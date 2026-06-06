@@ -291,6 +291,7 @@ tr:hover td{background:rgba(66,165,245,0.04)}
     <div class="tab" onclick="sw('broker',this)">🏦 Top Broker & Trading</div>
     <div class="tab" onclick="sw('sector',this)">🏭 Sektor & Indeks IDX</div>
     <div class="tab" onclick="sw('avgdown',this)">📉 Average Down</div>
+    <div class="tab" onclick="sw('changelog',this)">📝 Changelog</div>
   </div>
   <div class="actions">
     <button class="btn btn-theme" onclick="toggleTheme()">☀️ Light / 🌙 Dark</button>
@@ -490,6 +491,97 @@ tr:hover td{background:rgba(66,165,245,0.04)}
     </div>
   </div>
 
+</div>
+</div>
+
+<!-- CHANGELOG -->
+<div id="changelog" class="panel">
+<div style="max-width:680px;margin:0 auto">
+  <div class="card" style="margin-bottom:8px">
+    <div class="ct b">📝 Changelog — IDX Market Intelligence Dashboard</div>
+    <p style="font-size:11px;color:var(--text2);margin-bottom:16px">Riwayat pengembangan oleh Johan Iriawan Akbar · <a href="https://jiakbar.github.io/idx-dashboard/" target="_blank" style="color:var(--accent)">jiakbar.github.io/idx-dashboard</a></p>
+
+    <!-- v1.6 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v1.6</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Average Down Calculator</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">Juni 2026</span>
+      </div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:18px;line-height:2">
+        <li>Tab baru <strong>📉 Average Down</strong> — kalkulator strategi average down saham</li>
+        <li>5 mode: Half Loss, Loss Max, End Average, Avg Down Qty, Avg Down Value</li>
+        <li>Harga otomatis dari Yahoo Finance (delay ~15 menit) atau input manual</li>
+        <li>Data tersimpan di browser — tidak hilang saat refresh</li>
+      </ul>
+    </div>
+    <div style="border-top:0.5px solid var(--border);margin-bottom:20px"></div>
+
+    <!-- v1.5 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:var(--accent2);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v1.5</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Live Website & Update Otomatis</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">Juni 2026</span>
+      </div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:18px;line-height:2">
+        <li>Dashboard live di <strong>jiakbar.github.io/idx-dashboard/</strong></li>
+        <li>Data pasar update otomatis setiap hari kerja jam 20:00 WIB</li>
+        <li>Header: atribusi sumber data © Bursa Efek Indonesia</li>
+        <li>Footer: Visualisasi JIA © 2026 + disclaimer bukan saran investasi</li>
+      </ul>
+    </div>
+    <div style="border-top:0.5px solid var(--border);margin-bottom:20px"></div>
+
+    <!-- v1.4 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:var(--green);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v1.4</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Kalender Navigator Multi-Hari</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">Juni 2026</span>
+      </div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:18px;line-height:2">
+        <li>Kalender interaktif — klik tanggal untuk lihat data hari tersebut</li>
+        <li>Hari bursa aktif tampil hijau dengan nilai IHSG & persentase perubahan</li>
+        <li>Hari libur & bursa tutup otomatis bertuliskan "Bursa Libur"</li>
+        <li>Navigasi bulan Prev / Next</li>
+      </ul>
+    </div>
+    <div style="border-top:0.5px solid var(--border);margin-bottom:20px"></div>
+
+    <!-- v1.2 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:var(--purple);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v1.2</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Dashboard Lengkap 4 Tab</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">Juni 2026</span>
+      </div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:18px;line-height:2">
+        <li><strong>🌍 Indeks Dunia</strong> — perbandingan 36 negara, chart YTD, Avg Daily Trading, Net Foreign Flow, Market Fundamental (PER & PBV)</li>
+        <li><strong>📊 Top Stocks</strong> — Top Gainers, Losers, Leaders, Laggards, by Value & Frequency</li>
+        <li><strong>🏦 Top Broker & Trading</strong> — Top Broker by Value & Frequency, Market Cap</li>
+        <li><strong>🏭 Sektor & Indeks IDX</strong> — Sector heatmap, Board Indices, Indeks Syariah, chart YTD</li>
+        <li>Dual tema Dark / Light (default Light)</li>
+        <li>Export PDF satu halaman panjang (tidak terpotong)</li>
+        <li>Warna IHSG di header merah/hijau sesuai pergerakan</li>
+      </ul>
+    </div>
+    <div style="border-top:0.5px solid var(--border);margin-bottom:20px"></div>
+
+    <!-- v1.0 -->
+    <div style="margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:var(--text3);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v1.0</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Prototype Awal</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">Juni 2026</span>
+      </div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:18px;line-height:2">
+        <li>Infografis pertama: World Index Comparison & Index Performance</li>
+        <li>Tampilan awal tema gelap</li>
+      </ul>
+    </div>
+
+  </div>
 </div>
 </div>
 
