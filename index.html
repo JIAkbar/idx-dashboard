@@ -295,6 +295,7 @@ tr:hover td{background:rgba(66,165,245,0.04)}
     <div class="cal-dow">Kam</div><div class="cal-dow">Jum</div>
     <div class="cal-dow" style="color:#d32f2f">Sab</div><div class="cal-dow" style="color:#d32f2f">Min</div>
   </div>
+  <div id="cal-notice" style="display:none;margin-top:8px;padding:7px 10px;border-radius:6px;font-size:10.5px;line-height:1.5;"></div>
 </div>
 
 <!-- TOOLBAR -->
@@ -663,6 +664,10 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 // ============================================================
 let CAL_YEAR  = 2026;
 let CAL_MONTH = 6;   // 1-based
+
+// Rentang data tersedia
+const DATA_START = { year: 2026, month: 1 }; // Januari 2026
+const DATA_END   = { year: 2026, month: 6 }; // Juni 2026
 let INDEX     = [];  // dari index.json
 let ACTIVE_DATE = null;
 let D = null;        // data hari aktif
@@ -682,6 +687,7 @@ async function loadIndex() {
     INDEX = EMBEDDED_INDEX || [];
   }
   renderCal();
+  updateCalNotice();
   // Auto-load tanggal terbaru
   if (INDEX.length > 0) {
     const last = INDEX[INDEX.length - 1];
@@ -763,6 +769,38 @@ function calNav(dir) {
   if (CAL_MONTH > 12) { CAL_MONTH = 1; CAL_YEAR++; }
   if (CAL_MONTH < 1)  { CAL_MONTH = 12; CAL_YEAR--; }
   renderCal();
+  updateCalNotice();
+}
+
+function updateCalNotice() {
+  const notice = document.getElementById("cal-notice");
+  if (!notice) return;
+
+  const cur = CAL_YEAR * 100 + CAL_MONTH;
+  const start = DATA_START.year * 100 + DATA_START.month;
+  const end   = DATA_END.year * 100 + DATA_END.month;
+  const bulanStart = `${BULAN[DATA_START.month]} ${DATA_START.year}`;
+  const bulanEnd   = `${BULAN[DATA_END.month]} ${DATA_END.year}`;
+
+  if (cur < start) {
+    notice.style.display = "block";
+    notice.style.background = "var(--red-bg)";
+    notice.style.color = "var(--red-txt)";
+    notice.style.border = "0.5px solid var(--red)";
+    notice.innerHTML = `⚠️ <strong>Data belum tersedia.</strong>`;
+  } else if (cur > end) {
+    notice.style.display = "block";
+    notice.style.background = "var(--red-bg)";
+    notice.style.color = "var(--red-txt)";
+    notice.style.border = "0.5px solid var(--red)";
+    notice.innerHTML = `⚠️ <strong>Data belum tersedia untuk periode ini.</strong><br>Data tersedia dari <strong>${bulanStart}</strong> s/d <strong>${bulanEnd}</strong>. Data bulan berikutnya akan diperbarui secara berkala.`;
+  } else {
+    notice.style.display = "block";
+    notice.style.background = "var(--green-bg)";
+    notice.style.color = "var(--green-txt)";
+    notice.style.border = "0.5px solid var(--green)";
+    notice.innerHTML = `✅ <strong>Data tersedia:</strong> ${bulanStart} — ${bulanEnd} · Klik tanggal dengan latar hijau untuk melihat detail.`;
+  }
 }
 
 // ─── LOAD HARI ────────────────────────────────────────────
@@ -818,8 +856,19 @@ function updateHeader() {
   const isUp   = pct >= 0;
   ihsgEl.textContent = fN(D.ihsg_value, 3);
   ihsgEl.style.color = isUp ? "rgba(110,232,212,1)" : "rgba(244,160,160,1)";
-  chgEl.textContent =
-    `${fp(pct)} · YTD ${fp(D.ihsg_ytd??0)} · ASEAN #${D.ihsg_ra??"-"} · Asia Pasifik #${D.ihsg_rap??"-"} · Dunia #${D.ihsg_rw??"-"}`;
+
+  // Ambil ranking dari world data (entry Indonesia)
+  const idxEntry = (D.world || []).find(x => x.is_idx);
+  const ra  = idxEntry?.ra  ?? D.ihsg_ra  ?? "-";
+  const rap = idxEntry?.rap ?? D.ihsg_rap ?? "-";
+  const rw  = idxEntry?.rw  ?? D.ihsg_rw  ?? "-";
+  const rankColor = "rgba(255,220,100,0.9)"; // gold
+
+  chgEl.innerHTML =
+    `<span>${fp(pct)} · YTD ${fp(D.ihsg_ytd??0)}</span>` +
+    ` · <span style="color:${rankColor}">ASEAN <b>#${ra}</b></span>` +
+    ` · <span style="color:${rankColor}">Asia Pasifik <b>#${rap}</b></span>` +
+    ` · <span style="color:${rankColor}">Dunia <b>#${rw}</b></span>`;
   chgEl.style.color = isUp ? "rgba(110,232,212,0.8)" : "rgba(244,160,160,0.8)";
   document.getElementById("print-footer").innerHTML =
     `Sumber data: IDX Daily Statistics &copy; Bursa Efek Indonesia &nbsp;|&nbsp; ${D.date_id} &nbsp;|&nbsp; Visualisasi: JIA &copy; 2026 &nbsp;|&nbsp; Bukan saran investasi (Not Financial Advice)`;
