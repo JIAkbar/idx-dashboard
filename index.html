@@ -3,7 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IDX Market Intelligence</title>
+<title>IDX Market Intelligence - by JIA</title>
+<meta name="description" content="Dashboard analisis pasar IDX harian: IHSG, Top Stocks, Broker, Sektor, dan Indeks Dunia.">
+<meta property="og:title" content="IDX Market Intelligence - by JIA">
+<meta property="og:description" content="Dashboard analisis pasar IDX harian: IHSG, Top Stocks, Broker, Sektor, dan Indeks Dunia.">
+<meta property="og:url" content="https://jiakbar.github.io/idx-dashboard/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="IDX Market Intelligence - by JIA">
+<meta name="twitter:description" content="Dashboard analisis pasar IDX harian: IHSG, Top Stocks, Broker, Sektor, dan Indeks Dunia.">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
@@ -287,9 +295,11 @@ tr:hover td{background:rgba(66,165,245,0.04)}
     <span class="cal-title" id="cal-title">Juni 2026</span>
     <div class="cal-nav">
       <button onclick="calNav(-1)">‹ Prev</button>
+      <button onclick="calToday()" style="background:var(--accent);color:#fff;border-color:var(--accent)">Today</button>
       <button onclick="calNav(1)">Next ›</button>
     </div>
   </div>
+  <div id="cal-month-btns" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px"></div>
   <div class="cal-grid" id="cal-grid">
     <div class="cal-dow">Sen</div><div class="cal-dow">Sel</div><div class="cal-dow">Rab</div>
     <div class="cal-dow">Kam</div><div class="cal-dow">Jum</div>
@@ -516,6 +526,35 @@ tr:hover td{background:rgba(66,165,245,0.04)}
     <div class="ct b">📝 Changelog — IDX Market Intelligence Dashboard</div>
     <p style="font-size:11px;color:var(--text2);margin-bottom:16px">Riwayat pengembangan oleh Johan Iriawan Akbar · <a href="https://jiakbar.github.io/idx-dashboard/" target="_blank" style="color:var(--accent)">jiakbar.github.io/idx-dashboard</a></p>
 
+    <!-- v1.9 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:#d32f2f;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v1.9</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Navigasi Kalender & PDF Improvement</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">6 Juni 2026</span>
+      </div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:18px;line-height:2">
+        <li>Tombol <strong>Today</strong> untuk langsung ke bulan saat ini</li>
+        <li>Tombol cepat per bulan (Jan–Jun) untuk navigasi kalender</li>
+        <li>Simpan PDF kini mengabaikan panel Average Down & Changelog</li>
+      </ul>
+    </div>
+    <div style="border-top:0.5px solid var(--border);margin-bottom:20px"></div>
+
+    <!-- v1.8 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v1.8</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Ranking IHSG & Notifikasi Kalender</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">6 Juni 2026</span>
+      </div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:18px;line-height:2">
+        <li>Ranking IHSG di header: <strong>ASEAN · Asia Pasifik · Dunia</strong></li>
+        <li>Banner notifikasi di kalender: info rentang data tersedia & peringatan bulan kosong</li>
+      </ul>
+    </div>
+    <div style="border-top:0.5px solid var(--border);margin-bottom:20px"></div>
+
     <!-- v1.7 -->
     <div style="margin-bottom:20px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
@@ -688,6 +727,7 @@ async function loadIndex() {
   }
   renderCal();
   updateCalNotice();
+  renderMonthBtns();
   // Auto-load tanggal terbaru
   if (INDEX.length > 0) {
     const last = INDEX[INDEX.length - 1];
@@ -770,6 +810,45 @@ function calNav(dir) {
   if (CAL_MONTH < 1)  { CAL_MONTH = 12; CAL_YEAR--; }
   renderCal();
   updateCalNotice();
+  renderMonthBtns();
+}
+
+function calToday() {
+  const now = new Date();
+  CAL_YEAR  = now.getFullYear();
+  CAL_MONTH = now.getMonth() + 1;
+  renderCal();
+  updateCalNotice();
+  renderMonthBtns();
+}
+
+function calJump(y, m) {
+  CAL_YEAR  = y;
+  CAL_MONTH = m;
+  renderCal();
+  updateCalNotice();
+  renderMonthBtns();
+}
+
+function renderMonthBtns() {
+  const wrap = document.getElementById("cal-month-btns");
+  if (!wrap) return;
+  // Tampilkan bulan-bulan yang punya data
+  const months = {};
+  (INDEX || []).forEach(e => {
+    const d = new Date(e.date_iso);
+    const key = `${d.getFullYear()}-${d.getMonth()+1}`;
+    if (!months[key]) months[key] = { y: d.getFullYear(), m: d.getMonth()+1 };
+  });
+  const sorted = Object.values(months).sort((a,b)=> a.y!==b.y ? a.y-b.y : a.m-b.m);
+  wrap.innerHTML = sorted.map(({y,m}) => {
+    const active = (y===CAL_YEAR && m===CAL_MONTH);
+    return `<button onclick="calJump(${y},${m})" style="
+      font-size:10px;padding:3px 8px;border-radius:5px;cursor:pointer;border:0.5px solid var(--border2);
+      background:${active?"var(--accent)":"var(--bg3)"};
+      color:${active?"#fff":"var(--text2)"};font-weight:${active?"700":"500"}
+    ">${BULAN[m].slice(0,3)} ${String(y).slice(2)}</button>`;
+  }).join("");
 }
 
 function updateCalNotice() {
@@ -1254,8 +1333,11 @@ async function savePDF() {
   const activeTab = document.querySelector(".tab.active");
   const activePanelId = activeTab?.getAttribute("onclick").match(/'(\w+)'/)?.[1] || "world";
 
-  // Tampilkan semua panel
-  document.querySelectorAll(".panel").forEach(p=>{ p.style.display="block"; });
+  // Tampilkan panel data saja (exclude avgdown & changelog)
+  const excludePDF = ["avgdown","changelog"];
+  document.querySelectorAll(".panel").forEach(p=>{
+    p.style.display = excludePDF.includes(p.id) ? "none" : "block";
+  });
   document.querySelector(".toolbar").style.display = "none";
   document.querySelector(".cal-wrap").style.display = "none";
 
