@@ -14,6 +14,7 @@
 <meta name="twitter:description" content="Dashboard analisis pasar IDX harian: IHSG, Top Stocks, Broker, Sektor, dan Indeks Dunia.">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://s3.tradingview.com/tv.js" async></script>
 <style>
 /* ===== LIGHT (DEFAULT) ===== */
 [data-theme="light"]{
@@ -144,6 +145,18 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 .divider{border:none;border-top:0.5px solid var(--border);margin:10px 0}
 .sep{height:4px;background:var(--border2);border-radius:2px;margin:4px 0 8px;opacity:.4}
 /* === AVERAGE DOWN CALCULATOR === */
+/* === TV CHART === */
+.tv-grp-btn{font-size:10px;padding:4px 10px;border-radius:5px;cursor:pointer;border:0.5px solid var(--border2);background:var(--bg3);color:var(--text2);font-weight:500;transition:all .15s}
+.tv-grp-btn.active,.tv-grp-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tv-sym-btn{font-size:10px;padding:3px 9px;border-radius:5px;cursor:pointer;border:0.5px solid var(--border);background:var(--card2);color:var(--text2);font-weight:500;transition:all .15s;white-space:nowrap}
+.tv-sym-btn.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.tv-sym-btn:hover{border-color:var(--accent);color:var(--accent)}
+/* TV Expand / Fullscreen */
+.tv-fullscreen{position:fixed!important;inset:0!important;z-index:9999!important;background:var(--bg)!important;padding:10px!important;display:flex!important;flex-direction:column!important;border-radius:0!important}
+.tv-fullscreen .tv-fs-bar{display:flex!important}
+.tv-fs-bar{display:none;align-items:center;margin-bottom:8px;gap:8px}
+.tv-fs-title{font-size:13px;font-weight:700;color:var(--text);flex:1}
+.tv-fullscreen > div:not(.tv-fs-bar){flex:1;min-height:0}
 .adc-wrap{max-width:600px;margin:0 auto}
 .adc-section{margin-bottom:12px}
 .adc-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:8px}
@@ -315,6 +328,7 @@ tr:hover td{background:rgba(66,165,245,0.04)}
     <div class="tab" onclick="sw('stocks',this)">📊 Top Stocks</div>
     <div class="tab" onclick="sw('broker',this)">🏦 Top Broker & Trading</div>
     <div class="tab" onclick="sw('sector',this)">🏭 Sektor & Indeks IDX</div>
+    <div class="tab" onclick="sw('tvchart',this);initTVChart()">📈 Chart</div>
     <div class="tab" onclick="sw('avgdown',this)">📉 Average Down</div>
     <div class="tab" onclick="sw('changelog',this)">📝 Changelog</div>
   </div>
@@ -352,6 +366,67 @@ tr:hover td{background:rgba(66,165,245,0.04)}
   <div id="sector-content">
     <div class="loading-msg"><p>📅</p><p>Pilih tanggal di kalender untuk melihat data</p></div>
   </div>
+</div>
+
+<!-- TVCHART -->
+<div id="tvchart" class="panel">
+<div class="card" style="padding:12px">
+
+  <!-- Sub-tab: Chart | Heatmap -->
+  <div style="display:flex;gap:6px;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:10px;align-items:center">
+    <button id="tv-tab-chart" class="tv-grp-btn active" onclick="tvSubTab('chart')">📈 Chart Indeks</button>
+    <button id="tv-tab-heatmap" class="tv-grp-btn" onclick="tvSubTab('heatmap')">🔥 Heatmap</button>
+    <button onclick="tvExpand()" title="Expand" style="margin-left:auto;background:var(--bg3);border:0.5px solid var(--border);color:var(--text2);border-radius:5px;padding:4px 10px;cursor:pointer;font-size:12px">⛶ Expand</button>
+  </div>
+
+  <!-- CHART SECTION -->
+  <div id="tv-section-chart">
+    <div class="tv-fs-bar"><span class="tv-fs-title">📈 Chart Indeks IDX</span><button onclick="tvCollapse('tv-section-chart')" style="background:var(--red-bg);color:var(--red-txt);border:0.5px solid var(--red);border-radius:5px;padding:4px 12px;cursor:pointer;font-size:12px;font-weight:600">✕ Tutup</button></div>
+    <!-- Group selector -->
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px" id="tv-group-bar">
+      <button class="tv-grp-btn active" onclick="tvSetGroup('featured',this)">Featured</button>
+      <button class="tv-grp-btn" onclick="tvSetGroup('cobranding',this)">Co-Branding</button>
+      <button class="tv-grp-btn" onclick="tvSetGroup('sharia',this)">Syariah</button>
+    </div>
+    <!-- Symbol selector -->
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px" id="tv-sym-bar"></div>
+    <!-- Chart container -->
+    <div id="tv-chart-wrap" style="height:520px;border-radius:8px;overflow:hidden;background:var(--bg3)">
+      <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text3);font-size:13px">Memuat chart...</div>
+    </div>
+  </div>
+
+  <!-- HEATMAP SECTION -->
+  <div id="tv-section-heatmap" style="display:none">
+    <div class="tv-fs-bar"><span class="tv-fs-title">🔥 Heatmap Saham IDX</span><button onclick="tvCollapse('tv-section-heatmap')" style="background:var(--red-bg);color:var(--red-txt);border:0.5px solid var(--red);border-radius:5px;padding:4px 12px;cursor:pointer;font-size:12px;font-weight:600">✕ Tutup</button></div>
+    <div style="height:600px;border-radius:8px;overflow:hidden">
+      <div class="tradingview-widget-container" style="height:100%;width:100%">
+        <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js" async>
+        {
+          "dataSource": "AllID",
+          "blockSize": "market_cap_basic",
+          "blockColor": "change",
+          "grouping": "sector",
+          "locale": "id",
+          "symbolUrl": "",
+          "colorTheme": "dark",
+          "exchanges": [],
+          "hasTopBar": false,
+          "isDataSetEnabled": false,
+          "isZoomEnabled": true,
+          "hasSymbolTooltip": true,
+          "isMonoSize": false,
+          "width": "100%",
+          "height": "100%"
+        }
+        </script>
+      </div>
+    </div>
+  </div>
+
+  <p style="font-size:9px;color:var(--text3);margin-top:6px;text-align:right">Sumber: TradingView · Data real-time IDX</p>
+</div>
 </div>
 
 <!-- AVERAGE DOWN -->
@@ -525,6 +600,22 @@ tr:hover td{background:rgba(66,165,245,0.04)}
   <div class="card" style="margin-bottom:8px">
     <div class="ct b">📝 Changelog — IDX Market Intelligence Dashboard</div>
     <p style="font-size:11px;color:var(--text2);margin-bottom:16px">Riwayat pengembangan oleh Johan Iriawan Akbar · <a href="https://jiakbar.github.io/idx-dashboard/" target="_blank" style="color:var(--accent)">jiakbar.github.io/idx-dashboard</a></p>
+
+    <!-- v2.0 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:#6a1b9a;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v2.0</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Tab Chart & Heatmap IDX</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">6 Juni 2026</span>
+      </div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:18px;line-height:2">
+        <li>Tab baru <strong>📈 Chart</strong> — chart interaktif TradingView real-time</li>
+        <li>Semua indeks IDX: IHSG, LQ45, IDX30, IDX80, Kompas100, BUMN20, HIDIV20, Growth30, Value30, Quality30, Sri-Kehati, MNC36, ISSI, JII, JII70</li>
+        <li>🔥 <strong>Heatmap</strong> saham IDX per sektor berdasarkan market cap & perubahan harga</li>
+        <li>Filter group: Broad Market · Tematik · Syariah</li>
+      </ul>
+    </div>
+    <div style="border-top:0.5px solid var(--border);margin-bottom:20px"></div>
 
     <!-- v1.9 -->
     <div style="margin-bottom:20px">
@@ -1334,7 +1425,7 @@ async function savePDF() {
   const activePanelId = activeTab?.getAttribute("onclick").match(/'(\w+)'/)?.[1] || "world";
 
   // Tampilkan panel data saja (exclude avgdown & changelog)
-  const excludePDF = ["avgdown","changelog"];
+  const excludePDF = ["avgdown","changelog","tvchart"];
   document.querySelectorAll(".panel").forEach(p=>{
     p.style.display = excludePDF.includes(p.id) ? "none" : "block";
   });
@@ -1357,6 +1448,96 @@ async function savePDF() {
   document.querySelector(".cal-wrap").style.display = "";
   document.querySelectorAll(".panel").forEach(p=>{ p.style.display=""; });
   document.getElementById(activePanelId)?.classList.add("active");
+}
+
+// ─── TRADINGVIEW CHART ───────────────────────────────────
+const TV_GROUPS = {
+  featured: [
+    { sym:"IDX:COMPOSITE",  label:"IHSG" },
+    { sym:"IDX:LQ45",       label:"LQ45" },
+    { sym:"IDX:IDX30",      label:"IDX30" },
+    { sym:"IDX:IDX80",      label:"IDX80" },
+    { sym:"IDX:IDXHIDIV20", label:"High Div20" },
+    { sym:"IDX:IDXBUMN20",  label:"BUMN20" },
+    { sym:"IDX:IDXV30",     label:"Value30" },
+    { sym:"IDX:IDXG30",     label:"Growth30" },
+    { sym:"IDX:IDXQ30",     label:"Quality30" },
+  ],
+  cobranding: [
+    { sym:"IDX:KOMPAS100",  label:"Kompas100" },
+    { sym:"IDX:BISNIS27",   label:"Bisnis27" },
+    { sym:"IDX:SRIKEHATI",  label:"Sri-Kehati" },
+    { sym:"IDX:SMINFRA18",  label:"SMinfra18" },
+    { sym:"IDX:MNC36",      label:"MNC36" },
+  ],
+  sharia: [
+    { sym:"IDX:ISSI",  label:"ISSI" },
+    { sym:"IDX:JII",   label:"JII" },
+    { sym:"IDX:JII70", label:"JII70" },
+  ],
+};
+
+let TV_CURRENT_SYM = "IDX:COMPOSITE";
+let TV_CURRENT_GRP = "featured";
+let TV_ACTIVE_SUBTAB = "chart";
+let TV_CHART_INITED  = false;
+let TV_HEATMAP_INITED = false;
+
+function tvSubTab(tab) {
+  TV_ACTIVE_SUBTAB = tab;
+  document.getElementById("tv-tab-chart").classList.toggle("active", tab==="chart");
+  document.getElementById("tv-tab-heatmap").classList.toggle("active", tab==="heatmap");
+  document.getElementById("tv-section-chart").style.display   = tab==="chart"   ? "" : "none";
+  document.getElementById("tv-section-heatmap").style.display = tab==="heatmap" ? "" : "none";
+  // Heatmap sudah embed langsung di HTML, tidak perlu build dinamis
+}
+
+function tvSetGroup(grp, btn) {
+  TV_CURRENT_GRP = grp;
+  document.querySelectorAll("#tv-group-bar .tv-grp-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  TV_CURRENT_SYM = TV_GROUPS[grp][0].sym;
+  renderTVSymBtns();
+  buildTVChart(TV_CURRENT_SYM);
+}
+
+function tvSetSym(sym, btn) {
+  TV_CURRENT_SYM = sym;
+  document.querySelectorAll(".tv-sym-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  buildTVChart(sym);
+}
+
+function renderTVSymBtns() {
+  const bar = document.getElementById("tv-sym-bar");
+  if (!bar) return;
+  bar.innerHTML = (TV_GROUPS[TV_CURRENT_GRP]||[]).map(({sym,label}) =>
+    `<button class="tv-sym-btn${sym===TV_CURRENT_SYM?' active':''}" onclick="tvSetSym('${sym}',this)">${label}</button>`
+  ).join("");
+}
+
+function buildTVChart(sym) {
+  const wrap = document.getElementById("tv-chart-wrap");
+  if (!wrap) return;
+  const theme = document.documentElement.getAttribute("data-theme")==="dark" ? "dark" : "light";
+  wrap.innerHTML = `<div id="tv_widget_box" style="height:100%"></div>`;
+  const init = () => new TradingView.widget({
+    autosize:true, symbol:sym, interval:"D", timezone:"Asia/Jakarta",
+    theme, style:"1", locale:"id",
+    toolbar_bg: theme==="dark" ? "#141920" : "#f1f3f6",
+    enable_publishing:false, allow_symbol_change:true, save_image:false,
+    container_id:"tv_widget_box"
+  });
+  // tv.js sudah di-preload di head; retry jika belum siap
+  if (window.TradingView) { init(); }
+  else { const t = setInterval(()=>{ if(window.TradingView){ clearInterval(t); init(); } }, 150); }
+}
+
+function initTVChart() {
+  if (TV_CHART_INITED) return;
+  TV_CHART_INITED = true;
+  renderTVSymBtns();
+  buildTVChart(TV_CURRENT_SYM);
 }
 
 // ─── AVERAGE DOWN CALCULATOR ─────────────────────────────
@@ -1539,6 +1720,27 @@ const EMBEDDED_DATA  = null;
 
 loadIndex();
 ADC.load();
+
+// ─── TV EXPAND ───────────────────────────────────────────
+function tvExpand() {
+  const sectionId = TV_ACTIVE_SUBTAB === "heatmap" ? "tv-section-heatmap" : "tv-section-chart";
+  const section = document.getElementById(sectionId);
+  if (!section) return;
+  section.style.display = "";
+  section.classList.add("tv-fullscreen");
+  document.body.style.overflow = "hidden";
+}
+
+function tvCollapse(sectionId) {
+  const section = document.getElementById(sectionId);
+  if (!section) return;
+  section.classList.remove("tv-fullscreen");
+  document.body.style.overflow = "";
+  // Re-apply display state based on active sub-tab
+  if (sectionId === "tv-section-heatmap") section.style.display = TV_ACTIVE_SUBTAB === "heatmap" ? "" : "none";
+  if (sectionId === "tv-section-chart")   section.style.display = TV_ACTIVE_SUBTAB === "chart"   ? "" : "none";
+}
 </script>
+
 </body>
 </html>
