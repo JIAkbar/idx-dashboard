@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+
+# PDF source files (hanya simpan JSON hasil parse, bukan PDF asli)
+data/pdf/
+
+# Local files
+*.bat
+*.ps1
+dashboard_template.html
+parse_idx_pdf.py
+download_idx_stats.py
+PINDAHKAN_FILE_IDX.bat
+pindah_file_idx.ps1
+
+# OS
+.DS_Store
+Thumbs.db

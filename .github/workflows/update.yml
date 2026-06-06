@@ -1,0 +1,62 @@
+name: Update IDX Dashboard
+
+on:
+  # Otomatis setiap hari kerja pukul 20:00 WIB (= 13:00 UTC)
+  schedule:
+    - cron: '0 13 * * 1-5'
+  # Bisa dijalankan manual dari tab Actions di GitHub
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 2. Setup Python
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      # 3. Install dependencies
+      - name: Install Python packages
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium --with-deps
+
+      # 4. Download PDF IDX hari ini
+      - name: Download IDX Statistics PDF
+        run: |
+          python scripts/download_idx.py --hari-ini
+        continue-on-error: true   # Kalau bursa libur, lanjut saja
+
+      # 5. Parse semua PDF baru → JSON
+      - name: Parse PDF ke JSON
+        run: |
+          python scripts/parse_idx_pdf.py --semua
+
+      # 6. Commit & push jika ada perubahan
+      - name: Commit & push data baru
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          # Cek apakah ada perubahan
+          if git diff --staged --quiet; then
+            echo "Tidak ada data baru hari ini (mungkin bursa libur)."
+          else
+            TODAY=$(date +'%Y-%m-%d')
+            git commit -m "📊 Update data IDX: $TODAY"
+            git push
+            echo "Data berhasil diupdate dan di-push!"
+          fi

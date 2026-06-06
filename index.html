@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDX Market Intelligence</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+/* ===== LIGHT (DEFAULT) ===== */
+[data-theme="light"]{
+  --bg:#f2f4f7;--bg2:#fff;--bg3:#edf1f5;--card:#fff;--card2:#f8fafc;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,150,136,0.35);
+  --text:#1a2733;--text2:#4b6070;--text3:#8fa5b3;
+  --accent:#009688;--accent2:#00796b;
+  --red:#d32f2f;--red-bg:#ffebee;--red-txt:#b71c1c;
+  --green:#00796b;--green-bg:#e0f2f1;--green-txt:#004d40;
+  --gold:#e65100;--purple:#6a1b9a;
+  --hdr1:#004d40;--hdr2:#00251a;
+  --chart-grid:rgba(0,0,0,0.06);--chart-txt:#6b8fa8;
+  --rank1bg:#bf360c;--rank2bg:#455a64;--rank3bg:#4e342e;
+  --broker-chip-bg:#e0f2f1;--broker-chip-txt:#004d40;
+  --bar-track:#edf1f5;
+  --card-shadow:0 1px 6px rgba(0,0,0,0.08);
+  --cal-avail-bg:#e0f2f1;--cal-avail-txt:#00695c;
+  --cal-up:#00695c;--cal-dn:#b71c1c;
+  --cal-active-bg:#009688;--cal-active-txt:#fff;
+  --cal-holiday:#f5f5f5;--cal-holiday-txt:#aaa;
+}
+/* ===== DARK ===== */
+[data-theme="dark"]{
+  --bg:#0e1117;--bg2:#141920;--bg3:#1a2130;--card:#181e28;--card2:#202838;
+  --border:rgba(255,255,255,0.09);--border2:rgba(0,195,166,0.3);
+  --text:#cfd8e3;--text2:#5e7f96;--text3:#344f62;
+  --accent:#00c5a8;--accent2:#3ddfc8;
+  --red:#f05050;--red-bg:rgba(240,80,80,0.11);--red-txt:#f4a0a0;
+  --green:#00c5a8;--green-bg:rgba(0,197,168,0.11);--green-txt:#6ee8d4;
+  --gold:#f0b030;--purple:#b57bee;
+  --hdr1:#0d2035;--hdr2:#060e18;
+  --chart-grid:rgba(255,255,255,0.05);--chart-txt:#3e5e74;
+  --rank1bg:#a04b0a;--rank2bg:#303c4a;--rank3bg:#3d2e24;
+  --broker-chip-bg:rgba(0,197,168,0.13);--broker-chip-txt:#3ddfc8;
+  --bar-track:#0e1117;
+  --card-shadow:0 2px 12px rgba(0,0,0,0.35);
+  --cal-avail-bg:rgba(0,197,168,0.12);--cal-avail-txt:#3ddfc8;
+  --cal-up:#3ddfc8;--cal-dn:#f4a0a0;
+  --cal-active-bg:#00c5a8;--cal-active-txt:#0e1117;
+  --cal-holiday:#141920;--cal-holiday-txt:#2a3d50;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);padding:12px;min-height:100vh;transition:background .3s,color .3s}
+.wrap{max-width:980px;margin:0 auto}
+
+/* === HEADER === */
+.hdr{background:linear-gradient(135deg,var(--hdr1),var(--hdr2));border-radius:10px;padding:14px 20px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border2);box-shadow:0 4px 24px rgba(0,0,0,0.4)}
+.hdr-left p:first-child{font-size:18px;font-weight:700;color:#fff;letter-spacing:.3px}
+.hdr-meta{font-size:11px;color:rgba(255,255,255,0.6);margin-top:3px}
+.hdr-ihsg{font-size:30px;font-weight:700;line-height:1.1;text-align:right}
+.hdr-chg{font-size:11px;margin-top:3px;text-align:right}
+
+/* === KALENDER === */
+.cal-wrap{background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;box-shadow:var(--card-shadow)}
+.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cal-title{font-size:13px;font-weight:700;color:var(--text)}
+.cal-nav{display:flex;gap:4px}
+.cal-nav button{background:var(--bg3);border:0.5px solid var(--border);color:var(--text2);border-radius:5px;padding:3px 10px;cursor:pointer;font-size:12px;font-weight:600}
+.cal-nav button:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-dow{font-size:9px;font-weight:700;text-align:center;color:var(--text3);text-transform:uppercase;padding:2px 0;letter-spacing:.4px}
+.cal-day{border-radius:7px;padding:5px 4px;text-align:center;min-height:52px;display:flex;flex-direction:column;justify-content:space-between;border:0.5px solid transparent}
+.cal-day.empty{background:transparent}
+.cal-day.holiday{background:var(--cal-holiday);cursor:default}
+.cal-day.holiday .cal-dn{color:var(--cal-holiday-txt)}
+.cal-day.has-data{background:var(--cal-avail-bg);border-color:var(--border2);cursor:pointer;transition:all .15s}
+.cal-day.has-data:hover{filter:brightness(0.95);transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,0.12)}
+.cal-day.selected{background:var(--cal-active-bg)!important;border-color:var(--cal-active-bg)!important}
+.cal-day.selected .cal-dn,.cal-day.selected .cal-day-num,.cal-day.selected .cal-ihsg,.cal-day.selected .cal-pct{color:var(--cal-active-txt)!important}
+.cal-day-num{font-size:11px;font-weight:700;color:var(--text2)}
+.cal-ihsg{font-size:9px;font-weight:600;color:var(--text);margin-top:1px;line-height:1.2}
+.cal-pct{font-size:9px;font-weight:700;margin-top:1px}
+.cal-pct.up{color:var(--cal-up)}.cal-pct.dn{color:var(--cal-dn)}
+.cal-label{font-size:8px;color:var(--cal-holiday-txt);margin-top:2px;line-height:1.2}
+
+/* === TOOLBAR === */
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap}
+.tabs{display:flex;gap:3px;flex-wrap:wrap;flex:1}
+.tab{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;border:0.5px solid var(--border);background:var(--card2);color:var(--text2);transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.active{background:var(--bg3);color:var(--accent);border-color:var(--border2);font-weight:600}
+.actions{display:flex;gap:6px;align-items:center}
+.btn{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:0.5px solid var(--border2);transition:all .15s;white-space:nowrap}
+.btn-pdf{background:var(--red-bg);color:var(--red-txt);border-color:var(--red)}
+.btn-pdf:hover{background:var(--red);color:#fff}
+.btn-theme{background:var(--bg3);color:var(--accent);border-color:var(--border2)}
+.btn-theme:hover{background:var(--accent);color:#fff}
+
+/* === LOADING / EMPTY STATE === */
+.loading-msg{text-align:center;padding:60px 20px;color:var(--text2)}
+.loading-msg p:first-child{font-size:32px;margin-bottom:8px}
+.loading-msg p:last-child{font-size:13px}
+
+/* === PANELS === */
+.panel{display:none}.panel.active{display:block}
+
+/* === CARD === */
+.card{background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px;box-shadow:var(--card-shadow,none)}
+.ct{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin-bottom:9px;color:var(--text2)}
+.ct.g{color:var(--green)}.ct.r{color:var(--red)}.ct.b{color:var(--accent)}.ct.gold{color:var(--gold)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{padding:5px 7px;text-align:left;color:var(--text3);font-weight:700;border-bottom:0.5px solid var(--border);background:var(--bg3);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+td{padding:5px 7px;border-bottom:0.5px solid var(--border);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(66,165,245,0.04)}
+.r{text-align:right}.c{text-align:center}
+.red{color:var(--red);font-weight:700}.green{color:var(--green);font-weight:700}.muted{color:var(--text2)}
+.bdg{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;display:inline-block;min-width:52px;text-align:center}
+.bdg-r{background:var(--red-bg);color:var(--red-txt)}.bdg-g{background:var(--green-bg);color:var(--green-txt)}.bdg-b{background:rgba(66,165,245,0.15);color:var(--accent2)}
+.rank{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;margin-right:3px;flex-shrink:0}
+.rk1{background:var(--rank1bg);color:#fff}.rk2{background:var(--rank2bg);color:#fff}.rk3{background:var(--rank3bg);color:#fff}
+.bar-bg{height:6px;background:var(--bar-track);border-radius:3px;margin-top:3px;overflow:hidden}
+.bar-fill{height:6px;border-radius:3px}
+.region-hdr td{background:var(--bg3);color:var(--accent);font-weight:700;font-size:10px;letter-spacing:.5px;padding:4px 6px}
+.idx-row td{background:rgba(244,67,54,0.06)}
+.bchip{display:inline-block;background:var(--broker-chip-bg);color:var(--broker-chip-txt);font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;min-width:24px;text-align:center}
+.chart-wrap{position:relative;width:100%}
+.divider{border:none;border-top:0.5px solid var(--border);margin:10px 0}
+.sep{height:4px;background:var(--border2);border-radius:2px;margin:4px 0 8px;opacity:.4}
+.print-footer{display:none}
+
+@media print{
+  @page{margin:1cm 1.2cm;size:A4 portrait}
+  html,body{background:#fff!important;color:#111!important;font-size:9.5pt;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  .toolbar,.btn,.cal-wrap{display:none!important}
+  .panel{display:block!important}
+  .card{background:#f8f9fa!important;border:1px solid #d0d7de!important;border-radius:6px!important;page-break-inside:avoid;margin-bottom:8px;box-shadow:none!important;padding:10px 12px!important}
+  .hdr{background:linear-gradient(135deg,#0d2035,#060e18)!important;border-radius:6px!important}
+  .hdr *{color:#fff!important}
+  th{background:#e8edf2!important;color:#37474f!important}
+  td{color:#212529!important;padding:3px 6px!important}
+  .red{color:#b71c1c!important}.green{color:#1b5e20!important}.muted{color:#546e7a!important}
+  .bdg-r{background:#ffebee!important;color:#b71c1c!important}.bdg-g{background:#e8f5e9!important;color:#1b5e20!important}
+  .region-hdr td{background:#0d47a1!important;color:#fff!important}
+  .idx-row td{background:#fef2f2!important}
+  .bchip{background:#e3f2fd!important;color:#0d47a1!important}
+  .g2{display:grid!important;grid-template-columns:1fr 1fr!important}
+  .g3{display:grid!important;grid-template-columns:1fr 1fr 1fr!important}
+  canvas{max-width:100%!important}.chart-wrap{height:180px!important}
+  .print-footer{display:block!important;text-align:center;font-size:8pt;color:#888;margin-top:16px;border-top:1px solid #ccc;padding-top:6px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-left">
+    <p>IDX Market Intelligence</p>
+    <p class="hdr-meta" id="h-date">Pilih tanggal di kalender →</p>
+  </div>
+  <div>
+    <p class="hdr-ihsg" id="h-ihsg" style="color:var(--text2)">—</p>
+    <p class="hdr-chg" id="h-chg" style="color:var(--text2)">—</p>
+  </div>
+</div>
+
+<!-- KALENDER -->
+<div class="cal-wrap">
+  <div class="cal-header">
+    <span class="cal-title" id="cal-title">Juni 2026</span>
+    <div class="cal-nav">
+      <button onclick="calNav(-1)">‹ Prev</button>
+      <button onclick="calNav(1)">Next ›</button>
+    </div>
+  </div>
+  <div class="cal-grid" id="cal-grid">
+    <div class="cal-dow">Sen</div><div class="cal-dow">Sel</div><div class="cal-dow">Rab</div>
+    <div class="cal-dow">Kam</div><div class="cal-dow">Jum</div>
+    <div class="cal-dow" style="color:#d32f2f">Sab</div><div class="cal-dow" style="color:#d32f2f">Min</div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="tabs">
+    <div class="tab active" onclick="sw('world',this)">🌍 Indeks Dunia</div>
+    <div class="tab" onclick="sw('stocks',this)">📊 Top Stocks</div>
+    <div class="tab" onclick="sw('broker',this)">🏦 Top Broker & Trading</div>
+    <div class="tab" onclick="sw('sector',this)">🏭 Sektor & Indeks IDX</div>
+  </div>
+  <div class="actions">
+    <button class="btn btn-theme" onclick="toggleTheme()">☀️ Light / 🌙 Dark</button>
+    <button class="btn btn-pdf" onclick="savePDF()">🖨️ Simpan PDF</button>
+  </div>
+</div>
+
+<!-- ===== PANELS ===== -->
+
+<!-- WORLD -->
+<div id="world" class="panel active">
+  <div id="world-content">
+    <div class="loading-msg"><p>📅</p><p>Pilih tanggal di kalender untuk melihat data</p></div>
+  </div>
+</div>
+
+<!-- STOCKS -->
+<div id="stocks" class="panel">
+  <div id="stocks-content">
+    <div class="loading-msg"><p>📅</p><p>Pilih tanggal di kalender untuk melihat data</p></div>
+  </div>
+</div>
+
+<!-- BROKER -->
+<div id="broker" class="panel">
+  <div id="broker-content">
+    <div class="loading-msg"><p>📅</p><p>Pilih tanggal di kalender untuk melihat data</p></div>
+  </div>
+</div>
+
+<!-- SECTOR -->
+<div id="sector" class="panel">
+  <div id="sector-content">
+    <div class="loading-msg"><p>📅</p><p>Pilih tanggal di kalender untuk melihat data</p></div>
+  </div>
+</div>
+
+<footer class="print-footer" id="print-footer"></footer>
+</div><!-- /wrap -->
+
+<script>
+// ============================================================
+// KALENDER STATE
+// ============================================================
+let CAL_YEAR  = 2026;
+let CAL_MONTH = 6;   // 1-based
+let INDEX     = [];  // dari index.json
+let ACTIVE_DATE = null;
+let D = null;        // data hari aktif
+let charts = {};
+
+const BULAN = ["","Januari","Februari","Maret","April","Mei","Juni",
+               "Juli","Agustus","September","Oktober","November","Desember"];
+
+// ─── FETCH index.json ──────────────────────────────────────
+async function loadIndex() {
+  try {
+    const r = await fetch("data/index.json");
+    const j = await r.json();
+    INDEX = j.dates || [];
+  } catch(e) {
+    console.warn("index.json tidak ditemukan, coba embedded data");
+    INDEX = EMBEDDED_INDEX || [];
+  }
+  renderCal();
+  // Auto-load tanggal terbaru
+  if (INDEX.length > 0) {
+    const last = INDEX[INDEX.length - 1];
+    loadDay(last.stem, last.date_iso);
+  }
+}
+
+// ─── RENDER KALENDER ──────────────────────────────────────
+function renderCal() {
+  const grid = document.getElementById("cal-grid");
+  // Hapus semua kecuali header DOW (7 elemen pertama)
+  while (grid.children.length > 7) grid.removeChild(grid.lastChild);
+
+  document.getElementById("cal-title").textContent = `${BULAN[CAL_MONTH]} ${CAL_YEAR}`;
+
+  const dataMap = {};
+  INDEX.forEach(d => {
+    if (d.date_iso) dataMap[d.date_iso] = d;
+  });
+
+  // Hari pertama bulan ini (0=Sun..6=Sat → kita pakai Mon=0)
+  const firstDay = new Date(CAL_YEAR, CAL_MONTH - 1, 1).getDay(); // 0=Sun
+  const startOffset = (firstDay === 0) ? 6 : firstDay - 1; // Mon-based
+  const daysInMonth = new Date(CAL_YEAR, CAL_MONTH, 0).getDate();
+
+  // Tanggal merah Indonesia: isi manual kalau perlu
+  const HOLIDAYS = {
+    "2026-06-01": "Hari Lahir Pancasila",
+    "2026-05-29": "Kenaikan Isa Almasih",
+    // tambah sesuai kalender bursa
+  };
+
+  // Kosong sebelum hari pertama
+  for (let i = 0; i < startOffset; i++) {
+    const el = document.createElement("div");
+    el.className = "cal-day empty";
+    grid.appendChild(el);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const iso = `${CAL_YEAR}-${String(CAL_MONTH).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    const dow = new Date(CAL_YEAR, CAL_MONTH - 1, d).getDay(); // 0=Sun,6=Sat
+    const isWeekend = (dow === 0 || dow === 6);
+    const isHoliday = !!HOLIDAYS[iso];
+    const data = dataMap[iso];
+
+    const el = document.createElement("div");
+    el.className = "cal-day";
+    el.dataset.iso = iso;
+
+    const numEl = `<span class="cal-day-num">${d}</span>`;
+
+    if (data) {
+      const isUp = data.ihsg_pct >= 0;
+      const pctStr = (isUp ? "+" : "") + data.ihsg_pct.toFixed(2) + "%";
+      el.className += " has-data";
+      if (iso === ACTIVE_DATE) el.classList.add("selected");
+      el.innerHTML = `${numEl}
+        <span class="cal-ihsg">${data.ihsg.toLocaleString("id-ID",{maximumFractionDigits:0})}</span>
+        <span class="cal-pct ${isUp?"up":"dn"}">${pctStr}</span>`;
+      el.addEventListener("click", () => loadDay(data.stem, iso));
+    } else if (isWeekend) {
+      el.className += " holiday";
+      el.innerHTML = `${numEl}<span class="cal-label">${dow===6?"Sabtu":"Minggu"}</span>`;
+    } else if (isHoliday) {
+      el.className += " holiday";
+      el.innerHTML = `${numEl}<span class="cal-label">${HOLIDAYS[iso]}</span>`;
+    } else {
+      // Hari kerja tanpa data (belum tersedia / libur bursa)
+      el.className += " holiday";
+      el.innerHTML = `${numEl}<span class="cal-label">Bursa Libur</span>`;
+    }
+    grid.appendChild(el);
+  }
+}
+
+function calNav(dir) {
+  CAL_MONTH += dir;
+  if (CAL_MONTH > 12) { CAL_MONTH = 1; CAL_YEAR++; }
+  if (CAL_MONTH < 1)  { CAL_MONTH = 12; CAL_YEAR--; }
+  renderCal();
+}
+
+// ─── LOAD HARI ────────────────────────────────────────────
+async function loadDay(stem, iso) {
+  ACTIVE_DATE = iso;
+  renderCal(); // update selected state
+
+  try {
+    const r = await fetch(`data/${stem}.json`);
+    D = await r.json();
+  } catch(e) {
+    // Fallback embedded
+    D = EMBEDDED_DATA?.[stem] || null;
+  }
+
+  if (!D) {
+    showError(); return;
+  }
+
+  updateHeader();
+  buildWorldPanel();
+  buildStocksPanel();
+  buildBrokerPanel();
+  buildSectorPanel();
+  destroyCharts();
+  setTimeout(buildCharts, 100);
+}
+
+function showError() {
+  ["world","stocks","broker","sector"].forEach(id => {
+    document.getElementById(id+"-content").innerHTML =
+      `<div class="loading-msg"><p>⚠️</p><p>Data tidak tersedia untuk tanggal ini</p></div>`;
+  });
+}
+
+// ─── HELPER ──────────────────────────────────────────────
+const fN  = (v,d=2) => (v??0).toLocaleString("id-ID",{maximumFractionDigits:d});
+const fp  = (v,d=2) => (v>=0?"+":"")+Number(v).toFixed(d)+"%";
+const cls = v => v>=0?"green":"red";
+const bdg = v => `<span class="bdg ${v>=0?"bdg-g":"bdg-r"}">${fp(v)}</span>`;
+const fmtNF = v => {
+  const s = Number(v);
+  return (s>=0?"+":"")+s.toLocaleString("id-ID",{minimumFractionDigits:2,maximumFractionDigits:2});
+};
+
+// ─── UPDATE HEADER ────────────────────────────────────────
+function updateHeader() {
+  document.getElementById("h-date").textContent =
+    `${D.date_id} · Hari Perdagangan ke-${D.trading_day}`;
+  const ihsgEl = document.getElementById("h-ihsg");
+  const chgEl  = document.getElementById("h-chg");
+  const pct    = D.ihsg_pct ?? 0;
+  const isUp   = pct >= 0;
+  ihsgEl.textContent = fN(D.ihsg_value, 3);
+  ihsgEl.style.color = isUp ? "rgba(110,232,212,1)" : "rgba(244,160,160,1)";
+  chgEl.textContent =
+    `${fp(pct)} · YTD ${fp(D.ihsg_ytd??0)} · ASEAN #${D.ihsg_ra??"-"} · Asia Pasifik #${D.ihsg_rap??"-"} · Dunia #${D.ihsg_rw??"-"}`;
+  chgEl.style.color = isUp ? "rgba(110,232,212,0.8)" : "rgba(244,160,160,0.8)";
+  document.getElementById("print-footer").textContent =
+    `Sumber: IDX Daily Statistics · ${D.date_id} · Bukan saran investasi (NFA)`;
+}
+
+// ─── WORLD PANEL ─────────────────────────────────────────
+function buildWorldPanel() {
+  const world = D.world || [];
+  let wRows = "";
+  let curR = "";
+  world.forEach(w => {
+    if (w.r !== curR) {
+      curR = w.r;
+      wRows += `<tr class="region-hdr"><td colspan="8">${w.r}</td></tr>`;
+    }
+    wRows += `<tr class="${w.is_idx?"idx-row":""}">
+      <td style="font-weight:${w.is_idx?700:400}">${w.c}</td>
+      <td class="muted" style="font-size:10px">${w.idx}</td>
+      <td class="r">${fN(w.v)}</td>
+      <td class="r ${cls(w.d)}">${fp(w.d)}</td>
+      <td class="r">${bdg(w.ytd)}</td>
+      <td class="r muted">${w.ra??"-"}</td>
+      <td class="r muted">${w.rap??"-"}</td>
+      <td class="r muted">${w.rw??"-"}</td>
+    </tr>`;
+  });
+
+  // Avg Trading section
+  const at = D;
+  const trendIcon = t => t==="up"?'<span style="color:var(--green)">▲</span>':t==="down"?'<span style="color:var(--red)">▼</span>':"";
+  const nf = D;
+  const df = D;
+
+  document.getElementById("world-content").innerHTML = `
+    <div class="card" style="padding:10px;overflow-x:auto">
+      <p class="ct b">Perbandingan Indeks Dunia — 36 Negara (${D.date_id})</p>
+      <table><thead><tr>
+        <th>Negara</th><th>Indeks</th><th class="r">Nilai</th>
+        <th class="r">Hari Ini</th><th class="r">YTD</th>
+        <th class="r">A</th><th class="r">AP</th><th class="r">W</th>
+      </tr></thead><tbody>${wRows}</tbody></table>
+    </div>
+    <div class="card">
+      <p class="ct b">YTD Ranking — Semua Negara (Indonesia disorot merah)</p>
+      <div class="chart-wrap" style="height:280px"><canvas id="wChart"></canvas></div>
+    </div>
+    <div class="sep"></div>
+    <div class="card">
+      <p class="ct b">📊 Average Daily Trading (YTD)</p>
+      <div class="g3" style="gap:10px">
+        <div style="background:var(--bg3);border-radius:8px;padding:14px;text-align:center;border:0.5px solid var(--border)">
+          <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:6px">Avg. Volume</p>
+          <p style="font-size:22px;font-weight:700;color:var(--text)">${fN(at.avg_vol,0)} <span style="font-size:13px;color:var(--text2)">Jt Lbr</span></p>
+        </div>
+        <div style="background:var(--bg3);border-radius:8px;padding:14px;text-align:center;border:0.5px solid var(--border)">
+          <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:6px">Avg. Value</p>
+          <p style="font-size:22px;font-weight:700;color:var(--text)">${fN(at.avg_val_idr,0)} <span style="font-size:11px;color:var(--text2)">B IDR</span></p>
+          <p style="font-size:11px;color:var(--text2);margin-top:2px">${fN(at.avg_val_usd,0)} Jt USD</p>
+        </div>
+        <div style="background:var(--bg3);border-radius:8px;padding:14px;text-align:center;border:0.5px solid var(--border)">
+          <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:6px">Avg. Frequency</p>
+          <p style="font-size:22px;font-weight:700;color:var(--text)">${fN(at.avg_freq,0)} <span style="font-size:13px;color:var(--text2)">Rb Kali</span></p>
+        </div>
+      </div>
+    </div>
+    <div class="g2" style="gap:8px">
+      <div class="card" style="background:rgba(66,165,245,0.06);border-color:rgba(66,165,245,0.3)">
+        <p class="ct b">🌐 Net Foreign</p>
+        <div class="g2" style="gap:0;border:0.5px solid var(--border);border-radius:6px;overflow:hidden">
+          <div style="padding:12px 14px;border-right:0.5px solid var(--border)">
+            <p style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Today</p>
+            <p style="font-size:13px;font-weight:700;color:${(nf.nf_today_idr??0)<0?"var(--red)":"var(--green)"};margin-bottom:6px">${nf.nf_today_status??"-"}</p>
+            <p style="font-size:16px;font-weight:700;color:var(--text)">${fmtNF(nf.nf_today_idr??0)}</p>
+            <p style="font-size:9px;color:var(--text3)">(billion IDR)</p>
+            <p style="font-size:13px;font-weight:600;color:var(--text2);margin-top:4px">${fmtNF(nf.nf_today_usd??0)}</p>
+            <p style="font-size:9px;color:var(--text3)">(million USD~)</p>
+          </div>
+          <div style="padding:12px 14px">
+            <p style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">YTD</p>
+            <p style="font-size:13px;font-weight:700;color:${(nf.nf_ytd_idr??0)<0?"var(--red)":"var(--green)"};margin-bottom:6px">${nf.nf_ytd_status??"-"}</p>
+            <p style="font-size:16px;font-weight:700;color:var(--text)">${fmtNF(nf.nf_ytd_idr??0)}</p>
+            <p style="font-size:9px;color:var(--text3)">(billion IDR)</p>
+            <p style="font-size:13px;font-weight:600;color:var(--text2);margin-top:4px">${fmtNF(nf.nf_ytd_usd??0)}</p>
+            <p style="font-size:9px;color:var(--text3)">(million USD)</p>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="background:rgba(240,176,48,0.06);border-color:rgba(240,176,48,0.3)">
+        <p class="ct gold">📐 Market Fundamental</p>
+        <div class="g2" style="gap:0;border:0.5px solid var(--border);border-radius:6px;overflow:hidden">
+          <div style="padding:20px;text-align:center;border-right:0.5px solid var(--border)">
+            <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);margin-bottom:8px">Market PER (x)</p>
+            <p style="font-size:32px;font-weight:700;color:var(--text)">${(df.mkt_per??0).toFixed(2)}</p>
+          </div>
+          <div style="padding:20px;text-align:center">
+            <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);margin-bottom:8px">Market PBV (x)</p>
+            <p style="font-size:32px;font-weight:700;color:var(--text)">${(df.mkt_pbv??0).toFixed(2)}</p>
+          </div>
+        </div>
+        <p style="font-size:10px;text-align:center;color:var(--text3);margin-top:8px">~ USD/IDR BI = ${fN(df.usd_idr??0,0)}</p>
+      </div>
+    </div>`;
+}
+
+// ─── STOCKS PANEL ─────────────────────────────────────────
+function buildStocksPanel() {
+  const mcap = D.mcap || [];
+  const mx   = mcap[0]?.v || 1;
+  let mcapHtml = mcap.map((m,i) => {
+    const rc = i<3?["rk1","rk2","rk3"][i]:"";
+    const rankEl = i<3
+      ? `<span class="rank ${rc}">${i+1}</span>`
+      : `<span style="color:var(--text3);font-size:10px;margin-right:4px">${i+1}</span>`;
+    return `<div style="margin-bottom:7px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+        <span style="font-size:12px;font-weight:700">${rankEl}${m.c}</span>
+        <span style="font-size:11px;color:var(--text2)">${m.v}T &nbsp;<span class="bdg bdg-b" style="font-size:9px">${m.p}%</span></span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${(m.v/mx*100).toFixed(0)}%;background:var(--accent)"></div></div>
+    </div>`;
+  }).join("");
+
+  const gainRows = (D.gainers||[]).map(x =>
+    `<tr><td style="font-weight:700;color:var(--green)">${x.c}</td>
+     <td class="r muted">${fN(x.pr,0)}</td><td class="r green">${fN(x.td,0)}</td>
+     <td class="r">${bdg(x.p)}</td></tr>`).join("");
+
+  const lossRows = (D.losers||[]).map(x =>
+    `<tr><td style="font-weight:700;color:var(--red)">${x.c}</td>
+     <td class="r muted">${fN(x.pr,0)}</td><td class="r red">${fN(x.td,0)}</td>
+     <td class="r">${bdg(x.p)}</td></tr>`).join("");
+
+  const leadTodayRows = (D.leaders_today||[]).map(x =>
+    `<tr><td style="font-weight:700;color:var(--green)">${x.c}</td>
+     <td class="r ${cls(x.p)}">${fp(x.p)}</td>
+     <td class="r ${cls(x.ih)}">${x.ih>=0?"+":""}${x.ih.toFixed(2)}</td></tr>`).join("");
+
+  const leadYtdRows = (D.leaders_ytd||[]).map(x =>
+    `<tr><td style="font-weight:700;color:var(--green)">${x.c}</td>
+     <td class="r ${cls(x.p)}">${fp(x.p)}</td>
+     <td class="r ${cls(x.ih)}">${x.ih>=0?"+":""}${x.ih.toFixed(2)}</td></tr>`).join("");
+
+  const lagTodayRows = (D.laggards_today||[]).map(x =>
+    `<tr><td style="font-weight:700;color:var(--red)">${x.c}</td>
+     <td class="r ${cls(x.p)}">${fp(x.p)}</td>
+     <td class="r ${cls(x.ih)}">${x.ih>=0?"+":""}${x.ih.toFixed(2)}</td></tr>`).join("");
+
+  const lagYtdRows = (D.laggards_ytd||[]).map(x =>
+    `<tr><td style="font-weight:700;color:var(--red)">${x.c}</td>
+     <td class="r ${cls(x.p)}">${fp(x.p)}</td>
+     <td class="r ${cls(x.ih)}">${x.ih>=0?"+":""}${x.ih.toFixed(2)}</td></tr>`).join("");
+
+  document.getElementById("stocks-content").innerHTML = `
+    <div class="card"><p class="ct gold">Top 10 Market Capitalization (Triliun IDR)</p>${mcapHtml}</div>
+    <div class="g2">
+      <div class="card"><p class="ct g">Top Gainers Hari Ini</p>
+        <table><thead><tr><th>Kode</th><th class="r">Prev</th><th class="r">Today</th><th class="r">% Change</th></tr></thead>
+        <tbody>${gainRows}</tbody></table></div>
+      <div class="card"><p class="ct r">Top Losers Hari Ini</p>
+        <table><thead><tr><th>Kode</th><th class="r">Prev</th><th class="r">Today</th><th class="r">% Change</th></tr></thead>
+        <tbody>${lossRows}</tbody></table></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <p class="ct g">Top Leaders — Kontribusi IHSG Hari Ini</p>
+        <table><thead><tr><th>Kode</th><th class="r">%Saham</th><th class="r">+IHSG</th></tr></thead>
+        <tbody>${leadTodayRows}</tbody></table>
+        <hr class="divider">
+        <p class="ct g">Top Leaders YTD</p>
+        <table><thead><tr><th>Kode</th><th class="r">%YTD</th><th class="r">+IHSG</th></tr></thead>
+        <tbody>${leadYtdRows}</tbody></table>
+      </div>
+      <div class="card">
+        <p class="ct r">Top Laggards — Kontribusi IHSG Hari Ini</p>
+        <table><thead><tr><th>Kode</th><th class="r">%Saham</th><th class="r">IHSG</th></tr></thead>
+        <tbody>${lagTodayRows}</tbody></table>
+        <hr class="divider">
+        <p class="ct r">Top Laggards YTD</p>
+        <table><thead><tr><th>Kode</th><th class="r">%YTD</th><th class="r">IHSG</th></tr></thead>
+        <tbody>${lagYtdRows}</tbody></table>
+      </div>
+    </div>`;
+}
+
+// ─── BROKER PANEL ─────────────────────────────────────────
+function buildBrokerPanel() {
+  const tblStock = (id, data) => data.map(x =>
+    `<tr><td style="font-weight:700;color:var(--accent)">${x.c}</td>
+     <td class="r">${fN(x.v,0)}</td><td class="r muted">${x.p}%</td></tr>`).join("");
+
+  const tblBroker = (data) => data.map(x =>
+    `<tr><td><span class="bchip">${x.cd}</span></td>
+     <td style="font-size:10px;color:var(--text2)">${x.nm}</td>
+     <td class="r">${fN(x.v,0)}</td><td class="r muted">${x.p}%</td></tr>`).join("");
+
+  document.getElementById("broker-content").innerHTML = `
+    <div class="card">
+      <p class="ct b">Top Stock Trading — By Volume · Value · Frequency</p>
+      <div class="g3">
+        <div>
+          <p style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:7px">By Volume (Juta Saham)</p>
+          <table><thead><tr><th>Kode</th><th class="r">Volume</th><th class="r">%</th></tr></thead>
+          <tbody>${tblStock("tvol",D.top_vol||[])}</tbody></table>
+        </div>
+        <div>
+          <p style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:7px">By Value (Miliar IDR)</p>
+          <table><thead><tr><th>Kode</th><th class="r">Nilai</th><th class="r">%</th></tr></thead>
+          <tbody>${tblStock("tval",D.top_val||[])}</tbody></table>
+        </div>
+        <div>
+          <p style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:7px">By Frequency (Kali)</p>
+          <table><thead><tr><th>Kode</th><th class="r">Frekuensi</th><th class="r">%</th></tr></thead>
+          <tbody>${tblStock("tfreq",D.top_freq||[])}</tbody></table>
+        </div>
+      </div>
+    </div>
+    <div class="g3">
+      <div class="card">
+        <p class="ct gold">Top Broker — By Volume (Juta Saham)</p>
+        <table><thead><tr><th>Kode</th><th>Nama Broker</th><th class="r">Volume</th><th class="r">%</th></tr></thead>
+        <tbody>${tblBroker(D.broker_vol||[])}</tbody></table>
+      </div>
+      <div class="card">
+        <p class="ct gold">Top Broker — By Value (Miliar IDR)</p>
+        <table><thead><tr><th>Kode</th><th>Nama Broker</th><th class="r">Nilai</th><th class="r">%</th></tr></thead>
+        <tbody>${tblBroker(D.broker_val||[])}</tbody></table>
+      </div>
+      <div class="card">
+        <p class="ct gold">Top Broker — By Frequency (Kali)</p>
+        <table><thead><tr><th>Kode</th><th>Nama Broker</th><th class="r">Frekuensi</th><th class="r">%</th></tr></thead>
+        <tbody>${tblBroker(D.broker_freq||[])}</tbody></table>
+      </div>
+    </div>`;
+}
+
+// ─── SECTOR PANEL ─────────────────────────────────────────
+function buildSectorPanel() {
+  const secRows = [...(D.sectors||[])].sort((a,b)=>a.d-b.d).map(s =>
+    `<tr><td>${s.n}</td><td class="r muted">${fN(s.v)}</td>
+     <td class="r red">${fp(s.d)}</td><td class="r">${bdg(s.ytd)}</td></tr>`).join("");
+
+  const featRows = (D.featured||[]).map(x =>
+    `<tr><td>${x.n}</td><td class="r muted">${fN(x.v)}</td>
+     <td class="r ${cls(x.d)}">${fp(x.d)}</td><td class="r">${bdg(x.ytd)}</td></tr>`).join("");
+
+  const shrRows = (D.sharia||[]).map(x =>
+    `<tr><td>${x.n}</td><td class="r muted">${fN(x.v)}</td>
+     <td class="r ${cls(x.d)}">${fp(x.d)}</td><td class="r">${bdg(x.ytd)}</td></tr>`).join("");
+
+  const boardRows = (D.board||[]).map(x =>
+    `<tr><td>${x.n}</td><td class="r muted">${fN(x.v)}</td>
+     <td class="r ${cls(x.d)}">${fp(x.d)}</td><td class="r">${bdg(x.ytd)}</td></tr>`).join("");
+
+  document.getElementById("sector-content").innerHTML = `
+    <div class="card">
+      <p class="ct b">📊 Performa Sektor — Hari Ini vs YTD</p>
+      <table><thead><tr><th>Sektor</th><th class="r">Nilai Indeks</th><th class="r">Hari Ini</th><th class="r">YTD</th></tr></thead>
+      <tbody>${secRows}</tbody></table>
+    </div>
+    <div class="card">
+      <p class="ct b">Sektor — YTD vs Hari Ini</p>
+      <div class="chart-wrap" style="height:300px"><canvas id="secChart"></canvas></div>
+    </div>
+    <div class="sep"></div>
+    <div class="g2">
+      <div class="card">
+        <p class="ct b" style="font-size:12px;margin-bottom:10px">📈 Indeks Unggulan</p>
+        <table><thead><tr><th>Indeks</th><th class="r">Nilai</th><th class="r">Hari Ini</th><th class="r">YTD</th></tr></thead>
+        <tbody>${featRows}</tbody></table>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="card" style="flex:1">
+          <p class="ct b" style="font-size:12px;margin-bottom:10px">☪️ Indeks Syariah</p>
+          <table><thead><tr><th>Indeks</th><th class="r">Nilai</th><th class="r">Hari Ini</th><th class="r">YTD</th></tr></thead>
+          <tbody>${shrRows}</tbody></table>
+        </div>
+        <div class="card" style="flex:1">
+          <p class="ct b" style="font-size:12px;margin-bottom:10px">🗂️ Board Indices</p>
+          <table><thead><tr><th>Board</th><th class="r">Nilai</th><th class="r">Hari Ini</th><th class="r">YTD</th></tr></thead>
+          <tbody>${boardRows}</tbody></table>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="ct b">YTD — Perbandingan Semua Indeks Utama</p>
+      <div class="chart-wrap" style="height:300px"><canvas id="idxChart"></canvas></div>
+    </div>`;
+}
+
+// ─── CHARTS ───────────────────────────────────────────────
+function destroyCharts() {
+  Object.values(charts).forEach(c => { try{ c.destroy(); }catch(e){} });
+  charts = {};
+}
+
+function buildCharts() {
+  if (!D) return;
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  const gc = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)";
+  const tc = isDark ? "#4a6785" : "#78909c";
+  const redMain  = isDark ? "#ff4d4d" : "#d32f2f";
+  const redFill  = isDark ? "rgba(255,77,77,0.55)" : "rgba(211,47,47,0.55)";
+  const redFaint = isDark ? "rgba(255,77,77,0.35)" : "rgba(211,47,47,0.35)";
+  const greenFill= isDark ? "rgba(0,210,180,0.55)" : "rgba(0,121,107,0.55)";
+  const greenMain= isDark ? "#00d2b4" : "#00796b";
+  const greyFill = isDark ? "rgba(180,180,180,0.3)" : "rgba(100,120,130,0.35)";
+  const greyMain = isDark ? "#9ab0bc" : "#78909c";
+  const tealMain = isDark ? "#00d2b4" : "#009688";
+
+  const baseOpts = (extra={}) => ({
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, ...extra },
+    layout:{ padding:{top:4,bottom:4} }
+  });
+  const xAx = (rot=55) => ({ticks:{color:tc,font:{size:11,weight:"500"},maxRotation:rot,padding:4},grid:{color:gc}});
+  const yAx = () => ({ticks:{color:tc,font:{size:12},callback:v=>v+"%",padding:6},grid:{color:gc}});
+
+  // World chart
+  const wEl = document.getElementById("wChart");
+  if (wEl && D.world?.length && !charts.w) {
+    const s = [...D.world].sort((a,b) => a.ytd-b.ytd);
+    charts.w = new Chart(wEl, { type:"bar",
+      data:{ labels:s.map(x=>x.c),
+        datasets:[{ data:s.map(x=>x.ytd),
+          backgroundColor:s.map(x=>x.is_idx?redMain:x.ytd>=0?greenFill:redFaint),
+          borderColor:s.map(x=>x.is_idx?redMain:x.ytd>=0?greenMain:redMain),
+          borderWidth:1.5, borderRadius:2 }] },
+      options:{...baseOpts(), scales:{x:xAx(55),y:yAx()}}
+    });
+  }
+
+  // Sector chart
+  const sEl = document.getElementById("secChart");
+  if (sEl && D.sectors?.length && !charts.s) {
+    const sd = [...D.sectors].sort((a,b)=>a.ytd-b.ytd);
+    charts.s = new Chart(sEl, { type:"bar",
+      data:{ labels:sd.map(x=>x.n.replace(/\[.\] /,"")),
+        datasets:[
+          { label:"YTD %",   data:sd.map(x=>x.ytd), backgroundColor:redFill,  borderColor:redMain, borderWidth:1.5, borderRadius:2 },
+          { label:"Hari ini",data:sd.map(x=>x.d),   backgroundColor:greyFill, borderColor:greyMain,borderWidth:1,   borderRadius:2 }
+        ] },
+      options:{ ...baseOpts({legend:{display:true,labels:{color:tc,font:{size:12},boxWidth:12,padding:14}}}),
+        scales:{x:xAx(40),y:yAx()}}
+    });
+  }
+
+  // Index YTD chart
+  const iEl = document.getElementById("idxChart");
+  if (iEl && D.featured?.length && !charts.i) {
+    const all = [...(D.featured||[]),...(D.sharia||[])].sort((a,b)=>b.ytd-a.ytd);
+    charts.i = new Chart(iEl, { type:"bar",
+      data:{ labels:all.map(x=>x.n),
+        datasets:[{ data:all.map(x=>x.ytd),
+          backgroundColor:all.map(x=>x.n.includes("IDX Composite")||x.n.includes("IHSG")?redMain:redFaint),
+          borderColor:all.map(x=>x.n.includes("IDX Composite")||x.n.includes("IHSG")?redMain:redFill),
+          borderWidth:1.5, borderRadius:2 }] },
+      options:{...baseOpts(), scales:{x:xAx(50),y:yAx()}}
+    });
+  }
+}
+
+// ─── TAB SWITCH ───────────────────────────────────────────
+function sw(id, el) {
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  el.classList.add("active");
+  setTimeout(buildCharts, 80);
+}
+
+// ─── THEME TOGGLE ─────────────────────────────────────────
+function toggleTheme() {
+  const html = document.documentElement;
+  html.setAttribute("data-theme", html.getAttribute("data-theme")==="dark"?"light":"dark");
+  destroyCharts();
+  setTimeout(buildCharts, 100);
+}
+
+// ─── SAVE PDF ─────────────────────────────────────────────
+async function savePDF() {
+  if (!D) { alert("Pilih tanggal dulu!"); return; }
+  buildCharts();
+  const activeTab = document.querySelector(".tab.active");
+  const activePanelId = activeTab?.getAttribute("onclick").match(/'(\w+)'/)?.[1] || "world";
+
+  // Tampilkan semua panel
+  document.querySelectorAll(".panel").forEach(p=>{ p.style.display="block"; });
+  document.querySelector(".toolbar").style.display = "none";
+  document.querySelector(".cal-wrap").style.display = "none";
+
+  await new Promise(r=>setTimeout(r,800));
+  const el = document.querySelector(".wrap");
+  const opt = {
+    margin:[8,8,8,8],
+    filename:`IDX_Market_${D.date_iso||"unknown"}.pdf`,
+    image:{type:"jpeg",quality:0.92},
+    html2canvas:{scale:2,useCORS:true,logging:false,scrollY:0,windowWidth:980},
+    jsPDF:{unit:"pt",format:[el.scrollWidth+16,(el.scrollHeight*0.75)+16],orientation:"portrait"}
+  };
+  try { await html2pdf().set(opt).from(el).save(); } catch(e) { console.error(e); }
+
+  // Restore
+  document.querySelector(".toolbar").style.display = "";
+  document.querySelector(".cal-wrap").style.display = "";
+  document.querySelectorAll(".panel").forEach(p=>{ p.style.display=""; });
+  document.getElementById(activePanelId)?.classList.add("active");
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+// Embedded fallback (akan diisi oleh Python jika tidak ada server)
+const EMBEDDED_INDEX = null;
+const EMBEDDED_DATA  = null;
+
+loadIndex();
+</script>
+</body>
+</html>
