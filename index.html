@@ -135,6 +135,53 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 .chart-wrap{position:relative;width:100%}
 .divider{border:none;border-top:0.5px solid var(--border);margin:10px 0}
 .sep{height:4px;background:var(--border2);border-radius:2px;margin:4px 0 8px;opacity:.4}
+/* === AVERAGE DOWN CALCULATOR === */
+.adc-wrap{max-width:600px;margin:0 auto}
+.adc-section{margin-bottom:12px}
+.adc-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:8px}
+.adc-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.adc-field{display:flex;flex-direction:column;gap:3px}
+.adc-field label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px}
+.adc-input{background:var(--bg3);border:0.5px solid var(--border);border-radius:7px;padding:8px 10px;font-size:15px;font-weight:600;color:var(--text);outline:none;width:100%;transition:border-color .15s}
+.adc-input:focus{border-color:var(--accent)}
+.adc-unit{font-size:10px;color:var(--text3);margin-top:1px}
+.adc-kode-row{display:flex;gap:6px;align-items:flex-end}
+.adc-kode-row .adc-input{flex:1;text-transform:uppercase}
+.adc-name{font-size:11px;color:var(--text2);margin-top:3px;min-height:14px;font-style:italic}
+.adc-fetch-btn{background:var(--accent);color:#fff;border:none;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.adc-fetch-btn:hover{background:var(--accent2)}
+.adc-fetch-btn:disabled{opacity:.5;cursor:wait}
+.adc-price-row{display:flex;align-items:center;gap:6px;margin-top:3px}
+.adc-badge{font-size:9px;padding:2px 7px;border-radius:4px;font-weight:700}
+.adc-badge.auto{background:var(--green-bg);color:var(--green-txt)}
+.adc-badge.manual{background:var(--bg3);color:var(--text3);border:0.5px solid var(--border)}
+.adc-stat-box{background:var(--bg3);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border:0.5px solid var(--border)}
+.adc-stat-left{display:flex;flex-direction:column;gap:2px}
+.adc-stat-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)}
+.adc-stat-val{font-size:13px;font-weight:600;color:var(--text)}
+.adc-gl-pct{font-size:28px;font-weight:700;text-align:right}
+.adc-gl-idr{font-size:11px;font-weight:600;text-align:right;margin-top:2px;color:var(--text2)}
+.adc-modes{display:flex;flex-direction:column;gap:6px}
+.adc-mode{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;border:0.5px solid var(--border);cursor:pointer;background:var(--bg3);transition:all .15s}
+.adc-mode:hover{border-color:var(--accent)}
+.adc-mode.selected{border-color:var(--accent);background:var(--cal-avail-bg)}
+.adc-mode input[type=radio]{accent-color:var(--accent);width:15px;height:15px;flex-shrink:0}
+.adc-mode-label{font-size:13px;font-weight:600;color:var(--text);flex:1}
+.adc-mode-desc{font-size:10px;color:var(--text3);margin-top:1px}
+.adc-mode-sub{font-size:10px;color:var(--text2);font-style:italic}
+.adc-mode-inp{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.adc-mode-inp input{width:85px;background:var(--bg2);border:0.5px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:13px;font-weight:700;color:var(--accent);outline:none;text-align:right}
+.adc-mode-inp span{font-size:11px;color:var(--text3);font-weight:600}
+.adc-result-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.adc-result-item{background:var(--bg3);border-radius:8px;padding:10px 14px;border:0.5px solid var(--border)}
+.adc-result-item.highlight{border-color:var(--border2)}
+.adc-result-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px}
+.adc-result-val{font-size:18px;font-weight:700;color:var(--text)}
+.adc-result-sub{font-size:10px;color:var(--text2);margin-top:2px}
+.adc-calc-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:12px}
+.adc-calc-btn:hover{background:var(--accent2)}
+.adc-disclaimer{font-size:10px;color:var(--text3);text-align:center;padding:8px;border-top:0.5px solid var(--border);line-height:1.6}
+
 .print-footer{display:none}
 
 /* ===== MOBILE ===== */
@@ -243,6 +290,7 @@ tr:hover td{background:rgba(66,165,245,0.04)}
     <div class="tab" onclick="sw('stocks',this)">📊 Top Stocks</div>
     <div class="tab" onclick="sw('broker',this)">🏦 Top Broker & Trading</div>
     <div class="tab" onclick="sw('sector',this)">🏭 Sektor & Indeks IDX</div>
+    <div class="tab" onclick="sw('avgdown',this)">📉 Average Down</div>
   </div>
   <div class="actions">
     <button class="btn btn-theme" onclick="toggleTheme()">☀️ Light / 🌙 Dark</button>
@@ -278,6 +326,171 @@ tr:hover td{background:rgba(66,165,245,0.04)}
   <div id="sector-content">
     <div class="loading-msg"><p>📅</p><p>Pilih tanggal di kalender untuk melihat data</p></div>
   </div>
+</div>
+
+<!-- AVERAGE DOWN -->
+<div id="avgdown" class="panel">
+<div class="adc-wrap">
+
+  <!-- Stock Position -->
+  <div class="card adc-section">
+    <div class="ct b">📋 Posisi Saham</div>
+
+    <div class="adc-field" style="margin-bottom:10px">
+      <label>Kode Saham</label>
+      <div class="adc-kode-row">
+        <input id="adc-kode" class="adc-input" type="text" placeholder="Contoh: BBCA" maxlength="6" oninput="this.value=this.value.toUpperCase()">
+        <button class="adc-fetch-btn" id="adc-fetch-btn" onclick="ADC.fetchPrice()">🔍 Cari Harga</button>
+      </div>
+      <div class="adc-name" id="adc-name">—</div>
+    </div>
+
+    <div class="adc-grid2" style="margin-bottom:10px">
+      <div class="adc-field">
+        <label>Avg Cost (Harga Beli Rata-rata)</label>
+        <input id="adc-avg" class="adc-input" type="number" placeholder="0" min="0" oninput="ADC.calc()">
+        <div class="adc-unit">IDR per saham</div>
+      </div>
+      <div class="adc-field">
+        <label>Qty Balance</label>
+        <input id="adc-qty" class="adc-input" type="number" placeholder="0" min="0" oninput="ADC.calc()">
+        <div class="adc-unit">Lot (1 lot = 100 saham)</div>
+      </div>
+    </div>
+
+    <div class="adc-field" style="margin-bottom:10px">
+      <label>Last Price (Harga Sekarang)</label>
+      <input id="adc-last" class="adc-input" type="number" placeholder="0" min="0" oninput="ADC.calc()">
+      <div class="adc-price-row">
+        <span class="adc-badge manual" id="adc-price-src">Input Manual</span>
+        <span style="font-size:10px;color:var(--text3)">atau klik 🔍 untuk auto-fetch Yahoo Finance</span>
+      </div>
+    </div>
+
+    <!-- Current G/L -->
+    <div class="adc-stat-box">
+      <div class="adc-stat-left">
+        <span class="adc-stat-label">Nilai Investasi</span>
+        <span class="adc-stat-val" id="adc-cur-value">—</span>
+        <span class="adc-unit">IDR</span>
+        <div style="height:8px"></div>
+        <span class="adc-stat-label">Unrealized G/L</span>
+        <span class="adc-stat-val" id="adc-cur-gl-idr" style="color:var(--text2)">—</span>
+      </div>
+      <div>
+        <div class="adc-gl-pct red" id="adc-cur-gl-pct">—</div>
+        <div class="adc-gl-idr" id="adc-cur-gl-idr2">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mode Selection -->
+  <div class="card adc-section">
+    <div class="ct b">⚙️ Strategi Average Down</div>
+    <div class="adc-modes">
+
+      <!-- Half Loss -->
+      <div class="adc-mode selected" id="mode-half" onclick="ADC.setMode('half')">
+        <input type="radio" name="adc-mode" checked>
+        <div style="flex:1">
+          <div class="adc-mode-label">Half Loss</div>
+          <div class="adc-mode-desc">Kurangi kerugian menjadi setengahnya</div>
+          <div class="adc-mode-sub" id="adc-half-info"></div>
+        </div>
+      </div>
+
+      <!-- Loss Max -->
+      <div class="adc-mode" id="mode-lossmax" onclick="ADC.setMode('lossmax')">
+        <input type="radio" name="adc-mode">
+        <div style="flex:1">
+          <div class="adc-mode-label">Loss Max</div>
+          <div class="adc-mode-desc">Batasi kerugian maksimal</div>
+        </div>
+        <div class="adc-mode-inp" id="adc-mode-lossmax" style="display:none">
+          <input id="adc-lossmax-val" type="number" value="5" min="0.1" max="99" step="0.5" oninput="ADC.calc()" onclick="event.stopPropagation()">
+          <span>%</span>
+        </div>
+      </div>
+
+      <!-- End Avg -->
+      <div class="adc-mode" id="mode-endavg" onclick="ADC.setMode('endavg')">
+        <input type="radio" name="adc-mode">
+        <div style="flex:1">
+          <div class="adc-mode-label">End Average</div>
+          <div class="adc-mode-desc">Target harga rata-rata akhir yang diinginkan</div>
+        </div>
+        <div class="adc-mode-inp" id="adc-mode-endavg" style="display:none">
+          <input id="adc-endavg-val" type="number" value="0" min="0" oninput="ADC.calc()" onclick="event.stopPropagation()">
+          <span>IDR</span>
+        </div>
+      </div>
+
+      <!-- Avg Down Qty -->
+      <div class="adc-mode" id="mode-avgqty" onclick="ADC.setMode('avgqty')">
+        <input type="radio" name="adc-mode">
+        <div style="flex:1">
+          <div class="adc-mode-label">Average Down Qty</div>
+          <div class="adc-mode-desc">Beli sejumlah lot tertentu</div>
+        </div>
+        <div class="adc-mode-inp" id="adc-mode-avgqty" style="display:none">
+          <input id="adc-avgqty-val" type="number" value="0" min="0" step="1" oninput="ADC.calc()" onclick="event.stopPropagation()">
+          <span>Lot</span>
+        </div>
+      </div>
+
+      <!-- Avg Down Value -->
+      <div class="adc-mode" id="mode-avgval" onclick="ADC.setMode('avgval')">
+        <input type="radio" name="adc-mode">
+        <div style="flex:1">
+          <div class="adc-mode-label">Average Down Value</div>
+          <div class="adc-mode-desc">Investasikan sejumlah dana</div>
+        </div>
+        <div class="adc-mode-inp" id="adc-mode-avgval" style="display:none">
+          <input id="adc-avgval-val" type="number" value="0" min="0" step="100000" oninput="ADC.calc()" onclick="event.stopPropagation()">
+          <span>IDR</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Estimation Result -->
+  <div class="card adc-section">
+    <div class="ct b">📊 Estimasi Hasil</div>
+    <div class="adc-result-grid">
+      <div class="adc-result-item highlight">
+        <div class="adc-result-label">Buy Again Qty</div>
+        <div class="adc-result-val" id="adc-r-buyqty">—</div>
+        <div class="adc-result-sub" id="adc-r-buyval">—</div>
+      </div>
+      <div class="adc-result-item highlight">
+        <div class="adc-result-label">Est. End Average</div>
+        <div class="adc-result-val" id="adc-r-endavg">—</div>
+        <div class="adc-result-sub">IDR per saham</div>
+      </div>
+      <div class="adc-result-item">
+        <div class="adc-result-label">End Qty Balance</div>
+        <div class="adc-result-val" id="adc-r-endqty">—</div>
+        <div class="adc-result-sub">Lot</div>
+      </div>
+      <div class="adc-result-item">
+        <div class="adc-result-label">End Value (Modal)</div>
+        <div class="adc-result-val" id="adc-r-endval">—</div>
+        <div class="adc-result-sub">IDR</div>
+      </div>
+      <div class="adc-result-item" style="grid-column:1/-1">
+        <div class="adc-result-label">End Current G/L</div>
+        <div class="adc-result-val" id="adc-r-endgl-pct">—</div>
+        <div class="adc-result-sub" id="adc-r-endgl-idr">—</div>
+      </div>
+    </div>
+    <div class="adc-disclaimer">
+      ⚠️ Kalkulasi ini bersifat estimasi untuk perencanaan. Bukan saran investasi (Not Financial Advice).<br>
+      Harga real-time delay ~15 menit via Yahoo Finance.
+    </div>
+  </div>
+
+</div>
 </div>
 
 <footer class="print-footer" id="print-footer"></footer>
@@ -862,12 +1075,186 @@ async function savePDF() {
   document.getElementById(activePanelId)?.classList.add("active");
 }
 
+// ─── AVERAGE DOWN CALCULATOR ─────────────────────────────
+const ADC = {
+  mode: 'half',
+
+  setMode(m) {
+    this.mode = m;
+    // Highlight selected mode box
+    ['half','lossmax','endavg','avgqty','avgval'].forEach(id => {
+      const box = document.getElementById('mode-' + id);
+      const inp = document.getElementById('adc-mode-' + id);
+      if (box) box.classList.toggle('selected', id === m);
+      if (inp) inp.style.display = id === m ? 'flex' : 'none';
+      // sync radio
+      const radio = box?.querySelector('input[type=radio]');
+      if (radio) radio.checked = id === m;
+    });
+    this.calc();
+  },
+
+  async fetchPrice() {
+    const kode = (document.getElementById('adc-kode').value || '').trim().toUpperCase();
+    if (!kode) { alert('Masukkan kode saham terlebih dahulu'); return; }
+    const btn = document.getElementById('adc-fetch-btn');
+    btn.textContent = '⏳'; btn.disabled = true;
+    document.getElementById('adc-price-src').textContent = 'Mengambil data...';
+    document.getElementById('adc-price-src').className = 'adc-badge manual';
+    try {
+      const ticker = kode + '.JK';
+      const yUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
+      const proxy = `https://corsproxy.io/?url=${encodeURIComponent(yUrl)}`;
+      const r = await fetch(proxy, {signal: AbortSignal.timeout(10000)});
+      const j = await r.json();
+      const res = j?.chart?.result?.[0];
+      const price = res?.meta?.regularMarketPrice;
+      const name  = res?.meta?.longName || res?.meta?.shortName || kode;
+      if (price && price > 0) {
+        document.getElementById('adc-last').value  = price;
+        document.getElementById('adc-name').textContent = name;
+        document.getElementById('adc-price-src').textContent = 'Auto • Yahoo Finance (delay ~15m)';
+        document.getElementById('adc-price-src').className = 'adc-badge auto';
+        this.save();
+        this.calc();
+      } else { throw new Error('no price'); }
+    } catch(e) {
+      document.getElementById('adc-price-src').textContent = 'Gagal — isi harga manual';
+      document.getElementById('adc-price-src').className = 'adc-badge manual';
+      document.getElementById('adc-name').textContent = 'Tidak dapat mengambil data otomatis';
+    }
+    btn.textContent = '🔍 Cari Harga'; btn.disabled = false;
+  },
+
+  calc() {
+    const avg  = parseFloat(document.getElementById('adc-avg').value)  || 0;
+    const qty  = parseFloat(document.getElementById('adc-qty').value)  || 0;
+    const last = parseFloat(document.getElementById('adc-last').value) || 0;
+
+    // Tampilkan posisi saat ini
+    if (avg > 0 && qty > 0 && last > 0) {
+      const curVal   = qty * 100 * avg;
+      const curGLIdr = qty * 100 * (last - avg);
+      const curGLPct = (last - avg) / avg * 100;
+      document.getElementById('adc-cur-value').textContent   = fN(curVal, 0);
+      document.getElementById('adc-cur-gl-pct').textContent  = fp(curGLPct);
+      document.getElementById('adc-cur-gl-pct').className    = 'adc-gl-pct ' + (curGLPct >= 0 ? 'green' : 'red');
+      document.getElementById('adc-cur-gl-idr').textContent  = fN(curGLIdr, 0) + ' IDR';
+      document.getElementById('adc-cur-gl-idr2').textContent = fp(curGLPct);
+    }
+
+    if (!avg || !qty || !last || last >= avg) {
+      // Tidak bisa average down jika harga naik
+      if (last >= avg && avg > 0 && last > 0) {
+        document.getElementById('adc-r-buyqty').textContent = 'Harga sudah di atas avg';
+        document.getElementById('adc-r-buyval').textContent = 'Tidak perlu average down';
+        document.getElementById('adc-r-endavg').textContent = '—';
+        document.getElementById('adc-r-endqty').textContent = '—';
+        document.getElementById('adc-r-endval').textContent = '—';
+        document.getElementById('adc-r-endgl-pct').textContent = '—';
+        document.getElementById('adc-r-endgl-idr').textContent = '—';
+      }
+      return;
+    }
+
+    const curGLPct = (last - avg) / avg * 100;
+
+    // Hitung berdasarkan mode
+    let buyQty = 0, endAvg = avg;
+
+    switch(this.mode) {
+      case 'half': {
+        const targetPct = curGLPct / 2;                        // e.g. -47.58
+        endAvg = last / (1 + targetPct / 100);
+        buyQty = qty * (avg - endAvg) / (endAvg - last);
+        document.getElementById('adc-half-info').textContent =
+          `Loss saat ini: ${fp(curGLPct)} → target: ${fp(targetPct)}`;
+        break;
+      }
+      case 'lossmax': {
+        const lMax = parseFloat(document.getElementById('adc-lossmax-val').value) || 5;
+        endAvg = last / (1 - lMax / 100);
+        if (endAvg < avg) buyQty = qty * (avg - endAvg) / (endAvg - last);
+        break;
+      }
+      case 'endavg': {
+        endAvg = parseFloat(document.getElementById('adc-endavg-val').value) || avg;
+        if (endAvg > last && endAvg < avg) buyQty = qty * (avg - endAvg) / (endAvg - last);
+        break;
+      }
+      case 'avgqty': {
+        buyQty = parseFloat(document.getElementById('adc-avgqty-val').value) || 0;
+        endAvg = (qty * avg + buyQty * last) / (qty + buyQty);
+        break;
+      }
+      case 'avgval': {
+        const buyVal = parseFloat(document.getElementById('adc-avgval-val').value) || 0;
+        buyQty = Math.floor(buyVal / (last * 100));
+        endAvg = buyQty > 0 ? (qty * avg + buyQty * last) / (qty + buyQty) : avg;
+        break;
+      }
+    }
+
+    buyQty = Math.max(0, Math.round(buyQty));
+    const buyValue  = buyQty * 100 * last;
+    const endQty    = qty + buyQty;
+    const endModal  = qty * 100 * avg + buyQty * 100 * last;  // total modal diinvestasikan
+    const endGLPct  = (last - endAvg) / endAvg * 100;
+    const endGLIdr  = endQty * 100 * (last - endAvg);
+
+    document.getElementById('adc-r-buyqty').textContent   = fN(buyQty, 0) + ' Lot';
+    document.getElementById('adc-r-buyval').textContent   = fN(buyValue, 0) + ' IDR';
+    document.getElementById('adc-r-endavg').textContent   = fN(endAvg, 2) + ' IDR';
+    document.getElementById('adc-r-endqty').textContent   = fN(endQty, 0) + ' Lot';
+    document.getElementById('adc-r-endval').textContent   = fN(endModal, 0) + ' IDR';
+    document.getElementById('adc-r-endgl-pct').textContent = fp(endGLPct);
+    document.getElementById('adc-r-endgl-pct').className  = 'adc-result-val ' + (endGLPct >= 0 ? 'green' : 'red');
+    document.getElementById('adc-r-endgl-idr').textContent = fN(endGLIdr, 0) + ' IDR';
+
+    this.save();
+  },
+
+  save() {
+    try {
+      localStorage.setItem('adc', JSON.stringify({
+        kode : document.getElementById('adc-kode').value,
+        avg  : document.getElementById('adc-avg').value,
+        qty  : document.getElementById('adc-qty').value,
+        last : document.getElementById('adc-last').value,
+        mode : this.mode,
+        lossmax : document.getElementById('adc-lossmax-val')?.value,
+        endavg  : document.getElementById('adc-endavg-val')?.value,
+        avgqty  : document.getElementById('adc-avgqty-val')?.value,
+        avgval  : document.getElementById('adc-avgval-val')?.value,
+      }));
+    } catch(e){}
+  },
+
+  load() {
+    try {
+      const s = JSON.parse(localStorage.getItem('adc') || 'null');
+      if (!s) return;
+      if (s.kode) document.getElementById('adc-kode').value = s.kode;
+      if (s.avg)  document.getElementById('adc-avg').value  = s.avg;
+      if (s.qty)  document.getElementById('adc-qty').value  = s.qty;
+      if (s.last) document.getElementById('adc-last').value = s.last;
+      if (s.lossmax) document.getElementById('adc-lossmax-val').value = s.lossmax;
+      if (s.endavg)  document.getElementById('adc-endavg-val').value  = s.endavg;
+      if (s.avgqty)  document.getElementById('adc-avgqty-val').value  = s.avgqty;
+      if (s.avgval)  document.getElementById('adc-avgval-val').value  = s.avgval;
+      if (s.mode) this.setMode(s.mode);
+      this.calc();
+    } catch(e){}
+  }
+};
+
 // ─── INIT ─────────────────────────────────────────────────
 // Embedded fallback (akan diisi oleh Python jika tidak ada server)
 const EMBEDDED_INDEX = null;
 const EMBEDDED_DATA  = null;
 
 loadIndex();
+ADC.load();
 </script>
 </body>
 </html>
