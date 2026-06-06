@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IDX Market Intelligence - by JIA</title>
+<!-- Google Analytics GA4 — ganti G-4XZPK3DK2T dengan Measurement ID Anda -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4XZPK3DK2T"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4XZPK3DK2T');
+</script>
 <meta name="description" content="Dashboard analisis pasar IDX harian: IHSG, Top Stocks, Broker, Sektor, dan Indeks Dunia.">
 <meta property="og:title" content="IDX Market Intelligence - by JIA">
 <meta property="og:description" content="Dashboard analisis pasar IDX harian: IHSG, Top Stocks, Broker, Sektor, dan Indeks Dunia.">
@@ -249,16 +257,88 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 .adc-calc-btn:hover{background:var(--accent2)}
 .adc-disclaimer{font-size:10px;color:var(--text3);text-align:center;padding:8px;border-top:0.5px solid var(--border);line-height:1.6}
 
+/* === STOCK DETAIL PANEL === */
+.fd-search-wrap{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.fd-search-input{flex:1;min-width:160px;padding:9px 13px;border-radius:8px;border:0.5px solid var(--border2);background:var(--bg3);color:var(--text);font-size:12px;outline:none;transition:border-color .15s}
+.fd-search-input:focus{border-color:var(--accent)}
+.fd-search-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.fd-search-btn:hover{background:var(--accent2)}
+.fd-empty{text-align:center;padding:60px 20px;color:var(--text3);font-size:13px}
+.fd-tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.fd-tag-sector{background:rgba(66,165,245,0.15);color:var(--accent2)}
+/* 3-col layout */
+.fd-layout{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:8px;align-items:start}
+/* Metric row: label | value */
+.fd-section{background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:0;box-shadow:var(--card-shadow)}
+.fd-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text2);margin-bottom:8px;padding-bottom:5px;border-bottom:0.5px solid var(--border)}
+.fd-row{display:flex;justify-content:space-between;align-items:baseline;padding:3.5px 0;border-bottom:0.5px solid var(--border);font-size:11px;gap:8px}
+.fd-row:last-child{border-bottom:none}
+.fd-lbl{color:var(--text2);flex:1;min-width:0}
+.fd-val{color:var(--text);font-weight:600;white-space:nowrap;text-align:right;flex-shrink:0}
+.fd-val.up{color:var(--green)}.fd-val.dn{color:var(--red)}.fd-val.muted{color:var(--text3);font-weight:400}
+/* Quarterly table */
+.fd-qtab-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.fd-qtab{width:100%;border-collapse:collapse;font-size:11px;min-width:260px}
+.fd-qtab th{padding:4px 8px;text-align:right;color:var(--text3);font-weight:700;font-size:9.5px;text-transform:uppercase;letter-spacing:.3px;border-bottom:0.5px solid var(--border);background:var(--bg3)}
+.fd-qtab th:first-child{text-align:left}
+.fd-qtab td{padding:3.5px 8px;border-bottom:0.5px solid var(--border);color:var(--text);text-align:right}
+.fd-qtab td:first-child{text-align:left;color:var(--text2);font-weight:500}
+.fd-qtab tr:last-child td{border-bottom:none}
+.fd-qtab tr.fd-divider td,.fd-qtab tr.fd-divider th{border-top:0.5px solid var(--border2);background:var(--bg3);color:var(--text3);font-size:10px;font-weight:600}
+/* Tab buttons */
+.fd-tabs{display:flex;gap:4px;margin-bottom:10px}
+.fd-tab-btn{font-size:10px;padding:4px 10px;border-radius:20px;border:0.5px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-weight:500;transition:all .15s}
+.fd-tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* Price performance */
+.fd-perf-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:0.5px solid var(--border);font-size:11px}
+.fd-perf-row:last-child{border-bottom:none}
+.fd-perf-lbl{width:32px;font-weight:700;color:var(--text2);flex-shrink:0;font-size:10px}
+.fd-perf-pct{width:52px;font-weight:700;font-size:11px;text-align:right;flex-shrink:0}
+.fd-perf-bar{flex:1;height:5px;background:var(--bar-track);border-radius:3px;position:relative;overflow:hidden;min-width:40px}
+.fd-perf-dot{position:absolute;top:-2px;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--bg);transform:translateX(-50%)}
+.fd-range{color:var(--text3);font-size:9px;white-space:nowrap;flex-shrink:0;text-align:right;width:90px}
+/* Overview header */
+.fd-overview{background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px;box-shadow:var(--card-shadow)}
+/* Highlight rows */
+.fd-qtab tr.ttm-row td{font-weight:700;color:var(--accent)}
+@media(max-width:900px){.fd-layout{grid-template-columns:1fr}}
 .print-footer{display:none}
 
 /* ===== MOBILE ===== */
-@media (max-width: 640px){
+@media (max-width: 768px){
   html,body{overflow-x:hidden;max-width:100vw}
   body{flex-direction:column}
-  .sidebar{width:100%;min-width:0;height:auto;min-height:0;position:static;flex-direction:row;flex-wrap:wrap;padding:8px;gap:4px;border-right:none;border-bottom:0.5px solid var(--border)}
-  .sidebar-logo,.sidebar-divider,.sidebar-label,.sidebar-bottom{display:none}
-  .sidebar-theme{margin-bottom:0;width:auto}
-  .nav-item{padding:5px 8px;font-size:10px;margin-bottom:0}
+  /* Override collapsed state — .sidebar.collapsed has higher specificity, need explicit overrides */
+  .sidebar,.sidebar.collapsed{
+    width:100%!important;min-width:0!important;height:auto!important;
+    min-height:0;position:static;flex-direction:row;flex-wrap:wrap;
+    padding:6px 8px;gap:0;border-right:none;
+    border-bottom:0.5px solid var(--border);overflow:visible
+  }
+  .sidebar-logo,.sidebar-divider,.sidebar-label,.sidebar-bottom{display:none!important}
+  .sidebar-theme{display:none!important}
+  /* Toggle button becomes mobile hamburger at far right */
+  .sidebar-toggle{
+    display:none!important
+  }
+  /* Nav items: horizontal scrollable row, show icon + label */
+  .nav-item,.sidebar.collapsed .nav-item{
+    padding:7px 10px!important;font-size:11px!important;
+    margin-bottom:0!important;justify-content:flex-start!important;
+    gap:6px!important;flex-shrink:0;white-space:nowrap;overflow:visible
+  }
+  .nav-label,.sidebar.collapsed .nav-label{
+    opacity:1!important;max-width:none!important;pointer-events:auto!important;
+    display:inline!important;font-size:11px!important
+  }
+  /* Make nav a horizontal scroll strip */
+  .sidebar{
+    display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;
+    overflow-x:auto!important;-webkit-overflow-scrolling:touch;padding:4px 6px!important
+  }
+  .sidebar::-webkit-scrollbar{height:2px}
+  .sidebar::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
   .main{padding:6px}
   .wrap{overflow-x:hidden;width:100%}
 
@@ -266,8 +346,9 @@ tr:hover td{background:rgba(66,165,245,0.04)}
   .hdr{flex-direction:column;align-items:flex-start;gap:6px;padding:12px 14px}
   .hdr>div:last-child{width:100%;display:flex;justify-content:space-between;align-items:baseline}
   .hdr-ihsg{font-size:24px;text-align:left}
-  .hdr-chg{text-align:left;font-size:10px}
-  .hdr-attr{font-size:8px;line-height:1.5}
+  .hdr-chg{text-align:left;font-size:10.5px}
+  /* YTD / ASEAN / Dunia ranking text: lebih besar & jelas */
+  .hdr-attr{font-size:9.5px;line-height:1.7;color:rgba(255,255,255,0.85)!important}
 
   /* Kalender: padding lebih kecil */
   .cal-wrap{padding:8px}
@@ -372,6 +453,9 @@ tr:hover td{background:rgba(66,165,245,0.04)}
   </div>
   <div class="nav-item" id="nav-changelog" onclick="sw('changelog',this)" title="Changelog">
     <span class="nav-icon">📝</span><span class="nav-label">Changelog</span>
+  </div>
+  <div class="nav-item" id="nav-stockdetail" onclick="sw('stockdetail',this);fdInit()" title="Stock Detail">
+    <span class="nav-icon">📋</span><span class="nav-label">Stock Detail</span>
   </div>
   <div class="nav-item" id="nav-feedback" onclick="sw('feedback',this)" title="Kritik & Saran">
     <span class="nav-icon">💬</span><span class="nav-label">Kritik & Saran</span>
@@ -548,7 +632,7 @@ tr:hover td{background:rgba(66,165,245,0.04)}
       <input id="adc-last" class="adc-input" type="number" placeholder="0" min="0" oninput="ADC.calc()">
       <div class="adc-price-row">
         <span class="adc-badge manual" id="adc-price-src">Input Manual</span>
-        <span style="font-size:10px;color:var(--text3)">atau klik 🔍 untuk auto-fetch Yahoo Finance</span>
+        <span style="font-size:10px;color:var(--text3)">atau klik 🔍 untuk ambil harga otomatis (delay ~15m)</span>
       </div>
     </div>
 
@@ -671,7 +755,7 @@ tr:hover td{background:rgba(66,165,245,0.04)}
     </div>
     <div class="adc-disclaimer">
       ⚠️ Kalkulasi ini bersifat estimasi untuk perencanaan. Bukan saran investasi (Not Financial Advice).<br>
-      Harga real-time delay ~15 menit via Yahoo Finance.
+      Harga delay ~15 menit. Dapat berbeda dengan harga bursa.
     </div>
   </div>
 
@@ -684,6 +768,103 @@ tr:hover td{background:rgba(66,165,245,0.04)}
   <div class="card" style="margin-bottom:8px">
     <div class="ct b">📝 Changelog — IDX Market Intelligence Dashboard</div>
     <p style="font-size:11px;color:var(--text2);margin-bottom:16px">Riwayat pengembangan oleh Johan Iriawan Akbar · <a href="https://jiakbar.github.io/idx-dashboard/" target="_blank" style="color:var(--accent)">jiakbar.github.io/idx-dashboard</a></p>
+
+    <!-- v2.8 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:#e11d48;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v2.8</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Changelog — Bersihkan Info Teknis dari UI</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">6 Juni 2026</span>
+      </div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:18px;line-height:2">
+        <li>Changelog: semua keterangan teknis (nama script, file, library) diganti dengan deskripsi fitur yang mudah dipahami</li>
+        <li>Tidak ada perubahan tampilan atau fitur — hanya perapian teks changelog</li>
+      </ul>
+    </div>
+    <div style="border-top:0.5px solid var(--border);margin-bottom:20px"></div>
+
+    <!-- v2.7 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:#f59e0b;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v2.7</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Stock Detail — Redesign Layout Konsisten</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">6 Juni 2026</span>
+      </div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:18px;line-height:2">
+        <li>Tampilan Stock Detail menggunakan gaya kartu konsisten dengan panel lain</li>
+        <li>Fix tampilan tengah yang berantakan akibat duplikasi blok overview</li>
+        <li>Tab kuartalan langsung muncul saat data dimuat (tidak perlu klik ulang)</li>
+        <li>Hapus duplikat header pada panel Stock Detail</li>
+      </ul>
+    </div>
+    <div style="border-top:0.5px solid var(--border);margin-bottom:20px"></div>
+
+    <!-- v2.6 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:#00c896;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v2.6</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Mobile Fix & Stock Detail Cleanup</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">6 Juni 2026</span>
+      </div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:18px;line-height:2">
+        <li>Mobile: sidebar berubah jadi menu scroll horizontal dengan ikon + label yang mudah diakses</li>
+        <li>Header mobile: teks YTD/ASEAN/Dunia lebih besar dan mudah dibaca</li>
+        <li>Net Foreign: label Today/YTD warna lebih kontras</li>
+        <li>Board Indices: scroll horizontal agar tidak melebar di layar kecil</li>
+        <li>Stock Detail: tampilan lebih bersih, hapus elemen duplikat</li>
+      </ul>
+    </div>
+    <div style="border-top:0.5px solid var(--border);margin-bottom:20px"></div>
+
+    <!-- v2.5 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:#0ea5e9;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v2.5</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Stock Detail — Data Lengkap + Google Analytics</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">6 Juni 2026</span>
+      </div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:18px;line-height:2">
+        <li>Stock Detail: tambah data Beta & 52W Change% di header, tabel Riwayat Dividen per tahun</li>
+        <li>Analitik pengunjung — tracking perangkat, browser, dan jumlah pengunjung harian</li>
+        <li>Perbaikan beberapa data yang sebelumnya tidak muncul dengan benar</li>
+      </ul>
+    </div>
+    <div style="border-top:0.5px solid var(--border);margin-bottom:20px"></div>
+
+    <!-- v2.4 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:#7c3aed;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v2.4</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Stock Detail — Layout 3 Kolom RTI Style</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">6 Juni 2026</span>
+      </div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:18px;line-height:2">
+        <li>Redesign panel Stock Detail: layout 3 kolom seperti RTI (Current Valuation, Per Share, Solvency)</li>
+        <li>Kolom tengah: tab Kuartalan Net Income / EPS / Revenue + Profitabilitas + Growth + Dividen</li>
+        <li>Kolom kanan: Income Statement TTM, Balance Sheet LQ, Cash Flow TTM, Price Performance (1D–YTD)</li>
+        <li>Tambah data kuartalan: Net Income, EPS, Revenue per kuartal, Price Performance, metrik per saham</li>
+        <li>Info sumber data disederhanakan — hanya tampil "data delay" tanpa detail teknis</li>
+      </ul>
+    </div>
+    <div style="border-top:0.5px solid var(--border);margin-bottom:20px"></div>
+
+    <!-- v2.3 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v2.3</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Tab Stock Detail — Data Fundamental Saham</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">6 Juni 2026</span>
+      </div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:18px;line-height:2">
+        <li>Tab baru <strong>📋 Stock Detail</strong> — data fundamental per saham IDX</li>
+        <li>Tampilkan valuasi: P/E, P/B, P/S, EV/EBITDA, EPS, Book Value, Dividen</li>
+        <li>Profitabilitas: GPM, OPM, NPM, ROE, ROA · Likuiditas: DER, Current Ratio, Quick Ratio</li>
+        <li>Historis keuangan 5 tahun: Revenue, Gross Profit, Net Income, Total Assets, Equity</li>
+        <li>Grafik batang Revenue vs Net Income historis</li>
+        <li>Data fundamental diperbarui secara berkala dan tersedia untuk seluruh saham IDX</li>
+      </ul>
+    </div>
+    <div style="border-top:0.5px solid var(--border);margin-bottom:20px"></div>
 
     <!-- v2.2 -->
     <div style="margin-bottom:20px">
@@ -787,7 +968,7 @@ tr:hover td{background:rgba(66,165,245,0.04)}
       <ul style="font-size:12px;color:var(--text2);padding-left:18px;line-height:2">
         <li>Tab baru <strong>📉 Average Down</strong> — kalkulator strategi average down saham</li>
         <li>5 mode: Half Loss, Loss Max, End Average, Avg Down Qty, Avg Down Value</li>
-        <li>Harga otomatis dari Yahoo Finance (delay ~15 menit) atau input manual</li>
+        <li>Harga otomatis (delay ~15 menit) atau input manual</li>
         <li>Data tersimpan di browser — tidak hilang saat refresh</li>
       </ul>
     </div>
@@ -926,6 +1107,35 @@ tr:hover td{background:rgba(66,165,245,0.04)}
       📞 +62 899-0447-098 &nbsp;·&nbsp; Johan Iriawan Akbar
     </p>
   </div>
+</div>
+</div>
+
+<!-- STOCK DETAIL -->
+<div id="stockdetail" class="panel">
+<div style="max-width:900px;margin:0 auto">
+
+  <!-- Search bar -->
+  <div class="card" style="padding:14px 16px;margin-bottom:8px">
+    <div class="fd-search-wrap">
+      <input id="fd-input" class="fd-search-input" type="text" placeholder="Kode saham: BBCA, ASII, TLKM ..."
+             list="fd-datalist" oninput="this.value=this.value.toUpperCase()"
+             onkeydown="if(event.key==='Enter')fdLoad()">
+      <datalist id="fd-datalist"></datalist>
+      <button class="fd-search-btn" onclick="fdLoad()">🔍 Tampilkan</button>
+    </div>
+    <p id="fd-hint" style="font-size:10px;color:var(--text3);line-height:1.6">
+      Data delay. Harga tidak real-time.
+    </p>
+  </div>
+
+  <!-- Content area -->
+  <div id="fd-content">
+    <div class="fd-empty">
+      <p style="font-size:32px;margin-bottom:8px">📋</p>
+      <p>Cari kode saham IDX di atas untuk melihat data fundamental</p>
+    </div>
+  </div>
+
 </div>
 </div>
 
@@ -1262,20 +1472,20 @@ function buildWorldPanel() {
         <p class="ct b">🌐 Net Foreign</p>
         <div class="g2" style="gap:0;border:0.5px solid var(--border);border-radius:6px;overflow:hidden">
           <div style="padding:12px 14px;border-right:0.5px solid var(--border)">
-            <p style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Today</p>
+            <p style="font-size:10px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Today</p>
             <p style="font-size:13px;font-weight:700;color:${(nf.nf_today_idr??0)<0?"var(--red)":"var(--green)"};margin-bottom:6px">${nf.nf_today_status??"-"}</p>
             <p style="font-size:16px;font-weight:700;color:var(--text)">${fmtNF(nf.nf_today_idr??0)}</p>
-            <p style="font-size:9px;color:var(--text3)">(billion IDR)</p>
+            <p style="font-size:9px;color:var(--text2)">(billion IDR)</p>
             <p style="font-size:13px;font-weight:600;color:var(--text2);margin-top:4px">${fmtNF(nf.nf_today_usd??0)}</p>
-            <p style="font-size:9px;color:var(--text3)">(million USD~)</p>
+            <p style="font-size:9px;color:var(--text2)">(million USD~)</p>
           </div>
           <div style="padding:12px 14px">
-            <p style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">YTD</p>
+            <p style="font-size:10px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">YTD</p>
             <p style="font-size:13px;font-weight:700;color:${(nf.nf_ytd_idr??0)<0?"var(--red)":"var(--green)"};margin-bottom:6px">${nf.nf_ytd_status??"-"}</p>
             <p style="font-size:16px;font-weight:700;color:var(--text)">${fmtNF(nf.nf_ytd_idr??0)}</p>
-            <p style="font-size:9px;color:var(--text3)">(billion IDR)</p>
+            <p style="font-size:9px;color:var(--text2)">(billion IDR)</p>
             <p style="font-size:13px;font-weight:600;color:var(--text2);margin-top:4px">${fmtNF(nf.nf_ytd_usd??0)}</p>
-            <p style="font-size:9px;color:var(--text3)">(million USD)</p>
+            <p style="font-size:9px;color:var(--text2)">(million USD)</p>
           </div>
         </div>
       </div>
@@ -1470,8 +1680,10 @@ function buildSectorPanel() {
         </div>
         <div class="card" style="flex:1">
           <p class="ct b" style="font-size:12px;margin-bottom:10px">🗂️ Board Indices</p>
-          <table><thead><tr><th>Board</th><th class="r">Nilai</th><th class="r">Hari Ini</th><th class="r">YTD</th></tr></thead>
+          <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+          <table style="min-width:260px"><thead><tr><th>Board</th><th class="r">Nilai</th><th class="r">Hari Ini</th><th class="r">YTD</th></tr></thead>
           <tbody>${boardRows}</tbody></table>
+          </div>
         </div>
       </div>
     </div>
@@ -1555,7 +1767,7 @@ function buildCharts() {
 
 // ─── TAB SWITCH ───────────────────────────────────────────
 // Panel yang tidak butuh kalender
-const NO_CAL_PANELS = ["changelog","avgdown","tvchart","feedback"];
+const NO_CAL_PANELS = ["changelog","avgdown","tvchart","feedback","stockdetail"];
 
 function sw(id, el) {
   document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
@@ -1747,7 +1959,7 @@ const ADC = {
       if (price && price > 0) {
         document.getElementById('adc-last').value  = price;
         document.getElementById('adc-name').textContent = name;
-        document.getElementById('adc-price-src').textContent = 'Auto • Yahoo Finance (delay ~15m)';
+        document.getElementById('adc-price-src').textContent = 'Auto • harga delay ~15m';
         document.getElementById('adc-price-src').className = 'adc-badge auto';
         this.save();
         this.calc();
@@ -1890,6 +2102,425 @@ const EMBEDDED_DATA  = null;
 loadIndex();
 ADC.load();
 
+// ─── STOCK DETAIL (FUNDAMENTAL) ─────────────────────────
+let FD_INDEX = null;     // index.json dari data/fundamental/
+let FD_CHART = null;     // Chart.js instance
+
+async function fdInit() {
+  // Load index sekali saja
+  if (FD_INDEX) { fdPopulateDatalist(); return; }
+  try {
+    const r = await fetch("data/fundamental/index.json");
+    if (!r.ok) throw new Error("no index");
+    FD_INDEX = await r.json();
+    fdPopulateDatalist();
+  } catch(e) {
+    FD_INDEX = { stocks: [] };
+    document.getElementById("fd-hint").innerHTML =
+      `⚠️ Data fundamental belum tersedia. Periksa koneksi atau coba reload halaman.`;
+  }
+}
+
+function fdPopulateDatalist() {
+  const dl = document.getElementById("fd-datalist");
+  if (!dl || !FD_INDEX?.stocks) return;
+  dl.innerHTML = (FD_INDEX.stocks || [])
+    .map(s => `<option value="${s.ticker}">${s.ticker} — ${s.name}</option>`)
+    .join("");
+}
+
+async function fdLoad() {
+  const kode = (document.getElementById("fd-input").value || "").trim().toUpperCase().replace(".JK","");
+  if (!kode) return;
+  const content = document.getElementById("fd-content");
+  content.innerHTML = `<div class="fd-empty"><p style="font-size:28px">⏳</p><p>Mengambil data ${kode}...</p></div>`;
+
+  let fd = null;
+  try {
+    const r = await fetch(`data/fundamental/${kode}.json`);
+    if (!r.ok) throw new Error("not found");
+    fd = await r.json();
+  } catch(e) {
+    content.innerHTML = `<div class="fd-empty"><p style="font-size:28px">⚠️</p>
+      <p>Data <strong>${kode}</strong> tidak ditemukan.</p>
+      <p style="font-size:10px;margin-top:8px">Pastikan kode saham benar (contoh: BBCA, ASII, TLKM)</p></div>`;
+    return;
+  }
+  fdRender(fd);
+}
+
+// ─── FORMAT HELPERS ──────────────────────────────────────
+function fdV(v, dec=2) {
+  if (v===null||v===undefined||v!==v) return '<span class="fd-val muted">—</span>';
+  return `<span class="fd-val">${Number(v).toLocaleString("id-ID",{maximumFractionDigits:dec})}</span>`;
+}
+function fdVx(v, dec=2, suffix="x") {
+  if (v===null||v===undefined||v!==v) return '<span class="fd-val muted">—</span>';
+  return `<span class="fd-val">${Number(v).toFixed(dec)}${suffix}</span>`;
+}
+function fdVpct(v, from100=false, dec=2) {
+  // from100: jika nilai sudah dalam bentuk 0-1 (multiply 100), else sudah persen
+  if (v===null||v===undefined||v!==v) return '<span class="fd-val muted">—</span>';
+  const val = from100 ? v*100 : v;
+  const cls = val>=0 ? "up" : "dn";
+  return `<span class="fd-val ${cls}">${val>=0?"+":""}${val.toFixed(dec)}%</span>`;
+}
+function fdVB(v) { // miliar IDR
+  if (v===null||v===undefined||v!==v) return '<span class="fd-val muted">—</span>';
+  const b = v/1e9;
+  return `<span class="fd-val">${b.toLocaleString("id-ID",{maximumFractionDigits:0})} B</span>`;
+}
+function fdMktcap(v) {
+  if (!v) return "—";
+  if (v >= 1e13) return `Rp ${(v/1e12).toFixed(1)} T`;
+  if (v >= 1e12) return `Rp ${(v/1e12).toFixed(2)} T`;
+  return `Rp ${(v/1e9).toFixed(0)} M`;
+}
+function fdRow(lbl, valHtml) {
+  return `<div class="fd-row"><span class="fd-lbl">${lbl}</span>${valHtml}</div>`;
+}
+function fdFmt(v, isPercent=false, suffix="") {
+  if (v === null || v === undefined) return '<span style="color:var(--text3)">—</span>';
+  if (isPercent) return `${(v*100).toFixed(1)}%`;
+  if (suffix === "T") return `${(v/1e12).toFixed(2)} T`;
+  if (suffix === "M") return `${(v/1e9).toFixed(1)} M`;
+  return Number(v).toLocaleString("id-ID", {maximumFractionDigits:2});
+}
+function fdFmtMktcap(v) {
+  if (!v) return "—";
+  if (v >= 1e13) return `Rp ${(v/1e12).toFixed(1)} T`;
+  if (v >= 1e12) return `Rp ${(v/1e12).toFixed(2)} T`;
+  if (v >= 1e9)  return `Rp ${(v/1e9).toFixed(1)} M`;
+  return `Rp ${Number(v).toLocaleString("id-ID")}`;
+}
+function fdCls(v) { if (!v && v!==0) return ""; return v >= 0 ? "green" : "red"; }
+
+// ── QUARTERLY TABLE BUILD ──────────────────────────────────────────────────
+let FD_QTAB_MODE = "ni"; // ni | eps | rev
+
+function fdQTabSwitch(mode) {
+  FD_QTAB_MODE = mode;
+  ["ni","eps","rev"].forEach(m => {
+    const btn = document.getElementById("fd-qtab-"+m);
+    if (btn) btn.classList.toggle("active", m===mode);
+  });
+  const tbl = document.getElementById("fd-qtab-body");
+  if (tbl && window._FD_CURRENT) fdQTabBuild(window._FD_CURRENT);
+}
+
+function fdQTabBuild(fd) {
+  const tbl = document.getElementById("fd-qtab-body");
+  if (!tbl) return;
+  const mode = FD_QTAB_MODE;
+  const qData = mode==="ni" ? fd.q_net_income : mode==="eps" ? fd.q_eps : fd.q_revenue;
+  const divisor = (mode==="eps") ? 1 : 1e9; // B IDR for ni/rev, IDR for eps
+
+  // Determine latest 3 years with data
+  const allYears = Object.keys(qData||{}).map(Number).sort((a,b)=>b-a).slice(0,3);
+  const quarters = ["Q1","Q2","Q3","Q4"];
+
+  const fmt = (v) => {
+    if (v===null||v===undefined) return '<span style="color:var(--text3)">—</span>';
+    if (mode==="eps") return Number(v).toLocaleString("id-ID",{maximumFractionDigits:0});
+    return (v/1e9).toLocaleString("id-ID",{maximumFractionDigits:0});
+  };
+
+  let rows = "";
+  quarters.forEach(q => {
+    let hasAny = allYears.some(y => qData[y]?.[q] != null);
+    rows += `<tr><td>${q}</td>${allYears.map(y => {
+      const v = qData[String(y)]?.[q];
+      return `<td>${fmt(v)}</td>`;
+    }).join("")}</tr>`;
+  });
+
+  // Annualised (sum of all quarters for each year)
+  rows += `<tr class="fd-divider"><td>Annualised</td>${allYears.map(y => {
+    const ymap = qData[String(y)] || {};
+    const vals = Object.values(ymap).filter(v => v!=null);
+    const sum = vals.length ? vals.reduce((a,b)=>a+b,0) : null;
+    return `<td>${fmt(sum)}</td>`;
+  }).join("")}</tr>`;
+
+  // TTM: latest 4 quarters regardless of year
+  const allQ = [];
+  Object.entries(qData||{}).forEach(([y,qmap]) => {
+    Object.entries(qmap).forEach(([q,v]) => { if(v!=null) allQ.push([Number(y),q,v]); });
+  });
+  allQ.sort((a,b) => a[0]!==b[0] ? b[0]-a[0] : b[1].localeCompare(a[1]));
+  const ttmVals = allQ.slice(0,4).map(r=>r[2]);
+  const ttmSum = ttmVals.length===4 ? ttmVals.reduce((a,b)=>a+b,0) : null;
+  rows += `<tr class="ttm-row"><td>TTM</td><td>${fmt(ttmSum)}</td><td colspan="${allYears.length-1}"></td></tr>`;
+
+  // Dividend row (from fd)
+  if (mode==="ni") {
+    const divTTM = fd.dividend;
+    const divYld = fd.dividend_yield;
+    const payout = fd.payout_ratio;
+    rows += `<tr class="fd-divider"><td colspan="${allYears.length+1}" style="padding:2px 8px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)">Dividen & Yield</td></tr>`;
+    rows += `<tr><td>Div (TTM)</td><td>${divTTM ? Number(divTTM).toLocaleString("id-ID",{maximumFractionDigits:0}) : "—"}</td><td colspan="${allYears.length-1}"></td></tr>`;
+    rows += `<tr><td>Payout Ratio</td><td>${payout ? (payout*100).toFixed(2)+"%" : "—"}</td><td colspan="${allYears.length-1}"></td></tr>`;
+    rows += `<tr><td>Div Yield</td><td>${divYld ? (divYld*100).toFixed(2)+"%" : "—"}</td><td colspan="${allYears.length-1}"></td></tr>`;
+    rows += `<tr class="fd-divider"><td colspan="${allYears.length+1}" style="padding:2px 8px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)">Info Pasar</td></tr>`;
+    rows += `<tr><td>Market Cap</td><td>${fdMktcap(fd.market_cap)}</td><td colspan="${allYears.length-1}"></td></tr>`;
+    rows += `<tr><td>Enterprise Value</td><td>${fdMktcap(fd.enterprise_value)}</td><td colspan="${allYears.length-1}"></td></tr>`;
+    rows += `<tr><td>Shares Outstanding</td><td>${fd.shares ? (fd.shares/1e9).toFixed(2)+" M" : "—"}</td><td colspan="${allYears.length-1}"></td></tr>`;
+    rows += `<tr><td>Free Float</td><td>${fd.float_pct ? fd.float_pct.toFixed(2)+"%" : "—"}</td><td colspan="${allYears.length-1}"></td></tr>`;
+  }
+
+  const suffix = mode==="eps" ? "IDR" : "B IDR";
+  tbl.innerHTML = "<table class='fd-qtab'><thead><tr><th>Period</th>" +
+    allYears.map(y => "<th class='r'>"+y+"</th>").join("") + "</tr>" +
+    "<tr><td colspan='" + (allYears.length+1) + "' style='font-size:9px;color:var(--text3);padding:2px 8px'>("+suffix+")</td></tr></thead>" +
+    "<tbody>" + rows + "</tbody></table>";
+}
+
+// ── PRICE PERFORMANCE BAR ─────────────────────────────────────────────────
+function fdPerfRow(label, pct, low, high, cur) {
+  if (pct===null||pct===undefined) {
+    return `<div class="fd-perf-row"><span class="fd-perf-lbl">${label}</span><span class="fd-perf-pct muted">—</span><div class="fd-perf-bar"></div><span class="fd-range">—</span></div>`;
+  }
+  const cls = pct >= 0 ? "green" : "red";
+  const pctStr = `${pct>=0?"+":""}${pct.toFixed(2)}%`;
+  // Position of current price within range
+  let dotPct = 50;
+  if (low!=null && high!=null && high!==low) {
+    dotPct = Math.max(2, Math.min(98, ((cur-low)/(high-low))*100));
+  }
+  const dotColor = pct>=0 ? "var(--green)" : "var(--red)";
+  const rangeStr = (low!=null && high!=null) ?
+    `${Number(low).toLocaleString("id-ID",{maximumFractionDigits:0})} – ${Number(high).toLocaleString("id-ID",{maximumFractionDigits:0})}` : "";
+  return `<div class="fd-perf-row">
+    <span class="fd-perf-lbl">${label}</span>
+    <span class="fd-perf-pct ${cls}">${pctStr}</span>
+    <div class="fd-perf-bar"><div class="fd-perf-dot" style="left:${dotPct}%;background:${dotColor}"></div></div>
+    <span class="fd-range" style="color:var(--text3)">${rangeStr}</span>
+  </div>`;
+}
+
+function fdHistRow(label, obj, years, divisor=1) {
+  if (!obj || Object.keys(obj).length === 0) return "";
+  const vals = years.map(y => {
+    const v = obj[y];
+    if (v === undefined || v === null) return `<td class="r" style="color:var(--text3)">—</td>`;
+    return `<td class="r">${(v/divisor).toLocaleString("id-ID",{maximumFractionDigits:2})}</td>`;
+  }).join("");
+  return `<tr><td style="color:var(--text2)">${label}</td>${vals}</tr>`;
+}
+
+function fdRender(fd) {
+  const content = document.getElementById("fd-content");
+  window._FD_CURRENT = fd;
+  if (FD_CHART) { try { FD_CHART.destroy(); } catch(e){} FD_CHART = null; }
+
+  // ── Helpers ─────────────────────────────────
+  const fv  = v => v != null ? Number(v).toLocaleString("id-ID",{maximumFractionDigits:0}) : "—";
+  const fvx = (v,d=2) => v != null ? Number(v).toFixed(d)+"x" : "—";
+  const fp  = (v,d=2) => {
+    if (v==null) return '<span style="color:var(--text3)">—</span>';
+    const cls = v>=0 ? "green" : "red";
+    return `<span class="${cls}">${v>=0?"+":""}${Number(v).toFixed(d)}%</span>`;
+  };
+  const fB  = v => v!=null ? (v/1e9).toLocaleString("id-ID",{maximumFractionDigits:0})+" B" : "—";
+  const fMC = v => { if(!v) return "—"; if(v>=1e13) return `Rp ${(v/1e12).toFixed(1)} T`; if(v>=1e12) return `Rp ${(v/1e12).toFixed(2)} T`; return `Rp ${(v/1e9).toFixed(0)} M`; };
+  const CT  = t => `<p class="ct b" style="margin-bottom:7px">${t}</p>`;
+  const TR  = (lbl,val) => `<tr><td>${lbl}</td><td class="r">${val??'—'}</td></tr>`;
+
+  // ── Derived ──────────────────────────────────
+  const ttmRev  = fd.ttm_revenue   ?? (fd.hist_revenue         ? Object.values(fd.hist_revenue).slice(-1)[0]         : null);
+  const ttmNI   = fd.ttm_net_income?? (fd.hist_net_income      ? Object.values(fd.hist_net_income).slice(-1)[0]      : null);
+  const ttmGP   = fd.ttm_gross     ?? (fd.hist_gross_profit    ? Object.values(fd.hist_gross_profit).slice(-1)[0]    : null);
+  const ttmOI   = fd.ttm_op_income ?? (fd.hist_operating_income? Object.values(fd.hist_operating_income).slice(-1)[0]: null);
+  const lqCash  = fd.lq_cash   ?? fd.total_cash;
+  const lqAsset = fd.lq_assets ?? (fd.hist_total_assets ? Object.values(fd.hist_total_assets).slice(-1)[0] : null);
+  const lqEq    = fd.lq_equity ?? (fd.hist_total_equity ? Object.values(fd.hist_total_equity).slice(-1)[0] : null);
+  const lqDebt  = fd.lq_debt   ?? fd.total_debt;
+  const pp      = fd.price_perf || {};
+
+  // ── Riwayat dividen ──────────────────────────
+  let divHistRows = "";
+  if (fd.div_history && fd.div_history.length > 0) {
+    divHistRows = fd.div_history.map(d =>
+      "<tr><td style='color:var(--text2)'>" + d.year + "</td>" +
+      "<td class='r'>Rp " + fv(d.amount) + "</td>" +
+      "<td class='r' style='color:var(--text3)'>" + d.ex_date + "</td></tr>"
+    ).join("");
+  }
+
+  // ── Historis ─────────────────────────────────
+  const histSrc   = fd.hist_revenue || fd.hist_net_income || {};
+  const histYears = Object.keys(histSrc).sort().slice(-4);
+  const histHdr   = histYears.map(y => "<th class='r'>"+y+"</th>").join("");
+  const histTR = (lbl, obj) => {
+    if (!obj || !histYears.length) return "";
+    const cells = histYears.map(y => {
+      const v = obj[y];
+      return "<td class='r'>" + (v!=null ? (v/1e9).toLocaleString("id-ID",{maximumFractionDigits:0}) : "—") + "</td>";
+    }).join("");
+    return "<tr><td>" + lbl + "</td>" + cells + "</tr>";
+  };
+
+  // ── Price performance ────────────────────────
+  const perfRows = Object.keys(pp).length
+    ? ["1D","1W","1M","3M","YTD","1Y"].map(k => fdPerfRow(k, pp[k]?.pct, pp[k]?.low, pp[k]?.high, pp[k]?.cur)).join("")
+    : "<p style='font-size:11px;color:var(--text3)'>Belum ada data</p>";
+
+  content.innerHTML =
+    // ── OVERVIEW ──────────────────────────────
+    "<div class='card' style='margin-bottom:8px'>" +
+      "<div style='display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px'>" +
+        "<div>" +
+          "<div style='font-size:18px;font-weight:800;color:var(--accent)'>" + fd.ticker + "</div>" +
+          "<div style='font-size:13px;font-weight:600;color:var(--text);margin:2px 0'>" + (fd.name||"") + "</div>" +
+          "<div style='font-size:10px;color:var(--text3)'>" + (fd.sector||"") + (fd.industry?" · "+fd.industry:"") + "</div>" +
+        "</div>" +
+        "<div style='text-align:right'>" +
+          "<div style='font-size:24px;font-weight:700;color:var(--text)'>" + (fd.last_price?"Rp "+fv(fd.last_price):"—") + "</div>" +
+          "<div style='font-size:10px;color:var(--text3)'>Mkt Cap: <strong style='color:var(--text)'>" + fMC(fd.market_cap) + "</strong> · EV: " + fMC(fd.enterprise_value) + "</div>" +
+          "<div style='font-size:9.5px;color:var(--text3);margin-top:2px'>52W: " + (fd.week52_low?"Rp"+fv(fd.week52_low):"—") + " – " + (fd.week52_high?"Rp"+fv(fd.week52_high):"—") +
+            (fd.week52_change_pct!=null?" · "+fp(fd.week52_change_pct,2):"") + "</div>" +
+          "<div style='font-size:9.5px;color:var(--text3)'>Beta: <strong style='color:var(--text)'>" + (fd.beta??'—') + "</strong>" +
+            (fd.avg_volume?" · Vol Avg: "+(fd.avg_volume/1e6).toFixed(1)+"M":"") + "</div>" +
+        "</div>" +
+      "</div>" +
+      "<div style='font-size:9px;color:var(--text3);margin-top:6px;border-top:0.5px solid var(--border);padding-top:5px'>⏱ Data delay · Diperbarui: " + (fd.updated||"—") + "</div>" +
+    "</div>" +
+
+    // ── 3 KOLOM ────────────────────────────────
+    "<div class='fd-layout'>" +
+
+      // KIRI
+      "<div style='display:flex;flex-direction:column;gap:8px'>" +
+        "<div class='card'>" +
+          CT("Current Valuation") +
+          "<table><tbody>" +
+            TR("P/E (Trailing)", fvx(fd.pe)) +
+            TR("P/E (Forward)", fvx(fd.forward_pe)) +
+            TR("P/B", fvx(fd.pb)) +
+            TR("P/S (TTM)", fvx(fd.ps)) +
+            TR("EV/EBITDA (TTM)", fvx(fd.ev_ebitda)) +
+            TR("Earnings Yield", fd.eps&&fd.last_price ? fp(fd.eps/fd.last_price*100,2) : "—") +
+          "</tbody></table>" +
+        "</div>" +
+        "<div class='card'>" +
+          CT("Per Share") +
+          "<table><tbody>" +
+            TR("EPS (TTM)", fd.eps?"Rp "+fv(fd.eps):"—") +
+            TR("Book Value", fd.bv?"Rp "+fv(fd.bv):"—") +
+            TR("Revenue/Share", fd.rev_ps?"Rp "+fv(fd.rev_ps):"—") +
+            TR("Cash/Share", fd.cash_ps?"Rp "+fv(fd.cash_ps):"—") +
+            TR("FCF/Share", fd.fcf_ps?"Rp "+fv(fd.fcf_ps):"—") +
+            TR("Dividen/Share", fd.dividend?"Rp "+fv(fd.dividend):"—") +
+          "</tbody></table>" +
+        "</div>" +
+        "<div class='card'>" +
+          CT("Solvency") +
+          "<table><tbody>" +
+            TR("Current Ratio", fvx(fd.current_ratio)) +
+            TR("Quick Ratio", fvx(fd.quick_ratio)) +
+            TR("DER (Q)", fvx(fd.der_q??fd.der)) +
+            TR("LT DER (Q)", fvx(fd.lt_der_q)) +
+            TR("TL/Equity (Q)", fvx(fd.tl_eq_q)) +
+            TR("TD/TA (Q)", fvx(fd.td_ta_q)) +
+          "</tbody></table>" +
+        "</div>" +
+      "</div>" +
+
+      // TENGAH
+      "<div style='display:flex;flex-direction:column;gap:8px'>" +
+        "<div class='card' style='padding:10px'>" +
+          "<div class='fd-tabs'>" +
+            "<button class='fd-tab-btn active' id='fd-qtab-ni'  onclick=\"fdQTabSwitch('ni')\">Net Income</button>" +
+            "<button class='fd-tab-btn'        id='fd-qtab-eps' onclick=\"fdQTabSwitch('eps')\">EPS</button>" +
+            "<button class='fd-tab-btn'        id='fd-qtab-rev' onclick=\"fdQTabSwitch('rev')\">Revenue</button>" +
+          "</div>" +
+          "<div id='fd-qtab-body' style='overflow-x:auto'></div>" +
+        "</div>" +
+        "<div class='card'>" +
+          CT("Profitabilitas") +
+          "<table><tbody>" +
+            TR("Gross Profit Margin", fp(fd.gpm!=null?fd.gpm*100:null, 2)) +
+            TR("Operating Margin",    fp(fd.opm!=null?fd.opm*100:null, 2)) +
+            TR("Net Profit Margin",   fp(fd.npm!=null?fd.npm*100:null, 2)) +
+            TR("ROE (TTM)",           fp(fd.roe!=null?fd.roe*100:null, 2)) +
+            TR("ROA (TTM)",           fp(fd.roa!=null?fd.roa*100:null, 2)) +
+          "</tbody></table>" +
+        "</div>" +
+        "<div class='card'>" +
+          CT("Growth (YoY)") +
+          "<table><tbody>" +
+            TR("Revenue YoY",     fp(fd.rev_yoy!=null?fd.rev_yoy*100:null, 2)) +
+            TR("Gross Profit YoY",fp(fd.gp_yoy!=null?fd.gp_yoy*100:null, 2)) +
+            TR("Net Income YoY",  fp(fd.ni_yoy!=null?fd.ni_yoy*100:null, 2)) +
+          "</tbody></table>" +
+        "</div>" +
+        "<div class='card'>" +
+          CT("Dividen") +
+          "<table><tbody>" +
+            TR("Dividen/Saham", fd.dividend?"Rp "+fv(fd.dividend):"—") +
+            TR("Payout Ratio",  fp(fd.payout_ratio!=null?fd.payout_ratio*100:null, 1)) +
+            TR("Div Yield",     fp(fd.dividend_yield!=null?fd.dividend_yield*100:null, 2)) +
+            TR("Ex-Date",       fd.ex_dividend_date||"—") +
+          "</tbody></table>" +
+        "</div>" +
+        (divHistRows ? (
+          "<div class='card'>" +
+            CT("Riwayat Dividen") +
+            "<table><thead><tr><th>Tahun</th><th class='r'>Dividen</th><th class='r'>Ex-Date</th></tr></thead>" +
+            "<tbody>" + divHistRows + "</tbody></table>" +
+          "</div>"
+        ) : "") +
+      "</div>" +
+
+      // KANAN
+      "<div style='display:flex;flex-direction:column;gap:8px'>" +
+        "<div class='card'>" +
+          CT("Income Statement (TTM)") +
+          "<table><tbody>" +
+            TR("Revenue", fB(ttmRev)) +
+            TR("Gross Profit", fB(ttmGP)) +
+            TR("Op. Income", fB(ttmOI)) +
+            TR("Net Income", fB(ttmNI)) +
+          "</tbody></table>" +
+        "</div>" +
+        "<div class='card'>" +
+          CT("Balance Sheet (Latest Q)") +
+          "<table><tbody>" +
+            TR("Cash &amp; Equiv.", fB(lqCash)) +
+            TR("Total Assets", fB(lqAsset)) +
+            TR("Total Equity", fB(lqEq)) +
+            TR("Total Debt", fB(lqDebt)) +
+          "</tbody></table>" +
+        "</div>" +
+        "<div class='card'>" +
+          CT("Cash Flow (TTM)") +
+          "<table><tbody>" +
+            TR("Dari Operasi", fB(fd.ttm_ocf)) +
+            TR("Free Cash Flow", fB(fd.ttm_fcf)) +
+          "</tbody></table>" +
+        "</div>" +
+        "<div class='card'>" +
+          CT("Price Performance") +
+          perfRows +
+        "</div>" +
+        (histYears.length ? (
+          "<div class='card'>" +
+            CT("Historis (B IDR)") +
+            "<div style='overflow-x:auto'><table style='min-width:240px'><thead><tr><th>Metrik</th>" + histHdr + "</tr></thead><tbody>" +
+              histTR("Revenue", fd.hist_revenue) +
+              histTR("Net Income", fd.hist_net_income) +
+              histTR("Equity", fd.hist_total_equity) +
+            "</tbody></table></div>" +
+          "</div>"
+        ) : "") +
+      "</div>" +
+
+    "</div>";  // end fd-layout
+
+  // Render quarterly tab setelah DOM siap
+  fdQTabBuild(fd);
+}
+
 // ─── TV EXPAND ───────────────────────────────────────────
 function tvExpand() {
   const sectionId = TV_ACTIVE_SUBTAB === "heatmap" ? "tv-section-heatmap" : "tv-section-chart";
@@ -1898,7 +2529,6 @@ function tvExpand() {
   section.style.display = "";
   section.classList.add("tv-fullscreen");
   document.body.style.overflow = "hidden";
-  // Chart wrap: override fixed height, let flex fill remaining space
   const cw = document.getElementById("tv-chart-wrap");
   if (cw) { cw.style.height = ""; cw.style.flex = "1"; cw.style.flexShrink = "0"; }
 }
@@ -1908,7 +2538,6 @@ function tvCollapse(sectionId) {
   if (!section) return;
   section.classList.remove("tv-fullscreen");
   document.body.style.overflow = "";
-  // Restore chart wrap height
   const cw = document.getElementById("tv-chart-wrap");
   if (cw) { cw.style.height = "520px"; cw.style.flex = ""; cw.style.flexShrink = "0"; }
   if (sectionId === "tv-section-heatmap") section.style.display = TV_ACTIVE_SUBTAB === "heatmap" ? "" : "none";

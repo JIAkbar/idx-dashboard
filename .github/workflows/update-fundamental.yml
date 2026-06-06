@@ -1,0 +1,66 @@
+name: Update Data Fundamental Saham
+
+on:
+  # Otomatis: tanggal 1 setiap bulan, pukul 06:00 WIB (= 23:00 UTC hari sebelumnya)
+  schedule:
+    - cron: '0 23 28-31 * *'   # last weekend workaround — lihat catatan di bawah
+  # ↑ Gunakan ini untuk tanggal 1:
+  # - cron: '0 23 1 * *'      # 1 setiap bulan, 06:00 WIB
+
+  # Manual: bisa dijalankan kapan saja dari tab Actions di GitHub
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Mode fetch (1=semua 959 saham, 2=LQ45+default ~50 saham)'
+        required: false
+        default: '1'
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-fundamental:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60        # Batas waktu 60 menit (959 saham ~30 menit)
+
+    steps:
+      # 1. Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 2. Setup Python 3.11
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 3. Install dependencies
+      - name: Install Python packages
+        run: |
+          pip install yfinance pandas requests openpyxl --quiet
+
+      # 4. Jalankan fetch — pipe input "1" untuk pilih mode semua saham
+      - name: Fetch data fundamental 959 saham IDX
+        run: |
+          MODE=${{ github.event.inputs.mode || '1' }}
+          echo "Mode: $MODE"
+          echo "$MODE" | python scripts/fetch_fundamental.py
+        continue-on-error: false
+
+      # 5. Commit & push jika ada perubahan JSON
+      - name: Commit & push data fundamental
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/fundamental/
+          if git diff --staged --quiet; then
+            echo "Tidak ada perubahan data — skip commit."
+          else
+            TODAY=$(date +'%Y-%m-%d')
+            COUNT=$(git diff --staged --name-only | wc -l)
+            git commit -m "📊 Update fundamental: $TODAY ($COUNT file)"
+            git push
+            echo "✅ Push berhasil: $COUNT file diperbarui."
+          fi
