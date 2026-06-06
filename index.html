@@ -57,8 +57,49 @@
   --cal-holiday:#141920;--cal-holiday-txt:#2a3d50;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);padding:12px;min-height:100vh;transition:background .3s,color .3s}
-.wrap{max-width:980px;margin:0 auto}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s;display:flex}
+
+/* === SIDEBAR === */
+.sidebar{width:188px;min-width:188px;background:var(--card);border-right:0.5px solid var(--border);min-height:100vh;display:flex;flex-direction:column;padding:10px 8px;position:sticky;top:0;height:100vh;overflow:hidden;transition:width .25s ease,min-width .25s ease,padding .25s ease}
+.sidebar-logo{font-size:22px;font-weight:900;color:var(--accent);padding:4px 8px;margin-bottom:6px;letter-spacing:.5px;white-space:nowrap;overflow:hidden;transition:opacity .2s;line-height:1.1}
+.sidebar-logo span{display:block;font-size:10px;font-weight:600;color:var(--accent);opacity:.65;margin-top:2px;letter-spacing:1px;text-transform:uppercase}
+.sidebar-theme{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:0 8px;overflow:hidden;transition:opacity .2s}
+.theme-switch{position:relative;width:44px;height:24px;flex-shrink:0}
+.theme-switch input{opacity:0;width:0;height:0}
+.theme-track{position:absolute;inset:0;background:var(--bg3);border:0.5px solid var(--border);border-radius:12px;cursor:pointer;transition:background .25s}
+.theme-track:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:2.5px;background:#fff;border-radius:50%;transition:transform .25s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+[data-theme="dark"] .theme-track{background:var(--accent2)}
+[data-theme="dark"] .theme-track:before{transform:translateX(20px)}
+.theme-switch-label{font-size:10px;color:var(--text2);white-space:nowrap;cursor:pointer;user-select:none}
+.sidebar.collapsed .sidebar-theme{opacity:0;height:0;margin:0;padding:0;pointer-events:none}
+.sidebar-divider{height:0.5px;background:var(--border);margin:4px 4px 8px;transition:opacity .2s}
+.sidebar-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);padding:0 8px;margin-bottom:4px;white-space:nowrap;overflow:hidden;transition:opacity .2s}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;cursor:pointer;font-size:11.5px;font-weight:500;color:var(--text2);transition:background .15s,color .15s;margin-bottom:2px;border:0.5px solid transparent;white-space:nowrap;overflow:hidden}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--bg3);color:var(--accent);border-color:var(--border2);font-weight:600}
+.nav-icon{font-size:15px;flex-shrink:0;width:20px;text-align:center}
+.nav-label{overflow:hidden;transition:opacity .2s,max-width .25s ease;max-width:140px}
+.sidebar-bottom{margin-top:auto;padding-top:10px;overflow:hidden}
+.btn-pdf-side{width:100%;padding:7px 8px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:0.5px solid var(--red);background:var(--red-bg);color:var(--red-txt);transition:all .15s;text-align:center;white-space:nowrap;overflow:hidden}
+.btn-pdf-side:hover{background:var(--red);color:#fff}
+/* Toggle button */
+.sidebar-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:none;border:0.5px solid var(--border);border-radius:7px;color:var(--text3);cursor:pointer;font-size:15px;margin-bottom:10px;flex-shrink:0;transition:all .2s}
+.sidebar-toggle:hover{background:var(--bg3);color:var(--accent);border-color:var(--accent)}
+.sidebar.collapsed .sidebar-toggle{align-self:center}
+/* Collapsed */
+.sidebar.collapsed{width:52px;min-width:52px;padding:10px 6px}
+.sidebar.collapsed .sidebar-logo,
+.sidebar.collapsed .sidebar-theme,
+.sidebar.collapsed .sidebar-divider,
+.sidebar.collapsed .sidebar-label{opacity:0;pointer-events:none;height:0;margin:0;padding:0;overflow:hidden}
+.sidebar.collapsed .nav-item{padding:9px 0;justify-content:center;gap:0}
+.sidebar.collapsed .nav-label{opacity:0;max-width:0;pointer-events:none}
+.sidebar.collapsed .btn-pdf-side{font-size:17px;padding:7px 0}
+.sidebar.collapsed .btn-txt{display:none}
+
+/* === MAIN CONTENT === */
+.main{flex:1;min-width:0;padding:12px;overflow-x:hidden}
+.wrap{max-width:100%}
 
 /* === HEADER === */
 .hdr{background:linear-gradient(135deg,var(--hdr1),var(--hdr2));border-radius:10px;padding:14px 20px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border2);box-shadow:0 4px 24px rgba(0,0,0,0.4)}
@@ -152,11 +193,16 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 .tv-sym-btn.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
 .tv-sym-btn:hover{border-color:var(--accent);color:var(--accent)}
 /* TV Expand / Fullscreen */
-.tv-fullscreen{position:fixed!important;inset:0!important;z-index:9999!important;background:var(--bg)!important;padding:10px!important;display:flex!important;flex-direction:column!important;border-radius:0!important}
-.tv-fullscreen .tv-fs-bar{display:flex!important}
-.tv-fs-bar{display:none;align-items:center;margin-bottom:8px;gap:8px}
+.tv-fullscreen{position:fixed!important;inset:0!important;z-index:9999!important;background:var(--bg)!important;padding:10px!important;display:flex!important;flex-direction:column!important;border-radius:0!important;overflow:hidden!important}
+.tv-fullscreen .tv-fs-bar{display:flex!important;flex-shrink:0}
+.tv-fs-bar{display:none;align-items:center;margin-bottom:8px;gap:8px;flex-shrink:0}
 .tv-fs-title{font-size:13px;font-weight:700;color:var(--text);flex:1}
-.tv-fullscreen > div:not(.tv-fs-bar){flex:1;min-height:0}
+/* Group & sym bars stay compact in fullscreen */
+.tv-fullscreen #tv-group-bar{flex-shrink:0!important;height:auto!important}
+.tv-fullscreen #tv-sym-bar{flex-shrink:0!important;height:auto!important}
+/* Only chart/heatmap wrap grows */
+.tv-fullscreen #tv-chart-wrap{flex:1!important;min-height:0!important;height:auto!important}
+.tv-fullscreen>div:last-child{flex:1;min-height:0}
 .adc-wrap{max-width:600px;margin:0 auto}
 .adc-section{margin-bottom:12px}
 .adc-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:8px}
@@ -207,9 +253,13 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 
 /* ===== MOBILE ===== */
 @media (max-width: 640px){
-  /* Cegah horizontal scroll di level halaman */
   html,body{overflow-x:hidden;max-width:100vw}
-  body{padding:6px}
+  body{flex-direction:column}
+  .sidebar{width:100%;min-width:0;height:auto;min-height:0;position:static;flex-direction:row;flex-wrap:wrap;padding:8px;gap:4px;border-right:none;border-bottom:0.5px solid var(--border)}
+  .sidebar-logo,.sidebar-divider,.sidebar-label,.sidebar-bottom{display:none}
+  .sidebar-theme{margin-bottom:0;width:auto}
+  .nav-item{padding:5px 8px;font-size:10px;margin-bottom:0}
+  .main{padding:6px}
   .wrap{overflow-x:hidden;width:100%}
 
   /* Header: stack vertikal */
@@ -284,6 +334,56 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 </style>
 </head>
 <body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <button class="sidebar-toggle" onclick="toggleSidebar()" title="Sembunyikan/Tampilkan menu">☰</button>
+  <div class="sidebar-logo">IDXMI<span>by JIA</span></div>
+
+  <!-- Theme switch -->
+  <div class="sidebar-theme">
+    <label class="theme-switch" title="Light / Dark">
+      <input type="checkbox" id="theme-chk" onchange="setTheme(this.checked?'dark':'light')">
+      <span class="theme-track"></span>
+    </label>
+    <span class="theme-switch-label" onclick="document.getElementById('theme-chk').click()">☀️ / 🌙</span>
+  </div>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-label">Menu</div>
+
+  <div class="nav-item active" id="nav-world" onclick="sw('world',this)" title="Indeks Dunia">
+    <span class="nav-icon">🌍</span><span class="nav-label">Indeks Dunia</span>
+  </div>
+  <div class="nav-item" id="nav-stocks" onclick="sw('stocks',this)" title="Top Stocks">
+    <span class="nav-icon">📊</span><span class="nav-label">Top Stocks</span>
+  </div>
+  <div class="nav-item" id="nav-broker" onclick="sw('broker',this)" title="Top Broker & Trading">
+    <span class="nav-icon">🏦</span><span class="nav-label">Top Broker</span>
+  </div>
+  <div class="nav-item" id="nav-sector" onclick="sw('sector',this)" title="Sektor & Indeks IDX">
+    <span class="nav-icon">🏭</span><span class="nav-label">Sektor & Indeks</span>
+  </div>
+  <div class="nav-item" id="nav-tvchart" onclick="sw('tvchart',this);initTVChart()" title="Chart">
+    <span class="nav-icon">📈</span><span class="nav-label">Chart</span>
+  </div>
+  <div class="nav-item" id="nav-avgdown" onclick="sw('avgdown',this)" title="Average Down (DCA)">
+    <span class="nav-icon">📉</span><span class="nav-label">Avg Down <small style="opacity:.65;font-size:9px">(DCA)</small></span>
+  </div>
+  <div class="nav-item" id="nav-changelog" onclick="sw('changelog',this)" title="Changelog">
+    <span class="nav-icon">📝</span><span class="nav-label">Changelog</span>
+  </div>
+  <div class="nav-item" id="nav-feedback" onclick="sw('feedback',this)" title="Kritik & Saran">
+    <span class="nav-icon">💬</span><span class="nav-label">Kritik & Saran</span>
+  </div>
+
+  <div class="sidebar-bottom">
+    <button class="btn-pdf-side" onclick="savePDF()">🖨️ <span class="btn-txt">Simpan PDF</span></button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
 <div class="wrap">
 
 <!-- HEADER -->
@@ -321,22 +421,6 @@ tr:hover td{background:rgba(66,165,245,0.04)}
   <div id="cal-notice" style="display:none;margin-top:8px;padding:7px 10px;border-radius:6px;font-size:10.5px;line-height:1.5;"></div>
 </div>
 
-<!-- TOOLBAR -->
-<div class="toolbar">
-  <div class="tabs">
-    <div class="tab active" onclick="sw('world',this)">🌍 Indeks Dunia</div>
-    <div class="tab" onclick="sw('stocks',this)">📊 Top Stocks</div>
-    <div class="tab" onclick="sw('broker',this)">🏦 Top Broker & Trading</div>
-    <div class="tab" onclick="sw('sector',this)">🏭 Sektor & Indeks IDX</div>
-    <div class="tab" onclick="sw('tvchart',this);initTVChart()">📈 Chart</div>
-    <div class="tab" onclick="sw('avgdown',this)">📉 Average Down</div>
-    <div class="tab" onclick="sw('changelog',this)">📝 Changelog</div>
-  </div>
-  <div class="actions">
-    <button class="btn btn-theme" onclick="toggleTheme()">☀️ Light / 🌙 Dark</button>
-    <button class="btn btn-pdf" onclick="savePDF()">🖨️ Simpan PDF</button>
-  </div>
-</div>
 
 <!-- ===== PANELS ===== -->
 
@@ -380,18 +464,18 @@ tr:hover td{background:rgba(66,165,245,0.04)}
   </div>
 
   <!-- CHART SECTION -->
-  <div id="tv-section-chart">
+  <div id="tv-section-chart" style="display:flex;flex-direction:column;gap:0">
     <div class="tv-fs-bar"><span class="tv-fs-title">📈 Chart Indeks IDX</span><button onclick="tvCollapse('tv-section-chart')" style="background:var(--red-bg);color:var(--red-txt);border:0.5px solid var(--red);border-radius:5px;padding:4px 12px;cursor:pointer;font-size:12px;font-weight:600">✕ Tutup</button></div>
     <!-- Group selector -->
-    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px" id="tv-group-bar">
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;flex-shrink:0" id="tv-group-bar">
       <button class="tv-grp-btn active" onclick="tvSetGroup('featured',this)">Featured</button>
       <button class="tv-grp-btn" onclick="tvSetGroup('cobranding',this)">Co-Branding</button>
       <button class="tv-grp-btn" onclick="tvSetGroup('sharia',this)">Syariah</button>
     </div>
     <!-- Symbol selector -->
-    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px" id="tv-sym-bar"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;flex-shrink:0" id="tv-sym-bar"></div>
     <!-- Chart container -->
-    <div id="tv-chart-wrap" style="height:520px;border-radius:8px;overflow:hidden;background:var(--bg3)">
+    <div id="tv-chart-wrap" style="height:520px;border-radius:8px;overflow:hidden;background:var(--bg3);flex-shrink:0">
       <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text3);font-size:13px">Memuat chart...</div>
     </div>
   </div>
@@ -777,6 +861,43 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 </div>
 </div>
 
+<!-- FEEDBACK -->
+<div id="feedback" class="panel">
+<div style="max-width:560px;margin:0 auto">
+  <div class="card" style="padding:28px 24px;text-align:center">
+
+    <!-- Icon -->
+    <div style="font-size:48px;margin-bottom:12px">💬</div>
+    <div class="ct b" style="font-size:18px;margin-bottom:6px">Kritik & Saran</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:24px;line-height:1.7">
+      Kami terbuka untuk masukan dari Anda! Sampaikan kritik, saran, atau permintaan seputar dashboard ini langsung via WhatsApp.
+    </p>
+
+    <!-- Topic chips -->
+    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:28px">
+      <span style="background:var(--green-bg);color:var(--green-txt);padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600">📅 Penambahan Data Baru</span>
+      <span style="background:var(--green-bg);color:var(--green-txt);padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600">📊 Analisa & Visualisasi</span>
+      <span style="background:var(--green-bg);color:var(--green-txt);padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600">⚙️ Fitur Baru</span>
+      <span style="background:var(--green-bg);color:var(--green-txt);padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600">🐛 Laporan Bug</span>
+      <span style="background:var(--green-bg);color:var(--green-txt);padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600">💡 Ide Lainnya</span>
+    </div>
+
+    <!-- WA Button -->
+    <a href="https://wa.me/628990447098?text=Halo%20JIA%2C%20saya%20ingin%20menyampaikan%20masukan%20terkait%20IDX%20Market%20Intelligence%20Dashboard%3A%0A%0A"
+       target="_blank" rel="noopener"
+       style="display:inline-flex;align-items:center;gap:10px;background:#25D366;color:#fff;text-decoration:none;padding:13px 28px;border-radius:10px;font-size:14px;font-weight:700;box-shadow:0 4px 16px rgba(37,211,102,0.35);transition:all .2s"
+       onmouseover="this.style.background='#1ebe5d'" onmouseout="this.style.background='#25D366'">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Kirim via WhatsApp
+    </a>
+
+    <p style="font-size:10px;color:var(--text3);margin-top:20px">
+      📞 +62 899-0447-098 &nbsp;·&nbsp; Johan Iriawan Akbar
+    </p>
+  </div>
+</div>
+</div>
+
 <footer class="print-footer" id="print-footer"></footer>
 
 <!-- SITE FOOTER -->
@@ -787,6 +908,7 @@ tr:hover td{background:rgba(66,165,245,0.04)}
   <div class="disclaimer">Informasi ini bersifat edukatif/informasional. Bukan merupakan rekomendasi atau saran investasi (Not Financial Advice).</div>
 </footer>
 </div><!-- /wrap -->
+</div><!-- /main -->
 
 <script>
 // ============================================================
@@ -1401,20 +1523,36 @@ function buildCharts() {
 }
 
 // ─── TAB SWITCH ───────────────────────────────────────────
+// Panel yang tidak butuh kalender
+const NO_CAL_PANELS = ["changelog","avgdown","tvchart","feedback"];
+
 function sw(id, el) {
   document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
   document.getElementById(id).classList.add("active");
-  el.classList.add("active");
+  const navEl = document.getElementById("nav-"+id) || el;
+  if (navEl) navEl.classList.add("active");
+  // Tampilkan/sembunyikan kalender
+  const calWrap = document.querySelector(".cal-wrap");
+  if (calWrap) calWrap.style.display = NO_CAL_PANELS.includes(id) ? "none" : "";
   setTimeout(buildCharts, 80);
 }
 
-// ─── THEME TOGGLE ─────────────────────────────────────────
-function toggleTheme() {
-  const html = document.documentElement;
-  html.setAttribute("data-theme", html.getAttribute("data-theme")==="dark"?"light":"dark");
+function toggleSidebar() {
+  document.getElementById("sidebar").classList.toggle("collapsed");
+}
+
+// ─── THEME ────────────────────────────────────────────────
+function setTheme(t) {
+  document.documentElement.setAttribute("data-theme", t);
+  const chk = document.getElementById("theme-chk");
+  if (chk) chk.checked = (t === "dark");
   destroyCharts();
   setTimeout(buildCharts, 100);
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute("data-theme");
+  setTheme(cur==="dark" ? "light" : "dark");
 }
 
 // ─── SAVE PDF ─────────────────────────────────────────────
@@ -1729,6 +1867,9 @@ function tvExpand() {
   section.style.display = "";
   section.classList.add("tv-fullscreen");
   document.body.style.overflow = "hidden";
+  // Chart wrap: override fixed height, let flex fill remaining space
+  const cw = document.getElementById("tv-chart-wrap");
+  if (cw) { cw.style.height = ""; cw.style.flex = "1"; cw.style.flexShrink = "0"; }
 }
 
 function tvCollapse(sectionId) {
@@ -1736,10 +1877,13 @@ function tvCollapse(sectionId) {
   if (!section) return;
   section.classList.remove("tv-fullscreen");
   document.body.style.overflow = "";
-  // Re-apply display state based on active sub-tab
+  // Restore chart wrap height
+  const cw = document.getElementById("tv-chart-wrap");
+  if (cw) { cw.style.height = "520px"; cw.style.flex = ""; cw.style.flexShrink = "0"; }
   if (sectionId === "tv-section-heatmap") section.style.display = TV_ACTIVE_SUBTAB === "heatmap" ? "" : "none";
   if (sectionId === "tv-section-chart")   section.style.display = TV_ACTIVE_SUBTAB === "chart"   ? "" : "none";
 }
+
 </script>
 
 </body>
