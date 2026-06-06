@@ -57,6 +57,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .hdr-meta{font-size:11px;color:rgba(255,255,255,0.6);margin-top:3px}
 .hdr-ihsg{font-size:30px;font-weight:700;line-height:1.1;text-align:right}
 .hdr-chg{font-size:11px;margin-top:3px;text-align:right}
+.hdr-attr{font-size:9.5px;color:rgba(255,255,255,0.38);margin-top:6px;line-height:1.6;border-top:0.5px solid rgba(255,255,255,0.12);padding-top:5px}
+.hdr-attr a{color:rgba(255,255,255,0.5);text-decoration:none}
+.hdr-attr a:hover{color:rgba(255,255,255,0.8)}
+/* === FOOTER === */
+.site-footer{text-align:center;padding:14px 0 8px;margin-top:12px;border-top:0.5px solid var(--border);font-size:10px;color:var(--text3);line-height:1.8}
+.site-footer a{color:var(--text3);text-decoration:none}
+.site-footer a:hover{color:var(--accent)}
+.site-footer .disclaimer{font-size:9px;color:var(--text3);opacity:0.7;margin-top:2px}
 
 /* === KALENDER === */
 .cal-wrap{background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;box-shadow:var(--card-shadow)}
@@ -159,6 +167,10 @@ tr:hover td{background:rgba(66,165,245,0.04)}
   <div class="hdr-left">
     <p>IDX Market Intelligence</p>
     <p class="hdr-meta" id="h-date">Pilih tanggal di kalender →</p>
+    <p class="hdr-attr">
+      Data bersumber dari Bursa Efek Indonesia (IDX) &copy; Bursa Efek Indonesia<br>
+      Dashboard dibuat oleh Johan Iriawan Akbar &nbsp;|&nbsp; <a href="https://jiakbar.github.io/idx-dashboard/" target="_blank">jiakbar.github.io</a>
+    </p>
   </div>
   <div>
     <p class="hdr-ihsg" id="h-ihsg" style="color:var(--text2)">—</p>
@@ -227,6 +239,14 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 </div>
 
 <footer class="print-footer" id="print-footer"></footer>
+
+<!-- SITE FOOTER -->
+<footer class="site-footer">
+  Visualisasi: <strong>JIA</strong> &copy; 2026 &nbsp;|&nbsp;
+  Data: <a href="https://www.idx.co.id" target="_blank">Bursa Efek Indonesia</a> &nbsp;|&nbsp;
+  <a href="https://jiakbar.github.io/idx-dashboard/" target="_blank">jiakbar.github.io/idx-dashboard</a>
+  <div class="disclaimer">Informasi ini bersifat edukatif/informasional. Bukan merupakan rekomendasi atau saran investasi (Not Financial Advice).</div>
+</footer>
 </div><!-- /wrap -->
 
 <script>
@@ -393,8 +413,8 @@ function updateHeader() {
   chgEl.textContent =
     `${fp(pct)} · YTD ${fp(D.ihsg_ytd??0)} · ASEAN #${D.ihsg_ra??"-"} · Asia Pasifik #${D.ihsg_rap??"-"} · Dunia #${D.ihsg_rw??"-"}`;
   chgEl.style.color = isUp ? "rgba(110,232,212,0.8)" : "rgba(244,160,160,0.8)";
-  document.getElementById("print-footer").textContent =
-    `Sumber: IDX Daily Statistics · ${D.date_id} · Bukan saran investasi (NFA)`;
+  document.getElementById("print-footer").innerHTML =
+    `Sumber data: IDX Daily Statistics &copy; Bursa Efek Indonesia &nbsp;|&nbsp; ${D.date_id} &nbsp;|&nbsp; Visualisasi: JIA &copy; 2026 &nbsp;|&nbsp; Bukan saran investasi (Not Financial Advice)`;
 }
 
 // ─── WORLD PANEL ─────────────────────────────────────────
