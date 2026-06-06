@@ -137,6 +137,48 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 .sep{height:4px;background:var(--border2);border-radius:2px;margin:4px 0 8px;opacity:.4}
 .print-footer{display:none}
 
+/* ===== MOBILE ===== */
+@media (max-width: 640px){
+  body{padding:6px}
+
+  /* Header: stack vertikal */
+  .hdr{flex-direction:column;align-items:flex-start;gap:6px;padding:12px 14px}
+  .hdr>div:last-child{width:100%;display:flex;justify-content:space-between;align-items:baseline}
+  .hdr-ihsg{font-size:26px;text-align:left}
+  .hdr-chg{text-align:left;font-size:10px}
+  .hdr-attr{font-size:8.5px}
+
+  /* Kalender: padding lebih kecil */
+  .cal-wrap{padding:8px}
+  .cal-day{min-height:44px;padding:3px 2px}
+  .cal-day-num{font-size:10px}
+  .cal-ihsg{font-size:8px}
+  .cal-pct{font-size:8px}
+  .cal-label{font-size:7px}
+
+  /* Tab bar: scroll horizontal */
+  .toolbar{flex-direction:column;align-items:stretch;gap:6px}
+  .tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{font-size:10px;padding:5px 10px;flex-shrink:0}
+  .actions{justify-content:flex-end}
+
+  /* Grid: 1 kolom di mobile */
+  .g2{grid-template-columns:1fr!important}
+  .g3{grid-template-columns:1fr!important}
+
+  /* Tabel: scroll horizontal */
+  .card{padding:10px 10px;overflow-x:auto}
+  table{font-size:11px;min-width:360px}
+  th{font-size:9px;padding:4px 5px}
+  td{padding:4px 5px;font-size:11px}
+
+  /* Chart lebih kecil */
+  .chart-wrap{height:180px}
+
+  /* Footer */
+  .site-footer{font-size:9px}
+}
 @media print{
   @page{margin:1cm 1.2cm;size:A4 portrait}
   html,body{background:#fff!important;color:#111!important;font-size:9.5pt;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
