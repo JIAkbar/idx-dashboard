@@ -201,8 +201,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 /* === PANELS === */
 .panel{display:none}.panel.active{display:block}
-@keyframes panelIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
-.panel-in{animation:panelIn 220ms cubic-bezier(.25,.46,.45,.94) both}
+@keyframes panelIn{from{opacity:0}to{opacity:1}}
+.panel-in{animation:panelIn 250ms ease both}
 
 /* === CARD === */
 .card{background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px;box-shadow:var(--card-shadow,none)}
@@ -725,6 +725,18 @@ tr:hover td{background:rgba(66,165,245,0.04)}
     </div>
     <div class="cl-body">
 
+      <div class="cl-pop-entry">
+        <div class="cl-pop-entry-hd">
+          <span class="cl-pop-ver" style="background:#ef4444">v4.7</span>
+          <span class="cl-pop-subtitle">Fix mobile expand fullscreen + tombol Tampilkan</span>
+          <span class="cl-pop-date">7 Jun 2026</span>
+        </div>
+        <ul class="cl-pop-list">
+          <li>Fix: Chart &amp; Heatmap expand kini benar-benar fullscreen di mobile</li>
+          <li>Peta Investor: tombol <b>Tampilkan</b> — ketik kode saham lalu tap Tampilkan</li>
+          <li>Animasi panel diubah agar tidak mengganggu mode fullscreen</li>
+        </ul>
+      </div>
       <div class="cl-pop-entry">
         <div class="cl-pop-entry-hd">
           <span class="cl-pop-ver" style="background:#6366f1">v4.6</span>
@@ -1505,6 +1517,20 @@ tr:hover td{background:rgba(66,165,245,0.04)}
     <div class="ct b">📝 Changelog — IDX Market Intelligence Dashboard</div>
     <p style="font-size:11px;color:var(--text2);margin-bottom:16px">Riwayat pengembangan oleh Johan Iriawan Akbar · <a href="https://jiakbar.github.io/idx-dashboard/" target="_blank" style="color:var(--accent)">jiakbar.github.io/idx-dashboard</a></p>
 
+    <!-- v4.7 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v4.7</span>
+        <span style="font-size:12px;font-weight:600;color:var(--text)">Fix mobile expand fullscreen + tombol Tampilkan</span>
+        <span style="font-size:10px;color:var(--text3)">7 Jun 2026</span>
+      </div>
+      <ul style="font-size:11px;color:var(--text2);padding-left:18px;line-height:2;margin:0">
+        <li>Fix: Chart &amp; Heatmap expand kini benar-benar fullscreen di mobile</li>
+        <li>Peta Investor: tombol <b>Tampilkan</b> — ketik kode saham lalu tap Tampilkan</li>
+        <li>Animasi panel diubah agar tidak mengganggu mode fullscreen</li>
+      </ul>
+    </div>
+
     <!-- v4.6 -->
     <div style="margin-bottom:20px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
@@ -2160,7 +2186,8 @@ tr:hover td{background:rgba(66,165,245,0.04)}
             background:var(--card);border:0.5px solid var(--border2);border-radius:10px;
             box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:200"></div>
         </div>
-        <button onclick="piReset()" style="padding:6px 12px;border-radius:7px;border:0.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:11px;cursor:pointer">Reset</button>
+        <button onclick="piSearchGo()" style="padding:6px 14px;border-radius:7px;border:0.5px solid var(--accent);background:var(--accent);color:#fff;font-size:11px;font-weight:600;cursor:pointer">Tampilkan</button>
+        <button onclick="piSearchClear()" style="padding:6px 10px;border-radius:7px;border:0.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:11px;cursor:pointer">Reset</button>
       </div>
     </div>
   </div>
@@ -3398,7 +3425,12 @@ function tvSetGroup(grp, btn) {
 function tvExpand(sectionId) {
   const sec = document.getElementById(sectionId);
   if (!sec) return;
+  // Hapus transform dari parent panel agar position:fixed bekerja di mobile
+  const parentPanel = sec.closest('.panel');
+  if (parentPanel) { parentPanel.classList.remove('panel-in'); parentPanel.style.transform = 'none'; }
   sec.classList.add('tv-fullscreen');
+  // Mobile: set height eksplisit agar tutup bottom nav bar
+  if (window.innerWidth <= 768) sec.style.height = window.innerHeight + 'px';
   const inner = sec.querySelector('.tv-section-inner');
   if (inner) { inner.style.flex='1'; inner.style.height='0'; inner.style.minHeight='0'; }
   document.addEventListener('keydown', function esc(e){
@@ -3419,6 +3451,7 @@ function tvCollapse(sectionId) {
   const sec = sectionId ? document.getElementById(sectionId) : null;
   if (sec) {
     sec.classList.remove('tv-fullscreen');
+    sec.style.height = '';
     restoreInner(sec);
   } else {
     document.querySelectorAll('.tv-fullscreen').forEach(el => {
@@ -4917,6 +4950,25 @@ function piSearchClear() {
 }
 
 function piSearch(q) { piSearchInput(q); }
+
+function piSearchGo() {
+  const inp = document.getElementById('pi-search');
+  const q = (inp ? inp.value : '').trim().toUpperCase();
+  piHideDrop();
+  if (!q) { piSearchClear(); return; }
+  if (!PI_DATA) return;
+  // Exact emiten code
+  const emExact = PI_DATA.find(e => e.code === q);
+  if (emExact) { piRenderFocused(emExact.code); inp.blur(); return; }
+  // Partial code emiten
+  const emPartial = PI_DATA.find(e => e.code.startsWith(q));
+  if (emPartial) { piRenderFocused(emPartial.code); inp.value = emPartial.code; inp.blur(); return; }
+  // Partial nama emiten
+  const emName = PI_DATA.find(e => e.issuer.toUpperCase().includes(q));
+  if (emName) { piRenderFocused(emName.code); inp.value = emName.code; inp.blur(); return; }
+  // Tidak ketemu — tampilkan dropdown
+  piSearchInput(q);
+}
 
 // Focused star layout: center emiten → holders ring → cross-holdings outer ring
 function piRenderFocused(code) {
