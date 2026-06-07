@@ -11,9 +11,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'Mode fetch (1=semua 959 saham, 2=LQ45+default ~50 saham)'
+        description: 'Mode fetch: "ihsg" = semua 959 saham IDX, "semua" = ~50 saham default'
         required: false
-        default: '1'
+        default: 'ihsg'
 
 permissions:
   contents: write
@@ -41,12 +41,12 @@ jobs:
         run: |
           pip install yfinance pandas requests openpyxl --quiet
 
-      # 4. Jalankan fetch — pipe input "1" untuk pilih mode semua saham
-      - name: Fetch data fundamental 959 saham IDX
+      # 4. Jalankan fetch — argumen: --ihsg (959 saham) atau --semua (default ~50)
+      - name: Fetch data fundamental IDX
         run: |
-          MODE=${{ github.event.inputs.mode || '1' }}
+          MODE="${{ github.event.inputs.mode || 'ihsg' }}"
           echo "Mode: $MODE"
-          echo "$MODE" | python scripts/fetch_fundamental.py
+          python scripts/fetch_fundamental.py --$MODE
         continue-on-error: false
 
       # 5. Commit & push jika ada perubahan JSON

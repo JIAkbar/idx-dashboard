@@ -650,93 +650,145 @@ def fetch_stock(ticker_code):
         }
 
         # Save JSON per saham
-        out_path = os.path.join(OUT_DIR, f"{ticker}.json")
+        out_path = os.path.join(OUT_DIR, f"{ticker_code}.json")
         with open(out_path, "w", encoding="utf-8") as fw:
             json.dump(data, fw, ensure_ascii=False, separators=(",", ":"))
 
-        results.append({"code": ticker, "name": data.get("company_name",""), "sector": data.get("sector","")})
-        ok += 1
+        return data
 
     except Exception as exc:
-        print(f"  ERROR: {exc}")
-        fail += 1
+        print(f" ✗ {exc}")
+        return None
 
-print(f"\n✅ Selesai: {ok} berhasil, {fail} gagal dari {len(tickers)} saham")
+# ─── Globals (set by main) ────────────────────────────────────────────────────
+OUT_DIR  = ""
+tickers  = []
+results  = []
+ok = fail = 0
 
-# ── POST-PROCESSING: Sector Median ──────────────────────────────
-print("\n📊 Hitung sektor median...")
-import statistics
+# ─── Main execution ────────────────────────────────────────────────────────────
+def main():
+    global OUT_DIR, tickers, results, ok, fail
+    import statistics
 
-sector_data = {}
+    # ── Resolve output directory ──────────────────────────────────────────────
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    OUT_DIR = os.path.normpath(os.path.join(script_dir, '..', 'data', 'fundamental'))
+    os.makedirs(OUT_DIR, exist_ok=True)
 
-for fname in os.listdir(OUT_DIR):
-    if not fname.endswith(".json") or fname in ("index.json", "sector_avg.json"):
-        continue
-    try:
-        with open(os.path.join(OUT_DIR, fname), encoding="utf-8") as fj:
-            sd = json.load(fj)
-        sec = sd.get("sector") or "Unknown"
-        if sec not in sector_data:
-            sector_data[sec] = []
-        sector_data[sec].append(sd)
-    except Exception:
-        pass
+    # ── Determine tickers from sys.argv ───────────────────────────────────────
+    args = sys.argv[1:]
+    if not args or '--semua' in args:
+        tickers = list(DEFAULT_TICKERS)
+        mode_label = f"semua {len(tickers)} saham (default)"
+    elif '--ihsg' in args:
+        fetched = fetch_all_idx_tickers()
+        tickers = fetched if fetched else list(DEFAULT_TICKERS)
+        mode_label = f"IDX API — {len(tickers)} saham"
+    else:
+        tickers = [a.upper().replace('.JK', '') for a in args if not a.startswith('--')]
+        mode_label = f"spesifik: {', '.join(tickers)}"
 
-def safe_median(lst):
-    vals = [v for v in lst if v is not None and isinstance(v, (int, float)) and v == v]
-    return round(statistics.median(vals), 4) if len(vals) >= 3 else None
+    print(f"\n🔍 Mode  : {mode_label}")
+    print(f"   Output: {OUT_DIR}\n")
 
-sector_avg = {}
-for sec, stocks in sector_data.items():
-    sector_avg[sec] = {
-        "count":            len(stocks),
-        "pe_median":        safe_median([s.get("pe")         for s in stocks]),
-        "pb_median":        safe_median([s.get("pb")         for s in stocks]),
-        "ps_median":        safe_median([s.get("ps")         for s in stocks]),
-        "npm_median":       safe_median([s.get("npm")        for s in stocks]),
-        "roe_median":       safe_median([s.get("roe")        for s in stocks]),
-        "ev_ebitda_median": safe_median([s.get("ev_ebitda")  for s in stocks]),
-        "gpm_median":       safe_median([s.get("gpm")        for s in stocks]),
-        "opm_median":       safe_median([s.get("opm")        for s in stocks]),
-        "der_median":       safe_median([s.get("der")        for s in stocks]),
-    }
+    # ── Fetch loop ────────────────────────────────────────────────────────────
+    results, ok, fail = [], 0, 0
+    total = len(tickers)
+    for i, ticker in enumerate(tickers, 1):
+        print(f"  [{i:>4}/{total}] {ticker:<8}", end='', flush=True)
+        data = fetch_stock(ticker)
+        if data:
+            ok += 1
+            print(f" ✓ {data.get('company_name','')[:28]}")
+            results.append({
+                "code":   ticker,
+                "name":   data.get("company_name", ""),
+                "sector": data.get("sector", ""),
+            })
+        else:
+            fail += 1
+            print(" — skip")
+        if i % 50 == 0:
+            time.sleep(1)
 
-sa_path = os.path.join(OUT_DIR, "sector_avg.json")
-with open(sa_path, "w", encoding="utf-8") as fw:
-    json.dump(sector_avg, fw, ensure_ascii=False, separators=(",", ":"))
-print(f"  sector_avg.json -> {len(sector_avg)} sektor")
+    print(f"\n✅ Selesai: {ok} berhasil, {fail} gagal dari {total} saham")
 
-# Update setiap saham JSON dengan sektor comparison
-for fname in os.listdir(OUT_DIR):
-    if not fname.endswith(".json") or fname in ("index.json", "sector_avg.json"):
-        continue
-    try:
-        fp = os.path.join(OUT_DIR, fname)
-        with open(fp, encoding="utf-8") as fj:
-            sd = json.load(fj)
-        sec = sd.get("sector") or "Unknown"
-        sa  = sector_avg.get(sec, {})
-        for metric, sec_key in [("pe","pe_median"),("pb","pb_median"),("npm","npm_median"),
-                                 ("roe","roe_median"),("ev_ebitda","ev_ebitda_median")]:
-            sd[f"sector_{sec_key}"] = sa.get(sec_key)
-        sd["sector_stock_count"] = sa.get("count", 0)
-        for metric, sec_key in [("pe","pe_median"),("pb","pb_median"),("ps","ps_median")]:
-            v = sd.get(metric); sm = sa.get(sec_key)
-            if v and sm and sm != 0:
-                sd[f"{metric}_vs_sector_pct"] = round((v / sm - 1) * 100, 1)
-        with open(fp, "w", encoding="utf-8") as fw:
-            json.dump(sd, fw, ensure_ascii=False, separators=(",", ":"))
-    except Exception:
-        pass
-print("  Sector fields diupdate ke semua saham JSON")
+    # ── POST-PROCESSING: Sector Median ────────────────────────────────────────
+    print("\n📊 Hitung sektor median...")
+    sector_data = {}
+    for fname in os.listdir(OUT_DIR):
+        if not fname.endswith(".json") or fname in ("index.json", "sector_avg.json"):
+            continue
+        try:
+            with open(os.path.join(OUT_DIR, fname), encoding="utf-8") as fj:
+                sd = json.load(fj)
+            sec = sd.get("sector") or "Unknown"
+            if sec not in sector_data:
+                sector_data[sec] = []
+            sector_data[sec].append(sd)
+        except Exception:
+            pass
 
-# ── SAVE INDEX ───────────────────────────────────────────────────
-idx_path = os.path.join(OUT_DIR, "index.json")
-with open(idx_path, "w", encoding="utf-8") as fw:
-    json.dump({
-        "updated": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "total":   len(results),
-        "stocks":  results
-    }, fw, ensure_ascii=False, separators=(",", ":"))
-print(f"  index.json -> {len(results)} saham")
-print("\n🎉 Semua selesai!")
+    def safe_median(lst):
+        vals = [v for v in lst if v is not None and isinstance(v, (int, float)) and v == v]
+        return round(statistics.median(vals), 4) if len(vals) >= 3 else None
+
+    sector_avg = {}
+    for sec, stocks in sector_data.items():
+        sector_avg[sec] = {
+            "count":            len(stocks),
+            "pe_median":        safe_median([s.get("pe")         for s in stocks]),
+            "pb_median":        safe_median([s.get("pb")         for s in stocks]),
+            "ps_median":        safe_median([s.get("ps")         for s in stocks]),
+            "npm_median":       safe_median([s.get("npm")        for s in stocks]),
+            "roe_median":       safe_median([s.get("roe")        for s in stocks]),
+            "ev_ebitda_median": safe_median([s.get("ev_ebitda")  for s in stocks]),
+            "gpm_median":       safe_median([s.get("gpm")        for s in stocks]),
+            "opm_median":       safe_median([s.get("opm")        for s in stocks]),
+            "der_median":       safe_median([s.get("der")        for s in stocks]),
+        }
+
+    sa_path = os.path.join(OUT_DIR, "sector_avg.json")
+    with open(sa_path, "w", encoding="utf-8") as fw:
+        json.dump(sector_avg, fw, ensure_ascii=False, separators=(",", ":"))
+    print(f"  sector_avg.json → {len(sector_avg)} sektor")
+
+    # Update each stock JSON with sector comparison
+    for fname in os.listdir(OUT_DIR):
+        if not fname.endswith(".json") or fname in ("index.json", "sector_avg.json"):
+            continue
+        try:
+            fp = os.path.join(OUT_DIR, fname)
+            with open(fp, encoding="utf-8") as fj:
+                sd = json.load(fj)
+            sec = sd.get("sector") or "Unknown"
+            sa  = sector_avg.get(sec, {})
+            for metric, sec_key in [("pe","pe_median"),("pb","pb_median"),("npm","npm_median"),
+                                     ("roe","roe_median"),("ev_ebitda","ev_ebitda_median")]:
+                sd[f"sector_{sec_key}"] = sa.get(sec_key)
+            sd["sector_stock_count"] = sa.get("count", 0)
+            for metric, sec_key in [("pe","pe_median"),("pb","pb_median"),("ps","ps_median")]:
+                v = sd.get(metric); sm = sa.get(sec_key)
+                if v and sm and sm != 0:
+                    sd[f"{metric}_vs_sector_pct"] = round((v / sm - 1) * 100, 1)
+            with open(fp, "w", encoding="utf-8") as fw:
+                json.dump(sd, fw, ensure_ascii=False, separators=(",", ":"))
+        except Exception:
+            pass
+    print("  Sector fields diperbarui ke semua saham JSON")
+
+    # ── Save index ────────────────────────────────────────────────────────────
+    idx_path = os.path.join(OUT_DIR, "index.json")
+    with open(idx_path, "w", encoding="utf-8") as fw:
+        json.dump({
+            "updated": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "total":   len(results),
+            "stocks":  results,
+        }, fw, ensure_ascii=False, separators=(",", ":"))
+    print(f"  index.json → {len(results)} saham")
+    print("\n🎉 Semua selesai!")
+
+
+if __name__ == '__main__':
+    main()

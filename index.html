@@ -273,7 +273,7 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 /* TV Expand / Fullscreen */
 .tv-fullscreen{position:fixed!important;inset:0!important;z-index:9999!important;background:var(--bg)!important;padding:10px!important;display:flex!important;flex-direction:column!important;border-radius:0!important;overflow:hidden!important}
 .tv-fullscreen .tv-fs-bar{display:flex!important;flex-shrink:0}
-.tv-fullscreen [onclick="tvExpand()"] { display:none!important }
+.tv-fullscreen .tv-expand-btn { display:none!important }
 .tv-fs-bar{display:none;align-items:center;margin-bottom:8px;gap:8px;flex-shrink:0}
 .tv-fs-title{font-size:13px;font-weight:700;color:var(--text);flex:1}
 /* Group & sym bars stay compact in fullscreen */
@@ -281,7 +281,8 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 .tv-fullscreen #tv-sym-bar{flex-shrink:0!important;height:auto!important}
 /* Only chart/heatmap wrap grows */
 .tv-fullscreen #tv-chart-wrap{flex:1!important;min-height:0!important;height:auto!important}
-.tv-fullscreen>div:last-child{flex:1;min-height:0}
+/* tv-section-heatmap fullscreen handled by JS */
+.tv-fullscreen .tv-section-inner{flex:1!important;min-height:0!important;height:0!important}
 .adc-wrap{max-width:600px;margin:0 auto}
 .adc-section{margin-bottom:12px}
 .adc-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:8px}
@@ -512,13 +513,13 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 #cl-modal .cl-title{font-size:16px;font-weight:800;color:var(--text);flex:1}
 #cl-modal .cl-close-x{width:30px;height:30px;border-radius:50%;border:0.5px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
 #cl-modal .cl-close-x:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
-#cl-modal .cl-body{padding:16px 22px}
-.cl-pop-entry{margin-bottom:16px;padding-bottom:16px;border-bottom:0.5px solid var(--border)}
-.cl-pop-entry:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-.cl-pop-ver{display:inline-block;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;color:#fff;margin-right:8px;vertical-align:middle}
-.cl-pop-subtitle{font-size:13px;font-weight:700;color:var(--text);vertical-align:middle}
-.cl-pop-date{font-size:10px;color:var(--text3);float:right;margin-top:2px}
-.cl-pop-list{margin:8px 0 0 0;padding-left:18px;font-size:11px;color:var(--text2);line-height:1.9}
+#cl-modal .cl-body{padding:14px 18px}
+.cl-pop-entry{margin-bottom:10px;padding:12px 14px;border-radius:10px;background:var(--bg3);border:0.5px solid var(--border)}
+.cl-pop-entry-hd{display:flex;align-items:center;gap:7px;margin-bottom:8px;flex-wrap:wrap}
+.cl-pop-ver{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap;flex-shrink:0}
+.cl-pop-subtitle{font-size:12px;font-weight:700;color:var(--text);flex:1;min-width:0}
+.cl-pop-date{font-size:10px;color:var(--text3);white-space:nowrap;flex-shrink:0}
+.cl-pop-list{margin:0;padding-left:16px;font-size:11px;color:var(--text2);line-height:1.8}
 #cl-modal .cl-footer{padding:14px 22px 20px;display:flex;gap:10px;align-items:center}
 #cl-modal .cl-btn-start{flex:1;padding:11px;border-radius:10px;background:var(--accent);color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;transition:opacity .15s}
 #cl-modal .cl-btn-start:hover{opacity:.88}
@@ -605,6 +606,7 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 
   /* Peta Investor graph: limit height */
   #pi-graph { height: 360px !important }
+  .pi-tbl tr[onclick]:hover td { background:rgba(99,102,241,.08);cursor:pointer; }
   #pi-graph-wrap { max-width: 100vw; overflow: hidden }
 
   /* Kalkulator JIA: compact pos bar */
@@ -716,21 +718,76 @@ tr:hover td{background:rgba(66,165,245,0.04)}
     <div class="cl-body">
 
       <div class="cl-pop-entry">
-        <span class="cl-pop-ver" style="background:#059669">v3.9</span>
-        <span class="cl-pop-subtitle">✨ Custom Autocomplete + Fix Expand + Peta Investor</span>
-        <span class="cl-pop-date">7 Jun 2026</span>
+        <div class="cl-pop-entry-hd">
+          <span class="cl-pop-ver" style="background:#8b5cf6">v4.3</span>
+          <span class="cl-pop-subtitle">Chart &amp; Heatmap dua section independen</span>
+          <span class="cl-pop-date">7 Jun 2026</span>
+        </div>
         <ul class="cl-pop-list">
-          <li><strong>Stock Detail</strong> — dropdown custom autocomplete: tampilkan 10 hasil, filter saat mengetik, navigasi keyboard (↑↓ Enter Esc)</li>
-          <li>Fix <strong>double Tutup</strong> di Chart &amp; Heatmap expand — tombol expand tersembunyi saat fullscreen, ESC berfungsi</li>
-          <li>Tambah fungsi <code>tvCollapse()</code> agar tombol Tutup di fullscreen bar berfungsi</li>
-          <li><strong>Peta Investor</strong> — push <code>data/investor_map.json</code> ke GitHub agar data tampil</li>
+          <li>Chart Indeks dan Heatmap kini selalu tampil bersamaan — tidak perlu pindah tab</li>
+          <li>Tombol Expand per-section: Chart dan Heatmap bisa fullscreen masing-masing</li>
+          <li>Fix: buka heatmap tidak lagi mengecilkan chart</li>
+        </ul>
+      </div>
+      <div class="cl-pop-entry">
+        <div class="cl-pop-entry-hd">
+          <span class="cl-pop-ver" style="background:#0ea5e9">v4.2</span>
+          <span class="cl-pop-subtitle">Tema adaptif &amp; panel kanan Peta Investor</span>
+          <span class="cl-pop-date">7 Jun 2026</span>
+        </div>
+        <ul class="cl-pop-list">
+          <li>Popup detail saham &amp; investor kini mengikuti tema terang/gelap</li>
+          <li>Panel pemegang saham tampil di sebelah kanan grafik jaringan</li>
+          <li>Grafik jaringan Peta Investor ikut tema aplikasi</li>
+          <li>Fix: pindah tab Chart &#8596; Heatmap tidak lagi membuat tampilan berantakan</li>
+          <li>Fix: Chart Indeks tidak mengecil setelah keluar dari Heatmap expand</li>
         </ul>
       </div>
 
       <div class="cl-pop-entry">
-        <span class="cl-pop-ver" style="background:#4f46e5">v3.8</span>
-        <span class="cl-pop-subtitle">🔧 Nav Reorder + Fix Mobile + Price Performance</span>
-        <span class="cl-pop-date">7 Jun 2026</span>
+        <div class="cl-pop-entry-hd">
+          <span class="cl-pop-ver" style="background:#7c3aed">v4.1</span>
+          <span class="cl-pop-subtitle">&#127912; Peta Investor Redesign + Heatmap Fix</span>
+          <span class="cl-pop-date">7 Jun 2026</span>
+        </div>
+        <ul class="cl-pop-list">
+          <li>Heatmap expand kini benar-benar fullscreen</li>
+          <li>Grafik Jaringan: background gelap, sidebar kanan lebih bersih</li>
+          <li>Klik baris investor/emiten langsung buka popup detail</li>
+          <li>By Investor &amp; By Stock: tampil 20 baris awal</li>
+          <li>Klik area kosong di grafik tidak lagi mereset tampilan</li>
+        </ul>
+      </div>
+      <div class="cl-pop-entry">
+        <div class="cl-pop-entry-hd">
+          <span class="cl-pop-ver" style="background:#0ea5e9">v4.0</span>
+          <span class="cl-pop-subtitle">🗺️ Peta Investor Overhaul + Expand Fix</span>
+          <span class="cl-pop-date">7 Jun 2026</span>
+        </div>
+        <ul class="cl-pop-list">
+          <li>Chart &amp; Heatmap expand kini benar-benar fullscreen — tidak lagi tampil bersamaan</li>
+          <li><strong>By Stock</strong> &amp; <strong>By Investor</strong> — render 50 baris awal, tombol "Tampilkan N lagi" agar lebih ringan</li>
+          <li>Klik <strong>+N lagi</strong> membuka popup detail pemegang/saham inline</li>
+        </ul>
+      </div>
+      <div class="cl-pop-entry">
+        <div class="cl-pop-entry-hd">
+          <span class="cl-pop-ver" style="background:#059669">v3.9</span>
+          <span class="cl-pop-subtitle">✨ Custom Autocomplete + Fix Expand + Peta Investor</span>
+          <span class="cl-pop-date">7 Jun 2026</span>
+        </div>
+        <ul class="cl-pop-list">
+          <li><strong>Stock Detail</strong> — dropdown custom autocomplete: tampilkan 10 hasil, filter saat mengetik, navigasi keyboard (↑↓ Enter Esc)</li>
+          <li>Fix <strong>double Tutup</strong> di Chart &amp; Heatmap expand — tombol expand tersembunyi saat fullscreen, ESC berfungsi</li>
+        </ul>
+      </div>
+
+      <div class="cl-pop-entry">
+        <div class="cl-pop-entry-hd">
+          <span class="cl-pop-ver" style="background:#4f46e5">v3.8</span>
+          <span class="cl-pop-subtitle">🔧 Nav Reorder + Fix Mobile + Price Performance</span>
+          <span class="cl-pop-date">7 Jun 2026</span>
+        </div>
         <ul class="cl-pop-list">
           <li>Urutan menu: Kalkulator JIA dipindah setelah Peta Investor</li>
           <li>Fix <strong>Price Performance</strong> — data sekarang tampil (1D/1W/1M/3M/6M/YTD)</li>
@@ -742,9 +799,11 @@ tr:hover td{background:rgba(66,165,245,0.04)}
       </div>
 
       <div class="cl-pop-entry">
-        <span class="cl-pop-ver" style="background:#0284c7">v3.7</span>
-        <span class="cl-pop-subtitle">📱 Mobile UI Overhaul</span>
-        <span class="cl-pop-date">7 Jun 2026</span>
+        <div class="cl-pop-entry-hd">
+          <span class="cl-pop-ver" style="background:#0284c7">v3.7</span>
+          <span class="cl-pop-subtitle">📱 Mobile UI Overhaul</span>
+          <span class="cl-pop-date">7 Jun 2026</span>
+        </div>
         <ul class="cl-pop-list">
           <li>Fix <strong>horizontal scroll</strong> di semua panel mobile — konten tidak meluber keluar layar</li>
           <li>Peta Investor mobile: grafik lebih compact, scroll lebih lancar</li>
@@ -754,9 +813,11 @@ tr:hover td{background:rgba(66,165,245,0.04)}
       </div>
 
       <div class="cl-pop-entry">
-        <span class="cl-pop-ver" style="background:#7c3aed">v3.6</span>
-        <span class="cl-pop-subtitle">🗺️ Peta Investor Views & Posisi Saham</span>
-        <span class="cl-pop-date">7 Jun 2026</span>
+        <div class="cl-pop-entry-hd">
+          <span class="cl-pop-ver" style="background:#7c3aed">v3.6</span>
+          <span class="cl-pop-subtitle">🗺️ Peta Investor Views & Posisi Saham</span>
+          <span class="cl-pop-date">7 Jun 2026</span>
+        </div>
         <ul class="cl-pop-list">
           <li><strong>By Stock</strong> — tabel semua emiten: jumlah holder, % CORP/IND/OTH, daftar pemegang ≥1%</li>
           <li><strong>By Investor</strong> — tabel semua investor: tipe, jumlah saham dipegang, portfolio emiten</li>
@@ -767,9 +828,11 @@ tr:hover td{background:rgba(66,165,245,0.04)}
       </div>
 
       <div class="cl-pop-entry">
-        <span class="cl-pop-ver" style="background:#059669">v3.4</span>
-        <span class="cl-pop-subtitle">🎉 Notifikasi Update Otomatis</span>
-        <span class="cl-pop-date">7 Jun 2026</span>
+        <div class="cl-pop-entry-hd">
+          <span class="cl-pop-ver" style="background:#059669">v3.4</span>
+          <span class="cl-pop-subtitle">🎉 Notifikasi Update Otomatis</span>
+          <span class="cl-pop-date">7 Jun 2026</span>
+        </div>
         <ul class="cl-pop-list">
           <li>Popup ringkasan update muncul setiap membuka dashboard — klik tutup untuk mulai</li>
           <li>Tombol <em>Lihat Changelog Lengkap</em> langsung menuju panel riwayat versi</li>
@@ -777,9 +840,11 @@ tr:hover td{background:rgba(66,165,245,0.04)}
       </div>
 
       <div class="cl-pop-entry">
-        <span class="cl-pop-ver" style="background:#0891b2">v3.3</span>
-        <span class="cl-pop-subtitle">🧮 Kalkulator JIA</span>
-        <span class="cl-pop-date">7 Jun 2026</span>
+        <div class="cl-pop-entry-hd">
+          <span class="cl-pop-ver" style="background:#0891b2">v3.3</span>
+          <span class="cl-pop-subtitle">🧮 Kalkulator JIA</span>
+          <span class="cl-pop-date">7 Jun 2026</span>
+        </div>
         <ul class="cl-pop-list">
           <li><strong>Kalkulator Profit & ARA/ARB</strong> — hitung net profit setelah fee + tabel ARA/ARB T+1–T+5</li>
           <li><strong>Risk/Reward Calculator</strong> — visualisasi R:R dengan preset 1:1 s/d 1:5</li>
@@ -789,9 +854,11 @@ tr:hover td{background:rgba(66,165,245,0.04)}
       </div>
 
       <div class="cl-pop-entry">
-        <span class="cl-pop-ver" style="background:#0d9488">v3.2</span>
-        <span class="cl-pop-subtitle">🗓️ Kalender & 🕸️ Peta Investor</span>
-        <span class="cl-pop-date">7 Jun 2026</span>
+        <div class="cl-pop-entry-hd">
+          <span class="cl-pop-ver" style="background:#0d9488">v3.2</span>
+          <span class="cl-pop-subtitle">🗓️ Kalender & 🕸️ Peta Investor</span>
+          <span class="cl-pop-date">7 Jun 2026</span>
+        </div>
         <ul class="cl-pop-list">
           <li>Kalender lebih compact, jadwal Jumat otomatis disesuaikan</li>
           <li>Peta Investor: klik emiten → tampil star chart focused (emiten → pemegang → cross-holdings)</li>
@@ -799,9 +866,11 @@ tr:hover td{background:rgba(66,165,245,0.04)}
       </div>
 
       <div class="cl-pop-entry">
-        <span class="cl-pop-ver" style="background:#7c3aed">v3.1</span>
-        <span class="cl-pop-subtitle">📐 Valuasi Estimasi & Smart Search</span>
-        <span class="cl-pop-date">7 Jun 2026</span>
+        <div class="cl-pop-entry-hd">
+          <span class="cl-pop-ver" style="background:#7c3aed">v3.1</span>
+          <span class="cl-pop-subtitle">📐 Valuasi Estimasi & Smart Search</span>
+          <span class="cl-pop-date">7 Jun 2026</span>
+        </div>
         <ul class="cl-pop-list">
           <li>Graham Value, NCAV, DDM, Relative Valuation vs sektor di Stock Detail</li>
           <li>Smart Search di Peta Investor — badge tipe, highlight kata kunci</li>
@@ -906,36 +975,32 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 
 <!-- TVCHART -->
 <div id="tvchart" class="panel">
-<div class="card" style="padding:12px">
 
-  <!-- Sub-tab: Chart | Heatmap -->
-  <div style="display:flex;gap:6px;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:10px;align-items:center">
-    <button id="tv-tab-chart" class="tv-grp-btn active" onclick="tvSubTab('chart')">📈 Chart Indeks</button>
-    <button id="tv-tab-heatmap" class="tv-grp-btn" onclick="tvSubTab('heatmap')">🔥 Heatmap</button>
-    <button onclick="tvExpand()" title="Expand" style="margin-left:auto;background:var(--bg3);border:0.5px solid var(--border);color:var(--text2);border-radius:5px;padding:4px 10px;cursor:pointer;font-size:12px">⛶ Expand</button>
-  </div>
-
-  <!-- CHART SECTION -->
-  <div id="tv-section-chart" style="display:flex;flex-direction:column;gap:0">
+  <!-- CHART SECTION — selalu tampil -->
+  <div id="tv-section-chart" class="card" style="padding:12px;margin-bottom:12px;position:relative">
     <div class="tv-fs-bar"><span class="tv-fs-title">📈 Chart Indeks IDX</span><button onclick="tvCollapse('tv-section-chart')" style="background:var(--red-bg);color:var(--red-txt);border:0.5px solid var(--red);border-radius:5px;padding:4px 12px;cursor:pointer;font-size:12px;font-weight:600">✕ Tutup</button></div>
-    <!-- Group selector -->
-    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;flex-shrink:0" id="tv-group-bar">
-      <button class="tv-grp-btn active" onclick="tvSetGroup('featured',this)">Featured</button>
-      <button class="tv-grp-btn" onclick="tvSetGroup('cobranding',this)">Co-Branding</button>
-      <button class="tv-grp-btn" onclick="tvSetGroup('sharia',this)">Syariah</button>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;align-items:center">
+      <div id="tv-group-bar" style="display:flex;flex-wrap:wrap;gap:4px;flex:1">
+        <button class="tv-grp-btn active" onclick="tvSetGroup('featured',this)">Featured</button>
+        <button class="tv-grp-btn" onclick="tvSetGroup('cobranding',this)">Co-Branding</button>
+        <button class="tv-grp-btn" onclick="tvSetGroup('sharia',this)">Syariah</button>
+      </div>
+      <button class="tv-expand-btn" onclick="tvExpand('tv-section-chart')" title="Expand fullscreen" style="background:var(--bg3);border:0.5px solid var(--border);color:var(--text2);border-radius:5px;padding:4px 10px;cursor:pointer;font-size:12px;flex-shrink:0">⛶ Expand</button>
     </div>
-    <!-- Symbol selector -->
-    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;flex-shrink:0" id="tv-sym-bar"></div>
-    <!-- Chart container -->
-    <div id="tv-chart-wrap" style="height:520px;border-radius:8px;overflow:hidden;background:var(--bg3);flex-shrink:0">
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px" id="tv-sym-bar"></div>
+    <div id="tv-chart-wrap" class="tv-section-inner" style="height:520px;border-radius:8px;overflow:hidden;background:var(--bg3)">
       <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text3);font-size:13px">Memuat chart...</div>
     </div>
   </div>
 
-  <!-- HEATMAP SECTION -->
-  <div id="tv-section-heatmap" style="display:none">
+  <!-- HEATMAP SECTION — selalu tampil di bawah chart -->
+  <div id="tv-section-heatmap" class="card" style="padding:12px;position:relative">
     <div class="tv-fs-bar"><span class="tv-fs-title">🔥 Heatmap Saham IDX</span><button onclick="tvCollapse('tv-section-heatmap')" style="background:var(--red-bg);color:var(--red-txt);border:0.5px solid var(--red);border-radius:5px;padding:4px 12px;cursor:pointer;font-size:12px;font-weight:600">✕ Tutup</button></div>
-    <div style="height:600px;border-radius:8px;overflow:hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:13px;font-weight:600;color:var(--text)">🔥 Heatmap Saham IDX</span>
+      <button class="tv-expand-btn" onclick="tvExpand('tv-section-heatmap')" title="Expand fullscreen" style="background:var(--bg3);border:0.5px solid var(--border);color:var(--text2);border-radius:5px;padding:4px 10px;cursor:pointer;font-size:12px">⛶ Expand</button>
+    </div>
+    <div class="tv-section-inner" style="height:400px;border-radius:8px;overflow:hidden">
       <div class="tradingview-widget-container" style="height:100%;width:100%">
         <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
         <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js" async>
@@ -959,10 +1024,9 @@ tr:hover td{background:rgba(66,165,245,0.04)}
         </script>
       </div>
     </div>
+    <p style="font-size:9px;color:var(--text3);margin-top:6px;text-align:right">Sumber: TradingView · Data real-time IDX</p>
   </div>
 
-  <p style="font-size:9px;color:var(--text3);margin-top:6px;text-align:right">Sumber: TradingView · Data real-time IDX</p>
-</div>
 </div>
 
 <!-- AVERAGE DOWN -->
@@ -1397,6 +1461,66 @@ tr:hover td{background:rgba(66,165,245,0.04)}
     <div class="ct b">📝 Changelog — IDX Market Intelligence Dashboard</div>
     <p style="font-size:11px;color:var(--text2);margin-bottom:16px">Riwayat pengembangan oleh Johan Iriawan Akbar · <a href="https://jiakbar.github.io/idx-dashboard/" target="_blank" style="color:var(--accent)">jiakbar.github.io/idx-dashboard</a></p>
 
+    <!-- v4.3 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:#8b5cf6;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v4.3</span>
+        <span style="font-size:12px;font-weight:600;color:var(--text)">Chart &amp; Heatmap dua section independen</span>
+        <span style="font-size:10px;color:var(--text3)">7 Jun 2026</span>
+      </div>
+      <ul style="font-size:11px;color:var(--text2);padding-left:18px;line-height:2;margin:0">
+        <li>Chart Indeks dan Heatmap kini selalu tampil bersamaan — tidak perlu pindah tab</li>
+        <li>Tombol Expand per-section: Chart dan Heatmap bisa fullscreen masing-masing</li>
+        <li>Fix: buka heatmap tidak lagi mengecilkan chart</li>
+      </ul>
+    </div>
+
+    <!-- v4.2 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:#0ea5e9;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v4.2</span>
+        <span style="font-size:12px;font-weight:600;color:var(--text)">Tema adaptif & panel kanan Peta Investor</span>
+        <span style="font-size:10px;color:var(--text3)">7 Jun 2026</span>
+      </div>
+      <ul style="font-size:11px;color:var(--text2);padding-left:18px;line-height:2;margin:0">
+        <li>Popup detail saham & investor mengikuti tema terang/gelap aplikasi</li>
+        <li>Panel pemegang saham tampil di sebelah kanan grafik jaringan</li>
+        <li>Grafik jaringan Peta Investor ikut tema terang/gelap</li>
+        <li>Fix: pindah tab Chart ↔ Heatmap tidak lagi merusak tampilan</li>
+        <li>Fix: Chart Indeks tidak mengecil setelah keluar dari mode expand Heatmap</li>
+      </ul>
+    </div>
+
+    <!-- v4.1 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:#7c3aed;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v4.1</span>
+        <span style="font-size:12px;font-weight:600;color:var(--text)">&#127912; Peta Investor Redesign + Heatmap Fix</span>
+        <span style="font-size:11px;color:var(--text3);margin-left:auto">7 Jun 2026</span>
+      </div>
+      <ul style="margin:0;padding-left:18px;font-size:11px;color:var(--text2);line-height:1.7">
+        <li>Heatmap expand kini benar-benar fullscreen</li>
+        <li>Grafik Jaringan: background gelap, sidebar kanan lebih bersih &amp; informatif</li>
+        <li>Klik baris investor/emiten langsung buka popup detail (tidak perlu klik +N lagi)</li>
+        <li>By Investor &amp; By Stock: tampil 20 baris awal, filter &amp; load-more tetap berjalan</li>
+        <li>Klik area kosong di grafik tidak lagi mereset ke tampilan berantakan</li>
+      </ul>
+    </div>
+
+        <!-- v4.0 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:#0ea5e9;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v4.0</span>
+        <span style="font-size:12px;font-weight:600;color:var(--text)">🗺️ Peta Investor Overhaul + Expand Fix</span>
+        <span style="font-size:11px;color:var(--text3);margin-left:auto">7 Jun 2026</span>
+      </div>
+      <ul style="margin:0;padding-left:18px;font-size:12px;color:var(--text2);line-height:1.7">
+        <li>Chart &amp; Heatmap expand kini benar-benar fullscreen — tidak lagi tampil bersamaan satu layar</li>
+        <li><strong>By Stock</strong> &amp; <strong>By Investor</strong> — render 50 baris awal + tombol "Tampilkan N lagi" agar halaman tidak berat (952 emiten / 5277 investor)</li>
+        <li>Klik <strong>+N lagi</strong> membuka popup detail holder/saham secara inline — tidak loncat ke Grafik Jaringan</li>
+        <li>Fix error <em>piShowLoadMore is not defined</em> di Grafik Jaringan</li>
+      </ul>
+    </div>
     <!-- v3.9 -->
     <div style="margin-bottom:20px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
@@ -1407,7 +1531,6 @@ tr:hover td{background:rgba(66,165,245,0.04)}
       <ul style="font-size:11px;color:var(--text2);line-height:1.9;padding-left:18px">
         <li><strong>Stock Detail</strong> — dropdown custom autocomplete: tampil 10 hasil, filter mengetik, navigasi keyboard (↑↓ Enter Esc)</li>
         <li>Fix <strong>double Tutup</strong> di Chart &amp; Heatmap expand — tombol expand hilang saat fullscreen, ESC berfungsi</li>
-        <li>Tambah fungsi <code>tvCollapse()</code> agar tombol Tutup di fullscreen bar berfungsi</li>
       </ul>
     </div>
 
@@ -1974,15 +2097,15 @@ tr:hover td{background:rgba(66,165,245,0.04)}
     </div>
   </div>
 
-  <div class="card pi-grafik-card" style="padding:0;overflow:hidden;position:relative;display:flex;align-items:stretch">
+  <div class="card pi-grafik-card" style="padding:0;overflow:hidden;position:relative;display:flex;flex-direction:row;align-items:stretch;min-height:480px">
     <div id="pi-graph-wrap" style="flex:1;min-width:0;position:relative">
-      <div id="pi-graph" style="width:100%;height:580px;background:var(--bg)"></div>
+      <div id="pi-graph" style="width:100%;height:100%;min-height:480px;background:var(--bg3);border-radius:0 0 8px 8px"></div>
       <div id="pi-tooltip" style="display:none;position:absolute;background:var(--card);
         border:0.5px solid var(--border2);border-radius:8px;padding:10px 14px;font-size:11px;
         pointer-events:none;max-width:220px;box-shadow:0 4px 16px rgba(0,0,0,.4);z-index:50;line-height:1.7"></div>
     </div>
-    <div id="pi-panel" style="display:none;width:280px;min-width:280px;border-left:0.5px solid var(--border);
-      overflow-y:auto;background:var(--card2);max-height:580px;flex-shrink:0"></div>
+    <div id="pi-panel" style="display:none;width:300px;min-width:300px;border-left:0.5px solid var(--border);
+      overflow-y:auto;background:var(--card2);flex-shrink:0"></div>
   </div>
 
   <div style="font-size:10px;color:var(--text3);margin-top:8px;text-align:center">
@@ -2020,6 +2143,9 @@ tr:hover td{background:rgba(66,165,245,0.04)}
           </tr></thead>
           <tbody id="pi-stock-tbody"></tbody>
         </table>
+        <div style="text-align:center;padding:10px">
+          <button id="pi-stock-loadmore" onclick="piLoadMoreStock()" style="display:none;padding:7px 20px;border-radius:8px;background:var(--bg3);border:0.5px solid var(--border);color:var(--text2);cursor:pointer;font-size:12px"></button>
+        </div>
       </div>
     </div>
   </div>
@@ -2051,6 +2177,9 @@ tr:hover td{background:rgba(66,165,245,0.04)}
           </tr></thead>
           <tbody id="pi-inv-tbody"></tbody>
         </table>
+        <div style="text-align:center;padding:10px">
+          <button id="pi-inv-loadmore" onclick="piLoadMoreInv()" style="display:none;padding:7px 20px;border-radius:8px;background:var(--bg3);border:0.5px solid var(--border);color:var(--text2);cursor:pointer;font-size:12px"></button>
+        </div>
       </div>
     </div>
   </div>
@@ -3092,7 +3221,7 @@ function setTheme(t) {
   destroyCharts();
   setTimeout(buildCharts, 100);
   // Re-render Peta Investor jika sudah dimuat agar warna node/link update
-  if (PI_LOADED && PI_DATA) setTimeout(()=>piRender(PI_DATA.slice(0,60)), 120);
+  if (PI_LOADED && PI_DATA) setTimeout(()=>piRender(PI_DATA.slice(0,10)), 120);
 }
 function toggleTheme() {
   const cur = document.documentElement.getAttribute("data-theme");
@@ -3161,18 +3290,10 @@ const TV_GROUPS = {
 
 let TV_CURRENT_SYM = "IDX:COMPOSITE";
 let TV_CURRENT_GRP = "featured";
-let TV_ACTIVE_SUBTAB = "chart";
 let TV_CHART_INITED  = false;
 let TV_HEATMAP_INITED = false;
 
-function tvSubTab(tab) {
-  TV_ACTIVE_SUBTAB = tab;
-  document.getElementById("tv-tab-chart").classList.toggle("active", tab==="chart");
-  document.getElementById("tv-tab-heatmap").classList.toggle("active", tab==="heatmap");
-  document.getElementById("tv-section-chart").style.display   = tab==="chart"   ? "" : "none";
-  document.getElementById("tv-section-heatmap").style.display = tab==="heatmap" ? "" : "none";
-  // Heatmap sudah embed langsung di HTML, tidak perlu build dinamis
-}
+// tvSubTab removed — Chart & Heatmap are now always-visible independent sections
 
 function tvSetGroup(grp, btn) {
   TV_CURRENT_GRP = grp;
@@ -3184,16 +3305,38 @@ function tvSetGroup(grp, btn) {
 }
 
 
-function tvExpand() {
-  const card = document.querySelector('#tvchart .card');
-  if (!card) return;
-  const isFs = card.classList.toggle('tv-fullscreen');
-  if (isFs) {
-    document.addEventListener('keydown', function esc(e){ if(e.key==='Escape'){tvCollapse();document.removeEventListener('keydown',esc);} });
-  }
+// tvFsLayout removed
+function tvExpand(sectionId) {
+  const sec = document.getElementById(sectionId);
+  if (!sec) return;
+  sec.classList.add('tv-fullscreen');
+  const inner = sec.querySelector('.tv-section-inner');
+  if (inner) { inner.style.flex='1'; inner.style.height='0'; inner.style.minHeight='0'; }
+  document.addEventListener('keydown', function esc(e){
+    if(e.key==='Escape'){ tvCollapse(sectionId); document.removeEventListener('keydown',esc); }
+  });
 }
-function tvCollapse() {
-  document.querySelectorAll('.tv-fullscreen').forEach(el => el.classList.remove('tv-fullscreen'));
+function tvCollapse(sectionId) {
+  function restoreInner(el) {
+    const inner = el.querySelector('.tv-section-inner');
+    if (!inner) return;
+    inner.style.flex = '';
+    inner.style.minHeight = '';
+    // Restore default heights (cleared by tvExpand override)
+    if (el.id === 'tv-section-chart') inner.style.height = '520px';
+    else if (el.id === 'tv-section-heatmap') inner.style.height = '400px';
+    else inner.style.height = '';
+  }
+  const sec = sectionId ? document.getElementById(sectionId) : null;
+  if (sec) {
+    sec.classList.remove('tv-fullscreen');
+    restoreInner(sec);
+  } else {
+    document.querySelectorAll('.tv-fullscreen').forEach(el => {
+      el.classList.remove('tv-fullscreen');
+      restoreInner(el);
+    });
+  }
 }
 function tvSetSym(sym, btn) {
   TV_CURRENT_SYM = sym;
@@ -3755,7 +3898,7 @@ function fdRender(fd) {
   const perfRows = Object.keys(pp).length
     ? [["1D","1d"],["1W","1w"],["1M","1m"],["3M","3m"],["6M","6m"],["YTD","ytd"]]
         .map(([lbl,k]) => fdPerfRow(lbl, pp[k+"_pct"], pp[k+"_low"], pp[k+"_high"], pp.current)).join("")
-    : "<p style='font-size:11px;color:var(--text3)'>Belum ada data — jalankan JALANKAN_FUNDAMENTAL.bat</p>";
+    : "<p style='font-size:11px;color:var(--text3);padding:8px 0'>Belum ada data. Jalankan <b>GitHub Actions</b> untuk memperbarui data fundamental.</p>";
 
   content.innerHTML =
     // ── OVERVIEW ──────────────────────────────
@@ -4128,13 +4271,20 @@ async function piInit() {
   PI_LOADED = true;
   const wrap = document.getElementById('pi-graph');
   if (!wrap) return;
-  wrap.innerHTML = '<div style="padding:60px;text-align:center;color:var(--text3)">⏳ Memuat data...</div>';
+  wrap.innerHTML = '<div style="padding:60px;text-align:center;color:var(--text3)">⏳ Memuat data jaringan investor...</div>';
   try {
     const r = await fetch(PI_JSON+'?t='+Date.now());
+    if (!r.ok) throw new Error('HTTP '+r.status+' — '+PI_JSON);
     PI_DATA = await r.json();
-    piRender(PI_DATA.slice(0, 10)); piShowLoadMore(10);
+    piRender(PI_DATA.slice(0, 10));
   } catch(e) {
-    wrap.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text3)">⚠️ Data belum tersedia.<br>Push <code>data/investor_map.json</code> ke GitHub terlebih dahulu.</div>';
+    PI_LOADED = false; // allow retry
+    console.error('[piInit] fetch failed:', e);
+    wrap.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text3)">
+      ⚠️ Gagal memuat data investor.<br>
+      <small style="color:var(--text3);font-size:11px">${e.message || e}</small><br><br>
+      <button onclick="PI_LOADED=false;piInit()" style="padding:6px 16px;border-radius:6px;background:var(--accent);color:#fff;border:none;cursor:pointer;font-size:12px">🔄 Coba lagi</button>
+    </div>`;
   }
 }
 
@@ -4261,7 +4411,7 @@ function piShowTip(e,d) {
 }
 
 function piClickNode(d,emitenList) {
-  if (!d||!PI_DATA) { if(PI_DATA){piRender(PI_DATA.slice(0,30));piClosePanel();} return; }
+  if (!d||!PI_DATA) { piClosePanel(); return; }
   if (d.type==='emiten') {
     const code = d.id.replace('E_','');
     const em = PI_DATA.find(x=>x.code===code);
@@ -4280,37 +4430,40 @@ function piClickNode(d,emitenList) {
 function piShowPanel(d) {
   const panel = document.getElementById('pi-panel');
   if (!panel||!PI_DATA) return;
-  const dark = piIsDark();
-  const pctClr = dark?'#fde68a':'#b45309';
+  const pctClr = '#fbbf24';
   if (d.type==='emiten') {
     const code = d.id.replace('E_','');
     const em = PI_DATA.find(x=>x.code===code);
     if (!em) return;
     const rows = (em.holders||[]).map(h=>{
-      const flag = h.lf==='F'?'🌐':'🇮🇩';
-      const isInst = /corp|institution|mutual|fund|bank|insurance|pension|trust|equity|reksa/i.test(h.cls||'');
-      const icon = isInst?'🏢':'👤';
-      return `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--border)">
-        <span style="font-size:16px;flex-shrink:0">${icon}</span>
+      const flag = h.lf==='F'?'ASING':'LOKAL';
+      const flagClr = h.lf==='F'?'#818cf8':'#34d399';
+      const typeClr = h.type==='CORP'?'#60a5fa':h.type==='IND'?'#4ade80':'#a78bfa';
+      const typeLabel = h.type==='CORP'?'CORPORATE':h.type==='IND'?'INDIVIDUAL':'OTHER';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--border)">
         <div style="flex:1;min-width:0">
-          <div style="font-size:11px;font-weight:600;color:var(--text);word-break:break-word">${h.name}</div>
-          <div style="font-size:9px;color:var(--text3);margin-top:2px">${h.cls||'—'} · ${flag} ${h.lf==='L'?'Domestik':'Asing'}</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text);line-height:1.3;word-break:break-word">${h.name}</div>
+          <div style="display:flex;gap:5px;margin-top:4px;flex-wrap:wrap">
+            <span style="font-size:9px;font-weight:700;color:${typeClr};background:${typeClr}22;border-radius:3px;padding:1px 5px">${typeLabel}</span>
+            <span style="font-size:9px;font-weight:700;color:${flagClr};background:${flagClr}22;border-radius:3px;padding:1px 5px">${flag}</span>
+          </div>
         </div>
-        <div style="font-size:13px;font-weight:700;color:${pctClr};white-space:nowrap;padding-top:1px">${h.pct}%</div>
+        <div style="font-size:15px;font-weight:700;color:${pctClr};white-space:nowrap">${h.pct}%</div>
       </div>`;
     }).join('');
     panel.innerHTML = `
-      <div style="padding:12px 14px;border-bottom:0.5px solid var(--border);position:sticky;top:0;background:var(--card2);z-index:5">
+      <div style="padding:14px 16px;border-bottom:0.5px solid var(--border);position:sticky;top:0;background:var(--bg3);z-index:5">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px">
           <div>
-            <div style="font-size:16px;font-weight:800;color:#f97316">📊 ${code}</div>
-            <div style="font-size:10px;color:var(--text3);margin-top:3px;word-break:break-word">${em.issuer}</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px">EMITEN</div>
+            <div style="font-size:20px;font-weight:800;color:#f97316;letter-spacing:-.5px">${code}</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:4px;line-height:1.4;word-break:break-word">${em.issuer}</div>
           </div>
-          <button onclick="piClosePanel()" style="background:none;border:0.5px solid var(--border);border-radius:5px;color:var(--text3);padding:3px 8px;cursor:pointer;font-size:12px;flex-shrink:0">✕</button>
+          <button onclick="piClosePanel()" style="background:var(--card);border:none;border-radius:6px;color:var(--text3);padding:5px 10px;cursor:pointer;font-size:14px;flex-shrink:0;line-height:1">×</button>
         </div>
       </div>
-      <div style="padding:10px 14px">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:2px">Pemegang Saham (${em.holders?.length||0})</div>
+      <div style="padding:12px 16px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px">IDX 1% SHAREHOLDERS</div>
         ${rows}
       </div>`;
   } else {
@@ -4321,23 +4474,24 @@ function piShowPanel(d) {
       .sort((a,b)=>b.pct-a.pct);
     const flag = d.lf==='F'?'🌐 Asing':'🇮🇩 Domestik';
     const rows = holdings.map(h=>`
-      <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--border)">
-        <span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:22px;background:#f97316;border-radius:4px;font-size:8.5px;font-weight:800;color:#fff;flex-shrink:0">${h.code}</span>
-        <div style="flex:1;min-width:0;font-size:10px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${h.issuer}">${h.issuer}</div>
-        <div style="font-size:12px;font-weight:700;color:${pctClr};white-space:nowrap">${h.pct}%</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border)">
+        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:40px;height:24px;background:#f97316;border-radius:5px;font-size:9px;font-weight:800;color:#fff;padding:0 4px">${h.code}</span>
+        <div style="flex:1;min-width:0;font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${h.issuer}">${h.issuer}</div>
+        <div style="font-size:13px;font-weight:700;color:${pctClr};white-space:nowrap">${h.pct}%</div>
       </div>`).join('');
     panel.innerHTML = `
-      <div style="padding:12px 14px;border-bottom:0.5px solid var(--border);position:sticky;top:0;background:var(--card2);z-index:5">
+      <div style="padding:14px 16px;border-bottom:0.5px solid var(--border);position:sticky;top:0;background:var(--bg3);z-index:5">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px">
           <div>
-            <div style="font-size:13px;font-weight:700;color:${piNodeColor(d)};word-break:break-word">${invName}</div>
-            <div style="font-size:10px;color:var(--text3);margin-top:3px">${d.cls||'—'} · ${flag}</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px">INVESTOR</div>
+            <div style="font-size:14px;font-weight:800;color:var(--text);line-height:1.3;word-break:break-word">${invName}</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:4px">${d.cls||'—'} · ${flag}</div>
           </div>
-          <button onclick="piClosePanel()" style="background:none;border:0.5px solid var(--border);border-radius:5px;color:var(--text3);padding:3px 8px;cursor:pointer;font-size:12px;flex-shrink:0">✕</button>
+          <button onclick="piClosePanel()" style="background:var(--card);border:none;border-radius:6px;color:var(--text3);padding:5px 10px;cursor:pointer;font-size:14px;flex-shrink:0;line-height:1">×</button>
         </div>
       </div>
-      <div style="padding:10px 14px">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:2px">Kepemilikan di IDX (${holdings.length} emiten)</div>
+      <div style="padding:12px 16px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px">PORTOFOLIO SAHAM (${holdings.length} emiten)</div>
         ${rows}
       </div>`;
   }
@@ -4384,31 +4538,104 @@ function piGetInvMap() {
 }
 
 // ── By Stock ──────────────────────────────────────────────
+let PI_STOCK_ROWS = [], PI_STOCK_OFFSET = 0;
+const PI_PAGE = 20;
+
+function piHolderPopup(code) {
+  const em = PI_DATA.find(e=>(e.code||'')===code);
+  if (!em) return;
+  const holders = em.holders || [];
+  const rows = holders.map(h=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--border)">
+      <span style="font-size:12px;color:var(--text);flex:1;line-height:1.4">${h.name}</span>
+      <span style="font-size:13px;font-weight:700;color:#f0a030;margin-left:12px;white-space:nowrap">${(h.pct||0).toFixed(2)}%
+    </div>`).join('');
+  piShowModal(`<b style="font-size:16px;color:#f97316">${code}</b><br><span style="font-size:12px;color:var(--text2)">${em.name||em.issuer||''}</span><br><small style="color:var(--text3)">${holders.length} pemegang saham &ge;1%</small>`, rows);
+}
+
+function piInvPopup(invName) {
+  const all = piGetInvMap();
+  const inv = all.find(i=>i.name===invName);
+  if (!inv) return;
+  const rows = inv.holdings.map(h=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--border)">
+      <span style="display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:24px;background:#f97316;border-radius:5px;font-size:9px;font-weight:800;color:#fff;padding:0 4px">${h.code}</span>
+      <span style="font-size:11px;color:var(--text2);flex:1;margin:0 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.name}</span>
+      <span style="font-size:13px;font-weight:700;color:#f0a030;white-space:nowrap">${(h.pct||0).toFixed(2)}%</span>
+    </div>`).join('');
+  piShowModal(`<b style="font-size:14px;color:#e2e8f0">${inv.name}</b><br><small style="color:#475569">${inv.holdings.length} saham dipegang</small>`, rows);
+}
+
+function piShowModal(header, bodyHtml) {
+  let ov = document.getElementById('pi-modal-overlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'pi-modal-overlay';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)';
+    ov.addEventListener('click', e=>{ if(e.target===ov) ov.style.display='none'; });
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML = `<div style="background:var(--card);border-radius:14px;padding:20px 24px;max-width:540px;width:92%;max-height:72vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);border:0.5px solid var(--border2)">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+      <div style="font-size:13px;color:var(--text);line-height:1.6">${header}</div>
+      <button onclick="document.getElementById('pi-modal-overlay').style.display='none'" style="background:var(--bg3);border:none;border-radius:6px;color:var(--text3);font-size:18px;cursor:pointer;margin-left:12px;flex-shrink:0;line-height:1;padding:3px 8px">&times;</button>
+    </div>
+    ${bodyHtml}
+  </div>`;
+  ov.style.display = 'flex';
+}
+
+function piStockRow(em) {
+  const holders = em.holders || [];
+  const corpPct = holders.filter(h=>h.type==='CORP').reduce((s,h)=>s+(h.pct||0),0);
+  const indPct  = holders.filter(h=>h.type==='IND' ).reduce((s,h)=>s+(h.pct||0),0);
+  const othPct  = holders.filter(h=>!['CORP','IND'].includes(h.type||'')).reduce((s,h)=>s+(h.pct||0),0);
+  const code    = (em.code||'').replace(/'/g,"\'");
+  const visible = holders.slice(0,5);
+  const extra   = holders.length - 5;
+  const badges  = visible.map(h => {
+    const nm = h.name.length>24 ? h.name.slice(0,22)+'...' : h.name;
+    return `<span class="pi-badge-h ${h.type||'OTH'}" title="${(h.pct||0).toFixed(2)}%">${nm} <span style="opacity:.65">${(h.pct||0).toFixed(1)}%</span></span>`;
+  }).join('') + (extra > 0 ? `<button onclick="event.stopPropagation();piHolderPopup('${code}')" style="font-size:10px;color:var(--accent);background:none;border:0.5px solid var(--accent);border-radius:4px;padding:2px 6px;cursor:pointer;margin-left:2px;white-space:nowrap">+${extra} lagi</button>` : '');
+  return `<tr onclick="piHolderPopup('${code}')" style="cursor:pointer" title="Klik untuk lihat pemegang saham">
+    <td><div class="em-code">${em.code||''}</div><div class="em-name">${(em.name||em.issuer||'').slice(0,30)}</div></td>
+    <td style="text-align:center;font-weight:700">${holders.length}</td>
+    <td style="text-align:center;color:#3b82f6">${corpPct>0?corpPct.toFixed(1)+'%':'&mdash;'}</td>
+    <td style="text-align:center;color:#22c55e">${indPct>0?indPct.toFixed(1)+'%':'&mdash;'}</td>
+    <td style="text-align:center;color:#a855f7">${othPct>0?othPct.toFixed(1)+'%':'&mdash;'}</td>
+    <td><div class="pi-holder-list">${badges}</div></td>
+  </tr>`;
+}
+
 function piRenderStock(data) {
   const typeF = document.getElementById('pi-stock-type')?.value || '';
-  const rows  = typeF ? data.filter(em => (em.holders||[]).some(h => (h.type||'OTH') === typeF)) : data;
-  const cnt   = document.getElementById('pi-stock-count');
-  if (cnt) cnt.textContent = rows.length + ' emiten';
+  PI_STOCK_ROWS = typeF ? data.filter(em=>(em.holders||[]).some(h=>(h.type||'OTH')===typeF)) : data;
+  PI_STOCK_OFFSET = 0;
+  const cnt = document.getElementById('pi-stock-count');
+  if (cnt) cnt.textContent = PI_STOCK_ROWS.length + ' emiten';
   const tb = document.getElementById('pi-stock-tbody');
   if (!tb) return;
-  tb.innerHTML = rows.map(em => {
-    const holders = em.holders || [];
-    const corpPct = holders.filter(h=>h.type==='CORP').reduce((s,h)=>s+(h.pct||0),0);
-    const indPct  = holders.filter(h=>h.type==='IND' ).reduce((s,h)=>s+(h.pct||0),0);
-    const othPct  = holders.filter(h=>!['CORP','IND'].includes(h.type||'')).reduce((s,h)=>s+(h.pct||0),0);
-    const badges  = holders.slice(0,6).map(h =>
-      `<span class="pi-badge-h ${h.type||'OTH'}" title="${(h.pct||0).toFixed(2)}%">${h.name.length>26?h.name.slice(0,24)+'…':h.name} <span style="opacity:.65">${(h.pct||0).toFixed(1)}%</span></span>`
-    ).join('') + (holders.length > 6 ? `<span style="font-size:10px;color:var(--text3)"> +${holders.length-6} lagi</span>` : '');
-    const code = (em.code||'').replace(/'/g,"\'");
-    return `<tr onclick="piSwitchView('grafik');setTimeout(()=>{const inp=document.getElementById('pi-search');if(inp)inp.value='${code}';piRenderFocused('${code}');},80)">
-      <td><div class="em-code">${em.code||''}</div><div class="em-name">${(em.name||em.issuer||'').slice(0,28)}</div></td>
-      <td style="text-align:center;font-weight:700">${holders.length}</td>
-      <td style="text-align:center;color:#3b82f6">${corpPct>0?corpPct.toFixed(1)+'%':'—'}</td>
-      <td style="text-align:center;color:#22c55e">${indPct>0?indPct.toFixed(1)+'%':'—'}</td>
-      <td style="text-align:center;color:#a855f7">${othPct>0?othPct.toFixed(1)+'%':'—'}</td>
-      <td><div class="pi-holder-list">${badges}</div></td>
-    </tr>`;
-  }).join('');
+  tb.innerHTML = PI_STOCK_ROWS.slice(0, PI_PAGE).map(piStockRow).join('');
+  PI_STOCK_OFFSET = PI_PAGE;
+  piUpdateStockMore();
+}
+
+function piLoadMoreStock() {
+  const tb = document.getElementById('pi-stock-tbody');
+  if (!tb) return;
+  PI_STOCK_ROWS.slice(PI_STOCK_OFFSET, PI_STOCK_OFFSET + PI_PAGE).forEach(em => {
+    tb.insertAdjacentHTML('beforeend', piStockRow(em));
+  });
+  PI_STOCK_OFFSET += PI_PAGE;
+  piUpdateStockMore();
+}
+
+function piUpdateStockMore() {
+  const btn = document.getElementById('pi-stock-loadmore');
+  if (!btn) return;
+  const rem = PI_STOCK_ROWS.length - PI_STOCK_OFFSET;
+  if (rem > 0) { btn.style.display=''; btn.textContent='Tampilkan '+Math.min(rem,PI_PAGE)+' lagi (sisa '+rem+')'; }
+  else btn.style.display='none';
 }
 
 function piFilterStock(q) {
@@ -4419,51 +4646,56 @@ function piFilterStock(q) {
     (em.name||em.issuer||'').toLowerCase().includes(q.toLowerCase()) ||
     (em.holders||[]).some(h => h.name?.toLowerCase().includes(q.toLowerCase()))
   ) : PI_DATA;
-  if (typeF) rows = rows.filter(em => (em.holders||[]).some(h=>(h.type||'OTH')===typeF));
-  const cnt = document.getElementById('pi-stock-count');
-  if (cnt) cnt.textContent = rows.length + ' emiten';
-  const tb = document.getElementById('pi-stock-tbody');
-  if (!tb) return;
-  tb.innerHTML = rows.map(em => {
-    const holders = em.holders || [];
-    const corpPct = holders.filter(h=>h.type==='CORP').reduce((s,h)=>s+(h.pct||0),0);
-    const indPct  = holders.filter(h=>h.type==='IND' ).reduce((s,h)=>s+(h.pct||0),0);
-    const othPct  = holders.filter(h=>!['CORP','IND'].includes(h.type||'')).reduce((s,h)=>s+(h.pct||0),0);
-    const badges  = holders.slice(0,6).map(h =>
-      `<span class="pi-badge-h ${h.type||'OTH'}">${h.name.length>26?h.name.slice(0,24)+'…':h.name} <span style="opacity:.65">${(h.pct||0).toFixed(1)}%</span></span>`
-    ).join('') + (holders.length > 6 ? `<span style="font-size:10px;color:var(--text3)"> +${holders.length-6} lagi</span>` : '');
-    const code = (em.code||'').replace(/'/g,"\'");
-    return `<tr onclick="piSwitchView('grafik');setTimeout(()=>{const inp=document.getElementById('pi-search');if(inp)inp.value='${code}';piRenderFocused('${code}');},80)">
-      <td><div class="em-code">${em.code||''}</div><div class="em-name">${(em.name||em.issuer||'').slice(0,28)}</div></td>
-      <td style="text-align:center;font-weight:700">${holders.length}</td>
-      <td style="text-align:center;color:#3b82f6">${corpPct>0?corpPct.toFixed(1)+'%':'—'}</td>
-      <td style="text-align:center;color:#22c55e">${indPct>0?indPct.toFixed(1)+'%':'—'}</td>
-      <td style="text-align:center;color:#a855f7">${othPct>0?othPct.toFixed(1)+'%':'—'}</td>
-      <td><div class="pi-holder-list">${badges}</div></td>
-    </tr>`;
-  }).join('');
+  if (typeF) rows = rows.filter(em=>(em.holders||[]).some(h=>(h.type||'OTH')===typeF));
+  piRenderStock(rows);
 }
-
 // ── By Investor ───────────────────────────────────────────
+let PI_INV_ROWS = [], PI_INV_OFFSET = 0;
+
+function piInvRow(inv) {
+  const safeName = inv.name.replace(/\\/g,'\\\\').replace(/'/g,"\'");
+  const show = inv.holdings.slice(0, 6);
+  const badges = show.map(h =>
+    `<span class="pi-badge-h EM" title="${h.name}: ${(h.pct||0).toFixed(2)}%">${h.code} <span style="opacity:.65">${(h.pct||0).toFixed(1)}%</span></span>`
+  ).join('');
+  const extra = inv.holdings.length - 6;
+  const moreChip = extra > 0 ? `<span style="font-size:10px;color:var(--text3);white-space:nowrap">+${extra} lagi</span>` : '';
+  return `<tr onclick="piInvPopup('${safeName}')" style="cursor:pointer" title="Klik untuk lihat semua">
+    <td><div class="pi-inv-name" style="font-size:12px;font-weight:600">${inv.name.length>40?inv.name.slice(0,38)+'…':inv.name}</div>${inv.country?`<div style="font-size:10px;color:var(--text3)">${inv.country}</div>`:''}</td>
+    <td style="text-align:center"><span class="pi-badge-h ${inv.type||'OTH'}">${inv.type||'OTH'}</span></td>
+    <td style="text-align:center;font-weight:700;font-size:13px;color:var(--accent)">${inv.holdings.length}</td>
+    <td><div class="pi-holder-list">${badges}${moreChip}</div></td>
+  </tr>`;
+}
 function piRenderInvestor(data) {
   const typeF = document.getElementById('pi-inv-type')?.value || '';
-  const rows  = typeF ? data.filter(inv=>(inv.type||'OTH')===typeF) : data;
-  const cnt   = document.getElementById('pi-inv-count');
-  if (cnt) cnt.textContent = rows.length + ' investor';
+  PI_INV_ROWS = typeF ? data.filter(inv=>(inv.type||'OTH')===typeF) : data;
+  PI_INV_OFFSET = 0;
+  const cnt = document.getElementById('pi-inv-count');
+  if (cnt) cnt.textContent = PI_INV_ROWS.length + ' investor';
   const tb = document.getElementById('pi-inv-tbody');
   if (!tb) return;
-  tb.innerHTML = rows.map(inv => {
-    const badges = inv.holdings.slice(0,10).map(h =>
-      `<span class="pi-badge-h EM" onclick="event.stopPropagation();piSwitchView('grafik');setTimeout(()=>{const inp=document.getElementById('pi-search');if(inp)inp.value='${h.code}';piRenderFocused('${h.code}');},80)" title="${h.name}: ${(h.pct||0).toFixed(2)}%">${h.code} <span style="opacity:.65">${(h.pct||0).toFixed(1)}%</span></span>`
-    ).join('') + (inv.holdings.length > 10 ? `<span style="font-size:10px;color:var(--text3)"> +${inv.holdings.length-10} lagi</span>` : '');
-    const safeName = inv.name.replace(/`/g,'\`').replace(/'/g,"\'");
-    return `<tr onclick="piSwitchView('grafik');setTimeout(()=>{const em=PI_DATA.filter(e=>(e.holders||[]).some(h=>h.name==='${safeName}'));if(em.length)piRender(em);},80)">
-      <td><div class="pi-inv-name">${inv.name.length>42?inv.name.slice(0,40)+'…':inv.name}</div>${inv.country?`<div style="font-size:10px;color:var(--text3)">${inv.country}</div>`:''}</td>
-      <td style="text-align:center"><span class="pi-badge-h ${inv.type||'OTH'}">${inv.type||'OTH'}</span></td>
-      <td style="text-align:center;font-weight:700;color:var(--accent)">${inv.holdings.length}</td>
-      <td><div class="pi-holder-list">${badges}</div></td>
-    </tr>`;
-  }).join('');
+  tb.innerHTML = PI_INV_ROWS.slice(0, PI_PAGE).map(piInvRow).join('');
+  PI_INV_OFFSET = PI_PAGE;
+  piUpdateInvMore();
+}
+
+function piLoadMoreInv() {
+  const tb = document.getElementById('pi-inv-tbody');
+  if (!tb) return;
+  PI_INV_ROWS.slice(PI_INV_OFFSET, PI_INV_OFFSET + PI_PAGE).forEach(inv => {
+    tb.insertAdjacentHTML('beforeend', piInvRow(inv));
+  });
+  PI_INV_OFFSET += PI_PAGE;
+  piUpdateInvMore();
+}
+
+function piUpdateInvMore() {
+  const btn = document.getElementById('pi-inv-loadmore');
+  if (!btn) return;
+  const rem = PI_INV_ROWS.length - PI_INV_OFFSET;
+  if (rem > 0) { btn.style.display=''; btn.textContent='Tampilkan '+Math.min(rem,PI_PAGE)+' lagi (sisa '+rem+')'; }
+  else btn.style.display='none';
 }
 
 function piFilterInvestor(q) {
@@ -4474,8 +4706,6 @@ function piFilterInvestor(q) {
     inv.holdings.some(h => h.code?.toUpperCase().includes(q.toUpperCase()) || h.name?.toLowerCase().includes(q.toLowerCase()))
   ) : all;
   if (typeF) rows = rows.filter(inv=>(inv.type||'OTH')===typeF);
-  const cnt = document.getElementById('pi-inv-count');
-  if (cnt) cnt.textContent = rows.length + ' investor';
   piRenderInvestor(rows);
 }
 
