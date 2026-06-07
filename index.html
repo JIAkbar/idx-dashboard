@@ -703,6 +703,9 @@ tr:hover td{background:rgba(66,165,245,0.04)}
   <div class="nav-item" id="nav-changelog" onclick="sw('changelog',this)" title="Changelog">
     <span class="nav-icon">📝</span><span class="nav-label">Changelog</span>
   </div>
+  <div class="nav-item" id="nav-brokersummary" onclick="sw('brokersummary',this);bsInit()" title="Broker Summary">
+    <span>🏦</span><span class="nav-label">Broker Summary</span>
+  </div>
   <div class="nav-item" id="nav-feedback" onclick="sw('feedback',this)" title="Kritik & Saran">
     <span class="nav-icon">💬</span><span class="nav-label">Kritik & Saran</span>
   </div>
@@ -725,6 +728,17 @@ tr:hover td{background:rgba(66,165,245,0.04)}
     </div>
     <div class="cl-body">
 
+      <div class="cl-pop-entry">
+        <span class="cl-ver" style="background:#7c3aed">v4.8</span>
+        <div>
+          <b>Broker Summary (Alpha)</b>
+          <div class="cl-date">7 Jun 2026</div>
+          <ul style="margin:4px 0 0;padding-left:16px;font-size:11px">
+            <li>Panel baru: Broker Summary — ranking, kuadran, foreign flow, NEGO</li>
+            <li>Data IDX resmi 02–04 Jun (88 broker, 959 emiten)</li>
+          </ul>
+        </div>
+      </div>
       <div class="cl-pop-entry">
         <div class="cl-pop-entry-hd">
           <span class="cl-pop-ver" style="background:#ef4444">v4.7</span>
@@ -1516,6 +1530,19 @@ tr:hover td{background:rgba(66,165,245,0.04)}
   <div class="card" style="margin-bottom:8px">
     <div class="ct b">📝 Changelog — IDX Market Intelligence Dashboard</div>
     <p style="font-size:11px;color:var(--text2);margin-bottom:16px">Riwayat pengembangan oleh Johan Iriawan Akbar · <a href="https://jiakbar.github.io/idx-dashboard/" target="_blank" style="color:var(--accent)">jiakbar.github.io/idx-dashboard</a></p>
+
+    <!-- v4.8 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="background:#7c3aed;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">v4.8</span>
+        <span style="font-size:12px;font-weight:600;color:var(--text)">Broker Summary (Alpha)</span>
+        <span style="font-size:10px;color:var(--text3)">7 Jun 2026</span>
+      </div>
+      <ul style="font-size:11px;color:var(--text2);padding-left:18px;line-height:2;margin:0">
+        <li>Panel baru: Broker Summary — ranking broker, kuadran, foreign flow agregat, top NEGO</li>
+        <li>Data IDX resmi: 88 broker aktif, 959 emiten, periode 02–04 Jun 2026</li>
+      </ul>
+    </div>
 
     <!-- v4.7 -->
     <div style="margin-bottom:20px">
@@ -3308,7 +3335,7 @@ const DIVCALC = {
 
 // ─── TAB SWITCH ───────────────────────────────────────────
 // Panel yang tidak butuh kalender
-const NO_CAL_PANELS = ["changelog","avgdown","tvchart","feedback","stockdetail","petainvestor"];
+const NO_CAL_PANELS = ["changelog","avgdown","tvchart","feedback","stockdetail","petainvestor","brokersummary"];
 
 function sw(id, el) {
   document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active","panel-in"));
@@ -3724,13 +3751,13 @@ function fdAcFilter() {
   const q = (document.getElementById('fd-input').value || '').trim().toUpperCase();
   if (!FD_INDEX?.stocks) return;
   const matches = q
-    ? FD_INDEX.stocks.filter(s => s.ticker.startsWith(q) || s.name.toUpperCase().includes(q)).slice(0,10)
+    ? FD_INDEX.stocks.filter(s => (s.ticker||s.code||'').startsWith(q) || (s.name||'').toUpperCase().includes(q)).slice(0,10)
     : FD_INDEX.stocks.slice(0,10);
   const dd = document.getElementById('fd-ac-dropdown');
   if (!matches.length) { dd.style.display='none'; return; }
   dd.innerHTML = matches.map(s =>
-    `<div class="fd-ac-item" onmousedown="fdAcSelect('${s.ticker}')">
-      <span class="fd-ac-ticker">${s.ticker}</span>
+    `<div class="fd-ac-item" onmousedown="fdAcSelect('${s.ticker||s.code}')">
+      <span class="fd-ac-ticker">${s.ticker||s.code}</span>
       <span class="fd-ac-name">${s.name}</span>
     </div>`
   ).join('');
@@ -3741,13 +3768,13 @@ function fdAcShow() {
   if (!FD_INDEX?.stocks) return;
   const q = (document.getElementById('fd-input').value || '').trim().toUpperCase();
   const matches = q
-    ? FD_INDEX.stocks.filter(s => s.ticker.startsWith(q) || s.name.toUpperCase().includes(q)).slice(0,10)
+    ? FD_INDEX.stocks.filter(s => (s.ticker||s.code||'').startsWith(q) || (s.name||'').toUpperCase().includes(q)).slice(0,10)
     : FD_INDEX.stocks.slice(0,10);
   const dd = document.getElementById('fd-ac-dropdown');
   if (!matches.length) { dd.style.display='none'; return; }
   dd.innerHTML = matches.map(s =>
-    `<div class="fd-ac-item" onmousedown="fdAcSelect('${s.ticker}')">
-      <span class="fd-ac-ticker">${s.ticker}</span>
+    `<div class="fd-ac-item" onmousedown="fdAcSelect('${s.ticker||s.code}')">
+      <span class="fd-ac-ticker">${s.ticker||s.code}</span>
       <span class="fd-ac-name">${s.name}</span>
     </div>`
   ).join('');
@@ -5126,8 +5153,403 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') clPopClose()
   <button onclick="sw('petainvestor',document.getElementById('nav-petainvestor'));piInit();mnSw(document.getElementById('mn-more'));mnMoreClose()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer"><span style="font-size:18px">🕸️</span> Peta Investor</button>
   <button onclick="sw('avgdown',document.getElementById('nav-avgdown'));mnSw(document.getElementById('mn-more'));mnMoreClose()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer"><span style="font-size:18px">🧮</span> Kalkulator JIA</button>
   <button onclick="sw('changelog',document.getElementById('nav-changelog'));mnSw(document.getElementById('mn-more'));mnMoreClose()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer"><span style="font-size:18px">📝</span> Changelog</button>
+  <button onclick="sw('brokersummary',document.getElementById('nav-brokersummary'));bsInit();mnSw(document.getElementById('mn-more'));mnMoreClose()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer"><span style="font-size:18px">🏦</span> Broker Summary</button>
   <button onclick="sw('feedback',document.getElementById('nav-feedback'));mnSw(document.getElementById('mn-more'));mnMoreClose()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer"><span style="font-size:18px">💬</span> Kritik & Saran</button>
 </div>
+
+
+<!-- ====== BROKER SUMMARY ALPHA PANEL ====== -->
+<div id="brokersummary" class="panel" style="padding:0">
+
+<style>
+#brokersummary { overflow-y:auto; }
+.bs-wrap { padding:16px; max-width:1400px; margin:0 auto; }
+.bs-date-tabs { display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
+.bs-tab { padding:5px 14px; border-radius:20px; border:1px solid var(--border); background:var(--card);
+  color:var(--text2); font-size:12px; cursor:pointer; transition:.15s; font-weight:500; }
+.bs-tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+.bs-tab:hover:not(.active) { background:var(--bg3); }
+.bs-title-badge { font-size:10px; padding:2px 7px; border-radius:10px; background:#f0a030;
+  color:#000; font-weight:700; margin-left:8px; vertical-align:middle; }
+.bs-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px; }
+@media(max-width:768px){ .bs-cards{grid-template-columns:repeat(2,1fr);} }
+.bs-card { background:var(--card); border:0.5px solid var(--border); border-radius:10px;
+  padding:12px 14px; }
+.bs-card-label { font-size:10px; color:var(--text2); text-transform:uppercase; letter-spacing:.05em; }
+.bs-card-val { font-size:20px; font-weight:700; color:var(--text); margin:2px 0; }
+.bs-card-sub { font-size:11px; color:var(--text2); }
+.bs-card-val.pos { color:#22c55e; }
+.bs-card-val.neg { color:#ef4444; }
+.bs-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+@media(max-width:900px){ .bs-grid2{grid-template-columns:1fr;} }
+.bs-card-section { background:var(--card); border:0.5px solid var(--border); border-radius:10px; padding:14px; }
+.bs-section-title { font-size:12px; font-weight:600; color:var(--text); margin-bottom:10px;
+  display:flex; align-items:center; gap:6px; }
+.bs-section-title span.icon { font-size:15px; }
+/* Broker bar table */
+.bs-broker-table { width:100%; border-collapse:collapse; }
+.bs-broker-table th { font-size:10px; color:var(--text2); text-align:left; padding:3px 6px;
+  border-bottom:0.5px solid var(--border); }
+.bs-broker-table th.r { text-align:right; }
+.bs-broker-table td { font-size:11px; padding:3px 6px; color:var(--text); vertical-align:middle; }
+.bs-broker-table td.r { text-align:right; font-variant-numeric:tabular-nums; }
+.bs-broker-table tr:hover td { background:var(--bg3); }
+.bs-bar-outer { height:5px; background:var(--bg3); border-radius:3px; width:90px; display:inline-block; vertical-align:middle; margin-left:4px; }
+.bs-bar-inner { height:5px; border-radius:3px; background:var(--accent); }
+/* Quadrant */
+#bs-quadrant-wrap { position:relative; width:100%; height:340px; }
+#bs-quadrant-canvas { width:100%!important; height:100%!important; }
+/* Nego table */
+.bs-nego-row { display:flex; align-items:center; gap:8px; padding:5px 0;
+  border-bottom:0.5px solid var(--border); }
+.bs-nego-row:last-child { border-bottom:none; }
+.bs-nego-kode { font-size:12px; font-weight:700; width:52px; color:var(--accent); }
+.bs-nego-nama { font-size:10px; color:var(--text2); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bs-nego-val { font-size:11px; font-weight:600; color:var(--text); white-space:nowrap; }
+.bs-nego-bar { height:4px; border-radius:2px; background:#f0a030; min-width:2px; }
+/* Foreign flow chart */
+#bs-foreign-wrap { height:180px; }
+.bs-note { font-size:10px; color:var(--text2); margin-top:8px; font-style:italic; }
+.bs-full-row { margin-bottom:12px; }
+/* Quadrant labels */
+.bs-qlabel { position:absolute; font-size:9px; font-weight:600; letter-spacing:.05em;
+  text-transform:uppercase; opacity:.45; pointer-events:none; }
+</style>
+
+<div class="bs-wrap">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+    <span style="font-size:16px;font-weight:700;color:var(--text)">Broker Summary</span>
+    <span class="bs-title-badge">ALPHA</span>
+    <span style="font-size:10px;color:var(--text2);margin-left:4px">Data IDX: 02–04 Jun 2026</span>
+  </div>
+
+  <!-- Date Tabs -->
+  <div class="bs-date-tabs">
+    <span style="font-size:11px;color:var(--text2)">Tanggal:</span>
+    <button class="bs-tab" data-d="20260602" onclick="bsSetDate('20260602',this)">02 Jun</button>
+    <button class="bs-tab" data-d="20260603" onclick="bsSetDate('20260603',this)">03 Jun</button>
+    <button class="bs-tab active" data-d="20260604" onclick="bsSetDate('20260604',this)">04 Jun</button>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="bs-cards" id="bs-cards"></div>
+
+  <!-- Row 1: Broker Ranking + Quadrant -->
+  <div class="bs-grid2">
+    <!-- Broker Ranking Bar Table -->
+    <div class="bs-card-section">
+      <div class="bs-section-title"><span class="icon">🏆</span> Top 20 Broker by Nilai</div>
+      <div id="bs-broker-list" style="overflow-y:auto;max-height:280px;">
+        <table class="bs-broker-table">
+          <thead><tr>
+            <th>#</th><th>Kode</th><th class="r">Nilai</th><th class="r">Vol</th><th class="r">Freq</th><th>Proporsi</th>
+          </tr></thead>
+          <tbody id="bs-broker-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Quadrant Bubble Chart -->
+    <div class="bs-card-section">
+      <div class="bs-section-title"><span class="icon">⊹</span> Kuadran Broker
+        <span style="font-size:9px;color:var(--text2);margin-left:4px">(ukuran = nilai; X=frekuensi; Y=nilai)</span>
+      </div>
+      <div id="bs-quadrant-wrap" style="position:relative;height:290px;">
+        <canvas id="bs-quadrant-canvas"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: Foreign Flow + NEGO -->
+  <div class="bs-grid2">
+    <!-- Foreign Flow -->
+    <div class="bs-card-section">
+      <div class="bs-section-title"><span class="icon">🌍</span> Foreign Flow Agregat
+        <span style="font-size:9px;color:var(--text2);margin-left:4px">(lot, semua saham)</span>
+      </div>
+      <div style="height:200px"><canvas id="bs-foreign-canvas"></canvas></div>
+      <div class="bs-note">* Dihitung dari agregat Foreign Buy/Sell seluruh 959 emiten IDX</div>
+    </div>
+
+    <!-- NEGO Top Stocks -->
+    <div class="bs-card-section">
+      <div class="bs-section-title"><span class="icon">🤝</span> Top Non-Regular (NEGO) by Nilai</div>
+      <div id="bs-nego-list" style="max-height:230px;overflow-y:auto;"></div>
+      <div class="bs-note">* Non-Regular Board termasuk transaksi NEGO, crossing, dll.</div>
+    </div>
+  </div>
+
+</div><!-- /bs-wrap -->
+</div><!-- /brokersummary panel -->
+
+
+<script>
+
+/* ========== BROKER SUMMARY (ALPHA) ========== */
+const BS_DATA = {"dates":["20260602","20260603","20260604"],"labels":{"20260602":"02 Jun","20260603":"03 Jun","20260604":"04 Jun"},"broker":{"20260602":[{"kode":"AD","nama":"Sukadana Prima Sekuritas","vol":7996200,"nilai":1992993800,"freq":227,"chg":0},{"kode":"AF","nama":"Harita Kencana Sekuritas","vol":2230700,"nilai":1897257100,"freq":121,"chg":0},{"kode":"AG","nama":"Kiwoom Sekuritas Indonesia","vol":165925300,"nilai":260182820400,"freq":28256,"chg":0},{"kode":"AH","nama":"Shinhan Sekuritas Indonesia","vol":989800,"nilai":355356300,"freq":56,"chg":0},{"kode":"AI","nama":"Kay Hian Sekuritas","vol":363694500,"nilai":195210608000,"freq":12573,"chg":0},{"kode":"AK","nama":"UBS Sekuritas Indonesia","vol":4462871078,"nilai":6061521623290,"freq":455302,"chg":0},{"kode":"AO","nama":"ERDIKHA ELIT SEKURITAS","vol":233730800,"nilai":185922420200,"freq":22707,"chg":0},{"kode":"AP","nama":"Pacific Sekuritas Indonesia","vol":74299950,"nilai":94673180180,"freq":60,"chg":0},{"kode":"AR","nama":"Binaartha Sekuritas","vol":22360100,"nilai":10408158600,"freq":865,"chg":0},{"kode":"AT","nama":"Phintraco Sekuritas","vol":135194700,"nilai":66331021300,"freq":8219,"chg":0},{"kode":"AZ","nama":"Sucor Sekuritas","vol":840435900,"nilai":862507455500,"freq":55246,"chg":0},{"kode":"BB","nama":"Verdhana Sekuritas Indonesia","vol":271762558,"nilai":446671670050,"freq":41821,"chg":0},{"kode":"BF","nama":"Inti Fikasa Sekuritas","vol":1710000,"nilai":3296600000,"freq":130,"chg":0},{"kode":"BK","nama":"J.P. Morgan Sekuritas Indonesia","vol":1398293512,"nilai":2485322344770,"freq":133995,"chg":0},{"kode":"BQ","nama":"Korea Investment and Sekuritas Indonesia","vol":1308737460,"nilai":469277294100,"freq":65359,"chg":0},{"kode":"BR","nama":"Trust Sekuritas","vol":227294500,"nilai":127635300700,"freq":15492,"chg":0},{"kode":"BS","nama":"Equity Sekuritas Indonesia","vol":11849600,"nilai":10505303700,"freq":570,"chg":0},{"kode":"CC","nama":"MANDIRI SEKURITAS","vol":5269416062,"nilai":5352132742918,"freq":468881,"chg":0},{"kode":"CD","nama":"Mega Capital Sekuritas","vol":94124400,"nilai":82374558300,"freq":4387,"chg":0},{"kode":"CP","nama":"KB Valbury Sekuritas","vol":2479155786,"nilai":1396556504600,"freq":126726,"chg":0},{"kode":"DD","nama":"Makindo Sekuritas","vol":723300,"nilai":898746200,"freq":174,"chg":0},{"kode":"DH","nama":"SINARMAS SEKURITAS","vol":275908696,"nilai":445871647616,"freq":19766,"chg":0},{"kode":"DP","nama":"DBS Vickers Sekuritas Indonesia","vol":262057700,"nilai":427568623800,"freq":15912,"chg":0},{"kode":"DR","nama":"RHB Sekuritas Indonesia","vol":1341533600,"nilai":398721448900,"freq":37520,"chg":0},{"kode":"DU","nama":"KAF Sekuritas Indonesia","vol":59831000,"nilai":10792694700,"freq":1761,"chg":0},{"kode":"DX","nama":"Bahana Sekuritas","vol":223783256,"nilai":401559076900,"freq":21124,"chg":0},{"kode":"EL","nama":"Evergreen Sekuritas Indonesia","vol":56077800,"nilai":36968309500,"freq":3498,"chg":0},{"kode":"EP","nama":"MNC Sekuritas","vol":476236920,"nilai":221938436000,"freq":40204,"chg":0},{"kode":"ES","nama":"EKOKAPITAL SEKURITAS","vol":11335500,"nilai":9761432900,"freq":860,"chg":0},{"kode":"FO","nama":"Forte Global Sekuritas","vol":1687100,"nilai":3631636000,"freq":271,"chg":0},{"kode":"FS","nama":"Yuanta Sekuritas Indonesia","vol":96910900,"nilai":39473348000,"freq":4353,"chg":0},{"kode":"FZ","nama":"Waterfront Sekuritas Indonesia","vol":202332800,"nilai":79830342500,"freq":5731,"chg":0},{"kode":"GA","nama":"BNC Sekuritas Indonesia","vol":6542000,"nilai":12861940500,"freq":535,"chg":0},{"kode":"GI","nama":"Webull Sekuritas Indonesia","vol":13632200,"nilai":8264974600,"freq":1858,"chg":0},{"kode":"GR","nama":"PANIN SEKURITAS Tbk.","vol":668552100,"nilai":367580524100,"freq":31521,"chg":0},{"kode":"HD","nama":"KGI Sekuritas Indonesia","vol":1006571100,"nilai":728019248000,"freq":59056,"chg":0},{"kode":"HP","nama":"Henan Putihrai Sekuritas","vol":160561600,"nilai":162124638500,"freq":13367,"chg":0},{"kode":"IC","nama":"Integrity Capital Sekuritas","vol":820300,"nilai":260051000,"freq":18,"chg":0},{"kode":"ID","nama":"Anugerah Sekuritas Indonesia","vol":7430800,"nilai":7589431200,"freq":760,"chg":0},{"kode":"IF","nama":"SAMUEL SEKURITAS INDONESIA","vol":255704900,"nilai":162104436300,"freq":16420,"chg":0},{"kode":"IH","nama":"Indo Harvest Sekuritas","vol":62500700,"nilai":32097862200,"freq":4111,"chg":0},{"kode":"II","nama":"Danatama Makmur Sekuritas","vol":9272500,"nilai":4382041900,"freq":61,"chg":0},{"kode":"IN","nama":"INVESTINDO NUSANTARA SEKURITA","vol":204009200,"nilai":127916988800,"freq":6666,"chg":0},{"kode":"IT","nama":"INTI TELADAN SEKURITAS","vol":1247300,"nilai":1320368600,"freq":88,"chg":0},{"kode":"IU","nama":"Indo Capital Sekuritas","vol":173248300,"nilai":31033656400,"freq":12705,"chg":0},{"kode":"KI","nama":"Ciptadana Sekuritas Asia","vol":282791700,"nilai":268584181800,"freq":17732,"chg":0},{"kode":"KK","nama":"Phillip Sekuritas Indonesia","vol":911632900,"nilai":477946363500,"freq":74463,"chg":0},{"kode":"KZ","nama":"CLSA Sekuritas Indonesia","vol":439261556,"nilai":1243499702200,"freq":47757,"chg":0},{"kode":"LG","nama":"Trimegah Sekuritas Indonesia Tbk.","vol":811248900,"nilai":863607772000,"freq":47502,"chg":0},{"kode":"LS","nama":"Reliance Sekuritas Indonesia Tbk.","vol":49133000,"nilai":34175389000,"freq":4593,"chg":0},{"kode":"MG","nama":"Semesta Indovest Sekuritas","vol":2881765400,"nilai":2935220566100,"freq":139231,"chg":0},{"kode":"MI","nama":"Victoria Sekuritas Indonesia","vol":14388700,"nilai":17244612700,"freq":1443,"chg":0},{"kode":"MU","nama":"Minna Padi Investama Sekuritas","vol":61006200,"nilai":9980995200,"freq":2070,"chg":0},{"kode":"NI","nama":"BNI Sekuritas","vol":920286800,"nilai":723987735700,"freq":86390,"chg":0},{"kode":"OD","nama":"BRI Danareksa Sekuritas","vol":690922100,"nilai":592467229700,"freq":82424,"chg":0},{"kode":"OK","nama":"NET SEKURITAS","vol":17095500,"nilai":8445960300,"freq":290,"chg":0},{"kode":"PC","nama":"FAC Sekuritas Indonesia","vol":79725400,"nilai":53208830700,"freq":5653,"chg":0},{"kode":"PD","nama":"Indo Premier Sekuritas","vol":1728355974,"nilai":1433327198334,"freq":202492,"chg":0},{"kode":"PF","nama":"Danasakti Sekuritas Indonesia","vol":6718000,"nilai":10104866400,"freq":685,"chg":0},{"kode":"PG","nama":"Panca Global Sekuritas","vol":35149200,"nilai":17896360500,"freq":1357,"chg":0},{"kode":"PI","nama":"Magenta Kapital Sekuritas Indonesia","vol":16728300,"nilai":4629317400,"freq":592,"chg":0},{"kode":"PO","nama":"Pilarmas Investindo Sekuritas","vol":37199600,"nilai":38147755600,"freq":1289,"chg":0},{"kode":"PP","nama":"Aldiracita Sekuritas Indonesia","vol":4700,"nilai":1062200,"freq":1,"chg":0},{"kode":"QA","nama":"Tuntun Sekuritas Indonesia","vol":112970700,"nilai":7658175100,"freq":3422,"chg":0},{"kode":"RB","nama":"Ina Sekuritas Indonesia","vol":47527900,"nilai":22347142500,"freq":1628,"chg":0},{"kode":"RF","nama":"Buana Capital Sekuritas","vol":154555100,"nilai":231546467700,"freq":11150,"chg":0},{"kode":"RG","nama":"Profindo Sekuritas Indonesia","vol":22516300,"nilai":9113508500,"freq":1007,"chg":0},{"kode":"RO","nama":"Pluang Maju Sekuritas","vol":60465000,"nilai":32713140100,"freq":6950,"chg":0},{"kode":"RS","nama":"Yulie Sekuritas Indonesia Tbk.","vol":23934500,"nilai":17957737100,"freq":1186,"chg":0},{"kode":"RX","nama":"Macquarie Sekuritas Indonesia","vol":295756764,"nilai":841095309264,"freq":30059,"chg":0},{"kode":"SA","nama":"Elit Sukses Sekuritas","vol":40174300,"nilai":15900766300,"freq":2960,"chg":0},{"kode":"SF","nama":"Surya Fajar Sekuritas","vol":29300200,"nilai":11908278700,"freq":1296,"chg":0},{"kode":"SH","nama":"Artha Sekuritas Indonesia","vol":80683900,"nilai":70021119400,"freq":3969,"chg":0},{"kode":"SQ","nama":"BCA Sekuritas","vol":822320640,"nilai":809418882200,"freq":68992,"chg":0},{"kode":"SS","nama":"Supra Sekuritas Indonesia","vol":171067500,"nilai":106058001400,"freq":5633,"chg":0},{"kode":"TF","nama":"Laba Sekuritas Indonesia","vol":4845600,"nilai":2757915000,"freq":451,"chg":0},{"kode":"TP","nama":"OCBC Sekuritas Indonesia","vol":459433844,"nilai":837856952720,"freq":37992,"chg":0},{"kode":"TS","nama":"Dwidana Sakti Sekuritas","vol":44348200,"nilai":63163731000,"freq":4294,"chg":0},{"kode":"XA","nama":"NH Korindo Sekuritas Indonesia","vol":726615500,"nilai":402549321500,"freq":32972,"chg":0},{"kode":"XC","nama":"Ajaib Sekuritas Asia","vol":1907827000,"nilai":1253028376500,"freq":276855,"chg":0},{"kode":"XL","nama":"Stockbit Sekuritas Digital","vol":14568027748,"nilai":5097171671288,"freq":1460132,"chg":0},{"kode":"YB","nama":"Yakin Bertumbuh Sekuritas","vol":947490800,"nilai":303250583200,"freq":43400,"chg":0},{"kode":"YJ","nama":"Lotus Andalan Sekuritas","vol":255053700,"nilai":170103461000,"freq":10202,"chg":0},{"kode":"YO","nama":"Amantara Sekuritas Indonesia","vol":1144100,"nilai":280370000,"freq":43,"chg":0},{"kode":"YP","nama":"Mirae Asset Sekuritas Indonesia","vol":4094407200,"nilai":2579524528800,"freq":305136,"chg":0},{"kode":"YU","nama":"CGS International Sekuritas Indonesia","vol":1715803424,"nilai":2486181194322,"freq":144673,"chg":0},{"kode":"ZP","nama":"Maybank Sekuritas Indonesia","vol":3947328578,"nilai":4987585413704,"freq":234555,"chg":0},{"kode":"ZR","nama":"Bumiputera Sekuritas","vol":31837500,"nilai":16929192900,"freq":1658,"chg":0}],"20260603":[{"kode":"AD","nama":"Sukadana Prima Sekuritas","vol":14262700,"nilai":4373536600,"freq":388,"chg":119.45},{"kode":"AF","nama":"Harita Kencana Sekuritas","vol":8908300,"nilai":6935930000,"freq":290,"chg":265.58},{"kode":"AG","nama":"Kiwoom Sekuritas Indonesia","vol":193243100,"nilai":330429200200,"freq":35142,"chg":27.0},{"kode":"AH","nama":"Shinhan Sekuritas Indonesia","vol":518700,"nilai":579646400,"freq":45,"chg":63.12},{"kode":"AI","nama":"Kay Hian Sekuritas","vol":576563100,"nilai":457390362600,"freq":23669,"chg":134.31},{"kode":"AK","nama":"UBS Sekuritas Indonesia","vol":7215523624,"nilai":6701897041890,"freq":509876,"chg":10.56},{"kode":"AO","nama":"ERDIKHA ELIT SEKURITAS","vol":300681100,"nilai":145192737700,"freq":43956,"chg":-21.91},{"kode":"AP","nama":"Pacific Sekuritas Indonesia","vol":183278410,"nilai":118930511640,"freq":31,"chg":25.62},{"kode":"AR","nama":"Binaartha Sekuritas","vol":21140100,"nilai":11984060300,"freq":932,"chg":15.14},{"kode":"AT","nama":"Phintraco Sekuritas","vol":245146900,"nilai":105125620500,"freq":14495,"chg":58.49},{"kode":"AZ","nama":"Sucor Sekuritas","vol":1518496228,"nilai":1098011619558,"freq":67420,"chg":27.3},{"kode":"BB","nama":"Verdhana Sekuritas Indonesia","vol":1282467166,"nilai":832527205450,"freq":71965,"chg":86.38},{"kode":"BF","nama":"Inti Fikasa Sekuritas","vol":3328500,"nilai":2530293700,"freq":125,"chg":-23.25},{"kode":"BK","nama":"J.P. Morgan Sekuritas Indonesia","vol":1790564816,"nilai":1923110788620,"freq":124017,"chg":-22.62},{"kode":"BQ","nama":"Korea Investment and Sekuritas Indonesia","vol":1447974900,"nilai":401527272000,"freq":62301,"chg":-14.44},{"kode":"BR","nama":"Trust Sekuritas","vol":214824100,"nilai":87226999100,"freq":12340,"chg":-31.66},{"kode":"BS","nama":"Equity Sekuritas Indonesia","vol":10998100,"nilai":10272802400,"freq":614,"chg":-2.21},{"kode":"CC","nama":"MANDIRI SEKURITAS","vol":7976321628,"nilai":5502758733860,"freq":548578,"chg":2.81},{"kode":"CD","nama":"Mega Capital Sekuritas","vol":130136480,"nilai":122516593460,"freq":4437,"chg":48.73},{"kode":"CP","nama":"KB Valbury Sekuritas","vol":3153414000,"nilai":1481897917600,"freq":123511,"chg":6.11},{"kode":"DD","nama":"Makindo Sekuritas","vol":435900,"nilai":504096800,"freq":48,"chg":-43.91},{"kode":"DH","nama":"SINARMAS SEKURITAS","vol":372386472,"nilai":463267687274,"freq":26235,"chg":3.9},{"kode":"DP","nama":"DBS Vickers Sekuritas Indonesia","vol":148108500,"nilai":105471603300,"freq":7441,"chg":-75.33},{"kode":"DR","nama":"RHB Sekuritas Indonesia","vol":1135109600,"nilai":433793617600,"freq":46555,"chg":8.8},{"kode":"DU","nama":"KAF Sekuritas Indonesia","vol":86541700,"nilai":10668382800,"freq":2190,"chg":-1.15},{"kode":"DX","nama":"Bahana Sekuritas","vol":143680200,"nilai":309727033000,"freq":13071,"chg":-22.87},{"kode":"EL","nama":"Evergreen Sekuritas Indonesia","vol":41988800,"nilai":20853393000,"freq":1775,"chg":-43.59},{"kode":"EP","nama":"MNC Sekuritas","vol":537769734,"nilai":281279125326,"freq":43597,"chg":26.74},{"kode":"ES","nama":"EKOKAPITAL SEKURITAS","vol":22962500,"nilai":26810731500,"freq":1543,"chg":174.66},{"kode":"FO","nama":"Forte Global Sekuritas","vol":3363800,"nilai":9161050000,"freq":203,"chg":152.26},{"kode":"FS","nama":"Yuanta Sekuritas Indonesia","vol":91161200,"nilai":43615655100,"freq":3827,"chg":10.49},{"kode":"FZ","nama":"Waterfront Sekuritas Indonesia","vol":167947600,"nilai":40710961300,"freq":5398,"chg":-49.0},{"kode":"GA","nama":"BNC Sekuritas Indonesia","vol":6457500,"nilai":10048406500,"freq":380,"chg":-21.87},{"kode":"GI","nama":"Webull Sekuritas Indonesia","vol":4800700,"nilai":2491670100,"freq":855,"chg":-69.85},{"kode":"GR","nama":"PANIN SEKURITAS Tbk.","vol":832907900,"nilai":490843370300,"freq":40657,"chg":33.53},{"kode":"HD","nama":"KGI Sekuritas Indonesia","vol":1449268500,"nilai":635353861700,"freq":72371,"chg":-12.73},{"kode":"HP","nama":"Henan Putihrai Sekuritas","vol":214083200,"nilai":95557592100,"freq":11317,"chg":-41.06},{"kode":"IC","nama":"Integrity Capital Sekuritas","vol":1250000,"nilai":264675000,"freq":59,"chg":1.78},{"kode":"ID","nama":"Anugerah Sekuritas Indonesia","vol":39755500,"nilai":10314599800,"freq":786,"chg":35.91},{"kode":"IF","nama":"SAMUEL SEKURITAS INDONESIA","vol":396209400,"nilai":337916936600,"freq":23007,"chg":108.46},{"kode":"IH","nama":"Indo Harvest Sekuritas","vol":58699100,"nilai":36856177700,"freq":4959,"chg":14.82},{"kode":"II","nama":"Danatama Makmur Sekuritas","vol":16727400,"nilai":11228852800,"freq":180,"chg":156.25},{"kode":"IN","nama":"INVESTINDO NUSANTARA SEKURITA","vol":142600400,"nilai":82094616300,"freq":5213,"chg":-35.82},{"kode":"IT","nama":"INTI TELADAN SEKURITAS","vol":735700,"nilai":2027933500,"freq":80,"chg":53.59},{"kode":"IU","nama":"Indo Capital Sekuritas","vol":266159000,"nilai":38499504200,"freq":5262,"chg":24.06},{"kode":"KI","nama":"Ciptadana Sekuritas Asia","vol":510487700,"nilai":307207352600,"freq":18190,"chg":14.38},{"kode":"KK","nama":"Phillip Sekuritas Indonesia","vol":1419981800,"nilai":562475241400,"freq":82383,"chg":17.69},{"kode":"KZ","nama":"CLSA Sekuritas Indonesia","vol":230821900,"nilai":587019558500,"freq":35461,"chg":-52.79},{"kode":"LG","nama":"Trimegah Sekuritas Indonesia Tbk.","vol":906416400,"nilai":867321559600,"freq":56914,"chg":0.43},{"kode":"LS","nama":"Reliance Sekuritas Indonesia Tbk.","vol":104698100,"nilai":39074626800,"freq":5402,"chg":14.34},{"kode":"MG","nama":"Semesta Indovest Sekuritas","vol":3812741400,"nilai":2148035055900,"freq":113738,"chg":-26.82},{"kode":"MI","nama":"Victoria Sekuritas Indonesia","vol":37358100,"nilai":16291625200,"freq":913,"chg":-5.53},{"kode":"MU","nama":"Minna Padi Investama Sekuritas","vol":128852800,"nilai":25692640400,"freq":2881,"chg":157.42},{"kode":"NI","nama":"BNI Sekuritas","vol":1252457200,"nilai":903878468600,"freq":111587,"chg":24.85},{"kode":"OD","nama":"BRI Danareksa Sekuritas","vol":1006342400,"nilai":542611327300,"freq":76776,"chg":-8.41},{"kode":"OK","nama":"NET SEKURITAS","vol":62653900,"nilai":24394156600,"freq":1254,"chg":188.83},{"kode":"PC","nama":"FAC Sekuritas Indonesia","vol":108516300,"nilai":53202846600,"freq":4658,"chg":-0.01},{"kode":"PD","nama":"Indo Premier Sekuritas","vol":2506100936,"nilai":1929210701870,"freq":253788,"chg":34.6},{"kode":"PF","nama":"Danasakti Sekuritas Indonesia","vol":18594700,"nilai":8211079900,"freq":800,"chg":-18.74},{"kode":"PG","nama":"Panca Global Sekuritas","vol":53005300,"nilai":17393022500,"freq":1384,"chg":-2.81},{"kode":"PI","nama":"Magenta Kapital Sekuritas Indonesia","vol":13952600,"nilai":4409873900,"freq":934,"chg":-4.74},{"kode":"PO","nama":"Pilarmas Investindo Sekuritas","vol":39530000,"nilai":34107035700,"freq":1350,"chg":-10.59},{"kode":"PP","nama":"Aldiracita Sekuritas Indonesia","vol":12791500,"nilai":20579958400,"freq":2308,"chg":1937384.32},{"kode":"QA","nama":"Tuntun Sekuritas Indonesia","vol":84959200,"nilai":6974767300,"freq":3314,"chg":-8.92},{"kode":"RB","nama":"Ina Sekuritas Indonesia","vol":88144300,"nilai":66127891600,"freq":1900,"chg":195.91},{"kode":"RF","nama":"Buana Capital Sekuritas","vol":263534600,"nilai":198070270400,"freq":8042,"chg":-14.46},{"kode":"RG","nama":"Profindo Sekuritas Indonesia","vol":19313100,"nilai":12516643300,"freq":1130,"chg":37.34},{"kode":"RO","nama":"Pluang Maju Sekuritas","vol":46809800,"nilai":26984150300,"freq":6834,"chg":-17.51},{"kode":"RS","nama":"Yulie Sekuritas Indonesia Tbk.","vol":11723400,"nilai":8296300300,"freq":677,"chg":-53.8},{"kode":"RX","nama":"Macquarie Sekuritas Indonesia","vol":362360600,"nilai":406859306300,"freq":29305,"chg":-51.63},{"kode":"SA","nama":"Elit Sukses Sekuritas","vol":58406800,"nilai":20085757900,"freq":2921,"chg":26.32},{"kode":"SF","nama":"Surya Fajar Sekuritas","vol":36725200,"nilai":8886758300,"freq":1511,"chg":-25.37},{"kode":"SH","nama":"Artha Sekuritas Indonesia","vol":103035100,"nilai":42600460100,"freq":3204,"chg":-39.16},{"kode":"SQ","nama":"BCA Sekuritas","vol":1681584166,"nilai":1193850037950,"freq":92374,"chg":47.49},{"kode":"SS","nama":"Supra Sekuritas Indonesia","vol":260522100,"nilai":149770662200,"freq":8941,"chg":41.22},{"kode":"TF","nama":"Laba Sekuritas Indonesia","vol":6762100,"nilai":3329145500,"freq":581,"chg":20.71},{"kode":"TP","nama":"OCBC Sekuritas Indonesia","vol":539512600,"nilai":474198608700,"freq":36800,"chg":-43.4},{"kode":"TS","nama":"Dwidana Sakti Sekuritas","vol":5537700,"nilai":7536471700,"freq":460,"chg":-88.07},{"kode":"XA","nama":"NH Korindo Sekuritas Indonesia","vol":797874600,"nilai":331647444100,"freq":34707,"chg":-17.61},{"kode":"XC","nama":"Ajaib Sekuritas Asia","vol":2131354800,"nilai":1107568611300,"freq":294669,"chg":-11.61},{"kode":"XL","nama":"Stockbit Sekuritas Digital","vol":14755881358,"nilai":4721202481298,"freq":1477585,"chg":-7.38},{"kode":"YB","nama":"Yakin Bertumbuh Sekuritas","vol":1034833900,"nilai":350286351500,"freq":55998,"chg":15.51},{"kode":"YJ","nama":"Lotus Andalan Sekuritas","vol":663705500,"nilai":232845477000,"freq":18892,"chg":36.88},{"kode":"YO","nama":"Amantara Sekuritas Indonesia","vol":2669200,"nilai":777132500,"freq":82,"chg":177.18},{"kode":"YP","nama":"Mirae Asset Sekuritas Indonesia","vol":4969746456,"nilai":2506890389050,"freq":327176,"chg":-2.82},{"kode":"YU","nama":"CGS International Sekuritas Indonesia","vol":3503954942,"nilai":3666005146858,"freq":161051,"chg":47.46},{"kode":"ZP","nama":"Maybank Sekuritas Indonesia","vol":4191986148,"nilai":4004091358356,"freq":233337,"chg":-19.72},{"kode":"ZR","nama":"Bumiputera Sekuritas","vol":28006200,"nilai":23639140900,"freq":1421,"chg":39.64}],"20260604":[{"kode":"AD","nama":"Sukadana Prima Sekuritas","vol":9759900,"nilai":7601672000,"freq":376,"chg":73.81},{"kode":"AF","nama":"Harita Kencana Sekuritas","vol":4352400,"nilai":3705769500,"freq":212,"chg":-46.57},{"kode":"AG","nama":"Kiwoom Sekuritas Indonesia","vol":287897800,"nilai":401267710700,"freq":19193,"chg":21.44},{"kode":"AH","nama":"Shinhan Sekuritas Indonesia","vol":5583200,"nilai":446683800,"freq":37,"chg":-22.94},{"kode":"AI","nama":"Kay Hian Sekuritas","vol":586653200,"nilai":233220722100,"freq":15085,"chg":-49.01},{"kode":"AK","nama":"UBS Sekuritas Indonesia","vol":8262924498,"nilai":8298905332520,"freq":523944,"chg":23.83},{"kode":"AO","nama":"ERDIKHA ELIT SEKURITAS","vol":436432600,"nilai":216184370400,"freq":11591,"chg":48.89},{"kode":"AP","nama":"Pacific Sekuritas Indonesia","vol":104250814,"nilai":57115640970,"freq":37,"chg":-51.98},{"kode":"AR","nama":"Binaartha Sekuritas","vol":22099700,"nilai":6662860900,"freq":647,"chg":-44.4},{"kode":"AT","nama":"Phintraco Sekuritas","vol":203597600,"nilai":94170994000,"freq":11973,"chg":-10.42},{"kode":"AZ","nama":"Sucor Sekuritas","vol":1067465400,"nilai":699736490100,"freq":48208,"chg":-36.27},{"kode":"BB","nama":"Verdhana Sekuritas Indonesia","vol":322829434,"nilai":441461185320,"freq":40126,"chg":-46.97},{"kode":"BF","nama":"Inti Fikasa Sekuritas","vol":2227000,"nilai":606551300,"freq":111,"chg":-76.03},{"kode":"BK","nama":"J.P. Morgan Sekuritas Indonesia","vol":2815271400,"nilai":2976888453380,"freq":133104,"chg":54.8},{"kode":"BQ","nama":"Korea Investment and Sekuritas Indonesia","vol":1632076707,"nilai":432888911650,"freq":60412,"chg":7.81},{"kode":"BR","nama":"Trust Sekuritas","vol":195181100,"nilai":102931746600,"freq":11999,"chg":18.0},{"kode":"BS","nama":"Equity Sekuritas Indonesia","vol":8450400,"nilai":7347259900,"freq":475,"chg":-28.48},{"kode":"CC","nama":"MANDIRI SEKURITAS","vol":8174590100,"nilai":6452467661700,"freq":464951,"chg":17.26},{"kode":"CD","nama":"Mega Capital Sekuritas","vol":198426068,"nilai":109423532484,"freq":3237,"chg":-10.69},{"kode":"CP","nama":"KB Valbury Sekuritas","vol":4000848400,"nilai":1662706447200,"freq":94778,"chg":12.2},{"kode":"DD","nama":"Makindo Sekuritas","vol":1407000,"nilai":308287500,"freq":34,"chg":-38.84},{"kode":"DH","nama":"SINARMAS SEKURITAS","vol":455109946,"nilai":491437168010,"freq":20343,"chg":6.08},{"kode":"DP","nama":"DBS Vickers Sekuritas Indonesia","vol":745096300,"nilai":606899983000,"freq":10005,"chg":475.42},{"kode":"DR","nama":"RHB Sekuritas Indonesia","vol":1474658600,"nilai":496318711200,"freq":36374,"chg":14.41},{"kode":"DU","nama":"KAF Sekuritas Indonesia","vol":96420300,"nilai":8407532300,"freq":2017,"chg":-21.19},{"kode":"DX","nama":"Bahana Sekuritas","vol":109055200,"nilai":140890346700,"freq":9839,"chg":-54.51},{"kode":"EL","nama":"Evergreen Sekuritas Indonesia","vol":22167000,"nilai":13767817100,"freq":1984,"chg":-33.98},{"kode":"EP","nama":"MNC Sekuritas","vol":510187320,"nilai":232750350000,"freq":43253,"chg":-17.25},{"kode":"ES","nama":"EKOKAPITAL SEKURITAS","vol":22094100,"nilai":21973399200,"freq":1396,"chg":-18.04},{"kode":"FO","nama":"Forte Global Sekuritas","vol":8615500,"nilai":10493278000,"freq":224,"chg":14.54},{"kode":"FS","nama":"Yuanta Sekuritas Indonesia","vol":152837600,"nilai":74062326200,"freq":5461,"chg":69.81},{"kode":"FZ","nama":"Waterfront Sekuritas Indonesia","vol":267131600,"nilai":53995810300,"freq":4024,"chg":32.63},{"kode":"GA","nama":"BNC Sekuritas Indonesia","vol":10184400,"nilai":14212584700,"freq":578,"chg":41.44},{"kode":"GI","nama":"Webull Sekuritas Indonesia","vol":537500,"nilai":295213800,"freq":131,"chg":-88.15},{"kode":"GR","nama":"PANIN SEKURITAS Tbk.","vol":710458500,"nilai":423177928500,"freq":33634,"chg":-13.79},{"kode":"HD","nama":"KGI Sekuritas Indonesia","vol":1570297900,"nilai":736192055800,"freq":70708,"chg":15.87},{"kode":"HP","nama":"Henan Putihrai Sekuritas","vol":178882600,"nilai":144453277900,"freq":11343,"chg":51.17},{"kode":"IC","nama":"Integrity Capital Sekuritas","vol":6800000,"nilai":1696800000,"freq":59,"chg":541.09},{"kode":"ID","nama":"Anugerah Sekuritas Indonesia","vol":13121700,"nilai":6344991700,"freq":574,"chg":-38.49},{"kode":"IF","nama":"SAMUEL SEKURITAS INDONESIA","vol":333651400,"nilai":206783033500,"freq":11606,"chg":-38.81},{"kode":"IH","nama":"Indo Harvest Sekuritas","vol":62044400,"nilai":23605666200,"freq":3802,"chg":-35.95},{"kode":"II","nama":"Danatama Makmur Sekuritas","vol":316629400,"nilai":64624490600,"freq":1421,"chg":475.52},{"kode":"IN","nama":"INVESTINDO NUSANTARA SEKURITA","vol":195842400,"nilai":90191631800,"freq":4245,"chg":9.86},{"kode":"IT","nama":"INTI TELADAN SEKURITAS","vol":1805300,"nilai":2372742300,"freq":170,"chg":17.0},{"kode":"IU","nama":"Indo Capital Sekuritas","vol":154799000,"nilai":26141057300,"freq":4677,"chg":-32.1},{"kode":"KI","nama":"Ciptadana Sekuritas Asia","vol":383196882,"nilai":196102475466,"freq":11472,"chg":-36.17},{"kode":"KK","nama":"Phillip Sekuritas Indonesia","vol":1234589000,"nilai":627491517100,"freq":70357,"chg":11.56},{"kode":"KZ","nama":"CLSA Sekuritas Indonesia","vol":470691500,"nilai":1183397384300,"freq":62498,"chg":101.59},{"kode":"LG","nama":"Trimegah Sekuritas Indonesia Tbk.","vol":847022907,"nilai":936258495650,"freq":54477,"chg":7.95},{"kode":"LS","nama":"Reliance Sekuritas Indonesia Tbk.","vol":92644200,"nilai":44752322600,"freq":5880,"chg":14.53},{"kode":"MG","nama":"Semesta Indovest Sekuritas","vol":3243608000,"nilai":1724575674400,"freq":78117,"chg":-19.71},{"kode":"MI","nama":"Victoria Sekuritas Indonesia","vol":16191000,"nilai":12197101600,"freq":956,"chg":-25.13},{"kode":"MU","nama":"Minna Padi Investama Sekuritas","vol":309992500,"nilai":33807004100,"freq":2512,"chg":31.58},{"kode":"NI","nama":"BNI Sekuritas","vol":988232064,"nilai":668172427600,"freq":84964,"chg":-26.08},{"kode":"OD","nama":"BRI Danareksa Sekuritas","vol":1197978700,"nilai":569516729600,"freq":63799,"chg":4.96},{"kode":"OK","nama":"NET SEKURITAS","vol":17510200,"nilai":5635010000,"freq":242,"chg":-76.9},{"kode":"PC","nama":"FAC Sekuritas Indonesia","vol":56874300,"nilai":32323070000,"freq":3806,"chg":-39.25},{"kode":"PD","nama":"Indo Premier Sekuritas","vol":2069723882,"nilai":1362290436290,"freq":195258,"chg":-29.39},{"kode":"PF","nama":"Danasakti Sekuritas Indonesia","vol":4182000,"nilai":5824474600,"freq":769,"chg":-29.07},{"kode":"PG","nama":"Panca Global Sekuritas","vol":151309000,"nilai":23465978900,"freq":1919,"chg":34.92},{"kode":"PI","nama":"Magenta Kapital Sekuritas Indonesia","vol":14055500,"nilai":4661117800,"freq":718,"chg":5.7},{"kode":"PO","nama":"Pilarmas Investindo Sekuritas","vol":48788900,"nilai":35157290200,"freq":1541,"chg":3.08},{"kode":"PP","nama":"Aldiracita Sekuritas Indonesia","vol":12631600,"nilai":10144852700,"freq":1848,"chg":-50.71},{"kode":"QA","nama":"Tuntun Sekuritas Indonesia","vol":66597100,"nilai":4497535700,"freq":2351,"chg":-35.52},{"kode":"RB","nama":"Ina Sekuritas Indonesia","vol":86204400,"nilai":53098406700,"freq":1118,"chg":-19.7},{"kode":"RF","nama":"Buana Capital Sekuritas","vol":51895600,"nilai":42287015200,"freq":1770,"chg":-78.65},{"kode":"RG","nama":"Profindo Sekuritas Indonesia","vol":14176600,"nilai":8029567900,"freq":1165,"chg":-35.85},{"kode":"RO","nama":"Pluang Maju Sekuritas","vol":47499800,"nilai":23633197300,"freq":5580,"chg":-12.42},{"kode":"RS","nama":"Yulie Sekuritas Indonesia Tbk.","vol":6132100,"nilai":4935163800,"freq":315,"chg":-40.51},{"kode":"RX","nama":"Macquarie Sekuritas Indonesia","vol":109277700,"nilai":290995975000,"freq":13352,"chg":-28.48},{"kode":"SA","nama":"Elit Sukses Sekuritas","vol":39837200,"nilai":18310138500,"freq":1639,"chg":-8.84},{"kode":"SF","nama":"Surya Fajar Sekuritas","vol":22049300,"nilai":4541496400,"freq":954,"chg":-48.9},{"kode":"SH","nama":"Artha Sekuritas Indonesia","vol":63532100,"nilai":31266807400,"freq":2683,"chg":-26.6},{"kode":"SQ","nama":"BCA Sekuritas","vol":1174305128,"nilai":931362493400,"freq":70054,"chg":-21.99},{"kode":"SS","nama":"Supra Sekuritas Indonesia","vol":423779000,"nilai":176194126000,"freq":5561,"chg":17.64},{"kode":"TF","nama":"Laba Sekuritas Indonesia","vol":2345900,"nilai":835742900,"freq":441,"chg":-74.9},{"kode":"TP","nama":"OCBC Sekuritas Indonesia","vol":584205000,"nilai":548287519800,"freq":35719,"chg":15.62},{"kode":"TS","nama":"Dwidana Sakti Sekuritas","vol":16589500,"nilai":7014783400,"freq":913,"chg":-6.92},{"kode":"XA","nama":"NH Korindo Sekuritas Indonesia","vol":750539900,"nilai":298498203900,"freq":31584,"chg":-10.0},{"kode":"XC","nama":"Ajaib Sekuritas Asia","vol":1801287200,"nilai":883864497300,"freq":228171,"chg":-20.2},{"kode":"XL","nama":"Stockbit Sekuritas Digital","vol":12456854628,"nilai":3808219664800,"freq":1185132,"chg":-19.34},{"kode":"YB","nama":"Yakin Bertumbuh Sekuritas","vol":1084377300,"nilai":321510056700,"freq":43623,"chg":-8.22},{"kode":"YJ","nama":"Lotus Andalan Sekuritas","vol":604989200,"nilai":227874386900,"freq":13224,"chg":-2.13},{"kode":"YO","nama":"Amantara Sekuritas Indonesia","vol":1245800,"nilai":573350500,"freq":86,"chg":-26.22},{"kode":"YP","nama":"Mirae Asset Sekuritas Indonesia","vol":4072462500,"nilai":1887150412400,"freq":260167,"chg":-24.72},{"kode":"YU","nama":"CGS International Sekuritas Indonesia","vol":4594582856,"nilai":3846038555370,"freq":113204,"chg":4.91},{"kode":"ZP","nama":"Maybank Sekuritas Indonesia","vol":4359899184,"nilai":4072059339020,"freq":204468,"chg":1.7},{"kode":"ZR","nama":"Bumiputera Sekuritas","vol":17695400,"nilai":12731021500,"freq":931,"chg":-46.14}]},"top_broker":{"20260602":[{"kode":"AK","nama":"UBS Sekuritas Indonesia","vol":4462871078,"nilai":6061521623290,"freq":455302,"chg":0},{"kode":"CC","nama":"MANDIRI SEKURITAS","vol":5269416062,"nilai":5352132742918,"freq":468881,"chg":0},{"kode":"XL","nama":"Stockbit Sekuritas Digital","vol":14568027748,"nilai":5097171671288,"freq":1460132,"chg":0},{"kode":"ZP","nama":"Maybank Sekuritas Indonesia","vol":3947328578,"nilai":4987585413704,"freq":234555,"chg":0},{"kode":"MG","nama":"Semesta Indovest Sekuritas","vol":2881765400,"nilai":2935220566100,"freq":139231,"chg":0},{"kode":"YP","nama":"Mirae Asset Sekuritas Indonesia","vol":4094407200,"nilai":2579524528800,"freq":305136,"chg":0},{"kode":"YU","nama":"CGS International Sekuritas Indonesia","vol":1715803424,"nilai":2486181194322,"freq":144673,"chg":0},{"kode":"BK","nama":"J.P. Morgan Sekuritas Indonesia","vol":1398293512,"nilai":2485322344770,"freq":133995,"chg":0},{"kode":"PD","nama":"Indo Premier Sekuritas","vol":1728355974,"nilai":1433327198334,"freq":202492,"chg":0},{"kode":"CP","nama":"KB Valbury Sekuritas","vol":2479155786,"nilai":1396556504600,"freq":126726,"chg":0},{"kode":"XC","nama":"Ajaib Sekuritas Asia","vol":1907827000,"nilai":1253028376500,"freq":276855,"chg":0},{"kode":"KZ","nama":"CLSA Sekuritas Indonesia","vol":439261556,"nilai":1243499702200,"freq":47757,"chg":0},{"kode":"LG","nama":"Trimegah Sekuritas Indonesia Tbk.","vol":811248900,"nilai":863607772000,"freq":47502,"chg":0},{"kode":"AZ","nama":"Sucor Sekuritas","vol":840435900,"nilai":862507455500,"freq":55246,"chg":0},{"kode":"RX","nama":"Macquarie Sekuritas Indonesia","vol":295756764,"nilai":841095309264,"freq":30059,"chg":0},{"kode":"TP","nama":"OCBC Sekuritas Indonesia","vol":459433844,"nilai":837856952720,"freq":37992,"chg":0},{"kode":"SQ","nama":"BCA Sekuritas","vol":822320640,"nilai":809418882200,"freq":68992,"chg":0},{"kode":"HD","nama":"KGI Sekuritas Indonesia","vol":1006571100,"nilai":728019248000,"freq":59056,"chg":0},{"kode":"NI","nama":"BNI Sekuritas","vol":920286800,"nilai":723987735700,"freq":86390,"chg":0},{"kode":"OD","nama":"BRI Danareksa Sekuritas","vol":690922100,"nilai":592467229700,"freq":82424,"chg":0}],"20260603":[{"kode":"AK","nama":"UBS Sekuritas Indonesia","vol":7215523624,"nilai":6701897041890,"freq":509876,"chg":10.56},{"kode":"CC","nama":"MANDIRI SEKURITAS","vol":7976321628,"nilai":5502758733860,"freq":548578,"chg":2.81},{"kode":"XL","nama":"Stockbit Sekuritas Digital","vol":14755881358,"nilai":4721202481298,"freq":1477585,"chg":-7.38},{"kode":"ZP","nama":"Maybank Sekuritas Indonesia","vol":4191986148,"nilai":4004091358356,"freq":233337,"chg":-19.72},{"kode":"YU","nama":"CGS International Sekuritas Indonesia","vol":3503954942,"nilai":3666005146858,"freq":161051,"chg":47.46},{"kode":"YP","nama":"Mirae Asset Sekuritas Indonesia","vol":4969746456,"nilai":2506890389050,"freq":327176,"chg":-2.82},{"kode":"MG","nama":"Semesta Indovest Sekuritas","vol":3812741400,"nilai":2148035055900,"freq":113738,"chg":-26.82},{"kode":"PD","nama":"Indo Premier Sekuritas","vol":2506100936,"nilai":1929210701870,"freq":253788,"chg":34.6},{"kode":"BK","nama":"J.P. Morgan Sekuritas Indonesia","vol":1790564816,"nilai":1923110788620,"freq":124017,"chg":-22.62},{"kode":"CP","nama":"KB Valbury Sekuritas","vol":3153414000,"nilai":1481897917600,"freq":123511,"chg":6.11},{"kode":"SQ","nama":"BCA Sekuritas","vol":1681584166,"nilai":1193850037950,"freq":92374,"chg":47.49},{"kode":"XC","nama":"Ajaib Sekuritas Asia","vol":2131354800,"nilai":1107568611300,"freq":294669,"chg":-11.61},{"kode":"AZ","nama":"Sucor Sekuritas","vol":1518496228,"nilai":1098011619558,"freq":67420,"chg":27.3},{"kode":"NI","nama":"BNI Sekuritas","vol":1252457200,"nilai":903878468600,"freq":111587,"chg":24.85},{"kode":"LG","nama":"Trimegah Sekuritas Indonesia Tbk.","vol":906416400,"nilai":867321559600,"freq":56914,"chg":0.43},{"kode":"BB","nama":"Verdhana Sekuritas Indonesia","vol":1282467166,"nilai":832527205450,"freq":71965,"chg":86.38},{"kode":"HD","nama":"KGI Sekuritas Indonesia","vol":1449268500,"nilai":635353861700,"freq":72371,"chg":-12.73},{"kode":"KZ","nama":"CLSA Sekuritas Indonesia","vol":230821900,"nilai":587019558500,"freq":35461,"chg":-52.79},{"kode":"KK","nama":"Phillip Sekuritas Indonesia","vol":1419981800,"nilai":562475241400,"freq":82383,"chg":17.69},{"kode":"OD","nama":"BRI Danareksa Sekuritas","vol":1006342400,"nilai":542611327300,"freq":76776,"chg":-8.41}],"20260604":[{"kode":"AK","nama":"UBS Sekuritas Indonesia","vol":8262924498,"nilai":8298905332520,"freq":523944,"chg":23.83},{"kode":"CC","nama":"MANDIRI SEKURITAS","vol":8174590100,"nilai":6452467661700,"freq":464951,"chg":17.26},{"kode":"ZP","nama":"Maybank Sekuritas Indonesia","vol":4359899184,"nilai":4072059339020,"freq":204468,"chg":1.7},{"kode":"YU","nama":"CGS International Sekuritas Indonesia","vol":4594582856,"nilai":3846038555370,"freq":113204,"chg":4.91},{"kode":"XL","nama":"Stockbit Sekuritas Digital","vol":12456854628,"nilai":3808219664800,"freq":1185132,"chg":-19.34},{"kode":"BK","nama":"J.P. Morgan Sekuritas Indonesia","vol":2815271400,"nilai":2976888453380,"freq":133104,"chg":54.8},{"kode":"YP","nama":"Mirae Asset Sekuritas Indonesia","vol":4072462500,"nilai":1887150412400,"freq":260167,"chg":-24.72},{"kode":"MG","nama":"Semesta Indovest Sekuritas","vol":3243608000,"nilai":1724575674400,"freq":78117,"chg":-19.71},{"kode":"CP","nama":"KB Valbury Sekuritas","vol":4000848400,"nilai":1662706447200,"freq":94778,"chg":12.2},{"kode":"PD","nama":"Indo Premier Sekuritas","vol":2069723882,"nilai":1362290436290,"freq":195258,"chg":-29.39},{"kode":"KZ","nama":"CLSA Sekuritas Indonesia","vol":470691500,"nilai":1183397384300,"freq":62498,"chg":101.59},{"kode":"LG","nama":"Trimegah Sekuritas Indonesia Tbk.","vol":847022907,"nilai":936258495650,"freq":54477,"chg":7.95},{"kode":"SQ","nama":"BCA Sekuritas","vol":1174305128,"nilai":931362493400,"freq":70054,"chg":-21.99},{"kode":"XC","nama":"Ajaib Sekuritas Asia","vol":1801287200,"nilai":883864497300,"freq":228171,"chg":-20.2},{"kode":"HD","nama":"KGI Sekuritas Indonesia","vol":1570297900,"nilai":736192055800,"freq":70708,"chg":15.87},{"kode":"AZ","nama":"Sucor Sekuritas","vol":1067465400,"nilai":699736490100,"freq":48208,"chg":-36.27},{"kode":"NI","nama":"BNI Sekuritas","vol":988232064,"nilai":668172427600,"freq":84964,"chg":-26.08},{"kode":"KK","nama":"Phillip Sekuritas Indonesia","vol":1234589000,"nilai":627491517100,"freq":70357,"chg":11.56},{"kode":"DP","nama":"DBS Vickers Sekuritas Indonesia","vol":745096300,"nilai":606899983000,"freq":10005,"chg":475.42},{"kode":"OD","nama":"BRI Danareksa Sekuritas","vol":1197978700,"nilai":569516729600,"freq":63799,"chg":4.96}]},"foreign":{"20260602":{"buy":6055891800,"sell":6833683200,"net":-777791400},"20260603":{"buy":6055891800,"sell":6833683200,"net":-777791400},"20260604":{"buy":11718976600,"sell":10369976500,"net":1349000100}},"top_nego":{"20260602":[{"kode":"BMRI","nama":"Bank Mandiri (Persero) Tbk.","prev":4080.0,"close":4170.0,"selisih":90.0,"vol":261911500,"nilai":1086531816000.0,"freq":45777,"fsell":203198300,"fbuy":185842900,"nego_vol":65254096,"nego_val":270760727267.0},{"kode":"BBRI","nama":"Bank Rakyat Indonesia (Persero) Tbk.","prev":2950.0,"close":3040.0,"selisih":90.0,"vol":320974000,"nilai":969422681000.0,"freq":49510,"fsell":212940900,"fbuy":200683300,"nego_vol":64121467,"nego_val":193712522389.0},{"kode":"SMMA","nama":"Sinarmas Multiartha Tbk.","prev":17975.0,"close":17975.0,"selisih":0.0,"vol":1300,"nilai":23367500.0,"freq":8,"fsell":500,"fbuy":0,"nego_vol":10085514,"nego_val":117361854800.0},{"kode":"TLKM","nama":"Telkom Indonesia (Persero) Tbk.","prev":3030.0,"close":2950.0,"selisih":-80.0,"vol":242446000,"nilai":716629998000.0,"freq":31242,"fsell":200361800,"fbuy":194569500,"nego_vol":30453935,"nego_val":89890229636.0},{"kode":"BBCA","nama":"Bank Central Asia Tbk.","prev":5700.0,"close":5825.0,"selisih":125.0,"vol":346305200,"nilai":2008327572500.0,"freq":55396,"fsell":272685400,"fbuy":266433200,"nego_vol":14670856,"nego_val":85100318259.0},{"kode":"ESSA","nama":"ESSA Industries Indonesia Tbk.","prev":670.0,"close":665.0,"selisih":-5.0,"vol":63638400,"nilai":42485618500.0,"freq":7042,"fsell":16202800,"fbuy":15440400,"nego_vol":46300000,"nego_val":34725000000.0},{"kode":"GOTO","nama":"GoTo Gojek Tokopedia Tbk.","prev":50.0,"close":50.0,"selisih":0.0,"vol":398734700,"nilai":19936735000.0,"freq":8348,"fsell":20798500,"fbuy":233865300,"nego_vol":627981602,"nego_val":28640371460.0},{"kode":"BOGA","nama":"Apollo Global Interactive Tbk.","prev":1340.0,"close":1335.0,"selisih":-5.0,"vol":4500,"nilai":5988500.0,"freq":28,"fsell":600,"fbuy":500,"nego_vol":19520000,"nego_val":27913600000.0},{"kode":"CASA","nama":"Capital Financial Indonesia Tbk.","prev":1350.0,"close":1350.0,"selisih":0.0,"vol":69900,"nilai":94298500.0,"freq":298,"fsell":40100,"fbuy":0,"nego_vol":19318500,"nego_val":26083975000.0},{"kode":"ASII","nama":"Astra International Tbk.","prev":5000.0,"close":4900.0,"selisih":-100.0,"vol":156532600,"nilai":764937436500.0,"freq":35193,"fsell":142267600,"fbuy":95411700,"nego_vol":5297824,"nego_val":25930202618.0},{"kode":"APIC","nama":"Pacific Strategic Financial Tbk.","prev":980.0,"close":835.0,"selisih":-145.0,"vol":1824700,"nilai":1585304000.0,"freq":1257,"fsell":1471100,"fbuy":41900,"nego_vol":23324475,"nego_val":25812790090.0},{"kode":"NSSS","nama":"Nusantara Sawit Sejahtera Tbk.","prev":462.0,"close":464.0,"selisih":2.0,"vol":3706900,"nilai":1717014000.0,"freq":1178,"fsell":1308000,"fbuy":975500,"nego_vol":37500000,"nego_val":17400000000.0},{"kode":"OBMD","nama":"OBM Drilchem Tbk.","prev":206.0,"close":184.0,"selisih":-22.0,"vol":1976700,"nilai":373354400.0,"freq":372,"fsell":445100,"fbuy":10800,"nego_vol":50650000,"nego_val":15650850000.0},{"kode":"MIKA","nama":"Mitra Keluarga Karyasehat Tbk.","prev":1620.0,"close":1700.0,"selisih":80.0,"vol":13071200,"nilai":21951669500.0,"freq":3388,"fsell":11958600,"fbuy":10311000,"nego_vol":7377157,"nego_val":12019844340.0},{"kode":"BHAT","nama":"Bhakti Multi Artha Tbk.","prev":1010.0,"close":1020.0,"selisih":10.0,"vol":4000,"nilai":4073000.0,"freq":19,"fsell":1500,"fbuy":0,"nego_vol":11765000,"nego_val":12000300000.0}],"20260603":[{"kode":"BMRI","nama":"Bank Mandiri (Persero) Tbk.","prev":4080.0,"close":4170.0,"selisih":90.0,"vol":261911500,"nilai":1086531816000.0,"freq":45777,"fsell":203198300,"fbuy":185842900,"nego_vol":65254096,"nego_val":270760727267.0},{"kode":"BBRI","nama":"Bank Rakyat Indonesia (Persero) Tbk.","prev":2950.0,"close":3040.0,"selisih":90.0,"vol":320974000,"nilai":969422681000.0,"freq":49510,"fsell":212940900,"fbuy":200683300,"nego_vol":64121467,"nego_val":193712522389.0},{"kode":"SMMA","nama":"Sinarmas Multiartha Tbk.","prev":17975.0,"close":17975.0,"selisih":0.0,"vol":1300,"nilai":23367500.0,"freq":8,"fsell":500,"fbuy":0,"nego_vol":10085514,"nego_val":117361854800.0},{"kode":"TLKM","nama":"Telkom Indonesia (Persero) Tbk.","prev":3030.0,"close":2950.0,"selisih":-80.0,"vol":242446000,"nilai":716629998000.0,"freq":31242,"fsell":200361800,"fbuy":194569500,"nego_vol":30453935,"nego_val":89890229636.0},{"kode":"BBCA","nama":"Bank Central Asia Tbk.","prev":5700.0,"close":5825.0,"selisih":125.0,"vol":346305200,"nilai":2008327572500.0,"freq":55396,"fsell":272685400,"fbuy":266433200,"nego_vol":14670856,"nego_val":85100318259.0},{"kode":"ESSA","nama":"ESSA Industries Indonesia Tbk.","prev":670.0,"close":665.0,"selisih":-5.0,"vol":63638400,"nilai":42485618500.0,"freq":7042,"fsell":16202800,"fbuy":15440400,"nego_vol":46300000,"nego_val":34725000000.0},{"kode":"GOTO","nama":"GoTo Gojek Tokopedia Tbk.","prev":50.0,"close":50.0,"selisih":0.0,"vol":398734700,"nilai":19936735000.0,"freq":8348,"fsell":20798500,"fbuy":233865300,"nego_vol":627981602,"nego_val":28640371460.0},{"kode":"BOGA","nama":"Apollo Global Interactive Tbk.","prev":1340.0,"close":1335.0,"selisih":-5.0,"vol":4500,"nilai":5988500.0,"freq":28,"fsell":600,"fbuy":500,"nego_vol":19520000,"nego_val":27913600000.0},{"kode":"CASA","nama":"Capital Financial Indonesia Tbk.","prev":1350.0,"close":1350.0,"selisih":0.0,"vol":69900,"nilai":94298500.0,"freq":298,"fsell":40100,"fbuy":0,"nego_vol":19318500,"nego_val":26083975000.0},{"kode":"ASII","nama":"Astra International Tbk.","prev":5000.0,"close":4900.0,"selisih":-100.0,"vol":156532600,"nilai":764937436500.0,"freq":35193,"fsell":142267600,"fbuy":95411700,"nego_vol":5297824,"nego_val":25930202618.0},{"kode":"APIC","nama":"Pacific Strategic Financial Tbk.","prev":980.0,"close":835.0,"selisih":-145.0,"vol":1824700,"nilai":1585304000.0,"freq":1257,"fsell":1471100,"fbuy":41900,"nego_vol":23324475,"nego_val":25812790090.0},{"kode":"NSSS","nama":"Nusantara Sawit Sejahtera Tbk.","prev":462.0,"close":464.0,"selisih":2.0,"vol":3706900,"nilai":1717014000.0,"freq":1178,"fsell":1308000,"fbuy":975500,"nego_vol":37500000,"nego_val":17400000000.0},{"kode":"OBMD","nama":"OBM Drilchem Tbk.","prev":206.0,"close":184.0,"selisih":-22.0,"vol":1976700,"nilai":373354400.0,"freq":372,"fsell":445100,"fbuy":10800,"nego_vol":50650000,"nego_val":15650850000.0},{"kode":"MIKA","nama":"Mitra Keluarga Karyasehat Tbk.","prev":1620.0,"close":1700.0,"selisih":80.0,"vol":13071200,"nilai":21951669500.0,"freq":3388,"fsell":11958600,"fbuy":10311000,"nego_vol":7377157,"nego_val":12019844340.0},{"kode":"BHAT","nama":"Bhakti Multi Artha Tbk.","prev":1010.0,"close":1020.0,"selisih":10.0,"vol":4000,"nilai":4073000.0,"freq":19,"fsell":1500,"fbuy":0,"nego_vol":11765000,"nego_val":12000300000.0}],"20260604":[{"kode":"BRMS","nama":"Bumi Resources Minerals Tbk.","prev":535.0,"close":520.0,"selisih":-15.0,"vol":441265500,"nilai":219698492200.0,"freq":19564,"fsell":262115300,"fbuy":236260000,"nego_vol":677207075,"nego_val":335893536900.0},{"kode":"BMRI","nama":"Bank Mandiri (Persero) Tbk.","prev":4050.0,"close":3970.0,"selisih":-80.0,"vol":328529500,"nilai":1307219519000.0,"freq":46716,"fsell":234281600,"fbuy":193126800,"nego_vol":55109393,"nego_val":219030091550.0},{"kode":"BBCA","nama":"Bank Central Asia Tbk.","prev":5525.0,"close":5425.0,"selisih":-100.0,"vol":550059500,"nilai":2964225237500.0,"freq":82292,"fsell":453687800,"fbuy":367632600,"nego_vol":36247317,"nego_val":195018766775.0},{"kode":"PWON","nama":"Pakuwon Jati Tbk.","prev":282.0,"close":290.0,"selisih":8.0,"vol":74374900,"nilai":20409180400.0,"freq":5814,"fsell":35127300,"fbuy":45762600,"nego_vol":520355200,"nego_val":142390666400.0},{"kode":"TLKM","nama":"Telkom Indonesia (Persero) Tbk.","prev":2850.0,"close":2900.0,"selisih":50.0,"vol":197151900,"nilai":563844415000.0,"freq":22638,"fsell":166516500,"fbuy":178160200,"nego_vol":47548779,"nego_val":135941962400.0},{"kode":"BUMI","nama":"Bumi Resources Tbk.","prev":148.0,"close":150.0,"selisih":2.0,"vol":4978373200,"nilai":714418001000.0,"freq":74237,"fsell":1709206700,"fbuy":2002173100,"nego_vol":862060000,"nego_val":129719968800.0},{"kode":"SMMA","nama":"Sinarmas Multiartha Tbk.","prev":17975.0,"close":19000.0,"selisih":1025.0,"vol":6100,"nilai":112042500.0,"freq":49,"fsell":0,"fbuy":0,"nego_vol":10402873,"nego_val":116844159405.0},{"kode":"AMRT","nama":"Sumber Alfaria Trijaya Tbk.","prev":1350.0,"close":1330.0,"selisih":-20.0,"vol":143224600,"nilai":191443646000.0,"freq":18388,"fsell":122935700,"fbuy":117898900,"nego_vol":59101093,"nego_val":79268409740.0},{"kode":"GOTO","nama":"GoTo Gojek Tokopedia Tbk.","prev":50.0,"close":50.0,"selisih":0.0,"vol":163038900,"nilai":8151945000.0,"freq":2924,"fsell":35000000,"fbuy":67687900,"nego_vol":896905625,"nego_val":41907282210.0},{"kode":"ENRG","nama":"Energi Mega Persada Tbk.","prev":1350.0,"close":1340.0,"selisih":-10.0,"vol":51067600,"nilai":65905169000.0,"freq":8359,"fsell":19936000,"fbuy":34129500,"nego_vol":22787407,"nego_val":30762999450.0},{"kode":"APIC","nama":"Pacific Strategic Financial Tbk.","prev":710.0,"close":605.0,"selisih":-105.0,"vol":63093600,"nilai":38175048500.0,"freq":1270,"fsell":61024600,"fbuy":494200,"nego_vol":37645407,"nego_val":26675517985.0},{"kode":"YULE","nama":"Yulie Sekuritas Indonesia Tbk.","prev":3260.0,"close":3260.0,"selisih":0.0,"vol":500,"nilai":1629000.0,"freq":5,"fsell":200,"fbuy":0,"nego_vol":7169400,"nego_val":21508200000.0},{"kode":"BBRI","nama":"Bank Rakyat Indonesia (Persero) Tbk.","prev":2900.0,"close":2810.0,"selisih":-90.0,"vol":493450500,"nilai":1391889012000.0,"freq":85327,"fsell":345691600,"fbuy":185679700,"nego_vol":6811243,"nego_val":19214557395.0},{"kode":"ASII","nama":"Astra International Tbk.","prev":4840.0,"close":4630.0,"selisih":-210.0,"vol":160423900,"nilai":746370983000.0,"freq":26895,"fsell":145579700,"fbuy":119790800,"nego_vol":3157991,"nego_val":14850960030.0},{"kode":"CTRA","nama":"Ciputra Development Tbk.","prev":600.0,"close":580.0,"selisih":-20.0,"vol":20045100,"nilai":11531106500.0,"freq":2872,"fsell":9499400,"fbuy":11789500,"nego_vol":20000000,"nego_val":11575000000.0}]},"indeks_key":{"20260602":[{"kode":"COMPOSITE","prev":6127.381,"high":6264.261,"low":6143.625,"close":6195.427,"selisih":68.046,"vol":26582264453,"nilai":25428307684128.0},{"kode":"LQ45","prev":611.168,"high":622.834,"low":612.823,"close":619.275,"selisih":8.107,"vol":9307219040,"nilai":14218754927894.0},{"kode":"IDX30","prev":347.54,"high":352.849,"low":346.323,"close":349.573,"selisih":2.033,"vol":7472025794,"nilai":11438478454897.0},{"kode":"IDX80","prev":92.605,"high":94.562,"low":92.705,"close":93.62,"selisih":1.015,"vol":12836785932,"nilai":20133209676704.0},{"kode":"IDXSMC-LIQ","prev":299.241,"high":303.02,"low":298.877,"close":300.379,"selisih":1.138,"vol":2055183069,"nilai":1956127255384.0}],"20260603":[{"kode":"COMPOSITE","prev":6195.427,"high":6213.801,"low":5841.996,"close":5941.066,"selisih":-254.361,"vol":36303805903,"nilai":25219350363473.0},{"kode":"LQ45","prev":619.275,"high":620.225,"low":584.576,"close":588.991,"selisih":-30.284,"vol":13944817440,"nilai":14454724504035.0},{"kode":"IDX30","prev":349.573,"high":349.762,"low":331.586,"close":333.843,"selisih":-15.73,"vol":10363574762,"nilai":11342255220969.0},{"kode":"IDX80","prev":93.62,"high":93.771,"low":87.84,"close":88.789,"selisih":-4.831,"vol":18060217853,"nilai":18889707418108.0},{"kode":"IDXSMC-LIQ","prev":300.379,"high":301.296,"low":281.024,"close":285.666,"selisih":-14.713,"vol":3757194346,"nilai":2717954019441.0}],"20260604":[{"kode":"COMPOSITE","prev":5941.066,"high":5924.508,"low":5644.234,"close":5839.785,"selisih":-101.281,"vol":36246638809,"nilai":25511991029015.0},{"kode":"LQ45","prev":588.991,"high":589.489,"low":560.093,"close":580.916,"selisih":-8.075,"vol":13817992721,"nilai":15128782873285.0},{"kode":"IDX30","prev":333.843,"high":334.653,"low":318.357,"close":328.608,"selisih":-5.235,"vol":10843589424,"nilai":12531826210725.0},{"kode":"IDX80","prev":88.789,"high":88.598,"low":84.021,"close":87.346,"selisih":-1.443,"vol":19750549599,"nilai":20658316385195.0},{"kode":"IDXSMC-LIQ","prev":285.666,"high":284.185,"low":269.801,"close":280.184,"selisih":-5.482,"vol":3725048107,"nilai":2551486580155.0}]}};
+
+let BS_DATE = '20260604';
+let bsQuadChart = null;
+let bsForeignChart = null;
+
+function bsInit() {
+  bsSetDate(BS_DATE, document.querySelector('.bs-tab[data-d="'+BS_DATE+'"]'));
+}
+
+function bsSetDate(d, el) {
+  BS_DATE = d;
+  document.querySelectorAll('.bs-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  bsRenderCards(d);
+  bsRenderBrokerTable(d);
+  bsRenderQuadrant(d);
+  bsRenderForeign();
+  bsRenderNego(d);
+}
+
+function fmtB(n) {
+  if (n >= 1e12) return (n/1e12).toFixed(1)+'T';
+  if (n >= 1e9)  return (n/1e9).toFixed(1)+'B';
+  if (n >= 1e6)  return (n/1e6).toFixed(1)+'M';
+  return n.toLocaleString();
+}
+function fmtLot(n) {
+  if (n >= 1e9) return (n/1e9).toFixed(1)+'G lot';
+  if (n >= 1e6) return (n/1e6).toFixed(1)+'M lot';
+  if (n >= 1e3) return (n/1e3).toFixed(1)+'K lot';
+  return n+' lot';
+}
+
+function bsRenderCards(d) {
+  const data = BS_DATA.broker[d];
+  const total_nilai = data.reduce((s,b)=>s+b.nilai,0);
+  const total_vol   = data.reduce((s,b)=>s+b.vol,0);
+  const total_freq  = data.reduce((s,b)=>s+b.freq,0);
+  const ff = BS_DATA.foreign[d];
+  const net = ff.net;
+  const netCls = net >= 0 ? 'pos' : 'neg';
+  const netSign = net >= 0 ? '+' : '';
+  document.getElementById('bs-cards').innerHTML = `
+    <div class="bs-card">
+      <div class="bs-card-label">Total Broker Aktif</div>
+      <div class="bs-card-val">${data.length}</div>
+      <div class="bs-card-sub">Anggota bursa</div>
+    </div>
+    <div class="bs-card">
+      <div class="bs-card-label">Total Nilai Transaksi</div>
+      <div class="bs-card-val">${fmtB(total_nilai)}</div>
+      <div class="bs-card-sub">${fmtLot(total_vol)} vol</div>
+    </div>
+    <div class="bs-card">
+      <div class="bs-card-label">Foreign Net Flow</div>
+      <div class="bs-card-val ${netCls}">${netSign}${fmtLot(net)}</div>
+      <div class="bs-card-sub">Buy ${fmtLot(ff.buy)} / Sell ${fmtLot(ff.sell)}</div>
+    </div>
+    <div class="bs-card">
+      <div class="bs-card-label">Total Frekuensi</div>
+      <div class="bs-card-val">${total_freq.toLocaleString()}</div>
+      <div class="bs-card-sub">Transaksi</div>
+    </div>
+  `;
+}
+
+function bsRenderBrokerTable(d) {
+  const top = BS_DATA.top_broker[d];
+  const maxNilai = top[0].nilai;
+  let html = '';
+  top.forEach((b,i) => {
+    const pct = Math.round(b.nilai/maxNilai*100);
+    const chg = b.chg !== undefined ? b.chg : 0;
+    const chgStr = d==='20260602' ? '' : `<span style="color:${chg>=0?'#22c55e':'#ef4444'};font-size:10px">${chg>=0?'+':''}${chg.toFixed(1)}%</span>`;
+    html += `<tr>
+      <td style="color:var(--text2)">${i+1}</td>
+      <td><b>${b.kode}</b></td>
+      <td class="r">${fmtB(b.nilai)} ${chgStr}</td>
+      <td class="r">${fmtB(b.vol)}</td>
+      <td class="r">${b.freq.toLocaleString()}</td>
+      <td><div class="bs-bar-outer"><div class="bs-bar-inner" style="width:${pct}%"></div></div></td>
+    </tr>`;
+  });
+  document.getElementById('bs-broker-tbody').innerHTML = html;
+}
+
+function bsRenderQuadrant(d) {
+  const data = BS_DATA.broker[d];
+  const maxNilai = Math.max(...data.map(b=>b.nilai));
+  const maxFreq  = Math.max(...data.map(b=>b.freq));
+  const medNilai = maxNilai * 0.5;
+  const medFreq  = maxFreq  * 0.5;
+
+  // Bubble: x=freq/maxFreq*100, y=nilai/maxNilai*100, r=sqrt(nilai/maxNilai)*28
+  const points = data.map(b => ({
+    x: b.freq/maxFreq*100,
+    y: b.nilai/maxNilai*100,
+    r: Math.max(4, Math.sqrt(b.nilai/maxNilai)*28),
+    kode: b.kode,
+    nama: b.nama,
+    nilai: b.nilai,
+    freq: b.freq,
+    chg: b.chg||0
+  }));
+
+  const isDark = document.documentElement.classList.contains('dark') ||
+    document.body.getAttribute('data-theme')==='dark' ||
+    getComputedStyle(document.body).getPropertyValue('--bg').trim() === '#111827';
+
+  const gridCol = isDark ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.07)';
+  const textCol = isDark ? '#9ca3af' : '#6b7280';
+  const accentCol = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#3b82f6';
+
+  const colors = points.map(p => {
+    const isTop = p.y > 50;
+    const isRight = p.x > 50;
+    if (isTop && isRight) return 'rgba(34,197,94,.75)';   // Smart Accum + Aggressive → green
+    if (isTop && !isRight) return 'rgba(59,130,246,.75)'; // Smart Accum → blue
+    if (!isTop && isRight) return 'rgba(239,68,68,.75)';  // Distribution → red
+    return 'rgba(156,163,175,.6)';                        // Passive → gray
+  });
+
+  const ctx = document.getElementById('bs-quadrant-canvas').getContext('2d');
+  if (bsQuadChart) bsQuadChart.destroy();
+  bsQuadChart = new Chart(ctx, {
+    type: 'bubble',
+    data: {
+      datasets: [{
+        data: points,
+        backgroundColor: colors,
+        borderColor: colors.map(c=>c.replace('.75','1').replace('.6','1')),
+        borderWidth: 0.5,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: {display:false},
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const p = ctx.raw;
+              return [`${p.kode} — ${p.nama.substring(0,25)}`,
+                      `Nilai: ${fmtB(p.nilai)}`,
+                      `Freq: ${p.freq.toLocaleString()}`];
+            }
+          }
+        },
+        // Custom plugin: draw kode labels
+        afterDraw: null
+      },
+      scales: {
+        x: { min:0, max:105, title:{display:true,text:'Frekuensi →',color:textCol,font:{size:9}},
+             grid:{color:gridCol}, ticks:{color:textCol,font:{size:9},
+             callback: v => v===50?'Median':''}},
+        y: { min:0, max:105, title:{display:true,text:'Nilai →',color:textCol,font:{size:9}},
+             grid:{color:gridCol}, ticks:{color:textCol,font:{size:9},
+             callback: v => v===50?'Median':''}}
+      },
+      animation: false
+    },
+    plugins: [{
+      id: 'bubbleLabels',
+      afterDraw(chart) {
+        const ctx2 = chart.ctx;
+        chart.data.datasets[0].data.forEach((p,i) => {
+          const meta = chart.getDatasetMeta(0).data[i];
+          if (!meta) return;
+          ctx2.save();
+          ctx2.font = 'bold 8px sans-serif';
+          ctx2.fillStyle = '#fff';
+          ctx2.textAlign = 'center';
+          ctx2.textBaseline = 'middle';
+          if (p.r > 8) ctx2.fillText(p.kode, meta.x, meta.y);
+          ctx2.restore();
+        });
+        // Quadrant labels
+        const xA = chart.scales.x, yA = chart.scales.y;
+        const mx = xA.getPixelForValue(50), my = yA.getPixelForValue(50);
+        ctx2.save();
+        ctx2.font = '8px sans-serif';
+        ctx2.fillStyle = textCol;
+        ctx2.globalAlpha = 0.5;
+        ctx2.fillText('SMART ACCUM', xA.getPixelForValue(10), yA.getPixelForValue(90));
+        ctx2.fillText('AGRESIF BELI', xA.getPixelForValue(75), yA.getPixelForValue(90));
+        ctx2.fillText('PASIF', xA.getPixelForValue(10), yA.getPixelForValue(15));
+        ctx2.fillText('DISTRIBUSI', xA.getPixelForValue(70), yA.getPixelForValue(15));
+        // crosshairs
+        ctx2.globalAlpha = 0.15;
+        ctx2.strokeStyle = textCol;
+        ctx2.lineWidth = 1;
+        ctx2.setLineDash([4,4]);
+        ctx2.beginPath(); ctx2.moveTo(mx,yA.top); ctx2.lineTo(mx,yA.bottom); ctx2.stroke();
+        ctx2.beginPath(); ctx2.moveTo(xA.left,my); ctx2.lineTo(xA.right,my); ctx2.stroke();
+        ctx2.restore();
+      }
+    }]
+  });
+}
+
+function bsRenderForeign() {
+  const dates = BS_DATA.dates;
+  const lbls = dates.map(d => BS_DATA.labels[d]);
+  const buyData  = dates.map(d => Math.round(BS_DATA.foreign[d].buy/1e6));
+  const sellData = dates.map(d => Math.round(BS_DATA.foreign[d].sell/1e6));
+  const netData  = dates.map(d => Math.round(BS_DATA.foreign[d].net/1e6));
+  const ctx = document.getElementById('bs-foreign-canvas').getContext('2d');
+  if (bsForeignChart) bsForeignChart.destroy();
+  const isDark = document.documentElement.classList.contains('dark') ||
+    getComputedStyle(document.body).getPropertyValue('--bg').trim() === '#111827';
+  const gridCol = isDark ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.07)';
+  const textCol = isDark ? '#9ca3af' : '#6b7280';
+  bsForeignChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: lbls,
+      datasets: [
+        {label:'Foreign Buy', data:buyData,  backgroundColor:'rgba(34,197,94,.7)',  borderRadius:3},
+        {label:'Foreign Sell',data:sellData, backgroundColor:'rgba(239,68,68,.7)',  borderRadius:3},
+        {label:'Net',         data:netData,  backgroundColor:'rgba(59,130,246,.85)', borderRadius:3, type:'line',
+         borderColor:'rgba(59,130,246,1)', pointRadius:4, fill:false, yAxisID:'y2'}
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:textCol,font:{size:10}}}},
+      scales:{
+        x:{ticks:{color:textCol,font:{size:10}},grid:{color:gridCol}},
+        y:{ticks:{color:textCol,font:{size:9},callback:v=>v+'M'},grid:{color:gridCol}},
+        y2:{position:'right',ticks:{color:'rgba(59,130,246,.8)',font:{size:9},callback:v=>v+'M'},
+            grid:{display:false}}
+      }
+    }
+  });
+}
+
+function bsRenderNego(d) {
+  const top = BS_DATA.top_nego[d];
+  if (!top || !top.length) {
+    document.getElementById('bs-nego-list').innerHTML = '<div style="color:var(--text2);font-size:12px;padding:12px">Tidak ada data</div>';
+    return;
+  }
+  const maxVal = top[0].nego_val;
+  let html = '';
+  top.forEach(s => {
+    const barW = Math.max(4, Math.round(s.nego_val/maxVal*120));
+    const pct = (s.close&&s.prev ? ((s.close-s.prev)/s.prev*100).toFixed(2) : '0.00');
+    const pctCls = pct >= 0 ? 'color:#22c55e' : 'color:#ef4444';
+    html += `<div class="bs-nego-row">
+      <div class="bs-nego-kode">${s.kode}</div>
+      <div class="bs-nego-nama">${s.nama}</div>
+      <div class="bs-nego-val">${fmtB(s.nego_val)}</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">
+        <div class="bs-nego-bar" style="width:${barW}px"></div>
+        <span style="font-size:9px;${pctCls}">${pct>=0?'+':''}${pct}%</span>
+      </div>
+    </div>`;
+  });
+  document.getElementById('bs-nego-list').innerHTML = html;
+}
+/* ========== END BROKER SUMMARY ========== */
+
+</script>
 
 </body>
 </html>

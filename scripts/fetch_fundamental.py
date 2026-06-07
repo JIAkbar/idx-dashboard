@@ -702,8 +702,8 @@ def main():
             ok += 1
             print(f" ✓ {data.get('company_name','')[:28]}")
             results.append({
-                "code":   ticker,
-                "name":   data.get("company_name", ""),
+                "ticker": ticker,
+                "name":   data.get("company_name", "") or data.get("name", ""),
                 "sector": data.get("sector", ""),
             })
         else:
