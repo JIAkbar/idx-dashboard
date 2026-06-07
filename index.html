@@ -558,6 +558,83 @@ tr:hover td{background:rgba(66,165,245,0.04)}
   background:transparent;color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
 .jia-pos-sync:hover{background:var(--accent);color:#fff}
 .jia-pos-tag{font-size:10px;color:var(--text3);margin-left:auto}
+
+/* ====== MOBILE HORIZONTAL SCROLL FIX ====== */
+@media (max-width: 768px) {
+
+  /* Nuclear fix — nothing escapes viewport */
+  * { box-sizing: border-box }
+  html { overflow-x: hidden; width: 100% }
+  body { overflow-x: hidden; width: 100%; max-width: 100vw }
+  .main { overflow-x: hidden; width: 100% }
+
+  /* All flex children must shrink */
+  .g2, .g3, .card, .wrap, .panel > div { min-width: 0 }
+
+  /* Charts: fully responsive, no fixed canvas width */
+  .chart-wrap { 
+    height: 200px !important; 
+    width: 100% !important; 
+    max-width: 100% !important;
+    overflow: hidden !important;
+    position: relative
+  }
+  .chart-wrap canvas { 
+    max-width: 100% !important; 
+    width: 100% !important;
+    height: 100% !important
+  }
+
+  /* Tables: scroll inside card, never overflow page */
+  .card { overflow-x: auto !important; max-width: 100% }
+  table { min-width: 0; max-width: 100% }
+
+  /* Search inputs: shrink on mobile */
+  #pi-search { width: 160px !important }
+  .pi-tbl-search { width: 140px !important }
+
+  /* Peta Investor graph: limit height */
+  #pi-graph { height: 360px !important }
+  #pi-graph-wrap { max-width: 100vw; overflow: hidden }
+
+  /* Kalkulator JIA: compact pos bar */
+  .jia-pos-bar { gap: 6px }
+  .jia-pos-inp.avg { width: 80px }
+  .jia-pos-tag { display: none }
+  .jia-fee-note { display: none }
+
+  /* Peta Investor table: fit */
+  .pi-tbl-wrap { max-width: calc(100vw - 24px) }
+  .pi-tbl th, .pi-tbl td { font-size: 10px; padding: 6px 7px }
+
+  /* Bottom nav: 7 items on small screen */
+  .mob-nav-item { padding: 3px 1px }
+  .mob-nav-item .mn-icon { font-size: 18px }
+  .mob-nav-item span:not(.mn-icon) { font-size: 7.5px }
+
+  /* Toolbar row: allow wrapping */
+  .toolbar { flex-wrap: wrap }
+
+  /* Stock Detail: prevent overflow */
+  .fd-layout { max-width: 100% }
+  .fd-card { min-width: 0; max-width: 100% }
+
+  /* More menu modal */
+  #mn-more-menu { max-width: calc(100vw - 32px) }
+}
+
+/* Extra small screens */
+@media (max-width: 380px) {
+  .chart-wrap { height: 160px !important }
+  .mob-nav-item .mn-icon { font-size: 16px }
+  .mob-nav-item span:not(.mn-icon) { font-size: 6.5px }
+  #pi-graph { height: 280px !important }
+}
+
+/* === MORE BUTTON ANIMATION === */
+@keyframes mn-wag{0%,100%{transform:rotate(0)}25%{transform:rotate(15deg)}75%{transform:rotate(-15deg)}}
+#mn-more .mn-icon{animation:mn-wag 2.5s ease-in-out infinite;display:inline-block}
+#mn-more.open .mn-icon{animation:none;transform:rotate(90deg);transition:transform .2s}
 </style>
 </head>
 <body>
@@ -594,14 +671,14 @@ tr:hover td{background:rgba(66,165,245,0.04)}
   <div class="nav-item" id="nav-tvchart" onclick="sw('tvchart',this);initTVChart()" title="Chart">
     <span class="nav-icon">📈</span><span class="nav-label">Chart</span>
   </div>
-  <div class="nav-item" id="nav-avgdown" onclick="sw('avgdown',this)" title="Average Down (DCA)">
-    <span class="nav-icon">📉</span><span class="nav-label">Avg Down <small style="opacity:.65;font-size:9px">(DCA)</small></span>
-  </div>
   <div class="nav-item" id="nav-stockdetail" onclick="sw('stockdetail',this);fdInit()" title="Stock Detail">
     <span class="nav-icon">📋</span><span class="nav-label">Stock Detail</span>
   </div>
   <div class="nav-item" id="nav-petainvestor" onclick="sw('petainvestor',this);piInit()" title="Peta Investor">
     <span class="nav-icon">🕸️</span><span class="nav-label">Peta Investor</span>
+  </div>
+  <div class="nav-item" id="nav-avgdown" onclick="sw('avgdown',this)" title="Kalkulator JIA">
+    <span class="nav-icon">🧮</span><span class="nav-label">Kalkulator JIA</span>
   </div>
   <div class="nav-item" id="nav-changelog" onclick="sw('changelog',this)" title="Changelog">
     <span class="nav-icon">📝</span><span class="nav-label">Changelog</span>
@@ -627,6 +704,20 @@ tr:hover td{background:rgba(66,165,245,0.04)}
       <button class="cl-close-x" onclick="clPopClose()" title="Tutup">✕</button>
     </div>
     <div class="cl-body">
+
+      <div class="cl-pop-entry">
+        <span class="cl-pop-ver" style="background:#4f46e5">v3.8</span>
+        <span class="cl-pop-subtitle">🔧 Nav Reorder + Fix Mobile + Price Performance</span>
+        <span class="cl-pop-date">7 Jun 2026</span>
+        <ul class="cl-pop-list">
+          <li>Urutan menu: Kalkulator JIA dipindah setelah Peta Investor</li>
+          <li>Fix <strong>Price Performance</strong> — data sekarang tampil (1D/1W/1M/3M/6M/YTD)</li>
+          <li>Historis: tahun terbaru tampil di kiri, scroll ke kanan untuk tahun lama</li>
+          <li>Tombol <strong>Expand</strong> Chart/Heatmap sekarang berfungsi (termasuk mobile)</li>
+          <li>Animasi tombol "⋯ Lainnya" di mobile nav</li>
+          <li>Fix horizontal scroll di beberapa panel mobile</li>
+        </ul>
+      </div>
 
       <div class="cl-pop-entry">
         <span class="cl-pop-ver" style="background:#7c3aed">v3.6</span>
@@ -2549,7 +2640,8 @@ function buildCharts() {
     plugins:{ legend:{display:false}, ...extra },
     layout:{ padding:{top:4,bottom:4} }
   });
-  const xAx = (rot=55) => ({ticks:{color:tc,font:{size:11,weight:"500"},maxRotation:rot,padding:4},grid:{color:gc}});
+  const isMob = window.innerWidth <= 768;
+  const xAx = (rot=55) => ({ticks:{color:tc,font:{size:isMob?9:11,weight:"500"},maxRotation:rot,minRotation:rot,padding:4},grid:{color:gc}});
   const yAx = () => ({ticks:{color:tc,font:{size:12},callback:v=>v+"%",padding:6},grid:{color:gc}});
 
   // World chart
@@ -2982,6 +3074,17 @@ function tvSetGroup(grp, btn) {
   buildTVChart(TV_CURRENT_SYM);
 }
 
+
+function tvExpand() {
+  const card = document.querySelector('#tvchart .card');
+  if (!card) return;
+  const isFs = card.classList.toggle('tv-fullscreen');
+  const btn = document.querySelector('[onclick="tvExpand()"]');
+  if (btn) btn.innerHTML = isFs ? '✕ Tutup' : '⛶ Expand';
+  if (isFs) {
+    document.addEventListener('keydown', function esc(e){ if(e.key==='Escape'){tvExpand();document.removeEventListener('keydown',esc);} });
+  }
+}
 function tvSetSym(sym, btn) {
   TV_CURRENT_SYM = sym;
   document.querySelectorAll(".tv-sym-btn").forEach(b=>b.classList.remove("active"));
@@ -3468,7 +3571,7 @@ function fdRender(fd) {
 
   // ── Historis ─────────────────────────────────
   const histSrc   = fd.hist_revenue || fd.hist_net_income || {};
-  const histYears = Object.keys(histSrc).sort().slice(-4);
+  const histYears = Object.keys(histSrc).sort().reverse().slice(0,4);
   const histHdr   = histYears.map(y => "<th class='r'>"+y+"</th>").join("");
   const histTR = (lbl, obj) => {
     if (!obj || !histYears.length) return "";
@@ -3481,8 +3584,9 @@ function fdRender(fd) {
 
   // ── Price performance ────────────────────────
   const perfRows = Object.keys(pp).length
-    ? ["1D","1W","1M","3M","YTD","1Y"].map(k => fdPerfRow(k, pp[k]?.pct, pp[k]?.low, pp[k]?.high, pp[k]?.cur)).join("")
-    : "<p style='font-size:11px;color:var(--text3)'>Belum ada data</p>";
+    ? [["1D","1d"],["1W","1w"],["1M","1m"],["3M","3m"],["6M","6m"],["YTD","ytd"]]
+        .map(([lbl,k]) => fdPerfRow(lbl, pp[k+"_pct"], pp[k+"_low"], pp[k+"_high"], pp.current)).join("")
+    : "<p style='font-size:11px;color:var(--text3)'>Belum ada data — jalankan JALANKAN_FUNDAMENTAL.bat</p>";
 
   content.innerHTML =
     // ── OVERVIEW ──────────────────────────────
@@ -4440,6 +4544,7 @@ function mnSw(el) {
   mnMoreClose();
 }
 function mnToggleMore() {
+  document.getElementById('mn-more')?.classList.toggle('open');
   const m = document.getElementById('mob-more');
   if (m) m.style.display = m.style.display === 'none' ? 'block' : 'none';
 }
