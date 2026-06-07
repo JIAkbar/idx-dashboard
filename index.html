@@ -5112,21 +5112,21 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') clPopClose()
 </script>
 
 
-<!-- MOBILE BOTTOM NAV -->
+<!-- MOBILE BOTTOM NAV — urutan = desktop sidebar -->
 <nav class="mob-nav" id="mob-nav">
-  <button class="mob-nav-item active" id="mn-world"       onclick="sw('world',this);mnSw(this)"><span class="mn-icon">🌐</span>Indeks</button>
+  <button class="mob-nav-item active" id="mn-world"       onclick="sw('world',this);mnSw(this)"><span class="mn-icon">🌍</span>Indeks</button>
   <button class="mob-nav-item"        id="mn-stocks"      onclick="sw('stocks',this);mnSw(this)"><span class="mn-icon">📊</span>Stocks</button>
+  <button class="mob-nav-item"        id="mn-broker"      onclick="sw('broker',this);mnSw(this)"><span class="mn-icon">🏦</span>Broker</button>
   <button class="mob-nav-item"        id="mn-sector"      onclick="sw('sector',this);mnSw(this)"><span class="mn-icon">🏭</span>Sektor</button>
+  <button class="mob-nav-item"        id="mn-tvchart"     onclick="sw('tvchart',this);initTVChart();mnSw(this)"><span class="mn-icon">📈</span>Chart</button>
   <button class="mob-nav-item"        id="mn-stockdetail" onclick="sw('stockdetail',this);fdInit();mnSw(this)"><span class="mn-icon">📋</span>Detail</button>
-  <button class="mob-nav-item"        id="mn-petainvestor" onclick="sw('petainvestor',this);piInit();mnSw(this)"><span class="mn-icon">🕸️</span>Investor</button>
-  <button class="mob-nav-item"        id="mn-avgdown"     onclick="sw('avgdown',this);mnSw(this)"><span class="mn-icon">🧮</span>Kalkulator</button>
   <button class="mob-nav-item"        id="mn-more"        onclick="mnToggleMore()"><span class="mn-icon">⋯</span>Lainnya</button>
 </nav>
 <div id="mob-more" style="display:none;position:fixed;bottom:64px;left:0;right:0;z-index:998;background:var(--card);border-top:0.5px solid var(--border);padding:6px 0;box-shadow:0 -4px 20px rgba(0,0,0,.4)">
-  <button onclick="sw('broker',document.getElementById('nav-broker'));mnMoreClose()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer"><span style="font-size:18px">🏦</span> Top Broker</button>
-  <button onclick="sw('tvchart',document.getElementById('nav-tvchart'));initTVChart();mnMoreClose()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer"><span style="font-size:18px">📈</span> Chart (TradingView)</button>
-  <button onclick="sw('changelog',document.getElementById('nav-changelog'));mnMoreClose()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer"><span style="font-size:18px">📝</span> Changelog</button>
-  <button onclick="sw('feedback',document.getElementById('nav-feedback'));mnMoreClose()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer"><span style="font-size:18px">💬</span> Kritik & Saran</button>
+  <button onclick="sw('petainvestor',document.getElementById('nav-petainvestor'));piInit();mnSw(document.getElementById('mn-more'));mnMoreClose()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer"><span style="font-size:18px">🕸️</span> Peta Investor</button>
+  <button onclick="sw('avgdown',document.getElementById('nav-avgdown'));mnSw(document.getElementById('mn-more'));mnMoreClose()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer"><span style="font-size:18px">🧮</span> Kalkulator JIA</button>
+  <button onclick="sw('changelog',document.getElementById('nav-changelog'));mnSw(document.getElementById('mn-more'));mnMoreClose()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer"><span style="font-size:18px">📝</span> Changelog</button>
+  <button onclick="sw('feedback',document.getElementById('nav-feedback'));mnSw(document.getElementById('mn-more'));mnMoreClose()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer"><span style="font-size:18px">💬</span> Kritik & Saran</button>
 </div>
 
 </body>
