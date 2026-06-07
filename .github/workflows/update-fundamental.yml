@@ -61,6 +61,7 @@ jobs:
             TODAY=$(date +'%Y-%m-%d')
             COUNT=$(git diff --staged --name-only | wc -l)
             git commit -m "📊 Update fundamental: $TODAY ($COUNT file)"
+            git pull --rebase origin main
             git push
             echo "✅ Push berhasil: $COUNT file diperbarui."
           fi
