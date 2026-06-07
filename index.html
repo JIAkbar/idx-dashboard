@@ -697,15 +697,16 @@ tr:hover td{background:rgba(66,165,245,0.04)}
   <div class="nav-item" id="nav-petainvestor" onclick="sw('petainvestor',this);piInit()" title="Peta Investor">
     <span class="nav-icon">🕸️</span><span class="nav-label">Peta Investor</span>
   </div>
+  <div class="nav-item" id="nav-brokersummary" onclick="sw('brokersummary',this);bsInit()" title="Broker Summary (Alpha)">
+    <span class="nav-icon">🏦</span><span class="nav-label">Broker Summary <span style="font-size:8px;background:#7c3aed;color:#fff;padding:1px 5px;border-radius:8px;vertical-align:middle;font-weight:700;letter-spacing:0.3px">Alpha</span></span>
+  </div>
   <div class="nav-item" id="nav-avgdown" onclick="sw('avgdown',this)" title="Kalkulator JIA">
     <span class="nav-icon">🧮</span><span class="nav-label">Kalkulator JIA</span>
   </div>
   <div class="nav-item" id="nav-changelog" onclick="sw('changelog',this)" title="Changelog">
     <span class="nav-icon">📝</span><span class="nav-label">Changelog</span>
   </div>
-  <div class="nav-item" id="nav-brokersummary" onclick="sw('brokersummary',this);bsInit()" title="Broker Summary (Alpha)">
-    <span>🏦</span><span class="nav-label">Broker Summary <span style="font-size:8px;background:#7c3aed;color:#fff;padding:1px 5px;border-radius:8px;vertical-align:middle;font-weight:700">α</span></span>
-  </div>
+
   <div class="nav-item" id="nav-feedback" onclick="sw('feedback',this)" title="Kritik & Saran">
     <span class="nav-icon">💬</span><span class="nav-label">Kritik & Saran</span>
   </div>
@@ -5415,139 +5416,4 @@ function bsRenderQuadrant(d) {
       datasets: [{
         data: points,
         backgroundColor: colors,
-        borderColor: colors.map(c=>c.replace('.75','1').replace('.6','1')),
-        borderWidth: 0.5,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: {display:false},
-        tooltip: {
-          callbacks: {
-            label: ctx => {
-              const p = ctx.raw;
-              return [`${p.kode} — ${p.nama.substring(0,25)}`,
-                      `Nilai: ${fmtB(p.nilai)}`,
-                      `Freq: ${p.freq.toLocaleString()}`];
-            }
-          }
-        },
-        // Custom plugin: draw kode labels
-        afterDraw: null
-      },
-      scales: {
-        x: { min:0, max:105, title:{display:true,text:'Frekuensi →',color:textCol,font:{size:9}},
-             grid:{color:gridCol}, ticks:{color:textCol,font:{size:9},
-             callback: v => v===50?'Median':''}},
-        y: { min:0, max:105, title:{display:true,text:'Nilai →',color:textCol,font:{size:9}},
-             grid:{color:gridCol}, ticks:{color:textCol,font:{size:9},
-             callback: v => v===50?'Median':''}}
-      },
-      animation: false
-    },
-    plugins: [{
-      id: 'bubbleLabels',
-      afterDraw(chart) {
-        const ctx2 = chart.ctx;
-        chart.data.datasets[0].data.forEach((p,i) => {
-          const meta = chart.getDatasetMeta(0).data[i];
-          if (!meta) return;
-          ctx2.save();
-          ctx2.font = 'bold 8px sans-serif';
-          ctx2.fillStyle = '#fff';
-          ctx2.textAlign = 'center';
-          ctx2.textBaseline = 'middle';
-          if (p.r > 8) ctx2.fillText(p.kode, meta.x, meta.y);
-          ctx2.restore();
-        });
-        // Quadrant labels
-        const xA = chart.scales.x, yA = chart.scales.y;
-        const mx = xA.getPixelForValue(50), my = yA.getPixelForValue(50);
-        ctx2.save();
-        ctx2.font = '8px sans-serif';
-        ctx2.fillStyle = textCol;
-        ctx2.globalAlpha = 0.5;
-        ctx2.fillText('SMART ACCUM', xA.getPixelForValue(10), yA.getPixelForValue(90));
-        ctx2.fillText('AGRESIF BELI', xA.getPixelForValue(75), yA.getPixelForValue(90));
-        ctx2.fillText('PASIF', xA.getPixelForValue(10), yA.getPixelForValue(15));
-        ctx2.fillText('DISTRIBUSI', xA.getPixelForValue(70), yA.getPixelForValue(15));
-        // crosshairs
-        ctx2.globalAlpha = 0.15;
-        ctx2.strokeStyle = textCol;
-        ctx2.lineWidth = 1;
-        ctx2.setLineDash([4,4]);
-        ctx2.beginPath(); ctx2.moveTo(mx,yA.top); ctx2.lineTo(mx,yA.bottom); ctx2.stroke();
-        ctx2.beginPath(); ctx2.moveTo(xA.left,my); ctx2.lineTo(xA.right,my); ctx2.stroke();
-        ctx2.restore();
-      }
-    }]
-  });
-}
-
-function bsRenderForeign() {
-  const dates = BS_DATA.dates;
-  const lbls = dates.map(d => BS_DATA.labels[d]);
-  const buyData  = dates.map(d => Math.round(BS_DATA.foreign[d].buy/1e6));
-  const sellData = dates.map(d => Math.round(BS_DATA.foreign[d].sell/1e6));
-  const netData  = dates.map(d => Math.round(BS_DATA.foreign[d].net/1e6));
-  const ctx = document.getElementById('bs-foreign-canvas').getContext('2d');
-  if (bsForeignChart) bsForeignChart.destroy();
-  const isDark = document.documentElement.classList.contains('dark') ||
-    getComputedStyle(document.body).getPropertyValue('--bg').trim() === '#111827';
-  const gridCol = isDark ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.07)';
-  const textCol = isDark ? '#9ca3af' : '#6b7280';
-  bsForeignChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: lbls,
-      datasets: [
-        {label:'Foreign Buy', data:buyData,  backgroundColor:'rgba(34,197,94,.7)',  borderRadius:3},
-        {label:'Foreign Sell',data:sellData, backgroundColor:'rgba(239,68,68,.7)',  borderRadius:3},
-        {label:'Net',         data:netData,  backgroundColor:'rgba(59,130,246,.85)', borderRadius:3, type:'line',
-         borderColor:'rgba(59,130,246,1)', pointRadius:4, fill:false, yAxisID:'y2'}
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:textCol,font:{size:10}}}},
-      scales:{
-        x:{ticks:{color:textCol,font:{size:10}},grid:{color:gridCol}},
-        y:{ticks:{color:textCol,font:{size:9},callback:v=>v+'M'},grid:{color:gridCol}},
-        y2:{position:'right',ticks:{color:'rgba(59,130,246,.8)',font:{size:9},callback:v=>v+'M'},
-            grid:{display:false}}
-      }
-    }
-  });
-}
-
-function bsRenderNego(d) {
-  const top = BS_DATA.top_nego[d];
-  if (!top || !top.length) {
-    document.getElementById('bs-nego-list').innerHTML = '<div style="color:var(--text2);font-size:12px;padding:12px">Tidak ada data</div>';
-    return;
-  }
-  const maxVal = top[0].nego_val;
-  let html = '';
-  top.forEach(s => {
-    const barW = Math.max(4, Math.round(s.nego_val/maxVal*120));
-    const pct = (s.close&&s.prev ? ((s.close-s.prev)/s.prev*100).toFixed(2) : '0.00');
-    const pctCls = pct >= 0 ? 'color:#22c55e' : 'color:#ef4444';
-    html += `<div class="bs-nego-row">
-      <div class="bs-nego-kode">${s.kode}</div>
-      <div class="bs-nego-nama">${s.nama}</div>
-      <div class="bs-nego-val">${fmtB(s.nego_val)}</div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">
-        <div class="bs-nego-bar" style="width:${barW}px"></div>
-        <span style="font-size:9px;${pctCls}">${pct>=0?'+':''}${pct}%</span>
-      </div>
-    </div>`;
-  });
-  document.getElementById('bs-nego-list').innerHTML = html;
-}
-/* ========== END BROKER SUMMARY ========== */
-
-</script>
-
-</body>
-</html>
+        borderColor: colors.map(c=>c.replace('.75','1').replace('.
