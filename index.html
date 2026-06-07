@@ -514,6 +514,50 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 #cl-modal .cl-btn-start:hover{opacity:.88}
 #cl-modal .cl-btn-log{padding:11px 16px;border-radius:10px;background:var(--bg3);color:var(--text2);font-size:12px;font-weight:600;border:0.5px solid var(--border);cursor:pointer;transition:all .15s;white-space:nowrap}
 #cl-modal .cl-btn-log:hover{background:var(--bg2);color:var(--text)}
+
+@media (max-width: 480px) {
+  #cl-modal .cl-footer{flex-direction:column;gap:8px;padding:12px 16px 16px}
+  #cl-modal .cl-btn-start{font-size:12px;padding:10px}
+  #cl-modal .cl-btn-log{width:100%;font-size:11px;padding:9px;white-space:normal;text-align:center}
+  #cl-modal .cl-body{padding:12px 16px}
+  #cl-modal .cl-head{padding:14px 16px 12px}
+}
+
+/* === PETA INVESTOR TABLE VIEWS === */
+.pi-view-tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+.pi-view-tab{padding:6px 14px;border-radius:7px;border:0.5px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.pi-view-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pi-tbl-wrap{overflow-x:auto;border-radius:10px;border:0.5px solid var(--border)}
+.pi-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.pi-tbl th{background:var(--bg3);color:var(--text2);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;padding:9px 12px;text-align:left;border-bottom:0.5px solid var(--border);position:sticky;top:0;z-index:2}
+.pi-tbl td{padding:9px 12px;border-bottom:0.5px solid var(--border);color:var(--text);vertical-align:middle}
+.pi-tbl tr:last-child td{border-bottom:none}
+.pi-tbl tr:hover td{background:var(--bg3);cursor:pointer}
+.pi-tbl .em-code{font-weight:800;color:var(--accent);font-size:13px}
+.pi-tbl .em-name{font-size:10px;color:var(--text3);margin-top:1px}
+.pi-badge-h{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;margin:2px 2px 2px 0}
+.pi-badge-h.CORP{background:#3b82f620;color:#3b82f6}
+.pi-badge-h.IND{background:#22c55e20;color:#22c55e}
+.pi-badge-h.OTH{background:#a855f720;color:#a855f7}
+.pi-badge-h.EM{background:#f9731620;color:#f97316}
+.pi-holder-list{display:flex;flex-wrap:wrap;gap:3px;max-width:360px}
+.pi-tbl-search{padding:6px 12px;border-radius:7px;border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);font-size:12px;outline:none;width:210px}
+.pi-inv-name{font-weight:700;color:var(--text);font-size:12px}
+
+/* === POSISI SAHAM MINI-BAR (Kalkulator JIA) === */
+.jia-pos-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:8px 12px;background:var(--bg3);border-radius:9px;margin-bottom:10px;
+  border:0.5px solid var(--border)}
+.jia-pos-bar label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.jia-pos-inp{padding:5px 9px;border-radius:7px;border:0.5px solid var(--border2);
+  background:var(--bg2);color:var(--text);font-size:12px;outline:none;width:90px}
+.jia-pos-inp.kode{width:72px;text-transform:uppercase;font-weight:700;letter-spacing:.5px}
+.jia-pos-inp.lots{width:70px}
+.jia-pos-inp.avg{width:95px}
+.jia-pos-sync{padding:4px 10px;border-radius:7px;border:0.5px solid var(--accent);
+  background:transparent;color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.jia-pos-sync:hover{background:var(--accent);color:#fff}
+.jia-pos-tag{font-size:10px;color:var(--text3);margin-left:auto}
 </style>
 </head>
 <body>
@@ -553,14 +597,14 @@ tr:hover td{background:rgba(66,165,245,0.04)}
   <div class="nav-item" id="nav-avgdown" onclick="sw('avgdown',this)" title="Average Down (DCA)">
     <span class="nav-icon">📉</span><span class="nav-label">Avg Down <small style="opacity:.65;font-size:9px">(DCA)</small></span>
   </div>
-  <div class="nav-item" id="nav-changelog" onclick="sw('changelog',this)" title="Changelog">
-    <span class="nav-icon">📝</span><span class="nav-label">Changelog</span>
-  </div>
   <div class="nav-item" id="nav-stockdetail" onclick="sw('stockdetail',this);fdInit()" title="Stock Detail">
     <span class="nav-icon">📋</span><span class="nav-label">Stock Detail</span>
   </div>
   <div class="nav-item" id="nav-petainvestor" onclick="sw('petainvestor',this);piInit()" title="Peta Investor">
     <span class="nav-icon">🕸️</span><span class="nav-label">Peta Investor</span>
+  </div>
+  <div class="nav-item" id="nav-changelog" onclick="sw('changelog',this)" title="Changelog">
+    <span class="nav-icon">📝</span><span class="nav-label">Changelog</span>
   </div>
   <div class="nav-item" id="nav-feedback" onclick="sw('feedback',this)" title="Kritik & Saran">
     <span class="nav-icon">💬</span><span class="nav-label">Kritik & Saran</span>
@@ -583,6 +627,19 @@ tr:hover td{background:rgba(66,165,245,0.04)}
       <button class="cl-close-x" onclick="clPopClose()" title="Tutup">✕</button>
     </div>
     <div class="cl-body">
+
+      <div class="cl-pop-entry">
+        <span class="cl-pop-ver" style="background:#7c3aed">v3.6</span>
+        <span class="cl-pop-subtitle">🗺️ Peta Investor Views & Posisi Saham</span>
+        <span class="cl-pop-date">7 Jun 2026</span>
+        <ul class="cl-pop-list">
+          <li><strong>By Stock</strong> — tabel semua emiten: jumlah holder, % CORP/IND/OTH, daftar pemegang ≥1%</li>
+          <li><strong>By Investor</strong> — tabel semua investor: tipe, jumlah saham dipegang, portfolio emiten</li>
+          <li>Klik baris tabel langsung membuka grafik jaringan emiten/investor terkait</li>
+          <li><strong>Posisi Saham</strong> di Profit/ARA, Risk/Reward & Dividen — input kode, lot, avg untuk auto-fill kalkulator</li>
+          <li>Changelog menu dipindah ke sebelum Kritik & Saran</li>
+        </ul>
+      </div>
 
       <div class="cl-pop-entry">
         <span class="cl-pop-ver" style="background:#0891b2">v3.3</span>
@@ -967,6 +1024,19 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 <div class="adc-wrap">
   <div class="card adc-section">
     <div class="ct b">💰 Profit Calculator</div>
+    <div class="jia-pos-bar">
+      <label>📋 Kode</label>
+      <input id="pp-kode" class="jia-pos-inp kode" type="text" placeholder="BBCA" maxlength="6"
+        oninput="this.value=this.value.toUpperCase();POSISI.syncFrom('profit')">
+      <label>Lots</label>
+      <input id="pp-lots" class="jia-pos-inp lots" type="number" placeholder="0" min="0"
+        oninput="POSISI.fill('profit')">
+      <label>Avg Cost</label>
+      <input id="pp-avg" class="jia-pos-inp avg" type="number" placeholder="0" min="0"
+        oninput="POSISI.fill('profit')">
+      <button class="jia-pos-sync" onclick="POSISI.fill('profit')">↩ Isi Kalkulator</button>
+      <span class="jia-pos-tag">Isi posisi untuk auto-fill ↓</span>
+    </div>
     <div class="pc-grid2">
       <div class="adc-field">
         <label>Buy Price (IDR/saham)</label>
@@ -1036,6 +1106,19 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 <div class="adc-wrap">
   <div class="card adc-section">
     <div class="ct b">⚖️ Risk/Reward Calculator</div>
+    <div class="jia-pos-bar">
+      <label>📋 Kode</label>
+      <input id="rp-kode" class="jia-pos-inp kode" type="text" placeholder="BBCA" maxlength="6"
+        oninput="this.value=this.value.toUpperCase();POSISI.syncFrom('rr')">
+      <label>Lots</label>
+      <input id="rp-lots" class="jia-pos-inp lots" type="number" placeholder="0" min="0"
+        oninput="POSISI.fill('rr')">
+      <label>Avg Cost</label>
+      <input id="rp-avg" class="jia-pos-inp avg" type="number" placeholder="0" min="0"
+        oninput="POSISI.fill('rr')">
+      <button class="jia-pos-sync" onclick="POSISI.fill('rr')">↩ Isi Kalkulator</button>
+      <span class="jia-pos-tag">Isi posisi untuk auto-fill ↓</span>
+    </div>
     <div class="pc-grid2" style="margin-bottom:8px">
       <div class="adc-field">
         <label>Entry Price (IDR)</label>
@@ -1100,6 +1183,19 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 <div class="adc-wrap">
   <div class="card adc-section">
     <div class="ct b">💵 Dividend Calculator</div>
+    <div class="jia-pos-bar">
+      <label>📋 Kode</label>
+      <input id="dp-kode" class="jia-pos-inp kode" type="text" placeholder="BBCA" maxlength="6"
+        oninput="this.value=this.value.toUpperCase();POSISI.syncFrom('div')">
+      <label>Lots</label>
+      <input id="dp-lots" class="jia-pos-inp lots" type="number" placeholder="0" min="0"
+        oninput="POSISI.fill('div')">
+      <label>Avg Cost</label>
+      <input id="dp-avg" class="jia-pos-inp avg" type="number" placeholder="0" min="0"
+        oninput="POSISI.fill('div')">
+      <button class="jia-pos-sync" onclick="POSISI.fill('div')">↩ Isi Kalkulator</button>
+      <span class="jia-pos-tag">Isi posisi untuk auto-fill ↓</span>
+    </div>
     <div class="pc-grid2" style="margin-bottom:8px">
       <div class="adc-field">
         <label>Avg Buy Price (IDR/saham)</label>
@@ -1660,7 +1756,7 @@ tr:hover td{background:rgba(66,165,245,0.04)}
     </div>
   </div>
 
-  <div class="card" style="margin-bottom:10px;padding:8px 14px">
+  <div class="card pi-grafik-card" style="margin-bottom:10px;padding:8px 14px">
     <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--text2)">
       <span style="font-weight:700;color:var(--text);margin-right:4px">Legenda:</span>
       <span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#f97316;vertical-align:middle;margin-right:4px"></span>Emiten</span>
@@ -1672,7 +1768,7 @@ tr:hover td{background:rgba(66,165,245,0.04)}
     </div>
   </div>
 
-  <div class="card" style="padding:0;overflow:hidden;position:relative;display:flex;align-items:stretch">
+  <div class="card pi-grafik-card" style="padding:0;overflow:hidden;position:relative;display:flex;align-items:stretch">
     <div id="pi-graph-wrap" style="flex:1;min-width:0;position:relative">
       <div id="pi-graph" style="width:100%;height:580px;background:var(--bg)"></div>
       <div id="pi-tooltip" style="display:none;position:absolute;background:var(--card);
@@ -1685,6 +1781,77 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 
   <div style="font-size:10px;color:var(--text3);margin-top:8px;text-align:center">
     Data bersumber dari KSEI (Kustodian Sentral Efek Indonesia) · Kepemilikan ≥1% · Bukan saran investasi
+  </div>
+
+  <!-- VIEW TABS -->
+  <div class="pi-view-tabs" style="margin-top:14px">
+    <button class="pi-view-tab active" id="pi-vt-grafik"   onclick="piSwitchView('grafik')">🕸️ Grafik Jaringan</button>
+    <button class="pi-view-tab"        id="pi-vt-stock"    onclick="piSwitchView('stock')">📋 By Stock</button>
+    <button class="pi-view-tab"        id="pi-vt-investor" onclick="piSwitchView('investor')">👤 By Investor</button>
+  </div>
+
+  <!-- BY STOCK VIEW -->
+  <div id="pi-view-stock" style="display:none">
+    <div class="card" style="margin-bottom:8px;padding:10px 14px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-weight:700;font-size:13px">📋 Emiten &amp; Pemegang Saham ≥1%</span>
+        <input id="pi-stock-q" class="pi-tbl-search" placeholder="Cari kode/nama emiten..." oninput="piFilterStock(this.value)">
+        <select id="pi-stock-type" onchange="piFilterStock(document.getElementById('pi-stock-q').value)"
+          style="padding:6px 10px;border-radius:7px;border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);font-size:12px;outline:none">
+          <option value="">Semua Tipe Holder</option>
+          <option value="CORP">Institusi (CORP)</option>
+          <option value="IND">Individu (IND)</option>
+          <option value="OTH">Lainnya (OTH)</option>
+        </select>
+        <span id="pi-stock-count" style="font-size:11px;color:var(--text3);margin-left:auto"></span>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="pi-tbl-wrap" style="max-height:560px;overflow-y:auto">
+        <table class="pi-tbl" id="pi-stock-tbl">
+          <thead><tr>
+            <th style="width:120px">Emiten</th>
+            <th style="width:60px;text-align:center">Holder</th>
+            <th style="width:80px;text-align:center">CORP %</th>
+            <th style="width:80px;text-align:center">IND %</th>
+            <th style="width:80px;text-align:center">OTH %</th>
+            <th>Pemegang Saham (≥1%)</th>
+          </tr></thead>
+          <tbody id="pi-stock-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- BY INVESTOR VIEW -->
+  <div id="pi-view-investor" style="display:none">
+    <div class="card" style="margin-bottom:8px;padding:10px 14px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-weight:700;font-size:13px">👤 Investor &amp; Portfolio Saham</span>
+        <input id="pi-inv-q" class="pi-tbl-search" placeholder="Cari nama investor..." oninput="piFilterInvestor(this.value)">
+        <select id="pi-inv-type" onchange="piFilterInvestor(document.getElementById('pi-inv-q').value)"
+          style="padding:6px 10px;border-radius:7px;border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);font-size:12px;outline:none">
+          <option value="">Semua Tipe</option>
+          <option value="CORP">Institusi (CORP)</option>
+          <option value="IND">Individu (IND)</option>
+          <option value="OTH">Lainnya (OTH)</option>
+        </select>
+        <span id="pi-inv-count" style="font-size:11px;color:var(--text3);margin-left:auto"></span>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="pi-tbl-wrap" style="max-height:560px;overflow-y:auto">
+        <table class="pi-tbl" id="pi-inv-tbl">
+          <thead><tr>
+            <th style="width:260px">Investor / Pemegang Saham</th>
+            <th style="width:80px;text-align:center">Tipe</th>
+            <th style="width:70px;text-align:center"># Saham</th>
+            <th>Saham yang Dipegang</th>
+          </tr></thead>
+          <tbody id="pi-inv-tbody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -2455,6 +2622,48 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ─── PROFIT & ARA/ARB ─────────────────────────────────────
+// ── POSISI (stock position link across JIA tabs) ───────────
+const POSISI = {
+  _kode: '', _lots: 0, _avg: 0,
+  syncFrom(tab) {
+    // Sync kode across all tabs
+    const kodeMap = { profit:'pp-kode', rr:'rp-kode', div:'dp-kode' };
+    const kode = document.getElementById(kodeMap[tab])?.value || '';
+    this._kode = kode;
+    Object.entries(kodeMap).forEach(([t,id]) => {
+      const el = document.getElementById(id);
+      if (el && t !== tab) el.value = kode;
+    });
+  },
+  fill(tab) {
+    if (tab === 'profit') {
+      const lots = parseFloat(document.getElementById('pp-lots')?.value) || 0;
+      const avg  = parseFloat(document.getElementById('pp-avg')?.value)  || 0;
+      const lotEl = document.getElementById('pc-lots');
+      const buyEl = document.getElementById('pc-buy');
+      if (lotEl && lots > 0) { lotEl.value = lots; }
+      if (buyEl && avg  > 0) { buyEl.value = avg; }
+      PROFIT.calc();
+    } else if (tab === 'rr') {
+      const lots = parseFloat(document.getElementById('rp-lots')?.value) || 0;
+      const avg  = parseFloat(document.getElementById('rp-avg')?.value)  || 0;
+      const posEl  = document.getElementById('rr-pos');
+      const entEl  = document.getElementById('rr-entry');
+      if (posEl && lots > 0) { posEl.value = lots; }
+      if (entEl && avg  > 0) { entEl.value = avg; }
+      RR.calc();
+    } else if (tab === 'div') {
+      const lots = parseFloat(document.getElementById('dp-lots')?.value) || 0;
+      const avg  = parseFloat(document.getElementById('dp-avg')?.value)  || 0;
+      const lotEl = document.getElementById('dv-lots');
+      const buyEl = document.getElementById('dv-buy');
+      if (lotEl && lots > 0) { lotEl.value = lots; }
+      if (buyEl && avg  > 0) { buyEl.value = avg; }
+      DIVCALC.calc();
+    }
+  }
+};
+
 const PROFIT = {
   _mode: null,
   setMode(m) {
@@ -3861,6 +4070,141 @@ function piShowPanel(d) {
   panel.style.display = 'block';
 }
 
+
+// ─── PETA INVESTOR TABLE VIEWS ────────────────────────────
+let PI_INV_MAP = null;
+
+function piSwitchView(v) {
+  ['grafik','stock','investor'].forEach(x => {
+    const btn = document.getElementById('pi-vt-'+x);
+    if (btn) btn.classList.toggle('active', x === v);
+  });
+  // Toggle grafik cards
+  document.querySelectorAll('.pi-grafik-card').forEach(el => {
+    el.style.display = v === 'grafik' ? '' : 'none';
+  });
+  // Toggle view sections
+  document.querySelectorAll('[id^="pi-view-"]').forEach(el => el.style.display = 'none');
+  if (v !== 'grafik') {
+    const view = document.getElementById('pi-view-' + v);
+    if (view) view.style.display = 'block';
+    if (v === 'stock'    && PI_DATA) piRenderStock(PI_DATA);
+    if (v === 'investor' && PI_DATA) piRenderInvestor(piGetInvMap());
+  }
+}
+
+function piGetInvMap() {
+  if (PI_INV_MAP) return PI_INV_MAP;
+  if (!PI_DATA) return [];
+  const map = new Map();
+  PI_DATA.forEach(em => {
+    (em.holders || []).forEach(h => {
+      if (!map.has(h.name)) {
+        map.set(h.name, { name: h.name, type: h.type||'OTH', country: h.lf||h.country||'', holdings: [] });
+      }
+      map.get(h.name).holdings.push({ code: em.code, name: em.name||em.issuer||em.code, pct: h.pct });
+    });
+  });
+  PI_INV_MAP = [...map.values()].sort((a,b) => b.holdings.length - a.holdings.length);
+  return PI_INV_MAP;
+}
+
+// ── By Stock ──────────────────────────────────────────────
+function piRenderStock(data) {
+  const typeF = document.getElementById('pi-stock-type')?.value || '';
+  const rows  = typeF ? data.filter(em => (em.holders||[]).some(h => (h.type||'OTH') === typeF)) : data;
+  const cnt   = document.getElementById('pi-stock-count');
+  if (cnt) cnt.textContent = rows.length + ' emiten';
+  const tb = document.getElementById('pi-stock-tbody');
+  if (!tb) return;
+  tb.innerHTML = rows.map(em => {
+    const holders = em.holders || [];
+    const corpPct = holders.filter(h=>h.type==='CORP').reduce((s,h)=>s+(h.pct||0),0);
+    const indPct  = holders.filter(h=>h.type==='IND' ).reduce((s,h)=>s+(h.pct||0),0);
+    const othPct  = holders.filter(h=>!['CORP','IND'].includes(h.type||'')).reduce((s,h)=>s+(h.pct||0),0);
+    const badges  = holders.slice(0,6).map(h =>
+      `<span class="pi-badge-h ${h.type||'OTH'}" title="${(h.pct||0).toFixed(2)}%">${h.name.length>26?h.name.slice(0,24)+'…':h.name} <span style="opacity:.65">${(h.pct||0).toFixed(1)}%</span></span>`
+    ).join('') + (holders.length > 6 ? `<span style="font-size:10px;color:var(--text3)"> +${holders.length-6} lagi</span>` : '');
+    const code = (em.code||'').replace(/'/g,"\'");
+    return `<tr onclick="piSwitchView('grafik');setTimeout(()=>{const inp=document.getElementById('pi-search');if(inp)inp.value='${code}';piRenderFocused('${code}');},80)">
+      <td><div class="em-code">${em.code||''}</div><div class="em-name">${(em.name||em.issuer||'').slice(0,28)}</div></td>
+      <td style="text-align:center;font-weight:700">${holders.length}</td>
+      <td style="text-align:center;color:#3b82f6">${corpPct>0?corpPct.toFixed(1)+'%':'—'}</td>
+      <td style="text-align:center;color:#22c55e">${indPct>0?indPct.toFixed(1)+'%':'—'}</td>
+      <td style="text-align:center;color:#a855f7">${othPct>0?othPct.toFixed(1)+'%':'—'}</td>
+      <td><div class="pi-holder-list">${badges}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function piFilterStock(q) {
+  if (!PI_DATA) return;
+  const typeF = document.getElementById('pi-stock-type')?.value || '';
+  let rows = q ? PI_DATA.filter(em =>
+    (em.code||'').toUpperCase().includes(q.toUpperCase()) ||
+    (em.name||em.issuer||'').toLowerCase().includes(q.toLowerCase()) ||
+    (em.holders||[]).some(h => h.name?.toLowerCase().includes(q.toLowerCase()))
+  ) : PI_DATA;
+  if (typeF) rows = rows.filter(em => (em.holders||[]).some(h=>(h.type||'OTH')===typeF));
+  const cnt = document.getElementById('pi-stock-count');
+  if (cnt) cnt.textContent = rows.length + ' emiten';
+  const tb = document.getElementById('pi-stock-tbody');
+  if (!tb) return;
+  tb.innerHTML = rows.map(em => {
+    const holders = em.holders || [];
+    const corpPct = holders.filter(h=>h.type==='CORP').reduce((s,h)=>s+(h.pct||0),0);
+    const indPct  = holders.filter(h=>h.type==='IND' ).reduce((s,h)=>s+(h.pct||0),0);
+    const othPct  = holders.filter(h=>!['CORP','IND'].includes(h.type||'')).reduce((s,h)=>s+(h.pct||0),0);
+    const badges  = holders.slice(0,6).map(h =>
+      `<span class="pi-badge-h ${h.type||'OTH'}">${h.name.length>26?h.name.slice(0,24)+'…':h.name} <span style="opacity:.65">${(h.pct||0).toFixed(1)}%</span></span>`
+    ).join('') + (holders.length > 6 ? `<span style="font-size:10px;color:var(--text3)"> +${holders.length-6} lagi</span>` : '');
+    const code = (em.code||'').replace(/'/g,"\'");
+    return `<tr onclick="piSwitchView('grafik');setTimeout(()=>{const inp=document.getElementById('pi-search');if(inp)inp.value='${code}';piRenderFocused('${code}');},80)">
+      <td><div class="em-code">${em.code||''}</div><div class="em-name">${(em.name||em.issuer||'').slice(0,28)}</div></td>
+      <td style="text-align:center;font-weight:700">${holders.length}</td>
+      <td style="text-align:center;color:#3b82f6">${corpPct>0?corpPct.toFixed(1)+'%':'—'}</td>
+      <td style="text-align:center;color:#22c55e">${indPct>0?indPct.toFixed(1)+'%':'—'}</td>
+      <td style="text-align:center;color:#a855f7">${othPct>0?othPct.toFixed(1)+'%':'—'}</td>
+      <td><div class="pi-holder-list">${badges}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── By Investor ───────────────────────────────────────────
+function piRenderInvestor(data) {
+  const typeF = document.getElementById('pi-inv-type')?.value || '';
+  const rows  = typeF ? data.filter(inv=>(inv.type||'OTH')===typeF) : data;
+  const cnt   = document.getElementById('pi-inv-count');
+  if (cnt) cnt.textContent = rows.length + ' investor';
+  const tb = document.getElementById('pi-inv-tbody');
+  if (!tb) return;
+  tb.innerHTML = rows.map(inv => {
+    const badges = inv.holdings.slice(0,10).map(h =>
+      `<span class="pi-badge-h EM" onclick="event.stopPropagation();piSwitchView('grafik');setTimeout(()=>{const inp=document.getElementById('pi-search');if(inp)inp.value='${h.code}';piRenderFocused('${h.code}');},80)" title="${h.name}: ${(h.pct||0).toFixed(2)}%">${h.code} <span style="opacity:.65">${(h.pct||0).toFixed(1)}%</span></span>`
+    ).join('') + (inv.holdings.length > 10 ? `<span style="font-size:10px;color:var(--text3)"> +${inv.holdings.length-10} lagi</span>` : '');
+    const safeName = inv.name.replace(/`/g,'\`').replace(/'/g,"\'");
+    return `<tr onclick="piSwitchView('grafik');setTimeout(()=>{const em=PI_DATA.filter(e=>(e.holders||[]).some(h=>h.name==='${safeName}'));if(em.length)piRender(em);},80)">
+      <td><div class="pi-inv-name">${inv.name.length>42?inv.name.slice(0,40)+'…':inv.name}</div>${inv.country?`<div style="font-size:10px;color:var(--text3)">${inv.country}</div>`:''}</td>
+      <td style="text-align:center"><span class="pi-badge-h ${inv.type||'OTH'}">${inv.type||'OTH'}</span></td>
+      <td style="text-align:center;font-weight:700;color:var(--accent)">${inv.holdings.length}</td>
+      <td><div class="pi-holder-list">${badges}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function piFilterInvestor(q) {
+  const all   = piGetInvMap();
+  const typeF = document.getElementById('pi-inv-type')?.value || '';
+  let rows = q ? all.filter(inv =>
+    inv.name.toLowerCase().includes(q.toLowerCase()) ||
+    inv.holdings.some(h => h.code?.toUpperCase().includes(q.toUpperCase()) || h.name?.toLowerCase().includes(q.toLowerCase()))
+  ) : all;
+  if (typeF) rows = rows.filter(inv=>(inv.type||'OTH')===typeF);
+  const cnt = document.getElementById('pi-inv-count');
+  if (cnt) cnt.textContent = rows.length + ' investor';
+  piRenderInvestor(rows);
+}
+
 function piClosePanel() {
   const p = document.getElementById('pi-panel');
   if (p) p.style.display = 'none';
@@ -4087,6 +4431,28 @@ function piRenderFocused(code) {
 }
 
 
+
+// ─── MOBILE NAV ──────────────────────────────────────────
+function mnSw(el) {
+  document.querySelectorAll('.mob-nav-item').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  mnMoreClose();
+}
+function mnToggleMore() {
+  const m = document.getElementById('mob-more');
+  if (m) m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+function mnMoreClose() {
+  const m = document.getElementById('mob-more');
+  if (m) m.style.display = 'none';
+}
+document.addEventListener('click', e => {
+  const more = document.getElementById('mob-more');
+  if (more && more.style.display !== 'none') {
+    if (!more.contains(e.target) && !e.target.closest('#mn-more')) mnMoreClose();
+  }
+});
+
 // ─── CHANGELOG POPUP ──────────────────────────────────────
 function clPopClose() {
   const ov = document.getElementById('cl-overlay');
@@ -4098,6 +4464,24 @@ function clPopClose() {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') clPopClose(); });
 
 </script>
+
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mob-nav" id="mob-nav">
+  <button class="mob-nav-item active" id="mn-world"       onclick="sw('world',this);mnSw(this)"><span class="mn-icon">🌐</span>Indeks</button>
+  <button class="mob-nav-item"        id="mn-stocks"      onclick="sw('stocks',this);mnSw(this)"><span class="mn-icon">📊</span>Stocks</button>
+  <button class="mob-nav-item"        id="mn-sector"      onclick="sw('sector',this);mnSw(this)"><span class="mn-icon">🏭</span>Sektor</button>
+  <button class="mob-nav-item"        id="mn-stockdetail" onclick="sw('stockdetail',this);fdInit();mnSw(this)"><span class="mn-icon">📋</span>Detail</button>
+  <button class="mob-nav-item"        id="mn-petainvestor" onclick="sw('petainvestor',this);piInit();mnSw(this)"><span class="mn-icon">🕸️</span>Investor</button>
+  <button class="mob-nav-item"        id="mn-avgdown"     onclick="sw('avgdown',this);mnSw(this)"><span class="mn-icon">🧮</span>Kalkulator</button>
+  <button class="mob-nav-item"        id="mn-more"        onclick="mnToggleMore()"><span class="mn-icon">⋯</span>Lainnya</button>
+</nav>
+<div id="mob-more" style="display:none;position:fixed;bottom:64px;left:0;right:0;z-index:998;background:var(--card);border-top:0.5px solid var(--border);padding:6px 0;box-shadow:0 -4px 20px rgba(0,0,0,.4)">
+  <button onclick="sw('broker',document.getElementById('nav-broker'));mnMoreClose()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer"><span style="font-size:18px">🏦</span> Top Broker</button>
+  <button onclick="sw('tvchart',document.getElementById('nav-tvchart'));initTVChart();mnMoreClose()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer"><span style="font-size:18px">📈</span> Chart (TradingView)</button>
+  <button onclick="sw('changelog',document.getElementById('nav-changelog'));mnMoreClose()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer"><span style="font-size:18px">📝</span> Changelog</button>
+  <button onclick="sw('feedback',document.getElementById('nav-feedback'));mnMoreClose()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer"><span style="font-size:18px">💬</span> Kritik & Saran</button>
+</div>
 
 </body>
 </html>
