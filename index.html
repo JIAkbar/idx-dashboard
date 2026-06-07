@@ -273,6 +273,7 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 /* TV Expand / Fullscreen */
 .tv-fullscreen{position:fixed!important;inset:0!important;z-index:9999!important;background:var(--bg)!important;padding:10px!important;display:flex!important;flex-direction:column!important;border-radius:0!important;overflow:hidden!important}
 .tv-fullscreen .tv-fs-bar{display:flex!important;flex-shrink:0}
+.tv-fullscreen [onclick="tvExpand()"] { display:none!important }
 .tv-fs-bar{display:none;align-items:center;margin-bottom:8px;gap:8px;flex-shrink:0}
 .tv-fs-title{font-size:13px;font-weight:700;color:var(--text);flex:1}
 /* Group & sym bars stay compact in fullscreen */
@@ -329,6 +330,15 @@ tr:hover td{background:rgba(66,165,245,0.04)}
 
 /* === STOCK DETAIL PANEL === */
 .fd-search-wrap{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.fd-ac-wrap{position:relative;flex:1;min-width:160px}
+.fd-ac-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:10px;z-index:1000;max-height:260px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.fd-ac-item{padding:9px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .1s;border-bottom:0.5px solid var(--border)}
+.fd-ac-item:last-child{border-bottom:none}
+.fd-ac-item:first-child{border-radius:10px 10px 0 0}
+.fd-ac-item:last-child{border-radius:0 0 10px 10px}
+.fd-ac-item:hover,.fd-ac-item.ac-active{background:var(--bg3)}
+.fd-ac-ticker{font-weight:700;font-size:12px;color:var(--text);min-width:52px}
+.fd-ac-name{font-size:11px;color:var(--text3);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fd-search-input{flex:1;min-width:160px;padding:9px 13px;border-radius:8px;border:0.5px solid var(--border2);background:var(--bg3);color:var(--text);font-size:12px;outline:none;transition:border-color .15s}
 .fd-search-input:focus{border-color:var(--accent)}
 .fd-search-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
@@ -704,6 +714,18 @@ tr:hover td{background:rgba(66,165,245,0.04)}
       <button class="cl-close-x" onclick="clPopClose()" title="Tutup">✕</button>
     </div>
     <div class="cl-body">
+
+      <div class="cl-pop-entry">
+        <span class="cl-pop-ver" style="background:#059669">v3.9</span>
+        <span class="cl-pop-subtitle">✨ Custom Autocomplete + Fix Expand + Peta Investor</span>
+        <span class="cl-pop-date">7 Jun 2026</span>
+        <ul class="cl-pop-list">
+          <li><strong>Stock Detail</strong> — dropdown custom autocomplete: tampilkan 10 hasil, filter saat mengetik, navigasi keyboard (↑↓ Enter Esc)</li>
+          <li>Fix <strong>double Tutup</strong> di Chart &amp; Heatmap expand — tombol expand tersembunyi saat fullscreen, ESC berfungsi</li>
+          <li>Tambah fungsi <code>tvCollapse()</code> agar tombol Tutup di fullscreen bar berfungsi</li>
+          <li><strong>Peta Investor</strong> — push <code>data/investor_map.json</code> ke GitHub agar data tampil</li>
+        </ul>
+      </div>
 
       <div class="cl-pop-entry">
         <span class="cl-pop-ver" style="background:#4f46e5">v3.8</span>
@@ -1792,10 +1814,15 @@ tr:hover td{background:rgba(66,165,245,0.04)}
   <!-- Search bar -->
   <div class="card" style="padding:14px 16px;margin-bottom:8px">
     <div class="fd-search-wrap">
-      <input id="fd-input" class="fd-search-input" type="text" placeholder="Kode saham: BBCA, ASII, TLKM ..."
-             list="fd-datalist" oninput="this.value=this.value.toUpperCase()"
-             onkeydown="if(event.key==='Enter')fdLoad()">
-      <datalist id="fd-datalist"></datalist>
+      <div class="fd-ac-wrap">
+        <input id="fd-input" class="fd-search-input" type="text" placeholder="Kode saham: BBCA, ASII, TLKM ..."
+               autocomplete="off"
+               oninput="this.value=this.value.toUpperCase();fdAcFilter()"
+               onfocus="fdAcShow()"
+               onblur="setTimeout(()=>fdAcHide(),200)"
+               onkeydown="fdAcKey(event)">
+        <div id="fd-ac-dropdown" class="fd-ac-dropdown" style="display:none"></div>
+      </div>
       <button class="fd-search-btn" onclick="fdLoad()">🔍 Tampilkan</button>
     </div>
     <p id="fd-hint" style="font-size:10px;color:var(--text3);line-height:1.6">
@@ -3079,11 +3106,12 @@ function tvExpand() {
   const card = document.querySelector('#tvchart .card');
   if (!card) return;
   const isFs = card.classList.toggle('tv-fullscreen');
-  const btn = document.querySelector('[onclick="tvExpand()"]');
-  if (btn) btn.innerHTML = isFs ? '✕ Tutup' : '⛶ Expand';
   if (isFs) {
-    document.addEventListener('keydown', function esc(e){ if(e.key==='Escape'){tvExpand();document.removeEventListener('keydown',esc);} });
+    document.addEventListener('keydown', function esc(e){ if(e.key==='Escape'){tvCollapse();document.removeEventListener('keydown',esc);} });
   }
+}
+function tvCollapse() {
+  document.querySelectorAll('.tv-fullscreen').forEach(el => el.classList.remove('tv-fullscreen'));
 }
 function tvSetSym(sym, btn) {
   TV_CURRENT_SYM = sym;
@@ -3343,12 +3371,71 @@ async function fdInit() {
   }
 }
 
-function fdPopulateDatalist() {
-  const dl = document.getElementById("fd-datalist");
-  if (!dl || !FD_INDEX?.stocks) return;
-  dl.innerHTML = (FD_INDEX.stocks || [])
-    .map(s => `<option value="${s.ticker}">${s.ticker} — ${s.name}</option>`)
-    .join("");
+function fdPopulateDatalist() { /* replaced by fdAcFilter */ }
+
+function fdAcFilter() {
+  const q = (document.getElementById('fd-input').value || '').trim().toUpperCase();
+  if (!FD_INDEX?.stocks) return;
+  const matches = q
+    ? FD_INDEX.stocks.filter(s => s.ticker.startsWith(q) || s.name.toUpperCase().includes(q)).slice(0,10)
+    : FD_INDEX.stocks.slice(0,10);
+  const dd = document.getElementById('fd-ac-dropdown');
+  if (!matches.length) { dd.style.display='none'; return; }
+  dd.innerHTML = matches.map(s =>
+    `<div class="fd-ac-item" onmousedown="fdAcSelect('${s.ticker}')">
+      <span class="fd-ac-ticker">${s.ticker}</span>
+      <span class="fd-ac-name">${s.name}</span>
+    </div>`
+  ).join('');
+  dd.style.display = 'block';
+}
+
+function fdAcShow() {
+  if (!FD_INDEX?.stocks) return;
+  const q = (document.getElementById('fd-input').value || '').trim().toUpperCase();
+  const matches = q
+    ? FD_INDEX.stocks.filter(s => s.ticker.startsWith(q) || s.name.toUpperCase().includes(q)).slice(0,10)
+    : FD_INDEX.stocks.slice(0,10);
+  const dd = document.getElementById('fd-ac-dropdown');
+  if (!matches.length) { dd.style.display='none'; return; }
+  dd.innerHTML = matches.map(s =>
+    `<div class="fd-ac-item" onmousedown="fdAcSelect('${s.ticker}')">
+      <span class="fd-ac-ticker">${s.ticker}</span>
+      <span class="fd-ac-name">${s.name}</span>
+    </div>`
+  ).join('');
+  dd.style.display = 'block';
+}
+
+function fdAcHide() {
+  const dd = document.getElementById('fd-ac-dropdown');
+  if (dd) dd.style.display = 'none';
+}
+
+function fdAcSelect(ticker) {
+  document.getElementById('fd-input').value = ticker;
+  fdAcHide();
+  fdLoad();
+}
+
+function fdAcKey(e) {
+  const dd = document.getElementById('fd-ac-dropdown');
+  const items = dd ? Array.from(dd.querySelectorAll('.fd-ac-item')) : [];
+  const ai = items.findIndex(el => el.classList.contains('ac-active'));
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    items.forEach(el => el.classList.remove('ac-active'));
+    const next = items[ai+1] ?? items[0];
+    if (next) { next.classList.add('ac-active'); next.scrollIntoView({block:'nearest'}); }
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    items.forEach(el => el.classList.remove('ac-active'));
+    const prev = items[ai-1] ?? items[items.length-1];
+    if (prev) { prev.classList.add('ac-active'); prev.scrollIntoView({block:'nearest'}); }
+  } else if (e.key === 'Enter') {
+    if (ai >= 0) { fdAcSelect(items[ai].querySelector('.fd-ac-ticker').textContent.trim()); }
+    else { fdAcHide(); fdLoad(); }
+  } else if (e.key === 'Escape') { fdAcHide(); }
 }
 
 async function fdLoad() {
