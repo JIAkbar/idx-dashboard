@@ -2,7 +2,8 @@
 
 > Disusun 2026-08-10, direvisi 2026-08-10 (arsitektur hibrida), direvisi lagi 2026-08-10
 > (cakupan login diperjelas — lihat §1a).
-> Status: **Fase 0 selesai** (scaffold + auth + routing).
+> Status: **Fase 0-2 selesai** (scaffold+auth+routing · mesin skor TS paritas Python ·
+> template PDF ter-port ke komponen React, pratinjau di `/admin/edisi/ujicoba`).
 > Keputusan user: login **admin tunggal**; mesin analisa utama **Claude Code** (web = kotak masuk
 > + arsip + rak terbitan); API vision menjadi **opsional**, bukan jalur utama.
 
