@@ -5,8 +5,14 @@ __pycache__/
 .env
 venv/
 
-# File kerja lokal: skrip .bat/.ps1, template HTML, PDF sumber IDX, xlsx ringkasan
+# File kerja lokal — tidak perlu di GitHub
 _lokal/
+*.bat
+
+# Bahan mentah manual (bukan bagian pipeline otomatis)
+data emiten/
+data owner/
+data ringkasan/
 
 # PDF sumber IDX — hanya JSON hasil parse yang disimpan di repo
 data/pdf/
