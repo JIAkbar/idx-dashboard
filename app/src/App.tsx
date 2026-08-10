@@ -4,6 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { Home } from './views/Home'
 import { Login } from './views/Login'
 import { AdminHome } from './views/AdminHome'
+import { EdisiUjicoba } from './views/EdisiUjicoba'
 import './App.css'
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/admin" element={<AdminHome />} />
+            <Route path="/admin/edisi/ujicoba" element={<EdisiUjicoba />} />
           </Route>
         </Routes>
       </AuthProvider>

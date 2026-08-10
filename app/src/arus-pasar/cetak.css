@@ -1,0 +1,626 @@
+/*
+ * Port 1:1 dari arus-pasar/template.html <style>. Diskop di bawah .ap-cetak
+ * (bukan html/body mentah) supaya tidak bentrok dengan App.css route lain.
+ * Kalau template.html berubah, sinkronkan manual — jangan didesain ulang.
+ */
+.ap-cetak {
+  --paper: #ffffff;
+  --panel: #f4f6f8;
+  --ink: #12181f;
+  --ink2: #39434e;
+  --mute: #6b7683;
+  --hair: #d8dde3;
+  --brand: #0b4f4a;
+  --bull: #0a7d4f;
+  --bear: #b93a2b;
+  --warn: #8a5e00;
+
+  background: #888;
+  min-height: 100dvh;
+  padding: 1px 0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: var(--ink);
+  line-height: 1.45;
+  font-size: 9pt;
+}
+.ap-cetak * {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.ap-cetak .page {
+  width: 210mm;
+  height: 296mm;
+  background: var(--paper);
+  margin: 10px auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.35);
+}
+@page {
+  size: A4;
+  margin: 0;
+}
+@media print {
+  .ap-cetak {
+    background: none;
+    padding: 0;
+  }
+  .ap-cetak .page {
+    margin: 0 auto;
+    box-shadow: none;
+    page-break-after: always;
+  }
+  .ap-cetak .no-print {
+    display: none !important;
+  }
+}
+
+/* ── Pita masthead ── */
+.ap-cetak .band {
+  background: var(--brand);
+  color: #fff;
+  padding: 7mm 14mm 5.5mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.ap-cetak .band .m h1 {
+  font-family: Georgia, Cambria, serif;
+  font-size: 19pt;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+.ap-cetak .band .m .sub {
+  font-size: 7pt;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 2.5px;
+}
+.ap-cetak .band .e {
+  text-align: right;
+  font-size: 7.5pt;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+}
+.ap-cetak .band .e .kode {
+  font-family: Consolas, monospace;
+  font-size: 8pt;
+  color: #fff;
+}
+
+.ap-cetak .inner {
+  padding: 6mm 14mm 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Judul emiten ── */
+.ap-cetak .trow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 2.5px solid var(--ink);
+  padding-bottom: 2mm;
+}
+.ap-cetak .trow .tk {
+  font-size: 19pt;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.ap-cetak .trow .tk small {
+  font-size: 9pt;
+  font-weight: 400;
+  color: var(--mute);
+  margin-left: 8px;
+  letter-spacing: 0;
+}
+.ap-cetak .trow .px {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.ap-cetak .trow .px .h {
+  font-size: 19pt;
+  font-weight: 800;
+}
+.ap-cetak .trow .px .c {
+  font-size: 9pt;
+  font-weight: 700;
+}
+.ap-cetak .bull {
+  color: var(--bull);
+}
+.ap-cetak .bear {
+  color: var(--bear);
+}
+
+/* ── Strip statistik ── */
+.ap-cetak .stats {
+  display: flex;
+  border-bottom: 1px solid var(--hair);
+  padding: 2.2mm 0;
+  font-variant-numeric: tabular-nums;
+}
+.ap-cetak .stats .s {
+  flex: 1;
+  padding-right: 8px;
+}
+.ap-cetak .stats .s .l {
+  font-size: 6.3pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.ap-cetak .stats .s .v {
+  font-size: 9.5pt;
+  font-weight: 700;
+  margin-top: 1px;
+}
+.ap-cetak .stats .s .v small {
+  font-size: 7pt;
+  font-weight: 400;
+  color: var(--mute);
+}
+
+/* ── Chart ── */
+.ap-cetak .chartwrap {
+  margin: 3.5mm 0 0;
+  position: relative;
+}
+.ap-cetak .chartwrap .cap {
+  font-size: 6.3pt;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--mute);
+  margin-bottom: 1.5mm;
+}
+.ap-cetak canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── Kolom ── */
+.ap-cetak .cols {
+  display: grid;
+  grid-template-columns: 60mm 1fr;
+  gap: 7mm;
+  margin-top: 4mm;
+  flex: 1;
+  min-height: 0;
+}
+
+.ap-cetak h3.rule {
+  font-size: 7pt;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 0 0 2mm;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+.ap-cetak h3.rule::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--hair);
+}
+.ap-cetak h3.rule .r {
+  font-weight: 400;
+  color: var(--mute);
+  letter-spacing: 0.06em;
+}
+
+.ap-cetak .meter {
+  height: 3px;
+  background: linear-gradient(90deg, var(--bear), #c9cfd6 50%, var(--bull));
+  position: relative;
+  margin: 1mm 0 1.5mm;
+}
+.ap-cetak .meter i {
+  position: absolute;
+  top: -2.5px;
+  width: 2px;
+  height: 8px;
+  background: var(--ink);
+}
+.ap-cetak .meterlbl {
+  display: flex;
+  justify-content: space-between;
+  font-size: 5.8pt;
+  color: var(--mute);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 2.5mm;
+}
+
+.ap-cetak table.brk {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 7.6pt;
+  font-variant-numeric: tabular-nums;
+}
+.ap-cetak table.brk th {
+  font-size: 6pt;
+  color: var(--mute);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  text-align: right;
+  padding: 1.5px 0 3px;
+  border-bottom: 1.5px solid var(--ink);
+  font-weight: 700;
+}
+.ap-cetak table.brk th:first-child {
+  text-align: left;
+}
+.ap-cetak table.brk td {
+  padding: 2.1px 0;
+  text-align: right;
+  border-bottom: 1px solid var(--panel);
+}
+.ap-cetak table.brk td:first-child {
+  text-align: left;
+  font-weight: 700;
+}
+.ap-cetak .bcode-b {
+  color: var(--bull);
+}
+.ap-cetak .bcode-s {
+  color: var(--bear);
+}
+.ap-cetak .brk .sep td {
+  padding: 2.5mm 0 3px;
+  font-size: 6pt;
+  color: var(--mute);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  text-align: left;
+  font-weight: 700;
+  border-bottom: 1.5px solid var(--ink);
+}
+.ap-cetak .brk .tot td {
+  border-top: 1.5px solid var(--ink);
+  border-bottom: none;
+  font-weight: 700;
+  padding-top: 3px;
+}
+.ap-cetak .tag {
+  font-size: 5.4pt;
+  font-weight: 700;
+  padding: 0 2.5px;
+  margin-left: 3px;
+  vertical-align: 1px;
+  letter-spacing: 0.05em;
+}
+.ap-cetak .tag.ritel {
+  color: var(--warn);
+  outline: 1px solid var(--warn);
+}
+.ap-cetak .tag.scalp {
+  color: var(--mute);
+  outline: 1px solid var(--mute);
+}
+.ap-cetak .brksrc {
+  font-size: 6.2pt;
+  color: var(--mute);
+  margin-top: 2mm;
+  line-height: 1.5;
+}
+
+/* ── Analisa kanan ── */
+.ap-cetak .bias {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 2.5mm;
+}
+.ap-cetak .bias .lbl {
+  font-size: 12.5pt;
+  font-weight: 800;
+  letter-spacing: -0.005em;
+}
+.ap-cetak .risk {
+  font-size: 6.8pt;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 1.5px 8px;
+}
+.ap-cetak .risk.MENENGAH {
+  color: var(--brand);
+  outline: 1.5px solid var(--brand);
+}
+.ap-cetak .risk.TINGGI {
+  color: var(--warn);
+  outline: 1.5px solid var(--warn);
+}
+.ap-cetak .risk.EKSTREM {
+  color: var(--bear);
+  outline: 1.5px solid var(--bear);
+}
+
+.ap-cetak .sec {
+  margin-bottom: 3mm;
+}
+.ap-cetak .sec p {
+  margin: 0;
+  font-size: 8.6pt;
+  color: var(--ink2);
+}
+.ap-cetak .flowline {
+  font-size: 8.8pt;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 1px;
+}
+
+.ap-cetak .sr {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.5mm 5mm;
+  font-size: 9pt;
+  font-variant-numeric: tabular-nums;
+  border-top: 1.5px solid var(--ink);
+  border-bottom: 1px solid var(--hair);
+  padding: 2.5mm 0;
+  margin: 0 0 3mm;
+}
+.ap-cetak .sr .k {
+  font-size: 6.5pt;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  align-self: center;
+}
+.ap-cetak .sr .k.sup {
+  color: var(--bull);
+}
+.ap-cetak .sr .k.res {
+  color: var(--bear);
+}
+.ap-cetak .sr .v {
+  font-weight: 700;
+}
+.ap-cetak .sr .v span {
+  color: var(--hair);
+  font-weight: 400;
+  padding: 0 4px;
+}
+.ap-cetak .sr .v .ragu {
+  color: var(--warn);
+  font-weight: 400;
+  font-size: 7pt;
+}
+
+.ap-cetak .strategi {
+  border-left: 3px solid var(--ink);
+  padding: 1.5mm 0 1.5mm 4mm;
+  font-size: 9.3pt;
+  font-weight: 700;
+  margin-bottom: 3mm;
+}
+.ap-cetak .invtar {
+  display: flex;
+  gap: 9mm;
+  font-size: 8.8pt;
+  margin-bottom: 3mm;
+  font-variant-numeric: tabular-nums;
+}
+.ap-cetak .invtar .l {
+  font-size: 6.3pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mute);
+  display: block;
+}
+.ap-cetak .invtar b {
+  font-weight: 700;
+}
+.ap-cetak .invtar .inv b {
+  color: var(--bear);
+}
+.ap-cetak .konsek {
+  font-size: 8pt;
+  color: var(--mute);
+  margin: 0;
+}
+
+/* skor segmen */
+.ap-cetak .skor {
+  margin-top: auto;
+  padding-top: 3mm;
+}
+.ap-cetak .skor .head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1.5mm;
+}
+.ap-cetak .skor .head .t {
+  font-size: 6.5pt;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.ap-cetak .skor .head .n {
+  font-size: 12pt;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.ap-cetak .skor .barrow {
+  display: flex;
+  gap: 2px;
+  height: 5px;
+}
+.ap-cetak .skor .barrow i {
+  background: var(--brand);
+  opacity: 0.9;
+}
+.ap-cetak .skor .barrow i.sisa {
+  background: var(--panel);
+}
+.ap-cetak .skor .leg {
+  display: flex;
+  gap: 5mm;
+  font-size: 6.3pt;
+  color: var(--mute);
+  margin-top: 1.5mm;
+  font-variant-numeric: tabular-nums;
+}
+
+.ap-cetak .foot {
+  border-top: 1.5px solid var(--ink);
+  margin: 3mm 14mm 0;
+  padding: 2mm 0 5mm;
+  display: flex;
+  justify-content: space-between;
+  font-size: 6.5pt;
+  color: var(--mute);
+}
+.ap-cetak .foot .kode {
+  font-family: Consolas, monospace;
+}
+
+/* ── Ringkasan (hal 1) ── */
+.ap-cetak .lede {
+  font-size: 10.5pt;
+  color: var(--ink2);
+  margin: 0 0 4mm;
+  line-height: 1.6;
+  max-width: 150mm;
+}
+.ap-cetak table.ring {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8.8pt;
+  font-variant-numeric: tabular-nums;
+}
+.ap-cetak table.ring th {
+  font-size: 6.3pt;
+  color: var(--mute);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  text-align: left;
+  padding: 2mm 3mm 1.5mm 0;
+  border-bottom: 1.5px solid var(--ink);
+  font-weight: 700;
+}
+.ap-cetak table.ring td {
+  padding: 2.6mm 3mm 2.6mm 0;
+  border-bottom: 1px solid var(--hair);
+  vertical-align: top;
+}
+.ap-cetak table.ring .tk {
+  font-weight: 800;
+  font-size: 10pt;
+}
+.ap-cetak table.ring .num {
+  font-weight: 700;
+}
+.ap-cetak .ihsgbar {
+  background: var(--panel);
+  padding: 3mm 4mm;
+  font-size: 8.6pt;
+  margin: 4.5mm 0;
+  display: flex;
+  gap: 8mm;
+  font-variant-numeric: tabular-nums;
+}
+.ap-cetak .ihsgbar b {
+  font-weight: 700;
+}
+.ap-cetak .ihsgbar .l {
+  font-size: 6.3pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mute);
+  display: block;
+}
+.ap-cetak .metode {
+  font-size: 7.6pt;
+  color: var(--mute);
+  line-height: 1.7;
+}
+.ap-cetak .metode b {
+  color: var(--ink2);
+}
+
+/* ── Peringkat ── */
+.ap-cetak table.rank {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8.8pt;
+  font-variant-numeric: tabular-nums;
+}
+.ap-cetak table.rank th {
+  font-size: 6.3pt;
+  color: var(--mute);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  text-align: right;
+  padding: 2mm 0 1.5mm;
+  border-bottom: 1.5px solid var(--ink);
+  font-weight: 700;
+}
+.ap-cetak table.rank th:nth-child(-n + 2) {
+  text-align: left;
+}
+.ap-cetak table.rank td {
+  padding: 2.8mm 0;
+  border-bottom: 1px solid var(--hair);
+  text-align: right;
+}
+.ap-cetak table.rank td:nth-child(-n + 2) {
+  text-align: left;
+}
+.ap-cetak table.rank .tk {
+  font-weight: 800;
+  font-size: 10pt;
+}
+.ap-cetak table.rank .total {
+  font-weight: 800;
+  font-size: 12pt;
+}
+.ap-cetak .blok {
+  margin-top: 4.5mm;
+}
+.ap-cetak .blok p {
+  margin: 0;
+  font-size: 8.6pt;
+  color: var(--ink2);
+}
+.ap-cetak .blok.integritas {
+  border-left: 3px solid var(--warn);
+  padding-left: 4mm;
+}
+.ap-cetak .blok.integritas p {
+  color: var(--mute);
+  font-size: 8pt;
+}
+
+/* ── Tombol cetak (layar saja) ── */
+.ap-cetak .cetak-btn {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 10;
+  padding: 9px 16px;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 10pt;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
