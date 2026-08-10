@@ -5,137 +5,158 @@
 <title>{{JUDUL}}</title>
 <style>
   :root{
-    --ground:#0B1220; --panel:#111B2E; --panel2:#0E1726; --line:#1E2A40;
-    --text:#E8EDF4; --dim:#8B98AC; --faint:#5A6878;
-    --accent:#2DD4BF; --bull:#34D399; --bear:#F87171; --warn:#FBBF24;
+    --paper:#FFFFFF; --panel:#F4F6F8; --ink:#12181F; --ink2:#39434E;
+    --mute:#6B7683; --hair:#D8DDE3; --brand:#0B4F4A;
+    --bull:#0A7D4F; --bear:#B93A2B; --warn:#8A5E00;
   }
   *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  html,body{margin:0;padding:0;background:#000}
-  body{font-family:"Segoe UI",system-ui,sans-serif;color:var(--text);line-height:1.5}
-
-  .page{width:210mm;height:296mm;background:var(--ground);margin:0 auto;
-    padding:14mm 15mm 10mm;position:relative;overflow:hidden;
-    display:flex;flex-direction:column;page-break-after:always}
-  @media screen{.page{margin:10px auto;box-shadow:0 10px 40px rgba(0,0,0,.6)}}
+  html,body{margin:0;padding:0;background:#888}
+  body{font-family:"Segoe UI",system-ui,sans-serif;color:var(--ink);line-height:1.45;font-size:9pt}
+  .page{width:210mm;height:296mm;background:var(--paper);margin:0 auto;position:relative;
+    display:flex;flex-direction:column;page-break-after:always;overflow:hidden}
+  @media screen{.page{margin:10px auto;box-shadow:0 6px 30px rgba(0,0,0,.35)}}
   @page{size:A4;margin:0}
 
-  /* ── Masthead ── */
-  .mast{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;
-    border-bottom:2px solid var(--accent);padding-bottom:10px}
-  .brand .eyebrow{font-size:8.5pt;letter-spacing:.22em;color:var(--dim);text-transform:uppercase}
-  .brand h1{font-family:Georgia,Cambria,serif;font-size:21pt;font-weight:700;
-    letter-spacing:.08em;margin:1px 0 0;line-height:1.05}
-  .brand h1 .wave{color:var(--accent);letter-spacing:0}
-  .edisi{text-align:right;font-size:8.5pt;color:var(--dim)}
-  .edisi .kode{font-family:Consolas,monospace;color:var(--accent);font-size:9pt}
+  /* ── Pita masthead ── */
+  .band{background:var(--brand);color:#fff;padding:7mm 14mm 5.5mm;
+    display:flex;justify-content:space-between;align-items:flex-end}
+  .band .m h1{font-family:Georgia,Cambria,serif;font-size:19pt;font-weight:700;
+    margin:0;line-height:1;letter-spacing:.02em}
+  .band .m .sub{font-size:7pt;letter-spacing:.24em;text-transform:uppercase;
+    color:rgba(255,255,255,.75);margin-top:2.5px}
+  .band .e{text-align:right;font-size:7.5pt;color:rgba(255,255,255,.85);line-height:1.5}
+  .band .e .kode{font-family:Consolas,monospace;font-size:8pt;color:#fff}
 
-  /* ── Sampul ── */
-  .cover{justify-content:center;align-items:center;text-align:center}
-  .cover .wave-big{font-size:64pt;color:var(--accent);line-height:1}
-  .cover h1{font-family:Georgia,Cambria,serif;font-size:40pt;letter-spacing:.12em;margin:8px 0 4px}
-  .cover .sub{font-size:11pt;color:var(--dim);letter-spacing:.28em;text-transform:uppercase}
-  .cover .tgl{margin-top:26px;font-size:12pt}
-  .cover .kode{font-family:Consolas,monospace;color:var(--accent);font-size:10pt;margin-top:4px}
-  .cover .isi{margin-top:34px;font-size:10.5pt;color:var(--dim);line-height:2}
-  .cover .isi b{color:var(--text);font-weight:600}
-  .cover .ihsg{margin-top:30px;font-size:9.5pt;color:var(--dim);
-    border:1px solid var(--line);border-radius:4px;padding:8px 18px}
-  .cover .disc{position:absolute;bottom:12mm;left:0;right:0;font-size:8pt;color:var(--faint)}
+  .inner{padding:6mm 14mm 0;display:flex;flex-direction:column;flex:1;min-height:0}
 
-  /* ── Header emiten ── */
-  .emiten{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin:12px 0 8px}
-  .emiten .tk{font-size:17pt;font-weight:700}
-  .emiten .tk small{font-size:9.5pt;font-weight:400;color:var(--dim);margin-left:8px}
-  .close{text-align:right;font-variant-numeric:tabular-nums}
-  .close .harga{font-size:16pt;font-weight:700}
-  .close .chg{font-size:9.5pt;font-weight:600}
-  .close .chg.bull{color:var(--bull)} .close .chg.bear{color:var(--bear)}
+  /* ── Judul emiten ── */
+  .trow{display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:2.5px solid var(--ink);padding-bottom:2mm}
+  .trow .tk{font-size:19pt;font-weight:800;letter-spacing:-.01em;line-height:1}
+  .trow .tk small{font-size:9pt;font-weight:400;color:var(--mute);margin-left:8px;letter-spacing:0}
+  .trow .px{text-align:right;font-variant-numeric:tabular-nums;line-height:1.1}
+  .trow .px .h{font-size:19pt;font-weight:800}
+  .trow .px .c{font-size:9pt;font-weight:700}
+  .bull{color:var(--bull)} .bear{color:var(--bear)}
 
-  .chartwrap{background:var(--panel);border:1px solid var(--line);border-radius:4px;
-    padding:8px 8px 3px;position:relative}
-  .chartwrap .cap{position:absolute;top:7px;left:10px;font-size:7pt;color:var(--faint);
-    letter-spacing:.14em;text-transform:uppercase}
+  /* ── Strip statistik ── */
+  .stats{display:flex;border-bottom:1px solid var(--hair);
+    padding:2.2mm 0;font-variant-numeric:tabular-nums}
+  .stats .s{flex:1;padding-right:8px}
+  .stats .s .l{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+  .stats .s .v{font-size:9.5pt;font-weight:700;margin-top:1px}
+  .stats .s .v small{font-size:7pt;font-weight:400;color:var(--mute)}
+
+  /* ── Chart ── */
+  .chartwrap{margin:3.5mm 0 0;position:relative}
+  .chartwrap .cap{font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--mute);margin-bottom:1.5mm}
   canvas{width:100%;height:auto;display:block}
 
-  .cols{display:grid;grid-template-columns:62mm 1fr;gap:5mm;margin-top:5mm;flex:1;min-height:0}
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:9px 11px}
-  .ptitle{font-size:7.5pt;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);
-    margin:0 0 7px;display:flex;justify-content:space-between}
+  /* ── Kolom ── */
+  .cols{display:grid;grid-template-columns:60mm 1fr;gap:7mm;margin-top:4mm;flex:1;min-height:0}
 
-  .meter{height:5px;border-radius:3px;margin:1px 0 3px;position:relative;
-    background:linear-gradient(90deg,var(--bear),var(--faint) 50%,var(--bull))}
-  .meter i{position:absolute;top:-3px;width:2.5px;height:11px;background:var(--accent);border-radius:2px}
-  .meterlbl{display:flex;justify-content:space-between;font-size:6.5pt;color:var(--faint);
-    text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+  h3.rule{font-size:7pt;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);
+    margin:0 0 2mm;display:flex;align-items:center;gap:6px;font-weight:700}
+  h3.rule::after{content:"";flex:1;border-top:1px solid var(--hair)}
+  h3.rule .r{font-weight:400;color:var(--mute);letter-spacing:.06em}
 
-  table.brk{width:100%;border-collapse:collapse;font-size:7.8pt;font-variant-numeric:tabular-nums}
-  table.brk th{font-size:6.5pt;color:var(--faint);text-transform:uppercase;letter-spacing:.1em;
-    text-align:right;padding:2px 0;border-bottom:1px solid var(--line);font-weight:600}
+  /* meter tipis */
+  .meter{height:3px;background:linear-gradient(90deg,var(--bear),#C9CFD6 50%,var(--bull));
+    position:relative;margin:1mm 0 1.5mm}
+  .meter i{position:absolute;top:-2.5px;width:2px;height:8px;background:var(--ink)}
+  .meterlbl{display:flex;justify-content:space-between;font-size:5.8pt;color:var(--mute);
+    text-transform:uppercase;letter-spacing:.1em;margin-bottom:2.5mm}
+
+  table.brk{width:100%;border-collapse:collapse;font-size:7.6pt;font-variant-numeric:tabular-nums}
+  table.brk th{font-size:6pt;color:var(--mute);text-transform:uppercase;letter-spacing:.12em;
+    text-align:right;padding:1.5px 0 3px;border-bottom:1.5px solid var(--ink);font-weight:700}
   table.brk th:first-child{text-align:left}
-  table.brk td{padding:2px 0;text-align:right}
+  table.brk td{padding:2.1px 0;text-align:right;border-bottom:1px solid var(--panel)}
   table.brk td:first-child{text-align:left;font-weight:700}
   .bcode-b{color:var(--bull)} .bcode-s{color:var(--bear)}
-  .brk .sep td{padding:4px 0 2px;font-size:6.5pt;color:var(--faint);text-transform:uppercase;
-    letter-spacing:.12em;text-align:left;font-weight:600;border-bottom:1px solid var(--line)}
-  .tag{font-size:5.8pt;font-weight:600;border-radius:2px;padding:0 3px;margin-left:4px;vertical-align:1px}
-  .tag.ritel{color:var(--warn);border:1px solid var(--warn)}
-  .tag.scalp{color:var(--dim);border:1px solid var(--dim)}
-  .brksrc{font-size:6.5pt;color:var(--faint);margin-top:6px}
+  .brk .sep td{padding:2.5mm 0 3px;font-size:6pt;color:var(--mute);text-transform:uppercase;
+    letter-spacing:.12em;text-align:left;font-weight:700;border-bottom:1.5px solid var(--ink)}
+  .brk .tot td{border-top:1.5px solid var(--ink);border-bottom:none;font-weight:700;padding-top:3px}
+  .tag{font-size:5.4pt;font-weight:700;padding:0 2.5px;margin-left:3px;vertical-align:1px;
+    letter-spacing:.05em}
+  .tag.ritel{color:var(--warn);outline:1px solid var(--warn)}
+  .tag.scalp{color:var(--mute);outline:1px solid var(--mute)}
+  .brksrc{font-size:6.2pt;color:var(--mute);margin-top:2mm;line-height:1.5}
 
-  .bias{display:flex;justify-content:space-between;align-items:center;gap:8px;
-    border-bottom:2px solid var(--line);padding-bottom:7px;margin-bottom:8px}
-  .bias .lbl{font-size:11.5pt;font-weight:700}
-  .bias .lbl b.bull{color:var(--bull)} .bias .lbl b.bear{color:var(--bear)}
-  .risk{font-size:7.5pt;font-weight:700;letter-spacing:.14em;border-radius:3px;
-    padding:2px 7px;text-transform:uppercase}
-  .risk.MENENGAH{color:var(--accent);border:1px solid var(--accent)}
-  .risk.TINGGI{color:var(--warn);border:1px solid var(--warn)}
-  .risk.EKSTREM{color:var(--bear);border:1px solid var(--bear)}
+  /* ── Analisa kanan ── */
+  .bias{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2.5mm}
+  .bias .lbl{font-size:12.5pt;font-weight:800;letter-spacing:-.005em}
+  .risk{font-size:6.8pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+    padding:1.5px 8px}
+  .risk.MENENGAH{color:var(--brand);outline:1.5px solid var(--brand)}
+  .risk.TINGGI{color:var(--warn);outline:1.5px solid var(--warn)}
+  .risk.EKSTREM{color:var(--bear);outline:1.5px solid var(--bear)}
 
-  .sec{margin-bottom:8px}
-  .sec h3{font-size:7.5pt;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 3px}
-  .sec p{margin:0;font-size:8.8pt}
-  .sec p.dim{color:var(--dim)}
-  .flowline{font-size:8.8pt;font-weight:600}
-  .flowline .net-b{color:var(--bull)} .flowline .net-s{color:var(--bear)}
+  .sec{margin-bottom:3mm}
+  .sec p{margin:0;font-size:8.6pt;color:var(--ink2)}
+  .flowline{font-size:8.8pt;font-weight:700;color:var(--ink);margin-bottom:1px}
 
-  .sr{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:8.8pt;
-    font-variant-numeric:tabular-nums;background:var(--panel2);border:1px solid var(--line);
-    border-radius:4px;padding:7px 11px;margin:3px 0 8px}
-  .sr .k{font-size:7pt;letter-spacing:.16em;text-transform:uppercase;font-weight:700;align-self:center}
+  .sr{display:grid;grid-template-columns:auto 1fr;gap:1.5mm 5mm;font-size:9pt;
+    font-variant-numeric:tabular-nums;border-top:1.5px solid var(--ink);
+    border-bottom:1px solid var(--hair);padding:2.5mm 0;margin:0 0 3mm}
+  .sr .k{font-size:6.5pt;letter-spacing:.16em;text-transform:uppercase;font-weight:700;align-self:center}
   .sr .k.sup{color:var(--bull)} .sr .k.res{color:var(--bear)}
-  .sr .v{font-weight:600}
-  .sr .v span{color:var(--faint);font-weight:400;padding:0 3px}
+  .sr .v{font-weight:700}
+  .sr .v span{color:var(--hair);font-weight:400;padding:0 4px}
+  .sr .v .ragu{color:var(--warn);font-weight:400;font-size:7pt}
 
-  .strategi{background:var(--panel2);border-left:3px solid var(--accent);
-    padding:6px 10px;font-size:9pt;font-weight:600;margin:3px 0 8px;border-radius:0 4px 4px 0}
-  .invtar{display:flex;gap:16px;flex-wrap:wrap;font-size:8.8pt;margin-bottom:8px;
+  .strategi{border-left:3px solid var(--ink);padding:1.5mm 0 1.5mm 4mm;
+    font-size:9.3pt;font-weight:700;margin-bottom:3mm}
+  .invtar{display:flex;gap:9mm;font-size:8.8pt;margin-bottom:3mm;font-variant-numeric:tabular-nums}
+  .invtar .l{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);display:block}
+  .invtar b{font-weight:700}
+  .invtar .inv b{color:var(--bear)}
+  .konsek{font-size:8pt;color:var(--mute);margin:0}
+
+  /* skor segmen */
+  .skor{margin-top:auto;padding-top:3mm}
+  .skor .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1.5mm}
+  .skor .head .t{font-size:6.5pt;letter-spacing:.18em;text-transform:uppercase;font-weight:700}
+  .skor .head .n{font-size:12pt;font-weight:800;font-variant-numeric:tabular-nums}
+  .skor .barrow{display:flex;gap:2px;height:5px}
+  .skor .barrow i{background:var(--brand);opacity:.9}
+  .skor .barrow i.sisa{background:var(--panel)}
+  .skor .leg{display:flex;gap:5mm;font-size:6.3pt;color:var(--mute);margin-top:1.5mm;
     font-variant-numeric:tabular-nums}
-  .invtar .inv b{color:var(--bear)} .invtar .tar b{color:var(--text)}
-  .konsek{font-size:8pt;color:var(--dim);border-top:1px dashed var(--line);padding-top:6px}
-  .skorbar{display:flex;gap:10px;font-size:7.5pt;color:var(--dim);margin-top:auto;
-    padding-top:6px;font-variant-numeric:tabular-nums}
-  .skorbar b{color:var(--text)}
 
-  .foot{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line);
-    margin-top:4mm;padding-top:7px;font-size:7pt;color:var(--faint)}
+  .foot{border-top:1.5px solid var(--ink);margin:3mm 14mm 0;padding:2mm 0 5mm;
+    display:flex;justify-content:space-between;font-size:6.5pt;color:var(--mute)}
   .foot .kode{font-family:Consolas,monospace}
 
+  /* ── Ringkasan (hal 1) ── */
+  .lede{font-size:10.5pt;color:var(--ink2);margin:0 0 4mm;line-height:1.6;max-width:150mm}
+  table.ring{width:100%;border-collapse:collapse;font-size:8.8pt;font-variant-numeric:tabular-nums}
+  table.ring th{font-size:6.3pt;color:var(--mute);text-transform:uppercase;letter-spacing:.14em;
+    text-align:left;padding:2mm 3mm 1.5mm 0;border-bottom:1.5px solid var(--ink);font-weight:700}
+  table.ring td{padding:2.6mm 3mm 2.6mm 0;border-bottom:1px solid var(--hair);vertical-align:top}
+  table.ring .tk{font-weight:800;font-size:10pt}
+  table.ring .num{font-weight:700}
+  .ihsgbar{background:var(--panel);padding:3mm 4mm;font-size:8.6pt;margin:4.5mm 0;
+    display:flex;gap:8mm;font-variant-numeric:tabular-nums}
+  .ihsgbar b{font-weight:700}
+  .ihsgbar .l{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);display:block}
+  .metode{font-size:7.6pt;color:var(--mute);line-height:1.7}
+  .metode b{color:var(--ink2)}
+
   /* ── Peringkat ── */
-  .rank-kesimpulan{background:var(--panel);border:1px solid var(--line);border-radius:4px;
-    padding:10px 14px;margin:12px 0;font-size:9.5pt}
-  .rank-kesimpulan h3{font-size:7.5pt;letter-spacing:.2em;text-transform:uppercase;
-    color:var(--accent);margin:0 0 4px}
-  table.rank{width:100%;border-collapse:collapse;font-size:9pt;font-variant-numeric:tabular-nums}
-  table.rank th{font-size:7pt;color:var(--faint);text-transform:uppercase;letter-spacing:.12em;
-    text-align:left;padding:5px 6px;border-bottom:1px solid var(--line)}
-  table.rank td{padding:7px 6px;border-bottom:1px solid var(--line)}
-  table.rank .skor{font-weight:700;font-size:11pt}
-  .blok{background:var(--panel);border:1px solid var(--line);border-radius:4px;
-    padding:9px 13px;margin-top:8px;font-size:8.5pt}
-  .blok h3{font-size:7pt;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 3px}
-  .blok.warn{border-left:3px solid var(--warn)}
-  .blok .dim{color:var(--dim)}
+  table.rank{width:100%;border-collapse:collapse;font-size:8.8pt;font-variant-numeric:tabular-nums}
+  table.rank th{font-size:6.3pt;color:var(--mute);text-transform:uppercase;letter-spacing:.14em;
+    text-align:right;padding:2mm 0 1.5mm;border-bottom:1.5px solid var(--ink);font-weight:700}
+  table.rank th:nth-child(-n+2){text-align:left}
+  table.rank td{padding:2.8mm 0;border-bottom:1px solid var(--hair);text-align:right}
+  table.rank td:nth-child(-n+2){text-align:left}
+  table.rank .tk{font-weight:800;font-size:10pt}
+  table.rank .total{font-weight:800;font-size:12pt}
+  .blok{margin-top:4.5mm}
+  .blok p{margin:0;font-size:8.6pt;color:var(--ink2)}
+  .blok.integritas{border-left:3px solid var(--warn);padding-left:4mm}
+  .blok.integritas p{color:var(--mute);font-size:8pt}
 </style>
 </head>
 <body>
@@ -144,41 +165,34 @@
 const OHLC = /*OHLC*/{};
 function gambarChart(id, tk, ema50, pivot){
   const cv=document.getElementById(id), x=cv.getContext('2d');
-  const css=getComputedStyle(document.documentElement), C=n=>css.getPropertyValue(n).trim();
-  const bars=OHLC[tk].slice(-65); // ~3 bulan: zona pivot tetap terbaca, tidak terkompres puncak lama
-  const W=cv.width,H=cv.height,pad={t:20,r:110,b:14,l:8};
+  const bars=OHLC[tk].slice(-65);
+  const W=cv.width,H=cv.height,pad={t:14,r:104,b:14,l:6};
   const pvals=Object.values(pivot);
-  const lo=Math.min(...bars.map(b=>b.l),...pvals)*0.985,
-        hi=Math.max(...bars.map(b=>b.h),...pvals)*1.015;
+  const lo=Math.min(...bars.map(b=>b.l),...pvals)*0.99,
+        hi=Math.max(...bars.map(b=>b.h),...pvals)*1.01;
   const X=i=>pad.l+i*(W-pad.l-pad.r)/(bars.length-1),
         Y=v=>pad.t+(hi-v)*(H-pad.t-pad.b)/(hi-lo);
-  x.font="17px Segoe UI";
-  // label anti-tumpuk: geser ke bawah bila jarak <19px dari label sebelumnya
-  let yTerpakai=[];
+  x.font="15px Segoe UI";
+  let yT=[];
   for(const [n,v] of Object.entries(pivot)){
-    x.strokeStyle=n[0]==="R"?C('--bear'):n==="P"?C('--dim'):C('--bull');
-    x.globalAlpha=.5;x.setLineDash([4,5]);x.beginPath();
+    x.strokeStyle="#B9C1C9";x.setLineDash([3,4]);x.beginPath();
     x.moveTo(pad.l,Y(v));x.lineTo(W-pad.r,Y(v));x.stroke();x.setLineDash([]);
-    let yl=Y(v)+6;
-    while(yTerpakai.some(u=>Math.abs(u-yl)<19)) yl+=19;
-    yTerpakai.push(yl);
-    x.globalAlpha=1;x.fillStyle=x.strokeStyle;
+    let yl=Y(v)+5; while(yT.some(u=>Math.abs(u-yl)<17)) yl+=17; yT.push(yl);
+    x.fillStyle=n[0]==="R"?"#B93A2B":n==="P"?"#6B7683":"#0A7D4F";
     x.fillText(n+" "+v.toLocaleString('id'),W-pad.r+6,yl);
   }
-  const bw=Math.max(2.5,(W-pad.l-pad.r)/bars.length*.6);
+  const bw=Math.max(3,(W-pad.l-pad.r)/bars.length*.62);
   bars.forEach((b,i)=>{
     const up=b.c>=b.o;
-    x.strokeStyle=x.fillStyle=up?C('--bull'):C('--bear');
+    x.strokeStyle=x.fillStyle=up?"#0A7D4F":"#B93A2B";
     x.beginPath();x.moveTo(X(i),Y(b.h));x.lineTo(X(i),Y(b.l));x.stroke();
     x.fillRect(X(i)-bw/2,Y(Math.max(b.o,b.c)),bw,
       Math.max(1.5,Y(Math.min(b.o,b.c))-Y(Math.max(b.o,b.c))));
   });
-  // EMA50 dihitung dari seri penuh supaya nilai awal jendela benar
   const all=OHLC[tk], k=2/51; let e=all[0].c;
-  const emaSeri=all.map(b=>e=e+(b.c-e)*k);
-  const emaBars=emaSeri.slice(-bars.length);
-  x.strokeStyle=C('--accent');x.lineWidth=2.2;x.beginPath();
-  emaBars.forEach((v,i)=>i?x.lineTo(X(i),Y(v)):x.moveTo(X(0),Y(v)));
+  const seri=all.map(b=>e=e+(b.c-e)*k).slice(-bars.length);
+  x.strokeStyle="#0B4F4A";x.lineWidth=2;x.beginPath();
+  seri.forEach((v,i)=>i?x.lineTo(X(i),Y(v)):x.moveTo(X(0),Y(v)));
   x.stroke();
 }
 /*DRAWCALLS*/
