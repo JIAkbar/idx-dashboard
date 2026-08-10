@@ -1,7 +1,9 @@
 # Rencana Refactor React — IDXMI + Arus Pasar
 
-> Disusun 2026-08-10. Status: **persiapan** — belum ada kode refactor yang ditulis.
-> Keputusan user: login **admin tunggal**; otomasi analisa **AI transkripsi → draf → user setujui**.
+> Disusun 2026-08-10, direvisi 2026-08-10 (arsitektur hibrida).
+> Status: **persiapan** — belum ada kode refactor yang ditulis.
+> Keputusan user: login **admin tunggal**; mesin analisa utama **Claude Code** (web = kotak masuk
+> + arsip + rak terbitan); API vision menjadi **opsional**, bukan jalur utama.
 
 ## 1. Kenapa refactor
 
@@ -16,26 +18,51 @@
 | Auth | Supabase Auth, satu akun admin | MCP Supabase sudah terhubung; email+password cukup, tanpa manajemen user |
 | Database | Supabase Postgres | Edisi, emiten, baris flow, skor — menggantikan JSON file |
 | Storage | Supabase Storage | PDF/screenshot upload admin |
-| Analisa vision | Supabase Edge Function → Claude API (vision) | Baca chart + orderbook dari upload → JSON terstruktur. Model: `claude-sonnet-5` cukup untuk transkripsi; naikkan hanya kalau akurasi kurang |
+| Mesin analisa | **Sesi Claude Code** (manual / `/schedule`) | Transkripsi vision + narasi + rakit PDF; konteks metodologi utuh, masuk langganan. Cadangan opsional (fase 6): Edge Function → Claude API `claude-sonnet-5`, ~$1–11/bulan tergantung 3–20 emiten/hari |
 | Skor | Port `arus-pasar/build.py` → modul TS | Deterministik, mudah diuji; SATU sumber kebenaran (Python dipensiun setelah paritas terbukti) |
 | Export PDF | CSS print (`@page A4`) + `window.print()` | Template A4 sudah print-ready; nol server, nol biaya. Headless render server-side hanya kalau butuh otomasi penuh |
 | Hosting | Tetap GitHub Pages (SPA statis) | Backend seluruhnya di Supabase; tidak perlu pindah hosting |
 
-## 3. Alur otomasi yang disepakati
+## 3. Alur yang disepakati (hibrida: web = wadah, Claude Code = otak)
 
 ```
-Admin login → upload PDF/screenshot (chart TV + orderbook Stockbit)
-  → Edge Function: pecah halaman → Claude vision → JSON draf
-     (broker rows, pivot, OHLC hari, slider) + confidence per angka
-  → UI DRAF: tabel side-by-side gambar asli vs angka terbaca,
-     nilai confidence rendah disorot → admin koreksi → SETUJUI
-  → mesin skor (TS) hitung Technical/Flow/RR/Liq/IHSG
-  → admin tulis/edit narasi (draf awal dari AI, opsional)
-  → pratinjau halaman → export PDF (print CSS) → arsip edisi ke DB
+HP admin → upload screenshot ke web (Supabase Storage), kapan saja
+   ↓
+Sesi Claude Code — manual, atau terjadwal via /schedule:
+   tarik file dari Storage → transkripsi (vision sesi, masuk langganan)
+   → tampilkan draf angka ke admin → koreksi → SETUJUI
+   → mesin skor → narasi analisa (kualitas sesi penuh: METODOLOGI-ANALISA.md,
+     kamus broker, riwayat edisi) → rakit PDF
+   → unggah PDF + data edisi balik ke web sebagai edisi terbit
 ```
+
+Alasan memilih ini di atas Edge Function + API vision: kualitas narasi setara edisi manual
+(konteks metodologi utuh, model sesi), nol biaya API, satu otak analisa — bukan dua
+implementasi yang harus dijaga paritasnya. Trade-off yang diterima: analisa butuh sesi
+Claude Code hidup (manual/terjadwal), tidak bisa dipicu dari tombol di web.
 
 Aturan integritas §8 tetap berlaku: tidak ada angka hasil baca mesin masuk terbitan
 tanpa persetujuan admin; komponen hilang → penanda gap + penalti skor.
+
+### Standar upload (wajib, supaya transkripsi konsisten)
+
+| Berkas | Standar |
+|---|---|
+| Orderbook (Stockbit) — **wajib** | Tab ORDERBOOK · Net ON · tanggal terlihat · top-10 beli & jual utuh · slider Broker Action terlihat |
+| Chart (TradingView) — opsional | Timeframe 1D · EMA50 + Pivot Points · label pivot/harga kanan terbaca · rentang ≥6 bulan · ekspor PNG |
+| Penamaan | `TICKER_YYYY-MM-DD_*` (pola yang sudah dipakai) |
+
+### Mitigasi chart tidak diupload
+
+1. **Utama — hitung sendiri (tanpa browser):** EMA50 dan Pivot Points klasik
+   (`P=(H+L+C)/3`, `R1=2P−L`, `S1=2P−H`, dst. dari bar sebelumnya) dihitung dari OHLC
+   yfinance; chart digambar mesin render PDF yang sudah ada. Edisi tetap lengkap.
+2. **Opsional — remote Chrome → TradingView:** buka TradingView via Claude in Chrome
+   (login + template indikator user), tangkap layar. Dipakai hanya bila user ingin chart
+   bersumber TradingView persis; fallback, bukan jalur utama.
+
+Orderbook tidak punya mitigasi otomatis — broker summary per-saham tidak tersedia gratis
+(METODOLOGI §10); tanpa orderbook → blok FLOW DATA GAP + penalti skor (§8).
 
 ## 4. Skema data awal (Supabase)
 
@@ -69,17 +96,21 @@ RLS: semua tabel hanya `authenticated` (admin tunggal). Bucket storage privat.
 | 0 | Scaffold Vite+React+TS + Supabase project + auth admin | Login/logout jalan; route `/admin` terlindungi |
 | 1 | Modul skor TS + test paritas vs build.py | 3 emiten edisi ujicoba → angka identik |
 | 2 | Port template Arus Pasar → komponen + export print CSS | PDF hasil print ≡ AP-100826-E01 (diff visual) |
-| 3 | Form edisi manual (input angka tanpa AI dulu) | Bisa rakit edisi baru end-to-end tanpa Claude Code |
-| 4 | Upload + Edge Function vision + UI draf-koreksi | Upload screenshot ARCI → draf angka → koreksi → terbit |
+| 3 | Form edisi manual + upload ke Storage (kotak masuk) | Rakit edisi end-to-end tanpa Claude Code; upload dari HP tersimpan rapi per tanggal |
+| 4 | **Integrasi Claude Code sebagai mesin analisa** — alur tarik-file dari Storage, transkripsi+verifikasi, hitung pivot/EMA sendiri saat chart absen, unggah PDF terbit balik; lalu otomasi via `/schedule` | Satu siklus penuh: upload malam → agen pagi → draf → koreksi → edisi tayang di web |
 | 5 | Migrasi 11 view dashboard lama, per view | Tiap view: verifikasi 3 viewport (aturan §175) |
+| 6 *(opsional)* | Edge Function + API vision — hanya bila butuh analisa terpicu dari web tanpa sesi Claude Code | Upload di web → draf angka tanpa Claude Code |
 
-Fase 4 paling berisiko (biaya API + akurasi vision) — sengaja SETELAH 0–3 supaya
-aplikasi sudah berguna walau fase 4 molor.
+Fase 4 versi lama (Edge Function vision) turun jadi fase 6 opsional — digantikan integrasi
+Claude Code yang kualitas analisanya setara edisi manual dan tanpa biaya API. Fase 6 baru
+dipertimbangkan kalau alur terjadwal terasa kurang (mis. butuh hasil instan dari tombol web).
 
 ## 7. Biaya & risiko
 
-- **Claude API vision**: ~1.500–2.500 token/gambar input; 3 emiten × 2 gambar/hari ≈ murah,
-  tapi butuh API key berbayar terpisah dari langganan Claude. Estimasi < $2/bulan pemakaian harian.
+- **Kuota usage langganan**: mesin analisa di sesi Claude Code memakai jatah langganan —
+  20 emiten/hari ≈ 40 gambar ≈ 90rb token input per siklus; muat, tapi pantau sisa kuota.
+- **Claude API vision (fase 6 opsional)**: ~1.500–2.800 token/gambar; ~$1,2/bulan (3 emiten/hari,
+  Sonnet 5 intro) s.d. ~$11/bulan (20 emiten/hari). Butuh API key prabayar terpisah dari langganan.
 - **Supabase free tier**: cukup besar untuk admin tunggal; risiko pause 7 hari idle → mitigasi cron ping.
 - **Akurasi vision**: angka mirip (8 vs 6, koma) — mitigasi confidence + UI koreksi (§3).
 - **Paritas skor**: penyimpangan TS vs Python = kredibilitas — mitigasi test fase 1.
