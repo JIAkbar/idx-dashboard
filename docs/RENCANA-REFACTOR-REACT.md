@@ -1,7 +1,8 @@
 # Rencana Refactor React — IDXMI + Arus Pasar
 
-> Disusun 2026-08-10, direvisi 2026-08-10 (arsitektur hibrida).
-> Status: **persiapan** — belum ada kode refactor yang ditulis.
+> Disusun 2026-08-10, direvisi 2026-08-10 (arsitektur hibrida), direvisi lagi 2026-08-10
+> (cakupan login diperjelas — lihat §1a).
+> Status: **Fase 0 selesai** (scaffold + auth + routing).
 > Keputusan user: login **admin tunggal**; mesin analisa utama **Claude Code** (web = kotak masuk
 > + arsip + rak terbitan); API vision menjadi **opsional**, bukan jalur utama.
 
@@ -9,6 +10,22 @@
 
 - `index_live.html` = 6.043 baris satu file, 11 menu, routing `sw()` manual — sudah melewati batas nyaman vanilla.
 - Tiga kemampuan baru tidak mungkin di situs statis murni: **login**, **upload PDF → analisa otomatis**, **export PDF dari aplikasi**.
+
+## 1a. Cakupan login — dasbor tetap publik
+
+**Login TIDAK menggerbangi dasbor.** Seperti `index_live.html` lama (publik, siapa saja bisa
+lihat, cuma telat/tak terawat), 11 menu dasbor di React tetap **publik tanpa login** — itu
+prinsip yang dibawa masuk dari produk lama, bukan dibuang. Login cuma gerbang kecil ke fitur
+yang genuinely baru: **upload screenshot & kelola edisi Arus Pasar**.
+
+```
+"/"        publik  — dasbor (kosong sampai Fase 5, lalu diisi 11 menu)
+"/login"   publik  — form masuk, cuma dipakai admin
+"/admin"   terkunci — upload & kelola edisi (Fase 3/4)
+```
+
+Konsekuensi: fase 5 (migrasi 11 menu) menaruh view-nya di bawah `/` (publik), **bukan**
+di bawah `/admin`. `ProtectedRoute` hanya membungkus rute upload/kelola edisi.
 
 ## 2. Stack tujuan
 
