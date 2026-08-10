@@ -5,37 +5,16 @@ __pycache__/
 .env
 venv/
 
-# PDF source files (hanya simpan JSON hasil parse, bukan PDF asli)
+# File kerja lokal: skrip .bat/.ps1, template HTML, PDF sumber IDX, xlsx ringkasan
+_lokal/
+
+# PDF sumber IDX — hanya JSON hasil parse yang disimpan di repo
 data/pdf/
-Data Kepemilikan*/
 
-# Local scripts (tidak perlu di GitHub)
-*.bat
-*.ps1
-dashboard_template.html
-/parse_idx_pdf.py
-download_idx_stats.py
-scripts/
-# Exception: fetch_fundamental.py perlu di GitHub untuk GitHub Actions
-!scripts/fetch_fundamental.py
-
-# Redirect files (untuk repo terpisah jiakbar.github.io)
-redirect-index.html
-Redirect/
-
-# Claude internal memory files
-memory/
+# File internal Claude
 CLAUDE.md
+memory/
 
 # OS
 .DS_Store
 Thumbs.db
-Indeksing/index.html
-
-
-# Claude working files
-CLAUDE.md
-memory/
-Redirect/
-redirect-index.html
-/ringkasan
