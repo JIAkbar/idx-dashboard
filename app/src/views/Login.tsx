@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export function Login() {
@@ -22,33 +22,37 @@ export function Login() {
 
   return (
     <div className="login-page">
-      <form className="login-card" onSubmit={handleSubmit}>
-        <div className="login-brand">ARUS PASAR</div>
-        <p className="login-sub">Masuk sebagai admin</p>
-        <label>
-          Email
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoFocus
-          />
-        </label>
-        <label>
-          Kata sandi
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </label>
-        {error && <p className="login-error">{error}</p>}
-        <button type="submit" disabled={submitting}>
-          {submitting ? 'Memproses…' : 'Masuk'}
-        </button>
-      </form>
+      <div className="login-card">
+        <div className="login-band">
+          <div className="login-brand">ARUS PASAR</div>
+          <div className="login-eyebrow">Area Admin</div>
+        </div>
+        <form className="login-body" onSubmit={handleSubmit}>
+          <label>
+            Email
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </label>
+          <label>
+            Kata sandi
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </label>
+          {error && <p className="login-error">{error}</p>}
+          <button type="submit" disabled={submitting}>
+            {submitting ? 'Memproses…' : 'Masuk'}
+          </button>
+          <Link to="/" className="login-back">← Kembali ke dasbor publik</Link>
+        </form>
+      </div>
     </div>
   )
 }

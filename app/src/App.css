@@ -1,11 +1,13 @@
 :root {
   --brand: #0B4F4A;
+  --brand-deep: #081F1D;
   --ink: #12181F;
   --ink2: #39434E;
   --mute: #6B7683;
   --hair: #D8DDE3;
   --paper: #FFFFFF;
   --panel: #F4F6F8;
+  --bull: #0A7D4F;
   --bear: #B93A2B;
 }
 
@@ -18,49 +20,80 @@ body {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   color: var(--ink);
   background: var(--panel);
+  font-variant-numeric: tabular-nums;
 }
 
 .fullscreen-msg {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  height: 100dvh;
   color: var(--mute);
 }
+
+/* ── Login — gerbang kecil ke fitur upload, bukan pintu depan produk ── */
 
 .login-page {
   min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--brand);
+  background: var(--panel);
   padding: 16px;
 }
 
 .login-card {
   background: var(--paper);
+  border: 1px solid var(--hair);
   border-radius: 6px;
-  padding: 32px 28px;
   width: 100%;
-  max-width: 340px;
+  max-width: 320px;
+  overflow: hidden;
+}
+
+.login-band {
+  background: var(--brand);
+  padding: 16px 22px;
+}
+
+.login-band .login-brand {
+  color: #fff;
+}
+
+.login-eyebrow {
+  font-size: 7pt;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+  margin-top: 2px;
+}
+
+.login-body {
+  padding: 20px 22px 22px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.25);
 }
 
 .login-brand {
   font-family: Georgia, Cambria, serif;
-  font-size: 20pt;
+  font-size: 15pt;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   color: var(--brand);
 }
 
-.login-sub {
-  margin: 0 0 8px;
+.login-back {
+  margin-top: 4px;
+  text-align: center;
+  font-size: 8.5pt;
   color: var(--mute);
-  font-size: 10.5pt;
+  text-decoration: none;
+}
+
+.login-back:hover,
+.login-back:focus-visible {
+  color: var(--brand);
 }
 
 .login-card label {
@@ -76,6 +109,12 @@ body {
   border: 1px solid var(--hair);
   border-radius: 4px;
   font-size: 10.5pt;
+  font-family: inherit;
+}
+
+.login-card input:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
 }
 
 .login-card button {
@@ -90,6 +129,11 @@ body {
   cursor: pointer;
 }
 
+.login-card button:focus-visible {
+  outline: 2px solid var(--brand-deep);
+  outline-offset: 2px;
+}
+
 .login-card button:disabled {
   opacity: 0.6;
   cursor: default;
@@ -100,6 +144,43 @@ body {
   color: var(--bear);
   font-size: 9pt;
 }
+
+/* ── Halaman publik (dasbor — Fase 5) ── */
+
+.public-shell {
+  min-height: 100dvh;
+}
+
+.public-topbar {
+  background: var(--brand);
+  color: #fff;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.public-admin-link {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 9pt;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 5px 12px;
+  border-radius: 4px;
+}
+
+.public-admin-link:hover,
+.public-admin-link:focus-visible {
+  color: #fff;
+  border-color: #fff;
+}
+
+.public-topbar .login-brand,
+.admin-topbar .login-brand {
+  color: #fff;
+}
+
+/* ── Admin shell (area terkunci — upload & kelola edisi) ── */
 
 .admin-shell {
   min-height: 100dvh;
@@ -129,6 +210,33 @@ body {
   border-radius: 4px;
   cursor: pointer;
   font-size: 9pt;
+}
+
+.admin-topbar-right button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.admin-status {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--hair);
+  font-size: 9pt;
+}
+
+.admin-status .l {
+  display: block;
+  font-size: 6.5pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.admin-status b {
+  color: var(--ink);
 }
 
 .admin-main {
