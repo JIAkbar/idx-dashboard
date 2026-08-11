@@ -553,51 +553,45 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: `.lantai` primitif.
-- Produces: `useUrut<T>(baris: T[], awal: keyof T): { urut: T[]; kunci: keyof T; arah: 'naik' | 'turun'; klik: (k: keyof T) => void }`
+- Produces:
+  - `bandingkanBaris<T>(a: T, b: T, kunci: keyof T, arah: 'naik' | 'turun'): number` (fungsi murni, diuji langsung)
+  - `useUrut<T>(baris: T[], awal: keyof T): { urut: T[]; kunci: keyof T; arah: 'naik' | 'turun'; klik: (k: keyof T) => void }`
 
-- [ ] **Step 1: Tulis test yang gagal**
+- [ ] **Step 1: Tulis test yang gagal — untuk fungsi murni, bukan hook**
+
+`useUrut` sendiri hanyalah `useState`+`useMemo` di atas satu perbandingan; perbandingan itu
+yang punya logika untuk diuji, dan itu bisa diuji sebagai fungsi biasa tanpa merender React
+sama sekali. Menguji lewat `renderHook` akan menuntut devDependency baru
+(`@testing-library/react`) untuk sesuatu yang tidak butuh itu — melanggar ladder "dependency
+yang sudah terpasang dulu, baru tambah baru".
 
 `app/src/lib/dasbor/useUrut.test.ts`:
 
 ```ts
-import { renderHook, act } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { useUrut } from './useUrut'
+import { bandingkanBaris } from './useUrut'
 
-const baris = [
-  { kode: 'AK', nilai: 3 },
-  { kode: 'CC', nilai: 1 },
-  { kode: 'XL', nilai: 2 },
-]
-
-describe('useUrut', () => {
-  it('mengurutkan menurun pada kunci awal', () => {
-    const { result } = renderHook(() => useUrut(baris, 'nilai'))
-    expect(result.current.urut.map((b) => b.kode)).toEqual(['AK', 'XL', 'CC'])
+describe('bandingkanBaris', () => {
+  it('membandingkan angka secara numerik, turun', () => {
+    expect(bandingkanBaris({ nilai: 3 }, { nilai: 1 }, 'nilai', 'turun')).toBeLessThan(0)
   })
 
-  it('klik kunci yang sama membalik arah', () => {
-    const { result } = renderHook(() => useUrut(baris, 'nilai'))
-    act(() => result.current.klik('nilai'))
-    expect(result.current.urut.map((b) => b.kode)).toEqual(['CC', 'XL', 'AK'])
+  it('membalik urutan saat arah naik', () => {
+    expect(bandingkanBaris({ nilai: 3 }, { nilai: 1 }, 'nilai', 'naik')).toBeGreaterThan(0)
   })
 
-  it('klik kunci lain mulai lagi dari menurun', () => {
-    const { result } = renderHook(() => useUrut(baris, 'nilai'))
-    act(() => result.current.klik('kode'))
-    expect(result.current.urut.map((b) => b.kode)).toEqual(['XL', 'CC', 'AK'])
+  it('membandingkan teks dengan localeCompare id, bukan urutan byte', () => {
+    // 'Zebra' < 'apel' secara byte (Z=90 < a=97), tapi salah secara alfabet id-ID
+    const hasil = bandingkanBaris({ nama: 'apel' }, { nama: 'Zebra' }, 'nama', 'turun')
+    expect(hasil).toBeGreaterThan(0) // turun: apel setelah Zebra
   })
 })
 ```
 
-Kalau `@testing-library/react` belum terpasang, pasang sebagai devDependency:
-`npm --prefix app i -D @testing-library/react` — ini satu-satunya dependensi baru yang
-diizinkan rencana ini, dan hanya untuk pengujian.
-
 - [ ] **Step 2: Jalankan test, pastikan gagal**
 
 Run: `npm --prefix app test -- useUrut`
-Expected: FAIL — modul belum ada.
+Expected: FAIL — `Failed to resolve import "./useUrut"`.
 
 - [ ] **Step 3: Implementasi**
 
@@ -607,29 +601,36 @@ Expected: FAIL — modul belum ada.
 import { useMemo, useState } from 'react'
 
 /**
+ * Perbandingan satu pasang baris berdasar satu kunci. Fungsi murni supaya bisa
+ * diuji tanpa merender React — useUrut di bawah cuma menyimpan state di atasnya.
+ */
+export function bandingkanBaris<T extends Record<string, unknown>>(
+  a: T,
+  b: T,
+  kunci: keyof T,
+  arah: 'naik' | 'turun',
+): number {
+  const x = a[kunci]
+  const y = b[kunci]
+  const c =
+    typeof x === 'number' && typeof y === 'number'
+      ? x - y
+      : String(x ?? '').localeCompare(String(y ?? ''), 'id')
+  return arah === 'naik' ? c : -c
+}
+
+/**
  * Pengurutan tabel oleh klik judul kolom. Dipakai bersama 6 tabel Top Broker dan
  * 6 tabel Top Stocks — satu helper, bukan satu keadaan per tabel per berkas.
- *
- * Angka dan teks dibandingkan berbeda: angka secara numerik, sisanya dengan
- * localeCompare('id') supaya urutan huruf benar.
  */
 export function useUrut<T extends Record<string, unknown>>(baris: T[], awal: keyof T) {
   const [kunci, setKunci] = useState<keyof T>(awal)
   const [arah, setArah] = useState<'naik' | 'turun'>('turun')
 
-  const urut = useMemo(() => {
-    const salin = [...baris]
-    salin.sort((a, b) => {
-      const x = a[kunci]
-      const y = b[kunci]
-      const c =
-        typeof x === 'number' && typeof y === 'number'
-          ? x - y
-          : String(x ?? '').localeCompare(String(y ?? ''), 'id')
-      return arah === 'naik' ? c : -c
-    })
-    return salin
-  }, [baris, kunci, arah])
+  const urut = useMemo(
+    () => [...baris].sort((a, b) => bandingkanBaris(a, b, kunci, arah)),
+    [baris, kunci, arah],
+  )
 
   function klik(k: keyof T) {
     if (k === kunci) setArah((a) => (a === 'naik' ? 'turun' : 'naik'))
