@@ -41,8 +41,13 @@
    supaya tidak ada gerak yang lolos dari blok prefers-reduced-motion. */
 .lantai{display:flex;flex-direction:column;gap:16px}
 
-/* ============ BASE (sisa; *, html/body, main, button, table, canvas sudah
+/* ============ BASE (sisa; *, html/body, main, table, canvas sudah
    ditangani di luar .lantai) ============ */
+/* button tak pernah mewarisi color/font peramban — tanpa ini, <button
+   class="bchip"> render hitam-di-atas-gelap (celah sejak Task 1, lihat
+   ByStock.tsx/ByInvestor.tsx yang sempat menambal lokal dengan inline style
+   sebelum reset ini ada). */
+.lantai button{font:inherit;color:inherit}
 .lantai .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .lantai .lbl{font-family:var(--disp);font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text3)}
 .lantai .up{color:var(--green)} .lantai .dn{color:var(--red)}

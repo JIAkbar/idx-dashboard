@@ -118,7 +118,7 @@ export function ByStock({ data, onSelect }: ByStockProps) {
           </table>
           {remaining > 0 && (
             <div style={{ textAlign: 'center', padding: 10 }}>
-              <button type="button" className="bchip" style={{ color: 'var(--text2)', cursor: 'pointer' }} onClick={() => setVisibleCount((v) => v + PAGE)}>
+              <button type="button" className="bchip" style={{ cursor: 'pointer' }} onClick={() => setVisibleCount((v) => v + PAGE)}>
                 Tampilkan {Math.min(remaining, PAGE)} lagi (sisa {remaining})
               </button>
             </div>

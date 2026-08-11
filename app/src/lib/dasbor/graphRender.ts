@@ -76,11 +76,16 @@ export function idTerbesar(nodes: GNode[], n: number = LABEL_TERBESAR): Set<stri
 /**
  * Simpul yang dilabeli permanen: SEMUA emiten + 12 investor terbesar.
  *
- * Batas 12 sengaja TIDAK dikenakan ke emiten. Kode emiten digambar DI DALAM
- * lingkarannya sendiri, dan forceCollide (radius `size + 16`) menjamin dua
- * lingkaran tak pernah bertumpuk — jadi label emiten secara konstruksi tidak
- * bisa ikut menimbulkan tumpukan label yang jadi alasan batas ini ada. Yang
- * menumpuk adalah label investor yang mengambang di bawah simpul.
+ * Batas 12 sengaja TIDAK dikenakan ke emiten. Kode emiten IDX selalu 4
+ * karakter — jauh lebih sempit dari nama investor (dipotong sampai 22
+ * karakter) — jadi lebar labelnya selalu muat di ruang aman yang dijamin
+ * forceCollide di sekitar tiap simpul (radius `size + 16` di
+ * renderForceGraph, `size + 18` di renderFocusedGraph), TERLEPAS dari posisi
+ * labelnya: renderForceGraph menaruh label emiten DI DALAM lingkaran (dy
+ * 0.35em), sedangkan renderFocusedGraph menaruhnya DI BAWAH lingkaran (dy
+ * `size + 11`) — sama seperti label investor. Yang berisiko menumpuk kalau
+ * ambang 12 dihapus adalah label investor: lebih lebar DAN jauh lebih banyak
+ * jumlahnya.
  *
  * Diukur langsung sebelum aturan ini dipakai: dengan ambang 12 untuk SEMUA
  * simpul, cuma 1 dari 10 emiten yang berlabel (ukuran investor = pct×0,4,
