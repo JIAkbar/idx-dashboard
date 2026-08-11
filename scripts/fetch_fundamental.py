@@ -185,6 +185,21 @@ def konversi_ke_idr(nilai, mata_uang, kurs_usd_idr):
         return None
     return nilai * kurs_usd_idr
 
+def konversi_dict_ke_idr(d, mata_uang, kurs_usd_idr):
+    """Terapkan konversi_ke_idr ke setiap nilai dalam dict {key: number} atau
+    {key: {subkey: number}} (mis. q_revenue = {year: {quarter: value}}), mempertahankan
+    struktur dan None. Dipakai untuk field kuartalan/tahunan absolut (bukan rasio,
+    bukan EPS — lihat catatan di blok emisi)."""
+    if not d:
+        return d
+    out = {}
+    for k, v in d.items():
+        if isinstance(v, dict):
+            out[k] = konversi_dict_ke_idr(v, mata_uang, kurs_usd_idr)
+        else:
+            out[k] = konversi_ke_idr(v, mata_uang, kurs_usd_idr)
+    return out
+
 def get_latest_kurs():
     """Kurs USD/IDR terbaru dari data/ds_*.json (snapshot harian IHSG)."""
     data_dir = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data'))
@@ -647,58 +662,67 @@ def fetch_stock(ticker_code):
             "div_history":      div_history,
 
             # === INCOME STATEMENT TTM ===
-            "ttm_revenue":  ttm_rev,
-            "ttm_gross":    ttm_gp,
-            "ttm_ebitda":   sg(info,"ebitda"),
-            "ttm_net_income":ttm_ni,
-            "ttm_op_income":ttm_oi,
+            # Nilai absolut (bukan rasio, bukan per-saham) — disamakan ke IDR sama
+            # seperti rev_ps/bv/ebitda_idr di atas untuk emiten pelapor-USD (lihat
+            # konversi_ke_idr). ttm_revenue/ttm_ebitda memakai ulang ttm_rev_idr/
+            # ebitda_idr yang sudah dihitung di atas (baris ~479/519) untuk rasio
+            # ev_revenue/ev_ebitda — bukan konversi baru dari nilai yang sama.
+            "ttm_revenue":  ttm_rev_idr,
+            "ttm_gross":    konversi_ke_idr(ttm_gp, fin_cur, kurs),
+            "ttm_ebitda":   ebitda_idr,
+            "ttm_net_income":konversi_ke_idr(ttm_ni, fin_cur, kurs),
+            "ttm_op_income":konversi_ke_idr(ttm_oi, fin_cur, kurs),
 
             # === BALANCE SHEET (Latest Quarter) ===
-            "lq_cash":      lq_cash,
-            "lq_assets":    lq_assets,
-            "lq_tot_liab":  lq_tot_l,
-            "lq_wc":        lq_wc,
-            "lq_equity":    lq_eq,
-            "lq_lt_debt":   lq_lt_debt,
-            "lq_st_debt":   (lq_debt - lq_lt_debt) if (lq_debt and lq_lt_debt) else None,
-            "lq_total_debt":lq_debt,
-            "lq_net_debt":  lq_net_debt,
+            "lq_cash":      konversi_ke_idr(lq_cash, fin_cur, kurs),
+            "lq_assets":    konversi_ke_idr(lq_assets, fin_cur, kurs),
+            "lq_tot_liab":  konversi_ke_idr(lq_tot_l, fin_cur, kurs),
+            "lq_wc":        konversi_ke_idr(lq_wc, fin_cur, kurs),
+            "lq_equity":    konversi_ke_idr(lq_eq, fin_cur, kurs),
+            "lq_lt_debt":   konversi_ke_idr(lq_lt_debt, fin_cur, kurs),
+            "lq_st_debt":   konversi_ke_idr((lq_debt - lq_lt_debt) if (lq_debt and lq_lt_debt) else None, fin_cur, kurs),
+            "lq_total_debt":konversi_ke_idr(lq_debt, fin_cur, kurs),
+            "lq_net_debt":  konversi_ke_idr(lq_net_debt, fin_cur, kurs),
 
             # === CASH FLOW TTM ===
-            "ttm_ocf":      ttm_ocf,
-            "ttm_icf":      ttm_icf,
-            "ttm_fincf":    ttm_fincf,
-            "ttm_capex":    sg(info,"capitalExpenditures"),
-            "ttm_fcf":      ttm_fcf,
+            "ttm_ocf":      konversi_ke_idr(ttm_ocf, fin_cur, kurs),
+            "ttm_icf":      konversi_ke_idr(ttm_icf, fin_cur, kurs),
+            "ttm_fincf":    konversi_ke_idr(ttm_fincf, fin_cur, kurs),
+            "ttm_capex":    konversi_ke_idr(sg(info,"capitalExpenditures"), fin_cur, kurs),
+            "ttm_fcf":      konversi_ke_idr(ttm_fcf, fin_cur, kurs),
 
             # === MARKET CAP & ENTERPRISE VALUE ===
             "market_cap":       sg(info,"marketCap"),
             "enterprise_value": sg(info,"enterpriseValue"),
 
             # === QUARTERLY DATA (untuk tabel) ===
-            "q_revenue":    q_rev,
-            "q_net_income": q_ni,
+            # Dict {year: value} / {year: {quarter: value}} — disamakan ke IDR lewat
+            # konversi_dict_ke_idr, KECUALI q_eps: EPS sudah IDR-scale langsung dari
+            # Yahoo per temuan empiris Task 9 (lihat komentar di blok eps/eps_fwd di
+            # atas) — mengalikan lagi dengan kurs akan melipatgandakannya.
+            "q_revenue":    konversi_dict_ke_idr(q_rev, fin_cur, kurs),
+            "q_net_income": konversi_dict_ke_idr(q_ni, fin_cur, kurs),
             "q_eps":        q_eps,
-            "q_gross":      q_gp,
-            "q_op_income":  q_oi,
+            "q_gross":      konversi_dict_ke_idr(q_gp, fin_cur, kurs),
+            "q_op_income":  konversi_dict_ke_idr(q_oi, fin_cur, kurs),
             # Quarterly balance sheet
-            "q_assets":     q_assets,
-            "q_equity":     q_eq,
-            "q_debt":       q_debt,
-            "q_cash":       q_cash_bs,
+            "q_assets":     konversi_dict_ke_idr(q_assets, fin_cur, kurs),
+            "q_equity":     konversi_dict_ke_idr(q_eq, fin_cur, kurs),
+            "q_debt":       konversi_dict_ke_idr(q_debt, fin_cur, kurs),
+            "q_cash":       konversi_dict_ke_idr(q_cash_bs, fin_cur, kurs),
             # Quarterly cash flow
-            "q_ocf":        q_ocf,
-            "q_fcf":        q_fcf_cf,
+            "q_ocf":        konversi_dict_ke_idr(q_ocf, fin_cur, kurs),
+            "q_fcf":        konversi_dict_ke_idr(q_fcf_cf, fin_cur, kurs),
             # Annual (alias hist_* untuk kompatibilitas HTML)
-            "a_revenue":    a_rev,
-            "a_net_income": a_ni,
-            "hist_revenue":          a_rev,
-            "hist_gross_profit":     a_gp,
-            "hist_operating_income": a_oi,
-            "hist_net_income":       a_ni,
-            "hist_total_assets":     a_assets,
-            "hist_total_equity":     a_eq,
-            "hist_total_debt":       a_debt,
+            "a_revenue":    konversi_dict_ke_idr(a_rev, fin_cur, kurs),
+            "a_net_income": konversi_dict_ke_idr(a_ni, fin_cur, kurs),
+            "hist_revenue":          konversi_dict_ke_idr(a_rev, fin_cur, kurs),
+            "hist_gross_profit":     konversi_dict_ke_idr(a_gp, fin_cur, kurs),
+            "hist_operating_income": konversi_dict_ke_idr(a_oi, fin_cur, kurs),
+            "hist_net_income":       konversi_dict_ke_idr(a_ni, fin_cur, kurs),
+            "hist_total_assets":     konversi_dict_ke_idr(a_assets, fin_cur, kurs),
+            "hist_total_equity":     konversi_dict_ke_idr(a_eq, fin_cur, kurs),
+            "hist_total_debt":       konversi_dict_ke_idr(a_debt, fin_cur, kurs),
 
             # === PRICE PERFORMANCE ===
             "price_perf": pp,
