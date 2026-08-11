@@ -357,7 +357,12 @@
   .dasbor-shell .cal-label { font-size: 7px; }
   .dasbor-shell .g2, .dasbor-shell .g3 { grid-template-columns: 1fr !important; }
   .dasbor-shell .chart-wrap { height: 180px !important; }
-  .dasbor-shell .board-tbl-wrap { overflow-x: visible !important; }
+  /* Hanya untuk tabel gaya lama (.board-tbl) yang memang diciutkan agar muat:
+     tanpa :has(), aturan !important ini ikut mematikan geser mendatar milik
+     tabel .lantai (.w-tbl min-width 660px) sehingga kolomnya terpotong
+     .dasbor-main{overflow-x:hidden} dan tak bisa dijangkau di telepon.
+     Ikut terhapus bersama dasbor.css di Task 13. */
+  .dasbor-shell .board-tbl-wrap:has(.board-tbl) { overflow-x: visible !important; }
   .dasbor-shell .board-tbl { min-width: 0 !important; width: 100%; table-layout: fixed; }
   .dasbor-shell .board-tbl th, .dasbor-shell .board-tbl td { font-size: 11px; padding: 7px 4px !important; white-space: nowrap; }
   .dasbor-shell .board-tbl th:first-child, .dasbor-shell .board-tbl td:first-child { width: 42%; white-space: normal; word-break: break-word; }

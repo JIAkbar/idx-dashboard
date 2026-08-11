@@ -33,6 +33,14 @@
   --flap:#131B26; --flap-line:rgba(255,255,255,.10);
 }
 
+/* Pembungkus view = padanan .content artifact (baris 96). Task 1 melewatkannya
+   dengan alasan .dasbor-main sudah setara, padahal .dasbor-main hanya mengatur
+   padding: tanpa aturan ini panel-panel bertumpuk tanpa jarak, karena .panel —
+   beda dari .card lama — tidak punya margin-bottom sendiri. Hanya display/gap
+   yang disalin; padding tetap milik .dasbor-main dan `animation:vin` dilewatkan
+   supaya tidak ada gerak yang lolos dari blok prefers-reduced-motion. */
+.lantai{display:flex;flex-direction:column;gap:16px}
+
 /* ============ BASE (sisa; *, html/body, main, button, table, canvas sudah
    ditangani di luar .lantai) ============ */
 .lantai .num{font-family:var(--mono);font-variant-numeric:tabular-nums}

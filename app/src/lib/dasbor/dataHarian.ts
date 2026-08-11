@@ -80,6 +80,23 @@ export interface DataHarian {
   trading_day: number
   ihsg_value: number
   ihsg_pct: number
+  /**
+   * Ringkasan halaman 1 PDF IDX (scripts/parse_idx_pdf.py baris 61-92).
+   * Satuan: vol_today juta lembar, val_idr_today miliar IDR, freq_today ribu
+   * kali, mcap_idr triliun IDR. Opsional karena parser bisa gagal cocok.
+   *
+   * `ihsg_change` sengaja TIDAK didaftarkan: ruas itu hanya ada di 55 dari 93
+   * berkas harian, jadi pemakaiannya pasti berujung `?? 0` — pola bug yang
+   * sama dengan `ihsg_ytd` (lihat ytd.ts). Perubahan harian dihitung dari
+   * `ihsg_value - ihsg_prev`, dua ruas yang ada di seluruh 93 berkas.
+   */
+  ihsg_prev?: number
+  ihsg_high?: number
+  ihsg_low?: number
+  vol_today?: number
+  val_idr_today?: number
+  freq_today?: number
+  mcap_idr?: number
   world?: WorldRow[]
   avg_vol?: number
   avg_val_idr?: number
