@@ -6,6 +6,8 @@ const tanggal = [
   { stem: 'ds_260108', date_iso: '2026-01-08', ihsg: 8100, ihsg_pct: 1.2, trading_day: 5 },
   { stem: 'ds_260109', date_iso: '2026-01-09', ihsg: 8050, ihsg_pct: -0.6, trading_day: 6 },
   { stem: 'ds_260212', date_iso: '2026-02-12', ihsg: 8300, ihsg_pct: 0.4, trading_day: 26 },
+  // entri tambahan buat cakupan tes 3 bulan (hariMundur=91) — lihat SektorIndeks.tsx HARI_MUNDUR.m3
+  { stem: 'ds_260409', date_iso: '2026-04-09', ihsg: 8500, ihsg_pct: 0.3, trading_day: 65 },
 ] as never[]
 
 describe('cariTanggalPembanding', () => {
@@ -20,6 +22,16 @@ describe('cariTanggalPembanding', () => {
 
   it('null kalau daftar tanggal kosong', () => {
     expect(cariTanggalPembanding([], '2026-02-12', 30)).toBeNull()
+  })
+
+  it('ambil hari bursa terakhir yang <= tanggal target (91 hari, 3 Bulan)', () => {
+    // target = 2026-04-09 - 91 hari = 2026-01-08, pas kena entri itu
+    expect(cariTanggalPembanding(tanggal, '2026-04-09', 91)?.stem).toBe('ds_260108')
+  })
+
+  it('null kalau mundur 91 hari lewat awal riwayat data — bukan 0 atau tanggal terdekat', () => {
+    // target = 2026-01-08 - 91 hari = 2025-10-09, jauh sebelum entri paling awal (2026-01-07)
+    expect(cariTanggalPembanding(tanggal, '2026-01-08', 91)).toBeNull()
   })
 })
 
