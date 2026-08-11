@@ -177,6 +177,12 @@
 .lantai .cal-grid .cg.ada{color:var(--text);background:var(--bg2);border:1px solid var(--line)}
 .lantai .cal-grid .cg.aktif{background:var(--amber);color:var(--amber-ink);font-weight:700;border-color:var(--amber)}
 .lantai .cal-grid .cg.hdr{height:16px;font-family:var(--disp);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+/* Task 7c: .cg.ada artifact aslinya 1 baris kosong 28px (skrip vanilla, tak
+   dipakai) — instruksi eksplisit sebelumnya minta harga+persen IHSG tetap
+   tampil di sel berdata, jadi butuh 3 baris (tanggal · IHSG · persen). Cuma
+   tinggi & arah susun yang berubah di sini; warna/border tetap ikut .cg.ada
+   di atas — SATU-SATUNYA rule CSS baru di task ini. */
+.lantai .cal-grid .cg.ada{height:auto;min-height:44px;flex-direction:column;gap:1px;padding:4px 2px;line-height:1.2}
 
 /* net foreign & market fundamental */
 .lantai .nf-grid{display:grid;grid-template-columns:1fr 1fr}
