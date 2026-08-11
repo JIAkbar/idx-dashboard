@@ -96,7 +96,82 @@ export function IndeksDunia() {
         </div>
       </div>
 
-      <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
+      <div className="grid2 w-kiri">
+        <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="panel">
+            <div className="panel-h">
+              <span className="lbl">🌐 Net Foreign</span>
+            </div>
+            <div className="nf-grid">
+              <div className="nf-cell">
+                <span className="lbl">Today</span>
+                <div className={`nf-sec ${(hari.nf_today_idr ?? 0) < 0 ? 'dn' : 'up'}`}>{hari.nf_today_status ?? '-'}</div>
+                <div className={`num nf-big ${(hari.nf_today_idr ?? 0) < 0 ? 'dn' : 'up'}`}>{fmtNF(hari.nf_today_idr ?? 0)}</div>
+                <div className="nf-unit">(billion IDR)</div>
+                <div className={`num nf-sec ${(hari.nf_today_usd ?? 0) < 0 ? 'dn' : 'up'}`}>{fmtNF(hari.nf_today_usd ?? 0)}</div>
+                <div className="nf-unit">(million USD~)</div>
+              </div>
+              <div className="nf-cell">
+                <span className="lbl">YTD</span>
+                <div className={`nf-sec ${(hari.nf_ytd_idr ?? 0) < 0 ? 'dn' : 'up'}`}>{hari.nf_ytd_status ?? '-'}</div>
+                <div className={`num nf-big ${(hari.nf_ytd_idr ?? 0) < 0 ? 'dn' : 'up'}`}>{fmtNF(hari.nf_ytd_idr ?? 0)}</div>
+                <div className="nf-unit">(billion IDR)</div>
+                <div className={`num nf-sec ${(hari.nf_ytd_usd ?? 0) < 0 ? 'dn' : 'up'}`}>{fmtNF(hari.nf_ytd_usd ?? 0)}</div>
+                <div className="nf-unit">(million USD)</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="panel">
+            <div className="panel-h">
+              <span className="lbl">📐 Market Fundamental</span>
+              <span className="num" style={{ fontSize: 11, color: 'var(--text3)' }}>
+                ~ USD/IDR BI = {hari.usd_idr == null ? '—' : fN(hari.usd_idr, 0)}
+              </span>
+            </div>
+            <div className="nf-grid">
+              <div className="nf-cell" style={{ textAlign: 'center' }}>
+                <span className="lbl">Market PER (x)</span>
+                <div className="num mf-big">{(hari.mkt_per ?? 0).toFixed(2)}</div>
+              </div>
+              <div className="nf-cell" style={{ textAlign: 'center' }}>
+                <span className="lbl">Market PBV (x)</span>
+                <div className="num mf-big">{(hari.mkt_pbv ?? 0).toFixed(2)}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="panel">
+        <div className="panel-h">
+          <span className="lbl">📊 Average Daily Trading (YTD)</span>
+        </div>
+        <div className="adt">
+          <div className="adt-c">
+            <span className="lbl">Avg. Volume</span>
+            <div className="num adt-v">{fN(hari.avg_vol, 0)}<span className="adt-u">Jt Lbr</span></div>
+          </div>
+          <div className="adt-c">
+            <span className="lbl">Avg. Value</span>
+            <div className="num adt-v">{fN(hari.avg_val_idr, 0)}<span className="adt-u">B IDR</span></div>
+            <div className="num adt-s">{fN(hari.avg_val_usd, 0)} Jt USD</div>
+          </div>
+          <div className="adt-c">
+            <span className="lbl">Avg. Frequency</span>
+            <div className="num adt-v">{fN(hari.avg_freq, 0)}<span className="adt-u">Rb Kali</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="panel">
+        <div className="panel-h">
+          <span className="lbl">YTD Ranking — Semua Negara (Indonesia disorot merah)</span>
+        </div>
+        <BatangPeringkat baris={world.map((w) => ({ nama: w.c, nilai: w.ytd }))} sorot={indonesia?.c} />
+      </div>
 
       <div className="panel">
         {/* Jumlah negara dihitung dari data, bukan ditulis tetap: judul lama
@@ -138,79 +213,6 @@ export function IndeksDunia() {
               })}
             </tbody>
           </table>
-        </div>
-      </div>
-
-      <div className="panel">
-        <div className="panel-h">
-          <span className="lbl">YTD Ranking — Semua Negara (Indonesia disorot merah)</span>
-        </div>
-        <BatangPeringkat baris={world.map((w) => ({ nama: w.c, nilai: w.ytd }))} sorot={indonesia?.c} />
-      </div>
-
-      <div className="panel">
-        <div className="panel-h">
-          <span className="lbl">📊 Average Daily Trading (YTD)</span>
-        </div>
-        <div className="adt">
-          <div className="adt-c">
-            <span className="lbl">Avg. Volume</span>
-            <div className="num adt-v">{fN(hari.avg_vol, 0)}<span className="adt-u">Jt Lbr</span></div>
-          </div>
-          <div className="adt-c">
-            <span className="lbl">Avg. Value</span>
-            <div className="num adt-v">{fN(hari.avg_val_idr, 0)}<span className="adt-u">B IDR</span></div>
-            <div className="num adt-s">{fN(hari.avg_val_usd, 0)} Jt USD</div>
-          </div>
-          <div className="adt-c">
-            <span className="lbl">Avg. Frequency</span>
-            <div className="num adt-v">{fN(hari.avg_freq, 0)}<span className="adt-u">Rb Kali</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid2">
-        <div className="panel">
-          <div className="panel-h">
-            <span className="lbl">🌐 Net Foreign</span>
-          </div>
-          <div className="nf-grid">
-            <div className="nf-cell">
-              <span className="lbl">Today</span>
-              <div className={`nf-sec ${(hari.nf_today_idr ?? 0) < 0 ? 'dn' : 'up'}`}>{hari.nf_today_status ?? '-'}</div>
-              <div className={`num nf-big ${(hari.nf_today_idr ?? 0) < 0 ? 'dn' : 'up'}`}>{fmtNF(hari.nf_today_idr ?? 0)}</div>
-              <div className="nf-unit">(billion IDR)</div>
-              <div className={`num nf-sec ${(hari.nf_today_usd ?? 0) < 0 ? 'dn' : 'up'}`}>{fmtNF(hari.nf_today_usd ?? 0)}</div>
-              <div className="nf-unit">(million USD~)</div>
-            </div>
-            <div className="nf-cell">
-              <span className="lbl">YTD</span>
-              <div className={`nf-sec ${(hari.nf_ytd_idr ?? 0) < 0 ? 'dn' : 'up'}`}>{hari.nf_ytd_status ?? '-'}</div>
-              <div className={`num nf-big ${(hari.nf_ytd_idr ?? 0) < 0 ? 'dn' : 'up'}`}>{fmtNF(hari.nf_ytd_idr ?? 0)}</div>
-              <div className="nf-unit">(billion IDR)</div>
-              <div className={`num nf-sec ${(hari.nf_ytd_usd ?? 0) < 0 ? 'dn' : 'up'}`}>{fmtNF(hari.nf_ytd_usd ?? 0)}</div>
-              <div className="nf-unit">(million USD)</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="panel">
-          <div className="panel-h">
-            <span className="lbl">📐 Market Fundamental</span>
-            <span className="num" style={{ fontSize: 11, color: 'var(--text3)' }}>
-              ~ USD/IDR BI = {hari.usd_idr == null ? '—' : fN(hari.usd_idr, 0)}
-            </span>
-          </div>
-          <div className="nf-grid">
-            <div className="nf-cell" style={{ textAlign: 'center' }}>
-              <span className="lbl">Market PER (x)</span>
-              <div className="num mf-big">{(hari.mkt_per ?? 0).toFixed(2)}</div>
-            </div>
-            <div className="nf-cell" style={{ textAlign: 'center' }}>
-              <span className="lbl">Market PBV (x)</span>
-              <div className="num mf-big">{(hari.mkt_pbv ?? 0).toFixed(2)}</div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
