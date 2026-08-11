@@ -197,16 +197,18 @@ export function IndeksDunia() {
         <div className="panel">
           <div className="panel-h">
             <span className="lbl">📐 Market Fundamental</span>
-            <span className="num" style={{ fontSize: 11, color: 'var(--text3)' }}>~ USD/IDR BI = {fN(hari.usd_idr, 0)}</span>
+            <span className="num" style={{ fontSize: 11, color: 'var(--text3)' }}>
+              ~ USD/IDR BI = {hari.usd_idr == null ? '—' : fN(hari.usd_idr, 0)}
+            </span>
           </div>
           <div className="nf-grid">
             <div className="nf-cell" style={{ textAlign: 'center' }}>
               <span className="lbl">Market PER (x)</span>
-              <div className="num mf-big">{(hari.mkt_per ?? 0).toFixed(2)}<span className="mf-x">×</span></div>
+              <div className="num mf-big">{(hari.mkt_per ?? 0).toFixed(2)}</div>
             </div>
             <div className="nf-cell" style={{ textAlign: 'center' }}>
               <span className="lbl">Market PBV (x)</span>
-              <div className="num mf-big">{(hari.mkt_pbv ?? 0).toFixed(2)}<span className="mf-x">×</span></div>
+              <div className="num mf-big">{(hari.mkt_pbv ?? 0).toFixed(2)}</div>
             </div>
           </div>
         </div>
