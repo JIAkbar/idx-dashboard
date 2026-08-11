@@ -360,14 +360,21 @@ Prompt tiap sesi Sonnet **wajib** memuat dua rujukan: seksi artifact (`file:bari
 hash commit percontohan. Tanpa keduanya, model akan menulis ulang dari pemahamannya sendiri
 — kegagalan 125 chart di §169.
 
-## 8. Belum diputuskan
+## 8. Backlog — di luar cakupan rencana implementasi ini
 
-1. Pemilih periode 1B/3B: tabel sektor saja, atau ikut tabel indeks? (§4.4)
-2. Kalender: panel tetap atau dropdown? (§4.12)
-3. Rentang tanggal: aturan agregasi per menu — dijumlah, dirata-rata, atau hari terakhir?
-   (§4.12) Tanpa jawaban, fitur ini tidak dikerjakan.
-4. Kolom Δ peringkat vs hari bursa sebelumnya di Top Broker/Top Stocks (§4.3) — ditawarkan,
-   belum disetujui.
+Keputusan user 11 Agustus 2026: *"4 hal belum diputuskan itu dijadikan backlog dulu"*.
+Keempatnya **tidak** masuk rencana implementasi dan tidak boleh dikerjakan sambil lalu.
+Implementasi mengikuti perilaku yang ada sekarang sampai ada perintah baru.
+
+| # | Pertanyaan terbuka | Perilaku sementara | Rujukan |
+|---|---|---|---|
+| B1 | Pemilih periode 1B/3B: tabel sektor saja atau ikut tabel indeks? | dipasang di tabel sektor saja | §4.4 |
+| B2 | Kalender: panel tetap atau dropdown? | tetap panel seperti sekarang | §4.12 |
+| B3 | Rentang tanggal — aturan agregasi per menu (dijumlah / dirata-rata / hari terakhir)? | tidak dikerjakan; pilih tanggal tunggal seperti sekarang | §4.12 |
+| B4 | Kolom Δ peringkat vs hari bursa sebelumnya di Top Broker & Top Stocks | tidak dikerjakan | §4.3 |
+
+B3 dan B4 keduanya menuntut muat berkas `ds_*.json` tambahan; keputusannya bisa digabung
+kalau nanti dibuka lagi.
 
 ## 9. Temuan yang dicatat spec ini
 
