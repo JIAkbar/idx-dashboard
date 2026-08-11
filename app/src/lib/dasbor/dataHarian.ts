@@ -207,3 +207,50 @@ export function useDataHarian() {
 
   return { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error }
 }
+
+/**
+ * Data satu hari by stem, on-demand, TANPA mengubah tanggalAktif/hari
+ * (state utama `useDataHarian`). Dipakai pemilih periode 1B/3B di tabel
+ * sektor (SektorIndeks.tsx) yang butuh SATU berkas pembanding tambahan.
+ * Pakai `cache` modul yang sama dengan `pilihTanggal` (bukan cache
+ * terpisah) — pola sama dengan `useStockFundamental` di stockDetailData.ts.
+ */
+export function useDataPembanding(stem: string | null) {
+  const [data, setData] = useState<DataHarian | null>(stem ? (cache.get(stem) ?? null) : null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!stem) {
+      setData(null)
+      return
+    }
+    const cached = cache.get(stem)
+    if (cached) {
+      setData(cached)
+      return
+    }
+    let cancelled = false
+    setLoading(true)
+    fetch(`/data/${stem}.json`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json() as Promise<DataHarian>
+      })
+      .then((d) => {
+        if (cancelled) return
+        cache.set(stem, d)
+        setData(d)
+      })
+      .catch(() => {
+        if (!cancelled) setData(null)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [stem])
+
+  return { data, loading }
+}

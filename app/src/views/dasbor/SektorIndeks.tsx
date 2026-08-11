@@ -1,183 +1,187 @@
-import { useMemo } from 'react'
-import type { ChartConfiguration } from 'chart.js/auto'
+import { useMemo, useState } from 'react'
+import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
 import { Kalender } from '../../components/dasbor/Kalender'
-import { useChartCanvas } from '../../lib/dasbor/useChartJs'
-import { useDataHarian } from '../../lib/dasbor/dataHarian'
-import { useTheme } from '../../context/ThemeContext'
-import { fN, fp, cls, bdg } from '../../lib/dasbor/format'
+import { useDataHarian, useDataPembanding } from '../../lib/dasbor/dataHarian'
+import { cariTanggalPembanding, hitungPeriodePct } from '../../lib/dasbor/periode'
+import { fN, fp } from '../../lib/dasbor/format'
 import type { SectorRow } from '../../lib/dasbor/dataHarian'
+
+type PeriodeId = 'd' | 'm1' | 'm3' | 'ytd'
+
+const PERIODE: { id: PeriodeId; label: string }[] = [
+  { id: 'd', label: 'Hari Ini' },
+  { id: 'm1', label: '1 Bulan' },
+  { id: 'm3', label: '3 Bulan' },
+  { id: 'ytd', label: 'YTD' },
+]
+
+const HARI_MUNDUR: Record<'m1' | 'm3', number> = { m1: 30, m3: 91 }
 
 /**
  * Panel "Sektor & Indeks" — port buildSectorPanel() index_live.html baris
- * 2970-3023, plus chart "secChart"/"idxChart" dari buildCharts() baris
- * 3068-3095. Termasuk Board Indices (Papan Utama/Pengembangan/Akselerasi).
+ * 2970-3023, bergaya papan "Lantai Bursa"
+ * (docs/design-lantai-bursa-reimagined.html baris 582-598, 240-256).
+ *
+ * Dua pengecualian struktur-beku yang tertulis eksplisit di rencana (spec
+ * §4.4, pola sama dengan Peringkat YTD di IndeksDunia.tsx): kedua chart
+ * Chart.js ("Sektor — YTD vs Hari Ini" & "YTD — Perbandingan Semua Indeks
+ * Utama") diganti BatangPeringkat, dan tabel Performa Sektor mendapat
+ * pemilih periode (Hari Ini/1 Bulan/3 Bulan/YTD) yang mengganti kolom
+ * "Hari Ini"+"YTD" tetap jadi SATU kolom persen dinamis — kalau tidak,
+ * pemilih periode tidak mengubah apa pun yang terlihat. Indeks Unggulan,
+ * Indeks Syariah, dan Board Indices TIDAK dapat pemilih ini (keputusan
+ * backlog B1) dan kolomnya tetap Nilai+Hari Ini+YTD seperti semula.
  */
 export function SektorIndeks() {
   const { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error } = useDataHarian()
-  const { theme } = useTheme()
+  const [periode, setPeriode] = useState<PeriodeId>('d')
 
-  const sectors = hari?.sectors ?? []
-  const featured = hari?.featured ?? []
-  const sharia = hari?.sharia ?? []
+  const tanggalPembanding = useMemo(() => {
+    if ((periode !== 'm1' && periode !== 'm3') || !tanggalAktif) return null
+    return cariTanggalPembanding(tanggalTersedia, tanggalAktif, HARI_MUNDUR[periode])
+  }, [periode, tanggalAktif, tanggalTersedia])
 
-  const secChartConfig = useMemo<ChartConfiguration<'bar'> | null>(() => {
-    if (sectors.length === 0) return null
-    const isDark = theme === 'dark'
-    const gc = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)'
-    const tc = isDark ? '#4a6785' : '#78909c'
-    const redMain = isDark ? '#ff4d4d' : '#d32f2f'
-    const redFill = isDark ? 'rgba(255,77,77,0.55)' : 'rgba(211,47,47,0.55)'
-    const greyFill = isDark ? 'rgba(180,180,180,0.3)' : 'rgba(100,120,130,0.35)'
-    const greyMain = isDark ? '#9ab0bc' : '#78909c'
-    const isMob = window.innerWidth <= 768
-
-    const sd = [...sectors].sort((a, b) => a.ytd - b.ytd)
-    return {
-      type: 'bar',
-      data: {
-        labels: sd.map((x) => x.n.replace(/\[.\] /, '')),
-        datasets: [
-          { label: 'YTD %', data: sd.map((x) => x.ytd), backgroundColor: redFill, borderColor: redMain, borderWidth: 1.5, borderRadius: 2 },
-          { label: 'Hari ini', data: sd.map((x) => x.d), backgroundColor: greyFill, borderColor: greyMain, borderWidth: 1, borderRadius: 2 },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: true, labels: { color: tc, font: { size: 12 }, boxWidth: 12, padding: 14 } } },
-        layout: { padding: { top: 4, bottom: 4 } },
-        scales: {
-          x: { ticks: { color: tc, font: { size: isMob ? 9 : 11, weight: 500 }, maxRotation: 40, minRotation: 40, padding: 4 }, grid: { color: gc } },
-          y: { ticks: { color: tc, font: { size: 12 }, callback: (v) => `${v}%`, padding: 6 }, grid: { color: gc } },
-        },
-      },
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sectors, theme])
-
-  const idxChartConfig = useMemo<ChartConfiguration<'bar'> | null>(() => {
-    if (featured.length === 0) return null
-    const isDark = theme === 'dark'
-    const gc = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)'
-    const tc = isDark ? '#4a6785' : '#78909c'
-    const redMain = isDark ? '#ff4d4d' : '#d32f2f'
-    const redFill = isDark ? 'rgba(255,77,77,0.55)' : 'rgba(211,47,47,0.55)'
-    const redFaint = isDark ? 'rgba(255,77,77,0.35)' : 'rgba(211,47,47,0.35)'
-    const isMob = window.innerWidth <= 768
-
-    const all = [...featured, ...sharia].sort((a, b) => b.ytd - a.ytd)
-    return {
-      type: 'bar',
-      data: {
-        labels: all.map((x) => x.n),
-        datasets: [{
-          data: all.map((x) => x.ytd),
-          backgroundColor: all.map((x) => (x.n.includes('IDX Composite') || x.n.includes('IHSG') ? redMain : redFaint)),
-          borderColor: all.map((x) => (x.n.includes('IDX Composite') || x.n.includes('IHSG') ? redMain : redFill)),
-          borderWidth: 1.5,
-          borderRadius: 2,
-        }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        layout: { padding: { top: 4, bottom: 4 } },
-        scales: {
-          x: { ticks: { color: tc, font: { size: isMob ? 9 : 11, weight: 500 }, maxRotation: 50, minRotation: 50, padding: 4 }, grid: { color: gc } },
-          y: { ticks: { color: tc, font: { size: 12 }, callback: (v) => `${v}%`, padding: 6 }, grid: { color: gc } },
-        },
-      },
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [featured, sharia, theme])
-
-  const secCanvasRef = useChartCanvas(secChartConfig)
-  const idxCanvasRef = useChartCanvas(idxChartConfig)
+  // Hooks dipanggil tanpa syarat sebelum return dini loading/error (Rules of
+  // Hooks) — pola sama dengan SektorIndeks.tsx versi lama & TopStocks.tsx.
+  const { data: pembanding } = useDataPembanding(tanggalPembanding?.stem ?? null)
 
   if (loading && !hari) {
     return (
-      <>
+      <div className="lantai">
         <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
-        <div className="card" style={{ textAlign: 'center', padding: '40px 20px' }}>
+        <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p style={{ fontSize: 28 }}>⏳</p>
-          <p style={{ color: 'var(--text2)', fontSize: 12 }}>Memuat data...</p>
+          <p className="lbl">Memuat data...</p>
         </div>
-      </>
+      </div>
     )
   }
 
   if (error || !hari) {
     return (
-      <>
+      <div className="lantai">
         <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
-        <div className="card" style={{ textAlign: 'center', padding: '40px 20px' }}>
+        <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p style={{ fontSize: 28 }}>⚠️</p>
-          <p style={{ color: 'var(--text2)', fontSize: 12 }}>Data tidak tersedia untuk tanggal ini</p>
+          <p className="lbl">Data tidak tersedia untuk tanggal ini</p>
         </div>
-      </>
+      </div>
     )
   }
 
+  const sectors = hari.sectors ?? []
+  const featured = hari.featured ?? []
+  const sharia = hari.sharia ?? []
   const board = hari.board ?? []
+
+  // Urutan baris beku (sama dengan versi lama): berdasar "Hari Ini" naik,
+  // TIDAK ikut berubah waktu pemilih periode diganti.
   const secRows = [...sectors].sort((a, b) => a.d - b.d)
 
-  const perfRow = (x: SectorRow, hdgClass: string) => (
+  const periodeLabel = PERIODE.find((p) => p.id === periode)!.label
+
+  function nilaiPeriode(x: SectorRow): number | null {
+    if (periode === 'd') return x.d
+    if (periode === 'ytd') return x.ytd
+    if (!tanggalPembanding) return null
+    const cmp = pembanding?.sectors?.find((s) => s.n === x.n)?.v
+    return hitungPeriodePct(x.v, cmp)
+  }
+
+  // Baris tabel 4-kolom (Nama | Nilai | Hari Ini | YTD) — dipakai Indeks
+  // Unggulan/Syariah/Board Indices, struktur beku, TIDAK dipakai tabel sektor.
+  const perfRowFull = (x: SectorRow) => (
     <tr key={x.n}>
       <td>{x.n}</td>
-      <td className="r muted">{fN(x.v)}</td>
-      <td className={`r ${hdgClass}`}>{fp(x.d)}</td>
-      <td className="r" dangerouslySetInnerHTML={{ __html: bdg(x.ytd) }} />
+      <td className="r num muted">{fN(x.v)}</td>
+      <td className={`r num ${x.d >= 0 ? 'up' : 'dn'}`}>{fp(x.d)}</td>
+      <td className="r"><span className={`ytd-bdg ${x.ytd >= 0 ? 'u' : 'd'}`}>{fp(x.ytd)}</span></td>
     </tr>
   )
 
+  const indeksUtama = [...featured, ...sharia]
+  const sorotUtama = indeksUtama.find((x) => x.n.includes('IDX Composite') || x.n.includes('IHSG'))?.n
+
   return (
-    <>
+    <div className="lantai">
       <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
 
-      <div className="card">
-        <p className="ct b">📊 Performa Sektor — Hari Ini vs YTD</p>
-        <table>
-          <thead><tr><th>Sektor</th><th className="r">Nilai Indeks</th><th className="r">Hari Ini</th><th className="r">YTD</th></tr></thead>
-          <tbody>{secRows.map((s) => perfRow(s, cls(s.d)))}</tbody>
-        </table>
-      </div>
-
-      <div className="card">
-        <p className="ct b">Sektor — YTD vs Hari Ini</p>
-        <div className="chart-wrap" style={{ height: 300 }}>
-          <canvas ref={secCanvasRef} />
+      <div className="panel">
+        <div className="panel-h">
+          <span className="lbl">📊 Performa Sektor</span>
+          <div className="tabs" role="tablist" aria-label="Periode Performa Sektor">
+            {PERIODE.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                role="tab"
+                aria-selected={periode === p.id}
+                className={'tab' + (periode === p.id ? ' on' : '')}
+                onClick={() => setPeriode(p.id)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-
-      <div className="sep" />
-
-      <div className="g2">
-        <div className="card">
-          <p className="ct b" style={{ fontSize: 12, marginBottom: 10 }}>📈 Indeks Unggulan</p>
-          <table>
-            <thead><tr><th>Indeks</th><th className="r">Nilai</th><th className="r">Hari Ini</th><th className="r">YTD</th></tr></thead>
-            <tbody>{featured.map((x) => perfRow(x, cls(x.d)))}</tbody>
+        <div className="board-tbl-wrap">
+          <table className="tbl">
+            <thead><tr><th>Sektor</th><th className="r">Nilai Indeks</th><th className="r">{periodeLabel}</th></tr></thead>
+            <tbody>
+              {secRows.map((s) => {
+                const val = nilaiPeriode(s)
+                return (
+                  <tr key={s.n}>
+                    <td>{s.n}</td>
+                    <td className="r num muted">{fN(s.v)}</td>
+                    <td className="r">
+                      {val === null
+                        ? <span className="muted">—</span>
+                        : <span className={`ytd-bdg ${val >= 0 ? 'u' : 'd'}`}>{fp(val)}</span>}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
           </table>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div className="card" style={{ flex: 1 }}>
-            <p className="ct b" style={{ fontSize: 12, marginBottom: 10 }}>☪️ Indeks Syariah</p>
-            <table>
+      </div>
+
+      <div className="panel">
+        <div className="panel-h"><span className="lbl">Sektor — YTD vs Hari Ini</span></div>
+        <BatangPeringkat baris={sectors.map((s) => ({ nama: s.n.replace(/\[.\] /, ''), nilai: s.ytd }))} />
+      </div>
+
+      <div className="grid2">
+        <div className="panel">
+          <div className="panel-h"><span className="lbl">📈 Indeks Unggulan</span></div>
+          <div className="board-tbl-wrap">
+            <table className="tbl">
               <thead><tr><th>Indeks</th><th className="r">Nilai</th><th className="r">Hari Ini</th><th className="r">YTD</th></tr></thead>
-              <tbody>{sharia.map((x) => perfRow(x, cls(x.d)))}</tbody>
+              <tbody>{featured.map((x) => perfRowFull(x))}</tbody>
             </table>
           </div>
-          <div className="card" style={{ flex: 1 }}>
-            <p className="ct b" style={{ fontSize: 12, marginBottom: 10 }}>🗂️ Board Indices</p>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="panel" style={{ flex: 1 }}>
+            <div className="panel-h"><span className="lbl">☪️ Indeks Syariah</span></div>
             <div className="board-tbl-wrap">
-              <table className="board-tbl">
+              <table className="tbl">
+                <thead><tr><th>Indeks</th><th className="r">Nilai</th><th className="r">Hari Ini</th><th className="r">YTD</th></tr></thead>
+                <tbody>{sharia.map((x) => perfRowFull(x))}</tbody>
+              </table>
+            </div>
+          </div>
+          <div className="panel" style={{ flex: 1 }}>
+            <div className="panel-h"><span className="lbl">🗂️ Board Indices</span></div>
+            <div className="board-tbl-wrap">
+              <table className="tbl">
                 <thead><tr><th>Board</th><th className="r">Nilai</th><th className="r">Hari Ini</th><th className="r">YTD</th></tr></thead>
                 <tbody>
-                  {board.map((x) => perfRow(
-                    { ...x, n: x.n.replace('Main Board', 'Papan Utama').replace('Development Board', 'Papan Pengembangan').replace('Acceleration Board', 'Papan Akselerasi') },
-                    cls(x.d),
-                  ))}
+                  {board.map((x) => perfRowFull({
+                    ...x,
+                    n: x.n.replace('Main Board', 'Papan Utama').replace('Development Board', 'Papan Pengembangan').replace('Acceleration Board', 'Papan Akselerasi'),
+                  }))}
                 </tbody>
               </table>
             </div>
@@ -185,12 +189,10 @@ export function SektorIndeks() {
         </div>
       </div>
 
-      <div className="card">
-        <p className="ct b">YTD — Perbandingan Semua Indeks Utama</p>
-        <div className="chart-wrap" style={{ height: 300 }}>
-          <canvas ref={idxCanvasRef} />
-        </div>
+      <div className="panel">
+        <div className="panel-h"><span className="lbl">YTD — Perbandingan Semua Indeks Utama</span></div>
+        <BatangPeringkat baris={indeksUtama.map((x) => ({ nama: x.n, nilai: x.ytd }))} sorot={sorotUtama} />
       </div>
-    </>
+    </div>
   )
 }
