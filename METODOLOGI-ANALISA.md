@@ -134,6 +134,19 @@ Halaman peringkat memakai: `MENENGAH` → `TINGGI` → `EKSTREM`.
 
 Formatnya: `Klasifikasi | ≈ ±RpN,N miliar (top-10)`.
 
+### Sumber angka slider_pct (meter Big Dist–Netral–Big Acc)
+
+Posisi meter (`em.slider_pct`, 0-100) **boleh dianchor ke angka agregat siap-pakai dari
+Stockbit** — Net Value/Net Volume top-10 dan tabel Top1/Top3/Top5/Average Acc-Dist — bukan
+cuma tebakan manual dari baca satu-satu baris broker. Ini lebih objektif & konsisten
+antar-edisi. Diputuskan 2026-08-10 (dites di edisi demo ARCI slider_pct=86, DSSA=58).
+
+Yang **tidak boleh** diambil langsung dari indikator Stockbit: label `flow_kelas` (kata-kata
+Accumulation/Distribution dst) — itu tetap wajib dihitung dari tabel BY/SL mentah + kamus
+peran broker (§6), karena Stockbit tidak tahu mana broker ritel/institusi/scalper punya kita.
+Slider = posisi kuantitatif (boleh dari Stockbit). Label = interpretasi kualitatif (wajib
+racikan sendiri).
+
 ---
 
 ## 6. Kamus peran broker

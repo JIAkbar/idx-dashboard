@@ -24,6 +24,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://s3.tradingview.com/tv.js" async></script>
+<script type="module">
+  import { animate, scroll, stagger, inView } from "https://cdn.jsdelivr.net/npm/motion@11/+esm";
+  window.Motion = { animate, scroll, stagger, inView };
+</script>
 <style>
 /* ===== LIGHT (DEFAULT) ===== */
 [data-theme="light"]{
