@@ -36,41 +36,29 @@ const GROUP_LABEL: Record<TvGroup, string> = {
 }
 
 type TvGroup = keyof typeof TV_GROUPS
-type ExpandedSection = 'chart' | 'heatmap' | null
 
-const CLOSE_BTN_STYLE = {
-  background: 'var(--red-bg)',
-  color: 'var(--red-txt)',
-  border: '0.5px solid var(--red)',
-  borderRadius: 5,
-  padding: '4px 12px',
-  cursor: 'pointer',
-  fontSize: 12,
-  fontWeight: 600,
-} as const
+/** Layar penuh lewat Fullscreen API bawaan peramban, bukan simulasi lewat CSS
+ * class + state React. ESC-menutup, ukuran layar telepon, dan urutan tumpuk
+ * semua ditangani peramban sendiri — satu-satunya glue yang masih perlu kita
+ * tulis ada di .lantai .panel:fullscreen (lantai.css) supaya anak yang tinggi
+ * pikselnya tetap (.tv-section-inner) ikut melebar mengisi layar. */
+function penuh(ref: React.RefObject<HTMLDivElement | null>) {
+  ref.current?.requestFullscreen?.()?.catch(() => {})
+}
 
 /**
  * Menu Chart — port index_live.html baris 1063-1116 (markup) + 3442-3561 (logic).
  * Dua section SELALU tampil bersamaan (bukan tab): Chart Indeks IDX
  * (TradingView Advanced Chart, ganti grup/simbol) & Heatmap Saham IDX
- * (TradingView embed statis). Masing-masing punya expand/collapse fullscreen sendiri.
+ * (TradingView embed statis). Masing-masing punya tombol Layar Penuh sendiri.
  */
 export function ChartIndeks() {
   const { theme } = useTheme()
   const [grp, setGrp] = useState<TvGroup>('featured')
   const [sym, setSym] = useState<string>(TV_GROUPS.featured[0].sym)
-  const [expanded, setExpanded] = useState<ExpandedSection>(null)
   const heatmapRef = useRef<HTMLDivElement>(null)
-
-  // ESC menutup fullscreen — port tvExpand() addEventListener('keydown', ...) baris 3497-3499.
-  useEffect(() => {
-    if (!expanded) return
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setExpanded(null)
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [expanded])
+  const chartPanelRef = useRef<HTMLDivElement>(null)
+  const heatPanelRef = useRef<HTMLDivElement>(null)
 
   // Heatmap widget statis — script embed resmi TradingView cuma jalan kalau
   // <script> benar2 dieksekusi browser (JSX/dangerouslySetInnerHTML tidak
@@ -99,7 +87,7 @@ export function ChartIndeks() {
       grouping: 'sector',
       locale: 'id',
       symbolUrl: '',
-      colorTheme: 'dark',
+      colorTheme: theme,
       exchanges: [],
       hasTopBar: false,
       isDataSetEnabled: false,
@@ -113,6 +101,7 @@ export function ChartIndeks() {
     container.appendChild(widgetDiv)
     container.appendChild(script)
     // Tanpa cleanup wipe — lihat komentar di atas efek ini.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function handleSetGroup(g: TvGroup) {
@@ -120,81 +109,61 @@ export function ChartIndeks() {
     setSym(TV_GROUPS[g][0].sym)
   }
 
-  // Mobile: tinggi eksplisit saat fullscreen agar menutup bottom nav bar —
-  // port tvExpand() baris 3494.
-  const mobileFsHeight = window.innerWidth <= 768 ? window.innerHeight : undefined
-
   return (
-    <>
-      <div
-        className={`card${expanded === 'chart' ? ' tv-fullscreen' : ''}`}
-        style={{
-          padding: 12,
-          marginBottom: 12,
-          position: 'relative',
-          ...(expanded === 'chart' && mobileFsHeight ? { height: mobileFsHeight } : {}),
-        }}
-      >
-        <div className="tv-fs-bar">
-          <span className="tv-fs-title">📈 Chart Indeks IDX</span>
-          <button style={CLOSE_BTN_STYLE} onClick={() => setExpanded(null)}>✕ Tutup</button>
+    <div className="lantai">
+      <div className="panel" ref={chartPanelRef}>
+        <div className="panel-h">
+          <span className="lbl">📈 Chart Indeks IDX</span>
+          <button className="tab" onClick={() => penuh(chartPanelRef)} title="Layar penuh">⛶ Layar Penuh</button>
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8, alignItems: 'center' }}>
-          <div className="tv-group-bar" style={{ display: 'flex', flexWrap: 'wrap', gap: 4, flex: 1 }}>
+        <div className="panel-b">
+          <div className="tabs" role="tablist" aria-label="Grup Indeks">
             {(Object.keys(TV_GROUPS) as TvGroup[]).map((g) => (
               <button
                 key={g}
-                className={`tv-grp-btn${grp === g ? ' active' : ''}`}
+                type="button"
+                role="tab"
+                aria-selected={grp === g}
+                className={'tab' + (grp === g ? ' on' : '')}
                 onClick={() => handleSetGroup(g)}
               >
                 {GROUP_LABEL[g]}
               </button>
             ))}
           </div>
-          <button className="tv-expand-btn" title="Expand fullscreen" onClick={() => setExpanded('chart')}>
-            ⛶ Expand
-          </button>
-        </div>
-        <div className="tv-sym-bar" style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
-          {TV_GROUPS[grp].map(({ sym: s, label }) => (
-            <button
-              key={s}
-              className={`tv-sym-btn${sym === s ? ' active' : ''}`}
-              onClick={() => setSym(s)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <div className="tv-section-inner" style={{ height: 520, borderRadius: 8, overflow: 'hidden', background: 'var(--bg3)' }}>
-          <TradingViewChart symbol={sym} theme={theme} />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10, marginBottom: 10 }}>
+            {TV_GROUPS[grp].map(({ sym: s, label }) => {
+              const aktif = sym === s
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  className="bchip"
+                  style={aktif ? { borderColor: 'var(--amber)', color: 'var(--amber)', cursor: 'pointer' } : { cursor: 'pointer' }}
+                  onClick={() => setSym(s)}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+          <div className="tv-section-inner" style={{ height: 520, borderRadius: 8, overflow: 'hidden', background: 'var(--bg3)' }}>
+            <TradingViewChart symbol={sym} theme={theme} />
+          </div>
         </div>
       </div>
 
-      <div
-        className={`card${expanded === 'heatmap' ? ' tv-fullscreen' : ''}`}
-        style={{
-          padding: 12,
-          position: 'relative',
-          ...(expanded === 'heatmap' && mobileFsHeight ? { height: mobileFsHeight } : {}),
-        }}
-      >
-        <div className="tv-fs-bar">
-          <span className="tv-fs-title">🔥 Heatmap Saham IDX</span>
-          <button style={CLOSE_BTN_STYLE} onClick={() => setExpanded(null)}>✕ Tutup</button>
+      <div className="panel" ref={heatPanelRef}>
+        <div className="panel-h">
+          <span className="lbl">🔥 Heatmap Saham IDX</span>
+          <button className="tab" onClick={() => penuh(heatPanelRef)} title="Layar penuh">⛶ Layar Penuh</button>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <span className="tv-norm-title" style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
-            🔥 Heatmap Saham IDX
-          </span>
-          <button className="tv-expand-btn" title="Expand fullscreen" onClick={() => setExpanded('heatmap')}>
-            ⛶ Expand
-          </button>
-        </div>
-        <div className="tv-section-inner" style={{ height: 400, borderRadius: 8, overflow: 'hidden' }}>
-          <div className="tradingview-widget-container" style={{ height: '100%', width: '100%' }} ref={heatmapRef} />
+        <div className="panel-b">
+          <div className="tv-section-inner" style={{ height: 400, borderRadius: 8, overflow: 'hidden' }}>
+            <div className="tradingview-widget-container" style={{ height: '100%', width: '100%' }} ref={heatmapRef} />
+          </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
