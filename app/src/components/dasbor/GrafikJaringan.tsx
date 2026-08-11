@@ -33,15 +33,28 @@ export function GrafikJaringan({ allData, emitenList, focusCode, onSelect }: Gra
     if (!wrap) return
     simRef.current?.stop()
     simRef.current = null
+    let raf = 0
 
-    const dark = theme === 'dark'
-    if (focusCode) {
-      simRef.current = renderFocusedGraph({ wrap, tooltip: null, dark, allData, code: focusCode, onSelect })
-    } else {
-      simRef.current = renderForceGraph({ wrap, tooltip: tooltipRef.current, dark, allData, emitenList, onSelect })
+    function gambar() {
+      if (!wrap) return
+      // Penjaga lebar (papan #26): kedua fungsi render mengambil lebar wadah
+      // untuk menaruh titik pusat & lebar SVG. Kalau dipanggil sebelum tata
+      // letak siap, lebarnya 0 dan graf digambar untuk kanvas 900px semu lalu
+      // meluber di telepon. Penjaga ditaruh SATU KALI di sini — titik panggil
+      // tunggal kedua fungsi itu — bukan ditambal di masing-masing render.
+      if (wrap.getBoundingClientRect().width < 2) {
+        raf = requestAnimationFrame(gambar)
+        return
+      }
+      const dark = theme === 'dark'
+      simRef.current = focusCode
+        ? renderFocusedGraph({ wrap, tooltip: null, dark, allData, code: focusCode, onSelect })
+        : renderForceGraph({ wrap, tooltip: tooltipRef.current, dark, allData, emitenList, onSelect })
     }
+    gambar()
 
     return () => {
+      cancelAnimationFrame(raf)
       simRef.current?.stop()
       simRef.current = null
     }

@@ -104,6 +104,22 @@
 .lantai .tick{font-family:var(--mono);font-weight:600;font-size:12px}
 .lantai .bchip{display:inline-block;font-family:var(--mono);font-size:10.5px;font-weight:600;background:var(--bg3);border:1px solid var(--line2);border-radius:4px;padding:1px 6px;margin-right:7px}
 .lantai .spark{stroke-width:1.5;fill:none}
+/* Lajur pil (Peta Investor, Task 12) — sel berisi 3 .bchip yang HARUS muat satu
+   baris supaya tinggi baris tabel seragam. nowrap + ellipsis dipakai alih-alih
+   memotong nama di JavaScript: lebar sel berubah menurut viewport, jumlah
+   karakter yang muat tidak bisa ditebak dari kode. Hanya nama yang boleh
+   terpotong — persen dan "+N lagi" dikunci flex:none karena keduanya justru
+   informasi yang dicari pembaca. */
+.lantai .pil-row{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow:hidden;max-width:360px}
+.lantai .pil-row .bchip{display:flex;align-items:center;gap:5px;margin-right:0;min-width:0;white-space:nowrap}
+.lantai .pil-nm{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.lantai .pil-pct{flex:none;color:var(--text3)}
+.lantai .pil-row .lbl{flex:none;white-space:nowrap}
+/* Satu baris + elipsis. Dipakai sel tabel yang isinya nama panjang: membatasi
+   jumlah karakter di JavaScript tidak pernah cukup karena lebar kolom berubah
+   menurut viewport, dan sisa baris yang membungkus itulah penyebab tinggi baris
+   tabel jadi tidak seragam. */
+.lantai .satu-baris{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* tabs */
 .lantai .tabs{display:flex;gap:2px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:3px;width:max-content;max-width:100%;overflow-x:auto}

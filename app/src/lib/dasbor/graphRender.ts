@@ -1,5 +1,5 @@
 import * as d3 from 'd3'
-import { nodeColor, type GraphSelection, type InvestorMapEntry } from './petaInvestorData'
+import { holderType, type GraphSelection, type HolderType, type InvestorMapEntry } from './petaInvestorData'
 
 /**
  * Render D3 force-directed graph murni (tanpa React) — dipanggil dari
@@ -32,12 +32,70 @@ interface RenderParams {
   onSelect: (sel: GraphSelection | null) => void
 }
 
-function cssVar(el: Element, name: string): string {
-  return getComputedStyle(el).getPropertyValue(name).trim()
+/**
+ * Palet simpul: SATU aksen amber untuk emiten, sisanya derajat abu-biru.
+ * Hijau & merah sengaja TIDAK ada di sini — keduanya dikunci untuk arah angka
+ * (naik/turun) di seluruh dasbor; memakainya sebagai kategori simpul membuat
+ * "investor individu" terbaca seperti "naik".
+ *
+ * Diekspor karena legenda di PetaInvestor.tsx memakai objek yang SAMA — legenda
+ * yang menyalin nilai warnanya sendiri akan menyimpang diam-diam dari graf.
+ */
+export const WARNA = {
+  emiten: 'var(--amber)',
+  institusi: 'var(--text2)',
+  individu: 'var(--text3)',
+  lain: 'var(--line2)',
+} as const
+
+/** Kategori investor persis mengikuti holderType() yang dipakai tabel By Stock/By Investor — satu definisi, bukan dua. */
+const WARNA_TIPE: Record<HolderType, string> = { CORP: WARNA.institusi, IND: WARNA.individu, OTH: WARNA.lain }
+
+export function warnaSimpul(d: { kind: string; cls?: string }): string {
+  return d.kind === 'emiten' ? WARNA.emiten : WARNA_TIPE[holderType(d.cls ?? '')]
 }
 
-function asColorNode(d: GNode): { kind: 'emiten' } | { kind: 'investor'; cls: string; lf: string } {
-  return d.kind === 'emiten' ? { kind: 'emiten' } : { kind: 'investor', cls: d.cls ?? '', lf: d.lf ?? '' }
+/** Jumlah simpul yang dilabeli permanen. Graf yang melabeli SEMUA simpul selalu berakhir tak terbaca, dan itu bukan soal ukuran font. */
+const LABEL_TERBESAR = 12
+
+/**
+ * id simpul terbesar (menurut `size`) yang boleh dilabeli permanen; sisanya
+ * transparan sampai diarahkan/disentuh. Urutan sama-besar dipertahankan apa
+ * adanya (Array#sort stabil) sehingga emiten — yang selalu didorong ke array
+ * lebih dulu — menang atas investor berukuran sama.
+ */
+export function idTerbesar(nodes: GNode[], n: number = LABEL_TERBESAR): Set<string> {
+  return new Set(
+    [...nodes]
+      .sort((a, b) => b.size - a.size)
+      .slice(0, n)
+      .map((d) => d.id),
+  )
+}
+
+/**
+ * Simpul yang dilabeli permanen: SEMUA emiten + 12 investor terbesar.
+ *
+ * Batas 12 sengaja TIDAK dikenakan ke emiten. Kode emiten digambar DI DALAM
+ * lingkarannya sendiri, dan forceCollide (radius `size + 16`) menjamin dua
+ * lingkaran tak pernah bertumpuk — jadi label emiten secara konstruksi tidak
+ * bisa ikut menimbulkan tumpukan label yang jadi alasan batas ini ada. Yang
+ * menumpuk adalah label investor yang mengambang di bawah simpul.
+ *
+ * Diukur langsung sebelum aturan ini dipakai: dengan ambang 12 untuk SEMUA
+ * simpul, cuma 1 dari 10 emiten yang berlabel (ukuran investor = pct×0,4,
+ * mencapai 14 sementara emiten tetap 10; 857 holder di dataset memegang >25%).
+ * Peta kepemilikan yang menyembunyikan kode emitennya sendiri tidak bisa dibaca
+ * sama sekali — kodenya justru satu-satunya jangkar orientasi di layar ini.
+ */
+function idBerlabel(nodes: GNode[]): Set<string> {
+  const set = idTerbesar(nodes.filter((d) => d.kind !== 'emiten'))
+  for (const d of nodes) if (d.kind === 'emiten') set.add(d.id)
+  return set
+}
+
+function cssVar(el: Element, name: string): string {
+  return getComputedStyle(el).getPropertyValue(name).trim()
 }
 
 function nodeSelection(d: GNode): GraphSelection {
@@ -45,47 +103,39 @@ function nodeSelection(d: GNode): GraphSelection {
   return { type: 'investor', name: d.fullLabel ?? d.label, cls: d.cls ?? '', lf: d.lf ?? '' }
 }
 
-/** Lingkaran (emiten) / diamond (investor institusi) / bintang (pemilik manfaat) — port baris 79-110. Warna & bentuk sama untuk graf umum maupun focused view (lihat catatan ponytail di renderFocusedGraph). */
+/**
+ * Semua simpul bundar — dulu emiten lingkaran, investor belah ketupat, pemilik
+ * manfaat bintang. Bentuk campur itu memaksa pembaca menghafal tiga bentuk
+ * SEKALIGUS empat warna untuk informasi yang sama (tipe holder); satu bentuk +
+ * satu sumbu warna sudah cukup. Radius = `size` untuk semua, sama dengan
+ * radius yang dipakai gaya tolak-tabrakan (forceCollide `size + 16`).
+ */
 function drawNodeGlyph(node: d3.Selection<SVGGElement, GNode, SVGGElement, unknown>, nodeStroke: string) {
   node
-    .filter((d) => d.kind === 'emiten')
     .append('circle')
     .attr('r', (d) => d.size)
-    .attr('fill', (d) => nodeColor(asColorNode(d)))
+    .attr('fill', (d) => warnaSimpul(d))
     .attr('stroke', nodeStroke)
-    .attr('stroke-width', 1.5)
-    .attr('opacity', 0.95)
+    .attr('stroke-width', (d) => (d.kind === 'emiten' ? 1.5 : 1.2))
+    .attr('opacity', (d) => (d.kind === 'emiten' ? 0.95 : 0.92))
+}
 
+/** Ungkap label simpul non-terbesar saat diarahkan atau disentuh. Nama peristiwa dinamai (`.label`) supaya TIDAK menimpa penangan tooltip yang memakai `mouseover`/`mouseout` polos. */
+function pasangUngkapLabel(node: d3.Selection<SVGGElement, GNode, SVGGElement, unknown>, berlabel: Set<string>) {
+  function tampil(this: SVGGElement) {
+    d3.select(this).selectAll('text').attr('opacity', 1)
+  }
   node
-    .filter((d) => d.kind !== 'emiten')
-    .each(function (d) {
-      const el = d3.select(this)
-      const isPM = /pemilik|benefi/i.test(d.cls ?? '')
-      const sz = d.size * 2.2
-      if (isPM) {
-        el.append('path')
-          .attr('d', d3.symbol().type(d3.symbolStar).size(sz * sz * 0.7)())
-          .attr('fill', nodeColor(asColorNode(d)))
-          .attr('stroke', nodeStroke)
-          .attr('stroke-width', 1.2)
-          .attr('opacity', 0.92)
-      } else {
-        el.append('rect')
-          .attr('x', -sz * 0.55)
-          .attr('y', -sz * 0.55)
-          .attr('width', sz * 1.1)
-          .attr('height', sz * 1.1)
-          .attr('transform', 'rotate(45)')
-          .attr('fill', nodeColor(asColorNode(d)))
-          .attr('stroke', nodeStroke)
-          .attr('stroke-width', 1.2)
-          .attr('rx', 1)
-          .attr('opacity', 0.92)
-      }
+    .on('mouseover.label', tampil)
+    .on('touchstart.label', tampil)
+    .on('mouseout.label', function (this: SVGGElement, _e: unknown, d: GNode) {
+      d3.select(this)
+        .selectAll('text')
+        .attr('opacity', berlabel.has(d.id) ? 1 : 0)
     })
 }
 
-function showTooltip(tooltip: HTMLDivElement, wrap: HTMLDivElement, e: MouseEvent, d: GNode, allData: InvestorMapEntry[], dark: boolean) {
+function showTooltip(tooltip: HTMLDivElement, wrap: HTMLDivElement, e: MouseEvent, d: GNode, allData: InvestorMapEntry[]) {
   const wr = wrap.getBoundingClientRect()
   const x = e.clientX - wr.left + 14
   const y = e.clientY - wr.top + 14
@@ -96,18 +146,18 @@ function showTooltip(tooltip: HTMLDivElement, wrap: HTMLDivElement, e: MouseEven
   if (d.kind === 'emiten') {
     const code = d.id.replace('E_', '')
     const em = allData.find((x) => x.code === code)
-    const pctColor = dark ? '#fde68a' : '#b45309'
+    const pctColor = 'var(--amber)'
     const rows = em
       ? em.holders
           .slice(0, 4)
           .map((h) => `<tr><td style="padding:2px 0">${h.name}</td><td style="padding-left:8px;text-align:right;color:${pctColor};white-space:nowrap"><b>${h.pct}%</b></td></tr>`)
           .join('')
       : ''
-    tooltip.innerHTML = `<b style="color:#f97316">📊 ${code}</b><br><span style="color:var(--text3);font-size:10px">${d.fullName ?? ''}</span><br><br><b style="font-size:10px">Top pemegang saham:</b><table style="width:100%;margin-top:4px;font-size:11px">${rows}</table>${hint}`
+    tooltip.innerHTML = `<b style="color:var(--amber)">📊 ${code}</b><br><span style="color:var(--text3);font-size:10px">${d.fullName ?? ''}</span><br><br><b style="font-size:10px">Top pemegang saham:</b><table style="width:100%;margin-top:4px;font-size:11px">${rows}</table>${hint}`
   } else {
     const name = d.fullLabel ?? d.label
     const allCount = allData.filter((e) => e.holders.some((h) => h.name === name)).length
-    tooltip.innerHTML = `<b style="color:${nodeColor(asColorNode(d))}">${name}</b><br><span style="color:var(--text3)">${d.cls || '—'} · ${d.lf === 'L' ? '🇮🇩 Domestik' : '🌐 Asing'}</span><br><span style="color:var(--text3);font-size:10px">Memegang saham di ${allCount} emiten</span>${hint}`
+    tooltip.innerHTML = `<b style="color:${warnaSimpul(d)}">${name}</b><br><span style="color:var(--text3)">${d.cls || '—'} · ${d.lf === 'L' ? '🇮🇩 Domestik' : '🌐 Asing'}</span><br><span style="color:var(--text3);font-size:10px">Memegang saham di ${allCount} emiten</span>${hint}`
   }
 }
 
@@ -239,7 +289,7 @@ export function renderForceGraph(params: RenderParams & { emitenList: InvestorMa
 
   if (tooltip) {
     node
-      .on('mouseover', (e, d) => showTooltip(tooltip, wrap, e, d, allData, dark))
+      .on('mouseover', (e, d) => showTooltip(tooltip, wrap, e, d, allData))
       .on('mouseout', () => {
         tooltip.style.display = 'none'
       })
@@ -247,7 +297,9 @@ export function renderForceGraph(params: RenderParams & { emitenList: InvestorMa
 
   drawNodeGlyph(node, nodeStroke)
 
-  // Label emiten — di dalam lingkaran, putih.
+  const berlabel = idBerlabel(nodes)
+
+  // Label emiten — di dalam lingkaran, tinta kontras di atas amber.
   node
     .filter((d) => d.kind === 'emiten')
     .append('text')
@@ -255,22 +307,25 @@ export function renderForceGraph(params: RenderParams & { emitenList: InvestorMa
     .attr('text-anchor', 'middle')
     .attr('dy', '0.35em')
     .attr('font-size', '8.5px')
-    .attr('fill', '#fff')
+    .attr('fill', 'var(--amber-ink)')
     .attr('pointer-events', 'none')
     .attr('font-weight', 800)
+    .attr('opacity', (d) => (berlabel.has(d.id) ? 1 : 0))
 
-  // Label investor — di bawah node, warna ikut tema.
-  const lblColor = dark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)'
+  // Label investor — di bawah node, warna ikut token tema.
   node
     .filter((d) => d.kind !== 'emiten')
     .append('text')
     .text((d) => d.label)
     .attr('text-anchor', 'middle')
-    .attr('dy', (d) => `${d.size * 2.2 + 11}px`)
+    .attr('dy', (d) => `${d.size + 11}px`)
     .attr('font-size', '7.5px')
-    .attr('fill', lblColor)
+    .attr('fill', 'var(--text2)')
     .attr('pointer-events', 'none')
     .attr('font-weight', 500)
+    .attr('opacity', (d) => (berlabel.has(d.id) ? 1 : 0))
+
+  pasangUngkapLabel(node, berlabel)
 
   sim.on('tick', () => {
     link
@@ -356,8 +411,8 @@ export function renderFocusedGraph(params: RenderParams & { code: string }): d3.
     .selectAll('line')
     .data(links)
     .join('line')
-    .attr('stroke', '#475569')
-    .attr('stroke-opacity', 0.5)
+    .attr('stroke', 'var(--line2)')
+    .attr('stroke-opacity', 0.9)
     .attr('stroke-width', 1)
 
   const sim = d3
@@ -393,10 +448,12 @@ export function renderFocusedGraph(params: RenderParams & { code: string }): d3.
 
   // ponytail: sumber (piRenderFocused) membedakan bentuk investor pakai kode
   // negara (isAsia/isWest/isLocal, mis. 'SG'/'US') — data/investor_map.json
-  // yang dipakai sekarang cuma punya lf 'L'/'F' (bukan kode negara), jadi
-  // dipakai bentuk & warna node yang sama dengan graf umum (drawNodeGlyph).
-  // Upgrade ke bentuk per-negara kalau investor_map.json nanti punya field itu.
+  // yang dipakai sekarang cuma punya lf 'L'/'F' (bukan kode negara). Sejak
+  // Task 12 pembedaan bentuk dibuang seluruhnya (semua simpul bundar), jadi
+  // graf umum & focused view memang memakai glyph yang sama.
   drawNodeGlyph(nodeG, nodeStroke)
+
+  const berlabel = idBerlabel(nodes)
 
   nodeG
     .append('text')
@@ -407,6 +464,9 @@ export function renderFocusedGraph(params: RenderParams & { code: string }): d3.
     .attr('text-anchor', 'middle')
     .attr('dy', (d) => d.size + 11)
     .attr('pointer-events', 'none')
+    .attr('opacity', (d) => (berlabel.has(d.id) ? 1 : 0))
+
+  pasangUngkapLabel(nodeG, berlabel)
 
   sim.on('tick', () => {
     link
