@@ -264,6 +264,63 @@
   .lantai .board{padding:14px}
   .lantai .flap{font-size:clamp(22px,7vw,32px)}
 }
+/* ===== Kalender.tsx (Task 7b) — padanan .lantai untuk kelas dasbor.css lama
+   (baris 303-356) yang MASIH dipancarkan komponen React ini (bukan disentuh
+   JSX-nya). Dipakai apa adanya di 4 halaman (/, /stocks, /broker, /sector)
+   lewat <Kalender> sebagai flex-child langsung .lantai — spacing antar-panel
+   sudah dari .lantai{gap:16px}, cal-wrap sendiri tak perlu margin-bottom.
+   .cal-grid override margin-top/border-top/padding-top ke 0/none: nama kelas
+   itu sudah dipakai "kalender grid bulan" artifact di atas (baris ~174, anak
+   .cg/.cg.ada/.cg.aktif — tak satupun dipancarkan Kalender.tsx) dengan nilai
+   berbeda; tanpa override, 3 properti itu bocor ke grid bulan asli karena CSS
+   men-cascade per-properti, bukan mengganti seluruh rule. */
+.lantai .cal-wrap{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.lantai .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.lantai .cal-title{font-family:var(--disp);font-weight:700;font-size:13px}
+.lantai .cal-nav{display:flex;gap:4px}
+.lantai .cal-nav button{background:var(--bg3);border:1px solid var(--line2);color:var(--text2);border-radius:5px;padding:3px 10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer}
+.lantai .cal-nav button:hover{background:var(--amber);color:var(--amber-ink);border-color:var(--amber)}
+.lantai .cal-nav button.today{background:var(--amber);color:var(--amber-ink);border-color:var(--amber)}
+
+.lantai .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:0;border-top:none;padding-top:0}
+.lantai .cal-dow{font-family:var(--disp);font-size:9px;font-weight:700;text-align:center;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:2px 0}
+.lantai .cal-day{border-radius:var(--r);padding:4px 3px;text-align:center;min-height:46px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid transparent;width:100%;background:none;font-family:inherit}
+.lantai .cal-day.empty{background:transparent}
+.lantai .cal-day.holiday{background:var(--bg2);cursor:default}
+.lantai .cal-day.has-data{background:var(--amber-dim);border-color:var(--line2);cursor:pointer;transition:filter .15s,transform .15s}
+.lantai .cal-day.has-data:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.lantai .cal-day.selected{background:var(--amber) !important;border-color:var(--amber) !important}
+.lantai .cal-day.selected .cal-day-num,.lantai .cal-day.selected .cal-ihsg,.lantai .cal-day.selected .cal-pct{color:var(--amber-ink) !important}
+.lantai .cal-day-num{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text2)}
+.lantai .cal-ihsg{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text);margin-top:1px;line-height:1.2}
+.lantai .cal-pct{font-family:var(--mono);font-size:9px;font-weight:700;margin-top:1px}
+.lantai .cal-pct.up{color:var(--green)}
+.lantai .cal-pct.dn{color:var(--red)}
+.lantai .cal-label{font-size:8px;color:var(--text3)}
+
+.lantai .wk-strip{display:flex;gap:5px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
+.lantai .wk-day{flex:1;min-width:42px;border-radius:8px;padding:5px 3px;text-align:center;cursor:pointer;border:1.5px solid transparent;transition:filter .15s,transform .15s;display:flex;flex-direction:column;align-items:center;gap:1px;background:none;font-family:inherit}
+.lantai .wk-day.wd-has{background:var(--amber-dim);border-color:var(--line2)}
+.lantai .wk-day.wd-has:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.lantai .wk-day.wd-off{background:var(--bg3);cursor:default;opacity:.5}
+.lantai .wk-day.wd-sel{background:var(--amber) !important;border-color:var(--amber) !important}
+.lantai .wk-day.wd-sel .wd-lbl,.lantai .wk-day.wd-sel .wd-num,.lantai .wk-day.wd-sel .wd-pct{color:var(--amber-ink) !important}
+.lantai .wk-day .wd-lbl{font-family:var(--disp);font-size:8.5px;font-weight:700;color:var(--text3);letter-spacing:.06em}
+.lantai .wk-day .wd-num{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text)}
+.lantai .wk-day.wd-today .wd-num{background:var(--amber);color:var(--amber-ink);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center}
+.lantai .wk-day .wd-pct{font-family:var(--mono);font-size:8.5px;font-weight:700}
+.lantai .wk-day .wd-pct.up{color:var(--green)}
+.lantai .wk-day .wd-pct.dn{color:var(--red)}
+.lantai .wk-day .wd-pct.neu{color:var(--text3)}
+
+.lantai .sess-bar-wrap{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.lantai .sess-bar-title{font-family:var(--disp);font-size:9.5px;font-weight:700;color:var(--text3);margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;text-transform:uppercase;letter-spacing:.06em}
+.lantai .sess-bar{position:relative;height:28px;border-radius:var(--r);overflow:hidden;background:var(--bg3);display:flex}
+.lantai .sess-seg{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:7.5px;font-weight:700;color:#fff;overflow:hidden;white-space:nowrap}
+.lantai .sess-time-row{display:flex;justify-content:space-between;margin-top:3px;padding:0 2px}
+.lantai .sess-time{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.lantai .sess-cursor{position:absolute;top:0;bottom:0;width:2px;background:var(--amber);box-shadow:0 0 4px var(--amber-dim);border-radius:1px;transition:left .5s}
+
 @media (prefers-reduced-motion: reduce){
   .lantai .tape-track{animation:none}
   .lantai .flap{animation:none}
