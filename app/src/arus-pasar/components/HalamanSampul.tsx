@@ -41,7 +41,7 @@ export function HalamanSampul({ ed, skorMap }: { ed: Edisi; skorMap: SkorMap }) 
             marginTop: '1.5mm',
           }}
         >
-          {ed.edisi} · Edisi Ujicoba
+          {ed.edisi}
         </div>
         <div style={{ marginTop: '14mm' }}>
           <div

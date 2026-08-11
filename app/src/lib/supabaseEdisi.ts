@@ -1,0 +1,72 @@
+import { supabase } from './supabase'
+import type { Edisi, OhlcMap } from './skor/types'
+
+export interface EdisiRow {
+  id: string
+  kode: string
+  tanggal: string
+  status: 'draf' | 'terbit'
+  edisi_data: Edisi
+  ohlc_data: OhlcMap
+  created_at: string
+  updated_at: string
+}
+
+export async function daftarEdisi(): Promise<EdisiRow[]> {
+  const { data, error } = await supabase.from('edisi').select('*').order('tanggal', { ascending: false })
+  if (error) throw error
+  return data as EdisiRow[]
+}
+
+export async function ambilEdisi(kode: string): Promise<EdisiRow | null> {
+  const { data, error } = await supabase.from('edisi').select('*').eq('kode', kode).maybeSingle()
+  if (error) throw error
+  return data as EdisiRow | null
+}
+
+export async function simpanEdisi(
+  kode: string,
+  tanggal: string,
+  status: 'draf' | 'terbit',
+  edisiData: Edisi,
+  ohlcData: OhlcMap
+): Promise<void> {
+  const { error } = await supabase
+    .from('edisi')
+    .upsert(
+      { kode, tanggal, status, edisi_data: edisiData, ohlc_data: ohlcData },
+      { onConflict: 'kode' }
+    )
+  if (error) throw error
+}
+
+/** Unggah screenshot ke bucket privat "screenshots", path {tanggal}/{ticker}-{jenis}.{ext}. */
+export async function unggahScreenshot(
+  file: File,
+  tanggal: string,
+  ticker: string,
+  jenis: 'orderbook' | 'chart'
+): Promise<string> {
+  const ext = file.name.split('.').pop() || 'png'
+  const path = `${tanggal}/${ticker}-${jenis}.${ext}`
+  const { error } = await supabase.storage.from('screenshots').upload(path, file, { upsert: true })
+  if (error) throw error
+  return path
+}
+
+export async function daftarScreenshot(tanggal: string): Promise<string[]> {
+  const { data, error } = await supabase.storage.from('screenshots').list(tanggal)
+  if (error) throw error
+  return (data ?? []).map((f) => `${tanggal}/${f.name}`)
+}
+
+/** Tanggal (folder) yang punya upload di bucket "screenshots", terbaru dulu. */
+export async function daftarTanggalUnggahan(): Promise<string[]> {
+  const { data, error } = await supabase.storage.from('screenshots').list('')
+  if (error) throw error
+  return (data ?? [])
+    .filter((f) => f.id === null)
+    .map((f) => f.name)
+    .sort()
+    .reverse()
+}

@@ -18,7 +18,7 @@ export function HalamanRingkasan({ ed, skorMap }: { ed: Edisi; skorMap: SkorMap 
             Ringkasan Edisi
           </div>
           <div className="px" style={{ fontSize: '8pt', color: 'var(--mute)' }}>
-            Edisi ujicoba · {ed.emiten.length} emiten
+            {ed.emiten.length} emiten
           </div>
         </div>
         <p className="lede">

@@ -1,0 +1,192 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+/** Satu baris data/index.json → {dates:[...]}. Port field dari index_live.html baris 2390-2394. */
+export interface TanggalIndex {
+  stem: string
+  date_iso: string
+  date_id: string
+  date_raw: string
+  ihsg: number
+  ihsg_pct: number
+  trading_day: number
+}
+
+/** Satu baris tabel World (field `D.world`), lihat index_live.html baris 2740-2759. */
+export interface WorldRow {
+  r: string
+  c: string
+  idx: string
+  v: number
+  d: number
+  ytd: number
+  ra: number | string | null
+  rap: number | string | null
+  rw: number | string | null
+  is_idx: boolean
+}
+
+/** Saham gainers/losers (field `D.gainers`/`D.losers`), index_live.html baris 2856-2864. */
+export interface StockMoveRow {
+  c: string
+  pr: number
+  td: number
+  p: number
+}
+
+/** Saham leaders/laggards kontribusi IHSG (`D.leaders_today` dst), baris 2866-2884. */
+export interface StockContribRow {
+  c: string
+  p: number
+  ih: number
+}
+
+/** Top 10 market cap (`D.mcap`), baris 2840-2854. */
+export interface McapRow {
+  c: string
+  v: number
+  p: number
+}
+
+/** Top saham by volume/value/freq (`D.top_vol` dst), baris 2920-2922. */
+export interface StockRankRow {
+  c: string
+  v: number
+  p: number
+}
+
+/** Top broker by volume/value/freq (`D.broker_vol` dst), baris 2924-2927. */
+export interface BrokerRankRow {
+  cd: string
+  nm: string
+  v: number
+  p: number
+}
+
+/** Baris sektor/indeks/board (`D.sectors`, `D.featured`, `D.sharia`, `D.board`), baris 2971-2985. */
+export interface SectorRow {
+  n: string
+  v: number
+  d: number
+  ytd: number
+}
+
+/**
+ * Data satu hari (data/${stem}.json). Field yang dipakai panel World/Stocks/
+ * Broker/Sector didaftar eksplisit; field lain lewat index signature supaya
+ * tipe ini tidak perlu diubah tiap ada menu baru.
+ */
+export interface DataHarian {
+  date_id: string
+  trading_day: number
+  ihsg_value: number
+  ihsg_pct: number
+  world?: WorldRow[]
+  avg_vol?: number
+  avg_val_idr?: number
+  avg_val_usd?: number
+  avg_freq?: number
+  nf_today_idr?: number
+  nf_today_usd?: number
+  nf_today_status?: string
+  nf_ytd_idr?: number
+  nf_ytd_usd?: number
+  nf_ytd_status?: string
+  mkt_per?: number
+  mkt_pbv?: number
+  usd_idr?: number
+  gainers?: StockMoveRow[]
+  losers?: StockMoveRow[]
+  leaders_today?: StockContribRow[]
+  leaders_ytd?: StockContribRow[]
+  laggards_today?: StockContribRow[]
+  laggards_ytd?: StockContribRow[]
+  mcap?: McapRow[]
+  top_val?: StockRankRow[]
+  top_vol?: StockRankRow[]
+  top_freq?: StockRankRow[]
+  broker_vol?: BrokerRankRow[]
+  broker_val?: BrokerRankRow[]
+  broker_freq?: BrokerRankRow[]
+  sectors?: SectorRow[]
+  featured?: SectorRow[]
+  sharia?: SectorRow[]
+  board?: SectorRow[]
+  [key: string]: unknown
+}
+
+/** Cache di memori per-stem — pindah tanggal balik lagi tidak fetch ulang. */
+const cache = new Map<string, DataHarian>()
+
+/**
+ * Hook data harian dasbor. Port loadIndex()/loadDay() index_live.html baris
+ * 2390-2410 & 2664-2688 (tanpa bagian build*Panel — itu tanggung jawab tiap
+ * view). Dipakai bersama menu World/Stocks/Broker/Sector.
+ */
+export function useDataHarian() {
+  const [tanggalTersedia, setTanggalTersedia] = useState<TanggalIndex[]>([])
+  const [tanggalAktif, setTanggalAktif] = useState<string | null>(null)
+  const [hari, setHari] = useState<DataHarian | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const stemByIso = useRef(new Map<string, string>())
+
+  const pilihTanggal = useCallback((iso: string) => {
+    const stem = stemByIso.current.get(iso)
+    if (!stem) return
+    setTanggalAktif(iso)
+    setError(null)
+
+    const cached = cache.get(stem)
+    if (cached) {
+      setHari(cached)
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+    fetch(`/data/${stem}.json`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json() as Promise<DataHarian>
+      })
+      .then((data) => {
+        cache.set(stem, data)
+        setHari(data)
+      })
+      .catch((e: unknown) => {
+        setError(e instanceof Error ? e.message : 'Gagal memuat data')
+        setHari(null)
+      })
+      .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/data/index.json')
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json() as Promise<{ dates?: TanggalIndex[] }>
+      })
+      .then((j) => {
+        if (cancelled) return
+        const dates = j.dates ?? []
+        dates.forEach((d) => stemByIso.current.set(d.date_iso, d.stem))
+        setTanggalTersedia(dates)
+        if (dates.length > 0) {
+          pilihTanggal(dates[dates.length - 1].date_iso)
+        } else {
+          setLoading(false)
+        }
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return
+        setError(e instanceof Error ? e.message : 'Gagal memuat index')
+        setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [pilihTanggal])
+
+  return { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error }
+}

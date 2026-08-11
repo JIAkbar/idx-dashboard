@@ -240,9 +240,209 @@ body {
 }
 
 .admin-main {
-  max-width: 720px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 32px 20px;
+  padding: 28px 20px 60px;
   color: var(--ink2);
   line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.admin-cta {
+  align-self: flex-start;
+  background: var(--brand);
+  color: #fff;
+  text-decoration: none;
+  font-size: 9.5pt;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 5px;
+}
+
+.admin-cta:hover,
+.admin-cta:focus-visible {
+  background: var(--brand-deep);
+}
+
+.admin-section {
+  background: var(--paper);
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  padding: 20px 22px;
+}
+
+.admin-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.admin-section h3 {
+  margin: 0 0 4px;
+  font-size: 11.5pt;
+  color: var(--ink);
+}
+
+.admin-section .hint {
+  margin: 0 0 14px;
+  font-size: 9pt;
+  color: var(--mute);
+}
+
+.admin-empty {
+  color: var(--mute);
+  font-size: 9.5pt;
+  padding: 4px 0 2px;
+}
+
+/* Kotak masuk — kartu tanggal upload */
+
+.inbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.inbox-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid var(--hair);
+  border-radius: 6px;
+  padding: 12px 14px;
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--panel);
+}
+
+.inbox-card:hover,
+.inbox-card:focus-visible {
+  border-color: var(--brand);
+}
+
+.inbox-card .tgl {
+  font-size: 11pt;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.inbox-card .ket {
+  font-size: 8pt;
+  color: var(--bull);
+}
+
+/* Rak terbitan — tabel */
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10pt;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--hair);
+  font-size: 7.5pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.admin-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--hair);
+}
+
+.admin-table tbody tr:hover td {
+  background: var(--panel);
+}
+
+.admin-table a {
+  color: var(--brand);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.admin-table a:hover {
+  text-decoration: underline;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.status-pill.draf {
+  background: #fcefd9;
+  color: #8a5a00;
+}
+
+.status-pill.terbit {
+  background: #e1f3e9;
+  color: var(--bull);
+}
+
+/* Form unggah — sama gaya dengan login-card */
+
+.field-grid {
+  display: grid;
+  gap: 14px;
+  max-width: 380px;
+}
+
+.field-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 9.5pt;
+  color: var(--ink2);
+}
+
+.field-grid input {
+  padding: 9px 10px;
+  border: 1px solid var(--hair);
+  border-radius: 4px;
+  font-size: 10.5pt;
+  font-family: inherit;
+}
+
+.field-grid input:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+
+.field-grid button {
+  justify-self: start;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 5px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+  font-size: 10pt;
+  cursor: pointer;
+}
+
+.field-grid button:hover {
+  background: var(--brand-deep);
+}
+
+.field-grid button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.field-note {
+  font-size: 9pt;
+  color: var(--mute);
 }

@@ -1,26 +1,54 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
-import { Home } from './views/Home'
+import { DasborLayout } from './components/dasbor/DasborLayout'
+import { IndeksDunia } from './views/dasbor/IndeksDunia'
+import { TopStocks } from './views/dasbor/TopStocks'
+import { TopBroker } from './views/dasbor/TopBroker'
+import { SektorIndeks } from './views/dasbor/SektorIndeks'
+import { ChartIndeks } from './views/dasbor/ChartIndeks'
+import { BrokerSummary } from './views/dasbor/BrokerSummary'
+import { StockDetail } from './views/dasbor/StockDetail'
+import { PetaInvestor } from './views/dasbor/PetaInvestor'
+import { KalkulatorJia } from './views/dasbor/KalkulatorJia'
+import { Feedback } from './views/dasbor/Feedback'
 import { Login } from './views/Login'
 import { AdminHome } from './views/AdminHome'
 import { EdisiUjicoba } from './views/EdisiUjicoba'
+import { Unggah } from './views/Unggah'
+import { EdisiView } from './views/EdisiView'
 import './App.css'
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          {/* Publik — dasbor, tanpa login. Diisi 11 menu di Fase 5. */}
-          <Route path="/" element={<Home />} />
-          {/* Login hanya gerbang ke fitur upload/kelola edisi. */}
-          <Route path="/login" element={<Login />} />
-          <Route element={<ProtectedRoute />}>
-            <Route path="/admin" element={<AdminHome />} />
-            <Route path="/admin/edisi/ujicoba" element={<EdisiUjicoba />} />
-          </Route>
-        </Routes>
+        <ThemeProvider>
+          <Routes>
+            {/* Publik — dasbor, tanpa login. Index = Indeks Dunia (panel "active" default di index_live.html). */}
+            <Route element={<DasborLayout />}>
+              <Route path="/" element={<IndeksDunia />} />
+              <Route path="/stocks" element={<TopStocks />} />
+              <Route path="/broker" element={<TopBroker />} />
+              <Route path="/sector" element={<SektorIndeks />} />
+              <Route path="/chart" element={<ChartIndeks />} />
+              <Route path="/stock-detail" element={<StockDetail />} />
+              <Route path="/peta-investor" element={<PetaInvestor />} />
+              <Route path="/broker-summary" element={<BrokerSummary />} />
+              <Route path="/kalkulator" element={<KalkulatorJia />} />
+              <Route path="/feedback" element={<Feedback />} />
+            </Route>
+            {/* Login hanya gerbang ke fitur upload/kelola edisi. */}
+            <Route path="/login" element={<Login />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/admin" element={<AdminHome />} />
+              <Route path="/admin/upload" element={<Unggah />} />
+              <Route path="/admin/edisi/ujicoba" element={<EdisiUjicoba />} />
+              <Route path="/admin/edisi/:kode" element={<EdisiView />} />
+            </Route>
+          </Routes>
+        </ThemeProvider>
       </AuthProvider>
     </BrowserRouter>
   )
