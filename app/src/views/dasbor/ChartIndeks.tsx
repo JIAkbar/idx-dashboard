@@ -114,7 +114,7 @@ export function ChartIndeks() {
       <div className="panel" ref={chartPanelRef}>
         <div className="panel-h">
           <span className="lbl">📈 Chart Indeks IDX</span>
-          <button className="tab" onClick={() => penuh(chartPanelRef)} title="Layar penuh">⛶ Layar Penuh</button>
+          <button className="bchip" style={{ cursor: 'pointer' }} onClick={() => penuh(chartPanelRef)} title="Layar penuh">⛶ Layar Penuh</button>
         </div>
         <div className="panel-b">
           <div className="tabs" role="tablist" aria-label="Grup Indeks">
@@ -156,7 +156,7 @@ export function ChartIndeks() {
       <div className="panel" ref={heatPanelRef}>
         <div className="panel-h">
           <span className="lbl">🔥 Heatmap Saham IDX</span>
-          <button className="tab" onClick={() => penuh(heatPanelRef)} title="Layar penuh">⛶ Layar Penuh</button>
+          <button className="bchip" style={{ cursor: 'pointer' }} onClick={() => penuh(heatPanelRef)} title="Layar penuh">⛶ Layar Penuh</button>
         </div>
         <div className="panel-b">
           <div className="tv-section-inner" style={{ height: 400, borderRadius: 8, overflow: 'hidden' }}>
