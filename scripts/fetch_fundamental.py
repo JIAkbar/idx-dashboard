@@ -169,6 +169,34 @@ def sg(d, key):
     except Exception:
         return None
 
+def konversi_ke_idr(nilai, mata_uang, kurs_usd_idr):
+    """Samakan satuan angka laporan keuangan ke IDR.
+
+    AADI (dan emiten pelapor-USD lain) melaporkan keuangan dalam USD sementara
+    harganya IDR; membaginya mentah-mentah menghasilkan PB 20.683x. Sebelumnya
+    skrip hanya membaca `currency` (mata uang HARGA) dan tidak pernah membaca
+    `financialCurrency`.
+    """
+    if nilai is None:
+        return None
+    if mata_uang == "IDR":
+        return nilai
+    if not kurs_usd_idr:
+        return None
+    return nilai * kurs_usd_idr
+
+def get_latest_kurs():
+    """Kurs USD/IDR terbaru dari data/ds_*.json (snapshot harian IHSG)."""
+    data_dir = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data'))
+    try:
+        files = sorted(f for f in os.listdir(data_dir) if f.startswith('ds_') and f.endswith('.json'))
+        if not files:
+            return None
+        with open(os.path.join(data_dir, files[-1]), encoding='utf-8') as fj:
+            return json.load(fj).get('usd_idr')
+    except Exception:
+        return None
+
 def df_annual(df, row):
     """Annual DataFrame row → {year: float}."""
     out = {}
@@ -236,7 +264,11 @@ def price_perf(hist):
         if sub.empty: return None, None
         return round(float(sub["Low"].min()),0), round(float(sub["High"].max()),0)
 
-    ytd_start = pd.Timestamp(today_dt.year, 1, 2)
+    # tz= wajib: hist.index dari yfinance timezone-aware (Asia/Jakarta) — Timestamp naif
+    # vs index aware bikin TypeError di pandas modern ("Invalid comparison between
+    # dtype=datetime64[s, Asia/Jakarta] and Timestamp"), ditemukan lewat percobaan
+    # langsung ke Yahoo saat Task 9 (lihat laporan).
+    ytd_start = pd.Timestamp(today_dt.year, 1, 2, tz=today_dt.tz)
     ytd_sub = hist[hist.index >= ytd_start]
     ytd_price = float(ytd_sub["Close"].iloc[0]) if not ytd_sub.empty else None
 
@@ -268,6 +300,12 @@ def fetch_stock(ticker_code):
         if not name:
             return None
 
+        # Mata uang laporan keuangan vs mata uang harga (lihat konversi_ke_idr).
+        # AADI cs. melapor dalam USD sementara harganya IDR — tanpa ini, bv/rev_ps/
+        # cash_ps/fcf_ps mentah dari laporan USD dibagi harga IDR → PB 20.683x.
+        fin_cur = sg(info, "financialCurrency") or "IDR"
+        kurs = KURS_USD_IDR
+
         # ── Laporan keuangan ──────────────────────────────────────────────
         try: fin  = t.financials
         except: fin = None
@@ -286,7 +324,9 @@ def fetch_stock(ticker_code):
         try:
             hist = t.history(period="1y")
             pp   = price_perf(hist)
-        except Exception:
+        except Exception as e:
+            print(f"   ! {ticker_jk} price_perf gagal: {type(e).__name__}: {e}", flush=True)
+            gagal_price_perf.append(ticker_jk)
             hist, pp = None, {}
 
         # ── Quarterly helpers ─────────────────────────────────────────────
@@ -429,10 +469,14 @@ def fetch_stock(ticker_code):
         tl_eq_q     = (lq_tot_l/lq_eq) if (lq_tot_l and lq_eq and lq_eq!=0) else None
         td_ta_q     = (lq_debt/lq_assets) if (lq_debt and lq_assets and lq_assets!=0) else None
 
-        # Revenue per share TTM
-        rev_ps = (ttm_rev/shares) if (ttm_rev and shares) else None
-        cash_ps = (lq_cash/shares) if (lq_cash and shares) else None
-        fcf_ps  = (ttm_fcf/shares) if (ttm_fcf and shares) else None
+        # Revenue per share TTM — nilai laporan-keuangan, disamakan ke IDR
+        # (lihat konversi_ke_idr; no-op kalau fin_cur sudah IDR).
+        rev_ps  = konversi_ke_idr((ttm_rev/shares) if (ttm_rev and shares) else None, fin_cur, kurs)
+        cash_ps = konversi_ke_idr((lq_cash/shares) if (lq_cash and shares) else None, fin_cur, kurs)
+        fcf_ps  = konversi_ke_idr((ttm_fcf/shares) if (ttm_fcf and shares) else None, fin_cur, kurs)
+        ocf_ps  = konversi_ke_idr((ttm_ocf/shares) if (ttm_ocf and shares) else None, fin_cur, kurs)
+        bv      = konversi_ke_idr(sg(info,"bookValue"), fin_cur, kurs)
+        ebitda_idr = konversi_ke_idr(sg(info,"ebitda"), fin_cur, kurs)
 
         # Growth YoY (latest quarter vs same quarter prev year)
         def yoy_growth(qdict):
@@ -460,8 +504,20 @@ def fetch_stock(ticker_code):
         last_price = sg(info,"currentPrice") or sg(info,"regularMarketPrice")
         pe = sg(info,"trailingPE")
         earn_yield = (1/pe*100) if pe and pe!=0 else None
-        price_cf   = (last_price/(ttm_ocf/shares)) if (last_price and ttm_ocf and shares and ttm_ocf!=0) else None
-        price_fcf  = (last_price/(ttm_fcf/shares)) if (last_price and ttm_fcf and shares and ttm_fcf!=0) else None
+        # price_cf/price_fcf: last_price sudah IDR (harga), ocf_ps/fcf_ps sudah dikonversi
+        # ke IDR di atas — kalau sebelumnya dibagi mentah (USD), hasilnya lima digit palsu.
+        price_cf   = (last_price/ocf_ps) if (last_price and ocf_ps and ocf_ps!=0) else None
+        price_fcf  = (last_price/fcf_ps) if (last_price and fcf_ps and fcf_ps!=0) else None
+
+        # === RASIO VALUASI BERBASIS LAPORAN — dihitung ulang dari nilai yang sudah
+        # dikonversi ke IDR, BUKAN diambil mentah dari Yahoo (priceToBook dkk. Yahoo
+        # membagi harga IDR dengan nilai laporan USD mentah → PB/PS/EV lima digit). ===
+        pb_val = round(last_price/bv, 4) if (last_price and bv and bv!=0) else None
+        ps_val = round(last_price/rev_ps, 4) if (last_price and rev_ps and rev_ps!=0) else None
+        ev_val = sg(info,"enterpriseValue")  # sudah market-cap-based → IDR, tidak perlu konversi
+        ev_ebitda_val = round(ev_val/ebitda_idr, 2) if (ev_val and ebitda_idr and ebitda_idr!=0) else None
+        ttm_rev_idr = konversi_ke_idr(ttm_rev, fin_cur, kurs)
+        ev_revenue_val = round(ev_val/ttm_rev_idr, 2) if (ev_val and ttm_rev_idr and ttm_rev_idr!=0) else None
 
         # Free float %
         float_sh = sg(info,"floatShares")
@@ -524,23 +580,37 @@ def fetch_stock(ticker_code):
             "float_pct":        round(float_pct,2) if float_pct else None,
 
             # === CURRENT VALUATION ===
+            # pb/ps/ev_ebit/ev_ebitda/ev_revenue: dihitung ulang dari bv/rev_ps/ebitda
+            # yang sudah dikonversi ke IDR (lihat blok "RASIO VALUASI" di atas), BUKAN
+            # field priceToBook/priceToSalesTrailing12Months/enterpriseToEbitda/
+            # enterpriseToRevenue mentah dari Yahoo — field itu tetap membagi harga IDR
+            # dengan nilai laporan USD mentah untuk emiten pelapor-USD (akar temuan C).
             "pe":           pe,
             "pe_annualised":sg(info,"trailingPE"),    # same as pe, yfinance annualised
             "forward_pe":   sg(info,"forwardPE"),
             "earn_yield":   round(earn_yield,2) if earn_yield else None,
-            "pb":           sg(info,"priceToBook"),
-            "ps":           sg(info,"priceToSalesTrailing12Months"),
+            "pb":           pb_val,
+            "ps":           ps_val,
             "price_cf":     round(price_cf,2) if price_cf else None,
             "price_fcf":    round(price_fcf,2) if price_fcf else None,
-            "ev_ebit":      sg(info,"enterpriseToEbitda"),   # closest available
-            "ev_ebitda":    sg(info,"enterpriseToEbitda"),
-            "ev_revenue":   sg(info,"enterpriseToRevenue"),
+            "ev_ebit":      ev_ebitda_val,   # closest available (belum ada basis EBIT terpisah)
+            "ev_ebitda":    ev_ebitda_val,
+            "ev_revenue":   ev_revenue_val,
             "peg":          sg(info,"pegRatio"),
 
             # === PER SHARE ===
+            # eps/eps_fwd SENGAJA tidak melalui konversi_ke_idr: berbeda dari bookValue,
+            # trailingEps/forwardEps Yahoo untuk emiten pelapor-USD di IDX secara empiris
+            # SUDAH senilai IDR (dicek lintas >90 saham USD-reporter di data/fundamental/
+            # — rasio eps/hist_eps_lokal(USD) konsisten ~16.000-20.000, persis kisaran kurs
+            # USD/IDR asli di data/ds_*.json). Mengalikan lagi dengan kurs akan melipat-
+            # gandakan nilai yang sudah benar (bug baru arah sebaliknya). forwardEps kadang
+            # (minoritas ticker: HEXA, ARCI, BUMI, EMAS, RAJA, RATU) masih mentah-USD
+            # (forward_pe lima digit) — belum ada cara andal membedakan per-ticker tanpa
+            # verifikasi langsung, jadi TIDAK disentuh di task ini (lihat laporan Task 9).
             "eps":          sg(info,"trailingEps"),
             "eps_fwd":      sg(info,"forwardEps"),
-            "bv":           sg(info,"bookValue"),
+            "bv":           round(bv,4) if bv else None,
             "rev_ps":       round(rev_ps,2) if rev_ps else None,
             "cash_ps":      round(cash_ps,2) if cash_ps else None,
             "fcf_ps":       round(fcf_ps,2) if fcf_ps else None,
@@ -665,16 +735,27 @@ OUT_DIR  = ""
 tickers  = []
 results  = []
 ok = fail = 0
+KURS_USD_IDR = None      # diisi main() dari data/ds_*.json, dibaca fetch_stock()
+gagal_price_perf = []    # ticker.JK yang gagal price_perf — dipakai gerbang di akhir main()
 
 # ─── Main execution ────────────────────────────────────────────────────────────
 def main():
-    global OUT_DIR, tickers, results, ok, fail
+    global OUT_DIR, tickers, results, ok, fail, KURS_USD_IDR, gagal_price_perf
     import statistics
 
     # ── Resolve output directory ──────────────────────────────────────────────
     script_dir = os.path.dirname(os.path.abspath(__file__))
     OUT_DIR = os.path.normpath(os.path.join(script_dir, '..', 'data', 'fundamental'))
     os.makedirs(OUT_DIR, exist_ok=True)
+
+    # ── Kurs USD/IDR untuk konversi laporan-keuangan pelapor-USD (lihat konversi_ke_idr) ──
+    KURS_USD_IDR = get_latest_kurs()
+    gagal_price_perf = []
+    if KURS_USD_IDR:
+        print(f"   Kurs USD/IDR: {KURS_USD_IDR} (dari data/ds_*.json terbaru)")
+    else:
+        print("   ⚠ Kurs USD/IDR tidak ditemukan — emiten pelapor-USD (financialCurrency=USD) "
+              "akan punya bv/rev_ps/cash_ps/fcf_ps/pb/ps kosong (None), bukan salah.")
 
     # ── Determine tickers from sys.argv ───────────────────────────────────────
     args = sys.argv[1:]
@@ -788,6 +869,13 @@ def main():
         }, fw, ensure_ascii=False, separators=(",", ":"))
     print(f"  index.json → {len(results)} saham")
     print("\n🎉 Semua selesai!")
+
+    # ── Gerbang kegagalan price_perf — jangan biarkan galat senyap lagi ────────
+    rasio = len(gagal_price_perf) / max(len(tickers), 1)
+    print(f"price_perf gagal: {len(gagal_price_perf)}/{len(tickers)} ({rasio:.1%})")
+    if rasio > 0.05:
+        print("GAGAL: lebih dari 5% saham tidak mendapat price_perf.")
+        sys.exit(1)
 
 
 if __name__ == '__main__':
