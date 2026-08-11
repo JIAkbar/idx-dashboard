@@ -21,46 +21,52 @@ export function KolomValuasi({ fd }: { fd: StockFundamental }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div className="card">
-        <p className="ct b" style={{ marginBottom: 7 }}>Current Valuation</p>
-        <table>
-          <tbody>
-            {TR('P/E (Trailing)', fvx(fd.pe))}
-            {TR('P/E (Forward)', fvx(fd.forward_pe))}
-            {TR('P/B', fvx(fd.pb))}
-            {TR('P/S (TTM)', fvx(fd.ps))}
-            {TR('EV/EBITDA (TTM)', fvx(fd.ev_ebitda))}
-            {TR('Earnings Yield', earningsYield)}
-          </tbody>
-        </table>
+      <div className="panel">
+        <div className="panel-h"><span className="lbl">Current Valuation</span></div>
+        <div className="panel-b">
+          <table>
+            <tbody>
+              {TR('P/E (Trailing)', fvx(fd.pe))}
+              {TR('P/E (Forward)', fvx(fd.forward_pe))}
+              {TR('P/B', fvx(fd.pb))}
+              {TR('P/S (TTM)', fvx(fd.ps))}
+              {TR('EV/EBITDA (TTM)', fvx(fd.ev_ebitda))}
+              {TR('Earnings Yield', earningsYield)}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div className="card">
-        <p className="ct b" style={{ marginBottom: 7 }}>Per Share</p>
-        <table>
-          <tbody>
-            {TR('EPS (TTM)', fd.eps ? 'Rp ' + fv(fd.eps) : '—')}
-            {TR('Book Value', fd.bv ? 'Rp ' + fv(fd.bv) : '—')}
-            {TR('Revenue/Share', fd.rev_ps ? 'Rp ' + fv(fd.rev_ps) : '—')}
-            {TR('Cash/Share', fd.cash_ps ? 'Rp ' + fv(fd.cash_ps) : '—')}
-            {TR('FCF/Share', fd.fcf_ps ? 'Rp ' + fv(fd.fcf_ps) : '—')}
-            {TR('Dividen/Share', fd.dividend ? 'Rp ' + fv(fd.dividend) : '—')}
-          </tbody>
-        </table>
+      <div className="panel">
+        <div className="panel-h"><span className="lbl">Per Share</span></div>
+        <div className="panel-b">
+          <table>
+            <tbody>
+              {TR('EPS (TTM)', fd.eps ? 'Rp ' + fv(fd.eps) : '—')}
+              {TR('Book Value', fd.bv ? 'Rp ' + fv(fd.bv) : '—')}
+              {TR('Revenue/Share', fd.rev_ps ? 'Rp ' + fv(fd.rev_ps) : '—')}
+              {TR('Cash/Share', fd.cash_ps ? 'Rp ' + fv(fd.cash_ps) : '—')}
+              {TR('FCF/Share', fd.fcf_ps ? 'Rp ' + fv(fd.fcf_ps) : '—')}
+              {TR('Dividen/Share', fd.dividend ? 'Rp ' + fv(fd.dividend) : '—')}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div className="card">
-        <p className="ct b" style={{ marginBottom: 7 }}>Solvency</p>
-        <table>
-          <tbody>
-            {TR('Current Ratio', fvx(fd.current_ratio))}
-            {TR('Quick Ratio', fvx(fd.quick_ratio))}
-            {TR('DER (Q)', fvx(fd.der_q ?? fd.der))}
-            {TR('LT DER (Q)', fvx(fd.lt_der_q))}
-            {TR('TL/Equity (Q)', fvx(fd.tl_eq_q))}
-            {TR('TD/TA (Q)', fvx(fd.td_ta_q))}
-          </tbody>
-        </table>
+      <div className="panel">
+        <div className="panel-h"><span className="lbl">Solvency</span></div>
+        <div className="panel-b">
+          <table>
+            <tbody>
+              {TR('Current Ratio', fvx(fd.current_ratio))}
+              {TR('Quick Ratio', fvx(fd.quick_ratio))}
+              {TR('DER (Q)', fvx(fd.der_q ?? fd.der))}
+              {TR('LT DER (Q)', fvx(fd.lt_der_q))}
+              {TR('TL/Equity (Q)', fvx(fd.tl_eq_q))}
+              {TR('TD/TA (Q)', fvx(fd.td_ta_q))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )

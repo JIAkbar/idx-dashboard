@@ -51,7 +51,7 @@ export function StockAutocomplete({ stocks, value, onChange, onSelect }: StockAu
   return (
     <div className="fd-ac-wrap">
       <input
-        className="fd-search-input"
+        className="inp"
         type="text"
         placeholder="Kode saham: BBCA, ASII, TLKM ..."
         autoComplete="off"

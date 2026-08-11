@@ -147,75 +147,87 @@ export function KolomKuartalan({ fd }: { fd: StockFundamental }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div className="card" style={{ padding: 10 }}>
-        <div className="fd-tabs">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className={`fd-tab-btn${mode === t.id ? ' active' : ''}`}
-              onClick={() => setMode(t.id)}
-            >
-              {t.label}
-            </button>
-          ))}
+      <div className="panel">
+        <div className="panel-h">
+          <div className="fd-tabs">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className={`fd-tab-btn${mode === t.id ? ' active' : ''}`}
+                onClick={() => setMode(t.id)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
-        <QuarterlyTable fd={fd} mode={mode} />
+        <div className="panel-b">
+          <QuarterlyTable fd={fd} mode={mode} />
+        </div>
       </div>
 
-      <div className="card">
-        <p className="ct b" style={{ marginBottom: 7 }}>Profitabilitas</p>
-        <table>
-          <tbody>
-            {TR('Gross Profit Margin', <FdPercent v={fd.gpm != null ? fd.gpm * 100 : null} />)}
-            {TR('Operating Margin', <FdPercent v={fd.opm != null ? fd.opm * 100 : null} />)}
-            {TR('Net Profit Margin', <FdPercent v={fd.npm != null ? fd.npm * 100 : null} />)}
-            {TR('ROE (TTM)', <FdPercent v={fd.roe != null ? fd.roe * 100 : null} />)}
-            {TR('ROA (TTM)', <FdPercent v={fd.roa != null ? fd.roa * 100 : null} />)}
-          </tbody>
-        </table>
+      <div className="panel">
+        <div className="panel-h"><span className="lbl">Profitabilitas</span></div>
+        <div className="panel-b">
+          <table>
+            <tbody>
+              {TR('Gross Profit Margin', <FdPercent v={fd.gpm != null ? fd.gpm * 100 : null} />)}
+              {TR('Operating Margin', <FdPercent v={fd.opm != null ? fd.opm * 100 : null} />)}
+              {TR('Net Profit Margin', <FdPercent v={fd.npm != null ? fd.npm * 100 : null} />)}
+              {TR('ROE (TTM)', <FdPercent v={fd.roe != null ? fd.roe * 100 : null} />)}
+              {TR('ROA (TTM)', <FdPercent v={fd.roa != null ? fd.roa * 100 : null} />)}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div className="card">
-        <p className="ct b" style={{ marginBottom: 7 }}>Growth (YoY)</p>
-        <table>
-          <tbody>
-            {TR('Revenue YoY', <FdPercent v={fd.rev_yoy} />)}
-            {TR('Gross Profit YoY', <FdPercent v={fd.gp_yoy} />)}
-            {TR('Net Income YoY', <FdPercent v={fd.ni_yoy} />)}
-          </tbody>
-        </table>
+      <div className="panel">
+        <div className="panel-h"><span className="lbl">Growth (YoY)</span></div>
+        <div className="panel-b">
+          <table>
+            <tbody>
+              {TR('Revenue YoY', <FdPercent v={fd.rev_yoy} />)}
+              {TR('Gross Profit YoY', <FdPercent v={fd.gp_yoy} />)}
+              {TR('Net Income YoY', <FdPercent v={fd.ni_yoy} />)}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div className="card">
-        <p className="ct b" style={{ marginBottom: 7 }}>Dividen</p>
-        <table>
-          <tbody>
-            {TR('Dividen/Saham', fd.dividend ? 'Rp ' + Number(fd.dividend).toLocaleString('id-ID', { maximumFractionDigits: 0 }) : '—')}
-            {TR('Payout Ratio', <FdPercent v={fd.payout_ratio != null ? fd.payout_ratio * 100 : null} d={1} />)}
-            {TR('Div Yield', <FdPercent v={fd.dividend_yield} />)}
-            {TR('Ex-Date', fd.ex_dividend_date || '—')}
-          </tbody>
-        </table>
+      <div className="panel">
+        <div className="panel-h"><span className="lbl">Dividen</span></div>
+        <div className="panel-b">
+          <table>
+            <tbody>
+              {TR('Dividen/Saham', fd.dividend ? 'Rp ' + Number(fd.dividend).toLocaleString('id-ID', { maximumFractionDigits: 0 }) : '—')}
+              {TR('Payout Ratio', <FdPercent v={fd.payout_ratio != null ? fd.payout_ratio * 100 : null} d={1} />)}
+              {TR('Div Yield', <FdPercent v={fd.dividend_yield} />)}
+              {TR('Ex-Date', fd.ex_dividend_date || '—')}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {divHistRows.length > 0 && (
-        <div className="card">
-          <p className="ct b" style={{ marginBottom: 7 }}>Riwayat Dividen</p>
-          <table>
-            <thead>
-              <tr><th>Tahun</th><th className="r">Dividen</th><th className="r">Ex-Date</th></tr>
-            </thead>
-            <tbody>
-              {divHistRows.map((d, i) => (
-                <tr key={`${d.year}-${d.ex_date}-${i}`}>
-                  <td className="muted">{d.year}</td>
-                  <td className="r">Rp {Number(d.amount).toLocaleString('id-ID', { maximumFractionDigits: 0 })}</td>
-                  <td className="r muted">{d.ex_date}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="panel">
+          <div className="panel-h"><span className="lbl">Riwayat Dividen</span></div>
+          <div className="panel-b">
+            <table>
+              <thead>
+                <tr><th>Tahun</th><th className="r">Dividen</th><th className="r">Ex-Date</th></tr>
+              </thead>
+              <tbody>
+                {divHistRows.map((d, i) => (
+                  <tr key={`${d.year}-${d.ex_date}-${i}`}>
+                    <td className="muted">{d.year}</td>
+                    <td className="r">Rp {Number(d.amount).toLocaleString('id-ID', { maximumFractionDigits: 0 })}</td>
+                    <td className="r muted">{d.ex_date}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
