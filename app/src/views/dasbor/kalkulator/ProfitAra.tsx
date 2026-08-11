@@ -16,11 +16,13 @@ function araRate(p: number): number {
 interface ProfitAraProps {
   feeBeli: number
   feeJual: number
+  setFeeBeli: (v: number) => void
+  setFeeJual: (v: number) => void
 }
 
 /** Port panel "Profit & ARA/ARB" — markup index_live.html baris 1308-1387,
  *  objek PROFIT baris 3167-3239. */
-export function ProfitAra({ feeBeli, feeJual }: ProfitAraProps) {
+export function ProfitAra({ feeBeli, feeJual, setFeeBeli, setFeeJual }: ProfitAraProps) {
   const [posKode, setPosKode] = useState('')
   const [posLots, setPosLots] = useState('')
   const [posAvg, setPosAvg] = useState('')
@@ -80,113 +82,152 @@ export function ProfitAra({ feeBeli, feeJual }: ProfitAraProps) {
   }, [buyN])
 
   return (
-    <div className="adc-wrap">
-      <div className="card adc-section">
-        <div className="ct b">💰 Profit Calculator</div>
-        <PosisiBar kode={posKode} onKode={setPosKode} lots={posLots} onLots={setPosLots} avg={posAvg} onAvg={setPosAvg} onFill={handleFill} />
-        <div className="pc-grid2">
-          <div className="adc-field">
-            <label>Buy Price (IDR/saham)</label>
-            <input className="adc-input" type="number" placeholder="0" min={0} value={buy} onChange={(e) => setBuy(e.target.value)} />
+    <div className="grid2 w-kiri">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div className="panel">
+          <div className="panel-h" style={{ flexWrap: 'wrap', rowGap: 6 }}>
+            <span className="lbl">💰 Profit Calculator</span>
+            <div
+              style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}
+              title="Default: Beli 0.15% / Jual 0.25% (standard IDX/Stockbit)"
+            >
+              <span className="lbl" style={{ textTransform: 'none', letterSpacing: 0 }}>Fee Beli</span>
+              <input
+                className="inp"
+                style={{ width: 72 }}
+                type="number"
+                min={0}
+                max={5}
+                step={0.01}
+                value={feeBeli}
+                onChange={(e) => setFeeBeli(parseFloat(e.target.value) || 0)}
+              />
+              <span className="lbl" style={{ textTransform: 'none', letterSpacing: 0 }}>Fee Jual</span>
+              <input
+                className="inp"
+                style={{ width: 72 }}
+                type="number"
+                min={0}
+                max={5}
+                step={0.01}
+                value={feeJual}
+                onChange={(e) => setFeeJual(parseFloat(e.target.value) || 0)}
+              />
+            </div>
           </div>
-          <div className="adc-field">
-            <label>Sell Target (IDR/saham)</label>
-            <input className="adc-input" type="number" placeholder="0" min={0} value={sell} onChange={(e) => setSell(e.target.value)} />
-            <div style={{ display: 'flex', gap: 5, marginTop: 4 }}>
-              <button className={`rr-preset${araArbMode === 'ara' ? ' active' : ''}`} style={{ flex: 1, fontSize: 10 }} onClick={() => handleSetMode('ara')}>
-                ARA ▲
-              </button>
-              <button className={`rr-preset${araArbMode === 'arb' ? ' active' : ''}`} style={{ flex: 1, fontSize: 10 }} onClick={() => handleSetMode('arb')}>
-                ARB ▼
-              </button>
+          <div className="panel-b">
+            <PosisiBar kode={posKode} onKode={setPosKode} lots={posLots} onLots={setPosLots} avg={posAvg} onAvg={setPosAvg} onFill={handleFill} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 10 }}>
+              <div className="field">
+                <span className="lbl">Buy Price (IDR/saham)</span>
+                <input className="inp" type="number" placeholder="0" min={0} value={buy} onChange={(e) => setBuy(e.target.value)} />
+              </div>
+              <div className="field">
+                <span className="lbl">Sell Target (IDR/saham)</span>
+                <input className="inp" type="number" placeholder="0" min={0} value={sell} onChange={(e) => setSell(e.target.value)} />
+                <div style={{ display: 'flex', gap: 5, marginTop: 4 }}>
+                  <button className={'tab' + (araArbMode === 'ara' ? ' on' : '')} style={{ flex: 1 }} onClick={() => handleSetMode('ara')}>
+                    ARA ▲
+                  </button>
+                  <button className={'tab' + (araArbMode === 'arb' ? ' on' : '')} style={{ flex: 1 }} onClick={() => handleSetMode('arb')}>
+                    ARB ▼
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="field" style={{ marginTop: 10 }}>
+              <span className="lbl">Lots (1 lot = 100 saham)</span>
+              <input className="inp" type="number" placeholder="0" min={0} step={1} value={lots} onChange={(e) => setLots(e.target.value)} />
             </div>
           </div>
         </div>
-        <div className="adc-field" style={{ marginBottom: 10 }}>
-          <label>Lots (1 lot = 100 saham)</label>
-          <input className="adc-input" type="number" placeholder="0" min={0} step={1} value={lots} onChange={(e) => setLots(e.target.value)} />
-        </div>
-        {profit && (
-          <div className="pc-res">
-            <div className="pc-ri hl">
-              <div className="pc-rl">Net Profit</div>
-              <div className="pc-rv" style={{ color: profit.netProfit >= 0 ? 'var(--cal-up)' : 'var(--cal-dn)' }}>
-                Rp {fN(profit.netProfit, 0)}
-              </div>
-              <div className="pc-rs">IDR</div>
-            </div>
-            <div className="pc-ri hl">
-              <div className="pc-rl">Return</div>
-              <div className="pc-rv" style={{ color: profit.ret >= 0 ? 'var(--cal-up)' : 'var(--cal-dn)' }}>
-                {(profit.ret >= 0 ? '+' : '') + profit.ret.toFixed(2)}%
-              </div>
-              <div className="pc-rs">setelah fee</div>
-            </div>
-            <div className="pc-ri">
-              <div className="pc-rl">Total Modal</div>
-              <div className="pc-rv">Rp {fN(profit.capital, 0)}</div>
-              <div className="pc-rs">IDR (incl. fee beli)</div>
-            </div>
-            <div className="pc-ri">
-              <div className="pc-rl">Total Nilai Jual</div>
-              <div className="pc-rv">Rp {fN(profit.revenue, 0)}</div>
-              <div className="pc-rs">IDR (setelah fee jual)</div>
-            </div>
-            <div className="pc-ri" style={{ gridColumn: '1/-1' }}>
-              <div className="pc-rl">Total Fee & Pajak</div>
-              <div className="pc-rv" style={{ fontSize: 13, color: 'var(--cal-dn)' }}>
-                -Rp {fN(profit.fee, 0)}
-              </div>
+
+        <div className="panel">
+          <div className="panel-h">
+            <span className="lbl">📈 Proyeksi ARA / ARB</span>
+            <span className="num" style={{ fontSize: 10, color: 'var(--text3)' }}>
+              ARB = 15% (uniform, April 2025)
+            </span>
+          </div>
+          <div className="panel-b">
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left' }}>Hari</th>
+                  <th className="r">ARA (Limit Atas)</th>
+                  <th className="r">ARB (Limit Bawah)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {araTable ? (
+                  araTable.rows.map((row) => (
+                    <tr key={row.day}>
+                      <td>
+                        {row.day} <span style={{ color: 'var(--text3)' }}>T+{row.day}</span>
+                      </td>
+                      <td className="r num up">
+                        {row.ap.toLocaleString('id-ID')}
+                        <br />
+                        <span style={{ fontSize: 10 }}>+{araTable.ara}%</span>
+                      </td>
+                      <td className="r num dn">
+                        {row.bp.toLocaleString('id-ID')}
+                        <br />
+                        <span style={{ fontSize: 10 }}>-{araTable.arb}%</span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={3} style={{ color: 'var(--text3)', textAlign: 'center', padding: 14 }}>
+                      Isi Buy Price untuk melihat proyeksi
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+            <div className="v-note" style={{ marginTop: 8 }}>
+              ARA: ≤Rp200 = +35% · Rp200–5000 = +25% · &gt;Rp5000 = +20%
             </div>
           </div>
-        )}
+        </div>
       </div>
 
-      <div className="card adc-section">
-        <div className="ct b">
-          📈 Proyeksi ARA / ARB
-          <span style={{ fontSize: 9, fontWeight: 400, color: 'var(--text3)', marginLeft: 6 }}>
-            Berdasarkan harga beli · ARB = 15% (uniform, April 2025)
-          </span>
-        </div>
-        <table className="ara-tbl">
-          <thead>
-            <tr>
-              <th style={{ textAlign: 'left' }}>Hari</th>
-              <th>ARA (Limit Atas)</th>
-              <th>ARB (Limit Bawah)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {araTable ? (
-              araTable.rows.map((row) => (
-                <tr key={row.day}>
-                  <td>
-                    {row.day} <span style={{ color: 'var(--text3)' }}>T+{row.day}</span>
-                  </td>
-                  <td>
-                    <span className="c-up">{row.ap.toLocaleString('id-ID')}</span>
-                    <br />
-                    <span className="pct-sm">+{araTable.ara}%</span>
-                  </td>
-                  <td>
-                    <span className="c-dn">{row.bp.toLocaleString('id-ID')}</span>
-                    <br />
-                    <span className="pct-sm">-{araTable.arb}%</span>
-                  </td>
-                </tr>
-              ))
+      {/* Hasil — menempel, terlihat langsung saat isian kiri berubah */}
+      <div style={{ position: 'sticky', top: 60, alignSelf: 'start' }}>
+        <div className="panel">
+          <div className="panel-h"><span className="lbl">Hasil</span></div>
+          <div className="panel-b">
+            {profit ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div>
+                  <span className="lbl">Net Profit</span>
+                  <div className="num" style={{ fontSize: 26, fontWeight: 600, color: profit.netProfit >= 0 ? 'var(--green)' : 'var(--red)' }}>
+                    Rp {fN(profit.netProfit, 0)}
+                  </div>
+                  <div className="v-note">
+                    Return {(profit.ret >= 0 ? '+' : '') + profit.ret.toFixed(2)}% setelah fee
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+                  <div className="bm">
+                    <span className="lbl">Total Modal</span>
+                    <span className="num">Rp {fN(profit.capital, 0)}</span>
+                  </div>
+                  <div className="bm">
+                    <span className="lbl">Total Nilai Jual</span>
+                    <span className="num">Rp {fN(profit.revenue, 0)}</span>
+                  </div>
+                  <div className="bm">
+                    <span className="lbl">Total Fee & Pajak</span>
+                    <span className="num dn">-Rp {fN(profit.fee, 0)}</span>
+                  </div>
+                </div>
+              </div>
             ) : (
-              <tr>
-                <td colSpan={3} style={{ color: 'var(--text3)', textAlign: 'center', padding: 14 }}>
-                  Isi Buy Price untuk melihat proyeksi
-                </td>
-              </tr>
+              <div className="v-note">Isi Buy Price, Sell Target, dan Lots untuk melihat hasil</div>
             )}
-          </tbody>
-        </table>
-        <div className="adc-disclaimer" style={{ marginTop: 8 }}>
-          ARA: ≤Rp200 = +35% · Rp200–5000 = +25% · &gt;Rp5000 = +20% &nbsp;|&nbsp; ARB: 15% untuk semua harga
+          </div>
         </div>
       </div>
     </div>
