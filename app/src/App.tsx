@@ -15,6 +15,7 @@ import { KalkulatorJia } from './views/dasbor/KalkulatorJia'
 import { Feedback } from './views/dasbor/Feedback'
 import { Login } from './views/Login'
 import { AdminHome } from './views/AdminHome'
+import { ChangelogAdmin } from './views/admin/ChangelogAdmin'
 import { EdisiUjicoba } from './views/EdisiUjicoba'
 import { Unggah } from './views/Unggah'
 import { EdisiView } from './views/EdisiView'
@@ -43,6 +44,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route element={<ProtectedRoute />}>
               <Route path="/admin" element={<AdminHome />} />
+              <Route path="/admin/changelog" element={<ChangelogAdmin />} />
               <Route path="/admin/upload" element={<Unggah />} />
               <Route path="/admin/edisi/ujicoba" element={<EdisiUjicoba />} />
               <Route path="/admin/edisi/:kode" element={<EdisiView />} />

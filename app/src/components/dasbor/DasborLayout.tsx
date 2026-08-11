@@ -3,7 +3,6 @@ import { Sidebar } from './Sidebar'
 import { MobileNav } from './MobileNav'
 import { PitaKurs } from './PitaKurs'
 import { useTheme } from '../../context/ThemeContext'
-import '../../dasbor/dasbor.css'
 import '../../dasbor/lantai.css'
 
 /**

@@ -33,4 +33,7 @@ function serveRepoData(): Plugin {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), serveRepoData()],
+  // ChangelogAdmin.tsx imports docs/CHANGELOG.md (?raw) dari luar akar app/ —
+  // izinkan Vite dev server melayani berkas di luar root proyek (Task 13).
+  server: { fs: { allow: ['..', '../..'] } },
 })

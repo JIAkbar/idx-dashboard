@@ -4,6 +4,13 @@ Catatan riwayat versi dasbor lama (`index_live.html`), dipindah dari halaman UI 
 per keputusan 2026-08-10: changelog cukup jadi catatan lokal, tidak perlu jadi menu di
 dasbor React yang baru.
 
+## v5.0 — 11 Agustus 2026 — Redesign "Lantai Bursa" selesai + Changelog admin
+- Dasbor publik (10 menu) & shell (rail, pita kurs, kaki, bilah+laci mobile) sepenuhnya
+  memakai token & primitif "Lantai Bursa" (ink-navy + amber); `dasbor.css` lama dihapus,
+  isinya yang masih dipakai dipindah ke `lantai.css`
+- Changelog kembali sebagai halaman (bukan popup) — dibaca langsung dari berkas ini, tapi
+  dikunci di `/admin/changelog`, bukan menu publik (rail publik tetap 10 menu)
+
 ## v4.9 — 7 Jun 2026 — Broker Summary — UI Refresh
 - Tampilan Broker Summary diperbarui: tabs Inventory, Kuadran, NEGO, Flow
 - Date picker baru bergaya kalender dengan preset 1D, 1W, 1M
