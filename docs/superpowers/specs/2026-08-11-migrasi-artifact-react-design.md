@@ -21,9 +21,9 @@ Berkas ini **wajib disalin byte-per-byte** untuk lapisan token dan primitif
 (`kemampuan-workflow.md` §169). Dilarang "menulis ulang dari pemahaman mockup".
 Karena berkasnya ada secara lokal, tidak ada alasan untuk mengarang ulang.
 
-**Salin berkas sumber ke repo** (`docs/design/lantai-bursa-reimagined.html`) pada commit
-fondasi, supaya sesi berikutnya tidak bergantung pada folder sementara yang bisa dibersihkan
-sistem.
+Berkas sumber **sudah diarsipkan ke repo** di `docs/design-lantai-bursa-reimagined.html`
+(commit `c8930f2`), supaya sesi berikutnya tidak bergantung pada folder sementara yang bisa
+dibersihkan sistem. Rujuk arsip itu, bukan folder sementara.
 
 ### Aturan beku (ditetapkan user, 11 Agustus 2026)
 
@@ -47,7 +47,7 @@ bukan tata letak penuh. Hanya `view-ind` (129 baris) yang lengkap. Karena itu:
 app/src/dasbor/lantai.css   ← BARU. Isi baris 4–341 artifact, disalin verbatim.
                                Seluruh aturan (kecuali blok :root) dibungkus .lantai { … }
 app/src/dasbor/dasbor.css   ← tetap hidup, dihapus pada commit terakhir
-docs/design/lantai-bursa-reimagined.html ← arsip sumber
+docs/design-lantai-bursa-reimagined.html ← arsip sumber (commit c8930f2)
 ```
 
 Alasan pembungkus: `dasbor.css` dan CSS artifact punya **13 nama class bentrok** —
