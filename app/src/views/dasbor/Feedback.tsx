@@ -12,10 +12,10 @@ const WA_HREF =
 
 export function Feedback() {
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto' }}>
-      <div className="card" style={{ padding: '28px 24px', textAlign: 'center' }}>
+    <div className="lantai" style={{ maxWidth: 560, margin: '0 auto' }}>
+      <div className="panel panel-b" style={{ padding: '28px 24px', textAlign: 'center' }}>
         <div style={{ fontSize: 48, marginBottom: 12 }}>💬</div>
-        <div className="ct b" style={{ fontSize: 18, marginBottom: 6 }}>Kritik & Saran</div>
+        <div className="lbl" style={{ fontSize: 18, marginBottom: 6 }}>Kritik & Saran</div>
         <p style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 24, lineHeight: 1.7 }}>
           Kami terbuka untuk masukan dari Anda! Sampaikan kritik, saran, atau permintaan seputar
           dashboard ini langsung via WhatsApp.
@@ -39,6 +39,7 @@ export function Feedback() {
           href={WA_HREF}
           target="_blank"
           rel="noopener"
+          className="btn-p"
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 10,
             background: '#25D366', color: '#fff', textDecoration: 'none',
