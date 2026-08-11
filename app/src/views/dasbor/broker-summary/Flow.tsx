@@ -13,6 +13,9 @@ import { BS_DATA } from '../../../lib/dasbor/brokerSummaryData'
  * Tipe hook `useChartCanvas<TType>` cuma menerima satu ChartType — untuk
  * chart campuran, config diketik `ChartConfiguration<'bar' | 'line', ...>`
  * (union tipe, bukan `any`); tiap dataset menyatakan `type` sendiri.
+ *
+ * Gaya Lantai Bursa (Task 10): chrome kartu (panel/panel-h) dipegang parent
+ * BrokerSummary.tsx, komponen ini cuma judul `.lbl` + chart + catatan kaki.
  */
 export function Flow() {
   const { theme } = useTheme()
@@ -56,12 +59,12 @@ export function Flow() {
   const canvasRef = useChartCanvas(config)
 
   return (
-    <div className="bs-chart-card">
-      <div className="bs-chart-title">🌊 Foreign Flow Agregat — Buy / Sell / Net (lot, semua saham)</div>
+    <>
+      <div className="lbl" style={{ marginBottom: 8 }}>🌊 Foreign Flow Agregat — Buy / Sell / Net (lot, semua saham)</div>
       <div className="chart-wrap" style={{ height: 260 }}>
         <canvas ref={canvasRef} />
       </div>
-      <div className="bs-chart-sub" style={{ marginTop: 8 }}>* Dihitung dari agregat Foreign Buy/Sell seluruh emiten IDX per tanggal</div>
-    </div>
+      <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text3)' }}>* Dihitung dari agregat Foreign Buy/Sell seluruh emiten IDX per tanggal</div>
+    </>
   )
 }
