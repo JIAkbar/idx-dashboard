@@ -8,6 +8,7 @@ import { KolomValuasi } from './stock-detail/KolomValuasi'
 import { KolomKuartalan } from './stock-detail/KolomKuartalan'
 import { KolomLaporan } from './stock-detail/KolomLaporan'
 import { PanelValuasiInteraktif } from './stock-detail/PanelValuasiInteraktif'
+import { IkonMenu, IKON_CARI, IKON_PAPAN_KLIP, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 
 type Tab = 'statistik' | 'valuasi'
 
@@ -41,14 +42,14 @@ export function StockDetail() {
       <div>
         <div className="fd-search-wrap" style={{ maxWidth: 480, marginBottom: 6 }}>
           <StockAutocomplete stocks={index?.stocks ?? []} value={inputVal} onChange={setInputVal} onSelect={handleSubmit} />
-          <button type="button" className="btn-p" onClick={() => handleSubmit(inputVal)}>🔍 Tampilkan</button>
+          <button type="button" className="btn-p" onClick={() => handleSubmit(inputVal)}><IkonMenu d={IKON_CARI} size={13} /> Tampilkan</button>
         </div>
         <p style={{ fontSize: 10, color: 'var(--text3)', lineHeight: 1.6 }}>Data delay. Harga tidak real-time.</p>
       </div>
 
       {!activeTicker && (
         <div className="fd-empty">
-          <p style={{ fontSize: 32, marginBottom: 8 }}>📋</p>
+          <p style={{ marginBottom: 8 }}><IkonMenu d={IKON_PAPAN_KLIP} size={30} /></p>
           <p>Cari kode saham IDX di atas untuk melihat data fundamental</p>
         </div>
       )}
@@ -62,7 +63,7 @@ export function StockDetail() {
 
       {activeTicker && !loading && error && (
         <div className="fd-empty">
-          <p style={{ fontSize: 28 }}>⚠️</p>
+          <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p>Data <strong>{activeTicker}</strong> tidak ditemukan.</p>
           <p style={{ fontSize: 10, marginTop: 8 }}>Pastikan kode saham benar (contoh: BBCA, ASII, TLKM)</p>
         </div>
@@ -70,7 +71,7 @@ export function StockDetail() {
 
       {activeTicker && !loading && !error && fd && (
         <>
-          <div className="board">
+          <div className="board fd-board">
             <div className="board-main">
               <span className="lbl">{fd.ticker}</span>
               <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', margin: '3px 0' }}>{fd.name || ''}</div>

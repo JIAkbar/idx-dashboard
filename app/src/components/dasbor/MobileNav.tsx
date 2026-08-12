@@ -3,16 +3,21 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { MENU_ITEMS, MOBILE_NAV_COUNT } from '../../lib/dasbor/menu'
 import { IkonMenu } from './IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
+import { useAuth } from '../../context/AuthContext'
 
 /**
  * Bilah bawah telepon: 5 menu + tombol laci. Laci memuat SELURUH 10 menu
  * bernama penuh plus tombol tema — laci adalah bentuk telepon dari rail kiri,
  * yang di layar sempit disembunyikan. Tombol laci ikut menyala saat menu yang
  * sedang aktif berada di luar lima yang tampil, supaya posisi tidak hilang.
+ *
+ * Pintu Masuk/Admin di kaki laci sadar status login juga (#40), sama seperti
+ * Sidebar — onMasuk buka LoginModal yang dirender DasborLayout (#38).
  */
-export function MobileNav() {
+export function MobileNav({ onMasuk }: { onMasuk: () => void }) {
   const [laciBuka, setLaciBuka] = useState(false)
   const { theme, toggleTheme } = useTheme()
+  const { session } = useAuth()
   const { pathname } = useLocation()
 
   const tampil = MENU_ITEMS.slice(0, MOBILE_NAV_COUNT)
@@ -96,12 +101,25 @@ export function MobileNav() {
                 </svg>
                 <span>{theme === 'dark' ? 'Tema terang' : 'Tema gelap'}</span>
               </button>
-              <NavLink to="/login" className="dasbor-laci-tombol" onClick={() => setLaciBuka(false)}>
-                <svg viewBox="0 0 24 24" width="17" height="17" className="dasbor-ikon" aria-hidden="true">
-                  <path d="M14 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
-                </svg>
-                <span>Masuk</span>
-              </NavLink>
+              {session ? (
+                <NavLink to="/admin" className="dasbor-laci-tombol" onClick={() => setLaciBuka(false)}>
+                  <svg viewBox="0 0 24 24" width="17" height="17" className="dasbor-ikon" aria-hidden="true">
+                    <path d="M14 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
+                  </svg>
+                  <span>Admin</span>
+                </NavLink>
+              ) : (
+                <button
+                  type="button"
+                  className="dasbor-laci-tombol"
+                  onClick={() => { setLaciBuka(false); onMasuk() }}
+                >
+                  <svg viewBox="0 0 24 24" width="17" height="17" className="dasbor-ikon" aria-hidden="true">
+                    <path d="M14 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
+                  </svg>
+                  <span>Masuk</span>
+                </button>
+              )}
             </div>
           </div>
         </>

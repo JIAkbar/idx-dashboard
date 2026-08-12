@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { fN } from '../../../lib/dasbor/format'
 import { PosisiBar } from './PosisiBar'
+import { IkonMenu, IKON_UANG_KERTAS, IKON_GRAFIK_BATANG } from '../../../components/dasbor/IkonMenu'
 
 interface DividenProps {
   feeBeli: number
@@ -65,7 +66,7 @@ export function Dividen({ feeBeli, setFeeBeli }: DividenProps) {
       <div>
         <div className="panel">
           <div className="panel-h" style={{ flexWrap: 'wrap', rowGap: 6 }}>
-            <span className="lbl">💵 Dividend Calculator</span>
+            <span className="lbl"><IkonMenu d={IKON_UANG_KERTAS} size={13} /> Dividend Calculator</span>
             <div
               style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}
               title="Default: Beli 0.15% (standard IDX/Stockbit)"
@@ -145,7 +146,7 @@ export function Dividen({ feeBeli, setFeeBeli }: DividenProps) {
                   </div>
                 </div>
                 <div>
-                  <span className="lbl">📊 Post-Dividend Scenarios</span>
+                  <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Post-Dividend Scenarios</span>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
                     {result.scenarios.map((sc) => (
                       <div

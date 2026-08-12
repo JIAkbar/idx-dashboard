@@ -4,6 +4,7 @@ import { useChartCanvas } from '../../../lib/dasbor/useChartJs'
 import { useTheme } from '../../../context/ThemeContext'
 import { fmtLot } from '../../../lib/dasbor/brokerSummaryFormat'
 import { BS_DATA } from '../../../lib/dasbor/brokerSummaryData'
+import { IkonMenu, IKON_OMBAK } from '../../../components/dasbor/IkonMenu'
 
 /**
  * Tab "Flow" — port bsRenderFlow() index_live.html baris 6012-6037. Chart
@@ -60,7 +61,7 @@ export function Flow() {
 
   return (
     <>
-      <div className="lbl" style={{ marginBottom: 8 }}>🌊 Foreign Flow Agregat — Buy / Sell / Net (lot, semua saham)</div>
+      <div className="lbl" style={{ marginBottom: 8 }}><IkonMenu d={IKON_OMBAK} size={13} /> Foreign Flow Agregat — Buy / Sell / Net (lot, semua saham)</div>
       <div className="chart-wrap" style={{ height: 260 }}>
         <canvas ref={canvasRef} />
       </div>

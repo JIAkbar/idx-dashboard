@@ -1,9 +1,11 @@
 import type { CSSProperties } from 'react'
+import { Link } from 'react-router-dom'
 import { Kalender } from '../../components/dasbor/Kalender'
 import { useDataHarian } from '../../lib/dasbor/dataHarian'
 import { useUrut } from '../../lib/dasbor/useUrut'
 import { fN } from '../../lib/dasbor/format'
 import type { StockRankRow, BrokerRankRow } from '../../lib/dasbor/dataHarian'
+import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 
 /**
  * Reset tombol judul kolom ke tampilan teks polos — padanan `button{font:
@@ -66,7 +68,7 @@ export function TopBroker() {
       <div className="lantai">
         <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
-          <p style={{ fontSize: 28 }}>⚠️</p>
+          <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p className="lbl">Data tidak tersedia untuk tanggal ini</p>
         </div>
       </div>
@@ -75,7 +77,7 @@ export function TopBroker() {
 
   const tblStock = (s: UrutState<StockRankRow> & { urut: StockRankRow[] }) => s.urut.map((x) => (
     <tr key={x.c}>
-      <td><span className="tick">{x.c}</span></td>
+      <td><Link to={`/chart?sym=${x.c}`} className="tick">{x.c}</Link></td>
       <td className="r num">{fN(x.v, 0)}</td>
       <td className="r num muted">{x.p}%</td>
     </tr>

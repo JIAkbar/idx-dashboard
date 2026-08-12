@@ -6,6 +6,7 @@ import { ByStock } from './peta-investor/ByStock'
 import { ByInvestor } from './peta-investor/ByInvestor'
 import { DetailPanel } from './peta-investor/DetailPanel'
 import { PetaInvestorSearch } from './peta-investor/PetaInvestorSearch'
+import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_ULANG, IKON_KLIK } from '../../components/dasbor/IkonMenu'
 
 type ViewTab = 'grafik' | 'stock' | 'investor'
 
@@ -88,18 +89,18 @@ export function PetaInvestor() {
 
       {loading && (
         <div className="fd-empty">
-          <p style={{ fontSize: 28 }}>⏳</p>
+          <p><IkonMenu d={IKON_JAM} size={28} /></p>
           <p>Memuat data jaringan investor...</p>
         </div>
       )}
 
       {!loading && error && (
         <div className="fd-empty">
-          <p style={{ fontSize: 28 }}>⚠️</p>
+          <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p>Gagal memuat data investor.</p>
           <p style={{ fontSize: 11, marginTop: 4 }}>{error}</p>
           <button type="button" className="btn-p" style={{ marginTop: 12 }} onClick={retry}>
-            🔄 Coba lagi
+            <IkonMenu d={IKON_ULANG} size={13} /> Coba lagi
           </button>
         </div>
       )}
@@ -128,7 +129,7 @@ export function PetaInvestor() {
                 {LEGENDA.map((l) => (
                   <span key={l.teks}><span className="pi-legend-dot" style={{ background: l.warna }} />{l.teks}</span>
                 ))}
-                <span className="pi-legend-hint">Ukuran simpul = % kepemilikan · label hanya 12 simpul terbesar, sisanya muncul saat diarahkan · 👆 klik untuk detail</span>
+                <span className="pi-legend-hint">Ukuran simpul = % kepemilikan · label hanya 12 simpul terbesar, sisanya muncul saat diarahkan · <IkonMenu d={IKON_KLIK} size={11} /> klik untuk detail</span>
               </div>
               <div className="panel pi-graph-card">
                 <GrafikJaringan allData={data} emitenList={emitenList} focusCode={focusCode} onSelect={handleSelect} />

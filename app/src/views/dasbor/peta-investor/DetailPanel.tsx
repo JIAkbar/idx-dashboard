@@ -1,4 +1,5 @@
 import { holderType, type GraphSelection, type InvestorMapEntry } from '../../../lib/dasbor/petaInvestorData'
+import { IkonMenu, IKON_GLOBE, IKON_LOKASI } from '../../../components/dasbor/IkonMenu'
 
 interface DetailPanelProps {
   allData: InvestorMapEntry[]
@@ -51,7 +52,7 @@ export function DetailPanel({ allData, selected, onClose }: DetailPanelProps) {
     .filter((e) => e.holders.some((h) => h.name === selected.name))
     .map((e) => ({ code: e.code, issuer: e.issuer, pct: e.holders.find((h) => h.name === selected.name)?.pct ?? 0 }))
     .sort((a, b) => b.pct - a.pct)
-  const flag = selected.lf === 'F' ? '🌐 Asing' : '🇮🇩 Domestik'
+  const flag = selected.lf === 'F' ? <><IkonMenu d={IKON_GLOBE} size={11} /> Asing</> : <><IkonMenu d={IKON_LOKASI} size={11} /> Domestik</>
 
   return (
     <div className="pi-panel">

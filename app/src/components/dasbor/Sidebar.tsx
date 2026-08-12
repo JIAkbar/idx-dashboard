@@ -2,6 +2,7 @@ import { Link, NavLink } from 'react-router-dom'
 import { MENU_ITEMS } from '../../lib/dasbor/menu'
 import { IkonMenu } from './IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
+import { useAuth } from '../../context/AuthContext'
 
 /**
  * Rail kiri (layar lebar). Isinya tiga lapis, dari atas ke bawah:
@@ -9,14 +10,19 @@ import { useTheme } from '../../context/ThemeContext'
  *      halaman depan;
  *   2. menu, dinamai KODE tiga huruf gaya ticker bursa (nama panjang jadi
  *      tooltip);
- *   3. kaki: penanda data tersambung, tombol tema, dan pintu Masuk.
+ *   3. kaki: penanda data tersambung, tombol tema, dan pintu Masuk/Admin.
  *
  * Merek dan tombol Masuk sengaja di sini, bukan di bilah atas: bilah atas
  * seluruhnya milik pita kurs, dan kontrol yang duduk di jalur teks berjalan
  * menghalangi bacaan.
+ *
+ * Tombol Masuk sadar status login (#40): sudah masuk -> tautan ke /admin,
+ * belum -> buka LoginModal (onMasuk, dikelola DasborLayout — modal, bukan
+ * navigasi /login lagi, lihat #38).
  */
-export function Sidebar() {
+export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
   const { theme, toggleTheme } = useTheme()
+  const { session } = useAuth()
 
   return (
     <nav className="dasbor-rail" aria-label="Menu utama">
@@ -59,12 +65,21 @@ export function Sidebar() {
           <span className="dasbor-rail-kode">{theme === 'dark' ? 'Terang' : 'Gelap'}</span>
         </button>
 
-        <Link to="/login" className="dasbor-rail-tombol" title="Masuk — kelola unggahan &amp; edisi">
-          <svg viewBox="0 0 24 24" width="18" height="18" className="dasbor-ikon" aria-hidden="true">
-            <path d="M14 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
-          </svg>
-          <span className="dasbor-rail-kode">Masuk</span>
-        </Link>
+        {session ? (
+          <Link to="/admin" className="dasbor-rail-tombol" title="Admin — kelola unggahan &amp; edisi">
+            <svg viewBox="0 0 24 24" width="18" height="18" className="dasbor-ikon" aria-hidden="true">
+              <path d="M14 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
+            </svg>
+            <span className="dasbor-rail-kode">Admin</span>
+          </Link>
+        ) : (
+          <button type="button" className="dasbor-rail-tombol" onClick={onMasuk} title="Masuk — kelola unggahan &amp; edisi">
+            <svg viewBox="0 0 24 24" width="18" height="18" className="dasbor-ikon" aria-hidden="true">
+              <path d="M14 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
+            </svg>
+            <span className="dasbor-rail-kode">Masuk</span>
+          </button>
+        )}
       </div>
     </nav>
   )

@@ -12,12 +12,12 @@ import { BrokerSummary } from './views/dasbor/BrokerSummary'
 import { StockDetail } from './views/dasbor/StockDetail'
 import { PetaInvestor } from './views/dasbor/PetaInvestor'
 import { KalkulatorJia } from './views/dasbor/KalkulatorJia'
+import { Bulletin } from './views/dasbor/Bulletin'
 import { Feedback } from './views/dasbor/Feedback'
 import { Login } from './views/Login'
 import { AdminHome } from './views/AdminHome'
 import { ChangelogAdmin } from './views/admin/ChangelogAdmin'
 import { EdisiUjicoba } from './views/EdisiUjicoba'
-import { Unggah } from './views/Unggah'
 import { EdisiView } from './views/EdisiView'
 import './App.css'
 
@@ -38,14 +38,15 @@ function App() {
               <Route path="/peta-investor" element={<PetaInvestor />} />
               <Route path="/broker-summary" element={<BrokerSummary />} />
               <Route path="/kalkulator" element={<KalkulatorJia />} />
+              <Route path="/bulletin" element={<Bulletin />} />
               <Route path="/feedback" element={<Feedback />} />
             </Route>
-            {/* Login hanya gerbang ke fitur upload/kelola edisi. */}
+            {/* /login lama dipertahankan sbg redirect (bookmark/tautan luar) — login
+                sekarang modal, dipicu dari Sidebar/MobileNav (lihat views/Login.tsx). */}
             <Route path="/login" element={<Login />} />
             <Route element={<ProtectedRoute />}>
               <Route path="/admin" element={<AdminHome />} />
               <Route path="/admin/changelog" element={<ChangelogAdmin />} />
-              <Route path="/admin/upload" element={<Unggah />} />
               <Route path="/admin/edisi/ujicoba" element={<EdisiUjicoba />} />
               <Route path="/admin/edisi/:kode" element={<EdisiView />} />
             </Route>

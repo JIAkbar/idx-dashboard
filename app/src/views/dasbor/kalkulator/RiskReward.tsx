@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { fN } from '../../../lib/dasbor/format'
 import { PosisiBar } from './PosisiBar'
+import { IkonMenu, IKON_TIMBANGAN, IKON_CENTANG, IKON_PERINGATAN, IKON_SILANG } from '../../../components/dasbor/IkonMenu'
 
 const PRESETS = [1, 2, 3, 4, 5]
 
@@ -64,10 +65,10 @@ export function RiskReward() {
 
   const verdictText = result
     ? result.ratio >= 2
-      ? '✅ Setup bagus (R:R ≥ 1:2)'
+      ? <><IkonMenu d={IKON_CENTANG} size={11} /> Setup bagus (R:R ≥ 1:2)</>
       : result.ratio >= 1
-        ? '⚠️ Minimal (R:R 1:1 – 1:2)'
-        : '❌ Kurang ideal (R:R < 1:1)'
+        ? <><IkonMenu d={IKON_PERINGATAN} size={11} /> Minimal (R:R 1:1 – 1:2)</>
+        : <><IkonMenu d={IKON_SILANG} size={11} /> Kurang ideal (R:R {'<'} 1:1)</>
     : ''
   const verdictColor = result ? (result.ratio >= 2 ? 'var(--cal-up)' : result.ratio >= 1 ? '#f59e0b' : 'var(--cal-dn)') : 'var(--text3)'
 
@@ -75,7 +76,7 @@ export function RiskReward() {
     <div className="grid2 w-kiri">
       <div>
         <div className="panel">
-          <div className="panel-h"><span className="lbl">⚖️ Risk/Reward Calculator</span></div>
+          <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_TIMBANGAN} size={13} /> Risk/Reward Calculator</span></div>
           <div className="panel-b">
             <PosisiBar kode={posKode} onKode={setPosKode} lots={posLots} onLots={setPosLots} avg={posAvg} onAvg={setPosAvg} onFill={handleFill} />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 10, marginBottom: 8 }}>

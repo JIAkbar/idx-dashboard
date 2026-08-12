@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { TradingViewChart } from '../../components/dasbor/TradingViewChart'
+import { IkonMenu, IKON_PERLUAS, IKON_GRAFIK_NAIK, IKON_API } from '../../components/dasbor/IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 
-/** Port TV_GROUPS index_live.html baris 3442-3466 — salin persis. */
+/** Port TV_GROUPS index_live.html baris 3442-3466 — dua simbol dikoreksi
+ * setelah verifikasi ke TradingView (BISNIS27→BISNIS_27, SRIKEHATI→SRI_KEHATI;
+ * sumber lama salah ketik, halaman TradingView-nya pakai underscore). */
 const TV_GROUPS = {
   featured: [
     { sym: 'IDX:COMPOSITE', label: 'IHSG' },
@@ -17,8 +21,8 @@ const TV_GROUPS = {
   ],
   cobranding: [
     { sym: 'IDX:KOMPAS100', label: 'Kompas100' },
-    { sym: 'IDX:BISNIS27', label: 'Bisnis27' },
-    { sym: 'IDX:SRIKEHATI', label: 'Sri-Kehati' },
+    { sym: 'IDX:BISNIS_27', label: 'Bisnis27' },
+    { sym: 'IDX:SRI_KEHATI', label: 'Sri-Kehati' },
     { sym: 'IDX:SMINFRA18', label: 'SMinfra18' },
     { sym: 'IDX:MNC36', label: 'MNC36' },
   ],
@@ -46,6 +50,26 @@ function penuh(ref: React.RefObject<HTMLDivElement | null>) {
   ref.current?.requestFullscreen?.()?.catch(() => {})
 }
 
+function keluarPenuh() {
+  document.exitFullscreen?.().catch(() => {})
+}
+
+/** Tombol Layar Penuh yang jadi tombol Keluar (ikon X, bukan emoji) begitu
+ * panel ini yang sedang aktif fullscreen — lihat `fullscreenchange` listener
+ * di bawah, biar tetap sinkron kalau user keluar lewat Esc. */
+function TombolLayarPenuh({ panelRef, aktif }: { panelRef: React.RefObject<HTMLDivElement | null>; aktif: boolean }) {
+  return (
+    <button
+      className="bchip"
+      style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+      onClick={() => (aktif ? keluarPenuh() : penuh(panelRef))}
+      title={aktif ? 'Keluar layar penuh' : 'Layar penuh'}
+    >
+      {aktif ? <IkonMenu d="M6 6l12 12M18 6L6 18" size={12} /> : <IkonMenu d={IKON_PERLUAS} size={12} />} {aktif ? 'Keluar Layar Penuh' : 'Layar Penuh'}
+    </button>
+  )
+}
+
 /**
  * Menu Chart — port index_live.html baris 1063-1116 (markup) + 3442-3561 (logic).
  * Dua section SELALU tampil bersamaan (bukan tab): Chart Indeks IDX
@@ -54,11 +78,27 @@ function penuh(ref: React.RefObject<HTMLDivElement | null>) {
  */
 export function ChartIndeks() {
   const { theme } = useTheme()
+  const [searchParams] = useSearchParams()
+  const symParam = searchParams.get('sym')
   const [grp, setGrp] = useState<TvGroup>('featured')
-  const [sym, setSym] = useState<string>(TV_GROUPS.featured[0].sym)
+  const [sym, setSym] = useState<string>(() =>
+    symParam ? `IDX:${symParam.trim().toUpperCase().replace(/^IDX:/, '').replace(/\.JK$/, '')}` : TV_GROUPS.featured[0].sym,
+  )
   const heatmapRef = useRef<HTMLDivElement>(null)
   const chartPanelRef = useRef<HTMLDivElement>(null)
   const heatPanelRef = useRef<HTMLDivElement>(null)
+  // null = tidak ada panel yang fullscreen. Satu listener dokumen dipakai
+  // bersama kedua panel (chart & heatmap) — cukup satu yang bisa fullscreen
+  // sekaligus lewat Fullscreen API bawaan peramban.
+  const [panelFs, setPanelFs] = useState<Element | null>(null)
+
+  useEffect(() => {
+    function onFsChange() {
+      setPanelFs(document.fullscreenElement)
+    }
+    document.addEventListener('fullscreenchange', onFsChange)
+    return () => document.removeEventListener('fullscreenchange', onFsChange)
+  }, [])
 
   // Heatmap widget statis — script embed resmi TradingView cuma jalan kalau
   // <script> benar2 dieksekusi browser (JSX/dangerouslySetInnerHTML tidak
@@ -113,8 +153,8 @@ export function ChartIndeks() {
     <div className="lantai">
       <div className="panel" ref={chartPanelRef}>
         <div className="panel-h">
-          <span className="lbl">📈 Chart Indeks IDX</span>
-          <button className="bchip" style={{ cursor: 'pointer' }} onClick={() => penuh(chartPanelRef)} title="Layar penuh">⛶ Layar Penuh</button>
+          <span className="lbl"><IkonMenu d={IKON_GRAFIK_NAIK} size={13} /> Chart Indeks IDX</span>
+          <TombolLayarPenuh panelRef={chartPanelRef} aktif={panelFs !== null && panelFs === chartPanelRef.current} />
         </div>
         <div className="panel-b">
           <div className="tabs" role="tablist" aria-label="Grup Indeks">
@@ -155,8 +195,8 @@ export function ChartIndeks() {
 
       <div className="panel" ref={heatPanelRef}>
         <div className="panel-h">
-          <span className="lbl">🔥 Heatmap Saham IDX</span>
-          <button className="bchip" style={{ cursor: 'pointer' }} onClick={() => penuh(heatPanelRef)} title="Layar penuh">⛶ Layar Penuh</button>
+          <span className="lbl"><IkonMenu d={IKON_API} size={13} /> Heatmap Saham IDX</span>
+          <TombolLayarPenuh panelRef={heatPanelRef} aktif={panelFs !== null && panelFs === heatPanelRef.current} />
         </div>
         <div className="panel-b">
           <div className="tv-section-inner" style={{ height: 400, borderRadius: 8, overflow: 'hidden' }}>

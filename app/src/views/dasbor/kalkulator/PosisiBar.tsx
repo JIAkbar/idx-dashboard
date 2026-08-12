@@ -1,3 +1,5 @@
+import { IkonMenu, IKON_PAPAN_KLIP } from '../../../components/dasbor/IkonMenu'
+
 interface PosisiBarProps {
   kode: string
   onKode: (v: string) => void
@@ -19,7 +21,7 @@ export function PosisiBar({ kode, onKode, lots, onLots, avg, onAvg, onFill }: Po
     <div className="vcard" style={{ gap: 8 }}>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
         <div className="field" style={{ width: 92 }}>
-          <span className="lbl">📋 Kode</span>
+          <span className="lbl"><IkonMenu d={IKON_PAPAN_KLIP} size={12} /> Kode</span>
           <input className="inp" type="text" placeholder="BBCA" maxLength={6} value={kode} onChange={(e) => onKode(e.target.value.toUpperCase())} />
         </div>
         <div className="field" style={{ width: 80 }}>

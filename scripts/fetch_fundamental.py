@@ -580,6 +580,10 @@ def fetch_stock(ticker_code):
             "website":  sg(info,"website") or "-",
             "summary":  (sg(info,"longBusinessSummary") or "")[:400],
             "currency": sg(info,"currency") or "IDR",
+            # Mata uang LAPORAN KEUANGAN (fin_cur, baris ~321) — beda dari "currency"
+            # di atas (mata uang HARGA, selalu IDR di IDX). Emiten pelapor-USD (AADI dkk.)
+            # perlu ini di frontend buat caveat "laporan dalam USD" (Task 19).
+            "financial_currency": fin_cur,
             "updated":  datetime.now().strftime("%Y-%m-%d %H:%M"),
 
             # Harga & Statistik Perdagangan
@@ -729,8 +733,8 @@ def fetch_stock(ticker_code):
 
             # === HISTORICAL PER SHARE ===
             "hist_eps":      hist_eps_a,   # {year: EPS}
-            "hist_fcf":      hist_fcf_a,   # {year: FCF IDR}
-            "hist_bv":       hist_bv_a,    # {year: BV/share}
+            "hist_fcf":      konversi_dict_ke_idr(hist_fcf_a, fin_cur, kurs),   # {year: FCF IDR}
+            "hist_bv":       konversi_dict_ke_idr(hist_bv_a, fin_cur, kurs),    # {year: BV/share IDR}
             "hist_roe":      hist_roe_a,   # {year: ROE %}
             "hist_dps":      hist_dps_a,   # {year: total DPS}
 

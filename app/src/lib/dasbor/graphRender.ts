@@ -293,11 +293,39 @@ export function renderForceGraph(params: RenderParams & { emitenList: InvestorMa
     })
 
   if (tooltip) {
+    // Papan #klik-detail-nyantol: "👆 Klik untuk detail lengkap" di dalam
+    // tooltip (showTooltip) cuma teks HTML statis — satu-satunya klik yang
+    // beneran jalan ada di node SVG (.on('click', ...) di bawah), yang
+    // posisinya SELALU offset dari tooltip (tooltip digambar +14px dari
+    // kursor). Tooltip berpindah tangan (pointer-events di CSS) ke kursor
+    // yang gerak ke arah teks itu, jadi klik jatuh ke kanvas kosong di
+    // belakang tooltip, bukan ke node. Fix: tooltip sendiri jadi target klik
+    // yang meneruskan ke onSelect node yang lagi di-hover — dengan delay
+    // sembunyi supaya kursor sempat pindah dari node ke tooltip tanpa
+    // tooltip keburu hilang (mouseout node biasa langsung menyembunyikan).
+    let hideTimer: ReturnType<typeof setTimeout> | undefined
+    let hovered: GNode | null = null
+
     node
-      .on('mouseover', (e, d) => showTooltip(tooltip, wrap, e, d, allData))
-      .on('mouseout', () => {
-        tooltip.style.display = 'none'
+      .on('mouseover', (e, d) => {
+        clearTimeout(hideTimer)
+        hovered = d
+        showTooltip(tooltip, wrap, e, d, allData)
       })
+      .on('mouseout', () => {
+        hideTimer = setTimeout(() => {
+          tooltip.style.display = 'none'
+        }, 150)
+      })
+
+    tooltip.onmouseenter = () => clearTimeout(hideTimer)
+    tooltip.onmouseleave = () => {
+      tooltip.style.display = 'none'
+    }
+    tooltip.onclick = (e) => {
+      e.stopPropagation()
+      if (hovered) onSelect(nodeSelection(hovered))
+    }
   }
 
   drawNodeGlyph(node, nodeStroke)

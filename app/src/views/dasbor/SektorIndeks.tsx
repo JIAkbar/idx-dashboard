@@ -5,6 +5,7 @@ import { useDataHarian, useDataPembanding } from '../../lib/dasbor/dataHarian'
 import { cariTanggalPembanding, hitungPeriodePct } from '../../lib/dasbor/periode'
 import { fN, fp } from '../../lib/dasbor/format'
 import type { SectorRow } from '../../lib/dasbor/dataHarian'
+import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_GRAFIK_BATANG, IKON_GRAFIK_NAIK, IKON_BULAN_SABIT, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
 
 type PeriodeId = 'd' | 'm1' | 'm3' | 'ytd'
 
@@ -50,7 +51,7 @@ export function SektorIndeks() {
       <div className="lantai">
         <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
-          <p style={{ fontSize: 28 }}>⏳</p>
+          <p><IkonMenu d={IKON_JAM} size={28} /></p>
           <p className="lbl">Memuat data...</p>
         </div>
       </div>
@@ -62,7 +63,7 @@ export function SektorIndeks() {
       <div className="lantai">
         <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
-          <p style={{ fontSize: 28 }}>⚠️</p>
+          <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p className="lbl">Data tidak tersedia untuk tanggal ini</p>
         </div>
       </div>
@@ -104,11 +105,34 @@ export function SektorIndeks() {
 
   return (
     <div className="lantai">
+      <div className="tiles">
+        {sectors.map((s) => {
+          const kode = s.n.match(/^\[(.)\]/)?.[1] ?? ''
+          const nama = s.n.replace(/^\[.\] /, '')
+          const naik = s.d >= 0
+          // Intensitas warna: port rumus tile artifact lama (design-lantai-
+          // bursa-reimagined.html baris 980) — alpha 0,06-0,38 sebanding |d|,
+          // dijenuhkan di 2,2%. --green/--red sudah ikut tema via lantai.css.
+          const alpha = Math.min(Math.abs(s.d) / 2.2, 1) * 0.32 + 0.06
+          return (
+            <div
+              key={s.n}
+              className="tile"
+              style={{ background: `color-mix(in srgb, var(${naik ? '--green' : '--red'}) ${(alpha * 100).toFixed(0)}%, transparent)` }}
+            >
+              <span className="t-code">{kode}</span>
+              <span className="t-name">{nama}</span>
+              <span className={`t-val ${naik ? 'up' : 'dn'}`}>{fp(s.d)}</span>
+            </div>
+          )
+        })}
+      </div>
+
       <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
 
       <div className="panel">
         <div className="panel-h">
-          <span className="lbl">📊 Performa Sektor</span>
+          <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Performa Sektor</span>
           <div className="tabs" role="tablist" aria-label="Periode Performa Sektor">
             {PERIODE.map((p) => (
               <button
@@ -154,7 +178,7 @@ export function SektorIndeks() {
 
       <div className="grid2">
         <div className="panel">
-          <div className="panel-h"><span className="lbl">📈 Indeks Unggulan</span></div>
+          <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_GRAFIK_NAIK} size={13} /> Indeks Unggulan</span></div>
           <div className="board-tbl-wrap">
             <table className="tbl">
               <thead><tr><th>Indeks</th><th className="r">Nilai</th><th className="r">Hari Ini</th><th className="r">YTD</th></tr></thead>
@@ -164,7 +188,7 @@ export function SektorIndeks() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div className="panel" style={{ flex: 1 }}>
-            <div className="panel-h"><span className="lbl">☪️ Indeks Syariah</span></div>
+            <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_BULAN_SABIT} size={13} /> Indeks Syariah</span></div>
             <div className="board-tbl-wrap">
               <table className="tbl">
                 <thead><tr><th>Indeks</th><th className="r">Nilai</th><th className="r">Hari Ini</th><th className="r">YTD</th></tr></thead>
@@ -173,7 +197,7 @@ export function SektorIndeks() {
             </div>
           </div>
           <div className="panel" style={{ flex: 1 }}>
-            <div className="panel-h"><span className="lbl">🗂️ Board Indices</span></div>
+            <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_KOTAK_ARSIP} size={13} /> Board Indices</span></div>
             <div className="board-tbl-wrap">
               <table className="tbl">
                 <thead><tr><th>Board</th><th className="r">Nilai</th><th className="r">Hari Ini</th><th className="r">YTD</th></tr></thead>

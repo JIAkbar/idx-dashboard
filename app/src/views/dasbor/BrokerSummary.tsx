@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { BS_AVAIL, BS_DATA } from '../../lib/dasbor/brokerSummaryData'
 import { bsAggBrokers, bsAggForeign } from '../../lib/dasbor/brokerSummaryAgg'
 import { dateLabel, fmtB, fmtLot } from '../../lib/dasbor/brokerSummaryFormat'
@@ -6,14 +6,15 @@ import { Inventory } from './broker-summary/Inventory'
 import { Quadrant } from './broker-summary/Quadrant'
 import { Nego } from './broker-summary/Nego'
 import { Flow } from './broker-summary/Flow'
+import { IkonMenu, IKON_GRAFIK_BATANG, IKON_ULANG, IKON_OMBAK } from '../../components/dasbor/IkonMenu'
 
 type Tab = 'inventory' | 'quadrant' | 'nego' | 'flow'
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'inventory', label: '📊 Inventory' },
+const TABS: { id: Tab; label: ReactNode }[] = [
+  { id: 'inventory', label: <><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Inventory</> },
   { id: 'quadrant', label: '⊞ Kuadran' },
-  { id: 'nego', label: '🔄 NEGO' },
-  { id: 'flow', label: '🌊 Flow' },
+  { id: 'nego', label: <><IkonMenu d={IKON_ULANG} size={13} /> NEGO</> },
+  { id: 'flow', label: <><IkonMenu d={IKON_OMBAK} size={13} /> Flow</> },
 ]
 
 const FIRST = BS_AVAIL[0]

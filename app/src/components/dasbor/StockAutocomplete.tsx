@@ -48,8 +48,10 @@ export function StockAutocomplete({ stocks, value, onChange, onSelect }: StockAu
     }
   }
 
+  const showMenu = open && matches.length > 0
+
   return (
-    <div className="fd-ac-wrap">
+    <div className={`dd${showMenu ? ' open' : ''}`} style={{ flex: 1, minWidth: 160 }}>
       <input
         className="inp"
         type="text"
@@ -61,16 +63,16 @@ export function StockAutocomplete({ stocks, value, onChange, onSelect }: StockAu
         onBlur={() => setTimeout(() => setOpen(false), 200)}
         onKeyDown={handleKeyDown}
       />
-      {open && matches.length > 0 && (
-        <div className="fd-ac-dropdown">
+      {showMenu && (
+        <div className="dd-menu" style={{ right: 0, maxHeight: 260, overflowY: 'auto' }}>
           {matches.map((s, i) => (
             <div
               key={s.ticker}
-              className={`fd-ac-item${i === activeIndex ? ' ac-active' : ''}`}
+              className={`dd-it${i === activeIndex ? ' sel' : ''}`}
               onMouseDown={() => selectTicker(s.ticker)}
             >
-              <span className="fd-ac-ticker">{s.ticker}</span>
-              <span className="fd-ac-name">{s.name}</span>
+              <span className="tick" style={{ minWidth: 52, flexShrink: 0 }}>{s.ticker}</span>
+              <span className="satu-baris" style={{ flex: 1, minWidth: 0, color: 'var(--text3)', fontSize: 11 }}>{s.name}</span>
             </div>
           ))}
         </div>

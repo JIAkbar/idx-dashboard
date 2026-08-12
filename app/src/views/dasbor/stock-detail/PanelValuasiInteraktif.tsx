@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { StockFundamental } from '../../../lib/dasbor/stockDetailData'
 import { fp2 } from '../../../lib/dasbor/stockDetailFormat'
 import { FdPercent } from '../../../components/dasbor/FdPercent'
+import { IkonMenu, IKON_PENGGARIS, IKON_KALKULATOR, IKON_LAMPU, IKON_GRAFIK_BATANG, IKON_UANG, IKON_PERINGATAN, IKON_GRAFIK_NAIK } from '../../../components/dasbor/IkonMenu'
 
 /** "Rp "+angka bulat — port fv() lokal fdValuationCalc() baris 4397. */
 function rp(v: number | null): string {
@@ -117,12 +118,12 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
   return (
     <div style={{ marginTop: 8 }}>
       <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontSize: 16 }}>📐</span> Analisis Valuasi — Estimasi Fair Value
+        <IkonMenu d={IKON_PENGGARIS} size={16} /> Analisis Valuasi — Estimasi Fair Value
         <span style={{ fontSize: 9, fontWeight: 400, background: 'var(--red-bg)', color: 'var(--red-txt)', padding: '2px 7px', borderRadius: 10 }}>Bukan rekomendasi investasi</span>
       </div>
 
       <div className="panel" style={{ marginBottom: 8 }}>
-        <div className="panel-h"><span className="lbl">🧮 Graham Valuation Calculator</span></div>
+        <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_KALKULATOR} size={13} /> Graham Valuation Calculator</span></div>
         <div className="panel-b">
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 12 }}>
             <div className="field"><span className="lbl">EPS (Rp/saham)</span>
@@ -160,7 +161,7 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
             </div>
           </div>
           <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 8 }}>
-            💡 Ubah angka di atas untuk simulasi skenario berbeda. g default dari CAGR EPS historis
+            <IkonMenu d={IKON_LAMPU} size={11} /> Ubah angka di atas untuk simulasi skenario berbeda. g default dari CAGR EPS historis
             {fd.eps_cagr_3y != null ? ` (3Y: ${fd.eps_cagr_3y.toFixed(1)}%)` : fd.eps_cagr_2y != null ? ` (2Y: ${fd.eps_cagr_2y.toFixed(1)}%)` : ''}.
             {' '}Y = yield SBN 10 tahun Indonesia (default 6.75%).
           </div>
@@ -171,7 +172,7 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
         {hasRel && (
           <div className="panel" style={{ flex: 1, minWidth: 260 }}>
             <div className="panel-h">
-              <span className="lbl">📊 Relative Valuation</span>
+              <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Relative Valuation</span>
               <span style={{ fontSize: 9, color: 'var(--text3)' }}>vs median sektor ({secCnt} saham)</span>
             </div>
             <div className="panel-b" style={{ overflowX: 'auto' }}>
@@ -190,7 +191,7 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
 
         {showDdm ? (
           <div className="panel" style={{ flex: 1, minWidth: 220 }}>
-            <div className="panel-h"><span className="lbl">💰 DDM — Dividend Discount</span></div>
+            <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_UANG} size={13} /> DDM — Dividend Discount</span></div>
             <div className="panel-b">
               <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 8 }}>
                 Gordon Growth Model · Required Return ={' '}
@@ -204,12 +205,12 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
                   <tr><td>MOS vs Harga</td><td className="r"><MosBadge val={ddmVal} price={price} /></td></tr>
                 </tbody>
               </table>
-              <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 6 }}>⚠️ DDM hanya akurat untuk saham rutin dividen</div>
+              <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 6 }}><IkonMenu d={IKON_PERINGATAN} size={11} /> DDM hanya akurat untuk saham rutin dividen</div>
             </div>
           </div>
         ) : (
           <div className="panel" style={{ flex: 1, minWidth: 220, opacity: 0.5 }}>
-            <div className="panel-h"><span className="lbl">💰 DDM</span></div>
+            <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_UANG} size={13} /> DDM</span></div>
             <div className="panel-b">
               <p style={{ fontSize: 11, color: 'var(--text3)' }}>Data dividen tidak cukup (minimal 2 tahun)</p>
             </div>
@@ -218,7 +219,7 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
 
         {hYrs.length > 0 && (
           <div className="panel" style={{ flex: 1, minWidth: 260 }}>
-            <div className="panel-h"><span className="lbl">📈 Tren Historis per Saham</span></div>
+            <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_GRAFIK_NAIK} size={13} /> Tren Historis per Saham</span></div>
             <div className="panel-b" style={{ overflowX: 'auto' }}>
               <table style={{ minWidth: 240 }}>
                 <thead><tr><th>Metrik</th>{hYrs.map((y) => <th key={y} className="r">{y}</th>)}</tr></thead>

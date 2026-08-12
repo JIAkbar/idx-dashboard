@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { TanggalIndex } from '../../lib/dasbor/dataHarian'
+import { IkonMenu, IKON_PERINGATAN, IKON_CENTANG } from './IkonMenu'
 
 interface KalenderProps {
   /**
@@ -29,6 +30,60 @@ const HOLIDAYS: Record<string, string> = {
 
 function pad2(n: number) {
   return String(n).padStart(2, '0')
+}
+
+/** "HH:MM" dari total menit sejak 00:00 — dipakai label jam sesi bursa. */
+function fmtMenit(min: number) {
+  return `${pad2(Math.floor(min / 60))}:${pad2(min % 60)}`
+}
+
+/**
+ * Tanggal hari ini di zona WIB (Asia/Jakarta), BUKAN `toISOString()` (UTC) —
+ * itu salah sebelum jam 07:00 WIB karena UTC masih tanggal "kemarin". Pakai
+ * `Intl.DateTimeFormat` locale `en-CA` yang defaultnya sudah format
+ * YYYY-MM-DD, jadi tidak perlu susun manual.
+ */
+export function todayIsoJakarta() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date())
+}
+
+/** [label, mulaiMenit, selesaiMenit, warna]. Jumat sesi lebih pendek, tapi
+ * Pre-Closing/Post-Closing sama semua hari (#30 — dulu Jumat berhenti di
+ * 16:00, tidak lanjut Post-Closing). Jam terverifikasi Agustus 2026. */
+export function sesiUntukHari(isFri: boolean): [string, number, number, string][] {
+  return isFri ? [
+    ['Pre-Opening', 8 * 60 + 45, 9 * 60, '#94a3b8'],
+    ['Sesi I', 9 * 60, 11 * 60 + 30, '#0d9488'],
+    ['Istirahat', 11 * 60 + 30, 14 * 60, '#64748b'],
+    ['Sesi II', 14 * 60, 15 * 60 + 49, '#2563eb'],
+    ['Pre-Closing', 15 * 60 + 50, 16 * 60, '#7c3aed'],
+    ['Post-Closing', 16 * 60 + 1, 16 * 60 + 15, '#a855f7'],
+  ] : [
+    ['Pre-Opening', 8 * 60 + 45, 9 * 60, '#94a3b8'],
+    ['Sesi I', 9 * 60, 12 * 60, '#0d9488'],
+    ['Istirahat', 12 * 60, 13 * 60 + 30, '#64748b'],
+    ['Sesi II', 13 * 60 + 30, 15 * 60 + 49, '#2563eb'],
+    ['Pre-Closing', 15 * 60 + 50, 16 * 60, '#7c3aed'],
+    ['Post-Closing', 16 * 60 + 1, 16 * 60 + 15, '#a855f7'],
+  ]
+}
+
+/** Cari sesi yang mencakup `nowMin` (menit sejak 00:00). Weekend = tutup
+ * total, tidak dicek jam sama sekali. */
+export function sesiAktifPada(nowMin: number, isFri: boolean, isWeekendNow: boolean) {
+  if (isWeekendNow) return undefined
+  return sesiUntukHari(isFri).find(([, s, e]) => nowMin >= s && nowMin <= e)
+}
+
+/** Hari bursa sebelum/sesudah tanggal aktif, dari daftar tanggalTersedia
+ * (index.json cuma berisi hari yang benar-benar ada datanya) — otomatis
+ * skip weekend/libur tanpa tabel kalender bursa terpisah (#26). */
+export function cariHariAdjacent(tanggal: TanggalIndex[], aktif: string | null) {
+  const idx = aktif ? tanggal.findIndex((d) => d.date_iso === aktif) : -1
+  return {
+    sebelum: idx > 0 ? tanggal[idx - 1] : null,
+    sesudah: idx >= 0 && idx < tanggal.length - 1 ? tanggal[idx + 1] : null,
+  }
 }
 
 /**
@@ -100,7 +155,7 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih }: KalenderPro
   // Dipindah taruh (bawah .cal-grid) & bungkusnya sekarang .chip up/dn yang
   // sudah ada, bukan div berwarna inline — logic penentuan pesannya sendiri
   // tidak berubah.
-  let notice: { icon: string; ok: boolean; text: ReactNode } | null = null
+  let notice: { icon: ReactNode; ok: boolean; text: ReactNode } | null = null
   if (bulanTersedia.length > 0) {
     const start = bulanTersedia[0]
     const end = bulanTersedia[bulanTersedia.length - 1]
@@ -111,21 +166,21 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih }: KalenderPro
     const bulanEnd = `${BULAN[end.m]} ${end.y}`
     if (cur < curStart || cur > curEnd) {
       notice = {
-        icon: '⚠️', ok: false,
+        icon: <IkonMenu d={IKON_PERINGATAN} size={14} />, ok: false,
         text: cur < curStart
           ? <strong>Data belum tersedia.</strong>
           : <><strong>Data belum tersedia untuk periode ini.</strong><br />Data tersedia dari <strong>{bulanStart}</strong> s/d <strong>{bulanEnd}</strong>. Data bulan berikutnya akan diperbarui secara berkala.</>,
       }
     } else {
       notice = {
-        icon: '✅', ok: true,
+        icon: <IkonMenu d={IKON_CENTANG} size={14} />, ok: true,
         text: <><strong>Data tersedia:</strong> {bulanStart} — {bulanEnd} · Klik tanggal berdata untuk melihat detail.</>,
       }
     }
   }
 
   // ─── Week strip (.cal-strip) ─────────────────────────────
-  const todayIso = new Date().toISOString().slice(0, 10)
+  const todayIso = todayIsoJakarta()
   const weekBase = tanggalAktif ? new Date(`${tanggalAktif}T12:00:00`) : new Date()
   const wDow = weekBase.getDay()
   const monday = new Date(weekBase)
@@ -137,6 +192,15 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih }: KalenderPro
     return { iso, dayNum: d.getDate(), data: dataMap.get(iso), isWknd: i >= 5 }
   })
 
+  // ─── Navigasi hari bursa prev/next (#26) ──────────────────
+  const { sebelum: hariSebelum, sesudah: hariSesudah } = cariHariAdjacent(tanggalTersedia, tanggalAktif)
+  function gotoHari(d: TanggalIndex) {
+    const [y, m] = d.date_iso.split('-').map(Number)
+    setCalYear(y)
+    setCalMonth(m)
+    onPilih(d.date_iso)
+  }
+
   // ─── Jam & sesi bursa ────────────────────────────────────
   const [now, setNow] = useState(() => new Date())
   useEffect(() => {
@@ -144,27 +208,17 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih }: KalenderPro
     return () => clearInterval(id)
   }, [])
   const isFri = now.getDay() === 5
+  const isWeekendNow = now.getDay() === 0 || now.getDay() === 6
   const START = 8 * 60 + 45
-  const sessions: [string, number, number, string][] = isFri ? [
-    ['Pra', 8 * 60 + 45, 9 * 60, '#94a3b8'],
-    ['Sesi I  09:00–11:30', 9 * 60, 11 * 60 + 30, '#0d9488'],
-    ['Istirahat', 11 * 60 + 30, 14 * 60, '#64748b'],
-    ['Sesi II  14:00–15:50', 14 * 60, 15 * 60 + 50, '#2563eb'],
-    ['P', 15 * 60 + 50, 16 * 60, '#7c3aed'],
-  ] : [
-    ['Pra', 8 * 60 + 45, 9 * 60, '#94a3b8'],
-    ['Sesi I  09:00–12:00', 9 * 60, 12 * 60, '#0d9488'],
-    ['Istirahat', 12 * 60, 13 * 60 + 30, '#64748b'],
-    ['Sesi II  13:30–15:50', 13 * 60 + 30, 15 * 60 + 50, '#2563eb'],
-    ['P', 15 * 60 + 50, 16 * 60 + 15, '#7c3aed'],
-  ]
-  const timeLabels = isFri
-    ? ['08:45', '09:00', '11:30', '14:00', '15:50', '16:00']
-    : ['08:45', '09:00', '12:00', '13:30', '15:50', '16:15']
+  const sessions = sesiUntukHari(isFri)
   const END = sessions[sessions.length - 1][2]
   const TOTAL = END - START
-  const curMin = now.getHours() * 60 + now.getMinutes() - START
+  const nowMin = now.getHours() * 60 + now.getMinutes()
+  const curMin = nowMin - START
   const cursorPct = curMin >= 0 && curMin <= TOTAL ? (curMin / TOTAL) * 100 : null
+  const sesiTuple = sesiAktifPada(nowMin, isFri, isWeekendNow)
+  const sesiAktif = sesiTuple?.[0] ?? 'Bursa Tutup'
+  const jamDigital = `${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`
 
   return (
     <div className="panel">
@@ -194,10 +248,37 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih }: KalenderPro
       </div>
 
       <div className="panel-b">
+        <div className="hari-nav">
+          <button
+            type="button"
+            className="dd-btn"
+            disabled={!hariSebelum}
+            onClick={() => hariSebelum && gotoHari(hariSebelum)}
+            aria-label="Hari bursa sebelumnya"
+            title="Hari bursa sebelumnya"
+          >
+            <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg>
+          </button>
+          <span className="hari-nav-lbl">
+            {tanggalAktif ? (dataMap.get(tanggalAktif)?.date_id ?? tanggalAktif) : '—'}
+          </span>
+          <button
+            type="button"
+            className="dd-btn"
+            disabled={!hariSesudah}
+            onClick={() => hariSesudah && gotoHari(hariSesudah)}
+            aria-label="Hari bursa berikutnya"
+            title="Hari bursa berikutnya"
+          >
+            <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" /></svg>
+          </button>
+        </div>
+
         <div className="cal-strip">
           {weekDays.map(({ iso, dayNum, data, isWknd }, i) => {
             const isToday = iso === todayIso
-            const cls = `cal-d${isToday ? ' today' : ''}${isWknd ? ' off' : ''}`
+            const isAktifHari = iso === tanggalAktif
+            const cls = `cal-d${isToday ? ' today' : ''}${isWknd ? ' off' : ''}${isAktifHari ? ' aktif' : ''}`
             const inner = (
               <>
                 <div className="dw">{DOW_LABEL[i]}</div>
@@ -222,10 +303,14 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih }: KalenderPro
           })}
         </div>
 
+        <div className="sesi-status">
+          <span style={{ color: sesiTuple?.[3], fontWeight: 700 }}>{sesiAktif}</span>
+          <span className="sesi-jam">{jamDigital} WIB</span>
+        </div>
         <div className="sesi">
-          <span>{timeLabels[0]}</span>
+          <span>{fmtMenit(START)}</span>
           <div className="seg"><i style={{ width: `${cursorPct ?? (curMin < 0 ? 0 : 100)}%` }} /></div>
-          <span>{timeLabels[timeLabels.length - 1]}</span>
+          <span>{fmtMenit(END)}</span>
         </div>
 
         <div className="cal-grid">

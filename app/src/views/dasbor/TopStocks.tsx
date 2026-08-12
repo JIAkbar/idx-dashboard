@@ -1,9 +1,11 @@
 import type { CSSProperties } from 'react'
+import { Link } from 'react-router-dom'
 import { Kalender } from '../../components/dasbor/Kalender'
 import { useDataHarian } from '../../lib/dasbor/dataHarian'
 import { useUrut } from '../../lib/dasbor/useUrut'
 import { fN, fp } from '../../lib/dasbor/format'
 import type { StockContribRow, StockMoveRow } from '../../lib/dasbor/dataHarian'
+import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 
 /**
  * Reset tombol judul kolom ke tampilan teks polos — padanan `button{font:
@@ -72,7 +74,7 @@ export function TopStocks() {
       <div className="lantai">
         <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
-          <p style={{ fontSize: 28 }}>⚠️</p>
+          <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p className="lbl">Data tidak tersedia untuk tanggal ini</p>
         </div>
       </div>
@@ -84,7 +86,7 @@ export function TopStocks() {
 
   const contribRow = (x: StockContribRow, dir: 'up' | 'dn') => (
     <tr key={x.c}>
-      <td><span className={`tick ${dir}`}>{x.c}</span></td>
+      <td><Link to={`/chart?sym=${x.c}`} className={`tick ${dir}`}>{x.c}</Link></td>
       <td className={`r num ${x.p >= 0 ? 'up' : 'dn'}`}>{fp(x.p)}</td>
       <td className={`r num ${x.ih >= 0 ? 'up' : 'dn'}`}>{x.ih >= 0 ? '+' : ''}{x.ih.toFixed(2)}</td>
     </tr>
@@ -100,7 +102,7 @@ export function TopStocks() {
           {mcap.map((m, i) => (
             <div className="mc-row" key={m.c}>
               <span className={'mc-rk' + (i < 3 ? ` rk${i + 1}` : '')}>{i + 1}</span>
-              <span className="tick">{m.c}</span>
+              <Link to={`/chart?sym=${m.c}`} className="tick">{m.c}</Link>
               <div className="bar-tr"><div className="bar-fl" style={{ width: `${(m.v / mx * 100).toFixed(0)}%` }} /></div>
               <span className="mc-v num">{m.v}T</span>
               <span className="mc-p num">{m.p}%</span>
@@ -123,7 +125,7 @@ export function TopStocks() {
               <tbody>
                 {gainersS.urut.map((x) => (
                   <tr key={x.c}>
-                    <td><span className="tick up">{x.c}</span></td>
+                    <td><Link to={`/chart?sym=${x.c}`} className="tick up">{x.c}</Link></td>
                     <td className="r num muted">{fN(x.pr, 0)}</td>
                     <td className="r num green">{fN(x.td, 0)}</td>
                     <td className="r"><span className={`ytd-bdg ${x.p >= 0 ? 'u' : 'd'}`}>{fp(x.p)}</span></td>
@@ -146,7 +148,7 @@ export function TopStocks() {
               <tbody>
                 {losersS.urut.map((x) => (
                   <tr key={x.c}>
-                    <td><span className="tick dn">{x.c}</span></td>
+                    <td><Link to={`/chart?sym=${x.c}`} className="tick dn">{x.c}</Link></td>
                     <td className="r num muted">{fN(x.pr, 0)}</td>
                     <td className="r num red">{fN(x.td, 0)}</td>
                     <td className="r"><span className={`ytd-bdg ${x.p >= 0 ? 'u' : 'd'}`}>{fp(x.p)}</span></td>

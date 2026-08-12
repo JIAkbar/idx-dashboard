@@ -46,6 +46,16 @@ export function GrafikJaringan({ allData, emitenList, focusCode, onSelect }: Gra
         raf = requestAnimationFrame(gambar)
         return
       }
+      // Papan #tooltip-nyantol: tooltip adalah elemen DOM PERSISTEN (sibling
+      // dari `wrap`, bukan anak SVG yang ikut kehapus tiap render). Ganti mode
+      // (fokus <-> umum) atau data (filter/tab/tema) memicu render ulang yang
+      // menghapus node SVG lama LANGSUNG (innerHTML=''), jadi event
+      // `mouseout` node yang biasanya menyembunyikan tooltip tidak sempat
+      // terpicu — tooltip nyangkut dengan isi basi. Disembunyikan paksa di
+      // SATU titik panggil render ini (bukan ditambal di tiap render*Graph)
+      // supaya menutupi semua jalur transisi: klik node -> fokus, klik area
+      // kosong -> keluar fokus, ganti tab/filter/tema.
+      if (tooltipRef.current) tooltipRef.current.style.display = 'none'
       const dark = theme === 'dark'
       simRef.current = focusCode
         ? renderFocusedGraph({ wrap, tooltip: null, dark, allData, code: focusCode, onSelect })

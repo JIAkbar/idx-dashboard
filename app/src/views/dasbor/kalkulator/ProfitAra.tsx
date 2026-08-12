@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { fN } from '../../../lib/dasbor/format'
 import { PosisiBar } from './PosisiBar'
+import { IkonMenu, IKON_UANG, IKON_GRAFIK_NAIK } from '../../../components/dasbor/IkonMenu'
 
 /** Tick size IDX — port PROFIT.tick() index_live.html baris 3184-3188. */
 function tick(p: number): number {
@@ -86,7 +87,7 @@ export function ProfitAra({ feeBeli, feeJual, setFeeBeli, setFeeJual }: ProfitAr
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div className="panel">
           <div className="panel-h" style={{ flexWrap: 'wrap', rowGap: 6 }}>
-            <span className="lbl">💰 Profit Calculator</span>
+            <span className="lbl"><IkonMenu d={IKON_UANG} size={13} /> Profit Calculator</span>
             <div
               style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}
               title="Default: Beli 0.15% / Jual 0.25% (standard IDX/Stockbit)"
@@ -144,7 +145,7 @@ export function ProfitAra({ feeBeli, feeJual, setFeeBeli, setFeeJual }: ProfitAr
 
         <div className="panel">
           <div className="panel-h">
-            <span className="lbl">📈 Proyeksi ARA / ARB</span>
+            <span className="lbl"><IkonMenu d={IKON_GRAFIK_NAIK} size={13} /> Proyeksi ARA / ARB</span>
             <span className="num" style={{ fontSize: 10, color: 'var(--text3)' }}>
               ARB = 15% (uniform, April 2025)
             </span>

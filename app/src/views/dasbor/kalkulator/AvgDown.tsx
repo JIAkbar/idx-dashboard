@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fN, fp, cls } from '../../../lib/dasbor/format'
 import { onlyDigits, formatRibuan, parseRibuan } from '../../../lib/dasbor/kalkulatorFormat'
+import { IkonMenu, IKON_PAPAN_KLIP, IKON_JAM, IKON_CARI, IKON_GIR, IKON_GRAFIK_BATANG, IKON_PERINGATAN } from '../../../components/dasbor/IkonMenu'
 
 type AdcMode = 'half' | 'lossmax' | 'endavg' | 'avgqty' | 'avgval'
 
@@ -200,7 +201,7 @@ export function AvgDown() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {/* Stock Position */}
         <div className="panel">
-          <div className="panel-h"><span className="lbl">📋 Posisi Saham</span></div>
+          <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_PAPAN_KLIP} size={13} /> Posisi Saham</span></div>
           <div className="panel-b">
             <div className="field" style={{ marginBottom: 10 }}>
               <span className="lbl">Kode Saham</span>
@@ -215,7 +216,7 @@ export function AvgDown() {
                   onChange={(e) => setKode(e.target.value.toUpperCase())}
                 />
                 <button className="btn-p" style={{ whiteSpace: 'nowrap' }} onClick={fetchPrice} disabled={fetching}>
-                  {fetching ? '⏳' : '🔍 Cari Harga'}
+                  {fetching ? <IkonMenu d={IKON_JAM} size={13} /> : <><IkonMenu d={IKON_CARI} size={13} /> Cari Harga</>}
                 </button>
               </div>
               <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 4 }}>{name}</div>
@@ -239,7 +240,7 @@ export function AvgDown() {
               <input className="inp" type="number" placeholder="0" min={0} value={last} onChange={(e) => setLast(e.target.value)} />
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5, flexWrap: 'wrap' }}>
                 <span className={`chip ${priceSrc.kind === 'auto' ? 'up' : 'warn'}`}>{priceSrc.label}</span>
-                <span style={{ fontSize: 10, color: 'var(--text3)' }}>atau klik 🔍 untuk ambil harga otomatis (delay ~15m)</span>
+                <span style={{ fontSize: 10, color: 'var(--text3)' }}>atau klik <IkonMenu d={IKON_CARI} size={11} /> untuk ambil harga otomatis (delay ~15m)</span>
               </div>
             </div>
 
@@ -262,7 +263,7 @@ export function AvgDown() {
 
         {/* Mode Selection */}
         <div className="panel">
-          <div className="panel-h"><span className="lbl">⚙️ Strategi Average Down</span></div>
+          <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_GIR} size={13} /> Strategi Average Down</span></div>
           <div className="panel-b">
             <div className="tabs" role="radiogroup" aria-label="Strategi Average Down" style={{ flexDirection: 'column', width: '100%' }}>
               {MODES.map((m) => (
@@ -340,7 +341,7 @@ export function AvgDown() {
       {/* Estimation Result — menempel, terlihat langsung saat isian kiri berubah */}
       <div style={{ position: 'sticky', top: 60, alignSelf: 'start' }}>
         <div className="panel">
-          <div className="panel-h"><span className="lbl">📊 Estimasi Hasil</span></div>
+          <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Estimasi Hasil</span></div>
           <div className="panel-b" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div>
               <span className="lbl">Est. End Average</span>
@@ -375,7 +376,7 @@ export function AvgDown() {
               <div className="v-note">{result ? `${fN(result.endGLIdr, 0)} IDR` : '—'}</div>
             </div>
             <div className="v-note">
-              ⚠️ Kalkulasi ini bersifat estimasi untuk perencanaan. Bukan saran investasi (Not Financial Advice).
+              <IkonMenu d={IKON_PERINGATAN} size={11} /> Kalkulasi ini bersifat estimasi untuk perencanaan. Bukan saran investasi (Not Financial Advice).
               <br />
               Harga delay ~15 menit. Dapat berbeda dengan harga bursa.
             </div>

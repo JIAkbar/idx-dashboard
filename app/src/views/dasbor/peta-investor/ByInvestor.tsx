@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { GraphSelection, InvestorRow } from '../../../lib/dasbor/petaInvestorData'
+import { IkonMenu, IKON_GLOBE, IKON_LOKASI } from '../../../components/dasbor/IkonMenu'
 
 interface ByInvestorProps {
   investorMap: InvestorRow[]
@@ -76,7 +77,9 @@ export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
                   <tr key={inv.name} onClick={() => onSelect({ type: 'investor', name: inv.name, cls: inv.cls, lf: inv.lf })} title="Klik untuk lihat di Grafik Jaringan">
                     <td>
                       <div className="pi-inv-name satu-baris" title={inv.name}>{inv.name}</div>
-                      <div className="em-name">{inv.lf === 'F' ? '🌐 Asing' : '🇮🇩 Domestik'}</div>
+                      <div className="em-name">
+                        {inv.lf === 'F' ? <><IkonMenu d={IKON_GLOBE} size={11} /> Asing</> : <><IkonMenu d={IKON_LOKASI} size={11} /> Domestik</>}
+                      </div>
                     </td>
                     <td style={{ textAlign: 'center' }}><span className="bchip" style={{ marginRight: 0 }}>{inv.type}</span></td>
                     <td className="num" style={{ textAlign: 'center', fontWeight: 700, fontSize: 13, color: 'var(--amber)' }}>{inv.holdings.length}</td>

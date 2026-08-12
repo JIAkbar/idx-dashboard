@@ -149,12 +149,14 @@ export function KolomKuartalan({ fd }: { fd: StockFundamental }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div className="panel">
         <div className="panel-h">
-          <div className="fd-tabs">
+          <div className="tabs" role="tablist" aria-label="Metrik Kuartalan">
             {TABS.map((t) => (
               <button
                 key={t.id}
                 type="button"
-                className={`fd-tab-btn${mode === t.id ? ' active' : ''}`}
+                role="tab"
+                aria-selected={mode === t.id}
+                className={`tab${mode === t.id ? ' on' : ''}`}
                 onClick={() => setMode(t.id)}
               >
                 {t.label}

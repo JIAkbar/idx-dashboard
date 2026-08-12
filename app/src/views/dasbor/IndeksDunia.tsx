@@ -1,9 +1,78 @@
+import { useMemo } from 'react'
+import type { ChartConfiguration } from 'chart.js/auto'
 import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
 import { Kalender } from '../../components/dasbor/Kalender'
 import { Papan } from '../../components/dasbor/Papan'
-import { useDataHarian } from '../../lib/dasbor/dataHarian'
+import { useDataHarian, type TanggalIndex } from '../../lib/dasbor/dataHarian'
 import { hitungYtdPct } from '../../lib/dasbor/ytd'
 import { fN, fp, fmtNF } from '../../lib/dasbor/format'
+import { useChartCanvas } from '../../lib/dasbor/useChartJs'
+import { useTheme } from '../../context/ThemeContext'
+import { IkonMenu, IKON_PERINGATAN, IKON_GLOBE, IKON_PENGGARIS, IKON_GRAFIK_BATANG } from '../../components/dasbor/IkonMenu'
+
+/**
+ * Grafik mini board-side (Fix #27) — pakai tanggalTersedia (data/index.json)
+ * yang SUDAH berisi seri ihsg per hari bursa tahun berjalan, tidak perlu
+ * fetch tambahan. Komponen TERPISAH dari IndeksDunia (pola sama dengan
+ * Flow.tsx/Quadrant.tsx) sengaja: IndeksDunia punya early-return
+ * loading/error SEBELUM kanvas ini dipasang ke DOM — kalau hook chart
+ * dipanggil langsung di IndeksDunia, render pertama yang config-nya
+ * terisi terjadi SAAT kanvas belum ada di DOM (masih cabang loading),
+ * lalu saat kanvas akhirnya terpasang, dependency [config] sudah sama
+ * (referensi tak berubah) jadi effect tidak jalan ulang — chart tak
+ * pernah kebentuk. Mount sebagai komponen baru di sini menghindari itu:
+ * render pertamanya sudah pasti kanvas ADA sekaligus config terisi.
+ */
+function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
+  const { theme } = useTheme()
+
+  const config = useMemo<ChartConfiguration<'line', number[], string> | null>(() => {
+    if (dates.length === 0) return null
+    const isDark = theme === 'dark'
+    const amber = isDark ? '#F0A62B' : '#B87A10'
+    const amberFill = isDark ? 'rgba(240,166,43,.22)' : 'rgba(184,122,16,.16)'
+    return {
+      type: 'line',
+      data: {
+        labels: dates.map((d) => d.date_id),
+        datasets: [{
+          data: dates.map((d) => d.ihsg),
+          borderColor: amber,
+          backgroundColor: amberFill,
+          borderWidth: 1.8,
+          pointRadius: 0,
+          fill: true,
+          tension: 0.15,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (ctx) => `IHSG: ${fN(ctx.parsed.y)}` } },
+        },
+        scales: { x: { display: false }, y: { display: false } },
+      },
+    }
+  }, [dates, theme])
+  const canvasRef = useChartCanvas(config)
+
+  return (
+    <div className="board-side">
+      <span className="lbl" style={{ display: 'block', marginBottom: 6 }}>IHSG — Tahun Berjalan</span>
+      {/* canvas dipaksa display:block+width:100% LEWAT STYLE (bukan andalkan
+          Chart.js) — .board-side flex item, canvas default-nya display:inline
+          lebar intrinsik 300px; kalau Chart.js sempat baca lebar container
+          SEBELUM browser reflow ulang gara-gara canvas inline itu, elemen
+          kebaca 300px dan macet di situ (tinggi ikut kanvas resize kanan,
+          lebar tidak). Kuncian native CSS ini motong akar masalahnya. */}
+      <div className="chart-wrap" style={{ height: 120 }}>
+        <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
+      </div>
+    </div>
+  )
+}
 
 /**
  * Panel "Indeks Dunia" — port buildWorldPanel() index_live.html baris
@@ -37,7 +106,7 @@ export function IndeksDunia() {
       <div className="lantai">
         <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
-          <p style={{ fontSize: 28 }}>⚠️</p>
+          <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p className="lbl">Data tidak tersedia untuk tanggal ini</p>
         </div>
       </div>
@@ -94,6 +163,7 @@ export function IndeksDunia() {
             ))}
           </div>
         </div>
+        <IhsgYtdChart dates={tanggalTersedia} />
       </div>
 
       <div className="grid2 w-kiri">
@@ -102,7 +172,7 @@ export function IndeksDunia() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div className="panel">
             <div className="panel-h">
-              <span className="lbl">🌐 Net Foreign</span>
+              <span className="lbl"><IkonMenu d={IKON_GLOBE} size={13} /> Net Foreign</span>
             </div>
             <div className="nf-grid">
               <div className="nf-cell">
@@ -124,14 +194,18 @@ export function IndeksDunia() {
             </div>
           </div>
 
-          <div className="panel">
+          {/* flex:1 (Fix #23) — .grid2.w-kiri menyamakan tinggi kolom kanan
+              dgn Kalender (kolom terpanjang); tanpa ini sisa ruang di bawah
+              kartu ini kosong tak berbingkai. nf-grid ikut flex + align-items
+              center biar PER/PBV tidak nempel di atas saat kartu melar. */}
+          <div className="panel" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
             <div className="panel-h">
-              <span className="lbl">📐 Market Fundamental</span>
+              <span className="lbl"><IkonMenu d={IKON_PENGGARIS} size={13} /> Market Fundamental</span>
               <span className="num" style={{ fontSize: 11, color: 'var(--text3)' }}>
                 ~ USD/IDR BI = {hari.usd_idr == null ? '—' : fN(hari.usd_idr, 0)}
               </span>
             </div>
-            <div className="nf-grid">
+            <div className="nf-grid" style={{ flex: 1, alignItems: 'center' }}>
               <div className="nf-cell" style={{ textAlign: 'center' }}>
                 <span className="lbl">Market PER (x)</span>
                 <div className="num mf-big">{(hari.mkt_per ?? 0).toFixed(2)}</div>
@@ -147,7 +221,7 @@ export function IndeksDunia() {
 
       <div className="panel">
         <div className="panel-h">
-          <span className="lbl">📊 Average Daily Trading (YTD)</span>
+          <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Average Daily Trading (YTD)</span>
         </div>
         <div className="adt">
           <div className="adt-c">

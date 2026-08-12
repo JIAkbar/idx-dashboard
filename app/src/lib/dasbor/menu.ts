@@ -61,6 +61,10 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M6 3h12a1 1 0 011 1v16a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1zM8 7h8M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01',
   },
   {
+    id: 'bulletin', path: '/bulletin', label: 'Bulletin Arus Pasar', kode: 'BLT',
+    ikon: 'M5 4h11l3 3v13a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1zM16 4v4h3M8 10h7M8 13h7M8 16h4',
+  },
+  {
     id: 'feedback', path: '/feedback', label: 'Kritik & Saran', kode: 'SRN',
     ikon: 'M21 12a8 8 0 01-8 8H4l2.4-2.9A8 8 0 1121 12zM9 11h6M9 14h4',
   },

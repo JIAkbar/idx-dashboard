@@ -1,16 +1,17 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { AvgDown } from './kalkulator/AvgDown'
 import { ProfitAra } from './kalkulator/ProfitAra'
 import { RiskReward } from './kalkulator/RiskReward'
 import { Dividen } from './kalkulator/Dividen'
+import { IkonMenu, IKON_GRAFIK_TURUN, IKON_UANG, IKON_TIMBANGAN, IKON_UANG_KERTAS } from '../../components/dasbor/IkonMenu'
 
 type Tab = 'avgdown' | 'profit' | 'rr' | 'div'
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'avgdown', label: '📉 Avg Down' },
-  { id: 'profit', label: '💰 Profit & ARA' },
-  { id: 'rr', label: '⚖️ Risk/Reward' },
-  { id: 'div', label: '💵 Dividen' },
+const TABS: { id: Tab; label: ReactNode }[] = [
+  { id: 'avgdown', label: <><IkonMenu d={IKON_GRAFIK_TURUN} size={13} /> Avg Down</> },
+  { id: 'profit', label: <><IkonMenu d={IKON_UANG} size={13} /> Profit & ARA</> },
+  { id: 'rr', label: <><IkonMenu d={IKON_TIMBANGAN} size={13} /> Risk/Reward</> },
+  { id: 'div', label: <><IkonMenu d={IKON_UANG_KERTAS} size={13} /> Dividen</> },
 ]
 
 /**
@@ -24,7 +25,7 @@ export function KalkulatorJia() {
   const [feeJual, setFeeJual] = useState(0.25)
 
   return (
-    <div className="lantai">
+    <div className="lantai kalkulator-view">
       <div className="vhead">
         <h1>Kalkulator JIA</h1>
         <span className="sub">alat hitung posisi</span>

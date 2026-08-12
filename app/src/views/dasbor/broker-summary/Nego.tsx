@@ -1,5 +1,7 @@
+import { Link } from 'react-router-dom'
 import type { NegoRow } from '../../../lib/dasbor/brokerSummaryData'
 import { fmtB } from '../../../lib/dasbor/brokerSummaryFormat'
+import { IkonMenu, IKON_ULANG } from '../../../components/dasbor/IkonMenu'
 
 interface NegoProps {
   rows: NegoRow[]
@@ -19,7 +21,7 @@ export function Nego({ rows }: NegoProps) {
 
   return (
     <div>
-      <div className="lbl" style={{ marginBottom: 10 }}>🔄 Top Non-Regular (NEGO) by Nilai</div>
+      <div className="lbl" style={{ marginBottom: 10 }}><IkonMenu d={IKON_ULANG} size={13} /> Top Non-Regular (NEGO) by Nilai</div>
       {top.length === 0 ? (
         <div style={{ color: 'var(--text2)', padding: 20, textAlign: 'center' }}>Tidak ada data NEGO</div>
       ) : (
@@ -29,7 +31,7 @@ export function Nego({ rows }: NegoProps) {
             return (
               <div key={n.ticker} style={{ display: 'grid', gridTemplateColumns: COLS, gap: 8, alignItems: 'center' }}>
                 <span className="num" style={{ fontSize: 11, color: 'var(--text3)', textAlign: 'right' }}>{i + 1}</span>
-                <span className="tick">{n.ticker}</span>
+                <Link to={`/chart?sym=${n.ticker}`} className="tick">{n.ticker}</Link>
                 <span style={{ fontSize: 11.5, color: 'var(--text2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.nama}</span>
                 <div className="bar-tr"><div className="bar-fl" style={{ width: `${barPct}%` }} /></div>
                 <span className="r num">{fmtB(n.nilai)}</span>
