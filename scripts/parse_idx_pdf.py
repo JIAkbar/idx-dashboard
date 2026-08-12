@@ -2,7 +2,7 @@
 IDX Daily Statistics PDF Parser
 ================================
 Baca PDF IDX Daily Statistics → hasilkan file JSON per hari
-Output: data/ds_YYMMDD.json + data/index.json
+Output: data-idx/json/ds_YYMMDD.json + data-idx/json/index.json
 
 Cara pakai:
   python parse_idx_pdf.py ds_260605.pdf
@@ -14,8 +14,8 @@ from pathlib import Path
 import pdfplumber
 
 ROOT_DIR   = Path(__file__).parent.parent  # root repo
-OUTPUT_DIR = ROOT_DIR / "data"             # JSON output
-PDF_DIR    = ROOT_DIR / "data" / "pdf"    # PDF input
+OUTPUT_DIR = ROOT_DIR / "data-idx" / "json"  # JSON output
+PDF_DIR    = ROOT_DIR / "data-idx" / "daily" # PDF input
 
 HARI_ID  = {"Monday":"Senin","Tuesday":"Selasa","Wednesday":"Rabu",
             "Thursday":"Kamis","Friday":"Jumat","Saturday":"Sabtu","Sunday":"Minggu"}

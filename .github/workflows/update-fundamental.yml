@@ -39,7 +39,7 @@ jobs:
       # 3. Install dependencies
       - name: Install Python packages
         run: |
-          pip install yfinance pandas requests openpyxl --quiet
+          pip install -r requirements.txt pandas openpyxl --quiet
 
       # 4. Jalankan fetch — argumen: --ihsg (959 saham) atau --semua (default ~50)
       - name: Fetch data fundamental IDX
@@ -54,7 +54,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/fundamental/
+          git add data-idx/json/fundamental/
           if git diff --staged --quiet; then
             echo "Tidak ada perubahan data — skip commit."
           else

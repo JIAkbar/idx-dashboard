@@ -50,7 +50,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/
+          git add data-idx/json/
           # Cek apakah ada perubahan
           if git diff --staged --quiet; then
             echo "Tidak ada data baru hari ini (mungkin bursa libur)."
