@@ -3,11 +3,11 @@ import { useCallback, useEffect, useState } from 'react'
 /**
  * Tipe & fetch data Peta Investor. Port dari index_live.html piInit()
  * baris 4452-4472. Bentuk field diverifikasi langsung dari
- * data/investor_map.json (952 emiten, 6.728 baris holder) — BUKAN tebakan:
+ * data-idx/json/investor_map.json (952 emiten, 6.728 baris holder) — BUKAN tebakan:
  * tiap holder cuma punya {name, cls, lf, pct}. Sumber asli (index_live.html)
  * banyak memakai h.type siap pakai ('CORP'/'IND'/'OTH') dan lf berisi kode
  * negara ('US','SG', dst) untuk shape/warna node "focused view" —
- * data/investor_map.json TIDAK punya field-field itu (cuma cls bebas-teks +
+ * data-idx/json/investor_map.json TIDAK punya field-field itu (cuma cls bebas-teks +
  * lf 'L'/'F'). `holderType()` di bawah menurunkan kategori kasar dari cls;
  * lihat catatan ponytail di graphRender.ts soal shape focused view.
  */
@@ -34,12 +34,10 @@ export function holderType(cls: string): HolderType {
   return 'CORP'
 }
 
-/** Warna node graf — port piNodeColor() index_live.html baris 23-27, sama persis dengan legenda panel (Emiten/Institusi Domestik/Institusi Asing/Individu Lokal/Individu Asing). */
-export function nodeColor(node: { kind: 'emiten' } | { kind: 'investor'; cls: string; lf: string }): string {
-  if (node.kind === 'emiten') return '#f97316'
-  if (node.lf === 'F') return /individual/i.test(node.cls) ? '#ec4899' : '#a855f7'
-  return /individual/i.test(node.cls) ? '#22c55e' : '#3b82f6'
-}
+/* piNodeColor() lama (5 warna jenuh: oranye/biru/ungu/hijau/merah muda) dihapus
+   di Task 12 — palet simpul sekarang tinggal satu aksen amber + derajat abu-biru
+   dan hidup di graphRender.ts (`WARNA`/`warnaSimpul`), satu tempat yang juga
+   dipakai legenda. Hijau/merah dikunci untuk arah angka. */
 
 /** Entitas terpilih (klik node graf / baris tabel / hasil pencarian) — dipakai GrafikJaringan, ByStock, ByInvestor, panel detail, dan search box supaya satu handler bisa dipakai semua sumber klik. */
 export type GraphSelection =
@@ -52,7 +50,7 @@ let inflight: Promise<InvestorMapEntry[]> | null = null
 function load(): Promise<InvestorMapEntry[]> {
   if (cache) return Promise.resolve(cache)
   if (!inflight) {
-    inflight = fetch('/data/investor_map.json')
+    inflight = fetch('/data-idx/json/investor_map.json')
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json() as Promise<InvestorMapEntry[]>

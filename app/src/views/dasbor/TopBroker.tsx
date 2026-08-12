@@ -1,107 +1,159 @@
+import type { CSSProperties } from 'react'
+import { Link } from 'react-router-dom'
 import { Kalender } from '../../components/dasbor/Kalender'
 import { useDataHarian } from '../../lib/dasbor/dataHarian'
+import { useUrut } from '../../lib/dasbor/useUrut'
 import { fN } from '../../lib/dasbor/format'
 import type { StockRankRow, BrokerRankRow } from '../../lib/dasbor/dataHarian'
+import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 
-/** Panel "Top Broker" — port buildBrokerPanel() index_live.html baris 2919-2967. */
+/**
+ * Reset tombol judul kolom ke tampilan teks polos — padanan `button{font:
+ * inherit;color:inherit;background:none;border:none;cursor:pointer;padding:0}`
+ * (docs/design-lantai-bursa-reimagined.html:55). Aturan itu ada di "BASE" milik
+ * artifact tapi TIDAK ikut disalin ke lantai.css (komentar lantai.css bilang
+ * "sudah ditangani di luar .lantai", nyatanya belum — dasbor.css juga tidak
+ * punya reset button global). Ditaruh inline di sini, bukan di lantai.css,
+ * karena file itu di luar cakupan Task 6.
+ */
+const thBtn: CSSProperties = { font: 'inherit', color: 'inherit', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }
+
+type UrutState<T> = { kunci: keyof T; arah: 'naik' | 'turun'; klik: (k: keyof T) => void }
+
+/** Judul kolom yang bisa diklik untuk mengurutkan; teks & makna kolom tetap sama. */
+function thSort<T extends object>(s: UrutState<T>, k: keyof T, label: string, kanan = false) {
+  const aktif = s.kunci === k
+  return (
+    <th className={kanan ? 'r' : undefined}>
+      <button type="button" style={thBtn} onClick={() => s.klik(k)}>
+        {label}{aktif ? (s.arah === 'naik' ? ' ▲' : ' ▼') : ''}
+      </button>
+    </th>
+  )
+}
+
+/**
+ * Panel "Top Broker" — port buildBrokerPanel() index_live.html baris 2919-2967,
+ * bergaya papan "Lantai Bursa" (docs/design-lantai-bursa-reimagined.html baris
+ * 558-581). Enam blok dan urutannya beku: Top Stock Trading by Volume/Value/
+ * Frequency, lalu Top Broker by Volume/Value/Frequency — hanya lapisan tampilan
+ * dan pengurutan lewat judul kolom (useUrut) yang ditambahkan.
+ */
 export function TopBroker() {
   const { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error } = useDataHarian()
 
+  // Hooks dipanggil tanpa syarat sebelum return dini loading/error (Rules of
+  // Hooks) — pola sama dengan SektorIndeks.tsx.
+  const volS = useUrut<StockRankRow>(hari?.top_vol ?? [], 'v')
+  const valS = useUrut<StockRankRow>(hari?.top_val ?? [], 'v')
+  const freqS = useUrut<StockRankRow>(hari?.top_freq ?? [], 'v')
+  const volB = useUrut<BrokerRankRow>(hari?.broker_vol ?? [], 'v')
+  const valB = useUrut<BrokerRankRow>(hari?.broker_val ?? [], 'v')
+  const freqB = useUrut<BrokerRankRow>(hari?.broker_freq ?? [], 'v')
+
   if (loading && !hari) {
     return (
-      <>
+      <div className="lantai">
         <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
-        <div className="card" style={{ textAlign: 'center', padding: '40px 20px' }}>
+        <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p style={{ fontSize: 28 }}>⏳</p>
-          <p style={{ color: 'var(--text2)', fontSize: 12 }}>Memuat data...</p>
+          <p className="lbl">Memuat data...</p>
         </div>
-      </>
+      </div>
     )
   }
 
   if (error || !hari) {
     return (
-      <>
+      <div className="lantai">
         <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
-        <div className="card" style={{ textAlign: 'center', padding: '40px 20px' }}>
-          <p style={{ fontSize: 28 }}>⚠️</p>
-          <p style={{ color: 'var(--text2)', fontSize: 12 }}>Data tidak tersedia untuk tanggal ini</p>
+        <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
+          <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
+          <p className="lbl">Data tidak tersedia untuk tanggal ini</p>
         </div>
-      </>
+      </div>
     )
   }
 
-  const tblStock = (data: StockRankRow[]) => data.map((x) => (
+  const tblStock = (s: UrutState<StockRankRow> & { urut: StockRankRow[] }) => s.urut.map((x) => (
     <tr key={x.c}>
-      <td style={{ fontWeight: 700, color: 'var(--accent)' }}>{x.c}</td>
-      <td className="r">{fN(x.v, 0)}</td>
-      <td className="r muted">{x.p}%</td>
+      <td><Link to={`/chart?sym=${x.c}`} className="tick">{x.c}</Link></td>
+      <td className="r num">{fN(x.v, 0)}</td>
+      <td className="r num muted">{x.p}%</td>
     </tr>
   ))
 
-  const tblBroker = (data: BrokerRankRow[]) => data.map((x) => (
+  const tblBroker = (s: UrutState<BrokerRankRow> & { urut: BrokerRankRow[] }) => s.urut.map((x) => (
     <tr key={x.cd}>
       <td><span className="bchip">{x.cd}</span></td>
-      <td style={{ fontSize: 10, color: 'var(--text2)' }}>{x.nm}</td>
-      <td className="r">{fN(x.v, 0)}</td>
-      <td className="r muted">{x.p}%</td>
+      <td className="muted">{x.nm}</td>
+      <td className="r num">{fN(x.v, 0)}</td>
+      <td className="r num muted">{x.p}%</td>
     </tr>
   ))
 
   return (
-    <>
+    <div className="lantai">
       <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
 
-      <div className="card">
-        <p className="ct b">Top Stock Trading — By Volume · Value · Frequency</p>
-        <div className="g3">
-          <div>
-            <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', marginBottom: 7 }}>By Volume (Juta Saham)</p>
-            <table>
-              <thead><tr><th>Kode</th><th className="r">Volume</th><th className="r">%</th></tr></thead>
-              <tbody>{tblStock(hari.top_vol ?? [])}</tbody>
-            </table>
-          </div>
-          <div>
-            <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', marginBottom: 7 }}>By Value (Miliar IDR)</p>
-            <table>
-              <thead><tr><th>Kode</th><th className="r">Nilai</th><th className="r">%</th></tr></thead>
-              <tbody>{tblStock(hari.top_val ?? [])}</tbody>
-            </table>
-          </div>
-          <div>
-            <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', marginBottom: 7 }}>By Frequency (Kali)</p>
-            <table>
-              <thead><tr><th>Kode</th><th className="r">Frekuensi</th><th className="r">%</th></tr></thead>
-              <tbody>{tblStock(hari.top_freq ?? [])}</tbody>
-            </table>
+      <div className="panel">
+        <div className="panel-h"><span className="lbl">Top Stock Trading — By Volume · Value · Frequency</span></div>
+        <div className="panel-b">
+          <div className="grid3">
+            <div>
+              <p className="lbl" style={{ marginBottom: 7 }}>By Volume (Juta Saham)</p>
+              <table className="tbl">
+                <thead><tr>{thSort(volS, 'c', 'Kode')}{thSort(volS, 'v', 'Volume', true)}{thSort(volS, 'p', '%', true)}</tr></thead>
+                <tbody>{tblStock(volS)}</tbody>
+              </table>
+            </div>
+            <div>
+              <p className="lbl" style={{ marginBottom: 7 }}>By Value (Miliar IDR)</p>
+              <table className="tbl">
+                <thead><tr>{thSort(valS, 'c', 'Kode')}{thSort(valS, 'v', 'Nilai', true)}{thSort(valS, 'p', '%', true)}</tr></thead>
+                <tbody>{tblStock(valS)}</tbody>
+              </table>
+            </div>
+            <div>
+              <p className="lbl" style={{ marginBottom: 7 }}>By Frequency (Kali)</p>
+              <table className="tbl">
+                <thead><tr>{thSort(freqS, 'c', 'Kode')}{thSort(freqS, 'v', 'Frekuensi', true)}{thSort(freqS, 'p', '%', true)}</tr></thead>
+                <tbody>{tblStock(freqS)}</tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="g3">
-        <div className="card">
-          <p className="ct gold">Top Broker — By Volume (Juta Saham)</p>
-          <table>
-            <thead><tr><th>Kode</th><th>Nama Broker</th><th className="r">Volume</th><th className="r">%</th></tr></thead>
-            <tbody>{tblBroker(hari.broker_vol ?? [])}</tbody>
-          </table>
+      <div className="grid3">
+        <div className="panel">
+          <div className="panel-h"><span className="lbl">Top Broker — By Volume (Juta Saham)</span></div>
+          <div className="board-tbl-wrap">
+            <table className="tbl">
+              <thead><tr>{thSort(volB, 'cd', 'Kode')}{thSort(volB, 'nm', 'Nama Broker')}{thSort(volB, 'v', 'Volume', true)}{thSort(volB, 'p', '%', true)}</tr></thead>
+              <tbody>{tblBroker(volB)}</tbody>
+            </table>
+          </div>
         </div>
-        <div className="card">
-          <p className="ct gold">Top Broker — By Value (Miliar IDR)</p>
-          <table>
-            <thead><tr><th>Kode</th><th>Nama Broker</th><th className="r">Nilai</th><th className="r">%</th></tr></thead>
-            <tbody>{tblBroker(hari.broker_val ?? [])}</tbody>
-          </table>
+        <div className="panel">
+          <div className="panel-h"><span className="lbl">Top Broker — By Value (Miliar IDR)</span></div>
+          <div className="board-tbl-wrap">
+            <table className="tbl">
+              <thead><tr>{thSort(valB, 'cd', 'Kode')}{thSort(valB, 'nm', 'Nama Broker')}{thSort(valB, 'v', 'Nilai', true)}{thSort(valB, 'p', '%', true)}</tr></thead>
+              <tbody>{tblBroker(valB)}</tbody>
+            </table>
+          </div>
         </div>
-        <div className="card">
-          <p className="ct gold">Top Broker — By Frequency (Kali)</p>
-          <table>
-            <thead><tr><th>Kode</th><th>Nama Broker</th><th className="r">Frekuensi</th><th className="r">%</th></tr></thead>
-            <tbody>{tblBroker(hari.broker_freq ?? [])}</tbody>
-          </table>
+        <div className="panel">
+          <div className="panel-h"><span className="lbl">Top Broker — By Frequency (Kali)</span></div>
+          <div className="board-tbl-wrap">
+            <table className="tbl">
+              <thead><tr>{thSort(freqB, 'cd', 'Kode')}{thSort(freqB, 'nm', 'Nama Broker')}{thSort(freqB, 'v', 'Frekuensi', true)}{thSort(freqB, 'p', '%', true)}</tr></thead>
+              <tbody>{tblBroker(freqB)}</tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }

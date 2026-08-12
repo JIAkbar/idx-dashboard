@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-/** Satu baris data/index.json → {dates:[...]}. Port field dari index_live.html baris 2390-2394. */
+/** Satu baris data-idx/json/index.json → {dates:[...]}. Port field dari index_live.html baris 2390-2394. */
 export interface TanggalIndex {
   stem: string
   date_iso: string
@@ -71,7 +71,7 @@ export interface SectorRow {
 }
 
 /**
- * Data satu hari (data/${stem}.json). Field yang dipakai panel World/Stocks/
+ * Data satu hari (data-idx/json/${stem}.json). Field yang dipakai panel World/Stocks/
  * Broker/Sector didaftar eksplisit; field lain lewat index signature supaya
  * tipe ini tidak perlu diubah tiap ada menu baru.
  */
@@ -80,6 +80,23 @@ export interface DataHarian {
   trading_day: number
   ihsg_value: number
   ihsg_pct: number
+  /**
+   * Ringkasan halaman 1 PDF IDX (scripts/parse_idx_pdf.py baris 61-92).
+   * Satuan: vol_today juta lembar, val_idr_today miliar IDR, freq_today ribu
+   * kali, mcap_idr triliun IDR. Opsional karena parser bisa gagal cocok.
+   *
+   * `ihsg_change` sengaja TIDAK didaftarkan: ruas itu hanya ada di 55 dari 93
+   * berkas harian, jadi pemakaiannya pasti berujung `?? 0` — pola bug yang
+   * sama dengan `ihsg_ytd` (lihat ytd.ts). Perubahan harian dihitung dari
+   * `ihsg_value - ihsg_prev`, dua ruas yang ada di seluruh 93 berkas.
+   */
+  ihsg_prev?: number
+  ihsg_high?: number
+  ihsg_low?: number
+  vol_today?: number
+  val_idr_today?: number
+  freq_today?: number
+  mcap_idr?: number
   world?: WorldRow[]
   avg_vol?: number
   avg_val_idr?: number
@@ -144,7 +161,7 @@ export function useDataHarian() {
     }
 
     setLoading(true)
-    fetch(`/data/${stem}.json`)
+    fetch(`/data-idx/json/${stem}.json`)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json() as Promise<DataHarian>
@@ -162,7 +179,7 @@ export function useDataHarian() {
 
   useEffect(() => {
     let cancelled = false
-    fetch('/data/index.json')
+    fetch('/data-idx/json/index.json')
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json() as Promise<{ dates?: TanggalIndex[] }>
@@ -189,4 +206,51 @@ export function useDataHarian() {
   }, [pilihTanggal])
 
   return { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error }
+}
+
+/**
+ * Data satu hari by stem, on-demand, TANPA mengubah tanggalAktif/hari
+ * (state utama `useDataHarian`). Dipakai pemilih periode 1B/3B di tabel
+ * sektor (SektorIndeks.tsx) yang butuh SATU berkas pembanding tambahan.
+ * Pakai `cache` modul yang sama dengan `pilihTanggal` (bukan cache
+ * terpisah) — pola sama dengan `useStockFundamental` di stockDetailData.ts.
+ */
+export function useDataPembanding(stem: string | null) {
+  const [data, setData] = useState<DataHarian | null>(stem ? (cache.get(stem) ?? null) : null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!stem) {
+      setData(null)
+      return
+    }
+    const cached = cache.get(stem)
+    if (cached) {
+      setData(cached)
+      return
+    }
+    let cancelled = false
+    setLoading(true)
+    fetch(`/data-idx/json/${stem}.json`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json() as Promise<DataHarian>
+      })
+      .then((d) => {
+        if (cancelled) return
+        cache.set(stem, d)
+        setData(d)
+      })
+      .catch(() => {
+        if (!cancelled) setData(null)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [stem])
+
+  return { data, loading }
 }

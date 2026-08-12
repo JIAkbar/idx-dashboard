@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fN, fp, cls } from '../../../lib/dasbor/format'
 import { onlyDigits, formatRibuan, parseRibuan } from '../../../lib/dasbor/kalkulatorFormat'
+import { IkonMenu, IKON_PAPAN_KLIP, IKON_JAM, IKON_CARI, IKON_GIR, IKON_GRAFIK_BATANG, IKON_PERINGATAN } from '../../../components/dasbor/IkonMenu'
 
 type AdcMode = 'half' | 'lossmax' | 'endavg' | 'avgqty' | 'avgval'
 
@@ -196,166 +197,190 @@ export function AvgDown() {
   }, [canCompute, avgN, qtyN, lastN, mode, lossmaxN, endavgN, avgqtyN, avgvalN])
 
   return (
-    <div className="adc-wrap">
-      {/* Stock Position */}
-      <div className="card adc-section">
-        <div className="ct b">📋 Posisi Saham</div>
-
-        <div className="adc-field" style={{ marginBottom: 10 }}>
-          <label>Kode Saham</label>
-          <div className="adc-kode-row">
-            <input
-              className="adc-input"
-              type="text"
-              placeholder="Contoh: BBCA"
-              maxLength={6}
-              value={kode}
-              onChange={(e) => setKode(e.target.value.toUpperCase())}
-            />
-            <button className="adc-fetch-btn" onClick={fetchPrice} disabled={fetching}>
-              {fetching ? '⏳' : '🔍 Cari Harga'}
-            </button>
-          </div>
-          <div className="adc-name">{name}</div>
-        </div>
-
-        <div className="adc-grid2" style={{ marginBottom: 10 }}>
-          <div className="adc-field">
-            <label>Avg Cost (Harga Beli Rata-rata)</label>
-            <input className="adc-input" type="number" placeholder="0" min={0} value={avg} onChange={(e) => setAvg(e.target.value)} />
-            <div className="adc-unit">IDR per saham</div>
-          </div>
-          <div className="adc-field">
-            <label>Qty Balance</label>
-            <input className="adc-input" type="number" placeholder="0" min={0} value={qty} onChange={(e) => setQty(e.target.value)} />
-            <div className="adc-unit">Lot (1 lot = 100 saham)</div>
-          </div>
-        </div>
-
-        <div className="adc-field" style={{ marginBottom: 10 }}>
-          <label>Last Price (Harga Sekarang)</label>
-          <input className="adc-input" type="number" placeholder="0" min={0} value={last} onChange={(e) => setLast(e.target.value)} />
-          <div className="adc-price-row">
-            <span className={`adc-badge ${priceSrc.kind}`}>{priceSrc.label}</span>
-            <span style={{ fontSize: 10, color: 'var(--text3)' }}>atau klik 🔍 untuk ambil harga otomatis (delay ~15m)</span>
-          </div>
-        </div>
-
-        <div className="adc-stat-box">
-          <div className="adc-stat-left">
-            <span className="adc-stat-label">Nilai Investasi</span>
-            <span className="adc-stat-val">{current ? fN(current.curVal, 0) : '—'}</span>
-            <span className="adc-unit">IDR</span>
-            <div style={{ height: 8 }} />
-            <span className="adc-stat-label">Unrealized G/L</span>
-            <span className="adc-stat-val" style={{ color: 'var(--text2)' }}>
-              {current ? `${fN(current.curGLIdr, 0)} IDR` : '—'}
-            </span>
-          </div>
-          <div>
-            <div className={`adc-gl-pct ${current ? cls(current.curGLPct) : 'red'}`}>
-              {current ? fp(current.curGLPct) : '—'}
-            </div>
-            <div className="adc-gl-idr">{current ? fp(current.curGLPct) : '—'}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Mode Selection */}
-      <div className="card adc-section">
-        <div className="ct b">⚙️ Strategi Average Down</div>
-        <div className="adc-modes">
-          {MODES.map((m) => (
-            <div key={m.id} className={`adc-mode${mode === m.id ? ' selected' : ''}`} onClick={() => setMode(m.id)}>
-              <input type="radio" name="adc-mode" checked={mode === m.id} readOnly />
-              <div style={{ flex: 1 }}>
-                <div className="adc-mode-label">{m.label}</div>
-                <div className="adc-mode-desc">{m.desc}</div>
-                {m.id === 'half' && mode === 'half' && result?.halfTargetPct !== undefined && current && (
-                  <div className="adc-mode-sub">
-                    Loss saat ini: {fp(current.curGLPct)} → target: {fp(result.halfTargetPct)}
-                  </div>
-                )}
+    <div className="grid2 w-kiri">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {/* Stock Position */}
+        <div className="panel">
+          <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_PAPAN_KLIP} size={13} /> Posisi Saham</span></div>
+          <div className="panel-b">
+            <div className="field" style={{ marginBottom: 10 }}>
+              <span className="lbl">Kode Saham</span>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  className="inp"
+                  style={{ flex: 1, minWidth: 0 }}
+                  type="text"
+                  placeholder="Contoh: BBCA"
+                  maxLength={6}
+                  value={kode}
+                  onChange={(e) => setKode(e.target.value.toUpperCase())}
+                />
+                <button className="btn-p" style={{ whiteSpace: 'nowrap' }} onClick={fetchPrice} disabled={fetching}>
+                  {fetching ? <IkonMenu d={IKON_JAM} size={13} /> : <><IkonMenu d={IKON_CARI} size={13} /> Cari Harga</>}
+                </button>
               </div>
-              {m.id === 'lossmax' && mode === 'lossmax' && (
-                <div className="adc-mode-inp" onClick={(e) => e.stopPropagation()}>
-                  <input type="number" value={lossmax} min={0.1} max={99} step={0.5} onChange={(e) => setLossmax(e.target.value)} />
-                  <span>%</span>
+              <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 4 }}>{name}</div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 10 }}>
+              <div className="field">
+                <span className="lbl">Avg Cost (Harga Beli Rata-rata)</span>
+                <input className="inp" type="number" placeholder="0" min={0} value={avg} onChange={(e) => setAvg(e.target.value)} />
+                <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 3 }}>IDR per saham</div>
+              </div>
+              <div className="field">
+                <span className="lbl">Qty Balance</span>
+                <input className="inp" type="number" placeholder="0" min={0} value={qty} onChange={(e) => setQty(e.target.value)} />
+                <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 3 }}>Lot (1 lot = 100 saham)</div>
+              </div>
+            </div>
+
+            <div className="field" style={{ marginBottom: 10 }}>
+              <span className="lbl">Last Price (Harga Sekarang)</span>
+              <input className="inp" type="number" placeholder="0" min={0} value={last} onChange={(e) => setLast(e.target.value)} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5, flexWrap: 'wrap' }}>
+                <span className={`chip ${priceSrc.kind === 'auto' ? 'up' : 'warn'}`}>{priceSrc.label}</span>
+                <span style={{ fontSize: 10, color: 'var(--text3)' }}>atau klik <IkonMenu d={IKON_CARI} size={11} /> untuk ambil harga otomatis (delay ~15m)</span>
+              </div>
+            </div>
+
+            <div className="vcard">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 10 }}>
+                <div>
+                  <span className="lbl">Nilai Investasi</span>
+                  <div className="num" style={{ fontSize: 17, fontWeight: 600 }}>{current ? fN(current.curVal, 0) : '—'}</div>
+                  <div className="v-note">
+                    IDR &middot; G/L {current ? `${fN(current.curGLIdr, 0)} IDR` : '—'}
+                  </div>
+                </div>
+                <div className={`num ${current ? cls(current.curGLPct) : ''}`} style={{ fontSize: 20, fontWeight: 600 }}>
+                  {current ? fp(current.curGLPct) : '—'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mode Selection */}
+        <div className="panel">
+          <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_GIR} size={13} /> Strategi Average Down</span></div>
+          <div className="panel-b">
+            <div className="tabs" role="radiogroup" aria-label="Strategi Average Down" style={{ flexDirection: 'column', width: '100%' }}>
+              {MODES.map((m) => (
+                <label
+                  key={m.id}
+                  className={'tab' + (mode === m.id ? ' on' : '')}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
+                >
+                  <input type="radio" name="adc-mode" checked={mode === m.id} onChange={() => setMode(m.id)} />
+                  {m.label}
+                </label>
+              ))}
+            </div>
+
+            <div className="vcard" style={{ marginTop: 10 }}>
+              <div className="v-note">{MODES.find((m) => m.id === mode)?.desc}</div>
+              {mode === 'half' && result?.halfTargetPct !== undefined && current && (
+                <div className="v-note">
+                  Loss saat ini: {fp(current.curGLPct)} → target: {fp(result.halfTargetPct)}
                 </div>
               )}
-              {m.id === 'endavg' && mode === 'endavg' && (
-                <div className="adc-mode-inp" onClick={(e) => e.stopPropagation()}>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={formatRibuan(endavgRaw)}
-                    onChange={(e) => setEndavgRaw(onlyDigits(e.target.value))}
-                  />
-                  <span>IDR</span>
+              {mode === 'lossmax' && (
+                <div className="field" style={{ maxWidth: 160 }}>
+                  <span className="lbl">Loss Max</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <input className="inp" type="number" value={lossmax} min={0.1} max={99} step={0.5} onChange={(e) => setLossmax(e.target.value)} />
+                    <span className="num">%</span>
+                  </div>
                 </div>
               )}
-              {m.id === 'avgqty' && mode === 'avgqty' && (
-                <div className="adc-mode-inp" onClick={(e) => e.stopPropagation()}>
-                  <input type="number" value={avgqty} min={0} step={1} onChange={(e) => setAvgqty(e.target.value)} />
-                  <span>Lot</span>
+              {mode === 'endavg' && (
+                <div className="field" style={{ maxWidth: 200 }}>
+                  <span className="lbl">Target End Average</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <input
+                      className="inp"
+                      type="text"
+                      inputMode="numeric"
+                      value={formatRibuan(endavgRaw)}
+                      onChange={(e) => setEndavgRaw(onlyDigits(e.target.value))}
+                    />
+                    <span className="num">IDR</span>
+                  </div>
                 </div>
               )}
-              {m.id === 'avgval' && mode === 'avgval' && (
-                <div className="adc-mode-inp" onClick={(e) => e.stopPropagation()}>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={formatRibuan(avgvalRaw)}
-                    onChange={(e) => setAvgvalRaw(onlyDigits(e.target.value))}
-                  />
-                  <span>IDR</span>
+              {mode === 'avgqty' && (
+                <div className="field" style={{ maxWidth: 160 }}>
+                  <span className="lbl">Jumlah Lot</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <input className="inp" type="number" value={avgqty} min={0} step={1} onChange={(e) => setAvgqty(e.target.value)} />
+                    <span className="num">Lot</span>
+                  </div>
+                </div>
+              )}
+              {mode === 'avgval' && (
+                <div className="field" style={{ maxWidth: 200 }}>
+                  <span className="lbl">Dana Tambahan</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <input
+                      className="inp"
+                      type="text"
+                      inputMode="numeric"
+                      value={formatRibuan(avgvalRaw)}
+                      onChange={(e) => setAvgvalRaw(onlyDigits(e.target.value))}
+                    />
+                    <span className="num">IDR</span>
+                  </div>
                 </div>
               )}
             </div>
-          ))}
+          </div>
         </div>
       </div>
 
-      {/* Estimation Result */}
-      <div className="card adc-section">
-        <div className="ct b">📊 Estimasi Hasil</div>
-        <div className="adc-result-grid">
-          <div className="adc-result-item highlight">
-            <div className="adc-result-label">Buy Again Qty</div>
-            <div className="adc-result-val">
-              {result ? `${fN(result.buyQty, 0)} Lot` : aboveAvg ? 'Harga sudah di atas avg' : '—'}
+      {/* Estimation Result — menempel, terlihat langsung saat isian kiri berubah */}
+      <div style={{ position: 'sticky', top: 60, alignSelf: 'start' }}>
+        <div className="panel">
+          <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Estimasi Hasil</span></div>
+          <div className="panel-b" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div>
+              <span className="lbl">Est. End Average</span>
+              <div className="num" style={{ fontSize: 28, fontWeight: 600, color: 'var(--amber)' }}>
+                {result ? `${fN(result.endAvg, 2)} IDR` : '—'}
+              </div>
             </div>
-            <div className="adc-result-sub">
-              {result ? `${fN(result.buyValue, 0)} IDR` : aboveAvg ? 'Tidak perlu average down' : '—'}
+            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+              <div className="bm">
+                <span className="lbl">Buy Again Qty</span>
+                <span className="num">
+                  {result ? `${fN(result.buyQty, 0)} Lot` : aboveAvg ? 'Sudah di atas avg' : '—'}
+                </span>
+                <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2 }}>
+                  {result ? `${fN(result.buyValue, 0)} IDR` : aboveAvg ? 'Tidak perlu average down' : '—'}
+                </div>
+              </div>
+              <div className="bm">
+                <span className="lbl">End Qty Balance</span>
+                <span className="num">{result ? `${fN(result.endQty, 0)} Lot` : '—'}</span>
+              </div>
+              <div className="bm">
+                <span className="lbl">End Value (Modal)</span>
+                <span className="num">{result ? `${fN(result.endModal, 0)} IDR` : '—'}</span>
+              </div>
+            </div>
+            <div>
+              <span className="lbl">End Current G/L</span>
+              <div className={`num ${result ? cls(result.endGLPct) : ''}`} style={{ fontSize: 18, fontWeight: 600 }}>
+                {result ? fp(result.endGLPct) : '—'}
+              </div>
+              <div className="v-note">{result ? `${fN(result.endGLIdr, 0)} IDR` : '—'}</div>
+            </div>
+            <div className="v-note">
+              <IkonMenu d={IKON_PERINGATAN} size={11} /> Kalkulasi ini bersifat estimasi untuk perencanaan. Bukan saran investasi (Not Financial Advice).
+              <br />
+              Harga delay ~15 menit. Dapat berbeda dengan harga bursa.
             </div>
           </div>
-          <div className="adc-result-item highlight">
-            <div className="adc-result-label">Est. End Average</div>
-            <div className="adc-result-val">{result ? `${fN(result.endAvg, 2)} IDR` : '—'}</div>
-            <div className="adc-result-sub">IDR per saham</div>
-          </div>
-          <div className="adc-result-item">
-            <div className="adc-result-label">End Qty Balance</div>
-            <div className="adc-result-val">{result ? fN(result.endQty, 0) : '—'}</div>
-            <div className="adc-result-sub">Lot</div>
-          </div>
-          <div className="adc-result-item">
-            <div className="adc-result-label">End Value (Modal)</div>
-            <div className="adc-result-val">{result ? fN(result.endModal, 0) : '—'}</div>
-            <div className="adc-result-sub">IDR</div>
-          </div>
-          <div className="adc-result-item" style={{ gridColumn: '1/-1' }}>
-            <div className="adc-result-label">End Current G/L</div>
-            <div className={`adc-result-val ${result ? cls(result.endGLPct) : ''}`}>
-              {result ? fp(result.endGLPct) : '—'}
-            </div>
-            <div className="adc-result-sub">{result ? `${fN(result.endGLIdr, 0)} IDR` : '—'}</div>
-          </div>
-        </div>
-        <div className="adc-disclaimer">
-          ⚠️ Kalkulasi ini bersifat estimasi untuk perencanaan. Bukan saran investasi (Not Financial Advice).
-          <br />
-          Harga delay ~15 menit. Dapat berbeda dengan harga bursa.
         </div>
       </div>
     </div>

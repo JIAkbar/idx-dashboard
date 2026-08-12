@@ -1,19 +1,8 @@
-import { useState, type CSSProperties } from 'react'
+import { useState } from 'react'
 import type { StockFundamental } from '../../../lib/dasbor/stockDetailData'
 import { fp2 } from '../../../lib/dasbor/stockDetailFormat'
 import { FdPercent } from '../../../components/dasbor/FdPercent'
-
-const inputStyle: CSSProperties = {
-  border: '0.5px solid var(--border2)', borderRadius: 6, background: 'var(--bg2)',
-  color: 'var(--text)', fontSize: 13, padding: '5px 8px',
-}
-const resultBoxStyle: CSSProperties = {
-  flex: 1, minWidth: 140, padding: '10px 14px', borderRadius: 8,
-  background: 'var(--bg3)', border: '0.5px solid var(--border)',
-}
-const resultLblStyle: CSSProperties = {
-  fontSize: 9, color: 'var(--text3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4,
-}
+import { IkonMenu, IKON_PENGGARIS, IKON_KALKULATOR, IKON_LAMPU, IKON_GRAFIK_BATANG, IKON_UANG, IKON_PERINGATAN, IKON_GRAFIK_NAIK } from '../../../components/dasbor/IkonMenu'
 
 /** "Rp "+angka bulat — port fv() lokal fdValuationCalc() baris 4397. */
 function rp(v: number | null): string {
@@ -129,63 +118,64 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
   return (
     <div style={{ marginTop: 8 }}>
       <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontSize: 16 }}>📐</span> Analisis Valuasi — Estimasi Fair Value
+        <IkonMenu d={IKON_PENGGARIS} size={16} /> Analisis Valuasi — Estimasi Fair Value
         <span style={{ fontSize: 9, fontWeight: 400, background: 'var(--red-bg)', color: 'var(--red-txt)', padding: '2px 7px', borderRadius: 10 }}>Bukan rekomendasi investasi</span>
       </div>
 
-      <div className="card" style={{ marginBottom: 8 }}>
-        <p className="ct b" style={{ marginBottom: 10 }}>🧮 Graham Valuation Calculator</p>
-        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 12 }}>
-          <div><div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 3 }}>EPS (Rp/saham)</div>
-            <input type="number" value={eps} step="any" style={{ ...inputStyle, width: 90 }} onChange={(e) => setEps(num(e.target.value))} /></div>
-          <div><div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 3 }}>BV/Saham (Rp)</div>
-            <input type="number" value={bv} step="any" style={{ ...inputStyle, width: 100 }} onChange={(e) => setBv(num(e.target.value))} /></div>
-          <div><div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 3 }}>Growth EPS (g%/tahun)</div>
-            <input type="number" value={g} min={0} max={30} step={0.5} style={{ ...inputStyle, width: 75 }} onChange={(e) => setG(num(e.target.value))} /></div>
-          <div><div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 3 }}>Risk-free (Y%)</div>
-            <input type="number" value={Y} min={1} max={20} step={0.25} style={{ ...inputStyle, width: 65 }} onChange={(e) => setY(num(e.target.value))} /></div>
-          <div><div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 3 }}>Harga saat ini</div>
-            <input type="number" value={price} step="any" style={{ ...inputStyle, width: 90 }} onChange={(e) => setPrice(num(e.target.value))} /></div>
-        </div>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <div style={resultBoxStyle}>
-            <div style={resultLblStyle}>Graham Classic</div>
-            <div style={{ fontSize: 9, color: 'var(--text3)', marginBottom: 4 }}>√(22.5 × EPS × BV)</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--accent)' }}>
-              {classic != null ? rp(classic) : <span style={{ color: 'var(--text3)', fontSize: 13 }}>EPS atau BV = 0</span>}
+      <div className="panel" style={{ marginBottom: 8 }}>
+        <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_KALKULATOR} size={13} /> Graham Valuation Calculator</span></div>
+        <div className="panel-b">
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 12 }}>
+            <div className="field"><span className="lbl">EPS (Rp/saham)</span>
+              <input className="inp" type="number" value={eps} step="any" style={{ width: 90 }} onChange={(e) => setEps(num(e.target.value))} /></div>
+            <div className="field"><span className="lbl">BV/Saham (Rp)</span>
+              <input className="inp" type="number" value={bv} step="any" style={{ width: 100 }} onChange={(e) => setBv(num(e.target.value))} /></div>
+            <div className="field"><span className="lbl">Growth EPS (g%/tahun)</span>
+              <input className="inp" type="number" value={g} min={0} max={30} step={0.5} style={{ width: 75 }} onChange={(e) => setG(num(e.target.value))} /></div>
+            <div className="field"><span className="lbl">Risk-free (Y%)</span>
+              <input className="inp" type="number" value={Y} min={1} max={20} step={0.25} style={{ width: 65 }} onChange={(e) => setY(num(e.target.value))} /></div>
+            <div className="field"><span className="lbl">Harga saat ini</span>
+              <input className="inp" type="number" value={price} step="any" style={{ width: 90 }} onChange={(e) => setPrice(num(e.target.value))} /></div>
+          </div>
+          <div className="grid3">
+            <div className="vcard">
+              <span className="lbl">Graham Classic</span>
+              <span className="v-num num">
+                {classic != null ? rp(classic) : <span style={{ color: 'var(--text3)', fontSize: 13 }}>EPS atau BV = 0</span>}
+              </span>
+              <span style={{ fontSize: 11 }}><MosBadge val={classic} price={price} /></span>
+              <span className="v-note">√(22.5 × EPS × BV)</span>
             </div>
-            <div style={{ fontSize: 11, marginTop: 3 }}><MosBadge val={classic} price={price} /></div>
-          </div>
-          <div style={resultBoxStyle}>
-            <div style={resultLblStyle}>Graham Growth</div>
-            <div style={{ fontSize: 9, color: 'var(--text3)', marginBottom: 4 }}>EPS × (8.5 + 2g) × 4.4/Y</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--accent)' }}>
-              {growth != null ? rp(growth) : <span style={{ color: 'var(--text3)', fontSize: 13 }}>EPS = 0</span>}
+            <div className="vcard">
+              <span className="lbl">Graham Growth</span>
+              <span className="v-num num">
+                {growth != null ? rp(growth) : <span style={{ color: 'var(--text3)', fontSize: 13 }}>EPS = 0</span>}
+              </span>
+              <span style={{ fontSize: 11 }}><MosBadge val={growth} price={price} /></span>
+              <span className="v-note">EPS × (8.5 + 2g) × 4.4/Y</span>
             </div>
-            <div style={{ fontSize: 11, marginTop: 3 }}><MosBadge val={growth} price={price} /></div>
+            <div className="vcard">
+              <span className="lbl">NCAV / Net-Net</span>
+              <span className="v-num num">{ncav}</span>
+              <span className="v-note">(Aset Lancar − Utang Total) / Saham · Nilai likuidasi konservatif</span>
+            </div>
           </div>
-          <div style={resultBoxStyle}>
-            <div style={resultLblStyle}>NCAV / Net-Net</div>
-            <div style={{ fontSize: 9, color: 'var(--text3)', marginBottom: 4 }}>(Aset Lancar − Utang Total) / Saham</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)' }}>{ncav}</div>
-            <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 3 }}>Nilai likuidasi konservatif</div>
+          <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 8 }}>
+            <IkonMenu d={IKON_LAMPU} size={11} /> Ubah angka di atas untuk simulasi skenario berbeda. g default dari CAGR EPS historis
+            {fd.eps_cagr_3y != null ? ` (3Y: ${fd.eps_cagr_3y.toFixed(1)}%)` : fd.eps_cagr_2y != null ? ` (2Y: ${fd.eps_cagr_2y.toFixed(1)}%)` : ''}.
+            {' '}Y = yield SBN 10 tahun Indonesia (default 6.75%).
           </div>
-        </div>
-        <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 8 }}>
-          💡 Ubah angka di atas untuk simulasi skenario berbeda. g default dari CAGR EPS historis
-          {fd.eps_cagr_3y != null ? ` (3Y: ${fd.eps_cagr_3y.toFixed(1)}%)` : fd.eps_cagr_2y != null ? ` (2Y: ${fd.eps_cagr_2y.toFixed(1)}%)` : ''}.
-          {' '}Y = yield SBN 10 tahun Indonesia (default 6.75%).
         </div>
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
         {hasRel && (
-          <div className="card" style={{ flex: 1, minWidth: 260 }}>
-            <p className="ct b" style={{ marginBottom: 7 }}>
-              📊 Relative Valuation
-              <span style={{ fontSize: 9, fontWeight: 400, color: 'var(--text3)', marginLeft: 6 }}>vs median sektor ({secCnt} saham)</span>
-            </p>
-            <div style={{ overflowX: 'auto' }}>
+          <div className="panel" style={{ flex: 1, minWidth: 260 }}>
+            <div className="panel-h">
+              <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Relative Valuation</span>
+              <span style={{ fontSize: 9, color: 'var(--text3)' }}>vs median sektor ({secCnt} saham)</span>
+            </div>
+            <div className="panel-b" style={{ overflowX: 'auto' }}>
               <table style={{ minWidth: 260 }}>
                 <thead><tr><th>Metrik</th><th className="r">Saham</th><th className="r">Sektor</th><th className="r">Status</th></tr></thead>
                 <tbody>
@@ -200,33 +190,37 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
         )}
 
         {showDdm ? (
-          <div className="card" style={{ flex: 1, minWidth: 220 }}>
-            <p className="ct b" style={{ marginBottom: 7 }}>💰 DDM — Dividend Discount</p>
-            <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 8 }}>
-              Gordon Growth Model · Required Return ={' '}
-              <input type="number" value={ddmR} min={5} max={25} step={0.5} style={{ ...inputStyle, width: 38, padding: '1px 3px', textAlign: 'center', fontSize: 10, borderRadius: 4 }} onChange={(e) => setDdmR(num(e.target.value))} />%
+          <div className="panel" style={{ flex: 1, minWidth: 220 }}>
+            <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_UANG} size={13} /> DDM — Dividend Discount</span></div>
+            <div className="panel-b">
+              <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 8 }}>
+                Gordon Growth Model · Required Return ={' '}
+                <input className="inp" type="number" value={ddmR} min={5} max={25} step={0.5} style={{ width: 44, padding: '1px 3px', textAlign: 'center', fontSize: 10 }} onChange={(e) => setDdmR(num(e.target.value))} />%
+              </div>
+              <table>
+                <tbody>
+                  <tr><td>DPS Terakhir</td><td className="r" style={{ color: 'var(--text)' }}>Rp {latestDPS != null ? Number(latestDPS).toLocaleString('id-ID', { maximumFractionDigits: 0 }) : '—'}</td></tr>
+                  <tr><td>Growth DPS ({ddmYears}Y)</td><td className="r"><FdPercent v={fd.ddm_g_rate ?? null} d={1} /></td></tr>
+                  <tr><td>DDM Value</td><td className="r" style={{ fontSize: 13, fontWeight: 700, color: 'var(--amber)' }}>{rp(ddmVal)}</td></tr>
+                  <tr><td>MOS vs Harga</td><td className="r"><MosBadge val={ddmVal} price={price} /></td></tr>
+                </tbody>
+              </table>
+              <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 6 }}><IkonMenu d={IKON_PERINGATAN} size={11} /> DDM hanya akurat untuk saham rutin dividen</div>
             </div>
-            <table>
-              <tbody>
-                <tr><td>DPS Terakhir</td><td className="r" style={{ color: 'var(--text)' }}>Rp {latestDPS != null ? Number(latestDPS).toLocaleString('id-ID', { maximumFractionDigits: 0 }) : '—'}</td></tr>
-                <tr><td>Growth DPS ({ddmYears}Y)</td><td className="r"><FdPercent v={fd.ddm_g_rate ?? null} d={1} /></td></tr>
-                <tr><td>DDM Value</td><td className="r" style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>{rp(ddmVal)}</td></tr>
-                <tr><td>MOS vs Harga</td><td className="r"><MosBadge val={ddmVal} price={price} /></td></tr>
-              </tbody>
-            </table>
-            <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 6 }}>⚠️ DDM hanya akurat untuk saham rutin dividen</div>
           </div>
         ) : (
-          <div className="card" style={{ flex: 1, minWidth: 220, opacity: 0.5 }}>
-            <p className="ct b" style={{ marginBottom: 4 }}>💰 DDM</p>
-            <p style={{ fontSize: 11, color: 'var(--text3)' }}>Data dividen tidak cukup (minimal 2 tahun)</p>
+          <div className="panel" style={{ flex: 1, minWidth: 220, opacity: 0.5 }}>
+            <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_UANG} size={13} /> DDM</span></div>
+            <div className="panel-b">
+              <p style={{ fontSize: 11, color: 'var(--text3)' }}>Data dividen tidak cukup (minimal 2 tahun)</p>
+            </div>
           </div>
         )}
 
         {hYrs.length > 0 && (
-          <div className="card" style={{ flex: 1, minWidth: 260 }}>
-            <p className="ct b" style={{ marginBottom: 7 }}>📈 Tren Historis per Saham</p>
-            <div style={{ overflowX: 'auto' }}>
+          <div className="panel" style={{ flex: 1, minWidth: 260 }}>
+            <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_GRAFIK_NAIK} size={13} /> Tren Historis per Saham</span></div>
+            <div className="panel-b" style={{ overflowX: 'auto' }}>
               <table style={{ minWidth: 240 }}>
                 <thead><tr><th>Metrik</th>{hYrs.map((y) => <th key={y} className="r">{y}</th>)}</tr></thead>
                 <tbody>

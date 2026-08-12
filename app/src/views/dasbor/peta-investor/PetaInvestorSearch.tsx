@@ -9,11 +9,14 @@ interface PetaInvestorSearchProps {
   onClear: () => void
 }
 
+/* Empat warna latar penuh (ungu/hijau/hijau/biru) diganti .bchip netral: warna
+   di sini tidak menambah informasi apa pun di atas teksnya sendiri, dan dua di
+   antaranya hijau — dikunci untuk arah angka. */
 function categoryBadge(cls: string) {
-  if (/pemilik|benefi/i.test(cls)) return <span className="pi-cat-badge" style={{ background: '#7c3aed' }}>Pemilik Manfaat</span>
-  if (/direksi|komisar|board|director|commissioner/i.test(cls)) return <span className="pi-cat-badge" style={{ background: '#059669' }}>Direksi</span>
-  if (/individual|person|natural/i.test(cls)) return <span className="pi-cat-badge" style={{ background: '#22c55e' }}>Individu</span>
-  return <span className="pi-cat-badge" style={{ background: '#3b82f6' }}>Investor</span>
+  if (/pemilik|benefi/i.test(cls)) return <span className="bchip">Pemilik Manfaat</span>
+  if (/direksi|komisar|board|director|commissioner/i.test(cls)) return <span className="bchip">Direksi</span>
+  if (/individual|person|natural/i.test(cls)) return <span className="bchip">Individu</span>
+  return <span className="bchip">Investor</span>
 }
 
 function highlight(name: string, q: string) {
@@ -87,7 +90,7 @@ export function PetaInvestorSearch({ data, value, onChange, onSelect, onClear }:
                       <div className="pi-drop-item-title">{e.code}</div>
                       <div className="pi-drop-item-sub">{e.holders.length} pemegang saham</div>
                     </div>
-                    <span className="pi-cat-badge" style={{ background: '#f97316' }}>Emiten</span>
+                    <span className="bchip" style={{ color: 'var(--amber)', borderColor: 'var(--amber)' }}>Emiten</span>
                   </div>
                 ))}
               </>

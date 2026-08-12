@@ -22,6 +22,11 @@ interface QuadPoint {
  * Bubble chart: x=rank frekuensi, y=rank nilai, r~sqrt(nilai). Warna tick
  * dihitung dari theme (bukan string `var(--text2)` mentah) supaya chart
  * ikut redraw saat tema di-toggle — pola sama dengan SektorIndeks.tsx.
+ *
+ * Gaya Lantai Bursa (Task 10): chrome kartu (panel/panel-h) dipegang parent
+ * BrokerSummary.tsx, komponen ini cuma judul `.lbl` + chart + legenda. Warna
+ * legenda 4-kuadran (biru/hijau/merah/abu) domain-specific, TIDAK dipetakan
+ * ke token up/dn/amber — beda makna dari semantik naik/turun harga.
  */
 export function Quadrant({ brokers }: QuadrantProps) {
   const { theme } = useTheme()
@@ -94,17 +99,17 @@ export function Quadrant({ brokers }: QuadrantProps) {
   const canvasRef = useChartCanvas(config)
 
   return (
-    <div className="bs-chart-card">
-      <div className="bs-chart-title">⊞ Kuadran Broker — X: Frekuensi, Y: Nilai, Ukuran: Nilai</div>
+    <>
+      <div className="lbl" style={{ marginBottom: 8 }}>⊞ Kuadran Broker — X: Frekuensi, Y: Nilai, Ukuran: Nilai</div>
       <div className="chart-wrap" style={{ height: 420 }}>
         <canvas ref={canvasRef} />
       </div>
-      <div className="bs-chart-sub" style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8 }}>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8, fontSize: 11 }}>
         <span style={{ color: '#3b82f6' }}>● Smart Accumulation (high nilai, low freq)</span>
         <span style={{ color: '#22c55e' }}>● Agresif Beli (high nilai, high freq)</span>
         <span style={{ color: '#ef4444' }}>● Distribusi (low nilai, high freq)</span>
         <span style={{ color: '#9ca3af' }}>● Pasif</span>
       </div>
-    </div>
+    </>
   )
 }

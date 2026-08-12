@@ -1,14 +1,16 @@
 import { useMemo, useState } from 'react'
 import { fN } from '../../../lib/dasbor/format'
 import { PosisiBar } from './PosisiBar'
+import { IkonMenu, IKON_UANG_KERTAS, IKON_GRAFIK_BATANG } from '../../../components/dasbor/IkonMenu'
 
 interface DividenProps {
   feeBeli: number
+  setFeeBeli: (v: number) => void
 }
 
 /** Port panel "Dividen" — markup index_live.html baris 1467-1538, objek
  *  DIVCALC baris 3310-3363. */
-export function Dividen({ feeBeli }: DividenProps) {
+export function Dividen({ feeBeli, setFeeBeli }: DividenProps) {
   const [posKode, setPosKode] = useState('')
   const [posLots, setPosLots] = useState('')
   const [posAvg, setPosAvg] = useState('')
@@ -60,83 +62,119 @@ export function Dividen({ feeBeli }: DividenProps) {
   }, [buyN, lotsN, dpsN, taxN, fb])
 
   return (
-    <div className="adc-wrap">
-      <div className="card adc-section">
-        <div className="ct b">💵 Dividend Calculator</div>
-        <PosisiBar kode={posKode} onKode={setPosKode} lots={posLots} onLots={setPosLots} avg={posAvg} onAvg={setPosAvg} onFill={handleFill} />
-        <div className="pc-grid2" style={{ marginBottom: 8 }}>
-          <div className="adc-field">
-            <label>Avg Buy Price (IDR/saham)</label>
-            <input className="adc-input" type="number" placeholder="0" min={0} value={buy} onChange={(e) => setBuy(e.target.value)} />
+    <div className="grid2 w-kiri">
+      <div>
+        <div className="panel">
+          <div className="panel-h" style={{ flexWrap: 'wrap', rowGap: 6 }}>
+            <span className="lbl"><IkonMenu d={IKON_UANG_KERTAS} size={13} /> Dividend Calculator</span>
+            <div
+              style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}
+              title="Default: Beli 0.15% (standard IDX/Stockbit)"
+            >
+              <span className="lbl" style={{ textTransform: 'none', letterSpacing: 0 }}>Fee Beli</span>
+              <input
+                className="inp"
+                style={{ width: 72 }}
+                type="number"
+                min={0}
+                max={5}
+                step={0.01}
+                value={feeBeli}
+                onChange={(e) => setFeeBeli(parseFloat(e.target.value) || 0)}
+              />
+            </div>
           </div>
-          <div className="adc-field">
-            <label>Lots (1 lot = 100 saham)</label>
-            <input className="adc-input" type="number" placeholder="0" min={0} value={lots} onChange={(e) => setLots(e.target.value)} />
-          </div>
-          <div className="adc-field">
-            <label>Dividen / Saham (IDR)</label>
-            <input className="adc-input" type="number" placeholder="0" min={0} value={dps} onChange={(e) => setDps(e.target.value)} />
-          </div>
-          <div className="adc-field">
-            <label>Pajak Dividen (%)</label>
-            <input className="adc-input" type="number" value={tax} min={0} max={100} step={0.5} onChange={(e) => setTax(e.target.value)} />
-            <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 2 }}>WNI OP: 10% final</div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <label style={{ fontSize: 11, color: 'var(--text2)' }}>Sertakan fee beli dalam modal</label>
-          <input type="checkbox" checked={incFee} onChange={(e) => setIncFee(e.target.checked)} />
-        </div>
-        {result && (
-          <div>
-            <div className="div-bep">
-              <div className="div-bep-l">Break-even Market Price</div>
-              <div className="div-bep-v">Rp {fN(result.bep, 0)}</div>
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,.75)', marginTop: 4 }}>
-                Harga saham agar total portfolio = modal awal
+          <div className="panel-b">
+            <PosisiBar kode={posKode} onKode={setPosKode} lots={posLots} onLots={setPosLots} avg={posAvg} onAvg={setPosAvg} onFill={handleFill} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 10, marginBottom: 8 }}>
+              <div className="field">
+                <span className="lbl">Avg Buy Price (IDR/saham)</span>
+                <input className="inp" type="number" placeholder="0" min={0} value={buy} onChange={(e) => setBuy(e.target.value)} />
+              </div>
+              <div className="field">
+                <span className="lbl">Lots (1 lot = 100 saham)</span>
+                <input className="inp" type="number" placeholder="0" min={0} value={lots} onChange={(e) => setLots(e.target.value)} />
+              </div>
+              <div className="field">
+                <span className="lbl">Dividen / Saham (IDR)</span>
+                <input className="inp" type="number" placeholder="0" min={0} value={dps} onChange={(e) => setDps(e.target.value)} />
+              </div>
+              <div className="field">
+                <span className="lbl">Pajak Dividen (%)</span>
+                <input className="inp" type="number" value={tax} min={0} max={100} step={0.5} onChange={(e) => setTax(e.target.value)} />
+                <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 2 }}>WNI OP: 10% final</div>
               </div>
             </div>
-            <div className="pc-res" style={{ marginBottom: 10 }}>
-              <div className="pc-ri hl">
-                <div className="pc-rl">Total Dividen (Net)</div>
-                <div className="pc-rv">Rp {fN(result.divNet, 0)}</div>
-                <div className="pc-rs">Gross: Rp {fN(result.divGross, 0)}</div>
-              </div>
-              <div className="pc-ri hl">
-                <div className="pc-rl">Yield Net</div>
-                <div className="pc-rv">{result.yieldNet.toFixed(2)}%</div>
-                <div className="pc-rs">Gross: {result.yieldGross.toFixed(2)}%</div>
-              </div>
-              <div className="pc-ri">
-                <div className="pc-rl">Total Investasi</div>
-                <div className="pc-rv" style={{ fontSize: 13 }}>Rp {fN(result.invest, 0)}</div>
-              </div>
-              <div className="pc-ri">
-                <div className="pc-rl">Pajak Dividen</div>
-                <div className="pc-rv" style={{ fontSize: 13, color: 'var(--cal-dn)' }}>-Rp {fN(result.taxAmt, 0)}</div>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <label style={{ fontSize: 11, color: 'var(--text2)' }}>Sertakan fee beli dalam modal</label>
+              <input type="checkbox" checked={incFee} onChange={(e) => setIncFee(e.target.checked)} />
             </div>
-            <div className="ct b" style={{ fontSize: 11, marginBottom: 6 }}>📊 Post-Dividend Scenarios</div>
-            <div>
-              {result.scenarios.map((sc) => (
-                <div className="div-sc" key={sc.label}>
-                  <div>
-                    <div className="div-sc-l">{sc.label}</div>
-                    <div className="div-sc-p">Harga: Rp {fN(sc.price, 0)}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Hasil — menempel, terlihat langsung saat isian kiri berubah */}
+      <div style={{ position: 'sticky', top: 60, alignSelf: 'start' }}>
+        <div className="panel">
+          <div className="panel-h"><span className="lbl">Hasil</span></div>
+          <div className="panel-b">
+            {result ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div className="vcard">
+                  <span className="lbl">Break-even Market Price</span>
+                  <div className="num" style={{ fontSize: 26, fontWeight: 600, color: 'var(--amber)' }}>Rp {fN(result.bep, 0)}</div>
+                  <div className="v-note">Harga saham agar total portfolio = modal awal</div>
+                </div>
+                <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+                  <div className="bm">
+                    <span className="lbl">Total Dividen (Net)</span>
+                    <span className="num">Rp {fN(result.divNet, 0)}</span>
+                    <div className="v-note">Gross: Rp {fN(result.divGross, 0)}</div>
                   </div>
-                  <div className="div-sc-v" style={{ color: sc.netGL >= 0 ? 'var(--cal-up)' : 'var(--cal-dn)' }}>
-                    {sc.netGL >= 0 ? '+' : ''}Rp {fN(sc.netGL, 0)}
-                    <br />
-                    <span style={{ fontSize: 10 }}>
-                      ({sc.netGL >= 0 ? '+' : ''}
-                      {sc.netPct.toFixed(2)}%)
-                    </span>
+                  <div className="bm">
+                    <span className="lbl">Yield Net</span>
+                    <span className="num">{result.yieldNet.toFixed(2)}%</span>
+                    <div className="v-note">Gross: {result.yieldGross.toFixed(2)}%</div>
+                  </div>
+                  <div className="bm">
+                    <span className="lbl">Total Investasi</span>
+                    <span className="num">Rp {fN(result.invest, 0)}</span>
+                  </div>
+                  <div className="bm">
+                    <span className="lbl">Pajak Dividen</span>
+                    <span className="num dn">-Rp {fN(result.taxAmt, 0)}</span>
                   </div>
                 </div>
-              ))}
-            </div>
+                <div>
+                  <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Post-Dividend Scenarios</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
+                    {result.scenarios.map((sc) => (
+                      <div
+                        key={sc.label}
+                        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--line)' }}
+                      >
+                        <div>
+                          <div style={{ fontSize: 12 }}>{sc.label}</div>
+                          <div className="v-note">Harga: Rp {fN(sc.price, 0)}</div>
+                        </div>
+                        <div className={`num ${sc.netGL >= 0 ? 'up' : 'dn'}`} style={{ textAlign: 'right' }}>
+                          {sc.netGL >= 0 ? '+' : ''}Rp {fN(sc.netGL, 0)}
+                          <br />
+                          <span style={{ fontSize: 10 }}>
+                            ({sc.netGL >= 0 ? '+' : ''}
+                            {sc.netPct.toFixed(2)}%)
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="v-note">Isi Avg Buy Price, Lots, dan Dividen/Saham untuk melihat hasil</div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   )

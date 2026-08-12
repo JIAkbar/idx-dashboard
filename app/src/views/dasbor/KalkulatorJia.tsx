@@ -1,16 +1,17 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { AvgDown } from './kalkulator/AvgDown'
 import { ProfitAra } from './kalkulator/ProfitAra'
 import { RiskReward } from './kalkulator/RiskReward'
 import { Dividen } from './kalkulator/Dividen'
+import { IkonMenu, IKON_GRAFIK_TURUN, IKON_UANG, IKON_TIMBANGAN, IKON_UANG_KERTAS } from '../../components/dasbor/IkonMenu'
 
 type Tab = 'avgdown' | 'profit' | 'rr' | 'div'
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'avgdown', label: '📉 Avg Down' },
-  { id: 'profit', label: '💰 Profit & ARA' },
-  { id: 'rr', label: '⚖️ Risk/Reward' },
-  { id: 'div', label: '💵 Dividen' },
+const TABS: { id: Tab; label: ReactNode }[] = [
+  { id: 'avgdown', label: <><IkonMenu d={IKON_GRAFIK_TURUN} size={13} /> Avg Down</> },
+  { id: 'profit', label: <><IkonMenu d={IKON_UANG} size={13} /> Profit & ARA</> },
+  { id: 'rr', label: <><IkonMenu d={IKON_TIMBANGAN} size={13} /> Risk/Reward</> },
+  { id: 'div', label: <><IkonMenu d={IKON_UANG_KERTAS} size={13} /> Dividen</> },
 ]
 
 /**
@@ -24,47 +25,32 @@ export function KalkulatorJia() {
   const [feeJual, setFeeJual] = useState(0.25)
 
   return (
-    <div style={{ maxWidth: 760, margin: '0 auto' }}>
-      <div className="jia-fee-bar">
-        <label>💸 Fee Beli</label>
-        <input
-          className="jia-fee-in"
-          type="number"
-          min={0}
-          max={5}
-          step={0.01}
-          value={feeBeli}
-          onChange={(e) => setFeeBeli(parseFloat(e.target.value) || 0)}
-        />
-        <label>%</label>
-        <label style={{ marginLeft: 8 }}>Fee Jual</label>
-        <input
-          className="jia-fee-in"
-          type="number"
-          min={0}
-          max={5}
-          step={0.01}
-          value={feeJual}
-          onChange={(e) => setFeeJual(parseFloat(e.target.value) || 0)}
-        />
-        <label>%</label>
-        <span className="jia-fee-note">Default: Beli 0.15% / Jual 0.25% (standard IDX/Stockbit)</span>
+    <div className="lantai kalkulator-view">
+      <div className="vhead">
+        <h1>Kalkulator JIA</h1>
+        <span className="sub">alat hitung posisi</span>
       </div>
 
-      <div className="jia-tabs">
+      <div className="tabs" role="tablist">
         {TABS.map((t) => (
-          <button key={t.id} className={`jia-tab${tab === t.id ? ' active' : ''}`} onClick={() => setTab(t.id)}>
+          <button
+            key={t.id}
+            role="tab"
+            aria-selected={tab === t.id}
+            className={'tab' + (tab === t.id ? ' on' : '')}
+            onClick={() => setTab(t.id)}
+          >
             {t.label}
           </button>
         ))}
       </div>
 
-      <div className="jia-content active">
-        {tab === 'avgdown' && <AvgDown />}
-        {tab === 'profit' && <ProfitAra feeBeli={feeBeli} feeJual={feeJual} />}
-        {tab === 'rr' && <RiskReward />}
-        {tab === 'div' && <Dividen feeBeli={feeBeli} />}
-      </div>
+      {tab === 'avgdown' && <AvgDown />}
+      {tab === 'profit' && (
+        <ProfitAra feeBeli={feeBeli} feeJual={feeJual} setFeeBeli={setFeeBeli} setFeeJual={setFeeJual} />
+      )}
+      {tab === 'rr' && <RiskReward />}
+      {tab === 'div' && <Dividen feeBeli={feeBeli} setFeeBeli={setFeeBeli} />}
     </div>
   )
 }

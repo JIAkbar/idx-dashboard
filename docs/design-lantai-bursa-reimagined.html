@@ -1,0 +1,1157 @@
+<title>IDX Statistik — Reimagined "Lantai Bursa"</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>document.documentElement.setAttribute("data-theme","light")</script>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg0:#0B1017; --bg1:#111826; --bg2:#18212F; --bg3:#1F2A3B;
+  --line:#232E3F; --line2:#2E3B50;
+  --text:#E8EDF4; --text2:#9AA7B8; --text3:#5C6B7E;
+  --amber:#F0A62B; --amber-ink:#131008; --amber-dim:rgba(240,166,43,.13);
+  --red:#E5484D; --red-dim:rgba(229,72,77,.14);
+  --green:#30A46C; --green-dim:rgba(48,164,108,.14);
+  --blue:#4C8DFF;
+  --flap:#060A10; --flap-line:rgba(255,255,255,.07);
+  --mono:"Cascadia Code","Cascadia Mono",Consolas,"SF Mono","Roboto Mono",monospace;
+  --disp:"Bahnschrift","Arial Narrow","Segoe UI",system-ui,sans-serif;
+  --ui:"Segoe UI",system-ui,-apple-system,sans-serif;
+  --r:6px;
+}
+@media (prefers-color-scheme: light){
+  :root{
+    --bg0:#F2F4F7; --bg1:#FFFFFF; --bg2:#F7F9FC; --bg3:#EDF1F6;
+    --line:#DDE3EA; --line2:#C9D2DD;
+    --text:#131B26; --text2:#4E5D70; --text3:#8896A8;
+    --amber:#B87A10; --amber-ink:#FFFFFF; --amber-dim:rgba(184,122,16,.10);
+    --red:#CE3B41; --red-dim:rgba(206,59,65,.10);
+    --green:#1F8A57; --green-dim:rgba(31,138,87,.10);
+    --flap:#131B26; --flap-line:rgba(255,255,255,.10);
+  }
+}
+:root[data-theme="dark"]{
+  --bg0:#0B1017; --bg1:#111826; --bg2:#18212F; --bg3:#1F2A3B;
+  --line:#232E3F; --line2:#2E3B50;
+  --text:#E8EDF4; --text2:#9AA7B8; --text3:#5C6B7E;
+  --amber:#F0A62B; --amber-ink:#131008; --amber-dim:rgba(240,166,43,.13);
+  --red:#E5484D; --red-dim:rgba(229,72,77,.14);
+  --green:#30A46C; --green-dim:rgba(48,164,108,.14);
+  --flap:#060A10; --flap-line:rgba(255,255,255,.07);
+}
+:root[data-theme="light"]{
+  --bg0:#F2F4F7; --bg1:#FFFFFF; --bg2:#F7F9FC; --bg3:#EDF1F6;
+  --line:#DDE3EA; --line2:#C9D2DD;
+  --text:#131B26; --text2:#4E5D70; --text3:#8896A8;
+  --amber:#B87A10; --amber-ink:#FFFFFF; --amber-dim:rgba(184,122,16,.10);
+  --red:#CE3B41; --red-dim:rgba(206,59,65,.10);
+  --green:#1F8A57; --green-dim:rgba(31,138,87,.10);
+  --flap:#131B26; --flap-line:rgba(255,255,255,.10);
+}
+
+/* ============ BASE ============ */
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg0);color:var(--text);font-family:var(--ui);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+main{overflow-x:hidden;width:100%;max-width:100%}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;padding:0}
+table{border-collapse:collapse;width:100%}
+canvas{display:block;width:100%}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.lbl{font-family:var(--disp);font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text3)}
+.up{color:var(--green)} .dn{color:var(--red)}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:3px}
+
+/* ============ SHELL ============ */
+.shell{display:grid;grid-template-columns:76px 1fr;min-height:100vh}
+.workspace{min-width:0;display:flex;flex-direction:column}
+
+/* rail */
+.rail{background:var(--bg1);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:stretch;position:sticky;top:0;height:100vh;z-index:40}
+.logo{margin:14px 12px 10px;height:44px;border-radius:var(--r);background:var(--amber);color:var(--amber-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--disp);font-weight:700;letter-spacing:.06em;line-height:1}
+.logo b{font-size:15px}
+.logo span{font-size:7.5px;letter-spacing:.22em;margin-top:2px;opacity:.85}
+.rail-scroll{flex:1;overflow-y:auto;padding:4px 0 8px;scrollbar-width:none}
+.rail-scroll::-webkit-scrollbar{display:none}
+.nav-btn{width:100%;padding:9px 0 8px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text3);border-left:2px solid transparent;transition:color .15s}
+.nav-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.nav-btn .code{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em}
+.nav-btn:hover{color:var(--text2)}
+.nav-btn.on{color:var(--amber);border-left-color:var(--amber);background:linear-gradient(90deg,var(--amber-dim),transparent 70%)}
+.rail-foot{padding:9px 0 11px;border-top:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:9px}
+.dot-live{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px var(--green-dim)}
+.rail-tema{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text3);padding:2px 0}
+.rail-tema svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round}
+.rail-tema:hover{color:var(--amber)}
+
+/* topbar tape */
+.tape{height:44px;background:var(--bg1);border-bottom:1px solid var(--line);display:flex;align-items:center;overflow:hidden;position:sticky;top:0;z-index:30}
+.tape-mid{flex:1;min-width:0;padding-left:14px;overflow:hidden;height:100%;display:flex;align-items:center}
+.tape-track{display:flex;gap:0;white-space:nowrap;animation:tape 46s linear infinite;will-change:transform}
+.tape:hover .tape-track{animation-play-state:paused}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tk{display:inline-flex;align-items:center;gap:7px;padding:0 18px;font-family:var(--mono);font-size:11.5px;color:var(--text2)}
+.tk b{color:var(--text);font-weight:600}
+.tk .sep{color:var(--line2)}
+
+/* content */
+.content{padding:22px 26px 40px;display:none;flex-direction:column;gap:16px;animation:vin .28s ease}
+.content.on{display:flex}
+@keyframes vin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.vhead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.vhead h1{margin:0;font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.02em}
+.vhead .sub{font-family:var(--mono);font-size:11px;color:var(--text3)}
+
+/* panels */
+.panel{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r)}
+.panel-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.panel-b{padding:12px 14px}
+/* Proporsi kolom di kelas, BUKAN inline style — inline menang atas media query
+   sehingga tata letak dua kolom bertahan di telepon dan kontennya terpotong
+   (kemampuan-web-dev §178). */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;grid-auto-flow:dense}
+.grid2.w-kiri{grid-template-columns:1.25fr 1fr}
+.grid2.w-lebar{grid-template-columns:1.4fr 1fr}
+.grid2.w-agak{grid-template-columns:1.1fr 1fr}
+.grid2>*{min-width:0}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;grid-auto-flow:dense}
+
+/* board (split-flap) */
+.board{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;display:flex;gap:26px;align-items:center;flex-wrap:wrap}
+.board-main{flex:1 1 320px;min-width:0}
+.flap-row{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.flap{position:relative;background:var(--flap);color:#F4F6F9;font-family:var(--mono);font-weight:600;font-size:clamp(26px,4.2vw,40px);line-height:1;padding:10px 7px 12px;border-radius:4px;min-width:.72em;text-align:center;animation:flip .5s ease backwards}
+.flap.sym{color:var(--amber);min-width:.5em}
+.flap::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--flap-line)}
+:root[data-theme="light"] .flap{color:#F4F6F9}
+@keyframes flip{from{transform:rotateX(80deg);opacity:0}to{transform:none;opacity:1}}
+.flap:nth-child(2){animation-delay:.04s}.flap:nth-child(3){animation-delay:.08s}
+.flap:nth-child(4){animation-delay:.12s}.flap:nth-child(5){animation-delay:.16s}
+.flap:nth-child(6){animation-delay:.2s}.flap:nth-child(7){animation-delay:.24s}
+.flap:nth-child(8){animation-delay:.28s}
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:99px}
+.chip.up{background:var(--green-dim);color:var(--green)}
+.chip.dn{background:var(--red-dim);color:var(--red)}
+.chip.warn{background:var(--amber-dim);color:var(--amber)}
+.board-meta{display:flex;gap:22px;margin-top:14px;flex-wrap:wrap}
+.bm .lbl{display:block;margin-bottom:2px}
+.bm .num{font-size:13px;color:var(--text2)}
+.board-side{flex:1 1 260px;min-width:220px}
+
+/* tables */
+.tbl th{font-family:var(--disp);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
+.tbl td{padding:7px 10px;border-bottom:1px solid var(--line);font-size:12.5px}
+.tbl tr:last-child td{border-bottom:none}
+.tbl .r{text-align:right}
+.tbl tbody tr{transition:background .12s;border-left:2px solid transparent}
+.tbl tbody tr:hover{background:var(--amber-dim)}
+.tick{font-family:var(--mono);font-weight:600;font-size:12px}
+.bchip{display:inline-block;font-family:var(--mono);font-size:10.5px;font-weight:600;background:var(--bg3);border:1px solid var(--line2);border-radius:4px;padding:1px 6px;margin-right:7px}
+.spark{stroke-width:1.5;fill:none}
+
+/* tabs */
+.tabs{display:flex;gap:2px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:3px;width:max-content;max-width:100%;overflow-x:auto}
+.tab{font-family:var(--disp);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);padding:6px 14px;border-radius:4px;white-space:nowrap}
+.tab.on{background:var(--amber);color:var(--amber-ink)}
+.tab:not(.on):hover{color:var(--text2)}
+
+/* dropdown */
+.dd{position:relative}
+.dd-btn{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r);padding:6px 11px;font-family:var(--mono);font-size:11.5px;color:var(--text)}
+.dd-btn:hover{border-color:var(--amber)}
+.dd-btn svg{width:12px;height:12px;stroke:var(--text3);fill:none;stroke-width:2;transition:transform .15s}
+.dd.open .dd-btn svg{transform:rotate(180deg)}
+.dd-menu{position:absolute;top:calc(100% + 5px);left:0;min-width:100%;background:var(--bg1);border:1px solid var(--line2);border-radius:var(--r);padding:4px;display:none;z-index:50;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+.dd.open .dd-menu{display:block;animation:vin .14s ease}
+.dd-it{display:flex;width:100%;text-align:left;padding:6px 10px;border-radius:4px;font-family:var(--mono);font-size:11.5px;color:var(--text2)}
+.dd-it:hover{background:var(--amber-dim);color:var(--text)}
+.dd-it.sel{color:var(--amber)}
+
+/* inputs */
+.inp{background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:12.5px;padding:7px 11px;width:100%}
+.inp::placeholder{color:var(--text3)}
+.inp:focus{outline:none;border-color:var(--amber)}
+.btn-p{background:var(--amber);color:var(--amber-ink);font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding:9px 18px;border-radius:var(--r)}
+.btn-p:hover{filter:brightness(1.08)}
+.field .lbl{display:block;margin-bottom:5px}
+
+/* heat tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;grid-auto-flow:dense}
+.tile{border-radius:var(--r);padding:12px 12px 10px;border:1px solid var(--line);display:flex;flex-direction:column;gap:3px;transition:transform .2s ease}
+.tile:hover{transform:translateY(-2px)}
+.tile .t-code{font-family:var(--mono);font-size:10.5px;color:var(--text3)}
+.tile .t-name{font-family:var(--disp);font-weight:600;font-size:12.5px;letter-spacing:.02em}
+.tile .t-val{font-family:var(--mono);font-weight:600;font-size:15px;margin-top:3px}
+.tile.big{grid-column:span 2}
+.tile.big .t-val{font-size:24px}
+
+/* bars */
+.bar-row{display:grid;grid-template-columns:88px 1fr 84px;gap:10px;align-items:center;padding:6px 0}
+.bar-tr{height:14px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.bar-fl{height:100%;background:var(--amber);border-radius:3px}
+.bar-fl.neg{background:var(--red)}
+
+/* valuation cards */
+.vcard{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;display:flex;flex-direction:column;gap:6px}
+.vcard .v-num{font-family:var(--mono);font-size:21px;font-weight:600}
+.vcard .v-note{font-size:11px;color:var(--text3)}
+
+/* calendar */
+.cal-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal-d{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:8px 4px;text-align:center}
+.cal-d .dw{font-family:var(--disp);font-size:9.5px;letter-spacing:.12em;color:var(--text3);text-transform:uppercase}
+.cal-d .dn2{font-family:var(--mono);font-size:15px;font-weight:600;margin-top:3px}
+.cal-d.today{border-color:var(--amber);background:var(--amber-dim)}
+.cal-d.today .dn2{color:var(--amber)}
+.cal-d.off .dn2{color:var(--text3)}
+.sesi{display:flex;align-items:center;gap:8px;margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--text2)}
+.sesi .seg{flex:1;height:5px;border-radius:3px;background:var(--bg3);position:relative;overflow:hidden}
+.sesi .seg i{position:absolute;inset:0;width:62%;background:var(--amber);border-radius:3px}
+
+/* feedback */
+.rate{display:flex;gap:6px}
+.rate button{width:34px;height:34px;border:1px solid var(--line2);border-radius:var(--r);font-family:var(--mono);font-weight:600;color:var(--text3)}
+.rate button.on{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
+
+/* kalender grid bulan */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:12px;border-top:1px solid var(--line);padding-top:11px}
+.cal-grid .cg{height:28px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);
+  font-size:11px;color:var(--text3);border-radius:3px}
+.cal-grid .cg.ada{color:var(--text);background:var(--bg2);border:1px solid var(--line)}
+.cal-grid .cg.aktif{background:var(--amber);color:var(--amber-ink);font-weight:700;border-color:var(--amber)}
+.cal-grid .cg.hdr{height:16px;font-family:var(--disp);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+
+/* net foreign & market fundamental */
+.nf-grid{display:grid;grid-template-columns:1fr 1fr}
+.nf-cell{padding:12px 14px;border-right:1px solid var(--line)}
+.nf-cell:last-child{border-right:none}
+.nf-big{font-size:19px;font-weight:600;margin-top:3px}
+.nf-sec{font-size:13px;margin-top:7px;opacity:.85}
+.nf-unit{font-size:10px;color:var(--text3);font-family:var(--mono)}
+.mf-big{font-size:30px;font-weight:600;margin-top:4px;color:var(--amber)}
+.mf-x{font-size:15px;color:var(--text3);margin-left:3px}
+
+/* average daily trading */
+.adt{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.adt-c{padding:14px 16px;border-right:1px solid var(--line)}
+.adt-c:last-child{border-right:none}
+.adt-v{font-size:23px;font-weight:600;margin-top:3px}
+.adt-u{font-size:11px;color:var(--text3);margin-left:6px;font-weight:400}
+.adt-s{font-size:11.5px;color:var(--text2);margin-top:2px}
+
+/* Peringkat YTD — daftar batang mendatar, BUKAN kanvas.
+   Label negara jadi teks HTML biasa: terbaca lurus (tak diputar 60°), ikut
+   token warna tema otomatis, bisa disalin, dan terbaca pembaca layar.
+   Versi kanvas sebelumnya menumpuk 35 label miring sampai tak terbaca. */
+.rank-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:0 26px;padding:6px 14px 12px}
+.rk-row{display:grid;grid-template-columns:20px 104px 1fr 62px;gap:9px;align-items:center;
+  padding:3px 0;border-bottom:1px solid var(--line)}
+.rk-no{font-family:var(--mono);font-size:10px;color:var(--text3);text-align:right}
+.rk-nm{font-size:12.5px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk-tr{position:relative;height:12px}
+.rk-tr::before{content:"";position:absolute;left:var(--nol,50%);top:-3px;bottom:-3px;width:1px;background:var(--line2)}
+.rk-b{position:absolute;top:1px;height:10px;border-radius:1px}
+.rk-b.p{background:var(--green)} .rk-b.n{background:var(--red)}
+.rk-v{font-family:var(--mono);font-size:11.5px;text-align:right}
+.rk-row.kita .rk-nm{color:var(--red);font-weight:700}
+.rk-row.kita .rk-no{color:var(--red)}
+.rk-row.kita{background:var(--red-dim)}
+
+/* kapitalisasi pasar — peringkat + batang + nilai + persen */
+.mc-row{display:grid;grid-template-columns:22px 52px 1fr 74px 64px;gap:10px;align-items:center;
+  padding:5px 0;border-bottom:1px solid var(--line)}
+.mc-row:last-child{border-bottom:none}
+.mc-rk{font-family:var(--mono);font-size:10px;color:var(--text3);text-align:center;
+  width:20px;height:20px;line-height:20px;border-radius:50%}
+.mc-rk.rk1{background:var(--amber);color:var(--amber-ink);font-weight:700}
+.mc-rk.rk2{background:var(--line2);color:var(--text);font-weight:700}
+.mc-rk.rk3{background:var(--bg3);color:var(--text2);font-weight:700;border:1px solid var(--line2)}
+.mc-v{font-size:12px;text-align:right}
+.mc-p{font-size:11px;text-align:right}
+
+/* kontribusi IHSG — poin indeks digambar sebagai batang di dalam sel */
+.kontrib-jd{display:flex;justify-content:space-between;padding:9px 14px 5px}
+.kontrib-jd.garis{border-top:1px solid var(--line);margin-top:4px}
+.kontrib td{padding-top:5px;padding-bottom:5px}
+/* Batang dikurung di lajur berlebar tetap — kalau dibiarkan melebar mengikuti
+   sel, batang terpanjang meluber ke kiri dan menimpa kolom persen. */
+.kb-wrap{display:grid;grid-template-columns:58px 50px;gap:8px;align-items:center;width:116px;margin-left:auto}
+.kb-tr{position:relative;height:9px}
+.kb-bar{position:absolute;right:0;height:9px;border-radius:1px;opacity:.55}
+.kb-bar.u{background:var(--green)} .kb-bar.d{background:var(--red)}
+.kb-v{font-size:11.5px;text-align:right}
+
+/* tabel dunia */
+.board-tbl-wrap{overflow-x:auto}
+.w-tbl{min-width:660px}
+.w-tbl tr.kawasan td{background:var(--bg2);font-family:var(--disp);font-size:10px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--amber);padding:6px 10px}
+.w-tbl tr.kita td{background:var(--red-dim)}
+.w-tbl tr.kita:hover td{background:var(--red-dim)}
+.w-tbl tr.kita td:first-child{font-weight:700;box-shadow:inset 2px 0 0 var(--red)}
+.ytd-bdg{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;padding:1px 7px;border-radius:3px;min-width:62px;text-align:right}
+.ytd-bdg.u{background:var(--green-dim);color:var(--green)}
+.ytd-bdg.d{background:var(--red-dim);color:var(--red)}
+.rk{font-family:var(--mono);font-size:11px;color:var(--text3)}
+
+/* ===== LACI MENU (telepon) =====
+   Bilah bawah cuma muat 5 menu dari 10; sisanya dulu tak terjangkau sama
+   sekali. Tombol keenam membuka laci berisi SEMUA menu + tombol tema —
+   laci ini bentuk telepon dari rail kiri, jadi tema tetap "di sidebar". */
+.laci-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:70;opacity:0;pointer-events:none;transition:opacity .18s}
+.laci-bg.on{opacity:1;pointer-events:auto}
+.laci{position:fixed;left:0;right:0;bottom:0;z-index:71;background:var(--bg1);border-top:1px solid var(--line2);
+  border-radius:12px 12px 0 0;padding:10px 10px calc(14px + env(safe-area-inset-bottom));
+  transform:translateY(100%);transition:transform .22s cubic-bezier(.2,.7,.3,1);max-height:82dvh;overflow-y:auto}
+.laci.on{transform:none}
+.laci-tarik{width:38px;height:4px;border-radius:2px;background:var(--line2);margin:2px auto 12px}
+.laci-jd{display:flex;align-items:center;justify-content:space-between;padding:0 6px 8px}
+.laci-list{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.laci-list button{display:grid;grid-template-columns:20px 1fr;gap:10px;align-items:center;padding:11px 12px;
+  border:1px solid var(--line);border-radius:6px;color:var(--text2);text-align:left;font-size:13px}
+.laci-list button svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.laci-list button.on{color:var(--amber);border-color:var(--amber);background:var(--amber-dim);font-weight:600}
+.laci-tema{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:10px;
+  padding:11px;border:1px solid var(--line2);border-radius:6px;color:var(--text2);font-size:13px}
+.laci-tema svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round}
+.laci-tema:hover{color:var(--amber);border-color:var(--amber)}
+
+/* mobile */
+.bottom-nav{display:none}
+@media (max-width:820px){
+  .shell{grid-template-columns:1fr}
+  /* Rail disembunyikan penuh; menu lengkap & tombol tema pindah ke laci. */
+  .rail{display:none}
+  .grid2,.grid2.w-kiri,.grid2.w-lebar,.grid2.w-agak{grid-template-columns:1fr}
+  .rank-wrap{grid-template-columns:1fr;padding:6px 10px 10px}
+  .rk-row{grid-template-columns:20px 92px 1fr 58px}
+  .mc-row{grid-template-columns:20px 46px 1fr 60px 52px;gap:7px}
+  .kb-wrap{grid-template-columns:44px 46px;width:98px;gap:6px}
+  .content{padding:16px 14px 92px}
+  .bottom-nav{display:flex;position:fixed;left:0;right:0;bottom:0;background:var(--bg1);border-top:1px solid var(--line);z-index:60;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  .bottom-nav .nav-btn{width:auto;flex:1;border-left:none;border-top:2px solid transparent;padding:6px 0 4px}
+  .bottom-nav .nav-btn.on{border-left:none;border-top-color:var(--amber);background:none}
+  .board{padding:14px}
+  .flap{font-size:clamp(22px,7vw,32px)}
+}
+@media (prefers-reduced-motion: reduce){
+  .tape-track{animation:none}
+  .flap{animation:none}
+  .content{animation:none}
+  .tile:hover{transform:none}
+}
+</style>
+
+<main>
+<div class="shell">
+
+  <!-- ===== RAIL ===== -->
+  <nav class="rail" aria-label="Menu utama">
+    <div class="logo"><b>IDX</b><span>STATISTIK</span></div>
+    <div class="rail-scroll" id="railNav"></div>
+    <div class="rail-foot">
+      <span class="dot-live" title="Data pasar tersambung"></span>
+      <button class="rail-tema js-tema" aria-label="Ganti tema terang atau gelap">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/></svg>
+        <span class="code">Terang</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===== WORKSPACE ===== -->
+  <div class="workspace">
+
+    <!-- ticker tape -->
+    <div class="tape" aria-hidden="true">
+      <div class="tape-mid"><div class="tape-track" id="tapeTrack"></div></div>
+    </div>
+
+    <!-- ============ IND — INDEKS DUNIA ============ -->
+    <section class="content on" id="view-ind">
+      <div class="board">
+        <div class="board-main">
+          <span class="lbl">Indeks Harga Saham Gabungan · Jumat, 5 Juni 2026 · hari bursa ke-96</span>
+          <div class="flap-row" id="flapIhsg"></div>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+            <span class="chip dn">&#9660; &minus;245,02 (&minus;4,20%)</span>
+            <span class="chip warn">Tertinggi 5.860,67 · Terendah 5.594,11</span>
+          </div>
+          <div class="board-meta">
+            <div class="bm"><span class="lbl">Volume</span><span class="num">35.378 Jt lbr</span></div>
+            <div class="bm"><span class="lbl">Nilai</span><span class="num">31.710 M IDR</span></div>
+            <div class="bm"><span class="lbl">Frekuensi</span><span class="num">2.152 Rb kali</span></div>
+            <div class="bm"><span class="lbl">Kapitalisasi</span><span class="num">9.807 T IDR</span></div>
+            <div class="bm"><span class="lbl">USD/IDR BI</span><span class="num">18.039</span></div>
+          </div>
+        </div>
+        <div class="board-side">
+          <div class="lbl" style="margin-bottom:6px">IHSG — Tahun Berjalan</div>
+          <canvas id="cvYtd" height="120"></canvas>
+          <div style="display:flex;justify-content:space-between;margin-top:4px"
+               ><span style="color:var(--text3);font-size:10.5px">Jan</span
+               ><span style="color:var(--text3);font-size:10.5px">Jun</span></div>
+        </div>
+      </div>
+
+      <!-- kalender + net foreign + market fundamental -->
+      <div class="grid2 w-kiri">
+        <div class="panel">
+          <div class="panel-h"><span class="lbl">Kalender Bursa</span>
+            <div class="dd" data-dd>
+              <button class="dd-btn">Juni 2026 <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+              <div class="dd-menu">
+                <button class="dd-it sel">Juni 2026</button><button class="dd-it">Mei 2026</button><button class="dd-it">April 2026</button>
+              </div>
+            </div>
+          </div>
+          <div class="panel-b">
+            <div class="cal-strip">
+              <div class="cal-d"><div class="dw">Sen</div><div class="dn2">1</div></div>
+              <div class="cal-d"><div class="dw">Sel</div><div class="dn2">2</div></div>
+              <div class="cal-d"><div class="dw">Rab</div><div class="dn2">3</div></div>
+              <div class="cal-d"><div class="dw">Kam</div><div class="dn2">4</div></div>
+              <div class="cal-d today"><div class="dw">Jum</div><div class="dn2">5</div></div>
+              <div class="cal-d off"><div class="dw">Sab</div><div class="dn2">6</div></div>
+              <div class="cal-d off"><div class="dw">Min</div><div class="dn2">7</div></div>
+            </div>
+            <div class="sesi"><span>09:00</span><div class="seg"><i style="width:100%"></i></div><span>15:49</span></div>
+            <div class="cal-grid" id="calGrid"></div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="panel">
+            <div class="panel-h"><span class="lbl">Net Foreign</span><span class="chip dn">Net Sell</span></div>
+            <div class="nf-grid">
+              <div class="nf-cell">
+                <span class="lbl">Hari Ini</span>
+                <div class="num nf-big dn">&minus;3.731,16</div>
+                <div class="nf-unit">miliar IDR</div>
+                <div class="num nf-sec dn">&minus;206,84</div>
+                <div class="nf-unit">juta USD</div>
+              </div>
+              <div class="nf-cell">
+                <span class="lbl">Sejak Awal Tahun</span>
+                <div class="num nf-big dn">&minus;61.361,58</div>
+                <div class="nf-unit">miliar IDR</div>
+                <div class="num nf-sec dn">&minus;3.401,61</div>
+                <div class="nf-unit">juta USD</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-h"><span class="lbl">Market Fundamental</span><span class="num" style="font-size:11px;color:var(--text3)">USD/IDR BI 18.039</span></div>
+            <div class="nf-grid">
+              <div class="nf-cell" style="text-align:center">
+                <span class="lbl">Market PER</span>
+                <div class="num mf-big">11,79<span class="mf-x">&times;</span></div>
+              </div>
+              <div class="nf-cell" style="text-align:center">
+                <span class="lbl">Market PBV</span>
+                <div class="num mf-big">1,49<span class="mf-x">&times;</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Average Daily Trading -->
+      <div class="panel">
+        <div class="panel-h"><span class="lbl">Average Daily Trading — Sejak Awal Tahun</span><span class="num" style="font-size:11px;color:var(--text3)">96 hari bursa</span></div>
+        <div class="adt">
+          <div class="adt-c"><span class="lbl">Rata-rata Volume</span><div class="num adt-v">43.703<span class="adt-u">Jt lbr</span></div></div>
+          <div class="adt-c"><span class="lbl">Rata-rata Nilai</span><div class="num adt-v">24.718<span class="adt-u">M IDR</span></div><div class="num adt-s">1.449 Jt USD</div></div>
+          <div class="adt-c"><span class="lbl">Rata-rata Frekuensi</span><div class="num adt-v">2.720<span class="adt-u">Rb kali</span></div></div>
+        </div>
+      </div>
+
+      <!-- YTD ranking -->
+      <div class="panel">
+        <div class="panel-h"><span class="lbl">Peringkat YTD — Semua Negara</span><span class="chip dn">Indonesia disorot</span></div>
+        <div class="rank-wrap" id="rankYtd"></div>
+      </div>
+
+      <!-- tabel 35 negara -->
+      <div class="panel">
+        <div class="panel-h"><span class="lbl">Perbandingan Indeks Dunia — <span id="jmlNegara">35</span> Negara</span>
+          <div class="dd" data-dd>
+            <button class="dd-btn">Semua kawasan <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+            <div class="dd-menu">
+              <button class="dd-it sel">Semua kawasan</button><button class="dd-it">ASEAN</button>
+              <button class="dd-it">Asia Pacific</button><button class="dd-it">America</button><button class="dd-it">EMEA</button>
+            </div>
+          </div>
+        </div>
+        <div class="board-tbl-wrap">
+          <table class="tbl w-tbl">
+            <thead><tr>
+              <th>Negara</th><th>Indeks</th><th class="r">Nilai</th><th class="r">Hari Ini</th><th class="r">YTD</th>
+              <th class="r" title="Peringkat di ASEAN">A</th><th class="r" title="Peringkat di Asia Pasifik">AP</th><th class="r" title="Peringkat dunia">W</th>
+            </tr></thead>
+            <tbody id="tbWorld"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ STK — TOP STOCKS ============ -->
+    <section class="content" id="view-stk">
+      <div class="vhead"><h1>Saham Teratas</h1><span class="sub">Jumat, 5 Juni 2026 &middot; papan reguler</span></div>
+
+      <div class="panel">
+        <div class="panel-h"><span class="lbl">Kapitalisasi Pasar Terbesar</span><span class="num" style="font-size:11px;color:var(--text3)">Triliun IDR</span></div>
+        <div class="panel-b" id="mcapBars"></div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <div class="panel-h"><span class="lbl">Penguat Terbesar Hari Ini</span><span class="chip up">&#9650; Gainers</span></div>
+          <div class="board-tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Kode</th><th class="r">Sebelum</th><th class="r">Hari Ini</th><th class="r">&Delta;%</th></tr></thead>
+              <tbody id="tbGain"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><span class="lbl">Pelemah Terbesar Hari Ini</span><span class="chip dn">&#9660; Losers</span></div>
+          <div class="board-tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Kode</th><th class="r">Sebelum</th><th class="r">Hari Ini</th><th class="r">&Delta;%</th></tr></thead>
+              <tbody id="tbLose"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <div class="panel-h"><span class="lbl">Penopang IHSG</span><span class="chip up">Leaders</span></div>
+          <div class="kontrib-jd"><span class="lbl">Hari Ini</span><span class="lbl">poin IHSG</span></div>
+          <table class="tbl kontrib">
+            <thead><tr><th>Kode</th><th class="r">% Saham</th><th class="r">+ IHSG</th></tr></thead>
+            <tbody id="tbLdT"></tbody>
+          </table>
+          <div class="kontrib-jd garis"><span class="lbl">Sejak Awal Tahun</span><span class="lbl">poin IHSG</span></div>
+          <table class="tbl kontrib">
+            <thead><tr><th>Kode</th><th class="r">% YTD</th><th class="r">+ IHSG</th></tr></thead>
+            <tbody id="tbLdY"></tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <div class="panel-h"><span class="lbl">Penekan IHSG</span><span class="chip dn">Laggards</span></div>
+          <div class="kontrib-jd"><span class="lbl">Hari Ini</span><span class="lbl">poin IHSG</span></div>
+          <table class="tbl kontrib">
+            <thead><tr><th>Kode</th><th class="r">% Saham</th><th class="r">IHSG</th></tr></thead>
+            <tbody id="tbLgT"></tbody>
+          </table>
+          <div class="kontrib-jd garis"><span class="lbl">Sejak Awal Tahun</span><span class="lbl">poin IHSG</span></div>
+          <table class="tbl kontrib">
+            <thead><tr><th>Kode</th><th class="r">% YTD</th><th class="r">IHSG</th></tr></thead>
+            <tbody id="tbLgY"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BRK — TOP BROKER ============ -->
+    <section class="content" id="view-brk">
+      <div class="vhead"><h1>Broker Teratas</h1><span class="sub">ranking harian</span></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="tabs" data-tabs>
+          <button class="tab on">Nilai</button><button class="tab">Volume</button><button class="tab">Frekuensi</button>
+        </div>
+        <div class="dd" data-dd>
+          <button class="dd-btn">Semua Papan <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="dd-menu">
+            <button class="dd-it sel">Semua Papan</button>
+            <button class="dd-it">Reguler (RG)</button>
+            <button class="dd-it">Negosiasi (NG)</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <table class="tbl">
+          <thead><tr><th>Broker</th><th class="r">Beli</th><th class="r">Jual</th><th class="r">Bersih</th><th style="width:26%">Posisi</th></tr></thead>
+          <tbody id="tbBroker"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ SEK — SEKTOR & INDEKS ============ -->
+    <section class="content" id="view-sek">
+      <div class="vhead"><h1>Sektor &amp; Indeks</h1><span class="sub">peta panas harian</span></div>
+      <div class="tiles" id="sekTiles"></div>
+      <div class="panel">
+        <div class="panel-h"><span class="lbl">Indeks Papan</span></div>
+        <table class="tbl">
+          <thead><tr><th>Papan</th><th class="r">Terakhir</th><th class="r">Hari Ini</th><th class="r">YTD</th></tr></thead>
+          <tbody>
+            <tr><td><span class="bchip">UTM</span>Papan Utama</td><td class="r num">1.024,66</td><td class="r num up">+0,38%</td><td class="r num up">+6,12%</td></tr>
+            <tr><td><span class="bchip">PGB</span>Papan Pengembangan</td><td class="r num">1.311,08</td><td class="r num dn">&minus;0,21%</td><td class="r num up">+2,87%</td></tr>
+            <tr><td><span class="bchip">AKS</span>Papan Akselerasi</td><td class="r num">188,74</td><td class="r num up">+1,05%</td><td class="r num dn">&minus;4,40%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ CHT — CHART ============ -->
+    <section class="content" id="view-cht">
+      <div class="vhead"><h1>Grafik</h1><span class="sub">candlestick · pivot klasik</span></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div style="max-width:200px;flex:1"><input class="inp" value="COMPOSITE" aria-label="Kode"/></div>
+        <div class="dd" data-dd>
+          <button class="dd-btn">1 Hari <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="dd-menu">
+            <button class="dd-it sel">1 Hari</button><button class="dd-it">1 Minggu</button><button class="dd-it">1 Bulan</button>
+          </div>
+        </div>
+        <span class="chip warn">EMA50</span><span class="chip warn">Pivot P·R1·S1</span>
+      </div>
+      <div class="panel"><div class="panel-b" style="padding:10px">
+        <canvas id="cvCandle" height="330"></canvas>
+        <canvas id="cvVol" height="64" style="margin-top:6px"></canvas>
+      </div></div>
+    </section>
+
+    <!-- ============ DTL — STOCK DETAIL ============ -->
+    <section class="content" id="view-dtl">
+      <div class="vhead"><h1>Detail Saham</h1><span class="sub">fundamental &amp; 5 model valuasi</span></div>
+      <div style="max-width:420px;position:relative">
+        <input class="inp" value="BBCA" aria-label="Cari saham"/>
+      </div>
+      <div class="board" style="gap:18px">
+        <div>
+          <span class="lbl">Bank Central Asia Tbk</span>
+          <div style="display:flex;align-items:baseline;gap:12px;margin-top:4px">
+            <span class="num" style="font-size:34px;font-weight:600">9.850</span>
+            <span class="chip up">&#9650; +0,77%</span>
+          </div>
+          <div class="board-meta">
+            <div class="bm"><span class="lbl">PER</span><span class="num">21,4&times;</span></div>
+            <div class="bm"><span class="lbl">PBV</span><span class="num">4,6&times;</span></div>
+            <div class="bm"><span class="lbl">ROE</span><span class="num">21,9%</span></div>
+            <div class="bm"><span class="lbl">Div Yield</span><span class="num">2,8%</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid3">
+        <div class="vcard"><span class="lbl">Graham Classic</span><span class="v-num num">11.240</span><span class="chip up" style="width:max-content">Undervalued</span><span class="v-note">&radic;(22,5 &times; EPS &times; BVPS)</span></div>
+        <div class="vcard"><span class="lbl">Graham Growth</span><span class="v-num num">10.680</span><span class="chip up" style="width:max-content">Undervalued</span><span class="v-note">EPS &times; (8,5 + 2g)</span></div>
+        <div class="vcard"><span class="lbl">NCAV / Net-Net</span><span class="v-num num">&mdash;</span><span class="chip warn" style="width:max-content">Tak relevan</span><span class="v-note">Aset lancar &minus; total liabilitas</span></div>
+        <div class="vcard"><span class="lbl">Relative Valuation</span><span class="v-num num">9.410</span><span class="chip dn" style="width:max-content">Premium</span><span class="v-note">vs median PER sektor</span></div>
+        <div class="vcard"><span class="lbl">Dividend Discount</span><span class="v-num num">10.020</span><span class="chip up" style="width:max-content">Wajar</span><span class="v-note">Gordon growth, k=9%</span></div>
+      </div>
+    </section>
+
+    <!-- ============ MAP — PETA INVESTOR ============ -->
+    <section class="content" id="view-map">
+      <div class="vhead"><h1>Peta Investor</h1><span class="sub">jaringan kepemilikan KSEI</span></div>
+      <div class="grid2 w-lebar">
+        <div class="panel"><div class="panel-b" style="padding:8px">
+          <canvas id="cvNet" height="340"></canvas>
+        </div></div>
+        <div class="panel">
+          <div class="panel-h"><span class="lbl">BBCA — Pemegang Saham</span></div>
+          <table class="tbl">
+            <thead><tr><th>Entitas</th><th class="r">%</th></tr></thead>
+            <tbody>
+              <tr><td><span class="bchip">CORP</span>PT Dwimuria Investama Andalan</td><td class="r num">54,94</td></tr>
+              <tr><td><span class="bchip">PUBL</span>Masyarakat &lt;5%</td><td class="r num">42,53</td></tr>
+              <tr><td><span class="bchip">IND</span>Robert Budi Hartono</td><td class="r num">1,18</td></tr>
+              <tr><td><span class="bchip">IND</span>Bambang Hartono</td><td class="r num">1,14</td></tr>
+              <tr><td><span class="bchip">OTH</span>Saham Treasuri</td><td class="r num">0,21</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BSM — BROKER SUMMARY ============ -->
+    <section class="content" id="view-bsm">
+      <div class="vhead"><h1>Ringkasan Broker</h1><span class="sub">alpha · akumulasi vs distribusi</span></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="tabs" data-tabs>
+          <button class="tab on">Inventaris</button><button class="tab">Kuadran</button><button class="tab">Nego</button><button class="tab">Arus</button>
+        </div>
+        <div class="dd" data-dd>
+          <button class="dd-btn">7 &ndash; 10 Agu 2026 <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="dd-menu">
+            <button class="dd-it sel">7 &ndash; 10 Agu 2026</button>
+            <button class="dd-it">1 &ndash; 7 Agu 2026</button>
+            <button class="dd-it">Juli 2026</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <table class="tbl">
+          <thead><tr><th>Broker</th><th class="r">Akum. Lot</th><th class="r">Rata-rata</th><th class="r">Foreign Net</th><th class="r">Status</th></tr></thead>
+          <tbody>
+            <tr><td><span class="bchip">KZ</span>CLSA Sekuritas</td><td class="r num up">+412,6 K lot</td><td class="r num">9.712</td><td class="r num up">+88,4 M lot</td><td class="r"><span class="chip up">Akumulasi</span></td></tr>
+            <tr><td><span class="bchip">BK</span>J.P. Morgan</td><td class="r num up">+301,2 K lot</td><td class="r num">9.688</td><td class="r num up">+61,0 M lot</td><td class="r"><span class="chip up">Akumulasi</span></td></tr>
+            <tr><td><span class="bchip">YP</span>Mirae Asset</td><td class="r num dn">&minus;188,9 K lot</td><td class="r num">9.741</td><td class="r num">&mdash;</td><td class="r"><span class="chip dn">Distribusi</span></td></tr>
+            <tr><td><span class="bchip">PD</span>Indo Premier</td><td class="r num dn">&minus;120,3 K lot</td><td class="r num">9.735</td><td class="r num">&mdash;</td><td class="r"><span class="chip dn">Distribusi</span></td></tr>
+            <tr><td><span class="bchip">AK</span>UBS Sekuritas</td><td class="r num dn">&minus;206,6 M lot</td><td class="r num">9.702</td><td class="r num dn">&minus;206,6 M lot</td><td class="r"><span class="chip dn">Distribusi</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel" style="max-width:560px">
+        <div class="panel-h"><span class="lbl">Aksi Broker — Meter</span><span class="num" style="font-size:11px;color:var(--text3)">slider 62/100</span></div>
+        <div class="panel-b">
+          <div style="height:10px;border-radius:6px;background:linear-gradient(90deg,var(--red),var(--bg3) 46%,var(--bg3) 54%,var(--green));position:relative">
+            <i style="position:absolute;left:62%;top:-4px;width:4px;height:18px;background:var(--amber);border-radius:2px"></i>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px" class="lbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ KAL — KALKULATOR ============ -->
+    <section class="content" id="view-kal">
+      <div class="vhead"><h1>Kalkulator JIA</h1><span class="sub">alat hitung posisi</span></div>
+      <div class="tabs" data-tabs>
+        <button class="tab on">Avg Down</button><button class="tab">Profit &amp; ARA</button><button class="tab">Risk : Reward</button><button class="tab">Dividen</button>
+      </div>
+      <div class="grid2 w-agak">
+        <div class="panel"><div class="panel-b" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field"><span class="lbl">Harga Beli Awal</span><input class="inp" value="1.480"/></div>
+          <div class="field"><span class="lbl">Jumlah Lot Awal</span><input class="inp" value="50"/></div>
+          <div class="field"><span class="lbl">Harga Sekarang</span><input class="inp" value="1.150"/></div>
+          <div class="field"><span class="lbl">Dana Tambahan</span><input class="inp" value="Rp 10.000.000"/></div>
+          <div style="grid-column:1/-1"><button class="btn-p">Hitung Posisi</button></div>
+        </div></div>
+        <div class="panel">
+          <div class="panel-h"><span class="lbl">Hasil</span></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:12px">
+            <div><span class="lbl">Rata-rata Baru</span><div class="num" style="font-size:30px;font-weight:600;color:var(--amber)">1.264</div></div>
+            <div style="display:flex;gap:22px;flex-wrap:wrap">
+              <div class="bm"><span class="lbl">Lot Tambahan</span><span class="num">86 lot</span></div>
+              <div class="bm"><span class="lbl">Total Lot</span><span class="num">136 lot</span></div>
+              <div class="bm"><span class="lbl">Ke Titik Impas</span><span class="num up">+9,9%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SRN — KRITIK & SARAN ============ -->
+    <section class="content" id="view-srn">
+      <div class="vhead"><h1>Kritik &amp; Saran</h1><span class="sub">masukan pengguna</span></div>
+      <div class="grid2 w-agak">
+        <div class="panel"><div class="panel-b" style="display:flex;flex-direction:column;gap:14px">
+          <div class="field"><span class="lbl">Seberapa berguna dasbor ini?</span>
+            <div class="rate"><button>1</button><button>2</button><button>3</button><button class="on">4</button><button>5</button></div>
+          </div>
+          <div class="field"><span class="lbl">Pesan</span>
+            <textarea class="inp" rows="4" placeholder="Tulis masukan, laporan bug, atau ide fitur&hellip;"></textarea>
+          </div>
+          <div><button class="btn-p">Kirim Masukan</button></div>
+        </div></div>
+        <div class="panel">
+          <div class="panel-h"><span class="lbl">Terakhir Masuk</span></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:10px;color:var(--text2);font-size:12.5px">
+            <div>&ldquo;Tambah kolom net foreign di Top Stocks.&rdquo;<div class="num" style="font-size:10.5px;color:var(--text3);margin-top:2px">08 Agu &middot; rating 5</div></div>
+            <div>&ldquo;Peta investor keren, tapi berat di HP lama.&rdquo;<div class="num" style="font-size:10.5px;color:var(--text3);margin-top:2px">05 Agu &middot; rating 4</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- bottom nav (mobile) -->
+<nav class="bottom-nav" id="bottomNav" aria-label="Menu bawah"></nav>
+
+<!-- laci menu lengkap (mobile) -->
+<div class="laci-bg" id="laciBg"></div>
+<div class="laci" id="laci" role="dialog" aria-modal="true" aria-label="Semua menu">
+  <div class="laci-tarik"></div>
+  <div class="laci-jd"><span class="lbl">Semua Menu</span><span class="lbl" id="laciTutup" style="color:var(--amber);cursor:pointer">Tutup</span></div>
+  <div class="laci-list" id="laciList"></div>
+  <button class="laci-tema js-tema">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/></svg>
+    <span>Terang</span>
+  </button>
+</div>
+</main>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- nav ---------- */
+var MENUS=[
+ ["ind","IND","Indeks Dunia","M12 3a9 9 0 100 18 9 9 0 000-18zM3 12h18M12 3c2.5 2.4 3.8 5.6 3.8 9s-1.3 6.6-3.8 9c-2.5-2.4-3.8-5.6-3.8-9s1.3-6.6 3.8-9z"],
+ ["stk","STK","Top Stocks","M4 19h16M4 15l4-5 4 3 5-7 3 4"],
+ ["brk","BRK","Top Broker","M4 20V9m5.4 11V4m5.2 16v-8m5.4 8V7"],
+ ["sek","SEK","Sektor","M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z"],
+ ["cht","CHT","Grafik","M7 5v14M5 8h4v8H5zM15 3v18M13 7h4v9h-4z"],
+ ["dtl","DTL","Detail Saham","M10 4a6 6 0 100 12 6 6 0 000-12zM14.5 14.5L20 20M8 10h4M10 8v4"],
+ ["map","MAP","Peta Investor","M12 5a2 2 0 100 4 2 2 0 000-4zM5 15a2 2 0 100 4 2 2 0 000-4zM19 15a2 2 0 100 4 2 2 0 000-4zM11 8.5L6.3 14.6M13 8.5l4.7 6.1M7 17h10"],
+ ["bsm","BSM","Ringkasan Broker","M4 7h16M4 7l2-3h12l2 3M4 7v11a2 2 0 002 2h12a2 2 0 002-2V7M9 12h6"],
+ ["kal","KAL","Kalkulator","M6 3h12a1 1 0 011 1v16a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1zM8 7h8M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01"],
+ ["srn","SRN","Kritik Saran","M21 12a8 8 0 01-8 8H4l2.4-2.9A8 8 0 1121 12zM9 11h6M9 14h4"]
+];
+function navBtn(m,i){
+  var b=document.createElement("button");
+  b.className="nav-btn"+(i===0?" on":"");
+  b.setAttribute("data-v",m[0]);b.title=m[2];
+  b.innerHTML='<svg viewBox="0 0 24 24"><path d="'+m[3]+'"/></svg><span class="code">'+m[1]+'</span>';
+  b.addEventListener("click",function(){go(m[0])});
+  return b;
+}
+var rail=document.getElementById("railNav"),bn=document.getElementById("bottomNav");
+MENUS.forEach(function(m,i){rail.appendChild(navBtn(m,i))});
+MENUS.slice(0,5).forEach(function(m){
+  var b=navBtn(m,-1);
+  if(m[0]==="ind")b.classList.add("on");
+  bn.appendChild(b);
+});
+/* Tombol keenam: laci berisi 10 menu penuh. Tanpa ini 5 menu tak terjangkau. */
+var bLaci=document.createElement("button");
+bLaci.className="nav-btn";bLaci.id="btnLaci";bLaci.title="Semua menu";
+bLaci.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span class="code">MENU</span>';
+bn.appendChild(bLaci);
+var drawn={};
+function go(v){
+  document.querySelectorAll(".content").forEach(function(s){s.classList.toggle("on",s.id==="view-"+v)});
+  document.querySelectorAll(".nav-btn").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-v")===v)});
+  document.querySelectorAll("#laciList button").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-v")===v)});
+  /* Menu yang tidak muat di bilah bawah tetap harus punya jejak: tombol MENU
+     ikut menyala, supaya pengguna tak kehilangan posisi setelah memilih dari laci. */
+  var bl=document.getElementById("btnLaci");
+  if(bl)bl.classList.toggle("on",MENUS.slice(0,5).every(function(m){return m[0]!==v}));
+  if(!drawn[v]){drawn[v]=1;requestAnimationFrame(function(){draw(v)})}
+  window.scrollTo({top:0});
+}
+
+/* ---------- laci menu (telepon) ---------- */
+var laci=document.getElementById("laci"),laciBg=document.getElementById("laciBg");
+document.getElementById("laciList").innerHTML=MENUS.map(function(m,i){
+  return "<button data-v='"+m[0]+"'"+(i===0?" class='on'":"")+
+    "><svg viewBox='0 0 24 24'><path d='"+m[3]+"'/></svg><span>"+m[2]+"</span></button>";
+}).join("");
+function laciBuka(b){laci.classList.toggle("on",b);laciBg.classList.toggle("on",b)}
+document.getElementById("btnLaci").addEventListener("click",function(){laciBuka(true)});
+laciBg.addEventListener("click",function(){laciBuka(false)});
+document.getElementById("laciTutup").addEventListener("click",function(){laciBuka(false)});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")laciBuka(false)});
+document.querySelectorAll("#laciList button").forEach(function(b){
+  b.addEventListener("click",function(){go(b.getAttribute("data-v"));laciBuka(false)});
+});
+
+/* ---------- ticker tape ---------- */
+var TAPE=[["IHSG","5.594,77","-4,20",0],["LQ45","642,18","-4,55",0],["IDX30","331,44","-4,71",0],
+ ["USD/IDR","18.039","+0,38",1],["Nikkei","39.204,42","+0,73",1],["Hang Seng","20.114,87","-0,31",0],
+ ["Straits Times","4.402,10","+0,22",1],["S&P 500","6.640,55","+0,41",1],["Net Foreign","-3.731 M","-",0],
+ ["Market PER","11,79x","-",0]];
+var tt=document.getElementById("tapeTrack"),half="";
+TAPE.forEach(function(t){
+  half+='<span class="tk"><b>'+t[0]+'</b> '+t[1]+' <span class="'+(t[3]?"up":"dn")+'">'+(t[3]?"▲":"▼")+' '+t[2]+'%</span> <span class="sep">|</span></span>';
+});
+tt.innerHTML=half+half;
+
+/* ---------- split-flap ---------- */
+var flap=document.getElementById("flapIhsg");
+"5.594,77".split("").forEach(function(ch){
+  var d=document.createElement("span");
+  d.className="flap"+(/[.,]/.test(ch)?" sym":"");
+  d.textContent=ch;flap.appendChild(d);
+});
+
+/* ---------- tables ---------- */
+var SPARKS=["2,20 8,14 14,16 20,9 26,11 32,6 38,8 44,3","2,6 8,9 14,7 20,13 26,12 32,16 38,15 44,19","2,12 8,10 14,13 20,8 26,14 32,10 38,12 44,7"];
+function sparkSvg(i,up){
+  return '<svg width="46" height="22" viewBox="0 0 46 22"><polyline class="spark" points="'+SPARKS[i%3]+'" stroke="'+(up?"var(--green)":"var(--red)")+'"/></svg>';
+}
+var W35=[["ASEAN","Indonesia","IDX Composite Index",5594.765,-4.2,-35.3,6,13,35,1],["ASEAN","Malaysia","FTSE Bursa Malaysia KLCI Index",1693.43,0.6,0.79,4,8,24,0],["ASEAN","Philippines","PSEi Index",5938.38,0.45,-1.89,5,10,29,0],["ASEAN","Singapore","Straits Times Index STI",5049.96,-0.35,8.69,2,5,11,0],["ASEAN","Thailand","SET Index",1582.6,-0.76,25.64,1,4,4,0],["ASEAN","Vietnam","VN-Index",1831.55,0.69,2.64,3,6,19,0],["Asia Pacific","Australia","All Ordinaries Index",8855.9,-0.68,-1.81,9,28,null,0],["Asia Pacific","China","SSE Composite Index",4027.736,-0.74,1.48,7,21,null,0],["Asia Pacific","Hong Kong","Hang Seng Index",24961.949,-1.15,-2.61,11,31,null,0],["Asia Pacific","India","S&P BSE SENSEX Index",74231.172,-0.17,-12.9,12,34,null,0],["Asia Pacific","Japan","Nikkei 225",66588.117,-1.31,32.28,3,3,null,0],["Asia Pacific","Korea","KOSPI Index",8160.59,-5.54,93.65,1,1,null,0],["Asia Pacific","Taiwan","TSE Weighted Index",45070.941,-1.33,55.61,2,2,null,0],["America","Brazil","Ibovespa Brasil Index",170331.0,-2.22,5.71,15,null,null,0],["America","Canada","S&P/TSX Composite Index",35217.102,1.19,11.05,10,null,null,0],["America","Chile","S&P/CLX IPSA CLP TR",8316.74,0.73,0.0,26,null,null,0],["America","Colombia","MSCI COLCAP Index",2228.19,-0.48,7.75,12,null,null,0],["America","Mexico","S&P/BMV IPC",67392.188,-1.31,4.8,17,null,null,0],["America","US","Dow Jones Industrial Average",51561.93,1.73,7.28,13,null,null,0],["EMEA","Austria","Austrian Traded Index",6139.8,0.38,15.27,9,null,null,0],["EMEA","France","CAC 40 Index",8270.44,0.32,1.48,21,null,null,0],["EMEA","Germany","German Stock Index DAX",24957.24,0.05,1.91,20,null,null,0],["EMEA","Ireland","ISEQ All-Share Index",13171.5,0.25,0.55,25,null,null,0],["EMEA","Israel","Tel Aviv Stock Exchange 35 Index",4265.64,0.08,17.87,7,null,null,0],["EMEA","Norway","OSE Benchmark Index",2015.28,0.67,19.4,6,null,null,0],["EMEA","Poland","WIG Total Return Index",141337.953,-0.64,15.59,8,null,null,0],["EMEA","Qatar","Qatar Exchange Index",10335.86,-0.55,-3.96,32,null,null,0],["EMEA","Russia","MOEX Russia Index",2755.58,-0.02,0.0,26,null,null,0],["EMEA","Saudi Arabia","Tadawul All Share Index",11002.04,0.0,4.87,16,null,null,0],["EMEA","South Africa","FTSE/JSE Africa All Share Index",112918.258,0.33,-2.52,30,null,null,0],["EMEA","Spain","IBEX 35 Index",18434.4,0.87,6.51,14,null,null,0],["EMEA","Switzerland","Swiss Market Index",13374.02,0.25,0.8,23,null,null,0],["EMEA","Turkey","Borsa Istanbul 100 Index",13791.16,-0.58,22.46,5,null,null,0],["EMEA","UAE","Dubai Financial Market General Index",5774.82,1.55,-4.5,33,null,null,0],["EMEA","UK","FTSE 100 Index",10394.56,0.33,4.66,18,null,null,0]];
+
+function fN(v){return Number(v).toLocaleString("id-ID",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function fp(v){return (v>=0?"+":"\u2212")+Math.abs(v).toFixed(2).replace(".",",")+"%"}
+/* Tabel 35 negara, dikelompokkan per kawasan; baris Indonesia disorot merah
+   (kolom A/AP/W = peringkat di ASEAN, Asia Pasifik, dan dunia). */
+(function(){
+  var kw="",html="";
+  W35.forEach(function(x){
+    if(x[0]!==kw){kw=x[0];html+="<tr class='kawasan'><td colspan='8'>"+kw+"</td></tr>"}
+    html+="<tr class='"+(x[9]?"kita":"")+"'>"+
+      "<td>"+x[1]+"</td>"+
+      "<td style='color:var(--text3);font-size:10.5px'>"+x[2]+"</td>"+
+      "<td class='r num'>"+fN(x[3])+"</td>"+
+      "<td class='r num "+(x[4]>=0?"up":"dn")+"'>"+fp(x[4])+"</td>"+
+      "<td class='r'><span class='ytd-bdg "+(x[5]>=0?"u":"d")+"'>"+fp(x[5])+"</span></td>"+
+      "<td class='r rk'>"+(x[6]==null?"\u2013":x[6])+"</td>"+
+      "<td class='r rk'>"+(x[7]==null?"\u2013":x[7])+"</td>"+
+      "<td class='r rk'>"+(x[8]==null?"\u2013":x[8])+"</td></tr>";
+  });
+  document.getElementById("tbWorld").innerHTML=html;
+  document.getElementById("jmlNegara").textContent=W35.length;
+})();
+
+/* Peringkat YTD — diurutkan menurun, sumbu nol diletakkan proporsional
+   supaya batang negatif dan positif memakai skala yang sama. */
+(function(){
+  var d=W35.slice().sort(function(a,b){return b[5]-a[5]});
+  var v=d.map(function(x){return x[5]}),lo=Math.min(0,Math.min.apply(null,v)),hi=Math.max(0,Math.max.apply(null,v));
+  var span=hi-lo,nol=(0-lo)/span*100;
+  document.getElementById("rankYtd").innerHTML=d.map(function(x,i){
+    var w=Math.abs(x[5])/span*100,pos=x[5]>=0;
+    var gaya=pos?"left:"+nol+"%":"right:"+(100-nol)+"%";
+    return "<div class='rk-row "+(x[9]?"kita":"")+"'>"+
+      "<span class='rk-no'>"+(i+1)+"</span>"+
+      "<span class='rk-nm' title='"+x[1]+"'>"+x[1]+"</span>"+
+      "<span class='rk-tr' style='--nol:"+nol+"%'><i class='rk-b "+(pos?"p":"n")+"' style='"+gaya+";width:"+w+"%'></i></span>"+
+      "<span class='rk-v "+(pos?"up":"dn")+"'>"+fp(x[5])+"</span></div>";
+  }).join("");
+  /* garis nol digambar lewat variabel CSS supaya ikut posisi hitungan di atas */
+  document.querySelectorAll(".rk-tr").forEach(function(el){el.style.setProperty("--nol",nol+"%")});
+})();
+
+/* Kalender bulan Juni 2026 — tanggal yang punya berkas data bisa diklik. */
+(function(){
+  var g=document.getElementById("calGrid");if(!g)return;
+  var ADA=[1,2,3,4,5],AKTIF=5,h="";
+  ["Sen","Sel","Rab","Kam","Jum","Sab","Min"].forEach(function(d){h+="<div class='cg hdr'>"+d+"</div>"});
+  for(var i=0;i<30;i++){
+    var t=i+1,dow=(i+0)%7,ada=ADA.indexOf(t)>=0&&dow<5;
+    h+="<div class='cg "+(t===AKTIF?"aktif":(ada?"ada":""))+"'>"+t+"</div>";
+  }
+  g.innerHTML=h;
+})();
+
+var STK={"mcap":[["BBCA",619.0,6.32],["BREN",480.0,4.9],["DCII",430.0,4.38],["BBRI",411.0,4.19],["BMRI",355.0,3.62],["BYAN",318.0,3.24],["TLKM",273.0,2.79],["MORA",272.0,2.78],["AMMN",239.0,2.43],["ASII",185.0,1.89]],"gain":[["MUTU",102.0,117.0,14.71],["MMIX",655.0,750.0,14.5],["CBPE",288.0,324.0,12.5],["BTON",340.0,370.0,8.82],["DWGL",244.0,264.0,8.2],["ICON",102.0,110.0,7.84],["PUDP",306.0,330.0,7.84],["DAAZ",1710.0,1840.0,7.6],["CTBN",5825.0,6225.0,6.87],["PSAB",470.0,500.0,6.38]],"lose":[["WIFI",1700.0,1445.0,-15.0],["ARKO",5100.0,4340.0,-14.9],["APIC",605.0,515.0,-14.88],["RMKE",2420.0,2060.0,-14.88],["RSGK",840.0,715.0,-14.88],["GPSO",486.0,414.0,-14.81],["IRSX",284.0,242.0,-14.79],["WEHA",142.0,121.0,-14.79],["DOOH",115.0,98.0,-14.78],["ELPI",1320.0,1125.0,-14.77]],"ldT":[["SMMA",5.26,6.93],["MDKA",3.21,2.1],["EMAS",1.37,1.03],["INCO",4.1,0.87],["MPRO",2.11,0.58],["TINS",2.94,0.53],["MMIX",14.5,0.22],["MEGA",0.56,0.22],["ADMR",1.45,0.21],["PSAB",6.38,0.13]],"ldY":[["SMMA",37.93,38.39],["EMAS",33.33,20.45],["ADRO",23.76,8.17],["MDKA",12.72,7.61],["MAPI",27.47,5.84],["MSIN",28.57,4.52],["BIPI",59.3,4.01],["MEGA",10.15,3.69],["BDMN",70.04,2.83],["DNET",11.02,2.45]],"lgT":[["BBCA",-6.45,-32.79],["BREN",-10.25,-15.12],["TLKM",-4.83,-14.62],["BBRI",-2.49,-10.98],["DCII",-5.46,-10.31],["BMRI",-3.27,-10.17],["IMPC",-14.76,-8.02],["BRPT",-8.36,-7.59],["MORA",-6.56,-7.17],["BBNI",-6.14,-6.8]],"lgY":[["DSSA",-84.9,-302.89],["BBCA",-37.15,-282.78],["BREN",-62.99,-225.95],["BBRI",-25.14,-144.4],["TPIA",-81.36,-117.89],["BRPT",-54.74,-102.79],["FILM",-87.72,-98.87],["BYAN",-39.33,-98.37],["BMRI",-24.71,-98.36],["AMMN",-48.79,-95.18]]};
+
+/* ---------- Saham Teratas (data 5 Juni 2026) ---------- */
+var mx=STK.mcap[0][1];
+document.getElementById("mcapBars").innerHTML=STK.mcap.map(function(m,i){
+  var w=(m[1]/mx*100).toFixed(1),medali=i<3?" rk"+(i+1):"";
+  return "<div class='mc-row'>"+
+    "<span class='mc-rk"+medali+"'>"+(i+1)+"</span>"+
+    "<span class='tick'>"+m[0]+"</span>"+
+    "<div class='bar-tr'><div class='bar-fl' style='width:"+w+"%'></div></div>"+
+    "<span class='num mc-v'>"+m[1].toLocaleString("id-ID")+" T</span>"+
+    "<span class='num mc-p "+(m[2]>=0?"up":"dn")+"'>"+fp(m[2])+"</span></div>";
+}).join("");
+
+function barisHarga(a,naik){
+  return a.map(function(x){
+    return "<tr><td><span class='tick "+(naik?"up":"dn")+"'>"+x[0]+"</span></td>"+
+      "<td class='r num' style='color:var(--text3)'>"+x[1].toLocaleString("id-ID")+"</td>"+
+      "<td class='r num'>"+x[2].toLocaleString("id-ID")+"</td>"+
+      "<td class='r'><span class='ytd-bdg "+(naik?"u":"d")+"'>"+fp(x[3])+"</span></td></tr>";
+  }).join("");
+}
+document.getElementById("tbGain").innerHTML=barisHarga(STK.gain,true);
+document.getElementById("tbLose").innerHTML=barisHarga(STK.lose,false);
+
+/* Kontribusi ke IHSG: kolom terakhir dalam POIN indeks, bukan persen —
+   itu yang membedakan tabel ini dari Gainers/Losers di atasnya. */
+function barisKontrib(a,naik){
+  var mp=Math.max.apply(null,a.map(function(x){return Math.abs(x[2])}));
+  return a.map(function(x){
+    var w=(Math.abs(x[2])/mp*100).toFixed(0);
+    return "<tr><td><span class='tick "+(naik?"up":"dn")+"'>"+x[0]+"</span></td>"+
+      "<td class='r num "+(x[1]>=0?"up":"dn")+"'>"+fp(x[1])+"</td>"+
+      "<td class='r'><span class='kb-wrap'><span class='kb-tr'><i class='kb-bar "+(naik?"u":"d")+"' style='width:"+w+"%'></i></span>"+
+      "<span class='num kb-v "+(naik?"up":"dn")+"'>"+(x[2]>=0?"+":"\u2212")+Math.abs(x[2]).toFixed(2).replace(".",",")+"</span></span></td></tr>";
+  }).join("");
+}
+document.getElementById("tbLdT").innerHTML=barisKontrib(STK.ldT,true);
+document.getElementById("tbLdY").innerHTML=barisKontrib(STK.ldY,true);
+document.getElementById("tbLgT").innerHTML=barisKontrib(STK.lgT,false);
+document.getElementById("tbLgY").innerHTML=barisKontrib(STK.lgY,false);
+
+var BRO=[["YP","Mirae Asset",1892,1544,348],["PD","Indo Premier",1410,1287,123],["CC","Mandiri Sekuritas",1322,1401,-79],
+ ["NI","BNI Sekuritas",980,1122,-142],["KZ","CLSA Sekuritas",944,512,432],["BK","J.P. Morgan",871,449,422],
+ ["AK","UBS Sekuritas",712,1018,-306],["ZP","Maybank Sekuritas",688,701,-13]];
+var maxNet=Math.max.apply(null,BRO.map(function(b){return Math.abs(b[4])}));
+document.getElementById("tbBroker").innerHTML=BRO.map(function(b){
+  var up=b[4]>=0,w=(Math.abs(b[4])/maxNet*100).toFixed(0);
+  return "<tr><td><span class='bchip'>"+b[0]+"</span>"+b[1]+"</td><td class='r num'>"+b[2].toLocaleString("id-ID")+" M</td><td class='r num'>"+b[3].toLocaleString("id-ID")+" M</td><td class='r num "+(up?"up":"dn")+"'>"+(up?"+":"−")+Math.abs(b[4]).toLocaleString("id-ID")+" M</td><td><div class='bar-tr'><div class='bar-fl"+(up?"":" neg")+"' style='width:"+w+"%'></div></div></td></tr>";
+}).join("");
+
+/* ---------- sector tiles ---------- */
+var SEK=[["IDXENER","Energi",1.84,1],["IDXBASIC","Bahan Baku",1.12,0],["IDXINDUS","Perindustrian",0.44,0],
+ ["IDXNONCYC","Kons. Primer",-0.32,0],["IDXCYC","Kons. Sekunder",-0.85,0],["IDXHEALTH","Kesehatan",0.21,0],
+ ["IDXFIN","Keuangan",0.68,1],["IDXPROP","Properti",-1.24,0],["IDXTECH","Teknologi",-2.10,0],
+ ["IDXINFRA","Infrastruktur",0.15,0],["IDXTRANS","Transportasi",0.92,0]];
+document.getElementById("sekTiles").innerHTML=SEK.map(function(s){
+  var up=s[2]>=0,a=Math.min(Math.abs(s[2])/2.2,1)*0.32+0.06;
+  var bg=up?"rgba(48,164,108,"+a+")":"rgba(229,72,77,"+a+")";
+  return "<div class='tile"+(s[3]?" big":"")+"' style='background:"+bg+"'><span class='t-code'>"+s[0]+"</span><span class='t-name'>"+s[1]+"</span><span class='t-val "+(up?"up":"dn")+"'>"+(up?"+":"−")+Math.abs(s[2]).toFixed(2).replace(".",",")+"%</span></div>";
+}).join("");
+
+/* ---------- canvas helpers ---------- */
+function cv(id){var c=document.getElementById(id);if(!c)return null;
+  /* tinggi dasar disimpan sekali di dataset — menulis c.height juga menulis
+     atribut height, jadi membacanya balik tiap redraw bikin tinggi berlipat. */
+  if(!c.dataset.h)c.dataset.h=c.getAttribute("height");
+  var base=+c.dataset.h,d=window.devicePixelRatio||1,r=c.getBoundingClientRect();
+  c.style.height=base+"px";
+  c.width=Math.max(1,r.width*d);c.height=base*d;
+  var x=c.getContext("2d");x.scale(d,d);return{x:x,w:r.width,h:base}}
+function tok(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+function draw(v){
+  /* Kanvas kadang diukur saat tata letaknya belum selesai (lebar 0) — hasilnya
+     seluruh gambar terjepit jadi 1 piksel lalu diregangkan CSS jadi balok.
+     Ditahan di satu tempat supaya berlaku untuk SEMUA grafik, bukan ditambal
+     per-grafik. */
+  var sec=document.getElementById("view-"+v);
+  if(sec){
+    var kanvas=sec.querySelector("canvas");
+    if(kanvas&&kanvas.getBoundingClientRect().width<2){
+      return requestAnimationFrame(function(){draw(v)});
+    }
+  }
+  if(v==="ind")drawYtd();
+  if(v==="cht"){drawCandle();drawVol()}
+  if(v==="map")drawNet();
+}
+function drawYtd(){
+  var c=cv("cvYtd");if(!c)return;
+  var r=rng(42),pts=[],y=0.62;
+  for(var i=0;i<60;i++){y+=(r()-0.47)*0.05;y=Math.max(0.12,Math.min(0.9,y));pts.push(y)}
+  var am=tok("--amber");
+  c.x.beginPath();
+  pts.forEach(function(p,i){var X=i/(pts.length-1)*c.w,Y=p*c.h;i?c.x.lineTo(X,Y):c.x.moveTo(X,Y)});
+  c.x.strokeStyle=am;c.x.lineWidth=1.8;c.x.stroke();
+  c.x.lineTo(c.w,c.h);c.x.lineTo(0,c.h);c.x.closePath();
+  var g=c.x.createLinearGradient(0,0,0,c.h);
+  g.addColorStop(0,"rgba(240,166,43,.25)");g.addColorStop(1,"rgba(240,166,43,0)");
+  c.x.fillStyle=g;c.x.fill();
+}
+
+var CAND=null;
+function genCandles(){
+  if(CAND)return CAND;
+  var r=rng(7),o=7300,out=[];
+  for(var i=0;i<44;i++){
+    var ch=(r()-0.48)*70,cl=o+ch,hi=Math.max(o,cl)+r()*38,lo=Math.min(o,cl)-r()*38;
+    out.push([o,hi,lo,cl,r()]);o=cl;
+  }
+  CAND=out;return out;
+}
+function drawCandle(){
+  var c=cv("cvCandle");if(!c)return;
+  var d=genCandles(),lo=1e9,hi=0;
+  d.forEach(function(k){lo=Math.min(lo,k[2]);hi=Math.max(hi,k[1])});
+  var pad=26,Y=function(p){return 8+(hi-p)/(hi-lo)*(c.h-40)};
+  var g=tok("--green"),rd=tok("--red"),ln=tok("--line"),am=tok("--amber"),t3=tok("--text3");
+  /* grid */
+  c.x.strokeStyle=ln;c.x.lineWidth=1;
+  for(var i=0;i<5;i++){var gy=8+i*(c.h-40)/4;c.x.beginPath();c.x.moveTo(0,gy);c.x.lineTo(c.w-pad-30,gy);c.x.stroke();
+    c.x.fillStyle=t3;c.x.font="10px "+tok("--mono").split(",")[0];
+    c.x.fillText(Math.round(hi-(hi-lo)*i/4).toLocaleString("id-ID"),c.w-pad-24,gy+3)}
+  var bw=(c.w-pad-40)/d.length;
+  d.forEach(function(k,i){
+    var X=6+i*bw+bw/2,up=k[3]>=k[0],col=up?g:rd;
+    c.x.strokeStyle=col;c.x.beginPath();c.x.moveTo(X,Y(k[1]));c.x.lineTo(X,Y(k[2]));c.x.stroke();
+    c.x.fillStyle=col;
+    var y1=Y(Math.max(k[0],k[3])),y2=Y(Math.min(k[0],k[3]));
+    c.x.fillRect(X-bw*0.32,y1,bw*0.64,Math.max(1.5,y2-y1));
+  });
+  /* EMA */
+  c.x.strokeStyle=am;c.x.lineWidth=1.6;c.x.beginPath();
+  var e=d[0][3];
+  d.forEach(function(k,i){e=e*0.88+k[3]*0.12;var X=6+i*bw+bw/2;i?c.x.lineTo(X,Y(e)):c.x.moveTo(X,Y(e))});
+  c.x.stroke();
+  /* pivot */
+  var piv=(d[d.length-2][1]+d[d.length-2][2]+d[d.length-2][3])/3;
+  c.x.strokeStyle=am;c.x.setLineDash([5,4]);c.x.lineWidth=1;
+  c.x.beginPath();c.x.moveTo(0,Y(piv));c.x.lineTo(c.w-pad-30,Y(piv));c.x.stroke();c.x.setLineDash([]);
+  c.x.fillStyle=am;c.x.font="600 10px "+tok("--mono").split(",")[0];
+  c.x.fillText("P "+Math.round(piv).toLocaleString("id-ID"),8,Y(piv)-5);
+}
+function drawVol(){
+  var c=cv("cvVol");if(!c)return;
+  var d=genCandles(),bw=(c.w-46)/d.length,g=tok("--green"),rd=tok("--red");
+  d.forEach(function(k,i){
+    var h=6+k[4]*(c.h-12),up=k[3]>=k[0];
+    c.x.fillStyle=up?g:rd;c.x.globalAlpha=0.55;
+    c.x.fillRect(6+i*bw+bw*0.18,c.h-h,bw*0.64,h);
+  });c.x.globalAlpha=1;
+}
+function drawNet(){
+  var c=cv("cvNet");if(!c)return;
+  var cx=c.w/2,cyy=c.h/2,am=tok("--amber"),t2=tok("--text2"),ln=tok("--line2"),bg=tok("--bg2");
+  var H=[["DWIMURIA",54.9],["PUBLIK",42.5],["R. HARTONO",1.2],["B. HARTONO",1.1],["TREASURI",0.2],["KISI",0.8],["DANAREKSA",0.6],["MANULIFE",0.5]];
+  var nodes=H.map(function(h,i){
+    var a=i/H.length*Math.PI*2-Math.PI/2,rr=Math.min(c.w,c.h)*0.36;
+    return{x:cx+Math.cos(a)*rr,y:cyy+Math.sin(a)*rr,n:h[0],p:h[1]};
+  });
+  nodes.forEach(function(n){
+    c.x.strokeStyle=ln;c.x.lineWidth=Math.max(1,n.p/14);
+    c.x.beginPath();c.x.moveTo(cx,cyy);c.x.lineTo(n.x,n.y);c.x.stroke();
+  });
+  nodes.forEach(function(n){
+    var rr=6+Math.sqrt(n.p)*2.4;
+    c.x.fillStyle=bg;c.x.strokeStyle=t2;c.x.lineWidth=1;
+    c.x.beginPath();c.x.arc(n.x,n.y,rr,0,7);c.x.fill();c.x.stroke();
+    c.x.fillStyle=t2;c.x.font="9px "+tok("--mono").split(",")[0];c.x.textAlign="center";
+    c.x.fillText(n.n,n.x,n.y+rr+11);
+  });
+  c.x.fillStyle=am;c.x.beginPath();c.x.arc(cx,cyy,17,0,7);c.x.fill();
+  c.x.fillStyle=tok("--amber-ink");c.x.font="700 10px "+tok("--mono").split(",")[0];c.x.textAlign="center";
+  c.x.fillText("BBCA",cx,cyy+3);
+}
+
+/* ---------- dropdown + tabs ---------- */
+document.querySelectorAll("[data-dd]").forEach(function(dd){
+  dd.querySelector(".dd-btn").addEventListener("click",function(e){
+    e.stopPropagation();
+    document.querySelectorAll("[data-dd].open").forEach(function(o){if(o!==dd)o.classList.remove("open")});
+    dd.classList.toggle("open");
+  });
+  dd.querySelectorAll(".dd-it").forEach(function(it){
+    it.addEventListener("click",function(){
+      dd.querySelectorAll(".dd-it").forEach(function(x){x.classList.remove("sel")});
+      it.classList.add("sel");
+      dd.querySelector(".dd-btn").childNodes[0].textContent=it.textContent+" ";
+      dd.classList.remove("open");
+    });
+  });
+});
+document.addEventListener("click",function(){document.querySelectorAll("[data-dd].open").forEach(function(o){o.classList.remove("open")})});
+document.querySelectorAll("[data-tabs]").forEach(function(tg){
+  tg.querySelectorAll(".tab").forEach(function(t){
+    t.addEventListener("click",function(){
+      tg.querySelectorAll(".tab").forEach(function(x){x.classList.remove("on")});
+      t.classList.add("on");
+    });
+  });
+});
+document.querySelectorAll(".rate button").forEach(function(b,_,all){
+  b.addEventListener("click",function(){
+    document.querySelectorAll(".rate button").forEach(function(x){x.classList.remove("on")});
+    b.classList.add("on");
+  });
+});
+
+/* ---------- theme toggle ---------- */
+/* Dua tombol tema (rail di layar lebar, laci di telepon) tapi SATU fungsi —
+   labelnya disinkronkan bersama supaya tak pernah berbeda bunyi. */
+function setTema(t){
+  document.documentElement.setAttribute("data-theme",t);
+  document.querySelectorAll(".js-tema span").forEach(function(el){
+    el.textContent=(t==="dark"?"Terang":"Gelap");
+  });
+}
+setTema("light");  /* default terang — keputusan produk, bukan ikut tema sistem */
+document.querySelectorAll(".js-tema").forEach(function(b){
+  b.addEventListener("click",function(){
+    setTema(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  });
+});
+
+/* initial draw + redraw on resize/theme */
+requestAnimationFrame(function(){drawn.ind=1;drawYtd()});
+var rT;window.addEventListener("resize",function(){clearTimeout(rT);rT=setTimeout(function(){
+  Object.keys(drawn).forEach(function(v){var s=document.getElementById("view-"+v);if(s&&s.classList.contains("on"))draw(v)});
+},150)});
+new MutationObserver(function(){Object.keys(drawn).forEach(function(v){var s=document.getElementById("view-"+v);if(s&&s.classList.contains("on"))draw(v)})})
+  .observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+})();
+</script>

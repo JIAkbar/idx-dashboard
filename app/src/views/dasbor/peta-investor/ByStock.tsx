@@ -7,6 +7,8 @@ interface ByStockProps {
 }
 
 const PAGE = 20
+/** Pil pemegang saham dibatasi 3 supaya tinggi tiap baris tabel sama. Sebelumnya 5 dan jumlah pil mengikuti jumlah holder (1..26), jadi tinggi baris melompat-lompat. */
+const PIL = 3
 const TYPE_OPTIONS: { value: '' | 'CORP' | 'IND' | 'OTH'; label: string }[] = [
   { value: '', label: 'Semua Tipe Holder' },
   { value: 'CORP', label: 'Institusi (CORP)' },
@@ -44,24 +46,29 @@ export function ByStock({ data, onSelect }: ByStockProps) {
   const remaining = rows.length - visibleCount
 
   return (
-    <div>
-      <div className="card pi-tbl-toolbar">
-        <span className="pi-tbl-toolbar-title">📋 Emiten &amp; Pemegang Saham ≥1%</span>
+    <div className="panel">
+      <div className="panel-h" style={{ flexWrap: 'wrap' }}>
+        <span className="lbl">Emiten &amp; Pemegang Saham ≥1%</span>
         <input
-          className="pi-tbl-search"
+          className="inp"
+          style={{ width: 200 }}
           placeholder="Cari kode/nama emiten..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <select className="pi-tbl-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}>
+        <select className="inp" style={{ width: 'auto' }} value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}>
           {TYPE_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
           ))}
         </select>
-        <span className="pi-tbl-count">{rows.length} emiten</span>
+        {/* Keterangan ditaruh SEKALI di sini, bukan per baris: tiga kolom persen
+            di bawah diturunkan dari teks bebas `cls` KSEI, dan holder tanpa
+            `cls` (1.138 dari 6.728 baris) jatuh ke OTH — jadi "OTH" berarti
+            "tipe tidak terisi", bukan "tipe lain". */}
+        <span className="chip warn">Tipe holder diturunkan dari teks bebas KSEI · OTH = tipe tak terisi</span>
+        <span className="num" style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{rows.length} emiten</span>
       </div>
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div className="pi-tbl-wrap">
+      <div className="pi-tbl-wrap" style={{ border: 'none', borderRadius: 0 }}>
           <table className="pi-tbl">
             <thead>
               <tr>
@@ -78,26 +85,30 @@ export function ByStock({ data, onSelect }: ByStockProps) {
                 const corpPct = sumPct(em, 'CORP')
                 const indPct = sumPct(em, 'IND')
                 const othPct = sumPct(em, 'OTH')
-                const shown = em.holders.slice(0, 5)
-                const extra = em.holders.length - 5
+                const shown = em.holders.slice(0, PIL)
+                const extra = em.holders.length - PIL
                 return (
                   <tr key={em.code} onClick={() => onSelect({ type: 'emiten', code: em.code })} title="Klik untuk lihat di Grafik Jaringan">
                     <td>
                       <div className="em-code">{em.code}</div>
-                      <div className="em-name">{em.issuer.slice(0, 30)}</div>
+                      {/* 199 dari 952 emiten tidak punya nama perusahaan di data KSEI; tanpa
+                          pengganti, barisnya kehilangan satu baris teks dan tinggi baris tabel
+                          jadi tidak seragam lagi. */}
+                      <div className="em-name satu-baris" title={em.issuer}>{em.issuer || '—'}</div>
                     </td>
-                    <td style={{ textAlign: 'center', fontWeight: 700 }}>{em.holders.length}</td>
-                    <td style={{ textAlign: 'center', color: '#3b82f6' }}>{corpPct > 0 ? `${corpPct.toFixed(1)}%` : '—'}</td>
-                    <td style={{ textAlign: 'center', color: '#22c55e' }}>{indPct > 0 ? `${indPct.toFixed(1)}%` : '—'}</td>
-                    <td style={{ textAlign: 'center', color: '#a855f7' }}>{othPct > 0 ? `${othPct.toFixed(1)}%` : '—'}</td>
+                    <td className="num" style={{ textAlign: 'center', fontWeight: 700 }}>{em.holders.length}</td>
+                    <td className="num" style={{ textAlign: 'center', color: 'var(--text2)' }}>{corpPct > 0 ? `${corpPct.toFixed(1)}%` : '—'}</td>
+                    <td className="num" style={{ textAlign: 'center', color: 'var(--text3)' }}>{indPct > 0 ? `${indPct.toFixed(1)}%` : '—'}</td>
+                    <td className="num" style={{ textAlign: 'center', color: 'var(--text3)' }}>{othPct > 0 ? `${othPct.toFixed(1)}%` : '—'}</td>
                     <td>
-                      <div className="pi-holder-list">
+                      <div className="pil-row">
                         {shown.map((h) => (
-                          <span key={h.name} className={`pi-badge-h ${holderType(h.cls)}`} title={`${h.pct.toFixed(2)}%`}>
-                            {h.name.length > 24 ? `${h.name.slice(0, 22)}...` : h.name} <span style={{ opacity: 0.65 }}>{h.pct.toFixed(1)}%</span>
+                          <span key={h.name} className="bchip" title={`${h.name} · ${holderType(h.cls)} · ${h.pct.toFixed(2)}%`}>
+                            <span className="pil-nm">{h.name}</span>
+                            <span className="pil-pct">{h.pct.toFixed(1)}%</span>
                           </span>
                         ))}
-                        {extra > 0 && <span className="pi-badge-more">+{extra} lagi</span>}
+                        {extra > 0 && <span className="lbl">+{extra} lagi</span>}
                       </div>
                     </td>
                   </tr>
@@ -107,12 +118,11 @@ export function ByStock({ data, onSelect }: ByStockProps) {
           </table>
           {remaining > 0 && (
             <div style={{ textAlign: 'center', padding: 10 }}>
-              <button type="button" className="pi-loadmore" onClick={() => setVisibleCount((v) => v + PAGE)}>
+              <button type="button" className="bchip" style={{ cursor: 'pointer' }} onClick={() => setVisibleCount((v) => v + PAGE)}>
                 Tampilkan {Math.min(remaining, PAGE)} lagi (sisa {remaining})
               </button>
             </div>
           )}
-        </div>
       </div>
     </div>
   )

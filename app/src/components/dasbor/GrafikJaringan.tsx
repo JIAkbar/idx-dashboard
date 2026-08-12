@@ -33,15 +33,38 @@ export function GrafikJaringan({ allData, emitenList, focusCode, onSelect }: Gra
     if (!wrap) return
     simRef.current?.stop()
     simRef.current = null
+    let raf = 0
 
-    const dark = theme === 'dark'
-    if (focusCode) {
-      simRef.current = renderFocusedGraph({ wrap, tooltip: null, dark, allData, code: focusCode, onSelect })
-    } else {
-      simRef.current = renderForceGraph({ wrap, tooltip: tooltipRef.current, dark, allData, emitenList, onSelect })
+    function gambar() {
+      if (!wrap) return
+      // Penjaga lebar (papan #26): kedua fungsi render mengambil lebar wadah
+      // untuk menaruh titik pusat & lebar SVG. Kalau dipanggil sebelum tata
+      // letak siap, lebarnya 0 dan graf digambar untuk kanvas 900px semu lalu
+      // meluber di telepon. Penjaga ditaruh SATU KALI di sini — titik panggil
+      // tunggal kedua fungsi itu — bukan ditambal di masing-masing render.
+      if (wrap.getBoundingClientRect().width < 2) {
+        raf = requestAnimationFrame(gambar)
+        return
+      }
+      // Papan #tooltip-nyantol: tooltip adalah elemen DOM PERSISTEN (sibling
+      // dari `wrap`, bukan anak SVG yang ikut kehapus tiap render). Ganti mode
+      // (fokus <-> umum) atau data (filter/tab/tema) memicu render ulang yang
+      // menghapus node SVG lama LANGSUNG (innerHTML=''), jadi event
+      // `mouseout` node yang biasanya menyembunyikan tooltip tidak sempat
+      // terpicu — tooltip nyangkut dengan isi basi. Disembunyikan paksa di
+      // SATU titik panggil render ini (bukan ditambal di tiap render*Graph)
+      // supaya menutupi semua jalur transisi: klik node -> fokus, klik area
+      // kosong -> keluar fokus, ganti tab/filter/tema.
+      if (tooltipRef.current) tooltipRef.current.style.display = 'none'
+      const dark = theme === 'dark'
+      simRef.current = focusCode
+        ? renderFocusedGraph({ wrap, tooltip: null, dark, allData, code: focusCode, onSelect })
+        : renderForceGraph({ wrap, tooltip: tooltipRef.current, dark, allData, emitenList, onSelect })
     }
+    gambar()
 
     return () => {
+      cancelAnimationFrame(raf)
       simRef.current?.stop()
       simRef.current = null
     }

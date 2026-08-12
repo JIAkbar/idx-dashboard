@@ -1,3 +1,5 @@
+import { IkonMenu, IKON_PAPAN_KLIP } from '../../../components/dasbor/IkonMenu'
+
 interface PosisiBarProps {
   kode: string
   onKode: (v: string) => void
@@ -16,36 +18,23 @@ interface PosisiBarProps {
  */
 export function PosisiBar({ kode, onKode, lots, onLots, avg, onAvg, onFill }: PosisiBarProps) {
   return (
-    <div className="jia-pos-bar">
-      <label>📋 Kode</label>
-      <input
-        className="jia-pos-inp kode"
-        type="text"
-        placeholder="BBCA"
-        maxLength={6}
-        value={kode}
-        onChange={(e) => onKode(e.target.value.toUpperCase())}
-      />
-      <label>Lots</label>
-      <input
-        className="jia-pos-inp lots"
-        type="number"
-        placeholder="0"
-        min={0}
-        value={lots}
-        onChange={(e) => onLots(e.target.value)}
-      />
-      <label>Avg Cost</label>
-      <input
-        className="jia-pos-inp avg"
-        type="number"
-        placeholder="0"
-        min={0}
-        value={avg}
-        onChange={(e) => onAvg(e.target.value)}
-      />
-      <button className="jia-pos-sync" onClick={onFill}>↩ Isi Kalkulator</button>
-      <span className="jia-pos-tag">Isi posisi untuk auto-fill ↓</span>
+    <div className="vcard" style={{ gap: 8 }}>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <div className="field" style={{ width: 92 }}>
+          <span className="lbl"><IkonMenu d={IKON_PAPAN_KLIP} size={12} /> Kode</span>
+          <input className="inp" type="text" placeholder="BBCA" maxLength={6} value={kode} onChange={(e) => onKode(e.target.value.toUpperCase())} />
+        </div>
+        <div className="field" style={{ width: 80 }}>
+          <span className="lbl">Lots</span>
+          <input className="inp" type="number" placeholder="0" min={0} value={lots} onChange={(e) => onLots(e.target.value)} />
+        </div>
+        <div className="field" style={{ width: 110 }}>
+          <span className="lbl">Avg Cost</span>
+          <input className="inp" type="number" placeholder="0" min={0} value={avg} onChange={(e) => onAvg(e.target.value)} />
+        </div>
+        <button className="btn-p" style={{ fontSize: 11, padding: '7px 14px' }} onClick={onFill}>↩ Isi Kalkulator</button>
+      </div>
+      <span className="v-note">Isi posisi untuk auto-fill ↓</span>
     </div>
   )
 }

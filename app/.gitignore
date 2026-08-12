@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Salinan build-time dari luar app/ (lihat scripts/copy-static-data.mjs) —
+# sumber aslinya data-idx/json + arus-pasar/keluaran di repo root
+public/data-idx
+public/arus-pasar
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

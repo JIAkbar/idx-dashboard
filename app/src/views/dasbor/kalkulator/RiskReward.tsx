@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { fN } from '../../../lib/dasbor/format'
 import { PosisiBar } from './PosisiBar'
+import { IkonMenu, IKON_TIMBANGAN, IKON_CENTANG, IKON_PERINGATAN, IKON_SILANG } from '../../../components/dasbor/IkonMenu'
 
 const PRESETS = [1, 2, 3, 4, 5]
 
@@ -64,87 +65,98 @@ export function RiskReward() {
 
   const verdictText = result
     ? result.ratio >= 2
-      ? '✅ Setup bagus (R:R ≥ 1:2)'
+      ? <><IkonMenu d={IKON_CENTANG} size={11} /> Setup bagus (R:R ≥ 1:2)</>
       : result.ratio >= 1
-        ? '⚠️ Minimal (R:R 1:1 – 1:2)'
-        : '❌ Kurang ideal (R:R < 1:1)'
+        ? <><IkonMenu d={IKON_PERINGATAN} size={11} /> Minimal (R:R 1:1 – 1:2)</>
+        : <><IkonMenu d={IKON_SILANG} size={11} /> Kurang ideal (R:R {'<'} 1:1)</>
     : ''
   const verdictColor = result ? (result.ratio >= 2 ? 'var(--cal-up)' : result.ratio >= 1 ? '#f59e0b' : 'var(--cal-dn)') : 'var(--text3)'
 
   return (
-    <div className="adc-wrap">
-      <div className="card adc-section">
-        <div className="ct b">⚖️ Risk/Reward Calculator</div>
-        <PosisiBar kode={posKode} onKode={setPosKode} lots={posLots} onLots={setPosLots} avg={posAvg} onAvg={setPosAvg} onFill={handleFill} />
-        <div className="pc-grid2" style={{ marginBottom: 8 }}>
-          <div className="adc-field">
-            <label>Entry Price (IDR)</label>
-            <input className="adc-input" type="number" placeholder="0" min={0} value={entry} onChange={(e) => setEntry(e.target.value)} />
-          </div>
-          <div className="adc-field">
-            <label>Stop Loss (IDR)</label>
-            <input className="adc-input" type="number" placeholder="0" min={0} value={sl} onChange={(e) => setSl(e.target.value)} />
-            <div style={{ fontSize: 10, color: 'var(--cal-dn)', marginTop: 3 }}>{slNote}</div>
-          </div>
-          <div className="adc-field">
-            <label>Target Profit (IDR)</label>
-            <input className="adc-input" type="number" placeholder="0" min={0} value={tp} onChange={(e) => setTp(e.target.value)} />
-            <div style={{ fontSize: 10, color: 'var(--cal-up)', marginTop: 3 }}>{tpNote}</div>
-          </div>
-          <div className="adc-field">
-            <label>Posisi (Lot) — opsional</label>
-            <input className="adc-input" type="number" placeholder="0" min={0} value={lots} onChange={(e) => setLots(e.target.value)} />
+    <div className="grid2 w-kiri">
+      <div>
+        <div className="panel">
+          <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_TIMBANGAN} size={13} /> Risk/Reward Calculator</span></div>
+          <div className="panel-b">
+            <PosisiBar kode={posKode} onKode={setPosKode} lots={posLots} onLots={setPosLots} avg={posAvg} onAvg={setPosAvg} onFill={handleFill} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 10, marginBottom: 8 }}>
+              <div className="field">
+                <span className="lbl">Entry Price (IDR)</span>
+                <input className="inp" type="number" placeholder="0" min={0} value={entry} onChange={(e) => setEntry(e.target.value)} />
+              </div>
+              <div className="field">
+                <span className="lbl">Stop Loss (IDR)</span>
+                <input className="inp" type="number" placeholder="0" min={0} value={sl} onChange={(e) => setSl(e.target.value)} />
+                <div className="v-note" style={{ color: 'var(--red)', marginTop: 3 }}>{slNote}</div>
+              </div>
+              <div className="field">
+                <span className="lbl">Target Profit (IDR)</span>
+                <input className="inp" type="number" placeholder="0" min={0} value={tp} onChange={(e) => setTp(e.target.value)} />
+                <div className="v-note" style={{ color: 'var(--green)', marginTop: 3 }}>{tpNote}</div>
+              </div>
+              <div className="field">
+                <span className="lbl">Posisi (Lot) — opsional</span>
+                <input className="inp" type="number" placeholder="0" min={0} value={lots} onChange={(e) => setLots(e.target.value)} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+              <span className="lbl">Target R:R</span>
+              {PRESETS.map((r) => (
+                <button key={r} className={'tab' + (preset === r ? ' on' : '')} onClick={() => handlePreset(r)}>
+                  1:{r}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="rr-preset-row">
-          <span style={{ fontSize: 10, color: 'var(--text3)', alignSelf: 'center' }}>Target R:R</span>
-          {PRESETS.map((r) => (
-            <button key={r} className={`rr-preset${preset === r ? ' active' : ''}`} onClick={() => handlePreset(r)}>
-              1:{r}
-            </button>
-          ))}
-        </div>
-        {result && (
-          <div>
-            <div style={{ background: 'var(--bg3)', borderRadius: 8, padding: 12, marginBottom: 8, textAlign: 'center' }}>
-              <div style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
-                Risk : Reward Ratio
-              </div>
-              <div className="rr-big">1 : {result.ratio.toFixed(2)}</div>
-              <div style={{ fontSize: 11, marginTop: 4, color: verdictColor }}>{verdictText}</div>
-            </div>
-            <div className="rr-bar-wrap">
-              <div className="rr-bar-sl" style={{ width: `${result.slPct}%` }} />
-              <div className="rr-bar-mid" />
-              <div className="rr-bar-tp" style={{ width: `${result.tpPct}%` }} />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text3)', marginBottom: 8 }}>
-              <span>Stop Loss</span>
-              <span>Entry</span>
-              <span>Target</span>
-            </div>
-            <div className="pc-res">
-              <div className="pc-ri" style={{ background: 'rgba(220,38,38,.12)' }}>
-                <div className="pc-rl">Total Risiko</div>
-                <div className="pc-rv" style={{ color: '#dc2626', fontSize: 13 }}>
-                  Rp {fN(result.riskIdr, 0)}
+      </div>
+
+      {/* Hasil — menempel, terlihat langsung saat isian kiri berubah */}
+      <div style={{ position: 'sticky', top: 60, alignSelf: 'start' }}>
+        <div className="panel">
+          <div className="panel-h"><span className="lbl">Hasil</span></div>
+          <div className="panel-b">
+            {result ? (
+              <div>
+                <div className="vcard" style={{ alignItems: 'center', textAlign: 'center' }}>
+                  <span className="lbl">Risk : Reward Ratio</span>
+                  <div className="num" style={{ fontSize: 28, fontWeight: 600, color: 'var(--amber)' }}>
+                    1 : {result.ratio.toFixed(2)}
+                  </div>
+                  <div className="v-note" style={{ color: verdictColor }}>{verdictText}</div>
                 </div>
-                <div className="pc-rs">
-                  {lotsN > 0 ? `${lotsN} lot · ${result.riskPctPerSaham.toFixed(2)}% per saham` : `${result.riskPctPerSaham.toFixed(2)}% per saham`}
+                <div className="rr-bar-wrap" style={{ marginTop: 10 }}>
+                  <div className="rr-bar-sl" style={{ width: `${result.slPct}%` }} />
+                  <div className="rr-bar-mid" />
+                  <div className="rr-bar-tp" style={{ width: `${result.tpPct}%` }} />
                 </div>
-              </div>
-              <div className="pc-ri" style={{ background: 'rgba(22,163,74,.12)' }}>
-                <div className="pc-rl">Potensi Profit</div>
-                <div className="pc-rv" style={{ color: '#16a34a', fontSize: 13 }}>
-                  Rp {fN(result.profitIdr, 0)}
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text3)', marginBottom: 10 }}>
+                  <span>Stop Loss</span>
+                  <span>Entry</span>
+                  <span>Target</span>
                 </div>
-                <div className="pc-rs">
-                  {lotsN > 0 ? `${lotsN} lot · ${result.rewardPctPerSaham.toFixed(2)}% per saham` : `${result.rewardPctPerSaham.toFixed(2)}% per saham`}
+                <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+                  <div className="bm">
+                    <span className="lbl">Total Risiko</span>
+                    <span className="num dn">Rp {fN(result.riskIdr, 0)}</span>
+                    <div className="v-note">
+                      {lotsN > 0 ? `${lotsN} lot · ${result.riskPctPerSaham.toFixed(2)}% per saham` : `${result.riskPctPerSaham.toFixed(2)}% per saham`}
+                    </div>
+                  </div>
+                  <div className="bm">
+                    <span className="lbl">Potensi Profit</span>
+                    <span className="num up">Rp {fN(result.profitIdr, 0)}</span>
+                    <div className="v-note">
+                      {lotsN > 0 ? `${lotsN} lot · ${result.rewardPctPerSaham.toFixed(2)}% per saham` : `${result.rewardPctPerSaham.toFixed(2)}% per saham`}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="v-note">Isi Entry, Stop Loss, dan Target Profit untuk melihat hasil</div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   )

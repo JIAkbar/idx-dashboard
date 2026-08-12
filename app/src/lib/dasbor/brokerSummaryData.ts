@@ -1,7 +1,7 @@
 /**
  * Data hardcode Broker Summary (ALPHA) -- transkrip persis dari index_live.html
  * baris 5356-5708 (const BS_DATA). Data asli IDX cuma tersedia 3 hari
- * (2026-06-02..04) -- modul ini MANDIRI, tidak fetch /data/*.json seperti
+ * (2026-06-02..04) -- modul ini MANDIRI, tidak fetch /data-idx/json/*.json seperti
  * menu lain. Jangan sambungkan ke data live di sini; itu backlog terpisah.
  */
 

@@ -1,15 +1,31 @@
 import { useCallback, useMemo, useState } from 'react'
 import { GrafikJaringan } from '../../components/dasbor/GrafikJaringan'
+import { WARNA } from '../../lib/dasbor/graphRender'
 import { getInvestorMap, usePetaInvestor, type GraphSelection, type InvestorMapEntry } from '../../lib/dasbor/petaInvestorData'
 import { ByStock } from './peta-investor/ByStock'
 import { ByInvestor } from './peta-investor/ByInvestor'
 import { DetailPanel } from './peta-investor/DetailPanel'
 import { PetaInvestorSearch } from './peta-investor/PetaInvestorSearch'
+import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_ULANG, IKON_KLIK } from '../../components/dasbor/IkonMenu'
 
 type ViewTab = 'grafik' | 'stock' | 'investor'
 
 const DEFAULT_NODE_COUNT = 10
 const INVESTOR_FOCUS_LIMIT = 60
+
+const TABS: { id: ViewTab; label: string }[] = [
+  { id: 'grafik', label: 'Grafik Jaringan' },
+  { id: 'stock', label: 'By Stock' },
+  { id: 'investor', label: 'By Investor' },
+]
+
+/** Legenda memakai objek WARNA yang SAMA dengan graf — bukan salinan nilai warnanya. */
+const LEGENDA: { warna: string; teks: string }[] = [
+  { warna: WARNA.emiten, teks: 'Emiten' },
+  { warna: WARNA.institusi, teks: 'Institusi (CORP)' },
+  { warna: WARNA.individu, teks: 'Individu (IND)' },
+  { warna: WARNA.lain, teks: 'Tipe tak terisi (OTH)' },
+]
 
 /**
  * Panel "Peta Investor" — network graph kepemilikan saham IDX. Port markup
@@ -62,69 +78,64 @@ export function PetaInvestor() {
   }, [])
 
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-      <div className="card">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 18 }}>🕸️</span>
-          <div>
-            <div className="ct b">Peta Investor — Kepemilikan Saham IDX</div>
-            <div style={{ fontSize: 10, color: 'var(--text3)' }}>
-              Data KSEI · Pemegang saham ≥1% · {data?.length ?? 0} emiten
-            </div>
-          </div>
-          {data && (
-            <PetaInvestorSearch data={data} value={searchValue} onChange={setSearchValue} onSelect={handleSelect} onClear={handleClear} />
-          )}
-        </div>
+    <div className="lantai">
+      <div className="vhead">
+        <h1>Peta Investor</h1>
+        <span className="sub">jaringan kepemilikan KSEI · ≥1% · {data?.length ?? 0} emiten</span>
+        {data && (
+          <PetaInvestorSearch data={data} value={searchValue} onChange={setSearchValue} onSelect={handleSelect} onClear={handleClear} />
+        )}
       </div>
 
       {loading && (
         <div className="fd-empty">
-          <p style={{ fontSize: 28 }}>⏳</p>
+          <p><IkonMenu d={IKON_JAM} size={28} /></p>
           <p>Memuat data jaringan investor...</p>
         </div>
       )}
 
       {!loading && error && (
         <div className="fd-empty">
-          <p style={{ fontSize: 28 }}>⚠️</p>
+          <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p>Gagal memuat data investor.</p>
           <p style={{ fontSize: 11, marginTop: 4 }}>{error}</p>
-          <button
-            type="button"
-            className="pi-search-go"
-            style={{ marginTop: 12 }}
-            onClick={retry}
-          >
-            🔄 Coba lagi
+          <button type="button" className="btn-p" style={{ marginTop: 12 }} onClick={retry}>
+            <IkonMenu d={IKON_ULANG} size={13} /> Coba lagi
           </button>
         </div>
       )}
 
       {!loading && !error && data && (
         <>
-          <div className="pi-view-tabs">
-            <button type="button" className={`pi-view-tab${activeView === 'grafik' ? ' active' : ''}`} onClick={() => setActiveView('grafik')}>🕸️ Grafik Jaringan</button>
-            <button type="button" className={`pi-view-tab${activeView === 'stock' ? ' active' : ''}`} onClick={() => setActiveView('stock')}>📋 By Stock</button>
-            <button type="button" className={`pi-view-tab${activeView === 'investor' ? ' active' : ''}`} onClick={() => setActiveView('investor')}>👤 By Investor</button>
+          <div className="tabs" role="tablist" aria-label="Tampilan Peta Investor">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={activeView === t.id}
+                className={'tab' + (activeView === t.id ? ' on' : '')}
+                onClick={() => setActiveView(t.id)}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
 
           {activeView === 'grafik' && (
             <>
-              <div className="card pi-legend">
-                <span className="pi-legend-title">Legenda:</span>
-                <span><span className="pi-legend-dot" style={{ background: '#f97316' }} />Emiten</span>
-                <span><span className="pi-legend-dot" style={{ background: '#3b82f6' }} />Institusi Domestik</span>
-                <span><span className="pi-legend-dot" style={{ background: '#a855f7', borderRadius: 4 }} />Institusi Asing</span>
-                <span><span className="pi-legend-dot" style={{ background: '#22c55e' }} />Individu Lokal</span>
-                <span><span className="pi-legend-dot" style={{ background: '#ec4899' }} />Individu Asing</span>
-                <span className="pi-legend-hint">Ukuran node = % kepemilikan · 👆 Klik node untuk detail</span>
+              <div className="panel pi-legend" style={{ padding: '10px 14px' }}>
+                <span className="lbl">Legenda</span>
+                {LEGENDA.map((l) => (
+                  <span key={l.teks}><span className="pi-legend-dot" style={{ background: l.warna }} />{l.teks}</span>
+                ))}
+                <span className="pi-legend-hint">Ukuran simpul = % kepemilikan · label hanya 12 simpul terbesar, sisanya muncul saat diarahkan · <IkonMenu d={IKON_KLIK} size={11} /> klik untuk detail</span>
               </div>
-              <div className="card pi-graph-card">
+              <div className="panel pi-graph-card">
                 <GrafikJaringan allData={data} emitenList={emitenList} focusCode={focusCode} onSelect={handleSelect} />
                 {selectedDetail && <DetailPanel allData={data} selected={selectedDetail} onClose={() => setSelectedDetail(null)} />}
               </div>
-              <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 8, textAlign: 'center' }}>
+              <div style={{ fontSize: 10, color: 'var(--text3)', textAlign: 'center' }}>
                 Data bersumber dari KSEI (Kustodian Sentral Efek Indonesia) · Kepemilikan ≥1% · Bukan saran investasi
               </div>
             </>
