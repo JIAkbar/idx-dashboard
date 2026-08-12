@@ -4,7 +4,10 @@ Baca edisi/<tanggal>.json + cache/ohlc-<tanggal>.json, hitung skor model
 (Technical 35 / Flow 30 / RR 20 / Liquidity 10 / IHSG sensitivity 5),
 rakit HTML dari template.html, tulis ke keluaran/.
 
-Pakai: python build.py 2026-08-10
+Pakai: python build.py 2026-08-10 [--tanpa-pdf]
+Setelah HTML jadi, render juga ke keluaran/<edisi>.pdf via Playwright
+(chromium headless; menunggu window.__chartsDone dari template).
+--tanpa-pdf melewatkan langkah PDF.
 """
 import json, sys, statistics
 from pathlib import Path
@@ -361,8 +364,25 @@ def halaman_peringkat(ed, skor_map):
 </div>'''
 
 
+def render_pdf(html_path):
+    """Render HTML -> PDF (chromium headless, tunggu chart canvas selesai)."""
+    from playwright.sync_api import sync_playwright
+    pdf_path = html_path.with_suffix(".pdf")
+    with sync_playwright() as p:
+        b = p.chromium.launch()
+        page = b.new_page()
+        page.goto(html_path.resolve().as_uri())
+        page.wait_for_function("window.__chartsDone === true")
+        page.pdf(path=str(pdf_path), format="A4", print_background=True,
+                 margin={"top": "0", "right": "0", "bottom": "0", "left": "0"},
+                 prefer_css_page_size=True)
+        b.close()
+    print(f"OK -> {pdf_path} ({pdf_path.stat().st_size // 1024} KB)")
+
+
 def main():
-    tgl = sys.argv[1] if len(sys.argv) > 1 else "2026-08-10"
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    tgl = args[0] if args else "2026-08-10"
     ed = json.loads((AKAR / "edisi" / f"{tgl}.json").read_text(encoding="utf-8"))
     ohlc = json.loads((AKAR / "cache" / f"ohlc-{tgl}.json").read_text(encoding="utf-8"))
 
@@ -396,6 +416,9 @@ def main():
     print(f"OK -> {keluar}")
     for tk, s in skor_map.items():
         print(f"  {tk}: total {s['total']:.1f} ({s['risiko']})")
+
+    if "--tanpa-pdf" not in sys.argv:
+        render_pdf(keluar)
 
 
 if __name__ == "__main__":
