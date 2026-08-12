@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 /**
  * Tipe & fetch data fundamental untuk Stock Detail. Port dari
  * index_live.html fdInit()/fdLoad() baris 3767-3867. Field diambil dari
- * bentuk asli data/fundamental/{TICKER}.json (contoh: AALI.json, BBCA.json)
+ * bentuk asli data-idx/json/fundamental/{TICKER}.json (contoh: AALI.json, BBCA.json)
  * — bukan tebakan. Semua nilai boleh null/undefined di file mana pun,
  * jadi dibiarkan opsional.
  */
@@ -187,7 +187,7 @@ let indexPromise: Promise<StockIndexData> | null = null
 function loadIndex(): Promise<StockIndexData> {
   if (indexCache) return Promise.resolve(indexCache)
   if (!indexPromise) {
-    indexPromise = fetch('/data/fundamental/index.json')
+    indexPromise = fetch('/data-idx/json/fundamental/index.json')
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json() as Promise<StockIndexData>
@@ -242,7 +242,7 @@ export function useStockFundamental(ticker: string | null) {
     let cancelled = false
     setLoading(true)
     setError(null)
-    fetch(`/data/fundamental/${ticker}.json`)
+    fetch(`/data-idx/json/fundamental/${ticker}.json`)
       .then((r) => {
         if (!r.ok) throw new Error('not found')
         return r.json() as Promise<StockFundamental>

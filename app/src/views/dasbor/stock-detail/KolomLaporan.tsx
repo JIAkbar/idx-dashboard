@@ -67,7 +67,7 @@ export function KolomLaporan({ fd }: { fd: StockFundamental }) {
   const ttmGP = fd.ttm_gross ?? Object.values(fd.hist_gross_profit ?? {}).slice(-1)[0] ?? null
   const ttmOI = fd.ttm_op_income ?? Object.values(fd.hist_operating_income ?? {}).slice(-1)[0] ?? null
   // Sumber asli baca fd.lq_debt/fd.total_debt — field itu tidak pernah ada di
-  // data/fundamental/*.json (nama field sebenarnya lq_total_debt), jadi "Total
+  // data-idx/json/fundamental/*.json (nama field sebenarnya lq_total_debt), jadi "Total
   // Debt" di dashboard lama selalu tampil "—". Bug data, bukan pilihan desain
   // — diperbaiki di sini, bukan diport apa adanya.
   const lqCash = fd.lq_cash ?? (fd.total_cash as number | undefined) ?? null

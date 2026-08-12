@@ -15,7 +15,7 @@ type Tab = 'statistik' | 'valuasi'
 /**
  * Panel "Stock Detail" — port markup baris 2184-2215 + fdInit/fdLoad/fdRender
  * index_live.html baris 3767-4448. Search custom-autocomplete → fetch
- * on-demand data/fundamental/{KODE}.json → render overview + 3 kolom +
+ * on-demand data-idx/json/fundamental/{KODE}.json → render overview + 3 kolom +
  * modul valuasi interaktif.
  *
  * Task 11: dipecah jadi 2 tab lewat `?tab=` (bukan modal) — isian simulasi

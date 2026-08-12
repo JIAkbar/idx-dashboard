@@ -5,7 +5,7 @@ import fs from 'node:fs'
 
 /**
  * Dasbor publik fetch berkas statis dari folder-folder di root repo (mis.
- * `data/` 186MB, di-refresh harian oleh GitHub Actions — dan `arus-pasar/
+ * `data-idx/json/` 186MB, di-refresh harian oleh GitHub Actions — dan `arus-pasar/
  * keluaran/` berisi PDF+manifest bulletin, dibuat `generate_index.py`).
  * Saat produksi, hosting nanti serve folder-folder itu apa adanya (sama
  * seperti index_live.html lama, dan sesuai path relatifnya di repo). Untuk
@@ -38,7 +38,7 @@ function serveRepoDir(mount: string, ...dirParts: string[]): Plugin {
 export default defineConfig({
   plugins: [
     react(),
-    serveRepoDir('/data', 'data'),
+    serveRepoDir('/data-idx/json', 'data-idx', 'json'),
     serveRepoDir('/arus-pasar/keluaran', 'arus-pasar', 'keluaran'),
   ],
   // ChangelogAdmin.tsx imports docs/CHANGELOG.md (?raw) dari luar akar app/ —

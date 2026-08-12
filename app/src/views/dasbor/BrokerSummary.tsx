@@ -33,7 +33,7 @@ const NEGO_ROWS = BS_DATA.nego[LAST] ?? []
  * Panel "Broker Summary (ALPHA)" — port index_live.html baris 5272-6037 +
  * bsInit()/bsRenderAll() dkk baris 5745-6037. Modul MANDIRI: data hardcode
  * (BS_DATA, cuma 3 hari 2026-06-02..04) — BEDA dari 7 menu lain yang fetch
- * /data/*.json. JANGAN sambungkan ke data live di sini (backlog terpisah,
+ * /data-idx/json/*.json. JANGAN sambungkan ke data live di sini (backlog terpisah,
  * lihat docs/RENCANA-REFACTOR-REACT.md).
  *
  * Task 10 gaya "Lantai Bursa": verifikasi sumber ringkasan broker harian IDX

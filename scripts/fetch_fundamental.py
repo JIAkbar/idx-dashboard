@@ -2,7 +2,7 @@
 fetch_fundamental.py
 ====================
 Ambil data fundamental saham IDX (komprehensif) dari yfinance
-dan simpan ke data/fundamental/<TICKER>.json
+dan simpan ke data-idx/json/fundamental/<TICKER>.json
 
 Cara pakai:
   python fetch_fundamental.py               → fetch semua 959 saham IDX
@@ -10,7 +10,7 @@ Cara pakai:
   python fetch_fundamental.py --ihsg       → coba IDX API dulu, fallback ke 959 default
   python fetch_fundamental.py --semua      → alias, sama dengan tanpa argumen
 
-Output: data/fundamental/<TICKER>.json  +  data/fundamental/index.json
+Output: data-idx/json/fundamental/<TICKER>.json  +  data-idx/json/fundamental/index.json
 """
 
 import yfinance as yf
@@ -201,8 +201,8 @@ def konversi_dict_ke_idr(d, mata_uang, kurs_usd_idr):
     return out
 
 def get_latest_kurs():
-    """Kurs USD/IDR terbaru dari data/ds_*.json (snapshot harian IHSG)."""
-    data_dir = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data'))
+    """Kurs USD/IDR terbaru dari data-idx/json/ds_*.json (snapshot harian IHSG)."""
+    data_dir = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data-idx', 'json'))
     try:
         files = sorted(f for f in os.listdir(data_dir) if f.startswith('ds_') and f.endswith('.json'))
         if not files:
@@ -620,9 +620,9 @@ def fetch_stock(ticker_code):
             # === PER SHARE ===
             # eps/eps_fwd SENGAJA tidak melalui konversi_ke_idr: berbeda dari bookValue,
             # trailingEps/forwardEps Yahoo untuk emiten pelapor-USD di IDX secara empiris
-            # SUDAH senilai IDR (dicek lintas >90 saham USD-reporter di data/fundamental/
+            # SUDAH senilai IDR (dicek lintas >90 saham USD-reporter di data-idx/json/fundamental/
             # — rasio eps/hist_eps_lokal(USD) konsisten ~16.000-20.000, persis kisaran kurs
-            # USD/IDR asli di data/ds_*.json). Mengalikan lagi dengan kurs akan melipat-
+            # USD/IDR asli di data-idx/json/ds_*.json). Mengalikan lagi dengan kurs akan melipat-
             # gandakan nilai yang sudah benar (bug baru arah sebaliknya). forwardEps kadang
             # (minoritas ticker: HEXA, ARCI, BUMI, EMAS, RAJA, RATU) masih mentah-USD
             # (forward_pe lima digit) — belum ada cara andal membedakan per-ticker tanpa
@@ -763,7 +763,7 @@ OUT_DIR  = ""
 tickers  = []
 results  = []
 ok = fail = 0
-KURS_USD_IDR = None      # diisi main() dari data/ds_*.json, dibaca fetch_stock()
+KURS_USD_IDR = None      # diisi main() dari data-idx/json/ds_*.json, dibaca fetch_stock()
 gagal_price_perf = []    # ticker.JK yang gagal price_perf — dipakai gerbang di akhir main()
 
 # ─── Main execution ────────────────────────────────────────────────────────────
@@ -773,14 +773,14 @@ def main():
 
     # ── Resolve output directory ──────────────────────────────────────────────
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    OUT_DIR = os.path.normpath(os.path.join(script_dir, '..', 'data', 'fundamental'))
+    OUT_DIR = os.path.normpath(os.path.join(script_dir, '..', 'data-idx', 'json', 'fundamental'))
     os.makedirs(OUT_DIR, exist_ok=True)
 
     # ── Kurs USD/IDR untuk konversi laporan-keuangan pelapor-USD (lihat konversi_ke_idr) ──
     KURS_USD_IDR = get_latest_kurs()
     gagal_price_perf = []
     if KURS_USD_IDR:
-        print(f"   Kurs USD/IDR: {KURS_USD_IDR} (dari data/ds_*.json terbaru)")
+        print(f"   Kurs USD/IDR: {KURS_USD_IDR} (dari data-idx/json/ds_*.json terbaru)")
     else:
         print("   ⚠ Kurs USD/IDR tidak ditemukan — emiten pelapor-USD (financialCurrency=USD) "
               "akan punya bv/rev_ps/cash_ps/fcf_ps/pb/ps kosong (None), bukan salah.")

@@ -480,7 +480,7 @@ export function renderFocusedGraph(params: RenderParams & { code: string }): d3.
     })
 
   // ponytail: sumber (piRenderFocused) membedakan bentuk investor pakai kode
-  // negara (isAsia/isWest/isLocal, mis. 'SG'/'US') — data/investor_map.json
+  // negara (isAsia/isWest/isLocal, mis. 'SG'/'US') — data-idx/json/investor_map.json
   // yang dipakai sekarang cuma punya lf 'L'/'F' (bukan kode negara). Sejak
   // Task 12 pembedaan bentuk dibuang seluruhnya (semua simpul bundar), jadi
   // graf umum & focused view memang memakai glyph yang sama.

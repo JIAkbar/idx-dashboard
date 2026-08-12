@@ -11,7 +11,7 @@ import { useTheme } from '../../context/ThemeContext'
 import { IkonMenu, IKON_PERINGATAN, IKON_GLOBE, IKON_PENGGARIS, IKON_GRAFIK_BATANG } from '../../components/dasbor/IkonMenu'
 
 /**
- * Grafik mini board-side (Fix #27) — pakai tanggalTersedia (data/index.json)
+ * Grafik mini board-side (Fix #27) — pakai tanggalTersedia (data-idx/json/index.json)
  * yang SUDAH berisi seri ihsg per hari bursa tahun berjalan, tidak perlu
  * fetch tambahan. Komponen TERPISAH dari IndeksDunia (pola sama dengan
  * Flow.tsx/Quadrant.tsx) sengaja: IndeksDunia punya early-return

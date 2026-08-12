@@ -3,11 +3,11 @@ import { useCallback, useEffect, useState } from 'react'
 /**
  * Tipe & fetch data Peta Investor. Port dari index_live.html piInit()
  * baris 4452-4472. Bentuk field diverifikasi langsung dari
- * data/investor_map.json (952 emiten, 6.728 baris holder) — BUKAN tebakan:
+ * data-idx/json/investor_map.json (952 emiten, 6.728 baris holder) — BUKAN tebakan:
  * tiap holder cuma punya {name, cls, lf, pct}. Sumber asli (index_live.html)
  * banyak memakai h.type siap pakai ('CORP'/'IND'/'OTH') dan lf berisi kode
  * negara ('US','SG', dst) untuk shape/warna node "focused view" —
- * data/investor_map.json TIDAK punya field-field itu (cuma cls bebas-teks +
+ * data-idx/json/investor_map.json TIDAK punya field-field itu (cuma cls bebas-teks +
  * lf 'L'/'F'). `holderType()` di bawah menurunkan kategori kasar dari cls;
  * lihat catatan ponytail di graphRender.ts soal shape focused view.
  */
@@ -50,7 +50,7 @@ let inflight: Promise<InvestorMapEntry[]> | null = null
 function load(): Promise<InvestorMapEntry[]> {
   if (cache) return Promise.resolve(cache)
   if (!inflight) {
-    inflight = fetch('/data/investor_map.json')
+    inflight = fetch('/data-idx/json/investor_map.json')
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json() as Promise<InvestorMapEntry[]>

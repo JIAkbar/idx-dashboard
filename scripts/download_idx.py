@@ -2,7 +2,7 @@
 IDX Daily Statistics Downloader
 ================================
 Download otomatis IDX Daily Statistics dari idx.co.id
-Simpan ke folder: data/pdf/
+Simpan ke folder: data-idx/daily/
 
 Cara pakai:
   python scripts/download_idx.py --hari-ini
@@ -14,9 +14,9 @@ import argparse, os, re, time
 from datetime import datetime
 from pathlib import Path
 
-# Output PDF ke data/pdf/ (relatif dari root repo)
+# Output PDF ke data-idx/daily/ (relatif dari root repo)
 ROOT_DIR   = Path(__file__).parent.parent
-OUTPUT_DIR = ROOT_DIR / "data" / "pdf"
+OUTPUT_DIR = ROOT_DIR / "data-idx" / "daily"
 IDX_URL    = "https://www.idx.co.id/id/data-pasar/laporan-statistik/statistik"
 HEADERS    = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "

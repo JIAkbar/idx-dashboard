@@ -2389,7 +2389,7 @@ const BULAN = ["","Januari","Februari","Maret","April","Mei","Juni",
 // ─── FETCH index.json ──────────────────────────────────────
 async function loadIndex() {
   try {
-    const r = await fetch("data/index.json");
+    const r = await fetch("data-idx/json/index.json");
     const j = await r.json();
     INDEX = j.dates || [];
   } catch(e) {
@@ -2667,7 +2667,7 @@ async function loadDay(stem, iso) {
   renderCal(); // update selected state
 
   try {
-    const r = await fetch(`data/${stem}.json`);
+    const r = await fetch(`data-idx/json/${stem}.json`);
     D = await r.json();
   } catch(e) {
     // Fallback embedded
@@ -3761,14 +3761,14 @@ loadIndex();
 ADC.load();
 
 // ─── STOCK DETAIL (FUNDAMENTAL) ─────────────────────────
-let FD_INDEX = null;     // index.json dari data/fundamental/
+let FD_INDEX = null;     // index.json dari data-idx/json/fundamental/
 let FD_CHART = null;     // Chart.js instance
 
 async function fdInit() {
   // Load index sekali saja
   if (FD_INDEX) { fdPopulateDatalist(); return; }
   try {
-    const r = await fetch("data/fundamental/index.json");
+    const r = await fetch("data-idx/json/fundamental/index.json");
     if (!r.ok) throw new Error("no index");
     FD_INDEX = await r.json();
     fdPopulateDatalist();
@@ -3854,7 +3854,7 @@ async function fdLoad() {
 
   let fd = null;
   try {
-    const r = await fetch(`data/fundamental/${kode}.json`);
+    const r = await fetch(`data-idx/json/fundamental/${kode}.json`);
     if (!r.ok) throw new Error("not found");
     fd = await r.json();
   } catch(e) {
@@ -4444,7 +4444,7 @@ function fdValuationCalc() {
 
 // ─── PETA INVESTOR ───────────────────────────────────────
 let PI_DATA = null, PI_SIM = null, PI_LOADED = false;
-const PI_JSON = 'data/investor_map.json';
+const PI_JSON = 'data-idx/json/investor_map.json';
 
 function piGetVar(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
 function piIsDark(){return document.documentElement.getAttribute('data-theme')==='dark';}

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-/** Satu baris data/index.json → {dates:[...]}. Port field dari index_live.html baris 2390-2394. */
+/** Satu baris data-idx/json/index.json → {dates:[...]}. Port field dari index_live.html baris 2390-2394. */
 export interface TanggalIndex {
   stem: string
   date_iso: string
@@ -71,7 +71,7 @@ export interface SectorRow {
 }
 
 /**
- * Data satu hari (data/${stem}.json). Field yang dipakai panel World/Stocks/
+ * Data satu hari (data-idx/json/${stem}.json). Field yang dipakai panel World/Stocks/
  * Broker/Sector didaftar eksplisit; field lain lewat index signature supaya
  * tipe ini tidak perlu diubah tiap ada menu baru.
  */
@@ -161,7 +161,7 @@ export function useDataHarian() {
     }
 
     setLoading(true)
-    fetch(`/data/${stem}.json`)
+    fetch(`/data-idx/json/${stem}.json`)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json() as Promise<DataHarian>
@@ -179,7 +179,7 @@ export function useDataHarian() {
 
   useEffect(() => {
     let cancelled = false
-    fetch('/data/index.json')
+    fetch('/data-idx/json/index.json')
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json() as Promise<{ dates?: TanggalIndex[] }>
@@ -231,7 +231,7 @@ export function useDataPembanding(stem: string | null) {
     }
     let cancelled = false
     setLoading(true)
-    fetch(`/data/${stem}.json`)
+    fetch(`/data-idx/json/${stem}.json`)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json() as Promise<DataHarian>
