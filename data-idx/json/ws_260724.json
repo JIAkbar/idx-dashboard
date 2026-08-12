@@ -65,6 +65,125 @@
       "persen": 4.23
     }
   },
+  "transaksi_investor": [
+    {
+      "tanggal_iso": "2026-07-20",
+      "volume_juta_lembar": {
+        "ff": 1385.0,
+        "df": 4602.0,
+        "fd": 4290.0,
+        "dd": 19943.0
+      },
+      "nilai_miliar_idr": {
+        "ff": 3712.0,
+        "df": 3107.0,
+        "fd": 3010.0,
+        "dd": 7293.0
+      },
+      "frekuensi_ribu_kali": {
+        "ff": 66.0,
+        "df": 247.0,
+        "fd": 323.0,
+        "dd": 1726.0
+      }
+    },
+    {
+      "tanggal_iso": "2026-07-21",
+      "volume_juta_lembar": {
+        "ff": 1574.0,
+        "df": 6423.0,
+        "fd": 7640.0,
+        "dd": 32163.0
+      },
+      "nilai_miliar_idr": {
+        "ff": 2259.0,
+        "df": 4104.0,
+        "fd": 4073.0,
+        "dd": 11110.0
+      },
+      "frekuensi_ribu_kali": {
+        "ff": 72.0,
+        "df": 309.0,
+        "fd": 407.0,
+        "dd": 2108.0
+      }
+    },
+    {
+      "tanggal_iso": "2026-07-22",
+      "volume_juta_lembar": {
+        "ff": 1306.0,
+        "df": 6204.0,
+        "fd": 7083.0,
+        "dd": 30038.0
+      },
+      "nilai_miliar_idr": {
+        "ff": 1624.0,
+        "df": 3211.0,
+        "fd": 4131.0,
+        "dd": 9554.0
+      },
+      "frekuensi_ribu_kali": {
+        "ff": 62.0,
+        "df": 223.0,
+        "fd": 460.0,
+        "dd": 1955.0
+      }
+    },
+    {
+      "tanggal_iso": "2026-07-23",
+      "volume_juta_lembar": {
+        "ff": 1713.0,
+        "df": 8739.0,
+        "fd": 10021.0,
+        "dd": 39307.0
+      },
+      "nilai_miliar_idr": {
+        "ff": 1966.0,
+        "df": 3886.0,
+        "fd": 5110.0,
+        "dd": 12929.0
+      },
+      "frekuensi_ribu_kali": {
+        "ff": 63.0,
+        "df": 307.0,
+        "fd": 463.0,
+        "dd": 2315.0
+      }
+    },
+    {
+      "tanggal_iso": "2026-07-24",
+      "volume_juta_lembar": {
+        "ff": 1652.0,
+        "df": 4808.0,
+        "fd": 7646.0,
+        "dd": 21859.0
+      },
+      "nilai_miliar_idr": {
+        "ff": 2275.0,
+        "df": 3006.0,
+        "fd": 4365.0,
+        "dd": 8055.0
+      },
+      "frekuensi_ribu_kali": {
+        "ff": 61.0,
+        "df": 174.0,
+        "fd": 436.0,
+        "dd": 1558.0
+      }
+    }
+  ],
+  "net_asing": {
+    "minggu_ini": {
+      "arah": "jual",
+      "miliar_idr": -3376.06,
+      "juta_usd": -188.24
+    },
+    "minggu_lalu": {
+      "arah": "beli",
+      "miliar_idr": 442.05,
+      "juta_usd": 24.97
+    }
+  },
   "top_saham": {
     "volume": [
       {
@@ -835,19 +954,695 @@
       ]
     }
   },
+  "ringkasan_perdagangan": {
+    "instrumen": {
+      "saham": {
+        "volume_lembar": 218397397364,
+        "nilai_idr": 98781378806712,
+        "frekuensi_kali": 13337525
+      },
+      "right": {
+        "volume_lembar": 6692657792,
+        "nilai_idr": 81623440719,
+        "frekuensi_kali": 49185
+      },
+      "waran": {
+        "volume_lembar": 1033102938,
+        "nilai_idr": 15764176404,
+        "frekuensi_kali": 20414
+      },
+      "waran_terstruktur": {
+        "volume_lembar": 8200739700,
+        "nilai_idr": 94298988900,
+        "frekuensi_kali": 106452
+      },
+      "etf": {
+        "volume_lembar": 3565700,
+        "nilai_idr": 972007000,
+        "frekuensi_kali": 1347
+      },
+      "reit": {
+        "volume_lembar": 1048900,
+        "nilai_idr": 102882900,
+        "frekuensi_kali": 385
+      },
+      "total": {
+        "volume_lembar": 234328512394,
+        "nilai_idr": 98974140302635,
+        "frekuensi_kali": 13515308
+      }
+    },
+    "futures": {
+      "volume_kontrak": 45,
+      "nilai_idr": 15839000,
+      "frekuensi_kali": 9
+    },
+    "transaksi_asing": {
+      "beli": {
+        "volume_lembar": 38407364434,
+        "nilai_idr": 29150886396596,
+        "frekuensi_kali": 1586284
+      },
+      "jual": {
+        "volume_lembar": 44311168763,
+        "nilai_idr": 32526950017357,
+        "frekuensi_kali": 2413726
+      }
+    }
+  },
+  "indeks_mingguan": [
+    {
+      "nama": "IDX Composite (IHSG)",
+      "tertinggi": 6454.309,
+      "terendah": 6159.145,
+      "penutupan": 6196.43,
+      "persen": 0.34
+    },
+    {
+      "nama": "ISSI",
+      "tertinggi": 223.255,
+      "terendah": 212.22,
+      "penutupan": 214.074,
+      "persen": 1.11
+    },
+    {
+      "nama": "LQ45",
+      "tertinggi": 640.647,
+      "terendah": 609.64,
+      "penutupan": 614.786,
+      "persen": -1.15
+    },
+    {
+      "nama": "JII",
+      "tertinggi": 392.03,
+      "terendah": 367.84,
+      "penutupan": 371.907,
+      "persen": 1.35
+    },
+    {
+      "nama": "IDX30",
+      "tertinggi": 360.329,
+      "terendah": 343.094,
+      "penutupan": 345.991,
+      "persen": -1.57
+    },
+    {
+      "nama": "JII70",
+      "tertinggi": 151.457,
+      "terendah": 143.145,
+      "penutupan": 144.39,
+      "persen": 1.11
+    },
+    {
+      "nama": "IDX80",
+      "tertinggi": 96.824,
+      "terendah": 91.862,
+      "penutupan": 92.529,
+      "persen": -0.52
+    },
+    {
+      "nama": "IDX-MES BUMN 17",
+      "tertinggi": 78.001,
+      "terendah": 74.462,
+      "penutupan": 74.966,
+      "persen": -1.5
+    },
+    {
+      "nama": "IDX SMC Composite",
+      "tertinggi": 402.343,
+      "terendah": 385.453,
+      "penutupan": 387.64,
+      "persen": 0.92
+    },
+    {
+      "nama": "IDX Sharia Growth",
+      "tertinggi": 92.353,
+      "terendah": 85.839,
+      "penutupan": 87.506,
+      "persen": 2.34
+    },
+    {
+      "nama": "IDX SMC Liquid",
+      "tertinggi": 307.616,
+      "terendah": 293.731,
+      "penutupan": 296.195,
+      "persen": 1.19
+    },
+    {
+      "nama": "IDX High Dividend 20",
+      "tertinggi": 445.452,
+      "terendah": 424.917,
+      "penutupan": 428.425,
+      "persen": -2.2
+    },
+    {
+      "nama": "Main Board",
+      "tertinggi": 1625.077,
+      "terendah": 1546.622,
+      "penutupan": 1557.152,
+      "persen": -0.34
+    },
+    {
+      "nama": "IDX BUMN20",
+      "tertinggi": 324.855,
+      "terendah": 309.663,
+      "penutupan": 311.26,
+      "persen": -2.35
+    },
+    {
+      "nama": "Development Board",
+      "tertinggi": 3070.979,
+      "terendah": 2868.269,
+      "penutupan": 2962.763,
+      "persen": 3.48
+    },
+    {
+      "nama": "IDX Value30",
+      "tertinggi": 120.262,
+      "terendah": 116.089,
+      "penutupan": 116.964,
+      "persen": -0.38
+    },
+    {
+      "nama": "Acceleration Board",
+      "tertinggi": 2719.019,
+      "terendah": 2551.581,
+      "penutupan": 2631.999,
+      "persen": 3.01
+    },
+    {
+      "nama": "IDX Growth30",
+      "tertinggi": 121.975,
+      "terendah": 116.524,
+      "penutupan": 117.474,
+      "persen": -1.67
+    },
+    {
+      "nama": "IDX Quality30",
+      "tertinggi": 115.452,
+      "terendah": 109.944,
+      "penutupan": 110.855,
+      "persen": -2.31
+    },
+    {
+      "nama": "IDX ESG Leaders",
+      "tertinggi": 115.109,
+      "terendah": 109.083,
+      "penutupan": 109.894,
+      "persen": -2.02
+    },
+    {
+      "nama": "[A] Energy",
+      "tertinggi": 3182.083,
+      "terendah": 2871.079,
+      "penutupan": 2999.922,
+      "persen": 4.99
+    },
+    {
+      "nama": "IDX LQ45 Low Carbon Leaders",
+      "tertinggi": 93.611,
+      "terendah": 88.419,
+      "penutupan": 89.148,
+      "persen": -2.03
+    },
+    {
+      "nama": "[B] Basic Materials",
+      "tertinggi": 1729.306,
+      "terendah": 1595.71,
+      "penutupan": 1620.137,
+      "persen": 1.63
+    },
+    {
+      "nama": "IDX Cyclical Economy 30",
+      "tertinggi": 89.975,
+      "terendah": 84.486,
+      "penutupan": 85.251,
+      "persen": -1.72
+    },
+    {
+      "nama": "[C] Industrials",
+      "tertinggi": 1703.771,
+      "terendah": 1569.768,
+      "penutupan": 1616.959,
+      "persen": 3.01
+    },
+    {
+      "nama": "[D] Consumer Non-Cyclicals",
+      "tertinggi": 689.266,
+      "terendah": 658.333,
+      "penutupan": 674.024,
+      "persen": 2.74
+    },
+    {
+      "nama": "[E] Consumer Cyclicals",
+      "tertinggi": 967.493,
+      "terendah": 903.897,
+      "penutupan": 911.975,
+      "persen": -1.9
+    },
+    {
+      "nama": "KOMPAS100",
+      "tertinggi": 850.377,
+      "terendah": 804.777,
+      "penutupan": 811.09,
+      "persen": -0.37
+    },
+    {
+      "nama": "[F] Healthcare",
+      "tertinggi": 1457.878,
+      "terendah": 1390.931,
+      "penutupan": 1410.216,
+      "persen": -2.44
+    },
+    {
+      "nama": "BISNIS-27",
+      "tertinggi": 442.687,
+      "terendah": 421.391,
+      "penutupan": 425.27,
+      "persen": -1.32
+    },
+    {
+      "nama": "[G] Financials",
+      "tertinggi": 1395.832,
+      "terendah": 1333.256,
+      "penutupan": 1339.085,
+      "persen": -2.08
+    },
+    {
+      "nama": "SRI-KEHATI",
+      "tertinggi": 312.78,
+      "terendah": 297.476,
+      "penutupan": 299.961,
+      "persen": -2.37
+    },
+    {
+      "nama": "[H] Properties & Real Estate",
+      "tertinggi": 843.361,
+      "terendah": 764.387,
+      "penutupan": 808.718,
+      "persen": 6.55
+    },
+    {
+      "nama": "Pefindo I-Grade",
+      "tertinggi": 161.723,
+      "terendah": 152.605,
+      "penutupan": 153.87,
+      "persen": -1.22
+    },
+    {
+      "nama": "[I] Technology",
+      "tertinggi": 7153.221,
+      "terendah": 6611.414,
+      "penutupan": 6843.532,
+      "persen": 2.55
+    },
+    {
+      "nama": "ESG Sctr Ldrs IDX KEHATI",
+      "tertinggi": 107.475,
+      "terendah": 102.373,
+      "penutupan": 103.226,
+      "persen": -2.28
+    },
+    {
+      "nama": "[J] Infrastructures",
+      "tertinggi": 1876.688,
+      "terendah": 1782.355,
+      "penutupan": 1809.374,
+      "persen": 1.31
+    },
+    {
+      "nama": "ESG Q45 IDX KEHATI",
+      "tertinggi": 106.349,
+      "terendah": 101.348,
+      "penutupan": 102.16,
+      "persen": -2.38
+    },
+    {
+      "nama": "[K] Transportation & Logistic",
+      "tertinggi": 1715.123,
+      "terendah": 1629.071,
+      "penutupan": 1646.96,
+      "persen": -1.44
+    },
+    {
+      "nama": "SMinfra18",
+      "tertinggi": 235.513,
+      "terendah": 226.182,
+      "penutupan": 227.642,
+      "persen": -1.01
+    },
+    {
+      "nama": "Investor33",
+      "tertinggi": 352.531,
+      "terendah": 335.491,
+      "penutupan": 338.262,
+      "persen": -2.04
+    },
+    {
+      "nama": "infobank15",
+      "tertinggi": 875.61,
+      "terendah": 825.727,
+      "penutupan": 831.307,
+      "persen": -3.41
+    },
+    {
+      "nama": "IDX-PEFINDO Prime Bank",
+      "tertinggi": 159.431,
+      "terendah": 149.478,
+      "penutupan": 150.913,
+      "persen": -3.33
+    },
+    {
+      "nama": "MNC36",
+      "tertinggi": 279.471,
+      "terendah": 266.146,
+      "penutupan": 268.437,
+      "persen": -1.61
+    },
+    {
+      "nama": "IDX-Infovesta Multi-Factor 28",
+      "tertinggi": 134.901,
+      "terendah": 130.861,
+      "penutupan": 131.853,
+      "persen": 0.86
+    }
+  ],
+  "indeks_global": [
+    {
+      "wilayah": "ASEAN",
+      "negara": "Singapore",
+      "indeks": "Straits Times Index STI",
+      "minggu_lalu": 5509.43,
+      "minggu_ini": 5588.34,
+      "perubahan": 78.91,
+      "persen": 1.43
+    },
+    {
+      "wilayah": "ASEAN",
+      "negara": "Indonesia",
+      "indeks": "IDX Composite Index",
+      "minggu_lalu": 6175.54,
+      "minggu_ini": 6196.43,
+      "perubahan": 20.9,
+      "persen": 0.34
+    },
+    {
+      "wilayah": "ASEAN",
+      "negara": "Thailand",
+      "indeks": "SET Index",
+      "minggu_lalu": 1639.04,
+      "minggu_ini": 1644.39,
+      "perubahan": 5.35,
+      "persen": 0.33
+    },
+    {
+      "wilayah": "ASEAN",
+      "negara": "Malaysia",
+      "indeks": "FTSE Bursa Malaysia KLCI Index",
+      "minggu_lalu": 1731.45,
+      "minggu_ini": 1701.02,
+      "perubahan": -30.43,
+      "persen": -1.76
+    },
+    {
+      "wilayah": "ASEAN",
+      "negara": "Philippines",
+      "indeks": "PSEi Index",
+      "minggu_lalu": 6404.11,
+      "minggu_ini": 6281.01,
+      "perubahan": -123.1,
+      "persen": -1.92
+    },
+    {
+      "wilayah": "ASEAN",
+      "negara": "Vietnam",
+      "indeks": "VN-Index",
+      "minggu_lalu": 1787.45,
+      "minggu_ini": 1699.38,
+      "perubahan": -88.07,
+      "persen": -4.93
+    },
+    {
+      "wilayah": "Asia Pacific",
+      "negara": "Taiwan",
+      "indeks": "TSE Weighted Index",
+      "minggu_lalu": 42671.27,
+      "minggu_ini": 43654.84,
+      "perubahan": 983.57,
+      "persen": 2.3
+    },
+    {
+      "wilayah": "Asia Pacific",
+      "negara": "Hong Kong",
+      "indeks": "Hang Seng Index",
+      "minggu_lalu": 24562.24,
+      "minggu_ini": 24963.23,
+      "perubahan": 400.99,
+      "persen": 1.63
+    },
+    {
+      "wilayah": "Asia Pacific",
+      "negara": "China",
+      "indeks": "SSE Composite Index",
+      "minggu_lalu": 3764.16,
+      "minggu_ini": 3814.2,
+      "perubahan": 50.04,
+      "persen": 1.33
+    },
+    {
+      "wilayah": "Asia Pacific",
+      "negara": "Japan",
+      "indeks": "Nikkei 225",
+      "minggu_lalu": 64141.12,
+      "minggu_ini": 64611.15,
+      "perubahan": 470.03,
+      "persen": 0.73
+    },
+    {
+      "wilayah": "Asia Pacific",
+      "negara": "Australia",
+      "indeks": "All Ordinaries Index",
+      "minggu_lalu": 8978.8,
+      "minggu_ini": 8941.5,
+      "perubahan": -37.3,
+      "persen": -0.42
+    },
+    {
+      "wilayah": "Asia Pacific",
+      "negara": "Korea",
+      "indeks": "KOSPI Index",
+      "minggu_lalu": 6820.6,
+      "minggu_ini": 6690.62,
+      "perubahan": -129.98,
+      "persen": -1.91
+    },
+    {
+      "wilayah": "Asia Pacific",
+      "negara": "India",
+      "indeks": "S&P BSE SENSEX Index",
+      "minggu_lalu": 78151.45,
+      "minggu_ini": 76059.77,
+      "perubahan": -2091.68,
+      "persen": -2.68
+    },
+    {
+      "wilayah": "America",
+      "negara": "Brazil",
+      "indeks": "Ibovespa Brasil Index",
+      "minggu_lalu": 173714.0,
+      "minggu_ini": 176724.0,
+      "perubahan": 3010.0,
+      "persen": 1.73
+    },
+    {
+      "wilayah": "America",
+      "negara": "Colombia",
+      "indeks": "MSCI COLCAP Index",
+      "minggu_lalu": 2285.11,
+      "minggu_ini": 2283.28,
+      "perubahan": -1.83,
+      "persen": -0.08
+    },
+    {
+      "wilayah": "America",
+      "negara": "Canada",
+      "indeks": "S&P/TSX Composite Index",
+      "minggu_lalu": 35263.9,
+      "minggu_ini": 35192.7,
+      "perubahan": -71.2,
+      "persen": -0.2
+    },
+    {
+      "wilayah": "America",
+      "negara": "Mexico",
+      "indeks": "S&P/BMV IPC",
+      "minggu_lalu": 66634.23,
+      "minggu_ini": 66266.01,
+      "perubahan": -368.22,
+      "persen": -0.55
+    },
+    {
+      "wilayah": "America",
+      "negara": "US",
+      "indeks": "Dow Jones Industrial Average",
+      "minggu_lalu": 52146.42,
+      "minggu_ini": 51711.65,
+      "perubahan": -434.77,
+      "persen": -0.83
+    },
+    {
+      "wilayah": "EMEA",
+      "negara": "Israel",
+      "indeks": "Tel Aviv Stock Exchange 35 Index",
+      "minggu_lalu": 4140.43,
+      "minggu_ini": 4249.48,
+      "perubahan": 109.05,
+      "persen": 2.63
+    },
+    {
+      "wilayah": "EMEA",
+      "negara": "Norway",
+      "indeks": "OSE Benchmark Index",
+      "minggu_lalu": 1957.31,
+      "minggu_ini": 2005.19,
+      "perubahan": 47.88,
+      "persen": 2.45
+    },
+    {
+      "wilayah": "EMEA",
+      "negara": "Austria",
+      "indeks": "Austrian Traded Index",
+      "minggu_lalu": 6364.91,
+      "minggu_ini": 6487.74,
+      "perubahan": 122.83,
+      "persen": 1.93
+    },
+    {
+      "wilayah": "EMEA",
+      "negara": "Poland",
+      "indeks": "WIG Total Return Index",
+      "minggu_lalu": 147277.81,
+      "minggu_ini": 150044.33,
+      "perubahan": 2766.52,
+      "persen": 1.88
+    },
+    {
+      "wilayah": "EMEA",
+      "negara": "Spain",
+      "indeks": "IBEX 35 Index",
+      "minggu_lalu": 19216.9,
+      "minggu_ini": 19448.1,
+      "perubahan": 231.2,
+      "persen": 1.2
+    },
+    {
+      "wilayah": "EMEA",
+      "negara": "UK",
+      "indeks": "FTSE 100 Index",
+      "minggu_lalu": 10600.4,
+      "minggu_ini": 10672.18,
+      "perubahan": 71.78,
+      "persen": 0.68
+    },
+    {
+      "wilayah": "EMEA",
+      "negara": "Germany",
+      "indeks": "German Stock Index DAX",
+      "minggu_lalu": 24830.98,
+      "minggu_ini": 24956.36,
+      "perubahan": 125.38,
+      "persen": 0.5
+    },
+    {
+      "wilayah": "EMEA",
+      "negara": "Saudi Arabia",
+      "indeks": "Tadawul All Share Index",
+      "minggu_lalu": 10720.28,
+      "minggu_ini": 10731.73,
+      "perubahan": 11.45,
+      "persen": 0.11
+    },
+    {
+      "wilayah": "EMEA",
+      "negara": "South Africa",
+      "indeks": "FTSE/JSE Africa All Share Index",
+      "minggu_lalu": 109569.9,
+      "minggu_ini": 109468.78,
+      "perubahan": -101.12,
+      "persen": -0.09
+    },
+    {
+      "wilayah": "EMEA",
+      "negara": "France",
+      "indeks": "CAC 40 Index",
+      "minggu_lalu": 8338.81,
+      "minggu_ini": 8327.15,
+      "perubahan": -11.66,
+      "persen": -0.14
+    },
+    {
+      "wilayah": "EMEA",
+      "negara": "Turkey",
+      "indeks": "Borsa Istanbul 100 Index",
+      "minggu_lalu": 13981.1,
+      "minggu_ini": 13960.83,
+      "perubahan": -20.27,
+      "persen": -0.14
+    },
+    {
+      "wilayah": "EMEA",
+      "negara": "UAE",
+      "indeks": "Dubai Financial Market General Index",
+      "minggu_lalu": 5802.19,
+      "minggu_ini": 5785.32,
+      "perubahan": -16.87,
+      "persen": -0.29
+    },
+    {
+      "wilayah": "EMEA",
+      "negara": "Switzerland",
+      "indeks": "Swiss Market Index",
+      "minggu_lalu": 14343.7,
+      "minggu_ini": 14279.37,
+      "perubahan": -64.33,
+      "persen": -0.45
+    },
+    {
+      "wilayah": "EMEA",
+      "negara": "Ireland",
+      "indeks": "ISEQ All-Share Index",
+      "minggu_lalu": 13565.74,
+      "minggu_ini": 13433.88,
+      "perubahan": -131.86,
+      "persen": -0.97
+    }
+  ],
+  "dana_dihimpun": {
+    "pasar_saham_triliun": 13.43,
+    "pasar_obligasi_triliun": 818.78,
+    "saham": 2.16,
+    "reit": null,
+    "obligasi_korporasi_idr": 103.6,
+    "obligasi_korporasi_usd": 15.53,
+    "rights": 10.67,
+    "dinfra": null,
+    "obligasi_pemerintah_idr": 715.18,
+    "obligasi_pemerintah_usd": null,
+    "waran": 0.6
+  },
   "_sumber_pdf": "ws_260724.pdf",
   "_halaman_diambil": [
     1,
+    2,
     3,
     4,
-    5
-  ],
-  "_halaman_dilewati": [
-    2,
+    5,
     6,
     7,
     8,
-    9,
+    9
+  ],
+  "_halaman_dilewati": [
     10
   ]
 }

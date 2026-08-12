@@ -14,6 +14,7 @@ Output: data-idx/json/fundamental/<TICKER>.json  +  data-idx/json/fundamental/in
 """
 
 import yfinance as yf
+from yfinance.exceptions import YFRateLimitError
 import json, os, sys, time, requests
 import pandas as pd
 from datetime import datetime, date
@@ -166,6 +167,17 @@ def sg(d, key):
     try:
         v = d.get(key)
         return None if (v is None or (isinstance(v,float) and v!=v)) else v
+    except Exception:
+        return None
+
+def aman(fn):
+    """Jalankan fetch sub-data; error data → None, tapi rate limit HARUS naik
+    ke pemanggil supaya retry+backoff di loop utama bekerja (bare except lama
+    menelan YFRateLimitError → ticker ditandai gagal permanen padahal transien)."""
+    try:
+        return fn()
+    except YFRateLimitError:
+        raise
     except Exception:
         return None
 
@@ -322,23 +334,23 @@ def fetch_stock(ticker_code):
         kurs = KURS_USD_IDR
 
         # ── Laporan keuangan ──────────────────────────────────────────────
-        try: fin  = t.financials
-        except: fin = None
-        try: bs   = t.balance_sheet
-        except: bs  = None
-        try: cf   = t.cashflow
-        except: cf  = None
-        try: qfin = t.quarterly_financials
-        except: qfin = None
-        try: qbs  = t.quarterly_balance_sheet
-        except: qbs  = None
-        try: qcf  = t.quarterly_cashflow
-        except: qcf  = None
+        fin  = aman(lambda: t.financials)
+        bs   = aman(lambda: t.balance_sheet)
+        cf   = aman(lambda: t.cashflow)
+        qfin = aman(lambda: t.quarterly_financials)
+        qbs  = aman(lambda: t.quarterly_balance_sheet)
+        qcf  = aman(lambda: t.quarterly_cashflow)
+
+        # Dividends: satu kali fetch, dipakai dua blok (hist_dps_a + div_history) —
+        # sebelumnya t.dividends dipanggil 2x = 2x request history(period=max) ke Yahoo.
+        divs_raw = aman(lambda: t.dividends)
 
         # ── Harga historis ────────────────────────────────────────────────
         try:
             hist = t.history(period="1y")
             pp   = price_perf(hist)
+        except YFRateLimitError:
+            raise
         except Exception as e:
             print(f"   ! {ticker_jk} price_perf gagal: {type(e).__name__}: {e}", flush=True)
             gagal_price_perf.append(ticker_jk)
@@ -351,10 +363,13 @@ def fetch_stock(ticker_code):
         q_oi   = df_quarterly(qfin, "Operating Income")
 
         # EPS quarterly: Net Income / Shares
-        shares = sg(info,"sharesOutstanding") or 1
+        # shares None eksplisit bila sharesOutstanding tidak ada (fallback lama `or 1`
+        # menghasilkan rev_ps/q_eps = nilai absolut menyamar per-saham — data palsu).
+        shares = sg(info,"sharesOutstanding")
         q_eps  = {}
-        for y, qmap in q_ni.items():
-            q_eps[y] = {q: round(v/shares, 2) for q, v in qmap.items()}
+        if shares:
+            for y, qmap in q_ni.items():
+                q_eps[y] = {q: round(v/shares, 2) for q, v in qmap.items()}
 
         # Quarterly balance sheet
         q_assets = df_quarterly(qbs, "Total Assets")
@@ -415,10 +430,9 @@ def fetch_stock(ticker_code):
             if ni and eq and eq != 0:
                 hist_roe_a[yr] = round(ni / eq * 100, 2)
 
-        # DPS historis per tahun (dari t.dividends langsung)
+        # DPS historis per tahun (dari divs_raw, di-fetch sekali di atas)
         hist_dps_a = {}
         try:
-            divs_raw = t.dividends
             if divs_raw is not None and not divs_raw.empty:
                 for dt_idx, amt in divs_raw.items():
                     yr = str(dt_idx.year)
@@ -553,10 +567,10 @@ def fetch_stock(ticker_code):
             except Exception:
                 ex_div = str(ex_div)
 
-        # Dividend history (per tahun dari t.dividends)
+        # Dividend history (per tahun dari divs_raw, di-fetch sekali di atas)
         div_history = []
         try:
-            divs = t.dividends
+            divs = divs_raw
             if divs is not None and not divs.empty:
                 # Group by year — ambil entri terbesar per tahun (biasanya 1x/tahun untuk IDX)
                 div_by_year = {}
@@ -594,9 +608,20 @@ def fetch_stock(ticker_code):
             "week52_change_pct":round(week52_change*100,2) if week52_change else None,
             "beta":             round(beta,2) if beta else None,
             "avg_volume":       sg(info,"averageVolume"),
+            "avg_volume_10d":   sg(info,"averageDailyVolume10Day"),
             "shares":           shares,
             "float_shares":     float_sh,
             "float_pct":        round(float_pct,2) if float_pct else None,
+            # Field tambahan dashboard (dari info yang sama, nol request ekstra).
+            # ma50/ma200 & target_price dalam mata uang HARGA (IDR) — bukan laporan,
+            # jadi TIDAK melalui konversi_ke_idr.
+            "ma50":             sg(info,"fiftyDayAverage"),
+            "ma200":            sg(info,"twoHundredDayAverage"),
+            "target_price":     sg(info,"targetMeanPrice"),
+            "analyst_count":    sg(info,"numberOfAnalystOpinions"),
+            "recommendation":   sg(info,"recommendationKey"),
+            "held_insiders_pct":     round(sg(info,"heldPercentInsiders")*100,2) if sg(info,"heldPercentInsiders") is not None else None,
+            "held_institutions_pct": round(sg(info,"heldPercentInstitutions")*100,2) if sg(info,"heldPercentInstitutions") is not None else None,
 
             # === CURRENT VALUATION ===
             # pb/ps/ev_ebit/ev_ebitda/ev_revenue: dihitung ulang dari bv/rev_ps/ebitda
@@ -754,6 +779,8 @@ def fetch_stock(ticker_code):
 
         return data
 
+    except YFRateLimitError:
+        raise   # ditangani retry+backoff di main loop — jangan telan di sini
     except Exception as exc:
         print(f" ✗ {exc}")
         return None
@@ -802,24 +829,40 @@ def main():
     print(f"   Output: {OUT_DIR}\n")
 
     # ── Fetch loop ────────────────────────────────────────────────────────────
+    def fetch_dengan_retry(ticker, max_coba=3):
+        """Retry+backoff khusus rate limit Yahoo (429) — IP datacenter GitHub
+        Actions sering kena. Error lain (data kosong dll.) tidak di-retry."""
+        for coba in range(max_coba):
+            try:
+                return fetch_stock(ticker)
+            except YFRateLimitError:
+                if coba == max_coba - 1:
+                    break
+                tunggu = 30 * (2 ** coba)   # 30s, 60s
+                print(f" ⏳ rate limit — tunggu {tunggu}s", flush=True)
+                time.sleep(tunggu)
+        print(" ✗ rate limit menetap", end='')
+        return None
+
     results, ok, fail = [], 0, 0
     total = len(tickers)
     for i, ticker in enumerate(tickers, 1):
         print(f"  [{i:>4}/{total}] {ticker:<8}", end='', flush=True)
-        data = fetch_stock(ticker)
+        data = fetch_dengan_retry(ticker)
         if data:
             ok += 1
-            print(f" ✓ {data.get('company_name','')[:28]}")
+            print(f" ✓ {data.get('name','')[:28]}")
             results.append({
                 "ticker": ticker,
-                "name":   data.get("company_name", "") or data.get("name", ""),
+                "name":   data.get("name", ""),
                 "sector": data.get("sector", ""),
             })
         else:
             fail += 1
             print(" — skip")
-        if i % 50 == 0:
-            time.sleep(1)
+        # Jeda antar ticker: ~8 request/ticker × 959 ticker tanpa jeda = pola bot
+        # di mata Yahoo (mitigasi standar per isu yfinance #2125/#2422).
+        time.sleep(0.5)
 
     print(f"\n✅ Selesai: {ok} berhasil, {fail} gagal dari {total} saham")
 
@@ -888,15 +931,39 @@ def main():
     print("  Sector fields diperbarui ke semua saham JSON")
 
     # ── Save index ────────────────────────────────────────────────────────────
+    # Dibangun dari SEMUA file JSON di disk, bukan hanya hasil run ini —
+    # run yang gagal parsial (rate limit dsb.) tidak boleh menyusutkan index.json
+    # padahal JSON per-ticker dari run sebelumnya masih utuh.
+    stocks_index = []
+    for fname in sorted(os.listdir(OUT_DIR)):
+        if not fname.endswith(".json") or fname in ("index.json", "sector_avg.json"):
+            continue
+        try:
+            with open(os.path.join(OUT_DIR, fname), encoding="utf-8") as fj:
+                sd = json.load(fj)
+            stocks_index.append({
+                "ticker": sd.get("ticker") or fname[:-5],
+                "name":   sd.get("name", ""),
+                "sector": sd.get("sector", ""),
+            })
+        except Exception:
+            pass
     idx_path = os.path.join(OUT_DIR, "index.json")
     with open(idx_path, "w", encoding="utf-8") as fw:
         json.dump({
             "updated": datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "total":   len(results),
-            "stocks":  results,
+            "total":   len(stocks_index),
+            "stocks":  stocks_index,
         }, fw, ensure_ascii=False, separators=(",", ":"))
-    print(f"  index.json → {len(results)} saham")
+    print(f"  index.json → {len(stocks_index)} saham")
     print("\n🎉 Semua selesai!")
+
+    # ── Gerbang kegagalan massal — jangan commit data bulanan yang bolong besar ─
+    # (exit≠0 → step commit workflow tidak jalan). Hanya untuk run besar; smoke
+    # test beberapa ticker tidak kena.
+    if total >= 100 and fail / total > 0.3:
+        print(f"GAGAL: {fail}/{total} ticker gagal (>30%) — kemungkinan diblokir Yahoo.")
+        sys.exit(1)
 
     # ── Gerbang kegagalan price_perf — jangan biarkan galat senyap lagi ────────
     rasio = len(gagal_price_perf) / max(len(tickers), 1)

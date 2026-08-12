@@ -308,17 +308,128 @@ def parse_page7(text):
             })
     return world
 
+# ─── PAGE 5 ─── Stock Price Movement + Trading Recap ─────────
+RECAP_ROW_RE = re.compile(
+    r'^(RG|TN|NG|Rights|Warrants|Structured Warrants|ETF, REIT, DINFRA|Futures|Total Stocks|Total All)'
+    r'\s+([\d,]+)\s+([\d,]+)\s+([\d,]+)\s+([\d,]+)\s+([\d,]+)\s+([\d,]+)$')
+RECAP_NUMS_RE = re.compile(r'^([\d,]+)\s+([\d,]+)\s+([\d,]+)\s+([\d,]+)\s+([\d,]+)\s+([\d,]+)$')
+
+def parse_page5(text):
+    lines = [l.strip() for l in text.split("\n") if l.strip()]
+    stocks_n, stocks_p, mcap_n, mcap_p = [], [], [], []
+    recap, pending_label = [], None
+
+    def bare_nums(l):
+        # buang label naratif di kanan ("Increase/Decrease/Stable ...")
+        return re.findall(r'[\d,]+', re.sub(r'(Increase|Decrease|Stable).*', '', l))[:5]
+
+    for i, l in enumerate(lines):
+        # ── price movement ──
+        if l.startswith("By Number"):
+            stocks_n = bare_nums(l) or (bare_nums(lines[i+1]) if i+1 < len(lines) else [])
+        elif l.startswith("of Stocks"):
+            stocks_p = re.findall(r'\(([\d.]+)%\)', l)[:5]
+        elif l.startswith("By Market"):
+            mcap_n = bare_nums(l)
+        elif l.startswith("Cap"):
+            mcap_p = re.findall(r'\(([\d.]+)%\)', l)[:5]
+
+        # ── trading recap ──
+        m = RECAP_ROW_RE.match(l)
+        if m:
+            g = m.groups()
+            recap.append({"n": g[0], "v": num(g[1]), "va": num(g[2]), "f": num(g[3]),
+                          "yv": num(g[4]), "yva": num(g[5]), "yf": num(g[6])})
+            pending_label = None
+            continue
+        # label sendirian ("Total Stocks"), angka di baris berikutnya
+        if l in ("Total Stocks", "Total All"):
+            pending_label = l
+            continue
+        if pending_label:
+            m2 = RECAP_NUMS_RE.match(l)
+            if m2:
+                g = m2.groups()
+                recap.append({"n": pending_label, "v": num(g[0]), "va": num(g[1]), "f": num(g[2]),
+                              "yv": num(g[3]), "yva": num(g[4]), "yf": num(g[5])})
+            pending_label = None
+
+    # urutan: naik >2%, naik 0-2%, stabil, turun 0-2%, turun <-2%
+    return {
+        "price_movement": {
+            "stocks": [{"v": num(a), "p": pct(b)} for a, b in zip(stocks_n, stocks_p)],
+            "mcap":   [{"v": num(a), "p": pct(b)} for a, b in zip(mcap_n, mcap_p)],
+        },
+        "trading_recap": recap,
+    }
+
+# ─── PAGE 8 ─── ISSI Stock Trading ───────────────────────────
+ISSI_TOP_RE = re.compile(
+    r'^([A-Z0-9]{2,5})\s+([\d,.]+)\s+([\d.]+)%'
+    r'\s+([A-Z0-9]{2,5})\s+([\d,.]+)\s+([\d.]+)%'
+    r'\s+([A-Z0-9]{2,5})\s+([\d,.]+)\s+([\d.]+)%'
+    r'\s+([A-Z0-9]{2,5})\s+([\d,.]+)\s+([\d.]+)%$')
+
+def parse_page8(text):
+    out = {"top_vol": [], "top_val": [], "top_freq": [], "top_mcap": []}
+
+    def summary(header, prefix):
+        m = re.search(header + r'\s*\n([\d,]+)\s+([\d,]+)\s+([\d,]+)\s+([\d,]+)\s*\n'
+                               r'([\d.]+)%\s+([\d.]+)%\s+([\d.]+)%', text)
+        if m:
+            out[prefix + "vol"]      = num(m.group(1))
+            out[prefix + "val_idr"]  = num(m.group(2))
+            out[prefix + "val_usd"]  = num(m.group(3))
+            out[prefix + "freq"]     = num(m.group(4))
+            out[prefix + "vol_pct"]  = pct(m.group(5))
+            out[prefix + "val_pct"]  = pct(m.group(6))
+            out[prefix + "freq_pct"] = pct(m.group(7))
+
+    summary(r'Volume Value Frequency', "")
+    summary(r'Avg\. Volume Avg\. Value Avg\. Frequency', "avg_")
+
+    m = re.search(r'Market Cap\S*\s*\n([\d,]+)\s+([\d,]+)\s*\n([\d.]+)%', text)
+    if m:
+        out["mcap_idr"] = num(m.group(1))
+        out["mcap_usd"] = num(m.group(2))
+        out["mcap_pct"] = pct(m.group(3))
+
+    for line in text.split("\n"):
+        m = ISSI_TOP_RE.match(line.strip())
+        if m:
+            g = m.groups()
+            out["top_vol"].append( {"c": g[0], "v": num(g[1]),  "p": pct(g[2])})
+            out["top_val"].append( {"c": g[3], "v": num(g[4]),  "p": pct(g[5])})
+            out["top_freq"].append({"c": g[6], "v": num(g[7]),  "p": pct(g[8])})
+            out["top_mcap"].append({"c": g[9], "v": num(g[10]), "p": pct(g[11])})
+
+    for k in ("top_vol", "top_val", "top_freq", "top_mcap"):
+        out[k] = out[k][:10]
+    return out
+
 # ─── MAIN PARSER ─────────────────────────────────────────────
 def parse_pdf(pdf_path: Path) -> dict:
     pdf_path = Path(pdf_path)
     print(f"  Parsing: {pdf_path.name} ...", end=" ", flush=True)
     with pdfplumber.open(pdf_path) as pdf:
-        p1 = parse_page1(get_text(pdf, 0))
-        p2 = parse_page2(get_text(pdf, 1))
-        p3 = parse_page3(get_text(pdf, 2))
-        p4 = parse_page4(get_text(pdf, 3))
-        p6 = parse_page6(get_text(pdf, 5))
-        p7 = parse_page7(get_text(pdf, 6))
+        texts = [p.extract_text() or "" for p in pdf.pages]
+
+    def page(title, fallback_idx):
+        # cari halaman berdasarkan judul (posisi bisa geser, mis. edisi 10 halaman
+        # dengan sisipan NEW LISTING); fallback ke index lama kalau tak ketemu
+        for t in texts:
+            if t.lstrip().startswith(title):
+                return t
+        return texts[fallback_idx] if fallback_idx < len(texts) else ""
+
+    p1 = parse_page1(page("IDX DAILY STATISTICS", 0))
+    p2 = parse_page2(page("AVERAGE DAILY TRADING", 1))
+    p3 = parse_page3(page("TOP STOCKS TOP EXCHANGE MEMBERS", 2))
+    p4 = parse_page4(page("TOP STOCKS NO. OF LISTED SECURITIES", 3))
+    p5 = parse_page5(page("STOCK PRICE MOVEMENT", 4))
+    p6 = parse_page6(page("INDEX PERFORMANCE", 5))
+    p7 = parse_page7(page("WORLD INDEX COMPARISON", 6))
+    p8 = parse_page8(page("ISSI STOCK TRADING", 7))
 
     result = {
         **p1, **p2,
@@ -340,6 +451,9 @@ def parse_pdf(pdf_path: Path) -> dict:
         "board":        p6["board"],
         "sectors":      p6["sectors"],
         "world":        p7,
+        "price_movement": p5["price_movement"],
+        "trading_recap":  p5["trading_recap"],
+        "issi":           p8,
     }
 
     # Fallback IHSG dari featured
@@ -349,7 +463,8 @@ def parse_pdf(pdf_path: Path) -> dict:
             result.setdefault("ihsg_value", ihsg["v"])
             result.setdefault("ihsg_pct",   ihsg["d"])
 
-    print(f"OK  [world:{len(p7)} sectors:{len(p6['sectors'])} mcap:{len(p4['mcap'])} leaders:{len(p4['leaders_today'])}]")
+    print(f"OK  [world:{len(p7)} sectors:{len(p6['sectors'])} mcap:{len(p4['mcap'])} leaders:{len(p4['leaders_today'])} "
+          f"recap:{len(p5['trading_recap'])} pm:{len(p5['price_movement']['stocks'])}/{len(p5['price_movement']['mcap'])} issi:{len(p8['top_vol'])}]")
     return result
 
 def save_json(data: dict, stem: str):

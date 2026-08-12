@@ -34,16 +34,22 @@ jobs:
           pip install -r requirements.txt
           playwright install chromium --with-deps
 
-      # 4. Download PDF IDX hari ini
+      # 4. Download PDF IDX (harian + mingguan)
+      #    CATATAN blokir (Agustus 2026): IDX kerap menolak/melambatkan IP
+      #    datacenter GitHub — download_idx.py sekarang exit!=0 kalau scrape
+      #    gagal total, jadi run ini MERAH saat diblokir (bukan sukses semu
+      #    seperti dulu waktu pakai continue-on-error). Bursa libur = script
+      #    exit 0 dengan "tidak ada file cocok", tidak menggagalkan run.
+      #    Jalur cadangan saat diblokir: JALANKAN_OTOMATIS.bat di PC lokal.
       - name: Download IDX Statistics PDF
         run: |
-          python scripts/download_idx.py --hari-ini
-        continue-on-error: true   # Kalau bursa libur, lanjut saja
+          python scripts/download_idx.py --hari-ini --jenis semua
 
-      # 5. Parse semua PDF baru → JSON
+      # 5. Parse semua PDF baru → JSON (harian + mingguan)
       - name: Parse PDF ke JSON
         run: |
           python scripts/parse_idx_pdf.py --semua
+          python scripts/parse_idx_weekly.py --semua
 
       # 6. Commit & push jika ada perubahan
       - name: Commit & push data baru
