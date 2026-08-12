@@ -385,10 +385,20 @@
 @keyframes dasbor-modal-pudar { from { opacity: 0; } to { opacity: 1; } }
 @keyframes dasbor-modal-naik { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
+/* Ticker rim modal login (#39 opsi 2) — reuse .dasbor-tk/.dasbor-num dan
+   keyframe dasbor-pita-jalan dari pita header (baris ~97-104), cuma durasi
+   lebih pendek (kartu ~320px vs full-width). overflow:hidden di .panel
+   discope ke modal saja supaya panel lain (11 halaman dasbor) tidak kena. */
+.dasbor-modal .panel { overflow: hidden; }
+.login-tk-rim { overflow: hidden; border-bottom: 1px solid var(--line); background: var(--bg2); }
+.login-tk-rim-track { display: flex; white-space: nowrap; width: max-content; animation: dasbor-pita-jalan 20s linear infinite; }
+.login-tk-rim .dasbor-tk { padding: 6px 12px; font-size: 10.5px; }
+
 @media (prefers-reduced-motion: reduce) {
   .dasbor-pita-track { animation: none; }
   .dasbor-laci, .dasbor-laci-bg { animation: none; }
   .dasbor-modal, .dasbor-modal-bg { animation: none; }
+  .login-tk-rim-track { animation: none; }
 }
 
 /* ===== .rr-bar-* — satu-satunya sisa "KALKULATOR JIA" yang masih dipakai
