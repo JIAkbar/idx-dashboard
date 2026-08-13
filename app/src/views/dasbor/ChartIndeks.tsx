@@ -6,7 +6,14 @@ import { useTheme } from '../../context/ThemeContext'
 
 /** Port TV_GROUPS index_live.html baris 3442-3466 — dua simbol dikoreksi
  * setelah verifikasi ke TradingView (BISNIS27→BISNIS_27, SRIKEHATI→SRI_KEHATI;
- * sumber lama salah ketik, halaman TradingView-nya pakai underscore). */
+ * sumber lama salah ketik, halaman TradingView-nya pakai underscore).
+ * #89: daftar dilengkapi + grup Sektoral (11 sektor IDX-IC). Semua simbol
+ * baru diverifikasi ke halaman tradingview.com/symbols/IDX-<sym>/ (2026-08-13):
+ * SMC & MES BUMN juga pakai varian underscore/terpotong (IDXSMC_COM,
+ * IDXSMC_LIQ, IDXMESBUMN — bukan IDXSMCCOM/IDXSMCLIQ/IDXMESBUMN17), dan
+ * PEFINDO i-Grade ternyata IDX:I_GRADE (via symbol-search TradingView).
+ * PEFINDO25 TIDAK ada di TradingView (search "pefindo" cuma mengembalikan
+ * I_GRADE), jadi sengaja tidak diberi chip. */
 const TV_GROUPS = {
   featured: [
     { sym: 'IDX:COMPOSITE', label: 'IHSG' },
@@ -18,6 +25,9 @@ const TV_GROUPS = {
     { sym: 'IDX:IDXV30', label: 'Value30' },
     { sym: 'IDX:IDXG30', label: 'Growth30' },
     { sym: 'IDX:IDXQ30', label: 'Quality30' },
+    { sym: 'IDX:IDXSMC_COM', label: 'SMC Composite' },
+    { sym: 'IDX:IDXSMC_LIQ', label: 'SMC Liquid' },
+    { sym: 'IDX:IDXESGL', label: 'ESG Leaders' },
   ],
   cobranding: [
     { sym: 'IDX:KOMPAS100', label: 'Kompas100' },
@@ -25,11 +35,29 @@ const TV_GROUPS = {
     { sym: 'IDX:SRI_KEHATI', label: 'Sri-Kehati' },
     { sym: 'IDX:SMINFRA18', label: 'SMinfra18' },
     { sym: 'IDX:MNC36', label: 'MNC36' },
+    { sym: 'IDX:I_GRADE', label: 'PEFINDO i-Grade' },
+    { sym: 'IDX:INVESTOR33', label: 'Investor33' },
+    { sym: 'IDX:INFOBANK15', label: 'Infobank15' },
+    { sym: 'IDX:ESGQKEHATI', label: 'ESG Quality 45 Kehati' },
   ],
   sharia: [
     { sym: 'IDX:ISSI', label: 'ISSI' },
     { sym: 'IDX:JII', label: 'JII' },
     { sym: 'IDX:JII70', label: 'JII70' },
+    { sym: 'IDX:IDXMESBUMN', label: 'MES BUMN 17' },
+  ],
+  sektoral: [
+    { sym: 'IDX:IDXENERGY', label: 'Energi' },
+    { sym: 'IDX:IDXBASIC', label: 'Barang Baku' },
+    { sym: 'IDX:IDXINDUST', label: 'Perindustrian' },
+    { sym: 'IDX:IDXNONCYC', label: 'Kons. Primer' },
+    { sym: 'IDX:IDXCYCLIC', label: 'Kons. Non-Primer' },
+    { sym: 'IDX:IDXHEALTH', label: 'Kesehatan' },
+    { sym: 'IDX:IDXFINANCE', label: 'Keuangan' },
+    { sym: 'IDX:IDXPROPERT', label: 'Properti' },
+    { sym: 'IDX:IDXINFRA', label: 'Infrastruktur' },
+    { sym: 'IDX:IDXTRANS', label: 'Transportasi' },
+    { sym: 'IDX:IDXTECHNO', label: 'Teknologi' },
   ],
 } as const
 
@@ -37,6 +65,7 @@ const GROUP_LABEL: Record<TvGroup, string> = {
   featured: 'Featured',
   cobranding: 'Co-Branding',
   sharia: 'Syariah',
+  sektoral: 'Sektoral',
 }
 
 type TvGroup = keyof typeof TV_GROUPS
@@ -185,7 +214,7 @@ export function ChartIndeks() {
               </button>
             ))}
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10, marginBottom: 10 }}>
+          <div className="tv-chips">
             {TV_GROUPS[grp].map(({ sym: s, label }) => {
               const aktif = sym === s
               return (
