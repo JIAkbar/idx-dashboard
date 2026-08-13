@@ -1338,3 +1338,7 @@
   .lantai .pi-tbl th.pi-c-tipe { width: 44px; }
   .lantai .pi-tbl th.pi-c-jml { width: 46px; }
 }
+/* #95 filter tipe bulletin */
+.lantai .blt-h{flex-wrap:wrap;row-gap:8px}
+.lantai .blt-tabs{margin-left:auto;margin-right:10px}
+@media (max-width:560px){.lantai .blt-tabs{margin-left:0;flex-basis:100%;order:3}}

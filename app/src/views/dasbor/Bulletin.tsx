@@ -74,18 +74,20 @@ export function Bulletin() {
   const { daftar, error } = useBulletinList()
   const peta = useIhsgMap()
   const [cari, setCari] = useState('')
+  const [tipe, setTipe] = useState<'Semua' | 'Harian' | 'Mingguan' | 'Bulanan'>('Semua')
 
   // Filter: kode emiten yang dibahas ATAU kode edisi (case-insensitive).
   const q = cari.trim().toUpperCase()
   // Nomor dihitung dari daftar penuh (index.json urut tanggal turun,
   // generate_index.py) SEBELUM difilter — nomor tiap edisi stabil.
   const baris = (daftar ?? []).map((e, i, arr) => ({ e, no: arr.length - i }))
-  const tampil = q
-    ? baris.filter(
-        ({ e }) =>
-          e.emiten.some((t) => t.toUpperCase().includes(q)) || e.kode.toUpperCase().includes(q),
-      )
-    : baris
+  const tampil = baris.filter(
+    ({ e }) =>
+      (tipe === 'Semua' || tipeEdisi(e.kode) === tipe) &&
+      (!q ||
+        e.emiten.some((t) => t.toUpperCase().includes(q)) ||
+        e.kode.toUpperCase().includes(q)),
+  )
 
   return (
     <div className="lantai">
@@ -97,6 +99,22 @@ export function Bulletin() {
       <div className="panel">
         <div className="panel-h blt-h">
           <span className="lbl">Edisi Terbit</span>
+          {daftar && daftar.length > 0 && (
+            <span className="tabs blt-tabs" role="tablist" aria-label="Filter tipe edisi">
+              {(['Semua', 'Harian', 'Mingguan', 'Bulanan'] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  role="tab"
+                  aria-selected={tipe === t}
+                  className={`tab${tipe === t ? ' on' : ''}`}
+                  onClick={() => setTipe(t)}
+                >
+                  {t}
+                </button>
+              ))}
+            </span>
+          )}
           {daftar && daftar.length > 0 && (
             <span className="blt-cari">
               <input
@@ -127,8 +145,17 @@ export function Bulletin() {
           {daftar && daftar.length === 0 && <p className="muted">Belum ada edisi terbit.</p>}
           {daftar && daftar.length > 0 && tampil.length === 0 && (
             <p className="muted">
-              Tidak ada edisi yang membahas &ldquo;{cari.trim()}&rdquo;.{' '}
-              <button type="button" className="blt-reset" onClick={() => setCari('')}>
+              {q
+                ? `Tidak ada edisi ${tipe === 'Semua' ? '' : tipe.toLowerCase() + ' '}yang membahas “${cari.trim()}”.`
+                : `Belum ada edisi ${tipe.toLowerCase()}.`}{' '}
+              <button
+                type="button"
+                className="blt-reset"
+                onClick={() => {
+                  setCari('')
+                  setTipe('Semua')
+                }}
+              >
                 Tampilkan semua
               </button>
             </p>
