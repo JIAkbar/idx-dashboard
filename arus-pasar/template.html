@@ -251,27 +251,43 @@
 <!--PAGES-->
 <script>
 const OHLC = /*OHLC*/{};
+// EMA: [periode, warna, tebal] — dipilih kontras di #0E1620 tanpa norak
+const EMAS=[[20,"#6FE3D9",1],[50,"#37B8AF",1],[60,"#7E97B8",1],[100,"#A583D6",1],[200,"#E0955A",1.5]];
 function gambarChart(id, tk, ema50, pivot){
   const cv=document.getElementById(id), x=cv.getContext('2d');
-  const bars=OHLC[tk].slice(-252);
-  const W=cv.width,H=cv.height,pad={t:14,r:136,b:14,l:6};
+  const all=OHLC[tk], bars=all.slice(-252);
+  const W=cv.width,H=cv.height,pad={t:30,r:136,b:14,l:6};
+  const volH=Math.round(H*.20), gap=10;
+  const pBot=H-pad.b-volH-gap; // batas bawah area harga; di bawahnya panel volume
+  // EMA dihitung dari riwayat penuh (~2 thn, pemanasan EMA200), digambar 252 bar
+  const seriEma=EMAS.map(([n])=>{const k=2/(n+1);let e=all[0].c;
+    return all.map(b=>e=e+(b.c-e)*k).slice(-bars.length);});
   const pvals=Object.values(pivot);
-  const lo=Math.min(...bars.map(b=>b.l),...pvals)*0.99,
-        hi=Math.max(...bars.map(b=>b.h),...pvals)*1.01;
+  const lo=Math.min(...bars.map(b=>b.l),...pvals,...seriEma.map(s=>Math.min(...s)))*0.99,
+        hi=Math.max(...bars.map(b=>b.h),...pvals,...seriEma.map(s=>Math.max(...s)))*1.01;
   const X=i=>pad.l+i*(W-pad.l-pad.r)/(bars.length-1),
-        Y=v=>pad.t+(hi-v)*(H-pad.t-pad.b)/(hi-lo);
-  x.font="15px Bahnschrift, Segoe UI";
+        Y=v=>pad.t+(hi-v)*(pBot-pad.t)/(hi-lo);
+  // legenda satu baris pojok kiri atas
+  x.font="13px Cascadia Code, Consolas, monospace";x.textBaseline="middle";
+  let lx=pad.l+2;
+  for(const [n,c,w] of EMAS){
+    x.strokeStyle=c;x.lineWidth=2.5;x.beginPath();x.moveTo(lx,11);x.lineTo(lx+13,11);x.stroke();
+    lx+=17;x.fillStyle="rgba(233,238,244,.72)";x.fillText("EMA "+n,lx,11);
+    lx+=x.measureText("EMA "+n).width+13;
+  }
+  x.textBaseline="alphabetic";x.font="15px Bahnschrift, Segoe UI";
   let yT=[];
   // label diurut nilai desc supaya tumpukan anti-tabrakan tetap berurut harga
   // (tanpa ini R1 bisa terdorong ke bawah P dan urutan kebaca acak)
   for(const [n,v] of Object.entries(pivot).sort((a,b)=>b[1]-a[1])){
-    x.strokeStyle="rgba(255,255,255,.28)";x.setLineDash([3,4]);x.beginPath();
+    x.strokeStyle="rgba(255,255,255,.28)";x.lineWidth=1;x.setLineDash([3,4]);x.beginPath();
     x.moveTo(pad.l,Y(v));x.lineTo(W-pad.r,Y(v));x.stroke();x.setLineDash([]);
     let yl=Y(v)+5; while(yT.some(u=>Math.abs(u-yl)<17)) yl+=17; yT.push(yl);
     x.fillStyle="rgba(255,255,255,.72)";
     x.fillText(n+" "+v.toLocaleString('id'),W-pad.r+14,yl);
   }
   const bw=Math.max(3,(W-pad.l-pad.r)/bars.length*.62);
+  x.lineWidth=1;
   bars.forEach((b,i)=>{
     const up=b.c>=b.o;
     x.strokeStyle=x.fillStyle=up?"#2FBF71":"#E4574C";
@@ -279,11 +295,38 @@ function gambarChart(id, tk, ema50, pivot){
     x.fillRect(X(i)-bw/2,Y(Math.max(b.o,b.c)),bw,
       Math.max(1.5,Y(Math.min(b.o,b.c))-Y(Math.max(b.o,b.c))));
   });
-  const all=OHLC[tk], k=2/51; let e=all[0].c;
-  const seri=all.map(b=>e=e+(b.c-e)*k).slice(-bars.length);
-  x.strokeStyle="#37B8AF";x.lineWidth=2;x.beginPath();
-  seri.forEach((v,i)=>i?x.lineTo(X(i),Y(v)):x.moveTo(X(0),Y(v)));
+  seriEma.forEach((seri,j)=>{
+    x.strokeStyle=EMAS[j][1];x.lineWidth=EMAS[j][2];x.beginPath();
+    seri.forEach((v,i)=>i?x.lineTo(X(i),Y(v)):x.moveTo(X(0),Y(v)));
+    x.stroke();
+  });
+  // ── panel volume: bar ikut arah candle (redup), lonjakan >1.75× MA20 penuh ──
+  const vAll=all.map(b=>b.v), maAll=[]; let s=0;
+  vAll.forEach((v,i)=>{s+=v; if(i>=20)s-=vAll[i-20]; maAll.push(i>=19?s/20:null);});
+  const vol=vAll.slice(-bars.length), vma=maAll.slice(-bars.length);
+  const maxV=Math.max(...vol,...vma.map(v=>v||0))*1.05||1;
+  const vY=v=>H-pad.b-v/maxV*volH;
+  bars.forEach((b,i)=>{
+    const up=b.c>=b.o, lonjak=vma[i]&&vol[i]>1.75*vma[i];
+    x.fillStyle=up?(lonjak?"#2FBF71":"rgba(47,191,113,.32)")
+                 :(lonjak?"#E4574C":"rgba(228,87,76,.32)");
+    x.fillRect(X(i)-bw/2,vY(vol[i]),bw,Math.max(1,H-pad.b-vY(vol[i])));
+  });
+  x.strokeStyle="rgba(233,238,244,.55)";x.lineWidth=1;x.beginPath();
+  vma.forEach((v,i)=>{if(v==null)return;
+    i&&vma[i-1]!=null?x.lineTo(X(i),vY(v)):x.moveTo(X(i),vY(v));});
   x.stroke();
+  // 1 tick sumbu volume, angka bulat gaya Indonesia (12,5 Jt)
+  const fmtVol=v=>{const f=n=>n.toLocaleString('id',{maximumFractionDigits:1});
+    return v>=1e9?f(v/1e9)+" M":v>=1e6?f(v/1e6)+" Jt":f(v/1e3)+" rb";};
+  const mag=Math.pow(10,Math.floor(Math.log10(maxV*.8)));
+  const tick=Math.floor(maxV*.8/mag)*mag;
+  x.strokeStyle="rgba(255,255,255,.14)";x.setLineDash([3,4]);x.beginPath();
+  x.moveTo(pad.l,vY(tick));x.lineTo(W-pad.r,vY(tick));x.stroke();x.setLineDash([]);
+  x.fillStyle="rgba(255,255,255,.45)";x.font="12px Cascadia Code, Consolas, monospace";
+  // ikut tumpukan anti-tabrakan label pivot (S3 bisa terdorong sampai zona volume)
+  let vl=vY(tick)+4; while(yT.some(u=>Math.abs(u-vl)<15)) vl+=15;
+  x.fillText(fmtVol(tick),W-pad.r+14,Math.min(vl,H-4));
 }
 /*DRAWCALLS*/
 window.__chartsDone = true;

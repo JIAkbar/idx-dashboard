@@ -1,7 +1,8 @@
 """Arus Pasar — pengambil data OHLC harian via yfinance.
 
-Baca daftar ticker dari edisi/<tanggal>.json, ambil ~1 tahun OHLC harian
-(ticker IDX = <KODE>.JK, IHSG = ^JKSE), tulis cache/ohlc-<tanggal>.json.
+Baca daftar ticker dari edisi/<tanggal>.json, ambil ~2 tahun OHLC harian
+(pemanasan EMA200; ticker IDX = <KODE>.JK, IHSG = ^JKSE), tulis
+cache/ohlc-<tanggal>.json.
 
 Konvensi cache (mengikuti ohlc-2026-08-10.json existing): bar terakhir =
 sesi terakhir SEBELUM tanggal edisi (edisi Senin 10 Agu memakai data
@@ -60,7 +61,7 @@ def main():
 
     ed = json.loads((AKAR / "edisi" / f"{tgl}.json").read_text(encoding="utf-8"))
     tickers = [e["ticker"] for e in ed["emiten"]]
-    mulai = tgl - timedelta(days=372)
+    mulai = tgl - timedelta(days=744)  # ~2 tahun: pemanasan EMA200
 
     data = {}
     for tk in tickers:

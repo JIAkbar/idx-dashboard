@@ -185,8 +185,8 @@ def halaman_emiten(em, sk, ed, ohlc, idx):
     </div>
     {statistik_hari(em, ohlc)}
     <div class="chartwrap">
-      <div class="cap">IDX · Harian · 1 Tahun · EMA50 &amp; Pivot Points</div>
-      <canvas id="ch{idx}" width="1360" height="300"></canvas>
+      <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
+      <canvas id="ch{idx}" width="1360" height="360"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -447,7 +447,8 @@ def main():
     pages.append(halaman_peringkat(ed, skor_map))
 
     tpl = (AKAR / "template.html").read_text(encoding="utf-8")
-    ohlc_kecil = {k: v[-260:] for k, v in ohlc.items() if k != "JKSE"}
+    # 2 thn penuh (pemanasan EMA200 di gambarChart); JKSE tak dipakai chart
+    ohlc_kecil = {k: v[-505:] for k, v in ohlc.items() if k != "JKSE"}
     html = (tpl.replace("{{JUDUL}}", f"Arus Pasar {ed['edisi']}")
                .replace("<!--PAGES-->", "\n".join(pages))
                .replace("/*OHLC*/{}", json.dumps(ohlc_kecil, separators=(",", ":")))
