@@ -121,6 +121,82 @@ def sentimen(em):
     return "side"
 
 
+# ── Halaman pembuka: level IHSG, sentimen terukur, kalimat angka ─────────────
+
+def kalimat_angka(subjek, c, sup, res, des=0, des_l=0):
+    """Headline otomatis: posisi close vs S/R terdekat (pembagi = level).
+
+    'IHSG 6.301,77 bertahan 0,7% di atas support 6.259' — dipilih sisi yang
+    jaraknya (dalam %) paling dekat. Angka di-bold untuk .hangka.
+    """
+    d_s = (c - sup) / sup * 100 if sup and sup < c else 9e9
+    d_r = (res - c) / res * 100 if res and res > c else 9e9
+    if d_s <= d_r:
+        return (f'{subjek} <b>{fmt(c, des)}</b> bertahan <b>{fmt(d_s, 1)}%</b> '
+                f'di atas support <b>{fmt(sup, des_l)}</b>')
+    return (f'{subjek} <b>{fmt(c, des)}</b> tertahan <b>{fmt(d_r, 1)}%</b> '
+            f'di bawah resistance <b>{fmt(res, des_l)}</b>')
+
+
+def level_ihsg(ohlc, override=None):
+    """S/R IHSG dihitung, bukan dikarang: pivot klasik bar terakhir
+    (P=(H+L+C)/3; R1=2P−L; S1=2P−H; R2=P+(H−L); S2=P−(H−L)) digabung swing
+    fractal (jendela ±2 bar, 120 bar terakhir). Kandidat per sisi diurut dari
+    close, dedupe <0,35%, ambil dua terdekat. Override per kunci lewat
+    edisi ihsg_view.level {s1,s2,r1,r2}."""
+    seri = ohlc["JKSE"]; b = seri[-1]; c = b["c"]
+    P = (b["h"] + b["l"] + b["c"]) / 3
+    kand_s = [2 * P - b["h"], P - (b["h"] - b["l"])]
+    kand_r = [2 * P - b["l"], P + (b["h"] - b["l"])]
+    win = seri[-122:]
+    for i in range(2, len(win) - 2):
+        seg = win[i - 2:i + 3]
+        if win[i]["h"] == max(x["h"] for x in seg): kand_r.append(win[i]["h"])
+        if win[i]["l"] == min(x["l"] for x in seg): kand_s.append(win[i]["l"])
+
+    def dua(kand, bawah):
+        pool = sorted((x for x in kand if (x < c) == bawah), reverse=bawah)
+        pilih = []
+        for x in pool:
+            if all(abs(x - y) / y > 0.0035 for y in pilih):
+                pilih.append(x)
+            if len(pilih) == 2:
+                break
+        return pilih + [None] * (2 - len(pilih))
+
+    s, r = dua(kand_s, True), dua(kand_r, False)
+    lv = {"s1": s[0], "s2": s[1], "r1": r[0], "r2": r[1], "p": P}
+    lv.update({k: v for k, v in (override or {}).items() if v})
+    return {k: round(v, 2) if v else v for k, v in lv.items()}
+
+
+def muat_ds(tgl):
+    """Baca ds_YYMMDD.json + hari bursa sebelumnya (urutan dari index.json)."""
+    akar = AKAR.parent / "data-idx" / "json"
+    stems = [d["stem"] for d in
+             json.loads((akar / "index.json").read_text(encoding="utf-8"))["dates"]]
+    stem = f"ds_{tgl[2:4]}{tgl[5:7]}{tgl[8:10]}"
+    i = stems.index(stem)
+    baca = lambda s: json.loads((akar / f"{s}.json").read_text(encoding="utf-8"))
+    return baca(stem), baca(stems[i - 1])
+
+
+def skor_sentimen(ds, ds_prev):
+    """Komponen TERUKUR (clamp 0–10; formula dicetak di halaman):
+    dunia  = 5 + 2,5 × rerata Δ% bursa dunia overnight (non-IDX)
+    rupiah = 5 − 5 × Δ% USD/IDR harian
+    asing  = 5 + 2,5 × (net foreign hari ini, Rp triliun)
+    skor   = rerata tiga komponen (bisa dioverride analis di edisi)."""
+    w = [x["d"] for x in ds["world"] if not x.get("is_idx")]
+    d_w = sum(w) / len(w)
+    d_u = (ds["usd_idr"] - ds_prev["usd_idr"]) / ds_prev["usd_idr"] * 100
+    nf_t = ds["nf_today_idr"] / 1000
+    kl = lambda v: max(0.0, min(10.0, v))
+    s_w, s_u, s_n = kl(5 + 2.5 * d_w), kl(5 - 5 * d_u), kl(5 + 2.5 * nf_t)
+    return {"dunia": (d_w, s_w), "rupiah": (d_u, s_u), "asing": (nf_t, s_n),
+            "skor": round((s_w + s_u + s_n) / 3, 1)}
+
+
 # ── Potongan HTML ────────────────────────────────────────────────────────────
 
 def band(ed, eyebrow="Tinjauan Teknikal & Arus Dana Harian"):
@@ -173,6 +249,130 @@ def statistik_hari(em, ohlc):
             f'garis lengkap di chart)</span></div>')
 
 
+def halaman_ihsg(ed, ohlc):
+    """Technical View IHSG: chart 6 bulan + level terhitung + blok naratif.
+
+    Mengembalikan (html, garis_chart) — None kalau edisi tak punya ihsg_view
+    (edisi lama tetap terakit)."""
+    iv = ed.get("ihsg_view")
+    if not iv:
+        return None, None
+    lv = level_ihsg(ohlc, iv.get("level"))
+    c = ohlc["JKSE"][-1]["c"]
+    judul = kalimat_angka("IHSG", c, lv["s1"], lv["r1"], des=2)
+    label = [("Support krusial", lv["s1"], "c-bull"), ("Support lanjutan", lv["s2"], "c-bull"),
+             ("Pivot harian", lv["p"], ""), ("Resistance rebound", lv["r1"], "c-bear"),
+             ("Resistance utama", lv["r2"], "c-bear")]
+    rows = "\n".join(
+        f'<div class="r"><span class="l">{n}</span><b class="{cls}">{fmt(v)}</b></div>'
+        for n, v, cls in label if v)
+    garis = {"R2": lv["r2"], "R1": lv["r1"], "P": lv["p"], "S1": lv["s1"], "S2": lv["s2"]}
+    garis = {k: v for k, v in garis.items() if v}
+    html = f'''
+<div class="page">
+  {band(ed, "Technical View IHSG")}
+  <div class="inner">
+    <div class="hangka">{judul}</div>
+    <div class="chartwrap">
+      <div class="cap">IHSG · Harian · 6 Bulan · EMA 20/50/60/100/200 · Pivot &amp; Swing</div>
+      <canvas id="chIHSG" width="1360" height="500"></canvas>
+    </div>
+    <div class="blok4">
+      <div class="b4"><h3 class="rule">Daily View</h3><p>{iv["naratif"]}</p></div>
+      <div class="b4"><h3 class="rule">Level Penting <span class="r">pivot &amp; swing — dihitung</span></h3>
+        <div class="lvl">{rows}</div></div>
+      <div class="b4"><h3 class="rule">Skenario Utama</h3><p>{iv["skenario"]}</p></div>
+      <div class="b4 ksmp"><h3 class="rule">Kesimpulan</h3><p>{iv["kesimpulan"]}</p></div>
+    </div>
+  </div>
+  {kaki(ed)}
+</div>'''
+    return html, garis
+
+
+def halaman_sentimen(ed, ds, ds_prev):
+    """Sentimen Global & Domestik: skor terukur + 4 poin analis + kesimpulan.
+    None kalau edisi tak punya field sentimen (halaman dilewati)."""
+    st = ed.get("sentimen")
+    if not st:
+        return None
+    k = skor_sentimen(ds, ds_prev)
+    skor = st.get("skor") or k["skor"]
+    cls = "c-bull" if skor >= 6.5 else "c-side" if skor >= 4.5 else "c-bear"
+    sel_bar = "".join(f'<i class="{"isi" if i < round(skor) else ""}"></i>' for i in range(10))
+    tanda = lambda v: ("+" if v >= 0 else "−") + fmt(abs(v), 2)
+    komp = [
+        ("Bursa Dunia Overnight", f'{tanda(k["dunia"][0])}%', k["dunia"][1],
+         f'rerata Δ% {len([1 for x in ds["world"] if not x.get("is_idx")])} indeks'),
+        ("Rupiah (USD/IDR)", f'{fmt(ds["usd_idr"])} ({tanda(k["rupiah"][0])}%)', k["rupiah"][1], "vs hari bursa sebelumnya"),
+        ("Arus Asing Reguler", f'{tanda(k["asing"][0])} T', k["asing"][1], ds["nf_today_status"]),
+    ]
+    sel_komp = "\n".join(
+        f'<div class="k"><div class="l">{n}</div><div class="v">{v}</div>'
+        f'<div class="s">{ket} → {fmt(s, 1)}/10</div></div>' for n, v, s, ket in komp)
+    poin = "\n".join(
+        f'<div class="poin"><div class="no">{i + 1}</div>'
+        f'<div><h4>{p["judul"]}</h4><p>{p["isi"]}</p></div></div>'
+        for i, p in enumerate(st["poin"]))
+    manual = "" if st.get("skor") is None else \
+        f' · nilai akhir dioverride analis: {fmt(skor, 1)} (model: {fmt(k["skor"], 1)})'
+    return f'''
+<div class="page">
+  {band(ed, "Sentimen Global &amp; Domestik")}
+  <div class="inner">
+    <div class="sent-head">
+      <div class="sent-skor {cls}"><span class="l">Skor Sentimen</span>{fmt(skor, 1)}<small>/10</small></div>
+      <div class="sent-bar {cls}">{sel_bar}</div>
+    </div>
+    <div class="sent-komp">
+      {sel_komp}
+    </div>
+    <div class="formula">Formula: skor = rerata(dunia, rupiah, asing) · dunia = 5 + 2,5 ×
+    rerata Δ% bursa dunia · rupiah = 5 − 5 × Δ% USD/IDR · asing = 5 + 2,5 × (NF hari, Rp T)
+    · tiap komponen dibatasi 0–10{manual}</div>
+    <h3 class="rule">Empat Hal yang Menggerakkan Pasar</h3>
+    <div class="poin-grid">
+      {poin}
+    </div>
+    <div class="sent-ksmp"><h3 class="rule">Kesimpulan</h3><p>{st["kesimpulan"]}</p></div>
+  </div>
+  {kaki(ed)}
+</div>'''
+
+
+def kartu_skenario(em):
+    """Scenario Map 3 kartu + Aturan Eksekusi. Field edisi `skenario` menang;
+    tanpa field itu, FALLBACK dirakit dari target/invalidation/pivot/strategi
+    supaya edisi lama tetap terakit tanpa edit."""
+    p = em["pivot"]; c = em["ohlc_hari"]["c"]
+    sk = {
+        "bull": {"konfirmasi": f'Close &gt;{fmt(p["R1"])} dengan volume di atas rerata 20 hari',
+                 "rute": f'{em["target"]} (R1 → R2 → R3)',
+                 "risiko": f'Gagal bertahan di atas {fmt(p["R1"])} = breakout palsu, kembali netral'},
+        "retest": {"konfirmasi": f'Bertahan di {fmt(p["S1"])}–{fmt(c)} lalu rebut kembali pivot {fmt(p["P"])}',
+                   "rute": f'Basis di atas {fmt(p["S1"])}; reclaim {fmt(p["P"])} lalu uji {fmt(p["R1"])}',
+                   "risiko": f'{em["invalidation"]} membatalkan skenario konstruktif'},
+        "invalid": {"konfirmasi": f'{em["invalidation"]} (S1 patah)',
+                    "rute": f'Terbuka jalan ke {fmt(p["S2"])}–{fmt(p["S3"])}',
+                    "risiko": 'Pantulan tanpa volume rawan jebakan; tunggu basis baru terbentuk'},
+        "aturan": em["strategi"],
+    }
+    for k, v in (em.get("skenario") or {}).items():
+        sk[k] = v
+
+    def krt(kunci, judul, cls):
+        d = sk[kunci]
+        return (f'<div class="kartu {cls}"><div class="kt">{judul}</div>'
+                f'<div class="kr"><span class="kl">Konfirmasi</span><span>{d["konfirmasi"]}</span></div>'
+                f'<div class="kr"><span class="kl">Rute</span><span>{d["rute"]}</span></div>'
+                f'<div class="kr"><span class="kl">Risiko</span><span>{d["risiko"]}</span></div></div>')
+
+    return (f'<div class="skn">{krt("bull", "Konfirmasi Bullish", "b")}'
+            f'{krt("retest", "Retest Konstruktif", "t")}'
+            f'{krt("invalid", "Risk-off / Invalidasi", "r")}'
+            f'<div class="aturan"><span class="kl">Aturan Eksekusi</span><span>{sk["aturan"]}</span></div></div>')
+
+
 def halaman_emiten(em, sk, ed, ohlc, idx):
     o = em["ohlc_hari"]; p = em["pivot"]
     chg_cls = "bull" if o["chg"] >= 0 else "bear"
@@ -191,6 +391,10 @@ def halaman_emiten(em, sk, ed, ohlc, idx):
         f'<i style="flex:{b}"></i><i class="sisa" style="flex:{mx - b:.1f}"></i>'
         for b, mx in ((sk["teknikal"], 35), (sk["flow"], 30), (sk["rr"], 20),
                       (sk["lik"], 10), (sk["ihsg"], 5)))
+    c = o["c"]
+    sup_dekat = max((v for v in p.values() if v < c), default=None)
+    res_dekat = min((v for v in p.values() if v > c), default=None)
+    headline = kalimat_angka(f'Harga {em["ticker"]}', c, sup_dekat, res_dekat)
     return f'''
 <div class="page s-{sentimen(em)}">
   <span class="senti-edge"></span>
@@ -201,6 +405,7 @@ def halaman_emiten(em, sk, ed, ohlc, idx):
       <div class="px"><span class="h">{fmt(o["c"])}</span><br>
         <span class="c {chg_cls}">{tanda}{fmt(abs(o["chg"]))} ({tanda}{fmt(abs(o["pct"]),2)}%)</span></div>
     </div>
+    <div class="hangka em">{headline}</div>
     {statistik_hari(em, ohlc)}
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
@@ -240,12 +445,7 @@ def halaman_emiten(em, sk, ed, ohlc, idx):
           <div class="k sup">Support</div><div class="v">{sup}{ragu}</div>
           <div class="k res">Resistance</div><div class="v">{res}</div>
         </div>
-        <div class="strategi">{em["strategi"]}</div>
-        <div class="invtar">
-          <span class="inv"><span class="l">Invalidation</span><b>{em["invalidation"]}</b></span>
-          <span class="tar"><span class="l">Target</span><b>{em["target"]}</b></span>
-        </div>
-        <p class="konsek">{em["konsekuensi"]}</p>
+        {kartu_skenario(em)}
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">{sk["total"]:.0f}<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow">{segmen}</div>
@@ -489,8 +689,17 @@ def main():
                                   "ihsg": i, "korr": korr, "total": total,
                                   "risiko": tingkat_risiko(total)}
 
-    pages = [halaman_sampul(ed, skor_map), halaman_ringkasan(ed, skor_map)]
+    pages = [halaman_sampul(ed, skor_map)]
     draw = []
+    # dua halaman pembuka baru — keduanya opsional (edisi lama tetap terakit)
+    hal_ihsg, garis_ihsg = halaman_ihsg(ed, ohlc)
+    if hal_ihsg:
+        pages.append(hal_ihsg)
+        draw.append(f'gambarChart("chIHSG","JKSE",0,{json.dumps(garis_ihsg)},126);')
+    if ed.get("sentimen"):
+        ds, ds_prev = muat_ds(tgl)
+        pages.append(halaman_sentimen(ed, ds, ds_prev))
+    pages.append(halaman_ringkasan(ed, skor_map))
     for idx, em in enumerate(ed["emiten"]):
         pages.append(halaman_emiten(em, skor_map[em["ticker"]], ed, ohlc, idx))
         draw.append(f'gambarChart("ch{idx}","{em["ticker"]}",{em["ema50"]},'
@@ -499,8 +708,9 @@ def main():
     pages.append(halaman_kolofon(ed))
 
     tpl = (AKAR / "template.html").read_text(encoding="utf-8")
-    # 2 thn penuh (pemanasan EMA200 di gambarChart); JKSE tak dipakai chart
-    ohlc_kecil = {k: v[-505:] for k, v in ohlc.items() if k != "JKSE"}
+    # 2 thn penuh (pemanasan EMA200 di gambarChart); JKSE dipakai chart IHSG
+    ohlc_kecil = {k: v[-505:] for k, v in ohlc.items()
+                  if k != "JKSE" or hal_ihsg}
     html = (tpl.replace("{{JUDUL}}", f"Arus Pasar {ed['edisi']}")
                .replace("<!--PAGES-->", "\n".join(pages))
                .replace("/*OHLC*/{}", json.dumps(ohlc_kecil, separators=(",", ":")))
