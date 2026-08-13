@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { BS_AVAIL, BS_DATA } from '../../lib/dasbor/brokerSummaryData'
 import { useBrokerHarian, labelTanggal } from '../../lib/dasbor/brokerHarian'
 import { dateLabel, fmtB, fmtLot } from '../../lib/dasbor/brokerSummaryFormat'
@@ -7,7 +7,7 @@ import { Quadrant } from './broker-summary/Quadrant'
 import { Nego } from './broker-summary/Nego'
 import { Flow } from './broker-summary/Flow'
 import { IkonMenu, IKON_GRAFIK_BATANG, IKON_ULANG, IKON_OMBAK, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
-import { Dropdown } from '../../components/dasbor/Dropdown'
+import { DatePicker } from '../../components/dasbor/DatePicker'
 
 type Tab = 'inventory' | 'quadrant' | 'nego' | 'flow'
 
@@ -25,17 +25,28 @@ const SAMPLE_FIRST = BS_AVAIL[0]
 const SAMPLE_LAST = BS_AVAIL[BS_AVAIL.length - 1]
 const NEGO_ROWS = BS_DATA.nego[SAMPLE_LAST] ?? []
 
-/** Preset mode Rentang: mundur hari kalender dari tanggal berdata terakhir —
- * pilihRentang otomatis snap ke hari berdata di dalamnya. */
-const PRESET_BROKER: { id: 'w1' | 'b1'; label: string; hari: number }[] = [
+/** Preset mode Rentang (#79C — data 750 hari bursa, rentang tak dibatasi):
+ * mundur hari kalender dari tanggal berdata terakhir; YTD = 1 Januari tahun
+ * berjalan. pilihRentang otomatis snap ke hari berdata di dalamnya. */
+type PresetId = 'w1' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1'
+const PRESET_BROKER: { id: PresetId; label: string; hari: number }[] = [
   { id: 'w1', label: '1 Minggu', hari: 7 },
   { id: 'b1', label: '1 Bulan', hari: 30 },
+  { id: 'b3', label: '3 Bulan', hari: 91 },
+  { id: 'b6', label: '6 Bulan', hari: 182 },
+  { id: 'ytd', label: 'YTD', hari: 0 },
+  { id: 'y1', label: '1 Tahun', hari: 365 },
 ]
 
 function mundurIso(iso: string, hari: number): string {
   const d = new Date(`${iso}T12:00:00`)
   d.setDate(d.getDate() - hari)
   return d.toISOString().slice(0, 10)
+}
+
+function mulaiPreset(id: PresetId, akhir: string): string {
+  if (id === 'ytd') return `${akhir.slice(0, 4)}-01-01`
+  return mundurIso(akhir, PRESET_BROKER.find((x) => x.id === id)!.hari)
 }
 
 /**
@@ -48,18 +59,39 @@ function mundurIso(iso: string, hari: number): string {
  */
 export function BrokerSummary() {
   const [tab, setTab] = useState<Tab>('inventory')
-  const { tanggalTersedia, tanggalAktif, rows, rentang, pilihTanggal, pilihRentang, loading, error } = useBrokerHarian()
+  const { tanggalTersedia, tanggalAktif, rows, rentang, pilihTanggal, pilihRentang, loading, error, selesai, total } = useBrokerHarian()
+  const setTersedia = useMemo(() => new Set(tanggalTersedia), [tanggalTersedia])
 
-  // ─── Mode Rentang (#75): agregat SUM 88 broker sepanjang hari-berdata ──
+  // ─── Mode Rentang (#75/#79C): agregat SUM 88 broker sepanjang hari-berdata.
+  // Preset ATAU rentang bebas (dua DatePicker) — preset cuma jalan pintas
+  // mengisi pasangan mulai/akhir yang sama-sama memanggil pilihRentang. ──
   const [modeRentang, setModeRentang] = useState(false)
-  const [preset, setPreset] = useState<'w1' | 'b1'>('w1')
+  const [preset, setPreset] = useState<PresetId | null>('w1')
+  const [mulaiIso, setMulaiIso] = useState('')
+  const [akhirIso, setAkhirIso] = useState('')
 
-  function keRentang(p: 'w1' | 'b1') {
+  function keRentang(p: PresetId) {
     const akhir = tanggalTersedia[tanggalTersedia.length - 1]
     if (!akhir) return
     setModeRentang(true)
     setPreset(p)
-    pilihRentang(mundurIso(akhir, PRESET_BROKER.find((x) => x.id === p)!.hari), akhir)
+    const mulai = mulaiPreset(p, akhir)
+    setMulaiIso(mulai)
+    setAkhirIso(akhir)
+    pilihRentang(mulai, akhir)
+  }
+
+  /** Rentang bebas: ganti salah satu ujung — preset dilepas, langsung dimuat. */
+  function keRentangBebas(mulai: string, akhir: string) {
+    if (!mulai || !akhir) {
+      setMulaiIso(mulai)
+      setAkhirIso(akhir)
+      return
+    }
+    setPreset(null)
+    setMulaiIso(mulai)
+    setAkhirIso(akhir)
+    pilihRentang(mulai, akhir)
   }
 
   function keHarian() {
@@ -87,12 +119,12 @@ export function BrokerSummary() {
         <div className="vcard">
           <span className="lbl">Total Broker Aktif</span>
           <span className="v-num num">{rows ? activeBroker : '—'}</span>
-          <span className="v-note">{rows ? `dari ${brokers.length} terdaftar` : 'memuat...'}</span>
+          <span className="v-note">{rows ? `dari ${brokers.length} terdaftar` : 'memuat…'}</span>
         </div>
         <div className="vcard">
           <span className="lbl">Total Nilai Transaksi</span>
           <span className="v-num num">{rows ? `Rp ${fmtB(totalNilai)}` : '—'}</span>
-          <span className="v-note">{rows ? fmtLot(totalVol) : 'memuat...'}</span>
+          <span className="v-note">{rows ? fmtLot(totalVol) : 'memuat…'}</span>
         </div>
         <div className="vcard">
           <span className="lbl">Total Frekuensi</span>
@@ -128,30 +160,38 @@ export function BrokerSummary() {
           </div>
           {harian ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-              {/* Toggle mode + pemilih: Harian → Dropdown tanggal; Rentang →
-                  preset agregat (snap ke hari berdata, lihat pilihRentang). */}
+              {/* Toggle mode + pemilih: Harian → DatePicker (hanya hari
+                  ber-data); Rentang → preset + rentang bebas dua DatePicker
+                  (snap ke hari berdata, lihat pilihRentang). */}
               <div className="tabs" role="tablist" aria-label="Mode data broker">
                 <button type="button" role="tab" aria-selected={!modeRentang} className={'tab' + (modeRentang ? '' : ' on')} onClick={keHarian}>Harian</button>
-                <button type="button" role="tab" aria-selected={modeRentang} className={'tab' + (modeRentang ? ' on' : '')} onClick={() => keRentang(preset)}>Rentang</button>
+                <button type="button" role="tab" aria-selected={modeRentang} className={'tab' + (modeRentang ? ' on' : '')} onClick={() => keRentang(preset ?? 'w1')}>Rentang</button>
               </div>
               {modeRentang ? (
-                PRESET_BROKER.map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    className={`chip-t${preset === p.id && rentang ? ' on' : ''}`}
-                    onClick={() => keRentang(p.id)}
-                  >
-                    {p.label}
-                  </button>
-                ))
+                <>
+                  {PRESET_BROKER.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      className={`chip-t${preset === p.id ? ' on' : ''}`}
+                      onClick={() => keRentang(p.id)}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                  {/* Rentang bebas — dua DatePicker mulai/akhir, hanya hari
+                      ber-data yang bisa dipilih; urutan terbalik otomatis
+                      ditukar di pilihRentang. */}
+                  <DatePicker value={mulaiIso} onChange={(iso) => keRentangBebas(iso, akhirIso)} tersedia={setTersedia} ariaLabel="Tanggal mulai rentang" />
+                  <span className="lbl" aria-hidden="true">s.d.</span>
+                  <DatePicker value={akhirIso} onChange={(iso) => keRentangBebas(mulaiIso, iso)} tersedia={setTersedia} ariaLabel="Tanggal akhir rentang" />
+                </>
               ) : (
-                <Dropdown
-                  opsi={[...tanggalTersedia].reverse().map((iso) => ({ nilai: iso, label: labelTanggal(iso) }))}
-                  nilai={tanggalAktif ?? ''}
-                  placeholder="Pilih tanggal"
+                <DatePicker
+                  value={tanggalAktif ?? ''}
+                  onChange={pilihTanggal}
+                  tersedia={setTersedia}
                   ariaLabel="Pilih tanggal data broker"
-                  onGanti={pilihTanggal}
                 />
               )}
             </div>
@@ -162,8 +202,8 @@ export function BrokerSummary() {
         <div className="panel-b">
           {harian && loading && (
             <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-              <p style={{ fontSize: 28 }}>⏳</p>
-              <p className="lbl">Memuat data broker...</p>
+              <p><IkonMenu d={IKON_ULANG} size={26} /></p>
+              <p className="lbl">{total > 1 ? `Memuat ${selesai}/${total} hari bursa…` : 'Memuat data broker…'}</p>
             </div>
           )}
           {harian && !loading && (error || brokers.length === 0) && (

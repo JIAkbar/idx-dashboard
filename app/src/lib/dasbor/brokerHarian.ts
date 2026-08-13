@@ -112,14 +112,23 @@ export function useBrokerHarian() {
   const [rentang, setRentang] = useState<BrokerRentangAktif | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  // Progres mode rentang (#79C): rentang panjang (ratusan bs_*.json) dimuat
+  // batch — UI menampilkan "Memuat n/N hari" alih-alih membeku diam.
+  const [selesai, setSelesai] = useState(0)
+  const [total, setTotal] = useState(0)
   // Daftar tanggal juga disimpan di ref supaya pilihRentang (useCallback tanpa
   // dependensi) bisa membacanya tanpa side-effect di dalam updater state.
   const tersediaRef = useRef<string[]>([])
+  // Penanda request terakhir — pindah pilihan saat fetch rentang masih jalan
+  // membuat hasil basi dibuang, bukan menimpa state pilihan baru.
+  const reqRef = useRef(0)
 
   const pilihTanggal = useCallback((iso: string) => {
+    reqRef.current += 1
     setTanggalAktif(iso)
     setRentang(null)
     setError(null)
+    setTotal(0)
 
     const cached = cache.get(iso)
     if (cached) {
@@ -139,29 +148,44 @@ export function useBrokerHarian() {
   }, [])
 
   /**
-   * Mode rentang (#75): fetch semua bs_YYMMDD.json hari-berdata di [mulai,
-   * akhir] (paralel, reuse cache) lalu agregat SUM per broker. `mulai` boleh
-   * tanggal kalender (target preset) — otomatis snap ke hari berdata.
+   * Mode rentang (#75, diperluas #79C — rentang TIDAK dibatasi, data 750 hari
+   * bursa): fetch bs_YYMMDD.json hari-berdata di [mulai, akhir] per batch
+   * 16 request (bukan Promise.all ratusan sekaligus) sambil melaporkan
+   * progres, lalu agregat SUM per broker. `mulai`/`akhir` boleh tanggal
+   * kalender (target preset) — otomatis snap ke hari berdata. Cache modul
+   * membuat rentang yang beririsan tidak fetch ulang.
    */
   const pilihRentang = useCallback((mulai: string, akhir: string) => {
-    const dalam = tersediaRef.current.filter((iso) => iso >= mulai && iso <= akhir)
+    const [a, b] = mulai <= akhir ? [mulai, akhir] : [akhir, mulai]
+    const dalam = tersediaRef.current.filter((iso) => iso >= a && iso <= b)
     if (dalam.length === 0) {
       setError('Tidak ada hari berdata di rentang ini')
       return
     }
+    const req = ++reqRef.current
     setError(null)
     setLoading(true)
-    Promise.all(dalam.map(fetchBrokerRows))
-      .then((perHari) => {
-        setRows(agregatBrokerRows(perHari))
-        setRentang({ mulai: dalam[0], akhir: dalam[dalam.length - 1], nHari: dalam.length })
-        setTanggalAktif(dalam[dalam.length - 1])
-      })
-      .catch((e: unknown) => {
-        setError(e instanceof Error ? e.message : 'Gagal memuat data broker')
-        setRows(null)
-      })
-      .finally(() => setLoading(false))
+    setSelesai(0)
+    setTotal(dalam.length)
+    ;(async () => {
+      const BATCH = 16
+      const perHari: BrokerRow[][] = []
+      for (let i = 0; i < dalam.length; i += BATCH) {
+        const bagian = await Promise.all(dalam.slice(i, i + BATCH).map(fetchBrokerRows))
+        if (reqRef.current !== req) return
+        perHari.push(...bagian)
+        setSelesai(perHari.length)
+      }
+      setRows(agregatBrokerRows(perHari))
+      setRentang({ mulai: dalam[0], akhir: dalam[dalam.length - 1], nHari: dalam.length })
+      setTanggalAktif(dalam[dalam.length - 1])
+      setLoading(false)
+    })().catch((e: unknown) => {
+      if (reqRef.current !== req) return
+      setError(e instanceof Error ? e.message : 'Gagal memuat data broker')
+      setRows(null)
+      setLoading(false)
+    })
   }, [])
 
   useEffect(() => {
@@ -192,5 +216,5 @@ export function useBrokerHarian() {
     }
   }, [pilihTanggal])
 
-  return { tanggalTersedia, tanggalAktif, rows, rentang, pilihTanggal, pilihRentang, loading, error }
+  return { tanggalTersedia, tanggalAktif, rows, rentang, pilihTanggal, pilihRentang, loading, error, selesai, total }
 }

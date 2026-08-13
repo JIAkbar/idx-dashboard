@@ -25,7 +25,14 @@ function urai(iso: string): { t: number; b: number; d: number } | null {
  * Nilai masuk/keluar tetap string ISO `YYYY-MM-DD` — kompatibel penuh dengan
  * pemakaian input date sebelumnya.
  */
-export function DatePicker({ value, onChange }: { value: string; onChange: (iso: string) => void }) {
+export function DatePicker({ value, onChange, tersedia, ariaLabel }: {
+  value: string
+  onChange: (iso: string) => void
+  /** Kalau diisi: hanya tanggal di set ini yang bisa dipilih (hari ber-data),
+   *  sisanya disabled — dipakai pemilih tanggal /broker-summary (#79C). */
+  tersedia?: ReadonlySet<string>
+  ariaLabel?: string
+}) {
   const [open, setOpen] = useState(false)
   const kini = new Date()
   const vAwal = urai(value)
@@ -87,7 +94,7 @@ export function DatePicker({ value, onChange }: { value: string; onChange: (iso:
 
   return (
     <div className={`dd dpk${open ? ' open' : ''}`} ref={ref}>
-      <button type="button" className="inp dpk-btn" aria-haspopup="dialog" aria-expanded={open} onClick={buka}>
+      <button type="button" className="inp dpk-btn" aria-haspopup="dialog" aria-expanded={open} aria-label={ariaLabel} onClick={buka}>
         <IkonMenu d={IKON_KALENDER} size={14} />
         <span>{labelNilai}</span>
       </button>
@@ -116,6 +123,8 @@ export function DatePicker({ value, onChange }: { value: string; onChange: (iso:
                 key={iso}
                 type="button"
                 className={cls}
+                disabled={tersedia ? !tersedia.has(iso) : false}
+                title={tersedia && !tersedia.has(iso) ? 'Tidak ada data pada tanggal ini' : undefined}
                 onClick={() => { onChange(iso); setOpen(false) }}
               >
                 {d}

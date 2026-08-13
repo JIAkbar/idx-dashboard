@@ -39,3 +39,6 @@
 .lantai .dpk-hari.now { box-shadow: inset 0 0 0 1px var(--amber); }
 .lantai .dpk-hari.sel { background: var(--cal-active-bg); color: var(--cal-active-txt); font-weight: 700; }
 .lantai .dpk-hari.sel:hover { background: var(--cal-active-bg); color: var(--cal-active-txt); }
+/* Tanggal tanpa data (prop `tersedia`, #79C) — redup, tak merespons hover. */
+.lantai .dpk-hari:disabled { opacity: .32; cursor: default; }
+.lantai .dpk-hari:disabled:hover { background: none; color: var(--text2); }
