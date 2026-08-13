@@ -342,6 +342,20 @@ export function AdminHome() {
     }
   }, [tanggal, muat])
 
+  // Anti-basi (#101): tiap kali modal "Tambah Emiten" dibuka, muat ulang
+  // daftar unggahan tanggal ini — supaya chip duplikat & badge saran
+  // selalu berdasar kondisi server terkini, termasuk unggahan admin lain.
+  useEffect(() => {
+    if (!formBuka) return
+    let batal = false
+    daftarScreenshot(tanggal)
+      .then((paths) => !batal && setSudah(rangkumBerkas(paths)))
+      .catch(() => {})
+    return () => {
+      batal = true
+    }
+  }, [formBuka, tanggal])
+
   // Jumlah emiten per tanggal utk kartu Kotak Masuk.
   // ponytail: satu request list per tanggal (jumlah folder masih kecil);
   // ganti agregat sisi server kalau tanggalnya sudah puluhan.
@@ -715,6 +729,7 @@ export function AdminHome() {
                 onChange={setTicker}
                 onSelect={setTicker}
                 placeholder="Ketik kode / nama emiten…"
+                tandai={new Set(sudah.map((b) => b.ticker))}
               />
               {existingBaris && (
                 <p className="af-dup">
