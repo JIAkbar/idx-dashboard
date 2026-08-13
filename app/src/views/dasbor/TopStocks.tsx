@@ -1,7 +1,8 @@
-import type { CSSProperties } from 'react'
+import { useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { Kalender } from '../../components/dasbor/Kalender'
-import { useDataHarian } from '../../lib/dasbor/dataHarian'
+import { Kalender, fmtTanggalPendek } from '../../components/dasbor/Kalender'
+import { useDataHarian, useDataRentang } from '../../lib/dasbor/dataHarian'
+import type { RentangTanggal } from '../../lib/dasbor/periode'
 import { useUrut } from '../../lib/dasbor/useUrut'
 import { fN, fp } from '../../lib/dasbor/format'
 import type { StockContribRow, StockMoveRow } from '../../lib/dasbor/dataHarian'
@@ -48,6 +49,39 @@ function thSort<T extends object>(s: UrutState<T>, k: keyof T, label: string, ka
 export function TopStocks() {
   const { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error } = useDataHarian()
 
+  // ─── Mode RENTANG (#75) — JUJUR: daftar top-10 adalah snapshot per-hari
+  // (IDX tidak menerbitkan top-10 agregat lintas hari), jadi yang diagregat
+  // hanya ringkasan pasar (vol/val/frek harian dari tiap berkas); daftar
+  // top-10 tetap tampil untuk tanggal AKHIR rentang, dilabeli banner jelas. ──
+  const [rentang, setRentang] = useState<RentangTanggal | null>(null)
+  function gantiRentang(r: RentangTanggal | null) {
+    setRentang(r)
+    if (r) pilihTanggal(r.akhir)
+  }
+  const rentangTanggal = useMemo(
+    () => (rentang ? tanggalTersedia.filter((t) => t.date_iso >= rentang.mulai && t.date_iso <= rentang.akhir) : []),
+    [rentang, tanggalTersedia],
+  )
+  const { days, loading: loadingR, selesai, total, error: errorR } = useDataRentang(rentangTanggal)
+  // Agregat ringkasan pasar: satuan mengikuti DataHarian (vol juta lembar,
+  // val miliar IDR, freq ribu transaksi). Hari tanpa ruas ringkasan dilewati
+  // dan dihitung jujur lewat `n`.
+  const agg = useMemo(() => {
+    if (!days) return null
+    let vol = 0; let val = 0; let frek = 0; let n = 0
+    for (const d of days) {
+      if (d.vol_today == null && d.val_idr_today == null && d.freq_today == null) continue
+      vol += d.vol_today ?? 0
+      val += d.val_idr_today ?? 0
+      frek += d.freq_today ?? 0
+      n += 1
+    }
+    return { vol, val, frek, n }
+  }, [days])
+  const ihsgMulai = rentang ? tanggalTersedia.find((t) => t.date_iso === rentang.mulai)?.ihsg : undefined
+  const ihsgAkhir = rentang ? tanggalTersedia.find((t) => t.date_iso === rentang.akhir)?.ihsg : undefined
+  const ihsgPctRentang = ihsgMulai && ihsgAkhir ? (ihsgAkhir / ihsgMulai - 1) * 100 : null
+
   // Hooks dipanggil tanpa syarat sebelum return dini loading/error (Rules of
   // Hooks) — pola sama dengan SektorIndeks.tsx.
   const gainersS = useUrut<StockMoveRow>(hari?.gainers ?? [], 'p')
@@ -60,7 +94,7 @@ export function TopStocks() {
   if (loading && !hari) {
     return (
       <div className="lantai">
-        <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
+        <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p style={{ fontSize: 28 }}>⏳</p>
           <p className="lbl">Memuat data...</p>
@@ -72,7 +106,7 @@ export function TopStocks() {
   if (error || !hari) {
     return (
       <div className="lantai">
-        <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
+        <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p className="lbl">Data tidak tersedia untuk tanggal ini</p>
@@ -92,9 +126,62 @@ export function TopStocks() {
     </tr>
   )
 
+  const labelRentang = rentang ? `${fmtTanggalPendek(rentang.mulai)} – ${fmtTanggalPendek(rentang.akhir)}` : null
+
   return (
     <div className="lantai">
-      <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
+      <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
+
+      {rentang && (
+        <div className="panel">
+          <div className="panel-h">
+            <span className="lbl">Agregat Pasar — {labelRentang} ({rentangTanggal.length} hari bursa)</span>
+          </div>
+          <div className="panel-b">
+            {loadingR && <p className="lbl" style={{ textAlign: 'center', padding: '14px 0' }}>Memuat {selesai}/{total} hari...</p>}
+            {errorR && (
+              <div className="chip dn" style={{ display: 'flex', whiteSpace: 'normal', height: 'auto', lineHeight: 1.5 }}>
+                <span><IkonMenu d={IKON_PERINGATAN} size={14} /> {errorR} — pilih rentang lebih pendek untuk agregat pasar.</span>
+              </div>
+            )}
+            {agg && !loadingR && (
+              <div className="grid3">
+                <div className="vcard">
+                  <span className="lbl">IHSG Rentang</span>
+                  <span className={`v-num num ${(ihsgPctRentang ?? 0) >= 0 ? 'up' : 'dn'}`}>
+                    {ihsgPctRentang === null ? '—' : fp(ihsgPctRentang)}
+                  </span>
+                  <span className="v-note">close {labelRentang}</span>
+                </div>
+                <div className="vcard">
+                  <span className="lbl">Total Volume</span>
+                  <span className="v-num num">{fN(agg.vol / 1e3, 1)} M lembar</span>
+                  <span className="v-note">rata-rata {fN(agg.n ? agg.vol / agg.n / 1e3 : 0, 1)} M/hari · {agg.n} hari berdata</span>
+                </div>
+                <div className="vcard">
+                  <span className="lbl">Total Nilai Transaksi</span>
+                  <span className="v-num num">Rp {fN(agg.val / 1e3, 1)} T</span>
+                  <span className="v-note">rata-rata Rp {fN(agg.n ? agg.val / agg.n / 1e3 : 0, 1)} T/hari</span>
+                </div>
+                <div className="vcard">
+                  <span className="lbl">Total Frekuensi</span>
+                  <span className="v-num num">{fN(agg.frek / 1e3, 1)} jt</span>
+                  <span className="v-note">rata-rata {fN(agg.n ? agg.frek / agg.n / 1e3 : 0, 2)} jt/hari</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {rentang && (
+        <div className="chip warn" style={{ display: 'flex', whiteSpace: 'normal', height: 'auto', lineHeight: 1.5 }}>
+          <span>
+            Daftar Top di bawah adalah <strong>snapshot per-hari</strong> (tidak bisa diagregat lintas hari) —
+            menampilkan tanggal akhir rentang, <strong>{hari.date_id}</strong>. Pilih mode Hari untuk menelusuri harian.
+          </span>
+        </div>
+      )}
 
       <div className="panel">
         <div className="panel-h"><span className="lbl">Top 10 Market Capitalization (Triliun IDR)</span></div>
