@@ -1104,3 +1104,14 @@
    Menang atas override .rk-row media query lewat specificity (.sek). */
 .lantai .rk-row.sek{grid-template-columns:minmax(96px,130px) 62px 1fr 62px}
 .lantai .rk-row.sek .rk-nv{font-family:var(--mono);font-size:11px;color:var(--text2);text-align:right}
+
+/* ===== #78 BULLETIN — tabel edisi Arus Pasar (Bulletin.tsx) =====
+   Kolom No (mono redup) + IHSG hari edisi (numpang .num/.up/.dn yang sudah
+   ada), tombol unduh ramping: pill hairline var(--line2), ikon panah-tray,
+   hover amber halus. Scroll-x inline dalam panel (.blt-wrap) supaya di
+   mobile tabelnya yang geser, bukan halamannya. */
+.lantai .blt-wrap{overflow-x:auto}
+.lantai .blt-wrap .tbl{width:100%;min-width:680px}
+.lantai .blt-no{font-family:var(--mono);font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums}
+.lantai .blt-dl{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.07em;color:var(--text2);border:1px solid var(--line2);border-radius:99px;padding:4px 12px 4px 10px;text-decoration:none;white-space:nowrap;font-variant-numeric:tabular-nums;transition:color .12s,border-color .12s,background .12s}
+.lantai .blt-dl:hover{color:var(--amber);border-color:var(--amber);background:var(--amber-dim)}
