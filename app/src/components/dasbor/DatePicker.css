@@ -45,3 +45,19 @@
 /* Tanggal tanpa data (prop `tersedia`, #79C) — redup, tak merespons hover. */
 .lantai .dpk-hari:disabled { opacity: .32; cursor: default; }
 .lantai .dpk-hari:disabled:hover { background: none; color: var(--text2); }
+
+/* ─── Stepper ‹ › mengapit field (#97) ───
+   .dpk-wrap flex + .dd flex:1 menjaga perilaku lebar lama: di .field modal
+   admin field tetap full-width, di header flex-wrap tetap seukuran konten. */
+.lantai .dpk-wrap { display: flex; align-items: center; gap: 4px; }
+.lantai .dpk-wrap .dd { flex: 1; min-width: 0; }
+.lantai .dpk-step {
+  width: 26px; height: 32px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: none; border: 1px solid var(--line2); border-radius: 4px;
+  color: var(--text2); cursor: pointer;
+}
+.lantai .dpk-step svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; }
+.lantai .dpk-step:hover { border-color: var(--amber); color: var(--amber); }
+.lantai .dpk-step:disabled { opacity: .32; cursor: default; }
+.lantai .dpk-step:disabled:hover { border-color: var(--line2); color: var(--text2); }

@@ -3,6 +3,7 @@ import type { TanggalIndex } from '../../lib/dasbor/dataHarian'
 import { PRESET_RENTANG, rentangPreset, type RentangTanggal } from '../../lib/dasbor/periode'
 import { IkonMenu, IKON_PERINGATAN, IKON_CENTANG } from './IkonMenu'
 import { Dropdown } from './Dropdown'
+import { useSwipe } from './useSwipe'
 
 interface KalenderProps {
   /**
@@ -389,6 +390,20 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
     onPilih(d.date_iso)
   }
 
+  // ─── Swipe horizontal (#97, mobile) ──────────────────────
+  // Strip hari: swipe kiri = hari bursa berikutnya, kanan = sebelumnya
+  // (mode Rentang tidak diubah — swipe diabaikan). Grid bulan: ganti bulan.
+  const swipeHari = useSwipe((arah) => {
+    if (modeRentang) return
+    const t = arah === 1 ? hariSesudah : hariSebelum
+    if (t) gotoHari(t)
+  })
+  const swipeBulan = useSwipe((arah) => {
+    const d = new Date(calYear, calMonth - 1 + arah, 1)
+    setCalYear(d.getFullYear())
+    setCalMonth(d.getMonth() + 1)
+  })
+
   // ─── Jam & sesi bursa — satu sumber useJamBursa (dipakai juga LoginModal) ──
   const { sessions, START, END, sesi: sesiTuple, buka, cursorPct, jam: jamDigital, labelTutup } = useJamBursa()
   const sesiAktif = sesiTuple?.[0] ?? 'Bursa Tutup'
@@ -453,7 +468,7 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
   )
 
   const calGrid = (
-    <div className="cal-grid">
+    <div className="cal-grid" {...swipeBulan}>
       {DOW_LABEL.map((d) => (
         <div key={d} className="cg hdr">{d}</div>
       ))}
@@ -576,7 +591,21 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
               ? <b className="num">{jamDigital}</b>
               : <span style={{ whiteSpace: 'nowrap' }}>{labelTutup}</span>}
           </div>
-          <div className="csb-hari">
+          <div className="csb-hari" {...swipeHari}>
+            {/* Stepper ‹ › per-hari bursa (#97) — konsisten dengan hariNav
+                grid penuh; disembunyikan di mode Rentang (tidak berubah). */}
+            {!modeRentang && (
+              <button
+                type="button"
+                className="dd-btn"
+                disabled={!hariSebelum}
+                onClick={() => hariSebelum && gotoHari(hariSebelum)}
+                aria-label="Hari bursa sebelumnya"
+                title="Hari bursa sebelumnya"
+              >
+                <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg>
+              </button>
+            )}
             {weekDays.map(({ iso, dayNum, data }, i) => {
               const isAktifHari = rentang
                 ? iso === rentang.mulai || iso === rentang.akhir
@@ -609,6 +638,18 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
                 </button>
               )
             })}
+            {!modeRentang && (
+              <button
+                type="button"
+                className="dd-btn"
+                disabled={!hariSesudah}
+                onClick={() => hariSesudah && gotoHari(hariSesudah)}
+                aria-label="Hari bursa berikutnya"
+                title="Hari bursa berikutnya"
+              >
+                <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" /></svg>
+              </button>
+            )}
           </div>
           {btnHariIni}
           {onRentang && (
@@ -725,7 +766,7 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
       <div className="panel-b">
         {hariNav}
 
-        <div className="cal-strip">
+        <div className="cal-strip" {...swipeHari}>
           {weekDays.map(({ iso, dayNum, data }, i) => {
             const isToday = iso === todayIso
             const isAktifHari = iso === tanggalAktif

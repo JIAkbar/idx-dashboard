@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { IkonMenu, IKON_KALENDER } from './IkonMenu'
+import { useSwipe } from './useSwipe'
 import './DatePicker.css'
 
 const NAMA_BULAN = [
@@ -80,6 +81,22 @@ export function DatePicker({ value, onChange, tersedia, ariaLabel, rata = 'kiri'
     setBulan(d.getMonth())
   }
 
+  // ─── Stepper hari ber-data ‹ › (#97) — cuma saat `tersedia` ada. ────────
+  // Set → array terurut sekali per perubahan; prev = terbesar < value,
+  // next = terkecil > value — otomatis lompat akhir pekan/tanggal kosong.
+  const daftar = useMemo(() => (tersedia ? [...tersedia].sort() : null), [tersedia])
+  const isoPrev = daftar && value ? [...daftar].reverse().find((d) => d < value) : undefined
+  const isoNext = daftar && value ? daftar.find((d) => d > value) : undefined
+
+  // Panah kiri/kanan saat fokus di trigger juga menggeser (#97).
+  function onKeyTrigger(e: React.KeyboardEvent) {
+    if (e.key === 'ArrowLeft' && isoPrev) { e.preventDefault(); onChange(isoPrev) }
+    else if (e.key === 'ArrowRight' && isoNext) { e.preventDefault(); onChange(isoNext) }
+  }
+
+  // Swipe horizontal di popover = ganti bulan tampil (#97, mobile).
+  const swipeBulan = useSwipe(geser)
+
   // Grid 5 kolom SEN–JUM — Sabtu/Minggu dibuang (bursa tutup), konsisten
   // dengan Kalender dasbor. Setiap pekan menyumbang tepat 5 hari kerja,
   // jadi setelah offset baris pertama, aliran grid otomatis rapi.
@@ -95,13 +112,27 @@ export function DatePicker({ value, onChange, tersedia, ariaLabel, rata = 'kiri'
   const v = urai(value)
   const labelNilai = v ? `${v.d} ${NAMA_BULAN[v.b].slice(0, 3)} ${v.t}` : 'Pilih tanggal'
 
+  // Stepper dirender mengapit field, di luar .dd supaya popover tetap
+  // menempel pas di bawah field (bukan di bawah stepper).
+  const stepper = (arah: -1 | 1) => {
+    const iso = arah === -1 ? isoPrev : isoNext
+    const label = arah === -1 ? 'Tanggal ber-data sebelumnya' : 'Tanggal ber-data berikutnya'
+    return (
+      <button type="button" className="dpk-step" disabled={!iso} aria-label={label} title={label} onClick={() => iso && onChange(iso)}>
+        <svg viewBox="0 0 24 24"><path d={arah === -1 ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6'} /></svg>
+      </button>
+    )
+  }
+
   return (
-    <div className={`dd dpk${open ? ' open' : ''}${rata === 'kanan' ? ' dpk-kanan' : ''}`} ref={ref}>
-      <button type="button" className="inp dpk-btn" aria-haspopup="dialog" aria-expanded={open} aria-label={ariaLabel} onClick={buka}>
+    <div className="dpk-wrap" ref={ref}>
+      {daftar && stepper(-1)}
+      <div className={`dd dpk${open ? ' open' : ''}${rata === 'kanan' ? ' dpk-kanan' : ''}`}>
+      <button type="button" className="inp dpk-btn" aria-haspopup="dialog" aria-expanded={open} aria-label={ariaLabel} onClick={buka} onKeyDown={onKeyTrigger}>
         <IkonMenu d={IKON_KALENDER} size={14} />
         <span>{labelNilai}</span>
       </button>
-      <div className="dd-menu dpk-pop" role="dialog" aria-label="Pilih tanggal">
+      <div className="dd-menu dpk-pop" role="dialog" aria-label="Pilih tanggal" {...swipeBulan}>
         <div className="dpk-head">
           <button type="button" className="dpk-nav" aria-label="Bulan sebelumnya" onClick={() => geser(-1)}>
             <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg>
@@ -136,6 +167,8 @@ export function DatePicker({ value, onChange, tersedia, ariaLabel, rata = 'kiri'
           })}
         </div>
       </div>
+      </div>
+      {daftar && stepper(1)}
     </div>
   )
 }
