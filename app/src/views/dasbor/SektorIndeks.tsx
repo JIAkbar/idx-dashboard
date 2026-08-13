@@ -96,8 +96,11 @@ export function SektorIndeks() {
   const board = hari.board ?? []
 
   const labelRentang = rentang ? `Perf ${fmtTanggalPendek(rentang.mulai)} – ${fmtTanggalPendek(rentang.akhir)}` : null
+  // Performa = akhir vs awal; hari mulai cuma titik pembanding, jadi yang
+  // dilaporkan jumlah hari PERGERAKAN (inklusif − 1). Preset 1 Minggu 5–12 Agu
+  // berisi 6 hari bursa tapi pergerakannya 5 hari, sesuai konvensi "1 minggu".
   const nHariRentang = rentang
-    ? tanggalTersedia.filter((t) => t.date_iso >= rentang.mulai && t.date_iso <= rentang.akhir).length
+    ? Math.max(1, tanggalTersedia.filter((t) => t.date_iso >= rentang.mulai && t.date_iso <= rentang.akhir).length - 1)
     : 0
   /** % perubahan sektor untuk periode/rentang terpilih — null = pembanding
    * belum ada/tidak ketemu, tampilkan "—" (bukan 0). */
@@ -140,7 +143,7 @@ export function SektorIndeks() {
 
       {labelRentang && (
         <div className="lbl" style={{ margin: '2px 2px -8px' }}>
-          Heatmap Sektor — {labelRentang} ({nHariRentang} hari bursa)
+          Heatmap Sektor — {labelRentang} ({nHariRentang} hari pergerakan)
         </div>
       )}
       <div className="tiles">
@@ -172,7 +175,7 @@ export function SektorIndeks() {
         <div className="panel-h">
           <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Performa Sektor</span>
           {rentang ? (
-            <span className="chip warn">{labelRentang} · {nHariRentang} hari bursa</span>
+            <span className="chip warn">{labelRentang} · pergerakan {nHariRentang} hari bursa</span>
           ) : (
             <div className="tabs" role="tablist" aria-label="Periode Performa Sektor">
               {PERIODE.map((p) => (

@@ -19,6 +19,17 @@ import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
  */
 const thBtn: CSSProperties = { font: 'inherit', color: 'inherit', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }
 
+// Kolom presisi lintas tabel bertumpuk (kemampuan-web-dev §141): table-layout:fixed
+// + colgroup proporsi sama + minWidth di <table> supaya menyempit = scroll, bukan kompres.
+const tbl3: CSSProperties = { tableLayout: 'fixed', width: '100%', minWidth: 280 }
+const tbl4: CSSProperties = { tableLayout: 'fixed', width: '100%', minWidth: 340 }
+const kol3 = (
+  <colgroup><col style={{ width: '40%' }} /><col style={{ width: '30%' }} /><col style={{ width: '30%' }} /></colgroup>
+)
+const kol4 = (
+  <colgroup><col style={{ width: '28%' }} /><col style={{ width: '24%' }} /><col style={{ width: '24%' }} /><col style={{ width: '24%' }} /></colgroup>
+)
+
 type UrutState<T> = { kunci: keyof T; arah: 'naik' | 'turun'; klik: (k: keyof T) => void }
 
 /** Judul kolom yang bisa diklik untuk mengurutkan; teks & makna kolom tetap sama. */
@@ -202,7 +213,8 @@ export function TopStocks() {
         <div className="panel">
           <div className="panel-h"><span className="lbl">Top Gainers Hari Ini</span></div>
           <div className="board-tbl-wrap">
-            <table className="tbl">
+            <table className="tbl" style={tbl4}>
+              {kol4}
               <thead><tr>
                 {thSort(gainersS, 'c', 'Kode')}
                 {thSort(gainersS, 'pr', 'Prev', true)}
@@ -225,7 +237,8 @@ export function TopStocks() {
         <div className="panel">
           <div className="panel-h"><span className="lbl">Top Losers Hari Ini</span></div>
           <div className="board-tbl-wrap">
-            <table className="tbl">
+            <table className="tbl" style={tbl4}>
+              {kol4}
               <thead><tr>
                 {thSort(losersS, 'c', 'Kode')}
                 {thSort(losersS, 'pr', 'Prev', true)}
@@ -252,7 +265,8 @@ export function TopStocks() {
           <div className="panel-h"><span className="lbl">Top Leaders — Kontribusi IHSG Hari Ini</span></div>
           <div className="panel-b">
             <div className="board-tbl-wrap">
-              <table className="tbl">
+              <table className="tbl" style={tbl3}>
+                {kol3}
                 <thead><tr>
                   {thSort(leadersTodayS, 'c', 'Kode')}
                   {thSort(leadersTodayS, 'p', '%Saham', true)}
@@ -264,7 +278,8 @@ export function TopStocks() {
             <hr className="divider" />
             <div className="lbl" style={{ margin: '10px 0 8px' }}>Top Leaders YTD</div>
             <div className="board-tbl-wrap">
-              <table className="tbl">
+              <table className="tbl" style={tbl3}>
+                {kol3}
                 <thead><tr>
                   {thSort(leadersYtdS, 'c', 'Kode')}
                   {thSort(leadersYtdS, 'p', '%YTD', true)}
@@ -279,7 +294,8 @@ export function TopStocks() {
           <div className="panel-h"><span className="lbl">Top Laggards — Kontribusi IHSG Hari Ini</span></div>
           <div className="panel-b">
             <div className="board-tbl-wrap">
-              <table className="tbl">
+              <table className="tbl" style={tbl3}>
+                {kol3}
                 <thead><tr>
                   {thSort(laggardsTodayS, 'c', 'Kode')}
                   {thSort(laggardsTodayS, 'p', '%Saham', true)}
@@ -291,7 +307,8 @@ export function TopStocks() {
             <hr className="divider" />
             <div className="lbl" style={{ margin: '10px 0 8px' }}>Top Laggards YTD</div>
             <div className="board-tbl-wrap">
-              <table className="tbl">
+              <table className="tbl" style={tbl3}>
+                {kol3}
                 <thead><tr>
                   {thSort(laggardsYtdS, 'c', 'Kode')}
                   {thSort(laggardsYtdS, 'p', '%YTD', true)}
