@@ -760,7 +760,8 @@
    dekat sel tanggal aktif (bukan cuma dropdown bulan di .panel-h). */
 .lantai .hari-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px}
 .lantai .hari-nav .hari-nav-lbl{flex:1;text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lantai .cal-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+/* 5 kolom SEN-JUM: akhir pekan dibuang total dari kalender (bursa tutup, lanjutan #75) */
+.lantai .cal-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 .lantai .cal-d{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:8px 4px;text-align:center}
 .lantai .cal-d .dw{font-family:var(--disp);font-size:9.5px;letter-spacing:.12em;color:var(--text3);text-transform:uppercase}
 .lantai .cal-d .dn2{font-family:var(--mono);font-size:15px;font-weight:600;margin-top:3px}
@@ -786,7 +787,7 @@
 .lantai .rate button.on{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
 
 /* kalender grid bulan */
-.lantai .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:12px;border-top:1px solid var(--line);padding-top:11px}
+.lantai .cal-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin-top:12px;border-top:1px solid var(--line);padding-top:11px}
 .lantai .cal-grid .cg{height:28px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);
   font-size:11px;color:var(--text3);border-radius:3px}
 .lantai .cal-grid .cg.ada{color:var(--text);background:var(--bg2);border:1px solid var(--line)}
@@ -1082,3 +1083,24 @@
   .lantai .pi-tbl-wrap { max-width: calc(100vw - 24px); }
   .lantai .pi-tbl th, .lantai .pi-tbl td { font-size: 10px; padding: 6px 7px; }
 }
+
+/* ===== MODE RENTANG (#75) — toggle Hari|Rentang di strip kalender, preset,
+   highlight rentang di grid bulan, dan baris sektor kompak re-layout /sector.
+   .dlm = tanggal DALAM rentang (amber-dim), ujung rentang pakai .aktif yang
+   sudah ada. Toggle numpang primitif .tabs/.tab (diperkecil), preset numpang
+   .chip-t (+ state .on & :disabled yang sebelumnya belum ada). ===== */
+.lantai .cal-grid .cg.ada.dlm{background:var(--amber-dim);border-color:var(--amber)}
+.lantai .cal-strip-bar .tabs.mode-tgl{padding:2px}
+.lantai .cal-strip-bar .tabs.mode-tgl .tab{padding:4px 10px;font-size:10px}
+.lantai .cal-rentang-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 14px;border-top:1px solid var(--line)}
+.lantai .cal-rentang-bar .chip-t{padding:4px 11px;font-size:10.5px}
+.lantai .chip-t:disabled{opacity:.4;cursor:default}
+.lantai .chip-t.on{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
+.lantai .chip-t.on:hover{color:var(--amber-ink)}
+.lantai .crb-hint{font-family:var(--mono);font-size:10.5px;color:var(--text2);margin-left:auto}
+/* Baris "Performa Sektor" kompak (re-layout /sector #75): nama | nilai indeks
+   | bar mini | badge persen — dalam .rank-wrap yang sudah 2 kolom auto-fit,
+   jadi 11 sektor kebagi ±6+5 berdampingan di desktop, 1 kolom di mobile.
+   Menang atas override .rk-row media query lewat specificity (.sek). */
+.lantai .rk-row.sek{grid-template-columns:minmax(96px,130px) 62px 1fr 62px}
+.lantai .rk-row.sek .rk-nv{font-family:var(--mono);font-size:11px;color:var(--text2);text-align:right}

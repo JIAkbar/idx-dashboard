@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { TanggalIndex } from '../../lib/dasbor/dataHarian'
+import { PRESET_RENTANG, rentangPreset, type RentangTanggal } from '../../lib/dasbor/periode'
 import { IkonMenu, IKON_PERINGATAN, IKON_CENTANG } from './IkonMenu'
 import { Dropdown } from './Dropdown'
 
@@ -21,6 +22,16 @@ interface KalenderProps {
    * halaman standalone /stocks, /broker, /sector.
    */
   varian?: 'strip' | 'penuh'
+  /**
+   * Mode RENTANG (#75, varian strip): kalau prop ini diberikan, strip
+   * menampilkan toggle "Hari | Rentang" + preset (1 Minggu/1 Bulan/3 Bulan/
+   * YTD) + klik tanggal A→B di grid. Dipanggil dengan rentang lengkap saat
+   * user memilih, dan `null` saat kembali ke mode Hari. Halaman tanpa prop
+   * ini (IndeksDunia, varian penuh) TIDAK berubah sama sekali — backward
+   * compat mutlak, default tetap mode Hari.
+   */
+  onRentang?: (r: RentangTanggal | null) => void
+  rentangAktif?: RentangTanggal | null
 }
 
 const BULAN = [
@@ -29,7 +40,9 @@ const BULAN = [
 ]
 // .dw (cal-strip) & .cg.hdr (cal-grid) sama-sama uppercase lewat CSS
 // (text-transform), jadi satu daftar label ini cukup untuk keduanya.
-const DOW_LABEL = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
+// SEN–JUM saja: akhir pekan dibuang total dari kalender (bursa memang tutup,
+// sel "Sab"/"Min" cuma noise — permintaan user, lanjutan #75).
+const DOW_LABEL = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum']
 
 /** Tanggal merah manual — port index_live.html baris 2431-2435. */
 const HOLIDAYS: Record<string, string> = {
@@ -92,6 +105,12 @@ export function sesiAktifPada(nowMin: number, isFri: boolean, isWeekendNow: bool
 }
 
 const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+
+/** "2026-08-03" → "3 Agu" — label ringkas rentang (strip kalender + header
+ * halaman mode rentang, jangan duplikat). */
+export function fmtTanggalPendek(iso: string) {
+  return new Date(`${iso}T12:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+}
 
 /** Label "<Hari> 08:45" pembukaan bursa berikutnya dari `now` — hari kerja
  * berikutnya (hari ini sendiri kalau belum 08:45). Jujur: libur nasional
@@ -209,7 +228,7 @@ export function cariHariAdjacent(tanggal: TanggalIndex[], aktif: string | null) 
  * Reusable — tidak ada logika spesifik World di sini, cuma butuh
  * {tanggalTersedia, tanggalAktif, onPilih}.
  */
-export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'penuh' }: KalenderProps) {
+export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'penuh', onRentang, rentangAktif }: KalenderProps) {
   const dataMap = useMemo(() => {
     const m = new Map<string, TanggalIndex>()
     tanggalTersedia.forEach((d) => m.set(d.date_iso, d))
@@ -245,14 +264,54 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
   // ─── Expand grid bulan pada varian strip (#k1full mockup) ──
   const [stripOpen, setStripOpen] = useState(false)
 
-  // ─── Grid bulan ──────────────────────────────────────────
-  const firstDay = new Date(calYear, calMonth - 1, 1).getDay()
-  const startOffset = firstDay === 0 ? 6 : firstDay - 1
+  // ─── Mode RENTANG (#75) ──────────────────────────────────
+  const [modeRentang, setModeRentang] = useState(!!rentangAktif)
+  const [awalPilih, setAwalPilih] = useState<string | null>(null)
+  const rentang = modeRentang ? (rentangAktif ?? null) : null
+
+  /** Satu pintu klik tanggal (grid + strip hari): mode Hari → onPilih biasa;
+   * mode Rentang → klik pertama = awal, klik kedua = akhir (auto-urut). */
+  function pilih(iso: string) {
+    if (!modeRentang || !onRentang) {
+      onPilih(iso)
+      return
+    }
+    if (!awalPilih) {
+      setAwalPilih(iso)
+      return
+    }
+    if (awalPilih === iso) return
+    const [a, b] = awalPilih < iso ? [awalPilih, iso] : [iso, awalPilih]
+    setAwalPilih(null)
+    onRentang({ mulai: a, akhir: b })
+  }
+
+  function gantiMode(keRentang: boolean) {
+    if (!onRentang) return
+    setModeRentang(keRentang)
+    setAwalPilih(null)
+    if (!keRentang) {
+      onRentang(null)
+    } else if (!rentangAktif) {
+      // Auto-terapkan preset 1 Minggu supaya mode rentang tidak lahir kosong.
+      const akhir = tanggalAktif ?? tanggalTersedia[tanggalTersedia.length - 1]?.date_iso
+      if (akhir) onRentang(rentangPreset(tanggalTersedia, akhir, 'w1'))
+    }
+  }
+
+
+  // ─── Grid bulan (5 kolom SEN–JUM, akhir pekan dibuang) ───
+  // Hanya hari kerja yang masuk sel; offset baris pertama = kolom hari kerja
+  // pertama bulan itu. Minggu tanpa hari kerja otomatis tidak ada barisnya
+  // (mis. bulan yang mulai Sabtu: baris pertamanya langsung Senin).
   const daysInMonth = new Date(calYear, calMonth, 0).getDate()
-  const cells: (number | null)[] = [
-    ...Array<null>(startOffset).fill(null),
-    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
-  ]
+  const workdays: number[] = []
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dow = new Date(calYear, calMonth - 1, d).getDay()
+    if (dow !== 0 && dow !== 6) workdays.push(d)
+  }
+  const startOffset = workdays.length > 0 ? new Date(calYear, calMonth - 1, workdays[0]).getDay() - 1 : 0
+  const cells: (number | null)[] = [...Array<null>(startOffset).fill(null), ...workdays]
 
   // ─── Notice rentang data ─────────────────────────────────
   // Dipindah taruh (bawah .cal-grid) & bungkusnya sekarang .chip up/dn yang
@@ -288,11 +347,12 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
   const wDow = weekBase.getDay()
   const monday = new Date(weekBase)
   monday.setDate(weekBase.getDate() + (wDow === 0 ? -6 : 1 - wDow))
-  const weekDays = Array.from({ length: 7 }, (_, i) => {
+  // 5 hari kerja saja — SAB/MIN tidak dirender (bursa tutup).
+  const weekDays = Array.from({ length: 5 }, (_, i) => {
     const d = new Date(monday)
     d.setDate(monday.getDate() + i)
     const iso = d.toISOString().slice(0, 10)
-    return { iso, dayNum: d.getDate(), data: dataMap.get(iso), isWknd: i >= 5 }
+    return { iso, dayNum: d.getDate(), data: dataMap.get(iso) }
   })
 
   // ─── Navigasi hari bursa prev/next (#26) ──────────────────
@@ -355,26 +415,29 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
 
   const calGrid = (
     <div className="cal-grid">
-      {DOW_LABEL.map((d, i) => (
-        <div key={d} className="cg hdr" style={i >= 5 ? { color: '#d32f2f' } : undefined}>{d}</div>
+      {DOW_LABEL.map((d) => (
+        <div key={d} className="cg hdr">{d}</div>
       ))}
       {cells.map((day, i) => {
         if (day === null) return <div key={`e${i}`} className="cg" />
         const iso = `${calYear}-${pad2(calMonth)}-${pad2(day)}`
-        const dow = new Date(calYear, calMonth - 1, day).getDay()
-        const isWeekend = dow === 0 || dow === 6
         const isHoliday = !!HOLIDAYS[iso]
         const data = dataMap.get(iso)
 
         if (data) {
           const isUp = data.ihsg_pct >= 0
-          const isAktif = iso === tanggalAktif
+          // Mode Rentang: ujung rentang + tanggal awal yang sedang menunggu
+          // klik kedua = amber solid (.aktif); tanggal di antaranya = .dlm
+          // (amber-dim). Mode Hari: perilaku lama.
+          const ujung = rentang !== null && (iso === rentang.mulai || iso === rentang.akhir)
+          const isAktif = modeRentang ? (ujung || iso === awalPilih) : iso === tanggalAktif
+          const dlm = rentang !== null && !ujung && iso > rentang.mulai && iso < rentang.akhir
           return (
             <button
               key={iso}
               type="button"
-              className={`cg ada${isAktif ? ' aktif' : ''}`}
-              onClick={() => onPilih(iso)}
+              className={`cg ada${isAktif ? ' aktif' : ''}${dlm ? ' dlm' : ''}`}
+              onClick={() => pilih(iso)}
             >
               <span>{day}</span>
               <span className="num" style={{ fontSize: 9 }}>
@@ -391,8 +454,10 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
         }
 
         // .cg tanpa .ada didesain artifact untuk 1 baris (28px) — label
-        // libur karenanya disingkat supaya muat 2 baris kecil.
-        const label = isWeekend ? (dow === 6 ? 'Sab' : 'Min') : isHoliday ? 'Libur' : 'Bursa Libur'
+        // libur karenanya disingkat supaya muat 2 baris kecil. Akhir pekan
+        // sudah tidak pernah sampai sini (dibuang dari `cells`); hari kerja
+        // libur bursa non-akhir-pekan (cuti bersama dll) tetap tampil.
+        const label = isHoliday ? 'Libur' : 'Bursa Libur'
         return (
           <div
             key={iso}
@@ -423,18 +488,42 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
     const tglLabel = tanggalAktif
       ? new Date(`${tanggalAktif}T12:00:00`).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short' })
       : '—'
+    // Ringkasan rentang: close IHSG ujung awal vs akhir (dari index.json,
+    // tanpa fetch tambahan).
+    const dMulai = rentang ? dataMap.get(rentang.mulai) : undefined
+    const dAkhir = rentang ? dataMap.get(rentang.akhir) : undefined
+    const pctRentang = dMulai && dAkhir ? (dAkhir.ihsg / dMulai.ihsg - 1) * 100 : null
+    // Akhir acuan preset: rentang aktif → ujung akhirnya; kalau belum ada,
+    // tanggal aktif / tanggal berdata terbaru.
+    const akhirPreset = rentang?.akhir ?? tanggalAktif ?? tanggalTersedia[tanggalTersedia.length - 1]?.date_iso
     return (
       <div className="panel">
         <div className="cal-strip-bar">
           <div className="csb-now">
-            <span className="tgl">{tglLabel}</span>
-            {aktifData && (
-              <span className="ihsg num">
-                {aktifData.ihsg.toLocaleString('id-ID', { maximumFractionDigits: 0 })}{' '}
-                <span className={aktifData.ihsg_pct >= 0 ? 'up' : 'dn'}>
-                  {aktifData.ihsg_pct >= 0 ? '+' : ''}{aktifData.ihsg_pct.toFixed(2)}%
-                </span>
-              </span>
+            {rentang ? (
+              <>
+                <span className="tgl">{fmtTanggalPendek(rentang.mulai)} – {fmtTanggalPendek(rentang.akhir)}</span>
+                {pctRentang != null && (
+                  <span className="ihsg num">
+                    IHSG{' '}
+                    <span className={pctRentang >= 0 ? 'up' : 'dn'}>
+                      {pctRentang >= 0 ? '+' : ''}{pctRentang.toFixed(2)}%
+                    </span>
+                  </span>
+                )}
+              </>
+            ) : (
+              <>
+                <span className="tgl">{tglLabel}</span>
+                {aktifData && (
+                  <span className="ihsg num">
+                    {aktifData.ihsg.toLocaleString('id-ID', { maximumFractionDigits: 0 })}{' '}
+                    <span className={aktifData.ihsg_pct >= 0 ? 'up' : 'dn'}>
+                      {aktifData.ihsg_pct >= 0 ? '+' : ''}{aktifData.ihsg_pct.toFixed(2)}%
+                    </span>
+                  </span>
+                )}
+              </>
             )}
           </div>
           <div className="csb-sesi">
@@ -450,7 +539,9 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
           </div>
           <div className="csb-hari">
             {weekDays.map(({ iso, dayNum, data }, i) => {
-              const isAktifHari = iso === tanggalAktif
+              const isAktifHari = rentang
+                ? iso === rentang.mulai || iso === rentang.akhir
+                : iso === tanggalAktif
               const cls = `csb-d${isAktifHari ? ' aktif' : ''}${data ? '' : ' off'}`
               const inner = (dp: ReactNode) => (
                 <>
@@ -468,7 +559,7 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
                   key={iso}
                   type="button"
                   className={cls}
-                  onClick={() => onPilih(iso)}
+                  onClick={() => pilih(iso)}
                   title={`${iso}: IHSG ${data.ihsg.toLocaleString('id-ID')} ${isUp ? '+' : ''}${data.ihsg_pct.toFixed(2)}%`}
                 >
                   {inner(
@@ -480,10 +571,40 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
               )
             })}
           </div>
+          {onRentang && (
+            <div className="tabs mode-tgl" role="tablist" aria-label="Mode pemilihan tanggal">
+              <button type="button" role="tab" aria-selected={!modeRentang} className={'tab' + (modeRentang ? '' : ' on')} onClick={() => gantiMode(false)}>Hari</button>
+              <button type="button" role="tab" aria-selected={modeRentang} className={'tab' + (modeRentang ? ' on' : '')} onClick={() => gantiMode(true)}>Rentang</button>
+            </div>
+          )}
           <button type="button" className="csb-more" onClick={() => setStripOpen((v) => !v)}>
             {stripOpen ? 'Tutup kalender ▴' : 'Kalender penuh ▾'}
           </button>
         </div>
+        {modeRentang && onRentang && (
+          <div className="cal-rentang-bar">
+            {PRESET_RENTANG.map((p) => {
+              const r = akhirPreset ? rentangPreset(tanggalTersedia, akhirPreset, p.id) : null
+              const on = !!(r && rentang && r.mulai === rentang.mulai && r.akhir === rentang.akhir)
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  className={`chip-t${on ? ' on' : ''}`}
+                  disabled={!r}
+                  onClick={() => r && onRentang(r)}
+                >
+                  {p.label}
+                </button>
+              )
+            })}
+            <span className="crb-hint">
+              {awalPilih
+                ? <>Awal: <b>{fmtTanggalPendek(awalPilih)}</b> — klik tanggal akhir di grid kalender</>
+                : 'Rentang bebas: klik 2 tanggal di kalender penuh'}
+            </span>
+          </div>
+        )}
         {stripOpen && (
           <div className="csb-full">
             {/* Kolom kiri: grid bulan (cap 448px seperti semula). */}
@@ -562,10 +683,10 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
         {hariNav}
 
         <div className="cal-strip">
-          {weekDays.map(({ iso, dayNum, data, isWknd }, i) => {
+          {weekDays.map(({ iso, dayNum, data }, i) => {
             const isToday = iso === todayIso
             const isAktifHari = iso === tanggalAktif
-            const cls = `cal-d${isToday ? ' today' : ''}${isWknd ? ' off' : ''}${isAktifHari ? ' aktif' : ''}`
+            const cls = `cal-d${isToday ? ' today' : ''}${isAktifHari ? ' aktif' : ''}`
             const inner = (
               <>
                 <div className="dw">{DOW_LABEL[i]}</div>
