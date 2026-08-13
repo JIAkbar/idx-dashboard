@@ -3,6 +3,7 @@ import { MENU_ITEMS } from '../../lib/dasbor/menu'
 import { IkonMenu } from './IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 import { useAuth } from '../../context/AuthContext'
+import { useKlikTransisi } from '../../lib/dasbor/transisi'
 
 /**
  * Rail kiri (layar lebar). Isinya tiga lapis, dari atas ke bawah:
@@ -23,10 +24,15 @@ import { useAuth } from '../../context/AuthContext'
 export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
   const { theme, toggleTheme } = useTheme()
   const { session } = useAuth()
+  // #79: navigasi rail dibungkus View Transition (crossfade + naik tipis di
+  // .dasbor-main). LaciMobile sengaja TIDAK ikut — laci yang menutup sudah
+  // jadi gerak perpindahannya, dan startViewTransition membekukan snapshot
+  // laci-terbuka 180ms sehingga animasi tutupnya justru tercekat.
+  const klik = useKlikTransisi()
 
   return (
     <nav className="dasbor-rail" aria-label="Menu utama">
-      <Link to="/" className="dasbor-rail-merek" title="PAPAN — Pusat Analisa Pasar Nusantara">
+      <Link to="/" className="dasbor-rail-merek" title="PAPAN — Pusat Analisa Pasar Nusantara" onClick={(e) => klik(e, '/')}>
         <b>P</b>
         <span>PAPAN</span>
       </Link>
@@ -39,6 +45,7 @@ export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
             end={item.path === '/'}
             title={item.label + (item.badge ? ` (${item.badge})` : '')}
             className={({ isActive }) => 'dasbor-rail-item' + (isActive ? ' active' : '')}
+            onClick={(e) => klik(e, item.path)}
           >
             <IkonMenu d={item.ikon} />
             <span className="dasbor-rail-kode">{item.kode}</span>
@@ -70,6 +77,7 @@ export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
             to="/admin"
             title="Admin — kelola unggahan &amp; edisi"
             className={({ isActive }) => 'dasbor-rail-tombol' + (isActive ? ' active' : '')}
+            onClick={(e) => klik(e, '/admin')}
           >
             <svg viewBox="0 0 24 24" width="18" height="18" className="dasbor-ikon" aria-hidden="true">
               <path d="M14 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
