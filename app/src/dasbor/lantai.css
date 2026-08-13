@@ -1426,6 +1426,61 @@
 .lantai .csb-hari::-webkit-scrollbar-track,
 .dasbor-laci-kiri::-webkit-scrollbar-track { background: transparent; }
 
+/* ===== #98 RAPIAN MOBILE RONDE 2 =====
+   (1) /broker-summary: 4 kartu stat → grid 2×2 kompak di ≤560px.
+   (2) /broker-summary: header panel disusun ulang — baris 1 tab view 4 bagi
+       rata penuh, baris 2 kontrol tanggal. Akar masalah "Kuadran tak bisa
+       dibuka": .panel-h flex satu baris menggencet strip tab jadi kontainer
+       scroll ±180px — Kuadran terpotong di tepi klip (separuh kanan tombol di
+       luar klip = tak menerima tap), NEGO/FLOW tersembunyi total.
+   (3) kalkulator: cap lebar param (.f-cap, pengganti inline maxWidth 160/200)
+       dicabut di mobile.
+   (4) Stock Detail Valuasi: form Graham (.gv-form, pengganti inline flex) →
+       grid 2 kolom rapi di mobile.
+   (5) /bulletin: tab filter dibagi rata selebar baris di mobile.
+   (6) /bulletin: viewer PDF inline (.blt-modal) — modal besar header + iframe. */
+.lantai .bs-ctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.lantai .vcard .v-tgl{font-size:20px}
+.lantai .vcard .v-tgl.rentang{font-size:15px}
+.lantai .f-cap{max-width:200px}
+.lantai .gv-form{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+.lantai .inp{font-variant-numeric:tabular-nums}
+/* Label tanggal DatePicker jangan pecah dua baris ("13 Agu 2026" tetap satu). */
+.lantai .dpk-btn{white-space:nowrap}
+@media (max-width:560px){
+  /* (1) kartu stat 2×2 — padding & font diciutkan biar angka tetap kebaca */
+  .lantai .grid3.bs-stat{grid-template-columns:1fr 1fr;gap:8px}
+  .lantai .bs-stat>.vcard{padding:10px 11px;gap:3px}
+  .lantai .bs-stat>.vcard .v-num{font-size:16px}
+  .lantai .bs-stat>.vcard .v-num.rentang{font-size:12px}
+  .lantai .bs-stat>.vcard .v-note{font-size:10px}
+  .lantai .bs-stat>.vcard .lbl{font-size:9px;letter-spacing:.1em}
+  /* (2) header panel dua baris: tab full-width bagi rata, kontrol di bawahnya */
+  .lantai .bs-h{flex-wrap:wrap}
+  .lantai .bs-h>.tabs{flex:1 0 100%;display:flex}
+  .lantai .bs-h>.tabs .tab{flex:1 1 0;min-width:0;justify-content:center;padding:0 4px;font-size:10px}
+  .lantai .bs-ctl{flex:1 0 100%;justify-content:flex-start}
+  /* (3) param kalkulator melebar penuh kolomnya */
+  .lantai .f-cap{max-width:none}
+  /* (4) form Graham: grid 2 kolom seimbang; lebar inline desktop di-nol-kan */
+  .lantai .gv-form{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;align-items:end}
+  .lantai .gv-form .field{min-width:0}
+  .lantai .gv-form .inp{width:100% !important} /* menang atas inline width 65-100px desktop */
+  /* (5) tab filter bulletin dibagi rata selebar baris */
+  .lantai .blt-tabs{display:flex;width:100%}
+  .lantai .blt-tabs .tab{flex:1 1 0;min-width:0;justify-content:center;padding:0 4px}
+}
+/* (6) viewer PDF /bulletin — kartu besar di atas .dasbor-modal-bg */
+.lantai .blt-aksi{display:inline-flex;gap:6px}
+.lantai button.blt-dl{cursor:pointer}
+.lantai .blt-modal{width:min(92vw,1280px);height:88dvh;display:flex;flex-direction:column;background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;animation:dasbor-modal-naik .22s cubic-bezier(.2,.7,.3,1)}
+.lantai .blt-modal-h{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--bg2)}
+.lantai .blt-modal-h .tick{margin-right:auto}
+.lantai .blt-modal-x{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid var(--line2);border-radius:4px;color:var(--text2);cursor:pointer;transition:color .15s ease-out,border-color .15s ease-out}
+.lantai .blt-modal-x:hover{border-color:var(--amber);color:var(--amber)}
+.lantai .blt-frame{flex:1;width:100%;border:none;background:var(--bg3)}
+@media (prefers-reduced-motion: reduce){.lantai .blt-modal{animation:none}}
+
 /* ===== #79 TRANSISI RUTE (View Transitions API) =====
    Dipicu dari useKlikTransisi (lib/dasbor/transisi.ts) di rail Sidebar.
    Hanya .dasbor-main yang beranimasi: dinamai grup sendiri, sedangkan grup

@@ -227,9 +227,11 @@ export function AvgDown() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 10 }}>
               <div className="field">
-                <span className="lbl">Avg Cost (Harga Beli Rata-rata)</span>
+                {/* #98: label panjang bikin kolom kiri kurus di mobile —
+                    dipendekkan, penjelasan pindah ke keterangan bawah. */}
+                <span className="lbl">Avg Cost (Rp)</span>
                 <input className="inp" type="number" name="avg" placeholder="0" min={0} value={avg} onChange={(e) => setAvg(e.target.value)} />
-                <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 3 }}>IDR per saham</div>
+                <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 3 }}>Harga beli rata-rata per saham</div>
               </div>
               <div className="field">
                 <span className="lbl">Qty Balance</span>
@@ -294,7 +296,7 @@ export function AvgDown() {
             {mode !== 'half' && (
             <div className="vcard" style={{ marginTop: 10 }}>
               {mode === 'lossmax' && (
-                <div className="field" style={{ maxWidth: 160 }}>
+                <div className="field f-cap">
                   <span className="lbl">Loss Max</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <input className="inp" type="number" name="lossmax" value={lossmax} min={0.1} max={99} step={0.5} onChange={(e) => setLossmax(e.target.value)} />
@@ -303,7 +305,7 @@ export function AvgDown() {
                 </div>
               )}
               {mode === 'endavg' && (
-                <div className="field" style={{ maxWidth: 200 }}>
+                <div className="field f-cap">
                   <span className="lbl">Target End Average</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <input
@@ -318,7 +320,7 @@ export function AvgDown() {
                 </div>
               )}
               {mode === 'avgqty' && (
-                <div className="field" style={{ maxWidth: 160 }}>
+                <div className="field f-cap">
                   <span className="lbl">Jumlah Lot</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <input className="inp" type="number" name="avgqty" value={avgqty} min={0} step={1} onChange={(e) => setAvgqty(e.target.value)} />
@@ -327,7 +329,7 @@ export function AvgDown() {
                 </div>
               )}
               {mode === 'avgval' && (
-                <div className="field" style={{ maxWidth: 200 }}>
+                <div className="field f-cap">
                   <span className="lbl">Dana Tambahan</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <input

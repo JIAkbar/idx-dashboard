@@ -129,7 +129,9 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
       <div className="panel">
         <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_KALKULATOR} size={13} /> Graham Valuation Calculator</span></div>
         <div className="panel-b">
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 12 }}>
+          {/* #98: inline style → .gv-form supaya mobile bisa grid 2 kolom rapi
+              (lihat lantai.css blok #98). Lebar input inline tetap utk desktop. */}
+          <div className="gv-form">
             <div className="field"><span className="lbl">EPS (Rp/saham)</span>
               <input className="inp" type="number" value={eps} step="any" style={{ width: 90 }} onChange={(e) => setEps(num(e.target.value))} /></div>
             <div className="field"><span className="lbl">BV/Saham (Rp)</span>

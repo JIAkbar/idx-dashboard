@@ -115,7 +115,7 @@ export function BrokerSummary() {
         <span className="sub">akumulasi vs distribusi · sumber idx.co.id, harian otomatis</span>
       </div>
 
-      <div className="grid3">
+      <div className="grid3 bs-stat">
         <div className="vcard">
           <span className="lbl">Total Broker Aktif</span>
           <span className="v-num num">{rows ? activeBroker : '—'}</span>
@@ -140,7 +140,7 @@ export function BrokerSummary() {
         </div>
         <div className="vcard">
           <span className="lbl">{rentang ? 'Rentang Data' : 'Tanggal Data'}</span>
-          <span className="v-num num" style={{ fontSize: rentang ? 15 : 20 }}>
+          <span className={'v-num num v-tgl' + (rentang ? ' rentang' : '')}>
             {rentang
               ? `${labelTanggal(rentang.mulai)} – ${labelTanggal(rentang.akhir)}`
               : tanggalAktif ? labelTanggal(tanggalAktif) : '—'}
@@ -150,7 +150,7 @@ export function BrokerSummary() {
       </div>
 
       <div className="panel">
-        <div className="panel-h">
+        <div className="panel-h bs-h">
           <div className="tabs" role="tablist" aria-label="Tab Broker Summary">
             {TABS.map((t) => (
               <button
@@ -166,7 +166,9 @@ export function BrokerSummary() {
             ))}
           </div>
           {harian ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            /* #98: inline style → kelas .bs-ctl supaya media query mobile bisa
+               menata ulang (inline selalu menang atas CSS). */
+            <div className="bs-ctl">
               {/* Toggle mode + pemilih: Harian → DatePicker (hanya hari
                   ber-data); Rentang → preset + rentang bebas dua DatePicker
                   (snap ke hari berdata, lihat pilihRentang). */}

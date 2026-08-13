@@ -4,6 +4,14 @@ import { IkonMenu, IKON_SILANG } from '../../components/dasbor/IkonMenu'
 
 /** Panah unduh ke tray — lokal view ini, belum ada padanannya di IkonMenu.tsx. */
 const IKON_UNDUH = 'M12 4v10M7.5 10.5L12 15l4.5-4.5M5 19h14'
+/** Mata (pratinjau PDF, #98) — lokal view ini, sama alasan IKON_UNDUH. */
+const IKON_MATA = 'M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12zM12 12m-2.6 0a2.6 2.6 0 1 0 5.2 0 2.6 2.6 0 1 0-5.2 0'
+
+/** Chrome Android dkk umumnya TIDAK bisa render PDF di iframe (malah memicu
+ *  unduhan) — di mobile tombol Lihat membuka tab baru, bukan modal kosong.
+ *  Deteksi sederhana saat klik: UA mobile ATAU layar sempit. */
+const mobilekah = () =>
+  /Android|iPhone|iPad|Mobi/i.test(navigator.userAgent) || window.innerWidth <= 768
 
 /**
  * IHSG per tanggal ISO dari data-idx/json/index.json (#78) — index-nya saja
@@ -75,6 +83,22 @@ export function Bulletin() {
   const peta = useIhsgMap()
   const [cari, setCari] = useState('')
   const [tipe, setTipe] = useState<'Semua' | 'Harian' | 'Mingguan' | 'Bulanan'>('Semua')
+  // #98: viewer PDF inline — modal iframe di desktop; null = tertutup.
+  const [lihat, setLihat] = useState<{ kode: string; pdf: string } | null>(null)
+
+  useEffect(() => {
+    if (!lihat) return
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape') setLihat(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [lihat])
+
+  function bukaPdf(kode: string, pdf: string) {
+    if (mobilekah()) window.open(`/arus-pasar/keluaran/${pdf}`, '_blank', 'noopener')
+    else setLihat({ kode, pdf })
+  }
 
   // Filter: kode emiten yang dibahas ATAU kode edisi (case-insensitive).
   const q = cari.trim().toUpperCase()
@@ -215,15 +239,26 @@ export function Bulletin() {
                           )}
                         </td>
                         <td className="r">
-                          <a
-                            className="blt-dl"
-                            href={`/arus-pasar/keluaran/${e.pdf}`}
-                            download
-                            title={`Unduh ${e.pdf}`}
-                          >
-                            <IkonMenu d={IKON_UNDUH} size={13} />
-                            PDF
-                          </a>
+                          <span className="blt-aksi">
+                            <button
+                              type="button"
+                              className="blt-dl"
+                              onClick={() => bukaPdf(e.kode, e.pdf)}
+                              title={`Lihat ${e.pdf}`}
+                            >
+                              <IkonMenu d={IKON_MATA} size={13} />
+                              Lihat
+                            </button>
+                            <a
+                              className="blt-dl"
+                              href={`/arus-pasar/keluaran/${e.pdf}`}
+                              download
+                              title={`Unduh ${e.pdf}`}
+                            >
+                              <IkonMenu d={IKON_UNDUH} size={13} />
+                              PDF
+                            </a>
+                          </span>
                         </td>
                       </tr>
                     )
@@ -234,6 +269,32 @@ export function Bulletin() {
           )}
         </div>
       </div>
+
+      {/* #98: modal viewer PDF — backdrop numpang .dasbor-modal-bg (Escape via
+          effect di atas, klik luar lewat cek target). Hanya jalur desktop;
+          mobile sudah dibelokkan ke tab baru di bukaPdf(). */}
+      {lihat && (
+        <div
+          className="dasbor-modal-bg"
+          onClick={(ev) => {
+            if (ev.target === ev.currentTarget) setLihat(null)
+          }}
+        >
+          <div className="blt-modal" role="dialog" aria-modal="true" aria-label={`Pratinjau ${lihat.kode}`}>
+            <div className="blt-modal-h">
+              <span className="tick">{lihat.kode}</span>
+              <a className="blt-dl" href={`/arus-pasar/keluaran/${lihat.pdf}`} download title={`Unduh ${lihat.pdf}`}>
+                <IkonMenu d={IKON_UNDUH} size={13} />
+                Unduh
+              </a>
+              <button type="button" className="blt-modal-x" onClick={() => setLihat(null)} aria-label="Tutup pratinjau">
+                <IkonMenu d={IKON_SILANG} size={14} />
+              </button>
+            </div>
+            <iframe className="blt-frame" src={`/arus-pasar/keluaran/${lihat.pdf}`} title={`PDF ${lihat.kode}`} />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
