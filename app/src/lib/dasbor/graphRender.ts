@@ -202,7 +202,8 @@ export function renderForceGraph(params: RenderParams & { emitenList: InvestorMa
   const { wrap, tooltip, dark, allData, emitenList, onSelect } = params
   wrap.innerHTML = ''
   const W = wrap.clientWidth || 900
-  const H = 580
+  // #91b: tinggi ikut container (min-height .pi-graph via CSS), bukan 580 tetap.
+  const H = wrap.clientHeight || 580
   const nodes: GNode[] = []
   const links: GLink[] = []
   const seenInv = new Set<string>()
@@ -250,12 +251,17 @@ export function renderForceGraph(params: RenderParams & { emitenList: InvestorMa
     .attr('fill', arrowFill)
 
   const g = svg.append('g')
-  svg.call(
-    d3
-      .zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.15, 5])
-      .on('zoom', (e) => g.attr('transform', e.transform)),
-  )
+  // #91b: zoom disimpan di variabel supaya auto-fit bisa memakai transform yang
+  // sama — pan/zoom manual user tetap jalan (dan membatalkan auto-fit).
+  let userZoomed = false
+  const zoomB = d3
+    .zoom<SVGSVGElement, unknown>()
+    .scaleExtent([0.15, 5])
+    .on('zoom', (e) => {
+      if (e.sourceEvent) userZoomed = true
+      g.attr('transform', e.transform)
+    })
+  svg.call(zoomB)
 
   const sim = d3
     .forceSimulation<GNode>(nodes)
@@ -271,6 +277,11 @@ export function renderForceGraph(params: RenderParams & { emitenList: InvestorMa
     )
     .force('charge', d3.forceManyBody().strength(-90))
     .force('center', d3.forceCenter(W / 2, H / 2).strength(0.03))
+    // #91b: tarikan Y lebih kuat dari X sebanding rasio panel — awan node
+    // menjadi elips selebar panel (bukan bola di tengah), auto-fit tinggal
+    // membesarkan sampai pas. Di panel ~persegi efeknya netral.
+    .force('x', d3.forceX(W / 2).strength(0.02))
+    .force('y', d3.forceY(H / 2).strength(Math.min(0.3, 0.08 * (W / H))))
     .force(
       'collision',
       d3
@@ -379,6 +390,28 @@ export function renderForceGraph(params: RenderParams & { emitenList: InvestorMa
     node.attr('transform', (d) => `translate(${d.x},${d.y})`)
   })
 
+  // #91b: auto-fit — setelah simulasi stabil, zoom transform di-set supaya
+  // bounding box seluruh node mengisi panel (padding 8%). Layout force sendiri
+  // mengumpul di tengah kanvas; tanpa fit ini panel lebar menyisakan ruang
+  // kosong besar kiri-kanan. Batal kalau user sudah pan/zoom manual.
+  sim.on('end.fit', () => {
+    if (userZoomed || !nodes.length) return
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity
+    for (const n of nodes) {
+      const r = (n.size ?? 6) + 24 // + ruang label
+      x0 = Math.min(x0, (n.x ?? 0) - r)
+      y0 = Math.min(y0, (n.y ?? 0) - r)
+      x1 = Math.max(x1, (n.x ?? 0) + r)
+      y1 = Math.max(y1, (n.y ?? 0) + r)
+    }
+    const dx = x1 - x0
+    const dy = y1 - y0
+    if (dx < 10 || dy < 10) return
+    const s = Math.min(2.5, 0.92 * Math.min(W / dx, H / dy))
+    const t = d3.zoomIdentity.translate(W / 2 - (s * (x0 + x1)) / 2, H / 2 - (s * (y0 + y1)) / 2).scale(s)
+    svg.transition().duration(450).call(zoomB.transform, t)
+  })
+
   svg.on('click', () => onSelect(null))
 
   return sim
@@ -394,7 +427,10 @@ export function renderFocusedGraph(params: RenderParams & { code: string }): d3.
   if (!em) return null
   wrap.innerHTML = ''
   const W = wrap.clientWidth || 900
-  const H = 580
+  // #91b: tinggi ikut container; ring & jarak diskalakan supaya panel besar
+  // terisi (k=1 di ukuran lama 580 — tidak mengubah tampilan layar kecil).
+  const H = wrap.clientHeight || 580
+  const k = Math.max(1, Math.min(W, H) / 580)
   const cx = W / 2
   const cy = H / 2
   const centerId = 'E_' + code
@@ -423,8 +459,8 @@ export function renderFocusedGraph(params: RenderParams & { code: string }): d3.
       cls: h.cls,
       lf: h.lf,
       size: Math.max(6, Math.min(16, h.pct * 0.5)),
-      x: cx + 130 * Math.cos(a),
-      y: cy + 130 * Math.sin(a),
+      x: cx + 130 * k * Math.cos(a),
+      y: cy + 130 * k * Math.sin(a),
     })
     links.push({ source: 'I_' + h.name, target: centerId, pct: h.pct })
   })
@@ -432,7 +468,7 @@ export function renderFocusedGraph(params: RenderParams & { code: string }): d3.
   const crossArr = [...crossMap.entries()]
   crossArr.forEach(([eCode, e], i) => {
     const a = (i / crossArr.length) * 2 * Math.PI - Math.PI / 2
-    nodes.push({ id: 'E_' + eCode, label: eCode, kind: 'emiten', fullName: e.issuer, size: 8, x: cx + 240 * Math.cos(a), y: cy + 240 * Math.sin(a) })
+    nodes.push({ id: 'E_' + eCode, label: eCode, kind: 'emiten', fullName: e.issuer, size: 8, x: cx + 240 * k * Math.cos(a), y: cy + 240 * k * Math.sin(a) })
   })
 
   holders.forEach((h) => {
@@ -465,10 +501,10 @@ export function renderFocusedGraph(params: RenderParams & { code: string }): d3.
       d3
         .forceLink<GNode, GLink>(links)
         .id((d) => d.id)
-        .distance(110)
+        .distance(110 * k)
         .strength(0.6),
     )
-    .force('charge', d3.forceManyBody().strength(-200))
+    .force('charge', d3.forceManyBody().strength(-200 * k))
     .force(
       'collide',
       d3.forceCollide<GNode>((d) => d.size + 18),

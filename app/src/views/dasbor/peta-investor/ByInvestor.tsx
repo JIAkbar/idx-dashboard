@@ -57,9 +57,11 @@ export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
           <table className="pi-tbl">
             <thead>
               <tr>
-                <th style={{ width: 260 }}>Investor / Pemegang Saham</th>
-                <th style={{ width: 80, textAlign: 'center' }}>Tipe</th>
-                <th style={{ width: 70, textAlign: 'center' }}># Saham</th>
+                {/* #91c: lebar kolom pindah ke kelas CSS (tabel table-layout fixed,
+                    kolom chip = sisa lebar panel — tanpa scroll horizontal). */}
+                <th className="pi-c-nama">Investor / Pemegang Saham</th>
+                <th className="pi-c-tipe" style={{ textAlign: 'center' }}>Tipe</th>
+                <th className="pi-c-jml" style={{ textAlign: 'center' }}># Saham</th>
                 <th>Saham yang Dipegang</th>
               </tr>
             </thead>

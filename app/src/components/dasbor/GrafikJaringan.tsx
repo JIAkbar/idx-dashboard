@@ -63,7 +63,23 @@ export function GrafikJaringan({ allData, emitenList, focusCode, onSelect }: Gra
     }
     gambar()
 
+    // #91b: render ulang saat ukuran container berubah (resize jendela /
+    // panel detail buka-tutup) — graf mengisi panel penuh, simulasi force
+    // pakai bound baru. Ambang 4px mencegah loop dari selisih pembulatan.
+    const ukur = { w: wrap.getBoundingClientRect().width, h: wrap.getBoundingClientRect().height }
+    const ro = new ResizeObserver(() => {
+      const r = wrap.getBoundingClientRect()
+      if (Math.abs(r.width - ukur.w) < 4 && Math.abs(r.height - ukur.h) < 4) return
+      ukur.w = r.width
+      ukur.h = r.height
+      simRef.current?.stop()
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(gambar)
+    })
+    ro.observe(wrap)
+
     return () => {
+      ro.disconnect()
       cancelAnimationFrame(raf)
       simRef.current?.stop()
       simRef.current = null

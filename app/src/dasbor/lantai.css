@@ -1308,3 +1308,33 @@
    (redup saat tanggal aktif sudah hari bursa terkini). */
 .lantai .csb-more:disabled{opacity:.35;cursor:not-allowed}
 .lantai .csb-more:disabled:hover{border-color:var(--line2);color:var(--text2)}
+
+/* #91 — Peta Investor: tab bernafas, tabel tanpa scroll-x, scrollbar tak menimpa isi.
+   (a) Tab toolbar /peta-investor: padding horizontal lega + line-height 1;
+       tinggi bar tetap 32px (masalahnya proporsi, bukan tinggi).
+   (b) Tabel By Stock/By Investor: table-layout fixed — lebar kolom dikunci
+       kelas pi-c-*, kolom chip = SISA lebar panel; PilRow adaptif mengukur
+       sisa itu, jadi tabel tidak pernah melebihi panel (tanpa scroll-x).
+       Clamp viewport lama .pil-wrap tidak berlaku lagi di dalam tabel ini.
+   (c) Scrollbar tipis (4px) + gutter stabil + padding kanan kecil supaya
+       thumb tidak menutupi kolom terakhir (keluhan mobile), light + dark. */
+.lantai .pi-toolbar .tabs .tab { padding: 0 16px; line-height: 1; }
+.lantai .pi-tbl { table-layout: fixed; }
+.lantai .pi-tbl th.pi-c-em { width: 110px; }
+.lantai .pi-tbl th.pi-c-n { width: 68px; }
+.lantai .pi-tbl th.pi-c-pct { width: 72px; }
+.lantai .pi-tbl th.pi-c-nama { width: 32%; }
+.lantai .pi-tbl th.pi-c-tipe { width: 64px; }
+.lantai .pi-tbl th.pi-c-jml { width: 72px; }
+.lantai .pi-tbl .pil-wrap { max-width: 100%; }
+.lantai .pi-tbl-wrap { scrollbar-gutter: stable; padding-right: 2px; }
+.lantai .pi-tbl-wrap::-webkit-scrollbar { width: 4px; height: 4px; }
+@media (max-width: 700px) {
+  .lantai .pi-tbl th { white-space: normal; }
+  .lantai .pi-tbl th.pi-c-em { width: 78px; }
+  .lantai .pi-tbl th.pi-c-n { width: 52px; }
+  .lantai .pi-tbl th.pi-c-pct { width: 44px; }
+  .lantai .pi-tbl th.pi-c-nama { width: 40%; }
+  .lantai .pi-tbl th.pi-c-tipe { width: 44px; }
+  .lantai .pi-tbl th.pi-c-jml { width: 46px; }
+}

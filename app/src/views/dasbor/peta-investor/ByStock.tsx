@@ -61,11 +61,13 @@ export function ByStock({ data, onSelect }: ByStockProps) {
           <table className="pi-tbl">
             <thead>
               <tr>
-                <th style={{ width: 120 }}>Emiten</th>
-                <th style={{ width: 60, textAlign: 'center' }}>Holder</th>
-                <th style={{ width: 80, textAlign: 'center' }}>CORP %</th>
-                <th style={{ width: 80, textAlign: 'center' }}>IND %</th>
-                <th style={{ width: 80, textAlign: 'center' }} title="OTH = tipe tak terisi — tipe holder diturunkan dari teks bebas KSEI">OTH %</th>
+                {/* #91c: lebar kolom pindah ke kelas CSS (tabel table-layout fixed,
+                    kolom chip = sisa lebar panel — tanpa scroll horizontal). */}
+                <th className="pi-c-em">Emiten</th>
+                <th className="pi-c-n" style={{ textAlign: 'center' }}>Holder</th>
+                <th className="pi-c-pct" style={{ textAlign: 'center' }}>CORP %</th>
+                <th className="pi-c-pct" style={{ textAlign: 'center' }}>IND %</th>
+                <th className="pi-c-pct" style={{ textAlign: 'center' }} title="OTH = tipe tak terisi — tipe holder diturunkan dari teks bebas KSEI">OTH %</th>
                 <th>Pemegang Saham (≥1%)</th>
               </tr>
             </thead>
