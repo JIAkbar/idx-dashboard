@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd app && npm install && npm run build",
+  "buildCommand": "cd app && npm install && npm run build && mkdir -p dist/data-idx dist/arus-pasar && cp -r ../data-idx/json dist/data-idx/json && cp -r ../arus-pasar/keluaran dist/arus-pasar/keluaran",
   "outputDirectory": "app/dist",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
