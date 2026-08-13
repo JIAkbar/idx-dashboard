@@ -212,6 +212,7 @@ export function AvgDown() {
                   className="inp"
                   style={{ flex: 1, minWidth: 0 }}
                   type="text"
+                  name="kode"
                   placeholder="Contoh: BBCA"
                   maxLength={6}
                   value={kode}
@@ -227,19 +228,19 @@ export function AvgDown() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 10 }}>
               <div className="field">
                 <span className="lbl">Avg Cost (Harga Beli Rata-rata)</span>
-                <input className="inp" type="number" placeholder="0" min={0} value={avg} onChange={(e) => setAvg(e.target.value)} />
+                <input className="inp" type="number" name="avg" placeholder="0" min={0} value={avg} onChange={(e) => setAvg(e.target.value)} />
                 <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 3 }}>IDR per saham</div>
               </div>
               <div className="field">
                 <span className="lbl">Qty Balance</span>
-                <input className="inp" type="number" placeholder="0" min={0} value={qty} onChange={(e) => setQty(e.target.value)} />
+                <input className="inp" type="number" name="qty" placeholder="0" min={0} value={qty} onChange={(e) => setQty(e.target.value)} />
                 <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 3 }}>Lot (1 lot = 100 saham)</div>
               </div>
             </div>
 
             <div className="field" style={{ marginBottom: 10 }}>
               <span className="lbl">Last Price (Harga Sekarang)</span>
-              <input className="inp" type="number" placeholder="0" min={0} value={last} onChange={(e) => setLast(e.target.value)} />
+              <input className="inp" type="number" name="last" placeholder="0" min={0} value={last} onChange={(e) => setLast(e.target.value)} />
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5, flexWrap: 'wrap' }}>
                 <span className={`chip ${priceSrc.kind === 'auto' ? 'up' : 'warn'}`}>{priceSrc.label}</span>
                 <span style={{ fontSize: 10, color: 'var(--text3)' }}>atau klik <IkonMenu d={IKON_CARI} size={11} /> untuk ambil harga otomatis (delay ~15m)</span>
@@ -296,7 +297,7 @@ export function AvgDown() {
                 <div className="field" style={{ maxWidth: 160 }}>
                   <span className="lbl">Loss Max</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <input className="inp" type="number" value={lossmax} min={0.1} max={99} step={0.5} onChange={(e) => setLossmax(e.target.value)} />
+                    <input className="inp" type="number" name="lossmax" value={lossmax} min={0.1} max={99} step={0.5} onChange={(e) => setLossmax(e.target.value)} />
                     <span className="num">%</span>
                   </div>
                 </div>
@@ -309,7 +310,7 @@ export function AvgDown() {
                       className="inp"
                       type="text"
                       inputMode="numeric"
-                      value={formatRibuan(endavgRaw)}
+                      name="endavg" value={formatRibuan(endavgRaw)}
                       onChange={(e) => setEndavgRaw(onlyDigits(e.target.value))}
                     />
                     <span className="num">IDR</span>
@@ -320,7 +321,7 @@ export function AvgDown() {
                 <div className="field" style={{ maxWidth: 160 }}>
                   <span className="lbl">Jumlah Lot</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <input className="inp" type="number" value={avgqty} min={0} step={1} onChange={(e) => setAvgqty(e.target.value)} />
+                    <input className="inp" type="number" name="avgqty" value={avgqty} min={0} step={1} onChange={(e) => setAvgqty(e.target.value)} />
                     <span className="num">Lot</span>
                   </div>
                 </div>
@@ -333,7 +334,7 @@ export function AvgDown() {
                       className="inp"
                       type="text"
                       inputMode="numeric"
-                      value={formatRibuan(avgvalRaw)}
+                      name="avgval" value={formatRibuan(avgvalRaw)}
                       onChange={(e) => setAvgvalRaw(onlyDigits(e.target.value))}
                     />
                     <span className="num">IDR</span>

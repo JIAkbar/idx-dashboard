@@ -1254,7 +1254,9 @@
    baris kedua meluber menimpa konten di bawahnya. Tinggi 32px dijaga lewat
    min-height kontainer + tinggi tetap 26px di .tab (3+26+3 = 32). */
 .lantai .tabs { min-height: 32px; align-items: center; }
-.lantai .tab { height: 26px; }
+/* gap 6px (#79D5): .tab inline-flex membuang text-node spasi antara ikon
+   IkonMenu dan teks — tanpa gap eksplisit ikon menempel ke label. */
+.lantai .tab { height: 26px; gap: 6px; }
 .lantai .dd-btn, .lantai .csb-more, .lantai .btn-p, .lantai .chip-t,
 .lantai .pi-view-tab, .lantai .pi-loadmore {
   padding-top: 0; padding-bottom: 0;

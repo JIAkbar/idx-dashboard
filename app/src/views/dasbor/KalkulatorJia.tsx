@@ -27,7 +27,7 @@ export function KalkulatorJia() {
   return (
     <div className="lantai kalkulator-view">
       <div className="vhead">
-        <h1>Kalkulator JIA</h1>
+        <h1>Kalkulator</h1>
         <span className="sub">alat hitung posisi</span>
       </div>
 

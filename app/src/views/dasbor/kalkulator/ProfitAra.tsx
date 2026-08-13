@@ -100,7 +100,7 @@ export function ProfitAra({ feeBeli, feeJual, setFeeBeli, setFeeJual }: ProfitAr
                 min={0}
                 max={5}
                 step={0.01}
-                value={feeBeli}
+                name="feeBeli" aria-label="Fee beli (persen)" value={feeBeli}
                 onChange={(e) => setFeeBeli(parseFloat(e.target.value) || 0)}
               />
               <span className="lbl" style={{ textTransform: 'none', letterSpacing: 0 }}>Fee Jual</span>
@@ -111,7 +111,7 @@ export function ProfitAra({ feeBeli, feeJual, setFeeBeli, setFeeJual }: ProfitAr
                 min={0}
                 max={5}
                 step={0.01}
-                value={feeJual}
+                name="feeJual" aria-label="Fee jual (persen)" value={feeJual}
                 onChange={(e) => setFeeJual(parseFloat(e.target.value) || 0)}
               />
             </div>
@@ -121,11 +121,11 @@ export function ProfitAra({ feeBeli, feeJual, setFeeBeli, setFeeJual }: ProfitAr
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 10 }}>
               <div className="field">
                 <span className="lbl">Buy Price (IDR/saham)</span>
-                <input className="inp" type="number" placeholder="0" min={0} value={buy} onChange={(e) => setBuy(e.target.value)} />
+                <input className="inp" type="number" name="buy" placeholder="0" min={0} value={buy} onChange={(e) => setBuy(e.target.value)} />
               </div>
               <div className="field">
                 <span className="lbl">Sell Target (IDR/saham)</span>
-                <input className="inp" type="number" placeholder="0" min={0} value={sell} onChange={(e) => setSell(e.target.value)} />
+                <input className="inp" type="number" name="sell" placeholder="0" min={0} value={sell} onChange={(e) => setSell(e.target.value)} />
                 <div style={{ display: 'flex', gap: 5, marginTop: 4 }}>
                   <button className={'tab' + (araArbMode === 'ara' ? ' on' : '')} style={{ flex: 1 }} onClick={() => handleSetMode('ara')}>
                     ARA ▲
@@ -138,7 +138,7 @@ export function ProfitAra({ feeBeli, feeJual, setFeeBeli, setFeeJual }: ProfitAr
             </div>
             <div className="field" style={{ marginTop: 10 }}>
               <span className="lbl">Lots (1 lot = 100 saham)</span>
-              <input className="inp" type="number" placeholder="0" min={0} step={1} value={lots} onChange={(e) => setLots(e.target.value)} />
+              <input className="inp" type="number" name="lots" placeholder="0" min={0} step={1} value={lots} onChange={(e) => setLots(e.target.value)} />
             </div>
           </div>
         </div>

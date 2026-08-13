@@ -79,7 +79,8 @@ export function Dividen({ feeBeli, setFeeBeli }: DividenProps) {
                 min={0}
                 max={5}
                 step={0.01}
-                value={feeBeli}
+                name="feeBeli" value={feeBeli}
+                aria-label="Fee beli (persen)"
                 onChange={(e) => setFeeBeli(parseFloat(e.target.value) || 0)}
               />
             </div>
@@ -89,26 +90,26 @@ export function Dividen({ feeBeli, setFeeBeli }: DividenProps) {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 10, marginBottom: 8 }}>
               <div className="field">
                 <span className="lbl">Avg Buy Price (IDR/saham)</span>
-                <input className="inp" type="number" placeholder="0" min={0} value={buy} onChange={(e) => setBuy(e.target.value)} />
+                <input className="inp" type="number" name="buy" placeholder="0" min={0} value={buy} onChange={(e) => setBuy(e.target.value)} />
               </div>
               <div className="field">
                 <span className="lbl">Lots (1 lot = 100 saham)</span>
-                <input className="inp" type="number" placeholder="0" min={0} value={lots} onChange={(e) => setLots(e.target.value)} />
+                <input className="inp" type="number" name="lots" placeholder="0" min={0} value={lots} onChange={(e) => setLots(e.target.value)} />
               </div>
               <div className="field">
                 <span className="lbl">Dividen / Saham (IDR)</span>
-                <input className="inp" type="number" placeholder="0" min={0} value={dps} onChange={(e) => setDps(e.target.value)} />
+                <input className="inp" type="number" name="dps" placeholder="0" min={0} value={dps} onChange={(e) => setDps(e.target.value)} />
               </div>
               <div className="field">
                 <span className="lbl">Pajak Dividen (%)</span>
-                <input className="inp" type="number" value={tax} min={0} max={100} step={0.5} onChange={(e) => setTax(e.target.value)} />
+                <input className="inp" type="number" name="tax" value={tax} min={0} max={100} step={0.5} onChange={(e) => setTax(e.target.value)} />
                 <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 2 }}>WNI OP: 10% final</div>
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <label style={{ fontSize: 11, color: 'var(--text2)' }}>Sertakan fee beli dalam modal</label>
-              <input type="checkbox" checked={incFee} onChange={(e) => setIncFee(e.target.checked)} />
-            </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--text2)', cursor: 'pointer' }}>
+              Sertakan fee beli dalam modal
+              <input type="checkbox" name="incFee" checked={incFee} onChange={(e) => setIncFee(e.target.checked)} />
+            </label>
           </div>
         </div>
       </div>

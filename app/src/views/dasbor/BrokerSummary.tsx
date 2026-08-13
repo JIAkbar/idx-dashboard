@@ -128,7 +128,14 @@ export function BrokerSummary() {
         </div>
         <div className="vcard">
           <span className="lbl">Total Frekuensi</span>
-          <span className="v-num num">{rows ? `${(totalFreq / 1e3).toFixed(0)}K` : '—'}</span>
+          {/* Skala menyesuaikan: harian ~ribuan K, agregat 1 tahun tembus
+              miliaran — "1218432K" tak terbaca, naik ke Jt/M. */}
+          <span className="v-num num">
+            {!rows ? '—'
+              : totalFreq >= 1e9 ? `${(totalFreq / 1e9).toFixed(2)} M`
+              : totalFreq >= 1e6 ? `${(totalFreq / 1e6).toFixed(1)} Jt`
+              : `${(totalFreq / 1e3).toFixed(0)}K`}
+          </span>
           <span className="v-note">transaksi</span>
         </div>
         <div className="vcard">
@@ -182,9 +189,9 @@ export function BrokerSummary() {
                   {/* Rentang bebas — dua DatePicker mulai/akhir, hanya hari
                       ber-data yang bisa dipilih; urutan terbalik otomatis
                       ditukar di pilihRentang. */}
-                  <DatePicker value={mulaiIso} onChange={(iso) => keRentangBebas(iso, akhirIso)} tersedia={setTersedia} ariaLabel="Tanggal mulai rentang" />
+                  <DatePicker value={mulaiIso} onChange={(iso) => keRentangBebas(iso, akhirIso)} tersedia={setTersedia} ariaLabel="Tanggal mulai rentang" rata="kanan" />
                   <span className="lbl" aria-hidden="true">s.d.</span>
-                  <DatePicker value={akhirIso} onChange={(iso) => keRentangBebas(mulaiIso, iso)} tersedia={setTersedia} ariaLabel="Tanggal akhir rentang" />
+                  <DatePicker value={akhirIso} onChange={(iso) => keRentangBebas(mulaiIso, iso)} tersedia={setTersedia} ariaLabel="Tanggal akhir rentang" rata="kanan" />
                 </>
               ) : (
                 <DatePicker
@@ -192,6 +199,7 @@ export function BrokerSummary() {
                   onChange={pilihTanggal}
                   tersedia={setTersedia}
                   ariaLabel="Pilih tanggal data broker"
+                  rata="kanan"
                 />
               )}
             </div>

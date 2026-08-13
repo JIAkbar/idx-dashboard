@@ -13,6 +13,9 @@
 /* Lebar tetap — .dd-menu bawaannya min-width:100% (ngikut lebar input),
    di-reset di sini supaya popover kompak rata kiri di bawah field. */
 .lantai .dpk-pop { width: 288px; min-width: 0; max-width: calc(100vw - 48px); padding: 10px; }
+/* Pemicu dekat tepi kanan layar (header /broker-summary): popover rata kanan
+   supaya tidak terpotong viewport. */
+.lantai .dpk-kanan .dpk-pop { left: auto; right: 0; }
 
 .lantai .dpk-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .lantai .dpk-bulan { font-family: var(--disp); font-weight: 700; font-size: 12px; letter-spacing: .05em; }

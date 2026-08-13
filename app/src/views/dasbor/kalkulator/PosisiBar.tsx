@@ -22,15 +22,15 @@ export function PosisiBar({ kode, onKode, lots, onLots, avg, onAvg, onFill }: Po
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
         <div className="field" style={{ width: 92 }}>
           <span className="lbl"><IkonMenu d={IKON_PAPAN_KLIP} size={12} /> Kode</span>
-          <input className="inp" type="text" placeholder="BBCA" maxLength={6} value={kode} onChange={(e) => onKode(e.target.value.toUpperCase())} />
+          <input className="inp" type="text" name="kode" placeholder="BBCA" maxLength={6} value={kode} onChange={(e) => onKode(e.target.value.toUpperCase())} />
         </div>
         <div className="field" style={{ width: 80 }}>
           <span className="lbl">Lots</span>
-          <input className="inp" type="number" placeholder="0" min={0} value={lots} onChange={(e) => onLots(e.target.value)} />
+          <input className="inp" type="number" name="lots" placeholder="0" min={0} value={lots} onChange={(e) => onLots(e.target.value)} />
         </div>
         <div className="field" style={{ width: 110 }}>
           <span className="lbl">Avg Cost</span>
-          <input className="inp" type="number" placeholder="0" min={0} value={avg} onChange={(e) => onAvg(e.target.value)} />
+          <input className="inp" type="number" name="avg" placeholder="0" min={0} value={avg} onChange={(e) => onAvg(e.target.value)} />
         </div>
         <button className="btn-p" style={{ fontSize: 11, padding: '7px 14px' }} onClick={onFill}>↩ Isi Kalkulator</button>
       </div>

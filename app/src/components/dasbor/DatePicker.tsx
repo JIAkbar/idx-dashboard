@@ -25,13 +25,16 @@ function urai(iso: string): { t: number; b: number; d: number } | null {
  * Nilai masuk/keluar tetap string ISO `YYYY-MM-DD` — kompatibel penuh dengan
  * pemakaian input date sebelumnya.
  */
-export function DatePicker({ value, onChange, tersedia, ariaLabel }: {
+export function DatePicker({ value, onChange, tersedia, ariaLabel, rata = 'kiri' }: {
   value: string
   onChange: (iso: string) => void
   /** Kalau diisi: hanya tanggal di set ini yang bisa dipilih (hari ber-data),
    *  sisanya disabled — dipakai pemilih tanggal /broker-summary (#79C). */
   tersedia?: ReadonlySet<string>
   ariaLabel?: string
+  /** 'kanan' = popover rata kanan tombol — untuk pemicu dekat tepi kanan
+   *  layar (header /broker-summary) supaya tidak terpotong viewport. */
+  rata?: 'kiri' | 'kanan'
 }) {
   const [open, setOpen] = useState(false)
   const kini = new Date()
@@ -93,7 +96,7 @@ export function DatePicker({ value, onChange, tersedia, ariaLabel }: {
   const labelNilai = v ? `${v.d} ${NAMA_BULAN[v.b].slice(0, 3)} ${v.t}` : 'Pilih tanggal'
 
   return (
-    <div className={`dd dpk${open ? ' open' : ''}`} ref={ref}>
+    <div className={`dd dpk${open ? ' open' : ''}${rata === 'kanan' ? ' dpk-kanan' : ''}`} ref={ref}>
       <button type="button" className="inp dpk-btn" aria-haspopup="dialog" aria-expanded={open} aria-label={ariaLabel} onClick={buka}>
         <IkonMenu d={IKON_KALENDER} size={14} />
         <span>{labelNilai}</span>

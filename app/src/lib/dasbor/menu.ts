@@ -56,7 +56,7 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M4 7h16M4 7l2-3h12l2 3M4 7v11a2 2 0 002 2h12a2 2 0 002-2V7M9 12h6',
   },
   {
-    id: 'kalkulator', path: '/kalkulator', label: 'Kalkulator JIA', kode: 'KAL',
+    id: 'kalkulator', path: '/kalkulator', label: 'Kalkulator', kode: 'KAL',
     ikon: 'M6 3h12a1 1 0 011 1v16a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1zM8 7h8M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01',
   },
   {
