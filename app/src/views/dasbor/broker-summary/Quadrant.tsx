@@ -34,7 +34,7 @@ export function Quadrant({ brokers }: QuadrantProps) {
   const config = useMemo<ChartConfiguration<'bubble', QuadPoint[]> | null>(() => {
     if (brokers.length === 0) return null
     const isDark = theme === 'dark'
-    const text2Color = isDark ? '#5e7f96' : '#4b6070'
+    const text2Color = isDark ? '#8494a8' : '#4b6070' // #77: dark 4.19→5.74:1
     const gridColor = 'rgba(128,128,128,.1)'
 
     const n = brokers.length
@@ -104,11 +104,13 @@ export function Quadrant({ brokers }: QuadrantProps) {
       <div className="chart-wrap" style={{ height: 420 }}>
         <canvas ref={canvasRef} />
       </div>
-      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8, fontSize: 11 }}>
-        <span style={{ color: '#3b82f6' }}>● Smart Accumulation (high nilai, low freq)</span>
-        <span style={{ color: '#22c55e' }}>● Agresif Beli (high nilai, high freq)</span>
-        <span style={{ color: '#ef4444' }}>● Distribusi (low nilai, high freq)</span>
-        <span style={{ color: '#9ca3af' }}>● Pasif</span>
+      {/* #77 kontras: warna domain cuma di titik ●, teks legenda ikut warna
+          teks tema (hex mentah 2.3–3.8:1 di light, tak terbaca). */}
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8, fontSize: 11, color: 'var(--text2)' }}>
+        <span><span style={{ color: '#3b82f6' }}>●</span> Smart Accumulation (high nilai, low freq)</span>
+        <span><span style={{ color: '#22c55e' }}>●</span> Agresif Beli (high nilai, high freq)</span>
+        <span><span style={{ color: '#ef4444' }}>●</span> Distribusi (low nilai, high freq)</span>
+        <span><span style={{ color: '#9ca3af' }}>●</span> Pasif</span>
       </div>
     </>
   )
