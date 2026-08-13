@@ -14,6 +14,7 @@ import {
 } from '../components/dasbor/IkonMenu'
 import { DatePicker } from '../components/dasbor/DatePicker'
 import { StockAutocomplete } from '../components/dasbor/StockAutocomplete'
+import { LightboxGambar, type GambarLightbox } from '../components/dasbor/LightboxGambar'
 import { useStockIndex } from '../lib/dasbor/stockDetailData'
 import {
   daftarEdisi,
@@ -21,6 +22,7 @@ import {
   daftarTanggalUnggahan,
   hapusScreenshot,
   unggahScreenshot,
+  urlScreenshots,
   type EdisiRow,
 } from '../lib/supabaseEdisi'
 import './AdminHome.css'
@@ -55,6 +57,13 @@ function tanggalManusiawi(iso: string): string {
 
 /** Jumlah kartu Kotak Masuk yang tampil sebelum tombol "Tampilkan semua". */
 const BATAS_KARTU = 8
+
+/** Ukuran berkas manusiawi — "348 KB", "1,2 MB". */
+function ukuranBerkas(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1).replace('.', ',')} MB`
+}
 
 interface Baris {
   ticker: string
@@ -103,11 +112,13 @@ function PanelKosong({ ikon, pesan, petunjuk }: { ikon: string; pesan: string; p
  * peringatan kuning tapi unggah tetap boleh (heuristik bisa salah; isi gambar
  * sesungguhnya diverifikasi di tahap transkripsi).
  */
-function PilihGambar({ label, jenis, file, onFile }: {
+function PilihGambar({ label, jenis, file, onFile, onPratinjau }: {
   label: string
   jenis: 'orderbook' | 'chart'
   file: File | null
   onFile: (f: File | null) => void
+  /** Klik thumbnail → lightbox pratinjau besar (object URL lokal, pra-unggah). */
+  onPratinjau: (g: GambarLightbox) => void
 }) {
   const [err, setErr] = useState('')
   const [warn, setWarn] = useState('')
@@ -167,11 +178,26 @@ function PilihGambar({ label, jenis, file, onFile }: {
         </button>
       ) : (
         <div className="af-file">
-          {url && <img src={url} alt="" />}
-          <span className="nama" title={file.name}>{file.name}</span>
-          <button type="button" className="buang" aria-label="Buang pilihan" onClick={buang}>
-            <IkonMenu d={IKON_SILANG} size={12} />
-          </button>
+          {url && (
+            <button
+              type="button"
+              className="af-file-thumb"
+              title="Klik untuk pratinjau besar"
+              onClick={() => onPratinjau({
+                src: url,
+                keterangan: `${jenis === 'orderbook' ? 'Orderbook' : 'Chart'} · ${file.name} (belum diunggah)`,
+              })}
+            >
+              <img src={url} alt={`Pratinjau ${jenis}: ${file.name}`} />
+            </button>
+          )}
+          <div className="af-file-baris">
+            <span className="nama" title={file.name}>{file.name}</span>
+            <span className="uk">{ukuranBerkas(file.size)}</span>
+            <button type="button" className="buang" aria-label="Buang pilihan" onClick={buang}>
+              <IkonMenu d={IKON_SILANG} size={12} />
+            </button>
+          </div>
         </div>
       )}
       {err && <p className="af-err">{err}</p>}
@@ -248,6 +274,8 @@ export function AdminHome() {
   const [jumlahEmiten, setJumlahEmiten] = useState<Record<string, number>>({})
   /** Kotak Masuk: tampilkan semua kartu (default hanya BATAS_KARTU terbaru). */
   const [semuaKartu, setSemuaKartu] = useState(false)
+  /** Lightbox pratinjau gambar (#94) — items + posisi; null = tertutup. */
+  const [lightbox, setLightbox] = useState<{ items: GambarLightbox[]; index: number } | null>(null)
 
   // Modal sambutan sekali per sesi login: kunci sessionStorage berisi user.id,
   // dihapus saat keluar — login ulang (atau akun lain) menyambut lagi,
@@ -381,6 +409,33 @@ export function AdminHome() {
     }
   }
 
+  /**
+   * Buka lightbox dari tabel "Sudah Diunggah": kumpulkan SEMUA gambar tanggal
+   * ini (urut per emiten, orderbook lalu chart) supaya ‹ › bisa jalan antar
+   * gambar emiten yang sama maupun antar emiten, lalu minta signed URL batch
+   * (bucket privat) dan mulai dari gambar yang diklik.
+   */
+  async function bukaPratinjau(path: string) {
+    const tglPendek = tanggalManusiawi(tanggal).replace(/^[^,]+, /, '')
+    const entri = sudah.flatMap((b) =>
+      [
+        b.orderbook ? { path: b.orderbook, ket: `${b.ticker} · Orderbook · ${tglPendek}` } : null,
+        b.chart ? { path: b.chart, ket: `${b.ticker} · Chart · ${tglPendek}` } : null,
+      ].filter((x): x is { path: string; ket: string } => x !== null)
+    )
+    try {
+      const urls = await urlScreenshots(entri.map((e) => e.path))
+      const ada = entri.filter((e) => urls[e.path])
+      if (ada.length === 0) throw new Error('URL gambar tidak tersedia.')
+      setLightbox({
+        items: ada.map((e) => ({ src: urls[e.path], keterangan: e.ket })),
+        index: Math.max(0, ada.findIndex((e) => e.path === path)),
+      })
+    } catch {
+      setToast({ ok: false, pesan: 'Gagal memuat pratinjau gambar.' })
+    }
+  }
+
   function togglePilih(ticker: string) {
     setPilih((p) => {
       const q = new Set(p)
@@ -469,8 +524,34 @@ export function AdminHome() {
                               />
                             </td>
                             <td className="tick">{b.ticker}</td>
-                            <td>{b.orderbook ? <span className="af-centang"><IkonMenu d={IKON_CENTANG} size={13} /></span> : '—'}</td>
-                            <td>{b.chart ? <span className="af-centang"><IkonMenu d={IKON_CENTANG} size={13} /></span> : '—'}</td>
+                            <td>
+                              {b.orderbook ? (
+                                <button
+                                  type="button"
+                                  className="af-centang af-lihat"
+                                  title={`Lihat screenshot orderbook ${b.ticker}`}
+                                  aria-label={`Lihat screenshot orderbook ${b.ticker}`}
+                                  onClick={() => bukaPratinjau(b.orderbook!)}
+                                >
+                                  <IkonMenu d={IKON_CENTANG} size={13} />
+                                  <span className="lihat-lbl">Lihat</span>
+                                </button>
+                              ) : '—'}
+                            </td>
+                            <td>
+                              {b.chart ? (
+                                <button
+                                  type="button"
+                                  className="af-centang af-lihat"
+                                  title={`Lihat screenshot chart ${b.ticker}`}
+                                  aria-label={`Lihat screenshot chart ${b.ticker}`}
+                                  onClick={() => bukaPratinjau(b.chart!)}
+                                >
+                                  <IkonMenu d={IKON_CENTANG} size={13} />
+                                  <span className="lihat-lbl">Lihat</span>
+                                </button>
+                              ) : '—'}
+                            </td>
                             <td className="af-aksi">
                               <button
                                 type="button"
@@ -613,14 +694,37 @@ export function AdminHome() {
                 placeholder="Ketik kode / nama emiten…"
               />
             </div>
-            <PilihGambar key={`ob-${resetKey}`} label="Orderbook (Stockbit) — wajib" jenis="orderbook" file={orderbook} onFile={setOrderbook} />
-            <PilihGambar key={`ch-${resetKey}`} label="Chart (TradingView) — opsional" jenis="chart" file={chart} onFile={setChart} />
+            <PilihGambar
+              key={`ob-${resetKey}`}
+              label="Orderbook (Stockbit) — wajib"
+              jenis="orderbook"
+              file={orderbook}
+              onFile={setOrderbook}
+              onPratinjau={(g) => setLightbox({ items: [g], index: 0 })}
+            />
+            <PilihGambar
+              key={`ch-${resetKey}`}
+              label="Chart (TradingView) — opsional"
+              jenis="chart"
+              file={chart}
+              onFile={setChart}
+              onPratinjau={(g) => setLightbox({ items: [g], index: 0 })}
+            />
             <button type="submit" className="btn-p" disabled={mengunggah}>
               {mengunggah ? 'Mengunggah…' : 'Unggah'}
             </button>
             {formErr && <p className="af-err" style={{ margin: 0 }}>{formErr}</p>}
           </form>
         </ModalKecil>
+      )}
+
+      {lightbox && (
+        <LightboxGambar
+          items={lightbox.items}
+          index={lightbox.index}
+          onIndex={(i) => setLightbox((lb) => (lb ? { ...lb, index: i } : lb))}
+          onClose={() => setLightbox(null)}
+        />
       )}
 
       {toast && (

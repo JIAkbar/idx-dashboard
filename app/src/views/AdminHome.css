@@ -6,18 +6,30 @@
 .lantai .af-pilih .dasbor-ikon { stroke: var(--text3); }
 .lantai .af-pilih:hover .dasbor-ikon { stroke: var(--amber); }
 
+/* Kartu berkas terpilih (#94): thumbnail BESAR di atas (pastikan gambar benar
+   sebelum unggah), baris info nama + ukuran + tombol buang di bawah. */
 .lantai .af-file {
-  display: flex; align-items: center; gap: 9px;
+  display: flex; flex-direction: column;
   background: var(--bg2); border: 1px solid var(--line2); border-radius: var(--r);
-  padding: 5px 7px;
+  overflow: hidden;
 }
-.lantai .af-file img {
-  width: 34px; height: 34px; object-fit: cover; border-radius: 4px;
-  border: 1px solid var(--line); flex-shrink: 0;
+.lantai .af-file-thumb {
+  display: block; width: 100%; height: 132px; padding: 0;
+  background: var(--bg3, var(--bg2)); border: none; cursor: zoom-in;
+}
+.lantai .af-file-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.lantai .af-file-thumb:hover img { opacity: .85; }
+.lantai .af-file-thumb:focus-visible { outline: 2px solid var(--amber); outline-offset: -2px; }
+.lantai .af-file-baris {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px; border-top: 1px solid var(--line);
 }
 .lantai .af-file .nama {
   flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   font-family: var(--mono); font-size: 11px; color: var(--text2);
+}
+.lantai .af-file .uk {
+  flex-shrink: 0; font-family: var(--mono); font-size: 10px; color: var(--text3);
 }
 .lantai .af-file .buang {
   background: none; border: none; cursor: pointer; padding: 4px;
@@ -69,6 +81,66 @@
 .lantai .af-hapus .dasbor-ikon { stroke: currentColor; }
 .lantai .af-centang { color: var(--green); }
 .lantai .af-centang .dasbor-ikon { stroke: currentColor; }
+
+/* ✓ yang bisa diklik → lightbox (#94). Affordance: cursor pointer + label
+   "Lihat" bergaris bawah muncul saat hover/focus; "—" (tanpa berkas) tetap
+   teks biasa, tidak clickable. */
+.lantai .af-lihat {
+  background: none; border: none; cursor: pointer; padding: 3px 4px;
+  display: inline-flex; align-items: center; gap: 5px; vertical-align: middle;
+}
+.lantai .af-lihat .lihat-lbl {
+  font-size: 10px; color: var(--amber); text-decoration: underline;
+  text-underline-offset: 2px; opacity: 0; transition: opacity .12s;
+}
+.lantai .af-lihat:hover .lihat-lbl,
+.lantai .af-lihat:focus-visible .lihat-lbl { opacity: 1; }
+.lantai .af-lihat:focus-visible { outline: 2px solid var(--amber); outline-offset: 1px; border-radius: 3px; }
+
+/* Lightbox pratinjau gambar (#94) — overlay gelap di atas segalanya
+   (modal 90, toast 95), gambar besar contain, caption + navigasi di bawah.
+   Warna teks di sini fixed (bukan token) karena latar selalu gelap di kedua tema. */
+.lantai .af-lb-bg {
+  position: fixed; inset: 0; z-index: 120;
+  background: rgba(8, 9, 12, .82);
+  display: flex; align-items: center; justify-content: center;
+  padding: 18px;
+  animation: af-lb-masuk .15s ease-out;
+}
+@keyframes af-lb-masuk { from { opacity: 0; } to { opacity: 1; } }
+.lantai .af-lb {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  max-width: 90vw; outline: none;
+}
+.lantai .af-lb img {
+  max-width: 90vw; max-height: 80dvh; object-fit: contain;
+  border-radius: 6px; box-shadow: 0 16px 48px rgba(0, 0, 0, .55);
+}
+.lantai .af-lb-bar {
+  display: flex; align-items: center; gap: 12px; max-width: 90vw;
+}
+.lantai .af-lb-bar .ket {
+  font-family: var(--mono); font-size: 11.5px; color: #e8eaee;
+  text-align: center; overflow-wrap: anywhere;
+}
+.lantai .af-lb-bar .hitung { color: #9aa0ab; }
+.lantai .af-lb-nav {
+  flex-shrink: 0; width: 32px; height: 32px; border-radius: 4px;
+  background: rgba(255, 255, 255, .14); border: none; cursor: pointer;
+  color: #fff; font-size: 20px; line-height: 1; padding: 0 0 3px;
+}
+.lantai .af-lb-nav:hover:not(:disabled) { background: var(--amber); color: var(--amber-ink); }
+.lantai .af-lb-nav:disabled { opacity: .3; cursor: default; }
+.lantai .af-lb-tutup {
+  position: fixed; top: 16px; right: 16px;
+  width: 36px; height: 36px; border-radius: 4px;
+  background: rgba(255, 255, 255, .14); border: none; cursor: pointer;
+  color: #fff; display: flex; align-items: center; justify-content: center;
+}
+.lantai .af-lb-tutup:hover { background: var(--red); }
+.lantai .af-lb-tutup .dasbor-ikon, .lantai .af-lb-nav .dasbor-ikon { stroke: currentColor; }
+.lantai .af-lb:focus-visible { outline: none; }
+.lantai .af-lb-nav:focus-visible, .lantai .af-lb-tutup:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
 
 /* Toast status unggah/hapus — muncul bawah-tengah, hilang sendiri. */
 .lantai.af-toast {
@@ -148,4 +220,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .lantai.af-toast { animation: none; }
+  .lantai .af-lb-bg { animation: none; }
 }
