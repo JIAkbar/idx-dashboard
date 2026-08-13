@@ -268,7 +268,9 @@ def halaman_sampul(ed, skor_map):
     jml = {"bull": 0, "side": 0, "bear": 0}
     for e in urut:
         jml[sentimen(e)] += 1
-    padat = n > 6  # 7-20: daftar 2 kolom + label pendek; ≤6: 1 kolom label penuh
+    padat = n > 10  # 11-20: daftar 2 kolom + label pendek; ≤10: 1 kolom label penuh
+    # (keputusan user 13 Agu: pakai 1 kolom selama muat — halaman sampul masih
+    #  lega sampai ±10 baris; 2 kolom hanya kalau benar-benar tidak cukup)
     tampil = urut[:MAKS_SAMPUL]
 
     def lbl(e):
