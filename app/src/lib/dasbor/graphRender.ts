@@ -111,10 +111,6 @@ function idBerlabel(nodes: GNode[]): Set<string> {
   return set
 }
 
-function cssVar(el: Element, name: string): string {
-  return getComputedStyle(el).getPropertyValue(name).trim()
-}
-
 function nodeSelection(d: GNode): GraphSelection {
   if (d.kind === 'emiten') return { type: 'emiten', code: d.id.replace('E_', '') }
   return { type: 'investor', name: d.fullLabel ?? d.label, cls: d.cls ?? '', lf: d.lf ?? '' }
@@ -127,14 +123,134 @@ function nodeSelection(d: GNode): GraphSelection {
  * satu sumbu warna sudah cukup. Radius = `size` untuk semua, sama dengan
  * radius yang dipakai gaya tolak-tabrakan (forceCollide `size + 16`).
  */
-function drawNodeGlyph(node: d3.Selection<SVGGElement, GNode, SVGGElement, unknown>, nodeStroke: string) {
+function drawNodeGlyph(node: d3.Selection<SVGGElement, GNode, SVGGElement, unknown>, dark: boolean) {
   node
     .append('circle')
     .attr('r', (d) => d.size)
     .attr('fill', (d) => warnaSimpul(d))
-    .attr('stroke', nodeStroke)
-    .attr('stroke-width', (d) => (d.kind === 'emiten' ? 1.5 : 1.2))
-    .attr('opacity', (d) => (d.kind === 'emiten' ? 0.95 : 0.92))
+    // Ring 1px lebih terang dari isi (overlay putih semi-transparan — "lebih
+    // terang" yang bebas hitung untuk fill apa pun) + bayangan sangat tipis.
+    .attr('stroke', dark ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.55)')
+    .attr('stroke-width', 1)
+    .attr('filter', 'url(#pi-nshadow)')
+    .attr('opacity', (d) => (d.kind === 'emiten' ? 0.97 : 0.94))
+}
+
+/**
+ * Defs bersama kedua render (#96): panah mini 4.5px `userSpaceOnUse` (supaya
+ * TIDAK ikut membesar dengan stroke-width — default `strokeWidth` membuat
+ * panah edge tebal jadi segitiga besar kasar, persis yang mau dibuang) +
+ * bayangan simpul sangat tipis.
+ */
+function defsPremium(svg: d3.Selection<SVGSVGElement, unknown, null, undefined>, dark: boolean) {
+  const defs = svg.append('defs')
+  defs
+    .append('marker')
+    .attr('id', 'pi-arr')
+    .attr('viewBox', '0 -2 4 4')
+    .attr('refX', 3.4)
+    .attr('refY', 0)
+    .attr('markerUnits', 'userSpaceOnUse')
+    .attr('markerWidth', 4.5)
+    .attr('markerHeight', 4.5)
+    .attr('orient', 'auto')
+    .append('path')
+    .attr('d', 'M0,-2L4,0L0,2')
+    .attr('fill', dark ? 'rgba(255,255,255,0.45)' : 'rgba(15,23,42,0.50)')
+  defs
+    .append('filter')
+    .attr('id', 'pi-nshadow')
+    .attr('x', '-60%')
+    .attr('y', '-60%')
+    .attr('width', '220%')
+    .attr('height', '220%')
+    .append('feDropShadow')
+    .attr('dx', 0)
+    .attr('dy', 0.8)
+    .attr('stdDeviation', 1.4)
+    .attr('flood-color', '#000')
+    .attr('flood-opacity', dark ? 0.45 : 0.2)
+}
+
+/** Warna netral edge; intensitas per-edge diatur stroke-opacity (lihat linkOpacity). */
+const warnaEdge = (dark: boolean) => (dark ? '#E7ECF4' : '#1E293B')
+/** Opacity 0.25–0.5 di-scale dari % kepemilikan (pct ≥ 40 mentok 0.5). */
+const linkOpacity = (d: GLink) => 0.25 + Math.min(1, (d.pct ?? 0) / 40) * 0.25
+/** Ketebalan 0.6–2.5px dari % kepemilikan (dulu 0.5–6px — terlalu tebal seragam). */
+const linkWidth = (d: GLink) => Math.max(0.6, Math.min(2.5, 0.6 + (d.pct ?? 0) * 0.03))
+
+/**
+ * Lengkung kuadratik halus satu arah (offset kontrol selalu tegak-lurus kiri
+ * dari arah sumber→target, 12% jarak) dengan ujung dipangkas ke tepi lingkaran
+ * — pangkal mulai di tepi simpul sumber, ujung berhenti 3px sebelum tepi
+ * simpul target supaya panah mini tidak menusuk masuk lingkaran.
+ */
+function linkPath(d: GLink): string {
+  const s = d.source as GNode
+  const t = d.target as GNode
+  const sx = s.x ?? 0
+  const sy = s.y ?? 0
+  const tx = t.x ?? 0
+  const ty = t.y ?? 0
+  const dx = tx - sx
+  const dy = ty - sy
+  const dist = Math.hypot(dx, dy)
+  if (dist < 1) return ''
+  const ux = dx / dist
+  const uy = dy / dist
+  const r0 = s.size ?? 4
+  const r1 = (t.size ?? 4) + 3
+  const ax = sx + ux * r0
+  const ay = sy + uy * r0
+  const bx = tx - ux * r1
+  const by = ty - uy * r1
+  const bend = dist * 0.12
+  const mx = (ax + bx) / 2 - uy * bend
+  const my = (ay + by) / 2 + ux * bend
+  return `M${ax},${ay}Q${mx},${my} ${bx},${by}`
+}
+
+/**
+ * Highlight neighborhood saat hover (#96): ring simpul jadi amber, edge
+ * tetangga menyala (stroke-opacity naik), simpul & edge non-tetangga meredup
+ * ke 0.15. Transisi 150ms ease-out dipasang lewat `style` (bukan atribut —
+ * CSS transition hanya bereaksi ke perubahan properti style) — mikro-transisi
+ * ini tetap dibiarkan di prefers-reduced-motion sesuai keputusan #96.
+ * Namespace event `.sorot` supaya tidak menimpa penangan tooltip/label.
+ */
+function pasangSorotTetangga(
+  node: d3.Selection<SVGGElement, GNode, SVGGElement, unknown>,
+  link: d3.Selection<SVGPathElement, GLink, SVGGElement, unknown>,
+  links: GLink[],
+) {
+  const idOf = (v: GLink['source']) => (typeof v === 'object' ? v.id : String(v))
+  const adj = new Map<string, Set<string>>()
+  for (const l of links) {
+    const a = idOf(l.source)
+    const b = idOf(l.target)
+    if (!adj.has(a)) adj.set(a, new Set())
+    if (!adj.has(b)) adj.set(b, new Set())
+    adj.get(a)!.add(b)
+    adj.get(b)!.add(a)
+  }
+  node.style('transition', 'opacity 150ms ease-out')
+  node.select('circle').style('transition', 'stroke 150ms ease-out, stroke-width 150ms ease-out')
+  link.style('transition', 'opacity 150ms ease-out, stroke-opacity 150ms ease-out')
+
+  function nyala(this: SVGGElement, _e: unknown, d: GNode) {
+    const n = adj.get(d.id)
+    node.style('opacity', (o) => (o.id === d.id || n?.has(o.id) ? 1 : 0.15))
+    link
+      .style('opacity', (l) => (idOf(l.source) === d.id || idOf(l.target) === d.id ? 1 : 0.15))
+      .style('stroke-opacity', (l) => (idOf(l.source) === d.id || idOf(l.target) === d.id ? 0.85 : null))
+    d3.select(this).select('circle').style('stroke', 'var(--amber)').style('stroke-width', '1.5px')
+  }
+  function padam(this: SVGGElement) {
+    node.style('opacity', null)
+    link.style('opacity', null).style('stroke-opacity', null)
+    d3.select(this).select('circle').style('stroke', null).style('stroke-width', null)
+  }
+  node.on('mouseover.sorot', nyala).on('mouseout.sorot', padam)
 }
 
 /** Ungkap label simpul non-terbesar saat diarahkan atau disentuh. Nama peristiwa dinamai (`.label`) supaya TIDAK menimpa penangan tooltip yang memakai `mouseover`/`mouseout` polos. */
@@ -234,23 +350,7 @@ export function renderForceGraph(params: RenderParams & { emitenList: InvestorMa
   if (!nodes.length) return null
 
   const svg = d3.select(wrap).append('svg').attr('width', W).attr('height', H)
-  const linkStroke = dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.45)'
-  const arrowFill = dark ? 'rgba(255,255,255,0.30)' : 'rgba(0,0,0,0.55)'
-  const nodeStroke = cssVar(wrap, '--card') || (dark ? '#181e28' : '#fff')
-
-  svg
-    .append('defs')
-    .append('marker')
-    .attr('id', 'pi-arr')
-    .attr('viewBox', '0 -3 6 6')
-    .attr('refX', 14)
-    .attr('refY', 0)
-    .attr('markerWidth', 6)
-    .attr('markerHeight', 6)
-    .attr('orient', 'auto')
-    .append('path')
-    .attr('d', 'M0,-3L6,0L0,3')
-    .attr('fill', arrowFill)
+  defsPremium(svg, dark)
 
   const g = svg.append('g')
   // #91b: zoom disimpan di variabel supaya auto-fit bisa memakai transform yang
@@ -294,13 +394,17 @@ export function renderForceGraph(params: RenderParams & { emitenList: InvestorMa
 
   const link = g
     .append('g')
-    .selectAll('line')
+    .selectAll<SVGPathElement, GLink>('path')
     .data(links)
     .enter()
-    .append('line')
-    .attr('stroke', linkStroke)
-    .attr('stroke-width', (d) => Math.max(0.5, (d.pct ?? 0) / 25))
+    .append('path')
+    .attr('fill', 'none')
+    .attr('stroke', warnaEdge(dark))
+    .attr('stroke-opacity', linkOpacity)
+    .attr('stroke-width', linkWidth)
+    .attr('stroke-linecap', 'round')
     .attr('marker-end', 'url(#pi-arr)')
+    .attr('pointer-events', 'none')
 
   const node = g
     .append('g')
@@ -351,11 +455,11 @@ export function renderForceGraph(params: RenderParams & { emitenList: InvestorMa
     }
   }
 
-  drawNodeGlyph(node, nodeStroke)
+  drawNodeGlyph(node, dark)
 
   const berlabel = idBerlabel(nodes)
 
-  // Label emiten — di dalam lingkaran, tinta kontras di atas amber.
+  // Label emiten — mono kecil di dalam lingkaran, tinta kontras di atas amber.
   node
     .filter((d) => d.kind === 'emiten')
     .append('text')
@@ -363,12 +467,14 @@ export function renderForceGraph(params: RenderParams & { emitenList: InvestorMa
     .attr('text-anchor', 'middle')
     .attr('dy', '0.35em')
     .attr('font-size', '8.5px')
+    .attr('font-family', 'var(--mono)')
     .attr('fill', 'var(--amber-ink)')
     .attr('pointer-events', 'none')
-    .attr('font-weight', 800)
+    .attr('font-weight', 700)
     .attr('opacity', (d) => (berlabel.has(d.id) ? 1 : 0))
 
-  // Label investor — di bawah node, warna ikut token tema.
+  // Label investor — di bawah node, halo tipis warna latar (paint-order
+  // stroke) supaya tetap terbaca di atas edge yang lewat di belakangnya.
   node
     .filter((d) => d.kind !== 'emiten')
     .append('text')
@@ -377,18 +483,19 @@ export function renderForceGraph(params: RenderParams & { emitenList: InvestorMa
     .attr('dy', (d) => `${d.size + 11}px`)
     .attr('font-size', '7.5px')
     .attr('fill', 'var(--text2)')
+    .attr('stroke', 'var(--bg3)')
+    .attr('stroke-width', 2.5)
+    .attr('stroke-linejoin', 'round')
+    .attr('paint-order', 'stroke')
     .attr('pointer-events', 'none')
     .attr('font-weight', 500)
     .attr('opacity', (d) => (berlabel.has(d.id) ? 1 : 0))
 
   pasangUngkapLabel(node, berlabel)
+  pasangSorotTetangga(node, link, links)
 
   sim.on('tick', () => {
-    link
-      .attr('x1', (d) => (d.source as GNode).x ?? 0)
-      .attr('y1', (d) => (d.source as GNode).y ?? 0)
-      .attr('x2', (d) => (d.target as GNode).x ?? 0)
-      .attr('y2', (d) => (d.target as GNode).y ?? 0)
+    link.attr('d', linkPath)
     node.attr('transform', (d) => `translate(${d.x},${d.y})`)
   })
 
@@ -486,15 +593,20 @@ export function renderFocusedGraph(params: RenderParams & { code: string }): d3.
     .attr('height', H)
     .style('background', 'var(--bg)')
     .on('click', () => onSelect(null))
+  defsPremium(svg, dark)
 
   const link = svg
     .append('g')
-    .selectAll('line')
+    .selectAll<SVGPathElement, GLink>('path')
     .data(links)
-    .join('line')
-    .attr('stroke', 'var(--line2)')
-    .attr('stroke-opacity', 0.9)
-    .attr('stroke-width', 1)
+    .join('path')
+    .attr('fill', 'none')
+    .attr('stroke', warnaEdge(dark))
+    .attr('stroke-opacity', linkOpacity)
+    .attr('stroke-width', linkWidth)
+    .attr('stroke-linecap', 'round')
+    .attr('marker-end', 'url(#pi-arr)')
+    .attr('pointer-events', 'none')
 
   const sim = d3
     .forceSimulation<GNode>(nodes)
@@ -514,7 +626,6 @@ export function renderFocusedGraph(params: RenderParams & { code: string }): d3.
     .alphaDecay(0.04)
     .velocityDecay(0.85)
 
-  const nodeStroke = cssVar(wrap, '--card') || (dark ? '#181e28' : '#fff')
   const nodeG = svg
     .append('g')
     .selectAll<SVGGElement, GNode>('g')
@@ -532,29 +643,33 @@ export function renderFocusedGraph(params: RenderParams & { code: string }): d3.
   // yang dipakai sekarang cuma punya lf 'L'/'F' (bukan kode negara). Sejak
   // Task 12 pembedaan bentuk dibuang seluruhnya (semua simpul bundar), jadi
   // graf umum & focused view memang memakai glyph yang sama.
-  drawNodeGlyph(nodeG, nodeStroke)
+  drawNodeGlyph(nodeG, dark)
 
   const berlabel = idBerlabel(nodes)
 
+  // Label di bawah node — kode emiten mono, semua diberi halo warna latar
+  // (paint-order stroke) supaya terbaca di atas edge ring luar.
   nodeG
     .append('text')
     .text((d) => d.label)
     .attr('font-size', (d) => (d.id === centerId ? 12 : 9))
-    .attr('font-weight', (d) => (d.id === centerId ? 800 : 600))
+    .attr('font-weight', (d) => (d.id === centerId ? 700 : 600))
+    .attr('font-family', (d) => (d.kind === 'emiten' ? 'var(--mono)' : null))
     .attr('fill', 'var(--text)')
+    .attr('stroke', 'var(--bg)')
+    .attr('stroke-width', 2.5)
+    .attr('stroke-linejoin', 'round')
+    .attr('paint-order', 'stroke')
     .attr('text-anchor', 'middle')
     .attr('dy', (d) => d.size + 11)
     .attr('pointer-events', 'none')
     .attr('opacity', (d) => (berlabel.has(d.id) ? 1 : 0))
 
   pasangUngkapLabel(nodeG, berlabel)
+  pasangSorotTetangga(nodeG, link, links)
 
   sim.on('tick', () => {
-    link
-      .attr('x1', (d) => (d.source as GNode).x ?? 0)
-      .attr('y1', (d) => (d.source as GNode).y ?? 0)
-      .attr('x2', (d) => (d.target as GNode).x ?? 0)
-      .attr('y2', (d) => (d.target as GNode).y ?? 0)
+    link.attr('d', linkPath)
     nodeG.attr('transform', (d) => `translate(${d.x},${d.y})`)
   })
 
