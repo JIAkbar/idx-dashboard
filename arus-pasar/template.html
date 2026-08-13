@@ -5,39 +5,54 @@
 <title>{{JUDUL}}</title>
 <style>
   :root{
-    --paper:#FFFFFF; --panel:#F4F6F8; --ink:#12181F; --ink2:#39434E;
-    --mute:#6B7683; --hair:#D8DDE3; --brand:#0B4F4A;
-    --bull:#0A7D4F; --bear:#B93A2B; --warn:#8A5E00;
+    --paper:#0E1620; --panel:rgba(255,255,255,.04); --ink:#E9EEF4; --ink2:#C4CFDA;
+    --mute:#5E7080; --hair:rgba(255,255,255,.09); --brand:#12202C; --teal:#37B8AF;
+    --bull:#2FBF71; --bull-dim:rgba(47,191,113,.14);
+    --side:#E8A33D; --side-dim:rgba(232,163,61,.14);
+    --bear:#E4574C; --bear-dim:rgba(228,87,76,.14);
+    --warn:#E8A33D;
+    --disp:"Bahnschrift","Segoe UI",system-ui,sans-serif;
+    --mono:"Cascadia Code","Cascadia Mono",Consolas,monospace;
   }
   *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  html,body{margin:0;padding:0;background:#888}
-  body{font-family:"Segoe UI",system-ui,sans-serif;color:var(--ink);line-height:1.45;font-size:9pt}
-  .page{width:210mm;height:296mm;background:var(--paper);margin:0 auto;position:relative;
+  html,body{margin:0;padding:0;background:#2A333D}
+  body{font-family:var(--disp);color:var(--ink);line-height:1.45;font-size:9pt}
+  .page{width:210mm;height:296mm;background:var(--paper);color:var(--ink);margin:0 auto;position:relative;
     display:flex;flex-direction:column;page-break-after:always;overflow:hidden}
-  @media screen{.page{margin:10px auto;box-shadow:0 6px 30px rgba(0,0,0,.35)}}
+  @media screen{.page{margin:10px auto;box-shadow:0 6px 30px rgba(0,0,0,.5)}}
   @page{size:A4;margin:0}
 
+  /* ── Sistem sentimen: pita tepi kiri ── */
+  .senti-edge{position:absolute;left:0;top:0;bottom:0;width:5px}
+  .s-bull .senti-edge{background:var(--bull)}
+  .s-side .senti-edge{background:var(--side)}
+  .s-bear .senti-edge{background:var(--bear)}
+
   /* ── Pita masthead ── */
-  .band{background:var(--brand);color:#fff;padding:7mm 14mm 5.5mm;
-    display:flex;justify-content:space-between;align-items:flex-end}
+  .band{background:transparent;color:var(--ink);padding:7mm 14mm 5.5mm;
+    display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:1px solid var(--hair)}
   .band .m h1{font-family:Georgia,Cambria,serif;font-size:19pt;font-weight:700;
-    margin:0;line-height:1;letter-spacing:.02em}
+    margin:0;line-height:1;letter-spacing:.04em}
   .band .m .sub{font-size:7pt;letter-spacing:.24em;text-transform:uppercase;
-    color:rgba(255,255,255,.75);margin-top:2.5px}
-  .band .e{text-align:right;font-size:7.5pt;color:rgba(255,255,255,.85);line-height:1.5}
-  .band .e .kode{font-family:Consolas,monospace;font-size:8pt;color:#fff}
+    color:var(--mute);margin-top:2.5px}
+  .band .e{text-align:right;font-size:7.5pt;color:var(--ink2);line-height:1.5}
+  .band .e .kode{font-family:var(--mono);font-size:8pt;color:var(--teal)}
 
   .inner{padding:6mm 14mm 0;display:flex;flex-direction:column;flex:1;min-height:0}
 
   /* ── Judul emiten ── */
   .trow{display:flex;justify-content:space-between;align-items:flex-end;
-    border-bottom:2.5px solid var(--ink);padding-bottom:2mm}
-  .trow .tk{font-size:19pt;font-weight:800;letter-spacing:-.01em;line-height:1}
-  .trow .tk small{font-size:9pt;font-weight:400;color:var(--mute);margin-left:8px;letter-spacing:0}
-  .trow .px{text-align:right;font-variant-numeric:tabular-nums;line-height:1.1}
+    border-bottom:1px solid var(--hair);padding-bottom:2mm}
+  .trow .tk{font-family:var(--mono);font-size:19pt;font-weight:800;letter-spacing:-.01em;line-height:1}
+  .trow .tk small{font-family:var(--disp);font-size:9pt;font-weight:400;color:var(--mute);margin-left:8px;letter-spacing:0}
+  .trow .px{text-align:right;font-variant-numeric:tabular-nums;line-height:1.1;font-family:var(--mono)}
   .trow .px .h{font-size:19pt;font-weight:800}
   .trow .px .c{font-size:9pt;font-weight:700}
   .bull{color:var(--bull)} .bear{color:var(--bear)}
+  /* chg% harga ikut TANDA (.bull/.bear dari build.py berdasar o.chg), BUKAN
+     warna vonis — vonis bullish di hari merah tetap merah angkanya; sentimen
+     sudah terwakili pita, pill, strategi, dan skor. */
 
   /* ── Strip statistik ── */
   .stats{display:flex;border-bottom:1px solid var(--hair);
@@ -48,7 +63,8 @@
   .stats .s .v small{font-size:7pt;font-weight:400;color:var(--mute)}
 
   /* ── Chart ── */
-  .chartwrap{margin:3.5mm 0 0;position:relative}
+  .chartwrap{margin:3.5mm 0 0;position:relative;border:1px solid var(--hair);
+    border-radius:1.5mm;padding:2mm 2.5mm;background:rgba(255,255,255,.02)}
   .chartwrap .cap{font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;
     color:var(--mute);margin-bottom:1.5mm}
   canvas{width:100%;height:auto;display:block}
@@ -56,90 +72,162 @@
   /* ── Kolom ── */
   .cols{display:grid;grid-template-columns:60mm 1fr;gap:7mm;margin-top:4mm;flex:1;min-height:0}
 
-  h3.rule{font-size:7pt;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);
+  h3.rule{font-size:7pt;letter-spacing:.18em;text-transform:uppercase;color:var(--ink2);
     margin:0 0 2mm;display:flex;align-items:center;gap:6px;font-weight:700}
   h3.rule::after{content:"";flex:1;border-top:1px solid var(--hair)}
   h3.rule .r{font-weight:400;color:var(--mute);letter-spacing:.06em}
 
   /* meter tipis */
-  .meter{height:3px;background:linear-gradient(90deg,var(--bear),#C9CFD6 50%,var(--bull));
+  .meter{height:3px;background:linear-gradient(90deg,var(--bear),rgba(255,255,255,.16) 50%,var(--bull));
     position:relative;margin:1mm 0 1.5mm}
   .meter i{position:absolute;top:-2.5px;width:2px;height:8px;background:var(--ink)}
   .meterlbl{display:flex;justify-content:space-between;font-size:5.8pt;color:var(--mute);
     text-transform:uppercase;letter-spacing:.1em;margin-bottom:2.5mm}
 
-  table.brk{width:100%;border-collapse:collapse;font-size:7.6pt;font-variant-numeric:tabular-nums}
+  table.brk{width:100%;border-collapse:collapse;font-size:7.6pt;font-variant-numeric:tabular-nums;
+    font-family:var(--mono)}
   table.brk th{font-size:6pt;color:var(--mute);text-transform:uppercase;letter-spacing:.12em;
-    text-align:right;padding:1.5px 0 3px;border-bottom:1.5px solid var(--ink);font-weight:700}
+    text-align:right;padding:1.5px 0 3px;border-bottom:1px solid var(--hair);font-weight:700}
   table.brk th:first-child{text-align:left}
-  table.brk td{padding:2.1px 0;text-align:right;border-bottom:1px solid var(--panel)}
+  table.brk td{padding:2.1px 0;text-align:right;border-bottom:1px solid rgba(255,255,255,.045)}
   table.brk td:first-child{text-align:left;font-weight:700}
   .bcode-b{color:var(--bull)} .bcode-s{color:var(--bear)}
   .brk .sep td{padding:2.5mm 0 3px;font-size:6pt;color:var(--mute);text-transform:uppercase;
-    letter-spacing:.12em;text-align:left;font-weight:700;border-bottom:1.5px solid var(--ink)}
-  .brk .tot td{border-top:1.5px solid var(--ink);border-bottom:none;font-weight:700;padding-top:3px}
+    letter-spacing:.12em;text-align:left;font-weight:700;border-bottom:1px solid var(--hair)}
+  .brk .tot td{border-top:1px solid var(--hair);border-bottom:none;font-weight:700;padding-top:3px}
   .tag{font-size:5.4pt;font-weight:700;padding:0 2.5px;margin-left:3px;vertical-align:1px;
-    letter-spacing:.05em}
+    letter-spacing:.05em;font-family:var(--disp)}
   .tag.ritel{color:var(--warn);outline:1px solid var(--warn)}
   .tag.scalp{color:var(--mute);outline:1px solid var(--mute)}
-  .brksrc{font-size:6.2pt;color:var(--mute);margin-top:2mm;line-height:1.5}
+  .brksrc{font-size:6.2pt;color:var(--mute);margin-top:2mm;line-height:1.5;font-family:var(--disp)}
 
-  /* ── Analisa kanan ── */
-  .bias{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2.5mm}
+  /* ── Analisa kanan: verdict pill sentimen ── */
+  .bias{display:flex;justify-content:space-between;align-items:center;margin-bottom:2.5mm;
+    padding:2mm 3mm;border-radius:1.5mm;background:var(--panel)}
   .bias .lbl{font-size:12.5pt;font-weight:800;letter-spacing:-.005em}
+  .bias .lbl span{color:inherit}
+  .s-bull .bias{background:var(--bull-dim);color:var(--bull)}
+  .s-side .bias{background:var(--side-dim);color:var(--side)}
+  .s-bear .bias{background:var(--bear-dim);color:var(--bear)}
   .risk{font-size:6.8pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
-    padding:1.5px 8px}
-  .risk.MENENGAH{color:var(--brand);outline:1.5px solid var(--brand)}
-  .risk.TINGGI{color:var(--warn);outline:1.5px solid var(--warn)}
-  .risk.EKSTREM{color:var(--bear);outline:1.5px solid var(--bear)}
+    padding:1.5px 8px;border:1px solid currentColor;border-radius:99px}
+  .risk.MENENGAH{color:var(--teal)}
+  .risk.TINGGI{color:var(--warn)}
+  .risk.EKSTREM{color:var(--bear)}
+  .bias .risk{color:inherit}
 
   .sec{margin-bottom:3mm}
   .sec p{margin:0;font-size:8.6pt;color:var(--ink2)}
   .flowline{font-size:8.8pt;font-weight:700;color:var(--ink);margin-bottom:1px}
+  .kw{font-weight:700}
+  .s-bull .kw{color:var(--bull)}
+  .s-side .kw{color:var(--side)}
+  .s-bear .kw{color:var(--bear)}
 
   .sr{display:grid;grid-template-columns:auto 1fr;gap:1.5mm 5mm;font-size:9pt;
-    font-variant-numeric:tabular-nums;border-top:1.5px solid var(--ink);
-    border-bottom:1px solid var(--hair);padding:2.5mm 0;margin:0 0 3mm}
-  .sr .k{font-size:6.5pt;letter-spacing:.16em;text-transform:uppercase;font-weight:700;align-self:center}
+    font-variant-numeric:tabular-nums;border-top:1px solid var(--hair);
+    border-bottom:1px solid var(--hair);padding:2.5mm 0;margin:0 0 3mm;font-family:var(--mono)}
+  .sr .k{font-family:var(--disp);font-size:6.5pt;letter-spacing:.16em;text-transform:uppercase;font-weight:700;align-self:center}
   .sr .k.sup{color:var(--bull)} .sr .k.res{color:var(--bear)}
   .sr .v{font-weight:700}
-  .sr .v span{color:var(--hair);font-weight:400;padding:0 4px}
-  .sr .v .ragu{color:var(--warn);font-weight:400;font-size:7pt}
+  .sr .v span{color:var(--mute);font-weight:400;padding:0 4px}
+  .sr .v .ragu{color:var(--warn);font-weight:400;font-size:7pt;font-family:var(--disp)}
 
-  .strategi{border-left:3px solid var(--ink);padding:1.5mm 0 1.5mm 4mm;
+  .strategi{border-left:3px solid var(--ink);padding:1.5mm 3mm 1.5mm 4mm;
     font-size:9.3pt;font-weight:700;margin-bottom:3mm}
+  .s-bull .strategi{border-color:var(--bull);background:var(--bull-dim)}
+  .s-side .strategi{border-color:var(--side);background:var(--side-dim)}
+  .s-bear .strategi{border-color:var(--bear);background:var(--bear-dim)}
   .invtar{display:flex;gap:9mm;font-size:8.8pt;margin-bottom:3mm;font-variant-numeric:tabular-nums}
   .invtar .l{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);display:block}
-  .invtar b{font-weight:700}
+  .invtar b{font-weight:700;font-family:var(--mono)}
   .invtar .inv b{color:var(--bear)}
+  .invtar .tar b{color:var(--bull)}
   .konsek{font-size:8pt;color:var(--mute);margin:0}
 
-  /* skor segmen */
+  /* skor segmen — angka & bar ikut warna vonis */
   .skor{margin-top:auto;padding-top:3mm}
   .skor .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1.5mm}
-  .skor .head .t{font-size:6.5pt;letter-spacing:.18em;text-transform:uppercase;font-weight:700}
-  .skor .head .n{font-size:12pt;font-weight:800;font-variant-numeric:tabular-nums}
+  .skor .head .t{font-size:6.5pt;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+  .skor .head .n{font-size:12pt;font-weight:800;font-variant-numeric:tabular-nums;font-family:var(--mono)}
+  .s-bull .skor .head .n{color:var(--bull)}
+  .s-side .skor .head .n{color:var(--side)}
+  .s-bear .skor .head .n{color:var(--bear)}
   .skor .barrow{display:flex;gap:2px;height:5px}
-  .skor .barrow i{background:var(--brand);opacity:.9}
-  .skor .barrow i.sisa{background:var(--panel)}
+  .skor .barrow i{background:var(--teal);border-radius:1px}
+  .s-bull .skor .barrow i{background:var(--bull)}
+  .s-side .skor .barrow i{background:var(--side)}
+  .s-bear .skor .barrow i{background:var(--bear)}
+  .skor .barrow i:nth-child(3){opacity:.8}
+  .skor .barrow i:nth-child(5){opacity:.6}
+  .skor .barrow i:nth-child(7){opacity:.45}
+  .skor .barrow i:nth-child(9){opacity:.35}
+  .skor .barrow i.sisa,.s-bull .skor .barrow i.sisa,.s-side .skor .barrow i.sisa,
+  .s-bear .skor .barrow i.sisa{background:rgba(255,255,255,.08);opacity:1}
   .skor .leg{display:flex;gap:5mm;font-size:6.3pt;color:var(--mute);margin-top:1.5mm;
-    font-variant-numeric:tabular-nums}
+    font-variant-numeric:tabular-nums;font-family:var(--mono)}
 
-  .foot{border-top:1.5px solid var(--ink);margin:3mm 14mm 0;padding:2mm 0 5mm;
+  .foot{border-top:1px solid var(--hair);margin:3mm 14mm 0;padding:2mm 0 5mm;
     display:flex;justify-content:space-between;font-size:6.5pt;color:var(--mute)}
-  .foot .kode{font-family:Consolas,monospace}
+  .foot .kode{font-family:var(--mono)}
+
+  /* ── Sampul (sistem sentimen) ── */
+  .cover .wm-big{font-family:Georgia,Cambria,serif;font-size:46pt;font-weight:700;
+    line-height:1.05;margin-top:8mm}
+  .cover .cv-tag{font-size:8pt;letter-spacing:.3em;text-transform:uppercase;color:var(--mute);margin-top:3mm}
+  .cover .cv-tgl{font-size:13pt;margin-top:9mm;color:var(--ink2)}
+  .cover .cv-kode{font-family:var(--mono);font-size:9pt;color:var(--teal);margin-top:2mm}
+  .senti-sum{display:flex;gap:4mm;margin-top:11mm}
+  .senti-sum .b{flex:1;border-radius:1.5mm;padding:4mm 5mm;font-family:var(--mono);
+    font-variant-numeric:tabular-nums}
+  .senti-sum .b .n{font-size:18pt;font-weight:800;display:block;line-height:1.15}
+  .senti-sum .b .l{font-size:6.5pt;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+  .sb-bull{background:var(--bull-dim);color:var(--bull)}
+  .sb-side{background:var(--side-dim);color:var(--side)}
+  .sb-bear{background:var(--bear-dim);color:var(--bear)}
+  .cv-list{margin-top:10mm}
+  .cvrow{display:flex;align-items:center;gap:5mm;padding:3mm 0;border-bottom:1px solid var(--hair);
+    font-variant-numeric:tabular-nums}
+  .cvrow .dot{width:3mm;height:3mm;border-radius:1mm;flex:none}
+  .cvrow .tkk{font-family:var(--mono);font-size:12pt;font-weight:800;width:24mm}
+  .cvrow .lb{flex:1;color:var(--ink2);font-size:9.5pt}
+  .cvrow .sk{font-family:var(--mono);font-size:12pt;font-weight:800}
+  /* sampul padat 7-20 emiten: 2 kolom, label pendek */
+  .cover .wm-big.kecil{font-size:30pt;line-height:1.1}
+  .cv-list.padat{columns:2;column-gap:9mm;margin-top:7mm}
+  .cv-list.padat .cvrow{padding:1.7mm 0;gap:3mm;break-inside:avoid}
+  .cv-list.padat .tkk{font-size:10pt;width:17mm}
+  .cv-list.padat .lb{font-size:7.3pt}
+  .cv-list.padat .sk{font-size:10pt}
+  .cv-foot{margin-top:auto;padding-bottom:14mm}
+  /* kotak stat berlabel gaya sampul lama (V2) — angka besar kebaca, bukan
+     satu baris kecil; label kecil di atas angka. */
+  .cv-stats{display:flex;gap:10mm;background:rgba(255,255,255,.04);border:1px solid var(--hair);
+    border-radius:2mm;padding:4mm 5mm;font-variant-numeric:tabular-nums;margin-bottom:4mm}
+  .cv-stats .l{display:block;font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:.8mm}
+  .cv-stats b{font-family:var(--mono);font-size:10.5pt;color:var(--ink)}
+  .cv-stats span .c-bull{font-family:var(--mono);font-size:9pt}
+  .cv-foot .c-bull{color:var(--bull)}
+  .cv-legal{font-size:7pt;color:var(--mute);line-height:1.8}
 
   /* ── Ringkasan (hal 1) ── */
-  .lede{font-size:10.5pt;color:var(--ink2);margin:0 0 4mm;line-height:1.6;max-width:150mm}
+  .lede{font-size:10.5pt;color:var(--ink2);margin:0 0 4mm;line-height:1.6;max-width:138mm;text-wrap:pretty}
   table.ring{width:100%;border-collapse:collapse;font-size:8.8pt;font-variant-numeric:tabular-nums}
   table.ring th{font-size:6.3pt;color:var(--mute);text-transform:uppercase;letter-spacing:.14em;
-    text-align:left;padding:2mm 3mm 1.5mm 0;border-bottom:1.5px solid var(--ink);font-weight:700}
-  table.ring td{padding:2.6mm 3mm 2.6mm 0;border-bottom:1px solid var(--hair);vertical-align:top}
-  table.ring .tk{font-weight:800;font-size:10pt}
-  table.ring .num{font-weight:700}
-  .ihsgbar{background:var(--panel);padding:3mm 4mm;font-size:8.6pt;margin:4.5mm 0;
-    display:flex;gap:8mm;font-variant-numeric:tabular-nums}
-  .ihsgbar b{font-weight:700}
+    text-align:left;padding:2mm 3mm 1.5mm 0;border-bottom:1px solid var(--hair);font-weight:700}
+  table.ring td{padding:2.6mm 3mm 2.6mm 0;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
+  table.ring .tk{font-weight:800;font-size:10pt;font-family:var(--mono)}
+  table.ring .num{font-weight:700;font-family:var(--mono)}
+  .pill{display:inline-block;font-family:var(--mono);font-size:7pt;font-weight:700;
+    border-radius:1mm;padding:.6mm 2mm;letter-spacing:.04em}
+  .pill.bull{background:var(--bull-dim);color:var(--bull)}
+  .pill.side{background:var(--side-dim);color:var(--side)}
+  .pill.bear{background:var(--bear-dim);color:var(--bear)}
+  .c-bull{color:var(--bull)} .c-side{color:var(--side)} .c-bear{color:var(--bear)}
+  .lbl-sisa{font-size:7.4pt;color:var(--mute)}
+  .ihsgbar{background:var(--panel);border:1px solid var(--hair);border-radius:1.5mm;
+    padding:3mm 4mm;font-size:8.6pt;margin:4.5mm 0;display:flex;gap:8mm;font-variant-numeric:tabular-nums}
+  .ihsgbar b{font-weight:700;font-family:var(--mono)}
   .ihsgbar .l{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);display:block}
   .metode{font-size:7.6pt;color:var(--mute);line-height:1.7}
   .metode b{color:var(--ink2)}
@@ -147,12 +235,12 @@
   /* ── Peringkat ── */
   table.rank{width:100%;border-collapse:collapse;font-size:8.8pt;font-variant-numeric:tabular-nums}
   table.rank th{font-size:6.3pt;color:var(--mute);text-transform:uppercase;letter-spacing:.14em;
-    text-align:right;padding:2mm 0 1.5mm;border-bottom:1.5px solid var(--ink);font-weight:700}
+    text-align:right;padding:2mm 0 1.5mm;border-bottom:1px solid var(--hair);font-weight:700}
   table.rank th:nth-child(-n+2){text-align:left}
-  table.rank td{padding:2.8mm 0;border-bottom:1px solid var(--hair);text-align:right}
+  table.rank td{padding:2.8mm 0;border-bottom:1px solid rgba(255,255,255,.05);text-align:right}
   table.rank td:nth-child(-n+2){text-align:left}
-  table.rank .tk{font-weight:800;font-size:10pt}
-  table.rank .total{font-weight:800;font-size:12pt}
+  table.rank .tk{font-weight:800;font-size:10pt;font-family:var(--mono)}
+  table.rank .total{font-weight:800;font-size:12pt;font-family:var(--mono)}
   .blok{margin-top:4.5mm}
   .blok p{margin:0;font-size:8.6pt;color:var(--ink2)}
   .blok.integritas{border-left:3px solid var(--warn);padding-left:4mm}
@@ -163,37 +251,82 @@
 <!--PAGES-->
 <script>
 const OHLC = /*OHLC*/{};
+// EMA: [periode, warna, tebal] — dipilih kontras di #0E1620 tanpa norak
+const EMAS=[[20,"#6FE3D9",1],[50,"#37B8AF",1],[60,"#7E97B8",1],[100,"#A583D6",1],[200,"#E0955A",1.5]];
 function gambarChart(id, tk, ema50, pivot){
   const cv=document.getElementById(id), x=cv.getContext('2d');
-  const bars=OHLC[tk].slice(-65);
-  const W=cv.width,H=cv.height,pad={t:14,r:104,b:14,l:6};
+  const all=OHLC[tk], bars=all.slice(-252);
+  const W=cv.width,H=cv.height,pad={t:30,r:136,b:14,l:6};
+  const volH=Math.round(H*.20), gap=10;
+  const pBot=H-pad.b-volH-gap; // batas bawah area harga; di bawahnya panel volume
+  // EMA dihitung dari riwayat penuh (~2 thn, pemanasan EMA200), digambar 252 bar
+  const seriEma=EMAS.map(([n])=>{const k=2/(n+1);let e=all[0].c;
+    return all.map(b=>e=e+(b.c-e)*k).slice(-bars.length);});
   const pvals=Object.values(pivot);
-  const lo=Math.min(...bars.map(b=>b.l),...pvals)*0.99,
-        hi=Math.max(...bars.map(b=>b.h),...pvals)*1.01;
+  const lo=Math.min(...bars.map(b=>b.l),...pvals,...seriEma.map(s=>Math.min(...s)))*0.99,
+        hi=Math.max(...bars.map(b=>b.h),...pvals,...seriEma.map(s=>Math.max(...s)))*1.01;
   const X=i=>pad.l+i*(W-pad.l-pad.r)/(bars.length-1),
-        Y=v=>pad.t+(hi-v)*(H-pad.t-pad.b)/(hi-lo);
-  x.font="15px Segoe UI";
+        Y=v=>pad.t+(hi-v)*(pBot-pad.t)/(hi-lo);
+  // legenda satu baris pojok kiri atas
+  x.font="13px Cascadia Code, Consolas, monospace";x.textBaseline="middle";
+  let lx=pad.l+2;
+  for(const [n,c,w] of EMAS){
+    x.strokeStyle=c;x.lineWidth=2.5;x.beginPath();x.moveTo(lx,11);x.lineTo(lx+13,11);x.stroke();
+    lx+=17;x.fillStyle="rgba(233,238,244,.72)";x.fillText("EMA "+n,lx,11);
+    lx+=x.measureText("EMA "+n).width+13;
+  }
+  x.textBaseline="alphabetic";x.font="15px Bahnschrift, Segoe UI";
   let yT=[];
-  for(const [n,v] of Object.entries(pivot)){
-    x.strokeStyle="#B9C1C9";x.setLineDash([3,4]);x.beginPath();
+  // label diurut nilai desc supaya tumpukan anti-tabrakan tetap berurut harga
+  // (tanpa ini R1 bisa terdorong ke bawah P dan urutan kebaca acak)
+  for(const [n,v] of Object.entries(pivot).sort((a,b)=>b[1]-a[1])){
+    x.strokeStyle="rgba(255,255,255,.28)";x.lineWidth=1;x.setLineDash([3,4]);x.beginPath();
     x.moveTo(pad.l,Y(v));x.lineTo(W-pad.r,Y(v));x.stroke();x.setLineDash([]);
     let yl=Y(v)+5; while(yT.some(u=>Math.abs(u-yl)<17)) yl+=17; yT.push(yl);
-    x.fillStyle=n[0]==="R"?"#B93A2B":n==="P"?"#6B7683":"#0A7D4F";
-    x.fillText(n+" "+v.toLocaleString('id'),W-pad.r+6,yl);
+    x.fillStyle="rgba(255,255,255,.72)";
+    x.fillText(n+" "+v.toLocaleString('id'),W-pad.r+14,yl);
   }
   const bw=Math.max(3,(W-pad.l-pad.r)/bars.length*.62);
+  x.lineWidth=1;
   bars.forEach((b,i)=>{
     const up=b.c>=b.o;
-    x.strokeStyle=x.fillStyle=up?"#0A7D4F":"#B93A2B";
+    x.strokeStyle=x.fillStyle=up?"#2FBF71":"#E4574C";
     x.beginPath();x.moveTo(X(i),Y(b.h));x.lineTo(X(i),Y(b.l));x.stroke();
     x.fillRect(X(i)-bw/2,Y(Math.max(b.o,b.c)),bw,
       Math.max(1.5,Y(Math.min(b.o,b.c))-Y(Math.max(b.o,b.c))));
   });
-  const all=OHLC[tk], k=2/51; let e=all[0].c;
-  const seri=all.map(b=>e=e+(b.c-e)*k).slice(-bars.length);
-  x.strokeStyle="#0B4F4A";x.lineWidth=2;x.beginPath();
-  seri.forEach((v,i)=>i?x.lineTo(X(i),Y(v)):x.moveTo(X(0),Y(v)));
+  seriEma.forEach((seri,j)=>{
+    x.strokeStyle=EMAS[j][1];x.lineWidth=EMAS[j][2];x.beginPath();
+    seri.forEach((v,i)=>i?x.lineTo(X(i),Y(v)):x.moveTo(X(0),Y(v)));
+    x.stroke();
+  });
+  // ── panel volume: bar ikut arah candle (redup), lonjakan >1.75× MA20 penuh ──
+  const vAll=all.map(b=>b.v), maAll=[]; let s=0;
+  vAll.forEach((v,i)=>{s+=v; if(i>=20)s-=vAll[i-20]; maAll.push(i>=19?s/20:null);});
+  const vol=vAll.slice(-bars.length), vma=maAll.slice(-bars.length);
+  const maxV=Math.max(...vol,...vma.map(v=>v||0))*1.05||1;
+  const vY=v=>H-pad.b-v/maxV*volH;
+  bars.forEach((b,i)=>{
+    const up=b.c>=b.o, lonjak=vma[i]&&vol[i]>1.75*vma[i];
+    x.fillStyle=up?(lonjak?"#2FBF71":"rgba(47,191,113,.32)")
+                 :(lonjak?"#E4574C":"rgba(228,87,76,.32)");
+    x.fillRect(X(i)-bw/2,vY(vol[i]),bw,Math.max(1,H-pad.b-vY(vol[i])));
+  });
+  x.strokeStyle="rgba(233,238,244,.55)";x.lineWidth=1;x.beginPath();
+  vma.forEach((v,i)=>{if(v==null)return;
+    i&&vma[i-1]!=null?x.lineTo(X(i),vY(v)):x.moveTo(X(i),vY(v));});
   x.stroke();
+  // 1 tick sumbu volume, angka bulat gaya Indonesia (12,5 Jt)
+  const fmtVol=v=>{const f=n=>n.toLocaleString('id',{maximumFractionDigits:1});
+    return v>=1e9?f(v/1e9)+" M":v>=1e6?f(v/1e6)+" Jt":f(v/1e3)+" rb";};
+  const mag=Math.pow(10,Math.floor(Math.log10(maxV*.8)));
+  const tick=Math.floor(maxV*.8/mag)*mag;
+  x.strokeStyle="rgba(255,255,255,.14)";x.setLineDash([3,4]);x.beginPath();
+  x.moveTo(pad.l,vY(tick));x.lineTo(W-pad.r,vY(tick));x.stroke();x.setLineDash([]);
+  x.fillStyle="rgba(255,255,255,.45)";x.font="12px Cascadia Code, Consolas, monospace";
+  // ikut tumpukan anti-tabrakan label pivot (S3 bisa terdorong sampai zona volume)
+  let vl=vY(tick)+4; while(yT.some(u=>Math.abs(u-vl)<15)) vl+=15;
+  x.fillText(fmtVol(tick),W-pad.r+14,Math.min(vl,H-4));
 }
 /*DRAWCALLS*/
 window.__chartsDone = true;

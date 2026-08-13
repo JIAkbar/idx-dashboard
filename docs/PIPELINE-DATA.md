@@ -36,6 +36,40 @@ dan commit kosong tidak terjadi (`git diff --staged --quiet`).
 sudah dipasang retry backoff + gerbang gagal-massal (>30% dari ≥100 ticker → exit 1,
 tidak commit data bolong).
 
+### Field fundamental (per emiten, `data-idx/json/fundamental/<TICKER>.json`)
+
+Sejak Agu 2026 diperluas selevel "Key Stats" Stockbit (semua null bila sumber tak ada;
+±9 request Yahoo per ticker, tidak bertambah dari versi lama):
+
+- **Valuasi**: `pe`, `forward_pe`, `ps`, `pb`, `ev_ebitda`, `ev_ebit` (kini benar-benar
+  EV/EBIT TTM, dulu alias ev_ebitda), `peg`, `earn_yield`, `enterprise_value`, `market_cap`.
+- **Per saham**: `eps`, `eps_fwd`, `rev_ps`, `cash_ps`, `bv`, `fcf_ps`, `shares_outstanding`
+  (alias `shares`), `free_float_pct` (alias `float_pct`).
+- **Solvabilitas**: `current_ratio`, `quick_ratio`, `der`(%), `lq_total_debt`, `lq_cash`,
+  `interest_coverage` (EBIT/|beban bunga| TTM), `lev_q` (aset/ekuitas), `altman_z`
+  (Z" emerging market: 6.56·WC/TA + 3.26·RE/TA + 6.72·EBIT/TA + 1.05·BVE/TL).
+- **Profitabilitas & manajemen**: `gpm/opm/npm/ebitda_margin`, `roa`, `roe`,
+  `roic` (NOPAT/(ekuitas+utang−kas), tax efektif fallback 22%), `roce` (EBIT/(TA−CL)).
+- **Efisiensi**: `receivables_turnover`, `inventory_turnover`, `asset_turnover`,
+  `days_sales_outstanding`, `days_inventory`, `days_payables`, `cash_conversion_cycle`
+  (bank/finansial: sebagian null — tanpa inventory/COGS, wajar).
+- **Growth YoY** (kuartal vs kuartal thn lalu): `rev_yoy`, `ni_yoy`, `gp_yoy`.
+- **Dividen**: `dividend`, `dividend_yield`, `payout_ratio`, `ex_dividend_date`,
+  `div_history` (≤6 tahun terakhir, ex_date+amount), `ddm_g_rate`, `div_years`.
+- **Laporan ringkas (grup)**: `income_ttm{revenue,gross_profit,ebitda,net_income}`,
+  `balance_q{cash,total_assets,total_liabilities,working_capital,common_equity,lt_debt,
+  st_debt,total_debt,net_debt,total_equity}`, `cashflow_ttm{cfo,cfi,cff,capex,fcf}` —
+  nilai identik dgn field datar `ttm_*`/`lq_*` (referensi, bukan hitung ulang).
+- **Kuartalan mini**: `quarterly{tahun:{Qn:{revenue,net_income}}}` maks 12 kuartal
+  (tabel per kuartal; seri penuh tetap di `q_revenue`/`q_net_income`/`q_eps` dll).
+- **Price performance**: `price_perf` kini sampai `1y/3y/5y` (`*_pct/_low/_high`),
+  dari SATU call `history(period="5y")`.
+- **Skor**: `f_score` (Piotroski 0–9, tahunan t vs t−1; komponen tanpa data = 0),
+  `f_score_n` (jumlah komponen yang benar-benar terhitung, maks 9).
+
+Emiten pelapor-USD (`financial_currency: "USD"`): nilai absolut dikonversi ke IDR
+pakai kurs `ds_*.json` terbaru; rasio dihitung dari laporan se-mata-uang (tak dikonversi).
+
 ## Kalau data berhenti update, cek berurutan
 
 1. `gh run list --workflow=update.yml --limit 5` — merah semua? Berarti IDX blokir runner; pastikan Task Scheduler lokal jalan (`schtasks /Query /TN "IDX-Update"`).
