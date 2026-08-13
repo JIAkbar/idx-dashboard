@@ -292,12 +292,12 @@ def halaman_sampul(ed, skor_map):
     if padat:
         kepala = f'''<div class="wm-big kecil">ARUS PASAR</div>
     <div class="cv-tag">Lantai Bursa · Edisi Harian · {n} emiten</div>
-    <div class="cv-kode">{ed["edisi"]} · Edisi Ujicoba</div>'''
+    <div class="cv-kode">{ed["edisi"]}</div>'''
     else:
         kepala = f'''<div class="wm-big">ARUS<br>PASAR</div>
     <div class="cv-tag">Lantai Bursa · Edisi Harian</div>
     <div class="cv-tgl">{ed["tanggal_id"]}</div>
-    <div class="cv-kode">{ed["edisi"]} · {n} emiten · Edisi Ujicoba</div>'''
+    <div class="cv-kode">{ed["edisi"]} · {n} emiten</div>'''
 
     return f'''
 <div class="page cover">
@@ -349,7 +349,7 @@ def halaman_ringkasan(ed, skor_map):
   {band(ed, "Ringkasan Edisi")}
   <div class="inner">
     <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Ringkasan Edisi</div>
-      <div class="px" style="font-size:8pt;color:var(--mute)">Edisi ujicoba · {len(ed["emiten"])} emiten</div></div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">{len(ed["emiten"])} emiten</div></div>
     <p class="lede">{TERBILANG.get(len(ed["emiten"]), len(ed["emiten"]))} emiten dibedah dengan kerangka yang sama: struktur harga terhadap EMA50
     dan Pivot Points, kualitas arus dana broker (siapa yang membeli — bukan hanya berapa),
     rasio risk/reward, likuiditas, dan sensitivitas terhadap IHSG.</p>
