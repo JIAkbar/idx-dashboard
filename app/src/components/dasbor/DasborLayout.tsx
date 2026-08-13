@@ -46,7 +46,7 @@ export function DasborLayout() {
         <Sidebar onMasuk={() => setLoginOpen(true)} />
         <div className="dasbor-kolom">
           <header className="dasbor-atas">
-            <Link to="/" className="dasbor-merek-mini" title="Papan" aria-label="Papan — halaman depan">
+            <Link to="/" className="dasbor-merek-mini" title="PAPAN — Pusat Analisa Pasar Nusantara" aria-label="PAPAN — halaman depan">
               P
             </Link>
             <PitaKurs />
@@ -59,7 +59,7 @@ export function DasborLayout() {
           <footer className="dasbor-kaki">
             <span>
               Sumber data: <b>Statistik Ringkas IDX</b> (idx.co.id), Yahoo Finance, dan KSEI.
-              Papan bukan produk resmi Bursa Efek Indonesia.
+              PAPAN (Pusat Analisa Pasar Nusantara) bukan produk resmi Bursa Efek Indonesia.
             </span>
             <span className="dasbor-kaki-kanan">
               Buletin analisa: <b>Arus Pasar</b>

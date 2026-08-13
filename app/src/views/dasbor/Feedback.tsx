@@ -24,7 +24,7 @@ export function Feedback() {
 
   const labelTopik = TOPIK.find((t) => t.id === topik)?.label ?? ''
   const teks =
-    `Halo JIA, saya ingin menyampaikan masukan terkait Papan — Pusat Analisa Pasar.\n\n` +
+    `Halo JIA, saya ingin menyampaikan masukan terkait PAPAN — Pusat Analisa Pasar Nusantara.\n\n` +
     `Topik: ${labelTopik}\n` +
     (pesan.trim() ? `Pesan: ${pesan.trim()}` : 'Pesan: ')
   const hrefWa = `https://wa.me/${NOMOR_WA}?text=${encodeURIComponent(teks)}`
@@ -97,7 +97,7 @@ export function Feedback() {
               <span className="v-note">+62 899-0447-098 &middot; WhatsApp</span>
             </div>
             <p className="muted" style={{ margin: 0, fontSize: 12, lineHeight: 1.7 }}>
-              Papan dikembangkan &amp; dirawat satu orang di luar jam kerja — respons masukan
+              PAPAN dikembangkan &amp; dirawat satu orang di luar jam kerja — respons masukan
               biasanya di hari yang sama, kadang lebih lama saat musim laporan keuangan ramai.
               Laporan bug dengan tanggal/saham/langkah reproduksi jelas paling cepat ditindaklanjuti.
             </p>
