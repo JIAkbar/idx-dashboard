@@ -12,6 +12,14 @@ interface KalenderProps {
   tanggalTersedia: TanggalIndex[]
   tanggalAktif: string | null
   onPilih: (iso: string) => void
+  /**
+   * 'penuh' (default) = panel kalender lengkap seperti semula (IndeksDunia,
+   * dipasangkan grid2). 'strip' = bar tipis Konsep 1 mockup
+   * kalender-3-konsep.html (.cal-strip-bar/.csb-*): tanggal aktif + IHSG,
+   * sesi + jam live, strip 7 hari, tombol expand grid bulan penuh — dipakai
+   * halaman standalone /stocks, /broker, /sector.
+   */
+  varian?: 'strip' | 'penuh'
 }
 
 const BULAN = [
@@ -98,7 +106,7 @@ export function cariHariAdjacent(tanggal: TanggalIndex[], aktif: string | null) 
  * Reusable — tidak ada logika spesifik World di sini, cuma butuh
  * {tanggalTersedia, tanggalAktif, onPilih}.
  */
-export function Kalender({ tanggalTersedia, tanggalAktif, onPilih }: KalenderProps) {
+export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'penuh' }: KalenderProps) {
   const dataMap = useMemo(() => {
     const m = new Map<string, TanggalIndex>()
     tanggalTersedia.forEach((d) => m.set(d.date_iso, d))
@@ -130,6 +138,9 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih }: KalenderPro
     setCalYear(y)
     setCalMonth(m)
   }, [tanggalAktif])
+
+  // ─── Expand grid bulan pada varian strip (#k1full mockup) ──
+  const [stripOpen, setStripOpen] = useState(false)
 
   // ─── Dropdown bulan (.dd) ──────────────────────────────────
   const [ddOpen, setDdOpen] = useState(false)
@@ -220,35 +231,33 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih }: KalenderPro
   const sesiAktif = sesiTuple?.[0] ?? 'Bursa Tutup'
   const jamDigital = `${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`
 
-  return (
-    <div className="panel">
-      <div className="panel-h">
-        <span className="lbl">Kalender Bursa</span>
-        <div className={`dd${ddOpen ? ' open' : ''}`} ref={ddRef}>
-          <button type="button" className="dd-btn" onClick={() => setDdOpen((v) => !v)}>
-            {BULAN[calMonth]} {calYear}
-            <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
-          </button>
-          <div className="dd-menu">
-            {bulanTersedia.map(({ y, m }) => {
-              const active = y === calYear && m === calMonth
-              return (
-                <button
-                  key={`${y}-${m}`}
-                  type="button"
-                  className={`dd-it${active ? ' sel' : ''}`}
-                  onClick={() => { setCalYear(y); setCalMonth(m); setDdOpen(false) }}
-                >
-                  {BULAN[m]} {y}
-                </button>
-              )
-            })}
-          </div>
-        </div>
+  // ─── Potongan JSX yang dipakai kedua varian (penuh & strip) ──
+  const ddBulan = (
+    <div className={`dd${ddOpen ? ' open' : ''}`} ref={ddRef}>
+      <button type="button" className="dd-btn" onClick={() => setDdOpen((v) => !v)}>
+        {BULAN[calMonth]} {calYear}
+        <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
+      </button>
+      <div className="dd-menu">
+        {bulanTersedia.map(({ y, m }) => {
+          const active = y === calYear && m === calMonth
+          return (
+            <button
+              key={`${y}-${m}`}
+              type="button"
+              className={`dd-it${active ? ' sel' : ''}`}
+              onClick={() => { setCalYear(y); setCalMonth(m); setDdOpen(false) }}
+            >
+              {BULAN[m]} {y}
+            </button>
+          )
+        })}
       </div>
+    </div>
+  )
 
-      <div className="panel-b">
-        <div className="hari-nav">
+  const hariNav = (
+    <div className="hari-nav">
           <button
             type="button"
             className="dd-btn"
@@ -272,7 +281,159 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih }: KalenderPro
           >
             <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" /></svg>
           </button>
+    </div>
+  )
+
+  const calGrid = (
+    <div className="cal-grid">
+      {DOW_LABEL.map((d, i) => (
+        <div key={d} className="cg hdr" style={i >= 5 ? { color: '#d32f2f' } : undefined}>{d}</div>
+      ))}
+      {cells.map((day, i) => {
+        if (day === null) return <div key={`e${i}`} className="cg" />
+        const iso = `${calYear}-${pad2(calMonth)}-${pad2(day)}`
+        const dow = new Date(calYear, calMonth - 1, day).getDay()
+        const isWeekend = dow === 0 || dow === 6
+        const isHoliday = !!HOLIDAYS[iso]
+        const data = dataMap.get(iso)
+
+        if (data) {
+          const isUp = data.ihsg_pct >= 0
+          const isAktif = iso === tanggalAktif
+          return (
+            <button
+              key={iso}
+              type="button"
+              className={`cg ada${isAktif ? ' aktif' : ''}`}
+              onClick={() => onPilih(iso)}
+            >
+              <span>{day}</span>
+              <span className="num" style={{ fontSize: 9 }}>
+                {data.ihsg.toLocaleString('id-ID', { maximumFractionDigits: 0 })}
+              </span>
+              <span
+                className="num"
+                style={{ fontSize: 9, fontWeight: 700, color: isAktif ? undefined : `var(--${isUp ? 'green' : 'red'})` }}
+              >
+                {isUp ? '+' : ''}{data.ihsg_pct.toFixed(2)}%
+              </span>
+            </button>
+          )
+        }
+
+        // .cg tanpa .ada didesain artifact untuk 1 baris (28px) — label
+        // libur karenanya disingkat supaya muat 2 baris kecil.
+        const label = isWeekend ? (dow === 6 ? 'Sab' : 'Min') : isHoliday ? 'Libur' : 'Bursa Libur'
+        return (
+          <div
+            key={iso}
+            className="cg"
+            title={isHoliday ? HOLIDAYS[iso] : undefined}
+            style={{ flexDirection: 'column', height: 'auto', minHeight: 28, lineHeight: 1.15, gap: 1 }}
+          >
+            <span>{day}</span>
+            <span style={{ fontSize: 7 }}>{label}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+
+  const noticeEl = notice && (
+    <div
+      className={`chip ${notice.ok ? 'up' : 'dn'}`}
+      style={{ display: 'flex', marginTop: 10, whiteSpace: 'normal', textAlign: 'left', lineHeight: 1.5, height: 'auto' }}
+    >
+      <span>{notice.icon} {notice.text}</span>
+    </div>
+  )
+
+  // ─── Varian STRIP — port Konsep 1 mockup kalender-3-konsep.html ──
+  if (varian === 'strip') {
+    const aktifData = tanggalAktif ? dataMap.get(tanggalAktif) : undefined
+    const tglLabel = tanggalAktif
+      ? new Date(`${tanggalAktif}T12:00:00`).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short' })
+      : '—'
+    return (
+      <div className="panel">
+        <div className="cal-strip-bar">
+          <div className="csb-now">
+            <span className="tgl">{tglLabel}</span>
+            {aktifData && (
+              <span className="ihsg num">
+                {aktifData.ihsg.toLocaleString('id-ID', { maximumFractionDigits: 0 })}{' '}
+                <span className={aktifData.ihsg_pct >= 0 ? 'up' : 'dn'}>
+                  {aktifData.ihsg_pct >= 0 ? '+' : ''}{aktifData.ihsg_pct.toFixed(2)}%
+                </span>
+              </span>
+            )}
+          </div>
+          <div className="csb-sesi">
+            <span style={{ color: sesiTuple?.[3], fontWeight: 700 }}>{sesiAktif}</span>
+            <span className="seg"><i style={{ width: `${cursorPct ?? (curMin < 0 ? 0 : 100)}%` }} /></span>
+            <b className="num">{jamDigital}</b>
+          </div>
+          <div className="csb-hari">
+            {weekDays.map(({ iso, dayNum, data }, i) => {
+              const isAktifHari = iso === tanggalAktif
+              const cls = `csb-d${isAktifHari ? ' aktif' : ''}${data ? '' : ' off'}`
+              const inner = (dp: ReactNode) => (
+                <>
+                  <span className="dw">{DOW_LABEL[i]}</span>
+                  <span className="dd">{dayNum}</span>
+                  {dp}
+                </>
+              )
+              if (!data) {
+                return <span key={iso} className={cls}>{inner(<span className="dp">·</span>)}</span>
+              }
+              const isUp = data.ihsg_pct >= 0
+              return (
+                <button
+                  key={iso}
+                  type="button"
+                  className={cls}
+                  onClick={() => onPilih(iso)}
+                  title={`${iso}: IHSG ${data.ihsg.toLocaleString('id-ID')} ${isUp ? '+' : ''}${data.ihsg_pct.toFixed(2)}%`}
+                >
+                  {inner(
+                    <span className={`dp${isAktifHari ? '' : isUp ? ' up' : ' dn'}`}>
+                      {isUp ? '+' : ''}{data.ihsg_pct.toFixed(2)}%
+                    </span>,
+                  )}
+                </button>
+              )
+            })}
+          </div>
+          <button type="button" className="csb-more" onClick={() => setStripOpen((v) => !v)}>
+            {stripOpen ? 'Tutup kalender ▴' : 'Kalender penuh ▾'}
+          </button>
         </div>
+        {stripOpen && (
+          <div className="csb-full">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
+              <span className="lbl">Kalender Bursa</span>
+              {ddBulan}
+            </div>
+            {hariNav}
+            {calGrid}
+            {noticeEl}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // ─── Varian PENUH — tampilan lama, tidak berubah ──
+  return (
+    <div className="panel">
+      <div className="panel-h">
+        <span className="lbl">Kalender Bursa</span>
+        {ddBulan}
+      </div>
+
+      <div className="panel-b">
+        {hariNav}
 
         <div className="cal-strip">
           {weekDays.map(({ iso, dayNum, data, isWknd }, i) => {
@@ -313,67 +474,9 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih }: KalenderPro
           <span>{fmtMenit(END)}</span>
         </div>
 
-        <div className="cal-grid">
-          {DOW_LABEL.map((d, i) => (
-            <div key={d} className="cg hdr" style={i >= 5 ? { color: '#d32f2f' } : undefined}>{d}</div>
-          ))}
-          {cells.map((day, i) => {
-            if (day === null) return <div key={`e${i}`} className="cg" />
-            const iso = `${calYear}-${pad2(calMonth)}-${pad2(day)}`
-            const dow = new Date(calYear, calMonth - 1, day).getDay()
-            const isWeekend = dow === 0 || dow === 6
-            const isHoliday = !!HOLIDAYS[iso]
-            const data = dataMap.get(iso)
+        {calGrid}
 
-            if (data) {
-              const isUp = data.ihsg_pct >= 0
-              const isAktif = iso === tanggalAktif
-              return (
-                <button
-                  key={iso}
-                  type="button"
-                  className={`cg ada${isAktif ? ' aktif' : ''}`}
-                  onClick={() => onPilih(iso)}
-                >
-                  <span>{day}</span>
-                  <span className="num" style={{ fontSize: 9 }}>
-                    {data.ihsg.toLocaleString('id-ID', { maximumFractionDigits: 0 })}
-                  </span>
-                  <span
-                    className="num"
-                    style={{ fontSize: 9, fontWeight: 700, color: isAktif ? undefined : `var(--${isUp ? 'green' : 'red'})` }}
-                  >
-                    {isUp ? '+' : ''}{data.ihsg_pct.toFixed(2)}%
-                  </span>
-                </button>
-              )
-            }
-
-            // .cg tanpa .ada didesain artifact untuk 1 baris (28px) — label
-            // libur karenanya disingkat supaya muat 2 baris kecil.
-            const label = isWeekend ? (dow === 6 ? 'Sab' : 'Min') : isHoliday ? 'Libur' : 'Bursa Libur'
-            return (
-              <div
-                key={iso}
-                className="cg"
-                title={isHoliday ? HOLIDAYS[iso] : undefined}
-                style={{ flexDirection: 'column', height: 'auto', minHeight: 28, lineHeight: 1.15, gap: 1 }}
-              >
-                <span>{day}</span>
-                <span style={{ fontSize: 7 }}>{label}</span>
-              </div>
-            )
-          })}
-        </div>
-
-        {notice && (
-          <div
-            className={`chip ${notice.ok ? 'up' : 'dn'}`}
-            style={{ display: 'flex', marginTop: 10, whiteSpace: 'normal', textAlign: 'left', lineHeight: 1.5, height: 'auto' }}
-          >
-            <span>{notice.icon} {notice.text}</span>
-          </div>
-        )}
+        {noticeEl}
       </div>
     </div>
   )

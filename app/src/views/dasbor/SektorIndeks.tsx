@@ -49,7 +49,7 @@ export function SektorIndeks() {
   if (loading && !hari) {
     return (
       <div className="lantai">
-        <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
+        <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_JAM} size={28} /></p>
           <p className="lbl">Memuat data...</p>
@@ -61,7 +61,7 @@ export function SektorIndeks() {
   if (error || !hari) {
     return (
       <div className="lantai">
-        <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
+        <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p className="lbl">Data tidak tersedia untuk tanggal ini</p>
@@ -105,6 +105,8 @@ export function SektorIndeks() {
 
   return (
     <div className="lantai">
+      <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
+
       <div className="tiles">
         {sectors.map((s) => {
           const kode = s.n.match(/^\[(.)\]/)?.[1] ?? ''
@@ -127,8 +129,6 @@ export function SektorIndeks() {
           )
         })}
       </div>
-
-      <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
 
       <div className="panel">
         <div className="panel-h">

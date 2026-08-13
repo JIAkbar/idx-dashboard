@@ -391,20 +391,35 @@
 @keyframes dasbor-modal-pudar { from { opacity: 0; } to { opacity: 1; } }
 @keyframes dasbor-modal-naik { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
-/* Ticker rim modal login (#39 opsi 2) — reuse .dasbor-tk/.dasbor-num dan
-   keyframe dasbor-pita-jalan dari pita header (baris ~97-104), cuma durasi
-   lebih pendek (kartu ~320px vs full-width). overflow:hidden di .panel
-   discope ke modal saja supaya panel lain (11 halaman dasbor) tidak kena. */
+/* Kepala modal login "Gerbang Sesi" (#42 ronde 2, konsep B) + sparkline IHSG
+   (elemen konsep A) — nilai dari mockup modal-login-ronde2.html .mB/.spark,
+   token .lantai. overflow:hidden di .panel discope ke modal saja supaya
+   panel lain (11 halaman dasbor) tidak kena. */
 .dasbor-modal .panel { overflow: hidden; }
-.login-tk-rim { overflow: hidden; border-bottom: 1px solid var(--line); background: var(--bg2); }
-.login-tk-rim-track { display: flex; white-space: nowrap; width: max-content; animation: dasbor-pita-jalan 20s linear infinite; }
-.login-tk-rim .dasbor-tk { padding: 6px 12px; font-size: 10.5px; }
+.lantai .login-sesi { padding: 13px 16px 11px; border-bottom: 1px solid var(--line); background: var(--bg2); }
+.lantai .login-sesi .baris1 { display: flex; justify-content: space-between; align-items: baseline; }
+.lantai .login-sesi .status { font-family: var(--disp); font-weight: 700; font-size: 13px; }
+.lantai .login-sesi .status i { display: inline-block; width: 7px; height: 7px; border-radius: 99px; background: var(--green); margin-right: 6px; }
+.lantai .login-sesi.tutup .status i { background: var(--text3); }
+.lantai .login-sesi .jam { font-family: var(--mono); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.lantai .login-sesi .jam small { font-size: 9px; color: var(--text3); font-weight: 400; }
+.lantai .login-sesi .seg { height: 5px; border-radius: 3px; background: var(--bg3); position: relative; overflow: hidden; margin-top: 9px; }
+.lantai .login-sesi .seg i { position: absolute; inset: 0; background: var(--amber); border-radius: 3px; }
+.lantai .login-sesi.tutup .seg i { background: var(--line2); }
+.lantai .login-sesi .seglbl { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 9px; color: var(--text3); margin-top: 4px; }
+/* min-height me-reserve tinggi label+svg+nilai — jalur "data belum ada"
+   (placeholder —) dan "data ada" (sparkline) sama tingginya, layout tak
+   lompat saat index.json selesai termuat. */
+.lantai .login-spark { padding: 10px 16px 12px; border-bottom: 1px solid var(--line); min-height: 106px; }
+.lantai .login-spark .l { display: block; font-family: var(--disp); font-size: 8.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--text3); }
+.lantai .login-spark svg { display: block; width: 100%; height: 44px; margin: 4px 0 2px; }
+.lantai .login-spark .v { font-family: var(--mono); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.lantai .login-sub { margin: 0; font-size: 11.5px; color: var(--text3); line-height: 1.55; }
 
 @media (prefers-reduced-motion: reduce) {
   .dasbor-pita-track { animation: none; }
   .dasbor-laci, .dasbor-laci-bg { animation: none; }
   .dasbor-modal, .dasbor-modal-bg { animation: none; }
-  .login-tk-rim-track { animation: none; }
 }
 
 /* ===== .rr-bar-* — satu-satunya sisa "KALKULATOR JIA" yang masih dipakai
@@ -422,15 +437,9 @@
 .dasbor-shell .fd-search-wrap { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
 
 .dasbor-shell .fd-empty { text-align: center; padding: 60px 20px; color: var(--text3); font-size: 13px; }
-/* #34a — dulu 3 kolom fixed (1fr 1.2fr 1fr) selalu dipaksa berdampingan sampai
-   breakpoint 900px lompat langsung ke 1 kolom, tanpa jaminan lebar minimum di
-   antaranya (kolom tengah bisa terjepit di bawah min-width .fd-qtab 260px).
-   Fluid minmax() — pola sama dengan .grid3/.grid2 (baris ~536/522) — biar
-   auto-fit yang reflow 3→2→1 kolom sesuai ruang tersedia, bukan lompatan
-   biner. 300px dipilih dari kebutuhan kolom tengah (.fd-qtab min-width 260px
-   + padding .panel-b 14px*2), cukup juga buat kolom kiri/kanan yang tabelnya
-   lebih ramping. */
-.dasbor-shell .fd-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px; align-items: start; }
+/* .fd-layout (grid 3 kolom #34a) dihapus — re-layout mockup
+   stock-detail-relayout.html menggantinya dengan .duo 2 kolom seimbang
+   (lihat blok STOCK DETAIL RE-LAYOUT di bawah). */
 .dasbor-shell .fd-perf-row { display: flex; align-items: center; gap: 6px; padding: 4px 0; border-bottom: 0.5px solid var(--border); font-size: 11px; }
 .dasbor-shell .fd-perf-row:last-child { border-bottom: none; }
 .dasbor-shell .fd-perf-lbl { width: 32px; font-weight: 700; color: var(--text2); flex-shrink: 0; font-size: 10px; }
@@ -448,6 +457,59 @@
 .dasbor-shell .fd-qtab tr.ttm-row td { font-weight: 700; color: var(--accent); }
 /* Breakpoint manual 900px dihapus — repeat(auto-fit, minmax()) di atas sudah
    reflow 3→2→1 kolom sendiri sesuai ruang tersedia (sama seperti .grid3). */
+
+/* ===== STOCK DETAIL RE-LAYOUT — port mockup stock-detail-relayout.html
+   (.hero/.rasio/.duo/.kolom/.empty/.chip-t, nilai disalin persis).
+   Adaptasi ke token .lantai: border-radius 10px mockup → var(--r); token bg
+   mockup digeser satu tingkat (panel mockup --bg2 = panel app --bg1, inset
+   mockup --bg3 = --bg3 app utk track/chip mengikuti konvensi .seg/.tab). ===== */
+
+/* Hero 3 zona: identitas | harga + rentang 52 minggu | grid 6 stat */
+.lantai .hero{display:grid;grid-template-columns:minmax(230px,1.1fr) minmax(200px,1fr) minmax(280px,1.4fr);align-items:stretch}
+.lantai .hero > div{padding:14px 18px}
+.lantai .hero .ident{border-right:1px solid var(--line)}
+.lantai .hero .ident .tk{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.1em}
+.lantai .hero .ident .nm{font-size:16px;font-weight:700;margin:2px 0 3px}
+.lantai .hero .ident .sek{font-size:11px;color:var(--text3)}
+.lantai .hero .ident .badge{display:inline-block;margin-top:8px;font-family:var(--mono);font-size:9.5px;background:var(--amber-dim);color:var(--amber);border-radius:99px;padding:2px 9px}
+.lantai .hero .harga{border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:center}
+.lantai .hero .harga .px{font-family:var(--mono);font-size:30px;font-weight:700;line-height:1.1}
+.lantai .hero .harga .rng{margin-top:10px}
+.lantai .hero .harga .rng .lbl{letter-spacing:.1em}
+.lantai .hero .rngbar{position:relative;height:5px;border-radius:3px;background:var(--bg3);margin:6px 0 4px}
+.lantai .hero .rngbar i{position:absolute;top:-2.5px;width:10px;height:10px;border-radius:99px;background:var(--amber);border:2px solid var(--bg1)}
+.lantai .hero .rng .mm{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--text3)}
+.lantai .hero .statgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--line);align-content:stretch;padding:0}
+.lantai .hero .statgrid > div{background:var(--bg1);padding:10px 14px;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.lantai .hero .statgrid .v{font-family:var(--mono);font-size:13.5px;font-weight:700}
+@media (max-width:900px){ .lantai .hero{grid-template-columns:1fr 1fr} }
+@media (max-width:560px){
+  .lantai .hero{grid-template-columns:1fr}
+  .lantai .hero .statgrid{grid-template-columns:1fr 1fr}
+}
+
+/* Strip rasio full-width 6 sel */
+.lantai .rasio{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.lantai .rasio > div{background:var(--bg1);padding:10px 14px;text-align:center}
+.lantai .rasio .v{font-family:var(--mono);font-size:15px;font-weight:700;margin-top:2px}
+.lantai .rasio .sub{font-size:9.5px;color:var(--text3);font-family:var(--mono)}
+
+/* Konten 2 kolom seimbang */
+.lantai .duo{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+.lantai .kolom{display:flex;flex-direction:column;gap:12px;min-width:0}
+@media (max-width:840px){ .lantai .duo{grid-template-columns:1fr} }
+
+/* Empty state — pencarian jadi panggung */
+.lantai .empty{display:flex;flex-direction:column;align-items:center;gap:14px;padding:46px 20px;text-align:center}
+.lantai .empty svg{width:34px;height:34px;stroke:var(--text3);fill:none;stroke-width:1.5}
+.lantai .empty p{margin:0;color:var(--text2);font-size:13px;max-width:46ch}
+.lantai .empty .chips{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
+.lantai .chip-t{font-family:var(--mono);font-size:11.5px;font-weight:700;background:var(--bg3);border:1px solid var(--line2);border-radius:99px;padding:6px 14px;cursor:pointer;color:var(--text)}
+.lantai .chip-t:hover{border-color:var(--amber);color:var(--amber)}
+.lantai .empty .cari{display:flex;gap:8px;width:min(430px,100%)}
+/* Ticker "terakhir dilihat" — tombol teks polos di dalam .lbl */
+.lantai .empty .chip-r{font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit;background:none;border:none;padding:0;cursor:pointer;text-decoration:underline dotted}
+.lantai .empty .chip-r:hover{color:var(--amber)}
 
 /* ============================================================
    Bagian 2: Token + primitif artifact "Lantai Bursa"
@@ -584,21 +646,9 @@
 .lantai .bm .lbl{display:block;margin-bottom:2px}
 .lantai .bm .num{font-size:13px;color:var(--text2)}
 .lantai .board-side{flex:1 1 260px;min-width:220px}
-/* #34b — nama emiten pendek di .board-main dipaksa flex:1 sama dgn
-   .board-side, box-nya tumbuh jauh lebih lebar dari teksnya sendiri lalu
-   .board-side (rata-kanan) ikut terdorong ke ujung kanan kartu — jarak
-   nama↔harga jadi jauh padahal seharusnya rapat.
-   PERNAH dicoba scope pakai `.board-main:has(+ .board-side)` tapi itu
-   sibling-based — ambigu begitu ada .board yang lain juga punya
-   .board-main + .board-side (IndeksDunia dapat kartu mini-chart IHSG,
-   Fix #27, strukturnya sama persis). Makanya di sini di-scope eksplisit
-   lewat kelas pembungkus `.fd-board` yang CUMA dipasang di StockDetail.tsx
-   (lihat board di sana) — tidak bisa numpang ke halaman lain berapa pun
-   mirip strukturnya. Kedua sisi dikunci flex:0 (natural width, gak grow)
-   supaya harga betul-betul nempel ke nama, bukan cuma pindah kekosongannya
-   dari satu box ke box sebelah. */
-.lantai .fd-board .board-main{flex:0 1 auto;min-width:0}
-.lantai .fd-board .board-side{flex:0 1 auto;min-width:220px}
+/* .fd-board (#34b, board Stock Detail lama) dihapus — board diganti hero
+   3 zona (.hero) mockup stock-detail-relayout.html; .board sendiri masih
+   dipakai IndeksDunia, tetap. */
 
 /* tables */
 .lantai .tbl th{font-family:var(--disp);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
@@ -673,9 +723,13 @@
 .lantai .btn-p:hover{filter:brightness(1.08)}
 .lantai .field .lbl{display:block;margin-bottom:5px}
 
-/* heat tiles */
-.lantai .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;grid-auto-flow:dense}
-.lantai .tile{border-radius:var(--r);padding:12px 12px 10px;border:1px solid var(--line);display:flex;flex-direction:column;gap:3px;transition:transform .2s ease}
+/* heat tiles — flex wrap (bukan grid auto-fit): flex:1 1 basis bikin baris
+   terakhir MELEBAR mengisi penuh sisa lebar, nol area kosong berapa pun
+   jumlah tile (11 sektor kebagi rapi, mis. 8+3 dgn baris kedua melebar).
+   Tinggi antar baris konsisten (align-items:stretch). min-width:0 supaya
+   tile boleh menyempit di mobile tanpa overflow. */
+.lantai .tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.lantai .tile{flex:1 1 160px;min-width:0;border-radius:var(--r);padding:12px 12px 10px;border:1px solid var(--line);display:flex;flex-direction:column;gap:3px;transition:transform .2s ease}
 .lantai .tile:hover{transform:translateY(-2px)}
 .lantai .tile .t-code{font-family:var(--mono);font-size:10.5px;color:var(--text3)}
 .lantai .tile .t-name{font-family:var(--disp);font-weight:600;font-size:12.5px;letter-spacing:.02em}
@@ -743,8 +797,49 @@
    kena kasus berdiri sendiri ini; saat Kalender jadi item .grid2.w-kiri
    (IndeksDunia.tsx) parent-nya .grid2 bukan .lantai, jadi tidak kena, lebarnya
    tetap ikut kolom grid seperti sekarang. max-width tanpa width tetap fluid
-   turun ke mobile (baru berlaku begitu container lebih lebar dari cap ini). */
-.lantai > .panel:has(.cal-grid){max-width:520px;margin-inline:auto}
+   turun ke mobile (baru berlaku begitu container lebih lebar dari cap ini).
+   Sejak varian strip (Konsep 1), TIGA halaman standalone itu pakai
+   .cal-strip-bar yang barnya HARUS full-width — :not(:has(.cal-strip-bar))
+   mengecualikannya (cal-grid ikut muncul di dalam expand strip; tanpa
+   pengecualian ini bar menciut ke 520px begitu expand dibuka). Rule tetap
+   dipertahankan (bukan dihapus) sebagai jaring pengaman kalau ada pemakaian
+   varian penuh standalone baru. */
+.lantai > .panel:has(.cal-grid):not(:has(.cal-strip-bar)){max-width:520px;margin-inline:auto}
+
+/* ===== KALENDER VARIAN STRIP (Konsep 1 — mockup kalender-3-konsep.html
+   .cal-strip-bar/.csb-*, nilai disalin persis; adaptasi: token bg mockup
+   digeser satu tingkat ke token .lantai (panel mockup = --bg2, panel app =
+   --bg1) mengikuti konvensi primitif lain (.cal-d pakai bg2 di atas panel
+   bg1), dan lebar .seg i dari inline width React (mockup statis 78%). ===== */
+.lantai .cal-strip-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 14px}
+.lantai .csb-now{display:flex;align-items:baseline;gap:9px}
+.lantai .csb-now .tgl{font-weight:700;font-size:13.5px}
+.lantai .csb-now .ihsg{font-family:var(--mono);font-size:12.5px}
+.lantai .csb-sesi{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--text2);padding-left:14px;border-left:1px solid var(--line)}
+.lantai .csb-sesi .seg{width:110px;height:5px;border-radius:3px;background:var(--bg3);position:relative;overflow:hidden}
+.lantai .csb-sesi .seg i{position:absolute;inset:0;background:var(--amber);border-radius:3px}
+.lantai .csb-hari{display:flex;gap:5px;margin-left:auto}
+.lantai .csb-d{min-width:44px;text-align:center;border:1px solid var(--line);border-radius:var(--r);padding:4px 6px;background:var(--bg2);cursor:pointer;font-family:var(--mono)}
+.lantai span.csb-d{cursor:default}
+/* .dw/.dd/.dp: span di dalam .csb-d — .dd di sini cuma angka tanggal (numpang
+   nama kelas mockup); rule dropdown `.lantai .dd{position:relative}` ikut
+   kena tapi tidak berefek pada span statis ini. */
+.lantai .csb-d .dw{display:block;font-size:8.5px;letter-spacing:.1em;color:var(--text3);text-transform:uppercase}
+.lantai .csb-d .dd{font-size:12.5px;font-weight:700}
+.lantai .csb-d .dp{display:block;font-size:9px}
+.lantai .csb-d.aktif{background:var(--amber);border-color:var(--amber)}
+.lantai .csb-d.aktif .dw,.lantai .csb-d.aktif .dd,.lantai .csb-d.aktif .dp{color:var(--amber-ink)}
+.lantai .csb-d.off{opacity:.45;cursor:default}
+.lantai .csb-more{font-family:var(--mono);font-size:10.5px;color:var(--text2);background:var(--bg3);border:1px solid var(--line2);border-radius:var(--r);padding:6px 10px;cursor:pointer;white-space:nowrap}
+.lantai .csb-more:hover{border-color:var(--amber);color:var(--text)}
+/* Area expand "Kalender penuh" (#k1full mockup: display toggle + border-top;
+   grid bulan dicap 420px seperti cg-wrap mockup). */
+.lantai .csb-full{border-top:1px solid var(--line);padding:12px 14px;max-width:448px}
+.lantai .csb-full .cal-grid{max-width:420px;margin-top:0;border-top:none;padding-top:0}
+@media (max-width:560px){
+  .lantai .csb-hari{margin-left:0;width:100%;overflow-x:auto;padding-bottom:2px}
+  .lantai .csb-sesi{border-left:none;padding-left:0}
+}
 
 /* net foreign & market fundamental */
 .lantai .nf-grid{display:grid;grid-template-columns:1fr 1fr}

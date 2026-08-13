@@ -43,7 +43,7 @@ function PerfRow({ label, pct, low, high, cur }: { label: string; pct?: number; 
   )
 }
 
-/** Port histTR() index_live.html baris 4071-4078 — baris tabel Historis (B IDR), 1 baris per metrik. */
+/** Port histTR() index_live.html baris 4071-4078 — baris tabel Tahunan (B IDR), 1 baris per metrik. */
 function HistRow({ label, obj, years }: { label: string; obj?: Record<string, number>; years: string[] }) {
   if (!obj || !years.length) return null
   return (
@@ -56,16 +56,29 @@ function HistRow({ label, obj, years }: { label: string; obj?: Record<string, nu
   )
 }
 
-/**
- * Kolom KANAN Stock Detail — Income Statement TTM, Balance Sheet LQ, Cash
- * Flow TTM, Price Performance, Historis (B IDR). Port index_live.html
- * baris 4046-4054 (derived TTM/LQ) & 4194-4234.
- */
-export function KolomLaporan({ fd }: { fd: StockFundamental }) {
+export function PanelIncome({ fd }: { fd: StockFundamental }) {
   const ttmRev = fd.ttm_revenue ?? Object.values(fd.hist_revenue ?? {}).slice(-1)[0] ?? null
   const ttmNI = fd.ttm_net_income ?? Object.values(fd.hist_net_income ?? {}).slice(-1)[0] ?? null
   const ttmGP = fd.ttm_gross ?? Object.values(fd.hist_gross_profit ?? {}).slice(-1)[0] ?? null
   const ttmOI = fd.ttm_op_income ?? Object.values(fd.hist_operating_income ?? {}).slice(-1)[0] ?? null
+  return (
+    <div className="panel">
+      <div className="panel-h"><span className="lbl">Income Statement (TTM)</span></div>
+      <div className="panel-b">
+        <table>
+          <tbody>
+            {TR('Revenue', fB(ttmRev))}
+            {TR('Gross Profit', fB(ttmGP))}
+            {TR('Op. Income', fB(ttmOI))}
+            {TR('Net Income', fB(ttmNI))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+export function PanelBalance({ fd }: { fd: StockFundamental }) {
   // Sumber asli baca fd.lq_debt/fd.total_debt — field itu tidak pernah ada di
   // data-idx/json/fundamental/*.json (nama field sebenarnya lq_total_debt), jadi "Total
   // Debt" di dashboard lama selalu tampil "—". Bug data, bukan pilihan desain
@@ -74,94 +87,87 @@ export function KolomLaporan({ fd }: { fd: StockFundamental }) {
   const lqAsset = fd.lq_assets ?? Object.values(fd.hist_total_assets ?? {}).slice(-1)[0] ?? null
   const lqEq = fd.lq_equity ?? Object.values(fd.hist_total_equity ?? {}).slice(-1)[0] ?? null
   const lqDebt = fd.lq_total_debt ?? null
+  return (
+    <div className="panel">
+      <div className="panel-h"><span className="lbl">Balance Sheet (Latest Q)</span></div>
+      <div className="panel-b">
+        <table>
+          <tbody>
+            {TR('Cash & Equiv.', fB(lqCash))}
+            {TR('Total Assets', fB(lqAsset))}
+            {TR('Total Equity', fB(lqEq))}
+            {TR('Total Debt', fB(lqDebt))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
 
+export function PanelCashflow({ fd }: { fd: StockFundamental }) {
+  return (
+    <div className="panel">
+      <div className="panel-h"><span className="lbl">Cash Flow (TTM)</span></div>
+      <div className="panel-b">
+        <table>
+          <tbody>
+            {TR('Dari Operasi', fB(fd.ttm_ocf))}
+            {TR('Free Cash Flow', fB(fd.ttm_fcf))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+export function PanelPerformance({ fd }: { fd: StockFundamental }) {
   const pp: PricePerf = fd.price_perf ?? {}
   const hasPerf = Object.keys(pp).length > 0
+  return (
+    <div className="panel">
+      <div className="panel-h"><span className="lbl">Price Performance</span></div>
+      <div className="panel-b">
+        {hasPerf ? (
+          PERF_KEYS.map(([lbl, k]) => (
+            <PerfRow
+              key={k}
+              label={lbl}
+              pct={pp[`${k}_pct` as keyof PricePerf] as number | undefined}
+              low={pp[`${k}_low` as keyof PricePerf] as number | undefined}
+              high={pp[`${k}_high` as keyof PricePerf] as number | undefined}
+              cur={pp.current}
+            />
+          ))
+        ) : (
+          <p style={{ fontSize: 11, color: 'var(--text3)', padding: '8px 0' }}>
+            Belum ada data. Jalankan <b>GitHub Actions</b> untuk memperbarui data fundamental.
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
 
+/** Panel "Tahunan (B IDR)" — dulu berjudul "Historis (B IDR)", ikut nama mockup. */
+export function PanelTahunan({ fd }: { fd: StockFundamental }) {
   const histSrc = fd.hist_revenue ?? fd.hist_net_income ?? {}
   const histYears = Object.keys(histSrc).sort().reverse().slice(0, 4)
-
+  if (histYears.length === 0) return null
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div className="panel">
-        <div className="panel-h"><span className="lbl">Income Statement (TTM)</span></div>
-        <div className="panel-b">
-          <table>
-            <tbody>
-              {TR('Revenue', fB(ttmRev))}
-              {TR('Gross Profit', fB(ttmGP))}
-              {TR('Op. Income', fB(ttmOI))}
-              {TR('Net Income', fB(ttmNI))}
-            </tbody>
-          </table>
-        </div>
+    <div className="panel">
+      <div className="panel-h"><span className="lbl">Tahunan (B IDR)</span></div>
+      <div className="panel-b" style={{ overflowX: 'auto' }}>
+        <table style={{ minWidth: 240 }}>
+          <thead>
+            <tr><th>Metrik</th>{histYears.map((y) => <th key={y} className="r">{y}</th>)}</tr>
+          </thead>
+          <tbody>
+            <HistRow label="Revenue" obj={fd.hist_revenue} years={histYears} />
+            <HistRow label="Net Income" obj={fd.hist_net_income} years={histYears} />
+            <HistRow label="Equity" obj={fd.hist_total_equity} years={histYears} />
+          </tbody>
+        </table>
       </div>
-
-      <div className="panel">
-        <div className="panel-h"><span className="lbl">Balance Sheet (Latest Q)</span></div>
-        <div className="panel-b">
-          <table>
-            <tbody>
-              {TR('Cash & Equiv.', fB(lqCash))}
-              {TR('Total Assets', fB(lqAsset))}
-              {TR('Total Equity', fB(lqEq))}
-              {TR('Total Debt', fB(lqDebt))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="panel">
-        <div className="panel-h"><span className="lbl">Cash Flow (TTM)</span></div>
-        <div className="panel-b">
-          <table>
-            <tbody>
-              {TR('Dari Operasi', fB(fd.ttm_ocf))}
-              {TR('Free Cash Flow', fB(fd.ttm_fcf))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="panel">
-        <div className="panel-h"><span className="lbl">Price Performance</span></div>
-        <div className="panel-b">
-          {hasPerf ? (
-            PERF_KEYS.map(([lbl, k]) => (
-              <PerfRow
-                key={k}
-                label={lbl}
-                pct={pp[`${k}_pct` as keyof PricePerf] as number | undefined}
-                low={pp[`${k}_low` as keyof PricePerf] as number | undefined}
-                high={pp[`${k}_high` as keyof PricePerf] as number | undefined}
-                cur={pp.current}
-              />
-            ))
-          ) : (
-            <p style={{ fontSize: 11, color: 'var(--text3)', padding: '8px 0' }}>
-              Belum ada data. Jalankan <b>GitHub Actions</b> untuk memperbarui data fundamental.
-            </p>
-          )}
-        </div>
-      </div>
-
-      {histYears.length > 0 && (
-        <div className="panel">
-          <div className="panel-h"><span className="lbl">Historis (B IDR)</span></div>
-          <div className="panel-b" style={{ overflowX: 'auto' }}>
-            <table style={{ minWidth: 240 }}>
-              <thead>
-                <tr><th>Metrik</th>{histYears.map((y) => <th key={y} className="r">{y}</th>)}</tr>
-              </thead>
-              <tbody>
-                <HistRow label="Revenue" obj={fd.hist_revenue} years={histYears} />
-                <HistRow label="Net Income" obj={fd.hist_net_income} years={histYears} />
-                <HistRow label="Equity" obj={fd.hist_total_equity} years={histYears} />
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
