@@ -146,7 +146,7 @@ export function AvgDown() {
       return
     }
     setFetching(true)
-    setPriceSrc({ label: 'Mengambil data...', kind: 'manual' })
+    setPriceSrc({ label: 'Mengambil data…', kind: 'manual' })
     try {
       const yUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${kodeTrim}.JK?interval=1d&range=1d`
       const proxy = `https://corsproxy.io/?url=${encodeURIComponent(yUrl)}`
@@ -267,26 +267,31 @@ export function AvgDown() {
         <div className="panel">
           <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_GIR} size={13} /> Strategi Average Down</span></div>
           <div className="panel-b">
-            <div className="tabs" role="radiogroup" aria-label="Strategi Average Down" style={{ flexDirection: 'column', width: '100%' }}>
+            {/* #79D: daftar pilihan pakai .pilih (kartu radio) — pemakaian
+                .tabs arah kolom yang lama pecah karena .tabs kontrol 32px
+                satu-baris; deskripsi tiap strategi ikut masuk kartu. */}
+            <div className="pilih" role="radiogroup" aria-label="Strategi Average Down">
               {MODES.map((m) => (
-                <label
-                  key={m.id}
-                  className={'tab' + (mode === m.id ? ' on' : '')}
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
-                >
+                <label key={m.id} className={'pilih-k' + (mode === m.id ? ' on' : '')}>
                   <input type="radio" name="adc-mode" checked={mode === m.id} onChange={() => setMode(m.id)} />
-                  {m.label}
+                  <span>
+                    <span className="p-t">{m.label}</span>
+                    <span className="p-d">{m.desc}</span>
+                  </span>
                 </label>
               ))}
             </div>
 
-            <div className="vcard" style={{ marginTop: 10 }}>
-              <div className="v-note">{MODES.find((m) => m.id === mode)?.desc}</div>
-              {mode === 'half' && result?.halfTargetPct !== undefined && current && (
+            {mode === 'half' && result?.halfTargetPct !== undefined && current && (
+              <div className="vcard" style={{ marginTop: 10 }}>
                 <div className="v-note">
                   Loss saat ini: {fp(current.curGLPct)} → target: {fp(result.halfTargetPct)}
                 </div>
-              )}
+              </div>
+            )}
+            {/* Semua mode selain half punya satu input parameter. */}
+            {mode !== 'half' && (
+            <div className="vcard" style={{ marginTop: 10 }}>
               {mode === 'lossmax' && (
                 <div className="field" style={{ maxWidth: 160 }}>
                   <span className="lbl">Loss Max</span>
@@ -336,6 +341,7 @@ export function AvgDown() {
                 </div>
               )}
             </div>
+            )}
           </div>
         </div>
 

@@ -501,6 +501,9 @@
   --red:#EB5E62; --red-dim:rgba(235,94,98,.14);
   --green:#30A46C; --green-dim:rgba(48,164,108,.14);
   --blue:#4C8DFF;
+  /* #79: kategori simpul Grafik Jaringan /peta-investor (graphRender.ts WARNA)
+     — beda hue per tipe holder, bukan tiga abu mirip. */
+  --node-corp:#4E8FD9; --node-ind:#30A46C; --node-oth:#6B7A90;
   --flap:#060A10; --flap-line:rgba(255,255,255,.07);
   --mono:"Cascadia Code","Cascadia Mono",Consolas,"SF Mono","Roboto Mono",monospace;
   --disp:"Bahnschrift","Arial Narrow","Segoe UI",system-ui,sans-serif;
@@ -518,6 +521,7 @@
   --amber:#94620C; --amber-ink:#FFFFFF; --amber-dim:rgba(148,98,12,.10);
   --red:#C23439; --red-dim:rgba(194,52,57,.10);
   --green:#18754A; --green-dim:rgba(24,117,74,.10);
+  --node-corp:#2F6DB3; --node-ind:#1F7A4F; --node-oth:#7E8A99;
   --flap:#131B26; --flap-line:rgba(255,255,255,.10);
 }
 
@@ -1235,7 +1239,6 @@
       tekan translateY 1px, transisi .15s, shadow lembut di tombol primer),
       BUKAN dari bentuk. Panel/popover/modal TIDAK ikut (tetap --r). Lingkaran
       status (dot, medal peringkat, legend-dot) bukan tombol, tetap bundar. ===== */
-.lantai .tabs,
 .lantai .dd-btn,
 .lantai .csb-more,
 .lantai .btn-p,
@@ -1246,6 +1249,12 @@
 .lantai .pi-loadmore,
 .lantai .inp { height: 32px; }
 .lantai textarea.inp { height: auto; }
+/* .tabs TIDAK dikunci height mati (#79D): saat isinya wrap dua baris
+   (flex-wrap di layar sempit — mis. topik Feedback) kontainer 32px membuat
+   baris kedua meluber menimpa konten di bawahnya. Tinggi 32px dijaga lewat
+   min-height kontainer + tinggi tetap 26px di .tab (3+26+3 = 32). */
+.lantai .tabs { min-height: 32px; align-items: center; }
+.lantai .tab { height: 26px; }
 .lantai .dd-btn, .lantai .csb-more, .lantai .btn-p, .lantai .chip-t,
 .lantai .pi-view-tab, .lantai .pi-loadmore {
   padding-top: 0; padding-bottom: 0;
@@ -1345,6 +1354,19 @@
 .lantai .blt-h{flex-wrap:wrap;row-gap:8px}
 .lantai .blt-tabs{margin-left:auto;margin-right:10px}
 @media (max-width:560px){.lantai .blt-tabs{margin-left:0;flex-basis:100%;order:3}}
+
+/* ===== #79D KARTU RADIO (.pilih) — daftar pilihan vertikal ber-deskripsi
+   (strategi Avg Down). Pengganti pemakaian .tabs arah kolom yang pecah:
+   .tabs itu kontrol satu-baris 32px, bukan daftar. Radio native tetap tampak
+   (accent-color amber) — state terpilih jelas: border + latar amber-dim. */
+.lantai .pilih{display:flex;flex-direction:column;gap:6px}
+.lantai .pilih-k{display:flex;gap:10px;align-items:flex-start;padding:8px 11px;background:var(--bg2);border:1px solid var(--line2);border-radius:4px;cursor:pointer;transition:border-color .15s ease-out,background .15s ease-out}
+.lantai .pilih-k:hover{border-color:var(--amber)}
+.lantai .pilih-k.on{border-color:var(--amber);background:var(--amber-dim)}
+.lantai .pilih-k input{accent-color:var(--amber);margin:2px 0 0;flex:none}
+.lantai .pilih-k .p-t{display:block;font-size:12px;font-weight:600}
+.lantai .pilih-k.on .p-t{color:var(--amber)}
+.lantai .pilih-k .p-d{display:block;font-size:10.5px;color:var(--text3);margin-top:1px}
 
 /* ===== #79 PERMUKAAN PERAMBAN — detail yang paling sering terlewat =====
    Satu blok untuk semua "kulit" bawaan browser supaya ikut bahasa Lantai:
