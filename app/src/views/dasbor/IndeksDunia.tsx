@@ -80,6 +80,11 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        // Tanpa ini interaksi default Chart.js `intersect: true` menuntut
+        // kursor PAS di garis (pointRadius 0 = area kena nyaris nol, tooltip
+        // susah muncul). mode "index" + intersect false = hover di mana pun
+        // pada sumbu-x langsung nunjukin titik terdekat kolom itu.
+        interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },
           tooltip: {
