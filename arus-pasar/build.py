@@ -120,7 +120,7 @@ def band(ed, eyebrow="Tinjauan Teknikal & Arus Dana Harian"):
 def kaki(ed):
     return f'''<footer class="foot">
     <span class="kode">{ed["edisi"]}</span>
-    <span>Arus Pasar · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© {ed["tanggal_id"].split()[-1]} Johan Iriawan Akbar — Papan · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>'''
 
 
@@ -302,7 +302,8 @@ def halaman_sampul(ed, skor_map):
         <span><span class="l">IHSG</span><b>6.409,65</b> <span class="c-bull">+1,04%</span></span>
         <span><span class="l">Net Foreign Buy Reguler</span><b class="c-bull">Rp917,23 miliar</b> (7 Agu)</span>
       </div>
-      <div class="cv-legal">Analisis probabilistik, bukan ajakan transaksi.<br>
+      <div class="cv-legal">© {ed["tanggal_id"].split()[-1]} Johan Iriawan Akbar — Papan. Hak cipta dilindungi.<br>
+      Analisis probabilistik, bukan ajakan transaksi.<br>
       Data: TradingView &amp; Stockbit (transkripsi manual terverifikasi), Yahoo Finance.</div>
     </div>
   </div>
