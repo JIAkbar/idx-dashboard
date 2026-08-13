@@ -643,8 +643,22 @@
    memotong nama di JavaScript: lebar sel berubah menurut viewport, jumlah
    karakter yang muat tidak bisa ditebak dari kode. Hanya nama yang boleh
    terpotong — persen dan "+N lagi" dikunci flex:none karena keduanya justru
-   informasi yang dicari pembaca. */
-.lantai .pil-row{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow:hidden;max-width:360px}
+   informasi yang dicari pembaca. Cap max-width 360px DIHAPUS (#77b): kolom
+   pemegang saham adalah kolom sisa (kolom lain berlebar tetap), biarkan chip
+   memakai seluruh lebar itu — nama utuh selama muat; ellipsis per-chip baru
+   bekerja saat lebar benar-benar habis (min-width:0 di item + tabel 100%). */
+.lantai .pil-row{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow:hidden}
+/* Pembungkus PilRow.tsx. max-width WAJIB: tanpa cap, min-content sel tabel =
+   lebar natural seluruh chip dan tabel auto-layout MELEBAR melewati panel
+   (scroll-x, yang persis dilarang user). Cap dibuat adaptif viewport, bukan
+   angka mati 360px lama: 100vw dikurangi ± lebar kolom-kolom tetap kedua
+   tabel (ByStock 420px + ByInvestor 410px + rail/padding ≈ 640px), diapit
+   140px (mobile: 1-2 chip + "+N lagi") dan 920px (desktop lebar). */
+.lantai .pil-wrap{position:relative;max-width:clamp(140px,calc(100vw - 640px),920px)}
+/* Baris pengukur PilRow.tsx: semua kandidat chip pada lebar NATURAL (flex:none,
+   tak menyusut) — absolut + hidden supaya tak memengaruhi layout/tinggi baris. */
+.lantai .pil-ukur{position:absolute;inset:0;visibility:hidden;pointer-events:none}
+.lantai .pil-ukur .bchip{flex:none}
 .lantai .pil-row .bchip{display:flex;align-items:center;gap:5px;margin-right:0;min-width:0;white-space:nowrap}
 .lantai .pil-nm{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .lantai .pil-pct{flex:none;color:var(--text2)}
@@ -1000,9 +1014,14 @@
 /* Baris tab + kontrol pencarian Peta Investor (#83) — search pindah dari .vhead
    ke sebaris tab; tinggi kontrol diseragamkan 32px (≈ tinggi .tabs), lebar ikut isi. */
 .lantai .pi-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.lantai .pi-head-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+/* #77b: margin-left:auto dihapus — pencarian kini blok KIRI toolbar, tab view
+   duduk di kanannya (urutan elemen dibalik di PetaInvestor.tsx). */
+.lantai .pi-head-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .lantai .pi-srch-container { position: relative; }
 .lantai .pi-search { height: 32px; padding: 0 36px 0 12px; border-radius: 7px; border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text); font-size: 12px; width: 230px; outline: none; text-transform: uppercase; letter-spacing: .3px; }
+/* #77b: uppercase hanya untuk nilai ketikan (kode saham) — placeholder tetap
+   sentence case seperti konvensi placeholder lain. */
+.lantai .pi-search::placeholder { text-transform: none; letter-spacing: normal; }
 .lantai .pi-search-x { display: inline-block; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text3); font-size: 14px; line-height: 1; }
 .lantai .pi-search-drop { position: absolute; top: calc(100% + 4px); right: 0; width: 300px; max-height: 340px; overflow-y: auto; background: var(--card); border: 0.5px solid var(--border2); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.35); z-index: 200; }
 .lantai .pi-drop-empty { padding: 14px; text-align: center; color: var(--text3); font-size: 11px; }
@@ -1028,7 +1047,8 @@
 .lantai .pi-tbl-wrap::-webkit-scrollbar-thumb:hover { background: var(--text3); }
 .lantai .pi-tbl-wrap::-webkit-scrollbar-track { background: transparent; }
 .lantai .pi-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
-.lantai .pi-tbl th { background: var(--bg3); color: var(--text2); font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; padding: 9px 12px; text-align: left; border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 2; }
+/* white-space:nowrap (#77b): header pendek macam "# SAHAM" jangan patah dua baris. */
+.lantai .pi-tbl th { background: var(--bg3); color: var(--text2); font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; padding: 9px 12px; text-align: left; border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 2; white-space: nowrap; }
 .lantai .pi-tbl td { padding: 9px 12px; border-bottom: 0.5px solid var(--border); color: var(--text); vertical-align: middle; }
 .lantai .pi-tbl tr:last-child td { border-bottom: none; }
 .lantai .pi-tbl tbody tr:hover td { background: var(--bg3); cursor: pointer; }
@@ -1181,3 +1201,80 @@
 /* Kolom kanan baris 2: Indeks Syariah (1 baris) + Board Indices (3 baris)
    ditumpuk satu sel grid supaya tak ada panel setengah kosong. */
 .lantai .sec-stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+/* ===== #77b KONTROL SERAGAM — tinggi & bentuk (permintaan user, 2 aturan) =====
+   A. TINGGI: semua kontrol yang duduk sebaris (tab, dropdown, input, tombol,
+      chip aksi) dikunci 32px — sebelumnya toggle Hari|Rentang (~27px) lebih
+      pendek dari "Kalender penuh"/dropdown (~31px) di baris yang sama.
+      box-sizing:border-box global, jadi 32px sudah termasuk border+padding;
+      padding-block dinolkan & isi ditengahkan flex supaya font kecil (10-12px)
+      tidak menggeser baseline. textarea.inp dikecualikan (multiline).
+   B. BENTUK (revisi ronde 2 user): radius kontrol interaktif & badge data
+      seragam 4px — pill 99px (chip-t/blt-dl/.chip/.badge hero) dan variasi
+      3/6/7/8px dibuang; kesan "mewah" dari detail interaksi (hover amber-dim,
+      tekan translateY 1px, transisi .15s, shadow lembut di tombol primer),
+      BUKAN dari bentuk. Panel/popover/modal TIDAK ikut (tetap --r). Lingkaran
+      status (dot, medal peringkat, legend-dot) bukan tombol, tetap bundar. ===== */
+.lantai .tabs,
+.lantai .dd-btn,
+.lantai .csb-more,
+.lantai .btn-p,
+.lantai .chip-t,
+.lantai .pi-view-tab,
+.lantai .pi-tbl-search,
+.lantai .pi-tbl-select,
+.lantai .pi-loadmore,
+.lantai .inp { height: 32px; }
+.lantai textarea.inp { height: auto; }
+.lantai .dd-btn, .lantai .csb-more, .lantai .btn-p, .lantai .chip-t,
+.lantai .pi-view-tab, .lantai .pi-loadmore {
+  padding-top: 0; padding-bottom: 0;
+  display: inline-flex; align-items: center;
+}
+.lantai .tab { padding-top: 0; padding-bottom: 0; display: inline-flex; align-items: center; }
+.lantai .cal-strip-bar .tabs.mode-tgl .tab { padding-top: 0; padding-bottom: 0; }
+.lantai .rate button { width: 32px; height: 32px; }
+
+.lantai .tabs, .lantai .tab, .lantai .dd-btn, .lantai .dd-it,
+.lantai .inp, .lantai .btn-p, .lantai .chip, .lantai .chip-t,
+.lantai .bchip, .lantai .ytd-bdg, .lantai .blt-dl,
+.lantai .csb-more, .lantai .csb-d, .lantai .cal-d, .lantai .cal-grid .cg,
+.lantai .rate button, .lantai .hero .ident .badge,
+.lantai .pi-view-tab, .lantai .pi-search, .lantai .pi-search-go,
+.lantai .pi-search-reset, .lantai .pi-tbl-search, .lantai .pi-tbl-select,
+.lantai .pi-loadmore, .lantai .pi-panel-close,
+.lantai .dpk-nav, .lantai .dpk-hari,
+.dasbor-shell .bdg, .dasbor-shell .bchip, .dasbor-nav-badge,
+.dasbor-shell .dasbor-laci-item, .dasbor-shell .dasbor-laci-tombol { border-radius: 4px; }
+
+/* Micro-interaction "mewah": transisi halus + hover amber + tekan 1px.
+   Hover per-kontrol yang sudah ada (dd-btn/chip-t/csb-more/blt-dl) tetap;
+   di sini cuma melengkapi yang belum punya & menyeragamkan transisinya. */
+.lantai .dd-btn, .lantai .csb-more, .lantai .chip-t, .lantai .blt-dl,
+.lantai .pi-view-tab, .lantai .pi-loadmore, .lantai .rate button,
+.lantai .dpk-nav, .lantai .btn-p, .lantai .tab {
+  transition: color .15s ease-out, border-color .15s ease-out,
+    background .15s ease-out, transform .15s ease-out, box-shadow .15s ease-out;
+  letter-spacing: .02em;
+}
+.lantai .pi-view-tab:not(.active):hover,
+.lantai .pi-loadmore:hover { background: var(--amber-dim); border-color: var(--amber); color: var(--text); }
+.lantai .btn-p:active, .lantai .dd-btn:active, .lantai .csb-more:active,
+.lantai .chip-t:active, .lantai .pi-view-tab:active, .lantai .pi-search-go:active,
+.lantai .pi-loadmore:active, .lantai .rate button:active, .lantai .blt-dl:active,
+.lantai .tab:active { transform: translateY(1px); }
+.lantai .btn-p, .lantai .pi-search-go { box-shadow: 0 1px 2px rgba(0,0,0,.18); }
+.lantai .btn-p:active, .lantai .pi-search-go:active { box-shadow: 0 0 1px rgba(0,0,0,.14); }
+@media (prefers-reduced-motion: reduce) {
+  .lantai .btn-p:active, .lantai .dd-btn:active, .lantai .csb-more:active,
+  .lantai .chip-t:active, .lantai .pi-view-tab:active, .lantai .pi-search-go:active,
+  .lantai .pi-loadmore:active, .lantai .rate button:active, .lantai .blt-dl:active,
+  .lantai .tab:active { transform: none; }
+}
+
+/* #89 chart indeks — lajur chip pemilih indeks (/chart). Reset margin-right:7px
+   bawaan .bchip yang menduakan gap (horizontal 13px vs vertikal 6px → jarak
+   wrap tidak seragam di layar sempit); padding dibesarkan sedikit supaya
+   target sentuh telepon nyaman. Radius 4px sudah ikut blok radius global. */
+.lantai .tv-chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.lantai .tv-chips .bchip{margin-right:0;padding:4px 9px}

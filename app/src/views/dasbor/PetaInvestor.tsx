@@ -104,9 +104,11 @@ export function PetaInvestor() {
 
       {!loading && !error && data && (
         <>
-          {/* Kontrol pencarian sebaris tab (#83) — dulu di baris .vhead sendiri;
-              .pi-head-actions punya margin-left:auto jadi otomatis rapat kanan. */}
+          {/* Kontrol pencarian sebaris tab (#83; urutan dibalik per permintaan
+              user #77b: pencarian global di KIRI, baru tab view di kanannya —
+              di layar sempit pencarian wrap jadi baris sendiri di atas tab). */}
           <div className="pi-toolbar">
+            <PetaInvestorSearch data={data} value={searchValue} onChange={setSearchValue} onSelect={handleSelect} onClear={handleClear} />
             <div className="tabs" role="tablist" aria-label="Tampilan Peta Investor">
               {TABS.map((t) => (
                 <button
@@ -121,7 +123,6 @@ export function PetaInvestor() {
                 </button>
               ))}
             </div>
-            <PetaInvestorSearch data={data} value={searchValue} onChange={setSearchValue} onSelect={handleSelect} onClear={handleClear} />
           </div>
 
           {activeView === 'grafik' && (

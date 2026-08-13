@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { holderType, type GraphSelection, type InvestorMapEntry } from '../../../lib/dasbor/petaInvestorData'
 import { Dropdown } from '../../../components/dasbor/Dropdown'
+import { PilRow } from '../../../components/dasbor/PilRow'
 
 interface ByStockProps {
   data: InvestorMapEntry[]
@@ -8,8 +9,6 @@ interface ByStockProps {
 }
 
 const PAGE = 20
-/** Pil pemegang saham dibatasi 3 supaya tinggi tiap baris tabel sama. Sebelumnya 5 dan jumlah pil mengikuti jumlah holder (1..26), jadi tinggi baris melompat-lompat. */
-const PIL = 3
 const TYPE_OPTIONS: { nilai: '' | 'CORP' | 'IND' | 'OTH'; label: string }[] = [
   { nilai: '', label: 'Semua Tipe Holder' },
   { nilai: 'CORP', label: 'Institusi (CORP)' },
@@ -77,8 +76,6 @@ export function ByStock({ data, onSelect }: ByStockProps) {
                 const corpPct = sumPct(em, 'CORP')
                 const indPct = sumPct(em, 'IND')
                 const othPct = sumPct(em, 'OTH')
-                const shown = em.holders.slice(0, PIL)
-                const extra = em.holders.length - PIL
                 return (
                   <tr key={em.code} onClick={() => onSelect({ type: 'emiten', code: em.code })} title="Klik untuk lihat di Grafik Jaringan">
                     <td>
@@ -94,16 +91,13 @@ export function ByStock({ data, onSelect }: ByStockProps) {
                     <td className="num" style={{ textAlign: 'center' }}>{corpPct > 0 ? `${corpPct.toFixed(1)}%` : '—'}</td>
                     <td className="num" style={{ textAlign: 'center' }}>{indPct > 0 ? `${indPct.toFixed(1)}%` : '—'}</td>
                     <td className="num" style={{ textAlign: 'center' }}>{othPct > 0 ? `${othPct.toFixed(1)}%` : '—'}</td>
+                    {/* #77b: jumlah chip adaptif lebar kolom (PilRow ukur nyata),
+                        bukan angka tetap — "+N lagi" hanya saat benar tak muat. */}
                     <td>
-                      <div className="pil-row">
-                        {shown.map((h) => (
-                          <span key={h.name} className="bchip" title={`${h.name} · ${holderType(h.cls)} · ${h.pct.toFixed(2)}%`}>
-                            <span className="pil-nm">{h.name}</span>
-                            <span className="pil-pct">{h.pct.toFixed(1)}%</span>
-                          </span>
-                        ))}
-                        {extra > 0 && <span className="lbl">+{extra} lagi</span>}
-                      </div>
+                      <PilRow
+                        total={em.holders.length}
+                        items={em.holders.map((h) => ({ key: h.name, nama: h.name, pct: h.pct, title: `${h.name} · ${holderType(h.cls)} · ${h.pct.toFixed(2)}%` }))}
+                      />
                     </td>
                   </tr>
                 )

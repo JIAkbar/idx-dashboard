@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { GraphSelection, InvestorRow } from '../../../lib/dasbor/petaInvestorData'
 import { IkonMenu, IKON_GLOBE, IKON_LOKASI } from '../../../components/dasbor/IkonMenu'
 import { Dropdown } from '../../../components/dasbor/Dropdown'
+import { PilRow } from '../../../components/dasbor/PilRow'
 
 interface ByInvestorProps {
   investorMap: InvestorRow[]
@@ -9,8 +10,6 @@ interface ByInvestorProps {
 }
 
 const PAGE = 20
-/** Sama dengan ByStock: 3 pil supaya tinggi baris seragam (portofolio investor bisa 1..ratusan emiten). */
-const PIL = 3
 const TYPE_OPTIONS: { nilai: '' | 'CORP' | 'IND' | 'OTH'; label: string }[] = [
   { nilai: '', label: 'Semua Tipe' },
   { nilai: 'CORP', label: 'Institusi (CORP)' },
@@ -68,8 +67,6 @@ export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
             </thead>
             <tbody>
               {visible.map((inv) => {
-                const shown = inv.holdings.slice(0, PIL)
-                const extra = inv.holdings.length - PIL
                 return (
                   <tr key={inv.name} onClick={() => onSelect({ type: 'investor', name: inv.name, cls: inv.cls, lf: inv.lf })} title="Klik untuk lihat di Grafik Jaringan">
                     <td>
@@ -80,16 +77,13 @@ export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
                     </td>
                     <td style={{ textAlign: 'center' }}><span className="bchip" style={{ marginRight: 0 }}>{inv.type}</span></td>
                     <td className="num" style={{ textAlign: 'center', fontWeight: 700, fontSize: 13, color: 'var(--amber)' }}>{inv.holdings.length}</td>
+                    {/* #77b: jumlah chip adaptif lebar kolom (PilRow ukur nyata),
+                        bukan angka tetap — "+N lagi" hanya saat benar tak muat. */}
                     <td>
-                      <div className="pil-row">
-                        {shown.map((h) => (
-                          <span key={h.code} className="bchip" title={`${h.issuer} · ${h.pct.toFixed(2)}%`}>
-                            <span className="pil-nm">{h.code}</span>
-                            <span className="pil-pct">{h.pct.toFixed(1)}%</span>
-                          </span>
-                        ))}
-                        {extra > 0 && <span className="lbl">+{extra} lagi</span>}
-                      </div>
+                      <PilRow
+                        total={inv.holdings.length}
+                        items={inv.holdings.map((h) => ({ key: h.code, nama: h.code, pct: h.pct, title: `${h.issuer} · ${h.pct.toFixed(2)}%` }))}
+                      />
                     </td>
                   </tr>
                 )
