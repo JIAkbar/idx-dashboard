@@ -123,26 +123,34 @@ export function PanelCashflow({ fd }: { fd: StockFundamental }) {
 export function PanelPerformance({ fd }: { fd: StockFundamental }) {
   const pp: PricePerf = fd.price_perf ?? {}
   const hasPerf = Object.keys(pp).length > 0
+  // Kosong → baris notice ramping (bukan panel besar melompong), bahasa user
+  // tanpa istilah internal "GitHub Actions" (#81).
+  if (!hasPerf) {
+    return (
+      <div className="panel">
+        <div className="panel-h" style={{ borderBottom: 'none' }}>
+          <span className="lbl">Price Performance</span>
+          <span style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 400 }}>
+            Data belum tersedia — akan terisi saat pembaruan data bulanan
+          </span>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="panel">
       <div className="panel-h"><span className="lbl">Price Performance</span></div>
       <div className="panel-b">
-        {hasPerf ? (
-          PERF_KEYS.map(([lbl, k]) => (
-            <PerfRow
-              key={k}
-              label={lbl}
-              pct={pp[`${k}_pct` as keyof PricePerf] as number | undefined}
-              low={pp[`${k}_low` as keyof PricePerf] as number | undefined}
-              high={pp[`${k}_high` as keyof PricePerf] as number | undefined}
-              cur={pp.current}
-            />
-          ))
-        ) : (
-          <p style={{ fontSize: 11, color: 'var(--text3)', padding: '8px 0' }}>
-            Belum ada data. Jalankan <b>GitHub Actions</b> untuk memperbarui data fundamental.
-          </p>
-        )}
+        {PERF_KEYS.map(([lbl, k]) => (
+          <PerfRow
+            key={k}
+            label={lbl}
+            pct={pp[`${k}_pct` as keyof PricePerf] as number | undefined}
+            low={pp[`${k}_low` as keyof PricePerf] as number | undefined}
+            high={pp[`${k}_high` as keyof PricePerf] as number | undefined}
+            cur={pp.current}
+          />
+        ))}
       </div>
     </div>
   )

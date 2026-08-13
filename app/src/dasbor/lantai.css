@@ -494,10 +494,17 @@
 .lantai .rasio .v{font-family:var(--mono);font-size:15px;font-weight:700;margin-top:2px}
 .lantai .rasio .sub{font-size:9.5px;color:var(--text3);font-family:var(--mono)}
 
-/* Konten 2 kolom seimbang */
-.lantai .duo{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
-.lantai .kolom{display:flex;flex-direction:column;gap:12px;min-width:0}
-@media (max-width:840px){ .lantai .duo{grid-template-columns:1fr} }
+/* Konten kolom mengalir (#81) — multicol: panel anak langsung .duo (wrapper
+   .kolom dihapus). column-width bikin jumlah kolom fluid (±3 laptop lebar,
+   2 sedang, 1 mobile) dan column-fill:balance bawaan menyeimbangkan tinggi
+   kolom otomatis untuk profil data apa pun → nol bolong tanpa redistribusi
+   panel manual per saham. */
+.lantai .duo{column-width:340px;column-gap:12px}
+.lantai .duo>*{break-inside:avoid;margin-bottom:12px;min-width:0}
+/* Varian valuasi: cuma 4 panel & Graham dominan tinggi — kolom lebar supaya
+   Graham memendek (input+vcard melebar) dan 2 kolom laptop terisi penuh,
+   bukan 2 kolom kurus + separuh kanan kosong. */
+.lantai .duo.lebar{column-width:560px}
 
 /* Empty state — pencarian jadi panggung */
 .lantai .empty{display:flex;flex-direction:column;align-items:center;gap:14px;padding:46px 20px;text-align:center}
