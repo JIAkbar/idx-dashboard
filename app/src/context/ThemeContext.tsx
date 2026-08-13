@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
 export type Theme = 'light' | 'dark'
 
@@ -9,15 +9,32 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
 
+const KUNCI = 'papan-tema'
+
 /**
- * Port dari setTheme()/toggleTheme() index_live.html baris 3394-3406.
- * Catatan: kode asli TIDAK menyimpan pilihan ke localStorage — theme selalu
- * reset ke "light" (default `<html data-theme="light">`) tiap reload. Port
- * ini sengaja mempertahankan perilaku itu apa adanya, bukan menambah fitur
- * persist yang tidak ada di sumber.
+ * Default GELAP (keputusan user 13 Agu 2026 — identitas PAPAN dark-first,
+ * senada kulit bulletin V1). Pilihan toggle disimpan ke localStorage supaya
+ * user yang memilih terang tidak perlu toggle ulang tiap reload.
+ * (Perilaku lama port index_live: default light tanpa persist — diganti sadar.)
  */
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('light')
+  const [theme, setThemeState] = useState<Theme>(() => {
+    try {
+      const simpan = localStorage.getItem(KUNCI)
+      if (simpan === 'light' || simpan === 'dark') return simpan
+    } catch {
+      /* storage tak tersedia (private mode) — pakai default */
+    }
+    return 'dark'
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(KUNCI, theme)
+    } catch {
+      /* abaikan */
+    }
+  }, [theme])
 
   function toggleTheme() {
     setThemeState((t) => (t === 'dark' ? 'light' : 'dark'))

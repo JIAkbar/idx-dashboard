@@ -1,6 +1,6 @@
 /**
  * Satu sumber daftar menu dasbor publik, dipakai Sidebar (rail desktop) &
- * MobileNav (bilah bawah + laci "Semua Menu"). Port dari index_live.html
+ * LaciMobile (laci kiri telepon, #76). Port dari index_live.html
  * baris 683-716 (sidebar) — urutan ini juga dipakai sebagai urutan laci di
  * telepon (di kode asli baris 5187-5191 urutannya sedikit beda dari sidebar;
  * itu bug duplikasi dua daftar terpisah yang disatukan di sini).
@@ -68,11 +68,3 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M21 12a8 8 0 01-8 8H4l2.4-2.9A8 8 0 1121 12zM9 11h6M9 14h4',
   },
 ]
-
-/**
- * 5 menu pertama tampil langsung di bilah bawah telepon; slot keenam dipakai
- * tombol laci berisi SELURUH 10 menu. Sebelumnya 6 menu tampil dan sisanya
- * masuk popover "Lainnya" — 4 menu terakhir jadi sulit ditemukan karena
- * namanya tidak pernah terlihat sampai popover dibuka.
- */
-export const MOBILE_NAV_COUNT = 5

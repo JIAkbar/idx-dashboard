@@ -39,18 +39,20 @@
 .dasbor-shell[data-theme='light'] {
   --bg: #f2f4f7; --bg2: #fff; --bg3: #edf1f6; --card: #fff; --card2: #f7f9fc;
   --border: rgba(0,0,0,0.09); --border2: rgba(154,102,12,0.32);
-  --text: #131b26; --text2: #4e5d70; --text3: #8896a8;
+  /* #77 sweep kontras: text3 8896a8→5f6c7d (3.0→5.4 vs putih), red ce3b41→
+     c23439 & green 1f8a57→18754a (angka .red/.green bold 12px butuh ≥4.5). */
+  --text: #131b26; --text2: #4e5d70; --text3: #5f6c7d;
   --accent: #9a660c; --accent2: #b87a10;
   --accent-soft: rgba(154,102,12,0.10); --accent-soft2: rgba(154,102,12,0.22); --accent-soft3: rgba(154,102,12,0.38);
-  --red: #ce3b41; --red-bg: #fbeaeb; --red-txt: #93262b;
-  --green: #1f8a57; --green-bg: #e4f3ea; --green-txt: #14603c;
+  --red: #c23439; --red-bg: #fbeaeb; --red-txt: #93262b;
+  --green: #18754a; --green-bg: #e4f3ea; --green-txt: #14603c;
   --gold: #9a660c; --purple: #6b3fa0;
   --card-shadow: 0 1px 5px rgba(19,27,38,0.07);
   --cal-avail-bg: rgba(154,102,12,0.10); --cal-avail-txt: #9a660c;
-  --cal-up: #1f8a57; --cal-dn: #ce3b41;
+  --cal-up: #18754a; --cal-dn: #c23439;
   --cal-active-bg: #9a660c; --cal-active-txt: #fff;
   --cal-holiday: #f5f6f8; --cal-holiday-txt: #a8b2bf;
-  --chart-grid: rgba(19,27,38,0.07); --chart-txt: #7b8798;
+  --chart-grid: rgba(19,27,38,0.07); --chart-txt: #5f6c7d;
   --rank1bg: #9a660c; --rank2bg: #5a6675; --rank3bg: #7a5a3a;
   --broker-chip-bg: #edf1f6; --broker-chip-txt: #4e5d70;
   --bar-track: #e6eaf0;
@@ -58,18 +60,20 @@
 .dasbor-shell[data-theme='dark'] {
   --bg: #0b1017; --bg2: #111826; --bg3: #18212f; --card: #111826; --card2: #18212f;
   --border: #232e3f; --border2: rgba(240,166,43,0.30);
-  --text: #e8edf4; --text2: #9aa7b8; --text3: #5c6b7e;
+  /* #77 sweep kontras: text3 5c6b7e→8494a8 (3.3→5.7 vs bg panel), red
+     e5484d→eb5e62 (angka .dn/.red di atas red-bg/bg3 naik ke ≥4.5). */
+  --text: #e8edf4; --text2: #9aa7b8; --text3: #8494a8;
   --accent: #f0a62b; --accent2: #ffc155;
   --accent-soft: rgba(240,166,43,0.13); --accent-soft2: rgba(240,166,43,0.26); --accent-soft3: rgba(240,166,43,0.45);
-  --red: #e5484d; --red-bg: rgba(229,72,77,0.14); --red-txt: #f2a3a5;
+  --red: #eb5e62; --red-bg: rgba(235,94,98,0.14); --red-txt: #f2a3a5;
   --green: #30a46c; --green-bg: rgba(48,164,108,0.14); --green-txt: #7fd8ab;
   --gold: #f0a62b; --purple: #b48ae2;
   --card-shadow: 0 2px 12px rgba(0,0,0,0.35);
   --cal-avail-bg: rgba(240,166,43,0.12); --cal-avail-txt: #f0a62b;
-  --cal-up: #30a46c; --cal-dn: #e5484d;
+  --cal-up: #30a46c; --cal-dn: #eb5e62;
   --cal-active-bg: #f0a62b; --cal-active-txt: #131008;
   --cal-holiday: #111826; --cal-holiday-txt: #38455a;
-  --chart-grid: rgba(255,255,255,0.05); --chart-txt: #5c6b7e;
+  --chart-grid: rgba(255,255,255,0.05); --chart-txt: #8494a8;
   --rank1bg: #f0a62b; --rank2bg: #2e3b50; --rank3bg: #3d3020;
   --broker-chip-bg: #18212f; --broker-chip-txt: #9aa7b8;
   --bar-track: #18212f;
@@ -276,17 +280,16 @@
   .dasbor-shell .chart-wrap { height: 180px !important; }
 }
 
-/* ===== TELEPON — bilah bawah 5 menu + laci berisi SELURUH 10 menu =====
-   Sebelumnya 6 menu tampil dan 4 sisanya masuk popover "Lainnya"; nama menu
-   itu tak pernah terlihat sampai popover dibuka, jadi praktis tak ditemukan. */
-.dasbor-bilah { display: none; }
-.dasbor-laci, .dasbor-laci-bg { display: none; }
-
+/* ===== TELEPON =====
+   Bilah bawah 5 menu + laci bawah "Semua Menu" (MobileNav) DIHAPUS (#76) —
+   navigasi telepon satu jalur: logo P di bilah atas membuka laci kiri
+   (LaciMobile, blok "#76 laci mobile" di ujung berkas). Kelas bersama
+   .dasbor-laci-jd/-tutup/-item/-tombol di bawah tetap dipakai laci kiri. */
 @media (max-width: 768px) {
   .dasbor-rail { display: none !important; }
   .dasbor-main { padding: 8px; padding-bottom: 12px; }
   .dasbor-kaki {
-    padding: 11px 12px calc(74px + env(safe-area-inset-bottom));
+    padding: 11px 12px calc(12px + env(safe-area-inset-bottom));
     font-size: 10px; gap: 6px; flex-direction: column; align-items: flex-start;
   }
   .dasbor-kaki-kanan { white-space: normal; }
@@ -312,53 +315,12 @@
   .dasbor-pita { padding-right: 10px; }
   .dasbor-tk { padding: 0 12px; font-size: 11px; }
 
-  .dasbor-bilah {
-    display: flex;
-    position: fixed; bottom: 0; left: 0; right: 0;
-    z-index: 60;
-    background: var(--bg2);
-    border-top: 1px solid var(--border);
-    padding: 4px 2px max(4px, env(safe-area-inset-bottom));
-  }
-  .dasbor-bilah-item {
-    flex: 1; min-width: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 3px; padding: 6px 2px 4px;
-    background: none; border: none; border-top: 2px solid transparent;
-    margin-top: -1px;
-    cursor: pointer; text-decoration: none;
-    color: var(--text3);
-  }
-  .dasbor-bilah-item.active { color: var(--accent); border-top-color: var(--accent); }
-
-  .dasbor-laci-bg {
-    display: block;
-    position: fixed; inset: 0; z-index: 70;
-    background: rgba(0,0,0,.55);
-    animation: dasbor-laci-pudar .18s ease;
-  }
-  .dasbor-laci {
-    display: block;
-    position: fixed; left: 0; right: 0; bottom: 0;
-    z-index: 71;
-    background: var(--bg2);
-    border-top: 1px solid var(--border2);
-    border-radius: 12px 12px 0 0;
-    padding: 10px 10px calc(14px + env(safe-area-inset-bottom));
-    max-height: 82dvh; overflow-y: auto;
-    animation: dasbor-laci-naik .22s cubic-bezier(.2,.7,.3,1);
-  }
-  @keyframes dasbor-laci-pudar { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes dasbor-laci-naik { from { transform: translateY(100%); } to { transform: none; } }
-
-  .dasbor-laci-tarik { width: 38px; height: 4px; border-radius: 2px; background: var(--border2); margin: 2px auto 12px; }
   .dasbor-laci-jd { display: flex; align-items: center; justify-content: space-between; padding: 0 6px 9px; }
   .dasbor-laci-tutup {
     background: none; border: none; cursor: pointer; padding: 0;
     font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
     color: var(--accent);
   }
-  .dasbor-laci-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   .dasbor-laci-item {
     display: grid; grid-template-columns: 20px 1fr auto; gap: 10px; align-items: center;
     padding: 11px 12px;
@@ -366,7 +328,6 @@
     color: var(--text2); text-decoration: none; font-size: 13px;
   }
   .dasbor-laci-item.active { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
-  .dasbor-laci-aksi { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
   .dasbor-laci-tombol {
     display: flex; align-items: center; justify-content: center; gap: 8px;
     padding: 11px;
@@ -378,7 +339,7 @@
   .dasbor-laci-tombol.active { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
 }
 
-/* Modal login (#38) — dipicu Sidebar/MobileNav lewat DasborLayout. Sama pola
+/* Modal login (#38) — dipicu Sidebar/LaciMobile lewat DasborLayout. Sama pola
    "tidak statik" dgn .dasbor-laci di atas (fade bg + naik), tapi kartu
    ditengah & aktif di SEMUA lebar layar (laci cuma render di telepon). */
 .dasbor-modal-bg {
@@ -403,9 +364,9 @@
 .lantai .login-sesi.tutup .status i { background: var(--text3); }
 .lantai .login-sesi .jam { font-family: var(--mono); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .lantai .login-sesi .jam small { font-size: 9px; color: var(--text3); font-weight: 400; }
-.lantai .login-sesi .seg { height: 5px; border-radius: 3px; background: var(--bg3); position: relative; overflow: hidden; margin-top: 9px; }
-.lantai .login-sesi .seg i { position: absolute; inset: 0; background: var(--amber); border-radius: 3px; }
-.lantai .login-sesi.tutup .seg i { background: var(--line2); }
+/* Bar progres polos lama (.seg i) diganti .sesi-bar bersegmen (rule bersama
+   di seksi kalender strip) — di sini cuma jarak atasnya. */
+.lantai .login-sesi .sesi-bar { margin-top: 9px; }
 .lantai .login-sesi .seglbl { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 9px; color: var(--text3); margin-top: 4px; }
 /* min-height me-reserve tinggi label+svg+nilai — jalur "data belum ada"
    (placeholder —) dan "data ada" (sparkline) sama tingginya, layout tak
@@ -418,7 +379,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .dasbor-pita-track { animation: none; }
-  .dasbor-laci, .dasbor-laci-bg { animation: none; }
   .dasbor-modal, .dasbor-modal-bg { animation: none; }
 }
 
@@ -494,10 +454,17 @@
 .lantai .rasio .v{font-family:var(--mono);font-size:15px;font-weight:700;margin-top:2px}
 .lantai .rasio .sub{font-size:9.5px;color:var(--text3);font-family:var(--mono)}
 
-/* Konten 2 kolom seimbang */
-.lantai .duo{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
-.lantai .kolom{display:flex;flex-direction:column;gap:12px;min-width:0}
-@media (max-width:840px){ .lantai .duo{grid-template-columns:1fr} }
+/* Konten kolom mengalir (#81) — multicol: panel anak langsung .duo (wrapper
+   .kolom dihapus). column-width bikin jumlah kolom fluid (±3 laptop lebar,
+   2 sedang, 1 mobile) dan column-fill:balance bawaan menyeimbangkan tinggi
+   kolom otomatis untuk profil data apa pun → nol bolong tanpa redistribusi
+   panel manual per saham. */
+.lantai .duo{column-width:340px;column-gap:12px}
+.lantai .duo>*{break-inside:avoid;margin-bottom:12px;min-width:0}
+/* Varian valuasi: cuma 4 panel & Graham dominan tinggi — kolom lebar supaya
+   Graham memendek (input+vcard melebar) dan 2 kolom laptop terisi penuh,
+   bukan 2 kolom kurus + separuh kanan kosong. */
+.lantai .duo.lebar{column-width:560px}
 
 /* Empty state — pencarian jadi panggung */
 .lantai .empty{display:flex;flex-direction:column;align-items:center;gap:14px;padding:46px 20px;text-align:center}
@@ -527,9 +494,11 @@
 .lantai {
   --bg0:#0B1017; --bg1:#111826; --bg2:#18212F; --bg3:#1F2A3B;
   --line:#232E3F; --line2:#2E3B50;
-  --text:#E8EDF4; --text2:#9AA7B8; --text3:#5C6B7E;
+  /* #77 sweep kontras (nilai sama dgn blok dasbor-shell[data-theme] di atas):
+     text3 → 8494A8, red → EB5E62 (red-on-red-dim 3.97→4.53). */
+  --text:#E8EDF4; --text2:#9AA7B8; --text3:#8494A8;
   --amber:#F0A62B; --amber-ink:#131008; --amber-dim:rgba(240,166,43,.13);
-  --red:#E5484D; --red-dim:rgba(229,72,77,.14);
+  --red:#EB5E62; --red-dim:rgba(235,94,98,.14);
   --green:#30A46C; --green-dim:rgba(48,164,108,.14);
   --blue:#4C8DFF;
   --flap:#060A10; --flap-line:rgba(255,255,255,.07);
@@ -542,10 +511,13 @@
 .dasbor-shell[data-theme="light"] .lantai{
   --bg0:#F2F4F7; --bg1:#FFFFFF; --bg2:#F7F9FC; --bg3:#EDF1F6;
   --line:#DDE3EA; --line2:#C9D2DD;
-  --text:#131B26; --text2:#4E5D70; --text3:#8896A8;
-  --amber:#B87A10; --amber-ink:#FFFFFF; --amber-dim:rgba(184,122,16,.10);
-  --red:#CE3B41; --red-dim:rgba(206,59,65,.10);
-  --green:#1F8A57; --green-dim:rgba(31,138,87,.10);
+  /* #77 sweep kontras: text3 → 5F6C7D; amber B87A10 (3.6 vs putih) → 94620C
+     (5.2 — teks .em-code/.ttm-row & putih di atas .tab.on ikut lolos);
+     red → C23439, green → 18754A (angka up/dn kecil ≥4.5 di semua bg). */
+  --text:#131B26; --text2:#4E5D70; --text3:#5F6C7D;
+  --amber:#94620C; --amber-ink:#FFFFFF; --amber-dim:rgba(148,98,12,.10);
+  --red:#C23439; --red-dim:rgba(194,52,57,.10);
+  --green:#18754A; --green-dim:rgba(24,117,74,.10);
   --flap:#131B26; --flap-line:rgba(255,255,255,.10);
 }
 
@@ -671,11 +643,25 @@
    memotong nama di JavaScript: lebar sel berubah menurut viewport, jumlah
    karakter yang muat tidak bisa ditebak dari kode. Hanya nama yang boleh
    terpotong — persen dan "+N lagi" dikunci flex:none karena keduanya justru
-   informasi yang dicari pembaca. */
-.lantai .pil-row{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow:hidden;max-width:360px}
+   informasi yang dicari pembaca. Cap max-width 360px DIHAPUS (#77b): kolom
+   pemegang saham adalah kolom sisa (kolom lain berlebar tetap), biarkan chip
+   memakai seluruh lebar itu — nama utuh selama muat; ellipsis per-chip baru
+   bekerja saat lebar benar-benar habis (min-width:0 di item + tabel 100%). */
+.lantai .pil-row{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow:hidden}
+/* Pembungkus PilRow.tsx. max-width WAJIB: tanpa cap, min-content sel tabel =
+   lebar natural seluruh chip dan tabel auto-layout MELEBAR melewati panel
+   (scroll-x, yang persis dilarang user). Cap dibuat adaptif viewport, bukan
+   angka mati 360px lama: 100vw dikurangi ± lebar kolom-kolom tetap kedua
+   tabel (ByStock 420px + ByInvestor 410px + rail/padding ≈ 640px), diapit
+   140px (mobile: 1-2 chip + "+N lagi") dan 920px (desktop lebar). */
+.lantai .pil-wrap{position:relative;max-width:clamp(140px,calc(100vw - 640px),920px)}
+/* Baris pengukur PilRow.tsx: semua kandidat chip pada lebar NATURAL (flex:none,
+   tak menyusut) — absolut + hidden supaya tak memengaruhi layout/tinggi baris. */
+.lantai .pil-ukur{position:absolute;inset:0;visibility:hidden;pointer-events:none}
+.lantai .pil-ukur .bchip{flex:none}
 .lantai .pil-row .bchip{display:flex;align-items:center;gap:5px;margin-right:0;min-width:0;white-space:nowrap}
 .lantai .pil-nm{min-width:0;overflow:hidden;text-overflow:ellipsis}
-.lantai .pil-pct{flex:none;color:var(--text3)}
+.lantai .pil-pct{flex:none;color:var(--text2)}
 .lantai .pil-row .lbl{flex:none;white-space:nowrap}
 /* Satu baris + elipsis. Dipakai sel tabel yang isinya nama panjang: membatasi
    jumlah karakter di JavaScript tidak pernah cukup karena lebar kolom berubah
@@ -708,10 +694,10 @@
 .lantai .dd-btn:disabled:hover{border-color:var(--line2)}
 .lantai .dd-btn svg{width:12px;height:12px;stroke:var(--text3);fill:none;stroke-width:2;transition:transform .15s}
 .lantai .dd.open .dd-btn svg{transform:rotate(180deg)}
-.lantai .dd-menu{position:absolute;top:calc(100% + 5px);left:0;min-width:100%;background:var(--bg1);border:1px solid var(--line2);border-radius:var(--r);padding:4px;display:none;z-index:50;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+.lantai .dd-menu{position:absolute;top:calc(100% + 5px);left:0;min-width:max-content;background:var(--bg1);border:1px solid var(--line2);border-radius:var(--r);padding:4px;display:none;z-index:50;box-shadow:0 10px 28px rgba(0,0,0,.35)}
 .lantai .dd.open .dd-menu{display:block;animation:vin .14s ease}
 @keyframes vin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.lantai .dd-it{display:flex;width:100%;text-align:left;padding:6px 10px;border-radius:4px;font-family:var(--mono);font-size:11.5px;color:var(--text2)}
+.lantai .dd-it{display:flex;width:100%;text-align:left;padding:6px 10px;border-radius:4px;font-family:var(--mono);font-size:11.5px;color:var(--text2);white-space:nowrap}
 .lantai .dd-it:hover{background:var(--amber-dim);color:var(--text)}
 .lantai .dd-it.sel{color:var(--amber)}
 
@@ -736,6 +722,15 @@
 .lantai .tile .t-val{font-family:var(--mono);font-weight:600;font-size:15px;margin-top:3px}
 .lantai .tile.big{grid-column:span 2}
 .lantai .tile.big .t-val{font-size:24px}
+/* Mobile: 11 tile jangan jadi tangga 2 kolom panjang — 3 kolom kompak
+   (3×3 + baris sisa 2), biar data utama kelihatan tanpa scroll jauh. */
+@media (max-width:640px){
+  .lantai .tiles{gap:6px}
+  .lantai .tile{flex:1 1 30%;padding:8px 8px 7px;gap:2px}
+  .lantai .tile .t-code{font-size:9px}
+  .lantai .tile .t-name{font-size:10.5px;letter-spacing:0;line-height:1.25}
+  .lantai .tile .t-val{font-size:12.5px;margin-top:2px}
+}
 
 /* bars */
 .lantai .bar-row{display:grid;grid-template-columns:88px 1fr 84px;gap:10px;align-items:center;padding:6px 0}
@@ -753,7 +748,8 @@
    dekat sel tanggal aktif (bukan cuma dropdown bulan di .panel-h). */
 .lantai .hari-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px}
 .lantai .hari-nav .hari-nav-lbl{flex:1;text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lantai .cal-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+/* 5 kolom SEN-JUM: akhir pekan dibuang total dari kalender (bursa tutup, lanjutan #75) */
+.lantai .cal-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 .lantai .cal-d{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:8px 4px;text-align:center}
 .lantai .cal-d .dw{font-family:var(--disp);font-size:9.5px;letter-spacing:.12em;color:var(--text3);text-transform:uppercase}
 .lantai .cal-d .dn2{font-family:var(--mono);font-size:15px;font-weight:600;margin-top:3px}
@@ -767,9 +763,11 @@
 /* #30: status sesi berjalan + jam digital (detik) di atas bar */
 .lantai .sesi-status{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--text2)}
 .lantai .sesi-status .sesi-jam{font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
-.lantai .sesi{display:flex;align-items:center;gap:8px;margin-top:6px;font-family:var(--mono);font-size:11px;color:var(--text2)}
-.lantai .sesi .seg{flex:1;height:5px;border-radius:3px;background:var(--bg3);position:relative;overflow:hidden}
-.lantai .sesi .seg i{position:absolute;inset:0;width:62%;background:var(--amber);border-radius:3px}
+.lantai .sesi{display:flex;align-items:flex-start;gap:8px;margin-top:6px;font-family:var(--mono);font-size:11px;color:var(--text2)}
+/* bar bersegmen (.sesi-bar-wrap, rule bersama di seksi kalender strip)
+   menggantikan .seg polos; label jam 08:45/16:15 rata dengan barnya. */
+.lantai .sesi .sesi-bar-wrap{flex:1;min-width:0}
+.lantai .sesi>span{line-height:1;padding-top:0}
 
 /* feedback */
 .lantai .rate{display:flex;gap:6px}
@@ -777,7 +775,7 @@
 .lantai .rate button.on{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
 
 /* kalender grid bulan */
-.lantai .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:12px;border-top:1px solid var(--line);padding-top:11px}
+.lantai .cal-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin-top:12px;border-top:1px solid var(--line);padding-top:11px}
 .lantai .cal-grid .cg{height:28px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);
   font-size:11px;color:var(--text3);border-radius:3px}
 .lantai .cal-grid .cg.ada{color:var(--text);background:var(--bg2);border:1px solid var(--line)}
@@ -815,9 +813,10 @@
 .lantai .csb-now{display:flex;align-items:baseline;gap:9px}
 .lantai .csb-now .tgl{font-weight:700;font-size:13.5px}
 .lantai .csb-now .ihsg{font-family:var(--mono);font-size:12.5px}
-.lantai .csb-sesi{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--text2);padding-left:14px;border-left:1px solid var(--line)}
-.lantai .csb-sesi .seg{width:110px;height:5px;border-radius:3px;background:var(--bg3);position:relative;overflow:hidden}
-.lantai .csb-sesi .seg i{position:absolute;inset:0;background:var(--amber);border-radius:3px}
+/* Feedback ronde 2: bar sesi strip melebar mengisi ruang sampai dekat strip
+   7 hari (flex:1) supaya segmen jeda waktu kebaca — bukan lagi mini 110px. */
+.lantai .csb-sesi{display:flex;align-items:center;gap:8px;flex:1;min-width:0;font-family:var(--mono);font-size:11px;color:var(--text2);padding-left:14px;border-left:1px solid var(--line)}
+.lantai .csb-sesi .sesi-bar-wrap{flex:1;min-width:0}
 .lantai .csb-hari{display:flex;gap:5px;margin-left:auto}
 .lantai .csb-d{min-width:44px;text-align:center;border:1px solid var(--line);border-radius:var(--r);padding:4px 6px;background:var(--bg2);cursor:pointer;font-family:var(--mono)}
 .lantai span.csb-d{cursor:default}
@@ -829,16 +828,59 @@
 .lantai .csb-d .dp{display:block;font-size:9px}
 .lantai .csb-d.aktif{background:var(--amber);border-color:var(--amber)}
 .lantai .csb-d.aktif .dw,.lantai .csb-d.aktif .dd,.lantai .csb-d.aktif .dp{color:var(--amber-ink)}
-.lantai .csb-d.off{opacity:.45;cursor:default}
+.lantai .csb-d.off{opacity:.65;cursor:default} /* #77: .45 nyaris hilang di light */
 .lantai .csb-more{font-family:var(--mono);font-size:10.5px;color:var(--text2);background:var(--bg3);border:1px solid var(--line2);border-radius:var(--r);padding:6px 10px;cursor:pointer;white-space:nowrap}
 .lantai .csb-more:hover{border-color:var(--amber);color:var(--text)}
-/* Area expand "Kalender penuh" (#k1full mockup: display toggle + border-top;
-   grid bulan dicap 420px seperti cg-wrap mockup). */
-.lantai .csb-full{border-top:1px solid var(--line);padding:12px 14px;max-width:448px}
-.lantai .csb-full .cal-grid{max-width:420px;margin-top:0;border-top:none;padding-top:0}
+/* Area expand "Kalender penuh" (#k1full mockup: display toggle + border-top).
+   Feedback #1 (dua ronde): dulu satu kolom cap 448px — sisa kanan kosong
+   melompong; sekarang FULL-WIDTH — dua kolom fr fleksibel (kiri grid bulan
+   ikut melebar, sel proporsional; kanan sesi+statistik stretch sisa lebar),
+   tanpa cap px tetap, turun 1 kolom di layar sempit. */
+.lantai .csb-full{border-top:1px solid var(--line);padding:12px 14px;display:grid;grid-template-columns:minmax(380px,1fr) minmax(320px,1.2fr);gap:30px;align-items:start}
+.lantai .csb-full .cal-grid{margin-top:0;border-top:none;padding-top:0}
+/* Dua sub-blok kolom kanan (sesi | tanggal terpilih) berdampingan mengisi
+   sisa lebar; auto-fit merobohkannya jadi satu kolom saat sempit. */
+.lantai .csb-kanan{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px 32px;align-items:start}
+@media (max-width:760px){
+  .lantai .csb-full{grid-template-columns:1fr}
+}
+
+/* ===== BAR SESI BERSEGMEN (feedback #3 — jam resmi IDX pasar reguler).
+   Rule bersama: strip (.csb-sesi), varian penuh (.sesi), expand (.csb-kanan),
+   modal login (.login-sesi). Segmen proporsional durasi nyata (450 menit),
+   batas kelihatan lewat border antar segmen, istirahat diarsir garis miring,
+   segmen aktif amber, marker posisi "sekarang". ===== */
+.lantai .sesi-bar{position:relative;display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--bg3)}
+.lantai .sesi-bar .sb{height:100%;background:var(--line2);opacity:.55}
+.lantai .sesi-bar .sb+.sb{border-left:1px solid var(--bg1)}
+.lantai .sesi-bar .sb.rehat{background:repeating-linear-gradient(-45deg,var(--bg3) 0 3px,var(--line2) 3px 6px);opacity:.8}
+.lantai .sesi-bar .sb.on{background:var(--amber);opacity:1}
+.lantai .sesi-bar .sb-now{position:absolute;top:0;bottom:0;width:2px;transform:translateX(-1px);background:var(--text);border-radius:1px}
+.lantai .sesi-bar-names{display:flex;margin-top:3px;font-family:var(--disp);font-size:8px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3)}
+.lantai .sesi-bar-names span{overflow:hidden;white-space:nowrap;text-align:center;flex:none}
+
+/* Kolom kanan expand: legenda sesi + statistik mini tanggal terpilih. */
+.lantai .sesi-legend{display:flex;flex-direction:column;gap:5px;margin-top:12px;font-family:var(--mono);font-size:10.5px;color:var(--text2)}
+.lantai .sesi-legend .sl{display:flex;align-items:center;gap:8px}
+.lantai .sesi-legend .sl i{width:7px;height:7px;border-radius:2px;flex:none}
+.lantai .sesi-legend .sl b{margin-left:auto;font-weight:600;color:var(--text3)}
+.lantai .sesi-legend .sl.on span{color:var(--text);font-weight:700}
+.lantai .sesi-legend .sl.on b{color:var(--text)}
+.lantai .csb-stat .lbl{display:block;margin-bottom:4px}
+.lantai .csb-stat .baris{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:12px;color:var(--text2);margin-top:7px}
+.lantai .csb-stat .baris b{color:var(--text);font-weight:600}
+.lantai .csb-stat .baris b.up{color:var(--green)}
+.lantai .csb-stat .baris b.dn{color:var(--red)}
+
 @media (max-width:560px){
   .lantai .csb-hari{margin-left:0;width:100%;overflow-x:auto;padding-bottom:2px}
-  .lantai .csb-sesi{border-left:none;padding-left:0}
+  /* Bar sesi dapat baris sendiri full-width (di bawah baris tanggal/status,
+     di atas strip hari) — segmen tetap kebaca di 412px, tidak terjepit.
+     flex-basis 100% (bukan width) karena width kalah oleh flex-basis:0 dari
+     flex:1 di rule dasar; di dalamnya wrap lagi: baris label+jam, lalu bar. */
+  .lantai .csb-sesi{border-left:none;padding-left:0;flex:1 0 100%;flex-wrap:wrap;row-gap:5px}
+  .lantai .csb-sesi>:last-child{margin-left:auto}
+  .lantai .csb-sesi .sesi-bar-wrap{flex:1 0 100%;order:2}
 }
 
 /* net foreign & market fundamental */
@@ -846,7 +888,8 @@
 .lantai .nf-cell{padding:12px 14px;border-right:1px solid var(--line)}
 .lantai .nf-cell:last-child{border-right:none}
 .lantai .nf-big{font-size:19px;font-weight:600;margin-top:3px}
-.lantai .nf-sec{font-size:13px;margin-top:7px;opacity:.85}
+/* #77: opacity .85 dihapus — menggerus kontras angka net buy/sell (4.2:1). */
+.lantai .nf-sec{font-size:13px;margin-top:7px}
 .lantai .nf-unit{font-size:10px;color:var(--text3);font-family:var(--mono)}
 .lantai .mf-big{font-size:30px;font-weight:600;margin-top:4px;color:var(--amber)}
 .lantai .mf-x{font-size:15px;color:var(--text3);margin-left:3px}
@@ -910,11 +953,13 @@
 .lantai .w-tbl tr.kita:hover td{background:var(--red-dim)}
 .lantai .w-tbl tr.kita td:first-child{font-weight:700;box-shadow:inset 2px 0 0 var(--red)}
 .lantai .ytd-bdg{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;padding:1px 7px;border-radius:3px;min-width:62px;text-align:right}
-.lantai .ytd-bdg.u{background:var(--green-dim);color:var(--green)}
-.lantai .ytd-bdg.d{background:var(--red-dim);color:var(--red)}
+/* #77: teks pakai token *-txt (bukan --red/--green) — di baris .kita badge
+   duduk di atas red-dim DOBEL (row+badge), merah-di-merah cuma 4.1:1. */
+.lantai .ytd-bdg.u{background:var(--green-dim);color:var(--green-txt,var(--green))}
+.lantai .ytd-bdg.d{background:var(--red-dim);color:var(--red-txt,var(--red))}
 .lantai .rk{font-family:var(--mono);font-size:11px;color:var(--text3)}
 
-/* .laci* (baris 295-316 artifact) dilewati — padanannya ada di MobileNav.tsx. */
+/* .laci* (baris 295-316 artifact) dilewati — padanannya ada di LaciMobile.tsx. */
 
 /* @media (max-width:820px) — hanya aturan isi; .shell/.rail/.content/.bottom-nav
    dilewati karena padanannya ada di Bagian 1 di atas (media query 768px
@@ -966,9 +1011,17 @@
 .lantai .pi-panel-code-chip { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; height: 24px; background: #f97316; border-radius: 5px; font-size: 9px; font-weight: 800; color: #fff; padding: 0 4px; }
 .lantai .pi-panel-row-issuer { flex: 1; min-width: 0; font-size: 11px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.lantai .pi-head-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+/* Baris tab + kontrol pencarian Peta Investor (#83) — search pindah dari .vhead
+   ke sebaris tab; tinggi kontrol diseragamkan 32px (≈ tinggi .tabs), lebar ikut isi. */
+.lantai .pi-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+/* #77b: margin-left:auto dihapus — pencarian kini blok KIRI toolbar, tab view
+   duduk di kanannya (urutan elemen dibalik di PetaInvestor.tsx). */
+.lantai .pi-head-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .lantai .pi-srch-container { position: relative; }
-.lantai .pi-search { padding: 7px 36px 7px 12px; border-radius: 7px; border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text); font-size: 12px; width: 230px; outline: none; text-transform: uppercase; letter-spacing: .3px; }
+.lantai .pi-search { height: 32px; padding: 0 36px 0 12px; border-radius: 7px; border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text); font-size: 12px; width: 230px; outline: none; text-transform: uppercase; letter-spacing: .3px; }
+/* #77b: uppercase hanya untuk nilai ketikan (kode saham) — placeholder tetap
+   sentence case seperti konvensi placeholder lain. */
+.lantai .pi-search::placeholder { text-transform: none; letter-spacing: normal; }
 .lantai .pi-search-x { display: inline-block; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text3); font-size: 14px; line-height: 1; }
 .lantai .pi-search-drop { position: absolute; top: calc(100% + 4px); right: 0; width: 300px; max-height: 340px; overflow-y: auto; background: var(--card); border: 0.5px solid var(--border2); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.35); z-index: 200; }
 .lantai .pi-drop-empty { padding: 14px; text-align: center; color: var(--text3); font-size: 11px; }
@@ -978,20 +1031,30 @@
 .lantai .pi-drop-item-title { font-size: 13px; font-weight: 800; color: var(--text); letter-spacing: .5px; }
 .lantai .pi-drop-item-sub { font-size: 10px; color: var(--text3); }
 .lantai .pi-cat-badge { color: #fff; font-size: 8px; font-weight: 700; padding: 2px 7px; border-radius: 8px; white-space: nowrap; }
-.lantai .pi-search-go { padding: 6px 14px; border-radius: 7px; border: 0.5px solid var(--accent); background: var(--accent); color: var(--amber-ink); font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
-.lantai .pi-search-reset { padding: 6px 10px; border-radius: 7px; border: 0.5px solid var(--border); background: var(--bg3); color: var(--text2); font-size: 11px; cursor: pointer; font-family: inherit; }
+.lantai .pi-search-go { height: 32px; padding: 0 14px; border-radius: 7px; border: 0.5px solid var(--accent); background: var(--accent); color: var(--amber-ink); font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.lantai .pi-search-reset { height: 32px; padding: 0 12px; border-radius: 7px; border: 0.5px solid var(--border); background: var(--bg3); color: var(--text2); font-size: 11px; cursor: pointer; font-family: inherit; }
 
 .lantai .pi-tbl-toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 14px; }
 .lantai .pi-tbl-toolbar-title { font-weight: 700; font-size: 13px; }
 .lantai .pi-tbl-count { font-size: 11px; color: var(--text3); margin-left: auto; }
-.lantai .pi-tbl-wrap { overflow-x: auto; max-height: 560px; overflow-y: auto; border-radius: 10px; border: 0.5px solid var(--border); }
+/* Tinggi area scroll ikut viewport (fallback 560px lama cuma di layar pendek);
+   scrollbar custom halus "kayak SAKTI" (#83) — scoped ke area scroll tabel ini
+   saja. JANGAN tambah scrollbar-width/scrollbar-color di sini: Chrome 121+
+   mematikan ::-webkit-scrollbar begitu properti standar itu di-set. */
+.lantai .pi-tbl-wrap { overflow-x: auto; max-height: max(560px, calc(100dvh - 300px)); overflow-y: auto; border-radius: 10px; border: 0.5px solid var(--border); }
+.lantai .pi-tbl-wrap::-webkit-scrollbar { width: 8px; height: 8px; }
+.lantai .pi-tbl-wrap::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 99px; }
+.lantai .pi-tbl-wrap::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+.lantai .pi-tbl-wrap::-webkit-scrollbar-track { background: transparent; }
 .lantai .pi-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
-.lantai .pi-tbl th { background: var(--bg3); color: var(--text2); font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; padding: 9px 12px; text-align: left; border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 2; }
+/* white-space:nowrap (#77b): header pendek macam "# SAHAM" jangan patah dua baris. */
+.lantai .pi-tbl th { background: var(--bg3); color: var(--text2); font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; padding: 9px 12px; text-align: left; border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 2; white-space: nowrap; }
 .lantai .pi-tbl td { padding: 9px 12px; border-bottom: 0.5px solid var(--border); color: var(--text); vertical-align: middle; }
 .lantai .pi-tbl tr:last-child td { border-bottom: none; }
 .lantai .pi-tbl tbody tr:hover td { background: var(--bg3); cursor: pointer; }
 .lantai .pi-tbl .em-code { font-weight: 800; color: var(--accent); font-size: 13px; }
-.lantai .pi-tbl .em-name { font-size: 10px; color: var(--text3); margin-top: 1px; }
+/* Nama emiten/holder = teks sekunder — minimal var(--text2), text3 kelewat redup di dark (#83). */
+.lantai .pi-tbl .em-name { font-size: 10px; color: var(--text2); margin-top: 1px; }
 .lantai .pi-inv-name { font-weight: 700; color: var(--text); font-size: 12px; }
 .lantai .pi-badge-h { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; margin: 2px 2px 2px 0; }
 .lantai .pi-badge-h.CORP { background: #3b82f620; color: #3b82f6; }
@@ -1017,3 +1080,265 @@
   .lantai .pi-tbl-wrap { max-width: calc(100vw - 24px); }
   .lantai .pi-tbl th, .lantai .pi-tbl td { font-size: 10px; padding: 6px 7px; }
 }
+
+/* ===== MODE RENTANG (#75) — toggle Hari|Rentang di strip kalender, preset,
+   highlight rentang di grid bulan, dan baris sektor kompak re-layout /sector.
+   .dlm = tanggal DALAM rentang (amber-dim), ujung rentang pakai .aktif yang
+   sudah ada. Toggle numpang primitif .tabs/.tab (diperkecil), preset numpang
+   .chip-t (+ state .on & :disabled yang sebelumnya belum ada). ===== */
+.lantai .cal-grid .cg.ada.dlm{background:var(--amber-dim);border-color:var(--amber)}
+.lantai .cal-strip-bar .tabs.mode-tgl{padding:2px}
+.lantai .cal-strip-bar .tabs.mode-tgl .tab{padding:4px 10px;font-size:10px}
+.lantai .cal-rentang-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 14px;border-top:1px solid var(--line)}
+.lantai .cal-rentang-bar .chip-t{padding:4px 11px;font-size:10.5px}
+.lantai .chip-t:disabled{opacity:.4;cursor:default}
+.lantai .chip-t.on{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
+.lantai .chip-t.on:hover{color:var(--amber-ink)}
+.lantai .crb-hint{font-family:var(--mono);font-size:10.5px;color:var(--text2);margin-left:auto}
+/* Baris "Performa Sektor" kompak (re-layout /sector #75): nama | nilai indeks
+   | bar mini | badge persen — dalam .rank-wrap yang sudah 2 kolom auto-fit,
+   jadi 11 sektor kebagi ±6+5 berdampingan di desktop, 1 kolom di mobile.
+   Menang atas override .rk-row media query lewat specificity (.sek). */
+.lantai .rk-row.sek{grid-template-columns:minmax(96px,130px) 62px 1fr 62px}
+.lantai .rk-row.sek .rk-nv{font-family:var(--mono);font-size:11px;color:var(--text2);text-align:right}
+
+/* ===== #78 BULLETIN — tabel edisi Arus Pasar (Bulletin.tsx) =====
+   Kolom No (mono redup) + IHSG hari edisi (numpang .num/.up/.dn yang sudah
+   ada), tombol unduh ramping: pill hairline var(--line2), ikon panah-tray,
+   hover amber halus. Scroll-x inline dalam panel (.blt-wrap) supaya di
+   mobile tabelnya yang geser, bukan halamannya. */
+.lantai .blt-wrap{overflow-x:auto}
+.lantai .blt-wrap .tbl{width:100%;min-width:760px}
+.lantai .blt-no{font-family:var(--mono);font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums}
+.lantai .blt-dl{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.07em;color:var(--text2);border:1px solid var(--line2);border-radius:99px;padding:4px 12px 4px 10px;text-decoration:none;white-space:nowrap;font-variant-numeric:tabular-nums;transition:color .12s,border-color .12s,background .12s}
+.lantai .blt-dl:hover{color:var(--amber);border-color:var(--amber);background:var(--amber-dim)}
+/* #92 — pencarian emiten di header panel (input .inp 32px + tombol × di dalam),
+   kolom IHSG gabung badge Δ% (.ytd-bdg), badge Tipe & chip emiten numpang
+   .bchip (chip = <button> klik → isi filter). Mobile ≤560px: input pindah
+   baris sendiri (blt-h flex-wrap + basis 100%). */
+.lantai .blt-h{flex-wrap:wrap}
+.lantai .blt-cari{position:relative;flex:none;width:210px}
+.lantai .blt-cari .inp{padding-right:30px}
+.lantai .blt-cari-x{position:absolute;right:3px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:none;background:none;padding:0;color:var(--text3);cursor:pointer;border-radius:4px;transition:color .15s}
+.lantai .blt-cari-x:hover{color:var(--amber)}
+.lantai .blt-ihsg{white-space:nowrap}
+.lantai .blt-tipe{margin-right:0;color:var(--text2);white-space:nowrap}
+.lantai .blt-em{cursor:pointer;color:var(--text2);transition:color .15s,border-color .15s,background .15s}
+.lantai .blt-em:hover{color:var(--amber);border-color:var(--amber);background:var(--amber-dim)}
+.lantai .blt-reset{border:none;background:none;padding:0;font:inherit;color:var(--amber);cursor:pointer;text-decoration:underline}
+@media (max-width:560px){
+  .lantai .blt-cari{flex-basis:100%;width:auto}
+}
+
+/* #76 laci mobile — logo P di bilah atas telepon jadi tombol laci navigasi
+   kiri (bentuk telepon dari rail; BUKAN hamburger terpisah), dan zona logo
+   dipisah dari pita kurs dengan pembatas hairline supaya tidak menyatu.
+   Laci selalu ter-mount lalu digeser transform + visibility (bukan
+   mount/unmount) supaya buka DAN tutup sama-sama teranimasi; visibility:hidden
+   sekalian mengeluarkan isinya dari urutan Tab. Item/tombol/judul numpang
+   kelas .dasbor-laci-* yang sudah ada (laci bawah), hanya kontainernya baru. */
+.dasbor-merek-zona, .dasbor-laci-kiri, .dasbor-laci-kiri-bg { display: none; }
+
+@media (max-width: 768px) {
+  /* Zona logo: area sendiri + border-right hairline; pita mulai sesudahnya. */
+  .dasbor-merek-zona {
+    display: flex; align-items: center;
+    flex: none; align-self: stretch;
+    padding: 0 10px;
+    border-right: 1px solid var(--border);
+  }
+  /* .dasbor-merek-mini kini <button> — reset bawaan button + margin lama
+     (jarak kini urusan zona). */
+  .dasbor-merek-mini { margin: 0; padding: 0; border: none; cursor: pointer; }
+
+  .dasbor-laci-kiri-bg {
+    display: block;
+    position: fixed; inset: 0; z-index: 80;
+    background: rgba(0,0,0,.55);
+    opacity: 0; visibility: hidden;
+    transition: opacity .2s ease-out, visibility .2s;
+  }
+  .dasbor-laci-kiri-bg.buka { opacity: 1; visibility: visible; }
+
+  .dasbor-laci-kiri {
+    display: flex; flex-direction: column;
+    position: fixed; top: 0; bottom: 0; left: 0; z-index: 81;
+    width: min(280px, 82vw);
+    background: var(--bg2);
+    border-right: 1px solid var(--border2);
+    padding: 12px 10px calc(14px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+    transform: translateX(-100%); visibility: hidden;
+    transition: transform .22s ease-out, visibility .22s;
+  }
+  .dasbor-laci-kiri.buka { transform: none; visibility: visible; }
+
+  .dasbor-laci-kiri-list { display: flex; flex-direction: column; gap: 6px; }
+  .dasbor-laci-kiri-aksi {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    margin-top: auto; padding-top: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dasbor-laci-kiri, .dasbor-laci-kiri-bg { transition: none; }
+}
+
+/* #76 rapi atas mobile — lanjutan laci: potongan pita kurs di tepi zona
+   dihaluskan pakai mask fade (teks berjalan muncul/hilang lembut, tidak
+   terpenggal kasar di sebelah logo P), dan ritme vertikal strip kalender
+   di layar sempit dirapikan: jarak antar baris seragam, sel hari SEN-JUM
+   melebar rata penuh (tidak menyisakan kanan kosong), kontrol Hari|Rentang
+   kiri vs "Kalender penuh" kanan sejajar satu baris. Murni tata letak —
+   logika mode rentang/preset tidak disentuh. */
+@media (max-width: 768px) {
+  .dasbor-pita-mid {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 14px), transparent);
+    mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 14px), transparent);
+  }
+}
+@media (max-width: 560px) {
+  .lantai .cal-strip-bar { gap: 12px 8px; padding: 12px; }
+  .lantai .csb-hari { gap: 6px; }
+  .lantai .csb-d { flex: 1 0 auto; min-width: 0; padding: 5px 2px; }
+  .lantai .cal-strip-bar .csb-more { margin-left: auto; }
+  .lantai .cal-rentang-bar { padding: 8px 12px; }
+}
+
+/* ===== #87 sector r2 — relayout /sector ronde 2 ===== */
+/* Bug scrollbar tab periode: .tabs overflow-x:auto + width:max-content; di
+   DPR!=1 pembulatan subpiksel bikin scrollWidth > clientWidth sepiksel,
+   scrollbar Windows muncul padahal isinya muat. Sembunyikan visual scrollbar
+   (overflow-x:auto dipertahankan, swipe di mobile tetap jalan). */
+.lantai .tabs{scrollbar-width:none}
+.lantai .tabs::-webkit-scrollbar{display:none}
+/* Performa Sektor portrait: 11 baris satu kolom di panel setengah lebar
+   (menimpa auto-fit 2 kolom .rank-wrap bawaan). */
+.lantai .rank-wrap.potret{grid-template-columns:1fr}
+/* Kolom kanan baris 2: Indeks Syariah (1 baris) + Board Indices (3 baris)
+   ditumpuk satu sel grid supaya tak ada panel setengah kosong. */
+.lantai .sec-stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+/* ===== #77b KONTROL SERAGAM — tinggi & bentuk (permintaan user, 2 aturan) =====
+   A. TINGGI: semua kontrol yang duduk sebaris (tab, dropdown, input, tombol,
+      chip aksi) dikunci 32px — sebelumnya toggle Hari|Rentang (~27px) lebih
+      pendek dari "Kalender penuh"/dropdown (~31px) di baris yang sama.
+      box-sizing:border-box global, jadi 32px sudah termasuk border+padding;
+      padding-block dinolkan & isi ditengahkan flex supaya font kecil (10-12px)
+      tidak menggeser baseline. textarea.inp dikecualikan (multiline).
+   B. BENTUK (revisi ronde 2 user): radius kontrol interaktif & badge data
+      seragam 4px — pill 99px (chip-t/blt-dl/.chip/.badge hero) dan variasi
+      3/6/7/8px dibuang; kesan "mewah" dari detail interaksi (hover amber-dim,
+      tekan translateY 1px, transisi .15s, shadow lembut di tombol primer),
+      BUKAN dari bentuk. Panel/popover/modal TIDAK ikut (tetap --r). Lingkaran
+      status (dot, medal peringkat, legend-dot) bukan tombol, tetap bundar. ===== */
+.lantai .tabs,
+.lantai .dd-btn,
+.lantai .csb-more,
+.lantai .btn-p,
+.lantai .chip-t,
+.lantai .pi-view-tab,
+.lantai .pi-tbl-search,
+.lantai .pi-tbl-select,
+.lantai .pi-loadmore,
+.lantai .inp { height: 32px; }
+.lantai textarea.inp { height: auto; }
+.lantai .dd-btn, .lantai .csb-more, .lantai .btn-p, .lantai .chip-t,
+.lantai .pi-view-tab, .lantai .pi-loadmore {
+  padding-top: 0; padding-bottom: 0;
+  display: inline-flex; align-items: center;
+}
+.lantai .tab { padding-top: 0; padding-bottom: 0; display: inline-flex; align-items: center; }
+.lantai .cal-strip-bar .tabs.mode-tgl .tab { padding-top: 0; padding-bottom: 0; }
+.lantai .rate button { width: 32px; height: 32px; }
+
+.lantai .tabs, .lantai .tab, .lantai .dd-btn, .lantai .dd-it,
+.lantai .inp, .lantai .btn-p, .lantai .chip, .lantai .chip-t,
+.lantai .bchip, .lantai .ytd-bdg, .lantai .blt-dl,
+.lantai .csb-more, .lantai .csb-d, .lantai .cal-d, .lantai .cal-grid .cg,
+.lantai .rate button, .lantai .hero .ident .badge,
+.lantai .pi-view-tab, .lantai .pi-search, .lantai .pi-search-go,
+.lantai .pi-search-reset, .lantai .pi-tbl-search, .lantai .pi-tbl-select,
+.lantai .pi-loadmore, .lantai .pi-panel-close,
+.lantai .dpk-nav, .lantai .dpk-hari,
+.dasbor-shell .bdg, .dasbor-shell .bchip, .dasbor-nav-badge,
+.dasbor-shell .dasbor-laci-item, .dasbor-shell .dasbor-laci-tombol { border-radius: 4px; }
+
+/* Micro-interaction "mewah": transisi halus + hover amber + tekan 1px.
+   Hover per-kontrol yang sudah ada (dd-btn/chip-t/csb-more/blt-dl) tetap;
+   di sini cuma melengkapi yang belum punya & menyeragamkan transisinya. */
+.lantai .dd-btn, .lantai .csb-more, .lantai .chip-t, .lantai .blt-dl,
+.lantai .pi-view-tab, .lantai .pi-loadmore, .lantai .rate button,
+.lantai .dpk-nav, .lantai .btn-p, .lantai .tab {
+  transition: color .15s ease-out, border-color .15s ease-out,
+    background .15s ease-out, transform .15s ease-out, box-shadow .15s ease-out;
+  letter-spacing: .02em;
+}
+.lantai .pi-view-tab:not(.active):hover,
+.lantai .pi-loadmore:hover { background: var(--amber-dim); border-color: var(--amber); color: var(--text); }
+.lantai .btn-p:active, .lantai .dd-btn:active, .lantai .csb-more:active,
+.lantai .chip-t:active, .lantai .pi-view-tab:active, .lantai .pi-search-go:active,
+.lantai .pi-loadmore:active, .lantai .rate button:active, .lantai .blt-dl:active,
+.lantai .tab:active { transform: translateY(1px); }
+.lantai .btn-p, .lantai .pi-search-go { box-shadow: 0 1px 2px rgba(0,0,0,.18); }
+.lantai .btn-p:active, .lantai .pi-search-go:active { box-shadow: 0 0 1px rgba(0,0,0,.14); }
+@media (prefers-reduced-motion: reduce) {
+  .lantai .btn-p:active, .lantai .dd-btn:active, .lantai .csb-more:active,
+  .lantai .chip-t:active, .lantai .pi-view-tab:active, .lantai .pi-search-go:active,
+  .lantai .pi-loadmore:active, .lantai .rate button:active, .lantai .blt-dl:active,
+  .lantai .tab:active { transform: none; }
+}
+
+/* #89 chart indeks — lajur chip pemilih indeks (/chart). Reset margin-right:7px
+   bawaan .bchip yang menduakan gap (horizontal 13px vs vertikal 6px → jarak
+   wrap tidak seragam di layar sempit); padding dibesarkan sedikit supaya
+   target sentuh telepon nyaman. Radius 4px sudah ikut blok radius global. */
+.lantai .tv-chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.lantai .tv-chips .bchip{margin-right:0;padding:4px 9px}
+
+/* #93 keystats — badge skor (Altman Z / Piotroski F) di panel Key Stats.
+   Token --*-dim & warna sudah terdefinisi di kedua tema blok .lantai. */
+.lantai .ks-badge{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-radius:99px;padding:1px 7px;margin-left:6px;vertical-align:1px}
+.lantai .ks-badge.ks-g{background:var(--green-dim);color:var(--green)}
+.lantai .ks-badge.ks-a{background:var(--amber-dim);color:var(--amber)}
+.lantai .ks-badge.ks-r{background:var(--red-dim);color:var(--red)}
+.lantai .ks-note{display:block;font-size:9px;color:var(--text3)}
+
+/* #90 Tombol "Hari Ini" — reuse .csb-more, cuma butuh state disabled
+   (redup saat tanggal aktif sudah hari bursa terkini). */
+.lantai .csb-more:disabled{opacity:.35;cursor:not-allowed}
+.lantai .csb-more:disabled:hover{border-color:var(--line2);color:var(--text2)}
+
+/* #91 — Peta Investor: tab bernafas, tabel tanpa scroll-x, scrollbar tak menimpa isi.
+   (a) Tab toolbar /peta-investor: padding horizontal lega + line-height 1;
+       tinggi bar tetap 32px (masalahnya proporsi, bukan tinggi).
+   (b) Tabel By Stock/By Investor: table-layout fixed — lebar kolom dikunci
+       kelas pi-c-*, kolom chip = SISA lebar panel; PilRow adaptif mengukur
+       sisa itu, jadi tabel tidak pernah melebihi panel (tanpa scroll-x).
+       Clamp viewport lama .pil-wrap tidak berlaku lagi di dalam tabel ini.
+   (c) Scrollbar tipis (4px) + gutter stabil + padding kanan kecil supaya
+       thumb tidak menutupi kolom terakhir (keluhan mobile), light + dark. */
+.lantai .pi-toolbar .tabs .tab { padding: 0 16px; line-height: 1; }
+.lantai .pi-tbl { table-layout: fixed; }
+.lantai .pi-tbl th.pi-c-em { width: 110px; }
+.lantai .pi-tbl th.pi-c-n { width: 68px; }
+.lantai .pi-tbl th.pi-c-pct { width: 72px; }
+.lantai .pi-tbl th.pi-c-nama { width: 32%; }
+.lantai .pi-tbl th.pi-c-tipe { width: 64px; }
+.lantai .pi-tbl th.pi-c-jml { width: 72px; }
+.lantai .pi-tbl .pil-wrap { max-width: 100%; }
+.lantai .pi-tbl-wrap { scrollbar-gutter: stable; padding-right: 2px; }
+.lantai .pi-tbl-wrap::-webkit-scrollbar { width: 4px; height: 4px; }
+@media (max-width: 700px) {
+  .lantai .pi-tbl th { white-space: normal; }
+  .lantai .pi-tbl th.pi-c-em { width: 78px; }
+  .lantai .pi-tbl th.pi-c-n { width: 52px; }
+  .lantai .pi-tbl th.pi-c-pct { width: 44px; }
+  .lantai .pi-tbl th.pi-c-nama { width: 40%; }
+  .lantai .pi-tbl th.pi-c-tipe { width: 44px; }
+  .lantai .pi-tbl th.pi-c-jml { width: 46px; }
+}
+/* #95 filter tipe bulletin */
+.lantai .blt-h{flex-wrap:wrap;row-gap:8px}
+.lantai .blt-tabs{margin-left:auto;margin-right:10px}
+@media (max-width:560px){.lantai .blt-tabs{margin-left:0;flex-basis:100%;order:3}}

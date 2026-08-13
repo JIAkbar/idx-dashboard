@@ -54,6 +54,26 @@ export async function unggahScreenshot(
   return path
 }
 
+/** Hapus screenshot dari bucket "screenshots" berdasarkan path lengkap ({tanggal}/{nama}). */
+export async function hapusScreenshot(paths: string[]): Promise<void> {
+  if (paths.length === 0) return
+  const { error } = await supabase.storage.from('screenshots').remove(paths)
+  if (error) throw error
+}
+
+/** Signed URL (1 jam) berkas-berkas di bucket privat "screenshots", map path → URL.
+ *  Batch satu request; path yang gagal ditandatangani tidak masuk hasil. */
+export async function urlScreenshots(paths: string[]): Promise<Record<string, string>> {
+  if (paths.length === 0) return {}
+  const { data, error } = await supabase.storage.from('screenshots').createSignedUrls(paths, 3600)
+  if (error) throw error
+  const hasil: Record<string, string> = {}
+  for (const d of data ?? []) {
+    if (d.path && d.signedUrl) hasil[d.path] = d.signedUrl
+  }
+  return hasil
+}
+
 export async function daftarScreenshot(tanggal: string): Promise<string[]> {
   const { data, error } = await supabase.storage.from('screenshots').list(tanggal)
   if (error) throw error

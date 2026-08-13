@@ -43,7 +43,7 @@ export function Inventory({ brokers }: InventoryProps) {
                 </td>
                 <td className="r num">{fmtLot(b.vol)}</td>
                 <td className="r num">{b.freq.toLocaleString('id-ID')}</td>
-                <td className="r num" style={{ color: 'var(--text3)' }}>{pct}%</td>
+                <td className="r num" style={{ color: 'var(--text2)' }}>{pct}%</td>
               </tr>
             )
           })}

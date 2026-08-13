@@ -122,10 +122,10 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
         <span style={{ fontSize: 9, fontWeight: 400, background: 'var(--red-bg)', color: 'var(--red-txt)', padding: '2px 7px', borderRadius: 10 }}>Bukan rekomendasi investasi</span>
       </div>
 
-      {/* Re-layout: pola 2 kolom seimbang (.duo) sama dengan tab Statistik —
-          kiri: Graham + Tren Historis; kanan: Relative Valuation + DDM. */}
-      <div className="duo">
-      <div className="kolom">
+      {/* Re-layout #81: panel anak langsung .duo (multicol) — kolom fluid +
+          tinggi seimbang otomatis, nol bolong di profil data apa pun.
+          .lebar: kolom lebih lebar (4 panel saja, Graham butuh ruang). */}
+      <div className="duo lebar">
       <div className="panel">
         <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_KALKULATOR} size={13} /> Graham Valuation Calculator</span></div>
         <div className="panel-b">
@@ -141,7 +141,9 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
             <div className="field"><span className="lbl">Harga saat ini</span>
               <input className="inp" type="number" value={price} step="any" style={{ width: 90 }} onChange={(e) => setPrice(num(e.target.value))} /></div>
           </div>
-          <div className="grid3">
+          {/* minmax 200 (bukan 240 bawaan grid3) supaya 3 vcard muat sebaris
+              di kolom .duo.lebar — 240 bikin 2+1 dan bolong di samping NCAV. */}
+          <div className="grid3" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))' }}>
             <div className="vcard">
               <span className="lbl">Graham Classic</span>
               <span className="v-num num">
@@ -188,9 +190,7 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
           </div>
         </div>
       )}
-      </div>
 
-      <div className="kolom">
         {hasRel && (
           <div className="panel">
             <div className="panel-h">
@@ -241,7 +241,6 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
             </div>
           </div>
         )}
-      </div>
       </div>
     </div>
   )

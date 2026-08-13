@@ -3,45 +3,27 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useDataHarian } from '../../lib/dasbor/dataHarian'
 import { hitungYtdPct } from '../../lib/dasbor/ytd'
-import { sesiAktifPada, sesiUntukHari } from './Kalender'
-
-const pad2 = (n: number) => String(n).padStart(2, '0')
-const fmtMenit = (min: number) => `${pad2(Math.floor(min / 60))}:${pad2(min % 60)}`
+import { BarSesi, fmtMenit, useJamBursa } from './Kalender'
 
 /**
  * Kepala "Gerbang Sesi" (#42 ronde 2, konsep B mockup modal-login-ronde2.html):
- * status sesi bursa live + jam WIB detik berjalan + progress 08:45→16:15.
- * Logika sesi TIDAK ditulis ulang — `sesiUntukHari`/`sesiAktifPada` sudah
- * diekspor Kalender.tsx sejak #30, tinggal impor (tidak perlu modul util
- * baru). Komponen terpisah supaya tick per detik tidak me-render ulang form.
- * Jam detik tetap jalan di prefers-reduced-motion: itu informasi, bukan
- * dekorasi.
+ * status sesi bursa live + jam WIB + bar sesi bersegmen 08:45→16:15.
+ * Logika jam & sesi satu sumber dengan Kalender (`useJamBursa`/`BarSesi`),
+ * tidak ditulis ulang. Komponen terpisah supaya tick per detik tidak
+ * me-render ulang form. Saat bursa tutup jam detik DIGANTI info statis
+ * pembukaan berikutnya (feedback #2); kelas .tutup mewarnai dot jadi abu.
  */
 function SesiHead() {
-  const [now, setNow] = useState(() => new Date())
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000)
-    return () => clearInterval(id)
-  }, [])
-  const isFri = now.getDay() === 5
-  const isWeekend = now.getDay() === 0 || now.getDay() === 6
-  const sessions = sesiUntukHari(isFri)
-  const START = sessions[0][1]
-  const END = sessions[sessions.length - 1][2]
-  const nowMin = now.getHours() * 60 + now.getMinutes()
-  const sesi = sesiAktifPada(nowMin, isFri, isWeekend)
-  // Di luar jam bursa / akhir pekan: label "Bursa Tutup", bar full abu
-  // (kelas .tutup mewarnai dot + fill jadi abu).
-  const pct = sesi ? Math.min(100, Math.max(0, ((nowMin - START) / (END - START)) * 100)) : 100
+  const { sessions, START, END, sesi, buka, cursorPct, jam, labelTutup } = useJamBursa()
   return (
-    <div className={`login-sesi${sesi ? '' : ' tutup'}`}>
+    <div className={`login-sesi${buka ? '' : ' tutup'}`}>
       <div className="baris1">
         <span className="status"><i />{sesi?.[0] ?? 'Bursa Tutup'}</span>
         <span className="jam">
-          {pad2(now.getHours())}:{pad2(now.getMinutes())}:{pad2(now.getSeconds())} <small>WIB</small>
+          {buka ? <>{jam} <small>WIB</small></> : <small>{labelTutup}</small>}
         </span>
       </div>
-      <div className="seg" aria-hidden="true"><i style={{ width: `${pct}%` }} /></div>
+      <BarSesi sessions={sessions} aktif={sesi?.[0]} cursorPct={cursorPct} />
       <div className="seglbl"><span>{fmtMenit(START)}</span><span>{fmtMenit(END)}</span></div>
     </div>
   )

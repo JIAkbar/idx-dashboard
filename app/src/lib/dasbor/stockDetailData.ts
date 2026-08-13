@@ -31,7 +31,7 @@ export type YearMap = Record<string, number>
 /** Map tahun → { Q1..Q4: nilai } (q_*). */
 export type QuarterMap = Record<string, Record<string, number>>
 
-/** `pp[k+"_pct"|"_low"|"_high"]` untuk k = 1d/1w/1m/3m/6m/ytd, lihat fdPerfRow. */
+/** `pp[k+"_pct"|"_low"|"_high"]` untuk k = 1d/1w/1m/3m/6m/ytd/1y/3y/5y, lihat fdPerfRow. */
 export interface PricePerf {
   current?: number
   '1d_pct'?: number; '1d_low'?: number; '1d_high'?: number
@@ -40,6 +40,9 @@ export interface PricePerf {
   '3m_pct'?: number; '3m_low'?: number; '3m_high'?: number
   '6m_pct'?: number; '6m_low'?: number; '6m_high'?: number
   ytd_pct?: number; ytd_low?: number; ytd_high?: number
+  '1y_pct'?: number; '1y_low'?: number; '1y_high'?: number
+  '3y_pct'?: number; '3y_low'?: number; '3y_high'?: number
+  '5y_pct'?: number; '5y_low'?: number; '5y_high'?: number
 }
 
 export interface StockFundamental {
@@ -167,6 +170,26 @@ export interface StockFundamental {
   eps_cagr_2y?: number | null
   ddm_g_rate?: number | null
   div_years?: number | null
+
+  // #93 keystats — field baru ekspansi ±147 field. Nested income_ttm/
+  // balance_q/cashflow_ttm/quarterly TIDAK dipetakan: nilainya identik
+  // dengan field flat ttm_* / lq_* / q_* yang sudah dipakai panel.
+  financial_currency?: string | null
+  roic?: number | null
+  roce?: number | null
+  interest_coverage?: number | null
+  receivables_turnover?: number | null
+  inventory_turnover?: number | null
+  asset_turnover?: number | null
+  days_sales_outstanding?: number | null
+  days_inventory?: number | null
+  days_payables?: number | null
+  cash_conversion_cycle?: number | null
+  altman_z?: number | null
+  f_score?: number | null
+  f_score_n?: number | null
+  shares_outstanding?: number | null
+  free_float_pct?: number | null
 
   sector_pe_median?: number | null
   sector_pb_median?: number | null

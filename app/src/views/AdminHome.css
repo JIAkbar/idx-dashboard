@@ -1,0 +1,224 @@
+/* Gaya khusus halaman admin (.af-*) — file terpisah supaya tidak menyentuh
+   lantai.css yang sedang dikerjakan paralel. Semua warna dari token .lantai. */
+
+/* Kontrol pilih gambar pengganti "Choose File" native. */
+.lantai .af-pilih { cursor: pointer; width: 100%; justify-content: flex-start; padding: 8px 11px; }
+.lantai .af-pilih .dasbor-ikon { stroke: var(--text3); }
+.lantai .af-pilih:hover .dasbor-ikon { stroke: var(--amber); }
+
+/* Kartu berkas terpilih (#94): thumbnail BESAR di atas (pastikan gambar benar
+   sebelum unggah), baris info nama + ukuran + tombol buang di bawah. */
+.lantai .af-file {
+  display: flex; flex-direction: column;
+  background: var(--bg2); border: 1px solid var(--line2); border-radius: var(--r);
+  overflow: hidden;
+}
+.lantai .af-file-thumb {
+  display: block; width: 100%; height: 132px; padding: 0;
+  background: var(--bg3, var(--bg2)); border: none; cursor: zoom-in;
+}
+.lantai .af-file-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.lantai .af-file-thumb:hover img { opacity: .85; }
+.lantai .af-file-thumb:focus-visible { outline: 2px solid var(--amber); outline-offset: -2px; }
+.lantai .af-file-baris {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px; border-top: 1px solid var(--line);
+}
+.lantai .af-file .nama {
+  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-family: var(--mono); font-size: 11px; color: var(--text2);
+}
+.lantai .af-file .uk {
+  flex-shrink: 0; font-family: var(--mono); font-size: 10px; color: var(--text3);
+}
+.lantai .af-file .buang {
+  background: none; border: none; cursor: pointer; padding: 4px;
+  color: var(--text3); display: flex; flex-shrink: 0;
+}
+.lantai .af-file .buang:hover { color: var(--red); }
+.lantai .af-file .buang .dasbor-ikon { stroke: currentColor; }
+
+.lantai .af-err { margin: 4px 0 0; font-size: 11px; color: var(--red); }
+/* Peringatan heuristik orientasi gambar — kuning, non-blokir. */
+.lantai .af-warn {
+  margin: 4px 0 0; font-size: 11px; color: var(--amber); line-height: 1.5;
+  display: flex; gap: 5px; align-items: flex-start;
+}
+.lantai .af-warn .dasbor-ikon { stroke: var(--amber); flex-shrink: 0; margin-top: 2px; }
+
+/* Tabel "Sudah diunggah" — padat, tinggi dibatasi, gulir di dalam panel.
+   Scrollbar halus pola .pi-tbl-wrap lantai.css (#83) — jangan set
+   scrollbar-width/scrollbar-color, Chrome 121+ mematikan ::-webkit-scrollbar
+   begitu properti standar itu di-set. */
+.lantai .af-gulir { max-height: 330px; overflow-y: auto; } /* ± 9-10 baris; sisanya gulir */
+.lantai .af-gulir::-webkit-scrollbar { width: 8px; height: 8px; }
+.lantai .af-gulir::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 99px; }
+.lantai .af-gulir::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+.lantai .af-gulir::-webkit-scrollbar-track { background: transparent; }
+.lantai .af-gulir thead th { position: sticky; top: 0; background: var(--bg1); z-index: 1; }
+
+/* Checkbox pilih baris — accent amber ikut tema. */
+.lantai .af-cek { accent-color: var(--amber); width: 13px; height: 13px; cursor: pointer; }
+.lantai th.af-kolcek, .lantai td.af-kolcek { width: 1%; padding-right: 4px; }
+
+/* Bar aksi hapus massal — muncul saat ada baris tercentang. */
+.lantai .af-aksibar {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  background: var(--amber-dim); border: 1px solid var(--amber);
+  border-radius: var(--r); padding: 5px 8px 5px 11px; margin-bottom: 8px;
+  font-family: var(--mono); font-size: 11px; color: var(--text);
+}
+.lantai .af-aksibar .dd-btn.merah { color: var(--red); border-color: var(--red); gap: 5px; }
+.lantai .af-aksibar .dd-btn.merah .dasbor-ikon { stroke: currentColor; }
+
+/* Kolom aksi (hapus) — rata kanan, tidak melebar. */
+.lantai th.af-aksi, .lantai td.af-aksi { text-align: right; white-space: nowrap; width: 1%; }
+.lantai .af-hapus {
+  background: none; border: none; cursor: pointer; padding: 3px;
+  color: var(--text3); display: inline-flex; vertical-align: middle;
+}
+.lantai .af-hapus:hover { color: var(--red); }
+.lantai .af-hapus .dasbor-ikon { stroke: currentColor; }
+.lantai .af-centang { color: var(--green); }
+.lantai .af-centang .dasbor-ikon { stroke: currentColor; }
+
+/* ✓ yang bisa diklik → lightbox (#94). Affordance: cursor pointer + label
+   "Lihat" bergaris bawah muncul saat hover/focus; "—" (tanpa berkas) tetap
+   teks biasa, tidak clickable. */
+.lantai .af-lihat {
+  background: none; border: none; cursor: pointer; padding: 3px 4px;
+  display: inline-flex; align-items: center; gap: 5px; vertical-align: middle;
+}
+.lantai .af-lihat .lihat-lbl {
+  font-size: 10px; color: var(--amber); text-decoration: underline;
+  text-underline-offset: 2px; opacity: 0; transition: opacity .12s;
+}
+.lantai .af-lihat:hover .lihat-lbl,
+.lantai .af-lihat:focus-visible .lihat-lbl { opacity: 1; }
+.lantai .af-lihat:focus-visible { outline: 2px solid var(--amber); outline-offset: 1px; border-radius: 3px; }
+
+/* Lightbox pratinjau gambar (#94) — overlay gelap di atas segalanya
+   (modal 90, toast 95), gambar besar contain, caption + navigasi di bawah.
+   Warna teks di sini fixed (bukan token) karena latar selalu gelap di kedua tema. */
+.lantai .af-lb-bg {
+  position: fixed; inset: 0; z-index: 120;
+  background: rgba(8, 9, 12, .82);
+  display: flex; align-items: center; justify-content: center;
+  padding: 18px;
+  animation: af-lb-masuk .15s ease-out;
+}
+@keyframes af-lb-masuk { from { opacity: 0; } to { opacity: 1; } }
+.lantai .af-lb {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  max-width: 90vw; outline: none;
+}
+.lantai .af-lb img {
+  max-width: 90vw; max-height: 80dvh; object-fit: contain;
+  border-radius: 6px; box-shadow: 0 16px 48px rgba(0, 0, 0, .55);
+}
+.lantai .af-lb-bar {
+  display: flex; align-items: center; gap: 12px; max-width: 90vw;
+}
+.lantai .af-lb-bar .ket {
+  font-family: var(--mono); font-size: 11.5px; color: #e8eaee;
+  text-align: center; overflow-wrap: anywhere;
+}
+.lantai .af-lb-bar .hitung { color: #9aa0ab; }
+.lantai .af-lb-nav {
+  flex-shrink: 0; width: 32px; height: 32px; border-radius: 4px;
+  background: rgba(255, 255, 255, .14); border: none; cursor: pointer;
+  color: #fff; font-size: 20px; line-height: 1; padding: 0 0 3px;
+}
+.lantai .af-lb-nav:hover:not(:disabled) { background: var(--amber); color: var(--amber-ink); }
+.lantai .af-lb-nav:disabled { opacity: .3; cursor: default; }
+.lantai .af-lb-tutup {
+  position: fixed; top: 16px; right: 16px;
+  width: 36px; height: 36px; border-radius: 4px;
+  background: rgba(255, 255, 255, .14); border: none; cursor: pointer;
+  color: #fff; display: flex; align-items: center; justify-content: center;
+}
+.lantai .af-lb-tutup:hover { background: var(--red); }
+.lantai .af-lb-tutup .dasbor-ikon, .lantai .af-lb-nav .dasbor-ikon { stroke: currentColor; }
+.lantai .af-lb:focus-visible { outline: none; }
+.lantai .af-lb-nav:focus-visible, .lantai .af-lb-tutup:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+/* Toast status unggah/hapus — muncul bawah-tengah, hilang sendiri. */
+.lantai.af-toast {
+  position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
+  z-index: 95; display: flex; align-items: center; gap: 8px;
+  background: var(--bg1); border: 1px solid var(--green); border-radius: var(--r);
+  box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  padding: 9px 14px; font-family: var(--mono); font-size: 11.5px; color: var(--text);
+  animation: af-toast-naik .2s cubic-bezier(.2,.7,.3,1);
+  max-width: min(92vw, 480px);
+}
+.lantai.af-toast .dasbor-ikon { stroke: var(--green); flex-shrink: 0; }
+.lantai.af-toast.gagal { border-color: var(--red); }
+.lantai.af-toast.gagal .dasbor-ikon { stroke: var(--red); }
+@keyframes af-toast-naik { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* Judul panggung utama "Sudah Diunggah — Kamis, 13 Agu 2026" — hierarki
+   dinaikkan dari label panel biasa: display semibold, tanggal beraksen amber. */
+.lantai .af-judul {
+  font-family: var(--disp); font-size: 15.5px; font-weight: 600;
+  color: var(--text); letter-spacing: .01em;
+}
+.lantai .af-judul .tgl { color: var(--amber); font-weight: 700; }
+
+/* Tombol "+ Tambah Emiten" di header panel — btn-p diperkecil agar pas panel-h. */
+.lantai .af-tambah {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 13px; font-size: 11px;
+}
+.lantai .af-tambah .dasbor-ikon { stroke: var(--amber-ink); }
+
+/* Kartu tanggal Kotak Masuk — berjajar horizontal, wrap. */
+.lantai .af-kartu-wrap { display: flex; flex-wrap: wrap; gap: 10px; }
+.lantai .af-kartu { flex: 0 1 200px; min-width: 160px; text-align: left; cursor: pointer; }
+.lantai .af-kartu:hover { border-color: var(--amber); }
+.lantai .af-kartu.aktif { border-color: var(--amber); background: var(--amber-dim); }
+
+/* Modal form Tambah Emiten — lebih lebar dari modal kecil, dan popover
+   datepicker/autocomplete tidak boleh terpotong overflow panel. */
+.lantai.dasbor-modal.af-form-modal { max-width: 400px; }
+.dasbor-modal.af-form-modal .panel { overflow: visible; }
+
+/* Tombol konfirmasi keluar (merah) — varian btn-p. */
+.lantai .af-btn-keluar { background: var(--red); color: #fff; }
+
+/* Modal sambutan — kepala monogram beraksen amber, senada "Gerbang Sesi"
+   LoginModal: strip atas amber, band bg2, hairline bawah. */
+.lantai .af-sambut { overflow: hidden; border-top: 2px solid var(--amber); }
+.lantai .af-sambut-head {
+  display: flex; align-items: center; gap: 11px;
+  padding: 14px 16px; background: var(--bg2); border-bottom: 1px solid var(--line);
+}
+.lantai .af-monogram {
+  width: 36px; height: 36px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--amber); color: var(--amber-ink);
+  font-family: var(--disp); font-weight: 700; font-size: 19px;
+  border-radius: 7px;
+}
+.lantai .af-sambut-judul { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.lantai .af-sambut-merek {
+  font-family: var(--disp); font-size: 8.5px; font-weight: 600;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--text3);
+}
+.lantai .af-sambut-sapa { font-family: var(--disp); font-weight: 700; font-size: 15px; color: var(--text); }
+.lantai .af-sambut-stat { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.lantai .af-sambut-stat > div {
+  display: flex; flex-direction: column; gap: 2px;
+  background: var(--bg2); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 9px 11px;
+}
+.lantai .af-sambut-stat .num {
+  font-family: var(--mono); font-size: 17px; font-weight: 700;
+  font-variant-numeric: tabular-nums; color: var(--amber);
+}
+.lantai .af-sambut-stat .lbl { font-size: 8.5px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lantai.af-toast { animation: none; }
+  .lantai .af-lb-bg { animation: none; }
+}

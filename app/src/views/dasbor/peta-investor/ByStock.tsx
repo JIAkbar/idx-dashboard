@@ -1,5 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { holderType, type GraphSelection, type InvestorMapEntry } from '../../../lib/dasbor/petaInvestorData'
+import { Dropdown } from '../../../components/dasbor/Dropdown'
+import { PilRow } from '../../../components/dasbor/PilRow'
+import { useMuatBertahap } from './useMuatBertahap'
 
 interface ByStockProps {
   data: InvestorMapEntry[]
@@ -7,13 +10,11 @@ interface ByStockProps {
 }
 
 const PAGE = 20
-/** Pil pemegang saham dibatasi 3 supaya tinggi tiap baris tabel sama. Sebelumnya 5 dan jumlah pil mengikuti jumlah holder (1..26), jadi tinggi baris melompat-lompat. */
-const PIL = 3
-const TYPE_OPTIONS: { value: '' | 'CORP' | 'IND' | 'OTH'; label: string }[] = [
-  { value: '', label: 'Semua Tipe Holder' },
-  { value: 'CORP', label: 'Institusi (CORP)' },
-  { value: 'IND', label: 'Individu (IND)' },
-  { value: 'OTH', label: 'Lainnya (OTH)' },
+const TYPE_OPTIONS: { nilai: '' | 'CORP' | 'IND' | 'OTH'; label: string }[] = [
+  { nilai: '', label: 'Semua Tipe Holder' },
+  { nilai: 'CORP', label: 'Institusi (CORP)' },
+  { nilai: 'IND', label: 'Individu (IND)' },
+  { nilai: 'OTH', label: 'Lainnya (OTH)' },
 ]
 
 function sumPct(em: InvestorMapEntry, type: 'CORP' | 'IND' | 'OTH'): number {
@@ -24,7 +25,6 @@ function sumPct(em: InvestorMapEntry, type: 'CORP' | 'IND' | 'OTH'): number {
 export function ByStock({ data, onSelect }: ByStockProps) {
   const [query, setQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<'' | 'CORP' | 'IND' | 'OTH'>('')
-  const [visibleCount, setVisibleCount] = useState(PAGE)
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -40,10 +40,8 @@ export function ByStock({ data, onSelect }: ByStockProps) {
     return list
   }, [data, query, typeFilter])
 
-  useEffect(() => setVisibleCount(PAGE), [rows])
-
-  const visible = rows.slice(0, visibleCount)
-  const remaining = rows.length - visibleCount
+  // #91: infinite scroll dalam wrapper; reset batch saat filter berubah ada di hook.
+  const { visible, habis, ioGagal, sentinelRef, muatLagi } = useMuatBertahap(rows, PAGE)
 
   return (
     <div className="panel">
@@ -56,27 +54,20 @@ export function ByStock({ data, onSelect }: ByStockProps) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <select className="inp" style={{ width: 'auto' }} value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}>
-          {TYPE_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
-        {/* Keterangan ditaruh SEKALI di sini, bukan per baris: tiga kolom persen
-            di bawah diturunkan dari teks bebas `cls` KSEI, dan holder tanpa
-            `cls` (1.138 dari 6.728 baris) jatuh ke OTH — jadi "OTH" berarti
-            "tipe tidak terisi", bukan "tipe lain". */}
-        <span className="chip warn">Tipe holder diturunkan dari teks bebas KSEI · OTH = tipe tak terisi</span>
+        <Dropdown opsi={TYPE_OPTIONS} nilai={typeFilter} onGanti={(v) => setTypeFilter(v as typeof typeFilter)} ariaLabel="Filter tipe holder" />
         <span className="num" style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{rows.length} emiten</span>
       </div>
       <div className="pi-tbl-wrap" style={{ border: 'none', borderRadius: 0 }}>
           <table className="pi-tbl">
             <thead>
               <tr>
-                <th style={{ width: 120 }}>Emiten</th>
-                <th style={{ width: 60, textAlign: 'center' }}>Holder</th>
-                <th style={{ width: 80, textAlign: 'center' }}>CORP %</th>
-                <th style={{ width: 80, textAlign: 'center' }}>IND %</th>
-                <th style={{ width: 80, textAlign: 'center' }}>OTH %</th>
+                {/* #91c: lebar kolom pindah ke kelas CSS (tabel table-layout fixed,
+                    kolom chip = sisa lebar panel — tanpa scroll horizontal). */}
+                <th className="pi-c-em">Emiten</th>
+                <th className="pi-c-n" style={{ textAlign: 'center' }}>Holder</th>
+                <th className="pi-c-pct" style={{ textAlign: 'center' }}>CORP %</th>
+                <th className="pi-c-pct" style={{ textAlign: 'center' }}>IND %</th>
+                <th className="pi-c-pct" style={{ textAlign: 'center' }} title="OTH = tipe tak terisi — tipe holder diturunkan dari teks bebas KSEI">OTH %</th>
                 <th>Pemegang Saham (≥1%)</th>
               </tr>
             </thead>
@@ -85,8 +76,6 @@ export function ByStock({ data, onSelect }: ByStockProps) {
                 const corpPct = sumPct(em, 'CORP')
                 const indPct = sumPct(em, 'IND')
                 const othPct = sumPct(em, 'OTH')
-                const shown = em.holders.slice(0, PIL)
-                const extra = em.holders.length - PIL
                 return (
                   <tr key={em.code} onClick={() => onSelect({ type: 'emiten', code: em.code })} title="Klik untuk lihat di Grafik Jaringan">
                     <td>
@@ -96,33 +85,47 @@ export function ByStock({ data, onSelect }: ByStockProps) {
                           jadi tidak seragam lagi. */}
                       <div className="em-name satu-baris" title={em.issuer}>{em.issuer || '—'}</div>
                     </td>
+                    {/* Persentase = data utama tabel — warna teks utama (var(--text)
+                        dari .pi-tbl td), bukan text2/text3 yang redup di dark (#83). */}
                     <td className="num" style={{ textAlign: 'center', fontWeight: 700 }}>{em.holders.length}</td>
-                    <td className="num" style={{ textAlign: 'center', color: 'var(--text2)' }}>{corpPct > 0 ? `${corpPct.toFixed(1)}%` : '—'}</td>
-                    <td className="num" style={{ textAlign: 'center', color: 'var(--text3)' }}>{indPct > 0 ? `${indPct.toFixed(1)}%` : '—'}</td>
-                    <td className="num" style={{ textAlign: 'center', color: 'var(--text3)' }}>{othPct > 0 ? `${othPct.toFixed(1)}%` : '—'}</td>
+                    <td className="num" style={{ textAlign: 'center' }}>{corpPct > 0 ? `${corpPct.toFixed(1)}%` : '—'}</td>
+                    <td className="num" style={{ textAlign: 'center' }}>{indPct > 0 ? `${indPct.toFixed(1)}%` : '—'}</td>
+                    <td className="num" style={{ textAlign: 'center' }}>{othPct > 0 ? `${othPct.toFixed(1)}%` : '—'}</td>
+                    {/* #77b: jumlah chip adaptif lebar kolom (PilRow ukur nyata),
+                        bukan angka tetap — "+N lagi" hanya saat benar tak muat. */}
                     <td>
-                      <div className="pil-row">
-                        {shown.map((h) => (
-                          <span key={h.name} className="bchip" title={`${h.name} · ${holderType(h.cls)} · ${h.pct.toFixed(2)}%`}>
-                            <span className="pil-nm">{h.name}</span>
-                            <span className="pil-pct">{h.pct.toFixed(1)}%</span>
-                          </span>
-                        ))}
-                        {extra > 0 && <span className="lbl">+{extra} lagi</span>}
-                      </div>
+                      <PilRow
+                        total={em.holders.length}
+                        items={em.holders.map((h) => ({ key: h.name, nama: h.name, pct: h.pct, title: `${h.name} · ${holderType(h.cls)} · ${h.pct.toFixed(2)}%` }))}
+                      />
                     </td>
                   </tr>
                 )
               })}
             </tbody>
           </table>
-          {remaining > 0 && (
+          {/* #91: sentinel = baris "Memuat…" — diamati IO; fallback tombol lama bila IO gagal. */}
+          {!habis && !ioGagal && (
+            <div ref={sentinelRef} style={{ textAlign: 'center', padding: 8, fontSize: 11, color: 'var(--text3)' }}>
+              Memuat…
+            </div>
+          )}
+          {!habis && ioGagal && (
             <div style={{ textAlign: 'center', padding: 10 }}>
-              <button type="button" className="bchip" style={{ cursor: 'pointer' }} onClick={() => setVisibleCount((v) => v + PAGE)}>
-                Tampilkan {Math.min(remaining, PAGE)} lagi (sisa {remaining})
+              <button type="button" className="bchip" style={{ cursor: 'pointer' }} onClick={muatLagi}>
+                Tampilkan {Math.min(rows.length - visible.length, PAGE)} lagi (sisa {rows.length - visible.length})
               </button>
             </div>
           )}
+      </div>
+      {/* Dulu banner .chip warn mencolok sebaris kontrol (#83) — diciutkan jadi
+          keterangan kecil di bawah tabel + title di header kolom OTH %.
+          Substansi tetap: holder tanpa `cls` (1.138 dari 6.728 baris) jatuh ke
+          OTH, jadi "OTH" berarti "tipe tidak terisi", bukan "tipe lain". */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 10, color: 'var(--text3)', padding: '7px 14px', borderTop: '1px solid var(--line)' }}>
+        <span>Tipe holder diturunkan dari teks bebas KSEI · OTH = tipe tak terisi</span>
+        {/* #91 */}
+        <span className="num">{visible.length} dari {rows.length}</span>
       </div>
     </div>
   )

@@ -4,11 +4,11 @@ import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { useStockFundamental, useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { fMC, fv, fvx } from '../../lib/dasbor/stockDetailFormat'
 import { FdPercent } from '../../components/dasbor/FdPercent'
-import { PanelSolvency } from './stock-detail/KolomValuasi'
+import { PanelValuasi, PanelPerSaham, PanelSolvency, PanelEfektivitas, PanelSkor } from './stock-detail/KolomValuasi'
 import { PanelKuartalan, PanelProfitabilitas, PanelGrowth, PanelDividen, PanelRiwayatDividen } from './stock-detail/KolomKuartalan'
 import { PanelIncome, PanelBalance, PanelCashflow, PanelPerformance, PanelTahunan } from './stock-detail/KolomLaporan'
 import { PanelValuasiInteraktif } from './stock-detail/PanelValuasiInteraktif'
-import { IkonMenu, IKON_CARI, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_CARI, IKON_PERINGATAN, IKON_JAM } from '../../components/dasbor/IkonMenu'
 
 type Tab = 'statistik' | 'valuasi'
 
@@ -93,9 +93,17 @@ export function StockDetail() {
     <div className="lantai">
       {activeTicker && (
         <div>
-          <div className="fd-search-wrap" style={{ maxWidth: 480, marginBottom: 6 }}>
+          {/* Proporsi #81: input dominan (flex:1 di StockAutocomplete, cap
+              lebar wajar di wrap), tombol ramping ikon-saja + aria-label. */}
+          <div className="fd-search-wrap" style={{ maxWidth: 480, marginBottom: 6, flexWrap: 'nowrap' }}>
             <StockAutocomplete stocks={index?.stocks ?? []} value={inputVal} onChange={setInputVal} onSelect={handleSubmit} />
-            <button type="button" className="btn-p" onClick={() => handleSubmit(inputVal)}><IkonMenu d={IKON_CARI} size={13} /> Tampilkan</button>
+            <button
+              type="button" className="btn-p" aria-label="Tampilkan"
+              style={{ padding: '7px 12px', flexShrink: 0 }}
+              onClick={() => handleSubmit(inputVal)}
+            >
+              <IkonMenu d={IKON_CARI} size={14} />
+            </button>
           </div>
           <p style={{ fontSize: 10, color: 'var(--text3)', lineHeight: 1.6 }}>Data delay. Harga tidak real-time.</p>
         </div>
@@ -132,7 +140,7 @@ export function StockDetail() {
 
       {activeTicker && loading && (
         <div className="fd-empty">
-          <p style={{ fontSize: 28 }}>⏳</p>
+          <p><IkonMenu d={IKON_JAM} size={28} /></p>
           <p>Mengambil data {activeTicker}...</p>
         </div>
       )}
@@ -201,7 +209,7 @@ export function StockDetail() {
           </div>
 
           <div style={{ fontSize: 9, color: 'var(--text3)' }}>
-            ⏱ Data delay · Diperbarui: {fd.updated || '—'}
+            <IkonMenu d={IKON_JAM} size={11} /> Data delay · Diperbarui: {fd.updated || '—'}
           </div>
 
           <div className="tabs" role="tablist" aria-label="Tab Detail Saham">
@@ -222,24 +230,26 @@ export function StockDetail() {
           </div>
 
           {tab === 'statistik' && (
+            /* #93 Key Stats — panel anak langsung .duo (multicol), urutan
+               kiri→kanan ala referensi Stockbit: valuasi & per-saham dulu,
+               solvabilitas & efektivitas, profitabilitas/growth/dividen,
+               lalu kuartalan + laporan ringkas + skor + performance. */
             <div className="duo">
-              {/* KIRI: laporan per periode */}
-              <div className="kolom">
-                <PanelKuartalan fd={fd} />
-                <PanelTahunan fd={fd} />
-                <PanelRiwayatDividen fd={fd} />
-                <PanelPerformance fd={fd} />
-              </div>
-              {/* KANAN: snapshot TTM/LQ */}
-              <div className="kolom">
-                <PanelIncome fd={fd} />
-                <PanelBalance fd={fd} />
-                <PanelCashflow fd={fd} />
-                <PanelGrowth fd={fd} />
-                <PanelDividen fd={fd} />
-                <PanelProfitabilitas fd={fd} />
-                <PanelSolvency fd={fd} />
-              </div>
+              <PanelValuasi fd={fd} />
+              <PanelPerSaham fd={fd} />
+              <PanelSolvency fd={fd} />
+              <PanelEfektivitas fd={fd} />
+              <PanelProfitabilitas fd={fd} />
+              <PanelGrowth fd={fd} />
+              <PanelDividen fd={fd} />
+              <PanelRiwayatDividen fd={fd} />
+              <PanelKuartalan fd={fd} />
+              <PanelTahunan fd={fd} />
+              <PanelIncome fd={fd} />
+              <PanelBalance fd={fd} />
+              <PanelCashflow fd={fd} />
+              <PanelSkor fd={fd} />
+              <PanelPerformance fd={fd} />
             </div>
           )}
 

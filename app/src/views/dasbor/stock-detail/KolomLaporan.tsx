@@ -11,7 +11,8 @@ function TR(lbl: string, val: ReactNode) {
   )
 }
 
-const PERF_KEYS: [string, string][] = [['1D', '1d'], ['1W', '1w'], ['1M', '1m'], ['3M', '3m'], ['6M', '6m'], ['YTD', 'ytd']]
+/* #93: horizon panjang 1Y/3Y/5Y ikut tampil — datanya sudah ada di price_perf. */
+const PERF_KEYS: [string, string][] = [['1D', '1d'], ['1W', '1w'], ['1M', '1m'], ['3M', '3m'], ['6M', '6m'], ['YTD', 'ytd'], ['1Y', '1y'], ['3Y', '3y'], ['5Y', '5y']]
 
 /** Satu baris price performance — port fdPerfRow() index_live.html baris 3996-4016. */
 function PerfRow({ label, pct, low, high, cur }: { label: string; pct?: number; low?: number; high?: number; cur?: number }) {
@@ -70,6 +71,7 @@ export function PanelIncome({ fd }: { fd: StockFundamental }) {
             {TR('Revenue', fB(ttmRev))}
             {TR('Gross Profit', fB(ttmGP))}
             {TR('Op. Income', fB(ttmOI))}
+            {TR('EBITDA', fB(fd.ttm_ebitda))}
             {TR('Net Income', fB(ttmNI))}
           </tbody>
         </table>
@@ -97,6 +99,8 @@ export function PanelBalance({ fd }: { fd: StockFundamental }) {
             {TR('Total Assets', fB(lqAsset))}
             {TR('Total Equity', fB(lqEq))}
             {TR('Total Debt', fB(lqDebt))}
+            {TR('Net Debt', fB(fd.lq_net_debt))}
+            {TR('Working Capital', fB(fd.lq_wc))}
           </tbody>
         </table>
       </div>
@@ -112,6 +116,9 @@ export function PanelCashflow({ fd }: { fd: StockFundamental }) {
         <table>
           <tbody>
             {TR('Dari Operasi', fB(fd.ttm_ocf))}
+            {TR('Dari Investasi', fB(fd.ttm_icf))}
+            {TR('Dari Pendanaan', fB(fd.ttm_fincf))}
+            {TR('Capex', fB(fd.ttm_capex))}
             {TR('Free Cash Flow', fB(fd.ttm_fcf))}
           </tbody>
         </table>
@@ -123,26 +130,34 @@ export function PanelCashflow({ fd }: { fd: StockFundamental }) {
 export function PanelPerformance({ fd }: { fd: StockFundamental }) {
   const pp: PricePerf = fd.price_perf ?? {}
   const hasPerf = Object.keys(pp).length > 0
+  // Kosong → baris notice ramping (bukan panel besar melompong), bahasa user
+  // tanpa istilah internal "GitHub Actions" (#81).
+  if (!hasPerf) {
+    return (
+      <div className="panel">
+        <div className="panel-h" style={{ borderBottom: 'none' }}>
+          <span className="lbl">Price Performance</span>
+          <span style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 400 }}>
+            Data belum tersedia — akan terisi saat pembaruan data bulanan
+          </span>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="panel">
       <div className="panel-h"><span className="lbl">Price Performance</span></div>
       <div className="panel-b">
-        {hasPerf ? (
-          PERF_KEYS.map(([lbl, k]) => (
-            <PerfRow
-              key={k}
-              label={lbl}
-              pct={pp[`${k}_pct` as keyof PricePerf] as number | undefined}
-              low={pp[`${k}_low` as keyof PricePerf] as number | undefined}
-              high={pp[`${k}_high` as keyof PricePerf] as number | undefined}
-              cur={pp.current}
-            />
-          ))
-        ) : (
-          <p style={{ fontSize: 11, color: 'var(--text3)', padding: '8px 0' }}>
-            Belum ada data. Jalankan <b>GitHub Actions</b> untuk memperbarui data fundamental.
-          </p>
-        )}
+        {PERF_KEYS.map(([lbl, k]) => (
+          <PerfRow
+            key={k}
+            label={lbl}
+            pct={pp[`${k}_pct` as keyof PricePerf] as number | undefined}
+            low={pp[`${k}_low` as keyof PricePerf] as number | undefined}
+            high={pp[`${k}_high` as keyof PricePerf] as number | undefined}
+            cur={pp.current}
+          />
+        ))}
       </div>
     </div>
   )

@@ -1,6 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { GraphSelection, InvestorRow } from '../../../lib/dasbor/petaInvestorData'
 import { IkonMenu, IKON_GLOBE, IKON_LOKASI } from '../../../components/dasbor/IkonMenu'
+import { Dropdown } from '../../../components/dasbor/Dropdown'
+import { PilRow } from '../../../components/dasbor/PilRow'
+import { useMuatBertahap } from './useMuatBertahap'
 
 interface ByInvestorProps {
   investorMap: InvestorRow[]
@@ -8,20 +11,17 @@ interface ByInvestorProps {
 }
 
 const PAGE = 20
-/** Sama dengan ByStock: 3 pil supaya tinggi baris seragam (portofolio investor bisa 1..ratusan emiten). */
-const PIL = 3
-const TYPE_OPTIONS: { value: '' | 'CORP' | 'IND' | 'OTH'; label: string }[] = [
-  { value: '', label: 'Semua Tipe' },
-  { value: 'CORP', label: 'Institusi (CORP)' },
-  { value: 'IND', label: 'Individu (IND)' },
-  { value: 'OTH', label: 'Lainnya (OTH)' },
+const TYPE_OPTIONS: { nilai: '' | 'CORP' | 'IND' | 'OTH'; label: string }[] = [
+  { nilai: '', label: 'Semua Tipe' },
+  { nilai: 'CORP', label: 'Institusi (CORP)' },
+  { nilai: 'IND', label: 'Individu (IND)' },
+  { nilai: 'OTH', label: 'Lainnya (OTH)' },
 ]
 
 /** Tabel "Investor & Portfolio Saham" — dedup dari seluruh holders, render sebagian + "Tampilkan N lagi". Port piRenderInvestor/piFilterInvestor/piInvRow index_live.html baris 384-441. */
 export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
   const [query, setQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<'' | 'CORP' | 'IND' | 'OTH'>('')
-  const [visibleCount, setVisibleCount] = useState(PAGE)
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -36,10 +36,8 @@ export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
     return list
   }, [investorMap, query, typeFilter])
 
-  useEffect(() => setVisibleCount(PAGE), [rows])
-
-  const visible = rows.slice(0, visibleCount)
-  const remaining = rows.length - visibleCount
+  // #91: infinite scroll dalam wrapper; reset batch saat filter berubah ada di hook.
+  const { visible, habis, ioGagal, sentinelRef, muatLagi } = useMuatBertahap(rows, PAGE)
 
   return (
     <div className="panel">
@@ -52,27 +50,23 @@ export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <select className="inp" style={{ width: 'auto' }} value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}>
-          {TYPE_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
+        <Dropdown opsi={TYPE_OPTIONS} nilai={typeFilter} onGanti={(v) => setTypeFilter(v as typeof typeFilter)} ariaLabel="Filter tipe investor" />
         <span className="num" style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{rows.length} investor</span>
       </div>
       <div className="pi-tbl-wrap" style={{ border: 'none', borderRadius: 0 }}>
           <table className="pi-tbl">
             <thead>
               <tr>
-                <th style={{ width: 260 }}>Investor / Pemegang Saham</th>
-                <th style={{ width: 80, textAlign: 'center' }}>Tipe</th>
-                <th style={{ width: 70, textAlign: 'center' }}># Saham</th>
+                {/* #91c: lebar kolom pindah ke kelas CSS (tabel table-layout fixed,
+                    kolom chip = sisa lebar panel — tanpa scroll horizontal). */}
+                <th className="pi-c-nama">Investor / Pemegang Saham</th>
+                <th className="pi-c-tipe" style={{ textAlign: 'center' }}>Tipe</th>
+                <th className="pi-c-jml" style={{ textAlign: 'center' }}># Saham</th>
                 <th>Saham yang Dipegang</th>
               </tr>
             </thead>
             <tbody>
               {visible.map((inv) => {
-                const shown = inv.holdings.slice(0, PIL)
-                const extra = inv.holdings.length - PIL
                 return (
                   <tr key={inv.name} onClick={() => onSelect({ type: 'investor', name: inv.name, cls: inv.cls, lf: inv.lf })} title="Klik untuk lihat di Grafik Jaringan">
                     <td>
@@ -83,29 +77,36 @@ export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
                     </td>
                     <td style={{ textAlign: 'center' }}><span className="bchip" style={{ marginRight: 0 }}>{inv.type}</span></td>
                     <td className="num" style={{ textAlign: 'center', fontWeight: 700, fontSize: 13, color: 'var(--amber)' }}>{inv.holdings.length}</td>
+                    {/* #77b: jumlah chip adaptif lebar kolom (PilRow ukur nyata),
+                        bukan angka tetap — "+N lagi" hanya saat benar tak muat. */}
                     <td>
-                      <div className="pil-row">
-                        {shown.map((h) => (
-                          <span key={h.code} className="bchip" title={`${h.issuer} · ${h.pct.toFixed(2)}%`}>
-                            <span className="pil-nm">{h.code}</span>
-                            <span className="pil-pct">{h.pct.toFixed(1)}%</span>
-                          </span>
-                        ))}
-                        {extra > 0 && <span className="lbl">+{extra} lagi</span>}
-                      </div>
+                      <PilRow
+                        total={inv.holdings.length}
+                        items={inv.holdings.map((h) => ({ key: h.code, nama: h.code, pct: h.pct, title: `${h.issuer} · ${h.pct.toFixed(2)}%` }))}
+                      />
                     </td>
                   </tr>
                 )
               })}
             </tbody>
           </table>
-          {remaining > 0 && (
+          {/* #91: sentinel = baris "Memuat…" — diamati IO; fallback tombol lama bila IO gagal. */}
+          {!habis && !ioGagal && (
+            <div ref={sentinelRef} style={{ textAlign: 'center', padding: 8, fontSize: 11, color: 'var(--text3)' }}>
+              Memuat…
+            </div>
+          )}
+          {!habis && ioGagal && (
             <div style={{ textAlign: 'center', padding: 10 }}>
-              <button type="button" className="bchip" style={{ cursor: 'pointer' }} onClick={() => setVisibleCount((v) => v + PAGE)}>
-                Tampilkan {Math.min(remaining, PAGE)} lagi (sisa {remaining})
+              <button type="button" className="bchip" style={{ cursor: 'pointer' }} onClick={muatLagi}>
+                Tampilkan {Math.min(rows.length - visible.length, PAGE)} lagi (sisa {rows.length - visible.length})
               </button>
             </div>
           )}
+      </div>
+      {/* #91: kaki tabel — info jumlah baris terpakai. */}
+      <div style={{ textAlign: 'right', fontSize: 10, color: 'var(--text3)', padding: '7px 14px', borderTop: '1px solid var(--line)' }}>
+        <span className="num">{visible.length} dari {rows.length}</span>
       </div>
     </div>
   )

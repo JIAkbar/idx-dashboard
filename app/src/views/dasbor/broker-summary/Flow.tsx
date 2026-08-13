@@ -24,7 +24,7 @@ export function Flow() {
   const config = useMemo<ChartConfiguration<'bar' | 'line', number[], string>>(() => {
     const isDark = theme === 'dark'
     const textColor = isDark ? '#cfd8e3' : '#1a2733'
-    const text2Color = isDark ? '#5e7f96' : '#4b6070'
+    const text2Color = isDark ? '#8494a8' : '#4b6070' // #77: dark 4.19→5.74:1
     const gridColor = 'rgba(128,128,128,.1)'
 
     const labels = BS_DATA.dates.map((d) => d.label)

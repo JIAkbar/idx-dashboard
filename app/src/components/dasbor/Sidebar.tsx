@@ -26,9 +26,9 @@ export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
 
   return (
     <nav className="dasbor-rail" aria-label="Menu utama">
-      <Link to="/" className="dasbor-rail-merek" title="Papan — Pusat Analisa Pasar, Arus &amp; Nilai">
+      <Link to="/" className="dasbor-rail-merek" title="PAPAN — Pusat Analisa Pasar Nusantara">
         <b>P</b>
-        <span>Papan</span>
+        <span>PAPAN</span>
       </Link>
 
       <div className="dasbor-rail-list">

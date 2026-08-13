@@ -64,7 +64,7 @@ export function PetaInvestorSearch({ data, value, onChange, onSelect, onClear }:
         <input
           className="pi-search"
           type="text"
-          placeholder="Cari emiten atau investor..."
+          placeholder="Cari emiten atau investor…"
           autoComplete="off"
           spellCheck={false}
           value={value}
