@@ -39,18 +39,20 @@
 .dasbor-shell[data-theme='light'] {
   --bg: #f2f4f7; --bg2: #fff; --bg3: #edf1f6; --card: #fff; --card2: #f7f9fc;
   --border: rgba(0,0,0,0.09); --border2: rgba(154,102,12,0.32);
-  --text: #131b26; --text2: #4e5d70; --text3: #8896a8;
+  /* #77 sweep kontras: text3 8896a8→5f6c7d (3.0→5.4 vs putih), red ce3b41→
+     c23439 & green 1f8a57→18754a (angka .red/.green bold 12px butuh ≥4.5). */
+  --text: #131b26; --text2: #4e5d70; --text3: #5f6c7d;
   --accent: #9a660c; --accent2: #b87a10;
   --accent-soft: rgba(154,102,12,0.10); --accent-soft2: rgba(154,102,12,0.22); --accent-soft3: rgba(154,102,12,0.38);
-  --red: #ce3b41; --red-bg: #fbeaeb; --red-txt: #93262b;
-  --green: #1f8a57; --green-bg: #e4f3ea; --green-txt: #14603c;
+  --red: #c23439; --red-bg: #fbeaeb; --red-txt: #93262b;
+  --green: #18754a; --green-bg: #e4f3ea; --green-txt: #14603c;
   --gold: #9a660c; --purple: #6b3fa0;
   --card-shadow: 0 1px 5px rgba(19,27,38,0.07);
   --cal-avail-bg: rgba(154,102,12,0.10); --cal-avail-txt: #9a660c;
-  --cal-up: #1f8a57; --cal-dn: #ce3b41;
+  --cal-up: #18754a; --cal-dn: #c23439;
   --cal-active-bg: #9a660c; --cal-active-txt: #fff;
   --cal-holiday: #f5f6f8; --cal-holiday-txt: #a8b2bf;
-  --chart-grid: rgba(19,27,38,0.07); --chart-txt: #7b8798;
+  --chart-grid: rgba(19,27,38,0.07); --chart-txt: #5f6c7d;
   --rank1bg: #9a660c; --rank2bg: #5a6675; --rank3bg: #7a5a3a;
   --broker-chip-bg: #edf1f6; --broker-chip-txt: #4e5d70;
   --bar-track: #e6eaf0;
@@ -58,18 +60,20 @@
 .dasbor-shell[data-theme='dark'] {
   --bg: #0b1017; --bg2: #111826; --bg3: #18212f; --card: #111826; --card2: #18212f;
   --border: #232e3f; --border2: rgba(240,166,43,0.30);
-  --text: #e8edf4; --text2: #9aa7b8; --text3: #5c6b7e;
+  /* #77 sweep kontras: text3 5c6b7e→8494a8 (3.3→5.7 vs bg panel), red
+     e5484d→eb5e62 (angka .dn/.red di atas red-bg/bg3 naik ke ≥4.5). */
+  --text: #e8edf4; --text2: #9aa7b8; --text3: #8494a8;
   --accent: #f0a62b; --accent2: #ffc155;
   --accent-soft: rgba(240,166,43,0.13); --accent-soft2: rgba(240,166,43,0.26); --accent-soft3: rgba(240,166,43,0.45);
-  --red: #e5484d; --red-bg: rgba(229,72,77,0.14); --red-txt: #f2a3a5;
+  --red: #eb5e62; --red-bg: rgba(235,94,98,0.14); --red-txt: #f2a3a5;
   --green: #30a46c; --green-bg: rgba(48,164,108,0.14); --green-txt: #7fd8ab;
   --gold: #f0a62b; --purple: #b48ae2;
   --card-shadow: 0 2px 12px rgba(0,0,0,0.35);
   --cal-avail-bg: rgba(240,166,43,0.12); --cal-avail-txt: #f0a62b;
-  --cal-up: #30a46c; --cal-dn: #e5484d;
+  --cal-up: #30a46c; --cal-dn: #eb5e62;
   --cal-active-bg: #f0a62b; --cal-active-txt: #131008;
   --cal-holiday: #111826; --cal-holiday-txt: #38455a;
-  --chart-grid: rgba(255,255,255,0.05); --chart-txt: #5c6b7e;
+  --chart-grid: rgba(255,255,255,0.05); --chart-txt: #8494a8;
   --rank1bg: #f0a62b; --rank2bg: #2e3b50; --rank3bg: #3d3020;
   --broker-chip-bg: #18212f; --broker-chip-txt: #9aa7b8;
   --bar-track: #18212f;
@@ -490,9 +494,11 @@
 .lantai {
   --bg0:#0B1017; --bg1:#111826; --bg2:#18212F; --bg3:#1F2A3B;
   --line:#232E3F; --line2:#2E3B50;
-  --text:#E8EDF4; --text2:#9AA7B8; --text3:#5C6B7E;
+  /* #77 sweep kontras (nilai sama dgn blok dasbor-shell[data-theme] di atas):
+     text3 → 8494A8, red → EB5E62 (red-on-red-dim 3.97→4.53). */
+  --text:#E8EDF4; --text2:#9AA7B8; --text3:#8494A8;
   --amber:#F0A62B; --amber-ink:#131008; --amber-dim:rgba(240,166,43,.13);
-  --red:#E5484D; --red-dim:rgba(229,72,77,.14);
+  --red:#EB5E62; --red-dim:rgba(235,94,98,.14);
   --green:#30A46C; --green-dim:rgba(48,164,108,.14);
   --blue:#4C8DFF;
   --flap:#060A10; --flap-line:rgba(255,255,255,.07);
@@ -505,10 +511,13 @@
 .dasbor-shell[data-theme="light"] .lantai{
   --bg0:#F2F4F7; --bg1:#FFFFFF; --bg2:#F7F9FC; --bg3:#EDF1F6;
   --line:#DDE3EA; --line2:#C9D2DD;
-  --text:#131B26; --text2:#4E5D70; --text3:#8896A8;
-  --amber:#B87A10; --amber-ink:#FFFFFF; --amber-dim:rgba(184,122,16,.10);
-  --red:#CE3B41; --red-dim:rgba(206,59,65,.10);
-  --green:#1F8A57; --green-dim:rgba(31,138,87,.10);
+  /* #77 sweep kontras: text3 → 5F6C7D; amber B87A10 (3.6 vs putih) → 94620C
+     (5.2 — teks .em-code/.ttm-row & putih di atas .tab.on ikut lolos);
+     red → C23439, green → 18754A (angka up/dn kecil ≥4.5 di semua bg). */
+  --text:#131B26; --text2:#4E5D70; --text3:#5F6C7D;
+  --amber:#94620C; --amber-ink:#FFFFFF; --amber-dim:rgba(148,98,12,.10);
+  --red:#C23439; --red-dim:rgba(194,52,57,.10);
+  --green:#18754A; --green-dim:rgba(24,117,74,.10);
   --flap:#131B26; --flap-line:rgba(255,255,255,.10);
 }
 
@@ -671,10 +680,10 @@
 .lantai .dd-btn:disabled:hover{border-color:var(--line2)}
 .lantai .dd-btn svg{width:12px;height:12px;stroke:var(--text3);fill:none;stroke-width:2;transition:transform .15s}
 .lantai .dd.open .dd-btn svg{transform:rotate(180deg)}
-.lantai .dd-menu{position:absolute;top:calc(100% + 5px);left:0;min-width:100%;background:var(--bg1);border:1px solid var(--line2);border-radius:var(--r);padding:4px;display:none;z-index:50;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+.lantai .dd-menu{position:absolute;top:calc(100% + 5px);left:0;min-width:max-content;background:var(--bg1);border:1px solid var(--line2);border-radius:var(--r);padding:4px;display:none;z-index:50;box-shadow:0 10px 28px rgba(0,0,0,.35)}
 .lantai .dd.open .dd-menu{display:block;animation:vin .14s ease}
 @keyframes vin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.lantai .dd-it{display:flex;width:100%;text-align:left;padding:6px 10px;border-radius:4px;font-family:var(--mono);font-size:11.5px;color:var(--text2)}
+.lantai .dd-it{display:flex;width:100%;text-align:left;padding:6px 10px;border-radius:4px;font-family:var(--mono);font-size:11.5px;color:var(--text2);white-space:nowrap}
 .lantai .dd-it:hover{background:var(--amber-dim);color:var(--text)}
 .lantai .dd-it.sel{color:var(--amber)}
 
@@ -805,7 +814,7 @@
 .lantai .csb-d .dp{display:block;font-size:9px}
 .lantai .csb-d.aktif{background:var(--amber);border-color:var(--amber)}
 .lantai .csb-d.aktif .dw,.lantai .csb-d.aktif .dd,.lantai .csb-d.aktif .dp{color:var(--amber-ink)}
-.lantai .csb-d.off{opacity:.45;cursor:default}
+.lantai .csb-d.off{opacity:.65;cursor:default} /* #77: .45 nyaris hilang di light */
 .lantai .csb-more{font-family:var(--mono);font-size:10.5px;color:var(--text2);background:var(--bg3);border:1px solid var(--line2);border-radius:var(--r);padding:6px 10px;cursor:pointer;white-space:nowrap}
 .lantai .csb-more:hover{border-color:var(--amber);color:var(--text)}
 /* Area expand "Kalender penuh" (#k1full mockup: display toggle + border-top).
@@ -865,7 +874,8 @@
 .lantai .nf-cell{padding:12px 14px;border-right:1px solid var(--line)}
 .lantai .nf-cell:last-child{border-right:none}
 .lantai .nf-big{font-size:19px;font-weight:600;margin-top:3px}
-.lantai .nf-sec{font-size:13px;margin-top:7px;opacity:.85}
+/* #77: opacity .85 dihapus — menggerus kontras angka net buy/sell (4.2:1). */
+.lantai .nf-sec{font-size:13px;margin-top:7px}
 .lantai .nf-unit{font-size:10px;color:var(--text3);font-family:var(--mono)}
 .lantai .mf-big{font-size:30px;font-weight:600;margin-top:4px;color:var(--amber)}
 .lantai .mf-x{font-size:15px;color:var(--text3);margin-left:3px}
@@ -929,8 +939,10 @@
 .lantai .w-tbl tr.kita:hover td{background:var(--red-dim)}
 .lantai .w-tbl tr.kita td:first-child{font-weight:700;box-shadow:inset 2px 0 0 var(--red)}
 .lantai .ytd-bdg{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;padding:1px 7px;border-radius:3px;min-width:62px;text-align:right}
-.lantai .ytd-bdg.u{background:var(--green-dim);color:var(--green)}
-.lantai .ytd-bdg.d{background:var(--red-dim);color:var(--red)}
+/* #77: teks pakai token *-txt (bukan --red/--green) — di baris .kita badge
+   duduk di atas red-dim DOBEL (row+badge), merah-di-merah cuma 4.1:1. */
+.lantai .ytd-bdg.u{background:var(--green-dim);color:var(--green-txt,var(--green))}
+.lantai .ytd-bdg.d{background:var(--red-dim);color:var(--red-txt,var(--red))}
 .lantai .rk{font-family:var(--mono);font-size:11px;color:var(--text3)}
 
 /* .laci* (baris 295-316 artifact) dilewati — padanannya ada di LaciMobile.tsx. */
