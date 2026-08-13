@@ -105,6 +105,8 @@ export function SektorIndeks() {
 
   return (
     <div className="lantai">
+      <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
+
       <div className="tiles">
         {sectors.map((s) => {
           const kode = s.n.match(/^\[(.)\]/)?.[1] ?? ''
@@ -127,8 +129,6 @@ export function SektorIndeks() {
           )
         })}
       </div>
-
-      <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
 
       <div className="panel">
         <div className="panel-h">
