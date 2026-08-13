@@ -1,5 +1,3 @@
-import { BS_DATA } from './brokerSummaryData'
-
 /** Port fmtB() index_live.html baris 5719-5727 — format ringkas Rupiah. */
 export function fmtB(n: number): string {
   if (!n) return '0'
@@ -23,10 +21,4 @@ export function fmtLot(n: number): string {
   if (a >= 1e6) return s + (a / 1e6).toFixed(1) + 'M lot'
   if (a >= 1e3) return s + (a / 1e3).toFixed(1) + 'K lot'
   return n + ' lot'
-}
-
-/** Port dateLabel() index_live.html baris 5734-5737. */
-export function dateLabel(key: string): string {
-  const d = BS_DATA.dates.find((x) => x.key === key)
-  return d ? d.label + ' 2026' : key
 }

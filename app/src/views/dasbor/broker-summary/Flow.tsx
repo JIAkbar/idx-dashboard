@@ -2,40 +2,47 @@ import { useMemo } from 'react'
 import type { ChartConfiguration, ChartDataset } from 'chart.js/auto'
 import { useChartCanvas } from '../../../lib/dasbor/useChartJs'
 import { useTheme } from '../../../context/ThemeContext'
-import { fmtLot } from '../../../lib/dasbor/brokerSummaryFormat'
-import { BS_DATA } from '../../../lib/dasbor/brokerSummaryData'
-import { IkonMenu, IKON_OMBAK } from '../../../components/dasbor/IkonMenu'
+import { fmtB } from '../../../lib/dasbor/brokerSummaryFormat'
+import { labelTanggal } from '../../../lib/dasbor/brokerHarian'
+import { useFlowNego } from '../../../lib/dasbor/flowNego'
+import type { BrokerRentangAktif } from '../../../lib/dasbor/brokerHarian'
+import { IkonMenu, IKON_OMBAK, IKON_ULANG, IKON_PERINGATAN } from '../../../components/dasbor/IkonMenu'
+
+interface FlowProps {
+  tanggalAktif: string | null
+  rentang: BrokerRentangAktif | null
+}
+
+/** "2026-08-12" → "12 Agu" (tanpa tahun, label sumbu). */
+const labelPendek = (iso: string) => labelTanggal(iso).replace(/ \d{4}$/, '')
 
 /**
- * Tab "Flow" — port bsRenderFlow() index_live.html baris 6012-6037. Chart
- * mixed bar (Foreign Buy/Sell) + line (Net) — historis PENUH atas semua
- * BS_DATA.dates, TIDAK ikut filter range tab lain.
- *
- * Tipe hook `useChartCanvas<TType>` cuma menerima satu ChartType — untuk
- * chart campuran, config diketik `ChartConfiguration<'bar' | 'line', ...>`
- * (union tipe, bukan `any`); tiap dataset menyatakan `type` sendiri.
- *
- * Gaya Lantai Bursa (Task 10): chrome kartu (panel/panel-h) dipegang parent
- * BrokerSummary.tsx, komponen ini cuma judul `.lbl` + chart + catatan kaki.
+ * Tab "Flow" (#99) — data NYATA dari ds_YYMMDD.json, mengikuti tanggal/rentang
+ * aktif halaman. Sumber hanya menyediakan NET foreign harian (nf_today_idr,
+ * miliar Rp) — buy/sell terpisah TIDAK ada, jadi chart jujur: bar Net
+ * (hijau=net buy, merah=net sell) + garis kumulatif. Hari tanpa angka nf
+ * (7/138 berkas, parser gagal) tampil sebagai celah.
  */
-export function Flow() {
+export function Flow({ tanggalAktif, rentang }: FlowProps) {
   const { theme } = useTheme()
+  const { hari, loading, error, cakupan } = useFlowNego(tanggalAktif, rentang)
 
-  const config = useMemo<ChartConfiguration<'bar' | 'line', number[], string>>(() => {
+  const config = useMemo<ChartConfiguration<'bar' | 'line', (number | null)[], string> | null>(() => {
+    if (!hari || hari.length === 0) return null
     const isDark = theme === 'dark'
     const textColor = isDark ? '#cfd8e3' : '#1a2733'
-    const text2Color = isDark ? '#8494a8' : '#4b6070' // #77: dark 4.19→5.74:1
+    const text2Color = isDark ? '#8494a8' : '#4b6070'
     const gridColor = 'rgba(128,128,128,.1)'
 
-    const labels = BS_DATA.dates.map((d) => d.label)
-    const buy = BS_DATA.dates.map((d) => BS_DATA.foreign[d.key]?.buy ?? 0)
-    const sell = BS_DATA.dates.map((d) => BS_DATA.foreign[d.key]?.sell ?? 0)
-    const net = BS_DATA.dates.map((d) => BS_DATA.foreign[d.key]?.net ?? 0)
+    const labels = hari.map((h) => labelPendek(h.iso))
+    const net = hari.map((h) => h.nf)
+    let jml = 0
+    const kumulatif = hari.map((h) => (jml += h.nf ?? 0))
+    const warna = net.map((v) => ((v ?? 0) >= 0 ? 'rgba(34,197,94,.7)' : 'rgba(239,68,68,.7)'))
 
-    const datasets: ChartDataset<'bar' | 'line', number[]>[] = [
-      { type: 'bar', label: 'Foreign Buy', data: buy, backgroundColor: 'rgba(34,197,94,.7)', order: 2 },
-      { type: 'bar', label: 'Foreign Sell', data: sell, backgroundColor: 'rgba(239,68,68,.7)', order: 2 },
-      { type: 'line', label: 'Net', data: net, borderColor: '#facc15', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 5, order: 1 },
+    const datasets: ChartDataset<'bar' | 'line', (number | null)[]>[] = [
+      { type: 'bar', label: 'Net Foreign (miliar Rp)', data: net, backgroundColor: warna, order: 2 },
+      { type: 'line', label: 'Kumulatif', data: kumulatif, borderColor: '#facc15', backgroundColor: 'transparent', borderWidth: 2, pointRadius: hari.length > 40 ? 0 : 3, order: 1 },
     ]
 
     return {
@@ -46,26 +53,64 @@ export function Flow() {
         maintainAspectRatio: false,
         plugins: {
           legend: { labels: { color: textColor, font: { size: 11 } } },
-          tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtLot(ctx.parsed.y ?? 0)}` } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const v = ctx.parsed.y
+                if (v == null) return `${ctx.dataset.label}: tidak tersedia`
+                return `${ctx.dataset.label}: Rp ${fmtB(v * 1e9)}`
+              },
+            },
+          },
         },
         scales: {
-          x: { ticks: { color: text2Color }, grid: { color: gridColor } },
-          y: { ticks: { color: text2Color, callback: (v) => fmtLot(Number(v)) }, grid: { color: gridColor } },
+          x: { ticks: { color: text2Color, maxTicksLimit: 12 }, grid: { color: gridColor } },
+          y: { ticks: { color: text2Color, callback: (v) => fmtB(Number(v) * 1e9) }, grid: { color: gridColor } },
         },
       },
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [theme])
+  }, [hari, theme])
 
   const canvasRef = useChartCanvas(config)
 
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+        <p><IkonMenu d={IKON_ULANG} size={26} /></p>
+        <p className="lbl">Memuat data foreign flow…</p>
+      </div>
+    )
+  }
+  if (error || !hari || hari.length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+        <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
+        <p className="lbl">
+          {error
+            ? `Gagal memuat data foreign flow (${error})`
+            : cakupan
+              ? `Data harian pasar tersedia ${labelTanggal(cakupan.min)} – ${labelTanggal(cakupan.max)} — tidak ada di tanggal/rentang aktif`
+              : 'Data harian pasar belum tersedia'}
+        </p>
+      </div>
+    )
+  }
+
+  const tanpaNf = hari.filter((h) => h.nf == null).length
+  const jendela = rentang
+    ? `${labelTanggal(hari[0].iso)} – ${labelTanggal(hari[hari.length - 1].iso)} (${hari.length} hari bursa)`
+    : `${hari.length} hari bursa s.d. ${labelTanggal(hari[hari.length - 1].iso)}`
+
   return (
     <>
-      <div className="lbl" style={{ marginBottom: 8 }}><IkonMenu d={IKON_OMBAK} size={13} /> Foreign Flow Agregat — Buy / Sell / Net (lot, semua saham)</div>
+      <div className="lbl" style={{ marginBottom: 8 }}><IkonMenu d={IKON_OMBAK} size={13} /> Net Foreign Harian — {jendela}</div>
       <div className="chart-wrap" style={{ height: 260 }}>
         <canvas ref={canvasRef} />
       </div>
-      <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text3)' }}>* Dihitung dari agregat Foreign Buy/Sell seluruh emiten IDX per tanggal</div>
+      <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text3)' }}>
+        * Sumber (IDX daily statistics) hanya memuat NET foreign per hari — buy/sell terpisah tidak tersedia.
+        {tanpaNf > 0 && ` ${tanpaNf} hari tanpa angka net foreign di sumber (celah pada chart).`}
+      </div>
     </>
   )
 }
