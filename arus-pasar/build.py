@@ -284,7 +284,8 @@ def halaman_sampul(ed, skor_map):
     return f'''
 <div class="page cover">
   <header class="band">
-    <div class="m"><div class="sub">Tinjauan Teknikal &amp; Arus Dana Harian</div></div>
+    <div class="m"><div class="sub">Tinjauan Teknikal &amp; Arus Dana Harian</div>
+      <div class="byline">oleh Johan Iriawan Akbar · PAPAN</div></div>
     <div class="e">{ed["tanggal_id"]}<br><span class="kode">{ed["edisi"]}</span></div>
   </header>
   <div class="inner">
