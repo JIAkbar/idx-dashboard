@@ -8,6 +8,9 @@ export interface EdisiBulletin {
   judul: string
   emiten: string[]
   pdf: string
+  /** Jumlah emiten saat rilis pertama — ada berarti edisi dirilis ulang
+   *  dengan cakupan lebih luas; dashboard tampilkan badge "Update N→M". */
+  update_dari?: number
 }
 
 /** Cache modul — pindah halaman balik lagi tidak fetch ulang, pola sama dataHarian.ts. */

@@ -204,7 +204,21 @@ export function Bulletin() {
                     return (
                       <tr key={e.kode}>
                         <td className="r blt-no">{no}</td>
-                        <td><span className="tick">{e.kode}</span></td>
+                        <td>
+                          <span className="tick">{e.kode}</span>
+                          {e.update_dari != null && e.emiten.length > e.update_dari && (
+                            <span
+                              className="bchip"
+                              title={`Edisi dirilis ulang: cakupan diperluas dari ${e.update_dari} menjadi ${e.emiten.length} emiten`}
+                              style={{
+                                marginLeft: 6, fontFamily: 'var(--mono)', fontWeight: 700,
+                                background: 'var(--amber-dim)', color: 'var(--amber)', borderColor: 'var(--amber)',
+                              }}
+                            >
+                              Update {e.update_dari}→{e.emiten.length}
+                            </span>
+                          )}
+                        </td>
                         <td><span className="bchip blt-tipe">{tipeEdisi(e.kode)}</span></td>
                         <td>{e.tanggal_id}</td>
                         <td className="r num blt-ihsg">
