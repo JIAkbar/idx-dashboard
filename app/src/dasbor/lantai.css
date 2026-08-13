@@ -403,9 +403,9 @@
 .lantai .login-sesi.tutup .status i { background: var(--text3); }
 .lantai .login-sesi .jam { font-family: var(--mono); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .lantai .login-sesi .jam small { font-size: 9px; color: var(--text3); font-weight: 400; }
-.lantai .login-sesi .seg { height: 5px; border-radius: 3px; background: var(--bg3); position: relative; overflow: hidden; margin-top: 9px; }
-.lantai .login-sesi .seg i { position: absolute; inset: 0; background: var(--amber); border-radius: 3px; }
-.lantai .login-sesi.tutup .seg i { background: var(--line2); }
+/* Bar progres polos lama (.seg i) diganti .sesi-bar bersegmen (rule bersama
+   di seksi kalender strip) — di sini cuma jarak atasnya. */
+.lantai .login-sesi .sesi-bar { margin-top: 9px; }
 .lantai .login-sesi .seglbl { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 9px; color: var(--text3); margin-top: 4px; }
 /* min-height me-reserve tinggi label+svg+nilai — jalur "data belum ada"
    (placeholder —) dan "data ada" (sparkline) sama tingginya, layout tak
@@ -767,9 +767,11 @@
 /* #30: status sesi berjalan + jam digital (detik) di atas bar */
 .lantai .sesi-status{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--text2)}
 .lantai .sesi-status .sesi-jam{font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
-.lantai .sesi{display:flex;align-items:center;gap:8px;margin-top:6px;font-family:var(--mono);font-size:11px;color:var(--text2)}
-.lantai .sesi .seg{flex:1;height:5px;border-radius:3px;background:var(--bg3);position:relative;overflow:hidden}
-.lantai .sesi .seg i{position:absolute;inset:0;width:62%;background:var(--amber);border-radius:3px}
+.lantai .sesi{display:flex;align-items:flex-start;gap:8px;margin-top:6px;font-family:var(--mono);font-size:11px;color:var(--text2)}
+/* bar bersegmen (.sesi-bar-wrap, rule bersama di seksi kalender strip)
+   menggantikan .seg polos; label jam 08:45/16:15 rata dengan barnya. */
+.lantai .sesi .sesi-bar-wrap{flex:1;min-width:0}
+.lantai .sesi>span{line-height:1;padding-top:0}
 
 /* feedback */
 .lantai .rate{display:flex;gap:6px}
@@ -815,9 +817,10 @@
 .lantai .csb-now{display:flex;align-items:baseline;gap:9px}
 .lantai .csb-now .tgl{font-weight:700;font-size:13.5px}
 .lantai .csb-now .ihsg{font-family:var(--mono);font-size:12.5px}
-.lantai .csb-sesi{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--text2);padding-left:14px;border-left:1px solid var(--line)}
-.lantai .csb-sesi .seg{width:110px;height:5px;border-radius:3px;background:var(--bg3);position:relative;overflow:hidden}
-.lantai .csb-sesi .seg i{position:absolute;inset:0;background:var(--amber);border-radius:3px}
+/* Feedback ronde 2: bar sesi strip melebar mengisi ruang sampai dekat strip
+   7 hari (flex:1) supaya segmen jeda waktu kebaca — bukan lagi mini 110px. */
+.lantai .csb-sesi{display:flex;align-items:center;gap:8px;flex:1;min-width:0;font-family:var(--mono);font-size:11px;color:var(--text2);padding-left:14px;border-left:1px solid var(--line)}
+.lantai .csb-sesi .sesi-bar-wrap{flex:1;min-width:0}
 .lantai .csb-hari{display:flex;gap:5px;margin-left:auto}
 .lantai .csb-d{min-width:44px;text-align:center;border:1px solid var(--line);border-radius:var(--r);padding:4px 6px;background:var(--bg2);cursor:pointer;font-family:var(--mono)}
 .lantai span.csb-d{cursor:default}
@@ -832,13 +835,56 @@
 .lantai .csb-d.off{opacity:.45;cursor:default}
 .lantai .csb-more{font-family:var(--mono);font-size:10.5px;color:var(--text2);background:var(--bg3);border:1px solid var(--line2);border-radius:var(--r);padding:6px 10px;cursor:pointer;white-space:nowrap}
 .lantai .csb-more:hover{border-color:var(--amber);color:var(--text)}
-/* Area expand "Kalender penuh" (#k1full mockup: display toggle + border-top;
-   grid bulan dicap 420px seperti cg-wrap mockup). */
-.lantai .csb-full{border-top:1px solid var(--line);padding:12px 14px;max-width:448px}
-.lantai .csb-full .cal-grid{max-width:420px;margin-top:0;border-top:none;padding-top:0}
+/* Area expand "Kalender penuh" (#k1full mockup: display toggle + border-top).
+   Feedback #1 (dua ronde): dulu satu kolom cap 448px — sisa kanan kosong
+   melompong; sekarang FULL-WIDTH — dua kolom fr fleksibel (kiri grid bulan
+   ikut melebar, sel proporsional; kanan sesi+statistik stretch sisa lebar),
+   tanpa cap px tetap, turun 1 kolom di layar sempit. */
+.lantai .csb-full{border-top:1px solid var(--line);padding:12px 14px;display:grid;grid-template-columns:minmax(380px,1fr) minmax(320px,1.2fr);gap:30px;align-items:start}
+.lantai .csb-full .cal-grid{margin-top:0;border-top:none;padding-top:0}
+/* Dua sub-blok kolom kanan (sesi | tanggal terpilih) berdampingan mengisi
+   sisa lebar; auto-fit merobohkannya jadi satu kolom saat sempit. */
+.lantai .csb-kanan{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px 32px;align-items:start}
+@media (max-width:760px){
+  .lantai .csb-full{grid-template-columns:1fr}
+}
+
+/* ===== BAR SESI BERSEGMEN (feedback #3 — jam resmi IDX pasar reguler).
+   Rule bersama: strip (.csb-sesi), varian penuh (.sesi), expand (.csb-kanan),
+   modal login (.login-sesi). Segmen proporsional durasi nyata (450 menit),
+   batas kelihatan lewat border antar segmen, istirahat diarsir garis miring,
+   segmen aktif amber, marker posisi "sekarang". ===== */
+.lantai .sesi-bar{position:relative;display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--bg3)}
+.lantai .sesi-bar .sb{height:100%;background:var(--line2);opacity:.55}
+.lantai .sesi-bar .sb+.sb{border-left:1px solid var(--bg1)}
+.lantai .sesi-bar .sb.rehat{background:repeating-linear-gradient(-45deg,var(--bg3) 0 3px,var(--line2) 3px 6px);opacity:.8}
+.lantai .sesi-bar .sb.on{background:var(--amber);opacity:1}
+.lantai .sesi-bar .sb-now{position:absolute;top:0;bottom:0;width:2px;transform:translateX(-1px);background:var(--text);border-radius:1px}
+.lantai .sesi-bar-names{display:flex;margin-top:3px;font-family:var(--disp);font-size:8px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3)}
+.lantai .sesi-bar-names span{overflow:hidden;white-space:nowrap;text-align:center;flex:none}
+
+/* Kolom kanan expand: legenda sesi + statistik mini tanggal terpilih. */
+.lantai .sesi-legend{display:flex;flex-direction:column;gap:5px;margin-top:12px;font-family:var(--mono);font-size:10.5px;color:var(--text2)}
+.lantai .sesi-legend .sl{display:flex;align-items:center;gap:8px}
+.lantai .sesi-legend .sl i{width:7px;height:7px;border-radius:2px;flex:none}
+.lantai .sesi-legend .sl b{margin-left:auto;font-weight:600;color:var(--text3)}
+.lantai .sesi-legend .sl.on span{color:var(--text);font-weight:700}
+.lantai .sesi-legend .sl.on b{color:var(--text)}
+.lantai .csb-stat .lbl{display:block;margin-bottom:4px}
+.lantai .csb-stat .baris{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:12px;color:var(--text2);margin-top:7px}
+.lantai .csb-stat .baris b{color:var(--text);font-weight:600}
+.lantai .csb-stat .baris b.up{color:var(--green)}
+.lantai .csb-stat .baris b.dn{color:var(--red)}
+
 @media (max-width:560px){
   .lantai .csb-hari{margin-left:0;width:100%;overflow-x:auto;padding-bottom:2px}
-  .lantai .csb-sesi{border-left:none;padding-left:0}
+  /* Bar sesi dapat baris sendiri full-width (di bawah baris tanggal/status,
+     di atas strip hari) — segmen tetap kebaca di 412px, tidak terjepit.
+     flex-basis 100% (bukan width) karena width kalah oleh flex-basis:0 dari
+     flex:1 di rule dasar; di dalamnya wrap lagi: baris label+jam, lalu bar. */
+  .lantai .csb-sesi{border-left:none;padding-left:0;flex:1 0 100%;flex-wrap:wrap;row-gap:5px}
+  .lantai .csb-sesi>:last-child{margin-left:auto}
+  .lantai .csb-sesi .sesi-bar-wrap{flex:1 0 100%;order:2}
 }
 
 /* net foreign & market fundamental */
