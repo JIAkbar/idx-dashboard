@@ -72,6 +72,21 @@ interface Baris {
   chart?: string
 }
 
+/** Keterangan aksi saat emiten yang dipilih di form sudah punya unggahan
+ *  (upsert eksplisit, #100) — orderbook selalu wajib dipilih ulang tiap
+ *  submit (validasi tak berubah) jadi selalu dianggap diganti; chart cuma
+ *  disebut kalau memang ada perubahan (dipilih baru / dipertahankan). */
+function pesanAksiDuplikat(existing: Baris, chartFile: File | null): string {
+  if (chartFile) {
+    return existing.chart
+      ? 'unggahan baru akan MENGGANTIKAN yang lama.'
+      : 'orderbook lama akan diganti, chart baru akan melengkapi (bukan mengganti orderbook).'
+  }
+  return existing.chart
+    ? 'orderbook lama akan diganti; chart lama tetap dipertahankan.'
+    : 'unggahan baru akan MENGGANTIKAN yang lama.'
+}
+
 function rangkumBerkas(paths: string[]): Baris[] {
   const map = new Map<string, Baris>()
   for (const p of paths) {
@@ -348,6 +363,10 @@ export function AdminHome() {
   }, [tanggalUnggahan])
 
   const tanggalSudahTerbit = new Set(edisi?.map((r) => r.tanggal))
+  /** Emiten aktif di form yang sudah punya unggahan di tanggal ini — dasar
+   *  afordans upsert (chip keterangan + label tombol PERBARUI). */
+  const kodeAktif = ticker.trim().toUpperCase()
+  const existingBaris = kodeAktif ? sudah.find((b) => b.ticker === kodeAktif) : undefined
 
   function tutupSambutan() {
     if (session) sessionStorage.setItem(KUNCI_SAMBUTAN, session.user.id)
@@ -377,9 +396,13 @@ export function AdminHome() {
     setFormErr('')
     try {
       const kode = ticker.trim().toUpperCase()
+      const adaSebelum = sudah.some((b) => b.ticker === kode)
       await unggahScreenshot(orderbook, tanggal, kode, 'orderbook')
       if (chart) await unggahScreenshot(chart, tanggal, kode, 'chart')
-      setToast({ ok: true, pesan: `${kode} · ${chart ? 2 : 1} gambar tersimpan` })
+      setToast({
+        ok: true,
+        pesan: adaSebelum ? `${kode} diperbarui · ${chart ? 2 : 1} gambar` : `${kode} · ${chart ? 2 : 1} gambar tersimpan`,
+      })
       bersihkan()
       setFormBuka(false)
       setMuat((m) => m + 1)
@@ -693,6 +716,14 @@ export function AdminHome() {
                 onSelect={setTicker}
                 placeholder="Ketik kode / nama emiten…"
               />
+              {existingBaris && (
+                <p className="af-dup">
+                  <IkonMenu d={IKON_PERINGATAN} size={12} />
+                  <span>
+                    <b>{existingBaris.ticker}</b> sudah terunggah (orderbook {existingBaris.orderbook ? '✓' : '—'}, chart {existingBaris.chart ? '✓' : '—'}) — {pesanAksiDuplikat(existingBaris, chart)}
+                  </span>
+                </p>
+              )}
             </div>
             <PilihGambar
               key={`ob-${resetKey}`}
@@ -711,7 +742,7 @@ export function AdminHome() {
               onPratinjau={(g) => setLightbox({ items: [g], index: 0 })}
             />
             <button type="submit" className="btn-p" disabled={mengunggah}>
-              {mengunggah ? 'Mengunggah…' : 'Unggah'}
+              {mengunggah ? (existingBaris ? 'Memperbarui…' : 'Mengunggah…') : (existingBaris ? 'Perbarui' : 'Unggah')}
             </button>
             {formErr && <p className="af-err" style={{ margin: 0 }}>{formErr}</p>}
           </form>
