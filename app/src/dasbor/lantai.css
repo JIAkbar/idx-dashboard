@@ -1210,7 +1210,10 @@
   .lantai .cal-strip-bar { gap: 12px 8px; padding: 12px; }
   .lantai .csb-hari { gap: 6px; }
   .lantai .csb-d { flex: 1 0 auto; min-width: 0; padding: 5px 2px; }
-  .lantai .cal-strip-bar .csb-more { margin-left: auto; }
+  /* Baris kontrol wrap (Hari Ini + Kalender penuh / toggle): jangan
+     melayang acak — bagi rata satu baris penuh, teks center (user 14 Agu). */
+  .lantai .cal-strip-bar .csb-more { margin-left: 0; flex: 1 1 0; text-align: center; }
+  .lantai .cal-strip-bar .mode-tgl { flex: 1 1 auto; justify-content: center; }
   .lantai .cal-rentang-bar { padding: 8px 12px; }
 }
 
@@ -1311,6 +1314,21 @@
    target sentuh telepon nyaman. Radius 4px sudah ikut blok radius global. */
 .lantai .tv-chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
 .lantai .tv-chips .bchip{margin-right:0;padding:4px 9px}
+/* Mobile: chip indeks jadi grid 3 kolom rata — baris seragam, bukan wrap
+   compang-camping (user 14 Agu). Nama panjang di-ellipsis. */
+@media (max-width:560px){
+  .lantai .tv-chips{display:grid;grid-template-columns:repeat(3,1fr)}
+  .lantai .tv-chips .bchip{text-align:center;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;min-width:0;padding:6px 4px}
+}
+
+/* Mobile: toolbar By Investor — cari isi satu baris penuh, dropdown +
+   counter berbagi baris kedua rapi (user 14 Agu). */
+@media (max-width:560px){
+  .lantai .pi-inv-h .pi-inv-cari{width:100% !important;flex-basis:100%;order:2}
+  .lantai .pi-inv-h .dd{order:3;flex:1}
+  .lantai .pi-inv-h .pi-inv-n{order:4;margin-left:auto;align-self:center}
+}
 
 /* #93 keystats — badge skor (Altman Z / Piotroski F) di panel Key Stats.
    Token --*-dim & warna sudah terdefinisi di kedua tema blok .lantai. */

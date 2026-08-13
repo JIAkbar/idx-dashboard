@@ -55,7 +55,7 @@ export function StockAutocomplete({ stocks, value, onChange, onSelect, placehold
   const showMenu = open && matches.length > 0
 
   return (
-    <div className={`dd${showMenu ? ' open' : ''}`} style={{ flex: 1, minWidth: 160 }}>
+    <div className={`dd${showMenu ? ' open' : ''}`} style={{ flex: 1, minWidth: 160, position: 'relative' }}>
       <input
         className="inp"
         type="text"
@@ -66,7 +66,25 @@ export function StockAutocomplete({ stocks, value, onChange, onSelect, placehold
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 200)}
         onKeyDown={handleKeyDown}
+        style={value ? { paddingRight: 30 } : undefined}
       />
+      {value !== '' && (
+        <button
+          type="button"
+          aria-label="Bersihkan kode saham"
+          title="Bersihkan"
+          onMouseDown={(e) => { e.preventDefault(); onChange(''); setActiveIndex(-1); setOpen(true) }}
+          style={{
+            position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)',
+            width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text3)', padding: 0,
+          }}
+        >
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      )}
       {showMenu && (
         <div className="dd-menu" style={{ right: 0, maxHeight: 260, overflowY: 'auto' }}>
           {matches.map((s, i) => (

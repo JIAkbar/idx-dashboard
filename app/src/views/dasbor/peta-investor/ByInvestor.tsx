@@ -41,17 +41,17 @@ export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
 
   return (
     <div className="panel">
-      <div className="panel-h" style={{ flexWrap: 'wrap' }}>
+      <div className="panel-h pi-inv-h" style={{ flexWrap: 'wrap' }}>
         <span className="lbl">Investor &amp; Portofolio Saham</span>
         <input
-          className="inp"
+          className="inp pi-inv-cari"
           style={{ width: 200 }}
           placeholder="Cari nama investor…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
         <Dropdown opsi={TYPE_OPTIONS} nilai={typeFilter} onGanti={(v) => setTypeFilter(v as typeof typeFilter)} ariaLabel="Filter tipe investor" />
-        <span className="num" style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{rows.length} investor</span>
+        <span className="num pi-inv-n" style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{rows.length} investor</span>
       </div>
       <div className="pi-tbl-wrap" style={{ border: 'none', borderRadius: 0 }}>
           <table className="pi-tbl">
