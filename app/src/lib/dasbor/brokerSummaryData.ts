@@ -1,8 +1,10 @@
 /**
- * Data hardcode Broker Summary (ALPHA) -- transkrip persis dari index_live.html
- * baris 5356-5708 (const BS_DATA). Data asli IDX cuma tersedia 3 hari
- * (2026-06-02..04) -- modul ini MANDIRI, tidak fetch /data-idx/json/*.json seperti
- * menu lain. Jangan sambungkan ke data live di sini; itu backlog terpisah.
+ * Data contoh Broker Summary -- transkrip persis dari index_live.html
+ * baris 5356-5708 (const BS_DATA), 3 hari (2026-06-02..04). Sejak migrasi
+ * data harian (lib/dasbor/brokerHarian.ts), yang masih pakai data contoh ini
+ * cuma tab NEGO & Flow (jenis datanya beda: nego per-saham & foreign flow,
+ * belum ada sumber hariannya). Tab Inventory/Kuadran sudah fetch
+ * /data-idx/json/broker/*.json harian.
  */
 
 export interface DateEntry {
