@@ -53,6 +53,15 @@ const HARI_MUNDUR: Record<'m1' | 'm3', number> = { m1: 30, m3: 91 }
  *    Bug scrollbar tab periode: subpiksel DPR≠1 bikin scrollWidth >
  *    clientWidth → scrollbar Windows nongol; scrollbar disembunyikan
  *    (swipe mobile tetap jalan), lihat blok "#87 sector r2" lantai.css.
+ *
+ * Task #88 — tab periode + mode rentang menyetir SEMUA tabel halaman:
+ *    Kolom "Hari Ini" di Indeks Unggulan/Syariah/Board jadi kolom periode
+ *    dinamis (header ikut pilihan; nilai % titik-awal vs titik-akhir, pola
+ *    nilaiPeriode sektor, reuse berkas pembanding yang sama — nol fetch
+ *    tambahan). Panel perbandingan indeks utama ikut periode penuh (termasuk
+ *    "Hari Ini") — satu kontrol satu makna, tanpa pengecualian tersembunyi;
+ *    data YTD tetap selalu terlihat di kolom YTD tiap tabel. Pembanding tak
+ *    tersedia → "—".
  */
 export function SektorIndeks() {
   const { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error } = useDataHarian()
@@ -112,17 +121,27 @@ export function SektorIndeks() {
   const nHariRentang = rentang
     ? Math.max(1, tanggalTersedia.filter((t) => t.date_iso >= rentang.mulai && t.date_iso <= rentang.akhir).length - 1)
     : 0
-  /** % perubahan sektor untuk periode/rentang terpilih — null = pembanding
-   * belum ada/tidak ketemu, tampilkan "—" (bukan 0). */
-  function nilaiPeriode(x: SectorRow): number | null {
+  /** % perubahan untuk periode/rentang terpilih dari daftar `sumber` di
+   * berkas pembanding — null = pembanding belum ada/tidak ketemu, tampilkan
+   * "—" (bukan 0). #88: digeneralisasi dari sektor ke featured/sharia/board. */
+  function nilaiPeriodeDari(x: SectorRow, sumber: 'sectors' | 'featured' | 'sharia' | 'board'): number | null {
     if (!rentang) {
       if (periode === 'd') return x.d
       if (periode === 'ytd') return x.ytd
       if (!tanggalPembanding) return null
     }
-    const cmp = pembanding?.sectors?.find((s) => s.n === x.n)?.v
+    const cmp = pembanding?.[sumber]?.find((s) => s.n === x.n)?.v
     return hitungPeriodePct(x.v, cmp)
   }
+  const nilaiPeriode = (x: SectorRow) => nilaiPeriodeDari(x, 'sectors')
+
+  // Label pendek periode/rentang untuk header kolom & judul panel (#88) —
+  // rentang sebulan sama dipadatkan "5–12 Agu", beda bulan "28 Jul – 12 Agu".
+  const labelPeriode = rentang
+    ? (rentang.mulai.slice(0, 7) === rentang.akhir.slice(0, 7)
+        ? `${Number(rentang.mulai.slice(8))}–${fmtTanggalPendek(rentang.akhir)}`
+        : `${fmtTanggalPendek(rentang.mulai)} – ${fmtTanggalPendek(rentang.akhir)}`)
+    : PERIODE.find((p) => p.id === periode)!.label
 
   // ─── Daftar Performa Sektor kompak (re-layout a) ─────────
   const secVals = sectors.map((s) => ({ s, val: nilaiPeriode(s) }))
@@ -133,19 +152,29 @@ export function SektorIndeks() {
   const span = hi - lo || 1
   const nol = ((0 - lo) / span) * 100
 
-  // Baris tabel 4-kolom (Nama | Nilai | Hari Ini | YTD) — dipakai Indeks
-  // Unggulan/Syariah/Board Indices, struktur beku.
-  const perfRowFull = (x: SectorRow) => (
+  // Baris tabel 4-kolom (Nama | Nilai | Periode | YTD) — dipakai Indeks
+  // Unggulan/Syariah/Board Indices. #88: kolom ke-3 dinamis ikut periode/
+  // rentang; valP dihitung pemanggil (Board di-rename SETELAH hitung, supaya
+  // pencocokan nama vs berkas pembanding tetap kena).
+  const perfRowFull = (x: SectorRow, valP: number | null) => (
     <tr key={x.n}>
       <td>{x.n}</td>
       <td className="r num">{fN(x.v)}</td>
-      <td className={`r num ${x.d >= 0 ? 'up' : 'dn'}`}>{fp(x.d)}</td>
+      {valP === null
+        ? <td className="r num">—</td>
+        : <td className={`r num ${valP >= 0 ? 'up' : 'dn'}`}>{fp(valP)}</td>}
       <td className="r"><span className={`ytd-bdg ${x.ytd >= 0 ? 'u' : 'd'}`}>{fp(x.ytd)}</span></td>
     </tr>
   )
 
   const indeksUtama = [...featured, ...sharia]
   const sorotUtama = indeksUtama.find((x) => x.n.includes('IDX Composite') || x.n.includes('IHSG'))?.n
+  // Panel perbandingan indeks utama ikut periode (#88) — featured & sharia
+  // dicari di daftar masing-masing di berkas pembanding.
+  const barisUtama = [
+    ...featured.map((x) => ({ nama: x.n, nilai: nilaiPeriodeDari(x, 'featured') })),
+    ...sharia.map((x) => ({ nama: x.n, nilai: nilaiPeriodeDari(x, 'sharia') })),
+  ]
 
   return (
     <div className="lantai">
@@ -231,8 +260,8 @@ export function SektorIndeks() {
         </div>
       </div>
         <div className="panel">
-          <div className="panel-h"><span className="lbl">YTD — Perbandingan Semua Indeks Utama</span></div>
-          <BatangPeringkat baris={indeksUtama.map((x) => ({ nama: x.n, nilai: x.ytd }))} sorot={sorotUtama} />
+          <div className="panel-h"><span className="lbl">{labelPeriode} — Perbandingan Semua Indeks Utama</span></div>
+          <BatangPeringkat baris={barisUtama} sorot={sorotUtama} />
         </div>
       </div>
 
@@ -241,8 +270,8 @@ export function SektorIndeks() {
           <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_GRAFIK_NAIK} size={13} /> Indeks Unggulan</span></div>
           <div className="board-tbl-wrap">
             <table className="tbl">
-              <thead><tr><th>Indeks</th><th className="r">Nilai</th><th className="r">Hari Ini</th><th className="r">YTD</th></tr></thead>
-              <tbody>{featured.map((x) => perfRowFull(x))}</tbody>
+              <thead><tr><th>Indeks</th><th className="r">Nilai</th><th className="r">{labelPeriode}</th><th className="r">YTD</th></tr></thead>
+              <tbody>{featured.map((x) => perfRowFull(x, nilaiPeriodeDari(x, 'featured')))}</tbody>
             </table>
           </div>
         </div>
@@ -251,8 +280,8 @@ export function SektorIndeks() {
             <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_BULAN_SABIT} size={13} /> Indeks Syariah</span></div>
             <div className="board-tbl-wrap">
               <table className="tbl">
-                <thead><tr><th>Indeks</th><th className="r">Nilai</th><th className="r">Hari Ini</th><th className="r">YTD</th></tr></thead>
-                <tbody>{sharia.map((x) => perfRowFull(x))}</tbody>
+                <thead><tr><th>Indeks</th><th className="r">Nilai</th><th className="r">{labelPeriode}</th><th className="r">YTD</th></tr></thead>
+                <tbody>{sharia.map((x) => perfRowFull(x, nilaiPeriodeDari(x, 'sharia')))}</tbody>
               </table>
             </div>
           </div>
@@ -260,12 +289,12 @@ export function SektorIndeks() {
             <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_KOTAK_ARSIP} size={13} /> Board Indices</span></div>
             <div className="board-tbl-wrap">
               <table className="tbl">
-                <thead><tr><th>Board</th><th className="r">Nilai</th><th className="r">Hari Ini</th><th className="r">YTD</th></tr></thead>
+                <thead><tr><th>Board</th><th className="r">Nilai</th><th className="r">{labelPeriode}</th><th className="r">YTD</th></tr></thead>
                 <tbody>
                   {board.map((x) => perfRowFull({
                     ...x,
                     n: x.n.replace('Main Board', 'Papan Utama').replace('Development Board', 'Papan Pengembangan').replace('Acceleration Board', 'Papan Akselerasi'),
-                  }))}
+                  }, nilaiPeriodeDari(x, 'board')))}
                 </tbody>
               </table>
             </div>

@@ -21,11 +21,12 @@ export function BatangPeringkat({
   baris,
   sorot,
 }: {
-  baris: { nama: string; nilai: number }[]
+  /** nilai null = data tidak tersedia (#88) — tampil "—" tanpa batang, urut terbawah. */
+  baris: { nama: string; nilai: number | null }[]
   sorot?: string
 }) {
-  const urut = [...baris].sort((a, b) => b.nilai - a.nilai)
-  const nilai = urut.map((b) => b.nilai)
+  const urut = [...baris].sort((a, b) => (b.nilai ?? -Infinity) - (a.nilai ?? -Infinity))
+  const nilai = urut.map((b) => b.nilai).filter((v): v is number => v !== null)
   const lo = Math.min(0, ...nilai)
   const hi = Math.max(0, ...nilai)
   const rentang = hi - lo || 1
@@ -34,19 +35,23 @@ export function BatangPeringkat({
   return (
     <div className="rank-wrap">
       {urut.map((b, i) => {
-        const positif = b.nilai >= 0
-        const lebar = (Math.abs(b.nilai) / rentang) * 100
+        const positif = (b.nilai ?? 0) >= 0
+        const lebar = b.nilai === null ? 0 : (Math.abs(b.nilai) / rentang) * 100
         return (
           <div className={`rk-row${b.nama === sorot ? ' kita' : ''}`} key={b.nama}>
             <span className="rk-no">{i + 1}</span>
             <span className="rk-nm" title={b.nama}>{b.nama}</span>
             <span className="rk-tr" style={{ '--nol': `${nol}%` } as CSSProperties}>
-              <i
-                className={`rk-b ${positif ? 'p' : 'n'}`}
-                style={positif ? { left: `${nol}%`, width: `${lebar}%` } : { right: `${100 - nol}%`, width: `${lebar}%` }}
-              />
+              {b.nilai !== null && (
+                <i
+                  className={`rk-b ${positif ? 'p' : 'n'}`}
+                  style={positif ? { left: `${nol}%`, width: `${lebar}%` } : { right: `${100 - nol}%`, width: `${lebar}%` }}
+                />
+              )}
             </span>
-            <span className={`rk-v ${positif ? 'up' : 'dn'}`}>{fp(b.nilai)}</span>
+            {b.nilai === null
+              ? <span className="rk-v">—</span>
+              : <span className={`rk-v ${positif ? 'up' : 'dn'}`}>{fp(b.nilai)}</span>}
           </div>
         )
       })}
