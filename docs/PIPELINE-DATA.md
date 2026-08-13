@@ -13,6 +13,8 @@
 | Yahoo Finance — fundamental 959 emiten | `scripts/fetch_fundamental.py` (yfinance 0.2.66) | Bulanan (CI) | — | (langsung JSON) | `data-idx/json/fundamental/` |
 | Yahoo Finance — OHLC utk bulletin | `arus-pasar/fetch_ohlc.py` | Per edisi bulletin | — | (langsung JSON) | `arus-pasar/cache/ohlc-*.json` |
 | Orderbook Stockbit (arus broker per emiten) | **manual** — transkripsi tangkapan layar | Per edisi bulletin | `arus-pasar/edisi/*.json` | `arus-pasar/build.py` | `keluaran/*.html` + `*.pdf` (otomatis, Playwright print) |
+| idx.co.id — Broker Summary (endpoint `GetBrokerSummary`, agregat 88 broker) | `scripts/fetch_broker_summary.py` (fetch dari dalam page — Cloudflare tolak TLS non-browser) | Harian (`--hari N` utk backfill; riwayat endpoint sampai Agu 2023) | — | (langsung JSON) | `data-idx/json/broker/bs_*.json` + `index.json` |
+| IDX Pengumuman Bursa — "Pemegang Saham di atas 1% (KSEI)" | `scripts/fetch_investor_map.py` (cari pengumuman mundur 240 hari → download lamp1 → parse PDF koordinat) | Bulanan tak beraturan; **berhenti terbit sejak 8 Juni 2026** — jalankan ulang berkala, otomatis nangkep begitu terbit lagi | `data owner/*.pdf` | (built-in) | `data-idx/json/investor_map.json` + `.meta.json` |
 
 Konsumen JSON: React app (`app/`, fetch `/data-idx/json/...`) dan situs statis `index.html`/`index_live.html`.
 
@@ -42,6 +44,10 @@ tidak commit data bolong).
 4. Fundamental bolong? Cek run `update-fundamental.yml`; rate limit Yahoo di runner adalah tersangka pertama (lihat retry log).
 
 ## Batasan yang diketahui
+
+- Rincian per-broker-per-saham TIDAK tersedia gratis di IDX (route `GetBrokerSummaryDetail` dkk = 503; yang ada agregat per broker — sama isi xlsx "Ringkasan Broker" manual, kini otomatis). Endpoint bonus belum dipanen: `GetStockSummary` (963 saham OHLC harian) & `GetIndexSummary` (45 indeks).
+- `investor_map.json` paling segar = data 29 Mei 2026 — sumbernya sendiri (pengumuman 1% KSEI) berhenti terbit sejak 8 Juni; bukan keterbatasan harvester. File lama pra-harvester ternyata korup ±1.138 baris (BBRI/TLKM/AMAN kehilangan pemegang mayoritas) — sudah pulih.
+- Pola akses endpoint IDX WAJIB `page.evaluate(fetch)` dari dalam halaman idx.co.id — `pg.request.get` (pola `cek_broker_summary.py` lama) sekarang kena 403 Cloudflare.
 
 - `ws_260102.pdf` 403 dari sisi IDX (satu file lama, dibiarkan).
 - Halaman weekly PDF 2 (grafik), 6 (obligasi outstanding), 10 (appendix) sengaja tidak diparse — layout tidak stabil; detail di docstring `parse_idx_weekly.py`.
