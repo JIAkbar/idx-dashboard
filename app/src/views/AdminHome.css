@@ -38,6 +38,16 @@
 .lantai .af-file .buang:hover { color: var(--red); }
 .lantai .af-file .buang .dasbor-ikon { stroke: currentColor; }
 
+/* Chip keterangan "emiten sudah terunggah" (upsert eksplisit, #100) — bawah
+   field Emiten di form Tambah Emiten, warna amber pola .af-aksibar. */
+.lantai .af-dup {
+  display: flex; gap: 6px; align-items: flex-start;
+  margin: 6px 0 0; padding: 6px 9px;
+  background: var(--amber-dim); border: 1px solid var(--amber); border-radius: var(--r);
+  font-size: 11px; line-height: 1.5; color: var(--text);
+}
+.lantai .af-dup .dasbor-ikon { stroke: var(--amber); flex-shrink: 0; margin-top: 2px; }
+
 .lantai .af-err { margin: 4px 0 0; font-size: 11px; color: var(--red); }
 /* Peringatan heuristik orientasi gambar — kuning, non-blokir. */
 .lantai .af-warn {

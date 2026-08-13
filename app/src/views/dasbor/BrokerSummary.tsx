@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { BS_AVAIL, BS_DATA } from '../../lib/dasbor/brokerSummaryData'
 import { useBrokerHarian, labelTanggal } from '../../lib/dasbor/brokerHarian'
-import { dateLabel, fmtB, fmtLot } from '../../lib/dasbor/brokerSummaryFormat'
+import { useDsIso } from '../../lib/dasbor/flowNego'
+import { fmtB, fmtLot } from '../../lib/dasbor/brokerSummaryFormat'
 import { Inventory } from './broker-summary/Inventory'
 import { Quadrant } from './broker-summary/Quadrant'
 import { Nego } from './broker-summary/Nego'
@@ -18,12 +18,10 @@ const TABS: { id: Tab; label: ReactNode }[] = [
   { id: 'flow', label: <><IkonMenu d={IKON_OMBAK} size={13} /> Flow</> },
 ]
 
-/** Tab yang konsumsi data broker agregat harian (dari harvester). */
+/** Tab yang konsumsi data broker agregat harian (bs_*.json, 2023–kini);
+ * NEGO/Flow konsumsi ds_*.json (2026–kini, lihat flowNego.ts) — pemilih
+ * tanggal sama, tapi set hari ber-data DatePicker beda per kelompok tab. */
 const TAB_HARIAN: Record<Tab, boolean> = { inventory: true, quadrant: true, nego: false, flow: false }
-
-const SAMPLE_FIRST = BS_AVAIL[0]
-const SAMPLE_LAST = BS_AVAIL[BS_AVAIL.length - 1]
-const NEGO_ROWS = BS_DATA.nego[SAMPLE_LAST] ?? []
 
 /** Preset mode Rentang (#79C — data 750 hari bursa, rentang tak dibatasi):
  * mundur hari kalender dari tanggal berdata terakhir; YTD = 1 Januari tahun
@@ -50,17 +48,20 @@ function mulaiPreset(id: PresetId, akhir: string): string {
 }
 
 /**
- * Panel "Broker Summary" — tab Inventory & Kuadran sekarang pakai data broker
- * HARIAN dari harvester (/data-idx/json/broker/index.json + bs_YYMMDD.json,
- * lihat lib/dasbor/brokerHarian.ts) dengan pemilih tanggal. Tab NEGO & Flow
- * masih data contoh tertanam 3 hari (BS_DATA, Jun 2026) karena jenis datanya
- * beda (per-saham nego & foreign flow) dan belum ada sumber hariannya —
- * chip status per tab jujur soal itu.
+ * Panel "Broker Summary" — tab Inventory & Kuadran pakai data broker HARIAN
+ * dari harvester (/data-idx/json/broker/index.json + bs_YYMMDD.json, lihat
+ * lib/dasbor/brokerHarian.ts); tab NEGO & Flow (#99) pakai data harian pasar
+ * ds_YYMMDD.json (net foreign & papan NG, lihat lib/dasbor/flowNego.ts).
+ * Semua tab mengikuti tanggal/rentang aktif yang sama.
  */
 export function BrokerSummary() {
   const [tab, setTab] = useState<Tab>('inventory')
   const { tanggalTersedia, tanggalAktif, rows, rentang, pilihTanggal, pilihRentang, loading, error, selesai, total } = useBrokerHarian()
-  const setTersedia = useMemo(() => new Set(tanggalTersedia), [tanggalTersedia])
+  const setBroker = useMemo(() => new Set(tanggalTersedia), [tanggalTersedia])
+  // Tab NEGO/Flow: DatePicker hanya menawarkan hari ber-data ds (cakupan
+  // lebih pendek dari data broker) — mencegah memilih tanggal kosong.
+  const dsIso = useDsIso()
+  const setDs = useMemo(() => new Set(dsIso), [dsIso])
 
   // ─── Mode Rentang (#75/#79C): agregat SUM 88 broker sepanjang hari-berdata.
   // Preset ATAU rentang bebas (dua DatePicker) — preset cuma jalan pintas
@@ -107,6 +108,7 @@ export function BrokerSummary() {
   const totalFreq = brokers.reduce((s, b) => s + b.freq, 0)
   const activeBroker = brokers.filter((b) => b.nilai > 0).length
   const harian = TAB_HARIAN[tab]
+  const tersedia = harian ? setBroker : setDs
 
   return (
     <div className="lantai">
@@ -165,10 +167,10 @@ export function BrokerSummary() {
               </button>
             ))}
           </div>
-          {harian ? (
-            /* #98: inline style → kelas .bs-ctl supaya media query mobile bisa
-               menata ulang (inline selalu menang atas CSS). */
-            <div className="bs-ctl">
+          {/* #98: inline style → kelas .bs-ctl supaya media query mobile bisa
+              menata ulang (inline selalu menang atas CSS). #99: kontrol tampil
+              di SEMUA tab — NEGO/Flow ikut tanggal/rentang aktif halaman. */}
+          <div className="bs-ctl">
               {/* Toggle mode + pemilih: Harian → DatePicker (hanya hari
                   ber-data); Rentang → preset + rentang bebas dua DatePicker
                   (snap ke hari berdata, lihat pilihRentang). */}
@@ -191,23 +193,20 @@ export function BrokerSummary() {
                   {/* Rentang bebas — dua DatePicker mulai/akhir, hanya hari
                       ber-data yang bisa dipilih; urutan terbalik otomatis
                       ditukar di pilihRentang. */}
-                  <DatePicker value={mulaiIso} onChange={(iso) => keRentangBebas(iso, akhirIso)} tersedia={setTersedia} ariaLabel="Tanggal mulai rentang" rata="kanan" />
+                  <DatePicker value={mulaiIso} onChange={(iso) => keRentangBebas(iso, akhirIso)} tersedia={tersedia} ariaLabel="Tanggal mulai rentang" rata="kanan" />
                   <span className="lbl" aria-hidden="true">s.d.</span>
-                  <DatePicker value={akhirIso} onChange={(iso) => keRentangBebas(mulaiIso, iso)} tersedia={setTersedia} ariaLabel="Tanggal akhir rentang" rata="kanan" />
+                  <DatePicker value={akhirIso} onChange={(iso) => keRentangBebas(mulaiIso, iso)} tersedia={tersedia} ariaLabel="Tanggal akhir rentang" rata="kanan" />
                 </>
               ) : (
                 <DatePicker
                   value={tanggalAktif ?? ''}
                   onChange={pilihTanggal}
-                  tersedia={setTersedia}
+                  tersedia={tersedia}
                   ariaLabel="Pilih tanggal data broker"
                   rata="kanan"
                 />
               )}
-            </div>
-          ) : (
-            <span className="chip warn">Data contoh {dateLabel(SAMPLE_FIRST)} – {dateLabel(SAMPLE_LAST)} · tidak diperbarui</span>
-          )}
+          </div>
         </div>
         <div className="panel-b">
           {harian && loading && (
@@ -233,8 +232,8 @@ export function BrokerSummary() {
               {tab === 'quadrant' && <Quadrant brokers={brokers} />}
             </>
           )}
-          {tab === 'nego' && <Nego rows={NEGO_ROWS} />}
-          {tab === 'flow' && <Flow />}
+          {tab === 'nego' && <Nego tanggalAktif={tanggalAktif} rentang={rentang} />}
+          {tab === 'flow' && <Flow tanggalAktif={tanggalAktif} rentang={rentang} />}
         </div>
       </div>
     </div>

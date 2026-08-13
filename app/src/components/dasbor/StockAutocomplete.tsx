@@ -8,6 +8,12 @@ interface StockAutocompleteProps {
   /** Dipanggil saat item dipilih (klik/Enter pada item aktif) ATAU Enter/submit tanpa item aktif. */
   onSelect: (ticker: string) => void
   placeholder?: string
+  /** Opsional (#101) — ticker dalam set ini dapat badge di kanan item saran.
+   *  Dipakai AdminHome menandai emiten yang sudah terunggah tanggal aktif;
+   *  tanpa prop ini perilaku persis sama seperti sebelumnya (mis. Stock Detail). */
+  tandai?: ReadonlySet<string>
+  /** Teks badge, default "terunggah". */
+  labelTanda?: string
 }
 
 /**
@@ -16,7 +22,7 @@ interface StockAutocompleteProps {
  * punya logic filter identik (satu dipanggil saat mengetik, satu saat fokus)
  * — di sini disatukan lewat satu `matches` yang selalu dihitung dari `value`.
  */
-export function StockAutocomplete({ stocks, value, onChange, onSelect, placeholder = 'Kode saham: BBCA, ASII, TLKM…' }: StockAutocompleteProps) {
+export function StockAutocomplete({ stocks, value, onChange, onSelect, placeholder = 'Kode saham: BBCA, ASII, TLKM…', tandai, labelTanda = 'terunggah' }: StockAutocompleteProps) {
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
 
@@ -95,6 +101,12 @@ export function StockAutocomplete({ stocks, value, onChange, onSelect, placehold
             >
               <span className="tick" style={{ minWidth: 52, flexShrink: 0 }}>{s.ticker}</span>
               <span className="satu-baris" style={{ flex: 1, minWidth: 0, color: 'var(--text3)', fontSize: 11 }}>{s.name}</span>
+              {tandai?.has(s.ticker) && (
+                <span style={{
+                  flexShrink: 0, fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700,
+                  background: 'var(--amber-dim)', color: 'var(--amber)', padding: '1px 6px', borderRadius: 3,
+                }}>{labelTanda}</span>
+              )}
             </div>
           ))}
         </div>

@@ -134,8 +134,8 @@ export interface DataHarian {
 /** Cache di memori per-stem — pindah tanggal balik lagi tidak fetch ulang. */
 const cache = new Map<string, DataHarian>()
 
-/** Fetch satu berkas harian lewat cache modul — dipakai useDataRentang. */
-function fetchHari(stem: string): Promise<DataHarian> {
+/** Fetch satu berkas harian lewat cache modul — dipakai useDataRentang & flowNego.ts. */
+export function fetchHari(stem: string): Promise<DataHarian> {
   const c = cache.get(stem)
   if (c) return Promise.resolve(c)
   return fetch(`/data-idx/json/${stem}.json`)
