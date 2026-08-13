@@ -14,6 +14,7 @@
 | Yahoo Finance — OHLC utk bulletin | `arus-pasar/fetch_ohlc.py` | Per edisi bulletin | — | (langsung JSON) | `arus-pasar/cache/ohlc-*.json` |
 | Orderbook Stockbit (arus broker per emiten) | **manual** — transkripsi tangkapan layar | Per edisi bulletin | `arus-pasar/edisi/*.json` | `arus-pasar/build.py` | `keluaran/*.html` + `*.pdf` (otomatis, Playwright print) |
 | idx.co.id — Broker Summary (endpoint `GetBrokerSummary`, agregat 88 broker) | `scripts/fetch_broker_summary.py` (fetch dari dalam page — Cloudflare tolak TLS non-browser) | Harian (`--hari N` utk backfill; riwayat endpoint sampai Agu 2023) | — | (langsung JSON) | `data-idx/json/broker/bs_*.json` + `index.json` |
+| idx.co.id — daftar resmi emiten (endpoint `GetStockSummary`, 963+ saham) | `scripts/sinkron_emiten.py` (fetch dari dalam page, sama pola Cloudflare) | Harian (lewat `JALANKAN_OTOMATIS.bat`) | — | (langsung JSON, lalu diff) | `data-idx/json/daftar_emiten.json` + panen `fundamental/<TICKER>.json` baru |
 | IDX Pengumuman Bursa — "Pemegang Saham di atas 1% (KSEI)" | `scripts/fetch_investor_map.py` (cari pengumuman mundur 240 hari → download lamp1 → parse PDF koordinat) | Bulanan tak beraturan; **berhenti terbit sejak 8 Juni 2026** — jalankan ulang berkala, otomatis nangkep begitu terbit lagi | `data owner/*.pdf` | (built-in) | `data-idx/json/investor_map.json` + `.meta.json` |
 
 Konsumen JSON: React app (`app/`, fetch `/data-idx/json/...`) dan situs statis `index.html`/`index_live.html`.
@@ -70,6 +71,24 @@ Sejak Agu 2026 diperluas selevel "Key Stats" Stockbit (semua null bila sumber ta
 Emiten pelapor-USD (`financial_currency: "USD"`): nilai absolut dikonversi ke IDR
 pakai kurs `ds_*.json` terbaru; rasio dihitung dari laporan se-mata-uang (tak dikonversi).
 
+## Sinkron emiten baru (deteksi IPO)
+
+Daftar emiten yang muncul di app (autocomplete, Stock Detail) berasal dari
+`data-idx/json/fundamental/index.json`, dibangun dari file yang pernah dipanen
+`fetch_fundamental.py`. Saham IPO baru (mis. BACH, Agu 2026) tidak otomatis
+muncul di situ sampai dipanen manual — `scripts/sinkron_emiten.py` menutup gap
+ini: ambil daftar resmi seluruh saham IDX (`GetStockSummary`, 963+ saham) →
+diff dgn `index.json` → ticker yang belum ada dipanen otomatis lewat
+`fetch_fundamental.py <TICKER> ...` (CLI itu sudah menerima ticker spesifik
+sbg argumen positional, jadi tidak perlu flag baru). Ticker yang IPO-nya
+terlalu baru untuk dikenal Yahoo Finance (`.JK` belum terindeks — cth. GOTOM
+per Agu 2026) dilewati dan dicatat di log, bukan ditulis sbg file kosong;
+akan otomatis kepanen begitu Yahoo mengindeksnya (di run berikutnya, endpoint
+IDX tetap melaporkannya sbg "belum ada di database").
+
+Dijalankan tiap hari sbg langkah `[4/5]` di `JALANKAN_OTOMATIS.bat`, tidak
+menghentikan pipeline kalau gagal (data harian/mingguan tetap ter-commit).
+
 ## Kalau data berhenti update, cek berurutan
 
 1. `gh run list --workflow=update.yml --limit 5` — merah semua? Berarti IDX blokir runner; pastikan Task Scheduler lokal jalan (`schtasks /Query /TN "IDX-Update"`).
@@ -79,7 +98,7 @@ pakai kurs `ds_*.json` terbaru; rasio dihitung dari laporan se-mata-uang (tak di
 
 ## Batasan yang diketahui
 
-- Rincian per-broker-per-saham TIDAK tersedia gratis di IDX (route `GetBrokerSummaryDetail` dkk = 503; yang ada agregat per broker — sama isi xlsx "Ringkasan Broker" manual, kini otomatis). Endpoint bonus belum dipanen: `GetStockSummary` (963 saham OHLC harian) & `GetIndexSummary` (45 indeks).
+- Rincian per-broker-per-saham TIDAK tersedia gratis di IDX (route `GetBrokerSummaryDetail` dkk = 503; yang ada agregat per broker — sama isi xlsx "Ringkasan Broker" manual, kini otomatis). `GetStockSummary` kini dipanen (`sinkron_emiten.py`) tapi baru utk daftar kode+nama saham (deteksi IPO) — OHLC hariannya (Open/High/Low/Close/Volume per saham per endpoint ini) belum dipakai. `GetIndexSummary` (45 indeks) masih belum dipanen.
 - `investor_map.json` paling segar = data 29 Mei 2026 — sumbernya sendiri (pengumuman 1% KSEI) berhenti terbit sejak 8 Juni; bukan keterbatasan harvester. File lama pra-harvester ternyata korup ±1.138 baris (BBRI/TLKM/AMAN kehilangan pemegang mayoritas) — sudah pulih.
 - Pola akses endpoint IDX WAJIB `page.evaluate(fetch)` dari dalam halaman idx.co.id — `pg.request.get` (pola `cek_broker_summary.py` lama) sekarang kena 403 Cloudflare.
 
