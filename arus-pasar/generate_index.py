@@ -20,14 +20,18 @@ def main():
         kode = ed["edisi"]
         if not (AKAR / "keluaran" / f"{kode}.pdf").exists():
             continue
-        entri.append({
+        baris = {
             "kode": kode,
             "tanggal": ed["tanggal"],
             "tanggal_id": ed["tanggal_id"],
             "judul": f"Arus Pasar — {ed['tanggal_id']}",
             "emiten": [e["ticker"] for e in ed["emiten"]],
             "pdf": f"{kode}.pdf",
-        })
+        }
+        # Rilis ulang: edisi diperluas cakupannya — dashboard render badge Update N→M.
+        if "update_dari" in ed:
+            baris["update_dari"] = ed["update_dari"]
+        entri.append(baris)
     entri.sort(key=lambda e: e["tanggal"], reverse=True)
 
     keluar = AKAR / "keluaran" / "index.json"
