@@ -23,14 +23,42 @@ import { IkonMenu, IKON_PERINGATAN, IKON_GLOBE, IKON_PENGGARIS, IKON_GRAFIK_BATA
  * pernah kebentuk. Mount sebagai komponen baru di sini menghindari itu:
  * render pertamanya sudah pasti kanvas ADA sekaligus config terisi.
  */
+/** "12 Feb" dari date_iso — date_id terlalu panjang buat baris info mini. */
+function tglSingkat(iso: string) {
+  return new Date(`${iso}T12:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+}
+
 function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
   const { theme } = useTheme()
 
-  const config = useMemo<ChartConfiguration<'line', number[], string> | null>(() => {
+  // High/low/terkini tahun berjalan dari seri yang sama dengan chart.
+  const info = useMemo(() => {
     if (dates.length === 0) return null
+    let hi = dates[0]
+    let lo = dates[0]
+    dates.forEach((d) => {
+      if (d.ihsg > hi.ihsg) hi = d
+      if (d.ihsg < lo.ihsg) lo = d
+    })
+    const last = dates[dates.length - 1]
+    return { hi, lo, last, ytdPct: hitungYtdPct(last.ihsg, dates) }
+  }, [dates])
+
+  const config = useMemo<ChartConfiguration<'line', number[], string> | null>(() => {
+    if (dates.length === 0 || !info) return null
     const isDark = theme === 'dark'
     const amber = isDark ? '#F0A62B' : '#B87A10'
     const amberFill = isDark ? 'rgba(240,166,43,.22)' : 'rgba(184,122,16,.16)'
+    // Garis panduan high/low: warna --text3 tiap tema, alpha lembut.
+    const guide = isDark ? 'rgba(92,107,126,.55)' : 'rgba(136,150,168,.55)'
+    const guideDs = (nilai: number) => ({
+      data: dates.map(() => nilai),
+      borderColor: guide,
+      borderDash: [4, 4] as number[],
+      borderWidth: 1,
+      pointRadius: 0,
+      fill: false,
+    })
     return {
       type: 'line',
       data: {
@@ -43,24 +71,42 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
           pointRadius: 0,
           fill: true,
           tension: 0.15,
-        }],
+        },
+        // Dua dataset konstanta = garis putus-putus level high & low —
+        // cara paling ringan tanpa plugin/dependency tambahan.
+        guideDs(info.hi.ihsg),
+        guideDs(info.lo.ihsg)],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: (ctx) => `IHSG: ${fN(ctx.parsed.y)}` } },
+          tooltip: {
+            // Garis panduan bukan data — jangan ikut tooltip.
+            filter: (item) => item.datasetIndex === 0,
+            callbacks: { label: (ctx) => `IHSG: ${fN(ctx.parsed.y)}` },
+          },
         },
         scales: { x: { display: false }, y: { display: false } },
       },
     }
-  }, [dates, theme])
+  }, [dates, info, theme])
   const canvasRef = useChartCanvas(config)
 
   return (
     <div className="board-side">
-      <span className="lbl" style={{ display: 'block', marginBottom: 6 }}>IHSG — Tahun Berjalan</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+        <span className="lbl">IHSG — Tahun Berjalan</span>
+        {info && (
+          <span className="num" style={{ fontSize: 12, fontWeight: 700 }}>
+            {fN(info.last.ihsg)}{' '}
+            {info.ytdPct != null && (
+              <span className={info.ytdPct >= 0 ? 'up' : 'dn'}>{fp(info.ytdPct)}</span>
+            )}
+          </span>
+        )}
+      </div>
       {/* canvas dipaksa display:block+width:100% LEWAT STYLE (bukan andalkan
           Chart.js) — .board-side flex item, canvas default-nya display:inline
           lebar intrinsik 300px; kalau Chart.js sempat baca lebar container
@@ -70,6 +116,12 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
       <div className="chart-wrap" style={{ height: 120 }}>
         <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
       </div>
+      {info && (
+        <div className="num" style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 6, fontSize: 10, color: 'var(--text3)', flexWrap: 'wrap' }}>
+          <span>Tertinggi <span className="up">{fN(info.hi.ihsg)}</span> · {tglSingkat(info.hi.date_iso)}</span>
+          <span>Terendah <span className="dn">{fN(info.lo.ihsg)}</span> · {tglSingkat(info.lo.date_iso)}</span>
+        </div>
+      )}
     </div>
   )
 }
