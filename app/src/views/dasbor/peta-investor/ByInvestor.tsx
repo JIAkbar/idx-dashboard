@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { GraphSelection, InvestorRow } from '../../../lib/dasbor/petaInvestorData'
 import { IkonMenu, IKON_GLOBE, IKON_LOKASI } from '../../../components/dasbor/IkonMenu'
 import { Dropdown } from '../../../components/dasbor/Dropdown'
 import { PilRow } from '../../../components/dasbor/PilRow'
+import { useMuatBertahap } from './useMuatBertahap'
 
 interface ByInvestorProps {
   investorMap: InvestorRow[]
@@ -21,7 +22,6 @@ const TYPE_OPTIONS: { nilai: '' | 'CORP' | 'IND' | 'OTH'; label: string }[] = [
 export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
   const [query, setQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<'' | 'CORP' | 'IND' | 'OTH'>('')
-  const [visibleCount, setVisibleCount] = useState(PAGE)
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -36,10 +36,8 @@ export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
     return list
   }, [investorMap, query, typeFilter])
 
-  useEffect(() => setVisibleCount(PAGE), [rows])
-
-  const visible = rows.slice(0, visibleCount)
-  const remaining = rows.length - visibleCount
+  // #91: infinite scroll dalam wrapper; reset batch saat filter berubah ada di hook.
+  const { visible, habis, ioGagal, sentinelRef, muatLagi } = useMuatBertahap(rows, PAGE)
 
   return (
     <div className="panel">
@@ -90,13 +88,23 @@ export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
               })}
             </tbody>
           </table>
-          {remaining > 0 && (
+          {/* #91: sentinel = baris "Memuat…" — diamati IO; fallback tombol lama bila IO gagal. */}
+          {!habis && !ioGagal && (
+            <div ref={sentinelRef} style={{ textAlign: 'center', padding: 8, fontSize: 11, color: 'var(--text3)' }}>
+              Memuat…
+            </div>
+          )}
+          {!habis && ioGagal && (
             <div style={{ textAlign: 'center', padding: 10 }}>
-              <button type="button" className="bchip" style={{ cursor: 'pointer' }} onClick={() => setVisibleCount((v) => v + PAGE)}>
-                Tampilkan {Math.min(remaining, PAGE)} lagi (sisa {remaining})
+              <button type="button" className="bchip" style={{ cursor: 'pointer' }} onClick={muatLagi}>
+                Tampilkan {Math.min(rows.length - visible.length, PAGE)} lagi (sisa {rows.length - visible.length})
               </button>
             </div>
           )}
+      </div>
+      {/* #91: kaki tabel — info jumlah baris terpakai. */}
+      <div style={{ textAlign: 'right', fontSize: 10, color: 'var(--text3)', padding: '7px 14px', borderTop: '1px solid var(--line)' }}>
+        <span className="num">{visible.length} dari {rows.length}</span>
       </div>
     </div>
   )

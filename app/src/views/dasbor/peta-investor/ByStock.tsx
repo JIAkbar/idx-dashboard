@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { holderType, type GraphSelection, type InvestorMapEntry } from '../../../lib/dasbor/petaInvestorData'
 import { Dropdown } from '../../../components/dasbor/Dropdown'
 import { PilRow } from '../../../components/dasbor/PilRow'
+import { useMuatBertahap } from './useMuatBertahap'
 
 interface ByStockProps {
   data: InvestorMapEntry[]
@@ -24,7 +25,6 @@ function sumPct(em: InvestorMapEntry, type: 'CORP' | 'IND' | 'OTH'): number {
 export function ByStock({ data, onSelect }: ByStockProps) {
   const [query, setQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<'' | 'CORP' | 'IND' | 'OTH'>('')
-  const [visibleCount, setVisibleCount] = useState(PAGE)
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -40,10 +40,8 @@ export function ByStock({ data, onSelect }: ByStockProps) {
     return list
   }, [data, query, typeFilter])
 
-  useEffect(() => setVisibleCount(PAGE), [rows])
-
-  const visible = rows.slice(0, visibleCount)
-  const remaining = rows.length - visibleCount
+  // #91: infinite scroll dalam wrapper; reset batch saat filter berubah ada di hook.
+  const { visible, habis, ioGagal, sentinelRef, muatLagi } = useMuatBertahap(rows, PAGE)
 
   return (
     <div className="panel">
@@ -104,10 +102,16 @@ export function ByStock({ data, onSelect }: ByStockProps) {
               })}
             </tbody>
           </table>
-          {remaining > 0 && (
+          {/* #91: sentinel = baris "Memuat…" — diamati IO; fallback tombol lama bila IO gagal. */}
+          {!habis && !ioGagal && (
+            <div ref={sentinelRef} style={{ textAlign: 'center', padding: 8, fontSize: 11, color: 'var(--text3)' }}>
+              Memuat…
+            </div>
+          )}
+          {!habis && ioGagal && (
             <div style={{ textAlign: 'center', padding: 10 }}>
-              <button type="button" className="bchip" style={{ cursor: 'pointer' }} onClick={() => setVisibleCount((v) => v + PAGE)}>
-                Tampilkan {Math.min(remaining, PAGE)} lagi (sisa {remaining})
+              <button type="button" className="bchip" style={{ cursor: 'pointer' }} onClick={muatLagi}>
+                Tampilkan {Math.min(rows.length - visible.length, PAGE)} lagi (sisa {rows.length - visible.length})
               </button>
             </div>
           )}
@@ -116,8 +120,10 @@ export function ByStock({ data, onSelect }: ByStockProps) {
           keterangan kecil di bawah tabel + title di header kolom OTH %.
           Substansi tetap: holder tanpa `cls` (1.138 dari 6.728 baris) jatuh ke
           OTH, jadi "OTH" berarti "tipe tidak terisi", bukan "tipe lain". */}
-      <div style={{ fontSize: 10, color: 'var(--text3)', padding: '7px 14px', borderTop: '1px solid var(--line)' }}>
-        Tipe holder diturunkan dari teks bebas KSEI · OTH = tipe tak terisi
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 10, color: 'var(--text3)', padding: '7px 14px', borderTop: '1px solid var(--line)' }}>
+        <span>Tipe holder diturunkan dari teks bebas KSEI · OTH = tipe tak terisi</span>
+        {/* #91 */}
+        <span className="num">{visible.length} dari {rows.length}</span>
       </div>
     </div>
   )
