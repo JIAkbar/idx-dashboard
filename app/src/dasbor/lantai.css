@@ -682,7 +682,7 @@
 .lantai .pil-row{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow:hidden;max-width:360px}
 .lantai .pil-row .bchip{display:flex;align-items:center;gap:5px;margin-right:0;min-width:0;white-space:nowrap}
 .lantai .pil-nm{min-width:0;overflow:hidden;text-overflow:ellipsis}
-.lantai .pil-pct{flex:none;color:var(--text3)}
+.lantai .pil-pct{flex:none;color:var(--text2)}
 .lantai .pil-row .lbl{flex:none;white-space:nowrap}
 /* Satu baris + elipsis. Dipakai sel tabel yang isinya nama panjang: membatasi
    jumlah karakter di JavaScript tidak pernah cukup karena lebar kolom berubah
@@ -1019,9 +1019,12 @@
 .lantai .pi-panel-code-chip { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; height: 24px; background: #f97316; border-radius: 5px; font-size: 9px; font-weight: 800; color: #fff; padding: 0 4px; }
 .lantai .pi-panel-row-issuer { flex: 1; min-width: 0; font-size: 11px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* Baris tab + kontrol pencarian Peta Investor (#83) — search pindah dari .vhead
+   ke sebaris tab; tinggi kontrol diseragamkan 32px (≈ tinggi .tabs), lebar ikut isi. */
+.lantai .pi-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .lantai .pi-head-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .lantai .pi-srch-container { position: relative; }
-.lantai .pi-search { padding: 7px 36px 7px 12px; border-radius: 7px; border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text); font-size: 12px; width: 230px; outline: none; text-transform: uppercase; letter-spacing: .3px; }
+.lantai .pi-search { height: 32px; padding: 0 36px 0 12px; border-radius: 7px; border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text); font-size: 12px; width: 230px; outline: none; text-transform: uppercase; letter-spacing: .3px; }
 .lantai .pi-search-x { display: inline-block; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text3); font-size: 14px; line-height: 1; }
 .lantai .pi-search-drop { position: absolute; top: calc(100% + 4px); right: 0; width: 300px; max-height: 340px; overflow-y: auto; background: var(--card); border: 0.5px solid var(--border2); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.35); z-index: 200; }
 .lantai .pi-drop-empty { padding: 14px; text-align: center; color: var(--text3); font-size: 11px; }
@@ -1031,20 +1034,29 @@
 .lantai .pi-drop-item-title { font-size: 13px; font-weight: 800; color: var(--text); letter-spacing: .5px; }
 .lantai .pi-drop-item-sub { font-size: 10px; color: var(--text3); }
 .lantai .pi-cat-badge { color: #fff; font-size: 8px; font-weight: 700; padding: 2px 7px; border-radius: 8px; white-space: nowrap; }
-.lantai .pi-search-go { padding: 6px 14px; border-radius: 7px; border: 0.5px solid var(--accent); background: var(--accent); color: var(--amber-ink); font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
-.lantai .pi-search-reset { padding: 6px 10px; border-radius: 7px; border: 0.5px solid var(--border); background: var(--bg3); color: var(--text2); font-size: 11px; cursor: pointer; font-family: inherit; }
+.lantai .pi-search-go { height: 32px; padding: 0 14px; border-radius: 7px; border: 0.5px solid var(--accent); background: var(--accent); color: var(--amber-ink); font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.lantai .pi-search-reset { height: 32px; padding: 0 12px; border-radius: 7px; border: 0.5px solid var(--border); background: var(--bg3); color: var(--text2); font-size: 11px; cursor: pointer; font-family: inherit; }
 
 .lantai .pi-tbl-toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 14px; }
 .lantai .pi-tbl-toolbar-title { font-weight: 700; font-size: 13px; }
 .lantai .pi-tbl-count { font-size: 11px; color: var(--text3); margin-left: auto; }
-.lantai .pi-tbl-wrap { overflow-x: auto; max-height: 560px; overflow-y: auto; border-radius: 10px; border: 0.5px solid var(--border); }
+/* Tinggi area scroll ikut viewport (fallback 560px lama cuma di layar pendek);
+   scrollbar custom halus "kayak SAKTI" (#83) — scoped ke area scroll tabel ini
+   saja. JANGAN tambah scrollbar-width/scrollbar-color di sini: Chrome 121+
+   mematikan ::-webkit-scrollbar begitu properti standar itu di-set. */
+.lantai .pi-tbl-wrap { overflow-x: auto; max-height: max(560px, calc(100dvh - 300px)); overflow-y: auto; border-radius: 10px; border: 0.5px solid var(--border); }
+.lantai .pi-tbl-wrap::-webkit-scrollbar { width: 8px; height: 8px; }
+.lantai .pi-tbl-wrap::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 99px; }
+.lantai .pi-tbl-wrap::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+.lantai .pi-tbl-wrap::-webkit-scrollbar-track { background: transparent; }
 .lantai .pi-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
 .lantai .pi-tbl th { background: var(--bg3); color: var(--text2); font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; padding: 9px 12px; text-align: left; border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 2; }
 .lantai .pi-tbl td { padding: 9px 12px; border-bottom: 0.5px solid var(--border); color: var(--text); vertical-align: middle; }
 .lantai .pi-tbl tr:last-child td { border-bottom: none; }
 .lantai .pi-tbl tbody tr:hover td { background: var(--bg3); cursor: pointer; }
 .lantai .pi-tbl .em-code { font-weight: 800; color: var(--accent); font-size: 13px; }
-.lantai .pi-tbl .em-name { font-size: 10px; color: var(--text3); margin-top: 1px; }
+/* Nama emiten/holder = teks sekunder — minimal var(--text2), text3 kelewat redup di dark (#83). */
+.lantai .pi-tbl .em-name { font-size: 10px; color: var(--text2); margin-top: 1px; }
 .lantai .pi-inv-name { font-weight: 700; color: var(--text); font-size: 12px; }
 .lantai .pi-badge-h { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; margin: 2px 2px 2px 0; }
 .lantai .pi-badge-h.CORP { background: #3b82f620; color: #3b82f6; }

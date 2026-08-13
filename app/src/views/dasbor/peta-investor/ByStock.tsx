@@ -58,11 +58,6 @@ export function ByStock({ data, onSelect }: ByStockProps) {
           onChange={(e) => setQuery(e.target.value)}
         />
         <Dropdown opsi={TYPE_OPTIONS} nilai={typeFilter} onGanti={(v) => setTypeFilter(v as typeof typeFilter)} ariaLabel="Filter tipe holder" />
-        {/* Keterangan ditaruh SEKALI di sini, bukan per baris: tiga kolom persen
-            di bawah diturunkan dari teks bebas `cls` KSEI, dan holder tanpa
-            `cls` (1.138 dari 6.728 baris) jatuh ke OTH — jadi "OTH" berarti
-            "tipe tidak terisi", bukan "tipe lain". */}
-        <span className="chip warn">Tipe holder diturunkan dari teks bebas KSEI · OTH = tipe tak terisi</span>
         <span className="num" style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{rows.length} emiten</span>
       </div>
       <div className="pi-tbl-wrap" style={{ border: 'none', borderRadius: 0 }}>
@@ -73,7 +68,7 @@ export function ByStock({ data, onSelect }: ByStockProps) {
                 <th style={{ width: 60, textAlign: 'center' }}>Holder</th>
                 <th style={{ width: 80, textAlign: 'center' }}>CORP %</th>
                 <th style={{ width: 80, textAlign: 'center' }}>IND %</th>
-                <th style={{ width: 80, textAlign: 'center' }}>OTH %</th>
+                <th style={{ width: 80, textAlign: 'center' }} title="OTH = tipe tak terisi — tipe holder diturunkan dari teks bebas KSEI">OTH %</th>
                 <th>Pemegang Saham (≥1%)</th>
               </tr>
             </thead>
@@ -93,10 +88,12 @@ export function ByStock({ data, onSelect }: ByStockProps) {
                           jadi tidak seragam lagi. */}
                       <div className="em-name satu-baris" title={em.issuer}>{em.issuer || '—'}</div>
                     </td>
+                    {/* Persentase = data utama tabel — warna teks utama (var(--text)
+                        dari .pi-tbl td), bukan text2/text3 yang redup di dark (#83). */}
                     <td className="num" style={{ textAlign: 'center', fontWeight: 700 }}>{em.holders.length}</td>
-                    <td className="num" style={{ textAlign: 'center', color: 'var(--text2)' }}>{corpPct > 0 ? `${corpPct.toFixed(1)}%` : '—'}</td>
-                    <td className="num" style={{ textAlign: 'center', color: 'var(--text3)' }}>{indPct > 0 ? `${indPct.toFixed(1)}%` : '—'}</td>
-                    <td className="num" style={{ textAlign: 'center', color: 'var(--text3)' }}>{othPct > 0 ? `${othPct.toFixed(1)}%` : '—'}</td>
+                    <td className="num" style={{ textAlign: 'center' }}>{corpPct > 0 ? `${corpPct.toFixed(1)}%` : '—'}</td>
+                    <td className="num" style={{ textAlign: 'center' }}>{indPct > 0 ? `${indPct.toFixed(1)}%` : '—'}</td>
+                    <td className="num" style={{ textAlign: 'center' }}>{othPct > 0 ? `${othPct.toFixed(1)}%` : '—'}</td>
                     <td>
                       <div className="pil-row">
                         {shown.map((h) => (
@@ -120,6 +117,13 @@ export function ByStock({ data, onSelect }: ByStockProps) {
               </button>
             </div>
           )}
+      </div>
+      {/* Dulu banner .chip warn mencolok sebaris kontrol (#83) — diciutkan jadi
+          keterangan kecil di bawah tabel + title di header kolom OTH %.
+          Substansi tetap: holder tanpa `cls` (1.138 dari 6.728 baris) jatuh ke
+          OTH, jadi "OTH" berarti "tipe tidak terisi", bukan "tipe lain". */}
+      <div style={{ fontSize: 10, color: 'var(--text3)', padding: '7px 14px', borderTop: '1px solid var(--line)' }}>
+        Tipe holder diturunkan dari teks bebas KSEI · OTH = tipe tak terisi
       </div>
     </div>
   )

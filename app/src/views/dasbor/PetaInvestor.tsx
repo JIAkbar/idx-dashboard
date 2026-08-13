@@ -82,9 +82,6 @@ export function PetaInvestor() {
       <div className="vhead">
         <h1>Peta Investor</h1>
         <span className="sub">jaringan kepemilikan KSEI · ≥1% · {data?.length ?? 0} emiten</span>
-        {data && (
-          <PetaInvestorSearch data={data} value={searchValue} onChange={setSearchValue} onSelect={handleSelect} onClear={handleClear} />
-        )}
       </div>
 
       {loading && (
@@ -107,19 +104,24 @@ export function PetaInvestor() {
 
       {!loading && !error && data && (
         <>
-          <div className="tabs" role="tablist" aria-label="Tampilan Peta Investor">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                role="tab"
-                aria-selected={activeView === t.id}
-                className={'tab' + (activeView === t.id ? ' on' : '')}
-                onClick={() => setActiveView(t.id)}
-              >
-                {t.label}
-              </button>
-            ))}
+          {/* Kontrol pencarian sebaris tab (#83) — dulu di baris .vhead sendiri;
+              .pi-head-actions punya margin-left:auto jadi otomatis rapat kanan. */}
+          <div className="pi-toolbar">
+            <div className="tabs" role="tablist" aria-label="Tampilan Peta Investor">
+              {TABS.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeView === t.id}
+                  className={'tab' + (activeView === t.id ? ' on' : '')}
+                  onClick={() => setActiveView(t.id)}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            <PetaInvestorSearch data={data} value={searchValue} onChange={setSearchValue} onSelect={handleSelect} onClear={handleClear} />
           </div>
 
           {activeView === 'grafik' && (
