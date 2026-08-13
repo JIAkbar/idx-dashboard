@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { BS_AVAIL, BS_DATA } from '../../lib/dasbor/brokerSummaryData'
 import { useBrokerHarian, labelTanggal } from '../../lib/dasbor/brokerHarian'
 import { dateLabel, fmtB, fmtLot } from '../../lib/dasbor/brokerSummaryFormat'
@@ -7,6 +7,7 @@ import { Quadrant } from './broker-summary/Quadrant'
 import { Nego } from './broker-summary/Nego'
 import { Flow } from './broker-summary/Flow'
 import { IkonMenu, IKON_GRAFIK_BATANG, IKON_ULANG, IKON_OMBAK, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { Dropdown } from '../../components/dasbor/Dropdown'
 
 type Tab = 'inventory' | 'quadrant' | 'nego' | 'flow'
 
@@ -35,17 +36,6 @@ const NEGO_ROWS = BS_DATA.nego[SAMPLE_LAST] ?? []
 export function BrokerSummary() {
   const [tab, setTab] = useState<Tab>('inventory')
   const { tanggalTersedia, tanggalAktif, rows, pilihTanggal, loading, error } = useBrokerHarian()
-
-  // Dropdown tanggal (.dd) — pola buka/tutup sama dengan Kalender.tsx.
-  const [ddOpen, setDdOpen] = useState(false)
-  const ddRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    function onDocMouseDown(e: MouseEvent) {
-      if (ddRef.current && !ddRef.current.contains(e.target as Node)) setDdOpen(false)
-    }
-    document.addEventListener('mousedown', onDocMouseDown)
-    return () => document.removeEventListener('mousedown', onDocMouseDown)
-  }, [])
 
   const brokers = rows ?? []
   const totalNilai = brokers.reduce((s, b) => s + b.nilai, 0)
@@ -101,24 +91,13 @@ export function BrokerSummary() {
             ))}
           </div>
           {harian ? (
-            <div className={`dd${ddOpen ? ' open' : ''}`} ref={ddRef}>
-              <button type="button" className="dd-btn" onClick={() => setDdOpen((v) => !v)}>
-                {tanggalAktif ? labelTanggal(tanggalAktif) : 'Pilih tanggal'}
-                <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
-              </button>
-              <div className="dd-menu">
-                {[...tanggalTersedia].reverse().map((iso) => (
-                  <button
-                    key={iso}
-                    type="button"
-                    className={`dd-it${iso === tanggalAktif ? ' sel' : ''}`}
-                    onClick={() => { pilihTanggal(iso); setDdOpen(false) }}
-                  >
-                    {labelTanggal(iso)}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <Dropdown
+              opsi={[...tanggalTersedia].reverse().map((iso) => ({ nilai: iso, label: labelTanggal(iso) }))}
+              nilai={tanggalAktif ?? ''}
+              placeholder="Pilih tanggal"
+              ariaLabel="Pilih tanggal data broker"
+              onGanti={pilihTanggal}
+            />
           ) : (
             <span className="chip warn">Data contoh {dateLabel(SAMPLE_FIRST)} – {dateLabel(SAMPLE_LAST)} · tidak diperbarui</span>
           )}

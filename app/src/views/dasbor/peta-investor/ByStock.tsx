@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { holderType, type GraphSelection, type InvestorMapEntry } from '../../../lib/dasbor/petaInvestorData'
+import { Dropdown } from '../../../components/dasbor/Dropdown'
 
 interface ByStockProps {
   data: InvestorMapEntry[]
@@ -9,11 +10,11 @@ interface ByStockProps {
 const PAGE = 20
 /** Pil pemegang saham dibatasi 3 supaya tinggi tiap baris tabel sama. Sebelumnya 5 dan jumlah pil mengikuti jumlah holder (1..26), jadi tinggi baris melompat-lompat. */
 const PIL = 3
-const TYPE_OPTIONS: { value: '' | 'CORP' | 'IND' | 'OTH'; label: string }[] = [
-  { value: '', label: 'Semua Tipe Holder' },
-  { value: 'CORP', label: 'Institusi (CORP)' },
-  { value: 'IND', label: 'Individu (IND)' },
-  { value: 'OTH', label: 'Lainnya (OTH)' },
+const TYPE_OPTIONS: { nilai: '' | 'CORP' | 'IND' | 'OTH'; label: string }[] = [
+  { nilai: '', label: 'Semua Tipe Holder' },
+  { nilai: 'CORP', label: 'Institusi (CORP)' },
+  { nilai: 'IND', label: 'Individu (IND)' },
+  { nilai: 'OTH', label: 'Lainnya (OTH)' },
 ]
 
 function sumPct(em: InvestorMapEntry, type: 'CORP' | 'IND' | 'OTH'): number {
@@ -56,11 +57,7 @@ export function ByStock({ data, onSelect }: ByStockProps) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <select className="inp" style={{ width: 'auto' }} value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}>
-          {TYPE_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
+        <Dropdown opsi={TYPE_OPTIONS} nilai={typeFilter} onGanti={(v) => setTypeFilter(v as typeof typeFilter)} ariaLabel="Filter tipe holder" />
         {/* Keterangan ditaruh SEKALI di sini, bukan per baris: tiga kolom persen
             di bawah diturunkan dari teks bebas `cls` KSEI, dan holder tanpa
             `cls` (1.138 dari 6.728 baris) jatuh ke OTH — jadi "OTH" berarti

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { TanggalIndex } from '../../lib/dasbor/dataHarian'
 import { IkonMenu, IKON_PERINGATAN, IKON_CENTANG } from './IkonMenu'
+import { Dropdown } from './Dropdown'
 
 interface KalenderProps {
   /**
@@ -244,17 +245,6 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
   // ─── Expand grid bulan pada varian strip (#k1full mockup) ──
   const [stripOpen, setStripOpen] = useState(false)
 
-  // ─── Dropdown bulan (.dd) ──────────────────────────────────
-  const [ddOpen, setDdOpen] = useState(false)
-  const ddRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    function onDocMouseDown(e: MouseEvent) {
-      if (ddRef.current && !ddRef.current.contains(e.target as Node)) setDdOpen(false)
-    }
-    document.addEventListener('mousedown', onDocMouseDown)
-    return () => document.removeEventListener('mousedown', onDocMouseDown)
-  }, [])
-
   // ─── Grid bulan ──────────────────────────────────────────
   const firstDay = new Date(calYear, calMonth - 1, 1).getDay()
   const startOffset = firstDay === 0 ? 6 : firstDay - 1
@@ -319,28 +309,20 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
   const sesiAktif = sesiTuple?.[0] ?? 'Bursa Tutup'
 
   // ─── Potongan JSX yang dipakai kedua varian (penuh & strip) ──
+  // Dropdown bulan — komponen bersama (#82). `placeholder` menjaga perilaku
+  // lama: tombol tetap menampilkan bulan berjalan walau di luar rentang data.
   const ddBulan = (
-    <div className={`dd${ddOpen ? ' open' : ''}`} ref={ddRef}>
-      <button type="button" className="dd-btn" onClick={() => setDdOpen((v) => !v)}>
-        {BULAN[calMonth]} {calYear}
-        <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
-      </button>
-      <div className="dd-menu">
-        {bulanTersedia.map(({ y, m }) => {
-          const active = y === calYear && m === calMonth
-          return (
-            <button
-              key={`${y}-${m}`}
-              type="button"
-              className={`dd-it${active ? ' sel' : ''}`}
-              onClick={() => { setCalYear(y); setCalMonth(m); setDdOpen(false) }}
-            >
-              {BULAN[m]} {y}
-            </button>
-          )
-        })}
-      </div>
-    </div>
+    <Dropdown
+      opsi={bulanTersedia.map(({ y, m }) => ({ nilai: `${y}-${m}`, label: `${BULAN[m]} ${y}` }))}
+      nilai={`${calYear}-${calMonth}`}
+      placeholder={`${BULAN[calMonth]} ${calYear}`}
+      ariaLabel="Pilih bulan kalender"
+      onGanti={(v) => {
+        const [y, m] = v.split('-').map(Number)
+        setCalYear(y)
+        setCalMonth(m)
+      }}
+    />
   )
 
   const hariNav = (

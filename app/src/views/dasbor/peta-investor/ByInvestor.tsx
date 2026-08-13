@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { GraphSelection, InvestorRow } from '../../../lib/dasbor/petaInvestorData'
 import { IkonMenu, IKON_GLOBE, IKON_LOKASI } from '../../../components/dasbor/IkonMenu'
+import { Dropdown } from '../../../components/dasbor/Dropdown'
 
 interface ByInvestorProps {
   investorMap: InvestorRow[]
@@ -10,11 +11,11 @@ interface ByInvestorProps {
 const PAGE = 20
 /** Sama dengan ByStock: 3 pil supaya tinggi baris seragam (portofolio investor bisa 1..ratusan emiten). */
 const PIL = 3
-const TYPE_OPTIONS: { value: '' | 'CORP' | 'IND' | 'OTH'; label: string }[] = [
-  { value: '', label: 'Semua Tipe' },
-  { value: 'CORP', label: 'Institusi (CORP)' },
-  { value: 'IND', label: 'Individu (IND)' },
-  { value: 'OTH', label: 'Lainnya (OTH)' },
+const TYPE_OPTIONS: { nilai: '' | 'CORP' | 'IND' | 'OTH'; label: string }[] = [
+  { nilai: '', label: 'Semua Tipe' },
+  { nilai: 'CORP', label: 'Institusi (CORP)' },
+  { nilai: 'IND', label: 'Individu (IND)' },
+  { nilai: 'OTH', label: 'Lainnya (OTH)' },
 ]
 
 /** Tabel "Investor & Portfolio Saham" — dedup dari seluruh holders, render sebagian + "Tampilkan N lagi". Port piRenderInvestor/piFilterInvestor/piInvRow index_live.html baris 384-441. */
@@ -52,11 +53,7 @@ export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <select className="inp" style={{ width: 'auto' }} value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}>
-          {TYPE_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
+        <Dropdown opsi={TYPE_OPTIONS} nilai={typeFilter} onGanti={(v) => setTypeFilter(v as typeof typeFilter)} ariaLabel="Filter tipe investor" />
         <span className="num" style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{rows.length} investor</span>
       </div>
       <div className="pi-tbl-wrap" style={{ border: 'none', borderRadius: 0 }}>
