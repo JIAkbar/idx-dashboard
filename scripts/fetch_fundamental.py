@@ -582,6 +582,12 @@ def fetch_stock(ticker_code):
         # Earnings yield, Price to CF
         last_price = sg(info,"currentPrice") or sg(info,"regularMarketPrice")
         pe = sg(info,"trailingPE")
+        # yfinance kadang balikin trailingPE non-numerik (str "Infinity" — earnings
+        # ~0, ditemukan di INRU): sg() cuma nyaring None/NaN-float, bukan tipe lain.
+        # Tanpa guard ini, 1/pe di baris berikut TypeError ('int'/'str') & seluruh
+        # ticker gagal disimpan (bukan cuma earn_yield-nya).
+        if not isinstance(pe, (int, float)):
+            pe = None
         earn_yield = (1/pe*100) if pe and pe!=0 else None
         # price_cf/price_fcf: last_price sudah IDR (harga), ocf_ps/fcf_ps sudah dikonversi
         # ke IDR di atas — kalau sebelumnya dibagi mentah (USD), hasilnya lima digit palsu.
