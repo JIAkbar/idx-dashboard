@@ -401,7 +401,6 @@ def halaman_kolofon(ed):
     <div class="kf-kaki">© {tahun} Johan Iriawan Akbar — PAPAN. Hak cipta dilindungi.<br>
     Terbitan Arus Pasar disusun untuk edukasi analisa pasar, bukan ajakan transaksi.</div>
   </div>
-  {kaki(ed)}
 </div>'''
 
 
