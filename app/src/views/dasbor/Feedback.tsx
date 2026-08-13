@@ -62,6 +62,7 @@ export function Feedback() {
               <span className="lbl">Pesan</span>
               <textarea
                 className="inp"
+                name="pesan"
                 rows={5}
                 placeholder="Ceritakan detailnya — mis. tanggal data yang bolong, langkah yang bikin bug muncul, atau fitur yang Anda mau…"
                 value={pesan}
