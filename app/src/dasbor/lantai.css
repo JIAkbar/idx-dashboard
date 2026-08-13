@@ -1155,3 +1155,17 @@
   .lantai .cal-strip-bar .csb-more { margin-left: auto; }
   .lantai .cal-rentang-bar { padding: 8px 12px; }
 }
+
+/* ===== #87 sector r2 — relayout /sector ronde 2 ===== */
+/* Bug scrollbar tab periode: .tabs overflow-x:auto + width:max-content; di
+   DPR!=1 pembulatan subpiksel bikin scrollWidth > clientWidth sepiksel,
+   scrollbar Windows muncul padahal isinya muat. Sembunyikan visual scrollbar
+   (overflow-x:auto dipertahankan, swipe di mobile tetap jalan). */
+.lantai .tabs{scrollbar-width:none}
+.lantai .tabs::-webkit-scrollbar{display:none}
+/* Performa Sektor portrait: 11 baris satu kolom di panel setengah lebar
+   (menimpa auto-fit 2 kolom .rank-wrap bawaan). */
+.lantai .rank-wrap.potret{grid-template-columns:1fr}
+/* Kolom kanan baris 2: Indeks Syariah (1 baris) + Board Indices (3 baris)
+   ditumpuk satu sel grid supaya tak ada panel setengah kosong. */
+.lantai .sec-stack{display:flex;flex-direction:column;gap:14px;min-width:0}

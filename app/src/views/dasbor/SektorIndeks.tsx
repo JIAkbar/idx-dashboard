@@ -43,6 +43,16 @@ const HARI_MUNDUR: Record<'m1' | 'm3', number> = { m1: 30, m3: 91 }
  *        Utama" di baris grid berikutnya. Mobile tetap 1 kolom (grid2).
  *    (d) Kontras: kolom Nilai tidak lagi .muted (--text3) — angka penting
  *        pakai warna teks utama.
+ *
+ * Task #87 — relayout ronde 2 (revisi c di atas, tetap murni tata letak):
+ *    Baris 1: Performa Sektor PORTRAIT (11 baris 1 kolom, .rank-wrap.potret)
+ *             ⟷ "YTD — Perbandingan Semua Indeks Utama" (9 baris) — tinggi
+ *             sepadan, tak ada panel setengah kosong.
+ *    Baris 2: Indeks Unggulan (8 baris) ⟷ .sec-stack berisi Indeks Syariah
+ *             (1 baris) + Board Indices (3 baris) ditumpuk satu kolom.
+ *    Bug scrollbar tab periode: subpiksel DPR≠1 bikin scrollWidth >
+ *    clientWidth → scrollbar Windows nongol; scrollbar disembunyikan
+ *    (swipe mobile tetap jalan), lihat blok "#87 sector r2" lantai.css.
  */
 export function SektorIndeks() {
   const { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error } = useDataHarian()
@@ -171,6 +181,7 @@ export function SektorIndeks() {
         })}
       </div>
 
+      <div className="grid2">
       <div className="panel">
         <div className="panel-h">
           <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Performa Sektor</span>
@@ -193,9 +204,9 @@ export function SektorIndeks() {
             </div>
           )}
         </div>
-        {/* Daftar kompak 2 kolom (re-layout a): nama | nilai indeks | bar mini
+        {/* Daftar portrait 1 kolom (#87): nama | nilai indeks | bar mini
             | badge %. Sumbu nol proporsional, pola BatangPeringkat. */}
-        <div className="rank-wrap">
+        <div className="rank-wrap potret">
           {secVals.map(({ s, val }) => {
             const positif = (val ?? 0) >= 0
             const lebar = val === null ? 0 : (Math.abs(val) / span) * 100
@@ -219,6 +230,11 @@ export function SektorIndeks() {
           })}
         </div>
       </div>
+        <div className="panel">
+          <div className="panel-h"><span className="lbl">YTD — Perbandingan Semua Indeks Utama</span></div>
+          <BatangPeringkat baris={indeksUtama.map((x) => ({ nama: x.n, nilai: x.ytd }))} sorot={sorotUtama} />
+        </div>
+      </div>
 
       <div className="grid2">
         <div className="panel">
@@ -230,35 +246,30 @@ export function SektorIndeks() {
             </table>
           </div>
         </div>
-        <div className="panel">
-          <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_BULAN_SABIT} size={13} /> Indeks Syariah</span></div>
-          <div className="board-tbl-wrap">
-            <table className="tbl">
-              <thead><tr><th>Indeks</th><th className="r">Nilai</th><th className="r">Hari Ini</th><th className="r">YTD</th></tr></thead>
-              <tbody>{sharia.map((x) => perfRowFull(x))}</tbody>
-            </table>
+        <div className="sec-stack">
+          <div className="panel">
+            <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_BULAN_SABIT} size={13} /> Indeks Syariah</span></div>
+            <div className="board-tbl-wrap">
+              <table className="tbl">
+                <thead><tr><th>Indeks</th><th className="r">Nilai</th><th className="r">Hari Ini</th><th className="r">YTD</th></tr></thead>
+                <tbody>{sharia.map((x) => perfRowFull(x))}</tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <div className="grid2">
-        <div className="panel">
-          <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_KOTAK_ARSIP} size={13} /> Board Indices</span></div>
-          <div className="board-tbl-wrap">
-            <table className="tbl">
-              <thead><tr><th>Board</th><th className="r">Nilai</th><th className="r">Hari Ini</th><th className="r">YTD</th></tr></thead>
-              <tbody>
-                {board.map((x) => perfRowFull({
-                  ...x,
-                  n: x.n.replace('Main Board', 'Papan Utama').replace('Development Board', 'Papan Pengembangan').replace('Acceleration Board', 'Papan Akselerasi'),
-                }))}
-              </tbody>
-            </table>
+          <div className="panel">
+            <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_KOTAK_ARSIP} size={13} /> Board Indices</span></div>
+            <div className="board-tbl-wrap">
+              <table className="tbl">
+                <thead><tr><th>Board</th><th className="r">Nilai</th><th className="r">Hari Ini</th><th className="r">YTD</th></tr></thead>
+                <tbody>
+                  {board.map((x) => perfRowFull({
+                    ...x,
+                    n: x.n.replace('Main Board', 'Papan Utama').replace('Development Board', 'Papan Pengembangan').replace('Acceleration Board', 'Papan Akselerasi'),
+                  }))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-        <div className="panel">
-          <div className="panel-h"><span className="lbl">YTD — Perbandingan Semua Indeks Utama</span></div>
-          <BatangPeringkat baris={indeksUtama.map((x) => ({ nama: x.n, nilai: x.ytd }))} sorot={sorotUtama} />
         </div>
       </div>
     </div>
