@@ -276,17 +276,16 @@
   .dasbor-shell .chart-wrap { height: 180px !important; }
 }
 
-/* ===== TELEPON — bilah bawah 5 menu + laci berisi SELURUH 10 menu =====
-   Sebelumnya 6 menu tampil dan 4 sisanya masuk popover "Lainnya"; nama menu
-   itu tak pernah terlihat sampai popover dibuka, jadi praktis tak ditemukan. */
-.dasbor-bilah { display: none; }
-.dasbor-laci, .dasbor-laci-bg { display: none; }
-
+/* ===== TELEPON =====
+   Bilah bawah 5 menu + laci bawah "Semua Menu" (MobileNav) DIHAPUS (#76) —
+   navigasi telepon satu jalur: logo P di bilah atas membuka laci kiri
+   (LaciMobile, blok "#76 laci mobile" di ujung berkas). Kelas bersama
+   .dasbor-laci-jd/-tutup/-item/-tombol di bawah tetap dipakai laci kiri. */
 @media (max-width: 768px) {
   .dasbor-rail { display: none !important; }
   .dasbor-main { padding: 8px; padding-bottom: 12px; }
   .dasbor-kaki {
-    padding: 11px 12px calc(74px + env(safe-area-inset-bottom));
+    padding: 11px 12px calc(12px + env(safe-area-inset-bottom));
     font-size: 10px; gap: 6px; flex-direction: column; align-items: flex-start;
   }
   .dasbor-kaki-kanan { white-space: normal; }
@@ -312,53 +311,12 @@
   .dasbor-pita { padding-right: 10px; }
   .dasbor-tk { padding: 0 12px; font-size: 11px; }
 
-  .dasbor-bilah {
-    display: flex;
-    position: fixed; bottom: 0; left: 0; right: 0;
-    z-index: 60;
-    background: var(--bg2);
-    border-top: 1px solid var(--border);
-    padding: 4px 2px max(4px, env(safe-area-inset-bottom));
-  }
-  .dasbor-bilah-item {
-    flex: 1; min-width: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 3px; padding: 6px 2px 4px;
-    background: none; border: none; border-top: 2px solid transparent;
-    margin-top: -1px;
-    cursor: pointer; text-decoration: none;
-    color: var(--text3);
-  }
-  .dasbor-bilah-item.active { color: var(--accent); border-top-color: var(--accent); }
-
-  .dasbor-laci-bg {
-    display: block;
-    position: fixed; inset: 0; z-index: 70;
-    background: rgba(0,0,0,.55);
-    animation: dasbor-laci-pudar .18s ease;
-  }
-  .dasbor-laci {
-    display: block;
-    position: fixed; left: 0; right: 0; bottom: 0;
-    z-index: 71;
-    background: var(--bg2);
-    border-top: 1px solid var(--border2);
-    border-radius: 12px 12px 0 0;
-    padding: 10px 10px calc(14px + env(safe-area-inset-bottom));
-    max-height: 82dvh; overflow-y: auto;
-    animation: dasbor-laci-naik .22s cubic-bezier(.2,.7,.3,1);
-  }
-  @keyframes dasbor-laci-pudar { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes dasbor-laci-naik { from { transform: translateY(100%); } to { transform: none; } }
-
-  .dasbor-laci-tarik { width: 38px; height: 4px; border-radius: 2px; background: var(--border2); margin: 2px auto 12px; }
   .dasbor-laci-jd { display: flex; align-items: center; justify-content: space-between; padding: 0 6px 9px; }
   .dasbor-laci-tutup {
     background: none; border: none; cursor: pointer; padding: 0;
     font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
     color: var(--accent);
   }
-  .dasbor-laci-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   .dasbor-laci-item {
     display: grid; grid-template-columns: 20px 1fr auto; gap: 10px; align-items: center;
     padding: 11px 12px;
@@ -366,7 +324,6 @@
     color: var(--text2); text-decoration: none; font-size: 13px;
   }
   .dasbor-laci-item.active { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
-  .dasbor-laci-aksi { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
   .dasbor-laci-tombol {
     display: flex; align-items: center; justify-content: center; gap: 8px;
     padding: 11px;
@@ -378,7 +335,7 @@
   .dasbor-laci-tombol.active { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
 }
 
-/* Modal login (#38) — dipicu Sidebar/MobileNav lewat DasborLayout. Sama pola
+/* Modal login (#38) — dipicu Sidebar/LaciMobile lewat DasborLayout. Sama pola
    "tidak statik" dgn .dasbor-laci di atas (fade bg + naik), tapi kartu
    ditengah & aktif di SEMUA lebar layar (laci cuma render di telepon). */
 .dasbor-modal-bg {
@@ -418,7 +375,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .dasbor-pita-track { animation: none; }
-  .dasbor-laci, .dasbor-laci-bg { animation: none; }
   .dasbor-modal, .dasbor-modal-bg { animation: none; }
 }
 
@@ -743,6 +699,15 @@
 .lantai .tile .t-val{font-family:var(--mono);font-weight:600;font-size:15px;margin-top:3px}
 .lantai .tile.big{grid-column:span 2}
 .lantai .tile.big .t-val{font-size:24px}
+/* Mobile: 11 tile jangan jadi tangga 2 kolom panjang — 3 kolom kompak
+   (3×3 + baris sisa 2), biar data utama kelihatan tanpa scroll jauh. */
+@media (max-width:640px){
+  .lantai .tiles{gap:6px}
+  .lantai .tile{flex:1 1 30%;padding:8px 8px 7px;gap:2px}
+  .lantai .tile .t-code{font-size:9px}
+  .lantai .tile .t-name{font-size:10.5px;letter-spacing:0;line-height:1.25}
+  .lantai .tile .t-val{font-size:12.5px;margin-top:2px}
+}
 
 /* bars */
 .lantai .bar-row{display:grid;grid-template-columns:88px 1fr 84px;gap:10px;align-items:center;padding:6px 0}
@@ -968,7 +933,7 @@
 .lantai .ytd-bdg.d{background:var(--red-dim);color:var(--red)}
 .lantai .rk{font-family:var(--mono);font-size:11px;color:var(--text3)}
 
-/* .laci* (baris 295-316 artifact) dilewati — padanannya ada di MobileNav.tsx. */
+/* .laci* (baris 295-316 artifact) dilewati — padanannya ada di LaciMobile.tsx. */
 
 /* @media (max-width:820px) — hanya aturan isi; .shell/.rail/.content/.bottom-nav
    dilewati karena padanannya ada di Bagian 1 di atas (media query 768px
@@ -1115,3 +1080,78 @@
 .lantai .blt-no{font-family:var(--mono);font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums}
 .lantai .blt-dl{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.07em;color:var(--text2);border:1px solid var(--line2);border-radius:99px;padding:4px 12px 4px 10px;text-decoration:none;white-space:nowrap;font-variant-numeric:tabular-nums;transition:color .12s,border-color .12s,background .12s}
 .lantai .blt-dl:hover{color:var(--amber);border-color:var(--amber);background:var(--amber-dim)}
+
+/* #76 laci mobile — logo P di bilah atas telepon jadi tombol laci navigasi
+   kiri (bentuk telepon dari rail; BUKAN hamburger terpisah), dan zona logo
+   dipisah dari pita kurs dengan pembatas hairline supaya tidak menyatu.
+   Laci selalu ter-mount lalu digeser transform + visibility (bukan
+   mount/unmount) supaya buka DAN tutup sama-sama teranimasi; visibility:hidden
+   sekalian mengeluarkan isinya dari urutan Tab. Item/tombol/judul numpang
+   kelas .dasbor-laci-* yang sudah ada (laci bawah), hanya kontainernya baru. */
+.dasbor-merek-zona, .dasbor-laci-kiri, .dasbor-laci-kiri-bg { display: none; }
+
+@media (max-width: 768px) {
+  /* Zona logo: area sendiri + border-right hairline; pita mulai sesudahnya. */
+  .dasbor-merek-zona {
+    display: flex; align-items: center;
+    flex: none; align-self: stretch;
+    padding: 0 10px;
+    border-right: 1px solid var(--border);
+  }
+  /* .dasbor-merek-mini kini <button> — reset bawaan button + margin lama
+     (jarak kini urusan zona). */
+  .dasbor-merek-mini { margin: 0; padding: 0; border: none; cursor: pointer; }
+
+  .dasbor-laci-kiri-bg {
+    display: block;
+    position: fixed; inset: 0; z-index: 80;
+    background: rgba(0,0,0,.55);
+    opacity: 0; visibility: hidden;
+    transition: opacity .2s ease-out, visibility .2s;
+  }
+  .dasbor-laci-kiri-bg.buka { opacity: 1; visibility: visible; }
+
+  .dasbor-laci-kiri {
+    display: flex; flex-direction: column;
+    position: fixed; top: 0; bottom: 0; left: 0; z-index: 81;
+    width: min(280px, 82vw);
+    background: var(--bg2);
+    border-right: 1px solid var(--border2);
+    padding: 12px 10px calc(14px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+    transform: translateX(-100%); visibility: hidden;
+    transition: transform .22s ease-out, visibility .22s;
+  }
+  .dasbor-laci-kiri.buka { transform: none; visibility: visible; }
+
+  .dasbor-laci-kiri-list { display: flex; flex-direction: column; gap: 6px; }
+  .dasbor-laci-kiri-aksi {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    margin-top: auto; padding-top: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dasbor-laci-kiri, .dasbor-laci-kiri-bg { transition: none; }
+}
+
+/* #76 rapi atas mobile — lanjutan laci: potongan pita kurs di tepi zona
+   dihaluskan pakai mask fade (teks berjalan muncul/hilang lembut, tidak
+   terpenggal kasar di sebelah logo P), dan ritme vertikal strip kalender
+   di layar sempit dirapikan: jarak antar baris seragam, sel hari SEN-JUM
+   melebar rata penuh (tidak menyisakan kanan kosong), kontrol Hari|Rentang
+   kiri vs "Kalender penuh" kanan sejajar satu baris. Murni tata letak —
+   logika mode rentang/preset tidak disentuh. */
+@media (max-width: 768px) {
+  .dasbor-pita-mid {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 14px), transparent);
+    mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 14px), transparent);
+  }
+}
+@media (max-width: 560px) {
+  .lantai .cal-strip-bar { gap: 12px 8px; padding: 12px; }
+  .lantai .csb-hari { gap: 6px; }
+  .lantai .csb-d { flex: 1 0 auto; min-width: 0; padding: 5px 2px; }
+  .lantai .cal-strip-bar .csb-more { margin-left: auto; }
+  .lantai .cal-rentang-bar { padding: 8px 12px; }
+}
