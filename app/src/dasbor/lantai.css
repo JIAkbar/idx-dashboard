@@ -743,8 +743,49 @@
    kena kasus berdiri sendiri ini; saat Kalender jadi item .grid2.w-kiri
    (IndeksDunia.tsx) parent-nya .grid2 bukan .lantai, jadi tidak kena, lebarnya
    tetap ikut kolom grid seperti sekarang. max-width tanpa width tetap fluid
-   turun ke mobile (baru berlaku begitu container lebih lebar dari cap ini). */
-.lantai > .panel:has(.cal-grid){max-width:520px;margin-inline:auto}
+   turun ke mobile (baru berlaku begitu container lebih lebar dari cap ini).
+   Sejak varian strip (Konsep 1), TIGA halaman standalone itu pakai
+   .cal-strip-bar yang barnya HARUS full-width — :not(:has(.cal-strip-bar))
+   mengecualikannya (cal-grid ikut muncul di dalam expand strip; tanpa
+   pengecualian ini bar menciut ke 520px begitu expand dibuka). Rule tetap
+   dipertahankan (bukan dihapus) sebagai jaring pengaman kalau ada pemakaian
+   varian penuh standalone baru. */
+.lantai > .panel:has(.cal-grid):not(:has(.cal-strip-bar)){max-width:520px;margin-inline:auto}
+
+/* ===== KALENDER VARIAN STRIP (Konsep 1 — mockup kalender-3-konsep.html
+   .cal-strip-bar/.csb-*, nilai disalin persis; adaptasi: token bg mockup
+   digeser satu tingkat ke token .lantai (panel mockup = --bg2, panel app =
+   --bg1) mengikuti konvensi primitif lain (.cal-d pakai bg2 di atas panel
+   bg1), dan lebar .seg i dari inline width React (mockup statis 78%). ===== */
+.lantai .cal-strip-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 14px}
+.lantai .csb-now{display:flex;align-items:baseline;gap:9px}
+.lantai .csb-now .tgl{font-weight:700;font-size:13.5px}
+.lantai .csb-now .ihsg{font-family:var(--mono);font-size:12.5px}
+.lantai .csb-sesi{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--text2);padding-left:14px;border-left:1px solid var(--line)}
+.lantai .csb-sesi .seg{width:110px;height:5px;border-radius:3px;background:var(--bg3);position:relative;overflow:hidden}
+.lantai .csb-sesi .seg i{position:absolute;inset:0;background:var(--amber);border-radius:3px}
+.lantai .csb-hari{display:flex;gap:5px;margin-left:auto}
+.lantai .csb-d{min-width:44px;text-align:center;border:1px solid var(--line);border-radius:var(--r);padding:4px 6px;background:var(--bg2);cursor:pointer;font-family:var(--mono)}
+.lantai span.csb-d{cursor:default}
+/* .dw/.dd/.dp: span di dalam .csb-d — .dd di sini cuma angka tanggal (numpang
+   nama kelas mockup); rule dropdown `.lantai .dd{position:relative}` ikut
+   kena tapi tidak berefek pada span statis ini. */
+.lantai .csb-d .dw{display:block;font-size:8.5px;letter-spacing:.1em;color:var(--text3);text-transform:uppercase}
+.lantai .csb-d .dd{font-size:12.5px;font-weight:700}
+.lantai .csb-d .dp{display:block;font-size:9px}
+.lantai .csb-d.aktif{background:var(--amber);border-color:var(--amber)}
+.lantai .csb-d.aktif .dw,.lantai .csb-d.aktif .dd,.lantai .csb-d.aktif .dp{color:var(--amber-ink)}
+.lantai .csb-d.off{opacity:.45;cursor:default}
+.lantai .csb-more{font-family:var(--mono);font-size:10.5px;color:var(--text2);background:var(--bg3);border:1px solid var(--line2);border-radius:var(--r);padding:6px 10px;cursor:pointer;white-space:nowrap}
+.lantai .csb-more:hover{border-color:var(--amber);color:var(--text)}
+/* Area expand "Kalender penuh" (#k1full mockup: display toggle + border-top;
+   grid bulan dicap 420px seperti cg-wrap mockup). */
+.lantai .csb-full{border-top:1px solid var(--line);padding:12px 14px;max-width:448px}
+.lantai .csb-full .cal-grid{max-width:420px;margin-top:0;border-top:none;padding-top:0}
+@media (max-width:560px){
+  .lantai .csb-hari{margin-left:0;width:100%;overflow-x:auto;padding-bottom:2px}
+  .lantai .csb-sesi{border-left:none;padding-left:0}
+}
 
 /* net foreign & market fundamental */
 .lantai .nf-grid{display:grid;grid-template-columns:1fr 1fr}
