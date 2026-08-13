@@ -185,7 +185,7 @@ def halaman_emiten(em, sk, ed, ohlc, idx):
     </div>
     {statistik_hari(em, ohlc)}
     <div class="chartwrap">
-      <div class="cap">IDX · Harian · 3 bulan · EMA50 &amp; Pivot Points</div>
+      <div class="cap">IDX · Harian · 1 Tahun · EMA50 &amp; Pivot Points</div>
       <canvas id="ch{idx}" width="1360" height="300"></canvas>
     </div>
     <div class="cols">
@@ -298,10 +298,12 @@ def halaman_sampul(ed, skor_map):
       {chr(10).join(baris)}
     </div>
     <div class="cv-foot">
-      IHSG <b>6.409,65</b> <span class="c-bull">+1,04%</span> · Net foreign buy reguler
-      <b class="c-bull">Rp917,23 M</b> (7 Agu)<br>
-      Analisis probabilistik, bukan ajakan transaksi.
-      Data: TradingView &amp; Stockbit (transkripsi manual terverifikasi), Yahoo Finance.
+      <div class="cv-stats">
+        <span><span class="l">IHSG</span><b>6.409,65</b> <span class="c-bull">+1,04%</span></span>
+        <span><span class="l">Net Foreign Buy Reguler</span><b class="c-bull">Rp917,23 miliar</b> (7 Agu)</span>
+      </div>
+      <div class="cv-legal">Analisis probabilistik, bukan ajakan transaksi.<br>
+      Data: TradingView &amp; Stockbit (transkripsi manual terverifikasi), Yahoo Finance.</div>
     </div>
   </div>
 </div>'''
@@ -342,8 +344,8 @@ def halaman_ringkasan(ed, skor_map):
     </div>
     <h3 class="rule">Metodologi</h3>
     <p class="metode"><b>Skor komposit 0–100:</b> Technical 35% · Big Money Flow 30% · Risk/reward 20% ·
-    Liquidity 10% · IHSG sensitivity 5%. Pemetaan risiko: ≥80 Menengah · 55–79 Tinggi · &lt;55 Ekstrem.
-    <b>Sumber data:</b> harga Yahoo Finance; pivot &amp; EMA dari chart TradingView; arus broker dari
+    Liquidity 10% · IHSG sensitivity 5%. Pemetaan risiko: ≥80 Menengah · 55–79 Tinggi · &lt;55 Ekstrem.</p>
+    <p class="metode"><b>Sumber data:</b> harga Yahoo Finance; pivot &amp; EMA dari chart TradingView; arus broker dari
     orderbook Stockbit (transkripsi manual, diverifikasi). Komponen data yang tidak tersedia tidak
     pernah diisi perkiraan — halaman terkait akan menampilkan penanda kesenjangan data dan skor
     diberi penalti. Peringkat bersifat komparatif antar emiten edisi ini, bukan sinyal beli otomatis.</p>

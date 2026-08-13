@@ -199,12 +199,19 @@
   .cv-list.padat .tkk{font-size:10pt;width:17mm}
   .cv-list.padat .lb{font-size:7.3pt}
   .cv-list.padat .sk{font-size:10pt}
-  .cv-foot{margin-top:auto;padding-bottom:14mm;font-size:7pt;color:var(--mute);line-height:1.8}
-  .cv-foot b{font-family:var(--mono);color:var(--ink)}
+  .cv-foot{margin-top:auto;padding-bottom:14mm}
+  /* kotak stat berlabel gaya sampul lama (V2) — angka besar kebaca, bukan
+     satu baris kecil; label kecil di atas angka. */
+  .cv-stats{display:flex;gap:10mm;background:rgba(255,255,255,.04);border:1px solid var(--hair);
+    border-radius:2mm;padding:4mm 5mm;font-variant-numeric:tabular-nums;margin-bottom:4mm}
+  .cv-stats .l{display:block;font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:.8mm}
+  .cv-stats b{font-family:var(--mono);font-size:10.5pt;color:var(--ink)}
+  .cv-stats span .c-bull{font-family:var(--mono);font-size:9pt}
   .cv-foot .c-bull{color:var(--bull)}
+  .cv-legal{font-size:7pt;color:var(--mute);line-height:1.8}
 
   /* ── Ringkasan (hal 1) ── */
-  .lede{font-size:10.5pt;color:var(--ink2);margin:0 0 4mm;line-height:1.6;max-width:150mm}
+  .lede{font-size:10.5pt;color:var(--ink2);margin:0 0 4mm;line-height:1.6;max-width:138mm;text-wrap:pretty}
   table.ring{width:100%;border-collapse:collapse;font-size:8.8pt;font-variant-numeric:tabular-nums}
   table.ring th{font-size:6.3pt;color:var(--mute);text-transform:uppercase;letter-spacing:.14em;
     text-align:left;padding:2mm 3mm 1.5mm 0;border-bottom:1px solid var(--hair);font-weight:700}
@@ -246,8 +253,8 @@
 const OHLC = /*OHLC*/{};
 function gambarChart(id, tk, ema50, pivot){
   const cv=document.getElementById(id), x=cv.getContext('2d');
-  const bars=OHLC[tk].slice(-65);
-  const W=cv.width,H=cv.height,pad={t:14,r:104,b:14,l:6};
+  const bars=OHLC[tk].slice(-252);
+  const W=cv.width,H=cv.height,pad={t:14,r:136,b:14,l:6};
   const pvals=Object.values(pivot);
   const lo=Math.min(...bars.map(b=>b.l),...pvals)*0.99,
         hi=Math.max(...bars.map(b=>b.h),...pvals)*1.01;
@@ -255,12 +262,14 @@ function gambarChart(id, tk, ema50, pivot){
         Y=v=>pad.t+(hi-v)*(H-pad.t-pad.b)/(hi-lo);
   x.font="15px Bahnschrift, Segoe UI";
   let yT=[];
-  for(const [n,v] of Object.entries(pivot)){
+  // label diurut nilai desc supaya tumpukan anti-tabrakan tetap berurut harga
+  // (tanpa ini R1 bisa terdorong ke bawah P dan urutan kebaca acak)
+  for(const [n,v] of Object.entries(pivot).sort((a,b)=>b[1]-a[1])){
     x.strokeStyle="rgba(255,255,255,.28)";x.setLineDash([3,4]);x.beginPath();
     x.moveTo(pad.l,Y(v));x.lineTo(W-pad.r,Y(v));x.stroke();x.setLineDash([]);
     let yl=Y(v)+5; while(yT.some(u=>Math.abs(u-yl)<17)) yl+=17; yT.push(yl);
     x.fillStyle="rgba(255,255,255,.72)";
-    x.fillText(n+" "+v.toLocaleString('id'),W-pad.r+6,yl);
+    x.fillText(n+" "+v.toLocaleString('id'),W-pad.r+14,yl);
   }
   const bw=Math.max(3,(W-pad.l-pad.r)/bars.length*.62);
   bars.forEach((b,i)=>{
