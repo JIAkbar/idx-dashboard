@@ -1108,10 +1108,27 @@
    hover amber halus. Scroll-x inline dalam panel (.blt-wrap) supaya di
    mobile tabelnya yang geser, bukan halamannya. */
 .lantai .blt-wrap{overflow-x:auto}
-.lantai .blt-wrap .tbl{width:100%;min-width:680px}
+.lantai .blt-wrap .tbl{width:100%;min-width:760px}
 .lantai .blt-no{font-family:var(--mono);font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums}
 .lantai .blt-dl{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.07em;color:var(--text2);border:1px solid var(--line2);border-radius:99px;padding:4px 12px 4px 10px;text-decoration:none;white-space:nowrap;font-variant-numeric:tabular-nums;transition:color .12s,border-color .12s,background .12s}
 .lantai .blt-dl:hover{color:var(--amber);border-color:var(--amber);background:var(--amber-dim)}
+/* #92 — pencarian emiten di header panel (input .inp 32px + tombol × di dalam),
+   kolom IHSG gabung badge Δ% (.ytd-bdg), badge Tipe & chip emiten numpang
+   .bchip (chip = <button> klik → isi filter). Mobile ≤560px: input pindah
+   baris sendiri (blt-h flex-wrap + basis 100%). */
+.lantai .blt-h{flex-wrap:wrap}
+.lantai .blt-cari{position:relative;flex:none;width:210px}
+.lantai .blt-cari .inp{padding-right:30px}
+.lantai .blt-cari-x{position:absolute;right:3px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:none;background:none;padding:0;color:var(--text3);cursor:pointer;border-radius:4px;transition:color .15s}
+.lantai .blt-cari-x:hover{color:var(--amber)}
+.lantai .blt-ihsg{white-space:nowrap}
+.lantai .blt-tipe{margin-right:0;color:var(--text2);white-space:nowrap}
+.lantai .blt-em{cursor:pointer;color:var(--text2);transition:color .15s,border-color .15s,background .15s}
+.lantai .blt-em:hover{color:var(--amber);border-color:var(--amber);background:var(--amber-dim)}
+.lantai .blt-reset{border:none;background:none;padding:0;font:inherit;color:var(--amber);cursor:pointer;text-decoration:underline}
+@media (max-width:560px){
+  .lantai .blt-cari{flex-basis:100%;width:auto}
+}
 
 /* #76 laci mobile — logo P di bilah atas telepon jadi tombol laci navigasi
    kiri (bentuk telepon dari rail; BUKAN hamburger terpisah), dan zona logo
