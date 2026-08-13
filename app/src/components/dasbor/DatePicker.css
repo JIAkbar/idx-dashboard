@@ -1,0 +1,41 @@
+/* DatePicker (.dpk-*) — popover kalender bulan gaya Lantai. Sengaja file
+   terpisah (bukan nambah lantai.css) supaya tidak bentrok dengan pekerjaan
+   paralel di file itu; semua warna dari token .lantai jadi tema terang/gelap
+   otomatis ikut. */
+
+.lantai .dpk-btn {
+  display: flex; align-items: center; gap: 8px;
+  text-align: left; cursor: pointer;
+}
+.lantai .dpk-btn .dasbor-ikon { stroke: var(--text3); flex-shrink: 0; }
+.lantai .dpk-btn:hover { border-color: var(--amber); }
+
+/* Lebar tetap — .dd-menu bawaannya min-width:100% (ngikut lebar input),
+   di-reset di sini supaya popover kompak rata kiri di bawah field. */
+.lantai .dpk-pop { width: 288px; min-width: 0; max-width: calc(100vw - 48px); padding: 10px; }
+
+.lantai .dpk-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.lantai .dpk-bulan { font-family: var(--disp); font-weight: 700; font-size: 12px; letter-spacing: .05em; }
+.lantai .dpk-nav {
+  width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+  background: none; border: 1px solid var(--line2); border-radius: 4px;
+  color: var(--text2); cursor: pointer;
+}
+.lantai .dpk-nav:hover { border-color: var(--amber); color: var(--amber); }
+.lantai .dpk-nav svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+.lantai .dpk-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
+.lantai .dpk-dow {
+  font-family: var(--disp); font-size: 8.5px; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text3); text-align: center; padding: 3px 0;
+}
+.lantai .dpk-hari {
+  font-family: var(--mono); font-size: 11px; color: var(--text2);
+  text-align: center; padding: 5px 0; border-radius: 4px;
+  background: none; border: none; cursor: pointer;
+}
+.lantai .dpk-hari:hover { background: var(--amber-dim); color: var(--text); }
+.lantai .dpk-hari.now { box-shadow: inset 0 0 0 1px var(--amber); }
+.lantai .dpk-hari.sel { background: var(--cal-active-bg); color: var(--cal-active-txt); font-weight: 700; }
+.lantai .dpk-hari.sel:hover { background: var(--cal-active-bg); color: var(--cal-active-txt); }

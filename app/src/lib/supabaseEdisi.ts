@@ -54,6 +54,13 @@ export async function unggahScreenshot(
   return path
 }
 
+/** Hapus screenshot dari bucket "screenshots" berdasarkan path lengkap ({tanggal}/{nama}). */
+export async function hapusScreenshot(paths: string[]): Promise<void> {
+  if (paths.length === 0) return
+  const { error } = await supabase.storage.from('screenshots').remove(paths)
+  if (error) throw error
+}
+
 export async function daftarScreenshot(tanggal: string): Promise<string[]> {
   const { data, error } = await supabase.storage.from('screenshots').list(tanggal)
   if (error) throw error

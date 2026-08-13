@@ -7,6 +7,7 @@ interface StockAutocompleteProps {
   onChange: (v: string) => void
   /** Dipanggil saat item dipilih (klik/Enter pada item aktif) ATAU Enter/submit tanpa item aktif. */
   onSelect: (ticker: string) => void
+  placeholder?: string
 }
 
 /**
@@ -15,7 +16,7 @@ interface StockAutocompleteProps {
  * punya logic filter identik (satu dipanggil saat mengetik, satu saat fokus)
  * — di sini disatukan lewat satu `matches` yang selalu dihitung dari `value`.
  */
-export function StockAutocomplete({ stocks, value, onChange, onSelect }: StockAutocompleteProps) {
+export function StockAutocomplete({ stocks, value, onChange, onSelect, placeholder = 'Kode saham: BBCA, ASII, TLKM ...' }: StockAutocompleteProps) {
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
 
@@ -44,6 +45,9 @@ export function StockAutocomplete({ stocks, value, onChange, onSelect }: StockAu
       if (activeIndex >= 0 && matches[activeIndex]) selectTicker(matches[activeIndex].ticker)
       else { setOpen(false); onSelect(value) }
     } else if (e.key === 'Escape') {
+      // Saat menu saran terbuka, Escape cuma menutup menu — jangan merambat
+      // ke pendengar Escape level modal/halaman.
+      if (open) e.stopPropagation()
       setOpen(false)
     }
   }
@@ -55,7 +59,7 @@ export function StockAutocomplete({ stocks, value, onChange, onSelect }: StockAu
       <input
         className="inp"
         type="text"
-        placeholder="Kode saham: BBCA, ASII, TLKM ..."
+        placeholder={placeholder}
         autoComplete="off"
         value={value}
         onChange={(e) => { onChange(e.target.value.toUpperCase()); setActiveIndex(-1) }}
