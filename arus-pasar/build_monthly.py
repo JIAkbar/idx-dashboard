@@ -153,7 +153,7 @@ def halaman_sampul_bulanan(ed, picks_urut, jml, total_muncul):
         memakai bar OHLC nyata sesudah tanggal pick — dari {tuntas} pick tuntas, kejadian kronologis
         pertama yang menang. Data yang tidak tersedia ditampilkan jujur sebagai TANPA DATA.<br>
         Analisis probabilistik, bukan ajakan transaksi. Data: TradingView &amp; Stockbit
-        (transkripsi manual terverifikasi), Yahoo Finance.</div>
+       , Yahoo Finance.</div>
     </div>
   </div>
 </div>'''

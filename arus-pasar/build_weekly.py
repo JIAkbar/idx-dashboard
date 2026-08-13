@@ -94,7 +94,7 @@ def halaman_sampul_mingguan(ed, urut, skor_map, riwayat, total_muncul):
         Skor tiap emiten dihitung ulang per hari dengan model harian yang sama; emiten yang muncul
         di beberapa edisi ditampilkan sekali dengan progresi skornya.<br>
         Analisis probabilistik, bukan ajakan transaksi. Data: TradingView &amp; Stockbit
-        (transkripsi manual terverifikasi), Yahoo Finance.</div>
+       , Yahoo Finance.</div>
     </div>
   </div>
 </div>'''

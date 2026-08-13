@@ -201,7 +201,7 @@ def halaman_emiten(em, sk, ed, ohlc, idx):
           <tr class="tot"><td>NET</td><td colspan="3" class="{net_cls}">{net_txt}
             <small style="color:var(--mute);font-weight:400"> (B {fmt_rp(tb)} · S {fmt_rp(tj)})</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit, transkripsi manual terverifikasi.
+        <div class="brksrc">Sumber: orderbook Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -304,7 +304,7 @@ def halaman_sampul(ed, skor_map):
       </div>
       <div class="cv-legal">© {ed["tanggal_id"].split()[-1]} Johan Iriawan Akbar — PAPAN (Pusat Analisa Pasar Nusantara). Hak cipta dilindungi.<br>
       Analisis probabilistik, bukan ajakan transaksi.<br>
-      Data: TradingView &amp; Stockbit (transkripsi manual terverifikasi), Yahoo Finance.</div>
+      Data: TradingView &amp; Stockbit, Yahoo Finance.</div>
     </div>
   </div>
 </div>'''
@@ -347,7 +347,7 @@ def halaman_ringkasan(ed, skor_map):
     <p class="metode"><b>Skor komposit 0–100:</b> Technical 35% · Big Money Flow 30% · Risk/reward 20% ·
     Liquidity 10% · IHSG sensitivity 5%. Pemetaan risiko: ≥80 Menengah · 55–79 Tinggi · &lt;55 Ekstrem.</p>
     <p class="metode"><b>Sumber data:</b> harga Yahoo Finance; pivot &amp; EMA dari chart TradingView; arus broker dari
-    orderbook Stockbit (transkripsi manual, diverifikasi). Komponen data yang tidak tersedia tidak
+    orderbook Stockbit. Komponen data yang tidak tersedia tidak
     pernah diisi perkiraan — halaman terkait akan menampilkan penanda kesenjangan data dan skor
     diberi penalti. Peringkat bersifat komparatif antar emiten edisi ini, bukan sinyal beli otomatis.</p>
   </div>
