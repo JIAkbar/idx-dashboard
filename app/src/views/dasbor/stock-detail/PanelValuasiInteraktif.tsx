@@ -122,7 +122,11 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
         <span style={{ fontSize: 9, fontWeight: 400, background: 'var(--red-bg)', color: 'var(--red-txt)', padding: '2px 7px', borderRadius: 10 }}>Bukan rekomendasi investasi</span>
       </div>
 
-      <div className="panel" style={{ marginBottom: 8 }}>
+      {/* Re-layout: pola 2 kolom seimbang (.duo) sama dengan tab Statistik —
+          kiri: Graham + Tren Historis; kanan: Relative Valuation + DDM. */}
+      <div className="duo">
+      <div className="kolom">
+      <div className="panel">
         <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_KALKULATOR} size={13} /> Graham Valuation Calculator</span></div>
         <div className="panel-b">
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 12 }}>
@@ -168,9 +172,27 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+      {hYrs.length > 0 && (
+        <div className="panel">
+          <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_GRAFIK_NAIK} size={13} /> Tren Historis per Saham</span></div>
+          <div className="panel-b" style={{ overflowX: 'auto' }}>
+            <table style={{ minWidth: 240 }}>
+              <thead><tr><th>Metrik</th>{hYrs.map((y) => <th key={y} className="r">{y}</th>)}</tr></thead>
+              <tbody>
+                <tr><td>EPS (Rp)</td>{hYrs.map((y) => <td key={y} className="r">{hEps[y] != null ? Number(hEps[y]).toLocaleString('id-ID', { maximumFractionDigits: 0 }) : '—'}</td>)}</tr>
+                <tr><td>BV/Saham</td>{hYrs.map((y) => <td key={y} className="r">{hBv[y] != null ? Number(hBv[y]).toLocaleString('id-ID', { maximumFractionDigits: 0 }) : '—'}</td>)}</tr>
+                <tr><td>FCF (B IDR)</td>{hYrs.map((y) => <td key={y} className="r">{hFcf[y] != null ? (hFcf[y] / 1e9).toFixed(0) : '—'}</td>)}</tr>
+                <tr><td>ROE (%)</td>{hYrs.map((y) => <td key={y} className="r">{hRoe[y] != null ? Number(hRoe[y]).toFixed(1) + '%' : '—'}</td>)}</tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+      </div>
+
+      <div className="kolom">
         {hasRel && (
-          <div className="panel" style={{ flex: 1, minWidth: 260 }}>
+          <div className="panel">
             <div className="panel-h">
               <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Relative Valuation</span>
               <span style={{ fontSize: 9, color: 'var(--text3)' }}>vs median sektor ({secCnt} saham)</span>
@@ -181,6 +203,9 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
                 <tbody>
                   <RelRow label="P/E Ratio" val={fd.pe ?? null} secMed={secPE} fmt={(v) => v != null ? v.toFixed(1) + 'x' : '—'} invert={false} />
                   <RelRow label="P/B Ratio" val={fd.pb ?? null} secMed={secPB} fmt={(v) => v != null ? v.toFixed(2) + 'x' : '—'} invert={false} />
+                  {/* EV/EBITDA pindah ke sini dari panel "Current Valuation" lama
+                      (dihapus di re-layout) — median sektornya memang sudah ada. */}
+                  <RelRow label="EV/EBITDA" val={fd.ev_ebitda ?? null} secMed={fd.sector_ev_ebitda_median ?? null} fmt={(v) => v != null ? v.toFixed(1) + 'x' : '—'} invert={false} />
                   <RelRow label="Net Margin" val={fd.npm != null ? fd.npm * 100 : null} secMed={secNPM != null ? secNPM * 100 : null} fmt={(v) => pctPlain(v)} invert={true} />
                   <RelRow label="ROE" val={fd.roe != null ? fd.roe * 100 : null} secMed={secROE != null ? secROE * 100 : null} fmt={(v) => pctPlain(v)} invert={true} />
                 </tbody>
@@ -190,7 +215,7 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
         )}
 
         {showDdm ? (
-          <div className="panel" style={{ flex: 1, minWidth: 220 }}>
+          <div className="panel">
             <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_UANG} size={13} /> DDM — Dividend Discount</span></div>
             <div className="panel-b">
               <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 8 }}>
@@ -209,30 +234,14 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
             </div>
           </div>
         ) : (
-          <div className="panel" style={{ flex: 1, minWidth: 220, opacity: 0.5 }}>
+          <div className="panel" style={{ opacity: 0.5 }}>
             <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_UANG} size={13} /> DDM</span></div>
             <div className="panel-b">
               <p style={{ fontSize: 11, color: 'var(--text3)' }}>Data dividen tidak cukup (minimal 2 tahun)</p>
             </div>
           </div>
         )}
-
-        {hYrs.length > 0 && (
-          <div className="panel" style={{ flex: 1, minWidth: 260 }}>
-            <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_GRAFIK_NAIK} size={13} /> Tren Historis per Saham</span></div>
-            <div className="panel-b" style={{ overflowX: 'auto' }}>
-              <table style={{ minWidth: 240 }}>
-                <thead><tr><th>Metrik</th>{hYrs.map((y) => <th key={y} className="r">{y}</th>)}</tr></thead>
-                <tbody>
-                  <tr><td>EPS (Rp)</td>{hYrs.map((y) => <td key={y} className="r">{hEps[y] != null ? Number(hEps[y]).toLocaleString('id-ID', { maximumFractionDigits: 0 }) : '—'}</td>)}</tr>
-                  <tr><td>BV/Saham</td>{hYrs.map((y) => <td key={y} className="r">{hBv[y] != null ? Number(hBv[y]).toLocaleString('id-ID', { maximumFractionDigits: 0 }) : '—'}</td>)}</tr>
-                  <tr><td>FCF (B IDR)</td>{hYrs.map((y) => <td key={y} className="r">{hFcf[y] != null ? (hFcf[y] / 1e9).toFixed(0) : '—'}</td>)}</tr>
-                  <tr><td>ROE (%)</td>{hYrs.map((y) => <td key={y} className="r">{hRoe[y] != null ? Number(hRoe[y]).toFixed(1) + '%' : '—'}</td>)}</tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+      </div>
       </div>
     </div>
   )
