@@ -141,7 +141,7 @@ export function StockDetail() {
       {activeTicker && loading && (
         <div className="fd-empty">
           <p><IkonMenu d={IKON_JAM} size={28} /></p>
-          <p>Mengambil data {activeTicker}...</p>
+          <p>Mengambil data {activeTicker}…</p>
         </div>
       )}
 

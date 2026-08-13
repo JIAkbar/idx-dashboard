@@ -57,7 +57,7 @@ export function TopBroker() {
         <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p style={{ fontSize: 28 }}>⏳</p>
-          <p className="lbl">Memuat data...</p>
+          <p className="lbl">Memuat data…</p>
         </div>
       </div>
     )

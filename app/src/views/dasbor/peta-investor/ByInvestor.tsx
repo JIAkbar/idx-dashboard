@@ -46,7 +46,7 @@ export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
         <input
           className="inp"
           style={{ width: 200 }}
-          placeholder="Cari nama investor..."
+          placeholder="Cari nama investor…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />

@@ -43,19 +43,21 @@ interface RenderParams {
 }
 
 /**
- * Palet simpul: SATU aksen amber untuk emiten, sisanya derajat abu-biru.
- * Hijau & merah sengaja TIDAK ada di sini — keduanya dikunci untuk arah angka
- * (naik/turun) di seluruh dasbor; memakainya sebagai kategori simpul membuat
- * "investor individu" terbaca seperti "naik".
+ * Palet simpul (#79): emiten amber, kategori investor beda HUE — biru
+ * (institusi/CORP), hijau (individu/IND), abu redup (tipe tak terisi/OTH).
+ * Tiga derajat abu versi lama tak terbedakan di graf nyata. Nilai warna hidup
+ * sebagai token --node-* di lantai.css (dua tema) supaya kontras diatur per
+ * tema; risiko hijau terbaca "naik" diterima sadar — simpul bukan angka arah.
  *
- * Diekspor karena legenda di PetaInvestor.tsx memakai objek yang SAMA — legenda
- * yang menyalin nilai warnanya sendiri akan menyimpang diam-diam dari graf.
+ * Diekspor karena legenda & tooltip di PetaInvestor.tsx memakai objek yang
+ * SAMA — legenda yang menyalin nilai warnanya sendiri akan menyimpang
+ * diam-diam dari graf.
  */
 export const WARNA = {
   emiten: 'var(--amber)',
-  institusi: 'var(--text2)',
-  individu: 'var(--text3)',
-  lain: 'var(--line2)',
+  institusi: 'var(--node-corp)',
+  individu: 'var(--node-ind)',
+  lain: 'var(--node-oth)',
 } as const
 
 /** Kategori investor persis mengikuti holderType() yang dipakai tabel By Stock/By Investor — satu definisi, bukan dua. */

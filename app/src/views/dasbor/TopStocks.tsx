@@ -108,7 +108,7 @@ export function TopStocks() {
         <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p style={{ fontSize: 28 }}>⏳</p>
-          <p className="lbl">Memuat data...</p>
+          <p className="lbl">Memuat data…</p>
         </div>
       </div>
     )
@@ -149,7 +149,7 @@ export function TopStocks() {
             <span className="lbl">Agregat Pasar — {labelRentang} ({rentangTanggal.length} hari bursa)</span>
           </div>
           <div className="panel-b">
-            {loadingR && <p className="lbl" style={{ textAlign: 'center', padding: '14px 0' }}>Memuat {selesai}/{total} hari...</p>}
+            {loadingR && <p className="lbl" style={{ textAlign: 'center', padding: '14px 0' }}>Memuat {selesai}/{total} hari…</p>}
             {errorR && (
               <div className="chip dn" style={{ display: 'flex', whiteSpace: 'normal', height: 'auto', lineHeight: 1.5 }}>
                 <span><IkonMenu d={IKON_PERINGATAN} size={14} /> {errorR} — pilih rentang lebih pendek untuk agregat pasar.</span>

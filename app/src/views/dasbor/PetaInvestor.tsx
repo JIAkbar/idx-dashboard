@@ -87,7 +87,7 @@ export function PetaInvestor() {
       {loading && (
         <div className="fd-empty">
           <p><IkonMenu d={IKON_JAM} size={28} /></p>
-          <p>Memuat data jaringan investor...</p>
+          <p>Memuat data jaringan investor…</p>
         </div>
       )}
 

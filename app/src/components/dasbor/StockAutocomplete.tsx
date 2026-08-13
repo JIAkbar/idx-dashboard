@@ -16,7 +16,7 @@ interface StockAutocompleteProps {
  * punya logic filter identik (satu dipanggil saat mengetik, satu saat fokus)
  * — di sini disatukan lewat satu `matches` yang selalu dihitung dari `value`.
  */
-export function StockAutocomplete({ stocks, value, onChange, onSelect, placeholder = 'Kode saham: BBCA, ASII, TLKM ...' }: StockAutocompleteProps) {
+export function StockAutocomplete({ stocks, value, onChange, onSelect, placeholder = 'Kode saham: BBCA, ASII, TLKM…' }: StockAutocompleteProps) {
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
 

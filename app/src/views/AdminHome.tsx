@@ -736,7 +736,7 @@ export function AdminHome() {
 
       {sambut && (
         <div className="dasbor-modal-bg" onClick={tutupSambutan}>
-          <div className="lantai dasbor-modal" role="dialog" aria-modal="true" aria-label="Selamat datang" onClick={(e) => e.stopPropagation()}>
+          <div className="lantai dasbor-modal" role="dialog" aria-modal="true" aria-label="Ringkasan sesi admin" onClick={(e) => e.stopPropagation()}>
             <div className="panel af-sambut">
               <div className="af-sambut-head">
                 <span className="af-monogram" aria-hidden="true">P</span>
