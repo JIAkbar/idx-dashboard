@@ -8,7 +8,7 @@ import { PanelSolvency } from './stock-detail/KolomValuasi'
 import { PanelKuartalan, PanelProfitabilitas, PanelGrowth, PanelDividen, PanelRiwayatDividen } from './stock-detail/KolomKuartalan'
 import { PanelIncome, PanelBalance, PanelCashflow, PanelPerformance, PanelTahunan } from './stock-detail/KolomLaporan'
 import { PanelValuasiInteraktif } from './stock-detail/PanelValuasiInteraktif'
-import { IkonMenu, IKON_CARI, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_CARI, IKON_PERINGATAN, IKON_JAM } from '../../components/dasbor/IkonMenu'
 
 type Tab = 'statistik' | 'valuasi'
 
@@ -140,7 +140,7 @@ export function StockDetail() {
 
       {activeTicker && loading && (
         <div className="fd-empty">
-          <p style={{ fontSize: 28 }}>⏳</p>
+          <p><IkonMenu d={IKON_JAM} size={28} /></p>
           <p>Mengambil data {activeTicker}...</p>
         </div>
       )}
@@ -209,7 +209,7 @@ export function StockDetail() {
           </div>
 
           <div style={{ fontSize: 9, color: 'var(--text3)' }}>
-            ⏱ Data delay · Diperbarui: {fd.updated || '—'}
+            <IkonMenu d={IKON_JAM} size={11} /> Data delay · Diperbarui: {fd.updated || '—'}
           </div>
 
           <div className="tabs" role="tablist" aria-label="Tab Detail Saham">

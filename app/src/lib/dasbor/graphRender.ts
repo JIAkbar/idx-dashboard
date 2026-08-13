@@ -1,5 +1,15 @@
 import * as d3 from 'd3'
 import { holderType, type GraphSelection, type HolderType, type InvestorMapEntry } from './petaInvestorData'
+import { IKON_GRAFIK_BATANG, IKON_GLOBE, IKON_KLIK, IKON_LOKASI } from '../../components/dasbor/IkonMenu'
+
+/**
+ * SVG inline untuk string HTML tooltip (innerHTML, bukan JSX — jadi tidak
+ * bisa pakai komponen IkonMenu langsung). Path & gaya stroke disalin dari
+ * IkonMenu.tsx supaya bentuknya konsisten; `stroke:currentColor` biar ikut
+ * warna teks induknya di tooltip.
+ */
+const ikonSvg = (d: string, size = 12) =>
+  `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" style="vertical-align:-2px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="${d}"/></svg>`
 
 /**
  * Render D3 force-directed graph murni (tanpa React) — dipanggil dari
@@ -147,7 +157,7 @@ function showTooltip(tooltip: HTMLDivElement, wrap: HTMLDivElement, e: MouseEven
   tooltip.style.left = Math.min(x, wr.width - 240) + 'px'
   tooltip.style.top = Math.min(y, wr.height - 130) + 'px'
   tooltip.style.display = 'block'
-  const hint = `<div style="margin-top:7px;padding-top:5px;border-top:0.5px solid var(--border);font-size:9px;color:var(--accent);font-weight:600">👆 Klik untuk detail lengkap</div>`
+  const hint = `<div style="margin-top:7px;padding-top:5px;border-top:0.5px solid var(--border);font-size:9px;color:var(--accent);font-weight:600">${ikonSvg(IKON_KLIK, 11)} Klik untuk detail lengkap</div>`
   if (d.kind === 'emiten') {
     const code = d.id.replace('E_', '')
     const em = allData.find((x) => x.code === code)
@@ -158,11 +168,11 @@ function showTooltip(tooltip: HTMLDivElement, wrap: HTMLDivElement, e: MouseEven
           .map((h) => `<tr><td style="padding:2px 0">${h.name}</td><td style="padding-left:8px;text-align:right;color:${pctColor};white-space:nowrap"><b>${h.pct}%</b></td></tr>`)
           .join('')
       : ''
-    tooltip.innerHTML = `<b style="color:var(--amber)">📊 ${code}</b><br><span style="color:var(--text3);font-size:10px">${d.fullName ?? ''}</span><br><br><b style="font-size:10px">Top pemegang saham:</b><table style="width:100%;margin-top:4px;font-size:11px">${rows}</table>${hint}`
+    tooltip.innerHTML = `<b style="color:var(--amber)">${ikonSvg(IKON_GRAFIK_BATANG, 13)} ${code}</b><br><span style="color:var(--text3);font-size:10px">${d.fullName ?? ''}</span><br><br><b style="font-size:10px">Top pemegang saham:</b><table style="width:100%;margin-top:4px;font-size:11px">${rows}</table>${hint}`
   } else {
     const name = d.fullLabel ?? d.label
     const allCount = allData.filter((e) => e.holders.some((h) => h.name === name)).length
-    tooltip.innerHTML = `<b style="color:${warnaSimpul(d)}">${name}</b><br><span style="color:var(--text3)">${d.cls || '—'} · ${d.lf === 'L' ? '🇮🇩 Domestik' : '🌐 Asing'}</span><br><span style="color:var(--text3);font-size:10px">Memegang saham di ${allCount} emiten</span>${hint}`
+    tooltip.innerHTML = `<b style="color:${warnaSimpul(d)}">${name}</b><br><span style="color:var(--text3)">${d.cls || '—'} · ${d.lf === 'L' ? `${ikonSvg(IKON_LOKASI, 12)} Domestik` : `${ikonSvg(IKON_GLOBE, 12)} Asing`}</span><br><span style="color:var(--text3);font-size:10px">Memegang saham di ${allCount} emiten</span>${hint}`
   }
 }
 
@@ -293,7 +303,7 @@ export function renderForceGraph(params: RenderParams & { emitenList: InvestorMa
     })
 
   if (tooltip) {
-    // Papan #klik-detail-nyantol: "👆 Klik untuk detail lengkap" di dalam
+    // Papan #klik-detail-nyantol: "Klik untuk detail lengkap" di dalam
     // tooltip (showTooltip) cuma teks HTML statis — satu-satunya klik yang
     // beneran jalan ada di node SVG (.on('click', ...) di bawah), yang
     // posisinya SELALU offset dari tooltip (tooltip digambar +14px dari
