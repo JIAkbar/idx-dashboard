@@ -145,7 +145,7 @@ def statistik_hari(em, ohlc):
     vs_vol = o["vol_juta"] * 1e6 / (sum(vol20) / len(vol20)) if vol20 else 0
     stats = [
         ("Rentang Hari", f'{fmt(o["l"])}–{fmt(o["h"])}'),
-        ("EMA50", f'{fmt(em["ema50"])} <small>({vs_ema:+.1f}%)</small>'.replace(".", ",")),
+        ("EMA50", f'{fmt(em["ema50"])} <small>({f"{vs_ema:+.1f}".replace(".", ",")}%)</small>'),
         ("Pivot Harian", fmt(em["pivot"]["P"])),
         ("Volume", f'{fmt(o["vol_juta"],1)} jt <small>({fmt(vs_vol,1)}× rerata20)</small>'),
         ("Nilai Transaksi", f'≈ Rp{fmt(nilai_b,1)} miliar'),
