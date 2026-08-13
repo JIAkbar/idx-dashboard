@@ -1303,3 +1303,8 @@
 .lantai .ks-badge.ks-a{background:var(--amber-dim);color:var(--amber)}
 .lantai .ks-badge.ks-r{background:var(--red-dim);color:var(--red)}
 .lantai .ks-note{display:block;font-size:9px;color:var(--text3)}
+
+/* #90 Tombol "Hari Ini" — reuse .csb-more, cuma butuh state disabled
+   (redup saat tanggal aktif sudah hari bursa terkini). */
+.lantai .csb-more:disabled{opacity:.35;cursor:not-allowed}
+.lantai .csb-more:disabled:hover{border-color:var(--line2);color:var(--text2)}

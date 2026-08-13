@@ -300,6 +300,31 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
   }
 
 
+  // ─── Tombol "Hari Ini" (#90) ─────────────────────────────
+  // "Hari ini" versi bursa = entri TERAKHIR tanggalTersedia (hari berdata
+  // terbaru), BUKAN Date() mentah — akhir pekan/libur tidak punya data.
+  const hariTerkini = tanggalTersedia[tanggalTersedia.length - 1]?.date_iso ?? null
+  // Redup hanya bila BENAR-BENAR tak ada yang bisa dilompati: tanggal aktif
+  // sudah terkini DAN grid sedang menampilkan bulannya (user yang navigasi ke
+  // bulan lain tetap bisa klik untuk balik ke bulan berjalan).
+  const [thnTerkini, blnTerkini] = hariTerkini ? hariTerkini.split('-').map(Number) : [0, 0]
+  const sudahHariIni = !modeRentang && hariTerkini !== null && tanggalAktif === hariTerkini
+    && calYear === thnTerkini && calMonth === blnTerkini
+  function keHariIni() {
+    if (!hariTerkini) return
+    if (modeRentang) {
+      // Reset ke mode Hari (inline, bukan gantiMode(false) — gantiMode punya
+      // guard !onRentang dan auto-preset yang tidak relevan di sini).
+      setModeRentang(false)
+      setAwalPilih(null)
+      onRentang?.(null)
+    }
+    const [y, m] = hariTerkini.split('-').map(Number)
+    setCalYear(y)
+    setCalMonth(m)
+    onPilih(hariTerkini)
+  }
+
   // ─── Grid bulan (5 kolom SEN–JUM, akhir pekan dibuang) ───
   // Hanya hari kerja yang masuk sel; offset baris pertama = kolom hari kerja
   // pertama bulan itu. Minggu tanpa hari kerja otomatis tidak ada barisnya
@@ -383,6 +408,20 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
         setCalMonth(m)
       }}
     />
+  )
+
+  // Tombol lompat cepat ke tanggal bursa terkini (#90) — dipakai kedua
+  // varian; redup bila tanggal aktif sudah hari terkini (mode Hari).
+  const btnHariIni = (
+    <button
+      type="button"
+      className="csb-more"
+      disabled={sudahHariIni || !hariTerkini}
+      onClick={keHariIni}
+      title="Lompat ke tanggal bursa terkini"
+    >
+      Hari Ini
+    </button>
   )
 
   const hariNav = (
@@ -571,6 +610,7 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
               )
             })}
           </div>
+          {btnHariIni}
           {onRentang && (
             <div className="tabs mode-tgl" role="tablist" aria-label="Mode pemilihan tanggal">
               <button type="button" role="tab" aria-selected={!modeRentang} className={'tab' + (modeRentang ? '' : ' on')} onClick={() => gantiMode(false)}>Hari</button>
@@ -676,7 +716,10 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
     <div className="panel">
       <div className="panel-h">
         <span className="lbl">Kalender Bursa</span>
-        {ddBulan}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {btnHariIni}
+          {ddBulan}
+        </div>
       </div>
 
       <div className="panel-b">
