@@ -197,10 +197,12 @@ export function AvgDown() {
   }, [canCompute, avgN, qtyN, lastN, mode, lossmaxN, endavgN, avgqtyN, avgvalN])
 
   return (
-    <div className="grid2 w-kiri">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {/* Stock Position */}
-        <div className="panel">
+    /* #84: 3 panel sejajar 1 baris di desktop (grid3 auto-fit — pola sama
+       dengan BrokerSummary/TopBroker), collapse 1 kolom urutan DOM di mobile:
+       posisi → strategi → hasil. Grid stretch = tinggi panel seimbang. */
+    <div className="grid3">
+      {/* Stock Position */}
+      <div className="panel">
           <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_PAPAN_KLIP} size={13} /> Posisi Saham</span></div>
           <div className="panel-b">
             <div className="field" style={{ marginBottom: 10 }}>
@@ -336,10 +338,8 @@ export function AvgDown() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Estimation Result — menempel, terlihat langsung saat isian kiri berubah */}
-      <div style={{ position: 'sticky', top: 60, alignSelf: 'start' }}>
+      {/* Estimation Result — sejajar di kolom ke-3, terlihat langsung saat isian berubah */}
         <div className="panel">
           <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Estimasi Hasil</span></div>
           <div className="panel-b" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -382,7 +382,6 @@ export function AvgDown() {
             </div>
           </div>
         </div>
-      </div>
     </div>
   )
 }
