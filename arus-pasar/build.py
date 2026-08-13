@@ -15,6 +15,19 @@ from pathlib import Path
 AKAR = Path(__file__).parent
 
 
+TERBILANG = {1: "Satu", 2: "Dua", 3: "Tiga", 4: "Empat", 5: "Lima", 6: "Enam",
+             7: "Tujuh", 8: "Delapan", 9: "Sembilan", 10: "Sepuluh",
+             11: "Sebelas", 12: "Dua belas"}
+
+
+def ema_seri(seri, n):
+    """EMA klasik dari daftar close penuh (pemanasan riwayat 2 tahun)."""
+    k = 2 / (n + 1); e = seri[0]
+    for x in seri[1:]:
+        e = x * k + e * (1 - k)
+    return e
+
+
 def fmt(n, des=0):
     """Format angka gaya Indonesia: ribuan titik, desimal koma."""
     return f"{n:,.{des}f}".replace(",", "_").replace(".", ",").replace("_", ".")
@@ -152,7 +165,12 @@ def statistik_hari(em, ohlc):
     ]
     sel = "".join(f'<div class="s"><div class="l">{l}</div><div class="v">{v}</div></div>'
                   for l, v in stats)
-    return f'<div class="stats">{sel}</div>'
+    closes = [b["c"] for b in ohlc[em["ticker"]]]
+    ema_txt = " · ".join(
+        f'<b>{n}</b> {fmt(ema_seri(closes, n))}' for n in (20, 60, 100, 200))
+    return (f'<div class="stats">{sel}</div>'
+            f'<div class="emabar">EMA {ema_txt} <span class="ket">(50 di strip atas; '
+            f'garis lengkap di chart)</span></div>')
 
 
 def halaman_emiten(em, sk, ed, ohlc, idx):
@@ -300,8 +318,8 @@ def halaman_sampul(ed, skor_map):
     </div>
     <div class="cv-foot">
       <div class="cv-stats">
-        <span><span class="l">IHSG</span><b>6.409,65</b> <span class="c-bull">+1,04%</span></span>
-        <span><span class="l">Net Foreign Buy Reguler</span><b class="c-bull">Rp917,23 miliar</b> (7 Agu)</span>
+        <span><span class="l">IHSG</span><b>{ed["ihsg"]["nilai"]}</b> <span class="c-{ed["ihsg"]["cls"]}">{ed["ihsg"]["pct"]}</span></span>
+        <span><span class="l">{ed["nf"]["label"]}</span><b class="c-{ed["nf"]["cls"]}">{ed["nf"]["nilai"]}</b> {ed["nf"]["ket"]}</span>
       </div>
       <div class="cv-legal">© {ed["tanggal_id"].split()[-1]} Johan Iriawan Akbar — PAPAN (Pusat Analisa Pasar Nusantara). Hak cipta dilindungi.<br>
       Analisis probabilistik, bukan ajakan transaksi.<br>
@@ -332,7 +350,7 @@ def halaman_ringkasan(ed, skor_map):
   <div class="inner">
     <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Ringkasan Edisi</div>
       <div class="px" style="font-size:8pt;color:var(--mute)">Edisi ujicoba · {len(ed["emiten"])} emiten</div></div>
-    <p class="lede">Tiga emiten dibedah dengan kerangka yang sama: struktur harga terhadap EMA50
+    <p class="lede">{TERBILANG.get(len(ed["emiten"]), len(ed["emiten"]))} emiten dibedah dengan kerangka yang sama: struktur harga terhadap EMA50
     dan Pivot Points, kualitas arus dana broker (siapa yang membeli — bukan hanya berapa),
     rasio risk/reward, likuiditas, dan sensitivitas terhadap IHSG.</p>
     <table class="ring">
@@ -340,22 +358,48 @@ def halaman_ringkasan(ed, skor_map):
       {baris}
     </table>
     <div class="ihsgbar">
-      <span><span class="l">IHSG</span><b>6.409,65</b> <span class="bull">+1,04%</span></span>
-      <span><span class="l">Net Foreign Buy Reguler</span><b class="bull">Rp917,23 miliar</b> (7 Agu)</span>
-      <span><span class="l">Konteks</span>Bullish fluktuatif selama 6.376–6.380 bertahan</span>
+      <span><span class="l">IHSG</span><b>{ed["ihsg"]["nilai"]}</b> <span class="{ed["ihsg"]["cls"]}">{ed["ihsg"]["pct"]}</span></span>
+      <span><span class="l">{ed["nf"]["label"]}</span><b class="{ed["nf"]["cls"]}">{ed["nf"]["nilai"]}</b> {ed["nf"]["ket"]}</span>
+      <span><span class="l">Konteks</span>{ed["konteks"]}</span>
     </div>
     <h3 class="rule">Metodologi</h3>
     <p class="metode"><b>Skor komposit 0–100:</b> Technical 35% · Big Money Flow 30% · Risk/reward 20% ·
     Liquidity 10% · IHSG sensitivity 5%. Pemetaan risiko: ≥80 Menengah · 55–79 Tinggi · &lt;55 Ekstrem.</p>
-    <p class="metode"><b>Sumber data:</b> harga Yahoo Finance; pivot &amp; EMA dari chart TradingView; arus broker dari
-    orderbook Stockbit. Komponen data yang tidak tersedia tidak
+    <p class="metode"><b>Sumber data:</b> harga Yahoo Finance &amp; statistik resmi IDX; pivot &amp; EMA dihitung dari data
+    harga; arus broker dari Broker Summary Stockbit. Komponen data yang tidak tersedia tidak
     pernah diisi perkiraan — halaman terkait akan menampilkan penanda kesenjangan data dan skor
     diberi penalti. Peringkat bersifat komparatif antar emiten edisi ini, bukan sinyal beli otomatis.</p>
-    <h3 class="rule">Tim &amp; Kontributor</h3>
-    <p class="metode"><b>Analisa &amp; penyusun:</b> Johan Iriawan Akbar.</p>
-    <p class="metode"><b>Pengembangan, ide, gagasan &amp; dukungan:</b> Agitama Wahyu Putra Dita ·
-    Mohamad Miftahul Ulum · Ali Supian · Wardani W. · Dhafina S. F. · Erika J. · Difla S. ·
-    Ratu N. A. A.</p>
+  </div>
+  {kaki(ed)}
+</div>'''
+
+
+def halaman_kolofon(ed):
+    """Halaman penutup: kolofon tim — monogram, analis utama, grid kontributor."""
+    kontributor = ["Agitama Wahyu Putra Dita", "Mohamad Miftahul Ulum", "Ali Supian",
+                   "Wardani W.", "Dhafina S. F.", "Erika J.", "Difla S.", "Ratu N. A. A."]
+    sel = "\n".join(f'<div class="kf-nama">{n}</div>' for n in kontributor)
+    tahun = ed["tanggal_id"].split()[-1]
+    return f'''
+<div class="page">
+  {band(ed, "Kolofon")}
+  <div class="inner kolofon">
+    <div class="kf-monogram">P</div>
+    <div class="kf-merek">PAPAN — Pusat Analisa Pasar Nusantara</div>
+    <h2 class="kf-judul">Tim &amp; Kontributor</h2>
+    <div class="kf-blok">
+      <div class="kf-peran">Analisa &amp; Penyusun</div>
+      <div class="kf-utama">Johan Iriawan Akbar</div>
+    </div>
+    <hr class="kf-garis">
+    <div class="kf-blok">
+      <div class="kf-peran">Pengembangan, Ide, Gagasan &amp; Dukungan</div>
+      <div class="kf-grid">
+{sel}
+      </div>
+    </div>
+    <div class="kf-kaki">© {tahun} Johan Iriawan Akbar — PAPAN. Hak cipta dilindungi.<br>
+    Terbitan Arus Pasar disusun untuk edukasi analisa pasar, bukan ajakan transaksi.</div>
   </div>
   {kaki(ed)}
 </div>'''
@@ -451,6 +495,7 @@ def main():
         draw.append(f'gambarChart("ch{idx}","{em["ticker"]}",{em["ema50"]},'
                     f'{json.dumps(em["pivot"])});')
     pages.append(halaman_peringkat(ed, skor_map))
+    pages.append(halaman_kolofon(ed))
 
     tpl = (AKAR / "template.html").read_text(encoding="utf-8")
     # 2 thn penuh (pemanasan EMA200 di gambarChart); JKSE tak dipakai chart

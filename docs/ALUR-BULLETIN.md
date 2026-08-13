@@ -44,3 +44,12 @@ Rincian per-broker-per-saham TIDAK tersedia via API publik mana pun (endpoint de
 IDX = 503, sudah diverifikasi). Screenshot Stockbit adalah satu-satunya sumber — maka
 transkripsi (jalur a/b/c) selalu ada langkah verifikasi manusia: angka salah lebih
 buruk daripada kosong.
+
+## Vonis label per emiten (pelajaran edisi AP-130826)
+
+Label halaman ("Bullish — Uji Pivot R1", "Bearish — Distribusi ke Ritel") WAJIB ditulis
+per emiten dari pembacaan utuh: kualitas arus broker (siapa yang beli/jual, bukan cuma
+netnya), struktur tren (posisi vs EMA50/200), lokasi tutup dalam rentang hari, dan
+anomali (mis. akumulasi saat pasar merah). Mesin aturan komposit hanya BASELINE/fallback —
+jangan pernah menerbitkan edisi yang semua labelnya keluaran generator (gejalanya: semua
+halaman berbunyi sama, mis. "Uji Support S1" seragam).

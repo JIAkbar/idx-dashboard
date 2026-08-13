@@ -212,11 +212,13 @@
   .cv-legal{font-size:7pt;color:var(--mute);line-height:1.8}
 
   /* ── Ringkasan (hal 1) ── */
-  .lede{font-size:10.5pt;color:var(--ink2);margin:0 0 4mm;line-height:1.6;max-width:138mm;text-wrap:pretty}
+  .lede{font-size:10.5pt;color:var(--ink2);margin:0 0 4mm;line-height:1.6;text-align:justify;text-wrap:pretty}
   table.ring{width:100%;border-collapse:collapse;font-size:8.8pt;font-variant-numeric:tabular-nums}
   table.ring th{font-size:6.3pt;color:var(--mute);text-transform:uppercase;letter-spacing:.14em;
     text-align:left;padding:2mm 3mm 1.5mm 0;border-bottom:1px solid var(--hair);font-weight:700}
   table.ring td{padding:2.6mm 3mm 2.6mm 0;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
+  table.ring th:first-child,table.ring td:first-child{width:9mm;padding-right:2mm;
+    color:var(--mute);font-family:var(--mono);font-size:8pt;text-align:left}
   table.ring .tk{font-weight:800;font-size:10pt;font-family:var(--mono)}
   table.ring .num{font-weight:700;font-family:var(--mono)}
   .pill{display:inline-block;font-family:var(--mono);font-size:7pt;font-weight:700;
@@ -231,6 +233,30 @@
   .ihsgbar b{font-weight:700;font-family:var(--mono)}
   .ihsgbar .l{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);display:block}
   .metode{font-size:7.6pt;color:var(--mute);line-height:1.7}
+  /* baris EMA di bawah strip statistik */
+  .emabar{font-family:var(--mono);font-size:7.2pt;color:var(--mute);margin:1.6mm 0 0;
+    letter-spacing:.03em}
+  .emabar b{color:var(--ink2);font-weight:700}
+  .emabar .ket{font-size:6.4pt;letter-spacing:.02em}
+  /* halaman kolofon (penutup) */
+  .kolofon{display:flex;flex-direction:column;align-items:center;text-align:center;
+    padding-top:34mm}
+  .kf-monogram{width:16mm;height:16mm;border:1px solid var(--teal);border-radius:1.5mm;
+    display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;
+    font-size:20pt;font-weight:700;color:var(--teal);margin-bottom:5mm}
+  .kf-merek{font-size:7pt;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);
+    margin-bottom:12mm}
+  .kf-judul{font-family:Georgia,Cambria,serif;font-size:17pt;font-weight:700;color:var(--ink);
+    margin:0 0 10mm}
+  .kf-blok{margin-bottom:8mm}
+  .kf-peran{font-size:6.8pt;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);
+    margin-bottom:3mm}
+  .kf-utama{font-family:Georgia,serif;font-size:13pt;color:var(--ink)}
+  .kf-garis{border:0;border-top:1px solid var(--hair);width:38mm;margin:0 auto 8mm}
+  .kf-grid{display:grid;grid-template-columns:repeat(2,52mm);gap:2.6mm 8mm;justify-content:center}
+  .kf-nama{font-family:var(--mono);font-size:8.4pt;color:var(--ink2);padding:1.6mm 0;
+    border-bottom:1px solid rgba(255,255,255,.05)}
+  .kf-kaki{margin-top:auto;padding-top:14mm;font-size:6.8pt;color:var(--mute);line-height:1.8}
   .metode b{color:var(--ink2)}
 
   /* ── Peringkat ── */
@@ -323,15 +349,10 @@
     <h3 class="rule">Metodologi</h3>
     <p class="metode"><b>Skor komposit 0–100:</b> Technical 35% · Big Money Flow 30% · Risk/reward 20% ·
     Liquidity 10% · IHSG sensitivity 5%. Pemetaan risiko: ≥80 Menengah · 55–79 Tinggi · &lt;55 Ekstrem.</p>
-    <p class="metode"><b>Sumber data:</b> harga Yahoo Finance; pivot &amp; EMA dari chart TradingView; arus broker dari
-    orderbook Stockbit. Komponen data yang tidak tersedia tidak
+    <p class="metode"><b>Sumber data:</b> harga Yahoo Finance &amp; statistik resmi IDX; pivot &amp; EMA dihitung dari data
+    harga; arus broker dari Broker Summary Stockbit. Komponen data yang tidak tersedia tidak
     pernah diisi perkiraan — halaman terkait akan menampilkan penanda kesenjangan data dan skor
     diberi penalti. Peringkat bersifat komparatif antar emiten edisi ini, bukan sinyal beli otomatis.</p>
-    <h3 class="rule">Tim &amp; Kontributor</h3>
-    <p class="metode"><b>Analisa &amp; penyusun:</b> Johan Iriawan Akbar.</p>
-    <p class="metode"><b>Pengembangan, ide, gagasan &amp; dukungan:</b> Agitama Wahyu Putra Dita ·
-    Mohamad Miftahul Ulum · Ali Supian · Wardani W. · Dhafina S. F. · Erika J. · Difla S. ·
-    Ratu N. A. A.</p>
   </div>
   <footer class="foot">
     <span class="kode">AP-100826-E01</span>
@@ -351,7 +372,7 @@
       <div class="px"><span class="h">1.235</span><br>
         <span class="c bull">+55 (+4,66%)</span></div>
     </div>
-    <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">1.155–1.240</div></div><div class="s"><div class="l">EMA50</div><div class="v">1.117 <small>(+10,6%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">1.180</div></div><div class="s"><div class="l">Volume</div><div class="v">43,0 jt <small>(1,1× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp53,1 miliar</div></div></div>
+    <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">1.155–1.240</div></div><div class="s"><div class="l">EMA50</div><div class="v">1.117 <small>(+10,6%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">1.180</div></div><div class="s"><div class="l">Volume</div><div class="v">43,0 jt <small>(1,1× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp53,1 miliar</div></div></div><div class="emabar">EMA <b>20</b> 1.092 · <b>60</b> 1.130 · <b>100</b> 1.198 · <b>200</b> 1.196 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
       <canvas id="ch0" width="1360" height="360"></canvas>
@@ -441,7 +462,7 @@
       <div class="px"><span class="h">550</span><br>
         <span class="c bull">+20 (+3,77%)</span></div>
     </div>
-    <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">530–565</div></div><div class="s"><div class="l">EMA50</div><div class="v">529 <small>(+4,0%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">540</div></div><div class="s"><div class="l">Volume</div><div class="v">182,1 jt <small>(2,1× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp100,1 miliar</div></div></div>
+    <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">530–565</div></div><div class="s"><div class="l">EMA50</div><div class="v">529 <small>(+4,0%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">540</div></div><div class="s"><div class="l">Volume</div><div class="v">182,1 jt <small>(2,1× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp100,1 miliar</div></div></div><div class="emabar">EMA <b>20</b> 520 · <b>60</b> 533 · <b>100</b> 557 · <b>200</b> 571 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
       <canvas id="ch1" width="1360" height="360"></canvas>
@@ -531,7 +552,7 @@
       <div class="px"><span class="h">885</span><br>
         <span class="c bull">+25 (+2,91%)</span></div>
     </div>
-    <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">860–935</div></div><div class="s"><div class="l">EMA50</div><div class="v">719 <small>(+23,1%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">840</div></div><div class="s"><div class="l">Volume</div><div class="v">92,1 jt <small>(0,9× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp81,5 miliar</div></div></div>
+    <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">860–935</div></div><div class="s"><div class="l">EMA50</div><div class="v">719 <small>(+23,1%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">840</div></div><div class="s"><div class="l">Volume</div><div class="v">92,1 jt <small>(0,9× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp81,5 miliar</div></div></div><div class="emabar">EMA <b>20</b> 754 · <b>60</b> 719 · <b>100</b> 723 · <b>200</b> 659 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
       <canvas id="ch2" width="1360" height="360"></canvas>
@@ -658,8 +679,44 @@
     </div>
     <div class="blok integritas">
       <h3 class="rule">Catatan Integritas Data</h3>
-      <p>Flow ditranskripsi dari tangkapan layar orderbook Stockbit oleh Claude (penglihatan). Pivot dari chart TradingView user. Nilai bertanda '?' butuh verifikasi user.</p>
+      <p>Arus broker ditranskripsi dari Broker Summary Stockbit dan diverifikasi redaksi. Pivot dari analisa chart; komponen tanpa data ditandai, tidak diisi perkiraan.</p>
     </div>
+  </div>
+  <footer class="foot">
+    <span class="kode">AP-100826-E01</span>
+    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+  </footer>
+</div>
+
+<div class="page">
+  <header class="band">
+    <div class="m"><h1>ARUS PASAR</h1><div class="sub">Kolofon</div></div>
+    <div class="e">Senin, 10 Agustus 2026<br><span class="kode">AP-100826-E01</span></div>
+  </header>
+  <div class="inner kolofon">
+    <div class="kf-monogram">P</div>
+    <div class="kf-merek">PAPAN — Pusat Analisa Pasar Nusantara</div>
+    <h2 class="kf-judul">Tim &amp; Kontributor</h2>
+    <div class="kf-blok">
+      <div class="kf-peran">Analisa &amp; Penyusun</div>
+      <div class="kf-utama">Johan Iriawan Akbar</div>
+    </div>
+    <hr class="kf-garis">
+    <div class="kf-blok">
+      <div class="kf-peran">Pengembangan, Ide, Gagasan &amp; Dukungan</div>
+      <div class="kf-grid">
+<div class="kf-nama">Agitama Wahyu Putra Dita</div>
+<div class="kf-nama">Mohamad Miftahul Ulum</div>
+<div class="kf-nama">Ali Supian</div>
+<div class="kf-nama">Wardani W.</div>
+<div class="kf-nama">Dhafina S. F.</div>
+<div class="kf-nama">Erika J.</div>
+<div class="kf-nama">Difla S.</div>
+<div class="kf-nama">Ratu N. A. A.</div>
+      </div>
+    </div>
+    <div class="kf-kaki">© 2026 Johan Iriawan Akbar — PAPAN. Hak cipta dilindungi.<br>
+    Terbitan Arus Pasar disusun untuk edukasi analisa pasar, bukan ajakan transaksi.</div>
   </div>
   <footer class="foot">
     <span class="kode">AP-100826-E01</span>
