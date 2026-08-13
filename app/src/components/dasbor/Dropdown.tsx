@@ -32,6 +32,9 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder }: Dropd
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
     document.addEventListener('mousedown', onDocMouseDown)
+    // Menu punya max-height + scroll (#79C) — item terpilih bisa jauh di
+    // bawah lipatan; gulirkan supaya langsung kelihatan saat menu dibuka.
+    ref.current?.querySelector('.dd-it.sel')?.scrollIntoView({ block: 'nearest' })
     return () => document.removeEventListener('mousedown', onDocMouseDown)
   }, [open])
 

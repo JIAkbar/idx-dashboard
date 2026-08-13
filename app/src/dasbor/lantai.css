@@ -694,7 +694,10 @@
 .lantai .dd-btn:disabled:hover{border-color:var(--line2)}
 .lantai .dd-btn svg{width:12px;height:12px;stroke:var(--text3);fill:none;stroke-width:2;transition:transform .15s}
 .lantai .dd.open .dd-btn svg{transform:rotate(180deg)}
-.lantai .dd-menu{position:absolute;top:calc(100% + 5px);left:0;min-width:max-content;background:var(--bg1);border:1px solid var(--line2);border-radius:var(--r);padding:4px;display:none;z-index:50;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+/* max-height + scroll internal (#79C): daftar panjang (mis. 26+ tanggal)
+   jangan menjulur keluar layar; item terpilih di-scrollIntoView saat buka
+   (Dropdown.tsx). Scrollbar tipis ikut blok "permukaan peramban". */
+.lantai .dd-menu{position:absolute;top:calc(100% + 5px);left:0;min-width:max-content;max-height:320px;overflow-y:auto;background:var(--bg1);border:1px solid var(--line2);border-radius:var(--r);padding:4px;display:none;z-index:50;box-shadow:0 10px 28px rgba(0,0,0,.35)}
 .lantai .dd.open .dd-menu{display:block;animation:vin .14s ease}
 @keyframes vin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .lantai .dd-it{display:flex;width:100%;text-align:left;padding:6px 10px;border-radius:4px;font-family:var(--mono);font-size:11.5px;color:var(--text2);white-space:nowrap}
@@ -1342,6 +1345,42 @@
 .lantai .blt-h{flex-wrap:wrap;row-gap:8px}
 .lantai .blt-tabs{margin-left:auto;margin-right:10px}
 @media (max-width:560px){.lantai .blt-tabs{margin-left:0;flex-basis:100%;order:3}}
+
+/* ===== #79 PERMUKAAN PERAMBAN — detail yang paling sering terlewat =====
+   Satu blok untuk semua "kulit" bawaan browser supaya ikut bahasa Lantai:
+   seleksi teks amber, caret amber di input, scrollbar internal seragam tipis
+   (pola 4px .pi-tbl-wrap #91), fokus keyboard konsisten juga di luar .lantai
+   (rail/topbar), underline link diberi jarak napas, dan SEMUA sel tabel
+   tabular-nums (kolom angka tak bergoyang; pada teks efeknya nol). */
+.dasbor-shell ::selection { background: var(--accent-soft3); color: var(--text); }
+.dasbor-shell input, .dasbor-shell textarea { caret-color: var(--accent); }
+.dasbor-shell :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+.dasbor-shell a { text-underline-offset: 3px; }
+.lantai .blt-reset, .lantai .empty .chip-r { text-underline-offset: 3px; }
+.dasbor-shell td, .dasbor-shell th { font-variant-numeric: tabular-nums; }
+/* JANGAN tambah scrollbar-width/scrollbar-color di area ini (Chrome 121+
+   mematikan ::-webkit-scrollbar begitu properti standar di-set — lihat #83). */
+.lantai .blt-wrap::-webkit-scrollbar,
+.dasbor-shell .board-tbl-wrap::-webkit-scrollbar,
+.lantai .pi-search-drop::-webkit-scrollbar,
+.lantai .pi-panel::-webkit-scrollbar,
+.lantai .dd-menu::-webkit-scrollbar,
+.lantai .csb-hari::-webkit-scrollbar,
+.dasbor-laci-kiri::-webkit-scrollbar { width: 4px; height: 4px; }
+.lantai .blt-wrap::-webkit-scrollbar-thumb,
+.dasbor-shell .board-tbl-wrap::-webkit-scrollbar-thumb,
+.lantai .pi-search-drop::-webkit-scrollbar-thumb,
+.lantai .pi-panel::-webkit-scrollbar-thumb,
+.lantai .dd-menu::-webkit-scrollbar-thumb,
+.lantai .csb-hari::-webkit-scrollbar-thumb,
+.dasbor-laci-kiri::-webkit-scrollbar-thumb { background: var(--line2, var(--border)); border-radius: 99px; }
+.lantai .blt-wrap::-webkit-scrollbar-track,
+.dasbor-shell .board-tbl-wrap::-webkit-scrollbar-track,
+.lantai .pi-search-drop::-webkit-scrollbar-track,
+.lantai .pi-panel::-webkit-scrollbar-track,
+.lantai .dd-menu::-webkit-scrollbar-track,
+.lantai .csb-hari::-webkit-scrollbar-track,
+.dasbor-laci-kiri::-webkit-scrollbar-track { background: transparent; }
 
 /* ===== #79 TRANSISI RUTE (View Transitions API) =====
    Dipicu dari useKlikTransisi (lib/dasbor/transisi.ts) di rail Sidebar.
