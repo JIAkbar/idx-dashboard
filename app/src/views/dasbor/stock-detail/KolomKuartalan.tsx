@@ -128,8 +128,8 @@ export function PanelProfitabilitas({ fd }: { fd: StockFundamental }) {
             {TR('Gross Profit Margin', <FdPercent v={fd.gpm != null ? fd.gpm * 100 : null} />)}
             {TR('Operating Margin', <FdPercent v={fd.opm != null ? fd.opm * 100 : null} />)}
             {TR('Net Profit Margin', <FdPercent v={fd.npm != null ? fd.npm * 100 : null} />)}
-            {TR('ROE (TTM)', <FdPercent v={fd.roe != null ? fd.roe * 100 : null} />)}
-            {TR('ROA (TTM)', <FdPercent v={fd.roa != null ? fd.roa * 100 : null} />)}
+            {/* #93: ROE/ROA pindah ke PanelEfektivitas; EBITDA margin masuk sini. */}
+            {TR('EBITDA Margin', <FdPercent v={fd.ebitda_margin != null ? fd.ebitda_margin * 100 : null} />)}
           </tbody>
         </table>
       </div>
@@ -182,7 +182,8 @@ export function PanelDividen({ fd }: { fd: StockFundamental }) {
 }
 
 export function PanelRiwayatDividen({ fd }: { fd: StockFundamental }) {
-  const divHistRows = fd.div_history ?? []
+  // #93: maks 6 baris terbaru — data sudah urut terbaru→terlama dari backend.
+  const divHistRows = (fd.div_history ?? []).slice(0, 6)
   if (divHistRows.length === 0) return null
   return (
     <div className="panel">

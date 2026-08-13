@@ -1295,3 +1295,11 @@
    target sentuh telepon nyaman. Radius 4px sudah ikut blok radius global. */
 .lantai .tv-chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
 .lantai .tv-chips .bchip{margin-right:0;padding:4px 9px}
+
+/* #93 keystats — badge skor (Altman Z / Piotroski F) di panel Key Stats.
+   Token --*-dim & warna sudah terdefinisi di kedua tema blok .lantai. */
+.lantai .ks-badge{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-radius:99px;padding:1px 7px;margin-left:6px;vertical-align:1px}
+.lantai .ks-badge.ks-g{background:var(--green-dim);color:var(--green)}
+.lantai .ks-badge.ks-a{background:var(--amber-dim);color:var(--amber)}
+.lantai .ks-badge.ks-r{background:var(--red-dim);color:var(--red)}
+.lantai .ks-note{display:block;font-size:9px;color:var(--text3)}

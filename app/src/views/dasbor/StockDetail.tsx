@@ -4,7 +4,7 @@ import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { useStockFundamental, useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { fMC, fv, fvx } from '../../lib/dasbor/stockDetailFormat'
 import { FdPercent } from '../../components/dasbor/FdPercent'
-import { PanelSolvency } from './stock-detail/KolomValuasi'
+import { PanelValuasi, PanelPerSaham, PanelSolvency, PanelEfektivitas, PanelSkor } from './stock-detail/KolomValuasi'
 import { PanelKuartalan, PanelProfitabilitas, PanelGrowth, PanelDividen, PanelRiwayatDividen } from './stock-detail/KolomKuartalan'
 import { PanelIncome, PanelBalance, PanelCashflow, PanelPerformance, PanelTahunan } from './stock-detail/KolomLaporan'
 import { PanelValuasiInteraktif } from './stock-detail/PanelValuasiInteraktif'
@@ -230,21 +230,26 @@ export function StockDetail() {
           </div>
 
           {tab === 'statistik' && (
-            /* Panel anak langsung .duo (multicol) — urutan: laporan per
-               periode dulu, lalu snapshot TTM/LQ; browser yang membagi ke
-               kolom seimbang (#81). */
+            /* #93 Key Stats — panel anak langsung .duo (multicol), urutan
+               kiri→kanan ala referensi Stockbit: valuasi & per-saham dulu,
+               solvabilitas & efektivitas, profitabilitas/growth/dividen,
+               lalu kuartalan + laporan ringkas + skor + performance. */
             <div className="duo">
+              <PanelValuasi fd={fd} />
+              <PanelPerSaham fd={fd} />
+              <PanelSolvency fd={fd} />
+              <PanelEfektivitas fd={fd} />
+              <PanelProfitabilitas fd={fd} />
+              <PanelGrowth fd={fd} />
+              <PanelDividen fd={fd} />
+              <PanelRiwayatDividen fd={fd} />
               <PanelKuartalan fd={fd} />
               <PanelTahunan fd={fd} />
-              <PanelRiwayatDividen fd={fd} />
-              <PanelPerformance fd={fd} />
               <PanelIncome fd={fd} />
               <PanelBalance fd={fd} />
               <PanelCashflow fd={fd} />
-              <PanelGrowth fd={fd} />
-              <PanelDividen fd={fd} />
-              <PanelProfitabilitas fd={fd} />
-              <PanelSolvency fd={fd} />
+              <PanelSkor fd={fd} />
+              <PanelPerformance fd={fd} />
             </div>
           )}
 
