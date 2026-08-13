@@ -595,8 +595,10 @@
    KalkulatorJia.tsx), BUKAN di .lantai/.dasbor-main langsung — supaya halaman
    lain tidak ikut kena. Cap di sini, bukan di .grid2.w-kiri (dipakai 4
    subkomponen kalkulator + IndeksDunia.tsx), biar tidak ada efek lain yang
-   ikut berubah. max-width tanpa width tetap fluid turun ke mobile. */
-.kalkulator-view{max-width:1500px;margin-inline:auto}
+   ikut berubah. max-width tanpa width tetap fluid turun ke mobile.
+   Cap 1500px DIHAPUS (user 14 Agu: "dibuat full page biar gak kosong
+   kirinya") — kalkulator mengisi lebar konten penuh seperti halaman lain. */
+.kalkulator-view{width:100%}
 /* Halaman admin (#41) — pola cap lebar sama dgn .kalkulator-view di atas. */
 .admin-view{max-width:1300px;margin-inline:auto}
 .lantai .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;grid-auto-flow:dense}
