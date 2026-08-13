@@ -28,13 +28,25 @@ export function ByStock({ data, onSelect }: ByStockProps) {
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase()
+    // Peringkat relevansi (user 14 Agu: cari "bumi" — BUMI harus baris 1,
+    // bukan tenggelam di bawah emiten yang cuma cocok via nama pemegang):
+    // 0 kode persis · 1 awalan kode · 2 nama emiten · 3 nama pemegang.
+    const skor = (em: (typeof data)[number]) => {
+      const kode = em.code.toLowerCase()
+      if (kode === q) return 0
+      if (kode.startsWith(q)) return 1
+      if (kode.includes(q) || em.issuer.toLowerCase().includes(q)) return 2
+      return 3
+    }
     let list = q
-      ? data.filter(
-          (em) =>
-            em.code.toLowerCase().includes(q) ||
-            em.issuer.toLowerCase().includes(q) ||
-            em.holders.some((h) => h.name.toLowerCase().includes(q)),
-        )
+      ? data
+          .filter(
+            (em) =>
+              em.code.toLowerCase().includes(q) ||
+              em.issuer.toLowerCase().includes(q) ||
+              em.holders.some((h) => h.name.toLowerCase().includes(q)),
+          )
+          .sort((a, b) => skor(a) - skor(b))
       : data
     if (typeFilter) list = list.filter((em) => em.holders.some((h) => holderType(h.cls) === typeFilter))
     return list
