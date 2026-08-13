@@ -273,26 +273,28 @@ export function IndeksDunia() {
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="panel">
-        <div className="panel-h">
-          <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Average Daily Trading (YTD)</span>
-        </div>
-        <div className="adt">
-          <div className="adt-c">
-            <span className="lbl">Avg. Volume</span>
-            <div className="num adt-v">{fN(hari.avg_vol, 0)}<span className="adt-u">Jt Lbr</span></div>
-          </div>
-          <div className="adt-c">
-            <span className="lbl">Avg. Value</span>
-            <div className="num adt-v">{fN(hari.avg_val_idr, 0)}<span className="adt-u">B IDR</span></div>
-            <div className="num adt-s">{fN(hari.avg_val_usd, 0)} Jt USD</div>
-          </div>
-          <div className="adt-c">
-            <span className="lbl">Avg. Frequency</span>
-            <div className="num adt-v">{fN(hari.avg_freq, 0)}<span className="adt-u">Rb Kali</span></div>
+          {/* Digabung ke kolom ini (user 14 Agu): dulu panel full-width sendiri
+              di bawah — satu section dengan Net Foreign + Market Fundamental. */}
+          <div className="panel">
+            <div className="panel-h">
+              <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Average Daily Trading (YTD)</span>
+            </div>
+            <div className="adt">
+              <div className="adt-c">
+                <span className="lbl">Avg. Volume</span>
+                <div className="num adt-v">{fN(hari.avg_vol, 0)}<span className="adt-u">Jt Lbr</span></div>
+              </div>
+              <div className="adt-c">
+                <span className="lbl">Avg. Value</span>
+                <div className="num adt-v">{fN(hari.avg_val_idr, 0)}<span className="adt-u">B IDR</span></div>
+                <div className="num adt-s">{fN(hari.avg_val_usd, 0)} Jt USD</div>
+              </div>
+              <div className="adt-c">
+                <span className="lbl">Avg. Frequency</span>
+                <div className="num adt-v">{fN(hari.avg_freq, 0)}<span className="adt-u">Rb Kali</span></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
