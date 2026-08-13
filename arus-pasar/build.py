@@ -268,7 +268,9 @@ def halaman_sampul(ed, skor_map):
     jml = {"bull": 0, "side": 0, "bear": 0}
     for e in urut:
         jml[sentimen(e)] += 1
-    padat = n > 6  # 7-20: daftar 2 kolom + label pendek; ≤6: 1 kolom label penuh
+    padat = n > 10  # 11-20: daftar 2 kolom + label pendek; ≤10: 1 kolom label penuh
+    # (keputusan user 13 Agu: pakai 1 kolom selama muat — halaman sampul masih
+    #  lega sampai ±10 baris; 2 kolom hanya kalau benar-benar tidak cukup)
     tampil = urut[:MAKS_SAMPUL]
 
     def lbl(e):
@@ -292,12 +294,12 @@ def halaman_sampul(ed, skor_map):
     if padat:
         kepala = f'''<div class="wm-big kecil">ARUS PASAR</div>
     <div class="cv-tag">Lantai Bursa · Edisi Harian · {n} emiten</div>
-    <div class="cv-kode">{ed["edisi"]} · Edisi Ujicoba</div>'''
+    <div class="cv-kode">{ed["edisi"]}</div>'''
     else:
         kepala = f'''<div class="wm-big">ARUS<br>PASAR</div>
     <div class="cv-tag">Lantai Bursa · Edisi Harian</div>
     <div class="cv-tgl">{ed["tanggal_id"]}</div>
-    <div class="cv-kode">{ed["edisi"]} · {n} emiten · Edisi Ujicoba</div>'''
+    <div class="cv-kode">{ed["edisi"]} · {n} emiten</div>'''
 
     return f'''
 <div class="page cover">
@@ -349,7 +351,7 @@ def halaman_ringkasan(ed, skor_map):
   {band(ed, "Ringkasan Edisi")}
   <div class="inner">
     <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Ringkasan Edisi</div>
-      <div class="px" style="font-size:8pt;color:var(--mute)">Edisi ujicoba · {len(ed["emiten"])} emiten</div></div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">{len(ed["emiten"])} emiten</div></div>
     <p class="lede">{TERBILANG.get(len(ed["emiten"]), len(ed["emiten"]))} emiten dibedah dengan kerangka yang sama: struktur harga terhadap EMA50
     dan Pivot Points, kualitas arus dana broker (siapa yang membeli — bukan hanya berapa),
     rasio risk/reward, likuiditas, dan sensitivitas terhadap IHSG.</p>
@@ -401,7 +403,6 @@ def halaman_kolofon(ed):
     <div class="kf-kaki">© {tahun} Johan Iriawan Akbar — PAPAN. Hak cipta dilindungi.<br>
     Terbitan Arus Pasar disusun untuk edukasi analisa pasar, bukan ajakan transaksi.</div>
   </div>
-  {kaki(ed)}
 </div>'''
 
 
