@@ -40,12 +40,17 @@ function App() {
               <Route path="/kalkulator" element={<KalkulatorJia />} />
               <Route path="/bulletin" element={<Bulletin />} />
               <Route path="/feedback" element={<Feedback />} />
+              {/* /admin ikut DI DALAM layout (rail/topbar tetap tampil) tapi
+                  tetap dijaga ProtectedRoute — belum login dilempar ke /login
+                  yang berujung balik ke / dengan LoginModal terbuka (#41). */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/admin" element={<AdminHome />} />
+              </Route>
             </Route>
             {/* /login lama dipertahankan sbg redirect (bookmark/tautan luar) — login
                 sekarang modal, dipicu dari Sidebar/MobileNav (lihat views/Login.tsx). */}
             <Route path="/login" element={<Login />} />
             <Route element={<ProtectedRoute />}>
-              <Route path="/admin" element={<AdminHome />} />
               <Route path="/admin/changelog" element={<ChangelogAdmin />} />
               <Route path="/admin/edisi/ujicoba" element={<EdisiUjicoba />} />
               <Route path="/admin/edisi/:kode" element={<EdisiView />} />

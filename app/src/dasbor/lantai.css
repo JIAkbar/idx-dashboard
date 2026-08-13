@@ -222,6 +222,10 @@
   color: var(--text3); text-decoration: none; transition: color .15s;
 }
 .dasbor-rail-tombol:hover { color: var(--accent); }
+/* Entri Admin di kaki rail = NavLink (#41) — menyala saat di /admin, senada
+   dgn .dasbor-rail-item.active tapi tanpa border-left (kaki rail tak punya
+   kolom garis seperti daftar menu). */
+.dasbor-rail-tombol.active { color: var(--accent); }
 
 .dasbor-nav-badge {
   font-size: 8px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
@@ -370,6 +374,8 @@
     color: var(--text2); font-size: 12.5px; cursor: pointer; text-decoration: none;
   }
   .dasbor-laci-tombol:hover { color: var(--accent); border-color: var(--accent); }
+  /* Entri Admin di laci = NavLink (#41) — senada .dasbor-laci-item.active. */
+  .dasbor-laci-tombol.active { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
 }
 
 /* Modal login (#38) — dipicu Sidebar/MobileNav lewat DasborLayout. Sama pola
@@ -553,6 +559,8 @@
    subkomponen kalkulator + IndeksDunia.tsx), biar tidak ada efek lain yang
    ikut berubah. max-width tanpa width tetap fluid turun ke mobile. */
 .kalkulator-view{max-width:1500px;margin-inline:auto}
+/* Halaman admin (#41) — pola cap lebar sama dgn .kalkulator-view di atas. */
+.admin-view{max-width:1300px;margin-inline:auto}
 .lantai .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;grid-auto-flow:dense}
 
 /* board (split-flap) */

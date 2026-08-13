@@ -66,12 +66,16 @@ export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
         </button>
 
         {session ? (
-          <Link to="/admin" className="dasbor-rail-tombol" title="Admin — kelola unggahan &amp; edisi">
+          <NavLink
+            to="/admin"
+            title="Admin — kelola unggahan &amp; edisi"
+            className={({ isActive }) => 'dasbor-rail-tombol' + (isActive ? ' active' : '')}
+          >
             <svg viewBox="0 0 24 24" width="18" height="18" className="dasbor-ikon" aria-hidden="true">
               <path d="M14 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
             </svg>
             <span className="dasbor-rail-kode">Admin</span>
-          </Link>
+          </NavLink>
         ) : (
           <button type="button" className="dasbor-rail-tombol" onClick={onMasuk} title="Masuk — kelola unggahan &amp; edisi">
             <svg viewBox="0 0 24 24" width="18" height="18" className="dasbor-ikon" aria-hidden="true">

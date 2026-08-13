@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useTheme } from '../context/ThemeContext'
+import { IkonMenu, IKON_KOTAK_ARSIP, IKON_PAPAN_KLIP } from '../components/dasbor/IkonMenu'
 import {
   daftarEdisi,
   daftarScreenshot,
@@ -9,7 +9,6 @@ import {
   unggahScreenshot,
   type EdisiRow,
 } from '../lib/supabaseEdisi'
-import '../dasbor/lantai.css'
 
 function tanggalHariIni(): string {
   const d = new Date()
@@ -38,18 +37,35 @@ function rangkumBerkas(path: string[]): Baris[] {
   return [...map.values()].sort((a, b) => a.ticker.localeCompare(b.ticker))
 }
 
+/** Blok kosong seragam utk panel tanpa isi — pola fd-empty StockDetail.tsx,
+ *  padding diperkecil karena di sini dia hidup di dalam panel, bukan satu
+ *  halaman penuh. */
+function PanelKosong({ ikon, pesan, petunjuk }: { ikon: string; pesan: string; petunjuk?: string }) {
+  return (
+    <div className="fd-empty" style={{ padding: '28px 16px' }}>
+      <p style={{ marginBottom: 8 }}><IkonMenu d={ikon} size={26} /></p>
+      <p>{pesan}</p>
+      {petunjuk && <p style={{ fontSize: 10, marginTop: 6 }}>{petunjuk}</p>}
+    </div>
+  )
+}
+
 /**
  * Halaman admin Arus Pasar — SATU halaman (route /admin), gabungan bekas
  * AdminHome + Unggah (#39): upload screenshot, kotak masuk (tanggal yang
  * sudah punya upload), dan rak terbitan tampil sekaligus, tanpa sub-page.
- * Tak dibungkus <DasborLayout> (rail/pita kurs publik tak boleh nongol di
- * area admin) — pola bungkus tipis .dasbor-shell+.lantai sama seperti
- * ChangelogAdmin.tsx (butuh ancestor .dasbor-shell[data-theme] utk token
- * warna .lantai, lihat komentar di berkas itu).
+ *
+ * Sejak #41 dirender DI DALAM <DasborLayout> (rail kiri tetap tampil, entri
+ * Admin di kaki rail menyala saat aktif) — jadi tak perlu lagi bungkus
+ * .dasbor-shell sendiri ataupun tombol "← Dasbor". Guard auth tetap di
+ * App.tsx (ProtectedRoute membungkus route ini di dalam grup layout).
+ *
+ * Tata letak: .admin-view (cap lebar, lantai.css — pola .kalkulator-view),
+ * grid2 dua kolom di layar lebar (kiri form unggah, kanan status hari ini),
+ * rak terbitan lebar penuh di bawah. grid2 fluid, jatuh satu kolom di telepon.
  */
 export function AdminHome() {
   const { session, signOut } = useAuth()
-  const { theme } = useTheme()
 
   const [edisi, setEdisi] = useState<EdisiRow[] | null>(null)
   const [tanggalUnggahan, setTanggalUnggahan] = useState<string[] | null>(null)
@@ -114,27 +130,26 @@ export function AdminHome() {
   }
 
   return (
-    <div className="dasbor-shell" data-theme={theme}>
-      <div className="lantai">
-        <div className="vhead" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h1>Arus Pasar</h1>
-            <span className="sub">Area admin — unggah &amp; kelola edisi</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
-            <Link to="/" className="dd-btn">← Dasbor</Link>
-            <span className="muted">{session?.user.email}</span>
-            <button type="button" className="dd-btn" onClick={() => signOut()}>Keluar</button>
-          </div>
+    <div className="lantai admin-view">
+      <div className="vhead" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1>Arus Pasar</h1>
+          <span className="sub">Area admin — unggah &amp; kelola edisi</span>
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
+          <span className="muted">{session?.user.email}</span>
+          <button type="button" className="dd-btn" onClick={() => signOut()}>Keluar</button>
+        </div>
+      </div>
 
+      <div className="grid2">
         <section className="panel">
           <div className="panel-h"><span className="lbl">Unggah screenshot</span></div>
           <div className="panel-b">
             <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
               Orderbook wajib, chart opsional.
             </p>
-            <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12, maxWidth: 380 }}>
+            <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12 }}>
               <div className="field">
                 <span className="lbl">Tanggal</span>
                 <input className="inp" type="date" value={tanggal} onChange={(e) => setTanggal(e.target.value)} required />
@@ -179,88 +194,108 @@ export function AdminHome() {
           </div>
         </section>
 
-        <section className="panel">
-          <div className="panel-h"><span className="lbl">Sudah diunggah — {tanggal}</span></div>
-          <div className="panel-b">
-            {sudah.length === 0 && <p className="muted">Belum ada.</p>}
-            {sudah.length > 0 && (
-              <table className="tbl">
-                <thead>
-                  <tr>
-                    <th>Ticker</th>
-                    <th>Orderbook</th>
-                    <th>Chart</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sudah.map((b) => (
-                    <tr key={b.ticker}>
-                      <td className="tick">{b.ticker}</td>
-                      <td>{b.orderbook ? '✓' : '—'}</td>
-                      <td>{b.chart ? '✓' : '—'}</td>
+        <div style={{ display: 'grid', gap: 14, alignContent: 'start' }}>
+          <section className="panel">
+            <div className="panel-h"><span className="lbl">Sudah diunggah — {tanggal}</span></div>
+            <div className="panel-b">
+              {sudah.length === 0 && (
+                <PanelKosong
+                  ikon={IKON_PAPAN_KLIP}
+                  pesan={`Belum ada unggahan untuk ${tanggal}.`}
+                  petunjuk="Pilih tanggal, isi ticker, lalu unggah screenshot orderbook lewat form Unggah Screenshot."
+                />
+              )}
+              {sudah.length > 0 && (
+                <table className="tbl">
+                  <thead>
+                    <tr>
+                      <th>Ticker</th>
+                      <th>Orderbook</th>
+                      <th>Chart</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </section>
+                  </thead>
+                  <tbody>
+                    {sudah.map((b) => (
+                      <tr key={b.ticker}>
+                        <td className="tick">{b.ticker}</td>
+                        <td>{b.orderbook ? '✓' : '—'}</td>
+                        <td>{b.chart ? '✓' : '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </section>
 
-        <section className="panel">
-          <div className="panel-h"><span className="lbl">Kotak masuk</span></div>
-          <div className="panel-b">
-            {tanggalUnggahan === null && <p className="muted">Memuat…</p>}
-            {tanggalUnggahan && tanggalUnggahan.length === 0 && <p className="muted">Belum ada upload.</p>}
-            {tanggalUnggahan && tanggalUnggahan.length > 0 && (
-              <div className="grid3">
-                {tanggalUnggahan.map((tgl) => (
-                  <button
-                    key={tgl}
-                    type="button"
-                    className="vcard"
-                    style={{ textAlign: 'left', cursor: 'pointer' }}
-                    onClick={() => setTanggal(tgl)}
-                    title="Pilih tanggal ini di form unggah"
-                  >
-                    <span className="v-num" style={{ fontSize: 15 }}>{tgl}</span>
-                    <span className="v-note">{tanggalSudahTerbit.has(tgl) ? 'Sudah terbit' : 'Menunggu'}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-
-        <section className="panel">
-          <div className="panel-h"><span className="lbl">Rak terbitan</span></div>
-          <div className="panel-b">
-            {err && <p className="muted" style={{ color: 'var(--red)' }}>Gagal memuat daftar: {err}</p>}
-            {edisi && edisi.length === 0 && <p className="muted">Belum ada edisi terbit.</p>}
-            {edisi && edisi.length > 0 && (
-              <table className="tbl">
-                <thead>
-                  <tr>
-                    <th>Kode</th>
-                    <th>Tanggal</th>
-                    <th>Status</th>
-                    <th>Emiten</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {edisi.map((r) => (
-                    <tr key={r.kode}>
-                      <td><Link to={`/admin/edisi/${r.kode}`} className="tick">{r.kode}</Link></td>
-                      <td>{r.tanggal}</td>
-                      <td><span className={`chip ${r.status === 'terbit' ? 'up' : 'warn'}`}>{r.status}</span></td>
-                      <td>{r.edisi_data.emiten.length}</td>
-                    </tr>
+          <section className="panel">
+            <div className="panel-h"><span className="lbl">Kotak masuk</span></div>
+            <div className="panel-b">
+              {tanggalUnggahan === null && <p className="muted">Memuat…</p>}
+              {tanggalUnggahan && tanggalUnggahan.length === 0 && (
+                <PanelKosong
+                  ikon={IKON_KOTAK_ARSIP}
+                  pesan="Belum ada tanggal dengan unggahan."
+                  petunjuk="Tanggal yang sudah punya screenshot akan berbaris di sini."
+                />
+              )}
+              {tanggalUnggahan && tanggalUnggahan.length > 0 && (
+                <div className="grid3">
+                  {tanggalUnggahan.map((tgl) => (
+                    <button
+                      key={tgl}
+                      type="button"
+                      className="vcard"
+                      style={{ textAlign: 'left', cursor: 'pointer' }}
+                      onClick={() => setTanggal(tgl)}
+                      title="Pilih tanggal ini di form unggah"
+                    >
+                      <span className="v-num" style={{ fontSize: 15 }}>{tgl}</span>
+                      <span className="v-note">{tanggalSudahTerbit.has(tgl) ? 'Sudah terbit' : 'Menunggu'}</span>
+                    </button>
                   ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </section>
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
       </div>
+
+      <section className="panel">
+        <div className="panel-h"><span className="lbl">Rak terbitan</span></div>
+        <div className="panel-b">
+          {err && <p className="muted" style={{ color: 'var(--red)' }}>Gagal memuat daftar: {err}</p>}
+          {edisi && edisi.length === 0 && (
+            <PanelKosong
+              ikon={IKON_KOTAK_ARSIP}
+              pesan="Belum ada edisi terbit."
+              petunjuk="Edisi yang sudah dirakit dari unggahan akan tampil di rak ini."
+            />
+          )}
+          {edisi && edisi.length > 0 && (
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>Kode</th>
+                  <th>Tanggal</th>
+                  <th>Status</th>
+                  <th>Emiten</th>
+                </tr>
+              </thead>
+              <tbody>
+                {edisi.map((r) => (
+                  <tr key={r.kode}>
+                    <td><Link to={`/admin/edisi/${r.kode}`} className="tick">{r.kode}</Link></td>
+                    <td>{r.tanggal}</td>
+                    <td><span className={`chip ${r.status === 'terbit' ? 'up' : 'warn'}`}>{r.status}</span></td>
+                    <td>{r.edisi_data.emiten.length}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </section>
     </div>
   )
 }

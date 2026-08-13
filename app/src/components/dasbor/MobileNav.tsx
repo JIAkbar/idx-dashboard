@@ -102,7 +102,11 @@ export function MobileNav({ onMasuk }: { onMasuk: () => void }) {
                 <span>{theme === 'dark' ? 'Tema terang' : 'Tema gelap'}</span>
               </button>
               {session ? (
-                <NavLink to="/admin" className="dasbor-laci-tombol" onClick={() => setLaciBuka(false)}>
+                <NavLink
+                  to="/admin"
+                  className={({ isActive }) => 'dasbor-laci-tombol' + (isActive ? ' active' : '')}
+                  onClick={() => setLaciBuka(false)}
+                >
                   <svg viewBox="0 0 24 24" width="17" height="17" className="dasbor-ikon" aria-hidden="true">
                     <path d="M14 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
                   </svg>
