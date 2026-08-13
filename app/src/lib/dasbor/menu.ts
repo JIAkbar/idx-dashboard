@@ -54,7 +54,6 @@ export const MENU_ITEMS: MenuItem[] = [
   {
     id: 'broker-summary', path: '/broker-summary', label: 'Broker Summary', kode: 'BSM',
     ikon: 'M4 7h16M4 7l2-3h12l2 3M4 7v11a2 2 0 002 2h12a2 2 0 002-2V7M9 12h6',
-    badge: 'Alpha',
   },
   {
     id: 'kalkulator', path: '/kalkulator', label: 'Kalkulator JIA', kode: 'KAL',
