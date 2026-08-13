@@ -94,6 +94,20 @@ def tingkat_risiko(total):
     return "EKSTREM"
 
 
+def sentimen(em):
+    """Vonis sentimen halaman: 'bull' / 'side' / 'bear'.
+
+    Dari field `arah` (nilai aktual di edisi: "bull"); kalau kosong, fallback
+    kata pertama `label` (mis. "BULLISH — UJI PIVOT R1"). Selain bull/bear
+    (sideways, netral, fluktuatif, dst) -> 'side' (amber).
+    """
+    kunci = (em.get("arah") or "").strip().lower() \
+        or (em.get("label") or "").strip().lower()
+    if kunci.startswith("bull"): return "bull"
+    if kunci.startswith("bear"): return "bear"
+    return "side"
+
+
 # ── Potongan HTML ────────────────────────────────────────────────────────────
 
 def band(ed, eyebrow="Tinjauan Teknikal & Arus Dana Harian"):
@@ -160,11 +174,12 @@ def halaman_emiten(em, sk, ed, ohlc, idx):
         for b, mx in ((sk["teknikal"], 35), (sk["flow"], 30), (sk["rr"], 20),
                       (sk["lik"], 10), (sk["ihsg"], 5)))
     return f'''
-<div class="page">
+<div class="page s-{sentimen(em)}">
+  <span class="senti-edge"></span>
   {band(ed)}
   <div class="inner">
     <div class="trow">
-      <div class="tk">{em["ticker"]}<small>{em["nama"]}</small></div>
+      <div class="tk">${em["ticker"]}<small>{em["nama"]}</small></div>
       <div class="px"><span class="h">{fmt(o["c"])}</span><br>
         <span class="c {chg_cls}">{tanda}{fmt(abs(o["chg"]))} ({tanda}{fmt(abs(o["pct"]),2)}%)</span></div>
     </div>
@@ -196,7 +211,7 @@ def halaman_emiten(em, sk, ed, ohlc, idx):
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
-          <p class="flowline">{em["flow_kelas"]} · <span class="{net_cls}">≈ {net_txt}</span> (top-10)</p>
+          <p class="flowline"><span class="kw">{em["flow_kelas"]}</span> · <span class="{net_cls}">≈ {net_txt}</span> (top-10)</p>
           <p>{em["narasi_flow"]}</p>
         </div>
         <div class="sec">
@@ -226,49 +241,67 @@ def halaman_emiten(em, sk, ed, ohlc, idx):
 </div>'''
 
 
+MAKS_SAMPUL = 20  # >20 emiten: sampul tampilkan 20 teratas per skor
+
+
 def halaman_sampul(ed, skor_map):
     urut = sorted(ed["emiten"], key=lambda e: -skor_map[e["ticker"]]["total"])
-    isi = "\n".join(
-        f'''<div class="c-row"><span class="c-tk">{e["ticker"]}</span>
-        <span class="c-lbl">{e["label"]}</span>
-        <span class="c-skor">{skor_map[e["ticker"]]["total"]:.0f}</span></div>'''
-        for e in urut)
+    n = len(urut)
+    jml = {"bull": 0, "side": 0, "bear": 0}
+    for e in urut:
+        jml[sentimen(e)] += 1
+    padat = n > 6  # 7-20: daftar 2 kolom + label pendek; ≤6: 1 kolom label penuh
+    tampil = urut[:MAKS_SAMPUL]
+
+    def lbl(e):
+        t = e["label"]
+        if padat and "—" in t:  # warna dot sudah mewakili arah — buang kata vonis
+            t = t.split("—", 1)[1]
+        return t.strip().title()
+
+    baris = []
+    for e in tampil:
+        s = sentimen(e)
+        baris.append(
+            f'<div class="cvrow"><span class="dot" style="background:var(--{s})"></span>'
+            f'<span class="tkk">{e["ticker"]}</span><span class="lb">{lbl(e)}</span>'
+            f'<span class="sk c-{s}">{skor_map[e["ticker"]]["total"]:.0f}</span></div>')
+    if n > MAKS_SAMPUL:
+        baris.append(
+            f'<div class="cvrow"><span class="dot" style="background:var(--mute)"></span>'
+            f'<span class="lb">+{n - MAKS_SAMPUL} emiten lain — lihat Ringkasan</span></div>')
+
+    if padat:
+        kepala = f'''<div class="wm-big kecil">ARUS PASAR</div>
+    <div class="cv-tag">Lantai Bursa · Edisi Harian · {n} emiten</div>
+    <div class="cv-kode">{ed["edisi"]} · Edisi Ujicoba</div>'''
+    else:
+        kepala = f'''<div class="wm-big">ARUS<br>PASAR</div>
+    <div class="cv-tag">Lantai Bursa · Edisi Harian</div>
+    <div class="cv-tgl">{ed["tanggal_id"]}</div>
+    <div class="cv-kode">{ed["edisi"]} · {n} emiten · Edisi Ujicoba</div>'''
+
     return f'''
-<div class="page" style="background:var(--brand);color:#fff">
-  <div style="padding:22mm 20mm 0;flex:1;display:flex;flex-direction:column">
-    <div style="border-bottom:1px solid rgba(255,255,255,.35);padding-bottom:6mm">
-      <div style="font-size:8pt;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.7)">
-        Tinjauan Teknikal &amp; Arus Dana Harian</div>
-      <div style="font-family:Georgia,Cambria,serif;font-size:46pt;font-weight:700;line-height:1.05;margin-top:4mm">
-        ARUS PASAR</div>
+<div class="page cover">
+  <header class="band">
+    <div class="m"><div class="sub">Tinjauan Teknikal &amp; Arus Dana Harian</div></div>
+    <div class="e">{ed["tanggal_id"]}<br><span class="kode">{ed["edisi"]}</span></div>
+  </header>
+  <div class="inner">
+    {kepala}
+    <div class="senti-sum">
+      <div class="b sb-bull"><span class="n">{jml["bull"]}</span><span class="l">Bullish</span></div>
+      <div class="b sb-side"><span class="n">{jml["side"]}</span><span class="l">Sideways</span></div>
+      <div class="b sb-bear"><span class="n">{jml["bear"]}</span><span class="l">Bearish</span></div>
     </div>
-    <div style="margin-top:8mm;font-size:13pt">{ed["tanggal_id"]}</div>
-    <div style="font-family:Consolas,monospace;font-size:9pt;color:rgba(255,255,255,.75);margin-top:1.5mm">
-      {ed["edisi"]} · Edisi Ujicoba</div>
-    <div style="margin-top:14mm">
-      <div style="font-size:7pt;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.6);
-        border-bottom:1px solid rgba(255,255,255,.35);padding-bottom:2mm;margin-bottom:3mm;
-        display:flex;justify-content:space-between"><span>Dalam Edisi Ini</span><span>Skor</span></div>
-      <style>.c-row{{display:flex;align-items:baseline;gap:6mm;padding:2.8mm 0;
-        border-bottom:1px solid rgba(255,255,255,.16);font-variant-numeric:tabular-nums}}
-        .c-tk{{font-size:14pt;font-weight:800;width:24mm}}
-        .c-lbl{{flex:1;font-size:9.5pt;color:rgba(255,255,255,.85)}}
-        .c-skor{{font-size:14pt;font-weight:800}}</style>
-      {isi}
-      <div class="c-row"><span class="c-tk" style="font-size:9.5pt;font-weight:700">Peringkat</span>
-        <span class="c-lbl">Quant Opportunity Ranking — komponen skor terbuka</span><span class="c-skor"></span></div>
+    <div class="cv-list{" padat" if padat else ""}">
+      {chr(10).join(baris)}
     </div>
-    <div style="margin-top:auto;padding-bottom:16mm">
-      <div style="background:rgba(255,255,255,.08);padding:4mm 5mm;font-size:9pt;
-        display:flex;gap:10mm;font-variant-numeric:tabular-nums">
-        <span><span style="display:block;font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.6)">IHSG</span>
-          <b>6.409,65</b> +1,04%</span>
-        <span><span style="display:block;font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.6)">Net Foreign Buy Reguler</span>
-          <b>Rp917,23 miliar</b> (7 Agu)</span>
-      </div>
-      <div style="font-size:7pt;color:rgba(255,255,255,.55);margin-top:5mm;line-height:1.7">
-        Analisis probabilistik, bukan ajakan transaksi.<br>
-        Data: TradingView &amp; Stockbit (transkripsi manual terverifikasi), Yahoo Finance.</div>
+    <div class="cv-foot">
+      IHSG <b>6.409,65</b> <span class="c-bull">+1,04%</span> · Net foreign buy reguler
+      <b class="c-bull">Rp917,23 M</b> (7 Agu)<br>
+      Analisis probabilistik, bukan ajakan transaksi.
+      Data: TradingView &amp; Stockbit (transkripsi manual terverifikasi), Yahoo Finance.
     </div>
   </div>
 </div>'''
@@ -276,13 +309,19 @@ def halaman_sampul(ed, skor_map):
 
 def halaman_ringkasan(ed, skor_map):
     urut = sorted(ed["emiten"], key=lambda e: -skor_map[e["ticker"]]["total"])
-    baris = "\n".join(
-        f'''<tr><td class="tk">{e["ticker"]}</td><td>{e["nama"].replace("PT ","").replace(" Tbk.","")}</td>
+    baris = []
+    for e in urut:
+        s = sentimen(e)
+        kata = e["label"].split("—")[0].strip()
+        sisa = e["label"][len(kata):].lstrip(" —")
+        baris.append(
+            f'''<tr><td class="tk">{e["ticker"]}</td><td>{e["nama"].replace("PT ","").replace(" Tbk.","")}</td>
         <td class="num">{fmt(e["ohlc_hari"]["c"])}</td>
         <td class="num {'bull' if e["ohlc_hari"]["chg"]>=0 else 'bear'}">{'+' if e["ohlc_hari"]["chg"]>=0 else '−'}{fmt(abs(e["ohlc_hari"]["pct"]),2)}%</td>
-        <td>{e["label"]}</td><td class="num">{skor_map[e["ticker"]]["total"]:.0f}</td>
-        <td><span class="risk {skor_map[e["ticker"]]["risiko"]}">{skor_map[e["ticker"]]["risiko"]}</span></td></tr>'''
-        for e in urut)
+        <td><span class="pill {s}">{kata}</span><br><span class="lbl-sisa">{sisa}</span></td>
+        <td class="num c-{s}">{skor_map[e["ticker"]]["total"]:.0f}</td>
+        <td><span class="risk {skor_map[e["ticker"]]["risiko"]}">{skor_map[e["ticker"]]["risiko"]}</span></td></tr>''')
+    baris = "\n".join(baris)
     return f'''
 <div class="page">
   {band(ed, "Ringkasan Edisi")}

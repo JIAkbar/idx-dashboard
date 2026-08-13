@@ -90,13 +90,13 @@ KELAS_VONIS = {"TARGET TERCAPAI": "vd-ok", "INVALID": "vd-bad",
 GAYA_EKSTRA = """<style>
 table.sc{width:100%;border-collapse:collapse;font-size:8pt;font-variant-numeric:tabular-nums}
 table.sc th{font-size:6.1pt;color:var(--mute);text-transform:uppercase;letter-spacing:.12em;
-  text-align:left;padding:0 2mm 2mm 0;border-bottom:1.5px solid var(--ink)}
-table.sc td{padding:2.4mm 2mm 2.4mm 0;border-bottom:1px solid var(--hair);vertical-align:top}
+  text-align:left;padding:0 2mm 2mm 0;border-bottom:1px solid var(--hair)}
+table.sc td{padding:2.4mm 2mm 2.4mm 0;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
 table.sc .tk{font-weight:800;font-size:9.5pt}
 table.sc .prog-cell{font-family:Consolas,monospace;font-size:7.2pt;white-space:nowrap}
 .vd{display:inline-block;font-size:6.4pt;font-weight:800;letter-spacing:.08em;
   padding:.9mm 1.8mm;border:1px solid currentColor;white-space:nowrap}
-.vd-ok{color:#157347}.vd-bad{color:#b02a37}.vd-run{color:#1d4ed8}.vd-nd{color:var(--mute)}
+.vd-ok{color:var(--bull)}.vd-bad{color:var(--bear)}.vd-run{color:var(--side)}.vd-nd{color:var(--mute)}
 .vd-sub{display:block;font-size:6.4pt;color:var(--mute);margin-top:1mm;max-width:34mm}
 </style>"""
 

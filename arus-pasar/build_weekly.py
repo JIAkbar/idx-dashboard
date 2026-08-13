@@ -199,7 +199,7 @@ def main():
     }
 
     # ── Rakit halaman ────────────────────────────────────────────────────────
-    gaya_ekstra = ('<style>.prog{border-left:3px solid var(--brand);padding:1.5mm 0 1.5mm 4mm;'
+    gaya_ekstra = ('<style>.prog{border-left:3px solid var(--teal);padding:1.5mm 0 1.5mm 4mm;'
                    'margin-top:3mm;font-size:8pt;font-variant-numeric:tabular-nums}'
                    '.prog b{font-family:Consolas,monospace;font-weight:700}'
                    '.prog .l{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;'
