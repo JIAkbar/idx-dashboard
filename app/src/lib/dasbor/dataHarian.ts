@@ -134,6 +134,90 @@ export interface DataHarian {
 /** Cache di memori per-stem — pindah tanggal balik lagi tidak fetch ulang. */
 const cache = new Map<string, DataHarian>()
 
+/** Fetch satu berkas harian lewat cache modul — dipakai useDataRentang. */
+function fetchHari(stem: string): Promise<DataHarian> {
+  const c = cache.get(stem)
+  if (c) return Promise.resolve(c)
+  return fetch(`/data-idx/json/${stem}.json`)
+    .then((r) => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`)
+      return r.json() as Promise<DataHarian>
+    })
+    .then((d) => {
+      cache.set(stem, d)
+      return d
+    })
+}
+
+/** Batas fetch paralel mode rentang — YTD penuh (>130 berkas) ditolak jujur,
+ * bukan diam-diam dipotong. */
+export const MAKS_HARI_RENTANG = 60
+
+/**
+ * Mode rentang (#75): fetch semua berkas harian dalam rentang (paralel, reuse
+ * cache modul). `tanggal` = slice hari-berdata di rentang (urut naik); []
+ * berarti mode rentang tidak aktif. Guard >MAKS_HARI_RENTANG hari bursa →
+ * error tanpa fetch. `selesai` = progres sederhana untuk label loading.
+ */
+export function useDataRentang(tanggal: TanggalIndex[]) {
+  const [days, setDays] = useState<DataHarian[] | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [selesai, setSelesai] = useState(0)
+  const [error, setError] = useState<string | null>(null)
+  // Kunci efek: daftar stem — identitas array `tanggal` berubah tiap render
+  // pemanggil (hasil filter), isinya yang dibandingkan.
+  const kunci = tanggal.map((t) => t.stem).join(',')
+  const ref = useRef(tanggal)
+  ref.current = tanggal
+
+  useEffect(() => {
+    const t = ref.current
+    if (t.length === 0) {
+      setDays(null)
+      setLoading(false)
+      setError(null)
+      return
+    }
+    if (t.length > MAKS_HARI_RENTANG) {
+      setDays(null)
+      setLoading(false)
+      setError(`Rentang ${t.length} hari bursa terlalu panjang (maks ${MAKS_HARI_RENTANG})`)
+      return
+    }
+    let cancelled = false
+    let n = 0
+    setLoading(true)
+    setSelesai(0)
+    setError(null)
+    Promise.all(
+      t.map((d) =>
+        fetchHari(d.stem).then((x) => {
+          n += 1
+          if (!cancelled) setSelesai(n)
+          return x
+        }),
+      ),
+    )
+      .then((all) => {
+        if (!cancelled) setDays(all)
+      })
+      .catch((e: unknown) => {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : 'Gagal memuat data rentang')
+          setDays(null)
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [kunci])
+
+  return { days, loading, selesai, total: tanggal.length, error }
+}
+
 /**
  * Hook data harian dasbor. Port loadIndex()/loadDay() index_live.html baris
  * 2390-2410 & 2664-2688 (tanpa bagian build*Panel — itu tanggung jawab tiap

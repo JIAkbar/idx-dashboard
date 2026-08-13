@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { cariTanggalPembanding, hitungPeriodePct } from './periode'
+import { cariTanggalPembanding, hitungPeriodePct, rentangPreset } from './periode'
+import { agregatBrokerRows } from './brokerHarian'
 
 const tanggal = [
   { stem: 'ds_260107', date_iso: '2026-01-07', ihsg: 8000, ihsg_pct: 0.1, trading_day: 4 },
@@ -47,5 +48,56 @@ describe('hitungPeriodePct', () => {
 
   it('memberi null kalau nilai pembanding nol', () => {
     expect(hitungPeriodePct(8300, 0)).toBeNull()
+  })
+})
+
+describe('rentangPreset (#75)', () => {
+  it('1 Bulan mundur 30 hari kalender, snap ke hari berdata terakhir <= target', () => {
+    // target = 2026-02-12 - 30 = 2026-01-13 → snap ke 2026-01-09
+    expect(rentangPreset(tanggal, '2026-02-12', 'b1')).toEqual({ mulai: '2026-01-09', akhir: '2026-02-12' })
+  })
+
+  it('riwayat lebih pendek dari preset → mulai jatuh ke tanggal berdata pertama', () => {
+    expect(rentangPreset(tanggal, '2026-01-09', 'b3')).toEqual({ mulai: '2026-01-07', akhir: '2026-01-09' })
+  })
+
+  it('YTD = tanggal berdata pertama di tahun yang sama', () => {
+    expect(rentangPreset(tanggal, '2026-04-09', 'ytd')).toEqual({ mulai: '2026-01-07', akhir: '2026-04-09' })
+  })
+
+  it('null kalau rentang tidak valid (akhir = tanggal berdata pertama)', () => {
+    expect(rentangPreset(tanggal, '2026-01-07', 'w1')).toBeNull()
+    expect(rentangPreset([], '2026-01-07', 'ytd')).toBeNull()
+  })
+})
+
+describe('agregatBrokerRows (#75)', () => {
+  const hari1 = [
+    { kode: 'YP', nama: 'Mirae', vol: 10, nilai: 100, freq: 5, rn: 1, rf: 1 },
+    { kode: 'NI', nama: 'BNI', vol: 4, nilai: 40, freq: 9, rn: 2, rf: 2 },
+  ]
+  const hari2 = [
+    { kode: 'NI', nama: 'BNI', vol: 6, nilai: 70, freq: 1, rn: 1, rf: 2 },
+    { kode: 'CC', nama: 'Mandiri', vol: 1, nilai: 60, freq: 8, rn: 2, rf: 1 },
+  ]
+
+  it('SUM vol/nilai/freq per broker + ranking ulang atas totalnya', () => {
+    const agg = agregatBrokerRows([hari1, hari2])
+    // NI total nilai 110 > YP 100 > CC 60 — rank nilai ikut total, bukan harian
+    expect(agg.map((b) => [b.kode, b.vol, b.nilai, b.freq, b.rn])).toEqual([
+      ['NI', 10, 110, 10, 1],
+      ['YP', 10, 100, 5, 2],
+      ['CC', 1, 60, 8, 3],
+    ])
+    // rank frekuensi: NI 10 > CC 8 > YP 5
+    expect(agg.find((b) => b.kode === 'NI')?.rf).toBe(1)
+    expect(agg.find((b) => b.kode === 'CC')?.rf).toBe(2)
+    expect(agg.find((b) => b.kode === 'YP')?.rf).toBe(3)
+  })
+
+  it('tidak memutasi baris harian sumber (baris itu dicache per tanggal)', () => {
+    agregatBrokerRows([hari1, hari2])
+    expect(hari1[0].nilai).toBe(100)
+    expect(hari2[0].nilai).toBe(70)
   })
 })
