@@ -351,6 +351,11 @@ def halaman_ringkasan(ed, skor_map):
     orderbook Stockbit. Komponen data yang tidak tersedia tidak
     pernah diisi perkiraan — halaman terkait akan menampilkan penanda kesenjangan data dan skor
     diberi penalti. Peringkat bersifat komparatif antar emiten edisi ini, bukan sinyal beli otomatis.</p>
+    <h3 class="rule">Tim &amp; Kontributor</h3>
+    <p class="metode"><b>Analisa &amp; penyusun:</b> Johan Iriawan Akbar.</p>
+    <p class="metode"><b>Pengembangan, ide, gagasan &amp; dukungan:</b> Agitama Wahyu Putra Dita ·
+    Mohamad Miftahul Ulum · Ali Supian · Wardani W. · Dhafina S. F. · Erika J. · Difla S. ·
+    Ratu N. A. A.</p>
   </div>
   {kaki(ed)}
 </div>'''
