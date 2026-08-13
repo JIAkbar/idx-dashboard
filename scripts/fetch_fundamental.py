@@ -304,6 +304,11 @@ def price_perf(hist):
     r1m_l,  r1m_h  = get_range(30)
     r3m_l,  r3m_h  = get_range(91)
     r6m_l,  r6m_h  = get_range(183)
+    # Horizon panjang (hist sekarang period=5y, tetap 1 call history):
+    # emiten IPO < horizon → get_past_price None → pct None (bukan 0).
+    r1y_l,  r1y_h  = get_range(365)
+    r3y_l,  r3y_h  = get_range(1095)
+    r5y_l,  r5y_h  = get_range(1825)
     ytd_l = round(float(ytd_sub["Low"].min()),0)  if not ytd_sub.empty else None
     ytd_h = round(float(ytd_sub["High"].max()),0) if not ytd_sub.empty else None
 
@@ -315,6 +320,9 @@ def price_perf(hist):
         "3m_pct":  pct(get_past_price(91)), "3m_low": r3m_l,  "3m_high": r3m_h,
         "6m_pct":  pct(get_past_price(183)),"6m_low": r6m_l,  "6m_high": r6m_h,
         "ytd_pct": pct(ytd_price),           "ytd_low": ytd_l,  "ytd_high": ytd_h,
+        "1y_pct":  pct(get_past_price(365)), "1y_low": r1y_l,  "1y_high": r1y_h,
+        "3y_pct":  pct(get_past_price(1095)),"3y_low": r3y_l,  "3y_high": r3y_h,
+        "5y_pct":  pct(get_past_price(1825)),"5y_low": r5y_l,  "5y_high": r5y_h,
     }
 
 # ─── Fetch satu saham ──────────────────────────────────────────────────────
@@ -347,7 +355,8 @@ def fetch_stock(ticker_code):
 
         # ── Harga historis ────────────────────────────────────────────────
         try:
-            hist = t.history(period="1y")
+            # 5y (sebelumnya 1y): tetap SATU call history, sekalian buat perf 1y/3y/5y.
+            hist = t.history(period="5y")
             pp   = price_perf(hist)
         except YFRateLimitError:
             raise
@@ -361,6 +370,12 @@ def fetch_stock(ticker_code):
         q_ni   = df_quarterly(qfin, "Net Income")
         q_gp   = df_quarterly(qfin, "Gross Profit")
         q_oi   = df_quarterly(qfin, "Operating Income")
+        # Baris tambahan utk interest coverage / ROIC (tax efektif) / efisiensi —
+        # dari DataFrame qfin yang sudah di-fetch, NOL request ekstra.
+        q_cogs   = df_quarterly(qfin, "Cost Of Revenue")
+        q_int    = df_quarterly(qfin, "Interest Expense")
+        q_tax    = df_quarterly(qfin, "Tax Provision")
+        q_pretax = df_quarterly(qfin, "Pretax Income")
 
         # EPS quarterly: Net Income / Shares
         # shares None eksplisit bila sharesOutstanding tidak ada (fallback lama `or 1`
@@ -380,6 +395,12 @@ def fetch_stock(ticker_code):
         q_cur_l  = df_quarterly(qbs, "Current Liabilities")
         q_lt_debt= df_quarterly(qbs, "Long Term Debt")
         q_tot_l  = df_quarterly(qbs, "Total Liabilities Net Minority Interest")
+        # Baris tambahan utk efisiensi/Altman/balance_q — qbs sudah di-fetch.
+        q_teq    = df_quarterly(qbs, "Total Equity Gross Minority Interest")
+        q_recv   = df_quarterly(qbs, "Accounts Receivable")
+        q_inv    = df_quarterly(qbs, "Inventory")
+        q_pay    = df_quarterly(qbs, "Accounts Payable")
+        q_re     = df_quarterly(qbs, "Retained Earnings")
 
         # Quarterly cashflow
         q_ocf    = df_quarterly(qcf, "Operating Cash Flow")
@@ -401,6 +422,16 @@ def fetch_stock(ticker_code):
         a_fcf  = df_annual(cf, "Free Cash Flow")
         a_icf  = df_annual(cf, "Investing Cash Flow")
         a_fincf= df_annual(cf, "Financing Cash Flow")
+        # Annual tambahan utk Piotroski F-Score & fallback interest/tax/RE —
+        # dari bs/fin yang sudah di-fetch, nol request ekstra.
+        a_lt_debt = df_annual(bs, "Long Term Debt")
+        a_cur_a   = df_annual(bs, "Current Assets")
+        a_cur_l   = df_annual(bs, "Current Liabilities")
+        a_shares  = df_annual(bs, "Ordinary Shares Number")
+        a_re      = df_annual(bs, "Retained Earnings")
+        a_int     = df_annual(fin, "Interest Expense")
+        a_tax     = df_annual(fin, "Tax Provision")
+        a_pretax  = df_annual(fin, "Pretax Income")
 
         # ── HISTORICAL METRICS (per share, annual) ───────────────────────
         # EPS historis tahunan = Net Income / Shares
@@ -488,6 +519,25 @@ def fetch_stock(ticker_code):
         lq_ocf    = latest_q(q_ocf)
         lq_capex  = latest_q(q_capex)
         lq_fcf    = latest_q(q_fcf_cf)
+        lq_recv   = latest_q(q_recv)
+        lq_inv    = latest_q(q_inv)
+        lq_pay    = latest_q(q_pay)
+        lq_teq    = latest_q(q_teq)
+
+        def latest_a(adict):
+            """Nilai tahun terakhir dari dict {year: value}."""
+            yrs = sorted(adict.keys(), reverse=True)
+            return adict[yrs[0]] if yrs else None
+
+        lq_re     = latest_q(q_re)
+        if lq_re is None:
+            lq_re = latest_a(a_re)   # fallback annual (qbs sering tanpa RE)
+
+        # TTM tambahan (fallback annual terakhir bila quarterly kosong)
+        ttm_cogs   = ttm_from_quarterly(q_cogs)
+        ttm_int    = ttm_from_quarterly(q_int)    or latest_a(a_int)
+        ttm_tax_p  = ttm_from_quarterly(q_tax)    or latest_a(a_tax)
+        ttm_pretax = ttm_from_quarterly(q_pretax) or latest_a(a_pretax)
 
         # Calculated solvency (latest quarter)
         lq_net_debt = (lq_debt - lq_cash) if (lq_debt and lq_cash) else None
@@ -584,6 +634,121 @@ def fetch_stock(ticker_code):
         except Exception:
             pass
 
+        # === RASIO TURUNAN BARU (Stock Detail ala "Key Stats") ===============
+        # Rasio = laporan ÷ laporan (mata uang sama) → TIDAK perlu konversi_ke_idr.
+        # Nilai absolut yang diekspor tetap dikonversi di blok output.
+
+        # EBIT TTM: quarterly Operating Income, fallback annual terakhir.
+        ttm_ebit = ttm_oi if ttm_oi is not None else latest_a(a_oi)
+
+        # COGS TTM fallback: Revenue − Gross Profit (identitas akuntansi).
+        if ttm_cogs is None and ttm_rev is not None and ttm_gp is not None:
+            ttm_cogs = ttm_rev - ttm_gp
+
+        # EV/EBIT = enterprise value (IDR, market-based) / EBIT TTM (→IDR).
+        # Sebelumnya ev_ebit cuma alias ev_ebitda — sekarang dihitung beneran.
+        ttm_ebit_idr = konversi_ke_idr(ttm_ebit, fin_cur, kurs)
+        ev_ebit_val = round(ev_val/ttm_ebit_idr, 2) if (ev_val and ttm_ebit_idr) else None
+
+        # Interest coverage = EBIT TTM / |beban bunga TTM|.
+        interest_cov = round(ttm_ebit/abs(ttm_int), 2) if (ttm_ebit is not None and ttm_int) else None
+
+        # ROIC ≈ NOPAT / (equity + total_debt − cash), posisi kuartal terakhir
+        # (aproksimasi jujur: bukan rata-rata awal-akhir periode).
+        # NOPAT = EBIT × (1 − tax efektif); tax efektif = Tax Provision TTM /
+        # Pretax Income TTM (dipakai hanya bila 0 ≤ rate < 1), fallback tarif
+        # PPh badan RI 22%.
+        tax_rate = 0.22
+        if ttm_tax_p is not None and ttm_pretax:
+            tr = ttm_tax_p / ttm_pretax
+            if 0 <= tr < 1:
+                tax_rate = tr
+        roic = None
+        inv_cap = (lq_eq or 0) + (lq_debt or 0) - (lq_cash or 0)
+        if ttm_ebit is not None and lq_eq and inv_cap > 0:
+            roic = round(ttm_ebit*(1-tax_rate)/inv_cap, 4)
+
+        # ROCE = EBIT TTM / capital employed (total assets − current liabilities).
+        roce = None
+        if ttm_ebit is not None and lq_assets and lq_cur_l is not None and (lq_assets - lq_cur_l):
+            roce = round(ttm_ebit/(lq_assets - lq_cur_l), 4)
+
+        # Efisiensi/aktivitas — basis 365 hari, TTM income vs posisi kuartal
+        # terakhir. Bank/finansial umumnya tanpa Inventory/COGS → None (wajar).
+        # DSO = 365·piutang/pendapatan · DIO = 365·persediaan/COGS ·
+        # DPO = 365·utang usaha/COGS · CCC = DSO + DIO − DPO.
+        recv_turn  = round(ttm_rev/lq_recv, 2)   if (ttm_rev and lq_recv)   else None
+        inv_turn   = round(ttm_cogs/lq_inv, 2)   if (ttm_cogs and lq_inv)   else None
+        asset_turn = round(ttm_rev/lq_assets, 4) if (ttm_rev and lq_assets) else None
+        dso = round(365*lq_recv/ttm_rev, 1)  if (ttm_rev and lq_recv)  else None
+        dio = round(365*lq_inv/ttm_cogs, 1)  if (ttm_cogs and lq_inv)  else None
+        dpo = round(365*lq_pay/ttm_cogs, 1)  if (ttm_cogs and lq_pay)  else None
+        ccc = round(dso + dio - dpo, 1) if None not in (dso, dio, dpo) else None
+
+        # Altman Z"-Score (modifikasi emerging market, Altman 1995):
+        # Z" = 6.56·WC/TA + 3.26·RE/TA + 6.72·EBIT/TA + 1.05·BVE/TL.
+        # RE (retained earnings) dari balance sheet; null bila tak tersedia.
+        altman_z = None
+        if lq_assets and lq_tot_l and None not in (lq_wc, lq_re, ttm_ebit, lq_eq):
+            altman_z = round(6.56*lq_wc/lq_assets + 3.26*lq_re/lq_assets
+                             + 6.72*ttm_ebit/lq_assets + 1.05*lq_eq/lq_tot_l, 2)
+
+        # Piotroski F-Score (0–9) — tahun fiskal terakhir (t) vs sebelumnya (t−1):
+        #   1 ROA>0 · 2 CFO>0 · 3 ΔROA>0 · 4 CFO>NetIncome (kualitas akrual) ·
+        #   5 ΔLTdebt/TA<0 · 6 ΔCurrentRatio>0 · 7 tanpa dilusi (saham ≤ t−1) ·
+        #   8 ΔGrossMargin>0 · 9 ΔAssetTurnover>0.
+        # Komponen tanpa data = 0 (dilewati); f_score_n = jumlah komponen yang
+        # benar-benar terhitung (maks 9).
+        def rasio_a(num, den):
+            return {y: num[y]/den[y] for y in num if den.get(y)}
+        def t_dan_t1(d):
+            yrs = sorted(d.keys(), reverse=True)
+            return (d[yrs[0]], d[yrs[1]]) if len(yrs) >= 2 else (None, None)
+
+        f_score, f_n = 0, 0
+        roa_t, roa_p = t_dan_t1(rasio_a(a_ni, a_assets))
+        if roa_t is not None:
+            f_n += 1; f_score += roa_t > 0                                   # 1
+        cfo_t = latest_a(a_ocf)
+        if cfo_t is not None:
+            f_n += 1; f_score += cfo_t > 0                                   # 2
+        if roa_t is not None and roa_p is not None:
+            f_n += 1; f_score += roa_t > roa_p                               # 3
+        thn_sama = sorted(set(a_ocf) & set(a_ni), reverse=True)
+        if thn_sama:
+            f_n += 1; f_score += a_ocf[thn_sama[0]] > a_ni[thn_sama[0]]      # 4
+        lev_t, lev_p = t_dan_t1(rasio_a(a_lt_debt, a_assets))
+        if lev_t is not None and lev_p is not None:
+            f_n += 1; f_score += lev_t < lev_p                               # 5
+        cr_t, cr_p = t_dan_t1(rasio_a(a_cur_a, a_cur_l))
+        if cr_t is not None and cr_p is not None:
+            f_n += 1; f_score += cr_t > cr_p                                 # 6
+        sh_t, sh_p = t_dan_t1(a_shares)
+        if sh_t is not None and sh_p is not None:
+            f_n += 1; f_score += sh_t <= sh_p                                # 7
+        gm_t, gm_p = t_dan_t1(rasio_a(a_gp, a_rev))
+        if gm_t is not None and gm_p is not None:
+            f_n += 1; f_score += gm_t > gm_p                                 # 8
+        at_t, at_p = t_dan_t1(rasio_a(a_rev, a_assets))
+        if at_t is not None and at_p is not None:
+            f_n += 1; f_score += at_t > at_p                                 # 9
+        f_score = int(f_score) if f_n else None
+
+        # Kuartalan mini (maks 12 kuartal terakhir) utk tabel Net Income/Revenue
+        # per kuartal di Stock Detail. IDR-ised sekali di sini, dipakai ulang di
+        # q_revenue/q_net_income (output) — bukan konversi dobel.
+        q_rev_idr = konversi_dict_ke_idr(q_rev, fin_cur, kurs)
+        q_ni_idr  = konversi_dict_ke_idr(q_ni, fin_cur, kurs)
+        sel_q = sorted({(int(y), q) for y, m in q_rev_idr.items() for q in m} |
+                       {(int(y), q) for y, m in q_ni_idr.items() for q in m},
+                       reverse=True)[:12]
+        quarterly_mini = {}
+        for y, q in sel_q:
+            quarterly_mini.setdefault(str(y), {})[q] = {
+                "revenue":    q_rev_idr.get(str(y), {}).get(q),
+                "net_income": q_ni_idr.get(str(y), {}).get(q),
+            }
+
         # ── Susun output ──────────────────────────────────────────────────
         data = {
             # Meta
@@ -637,7 +802,7 @@ def fetch_stock(ticker_code):
             "ps":           ps_val,
             "price_cf":     round(price_cf,2) if price_cf else None,
             "price_fcf":    round(price_fcf,2) if price_fcf else None,
-            "ev_ebit":      ev_ebitda_val,   # closest available (belum ada basis EBIT terpisah)
+            "ev_ebit":      ev_ebit_val,     # EV / EBIT TTM beneran (dulu alias ev_ebitda)
             "ev_ebitda":    ev_ebitda_val,
             "ev_revenue":   ev_revenue_val,
             "peg":          sg(info,"pegRatio"),
@@ -729,8 +894,8 @@ def fetch_stock(ticker_code):
             # konversi_dict_ke_idr, KECUALI q_eps: EPS sudah IDR-scale langsung dari
             # Yahoo per temuan empiris Task 9 (lihat komentar di blok eps/eps_fwd di
             # atas) — mengalikan lagi dengan kurs akan melipatgandakannya.
-            "q_revenue":    konversi_dict_ke_idr(q_rev, fin_cur, kurs),
-            "q_net_income": konversi_dict_ke_idr(q_ni, fin_cur, kurs),
+            "q_revenue":    q_rev_idr,
+            "q_net_income": q_ni_idr,
             "q_eps":        q_eps,
             "q_gross":      konversi_dict_ke_idr(q_gp, fin_cur, kurs),
             "q_op_income":  konversi_dict_ke_idr(q_oi, fin_cur, kurs),
@@ -770,6 +935,58 @@ def fetch_stock(ticker_code):
             # === DDM DATA ===
             "ddm_g_rate":    ddm_g_rate,   # DPS CAGR 2Y (%)
             "div_years":     len(hist_dps_a),  # jumlah tahun bagi dividen
+
+            # === RASIO BARU (Key Stats Stock Detail — lihat blok perhitungan) ===
+            "interest_coverage":      interest_cov,
+            "roic":                   roic,
+            "roce":                   roce,
+            "receivables_turnover":   recv_turn,
+            "inventory_turnover":     inv_turn,
+            "asset_turnover":         asset_turn,
+            "days_sales_outstanding": dso,
+            "days_inventory":         dio,
+            "days_payables":          dpo,
+            "cash_conversion_cycle":  ccc,
+            "altman_z":               altman_z,
+            "f_score":                f_score,
+            "f_score_n":              f_n,   # jumlah komponen F-Score yang terhitung (maks 9)
+
+            # Alias eksplisit sesuai spek Stock Detail (nilai sama dgn shares/float_pct)
+            "shares_outstanding":     shares,
+            "free_float_pct":         round(float_pct, 2) if float_pct else None,
+
+            # === KUARTALAN MINI (maks 12 kuartal, {tahun:{Qn:{revenue,net_income}}}) ===
+            "quarterly":              quarterly_mini,
+        }
+
+        # === LAPORAN RINGKAS (grup) — referensi nilai flat yang SUDAH dikonversi
+        # ke IDR di atas (bukan konversi/perhitungan kedua), supaya angka grup
+        # dan angka flat mustahil beda.
+        data["income_ttm"] = {
+            "revenue":      data["ttm_revenue"],
+            "gross_profit": data["ttm_gross"],
+            "ebitda":       data["ttm_ebitda"],
+            "net_income":   data["ttm_net_income"],
+        }
+        data["balance_q"] = {
+            "cash":              data["lq_cash"],
+            "total_assets":      data["lq_assets"],
+            "total_liabilities": data["lq_tot_liab"],
+            "working_capital":   data["lq_wc"],
+            "common_equity":     data["lq_equity"],
+            "lt_debt":           data["lq_lt_debt"],
+            "st_debt":           data["lq_st_debt"],
+            "total_debt":        data["lq_total_debt"],
+            "net_debt":          data["lq_net_debt"],
+            # Total equity termasuk minoritas; fallback ke common equity.
+            "total_equity":      konversi_ke_idr(lq_teq, fin_cur, kurs) or data["lq_equity"],
+        }
+        data["cashflow_ttm"] = {
+            "cfo":   data["ttm_ocf"],
+            "cfi":   data["ttm_icf"],
+            "cff":   data["ttm_fincf"],
+            "capex": data["ttm_capex"],
+            "fcf":   data["ttm_fcf"],
         }
 
         # Save JSON per saham
