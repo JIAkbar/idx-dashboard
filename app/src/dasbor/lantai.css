@@ -391,20 +391,35 @@
 @keyframes dasbor-modal-pudar { from { opacity: 0; } to { opacity: 1; } }
 @keyframes dasbor-modal-naik { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
-/* Ticker rim modal login (#39 opsi 2) — reuse .dasbor-tk/.dasbor-num dan
-   keyframe dasbor-pita-jalan dari pita header (baris ~97-104), cuma durasi
-   lebih pendek (kartu ~320px vs full-width). overflow:hidden di .panel
-   discope ke modal saja supaya panel lain (11 halaman dasbor) tidak kena. */
+/* Kepala modal login "Gerbang Sesi" (#42 ronde 2, konsep B) + sparkline IHSG
+   (elemen konsep A) — nilai dari mockup modal-login-ronde2.html .mB/.spark,
+   token .lantai. overflow:hidden di .panel discope ke modal saja supaya
+   panel lain (11 halaman dasbor) tidak kena. */
 .dasbor-modal .panel { overflow: hidden; }
-.login-tk-rim { overflow: hidden; border-bottom: 1px solid var(--line); background: var(--bg2); }
-.login-tk-rim-track { display: flex; white-space: nowrap; width: max-content; animation: dasbor-pita-jalan 20s linear infinite; }
-.login-tk-rim .dasbor-tk { padding: 6px 12px; font-size: 10.5px; }
+.lantai .login-sesi { padding: 13px 16px 11px; border-bottom: 1px solid var(--line); background: var(--bg2); }
+.lantai .login-sesi .baris1 { display: flex; justify-content: space-between; align-items: baseline; }
+.lantai .login-sesi .status { font-family: var(--disp); font-weight: 700; font-size: 13px; }
+.lantai .login-sesi .status i { display: inline-block; width: 7px; height: 7px; border-radius: 99px; background: var(--green); margin-right: 6px; }
+.lantai .login-sesi.tutup .status i { background: var(--text3); }
+.lantai .login-sesi .jam { font-family: var(--mono); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.lantai .login-sesi .jam small { font-size: 9px; color: var(--text3); font-weight: 400; }
+.lantai .login-sesi .seg { height: 5px; border-radius: 3px; background: var(--bg3); position: relative; overflow: hidden; margin-top: 9px; }
+.lantai .login-sesi .seg i { position: absolute; inset: 0; background: var(--amber); border-radius: 3px; }
+.lantai .login-sesi.tutup .seg i { background: var(--line2); }
+.lantai .login-sesi .seglbl { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 9px; color: var(--text3); margin-top: 4px; }
+/* min-height me-reserve tinggi label+svg+nilai — jalur "data belum ada"
+   (placeholder —) dan "data ada" (sparkline) sama tingginya, layout tak
+   lompat saat index.json selesai termuat. */
+.lantai .login-spark { padding: 10px 16px 12px; border-bottom: 1px solid var(--line); min-height: 106px; }
+.lantai .login-spark .l { display: block; font-family: var(--disp); font-size: 8.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--text3); }
+.lantai .login-spark svg { display: block; width: 100%; height: 44px; margin: 4px 0 2px; }
+.lantai .login-spark .v { font-family: var(--mono); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.lantai .login-sub { margin: 0; font-size: 11.5px; color: var(--text3); line-height: 1.55; }
 
 @media (prefers-reduced-motion: reduce) {
   .dasbor-pita-track { animation: none; }
   .dasbor-laci, .dasbor-laci-bg { animation: none; }
   .dasbor-modal, .dasbor-modal-bg { animation: none; }
-  .login-tk-rim-track { animation: none; }
 }
 
 /* ===== .rr-bar-* — satu-satunya sisa "KALKULATOR JIA" yang masih dipakai
