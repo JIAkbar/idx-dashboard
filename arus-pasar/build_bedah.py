@@ -198,12 +198,6 @@ def hal_pcd(bd, r):
     lv = lambda rows: "\n".join(
         f'<div class="r"><span class="l">{n}</span><b class="{cls}">'
         f'{v if isinstance(v,str) else B.fmt(v)}</b></div>' for n, v, cls in rows)
-    # Batang horizontal butuh lebih banyak ruang vertikal per bin harga
-    # daripada versi vertikal lama (430px pas untuk lebar 1360px) — riwayat
-    # harga emiten yang pernah rally besar (mis. DSSA 400an -> 4000an) bikin
-    # rentang harga sumbu-Y lebar sekali dan zona bermakna (dekat close)
-    # cuma kebagian sepotong kecil; 820px (halaman masih sisa banyak ruang
-    # sebelum footer — sudah dicek) memberi tiap bin lebih dari 1px.
     return f'''
 <div class="page">
   {B.band(bd, "Price of Construction Distribution")}
@@ -211,36 +205,35 @@ def hal_pcd(bd, r):
     <div class="hangka">{headline}</div>
     <div class="chartwrap">
       <div class="cap">{bd["ticker"]} · Distribusi Volume × Harga · Peluruhan Half-life {r["half_life"]} Hari · {r["n_bar"]} Bar</div>
-      <canvas id="chPCD" width="1360" height="820"></canvas>
+      <canvas id="chPCD" width="1360" height="430"></canvas>
     </div>
     <script>
     (function(){{
       const K={json.dumps(kurva)},PCDV={r["pcd"]:.1f},P25={r["p25"]},P50={r["p50"]},P75={r["p75"]},C={r["close"]};
       const cv=document.getElementById('chPCD'),x=cv.getContext('2d');
-      const W=cv.width,H=cv.height,pad={{t:16,r:132,b:16,l:70}};
-      // sumbu-Y = harga (rendah di bawah, tinggi di atas); sumbu-X = bobot volume
+      const W=cv.width,H=cv.height,pad={{t:44,r:16,b:30,l:16}};
       const lo=K[0][0],hi=K[K.length-1][0],mx=Math.max(...K.map(k=>k[1]));
-      const Yp=p=>pad.t+(hi-p)/(hi-lo)*(H-pad.t-pad.b);
-      const Xv=v=>pad.l+v/mx*(W-pad.l-pad.r);
-      const bh=(H-pad.t-pad.b)/K.length*.82;
+      const X=p=>pad.l+(p-lo)/(hi-lo)*(W-pad.l-pad.r);
+      const Y=v=>H-pad.b-v/mx*(H-pad.t-pad.b);
+      const bw=(W-pad.l-pad.r)/K.length*.82;
       K.forEach(([p,v])=>{{x.fillStyle=p<=C?"rgba(18,135,63,.42)":"rgba(90,115,145,.30)";
-        x.fillRect(pad.l,Yp(p)-bh/2,Math.max(1,Xv(v)-pad.l),bh);}});
-      x.font="14px Cascadia Code, Consolas, monospace";x.textBaseline="middle";
-      // skala harga sumbu-Y — referensi umum, independen dari garis level
-      x.fillStyle="rgba(22,32,43,.55)";x.textAlign="right";
-      for(let i=0;i<=4;i++){{const p=lo+(hi-lo)*i/4;
-        x.fillText(p.toLocaleString('id',{{maximumFractionDigits:0}}),pad.l-8,Yp(p));}}
+        x.fillRect(X(p)-bw/2,Y(v),bw,H-pad.b-Y(v));}});
+      x.font="14px Cascadia Code, Consolas, monospace";x.textAlign="center";
       let taken=[];
       const garis=[["p25",P25,"#0E8F87",1,[4,4]],["p50",P50,"#0E8F87",1,[4,4]],
                    ["p75",P75,"#0E8F87",1,[4,4]],["PCD "+PCDV.toLocaleString('id',{{maximumFractionDigits:0}}),PCDV,"#B87708",2,[]],
                    ["CLOSE "+C.toLocaleString('id'),C,"#16202B",2,[]]];
       garis.forEach(([lbl,p,c,w,dash])=>{{
         x.strokeStyle=c;x.lineWidth=w;x.setLineDash(dash);x.beginPath();
-        x.moveTo(pad.l,Yp(p));x.lineTo(W-pad.r+4,Yp(p));x.stroke();x.setLineDash([]);
-        let yl=Yp(p); while(taken.some(ty=>Math.abs(ty-yl)<14)) yl+=14;
-        taken.push(yl);
-        x.fillStyle=c;x.textAlign="left";x.fillText(lbl,W-pad.r+8,yl);
+        x.moveTo(X(p),pad.t-4);x.lineTo(X(p),H-pad.b);x.stroke();x.setLineDash([]);
+        let yl=12; while(taken.some(([tx,ty])=>ty===yl&&Math.abs(tx-X(p))<70)) yl+=15;
+        taken.push([X(p),yl]);
+        x.fillStyle=c;x.fillText(lbl,X(p),yl);
       }});
+      x.fillStyle="rgba(22,32,43,.55)";
+      for(let i=0;i<=4;i++){{const p=lo+(hi-lo)*i/4;
+        x.textAlign=i===0?"left":i===4?"right":"center";
+        x.fillText(p.toLocaleString('id',{{maximumFractionDigits:0}}),X(p),H-8);}}
     }})();
     </script>
     <div class="bd-lvl">
