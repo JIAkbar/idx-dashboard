@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useBulletinList } from '../../lib/dasbor/bulletin'
 import { IkonMenu, IKON_SILANG } from '../../components/dasbor/IkonMenu'
 
@@ -286,10 +287,15 @@ export function Bulletin() {
 
       {/* #98: modal viewer PDF — backdrop numpang .dasbor-modal-bg (Escape via
           effect di atas, klik luar lewat cek target). Hanya jalur desktop;
-          mobile sudah dibelokkan ke tab baru di bukaPdf(). */}
-      {lihat && (
+          mobile sudah dibelokkan ke tab baru di bukaPdf().
+          Portal ke .dasbor-shell (bukan body): .dasbor-main ber-view-transition-name
+          = stacking context sendiri, z-index 90 di dalamnya kalah dari rail/topbar
+          (z 25/20 di context shell) — modal terpotong kalau tidak diangkat.
+          Tetap di dalam shell supaya [data-theme] berlaku; kelas "lantai" di
+          backdrop menyediakan token & scope selector .lantai .blt-*. */}
+      {lihat && createPortal(
         <div
-          className="dasbor-modal-bg"
+          className="dasbor-modal-bg lantai"
           onClick={(ev) => {
             if (ev.target === ev.currentTarget) setLihat(null)
           }}
@@ -307,7 +313,8 @@ export function Bulletin() {
             </div>
             <iframe className="blt-frame" src={`/arus-pasar/keluaran/${lihat.pdf}`} title={`PDF ${lihat.kode}`} />
           </div>
-        </div>
+        </div>,
+        document.querySelector('.dasbor-shell') ?? document.body,
       )}
     </div>
   )

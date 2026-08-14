@@ -13,7 +13,9 @@ export interface EdisiBulletin {
   update_dari?: number
 }
 
-/** Cache modul — pindah halaman balik lagi tidak fetch ulang, pola sama dataHarian.ts. */
+/** Cache modul — pindah halaman balik lagi langsung tampil, TAPI tetap
+ *  revalidate di latar tiap mount (stale-while-revalidate): edisi bisa
+ *  dirilis ulang di tengah sesi dan daftar lama nyangkut kalau di-skip. */
 let cache: EdisiBulletin[] | null = null
 
 export function useBulletinList() {
@@ -21,9 +23,9 @@ export function useBulletinList() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (cache) return
     let batal = false
-    fetch('/arus-pasar/keluaran/index.json')
+    // no-cache = tetap pakai HTTP cache tapi wajib revalidasi (ETag) ke server
+    fetch('/arus-pasar/keluaran/index.json', { cache: 'no-cache' })
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json() as Promise<{ edisi: EdisiBulletin[] }>
