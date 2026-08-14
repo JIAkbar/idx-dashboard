@@ -169,7 +169,14 @@ export function BrokerSummary() {
           </div>
           {/* #98: inline style → kelas .bs-ctl supaya media query mobile bisa
               menata ulang (inline selalu menang atas CSS). #99: kontrol tampil
-              di SEMUA tab — NEGO/Flow ikut tanggal/rentang aktif halaman. */}
+              di SEMUA tab — NEGO/Flow ikut tanggal/rentang aktif halaman.
+              #4/#5 (revisi 14 Agu): baris kontrol jadi grup sendiri — mode
+              toggle KIRI, preset TENGAH (boleh wrap), tanggal KANAN — via
+              .bs-ctl justify-content:space-between (3 grup flex, lihat
+              lantai.css). Ini juga mengunci posisi toggle & tanggal supaya
+              tak "gerak-gerak" saat Harian⇄Rentang (#5): toggle selalu grup
+              pertama/kiri, tanggal selalu grup terakhir/kanan, terlepas dari
+              preset ada/tidak. */}
           <div className="bs-ctl">
               {/* Toggle mode + pemilih: Harian → DatePicker (hanya hari
                   ber-data); Rentang → preset + rentang bebas dua DatePicker
@@ -178,8 +185,8 @@ export function BrokerSummary() {
                 <button type="button" role="tab" aria-selected={!modeRentang} className={'tab' + (modeRentang ? '' : ' on')} onClick={keHarian}>Harian</button>
                 <button type="button" role="tab" aria-selected={modeRentang} className={'tab' + (modeRentang ? ' on' : '')} onClick={() => keRentang(preset ?? 'w1')}>Rentang</button>
               </div>
-              {modeRentang ? (
-                <>
+              {modeRentang && (
+                <div className="bs-preset">
                   {PRESET_BROKER.map((p) => (
                     <button
                       key={p.id}
@@ -190,22 +197,28 @@ export function BrokerSummary() {
                       {p.label}
                     </button>
                   ))}
-                  {/* Rentang bebas — dua DatePicker mulai/akhir, hanya hari
-                      ber-data yang bisa dipilih; urutan terbalik otomatis
-                      ditukar di pilihRentang. */}
-                  <DatePicker value={mulaiIso} onChange={(iso) => keRentangBebas(iso, akhirIso)} tersedia={tersedia} ariaLabel="Tanggal mulai rentang" rata="kanan" />
-                  <span className="lbl" aria-hidden="true">s.d.</span>
-                  <DatePicker value={akhirIso} onChange={(iso) => keRentangBebas(mulaiIso, iso)} tersedia={tersedia} ariaLabel="Tanggal akhir rentang" rata="kanan" />
-                </>
-              ) : (
-                <DatePicker
-                  value={tanggalAktif ?? ''}
-                  onChange={pilihTanggal}
-                  tersedia={tersedia}
-                  ariaLabel="Pilih tanggal data broker"
-                  rata="kanan"
-                />
+                </div>
               )}
+              <div className="bs-tgl">
+                {modeRentang ? (
+                  <>
+                    {/* Rentang bebas — dua DatePicker mulai/akhir, hanya hari
+                        ber-data yang bisa dipilih; urutan terbalik otomatis
+                        ditukar di pilihRentang. */}
+                    <DatePicker value={mulaiIso} onChange={(iso) => keRentangBebas(iso, akhirIso)} tersedia={tersedia} ariaLabel="Tanggal mulai rentang" rata="kanan" />
+                    <span className="lbl" aria-hidden="true">s.d.</span>
+                    <DatePicker value={akhirIso} onChange={(iso) => keRentangBebas(mulaiIso, iso)} tersedia={tersedia} ariaLabel="Tanggal akhir rentang" rata="kanan" />
+                  </>
+                ) : (
+                  <DatePicker
+                    value={tanggalAktif ?? ''}
+                    onChange={pilihTanggal}
+                    tersedia={tersedia}
+                    ariaLabel="Pilih tanggal data broker"
+                    rata="kanan"
+                  />
+                )}
+              </div>
           </div>
         </div>
         <div className="panel-b">

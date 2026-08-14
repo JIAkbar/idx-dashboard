@@ -1512,7 +1512,26 @@
        grid 2 kolom rapi di mobile.
    (5) /bulletin: tab filter dibagi rata selebar baris di mobile.
    (6) /bulletin: viewer PDF inline (.blt-modal) — modal besar header + iframe. */
-.lantai .bs-ctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+/* #4/#5 (revisi 14 Agu, lanjutan catatan (2) di atas): dulu baris tab-view
+   cuma dipaksa turun baris sendiri di mobile ≤560px (blok media query di
+   bawah) — di desktop .panel-h masih satu baris flex, jadi begitu mode
+   Rentang aktif (preset + 2 date-picker numpang di .bs-ctl) tab view
+   (Inventory|Kuadran|Nego|Flow) tergencet lagi, Flow kepotong. Aturan ini
+   menyamakan perilaku "tab view baris sendiri penuh" ke SEMUA ukuran layar
+   — blok mobile di bawah jadi redundan tapi dibiarkan (aman, tak konflik). */
+.lantai .bs-h{flex-wrap:wrap}
+.lantai .bs-h>.tabs{flex:1 0 100%;display:flex}
+/* .bs-ctl sekarang 3 grup flex (toggle Harian/Rentang | preset | tanggal):
+   space-between mengunci toggle selalu di kiri & grup tanggal selalu di
+   kanan — posisinya TIDAK bergeser saat preset ada/tidaknya (Harian⇄Rentang,
+   #5 "kalender gerak-gerak"), preset kebagian ruang tengah & boleh wrap. */
+.lantai .bs-ctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:space-between}
+/* min-width:0 wajib: tanpa ini flex-basis:auto memakai lebar max-content
+   SATU BARIS (klasik flexbox gotcha "min-width:auto" bawaan flex item) —
+   .bs-preset jadi tak pernah menyusut, chip terakhir (mis. YTD) terpotong
+   diam-diam di layar sempit alih-alih wrap ke baris baru. */
+.lantai .bs-preset{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;flex:1 1 auto;min-width:0}
+.lantai .bs-tgl{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 .lantai .vcard .v-tgl{font-size:20px}
 .lantai .vcard .v-tgl.rentang{font-size:15px}
 .lantai .f-cap{max-width:200px}
@@ -1532,7 +1551,16 @@
   .lantai .bs-h{flex-wrap:wrap}
   .lantai .bs-h>.tabs{flex:1 0 100%;display:flex}
   .lantai .bs-h>.tabs .tab{flex:1 1 0;min-width:0;justify-content:center;padding:0 4px;font-size:10px}
-  .lantai .bs-ctl{flex:1 0 100%;justify-content:flex-start}
+  .lantai .bs-ctl{flex:1 0 100%;justify-content:flex-start;min-width:0}
+  /* #4/#5 (14 Agu) mobile: rantai flex bersarang (.bs-h > .bs-ctl > .bs-preset,
+     tiga level flex-wrap) kena gotcha "min-width:auto" default flex item —
+     TIAP level, bukan cuma yang terdalam, harus min-width:0 supaya boleh
+     menyusut ke lebar sebenarnya. Tanpa ini, min-content .bs-preset (lebar
+     andai 5-6 chip TAK wrap) merambat naik jadi ukuran minimum .bs-ctl juga
+     (flex-shrink:0 di .bs-ctl menolak mengecil di bawah itu) → seluruh
+     baris kontrol melebar ~403px padahal panel cuma ~379px, chip terakhir
+     (mis. YTD) kepotong di luar viewport alih-alih pindah baris. */
+  .lantai .bs-preset{flex-basis:100%;width:100%;min-width:0}
   /* (3) param kalkulator melebar penuh kolomnya */
   .lantai .f-cap{max-width:none}
   /* (4) form Graham: grid 2 kolom seimbang; lebar inline desktop di-nol-kan */
