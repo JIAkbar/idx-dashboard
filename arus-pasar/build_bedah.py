@@ -265,6 +265,38 @@ def hal_skenario(bd, em):
 </div>'''
 
 
+def bars_hibrida(ticker, harian):
+    """Seri hibrida utk PCD (pengganti Done Summary yang tak tersedia di
+    Stockbit): 60 hari terakhir pakai bar intraday 15 menit dari Yahoo —
+    distribusi harga per bar jauh lebih sempit daripada bar harian, sehingga
+    kurva modal periode berbobot terbesar jadi jauh lebih presisi. Riwayat
+    lebih lama tetap bar harian. Tiap bar membawa 'umur' hari-bursa supaya
+    bobot peluruhan pcd.py konsisten lintas granularitas.
+    Gagal fetch -> seri harian apa adanya (label metode mengikuti)."""
+    try:
+        import yfinance as yf
+        df = yf.Ticker(f"{ticker}.JK").history(period="60d", interval="15m")
+        if df.empty:
+            raise ValueError("intraday kosong")
+    except Exception as e:
+        print(f"  intraday gagal ({e}) — PCD memakai bar harian saja")
+        return list(harian), None
+    umur_hari = {b["d"]: len(harian) - 1 - i for i, b in enumerate(harian)}
+    intra, tgl_intra = [], set()
+    for ts, row in df.iterrows():
+        d = ts.strftime("%Y-%m-%d")
+        if d not in umur_hari or not row["Volume"]:
+            continue
+        tgl_intra.add(d)
+        intra.append({"l": float(row["Low"]), "h": float(row["High"]),
+                      "c": float(row["Close"]), "v": float(row["Volume"]),
+                      "umur": umur_hari[d]})
+    if not intra:
+        return list(harian), None
+    lama = [{**b, "umur": umur_hari[b["d"]]} for b in harian if b["d"] not in tgl_intra]
+    return lama + intra, len(tgl_intra)
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     stem = args[0] if args else "EXCL-2026-08-14"
@@ -273,7 +305,12 @@ def main():
     ed_sumber = json.loads((AKAR / "edisi" / f"{bd['edisi_sumber']}.json").read_text(encoding="utf-8"))
     em = next(e for e in ed_sumber["emiten"] if e["ticker"] == bd["ticker"])
 
-    r = PCD.hitung_pcd(ohlc[bd["ticker"]])
+    seri_pcd, n_hari_intra = bars_hibrida(bd["ticker"], ohlc[bd["ticker"]])
+    r = PCD.hitung_pcd(seri_pcd)
+    if n_hari_intra:
+        r["metode"] = (f"aproksimasi hibrida: intraday 15 menit ({n_hari_intra} hari bursa terakhir) "
+                       "+ OHLCV harian utk riwayat lebih lama; volume disebar merata low–high per bar, "
+                       f"peluruhan half-life {r['half_life']} hari bursa — bukan data done per harga")
     pr = prob.analisa_edisi(ohlc, [bd["ticker"]])[bd["ticker"]]
 
     pages = [BSTYLE + hal_sampul(bd, em, r, pr), hal_pcd(bd, r),

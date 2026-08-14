@@ -25,13 +25,19 @@ def tick_size(harga):
 
 
 def hitung_pcd(seri, half_life=HALF_LIFE):
-    """seri = list bar {'l','h','c','v'} terurut waktu. -> dict hasil PCD."""
+    """seri = list bar {'l','h','c','v'} terurut waktu. -> dict hasil PCD.
+
+    Bar boleh membawa 'umur' (usia dalam HARI BURSA, float) — dipakai bar
+    intraday (beberapa bar berbagi umur hari yang sama) supaya bobot peluruhan
+    tetap berbasis hari, bukan posisi indeks. Tanpa 'umur', fallback posisi
+    indeks (perilaku lama, seri harian murni)."""
     bins = {}
     n = len(seri)
     for i, b in enumerate(seri):
         if not b["v"]:
             continue
-        w = 0.5 ** ((n - 1 - i) / half_life)
+        umur = b.get("umur", n - 1 - i)
+        w = 0.5 ** (umur / half_life)
         lo, hi = b["l"], b["h"]
         t = tick_size((lo + hi) / 2)
         # level kelipatan tick di [lo, hi]; bar tanpa rentang -> 1 level di lo
