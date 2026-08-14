@@ -353,8 +353,12 @@
 <!--PAGES-->
 <script>
 const OHLC = /*OHLC*/{};
+// Tema opsional (disuntik build_bedah.py sebelum script ini jalan). Bulletin
+// tidak menyetel window.__TEMA -> semua fallback ke nilai gelap asli, piksel
+// identik seperti sebelumnya.
+const T = window.__TEMA || {};
 // EMA: [periode, warna, tebal] — dipilih kontras di #0E1620 tanpa norak
-const EMAS=[[20,"#6FE3D9",1],[50,"#37B8AF",1],[60,"#7E97B8",1],[100,"#A583D6",1],[200,"#E0955A",1.5]];
+const EMAS = T.emas || [[20,"#6FE3D9",1],[50,"#37B8AF",1],[60,"#7E97B8",1],[100,"#A583D6",1],[200,"#E0955A",1.5]];
 function gambarChart(id, tk, ema50, pivot, nBar){
   const cv=document.getElementById(id), x=cv.getContext('2d');
   const all=OHLC[tk], bars=all.slice(-(nBar||252));
@@ -375,7 +379,7 @@ function gambarChart(id, tk, ema50, pivot, nBar){
   let lx=pad.l+2;
   for(const [n,c,w] of EMAS){
     x.strokeStyle=c;x.lineWidth=2.5;x.beginPath();x.moveTo(lx,11);x.lineTo(lx+13,11);x.stroke();
-    lx+=17;x.fillStyle="rgba(233,238,244,.72)";x.fillText("EMA "+n,lx,11);
+    lx+=17;x.fillStyle=T.teks||"rgba(233,238,244,.72)";x.fillText("EMA "+n,lx,11);
     lx+=x.measureText("EMA "+n).width+13;
   }
   x.textBaseline="alphabetic";x.font="15px Bahnschrift, Segoe UI";
@@ -383,17 +387,17 @@ function gambarChart(id, tk, ema50, pivot, nBar){
   // label diurut nilai desc supaya tumpukan anti-tabrakan tetap berurut harga
   // (tanpa ini R1 bisa terdorong ke bawah P dan urutan kebaca acak)
   for(const [n,v] of Object.entries(pivot).sort((a,b)=>b[1]-a[1])){
-    x.strokeStyle="rgba(255,255,255,.28)";x.lineWidth=1;x.setLineDash([3,4]);x.beginPath();
+    x.strokeStyle=T.grid||"rgba(255,255,255,.28)";x.lineWidth=1;x.setLineDash([3,4]);x.beginPath();
     x.moveTo(pad.l,Y(v));x.lineTo(W-pad.r,Y(v));x.stroke();x.setLineDash([]);
     let yl=Y(v)+5; while(yT.some(u=>Math.abs(u-yl)<17)) yl+=17; yT.push(yl);
-    x.fillStyle="rgba(255,255,255,.72)";
+    x.fillStyle=T.pivot||"rgba(255,255,255,.72)";
     x.fillText(n+" "+v.toLocaleString('id'),W-pad.r+14,yl);
   }
   const bw=Math.max(3,(W-pad.l-pad.r)/bars.length*.62);
   x.lineWidth=1;
   bars.forEach((b,i)=>{
     const up=b.c>=b.o;
-    x.strokeStyle=x.fillStyle=up?"#2FBF71":"#E4574C";
+    x.strokeStyle=x.fillStyle=up?(T.bull||"#2FBF71"):(T.bear||"#E4574C");
     x.beginPath();x.moveTo(X(i),Y(b.h));x.lineTo(X(i),Y(b.l));x.stroke();
     x.fillRect(X(i)-bw/2,Y(Math.max(b.o,b.c)),bw,
       Math.max(1.5,Y(Math.min(b.o,b.c))-Y(Math.max(b.o,b.c))));
@@ -412,11 +416,11 @@ function gambarChart(id, tk, ema50, pivot, nBar){
   const vY=v=>H-pad.b-v/maxV*volH;
   bars.forEach((b,i)=>{
     const up=b.c>=b.o, lonjak=vma[i]&&vol[i]>1.75*vma[i];
-    x.fillStyle=up?(lonjak?"#2FBF71":"rgba(47,191,113,.32)")
-                 :(lonjak?"#E4574C":"rgba(228,87,76,.32)");
+    x.fillStyle=up?(lonjak?(T.bull||"#2FBF71"):(T.bullSoft||"rgba(47,191,113,.32)"))
+                 :(lonjak?(T.bear||"#E4574C"):(T.bearSoft||"rgba(228,87,76,.32)"));
     x.fillRect(X(i)-bw/2,vY(vol[i]),bw,Math.max(1,H-pad.b-vY(vol[i])));
   });
-  x.strokeStyle="rgba(233,238,244,.55)";x.lineWidth=1;x.beginPath();
+  x.strokeStyle=T.teksLembut||"rgba(233,238,244,.55)";x.lineWidth=1;x.beginPath();
   vma.forEach((v,i)=>{if(v==null)return;
     i&&vma[i-1]!=null?x.lineTo(X(i),vY(v)):x.moveTo(X(i),vY(v));});
   x.stroke();
@@ -425,9 +429,9 @@ function gambarChart(id, tk, ema50, pivot, nBar){
     return v>=1e9?f(v/1e9)+" M":v>=1e6?f(v/1e6)+" Jt":f(v/1e3)+" rb";};
   const mag=Math.pow(10,Math.floor(Math.log10(maxV*.8)));
   const tick=Math.floor(maxV*.8/mag)*mag;
-  x.strokeStyle="rgba(255,255,255,.14)";x.setLineDash([3,4]);x.beginPath();
+  x.strokeStyle=T.grid||"rgba(255,255,255,.14)";x.setLineDash([3,4]);x.beginPath();
   x.moveTo(pad.l,vY(tick));x.lineTo(W-pad.r,vY(tick));x.stroke();x.setLineDash([]);
-  x.fillStyle="rgba(255,255,255,.45)";x.font="12px Cascadia Code, Consolas, monospace";
+  x.fillStyle=T.teksLembut||"rgba(255,255,255,.45)";x.font="12px Cascadia Code, Consolas, monospace";
   // ikut tumpukan anti-tabrakan label pivot (S3 bisa terdorong sampai zona volume)
   let vl=vY(tick)+4; while(yT.some(u=>Math.abs(u-vl)<15)) vl+=15;
   x.fillText(fmtVol(tick),W-pad.r+14,Math.min(vl,H-4));
