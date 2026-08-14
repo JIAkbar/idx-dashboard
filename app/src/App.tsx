@@ -16,6 +16,8 @@ import { PetaInvestor } from './views/dasbor/PetaInvestor'
 import { KalkulatorJia } from './views/dasbor/KalkulatorJia'
 import { Bulletin } from './views/dasbor/Bulletin'
 import { Radar } from './views/dasbor/Radar'
+import { Forum } from './views/dasbor/Forum'
+import { ForumRuang } from './views/dasbor/ForumRuang'
 import { Feedback } from './views/dasbor/Feedback'
 import { Login } from './views/Login'
 import { AdminLayout } from './views/admin/AdminLayout'
@@ -69,6 +71,11 @@ function App() {
                   ini terbuka untuk semua orang padahal setelannya "perlu
                   login". */}
               <Route path="/radar" element={<PenjagaHalaman kunci="radar"><Radar /></PenjagaHalaman>} />
+              {/* Forum: backend belum punya kunci `akses_halaman` utk ini —
+                  sengaja TIDAK dibungkus PenjagaHalaman. Kalau nanti mau
+                  dikunci, tambah barisnya di tab Akses lalu pasang di sini. */}
+              <Route path="/forum" element={<Forum />} />
+              <Route path="/forum/:kunci" element={<ForumRuang />} />
               <Route path="/feedback" element={<PenjagaHalaman kunci="saran"><Feedback /></PenjagaHalaman>} />
               {/* /admin ikut DI DALAM layout (rail/topbar tetap tampil) tapi
                   tetap dijaga ProtectedRoute — belum login dilempar ke /login

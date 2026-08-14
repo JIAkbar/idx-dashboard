@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { useStockFundamental, useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { fMC, fv, fvx } from '../../lib/dasbor/stockDetailFormat'
@@ -209,8 +209,11 @@ export function StockDetail() {
             <RasioCell lbl="FCF/Share" v={fd.fcf_ps != null ? `Rp ${fv(fd.fcf_ps)}` : '—'} sub={fd.cash_ps != null ? `Cash/shr Rp ${fv(fd.cash_ps)}` : null} />
           </div>
 
-          <div style={{ fontSize: 9, color: 'var(--text3)' }}>
-            <IkonMenu d={IKON_JAM} size={11} /> Data delay · Diperbarui: {fd.updated || '—'}
+          <div style={{ fontSize: 9, color: 'var(--text3)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <span><IkonMenu d={IKON_JAM} size={11} /> Data delay · Diperbarui: {fd.updated || '—'}</span>
+            <Link to={`/forum/${fd.ticker}`} className="bchip bchip-klik" style={{ cursor: 'pointer' }}>
+              Diskusi {fd.ticker}
+            </Link>
           </div>
 
           <div className="tabs" role="tablist" aria-label="Tab Detail Saham">

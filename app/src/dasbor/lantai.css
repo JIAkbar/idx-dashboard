@@ -1839,3 +1839,19 @@
 .pgh-mini .pgh-judul { font-size: 12.5px; }
 .pgh-mini .pgh-kalimat { font-size: 11px; max-width: 260px; }
 .lantai .rdr-kaki{color:var(--text3);font-size:10.5px;line-height:1.8;margin-top:10px}
+
+/* Forum — kartu daftar ruang & utas pesan (Forum.tsx / ForumRuang.tsx). */
+.lantai .forum-ruang-kartu{cursor:pointer;text-decoration:none;color:inherit;transition:border-color .15s,transform .1s}
+.lantai .forum-ruang-kartu:hover{border-color:var(--amber)}
+.lantai .forum-ruang-kartu:active{transform:translateY(1px)}
+.lantai .forum-thread{display:flex;flex-direction:column;gap:14px}
+.lantai .forum-msg-grup{display:flex;flex-direction:column;gap:8px}
+.lantai .forum-msg{border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;background:var(--bg2)}
+.lantai .forum-msg-tertahan{border-color:color-mix(in srgb,var(--amber) 50%,var(--line))}
+.lantai .forum-msg-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.lantai .forum-msg-isi{margin:6px 0 0;font-size:12.5px;line-height:1.6;color:var(--text);white-space:pre-wrap;word-break:break-word}
+.lantai .forum-msg-aksi{display:flex;gap:6px;margin-top:8px}
+.lantai .forum-balasan{display:flex;flex-direction:column;gap:8px;margin-left:20px;padding-left:12px;border-left:2px solid var(--line2)}
+.lantai .forum-compose{display:flex;flex-direction:column;gap:10px}
+.lantai .forum-compose-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.lantai .forum-balas-ke{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bg3);border:1px solid var(--line2);border-radius:var(--r);padding:6px 10px;font-size:11px;color:var(--text2)}
