@@ -120,6 +120,16 @@ const SYM_INDEKS: Record<string, string> = {
   'IDX SMC Liquid': 'IDXSMC_LIQ',
   'SRI-KEHATI': 'SRI_KEHATI',
   'Pefindo I-Grade': 'I_GRADE',
+  // Dikonfirmasi lewat symbol-search TradingView (14 Agu), bukan tebakan:
+  'ESG Sctr Ldrs IDX KEHATI': 'ESGSKEHATI',
+  // Board Indices — nama di ds sudah di-rename ke bahasa Indonesia.
+  'Papan Utama': 'MBX',
+  'Papan Pengembangan': 'DBX',
+  'Papan Akselerasi': 'ABX',
+  // TIDAK dipetakan (symbol-search tak menemukan padanannya, jadi barisnya
+  // sengaja tidak bisa diklik daripada mengirim pembaca ke chart kosong):
+  // 'IDX KEHATI' (ambigu antara ESG Quality 45 / lainnya),
+  // 'IDX-PEFINDO Prime Bank', 'IDX Sharia Growth'.
 }
 
 export function SektorIndeks() {
@@ -234,16 +244,23 @@ export function SektorIndeks() {
   // Unggulan/Syariah/Board Indices. #88: kolom ke-3 dinamis ikut periode/
   // rentang; valP dihitung pemanggil (Board di-rename SETELAH hitung, supaya
   // pencocokan nama vs berkas pembanding tetap kena).
-  const perfRowFull = (x: SectorRow, valP: number | null) => (
-    <tr key={x.n}>
-      <td>{x.n}</td>
-      <td className="r num">{fN(x.v)}</td>
-      {valP === null
-        ? <td className="r num">—</td>
-        : <td className={`r num ${valP >= 0 ? 'up' : 'dn'}`}>{fp(valP)}</td>}
-      <td className="r"><span className={`ytd-bdg ${x.ytd >= 0 ? 'u' : 'd'}`}>{fp(x.ytd)}</span></td>
-    </tr>
-  )
+  const perfRowFull = (x: SectorRow, valP: number | null) => {
+    const sym = SYM_INDEKS[x.n] ?? null
+    return (
+      <tr key={x.n}>
+        <td>
+          {sym
+            ? <Link to={`/chart?sym=${sym}`} className="rk-link" style={{ display: 'inline-block' }} title={`Buka chart ${x.n}`}>{x.n}</Link>
+            : x.n}
+        </td>
+        <td className="r num">{fN(x.v)}</td>
+        {valP === null
+          ? <td className="r num">—</td>
+          : <td className={`r num ${valP >= 0 ? 'up' : 'dn'}`}>{fp(valP)}</td>}
+        <td className="r"><span className={`ytd-bdg ${x.ytd >= 0 ? 'u' : 'd'}`}>{fp(x.ytd)}</span></td>
+      </tr>
+    )
+  }
 
   const indeksUtama = [...featured, ...sharia]
   const sorotUtama = indeksUtama.find((x) => x.n.includes('IDX Composite') || x.n.includes('IHSG'))?.n
