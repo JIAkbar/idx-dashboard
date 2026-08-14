@@ -5,6 +5,7 @@ import { useProfilSaya } from '../../lib/profilSaya'
 import { AdminTanggalProvider } from '../../context/AdminTanggalContext'
 import { hitungSetoranMenunggu } from '../../lib/supabaseEdisi'
 import { perluSambutan, kunciSambutan } from '../../lib/sambutan'
+import { namaTampil } from '../../lib/namaTampil'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import {
   IkonMenu,
@@ -105,7 +106,8 @@ export function AdminLayout() {
   const tabs: TabDef[] = [
     { to: '/admin', end: true, label: 'Unggah', ikon: IKON_GAMBAR, tampil: true },
     { to: '/admin/kurasi', label: 'Kurasi', ikon: IKON_PAPAN_KLIP, tampil: superadmin, badge: menunggu },
-    { to: '/admin/radar', label: 'Radar', ikon: IKON_RADAR, tampil: true },
+    // Radar WDWL — produk kurasi khusus, kontributor tidak menyetor bahannya.
+    { to: '/admin/radar', label: 'Radar', ikon: IKON_RADAR, tampil: superadmin },
     { to: '/admin/bedah', label: 'Bedah', ikon: IKON_GRAFIK_NAIK, tampil: Boolean(profil?.boleh_bedah) },
     { to: '/admin/terbitan', label: 'Terbitan', ikon: IKON_KOTAK_ARSIP, tampil: true },
     { to: '/admin/akun', label: 'Akun', ikon: IKON_GIR, tampil: superadmin },
@@ -124,7 +126,7 @@ export function AdminLayout() {
               Kuota hari ini: {profil.kuota_harian}/hari
             </span>
           )}
-          <span className="muted">{session?.user.email}</span>
+          <span className="muted" title={session?.user.email}>{namaTampil(profil, session)}</span>
           <button type="button" className="dd-btn" onClick={() => setKonfirmKeluar(true)}>Keluar</button>
         </div>
       </div>
@@ -158,9 +160,9 @@ export function AdminLayout() {
                 </div>
               </div>
               <div className="panel-b" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {session?.user.email && (
+                {session && (
                   <p style={{ margin: 0, fontSize: 12.5 }}>
-                    Masuk sebagai <b>{session.user.email}</b>.
+                    Masuk sebagai <b>{namaTampil(profil, session)}</b>.
                   </p>
                 )}
                 <p className="muted" style={{ margin: 0, fontSize: 11.5, lineHeight: 1.55 }}>
@@ -177,7 +179,7 @@ export function AdminLayout() {
       {konfirmKeluar && (
         <ModalKecil label="Akhiri sesi?" onClose={() => setKonfirmKeluar(false)}>
           <p style={{ margin: 0, fontSize: 12.5 }}>
-            Keluar dari akun <b>{session?.user.email}</b>?
+            Keluar dari akun <b>{namaTampil(profil, session)}</b>?
           </p>
           <p className="muted" style={{ margin: 0, fontSize: 11.5 }}>
             Kamu harus masuk lagi untuk mengelola unggahan &amp; edisi.

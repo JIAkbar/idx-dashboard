@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent 
 import { useAuth } from '../../context/AuthContext'
 import { useProfilSaya } from '../../lib/profilSaya'
 import { useAdminTanggal } from '../../context/AdminTanggalContext'
+import { namaTampil } from '../../lib/namaTampil'
 import {
   IkonMenu,
   IKON_CENTANG,
@@ -422,6 +423,19 @@ export function UnggahHarian() {
     }))
   }, [sudah, setoranTanggal])
 
+  /** Baris boleh dihapus/dicentang pengguna sekarang: superadmin selalu boleh;
+   *  kontributor cuma kalau dia penyetor baris ini (orderbook diutamakan,
+   *  chart jadi fallback). Server (policy storage `hapus_screenshots`) adalah
+   *  wasit sesungguhnya — ini cuma UX supaya tabel tak menawarkan aksi yang
+   *  pasti ditolak. Baris tanpa padanan setoran (unggahan sebelum Fase 3)
+   *  diperlakukan sebagai BUKAN milik kontributor mana pun. */
+  function bolehHapusBaris(b: Baris): boolean {
+    if (superadmin) return true
+    const penyetorId = b.setoranOb?.penyetor ?? b.setoranCh?.penyetor
+    return penyetorId !== undefined && penyetorId === session?.user.id
+  }
+  const bolehHapusRows = sudahMerged.filter(bolehHapusBaris)
+
   function bersihkan() {
     setTicker('')
     setOrderbook(null)
@@ -568,13 +582,14 @@ export function UnggahHarian() {
                         <input
                           type="checkbox"
                           className="af-cek"
-                          aria-label="Pilih semua emiten"
-                          checked={sudah.length > 0 && pilih.size === sudah.length}
-                          ref={(el) => { if (el) el.indeterminate = pilih.size > 0 && pilih.size < sudah.length }}
-                          onChange={(e) => setPilih(e.target.checked ? new Set(sudah.map((b) => b.ticker)) : new Set())}
+                          aria-label="Pilih semua emiten yang bisa dihapus"
+                          checked={bolehHapusRows.length > 0 && pilih.size === bolehHapusRows.length}
+                          ref={(el) => { if (el) el.indeterminate = pilih.size > 0 && pilih.size < bolehHapusRows.length }}
+                          onChange={(e) => setPilih(e.target.checked ? new Set(bolehHapusRows.map((b) => b.ticker)) : new Set())}
                         />
                       </th>
                       <th>Emiten</th>
+                      <th>Penyetor</th>
                       <th>Alasan</th>
                       <th>Orderbook</th>
                       <th>Chart</th>
@@ -590,6 +605,8 @@ export function UnggahHarian() {
                       const entriesSendiri = [b.setoranOb, b.setoranCh].filter(
                         (s): s is SetoranRow => !!s && s.penyetor === session?.user.id && s.status === 'menunggu'
                       )
+                      const boleh = bolehHapusBaris(b)
+                      const judulKunci = 'Hanya penyetor berkas ini atau superadmin yang bisa menghapusnya.'
                       return (
                         <tr key={b.ticker}>
                           <td className="af-kolcek">
@@ -598,10 +615,15 @@ export function UnggahHarian() {
                               className="af-cek"
                               aria-label={`Pilih ${b.ticker}`}
                               checked={pilih.has(b.ticker)}
+                              disabled={!boleh}
+                              title={boleh ? undefined : judulKunci}
                               onChange={() => togglePilih(b.ticker)}
                             />
                           </td>
                           <td className="tick">{b.ticker}</td>
+                          <td className="muted" style={{ fontSize: 11 }}>
+                            {namaTampil(b.setoranOb?.profil ?? b.setoranCh?.profil, null)}
+                          </td>
                           <td className="af-alasan-sel">
                             <span className="af-alasan-teks" title={alasanTeks || undefined}>{alasanTeks || '—'}</span>
                             {entriesSendiri.length > 0 && (
@@ -657,8 +679,9 @@ export function UnggahHarian() {
                             <button
                               type="button"
                               className="af-hapus"
-                              title={`Hapus unggahan ${b.ticker}`}
+                              title={boleh ? `Hapus unggahan ${b.ticker}` : judulKunci}
                               aria-label={`Hapus unggahan ${b.ticker}`}
+                              disabled={!boleh}
                               onClick={() => setHapusTarget([b])}
                             >
                               <IkonMenu d={IKON_TONG} size={14} />

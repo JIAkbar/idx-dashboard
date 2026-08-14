@@ -70,8 +70,10 @@
 .lantai .af-gulir::-webkit-scrollbar-track { background: transparent; }
 .lantai .af-gulir thead th { position: sticky; top: 0; background: var(--bg1); z-index: 1; }
 
-/* Checkbox pilih baris — accent amber ikut tema. */
+/* Checkbox pilih baris — accent amber ikut tema. Disabled (baris bukan milik
+   pengguna/superadmin, #2 bug UI hapus lintas-akun) → kursor terlarang. */
 .lantai .af-cek { accent-color: var(--amber); width: 13px; height: 13px; cursor: pointer; }
+.lantai .af-cek:disabled { cursor: not-allowed; opacity: .4; }
 .lantai th.af-kolcek, .lantai td.af-kolcek { width: 1%; padding-right: 4px; }
 
 /* Bar aksi hapus massal — muncul saat ada baris tercentang. */
@@ -91,6 +93,8 @@
   color: var(--text3); display: inline-flex; vertical-align: middle;
 }
 .lantai .af-hapus:hover { color: var(--red); }
+.lantai .af-hapus:disabled { cursor: not-allowed; opacity: .35; }
+.lantai .af-hapus:disabled:hover { color: var(--text3); }
 .lantai .af-hapus .dasbor-ikon { stroke: currentColor; }
 .lantai .af-centang { color: var(--green); }
 .lantai .af-centang .dasbor-ikon { stroke: currentColor; }

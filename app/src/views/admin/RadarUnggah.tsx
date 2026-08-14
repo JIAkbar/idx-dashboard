@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { IkonMenu, IKON_CENTANG, IKON_GAMBAR, IKON_PERINGATAN, IKON_SILANG } from '../../components/dasbor/IkonMenu'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { daftarRadar, unggahRadar } from '../../lib/supabaseEdisi'
+import { useProfilSaya } from '../../lib/profilSaya'
+import { AksesDitolak } from './AdminLayout'
 
 function tanggalHariIni(): string {
   const d = new Date()
@@ -84,8 +86,14 @@ function SlotBerkas({ label, accept, cocok, file, onFile }: {
  * tanggal, masuk bucket "screenshots" prefiks radar/{tanggal}/. Transkripsi
  * ke data-idx/radar/r_*.json terjadi di luar app (alur sama dengan
  * screenshot orderbook → edisi bulletin).
+ *
+ * Khusus superadmin — Radar adalah produk kurasi, kontributor tidak menyetor
+ * bahannya. Tab disembunyikan di AdminLayout kalau bukan superadmin; guard
+ * di sini jaga-jaga akses langsung lewat URL/bookmark.
  */
 export function RadarUnggah() {
+  const { profil } = useProfilSaya()
+  const superadmin = profil?.peran === 'superadmin'
   const [tanggal, setTanggal] = useState(tanggalHariIni())
   const [wdwl, setWdwl] = useState<File | null>(null)
   const [rbu, setRbu] = useState<File | null>(null)
@@ -126,6 +134,8 @@ export function RadarUnggah() {
       setMengunggah(false)
     }
   }
+
+  if (!superadmin) return <AksesDitolak pesan="Halaman ini khusus superadmin." />
 
   return (
     <section className="panel">
