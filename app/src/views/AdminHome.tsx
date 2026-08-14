@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
   IkonMenu,
@@ -17,14 +16,13 @@ import { StockAutocomplete } from '../components/dasbor/StockAutocomplete'
 import { LightboxGambar, type GambarLightbox } from '../components/dasbor/LightboxGambar'
 import { useStockIndex } from '../lib/dasbor/stockDetailData'
 import {
-  daftarEdisi,
   daftarScreenshot,
   daftarTanggalUnggahan,
   hapusScreenshot,
   unggahScreenshot,
   urlScreenshots,
-  type EdisiRow,
 } from '../lib/supabaseEdisi'
+import { useBulletinList } from '../lib/dasbor/bulletin'
 import './AdminHome.css'
 
 /** Kunci sessionStorage modal sambutan — nilai = user.id supaya login akun
@@ -260,9 +258,11 @@ export function AdminHome() {
   const { session, signOut } = useAuth()
   const { index } = useStockIndex()
 
-  const [edisi, setEdisi] = useState<EdisiRow[] | null>(null)
+  // Rak terbitan baca manifest publik keluaran/index.json (sumber sama dengan
+  // halaman Bulletin) — BUKAN tabel Supabase `edisi` (alur lama, kosong):
+  // edisi dirakit dari repo, tabel itu tidak pernah diisi pipeline sekarang.
+  const { daftar: edisi, error: err } = useBulletinList()
   const [tanggalUnggahan, setTanggalUnggahan] = useState<string[] | null>(null)
-  const [err, setErr] = useState('')
 
   const [tanggal, setTanggal] = useState(tanggalHariIni())
   const [ticker, setTicker] = useState('')
@@ -320,9 +320,6 @@ export function AdminHome() {
 
   useEffect(() => {
     let batal = false
-    daftarEdisi()
-      .then((rows) => !batal && setEdisi(rows))
-      .catch((e: Error) => !batal && setErr(e.message))
     daftarTanggalUnggahan()
       .then((tgl) => !batal && setTanggalUnggahan(tgl))
       .catch(() => !batal && setTanggalUnggahan([]))
@@ -691,16 +688,42 @@ export function AdminHome() {
                   <th>Kode</th>
                   <th>Tanggal</th>
                   <th>Status</th>
-                  <th>Emiten</th>
+                  <th className="r">Emiten</th>
+                  <th className="r">PDF</th>
                 </tr>
               </thead>
               <tbody>
                 {edisi.map((r) => (
                   <tr key={r.kode}>
-                    <td><Link to={`/admin/edisi/${r.kode}`} className="tick">{r.kode}</Link></td>
-                    <td>{r.tanggal}</td>
-                    <td><span className={`chip ${r.status === 'terbit' ? 'up' : 'warn'}`}>{r.status}</span></td>
-                    <td>{r.edisi_data.emiten.length}</td>
+                    <td>
+                      <span className="tick">{r.kode}</span>
+                      {r.update_dari != null && r.emiten.length > r.update_dari && (
+                        <span
+                          className="bchip"
+                          title={`Dirilis ulang: ${r.update_dari} menjadi ${r.emiten.length} emiten`}
+                          style={{
+                            marginLeft: 6, fontFamily: 'var(--mono)', fontWeight: 700,
+                            background: 'var(--amber-dim)', color: 'var(--amber)', borderColor: 'var(--amber)',
+                          }}
+                        >
+                          Update {r.update_dari}→{r.emiten.length}
+                        </span>
+                      )}
+                    </td>
+                    <td>{r.tanggal_id}</td>
+                    <td><span className="chip up">terbit</span></td>
+                    <td className="r num">{r.emiten.length}</td>
+                    <td className="r">
+                      <a
+                        className="blt-dl"
+                        href={`/arus-pasar/keluaran/${r.pdf}`}
+                        target="_blank"
+                        rel="noopener"
+                        title={`Buka ${r.pdf}`}
+                      >
+                        Lihat
+                      </a>
+                    </td>
                   </tr>
                 ))}
               </tbody>
