@@ -126,17 +126,36 @@ export function waktuRelatif(iso: string): string {
 }
 
 /**
- * Nama tampilan penulis pesan. Batasan RLS `profil_baca_sendiri`: klien cuma
- * boleh baca baris `profil` MILIK SENDIRI (`id = auth.uid()`), jadi alias
- * penulis LAIN yang login tidak bisa diambil lewat join biasa — bukan lupa,
- * memang tidak ada jalan resmi (tak ada view publik/fungsi SECURITY DEFINER
- * utk itu; lihat laporan tugas). Maka: alias asli cuma utk pesan viewer
- * sendiri; pesan anggota lain yang login tampil "Anggota-xxxx" (potongan id)
- * supaya tetap bisa dibedakan antar penulis tanpa memalsukan identitas.
+ * Alias penulis yang pernah menulis di forum. RLS `profil` membatasi SELECT ke
+ * baris sendiri — membuka seluruh tabel ke publik bukan jawabannya (di situ ada
+ * email, kuota, peran). Fungsi `forum_penulis` di server hanya mengembalikan
+ * alias, dan hanya untuk akun yang memang punya pesan di forum.
  */
-export function namaPenulis(p: Pesan, idSaya: string | undefined, aliasSaya: string | null | undefined): string {
+export async function ambilAliasPenulis(ids: string[]): Promise<Record<string, string>> {
+  const unik = [...new Set(ids.filter(Boolean))]
+  if (unik.length === 0) return {}
+  const { data, error } = await supabase.rpc('forum_penulis', { ids: unik })
+  if (error) return {}
+  const peta: Record<string, string> = {}
+  for (const b of (data ?? []) as Array<{ id: string; alias: string | null }>) {
+    if (b.alias?.trim()) peta[b.id] = b.alias.trim()
+  }
+  return peta
+}
+
+/**
+ * Nama tampilan penulis pesan. Urutan: nama tamu → alias sendiri → alias dari
+ * `forum_penulis` → potongan id sebagai cadangan (akun tanpa alias; jangan
+ * memalsukan identitas dengan menebak nama).
+ */
+export function namaPenulis(
+  p: Pesan,
+  idSaya: string | undefined,
+  aliasSaya: string | null | undefined,
+  petaAlias: Record<string, string> = {}
+): string {
   if (p.nama_anon) return p.nama_anon
   if (!p.penulis) return 'Tamu'
   if (p.penulis === idSaya) return aliasSaya?.trim() || 'Anda'
-  return `Anggota-${p.penulis.slice(0, 4)}`
+  return petaAlias[p.penulis] || `Anggota-${p.penulis.slice(0, 4)}`
 }

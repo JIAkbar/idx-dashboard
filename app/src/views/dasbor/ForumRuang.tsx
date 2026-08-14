@@ -1,10 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { IsiPesan } from '../../components/dasbor/IsiPesan'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useProfilSaya } from '../../lib/profilSaya'
 import { useLoginModalOpsional } from '../../context/LoginModalContext'
 import {
   ambilPesan, ambilRuang, kirimPesan, laporkanPesan, namaPenulis, waktuRelatif,
+  ambilAliasPenulis,
   type Pesan, type RuangInfo,
 } from '../../lib/forum'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
@@ -59,6 +61,9 @@ export function ForumRuang() {
   const [kuotaHabis, setKuotaHabis] = useState(false)
   const [sisaKuota, setSisaKuota] = useState<number | null>(null)
   const [catatanTertahan, setCatatanTertahan] = useState<string | null>(null)
+  /** id penulis → alias, dari `forum_penulis` (server hanya membuka alias akun
+   *  yang memang pernah menulis di forum — bukan seluruh tabel profil). */
+  const [petaAlias, setPetaAlias] = useState<Record<string, string>>({})
 
   useEffect(() => {
     let batal = false
@@ -70,15 +75,27 @@ export function ForumRuang() {
         if (batal) return
         setRuangInfo(info)
         setPesan(daftar)
+        void muatAlias(daftar)
       })
       .catch((e: unknown) => { if (!batal) setGalat(e instanceof Error ? e.message : 'Gagal memuat ruang.') })
       .finally(() => { if (!batal) setMemuat(false) })
     return () => { batal = true }
   }, [kunci])
 
+  /** Alias penulis dimuat terpisah dari pesannya: satu panggilan untuk semua
+   *  penulis yang muncul, bukan satu per baris. */
+  async function muatAlias(daftar: Pesan[]) {
+    const ids = daftar.map((p) => p.penulis).filter((x): x is string => Boolean(x))
+    if (ids.length === 0) return
+    const peta = await ambilAliasPenulis(ids)
+    setPetaAlias((lama) => ({ ...lama, ...peta }))
+  }
+
   async function muatUlangPesan() {
     try {
-      setPesan(await ambilPesan(kunci))
+      const baru = await ambilPesan(kunci)
+      setPesan(baru)
+      void muatAlias(baru)
     } catch {
       // gagal muat ulang bukan galat fatal — pesan yg baru terkirim sudah
       // dikonfirmasi lewat balasan Edge Function, daftar tinggal coba lagi nanti
@@ -153,12 +170,12 @@ export function ForumRuang() {
           {utas.length === 0 && <p className="muted" style={{ fontSize: 12 }}>Belum ada pesan — jadilah yang pertama menulis.</p>}
           {utas.map((p) => (
             <div key={p.id} className="forum-msg-grup">
-              <PesanBaris p={p} sesiId={session?.user.id} alias={profil?.alias}
+              <PesanBaris petaAlias={petaAlias} p={p} sesiId={session?.user.id} alias={profil?.alias}
                 onBalas={() => setBalasKe(p)} onLapor={() => lapor(p.id)} />
               {p.balasan.length > 0 && (
                 <div className="forum-balasan">
                   {p.balasan.map((b) => (
-                    <PesanBaris key={b.id} p={b} sesiId={session?.user.id} alias={profil?.alias}
+                    <PesanBaris key={b.id} petaAlias={petaAlias} p={b} sesiId={session?.user.id} alias={profil?.alias}
                       onBalas={() => setBalasKe(p)} onLapor={() => lapor(b.id)} />
                   ))}
                 </div>
@@ -174,7 +191,7 @@ export function ForumRuang() {
           <form className="panel-b forum-compose" onSubmit={kirim}>
             {balasKe && (
               <div className="forum-balas-ke">
-                <span>Membalas {namaPenulis(balasKe, session?.user.id, profil?.alias)}: &ldquo;{ringkas(balasKe.isi)}&rdquo;</span>
+                <span>Membalas {namaPenulis(balasKe, session?.user.id, profil?.alias, petaAlias)}: &ldquo;{ringkas(balasKe.isi)}&rdquo;</span>
                 <button type="button" className="bchip bchip-klik" style={{ cursor: 'pointer' }} onClick={() => setBalasKe(null)}>Batal</button>
               </div>
             )}
@@ -215,17 +232,18 @@ export function ForumRuang() {
   )
 }
 
-function PesanBaris({ p, sesiId, alias, onBalas, onLapor }: {
+function PesanBaris({ p, sesiId, alias, petaAlias, onBalas, onLapor }: {
   p: Pesan
   sesiId: string | undefined
   alias: string | null | undefined
+  petaAlias: Record<string, string>
   onBalas: () => void
   onLapor: () => void
 }) {
   return (
     <div className={'forum-msg' + (p.disembunyikan ? ' forum-msg-tertahan' : '')}>
       <div className="forum-msg-head">
-        <span className="num" style={{ fontSize: 12 }}>{namaPenulis(p, sesiId, alias)}</span>
+        <span className="num" style={{ fontSize: 12 }}>{namaPenulis(p, sesiId, alias, petaAlias)}</span>
         <span className="muted" style={{ fontSize: 10.5 }}>{waktuRelatif(p.dibuat_pada)}</span>
       </div>
       {p.disembunyikan && (
@@ -233,7 +251,7 @@ function PesanBaris({ p, sesiId, alias, onBalas, onLapor }: {
           Ditahan untuk diperiksa{p.alasan_sembunyi ? `: ${p.alasan_sembunyi}` : ''}
         </p>
       )}
-      <p className="forum-msg-isi">{p.isi}</p>
+      <IsiPesan teks={p.isi} />
       <div className="forum-msg-aksi">
         <button type="button" className="bchip bchip-klik" style={{ cursor: 'pointer' }} onClick={onBalas}>Balas</button>
         <button type="button" className="bchip bchip-klik" style={{ cursor: 'pointer' }} onClick={onLapor}>Laporkan</button>

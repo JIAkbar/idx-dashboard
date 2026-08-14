@@ -1855,3 +1855,15 @@
 .lantai .forum-compose{display:flex;flex-direction:column;gap:10px}
 .lantai .forum-compose-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .lantai .forum-balas-ke{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bg3);border:1px solid var(--line2);border-radius:var(--r);padding:6px 10px;font-size:11px;color:var(--text2)}
+
+/* Tag emiten di dalam pesan forum ($BUMI) — menuju ruang diskusi emitennya,
+   bukan langsung ke chart: pembaca yang sedang di tengah percakapan biasanya
+   mencari percakapan lain soal emiten itu. Chart & Stock Detail tinggal satu
+   klik lagi dari halaman ruangnya. */
+.forum-tag {
+  color: var(--amber); text-decoration: none; font-weight: 600;
+  border-bottom: 1px dashed color-mix(in srgb, var(--amber) 55%, transparent);
+  padding-bottom: 1px;
+}
+.forum-tag:hover { border-bottom-style: solid; }
+.forum-tag:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; border-radius: 2px; }
