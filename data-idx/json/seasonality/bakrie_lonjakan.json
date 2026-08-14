@@ -1,0 +1,606 @@
+{
+  "dibuat": "2026-08-14T18:24:13+00:00",
+  "definisi": {
+    "beku": "|perubahan| < 0.5% — dianggap tidak bergerak, dibuang dari penyebut",
+    "ambang_lonjakan": [
+      10,
+      20,
+      50,
+      100
+    ],
+    "permutasi": 5000
+  },
+  "per_emiten": {
+    "BUMI": {
+      "nama": "Bumi Resources",
+      "mulai": "2001-06",
+      "akhir": "2026-08",
+      "n": 302,
+      "beku_persen": 12.6,
+      "lonjakan_20": 46,
+      "lonjakan_50": 12,
+      "terbaik": 214.7,
+      "terburuk": -57.7
+    },
+    "BNBR": {
+      "nama": "Bakrie & Brothers",
+      "mulai": "2000-09",
+      "akhir": "2026-08",
+      "n": 311,
+      "beku_persen": 72.3,
+      "lonjakan_20": 22,
+      "lonjakan_50": 8,
+      "terbaik": 122.8,
+      "terburuk": -98.3
+    },
+    "ELTY": {
+      "nama": "Bakrieland Development",
+      "mulai": "2002-06",
+      "akhir": "2026-08",
+      "n": 290,
+      "beku_persen": 50.0,
+      "lonjakan_20": 29,
+      "lonjakan_50": 9,
+      "terbaik": 260.0,
+      "terburuk": -90.0
+    },
+    "ENRG": {
+      "nama": "Energi Mega Persada",
+      "mulai": "2004-06",
+      "akhir": "2026-08",
+      "n": 266,
+      "beku_persen": 10.9,
+      "lonjakan_20": 34,
+      "lonjakan_50": 11,
+      "terbaik": 218.8,
+      "terburuk": -58.9
+    },
+    "UNSP": {
+      "nama": "Bakrie Sumatera Plantations",
+      "mulai": "2004-11",
+      "akhir": "2026-07",
+      "n": 260,
+      "beku_persen": 18.5,
+      "lonjakan_20": 22,
+      "lonjakan_50": 3,
+      "terbaik": 111.7,
+      "terburuk": -62.0
+    },
+    "DEWA": {
+      "nama": "Darma Henwa",
+      "mulai": "2007-09",
+      "akhir": "2026-08",
+      "n": 227,
+      "beku_persen": 49.3,
+      "lonjakan_20": 16,
+      "lonjakan_50": 5,
+      "terbaik": 140.0,
+      "terburuk": -67.8
+    },
+    "BRMS": {
+      "nama": "Bumi Resources Minerals",
+      "mulai": "2010-12",
+      "akhir": "2026-08",
+      "n": 188,
+      "beku_persen": 14.4,
+      "lonjakan_20": 18,
+      "lonjakan_50": 6,
+      "terbaik": 106.0,
+      "terburuk": -44.0
+    },
+    "VIVA": {
+      "nama": "Visi Media Asia",
+      "mulai": "2011-11",
+      "akhir": "2026-08",
+      "n": 177,
+      "beku_persen": 30.5,
+      "lonjakan_20": 18,
+      "lonjakan_50": 5,
+      "terbaik": 133.3,
+      "terburuk": -73.5
+    },
+    "MDIA": {
+      "nama": "Intermedia Capital",
+      "mulai": "2014-04",
+      "akhir": "2026-08",
+      "n": 148,
+      "beku_persen": 37.2,
+      "lonjakan_20": 13,
+      "lonjakan_50": 7,
+      "terbaik": 241.1,
+      "terburuk": -70.6
+    }
+  },
+  "gagal": {},
+  "peluang_per_bulan": {
+    "≥10%": {
+      "Januari": {
+        "n_semua": 181,
+        "n_aktif": 119,
+        "beku_persen": 34.3,
+        "lonjakan": 37,
+        "peluang": 31.1
+      },
+      "Februari": {
+        "n_semua": 181,
+        "n_aktif": 123,
+        "beku_persen": 32.0,
+        "lonjakan": 13,
+        "peluang": 10.6
+      },
+      "Maret": {
+        "n_semua": 181,
+        "n_aktif": 119,
+        "beku_persen": 34.3,
+        "lonjakan": 38,
+        "peluang": 31.9
+      },
+      "April": {
+        "n_semua": 181,
+        "n_aktif": 120,
+        "beku_persen": 33.7,
+        "lonjakan": 29,
+        "peluang": 24.2
+      },
+      "Mei": {
+        "n_semua": 182,
+        "n_aktif": 120,
+        "beku_persen": 34.1,
+        "lonjakan": 22,
+        "peluang": 18.3
+      },
+      "Juni": {
+        "n_semua": 182,
+        "n_aktif": 119,
+        "beku_persen": 34.6,
+        "lonjakan": 45,
+        "peluang": 37.8
+      },
+      "Juli": {
+        "n_semua": 185,
+        "n_aktif": 123,
+        "beku_persen": 33.5,
+        "lonjakan": 20,
+        "peluang": 16.3
+      },
+      "Agustus": {
+        "n_semua": 184,
+        "n_aktif": 121,
+        "beku_persen": 34.2,
+        "lonjakan": 39,
+        "peluang": 32.2
+      },
+      "September": {
+        "n_semua": 176,
+        "n_aktif": 118,
+        "beku_persen": 33.0,
+        "lonjakan": 33,
+        "peluang": 28.0
+      },
+      "Oktober": {
+        "n_semua": 178,
+        "n_aktif": 116,
+        "beku_persen": 34.8,
+        "lonjakan": 24,
+        "peluang": 20.7
+      },
+      "November": {
+        "n_semua": 178,
+        "n_aktif": 116,
+        "beku_persen": 34.8,
+        "lonjakan": 32,
+        "peluang": 27.6
+      },
+      "Desember": {
+        "n_semua": 180,
+        "n_aktif": 122,
+        "beku_persen": 32.2,
+        "lonjakan": 46,
+        "peluang": 37.7
+      }
+    },
+    "≥20%": {
+      "Januari": {
+        "n_semua": 181,
+        "n_aktif": 119,
+        "beku_persen": 34.3,
+        "lonjakan": 21,
+        "peluang": 17.6
+      },
+      "Februari": {
+        "n_semua": 181,
+        "n_aktif": 123,
+        "beku_persen": 32.0,
+        "lonjakan": 4,
+        "peluang": 3.3
+      },
+      "Maret": {
+        "n_semua": 181,
+        "n_aktif": 119,
+        "beku_persen": 34.3,
+        "lonjakan": 24,
+        "peluang": 20.2
+      },
+      "April": {
+        "n_semua": 181,
+        "n_aktif": 120,
+        "beku_persen": 33.7,
+        "lonjakan": 14,
+        "peluang": 11.7
+      },
+      "Mei": {
+        "n_semua": 182,
+        "n_aktif": 120,
+        "beku_persen": 34.1,
+        "lonjakan": 10,
+        "peluang": 8.3
+      },
+      "Juni": {
+        "n_semua": 182,
+        "n_aktif": 119,
+        "beku_persen": 34.6,
+        "lonjakan": 29,
+        "peluang": 24.4
+      },
+      "Juli": {
+        "n_semua": 185,
+        "n_aktif": 123,
+        "beku_persen": 33.5,
+        "lonjakan": 15,
+        "peluang": 12.2
+      },
+      "Agustus": {
+        "n_semua": 184,
+        "n_aktif": 121,
+        "beku_persen": 34.2,
+        "lonjakan": 30,
+        "peluang": 24.8
+      },
+      "September": {
+        "n_semua": 176,
+        "n_aktif": 118,
+        "beku_persen": 33.0,
+        "lonjakan": 23,
+        "peluang": 19.5
+      },
+      "Oktober": {
+        "n_semua": 178,
+        "n_aktif": 116,
+        "beku_persen": 34.8,
+        "lonjakan": 9,
+        "peluang": 7.8
+      },
+      "November": {
+        "n_semua": 178,
+        "n_aktif": 116,
+        "beku_persen": 34.8,
+        "lonjakan": 16,
+        "peluang": 13.8
+      },
+      "Desember": {
+        "n_semua": 180,
+        "n_aktif": 122,
+        "beku_persen": 32.2,
+        "lonjakan": 23,
+        "peluang": 18.9
+      }
+    },
+    "≥50%": {
+      "Januari": {
+        "n_semua": 181,
+        "n_aktif": 119,
+        "beku_persen": 34.3,
+        "lonjakan": 6,
+        "peluang": 5.0
+      },
+      "Februari": {
+        "n_semua": 181,
+        "n_aktif": 123,
+        "beku_persen": 32.0,
+        "lonjakan": 1,
+        "peluang": 0.8
+      },
+      "Maret": {
+        "n_semua": 181,
+        "n_aktif": 119,
+        "beku_persen": 34.3,
+        "lonjakan": 8,
+        "peluang": 6.7
+      },
+      "April": {
+        "n_semua": 181,
+        "n_aktif": 120,
+        "beku_persen": 33.7,
+        "lonjakan": 4,
+        "peluang": 3.3
+      },
+      "Mei": {
+        "n_semua": 182,
+        "n_aktif": 120,
+        "beku_persen": 34.1,
+        "lonjakan": 1,
+        "peluang": 0.8
+      },
+      "Juni": {
+        "n_semua": 182,
+        "n_aktif": 119,
+        "beku_persen": 34.6,
+        "lonjakan": 8,
+        "peluang": 6.7
+      },
+      "Juli": {
+        "n_semua": 185,
+        "n_aktif": 123,
+        "beku_persen": 33.5,
+        "lonjakan": 5,
+        "peluang": 4.1
+      },
+      "Agustus": {
+        "n_semua": 184,
+        "n_aktif": 121,
+        "beku_persen": 34.2,
+        "lonjakan": 6,
+        "peluang": 5.0
+      },
+      "September": {
+        "n_semua": 176,
+        "n_aktif": 118,
+        "beku_persen": 33.0,
+        "lonjakan": 3,
+        "peluang": 2.5
+      },
+      "Oktober": {
+        "n_semua": 178,
+        "n_aktif": 116,
+        "beku_persen": 34.8,
+        "lonjakan": 2,
+        "peluang": 1.7
+      },
+      "November": {
+        "n_semua": 178,
+        "n_aktif": 116,
+        "beku_persen": 34.8,
+        "lonjakan": 10,
+        "peluang": 8.6
+      },
+      "Desember": {
+        "n_semua": 180,
+        "n_aktif": 122,
+        "beku_persen": 32.2,
+        "lonjakan": 12,
+        "peluang": 9.8
+      }
+    },
+    "≥100%": {
+      "Januari": {
+        "n_semua": 181,
+        "n_aktif": 119,
+        "beku_persen": 34.3,
+        "lonjakan": 2,
+        "peluang": 1.7
+      },
+      "Februari": {
+        "n_semua": 181,
+        "n_aktif": 123,
+        "beku_persen": 32.0,
+        "lonjakan": 0,
+        "peluang": 0.0
+      },
+      "Maret": {
+        "n_semua": 181,
+        "n_aktif": 119,
+        "beku_persen": 34.3,
+        "lonjakan": 4,
+        "peluang": 3.4
+      },
+      "April": {
+        "n_semua": 181,
+        "n_aktif": 120,
+        "beku_persen": 33.7,
+        "lonjakan": 1,
+        "peluang": 0.8
+      },
+      "Mei": {
+        "n_semua": 182,
+        "n_aktif": 120,
+        "beku_persen": 34.1,
+        "lonjakan": 0,
+        "peluang": 0.0
+      },
+      "Juni": {
+        "n_semua": 182,
+        "n_aktif": 119,
+        "beku_persen": 34.6,
+        "lonjakan": 2,
+        "peluang": 1.7
+      },
+      "Juli": {
+        "n_semua": 185,
+        "n_aktif": 123,
+        "beku_persen": 33.5,
+        "lonjakan": 3,
+        "peluang": 2.4
+      },
+      "Agustus": {
+        "n_semua": 184,
+        "n_aktif": 121,
+        "beku_persen": 34.2,
+        "lonjakan": 0,
+        "peluang": 0.0
+      },
+      "September": {
+        "n_semua": 176,
+        "n_aktif": 118,
+        "beku_persen": 33.0,
+        "lonjakan": 1,
+        "peluang": 0.8
+      },
+      "Oktober": {
+        "n_semua": 178,
+        "n_aktif": 116,
+        "beku_persen": 34.8,
+        "lonjakan": 0,
+        "peluang": 0.0
+      },
+      "November": {
+        "n_semua": 178,
+        "n_aktif": 116,
+        "beku_persen": 34.8,
+        "lonjakan": 6,
+        "peluang": 5.2
+      },
+      "Desember": {
+        "n_semua": 180,
+        "n_aktif": 122,
+        "beku_persen": 32.2,
+        "lonjakan": 3,
+        "peluang": 2.5
+      }
+    }
+  },
+  "uji_acak": {
+    "≥10%": {
+      "cukup_data": true,
+      "juara": "Juni",
+      "peluang_juara": 37.8,
+      "p_value": 0.0218,
+      "putaran": 5000
+    },
+    "≥20%": {
+      "cukup_data": true,
+      "juara": "Agustus",
+      "peluang_juara": 24.8,
+      "p_value": 0.0268,
+      "putaran": 5000
+    },
+    "≥50%": {
+      "cukup_data": true,
+      "juara": "Desember",
+      "peluang_juara": 9.8,
+      "p_value": 0.0674,
+      "putaran": 5000
+    },
+    "≥100%": {
+      "cukup_data": true,
+      "juara": "November",
+      "peluang_juara": 5.2,
+      "p_value": 0.026,
+      "putaran": 5000
+    }
+  },
+  "bersyarat": {
+    "≥10%": {
+      "semua": {
+        "n": 1436,
+        "lonjakan": 378,
+        "peluang": 26.3
+      },
+      "volume_ramai": {
+        "n": 487,
+        "lonjakan": 146,
+        "peluang": 30.0
+      },
+      "volume_sepi": {
+        "n": 949,
+        "lonjakan": 232,
+        "peluang": 24.4
+      },
+      "tren_naik_3bln": {
+        "n": 675,
+        "lonjakan": 196,
+        "peluang": 29.0
+      },
+      "tren_turun_3bln": {
+        "n": 738,
+        "lonjakan": 176,
+        "peluang": 23.8
+      }
+    },
+    "≥20%": {
+      "semua": {
+        "n": 1436,
+        "lonjakan": 218,
+        "peluang": 15.2
+      },
+      "volume_ramai": {
+        "n": 487,
+        "lonjakan": 104,
+        "peluang": 21.4
+      },
+      "volume_sepi": {
+        "n": 949,
+        "lonjakan": 114,
+        "peluang": 12.0
+      },
+      "tren_naik_3bln": {
+        "n": 675,
+        "lonjakan": 118,
+        "peluang": 17.5
+      },
+      "tren_turun_3bln": {
+        "n": 738,
+        "lonjakan": 97,
+        "peluang": 13.1
+      }
+    },
+    "≥50%": {
+      "semua": {
+        "n": 1436,
+        "lonjakan": 66,
+        "peluang": 4.6
+      },
+      "volume_ramai": {
+        "n": 487,
+        "lonjakan": 38,
+        "peluang": 7.8
+      },
+      "volume_sepi": {
+        "n": 949,
+        "lonjakan": 28,
+        "peluang": 3.0
+      },
+      "tren_naik_3bln": {
+        "n": 675,
+        "lonjakan": 38,
+        "peluang": 5.6
+      },
+      "tren_turun_3bln": {
+        "n": 738,
+        "lonjakan": 27,
+        "peluang": 3.7
+      }
+    },
+    "≥100%": {
+      "semua": {
+        "n": 1436,
+        "lonjakan": 22,
+        "peluang": 1.5
+      },
+      "volume_ramai": {
+        "n": 487,
+        "lonjakan": 15,
+        "peluang": 3.1
+      },
+      "volume_sepi": {
+        "n": 949,
+        "lonjakan": 7,
+        "peluang": 0.7
+      },
+      "tren_naik_3bln": {
+        "n": 675,
+        "lonjakan": 13,
+        "peluang": 1.9
+      },
+      "tren_turun_3bln": {
+        "n": 738,
+        "lonjakan": 9,
+        "peluang": 1.2
+      }
+    }
+  },
+  "pembanding_ihsg": {
+    "n": 2169,
+    "rata2_emiten": 1.78,
+    "rata2_ihsg": 0.8
+  }
+}
