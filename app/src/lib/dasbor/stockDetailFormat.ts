@@ -30,3 +30,22 @@ export function fMC(v: number | null | undefined): string {
   if (v >= 1e12) return `Rp ${(v / 1e12).toFixed(2)} T`
   return `Rp ${(v / 1e9).toFixed(0)} M`
 }
+
+/** Format ringkas T/M/Jt tanpa prefiks mata uang (dipakai panel Laporan Keuangan —
+ * angka boleh IDR atau USD tergantung financial_currency emiten). */
+export function fRingkas(v: number | null | undefined): string {
+  if (v == null) return '—'
+  const a = Math.abs(v)
+  const s = v < 0 ? '-' : ''
+  if (a >= 1e12) return s + (a / 1e12).toLocaleString('id-ID', { maximumFractionDigits: 1 }) + ' T'
+  if (a >= 1e9) return s + (a / 1e9).toLocaleString('id-ID', { maximumFractionDigits: 1 }) + ' M'
+  if (a >= 1e6) return s + (a / 1e6).toLocaleString('id-ID', { maximumFractionDigits: 1 }) + ' Jt'
+  return s + a.toLocaleString('id-ID', { maximumFractionDigits: 0 })
+}
+
+/** EPS: skala kecil (bisa < 1 untuk pelapor-USD mis. DSSA 0,0014) — desimal
+ * adaptif, bukan dibulatkan T/M/Jt seperti fRingkas. */
+export function fEps(v: number | null | undefined): string {
+  if (v == null) return '—'
+  return v.toLocaleString('id-ID', { maximumFractionDigits: Math.abs(v) < 10 ? 4 : 2 })
+}

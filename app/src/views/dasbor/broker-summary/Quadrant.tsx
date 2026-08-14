@@ -210,7 +210,7 @@ export function Quadrant({ brokers }: QuadrantProps) {
           </button>
         )}
       </div>
-      <div className="chart-wrap" style={{ height: 420 }}>
+      <div className="chart-wrap chart-tinggi">
         <canvas ref={canvasRef} />
       </div>
       {/* #77 kontras: warna domain cuma di titik ●, teks legenda ikut warna

@@ -104,7 +104,7 @@ export function Flow({ tanggalAktif, rentang }: FlowProps) {
   return (
     <>
       <div className="lbl" style={{ marginBottom: 8 }}><IkonMenu d={IKON_OMBAK} size={13} /> Net Foreign Harian — {jendela}</div>
-      <div className="chart-wrap" style={{ height: 260 }}>
+      <div className="chart-wrap chart-tinggi">
         <canvas ref={canvasRef} />
       </div>
       <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text3)' }}>
