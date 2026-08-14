@@ -412,8 +412,9 @@ def kartu_skenario(em):
             f'<div class="aturan"><span class="kl">Aturan Eksekusi</span><span>{sk["aturan"]}</span></div></div>')
 
 
-def halaman_emiten(em, sk, ed, ohlc, idx, pr=None):
+def halaman_emiten(em, sk, ed, ohlc, idx, pr=None, alias=None):
     o = em["ohlc_hari"]; p = em["pivot"]
+    badge_kredit = f'<div class="ek-badge">▪ Disetor oleh {alias}</div>' if alias else ""
     chg_cls = "bull" if o["chg"] >= 0 else "bear"
     tanda = "+" if o["chg"] >= 0 else "−"
     kata = em["label"].split("—")[0].strip()
@@ -453,6 +454,7 @@ def halaman_emiten(em, sk, ed, ohlc, idx, pr=None):
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">{ed["tanggal_flow"]} · Net</span></h3>
+        {badge_kredit}
         <div class="meter"><i style="left:{em["slider_pct"]}%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -644,26 +646,60 @@ def halaman_ringkasan(ed, skor_map, prob_map=None):
     return "".join(halaman)
 
 
-def halaman_kolofon(ed):
-    """Halaman penutup: kolofon tim — monogram, analis utama, grid kontributor."""
-    kontributor = ["Agitama Wahyu Putra Dita", "Mohamad Miftahul Ulum", "Ali Supian",
-                   "Wardani W.", "Dhafina S. F.", "Erika J.", "Difla S.", "Ratu N. A. A."]
-    sel = "\n".join(f'<div class="kf-nama">{n}</div>' for n in kontributor)
+def muat_kredit(edisi):
+    """Berkas opsional masuk/kredit-<EDISI>.json: {"developer": str,
+    "kontributor": {TICKER: alias}} — alias penyetor orderbook yang setorannya
+    sudah disetujui, per emiten edisi ini. Dipakai kolofon + badge kartu
+    emiten. None kalau berkas tak ada/rusak -> fallback nama hardcode lama,
+    build TIDAK PERNAH gagal gara-gara berkas ini."""
+    p = AKAR / "masuk" / f"kredit-{edisi}.json"
+    if not p.exists():
+        return None
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def halaman_kolofon(ed, kredit=None):
+    """Halaman penutup terbitan: monogram + wordmark PAPAN, peran Developer
+    (utama) & Analisa/Penyusun (kedua) — keduanya Johan Iriawan Akbar — lalu
+    kontributor. Dengan kredit.json: alias unik + jumlah emiten yang
+    disetornya edisi ini, urut kontribusi terbanyak. Tanpa kredit.json:
+    daftar nama hardcode lama (edisi lama tetap terbit sama)."""
+    kontrib = (kredit or {}).get("kontributor") or {}
+    if kontrib:
+        cnt = {}
+        for em in ed["emiten"]:
+            alias = kontrib.get(em["ticker"])
+            if alias:
+                cnt[alias] = cnt.get(alias, 0) + 1
+        urut = sorted(cnt.items(), key=lambda kv: -kv[1])
+        judul_kontrib = "Kontributor Edisi Ini"
+        sel = "\n".join(
+            f'<div class="kf-nama"><span>{alias}</span><span class="kf-jml">{n} emiten</span></div>'
+            for alias, n in urut) or '<div class="kf-nama"><span>belum ada setoran tercatat</span></div>'
+    else:
+        nama_lama = ["Agitama Wahyu Putra Dita", "Mohamad Miftahul Ulum", "Ali Supian",
+                     "Wardani W.", "Dhafina S. F.", "Erika J.", "Difla S.", "Ratu N. A. A."]
+        judul_kontrib = "Pengembangan, Ide, Gagasan &amp; Dukungan"
+        sel = "\n".join(f'<div class="kf-nama"><span>{n}</span></div>' for n in nama_lama)
     tahun = ed["tanggal_id"].split()[-1]
     return f'''
 <div class="page">
   {band(ed, "Kolofon")}
   <div class="inner kolofon">
     <div class="kf-monogram">P</div>
-    <div class="kf-merek">PAPAN — Pusat Analisa Pasar Nusantara</div>
-    <h2 class="kf-judul">Tim &amp; Kontributor</h2>
+    <div class="kf-judul">PAPAN</div>
+    <div class="kf-merek">Pusat Analisa Pasar Nusantara</div>
     <div class="kf-blok">
-      <div class="kf-peran">Analisa &amp; Penyusun</div>
+      <div class="kf-peran">Developer</div>
       <div class="kf-utama">Johan Iriawan Akbar</div>
+      <div class="kf-peran-dua">Analisa &amp; Penyusun</div>
     </div>
     <hr class="kf-garis">
     <div class="kf-blok">
-      <div class="kf-peran">Pengembangan, Ide, Gagasan &amp; Dukungan</div>
+      <div class="kf-peran">{judul_kontrib}</div>
       <div class="kf-grid">
 {sel}
       </div>
@@ -770,6 +806,8 @@ def main():
     ohlc = json.loads((AKAR / "cache" / f"ohlc-{tgl}.json").read_text(encoding="utf-8"))
 
     prob_map = prob.analisa_edisi(ohlc, [em["ticker"] for em in ed["emiten"]])
+    kredit = muat_kredit(ed["edisi"])
+    kontrib_map = (kredit or {}).get("kontributor") or {}
 
     skor_map = {}
     for em in ed["emiten"]:
@@ -814,11 +852,11 @@ def main():
     pages.append(halaman_ringkasan(ed, skor_map, prob_map))
     for idx, em in enumerate(ed["emiten"]):
         pages.append(halaman_emiten(em, skor_map[em["ticker"]], ed, ohlc, idx,
-                                    prob_map.get(em["ticker"])))
+                                    prob_map.get(em["ticker"]), kontrib_map.get(em["ticker"])))
         draw.append(f'gambarChart("ch{idx}","{em["ticker"]}",{em["ema50"]},'
                     f'{json.dumps(em["pivot"])});')
     pages.append(halaman_peringkat(ed, skor_map))
-    pages.append(halaman_kolofon(ed))
+    pages.append(halaman_kolofon(ed, kredit))
 
     tpl = (AKAR / "template.html").read_text(encoding="utf-8")
     # 2 thn penuh (pemanasan EMA200 di gambarChart); JKSE dipakai chart IHSG

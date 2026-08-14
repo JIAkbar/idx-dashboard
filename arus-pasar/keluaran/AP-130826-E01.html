@@ -261,22 +261,28 @@
   /* halaman kolofon (penutup) */
   .kolofon{display:flex;flex-direction:column;align-items:center;text-align:center;
     padding-top:34mm}
-  .kf-monogram{width:20mm;height:20mm;background:#F0A62B;border-radius:2mm;
+  .kf-monogram{width:23mm;height:23mm;background:#F0A62B;border-radius:2.2mm;
     display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;
-    font-size:26pt;font-weight:700;color:#0E1620;margin-bottom:6mm}
+    font-size:30pt;font-weight:700;color:#0E1620;margin-bottom:6mm}
+  .kf-judul{font-family:Georgia,Cambria,serif;font-size:34pt;font-weight:700;color:var(--ink);
+    letter-spacing:.03em;margin:0 0 3mm}
   .kf-merek{font-size:8.5pt;letter-spacing:.3em;text-transform:uppercase;color:var(--mute);
     margin-bottom:14mm}
-  .kf-judul{font-family:Georgia,Cambria,serif;font-size:24pt;font-weight:700;color:var(--ink);
-    margin:0 0 12mm}
   .kf-blok{margin-bottom:10mm}
   .kf-peran{font-size:8pt;letter-spacing:.24em;text-transform:uppercase;color:var(--mute);
     margin-bottom:4mm}
   .kf-utama{font-family:Georgia,serif;font-size:17pt;color:var(--ink)}
+  .kf-peran-dua{font-size:7.5pt;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);
+    margin-top:2.5mm}
   .kf-garis{border:0;border-top:1px solid var(--hair);width:44mm;margin:0 auto 10mm}
   .kf-grid{display:grid;grid-template-columns:repeat(2,62mm);gap:3.4mm 10mm;justify-content:center}
   .kf-nama{font-family:var(--mono);font-size:10.5pt;color:var(--ink2);padding:2.2mm 0;
-    border-bottom:1px solid rgba(255,255,255,.05)}
+    border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;gap:4mm}
+  .kf-jml{color:var(--mute);font-size:8.5pt;font-weight:400;white-space:nowrap}
   .kf-kaki{margin-top:auto;padding-top:14mm;font-size:7.5pt;color:var(--mute);line-height:1.9}
+  /* badge kredit kontributor di kartu emiten — kecil, redup, tidak mencuri
+     perhatian dari angka */
+  .ek-badge{font-size:6.5pt;color:var(--mute);letter-spacing:.04em;margin:-.5mm 0 2.5mm}
   .metode b{color:var(--ink2)}
 
   /* ── Kalimat angka (headline otomatis dari data) ── */
@@ -701,6 +707,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:58%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -788,6 +795,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:50%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -875,6 +883,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:38%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -962,6 +971,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:12%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1049,6 +1059,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:12%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1136,6 +1147,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:50%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1223,6 +1235,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:14%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1310,6 +1323,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:50%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1397,6 +1411,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:53%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1484,6 +1499,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:55%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1571,6 +1587,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:42%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1658,6 +1675,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:25%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1745,6 +1763,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:63%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1832,6 +1851,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:42%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1919,6 +1939,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:22%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2006,6 +2027,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:48%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2093,6 +2115,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:50%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2177,6 +2200,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:58%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2264,6 +2288,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:52%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2351,6 +2376,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:12%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2438,6 +2464,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:55%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2525,6 +2552,7 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
+        
         <div class="meter"><i style="left:26%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2809,24 +2837,25 @@
   </header>
   <div class="inner kolofon">
     <div class="kf-monogram">P</div>
-    <div class="kf-merek">PAPAN — Pusat Analisa Pasar Nusantara</div>
-    <h2 class="kf-judul">Tim &amp; Kontributor</h2>
+    <div class="kf-judul">PAPAN</div>
+    <div class="kf-merek">Pusat Analisa Pasar Nusantara</div>
     <div class="kf-blok">
-      <div class="kf-peran">Analisa &amp; Penyusun</div>
+      <div class="kf-peran">Developer</div>
       <div class="kf-utama">Johan Iriawan Akbar</div>
+      <div class="kf-peran-dua">Analisa &amp; Penyusun</div>
     </div>
     <hr class="kf-garis">
     <div class="kf-blok">
       <div class="kf-peran">Pengembangan, Ide, Gagasan &amp; Dukungan</div>
       <div class="kf-grid">
-<div class="kf-nama">Agitama Wahyu Putra Dita</div>
-<div class="kf-nama">Mohamad Miftahul Ulum</div>
-<div class="kf-nama">Ali Supian</div>
-<div class="kf-nama">Wardani W.</div>
-<div class="kf-nama">Dhafina S. F.</div>
-<div class="kf-nama">Erika J.</div>
-<div class="kf-nama">Difla S.</div>
-<div class="kf-nama">Ratu N. A. A.</div>
+<div class="kf-nama"><span>Agitama Wahyu Putra Dita</span></div>
+<div class="kf-nama"><span>Mohamad Miftahul Ulum</span></div>
+<div class="kf-nama"><span>Ali Supian</span></div>
+<div class="kf-nama"><span>Wardani W.</span></div>
+<div class="kf-nama"><span>Dhafina S. F.</span></div>
+<div class="kf-nama"><span>Erika J.</span></div>
+<div class="kf-nama"><span>Difla S.</span></div>
+<div class="kf-nama"><span>Ratu N. A. A.</span></div>
       </div>
     </div>
     <div class="kf-kaki">© 2026 Johan Iriawan Akbar — PAPAN. Hak cipta dilindungi.<br>

@@ -261,22 +261,28 @@
   /* halaman kolofon (penutup) */
   .kolofon{display:flex;flex-direction:column;align-items:center;text-align:center;
     padding-top:34mm}
-  .kf-monogram{width:20mm;height:20mm;background:#F0A62B;border-radius:2mm;
+  .kf-monogram{width:23mm;height:23mm;background:#F0A62B;border-radius:2.2mm;
     display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;
-    font-size:26pt;font-weight:700;color:#0E1620;margin-bottom:6mm}
+    font-size:30pt;font-weight:700;color:#0E1620;margin-bottom:6mm}
+  .kf-judul{font-family:Georgia,Cambria,serif;font-size:34pt;font-weight:700;color:var(--ink);
+    letter-spacing:.03em;margin:0 0 3mm}
   .kf-merek{font-size:8.5pt;letter-spacing:.3em;text-transform:uppercase;color:var(--mute);
     margin-bottom:14mm}
-  .kf-judul{font-family:Georgia,Cambria,serif;font-size:24pt;font-weight:700;color:var(--ink);
-    margin:0 0 12mm}
   .kf-blok{margin-bottom:10mm}
   .kf-peran{font-size:8pt;letter-spacing:.24em;text-transform:uppercase;color:var(--mute);
     margin-bottom:4mm}
   .kf-utama{font-family:Georgia,serif;font-size:17pt;color:var(--ink)}
+  .kf-peran-dua{font-size:7.5pt;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);
+    margin-top:2.5mm}
   .kf-garis{border:0;border-top:1px solid var(--hair);width:44mm;margin:0 auto 10mm}
   .kf-grid{display:grid;grid-template-columns:repeat(2,62mm);gap:3.4mm 10mm;justify-content:center}
   .kf-nama{font-family:var(--mono);font-size:10.5pt;color:var(--ink2);padding:2.2mm 0;
-    border-bottom:1px solid rgba(255,255,255,.05)}
+    border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;gap:4mm}
+  .kf-jml{color:var(--mute);font-size:8.5pt;font-weight:400;white-space:nowrap}
   .kf-kaki{margin-top:auto;padding-top:14mm;font-size:7.5pt;color:var(--mute);line-height:1.9}
+  /* badge kredit kontributor di kartu emiten — kecil, redup, tidak mencuri
+     perhatian dari angka */
+  .ek-badge{font-size:6.5pt;color:var(--mute);letter-spacing:.04em;margin:-.5mm 0 2.5mm}
   .metode b{color:var(--ink2)}
 
   /* ── Kalimat angka (headline otomatis dari data) ── */
