@@ -185,12 +185,23 @@
   height: 1px; background: rgba(0,0,0,.26);
 }
 
-.dasbor-rail-list { flex: 1; overflow-y: auto; padding: 8px 0; scrollbar-width: none; }
+.dasbor-rail-list { flex: 1; overflow-y: auto; padding: 5px 0; scrollbar-width: none; }
 .dasbor-rail-list::-webkit-scrollbar { display: none; }
+/* Pemisah kelompok — 13 ikon berderet tanpa jeda sulit dipindai. Tiga
+   kelompok: pasar (harga & indeks), analisa (alat bedah), lalu terbitan &
+   komunitas. Garisnya nyaris tak terlihat; tugasnya memberi jeda, bukan
+   menarik perhatian. */
+.dasbor-rail-pisah {
+  height: 1px; margin: 6px 14px; background: var(--line);
+  opacity: .55; flex: none;
+}
 .dasbor-rail-item {
   width: 100%;
-  padding: 9px 0 8px;
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  /* Dirapatkan 15 Agu: 12 menu + tombol tema + Masuk sudah menyentuh tepi
+     bawah di laptop 960px, dan Forum masih harus masuk. Padding 9/8 → 6/5
+     dan ikon 20 → 18 memberi ruang dua item tanpa terasa sesak. */
+  padding: 6px 0 5px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
   color: var(--text3);
   text-decoration: none;
   border-left: 2px solid transparent;

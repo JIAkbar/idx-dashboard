@@ -20,6 +20,10 @@ export interface MenuItem {
   ikon: string
   /** Badge kecil di sebelah label, mis. "Alpha" pada Broker Summary. */
   badge?: string
+  /** Item ini membuka kelompok baru di rail — Sidebar menggambar garis jeda
+   *  tepat sebelumnya. Ditandai di data, bukan dihitung dari indeks, supaya
+   *  urutan menu boleh berubah tanpa memindahkan garisnya secara manual. */
+  mulaiKelompok?: boolean
 }
 
 export const MENU_ITEMS: MenuItem[] = [
@@ -44,7 +48,7 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M7 5v14M5 8h4v8H5zM15 3v18M13 7h4v9h-4z',
   },
   {
-    id: 'stock-detail', path: '/stock-detail', label: 'Stock Detail', kode: 'DTL',
+    id: 'stock-detail', path: '/stock-detail', label: 'Stock Detail', kode: 'DTL', mulaiKelompok: true,
     ikon: 'M10 4a6 6 0 100 12 6 6 0 000-12zM14.5 14.5L20 20M8 10h4M10 8v4',
   },
   {
@@ -64,7 +68,7 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M12 3a9 9 0 109 9M12 7a5 5 0 105 5M12 12l5.5-5.5M12 12h.01',
   },
   {
-    id: 'bulletin', path: '/bulletin', label: 'Bulletin Arus Pasar', kode: 'BLT',
+    id: 'bulletin', path: '/bulletin', label: 'Bulletin Arus Pasar', kode: 'BLT', mulaiKelompok: true,
     ikon: 'M5 4h11l3 3v13a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1zM16 4v4h3M8 10h7M8 13h7M8 16h4',
   },
   {

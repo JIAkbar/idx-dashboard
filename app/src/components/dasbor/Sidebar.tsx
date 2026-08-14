@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { MENU_ITEMS } from '../../lib/dasbor/menu'
 import { IkonMenu, IKON_KUNCI } from './IkonMenu'
@@ -54,15 +55,20 @@ export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
           const terkunci = kunci ? !boleh(kunci) : false
           const judul = item.label + (item.badge ? ` (${item.badge})` : '') + (terkunci ? ` — ${alasanRingkas(kunci!)}` : '')
           return (
+            <Fragment key={item.id}>
+              {/* Jeda kelompok sebelum item pembuka kelompok berikutnya —
+                  didefinisikan di menu.ts (`mulaiKelompok`), bukan diambil
+                  dari indeks, supaya urutan menu boleh berubah tanpa
+                  memindahkan garisnya secara manual. */}
+              {item.mulaiKelompok && <div className="dasbor-rail-pisah" aria-hidden="true" />}
             <NavLink
-              key={item.id}
               to={item.path}
               end={item.path === '/'}
               title={judul}
               className={({ isActive }) => 'dasbor-rail-item' + (isActive ? ' active' : '')}
               onClick={(e) => klik(e, item.path)}
             >
-              <IkonMenu d={item.ikon} />
+              <IkonMenu d={item.ikon} size={18} />
               <span className="dasbor-rail-kode">{item.kode}</span>
               {terkunci && (
                 <span className="dasbor-kunci-badge" aria-hidden="true">
@@ -70,6 +76,7 @@ export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
                 </span>
               )}
             </NavLink>
+            </Fragment>
           )
         })}
       </div>
