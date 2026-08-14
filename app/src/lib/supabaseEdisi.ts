@@ -80,13 +80,33 @@ export async function daftarScreenshot(tanggal: string): Promise<string[]> {
   return (data ?? []).map((f) => `${tanggal}/${f.name}`)
 }
 
-/** Tanggal (folder) yang punya upload di bucket "screenshots", terbaru dulu. */
+/** Tanggal (folder) yang punya upload di bucket "screenshots", terbaru dulu.
+ *  Hanya folder berpola tanggal — folder lain (mis. radar/) bukan antrean
+ *  Kotak Masuk. */
 export async function daftarTanggalUnggahan(): Promise<string[]> {
   const { data, error } = await supabase.storage.from('screenshots').list('')
   if (error) throw error
   return (data ?? [])
-    .filter((f) => f.id === null)
+    .filter((f) => f.id === null && /^\d{4}-\d{2}-\d{2}$/.test(f.name))
     .map((f) => f.name)
     .sort()
     .reverse()
+}
+
+/** Unggah berkas sumber Radar WDWL (wdwl.png / rbu.pdf) ke bucket
+ *  "screenshots", path radar/{tanggal}/{jenis}.{ext} — dipisah prefiks
+ *  radar/ supaya tidak tercampur folder tanggal screenshot orderbook. */
+export async function unggahRadar(file: File, tanggal: string, jenis: 'wdwl' | 'rbu'): Promise<string> {
+  const ext = file.name.split('.').pop() || (jenis === 'rbu' ? 'pdf' : 'png')
+  const path = `radar/${tanggal}/${jenis}.${ext}`
+  const { error } = await supabase.storage.from('screenshots').upload(path, file, { upsert: true })
+  if (error) throw error
+  return path
+}
+
+/** Nama berkas radar yang sudah terunggah untuk satu tanggal. */
+export async function daftarRadar(tanggal: string): Promise<string[]> {
+  const { data, error } = await supabase.storage.from('screenshots').list(`radar/${tanggal}`)
+  if (error) throw error
+  return (data ?? []).map((f) => f.name)
 }

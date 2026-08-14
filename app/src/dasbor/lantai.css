@@ -1030,6 +1030,7 @@
    layar (menang atas 360px !important mobile karena selektor lebih spesifik). */
 .lantai .pi-graph-card:fullscreen { flex-direction: row; background: var(--bg); }
 .lantai .pi-graph-card:fullscreen .pi-graph { height: 100% !important; }
+.lantai .pi-graph-card:fullscreen .pi-panel { overflow-y: auto; }
 
 .lantai .pi-panel { display: block; width: 300px; min-width: 300px; border-left: 0.5px solid var(--border); overflow-y: auto; background: var(--card2); flex-shrink: 0; }
 .lantai .pi-panel-head { padding: 14px 16px; border-bottom: 0.5px solid var(--border); position: sticky; top: 0; background: var(--bg3); z-index: 5; display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
@@ -1115,6 +1116,11 @@
   .lantai .pi-graph-wrap { max-width: 100vw; overflow: hidden; }
   .lantai .pi-graph-card { flex-direction: column !important; }
   .lantai .pi-panel { width: 100% !important; min-width: 0 !important; border-left: none !important; border-top: 0.5px solid var(--border) !important; }
+  /* Layar penuh mobile: panel detail JANGAN merampas layar — graf minimal
+     separuh atas (flex:1), panel dibatasi 45dvh dan scroll sendiri. */
+  .lantai .pi-graph-card:fullscreen { flex-direction: column !important; }
+  .lantai .pi-graph-card:fullscreen .pi-graph-wrap { flex: 1 1 auto; min-height: 0; }
+  .lantai .pi-graph-card:fullscreen .pi-panel { flex: none; max-height: 45dvh; overflow-y: auto; }
   .lantai .pi-tbl-wrap { max-width: calc(100vw - 24px); }
   .lantai .pi-tbl th, .lantai .pi-tbl td { font-size: 10px; padding: 6px 7px; }
 }
@@ -1531,3 +1537,85 @@
   ::view-transition-old(*),
   ::view-transition-new(*) { animation: none !important; }
 }
+
+/* ============ RADAR WDWL (.rdr-*) — port artifact papan-radar-wdwl.html v2
+   (halaman /radar, views/dasbor/Radar.tsx). Warna zona ikut legenda resmi
+   WDWL; nilai dark = artifact, light = varian gelap yang lolos kontras. */
+.lantai{
+  --rdr-rebound:#4CC38A; --rdr-breakout:#7BD88F; --rdr-uptrend:#4E8FD9;
+  --rdr-sw-tua:#1F7A4F; --rdr-sw-muda:#7BD88F; --rdr-sw-biru:#2F5E9E;
+  --rdr-uptrend-dim:rgba(78,143,217,.14);
+}
+.dasbor-shell[data-theme="light"] .lantai{
+  --rdr-rebound:#1F7A4F; --rdr-breakout:#3E8E52; --rdr-uptrend:#2F6DB3;
+  --rdr-uptrend-dim:rgba(47,109,179,.10);
+}
+
+/* Navigasi arsip per tanggal: tombol tanggal + stepper ‹ › */
+.lantai .rdr-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lantai .rdr-arsip{display:flex;gap:5px;flex-wrap:wrap}
+.lantai .rdr-arsip button{font-family:var(--mono);font-size:11px;padding:6px 10px;border-radius:4px;border:1px solid var(--line2);background:none;color:var(--text3);cursor:pointer}
+.lantai .rdr-arsip button.on{background:var(--amber);border-color:var(--amber);color:var(--amber-ink);font-weight:700}
+.lantai .rdr-arsip button:hover:not(.on){border-color:var(--amber);color:var(--text)}
+.lantai .rdr-stepper{display:flex;align-items:center;border:1px solid var(--line2);border-radius:4px;overflow:hidden}
+.lantai .rdr-stepper button{background:none;border:none;color:var(--text2);font-family:var(--mono);font-size:13px;padding:7px 11px;cursor:pointer}
+.lantai .rdr-stepper button:hover:not(:disabled){background:var(--amber-dim);color:var(--text)}
+.lantai .rdr-stepper button:disabled{opacity:.35;cursor:default}
+.lantai .rdr-stepper .tgl{font-family:var(--mono);font-size:12.5px;color:var(--text);padding:7px 14px;border-inline:1px solid var(--line2);font-weight:700;white-space:nowrap}
+
+/* Tabel papan: warna ticker per zona + superscript hari beruntun */
+.lantai .rdr-tbl .tick small{color:var(--text3);font-weight:400;font-size:9px;vertical-align:super;margin-left:1px}
+.lantai .rdr-z-rebound .tick{color:var(--rdr-rebound)}
+.lantai .rdr-z-breakout .tick{color:var(--rdr-breakout)}
+.lantai .rdr-z-uptrend .tick{color:var(--rdr-uptrend)}
+
+/* Chip sinyal */
+.lantai .rdr-chip{display:inline-block;font-family:var(--mono);font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:3px;border:1px solid var(--line2);color:var(--text2);white-space:nowrap;margin:1px 4px 1px 0;background:none}
+.lantai .rdr-chip.g{color:var(--green);border-color:var(--green);background:var(--green-dim)}
+.lantai .rdr-chip.o{color:var(--amber);border-color:var(--amber);background:var(--amber-dim)}
+.lantai .rdr-chip.b{color:var(--rdr-uptrend);border-color:var(--rdr-uptrend);background:var(--rdr-uptrend-dim)}
+.lantai .rdr-chip.d{color:var(--red);border-color:var(--red);background:var(--red-dim)}
+
+/* Skor probabilitas: bar mini + angka */
+.lantai .rdr-skor{display:inline-flex;align-items:center;gap:7px}
+.lantai .rdr-skor i{display:block;width:52px;height:4px;border-radius:2px;background:var(--bar-track);position:relative;overflow:hidden}
+.lantai .rdr-skor i::after{content:'';position:absolute;inset:0;width:var(--p);background:var(--green);border-radius:2px}
+.lantai .rdr-skor.rendah i::after{background:var(--text3)}
+.lantai .rdr-skor b{font-family:var(--mono);font-size:11.5px}
+
+/* Legenda resmi (tab Cara Baca) */
+.lantai .rdr-legenda{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0;font-size:12px}
+.lantai .rdr-leg{padding:13px 16px;border-left:1px solid var(--line)}
+.lantai .rdr-leg:first-child{border-left:none}
+.lantai .rdr-leg>b{display:block;font-family:var(--disp);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:7px}
+.lantai .rdr-leg .b{display:flex;align-items:center;gap:8px;margin-bottom:5px;color:var(--text3);font-size:11.5px}
+.lantai .rdr-sw{width:13px;height:13px;border-radius:3px;flex:none}
+.lantai .rdr-sw.tua{background:var(--rdr-sw-tua)}
+.lantai .rdr-sw.muda{background:var(--rdr-sw-muda)}
+.lantai .rdr-sw.biru{background:var(--rdr-sw-biru)}
+.lantai .rdr-sw.merah{background:var(--red)}
+.lantai .rdr-leg code{font-family:var(--mono);font-size:10.5px;color:var(--amber);background:var(--amber-dim);padding:1px 5px;border-radius:3px}
+
+/* Chart RBU: kartu gambar per ticker */
+.lantai .rdr-rbu{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.lantai .rdr-rbu-c{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.lantai .rdr-rbu-c .h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--line)}
+.lantai .rdr-rbu-c .h span{font-size:10.5px;color:var(--text3)}
+.lantai .rdr-rbu-c .g{display:block;width:100%;padding:0;border:none;background:none;cursor:zoom-in}
+.lantai .rdr-rbu-c img{display:block;width:100%;height:auto}
+
+/* Rollup mingguan/bulanan: baris peringkat ala artifact */
+.lantai .rdr-rank{display:flex;flex-direction:column}
+.lantai .rdr-rankrow{display:grid;grid-template-columns:minmax(64px,auto) 1fr auto;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.lantai .rdr-rankrow:last-of-type{border-bottom:none}
+.lantai .rdr-rankrow .t{font-family:var(--mono);font-weight:700;font-size:12px}
+.lantai .rdr-rankrow .t small{display:block;font-family:var(--ui);font-weight:400;color:var(--text3);font-size:10px}
+.lantai .rdr-bar{height:7px;border-radius:4px;background:var(--bar-track);position:relative;overflow:hidden;min-width:40px}
+.lantai .rdr-bar i{position:absolute;inset:0;width:var(--p);background:var(--green);border-radius:4px}
+.lantai .rdr-bar.netral i{background:var(--rdr-uptrend)}
+.lantai .rdr-bar.turun i{background:var(--red)}
+.lantai .rdr-rankrow .v{font-family:var(--mono);font-size:12px;font-weight:700;white-space:nowrap;text-align:right}
+.lantai .rdr-rankrow .v.up{color:var(--green)}
+.lantai .rdr-rankrow .v.dn{color:var(--red)}
+.lantai .rdr-catatan{font-size:11px;color:var(--text3);line-height:1.7;border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
+.lantai .rdr-kaki{color:var(--text3);font-size:10.5px;line-height:1.8;margin-top:10px}

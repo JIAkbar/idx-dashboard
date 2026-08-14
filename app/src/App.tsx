@@ -13,6 +13,7 @@ import { StockDetail } from './views/dasbor/StockDetail'
 import { PetaInvestor } from './views/dasbor/PetaInvestor'
 import { KalkulatorJia } from './views/dasbor/KalkulatorJia'
 import { Bulletin } from './views/dasbor/Bulletin'
+import { Radar } from './views/dasbor/Radar'
 import { Feedback } from './views/dasbor/Feedback'
 import { Login } from './views/Login'
 import { AdminHome } from './views/AdminHome'
@@ -39,6 +40,7 @@ function App() {
               <Route path="/broker-summary" element={<BrokerSummary />} />
               <Route path="/kalkulator" element={<KalkulatorJia />} />
               <Route path="/bulletin" element={<Bulletin />} />
+              <Route path="/radar" element={<Radar />} />
               <Route path="/feedback" element={<Feedback />} />
               {/* /admin ikut DI DALAM layout (rail/topbar tetap tampil) tapi
                   tetap dijaga ProtectedRoute — belum login dilempar ke /login

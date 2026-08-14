@@ -23,6 +23,7 @@ import {
   urlScreenshots,
 } from '../lib/supabaseEdisi'
 import { useBulletinList } from '../lib/dasbor/bulletin'
+import { RadarUnggah } from './admin/RadarUnggah'
 import './AdminHome.css'
 
 /** Kunci sessionStorage modal sambutan — nilai = user.id supaya login akun
@@ -731,6 +732,8 @@ export function AdminHome() {
           )}
           </div>
         </section>
+
+        <RadarUnggah />
       </div>
 
       {formBuka && (

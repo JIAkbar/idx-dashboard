@@ -13,6 +13,7 @@ const repoRoot = path.resolve(appDir, '..')
 
 const targets = [
   { src: path.join(repoRoot, 'data-idx', 'json'), dest: path.join(appDir, 'public', 'data-idx', 'json') },
+  { src: path.join(repoRoot, 'data-idx', 'radar'), dest: path.join(appDir, 'public', 'data-idx', 'radar') },
   { src: path.join(repoRoot, 'arus-pasar', 'keluaran'), dest: path.join(appDir, 'public', 'arus-pasar', 'keluaran') },
 ]
 

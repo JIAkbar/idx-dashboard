@@ -15,7 +15,7 @@ import fs from 'node:fs'
  */
 function serveRepoDir(mount: string, ...dirParts: string[]): Plugin {
   const dir = path.resolve(__dirname, '..', ...dirParts)
-  const tipe: Record<string, string> = { '.json': 'application/json', '.pdf': 'application/pdf' }
+  const tipe: Record<string, string> = { '.json': 'application/json', '.pdf': 'application/pdf', '.png': 'image/png' }
   return {
     name: `serve-repo-dir${mount}`,
     configureServer(server) {
@@ -39,6 +39,7 @@ export default defineConfig({
   plugins: [
     react(),
     serveRepoDir('/data-idx/json', 'data-idx', 'json'),
+    serveRepoDir('/data-idx/radar', 'data-idx', 'radar'),
     serveRepoDir('/arus-pasar/keluaran', 'arus-pasar', 'keluaran'),
   ],
   // ChangelogAdmin.tsx imports docs/CHANGELOG.md (?raw) dari luar akar app/ —
