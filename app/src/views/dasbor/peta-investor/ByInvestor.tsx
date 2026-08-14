@@ -83,6 +83,7 @@ export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
                       <PilRow
                         total={inv.holdings.length}
                         items={inv.holdings.map((h) => ({ key: h.code, nama: h.code, pct: h.pct, title: `${h.issuer} · ${h.pct.toFixed(2)}%` }))}
+                        onKlikItem={(h) => onSelect({ type: 'emiten', code: h.key })}
                       />
                     </td>
                   </tr>

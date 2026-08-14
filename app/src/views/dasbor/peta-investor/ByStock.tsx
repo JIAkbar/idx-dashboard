@@ -109,6 +109,10 @@ export function ByStock({ data, onSelect }: ByStockProps) {
                       <PilRow
                         total={em.holders.length}
                         items={em.holders.map((h) => ({ key: h.name, nama: h.name, pct: h.pct, title: `${h.name} · ${holderType(h.cls)} · ${h.pct.toFixed(2)}%` }))}
+                        onKlikItem={(h) => {
+                          const holder = em.holders.find((x) => x.name === h.key)
+                          if (holder) onSelect({ type: 'investor', name: holder.name, cls: holder.cls, lf: holder.lf })
+                        }}
                       />
                     </td>
                   </tr>

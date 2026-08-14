@@ -643,6 +643,11 @@
 .lantai a.tick{color:inherit;text-decoration:none}
 .lantai a.tick:hover{text-decoration:underline}
 .lantai .bchip{display:inline-block;font-family:var(--mono);font-size:10.5px;font-weight:600;background:var(--bg3);border:1px solid var(--line2);border-radius:4px;padding:1px 6px;margin-right:7px}
+/* #3: chip PilRow klik ke Grafik Jaringan (emiten di By Investor, investor di
+   By Stock) — pemegang tr sudah punya onClick sendiri, chip stopPropagation
+   di PilRow.tsx. */
+.lantai .bchip-klik{cursor:pointer}
+.lantai .bchip-klik:hover{border-color:var(--amber);color:var(--amber)}
 .lantai .spark{stroke-width:1.5;fill:none}
 /* Lajur pil (Peta Investor, Task 12) — sel berisi 3 .bchip yang HARUS muat satu
    baris supaya tinggi baris tabel seragam. nowrap + ellipsis dipakai alih-alih
@@ -1070,7 +1075,7 @@
 .lantai .pi-search-x { display: inline-block; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text3); font-size: 14px; line-height: 1; }
 /* overflow-x hidden + ellipsis (bug 14 Agu): nama panjang bikin daftar bisa
    tergeser horizontal — semua item tampak terpotong dari kiri. */
-.lantai .pi-search-drop { position: absolute; top: calc(100% + 4px); right: 0; width: 300px; max-height: 340px; overflow-y: auto; overflow-x: hidden; background: var(--card); border: 0.5px solid var(--border2); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.35); z-index: 200; }
+.lantai .pi-search-drop { position: absolute; top: calc(100% + 4px); right: 0; width: 300px; max-width: calc(100vw - 100px); max-height: 340px; overflow-y: auto; overflow-x: hidden; background: var(--card); border: 0.5px solid var(--border2); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.35); z-index: 200; }
 .lantai .pi-drop-empty { padding: 14px; text-align: center; color: var(--text3); font-size: 11px; }
 .lantai .pi-drop-label { padding: 8px 12px 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text3); }
 .lantai .pi-drop-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; cursor: pointer; border-bottom: 0.5px solid var(--border); }

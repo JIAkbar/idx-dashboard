@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react'
 
 export interface PilItem {
   key: string
@@ -21,7 +21,14 @@ const CADANGAN_LABEL = 64 // ± lebar "+NN lagi"
  * dipaksa melebar (tanpa scroll horizontal). Chip di baris tampil tetap
  * min-width:0 sebagai jaring pengaman selisih pembulatan 1-2px.
  */
-export function PilRow({ items, total }: { items: PilItem[]; total: number }) {
+export function PilRow({ items, total, onKlikItem }: {
+  items: PilItem[]
+  total: number
+  /** #3: chip bisa diklik (mis. lompat ke Grafik Jaringan fokus emiten/investor
+   * itu) — baris <tr> pemanggil biasanya sudah punya onClick sendiri, jadi
+   * chip WAJIB stopPropagation (ditangani di sini, bukan di pemanggil). */
+  onKlikItem?: (item: PilItem) => void
+}) {
   const ukurRef = useRef<HTMLDivElement>(null)
   const [muat, setMuat] = useState(Math.min(items.length, MAKS_UKUR))
 
@@ -56,7 +63,28 @@ export function PilRow({ items, total }: { items: PilItem[]; total: number }) {
   }, [items, total])
 
   const chip = (h: PilItem) => (
-    <span key={h.key} className="bchip" title={h.title}>
+    <span
+      key={h.key}
+      className={`bchip${onKlikItem ? ' bchip-klik' : ''}`}
+      title={h.title}
+      {...(onKlikItem
+        ? {
+            role: 'button',
+            tabIndex: 0,
+            onClick: (e: MouseEvent) => {
+              e.stopPropagation()
+              onKlikItem(h)
+            },
+            onKeyDown: (e: KeyboardEvent) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                e.stopPropagation()
+                onKlikItem(h)
+              }
+            },
+          }
+        : {})}
+    >
       <span className="pil-nm">{h.nama}</span>
       <span className="pil-pct">{h.pct.toFixed(1)}%</span>
     </span>
