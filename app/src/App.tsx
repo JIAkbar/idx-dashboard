@@ -45,14 +45,16 @@ function App() {
             {/* Publik — dasbor, tanpa login. Index = Indeks Dunia (panel "active" default di index_live.html). */}
             <Route element={<DasborLayout />}>
               <Route path="/" element={<PenjagaHalaman kunci="dasbor"><IndeksDunia /></PenjagaHalaman>} />
-              {/* /stocks (Top Stocks) & /radar (Radar Watchlist) TIDAK dibungkus —
-                  tak ada kunci akses_halaman yang cocok utk keduanya (lihat
-                  komentar PETA_MENU_KUNCI, lib/aksesHalaman.ts: 'kalender' itu
-                  panel di dalam Indeks Dunia, 'radar' itu tab admin WDWL). */}
-              <Route path="/stocks" element={<TopStocks />} />
-              {/* /broker (Top Broker) juga tak dibungkus — kunci 'broker' cuma
-                  utk "Broker Summary" (label sungguhan di database), lihat /broker-summary di bawah. */}
-              <Route path="/broker" element={<TopBroker />} />
+              {/* Sweep 15 Agu: SETIAP halaman yang punya rute sendiri wajib
+                  punya kunci akses. Top Stocks & Top Broker sebelumnya tidak
+                  terdaftar sama sekali — halaman tanpa aturan berarti celah
+                  yang tak kelihatan dari tab Akses (persis yang terjadi pada
+                  Radar). Keduanya kini publik secara default, tapi bisa
+                  dikunci dari panel tanpa menyentuh kode. */}
+              <Route path="/stocks" element={<PenjagaHalaman kunci="stocks"><TopStocks /></PenjagaHalaman>} />
+              {/* Kunci 'broker' = "Broker Summary" (halaman lain); Top Broker
+                  punya kuncinya sendiri, 'topbroker'. */}
+              <Route path="/broker" element={<PenjagaHalaman kunci="topbroker"><TopBroker /></PenjagaHalaman>} />
               <Route path="/sector" element={<PenjagaHalaman kunci="sektor"><SektorIndeks /></PenjagaHalaman>} />
               <Route path="/chart" element={<PenjagaHalaman kunci="chart"><ChartIndeks /></PenjagaHalaman>} />
               <Route path="/stock-detail" element={<PenjagaHalaman kunci="detail"><StockDetail /></PenjagaHalaman>} />
@@ -60,7 +62,12 @@ function App() {
               <Route path="/broker-summary" element={<PenjagaHalaman kunci="broker"><BrokerSummary /></PenjagaHalaman>} />
               <Route path="/kalkulator" element={<PenjagaHalaman kunci="kalkulator"><KalkulatorJia /></PenjagaHalaman>} />
               <Route path="/bulletin" element={<PenjagaHalaman kunci="bulletin"><Bulletin /></PenjagaHalaman>} />
-              <Route path="/radar" element={<Radar />} />
+              {/* Kunci 'radar' (label "Radar WDWL") menunjuk HALAMAN PUBLIK ini,
+                  bukan tab admin tempat sumbernya diunggah — produknya yang
+                  dijaga, bukan alat rakitnya. Sempat salah tafsir dan halaman
+                  ini terbuka untuk semua orang padahal setelannya "perlu
+                  login". */}
+              <Route path="/radar" element={<PenjagaHalaman kunci="radar"><Radar /></PenjagaHalaman>} />
               <Route path="/feedback" element={<PenjagaHalaman kunci="saran"><Feedback /></PenjagaHalaman>} />
               {/* /admin ikut DI DALAM layout (rail/topbar tetap tampil) tapi
                   tetap dijaga ProtectedRoute — belum login dilempar ke /login
@@ -82,7 +89,11 @@ function App() {
                   (mis. seharusnya tingkat='login'), sesuaikan baris itu di tab
                   Akses lalu pasang PenjagaHalaman kunci="admin" di sini. */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/admin" element={<AdminLayout />}>
+                {/* Kunci 'admin' sekarang bertingkat "perlu login" (bukan
+                    superadmin) — /admin juga rumah kontributor, jadi penjaga
+                    di pintu depan aman dipasang. Gerbang superadmin tetap
+                    berlaku PER TAB (Kurasi/Akun/Akses/Radar). */}
+                <Route path="/admin" element={<PenjagaHalaman kunci="admin"><AdminLayout /></PenjagaHalaman>}>
                   <Route index element={<UnggahHarian />} />
                   <Route path="kurasi" element={<KurasiSetoran />} />
                   <Route path="radar" element={<RadarUnggah />} />

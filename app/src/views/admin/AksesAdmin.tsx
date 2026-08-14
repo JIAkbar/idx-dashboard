@@ -15,6 +15,7 @@ import { Dropdown } from '../../components/dasbor/Dropdown'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { IkonMenu, IKON_TAMBAH, IKON_TONG, IKON_CENTANG, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { AksesDitolak } from './AdminLayout'
+import { PanelJenjang } from './PanelJenjang'
 import './AkunAdmin.css'
 
 const TINGKAT_OPSI = [
@@ -237,6 +238,11 @@ export function AksesAdmin() {
           )}
         </div>
       </section>
+
+      {/* Dropdown "jenjang minimum" di atas tidak berarti apa-apa tanpa tahu
+          apa syarat tiap jenjang — acuannya ditaruh persis di bawahnya.
+          Ringkas: kolom "yang terbuka" sudah diwakili tabel halaman di atas. */}
+      <PanelJenjang ringkas />
 
       {tambahBuka && akun && halaman && (
         <FormTambahPengecualian

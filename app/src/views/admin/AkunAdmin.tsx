@@ -6,6 +6,7 @@ import { IkonMenu, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_SURAT, IKON_T
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { AksesDitolak } from './AdminLayout'
+import { PanelJenjang } from './PanelJenjang'
 import './AkunAdmin.css'
 
 /** Pilihan kuota harian — dropdown gantinya input number bertombol panah
@@ -158,7 +159,16 @@ export function AkunAdmin() {
                     const sedangProses = sibuk.has(a.id)
                     const tier = a.tier ?? 0
                     const jenjangAkun = jenjang.find((j) => j.tier === tier)
-                    const kuotaEfektif = a.kuota_manual ?? jenjangAkun?.kuota ?? a.kuota_harian
+                    // Superadmin TIDAK berjenjang: `kuota_saya()` di server
+                    // mengecualikannya, jadi menampilkan "Perunggu · efektif
+                    // 2/hari" untuknya bukan cuma janggal — itu angka yang
+                    // tidak pernah dipakai server. Kolom tier tetap terisi di
+                    // basis data (dihitung dari setorannya sendiri), hanya
+                    // tidak berarti apa-apa untuk peran ini.
+                    const berjenjang = a.peran !== 'superadmin'
+                    const kuotaEfektif = berjenjang
+                      ? (a.kuota_manual ?? jenjangAkun?.kuota ?? a.kuota_harian)
+                      : Math.max(a.kuota_harian, 50)
                     return (
                       <tr key={a.id}>
                         <td>{a.email}</td>
@@ -169,7 +179,13 @@ export function AkunAdmin() {
                           </span>
                         </td>
                         <td>
-                          <span className="chip" title={`Tier ${tier}`}>{jenjangAkun?.nama ?? `Tier ${tier}`}</span>
+                          {berjenjang ? (
+                            <span className="chip" title={`Tier ${tier}`}>{jenjangAkun?.nama ?? `Tier ${tier}`}</span>
+                          ) : (
+                            <span className="muted" title="Superadmin tidak dibatasi jenjang maupun kuota harian">
+                              Tanpa jenjang
+                            </span>
+                          )}
                         </td>
                         <td className="r">
                           <div className="aa-kuota-dd" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
@@ -230,6 +246,10 @@ export function AkunAdmin() {
           )}
         </div>
       </section>
+
+      {/* Acuan jenjang — kolom "Jenjang" dan dropdown kuota di atas tidak ada
+          artinya tanpa tahu ambangnya. */}
+      <PanelJenjang />
 
       {tambahBuka && (
         <FormTambahAkun

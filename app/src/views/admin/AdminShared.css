@@ -195,20 +195,40 @@
 .lantai .af-lb:focus-visible { outline: none; }
 .lantai .af-lb-nav:focus-visible, .lantai .af-lb-tutup:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
 
-/* Toast status unggah/hapus — muncul bawah-tengah, hilang sendiri. */
+/* Toast status unggah/hapus/kelola akun.
+   Bawah-tengah membuat pesan muncul jauh dari tempat aksinya (tombol di kanan
+   tabel) dan hampir menyentuh kaki halaman — mata harus melompat ke seberang
+   layar untuk membacanya. Sekarang menempel di kanan, sejajar kolom Aksi,
+   dengan jarak yang aman dari tepi bawah.
+   Masuk dari kanan (bukan naik dari bawah) supaya arah geraknya menegaskan
+   dari mana pesan itu datang. */
 .lantai.af-toast {
-  position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
-  z-index: 95; display: flex; align-items: center; gap: 8px;
-  background: var(--bg1); border: 1px solid var(--green); border-radius: var(--r);
-  box-shadow: 0 8px 24px rgba(0,0,0,.3);
-  padding: 9px 14px; font-family: var(--mono); font-size: 11.5px; color: var(--text);
-  animation: af-toast-naik .2s cubic-bezier(.2,.7,.3,1);
-  max-width: min(92vw, 480px);
+  position: fixed; right: clamp(14px, 2.5vw, 28px); bottom: clamp(24px, 6vh, 56px);
+  left: auto; transform: none;
+  z-index: 95; display: flex; align-items: center; gap: 9px;
+  background: var(--bg1); border: 1px solid var(--green);
+  border-left-width: 3px; border-radius: var(--r);
+  box-shadow: 0 10px 30px -8px rgba(0,0,0,.45);
+  padding: 10px 15px; font-family: var(--mono); font-size: 11.5px; color: var(--text);
+  animation: af-toast-masuk .22s cubic-bezier(.2,.7,.3,1);
+  max-width: min(88vw, 460px);
 }
 .lantai.af-toast .dasbor-ikon { stroke: var(--green); flex-shrink: 0; }
 .lantai.af-toast.gagal { border-color: var(--red); }
 .lantai.af-toast.gagal .dasbor-ikon { stroke: var(--red); }
-@keyframes af-toast-naik { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes af-toast-masuk { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: translateX(0); } }
+
+/* Telepon: melebar sepenuhnya (teks panjang tidak terpotong di layar sempit)
+   dan diangkat di atas bilah navigasi bawah + area aman perangkat, supaya
+   tidak tertutup jempol maupun bilah sistem. */
+@media (max-width: 768px) {
+  .lantai.af-toast {
+    left: 12px; right: 12px; max-width: none;
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    animation: af-toast-naik .22s cubic-bezier(.2,.7,.3,1);
+  }
+  @keyframes af-toast-naik { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+}
 
 /* Judul panggung utama "Sudah Diunggah — Kamis, 13 Agu 2026" — hierarki
    dinaikkan dari label panel biasa: display semibold, tanggal beraksen amber. */

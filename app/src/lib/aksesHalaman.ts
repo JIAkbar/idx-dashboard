@@ -103,6 +103,13 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   'stock-detail': 'detail',
   'peta-investor': 'peta',
   'broker-summary': 'broker',
+  // Halaman publik Radar Watchlist — PRODUK-nya yang dijaga. Tab admin
+  // /admin/radar (tempat sumber WDWL diunggah) punya gerbang superadmin
+  // sendiri, jadi keduanya tidak bertabrakan. Sempat salah tafsir sehingga
+  // halaman ini terbuka untuk siapa saja padahal setelannya "perlu login".
+  radar: 'radar',
+  stocks: 'stocks',
+  broker: 'topbroker',
   kalkulator: 'kalkulator',
   bulletin: 'bulletin',
   feedback: 'saran',
