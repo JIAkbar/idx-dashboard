@@ -377,6 +377,18 @@
   background: rgba(0,0,0,.55);
   animation: dasbor-modal-pudar .18s ease;
 }
+/* Modal terasa meleset ke kiri walau secara teknis SUDAH center. Terukur di
+   layar 1536px: kartu berpusat di 760, viewport di 768 — hanya 8px selisih
+   (lebar scrollbar). Yang bikin janggal: rail 76px memakan sisi kiri, jadi
+   ruang yang DILIHAT pembaca berpusat di 798, dan modal tertinggal 38px.
+   Backdrop tetap menutupi layar penuh (rail ikut diredupkan, itu memang
+   benar); yang digeser hanya isinya, sebesar lebar rail. Di bawah 769px rail
+   disembunyikan, jadi aturan ini tidak berlaku di telepon.
+   Dugaan awal — leluhur ber-filter/transform yang merusak position:fixed —
+   TERBANTAH: rantai leluhur diperiksa satu per satu, nihil. */
+@media (min-width: 769px) {
+  .dasbor-modal-bg { padding-left: calc(76px + 16px); }
+}
 .dasbor-modal { width: 100%; max-width: 340px; animation: dasbor-modal-naik .22s cubic-bezier(.2,.7,.3,1); }
 @keyframes dasbor-modal-pudar { from { opacity: 0; } to { opacity: 1; } }
 @keyframes dasbor-modal-naik { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
