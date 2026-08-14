@@ -109,8 +109,16 @@ export function ChartIndeks() {
   const { theme } = useTheme()
   const [searchParams] = useSearchParams()
   const symParam = searchParams.get('sym')
-  // Normalisasi ?sym=ekad / ?sym=EKAD.JK / ?sym=IDX:EKAD → IDX:EKAD
-  const paramSym = symParam ? `IDX:${symParam.trim().toUpperCase().replace(/^IDX:/, '').replace(/\.JK$/, '')}` : null
+  // Normalisasi ?sym=ekad / ?sym=EKAD.JK / ?sym=IDX:EKAD → IDX:EKAD (emiten/
+  // indeks IDX, prefiks lama). #4/#5: indeks negara lain butuh bursa lain
+  // (mis. TVC:DJI, BSE:SENSEX) — kalau ?sym= sudah bawa "EXCHANGE:" sendiri,
+  // pakai apa adanya, JANGAN dipaksa "IDX:" (dulu prefiks itu ditempel tanpa
+  // syarat, jadi "TVC:DJI" rusak jadi "IDX:TVC:DJI").
+  const paramSym = symParam
+    ? (symParam.includes(':')
+        ? symParam.trim().toUpperCase()
+        : `IDX:${symParam.trim().toUpperCase().replace(/^IDX:/, '').replace(/\.JK$/, '')}`)
+    : null
   const [grp, setGrp] = useState<TvGroup>('featured')
   const [sym, setSym] = useState<string>(() => paramSym ?? TV_GROUPS.featured[0].sym)
 

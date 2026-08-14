@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { ChartConfiguration } from 'chart.js/auto'
 import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
 import { Kalender } from '../../components/dasbor/Kalender'
@@ -141,8 +142,64 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
  * halaman (spec §4.12, angka IHSG pindah dari panji hijau lama) dan Peringkat
  * YTD yang berhenti memakai kanvas berlabel miring.
  */
+/**
+ * Nama negara (`WorldRow.c`, data-idx/json/${stem}.json field `world`) →
+ * simbol TradingView indeks utama negara itu (#4/#5). Satu peta dipakai
+ * BatangPeringkat "YTD Ranking" DAN tabel "Negara–Indeks" — supaya tak ada
+ * dua daftar yang bisa berselisih.
+ *
+ * Tiap simbol diverifikasi satu-satu ke halaman tradingview.com/symbols/
+ * (14 Agu, browser sungguhan — bukan tebakan/hafalan) sampai nama indeks di
+ * halaman itu cocok dengan `WorldRow.idx` di data kita. 33 negara di berkas
+ * harian SEMUA ketemu padanannya; kalau suatu hari ada negara baru yang
+ * simbolnya belum diverifikasi, JANGAN ditambah tebakan — biarkan baris itu
+ * tidak bisa diklik (lihat `symUntukNegara`).
+ */
+const SYM_NEGARA: Record<string, string> = {
+  Indonesia: 'IDX:COMPOSITE',
+  Malaysia: 'FTSEMYX:FBMKLCI',
+  Philippines: 'PSE:PSEI',
+  Singapore: 'TVC:STI',
+  Thailand: 'SET:SET',
+  Vietnam: 'HOSE:VNINDEX',
+  Australia: 'ASX:XAO',
+  China: 'SSE:000001',
+  'Hong Kong': 'TVC:HSI',
+  India: 'BSE:SENSEX',
+  Japan: 'TVC:NI225',
+  Korea: 'KRX:KOSPI',
+  Taiwan: 'TWSE:IX0001',
+  Brazil: 'BMFBOVESPA:IBOV',
+  Canada: 'TSX:TSX',
+  Colombia: 'BVC:ICAP',
+  Mexico: 'BMV:ME',
+  US: 'TVC:DJI',
+  Austria: 'VIE:ATX',
+  France: 'EURONEXT:PX1',
+  Germany: 'XETR:DAX',
+  Ireland: 'EURONEXT:ISEQ',
+  Israel: 'TASE:TA35',
+  Norway: 'OSL:OSEBX',
+  Poland: 'GPW:WIG',
+  Qatar: 'QSE:GNRI',
+  'Saudi Arabia': 'TADAWUL:TASI',
+  'South Africa': 'JSE:J203',
+  Spain: 'BME:IBC',
+  Switzerland: 'SIX:SMI',
+  Turkey: 'BIST:XU100',
+  UAE: 'DFM:DFMGI',
+  UK: 'TVC:UKX',
+}
+
+/** null = simbol tidak diverifikasi — baris TIDAK dibuat clickable (jangan
+ *  menautkan ke chart yang salah/kosong), lihat komentar SYM_NEGARA. */
+function symUntukNegara(nama: string): string | null {
+  return SYM_NEGARA[nama] ?? null
+}
+
 export function IndeksDunia() {
   const { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error } = useDataHarian()
+  const navigate = useNavigate()
 
   const world = hari?.world ?? []
 
@@ -303,7 +360,7 @@ export function IndeksDunia() {
         <div className="panel-h">
           <span className="lbl">YTD Ranking — Semua Negara (Indonesia disorot merah)</span>
         </div>
-        <BatangPeringkat baris={world.map((w) => ({ nama: w.c, nilai: w.ytd }))} sorot={indonesia?.c} />
+        <BatangPeringkat baris={world.map((w) => ({ nama: w.c, nilai: w.ytd }))} sorot={indonesia?.c} symUntuk={symUntukNegara} />
       </div>
 
       <div className="panel">
@@ -328,8 +385,16 @@ export function IndeksDunia() {
                   curR = w.r
                   rows.push(<tr key={`r-${w.r}`} className="kawasan"><td colSpan={8}>{w.r}</td></tr>)
                 }
+                // #5: sym null (negara tanpa simbol TV terverifikasi) → baris
+                // biasa, tidak diklik — jangan menautkan ke chart yang salah.
+                const sym = symUntukNegara(w.c)
                 rows.push(
-                  <tr key={`${w.r}-${w.c}`} className={w.is_idx ? 'kita' : ''}>
+                  <tr
+                    key={`${w.r}-${w.c}`}
+                    className={`${w.is_idx ? 'kita' : ''}${sym ? ' klik' : ''}`}
+                    onClick={sym ? () => navigate(`/chart?sym=${sym}`) : undefined}
+                    title={sym ? `Buka chart ${w.c} — ${w.idx}` : undefined}
+                  >
                     <td>{w.c}</td>
                     <td className="rk">{w.idx}</td>
                     <td className="r num">{fN(w.v)}</td>

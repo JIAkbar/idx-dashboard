@@ -5,7 +5,7 @@ import { Kalender, fmtTanggalPendek } from '../../components/dasbor/Kalender'
 import { useDataHarian, useDataPembanding } from '../../lib/dasbor/dataHarian'
 import { cariTanggalPembanding, hitungPeriodePct, rentangPreset, type RentangTanggal } from '../../lib/dasbor/periode'
 import { fN, fp } from '../../lib/dasbor/format'
-import type { SectorRow } from '../../lib/dasbor/dataHarian'
+import type { DataHarian, SectorRow } from '../../lib/dasbor/dataHarian'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_GRAFIK_BATANG, IKON_GRAFIK_NAIK, IKON_BULAN_SABIT, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
 
@@ -130,6 +130,26 @@ const SYM_INDEKS: Record<string, string> = {
   // sengaja tidak bisa diklik daripada mengirim pembaca ke chart kosong):
   // 'IDX KEHATI' (ambigu antara ESG Quality 45 / lainnya),
   // 'IDX-PEFINDO Prime Bank', 'IDX Sharia Growth'.
+}
+
+/**
+ * % perubahan harga hari ini utk satu ticker (badge daftar saham sektor,
+ * #1) — TANPA fetch baru: `hari` (berkas harian yang sudah dimuat) cuma
+ * bawa top-10 tiap daftar (gainers/losers/top_vol/top_val/top_freq/mcap/
+ * leaders/laggards), bukan seluruh ~900 saham. Jadi sebagian besar emiten
+ * sektor memang tidak ketemu di mana pun — return null, badge sengaja
+ * tidak dirender (bukan "0,00%" palsu). */
+function pctSaham(hari: DataHarian, ticker: string): number | null {
+  const daftar: { c: string; p: number }[][] = [
+    hari.gainers ?? [], hari.losers ?? [],
+    hari.top_vol ?? [], hari.top_val ?? [], hari.top_freq ?? [],
+    hari.mcap ?? [], hari.leaders_today ?? [], hari.laggards_today ?? [],
+  ]
+  for (const d of daftar) {
+    const hit = d.find((x) => x.c === ticker)
+    if (hit) return hit.p
+  }
+  return null
 }
 
 export function SektorIndeks() {
@@ -327,12 +347,18 @@ export function SektorIndeks() {
             ) : (
               <>
                 <div className="sek-emiten">
-                  {daftar.map((e) => (
-                    <Link key={e.ticker} to={`/chart?sym=${e.ticker}`} className="sek-em">
-                      <span className="tick">{e.ticker}</span>
-                      <span className="sek-em-nm">{e.name}</span>
-                    </Link>
-                  ))}
+                  {daftar.map((e) => {
+                    const pct = pctSaham(hari, e.ticker)
+                    return (
+                      <Link key={e.ticker} to={`/chart?sym=${e.ticker}`} className="sek-em">
+                        <span className="tick">{e.ticker}</span>
+                        <span className="sek-em-nm">{e.name}</span>
+                        {pct !== null && (
+                          <span className={`ytd-bdg sek-em-bdg ${pct > 0 ? 'u' : pct < 0 ? 'd' : 'n'}`}>{fp(pct)}</span>
+                        )}
+                      </Link>
+                    )
+                  })}
                 </div>
                 <div className="sek-cat">{CATATAN_SEKTOR[sektorTerpilih] ?? CATATAN_UMUM}</div>
               </>
