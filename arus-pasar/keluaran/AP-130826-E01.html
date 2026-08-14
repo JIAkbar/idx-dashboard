@@ -64,14 +64,14 @@
   .stats .s .v small{font-size:7pt;font-weight:400;color:var(--mute)}
 
   /* ── Chart ── */
-  .chartwrap{margin:3.5mm 0 0;position:relative;border:1px solid var(--hair);
+  .chartwrap{margin:3mm 0 0;position:relative;border:1px solid var(--hair);
     border-radius:1.5mm;padding:2mm 2.5mm;background:rgba(255,255,255,.02)}
   .chartwrap .cap{font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;
     color:var(--mute);margin-bottom:1.5mm}
   canvas{width:100%;height:auto;display:block}
 
   /* ── Kolom ── */
-  .cols{display:grid;grid-template-columns:60mm 1fr;gap:7mm;margin-top:4mm;flex:1;min-height:0}
+  .cols{display:grid;grid-template-columns:60mm 1fr;gap:7mm;margin-top:3.6mm;flex:1;min-height:0}
 
   h3.rule{font-size:7pt;letter-spacing:.18em;text-transform:uppercase;color:var(--ink2);
     margin:0 0 2mm;display:flex;align-items:center;gap:6px;font-weight:700}
@@ -104,7 +104,7 @@
 
   /* ── Analisa kanan: verdict pill sentimen ── */
   .bias{display:flex;justify-content:space-between;align-items:center;gap:4mm;
-    margin-bottom:2.5mm;padding:2mm 3mm;border-radius:1.5mm;background:var(--panel)}
+    margin-bottom:2.2mm;padding:2mm 3mm;border-radius:1.5mm;background:var(--panel)}
   .bias .lbl{font-size:12.5pt;font-weight:800;letter-spacing:-.005em}
   .bias .lbl span{color:inherit}
   .s-bull .bias{background:var(--bull-dim);color:var(--bull)}
@@ -118,7 +118,7 @@
   .risk.EKSTREM{color:var(--bear)}
   .bias .risk{color:inherit}
 
-  .sec{margin-bottom:3mm}
+  .sec{margin-bottom:2.6mm}
   .sec p{margin:0;font-size:8.6pt;color:var(--ink2)}
   .flowline{font-size:8.8pt;font-weight:700;color:var(--ink);margin-bottom:1px}
   .kw{font-weight:700}
@@ -128,7 +128,7 @@
 
   .sr{display:grid;grid-template-columns:auto 1fr;gap:1.5mm 5mm;font-size:9pt;
     font-variant-numeric:tabular-nums;border-top:1px solid var(--hair);
-    border-bottom:1px solid var(--hair);padding:2.5mm 0;margin:0 0 3mm;font-family:var(--mono)}
+    border-bottom:1px solid var(--hair);padding:2.2mm 0;margin:0 0 2.6mm;font-family:var(--mono)}
   .sr .k{font-family:var(--disp);font-size:6.5pt;letter-spacing:.16em;text-transform:uppercase;font-weight:700;align-self:center}
   .sr .k.sup{color:var(--bull)} .sr .k.res{color:var(--bear)}
   .sr .v{font-weight:700}
@@ -146,6 +146,19 @@
   .invtar .inv b{color:var(--bear)}
   .invtar .tar b{color:var(--bull)}
   .konsek{font-size:8pt;color:var(--mute);margin:0}
+
+  /* strip probabilitas historis — 1 baris kecil dekat skor komposit */
+  .probstrip{font-family:var(--mono);font-size:6.4pt;color:var(--mute);
+    border-top:1px solid var(--hair);padding-top:.7mm;margin-top:.7mm;
+    white-space:nowrap;font-variant-numeric:tabular-nums}
+  .probstrip .pl{font-family:var(--disp);font-size:5.8pt;font-weight:700;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);margin-right:2mm}
+  .probstrip b{color:var(--ink)}
+  .probstrip small{font-size:5.8pt}
+  .probstrip .vv{color:var(--warn);font-weight:700}
+  /* kolom Prob tabel ringkasan */
+  table.ring .prob{font-size:8pt}
+  table.ring .prob small{font-size:6.2pt;color:var(--mute);font-weight:400}
 
   /* skor segmen — angka & bar ikut warna vonis */
   .skor{margin-top:auto;padding-top:3mm}
@@ -463,89 +476,103 @@
     dan Pivot Points, kualitas arus dana broker (siapa yang membeli — bukan hanya berapa),
     rasio risk/reward, likuiditas, dan sensitivitas terhadap IHSG.</p>
     <table class="ring">
-      <tr><th>Ticker</th><th>Emiten</th><th>Close</th><th>±%</th><th>Bias</th><th>Skor</th><th>Risiko</th></tr>
+      <tr><th>Ticker</th><th>Emiten</th><th>Close</th><th>±%</th><th>Bias</th><th>Prob 5h</th><th>Skor</th><th>Risiko</th></tr>
       <tr><td class="tk">EXCL</td><td>XLSMART Telecom Sejahtera Tbk</td>
         <td class="num">2.630</td>
         <td class="num bull">+2,73%</td>
         <td><span class="pill bull">Bullish</span><br><span class="lbl-sisa">Akumulasi Institusi OD+BB</span></td>
+        <td class="num prob">53%<br><small>n259</small></td>
         <td class="num c-bull">66</td>
         <td><span class="risk TINGGI">TINGGI</span></td></tr>
 <tr><td class="tk">CMRY</td><td>Cisarua Mountain Dairy Tbk</td>
         <td class="num">4.660</td>
         <td class="num bull">+0,65%</td>
         <td><span class="pill side">Netral-Bullish</span><br><span class="lbl-sisa">Serapan di Bawah Resisten 4.687</span></td>
+        <td class="num prob">49%<br><small>n39</small></td>
         <td class="num c-side">64</td>
         <td><span class="risk TINGGI">TINGGI</span></td></tr>
 <tr><td class="tk">PNLF</td><td>Panin Financial Tbk</td>
         <td class="num">236</td>
         <td class="num bull">+2,61%</td>
         <td><span class="pill bull">Bullish</span><br><span class="lbl-sisa">Momentum di Atas EMA50</span></td>
+        <td class="num prob">53%<br><small>n259</small></td>
         <td class="num c-bull">63</td>
         <td><span class="risk TINGGI">TINGGI</span></td></tr>
 <tr><td class="tk">MMIX</td><td>Multi Medika Internasional Tbk</td>
         <td class="num">750</td>
         <td class="num bull">+0,67%</td>
         <td><span class="pill side">Waspada</span><br><span class="lbl-sisa">Dominasi Satu Pihak YB–XA</span></td>
+        <td class="num prob">56%<br><small>n508</small></td>
         <td class="num c-side">62</td>
         <td><span class="risk TINGGI">TINGGI</span></td></tr>
 <tr><td class="tk">AVIA</td><td>Avia Avian Tbk</td>
         <td class="num">332</td>
         <td class="num bull">+0,61%</td>
         <td><span class="pill side">Sideways</span><br><span class="lbl-sisa">Konsolidasi Tepat di EMA50</span></td>
+        <td class="num prob">45%<br><small>n128</small></td>
         <td class="num c-side">61</td>
         <td><span class="risk TINGGI">TINGGI</span></td></tr>
 <tr><td class="tk">PSAB</td><td>J Resources Asia Pasifik Tbk</td>
         <td class="num">498</td>
         <td class="num bear">−1,39%</td>
         <td><span class="pill side">Pullback</span><br><span class="lbl-sisa">KZ Menampung di Koreksi</span></td>
+        <td class="num prob">54%<br><small>n290</small></td>
         <td class="num c-side">59</td>
         <td><span class="risk TINGGI">TINGGI</span></td></tr>
 <tr><td class="tk">BREN</td><td>Barito Renewables Energy</td>
         <td class="num">3.660</td>
         <td class="num bear">−2,40%</td>
         <td><span class="pill bear">Bearish</span><br><span class="lbl-sisa">Arus Silang di Area Low</span></td>
+        <td class="num prob">49%<br><small>n39</small></td>
         <td class="num c-bear">56</td>
         <td><span class="risk TINGGI">TINGGI</span></td></tr>
 <tr><td class="tk">VIVA</td><td>Visi Media Asia Tbk</td>
         <td class="num">58</td>
         <td class="num bull">+9,43%</td>
         <td><span class="pill bull">Spekulatif</span><br><span class="lbl-sisa">Momentum Kencang, Risiko Setara</span></td>
+        <td class="num prob">54%<br><small>n131</small></td>
         <td class="num c-bull">56</td>
         <td><span class="risk TINGGI">TINGGI</span></td></tr>
 <tr><td class="tk">DSSA</td><td>Dian Swastatika Sentosa</td>
         <td class="num">990</td>
         <td class="num bear">−1,00%</td>
         <td><span class="pill side">Sideways</span><br><span class="lbl-sisa">Akumulasi Terselubung</span></td>
+        <td class="num prob">56%<br><small>n508</small></td>
         <td class="num c-side">54</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
 <tr><td class="tk">ASPR</td><td>Asia Pramulia</td>
         <td class="num">161</td>
         <td class="num bull">+6,62%</td>
         <td><span class="pill bull">Rebound</span><br><span class="lbl-sisa">Institusi Menyerap dari Ritel</span></td>
+        <td class="num prob">40%<br><small>n152 · 3/4</small></td>
         <td class="num c-bull">54</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
 <tr><td class="tk">IOTF</td><td>Sumber Sinergi Makmur Tbk</td>
         <td class="num">72</td>
         <td class="num bear">−1,37%</td>
         <td><span class="pill side">Waspada</span><br><span class="lbl-sisa">Volume Puncak, Harga Gagal Naik</span></td>
+        <td class="num prob">54%<br><small>n131</small></td>
         <td class="num c-side">54</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
 <tr><td class="tk">BUMI</td><td>Bumi Resources</td>
         <td class="num">178</td>
         <td class="num bear">−3,78%</td>
         <td><span class="pill bear">Bearish</span><br><span class="lbl-sisa">Jual Terkonsentrasi Satu Pintu</span></td>
+        <td class="num prob">53%<br><small>n227</small></td>
         <td class="num c-bear">54</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
 <tr><td class="tk">BRPT</td><td>Barito Pacific</td>
         <td class="num">1.865</td>
         <td class="num bear">−4,36%</td>
         <td><span class="pill bear">Bearish</span><br><span class="lbl-sisa">Distribusi ke Ritel</span></td>
+        <td class="num prob">54%<br><small>n290</small></td>
         <td class="num c-bear">54</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
 <tr><td class="tk">PTRO</td><td>Petrosea</td>
         <td class="num">5.200</td>
         <td class="num bear">−5,45%</td>
         <td><span class="pill bear">Bearish</span><br><span class="lbl-sisa">Distribusi di Puncak Tren</span></td>
+        <td class="num prob">54%<br><small>n290</small></td>
         <td class="num c-bear">53</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
     </table>
@@ -566,53 +593,61 @@
       <div class="px" style="font-size:8pt;color:var(--mute)">22 emiten · bagian 2/2</div></div>
     
     <table class="ring">
-      <tr><th>Ticker</th><th>Emiten</th><th>Close</th><th>±%</th><th>Bias</th><th>Skor</th><th>Risiko</th></tr>
+      <tr><th>Ticker</th><th>Emiten</th><th>Close</th><th>±%</th><th>Bias</th><th>Prob 5h</th><th>Skor</th><th>Risiko</th></tr>
       <tr><td class="tk">MCAS</td><td>M Cash Integrasi Tbk</td>
         <td class="num">318</td>
         <td class="num bull">+2,58%</td>
         <td><span class="pill side">Waspada</span><br><span class="lbl-sisa">Naik Lanjut, Volume Menipis</span></td>
+        <td class="num prob">49%<br><small>n174</small></td>
         <td class="num c-side">52</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
 <tr><td class="tk">DEWI</td><td>Dewi Shri Farmindo</td>
         <td class="num">139</td>
         <td class="num bear">−0,71%</td>
         <td><span class="pill side">Sideways</span><br><span class="lbl-sisa">Jeda di Tren Naik</span></td>
+        <td class="num prob">56%<br><small>n508</small></td>
         <td class="num c-side">52</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
 <tr><td class="tk">EMMI</td><td>Esa Medika Mandiri</td>
         <td class="num">358</td>
         <td class="num bull">+0,56%</td>
         <td><span class="pill bear">Bearish</span><br><span class="lbl-sisa">Downtrend Muda, Likuiditas Tipis</span></td>
+        <td class="num prob">—</td>
         <td class="num c-bear">49</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
 <tr><td class="tk">DMAS</td><td>Puradelta Lestari Tbk</td>
         <td class="num">148</td>
         <td class="num bull">+0,68%</td>
         <td><span class="pill side">Netral-Konstruktif</span><br><span class="lbl-sisa">Institusi Menyerap Pelan</span></td>
+        <td class="num prob">49%<br><small>n174</small></td>
         <td class="num c-side">49</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
 <tr><td class="tk">DEWA</td><td>Darma Henwa</td>
         <td class="num">446</td>
         <td class="num bear">−4,29%</td>
         <td><span class="pill bear">Bearish</span><br><span class="lbl-sisa">Distribusi Ganda AK+MG</span></td>
+        <td class="num prob">53%<br><small>n227</small></td>
         <td class="num c-bear">49</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
 <tr><td class="tk">ENRG</td><td>Energi Mega Persada</td>
         <td class="num">1.265</td>
         <td class="num bear">−4,17%</td>
         <td><span class="pill bear">Bearish</span><br><span class="lbl-sisa">Tren Turun, Ritel Menampung</span></td>
+        <td class="num prob">36%<br><small>n36</small></td>
         <td class="num c-bear">38</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
 <tr><td class="tk">MBMA</td><td>Merdeka Battery Materials</td>
         <td class="num">510</td>
         <td class="num bear">−7,27%</td>
         <td><span class="pill bear">Bearish</span><br><span class="lbl-sisa">Institusi Keluar, Ritel Menampung</span></td>
+        <td class="num prob">40%<br><small>n149</small></td>
         <td class="num c-bear">37</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
 <tr><td class="tk">WIFI</td><td>Solusi Sinergi Digital</td>
         <td class="num">1.905</td>
         <td class="num bear">−3,05%</td>
         <td><span class="pill bear">Bearish</span><br><span class="lbl-sisa">Tipis Tanpa Penyangga</span></td>
+        <td class="num prob">44%<br><small>n538</small></td>
         <td class="num c-bear">36</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
     </table>
@@ -628,6 +663,10 @@
     harga; arus broker dari Broker Summary Stockbit. Komponen data yang tidak tersedia tidak
     pernah diisi perkiraan — halaman terkait akan menampilkan penanda kesenjangan data dan skor
     diberi penalti. Peringkat bersifat komparatif antar emiten edisi ini, bukan sinyal beli otomatis.</p>
+    <p class="metode"><b>Kolom Prob 5h:</b> probabilitas historis close 5 hari ke depan lebih tinggi,
+    dari backtest setup serupa (posisi vs EMA50, pivot harian, rasio volume 20 hari, posisi di
+    rentang 20 hari) atas seluruh seri harga cache edisi ini; n = jumlah sampel setup serupa.
+    Label "k/4" berarti pencocokan dilonggarkan ke k fitur karena sampel penuh &lt;30.</p>
   </div>
   <footer class="foot">
     <span class="kode">AP-130826-E01</span>
@@ -651,7 +690,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">149–167</div></div><div class="s"><div class="l">EMA50</div><div class="v">169 <small>(-4,7%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">159</div></div><div class="s"><div class="l">Volume</div><div class="v">180,2 jt <small>(4,7× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp29,0 miliar</div></div></div><div class="emabar">EMA <b>20</b> 152 · <b>60</b> 173 · <b>100</b> 183 · <b>200</b> 181 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch0" width="1360" height="330"></canvas>
+      <canvas id="ch0" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -706,6 +745,7 @@
           <div class="k res">Resistance</div><div class="v">169 <span>|</span> 177 <span>|</span> 187</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >169 (EMA50+R1 berimpit) dengan volume</span></div><div class="kr"><span class="kl">Rute</span><span>169 → 177 → 190</span></div><div class="kr"><span class="kl">Risiko</span><span>Resisten ganda; butuh tenaga besar sekali angkat</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Bertahan di 151–159 tanpa jual institusi</span></div><div class="kr"><span class="kl">Rute</span><span>Basis 151; uji ulang 169</span></div><div class="kr"><span class="kl">Risiko</span><span>AK berhenti menyerap — rebound kehabisan sponsor</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <151 (S1)</span></div><div class="kr"><span class="kl">Rute</span><span>141 → 133</span></div><div class="kr"><span class="kl">Risiko</span><span>Rebound gagal; downtrend lama berlanjut</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Menarik bila close >169 — EMA50 dan R1 berimpit di sana; sebelum itu statusnya spekulatif.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>40%</b> · P(≥3%) <b>59%</b> <small>n152·3/4 fitur</small> · VolVal z−0,1 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">54<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:13.6"></i><i class="sisa" style="flex:21.4"></i><i style="flex:13.235102139489907"></i><i class="sisa" style="flex:16.8"></i><i style="flex:14.4"></i><i class="sisa" style="flex:5.6"></i><i style="flex:8"></i><i class="sisa" style="flex:2.0"></i><i style="flex:4.872655027597307"></i><i class="sisa" style="flex:0.1"></i></div>
@@ -737,7 +777,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">326–334</div></div><div class="s"><div class="l">EMA50</div><div class="v">330 <small>(+0,6%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">331</div></div><div class="s"><div class="l">Volume</div><div class="v">8,6 jt <small>(0,6× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp2,8 miliar</div></div></div><div class="emabar">EMA <b>20</b> 326 · <b>60</b> 333 · <b>100</b> 347 · <b>200</b> 374 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch1" width="1360" height="330"></canvas>
+      <canvas id="ch1" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -792,6 +832,7 @@
           <div class="k res">Resistance</div><div class="v">335 <span>|</span> 339 <span>|</span> 343</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >339 (R2) dengan volume</span></div><div class="kr"><span class="kl">Rute</span><span>339 → 350 → 360</span></div><div class="kr"><span class="kl">Risiko</span><span>Break tipis tanpa volume mudah gagal</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Bertahan 327–332 di atas EMA50</span></div><div class="kr"><span class="kl">Rute</span><span>Rentang 327–335 sampai ada pemicu</span></div><div class="kr"><span class="kl">Risiko</span><span>Waktu — dana mengendap tanpa arah</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <323 (S2)</span></div><div class="kr"><span class="kl">Rute</span><span>319 → 310</span></div><div class="kr"><span class="kl">Risiko</span><span>EMA50 patah; sideways berubah turun</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Tunggu break rentang: close >339 baru menarik, close <323 keluar dari pantauan.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>45%</b> · P(≥3%) <b>72%</b> <small>n128·4/4</small> · VolVal z−0,4 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">61<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:26.0"></i><i class="sisa" style="flex:9.0"></i><i style="flex:15.098221060618835"></i><i class="sisa" style="flex:14.9"></i><i style="flex:12.6"></i><i class="sisa" style="flex:7.4"></i><i style="flex:4"></i><i class="sisa" style="flex:6.0"></i><i style="flex:3.7310726806308843"></i><i class="sisa" style="flex:1.3"></i></div>
@@ -823,7 +864,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">3.630–3.940</div></div><div class="s"><div class="l">EMA50</div><div class="v">3.614 <small>(+1,3%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">3.743</div></div><div class="s"><div class="l">Volume</div><div class="v">99,1 jt <small>(2,1× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp362,6 miliar</div></div></div><div class="emabar">EMA <b>20</b> 3.448 · <b>60</b> 3.739 · <b>100</b> 4.355 · <b>200</b> 5.542 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch2" width="1360" height="330"></canvas>
+      <canvas id="ch2" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -878,6 +919,7 @@
           <div class="k res">Resistance</div><div class="v">3.857 <span>|</span> 4.053 <span>|</span> 4.167</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >3.857 dengan volume; arus DX/KZ berlanjut jadi net beli yang jelas</span></div><div class="kr"><span class="kl">Rute</span><span>3.857 → 4.053 → 4.167</span></div><div class="kr"><span class="kl">Risiko</span><span>Breakout tanpa pemihakan arus = rawan gagal di R1</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Bertahan di 3.547–3.660 lalu close kembali di atas pivot 3.743</span></div><div class="kr"><span class="kl">Rute</span><span>Basis di atas 3.547; reclaim 3.743 lalu uji 3.857</span></div><div class="kr"><span class="kl">Risiko</span><span>Arus silang berlanjut — pantulan mudah dijual ulang DP/BK</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <3.547 (S1 patah)</span></div><div class="kr"><span class="kl">Rute</span><span>Terbuka jalan ke 3.433 → 3.237</span></div><div class="kr"><span class="kl">Risiko</span><span>Distribusi menang; jangan tangkap pisau sebelum basis baru</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Tunggu; selama arus dua arah belum berpihak, tidak ada tepi untuk posisi baru.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>49%</b> · P(≥3%) <b>64%</b> <small>n39·4/4</small> · VolVal z+0,4 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">56<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:12.0"></i><i class="sisa" style="flex:23.0"></i><i style="flex:9.754538649233988"></i><i class="sisa" style="flex:20.2"></i><i style="flex:20.0"></i><i class="sisa" style="flex:0.0"></i><i style="flex:10"></i><i class="sisa" style="flex:0.0"></i><i style="flex:4.248749651499171"></i><i class="sisa" style="flex:0.8"></i></div>
@@ -909,7 +951,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">1.850–1.965</div></div><div class="s"><div class="l">EMA50</div><div class="v">1.767 <small>(+5,5%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">1.893</div></div><div class="s"><div class="l">Volume</div><div class="v">213,2 jt <small>(1,1× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp397,6 miliar</div></div></div><div class="emabar">EMA <b>20</b> 1.815 · <b>60</b> 1.776 · <b>100</b> 1.858 · <b>200</b> 2.007 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch3" width="1360" height="330"></canvas>
+      <canvas id="ch3" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -964,6 +1006,7 @@
           <div class="k res">Resistance</div><div class="v">1.937 <span>|</span> 2.008 <span>|</span> 2.052</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >1.937 dengan volume dan institusi kembali ke sisi beli</span></div><div class="kr"><span class="kl">Rute</span><span>1.937 → 2.008 → 2.052</span></div><div class="kr"><span class="kl">Risiko</span><span>AK/ZP masih di sisi jual — breakout rawan dipakai sebagai pintu keluar</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Bertahan di 1.822–1.865 lalu rebut kembali pivot 1.893</span></div><div class="kr"><span class="kl">Rute</span><span>Basis di atas 1.822; reclaim 1.893 lalu uji 1.937</span></div><div class="kr"><span class="kl">Risiko</span><span>Close <1.822 membatalkan; penampung ritel mudah menyerah</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <1.822 (S1 patah)</span></div><div class="kr"><span class="kl">Rute</span><span>Terbuka jalan ke 1.778 → 1.707</span></div><div class="kr"><span class="kl">Risiko</span><span>Distribusi institusi ke ritel biasanya berlanjut beberapa hari</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Hindari; tunggu jual institusi kering dan harga stabil di atas pivot.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>54%</b> · P(≥3%) <b>65%</b> <small>n290·4/4</small> · VolVal z−0,2 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">54<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:12.0"></i><i class="sisa" style="flex:23.0"></i><i style="flex:8.267806614949299"></i><i class="sisa" style="flex:21.7"></i><i style="flex:20.0"></i><i class="sisa" style="flex:0.0"></i><i style="flex:10"></i><i class="sisa" style="flex:0.0"></i><i style="flex:3.337200630888403"></i><i class="sisa" style="flex:1.7"></i></div>
@@ -995,7 +1038,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">177–187</div></div><div class="s"><div class="l">EMA50</div><div class="v">170 <small>(+4,7%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">181</div></div><div class="s"><div class="l">Volume</div><div class="v">2.182,7 jt <small>(0,6× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp388,5 miliar</div></div></div><div class="emabar">EMA <b>20</b> 171 · <b>60</b> 173 · <b>100</b> 185 · <b>200</b> 194 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch4" width="1360" height="330"></canvas>
+      <canvas id="ch4" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -1050,6 +1093,7 @@
           <div class="k res">Resistance</div><div class="v">184 <span>|</span> 191 <span>|</span> 194</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >184 dengan volume; tekanan jual AK mengering</span></div><div class="kr"><span class="kl">Rute</span><span>184 → 191 → 194</span></div><div class="kr"><span class="kl">Risiko</span><span>Satu pintu jual (AK) belum tutup — rally rapuh</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Bertahan di 174–178 lalu rebut kembali pivot 181</span></div><div class="kr"><span class="kl">Rute</span><span>Basis di atas 174; reclaim 181 lalu uji 184</span></div><div class="kr"><span class="kl">Risiko</span><span>Close <174 membatalkan skenario konstruktif</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <174 (S1 patah)</span></div><div class="kr"><span class="kl">Rute</span><span>Terbuka jalan ke 171 → 164</span></div><div class="kr"><span class="kl">Risiko</span><span>Pembeli YU/YP berkarakter cepat keluar; tanpa penyangga institusi</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Hindari; saham ber-nilai 181-an rentan lanjut turun selama AK belum berhenti.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>53%</b> · P(≥3%) <b>68%</b> <small>n227·4/4</small> · VolVal z−0,5 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">54<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:12.0"></i><i class="sisa" style="flex:23.0"></i><i style="flex:8.43213728549142"></i><i class="sisa" style="flex:21.6"></i><i style="flex:20.0"></i><i class="sisa" style="flex:0.0"></i><i style="flex:10"></i><i class="sisa" style="flex:0.0"></i><i style="flex:3.2990929201058963"></i><i class="sisa" style="flex:1.7"></i></div>
@@ -1081,7 +1125,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">4.600–4.670</div></div><div class="s"><div class="l">EMA50</div><div class="v">4.590 <small>(+1,5%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">4.643</div></div><div class="s"><div class="l">Volume</div><div class="v">3,0 jt <small>(1,9× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp14,2 miliar</div></div></div><div class="emabar">EMA <b>20</b> 4.627 · <b>60</b> 4.593 · <b>100</b> 4.649 · <b>200</b> 4.830 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch5" width="1360" height="330"></canvas>
+      <canvas id="ch5" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -1136,6 +1180,7 @@
           <div class="k res">Resistance</div><div class="v">4.687 <span>|</span> 4.713 <span>|</span> 4.757</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >4.687 dengan volume di atas rerata</span></div><div class="kr"><span class="kl">Rute</span><span>4.687 → 4.713 → 4.760</span></div><div class="kr"><span class="kl">Risiko</span><span>AK dan KZ masih pasang jual di atas — breakout bisa tertahan</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Pullback bertahan di 4.590–4.617</span></div><div class="kr"><span class="kl">Rute</span><span>Basis EMA50 4.590; angkat lagi ke 4.687</span></div><div class="kr"><span class="kl">Risiko</span><span>Volume mengering di pullback</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <4.573 (S2)</span></div><div class="kr"><span class="kl">Rute</span><span>Kembali ke rentang 4.450–4.550</span></div><div class="kr"><span class="kl">Risiko</span><span>Serapan gagal; asing lanjut distribusi</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Tunggu close >4.687 dengan volume sebagai konfirmasi; selama di atas 4.590 struktur tetap aman.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>49%</b> · P(≥3%) <b>64%</b> <small>n39·4/4</small> · VolVal z+0,7 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">64<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:27.09090909090909"></i><i class="sisa" style="flex:7.9"></i><i style="flex:15.046943131375297"></i><i class="sisa" style="flex:15.0"></i><i style="flex:11.093023255813954"></i><i class="sisa" style="flex:8.9"></i><i style="flex:6"></i><i class="sisa" style="flex:4.0"></i><i style="flex:4.7008471522721855"></i><i class="sisa" style="flex:0.3"></i></div>
@@ -1167,7 +1212,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">446–472</div></div><div class="s"><div class="l">EMA50</div><div class="v">411 <small>(+8,5%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">455</div></div><div class="s"><div class="l">Volume</div><div class="v">523,3 jt <small>(0,6× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp233,4 miliar</div></div></div><div class="emabar">EMA <b>20</b> 440 · <b>60</b> 411 · <b>100</b> 417 · <b>200</b> 405 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch6" width="1360" height="330"></canvas>
+      <canvas id="ch6" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -1222,6 +1267,7 @@
           <div class="k res">Resistance</div><div class="v">463 <span>|</span> 481 <span>|</span> 489</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >463 dengan volume dan institusi masuk ke sisi beli</span></div><div class="kr"><span class="kl">Rute</span><span>463 → 481 → 489</span></div><div class="kr"><span class="kl">Risiko</span><span>AK+MG masih menekan — pantulan rawan dijual lagi</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Bertahan di 437–446 lalu rebut kembali pivot 455</span></div><div class="kr"><span class="kl">Rute</span><span>Basis di atas 437; reclaim 455 lalu uji 463</span></div><div class="kr"><span class="kl">Risiko</span><span>Close <437 membatalkan skenario konstruktif</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <437 (S1 patah)</span></div><div class="kr"><span class="kl">Rute</span><span>Terbuka jalan ke 429 → 411</span></div><div class="kr"><span class="kl">Risiko</span><span>Penampung hanya ritel; tekanan lanjutan mudah menembus support</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Hindari; tanpa institusi di sisi beli, pantulan rawan dijual lagi.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>53%</b> · P(≥3%) <b>68%</b> <small>n227·4/4</small> · VolVal z−0,4 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">49<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:12.0"></i><i class="sisa" style="flex:23.0"></i><i style="flex:3.2816630040150816"></i><i class="sisa" style="flex:26.7"></i><i style="flex:20.0"></i><i class="sisa" style="flex:0.0"></i><i style="flex:10"></i><i class="sisa" style="flex:0.0"></i><i style="flex:3.2698012734635276"></i><i class="sisa" style="flex:1.7"></i></div>
@@ -1253,7 +1299,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">136–144</div></div><div class="s"><div class="l">EMA50</div><div class="v">123 <small>(+13,0%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">140</div></div><div class="s"><div class="l">Volume</div><div class="v">63,3 jt <small>(1,0× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp8,8 miliar</div></div></div><div class="emabar">EMA <b>20</b> 126 · <b>60</b> 123 · <b>100</b> 124 · <b>200</b> 127 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch7" width="1360" height="330"></canvas>
+      <canvas id="ch7" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -1308,6 +1354,7 @@
           <div class="k res">Resistance</div><div class="v">143 <span>|</span> 148 <span>|</span> 151</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >143 (R1) keluar dari konsolidasi</span></div><div class="kr"><span class="kl">Rute</span><span>143 → 148 → 155</span></div><div class="kr"><span class="kl">Risiko</span><span>Break di volume tipis mudah ditarik balik</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Bertahan di 132–135</span></div><div class="kr"><span class="kl">Rute</span><span>Basis S2–S1; angkat lagi ke 143</span></div><div class="kr"><span class="kl">Risiko</span><span>Konsolidasi melar; momentum pindah ke saham lain</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <132 (S2)</span></div><div class="kr"><span class="kl">Rute</span><span>127 → 123 (EMA50)</span></div><div class="kr"><span class="kl">Risiko</span><span>Jeda berubah jadi pembalikan bila EMA50 ikut patah</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Tren utama masih naik; area 132–135 layak diamati untuk akumulasi, batal bila close <132.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>56%</b> · P(≥3%) <b>63%</b> <small>n508·4/4</small> · VolVal z+0,2 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">52<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:12.0"></i><i class="sisa" style="flex:23.0"></i><i style="flex:9.841990753331519"></i><i class="sisa" style="flex:20.2"></i><i style="flex:20.0"></i><i class="sisa" style="flex:0.0"></i><i style="flex:6"></i><i class="sisa" style="flex:4.0"></i><i style="flex:4.00947944914314"></i><i class="sisa" style="flex:1.0"></i></div>
@@ -1339,7 +1386,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">146–149</div></div><div class="s"><div class="l">EMA50</div><div class="v">144 <small>(+2,8%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">148</div></div><div class="s"><div class="l">Volume</div><div class="v">34,1 jt <small>(0,5× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp5,1 miliar</div></div></div><div class="emabar">EMA <b>20</b> 145 · <b>60</b> 144 · <b>100</b> 143 · <b>200</b> 141 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch8" width="1360" height="330"></canvas>
+      <canvas id="ch8" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -1394,6 +1441,7 @@
           <div class="k res">Resistance</div><div class="v">149 <span>|</span> 151 <span>|</span> 152</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >151 (R2) dengan volume di atas rerata</span></div><div class="kr"><span class="kl">Rute</span><span>151 → 155 → 160</span></div><div class="kr"><span class="kl">Risiko</span><span>Tanpa volume, break 151 hanya noise rentang</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Bertahan 145–146 dengan CC/AK tetap membeli</span></div><div class="kr"><span class="kl">Rute</span><span>Rentang 146–149 sampai volume datang</span></div><div class="kr"><span class="kl">Risiko</span><span>Serapan berhenti; kembali pasif</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <143 (S3)</span></div><div class="kr"><span class="kl">Rute</span><span>140 → 136</span></div><div class="kr"><span class="kl">Risiko</span><span>Rotasi gagal; ritel yang benar kali ini</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Akumulasi pelan; baru menarik bila volume ikut saat menembus 151.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>49%</b> · P(≥3%) <b>78%</b> <small>n174·4/4</small> · VolVal z−0,7 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">49<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:12.0"></i><i class="sisa" style="flex:23.0"></i><i style="flex:12.994207599629284"></i><i class="sisa" style="flex:17.0"></i><i style="flex:13.5"></i><i class="sisa" style="flex:6.5"></i><i style="flex:6"></i><i class="sisa" style="flex:4.0"></i><i style="flex:4.208056428133045"></i><i class="sisa" style="flex:0.8"></i></div>
@@ -1425,7 +1473,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">955–1.025</div></div><div class="s"><div class="l">EMA50</div><div class="v">972 <small>(+1,9%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">990</div></div><div class="s"><div class="l">Volume</div><div class="v">655,0 jt <small>(1,1× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp648,5 miliar</div></div></div><div class="emabar">EMA <b>20</b> 902 · <b>60</b> 1.046 · <b>100</b> 1.407 · <b>200</b> 1.997 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch9" width="1360" height="330"></canvas>
+      <canvas id="ch9" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -1480,6 +1528,7 @@
           <div class="k res">Resistance</div><div class="v">1.025 <span>|</span> 1.060 <span>|</span> 1.095</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >1.025 dengan volume; SS/LG/RF melanjutkan akumulasi</span></div><div class="kr"><span class="kl">Rute</span><span>1.025 → 1.060 → 1.095</span></div><div class="kr"><span class="kl">Risiko</span><span>Gagal di atas 1.025 = akumulasi butuh waktu, bukan batal</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Bertahan di 955–990 dengan arus beli tetap positif</span></div><div class="kr"><span class="kl">Rute</span><span>Basis 955–990; close di atas pivot 990 membuka uji 1.025</span></div><div class="kr"><span class="kl">Risiko</span><span>Close <955 menunda tesis akumulasi terselubung</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <955 (S1 patah)</span></div><div class="kr"><span class="kl">Rute</span><span>Terbuka jalan ke 920 → 885</span></div><div class="kr"><span class="kl">Risiko</span><span>Bila SS/LG berbalik jual, tesis akumulasi gugur</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Watchlist utama; akumulasi saat pasar merah adalah jejak yang layak diikuti — tunggu konfirmasi tutup di atas pivot.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>56%</b> · P(≥3%) <b>63%</b> <small>n508·4/4</small> · VolVal z+0,1 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">54<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:12.0"></i><i class="sisa" style="flex:23.0"></i><i style="flex:9.906832298136646"></i><i class="sisa" style="flex:20.1"></i><i style="flex:18.0"></i><i class="sisa" style="flex:2.0"></i><i style="flex:10"></i><i class="sisa" style="flex:0.0"></i><i style="flex:4.2511999997061185"></i><i class="sisa" style="flex:0.7"></i></div>
@@ -1511,7 +1560,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">336–360</div></div><div class="s"><div class="l">EMA50</div><div class="v">460 <small>(-22,2%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">351</div></div><div class="s"><div class="l">Volume</div><div class="v">8,4 jt <small>(0,4× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp3,0 miliar</div></div></div><div class="emabar">EMA <b>20</b> 409 · <b>60</b> 470 · <b>100</b> 496 · <b>200</b> 520 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch10" width="1360" height="330"></canvas>
+      <canvas id="ch10" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -1566,6 +1615,7 @@
           <div class="k res">Resistance</div><div class="v">367 <span>|</span> 375 <span>|</span> 391</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >375 dengan volume berarti (jarang terjadi di saham sepi)</span></div><div class="kr"><span class="kl">Rute</span><span>375 → 400 → 430</span></div><div class="kr"><span class="kl">Risiko</span><span>Spread lebar; slippage besar untuk ukuran kecil sekalipun</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Basis datar 343–358 minimal sepekan</span></div><div class="kr"><span class="kl">Rute</span><span>Basis dulu; breakout menyusul</span></div><div class="kr"><span class="kl">Risiko</span><span>Downtrend muda belum tentu selesai</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <343 (S1)</span></div><div class="kr"><span class="kl">Rute</span><span>327 → 319</span></div><div class="kr"><span class="kl">Risiko</span><span>Lanjut cari dasar baru tanpa pembeli</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Lewati; belum ada struktur maupun likuiditas yang layak dianalisa.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>riwayat harga belum cukup untuk backtest setup — belum ada angka</div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">49<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:15.5"></i><i class="sisa" style="flex:19.5"></i><i style="flex:15.4518847454206"></i><i class="sisa" style="flex:14.5"></i><i style="flex:10.2"></i><i class="sisa" style="flex:9.8"></i><i style="flex:4"></i><i class="sisa" style="flex:6.0"></i><i style="flex:3.6438224123231815"></i><i class="sisa" style="flex:1.4"></i></div>
@@ -1597,7 +1647,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">1.255–1.435</div></div><div class="s"><div class="l">EMA50</div><div class="v">1.335 <small>(-5,2%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">1.318</div></div><div class="s"><div class="l">Volume</div><div class="v">321,1 jt <small>(3,4× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp406,2 miliar</div></div></div><div class="emabar">EMA <b>20</b> 1.307 · <b>60</b> 1.347 · <b>100</b> 1.370 · <b>200</b> 1.276 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch11" width="1360" height="330"></canvas>
+      <canvas id="ch11" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -1652,6 +1702,7 @@
           <div class="k res">Resistance</div><div class="v">1.382 <span>|</span> 1.498 <span>|</span> 1.562</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >1.382 dengan volume dan institusi kembali membeli</span></div><div class="kr"><span class="kl">Rute</span><span>1.382 → 1.498 → 1.562</span></div><div class="kr"><span class="kl">Risiko</span><span>Tren turun; breakout melawan arus institusi rawan gagal</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Bertahan di 1.202–1.265 lalu rebut kembali pivot 1.318</span></div><div class="kr"><span class="kl">Rute</span><span>Basis di atas 1.202; reclaim 1.318 lalu uji 1.382</span></div><div class="kr"><span class="kl">Risiko</span><span>Close <1.202 membatalkan skenario konstruktif</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <1.202 (S1 patah)</span></div><div class="kr"><span class="kl">Rute</span><span>Terbuka jalan ke 1.138 → 1.022</span></div><div class="kr"><span class="kl">Risiko</span><span>Ritel menampung barang institusi — dasar belum teruji</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Hindari kejar; menarik hanya bila institusi kembali ke sisi beli.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>36%</b> · P(≥3%) <b>64%</b> <small>n36·4/4</small> · VolVal z+4,9 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">38<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:0.0"></i><i class="sisa" style="flex:35.0"></i><i style="flex:4.424355049708749"></i><i class="sisa" style="flex:25.6"></i><i style="flex:20.0"></i><i class="sisa" style="flex:0.0"></i><i style="flex:10"></i><i class="sisa" style="flex:0.0"></i><i style="flex:3.7915541368794665"></i><i class="sisa" style="flex:1.2"></i></div>
@@ -1683,7 +1734,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">2.530–2.640</div></div><div class="s"><div class="l">EMA50</div><div class="v">2.568 <small>(+2,4%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">2.600</div></div><div class="s"><div class="l">Volume</div><div class="v">13,3 jt <small>(2,0× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp35,1 miliar</div></div></div><div class="emabar">EMA <b>20</b> 2.515 · <b>60</b> 2.592 · <b>100</b> 2.668 · <b>200</b> 2.754 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch12" width="1360" height="330"></canvas>
+      <canvas id="ch12" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -1738,6 +1789,7 @@
           <div class="k res">Resistance</div><div class="v">2.670 <span>|</span> 2.710 <span>|</span> 2.780</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >2.670 dengan volume mengikuti</span></div><div class="kr"><span class="kl">Rute</span><span>2.670 → 2.710 → 2.780</span></div><div class="kr"><span class="kl">Risiko</span><span>Kejar-beli di puncak rentang tanpa menunggu konfirmasi</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Koreksi tertahan di 2.560–2.600</span></div><div class="kr"><span class="kl">Rute</span><span>Basis pivot 2.600; lanjut uji 2.670</span></div><div class="kr"><span class="kl">Risiko</span><span>OD/BB berhenti menyerap saat pullback</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <2.560 (S1)</span></div><div class="kr"><span class="kl">Rute</span><span>Turun ke 2.490–2.450</span></div><div class="kr"><span class="kl">Risiko</span><span>Breakout gagal berubah jadi bull trap</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Momentum valid; kelola posisi selama di atas 2.560, tambah hanya bila close >2.670 dengan volume besar.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>53%</b> · P(≥3%) <b>77%</b> <small>n259·4/4</small> · VolVal z+1,1 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">66<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:27.428571428571427"></i><i class="sisa" style="flex:7.6"></i><i style="flex:16.228129148308234"></i><i class="sisa" style="flex:13.8"></i><i style="flex:10.285714285714285"></i><i class="sisa" style="flex:9.7"></i><i style="flex:8"></i><i class="sisa" style="flex:2.0"></i><i style="flex:4.456667511341985"></i><i class="sisa" style="flex:0.5"></i></div>
@@ -1769,7 +1821,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">69–79</div></div><div class="s"><div class="l">EMA50</div><div class="v">56 <small>(+28,6%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">73</div></div><div class="s"><div class="l">Volume</div><div class="v">248,1 jt <small>(3,5× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp17,9 miliar</div></div></div><div class="emabar">EMA <b>20</b> 58 · <b>60</b> 57 · <b>100</b> 59 · <b>200</b> 64 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch13" width="1360" height="330"></canvas>
+      <canvas id="ch13" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -1824,6 +1876,7 @@
           <div class="k res">Resistance</div><div class="v">78 <span>|</span> 83 <span>|</span> 88</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >78 (R1) dengan volume besar lagi</span></div><div class="kr"><span class="kl">Rute</span><span>78 → 83 → 90</span></div><div class="kr"><span class="kl">Risiko</span><span>Butuh tenaga baru melampaui suplai yang baru keluar</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Bertahan di 68–72 dengan volume mengecil</span></div><div class="kr"><span class="kl">Rute</span><span>Serap suplai dulu; baru uji 78</span></div><div class="kr"><span class="kl">Risiko</span><span>Volume tinggi berlanjut = distribusi belum selesai</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <68 (S1)</span></div><div class="kr"><span class="kl">Rute</span><span>63 → 58 (EMA50)</span></div><div class="kr"><span class="kl">Risiko</span><span>Churning terkonfirmasi jadi puncak; koreksi dalam</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Sudah pegang: perketat stop di 68. Belum pegang: tunggu reaksi harga di support.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>54%</b> · P(≥3%) <b>79%</b> <small>n131·4/4</small> · VolVal z+2,5 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">54<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:5.0"></i><i class="sisa" style="flex:30.0"></i><i style="flex:18.01280409731114"></i><i class="sisa" style="flex:12.0"></i><i style="flex:20.0"></i><i class="sisa" style="flex:0.0"></i><i style="flex:6"></i><i class="sisa" style="flex:4.0"></i><i style="flex:4.939259344179858"></i><i class="sisa" style="flex:0.1"></i></div>
@@ -1855,7 +1908,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">505–560</div></div><div class="s"><div class="l">EMA50</div><div class="v">528 <small>(-3,4%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">525</div></div><div class="s"><div class="l">Volume</div><div class="v">121,3 jt <small>(1,2× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp61,9 miliar</div></div></div><div class="emabar">EMA <b>20</b> 524 · <b>60</b> 534 · <b>100</b> 565 · <b>200</b> 619 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch14" width="1360" height="330"></canvas>
+      <canvas id="ch14" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -1910,6 +1963,7 @@
           <div class="k res">Resistance</div><div class="v">545 <span>|</span> 580 <span>|</span> 600</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >545 dengan institusi kembali ke sisi beli</span></div><div class="kr"><span class="kl">Rute</span><span>545 → 580 → 615</span></div><div class="kr"><span class="kl">Risiko</span><span>Empat institusi baru saja keluar — rebound rawan dijual lagi</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Bertahan di 490–510 lalu reclaim pivot 525</span></div><div class="kr"><span class="kl">Rute</span><span>Basis 490; reclaim 525, uji 545</span></div><div class="kr"><span class="kl">Risiko</span><span>Close <490 mematahkan basis</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <490 (S1 patah)</span></div><div class="kr"><span class="kl">Rute</span><span>Terbuka ke 470 → 435</span></div><div class="kr"><span class="kl">Risiko</span><span>Penampung hanya ritel; tekanan lanjutan mudah menembus</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Hindari dulu; tunggu tekanan jual reda dan harga stabil kembali di atas 525.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>40%</b> · P(≥3%) <b>56%</b> <small>n149·4/4</small> · VolVal z−0,2 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">37<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:0.0"></i><i class="sisa" style="flex:35.0"></i><i style="flex:2.879457265661271"></i><i class="sisa" style="flex:27.1"></i><i style="flex:20.0"></i><i class="sisa" style="flex:0.0"></i><i style="flex:10"></i><i class="sisa" style="flex:0.0"></i><i style="flex:4.268724620739112"></i><i class="sisa" style="flex:0.7"></i></div>
@@ -1941,7 +1995,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">298–332</div></div><div class="s"><div class="l">EMA50</div><div class="v">241 <small>(+32,0%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">316</div></div><div class="s"><div class="l">Volume</div><div class="v">9,6 jt <small>(0,4× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp3,1 miliar</div></div></div><div class="emabar">EMA <b>20</b> 259 · <b>60</b> 247 · <b>100</b> 280 · <b>200</b> 351 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch15" width="1360" height="330"></canvas>
+      <canvas id="ch15" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -1996,6 +2050,7 @@
           <div class="k res">Resistance</div><div class="v">334 <span>|</span> 350 <span>|</span> 368</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >334 (R1) dengan volume kembali di atas rerata</span></div><div class="kr"><span class="kl">Rute</span><span>334 → 350 → 370</span></div><div class="kr"><span class="kl">Risiko</span><span>Naik tanpa uang besar; bid tipis saat dibutuhkan</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Koreksi tertahan di 300–316</span></div><div class="kr"><span class="kl">Rute</span><span>Basis 300; volume balik dulu</span></div><div class="kr"><span class="kl">Risiko</span><span>Koreksi saham sepi sering langsung dalam</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <300 (S1)</span></div><div class="kr"><span class="kl">Rute</span><span>282 → 266</span></div><div class="kr"><span class="kl">Risiko</span><span>Rally kehabisan bensin; balik ke arah EMA50 241</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Jangan kejar; rally tanpa volume rawan berbalik cepat. Batas waspada 300.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>49%</b> · P(≥3%) <b>78%</b> <small>n174·4/4</small> · VolVal z+0,1 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">52<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:17.88888888888889"></i><i class="sisa" style="flex:17.1"></i><i style="flex:10.204588910133843"></i><i class="sisa" style="flex:19.8"></i><i style="flex:16.0"></i><i class="sisa" style="flex:4.0"></i><i style="flex:4"></i><i class="sisa" style="flex:6.0"></i><i style="flex:4.382104902944846"></i><i class="sisa" style="flex:0.6"></i></div>
@@ -2027,7 +2082,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">730–750</div></div><div class="s"><div class="l">EMA50</div><div class="v">663 <small>(+13,1%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">743</div></div><div class="s"><div class="l">Volume</div><div class="v">20,8 jt <small>(0,9× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp15,6 miliar</div></div></div><div class="emabar">EMA <b>20</b> 724 · <b>60</b> 639 · <b>100</b> 557 · <b>200</b> 436 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch16" width="1360" height="330"></canvas>
+      <canvas id="ch16" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -2079,6 +2134,7 @@
           <div class="k res">Resistance</div><div class="v">757 <span>|</span> 763 <span>|</span> 777</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >757 dengan broker beli melebar (bukan YB saja)</span></div><div class="kr"><span class="kl">Rute</span><span>757 → 763 → 780</span></div><div class="kr"><span class="kl">Risiko</span><span>Naik di atas kertas; keluar sulit saat likuiditas sepi</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Bertahan >737 dengan partisipasi baru</span></div><div class="kr"><span class="kl">Rute</span><span>Basis 737; lanjut 757</span></div><div class="kr"><span class="kl">Risiko</span><span>YB berhenti menopang bid</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <737 (S1)</span></div><div class="kr"><span class="kl">Rute</span><span>723 → 717</span></div><div class="kr"><span class="kl">Risiko</span><span>Pola silang berakhir; harga kembali ke area sebelum markup</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Bukan area masuk; pergerakan dikendalikan satu pihak — kalau tetap ikut, stop ketat di bawah 737.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>56%</b> · P(≥3%) <b>63%</b> <small>n508·4/4</small> · VolVal z+0,2 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">62<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:28.0"></i><i class="sisa" style="flex:7.0"></i><i style="flex:15.069631678664388"></i><i class="sisa" style="flex:14.9"></i><i style="flex:9.0"></i><i class="sisa" style="flex:11.0"></i><i style="flex:6"></i><i class="sisa" style="flex:4.0"></i><i style="flex:3.9195873042659395"></i><i class="sisa" style="flex:1.1"></i></div>
@@ -2110,7 +2166,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">230–238</div></div><div class="s"><div class="l">EMA50</div><div class="v">227 <small>(+4,0%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">235</div></div><div class="s"><div class="l">Volume</div><div class="v">39,1 jt <small>(1,6× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp9,2 miliar</div></div></div><div class="emabar">EMA <b>20</b> 227 · <b>60</b> 229 · <b>100</b> 235 · <b>200</b> 250 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch17" width="1360" height="330"></canvas>
+      <canvas id="ch17" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -2165,6 +2221,7 @@
           <div class="k res">Resistance</div><div class="v">239 <span>|</span> 243 <span>|</span> 247</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >239 (R1) dengan volume bertahan</span></div><div class="kr"><span class="kl">Rute</span><span>239 → 243 → 250</span></div><div class="kr"><span class="kl">Risiko</span><span>Scalper (BQ) di sisi beli bisa balik arah cepat</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Pullback tertahan di 231–233</span></div><div class="kr"><span class="kl">Rute</span><span>Basis 231; lanjut 239</span></div><div class="kr"><span class="kl">Risiko</span><span>Volume pullback lebih besar dari volume naik</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <231 (S1)</span></div><div class="kr"><span class="kl">Rute</span><span>227 → 223</span></div><div class="kr"><span class="kl">Risiko</span><span>Momentum patah; kembali ke rentang lama</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Tren sehat; pegang selama di atas 231, target bertahap 239–243.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>53%</b> · P(≥3%) <b>77%</b> <small>n259·4/4</small> · VolVal z+0,1 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">63<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:26.0"></i><i class="sisa" style="flex:9.0"></i><i style="flex:15.518661079711558"></i><i class="sisa" style="flex:14.5"></i><i style="flex:12.6"></i><i class="sisa" style="flex:7.4"></i><i style="flex:6"></i><i class="sisa" style="flex:4.0"></i><i style="flex:3.3424039930300795"></i><i class="sisa" style="flex:1.7"></i></div>
@@ -2196,7 +2253,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">496–515</div></div><div class="s"><div class="l">EMA50</div><div class="v">452 <small>(+10,2%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">503</div></div><div class="s"><div class="l">Volume</div><div class="v">90,3 jt <small>(0,9× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp45,0 miliar</div></div></div><div class="emabar">EMA <b>20</b> 457 · <b>60</b> 455 · <b>100</b> 469 · <b>200</b> 493 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch18" width="1360" height="330"></canvas>
+      <canvas id="ch18" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -2251,6 +2308,7 @@
           <div class="k res">Resistance</div><div class="v">510 <span>|</span> 522 <span>|</span> 529</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Berbalik close >510 (R1)</span></div><div class="kr"><span class="kl">Rute</span><span>510 → 522 → 540</span></div><div class="kr"><span class="kl">Risiko</span><span>CC/AK masih setor barang di setiap kenaikan</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Bertahan 484–491 dengan KZ tetap di sisi beli</span></div><div class="kr"><span class="kl">Rute</span><span>Basis S1–S2; angkat kembali ke 510</span></div><div class="kr"><span class="kl">Risiko</span><span>Asing berhenti menampung — support kehilangan sponsor</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <484 (S2)</span></div><div class="kr"><span class="kl">Rute</span><span>472 → 452 (EMA50)</span></div><div class="kr"><span class="kl">Risiko</span><span>Pullback berubah jadi distribusi terselubung</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Koreksi wajar di uptrend; amati 484–491 — bertahan dengan sisi beli asing = peluang, close <484 batal.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>54%</b> · P(≥3%) <b>65%</b> <small>n290·4/4</small> · VolVal z−0,1 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">59<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:12.0"></i><i class="sisa" style="flex:23.0"></i><i style="flex:14.899660939026491"></i><i class="sisa" style="flex:15.1"></i><i style="flex:20.0"></i><i class="sisa" style="flex:0.0"></i><i style="flex:8"></i><i class="sisa" style="flex:2.0"></i><i style="flex:4.280620217405216"></i><i class="sisa" style="flex:0.7"></i></div>
@@ -2282,7 +2340,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">5.150–5.500</div></div><div class="s"><div class="l">EMA50</div><div class="v">4.592 <small>(+13,2%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">5.283</div></div><div class="s"><div class="l">Volume</div><div class="v">82,5 jt <small>(1,4× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp429,0 miliar</div></div></div><div class="emabar">EMA <b>20</b> 4.782 · <b>60</b> 4.632 · <b>100</b> 4.939 · <b>200</b> 5.324 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch19" width="1360" height="330"></canvas>
+      <canvas id="ch19" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -2337,6 +2395,7 @@
           <div class="k res">Resistance</div><div class="v">5.417 <span>|</span> 5.633 <span>|</span> 5.767</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >5.417 dengan volume; jual AK/CC mengering</span></div><div class="kr"><span class="kl">Rute</span><span>5.417 → 5.633 → 5.767</span></div><div class="kr"><span class="kl">Risiko</span><span>Distribusi di puncak tren — rally rawan jadi pintu keluar</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Bertahan di 5.067–5.200 lalu rebut kembali pivot 5.283</span></div><div class="kr"><span class="kl">Rute</span><span>Basis di atas 5.067; reclaim 5.283 lalu uji 5.417</span></div><div class="kr"><span class="kl">Risiko</span><span>Close <5.067 membatalkan skenario konstruktif</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <5.067 (S1 patah)</span></div><div class="kr"><span class="kl">Rute</span><span>Terbuka jalan ke 4.933 → 4.717</span></div><div class="kr"><span class="kl">Risiko</span><span>Tekanan −5,45% terdalam di daftar; biarkan menemukan dasar dulu</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Hindari; biarkan menemukan dasar dulu.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>54%</b> · P(≥3%) <b>65%</b> <small>n290·4/4</small> · VolVal z+0,7 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">53<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:12.0"></i><i class="sisa" style="flex:23.0"></i><i style="flex:7.879286049788632"></i><i class="sisa" style="flex:22.1"></i><i style="flex:20.0"></i><i class="sisa" style="flex:0.0"></i><i style="flex:10"></i><i class="sisa" style="flex:0.0"></i><i style="flex:3.4713423419347036"></i><i class="sisa" style="flex:1.5"></i></div>
@@ -2368,7 +2427,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">56–58</div></div><div class="s"><div class="l">EMA50</div><div class="v">41 <small>(+41,5%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">57</div></div><div class="s"><div class="l">Volume</div><div class="v">210,8 jt <small>(4,6× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp12,2 miliar</div></div></div><div class="emabar">EMA <b>20</b> 46 · <b>60</b> 40 · <b>100</b> 39 · <b>200</b> 39 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch20" width="1360" height="330"></canvas>
+      <canvas id="ch20" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -2423,6 +2482,7 @@
           <div class="k res">Resistance</div><div class="v">59 <span>|</span> 59 <span>|</span> 61</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Lanjut close di atas 60 dengan volume bertahan</span></div><div class="kr"><span class="kl">Rute</span><span>60 → 65 → 70</span></div><div class="kr"><span class="kl">Risiko</span><span>Antrian jual muncul serentak saat momentum berhenti</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Koreksi tertahan di 55–57 dengan volume mengecil</span></div><div class="kr"><span class="kl">Rute</span><span>Basis kilat; lanjut bila 60 pecah</span></div><div class="kr"><span class="kl">Risiko</span><span>Saham parabolik jarang memberi retest rapi</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <55</span></div><div class="kr"><span class="kl">Rute</span><span>50 → 45</span></div><div class="kr"><span class="kl">Risiko</span><span>Fase markup selesai; likuiditas hilang bersamaan</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Hanya untuk trader cepat: stop ketat 55, dilarang rata-rata ke atas. Di luar profil itu, cukup ditonton.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>54%</b> · P(≥3%) <b>79%</b> <small>n131·4/4</small> · VolVal z+6,4 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">56<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:21.0"></i><i class="sisa" style="flex:14.0"></i><i style="flex:15.537879045128866"></i><i class="sisa" style="flex:14.5"></i><i style="flex:9.0"></i><i class="sisa" style="flex:11.0"></i><i style="flex:6"></i><i class="sisa" style="flex:4.0"></i><i style="flex:4.072571858565485"></i><i class="sisa" style="flex:0.9"></i></div>
@@ -2454,7 +2514,7 @@
     <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">1.905–1.990</div></div><div class="s"><div class="l">EMA50</div><div class="v">1.918 <small>(-0,7%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">1.933</div></div><div class="s"><div class="l">Volume</div><div class="v">12,7 jt <small>(0,6× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp24,2 miliar</div></div></div><div class="emabar">EMA <b>20</b> 1.936 · <b>60</b> 1.936 · <b>100</b> 2.045 · <b>200</b> 2.205 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch21" width="1360" height="330"></canvas>
+      <canvas id="ch21" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -2509,6 +2569,7 @@
           <div class="k res">Resistance</div><div class="v">1.962 <span>|</span> 2.018 <span>|</span> 2.047</div>
         </div>
         <div class="skn"><div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >1.962 dengan perbaikan volume yang nyata</span></div><div class="kr"><span class="kl">Rute</span><span>1.962 → 2.018 → 2.047</span></div><div class="kr"><span class="kl">Risiko</span><span>Likuiditas tipis; breakout mudah berbalik tanpa partisipasi</span></div></div><div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Bertahan di 1.877–1.905 lalu rebut kembali pivot 1.933</span></div><div class="kr"><span class="kl">Rute</span><span>Basis di atas 1.877; reclaim 1.933 lalu uji 1.962</span></div><div class="kr"><span class="kl">Risiko</span><span>Close <1.877 membatalkan skenario konstruktif</span></div></div><div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <1.877 (S1 patah)</span></div><div class="kr"><span class="kl">Rute</span><span>Terbuka jalan ke 1.848 → 1.792</span></div><div class="kr"><span class="kl">Risiko</span><span>Sinyal dua arah sama lemah; likuiditas belum layak posisi</span></div></div><div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Abaikan dulu; likuiditas belum layak untuk posisi.</span></div></div>
+        <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>44%</b> · P(≥3%) <b>65%</b> <small>n538·4/4</small> · VolVal z−0,6 normal <small>· senyap 51% n51</small></div>
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">36<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow"><i style="flex:0.0"></i><i class="sisa" style="flex:35.0"></i><i style="flex:4.188592305804729"></i><i class="sisa" style="flex:25.8"></i><i style="flex:20.0"></i><i class="sisa" style="flex:0.0"></i><i style="flex:8"></i><i class="sisa" style="flex:2.0"></i><i style="flex:3.488745348256396"></i><i class="sisa" style="flex:1.5"></i></div>
