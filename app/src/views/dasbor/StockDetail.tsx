@@ -8,6 +8,7 @@ import { PanelValuasi, PanelPerSaham, PanelSolvency, PanelEfektivitas, PanelSkor
 import { PanelKuartalan, PanelProfitabilitas, PanelGrowth, PanelDividen, PanelRiwayatDividen } from './stock-detail/KolomKuartalan'
 import { PanelIncome, PanelBalance, PanelCashflow, PanelPerformance, PanelTahunan } from './stock-detail/KolomLaporan'
 import { PanelValuasiInteraktif } from './stock-detail/PanelValuasiInteraktif'
+import { PanelLaporanKeuangan } from './stock-detail/PanelLaporanKeuangan'
 import { IkonMenu, IKON_CARI, IKON_PERINGATAN, IKON_JAM } from '../../components/dasbor/IkonMenu'
 
 type Tab = 'statistik' | 'valuasi'
@@ -228,6 +229,13 @@ export function StockDetail() {
               Valuasi
             </button>
           </div>
+
+          {tab === 'statistik' && (
+            /* #99: panel Laporan Keuangan (chart + breakdown kuartal/tahunan)
+               di luar .duo — perlu lebar penuh untuk chart & tabel periode,
+               bukan kolom sempit 340px seperti panel ringkas lain. */
+            <PanelLaporanKeuangan ticker={fd.ticker} />
+          )}
 
           {tab === 'statistik' && (
             /* #93 Key Stats — panel anak langsung .duo (multicol), urutan

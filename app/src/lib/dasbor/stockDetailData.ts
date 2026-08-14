@@ -204,6 +204,36 @@ export interface StockFundamental {
   [key: string]: unknown
 }
 
+/** Satu periode (kuartal/tahunan) dari data-idx/json/keuangan/{TICKER}.json — nilai
+ * mentah dalam mata uang pelaporan (lihat StockKeuangan.currency), null bila baris
+ * itu tak tersedia di yfinance untuk emiten ybs. */
+export interface PeriodeKeuangan {
+  revenue: number | null
+  cogs: number | null
+  gross_profit: number | null
+  operating_income: number | null
+  net_income: number | null
+  eps: number | null
+  total_assets: number | null
+  total_liabilities: number | null
+  equity: number | null
+  cash: number | null
+  total_debt: number | null
+  operating_cf: number | null
+  investing_cf: number | null
+  financing_cf: number | null
+  free_cf: number | null
+}
+
+/** Bentuk data-idx/json/keuangan/{TICKER}.json (lihat scripts/fetch_keuangan.py). */
+export interface StockKeuangan {
+  ticker: string
+  currency: string
+  diperbarui: string
+  kuartal: Record<string, PeriodeKeuangan>
+  tahunan: Record<string, PeriodeKeuangan>
+}
+
 let indexCache: StockIndexData | null = null
 let indexPromise: Promise<StockIndexData> | null = null
 
@@ -289,4 +319,52 @@ export function useStockFundamental(ticker: string | null) {
   }, [ticker])
 
   return { data, loading, error }
+}
+
+const keuanganCache = new Map<string, StockKeuangan | null>()
+
+/**
+ * Panel "Laporan Keuangan" — data-idx/json/keuangan/{TICKER}.json belum dipanen
+ * untuk semua emiten (lihat scripts/fetch_keuangan.py). 404/gagal fetch DISENGAJA
+ * jadi data=null tanpa `error` — panel tampil "belum ada data", bukan pesan galat.
+ */
+export function useStockKeuangan(ticker: string | null) {
+  const [data, setData] = useState<StockKeuangan | null>(ticker ? (keuanganCache.get(ticker) ?? null) : null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!ticker) {
+      setData(null)
+      return
+    }
+    if (keuanganCache.has(ticker)) {
+      setData(keuanganCache.get(ticker) ?? null)
+      return
+    }
+    let cancelled = false
+    setLoading(true)
+    fetch(`/data-idx/json/keuangan/${ticker}.json`)
+      .then((r) => {
+        if (!r.ok) throw new Error('not found')
+        return r.json() as Promise<StockKeuangan>
+      })
+      .then((kd) => {
+        if (cancelled) return
+        keuanganCache.set(ticker, kd)
+        setData(kd)
+      })
+      .catch(() => {
+        if (cancelled) return
+        keuanganCache.set(ticker, null)
+        setData(null)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [ticker])
+
+  return { data, loading }
 }
