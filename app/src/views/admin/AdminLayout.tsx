@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useProfilSaya } from '../../lib/profilSaya'
+import { supabase } from '../../lib/supabase'
 import { AdminTanggalProvider } from '../../context/AdminTanggalContext'
 import { hitungSetoranMenunggu } from '../../lib/supabaseEdisi'
 import { perluSambutan, kunciSambutan } from '../../lib/sambutan'
@@ -59,6 +60,12 @@ export function AdminLayout() {
   const [konfirmKeluar, setKonfirmKeluar] = useState(false)
   const [sambut, setSambut] = useState(false)
   const [menunggu, setMenunggu] = useState(0)
+  /** Modal "Lengkapi profil" (#item5, akun lama alias kosong) sudah ditutup
+   *  sesi ini — dismissable, BUKAN gerbang mati: RLS `profil` saat ini cuma
+   *  izinkan superadmin menulis baris siapa pun (lihat komentar di bawah
+   *  render-nya), jadi kalau dipaksa non-dismissable, akun yang gagal simpan
+   *  bisa terkunci total dari UI (termasuk tombol Keluar di baliknya). */
+  const [lengkapiTutup, setLengkapiTutup] = useState(false)
 
   // Badge tab Kurasi — dihitung ulang tiap pindah halaman (proxy murah utk
   // "mungkin baru saja dikurasi/disetor", tanpa polling berkala).
@@ -103,6 +110,8 @@ export function AdminLayout() {
     await signOut()
   }
 
+  const perluLengkapiProfil = Boolean(profil && !profil.alias?.trim() && !lengkapiTutup)
+
   const tabs: TabDef[] = [
     { to: '/admin', end: true, label: 'Unggah', ikon: IKON_GAMBAR, tampil: true },
     { to: '/admin/kurasi', label: 'Kurasi', ikon: IKON_PAPAN_KLIP, tampil: superadmin, badge: menunggu },
@@ -118,7 +127,7 @@ export function AdminLayout() {
       <div className="vhead" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1>Arus Pasar</h1>
-          <span className="sub">Area admin — unggah &amp; kelola edisi</span>
+          <span className="sub">{superadmin ? 'Area admin — unggah & kelola edisi' : 'Kontributor — setor orderbook harian'}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
           {profil && (
@@ -148,14 +157,18 @@ export function AdminLayout() {
         </AdminTanggalProvider>
       </div>
 
-      {sambut && (
+      {perluLengkapiProfil && (
+        <LengkapiProfilModal onClose={() => setLengkapiTutup(true)} />
+      )}
+
+      {sambut && !perluLengkapiProfil && (
         <div className="dasbor-modal-bg" onClick={tutupSambutan}>
           <div className="lantai dasbor-modal" role="dialog" aria-modal="true" aria-label="Ringkasan sesi admin" onClick={(e) => e.stopPropagation()}>
             <div className="panel af-sambut">
               <div className="af-sambut-head">
                 <span className="af-monogram" aria-hidden="true">P</span>
                 <div className="af-sambut-judul">
-                  <span className="af-sambut-merek">PAPAN · Area Admin</span>
+                  <span className="af-sambut-merek">{superadmin ? 'PAPAN · Area Admin' : 'PAPAN · Kontributor'}</span>
                   <span className="af-sambut-sapa">{sapaan()}</span>
                 </div>
               </div>
@@ -166,8 +179,9 @@ export function AdminLayout() {
                   </p>
                 )}
                 <p className="muted" style={{ margin: 0, fontSize: 11.5, lineHeight: 1.55 }}>
-                  Unggah screenshot orderbook harian, kurasi setoran, pantau Radar WDWL,
-                  dan kelola rak terbitan Arus Pasar — semuanya di tab-tab atas.
+                  {superadmin
+                    ? 'Unggah screenshot orderbook harian, kurasi setoran, pantau Radar WDWL, dan kelola rak terbitan Arus Pasar — semuanya di tab-tab atas.'
+                    : 'Unggah screenshot orderbook harian dan pantau rak terbitan Arus Pasar — semuanya di tab-tab atas.'}
                 </p>
                 <button type="button" className="btn-p" style={{ width: '100%' }} onClick={tutupSambutan}>Mulai</button>
               </div>
@@ -204,5 +218,64 @@ export function AksesDitolak({ pesan }: { pesan: string }) {
       <p>{pesan}</p>
       <p style={{ fontSize: 11, marginTop: 6 }}><Link to="/admin">← Kembali ke Admin</Link></p>
     </div>
+  )
+}
+
+/**
+ * Modal "Lengkapi profil" (#item5) — akun lama yang aliasnya masih kosong
+ * diminta mengisi sebelum menyetor (alias jadi kredit kontributor di PDF,
+ * bukan email mentah). CATATAN PENTING: policy RLS tabel `profil` saat ini
+ * (`profil_baca_sendiri` SELECT-only + `profil_kelola_superadmin` ALL-untuk-
+ * superadmin) BELUM mengizinkan user mengubah baris sendiri — diperiksa
+ * langsung ke database produksi, bukan tebakan. Update di bawah akan gagal
+ * (galat RLS) untuk kontributor sampai ada policy UPDATE tambahan; sesuai
+ * instruksi, SQL tidak diubah dari sini. Galat ditampilkan apa adanya supaya
+ * jelas, dan modal ini SENGAJA bisa ditutup (bukan gerbang mati) —
+ * non-dismissable + gagal-simpan permanen berarti akun itu terkunci total
+ * dari UI, termasuk tombol Keluar di baliknya.
+ */
+function LengkapiProfilModal({ onClose }: { onClose: () => void }) {
+  const [alias, setAlias] = useState('')
+  const [kirim, setKirim] = useState(false)
+  const [err, setErr] = useState('')
+
+  async function submit(e: FormEvent) {
+    e.preventDefault()
+    const nilai = alias.trim()
+    if (nilai.length < 2) {
+      setErr('Alias minimal 2 karakter.')
+      return
+    }
+    setKirim(true)
+    setErr('')
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      setErr('Sesi tidak ditemukan — masuk ulang.')
+      setKirim(false)
+      return
+    }
+    const { error } = await supabase.from('profil').update({ alias: nilai }).eq('id', user.id)
+    if (error) {
+      setErr(error.message)
+      setKirim(false)
+      return
+    }
+    onClose()
+  }
+
+  return (
+    <ModalKecil label="Lengkapi profil" onClose={onClose}>
+      <p style={{ margin: 0, fontSize: 12.5 }}>
+        Isi alias sebelum menyetor — dipakai sebagai kredit kontributor di PDF Arus Pasar.
+      </p>
+      <form onSubmit={submit} style={{ display: 'grid', gap: 12 }}>
+        <div className="field">
+          <span className="lbl">Alias</span>
+          <input className="inp" type="text" autoFocus required value={alias} onChange={(e) => setAlias(e.target.value)} placeholder="Nama panggilan — minimal 2 karakter" />
+        </div>
+        <button type="submit" className="btn-p" disabled={kirim}>{kirim ? 'Menyimpan…' : 'Simpan'}</button>
+        {err && <p className="af-err" style={{ margin: 0 }}>{err}</p>}
+      </form>
+    </ModalKecil>
   )
 }

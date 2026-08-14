@@ -304,8 +304,10 @@ export function KurasiSetoran() {
 }
 
 /** Modal catatan kurator saat menolak — wajib diisi (kontributor berhak tahu
- *  alasan penolakan), dipakai tolak satuan maupun massal. */
-function TolakModal({ jumlah, onClose, onKirim }: { jumlah: number; onClose: () => void; onKirim: (catatan: string) => void }) {
+ *  alasan penolakan), dipakai tolak satuan maupun massal. Diekspor supaya
+ *  kurasi cepat dari tabel "Sudah Diunggah" (UnggahHarian.tsx) pakai modal
+ *  yang SAMA, bukan menulis ulang logikanya. */
+export function TolakModal({ jumlah, onClose, onKirim }: { jumlah: number; onClose: () => void; onKirim: (catatan: string) => void }) {
   const [catatan, setCatatan] = useState('')
   const [kirim, setKirim] = useState(false)
   const [err, setErr] = useState('')

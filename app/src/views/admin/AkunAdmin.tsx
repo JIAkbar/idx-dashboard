@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useProfilSaya } from '../../lib/profilSaya'
-import { daftarAkun, buatAkun, resetSandi, setProfil, type AkunRow } from '../../lib/adminAkun'
-import { IkonMenu, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_TAMBAH } from '../../components/dasbor/IkonMenu'
+import { daftarAkun, buatAkun, hapusAkun, resetSandi, setProfil, type AkunRow } from '../../lib/adminAkun'
+import { IkonMenu, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_TAMBAH, IKON_TONG } from '../../components/dasbor/IkonMenu'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { AksesDitolak } from './AdminLayout'
@@ -60,6 +60,7 @@ export function AkunAdmin() {
 
   const [tambahBuka, setTambahBuka] = useState(false)
   const [resetTarget, setResetTarget] = useState<AkunRow | null>(null)
+  const [hapusTarget, setHapusTarget] = useState<AkunRow | null>(null)
 
   const superadmin = profil?.peran === 'superadmin'
 
@@ -178,9 +179,14 @@ export function AkunAdmin() {
                         </td>
                         <td>{waktuManusiawi(a.terakhir_masuk)}</td>
                         <td className="af-aksi">
-                          <button type="button" className="dd-btn" disabled={sedangProses} onClick={() => setResetTarget(a)}>
-                            <IkonMenu d={IKON_KUNCI} size={12} /> Atur Ulang Sandi
-                          </button>
+                          <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                            <button type="button" className="dd-btn" disabled={sedangProses} onClick={() => setResetTarget(a)}>
+                              <IkonMenu d={IKON_KUNCI} size={12} /> Atur Ulang Sandi
+                            </button>
+                            <button type="button" className="dd-btn merah" disabled={sedangProses} onClick={() => setHapusTarget(a)}>
+                              <IkonMenu d={IKON_TONG} size={12} /> Hapus
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     )
@@ -214,6 +220,18 @@ export function AkunAdmin() {
         />
       )}
 
+      {hapusTarget && (
+        <FormHapusAkun
+          akun={hapusTarget}
+          onClose={() => setHapusTarget(null)}
+          onSukses={(pesan) => {
+            setToast({ ok: true, pesan })
+            setHapusTarget(null)
+            setMuat((m) => m + 1)
+          }}
+        />
+      )}
+
       {toast && (
         <div className={`lantai af-toast${toast.ok ? '' : ' gagal'}`} role="status">
           <IkonMenu d={toast.ok ? IKON_CENTANG : IKON_PERINGATAN} size={15} />
@@ -243,13 +261,17 @@ function FormTambahAkun({ onClose, onSukses }: { onClose: () => void; onSukses: 
       setErr('Sandi minimal 8 karakter.')
       return
     }
+    if (alias.trim().length < 2) {
+      setErr('Alias wajib diisi (minimal 2 karakter) — dipakai sebagai kredit di PDF.')
+      return
+    }
     setKirim(true)
     setErr('')
     try {
       const hasil = await buatAkun({
         email: email.trim(),
         sandi,
-        alias: alias.trim() || undefined,
+        alias: alias.trim(),
         kuota_harian: kuota,
         boleh_bedah: bedah,
       })
@@ -273,8 +295,8 @@ function FormTambahAkun({ onClose, onSukses }: { onClose: () => void; onSukses: 
           <input className="inp" type="password" required value={sandi} onChange={(e) => setSandi(e.target.value)} placeholder="Minimal 8 karakter" />
         </div>
         <div className="field">
-          <span className="lbl">Alias (opsional)</span>
-          <input className="inp" type="text" value={alias} onChange={(e) => setAlias(e.target.value)} placeholder="Nama panggilan" />
+          <span className="lbl">Alias</span>
+          <input className="inp" type="text" required value={alias} onChange={(e) => setAlias(e.target.value)} placeholder="Nama panggilan — minimal 2 karakter" />
         </div>
         <div className="field">
           <span className="lbl">Kuota awal / hari</span>
@@ -287,6 +309,45 @@ function FormTambahAkun({ onClose, onSukses }: { onClose: () => void; onSukses: 
         <button type="submit" className="btn-p" disabled={kirim}>{kirim ? 'Membuat…' : 'Buat Akun'}</button>
         {err && <p className="af-err" style={{ margin: 0 }}>{err}</p>}
       </form>
+    </ModalKecil>
+  )
+}
+
+/** Modal konfirmasi hapus akun (#item4) — permanen, dijaga tiga lapis di
+ *  SERVER (tidak bisa hapus diri sendiri / superadmin lain / akun dengan
+ *  setoran disetujui). Di sini cuma UX: sebut alias & email jelas, peringatan
+ *  ireversibel, dan tampilkan pesan galat server APA ADANYA (mis. saran
+ *  "nonaktifkan saja") — jangan diterjemahkan ulang. */
+function FormHapusAkun({ akun, onClose, onSukses }: { akun: AkunRow; onClose: () => void; onSukses: (pesan: string) => void }) {
+  const [kirim, setKirim] = useState(false)
+  const [err, setErr] = useState('')
+
+  async function hapus() {
+    setKirim(true)
+    setErr('')
+    try {
+      const hasil = await hapusAkun(akun.id)
+      onSukses(`Akun ${hasil.email} dihapus.`)
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Gagal menghapus akun.')
+    } finally {
+      setKirim(false)
+    }
+  }
+
+  return (
+    <ModalKecil label={`Hapus akun — ${akun.alias || akun.email}?`} onClose={() => { if (!kirim) onClose() }}>
+      <p style={{ margin: 0, fontSize: 12.5 }}>
+        Akun <b>{akun.alias || '(tanpa alias)'}</b> ({akun.email}) akan dihapus <b>permanen</b> — tindakan ini tidak
+        bisa dibatalkan.
+      </p>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button type="button" className="btn-p af-btn-keluar" disabled={kirim} onClick={hapus}>
+          {kirim ? 'Menghapus…' : 'Ya, Hapus Permanen'}
+        </button>
+        <button type="button" className="dd-btn" disabled={kirim} onClick={onClose}>Batal</button>
+      </div>
+      {err && <p className="af-err" style={{ margin: 0 }}>{err}</p>}
     </ModalKecil>
   )
 }

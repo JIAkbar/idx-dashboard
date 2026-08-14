@@ -151,6 +151,23 @@ export async function kurasiSetoran(paths: string[], status: 'disetujui' | 'dito
   if (error) throw error
 }
 
+/** Jumlah baris `setoran` jenis orderbook milik PENGGUNA SENDIRI untuk satu
+ *  tanggal — dasar modal "kuota habis" di UnggahHarian, dicek SEBELUM buka
+ *  form (server tetap wasit akhir lewat RLS saat submit). head:true supaya
+ *  server cuma balas hitungan. */
+export async function hitungSetoranSaya(tanggal: string): Promise<number> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return 0
+  const { count, error } = await supabase
+    .from('setoran')
+    .select('*', { count: 'exact', head: true })
+    .eq('penyetor', user.id)
+    .eq('tanggal', tanggal)
+    .eq('jenis', 'orderbook')
+  if (error) throw error
+  return count ?? 0
+}
+
 /** Jumlah baris `setoran` berstatus `menunggu` (SEMUA tanggal) — badge tab
  *  Kurasi di AdminLayout. head:true supaya server cuma balas hitungan,
  *  bukan menarik seluruh baris. */

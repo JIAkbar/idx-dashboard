@@ -70,6 +70,30 @@
 .lantai .af-gulir::-webkit-scrollbar-track { background: transparent; }
 .lantai .af-gulir thead th { position: sticky; top: 0; background: var(--bg1); z-index: 1; }
 
+/* Tabel "Sudah Diunggah" (#item3): halaman yang menggulir, bukan panel —
+   modifier RESET max-height/overflow-y bawaan .af-gulir (dipakai AkunAdmin
+   apa adanya, tidak disentuh). .af-gulir-cap dipasang balik cuma kalau
+   barisnya banyak (>15, lihat UnggahHarian.tsx). overflow-x tetap aktif
+   (gulir SAMPING di dalam wadah sendiri di layar sempit, bukan geser body). */
+.lantai .af-gulir.af-gulir-flex { max-height: none; overflow-y: visible; }
+.lantai .af-gulir.af-gulir-flex.af-gulir-cap { max-height: 480px; overflow-y: auto; }
+
+/* table-layout:fixed + <colgroup> persentase (JSX) → lebar kolom proporsional
+   alih-alih auto-layout yang gepeng/lebar seenaknya. min-width memaksa gulir
+   samping di layar sempit ketimbang kolom diperas. */
+.lantai .af-tbl { table-layout: fixed; min-width: 640px; }
+.lantai .tbl .af-c { text-align: center; }
+
+/* Item grid/flex (.panel di dalam shell /admin) defaultnya min-width:auto —
+   browser menolak menyusutkannya di bawah lebar intrinsik kontennya (di sini
+   tabel af-tbl 640px), jadi PANEL-nya yang melebar dan .af-gulir tak pernah
+   sempat overflow untuk memicu overflow-x:auto sendiri. Ditemukan lewat
+   pengukuran langsung (chain clientWidth/scrollWidth tiap leluhur) — bukan
+   overflow-x hilang, tapi panel-nya sendiri tak pernah menyempit ke lebar
+   kolom grid. Diskop ke .admin-view saja, bukan .panel global (dipakai di
+   semua halaman), supaya blast radius kecil. */
+.lantai.admin-view .panel { min-width: 0; }
+
 /* Checkbox pilih baris — accent amber ikut tema. Disabled (baris bukan milik
    pengguna/superadmin, #2 bug UI hapus lintas-akun) → kursor terlarang. */
 .lantai .af-cek { accent-color: var(--amber); width: 13px; height: 13px; cursor: pointer; }
@@ -244,12 +268,15 @@
 .lantai .af-alasan-cnt { margin: 0; color: var(--text3); }
 .lantai .af-alasan-cnt.kurang { color: var(--red); }
 
-/* Sel "Alasan" tabel Sudah Diunggah — teks terpotong + tombol "Ubah" kecil
-   (kontributor, baris sendiri, status masih menunggu). */
-.lantai .af-alasan-sel { display: flex; align-items: center; gap: 6px; max-width: 220px; }
+/* Sel "Alasan" tabel Sudah Diunggah — potong rapi maksimal 2 baris (#item3,
+   dulu 1 baris nowrap yang memutus kalimat tanggung) + tombol "Ubah" kecil
+   (kontributor, baris sendiri, status masih menunggu). title penuh di teks
+   utuh, buat pembaca yang mau lihat semuanya tanpa buka modal. */
+.lantai .af-alasan-sel { display: flex; align-items: flex-start; gap: 6px; }
 .lantai .af-alasan-teks {
-  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  font-size: 11px; color: var(--text2);
+  flex: 1; min-width: 0; font-size: 11px; color: var(--text2); line-height: 1.4;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden; text-overflow: ellipsis;
 }
 .lantai .af-alasan-edit {
   flex-shrink: 0; background: none; border: none; cursor: pointer; padding: 2px 4px;
@@ -257,6 +284,15 @@
   text-decoration: underline; text-underline-offset: 2px;
 }
 .lantai .af-alasan-edit:hover { color: var(--amber-ink); background: var(--amber); border-radius: 3px; }
+
+/* Status kolom klik-untuk-kurasi cepat (#item2, superadmin saja) — badge chip
+   jadi tombol pemicu popover Setujui/Tolak. Wrapper pakai kelas .dd yang
+   sama dengan komponen Dropdown (position:relative + .open mengontrol
+   .dd-menu) supaya popovernya konsisten tanpa menulis dropdown baru. */
+.lantai .af-status-dd { position: relative; display: inline-flex; }
+.lantai .af-status-trigger { background: none; border: none; padding: 0; cursor: pointer; }
+.lantai .af-status-dd .dd-menu { left: 50%; transform: translateX(-50%); min-width: 130px; }
+.lantai .af-status-dd .dd-it.merah { color: var(--red); }
 
 @media (prefers-reduced-motion: reduce) {
   .lantai.af-toast { animation: none; }

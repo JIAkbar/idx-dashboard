@@ -27,6 +27,8 @@ import {
   daftarSetoran,
   daftarTanggalUnggahan,
   hapusScreenshot,
+  hitungSetoranSaya,
+  kurasiSetoran,
   ubahAlasanSetoran,
   unggahScreenshot,
   urlScreenshots,
@@ -34,6 +36,7 @@ import {
   type StatusSetoran,
 } from '../../lib/supabaseEdisi'
 import { useBulletinList } from '../../lib/dasbor/bulletin'
+import { TolakModal } from './KurasiSetoran'
 import './AdminShared.css'
 
 function tanggalHariIni(): string {
@@ -230,6 +233,54 @@ function PilihGambar({ label, jenis, file, onFile, onPratinjau }: {
   )
 }
 
+/**
+ * Kurasi cepat kolom Status (superadmin saja, #item2) — badge chip jadi
+ * tombol pemicu popover Setujui/Tolak, beroperasi atas SEMUA baris `setoran`
+ * (orderbook+chart) emiten ini. Pola klik-luar-menutup sama dengan
+ * Dropdown.tsx, tapi ditulis lokal karena Dropdown itu pemilih NILAI —
+ * di sini tombolnya memicu AKSI, bukan mengganti state terpilih.
+ */
+function StatusAksi({ status, catatan, paths, onSetujui, onTolak }: {
+  status: StatusSetoran
+  catatan?: string
+  paths: string[]
+  onSetujui: (paths: string[]) => void
+  onTolak: (paths: string[]) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    function onDoc(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [open])
+
+  return (
+    <div className={`dd af-status-dd${open ? ' open' : ''}`} ref={ref}>
+      <button
+        type="button"
+        className="af-status-trigger"
+        title={status === 'ditolak' ? catatan || 'Ditolak kurator (tanpa catatan).' : 'Klik untuk kurasi cepat'}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className={`chip ${KELAS_STATUS[status]}`}>{LABEL_STATUS[status]}</span>
+      </button>
+      <div className="dd-menu" role="menu">
+        <button type="button" className="dd-it" role="menuitem" style={{ gap: 6 }} onClick={() => { setOpen(false); onSetujui(paths) }}>
+          <IkonMenu d={IKON_CENTANG} size={12} /> Setujui
+        </button>
+        <button type="button" className="dd-it merah" role="menuitem" style={{ gap: 6 }} onClick={() => { setOpen(false); onTolak(paths) }}>
+          <IkonMenu d={IKON_SILANG} size={12} /> Tolak
+        </button>
+      </div>
+    </div>
+  )
+}
+
 /** Modal "Ubah alasan" — kontributor menyunting alasan barisnya sendiri
  *  selama status masih `menunggu` (server jadi wasit sesungguhnya, ini cuma
  *  UX). `entries` = baris `setoran` yang ikut diperbarui (orderbook & chart
@@ -322,6 +373,12 @@ export function UnggahHarian() {
   const [lightbox, setLightbox] = useState<{ items: GambarLightbox[]; index: number } | null>(null)
   /** Emiten yang alasannya sedang disunting (modal, Fase 3) — null = tertutup. */
   const [editAlasanTarget, setEditAlasanTarget] = useState<Baris | null>(null)
+  /** Modal "kuota habis" (#item1) — angka dipakai isi pesan, null = tertutup. */
+  const [kuotaHabis, setKuotaHabis] = useState<{ terpakai: number; batas: number } | null>(null)
+  /** Kunci tombol "Tambah Emiten" selagi kuota dicek ke server. */
+  const [cekKuota, setCekKuota] = useState(false)
+  /** Path setoran yang sedang minta catatan penolakan (kurasi cepat, #item2) — null = tertutup. */
+  const [tolakTarget, setTolakTarget] = useState<string[] | null>(null)
 
   useEffect(() => {
     if (!toast) return
@@ -436,6 +493,15 @@ export function UnggahHarian() {
   }
   const bolehHapusRows = sudahMerged.filter(bolehHapusBaris)
 
+  /** Path setoran `menunggu` di antara baris tercentang — dasar tombol "Setujui/
+   *  Tolak terpilih" (#item2, superadmin). Cuma entri berstatus menunggu yang
+   *  ikut disentuh; entri emiten yang sama tapi sudah dikurasi dilewati. */
+  const pathsPilihMenunggu = superadmin
+    ? sudahMerged
+        .filter((b) => pilih.has(b.ticker))
+        .flatMap((b) => [b.setoranOb, b.setoranCh].filter((s): s is SetoranRow => !!s && s.status === 'menunggu').map((s) => s.path))
+    : []
+
   function bersihkan() {
     setTicker('')
     setOrderbook(null)
@@ -504,6 +570,57 @@ export function UnggahHarian() {
     }
   }
 
+  /** Cek kuota SEBELUM buka form Tambah Emiten (#item1) — kontributor yang
+   *  jatahnya habis dapat modal jelas di sini, bukan galat generik server
+   *  sesudah isi form lengkap. Superadmin tidak pernah dicek (kuota 50 +
+   *  server sudah mengecualikan superadmin dari batas ini). Gagal cek di
+   *  client (mis. jaringan) tidak menghalangi — server tetap wasit akhir. */
+  async function klikTambahEmiten() {
+    if (superadmin) {
+      setFormBuka(true)
+      return
+    }
+    setCekKuota(true)
+    try {
+      const batas = profil?.kuota_harian ?? 0
+      const terpakai = await hitungSetoranSaya(tanggal)
+      if (terpakai >= batas) {
+        setKuotaHabis({ terpakai, batas })
+        return
+      }
+    } catch {
+      // ponytail: gagal cek kuota di client — biarkan lanjut, submit tetap ditolak server kalau memang habis.
+    } finally {
+      setCekKuota(false)
+    }
+    setFormBuka(true)
+  }
+
+  /** Kurasi cepat dari tabel "Sudah Diunggah" (#item2, superadmin) — pakai
+   *  ulang kurasiSetoran() yang sama dgn tab Kurasi, tak ada logika baru. */
+  async function setujuiBaris(paths: string[]) {
+    try {
+      await kurasiSetoran(paths, 'disetujui')
+      setToast({ ok: true, pesan: paths.length === 1 ? '1 setoran disetujui.' : `${paths.length} setoran disetujui.` })
+      setPilih(new Set())
+      setMuat((m) => m + 1)
+    } catch (err) {
+      setToast({ ok: false, pesan: err instanceof Error ? err.message : 'Gagal menyetujui.' })
+    }
+  }
+
+  async function tolakBaris(paths: string[], catatan: string) {
+    try {
+      await kurasiSetoran(paths, 'ditolak', catatan)
+      setToast({ ok: true, pesan: paths.length === 1 ? '1 setoran ditolak.' : `${paths.length} setoran ditolak.` })
+      setPilih(new Set())
+      setTolakTarget(null)
+      setMuat((m) => m + 1)
+    } catch (err) {
+      setToast({ ok: false, pesan: err instanceof Error ? err.message : 'Gagal menolak.' })
+    }
+  }
+
   /**
    * Buka lightbox dari tabel "Sudah Diunggah": kumpulkan SEMUA gambar tanggal
    * ini (urut per emiten, orderbook lalu chart) supaya ‹ › bisa jalan antar
@@ -545,7 +662,7 @@ export function UnggahHarian() {
       <section className="panel">
         <div className="panel-h" style={{ alignItems: 'center' }}>
           <span className="af-judul">Sudah Diunggah — <b className="tgl">{tanggalManusiawi(tanggal)}</b></span>
-          <button type="button" className="btn-p af-tambah" onClick={() => setFormBuka(true)}>
+          <button type="button" className="btn-p af-tambah" disabled={cekKuota} onClick={klikTambahEmiten}>
             <IkonMenu d={IKON_TAMBAH} size={13} /> Tambah Emiten
           </button>
         </div>
@@ -565,17 +682,39 @@ export function UnggahHarian() {
               {pilih.size > 0 && (
                 <div className="af-aksibar">
                   <span>{pilih.size} emiten dipilih</span>
-                  <button
-                    type="button"
-                    className="dd-btn merah"
-                    onClick={() => setHapusTarget(sudah.filter((b) => pilih.has(b.ticker)))}
-                  >
-                    <IkonMenu d={IKON_TONG} size={12} /> Hapus
-                  </button>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {pathsPilihMenunggu.length > 0 && (
+                      <>
+                        <button type="button" className="dd-btn" onClick={() => setujuiBaris(pathsPilihMenunggu)}>
+                          <IkonMenu d={IKON_CENTANG} size={12} /> Setujui terpilih
+                        </button>
+                        <button type="button" className="dd-btn merah" onClick={() => setTolakTarget(pathsPilihMenunggu)}>
+                          <IkonMenu d={IKON_SILANG} size={12} /> Tolak terpilih
+                        </button>
+                      </>
+                    )}
+                    <button
+                      type="button"
+                      className="dd-btn merah"
+                      onClick={() => setHapusTarget(sudah.filter((b) => pilih.has(b.ticker)))}
+                    >
+                      <IkonMenu d={IKON_TONG} size={12} /> Hapus
+                    </button>
+                  </div>
                 </div>
               )}
-              <div className="af-gulir">
-                <table className="tbl">
+              <div className={`af-gulir af-gulir-flex${sudahMerged.length > 15 ? ' af-gulir-cap' : ''}`}>
+                <table className="tbl af-tbl">
+                  <colgroup>
+                    <col style={{ width: '3%' }} />
+                    <col style={{ width: '9%' }} />
+                    <col style={{ width: '11%' }} />
+                    <col style={{ width: '38%' }} />
+                    <col style={{ width: '9%' }} />
+                    <col style={{ width: '9%' }} />
+                    <col style={{ width: '12%' }} />
+                    <col style={{ width: '9%' }} />
+                  </colgroup>
                   <thead>
                     <tr>
                       <th className="af-kolcek">
@@ -591,9 +730,9 @@ export function UnggahHarian() {
                       <th>Emiten</th>
                       <th>Penyetor</th>
                       <th>Alasan</th>
-                      <th>Orderbook</th>
-                      <th>Chart</th>
-                      <th>Status</th>
+                      <th className="af-c">Orderbook</th>
+                      <th className="af-c">Chart</th>
+                      <th className="af-c">Status</th>
                       <th className="af-aksi">Aksi</th>
                     </tr>
                   </thead>
@@ -638,7 +777,7 @@ export function UnggahHarian() {
                               </button>
                             )}
                           </td>
-                          <td>
+                          <td className="af-c">
                             {b.orderbook ? (
                               <button
                                 type="button"
@@ -652,7 +791,7 @@ export function UnggahHarian() {
                               </button>
                             ) : '—'}
                           </td>
-                          <td>
+                          <td className="af-c">
                             {b.chart ? (
                               <button
                                 type="button"
@@ -666,11 +805,21 @@ export function UnggahHarian() {
                               </button>
                             ) : '—'}
                           </td>
-                          <td>
+                          <td className="af-c">
                             {status ? (
-                              <span className={`chip ${KELAS_STATUS[status]}`} title={status === 'ditolak' ? catatan || 'Ditolak kurator (tanpa catatan).' : undefined}>
-                                {LABEL_STATUS[status]}
-                              </span>
+                              superadmin ? (
+                                <StatusAksi
+                                  status={status}
+                                  catatan={catatan}
+                                  paths={[b.setoranOb?.path, b.setoranCh?.path].filter((p): p is string => Boolean(p))}
+                                  onSetujui={setujuiBaris}
+                                  onTolak={(paths) => setTolakTarget(paths)}
+                                />
+                              ) : (
+                                <span className={`chip ${KELAS_STATUS[status]}`} title={status === 'ditolak' ? catatan || 'Ditolak kurator (tanpa catatan).' : undefined}>
+                                  {LABEL_STATUS[status]}
+                                </span>
+                              )
                             ) : (
                               <span className="muted" style={{ fontSize: 10.5 }} title="Unggahan sebelum Fase 3 — tanpa data kurasi.">—</span>
                             )}
@@ -856,6 +1005,26 @@ export function UnggahHarian() {
           <IkonMenu d={toast.ok ? IKON_CENTANG : IKON_PERINGATAN} size={15} />
           <span>{toast.pesan}</span>
         </div>
+      )}
+
+      {kuotaHabis && (
+        <ModalKecil label="Jatah hari ini sudah habis" onClose={() => setKuotaHabis(null)}>
+          <p style={{ margin: 0, fontSize: 12.5 }}>
+            Kamu sudah menyetor <b>{kuotaHabis.terpakai} dari {kuotaHabis.batas}</b> orderbook untuk {tanggalManusiawi(tanggal)}.
+          </p>
+          <p className="muted" style={{ margin: 0, fontSize: 11.5 }}>
+            Jatah baru terbuka untuk tanggal berikutnya, atau minta tambahan ke superadmin.
+          </p>
+          <button type="button" className="btn-p" style={{ width: '100%' }} onClick={() => setKuotaHabis(null)}>Tutup</button>
+        </ModalKecil>
+      )}
+
+      {tolakTarget && (
+        <TolakModal
+          jumlah={tolakTarget.length}
+          onClose={() => setTolakTarget(null)}
+          onKirim={(catatan) => tolakBaris(tolakTarget, catatan)}
+        />
       )}
 
       {hapusTarget && hapusTarget.length > 0 && (

@@ -13,7 +13,7 @@ export interface AkunRow {
   terakhir_masuk: string | null
 }
 
-type Aksi = 'daftar' | 'buat' | 'reset_sandi' | 'set_profil'
+type Aksi = 'daftar' | 'buat' | 'reset_sandi' | 'set_profil' | 'hapus'
 
 /**
  * Panggil Edge Function `admin-akun` (backend Fase 1, sudah jadi) — token
@@ -61,4 +61,12 @@ export function setProfil(
   patch: Partial<{ peran: string; kuota_harian: number; boleh_bedah: boolean; aktif: boolean; alias: string }>
 ) {
   return panggilAdminAkun<{ ok: true }>('set_profil', { id, ...patch })
+}
+
+/** Hapus akun permanen (backend Fase 6-adjacent, aksi `hapus` sudah dideploy
+ *  di admin-akun) — server menolak kalau menghapus diri sendiri, akun
+ *  superadmin (turunkan dulu perannya), atau akun yang punya setoran
+ *  `disetujui` (saran server: nonaktifkan saja). */
+export function hapusAkun(id: string) {
+  return panggilAdminAkun<{ ok: true; email: string }>('hapus', { id })
 }
