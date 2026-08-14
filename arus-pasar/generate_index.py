@@ -31,6 +31,11 @@ def main():
         # Rilis ulang: edisi diperluas cakupannya — dashboard render badge Update N→M.
         if "update_dari" in ed:
             baris["update_dari"] = ed["update_dari"]
+        # Sidecar analitik (build.py): skor + probabilitas per emiten — tabel
+        # bulletin web menampilkannya sebagai baris detail edisi.
+        sc = AKAR / "keluaran" / f"{kode}.analisa.json"
+        if sc.exists():
+            baris["analisa"] = json.loads(sc.read_text(encoding="utf-8"))
         entri.append(baris)
 
     # Bedah Arus Saham (BA-*): satu emiten satu terbitan, berkas di bedah/.

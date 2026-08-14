@@ -781,6 +781,26 @@ def main():
                                   "ihsg": i, "korr": korr, "total": total,
                                   "risiko": tingkat_risiko(total)}
 
+    # Sidecar analitik utk dashboard (permintaan user 14 Agu: kolom Probabilitas
+    # di TABEL bulletin web, bukan cuma PDF) — generate_index.py menempelkannya
+    # ke entri edisi di keluaran/index.json.
+    sidecar = []
+    for em in ed["emiten"]:
+        sk = skor_map[em["ticker"]]
+        pr = prob_map.get(em["ticker"])
+        vv = pr.get("volval") if pr else None
+        sidecar.append({
+            "ticker": em["ticker"], "label": em["label"], "arah": em["arah"],
+            "close": em["ohlc_hari"]["c"], "pct": em["ohlc_hari"]["pct"],
+            "skor": round(sk["total"]), "risiko": sk["risiko"],
+            "p5": pr["p5"] if pr else None, "p3": pr["p3"] if pr else None,
+            "n": pr["n"] if pr else None, "cocok": pr["cocok"] if pr else None,
+            "vv_z": round(vv["z"], 2) if vv else None,
+            "vv_sinyal": bool(vv and vv["sinyal"]),
+        })
+    (AKAR / "keluaran" / f"{ed['edisi']}.analisa.json").write_text(
+        json.dumps(sidecar, ensure_ascii=False), encoding="utf-8")
+
     pages = [halaman_sampul(ed, skor_map)]
     draw = []
     # dua halaman pembuka baru — keduanya opsional (edisi lama tetap terakit)
