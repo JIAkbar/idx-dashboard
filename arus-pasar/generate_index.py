@@ -41,6 +41,8 @@ def main():
     # Bedah Arus Saham (BA-*): satu emiten satu terbitan, berkas di bedah/.
     for berkas in sorted((AKAR / "bedah").glob("*.json")):
         bd = json.loads(berkas.read_text(encoding="utf-8"))
+        if "edisi" not in bd:
+            continue  # sidecar (flow-<TICKER>.json dkk), bukan terbitan
         kode = bd["edisi"]
         if not (AKAR / "keluaran" / f"{kode}.pdf").exists():
             continue

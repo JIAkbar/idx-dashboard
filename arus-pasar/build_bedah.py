@@ -1,12 +1,28 @@
 """Arus Pasar — perakit BEDAH ARUS SAHAM (BA-*): satu emiten, satu terbitan.
 
-Baca bedah/<TICKER-tanggal>.json, tarik data emiten + arus broker dari edisi
-harian sumber, hitung PCD (pcd.py) dan probabilitas historis (prob.py), rakit
-5 halaman di atas kulit template.html yang SAMA dengan bulletin harian
-(build.py tidak disentuh): sampul mini, PCD, teknikal, arus broker, scenario
-map. Tulis keluaran/<kode>.html + .pdf.
+Baca bedah/<TICKER-tanggal>.json, hitung PCD (pcd.py) dan probabilitas
+historis (prob.py), rakit 5 halaman di atas kulit template.html yang SAMA
+dengan bulletin harian (build.py tidak disentuh): sampul mini, PCD,
+teknikal, arus broker, scenario map. Tulis keluaran/<kode>.html + .pdf.
 
-Pakai: python build_bedah.py EXCL-2026-08-14 [--tanpa-pdf]
+Dua mode:
+- `edisi_sumber` ADA  : data emiten (ohlc_hari, pivot, narasi, broksum top-10)
+  ditarik dari edisi harian sumber — perilaku lama.
+- `edisi_sumber` TIDAK ada (bedah standalone): OHLC diambil sendiri (yfinance
+  2 tahun harian, cache/ohlc-bedah-<TICKER>.json), `em` dirakit otomatis dari
+  OHLC (ohlc_hari, ema50, pivot klasik — formula sama build.py) + field
+  analis dari bedah JSON sendiri (blok `em`: label, arah, narasi_teknikal,
+  skenario). Pool probabilitas = cache `bd["cache"]` DIGABUNG seri sendiri,
+  supaya setup tetap dihitung terhadap pool besar.
+
+Halaman arus broker:
+- bedah/flow-<TICKER>.json ADA (setoran Broker Summary harian multi-hari):
+  chart Big Money Flow per hari + tabel broker hari terakhir + modal
+  rata-rata per broker lintas hari + strip label Acc/Dist Stockbit.
+- tidak ada, tapi ada edisi_sumber: tabel top-10 satu hari (perilaku lama).
+- tidak ada dua-duanya: panel keterangan jujur (belum ada setoran).
+
+Pakai: python build_bedah.py DSSA-2026-08-14 [--tanpa-pdf]
 """
 import json, sys
 from pathlib import Path
@@ -80,9 +96,27 @@ def hal_sampul(bd, em, r, pr):
 
 
 def hal_pcd(bd, r):
-    kurva = [[p, round(v, 1)] for p, v in r["kurva"]]
+    # Tampilan kurva dipotong ke persentil volume 0,5%–99,5%: ekor bin nyaris
+    # nol (mis. jejak harga lama yang bobotnya sudah meluruh) memanjangkan
+    # sumbu-x dan menggencet area bermakna. Angka PCD/persentil tetap dari
+    # kurva utuh; batas diperluas agar garis PCD & close selalu tergambar.
+    total = sum(v for _, v in r["kurva"])
+    kum, lo_t, hi_t = 0.0, r["kurva"][0][0], r["kurva"][-1][0]
+    for p, v in r["kurva"]:
+        if kum / total < 0.005:
+            lo_t = p
+        kum += v
+        if kum / total <= 0.995:
+            hi_t = p
+    lo_t = min(lo_t, r["close"], r["pcd"])
+    hi_t = max(hi_t, r["close"], r["pcd"])
+    kurva = [[p, round(v, 1)] for p, v in r["kurva"] if lo_t <= p <= hi_t]
+    c = r["close"]
+    posisi = ("di bawah zona" if c < r["p25"] else
+              "di lapis bawah zona" if c < r["p50"] else
+              "di lapis atas zona" if c < r["p75"] else "di atas zona")
     headline = (f'Modal pasar {bd["ticker"]} terkonsentrasi <b>{B.fmt(r["p25"])}</b>–'
-                f'<b>{B.fmt(r["p75"])}</b>; close <b>{B.fmt(r["close"])}</b> di lapis bawah zona')
+                f'<b>{B.fmt(r["p75"])}</b>; close <b>{B.fmt(r["close"])}</b> {posisi}')
     rows_kiri = [("PCD — rata-rata modal", r["pcd"], "c-side"),
                  ("Median modal (p50)", r["p50"], ""),
                  ("Close terakhir", r["close"], "c-bull" if r["close"] >= r["pcd"] else "c-bear")]
@@ -154,7 +188,10 @@ def hal_teknikal(bd, em, ohlc, pr):
     res_dekat = min((v for v in p.values() if v > c), default=None)
     sup = " <span>|</span> ".join(B.fmt(p[k]) for k in ("P", "S1", "S2", "S3"))
     res = " <span>|</span> ".join(B.fmt(p[k]) for k in ("R1", "R2", "R3"))
-    awal = ohlc[bd["ticker"]][0]["d"]
+    seri = ohlc[bd["ticker"]]
+    rentang_cap = "1 Tahun" if len(seri) >= 252 else f'Sejak Listing ({seri[0]["d"]})'
+    pool_lbl = (f'pool cache edisi {bd["edisi_sumber"]}' if "edisi_sumber" in bd
+                else f'pool cache {bd["cache"]} + seri {bd["ticker"]} sendiri')
     return f'''
 <div class="page s-{B.sentimen(em)}">
   <span class="senti-edge"></span>
@@ -168,7 +205,7 @@ def hal_teknikal(bd, em, ohlc, pr):
     <div class="hangka em">{B.kalimat_angka(f'Harga {bd["ticker"]}', c, sup_dekat, res_dekat)}</div>
     {B.statistik_hari(em, ohlc)}
     <div class="chartwrap">
-      <div class="cap">IDX · Harian · Sejak Listing XLSMART ({awal}) · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
+      <div class="cap">IDX · Harian · {rentang_cap} · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
       <canvas id="chT" width="1360" height="430"></canvas>
     </div>
     <div class="sec" style="margin-top:4mm">
@@ -181,7 +218,7 @@ def hal_teknikal(bd, em, ohlc, pr):
     </div>
     {B.strip_prob(pr)}
     <div class="bd-note">Probabilitas dari backtest setup serupa (EMA50, pivot, volume 20h, rentang 20h)
-    atas pool cache edisi {bd["edisi_sumber"]}; n = jumlah sampel. Bukan jaminan — frekuensi historis.</div>
+    atas {pool_lbl}; n = jumlah sampel. Bukan jaminan — frekuensi historis.</div>
   </div>
   {B.kaki(bd)}
 </div>'''
@@ -226,6 +263,171 @@ def hal_broker(bd, em, ed_sumber):
           <p>{bd["catatan_flow"]}</p>
         </div>
       </section>
+    </div>
+  </div>
+  {B.kaki(bd)}
+</div>'''
+
+
+def hal_broker_seri(bd, flow, peran=None):
+    """Halaman arus broker dari SETORAN HARIAN multi-hari (bedah/flow-<TK>.json):
+    (a) chart batang Big Money Flow per hari (net broker tampak, juta Rp)
+        + total rentang, total 5 hari terakhir, breadth hari positif;
+    (b) tabel broker hari terakhir (beli & jual — avg jual ikut tercatat);
+    (c) modal rata-rata per broker lintas hari (agregat val & lot per broker
+        -> avg tertimbang, aproksimasi modal akumulasi);
+    (d) strip label Acc/Dist Stockbit per hari (+ ringkasan rentang bila ada)."""
+    peran = peran or {"ritel": [], "scalper": []}
+    hh = sorted(flow["harian"].items())
+    hari = []
+    for d, h in hh:
+        tb = sum(r[1] for r in h["beli"]); tj = sum(r[1] for r in h["jual"])
+        hari.append({"d": d, "net": tb - tj, "r": h["ringkas"]})
+    total = sum(x["net"] for x in hari)
+    tot5 = sum(x["net"] for x in hari[-5:])
+    breadth = sum(1 for x in hari if x["net"] > 0)
+    rp = lambda v: ("+" if v >= 0 else "−") + "Rp" + B.fmt_rp(abs(v)).replace("B", " miliar").replace("M", " juta")
+    cls = lambda v: "bull" if v >= 0 else "bear"
+
+    # (c) agregat per broker lintas hari
+    agg = {}
+    for d, h in hh:
+        for kode, val, lot, _ in h["beli"]:
+            a = agg.setdefault(kode, [0.0, 0, 0.0, 0]); a[0] += val; a[1] += lot
+        for kode, val, lot, _ in h["jual"]:
+            a = agg.setdefault(kode, [0.0, 0, 0.0, 0]); a[2] += val; a[3] += lot
+    net_b = sorted(agg.items(), key=lambda kv: kv[1][2] - kv[1][0])
+    avg = lambda val, lot: B.fmt(val * 1e4 / lot) if lot else "—"
+
+    def baris_agg(kode, a):
+        n = a[0] - a[2]
+        return (f'<tr><td class="{"bcode-b" if n >= 0 else "bcode-s"}">{kode}</td>'
+                f'<td class="{cls(n)}">{("+" if n >= 0 else "−")}{B.fmt_rp(abs(n))}</td>'
+                f'<td>{avg(a[0], a[1])}</td><td>{avg(a[2], a[3])}</td></tr>')
+    rows_agg = "\n".join(baris_agg(k, a) for k, a in net_b[:4] + net_b[:-5:-1])
+
+    # (d) strip label per hari + ringkasan rentang
+    def lcls(lbl):
+        return "c-bull" if "Acc" in lbl else "c-bear" if "Dist" in lbl else ""
+    strip = " · ".join(
+        f'{x["d"][8:10]}/{x["d"][5:7]} <b class="{lcls(x["r"].get("label_avg",""))}">'
+        f'{x["r"].get("label_avg", "—")}</b>' for x in hari)
+    per_tbl = ""
+    if flow.get("periode"):
+        baris_per = []
+        for k, v in flow["periode"].items():
+            a, b = k.split("_")
+            pct = f'{v["top5_pct"]:+.1f}'.replace(".", ",").replace("-", "−")
+            baris_per.append(
+                f'<tr><td>{a[8:10]}/{a[5:7]}–{b[8:10]}/{b[5:7]}</td>'
+                f'<td class="{lcls(v["label_avg"])}">{v["label_avg"]}</td>'
+                f'<td>{pct}%</td><td>{B.fmt(v["average_rp"])}</td></tr>')
+        per_tbl = f'''<div class="sec" style="margin-bottom:4mm">
+          <h3 class="rule">Rentang Stockbit <span class="r">modal rata-rata pasar per rentang</span></h3>
+          <table class="brk">
+            <tr><th>Rentang</th><th>Vonis</th><th>Top5</th><th>Avg Rp</th></tr>
+            {chr(10).join(baris_per)}
+          </table>
+        </div>'''
+
+    # (a) chart batang net per hari
+    dchart = [[x["d"][8:10] + "/" + x["d"][5:7], round(x["net"], 1)] for x in hari]
+    d_akhir, h_akhir = hh[-1]
+    tgl_akhir = f"{d_akhir[8:10]}/{d_akhir[5:7]}"
+    return f'''
+<div class="page">
+  {B.band(bd, "Arus Broker — Big Money Flow")}
+  <div class="inner">
+    <div class="trow" style="margin-bottom:3mm"><div class="tk" style="font-size:14pt">Arus Broker {bd["ticker"]}</div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">{len(hari)} hari setoran · {hari[0]["d"]} s.d. {hari[-1]["d"]}</div></div>
+    <div class="chartwrap">
+      <div class="cap">{bd["ticker"]} · Net Broker Tampak per Hari (juta Rp) · Broker Summary Stockbit</div>
+      <canvas id="chBMF" width="1360" height="290"></canvas>
+    </div>
+    <script>
+    (function(){{
+      const D={json.dumps(dchart)};
+      const cv=document.getElementById('chBMF'),x=cv.getContext('2d');
+      const W=cv.width,H=cv.height,pad={{t:26,r:16,b:30,l:16}};
+      const mx=Math.max(...D.map(d=>Math.abs(d[1])),1);
+      const Y0=pad.t+(H-pad.t-pad.b)*mx/(2*mx);
+      const Y=v=>Y0-v/mx*(H-pad.t-pad.b)/2;
+      const bw=(W-pad.l-pad.r)/D.length;
+      x.strokeStyle="rgba(233,238,244,.25)";x.lineWidth=1;
+      x.beginPath();x.moveTo(pad.l,Y0);x.lineTo(W-pad.r,Y0);x.stroke();
+      x.font="15px Cascadia Code, Consolas, monospace";x.textAlign="center";
+      D.forEach(([d,v],i)=>{{
+        const cx=pad.l+bw*(i+.5);
+        x.fillStyle=v>=0?"rgba(47,191,113,.75)":"rgba(232,90,90,.75)";
+        x.fillRect(cx-bw*.3,Math.min(Y0,Y(v)),bw*.6,Math.abs(Y0-Y(v))||1);
+        x.fillStyle=v>=0?"#2FBF71":"#E85A5A";
+        const lbl=(v>=0?"+":"−")+Math.abs(v/1000).toLocaleString('id',{{maximumFractionDigits:1}})+"B";
+        x.fillText(lbl,cx,v>=0?Y(v)-8:Y(v)+18);
+        x.fillStyle="rgba(233,238,244,.55)";x.fillText(d,cx,H-8);
+      }});
+    }})();
+    </script>
+    <div class="bd-note" style="margin-top:1mm">VONIS HARIAN STOCKBIT: {strip}</div>
+    <div class="cols" style="margin-top:3mm">
+      <aside>
+        <h3 class="rule">Broker Hari Terakhir <span class="r">{tgl_akhir} · top-9 tampak</span></h3>
+        <table class="brk">
+          <tr><th>BY</th><th>Nilai</th><th>Lot</th><th>Avg</th></tr>
+          {B.baris_broker(h_akhir["beli"][:9], "b", peran)}
+          <tr class="sep"><td colspan="4">Jual Terbesar</td></tr>
+          {B.baris_broker(h_akhir["jual"][:9], "s", peran)}
+          <tr class="tot"><td>NET</td><td colspan="3" class="{cls(hari[-1]["net"])}">{rp(hari[-1]["net"])}</td></tr>
+        </table>
+        <table class="brk" style="margin-top:3mm">
+          <tr><th>Broker</th><th>Net {len(hari)}h</th><th>Avg Beli</th><th>Avg Jual</th></tr>
+          {rows_agg}
+        </table>
+        <div class="brksrc">Avg = Σnilai ÷ Σlot, agregat {len(hari)} hari — bukan data done.</div>
+      </aside>
+      <section>
+        {per_tbl}
+        <div class="sec">
+          <h3 class="rule">Arus Dana <span class="tagdraf" style="margin-left:0">Draf Analis</span></h3>
+          <p class="flowline"><span class="{cls(total)}">Σ rentang {rp(total)}</span> ·
+            <span class="{cls(tot5)}">5 hari {rp(tot5)}</span> ·
+            breadth {breadth}/{len(hari)} hari positif</p>
+          <p style="text-align:justify">{bd["narasi_flow"]}</p>
+        </div>
+        <div class="blok integritas" style="margin-top:5mm">
+          <h3 class="rule">Kejujuran Data</h3>
+          <p>{bd["catatan_flow"]}</p>
+        </div>
+      </section>
+    </div>
+  </div>
+  {B.kaki(bd)}
+</div>'''
+
+
+def hal_broker_kosong(bd):
+    """Halaman arus broker saat BELUM ada setoran Broker Summary sama sekali:
+    panel keterangan jujur bergaya sama — bukan halaman kosong polos."""
+    return f'''
+<div class="page">
+  {B.band(bd, "Arus Broker")}
+  <div class="inner">
+    <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Arus Broker {bd["ticker"]}</div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">belum ada data broker</div></div>
+    <div class="blok integritas" style="margin-top:4mm">
+      <h3 class="rule">Belum Ada Setoran Broker Summary</h3>
+      <p style="text-align:justify">Belum ada setoran Broker Summary untuk {bd["ticker"]} — analisa arus broker
+      &amp; PCD per broker akan aktif setelah screenshot disetor (Admin → Bedah Arus Saham).</p>
+    </div>
+    <div class="blok" style="margin-top:5mm">
+      <h3 class="rule">Dua Jenis Setoran yang Diterima</h3>
+      <p style="text-align:justify"><b>Harian</b> — Broker Summary satu hari penuh; deret setoran harian
+      dirangkai menjadi chart Big Money Flow (net broker besar per hari) dan tabel broker per hari.<br>
+      <b>Rentang</b> — Broker Summary kumulatif satu rentang tanggal; dipakai untuk aproksimasi
+      modal rata-rata per broker (total nilai ÷ total lot per broker).</p>
+    </div>
+    <div class="blok integritas" style="margin-top:5mm">
+      <h3 class="rule">Kejujuran Data</h3>
+      <p>{bd["catatan_flow"]}</p>
     </div>
   </div>
   {B.kaki(bd)}
@@ -297,24 +499,82 @@ def bars_hibrida(ticker, harian):
     return lama + intra, len(tgl_intra)
 
 
+def ohlc_standalone(ticker, tanggal):
+    """OHLC ~2 tahun harian utk bedah tanpa edisi sumber. Konvensi sama
+    fetch_ohlc: end EKSKLUSIF di tanggal terbitan (bar terakhir = sesi
+    terakhir sebelumnya). Cache di cache/ohlc-bedah-<TICKER>.json supaya
+    build ulang tak fetch lagi."""
+    p = AKAR / "cache" / f"ohlc-bedah-{ticker}.json"
+    if p.exists():
+        return json.loads(p.read_text(encoding="utf-8"))
+    from datetime import date, timedelta
+    import fetch_ohlc
+    akhir = date.fromisoformat(tanggal)
+    seri = fetch_ohlc.ambil(f"{ticker}.JK", akhir - timedelta(days=730), akhir)
+    if not seri:
+        sys.exit(f"fetch OHLC {ticker} kosong — periksa ticker/koneksi")
+    p.write_text(json.dumps(seri, separators=(",", ":")), encoding="utf-8")
+    print(f"OK -> {p} ({len(seri)} bar, {seri[0]['d']} s.d. {seri[-1]['d']})")
+    return seri
+
+
+def rakit_em(bd, seri):
+    """`em` mode standalone: angka mesin dari OHLC (ohlc_hari, ema50, pivot
+    klasik — formula sama build.py/level_ihsg, dibulatkan ke tick) + field
+    analis dari blok bd["em"] (label, arah, narasi_teknikal, skenario)."""
+    b, prev = seri[-1], seri[-2]
+    P = (b["h"] + b["l"] + b["c"]) / 3
+    rng = b["h"] - b["l"]
+    piv = {"P": P, "R1": 2 * P - b["l"], "R2": P + rng, "R3": b["h"] + 2 * (P - b["l"]),
+           "S1": 2 * P - b["h"], "S2": P - rng, "S3": b["l"] - 2 * (b["h"] - P)}
+    t = PCD.tick_size(b["c"])
+    piv = {k: round(v / t) * t for k, v in piv.items()}
+    chg = b["c"] - prev["c"]
+    em = {"ticker": bd["ticker"], "nama": bd["nama"],
+          "ohlc_hari": {"o": b["o"], "h": b["h"], "l": b["l"], "c": b["c"],
+                        "chg": chg, "pct": round(chg / prev["c"] * 100, 2),
+                        "vol_juta": round(b["v"] / 1e6, 2)},
+          "ema50": round(B.ema_seri([x["c"] for x in seri], 50)),
+          "pivot": piv,
+          "target": f'{B.fmt(piv["R1"])} / {B.fmt(piv["R2"])} / {B.fmt(piv["R3"])}',
+          "invalidation": f'Close <{B.fmt(piv["S1"])}'}
+    em.update(bd["em"])
+    return em
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    stem = args[0] if args else "EXCL-2026-08-14"
+    stem = args[0] if args else "DSSA-2026-08-14"
     bd = json.loads((AKAR / "bedah" / f"{stem}.json").read_text(encoding="utf-8"))
+    tk = bd["ticker"]
     ohlc = json.loads((AKAR / "cache" / f"ohlc-{bd['cache']}.json").read_text(encoding="utf-8"))
-    ed_sumber = json.loads((AKAR / "edisi" / f"{bd['edisi_sumber']}.json").read_text(encoding="utf-8"))
-    em = next(e for e in ed_sumber["emiten"] if e["ticker"] == bd["ticker"])
+    if "edisi_sumber" in bd:
+        ed_sumber = json.loads((AKAR / "edisi" / f"{bd['edisi_sumber']}.json").read_text(encoding="utf-8"))
+        em = next(e for e in ed_sumber["emiten"] if e["ticker"] == tk)
+    else:
+        ed_sumber = None
+        ohlc[tk] = ohlc_standalone(tk, bd["tanggal"])   # gabung ke pool prob
+        em = rakit_em(bd, ohlc[tk])
 
-    seri_pcd, n_hari_intra = bars_hibrida(bd["ticker"], ohlc[bd["ticker"]])
+    seri_pcd, n_hari_intra = bars_hibrida(tk, ohlc[tk])
     r = PCD.hitung_pcd(seri_pcd)
     if n_hari_intra:
         r["metode"] = (f"aproksimasi hibrida: intraday 15 menit ({n_hari_intra} hari bursa terakhir) "
                        "+ OHLCV harian utk riwayat lebih lama; volume disebar merata low–high per bar, "
                        f"peluruhan half-life {r['half_life']} hari bursa — bukan data done per harga")
-    pr = prob.analisa_edisi(ohlc, [bd["ticker"]])[bd["ticker"]]
+    pr = prob.analisa_edisi(ohlc, [tk])[tk]
+
+    flow_p = AKAR / "bedah" / f"flow-{tk}.json"
+    if flow_p.exists():
+        flow = json.loads(flow_p.read_text(encoding="utf-8"))
+        hal4 = hal_broker_seri(bd, flow, ed_sumber["peran_broker"] if ed_sumber else None)
+    elif ed_sumber:
+        hal4 = hal_broker(bd, em, ed_sumber)
+    else:
+        hal4 = hal_broker_kosong(bd)
 
     pages = [BSTYLE + hal_sampul(bd, em, r, pr), hal_pcd(bd, r),
-             hal_teknikal(bd, em, ohlc, pr), hal_broker(bd, em, ed_sumber),
+             hal_teknikal(bd, em, ohlc, pr), hal4,
              hal_skenario(bd, em)]
     draw = [f'gambarChart("chT","{bd["ticker"]}",{em["ema50"]},{json.dumps(em["pivot"])});']
 
