@@ -1,9 +1,9 @@
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useMemo, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
 import { Kalender, fmtTanggalPendek } from '../../components/dasbor/Kalender'
 import { useDataHarian, useDataPembanding } from '../../lib/dasbor/dataHarian'
-import { cariTanggalPembanding, hitungPeriodePct, type RentangTanggal } from '../../lib/dasbor/periode'
+import { cariTanggalPembanding, hitungPeriodePct, rentangPreset, type RentangTanggal } from '../../lib/dasbor/periode'
 import { fN, fp } from '../../lib/dasbor/format'
 import type { SectorRow } from '../../lib/dasbor/dataHarian'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
@@ -131,12 +131,26 @@ export function SektorIndeks() {
   // Daftar {ticker, name, sector} 965 saham — reuse index autocomplete Stock
   // Detail (fetch sekali, cache modul); di-load saat halaman dibuka.
   const { index: indexSaham } = useStockIndex()
+  // Strip Kalender — target scroll halus saat tab "Rentang" panel Performa
+  // Sektor diklik (#1 revisi user 14 Agu).
+  const kalenderRef = useRef<HTMLDivElement>(null)
 
   // Rentang dipilih → data utama pindah ke tanggal AKHIR rentang (nilai
   // indeks & tile dihitung akhir vs awal).
   function gantiRentang(r: RentangTanggal | null) {
     setRentang(r)
     if (r) pilihTanggal(r.akhir)
+  }
+
+  /** Tab "Rentang" panel Performa Sektor: buka mode rentang di Kalender strip
+   * (preset 1 Minggu, sama seperti toggle "Rentang" di dalam Kalender sendiri)
+   * lalu scroll halus ke strip supaya user langsung lihat kontrolnya. */
+  function bukaTabRentang() {
+    if (!rentang) {
+      const akhir = tanggalAktif ?? tanggalTersedia[tanggalTersedia.length - 1]?.date_iso
+      if (akhir) gantiRentang(rentangPreset(tanggalTersedia, akhir, 'w1'))
+    }
+    kalenderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   const tanggalPembanding = useMemo(() => {
@@ -242,7 +256,9 @@ export function SektorIndeks() {
 
   return (
     <div className="lantai">
-      <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
+      <div ref={kalenderRef}>
+        <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
+      </div>
 
       {labelRentang && (
         <div className="lbl" style={{ margin: '2px 2px -8px' }}>
@@ -312,24 +328,33 @@ export function SektorIndeks() {
       <div className="panel">
         <div className="panel-h">
           <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Performa Sektor</span>
-          {rentang ? (
-            <span className="chip warn">{labelRentang} · pergerakan {nHariRentang} hari bursa</span>
-          ) : (
-            <div className="tabs" role="tablist" aria-label="Periode Performa Sektor">
-              {PERIODE.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={periode === p.id}
-                  className={'tab' + (periode === p.id ? ' on' : '')}
-                  onClick={() => setPeriode(p.id)}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="tabs sek-periode-tabs" role="tablist" aria-label="Periode Performa Sektor">
+            {PERIODE.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                role="tab"
+                aria-selected={!rentang && periode === p.id}
+                className={'tab' + (!rentang && periode === p.id ? ' on' : '')}
+                onClick={() => {
+                  setPeriode(p.id)
+                  if (rentang) gantiRentang(null)
+                }}
+              >
+                {p.label}
+              </button>
+            ))}
+            <button
+              type="button"
+              role="tab"
+              aria-selected={!!rentang}
+              className={'tab' + (rentang ? ' on' : '')}
+              title={rentang ? labelRentang ?? undefined : undefined}
+              onClick={bukaTabRentang}
+            >
+              Rentang
+            </button>
+          </div>
         </div>
         {/* Daftar portrait 1 kolom (#87): nama | nilai indeks | bar mini
             | badge %. Sumbu nol proporsional, pola BatangPeringkat. */}

@@ -270,6 +270,16 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
   const [awalPilih, setAwalPilih] = useState<string | null>(null)
   const rentang = modeRentang ? (rentangAktif ?? null) : null
 
+  // Sinkron modeRentang kalau rentangAktif berubah dari LUAR tanpa lewat
+  // gantiMode/pilih di bawah — mis. tab "Rentang" panel Performa Sektor
+  // (SektorIndeks.tsx) memanggil onRentang langsung. useState awal saja
+  // cuma jalan sekali saat mount, tak cukup untuk perubahan susulan.
+  // Pemakai lain (TopStocks dll) rentangAktif-nya cuma pernah berubah lewat
+  // Kalender sendiri, jadi effect ini no-op buat mereka (nilai sudah sama).
+  useEffect(() => {
+    setModeRentang(!!rentangAktif)
+  }, [rentangAktif])
+
   /** Satu pintu klik tanggal (grid + strip hari): mode Hari → onPilih biasa;
    * mode Rentang → klik pertama = awal, klik kedua = akhir (auto-urut). */
   function pilih(iso: string) {
