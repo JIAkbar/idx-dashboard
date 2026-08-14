@@ -44,6 +44,13 @@ BSTYLE = """<style>
     vertical-align:2px;margin-left:2mm;font-family:var(--disp)}
   .bd-lvl{display:grid;grid-template-columns:1fr 1fr;gap:0 10mm;margin-top:3mm}
   .bd-note{font-size:6.5pt;color:var(--mute);font-family:var(--mono);line-height:1.7;margin-top:2.5mm}
+  /* Pita batas data — angka terbitan ditutup di sesi terakhir SEBELUM tanggal
+     rilis; dipasang di sampul supaya pembaca tidak menyangka ini waktu nyata. */
+  .bd-cutoff{margin-top:6mm;padding:2.5mm 4mm;border-left:3px solid var(--warn);
+    background:var(--panel);border-radius:0 1.5mm 1.5mm 0;font-size:8.2pt;
+    color:var(--ink2);line-height:1.6;text-align:justify}
+  .bd-cutoff .l{display:block;font-size:6pt;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--warn);margin-bottom:1.2mm;font-family:var(--disp)}
   .sknb{display:flex;flex-direction:column;gap:3mm;margin-top:4mm}
   .sknb .kartu{border-left:3px solid var(--mute);border-radius:0 1.5mm 1.5mm 0;
     background:var(--panel);padding:3mm 4.5mm}
@@ -61,7 +68,17 @@ BSTYLE = """<style>
 </style>"""
 
 
-def hal_sampul(bd, em, r, pr):
+BULAN_ID = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli",
+            "Agustus", "September", "Oktober", "November", "Desember"]
+
+
+def tanggal_id(iso):
+    """'2026-08-13' -> '13 Agustus 2026' (tanpa nama hari)."""
+    t, b, h = iso.split("-")
+    return f"{int(h)} {BULAN_ID[int(b) - 1]} {t}"
+
+
+def hal_sampul(bd, em, r, pr, cutoff):
     o = em["ohlc_hari"]
     gap = (r["pcd"] - r["close"]) / r["close"] * 100
     arah = "di bawah" if gap > 0 else "di atas"
@@ -84,12 +101,18 @@ def hal_sampul(bd, em, r, pr):
     <div class="cv-tag" style="margin-top:3mm">Satu Emiten · Modal, Arus &amp; Probabilitas</div>
     <div class="bd-tk">${bd["ticker"]}<small>{bd["nama"]}</small></div>
     <div class="hangka" style="margin-top:5mm">{headline}</div>
-    <div class="bd-vonis">{bd["vonis"]}<span class="tagdraf">Draf Analis</span></div>
+    <div class="bd-vonis">{bd["vonis"]}</div>
+    <div class="bd-cutoff">
+      <span class="l">Batas Data</span>
+      Seluruh angka terbitan ini ditutup pada sesi <b>{cutoff}</b> — perdagangan hari terbit
+      ({bd["tanggal_id"]}) belum tercakup. Ini bukan data waktu nyata: harga, arus broker, dan
+      probabilitas dihitung dari sesi bursa yang sudah selesai sebelum tanggal rilis.
+    </div>
     <div class="cv-foot">
       <div class="cv-stats">{sel}</div>
       <div class="cv-legal">© {bd["tanggal_id"].split()[-1]} Johan Iriawan Akbar — PAPAN (Pusat Analisa Pasar Nusantara). Hak cipta dilindungi.<br>
       Analisis probabilistik, bukan ajakan transaksi. PCD = aproksimasi OHLCV, bukan data done per harga.<br>
-      Data: Yahoo Finance &amp; Stockbit.</div>
+      Data per {cutoff} (bukan waktu nyata) · sumber: Yahoo Finance &amp; Stockbit.</div>
     </div>
   </div>
 </div>'''
@@ -169,7 +192,7 @@ def hal_pcd(bd, r):
       <div class="lvl">{lv(rows_kanan)}</div>
     </div>
     <div class="blok" style="margin-top:4mm">
-      <h3 class="rule">Interpretasi Analis <span class="tagdraf" style="margin-left:0">Draf Analis</span></h3>
+      <h3 class="rule">Interpretasi Analis</h3>
       <p style="text-align:justify;line-height:1.6">{bd["interpretasi_pcd"]}</p>
     </div>
     <div class="bd-note">METODE: {r["metode"]}. Batang hijau = lapis harga ≤ close (pemegang untung/impas);
@@ -209,7 +232,7 @@ def hal_teknikal(bd, em, ohlc, pr):
       <canvas id="chT" width="1360" height="430"></canvas>
     </div>
     <div class="sec" style="margin-top:4mm">
-      <h3 class="rule">Teknikal <span class="tagdraf" style="margin-left:0">Draf Analis</span></h3>
+      <h3 class="rule">Teknikal</h3>
       <p>{em["narasi_teknikal"]}</p>
     </div>
     <div class="sr">
@@ -254,7 +277,7 @@ def hal_broker(bd, em, ed_sumber):
       </aside>
       <section>
         <div class="sec">
-          <h3 class="rule">Arus Dana <span class="tagdraf" style="margin-left:0">Draf Analis</span></h3>
+          <h3 class="rule">Arus Dana</h3>
           <p class="flowline"><span class="kw c-bull">{em["flow_kelas"]}</span> · <span class="{net_cls}">≈ {net_txt}</span> (top-10)</p>
           <p style="text-align:justify">{em["narasi_flow"]}</p>
         </div>
@@ -387,7 +410,7 @@ def hal_broker_seri(bd, flow, peran=None):
       <section>
         {per_tbl}
         <div class="sec">
-          <h3 class="rule">Arus Dana <span class="tagdraf" style="margin-left:0">Draf Analis</span></h3>
+          <h3 class="rule">Arus Dana</h3>
           <p class="flowline"><span class="{cls(total)}">Σ rentang {rp(total)}</span> ·
             <span class="{cls(tot5)}">5 hari {rp(tot5)}</span> ·
             breadth {breadth}/{len(hari)} hari positif</p>
@@ -573,7 +596,11 @@ def main():
     else:
         hal4 = hal_broker_kosong(bd)
 
-    pages = [BSTYLE + hal_sampul(bd, em, r, pr), hal_pcd(bd, r),
+    # Batas data = sesi bursa terakhir yang masuk hitungan (bar terakhir OHLC),
+    # BUKAN tanggal terbit — dicetak di sampul & legal supaya tidak disangka
+    # waktu nyata (permintaan user 14 Agu).
+    cutoff = tanggal_id(ohlc[bd["ticker"]][-1]["d"])
+    pages = [BSTYLE + hal_sampul(bd, em, r, pr, cutoff), hal_pcd(bd, r),
              hal_teknikal(bd, em, ohlc, pr), hal4,
              hal_skenario(bd, em)]
     draw = [f'gambarChart("chT","{bd["ticker"]}",{em["ema50"]},{json.dumps(em["pivot"])});']

@@ -360,6 +360,13 @@
     vertical-align:2px;margin-left:2mm;font-family:var(--disp)}
   .bd-lvl{display:grid;grid-template-columns:1fr 1fr;gap:0 10mm;margin-top:3mm}
   .bd-note{font-size:6.5pt;color:var(--mute);font-family:var(--mono);line-height:1.7;margin-top:2.5mm}
+  /* Pita batas data — angka terbitan ditutup di sesi terakhir SEBELUM tanggal
+     rilis; dipasang di sampul supaya pembaca tidak menyangka ini waktu nyata. */
+  .bd-cutoff{margin-top:6mm;padding:2.5mm 4mm;border-left:3px solid var(--warn);
+    background:var(--panel);border-radius:0 1.5mm 1.5mm 0;font-size:8.2pt;
+    color:var(--ink2);line-height:1.6;text-align:justify}
+  .bd-cutoff .l{display:block;font-size:6pt;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--warn);margin-bottom:1.2mm;font-family:var(--disp)}
   .sknb{display:flex;flex-direction:column;gap:3mm;margin-top:4mm}
   .sknb .kartu{border-left:3px solid var(--mute);border-radius:0 1.5mm 1.5mm 0;
     background:var(--panel);padding:3mm 4.5mm}
@@ -385,12 +392,18 @@
     <div class="cv-tag" style="margin-top:3mm">Satu Emiten · Modal, Arus &amp; Probabilitas</div>
     <div class="bd-tk">$CUAN<small>PT Petrindo Jaya Kreasi Tbk.</small></div>
     <div class="hangka" style="margin-top:5mm">CUAN <b>840</b> diperdagangkan <b>14,4%</b> di bawah harga konstruksi pasar <b>961</b></div>
-    <div class="bd-vonis">Dua hari terakhir CUAN bergerak ekstrem: melesat dari 720 ke 870 (12 Agu) dengan volume 1,7 miliar lembar, lalu terkoreksi 3,45% ke 840. Mesin membaca setup ema+/pivot+/volume >3× di tercile atas rentang 20 hari: historisnya 55,8% naik dalam 5 hari dan 78,2% menyentuh +3% (n147). Namun 34,9% modal historis masih nyangkut di lapis atas — p75 modal di 1.190 — dan Stockbit menandai 3 dan 6 bulan terakhir Big Dist. Selama 805 (S1) bertahan, struktur momentum hidup; close >880 bervolume membuka rute 920–955.<span class="tagdraf">Draf Analis</span></div>
+    <div class="bd-vonis">Dua hari terakhir CUAN bergerak ekstrem: melesat dari 720 ke 870 (12 Agu) dengan volume 1,7 miliar lembar, lalu terkoreksi 3,45% ke 840. Mesin membaca setup ema+/pivot+/volume >3× di tercile atas rentang 20 hari: historisnya 55,8% naik dalam 5 hari dan 78,2% menyentuh +3% (n147). Namun 34,9% modal historis masih nyangkut di lapis atas — p75 modal di 1.190 — dan Stockbit menandai 3 dan 6 bulan terakhir Big Dist. Selama 805 (S1) bertahan, struktur momentum hidup; close >880 bervolume membuka rute 920–955.</div>
+    <div class="bd-cutoff">
+      <span class="l">Batas Data</span>
+      Seluruh angka terbitan ini ditutup pada sesi <b>13 Agustus 2026</b> — perdagangan hari terbit
+      (Jumat, 14 Agustus 2026) belum tercakup. Ini bukan data waktu nyata: harga, arus broker, dan
+      probabilitas dihitung dari sesi bursa yang sudah selesai sebelum tanggal rilis.
+    </div>
     <div class="cv-foot">
       <div class="cv-stats"><span><span class="l">Close</span><b>840 <span class="c-bear" style="font-size:8pt">−3,45%</span></b></span><span><span class="l">PCD (konstruksi)</span><b>961</b></span><span><span class="l">Modal di atas air</span><b>65,1%</b></span><span><span class="l">P(naik 5 hari)</span><b>56% <small style="color:var(--mute)">n147</small></b></span></div>
       <div class="cv-legal">© 2026 Johan Iriawan Akbar — PAPAN (Pusat Analisa Pasar Nusantara). Hak cipta dilindungi.<br>
       Analisis probabilistik, bukan ajakan transaksi. PCD = aproksimasi OHLCV, bukan data done per harga.<br>
-      Data: Yahoo Finance &amp; Stockbit.</div>
+      Data per 13 Agustus 2026 (bukan waktu nyata) · sumber: Yahoo Finance &amp; Stockbit.</div>
     </div>
   </div>
 </div>
@@ -444,7 +457,7 @@
 <div class="r"><span class="l">Modal di atas air</span><b class="">65,1%</b></div></div>
     </div>
     <div class="blok" style="margin-top:4mm">
-      <h3 class="rule">Interpretasi Analis <span class="tagdraf" style="margin-left:0">Draf Analis</span></h3>
+      <h3 class="rule">Interpretasi Analis</h3>
       <p style="text-align:justify;line-height:1.6">PCD CUAN 961 — 14,4% di atas close 840 — dan distribusinya terbelah dua: zona modal bawah (p25 675, median 760) yang kini untung, dan lapis tebal 1.190 ke atas (p75) peninggalan era harga tinggi yang masih rugi dalam. 65,1% modal sudah di atas air, tetapi setiap kenaikan menuju 900–1.200 akan menyusuri wilayah modal nyangkut — sumber pasokan dari pemegang yang ingin impas. Breakout 12 Agu dibangun di rentang 720–885 sehingga lapis modal baru terbentuk cepat tepat di bawah harga; selama 805 bertahan, lapis baru itu untung dan berkepentingan menjaganya. Reclaim bertahap di atas 961 (PCD) baru mengubah mayoritas modal atas menjadi netral.</p>
     </div>
     <div class="bd-note">METODE: aproksimasi hibrida: intraday 15 menit (55 hari bursa terakhir) + OHLCV harian utk riwayat lebih lama; volume disebar merata low–high per bar, peluruhan half-life 60 hari bursa — bukan data done per harga. Batang hijau = lapis harga ≤ close (pemegang untung/impas);
@@ -475,7 +488,7 @@
       <canvas id="chT" width="1360" height="430"></canvas>
     </div>
     <div class="sec" style="margin-top:4mm">
-      <h3 class="rule">Teknikal <span class="tagdraf" style="margin-left:0">Draf Analis</span></h3>
+      <h3 class="rule">Teknikal</h3>
       <p>Menutup 840 (−3,45%) sehari setelah melesat ke 870; harga jauh di atas EMA50 735 dengan volume 1.546 jt lembar — lebih dari 3× rerata 20 hari. Pivot besok 845; support terdekat 805, resisten 880. Rentang 20 hari 610–885: harga duduk di tercile atas, dua hari terakhir menyumbang hampir seluruh perjalanan itu.</p>
     </div>
     <div class="sr">
@@ -579,7 +592,7 @@
           </table>
         </div>
         <div class="sec">
-          <h3 class="rule">Arus Dana <span class="tagdraf" style="margin-left:0">Draf Analis</span></h3>
+          <h3 class="rule">Arus Dana</h3>
           <p class="flowline"><span class="bull">Σ rentang +Rp12,3 miliar</span> ·
             <span class="bull">5 hari +Rp13,7 miliar</span> ·
             breadth 3/6 hari positif</p>
@@ -613,7 +626,7 @@
     </div>
     <div class="blok integritas" style="margin-top:auto;margin-bottom:2mm">
       <h3 class="rule">Catatan Integritas Data</h3>
-      <p>Seluruh narasi terbitan ini DRAF ANALIS — belum diverifikasi. CUAN belum pernah masuk edisi harian Arus Pasar: seluruh angka teknikal (OHLC, EMA50, pivot klasik) dihitung mesin dari data Yahoo Finance 2 tahun (cache ohlc-bedah-CUAN), bukan dari edisi sumber. PCD aproksimasi hibrida OHLCV harian + intraday 15 menit — bukan data done per harga. Probabilitas historis memakai pool cache edisi 13 Agu (22 emiten) DITAMBAH seri CUAN sendiri; setup CUAN n147, 4/4 fitur. Arus broker dari 6 hari setoran manual + ringkasan rentang Stockbit; baris broker per hari bisa terpotong scroll layar.</p>
+      <p>Data terbitan ini ditutup pada sesi bursa 13 Agustus 2026 — bukan data waktu nyata; perdagangan hari terbit belum tercakup. CUAN belum pernah masuk edisi harian Arus Pasar: seluruh angka teknikal (OHLC, EMA50, pivot klasik) dihitung mesin dari data Yahoo Finance 2 tahun (cache ohlc-bedah-CUAN), bukan dari edisi sumber. PCD aproksimasi hibrida OHLCV harian + intraday 15 menit — bukan data done per harga. Probabilitas historis memakai pool cache edisi 13 Agu (22 emiten) DITAMBAH seri CUAN sendiri; setup CUAN n147, 4/4 fitur. Arus broker dari 6 hari setoran manual + ringkasan rentang Stockbit; baris broker per hari bisa terpotong scroll layar.</p>
     </div>
   </div>
   <footer class="foot">

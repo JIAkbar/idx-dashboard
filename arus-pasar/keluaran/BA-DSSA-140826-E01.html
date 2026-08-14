@@ -360,6 +360,13 @@
     vertical-align:2px;margin-left:2mm;font-family:var(--disp)}
   .bd-lvl{display:grid;grid-template-columns:1fr 1fr;gap:0 10mm;margin-top:3mm}
   .bd-note{font-size:6.5pt;color:var(--mute);font-family:var(--mono);line-height:1.7;margin-top:2.5mm}
+  /* Pita batas data — angka terbitan ditutup di sesi terakhir SEBELUM tanggal
+     rilis; dipasang di sampul supaya pembaca tidak menyangka ini waktu nyata. */
+  .bd-cutoff{margin-top:6mm;padding:2.5mm 4mm;border-left:3px solid var(--warn);
+    background:var(--panel);border-radius:0 1.5mm 1.5mm 0;font-size:8.2pt;
+    color:var(--ink2);line-height:1.6;text-align:justify}
+  .bd-cutoff .l{display:block;font-size:6pt;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--warn);margin-bottom:1.2mm;font-family:var(--disp)}
   .sknb{display:flex;flex-direction:column;gap:3mm;margin-top:4mm}
   .sknb .kartu{border-left:3px solid var(--mute);border-radius:0 1.5mm 1.5mm 0;
     background:var(--panel);padding:3mm 4.5mm}
@@ -385,12 +392,18 @@
     <div class="cv-tag" style="margin-top:3mm">Satu Emiten · Modal, Arus &amp; Probabilitas</div>
     <div class="bd-tk">$DSSA<small>PT Dian Swastatika Sentosa Tbk.</small></div>
     <div class="hangka" style="margin-top:5mm">DSSA <b>990</b> diperdagangkan <b>1,8%</b> di bawah harga konstruksi pasar <b>1.008</b></div>
-    <div class="bd-vonis">Sembilan hari setoran broker (03–13 Agu) memperlihatkan rotasi besar di balik net yang tipis: BK, SS, AK, dan RF menampung total ≈Rp400 miliar di rentang modal 905–1.007 melawan distribusi XL −Rp141,2 miliar. Sementara itu 85,1% modal historis pasar sudah di atas air dengan zona modal inti 780–940 — lantai tebal di bawah harga. Selama 955 (S1, berimpit modal akumulator) bertahan, tesis akumulasi terselubung edisi 13 Agu tetap hidup; close >1.025 bervolume membuka rute 1.060–1.095, patah di 955 mengembalikan harga ke zona modal 940–885.<span class="tagdraf">Draf Analis</span></div>
+    <div class="bd-vonis">Sembilan hari setoran broker (03–13 Agu) memperlihatkan rotasi besar di balik net yang tipis: BK, SS, AK, dan RF menampung total ≈Rp400 miliar di rentang modal 905–1.007 melawan distribusi XL −Rp141,2 miliar. Sementara itu 85,1% modal historis pasar sudah di atas air dengan zona modal inti 780–940 — lantai tebal di bawah harga. Selama 955 (S1, berimpit modal akumulator) bertahan, tesis akumulasi terselubung edisi 13 Agu tetap hidup; close >1.025 bervolume membuka rute 1.060–1.095, patah di 955 mengembalikan harga ke zona modal 940–885.</div>
+    <div class="bd-cutoff">
+      <span class="l">Batas Data</span>
+      Seluruh angka terbitan ini ditutup pada sesi <b>13 Agustus 2026</b> — perdagangan hari terbit
+      (Jumat, 14 Agustus 2026) belum tercakup. Ini bukan data waktu nyata: harga, arus broker, dan
+      probabilitas dihitung dari sesi bursa yang sudah selesai sebelum tanggal rilis.
+    </div>
     <div class="cv-foot">
       <div class="cv-stats"><span><span class="l">Close</span><b>990 <span class="c-bear" style="font-size:8pt">−1,00%</span></b></span><span><span class="l">PCD (konstruksi)</span><b>1.008</b></span><span><span class="l">Modal di atas air</span><b>85,1%</b></span><span><span class="l">P(naik 5 hari)</span><b>56% <small style="color:var(--mute)">n508</small></b></span></div>
       <div class="cv-legal">© 2026 Johan Iriawan Akbar — PAPAN (Pusat Analisa Pasar Nusantara). Hak cipta dilindungi.<br>
       Analisis probabilistik, bukan ajakan transaksi. PCD = aproksimasi OHLCV, bukan data done per harga.<br>
-      Data: Yahoo Finance &amp; Stockbit.</div>
+      Data per 13 Agustus 2026 (bukan waktu nyata) · sumber: Yahoo Finance &amp; Stockbit.</div>
     </div>
   </div>
 </div>
@@ -444,7 +457,7 @@
 <div class="r"><span class="l">Modal di atas air</span><b class="">85,1%</b></div></div>
     </div>
     <div class="blok" style="margin-top:4mm">
-      <h3 class="rule">Interpretasi Analis <span class="tagdraf" style="margin-left:0">Draf Analis</span></h3>
+      <h3 class="rule">Interpretasi Analis</h3>
       <p style="text-align:justify;line-height:1.6">PCD DSSA berdiri di 1.008 — 1,8% di atas close 990 — tetapi bentuk distribusinya tidak simetris: zona modal inti (p25–p75) justru terhampar di 780–940, di bawah harga, dengan median modal 840. Artinya 85,1% modal historis sudah di atas air: mayoritas pemegang untung, sehingga koreksi menuju 940–840 cenderung disambut pemegang yang mempertahankan posisi untungnya, bukan tekanan jual panik. Rerata 1.008 tertarik ke atas oleh lapis volume lama di harga lebih tinggi yang bobot peluruhannya kecil; pasokan dari pemegang nyangkut baru mulai terasa di atas ±1.000. Kombinasi ini membuat struktur di atas 955 konstruktif: lantai modal tebal di bawah, sedangkan resistensi modal di atas relatif tipis hingga lapis 1.000-an.</p>
     </div>
     <div class="bd-note">METODE: aproksimasi hibrida: intraday 15 menit (55 hari bursa terakhir) + OHLCV harian utk riwayat lebih lama; volume disebar merata low–high per bar, peluruhan half-life 60 hari bursa — bukan data done per harga. Batang hijau = lapis harga ≤ close (pemegang untung/impas);
@@ -475,7 +488,7 @@
       <canvas id="chT" width="1360" height="430"></canvas>
     </div>
     <div class="sec" style="margin-top:4mm">
-      <h3 class="rule">Teknikal <span class="tagdraf" style="margin-left:0">Draf Analis</span></h3>
+      <h3 class="rule">Teknikal</h3>
       <p>Menutup 990 (-1,00%) searah IHSG −1,13%; harga di atas EMA50 972 dengan pivot besok 990. Support terdekat 955, resisten 1.025; volume 655 jt lembar.</p>
     </div>
     <div class="sr">
@@ -570,7 +583,7 @@
       <section>
         
         <div class="sec">
-          <h3 class="rule">Arus Dana <span class="tagdraf" style="margin-left:0">Draf Analis</span></h3>
+          <h3 class="rule">Arus Dana</h3>
           <p class="flowline"><span class="bull">Σ rentang +Rp6,9 miliar</span> ·
             <span class="bear">5 hari −Rp1,7 miliar</span> ·
             breadth 5/9 hari positif</p>
@@ -604,7 +617,7 @@
     </div>
     <div class="blok integritas" style="margin-top:auto;margin-bottom:2mm">
       <h3 class="rule">Catatan Integritas Data</h3>
-      <p>Seluruh narasi terbitan ini DRAF ANALIS — belum diverifikasi. Angka PCD/zona modal dihitung mesin (pcd.py): aproksimasi hibrida OHLCV harian + intraday 15 menit, bukan data done per harga. Probabilitas historis memakai pool backtest cache edisi 13 Agu (22 emiten; setup DSSA n508, 4/4 fitur). Arus broker dari 9 hari setoran manual (03–13 Agu); baris broker per hari bisa terpotong scroll layar. Perbedaan kecil dengan tabel edisi AP-130826 (baris GR) mengikuti setoran terbaru.</p>
+      <p>Data terbitan ini ditutup pada sesi bursa 13 Agustus 2026 — bukan data waktu nyata; perdagangan hari terbit belum tercakup. Angka PCD/zona modal dihitung mesin (pcd.py): aproksimasi hibrida OHLCV harian + intraday 15 menit, bukan data done per harga. Probabilitas historis memakai pool backtest cache edisi 13 Agu (22 emiten; setup DSSA n508, 4/4 fitur). Arus broker dari 9 hari setoran manual (03–13 Agu); baris broker per hari bisa terpotong scroll layar. Perbedaan kecil dengan tabel edisi AP-130826 (baris GR) mengikuti setoran terbaru.</p>
     </div>
   </div>
   <footer class="foot">
