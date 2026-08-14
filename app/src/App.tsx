@@ -18,6 +18,7 @@ import { Feedback } from './views/dasbor/Feedback'
 import { Login } from './views/Login'
 import { AdminHome } from './views/AdminHome'
 import { AkunAdmin } from './views/admin/AkunAdmin'
+import { KurasiSetoran } from './views/admin/KurasiSetoran'
 import { ChangelogAdmin } from './views/admin/ChangelogAdmin'
 import { EdisiUjicoba } from './views/EdisiUjicoba'
 import { EdisiView } from './views/EdisiView'
@@ -49,6 +50,7 @@ function App() {
               <Route element={<ProtectedRoute />}>
                 <Route path="/admin" element={<AdminHome />} />
                 <Route path="/admin/akun" element={<AkunAdmin />} />
+                <Route path="/admin/kurasi" element={<KurasiSetoran />} />
               </Route>
             </Route>
             {/* /login lama dipertahankan sbg redirect (bookmark/tautan luar) — login

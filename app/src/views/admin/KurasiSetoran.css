@@ -1,0 +1,49 @@
+/* Gaya khusus halaman Kurasi Setoran (/admin/kurasi, Admin Fase 3) — token
+   dari .lantai, selaras AdminHome.css/AkunAdmin.css (.af-*/.aa-*). File
+   terpisah karena domainnya beda (kurasi, bukan unggahan/akun). */
+
+/* Baris filter: date picker + tab status, sebaris di layar lebar, tumpuk di sempit. */
+.lantai .ks-filter { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* Grid kartu setoran — auto-fit, minimal 240px per kartu. */
+.lantai .ks-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px; margin-top: 12px;
+}
+.lantai .ks-kartu {
+  display: flex; flex-direction: column; gap: 8px;
+  background: var(--bg1); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 10px; transition: border-color .12s;
+}
+.lantai .ks-kartu.pilih { border-color: var(--amber); background: var(--amber-dim); }
+.lantai .ks-kartu-atas { display: flex; align-items: center; justify-content: space-between; }
+
+.lantai .ks-thumb {
+  display: block; width: 100%; height: 128px; padding: 0;
+  background: var(--bg3, var(--bg2)); border: 1px solid var(--line2); border-radius: 4px;
+  cursor: zoom-in; overflow: hidden;
+}
+.lantai .ks-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.lantai .ks-thumb:hover img { opacity: .85; }
+.lantai .ks-thumb-kosong { display: flex; align-items: center; justify-content: center; color: var(--text3); cursor: default; }
+.lantai .ks-thumb-kosong .dasbor-ikon { stroke: var(--text3); }
+
+.lantai .ks-info { display: flex; flex-direction: column; gap: 3px; }
+.lantai .ks-alasan {
+  margin: 4px 0 0; font-size: 11px; line-height: 1.5; color: var(--text2);
+  overflow-wrap: anywhere;
+}
+.lantai .ks-catatan {
+  margin: 4px 0 0; padding: 5px 7px; display: flex; gap: 5px; align-items: flex-start;
+  background: var(--red-dim); border: 1px solid var(--red); border-radius: 4px;
+  font-size: 10.5px; line-height: 1.5; color: var(--text);
+}
+.lantai .ks-catatan .dasbor-ikon { stroke: var(--red); flex-shrink: 0; margin-top: 2px; }
+
+.lantai .ks-aksi { display: flex; gap: 6px; margin-top: 2px; }
+.lantai .ks-aksi .dd-btn { flex: 1; justify-content: center; padding: 6px 8px; font-size: 10.5px; }
+.lantai .ks-aksi .dd-btn.merah { color: var(--red); border-color: var(--red); }
+.lantai .ks-aksi .dd-btn .dasbor-ikon { stroke: currentColor; }
+.lantai .ks-aksi .dd-btn:disabled { opacity: .45; cursor: default; }
+/* Grid auto-fill(minmax(240px,1fr)) sudah jatuh ke 1 kolom sendiri di layar
+   telepon (~380-410px konten) — tidak perlu override media query lagi. */

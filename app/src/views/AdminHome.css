@@ -60,7 +60,10 @@
    Scrollbar halus pola .pi-tbl-wrap lantai.css (#83) — jangan set
    scrollbar-width/scrollbar-color, Chrome 121+ mematikan ::-webkit-scrollbar
    begitu properti standar itu di-set. */
-.lantai .af-gulir { max-height: 330px; overflow-y: auto; } /* ± 9-10 baris; sisanya gulir */
+/* overflow-x:auto (Fase 3): kolom Alasan+Status menambah lebar tabel — di
+   layar telepon tabel sekarang bisa lebih lebar dari viewport, gulir
+   horizontal di DALAM panel (bukan geser seluruh halaman) pola .aa-tbl-wrap. */
+.lantai .af-gulir { max-height: 330px; overflow-y: auto; overflow-x: auto; } /* ± 9-10 baris; sisanya gulir */
 .lantai .af-gulir::-webkit-scrollbar { width: 8px; height: 8px; }
 .lantai .af-gulir::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 99px; }
 .lantai .af-gulir::-webkit-scrollbar-thumb:hover { background: var(--text3); }
@@ -231,6 +234,25 @@
 /* Catatan kuota harian di header halaman (dekat tombol Keluar, #101) —
    angka pengguna sendiri (profil.kuota_harian), batas final dihitung server. */
 .lantai .af-kuota-info { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+
+/* Penghitung karakter di bawah textarea alasan (Fase 3) — merah kalau masih
+   kurang dari ALASAN_MIN, abu netral kalau sudah cukup/opsional. */
+.lantai .af-alasan-cnt { margin: 0; color: var(--text3); }
+.lantai .af-alasan-cnt.kurang { color: var(--red); }
+
+/* Sel "Alasan" tabel Sudah Diunggah — teks terpotong + tombol "Ubah" kecil
+   (kontributor, baris sendiri, status masih menunggu). */
+.lantai .af-alasan-sel { display: flex; align-items: center; gap: 6px; max-width: 220px; }
+.lantai .af-alasan-teks {
+  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 11px; color: var(--text2);
+}
+.lantai .af-alasan-edit {
+  flex-shrink: 0; background: none; border: none; cursor: pointer; padding: 2px 4px;
+  font-family: var(--mono); font-size: 10px; color: var(--amber);
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.lantai .af-alasan-edit:hover { color: var(--amber-ink); background: var(--amber); border-radius: 3px; }
 
 @media (prefers-reduced-motion: reduce) {
   .lantai.af-toast { animation: none; }

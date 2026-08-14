@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useProfilSaya } from '../lib/profilSaya'
@@ -17,13 +17,19 @@ import {
 import { DatePicker } from '../components/dasbor/DatePicker'
 import { StockAutocomplete } from '../components/dasbor/StockAutocomplete'
 import { LightboxGambar, type GambarLightbox } from '../components/dasbor/LightboxGambar'
+import { AlasanField } from '../components/dasbor/AlasanField'
 import { useStockIndex } from '../lib/dasbor/stockDetailData'
+import { ALASAN_MIN, alasanValid } from '../lib/alasanValidasi'
 import {
   daftarScreenshot,
+  daftarSetoran,
   daftarTanggalUnggahan,
   hapusScreenshot,
+  ubahAlasanSetoran,
   unggahScreenshot,
   urlScreenshots,
+  type SetoranRow,
+  type StatusSetoran,
 } from '../lib/supabaseEdisi'
 import { useBulletinList } from '../lib/dasbor/bulletin'
 import { RadarUnggah } from './admin/RadarUnggah'
@@ -73,7 +79,25 @@ interface Baris {
   /** Path lengkap di bucket ({tanggal}/{TICKER}-orderbook.ext) — dipakai tombol hapus. */
   orderbook?: string
   chart?: string
+  /** Baris `setoran` (Fase 3) utk orderbook/chart di atas, kalau ada — unggahan
+   *  dari sebelum Fase 3 tidak punya padanan, jadi ini bisa undefined. */
+  setoranOb?: SetoranRow
+  setoranCh?: SetoranRow
 }
+
+/** Status gabungan orderbook+chart satu emiten — ditolak menang (paling perlu
+ *  perhatian), lalu menunggu, baru disetujui. undefined kalau kedua baris
+ *  setoran-nya tidak ada (unggahan lama, sebelum Fase 3). */
+function statusGabungan(b: Baris): StatusSetoran | undefined {
+  const s = [b.setoranOb?.status, b.setoranCh?.status].filter((x): x is StatusSetoran => x !== undefined)
+  if (s.includes('ditolak')) return 'ditolak'
+  if (s.includes('menunggu')) return 'menunggu'
+  if (s.includes('disetujui')) return 'disetujui'
+  return undefined
+}
+
+const LABEL_STATUS: Record<StatusSetoran, string> = { menunggu: 'Menunggu', disetujui: 'Disetujui', ditolak: 'Ditolak' }
+const KELAS_STATUS: Record<StatusSetoran, string> = { menunggu: 'warn', disetujui: 'up', ditolak: 'dn' }
 
 /** Keterangan aksi saat emiten yang dipilih di form sudah punya unggahan
  *  (upsert eksplisit, #100) — orderbook selalu wajib dipilih ulang tiap
@@ -259,6 +283,49 @@ export function ModalKecil({ label, onClose, className, children }: { label: str
   )
 }
 
+/** Modal "Ubah alasan" — kontributor menyunting alasan barisnya sendiri
+ *  selama status masih `menunggu` (server jadi wasit sesungguhnya, ini cuma
+ *  UX). `entries` = baris `setoran` yang ikut diperbarui (orderbook & chart
+ *  emiten yang sama biasanya disetor bersamaan dgn alasan yang sama). */
+function EditAlasanModal({ ticker, entries, onClose, onSukses }: {
+  ticker: string
+  entries: SetoranRow[]
+  onClose: () => void
+  onSukses: () => void
+}) {
+  const [nilai, setNilai] = useState(entries[0]?.alasan ?? '')
+  const [kirim, setKirim] = useState(false)
+  const [err, setErr] = useState('')
+
+  async function submit(e: FormEvent) {
+    e.preventDefault()
+    if (!alasanValid(nilai, false)) {
+      setErr(`Alasan minimal ${ALASAN_MIN} karakter.`)
+      return
+    }
+    setKirim(true)
+    setErr('')
+    try {
+      await Promise.all(entries.map((s) => ubahAlasanSetoran(s.path, nilai.trim())))
+      onSukses()
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Gagal menyimpan alasan.')
+    } finally {
+      setKirim(false)
+    }
+  }
+
+  return (
+    <ModalKecil label={`Ubah alasan — ${ticker}`} onClose={() => { if (!kirim) onClose() }}>
+      <form onSubmit={submit} style={{ display: 'grid', gap: 12 }}>
+        <AlasanField value={nilai} onChange={setNilai} superadmin={false} />
+        <button type="submit" className="btn-p" disabled={kirim}>{kirim ? 'Menyimpan…' : 'Simpan'}</button>
+        {err && <p className="af-err" style={{ margin: 0 }}>{err}</p>}
+      </form>
+    </ModalKecil>
+  )
+}
+
 /**
  * Halaman admin Arus Pasar — SATU halaman (route /admin), gabungan bekas
  * AdminHome + Unggah (#39): upload screenshot, kotak masuk (tanggal yang
@@ -288,7 +355,11 @@ export function AdminHome() {
   const [ticker, setTicker] = useState('')
   const [orderbook, setOrderbook] = useState<File | null>(null)
   const [chart, setChart] = useState<File | null>(null)
+  const [alasan, setAlasan] = useState('')
   const [sudah, setSudah] = useState<Baris[]>([])
+  /** Baris `setoran` (Fase 3) tanggal aktif — digabung ke `sudah` (lihat
+   *  `sudahMerged`) utk badge status & alasan di tabel "Sudah Diunggah". */
+  const [setoranTanggal, setSetoranTanggal] = useState<SetoranRow[] | null>(null)
   const [formErr, setFormErr] = useState('')
   /** Modal form "Tambah Emiten" — aksi CRUD selalu modal (konsisten pola proyek). */
   const [formBuka, setFormBuka] = useState(false)
@@ -311,6 +382,8 @@ export function AdminHome() {
   const [semuaKartu, setSemuaKartu] = useState(false)
   /** Lightbox pratinjau gambar (#94) — items + posisi; null = tertutup. */
   const [lightbox, setLightbox] = useState<{ items: GambarLightbox[]; index: number } | null>(null)
+  /** Emiten yang alasannya sedang disunting (modal, Fase 3) — null = tertutup. */
+  const [editAlasanTarget, setEditAlasanTarget] = useState<Baris | null>(null)
 
   // Modal sambutan sekali per sesi login: kunci sessionStorage berisi user.id,
   // dihapus saat keluar — login ulang (atau akun lain) menyambut lagi,
@@ -354,6 +427,19 @@ export function AdminHome() {
     daftarScreenshot(tanggal)
       .then((paths) => !batal && setSudah(rangkumBerkas(paths)))
       .catch(() => !batal && setSudah([]))
+    return () => {
+      batal = true
+    }
+  }, [tanggal, muat])
+
+  // Baris `setoran` (Fase 3) tanggal aktif — badge status + alasan di tabel.
+  // Unggahan sebelum Fase 3 tidak punya padanan setoran; sudahMerged
+  // menangani itu (setoranOb/setoranCh jadi undefined, bukan galat).
+  useEffect(() => {
+    let batal = false
+    daftarSetoran(tanggal)
+      .then((rows) => !batal && setSetoranTanggal(rows))
+      .catch(() => !batal && setSetoranTanggal([]))
     return () => {
       batal = true
     }
@@ -404,6 +490,20 @@ export function AdminHome() {
    *  (upsert bebas) yang cuma masuk akal selagi hanya ada satu admin.
    *  Superadmin tetap boleh menimpa/perbarui seperti sebelumnya. */
   const kontributor = profil?.peran === 'kontributor'
+  const superadmin = profil?.peran === 'superadmin'
+
+  // "Sudah Diunggah" digabung dgn baris setoran tanggal ini (Fase 3) — dasar
+  // kolom Alasan & Status. Path tanpa padanan setoran (unggahan sebelum Fase
+  // 3) tetap tampil, cuma tanpa badge (setoranOb/setoranCh undefined).
+  const sudahMerged = useMemo<Baris[]>(() => {
+    if (!setoranTanggal) return sudah
+    const byPath = new Map(setoranTanggal.map((s) => [s.path, s]))
+    return sudah.map((b) => ({
+      ...b,
+      setoranOb: b.orderbook ? byPath.get(b.orderbook) : undefined,
+      setoranCh: b.chart ? byPath.get(b.chart) : undefined,
+    }))
+  }, [sudah, setoranTanggal])
 
   function tutupSambutan() {
     if (session) sessionStorage.setItem(KUNCI_SAMBUTAN, session.user.id)
@@ -419,6 +519,7 @@ export function AdminHome() {
     setTicker('')
     setOrderbook(null)
     setChart(null)
+    setAlasan('')
     setFormErr('')
     setResetKey((k) => k + 1)
   }
@@ -433,6 +534,10 @@ export function AdminHome() {
       setFormErr('Tanggal ini di masa depan — orderbook masa depan tidak diterima.')
       return
     }
+    if (!alasanValid(alasan, superadmin)) {
+      setFormErr(`Alasan wajib diisi, minimal ${ALASAN_MIN} karakter.`)
+      return
+    }
     const kode = ticker.trim().toUpperCase()
     const adaSebelum = sudah.some((b) => b.ticker === kode)
     if (kontributor && adaSebelum) {
@@ -442,8 +547,9 @@ export function AdminHome() {
     setMengunggah(true)
     setFormErr('')
     try {
-      await unggahScreenshot(orderbook, tanggal, kode, 'orderbook')
-      if (chart) await unggahScreenshot(chart, tanggal, kode, 'chart')
+      const alasanKirim = alasan.trim()
+      await unggahScreenshot(orderbook, tanggal, kode, 'orderbook', alasanKirim)
+      if (chart) await unggahScreenshot(chart, tanggal, kode, 'chart', alasanKirim)
       setToast({
         ok: true,
         pesan: adaSebelum ? `${kode} diperbarui · ${chart ? 2 : 1} gambar` : `${kode} · ${chart ? 2 : 1} gambar tersimpan`,
@@ -526,7 +632,12 @@ export function AdminHome() {
               Kuota hari ini: {profil.kuota_harian}/hari
             </span>
           )}
-          {profil?.peran === 'superadmin' && (
+          {superadmin && (
+            <Link to="/admin/kurasi" className="dd-btn">
+              <IkonMenu d={IKON_PAPAN_KLIP} size={13} /> Kurasi Setoran
+            </Link>
+          )}
+          {superadmin && (
             <Link to="/admin/akun" className="dd-btn">
               <IkonMenu d={IKON_GIR} size={13} /> Kelola Akun
             </Link>
@@ -584,65 +695,98 @@ export function AdminHome() {
                             />
                           </th>
                           <th>Emiten</th>
+                          <th>Alasan</th>
                           <th>Orderbook</th>
                           <th>Chart</th>
+                          <th>Status</th>
                           <th className="af-aksi">Aksi</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {sudah.map((b) => (
-                          <tr key={b.ticker}>
-                            <td className="af-kolcek">
-                              <input
-                                type="checkbox"
-                                className="af-cek"
-                                aria-label={`Pilih ${b.ticker}`}
-                                checked={pilih.has(b.ticker)}
-                                onChange={() => togglePilih(b.ticker)}
-                              />
-                            </td>
-                            <td className="tick">{b.ticker}</td>
-                            <td>
-                              {b.orderbook ? (
+                        {sudahMerged.map((b) => {
+                          const status = statusGabungan(b)
+                          const catatan = b.setoranOb?.catatan_kurator || b.setoranCh?.catatan_kurator || undefined
+                          const alasanTeks = (b.setoranOb?.alasan || b.setoranCh?.alasan || '').trim()
+                          const entriesSendiri = [b.setoranOb, b.setoranCh].filter(
+                            (s): s is SetoranRow => !!s && s.penyetor === session?.user.id && s.status === 'menunggu'
+                          )
+                          return (
+                            <tr key={b.ticker}>
+                              <td className="af-kolcek">
+                                <input
+                                  type="checkbox"
+                                  className="af-cek"
+                                  aria-label={`Pilih ${b.ticker}`}
+                                  checked={pilih.has(b.ticker)}
+                                  onChange={() => togglePilih(b.ticker)}
+                                />
+                              </td>
+                              <td className="tick">{b.ticker}</td>
+                              <td className="af-alasan-sel">
+                                <span className="af-alasan-teks" title={alasanTeks || undefined}>{alasanTeks || '—'}</span>
+                                {entriesSendiri.length > 0 && (
+                                  <button
+                                    type="button"
+                                    className="af-alasan-edit"
+                                    title={`Ubah alasan ${b.ticker}`}
+                                    aria-label={`Ubah alasan ${b.ticker}`}
+                                    onClick={() => setEditAlasanTarget(b)}
+                                  >
+                                    Ubah
+                                  </button>
+                                )}
+                              </td>
+                              <td>
+                                {b.orderbook ? (
+                                  <button
+                                    type="button"
+                                    className="af-centang af-lihat"
+                                    title={`Lihat screenshot orderbook ${b.ticker}`}
+                                    aria-label={`Lihat screenshot orderbook ${b.ticker}`}
+                                    onClick={() => bukaPratinjau(b.orderbook!)}
+                                  >
+                                    <IkonMenu d={IKON_CENTANG} size={13} />
+                                    <span className="lihat-lbl">Lihat</span>
+                                  </button>
+                                ) : '—'}
+                              </td>
+                              <td>
+                                {b.chart ? (
+                                  <button
+                                    type="button"
+                                    className="af-centang af-lihat"
+                                    title={`Lihat screenshot chart ${b.ticker}`}
+                                    aria-label={`Lihat screenshot chart ${b.ticker}`}
+                                    onClick={() => bukaPratinjau(b.chart!)}
+                                  >
+                                    <IkonMenu d={IKON_CENTANG} size={13} />
+                                    <span className="lihat-lbl">Lihat</span>
+                                  </button>
+                                ) : '—'}
+                              </td>
+                              <td>
+                                {status ? (
+                                  <span className={`chip ${KELAS_STATUS[status]}`} title={status === 'ditolak' ? catatan || 'Ditolak kurator (tanpa catatan).' : undefined}>
+                                    {LABEL_STATUS[status]}
+                                  </span>
+                                ) : (
+                                  <span className="muted" style={{ fontSize: 10.5 }} title="Unggahan sebelum Fase 3 — tanpa data kurasi.">—</span>
+                                )}
+                              </td>
+                              <td className="af-aksi">
                                 <button
                                   type="button"
-                                  className="af-centang af-lihat"
-                                  title={`Lihat screenshot orderbook ${b.ticker}`}
-                                  aria-label={`Lihat screenshot orderbook ${b.ticker}`}
-                                  onClick={() => bukaPratinjau(b.orderbook!)}
+                                  className="af-hapus"
+                                  title={`Hapus unggahan ${b.ticker}`}
+                                  aria-label={`Hapus unggahan ${b.ticker}`}
+                                  onClick={() => setHapusTarget([b])}
                                 >
-                                  <IkonMenu d={IKON_CENTANG} size={13} />
-                                  <span className="lihat-lbl">Lihat</span>
+                                  <IkonMenu d={IKON_TONG} size={14} />
                                 </button>
-                              ) : '—'}
-                            </td>
-                            <td>
-                              {b.chart ? (
-                                <button
-                                  type="button"
-                                  className="af-centang af-lihat"
-                                  title={`Lihat screenshot chart ${b.ticker}`}
-                                  aria-label={`Lihat screenshot chart ${b.ticker}`}
-                                  onClick={() => bukaPratinjau(b.chart!)}
-                                >
-                                  <IkonMenu d={IKON_CENTANG} size={13} />
-                                  <span className="lihat-lbl">Lihat</span>
-                                </button>
-                              ) : '—'}
-                            </td>
-                            <td className="af-aksi">
-                              <button
-                                type="button"
-                                className="af-hapus"
-                                title={`Hapus unggahan ${b.ticker}`}
-                                aria-label={`Hapus unggahan ${b.ticker}`}
-                                onClick={() => setHapusTarget([b])}
-                              >
-                                <IkonMenu d={IKON_TONG} size={14} />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
+                              </td>
+                            </tr>
+                          )
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -831,6 +975,7 @@ export function AdminHome() {
                 </p>
               )}
             </div>
+            <AlasanField value={alasan} onChange={setAlasan} superadmin={superadmin} />
             <PilihGambar
               key={`ob-${resetKey}`}
               label="Orderbook (Stockbit) — wajib"
@@ -847,7 +992,11 @@ export function AdminHome() {
               onFile={setChart}
               onPratinjau={(g) => setLightbox({ items: [g], index: 0 })}
             />
-            <button type="submit" className="btn-p" disabled={mengunggah || (kontributor && Boolean(existingBaris))}>
+            <button
+              type="submit"
+              className="btn-p"
+              disabled={mengunggah || (kontributor && Boolean(existingBaris)) || !alasanValid(alasan, superadmin)}
+            >
               {mengunggah ? (existingBaris ? 'Memperbarui…' : 'Mengunggah…') : (existingBaris ? 'Perbarui' : 'Unggah')}
             </button>
             {formErr && <p className="af-err" style={{ margin: 0 }}>{formErr}</p>}
@@ -861,6 +1010,21 @@ export function AdminHome() {
           index={lightbox.index}
           onIndex={(i) => setLightbox((lb) => (lb ? { ...lb, index: i } : lb))}
           onClose={() => setLightbox(null)}
+        />
+      )}
+
+      {editAlasanTarget && (
+        <EditAlasanModal
+          ticker={editAlasanTarget.ticker}
+          entries={[editAlasanTarget.setoranOb, editAlasanTarget.setoranCh].filter(
+            (s): s is SetoranRow => !!s && s.penyetor === session?.user.id && s.status === 'menunggu'
+          )}
+          onClose={() => setEditAlasanTarget(null)}
+          onSukses={() => {
+            setToast({ ok: true, pesan: `Alasan ${editAlasanTarget.ticker} diperbarui.` })
+            setEditAlasanTarget(null)
+            setMuat((m) => m + 1)
+          }}
         />
       )}
 

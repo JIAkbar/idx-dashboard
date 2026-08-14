@@ -3,7 +3,10 @@ import { IkonMenu, IKON_CENTANG, IKON_GAMBAR, IKON_PERINGATAN, IKON_SILANG } fro
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
+import { AlasanField } from '../../components/dasbor/AlasanField'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
+import { alasanValid } from '../../lib/alasanValidasi'
+import { useProfilSaya } from '../../lib/profilSaya'
 import { daftarBedah, daftarBedahArsip, unggahBedah, urlScreenshots, type BedahArsipBaris } from '../../lib/supabaseEdisi'
 
 function tanggalHariIni(): string {
@@ -88,10 +91,13 @@ function SlotBerkas({ label, file, onFile }: {
  */
 export function BedahUnggah() {
   const { index } = useStockIndex()
+  const { profil } = useProfilSaya()
+  const superadmin = profil?.peran === 'superadmin'
   const [ticker, setTicker] = useState('')
   const [tanggal, setTanggal] = useState(tanggalHariIni())
   const [broksum, setBroksum] = useState<File | null>(null)
   const [done, setDone] = useState<File | null>(null)
+  const [alasan, setAlasan] = useState('')
   const [sudah, setSudah] = useState<string[] | null>(null)
   const [mengunggah, setMengunggah] = useState(false)
   const [status, setStatus] = useState<{ ok: boolean; pesan: string } | null>(null)
@@ -137,14 +143,20 @@ export function BedahUnggah() {
       setStatus({ ok: false, pesan: 'Pilih minimal satu berkas (Broker Summary rentang atau Done Summary).' })
       return
     }
+    if (!alasanValid(alasan, superadmin)) {
+      setStatus({ ok: false, pesan: 'Alasan wajib diisi (lihat penghitung karakter di bawah kolom alasan).' })
+      return
+    }
     setMengunggah(true)
     setStatus(null)
     try {
-      if (broksum) await unggahBedah(broksum, kode, tanggal, 'broksum-rentang')
-      if (done) await unggahBedah(done, kode, tanggal, 'done-summary')
+      const alasanKirim = alasan.trim()
+      if (broksum) await unggahBedah(broksum, kode, tanggal, 'broksum-rentang', alasanKirim)
+      if (done) await unggahBedah(done, kode, tanggal, 'done-summary', alasanKirim)
       setStatus({ ok: true, pesan: `Tersimpan untuk ${kode} · ${tanggal}: ${[broksum && 'broker summary', done && 'done summary'].filter(Boolean).join(' + ')}.` })
       setBroksum(null)
       setDone(null)
+      setAlasan('')
       setMuat((m) => m + 1)
     } catch (err) {
       setStatus({ ok: false, pesan: err instanceof Error ? err.message : 'Gagal unggah.' })
@@ -198,7 +210,8 @@ export function BedahUnggah() {
           </div>
           <SlotBerkas label="Broker Summary rentang — wajib salah satu" file={broksum} onFile={setBroksum} />
           <SlotBerkas label="Done Summary — opsional" file={done} onFile={setDone} />
-          <button type="submit" className="btn-p" disabled={mengunggah}>
+          <AlasanField value={alasan} onChange={setAlasan} superadmin={superadmin} />
+          <button type="submit" className="btn-p" disabled={mengunggah || !alasanValid(alasan, superadmin)}>
             {mengunggah ? 'Mengunggah…' : 'Unggah'}
           </button>
           {status && (
