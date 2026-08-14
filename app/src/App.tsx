@@ -25,6 +25,7 @@ import { KurasiSetoran } from './views/admin/KurasiSetoran'
 import { RadarUnggah } from './views/admin/RadarUnggah'
 import { BedahTab } from './views/admin/BedahTab'
 import { AksesAdmin } from './views/admin/AksesAdmin'
+import { AktivitasAdmin } from './views/admin/AktivitasAdmin'
 import { RakTerbitan } from './views/admin/RakTerbitan'
 import { ChangelogAdmin, ChangelogPanel } from './views/admin/ChangelogAdmin'
 import { EdisiUjicoba } from './views/EdisiUjicoba'
@@ -101,6 +102,7 @@ function App() {
                   <Route path="terbitan" element={<RakTerbitan />} />
                   <Route path="akun" element={<AkunAdmin />} />
                   <Route path="akses" element={<AksesAdmin />} />
+                  <Route path="aktivitas" element={<AktivitasAdmin />} />
                   {/* "riwayat", bukan "changelog": /admin/changelog sudah dipakai
                       halaman mandiri lama (penanda halaman masih beredar), dan
                       dua route berpath sama di dua tingkat bikin bingung. */}

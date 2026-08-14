@@ -31,6 +31,7 @@ import {
   hapusScreenshot,
   hitungSetoranSaya,
   kurasiSetoran,
+  pernahMenyetor,
   ubahAlasanSetoran,
   unggahScreenshot,
   urlScreenshots,
@@ -39,6 +40,7 @@ import {
 } from '../../lib/supabaseEdisi'
 import { useBulletinList } from '../../lib/dasbor/bulletin'
 import { TolakModal } from './KurasiSetoran'
+import { PanduanScreenshot } from './PanduanScreenshot'
 import './AdminShared.css'
 
 function tanggalHariIni(): string {
@@ -454,12 +456,28 @@ export function UnggahHarian() {
   const [cekKuota, setCekKuota] = useState(false)
   /** Path setoran yang sedang minta catatan penolakan (kurasi cepat, #item2) — null = tertutup. */
   const [tolakTarget, setTolakTarget] = useState<string[] | null>(null)
+  /** Default buka/tutup panel "Cara screenshot orderbook" (Fase 5) — null
+   *  selagi belum dicek (dianggap tertutup sampai jawabannya datang, tidak
+   *  ada kedip terbuka-lalu-tertutup). true = akun ini belum pernah menyetor. */
+  const [panduanDefaultBuka, setPanduanDefaultBuka] = useState<boolean | null>(null)
 
   useEffect(() => {
     if (!toast) return
     const t = setTimeout(() => setToast(null), 4500)
     return () => clearTimeout(t)
   }, [toast])
+
+  // Cuma dicek SEKALI saat mount — panel tak boleh melompat terbuka/tertutup
+  // sendiri selagi pengguna sedang menyetor di sesi yang sama.
+  useEffect(() => {
+    let batal = false
+    pernahMenyetor()
+      .then((v) => !batal && setPanduanDefaultBuka(!v))
+      .catch(() => !batal && setPanduanDefaultBuka(false))
+    return () => {
+      batal = true
+    }
+  }, [])
 
   useEffect(() => {
     let batal = false
@@ -746,6 +764,8 @@ export function UnggahHarian() {
   return (
     <>
       {profil && <KartuJenjang profil={profil} superadmin={superadmin} />}
+
+      {panduanDefaultBuka !== null && <PanduanScreenshot superadmin={superadmin} defaultBuka={panduanDefaultBuka} />}
 
       <section className="panel">
         <div className="panel-h" style={{ alignItems: 'center' }}>

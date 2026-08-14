@@ -167,6 +167,8 @@ export function AdminLayout() {
     { to: '/admin/terbitan', label: 'Terbitan', ikon: IKON_KOTAK_ARSIP, tampil: true },
     { to: '/admin/akun', label: 'Akun', ikon: IKON_GIR, tampil: superadmin },
     { to: '/admin/akses', label: 'Akses', ikon: IKON_KUNCI, tampil: superadmin },
+    // Fase 4 — keaktifan kontributor & sinyal keamanan, superadmin saja.
+    { to: '/admin/aktivitas', label: 'Aktivitas', ikon: IKON_JAM, tampil: superadmin },
     // Changelog berdiri sendiri, bukan ekor tab Terbitan: Terbitan menjawab
     // "edisi apa yang sudah terbit", Changelog menjawab "aplikasinya berubah
     // apa" — dua pertanyaan berbeda yang kebetulan sama-sama berupa arsip.

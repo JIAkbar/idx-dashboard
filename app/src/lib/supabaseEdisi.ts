@@ -180,6 +180,20 @@ export async function hitungSetoranMenunggu(): Promise<number> {
   return count ?? 0
 }
 
+/** True kalau pengguna sudah PERNAH punya baris `setoran` (semua status,
+ *  semua tanggal) — dasar default buka/tutup panel panduan screenshot (Fase
+ *  5): akun yang belum pernah menyetor lebih butuh panduan terbuka duluan. */
+export async function pernahMenyetor(): Promise<boolean> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return false
+  const { count, error } = await supabase
+    .from('setoran')
+    .select('*', { count: 'exact', head: true })
+    .eq('penyetor', user.id)
+  if (error) throw error
+  return (count ?? 0) > 0
+}
+
 /** Signed URL (1 jam) berkas-berkas di bucket privat "screenshots", map path → URL.
  *  Batch satu request; path yang gagal ditandatangani tidak masuk hasil. */
 export async function urlScreenshots(paths: string[]): Promise<Record<string, string>> {
