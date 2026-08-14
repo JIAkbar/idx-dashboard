@@ -103,6 +103,10 @@ export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
         },
       },
     }
+    // theme: bukan dibaca langsung (warna datang dari bacaToken via wrapRef),
+    // tapi WAJIB di deps supaya chart dibangun ulang saat tema di-toggle —
+    // tanpa ini toggle gelap/terang tak mengubah warna chart yang sudah ada.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [periods, periodMode, kd?.currency, theme])
 
   const canvasRef = useChartCanvas(chartConfig)
