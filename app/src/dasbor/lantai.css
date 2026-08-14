@@ -816,6 +816,12 @@
 .lantai .cal-grid .cg.ada{color:var(--text);background:var(--bg2);border:1px solid var(--line)}
 .lantai .cal-grid .cg.aktif{background:var(--amber);color:var(--amber-ink);font-weight:700;border-color:var(--amber)}
 .lantai .cal-grid .cg.hdr{height:16px;font-family:var(--disp);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+/* Tanggal yang BELUM berlangsung: angka diredupkan, tanpa label apa pun —
+   dulu SEMUA sel tanpa data dilabeli "Bursa Libur", termasuk hari yang belum
+   terjadi (keluhan user 14 Agu). Empat keadaan kini dibedakan di Kalender.tsx:
+   Libur (tanggal merah terdaftar) · Menunggu (hari ini) · Tanpa data (lampau,
+   sebabnya belum pasti) · tanpa label (masa depan). */
+.lantai .cal-grid .cg.depan{opacity:.42}
 /* Task 7c: .cg.ada artifact aslinya 1 baris kosong 28px (skrip vanilla, tak
    dipakai) — instruksi eksplisit sebelumnya minta harga+persen IHSG tetap
    tampil di sel berdata, jadi butuh 3 baris (tanggal · IHSG · persen). Cuma

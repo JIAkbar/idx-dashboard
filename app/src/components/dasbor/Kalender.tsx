@@ -517,20 +517,35 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
           )
         }
 
-        // .cg tanpa .ada didesain artifact untuk 1 baris (28px) — label
-        // libur karenanya disingkat supaya muat 2 baris kecil. Akhir pekan
-        // sudah tidak pernah sampai sini (dibuang dari `cells`); hari kerja
-        // libur bursa non-akhir-pekan (cuti bersama dll) tetap tampil.
-        const label = isHoliday ? 'Libur' : 'Bursa Libur'
+        // Sel tanpa data BUKAN otomatis "Bursa Libur" (keluhan user 14 Agu:
+        // tanggal yang belum terjadi pun ikut dilabeli libur — menyesatkan,
+        // apalagi tabel HOLIDAYS cuma memuat segelintir tanggal merah).
+        // Empat keadaan dibedakan jujur; akhir pekan sudah dibuang dari `cells`.
+        const hariIni = todayIsoJakarta()
+        let label: string | null
+        let tip: string
+        if (isHoliday) {
+          label = 'Libur'
+          tip = HOLIDAYS[iso]
+        } else if (iso > hariIni) {
+          label = null // belum terjadi — jangan mengaku tahu apa pun
+          tip = 'Belum berlangsung'
+        } else if (iso === hariIni) {
+          label = 'Menunggu'
+          tip = 'Sesi hari ini belum ditutup atau datanya belum masuk'
+        } else {
+          label = 'Tanpa data'
+          tip = 'Tidak ada data untuk tanggal ini — libur bursa atau data belum dipanen'
+        }
         return (
           <div
             key={iso}
-            className="cg"
-            title={isHoliday ? HOLIDAYS[iso] : undefined}
+            className={`cg${label === null ? ' depan' : ''}`}
+            title={tip}
             style={{ flexDirection: 'column', height: 'auto', minHeight: 28, lineHeight: 1.15, gap: 1 }}
           >
             <span>{day}</span>
-            <span style={{ fontSize: 7 }}>{label}</span>
+            {label && <span style={{ fontSize: 7 }}>{label}</span>}
           </div>
         )
       })}
