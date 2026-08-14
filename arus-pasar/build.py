@@ -459,7 +459,7 @@ def halaman_emiten(em, sk, ed, ohlc, idx):
 </div>'''
 
 
-MAKS_SAMPUL = 20  # >20 emiten: sampul tampilkan 20 teratas per skor
+MAKS_SAMPUL = 28  # >28 emiten (14/kolom): sampul tampilkan teratas per skor
 
 
 def halaman_sampul(ed, skor_map):
