@@ -691,6 +691,9 @@
 .lantai .panel:fullscreen .panel-h{flex:none}
 .lantai .panel:fullscreen .panel-b{flex:1;display:flex;flex-direction:column;min-height:0}
 .lantai .panel:fullscreen .tv-section-inner{flex:1;min-height:0;height:auto!important}
+/* Kuadran broker layar penuh (pola sama) — chart mengisi layar, latar solid. */
+.lantai .quad-fs:fullscreen{display:flex;flex-direction:column;background:var(--bg1);padding:16px}
+.lantai .quad-fs:fullscreen .chart-wrap{flex:1;min-height:0;height:auto!important}
 
 /* dropdown */
 .lantai .dd{position:relative}
