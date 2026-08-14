@@ -307,12 +307,12 @@ export function Bulletin() {
                                     <th>Ticker</th>
                                     <th>Bias</th>
                                     <th className="r">Close</th>
-                                    <th className="r">±%</th>
-                                    <th className="r">Skor</th>
-                                    <th className="r">Prob 5h</th>
-                                    <th className="r">P ≥3%</th>
-                                    <th className="r">n</th>
-                                    <th>VolVal</th>
+                                    <th className="r" title="Perubahan harga pada hari edisi">±%</th>
+                                    <th className="r" title="Skor komposit 0–100: Teknikal 35% · Flow 30% · Risk/Reward 20% · Likuiditas 10% · IHSG 5%">Skor</th>
+                                    <th className="r" title="Peluang close lebih tinggi dalam 5 hari bursa — dihitung dari seluruh kejadian historis yang setup teknikalnya serupa (posisi vs EMA50, pivot, rasio volume, posisi rentang 20 hari)">Prob 5h ⓘ</th>
+                                    <th className="r" title="Peluang harga SEMPAT naik ≥3% dalam 5 hari bursa pada setup serupa">P ≥3% ⓘ</th>
+                                    <th className="r" title="Jumlah sampel historis di balik angka probabilitas — makin besar makin bisa dipercaya. 'k/4' berarti pencocokan setup diperlonggar karena sampel persis terlalu sedikit">n ⓘ</th>
+                                    <th title="z-score nilai transaksi (harga×volume) vs 60 hari. Badge 'senyap' = value melonjak (z≥2) tapi harga nyaris diam — pola akumulasi terselubung">VolVal ⓘ</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -349,11 +349,23 @@ export function Bulletin() {
                                   ))}
                                 </tbody>
                               </table>
-                              <p className="muted" style={{ fontSize: 10, margin: '6px 2px 0', lineHeight: 1.5 }}>
-                                Prob 5h = peluang close lebih tinggi dalam 5 hari bursa; P ≥3% = peluang sempat naik ≥3%.
-                                Dihitung dari kejadian historis dengan setup teknikal serupa (n = jumlah sampel; k/4 = pencocokan longgar).
-                                Probabilistik, bukan kepastian — bukan ajakan transaksi.
-                              </p>
+                              <div
+                                style={{
+                                  margin: '10px 2px 0', padding: '8px 12px', fontSize: 10.5, lineHeight: 1.6,
+                                  color: 'var(--text2)', background: 'var(--bg3)',
+                                  borderLeft: '3px solid var(--amber)', borderRadius: 4,
+                                }}
+                              >
+                                <b style={{ color: 'var(--text)', letterSpacing: '.06em' }}>CARA BACA</b> — angka
+                                probabilitas BUKAN ramalan hari ini: mesin mencari seluruh kejadian di riwayat harga
+                                yang <i>setup teknikalnya serupa</i> (posisi vs EMA50 &amp; pivot, rasio volume, posisi
+                                di rentang 20 hari), lalu menghitung berapa persen yang lanjut naik. <b>Prob 5h</b> =
+                                close lebih tinggi dalam 5 hari; <b>P ≥3%</b> = sempat naik ≥3%; <b>n</b> = jumlah
+                                sampel di baliknya (angka tanpa n besar = lemah); <b>VolVal</b> = lonjakan nilai
+                                transaksi — badge "senyap" menandai value besar saat harga diam (akumulasi terselubung).
+                                Arahkan kursor / tahan di judul kolom ⓘ untuk detail. Probabilistik, bukan kepastian —
+                                bukan ajakan transaksi.
+                              </div>
                             </div>
                           </td>
                         </tr>
