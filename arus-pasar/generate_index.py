@@ -31,7 +31,28 @@ def main():
         # Rilis ulang: edisi diperluas cakupannya — dashboard render badge Update N→M.
         if "update_dari" in ed:
             baris["update_dari"] = ed["update_dari"]
+        # Sidecar analitik (build.py): skor + probabilitas per emiten — tabel
+        # bulletin web menampilkannya sebagai baris detail edisi.
+        sc = AKAR / "keluaran" / f"{kode}.analisa.json"
+        if sc.exists():
+            baris["analisa"] = json.loads(sc.read_text(encoding="utf-8"))
         entri.append(baris)
+
+    # Bedah Arus Saham (BA-*): satu emiten satu terbitan, berkas di bedah/.
+    for berkas in sorted((AKAR / "bedah").glob("*.json")):
+        bd = json.loads(berkas.read_text(encoding="utf-8"))
+        kode = bd["edisi"]
+        if not (AKAR / "keluaran" / f"{kode}.pdf").exists():
+            continue
+        entri.append({
+            "kode": kode,
+            "tipe": "Bedah",
+            "tanggal": bd["tanggal"],
+            "tanggal_id": bd["tanggal_id"],
+            "judul": f"Bedah Arus Saham {bd['ticker']} — {bd['tanggal_id']}",
+            "emiten": [bd["ticker"]],
+            "pdf": f"{kode}.pdf",
+        })
     entri.sort(key=lambda e: e["tanggal"], reverse=True)
 
     keluar = AKAR / "keluaran" / "index.json"

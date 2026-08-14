@@ -12,6 +12,8 @@ Setelah HTML jadi, render juga ke keluaran/<edisi>.pdf via Playwright
 import json, sys, statistics
 from pathlib import Path
 
+import prob
+
 AKAR = Path(__file__).parent
 
 
@@ -340,6 +342,43 @@ def halaman_sentimen(ed, ds, ds_prev):
 </div>'''
 
 
+def fmt_z(z):
+    return ("z+" if z >= 0 else "z−") + fmt(abs(z), 1)
+
+
+def sel_prob(h):
+    """Sel kolom Prob tabel Ringkasan: '62% · n134' font kecil."""
+    if not h or h["p5"] is None:
+        return "—"
+    cat = f'n{h["n"]}' + ("" if h["cocok"] == 4 else f' · {h["cocok"]}/4')
+    return f'{h["p5"] * 100:.0f}%<br><small>{cat}</small>'
+
+
+def strip_prob(h):
+    """Strip 1 baris PROBABILITAS HISTORIS halaman emiten (dekat skor komposit).
+
+    Semua angka dari backtest pool cache edisi; n SELALU tampil. h None =
+    riwayat ticker terlalu pendek (fallback aman edisi lama / emiten baru)."""
+    if not h or h["p5"] is None:
+        isi = "riwayat harga belum cukup untuk backtest setup — belum ada angka"
+    else:
+        cocok = "4/4" if h["cocok"] == 4 else f'{h["cocok"]}/4 fitur'
+        vv = h["volval"]
+        if vv is None:
+            vv_txt = "VolVal n/a"
+        elif vv["sinyal"]:
+            vv_txt = f'VolVal <span class="vv">AKUM. SENYAP</span> {fmt_z(vv["z"])}'
+        else:
+            vv_txt = f'VolVal {fmt_z(vv["z"])} normal'
+        hit = (f' <small>· senyap {h["vv_hit"] * 100:.0f}% n{h["vv_n"]}</small>'
+               if h["vv_hit"] is not None else "")
+        isi = (f'P(naik 5h) <b>{h["p5"] * 100:.0f}%</b> · P(≥3%) '
+               f'<b>{h["p3"] * 100:.0f}%</b> <small>n{h["n"]}·{cocok}</small> · '
+               f'{vv_txt}{hit}')
+    return (f'<div class="probstrip"><span class="pl">Probabilitas Historis</span>'
+            f'{isi}</div>')
+
+
 def kartu_skenario(em):
     """Scenario Map 3 kartu + Aturan Eksekusi. Field edisi `skenario` menang;
     tanpa field itu, FALLBACK dirakit dari target/invalidation/pivot/strategi
@@ -373,7 +412,7 @@ def kartu_skenario(em):
             f'<div class="aturan"><span class="kl">Aturan Eksekusi</span><span>{sk["aturan"]}</span></div></div>')
 
 
-def halaman_emiten(em, sk, ed, ohlc, idx):
+def halaman_emiten(em, sk, ed, ohlc, idx, pr=None):
     o = em["ohlc_hari"]; p = em["pivot"]
     chg_cls = "bull" if o["chg"] >= 0 else "bear"
     tanda = "+" if o["chg"] >= 0 else "−"
@@ -409,7 +448,7 @@ def halaman_emiten(em, sk, ed, ohlc, idx):
     {statistik_hari(em, ohlc)}
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch{idx}" width="1360" height="360"></canvas>
+      <canvas id="ch{idx}" width="1360" height="320"></canvas>
     </div>
     <div class="cols">
       <aside>
@@ -446,6 +485,7 @@ def halaman_emiten(em, sk, ed, ohlc, idx):
           <div class="k res">Resistance</div><div class="v">{res}</div>
         </div>
         {kartu_skenario(em)}
+        {strip_prob(pr)}
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">{sk["total"]:.0f}<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
           <div class="barrow">{segmen}</div>
@@ -531,7 +571,7 @@ def halaman_sampul(ed, skor_map):
 </div>'''
 
 
-def halaman_ringkasan(ed, skor_map):
+def halaman_ringkasan(ed, skor_map, prob_map=None):
     urut = sorted(ed["emiten"], key=lambda e: -skor_map[e["ticker"]]["total"])
     baris = []
     for e in urut:
@@ -543,6 +583,7 @@ def halaman_ringkasan(ed, skor_map):
         <td class="num">{fmt(e["ohlc_hari"]["c"])}</td>
         <td class="num {'bull' if e["ohlc_hari"]["chg"]>=0 else 'bear'}">{'+' if e["ohlc_hari"]["chg"]>=0 else '−'}{fmt(abs(e["ohlc_hari"]["pct"]),2)}%</td>
         <td><span class="pill {s}">{kata}</span><br><span class="lbl-sisa">{sisa}</span></td>
+        <td class="num prob">{sel_prob((prob_map or {}).get(e["ticker"]))}</td>
         <td class="num c-{s}">{skor_map[e["ticker"]]["total"]:.0f}</td>
         <td><span class="risk {skor_map[e["ticker"]]["risiko"]}">{skor_map[e["ticker"]]["risiko"]}</span></td></tr>''')
     n = len(ed["emiten"])
@@ -560,8 +601,13 @@ def halaman_ringkasan(ed, skor_map):
     <p class="metode"><b>Sumber data:</b> harga Yahoo Finance &amp; statistik resmi IDX; pivot &amp; EMA dihitung dari data
     harga; arus broker dari Broker Summary Stockbit. Komponen data yang tidak tersedia tidak
     pernah diisi perkiraan — halaman terkait akan menampilkan penanda kesenjangan data dan skor
-    diberi penalti. Peringkat bersifat komparatif antar emiten edisi ini, bukan sinyal beli otomatis.</p>'''
-    kepala_tabel = '<tr><th>Ticker</th><th>Emiten</th><th>Close</th><th>±%</th><th>Bias</th><th>Skor</th><th>Risiko</th></tr>'
+    diberi penalti. Peringkat bersifat komparatif antar emiten edisi ini, bukan sinyal beli otomatis.</p>
+    <p class="metode"><b>Kolom Prob 5h:</b> probabilitas historis close 5 hari ke depan lebih tinggi,
+    dari backtest setup serupa (posisi vs EMA50, pivot harian, rasio volume 20 hari, posisi di
+    rentang 20 hari) atas seluruh seri harga cache edisi ini; n = jumlah sampel setup serupa.
+    Label "k/4" berarti pencocokan dilonggarkan ke k fitur karena sampel penuh &lt;30.</p>'''
+    kepala_tabel = ('<tr><th>Ticker</th><th>Emiten</th><th>Close</th><th>±%</th><th>Bias</th>'
+                    '<th>Prob 5h</th><th>Skor</th><th>Risiko</th></tr>')
 
     # Paginasi: baris .ring 2-lajur tinggi — edisi gemuk (>10) tembus footer
     # kalau dipaksa 1 halaman. Kapasitas konservatif: hal-1 (dengan lede,
@@ -723,6 +769,8 @@ def main():
     ed = json.loads((AKAR / "edisi" / f"{tgl}.json").read_text(encoding="utf-8"))
     ohlc = json.loads((AKAR / "cache" / f"ohlc-{tgl}.json").read_text(encoding="utf-8"))
 
+    prob_map = prob.analisa_edisi(ohlc, [em["ticker"] for em in ed["emiten"]])
+
     skor_map = {}
     for em in ed["emiten"]:
         t = skor_teknikal(em); f_ = skor_flow(em, ed["peran_broker"])
@@ -732,6 +780,26 @@ def main():
         skor_map[em["ticker"]] = {"teknikal": t, "flow": f_, "rr": r, "lik": l,
                                   "ihsg": i, "korr": korr, "total": total,
                                   "risiko": tingkat_risiko(total)}
+
+    # Sidecar analitik utk dashboard (permintaan user 14 Agu: kolom Probabilitas
+    # di TABEL bulletin web, bukan cuma PDF) — generate_index.py menempelkannya
+    # ke entri edisi di keluaran/index.json.
+    sidecar = []
+    for em in ed["emiten"]:
+        sk = skor_map[em["ticker"]]
+        pr = prob_map.get(em["ticker"])
+        vv = pr.get("volval") if pr else None
+        sidecar.append({
+            "ticker": em["ticker"], "label": em["label"], "arah": em["arah"],
+            "close": em["ohlc_hari"]["c"], "pct": em["ohlc_hari"]["pct"],
+            "skor": round(sk["total"]), "risiko": sk["risiko"],
+            "p5": pr["p5"] if pr else None, "p3": pr["p3"] if pr else None,
+            "n": pr["n"] if pr else None, "cocok": pr["cocok"] if pr else None,
+            "vv_z": round(vv["z"], 2) if vv else None,
+            "vv_sinyal": bool(vv and vv["sinyal"]),
+        })
+    (AKAR / "keluaran" / f"{ed['edisi']}.analisa.json").write_text(
+        json.dumps(sidecar, ensure_ascii=False), encoding="utf-8")
 
     pages = [halaman_sampul(ed, skor_map)]
     draw = []
@@ -743,9 +811,10 @@ def main():
     if ed.get("sentimen"):
         ds, ds_prev = muat_ds(tgl)
         pages.append(halaman_sentimen(ed, ds, ds_prev))
-    pages.append(halaman_ringkasan(ed, skor_map))
+    pages.append(halaman_ringkasan(ed, skor_map, prob_map))
     for idx, em in enumerate(ed["emiten"]):
-        pages.append(halaman_emiten(em, skor_map[em["ticker"]], ed, ohlc, idx))
+        pages.append(halaman_emiten(em, skor_map[em["ticker"]], ed, ohlc, idx,
+                                    prob_map.get(em["ticker"])))
         draw.append(f'gambarChart("ch{idx}","{em["ticker"]}",{em["ema50"]},'
                     f'{json.dumps(em["pivot"])});')
     pages.append(halaman_peringkat(ed, skor_map))

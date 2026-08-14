@@ -64,14 +64,14 @@
   .stats .s .v small{font-size:7pt;font-weight:400;color:var(--mute)}
 
   /* ── Chart ── */
-  .chartwrap{margin:3.5mm 0 0;position:relative;border:1px solid var(--hair);
+  .chartwrap{margin:3mm 0 0;position:relative;border:1px solid var(--hair);
     border-radius:1.5mm;padding:2mm 2.5mm;background:rgba(255,255,255,.02)}
   .chartwrap .cap{font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;
     color:var(--mute);margin-bottom:1.5mm}
   canvas{width:100%;height:auto;display:block}
 
   /* ── Kolom ── */
-  .cols{display:grid;grid-template-columns:60mm 1fr;gap:7mm;margin-top:4mm;flex:1;min-height:0}
+  .cols{display:grid;grid-template-columns:60mm 1fr;gap:7mm;margin-top:3.6mm;flex:1;min-height:0}
 
   h3.rule{font-size:7pt;letter-spacing:.18em;text-transform:uppercase;color:var(--ink2);
     margin:0 0 2mm;display:flex;align-items:center;gap:6px;font-weight:700}
@@ -104,7 +104,7 @@
 
   /* ── Analisa kanan: verdict pill sentimen ── */
   .bias{display:flex;justify-content:space-between;align-items:center;gap:4mm;
-    margin-bottom:2.5mm;padding:2mm 3mm;border-radius:1.5mm;background:var(--panel)}
+    margin-bottom:2.2mm;padding:2mm 3mm;border-radius:1.5mm;background:var(--panel)}
   .bias .lbl{font-size:12.5pt;font-weight:800;letter-spacing:-.005em}
   .bias .lbl span{color:inherit}
   .s-bull .bias{background:var(--bull-dim);color:var(--bull)}
@@ -118,7 +118,7 @@
   .risk.EKSTREM{color:var(--bear)}
   .bias .risk{color:inherit}
 
-  .sec{margin-bottom:3mm}
+  .sec{margin-bottom:2.6mm}
   .sec p{margin:0;font-size:8.6pt;color:var(--ink2)}
   .flowline{font-size:8.8pt;font-weight:700;color:var(--ink);margin-bottom:1px}
   .kw{font-weight:700}
@@ -128,7 +128,7 @@
 
   .sr{display:grid;grid-template-columns:auto 1fr;gap:1.5mm 5mm;font-size:9pt;
     font-variant-numeric:tabular-nums;border-top:1px solid var(--hair);
-    border-bottom:1px solid var(--hair);padding:2.5mm 0;margin:0 0 3mm;font-family:var(--mono)}
+    border-bottom:1px solid var(--hair);padding:2.2mm 0;margin:0 0 2.6mm;font-family:var(--mono)}
   .sr .k{font-family:var(--disp);font-size:6.5pt;letter-spacing:.16em;text-transform:uppercase;font-weight:700;align-self:center}
   .sr .k.sup{color:var(--bull)} .sr .k.res{color:var(--bear)}
   .sr .v{font-weight:700}
@@ -146,6 +146,19 @@
   .invtar .inv b{color:var(--bear)}
   .invtar .tar b{color:var(--bull)}
   .konsek{font-size:8pt;color:var(--mute);margin:0}
+
+  /* strip probabilitas historis — 1 baris kecil dekat skor komposit */
+  .probstrip{font-family:var(--mono);font-size:6.4pt;color:var(--mute);
+    border-top:1px solid var(--hair);padding-top:.7mm;margin-top:.7mm;
+    white-space:nowrap;font-variant-numeric:tabular-nums}
+  .probstrip .pl{font-family:var(--disp);font-size:5.8pt;font-weight:700;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);margin-right:2mm}
+  .probstrip b{color:var(--ink)}
+  .probstrip small{font-size:5.8pt}
+  .probstrip .vv{color:var(--warn);font-weight:700}
+  /* kolom Prob tabel ringkasan */
+  table.ring .prob{font-size:8pt}
+  table.ring .prob small{font-size:6.2pt;color:var(--mute);font-weight:400}
 
   /* skor segmen — angka & bar ikut warna vonis */
   .skor{margin-top:auto;padding-top:3mm}
