@@ -16,6 +16,12 @@
   }
   *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   html,body{margin:0;padding:0;background:#2A333D}
+  /* .page sengaja 296mm (A4 297mm) supaya pembulatan tidak memicu halaman
+     kosong tambahan — sisa 1mm itu menampakkan latar dokumen sebagai garis
+     tipis di tepi bawah halaman terakhir. Di layar latar abu berguna (halaman
+     tampak "mengambang"), tapi saat DICETAK latar harus senada kertasnya:
+     navy di bulletin, putih di bedah. */
+  @media print{html,body{background:var(--paper)}}
   body{font-family:var(--disp);color:var(--ink);line-height:1.45;font-size:9pt}
   .page{width:210mm;height:296mm;background:var(--paper);color:var(--ink);margin:0 auto;position:relative;
     display:flex;flex-direction:column;page-break-after:always;overflow:hidden}
