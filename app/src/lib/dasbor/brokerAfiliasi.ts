@@ -42,6 +42,7 @@ export const AFILIASI_BROKER: AfiliasiBroker[] = [
   { kode: 'SF', sekuritas: 'Surya Fajar Sekuritas', grup: 'Surya Fajar Capital', emiten: ['SFAN'] },
   { kode: 'AF', sekuritas: 'Harita Kencana Sekuritas', grup: 'Harita', emiten: ['NCKL', 'CITA'] },
   { kode: 'AP', sekuritas: 'Pacific Sekuritas Indonesia', grup: 'Pacific Strategic', emiten: ['APIC'] },
+  { kode: 'CD', sekuritas: 'Mega Capital Sekuritas', grup: 'CT Corp', emiten: ['MEGA', 'BBHI'] },
 ]
 
 const PETA_EMITEN: ReadonlyMap<string, AfiliasiBroker[]> = (() => {

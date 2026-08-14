@@ -45,9 +45,14 @@ export function DetailPanel({ allData, selected, onClose }: DetailPanelProps) {
               <div className="pi-panel-row-pct num" style={{ color: PCT_CLR }}>{h.pct}%</div>
             </div>
           ))}
-          {afiliasi.length > 0 && (
+          <div className="pi-panel-section-label" style={{ marginTop: 14 }}>BROKER TERAFILIASI</div>
+          {afiliasi.length === 0 ? (
+            <p className="muted" style={{ fontSize: 10, lineHeight: 1.5, margin: '4px 0 0' }}>
+              Belum ada sekuritas yang tercatat satu grup usaha dengan {em.code} (kurasi redaksi
+              — hanya afiliasi publik berkeyakinan tinggi yang dimasukkan).
+            </p>
+          ) : (
             <>
-              <div className="pi-panel-section-label" style={{ marginTop: 14 }}>BROKER TERAFILIASI</div>
               {afiliasi.map((a) => (
                 <div className="pi-panel-row" key={a.kode}>
                   <span
@@ -56,7 +61,19 @@ export function DetailPanel({ allData, selected, onClose }: DetailPanelProps) {
                   >{a.kode}</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div className="pi-panel-row-name">{a.sekuritas}</div>
-                    <div className="pi-panel-row-badges"><span className="bchip">GRUP {a.grup.toUpperCase()}</span></div>
+                    <div className="pi-panel-row-badges" style={{ flexWrap: 'wrap', rowGap: 3 }}>
+                      <span className="bchip">GRUP {a.grup.toUpperCase()}</span>
+                      {/* saham segrup broker ini — emiten yang sedang dibuka ditandai amber */}
+                      {a.emiten.map((t) => (
+                        <span
+                          key={t}
+                          className="bchip"
+                          style={t === em.code
+                            ? { color: 'var(--amber)', borderColor: 'var(--amber)', fontWeight: 700 }
+                            : undefined}
+                        >{t}</span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ))}
