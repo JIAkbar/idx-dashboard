@@ -17,6 +17,7 @@ import { Radar } from './views/dasbor/Radar'
 import { Feedback } from './views/dasbor/Feedback'
 import { Login } from './views/Login'
 import { AdminHome } from './views/AdminHome'
+import { AkunAdmin } from './views/admin/AkunAdmin'
 import { ChangelogAdmin } from './views/admin/ChangelogAdmin'
 import { EdisiUjicoba } from './views/EdisiUjicoba'
 import { EdisiView } from './views/EdisiView'
@@ -47,6 +48,7 @@ function App() {
                   yang berujung balik ke / dengan LoginModal terbuka (#41). */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/admin" element={<AdminHome />} />
+                <Route path="/admin/akun" element={<AkunAdmin />} />
               </Route>
             </Route>
             {/* /login lama dipertahankan sbg redirect (bookmark/tautan luar) — login

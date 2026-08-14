@@ -228,6 +228,10 @@
 }
 .lantai .af-sambut-stat .lbl { font-size: 8.5px; }
 
+/* Catatan kuota harian di header halaman (dekat tombol Keluar, #101) —
+   angka pengguna sendiri (profil.kuota_harian), batas final dihitung server. */
+.lantai .af-kuota-info { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+
 @media (prefers-reduced-motion: reduce) {
   .lantai.af-toast { animation: none; }
   .lantai .af-lb-bg { animation: none; }

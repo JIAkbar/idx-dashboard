@@ -1,0 +1,31 @@
+/* Gaya khusus halaman Kelola Akun (/admin/akun, #101) — token dari .lantai,
+   selaras AdminHome.css (.af-*). File terpisah karena domainnya beda (akun,
+   bukan unggahan) — bukan alasan teknis, cuma supaya gampang ditelusuri. */
+
+/* Kolom kuota — input number sempit, rata kanan. */
+.lantai .aa-kuota { width: 60px; text-align: right; padding: 5px 8px; }
+
+/* Toggle pill kecil (Izin Bedah / Aktif) — <button role="switch">, bukan
+   <input type=checkbox>, supaya bentuknya konsisten dgn tombol Lantai lain
+   dan warna ikut var(--amber) alih-alih accent-color browser. */
+.lantai .aa-sakelar {
+  position: relative; width: 34px; height: 19px; padding: 0; flex-shrink: 0;
+  background: var(--bg3, var(--bg2)); border: 1px solid var(--line2); border-radius: 99px;
+  cursor: pointer; transition: background .12s, border-color .12s;
+}
+.lantai .aa-sakelar.on { background: var(--amber); border-color: var(--amber); }
+.lantai .aa-sakelar:disabled { opacity: .5; cursor: default; }
+.lantai .aa-sakelar-bola {
+  position: absolute; top: 1px; left: 1px; width: 15px; height: 15px; border-radius: 99px;
+  background: var(--bg1); box-shadow: 0 1px 2px rgba(0, 0, 0, .25);
+  transition: transform .12s;
+}
+.lantai .aa-sakelar.on .aa-sakelar-bola { transform: translateX(15px); }
+
+/* Checkbox biasa + label sebaris (form Tambah Akun — izin Bedah awal). */
+.lantai .aa-cek-baris { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text); cursor: pointer; }
+
+/* Tabel akun butuh gulir horizontal di layar sempit — banyak kolom padat. */
+.lantai .aa-tbl-wrap { overflow-x: auto; }
+.lantai .aa-tbl { min-width: 720px; }
+

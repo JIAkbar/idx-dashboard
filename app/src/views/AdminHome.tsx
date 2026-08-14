@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useProfilSaya } from '../lib/profilSaya'
 import {
   IkonMenu,
   IKON_CENTANG,
   IKON_GAMBAR,
+  IKON_GIR,
   IKON_KOTAK_ARSIP,
   IKON_PAPAN_KLIP,
   IKON_PERINGATAN,
@@ -85,6 +88,20 @@ function pesanAksiDuplikat(existing: Baris, chartFile: File | null): string {
   return existing.chart
     ? 'orderbook lama akan diganti; chart lama tetap dipertahankan.'
     : 'unggahan baru akan MENGGANTIKAN yang lama.'
+}
+
+/** Galat RLS/kebijakan storage (backend Fase 1, #100) datang sebagai teks
+ *  generik Postgres ("new row violates row-level security policy…") tanpa
+ *  sebutkan alasan spesifik — server sengaja tak membocorkan detail kebijakan.
+ *  Di sini diterjemahkan jadi kalimat yang menyebut semua kemungkinan
+ *  penyebab (kuota habis / emiten sudah ada / tanggal masa depan / tanpa
+ *  izin) alih-alih menampilkan istilah teknis mentah ke pengguna. */
+function terjemahkanGalatUnggah(pesan: string): string {
+  const p = pesan.toLowerCase()
+  if (p.includes('row-level security') || p.includes('violates') || p.includes('policy') || p.includes('permission denied') || p.includes('403')) {
+    return 'Unggahan ditolak server — kemungkinan kuota harian sudah habis, emiten ini sudah disetor akun lain, tanggalnya di masa depan, atau kamu tidak punya izin untuk jenis unggahan ini.'
+  }
+  return pesan
 }
 
 function rangkumBerkas(paths: string[]): Baris[] {
@@ -223,7 +240,7 @@ function PilihGambar({ label, jenis, file, onFile, onPratinjau }: {
 
 /** Kerangka modal kecil — pola visual sama dengan LoginModal (.dasbor-modal-bg
  *  + .dasbor-modal + .panel), Escape & klik latar menutup. */
-function ModalKecil({ label, onClose, className, children }: { label: string; onClose: () => void; className?: string; children: ReactNode }) {
+export function ModalKecil({ label, onClose, className, children }: { label: string; onClose: () => void; className?: string; children: ReactNode }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', onKey)
@@ -258,6 +275,7 @@ function ModalKecil({ label, onClose, className, children }: { label: string; on
  */
 export function AdminHome() {
   const { session, signOut } = useAuth()
+  const { profil } = useProfilSaya()
   const { index } = useStockIndex()
 
   // Rak terbitan baca manifest publik keluaran/index.json (sumber sama dengan
@@ -380,6 +398,12 @@ export function AdminHome() {
    *  afordans upsert (chip keterangan + label tombol PERBARUI). */
   const kodeAktif = ticker.trim().toUpperCase()
   const existingBaris = kodeAktif ? sudah.find((b) => b.ticker === kodeAktif) : undefined
+  const hariIni = tanggalHariIni()
+  /** Kontributor (bukan superadmin) TIDAK boleh menimpa emiten yang sudah
+   *  disetor siapa pun untuk tanggal ini (#101) — beda dari perilaku lama
+   *  (upsert bebas) yang cuma masuk akal selagi hanya ada satu admin.
+   *  Superadmin tetap boleh menimpa/perbarui seperti sebelumnya. */
+  const kontributor = profil?.peran === 'kontributor'
 
   function tutupSambutan() {
     if (session) sessionStorage.setItem(KUNCI_SAMBUTAN, session.user.id)
@@ -405,11 +429,19 @@ export function AdminHome() {
       setFormErr('Emiten dan screenshot orderbook wajib diisi.')
       return
     }
+    if (tanggal > hariIni) {
+      setFormErr('Tanggal ini di masa depan — orderbook masa depan tidak diterima.')
+      return
+    }
+    const kode = ticker.trim().toUpperCase()
+    const adaSebelum = sudah.some((b) => b.ticker === kode)
+    if (kontributor && adaSebelum) {
+      setFormErr(`${kode} sudah disetor akun lain untuk ${tanggalManusiawi(tanggal)} — pilih emiten lain.`)
+      return
+    }
     setMengunggah(true)
     setFormErr('')
     try {
-      const kode = ticker.trim().toUpperCase()
-      const adaSebelum = sudah.some((b) => b.ticker === kode)
       await unggahScreenshot(orderbook, tanggal, kode, 'orderbook')
       if (chart) await unggahScreenshot(chart, tanggal, kode, 'chart')
       setToast({
@@ -420,7 +452,7 @@ export function AdminHome() {
       setFormBuka(false)
       setMuat((m) => m + 1)
     } catch (err) {
-      setToast({ ok: false, pesan: err instanceof Error ? err.message : 'Gagal unggah.' })
+      setToast({ ok: false, pesan: terjemahkanGalatUnggah(err instanceof Error ? err.message : 'Gagal unggah.') })
     } finally {
       setMengunggah(false)
     }
@@ -489,6 +521,16 @@ export function AdminHome() {
           <span className="sub">Area admin — unggah &amp; kelola edisi</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
+          {profil && (
+            <span className="af-kuota-info" title="Batas final dihitung server, bukan angka di layar ini">
+              Kuota hari ini: {profil.kuota_harian}/hari
+            </span>
+          )}
+          {profil?.peran === 'superadmin' && (
+            <Link to="/admin/akun" className="dd-btn">
+              <IkonMenu d={IKON_GIR} size={13} /> Kelola Akun
+            </Link>
+          )}
           <span className="muted">{session?.user.email}</span>
           <button type="button" className="dd-btn" onClick={() => setKonfirmKeluar(true)}>Keluar</button>
         </div>
@@ -735,7 +777,18 @@ export function AdminHome() {
         </section>
 
         <RadarUnggah />
-        <BedahUnggah />
+        {profil?.boleh_bedah ? (
+          <BedahUnggah />
+        ) : (
+          <section className="panel">
+            <div className="panel-h"><span className="lbl">Bedah Arus Saham — unggah sumber</span></div>
+            <div className="panel-b">
+              <p className="muted" style={{ margin: 0, fontSize: 11 }}>
+                Hak akses analisa single-saham diberikan superadmin.
+              </p>
+            </div>
+          </section>
+        )}
       </div>
 
       {formBuka && (
@@ -747,7 +800,8 @@ export function AdminHome() {
           <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12 }}>
             <div className="field">
               <span className="lbl">Tanggal</span>
-              <DatePicker value={tanggal} onChange={setTanggal} />
+              <DatePicker value={tanggal} onChange={setTanggal} maks={hariIni} />
+              <p className="muted" style={{ margin: '4px 0 0', fontSize: 10.5 }}>Orderbook masa depan tidak diterima.</p>
             </div>
             <div className="field">
               <span className="lbl">Emiten</span>
@@ -758,12 +812,21 @@ export function AdminHome() {
                 onSelect={setTicker}
                 placeholder="Ketik kode / nama emiten…"
                 tandai={new Set(sudah.map((b) => b.ticker))}
+                labelTanda="sudah ada"
               />
               {existingBaris && (
                 <p className="af-dup">
                   <IkonMenu d={IKON_PERINGATAN} size={12} />
                   <span>
-                    <b>{existingBaris.ticker}</b> sudah terunggah (orderbook {existingBaris.orderbook ? '✓' : '—'}, chart {existingBaris.chart ? '✓' : '—'}) — {pesanAksiDuplikat(existingBaris, chart)}
+                    {kontributor ? (
+                      <>
+                        <b>{existingBaris.ticker}</b> sudah disetor akun lain untuk {tanggalManusiawi(tanggal)} — pilih emiten lain.
+                      </>
+                    ) : (
+                      <>
+                        <b>{existingBaris.ticker}</b> sudah terunggah (orderbook {existingBaris.orderbook ? '✓' : '—'}, chart {existingBaris.chart ? '✓' : '—'}) — {pesanAksiDuplikat(existingBaris, chart)}
+                      </>
+                    )}
                   </span>
                 </p>
               )}
@@ -784,7 +847,7 @@ export function AdminHome() {
               onFile={setChart}
               onPratinjau={(g) => setLightbox({ items: [g], index: 0 })}
             />
-            <button type="submit" className="btn-p" disabled={mengunggah}>
+            <button type="submit" className="btn-p" disabled={mengunggah || (kontributor && Boolean(existingBaris))}>
               {mengunggah ? (existingBaris ? 'Memperbarui…' : 'Mengunggah…') : (existingBaris ? 'Perbarui' : 'Unggah')}
             </button>
             {formErr && <p className="af-err" style={{ margin: 0 }}>{formErr}</p>}

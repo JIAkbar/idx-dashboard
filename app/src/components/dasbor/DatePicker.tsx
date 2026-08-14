@@ -26,12 +26,16 @@ function urai(iso: string): { t: number; b: number; d: number } | null {
  * Nilai masuk/keluar tetap string ISO `YYYY-MM-DD` — kompatibel penuh dengan
  * pemakaian input date sebelumnya.
  */
-export function DatePicker({ value, onChange, tersedia, ariaLabel, rata = 'kiri' }: {
+export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 'kiri' }: {
   value: string
   onChange: (iso: string) => void
   /** Kalau diisi: hanya tanggal di set ini yang bisa dipilih (hari ber-data),
    *  sisanya disabled — dipakai pemilih tanggal /broker-summary (#79C). */
   tersedia?: ReadonlySet<string>
+  /** Kalau diisi (ISO YYYY-MM-DD): tanggal setelahnya disabled — dipakai form
+   *  unggah admin (#101) supaya orderbook masa depan tak bisa dipilih di UI
+   *  (server tetap sumber kebenaran; ini cuma cegah kesalahan klik). */
+  maks?: string
   ariaLabel?: string
   /** 'kanan' = popover rata kanan tombol — untuk pemicu dekat tepi kanan
    *  layar (header /broker-summary) supaya tidak terpotong viewport. */
@@ -152,13 +156,15 @@ export function DatePicker({ value, onChange, tersedia, ariaLabel, rata = 'kiri'
               iso === isoIni ? ' now' : '',
               iso === value ? ' sel' : '',
             ].join('')
+            const lewatMaks = maks !== undefined && iso > maks
+            const nonaktif = (tersedia ? !tersedia.has(iso) : false) || lewatMaks
             return (
               <button
                 key={iso}
                 type="button"
                 className={cls}
-                disabled={tersedia ? !tersedia.has(iso) : false}
-                title={tersedia && !tersedia.has(iso) ? 'Tidak ada data pada tanggal ini' : undefined}
+                disabled={nonaktif}
+                title={lewatMaks ? 'Tanggal masa depan tidak diterima' : tersedia && !tersedia.has(iso) ? 'Tidak ada data pada tanggal ini' : undefined}
                 onClick={() => { onChange(iso); setOpen(false) }}
               >
                 {d}
