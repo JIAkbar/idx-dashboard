@@ -32,6 +32,22 @@ def main():
         if "update_dari" in ed:
             baris["update_dari"] = ed["update_dari"]
         entri.append(baris)
+
+    # Bedah Arus Saham (BA-*): satu emiten satu terbitan, berkas di bedah/.
+    for berkas in sorted((AKAR / "bedah").glob("*.json")):
+        bd = json.loads(berkas.read_text(encoding="utf-8"))
+        kode = bd["edisi"]
+        if not (AKAR / "keluaran" / f"{kode}.pdf").exists():
+            continue
+        entri.append({
+            "kode": kode,
+            "tipe": "Bedah",
+            "tanggal": bd["tanggal"],
+            "tanggal_id": bd["tanggal_id"],
+            "judul": f"Bedah Arus Saham {bd['ticker']} — {bd['tanggal_id']}",
+            "emiten": [bd["ticker"]],
+            "pdf": f"{kode}.pdf",
+        })
     entri.sort(key=lambda e: e["tanggal"], reverse=True)
 
     keluar = AKAR / "keluaran" / "index.json"
