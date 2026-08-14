@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 export interface OpsiDropdown {
   nilai: string
@@ -26,6 +26,11 @@ interface DropdownProps {
  */
 export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disabled }: DropdownProps) {
   const [open, setOpen] = useState(false)
+  // Bug modal Tambah Akun (#3, 15 Agu 2026): dd-menu buka ke BAWAH baku dan
+  // menutupi kontrol di bawahnya (mis. tombol submit) di modal pendek. Diukur
+  // lewat getBoundingClientRect — kalau ruang bawah tak cukup DAN ruang atas
+  // lebih luas, buka ke atas.
+  const [bukaAtas, setBukaAtas] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -38,6 +43,25 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
     // bawah lipatan; gulirkan supaya langsung kelihatan saat menu dibuka.
     ref.current?.querySelector('.dd-it.sel')?.scrollIntoView({ block: 'nearest' })
     return () => document.removeEventListener('mousedown', onDocMouseDown)
+  }, [open])
+
+  useLayoutEffect(() => {
+    if (!open) { setBukaAtas(false); return }
+    const wadah = ref.current
+    const menu = wadah?.querySelector<HTMLElement>('.dd-menu')
+    if (!wadah || !menu) return
+    const rWadah = wadah.getBoundingClientRect()
+    // Batas jatuh = kartu `.panel` terdekat (modal ATAU panel biasa) kalau
+    // ada — dropdown dekat ujung modal pendek jangan menutupi kontrol di
+    // bawahnya (submit dsb) walau viewport sendiri masih longgar (bug #3).
+    // Tanpa `.panel` (dropdown lepas) baru pakai batas viewport.
+    const batas = wadah.closest<HTMLElement>('.panel')
+    const rBatas = batas?.getBoundingClientRect()
+    const batasBawah = rBatas ? rBatas.bottom : window.innerHeight
+    const batasAtas = rBatas ? rBatas.top : 0
+    const ruangBawah = batasBawah - rWadah.bottom
+    const ruangAtas = rWadah.top - batasAtas
+    setBukaAtas(ruangBawah < menu.offsetHeight + 8 && ruangAtas > ruangBawah)
   }, [open])
 
   const label = opsi.find((o) => o.nilai === nilai)?.label ?? placeholder ?? '—'
@@ -63,7 +87,7 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
   }
 
   return (
-    <div className={`dd${open ? ' open' : ''}`} ref={ref} onKeyDown={onKeyDown}>
+    <div className={`dd${open ? ' open' : ''}${bukaAtas ? ' dd-atas' : ''}`} ref={ref} onKeyDown={onKeyDown}>
       <button
         type="button"
         className="dd-btn"

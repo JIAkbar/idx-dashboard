@@ -297,7 +297,7 @@ function FormTambahPengecualian({ akun, halaman, onClose, onSukses }: {
   const izinkanOpsi = [{ nilai: 'ya', label: 'Izinkan' }, { nilai: 'tidak', label: 'Cabut' }]
 
   return (
-    <ModalKecil label="Tambah pengecualian akses" onClose={() => { if (!kirim) onClose() }}>
+    <ModalKecil className="af-form-modal" label="Tambah pengecualian akses" onClose={() => { if (!kirim) onClose() }}>
       <form onSubmit={submit} style={{ display: 'grid', gap: 12 }}>
         <div className="field">
           <span className="lbl">Akun</span>

@@ -744,6 +744,10 @@
 .lantai .dd-menu{position:absolute;top:calc(100% + 5px);left:0;min-width:max-content;max-height:320px;overflow-y:auto;background:var(--bg1);border:1px solid var(--line2);border-radius:var(--r);padding:4px;display:none;z-index:50;box-shadow:0 10px 28px rgba(0,0,0,.35)}
 .lantai .dd.open .dd-menu{display:block;animation:vin .14s ease}
 @keyframes vin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* Buka ke ATAS (Dropdown.tsx mengukur ruang viewport lalu memasang kelas ini)
+   — dropdown dekat tepi bawah wadah pendek (mis. modal Tambah Akun, #3) tidak
+   lagi menutupi kontrol di bawahnya. */
+.lantai .dd.dd-atas .dd-menu{top:auto;bottom:calc(100% + 5px)}
 .lantai .dd-it{display:flex;width:100%;text-align:left;padding:6px 10px;border-radius:4px;font-family:var(--mono);font-size:11.5px;color:var(--text2);white-space:nowrap}
 .lantai .dd-it:hover{background:var(--amber-dim);color:var(--text)}
 .lantai .dd-it.sel{color:var(--amber)}

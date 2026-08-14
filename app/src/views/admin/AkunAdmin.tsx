@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useProfilSaya } from '../../lib/profilSaya'
-import { daftarAkun, buatAkun, hapusAkun, resetSandi, setProfil, type AkunRow } from '../../lib/adminAkun'
+import { daftarAkun, buatAkun, hapusAkun, resetSandi, setProfil, ubahEmail, type AkunRow } from '../../lib/adminAkun'
 import { daftarJenjang, type JenjangRow } from '../../lib/jenjang'
-import { IkonMenu, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_TAMBAH, IKON_TONG } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_SURAT, IKON_TAMBAH, IKON_TONG } from '../../components/dasbor/IkonMenu'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { AksesDitolak } from './AdminLayout'
@@ -70,6 +70,7 @@ export function AkunAdmin() {
   const [tambahBuka, setTambahBuka] = useState(false)
   const [resetTarget, setResetTarget] = useState<AkunRow | null>(null)
   const [hapusTarget, setHapusTarget] = useState<AkunRow | null>(null)
+  const [emailTarget, setEmailTarget] = useState<AkunRow | null>(null)
 
   const superadmin = profil?.peran === 'superadmin'
 
@@ -209,6 +210,9 @@ export function AkunAdmin() {
                         <td>{waktuManusiawi(a.terakhir_masuk)}</td>
                         <td className="af-aksi">
                           <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                            <button type="button" className="dd-btn" disabled={sedangProses} onClick={() => setEmailTarget(a)}>
+                              <IkonMenu d={IKON_SURAT} size={12} /> Ubah Email
+                            </button>
                             <button type="button" className="dd-btn" disabled={sedangProses} onClick={() => setResetTarget(a)}>
                               <IkonMenu d={IKON_KUNCI} size={12} /> Atur Ulang Sandi
                             </button>
@@ -245,6 +249,19 @@ export function AkunAdmin() {
           onSukses={(pesan) => {
             setToast({ ok: true, pesan })
             setResetTarget(null)
+          }}
+        />
+      )}
+
+      {emailTarget && (
+        <FormUbahEmail
+          akun={emailTarget}
+          sendiri={emailTarget.id === profil?.id}
+          onClose={() => setEmailTarget(null)}
+          onSukses={(emailBaru, pesan) => {
+            setAkun((list) => list && list.map((a) => (a.id === emailTarget.id ? { ...a, email: emailBaru } : a)))
+            setToast({ ok: true, pesan })
+            setEmailTarget(null)
           }}
         />
       )}
@@ -313,7 +330,7 @@ function FormTambahAkun({ onClose, onSukses }: { onClose: () => void; onSukses: 
   }
 
   return (
-    <ModalKecil label="Tambah akun" onClose={() => { if (!kirim) onClose() }}>
+    <ModalKecil className="af-form-modal" label="Tambah akun" onClose={() => { if (!kirim) onClose() }}>
       <form onSubmit={submit} style={{ display: 'grid', gap: 12 }}>
         <div className="field">
           <span className="lbl">Email</span>
@@ -421,6 +438,65 @@ function FormResetSandi({ akun, onClose, onSukses }: { akun: AkunRow; onClose: (
           <input className="inp" type="password" required value={konfirmasi} onChange={(e) => setKonfirmasi(e.target.value)} />
         </div>
         <button type="submit" className="btn-p" disabled={kirim}>{kirim ? 'Menyimpan…' : 'Atur Ulang'}</button>
+        {err && <p className="af-err" style={{ margin: 0 }}>{err}</p>}
+      </form>
+    </ModalKecil>
+  )
+}
+
+/** Modal "Ubah Email" (#2, permintaan superadmin — ganti mis. arus@idx.id
+ *  jadi admin@papan.id) — pola sama FormResetSandi: alamat sekarang hanya
+ *  baca, validasi bentuk email di sisi aplikasi (server validasi ulang, ini
+ *  cuma cegah kedip form yang pasti ditolak), peringatan alamat lama langsung
+ *  tak bisa dipakai masuk lagi. Kalau superadmin mengubah emailnya SENDIRI,
+ *  peringatan tambahan: pakai alamat baru saat masuk berikutnya. */
+function FormUbahEmail({ akun, sendiri, onClose, onSukses }: { akun: AkunRow; sendiri: boolean; onClose: () => void; onSukses: (emailBaru: string, pesan: string) => void }) {
+  const [email, setEmail] = useState('')
+  const [kirim, setKirim] = useState(false)
+  const [err, setErr] = useState('')
+
+  async function submit(e: FormEvent) {
+    e.preventDefault()
+    const baru = email.trim()
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(baru)) {
+      setErr('Bentuk email tidak valid.')
+      return
+    }
+    if (baru.toLowerCase() === akun.email.toLowerCase()) {
+      setErr('Email baru sama dengan yang sekarang.')
+      return
+    }
+    setKirim(true)
+    setErr('')
+    try {
+      const hasil = await ubahEmail(akun.id, baru)
+      onSukses(hasil.email, `Email ${akun.email} diubah jadi ${hasil.email}.`)
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Gagal mengubah email.')
+    } finally {
+      setKirim(false)
+    }
+  }
+
+  return (
+    <ModalKecil label={`Ubah email — ${akun.alias || akun.email}`} onClose={() => { if (!kirim) onClose() }}>
+      <form onSubmit={submit} style={{ display: 'grid', gap: 12 }}>
+        <div className="field">
+          <span className="lbl">Alamat sekarang</span>
+          <input className="inp" type="email" value={akun.email} readOnly disabled />
+        </div>
+        <div className="field">
+          <span className="lbl">Alamat baru</span>
+          <input className="inp" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nama.baru@contoh.com" />
+        </div>
+        <p className="af-warn" style={{ margin: 0 }}>
+          <IkonMenu d={IKON_PERINGATAN} size={13} />
+          <span>
+            Alamat lama ({akun.email}) tidak bisa dipakai masuk lagi setelah diganti.
+            {sendiri && ' Karena ini akunmu sendiri, pakai alamat BARU saat masuk berikutnya.'}
+          </span>
+        </p>
+        <button type="submit" className="btn-p" disabled={kirim}>{kirim ? 'Menyimpan…' : 'Ubah Email'}</button>
         {err && <p className="af-err" style={{ margin: 0 }}>{err}</p>}
       </form>
     </ModalKecil>
