@@ -6,7 +6,11 @@ import { ByStock } from './peta-investor/ByStock'
 import { ByInvestor } from './peta-investor/ByInvestor'
 import { DetailPanel } from './peta-investor/DetailPanel'
 import { PetaInvestorSearch } from './peta-investor/PetaInvestorSearch'
+import { exportEmiten, exportInvestor, exportSemua } from '../../lib/dasbor/exportPeta'
 import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_ULANG, IKON_KLIK, IKON_PERLUAS } from '../../components/dasbor/IkonMenu'
+
+/** Panah unduh ke tray — sama dengan IKON_UNDUH lokal Bulletin.tsx. */
+const IKON_UNDUH = 'M12 4v10M7.5 10.5L12 15l4.5-4.5M5 19h14'
 
 type ViewTab = 'grafik' | 'stock' | 'investor'
 
@@ -47,6 +51,8 @@ export function PetaInvestor() {
   // label tombol lewat fullscreenchange (biar tetap benar saat keluar via Esc).
   const graphCardRef = useRef<HTMLDivElement>(null)
   const [fsAktif, setFsAktif] = useState(false)
+  // Menu Export XLS — tiga mode: emiten+cabang / investor / seluruh dataset.
+  const [exportBuka, setExportBuka] = useState(false)
 
   useEffect(() => {
     const onFsChange = () => setFsAktif(document.fullscreenElement === graphCardRef.current)
@@ -133,6 +139,50 @@ export function PetaInvestor() {
                   {t.label}
                 </button>
               ))}
+            </div>
+            <div className={`dd${exportBuka ? ' open' : ''}`} style={{ position: 'relative' }}>
+              <button
+                type="button"
+                className="dd-btn"
+                onClick={() => setExportBuka((v) => !v)}
+                onBlur={() => setTimeout(() => setExportBuka(false), 200)}
+                title="Unduh data Peta Investor sebagai berkas Excel"
+              >
+                <IkonMenu d={IKON_UNDUH} size={13} /> Export XLS
+              </button>
+              {exportBuka && (
+                <div className="dd-menu" style={{ display: 'block', right: 0, left: 'auto' }}>
+                  <button
+                    type="button"
+                    className="dd-it"
+                    disabled={selectedDetail?.type !== 'emiten'}
+                    style={selectedDetail?.type !== 'emiten' ? { opacity: 0.45, cursor: 'not-allowed' } : undefined}
+                    onMouseDown={() => {
+                      if (selectedDetail?.type === 'emiten') exportEmiten(data, selectedDetail.code)
+                    }}
+                  >
+                    {selectedDetail?.type === 'emiten'
+                      ? `Emiten ${selectedDetail.code} + cabang`
+                      : 'Emiten + cabang (pilih emiten dulu)'}
+                  </button>
+                  <button
+                    type="button"
+                    className="dd-it"
+                    disabled={selectedDetail?.type !== 'investor'}
+                    style={selectedDetail?.type !== 'investor' ? { opacity: 0.45, cursor: 'not-allowed' } : undefined}
+                    onMouseDown={() => {
+                      if (selectedDetail?.type === 'investor') exportInvestor(data, selectedDetail.name)
+                    }}
+                  >
+                    {selectedDetail?.type === 'investor'
+                      ? `Portofolio ${selectedDetail.name.slice(0, 24)}`
+                      : 'Portofolio investor (pilih investor dulu)'}
+                  </button>
+                  <button type="button" className="dd-it" onMouseDown={() => exportSemua(data)}>
+                    Seluruh dataset (flat, bahan pivot)
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
