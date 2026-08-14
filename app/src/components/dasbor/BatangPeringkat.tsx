@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { Link } from 'react-router-dom'
 import { fp } from '../../lib/dasbor/format'
 
 /**
@@ -20,10 +21,17 @@ import { fp } from '../../lib/dasbor/format'
 export function BatangPeringkat({
   baris,
   sorot,
+  symUntuk,
+  potret,
 }: {
   /** nilai null = data tidak tersedia (#88) — tampil "—" tanpa batang, urut terbawah. */
   baris: { nama: string; nilai: number | null }[]
   sorot?: string
+  /** Simbol TradingView utk nama ini (tanpa/dengan prefiks IDX:) — baris jadi
+   *  link ke /chart?sym=. null/undefined = baris tidak bisa diklik. */
+  symUntuk?: (nama: string) => string | null
+  /** Satu kolom lebar: kolom nama diperluas, bar menyusut (panel /sector). */
+  potret?: boolean
 }) {
   const urut = [...baris].sort((a, b) => (b.nilai ?? -Infinity) - (a.nilai ?? -Infinity))
   const nilai = urut.map((b) => b.nilai).filter((v): v is number => v !== null)
@@ -33,12 +41,13 @@ export function BatangPeringkat({
   const nol = ((0 - lo) / rentang) * 100
 
   return (
-    <div className="rank-wrap">
+    <div className={`rank-wrap${potret ? ' potret' : ''}`}>
       {urut.map((b, i) => {
         const positif = (b.nilai ?? 0) >= 0
         const lebar = b.nilai === null ? 0 : (Math.abs(b.nilai) / rentang) * 100
-        return (
-          <div className={`rk-row${b.nama === sorot ? ' kita' : ''}`} key={b.nama}>
+        const sym = symUntuk?.(b.nama) ?? null
+        const isi = (
+          <>
             <span className="rk-no">{i + 1}</span>
             <span className="rk-nm" title={b.nama}>{b.nama}</span>
             <span className="rk-tr" style={{ '--nol': `${nol}%` } as CSSProperties}>
@@ -52,7 +61,15 @@ export function BatangPeringkat({
             {b.nilai === null
               ? <span className="rk-v">—</span>
               : <span className={`rk-v ${positif ? 'up' : 'dn'}`}>{fp(b.nilai)}</span>}
-          </div>
+          </>
+        )
+        const kelas = `rk-row${b.nama === sorot ? ' kita' : ''}`
+        return sym ? (
+          <Link className={`${kelas} rk-link`} key={b.nama} to={`/chart?sym=${sym}`} title={`Buka chart ${b.nama}`}>
+            {isi}
+          </Link>
+        ) : (
+          <div className={kelas} key={b.nama}>{isi}</div>
         )
       })}
     </div>
