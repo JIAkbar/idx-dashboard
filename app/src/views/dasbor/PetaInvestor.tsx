@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { GrafikJaringan } from '../../components/dasbor/GrafikJaringan'
 import { WARNA } from '../../lib/dasbor/graphRender'
 import { getInvestorMap, usePetaInvestor, type GraphSelection, type InvestorMapEntry } from '../../lib/dasbor/petaInvestorData'
@@ -6,7 +6,7 @@ import { ByStock } from './peta-investor/ByStock'
 import { ByInvestor } from './peta-investor/ByInvestor'
 import { DetailPanel } from './peta-investor/DetailPanel'
 import { PetaInvestorSearch } from './peta-investor/PetaInvestorSearch'
-import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_ULANG, IKON_KLIK } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_ULANG, IKON_KLIK, IKON_PERLUAS } from '../../components/dasbor/IkonMenu'
 
 type ViewTab = 'grafik' | 'stock' | 'investor'
 
@@ -42,6 +42,17 @@ export function PetaInvestor() {
   /** Override daftar node graf umum saat investor diklik (portofolionya, s.d. 60 emiten). null = pakai default (10 emiten pertama). */
   const [investorFocusList, setInvestorFocusList] = useState<InvestorMapEntry[] | null>(null)
   const [selectedDetail, setSelectedDetail] = useState<GraphSelection | null>(null)
+  // Layar penuh kartu graf — Fullscreen API bawaan peramban, pola sama #51
+  // (ChartIndeks): browser urus ESC/tumpukan/ukuran, kita cuma sinkronkan
+  // label tombol lewat fullscreenchange (biar tetap benar saat keluar via Esc).
+  const graphCardRef = useRef<HTMLDivElement>(null)
+  const [fsAktif, setFsAktif] = useState(false)
+
+  useEffect(() => {
+    const onFsChange = () => setFsAktif(document.fullscreenElement === graphCardRef.current)
+    document.addEventListener('fullscreenchange', onFsChange)
+    return () => document.removeEventListener('fullscreenchange', onFsChange)
+  }, [])
 
   const defaultEmitenList = useMemo(() => (data ? data.slice(0, DEFAULT_NODE_COUNT) : []), [data])
   const emitenList = investorFocusList ?? defaultEmitenList
@@ -134,8 +145,21 @@ export function PetaInvestor() {
                 ))}
                 <span className="pi-legend-hint">Ukuran simpul = % kepemilikan · label hanya 12 simpul terbesar, sisanya muncul saat diarahkan · <IkonMenu d={IKON_KLIK} size={11} /> klik untuk detail</span>
               </div>
-              <div className="panel pi-graph-card">
-                <GrafikJaringan allData={data} emitenList={emitenList} focusCode={focusCode} onSelect={handleSelect} />
+              <div className="panel pi-graph-card" ref={graphCardRef}>
+                <GrafikJaringan allData={data} emitenList={emitenList} focusCode={focusCode} onSelect={handleSelect}>
+                  <button
+                    type="button"
+                    className="pi-fs-btn"
+                    onClick={() => {
+                      if (fsAktif) document.exitFullscreen?.().catch(() => {})
+                      else graphCardRef.current?.requestFullscreen?.()?.catch(() => {})
+                    }}
+                    title={fsAktif ? 'Keluar layar penuh' : 'Layar penuh'}
+                  >
+                    {fsAktif ? <IkonMenu d="M6 6l12 12M18 6L6 18" size={13} /> : <IkonMenu d={IKON_PERLUAS} size={13} />}
+                    <span>{fsAktif ? 'Keluar' : 'Layar Penuh'}</span>
+                  </button>
+                </GrafikJaringan>
                 {selectedDetail && <DetailPanel allData={data} selected={selectedDetail} onClose={() => setSelectedDetail(null)} />}
               </div>
               <div style={{ fontSize: 10, color: 'var(--text3)', textAlign: 'center' }}>

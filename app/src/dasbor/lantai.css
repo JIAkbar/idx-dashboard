@@ -734,6 +734,18 @@
 .lantai .tile .t-val{font-family:var(--mono);font-weight:600;font-size:15px;margin-top:3px}
 .lantai .tile.big{grid-column:span 2}
 .lantai .tile.big .t-val{font-size:24px}
+/* Tile sektor kini <button> yang bisa diklik (buka daftar saham sektornya) —
+   lucuti gaya bawaan button, tunjukkan bisa diklik, tandai yang terpilih. */
+.lantai button.tile{cursor:pointer;font:inherit;color:inherit;text-align:left;background:none}
+.lantai button.tile:hover{border-color:var(--amber)}
+.lantai .tile.on{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber)}
+/* Panel daftar saham sektor terpilih: grid kolom adaptif, scroll internal. */
+.lantai .sek-emiten{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:2px 14px;max-height:340px;overflow-y:auto;padding:4px 2px}
+.lantai .sek-em{display:flex;align-items:baseline;gap:8px;padding:3px 4px;border-radius:5px;color:inherit;text-decoration:none;min-width:0}
+.lantai .sek-em:hover{background:var(--bg3)}
+.lantai .sek-em .tick{color:var(--amber);flex:none}
+.lantai .sek-em-nm{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lantai .sek-cat{font-size:10px;color:var(--text3);margin-top:8px}
 /* Mobile: 11 tile jangan jadi tangga 2 kolom panjang — 3 kolom kompak
    (3×3 + baris sisa 2), biar data utama kelihatan tanpa scroll jauh. */
 @media (max-width:640px){
@@ -1006,6 +1018,18 @@
 .lantai .pi-graph-wrap { flex: 1; min-width: 0; position: relative; }
 .lantai .pi-graph { width: 100%; height: 100%; min-height: 480px; background: var(--bg3); border-radius: 0 0 8px 8px; }
 .lantai .pi-tooltip { display: none; position: absolute; background: var(--card); border: 0.5px solid var(--border2); border-radius: 8px; padding: 10px 14px; font-size: 11px; cursor: pointer; max-width: 220px; box-shadow: 0 4px 16px rgba(0,0,0,.4); z-index: 50; line-height: 1.7; }
+/* Pan+zoom sentuh: tanpa touch-action none, pinch/geser di ponsel direbut
+   scroll halaman sebelum sampai ke handler zoom d3. */
+.lantai .pi-graph svg { touch-action: none; display: block; }
+/* Tombol layar penuh graf — overlay pojok kanan-atas AREA GRAF (anak
+   .pi-graph-wrap, bukan kartu — supaya tidak menimpa kepala panel detail). */
+.lantai .pi-fs-btn { position: absolute; top: 10px; right: 10px; z-index: 20; display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 7px; border: 0.5px solid var(--border2); background: var(--card); color: var(--text2); font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.lantai .pi-fs-btn:hover { color: var(--text); border-color: var(--accent); }
+/* Layar penuh (#51 reuse): aturan umum .panel:fullscreen memaksa kolom untuk
+   halaman chart — kartu graf tetap baris graf|panel detail; tinggi graf ikut
+   layar (menang atas 360px !important mobile karena selektor lebih spesifik). */
+.lantai .pi-graph-card:fullscreen { flex-direction: row; background: var(--bg); }
+.lantai .pi-graph-card:fullscreen .pi-graph { height: 100% !important; }
 
 .lantai .pi-panel { display: block; width: 300px; min-width: 300px; border-left: 0.5px solid var(--border); overflow-y: auto; background: var(--card2); flex-shrink: 0; }
 .lantai .pi-panel-head { padding: 14px 16px; border-bottom: 0.5px solid var(--border); position: sticky; top: 0; background: var(--bg3); z-index: 5; display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }

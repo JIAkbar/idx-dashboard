@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import type { GLink, GNode } from '../../lib/dasbor/graphRender'
 import { renderFocusedGraph, renderForceGraph } from '../../lib/dasbor/graphRender'
 import type { GraphSelection, InvestorMapEntry } from '../../lib/dasbor/petaInvestorData'
@@ -13,6 +13,8 @@ interface GrafikJaringanProps {
   /** Kalau diisi, graf beralih ke "focused view" 1 emiten di tengah (port piRenderFocused). */
   focusCode: string | null
   onSelect: (sel: GraphSelection | null) => void
+  /** Overlay tambahan di atas area graf (mis. tombol layar penuh) — anak .pi-graph-wrap supaya posisinya relatif ke graf, bukan ke kartu (yang juga memuat panel detail). */
+  children?: ReactNode
 }
 
 /**
@@ -22,7 +24,7 @@ interface GrafikJaringanProps {
  * simulation lama SELALU di-stop() sebelum render ulang / saat unmount
  * supaya tidak numpuk multiple force simulation berjalan bersamaan.
  */
-export function GrafikJaringan({ allData, emitenList, focusCode, onSelect }: GrafikJaringanProps) {
+export function GrafikJaringan({ allData, emitenList, focusCode, onSelect, children }: GrafikJaringanProps) {
   const graphRef = useRef<HTMLDivElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
   const simRef = useRef<Simulation<GNode, GLink> | null>(null)
@@ -90,6 +92,7 @@ export function GrafikJaringan({ allData, emitenList, focusCode, onSelect }: Gra
     <div className="pi-graph-wrap">
       <div className="pi-graph" ref={graphRef} />
       <div className="pi-tooltip" ref={tooltipRef} />
+      {children}
     </div>
   )
 }
