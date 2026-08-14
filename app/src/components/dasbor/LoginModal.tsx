@@ -77,6 +77,11 @@ function SparkIhsg() {
   )
 }
 
+/** Nomor WhatsApp pengelola PAPAN, format internasional tanpa tanda plus
+ *  (0899… → 62899…) — bentuk yang diminta wa.me. */
+const WA_ADMIN = '628990447098'
+const WA_PESAN = 'Halo, saya mau register PAPAN — nama saya: '
+
 /**
  * Gerbang login sebagai modal (bukan halaman terpisah — dipicu dari tombol
  * "Masuk" di Sidebar/MobileNav, lihat DasborLayout). Animasi entrance pola
@@ -133,6 +138,18 @@ export function LoginModal({ onClose }: { onClose: () => void }) {
             <button type="submit" className="btn-p" disabled={submitting}>
               {submitting ? 'Memproses…' : 'Masuk'}
             </button>
+            {/* Pendaftaran mandiri sengaja TIDAK dibuka: akun kontributor lahir
+                dari kurasi manual — kuota, izin Bedah, dan alias untuk kredit
+                PDF semuanya ditentukan superadmin. Jadi tombol ini membuka
+                percakapan, bukan formulir. */}
+            <a
+              className="login-daftar"
+              href={`https://wa.me/${WA_ADMIN}?text=${encodeURIComponent(WA_PESAN)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Belum punya akun? <b>Daftar lewat WhatsApp</b>
+            </a>
           </form>
         </div>
       </div>
