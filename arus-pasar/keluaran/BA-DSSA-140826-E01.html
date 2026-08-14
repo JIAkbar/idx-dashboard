@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Bedah Arus Saham BA-DSSA-140826-E01</title>
+<style>
+  :root{
+    --paper:#0E1620; --panel:rgba(255,255,255,.04); --ink:#E9EEF4; --ink2:#C4CFDA;
+    --mute:#5E7080; --hair:rgba(255,255,255,.09); --brand:#12202C; --teal:#37B8AF;
+    --bull:#2FBF71; --bull-dim:rgba(47,191,113,.14);
+    --side:#E8A33D; --side-dim:rgba(232,163,61,.14);
+    --bear:#E4574C; --bear-dim:rgba(228,87,76,.14);
+    --warn:#E8A33D;
+    --disp:"Bahnschrift","Segoe UI",system-ui,sans-serif;
+    --mono:"Cascadia Code","Cascadia Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  html,body{margin:0;padding:0;background:#2A333D}
+  /* .page sengaja 296mm (A4 297mm) supaya pembulatan tidak memicu halaman
+     kosong tambahan — sisa 1mm itu menampakkan latar dokumen sebagai garis
+     tipis di tepi bawah halaman terakhir. Di layar latar abu berguna (halaman
+     tampak "mengambang"), tapi saat DICETAK latar harus senada kertasnya:
+     navy di bulletin, putih di bedah. */
+  @media print{html,body{background:var(--paper)}}
+  body{font-family:var(--disp);color:var(--ink);line-height:1.45;font-size:9pt}
+  .page{width:210mm;height:296mm;background:var(--paper);color:var(--ink);margin:0 auto;position:relative;
+    display:flex;flex-direction:column;page-break-after:always;overflow:hidden}
+  @media screen{.page{margin:10px auto;box-shadow:0 6px 30px rgba(0,0,0,.5)}}
+  @page{size:A4;margin:0}
+
+  /* ── Sistem sentimen: pita tepi kiri ── */
+  .senti-edge{position:absolute;left:0;top:0;bottom:0;width:5px}
+  .s-bull .senti-edge{background:var(--bull)}
+  .s-side .senti-edge{background:var(--side)}
+  .s-bear .senti-edge{background:var(--bear)}
+
+  /* ── Pita masthead ── */
+  .band{background:transparent;color:var(--ink);padding:7mm 14mm 5.5mm;
+    display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:1px solid var(--hair)}
+  .band .m h1{font-family:Georgia,Cambria,serif;font-size:19pt;font-weight:700;
+    margin:0;line-height:1;letter-spacing:.04em}
+  .band .m .sub{font-size:7pt;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--mute);margin-top:2.5px}
+  .band .m .byline{font-size:7pt;letter-spacing:.1em;color:var(--ink2);margin-top:3.5px}
+  .band .e{text-align:right;font-size:7.5pt;color:var(--ink2);line-height:1.5}
+  .band .e .kode{font-family:var(--mono);font-size:8pt;color:var(--teal)}
+
+  .inner{padding:6mm 14mm 0;display:flex;flex-direction:column;flex:1;min-height:0}
+
+  /* ── Judul emiten ── */
+  .trow{display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:1px solid var(--hair);padding-bottom:2mm}
+  .trow .tk{font-family:var(--mono);font-size:19pt;font-weight:800;letter-spacing:-.01em;line-height:1}
+  .trow .tk small{font-family:var(--disp);font-size:9pt;font-weight:400;color:var(--mute);margin-left:8px;letter-spacing:0}
+  .trow .px{text-align:right;font-variant-numeric:tabular-nums;line-height:1.1;font-family:var(--mono)}
+  .trow .px .h{font-size:19pt;font-weight:800}
+  .trow .px .c{font-size:9pt;font-weight:700}
+  .bull{color:var(--bull)} .bear{color:var(--bear)}
+  /* chg% harga ikut TANDA (.bull/.bear dari build.py berdasar o.chg), BUKAN
+     warna vonis — vonis bullish di hari merah tetap merah angkanya; sentimen
+     sudah terwakili pita, pill, strategi, dan skor. */
+
+  /* ── Strip statistik ── */
+  .stats{display:flex;border-bottom:1px solid var(--hair);
+    padding:2.2mm 0;font-variant-numeric:tabular-nums}
+  .stats .s{flex:1;padding-right:8px}
+  .stats .s .l{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+  .stats .s .v{font-size:9.5pt;font-weight:700;margin-top:1px}
+  .stats .s .v small{font-size:7pt;font-weight:400;color:var(--mute)}
+
+  /* ── Chart ── */
+  .chartwrap{margin:3mm 0 0;position:relative;border:1px solid var(--hair);
+    border-radius:1.5mm;padding:2mm 2.5mm;background:rgba(255,255,255,.02)}
+  .chartwrap .cap{font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--mute);margin-bottom:1.5mm}
+  canvas{width:100%;height:auto;display:block}
+
+  /* ── Kolom ── */
+  .cols{display:grid;grid-template-columns:60mm 1fr;gap:7mm;margin-top:3.6mm;flex:1;min-height:0}
+
+  h3.rule{font-size:7pt;letter-spacing:.18em;text-transform:uppercase;color:var(--ink2);
+    margin:0 0 2mm;display:flex;align-items:center;gap:6px;font-weight:700}
+  h3.rule::after{content:"";flex:1;border-top:1px solid var(--hair)}
+  h3.rule .r{font-weight:400;color:var(--mute);letter-spacing:.06em}
+
+  /* meter tipis */
+  .meter{height:3px;background:linear-gradient(90deg,var(--bear),rgba(255,255,255,.16) 50%,var(--bull));
+    position:relative;margin:1mm 0 1.5mm}
+  .meter i{position:absolute;top:-2.5px;width:2px;height:8px;background:var(--ink)}
+  .meterlbl{display:flex;justify-content:space-between;font-size:5.8pt;color:var(--mute);
+    text-transform:uppercase;letter-spacing:.1em;margin-bottom:2.5mm}
+
+  table.brk{width:100%;border-collapse:collapse;font-size:7.6pt;font-variant-numeric:tabular-nums;
+    font-family:var(--mono)}
+  table.brk th{font-size:6pt;color:var(--mute);text-transform:uppercase;letter-spacing:.12em;
+    text-align:right;padding:1.5px 0 3px;border-bottom:1px solid var(--hair);font-weight:700}
+  table.brk th:first-child{text-align:left}
+  table.brk td{padding:2.1px 0;text-align:right;border-bottom:1px solid rgba(255,255,255,.045)}
+  table.brk td:first-child{text-align:left;font-weight:700}
+  .bcode-b{color:var(--bull)} .bcode-s{color:var(--bear)}
+  .brk .sep td{padding:2.5mm 0 3px;font-size:6pt;color:var(--mute);text-transform:uppercase;
+    letter-spacing:.12em;text-align:left;font-weight:700;border-bottom:1px solid var(--hair)}
+  .brk .tot td{border-top:1px solid var(--hair);border-bottom:none;font-weight:700;padding-top:3px}
+  .tag{font-size:5.4pt;font-weight:700;padding:0 2.5px;margin-left:3px;vertical-align:1px;
+    letter-spacing:.05em;font-family:var(--disp)}
+  .tag.ritel{color:var(--warn);outline:1px solid var(--warn)}
+  .tag.scalp{color:var(--mute);outline:1px solid var(--mute)}
+  .brksrc{font-size:6.2pt;color:var(--mute);margin-top:2mm;line-height:1.5;font-family:var(--disp)}
+
+  /* ── Analisa kanan: verdict pill sentimen ── */
+  .bias{display:flex;justify-content:space-between;align-items:center;gap:4mm;
+    margin-bottom:2.2mm;padding:2mm 3mm;border-radius:1.5mm;background:var(--panel)}
+  .bias .lbl{font-size:12.5pt;font-weight:800;letter-spacing:-.005em}
+  .bias .lbl span{color:inherit}
+  .s-bull .bias{background:var(--bull-dim);color:var(--bull)}
+  .s-side .bias{background:var(--side-dim);color:var(--side)}
+  .s-bear .bias{background:var(--bear-dim);color:var(--bear)}
+  .risk{font-size:6.8pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+    padding:1.5px 8px;border:1px solid currentColor;border-radius:99px;
+    white-space:nowrap;flex:none}
+  .risk.MENENGAH{color:var(--teal)}
+  .risk.TINGGI{color:var(--warn)}
+  .risk.EKSTREM{color:var(--bear)}
+  .bias .risk{color:inherit}
+
+  .sec{margin-bottom:2.6mm}
+  .sec p{margin:0;font-size:8.6pt;color:var(--ink2)}
+  .flowline{font-size:8.8pt;font-weight:700;color:var(--ink);margin-bottom:1px}
+  .kw{font-weight:700}
+  .s-bull .kw{color:var(--bull)}
+  .s-side .kw{color:var(--side)}
+  .s-bear .kw{color:var(--bear)}
+
+  .sr{display:grid;grid-template-columns:auto 1fr;gap:1.5mm 5mm;font-size:9pt;
+    font-variant-numeric:tabular-nums;border-top:1px solid var(--hair);
+    border-bottom:1px solid var(--hair);padding:2.2mm 0;margin:0 0 2.6mm;font-family:var(--mono)}
+  .sr .k{font-family:var(--disp);font-size:6.5pt;letter-spacing:.16em;text-transform:uppercase;font-weight:700;align-self:center}
+  .sr .k.sup{color:var(--bull)} .sr .k.res{color:var(--bear)}
+  .sr .v{font-weight:700}
+  .sr .v span{color:var(--mute);font-weight:400;padding:0 4px}
+  .sr .v .ragu{color:var(--warn);font-weight:400;font-size:7pt;font-family:var(--disp)}
+
+  .strategi{border-left:3px solid var(--ink);padding:1.5mm 3mm 1.5mm 4mm;
+    font-size:9.3pt;font-weight:700;margin-bottom:3mm}
+  .s-bull .strategi{border-color:var(--bull);background:var(--bull-dim)}
+  .s-side .strategi{border-color:var(--side);background:var(--side-dim)}
+  .s-bear .strategi{border-color:var(--bear);background:var(--bear-dim)}
+  .invtar{display:flex;gap:9mm;font-size:8.8pt;margin-bottom:3mm;font-variant-numeric:tabular-nums}
+  .invtar .l{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);display:block}
+  .invtar b{font-weight:700;font-family:var(--mono)}
+  .invtar .inv b{color:var(--bear)}
+  .invtar .tar b{color:var(--bull)}
+  .konsek{font-size:8pt;color:var(--mute);margin:0}
+
+  /* strip probabilitas historis — 1 baris kecil dekat skor komposit */
+  .probstrip{font-family:var(--mono);font-size:6.4pt;color:var(--mute);
+    border-top:1px solid var(--hair);padding-top:.7mm;margin-top:.7mm;
+    white-space:nowrap;font-variant-numeric:tabular-nums}
+  .probstrip .pl{font-family:var(--disp);font-size:5.8pt;font-weight:700;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);margin-right:2mm}
+  .probstrip b{color:var(--ink)}
+  .probstrip small{font-size:5.8pt}
+  .probstrip .vv{color:var(--warn);font-weight:700}
+  /* kolom Prob tabel ringkasan */
+  table.ring .prob{font-size:8pt}
+  table.ring .prob small{font-size:6.2pt;color:var(--mute);font-weight:400}
+
+  /* skor segmen — angka & bar ikut warna vonis */
+  .skor{margin-top:auto;padding-top:3mm}
+  .skor .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1.5mm}
+  .skor .head .t{font-size:6.5pt;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+  .skor .head .n{font-size:12pt;font-weight:800;font-variant-numeric:tabular-nums;font-family:var(--mono)}
+  .s-bull .skor .head .n{color:var(--bull)}
+  .s-side .skor .head .n{color:var(--side)}
+  .s-bear .skor .head .n{color:var(--bear)}
+  .skor .barrow{display:flex;gap:2px;height:5px}
+  .skor .barrow i{background:var(--teal);border-radius:1px}
+  .s-bull .skor .barrow i{background:var(--bull)}
+  .s-side .skor .barrow i{background:var(--side)}
+  .s-bear .skor .barrow i{background:var(--bear)}
+  .skor .barrow i:nth-child(3){opacity:.8}
+  .skor .barrow i:nth-child(5){opacity:.6}
+  .skor .barrow i:nth-child(7){opacity:.45}
+  .skor .barrow i:nth-child(9){opacity:.35}
+  .skor .barrow i.sisa,.s-bull .skor .barrow i.sisa,.s-side .skor .barrow i.sisa,
+  .s-bear .skor .barrow i.sisa{background:rgba(255,255,255,.08);opacity:1}
+  .skor .leg{display:flex;gap:5mm;font-size:6.3pt;color:var(--mute);margin-top:1.5mm;
+    font-variant-numeric:tabular-nums;font-family:var(--mono)}
+
+  .foot{border-top:1px solid var(--hair);margin:3mm 14mm 0;padding:2mm 0 5mm;
+    display:flex;justify-content:space-between;font-size:6.5pt;color:var(--mute)}
+  .foot .kode{font-family:var(--mono)}
+
+  /* ── Sampul (sistem sentimen) ── */
+  .cover .wm-big{font-family:Georgia,Cambria,serif;font-size:46pt;font-weight:700;
+    line-height:1.05;margin-top:8mm}
+  .cover .cv-tag{font-size:8pt;letter-spacing:.3em;text-transform:uppercase;color:var(--mute);margin-top:3mm}
+  .cover .cv-tgl{font-size:13pt;margin-top:9mm;color:var(--ink2)}
+  .cover .cv-kode{font-family:var(--mono);font-size:9pt;color:var(--teal);margin-top:2mm}
+  .senti-sum{display:flex;gap:4mm;margin-top:11mm}
+  .senti-sum .b{flex:1;border-radius:1.5mm;padding:4mm 5mm;font-family:var(--mono);
+    font-variant-numeric:tabular-nums}
+  .senti-sum .b .n{font-size:18pt;font-weight:800;display:block;line-height:1.15}
+  .senti-sum .b .l{font-size:6.5pt;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+  .sb-bull{background:var(--bull-dim);color:var(--bull)}
+  .sb-side{background:var(--side-dim);color:var(--side)}
+  .sb-bear{background:var(--bear-dim);color:var(--bear)}
+  .cv-list{margin-top:10mm}
+  .cvrow{display:flex;align-items:center;gap:5mm;padding:3mm 0;border-bottom:1px solid var(--hair);
+    font-variant-numeric:tabular-nums}
+  .cvrow .dot{width:3mm;height:3mm;border-radius:1mm;flex:none}
+  .cvrow .tkk{font-family:var(--mono);font-size:12pt;font-weight:800;width:24mm}
+  .cvrow .lb{flex:1;color:var(--ink2);font-size:9.5pt}
+  .cvrow .sk{font-family:var(--mono);font-size:12pt;font-weight:800}
+  /* sampul padat 7-20 emiten: 2 kolom, label pendek */
+  .cover .wm-big.kecil{font-size:30pt;line-height:1.1}
+  .cv-list.padat{columns:2;column-gap:9mm;margin-top:7mm}
+  .cv-list.padat .cvrow{padding:1.7mm 0;gap:3mm;break-inside:avoid}
+  .cv-list.padat .tkk{font-size:10pt;width:17mm}
+  .cv-list.padat .lb{font-size:7.3pt}
+  .cv-list.padat .sk{font-size:10pt}
+  .cv-foot{margin-top:auto;padding-bottom:14mm}
+  /* kotak stat berlabel gaya sampul lama (V2) — angka besar kebaca, bukan
+     satu baris kecil; label kecil di atas angka. */
+  .cv-stats{display:flex;gap:10mm;background:rgba(255,255,255,.04);border:1px solid var(--hair);
+    border-radius:2mm;padding:4mm 5mm;font-variant-numeric:tabular-nums;margin-bottom:4mm}
+  .cv-stats .l{display:block;font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:.8mm}
+  .cv-stats b{font-family:var(--mono);font-size:10.5pt;color:var(--ink)}
+  .cv-stats span .c-bull{font-family:var(--mono);font-size:9pt}
+  .cv-foot .c-bull{color:var(--bull)}
+  .cv-legal{font-size:7pt;color:var(--mute);line-height:1.8}
+
+  /* ── Ringkasan (hal 1) ── */
+  .lede{font-size:10.5pt;color:var(--ink2);margin:0 0 4mm;line-height:1.6;text-align:justify;text-wrap:pretty}
+  table.ring{width:100%;border-collapse:collapse;font-size:8.8pt;font-variant-numeric:tabular-nums}
+  table.ring th{font-size:6.3pt;color:var(--mute);text-transform:uppercase;letter-spacing:.14em;
+    text-align:left;padding:2mm 3mm 1.5mm 0;border-bottom:1px solid var(--hair);font-weight:700}
+  table.ring td{padding:2.6mm 3mm 2.6mm 0;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
+  table.ring th:first-child,table.ring td:first-child{width:12mm;padding-right:4mm;
+    color:var(--mute);font-family:var(--mono);font-size:8pt;text-align:left}
+  table.ring .tk{font-weight:800;font-size:10pt;font-family:var(--mono)}
+  table.ring .num{font-weight:700;font-family:var(--mono)}
+  .pill{display:inline-block;font-family:var(--mono);font-size:7pt;font-weight:700;
+    border-radius:1mm;padding:.6mm 2mm;letter-spacing:.04em}
+  .pill.bull{background:var(--bull-dim);color:var(--bull)}
+  .pill.side{background:var(--side-dim);color:var(--side)}
+  .pill.bear{background:var(--bear-dim);color:var(--bear)}
+  .c-bull{color:var(--bull)} .c-side{color:var(--side)} .c-bear{color:var(--bear)}
+  .lbl-sisa{font-size:7.4pt;color:var(--mute)}
+  .ihsgbar{background:var(--panel);border:1px solid var(--hair);border-radius:1.5mm;
+    padding:3mm 4mm;font-size:8.6pt;margin:4.5mm 0;display:flex;gap:8mm;font-variant-numeric:tabular-nums}
+  .ihsgbar b{font-weight:700;font-family:var(--mono)}
+  .ihsgbar .l{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);display:block}
+  .metode{font-size:7.6pt;color:var(--mute);line-height:1.7}
+  /* baris EMA di bawah strip statistik */
+  .emabar{font-family:var(--mono);font-size:7.2pt;color:var(--mute);margin:1.6mm 0 0;
+    letter-spacing:.03em}
+  .emabar b{color:var(--ink2);font-weight:700}
+  .emabar .ket{font-size:6.4pt;letter-spacing:.02em}
+  /* halaman kolofon (penutup) */
+  .kolofon{display:flex;flex-direction:column;align-items:center;text-align:center;
+    padding-top:34mm}
+  .kf-monogram{width:20mm;height:20mm;background:#F0A62B;border-radius:2mm;
+    display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;
+    font-size:26pt;font-weight:700;color:#0E1620;margin-bottom:6mm}
+  .kf-merek{font-size:8.5pt;letter-spacing:.3em;text-transform:uppercase;color:var(--mute);
+    margin-bottom:14mm}
+  .kf-judul{font-family:Georgia,Cambria,serif;font-size:24pt;font-weight:700;color:var(--ink);
+    margin:0 0 12mm}
+  .kf-blok{margin-bottom:10mm}
+  .kf-peran{font-size:8pt;letter-spacing:.24em;text-transform:uppercase;color:var(--mute);
+    margin-bottom:4mm}
+  .kf-utama{font-family:Georgia,serif;font-size:17pt;color:var(--ink)}
+  .kf-garis{border:0;border-top:1px solid var(--hair);width:44mm;margin:0 auto 10mm}
+  .kf-grid{display:grid;grid-template-columns:repeat(2,62mm);gap:3.4mm 10mm;justify-content:center}
+  .kf-nama{font-family:var(--mono);font-size:10.5pt;color:var(--ink2);padding:2.2mm 0;
+    border-bottom:1px solid rgba(255,255,255,.05)}
+  .kf-kaki{margin-top:auto;padding-top:14mm;font-size:7.5pt;color:var(--mute);line-height:1.9}
+  .metode b{color:var(--ink2)}
+
+  /* ── Kalimat angka (headline otomatis dari data) ── */
+  .hangka{font-family:Georgia,Cambria,serif;font-size:13pt;font-weight:700;line-height:1.3;
+    padding:2.5mm 0 2.2mm;border-bottom:1px solid var(--hair)}
+  .hangka b{color:var(--teal);font-variant-numeric:tabular-nums}
+  .hangka.em{font-size:9pt;font-weight:400;color:var(--ink2);padding:1.6mm 0 1.5mm;border-bottom:0}
+  .hangka.em b{font-weight:700}
+
+  /* ── Halaman Technical View IHSG ── */
+  .blok4{display:grid;grid-template-columns:1fr 1fr;gap:4.5mm 8mm;margin-top:4.5mm}
+  .blok4 .b4 p{margin:0;font-size:8.8pt;color:var(--ink2);line-height:1.6;text-align:justify}
+  .lvl{font-variant-numeric:tabular-nums}
+  .lvl .r{display:flex;justify-content:space-between;padding:1.55mm 0;
+    border-bottom:1px solid rgba(255,255,255,.05);font-size:8.6pt}
+  .lvl .r .l{color:var(--mute);font-size:6.8pt;letter-spacing:.1em;text-transform:uppercase;align-self:center}
+  .lvl .r b{font-family:var(--mono);font-weight:700}
+  .b4.ksmp{border-left:3px solid var(--teal);padding-left:4mm}
+
+  /* ── Halaman Sentimen Global & Domestik ── */
+  .sent-head{display:flex;align-items:center;gap:8mm;margin:4mm 0 3.5mm;padding:4mm 5mm;
+    background:var(--panel);border:1px solid var(--hair);border-radius:2mm}
+  .sent-skor{font-family:var(--mono);font-size:28pt;font-weight:800;line-height:1;white-space:nowrap}
+  .sent-skor small{font-size:10pt;color:var(--mute);font-weight:400}
+  .sent-skor .l{display:block;font-family:var(--disp);font-size:6.3pt;font-weight:700;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:1.5mm}
+  .sent-bar{flex:1;display:flex;gap:1.2mm;height:5.5mm}
+  .sent-bar i{flex:1;border-radius:.8mm;background:rgba(255,255,255,.08)}
+  .sent-bar.c-bull i.isi{background:var(--bull)}
+  .sent-bar.c-side i.isi{background:var(--side)}
+  .sent-bar.c-bear i.isi{background:var(--bear)}
+  .sent-komp{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm}
+  .sent-komp .k{background:var(--panel);border:1px solid var(--hair);border-radius:1.5mm;padding:2.5mm 3mm}
+  .sent-komp .k .l{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+  .sent-komp .k .v{font-family:var(--mono);font-size:10.5pt;font-weight:700;margin-top:1mm}
+  .sent-komp .k .s{font-family:var(--mono);font-size:7.4pt;color:var(--mute);margin-top:.6mm}
+  .formula{font-size:6.5pt;color:var(--mute);font-family:var(--mono);margin:2mm 0 4mm;line-height:1.7}
+  .poin-grid{display:grid;grid-template-columns:1fr 1fr;gap:4.5mm 8mm;margin-top:2.5mm}
+  .poin{display:grid;grid-template-columns:8mm 1fr;gap:3mm}
+  .poin .no{font-family:Georgia,serif;font-size:15pt;font-weight:700;color:var(--teal);line-height:1}
+  .poin h4{margin:0 0 1.2mm;font-size:9pt;font-weight:800;letter-spacing:.02em}
+  .poin p{margin:0;font-size:8.3pt;color:var(--ink2);line-height:1.55;text-align:justify}
+  .sent-ksmp{margin-top:8mm;border:1px solid var(--teal);border-radius:2mm;padding:3mm 4mm}
+  .sent-ksmp p{margin:0;font-size:8.8pt;color:var(--ink2);line-height:1.6;text-align:justify}
+
+  /* ── Scenario Map emiten: 3 kartu + aturan eksekusi ── */
+  .skn{display:flex;flex-direction:column;gap:1mm;margin-bottom:2mm}
+  .skn .kartu{border-left:2px solid var(--mute);border-radius:0 1mm 1mm 0;
+    background:var(--panel);padding:.9mm 2.5mm 1mm}
+  .skn .kartu.b{border-color:var(--bull);background:var(--bull-dim)}
+  .skn .kartu.t{border-color:var(--teal)}
+  .skn .kartu.r{border-color:var(--bear);background:var(--bear-dim)}
+  .skn .kt{font-size:6.4pt;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.5mm}
+  .skn .kartu.b .kt{color:var(--bull)}
+  .skn .kartu.t .kt{color:var(--teal)}
+  .skn .kartu.r .kt{color:var(--bear)}
+  .skn .kr{display:grid;grid-template-columns:11mm 1fr;gap:2.5mm;font-size:6.8pt;
+    line-height:1.28;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .skn .kl{font-size:5.4pt;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);padding-top:.35mm}
+  .skn .aturan{display:grid;grid-template-columns:11mm 1fr;gap:2.5mm;font-size:7.2pt;font-weight:700;
+    padding:1mm 2.5mm;border:1px solid var(--hair);border-radius:1mm}
+  .skn .aturan .kl{font-weight:400}
+
+  /* ── Peringkat ── */
+  table.rank{width:100%;border-collapse:collapse;font-size:8.8pt;font-variant-numeric:tabular-nums}
+  table.rank th{font-size:6.3pt;color:var(--mute);text-transform:uppercase;letter-spacing:.14em;
+    text-align:right;padding:2mm 0 1.5mm;border-bottom:1px solid var(--hair);font-weight:700}
+  table.rank th:nth-child(-n+2){text-align:left}
+  table.rank td{padding:2.8mm 0;border-bottom:1px solid rgba(255,255,255,.05);text-align:right}
+  table.rank td:nth-child(-n+2){text-align:left}
+  table.rank .tk{font-weight:800;font-size:10pt;font-family:var(--mono)}
+  table.rank .total{font-weight:800;font-size:12pt;font-family:var(--mono)}
+  .blok{margin-top:4.5mm}
+  .blok p{margin:0;font-size:8.6pt;color:var(--ink2)}
+  .blok.integritas{border-left:3px solid var(--warn);padding-left:4mm}
+  .blok.integritas p{color:var(--mute);font-size:8pt}
+</style>
+</head>
+<body>
+<style>
+  :root{
+    --paper:#FFFFFF; --panel:#F4F7FA; --hair:rgba(18,32,46,.14); --brand:#EEF2F7;
+    --ink:#16202B; --ink2:#3D4E5E; --mute:#5A6B7A;
+    --teal:#0B6F68; --bull:#0F7A38; --bull-dim:rgba(18,135,63,.10);
+    --bear:#C6362B; --bear-dim:rgba(198,54,43,.10);
+    --side:#8A5A06; --side-dim:rgba(184,119,8,.12); --warn:#8A5A06;
+  }
+  /* body dasarnya navy gelap (html,body{background:#2A333D} di template.html,
+     dipakai layar & sebagai "bantal" di celah rounding cetak) — .page cuma
+     296mm padahal A4 297mm supaya PDF tidak numpahin 1 halaman kosong, jadi
+     sisa 1mm di tepi bawah tiap halaman cetak menampakkan bg body. Di
+     bulletin gelap itu tak kelihatan (gelap atas gelap); di kertas putih
+     jadi garis hitam tipis melintang di setiap halaman — dibetulkan di sini
+     saja (dokumen bedah tidak pernah dicampur dengan halaman bulletin). */
+  html,body{background:var(--paper)}
+  .band{background:var(--brand);border-bottom:1px solid var(--ink)}
+  /* Garis/latar berikut di kulit gelap pakai rgba(255,255,255,x) hardcode
+     (bukan token) — di kertas putih jadi nyaris tak kelihatan, dibetulkan
+     ke var(--hair)/var(--panel) di sini saja (bulletin tidak kena). */
+  .chartwrap{background:var(--panel)}
+  .meter{background:linear-gradient(90deg,var(--bear),var(--hair) 50%,var(--bull))}
+  table.brk td{border-bottom-color:var(--hair)}
+  .lvl .r{border-bottom-color:var(--hair)}
+  .cv-stats{background:var(--panel)}
+  .bd-judul{font-family:Georgia,Cambria,serif;font-size:30pt;font-weight:700;line-height:1.08;margin-top:10mm}
+  .bd-tk{font-family:var(--mono);font-size:20pt;font-weight:800;margin-top:8mm}
+  .bd-tk small{font-family:var(--disp);font-size:9.5pt;font-weight:400;color:var(--mute);margin-left:8px}
+  .bd-vonis{font-size:10.5pt;color:var(--ink2);line-height:1.65;text-align:justify;margin-top:6mm;text-wrap:pretty}
+  .tagdraf{font-size:5.8pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--warn);outline:1px solid var(--warn);padding:.4mm 1.6mm;border-radius:.8mm;
+    vertical-align:2px;margin-left:2mm;font-family:var(--disp)}
+  .bd-lvl{display:grid;grid-template-columns:1fr 1fr;gap:0 10mm;margin-top:3mm}
+  .bd-note{font-size:6.5pt;color:var(--mute);font-family:var(--mono);line-height:1.7;margin-top:2.5mm}
+  /* Pita batas data — angka terbitan ditutup di sesi terakhir SEBELUM tanggal
+     rilis; dipasang di sampul supaya pembaca tidak menyangka ini waktu nyata. */
+  .bd-cutoff{margin-top:6mm;padding:2.5mm 4mm;border-left:3px solid var(--warn);
+    background:var(--panel);border-radius:0 1.5mm 1.5mm 0;font-size:8.2pt;
+    color:var(--ink2);line-height:1.6;text-align:justify}
+  .bd-cutoff .l{display:block;font-size:6pt;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--warn);margin-bottom:1.2mm;font-family:var(--disp)}
+  .sknb{display:flex;flex-direction:column;gap:3mm;margin-top:4mm}
+  .sknb .kartu{border-left:3px solid var(--mute);border-radius:0 1.5mm 1.5mm 0;
+    background:var(--panel);padding:3mm 4.5mm}
+  .sknb .kartu.b{border-color:var(--bull);background:var(--bull-dim)}
+  .sknb .kartu.t{border-color:var(--teal)}
+  .sknb .kartu.r{border-color:var(--bear);background:var(--bear-dim)}
+  .sknb .kt{font-size:10pt;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2mm}
+  .sknb .kartu.b .kt{color:var(--bull)} .sknb .kartu.t .kt{color:var(--teal)} .sknb .kartu.r .kt{color:var(--bear)}
+  .sknb .kr{display:grid;grid-template-columns:24mm 1fr;gap:4mm;font-size:8.8pt;line-height:1.5;
+    color:var(--ink2);padding:1mm 0;font-variant-numeric:tabular-nums}
+  .sknb .kl{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);padding-top:.6mm}
+  .sknb .aturan{display:grid;grid-template-columns:24mm 1fr;gap:4mm;font-size:9.3pt;font-weight:700;
+    padding:2.5mm 4.5mm;border:1px solid var(--hair);border-radius:1.5mm}
+  .sknb .aturan .kl{font-weight:400}
+</style>
+<script>
+window.__TEMA = {
+  emas: [[20,"#0E8F87",1],[50,"#0A6E68",1.2],[60,"#4A6B8A",1],[100,"#6B4FA8",1],[200,"#B06A2C",1.5]],
+  bull: "#12873F", bear: "#C6362B",
+  bullSoft: "rgba(18,135,63,.30)", bearSoft: "rgba(198,54,43,.30)",
+  teks: "#16202B", teksLembut: "rgba(22,32,43,.55)",
+  grid: "rgba(18,32,46,.14)",
+  // label pivot = angka support/resistance (informasi, bukan dekorasi) —
+  // dipakai --mute versi gelap (5A6B7A) bukan 7B8A99 supaya tetap lolos
+  // kontras 4,5:1 di kertas putih (lihat catatan token :root di atas).
+  pivot: "#5A6B7A"
+};
+</script>
+<div class="page">
+  <header class="band">
+    <div class="m"><h1>ARUS PASAR</h1><div class="sub">Bedah Arus Saham — Terbitan Perdana</div></div>
+    <div class="e">Jumat, 14 Agustus 2026<br><span class="kode">BA-DSSA-140826-E01</span></div>
+  </header>
+  <div class="inner">
+    <div class="bd-judul">BEDAH<br>ARUS SAHAM</div>
+    <div class="cv-tag" style="margin-top:3mm">Satu Emiten · Modal, Arus &amp; Probabilitas</div>
+    <div class="bd-tk">$DSSA<small>PT Dian Swastatika Sentosa Tbk.</small></div>
+    <div class="hangka" style="margin-top:5mm">DSSA <b>990</b> diperdagangkan <b>1,8%</b> di bawah harga konstruksi pasar <b>1.008</b></div>
+    <div class="bd-vonis">Sembilan hari setoran broker (03–13 Agu) memperlihatkan rotasi besar di balik net yang tipis: BK, SS, AK, dan RF menampung total ≈Rp400 miliar di rentang modal 905–1.007 melawan distribusi XL −Rp141,2 miliar. Sementara itu 85,1% modal historis pasar sudah di atas air dengan zona modal inti 780–940 — lantai tebal di bawah harga. Selama 955 (S1, berimpit modal akumulator) bertahan, tesis akumulasi terselubung edisi 13 Agu tetap hidup; close >1.025 bervolume membuka rute 1.060–1.095, patah di 955 mengembalikan harga ke zona modal 940–885.</div>
+    <div class="bd-cutoff">
+      <span class="l">Batas Data</span>
+      Seluruh angka terbitan ini ditutup pada sesi <b>13 Agustus 2026</b> — perdagangan hari terbit
+      (Jumat, 14 Agustus 2026) belum tercakup. Ini bukan data waktu nyata: harga, arus broker, dan
+      probabilitas dihitung dari sesi bursa yang sudah selesai sebelum tanggal rilis.
+    </div>
+    <div class="cv-foot">
+      <div class="cv-stats"><span><span class="l">Close</span><b>990 <span class="c-bear" style="font-size:8pt">−1,00%</span></b></span><span><span class="l">PCD (konstruksi)</span><b>1.008</b></span><span><span class="l">Modal di atas air</span><b>85,1%</b></span><span><span class="l">P(naik 5 hari)</span><b>56% <small style="color:var(--mute)">n508</small></b></span></div>
+      <div class="cv-legal">© 2026 Johan Iriawan Akbar — PAPAN (Pusat Analisa Pasar Nusantara). Hak cipta dilindungi.<br>
+      Analisis probabilistik, bukan ajakan transaksi. PCD = aproksimasi OHLCV, bukan data done per harga.<br>
+      Data per 13 Agustus 2026 (bukan waktu nyata) · sumber: Yahoo Finance &amp; Stockbit.</div>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+  <header class="band">
+    <div class="m"><h1>ARUS PASAR</h1><div class="sub">Price of Construction Distribution</div></div>
+    <div class="e">Jumat, 14 Agustus 2026<br><span class="kode">BA-DSSA-140826-E01</span></div>
+  </header>
+  <div class="inner">
+    <div class="hangka">Modal pasar DSSA terkonsentrasi <b>780</b>–<b>940</b>; close <b>990</b> di atas zona</div>
+    <div class="chartwrap">
+      <div class="cap">DSSA · Distribusi Volume × Harga · Peluruhan Half-life 60 Hari · 1656 Bar</div>
+      <canvas id="chPCD" width="1360" height="430"></canvas>
+    </div>
+    <script>
+    (function(){
+      const K=[[436.0, 45379789.2], [438.0, 52130099.8], [440.0, 55469271.7], [442.0, 80122445.2], [444.0, 93860368.1], [446.0, 80914677.5], [448.0, 74860036.8], [450.0, 63499237.0], [452.0, 52892731.1], [454.0, 33700902.6], [456.0, 26348269.6], [458.0, 23334779.7], [460.0, 17676752.6], [462.0, 17676752.6], [464.0, 17676752.6], [466.0, 17676752.6], [468.0, 9524563.6], [470.0, 13716733.9], [472.0, 15303397.6], [474.0, 21190924.8], [476.0, 21713488.8], [478.0, 19805467.0], [480.0, 25796037.7], [482.0, 18533754.6], [484.0, 17498377.8], [486.0, 23106339.8], [488.0, 19509777.7], [490.0, 24411542.9], [492.0, 884505608.5], [494.0, 11575196.3], [495.0, 14053352.5], [496.0, 11575196.3], [498.0, 8641196.2], [500.0, 31203479.1], [502.0, 5856109.2], [504.0, 5856109.2], [505.0, 29784726.7], [506.0, 4129138.7], [508.0, 4129138.7], [510.0, 33913865.4], [512.0, 2781174.5], [514.0, 2781174.5], [515.0, 29784726.7], [516.0, 1895401.9], [518.0, 1895401.9], [520.0, 24429677.1], [525.0, 17613775.9], [530.0, 26305928.5], [535.0, 25420879.2], [540.0, 25420879.2], [545.0, 17162087.7], [550.0, 17162087.7], [555.0, 17162087.7], [560.0, 21850319.7], [565.0, 23570221.9], [570.0, 28610076.4], [575.0, 35627829.5], [580.0, 56406699.6], [585.0, 65610023.9], [590.0, 106246032.8], [595.0, 117892070.3], [600.0, 126831632.1], [605.0, 144812936.7], [610.0, 151949921.6], [615.0, 198126908.6], [620.0, 119653995.2], [625.0, 115482640.1], [630.0, 130849200.2], [635.0, 119313670.2], [640.0, 128818125.5], [645.0, 106416020.2], [650.0, 94711544.3], [655.0, 88187178.6], [660.0, 103029926.2], [665.0, 123676026.8], [670.0, 162969696.7], [675.0, 157126291.7], [680.0, 133588967.2], [685.0, 117097834.3], [690.0, 120450441.9], [695.0, 99271506.6], [700.0, 95695606.4], [705.0, 107537387.8], [710.0, 81808580.5], [715.0, 85838690.0], [720.0, 83457207.8], [725.0, 96026957.2], [730.0, 118852482.4], [735.0, 143567513.4], [740.0, 154788054.3], [745.0, 154948880.5], [750.0, 152351371.9], [755.0, 220109601.3], [760.0, 225267300.3], [765.0, 311299916.6], [770.0, 318611206.0], [775.0, 339774395.2], [780.0, 411783748.6], [785.0, 416904197.1], [790.0, 472033938.2], [795.0, 595925582.4], [800.0, 690041829.0], [805.0, 772699492.2], [810.0, 809671233.9], [815.0, 934161039.6], [820.0, 805358206.0], [825.0, 803727126.8], [830.0, 659969700.3], [835.0, 618894861.3], [840.0, 574644539.6], [845.0, 520134966.7], [850.0, 1151327757.2], [855.0, 647652931.6], [860.0, 611161541.2], [865.0, 624885487.2], [870.0, 512227949.3], [875.0, 463794152.6], [880.0, 345764238.7], [885.0, 289437962.7], [890.0, 270697744.1], [895.0, 283003500.7], [900.0, 254466904.1], [905.0, 281798793.9], [910.0, 291186450.3], [915.0, 321659891.1], [920.0, 199635758.5], [925.0, 266467971.3], [930.0, 322889749.3], [935.0, 348474761.9], [940.0, 339716345.7], [945.0, 328811556.6], [950.0, 351764135.4], [955.0, 338100562.4], [960.0, 385819270.1], [965.0, 300962615.5], [970.0, 320526823.2], [975.0, 261197100.7], [980.0, 229700406.0], [985.0, 293676989.3], [990.0, 283076924.0], [995.0, 292416151.1], [1000.0, 273155781.5], [1005.0, 212992310.6], [1010.0, 162189680.4], [1015.0, 157539563.4], [1020.0, 98904156.3], [1025.0, 88488223.4], [1030.0, 86890847.7], [1035.0, 99424848.2], [1040.0, 99424848.2], [1045.0, 111225571.6], [1050.0, 87835826.4], [1055.0, 54831656.0], [1060.0, 54831656.0], [1065.0, 18229487.4], [1070.0, 18229487.4], [1075.0, 18229487.4], [1080.0, 3077284.3], [1085.0, 3077284.3], [1090.0, 3077284.3], [1095.0, 3077284.3], [1100.0, 7870575.0], [1105.0, 7870575.0], [1110.0, 7870575.0], [1115.0, 7870575.0], [1120.0, 4793290.7], [1125.0, 4793290.7], [1130.0, 7575035.2], [1135.0, 7575035.2], [1140.0, 7575035.2], [1145.0, 7575035.2], [1150.0, 7575035.2], [1155.0, 7575035.2], [1160.0, 7575035.2], [1165.0, 7575035.2], [1170.0, 7575035.2], [1175.0, 7575035.2], [1180.0, 7621551.7], [1185.0, 7708827.1], [1190.0, 7708827.1], [1195.0, 7615737.7], [1200.0, 7581251.4], [1205.0, 7581251.4], [1210.0, 7581251.4], [1215.0, 7614483.9], [1220.0, 2821193.2], [1225.0, 2999445.2], [1230.0, 3273694.9], [1235.0, 3273694.9], [1240.0, 3290159.4], [1245.0, 3391536.4], [1250.0, 3416870.3], [1255.0, 3472240.0], [1260.0, 3472240.0], [1265.0, 3472240.0], [1270.0, 3475811.7], [1275.0, 3475811.7], [1280.0, 3495216.1], [1285.0, 3354032.7], [1290.0, 3278634.9], [1295.0, 3055175.7], [1300.0, 3080745.7], [1305.0, 2945495.7], [1310.0, 3880147.4], [1315.0, 3778770.5], [1320.0, 1069313.7], [1325.0, 1069313.7], [1330.0, 1069313.7], [1335.0, 1069313.7], [1340.0, 1069313.7], [1345.0, 1069313.7], [1350.0, 1069313.7], [1355.0, 1069313.7], [1360.0, 1111545.1], [1365.0, 1152244.7], [1370.0, 1152244.7], [1375.0, 1152244.7], [1380.0, 1152244.7], [1385.0, 1198044.4], [1390.0, 1198044.4], [1395.0, 1198044.4], [1400.0, 1333029.5], [1405.0, 1333029.5], [1410.0, 1532082.3], [1415.0, 1799496.2], [1420.0, 1872575.6], [1425.0, 2203281.9], [1430.0, 2120057.5], [1435.0, 2493967.0], [1440.0, 4064878.5], [1445.0, 4106051.5], [1450.0, 4219339.9], [1455.0, 3962654.0], [1460.0, 4373206.5], [1465.0, 4295262.7], [1470.0, 4990603.3], [1475.0, 5750598.9], [1480.0, 5797985.4], [1485.0, 5617801.4], [1490.0, 5723728.7], [1495.0, 5580244.3], [1500.0, 5433199.0], [1505.0, 5596783.0], [1510.0, 5478031.8], [1515.0, 5223155.2], [1520.0, 5354899.8], [1525.0, 5198896.7], [1530.0, 4357968.7], [1535.0, 4243250.8], [1540.0, 4377328.8], [1545.0, 4242579.1], [1550.0, 4157249.7], [1555.0, 3280568.9], [1560.0, 3280568.9], [1565.0, 3245516.1], [1570.0, 3165290.2], [1575.0, 3216576.5], [1580.0, 3138267.6], [1585.0, 3144377.1], [1590.0, 3119038.2], [1595.0, 3140939.7], [1600.0, 3290152.9], [1605.0, 3237670.9], [1610.0, 3480281.3], [1615.0, 3538882.8], [1620.0, 3420658.0], [1625.0, 3408836.2], [1630.0, 3446869.2], [1635.0, 3644339.3], [1640.0, 3836398.6], [1645.0, 4231660.5], [1650.0, 4551470.7], [1655.0, 4581060.7], [1660.0, 4346827.9], [1665.0, 3763994.1], [1670.0, 3659964.2], [1675.0, 3294292.8], [1680.0, 3156923.8], [1685.0, 3059812.2], [1690.0, 3234882.8], [1695.0, 4057879.5], [1700.0, 4328396.5], [1705.0, 4424001.1], [1710.0, 4708754.9], [1715.0, 4834937.2], [1720.0, 4853641.5], [1725.0, 3967147.7], [1730.0, 4032725.0], [1735.0, 3921863.3], [1740.0, 3870577.0], [1745.0, 3815328.6], [1750.0, 4113025.5], [1755.0, 3465058.4], [1760.0, 3462159.1], [1765.0, 2587959.0], [1770.0, 2480627.4], [1775.0, 2538327.0], [1780.0, 2302140.5], [1785.0, 2170889.1], [1790.0, 2227493.4], [1795.0, 1689539.1], [1800.0, 1441071.1], [1805.0, 1330941.7], [1810.0, 1472899.7], [1815.0, 1472899.7], [1820.0, 1742296.4], [1825.0, 1742296.4], [1830.0, 1716964.2], [1835.0, 1597228.9], [1840.0, 1860670.0], [1845.0, 1655704.9], [1850.0, 1788563.5], [1855.0, 1868131.2], [1860.0, 1868131.2], [1865.0, 1868131.2], [1870.0, 1378186.5], [1875.0, 1378186.5], [1880.0, 1378186.5], [1885.0, 1378186.5], [1890.0, 1378186.5], [1895.0, 1343450.0], [1900.0, 730093.5], [1905.0, 730093.5], [1910.0, 730093.5], [1915.0, 730093.5], [1920.0, 719688.5], [1925.0, 807418.7], [1930.0, 963681.5], [1935.0, 954794.8], [1940.0, 954794.8], [1945.0, 954794.8], [1950.0, 1195240.3], [1955.0, 875227.1], [1960.0, 1454402.6], [1965.0, 784588.9], [1970.0, 1404365.4], [1975.0, 784588.9], [1980.0, 1524176.4], [1985.0, 784588.9], [1990.0, 1524176.4], [1995.0, 784588.9], [2000.0, 1922990.2], [2005.0, 750514.2], [2010.0, 2465648.0], [2015.0, 662784.0], [2020.0, 3887314.5], [2025.0, 662784.0], [2030.0, 3776016.5], [2035.0, 360542.0], [2040.0, 3861367.2], [2045.0, 360542.0], [2050.0, 3861367.2], [2055.0, 360542.0], [2060.0, 3236843.7], [2065.0, 360542.0], [2070.0, 2940334.1], [2075.0, 360542.0], [2080.0, 2507445.6], [2085.0, 360542.0], [2090.0, 3285459.8], [2095.0, 360542.0], [2100.0, 3257066.7], [2105.0, 360542.0], [2110.0, 2934704.7], [2120.0, 2776475.5], [2130.0, 3066319.9], [2140.0, 3656702.1], [2150.0, 3850681.0], [2160.0, 3619351.1], [2170.0, 4297805.2], [2180.0, 3953074.8], [2190.0, 3953074.8], [2200.0, 4455475.8], [2210.0, 3194734.3], [2220.0, 3305765.2], [2230.0, 3305765.2], [2240.0, 4037652.2], [2250.0, 4123916.8], [2260.0, 4404671.4], [2270.0, 4770397.8], [2280.0, 4576418.8], [2290.0, 5167639.8], [2300.0, 5004132.1], [2310.0, 5290772.4], [2320.0, 4466860.1], [2330.0, 4258192.2], [2340.0, 4445975.3], [2350.0, 5190863.3], [2360.0, 5190863.3], [2370.0, 5135454.6], [2380.0, 6462747.6], [2390.0, 6181993.0], [2400.0, 6073366.6], [2410.0, 5468247.2], [2420.0, 6125279.9], [2430.0, 6562567.4], [2440.0, 7519776.7], [2450.0, 7519776.7], [2460.0, 7846769.0], [2470.0, 9959631.1], [2480.0, 12059501.0], [2490.0, 12059501.0], [2500.0, 13090212.5], [2510.0, 12835521.6], [2520.0, 14120974.0], [2530.0, 14120974.0], [2540.0, 14120974.0], [2550.0, 12793681.0], [2560.0, 11646419.4], [2570.0, 12663708.7], [2580.0, 15811043.5], [2590.0, 15661044.4], [2600.0, 18627267.2], [2610.0, 15494713.4], [2620.0, 17324955.0], [2630.0, 17324955.0], [2640.0, 17672389.8], [2650.0, 16219983.2], [2660.0, 13848203.3], [2670.0, 13848203.3], [2680.0, 12098309.7], [2690.0, 11328573.9], [2700.0, 11328573.9], [2710.0, 9872583.1], [2720.0, 8813029.9], [2730.0, 5295347.0], [2740.0, 4947912.2], [2750.0, 3917200.7], [2760.0, 3917200.7], [2770.0, 4567285.4], [2780.0, 4201665.0], [2790.0, 3973624.6], [2800.0, 3973624.6], [2810.0, 3973624.6], [2820.0, 3973624.6], [2830.0, 3973624.6], [2840.0, 3973624.6], [2850.0, 2786994.8], [2860.0, 2786994.8], [2870.0, 2786994.8], [2880.0, 2786994.8], [2890.0, 3840929.6], [2900.0, 5068120.7], [2910.0, 5068120.7], [2920.0, 5068120.7], [2930.0, 6627834.0], [2940.0, 6627834.0], [2950.0, 6627834.0], [2960.0, 6627834.0], [2970.0, 6627834.0], [2980.0, 8344542.1], [2990.0, 8344542.1], [3000.0, 9340169.2], [3010.0, 10462339.2], [3020.0, 9812254.6], [3030.0, 9812254.6], [3040.0, 11643067.6], [3050.0, 10589132.8], [3060.0, 11115387.6], [3070.0, 10970773.9], [3080.0, 10970773.9], [3090.0, 10970773.9], [3100.0, 10970773.9], [3110.0, 10970773.9], [3120.0, 12826595.2], [3130.0, 11834756.0], [3140.0, 15879470.4], [3150.0, 14863100.6], [3160.0, 16144108.2], [3170.0, 13576386.7], [3180.0, 12349195.6], [3190.0, 12349195.6], [3200.0, 13692725.1], [3210.0, 15699812.9], [3220.0, 12218632.2], [3230.0, 9990671.4], [3240.0, 9990671.4], [3250.0, 11775469.0], [3260.0, 11775469.0], [3270.0, 11775469.0], [3280.0, 12660581.8], [3290.0, 12660581.8], [3300.0, 12534205.2], [3310.0, 11544172.4], [3320.0, 12234381.1], [3330.0, 9767619.3], [3340.0, 9767619.3], [3350.0, 9767619.3], [3360.0, 10769212.6], [3370.0, 10187280.4], [3380.0, 11867916.8], [3390.0, 11867916.8], [3400.0, 11206176.7], [3410.0, 10196410.8], [3420.0, 10196410.8], [3430.0, 10196410.8], [3440.0, 9710142.5], [3450.0, 10438396.2], [3460.0, 10880865.5], [3470.0, 11623673.9], [3480.0, 12330051.3], [3490.0, 11485832.8], [3500.0, 11485832.8], [3510.0, 10449210.3], [3520.0, 10993449.9], [3530.0, 11028337.8], [3540.0, 11469602.7], [3550.0, 10469864.0], [3560.0, 10469864.0], [3570.0, 8569995.9], [3580.0, 7907997.0], [3590.0, 8266858.5], [3600.0, 8266858.5], [3610.0, 8406606.0], [3620.0, 8139637.4], [3630.0, 6919054.0], [3640.0, 6919054.0], [3650.0, 6864322.8], [3660.0, 7159308.7], [3670.0, 7159308.7], [3680.0, 7159308.7], [3690.0, 7805520.8], [3700.0, 7455810.9], [3710.0, 8550155.6], [3720.0, 8889914.1], [3730.0, 8511046.9], [3740.0, 8511046.9], [3750.0, 8095762.4], [3760.0, 9387951.5], [3770.0, 9387951.5], [3780.0, 9722201.5], [3790.0, 9356793.2], [3800.0, 9356793.2], [3810.0, 6542293.0], [3820.0, 6542293.0], [3830.0, 6542293.0], [3840.0, 6542293.0], [3850.0, 7228270.7], [3860.0, 7432331.7], [3870.0, 7244180.6], [3880.0, 7826962.0], [3890.0, 5440686.2], [3900.0, 5440686.2], [3910.0, 6206407.2], [3920.0, 5943187.9], [3930.0, 5367233.5], [3940.0, 5367233.5], [3950.0, 6678138.7], [3960.0, 8198815.6], [3970.0, 8198815.6], [3980.0, 9656564.3], [3990.0, 9631124.5], [4000.0, 8313178.9], [4010.0, 7851835.1], [4020.0, 8150688.9], [4030.0, 9230699.2], [4040.0, 10503896.9], [4050.0, 8147022.5], [4060.0, 8147022.5], [4070.0, 7107607.0], [4080.0, 7677629.4], [4090.0, 8338939.5], [4100.0, 9651847.3], [4110.0, 9447786.3], [4120.0, 11269897.5], [4130.0, 10953380.2], [4140.0, 11209704.3], [4150.0, 11754873.2], [4160.0, 11860412.8], [4170.0, 12128154.6], [4180.0, 12121025.4], [4190.0, 12038683.2], [4200.0, 16055794.5], [4210.0, 15605569.5], [4220.0, 16200745.8], [4230.0, 14068813.2], [4240.0, 14014645.3], [4250.0, 13265488.3], [4260.0, 12821156.2], [4270.0, 12627293.3], [4280.0, 11631393.7], [4290.0, 12000972.8], [4300.0, 12363479.1], [4310.0, 12363479.1], [4320.0, 14851568.2], [4330.0, 15292557.3], [4340.0, 15292557.3], [4350.0, 15533430.6], [4360.0, 16646041.5], [4370.0, 15332535.2], [4380.0, 15045642.6], [4390.0, 14688006.3], [4400.0, 14382205.2]],PCDV=1008.0,P25=780.0,P50=840.0,P75=940.0,C=990.0;
+      const cv=document.getElementById('chPCD'),x=cv.getContext('2d');
+      const W=cv.width,H=cv.height,pad={t:44,r:16,b:30,l:16};
+      const lo=K[0][0],hi=K[K.length-1][0],mx=Math.max(...K.map(k=>k[1]));
+      const X=p=>pad.l+(p-lo)/(hi-lo)*(W-pad.l-pad.r);
+      const Y=v=>H-pad.b-v/mx*(H-pad.t-pad.b);
+      const bw=(W-pad.l-pad.r)/K.length*.82;
+      K.forEach(([p,v])=>{x.fillStyle=p<=C?"rgba(18,135,63,.42)":"rgba(90,115,145,.30)";
+        x.fillRect(X(p)-bw/2,Y(v),bw,H-pad.b-Y(v));});
+      x.font="14px Cascadia Code, Consolas, monospace";x.textAlign="center";
+      let taken=[];
+      const garis=[["p25",P25,"#0E8F87",1,[4,4]],["p50",P50,"#0E8F87",1,[4,4]],
+                   ["p75",P75,"#0E8F87",1,[4,4]],["PCD "+PCDV.toLocaleString('id',{maximumFractionDigits:0}),PCDV,"#B87708",2,[]],
+                   ["CLOSE "+C.toLocaleString('id'),C,"#16202B",2,[]]];
+      garis.forEach(([lbl,p,c,w,dash])=>{
+        x.strokeStyle=c;x.lineWidth=w;x.setLineDash(dash);x.beginPath();
+        x.moveTo(X(p),pad.t-4);x.lineTo(X(p),H-pad.b);x.stroke();x.setLineDash([]);
+        let yl=12; while(taken.some(([tx,ty])=>ty===yl&&Math.abs(tx-X(p))<70)) yl+=15;
+        taken.push([X(p),yl]);
+        x.fillStyle=c;x.fillText(lbl,X(p),yl);
+      });
+      x.fillStyle="rgba(22,32,43,.55)";
+      for(let i=0;i<=4;i++){const p=lo+(hi-lo)*i/4;
+        x.textAlign=i===0?"left":i===4?"right":"center";
+        x.fillText(p.toLocaleString('id',{maximumFractionDigits:0}),X(p),H-8);}
+    })();
+    </script>
+    <div class="bd-lvl">
+      <div class="lvl"><div class="r"><span class="l">PCD — rata-rata modal</span><b class="c-side">1.008</b></div>
+<div class="r"><span class="l">Median modal (p50)</span><b class="">840</b></div>
+<div class="r"><span class="l">Close terakhir</span><b class="c-bear">990</b></div></div>
+      <div class="lvl"><div class="r"><span class="l">Lapis modal bawah (p25)</span><b class="c-bull">780</b></div>
+<div class="r"><span class="l">Lapis modal atas (p75)</span><b class="c-bear">940</b></div>
+<div class="r"><span class="l">Modal di atas air</span><b class="">85,1%</b></div></div>
+    </div>
+    <div class="blok" style="margin-top:4mm">
+      <h3 class="rule">Interpretasi Analis</h3>
+      <p style="text-align:justify;line-height:1.6">PCD DSSA berdiri di 1.008 — 1,8% di atas close 990 — tetapi bentuk distribusinya tidak simetris: zona modal inti (p25–p75) justru terhampar di 780–940, di bawah harga, dengan median modal 840. Artinya 85,1% modal historis sudah di atas air: mayoritas pemegang untung, sehingga koreksi menuju 940–840 cenderung disambut pemegang yang mempertahankan posisi untungnya, bukan tekanan jual panik. Rerata 1.008 tertarik ke atas oleh lapis volume lama di harga lebih tinggi yang bobot peluruhannya kecil; pasokan dari pemegang nyangkut baru mulai terasa di atas ±1.000. Kombinasi ini membuat struktur di atas 955 konstruktif: lantai modal tebal di bawah, sedangkan resistensi modal di atas relatif tipis hingga lapis 1.000-an.</p>
+    </div>
+    <div class="bd-note">METODE: aproksimasi hibrida: intraday 15 menit (55 hari bursa terakhir) + OHLCV harian utk riwayat lebih lama; volume disebar merata low–high per bar, peluruhan half-life 60 hari bursa — bukan data done per harga. Batang hijau = lapis harga ≤ close (pemegang untung/impas);
+    batang biru = lapis di atas close (pemegang rugi). % modal di atas air = porsi volume tertimbang pada lapis ≤ close.</div>
+  </div>
+  <footer class="foot">
+    <span class="kode">BA-DSSA-140826-E01</span>
+    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+  </footer>
+</div>
+
+<div class="page s-side">
+  <span class="senti-edge"></span>
+  <header class="band">
+    <div class="m"><h1>ARUS PASAR</h1><div class="sub">Teknikal & Probabilitas Historis</div></div>
+    <div class="e">Jumat, 14 Agustus 2026<br><span class="kode">BA-DSSA-140826-E01</span></div>
+  </header>
+  <div class="inner">
+    <div class="trow">
+      <div class="tk">$DSSA<small>PT Dian Swastatika Sentosa Tbk.</small></div>
+      <div class="px"><span class="h">990</span><br>
+        <span class="c bear">−10 (−1,00%)</span></div>
+    </div>
+    <div class="hangka em">Harga DSSA <b>990</b> tertahan <b>3,4%</b> di bawah resistance <b>1.025</b></div>
+    <div class="stats"><div class="s"><div class="l">Rentang Hari</div><div class="v">955–1.025</div></div><div class="s"><div class="l">EMA50</div><div class="v">972 <small>(+1,9%)</small></div></div><div class="s"><div class="l">Pivot Harian</div><div class="v">990</div></div><div class="s"><div class="l">Volume</div><div class="v">655,0 jt <small>(1,1× rerata20)</small></div></div><div class="s"><div class="l">Nilai Transaksi</div><div class="v">≈ Rp648,5 miliar</div></div></div><div class="emabar">EMA <b>20</b> 902 · <b>60</b> 1.046 · <b>100</b> 1.407 · <b>200</b> 1.997 <span class="ket">(50 di strip atas; garis lengkap di chart)</span></div>
+    <div class="chartwrap">
+      <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
+      <canvas id="chT" width="1360" height="430"></canvas>
+    </div>
+    <div class="sec" style="margin-top:4mm">
+      <h3 class="rule">Teknikal</h3>
+      <p>Menutup 990 (-1,00%) searah IHSG −1,13%; harga di atas EMA50 972 dengan pivot besok 990. Support terdekat 955, resisten 1.025; volume 655 jt lembar.</p>
+    </div>
+    <div class="sr">
+      <div class="k sup">Support</div><div class="v">990 <span>|</span> 955 <span>|</span> 920 <span>|</span> 885</div>
+      <div class="k res">Resistance</div><div class="v">1.025 <span>|</span> 1.060 <span>|</span> 1.095</div>
+    </div>
+    <div class="probstrip"><span class="pl">Probabilitas Historis</span>P(naik 5h) <b>56%</b> · P(≥3%) <b>63%</b> <small>n508·4/4</small> · VolVal z+0,1 normal <small>· senyap 51% n51</small></div>
+    <div class="bd-note">Probabilitas dari backtest setup serupa (EMA50, pivot, volume 20h, rentang 20h)
+    atas pool cache edisi 2026-08-13; n = jumlah sampel. Bukan jaminan — frekuensi historis.</div>
+  </div>
+  <footer class="foot">
+    <span class="kode">BA-DSSA-140826-E01</span>
+    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+  </footer>
+</div>
+
+<div class="page">
+  <header class="band">
+    <div class="m"><h1>ARUS PASAR</h1><div class="sub">Arus Broker — Big Money Flow</div></div>
+    <div class="e">Jumat, 14 Agustus 2026<br><span class="kode">BA-DSSA-140826-E01</span></div>
+  </header>
+  <div class="inner">
+    <div class="trow" style="margin-bottom:3mm"><div class="tk" style="font-size:14pt">Arus Broker DSSA</div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">9 hari setoran · 2026-08-03 s.d. 2026-08-13</div></div>
+    <div class="chartwrap">
+      <div class="cap">DSSA · Net Broker Tampak per Hari (juta Rp) · Broker Summary Stockbit</div>
+      <canvas id="chBMF" width="1360" height="290"></canvas>
+    </div>
+    <script>
+    (function(){
+      const D=[["03/08", -108.5], ["04/08", -15.0], ["05/08", 468.1], ["06/08", 8287.8], ["07/08", -1438.7], ["10/08", 847.2], ["11/08", -3300.3], ["12/08", 2066.7], ["13/08", 122.5]];
+      const cv=document.getElementById('chBMF'),x=cv.getContext('2d');
+      const W=cv.width,H=cv.height,pad={t:26,r:16,b:30,l:16};
+      const mx=Math.max(...D.map(d=>Math.abs(d[1])),1);
+      const Y0=pad.t+(H-pad.t-pad.b)*mx/(2*mx);
+      const Y=v=>Y0-v/mx*(H-pad.t-pad.b)/2;
+      const bw=(W-pad.l-pad.r)/D.length;
+      x.strokeStyle="rgba(18,32,46,.20)";x.lineWidth=1;
+      x.beginPath();x.moveTo(pad.l,Y0);x.lineTo(W-pad.r,Y0);x.stroke();
+      x.font="15px Cascadia Code, Consolas, monospace";x.textAlign="center";
+      D.forEach(([d,v],i)=>{
+        const cx=pad.l+bw*(i+.5);
+        x.fillStyle=v>=0?"rgba(18,135,63,.55)":"rgba(198,54,43,.55)";
+        x.fillRect(cx-bw*.3,Math.min(Y0,Y(v)),bw*.6,Math.abs(Y0-Y(v))||1);
+        x.fillStyle=v>=0?"#12873F":"#C6362B";
+        const lbl=(v>=0?"+":"−")+Math.abs(v/1000).toLocaleString('id',{maximumFractionDigits:1})+"B";
+        x.fillText(lbl,cx,v>=0?Y(v)-8:Y(v)+18);
+        x.fillStyle="rgba(22,32,43,.55)";x.fillText(d,cx,H-8);
+      });
+    })();
+    </script>
+    <div class="bd-note" style="margin-top:1mm">VONIS HARIAN STOCKBIT: 03/08 <b class="c-bull">Small Acc</b> · 04/08 <b class="c-bear">Normal Dist</b> · 05/08 <b class="c-bull">Big Acc</b> · 06/08 <b class="c-bull">Big Acc</b> · 07/08 <b class="">Neutral</b> · 10/08 <b class="">Neutral</b> · 11/08 <b class="c-bear">Big Dist</b> · 12/08 <b class="c-bull">Normal Acc</b> · 13/08 <b class="">Neutral</b></div>
+    <div class="cols" style="margin-top:3mm">
+      <aside>
+        <h3 class="rule">Broker Hari Terakhir <span class="r">13/08 · top-9 tampak</span></h3>
+        <table class="brk">
+          <tr><th>BY</th><th>Nilai</th><th>Lot</th><th>Avg</th></tr>
+          <tr><td class="bcode-b">SS</td><td>40,7B</td><td>416,2K</td><td>977</td></tr>
+<tr><td class="bcode-b">LG</td><td>25,4B</td><td>256,8K</td><td>989</td></tr>
+<tr><td class="bcode-b">RF</td><td>22,1B</td><td>224,8K</td><td>985</td></tr>
+<tr><td class="bcode-b">KK</td><td>14,8B</td><td>149,3K</td><td>990</td></tr>
+<tr><td class="bcode-b">SQ</td><td>12,2B</td><td>123,5K</td><td>988</td></tr>
+<tr><td class="bcode-b">DX</td><td>11,7B</td><td>116,2K</td><td>1.004</td></tr>
+<tr><td class="bcode-b">CP</td><td>11,4B</td><td>116,1K</td><td>990</td></tr>
+<tr><td class="bcode-b">PD</td><td>5,5B</td><td>55,0K</td><td>993</td></tr>
+<tr><td class="bcode-b">XC</td><td>4,1B</td><td>43,0K</td><td>994</td></tr>
+          <tr class="sep"><td colspan="4">Jual Terbesar</td></tr>
+          <tr><td class="bcode-s">ZP</td><td>34,8B</td><td>352,7K</td><td>987</td></tr>
+<tr><td class="bcode-s">AK</td><td>34,3B</td><td>350,7K</td><td>989</td></tr>
+<tr><td class="bcode-s">BK</td><td>27,7B</td><td>286,4K</td><td>981</td></tr>
+<tr><td class="bcode-s">MG<span class="tag scalp">SCALP</span></td><td>17,6B</td><td>175,9K</td><td>998</td></tr>
+<tr><td class="bcode-s">XL<span class="tag ritel">RITEL</span></td><td>14,8B</td><td>146,6K</td><td>995</td></tr>
+<tr><td class="bcode-s">AI</td><td>9,2B</td><td>90,8K</td><td>1.004</td></tr>
+<tr><td class="bcode-s">CC</td><td>7,7B</td><td>79,6K</td><td>990</td></tr>
+<tr><td class="bcode-s">GR</td><td>7,4B</td><td>77,1K</td><td>978</td></tr>
+<tr><td class="bcode-s">OD</td><td>3,9B</td><td>39,5K</td><td>991</td></tr>
+          <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp122,5 juta</td></tr>
+        </table>
+        <table class="brk" style="margin-top:3mm">
+          <tr><th>Broker</th><th>Net 9h</th><th>Avg Beli</th><th>Avg Jual</th></tr>
+          <tr><td class="bcode-b">BK</td><td class="bull">+132,7B</td><td>1.007</td><td>949</td></tr>
+<tr><td class="bcode-b">SS</td><td class="bull">+100,4B</td><td>905</td><td>999</td></tr>
+<tr><td class="bcode-b">AK</td><td class="bull">+98,1B</td><td>933</td><td>931</td></tr>
+<tr><td class="bcode-b">RF</td><td class="bull">+68,8B</td><td>924</td><td>1.023</td></tr>
+<tr><td class="bcode-s">XL</td><td class="bear">−141,2B</td><td>976</td><td>935</td></tr>
+<tr><td class="bcode-s">CC</td><td class="bear">−81,8B</td><td>938</td><td>957</td></tr>
+<tr><td class="bcode-s">YU</td><td class="bear">−43,9B</td><td>867</td><td>982</td></tr>
+<tr><td class="bcode-s">YP</td><td class="bear">−34,2B</td><td>934</td><td>937</td></tr>
+        </table>
+        <div class="brksrc">Avg = Σnilai ÷ Σlot, agregat 9 hari — bukan data done.</div>
+      </aside>
+      <section>
+        
+        <div class="sec">
+          <h3 class="rule">Arus Dana</h3>
+          <p class="flowline"><span class="bull">Σ rentang +Rp6,9 miliar</span> ·
+            <span class="bear">5 hari −Rp1,7 miliar</span> ·
+            breadth 5/9 hari positif</p>
+          <p style="text-align:justify">Sembilan hari setoran memberi gambar rotasi, bukan banjir dana satu arah: net broker tampak hanya +Rp6,9 miliar (5/9 hari positif), tetapi di baliknya BK menampung +Rp132,7 miliar (avg beli 1.007), SS +Rp100,4 miliar (avg 905), AK +Rp98,1 miliar (avg 933), dan RF +Rp68,8 miliar (avg 924) — melawan distribusi XL −Rp141,2 miliar dan CC −Rp81,8 miliar. Modal akumulator utama duduk di 905–1.007, mengapit close 990: mereka belum keluar dan berkepentingan mempertahankan 955. Hari net terbesar 06 Agu (+Rp8,3 miliar, vonis Stockbit Big Acc) terjadi saat average pasar naik ke 932.</p>
+        </div>
+        <div class="blok integritas" style="margin-top:5mm">
+          <h3 class="rule">Kejujuran Data</h3>
+          <p>Sembilan hari setoran Broker Summary (03–13 Agu 2026), screenshot manual. Daftar broker per hari adalah baris yang tampak di layar (terpotong scroll), bukan seluruh n_buyer/n_seller — total baris tampak tidak persis sama dengan Net Value ringkasan Stockbit; ringkasan dan label Acc/Dist tetap valid karena tercetak langsung dari Stockbit. Setoran 13 Agu memuat baris GR (jual Rp7,4 miliar) yang tidak tertangkap tabel edisi harian 13 Agu — halaman ini memakai setoran terbaru.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+  <footer class="foot">
+    <span class="kode">BA-DSSA-140826-E01</span>
+    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+  </footer>
+</div>
+
+<div class="page">
+  <header class="band">
+    <div class="m"><h1>ARUS PASAR</h1><div class="sub">Scenario Map</div></div>
+    <div class="e">Jumat, 14 Agustus 2026<br><span class="kode">BA-DSSA-140826-E01</span></div>
+  </header>
+  <div class="inner">
+    <div class="hangka">DSSA memerlukan konfirmasi &gt;<b>1.025</b> untuk memperluas probabilitas</div>
+    <div class="sknb">
+      <div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close >1.025 dengan volume; SS/LG/RF melanjutkan akumulasi</span></div><div class="kr"><span class="kl">Rute Teknikal</span><span>1.025 → 1.060 → 1.095</span></div><div class="kr"><span class="kl">Risiko</span><span>Gagal di atas 1.025 = akumulasi butuh waktu, bukan batal</span></div></div>
+      <div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Bertahan di 955–990 dengan arus beli tetap positif</span></div><div class="kr"><span class="kl">Rute Teknikal</span><span>Basis 955–990; close di atas pivot 990 membuka uji 1.025</span></div><div class="kr"><span class="kl">Risiko</span><span>Close <955 menunda tesis akumulasi terselubung</span></div></div>
+      <div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close <955 (S1 patah)</span></div><div class="kr"><span class="kl">Rute Teknikal</span><span>Terbuka jalan ke 920 → 885</span></div><div class="kr"><span class="kl">Risiko</span><span>Bila SS/LG berbalik jual, tesis akumulasi gugur</span></div></div>
+      <div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Watchlist utama; akumulasi saat pasar merah adalah jejak yang layak diikuti — tunggu konfirmasi tutup di atas pivot.</span></div>
+    </div>
+    <div class="blok integritas" style="margin-top:auto;margin-bottom:2mm">
+      <h3 class="rule">Catatan Integritas Data</h3>
+      <p>Data terbitan ini ditutup pada sesi bursa 13 Agustus 2026 — bukan data waktu nyata; perdagangan hari terbit belum tercakup. Angka PCD/zona modal dihitung mesin (pcd.py): aproksimasi hibrida OHLCV harian + intraday 15 menit, bukan data done per harga. Probabilitas historis memakai pool backtest cache edisi 13 Agu (22 emiten; setup DSSA n508, 4/4 fitur). Arus broker dari 9 hari setoran manual (03–13 Agu); baris broker per hari bisa terpotong scroll layar. Perbedaan kecil dengan tabel edisi AP-130826 (baris GR) mengikuti setoran terbaru.</p>
+    </div>
+  </div>
+  <footer class="foot">
+    <span class="kode">BA-DSSA-140826-E01</span>
+    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+  </footer>
+</div>
+<script>
+const OHLC = {"DSSA":[{"d":"2024-07-30","o":1196.0,"h":1196.0,"l":1182.0,"c":1183.0,"v":29387500},{"d":"2024-07-31","o":1183.0,"h":1190.0,"l":1182.0,"c":1184.0,"v":29645000},{"d":"2024-08-01","o":1185.0,"h":1191.0,"l":1180.0,"c":1190.0,"v":33557500},{"d":"2024-08-02","o":1188.0,"h":1290.0,"l":1180.0,"c":1260.0,"v":39227500},{"d":"2024-08-05","o":1260.0,"h":1284.0,"l":1236.0,"c":1248.0,"v":40190000},{"d":"2024-08-06","o":1258.0,"h":1284.0,"l":1251.0,"c":1276.0,"v":39750000},{"d":"2024-08-07","o":1280.0,"h":1289.0,"l":1276.0,"c":1277.0,"v":39965000},{"d":"2024-08-08","o":1277.0,"h":1279.0,"l":1249.0,"c":1268.0,"v":39822500},{"d":"2024-08-09","o":1268.0,"h":1275.0,"l":1251.0,"c":1268.0,"v":39700000},{"d":"2024-08-12","o":1268.0,"h":1500.0,"l":1268.0,"c":1500.0,"v":42975000},{"d":"2024-08-13","o":1510.0,"h":1716.0,"l":1510.0,"c":1675.0,"v":50832500},{"d":"2024-08-14","o":1694.0,"h":1694.0,"l":1644.0,"c":1651.0,"v":32590000},{"d":"2024-08-15","o":1651.0,"h":1659.0,"l":1616.0,"c":1618.0,"v":30640000},{"d":"2024-08-16","o":1618.0,"h":1641.0,"l":1585.0,"c":1614.0,"v":31532500},{"d":"2024-08-19","o":1622.0,"h":1681.0,"l":1597.0,"c":1614.0,"v":27337500},{"d":"2024-08-20","o":1615.0,"h":1665.0,"l":1608.0,"c":1614.0,"v":50752500},{"d":"2024-08-21","o":1620.0,"h":1658.0,"l":1614.0,"c":1644.0,"v":27497500},{"d":"2024-08-22","o":1646.0,"h":1665.0,"l":1633.0,"c":1644.0,"v":30950000},{"d":"2024-08-23","o":1648.0,"h":1686.0,"l":1622.0,"c":1630.0,"v":26765000},{"d":"2024-08-26","o":1630.0,"h":1672.0,"l":1617.0,"c":1660.0,"v":25640000},{"d":"2024-08-27","o":1652.0,"h":1687.0,"l":1652.0,"c":1670.0,"v":39070000},{"d":"2024-08-28","o":1660.0,"h":1673.0,"l":1650.0,"c":1658.0,"v":27505000},{"d":"2024-08-29","o":1662.0,"h":1693.0,"l":1655.0,"c":1667.0,"v":38907500},{"d":"2024-08-30","o":1672.0,"h":1791.0,"l":1662.0,"c":1665.0,"v":38417500},{"d":"2024-09-02","o":1666.0,"h":1683.0,"l":1620.0,"c":1654.0,"v":34890000},{"d":"2024-09-03","o":1660.0,"h":1662.0,"l":1632.0,"c":1655.0,"v":30295000},{"d":"2024-09-04","o":1655.0,"h":1674.0,"l":1638.0,"c":1638.0,"v":43215000},{"d":"2024-09-05","o":1640.0,"h":1666.0,"l":1622.0,"c":1648.0,"v":41452500},{"d":"2024-09-06","o":1656.0,"h":1667.0,"l":1643.0,"c":1649.0,"v":39432500},{"d":"2024-09-09","o":1649.0,"h":1666.0,"l":1640.0,"c":1650.0,"v":44920000},{"d":"2024-09-10","o":1662.0,"h":1692.0,"l":1648.0,"c":1661.0,"v":44087500},{"d":"2024-09-11","o":1661.0,"h":1664.0,"l":1620.0,"c":1660.0,"v":44460000},{"d":"2024-09-12","o":1660.0,"h":1684.0,"l":1640.0,"c":1655.0,"v":54700000},{"d":"2024-09-13","o":1655.0,"h":1682.0,"l":1633.0,"c":1654.0,"v":56837500},{"d":"2024-09-17","o":1655.0,"h":1658.0,"l":1642.0,"c":1645.0,"v":57185000},{"d":"2024-09-18","o":1645.0,"h":1649.0,"l":1596.0,"c":1620.0,"v":56267500},{"d":"2024-09-19","o":1631.0,"h":1631.0,"l":1585.0,"c":1602.0,"v":60280000},{"d":"2024-09-20","o":1600.0,"h":1655.0,"l":1580.0,"c":1649.0,"v":53167500},{"d":"2024-09-23","o":1652.0,"h":1663.0,"l":1640.0,"c":1660.0,"v":55045000},{"d":"2024-09-24","o":1662.0,"h":1686.0,"l":1641.0,"c":1643.0,"v":57782500},{"d":"2024-09-25","o":1643.0,"h":1650.0,"l":1610.0,"c":1642.0,"v":56580000},{"d":"2024-09-26","o":1640.0,"h":1680.0,"l":1637.0,"c":1662.0,"v":55367500},{"d":"2024-09-27","o":1667.0,"h":1680.0,"l":1642.0,"c":1661.0,"v":56532500},{"d":"2024-09-30","o":1661.0,"h":1661.0,"l":1592.0,"c":1612.0,"v":57310000},{"d":"2024-10-01","o":1612.0,"h":1617.0,"l":1594.0,"c":1613.0,"v":64102500},{"d":"2024-10-02","o":1612.0,"h":1622.0,"l":1596.0,"c":1613.0,"v":58342500},{"d":"2024-10-03","o":1605.0,"h":1634.0,"l":1596.0,"c":1632.0,"v":56315000},{"d":"2024-10-04","o":1632.0,"h":1672.0,"l":1629.0,"c":1660.0,"v":56492500},{"d":"2024-10-07","o":1660.0,"h":1687.0,"l":1624.0,"c":1628.0,"v":55547500},{"d":"2024-10-08","o":1630.0,"h":1648.0,"l":1610.0,"c":1641.0,"v":36352500},{"d":"2024-10-09","o":1641.0,"h":1681.0,"l":1641.0,"c":1653.0,"v":42642500},{"d":"2024-10-10","o":1652.0,"h":1678.0,"l":1620.0,"c":1666.0,"v":44012500},{"d":"2024-10-11","o":1666.0,"h":1686.0,"l":1648.0,"c":1660.0,"v":40315000},{"d":"2024-10-14","o":1660.0,"h":1679.0,"l":1650.0,"c":1658.0,"v":50565000},{"d":"2024-10-15","o":1658.0,"h":1676.0,"l":1654.0,"c":1668.0,"v":39700000},{"d":"2024-10-16","o":1668.0,"h":1691.0,"l":1663.0,"c":1675.0,"v":57117500},{"d":"2024-10-17","o":1675.0,"h":1759.0,"l":1670.0,"c":1713.0,"v":80280000},{"d":"2024-10-18","o":1713.0,"h":1780.0,"l":1701.0,"c":1770.0,"v":67440000},{"d":"2024-10-21","o":1771.0,"h":1930.0,"l":1756.0,"c":1793.0,"v":45207500},{"d":"2024-10-22","o":1794.0,"h":1807.0,"l":1771.0,"c":1794.0,"v":58030000},{"d":"2024-10-23","o":1796.0,"h":1800.0,"l":1720.0,"c":1732.0,"v":56707500},{"d":"2024-10-24","o":1732.0,"h":1740.0,"l":1652.0,"c":1720.0,"v":54212500},{"d":"2024-10-25","o":1720.0,"h":1816.0,"l":1708.0,"c":1800.0,"v":63782500},{"d":"2024-10-28","o":1804.0,"h":1892.0,"l":1781.0,"c":1860.0,"v":49912500},{"d":"2024-10-29","o":1860.0,"h":1892.0,"l":1758.0,"c":1776.0,"v":66635000},{"d":"2024-10-30","o":1776.0,"h":1783.0,"l":1748.0,"c":1764.0,"v":73810000},{"d":"2024-10-31","o":1764.0,"h":1798.0,"l":1764.0,"c":1784.0,"v":53112500},{"d":"2024-11-01","o":1783.0,"h":1799.0,"l":1765.0,"c":1785.0,"v":50820000},{"d":"2024-11-04","o":1790.0,"h":1826.0,"l":1763.0,"c":1780.0,"v":42642500},{"d":"2024-11-05","o":1768.0,"h":1784.0,"l":1732.0,"c":1784.0,"v":51795000},{"d":"2024-11-06","o":1784.0,"h":1794.0,"l":1742.0,"c":1794.0,"v":54560000},{"d":"2024-11-07","o":1786.0,"h":1786.0,"l":1730.0,"c":1730.0,"v":70775000},{"d":"2024-11-08","o":1732.0,"h":1745.0,"l":1653.0,"c":1658.0,"v":51982500},{"d":"2024-11-11","o":1657.0,"h":1658.0,"l":1472.0,"c":1508.0,"v":82787500},{"d":"2024-11-12","o":1512.0,"h":1583.0,"l":1494.0,"c":1546.0,"v":80042500},{"d":"2024-11-13","o":1546.0,"h":1565.0,"l":1520.0,"c":1562.0,"v":68297500},{"d":"2024-11-14","o":1570.0,"h":1588.0,"l":1514.0,"c":1514.0,"v":70200000},{"d":"2024-11-15","o":1514.0,"h":1514.0,"l":1480.0,"c":1497.0,"v":52835000},{"d":"2024-11-18","o":1500.0,"h":1514.0,"l":1440.0,"c":1466.0,"v":46557500},{"d":"2024-11-19","o":1465.0,"h":1465.0,"l":1420.0,"c":1442.0,"v":48727500},{"d":"2024-11-20","o":1432.0,"h":1492.0,"l":1408.0,"c":1483.0,"v":56172500},{"d":"2024-11-21","o":1483.0,"h":1496.0,"l":1460.0,"c":1471.0,"v":62562500},{"d":"2024-11-22","o":1463.0,"h":1492.0,"l":1456.0,"c":1488.0,"v":38072500},{"d":"2024-11-25","o":1488.0,"h":1510.0,"l":1448.0,"c":1466.0,"v":42552500},{"d":"2024-11-26","o":1466.0,"h":1552.0,"l":1451.0,"c":1533.0,"v":42800000},{"d":"2024-11-28","o":1532.0,"h":1533.0,"l":1462.0,"c":1468.0,"v":30957500},{"d":"2024-11-29","o":1472.0,"h":1486.0,"l":1453.0,"c":1453.0,"v":36867500},{"d":"2024-12-02","o":1453.0,"h":1514.0,"l":1453.0,"c":1496.0,"v":40365000},{"d":"2024-12-03","o":1496.0,"h":1568.0,"l":1484.0,"c":1568.0,"v":40252500},{"d":"2024-12-04","o":1570.0,"h":1588.0,"l":1516.0,"c":1520.0,"v":47652500},{"d":"2024-12-05","o":1520.0,"h":1539.0,"l":1502.0,"c":1509.0,"v":33327500},{"d":"2024-12-06","o":1511.0,"h":1562.0,"l":1500.0,"c":1500.0,"v":45237500},{"d":"2024-12-09","o":1500.0,"h":1519.0,"l":1476.0,"c":1501.0,"v":79837500},{"d":"2024-12-10","o":1502.0,"h":1520.0,"l":1489.0,"c":1510.0,"v":105932500},{"d":"2024-12-11","o":1518.0,"h":1599.0,"l":1518.0,"c":1591.0,"v":101157500},{"d":"2024-12-12","o":1592.0,"h":1672.0,"l":1588.0,"c":1607.0,"v":92707500},{"d":"2024-12-13","o":1607.0,"h":1656.0,"l":1588.0,"c":1648.0,"v":92047500},{"d":"2024-12-16","o":1658.0,"h":1660.0,"l":1538.0,"c":1538.0,"v":102587500},{"d":"2024-12-17","o":1538.0,"h":1590.0,"l":1520.0,"c":1567.0,"v":105502500},{"d":"2024-12-18","o":1567.0,"h":1576.0,"l":1529.0,"c":1550.0,"v":96530000},{"d":"2024-12-19","o":1544.0,"h":1546.0,"l":1484.0,"c":1496.0,"v":99247500},{"d":"2024-12-20","o":1496.0,"h":1512.0,"l":1462.0,"c":1465.0,"v":59770000},{"d":"2024-12-23","o":1465.0,"h":1491.0,"l":1408.0,"c":1409.0,"v":82935000},{"d":"2024-12-24","o":1419.0,"h":1530.0,"l":1419.0,"c":1526.0,"v":102772500},{"d":"2024-12-27","o":1523.0,"h":1541.0,"l":1476.0,"c":1476.0,"v":103925000},{"d":"2024-12-30","o":1480.0,"h":1508.0,"l":1456.0,"c":1480.0,"v":104322500},{"d":"2025-01-02","o":1526.0,"h":1526.0,"l":1470.0,"c":1492.0,"v":72447500},{"d":"2025-01-03","o":1479.0,"h":1495.0,"l":1465.0,"c":1471.0,"v":64647500},{"d":"2025-01-06","o":1459.0,"h":1480.0,"l":1436.0,"c":1447.0,"v":93387500},{"d":"2025-01-07","o":1440.0,"h":1475.0,"l":1432.0,"c":1447.0,"v":84922500},{"d":"2025-01-08","o":1442.0,"h":1460.0,"l":1422.0,"c":1422.0,"v":91167500},{"d":"2025-01-09","o":1421.0,"h":1450.0,"l":1410.0,"c":1420.0,"v":104365000},{"d":"2025-01-10","o":1415.0,"h":1426.0,"l":1400.0,"c":1413.0,"v":63082500},{"d":"2025-01-13","o":1413.0,"h":1452.0,"l":1365.0,"c":1444.0,"v":56405000},{"d":"2025-01-14","o":1440.0,"h":1503.0,"l":1440.0,"c":1444.0,"v":104307500},{"d":"2025-01-15","o":1444.0,"h":1463.0,"l":1422.0,"c":1451.0,"v":112995000},{"d":"2025-01-16","o":1443.0,"h":1484.0,"l":1432.0,"c":1483.0,"v":119995000},{"d":"2025-01-17","o":1483.0,"h":1600.0,"l":1461.0,"c":1600.0,"v":108032500},{"d":"2025-01-20","o":1600.0,"h":1654.0,"l":1552.0,"c":1652.0,"v":113155000},{"d":"2025-01-21","o":1653.0,"h":1672.0,"l":1631.0,"c":1672.0,"v":118305000},{"d":"2025-01-22","o":1670.0,"h":1740.0,"l":1644.0,"c":1684.0,"v":109240000},{"d":"2025-01-23","o":1679.0,"h":1724.0,"l":1648.0,"c":1660.0,"v":94965000},{"d":"2025-01-24","o":1658.0,"h":1728.0,"l":1612.0,"c":1726.0,"v":72875000},{"d":"2025-01-30","o":1726.0,"h":1775.0,"l":1681.0,"c":1744.0,"v":118472500},{"d":"2025-01-31","o":1745.0,"h":1800.0,"l":1724.0,"c":1798.0,"v":93997500},{"d":"2025-02-03","o":1820.0,"h":1995.0,"l":1777.0,"c":1989.0,"v":100492500},{"d":"2025-02-04","o":1994.0,"h":2128.0,"l":1970.0,"c":1980.0,"v":87800000},{"d":"2025-02-05","o":2013.0,"h":2013.0,"l":1924.0,"c":1924.0,"v":103427500},{"d":"2025-02-06","o":1924.0,"h":1952.0,"l":1852.0,"c":1921.0,"v":103030000},{"d":"2025-02-07","o":1919.0,"h":1919.0,"l":1578.0,"c":1578.0,"v":45282500},{"d":"2025-02-10","o":1584.0,"h":1640.0,"l":1512.0,"c":1550.0,"v":39402500},{"d":"2025-02-11","o":1550.0,"h":1615.0,"l":1514.0,"c":1521.0,"v":50027500},{"d":"2025-02-12","o":1521.0,"h":1528.0,"l":1456.0,"c":1474.0,"v":50790000},{"d":"2025-02-13","o":1474.0,"h":1510.0,"l":1428.0,"c":1502.0,"v":53772500},{"d":"2025-02-14","o":1502.0,"h":1502.0,"l":1420.0,"c":1420.0,"v":52305000},{"d":"2025-02-17","o":1432.0,"h":1490.0,"l":1383.0,"c":1480.0,"v":60167500},{"d":"2025-02-18","o":1481.0,"h":1540.0,"l":1444.0,"c":1451.0,"v":48607500},{"d":"2025-02-19","o":1454.0,"h":1478.0,"l":1432.0,"c":1470.0,"v":50175000},{"d":"2025-02-20","o":1471.0,"h":1525.0,"l":1460.0,"c":1461.0,"v":71287500},{"d":"2025-02-21","o":1462.0,"h":1513.0,"l":1449.0,"c":1500.0,"v":61690000},{"d":"2025-02-24","o":1500.0,"h":1500.0,"l":1440.0,"c":1450.0,"v":75367500},{"d":"2025-02-25","o":1452.0,"h":1468.0,"l":1412.0,"c":1414.0,"v":74682500},{"d":"2025-02-26","o":1420.0,"h":1452.0,"l":1411.0,"c":1430.0,"v":64132500},{"d":"2025-02-27","o":1430.0,"h":1450.0,"l":1300.0,"c":1300.0,"v":43155000},{"d":"2025-02-28","o":1300.0,"h":1304.0,"l":1228.0,"c":1235.0,"v":44805000},{"d":"2025-03-03","o":1222.0,"h":1304.0,"l":1222.0,"c":1295.0,"v":67880000},{"d":"2025-03-04","o":1292.0,"h":1292.0,"l":1221.0,"c":1227.0,"v":72522500},{"d":"2025-03-05","o":1227.0,"h":1284.0,"l":1227.0,"c":1255.0,"v":57187500},{"d":"2025-03-06","o":1260.0,"h":1313.0,"l":1242.0,"c":1269.0,"v":72932500},{"d":"2025-03-07","o":1269.0,"h":1292.0,"l":1229.0,"c":1236.0,"v":78410000},{"d":"2025-03-10","o":1236.0,"h":1408.0,"l":1212.0,"c":1398.0,"v":65080000},{"d":"2025-03-11","o":1394.0,"h":1415.0,"l":1320.0,"c":1371.0,"v":71762500},{"d":"2025-03-12","o":1371.0,"h":1530.0,"l":1360.0,"c":1528.0,"v":72525000},{"d":"2025-03-13","o":1530.0,"h":1588.0,"l":1502.0,"c":1584.0,"v":65875000},{"d":"2025-03-14","o":1596.0,"h":1704.0,"l":1596.0,"c":1607.0,"v":61960000},{"d":"2025-03-17","o":1616.0,"h":1728.0,"l":1616.0,"c":1696.0,"v":47710000},{"d":"2025-03-18","o":1700.0,"h":1735.0,"l":1575.0,"c":1651.0,"v":79292500},{"d":"2025-03-19","o":1664.0,"h":1764.0,"l":1664.0,"c":1685.0,"v":97265000},{"d":"2025-03-20","o":1708.0,"h":1836.0,"l":1692.0,"c":1692.0,"v":128915000},{"d":"2025-03-21","o":1690.0,"h":1798.0,"l":1688.0,"c":1696.0,"v":135190000},{"d":"2025-03-24","o":1718.0,"h":1752.0,"l":1696.0,"c":1696.0,"v":74197500},{"d":"2025-03-25","o":1711.0,"h":1749.0,"l":1692.0,"c":1692.0,"v":54612500},{"d":"2025-03-26","o":1706.0,"h":1722.0,"l":1680.0,"c":1704.0,"v":60740000},{"d":"2025-03-27","o":1704.0,"h":1721.0,"l":1692.0,"c":1704.0,"v":64385000},{"d":"2025-04-08","o":1616.0,"h":1700.0,"l":1456.0,"c":1607.0,"v":42900000},{"d":"2025-04-09","o":1605.0,"h":1616.0,"l":1536.0,"c":1609.0,"v":92680000},{"d":"2025-04-10","o":1628.0,"h":1678.0,"l":1610.0,"c":1676.0,"v":94427500},{"d":"2025-04-11","o":1677.0,"h":1748.0,"l":1643.0,"c":1678.0,"v":80532500},{"d":"2025-04-14","o":1679.0,"h":1766.0,"l":1664.0,"c":1728.0,"v":91930000},{"d":"2025-04-15","o":1728.0,"h":1760.0,"l":1704.0,"c":1718.0,"v":57862500},{"d":"2025-04-16","o":1720.0,"h":1754.0,"l":1707.0,"c":1712.0,"v":94645000},{"d":"2025-04-17","o":1713.0,"h":1779.0,"l":1713.0,"c":1752.0,"v":64625000},{"d":"2025-04-21","o":1753.0,"h":1775.0,"l":1663.0,"c":1672.0,"v":47630000},{"d":"2025-04-22","o":1678.0,"h":1730.0,"l":1650.0,"c":1692.0,"v":99035000},{"d":"2025-04-23","o":1696.0,"h":1830.0,"l":1696.0,"c":1720.0,"v":123025000},{"d":"2025-04-24","o":1743.0,"h":1750.0,"l":1702.0,"c":1724.0,"v":87770000},{"d":"2025-04-25","o":1731.0,"h":1746.0,"l":1688.0,"c":1690.0,"v":74507500},{"d":"2025-04-28","o":1707.0,"h":1840.0,"l":1703.0,"c":1794.0,"v":97905000},{"d":"2025-04-29","o":1812.0,"h":1840.0,"l":1728.0,"c":1835.0,"v":91797500},{"d":"2025-04-30","o":1841.0,"h":1866.0,"l":1807.0,"c":1820.0,"v":86057500},{"d":"2025-05-02","o":1820.0,"h":1865.0,"l":1816.0,"c":1836.0,"v":103070000},{"d":"2025-05-05","o":1848.0,"h":1956.0,"l":1788.0,"c":1852.0,"v":123820000},{"d":"2025-05-06","o":1860.0,"h":1960.0,"l":1850.0,"c":1928.0,"v":106020000},{"d":"2025-05-07","o":1942.0,"h":2095.0,"l":1942.0,"c":1948.0,"v":123697500},{"d":"2025-05-08","o":1980.0,"h":2027.0,"l":1930.0,"c":1930.0,"v":105955000},{"d":"2025-05-09","o":1952.0,"h":2060.0,"l":1952.0,"c":1973.0,"v":109307500},{"d":"2025-05-14","o":2001.0,"h":2070.0,"l":1996.0,"c":1996.0,"v":114727500},{"d":"2025-05-15","o":2017.0,"h":2057.0,"l":2016.0,"c":2016.0,"v":81807500},{"d":"2025-05-16","o":2024.0,"h":2024.0,"l":1976.0,"c":1997.0,"v":19392500},{"d":"2025-05-19","o":1998.0,"h":2032.0,"l":1957.0,"c":2028.0,"v":70070000},{"d":"2025-05-20","o":2031.0,"h":2100.0,"l":2020.0,"c":2040.0,"v":140795000},{"d":"2025-05-21","o":2063.0,"h":2085.0,"l":2020.0,"c":2033.0,"v":85435000},{"d":"2025-05-22","o":2037.0,"h":2160.0,"l":2028.0,"c":2072.0,"v":71305000},{"d":"2025-05-23","o":2166.0,"h":2168.0,"l":2106.0,"c":2108.0,"v":31567500},{"d":"2025-05-26","o":2108.0,"h":2156.0,"l":2032.0,"c":2156.0,"v":83845000},{"d":"2025-05-27","o":2156.0,"h":2208.0,"l":2138.0,"c":2147.0,"v":86070000},{"d":"2025-05-28","o":2152.0,"h":2218.0,"l":2100.0,"c":2160.0,"v":75102500},{"d":"2025-06-02","o":2160.0,"h":2237.0,"l":2112.0,"c":2210.0,"v":70830000},{"d":"2025-06-03","o":2212.0,"h":2320.0,"l":2192.0,"c":2232.0,"v":86375000},{"d":"2025-06-04","o":2240.0,"h":2336.0,"l":2231.0,"c":2244.0,"v":125550000},{"d":"2025-06-05","o":2248.0,"h":2336.0,"l":2212.0,"c":2272.0,"v":104737500},{"d":"2025-06-10","o":2252.0,"h":2384.0,"l":2252.0,"c":2292.0,"v":101675000},{"d":"2025-06-11","o":2312.0,"h":2343.0,"l":2288.0,"c":2288.0,"v":97685000},{"d":"2025-06-12","o":2301.0,"h":2368.0,"l":2300.0,"c":2340.0,"v":75505000},{"d":"2025-06-13","o":2327.0,"h":2432.0,"l":2327.0,"c":2368.0,"v":68052500},{"d":"2025-06-16","o":2328.0,"h":2408.0,"l":2324.0,"c":2388.0,"v":60777500},{"d":"2025-06-17","o":2414.0,"h":2420.0,"l":2365.0,"c":2380.0,"v":53772500},{"d":"2025-06-18","o":2380.0,"h":2407.0,"l":2336.0,"c":2348.0,"v":58132500},{"d":"2025-06-19","o":2363.0,"h":2416.0,"l":2335.0,"c":2358.0,"v":96275000},{"d":"2025-06-20","o":2320.0,"h":2420.0,"l":2309.0,"c":2386.0,"v":87362500},{"d":"2025-06-23","o":2386.0,"h":2393.0,"l":2200.0,"c":2245.0,"v":54545000},{"d":"2025-06-24","o":2260.0,"h":2274.0,"l":2145.0,"c":2170.0,"v":62585000},{"d":"2025-06-25","o":2170.0,"h":2260.0,"l":2169.0,"c":2243.0,"v":72322500},{"d":"2025-06-26","o":2246.0,"h":2312.0,"l":2200.0,"c":2208.0,"v":47550000},{"d":"2025-06-30","o":2211.0,"h":2216.0,"l":2130.0,"c":2143.0,"v":80405000},{"d":"2025-07-01","o":2143.0,"h":2168.0,"l":2085.0,"c":2122.0,"v":107855000},{"d":"2025-07-02","o":2113.0,"h":2172.0,"l":2089.0,"c":2172.0,"v":126375000},{"d":"2025-07-03","o":2188.0,"h":2208.0,"l":2162.0,"c":2185.0,"v":94722500},{"d":"2025-07-04","o":2196.0,"h":2247.0,"l":2163.0,"c":2224.0,"v":48875000},{"d":"2025-07-07","o":2240.0,"h":2296.0,"l":2212.0,"c":2240.0,"v":69880000},{"d":"2025-07-08","o":2240.0,"h":2327.0,"l":2231.0,"c":2280.0,"v":99407500},{"d":"2025-07-09","o":2300.0,"h":2312.0,"l":2263.0,"c":2268.0,"v":73022500},{"d":"2025-07-10","o":2280.0,"h":2298.0,"l":2204.0,"c":2223.0,"v":34172500},{"d":"2025-07-11","o":2224.0,"h":2240.0,"l":2140.0,"c":2151.0,"v":42437500},{"d":"2025-07-14","o":2172.0,"h":2506.0,"l":2172.0,"c":2400.0,"v":179505000},{"d":"2025-07-15","o":2400.0,"h":2583.0,"l":2336.0,"c":2488.0,"v":79170000},{"d":"2025-07-16","o":2460.0,"h":2648.0,"l":2452.0,"c":2584.0,"v":129660000},{"d":"2025-07-17","o":2560.0,"h":2780.0,"l":2560.0,"c":2640.0,"v":108202500},{"d":"2025-07-18","o":2620.0,"h":2712.0,"l":2620.0,"c":2628.0,"v":71385000},{"d":"2025-07-21","o":2684.0,"h":2685.0,"l":2600.0,"c":2604.0,"v":59200000},{"d":"2025-07-22","o":2637.0,"h":2659.0,"l":2560.0,"c":2592.0,"v":146975000},{"d":"2025-07-23","o":2620.0,"h":2707.0,"l":2591.0,"c":2620.0,"v":65845000},{"d":"2025-07-24","o":2580.0,"h":2676.0,"l":2574.0,"c":2604.0,"v":95847500},{"d":"2025-07-25","o":2568.0,"h":2700.0,"l":2567.0,"c":2640.0,"v":116015000},{"d":"2025-07-28","o":2686.0,"h":2733.0,"l":2636.0,"c":2636.0,"v":66107500},{"d":"2025-07-29","o":2636.0,"h":2676.0,"l":2596.0,"c":2628.0,"v":109082500},{"d":"2025-07-30","o":2598.0,"h":2650.0,"l":2575.0,"c":2607.0,"v":66502500},{"d":"2025-07-31","o":2630.0,"h":2680.0,"l":2592.0,"c":2592.0,"v":73350000},{"d":"2025-08-01","o":2566.0,"h":2614.0,"l":2564.0,"c":2598.0,"v":53302500},{"d":"2025-08-04","o":2628.0,"h":2672.0,"l":2600.0,"c":2600.0,"v":76722500},{"d":"2025-08-05","o":2638.0,"h":2670.0,"l":2572.0,"c":2636.0,"v":112197500},{"d":"2025-08-06","o":2620.0,"h":2720.0,"l":2604.0,"c":2656.0,"v":138192500},{"d":"2025-08-07","o":2612.0,"h":2716.0,"l":2612.0,"c":2620.0,"v":123082500},{"d":"2025-08-08","o":3144.0,"h":3144.0,"l":3006.0,"c":3144.0,"v":269407500},{"d":"2025-08-11","o":3300.0,"h":3520.0,"l":3300.0,"c":3368.0,"v":185500000},{"d":"2025-08-12","o":3536.0,"h":3536.0,"l":3328.0,"c":3344.0,"v":96850000},{"d":"2025-08-13","o":3460.0,"h":3600.0,"l":3372.0,"c":3540.0,"v":279580000},{"d":"2025-08-14","o":3516.0,"h":3740.0,"l":3516.0,"c":3680.0,"v":231130000},{"d":"2025-08-15","o":3624.0,"h":3780.0,"l":3624.0,"c":3704.0,"v":241552500},{"d":"2025-08-19","o":3704.0,"h":3880.0,"l":3704.0,"c":3720.0,"v":363727500},{"d":"2025-08-20","o":3800.0,"h":3800.0,"l":3602.0,"c":3694.0,"v":276340000},{"d":"2025-08-21","o":3140.0,"h":3213.0,"l":3140.0,"c":3209.0,"v":408267500},{"d":"2025-08-22","o":3242.0,"h":3290.0,"l":3120.0,"c":3153.0,"v":167515000},{"d":"2025-08-25","o":3194.0,"h":3212.0,"l":3120.0,"c":3195.0,"v":191527500},{"d":"2025-08-26","o":3260.0,"h":3623.0,"l":3244.0,"c":3623.0,"v":1506755000},{"d":"2025-08-27","o":3802.0,"h":3802.0,"l":3583.0,"c":3800.0,"v":117860000},{"d":"2025-08-28","o":3742.0,"h":4000.0,"l":3742.0,"c":3886.0,"v":115492500},{"d":"2025-08-29","o":3920.0,"h":3992.0,"l":3906.0,"c":3968.0,"v":100530000},{"d":"2025-09-01","o":3968.0,"h":3972.0,"l":3781.0,"c":3940.0,"v":36477500},{"d":"2025-09-02","o":3960.0,"h":3990.0,"l":3956.0,"c":3984.0,"v":48922500},{"d":"2025-09-03","o":4000.0,"h":4392.0,"l":3994.0,"c":4392.0,"v":172357500},{"d":"2025-09-04","o":4200.0,"h":4380.0,"l":4200.0,"c":4248.0,"v":94647500},{"d":"2025-09-08","o":4240.0,"h":4566.0,"l":4240.0,"c":4434.0,"v":142205000},{"d":"2025-09-09","o":4440.0,"h":4440.0,"l":4121.0,"c":4121.0,"v":52162500},{"d":"2025-09-10","o":4320.0,"h":4350.0,"l":4120.0,"c":4120.0,"v":58317500},{"d":"2025-09-11","o":4199.0,"h":4224.0,"l":3720.0,"c":3850.0,"v":73847500},{"d":"2025-09-12","o":3958.0,"h":4103.0,"l":3859.0,"c":4094.0,"v":67070000},{"d":"2025-09-15","o":4100.0,"h":4180.0,"l":4090.0,"c":4180.0,"v":52662500},{"d":"2025-09-16","o":4200.0,"h":4360.0,"l":4198.0,"c":4360.0,"v":67242500},{"d":"2025-09-17","o":4300.0,"h":4550.0,"l":4288.0,"c":4400.0,"v":110067500},{"d":"2025-09-18","o":4320.0,"h":4545.0,"l":4320.0,"c":4371.0,"v":74845000},{"d":"2025-09-19","o":4400.0,"h":4566.0,"l":4312.0,"c":4566.0,"v":933710000},{"d":"2025-09-22","o":4566.0,"h":4577.0,"l":4440.0,"c":4540.0,"v":33347500},{"d":"2025-09-23","o":4520.0,"h":4581.0,"l":4514.0,"c":4560.0,"v":29265000},{"d":"2025-09-24","o":4580.0,"h":4620.0,"l":4522.0,"c":4600.0,"v":32757500},{"d":"2025-09-25","o":4660.0,"h":4660.0,"l":4370.0,"c":4536.0,"v":31045000},{"d":"2025-09-26","o":4536.0,"h":4536.0,"l":4372.0,"c":4432.0,"v":22020000},{"d":"2025-09-29","o":4436.0,"h":4436.0,"l":4146.0,"c":4146.0,"v":30617500},{"d":"2025-09-30","o":4146.0,"h":4275.0,"l":4080.0,"c":4248.0,"v":36797500},{"d":"2025-10-01","o":4280.0,"h":4280.0,"l":4145.0,"c":4220.0,"v":19550000},{"d":"2025-10-02","o":4220.0,"h":4220.0,"l":4140.0,"c":4196.0,"v":25800000},{"d":"2025-10-03","o":4192.0,"h":4224.0,"l":4145.0,"c":4224.0,"v":29235000},{"d":"2025-10-06","o":4224.0,"h":4224.0,"l":4118.0,"c":4141.0,"v":29602500},{"d":"2025-10-07","o":4142.0,"h":4219.0,"l":4120.0,"c":4166.0,"v":54525000},{"d":"2025-10-08","o":4180.0,"h":4258.0,"l":4116.0,"c":4216.0,"v":50812500},{"d":"2025-10-09","o":4240.0,"h":4260.0,"l":4129.0,"c":4205.0,"v":28650000},{"d":"2025-10-10","o":4220.0,"h":4276.0,"l":4188.0,"c":4244.0,"v":30322500},{"d":"2025-10-13","o":4232.0,"h":4240.0,"l":4164.0,"c":4169.0,"v":28512500},{"d":"2025-10-14","o":4220.0,"h":4279.0,"l":4178.0,"c":4256.0,"v":35012500},{"d":"2025-10-15","o":4256.0,"h":4503.0,"l":4256.0,"c":4440.0,"v":88955000},{"d":"2025-10-16","o":4360.0,"h":4720.0,"l":4360.0,"c":4600.0,"v":147747500},{"d":"2025-10-17","o":4560.0,"h":4620.0,"l":3920.0,"c":3966.0,"v":91275000},{"d":"2025-10-20","o":3967.0,"h":4177.0,"l":3960.0,"c":4113.0,"v":33992500},{"d":"2025-10-21","o":4113.0,"h":4271.0,"l":4091.0,"c":4192.0,"v":29257500},{"d":"2025-10-22","o":4196.0,"h":4233.0,"l":4089.0,"c":4160.0,"v":52392500},{"d":"2025-10-23","o":4140.0,"h":4152.0,"l":4018.0,"c":4038.0,"v":39347500},{"d":"2025-10-24","o":4098.0,"h":4120.0,"l":4039.0,"c":4075.0,"v":52722500},{"d":"2025-10-27","o":4092.0,"h":4098.0,"l":3464.0,"c":3552.0,"v":55962500},{"d":"2025-10-28","o":3700.0,"h":3706.0,"l":3203.0,"c":3375.0,"v":76577500},{"d":"2025-10-29","o":3400.0,"h":3400.0,"l":3160.0,"c":3256.0,"v":35465000},{"d":"2025-10-30","o":3256.0,"h":3457.0,"l":3160.0,"c":3456.0,"v":58460000},{"d":"2025-10-31","o":3484.0,"h":3518.0,"l":3362.0,"c":3383.0,"v":57017500},{"d":"2025-11-03","o":3402.0,"h":3538.0,"l":3352.0,"c":3520.0,"v":32572500},{"d":"2025-11-04","o":3500.0,"h":3695.0,"l":3470.0,"c":3680.0,"v":68965000},{"d":"2025-11-05","o":3680.0,"h":3680.0,"l":3524.0,"c":3528.0,"v":43737500},{"d":"2025-11-06","o":3528.0,"h":3860.0,"l":3528.0,"c":3840.0,"v":53597500},{"d":"2025-11-07","o":3852.0,"h":4040.0,"l":3784.0,"c":4000.0,"v":55787500},{"d":"2025-11-10","o":4000.0,"h":4000.0,"l":3514.0,"c":3520.0,"v":64320000},{"d":"2025-11-11","o":3532.0,"h":3560.0,"l":3441.0,"c":3490.0,"v":62357500},{"d":"2025-11-12","o":3508.0,"h":3569.0,"l":3440.0,"c":3460.0,"v":57345000},{"d":"2025-11-13","o":3476.0,"h":3560.0,"l":3476.0,"c":3519.0,"v":50275000},{"d":"2025-11-14","o":3536.0,"h":3725.0,"l":3536.0,"c":3648.0,"v":56272500},{"d":"2025-11-17","o":3664.0,"h":3920.0,"l":3642.0,"c":3888.0,"v":52297500},{"d":"2025-11-18","o":3912.0,"h":3950.0,"l":3848.0,"c":3950.0,"v":57640000},{"d":"2025-11-19","o":3972.0,"h":4060.0,"l":3945.0,"c":3945.0,"v":51587500},{"d":"2025-11-20","o":4000.0,"h":4112.0,"l":3972.0,"c":3980.0,"v":50272500},{"d":"2025-11-21","o":3980.0,"h":4080.0,"l":3890.0,"c":4000.0,"v":44435000},{"d":"2025-11-24","o":4022.0,"h":4228.0,"l":3952.0,"c":4228.0,"v":234335000},{"d":"2025-11-25","o":4106.0,"h":4288.0,"l":4100.0,"c":4288.0,"v":54015000},{"d":"2025-11-26","o":4340.0,"h":4472.0,"l":4320.0,"c":4440.0,"v":52367500},{"d":"2025-11-27","o":4442.0,"h":4460.0,"l":4286.0,"c":4298.0,"v":21070000},{"d":"2025-11-28","o":4410.0,"h":4428.0,"l":4347.0,"c":4398.0,"v":23760000},{"d":"2025-12-01","o":4398.0,"h":4544.0,"l":4327.0,"c":4512.0,"v":48252500},{"d":"2025-12-02","o":4596.0,"h":4620.0,"l":4520.0,"c":4620.0,"v":53975000},{"d":"2025-12-03","o":4639.0,"h":4701.0,"l":4477.0,"c":4477.0,"v":37865000},{"d":"2025-12-04","o":4552.0,"h":4614.0,"l":4502.0,"c":4555.0,"v":35405000},{"d":"2025-12-05","o":4600.0,"h":4600.0,"l":4081.0,"c":4083.0,"v":64967500},{"d":"2025-12-08","o":4080.0,"h":4400.0,"l":4080.0,"c":4378.0,"v":53717500},{"d":"2025-12-09","o":4440.0,"h":4440.0,"l":4286.0,"c":4355.0,"v":41125000},{"d":"2025-12-10","o":4440.0,"h":4440.0,"l":4200.0,"c":4380.0,"v":51450000},{"d":"2025-12-11","o":4444.0,"h":4444.0,"l":4300.0,"c":4384.0,"v":34130000},{"d":"2025-12-12","o":4364.0,"h":4374.0,"l":4156.0,"c":4250.0,"v":55200000},{"d":"2025-12-15","o":4282.0,"h":4340.0,"l":4034.0,"c":4034.0,"v":35285000},{"d":"2025-12-16","o":4220.0,"h":4310.0,"l":4080.0,"c":4280.0,"v":68277500},{"d":"2025-12-17","o":4280.0,"h":4319.0,"l":4220.0,"c":4252.0,"v":46200000},{"d":"2025-12-18","o":4300.0,"h":4360.0,"l":4216.0,"c":4224.0,"v":51172500},{"d":"2025-12-19","o":4192.0,"h":4405.0,"l":4192.0,"c":4365.0,"v":372327500},{"d":"2025-12-22","o":4365.0,"h":4440.0,"l":4351.0,"c":4416.0,"v":46497500},{"d":"2025-12-23","o":4431.0,"h":4450.0,"l":4205.0,"c":4205.0,"v":21832500},{"d":"2025-12-24","o":4240.0,"h":4249.0,"l":4024.0,"c":4164.0,"v":50232500},{"d":"2025-12-29","o":4164.0,"h":4164.0,"l":3988.0,"c":4048.0,"v":41150000},{"d":"2025-12-30","o":4048.0,"h":4048.0,"l":3971.0,"c":4040.0,"v":42942500},{"d":"2026-01-02","o":4040.0,"h":4048.0,"l":3880.0,"c":3938.0,"v":54135000},{"d":"2026-01-05","o":3980.0,"h":3980.0,"l":3717.0,"c":3884.0,"v":63332500},{"d":"2026-01-06","o":3876.0,"h":3917.0,"l":3760.0,"c":3827.0,"v":33637500},{"d":"2026-01-07","o":3829.0,"h":4060.0,"l":3782.0,"c":4023.0,"v":69472500},{"d":"2026-01-08","o":4034.0,"h":4259.0,"l":4034.0,"c":4127.0,"v":52510000},{"d":"2026-01-09","o":4160.0,"h":4217.0,"l":4100.0,"c":4129.0,"v":52382500},{"d":"2026-01-12","o":4130.0,"h":4178.0,"l":4027.0,"c":4137.0,"v":51725000},{"d":"2026-01-13","o":4137.0,"h":4200.0,"l":4077.0,"c":4200.0,"v":39495000},{"d":"2026-01-14","o":4200.0,"h":4415.0,"l":4164.0,"c":4319.0,"v":41230000},{"d":"2026-01-15","o":4322.0,"h":4480.0,"l":4322.0,"c":4440.0,"v":50192500},{"d":"2026-01-19","o":4440.0,"h":4588.0,"l":4440.0,"c":4563.0,"v":34117500},{"d":"2026-01-20","o":4563.0,"h":4565.0,"l":4080.0,"c":4080.0,"v":36942500},{"d":"2026-01-21","o":4180.0,"h":4360.0,"l":4117.0,"c":4202.0,"v":61495000},{"d":"2026-01-22","o":4220.0,"h":4400.0,"l":4220.0,"c":4228.0,"v":53567500},{"d":"2026-01-23","o":4280.0,"h":4320.0,"l":4120.0,"c":4180.0,"v":50232500},{"d":"2026-01-26","o":4180.0,"h":4424.0,"l":4180.0,"c":4424.0,"v":55662500},{"d":"2026-01-27","o":4424.0,"h":4640.0,"l":4424.0,"c":4640.0,"v":68432500},{"d":"2026-01-28","o":3944.0,"h":4077.0,"l":3944.0,"c":3944.0,"v":62452500},{"d":"2026-01-29","o":3354.0,"h":3881.0,"l":3353.0,"c":3760.0,"v":123730000},{"d":"2026-01-30","o":3988.0,"h":4046.0,"l":3681.0,"c":3960.0,"v":64000000},{"d":"2026-02-02","o":3948.0,"h":3948.0,"l":3366.0,"c":3468.0,"v":82605000},{"d":"2026-02-03","o":3400.0,"h":3610.0,"l":3353.0,"c":3600.0,"v":29757500},{"d":"2026-02-04","o":3602.0,"h":3640.0,"l":3462.0,"c":3616.0,"v":22612500},{"d":"2026-02-05","o":3616.0,"h":3718.0,"l":3520.0,"c":3520.0,"v":17040000},{"d":"2026-02-06","o":3516.0,"h":3548.0,"l":3400.0,"c":3415.0,"v":13875000},{"d":"2026-02-09","o":3416.0,"h":3742.0,"l":3374.0,"c":3718.0,"v":15535000},{"d":"2026-02-10","o":3718.0,"h":3780.0,"l":3659.0,"c":3779.0,"v":15517500},{"d":"2026-02-11","o":3779.0,"h":3920.0,"l":3779.0,"c":3880.0,"v":20055000},{"d":"2026-02-12","o":3880.0,"h":3880.0,"l":3751.0,"c":3800.0,"v":46182500},{"d":"2026-02-13","o":3800.0,"h":3800.0,"l":3689.0,"c":3773.0,"v":52052500},{"d":"2026-02-18","o":3773.0,"h":3808.0,"l":3628.0,"c":3660.0,"v":32845000},{"d":"2026-02-19","o":3680.0,"h":3680.0,"l":3532.0,"c":3552.0,"v":31295000},{"d":"2026-02-20","o":3570.0,"h":3571.0,"l":3460.0,"c":3480.0,"v":29992500},{"d":"2026-02-23","o":3497.0,"h":3547.0,"l":3442.0,"c":3480.0,"v":28975000},{"d":"2026-02-24","o":3480.0,"h":3488.0,"l":3377.0,"c":3377.0,"v":34260000},{"d":"2026-02-25","o":3384.0,"h":3446.0,"l":3320.0,"c":3348.0,"v":32722500},{"d":"2026-02-26","o":3340.0,"h":3395.0,"l":3280.0,"c":3320.0,"v":38290000},{"d":"2026-02-27","o":3320.0,"h":3320.0,"l":3157.0,"c":3157.0,"v":54735000},{"d":"2026-03-02","o":3147.0,"h":3249.0,"l":3038.0,"c":3160.0,"v":62197500},{"d":"2026-03-03","o":3160.0,"h":3220.0,"l":3140.0,"c":3140.0,"v":49965000},{"d":"2026-03-04","o":3140.0,"h":3140.0,"l":2930.0,"c":2994.0,"v":56492500},{"d":"2026-03-05","o":3008.0,"h":3060.0,"l":2978.0,"c":3032.0,"v":52572500},{"d":"2026-03-06","o":3032.0,"h":3041.0,"l":2881.0,"c":3016.0,"v":56720000},{"d":"2026-03-09","o":2999.0,"h":3016.0,"l":2765.0,"c":2928.0,"v":54037500},{"d":"2026-03-10","o":2924.0,"h":3136.0,"l":2924.0,"c":3102.0,"v":56165000},{"d":"2026-03-11","o":3119.0,"h":3163.0,"l":3067.0,"c":3110.0,"v":51077500},{"d":"2026-03-12","o":3120.0,"h":3165.0,"l":2998.0,"c":3024.0,"v":54360000},{"d":"2026-03-13","o":3052.0,"h":3052.0,"l":2677.0,"c":2677.0,"v":61697500},{"d":"2026-03-16","o":2674.0,"h":2674.0,"l":2428.0,"c":2462.0,"v":83540000},{"d":"2026-03-17","o":2474.0,"h":2540.0,"l":2374.0,"c":2458.0,"v":70000000},{"d":"2026-03-25","o":2458.0,"h":2601.0,"l":2341.0,"c":2534.0,"v":92265000},{"d":"2026-03-26","o":2540.0,"h":2555.0,"l":2466.0,"c":2528.0,"v":57645000},{"d":"2026-03-27","o":2518.0,"h":2602.0,"l":2480.0,"c":2509.0,"v":81802500},{"d":"2026-03-30","o":2504.0,"h":2705.0,"l":2346.0,"c":2675.0,"v":76950000},{"d":"2026-03-31","o":2673.0,"h":2740.0,"l":2500.0,"c":2640.0,"v":75452500},{"d":"2026-04-01","o":2632.0,"h":2776.0,"l":2620.0,"c":2741.0,"v":62867500},{"d":"2026-04-02","o":2749.0,"h":2845.0,"l":2674.0,"c":2815.0,"v":57720000},{"d":"2026-04-06","o":2640.0,"h":2648.0,"l":2420.0,"c":2552.0,"v":73212500},{"d":"2026-04-07","o":2551.0,"h":2720.0,"l":2512.0,"c":2650.0,"v":75475000},{"d":"2026-04-08","o":2680.0,"h":2720.0,"l":2576.0,"c":2680.0,"v":65337500},{"d":"2026-04-09","o":2600.0,"h":3220.0,"l":2600.0,"c":3120.0,"v":109066800},{"d":"2026-04-10","o":3150.0,"h":3300.0,"l":3040.0,"c":3110.0,"v":72192100},{"d":"2026-04-13","o":3110.0,"h":3170.0,"l":2900.0,"c":3160.0,"v":91733800},{"d":"2026-04-14","o":3230.0,"h":3430.0,"l":3060.0,"c":3300.0,"v":104059500},{"d":"2026-04-15","o":3350.0,"h":3500.0,"l":3220.0,"c":3350.0,"v":78423000},{"d":"2026-04-16","o":3380.0,"h":3400.0,"l":3150.0,"c":3280.0,"v":57110000},{"d":"2026-04-17","o":3260.0,"h":3320.0,"l":3210.0,"c":3250.0,"v":56238400},{"d":"2026-04-20","o":3240.0,"h":3360.0,"l":3200.0,"c":3270.0,"v":57553200},{"d":"2026-04-21","o":3100.0,"h":3120.0,"l":2780.0,"c":2780.0,"v":86470000},{"d":"2026-04-22","o":2500.0,"h":2650.0,"l":2440.0,"c":2510.0,"v":64306700},{"d":"2026-04-23","o":2520.0,"h":2600.0,"l":2250.0,"c":2250.0,"v":46592000},{"d":"2026-04-24","o":2300.0,"h":2340.0,"l":2010.0,"c":2020.0,"v":44392500},{"d":"2026-04-27","o":2020.0,"h":2110.0,"l":1840.0,"c":1845.0,"v":47163500},{"d":"2026-04-28","o":1850.0,"h":1895.0,"l":1750.0,"c":1765.0,"v":43261800},{"d":"2026-04-29","o":1770.0,"h":1790.0,"l":1695.0,"c":1720.0,"v":22685400},{"d":"2026-04-30","o":1705.0,"h":1720.0,"l":1530.0,"c":1615.0,"v":43027200},{"d":"2026-05-04","o":1615.0,"h":1700.0,"l":1505.0,"c":1525.0,"v":27167800},{"d":"2026-05-05","o":1525.0,"h":1660.0,"l":1475.0,"c":1485.0,"v":63271300},{"d":"2026-05-06","o":1505.0,"h":1525.0,"l":1440.0,"c":1480.0,"v":48273600},{"d":"2026-05-07","o":1480.0,"h":1760.0,"l":1470.0,"c":1540.0,"v":101936300},{"d":"2026-05-08","o":1545.0,"h":1550.0,"l":1310.0,"c":1310.0,"v":99310700},{"d":"2026-05-11","o":1310.0,"h":1315.0,"l":1130.0,"c":1135.0,"v":226586400},{"d":"2026-05-12","o":1140.0,"h":1215.0,"l":1100.0,"c":1165.0,"v":243759100},{"d":"2026-05-13","o":1070.0,"h":1115.0,"l":1005.0,"c":1035.0,"v":148249800},{"d":"2026-05-14","o":1035.0,"h":1035.0,"l":1035.0,"c":1035.0,"v":0},{"d":"2026-05-15","o":1035.0,"h":1035.0,"l":1035.0,"c":1035.0,"v":0},{"d":"2026-05-18","o":945.0,"h":945.0,"l":880.0,"c":880.0,"v":123343900},{"d":"2026-05-19","o":795.0,"h":860.0,"l":750.0,"c":750.0,"v":443611800},{"d":"2026-05-20","o":735.0,"h":820.0,"l":680.0,"c":710.0,"v":459594900},{"d":"2026-05-21","o":675.0,"h":705.0,"l":605.0,"c":610.0,"v":510900200},{"d":"2026-05-22","o":600.0,"h":615.0,"l":530.0,"c":545.0,"v":466575300},{"d":"2026-05-25","o":505.0,"h":555.0,"l":470.0,"c":480.0,"v":569398200},{"d":"2026-05-26","o":472.0,"h":540.0,"l":432.0,"c":432.0,"v":851802500},{"d":"2026-05-27","o":432.0,"h":432.0,"l":432.0,"c":432.0,"v":0},{"d":"2026-05-28","o":432.0,"h":432.0,"l":432.0,"c":432.0,"v":0},{"d":"2026-05-29","o":410.0,"h":492.0,"l":410.0,"c":492.0,"v":2924893400},{"d":"2026-06-02","o":565.0,"h":615.0,"l":535.0,"c":615.0,"v":443249500},{"d":"2026-06-03","o":685.0,"h":765.0,"l":570.0,"c":690.0,"v":2074757800},{"d":"2026-06-04","o":685.0,"h":690.0,"l":590.0,"c":670.0,"v":1150519800},{"d":"2026-06-05","o":685.0,"h":740.0,"l":610.0,"c":610.0,"v":740739800},{"d":"2026-06-08","o":595.0,"h":630.0,"l":560.0,"c":595.0,"v":518702300},{"d":"2026-06-09","o":600.0,"h":685.0,"l":590.0,"c":675.0,"v":517234400},{"d":"2026-06-10","o":675.0,"h":825.0,"l":645.0,"c":790.0,"v":1853057400},{"d":"2026-06-11","o":760.0,"h":780.0,"l":695.0,"c":730.0,"v":1063286500},{"d":"2026-06-12","o":765.0,"h":850.0,"l":750.0,"c":825.0,"v":1360516800},{"d":"2026-06-15","o":875.0,"h":895.0,"l":810.0,"c":815.0,"v":1359395700},{"d":"2026-06-17","o":815.0,"h":835.0,"l":755.0,"c":775.0,"v":1048262200},{"d":"2026-06-18","o":760.0,"h":780.0,"l":720.0,"c":780.0,"v":887957000},{"d":"2026-06-19","o":790.0,"h":875.0,"l":775.0,"c":850.0,"v":3009788600},{"d":"2026-06-22","o":865.0,"h":885.0,"l":815.0,"c":850.0,"v":1465763900},{"d":"2026-06-23","o":880.0,"h":910.0,"l":755.0,"c":830.0,"v":2220829400},{"d":"2026-06-24","o":795.0,"h":825.0,"l":775.0,"c":785.0,"v":661121700},{"d":"2026-06-25","o":785.0,"h":845.0,"l":780.0,"c":830.0,"v":688113200},{"d":"2026-06-26","o":840.0,"h":840.0,"l":790.0,"c":815.0,"v":824261000},{"d":"2026-06-29","o":825.0,"h":850.0,"l":810.0,"c":825.0,"v":458402700},{"d":"2026-06-30","o":825.0,"h":830.0,"l":790.0,"c":795.0,"v":410335700},{"d":"2026-07-01","o":810.0,"h":835.0,"l":795.0,"c":820.0,"v":465987300},{"d":"2026-07-02","o":815.0,"h":835.0,"l":800.0,"c":805.0,"v":279295300},{"d":"2026-07-03","o":815.0,"h":865.0,"l":810.0,"c":820.0,"v":748789100},{"d":"2026-07-06","o":830.0,"h":830.0,"l":810.0,"c":815.0,"v":308455600},{"d":"2026-07-07","o":815.0,"h":825.0,"l":810.0,"c":815.0,"v":144671800},{"d":"2026-07-08","o":815.0,"h":820.0,"l":790.0,"c":790.0,"v":229514600},{"d":"2026-07-09","o":790.0,"h":795.0,"l":760.0,"c":775.0,"v":311253400},{"d":"2026-07-10","o":790.0,"h":795.0,"l":775.0,"c":785.0,"v":266957000},{"d":"2026-07-13","o":785.0,"h":825.0,"l":775.0,"c":825.0,"v":267099600},{"d":"2026-07-14","o":820.0,"h":830.0,"l":795.0,"c":800.0,"v":328774500},{"d":"2026-07-15","o":805.0,"h":820.0,"l":800.0,"c":800.0,"v":159403400},{"d":"2026-07-16","o":800.0,"h":815.0,"l":795.0,"c":810.0,"v":139313700},{"d":"2026-07-17","o":810.0,"h":815.0,"l":795.0,"c":800.0,"v":197502200},{"d":"2026-07-20","o":800.0,"h":820.0,"l":790.0,"c":815.0,"v":268674200},{"d":"2026-07-21","o":820.0,"h":985.0,"l":815.0,"c":940.0,"v":1987169500},{"d":"2026-07-22","o":950.0,"h":970.0,"l":885.0,"c":905.0,"v":1106413300},{"d":"2026-07-23","o":900.0,"h":955.0,"l":865.0,"c":875.0,"v":1128043400},{"d":"2026-07-24","o":855.0,"h":905.0,"l":850.0,"c":870.0,"v":565736100},{"d":"2026-07-27","o":870.0,"h":875.0,"l":840.0,"c":855.0,"v":249524100},{"d":"2026-07-28","o":845.0,"h":860.0,"l":825.0,"c":830.0,"v":249927100},{"d":"2026-07-29","o":830.0,"h":855.0,"l":805.0,"c":825.0,"v":330833300},{"d":"2026-07-30","o":830.0,"h":855.0,"l":825.0,"c":840.0,"v":184110400},{"d":"2026-07-31","o":860.0,"h":865.0,"l":845.0,"c":850.0,"v":156688400},{"d":"2026-08-03","o":850.0,"h":875.0,"l":830.0,"c":835.0,"v":236268200},{"d":"2026-08-04","o":835.0,"h":855.0,"l":830.0,"c":835.0,"v":123836000},{"d":"2026-08-05","o":845.0,"h":870.0,"l":845.0,"c":865.0,"v":226868100},{"d":"2026-08-06","o":870.0,"h":975.0,"l":865.0,"c":970.0,"v":1318265900},{"d":"2026-08-07","o":970.0,"h":1060.0,"l":950.0,"c":975.0,"v":1311549200},{"d":"2026-08-10","o":990.0,"h":1075.0,"l":975.0,"c":985.0,"v":1255876400},{"d":"2026-08-11","o":990.0,"h":995.0,"l":920.0,"c":945.0,"v":685524500},{"d":"2026-08-12","o":945.0,"h":1005.0,"l":940.0,"c":1000.0,"v":613046700},{"d":"2026-08-13","o":1005.0,"h":1025.0,"l":955.0,"c":990.0,"v":655016100.0}]};
+// Tema opsional (disuntik build_bedah.py sebelum script ini jalan). Bulletin
+// tidak menyetel window.__TEMA -> semua fallback ke nilai gelap asli, piksel
+// identik seperti sebelumnya.
+const T = window.__TEMA || {};
+// EMA: [periode, warna, tebal] — dipilih kontras di #0E1620 tanpa norak
+const EMAS = T.emas || [[20,"#6FE3D9",1],[50,"#37B8AF",1],[60,"#7E97B8",1],[100,"#A583D6",1],[200,"#E0955A",1.5]];
+function gambarChart(id, tk, ema50, pivot, nBar){
+  const cv=document.getElementById(id), x=cv.getContext('2d');
+  const all=OHLC[tk], bars=all.slice(-(nBar||252));
+  const adaVol=all.some(b=>b.v>0); // JKSE: volume 0 semua -> panel volume dilewati
+  const W=cv.width,H=cv.height,pad={t:30,r:136,b:14,l:6};
+  const volH=adaVol?Math.round(H*.20):0, gap=adaVol?10:0;
+  const pBot=H-pad.b-volH-gap; // batas bawah area harga; di bawahnya panel volume
+  // EMA dihitung dari riwayat penuh (~2 thn, pemanasan EMA200), digambar 252 bar
+  const seriEma=EMAS.map(([n])=>{const k=2/(n+1);let e=all[0].c;
+    return all.map(b=>e=e+(b.c-e)*k).slice(-bars.length);});
+  const pvals=Object.values(pivot);
+  const lo=Math.min(...bars.map(b=>b.l),...pvals,...seriEma.map(s=>Math.min(...s)))*0.99,
+        hi=Math.max(...bars.map(b=>b.h),...pvals,...seriEma.map(s=>Math.max(...s)))*1.01;
+  const X=i=>pad.l+i*(W-pad.l-pad.r)/(bars.length-1),
+        Y=v=>pad.t+(hi-v)*(pBot-pad.t)/(hi-lo);
+  // legenda satu baris pojok kiri atas
+  x.font="13px Cascadia Code, Consolas, monospace";x.textBaseline="middle";
+  let lx=pad.l+2;
+  for(const [n,c,w] of EMAS){
+    x.strokeStyle=c;x.lineWidth=2.5;x.beginPath();x.moveTo(lx,11);x.lineTo(lx+13,11);x.stroke();
+    lx+=17;x.fillStyle=T.teks||"rgba(233,238,244,.72)";x.fillText("EMA "+n,lx,11);
+    lx+=x.measureText("EMA "+n).width+13;
+  }
+  x.textBaseline="alphabetic";x.font="15px Bahnschrift, Segoe UI";
+  let yT=[];
+  // label diurut nilai desc supaya tumpukan anti-tabrakan tetap berurut harga
+  // (tanpa ini R1 bisa terdorong ke bawah P dan urutan kebaca acak)
+  for(const [n,v] of Object.entries(pivot).sort((a,b)=>b[1]-a[1])){
+    x.strokeStyle=T.grid||"rgba(255,255,255,.28)";x.lineWidth=1;x.setLineDash([3,4]);x.beginPath();
+    x.moveTo(pad.l,Y(v));x.lineTo(W-pad.r,Y(v));x.stroke();x.setLineDash([]);
+    let yl=Y(v)+5; while(yT.some(u=>Math.abs(u-yl)<17)) yl+=17; yT.push(yl);
+    x.fillStyle=T.pivot||"rgba(255,255,255,.72)";
+    x.fillText(n+" "+v.toLocaleString('id'),W-pad.r+14,yl);
+  }
+  const bw=Math.max(3,(W-pad.l-pad.r)/bars.length*.62);
+  x.lineWidth=1;
+  bars.forEach((b,i)=>{
+    const up=b.c>=b.o;
+    x.strokeStyle=x.fillStyle=up?(T.bull||"#2FBF71"):(T.bear||"#E4574C");
+    x.beginPath();x.moveTo(X(i),Y(b.h));x.lineTo(X(i),Y(b.l));x.stroke();
+    x.fillRect(X(i)-bw/2,Y(Math.max(b.o,b.c)),bw,
+      Math.max(1.5,Y(Math.min(b.o,b.c))-Y(Math.max(b.o,b.c))));
+  });
+  seriEma.forEach((seri,j)=>{
+    x.strokeStyle=EMAS[j][1];x.lineWidth=EMAS[j][2];x.beginPath();
+    seri.forEach((v,i)=>i?x.lineTo(X(i),Y(v)):x.moveTo(X(0),Y(v)));
+    x.stroke();
+  });
+  // ── panel volume: bar ikut arah candle (redup), lonjakan >1.75× MA20 penuh ──
+  if(adaVol){
+  const vAll=all.map(b=>b.v), maAll=[]; let s=0;
+  vAll.forEach((v,i)=>{s+=v; if(i>=20)s-=vAll[i-20]; maAll.push(i>=19?s/20:null);});
+  const vol=vAll.slice(-bars.length), vma=maAll.slice(-bars.length);
+  const maxV=Math.max(...vol,...vma.map(v=>v||0))*1.05||1;
+  const vY=v=>H-pad.b-v/maxV*volH;
+  bars.forEach((b,i)=>{
+    const up=b.c>=b.o, lonjak=vma[i]&&vol[i]>1.75*vma[i];
+    x.fillStyle=up?(lonjak?(T.bull||"#2FBF71"):(T.bullSoft||"rgba(47,191,113,.32)"))
+                 :(lonjak?(T.bear||"#E4574C"):(T.bearSoft||"rgba(228,87,76,.32)"));
+    x.fillRect(X(i)-bw/2,vY(vol[i]),bw,Math.max(1,H-pad.b-vY(vol[i])));
+  });
+  x.strokeStyle=T.teksLembut||"rgba(233,238,244,.55)";x.lineWidth=1;x.beginPath();
+  vma.forEach((v,i)=>{if(v==null)return;
+    i&&vma[i-1]!=null?x.lineTo(X(i),vY(v)):x.moveTo(X(i),vY(v));});
+  x.stroke();
+  // 1 tick sumbu volume, angka bulat gaya Indonesia (12,5 Jt)
+  const fmtVol=v=>{const f=n=>n.toLocaleString('id',{maximumFractionDigits:1});
+    return v>=1e9?f(v/1e9)+" M":v>=1e6?f(v/1e6)+" Jt":f(v/1e3)+" rb";};
+  const mag=Math.pow(10,Math.floor(Math.log10(maxV*.8)));
+  const tick=Math.floor(maxV*.8/mag)*mag;
+  x.strokeStyle=T.grid||"rgba(255,255,255,.14)";x.setLineDash([3,4]);x.beginPath();
+  x.moveTo(pad.l,vY(tick));x.lineTo(W-pad.r,vY(tick));x.stroke();x.setLineDash([]);
+  x.fillStyle=T.teksLembut||"rgba(255,255,255,.45)";x.font="12px Cascadia Code, Consolas, monospace";
+  // ikut tumpukan anti-tabrakan label pivot (S3 bisa terdorong sampai zona volume)
+  let vl=vY(tick)+4; while(yT.some(u=>Math.abs(u-vl)<15)) vl+=15;
+  x.fillText(fmtVol(tick),W-pad.r+14,Math.min(vl,H-4));
+  }
+}
+gambarChart("chT","DSSA",972,{"P": 990, "R1": 1025, "R2": 1060, "R3": 1095, "S1": 955, "S2": 920, "S3": 885});
+window.__chartsDone = true;
+</script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{
+ "edisi": "BA-CUAN-140826-E01",
+ "tipe": "bedah",
+ "ticker": "CUAN",
+ "nama": "PT Petrindo Jaya Kreasi Tbk.",
+ "tanggal": "2026-08-14",
+ "tanggal_id": "Jumat, 14 Agustus 2026",
+ "cache": "2026-08-13",
+ "vonis": "Dua hari terakhir CUAN bergerak ekstrem: melesat dari 720 ke 870 (12 Agu) dengan volume 1,7 miliar lembar, lalu terkoreksi 3,45% ke 840. Mesin membaca setup ema+/pivot+/volume >3× di tercile atas rentang 20 hari: historisnya 55,8% naik dalam 5 hari dan 78,2% menyentuh +3% (n147). Namun 34,9% modal historis masih nyangkut di lapis atas — p75 modal di 1.190 — dan Stockbit menandai 3 dan 6 bulan terakhir Big Dist. Selama 805 (S1) bertahan, struktur momentum hidup; close >880 bervolume membuka rute 920–955.",
+ "interpretasi_pcd": "PCD CUAN 961 — 14,4% di atas close 840 — dan distribusinya terbelah dua: zona modal bawah (p25 675, median 760) yang kini untung, dan lapis tebal 1.190 ke atas (p75) peninggalan era harga tinggi yang masih rugi dalam. 65,1% modal sudah di atas air, tetapi setiap kenaikan menuju 900–1.200 akan menyusuri wilayah modal nyangkut — sumber pasokan dari pemegang yang ingin impas. Breakout 12 Agu dibangun di rentang 720–885 sehingga lapis modal baru terbentuk cepat tepat di bawah harga; selama 805 bertahan, lapis baru itu untung dan berkepentingan menjaganya. Reclaim bertahap di atas 961 (PCD) baru mengubah mayoritas modal atas menjadi netral.",
+ "narasi_flow": "Enam hari setoran menunjukkan net broker tampak +Rp12,3 miliar (3/6 hari positif), terkonsentrasi di hari breakout 12 Agu (+Rp16,9 miliar, vonis Stockbit Big Acc). Akumulator konsisten: AK +Rp49,9 miliar (avg beli 768), CC +Rp44,6 miliar (avg 766), DX +Rp38,0 miliar (avg 712) — modal ketiganya di bawah close 840, posisi untung yang belum dibongkar. Distribusi terbesar XL −Rp50,6 miliar, disusul OD −Rp26,5 miliar dan MG −Rp26,4 miliar. Rentang Stockbit memberi dua wajah: mingguan 07–13 Agu Big Acc (top5 +26,3%), tetapi 3 bulan dan 6 bulan Big Dist — momentum baru berjalan sepekan melawan distribusi berbulan-bulan.",
+ "catatan_flow": "Enam hari setoran Broker Summary harian (06–13 Agu 2026) + empat tampilan rentang Stockbit (mingguan s.d. 6 bulan), screenshot manual. Daftar broker per hari adalah baris yang tampak di layar (terpotong scroll), bukan seluruh n_buyer/n_seller — total baris tampak tidak persis sama dengan Net Value ringkasan Stockbit; ringkasan dan label Acc/Dist tetap valid karena tercetak langsung dari Stockbit. Satu kode sisi beli 07 Agu terbaca \"FF\" (Rp79,3 juta) dan mungkin \"IF\". Tampilan rentang hanya memuat ringkasan (tanpa baris broker), sehingga modal per broker diaproksimasi dari agregat 6 hari harian.",
+ "catatan_verifikasi": "Data terbitan ini ditutup pada sesi bursa 13 Agustus 2026 — bukan data waktu nyata; perdagangan hari terbit belum tercakup. CUAN belum pernah masuk edisi harian Arus Pasar: seluruh angka teknikal (OHLC, EMA50, pivot klasik) dihitung mesin dari data Yahoo Finance 2 tahun (cache ohlc-bedah-CUAN), bukan dari edisi sumber. PCD aproksimasi hibrida OHLCV harian + intraday 15 menit — bukan data done per harga. Probabilitas historis memakai pool cache edisi 13 Agu (22 emiten) DITAMBAH seri CUAN sendiri; setup CUAN n147, 4/4 fitur. Arus broker dari 6 hari setoran manual + ringkasan rentang Stockbit; baris broker per hari bisa terpotong scroll layar.",
+ "em": {
+  "label": "Bullish — Momentum Breakout, Volatilitas Tinggi",
+  "arah": "bull",
+  "narasi_teknikal": "Menutup 840 (−3,45%) sehari setelah melesat ke 870; harga jauh di atas EMA50 735 dengan volume 1.546 jt lembar — lebih dari 3× rerata 20 hari. Pivot besok 845; support terdekat 805, resisten 880. Rentang 20 hari 610–885: harga duduk di tercile atas, dua hari terakhir menyumbang hampir seluruh perjalanan itu.",
+  "strategi": "Momentum baru berumur dua hari dengan volume ekstrem — ukuran kecil, konfirmasi close >880 sebelum agresif; disiplin penuh di 805.",
+  "skenario": {
+   "bull": {
+    "konfirmasi": "Close >880 dengan volume tetap di atas rerata 20 hari",
+    "rute": "880 → 920 → 955 (R1 → R2 → R3)",
+    "risiko": "Gagal bertahan di atas 880 = lonjakan dua hari rawan menjadi blow-off; kembali netral"
+   },
+   "retest": {
+    "konfirmasi": "Bertahan di 805–845 lalu close kembali di atas pivot 845",
+    "rute": "Basis di atas 805; reclaim 845 membuka uji ulang 880",
+    "risiko": "Close <805 membatalkan skenario konstruktif"
+   },
+   "invalid": {
+    "konfirmasi": "Close <805 (S1 patah)",
+    "rute": "Terbuka jalan ke 770 → 730; magnet modal berikutnya di median 760",
+    "risiko": "Volume besar 12–13 Agu berubah tafsir menjadi distribusi; tunggu basis baru terbentuk"
+   },
+   "aturan": "Momentum baru berumur dua hari dengan volume ekstrem — ukuran kecil, konfirmasi close >880 sebelum agresif; disiplin penuh di 805."
+  }
+ }
+}
