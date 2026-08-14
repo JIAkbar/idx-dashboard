@@ -102,7 +102,7 @@ export function Nego({ tanggalAktif, rentang }: NegoProps) {
         <span>Volume: <span className="num">{fmtB(totalVol)} lembar</span></span>
         <span>Frekuensi: <span className="num">{totalFrek.toLocaleString('id-ID')}x</span></span>
       </div>
-      <div className="chart-wrap" style={{ height: 240 }}>
+      <div className="chart-wrap chart-tinggi">
         <canvas ref={canvasRef} />
       </div>
       <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text3)' }}>

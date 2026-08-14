@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { fN, fp, cls } from '../../../lib/dasbor/format'
 import { onlyDigits, formatRibuan, parseRibuan } from '../../../lib/dasbor/kalkulatorFormat'
 import { IkonMenu, IKON_PAPAN_KLIP, IKON_JAM, IKON_CARI, IKON_GIR, IKON_GRAFIK_BATANG, IKON_PERINGATAN } from '../../../components/dasbor/IkonMenu'
+import { StockAutocomplete } from '../../../components/dasbor/StockAutocomplete'
+import { useStockIndex } from '../../../lib/dasbor/stockDetailData'
 
 type AdcMode = 'half' | 'lossmax' | 'endavg' | 'avgqty' | 'avgval'
 
@@ -85,6 +87,10 @@ function computeAdc(
  *  ADC baris 3583-3753 (fetchPrice/calc/save/load) + fmtModeInp/parseModeInp
  *  baris 3564-3581. */
 export function AvgDown() {
+  // Daftar emiten resmi utk autocomplete kode saham (cache modul, dipakai
+  // bersama Stock Detail/Admin) — pengganti input teks bebas yang membolehkan
+  // kode karangan (keluhan user 14 Agu).
+  const { index: indexSaham } = useStockIndex()
   const [kode, setKode] = useState('')
   const [avg, setAvg] = useState('')
   const [qty, setQty] = useState('')
@@ -139,8 +145,8 @@ export function AvgDown() {
     }
   }, [kode, avg, qty, last, mode, lossmax, endavgRaw, avgqty, avgvalRaw])
 
-  async function fetchPrice() {
-    const kodeTrim = kode.trim().toUpperCase()
+  async function fetchPrice(tickerPilihan?: string) {
+    const kodeTrim = (tickerPilihan ?? kode).trim().toUpperCase()
     if (!kodeTrim) {
       alert('Masukkan kode saham terlebih dahulu')
       return
@@ -207,18 +213,19 @@ export function AvgDown() {
           <div className="panel-b">
             <div className="field" style={{ marginBottom: 10 }}>
               <span className="lbl">Kode Saham</span>
+              {/* Dulu input teks bebas: kode karangan baru ketahuan setelah
+                  "Cari Harga" gagal. Kini autocomplete dari daftar emiten
+                  resmi (komponen yang sama dengan Stock Detail & Admin);
+                  memilih emiten langsung menarik harganya. */}
               <div style={{ display: 'flex', gap: 8 }}>
-                <input
-                  className="inp"
-                  style={{ flex: 1, minWidth: 0 }}
-                  type="text"
-                  name="kode"
-                  placeholder="Contoh: BBCA"
-                  maxLength={6}
+                <StockAutocomplete
+                  stocks={indexSaham?.stocks ?? []}
                   value={kode}
-                  onChange={(e) => setKode(e.target.value.toUpperCase())}
+                  onChange={setKode}
+                  onSelect={(t) => { setKode(t); void fetchPrice(t) }}
+                  placeholder="Cari kode / nama emiten…"
                 />
-                <button className="btn-p" style={{ whiteSpace: 'nowrap' }} onClick={fetchPrice} disabled={fetching}>
+                <button className="btn-p" style={{ whiteSpace: 'nowrap' }} onClick={() => void fetchPrice()} disabled={fetching}>
                   {fetching ? <IkonMenu d={IKON_JAM} size={13} /> : <><IkonMenu d={IKON_CARI} size={13} /> Cari Harga</>}
                 </button>
               </div>

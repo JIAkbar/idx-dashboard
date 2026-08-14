@@ -272,6 +272,12 @@
 .dasbor-shell .r { text-align: right; }
 
 .dasbor-shell .chart-wrap { position: relative; width: 100%; }
+/* Chart Broker Summary (Kuadran/Nego/Flow) mengisi sisa layar, bukan tinggi
+   paku 240-420px yang membuat gambar gepeng di layar lebar sementara bawahnya
+   kosong melompong (keluhan user 14 Agu). 340px ≈ kartu statistik + tab +
+   kontrol tanggal + judul + legenda + kaki; min-height menjaga keterbacaan di
+   jendela pendek. Mobile tetap 180px lewat aturan di bawah. */
+.dasbor-shell .chart-tinggi { height: calc(100dvh - 375px) !important; min-height: 320px; }
 
 @media (max-width: 768px) {
   /* .chart-wrap dipakai broker-summary/Flow.tsx & Quadrant.tsx; sisa aturan
