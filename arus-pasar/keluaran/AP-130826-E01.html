@@ -103,15 +103,16 @@
   .brksrc{font-size:6.2pt;color:var(--mute);margin-top:2mm;line-height:1.5;font-family:var(--disp)}
 
   /* ── Analisa kanan: verdict pill sentimen ── */
-  .bias{display:flex;justify-content:space-between;align-items:center;margin-bottom:2.5mm;
-    padding:2mm 3mm;border-radius:1.5mm;background:var(--panel)}
+  .bias{display:flex;justify-content:space-between;align-items:center;gap:4mm;
+    margin-bottom:2.5mm;padding:2mm 3mm;border-radius:1.5mm;background:var(--panel)}
   .bias .lbl{font-size:12.5pt;font-weight:800;letter-spacing:-.005em}
   .bias .lbl span{color:inherit}
   .s-bull .bias{background:var(--bull-dim);color:var(--bull)}
   .s-side .bias{background:var(--side-dim);color:var(--side)}
   .s-bear .bias{background:var(--bear-dim);color:var(--bear)}
   .risk{font-size:6.8pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
-    padding:1.5px 8px;border:1px solid currentColor;border-radius:99px}
+    padding:1.5px 8px;border:1px solid currentColor;border-radius:99px;
+    white-space:nowrap;flex:none}
   .risk.MENENGAH{color:var(--teal)}
   .risk.TINGGI{color:var(--warn)}
   .risk.EKSTREM{color:var(--bear)}
@@ -268,7 +269,7 @@
 
   /* ── Halaman Technical View IHSG ── */
   .blok4{display:grid;grid-template-columns:1fr 1fr;gap:4.5mm 8mm;margin-top:4.5mm}
-  .blok4 .b4 p{margin:0;font-size:8.8pt;color:var(--ink2);line-height:1.6}
+  .blok4 .b4 p{margin:0;font-size:8.8pt;color:var(--ink2);line-height:1.6;text-align:justify}
   .lvl{font-variant-numeric:tabular-nums}
   .lvl .r{display:flex;justify-content:space-between;padding:1.55mm 0;
     border-bottom:1px solid rgba(255,255,255,.05);font-size:8.6pt}
@@ -298,9 +299,9 @@
   .poin{display:grid;grid-template-columns:8mm 1fr;gap:3mm}
   .poin .no{font-family:Georgia,serif;font-size:15pt;font-weight:700;color:var(--teal);line-height:1}
   .poin h4{margin:0 0 1.2mm;font-size:9pt;font-weight:800;letter-spacing:.02em}
-  .poin p{margin:0;font-size:8.3pt;color:var(--ink2);line-height:1.55}
+  .poin p{margin:0;font-size:8.3pt;color:var(--ink2);line-height:1.55;text-align:justify}
   .sent-ksmp{margin-top:8mm;border:1px solid var(--teal);border-radius:2mm;padding:3mm 4mm}
-  .sent-ksmp p{margin:0;font-size:8.8pt;color:var(--ink2);line-height:1.6}
+  .sent-ksmp p{margin:0;font-size:8.8pt;color:var(--ink2);line-height:1.6;text-align:justify}
 
   /* ── Scenario Map emiten: 3 kartu + aturan eksekusi ── */
   .skn{display:flex;flex-direction:column;gap:1mm;margin-bottom:2mm}
@@ -457,43 +458,43 @@
   </header>
   <div class="inner">
     <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Ringkasan Edisi</div>
-      <div class="px" style="font-size:8pt;color:var(--mute)">22 emiten</div></div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">22 emiten · bagian 1/2</div></div>
     <p class="lede">22 emiten dibedah dengan kerangka yang sama: struktur harga terhadap EMA50
     dan Pivot Points, kualitas arus dana broker (siapa yang membeli — bukan hanya berapa),
     rasio risk/reward, likuiditas, dan sensitivitas terhadap IHSG.</p>
     <table class="ring">
       <tr><th>Ticker</th><th>Emiten</th><th>Close</th><th>±%</th><th>Bias</th><th>Skor</th><th>Risiko</th></tr>
-      <tr><td class="tk">EXCL</td><td>EXCL</td>
+      <tr><td class="tk">EXCL</td><td>XLSMART Telecom Sejahtera Tbk</td>
         <td class="num">2.630</td>
         <td class="num bull">+2,73%</td>
         <td><span class="pill bull">Bullish</span><br><span class="lbl-sisa">Akumulasi Institusi OD+BB</span></td>
         <td class="num c-bull">66</td>
         <td><span class="risk TINGGI">TINGGI</span></td></tr>
-<tr><td class="tk">CMRY</td><td>CMRY</td>
+<tr><td class="tk">CMRY</td><td>Cisarua Mountain Dairy Tbk</td>
         <td class="num">4.660</td>
         <td class="num bull">+0,65%</td>
         <td><span class="pill side">Netral-Bullish</span><br><span class="lbl-sisa">Serapan di Bawah Resisten 4.687</span></td>
         <td class="num c-side">64</td>
         <td><span class="risk TINGGI">TINGGI</span></td></tr>
-<tr><td class="tk">PNLF</td><td>PNLF</td>
+<tr><td class="tk">PNLF</td><td>Panin Financial Tbk</td>
         <td class="num">236</td>
         <td class="num bull">+2,61%</td>
         <td><span class="pill bull">Bullish</span><br><span class="lbl-sisa">Momentum di Atas EMA50</span></td>
         <td class="num c-bull">63</td>
         <td><span class="risk TINGGI">TINGGI</span></td></tr>
-<tr><td class="tk">MMIX</td><td>MMIX</td>
+<tr><td class="tk">MMIX</td><td>Multi Medika Internasional Tbk</td>
         <td class="num">750</td>
         <td class="num bull">+0,67%</td>
         <td><span class="pill side">Waspada</span><br><span class="lbl-sisa">Dominasi Satu Pihak YB–XA</span></td>
         <td class="num c-side">62</td>
         <td><span class="risk TINGGI">TINGGI</span></td></tr>
-<tr><td class="tk">AVIA</td><td>AVIA</td>
+<tr><td class="tk">AVIA</td><td>Avia Avian Tbk</td>
         <td class="num">332</td>
         <td class="num bull">+0,61%</td>
         <td><span class="pill side">Sideways</span><br><span class="lbl-sisa">Konsolidasi Tepat di EMA50</span></td>
         <td class="num c-side">61</td>
         <td><span class="risk TINGGI">TINGGI</span></td></tr>
-<tr><td class="tk">PSAB</td><td>PSAB</td>
+<tr><td class="tk">PSAB</td><td>J Resources Asia Pasifik Tbk</td>
         <td class="num">498</td>
         <td class="num bear">−1,39%</td>
         <td><span class="pill side">Pullback</span><br><span class="lbl-sisa">KZ Menampung di Koreksi</span></td>
@@ -505,7 +506,7 @@
         <td><span class="pill bear">Bearish</span><br><span class="lbl-sisa">Arus Silang di Area Low</span></td>
         <td class="num c-bear">56</td>
         <td><span class="risk TINGGI">TINGGI</span></td></tr>
-<tr><td class="tk">VIVA</td><td>VIVA</td>
+<tr><td class="tk">VIVA</td><td>Visi Media Asia Tbk</td>
         <td class="num">58</td>
         <td class="num bull">+9,43%</td>
         <td><span class="pill bull">Spekulatif</span><br><span class="lbl-sisa">Momentum Kencang, Risiko Setara</span></td>
@@ -517,13 +518,13 @@
         <td><span class="pill side">Sideways</span><br><span class="lbl-sisa">Akumulasi Terselubung</span></td>
         <td class="num c-side">54</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
-<tr><td class="tk">ASPR</td><td>ASPR</td>
+<tr><td class="tk">ASPR</td><td>Asia Pramulia</td>
         <td class="num">161</td>
         <td class="num bull">+6,62%</td>
         <td><span class="pill bull">Rebound</span><br><span class="lbl-sisa">Institusi Menyerap dari Ritel</span></td>
         <td class="num c-bull">54</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
-<tr><td class="tk">IOTF</td><td>IOTF</td>
+<tr><td class="tk">IOTF</td><td>Sumber Sinergi Makmur Tbk</td>
         <td class="num">72</td>
         <td class="num bear">−1,37%</td>
         <td><span class="pill side">Waspada</span><br><span class="lbl-sisa">Volume Puncak, Harga Gagal Naik</span></td>
@@ -547,25 +548,44 @@
         <td><span class="pill bear">Bearish</span><br><span class="lbl-sisa">Distribusi di Puncak Tren</span></td>
         <td class="num c-bear">53</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
-<tr><td class="tk">MCAS</td><td>MCAS</td>
+    </table>
+    
+  </div>
+  <footer class="foot">
+    <span class="kode">AP-130826-E01</span>
+    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+  </footer>
+</div>
+<div class="page">
+  <header class="band">
+    <div class="m"><h1>ARUS PASAR</h1><div class="sub">Ringkasan Edisi</div></div>
+    <div class="e">Kamis, 13 Agustus 2026<br><span class="kode">AP-130826-E01</span></div>
+  </header>
+  <div class="inner">
+    <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Ringkasan Edisi</div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">22 emiten · bagian 2/2</div></div>
+    
+    <table class="ring">
+      <tr><th>Ticker</th><th>Emiten</th><th>Close</th><th>±%</th><th>Bias</th><th>Skor</th><th>Risiko</th></tr>
+      <tr><td class="tk">MCAS</td><td>M Cash Integrasi Tbk</td>
         <td class="num">318</td>
         <td class="num bull">+2,58%</td>
         <td><span class="pill side">Waspada</span><br><span class="lbl-sisa">Naik Lanjut, Volume Menipis</span></td>
         <td class="num c-side">52</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
-<tr><td class="tk">DEWI</td><td>DEWI</td>
+<tr><td class="tk">DEWI</td><td>Dewi Shri Farmindo</td>
         <td class="num">139</td>
         <td class="num bear">−0,71%</td>
         <td><span class="pill side">Sideways</span><br><span class="lbl-sisa">Jeda di Tren Naik</span></td>
         <td class="num c-side">52</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
-<tr><td class="tk">EMMI</td><td>EMMI</td>
+<tr><td class="tk">EMMI</td><td>Esa Medika Mandiri</td>
         <td class="num">358</td>
         <td class="num bull">+0,56%</td>
         <td><span class="pill bear">Bearish</span><br><span class="lbl-sisa">Downtrend Muda, Likuiditas Tipis</span></td>
         <td class="num c-bear">49</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
-<tr><td class="tk">DMAS</td><td>DMAS</td>
+<tr><td class="tk">DMAS</td><td>Puradelta Lestari Tbk</td>
         <td class="num">148</td>
         <td class="num bull">+0,68%</td>
         <td><span class="pill side">Netral-Konstruktif</span><br><span class="lbl-sisa">Institusi Menyerap Pelan</span></td>
@@ -583,7 +603,7 @@
         <td><span class="pill bear">Bearish</span><br><span class="lbl-sisa">Tren Turun, Ritel Menampung</span></td>
         <td class="num c-bear">38</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
-<tr><td class="tk">MBMA</td><td>MBMA</td>
+<tr><td class="tk">MBMA</td><td>Merdeka Battery Materials</td>
         <td class="num">510</td>
         <td class="num bear">−7,27%</td>
         <td><span class="pill bear">Bearish</span><br><span class="lbl-sisa">Institusi Keluar, Ritel Menampung</span></td>
@@ -623,7 +643,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$ASPR<small>ASPR</small></div>
+      <div class="tk">$ASPR<small>Asia Pramulia Tbk.</small></div>
       <div class="px"><span class="h">161</span><br>
         <span class="c bull">+10 (+6,62%)</span></div>
     </div>
@@ -709,7 +729,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$AVIA<small>AVIA</small></div>
+      <div class="tk">$AVIA<small>PT Avia Avian Tbk</small></div>
       <div class="px"><span class="h">332</span><br>
         <span class="c bull">+2 (+0,61%)</span></div>
     </div>
@@ -1053,7 +1073,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$CMRY<small>CMRY</small></div>
+      <div class="tk">$CMRY<small>PT Cisarua Mountain Dairy Tbk</small></div>
       <div class="px"><span class="h">4.660</span><br>
         <span class="c bull">+30 (+0,65%)</span></div>
     </div>
@@ -1225,7 +1245,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$DEWI<small>DEWI</small></div>
+      <div class="tk">$DEWI<small>PT Dewi Shri Farmindo Tbk.</small></div>
       <div class="px"><span class="h">139</span><br>
         <span class="c bear">−1 (−0,71%)</span></div>
     </div>
@@ -1311,7 +1331,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$DMAS<small>DMAS</small></div>
+      <div class="tk">$DMAS<small>PT Puradelta Lestari Tbk</small></div>
       <div class="px"><span class="h">148</span><br>
         <span class="c bull">+1 (+0,68%)</span></div>
     </div>
@@ -1483,7 +1503,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$EMMI<small>EMMI</small></div>
+      <div class="tk">$EMMI<small>Esa Medika Mandiri Tbk.</small></div>
       <div class="px"><span class="h">358</span><br>
         <span class="c bull">+2 (+0,56%)</span></div>
     </div>
@@ -1655,7 +1675,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$EXCL<small>EXCL</small></div>
+      <div class="tk">$EXCL<small>PT XLSMART Telecom Sejahtera Tbk</small></div>
       <div class="px"><span class="h">2.630</span><br>
         <span class="c bull">+70 (+2,73%)</span></div>
     </div>
@@ -1741,7 +1761,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$IOTF<small>IOTF</small></div>
+      <div class="tk">$IOTF<small>PT Sumber Sinergi Makmur Tbk</small></div>
       <div class="px"><span class="h">72</span><br>
         <span class="c bear">−1 (−1,37%)</span></div>
     </div>
@@ -1827,7 +1847,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$MBMA<small>MBMA</small></div>
+      <div class="tk">$MBMA<small>PT Merdeka Battery Materials Tbk.</small></div>
       <div class="px"><span class="h">510</span><br>
         <span class="c bear">−40 (−7,27%)</span></div>
     </div>
@@ -1913,7 +1933,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$MCAS<small>MCAS</small></div>
+      <div class="tk">$MCAS<small>PT M Cash Integrasi Tbk</small></div>
       <div class="px"><span class="h">318</span><br>
         <span class="c bull">+8 (+2,58%)</span></div>
     </div>
@@ -1999,7 +2019,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$MMIX<small>MMIX</small></div>
+      <div class="tk">$MMIX<small>PT Multi Medika Internasional Tbk</small></div>
       <div class="px"><span class="h">750</span><br>
         <span class="c bull">+5 (+0,67%)</span></div>
     </div>
@@ -2082,7 +2102,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$PNLF<small>PNLF</small></div>
+      <div class="tk">$PNLF<small>PT Panin Financial Tbk</small></div>
       <div class="px"><span class="h">236</span><br>
         <span class="c bull">+6 (+2,61%)</span></div>
     </div>
@@ -2168,7 +2188,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$PSAB<small>PSAB</small></div>
+      <div class="tk">$PSAB<small>PT J Resources Asia Pasifik Tbk</small></div>
       <div class="px"><span class="h">498</span><br>
         <span class="c bear">−7 (−1,39%)</span></div>
     </div>
@@ -2340,7 +2360,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$VIVA<small>VIVA</small></div>
+      <div class="tk">$VIVA<small>PT Visi Media Asia Tbk</small></div>
       <div class="px"><span class="h">58</span><br>
         <span class="c bull">+5 (+9,43%)</span></div>
     </div>
@@ -2511,7 +2531,7 @@
   </header>
   <div class="inner">
     <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Peringkat Peluang</div>
-      <div class="px" style="font-size:8pt;color:var(--mute)">Risk-adjusted · komparatif</div></div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">Risk-adjusted · komparatif · bagian 1/2</div></div>
     <p class="lede">EXCL mencetak skor tertinggi (66) — pendorong
     utamanya struktur teknikal, dengan catatan rasio risk/reward bukan kekuatannya. WIFI di posisi
     akhir: likuiditas tipis, sinyal lemah.</p>
@@ -2630,7 +2650,27 @@
         <td>4</td>
         <td style="text-align:left;padding-left:5mm">Konsolidasi sehat di uptrend</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
-<tr><td>17</td><td class="tk">EMMI</td>
+    </table>
+    
+  </div>
+  <footer class="foot">
+    <span class="kode">AP-130826-E01</span>
+    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+  </footer>
+</div>
+<div class="page">
+  <header class="band">
+    <div class="m"><h1>ARUS PASAR</h1><div class="sub">Quant Opportunity Ranking</div></div>
+    <div class="e">Kamis, 13 Agustus 2026<br><span class="kode">AP-130826-E01</span></div>
+  </header>
+  <div class="inner">
+    <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Peringkat Peluang</div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">Risk-adjusted · komparatif · bagian 2/2</div></div>
+    
+    <table class="rank">
+      <tr><th>#</th><th>Ticker</th><th>Skor</th><th>Tek/35</th><th>Flow/30</th><th>R:R/20</th>
+        <th>Lik/10</th><th>IHSG/5</th><th style="text-align:left;padding-left:5mm">Rationale</th><th>Risiko</th></tr>
+      <tr><td>17</td><td class="tk">EMMI</td>
         <td class="total">49</td>
         <td>16</td><td>15</td>
         <td>10</td><td>4</td>

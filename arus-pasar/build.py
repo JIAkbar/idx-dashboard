@@ -545,21 +545,11 @@ def halaman_ringkasan(ed, skor_map):
         <td><span class="pill {s}">{kata}</span><br><span class="lbl-sisa">{sisa}</span></td>
         <td class="num c-{s}">{skor_map[e["ticker"]]["total"]:.0f}</td>
         <td><span class="risk {skor_map[e["ticker"]]["risiko"]}">{skor_map[e["ticker"]]["risiko"]}</span></td></tr>''')
-    baris = "\n".join(baris)
-    return f'''
-<div class="page">
-  {band(ed, "Ringkasan Edisi")}
-  <div class="inner">
-    <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Ringkasan Edisi</div>
-      <div class="px" style="font-size:8pt;color:var(--mute)">{len(ed["emiten"])} emiten</div></div>
-    <p class="lede">{TERBILANG.get(len(ed["emiten"]), len(ed["emiten"]))} emiten dibedah dengan kerangka yang sama: struktur harga terhadap EMA50
+    n = len(ed["emiten"])
+    lede = f'''<p class="lede">{TERBILANG.get(n, n)} emiten dibedah dengan kerangka yang sama: struktur harga terhadap EMA50
     dan Pivot Points, kualitas arus dana broker (siapa yang membeli — bukan hanya berapa),
-    rasio risk/reward, likuiditas, dan sensitivitas terhadap IHSG.</p>
-    <table class="ring">
-      <tr><th>Ticker</th><th>Emiten</th><th>Close</th><th>±%</th><th>Bias</th><th>Skor</th><th>Risiko</th></tr>
-      {baris}
-    </table>
-    <div class="ihsgbar">
+    rasio risk/reward, likuiditas, dan sensitivitas terhadap IHSG.</p>'''
+    penutup = f'''<div class="ihsgbar">
       <span><span class="l">IHSG</span><b>{ed["ihsg"]["nilai"]}</b> <span class="{ed["ihsg"]["cls"]}">{ed["ihsg"]["pct"]}</span></span>
       <span><span class="l">{ed["nf"]["label"]}</span><b class="{ed["nf"]["cls"]}">{ed["nf"]["nilai"]}</b> {ed["nf"]["ket"]}</span>
       <span><span class="l">Konteks</span>{ed["konteks"]}</span>
@@ -570,10 +560,42 @@ def halaman_ringkasan(ed, skor_map):
     <p class="metode"><b>Sumber data:</b> harga Yahoo Finance &amp; statistik resmi IDX; pivot &amp; EMA dihitung dari data
     harga; arus broker dari Broker Summary Stockbit. Komponen data yang tidak tersedia tidak
     pernah diisi perkiraan — halaman terkait akan menampilkan penanda kesenjangan data dan skor
-    diberi penalti. Peringkat bersifat komparatif antar emiten edisi ini, bukan sinyal beli otomatis.</p>
+    diberi penalti. Peringkat bersifat komparatif antar emiten edisi ini, bukan sinyal beli otomatis.</p>'''
+    kepala_tabel = '<tr><th>Ticker</th><th>Emiten</th><th>Close</th><th>±%</th><th>Bias</th><th>Skor</th><th>Risiko</th></tr>'
+
+    # Paginasi: baris .ring 2-lajur tinggi — edisi gemuk (>10) tembus footer
+    # kalau dipaksa 1 halaman. Kapasitas konservatif: hal-1 (dengan lede,
+    # tanpa penutup) 14 baris; sambungan 16; hal terakhir (bawa ihsgbar +
+    # metodologi) maks 10. Edisi ≤10 tetap persis 1 halaman seperti dulu.
+    if n <= 10:
+        potongan = [baris]
+    else:
+        potongan, sisa = [baris[:14]], baris[14:]
+        while len(sisa) > 10:
+            potongan.append(sisa[:16]); sisa = sisa[16:]
+        potongan.append(sisa)
+
+    halaman = []
+    for i, chunk in enumerate(potongan):
+        awal = i == 0
+        akhir = i == len(potongan) - 1
+        sub = f"{n} emiten" if len(potongan) == 1 else f"{n} emiten · bagian {i+1}/{len(potongan)}"
+        halaman.append(f'''
+<div class="page">
+  {band(ed, "Ringkasan Edisi")}
+  <div class="inner">
+    <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Ringkasan Edisi</div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">{sub}</div></div>
+    {lede if awal else ""}
+    <table class="ring">
+      {kepala_tabel}
+      {chr(10).join(chunk)}
+    </table>
+    {penutup if akhir else ""}
   </div>
   {kaki(ed)}
-</div>'''
+</div>''')
+    return "".join(halaman)
 
 
 def halaman_kolofon(ed):
@@ -614,7 +636,7 @@ def halaman_peringkat(ed, skor_map):
                 "rasio risk/reward": sk_atas["rr"] / 20}
     pendorong = max(komponen, key=komponen.get)
     lemah = min(komponen, key=komponen.get)
-    baris = "\n".join(
+    baris = [
         f'''<tr><td>{i+1}</td><td class="tk">{e["ticker"]}</td>
         <td class="total">{skor_map[e["ticker"]]["total"]:.0f}</td>
         <td>{skor_map[e["ticker"]]["teknikal"]:.0f}</td><td>{skor_map[e["ticker"]]["flow"]:.0f}</td>
@@ -622,22 +644,11 @@ def halaman_peringkat(ed, skor_map):
         <td>{skor_map[e["ticker"]]["ihsg"]:.0f}</td>
         <td style="text-align:left;padding-left:5mm">{e["rationale_rank"]}</td>
         <td><span class="risk {skor_map[e["ticker"]]["risiko"]}">{skor_map[e["ticker"]]["risiko"]}</span></td></tr>'''
-        for i, e in enumerate(urut))
-    return f'''
-<div class="page">
-  {band(ed, "Quant Opportunity Ranking")}
-  <div class="inner">
-    <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Peringkat Peluang</div>
-      <div class="px" style="font-size:8pt;color:var(--mute)">Risk-adjusted · komparatif</div></div>
-    <p class="lede">{atas["ticker"]} mencetak skor tertinggi ({sk_atas["total"]:.0f}) — pendorong
+        for i, e in enumerate(urut)]
+    lede = f'''<p class="lede">{atas["ticker"]} mencetak skor tertinggi ({sk_atas["total"]:.0f}) — pendorong
     utamanya {pendorong}, dengan catatan {lemah} bukan kekuatannya. {bawah["ticker"]} di posisi
-    akhir: {bawah["rationale_rank"].lower()}.</p>
-    <table class="rank">
-      <tr><th>#</th><th>Ticker</th><th>Skor</th><th>Tek/35</th><th>Flow/30</th><th>R:R/20</th>
-        <th>Lik/10</th><th>IHSG/5</th><th style="text-align:left;padding-left:5mm">Rationale</th><th>Risiko</th></tr>
-      {baris}
-    </table>
-    <div class="blok">
+    akhir: {bawah["rationale_rank"].lower()}.</p>'''
+    penutup = f'''<div class="blok">
       <h3 class="rule">Model</h3>
       <p>Technical 35% · Big Money Flow 30% · Risk/reward 20% · Liquidity 10% · IHSG sensitivity 5%.
       Komponen ditampilkan terbuka di tabel — skor bisa diaudit, bukan kotak hitam.</p>
@@ -651,10 +662,43 @@ def halaman_peringkat(ed, skor_map):
     <div class="blok integritas">
       <h3 class="rule">Catatan Integritas Data</h3>
       <p>{ed["catatan_verifikasi"]}</p>
-    </div>
+    </div>'''
+    kepala_tabel = '''<tr><th>#</th><th>Ticker</th><th>Skor</th><th>Tek/35</th><th>Flow/30</th><th>R:R/20</th>
+        <th>Lik/10</th><th>IHSG/5</th><th style="text-align:left;padding-left:5mm">Rationale</th><th>Risiko</th></tr>'''
+
+    # Paginasi (pola sama halaman_ringkasan): edisi >12 tembus footer di 1
+    # halaman. Hal-1 (lede) 16 baris; sambungan 20; hal terakhir bawa blok
+    # Model/Eksekusi/Integritas maks 12. Edisi ≤12 tetap 1 halaman.
+    n = len(urut)
+    if n <= 12:
+        potongan = [baris]
+    else:
+        potongan, sisa = [baris[:16]], baris[16:]
+        while len(sisa) > 12:
+            potongan.append(sisa[:20]); sisa = sisa[20:]
+        potongan.append(sisa)
+
+    halaman = []
+    for i, chunk in enumerate(potongan):
+        awal = i == 0
+        akhir = i == len(potongan) - 1
+        sub = "Risk-adjusted · komparatif" if len(potongan) == 1 else f"Risk-adjusted · komparatif · bagian {i+1}/{len(potongan)}"
+        halaman.append(f'''
+<div class="page">
+  {band(ed, "Quant Opportunity Ranking")}
+  <div class="inner">
+    <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Peringkat Peluang</div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">{sub}</div></div>
+    {lede if awal else ""}
+    <table class="rank">
+      {kepala_tabel}
+      {chr(10).join(chunk)}
+    </table>
+    {penutup if akhir else ""}
   </div>
   {kaki(ed)}
-</div>'''
+</div>''')
+    return "".join(halaman)
 
 
 def render_pdf(html_path):
