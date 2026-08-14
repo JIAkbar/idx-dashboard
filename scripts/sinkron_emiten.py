@@ -20,6 +20,12 @@ import json, os, subprocess, sys, time
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
+# Konsol Windows default cp1252: tanda ✓/✗ di laporan akhir bikin
+# UnicodeEncodeError setelah panen selesai — hasil aman, tapi laporannya hilang
+# dan pipeline tampak gagal. Skrip ini sudah menyetel PYTHONIOENCODING untuk
+# subprocess-nya; stdout sendiri ikut diamankan di sini.
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 ROOT = Path(__file__).parent.parent
 FUND_DIR = ROOT / "data-idx" / "json" / "fundamental"
 OUT_FILE = ROOT / "data-idx" / "json" / "daftar_emiten.json"
