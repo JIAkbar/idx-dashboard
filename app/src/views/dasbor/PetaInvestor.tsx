@@ -5,8 +5,8 @@ import { getInvestorMap, usePetaInvestor, type GraphSelection, type InvestorMapE
 import { ByStock } from './peta-investor/ByStock'
 import { ByInvestor } from './peta-investor/ByInvestor'
 import { DetailPanel } from './peta-investor/DetailPanel'
-import { PetaInvestorSearch } from './peta-investor/PetaInvestorSearch'
-import { exportEmiten, exportInvestor, exportSemua } from '../../lib/dasbor/exportPeta'
+import { PetaInvestorSearch, type PetaInvestorSearchHandle } from './peta-investor/PetaInvestorSearch'
+import { exportEmiten, exportInvestor } from '../../lib/dasbor/exportPeta'
 import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_ULANG, IKON_KLIK, IKON_PERLUAS } from '../../components/dasbor/IkonMenu'
 
 /** Panah unduh ke tray — sama dengan IKON_UNDUH lokal Bulletin.tsx. */
@@ -51,8 +51,11 @@ export function PetaInvestor() {
   // label tombol lewat fullscreenchange (biar tetap benar saat keluar via Esc).
   const graphCardRef = useRef<HTMLDivElement>(null)
   const [fsAktif, setFsAktif] = useState(false)
-  // Menu Export XLS — tiga mode: emiten+cabang / investor / seluruh dataset.
+  // Menu Export XLS — dua mode: emiten+cabang / investor.
   const [exportBuka, setExportBuka] = useState(false)
+  // Tombol "Tampilkan" pindah ke baris tab (dulu berdesakan dgn kotak cari di
+  // mobile) — logika go() tetap milik PetaInvestorSearch, dipicu via ref.
+  const searchRef = useRef<PetaInvestorSearchHandle>(null)
 
   useEffect(() => {
     const onFsChange = () => setFsAktif(document.fullscreenElement === graphCardRef.current)
@@ -123,9 +126,15 @@ export function PetaInvestor() {
         <>
           {/* Kontrol pencarian sebaris tab (#83; urutan dibalik per permintaan
               user #77b: pencarian global di KIRI, baru tab view di kanannya —
-              di layar sempit pencarian wrap jadi baris sendiri di atas tab). */}
+              di layar sempit pencarian wrap jadi baris sendiri di atas tab).
+              Tombol "Tampilkan" pindah ke SINI (bukan lagi di dalam
+              PetaInvestorSearch) — di mobile dulu berdesakan sebaris dengan
+              kotak cari dan kehimpit saat daftar saran terbuka; sekarang
+              kotak cari dapat baris sendiri, tombol duduk sesudah tab "By
+              Investor" berdampingan dgn Export XLS. Dipisah dari .tabs
+              (bukan anak role="tablist") supaya semantik tab list tetap benar. */}
           <div className="pi-toolbar">
-            <PetaInvestorSearch data={data} value={searchValue} onChange={setSearchValue} onSelect={handleSelect} onClear={handleClear} />
+            <PetaInvestorSearch ref={searchRef} data={data} value={searchValue} onChange={setSearchValue} onSelect={handleSelect} onClear={handleClear} />
             <div className="tabs" role="tablist" aria-label="Tampilan Peta Investor">
               {TABS.map((t) => (
                 <button
@@ -140,6 +149,7 @@ export function PetaInvestor() {
                 </button>
               ))}
             </div>
+            <button type="button" className="pi-search-go" onClick={() => searchRef.current?.tampilkan()}>Tampilkan</button>
             <div className={`dd${exportBuka ? ' open' : ''}`} style={{ position: 'relative' }}>
               <button
                 type="button"
@@ -177,9 +187,6 @@ export function PetaInvestor() {
                     {selectedDetail?.type === 'investor'
                       ? `Portofolio ${selectedDetail.name.slice(0, 24)}`
                       : 'Portofolio investor (pilih investor dulu)'}
-                  </button>
-                  <button type="button" className="dd-it" onMouseDown={() => exportSemua(data)}>
-                    Seluruh dataset (flat, bahan pivot)
                   </button>
                 </div>
               )}

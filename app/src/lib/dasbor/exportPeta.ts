@@ -2,9 +2,9 @@ import * as XLSX from 'xlsx'
 import { holderType, type InvestorMapEntry } from './petaInvestorData'
 import { afiliasiUntukEmiten } from './brokerAfiliasi'
 
-/** Export XLS Peta Investor — tiga mode (emiten+cabang, investor, seluruh
- *  dataset). SheetJS menulis .xlsx asli multi-sheet langsung di browser;
- *  tanpa server, data yang diekspor persis data yang sedang dirender. */
+/** Export XLS Peta Investor — dua mode (emiten+cabang, investor). SheetJS
+ *  menulis .xlsx asli multi-sheet langsung di browser; tanpa server, data
+ *  yang diekspor persis data yang sedang dirender. */
 
 const TIPE: Record<'CORP' | 'IND' | 'OTH', string> = { CORP: 'Corporate', IND: 'Individual', OTH: 'Tipe tak terisi' }
 
@@ -68,15 +68,4 @@ export function exportInvestor(data: InvestorMapEntry[], nama: string) {
   }
   sheet(wb, 'Portofolio', baris)
   unduh(wb, `investor-${nama.replace(/[^\w-]+/g, '_').slice(0, 40)}`)
-}
-
-/** Seluruh dataset flat — satu baris per relasi emiten–pemegang; bahan pivot Excel. */
-export function exportSemua(data: InvestorMapEntry[]) {
-  const wb = XLSX.utils.book_new()
-  const baris: (string | number)[][] = [['Kode', 'Emiten', 'Pemegang', 'Tipe', 'Lokal/Asing', '%']]
-  for (const e of data)
-    for (const h of e.holders)
-      baris.push([e.code, e.issuer, h.name, TIPE[holderType(h.cls)], lokalAsing(h.lf), h.pct])
-  sheet(wb, 'Kepemilikan', baris)
-  unduh(wb, 'semua')
 }

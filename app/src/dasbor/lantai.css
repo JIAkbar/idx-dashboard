@@ -1119,10 +1119,15 @@
    ke sebaris tab; tinggi kontrol diseragamkan 32px (≈ tinggi .tabs), lebar ikut isi. */
 .lantai .pi-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 /* #77b: margin-left:auto dihapus — pencarian kini blok KIRI toolbar, tab view
-   duduk di kanannya (urutan elemen dibalik di PetaInvestor.tsx). */
-.lantai .pi-head-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.lantai .pi-srch-container { position: relative; }
-.lantai .pi-search { height: 32px; padding: 0 36px 0 12px; border-radius: 7px; border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text); font-size: 12px; width: 230px; outline: none; text-transform: uppercase; letter-spacing: .3px; }
+   duduk di kanannya (urutan elemen dibalik di PetaInvestor.tsx).
+   #109: flex-basis 100% — kotak cari SELALU baris sendiri (bukan cuma ≤768px)
+   supaya daftar saran (.pi-search-drop) punya lebar penuh jatuh ke bawah,
+   tak lagi berebut tempat sebaris dgn tombol "Tampilkan" (kini pindah ke
+   baris tab, lihat PetaInvestor.tsx) — itu penyebab keduanya berdesakan di
+   mobile. */
+.lantai .pi-head-actions { display: flex; gap: 8px; align-items: center; flex: 1 1 100%; }
+.lantai .pi-srch-container { position: relative; flex: 1; }
+.lantai .pi-search { height: 32px; padding: 0 36px 0 12px; border-radius: 7px; border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text); font-size: 12px; width: 100%; outline: none; text-transform: uppercase; letter-spacing: .3px; }
 /* #77b: uppercase hanya untuk nilai ketikan (kode saham) — placeholder tetap
    sentence case seperti konvensi placeholder lain. */
 .lantai .pi-search::placeholder { text-transform: none; letter-spacing: normal; }
@@ -1174,11 +1179,11 @@
 .lantai .pi-loadmore { padding: 7px 20px; border-radius: 8px; background: var(--bg3); border: 0.5px solid var(--border); color: var(--text2); cursor: pointer; font-size: 12px; font-family: inherit; }
 
 @media (max-width: 768px) {
-  .lantai .pi-head-actions { width: 100%; margin-left: 0 !important; margin-top: 8px; }
-  .lantai .pi-srch-container { flex: 1; }
-  .lantai .pi-search { width: 100% !important; }
-  /* Lebar dropdown = lebar kontainer input (calc 100vw dulu menabrak tepi
-     kanan karena kontainer tidak mulai dari x=0 — ada rail/padding kiri). */
+  /* #109: .pi-head-actions/.pi-srch-container/.pi-search sudah full-width di
+     SEMUA ukuran layar (lihat aturan dasar di atas) — tinggal aturan dropdown
+     yang masih perlu override mobile. Lebar dropdown = lebar kontainer input
+     (calc 100vw dulu menabrak tepi kanan karena kontainer tidak mulai dari
+     x=0 — ada rail/padding kiri). */
   .lantai .pi-search-drop { width: 100% !important; min-width: 0; right: auto !important; left: 0 !important; max-height: 240px !important; }
   .lantai .pi-tbl-search { width: 140px !important; }
   .lantai .pi-graph { height: 360px !important; }

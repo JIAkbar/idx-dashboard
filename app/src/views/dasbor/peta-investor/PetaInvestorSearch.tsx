@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { forwardRef, useImperativeHandle, useState } from 'react'
 import { searchPetaInvestor, type GraphSelection, type InvestorMapEntry } from '../../../lib/dasbor/petaInvestorData'
 
 interface PetaInvestorSearchProps {
@@ -7,6 +7,14 @@ interface PetaInvestorSearchProps {
   onChange: (v: string) => void
   onSelect: (sel: GraphSelection) => void
   onClear: () => void
+}
+
+/** Diekspos ke induk (PetaInvestor.tsx) lewat ref — tombol "Tampilkan" kini
+ *  duduk di baris tab (permintaan user: dulu berdesakan dgn kotak cari di
+ *  mobile, daftar saran jadi menghimpit tombol), tapi logika go() tetap di
+ *  sini karena butuh state `open`/`q` lokal komponen ini. */
+export interface PetaInvestorSearchHandle {
+  tampilkan: () => void
 }
 
 /* Empat warna latar penuh (ungu/hijau/hijau/biru) diganti .bchip netral: warna
@@ -32,7 +40,10 @@ function highlight(name: string, q: string) {
 }
 
 /** Search box + dropdown hasil (emiten & investor). Port pi-search + piSearchInput/piShowDrop/piSearchSelect/piSearchGo/piSearchClear index_live.html baris 4450-4581. */
-export function PetaInvestorSearch({ data, value, onChange, onSelect, onClear }: PetaInvestorSearchProps) {
+export const PetaInvestorSearch = forwardRef<PetaInvestorSearchHandle, PetaInvestorSearchProps>(function PetaInvestorSearch(
+  { data, value, onChange, onSelect, onClear },
+  ref,
+) {
   const [open, setOpen] = useState(false)
   const q = value.trim().toUpperCase()
   const { emitenHits, investorHits } = open ? searchPetaInvestor(data, q) : { emitenHits: [], investorHits: [] }
@@ -57,6 +68,8 @@ export function PetaInvestorSearch({ data, value, onChange, onSelect, onClear }:
     if (byName) { selectEmiten(byName.code); return }
     setOpen(true)
   }
+
+  useImperativeHandle(ref, () => ({ tampilkan: go }))
 
   return (
     <div className="pi-head-actions">
@@ -112,8 +125,7 @@ export function PetaInvestorSearch({ data, value, onChange, onSelect, onClear }:
           </div>
         )}
       </div>
-      <button type="button" className="pi-search-go" onClick={go}>Tampilkan</button>
       <button type="button" className="pi-search-reset" onClick={() => { onClear(); setOpen(false) }}>Reset</button>
     </div>
   )
-}
+})
