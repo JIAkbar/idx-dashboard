@@ -1,6 +1,11 @@
 /* Gaya khusus halaman Kurasi Setoran (/admin/kurasi, Admin Fase 3) — token
-   dari .lantai, selaras AdminHome.css/AkunAdmin.css (.af-*/.aa-*). File
-   terpisah karena domainnya beda (kurasi, bukan unggahan/akun). */
+   dari .lantai, selaras AdminHome.css (prefiks af-) dan AkunAdmin.css
+   (prefiks aa-). File terpisah karena domainnya beda: kurasi, bukan
+   unggahan/akun.
+
+   Jangan tulis pola selektor ber-asterisk diikuti garis miring di dalam
+   komentar — itu menutup komentar lebih awal dan sisanya jadi CSS mentah.
+   Dev server tidak minify jadi lolos senyap; build produksi baru meledak. */
 
 /* Baris filter: date picker + tab status, sebaris di layar lebar, tumpuk di sempit. */
 .lantai .ks-filter { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
