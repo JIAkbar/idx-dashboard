@@ -9,9 +9,10 @@ import {
 import { skorRadar } from '../../lib/radar/skor'
 import { rollupBulanan, rollupMingguan } from '../../lib/radar/rollup'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
-// Gaya lightbox (.af-lb-*) hidup di AdminHome.css, ter-scope .lantai —
+// Gaya lightbox (.af-lb-*) hidup di AdminShared.css (dulu AdminHome.css,
+// pindah folder saat rombak shell tab #shell-tab), ter-scope .lantai —
 // diimpor di sini juga supaya pratinjau RBU jalan tanpa mampir halaman admin.
-import '../AdminHome.css'
+import '../admin/AdminShared.css'
 
 type Tab = 'watch' | 'penny' | 'rbu' | 'mingguan' | 'bulanan' | 'cara'
 

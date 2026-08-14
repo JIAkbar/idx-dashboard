@@ -2,8 +2,12 @@
    selaras AdminHome.css (.af-*). File terpisah karena domainnya beda (akun,
    bukan unggahan) — bukan alasan teknis, cuma supaya gampang ditelusuri. */
 
-/* Kolom kuota — input number sempit, rata kanan. */
-.lantai .aa-kuota { width: 60px; text-align: right; padding: 5px 8px; }
+/* Kolom kuota tabel — dropdown (perbaikan A, gantinya input number
+   bertombol panah) rata kanan mengikuti th.r/td.r kolom ini; .dd defaultnya
+   block jadi butuh flex+justify-end sendiri (text-align kolom tak berlaku
+   ke elemen block). */
+.lantai .aa-kuota-dd { display: flex; justify-content: flex-end; }
+.lantai .aa-kuota-dd .dd-btn { padding: 5px 8px; font-size: 11px; min-width: 46px; justify-content: space-between; }
 
 /* Toggle pill kecil (Izin Bedah / Aktif) — <button role="switch">, bukan
    <input type=checkbox>, supaya bentuknya konsisten dgn tombol Lantai lain

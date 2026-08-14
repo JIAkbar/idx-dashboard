@@ -1,25 +1,26 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import { useProfilSaya } from '../lib/profilSaya'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useAuth } from '../../context/AuthContext'
+import { useProfilSaya } from '../../lib/profilSaya'
+import { useAdminTanggal } from '../../context/AdminTanggalContext'
 import {
   IkonMenu,
   IKON_CENTANG,
   IKON_GAMBAR,
-  IKON_GIR,
   IKON_KOTAK_ARSIP,
   IKON_PAPAN_KLIP,
   IKON_PERINGATAN,
   IKON_SILANG,
   IKON_TAMBAH,
   IKON_TONG,
-} from '../components/dasbor/IkonMenu'
-import { DatePicker } from '../components/dasbor/DatePicker'
-import { StockAutocomplete } from '../components/dasbor/StockAutocomplete'
-import { LightboxGambar, type GambarLightbox } from '../components/dasbor/LightboxGambar'
-import { AlasanField } from '../components/dasbor/AlasanField'
-import { useStockIndex } from '../lib/dasbor/stockDetailData'
-import { ALASAN_MIN, alasanValid } from '../lib/alasanValidasi'
+} from '../../components/dasbor/IkonMenu'
+import { DatePicker } from '../../components/dasbor/DatePicker'
+import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
+import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
+import { AlasanField } from '../../components/dasbor/AlasanField'
+import { ModalKecil } from '../../components/dasbor/ModalKecil'
+import { useStockIndex } from '../../lib/dasbor/stockDetailData'
+import { ALASAN_MIN, alasanValid } from '../../lib/alasanValidasi'
+import { rangkumBerkas, type Baris as BarisDasar } from '../../lib/dasbor/screenshotBaris'
 import {
   daftarScreenshot,
   daftarSetoran,
@@ -30,24 +31,9 @@ import {
   urlScreenshots,
   type SetoranRow,
   type StatusSetoran,
-} from '../lib/supabaseEdisi'
-import { useBulletinList } from '../lib/dasbor/bulletin'
-import { RadarUnggah } from './admin/RadarUnggah'
-import { BedahUnggah } from './admin/BedahUnggah'
-import './AdminHome.css'
-
-/** Kunci sessionStorage modal sambutan — nilai = user.id supaya login akun
- *  lain (atau login ulang setelah keluar) memunculkan sambutan lagi. */
-const KUNCI_SAMBUTAN = 'papan-sambutan'
-
-/** Sapaan menurut jam lokal — dipakai header modal sambutan. */
-function sapaan(): string {
-  const j = new Date().getHours()
-  if (j < 11) return 'Selamat pagi'
-  if (j < 15) return 'Selamat siang'
-  if (j < 19) return 'Selamat sore'
-  return 'Selamat malam'
-}
+} from '../../lib/supabaseEdisi'
+import { useBulletinList } from '../../lib/dasbor/bulletin'
+import './AdminShared.css'
 
 function tanggalHariIni(): string {
   const d = new Date()
@@ -74,11 +60,7 @@ function ukuranBerkas(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1).replace('.', ',')} MB`
 }
 
-interface Baris {
-  ticker: string
-  /** Path lengkap di bucket ({tanggal}/{TICKER}-orderbook.ext) — dipakai tombol hapus. */
-  orderbook?: string
-  chart?: string
+interface Baris extends BarisDasar {
   /** Baris `setoran` (Fase 3) utk orderbook/chart di atas, kalau ada — unggahan
    *  dari sebelum Fase 3 tidak punya padanan, jadi ini bisa undefined. */
   setoranOb?: SetoranRow
@@ -126,21 +108,6 @@ function terjemahkanGalatUnggah(pesan: string): string {
     return 'Unggahan ditolak server — kemungkinan kuota harian sudah habis, emiten ini sudah disetor akun lain, tanggalnya di masa depan, atau kamu tidak punya izin untuk jenis unggahan ini.'
   }
   return pesan
-}
-
-function rangkumBerkas(paths: string[]): Baris[] {
-  const map = new Map<string, Baris>()
-  for (const p of paths) {
-    const nama = p.split('/').pop() ?? ''
-    const m = /^([A-Z0-9]+)-(orderbook|chart)\./.exec(nama)
-    if (!m) continue
-    const [, ticker, jenis] = m
-    const baris = map.get(ticker) ?? { ticker }
-    if (jenis === 'orderbook') baris.orderbook = p
-    else baris.chart = p
-    map.set(ticker, baris)
-  }
-  return [...map.values()].sort((a, b) => a.ticker.localeCompare(b.ticker))
 }
 
 /** Blok kosong seragam utk panel tanpa isi — pola fd-empty StockDetail.tsx,
@@ -262,27 +229,6 @@ function PilihGambar({ label, jenis, file, onFile, onPratinjau }: {
   )
 }
 
-/** Kerangka modal kecil — pola visual sama dengan LoginModal (.dasbor-modal-bg
- *  + .dasbor-modal + .panel), Escape & klik latar menutup. */
-export function ModalKecil({ label, onClose, className, children }: { label: string; onClose: () => void; className?: string; children: ReactNode }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-
-  return (
-    <div className="dasbor-modal-bg" onClick={onClose}>
-      <div className={`lantai dasbor-modal${className ? ` ${className}` : ''}`} role="dialog" aria-modal="true" aria-label={label} onClick={(e) => e.stopPropagation()}>
-        <div className="panel">
-          <div className="panel-h"><span className="lbl">{label}</span></div>
-          <div className="panel-b" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{children}</div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 /** Modal "Ubah alasan" — kontributor menyunting alasan barisnya sendiri
  *  selama status masih `menunggu` (server jadi wasit sesungguhnya, ini cuma
  *  UX). `entries` = baris `setoran` yang ikut diperbarui (orderbook & chart
@@ -327,31 +273,24 @@ function EditAlasanModal({ ticker, entries, onClose, onSukses }: {
 }
 
 /**
- * Halaman admin Arus Pasar — SATU halaman (route /admin), gabungan bekas
- * AdminHome + Unggah (#39): upload screenshot, kotak masuk (tanggal yang
- * sudah punya upload), dan rak terbitan tampil sekaligus, tanpa sub-page.
- *
- * Sejak #41 dirender DI DALAM <DasborLayout> (rail kiri tetap tampil, entri
- * Admin di kaki rail menyala saat aktif) — jadi tak perlu lagi bungkus
- * .dasbor-shell sendiri ataupun tombol "← Dasbor". Guard auth tetap di
- * App.tsx (ProtectedRoute membungkus route ini di dalam grup layout).
- *
- * Tata letak: .admin-view (cap lebar, lantai.css — pola .kalkulator-view),
- * grid2 dua kolom di layar lebar (kiri form unggah, kanan status hari ini),
- * rak terbitan lebar penuh di bawah. grid2 fluid, jatuh satu kolom di telepon.
+ * Tab "Unggah" (/admin, index) — form Tambah Emiten (upload screenshot) +
+ * tabel "Sudah Diunggah" tanggal aktif + Kotak Masuk (tanggal yang sudah
+ * punya upload). Rak terbitan/Radar/Bedah/Kurasi/Akun sekarang tab
+ * terpisah (#shell-tab) — header & tab bar dirender AdminLayout, di sini
+ * cuma isi panelnya.
  */
-export function AdminHome() {
-  const { session, signOut } = useAuth()
+export function UnggahHarian() {
+  const { session } = useAuth()
   const { profil } = useProfilSaya()
   const { index } = useStockIndex()
+  const { tanggal, setTanggal } = useAdminTanggal()
 
-  // Rak terbitan baca manifest publik keluaran/index.json (sumber sama dengan
-  // halaman Bulletin) — BUKAN tabel Supabase `edisi` (alur lama, kosong):
-  // edisi dirakit dari repo, tabel itu tidak pernah diisi pipeline sekarang.
-  const { daftar: edisi, error: err } = useBulletinList()
+  // Kotak Masuk baca manifest publik keluaran/index.json (sumber sama dengan
+  // halaman Bulletin) — dipakai cuma utk tandai tanggal "Selesai" vs
+  // "Menunggu" (rak terbitannya sendiri sudah pindah ke tab Terbitan).
+  const { daftar: edisi } = useBulletinList()
   const [tanggalUnggahan, setTanggalUnggahan] = useState<string[] | null>(null)
 
-  const [tanggal, setTanggal] = useState(tanggalHariIni())
   const [ticker, setTicker] = useState('')
   const [orderbook, setOrderbook] = useState<File | null>(null)
   const [chart, setChart] = useState<File | null>(null)
@@ -369,8 +308,6 @@ export function AdminHome() {
   const [muat, setMuat] = useState(0)
 
   const [toast, setToast] = useState<{ ok: boolean; pesan: string } | null>(null)
-  const [sambut, setSambut] = useState(false)
-  const [konfirmKeluar, setKonfirmKeluar] = useState(false)
   /** Baris yang sedang minta konfirmasi hapus (modal) — satu atau banyak (hapus massal). */
   const [hapusTarget, setHapusTarget] = useState<Baris[] | null>(null)
   const [menghapus, setMenghapus] = useState(false)
@@ -384,26 +321,6 @@ export function AdminHome() {
   const [lightbox, setLightbox] = useState<{ items: GambarLightbox[]; index: number } | null>(null)
   /** Emiten yang alasannya sedang disunting (modal, Fase 3) — null = tertutup. */
   const [editAlasanTarget, setEditAlasanTarget] = useState<Baris | null>(null)
-
-  // Modal sambutan sekali per sesi login: kunci sessionStorage berisi user.id,
-  // dihapus saat keluar — login ulang (atau akun lain) menyambut lagi,
-  // navigasi bolak-balik ke /admin dalam sesi sama tidak.
-  useEffect(() => {
-    if (session && sessionStorage.getItem(KUNCI_SAMBUTAN) !== session.user.id) setSambut(true)
-  }, [session])
-
-  // Escape menutup modal sambutan (markup-nya custom, tidak lewat ModalKecil).
-  useEffect(() => {
-    if (!sambut) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (session) sessionStorage.setItem(KUNCI_SAMBUTAN, session.user.id)
-        setSambut(false)
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [sambut, session])
 
   useEffect(() => {
     if (!toast) return
@@ -504,16 +421,6 @@ export function AdminHome() {
       setoranCh: b.chart ? byPath.get(b.chart) : undefined,
     }))
   }, [sudah, setoranTanggal])
-
-  function tutupSambutan() {
-    if (session) sessionStorage.setItem(KUNCI_SAMBUTAN, session.user.id)
-    setSambut(false)
-  }
-
-  async function keluar() {
-    sessionStorage.removeItem(KUNCI_SAMBUTAN)
-    await signOut()
-  }
 
   function bersihkan() {
     setTicker('')
@@ -620,320 +527,213 @@ export function AdminHome() {
   }
 
   return (
-    <div className="lantai admin-view">
-      <div className="vhead" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1>Arus Pasar</h1>
-          <span className="sub">Area admin — unggah &amp; kelola edisi</span>
+    <>
+      <section className="panel">
+        <div className="panel-h" style={{ alignItems: 'center' }}>
+          <span className="af-judul">Sudah Diunggah — <b className="tgl">{tanggalManusiawi(tanggal)}</b></span>
+          <button type="button" className="btn-p af-tambah" onClick={() => setFormBuka(true)}>
+            <IkonMenu d={IKON_TAMBAH} size={13} /> Tambah Emiten
+          </button>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
-          {profil && (
-            <span className="af-kuota-info" title="Batas final dihitung server, bukan angka di layar ini">
-              Kuota hari ini: {profil.kuota_harian}/hari
-            </span>
+        <div className="panel-b">
+          {sudah.length === 0 && (
+            <PanelKosong
+              ikon={IKON_PAPAN_KLIP}
+              pesan={`Belum ada unggahan untuk ${tanggal}.`}
+              petunjuk="Klik tombol Tambah Emiten untuk mengunggah screenshot orderbook tanggal ini."
+            />
           )}
-          {superadmin && (
-            <Link to="/admin/kurasi" className="dd-btn">
-              <IkonMenu d={IKON_PAPAN_KLIP} size={13} /> Kurasi Setoran
-            </Link>
-          )}
-          {superadmin && (
-            <Link to="/admin/akun" className="dd-btn">
-              <IkonMenu d={IKON_GIR} size={13} /> Kelola Akun
-            </Link>
-          )}
-          <span className="muted">{session?.user.email}</span>
-          <button type="button" className="dd-btn" onClick={() => setKonfirmKeluar(true)}>Keluar</button>
-        </div>
-      </div>
-
-      <div style={{ display: 'grid', gap: 14 }}>
-        <section className="panel">
-          <div className="panel-h" style={{ alignItems: 'center' }}>
-            <span className="af-judul">Sudah Diunggah — <b className="tgl">{tanggalManusiawi(tanggal)}</b></span>
-            <button type="button" className="btn-p af-tambah" onClick={() => setFormBuka(true)}>
-              <IkonMenu d={IKON_TAMBAH} size={13} /> Tambah Emiten
-            </button>
-          </div>
-          <div className="panel-b">
-              {sudah.length === 0 && (
-                <PanelKosong
-                  ikon={IKON_PAPAN_KLIP}
-                  pesan={`Belum ada unggahan untuk ${tanggal}.`}
-                  petunjuk="Klik tombol Tambah Emiten untuk mengunggah screenshot orderbook tanggal ini."
-                />
+          {sudah.length > 0 && (
+            <>
+              <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
+                {sudah.length} emiten terunggah untuk tanggal ini.
+              </p>
+              {pilih.size > 0 && (
+                <div className="af-aksibar">
+                  <span>{pilih.size} emiten dipilih</span>
+                  <button
+                    type="button"
+                    className="dd-btn merah"
+                    onClick={() => setHapusTarget(sudah.filter((b) => pilih.has(b.ticker)))}
+                  >
+                    <IkonMenu d={IKON_TONG} size={12} /> Hapus
+                  </button>
+                </div>
               )}
-              {sudah.length > 0 && (
-                <>
-                  <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
-                    {sudah.length} emiten terunggah untuk tanggal ini.
-                  </p>
-                  {pilih.size > 0 && (
-                    <div className="af-aksibar">
-                      <span>{pilih.size} emiten dipilih</span>
-                      <button
-                        type="button"
-                        className="dd-btn merah"
-                        onClick={() => setHapusTarget(sudah.filter((b) => pilih.has(b.ticker)))}
-                      >
-                        <IkonMenu d={IKON_TONG} size={12} /> Hapus
-                      </button>
-                    </div>
-                  )}
-                  <div className="af-gulir">
-                    <table className="tbl">
-                      <thead>
-                        <tr>
-                          <th className="af-kolcek">
+              <div className="af-gulir">
+                <table className="tbl">
+                  <thead>
+                    <tr>
+                      <th className="af-kolcek">
+                        <input
+                          type="checkbox"
+                          className="af-cek"
+                          aria-label="Pilih semua emiten"
+                          checked={sudah.length > 0 && pilih.size === sudah.length}
+                          ref={(el) => { if (el) el.indeterminate = pilih.size > 0 && pilih.size < sudah.length }}
+                          onChange={(e) => setPilih(e.target.checked ? new Set(sudah.map((b) => b.ticker)) : new Set())}
+                        />
+                      </th>
+                      <th>Emiten</th>
+                      <th>Alasan</th>
+                      <th>Orderbook</th>
+                      <th>Chart</th>
+                      <th>Status</th>
+                      <th className="af-aksi">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sudahMerged.map((b) => {
+                      const status = statusGabungan(b)
+                      const catatan = b.setoranOb?.catatan_kurator || b.setoranCh?.catatan_kurator || undefined
+                      const alasanTeks = (b.setoranOb?.alasan || b.setoranCh?.alasan || '').trim()
+                      const entriesSendiri = [b.setoranOb, b.setoranCh].filter(
+                        (s): s is SetoranRow => !!s && s.penyetor === session?.user.id && s.status === 'menunggu'
+                      )
+                      return (
+                        <tr key={b.ticker}>
+                          <td className="af-kolcek">
                             <input
                               type="checkbox"
                               className="af-cek"
-                              aria-label="Pilih semua emiten"
-                              checked={sudah.length > 0 && pilih.size === sudah.length}
-                              ref={(el) => { if (el) el.indeterminate = pilih.size > 0 && pilih.size < sudah.length }}
-                              onChange={(e) => setPilih(e.target.checked ? new Set(sudah.map((b) => b.ticker)) : new Set())}
+                              aria-label={`Pilih ${b.ticker}`}
+                              checked={pilih.has(b.ticker)}
+                              onChange={() => togglePilih(b.ticker)}
                             />
-                          </th>
-                          <th>Emiten</th>
-                          <th>Alasan</th>
-                          <th>Orderbook</th>
-                          <th>Chart</th>
-                          <th>Status</th>
-                          <th className="af-aksi">Aksi</th>
+                          </td>
+                          <td className="tick">{b.ticker}</td>
+                          <td className="af-alasan-sel">
+                            <span className="af-alasan-teks" title={alasanTeks || undefined}>{alasanTeks || '—'}</span>
+                            {entriesSendiri.length > 0 && (
+                              <button
+                                type="button"
+                                className="af-alasan-edit"
+                                title={`Ubah alasan ${b.ticker}`}
+                                aria-label={`Ubah alasan ${b.ticker}`}
+                                onClick={() => setEditAlasanTarget(b)}
+                              >
+                                Ubah
+                              </button>
+                            )}
+                          </td>
+                          <td>
+                            {b.orderbook ? (
+                              <button
+                                type="button"
+                                className="af-centang af-lihat"
+                                title={`Lihat screenshot orderbook ${b.ticker}`}
+                                aria-label={`Lihat screenshot orderbook ${b.ticker}`}
+                                onClick={() => bukaPratinjau(b.orderbook!)}
+                              >
+                                <IkonMenu d={IKON_CENTANG} size={13} />
+                                <span className="lihat-lbl">Lihat</span>
+                              </button>
+                            ) : '—'}
+                          </td>
+                          <td>
+                            {b.chart ? (
+                              <button
+                                type="button"
+                                className="af-centang af-lihat"
+                                title={`Lihat screenshot chart ${b.ticker}`}
+                                aria-label={`Lihat screenshot chart ${b.ticker}`}
+                                onClick={() => bukaPratinjau(b.chart!)}
+                              >
+                                <IkonMenu d={IKON_CENTANG} size={13} />
+                                <span className="lihat-lbl">Lihat</span>
+                              </button>
+                            ) : '—'}
+                          </td>
+                          <td>
+                            {status ? (
+                              <span className={`chip ${KELAS_STATUS[status]}`} title={status === 'ditolak' ? catatan || 'Ditolak kurator (tanpa catatan).' : undefined}>
+                                {LABEL_STATUS[status]}
+                              </span>
+                            ) : (
+                              <span className="muted" style={{ fontSize: 10.5 }} title="Unggahan sebelum Fase 3 — tanpa data kurasi.">—</span>
+                            )}
+                          </td>
+                          <td className="af-aksi">
+                            <button
+                              type="button"
+                              className="af-hapus"
+                              title={`Hapus unggahan ${b.ticker}`}
+                              aria-label={`Hapus unggahan ${b.ticker}`}
+                              onClick={() => setHapusTarget([b])}
+                            >
+                              <IkonMenu d={IKON_TONG} size={14} />
+                            </button>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {sudahMerged.map((b) => {
-                          const status = statusGabungan(b)
-                          const catatan = b.setoranOb?.catatan_kurator || b.setoranCh?.catatan_kurator || undefined
-                          const alasanTeks = (b.setoranOb?.alasan || b.setoranCh?.alasan || '').trim()
-                          const entriesSendiri = [b.setoranOb, b.setoranCh].filter(
-                            (s): s is SetoranRow => !!s && s.penyetor === session?.user.id && s.status === 'menunggu'
-                          )
-                          return (
-                            <tr key={b.ticker}>
-                              <td className="af-kolcek">
-                                <input
-                                  type="checkbox"
-                                  className="af-cek"
-                                  aria-label={`Pilih ${b.ticker}`}
-                                  checked={pilih.has(b.ticker)}
-                                  onChange={() => togglePilih(b.ticker)}
-                                />
-                              </td>
-                              <td className="tick">{b.ticker}</td>
-                              <td className="af-alasan-sel">
-                                <span className="af-alasan-teks" title={alasanTeks || undefined}>{alasanTeks || '—'}</span>
-                                {entriesSendiri.length > 0 && (
-                                  <button
-                                    type="button"
-                                    className="af-alasan-edit"
-                                    title={`Ubah alasan ${b.ticker}`}
-                                    aria-label={`Ubah alasan ${b.ticker}`}
-                                    onClick={() => setEditAlasanTarget(b)}
-                                  >
-                                    Ubah
-                                  </button>
-                                )}
-                              </td>
-                              <td>
-                                {b.orderbook ? (
-                                  <button
-                                    type="button"
-                                    className="af-centang af-lihat"
-                                    title={`Lihat screenshot orderbook ${b.ticker}`}
-                                    aria-label={`Lihat screenshot orderbook ${b.ticker}`}
-                                    onClick={() => bukaPratinjau(b.orderbook!)}
-                                  >
-                                    <IkonMenu d={IKON_CENTANG} size={13} />
-                                    <span className="lihat-lbl">Lihat</span>
-                                  </button>
-                                ) : '—'}
-                              </td>
-                              <td>
-                                {b.chart ? (
-                                  <button
-                                    type="button"
-                                    className="af-centang af-lihat"
-                                    title={`Lihat screenshot chart ${b.ticker}`}
-                                    aria-label={`Lihat screenshot chart ${b.ticker}`}
-                                    onClick={() => bukaPratinjau(b.chart!)}
-                                  >
-                                    <IkonMenu d={IKON_CENTANG} size={13} />
-                                    <span className="lihat-lbl">Lihat</span>
-                                  </button>
-                                ) : '—'}
-                              </td>
-                              <td>
-                                {status ? (
-                                  <span className={`chip ${KELAS_STATUS[status]}`} title={status === 'ditolak' ? catatan || 'Ditolak kurator (tanpa catatan).' : undefined}>
-                                    {LABEL_STATUS[status]}
-                                  </span>
-                                ) : (
-                                  <span className="muted" style={{ fontSize: 10.5 }} title="Unggahan sebelum Fase 3 — tanpa data kurasi.">—</span>
-                                )}
-                              </td>
-                              <td className="af-aksi">
-                                <button
-                                  type="button"
-                                  className="af-hapus"
-                                  title={`Hapus unggahan ${b.ticker}`}
-                                  aria-label={`Hapus unggahan ${b.ticker}`}
-                                  onClick={() => setHapusTarget([b])}
-                                >
-                                  <IkonMenu d={IKON_TONG} size={14} />
-                                </button>
-                              </td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
-              )}
-            </div>
-          </section>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </div>
+      </section>
 
-          <section className="panel">
-            <div className="panel-h"><span className="lbl">Kotak masuk</span></div>
-            <div className="panel-b">
-              <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
-                Antrean tanggal yang punya unggahan &amp; menunggu dirakit jadi edisi —
-                klik kartu untuk pindah ke tanggal itu.
-              </p>
-              {tanggalUnggahan === null && <p className="muted">Memuat…</p>}
-              {tanggalUnggahan && tanggalUnggahan.length === 0 && (
-                <PanelKosong
-                  ikon={IKON_KOTAK_ARSIP}
-                  pesan="Belum ada tanggal dengan unggahan."
-                  petunjuk="Tanggal yang sudah punya screenshot akan berbaris di sini."
-                />
-              )}
-              {tanggalUnggahan && tanggalUnggahan.length > 0 && (() => {
-                // Menunggu didahulukan (tanggal terbaru dulu), Selesai belakangan;
-                // default cuma BATAS_KARTU kartu supaya puluhan hari tidak
-                // memenuhi layar — sisanya di balik "Tampilkan semua".
-                const urut = [...tanggalUnggahan].sort((a, b) => {
-                  const sa = tanggalSudahTerbit.has(a) ? 1 : 0
-                  const sb = tanggalSudahTerbit.has(b) ? 1 : 0
-                  return sa - sb || b.localeCompare(a)
-                })
-                const tampil = semuaKartu ? urut : urut.slice(0, BATAS_KARTU)
-                return (
-                  <>
-                    <div className="af-kartu-wrap">
-                      {tampil.map((tgl) => (
-                        <button
-                          key={tgl}
-                          type="button"
-                          className={`vcard af-kartu${tgl === tanggal ? ' aktif' : ''}`}
-                          onClick={() => setTanggal(tgl)}
-                          title="Pilih tanggal ini sebagai panggung unggahan"
-                        >
-                          <span className="v-num" style={{ fontSize: 15 }}>{tgl}</span>
-                          <span className="v-note">
-                            {jumlahEmiten[tgl] !== undefined ? `${jumlahEmiten[tgl]} emiten · ` : ''}
-                            {tanggalSudahTerbit.has(tgl) ? 'Selesai' : 'Menunggu'}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                    {urut.length > BATAS_KARTU && (
-                      <button
-                        type="button"
-                        className="dd-btn"
-                        style={{ marginTop: 10 }}
-                        onClick={() => setSemuaKartu((v) => !v)}
-                      >
-                        {semuaKartu ? 'Tampilkan lebih sedikit' : `Tampilkan semua (${urut.length})`}
-                      </button>
-                    )}
-                  </>
-                )
-              })()}
-            </div>
-          </section>
-
-          <section className="panel">
-        <div className="panel-h"><span className="lbl">Rak terbitan</span></div>
+      <section className="panel">
+        <div className="panel-h"><span className="lbl">Kotak masuk</span></div>
         <div className="panel-b">
           <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
-            Arsip edisi bulletin yang sudah dirakit dari unggahan.
+            Antrean tanggal yang punya unggahan &amp; menunggu dirakit jadi edisi —
+            klik kartu untuk pindah ke tanggal itu.
           </p>
-          {err && <p className="muted" style={{ color: 'var(--red)' }}>Gagal memuat daftar: {err}</p>}
-          {edisi && edisi.length === 0 && (
+          {tanggalUnggahan === null && <p className="muted">Memuat…</p>}
+          {tanggalUnggahan && tanggalUnggahan.length === 0 && (
             <PanelKosong
               ikon={IKON_KOTAK_ARSIP}
-              pesan="Belum ada edisi terbit."
-              petunjuk="Edisi yang sudah dirakit dari unggahan akan tampil di rak ini."
+              pesan="Belum ada tanggal dengan unggahan."
+              petunjuk="Tanggal yang sudah punya screenshot akan berbaris di sini."
             />
           )}
-          {edisi && edisi.length > 0 && (
-            <table className="tbl">
-              <thead>
-                <tr>
-                  <th>Kode</th>
-                  <th>Tanggal</th>
-                  <th>Status</th>
-                  <th className="r">Emiten</th>
-                  <th className="r">PDF</th>
-                </tr>
-              </thead>
-              <tbody>
-                {edisi.map((r) => (
-                  <tr key={r.kode}>
-                    <td>
-                      <span className="tick">{r.kode}</span>
-                      {r.update_dari != null && r.emiten.length > r.update_dari && (
-                        <span
-                          className="bchip"
-                          title={`Dirilis ulang: ${r.update_dari} menjadi ${r.emiten.length} emiten`}
-                          style={{
-                            marginLeft: 6, fontFamily: 'var(--mono)', fontWeight: 700,
-                            background: 'var(--amber-dim)', color: 'var(--amber)', borderColor: 'var(--amber)',
-                          }}
-                        >
-                          Update {r.update_dari}→{r.emiten.length}
-                        </span>
-                      )}
-                    </td>
-                    <td>{r.tanggal_id}</td>
-                    <td><span className="chip up">terbit</span></td>
-                    <td className="r num">{r.emiten.length}</td>
-                    <td className="r">
-                      <a
-                        className="blt-dl"
-                        href={`/arus-pasar/keluaran/${r.pdf}`}
-                        target="_blank"
-                        rel="noopener"
-                        title={`Buka ${r.pdf}`}
-                      >
-                        Lihat
-                      </a>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          </div>
-        </section>
-
-        <RadarUnggah />
-        {profil?.boleh_bedah ? (
-          <BedahUnggah />
-        ) : (
-          <section className="panel">
-            <div className="panel-h"><span className="lbl">Bedah Arus Saham — unggah sumber</span></div>
-            <div className="panel-b">
-              <p className="muted" style={{ margin: 0, fontSize: 11 }}>
-                Hak akses analisa single-saham diberikan superadmin.
-              </p>
-            </div>
-          </section>
-        )}
-      </div>
+          {tanggalUnggahan && tanggalUnggahan.length > 0 && (() => {
+            // Menunggu didahulukan (tanggal terbaru dulu), Selesai belakangan;
+            // default cuma BATAS_KARTU kartu supaya puluhan hari tidak
+            // memenuhi layar — sisanya di balik "Tampilkan semua".
+            const urut = [...tanggalUnggahan].sort((a, b) => {
+              const sa = tanggalSudahTerbit.has(a) ? 1 : 0
+              const sb = tanggalSudahTerbit.has(b) ? 1 : 0
+              return sa - sb || b.localeCompare(a)
+            })
+            const tampil = semuaKartu ? urut : urut.slice(0, BATAS_KARTU)
+            return (
+              <>
+                <div className="af-kartu-wrap">
+                  {tampil.map((tgl) => (
+                    <button
+                      key={tgl}
+                      type="button"
+                      className={`vcard af-kartu${tgl === tanggal ? ' aktif' : ''}`}
+                      onClick={() => setTanggal(tgl)}
+                      title="Pilih tanggal ini sebagai panggung unggahan"
+                    >
+                      <span className="v-num" style={{ fontSize: 15 }}>{tgl}</span>
+                      <span className="v-note">
+                        {jumlahEmiten[tgl] !== undefined ? `${jumlahEmiten[tgl]} emiten · ` : ''}
+                        {tanggalSudahTerbit.has(tgl) ? 'Selesai' : 'Menunggu'}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                {urut.length > BATAS_KARTU && (
+                  <button
+                    type="button"
+                    className="dd-btn"
+                    style={{ marginTop: 10 }}
+                    onClick={() => setSemuaKartu((v) => !v)}
+                  >
+                    {semuaKartu ? 'Tampilkan lebih sedikit' : `Tampilkan semua (${urut.length})`}
+                  </button>
+                )}
+              </>
+            )
+          })()}
+        </div>
+      </section>
 
       {formBuka && (
         <ModalKecil className="af-form-modal" label="Tambah emiten — unggah screenshot" onClose={() => { if (!mengunggah) setFormBuka(false) }}>
@@ -1035,44 +835,6 @@ export function AdminHome() {
         </div>
       )}
 
-      {sambut && (
-        <div className="dasbor-modal-bg" onClick={tutupSambutan}>
-          <div className="lantai dasbor-modal" role="dialog" aria-modal="true" aria-label="Ringkasan sesi admin" onClick={(e) => e.stopPropagation()}>
-            <div className="panel af-sambut">
-              <div className="af-sambut-head">
-                <span className="af-monogram" aria-hidden="true">P</span>
-                <div className="af-sambut-judul">
-                  <span className="af-sambut-merek">PAPAN · Area Admin</span>
-                  <span className="af-sambut-sapa">{sapaan()}</span>
-                </div>
-              </div>
-              <div className="panel-b" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {session?.user.email && (
-                  <p style={{ margin: 0, fontSize: 12.5 }}>
-                    Masuk sebagai <b>{session.user.email}</b>.
-                  </p>
-                )}
-                <div className="af-sambut-stat">
-                  <div>
-                    <span className="num">{tanggalUnggahan === null ? '—' : tanggalUnggahan.filter((t) => !tanggalSudahTerbit.has(t)).length}</span>
-                    <span className="lbl">Tanggal menunggu</span>
-                  </div>
-                  <div>
-                    <span className="num">{sudah.length}</span>
-                    <span className="lbl">Emiten hari ini</span>
-                  </div>
-                </div>
-                <p className="muted" style={{ margin: 0, fontSize: 11.5, lineHeight: 1.55 }}>
-                  Unggah screenshot orderbook harian, pantau antrean di kotak masuk,
-                  dan kelola rak terbitan Arus Pasar dari halaman ini.
-                </p>
-                <button type="button" className="btn-p" style={{ width: '100%' }} onClick={tutupSambutan}>Mulai</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {hapusTarget && hapusTarget.length > 0 && (
         <ModalKecil
           label={hapusTarget.length === 1 ? `Hapus unggahan ${hapusTarget[0].ticker}?` : `Hapus ${hapusTarget.length} unggahan?`}
@@ -1099,21 +861,6 @@ export function AdminHome() {
           </div>
         </ModalKecil>
       )}
-
-      {konfirmKeluar && (
-        <ModalKecil label="Akhiri sesi?" onClose={() => setKonfirmKeluar(false)}>
-          <p style={{ margin: 0, fontSize: 12.5 }}>
-            Keluar dari akun <b>{session?.user.email}</b>?
-          </p>
-          <p className="muted" style={{ margin: 0, fontSize: 11.5 }}>
-            Kamu harus masuk lagi untuk mengelola unggahan &amp; edisi.
-          </p>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button type="button" className="btn-p af-btn-keluar" onClick={keluar}>Ya, keluar</button>
-            <button type="button" className="dd-btn" onClick={() => setKonfirmKeluar(false)}>Batal</button>
-          </div>
-        </ModalKecil>
-      )}
-    </div>
+    </>
   )
 }

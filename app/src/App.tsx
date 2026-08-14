@@ -16,9 +16,13 @@ import { Bulletin } from './views/dasbor/Bulletin'
 import { Radar } from './views/dasbor/Radar'
 import { Feedback } from './views/dasbor/Feedback'
 import { Login } from './views/Login'
-import { AdminHome } from './views/AdminHome'
+import { AdminLayout } from './views/admin/AdminLayout'
+import { UnggahHarian } from './views/admin/UnggahHarian'
 import { AkunAdmin } from './views/admin/AkunAdmin'
 import { KurasiSetoran } from './views/admin/KurasiSetoran'
+import { RadarUnggah } from './views/admin/RadarUnggah'
+import { BedahTab } from './views/admin/BedahTab'
+import { RakTerbitan } from './views/admin/RakTerbitan'
 import { ChangelogAdmin } from './views/admin/ChangelogAdmin'
 import { EdisiUjicoba } from './views/EdisiUjicoba'
 import { EdisiView } from './views/EdisiView'
@@ -46,11 +50,22 @@ function App() {
               <Route path="/feedback" element={<Feedback />} />
               {/* /admin ikut DI DALAM layout (rail/topbar tetap tampil) tapi
                   tetap dijaga ProtectedRoute — belum login dilempar ke /login
-                  yang berujung balik ke / dengan LoginModal terbuka (#41). */}
+                  yang berujung balik ke / dengan LoginModal terbuka (#41).
+                  Bersarang di bawah AdminLayout (#shell-tab): satu shell
+                  (header + tab bar) yang TIDAK remount saat pindah tab —
+                  cuma <Outlet/> isinya yang berganti. Tab tanpa hak (Kurasi/
+                  Akun non-superadmin, Bedah tanpa boleh_bedah) disembunyikan
+                  di AdminLayout sendiri, tapi URL-nya tetap hidup (guard
+                  AksesDitolak di tiap halaman jaga akses langsung/bookmark). */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/admin" element={<AdminHome />} />
-                <Route path="/admin/akun" element={<AkunAdmin />} />
-                <Route path="/admin/kurasi" element={<KurasiSetoran />} />
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<UnggahHarian />} />
+                  <Route path="kurasi" element={<KurasiSetoran />} />
+                  <Route path="radar" element={<RadarUnggah />} />
+                  <Route path="bedah" element={<BedahTab />} />
+                  <Route path="terbitan" element={<RakTerbitan />} />
+                  <Route path="akun" element={<AkunAdmin />} />
+                </Route>
               </Route>
             </Route>
             {/* /login lama dipertahankan sbg redirect (bookmark/tautan luar) — login

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
 import { useProfilSaya } from '../../lib/profilSaya'
+import { useAdminTanggal } from '../../context/AdminTanggalContext'
 import {
   daftarSetoran,
   kurasiSetoran,
@@ -11,14 +11,9 @@ import {
 import { IkonMenu, IKON_CENTANG, IKON_PAPAN_KLIP, IKON_PERINGATAN, IKON_SILANG } from '../../components/dasbor/IkonMenu'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
-import { ModalKecil } from '../AdminHome'
+import { ModalKecil } from '../../components/dasbor/ModalKecil'
+import { AksesDitolak } from './AdminLayout'
 import './KurasiSetoran.css'
-
-function tanggalHariIni(): string {
-  const d = new Date()
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-}
 
 /** ISO datetime → "13 Agu 2026, 14:05"; "—" kalau tak valid. Salinan kecil
  *  dari waktuManusiawi AkunAdmin.tsx — sengaja tidak diekstrak jadi util
@@ -53,8 +48,8 @@ const TAB_STATUS: { id: StatusSetoran | 'semua'; label: string }[] = [
 export function KurasiSetoran() {
   const { profil, loading: profilLoading } = useProfilSaya()
   const superadmin = profil?.peran === 'superadmin'
+  const { tanggal, setTanggal } = useAdminTanggal()
 
-  const [tanggal, setTanggal] = useState(tanggalHariIni())
   const [tabStatus, setTabStatus] = useState<StatusSetoran | 'semua'>('menunggu')
   const [setoran, setSetoran] = useState<SetoranRow[] | null>(null)
   const [urls, setUrls] = useState<Record<string, string>>({})
@@ -172,36 +167,14 @@ export function KurasiSetoran() {
     }
   }
 
-  if (profilLoading) {
-    return (
-      <div className="lantai admin-view">
-        <p className="muted">Memuat…</p>
-      </div>
-    )
-  }
+  if (profilLoading) return <p className="muted">Memuat…</p>
 
-  if (!superadmin) {
-    return (
-      <div className="lantai admin-view">
-        <div className="fd-empty" style={{ padding: '60px 20px' }}>
-          <p style={{ marginBottom: 8 }}><IkonMenu d={IKON_PERINGATAN} size={26} /></p>
-          <p>Halaman ini khusus superadmin.</p>
-          <p style={{ fontSize: 11, marginTop: 6 }}><Link to="/admin">← Kembali ke Admin</Link></p>
-        </div>
-      </div>
-    )
-  }
+  // Tab Kurasi disembunyikan di AdminLayout kalau bukan superadmin — guard ini
+  // jaga-jaga akses langsung lewat URL/bookmark (rute /admin/kurasi tetap hidup).
+  if (!superadmin) return <AksesDitolak pesan="Halaman ini khusus superadmin." />
 
   return (
-    <div className="lantai admin-view">
-      <div className="vhead" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1>Kurasi Setoran</h1>
-          <span className="sub">Superadmin — setujui/tolak setoran sebelum masuk bulletin</span>
-        </div>
-        <Link to="/admin" className="dd-btn">← Admin</Link>
-      </div>
-
+    <>
       <section className="panel">
         <div className="panel-h" style={{ alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
           <span className="lbl">
@@ -326,7 +299,7 @@ export function KurasiSetoran() {
           <span>{toast.pesan}</span>
         </div>
       )}
-    </div>
+    </>
   )
 }
 

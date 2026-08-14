@@ -60,3 +60,4 @@ export const IKON_TONG = 'M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2M6 7l1 13a1 1
 export const IKON_GAMBAR = 'M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1zM3.5 15.5L8.5 10l4 4 3-3 5 5M9 9h.01' // pilih berkas gambar
 export const IKON_TAMBAH = 'M12 5v14M5 12h14' // tombol tambah (mis. "+ Tambah Emiten")
 export const IKON_KUNCI = 'M7 10V7a5 5 0 0110 0v3M5 10h14a1 1 0 011 1v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9a1 1 0 011-1zM12 14v3' // gembok — atur ulang sandi
+export const IKON_RADAR = 'M12 3a9 9 0 109 9M12 7a5 5 0 105 5M12 12l5.5-5.5M12 12h.01' // sama dgn ikon "Radar Watchlist" di rail (menu.ts) — tab Radar AdminLayout

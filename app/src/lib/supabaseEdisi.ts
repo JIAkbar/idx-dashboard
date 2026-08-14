@@ -151,6 +151,18 @@ export async function kurasiSetoran(paths: string[], status: 'disetujui' | 'dito
   if (error) throw error
 }
 
+/** Jumlah baris `setoran` berstatus `menunggu` (SEMUA tanggal) — badge tab
+ *  Kurasi di AdminLayout. head:true supaya server cuma balas hitungan,
+ *  bukan menarik seluruh baris. */
+export async function hitungSetoranMenunggu(): Promise<number> {
+  const { count, error } = await supabase
+    .from('setoran')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'menunggu')
+  if (error) throw error
+  return count ?? 0
+}
+
 /** Signed URL (1 jam) berkas-berkas di bucket privat "screenshots", map path → URL.
  *  Batch satu request; path yang gagal ditandatangani tidak masuk hasil. */
 export async function urlScreenshots(paths: string[]): Promise<Record<string, string>> {

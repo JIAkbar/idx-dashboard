@@ -1,10 +1,16 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
 import { useProfilSaya } from '../../lib/profilSaya'
 import { daftarAkun, buatAkun, resetSandi, setProfil, type AkunRow } from '../../lib/adminAkun'
 import { IkonMenu, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_TAMBAH } from '../../components/dasbor/IkonMenu'
-import { ModalKecil } from '../AdminHome'
+import { ModalKecil } from '../../components/dasbor/ModalKecil'
+import { Dropdown } from '../../components/dasbor/Dropdown'
+import { AksesDitolak } from './AdminLayout'
 import './AkunAdmin.css'
+
+/** Pilihan kuota harian — dropdown gantinya input number bertombol panah
+ *  (sempit, gampang salah ketik). Dipakai form Tambah Akun & kolom kuota
+ *  per baris tabel (perbaikan A, #shell-tab). */
+const KUOTA_OPSI = [1, 2, 3, 5, 8, 12, 20, 50].map((n) => ({ nilai: String(n), label: String(n) }))
 
 /** ISO datetime (timestamptz) → "13 Agu 2026, 14:05"; "—" kalau null/kosong/tak valid. */
 function waktuManusiawi(iso: string | null): string {
@@ -96,36 +102,14 @@ export function AkunAdmin() {
     }
   }
 
-  if (profilLoading) {
-    return (
-      <div className="lantai admin-view">
-        <p className="muted">Memuat…</p>
-      </div>
-    )
-  }
+  if (profilLoading) return <p className="muted">Memuat…</p>
 
-  if (!superadmin) {
-    return (
-      <div className="lantai admin-view">
-        <div className="fd-empty" style={{ padding: '60px 20px' }}>
-          <p style={{ marginBottom: 8 }}><IkonMenu d={IKON_PERINGATAN} size={26} /></p>
-          <p>Halaman ini khusus superadmin.</p>
-          <p style={{ fontSize: 11, marginTop: 6 }}><Link to="/admin">← Kembali ke Admin</Link></p>
-        </div>
-      </div>
-    )
-  }
+  // Tab Akun disembunyikan di AdminLayout kalau bukan superadmin — guard ini
+  // jaga-jaga akses langsung lewat URL/bookmark (rute /admin/akun tetap hidup).
+  if (!superadmin) return <AksesDitolak pesan="Halaman ini khusus superadmin." />
 
   return (
-    <div className="lantai admin-view">
-      <div className="vhead" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1>Kelola Akun</h1>
-          <span className="sub">Superadmin — akun kontributor, kuota harian &amp; izin Bedah</span>
-        </div>
-        <Link to="/admin" className="dd-btn">← Admin</Link>
-      </div>
-
+    <>
       <section className="panel">
         <div className="panel-h" style={{ alignItems: 'center' }}>
           <span className="lbl">Akun{akun ? ` (${akun.length})` : ''}</span>
@@ -165,23 +149,16 @@ export function AkunAdmin() {
                           </span>
                         </td>
                         <td className="r">
-                          <input
-                            type="number"
-                            className="inp aa-kuota"
-                            min={0}
-                            max={50}
-                            defaultValue={a.kuota_harian}
-                            disabled={sedangProses}
-                            aria-label={`Kuota harian — ${a.email}`}
-                            onBlur={(e) => {
-                              const n = Math.max(0, Math.min(50, Math.round(Number(e.target.value)) || 0))
-                              e.target.value = String(n)
-                              if (n !== a.kuota_harian) ubahProfil(a, { kuota_harian: n })
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') e.currentTarget.blur()
-                            }}
-                          />
+                          <div className="aa-kuota-dd">
+                            <Dropdown
+                              opsi={KUOTA_OPSI}
+                              nilai={String(a.kuota_harian)}
+                              ariaLabel={`Kuota harian — ${a.email}`}
+                              placeholder={String(a.kuota_harian)}
+                              disabled={sedangProses}
+                              onGanti={(n) => ubahProfil(a, { kuota_harian: Number(n) })}
+                            />
+                          </div>
                         </td>
                         <td>
                           <Sakelar
@@ -243,7 +220,7 @@ export function AkunAdmin() {
           <span>{toast.pesan}</span>
         </div>
       )}
-    </div>
+    </>
   )
 }
 
@@ -301,14 +278,7 @@ function FormTambahAkun({ onClose, onSukses }: { onClose: () => void; onSukses: 
         </div>
         <div className="field">
           <span className="lbl">Kuota awal / hari</span>
-          <input
-            className="inp aa-kuota"
-            type="number"
-            min={0}
-            max={50}
-            value={kuota}
-            onChange={(e) => setKuota(Math.max(0, Math.min(50, Math.round(Number(e.target.value)) || 0)))}
-          />
+          <Dropdown opsi={KUOTA_OPSI} nilai={String(kuota)} ariaLabel="Kuota awal per hari" onGanti={(n) => setKuota(Number(n))} />
         </div>
         <label className="aa-cek-baris">
           <input type="checkbox" className="af-cek" checked={bedah} onChange={(e) => setBedah(e.target.checked)} />

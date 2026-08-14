@@ -12,6 +12,8 @@ interface DropdownProps {
   ariaLabel?: string
   /** Label tombol saat `nilai` tidak ada di `opsi` (mis. Kalender menampilkan bulan berjalan di luar rentang data). */
   placeholder?: string
+  /** Kunci interaksi selagi ada aksi in-flight (pola tombol Lantai lain, mis. Sakelar AkunAdmin.tsx). */
+  disabled?: boolean
 }
 
 /**
@@ -22,7 +24,7 @@ interface DropdownProps {
  * amber (`.sel`). Keyboard: Escape menutup, panah atas/bawah memindah fokus
  * antar item, Enter memilih (klik native tombol terfokus).
  */
-export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder }: DropdownProps) {
+export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disabled }: DropdownProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -68,6 +70,7 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder }: Dropd
         aria-label={ariaLabel}
         aria-haspopup="listbox"
         aria-expanded={open}
+        disabled={disabled}
         onClick={() => setOpen((v) => !v)}
       >
         {label}

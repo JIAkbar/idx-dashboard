@@ -258,3 +258,27 @@
   .lantai.af-toast { animation: none; }
   .lantai .af-lb-bg { animation: none; }
 }
+
+/* Tab bar shell /admin (#shell-tab) — pakai primitif .tabs/.tab yang sudah
+   ada (lihat KurasiSetoran.tsx filter status), cuma ditambah margin bawah
+   & scrollbar TAMPAK di telepon (beda dari .tabs biasa yang scrollbar-nya
+   sengaja disembunyikan, #79D3 — di sini tab-nya navigasi utama shell,
+   isyarat "bisa digeser" lebih penting). Selector 3-kelas biar menang
+   spesifisitas atas `.lantai .tabs{scrollbar-width:none}`. */
+.lantai .tabs.admin-tabbar { margin-top: 10px; }
+.lantai .tabs.admin-tabbar { scrollbar-width: thin; }
+.lantai .tabs.admin-tabbar::-webkit-scrollbar { display: block; height: 4px; }
+.lantai .tabs.admin-tabbar::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 99px; }
+.lantai .tabs.admin-tabbar::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+.lantai .tabs.admin-tabbar::-webkit-scrollbar-track { background: transparent; }
+
+/* Badge angka (mis. setoran menunggu) di tab Kurasi — bulat kecil, amber
+   solid supaya kontras di tab aktif (amber) maupun tidak aktif (abu). */
+.lantai .admin-tab-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 15px; height: 15px; padding: 0 4px;
+  border-radius: 99px; font-size: 9.5px; font-weight: 700;
+  font-family: var(--mono); line-height: 1;
+  background: var(--red); color: #fff;
+}
+.lantai .tab.on .admin-tab-badge { background: var(--amber-ink); color: var(--amber); }
