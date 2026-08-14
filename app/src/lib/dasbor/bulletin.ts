@@ -11,6 +11,29 @@ export interface EdisiBulletin {
   /** Jumlah emiten saat rilis pertama — ada berarti edisi dirilis ulang
    *  dengan cakupan lebih luas; dashboard tampilkan badge "Update N→M". */
   update_dari?: number
+  /** Sidecar analitik per emiten (build.py → generate_index.py) — bahan
+   *  tabel detail Probabilitas di baris edisi. Edisi lama tidak punya. */
+  analisa?: AnalisaEmiten[]
+}
+
+/** Satu baris analitik emiten dari keluaran/<kode>.analisa.json. */
+export interface AnalisaEmiten {
+  ticker: string
+  label: string
+  arah: string
+  close: number
+  pct: number
+  skor: number
+  risiko: string
+  /** P(close naik dalam 5 hari) 0..1 — null kalau riwayat belum cukup. */
+  p5: number | null
+  /** P(sempat ≥ +3% dalam 5 hari) 0..1. */
+  p3: number | null
+  n: number | null
+  /** Berapa dari 4 fitur setup yang cocok (fallback pencocokan longgar). */
+  cocok: number | null
+  vv_z: number | null
+  vv_sinyal: boolean
 }
 
 /** Cache modul — pindah halaman balik lagi langsung tampil, TAPI tetap

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useBulletinList } from '../../lib/dasbor/bulletin'
 import { IkonMenu, IKON_SILANG } from '../../components/dasbor/IkonMenu'
@@ -88,6 +88,9 @@ export function Bulletin() {
   const [tipe, setTipe] = useState<'Semua' | 'Harian' | 'Mingguan' | 'Bulanan' | 'Bedah'>('Semua')
   // #98: viewer PDF inline — modal iframe di desktop; null = tertutup.
   const [lihat, setLihat] = useState<{ kode: string; pdf: string } | null>(null)
+  // Kolom Probabilitas (permintaan user 14 Agu): kode edisi yang baris
+  // detailnya (tabel analitik per emiten dari sidecar) sedang terbuka.
+  const [detail, setDetail] = useState<string | null>(null)
 
   useEffect(() => {
     if (!lihat) return
@@ -204,8 +207,10 @@ export function Bulletin() {
                 <tbody>
                   {tampil.map(({ e, no }) => {
                     const h = peta?.get(e.tanggal)
+                    const buka = detail === e.kode
                     return (
-                      <tr key={e.kode}>
+                      <Fragment key={e.kode}>
+                      <tr>
                         <td className="r blt-no">{no}</td>
                         <td>
                           <span className="tick">{e.kode}</span>
@@ -257,6 +262,17 @@ export function Bulletin() {
                         </td>
                         <td className="r">
                           <span className="blt-aksi">
+                            {e.analisa && e.analisa.length > 0 && (
+                              <button
+                                type="button"
+                                className="blt-dl"
+                                onClick={() => setDetail(buka ? null : e.kode)}
+                                title={buka ? 'Tutup tabel probabilitas' : 'Tabel probabilitas per emiten'}
+                                style={buka ? { color: 'var(--amber)', borderColor: 'var(--amber)' } : undefined}
+                              >
+                                {buka ? 'Tutup' : 'Prob'}
+                              </button>
+                            )}
                             <button
                               type="button"
                               className="blt-dl"
@@ -278,6 +294,71 @@ export function Bulletin() {
                           </span>
                         </td>
                       </tr>
+                      {buka && e.analisa && (
+                        <tr>
+                          <td colSpan={7} style={{ padding: '0 0 14px', background: 'var(--bg2)' }}>
+                            <div style={{ overflowX: 'auto', padding: '10px 14px 4px' }}>
+                              <div className="lbl" style={{ marginBottom: 6 }}>
+                                Probabilitas Historis — {e.kode} · backtest setup teknikal, sampel (n) selalu tercetak
+                              </div>
+                              <table className="tbl" style={{ minWidth: 640 }}>
+                                <thead>
+                                  <tr>
+                                    <th>Ticker</th>
+                                    <th>Bias</th>
+                                    <th className="r">Close</th>
+                                    <th className="r">±%</th>
+                                    <th className="r">Skor</th>
+                                    <th className="r">Prob 5h</th>
+                                    <th className="r">P ≥3%</th>
+                                    <th className="r">n</th>
+                                    <th>VolVal</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {e.analisa.map((a) => (
+                                    <tr key={a.ticker}>
+                                      <td><span className="tick">{a.ticker}</span></td>
+                                      <td style={{ fontSize: 11, color: 'var(--text2)' }}>{a.label}</td>
+                                      <td className="r num">{a.close.toLocaleString('id-ID')}</td>
+                                      <td className={`r num ${a.pct >= 0 ? 'up' : 'dn'}`}>{fmtPct(a.pct)}</td>
+                                      <td className="r num" style={{ fontWeight: 700 }}>{a.skor}</td>
+                                      <td className="r num">{a.p5 == null ? '—' : `${Math.round(a.p5 * 100)}%`}</td>
+                                      <td className="r num">{a.p3 == null ? '—' : `${Math.round(a.p3 * 100)}%`}</td>
+                                      <td className="r num" style={{ color: 'var(--text3)', fontSize: 11 }}>
+                                        {a.n == null ? '—' : a.n}
+                                        {a.cocok != null && a.cocok < 4 && ` · ${a.cocok}/4`}
+                                      </td>
+                                      <td style={{ fontSize: 11 }}>
+                                        {a.vv_z == null ? '—' : (
+                                          <>
+                                            <span className="num">z{a.vv_z >= 0 ? '+' : ''}{a.vv_z.toFixed(1)}</span>
+                                            {a.vv_sinyal && (
+                                              <span
+                                                className="bchip"
+                                                title="Sinyal akumulasi senyap: value melonjak (z ≥ 2) tapi harga nyaris diam"
+                                                style={{ marginLeft: 6, background: 'var(--amber-dim)', color: 'var(--amber)', borderColor: 'var(--amber)', fontWeight: 700 }}
+                                              >
+                                                senyap
+                                              </span>
+                                            )}
+                                          </>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                              <p className="muted" style={{ fontSize: 10, margin: '6px 2px 0', lineHeight: 1.5 }}>
+                                Prob 5h = peluang close lebih tinggi dalam 5 hari bursa; P ≥3% = peluang sempat naik ≥3%.
+                                Dihitung dari kejadian historis dengan setup teknikal serupa (n = jumlah sampel; k/4 = pencocokan longgar).
+                                Probabilistik, bukan kepastian — bukan ajakan transaksi.
+                              </p>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                      </Fragment>
                     )
                   })}
                 </tbody>
