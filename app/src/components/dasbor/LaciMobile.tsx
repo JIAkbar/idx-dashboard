@@ -1,9 +1,11 @@
 import { useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { MENU_ITEMS } from '../../lib/dasbor/menu'
-import { IkonMenu } from './IkonMenu'
+import { IkonMenu, IKON_KUNCI } from './IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 import { useAuth } from '../../context/AuthContext'
+import { useAksesHalaman } from '../../context/AksesHalamanContext'
+import { PETA_MENU_KUNCI } from '../../lib/aksesHalaman'
 
 /**
  * Laci navigasi kiri telepon (#76) — dibuka logo "P" di bilah atas (bukan
@@ -23,6 +25,7 @@ export function LaciMobile({ buka, onTutup, onMasuk }: {
 }) {
   const { theme, toggleTheme } = useTheme()
   const { session } = useAuth()
+  const { boleh, alasanRingkas } = useAksesHalaman()
   const { pathname } = useLocation()
 
   // Tutup saat berpindah halaman lewat jalur lain (mis. tombol kembali).
@@ -53,19 +56,31 @@ export function LaciMobile({ buka, onTutup, onMasuk }: {
         </div>
 
         <div className="dasbor-laci-kiri-list">
-          {MENU_ITEMS.map((item) => (
-            <NavLink
-              key={item.id}
-              to={item.path}
-              end={item.path === '/'}
-              className={({ isActive }) => 'dasbor-laci-item' + (isActive ? ' active' : '')}
-              onClick={onTutup}
-            >
-              <IkonMenu d={item.ikon} size={19} />
-              <span>{item.label}</span>
-              {item.badge && <span className="dasbor-nav-badge">{item.badge}</span>}
-            </NavLink>
-          ))}
+          {MENU_ITEMS.map((item) => {
+            // Cuma item bermapping eksplisit yang dicek — lihat komentar sama
+            // di Sidebar.tsx (jangan fallback ke item.id, bisa nyasar ke kunci
+            // halaman lain yang kebetulan namanya sama).
+            const kunci = PETA_MENU_KUNCI[item.id]
+            const terkunci = kunci ? !boleh(kunci) : false
+            return (
+              <NavLink
+                key={item.id}
+                to={item.path}
+                end={item.path === '/'}
+                className={({ isActive }) => 'dasbor-laci-item' + (isActive ? ' active' : '')}
+                onClick={onTutup}
+                title={terkunci ? alasanRingkas(kunci!) : undefined}
+              >
+                <IkonMenu d={item.ikon} size={19} />
+                <span>{item.label}</span>
+                {terkunci ? (
+                  <IkonMenu d={IKON_KUNCI} size={14} />
+                ) : (
+                  item.badge && <span className="dasbor-nav-badge">{item.badge}</span>
+                )}
+              </NavLink>
+            )
+          })}
         </div>
 
         <div className="dasbor-laci-kiri-aksi">

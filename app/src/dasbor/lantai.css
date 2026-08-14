@@ -195,7 +195,19 @@
   text-decoration: none;
   border-left: 2px solid transparent;
   transition: color .15s;
+  position: relative;
 }
+/* Badge gembok (Fase 6 — akses & jenjang): menu TETAP tampil & bisa diklik
+   kalau terkunci (bukan disembunyikan) — halaman tujuannya sendiri yang
+   menampilkan kerangka terkunci (.pgh-*, lihat PenjagaHalaman.tsx). */
+.dasbor-kunci-badge {
+  position: absolute; top: 3px; right: 12px;
+  width: 13px; height: 13px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg2); border: 1px solid var(--border2); color: var(--text3);
+  pointer-events: none;
+}
+.dasbor-kunci-badge svg { width: 8px; height: 8px; }
 .dasbor-rail-item:hover { color: var(--text2); }
 .dasbor-rail-item.active {
   color: var(--accent);
@@ -1729,4 +1741,26 @@
 .lantai .rdr-rankrow .v.up{color:var(--green)}
 .lantai .rdr-rankrow .v.dn{color:var(--red)}
 .lantai .rdr-catatan{font-size:11px;color:var(--text3);line-height:1.7;border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
+
+/* ===== PenjagaHalaman (Fase 6 — akses & jenjang) — kerangka TIRUAN diburamkan
+   + kartu ajakan di tengahnya. Lihat components/PenjagaHalaman.tsx: isi
+   .pgh-blur SELALU data hardcode, tak pernah data server. ===== */
+.pgh-wrap { position: relative; min-height: 360px; }
+.pgh-blur { filter: blur(7px); user-select: none; pointer-events: none; opacity: .8; }
+.pgh-cta {
+  position: absolute; inset: 0; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  text-align: center; padding: 24px;
+}
+.pgh-cta .dasbor-ikon { color: var(--accent); }
+.pgh-judul { margin: 4px 0 0; font-family: var(--disp); font-size: 15px; font-weight: 700; color: var(--text); }
+.pgh-kalimat { margin: 0; max-width: 320px; font-size: 12px; color: var(--text2); line-height: 1.6; }
+.pgh-cta .btn-p, .pgh-cta .pgh-tautan { margin-top: 4px; text-decoration: none; }
+
+/* Versi kecil dipakai inline (mis. sel Probabilitas/VolVal Bulletin.tsx) —
+   sama prinsip, cuma ukurannya menyesuaikan konteks tabel. */
+.pgh-mini { position: relative; min-height: 120px; }
+.pgh-mini .pgh-blur { filter: blur(5px); }
+.pgh-mini .pgh-judul { font-size: 12.5px; }
+.pgh-mini .pgh-kalimat { font-size: 11px; max-width: 260px; }
 .lantai .rdr-kaki{color:var(--text3);font-size:10.5px;line-height:1.8;margin-top:10px}

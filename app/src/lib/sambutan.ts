@@ -28,3 +28,11 @@ export function perluSambutan(markerTersimpan: string | null, markerSaatIni: str
   if (!markerSaatIni) return false
   return markerTersimpan !== markerSaatIni
 }
+
+/** Kunci localStorage per user utk modal peringatan "hampir dibekukan" (Fase
+ *  6) — mekanisme sekali-per-sesi-login SAMA dengan modal sambutan di atas
+ *  (dibanding lewat `perluSambutan`), cuma namespace-nya beda supaya kedua
+ *  modal independen (menutup salah satu tak menutup yang lain). */
+export function kunciBeku(userId: string): string {
+  return `beku:${userId}`
+}

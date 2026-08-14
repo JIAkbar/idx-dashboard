@@ -1,8 +1,10 @@
 import { Link, NavLink } from 'react-router-dom'
 import { MENU_ITEMS } from '../../lib/dasbor/menu'
-import { IkonMenu } from './IkonMenu'
+import { IkonMenu, IKON_KUNCI } from './IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 import { useAuth } from '../../context/AuthContext'
+import { useAksesHalaman } from '../../context/AksesHalamanContext'
+import { PETA_MENU_KUNCI } from '../../lib/aksesHalaman'
 import { useKlikTransisi } from '../../lib/dasbor/transisi'
 
 /**
@@ -24,6 +26,7 @@ import { useKlikTransisi } from '../../lib/dasbor/transisi'
 export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
   const { theme, toggleTheme } = useTheme()
   const { session } = useAuth()
+  const { boleh, alasanRingkas } = useAksesHalaman()
   // #79: navigasi rail dibungkus View Transition (crossfade + naik tipis di
   // .dasbor-main). LaciMobile sengaja TIDAK ikut — laci yang menutup sudah
   // jadi gerak perpindahannya, dan startViewTransition membekukan snapshot
@@ -38,19 +41,37 @@ export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
       </Link>
 
       <div className="dasbor-rail-list">
-        {MENU_ITEMS.map((item) => (
-          <NavLink
-            key={item.id}
-            to={item.path}
-            end={item.path === '/'}
-            title={item.label + (item.badge ? ` (${item.badge})` : '')}
-            className={({ isActive }) => 'dasbor-rail-item' + (isActive ? ' active' : '')}
-            onClick={(e) => klik(e, item.path)}
-          >
-            <IkonMenu d={item.ikon} />
-            <span className="dasbor-rail-kode">{item.kode}</span>
-          </NavLink>
-        ))}
+        {MENU_ITEMS.map((item) => {
+          // Cuma item yang punya padanan eksplisit di PETA_MENU_KUNCI yang
+          // dicek — TIDAK fallback ke item.id: beberapa id menu (mis. 'broker',
+          // 'radar') kebetulan sama persis dengan kunci akses_halaman utk
+          // HALAMAN LAIN (Broker Summary / tab admin Radar WDWL), fallback ke
+          // id apa adanya bisa salah pasang gembok ke menu yang tak dijaga.
+          const kunci = PETA_MENU_KUNCI[item.id]
+          // Menu TETAP tampil & bisa diklik walau terkunci (bukan disembunyikan)
+          // — halaman tujuannya sendiri menampilkan kerangka terkunci
+          // (PenjagaHalaman.tsx), badge di sini cuma penanda.
+          const terkunci = kunci ? !boleh(kunci) : false
+          const judul = item.label + (item.badge ? ` (${item.badge})` : '') + (terkunci ? ` — ${alasanRingkas(kunci!)}` : '')
+          return (
+            <NavLink
+              key={item.id}
+              to={item.path}
+              end={item.path === '/'}
+              title={judul}
+              className={({ isActive }) => 'dasbor-rail-item' + (isActive ? ' active' : '')}
+              onClick={(e) => klik(e, item.path)}
+            >
+              <IkonMenu d={item.ikon} />
+              <span className="dasbor-rail-kode">{item.kode}</span>
+              {terkunci && (
+                <span className="dasbor-kunci-badge" aria-hidden="true">
+                  <IkonMenu d={IKON_KUNCI} size={8} />
+                </span>
+              )}
+            </NavLink>
+          )
+        })}
       </div>
 
       <div className="dasbor-rail-foot">

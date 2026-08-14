@@ -1,11 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useProfilSaya } from '../../lib/profilSaya'
 import { supabase } from '../../lib/supabase'
 import { AdminTanggalProvider } from '../../context/AdminTanggalContext'
 import { hitungSetoranMenunggu } from '../../lib/supabaseEdisi'
-import { perluSambutan, kunciSambutan } from '../../lib/sambutan'
+import { perluSambutan, kunciSambutan, kunciBeku } from '../../lib/sambutan'
+import { statusBekuSaya, type StatusBeku } from '../../lib/statusBeku'
 import { namaTampil } from '../../lib/namaTampil'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import {
@@ -14,7 +15,9 @@ import {
   IKON_GAMBAR,
   IKON_GIR,
   IKON_GRAFIK_NAIK,
+  IKON_JAM,
   IKON_KOTAK_ARSIP,
+  IKON_KUNCI,
   IKON_PAPAN_KLIP,
   IKON_PERINGATAN,
   IKON_RADAR,
@@ -56,11 +59,17 @@ export function AdminLayout() {
   const { session, signOut } = useAuth()
   const { profil } = useProfilSaya()
   const location = useLocation()
+  const navigate = useNavigate()
   const superadmin = profil?.peran === 'superadmin'
 
   const [konfirmKeluar, setKonfirmKeluar] = useState(false)
   const [sambut, setSambut] = useState(false)
   const [menunggu, setMenunggu] = useState(0)
+  /** Modal peringatan "hampir dibekukan otomatis" (Fase 6, status_beku_saya()) —
+   *  null selagi belum dicek/tak perlu tampil. Kontributor saja (superadmin
+   *  tak pernah dicek/dibekukan). */
+  const [bekuInfo, setBekuInfo] = useState<StatusBeku | null>(null)
+  const [bekuTampil, setBekuTampil] = useState(false)
   /** Modal "Lengkapi profil" (#item5, akun lama alias kosong) sudah ditutup
    *  sesi ini — dismissable, BUKAN gerbang mati: RLS `profil` saat ini cuma
    *  izinkan superadmin menulis baris siapa pun (lihat komentar di bawah
@@ -97,6 +106,42 @@ export function AdminLayout() {
     setSambut(false)
   }
 
+  // Peringatan "hampir dibekukan otomatis" — sekali per sesi login (pola
+  // sama persis modal sambutan di atas, kunci localStorage beda namespace,
+  // lihat lib/sambutan.ts). Kontributor saja: RPC `status_beku_saya()`
+  // TIDAK dipanggil sama sekali utk superadmin (jangan tampil, jangan cek).
+  useEffect(() => {
+    if (!session || superadmin) return
+    const kunci = kunciBeku(session.user.id)
+    const marker = session.user.last_sign_in_at
+    if (!perluSambutan(localStorage.getItem(kunci), marker)) return
+    let batal = false
+    statusBekuSaya().then((info) => {
+      if (batal || !info) return
+      if (info.peringatan) {
+        setBekuInfo(info)
+        setBekuTampil(true)
+      }
+    })
+    return () => {
+      batal = true
+    }
+  }, [session, superadmin])
+
+  function tutupBeku() {
+    if (session) localStorage.setItem(kunciBeku(session.user.id), session.user.last_sign_in_at ?? '')
+    setBekuTampil(false)
+  }
+
+  /** Tombol "Setor sekarang" — tutup modal, pindah ke tab Unggah (index) dan
+   *  minta form Tambah Emiten langsung terbuka lewat query `?tambah=1`
+   *  (dibaca UnggahHarian.tsx, pola sama location.state.openLogin di
+   *  DasborLayout.tsx — sinyal ringan lintas komponen tanpa lifting state). */
+  function setorSekarang() {
+    tutupBeku()
+    navigate('/admin?tambah=1', { replace: true })
+  }
+
   useEffect(() => {
     if (!sambut) return
     const onKey = (e: KeyboardEvent) => {
@@ -121,6 +166,7 @@ export function AdminLayout() {
     { to: '/admin/bedah', label: 'Bedah', ikon: IKON_GRAFIK_NAIK, tampil: Boolean(profil?.boleh_bedah) },
     { to: '/admin/terbitan', label: 'Terbitan', ikon: IKON_KOTAK_ARSIP, tampil: true },
     { to: '/admin/akun', label: 'Akun', ikon: IKON_GIR, tampil: superadmin },
+    { to: '/admin/akses', label: 'Akses', ikon: IKON_KUNCI, tampil: superadmin },
     // Changelog berdiri sendiri, bukan ekor tab Terbitan: Terbitan menjawab
     // "edisi apa yang sudah terbit", Changelog menjawab "aplikasinya berubah
     // apa" — dua pertanyaan berbeda yang kebetulan sama-sama berupa arsip.
@@ -166,7 +212,25 @@ export function AdminLayout() {
         <LengkapiProfilModal onClose={() => setLengkapiTutup(true)} />
       )}
 
-      {sambut && !perluLengkapiProfil && (
+      {bekuInfo && bekuTampil && !perluLengkapiProfil && (
+        <ModalKecil label="Hampir dibekukan otomatis" onClose={tutupBeku}>
+          <p style={{ margin: 0, fontSize: 12.5 }}>
+            <IkonMenu d={IKON_JAM} size={13} /> Sudah <b>{bekuInfo.hari} hari kerja</b> tanpa setoran
+            yang disetujui — akun dibekukan otomatis kalau mencapai <b>{bekuInfo.ambang} hari kerja</b>.
+          </p>
+          <p className="muted" style={{ margin: 0, fontSize: 11.5, lineHeight: 1.55 }}>
+            Sisa <b>{Math.max(0, bekuInfo.ambang - bekuInfo.hari)} hari kerja</b> lagi. Setor orderbook
+            hari ini lalu tunggu dikurasi superadmin — status "disetujui" yang mereset hitungan ini,
+            bukan sekadar mengunggah.
+          </p>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button type="button" className="btn-p" style={{ flex: 1 }} onClick={setorSekarang}>Setor sekarang</button>
+            <button type="button" className="dd-btn" onClick={tutupBeku}>Nanti</button>
+          </div>
+        </ModalKecil>
+      )}
+
+      {sambut && !perluLengkapiProfil && !bekuTampil && (
         <div className="dasbor-modal-bg" onClick={tutupSambutan}>
           <div className="lantai dasbor-modal" role="dialog" aria-modal="true" aria-label="Ringkasan sesi admin" onClick={(e) => e.stopPropagation()}>
             <div className="panel af-sambut">

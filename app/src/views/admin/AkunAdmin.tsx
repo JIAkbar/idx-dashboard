@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useProfilSaya } from '../../lib/profilSaya'
 import { daftarAkun, buatAkun, hapusAkun, resetSandi, setProfil, type AkunRow } from '../../lib/adminAkun'
+import { daftarJenjang, type JenjangRow } from '../../lib/jenjang'
 import { IkonMenu, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_TAMBAH, IKON_TONG } from '../../components/dasbor/IkonMenu'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { Dropdown } from '../../components/dasbor/Dropdown'
@@ -11,6 +12,13 @@ import './AkunAdmin.css'
  *  (sempit, gampang salah ketik). Dipakai form Tambah Akun & kolom kuota
  *  per baris tabel (perbaikan A, #shell-tab). */
 const KUOTA_OPSI = [1, 2, 3, 5, 8, 12, 20, 50].map((n) => ({ nilai: String(n), label: String(n) }))
+
+/** Sentinel dropdown "Ikut jenjang" (Fase 6) — `kuota_manual: null` di server. */
+const IKUT_JENJANG = 'ikut'
+const KUOTA_MANUAL_OPSI = [
+  { nilai: IKUT_JENJANG, label: 'Ikut jenjang' },
+  ...[1, 2, 3, 5, 8, 12, 20, 50].map((n) => ({ nilai: String(n), label: String(n) })),
+]
 
 /** ISO datetime (timestamptz) → "13 Agu 2026, 14:05"; "—" kalau null/kosong/tak valid. */
 function waktuManusiawi(iso: string | null): string {
@@ -52,6 +60,7 @@ function Sakelar({ nyala, onToggle, label, disabled }: { nyala: boolean; onToggl
 export function AkunAdmin() {
   const { profil, loading: profilLoading } = useProfilSaya()
   const [akun, setAkun] = useState<AkunRow[] | null>(null)
+  const [jenjang, setJenjang] = useState<JenjangRow[]>([])
   const [galat, setGalat] = useState('')
   const [muat, setMuat] = useState(0)
   /** id baris yang sedang punya request in-flight — dipakai disable kontrol baris itu. */
@@ -71,6 +80,7 @@ export function AkunAdmin() {
     daftarAkun()
       .then((a) => !batal && setAkun(a))
       .catch((e) => !batal && setGalat(e instanceof Error ? e.message : 'Gagal memuat daftar akun.'))
+    daftarJenjang().then((j) => !batal && setJenjang(j)).catch(() => {})
     return () => {
       batal = true
     }
@@ -91,7 +101,10 @@ export function AkunAdmin() {
     })
   }
 
-  async function ubahProfil(baris: AkunRow, patch: Partial<{ kuota_harian: number; boleh_bedah: boolean; aktif: boolean }>) {
+  async function ubahProfil(
+    baris: AkunRow,
+    patch: Partial<{ kuota_harian: number; boleh_bedah: boolean; aktif: boolean; kuota_manual: number | null; beku_otomatis: boolean }>
+  ) {
     tandaiSibuk(baris.id, true)
     try {
       await setProfil(baris.id, patch)
@@ -130,8 +143,10 @@ export function AkunAdmin() {
                     <th>Email</th>
                     <th>Alias</th>
                     <th>Peran</th>
+                    <th>Jenjang</th>
                     <th className="r">Kuota/hari</th>
                     <th>Izin Bedah</th>
+                    <th>Beku otomatis</th>
                     <th>Aktif</th>
                     <th>Terakhir masuk</th>
                     <th className="af-aksi">Aksi</th>
@@ -140,6 +155,9 @@ export function AkunAdmin() {
                 <tbody>
                   {akun.map((a) => {
                     const sedangProses = sibuk.has(a.id)
+                    const tier = a.tier ?? 0
+                    const jenjangAkun = jenjang.find((j) => j.tier === tier)
+                    const kuotaEfektif = a.kuota_manual ?? jenjangAkun?.kuota ?? a.kuota_harian
                     return (
                       <tr key={a.id}>
                         <td>{a.email}</td>
@@ -149,16 +167,19 @@ export function AkunAdmin() {
                             {a.peran === 'superadmin' ? 'Superadmin' : 'Kontributor'}
                           </span>
                         </td>
+                        <td>
+                          <span className="chip" title={`Tier ${tier}`}>{jenjangAkun?.nama ?? `Tier ${tier}`}</span>
+                        </td>
                         <td className="r">
-                          <div className="aa-kuota-dd">
+                          <div className="aa-kuota-dd" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
                             <Dropdown
-                              opsi={KUOTA_OPSI}
-                              nilai={String(a.kuota_harian)}
-                              ariaLabel={`Kuota harian — ${a.email}`}
-                              placeholder={String(a.kuota_harian)}
+                              opsi={KUOTA_MANUAL_OPSI}
+                              nilai={a.kuota_manual == null ? IKUT_JENJANG : String(a.kuota_manual)}
+                              ariaLabel={`Kuota manual — ${a.email}`}
                               disabled={sedangProses}
-                              onGanti={(n) => ubahProfil(a, { kuota_harian: Number(n) })}
+                              onGanti={(n) => ubahProfil(a, { kuota_manual: n === IKUT_JENJANG ? null : Number(n) })}
                             />
+                            <span className="muted" style={{ fontSize: 10 }}>efektif {kuotaEfektif}/hari</span>
                           </div>
                         </td>
                         <td>
@@ -167,6 +188,14 @@ export function AkunAdmin() {
                             disabled={sedangProses}
                             label={`Izin Bedah — ${a.email}`}
                             onToggle={() => ubahProfil(a, { boleh_bedah: !a.boleh_bedah })}
+                          />
+                        </td>
+                        <td>
+                          <Sakelar
+                            nyala={a.beku_otomatis ?? true}
+                            disabled={sedangProses}
+                            label={`Beku otomatis — ${a.email} (matikan untuk kontributor yang sedang cuti)`}
+                            onToggle={() => ubahProfil(a, { beku_otomatis: !(a.beku_otomatis ?? true) })}
                           />
                         </td>
                         <td>

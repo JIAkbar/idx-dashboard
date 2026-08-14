@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { useProfilSaya } from '../../lib/profilSaya'
+import { useProfilSaya, type ProfilSaya } from '../../lib/profilSaya'
 import { useAdminTanggal } from '../../context/AdminTanggalContext'
 import { namaTampil } from '../../lib/namaTampil'
+import { daftarJenjang, hitungRingkasanSetoranSaya, ringkasanJenjang, type JenjangRow } from '../../lib/jenjang'
 import {
   IkonMenu,
   IKON_CENTANG,
@@ -325,6 +327,78 @@ function EditAlasanModal({ ticker, entries, onClose, onSukses }: {
 }
 
 /**
+ * Kartu ringkas jenjang kontributor (Fase 6) — jenjang sekarang, kuota
+ * efektif, jumlah setoran disetujui, akurasi (disetujui ÷ dikurasi), dan
+ * sisa setoran menuju jenjang berikutnya. Angka setoran dari tabel `setoran`
+ * MILIK SENDIRI (RLS sudah membatasi) — tak ada parameter tanggal, ini
+ * rekap SEMUA WAKTU, beda dari tabel "Sudah Diunggah" di bawah yang per
+ * tanggal panggung.
+ */
+function KartuJenjang({ profil, superadmin }: { profil: ProfilSaya; superadmin: boolean }) {
+  const [jenjang, setJenjang] = useState<JenjangRow[] | null>(null)
+  const [angka, setAngka] = useState<{ disetujui: number; ditolak: number } | null>(null)
+
+  useEffect(() => {
+    let batal = false
+    Promise.all([daftarJenjang(), hitungRingkasanSetoranSaya()])
+      .then(([j, a]) => {
+        if (!batal) {
+          setJenjang(j)
+          setAngka(a)
+        }
+      })
+      .catch(() => {})
+    return () => {
+      batal = true
+    }
+  }, [])
+
+  if (!jenjang || jenjang.length === 0 || !angka) return null
+  const r = ringkasanJenjang(profil.tier ?? 0, profil.kuota_manual ?? null, angka.disetujui, angka.ditolak, jenjang)
+
+  return (
+    <section className="panel">
+      <div className="panel-h"><span className="lbl">Jenjang kontributor</span></div>
+      <div className="panel-b" style={{ display: 'flex', flexWrap: 'wrap', gap: 22, fontSize: 12.5 }}>
+        <div>
+          <span className="muted" style={{ fontSize: 10 }}>JENJANG</span><br />
+          <b>{r.jenjangSaatIni.nama}</b> <span className="muted">(tier {r.jenjangSaatIni.tier})</span>
+        </div>
+        <div>
+          <span className="muted" style={{ fontSize: 10 }}>KUOTA EFEKTIF</span><br />
+          <b>{r.kuotaEfektif}/hari</b>
+        </div>
+        <div>
+          <span className="muted" style={{ fontSize: 10 }}>SETORAN DISETUJUI</span><br />
+          <b>{r.disetujui}</b>
+        </div>
+        <div>
+          <span className="muted" style={{ fontSize: 10 }}>AKURASI</span><br />
+          <b>{r.akurasiPersen == null ? '—' : `${Math.round(r.akurasiPersen)}%`}</b>
+        </div>
+        <div>
+          <span className="muted" style={{ fontSize: 10 }}>MENUJU JENJANG BERIKUTNYA</span><br />
+          {superadmin ? (
+            <span className="muted">Jenjang tidak membatasi kuota superadmin.</span>
+          ) : !r.berikutnya ? (
+            <span className="muted">Sudah di jenjang tertinggi.</span>
+          ) : (
+            <b>
+              {r.kurangSetoran > 0
+                ? `${r.kurangSetoran} setoran disetujui lagi`
+                : r.akurasiCukup
+                  ? 'Syarat volume & akurasi terpenuhi'
+                  : `Akurasi belum cukup (butuh ${r.berikutnya.min_akurasi}%)`}
+              {' '}→ {r.berikutnya.nama}
+            </b>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/**
  * Tab "Unggah" (/admin, index) — form Tambah Emiten (upload screenshot) +
  * tabel "Sudah Diunggah" tanggal aktif + Kotak Masuk (tanggal yang sudah
  * punya upload). Rak terbitan/Radar/Bedah/Kurasi/Akun sekarang tab
@@ -336,6 +410,7 @@ export function UnggahHarian() {
   const { profil } = useProfilSaya()
   const { index } = useStockIndex()
   const { tanggal, setTanggal } = useAdminTanggal()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   // Kotak Masuk baca manifest publik keluaran/index.json (sumber sama dengan
   // halaman Bulletin) — dipakai cuma utk tandai tanggal "Selesai" vs
@@ -453,6 +528,17 @@ export function UnggahHarian() {
       batal = true
     }
   }, [tanggalUnggahan])
+
+  // Sinyal "buka form Tambah Emiten" dari modal peringatan hampir-beku
+  // (AdminLayout.tsx, tombol "Setor sekarang") — query `?tambah=1` dibaca
+  // sekali lalu dibuang dari URL supaya refresh/kembali tidak membuka form
+  // lagi. klikTambahEmiten() tetap lewat jalur normal (cek kuota dulu).
+  useEffect(() => {
+    if (searchParams.get('tambah') !== '1') return
+    setSearchParams({}, { replace: true })
+    klikTambahEmiten()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- klikTambahEmiten stabil cukup lewat closure sekali render mount
+  }, [searchParams])
 
   const tanggalSudahTerbit = new Set(edisi?.map((r) => r.tanggal))
   /** Emiten aktif di form yang sudah punya unggahan di tanggal ini — dasar
@@ -659,6 +745,8 @@ export function UnggahHarian() {
 
   return (
     <>
+      {profil && <KartuJenjang profil={profil} superadmin={superadmin} />}
+
       <section className="panel">
         <div className="panel-h" style={{ alignItems: 'center' }}>
           <span className="af-judul">Sudah Diunggah — <b className="tgl">{tanggalManusiawi(tanggal)}</b></span>

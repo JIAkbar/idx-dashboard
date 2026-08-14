@@ -1,7 +1,8 @@
 import { Fragment, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useBulletinList } from '../../lib/dasbor/bulletin'
-import { IkonMenu, IKON_SILANG } from '../../components/dasbor/IkonMenu'
+import { useAksesHalaman } from '../../context/AksesHalamanContext'
+import { IkonMenu, IKON_KUNCI, IKON_SILANG } from '../../components/dasbor/IkonMenu'
 
 /** Panah unduh ke tray — lokal view ini, belum ada padanannya di IkonMenu.tsx. */
 const IKON_UNDUH = 'M12 4v10M7.5 10.5L12 15l4.5-4.5M5 19h14'
@@ -71,6 +72,52 @@ function tipeEdisi(kode: string): 'Harian' | 'Mingguan' | 'Bulanan' | 'Bedah' {
 }
 
 /**
+ * Pengganti tabel Probabilitas/VolVal utk pengunjung terkunci (kunci
+ * 'probvv', Fase 6) — baris & angka di bawah ini SENGAJA hardcode/tiruan,
+ * BUKAN `e.analisa` (data sungguhan). Diburamkan + kartu ajakan jenjang di
+ * tengahnya, sama prinsip PenjagaHalaman.tsx: kalau kunci ini "dioptimalkan"
+ * nanti supaya kerangkanya pakai data asli, itu MEMBOCORKAN data yang
+ * seharusnya terkunci — jangan.
+ */
+function TabelProbabilitasTerkunci({ alasan }: { alasan: { judul: string; kalimat: string } }) {
+  return (
+    <div className="pgh-mini">
+      <div className="pgh-blur" aria-hidden="true">
+        <table className="tbl" style={{ minWidth: 640 }}>
+          <thead>
+            <tr>
+              <th>Ticker</th><th>Bias</th><th className="r">Close</th><th className="r">±%</th>
+              <th className="r">Skor</th><th className="r">Prob 5h</th><th className="r">P ≥3%</th>
+              <th className="r">n</th><th>VolVal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {['AAAA', 'BBBB', 'CCCC'].map((t) => (
+              <tr key={t}>
+                <td><span className="tick">{t}</span></td>
+                <td style={{ fontSize: 11 }}>bullish</td>
+                <td className="r num">1.234</td>
+                <td className="r num up">+1,2%</td>
+                <td className="r num" style={{ fontWeight: 700 }}>72</td>
+                <td className="r num">64%</td>
+                <td className="r num">38%</td>
+                <td className="r num">42</td>
+                <td className="num">z+1,4</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="pgh-cta">
+        <IkonMenu d={IKON_KUNCI} size={18} />
+        <p className="pgh-judul">{alasan.judul}</p>
+        <p className="pgh-kalimat">{alasan.kalimat}</p>
+      </div>
+    </div>
+  )
+}
+
+/**
  * Bulletin Arus Pasar — daftar publik edisi analisa teknikal & arus dana
  * broker terbit (#37a). Sumber data: arus-pasar/keluaran/index.json, dibuat
  * arus-pasar/generate_index.py dari edisi/*.json yang sudah punya PDF
@@ -91,6 +138,14 @@ export function Bulletin() {
   // Kolom Probabilitas (permintaan user 14 Agu): kode edisi yang baris
   // detailnya (tabel analitik per emiten dari sidecar) sedang terbuka.
   const [detail, setDetail] = useState<string | null>(null)
+  // Fase 6 — kolom Probabilitas & VolVal terkunci per jenjang (kunci 'probvv').
+  // `daftar === null` (jawaban belum datang) SENGAJA diperlakukan sbg "belum
+  // boleh" (bukan fail-open) — `e.analisa` (data asli) sudah nemplok di
+  // memori (ikut payload index.json yg publik), beda dari PenjagaHalaman yg
+  // bisa menahan mount children; di sini yang bisa dijaga cuma RENDER-nya,
+  // jadi harus aman-default (terkunci) sampai kepastian datang.
+  const { daftar: daftarAkses, boleh, alasan } = useAksesHalaman()
+  const probvvBoleh = daftarAkses !== null && boleh('probvv')
 
   useEffect(() => {
     if (!lihat) return
@@ -267,9 +322,14 @@ export function Bulletin() {
                                 type="button"
                                 className="blt-dl"
                                 onClick={() => setDetail(buka ? null : e.kode)}
-                                title={buka ? 'Tutup tabel probabilitas' : 'Tabel probabilitas per emiten'}
+                                title={
+                                  !probvvBoleh
+                                    ? alasan('probvv').kalimat
+                                    : buka ? 'Tutup tabel probabilitas' : 'Tabel probabilitas per emiten'
+                                }
                                 style={buka ? { color: 'var(--amber)', borderColor: 'var(--amber)' } : undefined}
                               >
+                                {!probvvBoleh && <IkonMenu d={IKON_KUNCI} size={11} />}
                                 {buka ? 'Tutup' : 'Prob'}
                               </button>
                             )}
@@ -301,6 +361,10 @@ export function Bulletin() {
                               <div className="lbl" style={{ marginBottom: 6 }}>
                                 Probabilitas Historis — {e.kode} · backtest setup teknikal, sampel (n) selalu tercetak
                               </div>
+                              {!probvvBoleh ? (
+                                <TabelProbabilitasTerkunci alasan={alasan('probvv')} />
+                              ) : (
+                              <>
                               <table className="tbl" style={{ minWidth: 640 }}>
                                 <thead>
                                   <tr>
@@ -366,6 +430,8 @@ export function Bulletin() {
                                 Arahkan kursor / tahan di judul kolom ⓘ untuk detail. Probabilistik, bukan kepastian —
                                 bukan ajakan transaksi.
                               </div>
+                              </>
+                              )}
                             </div>
                           </td>
                         </tr>

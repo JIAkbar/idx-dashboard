@@ -11,6 +11,12 @@ export interface AkunRow {
   aktif: boolean
   dibuat_pada: string
   terakhir_masuk: string | null
+  /** Fase 6 (jenjang & kuota manual) — optional: kalau Edge Function `daftar`
+   *  belum ikut mengembalikan field ini, UI jatuh ke nilai default (tier 0,
+   *  kuota_manual null, beku_otomatis true) alih-alih pecah. */
+  tier?: number | null
+  kuota_manual?: number | null
+  beku_otomatis?: boolean
 }
 
 type Aksi = 'daftar' | 'buat' | 'reset_sandi' | 'set_profil' | 'hapus'
@@ -58,7 +64,17 @@ export function resetSandi(id: string, sandi: string) {
 
 export function setProfil(
   id: string,
-  patch: Partial<{ peran: string; kuota_harian: number; boleh_bedah: boolean; aktif: boolean; alias: string }>
+  patch: Partial<{
+    peran: string
+    kuota_harian: number
+    boleh_bedah: boolean
+    aktif: boolean
+    alias: string
+    /** Fase 6 — TAMBAHKAN ke muatan Edge Function admin-akun (backend sudah
+     *  jadi, tidak diubah dari sini). `kuota_manual: null` = ikut jenjang. */
+    kuota_manual: number | null
+    beku_otomatis: boolean
+  }>
 ) {
   return panggilAdminAkun<{ ok: true }>('set_profil', { id, ...patch })
 }

@@ -10,6 +10,12 @@ export interface ProfilSaya {
   kuota_harian: number
   boleh_bedah: boolean
   aktif: boolean
+  /** Jenjang kontributor (Fase 6, tabel `jenjang`). Optional/nullable —
+   *  fallback ke 0 di pemanggil kalau kolom belum terisi backend. */
+  tier?: number | null
+  /** `null` = ikut kuota jenjang; angka = override manual superadmin. */
+  kuota_manual?: number | null
+  beku_otomatis?: boolean
 }
 
 /**

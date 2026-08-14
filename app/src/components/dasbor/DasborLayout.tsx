@@ -4,6 +4,7 @@ import { Sidebar } from './Sidebar'
 import { LaciMobile } from './LaciMobile'
 import { PitaKurs } from './PitaKurs'
 import { LoginModal } from './LoginModal'
+import { LoginModalProvider } from '../../context/LoginModalContext'
 import { useTheme } from '../../context/ThemeContext'
 import '../../dasbor/lantai.css'
 
@@ -45,49 +46,51 @@ export function DasborLayout() {
   }, [location, navigate])
 
   return (
-    <div className="dasbor-shell" data-theme={theme}>
-      <div className="dasbor-body">
-        <Sidebar onMasuk={() => setLoginOpen(true)} />
-        <div className="dasbor-kolom">
-          <header className="dasbor-atas">
-            {/* #76: logo P di telepon = tombol laci navigasi kiri (BUKAN
-                hamburger terpisah — satu trigger). Zona logo diberi pembatas
-                hairline sendiri supaya tidak menyatu dengan pita kurs; akses
-                halaman depan tetap ada lewat item pertama laci. Di desktop
-                seluruh zona ini display:none — merek yang berlaku di rail. */}
-            <div className="dasbor-merek-zona">
-              <button
-                type="button"
-                className="dasbor-merek-mini"
-                onClick={() => setLaciKiri((v) => !v)}
-                aria-expanded={laciKiri}
-                aria-controls="dasbor-laci-kiri"
-                title="PAPAN — Pusat Analisa Pasar Nusantara"
-                aria-label="Buka menu navigasi"
-              >
-                P
-              </button>
-            </div>
-            <PitaKurs />
-          </header>
+    <LoginModalProvider buka={() => setLoginOpen(true)}>
+      <div className="dasbor-shell" data-theme={theme}>
+        <div className="dasbor-body">
+          <Sidebar onMasuk={() => setLoginOpen(true)} />
+          <div className="dasbor-kolom">
+            <header className="dasbor-atas">
+              {/* #76: logo P di telepon = tombol laci navigasi kiri (BUKAN
+                  hamburger terpisah — satu trigger). Zona logo diberi pembatas
+                  hairline sendiri supaya tidak menyatu dengan pita kurs; akses
+                  halaman depan tetap ada lewat item pertama laci. Di desktop
+                  seluruh zona ini display:none — merek yang berlaku di rail. */}
+              <div className="dasbor-merek-zona">
+                <button
+                  type="button"
+                  className="dasbor-merek-mini"
+                  onClick={() => setLaciKiri((v) => !v)}
+                  aria-expanded={laciKiri}
+                  aria-controls="dasbor-laci-kiri"
+                  title="PAPAN — Pusat Analisa Pasar Nusantara"
+                  aria-label="Buka menu navigasi"
+                >
+                  P
+                </button>
+              </div>
+              <PitaKurs />
+            </header>
 
-          <main className="dasbor-main">
-            <Outlet />
-          </main>
+            <main className="dasbor-main">
+              <Outlet />
+            </main>
 
-          <footer className="dasbor-kaki">
-            <span>
-              Sumber data: <b>Statistik Ringkas IDX</b> (idx.co.id), Yahoo Finance, dan KSEI.
-              PAPAN (Pusat Analisa Pasar Nusantara) bukan produk resmi Bursa Efek Indonesia.
-            </span>
-            <span className="dasbor-kaki-kanan">
-              Buletin analisa: <b>Arus Pasar</b>
-            </span>
-          </footer>
+            <footer className="dasbor-kaki">
+              <span>
+                Sumber data: <b>Statistik Ringkas IDX</b> (idx.co.id), Yahoo Finance, dan KSEI.
+                PAPAN (Pusat Analisa Pasar Nusantara) bukan produk resmi Bursa Efek Indonesia.
+              </span>
+              <span className="dasbor-kaki-kanan">
+                Buletin analisa: <b>Arus Pasar</b>
+              </span>
+            </footer>
+          </div>
         </div>
+        <LaciMobile buka={laciKiri} onTutup={() => setLaciKiri(false)} onMasuk={() => setLoginOpen(true)} />
+        {loginOpen && <LoginModal onClose={() => setLoginOpen(false)} />}
       </div>
-      <LaciMobile buka={laciKiri} onTutup={() => setLaciKiri(false)} onMasuk={() => setLoginOpen(true)} />
-      {loginOpen && <LoginModal onClose={() => setLoginOpen(false)} />}
-    </div>
+    </LoginModalProvider>
   )
 }
