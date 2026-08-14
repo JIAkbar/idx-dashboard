@@ -1,6 +1,5 @@
 import { useBulletinList } from '../../lib/dasbor/bulletin'
 import { IkonMenu, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
-import { ChangelogPanel } from './ChangelogAdmin'
 
 /** Blok kosong seragam utk panel tanpa isi — pola fd-empty StockDetail.tsx,
  *  disalin dari UnggahHarian.tsx (dipakai 2 tab, terlalu kecil utk diekstrak
@@ -17,7 +16,7 @@ function PanelKosong({ ikon, pesan, petunjuk }: { ikon: string; pesan: string; p
 
 /**
  * Tab "Rak Terbitan" (/admin/terbitan) — arsip edisi bulletin (dipindah apa
- * adanya dari AdminHome.tsx lama) digabung dengan Changelog di bawahnya
+ * adanya dari AdminHome.tsx lama). Changelog dipisah ke tabnya sendiri
  * (sama-sama "hal yang sudah terbit/dirilis"). Rak baca manifest publik
  * keluaran/index.json (sumber sama dengan halaman Bulletin) — BUKAN tabel
  * Supabase `edisi` (alur lama, kosong): edisi dirakit dari repo, tabel itu
@@ -92,8 +91,6 @@ export function RakTerbitan() {
           )}
         </div>
       </section>
-
-      <ChangelogPanel />
     </>
   )
 }

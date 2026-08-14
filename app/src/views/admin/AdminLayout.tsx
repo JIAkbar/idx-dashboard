@@ -10,6 +10,7 @@ import { namaTampil } from '../../lib/namaTampil'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import {
   IkonMenu,
+  IKON_CATATAN,
   IKON_GAMBAR,
   IKON_GIR,
   IKON_GRAFIK_NAIK,
@@ -120,6 +121,10 @@ export function AdminLayout() {
     { to: '/admin/bedah', label: 'Bedah', ikon: IKON_GRAFIK_NAIK, tampil: Boolean(profil?.boleh_bedah) },
     { to: '/admin/terbitan', label: 'Terbitan', ikon: IKON_KOTAK_ARSIP, tampil: true },
     { to: '/admin/akun', label: 'Akun', ikon: IKON_GIR, tampil: superadmin },
+    // Changelog berdiri sendiri, bukan ekor tab Terbitan: Terbitan menjawab
+    // "edisi apa yang sudah terbit", Changelog menjawab "aplikasinya berubah
+    // apa" — dua pertanyaan berbeda yang kebetulan sama-sama berupa arsip.
+    { to: '/admin/riwayat', label: 'Changelog', ikon: IKON_CATATAN, tampil: true },
   ]
 
   return (

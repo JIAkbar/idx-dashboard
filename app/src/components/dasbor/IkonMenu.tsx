@@ -46,6 +46,7 @@ export const IKON_PAPAN_KLIP = 'M9 4h6a1 1 0 011 1v1h2a1 1 0 011 1v13a1 1 0 01-1
 export const IKON_PERLUAS = 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5' // ganti ⛶ (layar penuh)
 export const IKON_BULAN_SABIT = 'M20.5 14.5A8.5 8.5 0 119.5 3.5a7 7 0 1011 11z' // ganti ☪️ (Indeks Syariah)
 export const IKON_KOTAK_ARSIP = 'M4 7a2 2 0 012-2h4l2 2h6a2 2 0 012 2v9a2 2 0 01-2 2H6a2 2 0 01-2-2V7z' // ganti 🗂️
+export const IKON_CATATAN = 'M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1zM14 3v5h5M9 13h7M9 17h5' // ganti 📝 (tab Changelog)
 export const IKON_GLOBE = 'M12 3a9 9 0 100 18 9 9 0 000-18zM3 12h18M12 3c2.5 2.4 3.8 5.6 3.8 9s-1.3 6.6-3.8 9c-2.5-2.4-3.8-5.6-3.8-9s1.3-6.6 3.8-9z' // ganti 🌐 (sama dgn ikon "Indeks Dunia" di rail)
 export const IKON_LOKASI = 'M12 21s7-6.5 7-11a7 7 0 10-14 0c0 4.5 7 11 7 11zM12 13a2 2 0 100-4 2 2 0 000 4z' // ganti 🇮🇩 (pin lokasi, bukan bendera — rendernya beda-beda tiap OS)
 export const IKON_KLIK = 'M5 3l6.5 16.5 2-6.5 6.5-2z' // ganti 👆

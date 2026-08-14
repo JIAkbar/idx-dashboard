@@ -29,7 +29,11 @@
 /* Checkbox biasa + label sebaris (form Tambah Akun — izin Bedah awal). */
 .lantai .aa-cek-baris { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text); cursor: pointer; }
 
-/* Tabel akun butuh gulir horizontal di layar sempit — banyak kolom padat. */
-.lantai .aa-tbl-wrap { overflow-x: auto; }
+/* Gulir horizontal HANYA di layar sempit. Di layar lebar wadah ini dibiarkan
+   tanpa overflow karena overflow apa pun memotong dropdown kuota yang membuka
+   ke bawah baris — bug yang terlihat di tab Akun (14 Agu 2026). */
+@media (max-width: 900px) {
+  .lantai .aa-tbl-wrap { overflow-x: auto; }
+}
 .lantai .aa-tbl { min-width: 720px; }
 
