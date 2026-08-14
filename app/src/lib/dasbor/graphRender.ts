@@ -294,6 +294,32 @@ function showTooltip(tooltip: HTMLDivElement, wrap: HTMLDivElement, e: MouseEven
   }
 }
 
+/**
+ * Pasang perilaku pan+zoom d3 pada `svg`; transform diterapkan ke grup konten
+ * `g`. SATU titik pasang untuk KEDUA mode render — akar bug "pertama buka gak
+ * bisa digeser/zoom": zoom dulu hanya dipasang inline di renderForceGraph,
+ * sedangkan renderFocusedGraph (render pertama lewat pencarian/klik emiten)
+ * menggambar langsung ke svg tanpa zoom sama sekali; baru saat pindah ke graf
+ * umum ("cabang lain") zoom terasa jalan. `onUser` dipanggil hanya untuk
+ * gesture asli user (e.sourceEvent terisi) — dipakai auto-fit renderForceGraph
+ * untuk membatalkan diri.
+ */
+function pasangZoom(
+  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+  g: d3.Selection<SVGGElement, unknown, null, undefined>,
+  onUser?: () => void,
+) {
+  const zoomB = d3
+    .zoom<SVGSVGElement, unknown>()
+    .scaleExtent([0.15, 5])
+    .on('zoom', (e) => {
+      if (e.sourceEvent) onUser?.()
+      g.attr('transform', e.transform)
+    })
+  svg.call(zoomB)
+  return zoomB
+}
+
 function dragBehavior(sim: d3.Simulation<GNode, GLink>, pinnedId?: string) {
   return d3
     .drag<SVGGElement, GNode>()
@@ -356,14 +382,9 @@ export function renderForceGraph(params: RenderParams & { emitenList: InvestorMa
   // #91b: zoom disimpan di variabel supaya auto-fit bisa memakai transform yang
   // sama — pan/zoom manual user tetap jalan (dan membatalkan auto-fit).
   let userZoomed = false
-  const zoomB = d3
-    .zoom<SVGSVGElement, unknown>()
-    .scaleExtent([0.15, 5])
-    .on('zoom', (e) => {
-      if (e.sourceEvent) userZoomed = true
-      g.attr('transform', e.transform)
-    })
-  svg.call(zoomB)
+  const zoomB = pasangZoom(svg, g, () => {
+    userZoomed = true
+  })
 
   const sim = d3
     .forceSimulation<GNode>(nodes)
@@ -595,7 +616,13 @@ export function renderFocusedGraph(params: RenderParams & { code: string }): d3.
     .on('click', () => onSelect(null))
   defsPremium(svg, dark)
 
-  const link = svg
+  // Grup konten tunggal supaya pan+zoom (pasangZoom) tinggal menggeser satu
+  // transform — dulu link & node digambar langsung ke svg tanpa grup, dan
+  // itulah kenapa focused view tak pernah bisa di-zoom.
+  const g = svg.append('g')
+  pasangZoom(svg, g)
+
+  const link = g
     .append('g')
     .selectAll<SVGPathElement, GLink>('path')
     .data(links)
@@ -626,7 +653,7 @@ export function renderFocusedGraph(params: RenderParams & { code: string }): d3.
     .alphaDecay(0.04)
     .velocityDecay(0.85)
 
-  const nodeG = svg
+  const nodeG = g
     .append('g')
     .selectAll<SVGGElement, GNode>('g')
     .data(nodes)

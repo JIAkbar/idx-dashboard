@@ -1,10 +1,12 @@
 import { useMemo, useState, type CSSProperties } from 'react'
+import { Link } from 'react-router-dom'
 import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
 import { Kalender, fmtTanggalPendek } from '../../components/dasbor/Kalender'
 import { useDataHarian, useDataPembanding } from '../../lib/dasbor/dataHarian'
 import { cariTanggalPembanding, hitungPeriodePct, type RentangTanggal } from '../../lib/dasbor/periode'
 import { fN, fp } from '../../lib/dasbor/format'
 import type { SectorRow } from '../../lib/dasbor/dataHarian'
+import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_GRAFIK_BATANG, IKON_GRAFIK_NAIK, IKON_BULAN_SABIT, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
 
 type PeriodeId = 'd' | 'm1' | 'm3' | 'ytd'
@@ -17,6 +19,36 @@ const PERIODE: { id: PeriodeId; label: string }[] = [
 ]
 
 const HARI_MUNDUR: Record<'m1' | 'm3', number> = { m1: 30, m3: 91 }
+
+/**
+ * Peta sektor IDX-IC (nama tile heatmap, dari `D.sectors`) → sektor pada
+ * fundamental/index.json (klasifikasi Yahoo). Dua taksonomi ini BEDA — ini
+ * pemetaan terdekat yang jujur, bukan 1:1: Consumer Non-Cyclicals≈Consumer
+ * Defensive, Financials≈Financial Services, Infrastructures mencakup
+ * Communication Services + Utilities, dan Transportation & Logistic TIDAK
+ * punya padanan (Yahoo menggolongkannya ke Industrials) — jadi tile [C] dan
+ * [K] menampilkan daftar yang sama, diberi catatan di panel.
+ */
+const PETA_SEKTOR_FUNDAMENTAL: Record<string, string[]> = {
+  Energy: ['Energy'],
+  'Basic Materials': ['Basic Materials'],
+  Industrials: ['Industrials'],
+  'Consumer Non-Cyclicals': ['Consumer Defensive'],
+  'Consumer Cyclicals': ['Consumer Cyclical'],
+  Healthcare: ['Healthcare'],
+  Financials: ['Financial Services'],
+  'Properties & Real Estate': ['Real Estate'],
+  Technology: ['Technology'],
+  Infrastructures: ['Communication Services', 'Utilities'],
+  'Transportation & Logistic': ['Industrials'],
+}
+
+const CATATAN_UMUM = 'Keanggotaan sektor dari klasifikasi data fundamental (pemetaan terdekat sektor IDX-IC).'
+const CATATAN_SEKTOR: Record<string, string> = {
+  Industrials: 'Klasifikasi data fundamental menggabungkan Transportation & Logistic ke Industrials — daftar tile [C] dan [K] sama.',
+  'Transportation & Logistic': 'Klasifikasi data fundamental menggabungkan Transportation & Logistic ke Industrials — daftar tile [C] dan [K] sama.',
+  Infrastructures: 'Mencakup Communication Services + Utilities pada klasifikasi data fundamental.',
+}
 
 /**
  * Panel "Sektor & Indeks" — port buildSectorPanel() index_live.html baris
@@ -67,6 +99,11 @@ export function SektorIndeks() {
   const { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error } = useDataHarian()
   const [periode, setPeriode] = useState<PeriodeId>('d')
   const [rentang, setRentang] = useState<RentangTanggal | null>(null)
+  /** Nama sektor IDX-IC (tanpa prefiks "[X] ") yang tile-nya diklik — panel daftar saham sektor itu tampil di bawah heatmap. */
+  const [sektorTerpilih, setSektorTerpilih] = useState<string | null>(null)
+  // Daftar {ticker, name, sector} 965 saham — reuse index autocomplete Stock
+  // Detail (fetch sekali, cache modul); di-load saat halaman dibuka.
+  const { index: indexSaham } = useStockIndex()
 
   // Rentang dipilih → data utama pindah ke tanggal AKHIR rentang (nilai
   // indeks & tile dihitung akhir vs awal).
@@ -197,18 +234,52 @@ export function SektorIndeks() {
           // dijenuhkan di 2,2%.
           const alpha = Math.min(Math.abs(v ?? 0) / 2.2, 1) * 0.32 + 0.06
           return (
-            <div
+            <button
               key={s.n}
-              className="tile"
+              type="button"
+              className={'tile' + (sektorTerpilih === nama ? ' on' : '')}
+              aria-pressed={sektorTerpilih === nama}
+              title={`Lihat saham sektor ${nama}`}
+              onClick={() => setSektorTerpilih(sektorTerpilih === nama ? null : nama)}
               style={{ background: v === null ? undefined : `color-mix(in srgb, var(${naik ? '--green' : '--red'}) ${(alpha * 100).toFixed(0)}%, transparent)` }}
             >
               <span className="t-code">{kode}</span>
               <span className="t-name">{nama}</span>
               <span className={`t-val ${naik ? 'up' : 'dn'}`}>{v === null ? '—' : fp(v)}</span>
-            </div>
+            </button>
           )
         })}
       </div>
+
+      {sektorTerpilih && (() => {
+        const target = PETA_SEKTOR_FUNDAMENTAL[sektorTerpilih] ?? []
+        const daftar = (indexSaham?.stocks ?? [])
+          .filter((e) => target.includes(e.sector))
+          .sort((a, b) => a.ticker.localeCompare(b.ticker))
+        return (
+          <div className="panel">
+            <div className="panel-h">
+              <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Saham Sektor {sektorTerpilih}{indexSaham ? ` · ${daftar.length} emiten` : ''}</span>
+              <button type="button" className="tab" onClick={() => setSektorTerpilih(null)}>Tutup</button>
+            </div>
+            {!indexSaham ? (
+              <p className="lbl" style={{ padding: '10px 2px' }}>Memuat daftar saham…</p>
+            ) : (
+              <>
+                <div className="sek-emiten">
+                  {daftar.map((e) => (
+                    <Link key={e.ticker} to={`/chart?sym=${e.ticker}`} className="sek-em">
+                      <span className="tick">{e.ticker}</span>
+                      <span className="sek-em-nm">{e.name}</span>
+                    </Link>
+                  ))}
+                </div>
+                <div className="sek-cat">{CATATAN_SEKTOR[sektorTerpilih] ?? CATATAN_UMUM}</div>
+              </>
+            )}
+          </div>
+        )
+      })()}
 
       <div className="grid2">
       <div className="panel">

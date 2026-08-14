@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChartConfiguration, Plugin } from 'chart.js/auto'
 import { useChartCanvas } from '../../../lib/dasbor/useChartJs'
 import { useTheme } from '../../../context/ThemeContext'
 import { fmtB } from '../../../lib/dasbor/brokerSummaryFormat'
 import type { BrokerRow } from '../../../lib/dasbor/brokerSummaryData'
+import { IkonMenu, IKON_PERLUAS } from '../../../components/dasbor/IkonMenu'
 
 interface QuadrantProps {
   brokers: BrokerRow[]
@@ -181,9 +182,34 @@ export function Quadrant({ brokers }: QuadrantProps) {
 
   const canvasRef = useChartCanvas(config)
 
+  // Layar penuh — pola Fullscreen API ChartIndeks (#51): peramban urus ESC,
+  // tumpukan, dan ukuran; glue CSS di .lantai .quad-fs:fullscreen (lantai.css).
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const [fs, setFs] = useState(false)
+  useEffect(() => {
+    const onFsChange = () => setFs(document.fullscreenElement === wrapRef.current)
+    document.addEventListener('fullscreenchange', onFsChange)
+    return () => document.removeEventListener('fullscreenchange', onFsChange)
+  }, [])
+
   return (
-    <>
-      <div className="lbl" style={{ marginBottom: 8 }}>⊞ Kuadran Broker — X: Frekuensi (log), Y: Nilai (log), Ukuran: Nilai · garis putus = median</div>
+    <div ref={wrapRef} className="quad-fs">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+        <div className="lbl" style={{ flex: 1, minWidth: 0 }}>⊞ Kuadran Broker — X: Frekuensi (log), Y: Nilai (log), Ukuran: Nilai · garis putus = median</div>
+        {typeof document !== 'undefined' && document.fullscreenEnabled && (
+          <button
+            className="bchip"
+            style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}
+            onClick={() => {
+              if (fs) document.exitFullscreen?.().catch(() => {})
+              else wrapRef.current?.requestFullscreen?.()?.catch(() => {})
+            }}
+            title={fs ? 'Keluar layar penuh' : 'Layar penuh'}
+          >
+            {fs ? <IkonMenu d="M6 6l12 12M18 6L6 18" size={12} /> : <IkonMenu d={IKON_PERLUAS} size={12} />} {fs ? 'Keluar' : 'Layar Penuh'}
+          </button>
+        )}
+      </div>
       <div className="chart-wrap" style={{ height: 420 }}>
         <canvas ref={canvasRef} />
       </div>
@@ -195,6 +221,6 @@ export function Quadrant({ brokers }: QuadrantProps) {
         <span><span style={{ color: '#ef4444' }}>●</span> Distribusi Ritel (nilai kecil, frekuensi tinggi)</span>
         <span><span style={{ color: '#9ca3af' }}>●</span> Pasif</span>
       </div>
-    </>
+    </div>
   )
 }
