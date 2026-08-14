@@ -409,7 +409,7 @@ def halaman_emiten(em, sk, ed, ohlc, idx):
     {statistik_hari(em, ohlc)}
     <div class="chartwrap">
       <div class="cap">IDX · Harian · 1 Tahun · EMA 20/50/60/100/200 · Volume &amp; Pivot</div>
-      <canvas id="ch{idx}" width="1360" height="360"></canvas>
+      <canvas id="ch{idx}" width="1360" height="330"></canvas>
     </div>
     <div class="cols">
       <aside>
