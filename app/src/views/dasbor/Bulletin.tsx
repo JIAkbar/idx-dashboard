@@ -59,12 +59,14 @@ const fmtPct = (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(2).replace('.', '
 /**
  * Tipe edisi dari kode (#92) — pola generator arus-pasar: AP-<ddmmyy> harian
  * (build.py), AP-W<ddmmyy> mingguan (build_weekly.py), AP-M<mmyy> bulanan
- * (build_monthly.py); edisi uji berprefiks UJI-.
+ * (build_monthly.py); edisi uji berprefiks UJI-. #6 (14 Agu): BA-<...> = Bedah
+ * (produk PDF "Bedah Arus Saham", generator terpisah dibangun paralel).
  */
-function tipeEdisi(kode: string): 'Harian' | 'Mingguan' | 'Bulanan' {
+function tipeEdisi(kode: string): 'Harian' | 'Mingguan' | 'Bulanan' | 'Bedah' {
   const k = kode.replace(/^UJI-/, '')
   if (k.startsWith('AP-W')) return 'Mingguan'
   if (k.startsWith('AP-M')) return 'Bulanan'
+  if (k.startsWith('BA-')) return 'Bedah'
   return 'Harian'
 }
 
@@ -83,7 +85,7 @@ export function Bulletin() {
   const { daftar, error } = useBulletinList()
   const peta = useIhsgMap()
   const [cari, setCari] = useState('')
-  const [tipe, setTipe] = useState<'Semua' | 'Harian' | 'Mingguan' | 'Bulanan'>('Semua')
+  const [tipe, setTipe] = useState<'Semua' | 'Harian' | 'Mingguan' | 'Bulanan' | 'Bedah'>('Semua')
   // #98: viewer PDF inline — modal iframe di desktop; null = tertutup.
   const [lihat, setLihat] = useState<{ kode: string; pdf: string } | null>(null)
 
@@ -126,7 +128,7 @@ export function Bulletin() {
           <span className="lbl">Edisi Terbit</span>
           {daftar && daftar.length > 0 && (
             <span className="tabs blt-tabs" role="tablist" aria-label="Filter tipe edisi">
-              {(['Semua', 'Harian', 'Mingguan', 'Bulanan'] as const).map((t) => (
+              {(['Semua', 'Harian', 'Mingguan', 'Bulanan', 'Bedah'] as const).map((t) => (
                 <button
                   key={t}
                   type="button"
