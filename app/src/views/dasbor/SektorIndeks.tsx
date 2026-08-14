@@ -95,6 +95,33 @@ const CATATAN_SEKTOR: Record<string, string> = {
  *    data YTD tetap selalu terlihat di kolom YTD tiap tabel. Pembanding tak
  *    tersedia → "—".
  */
+/** Nama sektor IDX-IC (tanpa prefiks "[X] ") → simbol TradingView sektoral —
+ *  daftar teraudit #89 (ChartIndeks TV_GROUPS.sektoral). */
+const SYM_SEKTOR: Record<string, string> = {
+  Energy: 'IDXENERGY',
+  'Basic Materials': 'IDXBASIC',
+  Industrials: 'IDXINDUST',
+  'Consumer Non-Cyclicals': 'IDXNONCYC',
+  'Consumer Cyclicals': 'IDXCYCLIC',
+  Healthcare: 'IDXHEALTH',
+  Financials: 'IDXFINANCE',
+  'Properties & Real Estate': 'IDXPROPERT',
+  Technology: 'IDXTECHNO',
+  Infrastructures: 'IDXINFRA',
+  'Transportation & Logistic': 'IDXTRANS',
+}
+
+/** Nama indeks di ds featured/sharia → simbol TradingView. HANYA yang
+ *  simbolnya sudah terverifikasi ada di TV (#51/#89); sisanya sengaja tidak
+ *  diklik daripada mengirim user ke chart error. */
+const SYM_INDEKS: Record<string, string> = {
+  'IDX Composite (IHSG)': 'COMPOSITE',
+  'IDX SMC Composite': 'IDXSMC_COM',
+  'IDX SMC Liquid': 'IDXSMC_LIQ',
+  'SRI-KEHATI': 'SRI_KEHATI',
+  'Pefindo I-Grade': 'I_GRADE',
+}
+
 export function SektorIndeks() {
   const { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error } = useDataHarian()
   const [periode, setPeriode] = useState<PeriodeId>('d')
@@ -310,9 +337,11 @@ export function SektorIndeks() {
           {secVals.map(({ s, val }) => {
             const positif = (val ?? 0) >= 0
             const lebar = val === null ? 0 : (Math.abs(val) / span) * 100
-            return (
-              <div className="rk-row sek" key={s.n}>
-                <span className="rk-nm" title={s.n}>{s.n.replace(/^\[.\] /, '')}</span>
+            const nama = s.n.replace(/^\[.\] /, '')
+            const sym = SYM_SEKTOR[nama] ?? null
+            const isi = (
+              <>
+                <span className="rk-nm" title={s.n}>{nama}</span>
                 <span className="rk-nv num" title="Nilai indeks">{fN(s.v)}</span>
                 <span className="rk-tr" style={{ '--nol': `${nol}%` } as CSSProperties}>
                   {val !== null && (
@@ -325,14 +354,21 @@ export function SektorIndeks() {
                 {val === null
                   ? <span className="rk-v">—</span>
                   : <span className={`ytd-bdg ${positif ? 'u' : 'd'}`}>{fp(val)}</span>}
-              </div>
+              </>
+            )
+            return sym ? (
+              <Link className="rk-row sek rk-link" key={s.n} to={`/chart?sym=${sym}`} title={`Buka chart sektor ${nama}`}>
+                {isi}
+              </Link>
+            ) : (
+              <div className="rk-row sek" key={s.n}>{isi}</div>
             )
           })}
         </div>
       </div>
         <div className="panel">
           <div className="panel-h"><span className="lbl">{labelPeriode} — Perbandingan Semua Indeks Utama</span></div>
-          <BatangPeringkat baris={barisUtama} sorot={sorotUtama} />
+          <BatangPeringkat baris={barisUtama} sorot={sorotUtama} symUntuk={(n) => SYM_INDEKS[n] ?? null} potret />
         </div>
       </div>
 
