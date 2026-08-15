@@ -45,8 +45,21 @@
 }
 .lantai .ks-catatan .dasbor-ikon { stroke: var(--red); flex-shrink: 0; margin-top: 2px; }
 
-.lantai .ks-aksi { display: flex; gap: 6px; margin-top: 2px; }
-.lantai .ks-aksi .dd-btn { flex: 1; justify-content: center; padding: 6px 8px; font-size: 10.5px; }
+/* Tiga tombol dalam kartu sempit. `flex:1` saja tidak cukup: dasar flex
+   adalah lebar KONTEN, jadi "Minta revisi" yang paling panjang menuntut
+   ruang lebih besar, membungkus dua baris, lalu mendorong tetangganya
+   keluar batas kartu — dan tinggi tiap tombol jadi tak sama.
+   `flex:1 1 0` menyamakan dasarnya ke nol supaya ruang dibagi RATA, dan
+   min-width:0 mengizinkan tombol menyusut di bawah lebar kontennya. */
+.lantai .ks-aksi { display: flex; gap: 6px; margin-top: 2px; align-items: stretch; }
+.lantai .ks-aksi .dd-btn {
+  flex: 1 1 0; min-width: 0; justify-content: center; padding: 6px 6px;
+  font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  gap: 4px;
+}
+/* Ikon tak boleh ikut menyusut — begitu tergencet, yang tersisa cuma
+   coretan setengah yang lebih membingungkan daripada tak ada ikon. */
+.lantai .ks-aksi .dd-btn .dasbor-ikon { flex: none }
 .lantai .ks-aksi .dd-btn.merah { color: var(--red); border-color: var(--red); }
 .lantai .ks-aksi .dd-btn .dasbor-ikon { stroke: currentColor; }
 .lantai .ks-aksi .dd-btn:disabled { opacity: .45; cursor: default; }

@@ -289,7 +289,7 @@ export function KurasiSetoran() {
                         <IkonMenu d={IKON_CENTANG} size={12} /> Setujui
                       </button>
                       <button type="button" className="dd-btn" disabled={proses || s.status === 'revisi'} onClick={() => setRevisiTarget([s.path])}>
-                        <IkonMenu d={IKON_PERINGATAN} size={12} /> Minta revisi
+                        <IkonMenu d={IKON_PERINGATAN} size={12} /> Revisi
                       </button>
                       <button type="button" className="dd-btn merah" disabled={proses || s.status === 'ditolak'} onClick={() => setTolakTarget([s.path])}>
                         <IkonMenu d={IKON_SILANG} size={12} /> Tolak
