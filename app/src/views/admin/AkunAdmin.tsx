@@ -183,7 +183,10 @@ export function AkunAdmin() {
   const [toast, setToast] = useState<{ ok: boolean; pesan: string } | null>(null)
 
   const [cari, setCari] = useState('')
-  const [urut, setUrut] = useState<KunciUrut>('terbaru')
+  // Jenjang tertinggi sebagai urutan awal: yang paling sering dicari di
+  // tabel ini adalah kontributor yang paling banyak menyumbang, bukan yang
+  // kebetulan paling baru membuka aplikasi.
+  const [urut, setUrut] = useState<KunciUrut>('jenjang')
   const [tambahBuka, setTambahBuka] = useState(false)
   const [resetTarget, setResetTarget] = useState<AkunRow | null>(null)
   const [hapusTarget, setHapusTarget] = useState<AkunRow | null>(null)

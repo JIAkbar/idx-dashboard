@@ -36,20 +36,23 @@
    urut sependek isinya — kalau keduanya dibagi rata, kotak cari jadi separuh
    layar padahal dialah yang isinya panjang. */
 .lantai .aa-kontrol { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+/* Radius skala KECIL, bukan var(--r): kotak ini lebih tinggi daripada
+   dropdown di sebelahnya, dan radius 12px pada kotak yang lebih tinggi
+   terbaca lebih bulat walau angkanya sama. */
 .lantai .aa-cari { position: relative; display: flex; align-items: center; gap: 8px; flex: 1; min-width: 200px;
-  background: var(--bg2); border: 1px solid var(--line2); border-radius: var(--r); padding-left: 11px; }
+  background: var(--bg2); border: 1px solid var(--line2); border-radius: var(--r-kecil); padding-left: 11px; }
 .lantai .aa-cari:focus-within { border-color: var(--amber); }
 .lantai .aa-cari svg { flex: none; color: var(--text3); }
-.lantai .aa-cari .inp { border: 0; background: transparent; padding-left: 0; }
+.lantai .aa-cari .inp { border: 0; background: transparent; padding-left: 0; border-radius: 0; }
 .lantai .aa-cari .inp:focus { border-color: transparent; }
 
 /* Kolom email dengan domain tempelan. Kotak luarnya yang menggambar bingkai
    dan keadaan fokus, bukan input di dalamnya — supaya "nama" dan "@papan.id"
    terbaca sebagai satu alamat utuh, bukan dua kontrol bersebelahan. */
 .lantai .aa-email { display: flex; align-items: center; background: var(--bg2);
-  border: 1px solid var(--line2); border-radius: var(--r); padding-right: 11px; }
+  border: 1px solid var(--line2); border-radius: var(--r-kecil); padding-right: 11px; }
 .lantai .aa-email:focus-within { border-color: var(--amber); }
-.lantai .aa-email .inp { border: 0; background: transparent; padding-right: 2px; min-width: 0; }
+.lantai .aa-email .inp { border: 0; background: transparent; padding-right: 2px; min-width: 0; border-radius: 0; }
 .lantai .aa-email .inp:focus { border-color: transparent; }
 .lantai .aa-email-dom { font-family: var(--mono); font-size: 12.5px; color: var(--text3); white-space: nowrap; }
 .lantai .aa-salin { display: flex; align-items: center; margin-left: 8px; padding: 4px; border-radius: 5px; color: var(--text3); }
