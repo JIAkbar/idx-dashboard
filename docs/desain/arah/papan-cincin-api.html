@@ -1,0 +1,519 @@
+<title>PAPAN Cincin Api</title>
+<style>
+/* ═══ ARAH 2 · CINCIN API ══════════════════════════════════════════════════
+   Token dari geologi vulkanik Indonesia: abu vulkanik sebagai kertas, basal
+   sebagai tinta, BELERANG sebagai aksen, dan oksida besi sebagai warna kedua.
+   Volatilitas diperlakukan seperti getaran: punya magnitudo, punya lapisan.  */
+
+:root {
+  --bg0:#E7E4DE; --bg1:#FFFFFF; --bg2:#F0EEE9; --bg3:#DDD9D1;
+  --line:#D2CDC4; --line2:#BAB3A8;
+  --text:#16181C; --text2:#55595F; --text3:#6B7078;
+  --aksen:#58610A; --aksen-fill:#C4CE2B; --aksen-ink:#14170A; --aksen-dim:rgba(196,206,43,.20);
+  --oksida:#8C3A2B; --oksida-dim:rgba(140,58,43,.12);
+  --bull:#1F6B4A; --bear:#B3382C;
+  --strata1:#16181C; --strata2:#41433C; --strata3:#7A7261; --strata4:#8C3A2B; --strata5:#C4CE2B;
+  --bayang:0 1px 3px rgba(22,24,28,.10);
+  --disp:"Chivo","Segoe UI",system-ui,sans-serif;
+  --baca:"Source Serif 4","Source Serif Pro",Constantia,Georgia,serif;
+  --mono:"Chivo Mono","Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg0:#101317; --bg1:#171B21; --bg2:#1E242C; --bg3:#262E38;
+    --line:#2A323C; --line2:#39434F;
+    --text:#E6E4DF; --text2:#9AA0A8; --text3:#868C94;
+    --aksen:#C4CE2B; --aksen-fill:#C4CE2B; --aksen-ink:#14170A; --aksen-dim:rgba(196,206,43,.16);
+    --oksida:#D97A63; --oksida-dim:rgba(217,122,99,.14);
+    --bull:#35A776; --bear:#E4635C;
+    --strata1:#0A0C0E; --strata2:#2B3038; --strata3:#5C5648; --strata4:#8C3A2B; --strata5:#C4CE2B;
+    --bayang:0 2px 14px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"] {
+  --bg0:#101317; --bg1:#171B21; --bg2:#1E242C; --bg3:#262E38;
+  --line:#2A323C; --line2:#39434F;
+  --text:#E6E4DF; --text2:#9AA0A8; --text3:#868C94;
+  --aksen:#C4CE2B; --aksen-fill:#C4CE2B; --aksen-ink:#14170A; --aksen-dim:rgba(196,206,43,.16);
+  --oksida:#D97A63; --oksida-dim:rgba(217,122,99,.14);
+  --bull:#35A776; --bear:#E4635C;
+  --strata1:#0A0C0E; --strata2:#2B3038; --strata3:#5C5648; --strata4:#8C3A2B; --strata5:#C4CE2B;
+  --bayang:0 2px 14px rgba(0,0,0,.5);
+}
+
+* { box-sizing:border-box; }
+body {
+  margin:0; background:var(--bg0); color:var(--text);
+  font-family:var(--disp); font-size:15px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3 { margin:0; font-weight:900; letter-spacing:-.02em; text-wrap:balance; }
+p { margin:0 0 14px; }
+code { font-family:var(--mono); }
+
+/* ── Rangka: rel stratigrafi di kiri ────────────────────────────────────── */
+.rangka { display:grid; grid-template-columns:56px 1fr; max-width:1140px; margin:0 auto; }
+.rel { position:sticky; top:0; height:100vh; display:flex; flex-direction:column; }
+.rel .lap { flex:1; position:relative; }
+.rel .lap span {
+  position:absolute; left:9px; top:12px; transform:rotate(90deg); transform-origin:left top;
+  font-family:var(--mono); font-size:9px; letter-spacing:.22em; text-transform:uppercase;
+  white-space:nowrap; color:var(--bg0); opacity:.85;
+}
+.isi { padding:0 30px 96px; min-width:0; }
+
+/* ── Kepala ─────────────────────────────────────────────────────────────── */
+.top { display:flex; align-items:center; gap:14px; padding:16px 0 0; }
+.tag { font-family:var(--mono); font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--oksida); }
+.top .kanan { margin-left:auto; display:flex; gap:6px; }
+button.sw {
+  font:inherit; font-size:11.5px; font-weight:700; cursor:pointer;
+  padding:5px 12px; border:1px solid var(--line2); background:var(--bg1); color:var(--text2);
+}
+button.sw[aria-pressed="true"] { background:var(--aksen-fill); border-color:var(--aksen-fill); color:var(--aksen-ink); }
+button.sw:focus-visible, a:focus-visible { outline:2px solid var(--aksen); outline-offset:2px; }
+
+/* ── Hero: seismogram ───────────────────────────────────────────────────── */
+.hero { padding:54px 0 30px; }
+.hero h1 { font-size:clamp(40px,6.5vw,72px); line-height:.94; letter-spacing:-.04em; }
+.hero h1 .sulfur { color:var(--aksen); }
+.hero .lead { font-family:var(--baca); font-size:17px; line-height:1.62; color:var(--text2); max-width:56ch; margin-top:20px; }
+.seis { margin-top:32px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:8px 0; }
+.seis canvas { display:block; width:100%; height:88px; }
+.seis .ket {
+  display:flex; gap:16px; font-family:var(--mono); font-size:9.5px;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--text3); padding-top:6px;
+}
+
+/* ── Bagian ─────────────────────────────────────────────────────────────── */
+section { padding-top:58px; }
+.sec-h { display:flex; align-items:baseline; gap:12px; margin-bottom:22px; }
+.sec-h h2 { font-size:13px; letter-spacing:.2em; text-transform:uppercase; font-weight:900; }
+.sec-h .garis { flex:1; height:3px; background:var(--aksen-fill); }
+.sec-h .ket { font-family:var(--mono); font-size:10px; color:var(--text3); }
+.baca { font-family:var(--baca); font-size:16px; line-height:1.65; max-width:64ch; color:var(--text2); }
+.baca b { color:var(--text); }
+
+/* ── Magnitudo (tanda khas arah ini) ────────────────────────────────────── */
+.mag {
+  display:inline-flex; align-items:center; gap:5px; font-family:var(--mono);
+  font-size:10px; padding:2px 7px; border:1px solid currentColor; white-space:nowrap;
+}
+.mag i { width:5px; height:5px; background:currentColor; display:block; }
+.mag.m1 { color:var(--text3); } .mag.m2 { color:var(--text2); }
+.mag.m3 { color:var(--aksen); } .mag.m4 { color:var(--oksida); }
+.mag.m5 { color:var(--oksida); font-weight:700; }
+.skala { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:18px; }
+/* Kartu skala memakai kelas .mag hanya untuk mewarisi warnanya; white-space
+   nowrap milik .mag harus dibatalkan di sini, kalau tidak keterangannya
+   memaksa satu baris panjang dan mendorong lebar halaman di layar sempit. */
+.skala > div { border-left:3px solid currentColor; padding:8px 12px; background:var(--bg1); white-space:normal; }
+.skala .m { font-family:var(--mono); font-size:11px; font-weight:700; }
+.skala .d { font-size:11.5px; color:var(--text2); line-height:1.45; }
+
+/* ── Palet ──────────────────────────────────────────────────────────────── */
+.palet { display:grid; grid-template-columns:repeat(auto-fill,minmax(216px,1fr)); gap:0; border:1px solid var(--line); background:var(--line); }
+.sw-kartu { background:var(--bg1); }
+.sw-chip { height:70px; }
+.sw-isi { padding:12px 14px 14px; }
+.sw-nama { font-size:12.5px; font-weight:900; letter-spacing:-.01em; }
+.sw-hex { font-family:var(--mono); font-size:10.5px; color:var(--text2); }
+.sw-arti { font-size:11.5px; color:var(--text2); line-height:1.5; margin-top:7px; }
+.sw-cr { display:inline-block; margin-top:8px; font-family:var(--mono); font-size:9.5px; color:var(--text3); }
+
+/* ── Tipografi ──────────────────────────────────────────────────────────── */
+.tipo-kartu { border-top:3px solid var(--strata2); padding:16px 0 22px; }
+.tipo-kepala { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.tipo-peran { font-family:var(--mono); font-size:9.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--text3); }
+.tipo-nama { font-size:18px; font-weight:900; }
+.lencana { font-family:var(--mono); font-size:9.5px; padding:2px 7px; border:1px solid var(--line2); color:var(--text3); }
+.lencana.ada { border-color:var(--bull); color:var(--bull); }
+.contoh-disp { font-family:var(--disp); font-weight:900; font-size:40px; letter-spacing:-.045em; line-height:1; }
+.contoh-baca { font-family:var(--baca); font-size:19px; line-height:1.55; }
+.contoh-mono { font-family:var(--mono); font-size:19px; }
+.tipo-alasan { font-size:12.5px; color:var(--text2); margin-top:12px; max-width:66ch; }
+
+/* ── Mockup ─────────────────────────────────────────────────────────────── */
+/* overflow:hidden wajib — tanpa itu tabel ber-min-width di dalam .mock-sc
+   melebarkan kartu induknya alih-alih menggulir di dalamnya, dan badan
+   halaman ikut menggulir ke samping di layar sempit. */
+.mock { background:var(--bg1); border:1px solid var(--line); margin-bottom:28px; box-shadow:var(--bayang); overflow:hidden; }
+.mock-cap {
+  display:flex; align-items:center; gap:9px; padding:8px 14px; background:var(--bg2);
+  border-bottom:1px solid var(--line); font-family:var(--mono);
+  font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--text3);
+}
+.mock-cap .rute { letter-spacing:0; text-transform:none; color:var(--oksida); }
+.mock-b { padding:16px 18px 18px; }
+.mock-sc { overflow-x:auto; }
+
+.pita { display:flex; gap:20px; padding:7px 14px; background:var(--strata1); color:#E7E4DE; font-family:var(--mono); font-size:11px; }
+.pita b { color:#FFFFFF; } .pita .n { color:#8FD9AE; } .pita .t { color:#F0A79E; }
+
+.ihsg { display:grid; grid-template-columns:1fr auto; gap:20px; align-items:start; }
+.ihsg .lbl { font-family:var(--mono); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--text3); }
+.ihsg .angka { font-family:var(--mono); font-size:42px; font-weight:700; letter-spacing:-.04em; line-height:1.05; }
+.ihsg .delta { font-size:14px; font-weight:900; }
+.naik { color:var(--bull); } .turun { color:var(--bear); }
+.spark { width:220px; height:60px; display:block; }
+
+/* strata harga: level support/resistance sebagai lapisan */
+.lapis { margin-top:18px; }
+.lapis .l {
+  display:grid; grid-template-columns:78px 1fr auto; gap:10px; align-items:center;
+  font-size:11.5px; padding:5px 0; border-bottom:1px solid var(--line);
+}
+.lapis .h { font-family:var(--mono); font-weight:700; }
+.lapis .pita-l { height:7px; }
+.lapis .n { font-family:var(--mono); font-size:10px; color:var(--text3); letter-spacing:.1em; text-transform:uppercase; }
+
+table { width:100%; border-collapse:collapse; font-size:12.5px; }
+th { text-align:left; font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text3); padding:0 10px 7px 0; border-bottom:2px solid var(--strata2); font-weight:400; }
+td { padding:8px 10px 8px 0; border-bottom:1px solid var(--line); }
+td.num, th.num { text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums; }
+.tk { font-family:var(--mono); font-weight:700; color:var(--oksida); }
+
+.pesan { display:flex; gap:11px; padding:11px 0; border-bottom:1px solid var(--line); }
+.ava { width:30px; height:30px; flex-shrink:0; background:var(--bg3); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; font-weight:700; color:var(--text2); }
+.pesan .meta { font-family:var(--mono); font-size:10px; color:var(--text3); margin-bottom:3px; }
+.pesan .meta b { color:var(--text); font-family:var(--disp); font-size:12.5px; }
+.pesan .teks { font-family:var(--baca); font-size:14px; }
+.tag-saham { font-family:var(--mono); font-weight:700; color:var(--oksida); text-decoration:none; background:var(--oksida-dim); padding:0 3px; }
+
+.jenjang { display:grid; grid-template-columns:repeat(3,1fr); gap:0; border:1px solid var(--line); }
+.jenjang > div { padding:10px 13px; border-right:1px solid var(--line); }
+.jenjang > div:last-child { border-right:0; }
+.jenjang .l { font-family:var(--mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--text3); }
+.jenjang b { display:block; font-size:15px; font-weight:900; margin-top:2px; }
+.bar-naik { height:5px; background:var(--bg3); margin-top:12px; }
+.bar-naik i { display:block; height:100%; background:var(--aksen-fill); }
+
+pre { background:var(--bg1); border:1px solid var(--line); padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:11.5px; line-height:1.75; color:var(--text2); margin:0; }
+pre .k { color:var(--oksida); } pre .c { color:var(--text3); font-style:italic; }
+
+.catatan { border-left:4px solid var(--oksida); background:var(--oksida-dim); padding:14px 16px; }
+.catatan h3 { font-size:14px; margin-bottom:7px; }
+.catatan p:last-child { margin-bottom:0; }
+
+@media (max-width:820px) {
+  .rangka { grid-template-columns:14px 1fr; }
+  .rel .lap span { display:none; }
+  .isi { padding:0 18px 80px; }
+  .ihsg, .jenjang { grid-template-columns:1fr; }
+  .jenjang > div { border-right:0; border-bottom:1px solid var(--line); }
+}
+@media (prefers-reduced-motion:reduce) { * { animation:none !important; transition:none !important; } }
+</style>
+
+<div class="rangka">
+  <!-- Rel stratigrafi: lima lapisan, dari basal terdalam ke belerang permukaan.
+       Bukan hiasan — urutannya sama dengan urutan bagian halaman ini. -->
+  <div class="rel" aria-hidden="true">
+    <div class="lap" style="background:var(--strata1)"><span>Dasar</span></div>
+    <div class="lap" style="background:var(--strata2)"><span>Palet</span></div>
+    <div class="lap" style="background:var(--strata3)"><span>Huruf</span></div>
+    <div class="lap" style="background:var(--strata4)"><span>Halaman</span></div>
+    <div class="lap" style="background:var(--strata5)"><span>Token</span></div>
+  </div>
+
+  <div class="isi">
+    <div class="top">
+      <span class="tag">Arah 2 · Cincin Api</span>
+      <span class="kanan">
+        <button class="sw" data-tema="light" aria-pressed="false">Abu vulkanik</button>
+      <button class="sw" data-tema="sistem" aria-pressed="false">Sistem</button>
+        <button class="sw" data-tema="dark" aria-pressed="false">Basal</button>
+      </span>
+    </div>
+
+    <header class="hero">
+      <h1>Pasar tidak bergerak.<br>Pasar <span class="sulfur">bergetar</span>.</h1>
+      <p class="lead">
+        Indonesia duduk di atas Cincin Api, dan warga di sini punya kosakata yang sudah matang untuk
+        guncangan: magnitudo, episentrum, lapisan, susulan. Arah ini meminjam kosakata itu untuk
+        volatilitas — bukan sebagai tema visual, tapi sebagai cara mengukur. Setiap pergerakan
+        harga dapat satu angka, dan angka itulah yang menentukan seberapa keras ia boleh tampil di layar.
+      </p>
+      <div class="seis">
+        <canvas id="seis" width="1000" height="176" aria-label="Rekaman getaran IHSG 90 hari terakhir"></canvas>
+        <div class="ket"><span>IHSG · 90 hari</span><span>amplitudo = |Δ%| harian</span><span>garis belerang = magnitudo ≥ 3</span></div>
+      </div>
+    </header>
+
+    <section>
+      <div class="sec-h"><h2>Skala magnitudo</h2><span class="garis"></span><span class="ket">tanda khas arah ini</span></div>
+      <p class="baca">
+        Masalah lama dasbor saham: semua angka berteriak sama kerasnya. Naik 0,3% dan naik 14%
+        dicetak dengan warna dan ukuran yang sama, jadi mata harus membaca angkanya dulu sebelum
+        tahu mana yang penting. <b>Skala magnitudo menjadikan besaran itu bentuk, bukan cuma angka.</b>
+        Satu emiten mendapat satu nilai M dari pergerakan harian relatif terhadap volatilitas 20 harinya,
+        dan nilai itu yang menentukan warna, ketebalan huruf, dan apakah ia dapat tanda sama sekali.
+      </p>
+      <div class="skala">
+        <div class="mag m1" style="display:block"><div class="m">M0–1 · Tenang</div><div class="d">Tanpa tanda. Angka abu, huruf normal.</div></div>
+        <div class="mag m2" style="display:block"><div class="m">M2 · Terasa</div><div class="d">Angka jadi warna teks penuh.</div></div>
+        <div class="mag m3" style="display:block"><div class="m">M3 · Menonjol</div><div class="d">Tanda belerang muncul di baris.</div></div>
+        <div class="mag m4" style="display:block"><div class="m">M4 · Keras</div><div class="d">Oksida besi; baris dapat garis kiri.</div></div>
+        <div class="mag m5" style="display:block"><div class="m">M5+ · Ekstrem</div><div class="d">Oksida tebal. ARA/ARB masuk sini.</div></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-h"><h2>Palet</h2><span class="garis"></span><span class="ket">rasio kontras dihitung</span></div>
+      <div class="palet">
+        <div class="sw-kartu"><div class="sw-chip" style="background:#C4CE2B"></div><div class="sw-isi">
+          <div class="sw-nama">Belerang</div><div class="sw-hex">#C4CE2B</div>
+          <div class="sw-arti">Aksen. Kuning-hijau yang di alam hanya muncul di kawah — tidak pernah tertukar dengan hijau "harga naik" karena ronanya jauh lebih kuning.</div>
+          <div class="sw-cr">bidang saja; teks pakai #58610A (5,3:1)</div></div></div>
+        <div class="sw-kartu"><div class="sw-chip" style="background:#8C3A2B"></div><div class="sw-isi">
+          <div class="sw-nama">Oksida Besi</div><div class="sw-hex">#8C3A2B</div>
+          <div class="sw-arti">Warna kedua. Kode emiten, magnitudo tinggi, penanda edisi. Merah bata teroksidasi, bukan merah alarm.</div>
+          <div class="sw-cr">6,0:1</div></div></div>
+        <div class="sw-kartu"><div class="sw-chip" style="background:#E7E4DE"></div><div class="sw-isi">
+          <div class="sw-nama">Abu Vulkanik</div><div class="sw-hex">#E7E4DE</div>
+          <div class="sw-arti">Latar terang. Netral hangat yang sedikit kelabu — kertas tanpa jadi krem, sehingga belerang di atasnya tetap terbaca sebagai kuning.</div>
+          <div class="sw-cr">latar</div></div></div>
+        <div class="sw-kartu"><div class="sw-chip" style="background:#101317"></div><div class="sw-isi">
+          <div class="sw-nama">Basal</div><div class="sw-hex">#101317</div>
+          <div class="sw-arti">Latar gelap dan tinta terang. Hampir hitam dengan sedikit biru, supaya belerang tidak berpendar hijau di atasnya.</div>
+          <div class="sw-cr">14,0:1 dengan tinta terang</div></div></div>
+        <div class="sw-kartu"><div class="sw-chip" style="background:#1F6B4A"></div><div class="sw-isi">
+          <div class="sw-nama">Naik</div><div class="sw-hex">#1F6B4A</div>
+          <div class="sw-arti">Hijau lumut tua. Sengaja tidak cerah: kecerahan disimpan untuk belerang, supaya "menarik perhatian" dan "harga naik" tak berebut.</div>
+          <div class="sw-cr">5,1:1</div></div></div>
+        <div class="sw-kartu"><div class="sw-chip" style="background:#B3382C"></div><div class="sw-isi">
+          <div class="sw-nama">Turun</div><div class="sw-hex">#B3382C</div>
+          <div class="sw-arti">Serumpun dengan oksida besi tapi lebih terang — dua-duanya boleh muncul di baris yang sama tanpa saling menutup.</div>
+          <div class="sw-cr">4,7:1</div></div></div>
+      </div>
+      <p class="baca" style="margin-top:18px;font-size:14px">
+        Di tema gelap belerang naik jadi warna teks penuh (10,8:1 di atas basal) — satu-satunya
+        token yang berubah peran antar tema. Alasannya fisik: pigmen kuning butuh latar gelap
+        untuk terbaca sebagai teks, dan butuh latar terang untuk terbaca sebagai bidang.
+      </p>
+    </section>
+
+    <section>
+      <div class="sec-h"><h2>Tipografi</h2><span class="garis"></span><span class="ket">satu superkeluarga + satu serif</span></div>
+      <div class="tipo-kartu">
+        <div class="tipo-kepala"><span class="tipo-peran">Judul &amp; antarmuka</span><span class="tipo-nama">Chivo</span><span class="lencana" data-font="Chivo">memeriksa…</span></div>
+        <div class="contoh-disp">Radar WDWL</div>
+        <p class="tipo-alasan">Grotesk Amerika Latin dengan bobot 900 yang benar-benar padat —
+          judul terasa dicetak, bukan diketik. Dipakai hanya di bobot 400 dan 900; bobot tengah
+          dilarang supaya hierarki cuma punya dua tingkat dan tidak pernah kabur.</p>
+      </div>
+      <div class="tipo-kartu">
+        <div class="tipo-kepala"><span class="tipo-peran">Bacaan panjang</span><span class="tipo-nama">Source Serif 4</span><span class="lencana" data-font="Source Serif 4">memeriksa…</span></div>
+        <div class="contoh-baca">Volume masuk tiga hari berturut tanpa menembus resistance — energi tertahan di lapisan yang sama.</div>
+        <p class="tipo-alasan">Untuk paragraf analisa, isi forum, dan badan PDF. Serif dipakai
+          karena teks di PAPAN memang dibaca lama, bukan dipindai — dan karena ia membedakan
+          "tulisan orang" dari "keluaran mesin" tanpa perlu label.</p>
+      </div>
+      <div class="tipo-kartu">
+        <div class="tipo-kepala"><span class="tipo-peran">Angka &amp; kode</span><span class="tipo-nama">Chivo Mono</span><span class="lencana" data-font="Chivo Mono">memeriksa…</span></div>
+        <div class="contoh-mono">7.284,51 · M3,4 · BUMI · 09:41:07</div>
+        <p class="tipo-alasan">Satu keluarga dengan judul, jadi angka dan huruf punya kerangka
+          yang sama — kolom mono di sebelah judul Chivo terlihat menyatu, bukan tertempel.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-h"><h2>Di halaman</h2><span class="garis"></span><span class="ket">tampilan asli, token baru</span></div>
+
+      <div class="mock">
+        <div class="mock-cap">Dasbor <span class="rute">/</span></div>
+        <div class="pita">
+          <span>USD/IDR <b>16.284</b> <span class="t">+0,21%</span></span>
+          <span>Top Gainer <b>VKTR</b> <span class="n">+8,4%</span></span>
+          <span>Top Loser <b>MBMA</b> <span class="t">−5,1%</span></span>
+        </div>
+        <div class="mock-b">
+          <div class="ihsg">
+            <div>
+              <div class="lbl">IHSG · 15 Agustus 2026 · Sesi II</div>
+              <div class="angka">7.284,51</div>
+              <div class="delta naik">+46,20 (+0,64%) <span class="mag m2"><i></i>M2,1</span></div>
+            </div>
+            <svg class="spark" viewBox="0 0 220 60" preserveAspectRatio="none" aria-label="IHSG tahun berjalan">
+              <polyline points="0,47 24,42 48,49 72,35 96,38 120,25 144,29 168,18 192,23 216,10" fill="none" stroke="var(--aksen)" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="lapis">
+            <div class="l"><span class="h">7.401</span><span class="pita-l" style="background:var(--strata3)"></span><span class="n">resistance 2</span></div>
+            <div class="l"><span class="h">7.318</span><span class="pita-l" style="background:var(--strata4)"></span><span class="n">resistance 1</span></div>
+            <div class="l"><span class="h">7.284</span><span class="pita-l" style="background:var(--aksen-fill)"></span><span class="n">harga sekarang</span></div>
+            <div class="l"><span class="h">7.233</span><span class="pita-l" style="background:var(--strata3)"></span><span class="n">support 1</span></div>
+            <div class="l"><span class="h">7.150</span><span class="pita-l" style="background:var(--strata2)"></span><span class="n">support 2</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mock">
+        <div class="mock-cap">Top Stocks <span class="rute">/top</span></div>
+        <div class="mock-b mock-sc">
+          <table style="min-width:600px">
+            <tr><th>Kode</th><th>Emiten</th><th class="num">Close</th><th class="num">Δ%</th><th>Magnitudo</th><th class="num">Nilai (M)</th></tr>
+            <tr><td class="tk">VKTR</td><td>Vale Kinetik</td><td class="num">1.245</td><td class="num naik">+8,40</td><td><span class="mag m5"><i></i>M5,2</span></td><td class="num">418,7</td></tr>
+            <tr><td class="tk">MBMA</td><td>Merdeka Battery</td><td class="num">565</td><td class="num turun">−5,10</td><td><span class="mag m4"><i></i>M4,1</span></td><td class="num">302,4</td></tr>
+            <tr><td class="tk">ARCI</td><td>Archi Indonesia</td><td class="num">388</td><td class="num naik">+2,10</td><td><span class="mag m3"><i></i>M3,0</span></td><td class="num">96,2</td></tr>
+            <tr><td class="tk">BUMI</td><td>Bumi Resources</td><td class="num">142</td><td class="num turun">−2,07</td><td><span class="mag m2"><i></i>M2,2</span></td><td class="num">88,1</td></tr>
+            <tr><td class="tk">BBRI</td><td>Bank Rakyat Indonesia</td><td class="num">4.720</td><td class="num naik">+0,21</td><td><span class="mag m1"><i></i>M0,4</span></td><td class="num">1.204,8</td></tr>
+          </table>
+          <p class="baca" style="font-size:13px;margin:14px 0 0">
+            Baris terakhir bergerak paling banyak dalam rupiah, tapi magnitudonya paling kecil —
+            0,21% pada saham yang biasanya bergerak 0,5% sehari itu hari yang tenang. Kolom
+            magnitudo membuat perbedaan itu terbaca tanpa menghitung.
+          </p>
+        </div>
+      </div>
+
+      <div class="mock">
+        <div class="mock-cap">Forum <span class="rute">/forum/VKTR</span></div>
+        <div class="mock-b">
+          <div class="pesan"><span class="ava">AG</span><div>
+            <div class="meta">Agitama · Perak · 09:52</div>
+            <div class="teks"><a class="tag-saham" href="#">$VKTR</a> M5,2 hari ini — susulan setelah breakout Selasa, bukan pemicu baru. Volume justru turun dari kemarin.</div>
+          </div></div>
+          <div class="pesan"><span class="ava">JI</span><div>
+            <div class="meta">Johan · Superadmin · 10:04</div>
+            <div class="teks">Setuju. Broker penggerak masih dua nama yang sama sejak Senin; belum ada broker baru masuk.</div>
+          </div></div>
+          <div class="pesan"><span class="ava">?</span><div>
+            <div class="meta">Tamu · sisa 3 dari 5 pesan hari ini</div>
+            <div class="teks" style="color:var(--text3)">Tulis pesan…</div>
+          </div></div>
+        </div>
+      </div>
+
+      <div class="mock">
+        <div class="mock-cap">Kontributor · sambutan <span class="rute">/admin</span></div>
+        <div class="mock-b">
+          <p style="font-size:13px;margin-bottom:12px">Selamat pagi, <b>Agitama</b>.</p>
+          <div class="jenjang">
+            <div><span class="l">Jenjang</span><b>Perak</b></div>
+            <div><span class="l">Kuota harian</span><b>3 orderbook</b></div>
+            <div><span class="l">Disetujui</span><b>27</b></div>
+          </div>
+          <div class="bar-naik" title="27 dari 35 setoran menuju Emas"><i style="width:77%"></i></div>
+          <p class="baca" style="font-size:13px;margin:10px 0 0">
+            8 setoran disetujui lagi untuk naik ke Emas — kuota harianmu ikut naik jadi 5.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-h"><h2>Sakelar tema</h2><span class="garis"></span><span class="ket">Abu vulkanik · Sistem · Basal</span></div>
+      <p class="baca" style="margin-bottom:18px">
+        Tiga pilihan, bukan dua: <b>Abu vulkanik</b>, <b>Sistem</b>, <b>Basal</b>. "Sistem" mengikuti
+        setelan perangkat dan menjadi bawaan — tanpa stempel <code>data-theme</code>, halaman jatuh
+        ke <code>prefers-color-scheme</code>, kontrak tema yang sama dengan dasbor PAPAN. Pilihan
+        eksplisit disimpan di <code>localStorage</code> kunci <code>papan-tema</code>; memilih
+        "Sistem" berarti kuncinya dihapus. Nama temanya dari lapisan batuannya sendiri. Sakelar di kepala halaman ini memakainya sungguhan.
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3)">Bentuk istirahat</span>
+          <span style="display:inline-flex;gap:6px" aria-hidden="true"><button class="sw" tabindex="-1">Abu vulkanik</button><button class="sw" tabindex="-1" aria-pressed="true">Sistem</button><button class="sw" tabindex="-1">Basal</button></span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3)">Pilihan eksplisit</span>
+          <span style="display:inline-flex;gap:6px" aria-hidden="true"><button class="sw" tabindex="-1">Abu vulkanik</button><button class="sw" tabindex="-1">Sistem</button><button class="sw" tabindex="-1" aria-pressed="true">Basal</button></span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-h"><h2>Token siap tempel</h2><span class="garis"></span><span class="ket">blok .lantai</span></div>
+<pre><span class="c">/* Arah Cincin Api — tema gelap (basal) */</span>
+.lantai {
+  <span class="k">--bg0</span>:#101317; <span class="k">--bg1</span>:#171B21; <span class="k">--bg2</span>:#1E242C; <span class="k">--bg3</span>:#262E38;
+  <span class="k">--line</span>:#2A323C; <span class="k">--line2</span>:#39434F;
+  <span class="k">--text</span>:#E6E4DF; <span class="k">--text2</span>:#9AA0A8; <span class="k">--text3</span>:#868C94;
+  <span class="k">--aksen</span>:#C4CE2B; <span class="k">--aksen-ink</span>:#14170A;   <span class="c">/* belerang jadi teks di gelap */</span>
+  <span class="k">--oksida</span>:#D97A63;
+  <span class="k">--green</span>:#35A776; <span class="k">--red</span>:#E4635C;
+  <span class="k">--disp</span>:"Chivo",system-ui,sans-serif;   <span class="c">/* bobot 400 & 900 saja */</span>
+  <span class="k">--baca</span>:"Source Serif 4",Georgia,serif;
+  <span class="k">--mono</span>:"Chivo Mono",Consolas,monospace;
+}
+<span class="c">/* tema terang (abu vulkanik) */</span>
+.lantai[data-theme="light"] {
+  <span class="k">--bg0</span>:#E7E4DE; <span class="k">--bg1</span>:#FFFFFF; <span class="k">--bg2</span>:#F0EEE9; <span class="k">--bg3</span>:#DDD9D1;
+  <span class="k">--line</span>:#D2CDC4; <span class="k">--line2</span>:#BAB3A8;
+  <span class="k">--text</span>:#16181C; <span class="k">--text2</span>:#55595F; <span class="k">--text3</span>:#6B7078;
+  <span class="k">--aksen</span>:#58610A;   <span class="c">/* belerang tua utk teks; #C4CE2B utk bidang */</span>
+  <span class="k">--aksen-fill</span>:#C4CE2B; <span class="k">--aksen-ink</span>:#14170A;
+  <span class="k">--oksida</span>:#8C3A2B;
+  <span class="k">--green</span>:#1F6B4A; <span class="k">--red</span>:#B3382C;
+}</pre>
+    </section>
+
+    <section>
+      <div class="sec-h"><h2>Yang perlu dipertimbangkan</h2><span class="garis"></span></div>
+      <div class="catatan">
+        <h3>Tiga konsekuensi arah ini</h3>
+        <p><b>Magnitudo butuh rumus yang disepakati dulu.</b> Angka M tidak ada di data sekarang —
+          harus dihitung (mis. |Δ%| dibagi simpangan baku 20 hari). Kalau rumusnya berubah-ubah,
+          angkanya kehilangan arti dan lebih baik tidak ditampilkan sama sekali.</p>
+        <p><b>Belerang berganti peran antar tema.</b> Di terang ia bidang, di gelap ia teks.
+          Itu keputusan sadar, tapi berarti tiap komponen harus diuji di kedua tema —
+          tidak bisa asal pakai <code>--aksen</code> dan berharap benar.</p>
+        <p><b>Bobot 900 mahal di jaringan lambat.</b> Chivo 900 menambah berkas huruf yang
+          harus diunduh. Untuk PAPAN yang baru saja dioptimalkan buat internet lambat, ini
+          harus di-subset ke karakter Latin saja.</p>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+const akar = document.documentElement;
+// Sakelar tiga pilihan: "sistem" = tanpa stempel data-theme, ikut
+// prefers-color-scheme — kontrak tema yang sama dengan dasbor PAPAN.
+function pasangTema(t) {
+  if (t === 'sistem') akar.removeAttribute('data-theme');
+  else akar.setAttribute('data-theme', t);
+  document.querySelectorAll('.sw[data-tema]').forEach((b) =>
+    b.setAttribute('aria-pressed', String(b.dataset.tema === t)));
+  gambarSeis();
+}
+document.querySelectorAll('.sw[data-tema]').forEach((b) => { b.onclick = () => pasangTema(b.dataset.tema); });
+
+// Seismogram: satu garis dasar, amplitudo = |Δ%| harian. Getaran yang melewati
+// ambang magnitudo 3 diwarnai belerang — sama aturannya dengan skala di atas,
+// bukan warna yang dipilih per batang.
+const kanvas = document.getElementById('seis');
+const DERET = Array.from({length:90}, (_,i) => {
+  const dasar = Math.sin(i/6.5)*1.1 + Math.sin(i/2.3)*0.7 + Math.cos(i/11)*0.9;
+  const letup = (i===22||i===57||i===79) ? 3.4 : (i===41 ? -3.1 : 0);
+  return dasar + letup;
+});
+function gambarSeis() {
+  const gaya = getComputedStyle(akar);
+  const w = kanvas.width, h = kanvas.height, tengah = h/2;
+  const c = kanvas.getContext('2d');
+  c.clearRect(0,0,w,h);
+  c.strokeStyle = gaya.getPropertyValue('--line').trim();
+  c.lineWidth = 2; c.beginPath(); c.moveTo(0,tengah); c.lineTo(w,tengah); c.stroke();
+  const lebar = w/DERET.length;
+  DERET.forEach((v,i) => {
+    const x = i*lebar + lebar/2;
+    const y = Math.min(Math.abs(v)/4, 1) * (tengah-8);
+    c.strokeStyle = Math.abs(v) >= 3
+      ? gaya.getPropertyValue('--aksen').trim()
+      : gaya.getPropertyValue('--text3').trim();
+    c.lineWidth = Math.abs(v) >= 3 ? 3 : 1.6;
+    c.beginPath(); c.moveTo(x, tengah-y); c.lineTo(x, tengah+y); c.stroke();
+  });
+}
+pasangTema('sistem');
+addEventListener('resize', gambarSeis);
+
+document.querySelectorAll('.lencana[data-font]').forEach((el) => {
+  const nama = el.dataset.font;
+  const ada = document.fonts && document.fonts.check(`16px "${nama}"`);
+  el.textContent = ada ? 'terpasang' : 'contoh pakai huruf pengganti';
+  el.classList.toggle('ada', !!ada);
+});
+</script>

@@ -1,0 +1,523 @@
+<title>PAPAN Jam Bursa</title>
+<style>
+/* ═══ ARAH 3 · JAM BURSA ═══════════════════════════════════════════════════
+   Netral tetap, aksen bergerak. Satu token — --sesi — mengambil warnanya dari
+   fase perdagangan yang sedang berjalan (WIB). Semua token lain diam, jadi
+   halaman tidak pernah berubah rasa, cuma berubah suhu.                       */
+
+:root {
+  --bg0:#EEF1F4; --bg1:#FFFFFF; --bg2:#F5F7F9; --bg3:#E4E9EE;
+  --line:#D5DCE3; --line2:#BEC8D2;
+  --text:#14181D; --text2:#55606C; --text3:#68737F;
+  --bull:#1B7A4F; --bear:#B53A32;
+  --sesi-pra:#5B54A0; --sesi-1:#0E7288; --sesi-rehat:#5F6772; --sesi-2:#9C4A2B; --sesi-tutup:#39424F;
+  --sesi-ink:#FFFFFF;
+  --bayang:0 1px 3px rgba(20,24,29,.08);
+  --disp:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --ui:"Instrument Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"Martian Mono","Cascadia Mono",Consolas,monospace;
+  --r:4px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg0:#0D1013; --bg1:#14181D; --bg2:#1B2027; --bg3:#232A33;
+    --line:#262D36; --line2:#38414C;
+    --text:#E7EBEF; --text2:#98A3AE; --text3:#8794A1;
+    --bull:#34B27A; --bear:#E86C63;
+    --sesi-pra:#8C86D8; --sesi-1:#35B4CE; --sesi-rehat:#9AA4B0; --sesi-2:#E08A5F; --sesi-tutup:#7B8797;
+    --sesi-ink:#0D1013;
+    --bayang:0 2px 14px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"] {
+  --bg0:#0D1013; --bg1:#14181D; --bg2:#1B2027; --bg3:#232A33;
+  --line:#262D36; --line2:#38414C;
+  --text:#E7EBEF; --text2:#98A3AE; --text3:#8794A1;
+  --bull:#34B27A; --bear:#E86C63;
+  --sesi-pra:#8C86D8; --sesi-1:#35B4CE; --sesi-rehat:#9AA4B0; --sesi-2:#E08A5F; --sesi-tutup:#7B8797;
+  --sesi-ink:#0D1013;
+  --bayang:0 2px 14px rgba(0,0,0,.5);
+}
+/* --sesi diisi skrip dari fase yang sedang berjalan; nilai awal = tutup,
+   supaya halaman tetap benar kalau JavaScript tidak jalan. */
+:root { --sesi:var(--sesi-tutup); }
+
+* { box-sizing:border-box; }
+body {
+  margin:0; background:var(--bg0); color:var(--text);
+  font-family:var(--ui); font-size:15px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3 { margin:0; font-family:var(--disp); font-weight:700; letter-spacing:-.02em; text-wrap:balance; }
+p { margin:0 0 14px; }
+code { font-family:var(--mono); font-size:.9em; }
+.wrap { max-width:1060px; margin:0 auto; padding:0 24px 96px; }
+
+/* ── Pita sesi: tulang punggung halaman ─────────────────────────────────── */
+.pita-sesi { position:sticky; top:0; z-index:30; background:var(--bg0); border-bottom:1px solid var(--line); }
+.pita-in { max-width:1060px; margin:0 auto; padding:10px 24px 12px; }
+.pita-atas { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+.titik { width:9px; height:9px; border-radius:99px; background:var(--sesi); flex-shrink:0; }
+.pita-nama { font-family:var(--disp); font-weight:700; font-size:14px; }
+.pita-jam { font-family:var(--mono); font-size:12px; color:var(--text2); font-variant-numeric:tabular-nums; }
+.pita-kanan { margin-left:auto; display:flex; gap:6px; }
+button.sw {
+  font:inherit; font-family:var(--ui); font-size:11.5px; font-weight:600; cursor:pointer;
+  padding:4px 11px; border-radius:99px; border:1px solid var(--line2); background:var(--bg1); color:var(--text2);
+}
+button.sw[aria-pressed="true"] { background:var(--sesi); border-color:var(--sesi); color:var(--sesi-ink); }
+button.sw:focus-visible, a:focus-visible { outline:2px solid var(--sesi); outline-offset:2px; }
+.rel-sesi { display:flex; gap:2px; height:7px; }
+.rel-sesi > i { display:block; border-radius:1px; opacity:.30; }
+.rel-sesi > i.aktif { opacity:1; }
+.rel-lbl { display:flex; justify-content:space-between; font-family:var(--mono); font-size:9px; color:var(--text3); margin-top:4px; }
+
+/* ── Hero ───────────────────────────────────────────────────────────────── */
+.hero { padding:58px 0 34px; }
+.hero h1 { font-size:clamp(38px,6vw,66px); line-height:.98; letter-spacing:-.035em; }
+.hero h1 .sesi-kata { color:var(--sesi); }
+.hero .lead { font-size:16.5px; color:var(--text2); max-width:54ch; margin-top:20px; }
+.hero .demo {
+  margin-top:30px; display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+  border:1px solid var(--line); border-radius:var(--r); background:var(--bg1); padding:12px 14px;
+}
+.hero .demo .l { font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text3); width:100%; }
+.fase-tbl {
+  font:inherit; font-family:var(--ui); font-size:11.5px; font-weight:600; cursor:pointer;
+  padding:5px 12px; border-radius:99px; border:1px solid var(--line2); background:transparent; color:var(--text2);
+}
+.fase-tbl[aria-pressed="true"] { background:var(--sesi); border-color:var(--sesi); color:var(--sesi-ink); }
+
+/* ── Bagian ─────────────────────────────────────────────────────────────── */
+section { padding-top:58px; }
+.sec-h { display:flex; align-items:baseline; gap:12px; margin-bottom:22px; padding-bottom:9px; border-bottom:2px solid var(--sesi); }
+.sec-h h2 { font-size:21px; }
+.sec-h .ket { font-family:var(--mono); font-size:10px; color:var(--text3); margin-left:auto; }
+.baca { font-size:15.5px; line-height:1.65; max-width:64ch; color:var(--text2); }
+.baca b { color:var(--text); }
+
+/* ── Palet ──────────────────────────────────────────────────────────────── */
+.palet { display:grid; grid-template-columns:repeat(auto-fill,minmax(196px,1fr)); gap:12px; }
+.sw-kartu { background:var(--bg1); border:1px solid var(--line); border-radius:var(--r); overflow:hidden; }
+.sw-chip { height:56px; display:flex; align-items:flex-end; padding:7px 10px; }
+.sw-chip span { font-family:var(--mono); font-size:9.5px; color:var(--sesi-ink); }
+.sw-isi { padding:10px 12px 12px; }
+.sw-nama { font-family:var(--disp); font-size:13px; font-weight:700; }
+.sw-hex { font-family:var(--mono); font-size:10px; color:var(--text2); }
+.sw-arti { font-size:11.5px; color:var(--text2); line-height:1.5; margin-top:6px; }
+
+/* ── Tipografi ──────────────────────────────────────────────────────────── */
+.tipo-kartu { background:var(--bg1); border:1px solid var(--line); border-radius:var(--r); padding:18px 20px; margin-bottom:14px; }
+.tipo-kepala { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:13px; }
+.tipo-peran { font-family:var(--mono); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--text3); }
+.tipo-nama { font-family:var(--disp); font-size:18px; font-weight:700; }
+.lencana { font-family:var(--mono); font-size:9px; padding:2px 7px; border-radius:99px; border:1px solid var(--line2); color:var(--text3); }
+.lencana.ada { border-color:var(--bull); color:var(--bull); }
+.contoh-disp { font-family:var(--disp); font-size:36px; font-weight:700; letter-spacing:-.035em; line-height:1.05; }
+.contoh-ui { font-family:var(--ui); font-size:18px; line-height:1.5; }
+.contoh-mono { font-family:var(--mono); font-size:16px; letter-spacing:-.02em; }
+.tipo-alasan { font-size:12.5px; color:var(--text2); margin-top:12px; max-width:66ch; }
+
+/* ── Mockup ─────────────────────────────────────────────────────────────── */
+.mock { background:var(--bg1); border:1px solid var(--line); border-radius:7px; overflow:hidden; box-shadow:var(--bayang); margin-bottom:28px; }
+.mock-cap {
+  display:flex; align-items:center; gap:9px; padding:8px 14px; background:var(--bg2);
+  border-bottom:1px solid var(--line); font-family:var(--mono);
+  font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text3);
+}
+.mock-cap .rute { letter-spacing:0; text-transform:none; color:var(--sesi); }
+.mock-b { padding:16px 18px 18px; }
+.mock-sc { overflow-x:auto; }
+
+.kurs { display:flex; gap:18px; padding:7px 14px; background:var(--bg3); font-family:var(--mono); font-size:10.5px; }
+.naik { color:var(--bull); } .turun { color:var(--bear); }
+
+.ihsg { display:grid; grid-template-columns:1fr auto; gap:20px; align-items:start; }
+.ihsg .lbl { font-family:var(--mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--text3); }
+.ihsg .angka { font-family:var(--mono); font-size:34px; font-weight:600; letter-spacing:-.045em; line-height:1.1; }
+.ihsg .delta { font-family:var(--ui); font-size:14px; font-weight:700; margin-top:2px; }
+.spark { width:210px; height:56px; display:block; }
+.jam-besar { font-family:var(--mono); font-size:13px; color:var(--sesi); font-variant-numeric:tabular-nums; }
+
+.kal { display:flex; gap:4px; margin-top:16px; }
+.kal .d { flex:1; text-align:center; padding:7px 3px; border-radius:var(--r); background:var(--bg2); border:1px solid var(--line); font-size:11px; }
+.kal .d b { display:block; font-family:var(--mono); font-size:12px; }
+.kal .d.on { background:var(--sesi); border-color:var(--sesi); color:var(--sesi-ink); }
+.kal .d.libur { background:transparent; color:var(--text3); }
+
+table { width:100%; border-collapse:collapse; font-size:12.5px; }
+th { text-align:left; font-family:var(--mono); font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--text3); padding:0 10px 7px 0; border-bottom:1px solid var(--line); font-weight:400; }
+td { padding:8px 10px 8px 0; border-bottom:1px solid var(--line); }
+td.num, th.num { text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums; }
+.tk { font-family:var(--mono); font-weight:700; color:var(--sesi); }
+.jam-sel { font-family:var(--mono); font-size:10.5px; color:var(--text3); }
+
+.pesan { display:flex; gap:11px; padding:11px 0; border-bottom:1px solid var(--line); }
+.ava { width:30px; height:30px; flex-shrink:0; border-radius:var(--r); background:var(--bg3); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:10px; font-weight:700; color:var(--text2); }
+.pesan .meta { font-size:10.5px; color:var(--text3); margin-bottom:3px; }
+.pesan .meta b { color:var(--text); font-size:12.5px; }
+.pesan .meta .fase { font-family:var(--mono); font-size:9px; padding:1px 6px; border-radius:99px; border:1px solid currentColor; }
+.tag-saham { font-family:var(--mono); font-weight:700; color:var(--sesi); text-decoration:none; }
+
+.jenjang { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.jenjang > div { background:var(--bg2); border:1px solid var(--line); border-radius:var(--r); padding:10px 12px; }
+.jenjang .l { font-family:var(--mono); font-size:8.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text3); }
+.jenjang b { display:block; font-family:var(--disp); font-size:15px; margin-top:2px; }
+
+pre { background:var(--bg1); border:1px solid var(--line); border-radius:var(--r); padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:11px; line-height:1.8; color:var(--text2); margin:0; }
+pre .k { color:var(--sesi); } pre .c { color:var(--text3); font-style:italic; }
+
+.catatan { border:1px solid var(--sesi); border-left-width:4px; border-radius:0 var(--r) var(--r) 0; padding:14px 16px; background:var(--bg1); }
+.catatan h3 { font-size:14px; margin-bottom:7px; }
+.catatan p:last-child { margin-bottom:0; }
+
+@media (max-width:760px) {
+  .ihsg, .jenjang { grid-template-columns:1fr; }
+  .rel-lbl { font-size:8px; }
+}
+@media (prefers-reduced-motion:reduce) { * { transition:none !important; animation:none !important; } }
+:root { transition:none; }
+.titik, .sec-h, button.sw, .fase-tbl { transition:background-color .5s ease, border-color .5s ease, color .5s ease; }
+</style>
+
+<div class="pita-sesi">
+  <div class="pita-in">
+    <div class="pita-atas">
+      <span class="titik" aria-hidden="true"></span>
+      <span class="pita-nama" id="nama-sesi">Bursa Tutup</span>
+      <span class="pita-jam" id="jam-wib">—</span>
+      <span class="pita-kanan">
+        <button class="sw" data-tema="light" aria-pressed="false">Terang</button>
+      <button class="sw" data-tema="sistem" aria-pressed="false">Sistem</button>
+        <button class="sw" data-tema="dark" aria-pressed="false">Gelap</button>
+      </span>
+    </div>
+    <div class="rel-sesi" id="rel" aria-hidden="true"></div>
+    <div class="rel-lbl"><span>08:45</span><span>12:00</span><span>16:15</span></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="hero">
+    <h1>Satu warna yang tahu<br><span class="sesi-kata">jam berapa sekarang</span>.</h1>
+    <p class="lead">
+      Semua yang dilakukan orang di PAPAN terikat jam bursa. Orderbook hanya berarti saat sesi
+      berjalan; setoran kontributor hanya sah untuk tanggal bursa; edisi terbit setelah penutupan.
+      Arah ini menaruh fakta itu ke dalam sistem warna: netral halaman tetap diam, dan
+      <b style="color:var(--text)">tepat satu token</b> — aksen — mengambil warnanya dari fase
+      perdagangan yang sedang berjalan. Buka pagi hari, layarnya lain daripada sore.
+    </p>
+    <div class="demo">
+      <span class="l">Coba fase lain — seluruh halaman ikut berubah</span>
+      <button class="fase-tbl" data-fase="pra">Pra-Pembukaan</button>
+      <button class="fase-tbl" data-fase="s1">Sesi I</button>
+      <button class="fase-tbl" data-fase="rehat">Istirahat</button>
+      <button class="fase-tbl" data-fase="s2">Sesi II</button>
+      <button class="fase-tbl" data-fase="tutup">Tutup</button>
+      <button class="fase-tbl" data-fase="live" aria-pressed="true">Ikut jam asli</button>
+    </div>
+  </header>
+
+  <section>
+    <div class="sec-h"><h2>Kenapa waktu, bukan tema</h2><span class="ket">makna arah ini</span></div>
+    <p class="baca">
+      Dasbor saham biasanya menawarkan terang dan gelap, dan itu menjawab pertanyaan yang salah.
+      Yang berubah sepanjang hari bukan selera pengguna — yang berubah adalah <b>apa yang sedang
+      bisa dilakukan</b>. Jam 08:50 tidak ada transaksi, cuma antrean. Jam 12:15 pasar diam.
+      Jam 15:55 harga penutupan sedang dibentuk. Tiga keadaan itu menuntut perhatian yang berbeda,
+      tapi hari ini tampil identik.
+    </p>
+    <p class="baca" style="margin-top:14px">
+      Arah ini menjadikan fase itu terbaca dari sudut mata. Aksen abu saat istirahat bukan pilihan
+      estetis — <b>pasar memang sedang tidak melakukan apa-apa</b>, dan warnanya mengatakan begitu.
+      Terang dan gelap tetap ada, tapi turun pangkat jadi urusan cahaya ruangan, bukan urusan makna.
+    </p>
+    <p class="baca" style="margin-top:14px">
+      Risikonya nyata dan sengaja diambil: sistem warna yang bergerak lebih sulit dijaga daripada
+      yang diam. Karena itu batasnya keras — satu token, lima nilai, dan tidak ada token lain yang
+      boleh ikut berubah.
+    </p>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Palet</h2><span class="ket">netral tetap · aksen bergerak</span></div>
+    <p class="baca" style="margin-bottom:18px">Lima nilai aksen, satu per fase. Semuanya lolos 4,5:1 di kedua tema.</p>
+    <div class="palet">
+      <div class="sw-kartu"><div class="sw-chip" style="background:var(--sesi-pra)"><span>08:45 – 08:59</span></div><div class="sw-isi">
+        <div class="sw-nama">Pra-Pembukaan</div><div class="sw-hex">#5B54A0 / #8C86D8</div>
+        <div class="sw-arti">Ungu subuh. Antrean sudah masuk, harga belum terbentuk — warna yang belum matang.</div></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:var(--sesi-1)"><span>09:00 – 12:00</span></div><div class="sw-isi">
+        <div class="sw-nama">Sesi I</div><div class="sw-hex">#0E7288 / #35B4CE</div>
+        <div class="sw-arti">Teal. Fase paling aktif dan paling lama ditatap, jadi warnanya yang paling tenang dari lima.</div></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:var(--sesi-rehat)"><span>12:00 – 13:30</span></div><div class="sw-isi">
+        <div class="sw-nama">Istirahat</div><div class="sw-hex">#5F6772 / #9AA4B0</div>
+        <div class="sw-arti">Abu. Satu-satunya fase tanpa warna — angka di layar sedang beku, dan itu terlihat sebelum dibaca.</div></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:var(--sesi-2)"><span>13:30 – 15:49</span></div><div class="sw-isi">
+        <div class="sw-nama">Sesi II</div><div class="sw-hex">#9C4A2B / #E08A5F</div>
+        <div class="sw-arti">Tembaga sore. Lebih hangat dari Sesi I karena di sinilah harga penutupan ditentukan.</div></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:var(--sesi-tutup)"><span>16:15 – 08:45</span></div><div class="sw-isi">
+        <div class="sw-nama">Tutup</div><div class="sw-hex">#39424F / #7B8797</div>
+        <div class="sw-arti">Batu tua. Berlaku semalaman, akhir pekan, dan hari libur bursa — sebagian besar waktu hidup halaman ini.</div></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:linear-gradient(90deg,#1B7A4F 50%,#B53A32 50%)"></div><div class="sw-isi">
+        <div class="sw-nama">Naik &amp; Turun</div><div class="sw-hex">#1B7A4F · #B53A32</div>
+        <div class="sw-arti">Tidak pernah ikut berubah. Kalau warna harga ikut fase, angka kehilangan arti — ini garis yang tidak boleh dilewati.</div></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Tipografi</h2><span class="ket">tiga peran</span></div>
+    <div class="tipo-kartu">
+      <div class="tipo-kepala"><span class="tipo-peran">Judul</span><span class="tipo-nama">Bricolage Grotesque</span><span class="lencana" data-font="Bricolage Grotesque">memeriksa…</span></div>
+      <div class="contoh-disp">Peta Investor</div>
+      <p class="tipo-alasan">Grotesk dengan sedikit kejanggalan yang disengaja pada huruf g dan a —
+        cukup untuk membuat judul PAPAN tidak tertukar dengan judul aplikasi lain, tapi tidak cukup
+        untuk mengganggu saat dibaca cepat. Hanya untuk judul dan angka besar.</p>
+    </div>
+    <div class="tipo-kartu">
+      <div class="tipo-kepala"><span class="tipo-peran">Antarmuka &amp; bacaan</span><span class="tipo-nama">Instrument Sans</span><span class="lencana" data-font="Instrument Sans">memeriksa…</span></div>
+      <div class="contoh-ui">Setoran kamu masuk antrean kurasi. Tanggal bursa yang dipilih menentukan edisi mana yang memakainya.</div>
+      <p class="tipo-alasan">Netral tanpa jadi hambar, dan tetap terbaca di 11px — ukuran yang
+        banyak dipakai di label kolom PAPAN. Semua kalimat antarmuka, tombol, dan isi forum.</p>
+    </div>
+    <div class="tipo-kartu">
+      <div class="tipo-kepala"><span class="tipo-peran">Jam &amp; angka</span><span class="tipo-nama">Martian Mono</span><span class="lencana" data-font="Martian Mono">memeriksa…</span></div>
+      <div class="contoh-mono">09:41:07 WIB · 7.284,51 · BUMI</div>
+      <p class="tipo-alasan">Mono yang sengaja lebar dan bersudut. Dipakai untuk jam, harga, kode
+        emiten, dan kode edisi — semua hal yang disalin orang ke tempat lain, dan karena itu harus
+        tidak mungkin salah baca antara 0/O dan 1/l.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Di halaman</h2><span class="ket">semua ikut fase yang aktif di atas</span></div>
+
+    <div class="mock">
+      <div class="mock-cap">Dasbor <span class="rute">/</span></div>
+      <div class="kurs">
+        <span>USD/IDR 16.284 <span class="turun">+0,21%</span></span>
+        <span>VKTR <span class="naik">+8,4%</span></span>
+        <span>MBMA <span class="turun">−5,1%</span></span>
+      </div>
+      <div class="mock-b">
+        <div class="ihsg">
+          <div>
+            <div class="lbl">IHSG · 15 Agustus 2026</div>
+            <div class="angka">7.284,51</div>
+            <div class="delta naik">+46,20 (+0,64%)</div>
+            <div class="jam-besar" id="jam-mock">—</div>
+          </div>
+          <svg class="spark" viewBox="0 0 210 56" preserveAspectRatio="none" aria-label="IHSG tahun berjalan">
+            <polygon points="0,44 24,40 48,46 72,33 96,36 120,24 144,28 168,18 192,22 210,11 210,56 0,56" fill="var(--sesi)" opacity=".14"/>
+            <polyline points="0,44 24,40 48,46 72,33 96,36 120,24 144,28 168,18 192,22 210,11" fill="none" stroke="var(--sesi)" stroke-width="1.8"/>
+          </svg>
+        </div>
+        <div class="kal">
+          <div class="d">Sen<b>10</b></div><div class="d">Sel<b>11</b></div><div class="d">Rab<b>12</b></div>
+          <div class="d">Kam<b>13</b></div><div class="d on">Jum<b>14</b></div>
+          <div class="d libur">Sab<b>15</b></div><div class="d libur">Min<b>16</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mock">
+      <div class="mock-cap">Top Broker <span class="rute">/broker</span></div>
+      <div class="mock-b mock-sc">
+        <table style="min-width:580px">
+          <tr><th>Broker</th><th>Emiten</th><th class="num">Net (M)</th><th>Jam masuk</th><th class="num">Rata harga</th></tr>
+          <tr><td class="tk">YP</td><td>BUMI</td><td class="num naik">+41,2</td><td class="jam-sel">09:04 – 11:52</td><td class="num">141,8</td></tr>
+          <tr><td class="tk">CC</td><td>BUMI</td><td class="num naik">+28,7</td><td class="jam-sel">13:31 – 15:44</td><td class="num">142,4</td></tr>
+          <tr><td class="tk">MG</td><td>VKTR</td><td class="num turun">−19,4</td><td class="jam-sel">09:00 – 09:23</td><td class="num">1.238,0</td></tr>
+          <tr><td class="tk">BK</td><td>MBMA</td><td class="num turun">−12,1</td><td class="jam-sel">15:40 – 15:49</td><td class="num">566,5</td></tr>
+        </table>
+        <p class="baca" style="font-size:13px;margin:14px 0 0">
+          Kolom jam masuk memakai warna netral, bukan aksen — ia menceritakan masa lalu, sedangkan
+          aksen selalu berarti "sekarang". Baris terakhir seluruhnya terjadi di sembilan menit
+          terakhir Sesi II: pola khas penjagaan harga penutupan.
+        </p>
+      </div>
+    </div>
+
+    <div class="mock">
+      <div class="mock-cap">Forum <span class="rute">/forum/BUMI</span></div>
+      <div class="mock-b">
+        <div class="pesan"><span class="ava">AG</span><div>
+          <div class="meta"><b>Agitama</b> · 09:52 · <span class="fase" style="color:var(--sesi-1)">Sesi I</span></div>
+          <div>Dinding jual <a class="tag-saham" href="#">$BUMI</a> di 145 menipis tiap hari. YP masih menyerap.</div>
+        </div></div>
+        <div class="pesan"><span class="ava">JI</span><div>
+          <div class="meta"><b>Johan</b> · 12:40 · <span class="fase" style="color:var(--sesi-rehat)">Istirahat</span></div>
+          <div>Sudah masuk edisi besok. Lanjut pantau selepas 13:30.</div>
+        </div></div>
+        <div class="pesan"><span class="ava">?</span><div>
+          <div class="meta">Tamu · sisa 3 dari 5 pesan hari ini</div>
+          <div style="color:var(--text3)">Tulis pesan…</div>
+        </div></div>
+        <p class="baca" style="font-size:12.5px;margin:12px 0 0">
+          Tiap pesan menyimpan fase saat ia ditulis. Membaca ulang percakapan sore hari, warna
+          lencana langsung memberi tahu mana komentar yang dibuat saat pasar berjalan dan mana yang
+          setelah tutup — konteks yang selama ini hilang begitu jam berganti.
+        </p>
+      </div>
+    </div>
+
+    <div class="mock">
+      <div class="mock-cap">Kontributor · sambutan <span class="rute">/admin</span></div>
+      <div class="mock-b">
+        <p style="font-size:13px;margin-bottom:12px">Selamat pagi, <b>Agitama</b>.</p>
+        <div class="jenjang">
+          <div><span class="l">Jenjang</span><b>Perak</b></div>
+          <div><span class="l">Kuota harian</span><b>3 orderbook</b></div>
+          <div><span class="l">Disetujui</span><b>27</b></div>
+        </div>
+        <p class="baca" style="font-size:13px;margin:12px 0 0">
+          8 setoran disetujui lagi untuk naik ke Emas — kuota harianmu ikut naik jadi 5.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Sakelar tema</h2><span class="ket">Terang · Sistem · Gelap</span></div>
+    <p class="baca" style="margin-bottom:18px">
+      Tiga pilihan, bukan dua: <b>Terang</b>, <b>Sistem</b>, <b>Gelap</b>. "Sistem" mengikuti
+      setelan perangkat dan menjadi bawaan — tanpa stempel <code>data-theme</code>, halaman jatuh
+      ke <code>prefers-color-scheme</code>, kontrak tema yang sama dengan dasbor PAPAN. Pilihan
+      eksplisit disimpan di <code>localStorage</code> kunci <code>papan-tema</code>; memilih
+      "Sistem" berarti kuncinya dihapus. Di arah ini tema hanya urusan cahaya ruangan — makna dibawa warna sesi, dan warna sesi TIDAK ikut sakelar ini. Sakelar di kepala halaman ini memakainya sungguhan.
+    </p>
+    <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3)">Bentuk istirahat</span>
+        <span style="display:inline-flex;gap:6px" aria-hidden="true"><button class="sw" tabindex="-1">Terang</button><button class="sw" tabindex="-1" aria-pressed="true">Sistem</button><button class="sw" tabindex="-1">Gelap</button></span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3)">Pilihan eksplisit</span>
+        <span style="display:inline-flex;gap:6px" aria-hidden="true"><button class="sw" tabindex="-1">Terang</button><button class="sw" tabindex="-1">Sistem</button><button class="sw" tabindex="-1" aria-pressed="true">Gelap</button></span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Token siap tempel</h2><span class="ket">blok .lantai + satu efek</span></div>
+<pre><span class="c">/* Netral tetap — tidak pernah ikut fase. */</span>
+.lantai {
+  <span class="k">--bg0</span>:#0D1013; <span class="k">--bg1</span>:#14181D; <span class="k">--bg2</span>:#1B2027; <span class="k">--bg3</span>:#232A33;
+  <span class="k">--line</span>:#262D36; <span class="k">--line2</span>:#38414C;
+  <span class="k">--text</span>:#E7EBEF; <span class="k">--text2</span>:#98A3AE; <span class="k">--text3</span>:#8794A1;
+  <span class="k">--green</span>:#34B27A; <span class="k">--red</span>:#E86C63;   <span class="c">/* harga: TIDAK ikut fase */</span>
+  <span class="k">--sesi-pra</span>:#8C86D8; <span class="k">--sesi-1</span>:#35B4CE; <span class="k">--sesi-rehat</span>:#9AA4B0;
+  <span class="k">--sesi-2</span>:#E08A5F; <span class="k">--sesi-tutup</span>:#7B8797; <span class="k">--sesi-ink</span>:#0D1013;
+  <span class="k">--sesi</span>:var(--sesi-tutup);   <span class="c">/* nilai aman kalau skrip gagal */</span>
+  <span class="k">--disp</span>:"Bricolage Grotesque",system-ui,sans-serif;
+  <span class="k">--ui</span>:"Instrument Sans",system-ui,sans-serif;
+  <span class="k">--mono</span>:"Martian Mono",Consolas,monospace;
+}
+.lantai[data-theme="light"] {
+  <span class="k">--bg0</span>:#EEF1F4; <span class="k">--bg1</span>:#FFFFFF; <span class="k">--bg2</span>:#F5F7F9; <span class="k">--bg3</span>:#E4E9EE;
+  <span class="k">--line</span>:#D5DCE3; <span class="k">--line2</span>:#BEC8D2;
+  <span class="k">--text</span>:#14181D; <span class="k">--text2</span>:#55606C; <span class="k">--text3</span>:#68737F;
+  <span class="k">--green</span>:#1B7A4F; <span class="k">--red</span>:#B53A32;
+  <span class="k">--sesi-pra</span>:#5B54A0; <span class="k">--sesi-1</span>:#0E7288; <span class="k">--sesi-rehat</span>:#5F6772;
+  <span class="k">--sesi-2</span>:#9C4A2B; <span class="k">--sesi-tutup</span>:#39424F; <span class="k">--sesi-ink</span>:#FFFFFF;
+}
+<span class="c">/* Satu baris di DasborLayout, memakai useJamBursa() yang SUDAH ada:
+   el.style.setProperty('--sesi', `var(--sesi-${fase})`)                     */</span></pre>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Yang perlu dipertimbangkan</h2></div>
+    <div class="catatan">
+      <h3>Tiga konsekuensi arah ini</h3>
+      <p><b>Tangkapan layar jadi tidak seragam.</b> Dua tangkapan halaman yang sama di jam berbeda
+        akan berwarna beda. Untuk dokumentasi dan laporan bug, perlu satu cara memaksa fase
+        (misalnya <code>?fase=s1</code>) supaya perbandingan tetap adil.</p>
+      <p><b>PDF tidak boleh ikut.</b> Terbitan Arus Pasar dibaca berbulan-bulan setelah dicetak;
+        aksennya harus tetap dari palet terbitan, bukan dari jam saat file dibuat. Batas antara
+        web dan cetak harus ditulis eksplisit.</p>
+      <p><b>Hijau/merah harga adalah garis mati.</b> Begitu ada yang tergoda membuat warna harga
+        ikut fase, seluruh ide ini berubah dari sistem jadi gangguan. Perlu dijaga di tinjauan kode,
+        bukan sekadar diniatkan.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+const akar = document.documentElement;
+
+/* Fase bursa IDX, disederhanakan: Jumat punya jadwal sendiri (Sesi I berakhir
+   11:30, Sesi II mulai 14:00) dan itu ikut dihitung. Hari libur bursa TIDAK
+   dihitung di sini — halaman ini contoh; di aplikasi, useJamBursa() sudah
+   memakai kalender bursa yang sebenarnya. */
+const FASE = {
+  pra:   { nama:'Pra-Pembukaan', token:'--sesi-pra' },
+  s1:    { nama:'Sesi I',        token:'--sesi-1' },
+  rehat: { nama:'Istirahat',     token:'--sesi-rehat' },
+  s2:    { nama:'Sesi II',       token:'--sesi-2' },
+  tutup: { nama:'Bursa Tutup',   token:'--sesi-tutup' },
+};
+function wib() {
+  // UTC+7 tanpa bergantung pada zona waktu pembaca.
+  const t = new Date();
+  return new Date(t.getTime() + (t.getTimezoneOffset() + 420) * 60000);
+}
+function faseSekarang(d) {
+  const hari = d.getDay();
+  if (hari === 0 || hari === 6) return 'tutup';
+  const m = d.getHours() * 60 + d.getMinutes();
+  const jumat = hari === 5;
+  const akhir1 = jumat ? 11 * 60 + 30 : 12 * 60;
+  const mulai2 = jumat ? 14 * 60 : 13 * 60 + 30;
+  if (m >= 525 && m < 540) return 'pra';        // 08:45–08:59
+  if (m >= 540 && m < akhir1) return 's1';
+  if (m >= akhir1 && m < mulai2) return 'rehat';
+  if (m >= mulai2 && m < 16 * 60 + 15) return 's2';
+  return 'tutup';
+}
+let paksa = null;   // null = ikut jam asli
+function terapkan() {
+  const d = wib();
+  const f = paksa || faseSekarang(d);
+  akar.style.setProperty('--sesi', `var(${FASE[f].token})`);
+  document.getElementById('nama-sesi').textContent = FASE[f].nama;
+  const jam = d.toTimeString().slice(0, 8) + ' WIB';
+  document.getElementById('jam-wib').textContent = paksa ? '(fase dipaksa)' : jam;
+  document.getElementById('jam-mock').textContent = paksa ? FASE[f].nama : jam;
+  document.querySelectorAll('.fase-tbl').forEach((b) => {
+    const cocok = paksa ? b.dataset.fase === paksa : b.dataset.fase === 'live';
+    b.setAttribute('aria-pressed', String(cocok));
+  });
+  gambarRel(f, d);
+}
+/* Rel lima segmen; lebarnya sebanding dengan durasi tiap fase, jadi
+   Istirahat memang terlihat lebih pendek daripada Sesi I. */
+function gambarRel(aktif) {
+  const seg = [['pra',15],['s1',180],['rehat',90],['s2',139],['tutup',60]];
+  const total = seg.reduce((a,[,d]) => a + d, 0);
+  document.getElementById('rel').innerHTML = seg.map(([k,d]) =>
+    `<i style="flex:${d/total};background:var(${FASE[k].token})"${k===aktif?' class="aktif"':''}></i>`).join('');
+}
+document.querySelectorAll('.fase-tbl').forEach((b) => {
+  b.onclick = () => { paksa = b.dataset.fase === 'live' ? null : b.dataset.fase; terapkan(); };
+});
+
+// Sakelar tiga pilihan: "sistem" = tanpa stempel data-theme, ikut
+// prefers-color-scheme — kontrak tema yang sama dengan dasbor PAPAN.
+function pasangTema(t) {
+  if (t === 'sistem') akar.removeAttribute('data-theme');
+  else akar.setAttribute('data-theme', t);
+  document.querySelectorAll('.sw[data-tema]').forEach((b) =>
+    b.setAttribute('aria-pressed', String(b.dataset.tema === t)));
+}
+document.querySelectorAll('.sw[data-tema]').forEach((b) => { b.onclick = () => pasangTema(b.dataset.tema); });
+pasangTema('sistem');
+terapkan();
+setInterval(terapkan, 1000);
+
+document.querySelectorAll('.lencana[data-font]').forEach((el) => {
+  const nama = el.dataset.font;
+  const ada = document.fonts && document.fonts.check(`16px "${nama}"`);
+  el.textContent = ada ? 'terpasang' : 'contoh pakai huruf pengganti';
+  el.classList.toggle('ada', !!ada);
+});
+</script>

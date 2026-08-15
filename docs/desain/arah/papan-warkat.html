@@ -1,0 +1,440 @@
+<title>PAPAN Warkat</title>
+<style>
+/* ═══ ARAH 5 · WARKAT ══════════════════════════════════════════════════════
+   Sebelum perdagangan tanpa warkat (scripless, KSEI 2000-an), memiliki saham
+   berarti memegang KERTAS: sertifikat bergaris ukir, nomor seri, dan cap tera.
+   Arah ini memungut disiplin cetak warkat itu — garis rangkap tipis, emas tera
+   sebagai aksen, cap sebagai penanda — untuk produk yang intinya memang
+   penerbitan dokumen: bulletin PDF harian PAPAN.                              */
+
+:root {
+  --bg0:#F1F2EC; --bg1:#FBFBF7; --bg2:#F5F5EF; --bg3:#E9EAE1;
+  --line:#D9DACE; --line2:#C2C4B3;
+  --text:#20261F; --text2:#565E4E; --text3:#6C7462;
+  --aksen:#7C5E17; --aksen-ink:#FFFFFF; --aksen-dim:rgba(124,94,23,.10);
+  --tera:#8C3B2E; --tera-dim:rgba(140,59,46,.09);
+  --bull:#24704C; --bear:#B23A31;
+  --bull-dim:rgba(36,112,76,.10); --bear-dim:rgba(178,58,49,.10);
+  --disp:"EB Garamond",Garamond,"Times New Roman",serif;
+  --ui:"Alegreya Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"Fira Mono","Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg0:#101310; --bg1:#171B16; --bg2:#1D221C; --bg3:#252B23;
+    --line:#2B3129; --line2:#3E4639;
+    --text:#E8E7DD; --text2:#A2A695; --text3:#8E927F;
+    --aksen:#D9B24A; --aksen-ink:#171207; --aksen-dim:rgba(217,178,74,.12);
+    --tera:#D98A70; --tera-dim:rgba(217,138,112,.11);
+    --bull:#3AAB77; --bear:#E4685E;
+    --bull-dim:rgba(58,171,119,.12); --bear-dim:rgba(228,104,94,.12);
+  }
+}
+:root[data-theme="dark"] {
+  --bg0:#101310; --bg1:#171B16; --bg2:#1D221C; --bg3:#252B23;
+  --line:#2B3129; --line2:#3E4639;
+  --text:#E8E7DD; --text2:#A2A695; --text3:#8E927F;
+  --aksen:#D9B24A; --aksen-ink:#171207; --aksen-dim:rgba(217,178,74,.12);
+  --tera:#D98A70; --tera-dim:rgba(217,138,112,.11);
+  --bull:#3AAB77; --bear:#E4685E;
+  --bull-dim:rgba(58,171,119,.12); --bear-dim:rgba(228,104,94,.12);
+}
+
+* { box-sizing:border-box; }
+body {
+  margin:0; background:var(--bg0); color:var(--text);
+  font-family:var(--ui); font-size:15.5px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3 { margin:0; font-family:var(--disp); font-weight:600; letter-spacing:.005em; text-wrap:balance; }
+p { margin:0 0 14px; }
+code { font-family:var(--mono); font-size:.88em; }
+.wrap { max-width:1000px; margin:0 auto; padding:0 24px 96px; }
+
+/* garis rangkap warkat: tebal-tipis, ciri cetakan sekuritas lama */
+.rangkap { border-top:2px solid var(--line2); position:relative; }
+.rangkap::after { content:""; position:absolute; top:3px; left:0; right:0; border-top:1px solid var(--line); }
+
+/* ── Kepala ─────────────────────────────────────────────────────────────── */
+.topbar { position:sticky; top:0; z-index:30; background:var(--bg0); border-bottom:1px solid var(--line2); box-shadow:0 1px 0 var(--bg0), 0 4px 0 -3px var(--line); }
+.topbar-in { max-width:1000px; margin:0 auto; padding:11px 24px; display:flex; align-items:center; gap:14px; }
+.tag { font-family:var(--mono); font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--tera); }
+.topbar .kanan { margin-left:auto; }
+
+/* Sakelar tema gaya warkat: kotak bersegi, garis tegas, tanpa pil */
+.tema-seg { display:inline-flex; border:1px solid var(--line2); background:var(--bg1); }
+.tema-seg button {
+  font:inherit; font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; cursor:pointer;
+  padding:5px 12px; border:0; background:transparent; color:var(--text3);
+  border-right:1px solid var(--line);
+}
+.tema-seg button:last-child { border-right:0; }
+.tema-seg button[aria-pressed="true"] { background:var(--text); color:var(--bg1); }
+.tema-seg button:focus-visible { outline:2px solid var(--aksen); outline-offset:2px; }
+
+/* ── Hero: kepala sertifikat ────────────────────────────────────────────── */
+.hero { padding:56px 0 36px; text-align:center; }
+.hero .nomor { font-family:var(--mono); font-size:11px; letter-spacing:.24em; color:var(--text3); }
+.hero h1 { font-size:clamp(42px,7vw,76px); line-height:1.04; margin:14px 0 6px; }
+.hero h1 em { font-style:italic; color:var(--aksen); }
+.hero .sub { font-family:var(--disp); font-style:italic; font-size:17px; color:var(--text2); }
+.hero .lead { font-size:16px; color:var(--text2); max-width:58ch; margin:22px auto 0; text-align:left; }
+.hero .bingkai { max-width:720px; margin:0 auto; border:1px solid var(--line2); outline:1px solid var(--line); outline-offset:3px; padding:34px 30px 30px; background:var(--bg1); }
+
+/* ── Bagian ─────────────────────────────────────────────────────────────── */
+section { padding-top:58px; }
+.sec-h { display:flex; align-items:baseline; gap:14px; margin-bottom:22px; }
+.sec-h h2 { font-size:24px; }
+.sec-h .ket { font-family:var(--mono); font-size:10px; color:var(--text3); margin-left:auto; }
+.sec-h .garis { flex:1; align-self:center; } /* dipakai bersama .rangkap */
+.baca { font-size:15.5px; line-height:1.68; max-width:62ch; color:var(--text2); }
+.baca b { color:var(--text); }
+
+/* ── Palet ──────────────────────────────────────────────────────────────── */
+.palet { display:grid; grid-template-columns:repeat(auto-fill,minmax(216px,1fr)); gap:14px; }
+.sw-kartu { background:var(--bg1); border:1px solid var(--line2); }
+.sw-chip { height:60px; border-bottom:1px solid var(--line2); }
+.sw-isi { padding:12px 14px 14px; }
+.sw-nama { font-family:var(--disp); font-size:15px; font-weight:600; }
+.sw-hex { font-family:var(--mono); font-size:10.5px; color:var(--text2); }
+.sw-arti { font-size:11.5px; color:var(--text2); line-height:1.55; margin-top:7px; }
+.sw-cr { display:inline-block; margin-top:8px; font-family:var(--mono); font-size:9.5px; color:var(--text3); }
+
+/* ── Tipografi ──────────────────────────────────────────────────────────── */
+.tipo-kartu { border-top:1px solid var(--line2); padding:18px 0 24px; }
+.tipo-kepala { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:13px; }
+.tipo-peran { font-family:var(--mono); font-size:9.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--text3); }
+.tipo-nama { font-family:var(--disp); font-size:19px; font-weight:600; }
+.lencana { font-family:var(--mono); font-size:9px; padding:2px 7px; border:1px solid var(--line2); color:var(--text3); }
+.lencana.ada { border-color:var(--bull); color:var(--bull); }
+.contoh-disp { font-family:var(--disp); font-size:40px; font-weight:600; line-height:1.1; }
+.contoh-ui { font-family:var(--ui); font-size:18px; line-height:1.55; }
+.contoh-mono { font-family:var(--mono); font-size:17px; font-variant-numeric:tabular-nums; }
+.tipo-alasan { font-size:12.5px; color:var(--text2); margin-top:12px; max-width:66ch; }
+
+/* ── Mockup ─────────────────────────────────────────────────────────────── */
+.mock { background:var(--bg1); border:1px solid var(--line2); margin-bottom:28px; }
+.mock-cap { display:flex; align-items:center; gap:9px; padding:8px 15px; border-bottom:1px solid var(--line2); font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text3); background:var(--bg2); }
+.mock-cap .rute { letter-spacing:0; text-transform:none; color:var(--tera); }
+.mock-b { padding:18px 20px 20px; }
+.mock-sc { overflow-x:auto; }
+
+.ihsg { display:grid; grid-template-columns:1fr auto; gap:22px; align-items:end; }
+.ihsg .lbl { font-family:var(--mono); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--text3); }
+.ihsg .angka { font-family:var(--disp); font-size:52px; font-weight:600; line-height:1; font-variant-numeric:lining-nums tabular-nums; }
+.ihsg .delta { font-family:var(--mono); font-size:13px; margin-top:5px; }
+.naik { color:var(--bull); } .turun { color:var(--bear); }
+.spark { width:210px; height:58px; display:block; }
+
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; font-family:var(--disp); font-style:italic; font-size:13px; color:var(--text2); padding:0 10px 7px 0; border-bottom:2px solid var(--text); font-weight:500; }
+td { padding:9px 10px 9px 0; border-bottom:1px solid var(--line); }
+td.num, th.num { text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums; }
+.tk { font-family:var(--mono); font-weight:500; color:var(--tera); }
+
+/* cap tera: penanda status ala stempel dokumen */
+.cap {
+  display:inline-block; font-family:var(--mono); font-size:9px; letter-spacing:.14em;
+  text-transform:uppercase; padding:2px 8px; border:1.5px solid currentColor;
+  transform:rotate(-2deg);
+}
+.cap.disetujui { color:var(--bull); }
+.cap.menunggu { color:var(--aksen); }
+.cap.ditolak { color:var(--bear); }
+
+.pesan { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); }
+.pesan:last-child { border-bottom:0; }
+.ava { width:30px; height:30px; flex-shrink:0; border:1px solid var(--line2); background:var(--bg2); display:flex; align-items:center; justify-content:center; font-family:var(--disp); font-size:12px; font-weight:600; color:var(--text2); }
+.pesan .meta { font-size:10.5px; color:var(--text3); margin-bottom:2px; }
+.pesan .meta b { color:var(--text); font-size:13px; font-family:var(--disp); }
+.tag-saham { font-family:var(--mono); font-weight:500; color:var(--tera); text-decoration:none; border-bottom:1px dotted var(--tera); }
+
+.jenjang { display:grid; grid-template-columns:repeat(3,1fr); border:1px solid var(--line2); }
+.jenjang > div { padding:11px 14px; border-right:1px solid var(--line); }
+.jenjang > div:last-child { border-right:0; }
+.jenjang .l { font-family:var(--mono); font-size:8.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text3); }
+.jenjang b { display:block; font-family:var(--disp); font-size:18px; font-weight:600; margin-top:2px; }
+
+.toggle-demo { display:flex; flex-wrap:wrap; gap:26px; align-items:flex-start; }
+.toggle-demo .kolom { display:flex; flex-direction:column; gap:8px; }
+.toggle-demo .l { font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text3); }
+
+pre { background:var(--bg1); border:1px solid var(--line2); padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:11px; line-height:1.8; color:var(--text2); margin:0; }
+pre .k { color:var(--tera); } pre .c { color:var(--text3); font-style:italic; }
+
+.catatan { border:1px solid var(--line2); outline:1px solid var(--line); outline-offset:3px; padding:16px 18px; background:var(--bg1); }
+.catatan h3 { font-size:16px; margin-bottom:8px; }
+.catatan p:last-child { margin-bottom:0; }
+
+@media (max-width:760px) {
+  .ihsg, .jenjang { grid-template-columns:1fr; }
+  .jenjang > div { border-right:0; border-bottom:1px solid var(--line); }
+  .jenjang > div:last-child { border-bottom:0; }
+  .hero .bingkai { padding:26px 18px 22px; }
+}
+</style>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <span class="tag">Arah 5 · Warkat</span>
+    <span class="kanan">
+      <span class="tema-seg" role="group" aria-label="Tema tampilan">
+        <button type="button" data-tema="light" aria-pressed="false">Kertas</button>
+        <button type="button" data-tema="sistem" aria-pressed="false">Sistem</button>
+        <button type="button" data-tema="dark" aria-pressed="false">Brankas</button>
+      </span>
+    </span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="bingkai">
+      <div class="nomor">№ AP-150826-E01 · TERBITAN HARIAN</div>
+      <h1>Saham pernah<br>berupa <em>kertas</em>.</h1>
+      <p class="sub">— dan kertas menuntut disiplin cetak yang layar sudah lupa.</p>
+    </div>
+    <p class="lead">
+      Sebelum KSEI memindahkan semuanya ke pencatatan elektronik, memiliki saham berarti
+      memegang warkat: sertifikat bergaris ukir, bernomor seri, bertanda tera. Produk inti
+      PAPAN sesungguhnya masih warkat — <b style="color:var(--text)">bulletin PDF yang
+      terbit tiap hari bursa</b>. Arah ini menyatukan bahasa web dan PDF dalam satu disiplin
+      cetak: garis rangkap tebal-tipis, serif ukir untuk angka besar, dan cap tera sebagai
+      penanda status. Tanpa tekstur kertas palsu, tanpa ornamen tempelan — hanya aturan cetaknya.
+    </p>
+  </header>
+
+  <section>
+    <div class="sec-h"><h2>Kenapa warkat</h2><span class="ket">makna arah ini</span></div>
+    <p class="baca">
+      Tiga hal dipungut dari sertifikat saham lama, dan ketiganya punya pekerjaan:
+    </p>
+    <ol style="color:var(--text2);font-size:14.5px;padding-left:20px;max-width:62ch">
+      <li style="margin-bottom:10px"><b style="color:var(--text)">Garis rangkap tebal-tipis.</b>
+        Pembatas bagian di warkat selalu dua garis — satu tegas, satu halus. Di PAPAN ia jadi
+        satu-satunya ornamen: kepala tabel, pembatas panel, bingkai sampul PDF.</li>
+      <li style="margin-bottom:10px"><b style="color:var(--text)">Cap tera untuk status.</b>
+        Setoran disetujui, menunggu, ditolak — dicap miring seperti stempel dokumen, bukan
+        chip berwarna. Status jadi terasa seperti keputusan yang dibubuhkan, karena memang begitu:
+        kurasi superadmin adalah tanda tangannya.</li>
+      <li><b style="color:var(--text)">Emas tera sebagai aksen.</b>
+        Ini evolusi dari amber PAPAN sekarang, bukan penggantinya — diturunkan ke arah tinta
+        emas cap, dipakai sehemat cap dipakai di dokumen: hal yang menuntut tindakan saja.</li>
+    </ol>
+    <p class="baca" style="margin-top:14px">
+      Yang <i>tidak</i> dipungut: tekstur kertas tua, guilloche palsu, dan nuansa "vintage".
+      Warkat asli justru dicetak sangat bersih — kerapiannya yang membuatnya sulit dipalsukan.
+    </p>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Palet</h2><span class="ket">kontras dihitung, bukan ditaksir</span></div>
+    <div class="palet">
+      <div class="sw-kartu"><div class="sw-chip" style="background:#F1F2EC"></div><div class="sw-isi">
+        <div class="sw-nama">Kertas Sekuritas</div><div class="sw-hex">#F1F2EC</div>
+        <div class="sw-arti">Latar terang. Putih tulang sedikit kehijauan — warna kertas sekuritas sungguhan, bukan krem hangat yang membuat merah-hijau harga berdempetan.</div>
+        <span class="sw-cr">latar</span></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:#101310"></div><div class="sw-isi">
+        <div class="sw-nama">Brankas</div><div class="sw-hex">#101310</div>
+        <div class="sw-arti">Latar gelap: hitam kehijauan lemari besi. Tema gelap bukan pembalikan — ia "warkat yang disimpan", emasnya justru lebih menyala.</div>
+        <span class="sw-cr">latar</span></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:#7C5E17"></div><div class="sw-isi">
+        <div class="sw-nama">Emas Tera</div><div class="sw-hex">#7C5E17 / #D9B24A</div>
+        <div class="sw-arti">Aksen utama — evolusi amber PAPAN. Tombol utama, tanggal aktif, tab terpilih. Di gelap naik ke #D9B24A (9,3:1).</div>
+        <span class="sw-cr">5,4:1 terang · 9,3:1 gelap</span></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:#8C3B2E"></div><div class="sw-isi">
+        <div class="sw-nama">Tinta Cap</div><div class="sw-hex">#8C3B2E / #D98A70</div>
+        <div class="sw-arti">Warna kedua: merah-coklat tinta stempel. Kode emiten dan rute — dibedakan dari merah "harga turun" oleh rona coklatnya.</div>
+        <span class="sw-cr">6,7:1 · 7,0:1</span></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:#24704C"></div><div class="sw-isi">
+        <div class="sw-nama">Naik</div><div class="sw-hex">#24704C</div>
+        <div class="sw-arti">Hijau tinta pembukuan — warna yang dipakai pemegang buku untuk saldo positif jauh sebelum layar ada.</div>
+        <span class="sw-cr">5,3:1</span></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:#B23A31"></div><div class="sw-isi">
+        <div class="sw-nama">Turun</div><div class="sw-hex">#B23A31</div>
+        <div class="sw-arti">Merah pembukuan. Sengaja dijauhkan dari tinta cap: "harga turun" dan "kode emiten" tidak boleh terlihat sekeluarga.</div>
+        <span class="sw-cr">5,3:1</span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Tipografi</h2><span class="ket">serif ukir + sans pendamping</span></div>
+    <div class="tipo-kartu">
+      <div class="tipo-kepala"><span class="tipo-peran">Judul &amp; angka besar</span><span class="tipo-nama">EB Garamond</span><span class="lencana" data-font="EB Garamond">memeriksa…</span></div>
+      <div class="contoh-disp">Arus Pasar — 7.284,51</div>
+      <p class="tipo-alasan">Garamond adalah huruf pengukir: dipakai di sertifikat dan uang
+        kertas karena bentuknya bertahan digores halus. Angka besarnya memakai lining figures
+        tabular — sejajar rapi seperti nomor seri. Hanya untuk judul dan angka hero; teks
+        kecil tetap sans supaya terbaca di 11px.</p>
+    </div>
+    <div class="tipo-kartu">
+      <div class="tipo-kepala"><span class="tipo-peran">Antarmuka &amp; bacaan</span><span class="tipo-nama">Alegreya Sans</span><span class="lencana" data-font="Alegreya Sans">memeriksa…</span></div>
+      <div class="contoh-ui">Setoranmu dicap "disetujui" oleh kurasi — cap itulah yang menaikkan jenjang, bukan sekadar mengunggah.</div>
+      <p class="tipo-alasan">Sans humanis yang digambar oleh perancang serif — lengkungannya
+        seirama dengan Garamond, jadi pergantian judul-ke-teks tidak terasa ganti dunia.</p>
+    </div>
+    <div class="tipo-kartu">
+      <div class="tipo-kepala"><span class="tipo-peran">Angka tabel, kode &amp; cap</span><span class="tipo-nama">Fira Mono</span><span class="lencana" data-font="Fira Mono">memeriksa…</span></div>
+      <div class="contoh-mono">№ AP-150826-E01 · BUMI 142 · −2,07%</div>
+      <p class="tipo-alasan">Kolom harga, nomor edisi, isi cap tera. Mono yang tegak dan
+        sedikit sempit — terasa seperti mesin tik pembukuan, cocok tanpa berkostum.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Sakelar tema</h2><span class="ket">Kertas · Sistem · Brankas</span></div>
+    <p class="baca" style="margin-bottom:20px">
+      Dua tema arah ini punya nama sendiri: <b>Kertas</b> (warkat di atas meja) dan
+      <b>Brankas</b> (warkat yang disimpan — emasnya lebih menyala di gelap). "Sistem" ikut
+      perangkat dan jadi bawaan. Bentuk sakelarnya kotak bersegi dengan pilihan aktif
+      dibalik pekat — bahasa stempel, bukan pil. Coba di kanan atas; halaman ini memakainya sungguhan.
+    </p>
+    <div class="toggle-demo">
+      <div class="kolom">
+        <span class="l">Bentuk istirahat</span>
+        <span class="tema-seg" aria-hidden="true">
+          <button type="button" tabindex="-1">Kertas</button>
+          <button type="button" tabindex="-1" aria-pressed="true">Sistem</button>
+          <button type="button" tabindex="-1">Brankas</button>
+        </span>
+      </div>
+      <div class="kolom">
+        <span class="l">Pilihan eksplisit</span>
+        <span class="tema-seg" aria-hidden="true">
+          <button type="button" tabindex="-1" aria-pressed="true">Kertas</button>
+          <button type="button" tabindex="-1">Sistem</button>
+          <button type="button" tabindex="-1">Brankas</button>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Di halaman</h2><span class="ket">tampilan asli, token baru</span></div>
+
+    <div class="mock">
+      <div class="mock-cap">Dasbor <span class="rute">/</span></div>
+      <div class="mock-b">
+        <div class="ihsg">
+          <div>
+            <div class="lbl">Indeks Harga Saham Gabungan · 15 Agustus 2026</div>
+            <div class="angka">7.284,51</div>
+            <div class="delta naik">▲ +46,20 (+0,64%)</div>
+          </div>
+          <svg class="spark" viewBox="0 0 210 58" preserveAspectRatio="none" aria-label="IHSG tahun berjalan">
+            <polyline points="0,46 22,41 44,47 66,34 88,37 110,25 132,29 154,18 176,22 210,10" fill="none" stroke="var(--aksen)" stroke-width="1.6"/>
+            <polyline points="0,49 22,44 44,50 66,37 88,40 110,28 132,32 154,21 176,25 210,13" fill="none" stroke="var(--line2)" stroke-width="1"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="mock">
+      <div class="mock-cap">Kurasi setoran <span class="rute">/admin/kurasi</span></div>
+      <div class="mock-b mock-sc">
+        <table style="min-width:560px">
+          <tr><th>Kode</th><th>Penyetor</th><th>Alasan</th><th class="num">Status</th></tr>
+          <tr><td class="tk">BUMI</td><td>Agitama</td><td style="color:var(--text2)">Dinding jual 145 menipis, YP akumulasi</td><td class="num"><span class="cap disetujui">Disetujui</span></td></tr>
+          <tr><td class="tk">VKTR</td><td>Michael S.</td><td style="color:var(--text2)">Breakout volume 3× rata-rata</td><td class="num"><span class="cap menunggu">Menunggu</span></td></tr>
+          <tr><td class="tk">DEWA</td><td>Andri W.</td><td style="color:var(--text2)">Screenshot terpotong, ulangi layar penuh</td><td class="num"><span class="cap ditolak">Ditolak</span></td></tr>
+        </table>
+        <p class="baca" style="font-size:12.5px;margin:14px 0 0">
+          Status dicap miring seperti stempel dokumen — kurasi memang keputusan yang dibubuhkan,
+          dan cap membuatnya terasa begitu.
+        </p>
+      </div>
+    </div>
+
+    <div class="mock">
+      <div class="mock-cap">Bulletin <span class="rute">/bulletin</span></div>
+      <div class="mock-b mock-sc">
+        <table style="min-width:540px">
+          <tr><th>№ Edisi</th><th>Terbitan</th><th class="num">IHSG</th><th class="num">Δ%</th></tr>
+          <tr><td class="tk">AP-W140826-E01</td><td>Arus Pasar Mingguan — 10–14 Agustus</td><td class="num">7.284,51</td><td class="num naik">+0,64</td></tr>
+          <tr><td class="tk">AP-130826-E01</td><td>Arus Pasar — Kamis, 13 Agustus</td><td class="num">7.238,31</td><td class="num naik">+0,29</td></tr>
+          <tr><td class="tk">BA-DSSA-140826-E01</td><td>Bedah Arus Saham DSSA</td><td class="num">7.284,51</td><td class="num naik">+0,64</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="mock">
+      <div class="mock-cap">Kontributor · sambutan <span class="rute">/admin</span></div>
+      <div class="mock-b">
+        <p style="font-size:14px;margin-bottom:12px">Selamat pagi, <b style="font-family:var(--disp)">Agitama</b>.</p>
+        <div class="jenjang">
+          <div><span class="l">Jenjang</span><b>Perak</b></div>
+          <div><span class="l">Kuota harian</span><b>3 orderbook</b></div>
+          <div><span class="l">Disetujui</span><b>27</b></div>
+        </div>
+        <p class="baca" style="font-size:13px;margin:12px 0 0">
+          8 setoran disetujui lagi untuk naik ke Emas — aliasmu tercantum di kolofon tiap
+          edisi yang memuat setoranmu, seperti nama pengukir di sudut warkat.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Token siap tempel</h2><span class="ket">blok .lantai</span></div>
+<pre><span class="c">/* Arah Warkat — tema terang (kertas) sebagai muka utama */</span>
+.lantai[data-theme="light"] {
+  <span class="k">--bg0</span>:#F1F2EC; <span class="k">--bg1</span>:#FBFBF7; <span class="k">--bg2</span>:#F5F5EF; <span class="k">--bg3</span>:#E9EAE1;
+  <span class="k">--line</span>:#D9DACE; <span class="k">--line2</span>:#C2C4B3;
+  <span class="k">--text</span>:#20261F; <span class="k">--text2</span>:#565E4E; <span class="k">--text3</span>:#6C7462;
+  <span class="k">--aksen</span>:#7C5E17; <span class="k">--aksen-ink</span>:#FFFFFF;
+  <span class="k">--tera</span>:#8C3B2E;
+  <span class="k">--green</span>:#24704C; <span class="k">--red</span>:#B23A31;
+  <span class="k">--disp</span>:"EB Garamond",Garamond,serif;
+  <span class="k">--ui</span>:"Alegreya Sans",system-ui,sans-serif;
+  <span class="k">--mono</span>:"Fira Mono",Consolas,monospace;
+}
+<span class="c">/* tema gelap (brankas) */</span>
+.lantai {
+  <span class="k">--bg0</span>:#101310; <span class="k">--bg1</span>:#171B16; <span class="k">--bg2</span>:#1D221C; <span class="k">--bg3</span>:#252B23;
+  <span class="k">--line</span>:#2B3129; <span class="k">--line2</span>:#3E4639;
+  <span class="k">--text</span>:#E8E7DD; <span class="k">--text2</span>:#A2A695; <span class="k">--text3</span>:#8E927F;
+  <span class="k">--aksen</span>:#D9B24A; <span class="k">--aksen-ink</span>:#171207;
+  <span class="k">--tera</span>:#D98A70;
+  <span class="k">--green</span>:#3AAB77; <span class="k">--red</span>:#E4685E;
+}</pre>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Yang perlu dipertimbangkan</h2></div>
+    <div class="catatan">
+      <h3>Tiga konsekuensi arah ini</h3>
+      <p><b>Serif untuk angka besar harus diuji di data padat.</b> Garamond indah di angka hero,
+        tapi tabel 22 baris penuh angka serif bisa melelahkan — karena itu tabel tetap mono.
+        Batas itu harus dijaga di tinjauan kode.</p>
+      <p><b>Ini arah yang paling "berpihak terang".</b> Bahasa warkat paling kuat di tema
+        Kertas; Brankas tetap dirancang penuh, tapi kalau mayoritas penggunamu memakai gelap,
+        arah lain menyuguhkan muka terbaiknya lebih sering.</p>
+      <p><b>Cap miring butuh disiplin.</b> Transform rotate pada status hanya bekerja kalau
+        JARANG — begitu semua chip ikut miring, halaman terlihat rusak, bukan bergaya. Hanya
+        status kurasi yang boleh dicap.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const akar = document.documentElement;
+function pasang(t) {
+  if (t === 'sistem') akar.removeAttribute('data-theme');
+  else akar.setAttribute('data-theme', t);
+  document.querySelectorAll('.topbar .tema-seg button').forEach((b) => {
+    b.setAttribute('aria-pressed', String(b.dataset.tema === t));
+  });
+}
+document.querySelectorAll('.topbar .tema-seg button').forEach((b) => {
+  b.onclick = () => pasang(b.dataset.tema);
+});
+pasang('sistem');
+
+document.querySelectorAll('.lencana[data-font]').forEach((el) => {
+  const ada = document.fonts && document.fonts.check(`16px "${el.dataset.font}"`);
+  el.textContent = ada ? 'terpasang' : 'contoh pakai huruf pengganti';
+  el.classList.toggle('ada', !!ada);
+});
+</script>

@@ -100,6 +100,10 @@ export function setProfil(
      *  jadi, tidak diubah dari sini). `kuota_manual: null` = ikut jenjang. */
     kuota_manual: number | null
     beku_otomatis: boolean
+    /** Jenjang (tier 0–5). Superadmin boleh menyetelnya langsung — misalnya
+     *  memberi kontributor titik awal yang pantas tanpa menunggu perhitungan
+     *  otomatis mengejar. Kuota tetap ditegakkan server lewat kuota_saya(). */
+    tier: number
   }>
 ) {
   return panggilAdminAkun<{ ok: true }>('set_profil', { id, ...patch })

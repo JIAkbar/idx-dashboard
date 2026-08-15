@@ -1,0 +1,452 @@
+<title>PAPAN Samudra</title>
+<style>
+/* ═══ ARAH 4 · SAMUDRA ═════════════════════════════════════════════════════
+   Arah "produk konsumen": disiplin yang dipakai aplikasi finansial terbaik di
+   galeri referensi (refero.design) — netral sejati tanpa rona, SATU biru
+   elektrik, angka besar sebagai pahlawan halaman, kartu lunak, dan ruang
+   kosong yang dibayar mahal. Tidak ada metafora; kualitasnya IALAH identitas. */
+
+:root {
+  --bg0:#F6F7F9; --bg1:#FFFFFF; --bg2:#F1F3F6; --bg3:#E8EBEF;
+  --line:#E3E6EB; --line2:#CDD3DB;
+  --text:#171B21; --text2:#4E5A68; --text3:#69747F;
+  --aksen:#1D5FCC; --aksen-ink:#FFFFFF; --aksen-dim:rgba(29,95,204,.09);
+  --bull:#157A4E; --bear:#C03A31;
+  --bull-dim:rgba(21,122,78,.10); --bear-dim:rgba(192,58,49,.10);
+  --bayang:0 1px 2px rgba(23,27,33,.05), 0 8px 24px rgba(23,27,33,.06);
+  --disp:"Red Hat Display","Segoe UI",system-ui,sans-serif;
+  --ui:"Red Hat Text","Segoe UI",system-ui,sans-serif;
+  --mono:"Red Hat Mono","Cascadia Mono",Consolas,monospace;
+  --r:12px; --r-kecil:8px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg0:#0B0E13; --bg1:#12161D; --bg2:#181D26; --bg3:#20262F;
+    --line:#222834; --line2:#333B48;
+    --text:#E9ECF1; --text2:#9AA5B2; --text3:#87919D;
+    --aksen:#6AA6FF; --aksen-ink:#0B0E13; --aksen-dim:rgba(106,166,255,.12);
+    --bull:#33B27B; --bear:#E8695F;
+    --bull-dim:rgba(51,178,123,.13); --bear-dim:rgba(232,105,95,.13);
+    --bayang:0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"] {
+  --bg0:#0B0E13; --bg1:#12161D; --bg2:#181D26; --bg3:#20262F;
+  --line:#222834; --line2:#333B48;
+  --text:#E9ECF1; --text2:#9AA5B2; --text3:#87919D;
+  --aksen:#6AA6FF; --aksen-ink:#0B0E13; --aksen-dim:rgba(106,166,255,.12);
+  --bull:#33B27B; --bear:#E8695F;
+  --bull-dim:rgba(51,178,123,.13); --bear-dim:rgba(232,105,95,.13);
+  --bayang:0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
+}
+
+* { box-sizing:border-box; }
+body {
+  margin:0; background:var(--bg0); color:var(--text);
+  font-family:var(--ui); font-size:15px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3 { margin:0; font-family:var(--disp); font-weight:800; letter-spacing:-.025em; text-wrap:balance; }
+p { margin:0 0 14px; }
+code { font-family:var(--mono); font-size:.9em; }
+.wrap { max-width:1040px; margin:0 auto; padding:0 24px 96px; }
+
+/* ── Kepala ─────────────────────────────────────────────────────────────── */
+.topbar { position:sticky; top:0; z-index:30; background:color-mix(in srgb, var(--bg0) 88%, transparent); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
+.topbar-in { max-width:1040px; margin:0 auto; padding:12px 24px; display:flex; align-items:center; gap:14px; }
+.tag { font-family:var(--mono); font-size:10px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--aksen); }
+.topbar .kanan { margin-left:auto; }
+
+/* ── Sakelar tema — komponen resmi arah ini ─────────────────────────────── */
+.tema-pil {
+  display:inline-flex; position:relative; padding:3px; gap:2px;
+  background:var(--bg3); border:1px solid var(--line); border-radius:99px;
+}
+.tema-pil button {
+  font:inherit; font-family:var(--ui); font-size:11.5px; font-weight:600; cursor:pointer;
+  display:inline-flex; align-items:center; gap:5px;
+  padding:4px 11px; border:0; border-radius:99px; background:transparent; color:var(--text3);
+  transition:background-color .18s ease, color .18s ease;
+}
+.tema-pil button[aria-pressed="true"] { background:var(--bg1); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,.14); }
+.tema-pil button:focus-visible { outline:2px solid var(--aksen); outline-offset:2px; }
+.tema-pil svg { width:13px; height:13px; }
+@media (prefers-reduced-motion:reduce) { .tema-pil button { transition:none; } }
+
+/* ── Hero: angka sebagai pahlawan ───────────────────────────────────────── */
+.hero { padding:64px 0 36px; text-align:left; }
+.hero .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--text3); }
+.hero .angka-besar {
+  font-family:var(--disp); font-weight:800; letter-spacing:-.045em; line-height:1;
+  font-size:clamp(64px,11vw,124px); font-variant-numeric:tabular-nums; margin:10px 0 4px;
+}
+.hero .delta { font-family:var(--mono); font-size:clamp(15px,2.2vw,20px); font-weight:600; color:var(--bull); }
+.hero .lead { font-size:16.5px; color:var(--text2); max-width:52ch; margin-top:24px; }
+
+/* ── Bagian ─────────────────────────────────────────────────────────────── */
+section { padding-top:60px; }
+.sec-h { display:flex; align-items:baseline; gap:12px; margin-bottom:22px; }
+.sec-h h2 { font-size:22px; }
+.sec-h .ket { font-family:var(--mono); font-size:10px; color:var(--text3); margin-left:auto; }
+.baca { font-size:15.5px; line-height:1.65; max-width:62ch; color:var(--text2); }
+.baca b { color:var(--text); }
+
+/* ── Palet ──────────────────────────────────────────────────────────────── */
+.palet { display:grid; grid-template-columns:repeat(auto-fill,minmax(212px,1fr)); gap:14px; }
+.sw-kartu { background:var(--bg1); border:1px solid var(--line); border-radius:var(--r); overflow:hidden; box-shadow:var(--bayang); }
+.sw-chip { height:64px; }
+.sw-isi { padding:12px 15px 15px; }
+.sw-nama { font-family:var(--disp); font-size:13.5px; font-weight:700; }
+.sw-hex { font-family:var(--mono); font-size:10.5px; color:var(--text2); }
+.sw-arti { font-size:11.5px; color:var(--text2); line-height:1.5; margin-top:7px; }
+.sw-cr { display:inline-block; margin-top:8px; font-family:var(--mono); font-size:9.5px; padding:2px 7px; border-radius:99px; background:var(--bg2); color:var(--text2); }
+
+/* ── Tipografi ──────────────────────────────────────────────────────────── */
+.tipo-kartu { background:var(--bg1); border:1px solid var(--line); border-radius:var(--r); padding:20px 22px; margin-bottom:14px; box-shadow:var(--bayang); }
+.tipo-kepala { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:13px; }
+.tipo-peran { font-family:var(--mono); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--text3); }
+.tipo-nama { font-family:var(--disp); font-size:17px; font-weight:800; }
+.lencana { font-family:var(--mono); font-size:9px; padding:2px 8px; border-radius:99px; border:1px solid var(--line2); color:var(--text3); }
+.lencana.ada { border-color:var(--bull); color:var(--bull); }
+.contoh-disp { font-family:var(--disp); font-size:38px; font-weight:800; letter-spacing:-.04em; line-height:1.05; }
+.contoh-ui { font-family:var(--ui); font-size:17px; line-height:1.55; }
+.contoh-mono { font-family:var(--mono); font-size:17px; font-variant-numeric:tabular-nums; }
+.tipo-alasan { font-size:12.5px; color:var(--text2); margin-top:12px; max-width:66ch; }
+
+/* ── Mockup ─────────────────────────────────────────────────────────────── */
+.mock { background:var(--bg1); border:1px solid var(--line); border-radius:var(--r); overflow:hidden; box-shadow:var(--bayang); margin-bottom:28px; }
+.mock-cap { display:flex; align-items:center; gap:9px; padding:9px 16px; border-bottom:1px solid var(--line); font-family:var(--mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text3); }
+.mock-cap .rute { letter-spacing:0; text-transform:none; color:var(--aksen); }
+.mock-b { padding:18px 20px 20px; }
+.mock-sc { overflow-x:auto; }
+
+.ihsg { display:grid; grid-template-columns:1fr auto; gap:22px; align-items:end; }
+.ihsg .lbl { font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text3); }
+.ihsg .angka { font-family:var(--disp); font-size:46px; font-weight:800; letter-spacing:-.045em; line-height:1.05; font-variant-numeric:tabular-nums; }
+.ihsg .delta { font-family:var(--mono); font-size:13.5px; font-weight:600; margin-top:3px; }
+.naik { color:var(--bull); } .turun { color:var(--bear); }
+.chip-naik, .chip-turun { display:inline-block; font-family:var(--mono); font-size:11px; font-weight:600; padding:3px 9px; border-radius:99px; }
+.chip-naik { background:var(--bull-dim); color:var(--bull); }
+.chip-turun { background:var(--bear-dim); color:var(--bear); }
+.spark { width:220px; height:64px; display:block; }
+
+.kartu-baris { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:20px; }
+.kartu-baris > div { background:var(--bg2); border-radius:var(--r-kecil); padding:12px 14px; }
+.kartu-baris .l { font-family:var(--mono); font-size:9px; letter-spacing:.13em; text-transform:uppercase; color:var(--text3); }
+.kartu-baris b { display:block; font-family:var(--disp); font-size:19px; font-weight:800; margin-top:3px; font-variant-numeric:tabular-nums; }
+
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; font-family:var(--mono); font-size:9px; letter-spacing:.13em; text-transform:uppercase; color:var(--text3); padding:0 10px 8px 0; border-bottom:1px solid var(--line); font-weight:500; }
+td { padding:10px 10px 10px 0; border-bottom:1px solid var(--line); }
+tr:last-child td { border-bottom:0; }
+td.num, th.num { text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums; }
+.tk { font-family:var(--mono); font-weight:700; color:var(--aksen); }
+
+.pesan { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); }
+.pesan:last-child { border-bottom:0; }
+.ava { width:32px; height:32px; flex-shrink:0; border-radius:99px; background:var(--bg3); display:flex; align-items:center; justify-content:center; font-family:var(--disp); font-size:11px; font-weight:800; color:var(--text2); }
+.pesan .meta { font-size:10.5px; color:var(--text3); margin-bottom:2px; }
+.pesan .meta b { color:var(--text); font-size:12.5px; }
+.tag-saham { font-family:var(--mono); font-weight:700; color:var(--aksen); text-decoration:none; }
+
+.jenjang { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.jenjang > div { background:var(--bg2); border-radius:var(--r-kecil); padding:11px 13px; }
+.jenjang .l { font-family:var(--mono); font-size:8.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text3); }
+.jenjang b { display:block; font-family:var(--disp); font-size:15.5px; font-weight:800; margin-top:2px; }
+.btn-utama { font:inherit; font-family:var(--disp); font-weight:700; font-size:13.5px; cursor:pointer; width:100%; margin-top:14px; padding:11px 0; border:0; border-radius:99px; background:var(--aksen); color:var(--aksen-ink); }
+.btn-utama:focus-visible { outline:2px solid var(--aksen); outline-offset:3px; }
+
+/* ── Spec sakelar tema ──────────────────────────────────────────────────── */
+.toggle-demo { display:flex; flex-wrap:wrap; gap:26px; align-items:flex-start; }
+.toggle-demo .kolom { display:flex; flex-direction:column; gap:8px; }
+.toggle-demo .l { font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text3); }
+
+pre { background:var(--bg1); border:1px solid var(--line); border-radius:var(--r); padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:11px; line-height:1.8; color:var(--text2); margin:0; box-shadow:var(--bayang); }
+pre .k { color:var(--aksen); } pre .c { color:var(--text3); font-style:italic; }
+
+.catatan { border:1px solid var(--line); border-left:4px solid var(--aksen); border-radius:var(--r-kecil); padding:15px 17px; background:var(--bg1); }
+.catatan h3 { font-size:14px; margin-bottom:7px; }
+.catatan p:last-child { margin-bottom:0; }
+
+@media (max-width:760px) {
+  .ihsg, .jenjang { grid-template-columns:1fr; }
+  .hero { padding-top:44px; }
+}
+</style>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <span class="tag">Arah 4 · Samudra</span>
+    <span class="kanan">
+      <span class="tema-pil" role="group" aria-label="Tema tampilan">
+        <button type="button" data-tema="light" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5 5l1.8 1.8M17.2 17.2L19 19M19 5l-1.8 1.8M6.8 17.2L5 19"/></svg>
+          Terang
+        </button>
+        <button type="button" data-tema="sistem" aria-pressed="false">Sistem</button>
+        <button type="button" data-tema="dark" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 14.5A8.5 8.5 0 119.5 4a7 7 0 1010.5 10.5z"/></svg>
+          Gelap
+        </button>
+      </span>
+    </span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">IHSG · Jumat, 15 Agustus 2026 · Sesi II</div>
+    <div class="angka-besar">7.284,51</div>
+    <div class="delta">+46,20 (+0,64%)</div>
+    <p class="lead">
+      Empat arah sebelumnya membawa metafora — laut, gunung api, jam. Arah ini menolak
+      metafora. Rujukannya galeri antarmuka finansial terbaik (pola yang dikurasi
+      refero.design): netral sejati tanpa rona, satu biru elektrik yang bekerja keras,
+      angka besar sebagai pahlawan halaman, dan kartu yang mengapung tipis di atas latar.
+      Identitasnya adalah <b style="color:var(--text)">kualitas eksekusi itu sendiri</b>.
+    </p>
+  </header>
+
+  <section>
+    <div class="sec-h"><h2>Kenapa tanpa metafora</h2><span class="ket">makna arah ini</span></div>
+    <p class="baca">
+      Aplikasi finansial yang dipakai jutaan orang hampir tidak pernah bertema. Mereka menang
+      lewat disiplin: <b>satu aksen yang tidak pernah dipakai sembarangan</b>, netral yang
+      benar-benar netral (abu tanpa rona biru atau coklat), angka yang selalu tabular, dan
+      sudut membulat yang konsisten di setiap kartu. PAPAN versi ini terasa seperti produk
+      yang sudah lima tahun dipoles — bukan proyek yang sedang mencari kepribadian.
+    </p>
+    <p class="baca" style="margin-top:14px">
+      Risikonya kebalikan dari tiga arah pertama: arah ini <b>paling aman dan paling tidak
+      khas</b>. Kalau tujuanmu PAPAN langsung terasa kredibel bagi orang yang terbiasa
+      dengan aplikasi sekuritas besar, ini jalannya. Kalau tujuanmu PAPAN dikenali dari
+      warnanya saja, pilih arah lain.
+    </p>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Palet</h2><span class="ket">kontras dihitung, bukan ditaksir</span></div>
+    <div class="palet">
+      <div class="sw-kartu"><div class="sw-chip" style="background:#1D5FCC"></div><div class="sw-isi">
+        <div class="sw-nama">Biru Samudra</div><div class="sw-hex">#1D5FCC / #6AA6FF</div>
+        <div class="sw-arti">Satu-satunya aksen. Tautan, tombol utama, kode emiten, tab aktif. Di gelap dinaikkan ke #6AA6FF supaya tetap 7,8:1.</div>
+        <span class="sw-cr">5,5:1 terang · 7,8:1 gelap</span></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:#F6F7F9;border-bottom:1px solid var(--line)"></div><div class="sw-isi">
+        <div class="sw-nama">Kabut</div><div class="sw-hex">#F6F7F9</div>
+        <div class="sw-arti">Latar terang. Abu sejati tanpa rona — krem membuat merah-hijau harga saling mendekat, abu murni menjauhkannya.</div>
+        <span class="sw-cr">latar</span></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:#0B0E13"></div><div class="sw-isi">
+        <div class="sw-nama">Palung</div><div class="sw-hex">#0B0E13</div>
+        <div class="sw-arti">Latar gelap. Hampir hitam dengan sedikit biru — kartu #12161D mengapung di atasnya lewat bayangan, bukan garis tepi tebal.</div>
+        <span class="sw-cr">latar</span></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:linear-gradient(90deg,#157A4E 50%,#C03A31 50%)"></div><div class="sw-isi">
+        <div class="sw-nama">Naik &amp; Turun</div><div class="sw-hex">#157A4E · #C03A31</div>
+        <div class="sw-arti">Semantik harga, terpisah penuh dari aksen. Selalu tampil dengan chip berlatar tipis (10%) supaya terbaca sebelum angkanya dibaca.</div>
+        <span class="sw-cr">5,0:1 · 5,0:1</span></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:#E8EBEF;border-bottom:1px solid var(--line)"></div><div class="sw-isi">
+        <div class="sw-nama">Permukaan Dalam</div><div class="sw-hex">#E8EBEF / #20262F</div>
+        <div class="sw-arti">Kartu di dalam kartu (statistik, jenjang, sakelar). Tanpa garis tepi — kedalamannya dari selisih terang, bukan dari border.</div>
+        <span class="sw-cr">permukaan</span></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:#4E5A68"></div><div class="sw-isi">
+        <div class="sw-nama">Teks Kedua</div><div class="sw-hex">#4E5A68 / #9AA5B2</div>
+        <div class="sw-arti">Keterangan dan label. Sengaja masih 6,6:1 — arah ini tidak pernah memakai abu yang "hampir tidak terbaca demi estetika".</div>
+        <span class="sw-cr">6,6:1 · 7,7:1</span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Tipografi</h2><span class="ket">satu superkeluarga, tiga peran</span></div>
+    <p class="baca" style="margin-bottom:18px">
+      Red Hat adalah satu keluarga dengan tiga anggota yang digambar bersama — Display,
+      Text, Mono. Judul, kalimat, dan angka memakai kerangka huruf yang sama, jadi halaman
+      terasa satu suara tanpa perlu menyetel pasangan. Ini pola yang dipakai aplikasi
+      finansial modern: satu keputusan huruf, bukan tiga.
+    </p>
+    <div class="tipo-kartu">
+      <div class="tipo-kepala"><span class="tipo-peran">Judul &amp; angka besar</span><span class="tipo-nama">Red Hat Display</span><span class="lencana" data-font="Red Hat Display">memeriksa…</span></div>
+      <div class="contoh-disp">Peta Investor</div>
+      <p class="tipo-alasan">Bobot 800 dengan sela huruf dirapatkan — judul dan angka hero
+        sama-sama memakainya, jadi "7.284,51" di atas terasa satu bahasa dengan judul halaman.</p>
+    </div>
+    <div class="tipo-kartu">
+      <div class="tipo-kepala"><span class="tipo-peran">Antarmuka &amp; bacaan</span><span class="tipo-nama">Red Hat Text</span><span class="lencana" data-font="Red Hat Text">memeriksa…</span></div>
+      <div class="contoh-ui">Setoranmu masuk antrean kurasi — status "disetujui" yang menaikkan jenjang, bukan sekadar mengunggah.</div>
+      <p class="tipo-alasan">Terbaca jernih di 11px, ukuran label terkecil PAPAN. Semua kalimat antarmuka dan isi forum.</p>
+    </div>
+    <div class="tipo-kartu">
+      <div class="tipo-kepala"><span class="tipo-peran">Angka tabel &amp; kode</span><span class="tipo-nama">Red Hat Mono</span><span class="lencana" data-font="Red Hat Mono">memeriksa…</span></div>
+      <div class="contoh-mono">BUMI · 142 · −2,07% · 09:41:07 WIB</div>
+      <p class="tipo-alasan">Kolom harga, kode emiten, jam. Karena satu keluarga dengan Display,
+        angka tabel di sebelah judul tidak terlihat "tertempel dari font lain".</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Sakelar tema</h2><span class="ket">komponen resmi, bukan tombol darurat</span></div>
+    <p class="baca" style="margin-bottom:20px">
+      Tiga pilihan, bukan dua: <b>Terang · Sistem · Gelap</b>. "Sistem" mengikuti setelan
+      perangkat dan menjadi bawaan — pengguna yang tidak pernah menyentuh sakelar otomatis
+      mendapat tema yang cocok dengan ponselnya. Pilihan disimpan di <code>localStorage</code>
+      dengan kunci <code>papan-tema</code> yang sudah ada; nilai "sistem" berarti kuncinya
+      dihapus. Coba sakelar di kanan atas — halaman ini memakainya sungguhan.
+    </p>
+    <div class="toggle-demo">
+      <div class="kolom">
+        <span class="l">Bentuk istirahat</span>
+        <span class="tema-pil" aria-hidden="true">
+          <button type="button" tabindex="-1">Terang</button>
+          <button type="button" tabindex="-1" aria-pressed="true">Sistem</button>
+          <button type="button" tabindex="-1">Gelap</button>
+        </span>
+      </div>
+      <div class="kolom">
+        <span class="l">Pilihan eksplisit</span>
+        <span class="tema-pil" aria-hidden="true">
+          <button type="button" tabindex="-1">Terang</button>
+          <button type="button" tabindex="-1">Sistem</button>
+          <button type="button" tabindex="-1" aria-pressed="true">Gelap</button>
+        </span>
+      </div>
+      <div class="kolom">
+        <span class="l">Ringkas (rail sempit) — ikon saja</span>
+        <span class="tema-pil" aria-hidden="true">
+          <button type="button" tabindex="-1" aria-pressed="true" title="Terang"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5 5l1.8 1.8M17.2 17.2L19 19M19 5l-1.8 1.8M6.8 17.2L5 19"/></svg></button>
+          <button type="button" tabindex="-1" title="Gelap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M20 14.5A8.5 8.5 0 119.5 4a7 7 0 1010.5 10.5z"/></svg></button>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Di halaman</h2><span class="ket">tampilan asli, token baru</span></div>
+
+    <div class="mock">
+      <div class="mock-cap">Dasbor <span class="rute">/</span></div>
+      <div class="mock-b">
+        <div class="ihsg">
+          <div>
+            <div class="lbl">IHSG · 15 Agustus 2026</div>
+            <div class="angka">7.284,51</div>
+            <div class="delta"><span class="chip-naik">▲ +46,20 (+0,64%)</span></div>
+          </div>
+          <svg class="spark" viewBox="0 0 220 64" preserveAspectRatio="none" aria-label="IHSG tahun berjalan">
+            <polygon points="0,50 24,45 48,52 72,37 96,41 120,27 144,32 168,20 192,25 220,12 220,64 0,64" fill="var(--aksen-dim)"/>
+            <polyline points="0,50 24,45 48,52 72,37 96,41 120,27 144,32 168,20 192,25 220,12" fill="none" stroke="var(--aksen)" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="kartu-baris">
+          <div><span class="l">Volume</span><b>31.124 Jt</b></div>
+          <div><span class="l">Nilai</span><b>12,4 T</b></div>
+          <div><span class="l">Frekuensi</span><b>1.730 Rb</b></div>
+          <div><span class="l">Asing</span><b class="turun">−1,2 T</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mock">
+      <div class="mock-cap">Top Stocks <span class="rute">/stocks</span></div>
+      <div class="mock-b mock-sc">
+        <table style="min-width:560px">
+          <tr><th>Kode</th><th>Emiten</th><th class="num">Close</th><th class="num">Δ%</th><th class="num">Nilai (M)</th></tr>
+          <tr><td class="tk">VKTR</td><td>Vale Kinetik</td><td class="num">1.245</td><td class="num"><span class="chip-naik">+8,40%</span></td><td class="num">418,7</td></tr>
+          <tr><td class="tk">MBMA</td><td>Merdeka Battery</td><td class="num">565</td><td class="num"><span class="chip-turun">−5,10%</span></td><td class="num">302,4</td></tr>
+          <tr><td class="tk">BUMI</td><td>Bumi Resources</td><td class="num">142</td><td class="num"><span class="chip-turun">−2,07%</span></td><td class="num">88,1</td></tr>
+          <tr><td class="tk">BBRI</td><td>Bank Rakyat Indonesia</td><td class="num">4.720</td><td class="num"><span class="chip-naik">+0,21%</span></td><td class="num">1.204,8</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="mock">
+      <div class="mock-cap">Forum <span class="rute">/forum/BUMI</span></div>
+      <div class="mock-b">
+        <div class="pesan"><span class="ava">AG</span><div>
+          <div class="meta"><b>Agitama</b> · Perak · 09:52</div>
+          <div>Dinding jual <a class="tag-saham" href="#">$BUMI</a> di 145 menipis tiga hari berturut. YP masih menyerap tanpa mengangkat harga.</div>
+        </div></div>
+        <div class="pesan"><span class="ava">JI</span><div>
+          <div class="meta"><b>Johan</b> · Superadmin · 10:04</div>
+          <div>Masuk edisi besok. Pantau selepas 13:30.</div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="mock">
+      <div class="mock-cap">Kontributor · sambutan <span class="rute">/admin</span></div>
+      <div class="mock-b">
+        <p style="font-size:13.5px;margin-bottom:12px">Selamat pagi, <b>Agitama</b>.</p>
+        <div class="jenjang">
+          <div><span class="l">Jenjang</span><b>Perak</b></div>
+          <div><span class="l">Kuota harian</span><b>3 orderbook</b></div>
+          <div><span class="l">Disetujui</span><b>27</b></div>
+        </div>
+        <button type="button" class="btn-utama">Setor orderbook</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Token siap tempel</h2><span class="ket">blok .lantai</span></div>
+<pre><span class="c">/* Arah Samudra — tema gelap (palung) */</span>
+.lantai {
+  <span class="k">--bg0</span>:#0B0E13; <span class="k">--bg1</span>:#12161D; <span class="k">--bg2</span>:#181D26; <span class="k">--bg3</span>:#20262F;
+  <span class="k">--line</span>:#222834; <span class="k">--line2</span>:#333B48;
+  <span class="k">--text</span>:#E9ECF1; <span class="k">--text2</span>:#9AA5B2; <span class="k">--text3</span>:#87919D;
+  <span class="k">--aksen</span>:#6AA6FF; <span class="k">--aksen-ink</span>:#0B0E13; <span class="k">--aksen-dim</span>:rgba(106,166,255,.12);
+  <span class="k">--green</span>:#33B27B; <span class="k">--red</span>:#E8695F;
+  <span class="k">--disp</span>:"Red Hat Display",system-ui,sans-serif;
+  <span class="k">--ui</span>:"Red Hat Text",system-ui,sans-serif;
+  <span class="k">--mono</span>:"Red Hat Mono",Consolas,monospace;
+  <span class="k">--r</span>:12px;
+}
+<span class="c">/* tema terang (kabut) */</span>
+.lantai[data-theme="light"] {
+  <span class="k">--bg0</span>:#F6F7F9; <span class="k">--bg1</span>:#FFFFFF; <span class="k">--bg2</span>:#F1F3F6; <span class="k">--bg3</span>:#E8EBEF;
+  <span class="k">--line</span>:#E3E6EB; <span class="k">--line2</span>:#CDD3DB;
+  <span class="k">--text</span>:#171B21; <span class="k">--text2</span>:#4E5A68; <span class="k">--text3</span>:#69747F;
+  <span class="k">--aksen</span>:#1D5FCC; <span class="k">--aksen-ink</span>:#FFFFFF; <span class="k">--aksen-dim</span>:rgba(29,95,204,.09);
+  <span class="k">--green</span>:#157A4E; <span class="k">--red</span>:#C03A31;
+}</pre>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Yang perlu dipertimbangkan</h2></div>
+    <div class="catatan">
+      <h3>Tiga konsekuensi arah ini</h3>
+      <p><b>Aman berarti tidak khas.</b> Tanpa metafora, PAPAN versi ini bisa tertukar dengan
+        aplikasi sekuritas mana pun kalau logonya ditutup. Kekhasannya harus datang dari isi
+        (Radar, Arus Pasar, jenjang) — bukan dari kulit.</p>
+      <p><b>Radius 12px menuntut sweep penuh.</b> Kartu PAPAN sekarang 6px dan datar bergaris.
+        Setengah-setengah (kartu lama bergaris + kartu baru membulat berbayang) justru terlihat
+        lebih buruk daripada tidak pindah sama sekali.</p>
+      <p><b>Chip persentase menambah markup.</b> Setiap Δ% dibungkus chip berlatar tipis —
+        itu sentuhan khas arah ini, tapi berarti menyunting semua tabel, bukan cuma CSS.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// Sakelar tiga pilihan — "sistem" berarti tanpa stempel data-theme, ikut
+// prefers-color-scheme; sama persis kontrak tema artifact/dasbor.
+const akar = document.documentElement;
+let pilihan = 'sistem';
+function pasang(t) {
+  pilihan = t;
+  if (t === 'sistem') akar.removeAttribute('data-theme');
+  else akar.setAttribute('data-theme', t);
+  document.querySelectorAll('.topbar .tema-pil button').forEach((b) => {
+    b.setAttribute('aria-pressed', String(b.dataset.tema === t));
+  });
+}
+document.querySelectorAll('.topbar .tema-pil button').forEach((b) => {
+  b.onclick = () => pasang(b.dataset.tema);
+});
+pasang('sistem');
+
+document.querySelectorAll('.lencana[data-font]').forEach((el) => {
+  const ada = document.fonts && document.fonts.check(`16px "${el.dataset.font}"`);
+  el.textContent = ada ? 'terpasang' : 'contoh pakai huruf pengganti';
+  el.classList.toggle('ada', !!ada);
+});
+</script>

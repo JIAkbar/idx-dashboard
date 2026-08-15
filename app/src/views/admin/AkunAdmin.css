@@ -35,7 +35,18 @@
 @media (max-width: 900px) {
   .lantai .aa-tbl-wrap { overflow-x: auto; }
 }
-.lantai .aa-tbl { table-layout: fixed; min-width: 1360px; }
+.lantai .aa-tbl { table-layout: fixed; min-width: 1180px; }
+
+/* Kolom aksi: tombol ikon persegi tanpa teks. Tiga tombol berteks ("Ubah
+   Email / Atur Ulang Sandi / Hapus") memakan 300px tiap baris dan membuat
+   tabel menggulir sangat jauh di telepon; ikon memangkasnya ke 120px, dan
+   min-width tabel ikut turun 1360 → 1180. Nama aksinya tidak hilang — pindah
+   ke title (tetikus) + aria-label (pembaca layar). */
+.lantai .aa-aksi { display: flex; gap: 6px; justify-content: flex-end; }
+.lantai .aa-ikon {
+  width: 30px; height: 30px; padding: 0; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+}
 /* Sel sempit tidak boleh membungkus — begitu pecah dua baris, tinggi baris
    jadi tak seragam dan tabel terlihat berantakan. §172 SAKTI: kalau konten
    tidak muat, PENDEKKAN kontennya (label dipangkas, sisanya ke tooltip),

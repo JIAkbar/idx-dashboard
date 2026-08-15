@@ -1,0 +1,453 @@
+<title>PAPAN Lilin</title>
+<style>
+/* ═══ ARAH 7 · LILIN ═══════════════════════════════════════════════════════
+   Kreasi sendiri, tanpa galeri referensi. Sumbernya benda yang ditatap trader
+   saham berjam-jam tiap hari: LILIN pada chart. Tiga hukumnya jadi sistem:
+   (1) kosong = naik, terisi = turun — konvensi hollow/filled candle;
+   (2) kuning = harga terakhir — warna baris "last done" di layar bursa;
+   (3) sumbu tipis + badan tebal — anatomi lilin jadi kerangka halaman.
+   Gelap-dulu: layar trading memang gelap; terang = buku chart cetakan.        */
+
+:root {
+  --bg0:#0C0D10; --bg1:#14151A; --bg2:#1A1C22; --bg3:#22242C;
+  --line:#24262E; --line2:#363945;
+  --text:#EAEAEE; --text2:#9CA0AC; --text3:#888D99;
+  --aksen:#F2C230; --aksen-ink:#171207; --aksen-dim:rgba(242,194,48,.12);
+  --bull:#38B77E; --bear:#E6635A;
+  --bull-dim:rgba(56,183,126,.12); --bear-dim:rgba(230,99,90,.12);
+  --disp:"Saira SemiCondensed","Saira","Segoe UI",system-ui,sans-serif;
+  --ui:"Saira","Segoe UI",system-ui,sans-serif;
+  --mono:"Spline Sans Mono","Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg0:#F3F4F2; --bg1:#FCFCFB; --bg2:#EEF0ED; --bg3:#E4E7E3;
+    --line:#DDE0DC; --line2:#C5C9C4;
+    --text:#16181A; --text2:#525860; --text3:#666C74;
+    --aksen:#7A5E00; --aksen-ink:#FFFFFF; --aksen-dim:rgba(122,94,0,.10);
+    --bull:#1D7A50; --bear:#B73A31;
+    --bull-dim:rgba(29,122,80,.10); --bear-dim:rgba(183,58,49,.10);
+  }
+}
+:root[data-theme="light"] {
+  --bg0:#F3F4F2; --bg1:#FCFCFB; --bg2:#EEF0ED; --bg3:#E4E7E3;
+  --line:#DDE0DC; --line2:#C5C9C4;
+  --text:#16181A; --text2:#525860; --text3:#666C74;
+  --aksen:#7A5E00; --aksen-ink:#FFFFFF; --aksen-dim:rgba(122,94,0,.10);
+  --bull:#1D7A50; --bear:#B73A31;
+  --bull-dim:rgba(29,122,80,.10); --bear-dim:rgba(183,58,49,.10);
+}
+
+* { box-sizing:border-box; }
+body {
+  margin:0; background:var(--bg0); color:var(--text);
+  font-family:var(--ui); font-size:15px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3 { margin:0; font-family:var(--disp); font-weight:700; letter-spacing:-.01em; text-wrap:balance; }
+p { margin:0 0 14px; }
+code { font-family:var(--mono); font-size:.9em; }
+.wrap { max-width:1020px; margin:0 auto; padding:0 24px 96px; }
+
+/* Sumbu & badan: pembatas bagian = anatomi lilin. Sumbu tipis di tengah,
+   badan tebal — dipakai sebagai penanda tiap bagian, bukan garis polos. */
+.sumbu { width:2px; height:16px; background:var(--line2); margin:0 auto; }
+.badan-naik { width:14px; height:26px; border:2px solid var(--bull); background:transparent; margin:0 auto; }
+.badan-turun { width:14px; height:26px; background:var(--bear); margin:0 auto; }
+
+/* ── Kepala ─────────────────────────────────────────────────────────────── */
+.topbar { position:sticky; top:0; z-index:30; background:var(--bg0); border-bottom:1px solid var(--line); }
+.topbar-in { max-width:1020px; margin:0 auto; padding:11px 24px; display:flex; align-items:center; gap:14px; }
+.tag { font-family:var(--mono); font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--aksen); }
+.topbar .kanan { margin-left:auto; }
+
+/* Sakelar tema bentuk lilin: dua "badan" berdampingan; aktif = terisi kuning. */
+.tema-lilin { display:inline-flex; gap:2px; border:1px solid var(--line2); background:var(--bg1); padding:3px; }
+.tema-lilin button {
+  font:inherit; font-family:var(--mono); font-size:10.5px; cursor:pointer;
+  padding:4px 12px; border:1px solid transparent; background:transparent; color:var(--text3);
+}
+.tema-lilin button[aria-pressed="true"] { background:var(--aksen); border-color:var(--aksen); color:var(--aksen-ink); font-weight:700; }
+.tema-lilin button:focus-visible { outline:2px solid var(--aksen); outline-offset:2px; }
+
+/* ── Hero: lilin raksasa ────────────────────────────────────────────────── */
+.hero { padding:60px 0 36px; display:grid; grid-template-columns:1fr auto; gap:40px; align-items:center; }
+.hero h1 { font-size:clamp(40px,6.5vw,72px); line-height:1; letter-spacing:-.025em; }
+.hero h1 .kuning { color:var(--aksen); }
+.hero .lead { font-size:16.5px; color:var(--text2); max-width:50ch; margin-top:20px; }
+.lilin-besar { display:flex; gap:14px; align-items:flex-end; height:220px; }
+.lilin-besar .l { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
+.lilin-besar .w { width:2px; background:var(--line2); }
+.lilin-besar .b { width:26px; }
+.lilin-besar .naik { border:2.5px solid var(--bull); background:transparent; }
+.lilin-besar .turun { background:var(--bear); }
+.lilin-besar .last { position:relative; }
+.lilin-besar .last::after {
+  content:"7.284,51"; position:absolute; left:34px; top:8px;
+  font-family:var(--mono); font-size:11px; font-weight:700; color:var(--aksen-ink);
+  background:var(--aksen); padding:2px 7px; white-space:nowrap;
+}
+
+/* ── Bagian ─────────────────────────────────────────────────────────────── */
+section { padding-top:56px; }
+.sec-h { display:flex; align-items:center; gap:14px; margin-bottom:22px; }
+.sec-h .anatomi { display:flex; flex-direction:column; flex-shrink:0; }
+.sec-h h2 { font-size:21px; }
+.sec-h .ket { font-family:var(--mono); font-size:10px; color:var(--text3); margin-left:auto; }
+.baca { font-size:15.5px; line-height:1.65; max-width:62ch; color:var(--text2); }
+.baca b { color:var(--text); }
+
+/* ── Palet ──────────────────────────────────────────────────────────────── */
+.palet { display:grid; grid-template-columns:repeat(auto-fill,minmax(212px,1fr)); gap:14px; }
+.sw-kartu { background:var(--bg1); border:1px solid var(--line); overflow:hidden; }
+.sw-chip { height:62px; }
+.sw-isi { padding:12px 14px 14px; }
+.sw-nama { font-family:var(--disp); font-size:13.5px; font-weight:700; }
+.sw-hex { font-family:var(--mono); font-size:10.5px; color:var(--text2); }
+.sw-arti { font-size:11.5px; color:var(--text2); line-height:1.5; margin-top:7px; }
+.sw-cr { display:inline-block; margin-top:8px; font-family:var(--mono); font-size:9.5px; color:var(--text3); }
+
+/* Naik/turun sebagai BENTUK, bukan cuma warna — kosong vs terisi. */
+.arah-naik, .arah-turun {
+  display:inline-flex; align-items:center; gap:6px;
+  font-family:var(--mono); font-size:11.5px; font-weight:600; white-space:nowrap;
+}
+.arah-naik { color:var(--bull); } .arah-turun { color:var(--bear); }
+.arah-naik i { width:8px; height:12px; border:1.5px solid currentColor; background:transparent; display:block; }
+.arah-turun i { width:8px; height:12px; background:currentColor; display:block; }
+
+/* ── Tipografi ──────────────────────────────────────────────────────────── */
+.tipo-kartu { background:var(--bg1); border:1px solid var(--line); padding:18px 20px; margin-bottom:14px; }
+.tipo-kepala { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:13px; }
+.tipo-peran { font-family:var(--mono); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--text3); }
+.tipo-nama { font-family:var(--disp); font-size:17px; font-weight:700; }
+.lencana { font-family:var(--mono); font-size:9px; padding:2px 8px; border:1px solid var(--line2); color:var(--text3); }
+.lencana.ada { border-color:var(--bull); color:var(--bull); }
+.contoh-disp { font-family:var(--disp); font-size:38px; font-weight:700; letter-spacing:-.02em; line-height:1.05; }
+.contoh-ui { font-family:var(--ui); font-size:17px; line-height:1.55; }
+.contoh-mono { font-family:var(--mono); font-size:17px; font-variant-numeric:tabular-nums; }
+.tipo-alasan { font-size:12.5px; color:var(--text2); margin-top:12px; max-width:66ch; }
+
+/* ── Mockup ─────────────────────────────────────────────────────────────── */
+.mock { background:var(--bg1); border:1px solid var(--line); margin-bottom:28px; }
+.mock-cap { display:flex; align-items:center; gap:9px; padding:8px 15px; border-bottom:1px solid var(--line); font-family:var(--mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text3); background:var(--bg2); }
+.mock-cap .rute { letter-spacing:0; text-transform:none; color:var(--aksen); }
+.mock-b { padding:18px 20px 20px; }
+.mock-sc { overflow-x:auto; }
+
+.ihsg { display:grid; grid-template-columns:1fr auto; gap:22px; align-items:end; }
+.ihsg .lbl { font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text3); }
+.ihsg .angka {
+  font-family:var(--mono); font-size:40px; font-weight:700; letter-spacing:-.03em; line-height:1.1;
+  font-variant-numeric:tabular-nums;
+  display:inline-block; background:var(--aksen); color:var(--aksen-ink); padding:2px 12px;
+}
+.naik { color:var(--bull); } .turun { color:var(--bear); }
+.spark { width:230px; height:70px; display:block; }
+
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; font-family:var(--mono); font-size:9px; letter-spacing:.13em; text-transform:uppercase; color:var(--text3); padding:0 10px 8px 0; border-bottom:1px solid var(--line2); font-weight:500; }
+td { padding:9px 10px 9px 0; border-bottom:1px solid var(--line); }
+tr:last-child td { border-bottom:0; }
+td.num, th.num { text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums; }
+.tk { font-family:var(--mono); font-weight:700; color:var(--text); }
+tr.last-done td { background:var(--aksen-dim); }
+tr.last-done .tk { color:var(--aksen); }
+
+.jenjang { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.jenjang > div { background:var(--bg2); padding:11px 13px; border-top:2px solid var(--line2); }
+.jenjang .l { font-family:var(--mono); font-size:8.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text3); }
+.jenjang b { display:block; font-family:var(--disp); font-size:15.5px; font-weight:700; margin-top:2px; }
+.btn-utama { font:inherit; font-family:var(--disp); font-weight:700; font-size:13.5px; cursor:pointer; width:100%; margin-top:14px; padding:11px 0; border:0; background:var(--aksen); color:var(--aksen-ink); }
+.btn-utama:focus-visible { outline:2px solid var(--aksen); outline-offset:3px; }
+
+.toggle-demo { display:flex; flex-wrap:wrap; gap:26px; align-items:flex-start; }
+.toggle-demo .kolom { display:flex; flex-direction:column; gap:8px; }
+.toggle-demo .l { font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text3); }
+
+pre { background:var(--bg1); border:1px solid var(--line); padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:11px; line-height:1.8; color:var(--text2); margin:0; }
+pre .k { color:var(--aksen); } pre .c { color:var(--text3); font-style:italic; }
+
+.catatan { border:1px solid var(--line2); border-top:3px solid var(--aksen); padding:15px 17px; background:var(--bg1); }
+.catatan h3 { font-size:15px; margin-bottom:7px; }
+.catatan p:last-child { margin-bottom:0; }
+
+@media (max-width:760px) {
+  .hero { grid-template-columns:1fr; }
+  .lilin-besar { height:150px; }
+  .ihsg, .jenjang { grid-template-columns:1fr; }
+  .ihsg .angka { font-size:30px; }
+}
+</style>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <span class="tag">Arah 7 · Lilin</span>
+    <span class="kanan">
+      <span class="tema-lilin" role="group" aria-label="Tema tampilan">
+        <button type="button" data-tema="light" aria-pressed="false">Cetak</button>
+        <button type="button" data-tema="sistem" aria-pressed="false">Sistem</button>
+        <button type="button" data-tema="dark" aria-pressed="false">Layar</button>
+      </span>
+    </span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div>
+      <h1>Trader membaca bentuk<br>sebelum membaca <span class="kuning">angka</span>.</h1>
+      <p class="lead">
+        Ini bukan aplikasi finansial umum — ini alat trading saham. Maka bahasanya diambil
+        dari benda yang trader tatap berjam-jam: <b style="color:var(--text)">lilin pada chart</b>.
+        Tiga hukum lilin jadi seluruh sistem: kosong berarti naik, terisi berarti turun,
+        dan kuning selalu berarti harga terakhir — persis baris <i>last done</i> di layar bursa.
+      </p>
+    </div>
+    <div class="lilin-besar" aria-hidden="true">
+      <span class="l"><span class="w" style="height:24px"></span><span class="b naik" style="height:60px"></span><span class="w" style="height:14px"></span></span>
+      <span class="l"><span class="w" style="height:12px"></span><span class="b turun" style="height:88px"></span><span class="w" style="height:22px"></span></span>
+      <span class="l"><span class="w" style="height:30px"></span><span class="b naik" style="height:118px"></span><span class="w" style="height:10px"></span></span>
+      <span class="l last"><span class="w" style="height:16px"></span><span class="b naik" style="height:150px"></span><span class="w" style="height:18px"></span></span>
+    </div>
+  </header>
+
+  <section>
+    <div class="sec-h">
+      <span class="anatomi" aria-hidden="true"><span class="sumbu"></span><span class="badan-naik"></span><span class="sumbu"></span></span>
+      <h2>Tiga hukum lilin</h2><span class="ket">makna arah ini</span>
+    </div>
+    <ol style="color:var(--text2);font-size:14.5px;padding-left:20px;max-width:62ch">
+      <li style="margin-bottom:12px"><b style="color:var(--text)">Kosong = naik, terisi = turun.</b>
+        Konvensi hollow/filled candle dijadikan sistem semantik seluruh antarmuka: penanda naik
+        selalu BERGARIS TEPI dengan isi kosong, penanda turun selalu BLOK PENUH. Arah harga
+        terbaca dari bentuk bahkan sebelum warna — dan tetap terbaca oleh pengguna buta warna
+        merah-hijau, kelompok yang paling dikhianati aplikasi saham.</li>
+      <li style="margin-bottom:12px"><b style="color:var(--text)">Kuning = harga terakhir.</b>
+        Di layar bursa dan running trade, baris last done disorot kuning — refleks yang sudah
+        tertanam pada setiap trader. Kuning `#F2C230` menjadi satu-satunya aksen, dan artinya
+        SEMPIT: harga/keadaan terkini yang bisa ditindaklanjuti. Bukan hiasan judul.</li>
+      <li><b style="color:var(--text)">Sumbu tipis, badan tebal.</b>
+        Anatomi lilin jadi kerangka visual: penanda bagian adalah lilin kecil, pembatas panel
+        garis tipis "sumbu", dan blok penting "badan". Ornamen halaman = pelajaran membaca chart.</li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="sec-h">
+      <span class="anatomi" aria-hidden="true"><span class="sumbu"></span><span class="badan-turun"></span><span class="sumbu"></span></span>
+      <h2>Palet</h2><span class="ket">kontras dihitung, bukan ditaksir</span>
+    </div>
+    <div class="palet">
+      <div class="sw-kartu"><div class="sw-chip" style="background:#F2C230"></div><div class="sw-isi">
+        <div class="sw-nama">Kuning Last Done</div><div class="sw-hex">#F2C230 / #7A5E00</div>
+        <div class="sw-arti">Aksen tunggal, arti sempit: harga terakhir, tanggal aktif, tombol utama. Di tema Cetak turun ke kuning tua 5,6:1 supaya tetap jadi TEKS yang sah.</div>
+        <span class="sw-cr">11,6:1 gelap · 5,6:1 terang</span></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:#0C0D10"></div><div class="sw-isi">
+        <div class="sw-nama">Layar</div><div class="sw-hex">#0C0D10</div>
+        <div class="sw-arti">Tema utama — layar trading memang gelap, dan kuning last done paling menyala di sini. Netral tanpa rona biru supaya kuning tidak bergeser hijau.</div>
+        <span class="sw-cr">latar</span></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:#F3F4F2;border-bottom:1px solid var(--line)"></div><div class="sw-isi">
+        <div class="sw-nama">Cetak</div><div class="sw-hex">#F3F4F2</div>
+        <div class="sw-arti">Tema terang = buku chart cetakan: putih kertas teknikal, bukan krem. Semua hukum lilin berlaku sama.</div>
+        <span class="sw-cr">latar</span></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:#38B77E"></div><div class="sw-isi">
+        <div class="sw-nama">Naik — selalu kosong</div><div class="sw-hex">#38B77E / #1D7A50</div>
+        <div class="sw-arti">Hijau lilin naik. Penandanya selalu bergaris tepi berisi kosong — warnanya pelengkap, bentuknya yang wajib.</div>
+        <span class="sw-cr">7,6:1 · 4,8:1</span></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:#E6635A"></div><div class="sw-isi">
+        <div class="sw-nama">Turun — selalu terisi</div><div class="sw-hex">#E6635A / #B73A31</div>
+        <div class="sw-arti">Merah lilin turun, selalu blok penuh. Pasangan kosong/terisi membuat tabel terbaca di cetakan hitam-putih sekalipun.</div>
+        <span class="sw-cr">5,8:1 · 5,2:1</span></div></div>
+      <div class="sw-kartu"><div class="sw-chip" style="background:#9CA0AC"></div><div class="sw-isi">
+        <div class="sw-nama">Teks Kedua</div><div class="sw-hex">#9CA0AC / #525860</div>
+        <div class="sw-arti">Label dan keterangan, 7,4:1 — layar yang ditatap 8 jam tidak boleh punya abu samar.</div>
+        <span class="sw-cr">7,4:1 · 6,5:1</span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h">
+      <span class="anatomi" aria-hidden="true"><span class="sumbu"></span><span class="badan-naik"></span><span class="sumbu"></span></span>
+      <h2>Tipografi</h2><span class="ket">semi-condensed: rapat seperti layar kuotasi</span>
+    </div>
+    <div class="tipo-kartu">
+      <div class="tipo-kepala"><span class="tipo-peran">Judul</span><span class="tipo-nama">Saira SemiCondensed</span><span class="lencana" data-font="Saira SemiCondensed">memeriksa…</span></div>
+      <div class="contoh-disp">Bedah Arus Saham</div>
+      <p class="tipo-alasan">Grotesk agak sempit — irama layar kuotasi yang memuat banyak dalam
+        sedikit ruang, tanpa jadi condensed penuh yang melelahkan. Judul terasa alat, bukan poster.</p>
+    </div>
+    <div class="tipo-kartu">
+      <div class="tipo-kepala"><span class="tipo-peran">Antarmuka &amp; bacaan</span><span class="tipo-nama">Saira</span><span class="lencana" data-font="Saira">memeriksa…</span></div>
+      <div class="contoh-ui">Setoranmu masuk antrean kurasi — status disetujui yang menaikkan jenjang.</div>
+      <p class="tipo-alasan">Lebar normal dari keluarga yang sama: satu keluarga dua lebar,
+        hierarki datang dari kesempitan, bukan dari ganti font.</p>
+    </div>
+    <div class="tipo-kartu">
+      <div class="tipo-kepala"><span class="tipo-peran">Angka &amp; kode</span><span class="tipo-nama">Spline Sans Mono</span><span class="lencana" data-font="Spline Sans Mono">memeriksa…</span></div>
+      <div class="contoh-mono">BUMI 142 · −2,07% · 09:41:07</div>
+      <p class="tipo-alasan">Mono yang digambar untuk antarmuka (bukan untuk kode): angkanya besar
+        di tinggi-x dan tegas di 11px — ukuran sel tabel PAPAN yang sesungguhnya.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h">
+      <span class="anatomi" aria-hidden="true"><span class="sumbu"></span><span class="badan-turun"></span><span class="sumbu"></span></span>
+      <h2>Sakelar tema</h2><span class="ket">Cetak · Sistem · Layar</span>
+    </div>
+    <p class="baca" style="margin-bottom:20px">
+      Dua temanya bernama <b>Layar</b> (gelap, tema utama) dan <b>Cetak</b> (buku chart).
+      Pilihan aktif terisi kuning — hukum kedua bekerja bahkan di sakelarnya sendiri: kuning
+      menandai keadaan yang sedang berlaku. "Sistem" ikut perangkat dan jadi bawaan;
+      pilihan eksplisit disimpan di <code>localStorage</code> kunci <code>papan-tema</code>.
+      Coba di kanan atas.
+    </p>
+    <div class="toggle-demo">
+      <div class="kolom">
+        <span class="l">Bentuk istirahat</span>
+        <span class="tema-lilin" aria-hidden="true">
+          <button type="button" tabindex="-1">Cetak</button>
+          <button type="button" tabindex="-1" aria-pressed="true">Sistem</button>
+          <button type="button" tabindex="-1">Layar</button>
+        </span>
+      </div>
+      <div class="kolom">
+        <span class="l">Pilihan eksplisit</span>
+        <span class="tema-lilin" aria-hidden="true">
+          <button type="button" tabindex="-1" aria-pressed="true">Cetak</button>
+          <button type="button" tabindex="-1">Sistem</button>
+          <button type="button" tabindex="-1">Layar</button>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h">
+      <span class="anatomi" aria-hidden="true"><span class="sumbu"></span><span class="badan-naik"></span><span class="sumbu"></span></span>
+      <h2>Di halaman</h2><span class="ket">tampilan asli, token baru</span>
+    </div>
+
+    <div class="mock">
+      <div class="mock-cap">Dasbor <span class="rute">/</span></div>
+      <div class="mock-b">
+        <div class="ihsg">
+          <div>
+            <div class="lbl">IHSG · 15 Agustus 2026 · Last Done</div>
+            <div style="margin-top:6px"><span class="angka">7.284,51</span></div>
+            <div style="margin-top:8px"><span class="arah-naik"><i></i>+46,20 (+0,64%)</span></div>
+          </div>
+          <svg class="spark" viewBox="0 0 230 70" preserveAspectRatio="none" aria-label="IHSG lima hari, digambar sebagai lilin">
+            <line x1="20" y1="8" x2="20" y2="60" stroke="var(--line2)" stroke-width="1.5"/>
+            <rect x="12" y="18" width="16" height="30" fill="none" stroke="var(--bull)" stroke-width="2"/>
+            <line x1="62" y1="12" x2="62" y2="64" stroke="var(--line2)" stroke-width="1.5"/>
+            <rect x="54" y="22" width="16" height="34" fill="var(--bear)"/>
+            <line x1="104" y1="10" x2="104" y2="58" stroke="var(--line2)" stroke-width="1.5"/>
+            <rect x="96" y="16" width="16" height="30" fill="none" stroke="var(--bull)" stroke-width="2"/>
+            <line x1="146" y1="14" x2="146" y2="62" stroke="var(--line2)" stroke-width="1.5"/>
+            <rect x="138" y="26" width="16" height="26" fill="var(--bear)"/>
+            <line x1="188" y1="6" x2="188" y2="54" stroke="var(--line2)" stroke-width="1.5"/>
+            <rect x="180" y="12" width="16" height="32" fill="none" stroke="var(--bull)" stroke-width="2"/>
+            <line x1="176" y1="12" x2="230" y2="12" stroke="var(--aksen)" stroke-width="2" stroke-dasharray="4 3"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="mock">
+      <div class="mock-cap">Running trade <span class="rute">/stocks</span></div>
+      <div class="mock-b mock-sc">
+        <table style="min-width:560px">
+          <tr><th>Kode</th><th>Emiten</th><th class="num">Close</th><th class="num">Arah</th><th class="num">Nilai (M)</th></tr>
+          <tr class="last-done"><td class="tk">VKTR</td><td>Vale Kinetik</td><td class="num">1.245</td><td class="num"><span class="arah-naik"><i></i>+8,40%</span></td><td class="num">418,7</td></tr>
+          <tr><td class="tk">MBMA</td><td>Merdeka Battery</td><td class="num">565</td><td class="num"><span class="arah-turun"><i></i>−5,10%</span></td><td class="num">302,4</td></tr>
+          <tr><td class="tk">BUMI</td><td>Bumi Resources</td><td class="num">142</td><td class="num"><span class="arah-turun"><i></i>−2,07%</span></td><td class="num">88,1</td></tr>
+          <tr><td class="tk">BBRI</td><td>Bank Rakyat Indonesia</td><td class="num">4.720</td><td class="num"><span class="arah-naik"><i></i>+0,21%</span></td><td class="num">1.204,8</td></tr>
+        </table>
+        <p class="baca" style="font-size:13px;margin:14px 0 0">
+          Baris tersorot kuning = transaksi terakhir yang masuk, refleks layar bursa. Penanda
+          arah kosong/terisi terbaca tanpa warna — coba bayangkan tabel ini difotokopi.
+        </p>
+      </div>
+    </div>
+
+    <div class="mock">
+      <div class="mock-cap">Kontributor · sambutan <span class="rute">/admin</span></div>
+      <div class="mock-b">
+        <p style="font-size:13.5px;margin-bottom:12px">Selamat pagi, <b>Agitama</b>.</p>
+        <div class="jenjang">
+          <div><span class="l">Jenjang</span><b>Perak</b></div>
+          <div><span class="l">Kuota harian</span><b>3 orderbook</b></div>
+          <div><span class="l">Disetujui</span><b>27</b></div>
+        </div>
+        <button type="button" class="btn-utama">Setor orderbook</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h">
+      <span class="anatomi" aria-hidden="true"><span class="sumbu"></span><span class="badan-turun"></span><span class="sumbu"></span></span>
+      <h2>Token siap tempel</h2><span class="ket">blok .lantai</span>
+    </div>
+<pre><span class="c">/* Arah Lilin — tema gelap (layar) sebagai tema utama */</span>
+.lantai {
+  <span class="k">--bg0</span>:#0C0D10; <span class="k">--bg1</span>:#14151A; <span class="k">--bg2</span>:#1A1C22; <span class="k">--bg3</span>:#22242C;
+  <span class="k">--line</span>:#24262E; <span class="k">--line2</span>:#363945;
+  <span class="k">--text</span>:#EAEAEE; <span class="k">--text2</span>:#9CA0AC; <span class="k">--text3</span>:#888D99;
+  <span class="k">--aksen</span>:#F2C230; <span class="k">--aksen-ink</span>:#171207;   <span class="c">/* kuning last done */</span>
+  <span class="k">--green</span>:#38B77E; <span class="k">--red</span>:#E6635A;       <span class="c">/* naik=kosong, turun=terisi */</span>
+  <span class="k">--disp</span>:"Saira SemiCondensed","Saira",system-ui,sans-serif;
+  <span class="k">--ui</span>:"Saira",system-ui,sans-serif;
+  <span class="k">--mono</span>:"Spline Sans Mono",Consolas,monospace;
+}
+<span class="c">/* tema terang (cetak) */</span>
+.lantai[data-theme="light"] {
+  <span class="k">--bg0</span>:#F3F4F2; <span class="k">--bg1</span>:#FCFCFB; <span class="k">--bg2</span>:#EEF0ED; <span class="k">--bg3</span>:#E4E7E3;
+  <span class="k">--line</span>:#DDE0DC; <span class="k">--line2</span>:#C5C9C4;
+  <span class="k">--text</span>:#16181A; <span class="k">--text2</span>:#525860; <span class="k">--text3</span>:#666C74;
+  <span class="k">--aksen</span>:#7A5E00; <span class="k">--aksen-ink</span>:#FFFFFF;
+  <span class="k">--green</span>:#1D7A50; <span class="k">--red</span>:#B73A31;
+}</pre>
+  </section>
+
+  <section>
+    <div class="sec-h">
+      <span class="anatomi" aria-hidden="true"><span class="sumbu"></span><span class="badan-naik"></span><span class="sumbu"></span></span>
+      <h2>Yang perlu dipertimbangkan</h2>
+    </div>
+    <div class="catatan">
+      <h3>Tiga konsekuensi arah ini</h3>
+      <p><b>Kosong/terisi menyentuh semua penanda arah.</b> Setiap tempat yang hari ini memakai
+        warna saja untuk naik/turun harus dapat bentuknya juga — itu sweep markup terluas dari
+        ketujuh arah, sekaligus kemenangan aksesibilitas terbesar (aman buta warna merah-hijau).</p>
+      <p><b>Kuning PAPAN yang sekarang harus mengalah.</b> Amber `#F0A62B` yang jadi aksen umum
+        hari ini terlalu dekat dengan kuning last done — arah ini hanya jalan kalau kuning
+        DIPERSEMPIT artinya, bukan ditambah. Migrasi berarti mencabut amber dari peran hiasnya.</p>
+      <p><b>Sorot kuning butuh data yang benar-benar "terakhir".</b> Baris last done hanya jujur
+        kalau datanya real-time atau bertanda waktu jelas. Untuk data akhir-hari, sorotnya harus
+        diberi label "penutupan" — kuning yang bohong lebih buruk dari tanpa sorot.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const akar = document.documentElement;
+function pasang(t) {
+  if (t === 'sistem') akar.removeAttribute('data-theme');
+  else akar.setAttribute('data-theme', t);
+  document.querySelectorAll('.topbar .tema-lilin button').forEach((b) => {
+    b.setAttribute('aria-pressed', String(b.dataset.tema === t));
+  });
+}
+document.querySelectorAll('.topbar .tema-lilin button').forEach((b) => { b.onclick = () => pasang(b.dataset.tema); });
+pasang('sistem');
+document.querySelectorAll('.lencana[data-font]').forEach((el) => {
+  const ada = document.fonts && document.fonts.check(`16px "${el.dataset.font}"`);
+  el.textContent = ada ? 'terpasang' : 'contoh pakai huruf pengganti';
+  el.classList.toggle('ada', !!ada);
+});
+</script>

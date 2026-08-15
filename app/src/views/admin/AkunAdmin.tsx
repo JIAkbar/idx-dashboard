@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useProfilSaya } from '../../lib/profilSaya'
 import { daftarAkun, buatAkun, hapusAkun, resetSandi, setProfil, ubahEmail, type AkunRow } from '../../lib/adminAkun'
 import { daftarJenjang, type JenjangRow } from '../../lib/jenjang'
@@ -66,6 +66,15 @@ export function AkunAdmin() {
   const { profil, loading: profilLoading } = useProfilSaya()
   const [akun, setAkun] = useState<AkunRow[] | null>(null)
   const [jenjang, setJenjang] = useState<JenjangRow[]>([])
+  /** Opsi dropdown jenjang. Label nama saja — "Perunggu · 2/hari" pecah dua
+   *  baris di kolom 110px, dan kuota efektifnya sudah tertulis di kolom
+   *  sebelahnya (§172 SAKTI: pendekkan konten, jangan lebarkan kolom). */
+  const jenjangOpsi = useMemo(
+    () => [...jenjang]
+      .sort((a, b) => a.tier - b.tier)
+      .map((j) => ({ nilai: String(j.tier), label: j.nama })),
+    [jenjang]
+  )
   const [galat, setGalat] = useState('')
   const [muat, setMuat] = useState(0)
   /** id baris yang sedang punya request in-flight — dipakai disable kontrol baris itu. */
@@ -109,7 +118,7 @@ export function AkunAdmin() {
 
   async function ubahProfil(
     baris: AkunRow,
-    patch: Partial<{ kuota_harian: number; boleh_bedah: boolean; aktif: boolean; kuota_manual: number | null; beku_otomatis: boolean }>
+    patch: Partial<{ kuota_harian: number; boleh_bedah: boolean; aktif: boolean; kuota_manual: number | null; beku_otomatis: boolean; tier: number }>
   ) {
     tandaiSibuk(baris.id, true)
     try {
@@ -148,11 +157,12 @@ export function AkunAdmin() {
                     dengan auto, "Tanpa jenjang" dan dropdown "Ikut jenjang"
                     pecah dua baris dan tinggi tiap baris jadi berbeda-beda.
                     Email sengaja jadi kolom penyerap — satu-satunya yang
-                    panjangnya tak terduga. Σ kolom tetap = 1.170px, plus jatah
-                    minimum Email 190px → min-width tabel 1.360px (lihat
-                    .aa-tbl di AkunAdmin.css; kalau kolom di sini berubah,
-                    angka itu WAJIB dihitung ulang, kalau tidak kolom penyerap
-                    kolaps di layar sempit). */}
+                    panjangnya tak terduga. Σ kolom tetap = 990px (aksi turun
+                    300→120 sejak tombolnya jadi ikon), plus jatah minimum
+                    Email 190px → min-width tabel 1.180px (lihat .aa-tbl di
+                    AkunAdmin.css; kalau kolom di sini berubah, angka itu WAJIB
+                    dihitung ulang, kalau tidak kolom penyerap kolaps di layar
+                    sempit). */}
                 <colgroup>
                   <col />
                   <col style={{ width: 120 }} />
@@ -163,7 +173,7 @@ export function AkunAdmin() {
                   <col style={{ width: 100 }} />
                   <col style={{ width: 70 }} />
                   <col style={{ width: 150 }} />
-                  <col style={{ width: 300 }} />
+                  <col style={{ width: 120 }} />
                 </colgroup>
                 <thead>
                   <tr>
@@ -204,8 +214,18 @@ export function AkunAdmin() {
                           </span>
                         </td>
                         <td>
+                          {/* Jenjang bisa disetel langsung (bukan lagi teks mati):
+                              kontributor baru kerap pantas mulai di atas Pemula, dan
+                              menunggu perhitungan otomatis mengejar itu menghukum
+                              orang yang sudah terbukti. Server tetap wasit kuotanya. */}
                           {berjenjang ? (
-                            <span className="chip" title={`Tier ${tier}`}>{jenjangAkun?.nama ?? `Tier ${tier}`}</span>
+                            <Dropdown
+                              opsi={jenjangOpsi}
+                              nilai={String(tier)}
+                              ariaLabel={`Jenjang — ${a.email}`}
+                              disabled={sedangProses || jenjangOpsi.length === 0}
+                              onGanti={(n) => ubahProfil(a, { tier: Number(n) })}
+                            />
                           ) : (
                             <span className="muted aa-nowrap" title="Superadmin tidak dibatasi jenjang maupun kuota harian">
                               Tanpa jenjang
@@ -249,16 +269,32 @@ export function AkunAdmin() {
                           />
                         </td>
                         <td>{waktuManusiawi(a.terakhir_masuk)}</td>
+                        {/* Aksi jadi ikon saja: tiga tombol berteks memakan 300px per
+                            baris dan membuat tabel menggulir sangat jauh di telepon.
+                            Nama aksinya tetap terbaca lewat title (tetikus) dan
+                            aria-label (pembaca layar) — yang hilang cuma lebarnya. */}
                         <td className="af-aksi">
-                          <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                            <button type="button" className="dd-btn" disabled={sedangProses} onClick={() => setEmailTarget(a)}>
-                              <IkonMenu d={IKON_SURAT} size={12} /> Ubah Email
+                          <div className="aa-aksi">
+                            <button
+                              type="button" className="dd-btn aa-ikon" disabled={sedangProses}
+                              title="Ubah email" aria-label={`Ubah email — ${a.email}`}
+                              onClick={() => setEmailTarget(a)}
+                            >
+                              <IkonMenu d={IKON_SURAT} size={13} />
                             </button>
-                            <button type="button" className="dd-btn" disabled={sedangProses} onClick={() => setResetTarget(a)}>
-                              <IkonMenu d={IKON_KUNCI} size={12} /> Atur Ulang Sandi
+                            <button
+                              type="button" className="dd-btn aa-ikon" disabled={sedangProses}
+                              title="Atur ulang sandi" aria-label={`Atur ulang sandi — ${a.email}`}
+                              onClick={() => setResetTarget(a)}
+                            >
+                              <IkonMenu d={IKON_KUNCI} size={13} />
                             </button>
-                            <button type="button" className="dd-btn merah" disabled={sedangProses} onClick={() => setHapusTarget(a)}>
-                              <IkonMenu d={IKON_TONG} size={12} /> Hapus
+                            <button
+                              type="button" className="dd-btn merah aa-ikon" disabled={sedangProses}
+                              title="Hapus akun" aria-label={`Hapus akun — ${a.email}`}
+                              onClick={() => setHapusTarget(a)}
+                            >
+                              <IkonMenu d={IKON_TONG} size={13} />
                             </button>
                           </div>
                         </td>
