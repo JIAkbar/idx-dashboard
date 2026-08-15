@@ -54,6 +54,7 @@ utama. Aturannya: makin tajam speknya, makin rendah tier yang aman.
 | 108 | [IHSG] Panen harga BUKA harian | Kecil | Lilin berhenti jadi aproksimasi | ✅ sonnet — satu ruas ditambah ke skrip yang sudah jalan |
 | 137 | Notifikasi hasil kurasi ke penyetor (setuju/revisi/hapus) | Sedang | Status `revisi` baru berguna kalau sampai ke orangnya | — migrasi DB + RLS; satukan dgn #123 |
 | 142 | Ganti aksi "Tolak" dengan "Hapus + notice" | Sedang | Tiga aksi, tiga makna jelas; berkas mati berhenti menumpuk | — butuh #137 lebih dulu |
+| 143 | **Keputusan** jalur transkripsi orderbook kalau produksi pindah ke CI | Kecil (memutuskan) | Menentukan apakah tombol "Terbitkan" bisa berdiri sendiri | — HARUS dijawab sebelum #138 |
 | 138 | Pilih emiten MASUK PRODUKSI (layar "Susun Edisi" belum ada sama sekali) | Sedang-besar | Berhenti menolak data benar demi memangkas isi edisi | — UI **dan** skrip Python build_*.py ikut diubah |
 | 128 | Cocokkan fraksi harga ke dokumen IDX | Kecil | Angka aturan bursa jadi pasti | — perlu penilaian sumber |
 | 124 | Chart IHSG: pemilih rentang + judul | Sedang | Grafik 30+ tahun langsung terpakai | — keputusan sambungan dua sumber |
@@ -167,6 +168,18 @@ mesin gambar jauh lebih murah daripada menulisnya di awal.
 
 Tahap 1-3 sudah cukup jadi rilis yang bisa diumumkan. Tahap 6 yang membuat
 chart ini tak punya pembanding.
+
+### Rantai produksi PDF — dua bagian, sifatnya beda
+
+Sering terlupa dan sempat membuat rencana #138 keliru:
+
+```
+screenshot orderbook  →[TRANSKRIPSI: Vision]→  edisi/<tgl>.json  →[build.py]→  PDF
+```
+
+`build.py` **tak menyentuh gambar sama sekali** — dia membaca JSON yang isinya
+sudah berupa angka. Perakitan bisa jalan di CI tanpa AI; transkripsi tidak.
+Lihat #143 untuk pilihan jalurnya.
 
 ## Keputusan yang sudah diambil
 
