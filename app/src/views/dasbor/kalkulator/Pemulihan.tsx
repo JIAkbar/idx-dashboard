@@ -1,9 +1,14 @@
 import { useMemo, useState } from 'react'
 import { fN } from '../../../lib/dasbor/format'
 import { keFraksi, hariAraMinimal } from '../../../lib/fraksiHarga'
-import { IkonMenu, IKON_PERINGATAN } from '../../../components/dasbor/IkonMenu'
+import { StockAutocomplete } from '../../../components/dasbor/StockAutocomplete'
+import { useStockIndex } from '../../../lib/dasbor/stockDetailData'
+import { IkonMenu, IKON_PERINGATAN, IKON_CARI, IKON_JAM } from '../../../components/dasbor/IkonMenu'
 
 /** Baris tabel acuan — kerugian yang lazim dipakai orang untuk mengukur diri. */
+/** Asumsi imbal tahunan bawaan — kira-kira imbal jangka panjang IHSG. */
+export const CAGR_BAWAAN = 7
+
 const ANAK_TANGGA = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95]
 
 /** Kenaikan yang dibutuhkan untuk kembali ke modal setelah rugi `r` persen.
@@ -50,6 +55,9 @@ function tingkat(rugi: number): string {
 export function Pemulihan() {
   const [kode, setKode] = useState('')
   const [lot, setLot] = useState('')
+  const [namaEmiten, setNamaEmiten] = useState('')
+  const [mengambil, setMengambil] = useState(false)
+  const { index: indexSaham } = useStockIndex()
   const [avg, setAvg] = useState('')
   const [kini, setKini] = useState('')
   const [cagr, setCagr] = useState('7')
@@ -62,22 +70,65 @@ export function Pemulihan() {
     return { avg: a, kini: k, rugi }
   }, [avg, kini])
 
-  const cagrN = Math.max(0, parseFloat(cagr) || 0)
+  // Kolom "lama pulih" mati total kalau asumsinya nol — dan nol bukan asumsi
+  // yang pernah dimaksudkan siapa pun, cuma akibat kotak yang dikosongkan.
+  // Kosong berarti kembali ke bawaan 7%, bukan berarti "tidak tumbuh".
+  const cagrN = cagr.trim() === '' ? CAGR_BAWAAN : Math.max(0, parseFloat(cagr) || 0)
   // Lot hanya pengali buat kolom rupiah — bukan bagian dari `posisi`, supaya
   // baris tabel umum (yang tak butuh lot) tak ikut hitung ulang tiap ketik.
   const lotN = Math.max(0, parseFloat(lot) || 0)
+
+  /** Tarik harga terakhir dari Yahoo — pola yang sama dengan tab Avg Down,
+   *  sengaja tidak dijadikan util bersama sampai ada pemakai ketiga. Kalau
+   *  gagal, harga manual tetap bisa diisi: kotaknya tidak dikunci. */
+  async function ambilHarga(pilih?: string) {
+    const k = (pilih ?? kode).trim().toUpperCase()
+    if (!k) return
+    setMengambil(true)
+    setNamaEmiten('Mengambil harga…')
+    try {
+      const yUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${k}.JK?interval=1d&range=1d`
+      const r = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(yUrl)}`, {
+        signal: AbortSignal.timeout(10000),
+      })
+      const j = await r.json()
+      const res = j?.chart?.result?.[0]
+      const harga = res?.meta?.regularMarketPrice
+      if (!harga || harga <= 0) throw new Error('harga kosong')
+      setKini(String(harga))
+      setNamaEmiten(`${res?.meta?.longName || res?.meta?.shortName || k} · harga delay ~15 menit`)
+    } catch {
+      setNamaEmiten('Gagal mengambil harga — isi manual di bawah.')
+    } finally {
+      setMengambil(false)
+    }
+  }
 
   return (
     <div className="grid2 kalk-pemulihan">
       <section className="panel">
         <div className="panel-h"><span className="lbl">Posisi Anda</span></div>
         <div className="panel-b" style={{ display: 'grid', gap: 12 }}>
-          {/* Kode cuma label buat baca tabel/kartu vonis sendiri — tak dipakai
-              cari data apa pun, jadi bebas diisi teks apa saja. */}
+          {/* Memilih emiten langsung menarik harga terakhirnya — mengetik ulang
+              harga yang sudah ada di layar sebelah cuma menambah kesempatan
+              salah ketik. Kotak harga tetap bisa disunting kalau ingin
+              menghitung skenario, atau kalau pengambilannya gagal. */}
           <div className="field">
-            <span className="lbl">Kode emiten</span>
-            <input className="inp" type="text" value={kode} placeholder="BBCA" maxLength={6}
-              onChange={(e) => setKode(e.target.value.toUpperCase())} />
+            <span className="lbl">Emiten</span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <StockAutocomplete
+                stocks={indexSaham?.stocks ?? []}
+                value={kode}
+                onChange={setKode}
+                onSelect={(t) => { setKode(t); void ambilHarga(t) }}
+                placeholder="Cari kode / nama emiten…"
+              />
+              <button type="button" className="btn-p" style={{ whiteSpace: 'nowrap' }}
+                onClick={() => void ambilHarga()} disabled={mengambil || !kode.trim()}>
+                {mengambil ? <IkonMenu d={IKON_JAM} size={13} /> : <><IkonMenu d={IKON_CARI} size={13} /> Cari Harga</>}
+              </button>
+            </div>
+            {namaEmiten && <span className="v-note">{namaEmiten}</span>}
           </div>
           <div className="field">
             <span className="lbl">Jumlah lot</span>
@@ -97,12 +148,12 @@ export function Pemulihan() {
           </div>
           <div className="field">
             <span className="lbl">Asumsi imbal setahun (%)</span>
-            <input className="inp" inputMode="decimal" value={cagr} placeholder="7"
+            <input className="inp" inputMode="decimal" value={cagr} placeholder={String(CAGR_BAWAAN)}
               onChange={(e) => setCagr(e.target.value)} />
             {/* Angka bawaan 7% bukan tebakan asal: kira-kira imbal jangka
                 panjang IHSG. Dibiarkan bisa diubah karena tiap orang punya
                 keyakinan sendiri soal ini. */}
-            <span className="v-note">Bawaan 7% — kira-kira imbal jangka panjang IHSG.</span>
+            <span className="v-note">Dikosongkan berarti kembali ke {CAGR_BAWAAN}% — kira-kira imbal jangka panjang IHSG.</span>
           </div>
 
           {posisi && posisi.rugi > 0 && (
