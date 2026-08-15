@@ -480,6 +480,14 @@
 .lantai .lb-tier { font-family: var(--disp); font-weight: 700; font-size: 12px; color: var(--text); white-space: nowrap; }
 .lantai .lb-kuota { font-family: var(--mono); font-size: 11px; color: var(--amber); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .lantai .lb-hak { min-width: 0; overflow-wrap: anywhere; }
+/* Tombol utama panel benefit — selebar panel dan lebih tinggi daripada .btn-p
+   bawaan (9px padding). 42px menyamakannya dengan tinggi kolom isian di
+   formulir masuk, jadi dua muka modal punya irama tombol yang sama. */
+.lantai .lb-kembali {
+  width: 100%; min-height: 42px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
 .lantai .lb-kaki { margin: 2px 0 0; font-size: 10.5px; color: var(--text3); line-height: 1.55; }
 .lantai .lb-kaki b { color: var(--text2); font-weight: 600; }
 

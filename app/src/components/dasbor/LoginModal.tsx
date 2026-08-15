@@ -153,7 +153,7 @@ function PanelBenefit({ kembali }: { kembali: () => void }) {
       {/* Tombol utama panel: kuning selebar panel (keputusan 15 Agu) — panel
           benefit ujungnya tetap mengajak masuk, jadi jalan kembali ke formulir
           pantas jadi ajakan paling menonjol, bukan tombol kecil rata kanan. */}
-      <button type="button" className="btn-p" style={{ width: '100%' }} onClick={kembali}>
+      <button type="button" className="btn-p lb-kembali" onClick={kembali}>
         Kembali ke masuk
       </button>
       <a
