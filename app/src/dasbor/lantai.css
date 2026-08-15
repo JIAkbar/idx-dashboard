@@ -37,46 +37,51 @@
 
 /* ===== TEMA — port apa adanya dari index_live.html baris 33-71 ===== */
 .dasbor-shell[data-theme='light'] {
-  --bg: #f2f4f7; --bg2: #fff; --bg3: #edf1f6; --card: #fff; --card2: #f7f9fc;
-  --border: rgba(0,0,0,0.09); --border2: rgba(154,102,12,0.32);
-  /* #77 sweep kontras: text3 8896a8→5f6c7d (3.0→5.4 vs putih), red ce3b41→
-     c23439 & green 1f8a57→18754a (angka .red/.green bold 12px butuh ≥4.5). */
-  --text: #131b26; --text2: #4e5d70; --text3: #5f6c7d;
-  --accent: #9a660c; --accent2: #b87a10;
-  --accent-soft: rgba(154,102,12,0.10); --accent-soft2: rgba(154,102,12,0.22); --accent-soft3: rgba(154,102,12,0.38);
-  --red: #c23439; --red-bg: #fbeaeb; --red-txt: #93262b;
-  --green: #18754a; --green-bg: #e4f3ea; --green-txt: #14603c;
-  --gold: #9a660c; --purple: #6b3fa0;
-  --card-shadow: 0 1px 5px rgba(19,27,38,0.07);
-  --cal-avail-bg: rgba(154,102,12,0.10); --cal-avail-txt: #9a660c;
-  --cal-up: #18754a; --cal-dn: #c23439;
-  --cal-active-bg: #9a660c; --cal-active-txt: #fff;
-  --cal-holiday: #f5f6f8; --cal-holiday-txt: #a8b2bf;
-  --chart-grid: rgba(19,27,38,0.07); --chart-txt: #5f6c7d;
-  --rank1bg: #9a660c; --rank2bg: #5a6675; --rank3bg: #7a5a3a;
-  --broker-chip-bg: #edf1f6; --broker-chip-txt: #4e5d70;
-  --bar-track: #e6eaf0;
+  /* Lilin terang — pasangan blok gelap di atas; text3 & green digelapkan dari
+     nilai artifact dengan alasan yang sama seperti di .lantai (lolos 4,5:1
+     juga di atas latar --bg3). */
+  --bg: #f3f4f2; --bg2: #fcfcfb; --bg3: #e4e7e3; --card: #fcfcfb; --card2: #eef0ed;
+  --border: rgba(0,0,0,0.09); --border2: rgba(122,94,0,0.32);
+  --text: #16181a; --text2: #525860; --text3: #5f656d;
+  --accent: #7a5e00; --accent2: #9a7700;
+  --accent-soft: rgba(122,94,0,0.10); --accent-soft2: rgba(122,94,0,0.22); --accent-soft3: rgba(122,94,0,0.38);
+  --red: #b73a31; --red-bg: #f7e9e7; --red-txt: #8d2b24;
+  --green: #197047; --green-bg: #e3f0e9; --green-txt: #145c3a;
+  --gold: #7a5e00; --purple: #6b3fa0;
+  --card-shadow: 0 1px 5px rgba(22,24,26,0.07);
+  --cal-avail-bg: rgba(122,94,0,0.10); --cal-avail-txt: #7a5e00;
+  --cal-up: #197047; --cal-dn: #b73a31;
+  --cal-active-bg: #7a5e00; --cal-active-txt: #fff;
+  --cal-holiday: #eef0ed; --cal-holiday-txt: #a4aaa2;
+  --chart-grid: rgba(22,24,26,0.07); --chart-txt: #5f656d;
+  --rank1bg: #7a5e00; --rank2bg: #5c6159; --rank3bg: #79603a;
+  --broker-chip-bg: #e4e7e3; --broker-chip-txt: #525860;
+  --bar-track: #e0e3df;
 }
 .dasbor-shell[data-theme='dark'] {
-  --bg: #0b1017; --bg2: #111826; --bg3: #18212f; --card: #111826; --card2: #18212f;
-  --border: #232e3f; --border2: rgba(240,166,43,0.30);
-  /* #77 sweep kontras: text3 5c6b7e→8494a8 (3.3→5.7 vs bg panel), red
-     e5484d→eb5e62 (angka .dn/.red di atas red-bg/bg3 naik ke ≥4.5). */
-  --text: #e8edf4; --text2: #9aa7b8; --text3: #8494a8;
-  --accent: #f0a62b; --accent2: #ffc155;
-  --accent-soft: rgba(240,166,43,0.13); --accent-soft2: rgba(240,166,43,0.26); --accent-soft3: rgba(240,166,43,0.45);
-  --red: #eb5e62; --red-bg: rgba(235,94,98,0.14); --red-txt: #f2a3a5;
-  --green: #30a46c; --green-bg: rgba(48,164,108,0.14); --green-txt: #7fd8ab;
-  --gold: #f0a62b; --purple: #b48ae2;
+  /* Lilin (15 Agu 2026). Shell punya sistem token SENDIRI, terpisah dari
+     .lantai — warisan index_live.html, sengaja dibiarkan hidup berdampingan
+     (lihat catatan panjang di blok token .lantai). Akibatnya tema baru harus
+     dipasang DUA KALI: sekali di .lantai untuk isi halaman, sekali di sini
+     untuk rail, topbar, dan pita kurs. Melewatkan yang ini persis yang bikin
+     rail & topbar tertinggal di palet lama. */
+  --bg: #0c0d10; --bg2: #14151a; --bg3: #1a1c22; --card: #14151a; --card2: #1a1c22;
+  --border: #24262e; --border2: rgba(242,194,48,0.30);
+  --text: #eaeaee; --text2: #9ca0ac; --text3: #888d99;
+  --accent: #f2c230; --accent2: #ffd863;
+  --accent-soft: rgba(242,194,48,0.12); --accent-soft2: rgba(242,194,48,0.26); --accent-soft3: rgba(242,194,48,0.45);
+  --red: #e6635a; --red-bg: rgba(230,99,90,0.14); --red-txt: #f0a49d;
+  --green: #38b77e; --green-bg: rgba(56,183,126,0.14); --green-txt: #85dcb4;
+  --gold: #f2c230; --purple: #b48ae2;
   --card-shadow: 0 2px 12px rgba(0,0,0,0.35);
-  --cal-avail-bg: rgba(240,166,43,0.12); --cal-avail-txt: #f0a62b;
-  --cal-up: #30a46c; --cal-dn: #eb5e62;
-  --cal-active-bg: #f0a62b; --cal-active-txt: #131008;
-  --cal-holiday: #111826; --cal-holiday-txt: #38455a;
-  --chart-grid: rgba(255,255,255,0.05); --chart-txt: #8494a8;
-  --rank1bg: #f0a62b; --rank2bg: #2e3b50; --rank3bg: #3d3020;
-  --broker-chip-bg: #18212f; --broker-chip-txt: #9aa7b8;
-  --bar-track: #18212f;
+  --cal-avail-bg: rgba(242,194,48,0.12); --cal-avail-txt: #f2c230;
+  --cal-up: #38b77e; --cal-dn: #e6635a;
+  --cal-active-bg: #f2c230; --cal-active-txt: #171207;
+  --cal-holiday: #14151a; --cal-holiday-txt: #3a3d47;
+  --chart-grid: rgba(255,255,255,0.05); --chart-txt: #888d99;
+  --rank1bg: #f2c230; --rank2bg: #363945; --rank3bg: #3d3320;
+  --broker-chip-bg: #1a1c22; --broker-chip-txt: #9ca0ac;
+  --bar-track: #1a1c22;
 }
 
 /* ===== KEPALA HALAMAN: merek + pita kurs berjalan =====
