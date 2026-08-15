@@ -193,6 +193,8 @@ Lihat #143 untuk pilihan jalurnya.
 | Animasi papan | Riak saja; flip dibuang |
 | Toggle tema | Satu ikon di rail; mode "sistem" tetap hidup di kode |
 | Pengumuman | Tanpa UI admin, ditulis ke DB saat diminta |
+| Transkripsi orderbook | **Tetap manual** (opsi A, #143) — dilakukan Claude di sesi, tidak dipindah ke API berbayar dan tidak dibebankan ke kontributor. Konsekuensinya tiap edisi butuh satu sesi |
+| Prosedur produksi | Runbook lengkap per jenis edisi: `docs/produksi-edisi.md` |
 | Pembekuan otomatis | Diukur dari **kehadiran** (`max(dibuat_pada)` setoran apa pun statusnya), bukan dari setoran yang lolos kurasi. Mutu dihukum di jalur jenjang, bukan di sini |
 | Ambang beku | Ikut jenjang: Pemula 5, Perunggu 7, Perak 10, Emas 20, Platinum 60, Diamond 120 hari kerja (≈5,5 bulan). Kolom `jenjang.hari_beku` |
 | Status `revisi` | Penolakan yang tak menghukum — berkas boleh diganti, TIDAK ikut membagi akurasi. Untuk penyetor beritikad baik yang datanya perlu diperbaiki |
