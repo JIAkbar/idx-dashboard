@@ -5,6 +5,7 @@ import { daftarJenjang, type JenjangRow } from '../../lib/jenjang'
 import { IkonMenu, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_SURAT, IKON_TAMBAH, IKON_TONG } from '../../components/dasbor/IkonMenu'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { Dropdown } from '../../components/dasbor/Dropdown'
+import { KolomSandi } from '../../components/dasbor/KolomSandi'
 import { AksesDitolak } from './AdminLayout'
 import { PanelJenjang } from './PanelJenjang'
 import './AkunAdmin.css'
@@ -356,10 +357,8 @@ function FormTambahAkun({ onClose, onSukses }: { onClose: () => void; onSukses: 
           <span className="lbl">Email</span>
           <input className="inp" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nama@contoh.com" />
         </div>
-        <div className="field">
-          <span className="lbl">Sandi awal</span>
-          <input className="inp" type="password" required value={sandi} onChange={(e) => setSandi(e.target.value)} placeholder="Minimal 8 karakter" />
-        </div>
+        <KolomSandi label="Sandi awal" nilai={sandi} onGanti={setSandi}
+          placeholder="Minimal 8 karakter" autoComplete="new-password" />
         <div className="field">
           <span className="lbl">Alias</span>
           <input className="inp" type="text" required value={alias} onChange={(e) => setAlias(e.target.value)} placeholder="Nama panggilan — minimal 2 karakter" />
@@ -449,14 +448,10 @@ function FormResetSandi({ akun, onClose, onSukses }: { akun: AkunRow; onClose: (
   return (
     <ModalKecil label={`Atur ulang sandi — ${akun.email}`} onClose={() => { if (!kirim) onClose() }}>
       <form onSubmit={submit} style={{ display: 'grid', gap: 12 }}>
-        <div className="field">
-          <span className="lbl">Sandi baru</span>
-          <input className="inp" type="password" required value={sandi} onChange={(e) => setSandi(e.target.value)} placeholder="Minimal 8 karakter" />
-        </div>
-        <div className="field">
-          <span className="lbl">Konfirmasi sandi</span>
-          <input className="inp" type="password" required value={konfirmasi} onChange={(e) => setKonfirmasi(e.target.value)} />
-        </div>
+        <KolomSandi label="Sandi baru" nilai={sandi} onGanti={setSandi}
+          placeholder="Minimal 8 karakter" autoComplete="new-password" />
+        <KolomSandi label="Konfirmasi sandi" nilai={konfirmasi} onGanti={setKonfirmasi}
+          autoComplete="new-password" />
         <button type="submit" className="btn-p" disabled={kirim}>{kirim ? 'Menyimpan…' : 'Atur Ulang'}</button>
         {err && <p className="af-err" style={{ margin: 0 }}>{err}</p>}
       </form>

@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { KolomSandi } from './KolomSandi'
 import { useDataHarian } from '../../lib/dasbor/dataHarian'
 import { hitungYtdPct } from '../../lib/dasbor/ytd'
 import { BarSesi, fmtMenit, useJamBursa } from './Kalender'
@@ -130,10 +131,7 @@ export function LoginModal({ onClose }: { onClose: () => void }) {
               <span className="lbl">Email</span>
               <input className="inp" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus />
             </div>
-            <div className="field">
-              <span className="lbl">Kata sandi</span>
-              <input className="inp" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            </div>
+            <KolomSandi label="Kata sandi" nilai={password} onGanti={setPassword} autoComplete="current-password" />
             {error && <p style={{ margin: 0, fontSize: 11, color: 'var(--red)' }}>{error}</p>}
             <button type="submit" className="btn-p" disabled={submitting}>
               {submitting ? 'Memproses…' : 'Masuk'}

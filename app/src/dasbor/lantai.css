@@ -1889,3 +1889,17 @@
 @media (prefers-reduced-motion: reduce) {
   .lantai .cg.memuat { animation: none; opacity: .4; }
 }
+
+/* Kolom sandi + tombol intip (KolomSandi.tsx). Tombolnya duduk DI DALAM kotak
+   isian, jadi padding kanan input diperlebar supaya teks sandi panjang tidak
+   pernah tertutup ikonnya. */
+.lantai .sandi-bungkus { position: relative; display: block; }
+.lantai .sandi-inp { width: 100%; padding-right: 38px; }
+.lantai .sandi-intip {
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; padding: 6px; cursor: pointer;
+  color: var(--text3); display: flex; border-radius: 4px;
+}
+.lantai .sandi-intip:hover { color: var(--amber); }
+.lantai .sandi-intip:focus-visible { outline: 2px solid var(--amber); outline-offset: -1px; color: var(--amber); }
+.lantai .sandi-intip .dasbor-ikon { stroke: currentColor; }

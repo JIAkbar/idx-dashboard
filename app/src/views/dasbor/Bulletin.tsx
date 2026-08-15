@@ -2,12 +2,11 @@ import { Fragment, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useBulletinList } from '../../lib/dasbor/bulletin'
 import { useAksesHalaman } from '../../context/AksesHalamanContext'
-import { IkonMenu, IKON_KUNCI, IKON_SILANG } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_KUNCI, IKON_SILANG, IKON_MATA } from '../../components/dasbor/IkonMenu'
 
 /** Panah unduh ke tray — lokal view ini, belum ada padanannya di IkonMenu.tsx. */
 const IKON_UNDUH = 'M12 4v10M7.5 10.5L12 15l4.5-4.5M5 19h14'
 /** Mata (pratinjau PDF, #98) — lokal view ini, sama alasan IKON_UNDUH. */
-const IKON_MATA = 'M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12zM12 12m-2.6 0a2.6 2.6 0 1 0 5.2 0 2.6 2.6 0 1 0-5.2 0'
 
 /** Chrome Android dkk umumnya TIDAK bisa render PDF di iframe (malah memicu
  *  unduhan) — di mobile tombol Lihat membuka tab baru, bukan modal kosong.
