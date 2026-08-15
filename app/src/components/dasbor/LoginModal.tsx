@@ -82,10 +82,20 @@ function SparkIhsg() {
  *  (0899… → 62899…) — bentuk yang diminta wa.me. */
 const WA_ADMIN = '628990447098'
 /** Channel pengumuman PAPAN — rilis fitur publik & halaman baru diumumkan di
- *  sini. Ditaruh berdampingan dengan tombol daftar supaya orang yang belum
- *  siap mendaftar tetap punya cara mengikuti perkembangannya. */
+ *  sini. Disisipkan ke dalam pesan registrasi (WA_PESAN), bukan jadi tautan
+ *  tersendiri di modal. */
 const WA_CHANNEL = 'https://whatsapp.com/channel/0029VbBJN5y7j6gB0S4zFW1R'
-const WA_PESAN = 'Halo, saya mau Registrasi PAPAN — Pusat Analisa Pasar Nusantara. Nama saya: '
+/** Isi pesan yang sudah terketik saat tombol daftar ditekan. Tautan channel
+ *  ikut di dalamnya, bukan berdiri sebagai tautan sendiri di modal: begitu
+ *  pesan terkirim, calon kontributor punya link itu di riwayat chatnya sendiri
+ *  dan bisa membukanya kapan pun tanpa kembali ke halaman ini. */
+const WA_PESAN = [
+  'Halo, saya mau Registrasi PAPAN — Pusat Analisa Pasar Nusantara.',
+  '',
+  'Nama saya: ',
+  '',
+  `Channel kabar fitur PAPAN: ${WA_CHANNEL}`,
+].join('\n')
 
 /**
  * Isi panel "Benefit kontributor".
@@ -254,12 +264,6 @@ export function LoginModal({ onClose }: { onClose: () => void }) {
               rel="noopener noreferrer"
             >
               Belum punya akun? <b>Daftar lewat WhatsApp</b>
-            </a>
-            {/* Channel pengumuman: jalan bagi yang belum siap mendaftar tapi
-                mau mengikuti. Diletakkan setelah tautan daftar, bukan
-                menggantikannya — mendaftar tetap ajakan utamanya. */}
-            <a className="login-channel" href={WA_CHANNEL} target="_blank" rel="noopener noreferrer">
-              Ikuti channel PAPAN untuk kabar fitur baru
             </a>
           </form>
           )}

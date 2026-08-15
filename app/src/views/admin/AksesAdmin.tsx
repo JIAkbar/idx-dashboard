@@ -151,8 +151,16 @@ export function AksesAdmin() {
                             onGanti={(v) =>
                               ubahBaris(h, {
                                 tingkat: v as HalamanBaris['tingkat'],
-                                // Kunci kontrol jenjang minimum utk tingkat selain 'login' — nilainya direset null.
-                                ...(v !== 'login' ? { min_tier: null } : {}),
+                                // Jenjang minimum direset ke 0, BUKAN null:
+                                // kolom min_tier di server NOT NULL, jadi
+                                // mengirim null membuat SETIAP perubahan ke
+                                // Publik/Superadmin ditolak ("null value in
+                                // column min_tier violates not-null
+                                // constraint"). Nilai 0 aman — kolom ini tidak
+                                // dipakai di luar tingkat 'login', dan sel "—"
+                                // di tabel ditentukan oleh TINGKAT-nya, bukan
+                                // oleh min_tier yang bernilai null.
+                                ...(v !== 'login' ? { min_tier: 0 } : {}),
                               })
                             }
                           />
