@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { fN } from '../../../lib/dasbor/format'
 import { keFraksi, hariAraMinimal } from '../../../lib/fraksiHarga'
+import { ambilHargaTerakhir } from '../../../lib/hargaTerakhir'
 import { StockAutocomplete } from '../../../components/dasbor/StockAutocomplete'
 import { useStockIndex } from '../../../lib/dasbor/stockDetailData'
 import { IkonMenu, IKON_PERINGATAN, IKON_CARI, IKON_JAM } from '../../../components/dasbor/IkonMenu'
@@ -79,15 +80,8 @@ export function Pemulihan() {
   const lotN = Math.max(0, parseFloat(lot) || 0)
 
   /**
-   * Isi harga terakhir emiten.
-   *
-   * Dicoba dua sumber, berurutan:
-   *
-   * 1. Yahoo lewat proxy CORS — paling segar (delay ~15 menit), tapi lewat
-   *    layanan pihak ketiga yang bisa membatasi atau memblokir kapan saja.
-   *    Terbukti gagal di production untuk ANTM, 15 Agu 2026.
-   * 2. Penutupan bulanan milik PAPAN sendiri — statis, tak pernah gagal,
-   *    tapi setua bulan terakhir panen.
+   * Isi harga terakhir emiten — dua sumber cadangan (Yahoo lalu berkas
+   * lokal) ada di `lib/hargaTerakhir.ts`, dipakai bersama tab Avg Down.
    *
    * Yang PENTING: sumbernya selalu disebut di layar. Harga bulan lalu yang
    * disamarkan sebagai harga hari ini jauh lebih berbahaya daripada
@@ -100,29 +94,15 @@ export function Pemulihan() {
     setMengambil(true)
     setNamaEmiten('Mengambil harga…')
     try {
-      const yUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${k}.JK?interval=1d&range=1d`
-      const r = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(yUrl)}`, {
-        signal: AbortSignal.timeout(8000),
-      })
-      const j = await r.json()
-      const res = j?.chart?.result?.[0]
-      const harga = res?.meta?.regularMarketPrice
-      if (!harga || harga <= 0) throw new Error('harga kosong')
-      setKini(String(harga))
-      setNamaEmiten(`${res?.meta?.longName || res?.meta?.shortName || k} · harga delay ~15 menit`)
-      return
-    } catch {
-      /* jatuh ke cadangan di bawah */
-    }
-    try {
-      const r = await fetch('/data-idx/json/harga_terakhir.json')
-      const j = await r.json() as { bulan: string; harga: Record<string, number> }
-      const harga = j.harga?.[k]
-      if (!harga) throw new Error('tak ada di cadangan')
-      setKini(String(harga))
-      setNamaEmiten(`${k} · penutupan ${j.bulan} — harga langsung tak bisa diambil, ini yang terakhir kami simpan`)
-    } catch {
-      setNamaEmiten('Gagal mengambil harga — isi manual di bawah.')
+      const hasil = await ambilHargaTerakhir(k)
+      setKini(String(hasil.harga))
+      setNamaEmiten(
+        hasil.sumber === 'yahoo'
+          ? `${hasil.nama || k} · harga delay ~15 menit`
+          : `${k} · penutupan ${hasil.bulan} — harga langsung tak bisa diambil, ini yang terakhir kami simpan`,
+      )
+    } catch (e) {
+      setNamaEmiten(e instanceof Error ? e.message : 'Gagal mengambil harga — isi manual di bawah.')
     } finally {
       setMengambil(false)
     }

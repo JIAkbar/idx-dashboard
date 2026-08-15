@@ -4,6 +4,7 @@ import { onlyDigits, formatRibuan, parseRibuan } from '../../../lib/dasbor/kalku
 import { IkonMenu, IKON_PAPAN_KLIP, IKON_JAM, IKON_CARI, IKON_GIR, IKON_GRAFIK_BATANG, IKON_PERINGATAN } from '../../../components/dasbor/IkonMenu'
 import { StockAutocomplete } from '../../../components/dasbor/StockAutocomplete'
 import { useStockIndex } from '../../../lib/dasbor/stockDetailData'
+import { ambilHargaTerakhir } from '../../../lib/hargaTerakhir'
 
 type AdcMode = 'half' | 'lossmax' | 'endavg' | 'avgqty' | 'avgval'
 
@@ -145,6 +146,10 @@ export function AvgDown() {
     }
   }, [kode, avg, qty, last, mode, lossmax, endavgRaw, avgqty, avgvalRaw])
 
+  // Cadangan dua sumber (Yahoo lalu penutupan bulanan lokal) ada di
+  // lib/hargaTerakhir.ts, dipakai bersama tab Pemulihan — sebelumnya di sini
+  // cuma memanggil Yahoo, jadi kalau proxy-nya diblokir (kejadian di
+  // production untuk ANTM, 15 Agu 2026) tak ada jalan lain selain gagal.
   async function fetchPrice(tickerPilihan?: string) {
     const kodeTrim = (tickerPilihan ?? kode).trim().toUpperCase()
     if (!kodeTrim) {
@@ -154,23 +159,18 @@ export function AvgDown() {
     setFetching(true)
     setPriceSrc({ label: 'Mengambil data…', kind: 'manual' })
     try {
-      const yUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${kodeTrim}.JK?interval=1d&range=1d`
-      const proxy = `https://corsproxy.io/?url=${encodeURIComponent(yUrl)}`
-      const r = await fetch(proxy, { signal: AbortSignal.timeout(10000) })
-      const j = await r.json()
-      const res = j?.chart?.result?.[0]
-      const price = res?.meta?.regularMarketPrice
-      const priceName: string = res?.meta?.longName || res?.meta?.shortName || kodeTrim
-      if (price && price > 0) {
-        setLast(String(price))
-        setName(priceName)
+      const hasil = await ambilHargaTerakhir(kodeTrim)
+      setLast(String(hasil.harga))
+      if (hasil.sumber === 'yahoo') {
+        setName(hasil.nama || kodeTrim)
         setPriceSrc({ label: 'Auto • harga delay ~15m', kind: 'auto' })
       } else {
-        throw new Error('no price')
+        setName(`${kodeTrim} · penutupan ${hasil.bulan}`)
+        setPriceSrc({ label: `Cadangan lokal • penutupan ${hasil.bulan}`, kind: 'auto' })
       }
-    } catch {
+    } catch (e) {
       setPriceSrc({ label: 'Gagal — isi harga manual', kind: 'manual' })
-      setName('Tidak dapat mengambil data otomatis')
+      setName(e instanceof Error ? e.message : 'Tidak dapat mengambil data otomatis')
     } finally {
       setFetching(false)
     }
