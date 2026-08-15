@@ -54,6 +54,7 @@ utama. Aturannya: makin tajam speknya, makin rendah tier yang aman.
 | 108 | [IHSG] Panen harga BUKA harian | Kecil | Lilin berhenti jadi aproksimasi | ✅ sonnet — satu ruas ditambah ke skrip yang sudah jalan |
 | 137 | Notifikasi hasil kurasi ke penyetor (setuju/revisi/hapus) | Sedang | Status `revisi` baru berguna kalau sampai ke orangnya | — migrasi DB + RLS; satukan dgn #123 |
 | 142 | Ganti aksi "Tolak" dengan "Hapus + notice" | Sedang | Tiga aksi, tiga makna jelas; berkas mati berhenti menumpuk | — butuh #137 lebih dulu |
+| 144 | **Koreksi istilah**: "orderbook" sebenarnya BROKER SUMMARY — sweep teks UI dulu | Kecil (lapis teks) | Berhenti mengajari pengguna istilah yang salah | ✅ sonnet utk lapis teks; lapis data tunggu #142 |
 | 143 | **Keputusan** jalur transkripsi orderbook kalau produksi pindah ke CI | Kecil (memutuskan) | Menentukan apakah tombol "Terbitkan" bisa berdiri sendiri | — HARUS dijawab sebelum #138 |
 | 138 | Pilih emiten MASUK PRODUKSI (layar "Susun Edisi" belum ada sama sekali) | Sedang-besar | Berhenti menolak data benar demi memangkas isi edisi | — UI **dan** skrip Python build_*.py ikut diubah |
 | 128 | Cocokkan fraksi harga ke dokumen IDX | Kecil | Angka aturan bursa jadi pasti | — perlu penilaian sumber |
@@ -207,6 +208,7 @@ Lihat #143 untuk pilihan jalurnya.
 
 - **Paket rilis WA** wajib tiap fitur/halaman publik baru: screenshot desktop + mobile, naskah fungsi & keunggulan. Backend tidak diumumkan.
 - **Verifikasi dua viewport** sebelum melapor selesai: laptop 1536×960×1.25, telepon 412×915×2.625.
+- **Istilah yang benar: BROKER SUMMARY**, bukan "orderbook". Seluruh aplikasi masih memakai istilah lama (#144) — jangan menambah pemakaian baru.
 - **Nada pesan ke kontributor** berbentuk apresiasi, bukan pemberitahuan penolakan. Setoran yang disetujui tapi tak dimuat di edisi harus terbaca sebagai terima kasih atas kerjanya — pengakuan di depan, keterangan teknis di belakang.
 - **Harga apa pun** yang ditampilkan wajib lewat `keFraksi()` — lihat `docs/pedoman-harga-bei.md`. Kecuali rata-rata biaya (cost basis) hasil hitungan, yang memang tak wajib jatuh di tick.
 - **Grid pembungkus halaman** wajib `minmax(0, 1fr)`, bukan `auto`. Kolom `auto` melebar mengikuti anak terlebar (tabel ber-min-width), dan karena `.dasbor-main` memotong bukan menggulung, kelebihannya jadi tak terjangkau di ponsel. Ditemukan pada Seasonality 15 Agu 2026.
