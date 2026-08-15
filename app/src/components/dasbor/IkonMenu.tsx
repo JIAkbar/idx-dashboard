@@ -66,3 +66,4 @@ export const IKON_MATA = 'M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2
 export const IKON_MATA_CORET = 'M2.5 12S6 5.5 12 5.5c1.7 0 3.2.5 4.5 1.2M21.5 12s-1.6 2.9-4.5 4.6c-1.4.8-3.1 1.4-5 1.4-1.9 0-3.6-.6-5-1.4M4 4l16 16' // sandi sedang terlihat
 export const IKON_SURAT = 'M4 6h16a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V7a1 1 0 011-1zM3.5 7l8.5 6 8.5-6' // amplop — ubah alamat email
 export const IKON_INFO = 'M12 21a9 9 0 100-18 9 9 0 000 18zM12 11v6M12 7.5h.01' // "i" dalam lingkaran — panduan singkat
+export const IKON_SALIN = 'M9 9h10a1 1 0 011 1v10a1 1 0 01-1 1H9a1 1 0 01-1-1V10a1 1 0 011-1zM5 15H4a1 1 0 01-1-1V4a1 1 0 011-1h10a1 1 0 011 1v1' // dua lembar bertumpuk — salin ke papan klip

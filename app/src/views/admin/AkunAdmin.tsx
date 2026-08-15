@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useProfilSaya } from '../../lib/profilSaya'
 import { daftarAkun, buatAkun, hapusAkun, resetSandi, setProfil, ubahEmail, type AkunRow } from '../../lib/adminAkun'
 import { daftarJenjang, type JenjangRow } from '../../lib/jenjang'
-import { IkonMenu, IKON_CARI, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_SURAT, IKON_TAMBAH, IKON_TONG, IKON_ULANG } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_CARI, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_SALIN, IKON_SURAT, IKON_TAMBAH, IKON_TONG, IKON_ULANG } from '../../components/dasbor/IkonMenu'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { KolomSandi } from '../../components/dasbor/KolomSandi'
@@ -86,6 +86,37 @@ function waktuManusiawi(iso: string | null): string {
   const bulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'][d.getMonth()]
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getDate()} ${bulan} ${d.getFullYear()}, ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+/**
+ * Tombol salin ke papan klip, dengan centang sesaat sebagai bukti.
+ *
+ * Tanpa umpan balik, satu-satunya cara memastikan salinan berhasil adalah
+ * menempelkannya ke suatu tempat — dan orang yang ragu akan menekan tombolnya
+ * dua-tiga kali. Centang dua detik menghapus keraguan itu.
+ */
+function TombolSalin({ teks, judul }: { teks: string; judul: string }) {
+  const [tersalin, setTersalin] = useState(false)
+  useEffect(() => {
+    if (!tersalin) return
+    const t = setTimeout(() => setTersalin(false), 2000)
+    return () => clearTimeout(t)
+  }, [tersalin])
+  return (
+    <button
+      type="button" className="aa-salin" title={judul} aria-label={judul}
+      disabled={!teks}
+      onClick={() => {
+        // Clipboard API bisa ditolak (izin, konteks non-secure). Diamkan
+        // galatnya — tapi JANGAN tampilkan centang, karena centang yang muncul
+        // padahal tak ada yang tersalin lebih menyesatkan daripada tak ada
+        // umpan balik sama sekali.
+        void navigator.clipboard.writeText(teks).then(() => setTersalin(true), () => {})
+      }}
+    >
+      <IkonMenu d={tersalin ? IKON_CENTANG : IKON_SALIN} size={13} />
+    </button>
+  )
 }
 
 /**
@@ -524,6 +555,7 @@ function FormTambahAkun({ onClose, onSukses }: { onClose: () => void; onSukses: 
               aria-label={`Bagian nama email, sebelum ${DOMAIN_AKUN}`}
             />
             <span className="aa-email-dom">{DOMAIN_AKUN}</span>
+            <TombolSalin teks={email} judul="Salin alamat email lengkap" />
           </div>
         </div>
         <KolomSandi label="Sandi awal" nilai={sandi} onGanti={setSandi}
