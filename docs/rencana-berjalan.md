@@ -38,7 +38,8 @@ utama. Aturannya: makin tajam speknya, makin rendah tier yang aman.
 | # | Tugas | Ongkos | Hasil terlihat | Agen |
 |---|---|---|---|---|
 | 108 | [IHSG] Panen harga BUKA harian | Kecil | Lilin berhenti jadi aproksimasi | ✅ sonnet — satu ruas ditambah ke skrip yang sudah jalan |
-| 133 | Seasonality tak tergembok padahal keputusannya "perlu masuk" | Sangat kecil | Akses jadi sesuai keputusan | — perlu konfirmasi Johan dulu |
+| 137 | Notifikasi hasil kurasi ke penyetor (setuju/revisi/tolak) | Sedang | Status `revisi` baru berguna kalau sampai ke orangnya | — migrasi DB + RLS; satukan dgn #123 |
+| 138 | Pilih emiten yang MASUK PRODUKSI, terpisah dari kurasi | Sedang | Berhenti menolak data benar demi memangkas isi edisi | — keputusan bentuk layar |
 | 128 | Cocokkan fraksi harga ke dokumen IDX | Kecil | Angka aturan bursa jadi pasti | — perlu penilaian sumber |
 | 124 | Chart IHSG: pemilih rentang + judul | Sedang | Grafik 30+ tahun langsung terpakai | — keputusan sambungan dua sumber |
 | 127 | PDF bulletin: daftarkan Red Hat | Sedang | Web & PDF seragam | ✅ sonnet kalau pipeline-nya sudah dipetakan |
