@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useProfilSaya } from '../../lib/profilSaya'
 import { daftarAkun, buatAkun, hapusAkun, resetSandi, setProfil, ubahEmail, type AkunRow } from '../../lib/adminAkun'
 import { daftarJenjang, type JenjangRow } from '../../lib/jenjang'
-import { IkonMenu, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_SURAT, IKON_TAMBAH, IKON_TONG } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_SURAT, IKON_TAMBAH, IKON_TONG, IKON_ULANG } from '../../components/dasbor/IkonMenu'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { KolomSandi } from '../../components/dasbor/KolomSandi'
+import { rakitSandi } from '../../lib/sandiRakit'
 import { AksesDitolak } from './AdminLayout'
 import { PanelJenjang } from './PanelJenjang'
 import './AkunAdmin.css'
@@ -33,6 +34,23 @@ function waktuManusiawi(iso: string | null): string {
   const bulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'][d.getMonth()]
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getDate()} ${bulan} ${d.getFullYear()}, ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+/**
+ * Baris "Buatkan sandi" di bawah kolom sandi — merakit <Nama><4 digit> lalu
+ * mengisinya ke kolom. Sandinya tampil apa adanya di layar superadmin (tombol
+ * intip di KolomSandi) karena memang harus disalin dan dibacakan ke pemilik
+ * akun; ia tidak pernah dikirim ke mana pun selain Edge Function admin-akun.
+ */
+function BarisBuatkanSandi({ nama, onBuat, disabled }: { nama: string; onBuat: (s: string) => void; disabled?: boolean }) {
+  return (
+    <div className="aa-buatkan">
+      <button type="button" className="dd-btn" disabled={disabled} onClick={() => onBuat(rakitSandi(nama))}>
+        <IkonMenu d={IKON_ULANG} size={12} /> Buatkan sandi
+      </button>
+      <span className="muted">Bentuknya {'<Nama><4 angka>'} — cukup untuk dibacakan, wajib diganti pemiliknya.</span>
+    </div>
+  )
 }
 
 /** Toggle pill boolean per baris — pola tombol Lantai, bukan checkbox native
@@ -419,6 +437,14 @@ function FormTambahAkun({ onClose, onSukses }: { onClose: () => void; onSukses: 
         </div>
         <KolomSandi label="Sandi awal" nilai={sandi} onGanti={setSandi}
           placeholder="Minimal 8 karakter" autoComplete="new-password" />
+        {/* Sandi awal dibacakan lewat WhatsApp, jadi bentuknya harus bisa
+            diucapkan: <Nama><4 digit>. Nama diambil dari alias kalau sudah
+            diisi, kalau belum dari bagian lokal email. */}
+        <BarisBuatkanSandi
+          nama={alias.trim() || email.split('@')[0]}
+          onBuat={setSandi}
+          disabled={kirim}
+        />
         <div className="field">
           <span className="lbl">Alias</span>
           <input className="inp" type="text" required value={alias} onChange={(e) => setAlias(e.target.value)} placeholder="Nama panggilan — minimal 2 karakter" />
@@ -510,6 +536,13 @@ function FormResetSandi({ akun, onClose, onSukses }: { akun: AkunRow; onClose: (
       <form onSubmit={submit} style={{ display: 'grid', gap: 12 }}>
         <KolomSandi label="Sandi baru" nilai={sandi} onGanti={setSandi}
           placeholder="Minimal 8 karakter" autoComplete="new-password" />
+        {/* Mengisi kedua kolom sekaligus: konfirmasi yang diketik ulang manual
+            dari sandi yang baru saja dibuatkan tidak menguji apa pun. */}
+        <BarisBuatkanSandi
+          nama={akun.alias?.trim() || akun.email.split('@')[0]}
+          onBuat={(s) => { setSandi(s); setKonfirmasi(s) }}
+          disabled={kirim}
+        />
         <KolomSandi label="Konfirmasi sandi" nilai={konfirmasi} onGanti={setKonfirmasi}
           autoComplete="new-password" />
         <button type="submit" className="btn-p" disabled={kirim}>{kirim ? 'Menyimpan…' : 'Atur Ulang'}</button>

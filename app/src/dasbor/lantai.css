@@ -389,7 +389,10 @@
 @media (min-width: 769px) {
   .dasbor-modal-bg { padding-left: calc(76px + 16px); }
 }
-.dasbor-modal { width: 100%; max-width: 340px; animation: dasbor-modal-naik .22s cubic-bezier(.2,.7,.3,1); }
+/* 420px, naik dari 340px: pada 340px kalimat pengantar dan tiap keterangan
+   benefit pecah 2–3 baris, dan tombol "Benefit kontributor" nyaris menyentuh
+   "Tutup" di kepala. Tetap 100% di layar sempit, jadi telepon tidak berubah. */
+.dasbor-modal { width: 100%; max-width: 420px; animation: dasbor-modal-naik .22s cubic-bezier(.2,.7,.3,1); }
 @keyframes dasbor-modal-pudar { from { opacity: 0; } to { opacity: 1; } }
 @keyframes dasbor-modal-naik { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
