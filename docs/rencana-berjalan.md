@@ -3,7 +3,7 @@
 Catatan hidup — diperbarui tiap ada keputusan. Ditulis ke berkas supaya tidak
 bergantung pada ingatan percakapan (yang bisa diringkas dan kehilangan detail).
 
-Terakhir diperbarui: 15 Agustus 2026.
+Terakhir diperbarui: 15 Agustus 2026 (malam — setelah verifikasi endpoint IDX).
 
 ## ✅ Sudah selesai — dari permintaan Johan
 
@@ -39,13 +39,17 @@ utama. Aturannya: makin tajam speknya, makin rendah tier yang aman.
 | 126 | Verifikasi mobile Seasonality | Kecil | Membuka jalan pengumuman WA | ✅ sonnet — ceklist viewport sudah baku |
 | 128 | Cocokkan fraksi harga ke dokumen IDX | Kecil | Angka aturan bursa jadi pasti | — perlu penilaian sumber |
 | 124 | Chart IHSG: pemilih rentang + judul | Sedang | Grafik 30+ tahun langsung terpakai | — keputusan sambungan dua sumber |
+| 131a | **Seasonality tab 2 — bagian IHSG** | Sedang | Pola hari-dalam-seminggu langsung terlihat; angkanya SUDAH terhitung | — bentuk grafik balapan |
 | 127 | PDF bulletin: daftarkan Red Hat | Sedang | Web & PDF seragam | ✅ sonnet kalau pipeline-nya sudah dipetakan |
 | 126b | Chart komparasi Seasonality | Sedang | Perbandingan emiten lebih cepat dibaca | — keputusan bentuk grafik |
 | 109 | Peta Investor: pindah tombol + hapus ekspor | Sedang | Rapi | ✅ sonnet |
 | 123 | Badge/notifikasi fitur baru | Sedang-besar | Kontributor tahu ada yang baru | — migrasi DB + RLS + desain |
 | 107 | Dasbor: badge %, bar tembus, klik ke TradingView | Sedang-besar | Dasbor lebih hidup | sebagian ✅ sonnet |
 | 122 | [EMITEN] Panen OHLC 5 tahun + chart candle | Besar | Chart candle per emiten | panen ✅ sonnet · chart — |
+| 131b | Seasonality tab 2 — bagian emiten | Besar | Pola harian per emiten | terhalang #122 |
+| 130 | Analisis volume & divergensi tiga lapis | Besar | Yang tak ada di aplikasi lain | terhalang #122/#108 |
 | 99 | Stock Detail: laporan keuangan kuartalan | Paling besar | Fundamental lengkap | — perlu perancangan tabel |
+| 129 | **[PALING AKHIR]** Chart bandarmologi ala @Asta_8_Free_Bot | Paling besar | Lima panel bawahnya BELUM ada datanya | — perlu sumber broker per emiten |
 
 Empat teratas bisa selesai dalam satu sesi pendek, dan tiga di antaranya bisa
 dikerjakan bersamaan oleh agen terpisah karena berkasnya tak bersinggungan.
