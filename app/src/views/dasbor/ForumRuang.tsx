@@ -11,6 +11,7 @@ import {
 } from '../../lib/forum'
 import { IkonMenu, IKON_PERINGATAN, IKON_TONG, IKON_INFO } from '../../components/dasbor/IkonMenu'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
+import { KotakTulisTag } from '../../components/dasbor/KotakTulisTag'
 import { pesanGalat } from '../../lib/pesanGalat'
 
 interface Utas extends Pesan {
@@ -173,11 +174,6 @@ export function ForumRuang() {
 
   return (
     <div className="lantai">
-      <div className="vhead">
-        <h1>{ruangInfo.label}</h1>
-        <span className="sub">{ruangInfo.keterangan || (ruangInfo.jenis === 'emiten' ? `Diskusi ${ruangInfo.kunci}` : '')}</span>
-      </div>
-
       {galat && <div className="panel panel-b"><p className="muted">{galat}</p></div>}
 
       <div className="panel">
@@ -223,10 +219,9 @@ export function ForumRuang() {
                 <button type="button" className="bchip bchip-klik" style={{ cursor: 'pointer' }} onClick={() => setBalasKe(null)}>Batal</button>
               </div>
             )}
-            <textarea
-              className="inp" rows={3} maxLength={2000}
-              placeholder={session ? 'Tulis pesan…' : 'Tulis sebagai tamu — nama samaran dibuat otomatis…'}
-              value={isi} onChange={(e) => setIsi(e.target.value)}
+            <KotakTulisTag
+              nilai={isi} onNilai={setIsi}
+              placeholder={session ? 'Tulis pesan… ketik $ untuk menandai emiten' : 'Tulis sebagai tamu — ketik $ untuk menandai emiten…'}
             />
             <div className="forum-compose-bar">
               <span className="muted" style={{ fontSize: 11 }}>
@@ -285,21 +280,21 @@ export function ForumRuang() {
         <ModalKecil label="Menandai emiten" onClose={() => setPanduanTag(false)}>
           <div className="forum-panduan">
             <p>
-              Tulis <b>$</b> diikuti kode emiten empat huruf <b>KAPITAL</b>. Kode itu langsung
-              jadi tautan ke ruang diskusi emitennya.
+              Ketik <b>$</b> di kotak tulis, lalu ketik apa saja yang Anda ingat — kodenya atau
+              nama perusahaannya. Daftar emiten muncul, tinggal pilih. <b>Caps Lock tidak perlu.</b>
             </p>
             <div className="forum-panduan-contoh">
-              <span className="ok">$BUMI</span>
-              <span className="muted">jadi tautan</span>
-              <span className="no">$bumi</span>
-              <span className="muted">huruf kecil — tetap teks biasa</span>
-              <span className="no">$BMRIX</span>
-              <span className="muted">lebih dari empat huruf — tidak dikenali</span>
+              <span className="ok">$bum</span>
+              <span className="muted">memunculkan BUMI, BBSS, BCIP, BNBA…</span>
+              <span className="ok">$bumi</span>
+              <span className="muted">huruf kecil pun jadi tautan — ditampilkan $BUMI</span>
+              <span className="no">BUMI</span>
+              <span className="muted">tanpa $ — tetap teks biasa</span>
             </div>
             <p>
-              Aturannya sengaja ketat. Tanpa <b>$</b> dan tanpa kapital, kata sehari-hari seperti
-              &ldquo;SAYA&rdquo; atau &ldquo;PAGI&rdquo; ikut tertangkap dan seluruh percakapan
-              berubah jadi ladang tautan.
+              Tanda <b>$</b> tetap wajib, dan itu satu-satunya syaratnya. Tanpa penanda, kata
+              sehari-hari seperti &ldquo;saya&rdquo; atau &ldquo;pagi&rdquo; ikut tertangkap dan
+              seluruh percakapan berubah jadi ladang tautan.
             </p>
             <p className="muted" style={{ fontSize: 11 }}>
               Ruang emiten dibuka superadmin saat pertama kali dibutuhkan — tag ke ruang yang belum

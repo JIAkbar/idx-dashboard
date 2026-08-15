@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { ambilRingkasanRuang, waktuRelatif, type RuangRingkasan } from '../../lib/forum'
 import { pesanGalat } from '../../lib/pesanGalat'
 
@@ -39,12 +39,26 @@ export function Forum() {
   const topik = tersaring.filter((r) => r.jenis === 'topik')
   const emiten = tersaring.filter((r) => r.jenis === 'emiten')
 
+  // Ruang yang sedang dibuka dibaca dari alamat, bukan dari useParams: shell
+  // ini rute INDUK, dan induk tidak melihat parameter anaknya. Judulnya
+  // diambil dari daftar ruang yang memang sudah dimuat di sini — kalau ditaruh
+  // di dalam kolom kanan, judul halaman ikut menyempit dan sejajar dengan
+  // panel isinya, bukan dengan halamannya.
+  const kunciAktif = useLocation().pathname.replace(/^\/forum\/?/, '').split('/')[0]
+  const ruangAktif = ruang?.find((r) => r.kunci === kunciAktif) ?? null
+
   return (
     <div className="lantai forum-shell">
+      <div className="vhead forum-judul">
+        <h1>{ruangAktif ? ruangAktif.label : 'Forum'}</h1>
+        <span className="sub">
+          {ruangAktif
+            ? (ruangAktif.keterangan || (ruangAktif.jenis === 'emiten' ? `Diskusi ${ruangAktif.kunci}` : ''))
+            : 'diskusi terbuka seputar pasar & emiten'}
+        </span>
+      </div>
+
       <aside className="forum-rel">
-        <div className="vhead" style={{ marginBottom: 10 }}>
-          <h1>Forum</h1>
-        </div>
 
         <input
           className="inp" placeholder="Cari ruang…" value={cari}
