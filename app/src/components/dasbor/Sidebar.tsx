@@ -8,7 +8,6 @@ import { useAksesHalaman } from '../../context/AksesHalamanContext'
 import { PETA_MENU_KUNCI } from '../../lib/aksesHalaman'
 import { useKlikTransisi } from '../../lib/dasbor/transisi'
 import { prefetchRute } from '../../lib/prefetchRute'
-import { PilihTema } from './PilihTema'
 
 /**
  * Rail kiri (layar lebar). Isinya tiga lapis, dari atas ke bawah:
@@ -27,7 +26,7 @@ import { PilihTema } from './PilihTema'
  * navigasi /login lagi, lihat #38).
  */
 export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
-  const { mode, setMode } = useTheme()
+  const { theme, toggleTheme } = useTheme()
   const { session } = useAuth()
   const { boleh, alasanRingkas } = useAksesHalaman()
   // #79: navigasi rail dibungkus View Transition (crossfade + naik tipis di
@@ -91,7 +90,26 @@ export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
       <div className="dasbor-rail-foot">
         <span className="dasbor-dot-live" title="Data pasar tersambung" />
 
-        <PilihTema mode={mode} setMode={setMode} />
+        {/* Satu tombol, ikon saja. Pil tiga pilihan sempat dicoba di sini
+            dan makan tiga baris di rail yang cuma 76px — di kolom setipis itu
+            sakelar tunggal menang telak atas kelengkapan pilihan. Mode
+            "sistem" tetap ada di ThemeContext dan tetap dipakai kalau
+            tersimpan; yang hilang cuma cara memilihnya dari rail. */}
+        <button
+          type="button"
+          className="dasbor-rail-tombol"
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Ganti ke tema terang' : 'Ganti ke tema gelap'}
+          aria-label={theme === 'dark' ? 'Ganti ke tema terang' : 'Ganti ke tema gelap'}
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" className="dasbor-ikon" aria-hidden="true">
+            {theme === 'dark' ? (
+              <path d="M12 7.8a4.2 4.2 0 100 8.4 4.2 4.2 0 000-8.4zM12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6" />
+            ) : (
+              <path d="M20.5 14.6A8.5 8.5 0 019.4 3.5a8.5 8.5 0 1011.1 11.1z" />
+            )}
+          </svg>
+        </button>
 
         {session ? (
           <NavLink

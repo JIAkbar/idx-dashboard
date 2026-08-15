@@ -22,11 +22,22 @@ export function LilinHarian({ dasar, tutup, tinggi, rendah, lebar = 34, tinggiPx
   judul?: string
 }) {
   const naik = tutup >= dasar
-  // Rentang sumbu jadi skala gambar. Hari yang benar-benar datar (tinggi ==
-  // rendah) akan membagi nol, jadi rentangnya dilantaikan ke angka kecil —
-  // hasilnya lilin doji setipis garis, yang memang gambaran yang benar.
-  const span = Math.max(tinggi - rendah, 1e-9)
-  const y = (nilai: number) => ((tinggi - nilai) / span) * tinggiPx
+  // Skala diambil dari KEEMPAT nilai, bukan cuma tinggi/rendah hari ini.
+  //
+  // Penutupan kemarin tidak dijamin berada di dalam rentang hari ini: hari
+  // yang membuka dengan gap naik punya `rendah` di ATAS penutupan kemarin,
+  // dan sebaliknya. Waktu skalanya cuma tinggi–rendah, badan lilin digambar
+  // di luar kotaknya dan meluber menimpa teks di sekitarnya (terlihat 15 Agu
+  // 2026 pada hari 6.201,89 → 6.236,62).
+  //
+  // Memakai min/max keempatnya membuat gap itu justru terbaca: badan yang
+  // menjulur keluar rentang hari ADALAH gambaran yang benar dari gap.
+  const atas = Math.max(tinggi, dasar, tutup)
+  const bawah = Math.min(rendah, dasar, tutup)
+  // Hari yang benar-benar datar akan membagi nol, jadi rentangnya dilantaikan
+  // ke angka kecil — hasilnya lilin doji setipis garis, yang memang benar.
+  const span = Math.max(atas - bawah, 1e-9)
+  const y = (nilai: number) => ((atas - nilai) / span) * tinggiPx
 
   const atasBadan = y(Math.max(dasar, tutup))
   const bawahBadan = y(Math.min(dasar, tutup))
@@ -41,7 +52,6 @@ export function LilinHarian({ dasar, tutup, tinggi, rendah, lebar = 34, tinggiPx
     <svg
       width={lebar} height={tinggiPx} viewBox={`0 0 ${lebar} ${tinggiPx}`}
       role="img" aria-label={judul ?? (naik ? 'Hari naik' : 'Hari turun')}
-      style={{ overflow: 'visible' }}
     >
       {judul && <title>{judul}</title>}
       <line x1={x} x2={x} y1={y(tinggi)} y2={y(rendah)} stroke={warna} strokeWidth="1.5" />
