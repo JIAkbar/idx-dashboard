@@ -2413,8 +2413,11 @@
    sesempit tombol di sebelahnya. */
 .lantai .pi-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .lantai .pi-toolbar .tabs { flex: none; }
-/* Kotak cari yang menyerap sisa lebar, dan satu-satunya yang boleh
-   menyusut — tab dan kedua tombol lebarnya ditentukan isinya. */
-.lantai .pi-toolbar .pi-head-actions { flex: 1 1 240px; min-width: 200px; display: block; }
+/* Lebar secukupnya, TIDAK menyerap sisa baris. Kotak yang membentang
+   sampai tombol cuma memperbesar jarak tempuh mata dari yang diketik ke
+   tombol yang menindaklanjutinya — kode emiten paling panjang empat huruf,
+   dan nama investor yang panjang toh dipotong ellipsis. Boleh menyusut di
+   layar sempit (flex-shrink 1), tak boleh melar. */
+.lantai .pi-toolbar .pi-head-actions { flex: 0 1 300px; min-width: 180px; display: block; }
 .lantai .pi-toolbar .pi-srch-container { position: relative; }
 .lantai .pi-toolbar .pi-search-go, .lantai .pi-toolbar .dd-btn { flex: none; white-space: nowrap; }
