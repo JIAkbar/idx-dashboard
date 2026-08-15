@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { pesanGalat } from '../pesanGalat'
 
 /**
  * Tipe & fetch data Peta Investor. Port dari index_live.html piInit()
@@ -88,7 +89,7 @@ export function usePetaInvestor() {
         if (!cancelled) setData(d)
       })
       .catch((e: unknown) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'Gagal memuat data investor')
+        if (!cancelled) setError(pesanGalat(e, 'Gagal memuat data investor'))
       })
       .finally(() => {
         if (!cancelled) setLoading(false)

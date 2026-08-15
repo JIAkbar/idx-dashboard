@@ -4,6 +4,7 @@ import { DatePicker } from '../../components/dasbor/DatePicker'
 import { daftarRadar, unggahRadar } from '../../lib/supabaseEdisi'
 import { useProfilSaya } from '../../lib/profilSaya'
 import { AksesDitolak } from './AdminLayout'
+import { pesanGalat } from '../../lib/pesanGalat'
 
 function tanggalHariIni(): string {
   const d = new Date()
@@ -129,7 +130,7 @@ export function RadarUnggah() {
       setRbu(null)
       setMuat((m) => m + 1)
     } catch (err) {
-      setStatus({ ok: false, pesan: err instanceof Error ? err.message : 'Gagal unggah.' })
+      setStatus({ ok: false, pesan: pesanGalat(err, 'Gagal unggah.') })
     } finally {
       setMengunggah(false)
     }

@@ -81,7 +81,11 @@ function SparkIhsg() {
 /** Nomor WhatsApp pengelola PAPAN, format internasional tanpa tanda plus
  *  (0899… → 62899…) — bentuk yang diminta wa.me. */
 const WA_ADMIN = '628990447098'
-const WA_PESAN = 'Halo, saya mau register PAPAN — nama saya: '
+/** Channel pengumuman PAPAN — rilis fitur publik & halaman baru diumumkan di
+ *  sini. Ditaruh berdampingan dengan tombol daftar supaya orang yang belum
+ *  siap mendaftar tetap punya cara mengikuti perkembangannya. */
+const WA_CHANNEL = 'https://whatsapp.com/channel/0029VbBJN5y7j6gB0S4zFW1R'
+const WA_PESAN = 'Halo, saya mau Registrasi PAPAN — Pusat Analisa Pasar Nusantara. Nama saya: '
 
 /**
  * Isi panel "Benefit kontributor".
@@ -250,6 +254,12 @@ export function LoginModal({ onClose }: { onClose: () => void }) {
               rel="noopener noreferrer"
             >
               Belum punya akun? <b>Daftar lewat WhatsApp</b>
+            </a>
+            {/* Channel pengumuman: jalan bagi yang belum siap mendaftar tapi
+                mau mengikuti. Diletakkan setelah tautan daftar, bukan
+                menggantikannya — mendaftar tetap ajakan utamanya. */}
+            <a className="login-channel" href={WA_CHANNEL} target="_blank" rel="noopener noreferrer">
+              Ikuti channel PAPAN untuk kabar fitur baru
             </a>
           </form>
           )}

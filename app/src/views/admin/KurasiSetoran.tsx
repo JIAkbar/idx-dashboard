@@ -14,6 +14,7 @@ import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/Lig
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { AksesDitolak } from './AdminLayout'
 import './KurasiSetoran.css'
+import { pesanGalat } from '../../lib/pesanGalat'
 
 /** ISO datetime → "13 Agu 2026, 14:05"; "—" kalau tak valid. Salinan kecil
  *  dari waktuManusiawi AkunAdmin.tsx — sengaja tidak diekstrak jadi util
@@ -74,7 +75,7 @@ export function KurasiSetoran() {
         const urlMap = await urlScreenshots(rows.map((r) => r.path)).catch(() => ({}) as Record<string, string>)
         if (!batal) setUrls(urlMap)
       })
-      .catch((e) => !batal && setGalat(e instanceof Error ? e.message : 'Gagal memuat setoran.'))
+      .catch((e) => !batal && setGalat(pesanGalat(e, 'Gagal memuat setoran.')))
     return () => {
       batal = true
     }
@@ -122,7 +123,7 @@ export function KurasiSetoran() {
       setPilih(new Set())
       setMuat((m) => m + 1)
     } catch (e) {
-      setToast({ ok: false, pesan: e instanceof Error ? e.message : 'Gagal menyetujui.' })
+      setToast({ ok: false, pesan: pesanGalat(e, 'Gagal menyetujui.') })
     } finally {
       tandaiSibuk(paths, false)
     }
@@ -137,7 +138,7 @@ export function KurasiSetoran() {
       setTolakTarget(null)
       setMuat((m) => m + 1)
     } catch (e) {
-      setToast({ ok: false, pesan: e instanceof Error ? e.message : 'Gagal menolak.' })
+      setToast({ ok: false, pesan: pesanGalat(e, 'Gagal menolak.') })
     } finally {
       tandaiSibuk(paths, false)
     }

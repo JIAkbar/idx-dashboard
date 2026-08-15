@@ -10,6 +10,7 @@ import {
   type Pesan, type RuangInfo,
 } from '../../lib/forum'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { pesanGalat } from '../../lib/pesanGalat'
 
 interface Utas extends Pesan {
   balasan: Pesan[]
@@ -77,7 +78,7 @@ export function ForumRuang() {
         setPesan(daftar)
         void muatAlias(daftar)
       })
-      .catch((e: unknown) => { if (!batal) setGalat(e instanceof Error ? e.message : 'Gagal memuat ruang.') })
+      .catch((e: unknown) => { if (!batal) setGalat(pesanGalat(e, 'Gagal memuat ruang.')) })
       .finally(() => { if (!batal) setMemuat(false) })
     return () => { batal = true }
   }, [kunci])

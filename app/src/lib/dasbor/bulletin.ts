@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { pesanGalat } from '../pesanGalat'
 
 /** Satu baris arus-pasar/keluaran/index.json (dibuat generate_index.py). */
 export interface EdisiBulletin {
@@ -59,7 +60,7 @@ export function useBulletinList() {
         setDaftar(j.edisi)
       })
       .catch((e: unknown) => {
-        if (!batal) setError(e instanceof Error ? e.message : 'Gagal memuat daftar edisi')
+        if (!batal) setError(pesanGalat(e, 'Gagal memuat daftar edisi'))
       })
     return () => {
       batal = true

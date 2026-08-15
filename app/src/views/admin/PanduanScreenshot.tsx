@@ -10,6 +10,7 @@ import { urlScreenshots } from '../../lib/supabaseEdisi'
 import { IkonMenu, IKON_PERLUAS, IKON_TAMBAH, IKON_TONG, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
+import { pesanGalat } from '../../lib/pesanGalat'
 
 /**
  * Panel "Cara screenshot orderbook" (Fase 5) — panduan teks + galeri contoh
@@ -77,7 +78,7 @@ export function PanduanScreenshot({ superadmin, defaultBuka }: { superadmin: boo
       await hapusContohOrderbook(path)
       setMuat((m) => m + 1)
     } catch (e) {
-      setToast({ ok: false, pesan: e instanceof Error ? e.message : 'Gagal menghapus contoh.' })
+      setToast({ ok: false, pesan: pesanGalat(e, 'Gagal menghapus contoh.') })
     } finally {
       setHapusSibuk((s) => {
         const q = new Set(s)
@@ -220,7 +221,7 @@ function FormTambahContoh({ urutanAwal, onClose, onSukses }: { urutanAwal: numbe
       await tambahContohOrderbook({ path, judul: judul.trim() || null, keterangan: keterangan.trim() || null, benar, urutan })
       onSukses()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Gagal menambah contoh.')
+      setErr(pesanGalat(e, 'Gagal menambah contoh.'))
     } finally {
       setKirim(false)
     }

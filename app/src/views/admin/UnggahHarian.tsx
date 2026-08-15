@@ -43,6 +43,7 @@ import { useBulletinList } from '../../lib/dasbor/bulletin'
 import { TolakModal } from './KurasiSetoran'
 import { PanduanScreenshot } from './PanduanScreenshot'
 import './AdminShared.css'
+import { pesanGalat } from '../../lib/pesanGalat'
 
 function tanggalHariIni(): string {
   const d = new Date()
@@ -312,7 +313,7 @@ function EditAlasanModal({ ticker, entries, onClose, onSukses }: {
       await Promise.all(entries.map((s) => ubahAlasanSetoran(s.path, nilai.trim())))
       onSukses()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Gagal menyimpan alasan.')
+      setErr(pesanGalat(e, 'Gagal menyimpan alasan.'))
     } finally {
       setKirim(false)
     }
@@ -709,7 +710,7 @@ export function UnggahHarian() {
       setFormBuka(false)
       setMuat((m) => m + 1)
     } catch (err) {
-      setToast({ ok: false, pesan: terjemahkanGalatUnggah(err instanceof Error ? err.message : 'Gagal unggah.') })
+      setToast({ ok: false, pesan: terjemahkanGalatUnggah(pesanGalat(err, 'Gagal unggah.')) })
     } finally {
       setMengunggah(false)
     }
@@ -727,7 +728,7 @@ export function UnggahHarian() {
       })
       setMuat((m) => m + 1)
     } catch (err) {
-      setToast({ ok: false, pesan: err instanceof Error ? err.message : 'Gagal hapus.' })
+      setToast({ ok: false, pesan: pesanGalat(err, 'Gagal hapus.') })
     } finally {
       setMenghapus(false)
       setHapusTarget(null)
@@ -774,7 +775,7 @@ export function UnggahHarian() {
       setPilih(new Set())
       setMuat((m) => m + 1)
     } catch (err) {
-      setToast({ ok: false, pesan: err instanceof Error ? err.message : 'Gagal menyetujui.' })
+      setToast({ ok: false, pesan: pesanGalat(err, 'Gagal menyetujui.') })
     }
   }
 
@@ -786,7 +787,7 @@ export function UnggahHarian() {
       setTolakTarget(null)
       setMuat((m) => m + 1)
     } catch (err) {
-      setToast({ ok: false, pesan: err instanceof Error ? err.message : 'Gagal menolak.' })
+      setToast({ ok: false, pesan: pesanGalat(err, 'Gagal menolak.') })
     }
   }
 

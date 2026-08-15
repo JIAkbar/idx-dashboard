@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { pesanGalat } from '../pesanGalat'
 
 /** Satu baris data-idx/json/index.json → {dates:[...]}. Port field dari index_live.html baris 2390-2394. */
 export interface TanggalIndex {
@@ -223,7 +224,7 @@ export function useDataRentang(tanggal: TanggalIndex[]) {
       })
       .catch((e: unknown) => {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : 'Gagal memuat data rentang')
+          setError(pesanGalat(e, 'Gagal memuat data rentang'))
           setDays(null)
         }
       })
@@ -275,7 +276,7 @@ export function useDataHarian() {
         setHari(data)
       })
       .catch((e: unknown) => {
-        setError(e instanceof Error ? e.message : 'Gagal memuat data')
+        setError(pesanGalat(e, 'Gagal memuat data'))
         setHari(null)
       })
       .finally(() => setLoading(false))
@@ -296,7 +297,7 @@ export function useDataHarian() {
       })
       .catch((e: unknown) => {
         if (cancelled) return
-        setError(e instanceof Error ? e.message : 'Gagal memuat index')
+        setError(pesanGalat(e, 'Gagal memuat index'))
         setLoading(false)
       })
     return () => {

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ambilRingkasanRuang, waktuRelatif, type RuangRingkasan } from '../../lib/forum'
+import { pesanGalat } from '../../lib/pesanGalat'
 
 /**
  * Daftar ruang Forum — kartu per ruang dari `forum_ringkasan()` (baca
@@ -17,7 +18,7 @@ export function Forum() {
     let batal = false
     ambilRingkasanRuang()
       .then((r) => { if (!batal) setRuang(r) })
-      .catch((e: unknown) => { if (!batal) setGalat(e instanceof Error ? e.message : 'Gagal memuat daftar ruang.') })
+      .catch((e: unknown) => { if (!batal) setGalat(pesanGalat(e, 'Gagal memuat daftar ruang.')) })
     return () => { batal = true }
   }, [])
 

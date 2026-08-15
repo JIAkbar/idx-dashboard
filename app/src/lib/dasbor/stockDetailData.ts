@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { pesanGalat } from '../pesanGalat'
 
 /**
  * Tipe & fetch data fundamental untuk Stock Detail. Port dari
@@ -266,7 +267,7 @@ export function useStockIndex() {
     if (indexCache) return
     loadIndex()
       .then(setIndex)
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Gagal memuat daftar saham'))
+      .catch((e: unknown) => setError(pesanGalat(e, 'Gagal memuat daftar saham')))
   }, [])
 
   return { index, error }

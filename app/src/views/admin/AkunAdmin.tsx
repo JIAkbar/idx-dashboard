@@ -10,6 +10,7 @@ import { rakitSandi } from '../../lib/sandiRakit'
 import { AksesDitolak } from './AdminLayout'
 import { PanelJenjang } from './PanelJenjang'
 import './AkunAdmin.css'
+import { pesanGalat } from '../../lib/pesanGalat'
 
 /** Pilihan kuota harian — dropdown gantinya input number bertombol panah
  *  (sempit, gampang salah ketik). Dipakai form Tambah Akun & kolom kuota
@@ -112,7 +113,7 @@ export function AkunAdmin() {
     setGalat('')
     daftarAkun()
       .then((a) => !batal && setAkun(a))
-      .catch((e) => !batal && setGalat(e instanceof Error ? e.message : 'Gagal memuat daftar akun.'))
+      .catch((e) => !batal && setGalat(pesanGalat(e, 'Gagal memuat daftar akun.')))
     daftarJenjang().then((j) => !batal && setJenjang(j)).catch(() => {})
     return () => {
       batal = true
@@ -143,7 +144,7 @@ export function AkunAdmin() {
       await setProfil(baris.id, patch)
       setAkun((list) => list && list.map((a) => (a.id === baris.id ? { ...a, ...patch } : a)))
     } catch (e) {
-      setToast({ ok: false, pesan: e instanceof Error ? e.message : 'Gagal menyimpan perubahan.' })
+      setToast({ ok: false, pesan: pesanGalat(e, 'Gagal menyimpan perubahan.') })
     } finally {
       tandaiSibuk(baris.id, false)
     }
@@ -422,7 +423,7 @@ function FormTambahAkun({ onClose, onSukses }: { onClose: () => void; onSukses: 
       })
       onSukses(`Akun ${hasil.email} dibuat.`)
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Gagal membuat akun.')
+      setErr(pesanGalat(e, 'Gagal membuat akun.'))
     } finally {
       setKirim(false)
     }
@@ -480,7 +481,7 @@ function FormHapusAkun({ akun, onClose, onSukses }: { akun: AkunRow; onClose: ()
       const hasil = await hapusAkun(akun.id)
       onSukses(`Akun ${hasil.email} dihapus.`)
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Gagal menghapus akun.')
+      setErr(pesanGalat(e, 'Gagal menghapus akun.'))
     } finally {
       setKirim(false)
     }
@@ -525,7 +526,7 @@ function FormResetSandi({ akun, onClose, onSukses }: { akun: AkunRow; onClose: (
       await resetSandi(akun.id, sandi)
       onSukses(`Sandi ${akun.email} diatur ulang.`)
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Gagal mengatur ulang sandi.')
+      setErr(pesanGalat(e, 'Gagal mengatur ulang sandi.'))
     } finally {
       setKirim(false)
     }
@@ -580,7 +581,7 @@ function FormUbahEmail({ akun, sendiri, onClose, onSukses }: { akun: AkunRow; se
       const hasil = await ubahEmail(akun.id, baru)
       onSukses(hasil.email, `Email ${akun.email} diubah jadi ${hasil.email}.`)
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Gagal mengubah email.')
+      setErr(pesanGalat(e, 'Gagal mengubah email.'))
     } finally {
       setKirim(false)
     }

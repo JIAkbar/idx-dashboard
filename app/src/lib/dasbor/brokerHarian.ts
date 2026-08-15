@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { BrokerRow } from './brokerSummaryData'
+import { pesanGalat } from '../pesanGalat'
 
 /** Baris mentah bs_YYMMDD.json (harvester harian idx.co.id). */
 interface BrokerHarianRaw {
@@ -141,7 +142,7 @@ export function useBrokerHarian() {
     fetchBrokerRows(iso)
       .then(setRows)
       .catch((e: unknown) => {
-        setError(e instanceof Error ? e.message : 'Gagal memuat data broker')
+        setError(pesanGalat(e, 'Gagal memuat data broker'))
         setRows(null)
       })
       .finally(() => setLoading(false))
@@ -182,7 +183,7 @@ export function useBrokerHarian() {
       setLoading(false)
     })().catch((e: unknown) => {
       if (reqRef.current !== req) return
-      setError(e instanceof Error ? e.message : 'Gagal memuat data broker')
+      setError(pesanGalat(e, 'Gagal memuat data broker'))
       setRows(null)
       setLoading(false)
     })
@@ -208,7 +209,7 @@ export function useBrokerHarian() {
       })
       .catch((e: unknown) => {
         if (cancelled) return
-        setError(e instanceof Error ? e.message : 'Gagal memuat index broker')
+        setError(pesanGalat(e, 'Gagal memuat index broker'))
         setLoading(false)
       })
     return () => {

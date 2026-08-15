@@ -17,6 +17,7 @@ import { Dropdown } from '../../components/dasbor/Dropdown'
 import { IkonMenu, IKON_PERINGATAN, IKON_KUNCI } from '../../components/dasbor/IkonMenu'
 import { AksesDitolak } from './AdminLayout'
 import './AdminShared.css'
+import { pesanGalat } from '../../lib/pesanGalat'
 
 /** Hari diam dari sini dianggap "mendekati pembekuan otomatis" — ambang
  *  pembekuan sebenarnya (biasanya lebih tinggi, per jenjang) dihitung server;
@@ -86,7 +87,7 @@ export function AktivitasAdmin() {
         setKeaktifan(k)
         setAkun(a)
       })
-      .catch((e) => !batal && setGalatKeaktifan(e instanceof Error ? e.message : 'Gagal memuat keaktifan kontributor.'))
+      .catch((e) => !batal && setGalatKeaktifan(pesanGalat(e, 'Gagal memuat keaktifan kontributor.')))
     return () => {
       batal = true
     }
@@ -98,7 +99,7 @@ export function AktivitasAdmin() {
     setGalatBruteforce('')
     sinyalBruteforce(Number(jendela), 5)
       .then((s) => !batal && setBruteforce(s))
-      .catch((e) => !batal && setGalatBruteforce(e instanceof Error ? e.message : 'Gagal memuat sinyal keamanan.'))
+      .catch((e) => !batal && setGalatBruteforce(pesanGalat(e, 'Gagal memuat sinyal keamanan.')))
     return () => {
       batal = true
     }
@@ -118,7 +119,7 @@ export function AktivitasAdmin() {
         setJejak(h.baris)
         setTotalJejak(h.total)
       })
-      .catch((e) => !batal && setGalatJejak(e instanceof Error ? e.message : 'Gagal memuat jejak akses.'))
+      .catch((e) => !batal && setGalatJejak(pesanGalat(e, 'Gagal memuat jejak akses.')))
     return () => {
       batal = true
     }

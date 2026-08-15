@@ -17,6 +17,7 @@ import { IkonMenu, IKON_TAMBAH, IKON_TONG, IKON_CENTANG, IKON_PERINGATAN } from 
 import { AksesDitolak } from './AdminLayout'
 import { PanelJenjang } from './PanelJenjang'
 import './AkunAdmin.css'
+import { pesanGalat } from '../../lib/pesanGalat'
 
 const TINGKAT_OPSI = [
   { nilai: 'publik', label: 'Publik' },
@@ -58,7 +59,7 @@ export function AksesAdmin() {
         setKhusus(k)
         setAkun(a)
       })
-      .catch((e) => !batal && setGalat(e instanceof Error ? e.message : 'Gagal memuat data akses.'))
+      .catch((e) => !batal && setGalat(pesanGalat(e, 'Gagal memuat data akses.')))
     return () => {
       batal = true
     }
@@ -85,7 +86,7 @@ export function AksesAdmin() {
       await ubahHalamanAkses(baris.kunci, patch)
       setHalaman((list) => list && list.map((h) => (h.kunci === baris.kunci ? { ...h, ...patch } : h)))
     } catch (e) {
-      setToast({ ok: false, pesan: e instanceof Error ? e.message : 'Gagal menyimpan.' })
+      setToast({ ok: false, pesan: pesanGalat(e, 'Gagal menyimpan.') })
     } finally {
       tandaiSibuk(baris.kunci, false)
     }
@@ -98,7 +99,7 @@ export function AksesAdmin() {
       await hapusAksesKhusus(b.profil_id, b.kunci)
       setKhusus((list) => list && list.filter((x) => !(x.profil_id === b.profil_id && x.kunci === b.kunci)))
     } catch (e) {
-      setToast({ ok: false, pesan: e instanceof Error ? e.message : 'Gagal menghapus.' })
+      setToast({ ok: false, pesan: pesanGalat(e, 'Gagal menghapus.') })
     } finally {
       tandaiSibuk(key, false)
     }
@@ -292,7 +293,7 @@ function FormTambahPengecualian({ akun, halaman, onClose, onSukses }: {
       await tambahAksesKhusus({ profil_id: profilId, kunci, izinkan: izinkan === 'ya', catatan })
       onSukses('Pengecualian ditambahkan.')
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Gagal menambah pengecualian.')
+      setErr(pesanGalat(e, 'Gagal menambah pengecualian.'))
     } finally {
       setKirim(false)
     }

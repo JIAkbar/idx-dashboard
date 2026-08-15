@@ -8,6 +8,7 @@ import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { alasanValid } from '../../lib/alasanValidasi'
 import { useProfilSaya } from '../../lib/profilSaya'
 import { daftarBedah, daftarBedahArsip, unggahBedah, urlScreenshots, type BedahArsipBaris } from '../../lib/supabaseEdisi'
+import { pesanGalat } from '../../lib/pesanGalat'
 
 function tanggalHariIni(): string {
   const d = new Date()
@@ -159,7 +160,7 @@ export function BedahUnggah() {
       setAlasan('')
       setMuat((m) => m + 1)
     } catch (err) {
-      setStatus({ ok: false, pesan: err instanceof Error ? err.message : 'Gagal unggah.' })
+      setStatus({ ok: false, pesan: pesanGalat(err, 'Gagal unggah.') })
     } finally {
       setMengunggah(false)
     }

@@ -1980,3 +1980,12 @@
 .lantai .sandi-intip:hover { color: var(--amber); }
 .lantai .sandi-intip:focus-visible { outline: 2px solid var(--amber); outline-offset: -1px; color: var(--amber); }
 .lantai .sandi-intip .dasbor-ikon { stroke: currentColor; }
+
+/* Tautan channel pengumuman di modal masuk — sekunder terhadap "Daftar lewat
+   WhatsApp", jadi tanpa garis pemisah sendiri dan berukuran lebih kecil. */
+.lantai .login-channel {
+  display: block; text-align: center; text-decoration: none;
+  margin-top: 6px; font-size: 10.5px; color: var(--text3);
+}
+.lantai .login-channel:hover { color: var(--amber); text-decoration: underline; }
+.lantai .login-channel:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 4px; }

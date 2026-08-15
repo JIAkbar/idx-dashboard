@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { fetchHari, fetchIndex, type DataHarian } from './dataHarian'
+import { pesanGalat } from '../pesanGalat'
 
 /**
  * Sumber data tab Flow & NEGO /broker-summary (#99) — dari berkas harian pasar
@@ -122,7 +123,7 @@ export function useFlowNego(
       setLoading(false)
     })().catch((e: unknown) => {
       if (reqRef.current !== req) return
-      setError(e instanceof Error ? e.message : 'Gagal memuat data harian pasar')
+      setError(pesanGalat(e, 'Gagal memuat data harian pasar'))
       setHari(null)
       setLoading(false)
     })
