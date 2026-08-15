@@ -45,12 +45,8 @@ import { TolakModal } from './KurasiSetoran'
 import { PanduanScreenshot } from './PanduanScreenshot'
 import './AdminShared.css'
 import { pesanGalat } from '../../lib/pesanGalat'
+import { tanggalBursaTerakhir as tanggalHariIni } from '../../lib/tanggalBursa'
 
-function tanggalHariIni(): string {
-  const d = new Date()
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-}
 
 /** ISO `YYYY-MM-DD` → "Kamis, 13 Agu 2026" (judul panggung utama). */
 function tanggalManusiawi(iso: string): string {

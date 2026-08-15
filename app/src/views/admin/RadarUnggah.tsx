@@ -5,12 +5,8 @@ import { daftarRadar, unggahRadar } from '../../lib/supabaseEdisi'
 import { useProfilSaya } from '../../lib/profilSaya'
 import { AksesDitolak } from './AdminLayout'
 import { pesanGalat } from '../../lib/pesanGalat'
+import { tanggalBursaTerakhir as tanggalHariIni } from '../../lib/tanggalBursa'
 
-function tanggalHariIni(): string {
-  const d = new Date()
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-}
 
 /** Ukuran berkas manusiawi — "348 KB", "1,2 MB". */
 function ukuranBerkas(bytes: number): string {
