@@ -5,7 +5,16 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PAPAN — Pusat Analisa Pasar Nusantara</title>
-    <script src="https://s3.tradingview.com/tv.js" async></script>
+    <!-- Data hari-tersedia dipakai HAMPIR SEMUA halaman (useDataHarian) — mulai
+         unduh sejak HTML dibaca, paralel dengan bundle JS, bukan menunggu JS
+         selesai lalu baru fetch (rantai berurutan = lambat di jaringan pelan).
+         fetch() di dataHarian.ts sengaja TANPA opsi mode/credentials khusus
+         supaya cocok dengan preload ini (default keduanya sama). -->
+    <link rel="preload" as="fetch" crossorigin href="/data-idx/json/index.json" />
+    <!-- tv.js TradingView SENGAJA TIDAK dimuat di sini — cuma dipakai widget
+         Chart Indeks (ChartIndeks.tsx), dimuat on-demand oleh
+         TradingViewChart.tsx saat komponennya benar-benar dipasang. Halaman
+         depan (dan hampir semua halaman lain) tidak pernah menyentuhnya. -->
   </head>
   <body>
     <div id="root"></div>

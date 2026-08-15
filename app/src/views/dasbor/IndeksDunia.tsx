@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, type CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { ChartConfiguration } from 'chart.js/auto'
 import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
@@ -9,7 +9,7 @@ import { hitungYtdPct } from '../../lib/dasbor/ytd'
 import { fN, fp, fmtNF } from '../../lib/dasbor/format'
 import { useChartCanvas } from '../../lib/dasbor/useChartJs'
 import { useTheme } from '../../context/ThemeContext'
-import { IkonMenu, IKON_PERINGATAN, IKON_GLOBE, IKON_PENGGARIS, IKON_GRAFIK_BATANG, IKON_JAM } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_PERINGATAN, IKON_GLOBE, IKON_PENGGARIS, IKON_GRAFIK_BATANG } from '../../components/dasbor/IkonMenu'
 
 /**
  * Grafik mini board-side (Fix #27) — pakai tanggalTersedia (data-idx/json/index.json)
@@ -197,6 +197,111 @@ function symUntukNegara(nama: string): string | null {
   return SYM_NEGARA[nama] ?? null
 }
 
+/** Satu blok abu-abu berdenyut — bahan dasar kerangka di bawah. */
+function Skel({ w, h, style }: { w?: number | string; h: number; style?: CSSProperties }) {
+  return <div className="skel-bar skel-pulse" style={{ width: w, height: h, ...style }} />
+}
+
+/**
+ * Kerangka panel utama Indeks Dunia selagi `loading && !hari` (#109) —
+ * gantikan blok "Memuat data…" di tengah layar. Bentuknya mengikuti tata
+ * letak asli (board + grid2 + panel ranking/tabel) SUPAYA tata letak tidak
+ * melompat saat data datang — bukan sekadar hiasan. Kalender di kolom kiri
+ * tetap komponen ASLI (sudah punya kerangka `.cg.memuat` sendiri, dan
+ * `tanggalTersedia` bisa saja sudah terisi duluan sebelum berkas harian
+ * datang, lihat useDataHarian).
+ */
+function PanelSkeleton({ tanggalTersedia, tanggalAktif, pilihTanggal, loading }: {
+  tanggalTersedia: TanggalIndex[]
+  tanggalAktif: string | null
+  pilihTanggal: (iso: string) => void
+  loading: boolean
+}) {
+  return (
+    <>
+      <div className="board">
+        <div className="board-main">
+          <Skel w={280} h={11} />
+          <div style={{ marginTop: 10 }}><Skel w={210} h={38} /></div>
+          <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <Skel w={96} h={24} style={{ borderRadius: 20 }} />
+            <Skel w={76} h={24} style={{ borderRadius: 20 }} />
+          </div>
+          <div className="board-meta">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div className="bm" key={i}>
+                <Skel w={54} h={9} />
+                <div style={{ marginTop: 5 }}><Skel w={74} h={13} /></div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="board-side">
+          <div style={{ marginBottom: 8 }}><Skel w={150} h={11} /></div>
+          <Skel h={120} style={{ width: '100%' }} />
+        </div>
+      </div>
+
+      <div className="grid2 w-kiri">
+        <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} memuat={loading} />
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="panel">
+            <div className="panel-h"><Skel w={100} h={11} /></div>
+            <div className="nf-grid">
+              {[0, 1].map((i) => (
+                <div className="nf-cell" key={i}>
+                  <Skel w={40} h={9} />
+                  <div style={{ marginTop: 8 }}><Skel w={90} h={22} /></div>
+                  <div style={{ marginTop: 6 }}><Skel w={70} h={9} /></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="panel" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <div className="panel-h"><Skel w={140} h={11} /></div>
+            <div className="nf-grid" style={{ flex: 1, alignItems: 'center' }}>
+              {[0, 1].map((i) => (
+                <div className="nf-cell" key={i} style={{ textAlign: 'center' }}>
+                  <Skel w={80} h={9} style={{ margin: '0 auto' }} />
+                  <div style={{ marginTop: 8 }}><Skel w={50} h={24} style={{ margin: '0 auto' }} /></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="panel">
+            <div className="panel-h"><Skel w={190} h={11} /></div>
+            <div className="adt">
+              {[0, 1, 2].map((i) => (
+                <div className="adt-c" key={i}>
+                  <Skel w={70} h={9} />
+                  <div style={{ marginTop: 6 }}><Skel w={60} h={20} /></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="panel">
+        <div className="panel-h"><Skel w={220} h={11} /></div>
+        <div className="panel-b"><Skel h={160} style={{ width: '100%' }} /></div>
+      </div>
+
+      <div className="panel">
+        <div className="panel-h"><Skel w={260} h={11} /></div>
+        <div className="panel-b" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <Skel key={i} h={20} style={{ width: '100%' }} />
+          ))}
+        </div>
+      </div>
+    </>
+  )
+}
+
 export function IndeksDunia() {
   const { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error } = useDataHarian()
   const navigate = useNavigate()
@@ -206,11 +311,7 @@ export function IndeksDunia() {
   if (loading && !hari) {
     return (
       <div className="lantai">
-        <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} memuat={loading && !hari} />
-        <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
-          <p><IkonMenu d={IKON_JAM} size={28} /></p>
-          <p className="lbl">Memuat data…</p>
-        </div>
+        <PanelSkeleton tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} pilihTanggal={pilihTanggal} loading={loading} />
       </div>
     )
   }

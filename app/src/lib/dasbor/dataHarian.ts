@@ -134,6 +134,26 @@ export interface DataHarian {
 /** Cache di memori per-stem — pindah tanggal balik lagi tidak fetch ulang. */
 const cache = new Map<string, DataHarian>()
 
+/**
+ * Promise index.json di-cache di modul (satu request per sesi, pola sama
+ * `daftarJenjang()` di lib/jenjang.ts) — dipakai SEMUA pemanggil
+ * `useDataHarian` (PitaKurs & halaman aktif render bersamaan lewat DasborLayout
+ * itu dua instance hook terpisah, dulu dua-duanya fetch index.json sendiri-
+ * sendiri) plus `flowNego.ts`. `<link rel="preload">` di index.html menaruh
+ * respons ini di HTTP cache sejak HTML dibaca; fetch tanpa opsi khusus di sini
+ * cocok dengan preload (mode/credentials default = sama).
+ */
+let indexPromise: Promise<TanggalIndex[]> | null = null
+export function fetchIndex(): Promise<TanggalIndex[]> {
+  indexPromise ??= fetch('/data-idx/json/index.json')
+    .then((r) => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`)
+      return r.json() as Promise<{ dates?: TanggalIndex[] }>
+    })
+    .then((j) => j.dates ?? [])
+  return indexPromise
+}
+
 /** Fetch satu berkas harian lewat cache modul — dipakai useDataRentang & flowNego.ts. */
 export function fetchHari(stem: string): Promise<DataHarian> {
   const c = cache.get(stem)
@@ -263,14 +283,9 @@ export function useDataHarian() {
 
   useEffect(() => {
     let cancelled = false
-    fetch('/data-idx/json/index.json')
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`)
-        return r.json() as Promise<{ dates?: TanggalIndex[] }>
-      })
-      .then((j) => {
+    fetchIndex()
+      .then((dates) => {
         if (cancelled) return
-        const dates = j.dates ?? []
         dates.forEach((d) => stemByIso.current.set(d.date_iso, d.stem))
         setTanggalTersedia(dates)
         if (dates.length > 0) {

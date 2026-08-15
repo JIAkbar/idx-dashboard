@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
@@ -9,30 +10,38 @@ import { IndeksDunia } from './views/dasbor/IndeksDunia'
 import { TopStocks } from './views/dasbor/TopStocks'
 import { TopBroker } from './views/dasbor/TopBroker'
 import { SektorIndeks } from './views/dasbor/SektorIndeks'
-import { ChartIndeks } from './views/dasbor/ChartIndeks'
-import { BrokerSummary } from './views/dasbor/BrokerSummary'
-import { StockDetail } from './views/dasbor/StockDetail'
-import { PetaInvestor } from './views/dasbor/PetaInvestor'
 import { KalkulatorJia } from './views/dasbor/KalkulatorJia'
-import { Bulletin } from './views/dasbor/Bulletin'
-import { Radar } from './views/dasbor/Radar'
 import { Forum } from './views/dasbor/Forum'
 import { ForumRuang } from './views/dasbor/ForumRuang'
 import { Feedback } from './views/dasbor/Feedback'
 import { Login } from './views/Login'
-import { AdminLayout } from './views/admin/AdminLayout'
-import { UnggahHarian } from './views/admin/UnggahHarian'
-import { AkunAdmin } from './views/admin/AkunAdmin'
-import { KurasiSetoran } from './views/admin/KurasiSetoran'
-import { RadarUnggah } from './views/admin/RadarUnggah'
-import { BedahTab } from './views/admin/BedahTab'
-import { AksesAdmin } from './views/admin/AksesAdmin'
-import { AktivitasAdmin } from './views/admin/AktivitasAdmin'
-import { RakTerbitan } from './views/admin/RakTerbitan'
-import { ChangelogAdmin, ChangelogPanel } from './views/admin/ChangelogAdmin'
-import { EdisiUjicoba } from './views/EdisiUjicoba'
-import { EdisiView } from './views/EdisiView'
 import './App.css'
+
+// Code splitting (percepat pemuatan awal jaringan lambat, #109): halaman
+// berat dipecah dari bundle utama, diunduh cuma saat rutenya benar-benar
+// dibuka. Indeks Dunia (halaman depan) SENGAJA tetap statis di atas — itu
+// yang harus tampil tercepat. Chart (TradingView), Peta Investor (d3),
+// Broker Summary/Stock Detail (Chart.js), Radar, Bulletin, dan seluruh
+// area /admin/* dipindah ke sini.
+const ChartIndeks = lazy(() => import('./views/dasbor/ChartIndeks').then((m) => ({ default: m.ChartIndeks })))
+const BrokerSummary = lazy(() => import('./views/dasbor/BrokerSummary').then((m) => ({ default: m.BrokerSummary })))
+const StockDetail = lazy(() => import('./views/dasbor/StockDetail').then((m) => ({ default: m.StockDetail })))
+const PetaInvestor = lazy(() => import('./views/dasbor/PetaInvestor').then((m) => ({ default: m.PetaInvestor })))
+const Bulletin = lazy(() => import('./views/dasbor/Bulletin').then((m) => ({ default: m.Bulletin })))
+const Radar = lazy(() => import('./views/dasbor/Radar').then((m) => ({ default: m.Radar })))
+const AdminLayout = lazy(() => import('./views/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })))
+const UnggahHarian = lazy(() => import('./views/admin/UnggahHarian').then((m) => ({ default: m.UnggahHarian })))
+const AkunAdmin = lazy(() => import('./views/admin/AkunAdmin').then((m) => ({ default: m.AkunAdmin })))
+const KurasiSetoran = lazy(() => import('./views/admin/KurasiSetoran').then((m) => ({ default: m.KurasiSetoran })))
+const RadarUnggah = lazy(() => import('./views/admin/RadarUnggah').then((m) => ({ default: m.RadarUnggah })))
+const BedahTab = lazy(() => import('./views/admin/BedahTab').then((m) => ({ default: m.BedahTab })))
+const AksesAdmin = lazy(() => import('./views/admin/AksesAdmin').then((m) => ({ default: m.AksesAdmin })))
+const AktivitasAdmin = lazy(() => import('./views/admin/AktivitasAdmin').then((m) => ({ default: m.AktivitasAdmin })))
+const RakTerbitan = lazy(() => import('./views/admin/RakTerbitan').then((m) => ({ default: m.RakTerbitan })))
+const ChangelogAdmin = lazy(() => import('./views/admin/ChangelogAdmin').then((m) => ({ default: m.ChangelogAdmin })))
+const ChangelogPanel = lazy(() => import('./views/admin/ChangelogAdmin').then((m) => ({ default: m.ChangelogPanel })))
+const EdisiUjicoba = lazy(() => import('./views/EdisiUjicoba').then((m) => ({ default: m.EdisiUjicoba })))
+const EdisiView = lazy(() => import('./views/EdisiView').then((m) => ({ default: m.EdisiView })))
 
 function App() {
   return (
@@ -44,6 +53,11 @@ function App() {
             terkait tema). */}
         <AksesHalamanProvider>
         <ThemeProvider>
+          {/* Satu boundary Suspense utk semua rute lazy di bawah — fallback
+              pakai .fullscreen-msg yang sudah ada (dipakai jua PenjagaHalaman/
+              ProtectedRoute utk keadaan "sedang menunggu jawaban"), bukan
+              komponen pemuat baru. */}
+          <Suspense fallback={<div className="fullscreen-msg">Memuat…</div>}>
           <Routes>
             {/* Publik — dasbor, tanpa login. Index = Indeks Dunia (panel "active" default di index_live.html). */}
             <Route element={<DasborLayout />}>
@@ -126,6 +140,7 @@ function App() {
               <Route path="/admin/edisi/:kode" element={<EdisiView />} />
             </Route>
           </Routes>
+          </Suspense>
         </ThemeProvider>
         </AksesHalamanProvider>
       </AuthProvider>

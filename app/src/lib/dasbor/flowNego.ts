@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { fetchHari, type DataHarian, type TanggalIndex } from './dataHarian'
+import { fetchHari, fetchIndex, type DataHarian } from './dataHarian'
 
 /**
  * Sumber data tab Flow & NEGO /broker-summary (#99) — dari berkas harian pasar
@@ -58,26 +58,15 @@ export function pilihJendela(
   return dsIso.filter((iso) => iso <= tanggalAktif).slice(-JENDELA_HARIAN)
 }
 
-/** Index ds_*.json di-fetch sekali per sesi (promise di module scope) —
- * dipakai useDsIso (DatePicker) dan useFlowNego bersamaan. */
-let dsIndexPromise: Promise<TanggalIndex[]> | null = null
-function fetchDsIndex(): Promise<TanggalIndex[]> {
-  dsIndexPromise ??= fetch('/data-idx/json/index.json')
-    .then((r) => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`)
-      return r.json() as Promise<{ dates?: TanggalIndex[] }>
-    })
-    .then((j) => j.dates ?? [])
-  return dsIndexPromise
-}
-
 /** Daftar ISO hari ber-data ds — untuk DatePicker tab NEGO/Flow (cakupan ds
- * jauh lebih pendek dari data broker: 2026 vs 2023). */
+ * jauh lebih pendek dari data broker: 2026 vs 2023). Index.json sendiri
+ * dipakai lewat `fetchIndex()` (dataHarian.ts) — satu promise di-cache modul
+ * dipakai bareng useDataHarian, bukan fetch terpisah di sini. */
 export function useDsIso(): string[] {
   const [iso, setIso] = useState<string[]>([])
   useEffect(() => {
     let cancelled = false
-    fetchDsIndex()
+    fetchIndex()
       .then((d) => {
         if (!cancelled) setIso(d.map((x) => x.date_iso))
       })
@@ -112,7 +101,7 @@ export function useFlowNego(
     setLoading(true)
     setError(null)
     ;(async () => {
-      const idx = await fetchDsIndex()
+      const idx = await fetchIndex()
       const stemByIso = new Map(idx.map((d) => [d.date_iso, d.stem]))
       const isos = pilihJendela(
         idx.map((d) => d.date_iso),
