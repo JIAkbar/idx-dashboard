@@ -80,11 +80,35 @@ export function AksesAdmin() {
     })
   }
 
+  /** Menyebut apa yang berubah jadi apa, bukan sekadar "Tersimpan". Mengubah
+   *  siapa yang boleh membuka sebuah halaman berlaku diam-diam di sisi
+   *  pengguna, jadi satu-satunya bukti bahwa klik tadi benar-benar masuk
+   *  adalah kalimat yang mengulang setelan barunya. */
+  function ringkasPerubahan(
+    baris: HalamanBaris,
+    patch: Partial<Pick<HalamanBaris, 'tingkat' | 'min_tier' | 'urutan'>>,
+  ): string {
+    const bagian: string[] = []
+    if (patch.tingkat !== undefined) {
+      bagian.push(TINGKAT_OPSI.find((o) => o.nilai === patch.tingkat)?.label ?? patch.tingkat)
+    }
+    // Jenjang hanya disebut kalau memang berlaku. Menyebutnya saat tingkatnya
+    // Publik cuma menimbulkan pertanyaan, karena kolomnya diabaikan di sana.
+    const tingkatAkhir = patch.tingkat ?? baris.tingkat
+    if (patch.min_tier !== undefined && tingkatAkhir === 'login') {
+      const j = jenjang.find((x) => x.tier === patch.min_tier)
+      bagian.push(`jenjang minimum ${j ? j.nama : `tier ${patch.min_tier}`}`)
+    }
+    if (patch.urutan !== undefined) bagian.push(`urutan ${patch.urutan}`)
+    return bagian.length ? `${baris.label}: ${bagian.join(' · ')}` : `${baris.label} tersimpan`
+  }
+
   async function ubahBaris(baris: HalamanBaris, patch: Partial<Pick<HalamanBaris, 'tingkat' | 'min_tier' | 'urutan'>>) {
     tandaiSibuk(baris.kunci, true)
     try {
       await ubahHalamanAkses(baris.kunci, patch)
       setHalaman((list) => list && list.map((h) => (h.kunci === baris.kunci ? { ...h, ...patch } : h)))
+      setToast({ ok: true, pesan: ringkasPerubahan(baris, patch) })
     } catch (e) {
       setToast({ ok: false, pesan: pesanGalat(e, 'Gagal menyimpan.') })
     } finally {
@@ -131,7 +155,7 @@ export function AksesAdmin() {
                     <th>Label</th>
                     <th>Tingkat</th>
                     <th>Jenjang minimum</th>
-                    <th className="r">Urutan</th>
+                    <th className="r" title="Menentukan posisi menu di rail — makin kecil makin atas">Urutan</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -182,7 +206,10 @@ export function AksesAdmin() {
                           <input
                             className="inp"
                             type="number"
-                            style={{ width: 56, textAlign: 'right' }}
+                            // 56px cuma memuat dua digit: setelah dikurangi
+                            // padding dan tombol putar bawaan type=number,
+                            // "100" tergunting jadi "10(" dan "145" jadi "14:".
+                            style={{ width: 78, textAlign: 'right' }}
                             defaultValue={h.urutan}
                             disabled={sedangProses}
                             aria-label={`Urutan — ${h.label}`}

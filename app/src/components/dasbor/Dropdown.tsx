@@ -31,10 +31,14 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
   // lewat getBoundingClientRect — kalau ruang bawah tak cukup DAN ruang atas
   // lebih luas, buka ke atas.
   const [bukaAtas, setBukaAtas] = useState(false)
+  const [q, setQ] = useState('')
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!open) return
+    // Kueri dibuang tiap menu ditutup. Menyimpannya berarti membuka lagi
+    // menampilkan daftar yang sudah tersaring oleh ketikan yang sudah dilupakan,
+    // dan itu terbaca sebagai pilihan yang hilang.
+    if (!open) { setQ(''); return }
     function onDocMouseDown(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
@@ -42,6 +46,10 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
     // Menu punya max-height + scroll (#79C) — item terpilih bisa jauh di
     // bawah lipatan; gulirkan supaya langsung kelihatan saat menu dibuka.
     ref.current?.querySelector('.dd-it.sel')?.scrollIntoView({ block: 'nearest' })
+    // Fokus lewat effect, BUKAN atribut autoFocus: menu selalu ter-mount
+    // (disembunyikan CSS), jadi autoFocus akan menyambar fokus sekali saat
+    // halaman dimuat dan tak pernah lagi saat menunya benar-benar dibuka.
+    ref.current?.querySelector<HTMLInputElement>('.dd-cari')?.focus()
     return () => document.removeEventListener('mousedown', onDocMouseDown)
   }, [open])
 
@@ -65,6 +73,14 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
   }, [open])
 
   const label = opsi.find((o) => o.nilai === nilai)?.label ?? placeholder ?? '—'
+
+  // Kotak cari muncul sendiri begitu daftarnya panjang, tanpa perlu disetel di
+  // tiap pemanggil. Daftar akun tumbuh seiring kontributor bertambah — kalau
+  // penyalaannya manual, yang terjadi adalah dropdown yang tadinya nyaman
+  // pelan-pelan jadi tak terpakai tanpa ada yang sadar harus mengubah apa.
+  const pakaiCari = opsi.length >= 10
+  const kata = q.trim().toLowerCase()
+  const tampil = kata ? opsi.filter((o) => o.label.toLowerCase().includes(kata)) : opsi
 
   function onKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Escape') {
@@ -101,7 +117,26 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
         <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
       </button>
       <div className="dd-menu" role="listbox" aria-label={ariaLabel}>
-        {opsi.map((o) => (
+        {pakaiCari && (
+          <input
+            className="dd-cari"
+            value={q}
+            placeholder="Cari…"
+            aria-label={`Cari ${ariaLabel ?? 'pilihan'}`}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => {
+              // Enter mengambil hasil teratas: mengetik tiga huruf lalu menekan
+              // Enter jauh lebih cepat daripada mengetik lalu meraih tetikus.
+              if (e.key === 'Enter' && tampil[0]) {
+                e.preventDefault()
+                onGanti(tampil[0].nilai)
+                setOpen(false)
+              }
+            }}
+          />
+        )}
+        {pakaiCari && tampil.length === 0 && <p className="dd-kosong">Tak ada yang cocok.</p>}
+        {tampil.map((o) => (
           <button
             key={o.nilai}
             type="button"
