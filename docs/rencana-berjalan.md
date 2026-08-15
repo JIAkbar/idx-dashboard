@@ -54,7 +54,7 @@ utama. Aturannya: makin tajam speknya, makin rendah tier yang aman.
 | 108 | [IHSG] Panen harga BUKA harian | Kecil | Lilin berhenti jadi aproksimasi | ✅ sonnet — satu ruas ditambah ke skrip yang sudah jalan |
 | 137 | Notifikasi hasil kurasi ke penyetor (setuju/revisi/hapus) | Sedang | Status `revisi` baru berguna kalau sampai ke orangnya | — migrasi DB + RLS; satukan dgn #123 |
 | 142 | Ganti aksi "Tolak" dengan "Hapus + notice" | Sedang | Tiga aksi, tiga makna jelas; berkas mati berhenti menumpuk | — butuh #137 lebih dulu |
-| 138 | Pilih emiten yang MASUK PRODUKSI, terpisah dari kurasi | Sedang | Berhenti menolak data benar demi memangkas isi edisi | — keputusan bentuk layar |
+| 138 | Pilih emiten MASUK PRODUKSI (layar "Susun Edisi" belum ada sama sekali) | Sedang-besar | Berhenti menolak data benar demi memangkas isi edisi | — UI **dan** skrip Python build_*.py ikut diubah |
 | 128 | Cocokkan fraksi harga ke dokumen IDX | Kecil | Angka aturan bursa jadi pasti | — perlu penilaian sumber |
 | 124 | Chart IHSG: pemilih rentang + judul | Sedang | Grafik 30+ tahun langsung terpakai | — keputusan sambungan dua sumber |
 | 127 | PDF bulletin: daftarkan Red Hat | Sedang | Web & PDF seragam | ✅ sonnet kalau pipeline-nya sudah dipetakan |
