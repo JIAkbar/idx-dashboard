@@ -29,3 +29,8 @@ Thumbs.db
 
 # Keluaran uji build_weekly (data uji, bukan edisi asli)
 arus-pasar/keluaran-uji/
+
+# Panen OHLC harian menghasilkan ratusan berkas besar; disimpan lokal +
+# disalin ke app/public saat dibutuhkan, tidak ikut git sampai cakupannya
+# diputuskan (lihat task #122).
+data-idx/json/ohlc/
