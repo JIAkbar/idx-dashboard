@@ -124,30 +124,31 @@ export function PetaInvestor() {
 
       {!loading && !error && data && (
         <>
-          {/* Tab dipisah ke barisnya sendiri, kontrol aksi disatukan di
-              bawahnya: kotak cari, "Tampilkan", lalu Export XLS. Sebelumnya
-              tab duduk DI ANTARA kotak cari dan tombolnya, sehingga dua
-              kontrol yang selalu dipakai berurutan — ketik lalu tampilkan —
-              terpisah oleh tiga tab yang tak ada hubungannya dengan urutan
-              itu. Tombol "Reset" dibuang: tombol X di dalam kotak cari sudah
+          {/* Enam kontrol satu baris: tiga tab, kotak cari, "Tampilkan",
+              Export XLS. Tab di depan karena dialah yang menentukan ARTI
+              kontrol sesudahnya — mencari di Grafik Jaringan dan mencari
+              di By Investor menghasilkan hal berbeda, jadi urutan bacanya
+              pun mengikuti: pilih tampilan dulu, baru cari di dalamnya.
+              Kotak cari menyerap sisa lebar; di layar sempit dia yang
+              membungkus turun lebih dulu karena paling butuh ruang.
+              Tombol "Reset" dibuang: tombol X di dalam kotak cari sudah
               mengosongkannya, dan dua kontrol untuk satu tindakan cuma
               menimbulkan ragu mana yang benar. */}
-          <div className="tabs" role="tablist" aria-label="Tampilan Peta Investor">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                role="tab"
-                aria-selected={activeView === t.id}
-                className={'tab' + (activeView === t.id ? ' on' : '')}
-                onClick={() => setActiveView(t.id)}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-
           <div className="pi-toolbar">
+            <div className="tabs" role="tablist" aria-label="Tampilan Peta Investor">
+              {TABS.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeView === t.id}
+                  className={'tab' + (activeView === t.id ? ' on' : '')}
+                  onClick={() => setActiveView(t.id)}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
             <PetaInvestorSearch ref={searchRef} data={data} value={searchValue} onChange={setSearchValue} onSelect={handleSelect} onClear={handleClear} />
             <button type="button" className="pi-search-go" onClick={() => searchRef.current?.tampilkan()}>Tampilkan</button>
             <div className={`dd${exportBuka ? ' open' : ''}`} style={{ position: 'relative' }}>

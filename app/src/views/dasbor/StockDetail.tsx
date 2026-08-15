@@ -106,7 +106,13 @@ export function StockDetail() {
               <IkonMenu d={IKON_CARI} size={14} />
             </button>
           </div>
-          <p style={{ fontSize: 10, color: 'var(--text3)', lineHeight: 1.6 }}>Data delay. Harga tidak real-time.</p>
+          {/* "Data delay" saja menyisakan pertanyaan yang justru menentukan:
+              tertinggal lima belas menit atau tiga hari? Tanggalnya membuat
+              pembaca menilai sendiri, bukan menebak. Ditempel hanya kalau
+              memang ada — "Terakhir diperbarui —" lebih buruk daripada diam. */}
+          <p style={{ fontSize: 10, color: 'var(--text3)', lineHeight: 1.6 }}>
+            Data delay, bukan harga real-time.{fd?.updated ? ` Terakhir diperbarui ${fd.updated}.` : ''}
+          </p>
         </div>
       )}
 
