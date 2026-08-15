@@ -493,7 +493,15 @@ export function IndeksDunia() {
         {/* Jumlah negara dihitung dari data, bukan ditulis tetap: judul lama
             berbunyi "36 Negara" padahal berkas harian berisi 35 baris. */}
         <div className="panel-h">
-          <span className="lbl">Perbandingan Indeks Dunia — {world.length} Negara ({hari.date_id})</span>
+          {/* Judul penuh membungkus jadi dua baris di telepon dan mendorong
+              kepala tabel turun. Bagian "— 33 Negara" yang paling dulu
+              dikorbankan: jumlahnya bisa dihitung dari tabel di bawahnya,
+              sedangkan tanggalnya tidak ada di tempat lain. */}
+          <span className="lbl">
+            <span className="hanya-lebar">Perbandingan </span>Indeks Dunia
+            <span className="hanya-lebar"> — {world.length} Negara</span>
+            {' '}({hari.date_id})
+          </span>
         </div>
         <div className="board-tbl-wrap">
           <table className="tbl w-tbl">

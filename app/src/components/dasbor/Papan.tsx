@@ -24,6 +24,15 @@ export function Papan({ nilai }: { nilai: number }) {
   const chars = [...teks]
   const nilaiSebelumnya = useRef(nilai)
   const [riak, setRiak] = useState(false)
+  /** Flip 80° cuma untuk kemunculan pertama. Dilepas setelah animasinya
+   *  selesai supaya tidak ada aturan animasi yang tertinggal menempel di
+   *  elemen dan ikut terpicu ulang saat kelas riak dilepas. */
+  const [masuk, setMasuk] = useState(true)
+
+  useEffect(() => {
+    const t = setTimeout(() => setMasuk(false), 900) // .5s animasi + delay digit terakhir
+    return () => clearTimeout(t)
+  }, [])
 
   useEffect(() => {
     if (nilaiSebelumnya.current === nilai) return
@@ -40,7 +49,7 @@ export function Papan({ nilai }: { nilai: number }) {
       {chars.map((ch, i) => (
         <span
           key={i}
-          className={`${/\d/.test(ch) ? 'flap' : 'flap sym'}${riak ? ' riak' : ''}`}
+          className={`${/\d/.test(ch) ? 'flap' : 'flap sym'}${masuk ? ' masuk' : ''}${riak ? ' riak' : ''}`}
           style={riak ? { animationDelay: `${i * RIAK_STEP}s` } : undefined}
         >
           {ch}

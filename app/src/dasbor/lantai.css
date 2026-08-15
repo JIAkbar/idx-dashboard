@@ -747,15 +747,23 @@
 .lantai .board{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;display:flex;gap:26px;align-items:center;flex-wrap:wrap}
 .lantai .board-main{flex:1 1 320px;min-width:0}
 .lantai .flap-row{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
-.lantai .flap{position:relative;background:var(--flap);color:#F4F6F9;font-family:var(--mono);font-weight:600;font-size:clamp(26px,4.2vw,40px);line-height:1;padding:10px 7px 12px;border-radius:4px;min-width:.72em;text-align:center;animation:flip .5s ease backwards}
+/* animation:flip SENGAJA tidak di sini. Waktu flip jadi aturan dasar
+   .flap, ia otomatis hidup lagi setiap kali kelas .riak yang lebih
+   spesifik berhenti cocok: melepas .riak mengubah animation-name dari
+   riak ke flip, dan pergantian nama itu sendiri sudah cukup membuat
+   browser memutar flip 80° dari awal. Hasilnya tiap perubahan harga
+   terlihat beranimasi DUA KALI — riak halus lalu flip besar. */
+.lantai .flap{position:relative;background:var(--flap);color:#F4F6F9;font-family:var(--mono);font-weight:600;font-size:clamp(26px,4.2vw,40px);line-height:1;padding:10px 7px 12px;border-radius:4px;min-width:.72em;text-align:center}
+/* Flip cuma untuk kemunculan pertama; kelasnya dilepas React sesudah itu. */
+.lantai .flap.masuk{animation:flip .5s ease backwards}
 .lantai .flap.sym{color:var(--amber);min-width:.5em}
 .lantai .flap::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--flap-line)}
 .dasbor-shell[data-theme="light"] .lantai .flap{color:#F4F6F9}
 @keyframes flip{from{transform:rotateX(80deg);opacity:0}to{transform:none;opacity:1}}
-.lantai .flap:nth-child(2){animation-delay:.04s}.lantai .flap:nth-child(3){animation-delay:.08s}
-.lantai .flap:nth-child(4){animation-delay:.12s}.lantai .flap:nth-child(5){animation-delay:.16s}
-.lantai .flap:nth-child(6){animation-delay:.2s}.lantai .flap:nth-child(7){animation-delay:.24s}
-.lantai .flap:nth-child(8){animation-delay:.28s}
+.lantai .flap.masuk:nth-child(2){animation-delay:.04s}.lantai .flap.masuk:nth-child(3){animation-delay:.08s}
+.lantai .flap.masuk:nth-child(4){animation-delay:.12s}.lantai .flap.masuk:nth-child(5){animation-delay:.16s}
+.lantai .flap.masuk:nth-child(6){animation-delay:.2s}.lantai .flap.masuk:nth-child(7){animation-delay:.24s}
+.lantai .flap.masuk:nth-child(8){animation-delay:.28s}
 /* Riak (#3) — angka IHSG berubah: gelombang naik-turun halus menjalar antar
    digit (Papan.tsx set animationDelay per-indeks inline). transform+opacity
    saja (tanpa reflow), opacity TIDAK turun ke 0 — beda dari .flip di atas
@@ -2184,3 +2192,10 @@
   .lantai .lilin-hari { width: 100%; }
   .lantai .lilin-catatan { max-width: none; }
 }
+
+/* Potongan judul yang cuma tampil kalau ruangnya cukup. Dipakai di kepala
+   panel yang judulnya membungkus dua baris di telepon dan mendorong isi
+   turun — yang dibuang selalu bagian yang bisa disimpulkan dari isi panel,
+   bukan bagian yang tak ada di tempat lain (mis. tanggal). */
+.lantai .hanya-lebar { display: inline; }
+@media (max-width: 700px) { .lantai .hanya-lebar { display: none; } }
