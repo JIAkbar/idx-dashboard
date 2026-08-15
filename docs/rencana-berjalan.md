@@ -3,7 +3,7 @@
 Catatan hidup — diperbarui tiap ada keputusan. Ditulis ke berkas supaya tidak
 bergantung pada ingatan percakapan (yang bisa diringkas dan kehilangan detail).
 
-Terakhir diperbarui: 15 Agustus 2026 (malam — setelah verifikasi mobile Seasonality).
+Terakhir diperbarui: 16 Agustus 2026 (dini hari — setelah sesi admin, jenjang & kurasi).
 
 ## ✅ Sudah selesai — dari permintaan Johan
 
@@ -22,6 +22,18 @@ Terakhir diperbarui: 15 Agustus 2026 (malam — setelah verifikasi mobile Season
 | 131a | **Seasonality tab 2** — pola hari dalam seminggu, grafik balapan | 15 Agu 2026 |
 | 125 | Avg Down: cadangan harga lokal (fungsi bersama `lib/hargaTerakhir.ts`) | 15 Agu 2026 |
 | 126 | Verifikasi dua viewport Seasonality + tiga perbaikan yang ditemukan | 15 Agu 2026 |
+| — | Tab Akses: toast sebut setelan baru, lebar kolom Urutan, dropdown ≥10 opsi bisa dicari | 16 Agu 2026 |
+| — | Form akun: domain `@papan.id` tempelan, tombol salin, sandi pakai kata pertama | 16 Agu 2026 |
+| — | Tabel Akun: cari email/alias + 7 pilihan urutan (awal: jenjang tertinggi) | 16 Agu 2026 |
+| — | **Pembekuan diukur dari kehadiran**, bukan setoran yang lolos kurasi | 16 Agu 2026 |
+| — | **Ambang beku berjenjang** 5/7/10/20/60/120 hari kerja (kolom `jenjang.hari_beku`) | 16 Agu 2026 |
+| — | **Status `revisi`** — penolakan yang tak menghukum akurasi, berkas boleh diganti | 16 Agu 2026 |
+| — | Berkas setoran terkurasi tak bisa dihapus/diganti penyetornya | 16 Agu 2026 |
+| — | Tabel unggahan: thumbnail berkas + tandai baris milik kontributor lain | 16 Agu 2026 |
+| — | Tab Seasonality **berjenjang** (`seasonality-hari`, Perak) + penunjuk jarak setoran | 16 Agu 2026 |
+| — | Kolom "Yang terbuka" diturunkan dari tabel Akses, bukan teks manual | 16 Agu 2026 |
+| — | Peta Investor: enam kontrol satu baris, kotak cari 300px, tombol Reset dibuang | 16 Agu 2026 |
+| — | Judul panel Top Stocks & Stock Detail sebut TANGGAL, bukan "Hari Ini" | 16 Agu 2026 |
 
 ## ⏳ Antrean kerja — diurutkan dari yang paling murah
 
@@ -44,18 +56,37 @@ utama. Aturannya: makin tajam speknya, makin rendah tier yang aman.
 | 124 | Chart IHSG: pemilih rentang + judul | Sedang | Grafik 30+ tahun langsung terpakai | — keputusan sambungan dua sumber |
 | 127 | PDF bulletin: daftarkan Red Hat | Sedang | Web & PDF seragam | ✅ sonnet kalau pipeline-nya sudah dipetakan |
 | 132 | Chart komparasi Seasonality antar-emiten | Sedang | Perbandingan emiten lebih cepat dibaca | — keputusan bentuk grafik |
-| 109 | Peta Investor: pindah tombol + hapus ekspor | Sedang | Rapi | ✅ sonnet |
+| 139 | Verifikasi tampilan sisi KONTRIBUTOR (tab tergembok, "Kontributor lain") | Kecil | Menutup dua fitur yang belum pernah terlihat | — butuh Johan login akun < Perak |
+| 109b | Peta Investor: hapus mode ekspor "Seluruh dataset" (tombol sudah beres) | Kecil | Rapi | ✅ sonnet |
 | 123 | Badge/notifikasi fitur baru | Sedang-besar | Kontributor tahu ada yang baru | — migrasi DB + RLS + desain |
 | 107 | Dasbor: badge %, bar tembus, klik ke TradingView | Sedang-besar | Dasbor lebih hidup | sebagian ✅ sonnet |
-| 122 | [EMITEN] Panen OHLC 5 tahun + chart candle | Besar | Chart candle per emiten | panen ✅ sonnet · chart — |
+| 122 | **[EMITEN] Panen OHLC harian 5 tahun** — Yahoo utk riwayat, IDX utk hari berjalan | Besar | Chart candle per emiten | panen ✅ sonnet · chart — |
 | 131b | Seasonality tab 2 — bagian emiten | Besar | Pola harian per emiten | terhalang #122 |
 | 130 | Analisis volume & divergensi tiga lapis | Besar | Yang tak ada di aplikasi lain | terhalang #122/#108 |
 | 99 | Stock Detail: laporan keuangan kuartalan | Paling besar | Fundamental lengkap | — perlu perancangan tabel |
 | 129 | **[PALING AKHIR]** Chart bandarmologi ala @Asta_8_Free_Bot | Paling besar | Lima panel bawahnya BELUM ada datanya | — perlu sumber broker per emiten |
 
-Tiga teratas bisa selesai dalam satu sesi pendek. Yang bertanda ✅ sonnet bisa
-dikerjakan bersamaan oleh agen terpisah karena berkasnya tak bersinggungan —
-#125 dan #126 tadi memang berjalan paralel tanpa bentrok.
+#139 paling murah dan menutup dua fitur yang sudah dibangun tapi belum pernah
+terlihat. #137 mendesak bukan karena besar, tapi karena memblokir kegunaan
+status `revisi` yang baru dipasang: permintaan perbaikan yang tak sampai ke
+orangnya sama saja dengan penolakan diam-diam.
+
+Yang bertanda ✅ sonnet bisa dikerjakan bersamaan oleh agen terpisah karena
+berkasnya tak bersinggungan — #125/#126 dan status `revisi` memang berjalan
+paralel tanpa bentrok.
+
+### Panen data harian — dua sumber, dua peran
+
+Sudah terbukti dan tak perlu diperdebatkan lagi tiap kali menyentuh #122/#108:
+
+| Sumber | Dipakai untuk | Batasnya |
+|---|---|---|
+| **Yahoo Finance** | Riwayat panjang (IHSG 1990-2026, emiten 5 tahun) + harga BUKA | `range=max` diam-diam menurunkan resolusi jadi bulanan walau `interval=1d` — WAJIB `period1`/`period2` |
+| **IDX GetStockSummary** | Hari berjalan, 32 ruas per emiten (volume, frekuensi, asing, dll) | Cuma hari berjalan, tak bisa mundur. OpenPrice terisi 74% hari ini tapi 5-8% sebelum 2025 |
+
+Panen 963 emiten sekali jalan terbukti aman: 0 penolakan, permintaan berurutan
+dengan jeda acak. Jadwal harian 16:45 WIB — bursa tutup 16:15, Yahoo delay
+±15 menit, penutupan resmi final sekitar 30 menit sesudahnya.
 
 ## 🏁 Milestone: chart PAPAN sendiri
 
