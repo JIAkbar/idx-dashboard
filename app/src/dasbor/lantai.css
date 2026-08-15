@@ -2193,3 +2193,22 @@
    bukan bagian yang tak ada di tempat lain (mis. tanggal). */
 .lantai .hanya-lebar { display: inline; }
 @media (max-width: 700px) { .lantai .hanya-lebar { display: none; } }
+
+/* ===== DRAFT: tombol berbentuk pil ala Samudra ============================
+   Percobaan bentuk, bukan keputusan. Seluruhnya di satu blok supaya bisa
+   dibuang lewat satu `git revert` tanpa menyentuh apa pun yang lain.
+   --r-tombol dipakai sebagai satu-satunya sakelar: 999px = pil penuh,
+   var(--r) = kembali ke 12px seperti sebelumnya. */
+.lantai { --r-tombol: 999px; }
+.lantai .btn-p,
+.lantai .dd-btn,
+.lantai .pi-view-tab,
+.lantai .pi-search-go,
+.lantai .pi-search-reset,
+.lantai .pi-fs-btn,
+.lantai .pi-panel-close { border-radius: var(--r-tombol); }
+/* Tombol pil butuh bantalan mendatar lebih lega — sudut yang membulat penuh
+   memakan ruang di kiri-kanan teks, dan tanpa tambahan ini hurufnya terlihat
+   menempel ke tepi. */
+.lantai .btn-p { padding-inline: 22px; }
+.lantai .dd-btn { padding-inline: 14px; }
