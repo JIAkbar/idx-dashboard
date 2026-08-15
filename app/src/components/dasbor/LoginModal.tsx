@@ -150,6 +150,9 @@ function PanelBenefit({ kembali }: { kembali: () => void }) {
         </p>
       </div>
 
+      {/* Tombol utama panel: kuning selebar panel (keputusan 15 Agu) — panel
+          benefit ujungnya tetap mengajak masuk, jadi jalan kembali ke formulir
+          pantas jadi ajakan paling menonjol, bukan tombol kecil rata kanan. */}
       <button type="button" className="btn-p" style={{ width: '100%' }} onClick={kembali}>
         Kembali ke masuk
       </button>
@@ -209,19 +212,24 @@ export function LoginModal({ onClose }: { onClose: () => void }) {
               digulir terus. Disembunyikan saat panel benefit terbuka. */}
           {!benefit && <><SesiHead /><SparkIhsg /></>}
           <div className="panel-h">
-            <span className="lbl">{benefit ? 'Benefit kontributor' : 'Masuk — Area Admin'}</span>
-            <span style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
+            <span className="lbl">{benefit ? 'Benefit kontributor' : 'Masuk Dashboard'}</span>
+            <span className="login-aksi">
               {!benefit && (
                 <button type="button" className="dd-btn" onClick={() => setBenefit(true)}>
                   Benefit kontributor
                 </button>
               )}
-              <button type="button" className="dd-btn" onClick={onClose}>Tutup</button>
+              {/* Di panel benefit, "Tutup" berarti kembali ke formulir masuk —
+                  bukan menutup gerbangnya. Orang yang membuka daftar benefit
+                  sedang menimbang, bukan hendak pergi. */}
+              <button type="button" className="dd-btn" onClick={benefit ? () => setBenefit(false) : onClose}>
+                Tutup
+              </button>
             </span>
           </div>
           {benefit ? <PanelBenefit kembali={() => setBenefit(false)} /> : (
           <form className="panel-b" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <p className="login-sub">Masuk untuk kelola unggahan orderbook &amp; edisi Arus Pasar.</p>
+            <p className="login-sub">Masuk untuk kelola Data dan Arus Pasar.</p>
             <div className="field">
               <span className="lbl">Email</span>
               <input className="inp" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus />

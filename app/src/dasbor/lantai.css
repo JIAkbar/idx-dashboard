@@ -432,10 +432,29 @@
    daripada formulir, jadi digulir DI DALAM modal — tinggi modal tidak boleh
    memanjang sampai keluar layar telepon. dvh, bukan vh: bilah alamat ponsel
    menutup bagian bawah viewport. */
+/* Kepala modal masuk: label kiri, tombol kanan. Tombol tidak boleh membungkus —
+   "Benefit kontributor" yang pecah dua baris menaikkan tinggi seluruh kepala
+   dan membuat "Tutup" di sebelahnya ikut melar. Labelnya yang mengalah kalau
+   ruang kurang (memendek dengan elipsis), bukan tombolnya. Diskop ke modal
+   saja (.lantai.dasbor-modal), bukan .panel-h global — kepala panel dipakai di
+   seluruh halaman dan sebagian memang boleh membungkus. */
+.lantai.dasbor-modal .panel-h .lbl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lantai .login-aksi { display: flex; gap: 6px; margin-left: auto; flex-shrink: 0; }
+.lantai .login-aksi .dd-btn { white-space: nowrap; }
+
 .lantai .login-benefit {
   display: flex; flex-direction: column; gap: 14px;
   max-height: min(74dvh, 560px); overflow-y: auto;
+  /* Gutter gulir 2px. SENGAJA tanpa scrollbar-width/scrollbar-color standar:
+     sejak Chrome 121, menyetel salah satunya membuat seluruh aturan
+     ::-webkit-scrollbar diabaikan — "thin" 11px yang menang, bukan 2px ini
+     (terukur langsung 15 Agu 2026). Firefox jatuh ke batang bawaannya. */
+  padding-right: 6px;
 }
+.lantai .login-benefit::-webkit-scrollbar { width: 2px; }
+.lantai .login-benefit::-webkit-scrollbar-track { background: transparent; }
+.lantai .login-benefit::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 99px; }
+.lantai .login-benefit::-webkit-scrollbar-thumb:hover { background: var(--text3); }
 .lantai .lb-blok { display: flex; flex-direction: column; gap: 8px; }
 .lantai .lb-judul {
   font-family: var(--disp); font-size: 9px; font-weight: 700;
