@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useProfilSaya } from '../../lib/profilSaya'
 import { daftarAkun, buatAkun, hapusAkun, resetSandi, setProfil, ubahEmail, type AkunRow } from '../../lib/adminAkun'
 import { daftarJenjang, type JenjangRow } from '../../lib/jenjang'
-import { IkonMenu, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_SURAT, IKON_TAMBAH, IKON_TONG, IKON_ULANG } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_CARI, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_SURAT, IKON_TAMBAH, IKON_TONG, IKON_ULANG } from '../../components/dasbor/IkonMenu'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { KolomSandi } from '../../components/dasbor/KolomSandi'
@@ -15,6 +15,53 @@ import { pesanGalat } from '../../lib/pesanGalat'
 /** Domain akun kontributor PAPAN. Ditulis sekali di sini supaya kalau suatu
  *  saat berganti, tak ada satu pun tempat yang tertinggal memakai yang lama. */
 const DOMAIN_AKUN = '@papan.id'
+
+type KunciUrut = 'terbaru' | 'terlama' | 'email' | 'alias' | 'jenjang' | 'kuota' | 'nonaktif'
+
+const URUT_OPSI = [
+  { nilai: 'terbaru', label: 'Terakhir masuk ↓' },
+  { nilai: 'terlama', label: 'Terakhir masuk ↑' },
+  { nilai: 'email', label: 'Email A–Z' },
+  { nilai: 'alias', label: 'Alias A–Z' },
+  { nilai: 'jenjang', label: 'Jenjang tertinggi' },
+  { nilai: 'kuota', label: 'Kuota terbesar' },
+  { nilai: 'nonaktif', label: 'Nonaktif dulu' },
+]
+
+/**
+ * Saring lalu urutkan daftar akun. Dipisah jadi fungsi murni supaya bisa diuji
+ * tanpa merender tabelnya — yang gampang salah di sini bukan tampilannya, tapi
+ * perlakuan pada akun yang BELUM pernah masuk (`terakhir_masuk` null).
+ */
+export function saringUrutAkun(daftar: AkunRow[], cari: string, urut: KunciUrut): AkunRow[] {
+  const q = cari.trim().toLowerCase()
+  const hasil = q
+    ? daftar.filter((a) => `${a.email} ${a.alias ?? ''}`.toLowerCase().includes(q))
+    : [...daftar]
+
+  // Akun yang belum pernah masuk selalu ditaruh di UJUNG, di kedua arah — bukan
+  // diperlakukan sebagai "tahun 1970". Pada urutan "terlama" mereka akan
+  // memenuhi layar teratas dan menutupi yang sebenarnya dicari: akun lama yang
+  // sudah lama tak muncul.
+  const waktu = (a: AkunRow) => (a.terakhir_masuk ? Date.parse(a.terakhir_masuk) : NaN)
+  const banding: Record<KunciUrut, (a: AkunRow, b: AkunRow) => number> = {
+    terbaru: (a, b) => bandingWaktu(waktu(a), waktu(b), -1),
+    terlama: (a, b) => bandingWaktu(waktu(a), waktu(b), 1),
+    email: (a, b) => a.email.localeCompare(b.email, 'id'),
+    alias: (a, b) => (a.alias || '￿').localeCompare(b.alias || '￿', 'id'),
+    jenjang: (a, b) => (b.tier ?? 0) - (a.tier ?? 0),
+    kuota: (a, b) => (b.kuota_manual ?? b.kuota_harian) - (a.kuota_manual ?? a.kuota_harian),
+    nonaktif: (a, b) => Number(a.aktif) - Number(b.aktif),
+  }
+  return hasil.sort(banding[urut])
+}
+
+function bandingWaktu(a: number, b: number, arah: 1 | -1): number {
+  if (Number.isNaN(a) && Number.isNaN(b)) return 0
+  if (Number.isNaN(a)) return 1
+  if (Number.isNaN(b)) return -1
+  return (a - b) * arah
+}
 
 /** Pilihan kuota harian — dropdown gantinya input number bertombol panah
  *  (sempit, gampang salah ketik). Dipakai form Tambah Akun & kolom kuota
@@ -104,12 +151,15 @@ export function AkunAdmin() {
   const [sibuk, setSibuk] = useState<Set<string>>(new Set())
   const [toast, setToast] = useState<{ ok: boolean; pesan: string } | null>(null)
 
+  const [cari, setCari] = useState('')
+  const [urut, setUrut] = useState<KunciUrut>('terbaru')
   const [tambahBuka, setTambahBuka] = useState(false)
   const [resetTarget, setResetTarget] = useState<AkunRow | null>(null)
   const [hapusTarget, setHapusTarget] = useState<AkunRow | null>(null)
   const [emailTarget, setEmailTarget] = useState<AkunRow | null>(null)
 
   const superadmin = profil?.peran === 'superadmin'
+  const tampil = useMemo(() => saringUrutAkun(akun ?? [], cari, urut), [akun, cari, urut])
 
   useEffect(() => {
     if (!superadmin) return
@@ -164,7 +214,11 @@ export function AkunAdmin() {
     <>
       <section className="panel">
         <div className="panel-h" style={{ alignItems: 'center' }}>
-          <span className="lbl">Akun{akun ? ` (${akun.length})` : ''}</span>
+          {/* Saat sedang menyaring, angkanya menyebut DUA-DUANYA. "Akun (3)"
+              di layar yang tersaring gampang terbaca sebagai "cuma ada 3 akun". */}
+          <span className="lbl">
+            Akun{akun ? (cari.trim() ? ` (${tampil.length} dari ${akun.length})` : ` (${akun.length})`) : ''}
+          </span>
           <button type="button" className="btn-p af-tambah" onClick={() => setTambahBuka(true)}>
             <IkonMenu d={IKON_TAMBAH} size={13} /> Tambah Akun
           </button>
@@ -174,6 +228,23 @@ export function AkunAdmin() {
           {akun === null && !galat && <p className="muted">Memuat…</p>}
           {akun && akun.length === 0 && <p className="muted">Belum ada akun.</p>}
           {akun && akun.length > 0 && (
+            <div className="aa-kontrol">
+              <div className="aa-cari">
+                <IkonMenu d={IKON_CARI} size={13} />
+                <input
+                  className="inp" value={cari} type="search" autoComplete="off"
+                  placeholder="Cari email atau alias…" aria-label="Cari akun"
+                  onChange={(e) => setCari(e.target.value)}
+                />
+              </div>
+              <Dropdown opsi={URUT_OPSI} nilai={urut} ariaLabel="Urutkan akun"
+                onGanti={(v) => setUrut(v as KunciUrut)} />
+            </div>
+          )}
+          {akun && akun.length > 0 && tampil.length === 0 && (
+            <p className="muted">Tak ada akun yang cocok dengan "{cari.trim()}".</p>
+          )}
+          {tampil.length > 0 && (
             <div className="af-gulir aa-tbl-wrap">
               <table className="tbl aa-tbl aa-tbl-akun">
                 {/* Lebar kolom dipatok px, bukan dibiarkan auto (§172 SAKTI):
@@ -213,7 +284,7 @@ export function AkunAdmin() {
                   </tr>
                 </thead>
                 <tbody>
-                  {akun.map((a) => {
+                  {tampil.map((a) => {
                     const sedangProses = sibuk.has(a.id)
                     const tier = a.tier ?? 0
                     const jenjangAkun = jenjang.find((j) => j.tier === tier)

@@ -32,6 +32,17 @@
 .lantai .aa-buatkan .dd-btn { white-space: nowrap; }
 .lantai .aa-buatkan .muted { font-size: 10.5px; line-height: 1.45; flex: 1; min-width: 180px; }
 
+/* Baris cari + urut di atas tabel akun. Cari menyerap sisa lebar, dropdown
+   urut sependek isinya — kalau keduanya dibagi rata, kotak cari jadi separuh
+   layar padahal dialah yang isinya panjang. */
+.lantai .aa-kontrol { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.lantai .aa-cari { position: relative; display: flex; align-items: center; gap: 8px; flex: 1; min-width: 200px;
+  background: var(--bg2); border: 1px solid var(--line2); border-radius: var(--r); padding-left: 11px; }
+.lantai .aa-cari:focus-within { border-color: var(--amber); }
+.lantai .aa-cari svg { flex: none; color: var(--text3); }
+.lantai .aa-cari .inp { border: 0; background: transparent; padding-left: 0; }
+.lantai .aa-cari .inp:focus { border-color: transparent; }
+
 /* Kolom email dengan domain tempelan. Kotak luarnya yang menggambar bingkai
    dan keadaan fokus, bukan input di dalamnya — supaya "nama" dan "@papan.id"
    terbaca sebagai satu alamat utuh, bukan dua kontrol bersebelahan. */
