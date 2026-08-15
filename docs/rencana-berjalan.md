@@ -52,7 +52,8 @@ utama. Aturannya: makin tajam speknya, makin rendah tier yang aman.
 | # | Tugas | Ongkos | Hasil terlihat | Agen |
 |---|---|---|---|---|
 | 108 | [IHSG] Panen harga BUKA harian | Kecil | Lilin berhenti jadi aproksimasi | ✅ sonnet — satu ruas ditambah ke skrip yang sudah jalan |
-| 137 | Notifikasi hasil kurasi ke penyetor (setuju/revisi/tolak) | Sedang | Status `revisi` baru berguna kalau sampai ke orangnya | — migrasi DB + RLS; satukan dgn #123 |
+| 137 | Notifikasi hasil kurasi ke penyetor (setuju/revisi/hapus) | Sedang | Status `revisi` baru berguna kalau sampai ke orangnya | — migrasi DB + RLS; satukan dgn #123 |
+| 142 | Ganti aksi "Tolak" dengan "Hapus + notice" | Sedang | Tiga aksi, tiga makna jelas; berkas mati berhenti menumpuk | — butuh #137 lebih dulu |
 | 138 | Pilih emiten yang MASUK PRODUKSI, terpisah dari kurasi | Sedang | Berhenti menolak data benar demi memangkas isi edisi | — keputusan bentuk layar |
 | 128 | Cocokkan fraksi harga ke dokumen IDX | Kecil | Angka aturan bursa jadi pasti | — perlu penilaian sumber |
 | 124 | Chart IHSG: pemilih rentang + judul | Sedang | Grafik 30+ tahun langsung terpakai | — keputusan sambungan dua sumber |
