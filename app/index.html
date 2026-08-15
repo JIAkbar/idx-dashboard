@@ -10,6 +10,13 @@
          selesai lalu baru fetch (rantai berurutan = lambat di jaringan pelan).
          fetch() di dataHarian.ts sengaja TANPA opsi mode/credentials khusus
          supaya cocok dengan preload ini (default keduanya sama). -->
+    <!-- Red Hat disalin ke repo (public/fonts), bukan ditarik dari CDN Google:
+         pembaca PAPAN tak perlu mengirim permintaan ke server pihak ketiga, dan
+         teks halaman tak menunggu CDN yang lambat atau diblokir. Dua berkas yang
+         pasti terpakai di layar pertama di-preload; sisanya menyusul lewat CSS. -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/RedHatText-400.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/RedHatDisplay-700.woff2" />
+    <link rel="stylesheet" href="/fonts/redhat.css" />
     <link rel="preload" as="fetch" crossorigin href="/data-idx/json/index.json" />
     <!-- tv.js TradingView SENGAJA TIDAK dimuat di sini — cuma dipakai widget
          Chart Indeks (ChartIndeks.tsx), dimuat on-demand oleh

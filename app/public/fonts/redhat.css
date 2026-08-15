@@ -1,0 +1,19 @@
+/* Red Hat (Display/Text/Mono) — disalin ke repo, bukan ditarik dari CDN
+   Google saat halaman dibuka. Alasannya bukan sekadar kecepatan: font dari
+   CDN pihak ketiga berarti setiap pembaca PAPAN mengirim permintaan ke server
+   yang bukan milik kita, dan kalau CDN-nya lambat atau diblokir, seluruh teks
+   halaman menunggu atau jatuh ke huruf cadangan.
+
+   Hanya subset `latin` yang disalin — PAPAN berbahasa Indonesia dengan kode
+   emiten Latin; `latin-ext` menambah berkas tanpa satu pun glif yang dipakai.
+   `font-display: swap` memastikan teks tampil dengan huruf cadangan lebih
+   dulu, bukan menghilang selama font diunduh.
+
+   Dibuat 15 Agustus 2026 dari fonts.googleapis.com/css2 (Red Hat, SIL OFL 1.1). */
+@font-face{font-family:'Red Hat Display';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/RedHatDisplay-700.woff2') format('woff2')}
+@font-face{font-family:'Red Hat Display';font-style:normal;font-weight:800;font-display:swap;src:url('/fonts/RedHatDisplay-800.woff2') format('woff2')}
+@font-face{font-family:'Red Hat Text';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/RedHatText-400.woff2') format('woff2')}
+@font-face{font-family:'Red Hat Text';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/RedHatText-500.woff2') format('woff2')}
+@font-face{font-family:'Red Hat Text';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/RedHatText-700.woff2') format('woff2')}
+@font-face{font-family:'Red Hat Mono';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/RedHatMono-400.woff2') format('woff2')}
+@font-face{font-family:'Red Hat Mono';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/RedHatMono-600.woff2') format('woff2')}

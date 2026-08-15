@@ -27,7 +27,7 @@
 
 .dasbor-shell {
   --dasbor-topbar-h: 52px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: "Red Hat Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -108,12 +108,12 @@
 @keyframes dasbor-pita-jalan { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .dasbor-tk {
   display: inline-flex; align-items: center; gap: 7px; padding: 0 16px;
-  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-family: "Red Hat Mono", ui-monospace, Consolas, monospace;
   font-size: 11.5px; color: var(--text2);
 }
 .dasbor-tk b { color: var(--text); font-weight: 600; }
 .dasbor-tk-sep { color: var(--border2); }
-.dasbor-num { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-variant-numeric: tabular-nums; }
+.dasbor-num { font-family: "Red Hat Mono", ui-monospace, Consolas, monospace; font-variant-numeric: tabular-nums; }
 .dasbor-shell .up, .dasbor-num.up { color: var(--green); }
 .dasbor-shell .dn, .dasbor-num.dn { color: var(--red); }
 .dasbor-lbl {
@@ -164,7 +164,7 @@
   flex: none;
   margin: 12px 12px 8px;
   height: 46px;
-  border-radius: 6px;
+  border-radius: var(--r-kecil, 8px);
   background: var(--accent);
   color: var(--cal-active-txt);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -173,7 +173,7 @@
   overflow: hidden;
 }
 .dasbor-rail-merek b {
-  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-family: "Red Hat Mono", ui-monospace, Consolas, monospace;
   font-size: 19px; font-weight: 700; line-height: 1;
 }
 .dasbor-rail-merek span {
@@ -226,7 +226,7 @@
   background: linear-gradient(90deg, var(--accent-soft), transparent 72%);
 }
 .dasbor-rail-kode {
-  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-family: "Red Hat Mono", ui-monospace, Consolas, monospace;
   font-size: 9.5px; letter-spacing: .1em;
 }
 /* Semua ikon menu digambar sendiri; strokenya ikut warna teks induk supaya
@@ -329,10 +329,10 @@
     display: flex; align-items: center; justify-content: center;
     flex: none;
     width: 30px; height: 30px; margin: 0 9px;
-    border-radius: 5px;
+    border-radius: var(--r-kecil, 8px);
     background: var(--accent);
     color: var(--cal-active-txt);
-    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-family: "Red Hat Mono", ui-monospace, Consolas, monospace;
     font-size: 16px; font-weight: 700; line-height: 1;
     text-decoration: none;
     position: relative; overflow: hidden;
@@ -353,14 +353,14 @@
   .dasbor-laci-item {
     display: grid; grid-template-columns: 20px 1fr auto; gap: 10px; align-items: center;
     padding: 11px 12px;
-    border: 1px solid var(--border); border-radius: 6px;
+    border: 1px solid var(--border); border-radius: var(--r-kecil, 8px);
     color: var(--text2); text-decoration: none; font-size: 13px;
   }
   .dasbor-laci-item.active { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
   .dasbor-laci-tombol {
     display: flex; align-items: center; justify-content: center; gap: 8px;
     padding: 11px;
-    background: none; border: 1px solid var(--border2); border-radius: 6px;
+    background: none; border: 1px solid var(--border2); border-radius: var(--r-kecil, 8px);
     color: var(--text2); font-size: 12.5px; cursor: pointer; text-decoration: none;
   }
   .dasbor-laci-tombol:hover { color: var(--accent); border-color: var(--accent); }
@@ -504,7 +504,7 @@
    (RiskReward.tsx); .jia-*, .adc-*, .pc-*, .ara-tbl, .div-bep*, .div-sc*, .rr-big,
    .rr-preset* semuanya mati, diganti primitif .lantai (.tab/.vcard/.num). ===== */
 
-.dasbor-shell .rr-bar-wrap { height: 26px; border-radius: 6px; overflow: hidden; display: flex; margin: 8px 0; }
+.dasbor-shell .rr-bar-wrap { height: 26px; border-radius: var(--r-kecil, 8px); overflow: hidden; display: flex; margin: 8px 0; }
 .dasbor-shell .rr-bar-sl { background: #dc2626; }
 .dasbor-shell .rr-bar-mid { background: var(--border2); width: 3px; flex-shrink: 0; }
 .dasbor-shell .rr-bar-tp { background: #16a34a; }
@@ -610,39 +610,56 @@
    masih dipakai .pi-* via alias di bawah, bukan ditulis ulang ke token ini.
    ============================================================ */
 .lantai {
-  --bg0:#0B1017; --bg1:#111826; --bg2:#18212F; --bg3:#1F2A3B;
-  --line:#232E3F; --line2:#2E3B50;
-  /* #77 sweep kontras (nilai sama dgn blok dasbor-shell[data-theme] di atas):
-     text3 → 8494A8, red → EB5E62 (red-on-red-dim 3.97→4.53). */
-  --text:#E8EDF4; --text2:#9AA7B8; --text3:#8494A8;
-  --amber:#F0A62B; --amber-ink:#131008; --amber-dim:rgba(240,166,43,.13);
-  --red:#EB5E62; --red-dim:rgba(235,94,98,.14);
-  --green:#30A46C; --green-dim:rgba(48,164,108,.14);
-  --blue:#4C8DFF;
+  /* ===== Tema PAPAN Lilin (dipasang 15 Agu 2026) ==========================
+     Warnanya dari arah desain "Lilin" (docs/desain/arah/papan-lilin.html);
+     sudut membulat 12px/8px dan keluarga huruf Red Hat dari "Samudra". Palet
+     lama tersimpan utuh di docs/desain/token-terpasang-sebelum-lilin.css.
+
+     Nama variabelnya sengaja TIDAK ikut berganti. Arah desain memakai
+     --aksen/--bull/--bear, sedangkan seluruh aplikasi ini memakai
+     --amber/--green/--red di ratusan tempat; menyeragamkan nama berarti sweep
+     besar yang tidak menambah apa pun di layar. Yang berpindah nilainya, bukan
+     namanya.
+
+     Dua nilai tema terang SENGAJA lebih gelap dari artifact aslinya: --text3
+     dan --green. Di artifact keduanya duduk di atas latar terang saja; di
+     aplikasi ini keduanya juga jatuh di atas --bg3, dan di situ rasionya
+     4,25:1 dan 4,26:1 — di bawah ambang WCAG AA. Digelapkan sampai lolos di
+     KEEMPAT latar. */
+  --bg0:#0C0D10; --bg1:#14151A; --bg2:#1A1C22; --bg3:#22242C;
+  --line:#24262E; --line2:#363945;
+  --text:#EAEAEE; --text2:#9CA0AC; --text3:#888D99;
+  --amber:#F2C230; --amber-ink:#171207; --amber-dim:rgba(242,194,48,.12);
+  --red:#E6635A; --red-dim:rgba(230,99,90,.14);
+  --green:#38B77E; --green-dim:rgba(56,183,126,.14);
+  --blue:#5B94E8;
   /* #79: kategori simpul Grafik Jaringan /peta-investor (graphRender.ts WARNA)
      — beda hue per tipe holder, bukan tiga abu mirip. */
-  --node-corp:#4E8FD9; --node-ind:#30A46C; --node-oth:#6B7A90;
-  --flap:#060A10; --flap-line:rgba(255,255,255,.07);
-  --mono:"Cascadia Code","Cascadia Mono",Consolas,"SF Mono","Roboto Mono",monospace;
-  --disp:"Bahnschrift","Arial Narrow","Segoe UI",system-ui,sans-serif;
-  --ui:"Segoe UI",system-ui,-apple-system,sans-serif;
-  --r:6px;
+  --node-corp:#5B94E8; --node-ind:#38B77E; --node-oth:#767C8C;
+  --flap:#08090C; --flap-line:rgba(255,255,255,.07);
+  --mono:"Red Hat Mono","Cascadia Mono",Consolas,"SF Mono",monospace;
+  --disp:"Red Hat Display","Segoe UI",system-ui,sans-serif;
+  --ui:"Red Hat Text","Segoe UI",system-ui,-apple-system,sans-serif;
+  /* 6px terbaca seperti sudut yang lupa dibulatkan; 12px membuat panel terlihat
+     memang dirancang. --r-kecil untuk elemen kecil (chip, badge, tombol ikon),
+     yang pada 12px justru berubah jadi kapsul. */
+  --r:12px; --r-kecil:8px;
   font-family:var(--ui); font-size:13px; line-height:1.5; color:var(--text);
 }
 .dasbor-shell[data-theme="light"] .lantai{
-  --bg0:#F2F4F7; --bg1:#FFFFFF; --bg2:#F7F9FC; --bg3:#EDF1F6;
-  --line:#DDE3EA; --line2:#C9D2DD;
-  /* #77 sweep kontras: text3 → 5F6C7D; amber B87A10 (3.6 vs putih) → 94620C
-     (5.2 — teks .em-code/.ttm-row & putih di atas .tab.on ikut lolos);
-     red → C23439, green → 18754A (angka up/dn kecil ≥4.5 di semua bg). */
-  --text:#131B26; --text2:#4E5D70; --text3:#5F6C7D;
-  --amber:#94620C; --amber-ink:#FFFFFF; --amber-dim:rgba(148,98,12,.10);
-  --red:#C23439; --red-dim:rgba(194,52,57,.10);
-  --green:#18754A; --green-dim:rgba(24,117,74,.10);
-  --node-corp:#2F6DB3; --node-ind:#1F7A4F; --node-oth:#7E8A99;
-  --flap:#131B26; --flap-line:rgba(255,255,255,.10);
+  --bg0:#F3F4F2; --bg1:#FCFCFB; --bg2:#EEF0ED; --bg3:#E4E7E3;
+  --line:#DDE0DC; --line2:#C5C9C4;
+  /* text3 5F656D & green 197047 digelapkan dari nilai artifact (666C74 /
+     1D7A50) supaya lolos 4,5:1 juga di atas --bg3 — lihat catatan di blok
+     gelap. */
+  --text:#16181A; --text2:#525860; --text3:#5F656D;
+  --amber:#7A5E00; --amber-ink:#FFFFFF; --amber-dim:rgba(122,94,0,.10);
+  --red:#B73A31; --red-dim:rgba(183,58,49,.10);
+  --green:#197047; --green-dim:rgba(25,112,71,.10);
+  --blue:#2C63C4;
+  --node-corp:#2C63C4; --node-ind:#197047; --node-oth:#767C74;
+  --flap:#16181A; --flap-line:rgba(255,255,255,.10);
 }
-
 /* Alias kompatibilitas utk .pi-* (Peta Investor) yang dipindah dari dasbor.css
    apa adanya (lihat blok .pi-* di paling bawah berkas ini) — nama variabel
    lama beda dari sistem token .lantai, alih-alih menulis ulang 62 aturan
@@ -886,7 +903,7 @@
 .lantai .sek-emiten::-webkit-scrollbar-thumb{background:var(--line2);border-radius:99px}
 .lantai .sek-emiten::-webkit-scrollbar-thumb:hover{background:var(--text3)}
 .lantai .sek-emiten::-webkit-scrollbar-track{background:transparent}
-.lantai .sek-em{display:flex;align-items:baseline;gap:8px;padding:3px 4px;border-radius:5px;color:inherit;text-decoration:none;min-width:0}
+.lantai .sek-em{display:flex;align-items:baseline;gap:8px;padding:3px 4px;border-radius:var(--r-kecil, 8px);color:inherit;text-decoration:none;min-width:0}
 .lantai .sek-em:hover{background:var(--bg3)}
 .lantai .sek-em .tick{color:var(--amber);flex:none}
 /* flex:1 + min-width:0 — nama mengisi sisa ruang & tetap bisa mengecil
@@ -1175,7 +1192,7 @@
 
 /* ===== PETA INVESTOR — port markup baris 2219-2369 + CSS baris 544-563, 610-622, 630-632 ===== */
 .lantai .pi-view-tabs { display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
-.lantai .pi-view-tab { padding: 6px 14px; border-radius: 7px; border: 0.5px solid var(--border2); background: var(--bg3); color: var(--text2); font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; font-family: inherit; }
+.lantai .pi-view-tab { padding: 6px 14px; border-radius: var(--r-kecil, 8px); border: 0.5px solid var(--border2); background: var(--bg3); color: var(--text2); font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; font-family: inherit; }
 .lantai .pi-view-tab.active { background: var(--accent); color: var(--amber-ink); border-color: var(--accent); }
 
 .lantai .pi-legend { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; font-size: 11px; color: var(--text2); }
@@ -1194,7 +1211,7 @@
 .lantai .pi-graph svg { touch-action: none; display: block; }
 /* Tombol layar penuh graf — overlay pojok kanan-atas AREA GRAF (anak
    .pi-graph-wrap, bukan kartu — supaya tidak menimpa kepala panel detail). */
-.lantai .pi-fs-btn { position: absolute; top: 10px; right: 10px; z-index: 20; display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 7px; border: 0.5px solid var(--border2); background: var(--card); color: var(--text2); font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.lantai .pi-fs-btn { position: absolute; top: 10px; right: 10px; z-index: 20; display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: var(--r-kecil, 8px); border: 0.5px solid var(--border2); background: var(--card); color: var(--text2); font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
 .lantai .pi-fs-btn:hover { color: var(--text); border-color: var(--accent); }
 /* Layar penuh (#51 reuse): aturan umum .panel:fullscreen memaksa kolom untuk
    halaman chart — kartu graf tetap baris graf|panel detail; tinggi graf ikut
@@ -1208,7 +1225,7 @@
 .lantai .pi-panel-eyebrow { font-size: 11px; font-weight: 600; color: var(--text3); letter-spacing: .5px; text-transform: uppercase; margin-bottom: 4px; }
 .lantai .pi-panel-title { font-size: 20px; font-weight: 800; letter-spacing: -.5px; color: var(--text); }
 .lantai .pi-panel-sub { font-size: 11px; color: var(--text2); margin-top: 4px; line-height: 1.4; word-break: break-word; }
-.lantai .pi-panel-close { background: var(--card); border: none; border-radius: 6px; color: var(--text3); padding: 5px 10px; cursor: pointer; font-size: 14px; flex-shrink: 0; line-height: 1; }
+.lantai .pi-panel-close { background: var(--card); border: none; border-radius: var(--r-kecil, 8px); color: var(--text3); padding: 5px 10px; cursor: pointer; font-size: 14px; flex-shrink: 0; line-height: 1; }
 .lantai .pi-panel-body { padding: 12px 16px; }
 .lantai .pi-panel-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--text3); margin-bottom: 8px; }
 .lantai .pi-panel-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--border); }
@@ -1216,7 +1233,7 @@
 .lantai .pi-panel-row-badges { display: flex; gap: 5px; margin-top: 4px; flex-wrap: wrap; }
 .lantai .pi-panel-chip { font-size: 9px; font-weight: 700; border-radius: 3px; padding: 1px 5px; }
 .lantai .pi-panel-row-pct { font-size: 15px; font-weight: 700; white-space: nowrap; }
-.lantai .pi-panel-code-chip { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; height: 24px; background: #f97316; border-radius: 5px; font-size: 9px; font-weight: 800; color: #fff; padding: 0 4px; }
+.lantai .pi-panel-code-chip { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; height: 24px; background: #f97316; border-radius: var(--r-kecil, 8px); font-size: 9px; font-weight: 800; color: #fff; padding: 0 4px; }
 .lantai .pi-panel-row-issuer { flex: 1; min-width: 0; font-size: 11px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Baris tab + kontrol pencarian Peta Investor (#83) — search pindah dari .vhead
@@ -1231,7 +1248,7 @@
    mobile. */
 .lantai .pi-head-actions { display: flex; gap: 8px; align-items: center; flex: 1 1 100%; }
 .lantai .pi-srch-container { position: relative; flex: 1; }
-.lantai .pi-search { height: 32px; padding: 0 36px 0 12px; border-radius: 7px; border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text); font-size: 12px; width: 100%; outline: none; text-transform: uppercase; letter-spacing: .3px; }
+.lantai .pi-search { height: 32px; padding: 0 36px 0 12px; border-radius: var(--r-kecil, 8px); border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text); font-size: 12px; width: 100%; outline: none; text-transform: uppercase; letter-spacing: .3px; }
 /* #77b: uppercase hanya untuk nilai ketikan (kode saham) — placeholder tetap
    sentence case seperti konvensi placeholder lain. */
 .lantai .pi-search::placeholder { text-transform: none; letter-spacing: normal; }
@@ -1246,8 +1263,8 @@
 .lantai .pi-drop-item-title { font-size: 13px; font-weight: 800; color: var(--text); letter-spacing: .5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lantai .pi-drop-item-sub { font-size: 10px; color: var(--text3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lantai .pi-cat-badge { color: #fff; font-size: 8px; font-weight: 700; padding: 2px 7px; border-radius: 8px; white-space: nowrap; }
-.lantai .pi-search-go { height: 32px; padding: 0 14px; border-radius: 7px; border: 0.5px solid var(--accent); background: var(--accent); color: var(--amber-ink); font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
-.lantai .pi-search-reset { height: 32px; padding: 0 12px; border-radius: 7px; border: 0.5px solid var(--border); background: var(--bg3); color: var(--text2); font-size: 11px; cursor: pointer; font-family: inherit; }
+.lantai .pi-search-go { height: 32px; padding: 0 14px; border-radius: var(--r-kecil, 8px); border: 0.5px solid var(--accent); background: var(--accent); color: var(--amber-ink); font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.lantai .pi-search-reset { height: 32px; padding: 0 12px; border-radius: var(--r-kecil, 8px); border: 0.5px solid var(--border); background: var(--bg3); color: var(--text2); font-size: 11px; cursor: pointer; font-family: inherit; }
 
 .lantai .pi-tbl-toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 14px; }
 .lantai .pi-tbl-toolbar-title { font-weight: 700; font-size: 13px; }
@@ -1278,8 +1295,8 @@
 .lantai .pi-badge-h.EM { background: #f9731620; color: #f97316; }
 .lantai .pi-badge-more { font-size: 10px; color: var(--text3); white-space: nowrap; align-self: center; }
 .lantai .pi-holder-list { display: flex; flex-wrap: wrap; gap: 3px; max-width: 360px; align-items: center; }
-.lantai .pi-tbl-search { padding: 6px 12px; border-radius: 7px; border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text); font-size: 12px; outline: none; width: 210px; }
-.lantai .pi-tbl-select { padding: 6px 10px; border-radius: 7px; border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text); font-size: 12px; outline: none; }
+.lantai .pi-tbl-search { padding: 6px 12px; border-radius: var(--r-kecil, 8px); border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text); font-size: 12px; outline: none; width: 210px; }
+.lantai .pi-tbl-select { padding: 6px 10px; border-radius: var(--r-kecil, 8px); border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text); font-size: 12px; outline: none; }
 .lantai .pi-loadmore { padding: 7px 20px; border-radius: 8px; background: var(--bg3); border: 0.5px solid var(--border); color: var(--text2); cursor: pointer; font-size: 12px; font-family: inherit; }
 
 @media (max-width: 768px) {

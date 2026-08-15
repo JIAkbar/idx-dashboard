@@ -182,7 +182,7 @@
 }
 .lantai .af-lb img {
   max-width: 90vw; max-height: 80dvh; object-fit: contain;
-  border-radius: 6px; box-shadow: 0 16px 48px rgba(0, 0, 0, .55);
+  border-radius: var(--r-kecil, 8px); box-shadow: 0 16px 48px rgba(0, 0, 0, .55);
 }
 .lantai .af-lb-bar {
   display: flex; align-items: center; gap: 12px; max-width: 90vw;
@@ -286,7 +286,7 @@
   display: flex; align-items: center; justify-content: center;
   background: var(--amber); color: var(--amber-ink);
   font-family: var(--disp); font-weight: 700; font-size: 19px;
-  border-radius: 7px;
+  border-radius: var(--r-kecil, 8px);
 }
 .lantai .af-sambut-judul { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .lantai .af-sambut-merek {

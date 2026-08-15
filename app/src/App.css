@@ -8,7 +8,9 @@
 
 body {
   margin: 0;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  /* Red Hat Text juga di luar .lantai (shell, header, modal) supaya
+     tak ada dua keluarga huruf di satu layar. */
+  font-family: "Red Hat Text", "Segoe UI", system-ui, -apple-system, sans-serif;
   color: #12181F;
   background: #F4F6F8;
   font-variant-numeric: tabular-nums;
