@@ -56,6 +56,77 @@ Tiga teratas bisa selesai dalam satu sesi pendek. Yang bertanda ✅ sonnet bisa
 dikerjakan bersamaan oleh agen terpisah karena berkasnya tak bersinggungan —
 #125 dan #126 tadi memang berjalan paralel tanpa bentrok.
 
+## 🏁 Milestone: chart PAPAN sendiri
+
+Disebut Johan 15 Agu 2026: panen data harian untuk membangun **chart versi
+kita sendiri**, dengan banyak indikator bergaya PAPAN — alasannya, kalau kode
+sumbernya milik sendiri, improvisasinya tak dibatasi siapa pun.
+
+Ini bukan satu tugas. Ini payung yang menaungi #122, #124, #129, #130, dan
+menentukan urutan pengerjaannya.
+
+### Kenapa ini masuk akal sekarang
+
+Pondasinya sudah berdiri, dan itu bagian yang biasanya paling sering gagal:
+panen 963 emiten berjalan dengan 0 penolakan, dan `panen_ohlc.py` sudah
+menyimpan OHLCV harian penuh per emiten. Yang tersisa memang bagian yang
+bisa dikerjakan, bukan bagian yang bergantung pada izin pihak lain.
+
+### Yang membuatnya layak dibanding menempelkan TradingView
+
+Menempelkan chart orang lain berarti berhenti di apa yang mereka sediakan.
+Chart sendiri membuka lapisan yang tak mungkin ada di sana, karena datanya
+memang cuma PAPAN yang punya:
+
+| Lapisan | Sumber datanya | Ada di TradingView? |
+|---|---|---|
+| Akumulasi broker per emiten | Panen broker summary harian | Tidak |
+| Pita musiman (bulan & hari kuat/lemah) | Mesin Seasonality yang sudah jalan | Tidak |
+| Penanda WDWL / Radar | Produk PAPAN sendiri | Tidak |
+| Level S/R yang sadar fraksi BEI | `lib/fraksiHarga.ts` | Tidak — fraksi IDX tak dikenali |
+| Divergensi tiga lapis (#130) | Ruas volume IDX | Tidak |
+| Indikator baku (MA, RSI, MACD, BB) | OHLCV harian | Ya |
+
+Baris terakhir yang paling penting dipahami: indikator baku **bukan** alasan
+membangun ini. Semuanya sudah ada di mana-mana dan masing-masing cuma
+belasan baris. Yang membenarkan ongkosnya adalah lima baris di atasnya.
+
+### ⚠️ Keputusan yang MENUNGGU Johan
+
+"Kode sumber kita sendiri" bisa berarti dua hal yang ongkosnya jauh berbeda:
+
+**A. Mesin gambar pakai `lightweight-charts`, lapisan indikator milik kita.**
+Pustaka Apache-2.0 dari TradingView, dipasang di aplikasi kita, tanpa iframe
+dan tanpa panggilan ke server mereka. Semua indikator, overlay, dan
+perhitungan tetap kode kita — yang dipinjam cuma penggambar sumbu, lilin,
+zoom, dan crosshair. Ongkos: sedang. Bisa jalan minggu ini.
+
+**B. Penggambar sendiri dari nol (Canvas/WebGL).**
+Termasuk menulis ulang sumbu waktu yang melompati hari libur, zoom-pan yang
+mulus di ponsel, penjajaran multi-panel, dan crosshair. Ongkos: besar, dan
+sebagian besarnya habis di pekerjaan yang tak terlihat sebagai fitur.
+
+Rekomendasi: **A**. Yang Johan sebut — "bisa improvisasi lebih detail" —
+seluruhnya ada di lapisan indikator dan overlay, dan lapisan itu 100% milik
+kita di opsi A. Opsi B menambah kendali atas bagian yang justru tak ada
+bedanya bagi pembaca. Kalau nanti penggambarnya terasa membatasi, menukar
+mesin gambar jauh lebih murah daripada menulisnya di awal.
+
+### Urutan kerja setelah keputusan diambil
+
+| Tahap | Isi | Bergantung pada |
+|---|---|---|
+| 1 | #122 — panen OHLC 5 tahun seluruh emiten | — (skrip sudah siap) |
+| 2 | #108 — harga BUKA harian IHSG | — |
+| 3 | Chart dasar: lilin + volume + zoom, satu emiten | Tahap 1 |
+| 4 | Indikator baku: MA, EMA, RSI, MACD, Bollinger | Tahap 3 |
+| 5 | #130 — divergensi tiga lapis | Tahap 4 |
+| 6 | Overlay khas PAPAN: pita musiman, akumulasi broker, penanda Radar | Tahap 5 |
+| 7 | #129 — bandarmologi multi-panel | Tahap 6 + sumber broker per emiten |
+
+Tahap 1-3 sudah cukup jadi rilis yang bisa diumumkan. Tahap 6 yang membuat
+chart ini tak punya pembanding.
+
 ## Keputusan yang sudah diambil
 
 | Hal | Keputusan |
