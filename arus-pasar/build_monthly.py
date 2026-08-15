@@ -23,9 +23,11 @@ Pakai:
 import argparse, datetime as dt, json, re
 from pathlib import Path
 
-from build import AKAR, fmt, halaman_peringkat, band, kaki, render_pdf
+import palet
+from build import AKAR, fmt, halaman_peringkat, band, kaki, render_pdf, tulis_meta
 from build_weekly import hitung_skor, BULAN
 
+EDISI_PALET = "monthly"  # Opsi A · Permukaan & Suhu — lihat palet.py
 BARIS_SC = 12  # ponytail: baris scorecard per halaman; sel vonis 2 baris, muat aman di A4
 MAKS_SAMPUL = 12
 
@@ -91,7 +93,7 @@ GAYA_EKSTRA = """<style>
 table.sc{width:100%;border-collapse:collapse;font-size:8pt;font-variant-numeric:tabular-nums}
 table.sc th{font-size:6.1pt;color:var(--mute);text-transform:uppercase;letter-spacing:.12em;
   text-align:left;padding:0 2mm 2mm 0;border-bottom:1px solid var(--hair)}
-table.sc td{padding:2.4mm 2mm 2.4mm 0;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
+table.sc td{padding:2.4mm 2mm 2.4mm 0;border-bottom:1px solid var(--hair);vertical-align:top}
 table.sc .tk{font-weight:800;font-size:9.5pt}
 table.sc .prog-cell{font-family:Consolas,monospace;font-size:7.2pt;white-space:nowrap}
 .vd{display:inline-block;font-size:6.4pt;font-weight:800;letter-spacing:.08em;
@@ -113,42 +115,45 @@ def halaman_sampul_bulanan(ed, picks_urut, jml, total_muncul):
     sisa = (f'<div class="c-row"><span class="c-tk"></span><span class="c-lbl">'
             f'+{n - MAKS_SAMPUL} pick lainnya di halaman scorecard</span><span class="c-skor"></span></div>'
             if n > MAKS_SAMPUL else "")
+    # var(--ink) + color-mix, bukan #fff/rgba(255,255,255,x) hardcode — Monthly
+    # permukaannya TERANG (krem), teks putih di atas --brand terang jadi tak
+    # terbaca; var(--ink) otomatis kontras benar di kedua arah tema.
     return f'''
-<div class="page" style="background:var(--brand);color:#fff">
+<div class="page" style="background:var(--brand);color:var(--ink)">
   <div style="padding:22mm 20mm 0;flex:1;display:flex;flex-direction:column">
-    <div style="border-bottom:1px solid rgba(255,255,255,.35);padding-bottom:6mm">
-      <div style="font-size:8pt;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.7)">
+    <div style="border-bottom:1px solid color-mix(in srgb, var(--ink) 35%, transparent);padding-bottom:6mm">
+      <div style="font-size:8pt;letter-spacing:.3em;text-transform:uppercase;color:color-mix(in srgb, var(--ink) 70%, transparent)">
         Scorecard &amp; Rekap — Edisi Bulanan</div>
       <div style="font-family:Georgia,Cambria,serif;font-size:46pt;font-weight:700;line-height:1.05;margin-top:4mm">
         ARUS PASAR</div>
     </div>
     <div style="margin-top:8mm;font-size:13pt">{ed["tanggal_id"]}</div>
-    <div style="font-family:Consolas,monospace;font-size:9pt;color:rgba(255,255,255,.75);margin-top:1.5mm">
+    <div style="font-family:Consolas,monospace;font-size:9pt;color:color-mix(in srgb, var(--ink) 75%, transparent);margin-top:1.5mm">
       {ed["edisi"]} · {n} pick unik · {total_muncul} kemunculan harian</div>
     <div style="margin-top:10mm;display:flex;gap:6mm;font-variant-numeric:tabular-nums">
-      <div style="background:rgba(255,255,255,.08);padding:4mm 5mm;flex:1">
-        <div style="font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.6)">Target Tercapai</div>
-        <div style="font-size:20pt;font-weight:800">{jml["TARGET TERCAPAI"]}<small style="font-size:9pt;color:rgba(255,255,255,.6)"> / {n}</small></div></div>
-      <div style="background:rgba(255,255,255,.08);padding:4mm 5mm;flex:1">
-        <div style="font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.6)">Kena Invalidation</div>
-        <div style="font-size:20pt;font-weight:800">{jml["INVALID"]}<small style="font-size:9pt;color:rgba(255,255,255,.6)"> / {n}</small></div></div>
-      <div style="background:rgba(255,255,255,.08);padding:4mm 5mm;flex:1">
-        <div style="font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.6)">Berjalan · Tanpa Data</div>
-        <div style="font-size:20pt;font-weight:800">{jml["BERJALAN"]}<small style="font-size:9pt;color:rgba(255,255,255,.6)"> · {jml["TANPA DATA"]}</small></div></div>
+      <div style="background:color-mix(in srgb, var(--ink) 8%, transparent);padding:4mm 5mm;flex:1">
+        <div style="font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;color:color-mix(in srgb, var(--ink) 60%, transparent)">Target Tercapai</div>
+        <div style="font-size:20pt;font-weight:800">{jml["TARGET TERCAPAI"]}<small style="font-size:9pt;color:color-mix(in srgb, var(--ink) 60%, transparent)"> / {n}</small></div></div>
+      <div style="background:color-mix(in srgb, var(--ink) 8%, transparent);padding:4mm 5mm;flex:1">
+        <div style="font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;color:color-mix(in srgb, var(--ink) 60%, transparent)">Kena Invalidation</div>
+        <div style="font-size:20pt;font-weight:800">{jml["INVALID"]}<small style="font-size:9pt;color:color-mix(in srgb, var(--ink) 60%, transparent)"> / {n}</small></div></div>
+      <div style="background:color-mix(in srgb, var(--ink) 8%, transparent);padding:4mm 5mm;flex:1">
+        <div style="font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;color:color-mix(in srgb, var(--ink) 60%, transparent)">Berjalan · Tanpa Data</div>
+        <div style="font-size:20pt;font-weight:800">{jml["BERJALAN"]}<small style="font-size:9pt;color:color-mix(in srgb, var(--ink) 60%, transparent)"> · {jml["TANPA DATA"]}</small></div></div>
     </div>
     <div style="margin-top:9mm">
-      <div style="font-size:7pt;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.6);
-        border-bottom:1px solid rgba(255,255,255,.35);padding-bottom:2mm;margin-bottom:3mm;
+      <div style="font-size:7pt;letter-spacing:.24em;text-transform:uppercase;color:color-mix(in srgb, var(--ink) 60%, transparent);
+        border-bottom:1px solid color-mix(in srgb, var(--ink) 35%, transparent);padding-bottom:2mm;margin-bottom:3mm;
         display:flex;justify-content:space-between"><span>Pick Bulan Ini — vonis</span><span></span></div>
       <style>.c-row{{display:flex;align-items:baseline;gap:6mm;padding:2.4mm 0;
-        border-bottom:1px solid rgba(255,255,255,.16);font-variant-numeric:tabular-nums}}
+        border-bottom:1px solid color-mix(in srgb, var(--ink) 16%, transparent);font-variant-numeric:tabular-nums}}
         .c-tk{{font-size:12pt;font-weight:800;width:24mm}}
-        .c-lbl{{flex:1;font-size:9pt;color:rgba(255,255,255,.85)}}
+        .c-lbl{{flex:1;font-size:9pt;color:color-mix(in srgb, var(--ink) 85%, transparent)}}
         .c-skor{{font-size:14pt;font-weight:800}}</style>
       {baris}{sisa}
     </div>
     <div style="margin-top:auto;padding-bottom:16mm">
-      <div style="font-size:7pt;color:rgba(255,255,255,.55);margin-top:5mm;line-height:1.7">
+      <div style="font-size:7pt;color:color-mix(in srgb, var(--ink) 55%, transparent);margin-top:5mm;line-height:1.7">
         Tiap pick dievaluasi terhadap target &amp; invalidation yang ditulis di edisi pertamanya,
         memakai bar OHLC nyata sesudah tanggal pick — dari {tuntas} pick tuntas, kejadian kronologis
         pertama yang menang. Data yang tidak tersedia ditampilkan jujur sebagai TANPA DATA.<br>
@@ -327,7 +332,12 @@ def main():
     # ohlc.update mengganti seri per ticker utuh -> ticker memakai seri dari
     # cache TERBARU yang memuatnya; evaluasi vonis pakai seri itu.
     tanggal_set = {t.isoformat() for t, _ in edisi_list}
-    semua_cache = sorted((AKAR / "cache").glob("ohlc-*.json"))
+    # ponytail: exclude ohlc-bedah-<TICKER>.json — cache standalone Bedah itu
+    # list bar SATU ticker (bukan dict {ticker: bars} per-tanggal), bikin
+    # ohlc.update() di bawah meledak kalau ikut ke-glob (bug lama, ketemu
+    # sambil kerja palet, sekalian dibetulkan — bukan bagian tugas warna).
+    semua_cache = sorted(c for c in (AKAR / "cache").glob("ohlc-*.json")
+                         if not c.stem.startswith("ohlc-bedah-"))
     ohlc = {}
     for c in semua_cache:
         if c.stem[5:] in tanggal_set or c == semua_cache[-1]:
@@ -376,7 +386,8 @@ def main():
     }
 
     # ── Rakit halaman (tanpa chart -> OHLC payload kosong, drawcalls kosong) ─
-    pages = [GAYA_EKSTRA + halaman_sampul_bulanan(ed_bulanan, picks_urut, jml, total_muncul)]
+    pages = [palet.blok_tema(EDISI_PALET) + GAYA_EKSTRA
+             + halaman_sampul_bulanan(ed_bulanan, picks_urut, jml, total_muncul)]
     potongan = [picks_urut[i:i + BARIS_SC] for i in range(0, len(picks_urut), BARIS_SC)]
     for i, pot in enumerate(potongan):
         pages.append(halaman_scorecard(ed_bulanan, pot, i, len(potongan), len(picks_urut)))
@@ -385,10 +396,14 @@ def main():
 
     tpl = (AKAR / "template.html").read_text(encoding="utf-8")
     html = (tpl.replace("{{JUDUL}}", f"Arus Pasar Bulanan {kode}")
+               .replace("/*PALET*/", palet.blok_css(EDISI_PALET))
                .replace("<!--PAGES-->", "\n".join(pages)))
     dir_keluar.mkdir(exist_ok=True)
     keluar = dir_keluar / f"{kode}.html"
     keluar.write_text(html, encoding="utf-8")
+    tulis_meta(dir_keluar, kode, edisi_list[-1][0].isoformat(), ed_bulanan["tanggal_id"],
+               f"Arus Pasar Bulanan — {BULAN[bln]} {thn}",
+               [e["ticker"] for e in emiten_akhir])
 
     print(f"OK -> {keluar}")
     print(f"  {len(edisi_list)} edisi harian, {len(picks)} pick unik, {total_muncul} kemunculan")

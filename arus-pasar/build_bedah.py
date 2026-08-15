@@ -28,49 +28,26 @@ import json, sys
 from pathlib import Path
 
 import build as B
+import palet
 import pcd as PCD
 import prob
 
 AKAR = Path(__file__).parent
+EDISI_PALET = "single"  # Opsi A · Permukaan & Suhu — lihat palet.py
+PAL = palet.PALET[EDISI_PALET]
 
 # CSS tambahan khusus bedah — disuntik di body, kulit template tidak diubah.
-# Tema TERANG ("kertas riset institusional"): override token :root + beberapa
-# selektor yang di kulit gelap memakai rgba(255,255,255,x) hardcode (bukan
-# token) sehingga jadi nyaris tak kelihatan di kertas putih. build.py &
-# bulletin harian TIDAK disentuh — override ini cuma berlaku di body halaman
-# bedah karena disuntik lewat BSTYLE, bukan lewat template.html.
-#
-# Beberapa token digelapkan sedikit dari palet acuan supaya lolos kontras
-# WCAG AA 4,5:1 sebagai teks (bukan improvisasi warna baru, cuma turun
-# lightness, hue sama): --mute 7B8A99->5A6B7A (3,29:1 -> 5,12:1 atas --panel),
-# --warn/--side B87708->8A5A06 (3,44:1 -> 5,51:1), --teal 0E8F87->0B6F68
-# (3,69:1 -> 5,60:1), --bull 12873F->0F7A38 (4,28:1 -> 5,06:1 atas --panel).
-# --bear C6362B TIDAK diubah (sudah 4,93:1, lolos apa adanya).
-BSTYLE = """<style>
-  :root{
-    --paper:#FFFFFF; --panel:#F4F7FA; --hair:rgba(18,32,46,.14); --brand:#EEF2F7;
-    --ink:#16202B; --ink2:#3D4E5E; --mute:#5A6B7A;
-    --teal:#0B6F68; --bull:#0F7A38; --bull-dim:rgba(18,135,63,.10);
-    --bear:#C6362B; --bear-dim:rgba(198,54,43,.10);
-    --side:#8A5A06; --side-dim:rgba(184,119,8,.12); --warn:#8A5A06;
-  }
-  /* body dasarnya navy gelap (html,body{background:#2A333D} di template.html,
-     dipakai layar & sebagai "bantal" di celah rounding cetak) — .page cuma
-     296mm padahal A4 297mm supaya PDF tidak numpahin 1 halaman kosong, jadi
-     sisa 1mm di tepi bawah tiap halaman cetak menampakkan bg body. Di
-     bulletin gelap itu tak kelihatan (gelap atas gelap); di kertas putih
-     jadi garis hitam tipis melintang di setiap halaman — dibetulkan di sini
-     saja (dokumen bedah tidak pernah dicampur dengan halaman bulletin). */
-  html,body{background:var(--paper)}
+# Tema TERANG ("kertas riset institusional"): token :root datang dari
+# palet.py (satu sumber, lihat blok_css() di bawah) — build.py & bulletin
+# harian TIDAK disentuh, override ini cuma berlaku di body halaman bedah
+# karena disuntik lewat BSTYLE, bukan lewat template.html. Selektor yang di
+# kulit gelap memakai rgba(255,255,255,x) hardcode sudah diperbaiki generik
+# di template.html sendiri (color-mix atas var(--ink)) — tidak perlu diulang
+# di sini lagi.
+BSTYLE = f"<style>{palet.blok_css(EDISI_PALET)}</style>" + """
+<style>
   .band{background:var(--brand);border-bottom:1px solid var(--ink)}
-  /* Garis/latar berikut di kulit gelap pakai rgba(255,255,255,x) hardcode
-     (bukan token) — di kertas putih jadi nyaris tak kelihatan, dibetulkan
-     ke var(--hair)/var(--panel) di sini saja (bulletin tidak kena). */
   .chartwrap{background:var(--panel)}
-  .meter{background:linear-gradient(90deg,var(--bear),var(--hair) 50%,var(--bull))}
-  table.brk td{border-bottom-color:var(--hair)}
-  .lvl .r{border-bottom-color:var(--hair)}
-  .cv-stats{background:var(--panel)}
   .bd-judul{font-family:Georgia,Cambria,serif;font-size:30pt;font-weight:700;line-height:1.08;margin-top:10mm}
   .bd-tk{font-family:var(--mono);font-size:20pt;font-weight:800;margin-top:8mm}
   .bd-tk small{font-family:var(--disp);font-size:9.5pt;font-weight:400;color:var(--mute);margin-left:8px}
@@ -101,20 +78,7 @@ BSTYLE = """<style>
   .sknb .aturan{display:grid;grid-template-columns:24mm 1fr;gap:4mm;font-size:9.3pt;font-weight:700;
     padding:2.5mm 4.5mm;border:1px solid var(--hair);border-radius:1.5mm}
   .sknb .aturan .kl{font-weight:400}
-</style>
-<script>
-window.__TEMA = {
-  emas: [[20,"#0E8F87",1],[50,"#0A6E68",1.2],[60,"#4A6B8A",1],[100,"#6B4FA8",1],[200,"#B06A2C",1.5]],
-  bull: "#12873F", bear: "#C6362B",
-  bullSoft: "rgba(18,135,63,.30)", bearSoft: "rgba(198,54,43,.30)",
-  teks: "#16202B", teksLembut: "rgba(22,32,43,.55)",
-  grid: "rgba(18,32,46,.14)",
-  // label pivot = angka support/resistance (informasi, bukan dekorasi) —
-  // dipakai --mute versi gelap (5A6B7A) bukan 7B8A99 supaya tetap lolos
-  // kontras 4,5:1 di kertas putih (lihat catatan token :root di atas).
-  pivot: "#5A6B7A"
-};
-</script>"""
+</style>""" + palet.blok_tema(EDISI_PALET)
 
 
 BULAN_ID = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli",
@@ -198,6 +162,12 @@ def hal_pcd(bd, r):
     lv = lambda rows: "\n".join(
         f'<div class="r"><span class="l">{n}</span><b class="{cls}">'
         f'{v if isinstance(v,str) else B.fmt(v)}</b></div>' for n, v, cls in rows)
+    # Warna chart PCD dari palet.py (single sumber) — bukan hex sendiri:
+    # batang untung = naik, batang rugi = redup (netral, bukan warna arah),
+    # garis persentil & PCD = aksen (metrik andalan halaman ini), CLOSE = tinta.
+    c_untung, c_rugi = palet.rgba(PAL["naik"], 0.42), palet.rgba(PAL["redup"], 0.30)
+    c_persentil, c_pcd, c_close = PAL["aksen"], PAL["aksen"], PAL["tinta"]
+    c_sumbu = palet.rgba(PAL["tinta"], 0.55)
     return f'''
 <div class="page">
   {B.band(bd, "Price of Construction Distribution")}
@@ -216,13 +186,13 @@ def hal_pcd(bd, r):
       const X=p=>pad.l+(p-lo)/(hi-lo)*(W-pad.l-pad.r);
       const Y=v=>H-pad.b-v/mx*(H-pad.t-pad.b);
       const bw=(W-pad.l-pad.r)/K.length*.82;
-      K.forEach(([p,v])=>{{x.fillStyle=p<=C?"rgba(18,135,63,.42)":"rgba(90,115,145,.30)";
+      K.forEach(([p,v])=>{{x.fillStyle=p<=C?"{c_untung}":"{c_rugi}";
         x.fillRect(X(p)-bw/2,Y(v),bw,H-pad.b-Y(v));}});
       x.font="14px Cascadia Code, Consolas, monospace";x.textAlign="center";
       let taken=[];
-      const garis=[["p25",P25,"#0E8F87",1,[4,4]],["p50",P50,"#0E8F87",1,[4,4]],
-                   ["p75",P75,"#0E8F87",1,[4,4]],["PCD "+PCDV.toLocaleString('id',{{maximumFractionDigits:0}}),PCDV,"#B87708",2,[]],
-                   ["CLOSE "+C.toLocaleString('id'),C,"#16202B",2,[]]];
+      const garis=[["p25",P25,"{c_persentil}",1,[4,4]],["p50",P50,"{c_persentil}",1,[4,4]],
+                   ["p75",P75,"{c_persentil}",1,[4,4]],["PCD "+PCDV.toLocaleString('id',{{maximumFractionDigits:0}}),PCDV,"{c_pcd}",2,[]],
+                   ["CLOSE "+C.toLocaleString('id'),C,"{c_close}",2,[]]];
       garis.forEach(([lbl,p,c,w,dash])=>{{
         x.strokeStyle=c;x.lineWidth=w;x.setLineDash(dash);x.beginPath();
         x.moveTo(X(p),pad.t-4);x.lineTo(X(p),H-pad.b);x.stroke();x.setLineDash([]);
@@ -230,7 +200,7 @@ def hal_pcd(bd, r):
         taken.push([X(p),yl]);
         x.fillStyle=c;x.fillText(lbl,X(p),yl);
       }});
-      x.fillStyle="rgba(22,32,43,.55)";
+      x.fillStyle="{c_sumbu}";
       for(let i=0;i<=4;i++){{const p=lo+(hi-lo)*i/4;
         x.textAlign=i===0?"left":i===4?"right":"center";
         x.fillText(p.toLocaleString('id',{{maximumFractionDigits:0}}),X(p),H-8);}}
@@ -656,6 +626,7 @@ def main():
 
     tpl = (AKAR / "template.html").read_text(encoding="utf-8")
     html = (tpl.replace("{{JUDUL}}", f"Bedah Arus Saham {bd['edisi']}")
+               .replace("/*PALET*/", palet.blok_css(EDISI_PALET))
                .replace("<!--PAGES-->", "\n".join(pages))
                .replace("/*OHLC*/{}", json.dumps({bd["ticker"]: ohlc[bd["ticker"]]},
                                                  separators=(",", ":")))

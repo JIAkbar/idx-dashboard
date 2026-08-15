@@ -5,15 +5,24 @@
 <title>Bedah Arus Saham BA-DSSA-140826-E01</title>
 <style>
   :root{
+    --disp:"Bahnschrift","Segoe UI",system-ui,sans-serif;
+    --mono:"Cascadia Code","Cascadia Mono",Consolas,monospace;
+  }
+  /* Jaring pengaman: kalau template dibuka tanpa lewat generator (mis. edit
+     manual di browser), token warna jatuh ke tema Daily lama. Semua
+     build*.py SELALU menimpa lewat placeholder :root{--paper:#FFFFFF;--ink:#0F1A22;--mute:#57687A;--ink2:#33414E;--hair:rgba(15,26,34,0.12);--panel:rgba(15,26,34,0.05);--brand:#E9EAEB;--teal:#0A6B63;--side:#0A6B63;--warn:#0A6B63;--bull:#0F7A38;--bull-dim:rgba(15,122,56,0.11);--bear:#B3271E;--bear-dim:rgba(179,39,30,0.11);--side-dim:rgba(10,107,99,0.11)} di bawah ini —
+     spesifisitas sama + urutan sumber belakangan menang, jadi blok generator
+     selalu unggul saat build normal. Sumber warna aslinya tetap satu:
+     palet.py (lihat prinsip pemilihan di sana). */
+  :root{
     --paper:#0E1620; --panel:rgba(255,255,255,.04); --ink:#E9EEF4; --ink2:#C4CFDA;
     --mute:#5E7080; --hair:rgba(255,255,255,.09); --brand:#12202C; --teal:#37B8AF;
     --bull:#2FBF71; --bull-dim:rgba(47,191,113,.14);
     --side:#E8A33D; --side-dim:rgba(232,163,61,.14);
     --bear:#E4574C; --bear-dim:rgba(228,87,76,.14);
     --warn:#E8A33D;
-    --disp:"Bahnschrift","Segoe UI",system-ui,sans-serif;
-    --mono:"Cascadia Code","Cascadia Mono",Consolas,monospace;
   }
+  :root{--paper:#FFFFFF;--ink:#0F1A22;--mute:#57687A;--ink2:#33414E;--hair:rgba(15,26,34,0.12);--panel:rgba(15,26,34,0.05);--brand:#E9EAEB;--teal:#0A6B63;--side:#0A6B63;--warn:#0A6B63;--bull:#0F7A38;--bull-dim:rgba(15,122,56,0.11);--bear:#B3271E;--bear-dim:rgba(179,39,30,0.11);--side-dim:rgba(10,107,99,0.11)}
   *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   html,body{margin:0;padding:0;background:#2A333D}
   /* .page sengaja 296mm (A4 297mm) supaya pembulatan tidak memicu halaman
@@ -71,7 +80,7 @@
 
   /* ── Chart ── */
   .chartwrap{margin:3mm 0 0;position:relative;border:1px solid var(--hair);
-    border-radius:1.5mm;padding:2mm 2.5mm;background:rgba(255,255,255,.02)}
+    border-radius:1.5mm;padding:2mm 2.5mm;background:color-mix(in srgb, var(--ink) 2%, transparent)}
   .chartwrap .cap{font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;
     color:var(--mute);margin-bottom:1.5mm}
   canvas{width:100%;height:auto;display:block}
@@ -85,7 +94,7 @@
   h3.rule .r{font-weight:400;color:var(--mute);letter-spacing:.06em}
 
   /* meter tipis */
-  .meter{height:3px;background:linear-gradient(90deg,var(--bear),rgba(255,255,255,.16) 50%,var(--bull));
+  .meter{height:3px;background:linear-gradient(90deg,var(--bear),color-mix(in srgb, var(--ink) 16%, transparent) 50%,var(--bull));
     position:relative;margin:1mm 0 1.5mm}
   .meter i{position:absolute;top:-2.5px;width:2px;height:8px;background:var(--ink)}
   .meterlbl{display:flex;justify-content:space-between;font-size:5.8pt;color:var(--mute);
@@ -96,7 +105,7 @@
   table.brk th{font-size:6pt;color:var(--mute);text-transform:uppercase;letter-spacing:.12em;
     text-align:right;padding:1.5px 0 3px;border-bottom:1px solid var(--hair);font-weight:700}
   table.brk th:first-child{text-align:left}
-  table.brk td{padding:2.1px 0;text-align:right;border-bottom:1px solid rgba(255,255,255,.045)}
+  table.brk td{padding:2.1px 0;text-align:right;border-bottom:1px solid color-mix(in srgb, var(--ink) 4.5%, transparent)}
   table.brk td:first-child{text-align:left;font-weight:700}
   .bcode-b{color:var(--bull)} .bcode-s{color:var(--bear)}
   .brk .sep td{padding:2.5mm 0 3px;font-size:6pt;color:var(--mute);text-transform:uppercase;
@@ -184,7 +193,7 @@
   .skor .barrow i:nth-child(7){opacity:.45}
   .skor .barrow i:nth-child(9){opacity:.35}
   .skor .barrow i.sisa,.s-bull .skor .barrow i.sisa,.s-side .skor .barrow i.sisa,
-  .s-bear .skor .barrow i.sisa{background:rgba(255,255,255,.08);opacity:1}
+  .s-bear .skor .barrow i.sisa{background:color-mix(in srgb, var(--ink) 8%, transparent);opacity:1}
   .skor .leg{display:flex;gap:5mm;font-size:6.3pt;color:var(--mute);margin-top:1.5mm;
     font-variant-numeric:tabular-nums;font-family:var(--mono)}
 
@@ -223,7 +232,7 @@
   .cv-foot{margin-top:auto;padding-bottom:14mm}
   /* kotak stat berlabel gaya sampul lama (V2) — angka besar kebaca, bukan
      satu baris kecil; label kecil di atas angka. */
-  .cv-stats{display:flex;gap:10mm;background:rgba(255,255,255,.04);border:1px solid var(--hair);
+  .cv-stats{display:flex;gap:10mm;background:color-mix(in srgb, var(--ink) 4%, transparent);border:1px solid var(--hair);
     border-radius:2mm;padding:4mm 5mm;font-variant-numeric:tabular-nums;margin-bottom:4mm}
   .cv-stats .l{display:block;font-size:6.3pt;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:.8mm}
   .cv-stats b{font-family:var(--mono);font-size:10.5pt;color:var(--ink)}
@@ -236,7 +245,7 @@
   table.ring{width:100%;border-collapse:collapse;font-size:8.8pt;font-variant-numeric:tabular-nums}
   table.ring th{font-size:6.3pt;color:var(--mute);text-transform:uppercase;letter-spacing:.14em;
     text-align:left;padding:2mm 3mm 1.5mm 0;border-bottom:1px solid var(--hair);font-weight:700}
-  table.ring td{padding:2.6mm 3mm 2.6mm 0;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
+  table.ring td{padding:2.6mm 3mm 2.6mm 0;border-bottom:1px solid color-mix(in srgb, var(--ink) 5%, transparent);vertical-align:top}
   table.ring th:first-child,table.ring td:first-child{width:12mm;padding-right:4mm;
     color:var(--mute);font-family:var(--mono);font-size:8pt;text-align:left}
   table.ring .tk{font-weight:800;font-size:10pt;font-family:var(--mono)}
@@ -277,7 +286,7 @@
   .kf-garis{border:0;border-top:1px solid var(--hair);width:44mm;margin:0 auto 10mm}
   .kf-grid{display:grid;grid-template-columns:repeat(2,62mm);gap:3.4mm 10mm;justify-content:center}
   .kf-nama{font-family:var(--mono);font-size:10.5pt;color:var(--ink2);padding:2.2mm 0;
-    border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;gap:4mm}
+    border-bottom:1px solid color-mix(in srgb, var(--ink) 5%, transparent);display:flex;justify-content:space-between;gap:4mm}
   .kf-jml{color:var(--mute);font-size:8.5pt;font-weight:400;white-space:nowrap}
   .kf-kaki{margin-top:auto;padding-top:14mm;font-size:7.5pt;color:var(--mute);line-height:1.9}
   /* badge kredit kontributor di kartu emiten — kecil, redup, tidak mencuri
@@ -297,7 +306,7 @@
   .blok4 .b4 p{margin:0;font-size:8.8pt;color:var(--ink2);line-height:1.6;text-align:justify}
   .lvl{font-variant-numeric:tabular-nums}
   .lvl .r{display:flex;justify-content:space-between;padding:1.55mm 0;
-    border-bottom:1px solid rgba(255,255,255,.05);font-size:8.6pt}
+    border-bottom:1px solid color-mix(in srgb, var(--ink) 5%, transparent);font-size:8.6pt}
   .lvl .r .l{color:var(--mute);font-size:6.8pt;letter-spacing:.1em;text-transform:uppercase;align-self:center}
   .lvl .r b{font-family:var(--mono);font-weight:700}
   .b4.ksmp{border-left:3px solid var(--teal);padding-left:4mm}
@@ -310,7 +319,7 @@
   .sent-skor .l{display:block;font-family:var(--disp);font-size:6.3pt;font-weight:700;
     letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:1.5mm}
   .sent-bar{flex:1;display:flex;gap:1.2mm;height:5.5mm}
-  .sent-bar i{flex:1;border-radius:.8mm;background:rgba(255,255,255,.08)}
+  .sent-bar i{flex:1;border-radius:.8mm;background:color-mix(in srgb, var(--ink) 8%, transparent)}
   .sent-bar.c-bull i.isi{background:var(--bull)}
   .sent-bar.c-side i.isi{background:var(--side)}
   .sent-bar.c-bear i.isi{background:var(--bear)}
@@ -351,7 +360,7 @@
   table.rank th{font-size:6.3pt;color:var(--mute);text-transform:uppercase;letter-spacing:.14em;
     text-align:right;padding:2mm 0 1.5mm;border-bottom:1px solid var(--hair);font-weight:700}
   table.rank th:nth-child(-n+2){text-align:left}
-  table.rank td{padding:2.8mm 0;border-bottom:1px solid rgba(255,255,255,.05);text-align:right}
+  table.rank td{padding:2.8mm 0;border-bottom:1px solid color-mix(in srgb, var(--ink) 5%, transparent);text-align:right}
   table.rank td:nth-child(-n+2){text-align:left}
   table.rank .tk{font-weight:800;font-size:10pt;font-family:var(--mono)}
   table.rank .total{font-weight:800;font-size:12pt;font-family:var(--mono)}
@@ -362,31 +371,10 @@
 </style>
 </head>
 <body>
+<style>:root{--paper:#FFFFFF;--ink:#0F1A22;--mute:#57687A;--ink2:#33414E;--hair:rgba(15,26,34,0.12);--panel:rgba(15,26,34,0.05);--brand:#E9EAEB;--teal:#0A6B63;--side:#0A6B63;--warn:#0A6B63;--bull:#0F7A38;--bull-dim:rgba(15,122,56,0.11);--bear:#B3271E;--bear-dim:rgba(179,39,30,0.11);--side-dim:rgba(10,107,99,0.11)}</style>
 <style>
-  :root{
-    --paper:#FFFFFF; --panel:#F4F7FA; --hair:rgba(18,32,46,.14); --brand:#EEF2F7;
-    --ink:#16202B; --ink2:#3D4E5E; --mute:#5A6B7A;
-    --teal:#0B6F68; --bull:#0F7A38; --bull-dim:rgba(18,135,63,.10);
-    --bear:#C6362B; --bear-dim:rgba(198,54,43,.10);
-    --side:#8A5A06; --side-dim:rgba(184,119,8,.12); --warn:#8A5A06;
-  }
-  /* body dasarnya navy gelap (html,body{background:#2A333D} di template.html,
-     dipakai layar & sebagai "bantal" di celah rounding cetak) — .page cuma
-     296mm padahal A4 297mm supaya PDF tidak numpahin 1 halaman kosong, jadi
-     sisa 1mm di tepi bawah tiap halaman cetak menampakkan bg body. Di
-     bulletin gelap itu tak kelihatan (gelap atas gelap); di kertas putih
-     jadi garis hitam tipis melintang di setiap halaman — dibetulkan di sini
-     saja (dokumen bedah tidak pernah dicampur dengan halaman bulletin). */
-  html,body{background:var(--paper)}
   .band{background:var(--brand);border-bottom:1px solid var(--ink)}
-  /* Garis/latar berikut di kulit gelap pakai rgba(255,255,255,x) hardcode
-     (bukan token) — di kertas putih jadi nyaris tak kelihatan, dibetulkan
-     ke var(--hair)/var(--panel) di sini saja (bulletin tidak kena). */
   .chartwrap{background:var(--panel)}
-  .meter{background:linear-gradient(90deg,var(--bear),var(--hair) 50%,var(--bull))}
-  table.brk td{border-bottom-color:var(--hair)}
-  .lvl .r{border-bottom-color:var(--hair)}
-  .cv-stats{background:var(--panel)}
   .bd-judul{font-family:Georgia,Cambria,serif;font-size:30pt;font-weight:700;line-height:1.08;margin-top:10mm}
   .bd-tk{font-family:var(--mono);font-size:20pt;font-weight:800;margin-top:8mm}
   .bd-tk small{font-family:var(--disp);font-size:9.5pt;font-weight:400;color:var(--mute);margin-left:8px}
@@ -417,20 +405,7 @@
   .sknb .aturan{display:grid;grid-template-columns:24mm 1fr;gap:4mm;font-size:9.3pt;font-weight:700;
     padding:2.5mm 4.5mm;border:1px solid var(--hair);border-radius:1.5mm}
   .sknb .aturan .kl{font-weight:400}
-</style>
-<script>
-window.__TEMA = {
-  emas: [[20,"#0E8F87",1],[50,"#0A6E68",1.2],[60,"#4A6B8A",1],[100,"#6B4FA8",1],[200,"#B06A2C",1.5]],
-  bull: "#12873F", bear: "#C6362B",
-  bullSoft: "rgba(18,135,63,.30)", bearSoft: "rgba(198,54,43,.30)",
-  teks: "#16202B", teksLembut: "rgba(22,32,43,.55)",
-  grid: "rgba(18,32,46,.14)",
-  // label pivot = angka support/resistance (informasi, bukan dekorasi) —
-  // dipakai --mute versi gelap (5A6B7A) bukan 7B8A99 supaya tetap lolos
-  // kontras 4,5:1 di kertas putih (lihat catatan token :root di atas).
-  pivot: "#5A6B7A"
-};
-</script>
+</style><script>window.__TEMA = {"emas": [[20, "#0E8F87", 1], [50, "#0A6E68", 1.2], [60, "#4A6B8A", 1], [100, "#6B4FA8", 1], [200, "#B06A2C", 1.5]], "bull": "#0F7A38", "bear": "#B3271E", "bullSoft": "rgba(15,122,56,0.3)", "bearSoft": "rgba(179,39,30,0.3)", "teks": "#0F1A22", "teksLembut": "rgba(15,26,34,0.55)", "grid": "rgba(15,26,34,0.14)", "pivot": "#57687A"};</script>
 <div class="page">
   <header class="band">
     <div class="m"><h1>ARUS PASAR</h1><div class="sub">Bedah Arus Saham — Terbitan Perdana</div></div>
@@ -477,13 +452,13 @@ window.__TEMA = {
       const X=p=>pad.l+(p-lo)/(hi-lo)*(W-pad.l-pad.r);
       const Y=v=>H-pad.b-v/mx*(H-pad.t-pad.b);
       const bw=(W-pad.l-pad.r)/K.length*.82;
-      K.forEach(([p,v])=>{x.fillStyle=p<=C?"rgba(18,135,63,.42)":"rgba(90,115,145,.30)";
+      K.forEach(([p,v])=>{x.fillStyle=p<=C?"rgba(15,122,56,0.42)":"rgba(87,104,122,0.3)";
         x.fillRect(X(p)-bw/2,Y(v),bw,H-pad.b-Y(v));});
       x.font="14px Cascadia Code, Consolas, monospace";x.textAlign="center";
       let taken=[];
-      const garis=[["p25",P25,"#0E8F87",1,[4,4]],["p50",P50,"#0E8F87",1,[4,4]],
-                   ["p75",P75,"#0E8F87",1,[4,4]],["PCD "+PCDV.toLocaleString('id',{maximumFractionDigits:0}),PCDV,"#B87708",2,[]],
-                   ["CLOSE "+C.toLocaleString('id'),C,"#16202B",2,[]]];
+      const garis=[["p25",P25,"#0A6B63",1,[4,4]],["p50",P50,"#0A6B63",1,[4,4]],
+                   ["p75",P75,"#0A6B63",1,[4,4]],["PCD "+PCDV.toLocaleString('id',{maximumFractionDigits:0}),PCDV,"#0A6B63",2,[]],
+                   ["CLOSE "+C.toLocaleString('id'),C,"#0F1A22",2,[]]];
       garis.forEach(([lbl,p,c,w,dash])=>{
         x.strokeStyle=c;x.lineWidth=w;x.setLineDash(dash);x.beginPath();
         x.moveTo(X(p),pad.t-4);x.lineTo(X(p),H-pad.b);x.stroke();x.setLineDash([]);
@@ -491,7 +466,7 @@ window.__TEMA = {
         taken.push([X(p),yl]);
         x.fillStyle=c;x.fillText(lbl,X(p),yl);
       });
-      x.fillStyle="rgba(22,32,43,.55)";
+      x.fillStyle="rgba(15,26,34,0.55)";
       for(let i=0;i<=4;i++){const p=lo+(hi-lo)*i/4;
         x.textAlign=i===0?"left":i===4?"right":"center";
         x.fillText(p.toLocaleString('id',{maximumFractionDigits:0}),X(p),H-8);}

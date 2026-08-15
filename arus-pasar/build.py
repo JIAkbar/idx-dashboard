@@ -12,9 +12,11 @@ Setelah HTML jadi, render juga ke keluaran/<edisi>.pdf via Playwright
 import json, sys, statistics
 from pathlib import Path
 
+import palet
 import prob
 
 AKAR = Path(__file__).parent
+EDISI_PALET = "daily"  # Opsi A · Permukaan & Suhu — lihat palet.py
 
 
 TERBILANG = {1: "Satu", 2: "Dua", 3: "Tiga", 4: "Empat", 5: "Lima", 6: "Enam",
@@ -799,6 +801,24 @@ def render_pdf(html_path):
     print(f"OK -> {pdf_path} ({pdf_path.stat().st_size // 1024} KB)")
 
 
+def tulis_meta(dir_keluar, kode, tanggal, tanggal_id, judul, emiten):
+    """Sidecar <kode>.meta.json untuk terbitan yang TIDAK punya berkas edisi/.
+
+    generate_index.py membangun manifest dari edisi/*.json, jadi terbitan
+    turunan (mingguan AP-W*, bulanan AP-M*) tak pernah muncul di halaman
+    Bulletin — tidak ada berkas edisi yang mewakilinya. Sidecar ini mengisi
+    lubang itu tanpa menaruh berkas palsu di edisi/: nama di sana berpola
+    tanggal, jadi edisi mingguan akan bentrok dengan edisi harian tanggal sama.
+
+    Tanpa medan "tipe" — dasbor menurunkannya dari prefiks kode (AP-W/AP-M),
+    lihat tipeEdisi() di Bulletin.tsx.
+    """
+    (dir_keluar / f"{kode}.meta.json").write_text(json.dumps({
+        "kode": kode, "tanggal": tanggal, "tanggal_id": tanggal_id,
+        "judul": judul, "emiten": emiten, "pdf": f"{kode}.pdf",
+    }, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     tgl = args[0] if args else "2026-08-10"
@@ -839,7 +859,7 @@ def main():
     (AKAR / "keluaran" / f"{ed['edisi']}.analisa.json").write_text(
         json.dumps(sidecar, ensure_ascii=False), encoding="utf-8")
 
-    pages = [halaman_sampul(ed, skor_map)]
+    pages = [palet.blok_tema(EDISI_PALET) + halaman_sampul(ed, skor_map)]
     draw = []
     # dua halaman pembuka baru — keduanya opsional (edisi lama tetap terakit)
     hal_ihsg, garis_ihsg = halaman_ihsg(ed, ohlc)
@@ -863,6 +883,7 @@ def main():
     ohlc_kecil = {k: v[-505:] for k, v in ohlc.items()
                   if k != "JKSE" or hal_ihsg}
     html = (tpl.replace("{{JUDUL}}", f"Arus Pasar {ed['edisi']}")
+               .replace("/*PALET*/", palet.blok_css(EDISI_PALET))
                .replace("<!--PAGES-->", "\n".join(pages))
                .replace("/*OHLC*/{}", json.dumps(ohlc_kecil, separators=(",", ":")))
                .replace("/*DRAWCALLS*/", "\n".join(draw)))

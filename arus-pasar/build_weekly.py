@@ -23,10 +23,12 @@ Pakai:
 import argparse, datetime as dt, json
 from pathlib import Path
 
+import palet
 from build import (AKAR, fmt, halaman_emiten, halaman_peringkat, band, kaki,
                    render_pdf, skor_teknikal, skor_flow, skor_rr,
-                   skor_likuiditas, skor_ihsg, tingkat_risiko)
+                   skor_likuiditas, skor_ihsg, tingkat_risiko, tulis_meta)
 
+EDISI_PALET = "weekly"  # Opsi A · Permukaan & Suhu — lihat palet.py
 HARI = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"]
 BULAN = [None, "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli",
          "Agustus", "September", "Oktober", "November", "Desember"]
@@ -62,35 +64,39 @@ def halaman_sampul_mingguan(ed, urut, skor_map, riwayat, total_muncul):
         }</span></span>
         <span class="c-skor">{skor_map[em["ticker"]]["total"]:.0f}</span></div>'''
         for em in urut)
+    # Teks sampul full-bleed pakai var(--ink) (bukan #fff hardcode) + color-mix
+    # atas var(--ink) utk versi tembus pandang — supaya kontras BENAR di kedua
+    # arah tema: --ink terang di atas --brand gelap (Weekly), --ink gelap di
+    # atas --brand terang (kalau kelak terbitan lain pakai kepala sampul ini).
     return f'''
-<div class="page" style="background:var(--brand);color:#fff">
+<div class="page" style="background:var(--brand);color:var(--ink)">
   <div style="padding:22mm 20mm 0;flex:1;display:flex;flex-direction:column">
-    <div style="border-bottom:1px solid rgba(255,255,255,.35);padding-bottom:6mm">
-      <div style="font-size:8pt;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.7)">
+    <div style="border-bottom:1px solid color-mix(in srgb, var(--ink) 35%, transparent);padding-bottom:6mm">
+      <div style="font-size:8pt;letter-spacing:.3em;text-transform:uppercase;color:color-mix(in srgb, var(--ink) 70%, transparent)">
         Tinjauan Teknikal &amp; Arus Dana — Edisi Mingguan</div>
       <div style="font-family:Georgia,Cambria,serif;font-size:46pt;font-weight:700;line-height:1.05;margin-top:4mm">
         ARUS PASAR</div>
     </div>
     <div style="margin-top:8mm;font-size:13pt">{ed["tanggal_id"]}</div>
-    <div style="font-family:Consolas,monospace;font-size:9pt;color:rgba(255,255,255,.75);margin-top:1.5mm">
+    <div style="font-family:Consolas,monospace;font-size:9pt;color:color-mix(in srgb, var(--ink) 75%, transparent);margin-top:1.5mm">
       {ed["edisi"]} · {len(urut)} emiten unik · {total_muncul} kemunculan harian</div>
     <div style="margin-top:12mm">
-      <div style="font-size:7pt;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.6);
-        border-bottom:1px solid rgba(255,255,255,.35);padding-bottom:2mm;margin-bottom:3mm;
+      <div style="font-size:7pt;letter-spacing:.24em;text-transform:uppercase;color:color-mix(in srgb, var(--ink) 60%, transparent);
+        border-bottom:1px solid color-mix(in srgb, var(--ink) 35%, transparent);padding-bottom:2mm;margin-bottom:3mm;
         display:flex;justify-content:space-between"><span>Dalam Edisi Ini — posisi terkini</span><span>Skor</span></div>
       <style>.c-row{{display:flex;align-items:baseline;gap:6mm;padding:2.8mm 0;
-        border-bottom:1px solid rgba(255,255,255,.16);font-variant-numeric:tabular-nums}}
+        border-bottom:1px solid color-mix(in srgb, var(--ink) 16%, transparent);font-variant-numeric:tabular-nums}}
         .c-tk{{font-size:14pt;font-weight:800;width:24mm}}
-        .c-lbl{{flex:1;font-size:9.5pt;color:rgba(255,255,255,.85)}}
-        .c-prog{{display:block;font-size:7pt;color:rgba(255,255,255,.55);font-family:Consolas,monospace}}
+        .c-lbl{{flex:1;font-size:9.5pt;color:color-mix(in srgb, var(--ink) 85%, transparent)}}
+        .c-prog{{display:block;font-size:7pt;color:color-mix(in srgb, var(--ink) 55%, transparent);font-family:Consolas,monospace}}
         .c-skor{{font-size:14pt;font-weight:800}}</style>
       {isi}
       <div class="c-row"><span class="c-tk" style="font-size:9.5pt;font-weight:700">Peringkat</span>
         <span class="c-lbl">Quant Opportunity Ranking mingguan — komponen skor terbuka</span><span class="c-skor"></span></div>
     </div>
     <div style="margin-top:auto;padding-bottom:16mm">
-      <div style="background:rgba(255,255,255,.08);padding:4mm 5mm;font-size:9pt">{ed["ihsg_baris"]}</div>
-      <div style="font-size:7pt;color:rgba(255,255,255,.55);margin-top:5mm;line-height:1.7">
+      <div style="background:color-mix(in srgb, var(--ink) 8%, transparent);padding:4mm 5mm;font-size:9pt">{ed["ihsg_baris"]}</div>
+      <div style="font-size:7pt;color:color-mix(in srgb, var(--ink) 55%, transparent);margin-top:5mm;line-height:1.7">
         Skor tiap emiten dihitung ulang per hari dengan model harian yang sama; emiten yang muncul
         di beberapa edisi ditampilkan sekali dengan progresi skornya.<br>
         Analisis probabilistik, bukan ajakan transaksi. Data: TradingView &amp; Stockbit
@@ -206,7 +212,8 @@ def main():
                    'color:var(--mute);margin-right:3mm}'
                    'table.ring .prog-cell{font-family:Consolas,monospace;font-size:7.4pt;'
                    'color:var(--ink2);white-space:nowrap}</style>')
-    pages = [gaya_ekstra + halaman_sampul_mingguan(ed_mingguan, urut, skor_map, riwayat, total_muncul)]
+    pages = [palet.blok_tema(EDISI_PALET) + gaya_ekstra
+             + halaman_sampul_mingguan(ed_mingguan, urut, skor_map, riwayat, total_muncul)]
     potongan = [urut[i:i + BARIS_PER_HAL] for i in range(0, len(urut), BARIS_PER_HAL)]
     for i, pot in enumerate(potongan):
         pages.append(halaman_ringkasan_mingguan(ed_mingguan, pot, skor_map, riwayat,
@@ -234,12 +241,16 @@ def main():
     tpl = (AKAR / "template.html").read_text(encoding="utf-8")
     ohlc_kecil = {k: v[-260:] for k, v in ohlc.items() if k != "JKSE"}
     html = (tpl.replace("{{JUDUL}}", f"Arus Pasar Mingguan {kode}")
+               .replace("/*PALET*/", palet.blok_css(EDISI_PALET))
                .replace("<!--PAGES-->", "\n".join(pages))
                .replace("/*OHLC*/{}", json.dumps(ohlc_kecil, separators=(",", ":")))
                .replace("/*DRAWCALLS*/", "\n".join(draw)))
     dir_keluar.mkdir(exist_ok=True)
     keluar = dir_keluar / f"{kode}.html"
     keluar.write_text(html, encoding="utf-8")
+    tulis_meta(dir_keluar, kode, akhir.isoformat(), ed_mingguan["tanggal_id"],
+               f"Arus Pasar Mingguan — {rentang_id(awal, akhir)}",
+               [em["ticker"] for em in urut])
 
     print(f"OK -> {keluar}")
     print(f"  {len(edisi_list)} edisi harian, {len(urut)} emiten unik, {total_muncul} kemunculan")
