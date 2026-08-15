@@ -20,41 +20,35 @@ Terakhir diperbarui: 15 Agustus 2026.
 | — | Pedoman fraksi harga & auto rejection BEI | 15 Agu 2026 |
 | — | Sebagian #107: ripple angka IHSG | 15 Agu 2026 |
 
-## ⏳ Belum — dari permintaan Johan
+## ⏳ Antrean kerja — diurutkan dari yang paling murah
 
-Ini utang ke Johan. Prioritas di atas apa pun yang kuusulkan sendiri.
+Urutannya bukan menurut siapa yang minta, tapi menurut **ongkos dibanding
+hasil yang terlihat**. Yang murah dan langsung kelihatan didahulukan: tiap
+satu selesai, ada sesuatu yang bisa dilihat atau diumumkan, dan itu menjaga
+laju kerja tetap terasa.
 
-| # | Tugas | Catatan |
-|---|---|---|
-| 123 | **Badge/notifikasi fitur baru** untuk kontributor | Ide Johan 15 Agu. Konsep matang: tabel `pengumuman`, kolom `dibaca_pada` di profil, tampil 7 hari lalu padam sendiri, titik di rail + panel (bukan modal), tanpa UI admin |
-| 107 | Dasbor: badge % per emiten · bar indeks tembus · klik indeks dunia ke TradingView | 3 dari 4 butir |
-| 108 | **[IHSG]** Panen harga BUKA harian | Kecil — yang kurang cuma `ihsg_open`. Membuka lilin sungguhan + lilin mini kalender |
-| 122 | **[EMITEN]** Panen OHLC harian + chart candle | Proyek tersendiri. Belum ada data apa pun. Perlu keputusan cakupan, rentang, dan pemecahan berkas dulu |
-| 109 | Peta Investor: pindah tombol Tampilkan + hapus ekspor "Seluruh dataset" | |
-| 99 | Stock Detail: laporan keuangan kuartalan ala Yahoo Financials | Paling besar yang tersisa |
+Kolom **Agen** menandai mana yang bisa diserahkan ke model lebih ringan
+(sonnet) karena speknya sudah tak ambigu — tinggal dieksekusi. Yang bertanda
+"—" menuntut keputusan desain atau diagnosa, jadi tetap dikerjakan model
+utama. Aturannya: makin tajam speknya, makin rendah tier yang aman.
 
-## ⏳ Belum — usulan yang SUDAH disetujui Johan
+| # | Tugas | Ongkos | Hasil terlihat | Agen |
+|---|---|---|---|---|
+| 125 | Tab Avg Down: cadangan harga lokal | Sangat kecil | Bug production hilang | ✅ sonnet — polanya tinggal disalin dari Pemulihan.tsx |
+| 108 | [IHSG] Panen harga BUKA harian | Kecil | Lilin berhenti jadi aproksimasi | ✅ sonnet — satu ruas ditambah ke skrip yang sudah jalan |
+| 126 | Verifikasi mobile Seasonality | Kecil | Membuka jalan pengumuman WA | ✅ sonnet — ceklist viewport sudah baku |
+| 128 | Cocokkan fraksi harga ke dokumen IDX | Kecil | Angka aturan bursa jadi pasti | — perlu penilaian sumber |
+| 124 | Chart IHSG: pemilih rentang + judul | Sedang | Grafik 30+ tahun langsung terpakai | — keputusan sambungan dua sumber |
+| 127 | PDF bulletin: daftarkan Red Hat | Sedang | Web & PDF seragam | ✅ sonnet kalau pipeline-nya sudah dipetakan |
+| 126b | Chart komparasi Seasonality | Sedang | Perbandingan emiten lebih cepat dibaca | — keputusan bentuk grafik |
+| 109 | Peta Investor: pindah tombol + hapus ekspor | Sedang | Rapi | ✅ sonnet |
+| 123 | Badge/notifikasi fitur baru | Sedang-besar | Kontributor tahu ada yang baru | — migrasi DB + RLS + desain |
+| 107 | Dasbor: badge %, bar tembus, klik ke TradingView | Sedang-besar | Dasbor lebih hidup | sebagian ✅ sonnet |
+| 122 | [EMITEN] Panen OHLC 5 tahun + chart candle | Besar | Chart candle per emiten | panen ✅ sonnet · chart — |
+| 99 | Stock Detail: laporan keuangan kuartalan | Paling besar | Fundamental lengkap | — perlu perancangan tabel |
 
-Disetujui 15 Agu 2026 ("ini juga jadi backlog"). Statusnya kini sama dengan
-permintaan langsung — bukan lagi sekadar usulan yang menunggu jawaban.
-
-| Tugas | Kenapa dikerjakan |
-|---|---|
-| **124 · Chart IHSG: pemilih rentang** + ganti judul "Tahun Berjalan" | Muncul dari pertanyaan Johan 15 Agu. Datanya (`ihsg_harian.json`, 8.849 hari) SUDAH ada tapi belum dipakai halaman mana pun — itu yang membuatnya layak dikerjakan lebih dulu di antara usulanku |
-| 126 · Chart komparasi Seasonality | Matriks sudah membandingkan; grafik garis 12 titik akan lebih cepat dibaca |
-| 126 · Verifikasi mobile Seasonality | Baru diuji di laptop — wajib sebelum halaman ini diumumkan ke channel |
-| Lilin mini di kalender bursa | Terhalang #108 (bagian IHSG) |
-| Ruang emiten forum ↔ Seasonality ↔ Stock Detail saling menaut | |
-
-## 🔧 Utang teknis
-
-Bukan permintaan siapa pun; muncul dari pekerjaan itu sendiri.
-
-- **125 · Tab Avg Down** — bug proxy yang sama dengan Pemulihan; polanya tinggal disalin
-- **GOTOM** tak ada di Yahoo — satu-satunya emiten gagal panen
-- **127 · PDF bulletin masih berhuruf lama** — daftarkan Red Hat ke pipeline cetak Python
-- **128 · Angka fraksi harga** perlu dicocokkan ke dokumen resmi IDX (press release menolak pengambil otomatis)
-- Tombol hapus forum belum diverifikasi visual — perlu sesi superadmin
+Empat teratas bisa selesai dalam satu sesi pendek, dan tiga di antaranya bisa
+dikerjakan bersamaan oleh agen terpisah karena berkasnya tak bersinggungan.
 
 ## Keputusan yang sudah diambil
 
