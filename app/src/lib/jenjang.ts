@@ -8,6 +8,9 @@ export interface JenjangRow {
   /** Persen (0–100). `null` = tier 0 "Pemula", tanpa syarat akurasi. */
   min_akurasi: number | null
   kuota: number
+  /** Hari KERJA tanpa setoran sebelum akun dibekukan otomatis — naik seiring
+   *  jenjang, jadi imbalan paling nyata dari rekam jejak panjang. */
+  hari_beku?: number
   hak: string | null
 }
 

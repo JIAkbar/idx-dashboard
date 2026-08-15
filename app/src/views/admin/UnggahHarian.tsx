@@ -32,6 +32,7 @@ import {
   hapusScreenshot,
   hitungSetoranSaya,
   kurasiSetoran,
+  mintaRevisiSetoran,
   pernahMenyetor,
   ubahAlasanSetoran,
   unggahScreenshot,
@@ -78,11 +79,13 @@ interface Baris extends BarisDasar {
 }
 
 /** Status gabungan orderbook+chart satu emiten — ditolak menang (paling perlu
- *  perhatian), lalu menunggu, baru disetujui. undefined kalau kedua baris
- *  setoran-nya tidak ada (unggahan lama, sebelum Fase 3). */
+ *  perhatian), lalu revisi (juga butuh tindakan penyetor), lalu menunggu,
+ *  baru disetujui. undefined kalau kedua baris setoran-nya tidak ada
+ *  (unggahan lama, sebelum Fase 3). */
 function statusGabungan(b: Baris): StatusSetoran | undefined {
   const s = [b.setoranOb?.status, b.setoranCh?.status].filter((x): x is StatusSetoran => x !== undefined)
   if (s.includes('ditolak')) return 'ditolak'
+  if (s.includes('revisi')) return 'revisi'
   if (s.includes('menunggu')) return 'menunggu'
   if (s.includes('disetujui')) return 'disetujui'
   return undefined
@@ -118,8 +121,10 @@ function SelBerkas({ path, url, judul, onBuka }: {
   )
 }
 
-const LABEL_STATUS: Record<StatusSetoran, string> = { menunggu: 'Menunggu', disetujui: 'Disetujui', ditolak: 'Ditolak' }
-const KELAS_STATUS: Record<StatusSetoran, string> = { menunggu: 'warn', disetujui: 'up', ditolak: 'dn' }
+const LABEL_STATUS: Record<StatusSetoran, string> = { menunggu: 'Menunggu', revisi: 'Perlu revisi', disetujui: 'Disetujui', ditolak: 'Ditolak' }
+// 'revisi' pakai kelas 'warn' yang sama dengan 'menunggu' — sama-sama keadaan
+// menunggu tindakan (dari penyetor), bukan kegagalan seperti 'ditolak'.
+const KELAS_STATUS: Record<StatusSetoran, string> = { menunggu: 'warn', revisi: 'warn', disetujui: 'up', ditolak: 'dn' }
 
 /** Keterangan aksi saat emiten yang dipilih di form sudah punya unggahan
  *  (upsert eksplisit, #100) — orderbook selalu wajib dipilih ulang tiap
@@ -276,11 +281,12 @@ function PilihGambar({ label, jenis, file, onFile, onPratinjau }: {
  * Dropdown.tsx, tapi ditulis lokal karena Dropdown itu pemilih NILAI —
  * di sini tombolnya memicu AKSI, bukan mengganti state terpilih.
  */
-function StatusAksi({ status, catatan, paths, onSetujui, onTolak }: {
+function StatusAksi({ status, catatan, paths, onSetujui, onRevisi, onTolak }: {
   status: StatusSetoran
   catatan?: string
   paths: string[]
   onSetujui: (paths: string[]) => void
+  onRevisi: (paths: string[]) => void
   onTolak: (paths: string[]) => void
 }) {
   const [open, setOpen] = useState(false)
@@ -300,7 +306,7 @@ function StatusAksi({ status, catatan, paths, onSetujui, onTolak }: {
       <button
         type="button"
         className="af-status-trigger"
-        title={status === 'ditolak' ? catatan || 'Ditolak kurator (tanpa catatan).' : 'Klik untuk kurasi cepat'}
+        title={status === 'ditolak' || status === 'revisi' ? catatan || 'Belum ada catatan kurator.' : 'Klik untuk kurasi cepat'}
         onClick={() => setOpen((v) => !v)}
       >
         <span className={`chip ${KELAS_STATUS[status]}`}>{LABEL_STATUS[status]}</span>
@@ -308,6 +314,9 @@ function StatusAksi({ status, catatan, paths, onSetujui, onTolak }: {
       <div className="dd-menu" role="menu">
         <button type="button" className="dd-it" role="menuitem" style={{ gap: 6 }} onClick={() => { setOpen(false); onSetujui(paths) }}>
           <IkonMenu d={IKON_CENTANG} size={12} /> Setujui
+        </button>
+        <button type="button" className="dd-it" role="menuitem" style={{ gap: 6 }} onClick={() => { setOpen(false); onRevisi(paths) }}>
+          <IkonMenu d={IKON_PERINGATAN} size={12} /> Minta revisi
         </button>
         <button type="button" className="dd-it merah" role="menuitem" style={{ gap: 6 }} onClick={() => { setOpen(false); onTolak(paths) }}>
           <IkonMenu d={IKON_SILANG} size={12} /> Tolak
@@ -544,6 +553,8 @@ export function UnggahHarian() {
   const [cekKuota, setCekKuota] = useState(false)
   /** Path setoran yang sedang minta catatan penolakan (kurasi cepat, #item2) — null = tertutup. */
   const [tolakTarget, setTolakTarget] = useState<string[] | null>(null)
+  /** Path setoran yang sedang minta catatan revisi (kurasi cepat) — null = tertutup. */
+  const [revisiTarget, setRevisiTarget] = useState<string[] | null>(null)
   /** Default buka/tutup panel "Cara screenshot orderbook" (Fase 5) — null
    *  selagi belum dicek (dianggap tertutup sampai jawabannya datang, tidak
    *  ada kedip terbuka-lalu-tertutup). true = akun ini belum pernah menyetor. */
@@ -704,13 +715,14 @@ export function UnggahHarian() {
   }
   const bolehHapusRows = sudahMerged.filter(bolehHapusBaris)
 
-  /** Path setoran `menunggu` di antara baris tercentang — dasar tombol "Setujui/
-   *  Tolak terpilih" (#item2, superadmin). Cuma entri berstatus menunggu yang
-   *  ikut disentuh; entri emiten yang sama tapi sudah dikurasi dilewati. */
+  /** Path setoran `menunggu`/`revisi` di antara baris tercentang — dasar tombol
+   *  "Setujui/Minta revisi/Tolak terpilih" (#item2, superadmin). Cuma entri yang
+   *  masih menunggu tindakan yang ikut disentuh; entri emiten yang sama tapi
+   *  sudah disetujui/ditolak dilewati. */
   const pathsPilihMenunggu = superadmin
     ? sudahMerged
         .filter((b) => pilih.has(b.ticker))
-        .flatMap((b) => [b.setoranOb, b.setoranCh].filter((s): s is SetoranRow => !!s && s.status === 'menunggu').map((s) => s.path))
+        .flatMap((b) => [b.setoranOb, b.setoranCh].filter((s): s is SetoranRow => !!s && (s.status === 'menunggu' || s.status === 'revisi')).map((s) => s.path))
     : []
 
   function bersihkan() {
@@ -837,6 +849,18 @@ export function UnggahHarian() {
     }
   }
 
+  async function revisiBaris(paths: string[], catatan: string) {
+    try {
+      await mintaRevisiSetoran(paths, catatan)
+      setToast({ ok: true, pesan: paths.length === 1 ? '1 setoran diminta revisi.' : `${paths.length} setoran diminta revisi.` })
+      setPilih(new Set())
+      setRevisiTarget(null)
+      setMuat((m) => m + 1)
+    } catch (err) {
+      setToast({ ok: false, pesan: pesanGalat(err, 'Gagal meminta revisi.') })
+    }
+  }
+
   /**
    * Buka lightbox dari tabel "Sudah Diunggah": kumpulkan SEMUA gambar tanggal
    * ini (urut per emiten, orderbook lalu chart) supaya ‹ › bisa jalan antar
@@ -908,6 +932,9 @@ export function UnggahHarian() {
                         <button type="button" className="dd-btn" onClick={() => setujuiBaris(pathsPilihMenunggu)}>
                           <IkonMenu d={IKON_CENTANG} size={12} /> Setujui terpilih
                         </button>
+                        <button type="button" className="dd-btn" onClick={() => setRevisiTarget(pathsPilihMenunggu)}>
+                          <IkonMenu d={IKON_PERINGATAN} size={12} /> Minta revisi terpilih
+                        </button>
                         <button type="button" className="dd-btn merah" onClick={() => setTolakTarget(pathsPilihMenunggu)}>
                           <IkonMenu d={IKON_SILANG} size={12} /> Tolak terpilih
                         </button>
@@ -970,7 +997,7 @@ export function UnggahHarian() {
                       const catatan = b.setoranOb?.catatan_kurator || b.setoranCh?.catatan_kurator || undefined
                       const alasanTeks = (b.setoranOb?.alasan || b.setoranCh?.alasan || '').trim()
                       const entriesSendiri = [b.setoranOb, b.setoranCh].filter(
-                        (s): s is SetoranRow => !!s && s.penyetor === session?.user.id && s.status === 'menunggu'
+                        (s): s is SetoranRow => !!s && s.penyetor === session?.user.id && (s.status === 'menunggu' || s.status === 'revisi')
                       )
                       const boleh = bolehHapusBaris(b)
                       const judulKunci = 'Hanya penyetor berkas ini atau superadmin yang bisa menghapusnya.'
@@ -1038,10 +1065,11 @@ export function UnggahHarian() {
                                   catatan={catatan}
                                   paths={[b.setoranOb?.path, b.setoranCh?.path].filter((p): p is string => Boolean(p))}
                                   onSetujui={setujuiBaris}
+                                  onRevisi={(paths) => setRevisiTarget(paths)}
                                   onTolak={(paths) => setTolakTarget(paths)}
                                 />
                               ) : (
-                                <span className={`chip ${KELAS_STATUS[status]}`} title={status === 'ditolak' ? catatan || 'Ditolak kurator (tanpa catatan).' : undefined}>
+                                <span className={`chip ${KELAS_STATUS[status]}`} title={status === 'ditolak' || status === 'revisi' ? catatan || 'Belum ada catatan kurator.' : undefined}>
                                   {LABEL_STATUS[status]}
                                 </span>
                               )
@@ -1221,7 +1249,7 @@ export function UnggahHarian() {
         <EditAlasanModal
           ticker={editAlasanTarget.ticker}
           entries={[editAlasanTarget.setoranOb, editAlasanTarget.setoranCh].filter(
-            (s): s is SetoranRow => !!s && s.penyetor === session?.user.id && s.status === 'menunggu'
+            (s): s is SetoranRow => !!s && s.penyetor === session?.user.id && (s.status === 'menunggu' || s.status === 'revisi')
           )}
           onClose={() => setEditAlasanTarget(null)}
           onSukses={() => {
@@ -1256,6 +1284,15 @@ export function UnggahHarian() {
           jumlah={tolakTarget.length}
           onClose={() => setTolakTarget(null)}
           onKirim={(catatan) => tolakBaris(tolakTarget, catatan)}
+        />
+      )}
+
+      {revisiTarget && (
+        <TolakModal
+          jumlah={revisiTarget.length}
+          varian="revisi"
+          onClose={() => setRevisiTarget(null)}
+          onKirim={(catatan) => revisiBaris(revisiTarget, catatan)}
         />
       )}
 

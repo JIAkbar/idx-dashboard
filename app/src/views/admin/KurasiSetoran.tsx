@@ -4,6 +4,7 @@ import { useAdminTanggal } from '../../context/AdminTanggalContext'
 import {
   daftarSetoran,
   kurasiSetoran,
+  mintaRevisiSetoran,
   urlScreenshots,
   type SetoranRow,
   type StatusSetoran,
@@ -28,11 +29,14 @@ function waktuManusiawi(iso: string): string {
 }
 
 const LABEL_JENIS: Record<SetoranRow['jenis'], string> = { orderbook: 'Orderbook', chart: 'Chart', bedah: 'Bedah' }
-const LABEL_STATUS: Record<StatusSetoran, string> = { menunggu: 'Menunggu', disetujui: 'Disetujui', ditolak: 'Ditolak' }
-const KELAS_STATUS: Record<StatusSetoran, string> = { menunggu: 'warn', disetujui: 'up', ditolak: 'dn' }
+const LABEL_STATUS: Record<StatusSetoran, string> = { menunggu: 'Menunggu', revisi: 'Perlu revisi', disetujui: 'Disetujui', ditolak: 'Ditolak' }
+// 'revisi' pakai kelas 'warn' yang sama dengan 'menunggu' — sama-sama keadaan
+// menunggu tindakan (dari penyetor), bukan kegagalan seperti 'ditolak'.
+const KELAS_STATUS: Record<StatusSetoran, string> = { menunggu: 'warn', revisi: 'warn', disetujui: 'up', ditolak: 'dn' }
 
 const TAB_STATUS: { id: StatusSetoran | 'semua'; label: string }[] = [
   { id: 'menunggu', label: 'Menunggu' },
+  { id: 'revisi', label: 'Perlu revisi' },
   { id: 'disetujui', label: 'Disetujui' },
   { id: 'ditolak', label: 'Ditolak' },
   { id: 'semua', label: 'Semua' },
@@ -60,6 +64,7 @@ export function KurasiSetoran() {
   /** path yang sedang punya request kurasi in-flight — disable tombol baris itu. */
   const [sibuk, setSibuk] = useState<Set<string>>(new Set())
   const [tolakTarget, setTolakTarget] = useState<string[] | null>(null)
+  const [revisiTarget, setRevisiTarget] = useState<string[] | null>(null)
   const [lightbox, setLightbox] = useState<{ items: GambarLightbox[]; index: number } | null>(null)
   const [toast, setToast] = useState<{ ok: boolean; pesan: string } | null>(null)
 
@@ -88,7 +93,7 @@ export function KurasiSetoran() {
   }, [toast])
 
   const ringkasan = useMemo(() => {
-    const r = { menunggu: 0, disetujui: 0, ditolak: 0 }
+    const r = { menunggu: 0, revisi: 0, disetujui: 0, ditolak: 0 }
     for (const s of setoran ?? []) r[s.status]++
     return r
   }, [setoran])
@@ -144,6 +149,21 @@ export function KurasiSetoran() {
     }
   }
 
+  async function revisi(paths: string[], catatan: string) {
+    tandaiSibuk(paths, true)
+    try {
+      await mintaRevisiSetoran(paths, catatan)
+      setToast({ ok: true, pesan: paths.length === 1 ? '1 setoran diminta revisi.' : `${paths.length} setoran diminta revisi.` })
+      setPilih(new Set())
+      setRevisiTarget(null)
+      setMuat((m) => m + 1)
+    } catch (e) {
+      setToast({ ok: false, pesan: pesanGalat(e, 'Gagal meminta revisi.') })
+    } finally {
+      tandaiSibuk(paths, false)
+    }
+  }
+
   function bukaPratinjau(path: string) {
     const entri = tampil.filter((s) => urls[s.path]).map((s) => ({
       path: s.path,
@@ -179,7 +199,7 @@ export function KurasiSetoran() {
       <section className="panel">
         <div className="panel-h" style={{ alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
           <span className="lbl">
-            {ringkasan.menunggu} menunggu · {ringkasan.disetujui} disetujui · {ringkasan.ditolak} ditolak
+            {ringkasan.menunggu} menunggu · {ringkasan.revisi} perlu revisi · {ringkasan.disetujui} disetujui · {ringkasan.ditolak} ditolak
           </span>
           <button type="button" className="dd-btn" onClick={salinDisetujui}>
             <IkonMenu d={IKON_PAPAN_KLIP} size={12} /> Salin daftar disetujui
@@ -219,6 +239,9 @@ export function KurasiSetoran() {
                 <button type="button" className="dd-btn" onClick={() => setujui([...pilih])}>
                   <IkonMenu d={IKON_CENTANG} size={12} /> Setujui terpilih
                 </button>
+                <button type="button" className="dd-btn" onClick={() => setRevisiTarget([...pilih])}>
+                  <IkonMenu d={IKON_PERINGATAN} size={12} /> Minta revisi terpilih
+                </button>
                 <button type="button" className="dd-btn merah" onClick={() => setTolakTarget([...pilih])}>
                   <IkonMenu d={IKON_SILANG} size={12} /> Tolak terpilih
                 </button>
@@ -257,13 +280,16 @@ export function KurasiSetoran() {
                       <span className="muted" style={{ fontSize: 10.5 }}>{LABEL_JENIS[s.jenis]} · {nama}</span>
                       <span className="muted" style={{ fontSize: 10 }}>{waktuManusiawi(s.dibuat_pada)}</span>
                       <p className="ks-alasan">{s.alasan?.trim() || '(tanpa alasan — superadmin)'}</p>
-                      {s.status === 'ditolak' && s.catatan_kurator && (
+                      {(s.status === 'ditolak' || s.status === 'revisi') && s.catatan_kurator && (
                         <p className="ks-catatan"><IkonMenu d={IKON_PERINGATAN} size={11} /> {s.catatan_kurator}</p>
                       )}
                     </div>
                     <div className="ks-aksi">
                       <button type="button" className="dd-btn" disabled={proses || s.status === 'disetujui'} onClick={() => setujui([s.path])}>
                         <IkonMenu d={IKON_CENTANG} size={12} /> Setujui
+                      </button>
+                      <button type="button" className="dd-btn" disabled={proses || s.status === 'revisi'} onClick={() => setRevisiTarget([s.path])}>
+                        <IkonMenu d={IKON_PERINGATAN} size={12} /> Minta revisi
                       </button>
                       <button type="button" className="dd-btn merah" disabled={proses || s.status === 'ditolak'} onClick={() => setTolakTarget([s.path])}>
                         <IkonMenu d={IKON_SILANG} size={12} /> Tolak
@@ -282,6 +308,15 @@ export function KurasiSetoran() {
           jumlah={tolakTarget.length}
           onClose={() => setTolakTarget(null)}
           onKirim={(catatan) => tolak(tolakTarget, catatan)}
+        />
+      )}
+
+      {revisiTarget && (
+        <TolakModal
+          jumlah={revisiTarget.length}
+          varian="revisi"
+          onClose={() => setRevisiTarget(null)}
+          onKirim={(catatan) => revisi(revisiTarget, catatan)}
         />
       )}
 
@@ -304,11 +339,19 @@ export function KurasiSetoran() {
   )
 }
 
-/** Modal catatan kurator saat menolak — wajib diisi (kontributor berhak tahu
- *  alasan penolakan), dipakai tolak satuan maupun massal. Diekspor supaya
- *  kurasi cepat dari tabel "Sudah Diunggah" (UnggahHarian.tsx) pakai modal
- *  yang SAMA, bukan menulis ulang logikanya. */
-export function TolakModal({ jumlah, onClose, onKirim }: { jumlah: number; onClose: () => void; onKirim: (catatan: string) => void }) {
+/** Modal catatan kurator saat menolak ATAU minta revisi — catatan wajib diisi
+ *  di kedua varian (kontributor berhak tahu alasan/apa yang perlu diperbaiki),
+ *  dipakai satuan maupun massal. Diekspor supaya kurasi cepat dari tabel
+ *  "Sudah Diunggah" (UnggahHarian.tsx) pakai modal yang SAMA, bukan menulis
+ *  ulang logikanya. `varian` cuma mengubah judul/teks — logika & bentuk
+ *  form-nya identik, jadi satu modal dipakai ulang alih-alih dua. */
+export function TolakModal({ jumlah, varian = 'tolak', onClose, onKirim }: {
+  jumlah: number
+  varian?: 'tolak' | 'revisi'
+  onClose: () => void
+  onKirim: (catatan: string) => void
+}) {
+  const revisi = varian === 'revisi'
   const [catatan, setCatatan] = useState('')
   const [kirim, setKirim] = useState(false)
   const [err, setErr] = useState('')
@@ -316,7 +359,7 @@ export function TolakModal({ jumlah, onClose, onKirim }: { jumlah: number; onClo
   async function submit(e: FormEvent) {
     e.preventDefault()
     if (!catatan.trim()) {
-      setErr('Catatan wajib diisi — kontributor berhak tahu alasan penolakan.')
+      setErr(revisi ? 'Catatan wajib diisi — penyetor perlu tahu apa yang harus diperbaiki.' : 'Catatan wajib diisi — kontributor berhak tahu alasan penolakan.')
       return
     }
     setKirim(true)
@@ -325,8 +368,12 @@ export function TolakModal({ jumlah, onClose, onKirim }: { jumlah: number; onClo
     setKirim(false)
   }
 
+  const label = revisi
+    ? (jumlah === 1 ? 'Minta revisi setoran ini?' : `Minta revisi ${jumlah} setoran?`)
+    : (jumlah === 1 ? 'Tolak setoran ini?' : `Tolak ${jumlah} setoran?`)
+
   return (
-    <ModalKecil label={jumlah === 1 ? 'Tolak setoran ini?' : `Tolak ${jumlah} setoran?`} onClose={() => { if (!kirim) onClose() }}>
+    <ModalKecil label={label} onClose={() => { if (!kirim) onClose() }}>
       <form onSubmit={submit} style={{ display: 'grid', gap: 12 }}>
         <div className="field">
           <span className="lbl">Catatan kurator — wajib diisi</span>
@@ -335,11 +382,13 @@ export function TolakModal({ jumlah, onClose, onKirim }: { jumlah: number; onClo
             rows={3}
             value={catatan}
             onChange={(e) => setCatatan(e.target.value)}
-            placeholder="Alasan penolakan — akan terlihat oleh penyetor."
+            placeholder={revisi ? 'Apa yang perlu diperbaiki — akan terlihat oleh penyetor.' : 'Alasan penolakan — akan terlihat oleh penyetor.'}
             style={{ resize: 'vertical', fontFamily: 'inherit' }}
           />
         </div>
-        <button type="submit" className="btn-p af-btn-keluar" disabled={kirim}>{kirim ? 'Menolak…' : 'Tolak'}</button>
+        <button type="submit" className={revisi ? 'btn-p' : 'btn-p af-btn-keluar'} disabled={kirim}>
+          {revisi ? (kirim ? 'Mengirim…' : 'Minta revisi') : (kirim ? 'Menolak…' : 'Tolak')}
+        </button>
         {err && <p className="af-err" style={{ margin: 0 }}>{err}</p>}
       </form>
     </ModalKecil>

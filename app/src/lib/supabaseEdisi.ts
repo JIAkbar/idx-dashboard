@@ -42,7 +42,7 @@ export async function simpanEdisi(
 
 /** Status kurasi & jenis baris tabel `setoran` (backend Fase 3, sudah jadi —
  *  lihat trigger & policy storage yang menegakkan aturan ini di server). */
-export type StatusSetoran = 'menunggu' | 'disetujui' | 'ditolak'
+export type StatusSetoran = 'menunggu' | 'revisi' | 'disetujui' | 'ditolak'
 export type JenisSetoran = 'orderbook' | 'chart' | 'bedah'
 
 /** Satu baris `setoran`, dengan embed profil penyetor (email/alias) — dasar
@@ -144,6 +144,27 @@ export async function kurasiSetoran(paths: string[], status: 'disetujui' | 'dito
     .update({
       status,
       catatan_kurator: catatanKurator?.trim() || null,
+      kurator: user?.id ?? null,
+      dikurasi_pada: new Date().toISOString(),
+    })
+    .in('path', paths)
+  if (error) throw error
+}
+
+/** Minta revisi (superadmin) — sekumpulan path sekaligus. Pola SAMA dengan
+ *  kurasiSetoran(), cuma status selalu 'revisi' dan catatan WAJIB (dilempar
+ *  Error kalau kosong/spasi) — beda dari tolak yang validasinya di pemanggil,
+ *  di sini wajibnya mutlak karena 'revisi' tanpa catatan bikin penyetor tak
+ *  tahu apa yang harus diperbaiki. */
+export async function mintaRevisiSetoran(paths: string[], catatanKurator: string): Promise<void> {
+  if (paths.length === 0) return
+  if (!catatanKurator.trim()) throw new Error('Catatan wajib diisi — penyetor perlu tahu apa yang harus diperbaiki.')
+  const { data: { user } } = await supabase.auth.getUser()
+  const { error } = await supabase
+    .from('setoran')
+    .update({
+      status: 'revisi',
+      catatan_kurator: catatanKurator.trim(),
       kurator: user?.id ?? null,
       dikurasi_pada: new Date().toISOString(),
     })

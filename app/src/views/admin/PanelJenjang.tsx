@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { daftarJenjang, type JenjangRow } from '../../lib/jenjang'
+import { daftarHalamanAkses, type HalamanBaris } from '../../lib/aksesAdmin'
 import { IkonJenjang } from '../../components/dasbor/IkonJenjang'
 
 /**
@@ -13,6 +14,7 @@ import { IkonJenjang } from '../../components/dasbor/IkonJenjang'
  */
 export function PanelJenjang({ ringkas = false }: { ringkas?: boolean }) {
   const [baris, setBaris] = useState<JenjangRow[]>([])
+  const [halaman, setHalaman] = useState<HalamanBaris[]>([])
   const [galat, setGalat] = useState(false)
 
   useEffect(() => {
@@ -20,6 +22,11 @@ export function PanelJenjang({ ringkas = false }: { ringkas?: boolean }) {
     daftarJenjang()
       .then((j) => !batal && setBaris(j))
       .catch(() => !batal && setGalat(true))
+    // Halaman ditarik terpisah dan kegagalannya didiamkan: kolom "Yang
+    // terbuka" jatuh ke teks `hak` saja, dan tabel acuannya tetap berguna.
+    daftarHalamanAkses()
+      .then((h) => !batal && setHalaman(h))
+      .catch(() => {})
     return () => { batal = true }
   }, [])
 
@@ -49,6 +56,7 @@ export function PanelJenjang({ ringkas = false }: { ringkas?: boolean }) {
                 <th className="af-c">Setoran disetujui</th>
                 <th className="af-c">Akurasi minimum</th>
                 <th className="af-c">Kuota/hari</th>
+                <th className="af-c" title="Hari kerja tanpa setoran sebelum akun dibekukan otomatis">Ambang beku</th>
                 {!ringkas && <th>Yang terbuka</th>}
               </tr>
             </thead>
@@ -71,7 +79,32 @@ export function PanelJenjang({ ringkas = false }: { ringkas?: boolean }) {
                   <td className="af-c">{j.min_disetujui === 0 ? '—' : `${j.min_disetujui}+`}</td>
                   <td className="af-c">{!j.min_akurasi ? '—' : `${j.min_akurasi}%`}</td>
                   <td className="af-c">{j.kuota}</td>
-                  {!ringkas && <td className="muted">{j.hak ?? '—'}</td>}
+                  <td className="af-c" title="Hari kerja tanpa setoran sebelum akun dibekukan otomatis">
+                    {j.hari_beku ?? 5} hari
+                  </td>
+                  {!ringkas && (
+                    <td className="muted">
+                      {/* Halaman DITURUNKAN dari tabel Akses, tidak ditulis
+                          ulang di sini. Sebelumnya kolom ini cuma menampilkan
+                          teks `hak` yang diketik manual, dan begitu jenjang
+                          minimum sebuah halaman diubah di tab Akses, kalimat
+                          di sini diam saja — Seasonality sempat naik ke Perak
+                          tanpa satu pun barisnya menyebutkan itu. Teks yang
+                          berbohong lebih buruk daripada kolom yang kosong. */}
+                      {(() => {
+                        const halamanTier = halaman
+                          .filter((h) => h.tingkat === 'login' && (h.min_tier ?? 0) === j.tier)
+                          .map((h) => h.label)
+                        const manual = (j.hak ?? '').trim()
+                        // Tier 0 membuka SEMUA halaman anggota; menyenaraikan
+                        // belasan nama di satu sel cuma jadi dinding teks.
+                        const bagian = j.tier === 0
+                          ? [manual].filter(Boolean)
+                          : [manual, ...halamanTier].filter(Boolean)
+                        return bagian.length ? bagian.join(' · ') : '—'
+                      })()}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

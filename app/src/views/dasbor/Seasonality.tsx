@@ -3,7 +3,9 @@ import { BULAN, ringkasEmiten, vonisUji, type RingkasBulan, type RingkasEmiten, 
 import { muatIndeks, muatIhsg, muatSeri, type BarisIndeks } from '../../lib/seasonalityData'
 import { pesanGalat } from '../../lib/pesanGalat'
 import { SeasonalityHarian } from './SeasonalityHarian'
-import { IkonMenu, IKON_CARI, IKON_SILANG, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_CARI, IKON_SILANG, IKON_PERINGATAN, IKON_KUNCI } from '../../components/dasbor/IkonMenu'
+import { useAksesHalaman } from '../../context/AksesHalamanContext'
+import { daftarJenjang, hitungRingkasanSetoranSaya, type JenjangRow } from '../../lib/jenjang'
 
 const MAKS = 5
 const BLN3 = BULAN.map((b) => b.slice(0, 3))
@@ -31,6 +33,40 @@ export function Seasonality() {
   const [sejak, setSejak] = useState(0)
   const [fokus, setFokus] = useState<{ kode: string; bulan: number } | null>(null)
   const [tab, setTab] = useState<'bulan' | 'hari'>('bulan')
+  // Tab hari punya kuncinya SENDIRI di tabel Akses (`seasonality-hari`),
+  // terpisah dari kunci halamannya. Halamannya terbuka untuk Pemula supaya
+  // dia melihat apa yang sedang dikejar; tab yang bahannya paling mahal
+  // disiapkan itulah yang berjenjang.
+  const { daftar, boleh, alasan } = useAksesHalaman()
+  const bolehHari = boleh('seasonality-hari')
+  const alasanHari = alasan('seasonality-hari')
+  // Jarak menuju tab yang terkunci dihitung dalam satuan yang bisa
+  // dikerjakan orangnya: berapa setoran lagi. "Perlu jenjang Perak" tak
+  // memberi tahu apa pun tentang usaha yang dibutuhkan — dan syarat yang
+  // tak bisa diukur tak akan dikejar siapa pun.
+  const [jarak, setJarak] = useState<{ nama: string; kurangSetoran: number; akurasiKurang: number | null } | null>(null)
+  useEffect(() => {
+    if (bolehHari) return
+    let batal = false
+    void Promise.all([daftarJenjang(), hitungRingkasanSetoranSaya()])
+      .then(([js, s]: [JenjangRow[], { disetujui: number; ditolak: number }]) => {
+        if (batal) return
+        // Tier target dibaca dari tabel Akses, bukan ditulis tetap di sini —
+        // superadmin boleh memindahkannya ke Perunggu atau Emas kapan saja.
+        const tierPerlu = daftar?.find((h) => h.kunci === 'seasonality-hari')?.min_tier ?? 2
+        const target = js.find((j) => j.tier === tierPerlu)
+        if (!target) return
+        const dikurasi = s.disetujui + s.ditolak
+        const pct = dikurasi === 0 ? 100 : Math.round((s.disetujui * 100) / dikurasi)
+        setJarak({
+          nama: target.nama,
+          kurangSetoran: Math.max(0, target.min_disetujui - s.disetujui),
+          akurasiKurang: pct >= (target.min_akurasi ?? 0) ? null : (target.min_akurasi ?? 0) - pct,
+        })
+      })
+      .catch(() => {})
+    return () => { batal = true }
+  }, [bolehHari, daftar])
   const kotak = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -109,13 +145,43 @@ export function Seasonality() {
           className={'tab' + (tab === 'bulan' ? ' on' : '')} onClick={() => setTab('bulan')}>
           Bulanan
         </button>
+        {/* Tab terkunci tetap TERLIHAT, tidak disembunyikan. Yang tak
+            kelihatan tak bisa dikejar — kontributor Pemula perlu tahu apa
+            yang menunggunya di Perak supaya jenjangnya punya arti. */}
         <button type="button" role="tab" aria-selected={tab === 'hari'}
-          className={'tab' + (tab === 'hari' ? ' on' : '')} onClick={() => setTab('hari')}>
+          className={'tab' + (tab === 'hari' ? ' on' : '') + (bolehHari ? '' : ' tab-kunci')}
+          title={bolehHari ? undefined : alasanHari.kalimat}
+          onClick={() => setTab('hari')}>
           Hari dalam Seminggu
+          {!bolehHari && <IkonMenu d={IKON_KUNCI} size={11} />}
         </button>
       </div>
 
-      {tab === 'hari' && <SeasonalityHarian />}
+      {tab === 'hari' && (bolehHari ? <SeasonalityHarian /> : (
+        <section className="panel">
+          <div className="panel-b">
+            <div className="fd-empty" style={{ padding: '40px 20px' }}>
+              <p style={{ marginBottom: 10 }}><IkonMenu d={IKON_KUNCI} size={26} /></p>
+              <p style={{ fontSize: 14 }}>{alasanHari.judul}</p>
+              <p style={{ fontSize: 11.5, marginTop: 8, maxWidth: '52ch', margin: '8px auto 0', lineHeight: 1.7 }}>
+                {alasanHari.kalimat} Tab ini membedah 8.848 hari bursa IHSG sejak 1990 dan
+                menguji polanya lawan 2.000 pengacakan — bahan yang paling mahal disiapkan
+                di halaman ini.
+              </p>
+              {jarak && (
+                <p className="sea-jarak">
+                  {jarak.kurangSetoran > 0
+                    ? <><b>{jarak.kurangSetoran} setoran orderbook lagi</b> yang disetujui untuk mencapai {jarak.nama}.</>
+                    : <>Jumlah setoranmu sudah cukup untuk {jarak.nama}.</>}
+                  {jarak.akurasiKurang !== null && (
+                    <> Akurasimu juga perlu naik <b>{jarak.akurasiKurang} poin</b> — keduanya harus terpenuhi bersamaan.</>
+                  )}
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+      ))}
 
       {tab === 'bulan' && <>
       {galat && <div className="panel panel-b"><p className="muted">{galat}</p></div>}

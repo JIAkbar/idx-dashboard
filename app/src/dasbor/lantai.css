@@ -2391,3 +2391,18 @@
   background: var(--red-dim); border-left: 3px solid var(--red); color: var(--text2);
 }
 .lantai .sea-tipis b { color: var(--red); }
+/* Tab yang terkunci jenjang tetap terlihat dan tetap bisa diklik — kliknya
+   membuka kartu penjelasan, bukan isinya. Disabled akan menghapus tooltip
+   dan fokus keyboard sekaligus, sehingga orang yang tak bisa membukanya juga
+   tak bisa mencari tahu kenapa. */
+.lantai .tab.tab-kunci { opacity: .62; gap: 5px; }
+.lantai .tab.tab-kunci .dasbor-ikon { stroke: currentColor; }
+.lantai .tab.tab-kunci:hover { opacity: .85; }
+/* Jarak menuju jenjang yang membuka tab — dipisah dari kalimat alasan supaya
+   angka yang bisa dikerjakan tidak tenggelam di dalam paragraf penjelasan. */
+.lantai .sea-jarak {
+  margin: 14px auto 0; max-width: 52ch; padding: 10px 14px; border-radius: var(--r);
+  background: var(--amber-dim); border-left: 3px solid var(--amber);
+  font-size: 12px; line-height: 1.7; color: var(--text2); text-align: left;
+}
+.lantai .sea-jarak b { color: var(--amber); }
