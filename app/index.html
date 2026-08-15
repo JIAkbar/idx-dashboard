@@ -34,6 +34,10 @@
         try {
           var s = localStorage.getItem('papan-tema');
           if (s === 'light' || s === 'dark') t = s;
+          // Mode 'sistem' diterjemahkan DI SINI juga, bukan hanya di React:
+          // kalau tidak, halaman terbit gelap dulu lalu berkedip terang begitu
+          // React jalan — persis kedipan yang skrip ini ada untuk mencegahnya.
+          else if (s === 'sistem') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         } catch (e) { /* private mode — pakai default */ }
         document.documentElement.dataset.tema = t;
       })();

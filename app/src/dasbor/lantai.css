@@ -2145,3 +2145,27 @@
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .lantai .tag-saran-kosong { padding: 9px 11px; font-size: 11.5px; color: var(--text3); }
+
+/* ===== Pemilih tema tiga pilihan (rail) ===================================
+   Bentuk pil bersegmen ala arah desain Samudra. Di rail selebar 76px ketiganya
+   ditumpuk, bukan disejajarkan — dipaksa sebaris, tiap segmen tinggal 24px dan
+   labelnya hilang. */
+.dasbor-rail .pilih-tema {
+  display: flex; flex-direction: column; gap: 2px; width: 100%;
+  padding: 3px; margin: 2px 0 6px;
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 12px;
+}
+.dasbor-rail .pilih-tema-it {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 7px; border: 0; border-radius: 9px; cursor: pointer;
+  background: transparent; color: var(--text3);
+  font-family: inherit; font-size: 9.5px; font-weight: 600; letter-spacing: .02em;
+  line-height: 1; white-space: nowrap;
+}
+.dasbor-rail .pilih-tema-it:hover { color: var(--text2); }
+.dasbor-rail .pilih-tema-it.on {
+  background: var(--card); color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,.28);
+}
+.dasbor-rail .pilih-tema-it:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.dasbor-rail .pilih-tema-it svg { flex: none; }
