@@ -2169,3 +2169,18 @@
 }
 .dasbor-rail .pilih-tema-it:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .dasbor-rail .pilih-tema-it svg { flex: none; }
+
+/* ===== Lilin harian di papan IHSG ========================================= */
+.lantai .lilin-hari {
+  display: flex; align-items: center; gap: 14px;
+  margin-top: 14px; padding: 10px 14px;
+  background: var(--bg2); border: 1px solid var(--line); border-radius: var(--r);
+  width: fit-content; max-width: 100%;
+}
+.lantai .lilin-ket { display: grid; gap: 2px; min-width: 0; }
+.lantai .lilin-angka { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+.lantai .lilin-catatan { font-size: 10px; color: var(--text3); line-height: 1.5; max-width: 34ch; }
+@media (max-width: 860px) {
+  .lantai .lilin-hari { width: 100%; }
+  .lantai .lilin-catatan { max-width: none; }
+}

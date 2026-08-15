@@ -10,6 +10,7 @@ import { fN, fp, fmtNF } from '../../lib/dasbor/format'
 import { useChartCanvas } from '../../lib/dasbor/useChartJs'
 import { useTheme } from '../../context/ThemeContext'
 import { IkonMenu, IKON_PERINGATAN, IKON_GLOBE, IKON_PENGGARIS, IKON_GRAFIK_BATANG } from '../../components/dasbor/IkonMenu'
+import { LilinHarian } from '../../components/dasbor/LilinHarian'
 
 /**
  * Grafik mini board-side (Fix #27) — pakai tanggalTersedia (data-idx/json/index.json)
@@ -369,6 +370,30 @@ export function IndeksDunia() {
               </span>
             )}
           </div>
+
+          {/* Lilin hari ini di samping angkanya. Angka menyebut di mana IHSG
+              berhenti; lilin menyebut jalan yang ditempuhnya ke sana — hari
+              yang tutup +1% setelah sempat -2% terbaca sangat berbeda dari
+              hari yang naik lurus, dan itu selisih yang hilang kalau cuma ada
+              satu angka. */}
+          {hari.ihsg_prev != null && hari.ihsg_high != null && hari.ihsg_low != null && (
+            <div className="lilin-hari">
+              <LilinHarian
+                dasar={hari.ihsg_prev} tutup={hari.ihsg_value}
+                tinggi={hari.ihsg_high} rendah={hari.ihsg_low}
+                judul={`Rentang hari: ${fN(hari.ihsg_low)} sampai ${fN(hari.ihsg_high)}, tutup ${fN(hari.ihsg_value)}`}
+              />
+              <div className="lilin-ket">
+                <span className="lbl">Rentang hari</span>
+                <span className="lilin-angka">
+                  {fN(hari.ihsg_low)} <span className="muted">→</span> {fN(hari.ihsg_high)}
+                </span>
+                <span className="lilin-catatan">
+                  Badan dari penutupan kemarin ke penutupan hari ini — harga buka belum dipanen.
+                </span>
+              </div>
+            </div>
+          )}
           <div className="board-meta">
             {meta.map(([label, isi]) => (
               <div className="bm" key={label}>
