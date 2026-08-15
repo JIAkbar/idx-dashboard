@@ -81,8 +81,14 @@ Sudah terbukti dan tak perlu diperdebatkan lagi tiap kali menyentuh #122/#108:
 
 | Sumber | Dipakai untuk | Batasnya |
 |---|---|---|
-| **Yahoo Finance** | Riwayat panjang (IHSG 1990-2026, emiten 5 tahun) + harga BUKA | `range=max` diam-diam menurunkan resolusi jadi bulanan walau `interval=1d` — WAJIB `period1`/`period2` |
-| **IDX GetStockSummary** | Hari berjalan, 32 ruas per emiten (volume, frekuensi, asing, dll) | Cuma hari berjalan, tak bisa mundur. OpenPrice terisi 74% hari ini tapi 5-8% sebelum 2025 |
+| **Yahoo Finance** | Riwayat SEBELUM 2020, dan **harga BUKA riwayat** (di sana `open` terisi penuh) | `range=max` diam-diam menurunkan resolusi jadi bulanan walau `interval=1d` — WAJIB `period1`/`period2` |
+| **IDX GetStockSummary** | Hari berjalan DAN riwayat per tanggal sejak awal 2020 — 32 ruas (volume, frekuensi, asing, dll) | `OpenPrice` praktis kosong sebelum 2025 (5-8%), hari ini pun cuma 74%. Ruas lain 100% terisi |
+
+**Koreksi yang perlu diingat** (16 Agu 2026): IDX BISA ditarik mundur per
+tanggal sampai awal 2020 — yang tak bisa mundur cuma `OpenPrice`-nya. Dan nol
+di ruas Open bukan berarti emitennya tak diperdagangkan: 14 Nov 2024, 900
+emiten ber-Open nol padahal 785 di antaranya punya volume. Dipakai apa adanya,
+candle-nya akan menggambar buka di harga 0.
 
 Panen 963 emiten sekali jalan terbukti aman: 0 penolakan, permintaan berurutan
 dengan jeda acak. Jadwal harian 16:45 WIB — bursa tutup 16:15, Yahoo delay
