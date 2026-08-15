@@ -67,3 +67,52 @@ memberitahu adalah cara paling halus kehilangan kepercayaan.
   mengembalikan 88 broker se-pasar. Broker per emiten tidak tersedia.
 * Yahoo: jangan pernah `range=max` dengan `interval=1d` — resolusinya
   diturunkan diam-diam jadi bulanan. Selalu `period1`/`period2`.
+
+## Apa yang bisa dibangun dari ruas ini
+
+Dicatat supaya tak ada yang menyimpulkan "datanya kurang" padahal cuma belum
+dilihat. Semua di bawah ini **sudah punya bahannya**, tinggal dihitung.
+
+### Analisis volume
+
+| Yang dibangun | Ruas |
+|---|---|
+| Volume vs rata-ratanya (lonjakan tak wajar) | Volume |
+| **Nilai per transaksi** = Value ÷ Frequency | Value, Frequency |
+| **Ukuran order rata-rata** = Volume ÷ Frequency | Volume, Frequency |
+| Volume di pasar reguler vs negosiasi | Volume, NonRegularVolume |
+| Turnover = Volume ÷ TradebleShares | Volume, TradebleShares |
+
+Ruas **Frequency** yang membuat ini jauh lebih tajam daripada analisis volume
+biasa: volume besar dengan frekuensi kecil berarti sedikit pihak bertransaksi
+besar — beda watak dari volume besar yang tersebar di ribuan transaksi. Itu
+selisih yang tak bisa dilihat kalau sumbernya cuma Yahoo.
+
+### Aliran dana asing
+
+| Yang dibangun | Ruas |
+|---|---|
+| Net asing harian = ForeignBuy − ForeignSell | ForeignBuy, ForeignSell |
+| Akumulasi asing n-hari | keduanya, dijumlah |
+| Porsi asing = (Buy+Sell) ÷ Volume | ketiganya |
+
+### Divergensi & konvergensi
+
+Butuh indikator momentum yang dihitung dari harga — RSI, MACD, atau
+stochastic — lalu dibandingkan arahnya dengan harga:
+
+* **Divergensi bearish**: harga membuat puncak lebih tinggi, indikatornya
+  tidak.
+* **Divergensi bullish**: harga membuat dasar lebih rendah, indikatornya
+  tidak.
+
+Semua bahannya ada dari OHLC. Yang membuat versi PAPAN bisa lebih dari
+sekadar mengulang aplikasi lain: divergensi harga-vs-momentum bisa
+**disandingkan dengan divergensi harga-vs-net asing** atau
+**harga-vs-frekuensi** — harga naik sementara asing terus keluar adalah
+cerita yang berbeda dari harga naik dengan asing masuk, dan itu tak terlihat
+di mana pun yang cuma memakai OHLCV.
+
+Catatan kejujuran: divergensi adalah pengamatan, bukan ramalan. Kalau
+ditampilkan, sebutkan berapa sering pola serupa berlanjut secara historis —
+pola yang sama dengan yang sudah dipakai halaman Seasonality.
