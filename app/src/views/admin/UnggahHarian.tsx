@@ -88,6 +88,36 @@ function statusGabungan(b: Baris): StatusSetoran | undefined {
   return undefined
 }
 
+/**
+ * Sel berkas: thumbnail kalau URL-nya sudah ada, centang kalau belum.
+ *
+ * Gambar kecil menjawab pertanyaan yang centang tak bisa jawab — "yang
+ * terunggah tadi benar screenshot orderbook, atau salah berkas?". Menemukan
+ * salah unggah butuh membuka lightbox satu per satu; dengan thumbnail,
+ * kekeliruan terlihat sambil lalu.
+ *
+ * Centang tetap jadi keadaan awal (dan cadangan kalau URL gagal) supaya
+ * tabelnya tidak terlihat rusak selama URL bertanda tangan masih diambil.
+ */
+function SelBerkas({ path, url, judul, onBuka }: {
+  path?: string; url?: string; judul: string; onBuka: (p: string) => void
+}) {
+  if (!path) return <>—</>
+  return (
+    <button
+      type="button"
+      className={url ? 'af-thumb' : 'af-centang af-lihat'}
+      title={`Lihat screenshot ${judul}`}
+      aria-label={`Lihat screenshot ${judul}`}
+      onClick={() => onBuka(path)}
+    >
+      {url
+        ? <img src={url} alt="" loading="lazy" />
+        : <><IkonMenu d={IKON_CENTANG} size={13} /><span className="lihat-lbl">Lihat</span></>}
+    </button>
+  )
+}
+
 const LABEL_STATUS: Record<StatusSetoran, string> = { menunggu: 'Menunggu', disetujui: 'Disetujui', ditolak: 'Ditolak' }
 const KELAS_STATUS: Record<StatusSetoran, string> = { menunggu: 'warn', disetujui: 'up', ditolak: 'dn' }
 
@@ -642,6 +672,22 @@ export function UnggahHarian() {
     }))
   }, [sudah, setoranTanggal])
 
+  /** Thumbnail tabel. URL bertanda tangan kedaluwarsa satu jam, jadi disimpan
+   *  per-tanggal dan ditarik ulang tiap tanggalnya berganti — bukan di-cache
+   *  selamanya, yang akan berakhir sebagai deretan gambar rusak. */
+  const [thumb, setThumb] = useState<Record<string, string>>({})
+  useEffect(() => {
+    let batal = false
+    const paths = sudahMerged.flatMap((b) => [b.orderbook, b.chart].filter((p): p is string => !!p))
+    if (paths.length === 0) { setThumb({}); return }
+    urlScreenshots(paths)
+      .then((u) => !batal && setThumb(u))
+      // Gagal ambil URL bukan kondisi galat: tabelnya tetap berguna tanpa
+      // gambar kecil, dan tombol "Lihat" punya jalurnya sendiri.
+      .catch(() => !batal && setThumb({}))
+    return () => { batal = true }
+  }, [sudahMerged])
+
   const wadahTabel = useRef<HTMLDivElement>(null)
   useTinggiSepuluhBaris(wadahTabel, sudahMerged.length)
 
@@ -928,6 +974,14 @@ export function UnggahHarian() {
                       )
                       const boleh = bolehHapusBaris(b)
                       const judulKunci = 'Hanya penyetor berkas ini atau superadmin yang bisa menghapusnya.'
+                      // Berkasnya ada tapi baris setorannya tidak sampai ke
+                      // sini: bagi superadmin (yang RLS-nya melihat semua) itu
+                      // benar-benar unggahan pra-Fase 3; bagi kontributor itu
+                      // hampir pasti milik orang lain — RLS `setoran_baca`
+                      // memang cuma memberi baris miliknya sendiri. Tanpa
+                      // dibedakan, tiga kolom "—" berturut-turut terbaca
+                      // sebagai data rusak, bukan sebagai batas kewenangan.
+                      const milikOrangLain = !superadmin && !b.setoranOb && !b.setoranCh && !!b.orderbook
                       return (
                         <tr key={b.ticker}>
                           <td className="af-kolcek">
@@ -943,10 +997,17 @@ export function UnggahHarian() {
                           </td>
                           <td className="tick">{b.ticker}</td>
                           <td className="muted" style={{ fontSize: 11 }}>
-                            {namaTampil(b.setoranOb?.profil ?? b.setoranCh?.profil, null)}
+                            {milikOrangLain
+                              ? <span className="af-lain" title="Nama penyetor hanya terlihat oleh dirinya sendiri dan superadmin.">Kontributor lain</span>
+                              : namaTampil(b.setoranOb?.profil ?? b.setoranCh?.profil, null)}
                           </td>
                           <td className="af-alasan-sel">
-                            <span className="af-alasan-teks" title={alasanTeks || undefined}>{alasanTeks || '—'}</span>
+                            <span
+                              className="af-alasan-teks"
+                              title={milikOrangLain ? 'Alasan hanya terlihat oleh penyetornya sendiri.' : alasanTeks || undefined}
+                            >
+                              {alasanTeks || '—'}
+                            </span>
                             {entriesSendiri.length > 0 && (
                               <button
                                 type="button"
@@ -960,32 +1021,12 @@ export function UnggahHarian() {
                             )}
                           </td>
                           <td className="af-c">
-                            {b.orderbook ? (
-                              <button
-                                type="button"
-                                className="af-centang af-lihat"
-                                title={`Lihat screenshot orderbook ${b.ticker}`}
-                                aria-label={`Lihat screenshot orderbook ${b.ticker}`}
-                                onClick={() => bukaPratinjau(b.orderbook!)}
-                              >
-                                <IkonMenu d={IKON_CENTANG} size={13} />
-                                <span className="lihat-lbl">Lihat</span>
-                              </button>
-                            ) : '—'}
+                            <SelBerkas path={b.orderbook} url={b.orderbook ? thumb[b.orderbook] : undefined}
+                              judul={`orderbook ${b.ticker}`} onBuka={bukaPratinjau} />
                           </td>
                           <td className="af-c">
-                            {b.chart ? (
-                              <button
-                                type="button"
-                                className="af-centang af-lihat"
-                                title={`Lihat screenshot chart ${b.ticker}`}
-                                aria-label={`Lihat screenshot chart ${b.ticker}`}
-                                onClick={() => bukaPratinjau(b.chart!)}
-                              >
-                                <IkonMenu d={IKON_CENTANG} size={13} />
-                                <span className="lihat-lbl">Lihat</span>
-                              </button>
-                            ) : '—'}
+                            <SelBerkas path={b.chart} url={b.chart ? thumb[b.chart] : undefined}
+                              judul={`chart ${b.ticker}`} onBuka={bukaPratinjau} />
                           </td>
                           <td className="af-c">
                             {status ? (
@@ -1002,6 +1043,13 @@ export function UnggahHarian() {
                                   {LABEL_STATUS[status]}
                                 </span>
                               )
+                            ) : milikOrangLain ? (
+                              // Bukan "—". Yang perlu diketahui kontributor lain
+                              // cuma satu: emiten ini sudah diambil, jangan
+                              // dikerjakan lagi. Statusnya sendiri (menunggu /
+                              // disetujui / ditolak) sengaja tak disebut — itu
+                              // urusan penyetornya dengan kurator.
+                              <span className="chip" title="Emiten ini sudah disetor kontributor lain untuk tanggal ini.">Sudah disetor</span>
                             ) : (
                               <span className="muted" style={{ fontSize: 10.5 }} title="Unggahan sebelum Fase 3 — tanpa data kurasi.">—</span>
                             )}

@@ -165,6 +165,22 @@
 .lantai .af-lihat:focus-visible .lihat-lbl { opacity: 1; }
 .lantai .af-lihat:focus-visible { outline: 2px solid var(--amber); outline-offset: 1px; border-radius: 3px; }
 
+/* Thumbnail berkas di tabel unggahan. Rasio dipatok 16/10 dan object-fit
+   cover supaya tinggi tiap baris tetap sama apa pun bentuk screenshot-nya —
+   orderbook potret dan chart lanskap kalau dibiarkan apa adanya membuat
+   tinggi baris naik-turun dan tabelnya sulit dipindai. */
+.lantai .af-thumb {
+  background: none; border: 1px solid var(--line2); border-radius: 5px; cursor: pointer;
+  padding: 0; overflow: hidden; display: inline-flex; vertical-align: middle;
+  width: 58px; aspect-ratio: 16 / 10; transition: border-color .12s;
+}
+.lantai .af-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lantai .af-thumb:hover { border-color: var(--amber); }
+.lantai .af-thumb:focus-visible { outline: 2px solid var(--amber); outline-offset: 1px; }
+
+/* Baris milik kontributor lain: bukan data hilang, tapi batas kewenangan. */
+.lantai .af-lain { font-style: italic; opacity: .75; }
+
 /* Lightbox pratinjau gambar (#94) — overlay gelap di atas segalanya
    (modal 90, toast 95), gambar besar contain, caption + navigasi di bawah.
    Warna teks di sini fixed (bukan token) karena latar selalu gelap di kedua tema. */
