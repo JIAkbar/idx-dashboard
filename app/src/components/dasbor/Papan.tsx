@@ -23,21 +23,20 @@ export function Papan({ nilai }: { nilai: number }) {
   const teks = nilai.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   const chars = [...teks]
   const nilaiSebelumnya = useRef(nilai)
-  const [riak, setRiak] = useState(false)
-  /** Flip 80° cuma untuk kemunculan pertama. Dilepas setelah animasinya
-   *  selesai supaya tidak ada aturan animasi yang tertinggal menempel di
-   *  elemen dan ikut terpicu ulang saat kelas riak dilepas. */
-  const [masuk, setMasuk] = useState(true)
+  // Menyala sejak awal: kemunculan pertama memakai gelombang yang sama dengan
+  // perubahan harga, bukan animasi kedua yang berbeda bahasa geraknya.
+  const [riak, setRiak] = useState(true)
 
   useEffect(() => {
-    const t = setTimeout(() => setMasuk(false), 900) // .5s animasi + delay digit terakhir
-    return () => clearTimeout(t)
-  }, [])
-
-  useEffect(() => {
-    if (nilaiSebelumnya.current === nilai) return
-    nilaiSebelumnya.current = nilai
-    setRiak(true)
+    const pertama = nilaiSebelumnya.current === nilai
+    if (!pertama) {
+      nilaiSebelumnya.current = nilai
+      setRiak(true)
+    }
+    // Dilepas juga sesudah gelombang KEMUNCULAN, bukan cuma sesudah perubahan:
+    // kelas yang menempel selamanya membuat perubahan harga pertama tak
+    // beranimasi sama sekali (CSS tak memutar ulang kalau nama kelasnya tak
+    // sempat hilang lalu muncul lagi).
     const totalMs = (chars.length * RIAK_STEP + RIAK_DUR) * 1000
     const t = setTimeout(() => setRiak(false), totalMs)
     return () => clearTimeout(t)
@@ -49,7 +48,7 @@ export function Papan({ nilai }: { nilai: number }) {
       {chars.map((ch, i) => (
         <span
           key={i}
-          className={`${/\d/.test(ch) ? 'flap' : 'flap sym'}${masuk ? ' masuk' : ''}${riak ? ' riak' : ''}`}
+          className={`${/\d/.test(ch) ? 'flap' : 'flap sym'}${riak ? ' riak' : ''}`}
           style={riak ? { animationDelay: `${i * RIAK_STEP}s` } : undefined}
         >
           {ch}
