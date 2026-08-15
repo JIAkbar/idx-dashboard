@@ -78,9 +78,22 @@ export function Pemulihan() {
   // baris tabel umum (yang tak butuh lot) tak ikut hitung ulang tiap ketik.
   const lotN = Math.max(0, parseFloat(lot) || 0)
 
-  /** Tarik harga terakhir dari Yahoo — pola yang sama dengan tab Avg Down,
-   *  sengaja tidak dijadikan util bersama sampai ada pemakai ketiga. Kalau
-   *  gagal, harga manual tetap bisa diisi: kotaknya tidak dikunci. */
+  /**
+   * Isi harga terakhir emiten.
+   *
+   * Dicoba dua sumber, berurutan:
+   *
+   * 1. Yahoo lewat proxy CORS — paling segar (delay ~15 menit), tapi lewat
+   *    layanan pihak ketiga yang bisa membatasi atau memblokir kapan saja.
+   *    Terbukti gagal di production untuk ANTM, 15 Agu 2026.
+   * 2. Penutupan bulanan milik PAPAN sendiri — statis, tak pernah gagal,
+   *    tapi setua bulan terakhir panen.
+   *
+   * Yang PENTING: sumbernya selalu disebut di layar. Harga bulan lalu yang
+   * disamarkan sebagai harga hari ini jauh lebih berbahaya daripada
+   * kegagalan yang jujur — orang menghitung kerugiannya dari angka yang
+   * dikiranya terkini.
+   */
   async function ambilHarga(pilih?: string) {
     const k = (pilih ?? kode).trim().toUpperCase()
     if (!k) return
@@ -89,7 +102,7 @@ export function Pemulihan() {
     try {
       const yUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${k}.JK?interval=1d&range=1d`
       const r = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(yUrl)}`, {
-        signal: AbortSignal.timeout(10000),
+        signal: AbortSignal.timeout(8000),
       })
       const j = await r.json()
       const res = j?.chart?.result?.[0]
@@ -97,6 +110,17 @@ export function Pemulihan() {
       if (!harga || harga <= 0) throw new Error('harga kosong')
       setKini(String(harga))
       setNamaEmiten(`${res?.meta?.longName || res?.meta?.shortName || k} · harga delay ~15 menit`)
+      return
+    } catch {
+      /* jatuh ke cadangan di bawah */
+    }
+    try {
+      const r = await fetch('/data-idx/json/harga_terakhir.json')
+      const j = await r.json() as { bulan: string; harga: Record<string, number> }
+      const harga = j.harga?.[k]
+      if (!harga) throw new Error('tak ada di cadangan')
+      setKini(String(harga))
+      setNamaEmiten(`${k} · penutupan ${j.bulan} — harga langsung tak bisa diambil, ini yang terakhir kami simpan`)
     } catch {
       setNamaEmiten('Gagal mengambil harga — isi manual di bawah.')
     } finally {
