@@ -12,6 +12,10 @@ import { PanelJenjang } from './PanelJenjang'
 import './AkunAdmin.css'
 import { pesanGalat } from '../../lib/pesanGalat'
 
+/** Domain akun kontributor PAPAN. Ditulis sekali di sini supaya kalau suatu
+ *  saat berganti, tak ada satu pun tempat yang tertinggal memakai yang lama. */
+const DOMAIN_AKUN = '@papan.id'
+
 /** Pilihan kuota harian — dropdown gantinya input number bertombol panah
  *  (sempit, gampang salah ketik). Dipakai form Tambah Akun & kolom kuota
  *  per baris tabel (perbaikan A, #shell-tab). */
@@ -389,7 +393,8 @@ export function AkunAdmin() {
 }
 
 function FormTambahAkun({ onClose, onSukses }: { onClose: () => void; onSukses: (pesan: string) => void }) {
-  const [email, setEmail] = useState('')
+  const [lokal, setLokal] = useState('')
+  const email = lokal ? `${lokal}${DOMAIN_AKUN}` : ''
   const [sandi, setSandi] = useState('')
   const [alias, setAlias] = useState('')
   const [kuota, setKuota] = useState(1)
@@ -434,7 +439,21 @@ function FormTambahAkun({ onClose, onSukses }: { onClose: () => void; onSukses: 
       <form onSubmit={submit} style={{ display: 'grid', gap: 12 }}>
         <div className="field">
           <span className="lbl">Email</span>
-          <input className="inp" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nama@contoh.com" />
+          {/* Domainnya tempelan tetap, BUKAN teks yang ikut diketik. Menyisipkan
+              "@papan.id" ke nilai input tiap ketikan akan melompatkan kursor ke
+              ujung setiap kali orang membetulkan satu huruf di tengah. Yang
+              diketik cuma bagian lokal; alamat utuhnya dirakit saat dikirim. */}
+          <div className="aa-email">
+            <input
+              className="inp" required value={lokal} autoComplete="off"
+              // Menempel alamat utuh tetap bekerja: bagian setelah @ dibuang,
+              // karena domainnya toh sudah ditentukan.
+              onChange={(e) => setLokal(e.target.value.split('@')[0].replace(/\s/g, ''))}
+              placeholder="nama"
+              aria-label={`Bagian nama email, sebelum ${DOMAIN_AKUN}`}
+            />
+            <span className="aa-email-dom">{DOMAIN_AKUN}</span>
+          </div>
         </div>
         <KolomSandi label="Sandi awal" nilai={sandi} onGanti={setSandi}
           placeholder="Minimal 8 karakter" autoComplete="new-password" />
@@ -442,7 +461,7 @@ function FormTambahAkun({ onClose, onSukses }: { onClose: () => void; onSukses: 
             diucapkan: <Nama><4 digit>. Nama diambil dari alias kalau sudah
             diisi, kalau belum dari bagian lokal email. */}
         <BarisBuatkanSandi
-          nama={alias.trim() || email.split('@')[0]}
+          nama={alias.trim() || lokal}
           onBuat={setSandi}
           disabled={kirim}
         />

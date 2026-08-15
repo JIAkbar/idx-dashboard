@@ -21,13 +21,19 @@ const DIGIT = 4
 /**
  * Rakit sandi dari nama/alias + angka acak.
  *
- * Nama dibersihkan ke huruf Latin saja dan diawali kapital; kalau setelah
- * dibersihkan kosong atau terlalu pendek (mis. alias berupa emoji atau satu
- * huruf), dipakai kata cadangan "Papan" supaya hasilnya tetap bisa dibacakan
- * dan tetap memenuhi panjang minimum server.
+ * Hanya kata pertama yang dipakai — "Budi Santoso" dan "budi.santoso" sama-sama
+ * menghasilkan "Budi". Nama dibersihkan ke huruf Latin saja dan diawali
+ * kapital; kalau setelah dibersihkan kosong atau terlalu pendek (mis. alias
+ * berupa emoji atau satu huruf), dipakai kata cadangan "Papan" supaya hasilnya
+ * tetap bisa dibacakan dan tetap memenuhi panjang minimum server.
  */
 export function rakitSandi(nama: string): string {
-  const bersih = nama.replace(/[^A-Za-z]/g, '')
+  // Kata PERTAMA saja. Membuang pemisah lalu menyambung sisanya menghasilkan
+  // "Ujicobauji" dari "ujicoba Uji" — lebih panjang dan justru lebih sulit
+  // dibacakan lewat telepon, padahal bisa dibacakan adalah satu-satunya
+  // alasan bentuk sandi ini dipilih.
+  const kataPertama = nama.trim().split(/[\s._+-]+/)[0] ?? ''
+  const bersih = kataPertama.replace(/[^A-Za-z]/g, '')
   const pokok = bersih.length >= 4
     ? bersih[0].toUpperCase() + bersih.slice(1, 10).toLowerCase()
     : 'Papan'

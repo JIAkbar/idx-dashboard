@@ -33,10 +33,18 @@ describe('rakitSandi', () => {
     expect(s.length).toBeGreaterThanOrEqual(8)
   })
 
-  it('membuang spasi & memotong nama panjang di 10 huruf', () => {
-    // "Michael Septian" -> "Michaelsep" + 4 angka. Dipotong supaya sandinya
-    // tetap pendek saat dibacakan lewat telepon.
-    expect(rakitSandi('Michael Septian')).toMatch(/^Michaelsep\d{4}$/)
+  it('memakai kata pertama saja, apa pun pemisahnya', () => {
+    // Versi lama menyambung semua kata jadi satu ("Michaelsep" dari "Michael
+    // Septian"), yang justru lebih sulit dibacakan lewat telepon — padahal
+    // bisa dibacakan adalah satu-satunya alasan bentuk sandi ini dipilih.
+    expect(rakitSandi('Michael Septian')).toMatch(/^Michael\d{4}$/)
+    expect(rakitSandi('ujicoba Uji')).toMatch(/^Ujicoba\d{4}$/)
+    expect(rakitSandi('budi.santoso')).toMatch(/^Budi\d{4}$/)
+    expect(rakitSandi('warda_w')).toMatch(/^Warda\d{4}$/)
+  })
+
+  it('memotong kata pertama yang kelewat panjang di 10 huruf', () => {
+    expect(rakitSandi('Bartholomeusz')).toMatch(/^Bartholome\d{4}$/)
   })
 
   it('jatuh ke kata cadangan kalau nama terlalu pendek setelah dibersihkan', () => {

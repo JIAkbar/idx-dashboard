@@ -32,6 +32,16 @@
 .lantai .aa-buatkan .dd-btn { white-space: nowrap; }
 .lantai .aa-buatkan .muted { font-size: 10.5px; line-height: 1.45; flex: 1; min-width: 180px; }
 
+/* Kolom email dengan domain tempelan. Kotak luarnya yang menggambar bingkai
+   dan keadaan fokus, bukan input di dalamnya — supaya "nama" dan "@papan.id"
+   terbaca sebagai satu alamat utuh, bukan dua kontrol bersebelahan. */
+.lantai .aa-email { display: flex; align-items: center; background: var(--bg2);
+  border: 1px solid var(--line2); border-radius: var(--r); padding-right: 11px; }
+.lantai .aa-email:focus-within { border-color: var(--amber); }
+.lantai .aa-email .inp { border: 0; background: transparent; padding-right: 2px; min-width: 0; }
+.lantai .aa-email .inp:focus { border-color: transparent; }
+.lantai .aa-email-dom { font-family: var(--mono); font-size: 12.5px; color: var(--text3); white-space: nowrap; }
+
 /* Checkbox biasa + label sebaris (form Tambah Akun — izin Bedah awal). */
 .lantai .aa-cek-baris { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text); cursor: pointer; }
 
