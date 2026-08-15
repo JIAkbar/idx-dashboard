@@ -414,12 +414,17 @@ export function ringkasHarian(
     })
   }
 
-  // Jejak untuk grafik balapan. Dijarangkan supaya tak mengirim ribuan titik
-  // ke SVG — mata tak bisa membedakan 8.000 titik dari 400 pada lebar layar
-  // mana pun, dan yang 8.000 membuat animasinya tersendat.
+  // Jejak untuk grafik balapan. Penjarangan hanya dilakukan kalau titiknya
+  // memang berlebihan: di bawah 900 hari (kira-kira 3,5 tahun) semuanya
+  // dipakai apa adanya.
+  //
+  // Ini penting untuk rentang pendek. Tiap garis hanya bergerak sekali
+  // seminggu — garis "Selasa" mendatar di empat hari lainnya — jadi
+  // menjarangkan lagi di atas itu membuat satu langkah tangga menelan
+  // beberapa minggu sekaligus, dan bentuknya berhenti menggambarkan apa pun.
   const kum = [1, 1, 1, 1, 1]
   const jejak: Array<{ tgl: string; nilai: number[] }> = []
-  const langkah = Math.max(1, Math.floor(semua.length / 400))
+  const langkah = semua.length <= 900 ? 1 : Math.ceil(semua.length / 900)
   semua.forEach((x, i) => {
     kum[x.hari] *= 1 + x.persen / 100
     if (i % langkah === 0 || i === semua.length - 1) {

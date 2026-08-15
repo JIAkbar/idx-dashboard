@@ -2333,7 +2333,22 @@
 .lantai .sea-balapan svg { width: 100%; height: auto; display: block; }
 .lantai .sb-sumbu { font-family: var(--mono); font-size: 10px; fill: var(--text3); }
 .lantai .sb-label { font-family: var(--mono); font-size: 11px; font-weight: 700; }
-.lantai .sb-lompat { position: absolute; right: 4px; top: 4px; cursor: pointer; }
+/* Penyingkapan garis dijalankan compositor lewat dashoffset — bukan state
+   React per frame, yang membuat versi pertama tersendat karena seluruh tabel
+   ikut dihitung ulang 60 kali sedetik. */
+@keyframes sb-tarik { from { stroke-dashoffset: var(--L); } to { stroke-dashoffset: 0; } }
+@keyframes sb-muncul { from { opacity: 0; } to { opacity: 1; } }
+.lantai .sb-garis {
+  stroke-dasharray: var(--L);
+  animation: sb-tarik 2.2s cubic-bezier(.32,.72,.36,1) both;
+}
+/* Label ujung menyusul SETELAH garisnya sampai — muncul lebih awal, angkanya
+   sudah terbaca sementara garisnya masih di tengah jalan, dan perlombaannya
+   kehilangan maksud. */
+.lantai .sb-ujung { animation: sb-muncul .45s ease 2.15s both; }
+@media (prefers-reduced-motion: reduce) {
+  .lantai .sb-garis, .lantai .sb-ujung { animation: none; stroke-dashoffset: 0; opacity: 1; }
+}
 .lantai .sea-hari-tbl { min-width: 640px; }
 .lantai .sea-hari-tbl td.up { color: var(--green); }
 .lantai .sea-hari-tbl td.dn { color: var(--red); }

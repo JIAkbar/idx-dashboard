@@ -25,6 +25,7 @@ function geser(tahun: number): string {
 }
 
 const WARNA = ['var(--red)', 'var(--amber)', 'var(--blue)', 'var(--green)', 'var(--text)']
+const BLN_PENDEK = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 
 /**
  * Pola hari dalam seminggu — tab kedua Seasonality.
@@ -42,7 +43,6 @@ export function SeasonalityHarian() {
   const [tutup, setTutup] = useState<Record<string, number> | null>(null)
   const [galat, setGalat] = useState<string | null>(null)
   const [pilih, setPilih] = useState('Semua')
-  const [maju, setMaju] = useState(1)
 
   useEffect(() => {
     fetch('/data-idx/json/ihsg_harian.json')
@@ -57,27 +57,6 @@ export function SeasonalityHarian() {
     () => (tutup ? ringkasHarian('IHSG', tutup, sejak) : null),
     [tutup, sejak],
   )
-
-  // Animasi berjalan SEKALI tiap ganti rentang, lalu berhenti di hasil akhir.
-  // Diulang terus-menerus, angkanya jadi sulit dibaca justru karena
-  // gerakannya — padahal angka itulah yang dicari orang.
-  useEffect(() => {
-    if (!r) return
-    const kurangGerak = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (kurangGerak) { setMaju(1); return }
-    setMaju(0)
-    let batal = false
-    const mulai = performance.now()
-    const DURASI = 2200
-    const tik = (t: number) => {
-      if (batal) return
-      const p = Math.min(1, (t - mulai) / DURASI)
-      setMaju(p)
-      if (p < 1) requestAnimationFrame(tik)
-    }
-    const id = requestAnimationFrame(tik)
-    return () => { batal = true; cancelAnimationFrame(id) }
-  }, [r])
 
   if (galat) return <div className="panel panel-b"><p className="muted">{galat}</p></div>
   if (!tutup) return <div className="fd-empty"><p>Memuat data IHSG…</p></div>
@@ -122,7 +101,7 @@ export function SeasonalityHarian() {
           <span className="v-note">pertumbuhan kumulatif sejak {r.mulai.slice(0, 4)}</span>
         </div>
         <div className="panel-b">
-          <Balapan r={r} maju={maju} onLompat={() => setMaju(1)} />
+          <Balapan r={r} kunci={pilih} />
         </div>
       </section>
 
@@ -186,26 +165,71 @@ export function SeasonalityHarian() {
   )
 }
 
-/** Grafik balapan: lima garis kumulatif yang tumbuh bersamaan. */
-function Balapan({ r, maju, onLompat }: { r: RingkasHarian; maju: number; onLompat: () => void }) {
-  const W = 900, H = 340
-  const PAD = { atas: 14, kanan: 104, bawah: 26, kiri: 56 }
-  const sampai = Math.max(2, Math.floor(r.jejak.length * maju))
-  const tampak = r.jejak.slice(0, sampai)
+/**
+ * Grafik balapan: lima garis kumulatif yang tumbuh bersamaan.
+ *
+ * Animasinya digerakkan CSS (stroke-dashoffset), BUKAN state React per frame.
+ * Versi pertama menyetel state 60 kali per detik, dan tiap penyetelan memaksa
+ * seluruh komponen — termasuk tabel tujuh kolomnya — dihitung ulang. Hasilnya
+ * tersendat persis di bagian yang seharusnya mulus.
+ *
+ * Dengan dashoffset, path digambar sekali lalu compositor yang menganimasikan
+ * penyingkapannya. Tak ada render ulang sama sekali selama animasi berjalan.
+ */
+function Balapan({ r, kunci }: { r: RingkasHarian; kunci: string }) {
+  const W = 900, H = 348
+  const PAD = { atas: 14, kanan: 104, bawah: 34, kiri: 56 }
 
-  // Skala dari SELURUH jejak, bukan cuma yang tampak. Kalau ikut tumbuh,
-  // garisnya terlihat diam sementara sumbunya yang bergerak — dan justru
-  // perlombaannya yang jadi tak terlihat.
   const semua = r.jejak.flatMap((j) => j.nilai)
   const min = Math.min(0, ...semua)
   const maks = Math.max(...semua)
   const x = (i: number) => PAD.kiri + (i / Math.max(1, r.jejak.length - 1)) * (W - PAD.kiri - PAD.kanan)
   const y = (v: number) => PAD.atas + (1 - (v - min) / Math.max(1e-9, maks - min)) * (H - PAD.atas - PAD.bawah)
-  const akhir = tampak[tampak.length - 1]
+  const akhir = r.jejak[r.jejak.length - 1]
+
+  // Penanda waktu dipilih menurut panjang rentangnya: di bawah 2 tahun tiap
+  // bulan (atau tiap 2 bulan kalau padat), di atas itu tiap tahun. Menampilkan
+  // 36 label bulan pada rentang 30 tahun cuma menghasilkan pita hitam.
+  const tanda = useMemo(() => {
+    const hari = r.jejak.length
+    const perTahun = hari > 480
+    const hasil: Array<{ i: number; tgl: string; label: string }> = []
+    let terakhir = ''
+    r.jejak.forEach((j, i) => {
+      const kunci = perTahun ? j.tgl.slice(0, 4) : j.tgl.slice(0, 7)
+      if (kunci === terakhir) return
+      terakhir = kunci
+      hasil.push({
+        i, tgl: j.tgl,
+        label: perTahun ? kunci : BLN_PENDEK[Number(j.tgl.slice(5, 7)) - 1] + (j.tgl.slice(5, 7) === '01' ? ` '${j.tgl.slice(2, 4)}` : ''),
+      })
+    })
+    // Kalau masih terlalu rapat, ambil selang seling sampai muat. Label yang
+    // saling menimpa lebih buruk daripada label yang lebih jarang.
+    const maksLabel = 14
+    if (hasil.length <= maksLabel) return hasil
+    const lompat = Math.ceil(hasil.length / maksLabel)
+    return hasil.filter((_, i) => i % lompat === 0)
+  }, [r.jejak])
+
+  // Panjang jalur ditaksir dari jarak antar titik. Cukup: nilainya cuma perlu
+  // TIDAK LEBIH PENDEK dari panjang sebenarnya, karena dipakai sebagai dash
+  // yang harus mampu menutupi seluruh garis sebelum disingkap.
+  const panjang = HARI.map((_, h) => {
+    let L = 0
+    for (let i = 1; i < r.jejak.length; i++) {
+      const dx = x(i) - x(i - 1)
+      const dy = y(r.jejak[i].nilai[h]) - y(r.jejak[i - 1].nilai[h])
+      L += Math.hypot(dx, dy)
+    }
+    return Math.ceil(L) + 10
+  })
 
   return (
     <div className="sea-balapan">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img"
+      {/* key memaksa elemen dibuat ulang saat rentang berganti — animasi CSS
+          tidak akan mengulang sendiri kalau elemennya cuma diperbarui. */}
+      <svg key={kunci} viewBox={`0 0 ${W} ${H}`} role="img"
         aria-label="Pertumbuhan kumulatif IHSG per hari dalam seminggu">
         <line x1={PAD.kiri} x2={W - PAD.kanan} y1={y(0)} y2={y(0)}
           stroke="var(--line2)" strokeDasharray="3 4" />
@@ -218,30 +242,30 @@ function Balapan({ r, maju, onLompat }: { r: RingkasHarian; maju: number; onLomp
         {HARI.map((nama, h) => (
           <g key={nama}>
             <path
-              d={tampak.map((j, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(j.nilai[h]).toFixed(1)}`).join(' ')}
-              fill="none" stroke={WARNA[h]} strokeWidth="1.8" strokeLinejoin="round"
+              className="sb-garis"
+              style={{ ['--L' as string]: panjang[h] }}
+              d={r.jejak.map((j, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(j.nilai[h]).toFixed(1)}`).join(' ')}
+              fill="none" stroke={WARNA[h]} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round"
             />
-            {akhir && (
-              <>
-                <circle cx={x(tampak.length - 1)} cy={y(akhir.nilai[h])} r="3.5" fill={WARNA[h]} />
-                <text x={x(tampak.length - 1) + 8} y={y(akhir.nilai[h]) + 4} fill={WARNA[h]} className="sb-label">
-                  {nama} {akhir.nilai[h] >= 0 ? '+' : ''}{Math.round(akhir.nilai[h])}%
-                </text>
-              </>
-            )}
+            <g className="sb-ujung">
+              <circle cx={x(r.jejak.length - 1)} cy={y(akhir.nilai[h])} r="3.5" fill={WARNA[h]} />
+              <text x={x(r.jejak.length - 1) + 8} y={y(akhir.nilai[h]) + 4} fill={WARNA[h]} className="sb-label">
+                {nama} {akhir.nilai[h] >= 0 ? '+' : ''}{Math.round(akhir.nilai[h])}%
+              </text>
+            </g>
           </g>
         ))}
-        {akhir && (
-          <text x={PAD.kiri} y={H - 6} className="sb-sumbu">
-            {tampak[0].tgl} &rarr; {akhir.tgl}
-          </text>
-        )}
+        {/* Sumbu waktu: penanda BULAN untuk rentang pendek, TAHUN untuk
+            rentang panjang. Tanpa ini, garis yang naik-turun tak punya
+            jangkar — orang melihat bentuk tapi tak tahu kapan itu terjadi. */}
+        {tanda.map((t) => (
+          <g key={t.tgl}>
+            <line x1={x(t.i)} x2={x(t.i)} y1={PAD.atas} y2={H - PAD.bawah}
+              stroke="var(--line)" strokeWidth="1" opacity="0.5" />
+            <text x={x(t.i)} y={H - 6} textAnchor="middle" className="sb-sumbu">{t.label}</text>
+          </g>
+        ))}
       </svg>
-      {maju < 1 && (
-        <button type="button" className="bchip bchip-klik sb-lompat" onClick={onLompat}>
-          Langsung ke hasil akhir
-        </button>
-      )}
     </div>
   )
 }
