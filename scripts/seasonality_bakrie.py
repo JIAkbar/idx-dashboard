@@ -53,6 +53,16 @@ EMITEN = {
     "BRMS": "Bumi Resources Minerals",
     "VIVA": "Visi Media Asia",
     "MDIA": "Intermedia Capital",
+    # Ronde 2 (15 Agu 2026) — empat kode yang ketinggalan di panen pertama.
+    # Tiga di antaranya ditemukan dari data KSEI ≥1% milik PAPAN sendiri
+    # (data-idx/json/investor_map.json, cari pemegang saham bernama Bakrie),
+    # bukan dari daftar di internet: cara itu menemukan kepemilikan yang
+    # benar-benar tercatat, termasuk yang jarang disebut media. JGLE datang
+    # dari pencarian web (lini properti grup, seinduk ELTY).
+    "VKTR": "VKTR Teknologi Mobilitas",          # BNBR 24,4% + Bakrie Metal 14,2% + Bakrie Pipe 1,26%
+    "BIPI": "Astrindo Nusantara Infrastruktur",  # Bakrie Capital 7,06%
+    "JGLE": "Graha Andrasentra Propertindo",     # properti, seinduk ELTY
+    "ALII": "Ancara Logistics Indonesia",        # Aninditha Anestya Bakrie 1,95% — tipis & perorangan
 }
 
 BULAN = ["Januari", "Februari", "Maret", "April", "Mei", "Juni",

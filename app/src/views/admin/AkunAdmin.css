@@ -73,6 +73,10 @@
   white-space: normal; overflow-wrap: anywhere;
 }
 .lantai .aa-nowrap { white-space: nowrap; }
+
+/* Sel nama jenjang di tabel acuan: lencana + teks sejajar tengah. */
+.lantai .pj-nama { display: flex; align-items: center; gap: 9px; }
+.lantai .pj-nama > span { min-width: 0; }
 /* Keterangan "efektif N/hari" di bawah dropdown kuota — satu baris, tidak
    ikut melebarkan kolomnya. */
 .lantai .aa-kuota-dd .muted { white-space: nowrap; }

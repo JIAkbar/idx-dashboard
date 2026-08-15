@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { daftarJenjang, type JenjangRow } from '../../lib/jenjang'
+import { IkonJenjang } from '../../components/dasbor/IkonJenjang'
 
 /**
  * Tabel acuan jenjang kontributor — dipakai di tab Akun (menjelaskan kolom
@@ -55,8 +56,17 @@ export function PanelJenjang({ ringkas = false }: { ringkas?: boolean }) {
               {baris.map((j) => (
                 <tr key={j.tier}>
                   <td>
-                    <b>{j.nama}</b>{' '}
-                    <span className="muted" style={{ fontSize: 10 }}>tier {j.tier}</span>
+                    {/* Lencana kecil di tiap baris: enam nama jenjang berturut
+                        terbaca sebagai daftar kata sampai warnanya ikut hadir —
+                        logam dan jumlah takiknya membuat urutannya kelihatan
+                        sebelum kolom angkanya dibaca. */}
+                    <span className="pj-nama">
+                      <IkonJenjang tier={j.tier} nama={j.nama} size={26} />
+                      <span>
+                        <b>{j.nama}</b>{' '}
+                        <span className="muted" style={{ fontSize: 10 }}>tier {j.tier}</span>
+                      </span>
+                    </span>
                   </td>
                   <td className="af-c">{j.min_disetujui === 0 ? '—' : `${j.min_disetujui}+`}</td>
                   <td className="af-c">{!j.min_akurasi ? '—' : `${j.min_akurasi}%`}</td>
