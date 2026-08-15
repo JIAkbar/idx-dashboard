@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type RefObject } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useProfilSaya, type ProfilSaya } from '../../lib/profilSaya'
@@ -410,6 +410,53 @@ function KartuJenjang({ profil, superadmin }: { profil: ProfilSaya; superadmin: 
   )
 }
 
+/** Berapa baris tabel yang tampak sebelum harus digulir. */
+const BARIS_TAMPIL = 10
+
+/**
+ * Pangkas tinggi wadah tabel supaya persis memuat kepala kolom + sepuluh baris.
+ *
+ * Diukur dari baris yang benar-benar terender, bukan dari angka piksel tetap:
+ * tinggi baris di tabel ini tidak seragam-tertebak — sel Alasan boleh
+ * membungkus, dan ukuran huruf ikut zoom peramban serta setelan skala sistem.
+ * Menebak "10 × 46px" benar di satu layar dan meleset di layar berikutnya.
+ *
+ * Batasnya dipasang sebagai maxHeight inline, jadi menang atas nilai cadangan
+ * di CSS (yang tetap dipakai kalau JavaScript belum sempat mengukur).
+ */
+function useTinggiSepuluhBaris(
+  wadah: RefObject<HTMLDivElement | null>,
+  jumlahBaris: number
+) {
+  useLayoutEffect(() => {
+    const el = wadah.current
+    if (!el) return
+    if (jumlahBaris <= BARIS_TAMPIL) {
+      el.style.maxHeight = ''
+      return
+    }
+
+    function ukur() {
+      const w = wadah.current
+      const tabel = w?.querySelector('table')
+      if (!w || !tabel) return
+      const kepala = tabel.tHead?.getBoundingClientRect().height ?? 0
+      const baris = Array.from(tabel.tBodies[0]?.rows ?? []).slice(0, BARIS_TAMPIL)
+      if (baris.length < BARIS_TAMPIL) return
+      const tinggi = baris.reduce((n, r) => n + r.getBoundingClientRect().height, 0)
+      // Bulatkan ke bawah: kelebihan setengah piksel memunculkan potongan
+      // baris ke-11 di tepi bawah, persis yang mau dihindari.
+      w.style.maxHeight = `${Math.floor(kepala + tinggi)}px`
+    }
+
+    ukur()
+    // Lebar berubah -> sel Alasan bisa membungkus -> tinggi baris berubah.
+    const pengamat = new ResizeObserver(ukur)
+    pengamat.observe(el)
+    return () => pengamat.disconnect()
+  }, [wadah, jumlahBaris])
+}
+
 /**
  * Tab "Unggah" (/admin, index) — form Tambah Emiten (upload screenshot) +
  * tabel "Sudah Diunggah" tanggal aktif + Kotak Masuk (tanggal yang sudah
@@ -593,6 +640,9 @@ export function UnggahHarian() {
       setoranCh: b.chart ? byPath.get(b.chart) : undefined,
     }))
   }, [sudah, setoranTanggal])
+
+  const wadahTabel = useRef<HTMLDivElement>(null)
+  useTinggiSepuluhBaris(wadahTabel, sudahMerged.length)
 
   /** Baris boleh dihapus/dicentang pengguna sekarang: superadmin selalu boleh;
    *  kontributor cuma kalau dia penyetor baris ini (orderbook diutamakan,
@@ -828,8 +878,13 @@ export function UnggahHarian() {
               )}
               {/* Lebih dari 10 baris digulir di dalam wadahnya (kepala kolom
                   menempel) — tanggal ramai seperti 13 Agu punya 22 emiten dan
-                  mendorong panel di bawahnya jauh ke luar layar. */}
-              <div className={`af-gulir af-gulir-flex${sudahMerged.length > 10 ? ' af-gulir-cap' : ''}`}>
+                  mendorong panel di bawahnya jauh ke luar layar. Tingginya
+                  DIUKUR dari baris yang benar-benar tampil (lihat
+                  useTinggiSepuluhBaris), bukan angka piksel tetap. */}
+              <div
+                ref={wadahTabel}
+                className={`af-gulir af-gulir-flex${sudahMerged.length > 10 ? ' af-gulir-cap' : ''}`}
+              >
                 <table className="tbl af-tbl">
                   <colgroup>
                     <col style={{ width: '3%' }} />
