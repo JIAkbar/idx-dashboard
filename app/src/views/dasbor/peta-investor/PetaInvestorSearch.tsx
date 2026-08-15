@@ -125,7 +125,6 @@ export const PetaInvestorSearch = forwardRef<PetaInvestorSearchHandle, PetaInves
           </div>
         )}
       </div>
-      <button type="button" className="pi-search-reset" onClick={() => { onClear(); setOpen(false) }}>Reset</button>
     </div>
   )
 })

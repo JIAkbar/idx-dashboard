@@ -2406,3 +2406,12 @@
   font-size: 12px; line-height: 1.7; color: var(--text2); text-align: left;
 }
 .lantai .sea-jarak b { color: var(--amber); }
+
+/* Toolbar Peta Investor sesudah tab dipisah: kotak cari menyerap sisa
+   lebar, dua tombol sependek isinya. Tanpa flex:1 di kotaknya, ketiganya
+   dibagi rata dan kotak cari — satu-satunya yang isinya panjang — jadi
+   sesempit tombol di sebelahnya. */
+.lantai .pi-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.lantai .pi-toolbar .pi-head-actions { flex: 1; min-width: 220px; display: block; }
+.lantai .pi-toolbar .pi-srch-container { position: relative; }
+.lantai .pi-toolbar .pi-search-go, .lantai .pi-toolbar .dd-btn { flex: none; white-space: nowrap; }
