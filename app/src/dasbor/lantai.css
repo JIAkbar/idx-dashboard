@@ -2193,3 +2193,30 @@
    bukan bagian yang tak ada di tempat lain (mis. tanggal). */
 .lantai .hanya-lebar { display: inline; }
 @media (max-width: 700px) { .lantai .hanya-lebar { display: none; } }
+
+/* ===== Kalkulator · tab Pemulihan ========================================= */
+.lantai .kalk-vonis {
+  display: grid; gap: 4px; padding: 14px 16px; border-radius: var(--r);
+  background: var(--bg2); border-left: 3px solid var(--text3);
+}
+.lantai .kalk-vonis .angka { font-family: var(--disp); font-size: 30px; line-height: 1.1; }
+.lantai .kalk-vonis p { margin: 4px 0 0; font-size: 12.5px; line-height: 1.65; }
+.lantai .kalk-vonis.ringan { border-left-color: var(--amber); }
+.lantai .kalk-vonis.ringan .angka { color: var(--amber); }
+.lantai .kalk-vonis.berat,
+.lantai .kalk-vonis.dalam { border-left-color: var(--red); }
+.lantai .kalk-vonis.berat .angka,
+.lantai .kalk-vonis.dalam .angka { color: var(--red); }
+.lantai .kalk-vonis.untung { border-left-color: var(--green); }
+.lantai .kalk-vonis.untung .angka { color: var(--green); }
+
+/* Gradasi baris mengikuti beratnya pemulihan, bukan sekadar hiasan: mata
+   menangkap titik patah 50% (butuh naik 100%) sebelum membaca angkanya. */
+.lantai .kalk-tbl-pulih tbody tr.t-ringan td { background: color-mix(in srgb, var(--green) 9%, transparent); }
+.lantai .kalk-tbl-pulih tbody tr.t-berat td { background: color-mix(in srgb, var(--amber) 10%, transparent); }
+.lantai .kalk-tbl-pulih tbody tr.t-dalam td { background: color-mix(in srgb, var(--red) 12%, transparent); }
+.lantai .kalk-tbl-pulih tbody tr.t-total td { background: var(--red-dim); font-weight: 600; }
+.lantai .kalk-tbl-pulih tbody tr.sorot td {
+  outline: 1px solid var(--amber); outline-offset: -1px; font-weight: 700;
+}
+@media (max-width: 860px) { .lantai .kalk-pemulihan { grid-template-columns: 1fr; } }

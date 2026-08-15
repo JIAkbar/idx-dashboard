@@ -3,15 +3,17 @@ import { AvgDown } from './kalkulator/AvgDown'
 import { ProfitAra } from './kalkulator/ProfitAra'
 import { RiskReward } from './kalkulator/RiskReward'
 import { Dividen } from './kalkulator/Dividen'
-import { IkonMenu, IKON_GRAFIK_TURUN, IKON_UANG, IKON_TIMBANGAN, IKON_UANG_KERTAS } from '../../components/dasbor/IkonMenu'
+import { Pemulihan } from './kalkulator/Pemulihan'
+import { IkonMenu, IKON_GRAFIK_TURUN, IKON_UANG, IKON_TIMBANGAN, IKON_UANG_KERTAS, IKON_ULANG } from '../../components/dasbor/IkonMenu'
 
-type Tab = 'avgdown' | 'profit' | 'rr' | 'div'
+type Tab = 'avgdown' | 'profit' | 'rr' | 'div' | 'pulih'
 
 const TABS: { id: Tab; label: ReactNode }[] = [
   { id: 'avgdown', label: <><IkonMenu d={IKON_GRAFIK_TURUN} size={13} /> Avg Down</> },
   { id: 'profit', label: <><IkonMenu d={IKON_UANG} size={13} /> Profit & ARA</> },
   { id: 'rr', label: <><IkonMenu d={IKON_TIMBANGAN} size={13} /> Risk/Reward</> },
   { id: 'div', label: <><IkonMenu d={IKON_UANG_KERTAS} size={13} /> Dividen</> },
+  { id: 'pulih', label: <><IkonMenu d={IKON_ULANG} size={13} /> Pemulihan</> },
 ]
 
 /**
@@ -51,6 +53,7 @@ export function KalkulatorJia() {
       )}
       {tab === 'rr' && <RiskReward />}
       {tab === 'div' && <Dividen feeBeli={feeBeli} setFeeBeli={setFeeBeli} />}
+      {tab === 'pulih' && <Pemulihan />}
     </div>
   )
 }
