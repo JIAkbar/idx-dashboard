@@ -254,11 +254,176 @@ export function vonisUji(uji: HasilUji | null): { kuat: boolean; teks: string } 
   if (uji.pValue < 0.05) {
     return {
       kuat: true,
-      teks: `Dari ${uji.putaran.toLocaleString('id-ID')} kali pengacakan urutan bulan, pola sekuat ini muncul kurang dari 5% waktu — sulit disebut kebetulan.`,
+      teks: `Dari ${uji.putaran.toLocaleString('id-ID')} kali pengacakan label, pola sekuat ini muncul kurang dari 5% waktu — sulit disebut kebetulan.`,
     }
   }
   return {
     kuat: false,
     teks: `Pola sekuat ini masih cukup sering muncul dari data acak (p = ${uji.pValue.toFixed(3)}). Belum cukup untuk disebut nyata.`,
+  }
+}
+
+/* ===================================================================== *
+ * POLA HARI DALAM SEMINGGU
+ *
+ * Ember 5 (Senin-Jumat), bukan 12. Seluruh lapis kejujuran di atas dipakai
+ * ulang apa adanya — penyusutan, selang Wilson, uji permutasi tak peduli
+ * embernya bulan atau hari.
+ *
+ * Satu hal yang BERBEDA dan harus dijaga: dengan 5 ember, tiap ember terisi
+ * 2,4x lebih cepat daripada 12 ember. Itu bagus untuk IHSG (ribuan
+ * pengamatan per hari), tapi berbahaya untuk emiten baru — polanya terlihat
+ * meyakinkan jauh sebelum datanya layak dipercaya.
+ * ===================================================================== */
+
+export const HARI = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'] as const
+
+export interface RingkasHari {
+  /** 0-4 (Senin-Jumat). */
+  hari: number
+  n: number
+  naik: number
+  mentah: number
+  tersusut: number
+  bawah: number
+  atas: number
+  median: number
+  rata2: number
+  /** Hasil pengalian semua imbal hari itu, dalam persen. */
+  kumulatif: number
+}
+
+export interface RingkasHarian {
+  kode: string
+  mulai: string
+  akhir: string
+  dasar: number
+  totalObservasi: number
+  perHari: RingkasHari[]
+  uji: HasilUji | null
+  /** Titik untuk grafik balapan: kumulatif berjalan per hari. */
+  jejak: Array<{ tgl: string; nilai: number[] }>
+}
+
+/**
+ * Uji permutasi untuk ember apa pun — versi umum dari `ujiPermutasi`.
+ *
+ * Yang diacak tetap PELABELAN, bukan nilainya: imbal aslinya utuh, cuma
+ * dipasangkan ke ember berbeda. Jadi yang diuji benar-benar "apakah embernya
+ * penting", bukan "apakah datanya bergejolak".
+ */
+export function ujiPermutasiEmber(
+  pasangan: Array<{ ember: number; persen: number }>,
+  jumlahEmber: number,
+  putaran = 2000,
+  benih = 20260815,
+): HasilUji | null {
+  if (pasangan.length < jumlahEmber * 5) return null
+
+  const puncak = (ps: Array<{ ember: number; persen: number }>) => {
+    const naik = new Array(jumlahEmber).fill(0)
+    const total = new Array(jumlahEmber).fill(0)
+    for (const { ember, persen } of ps) {
+      total[ember]++
+      if (persen > 0) naik[ember]++
+    }
+    let terbaik = 0, idx = 0
+    for (let i = 0; i < jumlahEmber; i++) {
+      if (total[i] < 3) continue
+      const p = (naik[i] / total[i]) * 100
+      if (p > terbaik) { terbaik = p; idx = i }
+    }
+    return { ember: idx, peluang: terbaik }
+  }
+
+  const asli = puncak(pasangan)
+  const nilai = pasangan.map((x) => x.persen)
+  const label = pasangan.map((x) => x.ember)
+  let a = benih >>> 0
+  const rnd = () => {
+    a = (a + 0x6d2b79f5) >>> 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+
+  let ekstrem = 0
+  for (let i = 0; i < putaran; i++) {
+    const campur = [...nilai]
+    for (let j = campur.length - 1; j > 0; j--) {
+      const k = Math.floor(rnd() * (j + 1))
+      ;[campur[j], campur[k]] = [campur[k], campur[j]]
+    }
+    if (puncak(label.map((e, idx) => ({ ember: e, persen: campur[idx] }))).peluang >= asli.peluang) ekstrem++
+  }
+
+  return {
+    bulanJuara: asli.ember + 1,
+    peluangJuara: Math.round(asli.peluang * 10) / 10,
+    pValue: (ekstrem + 1) / (putaran + 1),
+    putaran,
+  }
+}
+
+/** Ringkas pola hari-dalam-seminggu dari seri harga penutupan harian. */
+export function ringkasHarian(
+  kode: string,
+  tutup: Record<string, number>,
+  sejakTahun = 0,
+): RingkasHarian | null {
+  const tgl = Object.keys(tutup).filter((t) => Number(t.slice(0, 4)) >= sejakTahun).sort()
+  if (tgl.length < 30) return null
+
+  const semua: Array<{ tgl: string; hari: number; persen: number }> = []
+  for (let i = 1; i < tgl.length; i++) {
+    const a = tutup[tgl[i - 1]], b = tutup[tgl[i]]
+    if (!(a > 0)) continue
+    // getUTCDay: 1=Senin … 5=Jumat. Akhir pekan dibuang — bursa tutup, dan
+    // baris yang muncul di situ hampir pasti salah baca tanggal.
+    const w = new Date(tgl[i] + 'T00:00:00Z').getUTCDay()
+    if (w < 1 || w > 5) continue
+    semua.push({ tgl: tgl[i], hari: w - 1, persen: ((b - a) / a) * 100 })
+  }
+  if (!semua.length) return null
+
+  const dasar = (semua.filter((x) => x.persen > 0).length / semua.length) * 100
+
+  const perHari: RingkasHari[] = []
+  for (let h = 0; h < 5; h++) {
+    const isi = semua.filter((x) => x.hari === h)
+    const nilai = isi.map((x) => x.persen)
+    const naik = nilai.filter((v) => v > 0).length
+    const n = nilai.length
+    const [bawah, atas] = selangWilson(naik, n)
+    const s = [...nilai].sort((x, y) => x - y)
+    const t = s.length >> 1
+    perHari.push({
+      hari: h, n, naik,
+      mentah: n ? (naik / n) * 100 : 0,
+      tersusut: peluangTersusut(naik, n, dasar),
+      bawah, atas,
+      median: s.length ? (s.length % 2 ? s[t] : (s[t - 1] + s[t]) / 2) : 0,
+      rata2: n ? nilai.reduce((x, v) => x + v, 0) / n : 0,
+      kumulatif: (nilai.reduce((acc, v) => acc * (1 + v / 100), 1) - 1) * 100,
+    })
+  }
+
+  // Jejak untuk grafik balapan. Dijarangkan supaya tak mengirim ribuan titik
+  // ke SVG — mata tak bisa membedakan 8.000 titik dari 400 pada lebar layar
+  // mana pun, dan yang 8.000 membuat animasinya tersendat.
+  const kum = [1, 1, 1, 1, 1]
+  const jejak: Array<{ tgl: string; nilai: number[] }> = []
+  const langkah = Math.max(1, Math.floor(semua.length / 400))
+  semua.forEach((x, i) => {
+    kum[x.hari] *= 1 + x.persen / 100
+    if (i % langkah === 0 || i === semua.length - 1) {
+      jejak.push({ tgl: x.tgl, nilai: kum.map((v) => (v - 1) * 100) })
+    }
+  })
+
+  return {
+    kode, mulai: semua[0].tgl, akhir: semua[semua.length - 1].tgl,
+    dasar, totalObservasi: semua.length, perHari, jejak,
+    uji: ujiPermutasiEmber(semua.map((x) => ({ ember: x.hari, persen: x.persen })), 5),
   }
 }

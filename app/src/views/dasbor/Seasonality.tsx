@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { BULAN, ringkasEmiten, vonisUji, type RingkasBulan, type RingkasEmiten, type SeriImbal } from '../../lib/seasonality'
 import { muatIndeks, muatIhsg, muatSeri, type BarisIndeks } from '../../lib/seasonalityData'
 import { pesanGalat } from '../../lib/pesanGalat'
+import { SeasonalityHarian } from './SeasonalityHarian'
 import { IkonMenu, IKON_CARI, IKON_SILANG, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 
 const MAKS = 5
@@ -29,6 +30,7 @@ export function Seasonality() {
   const [seri, setSeri] = useState<Record<string, SeriImbal>>({})
   const [sejak, setSejak] = useState(0)
   const [fokus, setFokus] = useState<{ kode: string; bulan: number } | null>(null)
+  const [tab, setTab] = useState<'bulan' | 'hari'>('bulan')
   const kotak = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -92,6 +94,24 @@ export function Seasonality() {
         <span className="sub">pola bulanan {indeks ? indeks.length.toLocaleString('id-ID') : '—'} emiten, diuji lawan kebetulan</span>
       </div>
 
+      {/* Dua sudut waktu dari satu pertanyaan yang sama — "kapan cenderung
+          naik?" — jadi satu halaman, bukan dua. Memecahnya berarti orang
+          harus tahu lebih dulu sudut mana yang dicari, padahal justru itu
+          yang sedang mereka cari. */}
+      <div className="tabs" role="tablist">
+        <button type="button" role="tab" aria-selected={tab === 'bulan'}
+          className={'tab' + (tab === 'bulan' ? ' on' : '')} onClick={() => setTab('bulan')}>
+          Bulanan
+        </button>
+        <button type="button" role="tab" aria-selected={tab === 'hari'}
+          className={'tab' + (tab === 'hari' ? ' on' : '')} onClick={() => setTab('hari')}>
+          Hari dalam Seminggu
+        </button>
+      </div>
+
+      {tab === 'hari' && <SeasonalityHarian />}
+
+      {tab === 'bulan' && <>
       {galat && <div className="panel panel-b"><p className="muted">{galat}</p></div>}
 
       <section className="panel">
@@ -225,14 +245,16 @@ export function Seasonality() {
         </>
       )}
 
-      <p className="sea-kaki">
+      </>}
+
+      {tab === 'bulan' && <p className="sea-kaki">
         <IkonMenu d={IKON_PERINGATAN} size={12} />{' '}
         <b>Ini frekuensi historis, bukan probabilitas masa depan.</b> Rentang data tiap
         emiten berbeda dan <b>bukan sejak IPO</b> — sumbernya praktis mulai sekitar tahun
         2000, jadi emiten lama kehilangan tahun-tahun awalnya. Harga sudah disesuaikan
         aksi korporasi. Angka peluang sudah <b>disusutkan</b> terhadap sampel tipis, dan
         bulan terkuat diuji lawan 2.000 pengacakan sebelum disebut nyata.
-      </p>
+      </p>}
     </div>
   )
 }
