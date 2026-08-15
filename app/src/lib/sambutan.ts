@@ -36,3 +36,27 @@ export function perluSambutan(markerTersimpan: string | null, markerSaatIni: str
 export function kunciBeku(userId: string): string {
   return `beku:${userId}`
 }
+
+/** Kunci localStorage penanda jenjang terakhir yang SUDAH dirayakan. Beda
+ *  dari dua kunci di atas: penandanya bukan sesi login melainkan nomor tier,
+ *  karena naik jenjang bisa terjadi di tengah sesi (setoran disetujui saat
+ *  halamannya terbuka) dan perayaannya pantas muncul saat itu juga — bukan
+ *  menunggu login berikutnya. */
+export function kunciJenjang(userId: string): string {
+  return `jenjang:${userId}`
+}
+
+/**
+ * Perlu merayakan kenaikan jenjang?
+ *
+ * Hanya untuk KENAIKAN nyata dari catatan yang ada. Kalau belum ada catatan
+ * sama sekali (akun lama, peramban baru, localStorage dibersihkan), tier
+ * sekarang dicatat diam-diam TANPA perayaan — merayakan sesuatu yang
+ * sebenarnya cuma pertemuan pertama akan terasa palsu, apalagi untuk Pemula
+ * yang belum menyetor apa pun. Turun jenjang juga tidak pernah dirayakan.
+ */
+export function perluRayakan(tersimpan: string | null, tierSekarang: number): boolean {
+  if (tersimpan === null) return false
+  const lama = Number(tersimpan)
+  return Number.isFinite(lama) && tierSekarang > lama
+}

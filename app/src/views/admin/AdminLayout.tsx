@@ -5,10 +5,11 @@ import { useProfilSaya, type ProfilSaya } from '../../lib/profilSaya'
 import { daftarJenjang, hitungRingkasanSetoranSaya, ringkasanJenjang, type JenjangRow } from '../../lib/jenjang'
 import { useKuotaSaya } from '../../lib/kuotaSaya'
 import { IkonJenjang } from '../../components/dasbor/IkonJenjang'
+import { ModalNaikJenjang } from '../../components/dasbor/ModalNaikJenjang'
 import { supabase } from '../../lib/supabase'
 import { AdminTanggalProvider } from '../../context/AdminTanggalContext'
 import { hitungSetoranMenunggu } from '../../lib/supabaseEdisi'
-import { perluSambutan, kunciSambutan, kunciBeku } from '../../lib/sambutan'
+import { perluSambutan, kunciSambutan, kunciBeku, kunciJenjang, perluRayakan } from '../../lib/sambutan'
 import { statusBekuSaya, type StatusBeku } from '../../lib/statusBeku'
 import { namaTampil } from '../../lib/namaTampil'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
@@ -74,6 +75,8 @@ export function AdminLayout() {
    *  tak pernah dicek/dibekukan). */
   const [bekuInfo, setBekuInfo] = useState<StatusBeku | null>(null)
   const [bekuTampil, setBekuTampil] = useState(false)
+  /** Jenjang yang baru dicapai — non-null berarti modal perayaan tampil. */
+  const [naikJenjang, setNaikJenjang] = useState<JenjangRow | null>(null)
   /** Modal "Lengkapi profil" (#item5, akun lama alias kosong) sudah ditutup
    *  sesi ini — dismissable, BUKAN gerbang mati: RLS `profil` saat ini cuma
    *  izinkan superadmin menulis baris siapa pun (lihat komentar di bawah
@@ -136,6 +139,28 @@ export function AdminLayout() {
     if (session) localStorage.setItem(kunciBeku(session.user.id), session.user.last_sign_in_at ?? '')
     setBekuTampil(false)
   }
+
+  // Perayaan naik jenjang. Penandanya nomor tier, bukan sesi login: kenaikan
+  // bisa terjadi saat halaman sedang terbuka (setoran baru disetujui), dan
+  // perayaannya pantas muncul saat itu juga. Superadmin dilewati — ia tidak
+  // berjenjang, dan tier di barisnya cuma sisa perhitungan yang tak dipakai.
+  useEffect(() => {
+    if (!session || superadmin || !profil) return
+    const tier = profil.tier ?? 0
+    const kunci = kunciJenjang(session.user.id)
+    const tersimpan = localStorage.getItem(kunci)
+    if (perluRayakan(tersimpan, tier)) {
+      daftarJenjang()
+        .then((daftar) => {
+          const j = daftar.find((x) => x.tier === tier)
+          if (j) setNaikJenjang(j)
+        })
+        .catch(() => {})
+    }
+    // Catat apa pun hasilnya — termasuk saat belum ada catatan sama sekali,
+    // supaya kenaikan BERIKUTNYA punya pembanding.
+    localStorage.setItem(kunci, String(tier))
+  }, [session, superadmin, profil])
 
   /** Tombol "Setor sekarang" — tutup modal, pindah ke tab Unggah (index) dan
    *  minta form Tambah Emiten langsung terbuka lewat query `?tambah=1`
@@ -246,7 +271,17 @@ export function AdminLayout() {
         </ModalKecil>
       )}
 
-      {sambut && !perluLengkapiProfil && !bekuTampil && (
+      {/* Perayaan naik jenjang didahulukan dari sambutan: kalau keduanya jatuh
+          di muat yang sama, kabar bagus yang tampil duluan. */}
+      {naikJenjang && !perluLengkapiProfil && (
+        <ModalNaikJenjang
+          jenjang={naikJenjang}
+          kuotaBaru={kuota ?? naikJenjang.kuota}
+          onTutup={() => setNaikJenjang(null)}
+        />
+      )}
+
+      {sambut && !perluLengkapiProfil && !bekuTampil && !naikJenjang && (
         <div className="dasbor-modal-bg" onClick={tutupSambutan}>
           <div className="lantai dasbor-modal" role="dialog" aria-modal="true" aria-label="Ringkasan sesi admin" onClick={(e) => e.stopPropagation()}>
             <div className="panel af-sambut">

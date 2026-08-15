@@ -354,6 +354,41 @@
 }
 .lantai .af-sambut-jenjang-kepala b { font-family: var(--disp); font-size: 17px; color: var(--text); }
 
+/* ── Modal naik jenjang (ModalNaikJenjang.tsx) ─────────────────────────────
+   Kepala bertumpu pada lencana besar: satu-satunya elemen yang boleh nyaring
+   di modal ini, sisanya tenang supaya angkanya yang terbaca. */
+.lantai .njg { overflow: hidden; border-top: 2px solid var(--amber); }
+.lantai .njg-kepala {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 26px 20px 20px; background: var(--bg2); border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+.lantai .njg-eyebrow {
+  font-family: var(--disp); font-size: 9px; font-weight: 700;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--text3); margin-top: 4px;
+}
+.lantai .njg-nama { font-family: var(--disp); font-size: 26px; font-weight: 700; color: var(--text); line-height: 1.1; }
+.lantai .njg-isi { display: flex; flex-direction: column; gap: 13px; }
+.lantai .njg-angka { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.lantai .njg-angka > div {
+  display: flex; flex-direction: column; gap: 2px; min-width: 0;
+  background: var(--bg2); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px;
+}
+.lantai .njg-angka .l {
+  font-size: 8.5px; font-weight: 600; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--text3);
+}
+.lantai .njg-angka b { font-size: 12.5px; color: var(--text); line-height: 1.4; }
+.lantai .njg-pesan { margin: 0; font-size: 13px; line-height: 1.6; color: var(--text); }
+.lantai .njg-kaki { margin: 0; font-size: 10.5px; line-height: 1.55; color: var(--text3); }
+.lantai .njg-tombol { width: 100%; min-height: 42px; display: inline-flex; align-items: center; justify-content: center; }
+
+@media (max-width: 420px) {
+  /* Hak jenjang kerap satu kalimat penuh — di layar sempit ia terjepit jadi
+     kolom 90px dan pecah kata demi kata. Dua kotak turun jadi satu kolom. */
+  .lantai .njg-angka { grid-template-columns: 1fr; }
+}
+
 /* Catatan kuota harian di header halaman (dekat tombol Keluar, #101) —
    angka pengguna sendiri (profil.kuota_harian), batas final dihitung server. */
 .lantai .af-kuota-info { font-family: var(--mono); font-size: 11px; color: var(--text3); }
