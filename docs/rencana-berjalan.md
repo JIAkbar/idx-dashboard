@@ -50,6 +50,7 @@ utama. Aturannya: makin tajam speknya, makin rendah tier yang aman.
 | # | Tugas | Ongkos | Hasil terlihat | Agen |
 |---|---|---|---|---|
 | 108 | [IHSG] Panen harga BUKA harian | Kecil | Lilin berhenti jadi aproksimasi | ✅ sonnet — satu ruas ditambah ke skrip yang sudah jalan |
+| 141 | Setoran DITOLAK dihukum tiga kali (kuota, kunci emiten, tak bisa dihapus) | Sedang | Kontributor Pemula yang ditolak tak lagi buntu total | — sentuh policy INSERT storage, uji hati-hati |
 | 137 | Notifikasi hasil kurasi ke penyetor (setuju/revisi/tolak) | Sedang | Status `revisi` baru berguna kalau sampai ke orangnya | — migrasi DB + RLS; satukan dgn #123 |
 | 138 | Pilih emiten yang MASUK PRODUKSI, terpisah dari kurasi | Sedang | Berhenti menolak data benar demi memangkas isi edisi | — keputusan bentuk layar |
 | 128 | Cocokkan fraksi harga ke dokumen IDX | Kecil | Angka aturan bursa jadi pasti | — perlu penilaian sumber |
