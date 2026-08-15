@@ -2066,3 +2066,35 @@
    sama dengan tombol simpan di modal lain. */
 .lantai .btn-p.btn-bahaya { background: var(--red); color: #fff; }
 .lantai .btn-p.btn-bahaya:hover { filter: brightness(1.08); }
+
+/* ===== Pemuat halaman (kerangka) ==========================================
+   Menggantikan teks "Memuat…" di tengah layar kosong, yang tak membedakan
+   "sebentar lagi datang" dari "menggantung". Kerangkanya menempati bentuk
+   yang akan diisi, jadi pergantiannya tidak terasa seperti halaman melompat. */
+.lantai.pemuat { display: grid; gap: 12px; }
+@keyframes pemuat-denyut { 0%, 100% { opacity: .45 } 50% { opacity: .9 } }
+.lantai.pemuat .pemuat-judul,
+.lantai.pemuat .pemuat-baris,
+.lantai.pemuat .pemuat-kartu {
+  background: linear-gradient(90deg, var(--bg2), var(--bg3), var(--bg2));
+  border-radius: var(--r);
+  animation: pemuat-denyut 1.4s ease-in-out infinite;
+}
+.lantai.pemuat .pemuat-judul { height: 26px; width: 220px; }
+.lantai.pemuat .pemuat-panel {
+  display: grid; gap: 10px; padding: 16px;
+  background: var(--bg1); border: 1px solid var(--line); border-radius: var(--r);
+}
+.lantai.pemuat .pemuat-baris { height: 12px; }
+.lantai.pemuat .pemuat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.lantai.pemuat .pemuat-kartu { height: 96px; border: 1px solid var(--line); }
+/* Denyut adalah isyarat, bukan hiasan — yang dimatikan cuma geraknya, bentuk
+   kerangkanya tetap memberi tahu apa yang sedang disiapkan. */
+@media (prefers-reduced-motion: reduce) {
+  .lantai.pemuat .pemuat-judul,
+  .lantai.pemuat .pemuat-baris,
+  .lantai.pemuat .pemuat-kartu { animation: none; opacity: .6; }
+}
+@media (max-width: 860px) {
+  .lantai.pemuat .pemuat-grid { grid-template-columns: 1fr; }
+}

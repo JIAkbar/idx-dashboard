@@ -22,11 +22,25 @@ export interface AkunRow {
 type Aksi = 'daftar' | 'buat' | 'reset_sandi' | 'set_profil' | 'hapus' | 'set_email'
 
 /** Keputusan murni "perlu diulang atau tidak" (dites tanpa jaringan, lihat
- *  adminAkun.test.ts) — retry HANYA untuk 401 + `sesi_kedaluwarsa: true` dari
- *  Edge Function admin-akun. Token akses Supabase berumur 1 jam; tab lama yang
- *  masih terbuka mengirim token basi dan server menolaknya dengan bentuk ini. */
-export function perluUlangSesi(status: number, body: { sesi_kedaluwarsa?: boolean }): boolean {
-  return status === 401 && body.sesi_kedaluwarsa === true
+ *  adminAkun.test.ts). Token akses Supabase berumur 1 jam; tab lama yang masih
+ *  terbuka mengirim token basi.
+ *
+ *  Token basi itu bisa ditolak DUA pihak, dan bentuk balasannya berbeda:
+ *
+ *  * Edge Function kita sendiri → 401 + `sesi_kedaluwarsa: true`
+ *  * Gateway Supabase, kalau `verify_jwt` menyala → 401 + `{"message":"Invalid
+ *    JWT"}`, tanpa flag apa pun; permintaannya bahkan tak pernah sampai ke
+ *    fungsi
+ *
+ *  Dulu di sini disyaratkan flag itu ada, jadi penolakan gateway lolos dari
+ *  jaring dan jalur "segarkan lalu ulangi" tak pernah jalan — orang cuma lihat
+ *  "Gagal memanggil admin-akun (401)" dan harus memuat ulang halaman sendiri.
+ *  Sekarang 401 apa pun memicu satu kali segarkan-dan-ulang: penyebab 401 yang
+ *  bukan sesi (jarang) paling banter membayar satu permintaan tambahan, dan
+ *  benar untuk kedua setelan `verify_jwt` — jadi setelan itu tak lagi jadi
+ *  syarat diam-diam yang bisa terbalik tanpa disadari saat deploy ulang. */
+export function perluUlangSesi(status: number, _body: { sesi_kedaluwarsa?: boolean }): boolean {
+  return status === 401
 }
 
 async function panggilSekali(aksi: Aksi, muatan: Record<string, unknown>, token: string) {

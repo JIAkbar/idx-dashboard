@@ -6,6 +6,7 @@ import { AksesHalamanProvider } from './context/AksesHalamanContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { PenjagaHalaman } from './components/PenjagaHalaman'
 import { DasborLayout } from './components/dasbor/DasborLayout'
+import { PemuatHalaman } from './components/dasbor/PemuatHalaman'
 import { IndeksDunia } from './views/dasbor/IndeksDunia'
 import { TopStocks } from './views/dasbor/TopStocks'
 import { TopBroker } from './views/dasbor/TopBroker'
@@ -57,7 +58,7 @@ function App() {
               pakai .fullscreen-msg yang sudah ada (dipakai jua PenjagaHalaman/
               ProtectedRoute utk keadaan "sedang menunggu jawaban"), bukan
               komponen pemuat baru. */}
-          <Suspense fallback={<div className="fullscreen-msg">Memuat…</div>}>
+          <Suspense fallback={<PemuatHalaman />}>
           <Routes>
             {/* Publik — dasbor, tanpa login. Index = Indeks Dunia (panel "active" default di index_live.html). */}
             <Route element={<DasborLayout />}>

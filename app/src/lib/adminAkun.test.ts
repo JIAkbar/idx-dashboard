@@ -6,9 +6,11 @@ describe('perluUlangSesi', () => {
     expect(perluUlangSesi(401, { sesi_kedaluwarsa: true })).toBe(true)
   })
 
-  it('401 tanpa flag sesi_kedaluwarsa → jangan ulang (403/401 biasa)', () => {
-    expect(perluUlangSesi(401, {})).toBe(false)
-    expect(perluUlangSesi(401, { sesi_kedaluwarsa: false })).toBe(false)
+  it('401 polos dari gateway (verify_jwt menyala) → tetap perlu ulang', () => {
+    // Kasus yang dulu lolos: gateway menolak token basi sebelum permintaan
+    // sampai ke fungsi, jadi tak ada flag `sesi_kedaluwarsa` untuk dikenali.
+    expect(perluUlangSesi(401, {})).toBe(true)
+    expect(perluUlangSesi(401, { sesi_kedaluwarsa: false })).toBe(true)
   })
 
   it('status lain (403/500) walau flag true → jangan ulang', () => {

@@ -4,6 +4,7 @@ import { useAksesHalaman } from '../context/AksesHalamanContext'
 import { useLoginModalOpsional } from '../context/LoginModalContext'
 import { IkonMenu, IKON_KUNCI } from './dasbor/IkonMenu'
 import type { AlasanKunci } from '../lib/aksesHalaman'
+import { PemuatHalaman } from './dasbor/PemuatHalaman'
 
 /**
  * Penjaga rute (Fase 6 — akses & jenjang): kalau `boleh(kunci)` false,
@@ -24,7 +25,7 @@ export function PenjagaHalaman({ kunci, children }: { kunci: string; children: R
   // — persis kebocoran yang mau dicegah. Jadi selagi belum tahu, tampilkan
   // pemuat netral dulu, BUKAN children, BUKAN juga kerangka terkunci (belum
   // tentu terkunci).
-  if (daftar === null) return <div className="fullscreen-msg">Memuat…</div>
+  if (daftar === null) return <PemuatHalaman />
   if (boleh(kunci)) return <>{children}</>
   return <KerangkaTerkunci {...alasan(kunci)} />
 }

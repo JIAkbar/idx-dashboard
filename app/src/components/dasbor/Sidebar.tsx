@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useAksesHalaman } from '../../context/AksesHalamanContext'
 import { PETA_MENU_KUNCI } from '../../lib/aksesHalaman'
 import { useKlikTransisi } from '../../lib/dasbor/transisi'
+import { prefetchRute } from '../../lib/prefetchRute'
 
 /**
  * Rail kiri (layar lebar). Isinya tiga lapis, dari atas ke bawah:
@@ -67,6 +68,11 @@ export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
               title={judul}
               className={({ isActive }) => 'dasbor-rail-item' + (isActive ? ' active' : '')}
               onClick={(e) => klik(e, item.path)}
+              // Chunk halaman diunduh saat penunjuk mampir, bukan saat diklik —
+              // lihat lib/prefetchRute.ts. `onFocus` menyertakan navigasi papan
+              // ketik, yang kalau tidak akan selalu kena jalur lambat.
+              onPointerEnter={() => prefetchRute(item.path)}
+              onFocus={() => prefetchRute(item.path)}
             >
               <IkonMenu d={item.ikon} size={18} />
               <span className="dasbor-rail-kode">{item.kode}</span>
