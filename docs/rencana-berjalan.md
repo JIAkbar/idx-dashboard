@@ -32,15 +32,16 @@ Ini utang ke Johan. Prioritas di atas apa pun yang kuusulkan sendiri.
 | 109 | Peta Investor: pindah tombol Tampilkan + hapus ekspor "Seluruh dataset" | |
 | 99 | Stock Detail: laporan keuangan kuartalan ala Yahoo Financials | Paling besar yang tersisa |
 
-## 💡 Belum — usulanku, bukan permintaan Johan
+## ⏳ Belum — usulan yang SUDAH disetujui Johan
 
-Jangan dihitung sebagai utang. Kerjakan kalau Johan setuju.
+Disetujui 15 Agu 2026 ("ini juga jadi backlog"). Statusnya kini sama dengan
+permintaan langsung — bukan lagi sekadar usulan yang menunggu jawaban.
 
-| Tugas | Kenapa kuusulkan |
+| Tugas | Kenapa dikerjakan |
 |---|---|
 | **Chart IHSG: pemilih rentang** (1B/6B/YTD/1T/5T/Maks) + ganti judul "Tahun Berjalan" | Muncul dari pertanyaan Johan 15 Agu. Datanya (`ihsg_harian.json`, 8.849 hari) SUDAH ada tapi belum dipakai halaman mana pun — itu yang membuatnya layak dikerjakan lebih dulu di antara usulanku |
 | Chart komparasi Seasonality | Matriks sudah membandingkan; grafik garis 12 titik akan lebih cepat dibaca |
-| Verifikasi mobile halaman Seasonality | Baru diuji di laptop |
+| Verifikasi mobile halaman Seasonality | Baru diuji di laptop — wajib sebelum halaman ini diumumkan ke channel |
 | Lilin mini di kalender bursa | Terhalang #108 |
 | Ruang emiten forum ↔ Seasonality ↔ Stock Detail saling menaut | |
 
