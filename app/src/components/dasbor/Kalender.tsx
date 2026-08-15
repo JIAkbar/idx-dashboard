@@ -16,6 +16,14 @@ interface KalenderProps {
   tanggalAktif: string | null
   onPilih: (iso: string) => void
   /**
+   * Daftar tanggal masih dalam perjalanan. WAJIB diteruskan pemanggil selama
+   * fetch berlangsung: tanpa ini `tanggalTersedia` yang masih kosong terbaca
+   * sebagai "memang tidak ada datanya", dan seluruh kalender menuduh bursa
+   * kosong beberapa ratus milidetik sebelum berubah pikiran (terlihat user
+   * 15 Agu, gejala kembar keluhan "Bursa Libur" 14 Agu).
+   */
+  memuat?: boolean
+  /**
    * 'penuh' (default) = panel kalender lengkap seperti semula (IndeksDunia,
    * dipasangkan grid2). 'strip' = bar tipis Konsep 1 mockup
    * kalender-3-konsep.html (.cal-strip-bar/.csb-*): tanggal aktif + IHSG,
@@ -229,7 +237,7 @@ export function cariHariAdjacent(tanggal: TanggalIndex[], aktif: string | null) 
  * Reusable — tidak ada logika spesifik World di sini, cuma butuh
  * {tanggalTersedia, tanggalAktif, onPilih}.
  */
-export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'penuh', onRentang, rentangAktif }: KalenderProps) {
+export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'penuh', onRentang, rentangAktif, memuat = false }: KalenderProps) {
   const dataMap = useMemo(() => {
     const m = new Map<string, TanggalIndex>()
     tanggalTersedia.forEach((d) => m.set(d.date_iso, d))
@@ -524,7 +532,12 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
         const hariIni = todayIsoJakarta()
         let label: string | null
         let tip: string
-        if (isHoliday) {
+        if (memuat) {
+          // Belum tahu apa-apa — jangan menuduh. Sel dibiarkan netral sampai
+          // datanya datang.
+          label = null
+          tip = 'Memuat data…'
+        } else if (isHoliday) {
           label = 'Libur'
           tip = HOLIDAYS[iso]
         } else if (iso > hariIni) {
@@ -540,7 +553,7 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
         return (
           <div
             key={iso}
-            className={`cg${label === null ? ' depan' : ''}`}
+            className={`cg${label === null ? ' depan' : ''}${memuat ? ' memuat' : ''}`}
             title={tip}
             style={{ flexDirection: 'column', height: 'auto', minHeight: 28, lineHeight: 1.15, gap: 1 }}
           >

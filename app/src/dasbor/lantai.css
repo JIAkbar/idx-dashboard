@@ -1879,3 +1879,13 @@
 }
 .forum-tag:hover { border-bottom-style: solid; }
 .forum-tag:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; border-radius: 2px; }
+
+/* Sel kalender selagi daftar tanggal masih dimuat — denyut halus, tanpa label.
+   Sebelumnya sel kosong langsung dilabeli "Tanpa data" padahal datanya belum
+   sampai; kalender jadi menuduh bursa kosong lalu berubah pikiran sedetik
+   kemudian. Keadaan MEMUAT dan keadaan KOSONG bukan hal yang sama. */
+.lantai .cg.memuat { animation: cg-denyut 1.1s ease-in-out infinite; cursor: progress; }
+@keyframes cg-denyut { 0%,100% { opacity: .32 } 50% { opacity: .6 } }
+@media (prefers-reduced-motion: reduce) {
+  .lantai .cg.memuat { animation: none; opacity: .4; }
+}
