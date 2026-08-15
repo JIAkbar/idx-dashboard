@@ -182,6 +182,7 @@ chart ini tak punya pembanding.
 | Pembekuan otomatis | Diukur dari **kehadiran** (`max(dibuat_pada)` setoran apa pun statusnya), bukan dari setoran yang lolos kurasi. Mutu dihukum di jalur jenjang, bukan di sini |
 | Ambang beku | Ikut jenjang: Pemula 5, Perunggu 7, Perak 10, Emas 20, Platinum 60, Diamond 120 hari kerja (≈5,5 bulan). Kolom `jenjang.hari_beku` |
 | Status `revisi` | Penolakan yang tak menghukum — berkas boleh diganti, TIDAK ikut membagi akurasi. Untuk penyetor beritikad baik yang datanya perlu diperbaiki |
+| Aksi kurasi | Tiga saja: **Setujui · Revisi · Hapus**. "Tolak" dibuang (#142) — dia tak menjawab apa pun: berkasnya tinggal, penyetor tak bisa memperbaiki, akurasinya turun. Baris `ditolak` yang ada DIKONVERSI ke `dihapus`, bukan dibiarkan — dua status yang artinya sama akan menempel di tiap query akurasi selamanya |
 | Setoran ditolak | TIDAK memakan kuota, TIDAK mengunci emitennya, dan boleh dihapus penyetornya. Penolakan sudah dihukum di akurasi — menghukumnya lagi dengan kehilangan giliran hari itu adalah hukuman kedua untuk kesalahan yang sama |
 | Tier turun | Hanya terpicu kalau masih ada setoran baru. Yang berhenti total tiernya membeku — tier itu rekam jejak, bukan langganan; yang hilang aksesnya, lewat pembekuan |
 | Berkas terkurasi | Tak bisa dihapus/diganti penyetornya begitu status keluar dari `menunggu`; superadmin tetap bebas |
