@@ -34,6 +34,8 @@ Terakhir diperbarui: 16 Agustus 2026 (dini hari — setelah sesi admin, jenjang 
 | — | Kolom "Yang terbuka" diturunkan dari tabel Akses, bukan teks manual | 16 Agu 2026 |
 | — | Peta Investor: enam kontrol satu baris, kotak cari 300px, tombol Reset dibuang | 16 Agu 2026 |
 | — | Judul panel Top Stocks & Stock Detail sebut TANGGAL, bukan "Hari Ini" | 16 Agu 2026 |
+| — | Tanggal setoran mundur ke hari bursa (`lib/tanggalBursa.ts`, 4 salinan disatukan) | 16 Agu 2026 |
+| 141 | Setoran ditolak berhenti dihukum tiga kali (kuota, kunci emiten, hapus) | 16 Agu 2026 |
 
 ## ⏳ Antrean kerja — diurutkan dari yang paling murah
 
@@ -50,7 +52,6 @@ utama. Aturannya: makin tajam speknya, makin rendah tier yang aman.
 | # | Tugas | Ongkos | Hasil terlihat | Agen |
 |---|---|---|---|---|
 | 108 | [IHSG] Panen harga BUKA harian | Kecil | Lilin berhenti jadi aproksimasi | ✅ sonnet — satu ruas ditambah ke skrip yang sudah jalan |
-| 141 | Setoran DITOLAK dihukum tiga kali (kuota, kunci emiten, tak bisa dihapus) | Sedang | Kontributor Pemula yang ditolak tak lagi buntu total | — sentuh policy INSERT storage, uji hati-hati |
 | 137 | Notifikasi hasil kurasi ke penyetor (setuju/revisi/tolak) | Sedang | Status `revisi` baru berguna kalau sampai ke orangnya | — migrasi DB + RLS; satukan dgn #123 |
 | 138 | Pilih emiten yang MASUK PRODUKSI, terpisah dari kurasi | Sedang | Berhenti menolak data benar demi memangkas isi edisi | — keputusan bentuk layar |
 | 128 | Cocokkan fraksi harga ke dokumen IDX | Kecil | Angka aturan bursa jadi pasti | — perlu penilaian sumber |
@@ -180,6 +181,7 @@ chart ini tak punya pembanding.
 | Pembekuan otomatis | Diukur dari **kehadiran** (`max(dibuat_pada)` setoran apa pun statusnya), bukan dari setoran yang lolos kurasi. Mutu dihukum di jalur jenjang, bukan di sini |
 | Ambang beku | Ikut jenjang: Pemula 5, Perunggu 7, Perak 10, Emas 20, Platinum 60, Diamond 120 hari kerja (≈5,5 bulan). Kolom `jenjang.hari_beku` |
 | Status `revisi` | Penolakan yang tak menghukum — berkas boleh diganti, TIDAK ikut membagi akurasi. Untuk penyetor beritikad baik yang datanya perlu diperbaiki |
+| Setoran ditolak | TIDAK memakan kuota, TIDAK mengunci emitennya, dan boleh dihapus penyetornya. Penolakan sudah dihukum di akurasi — menghukumnya lagi dengan kehilangan giliran hari itu adalah hukuman kedua untuk kesalahan yang sama |
 | Tier turun | Hanya terpicu kalau masih ada setoran baru. Yang berhenti total tiernya membeku — tier itu rekam jejak, bukan langganan; yang hilang aksesnya, lewat pembekuan |
 | Berkas terkurasi | Tak bisa dihapus/diganti penyetornya begitu status keluar dari `menunggu`; superadmin tetap bebas |
 | Identitas penyetor | Tak terlihat antar-kontributor. Yang ditampilkan cuma "Sudah disetor" — cukup untuk mencegah kerja ganda |
