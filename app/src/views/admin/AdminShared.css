@@ -324,6 +324,36 @@
 .lantai .af-sambut-angka b { font-size: 12.5px; color: var(--text); }
 .lantai .af-sambut-jenjang > .muted { margin: 0; font-size: 11px; line-height: 1.55; }
 
+/* Lencana jenjang (IkonJenjang.tsx) — "lampu" dibentuk drop-shadow berwarna
+   kilau logamnya, kekuatannya naik seiring tier lewat --jenjang-tier (0–5).
+   drop-shadow, bukan box-shadow: bayangannya harus mengikuti bentuk medali,
+   bukan kotak pembungkusnya. */
+.lantai .jenjang-lencana {
+  display: inline-flex; flex-shrink: 0; line-height: 0;
+  filter:
+    drop-shadow(0 0 calc(2px + var(--jenjang-tier) * 1.6px) color-mix(in srgb, var(--jenjang-kilau) calc(22% + var(--jenjang-tier) * 11%), transparent))
+    drop-shadow(0 0 calc(6px + var(--jenjang-tier) * 3px) color-mix(in srgb, var(--jenjang-kilau) calc(8% + var(--jenjang-tier) * 6%), transparent));
+}
+/* Halo di belakang medali bernapas pelan — hanya dari Perak ke atas, supaya
+   "istimewa" tetap terasa istimewa dan Pemula tidak ikut berkilau. */
+.lantai .jenjang-lencana .jl-halo { transform-origin: center; }
+@media (prefers-reduced-motion: no-preference) {
+  .lantai .jenjang-lencana .jl-halo { animation: jenjang-napas 3.2s ease-in-out infinite; }
+}
+@keyframes jenjang-napas {
+  0%, 100% { opacity: .75; transform: scale(.94); }
+  50%      { opacity: 1;   transform: scale(1.04); }
+}
+
+/* Baris kepala blok jenjang: lencana + nama jenjang berdampingan. */
+.lantai .af-sambut-jenjang-kepala { display: flex; align-items: center; gap: 12px; }
+.lantai .af-sambut-jenjang-kepala .nm { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.lantai .af-sambut-jenjang-kepala .l {
+  font-size: 8.5px; font-weight: 600; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--text3);
+}
+.lantai .af-sambut-jenjang-kepala b { font-family: var(--disp); font-size: 17px; color: var(--text); }
+
 /* Catatan kuota harian di header halaman (dekat tombol Keluar, #101) —
    angka pengguna sendiri (profil.kuota_harian), batas final dihitung server. */
 .lantai .af-kuota-info { font-family: var(--mono); font-size: 11px; color: var(--text3); }

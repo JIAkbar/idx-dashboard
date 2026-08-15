@@ -84,6 +84,91 @@ const WA_ADMIN = '628990447098'
 const WA_PESAN = 'Halo, saya mau register PAPAN — nama saya: '
 
 /**
+ * Isi panel "Benefit kontributor".
+ *
+ * Semua butir di bawah adalah yang BENAR-BENAR berlaku hari ini, diambil dari
+ * dua tabel yang menegakkannya: `akses_halaman` (halaman mana terbuka setelah
+ * login, dan jenjang minimum tiap halaman) dan `jenjang` (kuota + hak tiap
+ * tier). Tidak ada janji fitur yang belum jalan — halaman pendaftaran yang
+ * menjanjikan lebih dari yang ditegakkan server akan ketahuan di hari pertama.
+ */
+const BENEFIT_LOGIN = [
+  ['Radar WDWL', 'Layar pantau emiten yang sedang diawasi, lengkap dengan arsip pemindaian sebelumnya.'],
+  ['Peta Investor', 'Kepemilikan pemegang saham ≥1% dari data KSEI — siapa masuk, siapa keluar, per emiten.'],
+  ['Broker Summary', 'Rekap arus broker harian: inventory, kuadran, transaksi nego, dan alur dana.'],
+  ['Bedah Arus Saham', 'Terbitan PDF satu emiten satu edisi, dengan pembacaan orderbook dan distribusi harga.'],
+  ['Forum tanpa batas', 'Tamu dibatasi 5 pesan sehari. Akun aktif menulis sebanyak yang perlu, di ruang umum maupun ruang per emiten.'],
+]
+
+const BENEFIT_JENJANG = [
+  ['Perunggu', 2, 'Riwayat kontribusi + lencana profil'],
+  ['Perak', 3, 'Ekspor XLS Peta Investor'],
+  ['Emas', 5, 'Tabel Probabilitas & VolVal terbuka + arsip PDF seluruh edisi lama'],
+  ['Platinum', 8, 'Boleh menyetor bahan Bedah Arus Saham'],
+  ['Diamond', 12, 'Nama tercantum di bulletin + usul emiten prioritas'],
+] as const
+
+/**
+ * Panel benefit — dipakai sebagai muka kedua modal masuk, bukan halaman
+ * terpisah: orang yang berhenti di gerbang login justru sedang bertanya
+ * "kenapa saya harus punya akun", jadi jawabannya harus ada di layar yang
+ * sama, bukan di balik satu klik keluar.
+ */
+function PanelBenefit({ kembali }: { kembali: () => void }) {
+  return (
+    <div className="panel-b login-benefit">
+      <p className="login-sub" style={{ marginBottom: 4 }}>
+        PAPAN tumbuh dari orderbook yang disetor anggotanya. Yang menyetor mendapat
+        akses lebih dulu — dan makin banyak setoran yang lolos kurasi, makin banyak yang terbuka.
+      </p>
+
+      <div className="lb-blok">
+        <span className="lb-judul">Terbuka begitu akun aktif</span>
+        <ul>
+          {BENEFIT_LOGIN.map(([nama, ket]) => (
+            <li key={nama}><b>{nama}</b><span>{ket}</span></li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="lb-blok">
+        <span className="lb-judul">Naik jenjang, kuota &amp; hak ikut naik</span>
+        <ul className="lb-jenjang">
+          <li>
+            <span className="lb-tier">Pemula</span>
+            <span className="lb-kuota">1/hari</span>
+            <span>Akses penuh halaman anggota</span>
+          </li>
+          {BENEFIT_JENJANG.map(([nama, kuota, hak]) => (
+            <li key={nama}>
+              <span className="lb-tier">{nama}</span>
+              <span className="lb-kuota">{kuota}/hari</span>
+              <span>{hak}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="lb-kaki">
+          Jenjang naik sendiri dari jumlah setoran yang <b>disetujui kurasi</b> dan akurasinya —
+          bukan dari lama berlangganan. Alias kamu tercantum di kolofon PDF setiap edisi yang memuat setoranmu.
+        </p>
+      </div>
+
+      <button type="button" className="btn-p" style={{ width: '100%' }} onClick={kembali}>
+        Kembali ke masuk
+      </button>
+      <a
+        className="login-daftar"
+        href={`https://wa.me/${WA_ADMIN}?text=${encodeURIComponent(WA_PESAN)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Siap bergabung? <b>Daftar lewat WhatsApp</b>
+      </a>
+    </div>
+  )
+}
+
+/**
  * Gerbang login sebagai modal (bukan halaman terpisah — dipicu dari tombol
  * "Masuk" di Sidebar/MobileNav, lihat DasborLayout). Animasi entrance pola
  * yang sama dengan laci menu telepon (MobileNav): background pudar + kartu
@@ -97,6 +182,8 @@ export function LoginModal({ onClose }: { onClose: () => void }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  /** Modal punya dua muka: formulir masuk dan daftar benefit. */
+  const [benefit, setBenefit] = useState(false)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -122,9 +209,17 @@ export function LoginModal({ onClose }: { onClose: () => void }) {
           <SesiHead />
           <SparkIhsg />
           <div className="panel-h">
-            <span className="lbl">Masuk — Area Admin</span>
-            <button type="button" className="dd-btn" onClick={onClose}>Tutup</button>
+            <span className="lbl">{benefit ? 'Benefit kontributor' : 'Masuk — Area Admin'}</span>
+            <span style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
+              {!benefit && (
+                <button type="button" className="dd-btn" onClick={() => setBenefit(true)}>
+                  Benefit kontributor
+                </button>
+              )}
+              <button type="button" className="dd-btn" onClick={onClose}>Tutup</button>
+            </span>
           </div>
+          {benefit ? <PanelBenefit kembali={() => setBenefit(false)} /> : (
           <form className="panel-b" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <p className="login-sub">Masuk untuk kelola unggahan orderbook &amp; edisi Arus Pasar.</p>
             <div className="field">
@@ -149,6 +244,7 @@ export function LoginModal({ onClose }: { onClose: () => void }) {
               Belum punya akun? <b>Daftar lewat WhatsApp</b>
             </a>
           </form>
+          )}
         </div>
       </div>
     </div>

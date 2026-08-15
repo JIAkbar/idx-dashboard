@@ -428,6 +428,43 @@
 .lantai .login-daftar:hover b { text-decoration: underline; }
 .lantai .login-daftar:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 4px; }
 
+/* Muka kedua modal masuk: daftar benefit kontributor. Isinya lebih panjang
+   daripada formulir, jadi digulir DI DALAM modal — tinggi modal tidak boleh
+   memanjang sampai keluar layar telepon. dvh, bukan vh: bilah alamat ponsel
+   menutup bagian bawah viewport. */
+.lantai .login-benefit {
+  display: flex; flex-direction: column; gap: 14px;
+  max-height: min(62dvh, 460px); overflow-y: auto;
+}
+.lantai .lb-blok { display: flex; flex-direction: column; gap: 8px; }
+.lantai .lb-judul {
+  font-family: var(--disp); font-size: 9px; font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--amber);
+}
+.lantai .login-benefit ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.lantai .login-benefit li { display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; color: var(--text2); line-height: 1.5; }
+.lantai .login-benefit li b { font-size: 12.5px; color: var(--text); font-weight: 600; }
+
+/* Baris jenjang: nama, kuota, hak. Kolom nama & kuota dipatok supaya angka
+   kuota berbaris rapi ke bawah; kolom hak yang menyerap sisa dan boleh
+   membungkus (aturan kolom penyerap, SAKTI §172). */
+.lantai .login-benefit .lb-jenjang li {
+  display: grid; grid-template-columns: 72px 52px 1fr; gap: 8px;
+  align-items: baseline; padding-bottom: 7px; border-bottom: 1px solid var(--line);
+}
+.lantai .login-benefit .lb-jenjang li:last-child { border-bottom: 0; padding-bottom: 0; }
+.lantai .lb-tier { font-family: var(--disp); font-weight: 700; font-size: 12px; color: var(--text); }
+.lantai .lb-kuota { font-family: var(--mono); font-size: 11px; color: var(--amber); font-variant-numeric: tabular-nums; }
+.lantai .lb-kaki { margin: 2px 0 0; font-size: 10.5px; color: var(--text3); line-height: 1.55; }
+.lantai .lb-kaki b { color: var(--text2); font-weight: 600; }
+
+@media (max-width: 480px) {
+  /* Di layar sempit kolom hak terjepit di bawah 120px dan pecah kata demi
+     kata; lebih terbaca kalau haknya turun ke baris sendiri. */
+  .lantai .login-benefit .lb-jenjang li { grid-template-columns: 72px 1fr; }
+  .lantai .login-benefit .lb-jenjang li > span:last-child { grid-column: 1 / -1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .dasbor-pita-track { animation: none; }
   .dasbor-modal, .dasbor-modal-bg { animation: none; }

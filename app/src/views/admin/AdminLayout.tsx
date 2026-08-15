@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useProfilSaya, type ProfilSaya } from '../../lib/profilSaya'
 import { daftarJenjang, hitungRingkasanSetoranSaya, ringkasanJenjang, type JenjangRow } from '../../lib/jenjang'
 import { useKuotaSaya } from '../../lib/kuotaSaya'
+import { IkonJenjang } from '../../components/dasbor/IkonJenjang'
 import { supabase } from '../../lib/supabase'
 import { AdminTanggalProvider } from '../../context/AdminTanggalContext'
 import { hitungSetoranMenunggu } from '../../lib/supabaseEdisi'
@@ -338,11 +339,14 @@ function SambutanJenjang({ profil }: { profil: ProfilSaya }) {
 
   return (
     <div className="af-sambut-jenjang">
-      <div className="af-sambut-angka">
-        <div>
+      <div className="af-sambut-jenjang-kepala">
+        <IkonJenjang tier={r.jenjangSaatIni.tier} nama={r.jenjangSaatIni.nama} />
+        <span className="nm">
           <span className="l">Jenjang</span>
           <b>{r.jenjangSaatIni.nama}</b>
-        </div>
+        </span>
+      </div>
+      <div className="af-sambut-angka">
         <div>
           <span className="l">Kuota harian</span>
           <b>{r.kuotaEfektif} orderbook</b>
@@ -350,6 +354,10 @@ function SambutanJenjang({ profil }: { profil: ProfilSaya }) {
         <div>
           <span className="l">Disetujui</span>
           <b>{r.disetujui}</b>
+        </div>
+        <div>
+          <span className="l">Akurasi</span>
+          <b>{r.akurasiPersen == null ? '—' : `${Math.round(r.akurasiPersen)}%`}</b>
         </div>
       </div>
       <p className="muted">{ajakan}</p>
