@@ -86,9 +86,18 @@
    barisnya banyak (>15, lihat UnggahHarian.tsx). overflow-x tetap aktif
    (gulir SAMPING di dalam wadah sendiri di layar sempit, bukan geser body). */
 .lantai .af-gulir.af-gulir-flex { max-height: none; overflow-y: visible; }
-/* .af-gulir-cap sengaja TIDAK lagi memasang max-height: tabel panjang kini
-   dibiarkan penuh (permintaan "buat full height saja"). Kelasnya dipertahankan
-   supaya JSX tidak perlu diubah dan pembatas gampang dihidupkan lagi. */
+/* .af-gulir-cap: tabel dengan lebih dari 10 baris digulir DI DALAM wadahnya,
+   kepala kolom tetap menempel (aturan sticky ada di .af-gulir thead th di
+   atas). Batasnya vh, bukan piksel tetap, supaya di layar tinggi tampil lebih
+   banyak baris; 560px sebagai pagu agar di monitor besar tabel tidak menjadi
+   satu-satunya isi layar.
+
+   Ini MEMBALIK keputusan "buat full height saja" yang dulu dipasang karena
+   dropdown kuota tersembunyi di balik tepi wadah. Aman di sini: tabel yang
+   memakai kelas ini ("Sudah Diunggah") tidak punya dropdown yang membuka ke
+   bawah baris — tabel Akun yang punya memakai .aa-tbl-wrap, bukan kelas ini.
+   Kalau kelak ada dropdown di tabel ber-cap, batas ini harus dicabut lagi. */
+.lantai .af-gulir.af-gulir-cap { max-height: min(60vh, 560px); overflow-y: auto; }
 
 /* table-layout:fixed + <colgroup> persentase (JSX) → lebar kolom proporsional
    alih-alih auto-layout yang gepeng/lebar seenaknya. min-width memaksa gulir

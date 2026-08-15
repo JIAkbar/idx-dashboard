@@ -1,5 +1,7 @@
 import teks from '../../../../docs/CHANGELOG.md?raw'
 import { useTheme } from '../../context/ThemeContext'
+import { useProfilSaya } from '../../lib/profilSaya'
+import { AksesDitolak } from './AdminLayout'
 import '../../dasbor/lantai.css'
 import './AdminShared.css'
 
@@ -48,6 +50,15 @@ function pecah(sumber: string): { preambul: string[]; blok: Blok[] } {
 }
 
 export function ChangelogPanel() {
+  // Superadmin saja. Menyembunyikan tabnya saja tidak cukup — /admin/riwayat
+  // tetap bisa dibuka lewat URL atau bookmark; pola guard yang sama dipakai
+  // tab superadmin lain (lihat AktivitasAdmin). Selagi profil belum datang
+  // (null) halaman dibiarkan render: isinya berkas statis, bukan data akun.
+  const { profil } = useProfilSaya()
+  if (profil && profil.peran !== 'superadmin') {
+    return <AksesDitolak pesan="Changelog hanya untuk superadmin." />
+  }
+
   const { preambul, blok } = pecah(teks)
   const judulBerkas = preambul.find((b) => b.startsWith('# '))?.slice(2) ?? 'Changelog'
   const paragraf = preambul.filter((b) => b.trim() && !b.startsWith('# '))

@@ -34,6 +34,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     } catch {
       /* abaikan */
     }
+    // Jaga html[data-tema] tetap sinkron. Skrip boot di index.html memasangnya
+    // sekali sebelum React jalan (supaya halaman tidak terbit putih lalu
+    // berkedip gelap); tanpa baris ini, menekan sakelar tema tak mengubahnya
+    // dan layar tunggu berikutnya memakai warna tema yang lama.
+    document.documentElement.dataset.tema = theme
   }, [theme])
 
   function toggleTheme() {

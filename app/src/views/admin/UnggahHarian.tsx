@@ -5,6 +5,7 @@ import { useProfilSaya, type ProfilSaya } from '../../lib/profilSaya'
 import { useAdminTanggal } from '../../context/AdminTanggalContext'
 import { namaTampil } from '../../lib/namaTampil'
 import { daftarJenjang, hitungRingkasanSetoranSaya, ringkasanJenjang, type JenjangRow } from '../../lib/jenjang'
+import { ambilKuotaSaya } from '../../lib/kuotaSaya'
 import {
   IkonMenu,
   IKON_CENTANG,
@@ -695,9 +696,14 @@ export function UnggahHarian() {
     }
     setCekKuota(true)
     try {
-      const batas = profil?.kuota_harian ?? 0
-      const terpakai = await hitungSetoranSaya(tanggal)
-      if (terpakai >= batas) {
+      // Batas dari server (kuota_saya()), BUKAN kolom kuota_harian: kolom itu
+      // peninggalan Fase 1 dan sejak Fase 6 bukan lagi kuota efektif, jadi
+      // memakainya di sini memblokir kontributor pada angka yang lebih rendah
+      // daripada yang sebenarnya diizinkan server.
+      const [batas, terpakai] = await Promise.all([ambilKuotaSaya(), hitungSetoranSaya(tanggal)])
+      // batas null = server tidak menjawab; jangan tebak 0 — biarkan lanjut,
+      // submit tetap ditolak server kalau memang habis.
+      if (batas != null && terpakai >= batas) {
         setKuotaHabis({ terpakai, batas })
         return
       }
@@ -820,7 +826,10 @@ export function UnggahHarian() {
                   </div>
                 </div>
               )}
-              <div className={`af-gulir af-gulir-flex${sudahMerged.length > 15 ? ' af-gulir-cap' : ''}`}>
+              {/* Lebih dari 10 baris digulir di dalam wadahnya (kepala kolom
+                  menempel) — tanggal ramai seperti 13 Agu punya 22 emiten dan
+                  mendorong panel di bawahnya jauh ke luar layar. */}
+              <div className={`af-gulir af-gulir-flex${sudahMerged.length > 10 ? ' af-gulir-cap' : ''}`}>
                 <table className="tbl af-tbl">
                   <colgroup>
                     <col style={{ width: '3%' }} />

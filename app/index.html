@@ -15,6 +15,22 @@
          Chart Indeks (ChartIndeks.tsx), dimuat on-demand oleh
          TradingViewChart.tsx saat komponennya benar-benar dipasang. Halaman
          depan (dan hampir semua halaman lain) tidak pernah menyentuhnya. -->
+    <!-- Tema dibaca SEBELUM React jalan. Tanpa ini halaman selalu terbit putih
+         dulu (body di App.css dipatok terang) lalu berkedip gelap saat
+         ThemeProvider mount — dan sejak rute dipecah jadi potongan terpisah,
+         kedipan itu ikut muncul tiap menunggu potongan baru, bukan cuma saat
+         muat pertama. Nilai & kunci sama persis dengan ThemeContext.tsx
+         ('papan-tema', default 'dark'). -->
+    <script>
+      (function () {
+        var t = 'dark';
+        try {
+          var s = localStorage.getItem('papan-tema');
+          if (s === 'light' || s === 'dark') t = s;
+        } catch (e) { /* private mode — pakai default */ }
+        document.documentElement.dataset.tema = t;
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

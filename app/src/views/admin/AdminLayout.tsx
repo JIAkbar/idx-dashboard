@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import { useAuth } from '../../context/AuthContext'
 import { useProfilSaya, type ProfilSaya } from '../../lib/profilSaya'
 import { daftarJenjang, hitungRingkasanSetoranSaya, ringkasanJenjang, type JenjangRow } from '../../lib/jenjang'
+import { useKuotaSaya } from '../../lib/kuotaSaya'
 import { supabase } from '../../lib/supabase'
 import { AdminTanggalProvider } from '../../context/AdminTanggalContext'
 import { hitungSetoranMenunggu } from '../../lib/supabaseEdisi'
@@ -62,6 +63,7 @@ export function AdminLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const superadmin = profil?.peran === 'superadmin'
+  const kuota = useKuotaSaya()
 
   const [konfirmKeluar, setKonfirmKeluar] = useState(false)
   const [sambut, setSambut] = useState(false)
@@ -181,7 +183,9 @@ export function AdminLayout() {
     // Changelog berdiri sendiri, bukan ekor tab Terbitan: Terbitan menjawab
     // "edisi apa yang sudah terbit", Changelog menjawab "aplikasinya berubah
     // apa" — dua pertanyaan berbeda yang kebetulan sama-sama berupa arsip.
-    { to: '/admin/riwayat', label: 'Changelog', ikon: IKON_CATATAN, tampil: true },
+    // Superadmin saja: isinya catatan rilis pengembangan, bukan bahan kerja
+    // kontributor, dan memuatnya di sana cuma menambah tab yang tak dipakai.
+    { to: '/admin/riwayat', label: 'Changelog', ikon: IKON_CATATAN, tampil: superadmin },
   ]
 
   return (
@@ -192,9 +196,9 @@ export function AdminLayout() {
           <span className="sub">{superadmin ? 'Area admin — unggah & kelola edisi' : 'Kontributor — setor orderbook harian'}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
-          {profil && (
-            <span className="af-kuota-info" title="Batas final dihitung server, bukan angka di layar ini">
-              Kuota hari ini: {profil.kuota_harian}/hari
+          {kuota != null && (
+            <span className="af-kuota-info" title="Angka ini datang dari server (kuota_saya()), bukan hitungan layar">
+              Kuota hari ini: {kuota}/hari
             </span>
           )}
           <span className="muted" title={session?.user.email}>{namaTampil(profil, session)}</span>

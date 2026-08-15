@@ -14,6 +14,15 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Latar & tinta halaman mengikuti tema yang sudah dipasang skrip boot di
+   index.html (html[data-tema]), bukan dipatok terang. Nilainya sama persis
+   dengan --bg0/--text tema gelap di lantai.css, supaya layar tunggu menyatu
+   dengan halaman yang menyusul alih-alih berkedip putih dulu. */
+html[data-tema='dark'] body {
+  color: #E8EDF4;
+  background: #0B1017;
+}
+
 .fullscreen-msg {
   display: flex;
   align-items: center;
@@ -21,3 +30,4 @@ body {
   height: 100dvh;
   color: #5F6C7D; /* #77: samakan text3 light baru, 4.4→5.2:1 */
 }
+html[data-tema='dark'] .fullscreen-msg { color: #8494A8; } /* = --text3 gelap */

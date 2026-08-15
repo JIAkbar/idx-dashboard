@@ -128,7 +128,7 @@ export function AktivitasAdmin() {
           {keaktifan === null && !galatKeaktifan && <p className="muted">Memuat…</p>}
           {keaktifan && keaktifan.length === 0 && <p className="muted">Belum ada kontributor.</p>}
           {keaktifan && keaktifan.length > 0 && (
-            <div className="af-gulir aa-tbl-wrap">
+            <div className={`af-gulir aa-tbl-wrap${keaktifan.length > 10 ? ' af-gulir-cap' : ''}`}>
               <table className="tbl aa-tbl">
                 <thead>
                   <tr>
@@ -203,7 +203,7 @@ export function AktivitasAdmin() {
             </p>
           )}
           {bruteforce && bruteforce.length > 0 && (
-            <div className="af-gulir aa-tbl-wrap">
+            <div className={`af-gulir aa-tbl-wrap${bruteforce.length > 10 ? ' af-gulir-cap' : ''}`}>
               <table className="tbl aa-tbl">
                 <thead>
                   <tr>
@@ -241,7 +241,7 @@ export function AktivitasAdmin() {
           {jejak === null && !galatJejak && <p className="muted">Memuat…</p>}
           {jejak && jejak.length === 0 && <p className="muted">Belum ada jejak akses{jenisFilter !== 'semua' ? ` jenis "${LABEL_JENIS_JEJAK[jenisFilter]}"` : ''}.</p>}
           {jejak && jejak.length > 0 && (
-            <div className="af-gulir aa-tbl-wrap">
+            <div className={`af-gulir aa-tbl-wrap${jejak.length > 10 ? ' af-gulir-cap' : ''}`}>
               <table className="tbl aa-tbl">
                 <thead>
                   <tr>
