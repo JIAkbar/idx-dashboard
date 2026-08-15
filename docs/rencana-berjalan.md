@@ -145,6 +145,8 @@ chart ini tak punya pembanding.
 | Tier turun | Hanya terpicu kalau masih ada setoran baru. Yang berhenti total tiernya membeku — tier itu rekam jejak, bukan langganan; yang hilang aksesnya, lewat pembekuan |
 | Berkas terkurasi | Tak bisa dihapus/diganti penyetornya begitu status keluar dari `menunggu`; superadmin tetap bebas |
 | Identitas penyetor | Tak terlihat antar-kontributor. Yang ditampilkan cuma "Sudah disetor" — cukup untuk mencegah kerja ganda |
+| Kredit & jenjang | Ikut setoran **disetujui**, BUKAN yang dimuat di edisi. Kerjanya sudah dilakukan; dimuat atau tidak itu keputusan redaksi, bukan ukuran kerjanya |
+| Isi PDF | Ikut filter superadmin (`dimuat`), terpisah dari kurasi. Menolak setoran yang benar demi memangkas isi edisi bukan lagi satu-satunya cara |
 
 ## Aturan yang berlaku
 
