@@ -138,6 +138,9 @@ chart ini tak punya pembanding.
 | Animasi papan | Riak saja; flip dibuang |
 | Toggle tema | Satu ikon di rail; mode "sistem" tetap hidup di kode |
 | Pengumuman | Tanpa UI admin, ditulis ke DB saat diminta |
+| Pembekuan otomatis | Diukur dari **kehadiran** (`max(dibuat_pada)` setoran apa pun statusnya), bukan dari setoran yang lolos kurasi. Mutu dihukum di jalur jenjang, bukan di sini |
+| Berkas terkurasi | Tak bisa dihapus/diganti penyetornya begitu status keluar dari `menunggu`; superadmin tetap bebas |
+| Identitas penyetor | Tak terlihat antar-kontributor. Yang ditampilkan cuma "Sudah disetor" — cukup untuk mencegah kerja ganda |
 
 ## Aturan yang berlaku
 
