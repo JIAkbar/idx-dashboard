@@ -362,13 +362,22 @@ function KartuJenjang({ profil, superadmin }: { profil: ProfilSaya; superadmin: 
     <section className="panel">
       <div className="panel-h"><span className="lbl">Jenjang kontributor</span></div>
       <div className="panel-b" style={{ display: 'flex', flexWrap: 'wrap', gap: 22, fontSize: 12.5 }}>
+        {/* Superadmin tidak berjenjang: `kuota_saya()` di server mengecualikannya,
+            jadi menampilkan "Perunggu · 2/hari" untuknya menyebut angka yang tidak
+            pernah dipakai — dan bertabrakan dengan "50/hari" di header halaman
+            yang sama. Kolom tier di basis data tetap terisi (dihitung dari
+            setorannya sendiri), cuma tidak berarti apa-apa untuk peran ini. */}
         <div>
           <span className="muted" style={{ fontSize: 10 }}>JENJANG</span><br />
-          <b>{r.jenjangSaatIni.nama}</b> <span className="muted">(tier {r.jenjangSaatIni.tier})</span>
+          {superadmin ? (
+            <span className="muted" title="Superadmin tidak dibatasi jenjang maupun kuota harian">Tanpa jenjang</span>
+          ) : (
+            <><b>{r.jenjangSaatIni.nama}</b> <span className="muted">(tier {r.jenjangSaatIni.tier})</span></>
+          )}
         </div>
         <div>
           <span className="muted" style={{ fontSize: 10 }}>KUOTA EFEKTIF</span><br />
-          <b>{r.kuotaEfektif}/hari</b>
+          <b>{superadmin ? Math.max(profil.kuota_harian, 50) : r.kuotaEfektif}/hari</b>
         </div>
         <div>
           <span className="muted" style={{ fontSize: 10 }}>SETORAN DISETUJUI</span><br />
