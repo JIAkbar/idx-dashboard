@@ -88,7 +88,15 @@ export function DasborLayout() {
             </footer>
           </div>
         </div>
-        <LaciMobile buka={laciKiri} onTutup={() => setLaciKiri(false)} onMasuk={() => setLoginOpen(true)} />
+        {/* Membuka modal masuk dari laci telepon HARUS menutup lacinya: kalau
+            tidak, modal berdiri di atas laci yang masih terbuka — menunya
+            terbaca sebagian di belakang, dan menutup modal mengembalikan orang
+            ke menu alih-alih ke halaman yang tadi dilihat. */}
+        <LaciMobile
+          buka={laciKiri}
+          onTutup={() => setLaciKiri(false)}
+          onMasuk={() => { setLaciKiri(false); setLoginOpen(true) }}
+        />
         {loginOpen && <LoginModal onClose={() => setLoginOpen(false)} />}
       </div>
     </LoginModalProvider>

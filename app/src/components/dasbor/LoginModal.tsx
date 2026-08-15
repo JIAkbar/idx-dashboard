@@ -93,19 +93,21 @@ const WA_PESAN = 'Halo, saya mau register PAPAN — nama saya: '
  * menjanjikan lebih dari yang ditegakkan server akan ketahuan di hari pertama.
  */
 const BENEFIT_LOGIN = [
-  ['Radar WDWL', 'Layar pantau emiten yang sedang diawasi, lengkap dengan arsip pemindaian sebelumnya.'],
-  ['Peta Investor', 'Kepemilikan pemegang saham ≥1% dari data KSEI — siapa masuk, siapa keluar, per emiten.'],
-  ['Broker Summary', 'Rekap arus broker harian: inventory, kuadran, transaksi nego, dan alur dana.'],
-  ['Bedah Arus Saham', 'Terbitan PDF satu emiten satu edisi, dengan pembacaan orderbook dan distribusi harga.'],
-  ['Forum tanpa batas', 'Tamu dibatasi 5 pesan sehari. Akun aktif menulis sebanyak yang perlu, di ruang umum maupun ruang per emiten.'],
+  ['Radar WDWL', 'Layar pantau emiten yang sedang diawasi, plus arsip pemindaian lama.'],
+  ['Peta Investor', 'Pemegang saham di atas 1% dari data KSEI: siapa masuk, siapa keluar.'],
+  ['Broker Summary', 'Arus broker harian — inventory, kuadran, nego, dan alur dana.'],
+  ['Bedah Arus Saham', 'PDF satu emiten satu edisi: bacaan orderbook + distribusi harga.'],
+  ['Forum tanpa batas', 'Tamu dibatasi 5 pesan sehari. Akun aktif menulis sepuasnya.'],
 ]
 
+/** [nama, kuota harian, hak tambahan] — urut tier 0..5. */
 const BENEFIT_JENJANG = [
-  ['Perunggu', 2, 'Riwayat kontribusi + lencana profil'],
+  ['Pemula', 1, 'Semua halaman anggota'],
+  ['Perunggu', 2, 'Riwayat kontribusi + lencana'],
   ['Perak', 3, 'Ekspor XLS Peta Investor'],
-  ['Emas', 5, 'Tabel Probabilitas & VolVal terbuka + arsip PDF seluruh edisi lama'],
-  ['Platinum', 8, 'Boleh menyetor bahan Bedah Arus Saham'],
-  ['Diamond', 12, 'Nama tercantum di bulletin + usul emiten prioritas'],
+  ['Emas', 5, 'Probabilitas & VolVal + arsip PDF lama'],
+  ['Platinum', 8, 'Boleh setor bahan Bedah'],
+  ['Diamond', 12, 'Nama di bulletin + usul emiten prioritas'],
 ] as const
 
 /**
@@ -118,12 +120,12 @@ function PanelBenefit({ kembali }: { kembali: () => void }) {
   return (
     <div className="panel-b login-benefit">
       <p className="login-sub" style={{ marginBottom: 4 }}>
-        PAPAN tumbuh dari orderbook yang disetor anggotanya. Yang menyetor mendapat
-        akses lebih dulu — dan makin banyak setoran yang lolos kurasi, makin banyak yang terbuka.
+        Akun PAPAN tidak dijual. Kamu mendapatkannya dengan menyetor orderbook —
+        makin banyak setoran yang lolos kurasi, makin banyak yang terbuka.
       </p>
 
       <div className="lb-blok">
-        <span className="lb-judul">Terbuka begitu akun aktif</span>
+        <span className="lb-judul">Langsung terbuka begitu akun aktif</span>
         <ul>
           {BENEFIT_LOGIN.map(([nama, ket]) => (
             <li key={nama}><b>{nama}</b><span>{ket}</span></li>
@@ -132,24 +134,19 @@ function PanelBenefit({ kembali }: { kembali: () => void }) {
       </div>
 
       <div className="lb-blok">
-        <span className="lb-judul">Naik jenjang, kuota &amp; hak ikut naik</span>
+        <span className="lb-judul">Naik jenjang → kuota &amp; hak ikut naik</span>
         <ul className="lb-jenjang">
-          <li>
-            <span className="lb-tier">Pemula</span>
-            <span className="lb-kuota">1/hari</span>
-            <span>Akses penuh halaman anggota</span>
-          </li>
           {BENEFIT_JENJANG.map(([nama, kuota, hak]) => (
             <li key={nama}>
               <span className="lb-tier">{nama}</span>
               <span className="lb-kuota">{kuota}/hari</span>
-              <span>{hak}</span>
+              <span className="lb-hak">{hak}</span>
             </li>
           ))}
         </ul>
         <p className="lb-kaki">
-          Jenjang naik sendiri dari jumlah setoran yang <b>disetujui kurasi</b> dan akurasinya —
-          bukan dari lama berlangganan. Alias kamu tercantum di kolofon PDF setiap edisi yang memuat setoranmu.
+          Jenjang naik sendiri dari <b>jumlah setoran yang disetujui</b> kurasi dan akurasinya —
+          bukan dari lama berlangganan. Aliasmu tercantum di kolofon PDF tiap edisi yang memuat setoranmu.
         </p>
       </div>
 
@@ -206,8 +203,11 @@ export function LoginModal({ onClose }: { onClose: () => void }) {
     <div className="dasbor-modal-bg" onClick={onClose}>
       <div className="lantai dasbor-modal" role="dialog" aria-modal="true" aria-label="Masuk" onClick={(e) => e.stopPropagation()}>
         <div className="panel">
-          <SesiHead />
-          <SparkIhsg />
+          {/* Status bursa & sparkline adalah konteks untuk MASUK, bukan untuk
+              membaca daftar benefit — dan di telepon keduanya memakan lebih
+              dari separuh tinggi layar, menyisakan jendela sempit yang harus
+              digulir terus. Disembunyikan saat panel benefit terbuka. */}
+          {!benefit && <><SesiHead /><SparkIhsg /></>}
           <div className="panel-h">
             <span className="lbl">{benefit ? 'Benefit kontributor' : 'Masuk — Area Admin'}</span>
             <span style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
