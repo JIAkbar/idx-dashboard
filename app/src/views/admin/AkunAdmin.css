@@ -35,7 +35,17 @@
 @media (max-width: 900px) {
   .lantai .aa-tbl-wrap { overflow-x: auto; }
 }
-.lantai .aa-tbl { table-layout: fixed; min-width: 1180px; }
+/* min-width HANYA untuk tabel Akun. Kelas .aa-tbl dipakai bersama oleh enam
+   tabel (Akses 4 kolom, tiga tabel Aktivitas, Akun 10 kolom); memasang lebar
+   minimum 10-kolom di sana memaksa tabel Akses yang cuma 4 kolom ikut
+   menggulir jauh ke samping di telepon — kolom pertamanya terdorong keluar
+   layar dan yang tampak cuma dropdown tanpa tahu itu halaman apa. */
+.lantai .aa-tbl { table-layout: fixed; }
+.lantai .aa-tbl-akun { min-width: 1180px; }
+
+/* Tabel dengan sedikit kolom (Akses, Aktivitas) dibiarkan selebar wadahnya —
+   isinya muat tanpa gulir samping, jadi tidak perlu lebar minimum sama sekali. */
+.lantai .aa-tbl:not(.aa-tbl-akun) { table-layout: auto; }
 
 /* Kolom aksi: tombol ikon persegi tanpa teks. Tiga tombol berteks ("Ubah
    Email / Atur Ulang Sandi / Hapus") memakan 300px tiap baris dan membuat

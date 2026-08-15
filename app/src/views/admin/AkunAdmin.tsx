@@ -152,7 +152,7 @@ export function AkunAdmin() {
           {akun && akun.length === 0 && <p className="muted">Belum ada akun.</p>}
           {akun && akun.length > 0 && (
             <div className="af-gulir aa-tbl-wrap">
-              <table className="tbl aa-tbl">
+              <table className="tbl aa-tbl aa-tbl-akun">
                 {/* Lebar kolom dipatok px, bukan dibiarkan auto (§172 SAKTI):
                     dengan auto, "Tanpa jenjang" dan dropdown "Ikut jenjang"
                     pecah dua baris dan tinggi tiap baris jadi berbeda-beda.
