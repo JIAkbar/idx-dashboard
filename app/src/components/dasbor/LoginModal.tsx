@@ -112,6 +112,13 @@ const BENEFIT_LOGIN = [
   ['Broker Summary', 'Arus broker harian — inventory, kuadran, nego, dan alur dana.'],
   ['Bedah Arus Saham', 'PDF satu emiten satu edisi: bacaan orderbook + distribusi harga.'],
   ['Forum tanpa batas', 'Tamu dibatasi 5 pesan sehari. Akun aktif menulis sepuasnya.'],
+  // Butir ini menyebut yang PALING membedakan PAPAN, jadi ditaruh terakhir —
+  // posisi yang paling diingat dalam daftar. Kalimatnya sengaja menyebut
+  // "frekuensi historis", bukan "prediksi": angkanya memang dihitung dari
+  // kejadian masa lalu, dan menjanjikan lebih dari itu akan jadi janji palsu
+  // yang ketahuan pada perdagangan pertama.
+  ['Sistem terukur, bukan feeling',
+    'Tiap emiten dinilai lima komponen — teknikal, arus broker, risk/reward, likuiditas, kepekaan IHSG — lalu diuji ke frekuensi historisnya: berapa sering setup serupa berakhir naik.'],
 ]
 
 /** [nama, kuota harian, hak tambahan] — urut tier 0..5. */

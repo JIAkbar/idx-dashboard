@@ -97,13 +97,23 @@ def ambil_bulanan(kode: str, percobaan: int = 3) -> list[tuple[str, float]]:
     adj = res.get("indicators", {}).get("adjclose")
     harga = adj[0]["adjclose"] if adj else kutipan["close"]
 
-    seri = []
+    # Yahoo TIDAK selalu menghormati interval=1mo. Untuk emiten yang baru
+    # tercatat (VKTR, ALII — ketahuan 15 Agu 2026) ia mengembalikan candle
+    # MINGGUAN: 165 titik untuk rentang 39 bulan. Kalau titik itu dipakai apa
+    # adanya, "imbal bulanan" sebenarnya imbal mingguan, dan satu bulan
+    # kalender terhitung 4-5 kali di ember seasonality-nya.
+    #
+    # Maka pengelompokan ke bulan dilakukan DI SINI, bukan dipercayakan ke
+    # Yahoo: harga bulan = titik TERAKHIR di bulan itu (harga penutup bulan),
+    # sesuai makna candle bulanan. Untuk seri yang memang sudah bulanan,
+    # langkah ini tidak mengubah apa pun — tiap bulan cuma punya satu titik.
+    per_bulan: dict[str, float] = {}
     for t, h in zip(stempel, harga):
         if h is None:
             continue
         bulan = datetime.fromtimestamp(t, timezone.utc).strftime("%Y-%m")
-        seri.append((bulan, float(h)))
-    return seri
+        per_bulan[bulan] = float(h)   # kemunculan terakhir menang
+    return sorted(per_bulan.items())
 
 
 def imbal_bulanan(seri: list[tuple[str, float]]) -> list[tuple[str, float]]:
