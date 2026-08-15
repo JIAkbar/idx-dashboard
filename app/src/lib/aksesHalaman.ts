@@ -111,6 +111,9 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   stocks: 'stocks',
   broker: 'topbroker',
   kalkulator: 'kalkulator',
+  // Seasonality perlu masuk (keputusan 15 Agu 2026). Kuncinya tetap lewat tab
+  // Akses supaya bisa dibuka untuk publik nanti tanpa menyentuh kode.
+  seasonality: 'seasonality',
   bulletin: 'bulletin',
   feedback: 'saran',
 }

@@ -1,0 +1,135 @@
+import { describe, it, expect } from 'vitest'
+import { peluangTersusut, selangWilson, ujiPermutasi, ringkasEmiten, ALFA } from './seasonality'
+
+describe('peluangTersusut', () => {
+  it('menarik sampel tipis ke peluang dasar', () => {
+    // 4 dari 5 = 80% mentah. Dengan dasar 50%, harus turun jauh — inilah
+    // koreksi yang tidak dilakukan tabel seasonality biasa.
+    const p = peluangTersusut(4, 5, 50)
+    expect(p).toBeGreaterThan(50)
+    expect(p).toBeLessThan(70)
+  })
+
+  it('nyaris tidak menggeser sampel tebal', () => {
+    // 60 dari 100 dengan dasar 50: bobot α=6 kecil dibanding n=100.
+    const p = peluangTersusut(60, 100, 50)
+    expect(p).toBeGreaterThan(58)
+    expect(p).toBeLessThan(60)
+  })
+
+  it('tanpa data sama sekali, jatuh ke peluang dasar', () => {
+    expect(peluangTersusut(0, 0, 42)).toBe(42)
+  })
+
+  it('bobotnya persis α pengamatan bayangan', () => {
+    // Rumusnya (naik + α·p₀)/(n + α): dengan naik=0, n=0 ekuivalen p₀.
+    expect(peluangTersusut(ALFA, ALFA, 0)).toBeCloseTo(50, 6)
+  })
+})
+
+describe('selangWilson', () => {
+  it('5 dari 5 TIDAK menghasilkan "pasti 100%"', () => {
+    const [bawah, atas] = selangWilson(5, 5)
+    expect(atas).toBe(100)
+    expect(bawah).toBeGreaterThan(50)
+    expect(bawah).toBeLessThan(70)
+  })
+
+  it('sampel tebal memberi selang yang sempit', () => {
+    const [b1, a1] = selangWilson(5, 10)
+    const [b2, a2] = selangWilson(50, 100)
+    expect(a1 - b1).toBeGreaterThan(a2 - b2)
+  })
+
+  it('selalu memuat proporsi mentahnya', () => {
+    for (const [naik, n] of [[1, 3], [7, 9], [13, 40]] as const) {
+      const [bawah, atas] = selangWilson(naik, n)
+      const p = (naik / n) * 100
+      expect(p).toBeGreaterThanOrEqual(bawah - 1e-9)
+      expect(p).toBeLessThanOrEqual(atas + 1e-9)
+    }
+  })
+})
+
+describe('ujiPermutasi', () => {
+  it('menolak data yang terlalu pendek', () => {
+    const pendek = Array.from({ length: 20 }, (_, i) => ({ bulan: (i % 12) + 1, persen: i }))
+    expect(ujiPermutasi(pendek)).toBeNull()
+  })
+
+  it('hasilnya sama persis tiap kali dipanggil (berbenih)', () => {
+    const data = Array.from({ length: 120 }, (_, i) => ({
+      bulan: (i % 12) + 1,
+      persen: Math.sin(i) * 10,
+    }))
+    const a = ujiPermutasi(data, 300)
+    const b = ujiPermutasi(data, 300)
+    expect(a).toEqual(b)
+  })
+
+  it('pola yang ditanam terdeteksi tidak acak', () => {
+    // Juni (bulan 6) selalu naik, sisanya berselang-seling.
+    const data: Array<{ bulan: number; persen: number }> = []
+    for (let t = 0; t < 15; t++) {
+      for (let b = 1; b <= 12; b++) {
+        data.push({ bulan: b, persen: b === 6 ? 5 : (t + b) % 2 ? 3 : -3 })
+      }
+    }
+    const hasil = ujiPermutasi(data, 500)!
+    expect(hasil.bulanJuara).toBe(6)
+    expect(hasil.pValue).toBeLessThan(0.05)
+  })
+
+  it('p-value tidak pernah nol — 2.000 percobaan bukan bukti kemustahilan', () => {
+    const data: Array<{ bulan: number; persen: number }> = []
+    for (let t = 0; t < 20; t++) {
+      for (let b = 1; b <= 12; b++) data.push({ bulan: b, persen: b === 3 ? 9 : -9 })
+    }
+    const hasil = ujiPermutasi(data, 200)!
+    expect(hasil.pValue).toBeGreaterThan(0)
+  })
+})
+
+describe('ringkasEmiten', () => {
+  const seri = {
+    '2020-01': 5, '2020-02': -3, '2020-06': 8,
+    '2021-01': -2, '2021-02': 4, '2021-06': 10,
+    '2022-01': 6, '2022-02': -1, '2022-06': -5,
+  }
+
+  it('mengelompokkan per bulan kalender', () => {
+    const r = ringkasEmiten('TEST', seri)!
+    const jan = r.perBulan[0]
+    expect(jan.n).toBe(3)
+    expect(jan.naik).toBe(2)
+    expect(jan.mentah).toBeCloseTo(66.67, 1)
+  })
+
+  it('pembanding pasar hanya menghitung bulan yang IHSG-nya ada', () => {
+    // IHSG cuma punya dua dari tiga Januari — penyebutnya harus 2, bukan 3.
+    const r = ringkasEmiten('TEST', seri, { '2020-01': 1, '2021-01': 1 })!
+    const jan = r.perBulan[0]
+    expect(jan.unggulDari).toBe(2)
+    expect(jan.unggul).toBe(1) // 2020 (+5 > +1) menang, 2021 (-2) kalah
+  })
+
+  it('bulan tanpa data tidak mengarang angka', () => {
+    const r = ringkasEmiten('TEST', seri)!
+    const mar = r.perBulan[2]
+    expect(mar.n).toBe(0)
+    expect(mar.nilai).toEqual([])
+    // Tersusut jatuh ke peluang dasar, bukan nol — nol terbaca sebagai
+    // "tidak pernah naik", padahal yang benar "belum pernah tercatat".
+    expect(mar.tersusut).toBeCloseTo(r.dasar, 6)
+  })
+
+  it('menyaring tahun awal', () => {
+    const r = ringkasEmiten('TEST', seri, {}, 2022)!
+    expect(r.totalObservasi).toBe(3)
+    expect(r.mulai).toBe('2022-01')
+  })
+
+  it('seri kosong mengembalikan null, bukan objek palsu', () => {
+    expect(ringkasEmiten('KOSONG', {})).toBeNull()
+  })
+})

@@ -2220,3 +2220,109 @@
   outline: 1px solid var(--amber); outline-offset: -1px; font-weight: 700;
 }
 @media (max-width: 860px) { .lantai .kalk-pemulihan { grid-template-columns: 1fr; } }
+
+/* ===== Seasonality ======================================================== */
+.lantai.seasonality { display: grid; gap: 14px; }
+.lantai .sea-cari-blok { display: grid; gap: 12px; }
+.lantai .sea-cari { position: relative; display: flex; align-items: center; gap: 8px; }
+.lantai .sea-cari .inp { flex: 1; }
+.lantai .sea-saran {
+  position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 4px);
+  margin: 0; padding: 4px; list-style: none; max-height: 300px; overflow-y: auto;
+  background: var(--bg1); border: 1px solid var(--line); border-radius: var(--r);
+  box-shadow: 0 12px 28px rgba(0,0,0,.34);
+}
+.lantai .sea-saran-it {
+  display: grid; grid-template-columns: 58px 1fr auto; gap: 10px; align-items: baseline;
+  width: 100%; text-align: left; padding: 7px 9px; border: 0; border-radius: var(--r);
+  background: transparent; cursor: pointer;
+}
+.lantai .sea-saran-it:hover { background: var(--amber-dim); }
+.lantai .sea-saran-it .kd { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--amber); }
+.lantai .sea-saran-it .nm { font-size: 11.5px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lantai .sea-saran-it .rg { font-family: var(--mono); font-size: 9.5px; color: var(--text3); }
+
+.lantai .sea-chip-baris { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.lantai .sea-chip {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 99px;
+  background: var(--amber-dim); border: 1px solid var(--amber); color: var(--amber);
+}
+.lantai .sea-tahun { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.lantai .sea-tahun .bchip.on { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); }
+
+/* Matriks: warna dari peluang tersusut. Lima tingkat, bukan gradasi halus —
+   mata membedakan lima langkah dengan andal, dua puluh tidak. */
+.lantai .sea-matriks { min-width: 660px; }
+.lantai .sea-matriks tbody th { text-align: left; padding: 6px 10px; }
+.lantai .sea-matriks tbody th .kd { display: block; font-family: var(--mono); font-size: 12.5px; font-weight: 700; }
+.lantai .sea-matriks tbody th .rg { display: block; font-size: 9.5px; color: var(--text3); }
+.lantai .sea-sel { padding: 0 !important; text-align: center; }
+.lantai .sea-sel button {
+  position: relative; width: 100%; height: 38px; border: 0; cursor: pointer;
+  background: transparent; color: inherit;
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+}
+.lantai .sea-sel .tipis {
+  position: absolute; right: 4px; top: 4px; width: 4px; height: 4px;
+  border-radius: 99px; background: currentColor; opacity: .55;
+}
+.lantai .s-kosong { color: var(--text3); }
+.lantai .s-d2 { background: color-mix(in srgb, var(--red) 26%, transparent); }
+.lantai .s-d1 { background: color-mix(in srgb, var(--red) 13%, transparent); }
+.lantai .s-n  { background: var(--bg2); }
+.lantai .s-u1 { background: color-mix(in srgb, var(--green) 13%, transparent); }
+.lantai .s-u2 { background: color-mix(in srgb, var(--green) 26%, transparent); }
+.lantai .sea-sel.pilih { outline: 2px solid var(--amber); outline-offset: -2px; }
+
+.lantai .sea-legenda {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  font-family: var(--mono); font-size: 10px; color: var(--text3); border-top: 1px solid var(--line);
+}
+.lantai .sea-legenda .skala { display: flex; }
+.lantai .sea-legenda .skala i { width: 24px; height: 11px; }
+.lantai .sea-legenda .tipis-demo {
+  display: inline-block; width: 4px; height: 4px; border-radius: 99px;
+  background: currentColor; vertical-align: middle;
+}
+
+.lantai .sea-laci { border-color: var(--amber); }
+.lantai .sea-laci-isi { display: grid; gap: 16px; }
+.lantai .sea-laci-angka { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+.lantai .sea-laci-angka .besar { display: block; font-family: var(--disp); font-size: 26px; line-height: 1.2; }
+.lantai .sea-laci-angka .besar.up { color: var(--green); }
+.lantai .sea-laci-angka .besar.dn { color: var(--red); }
+
+.lantai .sea-tahun-bar { display: grid; gap: 4px; }
+.lantai .sea-bar-baris { display: grid; grid-template-columns: 46px 1fr 72px; gap: 10px; align-items: center; }
+.lantai .sea-bar-baris .th { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+.lantai .sea-bar-baris .jalur { height: 12px; background: var(--bg2); border-radius: 3px; overflow: hidden; }
+.lantai .sea-bar-baris .jalur i { display: block; height: 100%; border-radius: 3px; }
+.lantai .sea-bar-baris .jalur i.up { background: var(--green); }
+.lantai .sea-bar-baris .jalur i.dn { background: var(--red); }
+.lantai .sea-bar-baris .ag { font-family: var(--mono); font-size: 11px; text-align: right; }
+.lantai .sea-bar-baris .ag.up { color: var(--green); }
+.lantai .sea-bar-baris .ag.dn { color: var(--red); }
+
+.lantai .sea-uji { display: grid; gap: 8px; }
+.lantai .sea-uji-baris {
+  display: grid; grid-template-columns: 62px minmax(0, 200px) 78px 1fr; gap: 10px; align-items: baseline;
+  padding: 9px 11px; border-radius: var(--r); background: var(--bg2);
+  border-left: 3px solid var(--text3); font-size: 12px;
+}
+.lantai .sea-uji-baris.kuat { border-left-color: var(--green); }
+.lantai .sea-uji-baris .kd { font-family: var(--mono); font-weight: 700; }
+.lantai .sea-uji-baris .pv { font-family: var(--mono); font-size: 11px; color: var(--text2); }
+.lantai .sea-uji-baris .ks { color: var(--text3); font-size: 11.5px; line-height: 1.6; }
+
+.lantai .sea-kaki {
+  font-size: 11.5px; color: var(--text3); line-height: 1.8; max-width: 82ch;
+  padding: 14px 16px; background: var(--bg2); border-radius: var(--r); margin: 0;
+}
+.lantai .sea-kaki b { color: var(--text2); }
+
+@media (max-width: 860px) {
+  .lantai .sea-uji-baris { grid-template-columns: 1fr; gap: 4px; }
+  .lantai .sea-bar-baris { grid-template-columns: 40px 1fr 64px; }
+}

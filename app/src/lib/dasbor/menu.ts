@@ -68,6 +68,10 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M12 3a9 9 0 109 9M12 7a5 5 0 105 5M12 12l5.5-5.5M12 12h.01',
   },
   {
+    id: 'seasonality', path: '/seasonality', label: 'Seasonality', kode: 'SSN',
+    ikon: 'M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1zM4 9.5h16M8 3v4M16 3v4M8 13h2M12 13h2M8 16.5h2M12 16.5h2',
+  },
+  {
     id: 'bulletin', path: '/bulletin', label: 'Bulletin Arus Pasar', kode: 'BLT', mulaiKelompok: true,
     ikon: 'M5 4h11l3 3v13a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1zM16 4v4h3M8 10h7M8 13h7M8 16h4',
   },

@@ -30,6 +30,7 @@ const StockDetail = lazy(() => import('./views/dasbor/StockDetail').then((m) => 
 const PetaInvestor = lazy(() => import('./views/dasbor/PetaInvestor').then((m) => ({ default: m.PetaInvestor })))
 const Bulletin = lazy(() => import('./views/dasbor/Bulletin').then((m) => ({ default: m.Bulletin })))
 const Radar = lazy(() => import('./views/dasbor/Radar').then((m) => ({ default: m.Radar })))
+const Seasonality = lazy(() => import('./views/dasbor/Seasonality').then((m) => ({ default: m.Seasonality })))
 const AdminLayout = lazy(() => import('./views/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })))
 const UnggahHarian = lazy(() => import('./views/admin/UnggahHarian').then((m) => ({ default: m.UnggahHarian })))
 const AkunAdmin = lazy(() => import('./views/admin/AkunAdmin').then((m) => ({ default: m.AkunAdmin })))
@@ -86,6 +87,7 @@ function App() {
                   ini terbuka untuk semua orang padahal setelannya "perlu
                   login". */}
               <Route path="/radar" element={<PenjagaHalaman kunci="radar"><Radar /></PenjagaHalaman>} />
+              <Route path="/seasonality" element={<PenjagaHalaman kunci="seasonality"><Seasonality /></PenjagaHalaman>} />
               {/* Forum: backend belum punya kunci `akses_halaman` utk ini —
                   sengaja TIDAK dibungkus PenjagaHalaman. Kalau nanti mau
                   dikunci, tambah barisnya di tab Akses lalu pasang di sini. */}
