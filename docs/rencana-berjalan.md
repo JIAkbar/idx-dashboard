@@ -5,52 +5,52 @@ bergantung pada ingatan percakapan (yang bisa diringkas dan kehilangan detail).
 
 Terakhir diperbarui: 15 Agustus 2026.
 
-## Sedang dikerjakan
+## ✅ Sudah selesai — dari permintaan Johan
 
-### Kalkulator · tab Pemulihan
-Sudah ada: cermin posisi (harga beli + harga sekarang), tabel 5–95%, kolom
-lama pulih pada asumsi imbal tahunan, gradasi baris, harga di tiap titik.
+| # | Tugas | Selesai |
+|---|---|---|
+| 118 | Tema PAPAN Lilin + font Red Hat + radius Samudra | 15 Agu 2026 |
+| 120 | verify_jwt Edge Function — selesai tanpa dashboard Supabase | 15 Agu 2026 |
+| 121 | Pesan galat Supabase tertelan "Gagal menyimpan" | 15 Agu 2026 |
+| 110-117, 119 | Sembilan tugas admin, forum, jenjang, modal | 15 Agu 2026 |
+| — | Halaman **Seasonality** (menggantikan rencana halaman Bakrie) | 15 Agu 2026 |
+| — | Kalkulator tab **Pemulihan** lengkap: rupiah, hari ARA, harga otomatis | 15 Agu 2026 |
+| — | Forum jadi satu halaman + moderasi + tag `$` | 15 Agu 2026 |
+| — | Panen 962 emiten + IHSG harian 1990-2026 | 15 Agu 2026 |
+| — | Pedoman fraksi harga & auto rejection BEI | 15 Agu 2026 |
+| — | Sebagian #107: ripple angka IHSG | 15 Agu 2026 |
 
-Belum:
-- **Kolom rupiah** — kerugian dan kebutuhan pemulihan dalam nominal, bukan cuma persen
-- **Input emiten + harga average manual** (pola `PosisiBar` di `RiskReward.tsx`)
-- **Angka risk/reward** di dalam cermin posisi
-- **Harga sasaran dibulatkan ke fraksi BEI** lewat `keFraksi()` — sekarang masih angka mentah yang bisa jadi harga tak sah
-- **Kolom hari ARA** lewat `hariAraMinimal()` — dulu ditunda karena aturannya belum ada; sekarang sudah ada
+## ⏳ Belum — dari permintaan Johan
 
-### Halaman Seasonality
-Sudah ada: pencarian sampai 5 emiten, matriks 12 bulan (peluang tersusut),
-laci detail per bulan (selang Wilson, mengalahkan IHSG, bar per tahun), uji
-permutasi, filter tahun, gating login.
+Ini utang ke Johan. Prioritas di atas apa pun yang kuusulkan sendiri.
 
-Belum:
-- **Chart komparasi** — garis 12 titik per emiten dalam satu grafik
-- **Verifikasi mobile** (baru diuji di laptop)
-- Ruang emiten forum & Stock Detail belum saling menaut ke halaman ini
+| # | Tugas | Catatan |
+|---|---|---|
+| — | **Badge/notifikasi fitur baru** untuk kontributor | Ide Johan 15 Agu. Konsep matang: tabel `pengumuman`, kolom `dibaca_pada` di profil, tampil 7 hari lalu padam sendiri, titik di rail + panel (bukan modal), tanpa UI admin |
+| 107 | Dasbor: badge % per emiten · bar indeks tembus · klik indeks dunia ke TradingView | 3 dari 4 butir |
+| 108 | Panen OHLC harian + chart lightweight-charts | Membuka lilin sungguhan & lilin mini kalender |
+| 109 | Peta Investor: pindah tombol Tampilkan + hapus ekspor "Seluruh dataset" | |
+| 99 | Stock Detail: laporan keuangan kuartalan ala Yahoo Financials | Paling besar yang tersisa |
 
-### Sistem pengumuman fitur baru
-Konsep disepakati, belum dibangun:
-- Tabel `pengumuman`: judul, ringkasan, tautan, `tayang_sejak`, `untuk_jenjang`
-- Satu kolom `pengumuman_dibaca_pada` di `profil` — bukan tabel silang
-- Badge muncul kalau ada pengumuman < 7 hari yang belum dibaca; padam sendiri
-- Titik kecil di rail + panel ringkas, **bukan modal**
-- Tanpa UI admin — barisnya ditulis langsung ke DB saat Johan minta
+## 💡 Belum — usulanku, bukan permintaan Johan
 
-## Backlog lama
+Jangan dihitung sebagai utang. Kerjakan kalau Johan setuju.
 
-| # | Tugas |
+| Tugas | Kenapa kuusulkan |
 |---|---|
-| 99 | Stock Detail: laporan keuangan kuartalan ala Yahoo Financials |
-| 107 | Dasbor: badge % per emiten, bar indeks tembus, klik indeks dunia ke TradingView (ripple IHSG sudah selesai) |
-| 108 | Panen OHLC harian — harga **buka**; menyelesaikan aproksimasi lilin & membuka lilin mini di kalender |
-| 109 | Peta Investor: pindah tombol Tampilkan + hapus ekspor "Seluruh dataset" |
+| **Chart IHSG: pemilih rentang** (1B/6B/YTD/1T/5T/Maks) + ganti judul "Tahun Berjalan" | Muncul dari pertanyaan Johan 15 Agu. Datanya (`ihsg_harian.json`, 8.849 hari) SUDAH ada tapi belum dipakai halaman mana pun — itu yang membuatnya layak dikerjakan lebih dulu di antara usulanku |
+| Chart komparasi Seasonality | Matriks sudah membandingkan; grafik garis 12 titik akan lebih cepat dibaca |
+| Verifikasi mobile halaman Seasonality | Baru diuji di laptop |
+| Lilin mini di kalender bursa | Terhalang #108 |
+| Ruang emiten forum ↔ Seasonality ↔ Stock Detail saling menaut | |
 
-## Utang kecil
+## 🔧 Utang teknis
 
+Bukan permintaan siapa pun; muncul dari pekerjaan itu sendiri.
+
+- **Tab Avg Down kemungkinan punya bug proxy yang sama** dengan Pemulihan — belum diberi cadangan harga lokal
 - **GOTOM** tak ada di Yahoo — satu-satunya emiten gagal panen
-- **PDF bulletin masih berhuruf lama** — `arus-pasar/cetak.css` sengaja dilewati saat pasang Red Hat; menyeragamkan berarti mendaftarkan font ke pipeline Python
-- **Chart IHSG** masih berjudul "Tahun Berjalan" dan belum punya pemilih rentang, padahal `ihsg_harian.json` (1990–2026) sudah ada
-- **Lilin mini di kalender bursa** terhalang `cal_index.json` yang tak menyimpan tinggi/rendah
+- **PDF bulletin masih berhuruf lama** — `cetak.css` sengaja dilewati saat pasang Red Hat
 - **Angka fraksi harga** perlu dicocokkan ke dokumen resmi IDX (press release menolak pengambil otomatis)
 - Tombol hapus forum belum diverifikasi visual — perlu sesi superadmin
 
