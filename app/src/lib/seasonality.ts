@@ -369,10 +369,16 @@ export function ujiPermutasiEmber(
 export function ringkasHarian(
   kode: string,
   tutup: Record<string, number>,
-  sejakTahun = 0,
+  /** Batas bawah "YYYY-MM-DD"; string kosong berarti seluruh riwayat. Memakai
+   *  tanggal, bukan tahun, supaya MTD dan YTD bisa diminta dengan cara yang
+   *  sama seperti "5 tahun terakhir". */
+  sejakTgl = '',
 ): RingkasHarian | null {
-  const tgl = Object.keys(tutup).filter((t) => Number(t.slice(0, 4)) >= sejakTahun).sort()
-  if (tgl.length < 30) return null
+  const tgl = Object.keys(tutup).filter((t) => t >= sejakTgl).sort()
+  // Di bawah 25 hari bursa, tiap ember hari cuma berisi segelintir pengamatan
+  // dan "polanya" praktis dibentuk oleh dua-tiga hari. Lebih baik menolak
+  // menghitung daripada menampilkan angka yang terlihat berarti.
+  if (tgl.length < 25) return null
 
   const semua: Array<{ tgl: string; hari: number; persen: number }> = []
   for (let i = 1; i < tgl.length; i++) {

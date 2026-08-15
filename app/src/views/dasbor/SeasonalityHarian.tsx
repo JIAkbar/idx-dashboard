@@ -3,9 +3,26 @@ import { HARI, ringkasHarian, vonisUji, type RingkasHarian } from '../../lib/sea
 import { pesanGalat } from '../../lib/pesanGalat'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 
-const RENTANG: Array<[string, number]> = [
-  ['Semua', 0], ['1 thn', 1], ['2 thn', 2], ['3 thn', 3], ['5 thn', 5], ['10 thn', 10], ['20 thn', 20],
+/** Tiap pilihan menghitung batas bawahnya sendiri saat diklik — bukan disimpan
+ *  sebagai tanggal tetap, supaya MTD/YTD tetap benar kalau halaman dibiarkan
+ *  terbuka melewati tengah malam atau pergantian bulan. */
+const RENTANG: Array<[string, () => string]> = [
+  ['Semua', () => ''],
+  ['MTD', () => new Date().toISOString().slice(0, 8) + '01'],
+  ['YTD', () => new Date().getUTCFullYear() + '-01-01'],
+  ['1 thn', () => geser(1)],
+  ['2 thn', () => geser(2)],
+  ['3 thn', () => geser(3)],
+  ['5 thn', () => geser(5)],
+  ['10 thn', () => geser(10)],
+  ['20 thn', () => geser(20)],
 ]
+
+function geser(tahun: number): string {
+  const d = new Date()
+  d.setUTCFullYear(d.getUTCFullYear() - tahun)
+  return d.toISOString().slice(0, 10)
+}
 
 const WARNA = ['var(--red)', 'var(--amber)', 'var(--blue)', 'var(--green)', 'var(--text)']
 
@@ -24,7 +41,7 @@ const WARNA = ['var(--red)', 'var(--amber)', 'var(--blue)', 'var(--green)', 'var
 export function SeasonalityHarian() {
   const [tutup, setTutup] = useState<Record<string, number> | null>(null)
   const [galat, setGalat] = useState<string | null>(null)
-  const [tahun, setTahun] = useState(0)
+  const [pilih, setPilih] = useState('Semua')
   const [maju, setMaju] = useState(1)
 
   useEffect(() => {
@@ -34,7 +51,7 @@ export function SeasonalityHarian() {
       .catch((e: unknown) => setGalat(pesanGalat(e, 'Gagal memuat data IHSG harian.')))
   }, [])
 
-  const sejak = tahun ? new Date().getUTCFullYear() - tahun + 1 : 0
+  const sejak = (RENTANG.find(([n]) => n === pilih)?.[1] ?? (() => ''))()
 
   const r: RingkasHarian | null = useMemo(
     () => (tutup ? ringkasHarian('IHSG', tutup, sejak) : null),
@@ -63,10 +80,10 @@ export function SeasonalityHarian() {
   }, [r])
 
   if (galat) return <div className="panel panel-b"><p className="muted">{galat}</p></div>
-  if (!r) return <div className="fd-empty"><p>Memuat data IHSG…</p></div>
+  if (!tutup) return <div className="fd-empty"><p>Memuat data IHSG…</p></div>
 
-  const v = vonisUji(r.uji)
-  const urut = [...r.perHari].sort((a, b) => b.kumulatif - a.kumulatif)
+  const v = r ? vonisUji(r.uji) : null
+  const urut = r ? [...r.perHari].sort((a, b) => b.kumulatif - a.kumulatif) : []
 
   return (
     <>
@@ -74,16 +91,30 @@ export function SeasonalityHarian() {
         <div className="panel-b sea-hari-kepala">
           <div className="sea-tahun">
             <span className="lbl">Rentang</span>
-            {RENTANG.map(([label, th]) => (
-              <button key={label} type="button" className={'bchip bchip-klik' + (tahun === th ? ' on' : '')}
-                onClick={() => setTahun(th)}>{label}</button>
+            {RENTANG.map(([label]) => (
+              <button key={label} type="button" className={'bchip bchip-klik' + (pilih === label ? ' on' : '')}
+                onClick={() => setPilih(label)}>{label}</button>
             ))}
           </div>
           <span className="v-note">
-            IHSG · {r.mulai} → {r.akhir} · {r.totalObservasi.toLocaleString('id-ID')} hari bursa
+            {r
+              ? `IHSG · ${r.mulai} → ${r.akhir} · ${r.totalObservasi.toLocaleString('id-ID')} hari bursa`
+              : 'IHSG · rentang ini belum cukup panjang'}
           </span>
         </div>
       </section>
+
+      {!r && (
+        <div className="fd-empty" style={{ padding: '40px 20px' }}>
+          <p style={{ fontSize: 14 }}>Rentang ini di bawah 25 hari bursa.</p>
+          <p style={{ fontSize: 11.5, marginTop: 6, maxWidth: '54ch', margin: '6px auto 0', lineHeight: 1.7 }}>
+            Dibagi lima hari, tiap hari cuma menyisakan segelintir pengamatan — polanya akan
+            dibentuk oleh dua-tiga hari saja. Pilih rentang yang lebih panjang.
+          </p>
+        </div>
+      )}
+
+      {r && v && <>
 
       <section className="panel">
         <div className="panel-h">
@@ -139,6 +170,8 @@ export function SeasonalityHarian() {
           <span className="ks">{v.teks}</span>
         </div>
       </section>
+
+      </>}
 
       <p className="sea-kaki">
         <IkonMenu d={IKON_PERINGATAN} size={12} />{' '}
