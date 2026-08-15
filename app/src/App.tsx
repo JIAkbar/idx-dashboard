@@ -11,7 +11,7 @@ import { TopStocks } from './views/dasbor/TopStocks'
 import { TopBroker } from './views/dasbor/TopBroker'
 import { SektorIndeks } from './views/dasbor/SektorIndeks'
 import { KalkulatorJia } from './views/dasbor/KalkulatorJia'
-import { Forum } from './views/dasbor/Forum'
+import { Forum, ForumSambutan } from './views/dasbor/Forum'
 import { ForumRuang } from './views/dasbor/ForumRuang'
 import { Feedback } from './views/dasbor/Feedback'
 import { Login } from './views/Login'
@@ -88,8 +88,13 @@ function App() {
               {/* Forum: backend belum punya kunci `akses_halaman` utk ini —
                   sengaja TIDAK dibungkus PenjagaHalaman. Kalau nanti mau
                   dikunci, tambah barisnya di tab Akses lalu pasang di sini. */}
-              <Route path="/forum" element={<Forum />} />
-              <Route path="/forum/:kunci" element={<ForumRuang />} />
+              {/* Rute bersarang: <Forum/> jadi shell (rel ruang + kotak cari)
+                  yang TIDAK ikut dimuat ulang saat pindah ruang; cuma
+                  <Outlet/> di kanannya yang berganti. */}
+              <Route path="/forum" element={<Forum />}>
+                <Route index element={<ForumSambutan />} />
+                <Route path=":kunci" element={<ForumRuang />} />
+              </Route>
               <Route path="/feedback" element={<PenjagaHalaman kunci="saran"><Feedback /></PenjagaHalaman>} />
               {/* /admin ikut DI DALAM layout (rail/topbar tetap tampil) tapi
                   tetap dijaga ProtectedRoute — belum login dilempar ke /login

@@ -78,6 +78,15 @@ export async function laporkanPesan(pesanId: string, alasan: string): Promise<st
   return error?.message ?? null
 }
 
+/** Hapus permanen satu pesan. RLS `pesan_hapus` sudah membatasi ke penulisnya
+ *  sendiri atau superadmin — tak perlu cek peran lagi di sini; kalau bukan
+ *  keduanya, DELETE-nya cuma tak kena baris apa pun. Balasan ikut terhapus
+ *  lewat FK `induk` (on delete cascade). */
+export async function hapusPesan(id: string): Promise<void> {
+  const { error } = await supabase.from('forum_pesan').delete().eq('id', id)
+  if (error) throw error
+}
+
 export interface KirimHasil {
   ok: boolean
   id?: string

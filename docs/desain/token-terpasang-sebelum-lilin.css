@@ -1,0 +1,57 @@
+/* Cadangan token .lantai PAPAN sebelum tema Lilin dipasang (15 Agustus 2026,
+   commit fdc6e8d). Disimpan apa adanya supaya bisa dikembalikan persis.
+   Untuk memulihkan: salin balik blok ini ke app/src/dasbor/lantai.css. */
+
+   dengan aman — keduanya tetap ada setelah Task 13 (dasbor.css dihapus, isinya
+   pindah ke Bagian 1), karena banyak kelas Bagian 1 (mis. .card/--accent lama)
+   masih dipakai .pi-* via alias di bawah, bukan ditulis ulang ke token ini.
+   ============================================================ */
+.lantai {
+  --bg0:#0B1017; --bg1:#111826; --bg2:#18212F; --bg3:#1F2A3B;
+  --line:#232E3F; --line2:#2E3B50;
+  /* #77 sweep kontras (nilai sama dgn blok dasbor-shell[data-theme] di atas):
+     text3 → 8494A8, red → EB5E62 (red-on-red-dim 3.97→4.53). */
+  --text:#E8EDF4; --text2:#9AA7B8; --text3:#8494A8;
+  --amber:#F0A62B; --amber-ink:#131008; --amber-dim:rgba(240,166,43,.13);
+  --red:#EB5E62; --red-dim:rgba(235,94,98,.14);
+  --green:#30A46C; --green-dim:rgba(48,164,108,.14);
+  --blue:#4C8DFF;
+  /* #79: kategori simpul Grafik Jaringan /peta-investor (graphRender.ts WARNA)
+     — beda hue per tipe holder, bukan tiga abu mirip. */
+  --node-corp:#4E8FD9; --node-ind:#30A46C; --node-oth:#6B7A90;
+  --flap:#060A10; --flap-line:rgba(255,255,255,.07);
+  --mono:"Cascadia Code","Cascadia Mono",Consolas,"SF Mono","Roboto Mono",monospace;
+  --disp:"Bahnschrift","Arial Narrow","Segoe UI",system-ui,sans-serif;
+  --ui:"Segoe UI",system-ui,-apple-system,sans-serif;
+  --r:6px;
+  font-family:var(--ui); font-size:13px; line-height:1.5; color:var(--text);
+}
+.dasbor-shell[data-theme="light"] .lantai{
+  --bg0:#F2F4F7; --bg1:#FFFFFF; --bg2:#F7F9FC; --bg3:#EDF1F6;
+  --line:#DDE3EA; --line2:#C9D2DD;
+  /* #77 sweep kontras: text3 → 5F6C7D; amber B87A10 (3.6 vs putih) → 94620C
+     (5.2 — teks .em-code/.ttm-row & putih di atas .tab.on ikut lolos);
+     red → C23439, green → 18754A (angka up/dn kecil ≥4.5 di semua bg). */
+  --text:#131B26; --text2:#4E5D70; --text3:#5F6C7D;
+  --amber:#94620C; --amber-ink:#FFFFFF; --amber-dim:rgba(148,98,12,.10);
+  --red:#C23439; --red-dim:rgba(194,52,57,.10);
+  --green:#18754A; --green-dim:rgba(24,117,74,.10);
+  --node-corp:#2F6DB3; --node-ind:#1F7A4F; --node-oth:#7E8A99;
+  --flap:#131B26; --flap-line:rgba(255,255,255,.10);
+}
+
+/* Alias kompatibilitas utk .pi-* (Peta Investor) yang dipindah dari dasbor.css
+   apa adanya (lihat blok .pi-* di paling bawah berkas ini) — nama variabel
+   lama beda dari sistem token .lantai, alih-alih menulis ulang 62 aturan
+   (risiko tinggi di komponen paling rawan di seluruh migrasi ini), alias nama
+   lama ke nilai baru di satu tempat. (Task 13, sesuai suplemen; --card/--card2/
+   --border/--border2/--accent dikonfirmasi TIDAK bentrok dengan token asli
+   .lantai di atas.) */
+.lantai {
+  --card: var(--bg1);
+  --card2: var(--bg2);
+  --border: var(--line);
+  --border2: var(--line2);
+  --accent: var(--amber);
+}
+

@@ -1,13 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { NavLink, Outlet } from 'react-router-dom'
 import { ambilRingkasanRuang, waktuRelatif, type RuangRingkasan } from '../../lib/forum'
 import { pesanGalat } from '../../lib/pesanGalat'
 
 /**
- * Daftar ruang Forum — kartu per ruang dari `forum_ringkasan()` (baca
- * publik, anon termasuk). Topik dulu, lalu ruang emiten (diurutkan di
- * lib/forum.ts). Kotak cari menyaring label/keterangan/kunci di klien —
- * jumlah ruang kecil, tak perlu query server terpisah.
+ * Shell Forum — rel ruang di kiri, isi ruang di kanan.
+ *
+ * Sebelumnya daftar ruang berupa kartu satu halaman penuh: untuk tahu ruang
+ * mana yang ramai, orang harus membuka satu per satu lalu menekan tombol
+ * kembali. Sekarang rel ruangnya menetap di samping, badge jumlah pesan
+ * terbaca sekaligus, dan berpindah ruang tidak pernah meninggalkan halaman.
+ *
+ * Rel tidak ikut dimuat ulang saat pindah ruang — daftarnya diambil sekali di
+ * shell ini, sementara `<Outlet/>` yang berganti (rute bersarang, pola yang
+ * sama dengan shell tab admin).
  */
 export function Forum() {
   const [ruang, setRuang] = useState<RuangRingkasan[] | null>(null)
@@ -34,58 +40,75 @@ export function Forum() {
   const emiten = tersaring.filter((r) => r.jenis === 'emiten')
 
   return (
-    <div className="lantai">
-      <div className="vhead">
-        <h1>Forum</h1>
-        <span className="sub">diskusi terbuka seputar pasar &amp; emiten</span>
-      </div>
+    <div className="lantai forum-shell">
+      <aside className="forum-rel">
+        <div className="vhead" style={{ marginBottom: 10 }}>
+          <h1>Forum</h1>
+        </div>
 
-      <div className="field" style={{ maxWidth: 360 }}>
         <input
           className="inp" placeholder="Cari ruang…" value={cari}
-          onChange={(e) => setCari(e.target.value)}
+          onChange={(e) => setCari(e.target.value)} aria-label="Cari ruang forum"
         />
+
+        {galat && <p className="muted" style={{ fontSize: 11.5 }}>{galat}</p>}
+        {!galat && ruang === null && <p className="muted" style={{ fontSize: 11.5 }}>Memuat ruang…</p>}
+
+        {ruang !== null && (
+          <>
+            {topik.length > 0 && <BlokRel judul="Topik" daftar={topik} />}
+            {emiten.length > 0 && <BlokRel judul="Ruang Emiten" daftar={emiten} />}
+            {tersaring.length === 0 && (
+              <p className="muted" style={{ fontSize: 11.5 }}>Tidak ada ruang yang cocok.</p>
+            )}
+          </>
+        )}
+      </aside>
+
+      <div className="forum-isi">
+        <Outlet />
       </div>
-
-      {galat && <div className="panel panel-b"><p className="muted">{galat}</p></div>}
-
-      {!galat && ruang === null && <div className="fd-empty"><p>Memuat ruang…</p></div>}
-
-      {ruang !== null && (
-        <>
-          {topik.length > 0 && (
-            <>
-              <span className="lbl">Topik</span>
-              <div className="grid3">
-                {topik.map((r) => <KartuRuang key={r.kunci} r={r} />)}
-              </div>
-            </>
-          )}
-          {emiten.length > 0 && (
-            <>
-              <span className="lbl">Ruang Emiten</span>
-              <div className="grid3">
-                {emiten.map((r) => <KartuRuang key={r.kunci} r={r} />)}
-              </div>
-            </>
-          )}
-          {tersaring.length === 0 && (
-            <div className="fd-empty"><p>Tidak ada ruang yang cocok dengan pencarian.</p></div>
-          )}
-        </>
-      )}
     </div>
   )
 }
 
-function KartuRuang({ r }: { r: RuangRingkasan }) {
+function BlokRel({ judul, daftar }: { judul: string; daftar: RuangRingkasan[] }) {
   return (
-    <Link to={`/forum/${r.kunci}`} className="panel vcard forum-ruang-kartu">
-      <span className="num" style={{ fontSize: 15 }}>{r.label}</span>
-      {r.keterangan && <span className="muted" style={{ fontSize: 12 }}>{r.keterangan}</span>}
-      <span className="v-note">
-        {r.jumlah} pesan{r.terakhir ? ` · ${waktuRelatif(r.terakhir)}` : ' · belum ada pesan'}
-      </span>
-    </Link>
+    <div className="forum-rel-blok">
+      <span className="lbl">{judul}</span>
+      {daftar.map((r) => (
+        <NavLink
+          key={r.kunci}
+          to={`/forum/${r.kunci}`}
+          className={({ isActive }) => `forum-rel-item${isActive ? ' on' : ''}`}
+          // Keterangan ruang tidak muat di rel sesempit ini, tapi juga tidak
+          // perlu hilang — dititipkan ke title supaya tetap bisa dibaca.
+          title={r.keterangan || undefined}
+        >
+          <span className="nm">{r.label}</span>
+          {/* Badge menyebut jumlah pesan, dan meredup saat nol — ruang kosong
+              tetap terlihat ada tanpa menuntut perhatian yang sama dengan
+              ruang yang sedang ramai. */}
+          <span className={`forum-badge${r.jumlah === 0 ? ' nol' : ''}`}>{r.jumlah}</span>
+          <span className="wkt">{r.terakhir ? waktuRelatif(r.terakhir) : 'belum ada pesan'}</span>
+        </NavLink>
+      ))}
+    </div>
+  )
+}
+
+/**
+ * Isi awal saat belum ada ruang dipilih (rute `/forum` persis). Bukan halaman
+ * kosong: menyebut apa yang ada di rel sebelahnya, supaya orang tahu langkah
+ * berikutnya tanpa menebak.
+ */
+export function ForumSambutan() {
+  return (
+    <div className="fd-empty" style={{ padding: '56px 20px' }}>
+      <p style={{ fontSize: 14 }}>Pilih ruang di sebelah kiri untuk mulai membaca.</p>
+      <p style={{ fontSize: 11.5, marginTop: 6 }}>
+        Ruang emiten juga terbuka dari tag <b>$KODE</b> di dalam pesan mana pun.
+      </p>
+    </div>
   )
 }

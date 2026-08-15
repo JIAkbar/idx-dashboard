@@ -5,11 +5,12 @@ import { useAuth } from '../../context/AuthContext'
 import { useProfilSaya } from '../../lib/profilSaya'
 import { useLoginModalOpsional } from '../../context/LoginModalContext'
 import {
-  ambilPesan, ambilRuang, kirimPesan, laporkanPesan, namaPenulis, waktuRelatif,
+  ambilPesan, ambilRuang, kirimPesan, laporkanPesan, hapusPesan, namaPenulis, waktuRelatif,
   ambilAliasPenulis,
   type Pesan, type RuangInfo,
 } from '../../lib/forum'
-import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_PERINGATAN, IKON_TONG, IKON_INFO } from '../../components/dasbor/IkonMenu'
+import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { pesanGalat } from '../../lib/pesanGalat'
 
 interface Utas extends Pesan {
@@ -65,6 +66,15 @@ export function ForumRuang() {
   /** id penulis → alias, dari `forum_penulis` (server hanya membuka alias akun
    *  yang memang pernah menulis di forum — bukan seluruh tabel profil). */
   const [petaAlias, setPetaAlias] = useState<Record<string, string>>({})
+  /** Pesan yang sedang dilaporkan / akan dihapus — keduanya lewat modal, bukan
+   *  `window.prompt`/`confirm` bawaan browser: dialog bawaan tak bisa
+   *  menjelaskan APA yang terjadi setelah tombol ditekan, dan itu justru
+   *  pertanyaan pertama orang yang menekan "Laporkan". */
+  const [laporTarget, setLaporTarget] = useState<Pesan | null>(null)
+  const [hapusTarget, setHapusTarget] = useState<Pesan | null>(null)
+  const [panduanTag, setPanduanTag] = useState(false)
+
+  const superadmin = profil?.peran === 'superadmin'
 
   useEffect(() => {
     let batal = false
@@ -129,9 +139,14 @@ export function ForumRuang() {
     void muatUlangPesan()
   }
 
-  async function lapor(id: string) {
-    const alasan = window.prompt('Alasan melaporkan pesan ini (boleh dikosongkan):') ?? ''
-    await laporkanPesan(id, alasan.trim() || 'Tidak ada alasan diberikan')
+  async function hapus(p: Pesan) {
+    try {
+      await hapusPesan(p.id)
+      setHapusTarget(null)
+      void muatUlangPesan()
+    } catch (e) {
+      setGalat(pesanGalat(e, 'Gagal menghapus pesan.'))
+    }
   }
 
   if (memuat) {
@@ -172,12 +187,14 @@ export function ForumRuang() {
           {utas.map((p) => (
             <div key={p.id} className="forum-msg-grup">
               <PesanBaris petaAlias={petaAlias} p={p} sesiId={session?.user.id} alias={profil?.alias}
-                onBalas={() => setBalasKe(p)} onLapor={() => lapor(p.id)} />
+                superadmin={superadmin}
+                onBalas={() => setBalasKe(p)} onLapor={() => setLaporTarget(p)} onHapus={() => setHapusTarget(p)} />
               {p.balasan.length > 0 && (
                 <div className="forum-balasan">
                   {p.balasan.map((b) => (
                     <PesanBaris key={b.id} petaAlias={petaAlias} p={b} sesiId={session?.user.id} alias={profil?.alias}
-                      onBalas={() => setBalasKe(p)} onLapor={() => lapor(b.id)} />
+                      superadmin={superadmin}
+                      onBalas={() => setBalasKe(p)} onLapor={() => setLaporTarget(b)} onHapus={() => setHapusTarget(b)} />
                   ))}
                 </div>
               )}
@@ -188,7 +205,17 @@ export function ForumRuang() {
 
       {ruangInfo.aktif ? (
         <div className="panel">
-          <div className="panel-h"><span className="lbl">Tulis Pesan</span></div>
+          <div className="panel-h forum-compose-h">
+            <span className="lbl">Tulis Pesan</span>
+            {/* Tag $KODE tidak akan pernah ditemukan orang yang tak diberi tahu
+                — dan aturannya (kapital, 4 huruf) cukup ketat untuk membuat
+                percobaan pertama gagal diam-diam. Panduannya ditaruh persis di
+                sebelah kotak tulis, tempat pertanyaannya muncul. */}
+            <button type="button" className="forum-info" onClick={() => setPanduanTag(true)}
+              title="Cara menandai emiten" aria-label="Cara menandai emiten">
+              <IkonMenu d={IKON_INFO} size={14} />
+            </button>
+          </div>
           <form className="panel-b forum-compose" onSubmit={kirim}>
             {balasKe && (
               <div className="forum-balas-ke">
@@ -229,22 +256,135 @@ export function ForumRuang() {
       ) : (
         <div className="panel panel-b"><p className="muted">Ruang ini sedang ditutup untuk pesan baru.</p></div>
       )}
+
+      {laporTarget && (
+        <ModalLapor
+          p={laporTarget}
+          nama={namaPenulis(laporTarget, session?.user.id, profil?.alias, petaAlias)}
+          onClose={() => setLaporTarget(null)}
+        />
+      )}
+
+      {hapusTarget && (
+        <ModalKecil label="Hapus pesan" onClose={() => setHapusTarget(null)}>
+          <div style={{ display: 'grid', gap: 12 }}>
+            <p className="muted" style={{ fontSize: 12, margin: 0, lineHeight: 1.7 }}>
+              Pesan ini hilang permanen — tidak disembunyikan, tidak bisa dikembalikan.
+              {hapusTarget.induk === null && ' Balasannya ikut terhapus.'}
+            </p>
+            <blockquote className="forum-kutip">{ringkas(hapusTarget.isi)}</blockquote>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button type="button" className="dd-btn" onClick={() => setHapusTarget(null)}>Batal</button>
+              <button type="button" className="btn-p btn-bahaya" onClick={() => void hapus(hapusTarget)}>Hapus permanen</button>
+            </div>
+          </div>
+        </ModalKecil>
+      )}
+
+      {panduanTag && (
+        <ModalKecil label="Menandai emiten" onClose={() => setPanduanTag(false)}>
+          <div className="forum-panduan">
+            <p>
+              Tulis <b>$</b> diikuti kode emiten empat huruf <b>KAPITAL</b>. Kode itu langsung
+              jadi tautan ke ruang diskusi emitennya.
+            </p>
+            <div className="forum-panduan-contoh">
+              <span className="ok">$BUMI</span>
+              <span className="muted">jadi tautan</span>
+              <span className="no">$bumi</span>
+              <span className="muted">huruf kecil — tetap teks biasa</span>
+              <span className="no">$BMRIX</span>
+              <span className="muted">lebih dari empat huruf — tidak dikenali</span>
+            </div>
+            <p>
+              Aturannya sengaja ketat. Tanpa <b>$</b> dan tanpa kapital, kata sehari-hari seperti
+              &ldquo;SAYA&rdquo; atau &ldquo;PAGI&rdquo; ikut tertangkap dan seluruh percakapan
+              berubah jadi ladang tautan.
+            </p>
+            <p className="muted" style={{ fontSize: 11 }}>
+              Ruang emiten dibuka superadmin saat pertama kali dibutuhkan — tag ke ruang yang belum
+              dibuka tetap bisa ditulis, halamannya akan bilang ruang itu belum ada.
+            </p>
+          </div>
+        </ModalKecil>
+      )}
     </div>
   )
 }
 
-function PesanBaris({ p, sesiId, alias, petaAlias, onBalas, onLapor }: {
+/**
+ * Modal laporan. Menggantikan `window.prompt`, yang tak bisa menjawab satu-satunya
+ * pertanyaan yang penting saat orang menekan "Laporkan": ini dikirim ke siapa.
+ */
+function ModalLapor({ p, nama, onClose }: { p: Pesan; nama: string; onClose: () => void }) {
+  const [alasan, setAlasan] = useState('')
+  const [kirim, setKirim] = useState(false)
+  const [selesai, setSelesai] = useState(false)
+  const [galat, setGalat] = useState<string | null>(null)
+
+  async function kirimLaporan() {
+    setKirim(true)
+    const pesan = await laporkanPesan(p.id, alasan.trim() || 'Tidak ada alasan diberikan')
+    setKirim(false)
+    if (pesan) setGalat(pesan)
+    else setSelesai(true)
+  }
+
+  return (
+    <ModalKecil label={selesai ? 'Laporan terkirim' : 'Laporkan pesan'} onClose={onClose}>
+      {selesai ? (
+        <div style={{ display: 'grid', gap: 12 }}>
+          <p style={{ fontSize: 12, margin: 0, lineHeight: 1.7 }}>
+            Laporan tercatat. Pesan ini kini bertanda, dan akan diperiksa superadmin — bukan
+            dihapus otomatis.
+          </p>
+          <button type="button" className="btn-p" onClick={onClose} style={{ justifySelf: 'end' }}>Tutup</button>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gap: 12 }}>
+          <p className="muted" style={{ fontSize: 11.5, margin: 0, lineHeight: 1.7 }}>
+            Laporan masuk ke <b>superadmin PAPAN</b>. Pesannya tidak langsung hilang — ditandai
+            dulu, lalu diperiksa. Penulisnya tidak diberi tahu siapa yang melapor.
+          </p>
+          <blockquote className="forum-kutip">{nama}: {ringkas(p.isi)}</blockquote>
+          <div className="field">
+            <span className="lbl">Alasan (boleh dikosongkan)</span>
+            <input className="inp" value={alasan} onChange={(e) => setAlasan(e.target.value)}
+              placeholder="mis. spam, menyesatkan, kasar" maxLength={200} />
+          </div>
+          {galat && <p style={{ fontSize: 11, color: 'var(--red)', margin: 0 }}>{galat}</p>}
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <button type="button" className="dd-btn" onClick={onClose}>Batal</button>
+            <button type="button" className="btn-p" disabled={kirim} onClick={() => void kirimLaporan()}>
+              {kirim ? 'Mengirim…' : 'Kirim laporan'}
+            </button>
+          </div>
+        </div>
+      )}
+    </ModalKecil>
+  )
+}
+
+function PesanBaris({ p, sesiId, alias, petaAlias, superadmin, onBalas, onLapor, onHapus }: {
   p: Pesan
   sesiId: string | undefined
   alias: string | null | undefined
   petaAlias: Record<string, string>
+  superadmin: boolean
   onBalas: () => void
   onLapor: () => void
+  onHapus: () => void
 }) {
   return (
     <div className={'forum-msg' + (p.disembunyikan ? ' forum-msg-tertahan' : '')}>
       <div className="forum-msg-head">
         <span className="num" style={{ fontSize: 12 }}>{namaPenulis(p, sesiId, alias, petaAlias)}</span>
+        {/* Hitungan laporan cuma ditampilkan ke superadmin: menunjukkannya ke
+            semua orang mengubah tombol Laporkan jadi papan skor yang bisa
+            dipakai beramai-ramai menekan satu penulis. */}
+        {superadmin && p.laporan > 0 && (
+          <span className="forum-lapor-badge" title="Jumlah laporan masuk">{p.laporan} laporan</span>
+        )}
         <span className="muted" style={{ fontSize: 10.5 }}>{waktuRelatif(p.dibuat_pada)}</span>
       </div>
       {p.disembunyikan && (
@@ -256,6 +396,12 @@ function PesanBaris({ p, sesiId, alias, petaAlias, onBalas, onLapor }: {
       <div className="forum-msg-aksi">
         <button type="button" className="bchip bchip-klik" style={{ cursor: 'pointer' }} onClick={onBalas}>Balas</button>
         <button type="button" className="bchip bchip-klik" style={{ cursor: 'pointer' }} onClick={onLapor}>Laporkan</button>
+        {superadmin && (
+          <button type="button" className="bchip bchip-klik forum-hapus" style={{ cursor: 'pointer' }}
+            onClick={onHapus} title="Hapus pesan ini">
+            <IkonMenu d={IKON_TONG} size={11} /> Hapus
+          </button>
+        )}
       </div>
     </div>
   )

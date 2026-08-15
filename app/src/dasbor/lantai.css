@@ -1980,3 +1980,89 @@
 .lantai .sandi-intip:hover { color: var(--amber); }
 .lantai .sandi-intip:focus-visible { outline: 2px solid var(--amber); outline-offset: -1px; color: var(--amber); }
 .lantai .sandi-intip .dasbor-ikon { stroke: currentColor; }
+
+/* ===== Forum: shell rel + isi ==============================================
+   Dulu daftar ruang berupa kartu satu halaman penuh — untuk tahu ruang mana
+   yang ramai orang harus membuka satu per satu lalu menekan kembali. Rel di
+   kiri membuat jumlah pesan tiap ruang terbaca sekaligus, dan berpindah ruang
+   tidak pernah meninggalkan halaman. */
+.lantai.forum-shell { display: grid; grid-template-columns: 268px 1fr; gap: 16px; align-items: start; }
+.lantai .forum-rel {
+  display: flex; flex-direction: column; gap: 10px;
+  position: sticky; top: 12px; max-height: calc(100dvh - 24px); overflow-y: auto;
+  background: var(--bg1); border: 1px solid var(--line); border-radius: var(--r); padding: 14px;
+}
+.lantai .forum-rel .vhead h1 { font-size: 17px; }
+.lantai .forum-rel-blok { display: flex; flex-direction: column; gap: 3px; }
+.lantai .forum-rel-blok .lbl { margin-bottom: 3px; }
+
+/* Item rel: nama + badge sebaris, waktu terakhir di baris kedua. Nama
+   memendek dengan elipsis, badge tidak pernah ikut menyusut — angka yang
+   terpotong lebih buruk daripada nama yang terpotong. */
+.lantai .forum-rel-item {
+  display: grid; grid-template-columns: 1fr auto; gap: 2px 8px;
+  padding: 7px 9px; border-radius: var(--r); text-decoration: none;
+  border: 1px solid transparent;
+}
+.lantai .forum-rel-item:hover { background: var(--bg2); }
+.lantai .forum-rel-item.on { background: var(--amber-dim); border-color: var(--amber); }
+.lantai .forum-rel-item .nm {
+  font-family: var(--disp); font-size: 12.5px; font-weight: 600; color: var(--text);
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.lantai .forum-rel-item .wkt { grid-column: 1 / -1; font-size: 10px; color: var(--text3); }
+.lantai .forum-badge {
+  justify-self: end; flex-shrink: 0;
+  font-family: var(--mono); font-size: 10px; font-weight: 700; line-height: 1;
+  min-width: 20px; text-align: center; padding: 3px 6px; border-radius: 99px;
+  background: var(--amber); color: var(--amber-ink);
+}
+/* Ruang kosong tetap terlihat ada, tapi tidak menuntut perhatian yang sama
+   dengan ruang yang sedang ramai. */
+.lantai .forum-badge.nol { background: var(--bg3); color: var(--text3); font-weight: 400; }
+.lantai .forum-isi { min-width: 0; }
+
+@media (max-width: 860px) {
+  /* Telepon: rel jadi baris atas yang bisa digulir mendatar — memaksa dua
+     kolom di 412px akan menyisakan isi ruang selebar 150px. */
+  .lantai.forum-shell { grid-template-columns: 1fr; }
+  .lantai .forum-rel { position: static; max-height: none; }
+  .lantai .forum-rel-blok { flex-direction: row; overflow-x: auto; gap: 6px; padding-bottom: 2px; }
+  .lantai .forum-rel-blok .lbl { display: none; }
+  .lantai .forum-rel-item { flex: 0 0 auto; min-width: 132px; border: 1px solid var(--line); }
+}
+
+/* ===== Forum: moderasi & panduan tag ====================================== */
+.lantai .forum-compose-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.lantai .forum-info {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 99px;
+  background: transparent; border: 1px solid var(--line); color: var(--text3); cursor: pointer;
+}
+.lantai .forum-info:hover { color: var(--amber); border-color: var(--amber); }
+.lantai .forum-hapus { color: var(--red); border-color: color-mix(in srgb, var(--red) 45%, transparent); }
+.lantai .forum-hapus:hover { background: color-mix(in srgb, var(--red) 12%, transparent); }
+.lantai .forum-lapor-badge {
+  font-family: var(--mono); font-size: 9.5px; line-height: 1; padding: 3px 6px; border-radius: 99px;
+  background: color-mix(in srgb, var(--red) 16%, transparent); color: var(--red);
+}
+.lantai .forum-kutip {
+  margin: 0; padding: 8px 10px; border-left: 2px solid var(--amber);
+  background: var(--bg2); border-radius: 0 var(--r) var(--r) 0;
+  font-size: 12px; color: var(--text2); line-height: 1.6;
+}
+.lantai .forum-panduan { display: grid; gap: 10px; font-size: 12px; line-height: 1.75; }
+.lantai .forum-panduan p { margin: 0; }
+/* Contoh benar/salah berpasangan: kode di kiri, sebabnya di kanan — dibaca
+   sebaris, bukan sebagai daftar yang harus dicocokkan sendiri. */
+.lantai .forum-panduan-contoh {
+  display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center;
+  padding: 10px; background: var(--bg2); border-radius: var(--r);
+}
+.lantai .forum-panduan-contoh span { font-size: 11.5px; }
+.lantai .forum-panduan-contoh .ok { font-family: var(--mono); color: var(--amber); font-weight: 700; }
+.lantai .forum-panduan-contoh .no { font-family: var(--mono); color: var(--text3); text-decoration: line-through; }
+/* Tombol tindakan permanen — merah, supaya tak tertekan karena posisinya
+   sama dengan tombol simpan di modal lain. */
+.lantai .btn-p.btn-bahaya { background: var(--red); color: #fff; }
+.lantai .btn-p.btn-bahaya:hover { filter: brightness(1.08); }
