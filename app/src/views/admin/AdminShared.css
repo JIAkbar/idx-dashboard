@@ -291,6 +291,24 @@
 }
 .lantai .af-sambut-stat .lbl { font-size: 8.5px; }
 
+/* Blok jenjang di modal sambutan kontributor — tiga angka sebaris + satu
+   kalimat ajakan. Tiga kolom sama lebar (bukan auto-fit) supaya nilai yang
+   panjangnya beda ("Perunggu" vs "12 orderbook") tidak menggeser kolom
+   sebelahnya; teksnya sendiri boleh membungkus. */
+.lantai .af-sambut-jenjang {
+  display: flex; flex-direction: column; gap: 8px;
+  background: var(--bg2); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 11px 12px;
+}
+.lantai .af-sambut-angka { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.lantai .af-sambut-angka > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.lantai .af-sambut-angka .l {
+  font-size: 8.5px; font-weight: 600; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--text3);
+}
+.lantai .af-sambut-angka b { font-size: 12.5px; color: var(--text); }
+.lantai .af-sambut-jenjang > .muted { margin: 0; font-size: 11px; line-height: 1.55; }
+
 /* Catatan kuota harian di header halaman (dekat tombol Keluar, #101) —
    angka pengguna sendiri (profil.kuota_harian), batas final dihitung server. */
 .lantai .af-kuota-info { font-family: var(--mono); font-size: 11px; color: var(--text3); }

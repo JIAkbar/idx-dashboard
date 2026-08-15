@@ -1,7 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { useProfilSaya } from '../../lib/profilSaya'
+import { useProfilSaya, type ProfilSaya } from '../../lib/profilSaya'
+import { daftarJenjang, hitungRingkasanSetoranSaya, ringkasanJenjang, type JenjangRow } from '../../lib/jenjang'
 import { supabase } from '../../lib/supabase'
 import { AdminTanggalProvider } from '../../context/AdminTanggalContext'
 import { hitungSetoranMenunggu } from '../../lib/supabaseEdisi'
@@ -142,6 +143,14 @@ export function AdminLayout() {
     navigate('/admin?tambah=1', { replace: true })
   }
 
+  /** Tombol utama modal sambutan untuk kontributor — sama tujuannya dengan
+   *  `setorSekarang` (form Tambah Emiten terbuka), beda penanda sesi yang
+   *  ditulis: sambutan, bukan peringatan pembekuan. */
+  function setorDariSambutan() {
+    tutupSambutan()
+    navigate('/admin?tambah=1', { replace: true })
+  }
+
   useEffect(() => {
     if (!sambut) return
     const onKey = (e: KeyboardEvent) => {
@@ -254,7 +263,15 @@ export function AdminLayout() {
                     ? 'Unggah screenshot orderbook harian, kurasi setoran, pantau Radar WDWL, dan kelola rak terbitan Arus Pasar — semuanya di tab-tab atas.'
                     : 'Unggah screenshot orderbook harian dan pantau rak terbitan Arus Pasar — semuanya di tab-tab atas.'}
                 </p>
-                <button type="button" className="btn-p" style={{ width: '100%' }} onClick={tutupSambutan}>Mulai</button>
+                {!superadmin && profil && <SambutanJenjang profil={profil} />}
+                <button
+                  type="button"
+                  className="btn-p"
+                  style={{ width: '100%' }}
+                  onClick={superadmin ? tutupSambutan : setorDariSambutan}
+                >
+                  {superadmin ? 'Mulai' : 'Setor orderbook'}
+                </button>
               </div>
             </div>
           </div>
@@ -275,6 +292,63 @@ export function AdminLayout() {
           </div>
         </ModalKecil>
       )}
+    </div>
+  )
+}
+
+/**
+ * Blok jenjang di modal sambutan kontributor — jenjang sekarang, kuota harian,
+ * dan satu kalimat berisi jarak menuju jenjang berikutnya.
+ *
+ * Angkanya diturunkan `ringkasanJenjang()`, sumber yang sama dengan kartu
+ * jenjang tab Unggah — bukan hitungan kedua yang bisa menyimpang darinya.
+ * Sengaja tidak merender apa pun selagi data belum sampai: modal sambutan
+ * muncul seketika setelah login, dan kerangka kosong yang berkedip sebentar
+ * lebih mengganggu daripada blok yang menyusul sepersekian detik kemudian.
+ */
+function SambutanJenjang({ profil }: { profil: ProfilSaya }) {
+  const [data, setData] = useState<{ jenjang: JenjangRow[]; angka: { disetujui: number; ditolak: number } } | null>(null)
+
+  useEffect(() => {
+    let batal = false
+    Promise.all([daftarJenjang(), hitungRingkasanSetoranSaya()])
+      .then(([jenjang, angka]) => !batal && setData({ jenjang, angka }))
+      .catch(() => {})
+    return () => {
+      batal = true
+    }
+  }, [])
+
+  if (!data || data.jenjang.length === 0) return null
+  const r = ringkasanJenjang(
+    profil.tier ?? 0, profil.kuota_manual ?? null,
+    data.angka.disetujui, data.angka.ditolak, data.jenjang
+  )
+  const ajakan = !r.berikutnya
+    ? 'Kamu sudah di jenjang tertinggi — setoranmu yang menjaga bulletin tetap terbit tiap hari.'
+    : r.kurangSetoran > 0
+      ? `${r.kurangSetoran} setoran disetujui lagi untuk naik ke ${r.berikutnya.nama} — kuota harianmu ikut naik jadi ${r.berikutnya.kuota}.`
+      : r.akurasiCukup
+        ? `Syarat ${r.berikutnya.nama} sudah terpenuhi — tinggal menunggu kenaikan jenjang.`
+        : `Akurasi belum cukup untuk ${r.berikutnya.nama} (butuh ${r.berikutnya.min_akurasi}%). Setoran yang lolos kurasi menaikkannya.`
+
+  return (
+    <div className="af-sambut-jenjang">
+      <div className="af-sambut-angka">
+        <div>
+          <span className="l">Jenjang</span>
+          <b>{r.jenjangSaatIni.nama}</b>
+        </div>
+        <div>
+          <span className="l">Kuota harian</span>
+          <b>{r.kuotaEfektif} orderbook</b>
+        </div>
+        <div>
+          <span className="l">Disetujui</span>
+          <b>{r.disetujui}</b>
+        </div>
+      </div>
+      <p className="muted">{ajakan}</p>
     </div>
   )
 }

@@ -55,6 +55,15 @@ def main():
             "emiten": [bd["ticker"]],
             "pdf": f"{kode}.pdf",
         })
+    # Terbitan turunan (mingguan AP-W*, bulanan AP-M*) tak punya berkas di
+    # edisi/ — identitasnya datang dari sidecar <kode>.meta.json yang ditulis
+    # build_weekly.py / build_monthly.py (lihat build.tulis_meta).
+    for berkas in sorted((AKAR / "keluaran").glob("*.meta.json")):
+        meta = json.loads(berkas.read_text(encoding="utf-8"))
+        if not (AKAR / "keluaran" / meta["pdf"]).exists():
+            continue
+        entri.append(meta)
+
     entri.sort(key=lambda e: e["tanggal"], reverse=True)
 
     keluar = AKAR / "keluaran" / "index.json"

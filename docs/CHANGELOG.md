@@ -8,6 +8,29 @@ penomoran mengikuti [Semantic Versioning 2.0.0](https://semver.org/lang/id/):
 **MINOR** untuk kemampuan baru yang tidak merusak alur lama, **PATCH** untuk perbaikan saja.
 Versi yang sudah dirilis tidak diubah isinya — kalau ada yang keliru, terbit versi baru.
 
+## [6.1.0] — 2026-08-15
+
+### Ditambah
+- Halaman **Forum**: ruang umum dan ruang per emiten; tag `$KODE` di dalam pesan jadi
+  tautan ke ruang emiten itu. Tamu boleh menulis 5 pesan sehari, akun aktif tanpa batas
+- Tombol **intip kata sandi** di semua kolom sandi (masuk, buat akun, atur ulang)
+- Terbitan **mingguan dirakit sendiri tiap Jumat** oleh pipeline lokal: edisi harian
+  Senin–Jumat digabung jadi satu PDF dan langsung muncul di halaman Bulletin
+- Pendaftaran akun lewat WhatsApp langsung dari modal masuk
+
+### Diubah
+- Pemuatan awal dasbor dipercepat untuk jaringan lambat: berkas program dipecah agar
+  halaman pertama tidak menunggu seluruh aplikasi terunduh
+- Tabel Kelola Akun memakai lebar kolom tetap; isi yang tidak muat dipendekkan,
+  bukan kolomnya yang dilebarkan
+
+### Diperbaiki
+- Modal masuk kembali di tengah ruang yang terlihat, tidak tertarik ke kiri oleh rail
+- Kalender membedakan keadaan "sedang memuat" dari "tidak ada data" — sebelumnya sel
+  tanggal sempat mengaku kosong padahal datanya belum sampai
+- Kartu jenjang berhenti menyebut superadmin "Perunggu · 2/hari" sementara kepala
+  halaman menulis 50/hari
+
 ## [6.0.0] — 2026-08-14
 
 Rilis peran & kurasi. Disebut MAJOR karena cara menyetor orderbook berubah:
