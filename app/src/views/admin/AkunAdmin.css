@@ -35,5 +35,18 @@
 @media (max-width: 900px) {
   .lantai .aa-tbl-wrap { overflow-x: auto; }
 }
-.lantai .aa-tbl { min-width: 720px; }
+.lantai .aa-tbl { table-layout: fixed; min-width: 1360px; }
+/* Sel sempit tidak boleh membungkus — begitu pecah dua baris, tinggi baris
+   jadi tak seragam dan tabel terlihat berantakan. §172 SAKTI: kalau konten
+   tidak muat, PENDEKKAN kontennya (label dipangkas, sisanya ke tooltip),
+   jangan lebarkan kolom — melebarkan satu kolom menggeser semua kolom
+   sesudahnya. */
+.lantai .aa-tbl td, .lantai .aa-tbl th { white-space: nowrap; }
+.lantai .aa-tbl td:first-child, .lantai .aa-tbl th:first-child {
+  white-space: normal; overflow-wrap: anywhere;
+}
+.lantai .aa-nowrap { white-space: nowrap; }
+/* Keterangan "efektif N/hari" di bawah dropdown kuota — satu baris, tidak
+   ikut melebarkan kolomnya. */
+.lantai .aa-kuota-dd .muted { white-space: nowrap; }
 

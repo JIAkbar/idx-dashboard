@@ -18,7 +18,10 @@ const KUOTA_OPSI = [1, 2, 3, 5, 8, 12, 20, 50].map((n) => ({ nilai: String(n), l
 /** Sentinel dropdown "Ikut jenjang" (Fase 6) — `kuota_manual: null` di server. */
 const IKUT_JENJANG = 'ikut'
 const KUOTA_MANUAL_OPSI = [
-  { nilai: IKUT_JENJANG, label: 'Ikut jenjang' },
+  // Label sengaja satu kata: "Ikut jenjang" pecah dua baris di kolom
+  // selebar ini, dan melebarkan kolomnya berarti menggeser semua kolom
+  // sesudahnya (§172 SAKTI: pendekkan konten, jangan lebarkan kolom).
+  { nilai: IKUT_JENJANG, label: 'Otomatis' },
   ...[1, 2, 3, 5, 8, 12, 20, 50].map((n) => ({ nilai: String(n), label: String(n) })),
 ]
 
@@ -141,6 +144,27 @@ export function AkunAdmin() {
           {akun && akun.length > 0 && (
             <div className="af-gulir aa-tbl-wrap">
               <table className="tbl aa-tbl">
+                {/* Lebar kolom dipatok px, bukan dibiarkan auto (§172 SAKTI):
+                    dengan auto, "Tanpa jenjang" dan dropdown "Ikut jenjang"
+                    pecah dua baris dan tinggi tiap baris jadi berbeda-beda.
+                    Email sengaja jadi kolom penyerap — satu-satunya yang
+                    panjangnya tak terduga. Σ kolom tetap = 1.170px, plus jatah
+                    minimum Email 190px → min-width tabel 1.360px (lihat
+                    .aa-tbl di AkunAdmin.css; kalau kolom di sini berubah,
+                    angka itu WAJIB dihitung ulang, kalau tidak kolom penyerap
+                    kolaps di layar sempit). */}
+                <colgroup>
+                  <col />
+                  <col style={{ width: 120 }} />
+                  <col style={{ width: 110 }} />
+                  <col style={{ width: 110 }} />
+                  <col style={{ width: 120 }} />
+                  <col style={{ width: 90 }} />
+                  <col style={{ width: 100 }} />
+                  <col style={{ width: 70 }} />
+                  <col style={{ width: 150 }} />
+                  <col style={{ width: 300 }} />
+                </colgroup>
                 <thead>
                   <tr>
                     <th>Email</th>
@@ -183,7 +207,7 @@ export function AkunAdmin() {
                           {berjenjang ? (
                             <span className="chip" title={`Tier ${tier}`}>{jenjangAkun?.nama ?? `Tier ${tier}`}</span>
                           ) : (
-                            <span className="muted" title="Superadmin tidak dibatasi jenjang maupun kuota harian">
+                            <span className="muted aa-nowrap" title="Superadmin tidak dibatasi jenjang maupun kuota harian">
                               Tanpa jenjang
                             </span>
                           )}
