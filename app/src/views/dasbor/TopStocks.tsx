@@ -89,6 +89,13 @@ export function TopStocks() {
     }
     return { vol, val, frek, n }
   }, [days])
+  /** Tanggal yang benar-benar sedang ditampilkan. Judul panel dulu tertulis
+   *  "Hari Ini", padahal strip kalender membiarkan pembaca menggeser ke
+   *  tanggal mana pun — dan begitu digeser, judulnya berbohong. Menyebut
+   *  tanggalnya juga menjawab pertanyaan yang wajar muncul pada data delay:
+   *  ini angka kapan? */
+  const labelTanggal = tanggalAktif ? fmtTanggalPendek(tanggalAktif) : ''
+
   const ihsgMulai = rentang ? tanggalTersedia.find((t) => t.date_iso === rentang.mulai)?.ihsg : undefined
   const ihsgAkhir = rentang ? tanggalTersedia.find((t) => t.date_iso === rentang.akhir)?.ihsg : undefined
   const ihsgPctRentang = ihsgMulai && ihsgAkhir ? (ihsgAkhir / ihsgMulai - 1) * 100 : null
@@ -211,7 +218,7 @@ export function TopStocks() {
 
       <div className="grid2">
         <div className="panel">
-          <div className="panel-h"><span className="lbl">Top Gainers Hari Ini</span></div>
+          <div className="panel-h"><span className="lbl">Top Gainers</span><span className="muted" style={{ fontSize: 11 }}>{labelTanggal}</span></div>
           <div className="board-tbl-wrap">
             <table className="tbl" style={tbl4}>
               {kol4}
@@ -235,7 +242,7 @@ export function TopStocks() {
           </div>
         </div>
         <div className="panel">
-          <div className="panel-h"><span className="lbl">Top Losers Hari Ini</span></div>
+          <div className="panel-h"><span className="lbl">Top Losers</span><span className="muted" style={{ fontSize: 11 }}>{labelTanggal}</span></div>
           <div className="board-tbl-wrap">
             <table className="tbl" style={tbl4}>
               {kol4}
@@ -262,7 +269,7 @@ export function TopStocks() {
 
       <div className="grid2">
         <div className="panel">
-          <div className="panel-h"><span className="lbl">Top Leaders — Kontribusi IHSG Hari Ini</span></div>
+          <div className="panel-h"><span className="lbl">Top Leaders — Kontribusi IHSG</span><span className="muted" style={{ fontSize: 11 }}>{labelTanggal}</span></div>
           <div className="panel-b">
             <div className="board-tbl-wrap">
               <table className="tbl" style={tbl3}>
@@ -291,7 +298,7 @@ export function TopStocks() {
           </div>
         </div>
         <div className="panel">
-          <div className="panel-h"><span className="lbl">Top Laggards — Kontribusi IHSG Hari Ini</span></div>
+          <div className="panel-h"><span className="lbl">Top Laggards — Kontribusi IHSG</span><span className="muted" style={{ fontSize: 11 }}>{labelTanggal}</span></div>
           <div className="panel-b">
             <div className="board-tbl-wrap">
               <table className="tbl" style={tbl3}>
