@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { fN } from '../../../lib/dasbor/format'
+import { keFraksi, hariAraMinimal } from '../../../lib/fraksiHarga'
 import { IkonMenu, IKON_PERINGATAN } from '../../../components/dasbor/IkonMenu'
 
 /** Baris tabel acuan — kerugian yang lazim dipakai orang untuk mengukur diri. */
@@ -47,6 +48,8 @@ function tingkat(rugi: number): string {
  *   "besok balik" berhadapan dengan aturan bursa.
  */
 export function Pemulihan() {
+  const [kode, setKode] = useState('')
+  const [lot, setLot] = useState('')
   const [avg, setAvg] = useState('')
   const [kini, setKini] = useState('')
   const [cagr, setCagr] = useState('7')
@@ -60,12 +63,28 @@ export function Pemulihan() {
   }, [avg, kini])
 
   const cagrN = Math.max(0, parseFloat(cagr) || 0)
+  // Lot hanya pengali buat kolom rupiah — bukan bagian dari `posisi`, supaya
+  // baris tabel umum (yang tak butuh lot) tak ikut hitung ulang tiap ketik.
+  const lotN = Math.max(0, parseFloat(lot) || 0)
 
   return (
     <div className="grid2 kalk-pemulihan">
       <section className="panel">
         <div className="panel-h"><span className="lbl">Posisi Anda</span></div>
         <div className="panel-b" style={{ display: 'grid', gap: 12 }}>
+          {/* Kode cuma label buat baca tabel/kartu vonis sendiri — tak dipakai
+              cari data apa pun, jadi bebas diisi teks apa saja. */}
+          <div className="field">
+            <span className="lbl">Kode emiten</span>
+            <input className="inp" type="text" value={kode} placeholder="BBCA" maxLength={6}
+              onChange={(e) => setKode(e.target.value.toUpperCase())} />
+          </div>
+          <div className="field">
+            <span className="lbl">Jumlah lot</span>
+            <input className="inp" inputMode="numeric" value={lot} placeholder="0"
+              onChange={(e) => setLot(e.target.value)} />
+            <span className="v-note">1 lot = 100 saham — kosongkan kalau cuma mau lihat persentase.</span>
+          </div>
           <div className="field">
             <span className="lbl">Harga beli rata-rata (Rp)</span>
             <input className="inp" inputMode="decimal" value={avg} placeholder="0"
@@ -93,8 +112,20 @@ export function Pemulihan() {
               <p>
                 Untuk balik modal, harga harus naik{' '}
                 <b>{butuhNaik(posisi.rugi) === Infinity ? '∞' : `${butuhNaik(posisi.rugi).toFixed(2)}%`}</b>{' '}
-                — dari {fN(posisi.kini)} kembali ke <b>{fN(posisi.avg)}</b>.
+                {/* Harga sekarang sekadar ditampilkan (arah 'dekat'); harga sasaran
+                    dibulatkan ke ATAS karena itu titik yang harus benar-benar
+                    tercapai di bursa — dibulatkan ke bawah malah mengecoh, terasa
+                    tercapai padahal belum. */}
+                — dari {fN(keFraksi(posisi.kini, 'dekat'))} kembali ke <b>{fN(keFraksi(posisi.avg, 'atas'))}</b>.
               </p>
+              {lotN > 0 && (
+                <p>
+                  Modal <b>Rp {fN(posisi.avg * lotN * 100, 0)}</b>, sekarang{' '}
+                  <b>Rp {fN(posisi.kini * lotN * 100, 0)}</b> — rugi{' '}
+                  <b className="dn">Rp {fN((posisi.avg - posisi.kini) * lotN * 100, 0)}</b>
+                  {kode ? ` di ${kode}` : ''}.
+                </p>
+              )}
               {(() => {
                 const th = tahunPulih(butuhNaik(posisi.rugi), cagrN)
                 if (th === null) return null
@@ -104,6 +135,10 @@ export function Pemulihan() {
                   </p>
                 )
               })()}
+              <p className="muted">
+                Paling cepat <b>{hariAraMinimal(keFraksi(posisi.kini, 'bawah'), butuhNaik(posisi.rugi))} hari ARA berturut-turut</b>{' '}
+                — dan itu skenario paling ekstrem, bukan yang lazim.
+              </p>
             </div>
           )}
 
@@ -133,6 +168,7 @@ export function Pemulihan() {
             <colgroup>
               <col style={{ width: 74 }} /><col style={{ width: 96 }} />
               <col style={{ width: 96 }} /><col />
+              <col style={{ width: 90 }} />
             </colgroup>
             <thead>
               <tr>
@@ -140,6 +176,7 @@ export function Pemulihan() {
                 <th className="num">Butuh naik</th>
                 <th className="num">Lama pulih</th>
                 <th className="num">Harga di titik itu</th>
+                <th className="num">Hari ARA</th>
               </tr>
             </thead>
             <tbody>
@@ -150,16 +187,22 @@ export function Pemulihan() {
                 // umum jadi cermin posisi sendiri tanpa perlu mencari-cari.
                 const dekat = posisi && posisi.rugi > 0 &&
                   ANAK_TANGGA.reduce((a, b) => Math.abs(b - posisi.rugi) < Math.abs(a - posisi.rugi) ? b : a) === r
+                // Harga acuan dibulatkan ke BAWAH: itu titik masuk/support di
+                // baris ini, membulatkan ke atas menjanjikan harga yang belum
+                // tentu bisa dipesan. Sasaran (avg) dibulatkan ke ATAS — alasan
+                // sama seperti di kartu vonis di atas.
+                const acuan = posisi ? keFraksi(posisi.avg * (1 - r / 100), 'bawah') : null
                 return (
                   <tr key={r} className={`t-${tingkat(r)}${dekat ? ' sorot' : ''}`}>
                     <td><b>{r}%</b></td>
                     <td className="num">{naik.toFixed(2)}%</td>
                     <td className="num">{th === null ? '—' : th < 1 ? `${Math.round(th * 12)} bln` : `${th.toFixed(1)} thn`}</td>
                     <td className="num">
-                      {posisi
-                        ? <>{fN(posisi.avg * (1 - r / 100))} <span className="muted">→ {fN(posisi.avg)}</span></>
+                      {posisi && acuan !== null
+                        ? <>{fN(acuan)} <span className="muted">→ {fN(keFraksi(posisi.avg, 'atas'))}</span></>
                         : <span className="muted">isi harga beli</span>}
                     </td>
+                    <td className="num">{acuan !== null ? hariAraMinimal(acuan, naik) : '—'}</td>
                   </tr>
                 )
               })}
@@ -168,6 +211,7 @@ export function Pemulihan() {
                 <td className="num">tidak mungkin</td>
                 <td className="num">—</td>
                 <td className="num muted">0 — tak bisa naik dari nol</td>
+                <td className="num">—</td>
               </tr>
             </tbody>
           </table>

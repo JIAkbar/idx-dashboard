@@ -31,6 +31,14 @@ describe('keFraksi', () => {
     expect(b % fraksi(b)).toBe(0)
   })
 
+  it('galat pecahan biner tidak menjatuhkan harga satu tick penuh', () => {
+    // 8.000 dikurangi 55% = 3599,9999999999995 di JavaScript. Dibulatkan ke
+    // bawah tanpa toleransi, hasilnya 3.590 — salah satu tick penuh.
+    expect(keFraksi(8000 * (1 - 55 / 100), 'bawah')).toBe(3600)
+    expect(keFraksi(8000 * (1 - 80 / 100), 'bawah')).toBe(1600)
+    expect(keFraksi(1000 * (1 - 30 / 100), 'bawah')).toBe(700)
+  })
+
   it('harga tak masuk akal jadi nol, bukan NaN', () => {
     expect(keFraksi(0)).toBe(0)
     expect(keFraksi(-5)).toBe(0)

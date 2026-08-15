@@ -49,7 +49,14 @@ export function fraksi(harga: number): number {
 export function keFraksi(harga: number, arah: 'atas' | 'bawah' | 'dekat' = 'dekat'): number {
   if (!isFinite(harga) || harga <= 0) return 0
   const f = fraksi(harga)
-  const bagi = harga / f
+  // Toleransi galat pecahan biner SEBELUM dibulatkan. Tanpa ini, 8.000 dikurangi
+  // 55% menghasilkan 3599,9999999999995 di JavaScript, dan pembulatan ke bawah
+  // menjatuhkannya satu tick penuh ke 3.590 — bukan 3.600 yang benar. Galatnya
+  // sangat kecil, tapi arah pembulatanlah yang membesarkannya jadi kesalahan
+  // harga yang terlihat. Terbukti di tab Pemulihan, 15 Agu 2026.
+  const bagi = Math.abs(Math.round(harga / f) - harga / f) < 1e-9
+    ? Math.round(harga / f)
+    : harga / f
   const n = arah === 'atas' ? Math.ceil(bagi) : arah === 'bawah' ? Math.floor(bagi) : Math.round(bagi)
   const hasil = n * f
   // Pembulatan bisa melompati batas jenjang (mis. 1.999 → 2.000 → fraksinya
