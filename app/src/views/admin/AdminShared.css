@@ -418,7 +418,13 @@
    dulu 1 baris nowrap yang memutus kalimat tanggung) + tombol "Ubah" kecil
    (kontributor, baris sendiri, status masih menunggu). title penuh di teks
    utuh, buat pembaca yang mau lihat semuanya tanpa buka modal. */
-.lantai .af-alasan-sel { display: flex; align-items: flex-start; gap: 6px; }
+/* `display:flex` JANGAN dipasang langsung ke <td>: sel itu berhenti
+   berperilaku sebagai sel tabel dan menyusut ke tinggi kontennya (30px,
+   sementara sel lain 51px), sehingga garis bawahnya tergambar melayang di
+   tengah baris — tak sejajar dengan kolom di kiri-kanannya. Flex-nya
+   dipindah ke pembungkus di dalam sel. */
+.lantai .af-alasan-sel { vertical-align: middle; }
+.lantai .af-alasan-bungkus { display: flex; align-items: flex-start; gap: 6px; }
 .lantai .af-alasan-teks {
   flex: 1; min-width: 0; font-size: 11px; color: var(--text2); line-height: 1.4;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;

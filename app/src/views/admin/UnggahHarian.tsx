@@ -1002,6 +1002,7 @@ export function UnggahHarian() {
                               : namaTampil(b.setoranOb?.profil ?? b.setoranCh?.profil, null)}
                           </td>
                           <td className="af-alasan-sel">
+                           <div className="af-alasan-bungkus">
                             <span
                               className="af-alasan-teks"
                               title={milikOrangLain ? 'Alasan hanya terlihat oleh penyetornya sendiri.' : alasanTeks || undefined}
@@ -1019,6 +1020,7 @@ export function UnggahHarian() {
                                 Ubah
                               </button>
                             )}
+                           </div>
                           </td>
                           <td className="af-c">
                             <SelBerkas path={b.orderbook} url={b.orderbook ? thumb[b.orderbook] : undefined}
