@@ -24,6 +24,22 @@ function geser(tahun: number): string {
   return d.toISOString().slice(0, 10)
 }
 
+/** Ikut mendengarkan perubahan, bukan sekadar membaca sekali saat render:
+ *  memutar ponsel ke lanskap mengubah jawabannya, dan grafik yang menyimpan
+ *  ukuran lama akan tergambar dengan skala yang salah sampai dipaksa render. */
+function useLayarSempit(batas = 700): boolean {
+  const [sempit, setSempit] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(`(max-width: ${batas}px)`).matches,
+  )
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${batas}px)`)
+    const ubah = () => setSempit(mq.matches)
+    mq.addEventListener('change', ubah)
+    return () => mq.removeEventListener('change', ubah)
+  }, [batas])
+  return sempit
+}
+
 const WARNA = ['var(--red)', 'var(--amber)', 'var(--blue)', 'var(--green)', 'var(--text)']
 const BLN_PENDEK = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 
@@ -185,8 +201,16 @@ export function SeasonalityHarian() {
  * penyingkapannya. Tak ada render ulang sama sekali selama animasi berjalan.
  */
 function Balapan({ r, kunci }: { r: RingkasHarian; kunci: string }) {
-  const W = 900, H = 348
-  const PAD = { atas: 14, kanan: 104, bawah: 34, kiri: 56 }
+  // viewBox lebih sempit di layar kecil. Ukuran teks di dalam SVG ikut
+  // diskalakan bersama viewBox-nya: kotak 900 lebar yang dipaksa masuk ke
+  // 394px menyusutkan label 12px jadi sekitar 5px — ada di layar, tak terbaca.
+  // Kotak yang lebih kecil dan lebih jangkung membuat skalanya mendekati 1:1.
+  const sempit = useLayarSempit()
+  const W = sempit ? 460 : 900
+  const H = sempit ? 320 : 348
+  const PAD = sempit
+    ? { atas: 12, kanan: 78, bawah: 30, kiri: 42 }
+    : { atas: 14, kanan: 104, bawah: 34, kiri: 56 }
 
   const semua = r.jejak.flatMap((j) => j.nilai)
   const min = Math.min(0, ...semua)
@@ -214,11 +238,11 @@ function Balapan({ r, kunci }: { r: RingkasHarian; kunci: string }) {
     })
     // Kalau masih terlalu rapat, ambil selang seling sampai muat. Label yang
     // saling menimpa lebih buruk daripada label yang lebih jarang.
-    const maksLabel = 14
+    const maksLabel = sempit ? 7 : 14
     if (hasil.length <= maksLabel) return hasil
     const lompat = Math.ceil(hasil.length / maksLabel)
     return hasil.filter((_, i) => i % lompat === 0)
-  }, [r.jejak])
+  }, [r.jejak, sempit])
 
   // Panjang jalur ditaksir dari jarak antar titik. Cukup: nilainya cuma perlu
   // TIDAK LEBIH PENDEK dari panjang sebenarnya, karena dipakai sebagai dash

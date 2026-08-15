@@ -2222,7 +2222,14 @@
 @media (max-width: 860px) { .lantai .kalk-pemulihan { grid-template-columns: 1fr; } }
 
 /* ===== Seasonality ======================================================== */
-.lantai.seasonality { display: grid; gap: 14px; }
+/* minmax(0,1fr), bukan `auto`: kolom grid `auto` melebar mengikuti max-content
+   anaknya, dan `.sea-hari-tbl` yang min-width 640px menyeret seluruh halaman
+   jadi 670px di layar 412px. Karena `.dasbor-main` memotong (overflow-x:
+   hidden), kelebihannya tak bisa digulung — separuh tabel dan grafik hilang
+   tanpa cara mencapainya. Kolom yang boleh menyusut mengembalikan tugas
+   menggulung ke pembungkus tabel, tempat yang memang disiapkan untuk itu. */
+.lantai.seasonality { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.lantai.seasonality > .panel { min-width: 0; }
 .lantai .sea-cari-blok { display: grid; gap: 12px; }
 .lantai .sea-cari { position: relative; display: flex; align-items: center; gap: 8px; }
 .lantai .sea-cari .inp { flex: 1; }
@@ -2329,6 +2336,12 @@
 
 /* ===== Seasonality · tab hari dalam seminggu ============================== */
 .lantai .sea-hari-kepala { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+/* Di layar sempit judul dan keterangannya berbagi baris jadi dua kolom
+   selebar ±180px, dan keduanya membungkus tiga baris. Menumpuk memberi
+   keduanya lebar penuh dengan tinggi yang justru lebih pendek. */
+@media (max-width: 700px) {
+  .lantai .sea-hari-kepala { flex-direction: column; align-items: flex-start; gap: 4px; }
+}
 .lantai .sea-balapan { position: relative; }
 .lantai .sea-balapan svg { width: 100%; height: auto; display: block; }
 .lantai .sb-sumbu { font-family: var(--mono); font-size: 10px; fill: var(--text3); }

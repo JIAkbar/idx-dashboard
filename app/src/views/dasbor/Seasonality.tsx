@@ -91,7 +91,13 @@ export function Seasonality() {
     <div className="lantai seasonality">
       <div className="vhead">
         <h1>Seasonality</h1>
-        <span className="sub">pola bulanan {indeks ? indeks.length.toLocaleString('id-ID') : '—'} emiten, diuji lawan kebetulan</span>
+        {/* Subjudul ikut tab: tab hari memakai IHSG harian, bukan pola bulanan
+            910 emiten, jadi keterangan yang tak berganti akan salah separuh waktu. */}
+        <span className="sub">
+          {tab === 'bulan'
+            ? `pola bulanan ${indeks ? indeks.length.toLocaleString('id-ID') : '—'} emiten, diuji lawan kebetulan`
+            : 'pola hari dalam seminggu di IHSG, diuji lawan kebetulan'}
+        </span>
       </div>
 
       {/* Dua sudut waktu dari satu pertanyaan yang sama — "kapan cenderung
