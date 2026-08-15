@@ -107,6 +107,14 @@ export function PanduanScreenshot({ superadmin, defaultBuka }: { superadmin: boo
               <b>total volume</b>, dan <b>seluruh baris broker sampai bawah</b>.
             </li>
             <li>Jangan memotong atau menyunting gambar, jangan menutupi angka.</li>
+            {/* Contoh di bawah kebetulan semuanya dari Stockbit, dan itu
+                terbaca seperti syarat. Yang dibutuhkan transkripsi cuma
+                angkanya — aplikasi mana pun boleh, asal isinya lengkap. */}
+            <li>
+              <b>Aplikasi bebas.</b> Orderbook dari sekuritas mana pun diterima — Stockbit, IPOT,
+              Mirae, Ajaib, BNI Bions, dan lainnya. Contoh di bawah kebetulan memakai Stockbit;
+              yang dinilai isinya, bukan aplikasinya.
+            </li>
           </ul>
 
           {contoh === null && <p className="muted" style={{ fontSize: 11 }}>Memuat contoh…</p>}
