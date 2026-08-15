@@ -375,10 +375,15 @@ export function ringkasHarian(
   sejakTgl = '',
 ): RingkasHarian | null {
   const tgl = Object.keys(tutup).filter((t) => t >= sejakTgl).sort()
-  // Di bawah 25 hari bursa, tiap ember hari cuma berisi segelintir pengamatan
-  // dan "polanya" praktis dibentuk oleh dua-tiga hari. Lebih baik menolak
-  // menghitung daripada menampilkan angka yang terlihat berarti.
-  if (tgl.length < 25) return null
+  // Ambangnya sengaja RENDAH. Versi pertama menolak di bawah 25 hari bursa,
+  // dan itu keliru arahnya: orang yang membuka MTD justru sedang ingin
+  // melihat bagaimana angkanya terbentuk. Menolak menghitung menyembunyikan
+  // mekanismenya, bukan melindungi siapa pun.
+  //
+  // Yang benar: hitung, tampilkan, lalu KATAKAN dengan jelas bahwa dasarnya
+  // tipis. Pembacanya yang memutuskan, dengan tahu apa yang ia lihat.
+  // Dua hari cukup untuk satu imbal; di bawah itu tak ada yang bisa dihitung.
+  if (tgl.length < 2) return null
 
   const semua: Array<{ tgl: string; hari: number; persen: number }> = []
   for (let i = 1; i < tgl.length; i++) {

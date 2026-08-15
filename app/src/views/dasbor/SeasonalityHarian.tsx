@@ -85,11 +85,19 @@ export function SeasonalityHarian() {
 
       {!r && (
         <div className="fd-empty" style={{ padding: '40px 20px' }}>
-          <p style={{ fontSize: 14 }}>Rentang ini di bawah 25 hari bursa.</p>
-          <p style={{ fontSize: 11.5, marginTop: 6, maxWidth: '54ch', margin: '6px auto 0', lineHeight: 1.7 }}>
-            Dibagi lima hari, tiap hari cuma menyisakan segelintir pengamatan — polanya akan
-            dibentuk oleh dua-tiga hari saja. Pilih rentang yang lebih panjang.
-          </p>
+          <p style={{ fontSize: 14 }}>Rentang ini belum punya satu pun perubahan harga.</p>
+        </div>
+      )}
+
+      {/* Sampel tipis TIDAK disembunyikan — ditampilkan dengan peringatan yang
+          menyebut angkanya. Menolak menghitung menyembunyikan mekanismenya;
+          yang dibutuhkan pembaca adalah tahu setipis apa dasarnya. */}
+      {r && r.totalObservasi < 25 && (
+        <div className="sea-tipis">
+          <b>Dasarnya tipis: {r.totalObservasi} perubahan harga.</b> Dibagi lima hari, tiap hari
+          cuma punya sekitar {Math.round(r.totalObservasi / 5)} pengamatan — satu hari yang
+          kebetulan meledak bisa menentukan seluruh urutannya. Angka di bawah benar secara
+          hitungan, tapi belum berarti apa-apa sebagai pola.
         </div>
       )}
 
