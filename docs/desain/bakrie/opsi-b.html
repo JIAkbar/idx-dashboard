@@ -1,0 +1,180 @@
+<title>Papan Peluang Bakrie</title>
+<style>
+:root{
+  --dasar:#0E1116; --panel:#151A21; --panel2:#1B212A; --garis:#242C36;
+  --teks:#E9EEF5; --teks2:#A8B4C2; --teks3:#6E7B8B;
+  --nyala:#3FD1A0; --redam:#F2564B; --tanda:#5AA9FF; --emas:#F0B429;
+  --r:8px;
+  --disp:"Archivo",'Helvetica Neue',Helvetica,Arial,sans-serif;
+  --body:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+:root[data-theme="light"]{
+  --dasar:#EEF1F5; --panel:#FFFFFF; --panel2:#F5F7FA; --garis:#D9DFE7;
+  --teks:#111820; --teks2:#4A5766; --teks3:#7E8B9A;
+  --nyala:#0C7C5B; --redam:#C0392B; --tanda:#1F6FD0; --emas:#9A6B05;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --dasar:#EEF1F5; --panel:#FFFFFF; --panel2:#F5F7FA; --garis:#D9DFE7;
+  --teks:#111820; --teks2:#4A5766; --teks3:#7E8B9A;
+  --nyala:#0C7C5B; --redam:#C0392B; --tanda:#1F6FD0; --emas:#9A6B05;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--dasar);color:var(--teks);font-family:var(--body);
+  -webkit-font-smoothing:antialiased;line-height:1.55}
+.wrap{max-width:1080px;margin:0 auto;padding:26px 18px 70px}
+.top{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;
+  padding-bottom:14px;border-bottom:1px solid var(--garis)}
+h1{font-family:var(--disp);font-size:clamp(20px,3vw,28px);font-weight:800;letter-spacing:-.02em;margin:0}
+.tik{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--tanda);margin:0 0 3px}
+.jam{font-family:var(--mono);font-size:11px;color:var(--teks3)}
+
+.pilih{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 6px}
+.pilih button{font-family:var(--mono);font-size:12px;font-weight:600;padding:8px 14px;cursor:pointer;
+  background:var(--panel);color:var(--teks2);border:1px solid var(--garis);border-radius:99px;
+  transition:transform .08s ease,background .12s ease}
+.pilih button:hover{background:var(--panel2);color:var(--teks)}
+.pilih button:active{transform:translateY(1px)}
+.pilih button[aria-pressed="true"]{background:var(--tanda);border-color:var(--tanda);color:#04101F}
+.pilih button:focus-visible{outline:2px solid var(--emas);outline-offset:2px}
+.tanya{font-size:13px;color:var(--teks2);margin:8px 0 22px;max-width:66ch}
+.tanya b{color:var(--teks)}
+
+.papan{background:var(--panel);border:1px solid var(--garis);border-radius:var(--r);overflow:hidden}
+.brs{display:grid;grid-template-columns:26px 96px 1fr 74px;gap:12px;align-items:center;
+  padding:10px 16px;border-bottom:1px solid var(--garis)}
+.brs:last-child{border-bottom:0}
+.brs.kepala{background:var(--panel2);font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--teks3);padding:9px 16px}
+.pk{font-family:var(--mono);font-size:11px;color:var(--teks3);text-align:right}
+.nm{font-family:var(--disp);font-weight:700;font-size:13.5px}
+.bar{position:relative;height:22px;background:var(--panel2);border-radius:4px;overflow:hidden}
+.bar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--tanda),var(--nyala));
+  border-radius:4px;width:0;transition:width .5s cubic-bezier(.22,.9,.3,1)}
+.brs.juara .bar i{background:linear-gradient(90deg,var(--emas),var(--nyala))}
+.brs.juara .nm{color:var(--emas)}
+.ag{font-family:var(--mono);font-size:14px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.sisa{font-family:var(--mono);font-size:10px;color:var(--teks3)}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+
+.vonis{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px;padding:14px 16px;
+  background:var(--panel);border:1px solid var(--garis);border-left:3px solid var(--emas);border-radius:var(--r);
+  font-size:13px;color:var(--teks2)}
+.vonis b{color:var(--teks)}
+.vonis .p{font-family:var(--mono);font-size:12px;padding:3px 9px;border-radius:99px;
+  border:1px solid var(--nyala);color:var(--nyala)}
+.vonis .p.lemah{border-color:var(--teks3);color:var(--teks3)}
+
+h2{font-family:var(--disp);font-size:17px;font-weight:800;margin:40px 0 4px;letter-spacing:-.01em}
+.ket{font-size:13px;color:var(--teks2);margin:0 0 16px;max-width:68ch}
+
+.syarat{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.sy{background:var(--panel);border:1px solid var(--garis);border-radius:var(--r);padding:15px 17px}
+.sy .l{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--teks3)}
+.sy .v{font-family:var(--disp);font-size:27px;font-weight:800;margin:5px 0 1px;font-variant-numeric:tabular-nums}
+.sy .d{font-size:11.5px;color:var(--teks3);font-family:var(--mono)}
+.sy.baik .v{color:var(--nyala)}.sy.buruk .v{color:var(--redam)}
+
+.kaki{margin-top:42px;font-size:12.5px;color:var(--teks3);max-width:74ch;line-height:1.75}
+.kaki b{color:var(--teks2)}
+</style>
+
+<div class="wrap">
+<div class="top">
+  <div>
+    <p class="tik">Grup Bakrie · 13 emiten · 2.557 bulan-emiten</p>
+    <h1>Peluang lonjakan, per bulan</h1>
+  </div>
+  <div class="jam">Yahoo Finance · <span id="tgl"></span></div>
+</div>
+
+<div class="pilih" id="ambang" role="group" aria-label="Pilih ambang lonjakan"></div>
+<p class="tanya" id="tanya"></p>
+
+<div class="papan" id="papan">
+  <div class="brs kepala"><span></span><span>Bulan</span><span>Peluang</span><span style="text-align:right">%</span></div>
+</div>
+
+<div class="vonis" id="vonis"></div>
+
+<h2>Peluang berubah kalau keadaannya berubah</h2>
+<p class="ket">Bulan bukan satu-satunya penanda. Angka di bawah memilah observasi yang sama menurut
+keadaan sebelum bulan itu berjalan — pada ambang yang sedang dipilih.</p>
+<div class="syarat" id="syarat"></div>
+
+<p class="kaki">
+<b>Penyebutnya bukan semua bulan.</b> Bulan yang bergerak di bawah 0,5% dianggap tidak bergerak dan
+dibuang — memasukkannya akan menipiskan peluang secara semu. <b>Harga sudah disesuaikan aksi
+korporasi</b>, karena grup ini sering right issue dan reverse split. <b>Ini frekuensi historis, bukan
+prediksi:</b> sebagian besar rentangnya rezim yang sudah lewat — booming batu bara 2005–2008, krisis
+2008, penurunan panjang 2012–2015 — dan tak satu pun berjanji akan berulang.
+</p>
+</div>
+
+<script>
+const D = {"bulan":["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"],"dibuat":"2026-08-15","emiten":{"BUMI":{"nama":"Bumi Resources","mulai":"2001-06","akhir":"2026-08","n":303,"bulan":[[28.0,-3.92,25],[24.0,-3.45,25],[52.0,1.11,25],[32.0,-1.96,25],[36.0,-5.1,25],[44.0,0.0,25],[30.8,-4.38,26],[50.0,0.84,26],[40.0,0.0,25],[36.0,-3.7,25],[48.0,0.0,25],[60.0,6.67,25]],"lonjak20":43,"lonjak50":12,"beku":12.6,"terbaik":214.7,"terburuk":-57.7},"BNBR":{"nama":"Bakrie & Brothers","mulai":"2000-09","akhir":"2026-08","n":312,"bulan":[[7.7,0.0,26],[7.7,0.0,26],[19.2,0.0,26],[3.8,0.0,26],[7.7,0.0,26],[19.2,0.0,26],[15.4,0.0,26],[19.2,0.0,26],[16.0,0.0,25],[7.7,0.0,26],[15.4,0.0,26],[11.5,0.0,26]],"lonjak20":22,"lonjak50":8,"beku":72.3,"terbaik":122.8,"terburuk":-98.3},"ELTY":{"nama":"Bakrieland Development","mulai":"2002-06","akhir":"2026-08","n":291,"bulan":[[29.2,0.0,24],[16.7,0.0,24],[25.0,0.0,24],[29.2,0.0,24],[8.3,0.0,24],[41.7,0.0,24],[16.0,0.0,25],[28.0,0.0,25],[20.8,0.0,24],[16.7,0.0,24],[25.0,0.0,24],[29.2,0.0,24]],"lonjak20":29,"lonjak50":9,"beku":50.0,"terbaik":260.0,"terburuk":-90.0},"ENRG":{"nama":"Energi Mega Persada","mulai":"2004-06","akhir":"2026-08","n":267,"bulan":[[50.0,0.47,22],[18.2,-4.03,22],[45.5,0.0,22],[40.9,0.0,22],[36.4,-1.3,22],[45.5,0.0,22],[13.0,-5.93,23],[52.2,3.95,23],[45.5,-0.98,22],[27.3,-4.2,22],[40.9,-0.98,22],[50.0,0.71,22]],"lonjak20":34,"lonjak50":11,"beku":10.9,"terbaik":218.8,"terburuk":-58.9},"UNSP":{"nama":"Bakrie Sumatera Plantations","mulai":"2004-11","akhir":"2026-07","n":261,"bulan":[[63.6,3.26,22],[27.3,-1.63,22],[40.9,0.0,22],[31.8,-2.07,22],[22.7,-3.41,22],[54.5,3.38,22],[27.3,-1.5,22],[38.1,0.0,21],[42.9,0.0,21],[28.6,0.0,21],[47.6,0.0,21],[45.5,0.0,22]],"lonjak20":22,"lonjak50":3,"beku":18.5,"terbaik":111.7,"terburuk":-62.0},"DEWA":{"nama":"Darma Henwa","mulai":"2007-09","akhir":"2026-08","n":228,"bulan":[[31.6,0.0,19],[10.5,-1.96,19],[26.3,0.0,19],[15.8,0.0,19],[21.1,0.0,19],[36.8,0.0,19],[15.8,0.0,19],[26.3,0.0,19],[33.3,0.0,18],[10.5,0.0,19],[21.1,0.0,19],[31.6,0.0,19]],"lonjak20":16,"lonjak50":5,"beku":49.3,"terbaik":140.0,"terburuk":-67.8},"BRMS":{"nama":"Bumi Resources Minerals","mulai":"2010-12","akhir":"2026-08","n":189,"bulan":[[31.2,-1.76,16],[43.8,0.0,16],[50.0,0.76,16],[31.2,-0.98,16],[43.8,0.0,16],[43.8,0.0,16],[43.8,0.0,16],[56.2,5.91,16],[53.3,4.44,15],[46.7,0.0,15],[26.7,-5.63,15],[66.7,5.66,15]],"lonjak20":18,"lonjak50":6,"beku":14.4,"terbaik":106.0,"terburuk":-44.0},"VIVA":{"nama":"Visi Media Asia","mulai":"2011-11","akhir":"2026-08","n":178,"bulan":[[40.0,0.0,15],[33.3,0.0,15],[40.0,0.0,15],[6.7,-5.17,15],[13.3,-3.2,15],[33.3,0.0,15],[26.7,0.0,15],[26.7,0.0,15],[21.4,0.0,14],[35.7,0.0,14],[50.0,1.96,14],[33.3,0.0,15]],"lonjak20":18,"lonjak50":5,"beku":30.5,"terbaik":133.3,"terburuk":-73.5},"MDIA":{"nama":"Intermedia Capital","mulai":"2014-04","akhir":"2026-08","n":149,"bulan":[[41.7,0.0,12],[25.0,0.0,12],[16.7,0.0,12],[25.0,0.0,12],[23.1,0.0,13],[30.8,0.0,13],[23.1,0.0,13],[23.1,0.0,13],[33.3,0.0,12],[8.3,-2.26,12],[33.3,0.0,12],[58.3,0.74,12]],"lonjak20":13,"lonjak50":7,"beku":37.2,"terbaik":241.1,"terburuk":-70.6},"VKTR":{"nama":"VKTR Teknologi Mobilitas","mulai":"2023-06","akhir":"2026-08","n":39,"bulan":[[0.0,-2.44,3],[66.7,18.12,3],[0.0,-12.67,3],[66.7,11.11,3],[0.0,-8.89,3],[66.7,1.22,3],[100.0,4.17,4],[75.0,11.42,4],[66.7,17.19,3],[33.3,-5.56,3],[66.7,2.52,3],[33.3,-2.46,3]],"lonjak20":null,"lonjak50":null,"beku":null,"terbaik":null,"terburuk":null},"BIPI":{"nama":"Astrindo Nusantara Infrastruktur","mulai":"2010-02","akhir":"2026-08","n":199,"bulan":[[12.5,-2.67,16],[25.0,0.0,16],[29.4,0.0,17],[5.9,-4.08,17],[17.6,-4.71,17],[41.2,0.0,17],[23.5,-2.97,17],[41.2,0.0,17],[31.2,0.0,16],[50.0,1.0,16],[25.0,-4.52,16],[43.8,0.0,16]],"lonjak20":null,"lonjak50":null,"beku":null,"terbaik":null,"terburuk":null},"JGLE":{"nama":"Graha Andrasentra Propertindo","mulai":"2016-06","akhir":"2026-08","n":123,"bulan":[[10.0,0.0,10],[20.0,0.0,10],[20.0,0.0,10],[10.0,0.0,10],[20.0,0.0,10],[20.0,0.0,10],[36.4,0.0,11],[9.1,0.0,11],[0.0,0.0,10],[20.0,0.0,10],[30.0,0.0,10],[30.0,0.0,10]],"lonjak20":null,"lonjak50":null,"beku":null,"terbaik":null,"terburuk":null},"ALII":{"nama":"Ancara Logistics Indonesia","mulai":"2024-02","akhir":"2026-08","n":31,"bulan":[[50.0,-18.17,2],[50.0,4.27,2],[0.0,-23.3,3],[66.7,33.71,3],[33.3,-3.31,3],[33.3,-1.71,3],[33.3,-1.74,3],[66.7,1.18,3],[100.0,10.0,2],[50.0,-1.06,2],[100.0,8.24,2],[50.0,52.85,2]],"lonjak20":null,"lonjak50":null,"beku":null,"terbaik":null,"terburuk":null}},"grup":[[31.6,0.0,212],[22.6,0.0,212],[33.2,0.0,214],[23.4,0.0,214],[22.3,0.0,215],[38.6,0.0,215],[25.0,0.0,220],[36.1,0.0,219],[32.9,0.0,207],[25.8,0.0,209],[34.0,0.0,209],[40.8,0.0,211]],"peluang":{"≥10%":[31.1,10.6,31.9,24.2,18.3,37.8,16.3,32.2,28.0,20.7,27.6,37.7],"≥20%":[17.6,3.3,20.2,10.8,8.3,24.4,12.2,24.0,19.5,7.8,13.8,18.0],"≥50%":[5.0,0.8,6.7,3.3,0.8,6.7,4.1,5.0,2.5,1.7,8.6,9.8],"≥100%":[1.7,0.0,3.4,0.8,0.0,1.7,2.4,0.0,0.8,0.0,5.2,2.5]},"aktif":{"≥10%":[119,123,119,120,120,119,123,121,118,116,116,122],"≥20%":[119,123,119,120,120,119,123,121,118,116,116,122],"≥50%":[119,123,119,120,120,119,123,121,118,116,116,122],"≥100%":[119,123,119,120,120,119,123,121,118,116,116,122]},"uji":{"≥10%":{"cukup_data":true,"juara":"Juni","peluang_juara":37.8,"p_value":0.0218,"putaran":5000},"≥20%":{"cukup_data":true,"juara":"Juni","peluang_juara":24.4,"p_value":0.0326,"putaran":5000},"≥50%":{"cukup_data":true,"juara":"Desember","peluang_juara":9.8,"p_value":0.0674,"putaran":5000},"≥100%":{"cukup_data":true,"juara":"November","peluang_juara":5.2,"p_value":0.026,"putaran":5000}},"bersyarat":{"≥10%":{"semua":{"n":1436,"lonjakan":378,"peluang":26.3},"volume_ramai":{"n":487,"lonjakan":146,"peluang":30.0},"volume_sepi":{"n":949,"lonjakan":232,"peluang":24.4},"tren_naik_3bln":{"n":675,"lonjakan":196,"peluang":29.0},"tren_turun_3bln":{"n":738,"lonjakan":176,"peluang":23.8}},"≥20%":{"semua":{"n":1436,"lonjakan":215,"peluang":15.0},"volume_ramai":{"n":487,"lonjakan":104,"peluang":21.4},"volume_sepi":{"n":949,"lonjakan":111,"peluang":11.7},"tren_naik_3bln":{"n":675,"lonjakan":116,"peluang":17.2},"tren_turun_3bln":{"n":738,"lonjakan":96,"peluang":13.0}},"≥50%":{"semua":{"n":1436,"lonjakan":66,"peluang":4.6},"volume_ramai":{"n":487,"lonjakan":38,"peluang":7.8},"volume_sepi":{"n":949,"lonjakan":28,"peluang":3.0},"tren_naik_3bln":{"n":675,"lonjakan":38,"peluang":5.6},"tren_turun_3bln":{"n":738,"lonjakan":27,"peluang":3.7}},"≥100%":{"semua":{"n":1436,"lonjakan":22,"peluang":1.5},"volume_ramai":{"n":487,"lonjakan":15,"peluang":3.1},"volume_sepi":{"n":949,"lonjakan":7,"peluang":0.7},"tren_naik_3bln":{"n":675,"lonjakan":13,"peluang":1.9},"tren_turun_3bln":{"n":738,"lonjakan":9,"peluang":1.2}}},"ihsg":{"n":2169,"rata2_emiten":1.78,"rata2_ihsg":0.8},"definisi":{"beku":"|perubahan| < 0.5% — dianggap tidak bergerak, dibuang dari penyebut","ambang_lonjakan":[10,20,50,100],"permutasi":5000}};
+document.getElementById('tgl').textContent = D.dibuat;
+const AMBANG = Object.keys(D.peluang);
+let aktif = AMBANG[1] || AMBANG[0];
+
+const bar = document.getElementById('ambang');
+AMBANG.forEach(a => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.textContent = a; b.setAttribute('aria-pressed', String(a === aktif));
+  b.onclick = () => { aktif = a; gambar() };
+  bar.appendChild(b);
+});
+
+function gambar() {
+  [...bar.children].forEach(b => b.setAttribute('aria-pressed', String(b.textContent === aktif)));
+  document.getElementById('tanya').innerHTML =
+    'Dari bulan-bulan yang benar-benar bergerak, berapa persen yang berakhir <b>naik ' + aktif +
+    '</b> atau lebih? Diurutkan dari yang paling sering.';
+
+  const p = D.peluang[aktif], n = D.aktif[aktif];
+  const urut = D.bulan.map((b, i) => ({ b, p: p[i], n: n[i] })).sort((x, y) => y.p - x.p);
+  const puncak = urut[0].p || 1;
+
+  const papan = document.getElementById('papan');
+  [...papan.querySelectorAll('.brs:not(.kepala)')].forEach(e => e.remove());
+  urut.forEach((r, i) => {
+    const el = document.createElement('div');
+    el.className = 'brs' + (i === 0 ? ' juara' : '');
+    el.innerHTML = `<span class="pk">${i + 1}</span><span class="nm">${r.b}</span>
+      <span class="bar"><i></i></span>
+      <span><span class="ag">${r.p.toFixed(1)}</span><br><span class="sisa">${r.n}×</span></span>`;
+    papan.appendChild(el);
+    // Lebar dipasang setelah elemen masuk DOM supaya transisinya benar-benar
+    // berjalan — kalau disetel sekaligus saat dibuat, browser tak punya nilai
+    // awal untuk dianimasikan.
+    requestAnimationFrame(() => { el.querySelector('.bar i').style.width = (r.p / puncak * 100) + '%' });
+  });
+
+  const u = D.uji[aktif];
+  const kuat = u && u.p_value < 0.05;
+  document.getElementById('vonis').innerHTML = u
+    ? `<span><b>${u.juara}</b> memimpin dengan ${u.peluang_juara}%.</span>
+       <span class="p ${kuat ? '' : 'lemah'}">p = ${u.p_value.toFixed(4)}</span>
+       <span>${kuat
+         ? 'Dari 5.000 kali pengacakan urutan bulan, pola sekuat ini muncul kurang dari 5% waktu — sulit disebut kebetulan.'
+         : 'Pola sekuat ini masih cukup sering muncul dari data acak. Belum cukup untuk disebut nyata.'}</span>`
+    : '<span>Data pada ambang ini terlalu tipis untuk diuji.</span>';
+
+  const s = D.bersyarat[aktif], dasar = s.semua.peluang;
+  const peta = [
+    ['Semua bulan aktif', s.semua, 'patokan'],
+    ['Volume ramai', s.volume_ramai, 'volume di atas median 12 bulan'],
+    ['Volume sepi', s.volume_sepi, 'volume di bawah median'],
+    ['Setelah naik 3 bulan', s.tren_naik_3bln, 'momentum searah'],
+    ['Setelah turun 3 bulan', s.tren_turun_3bln, 'pantulan dari tekanan'],
+  ];
+  document.getElementById('syarat').innerHTML = peta.map(([l, o, d]) => {
+    const beda = o.peluang - dasar;
+    const w = l === 'Semua bulan aktif' ? '' : beda > 1 ? 'baik' : beda < -1 ? 'buruk' : '';
+    const tanda = l === 'Semua bulan aktif' ? d : `${d} · ${beda >= 0 ? '+' : ''}${beda.toFixed(1)} poin`;
+    return `<div class="sy ${w}"><div class="l">${l}</div><div class="v">${o.peluang}%</div>
+            <div class="d">${o.lonjakan} dari ${o.n} · ${tanda}</div></div>`;
+  }).join('');
+}
+gambar();
+</script>
