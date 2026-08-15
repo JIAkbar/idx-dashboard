@@ -4,7 +4,8 @@ import { daftarAkun, type AkunRow } from '../../lib/adminAkun'
 import {
   ringkasanKeaktifan,
   sinyalBruteforce,
-  jejakTerakhir,
+  jejakHalaman,
+  JEJAK_PER_HAL,
   LABEL_JENIS_JEJAK,
   type RingkasanKeaktifan,
   type SinyalBruteforce,
@@ -65,6 +66,9 @@ export function AktivitasAdmin() {
 
   const [jenisFilter, setJenisFilter] = useState<JenisJejak | 'semua'>('semua')
   const [jejak, setJejak] = useState<JejakAkses[] | null>(null)
+  /** Halaman jejak yang sedang dilihat (0 = terbaru) + total baris di server. */
+  const [halaman, setHalaman] = useState(0)
+  const [totalJejak, setTotalJejak] = useState(0)
   const [galatJejak, setGalatJejak] = useState('')
 
   // Keaktifan kontributor + daftarAkun (Edge Function admin-akun) cuma dipakai
@@ -100,17 +104,25 @@ export function AktivitasAdmin() {
     }
   }, [superadmin, jendela])
 
+  // Ganti saringan jenis mengembalikan pembaca ke halaman pertama — halaman 3
+  // dari daftar lama hampir pasti tidak ada di daftar yang baru disaring.
+  useEffect(() => { setHalaman(0) }, [jenisFilter])
+
   useEffect(() => {
     if (!superadmin) return
     let batal = false
     setGalatJejak('')
-    jejakTerakhir(jenisFilter, 50)
-      .then((j) => !batal && setJejak(j))
+    jejakHalaman(jenisFilter, halaman)
+      .then((h) => {
+        if (batal) return
+        setJejak(h.baris)
+        setTotalJejak(h.total)
+      })
       .catch((e) => !batal && setGalatJejak(e instanceof Error ? e.message : 'Gagal memuat jejak akses.'))
     return () => {
       batal = true
     }
-  }, [superadmin, jenisFilter])
+  }, [superadmin, jenisFilter, halaman])
 
   if (loading) return <p className="muted">Memuat…</p>
   // Tab disembunyikan di AdminLayout kalau bukan superadmin — guard ini jaga-
@@ -264,6 +276,30 @@ export function AktivitasAdmin() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+          {/* Paginasi. Ditampilkan hanya kalau memang ada halaman kedua —
+              kontrol navigasi untuk satu halaman cuma menambah kebisingan. */}
+          {totalJejak > JEJAK_PER_HAL && (
+            <div className="af-paginasi">
+              <span className="muted">
+                {halaman * JEJAK_PER_HAL + 1}–{Math.min((halaman + 1) * JEJAK_PER_HAL, totalJejak)} dari {totalJejak}
+              </span>
+              <span className="af-paginasi-tbl">
+                <button
+                  type="button" className="dd-btn" disabled={halaman === 0}
+                  onClick={() => setHalaman((h) => Math.max(0, h - 1))}
+                >
+                  ‹ Lebih baru
+                </button>
+                <button
+                  type="button" className="dd-btn"
+                  disabled={(halaman + 1) * JEJAK_PER_HAL >= totalJejak}
+                  onClick={() => setHalaman((h) => h + 1)}
+                >
+                  Lebih lama ›
+                </button>
+              </span>
             </div>
           )}
           <p className="muted af-privasi" style={{ marginBottom: 0 }}>

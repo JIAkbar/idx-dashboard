@@ -75,11 +75,36 @@ export interface JejakAkses {
   keterangan: unknown
 }
 
-/** 50 baris terbaru (atau sesuai `limit`), opsional disaring per jenis. */
-export async function jejakTerakhir(jenis: JenisJejak | 'semua', limit = 50): Promise<JejakAkses[]> {
-  let q = supabase.from('jejak_akses').select('*').order('waktu', { ascending: false }).limit(limit)
+/** Satu halaman jejak + jumlah total barisnya (untuk paginasi). */
+export interface HalamanJejak {
+  baris: JejakAkses[]
+  /** Total baris yang cocok filter — bukan cuma yang di halaman ini. */
+  total: number
+}
+
+/** Berapa baris per halaman di tab Aktivitas. */
+export const JEJAK_PER_HAL = 30
+
+/**
+ * Satu halaman jejak akses, terbaru dulu, opsional disaring per jenis.
+ *
+ * Memakai `.range()` + `count: 'exact'` alih-alih `.limit()`: tanpa jumlah
+ * total, layar tidak bisa memberi tahu apakah masih ada baris di belakang —
+ * dan "50 terbaru" diam-diam menyembunyikan sisanya tanpa petunjuk apa pun.
+ */
+export async function jejakHalaman(
+  jenis: JenisJejak | 'semua',
+  halaman = 0,
+  perHal = JEJAK_PER_HAL
+): Promise<HalamanJejak> {
+  const dari = halaman * perHal
+  let q = supabase
+    .from('jejak_akses')
+    .select('*', { count: 'exact' })
+    .order('waktu', { ascending: false })
+    .range(dari, dari + perHal - 1)
   if (jenis !== 'semua') q = q.eq('jenis', jenis)
-  const { data, error } = await q
+  const { data, error, count } = await q
   if (error) throw error
-  return (data ?? []) as JejakAkses[]
+  return { baris: (data ?? []) as JejakAkses[], total: count ?? 0 }
 }

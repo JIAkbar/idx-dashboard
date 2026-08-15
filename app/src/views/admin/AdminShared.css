@@ -541,3 +541,15 @@
 .lantai .af-ua { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10.5px; color: var(--text3); }
 .lantai .af-privasi { display: flex; align-items: flex-start; gap: 6px; font-size: 10.5px; line-height: 1.5; margin-top: 12px; }
 .lantai .af-privasi .dasbor-ikon { stroke: var(--text3); flex-shrink: 0; margin-top: 2px; }
+
+/* Paginasi jejak akses — keterangan rentang di kiri, tombol di kanan.
+   Tombolnya diberi nama "Lebih baru / Lebih lama", bukan "Sebelumnya /
+   Berikutnya": daftarnya terurut waktu terbalik, jadi "berikutnya" ambigu —
+   pembaca tidak tahu itu maju ke masa lalu atau ke masa kini. */
+.lantai .af-paginasi {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin-top: 12px;
+}
+.lantai .af-paginasi > .muted { font-family: var(--mono); font-size: 11px; }
+.lantai .af-paginasi-tbl { display: flex; gap: 6px; }
+.lantai .af-paginasi-tbl .dd-btn { white-space: nowrap; }
