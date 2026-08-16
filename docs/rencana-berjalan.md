@@ -137,6 +137,20 @@ kurang cara menemukannya.** Ronde 1 sembilan lubang, sembilan-sembilanya
 karena pencocokan frasa terlalu kaku; ronde 2 dua puluh lima lubang, sebagian
 besar karena kunci terlalu sempit.
 
+### ⚠️ Catatan git 16 Agu malam — commit tercampur
+
+`94133bdc` berjudul "feat(tanya-papan): kata tunggal dikenali…" tapi isinya
+JUGA memuat seluruh pekerjaan tab Bedah (`BedahUnggah.tsx`,
+`PanduanScreenshot.tsx`, `supabaseEdisi.ts`). Sebabnya saya menjalankan
+`git add -A app/src` selagi agen lain sedang menyunting berkas di pohon kerja
+yang sama.
+
+Isinya tetap utuh dan sudah teruji (265 lalu 266 tes hijau) — yang salah cuma
+pesannya. Aturan yang diambil dari ini: **selagi ada agen berjalan, jangan
+`git add` seluruh direktori.** Sebut berkasnya satu per satu, atau tunggu
+agennya selesai. Pesan commit yang berbohong lebih mahal daripada beberapa
+detik yang dihemat.
+
 ### #172 — Emiten dijawab ANALISA + saran pertanyaan lanjutan (penting)
 
 Diminta Johan 16 Agu 2026 malam, setelah menguji sendiri dan menyimpulkan
