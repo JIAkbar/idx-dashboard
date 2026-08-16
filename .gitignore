@@ -30,7 +30,9 @@ Thumbs.db
 # Keluaran uji build_weekly (data uji, bukan edisi asli)
 arus-pasar/keluaran-uji/
 
-# Panen OHLC harian menghasilkan ratusan berkas besar; disimpan lokal +
-# disalin ke app/public saat dibutuhkan, tidak ikut git sampai cakupannya
-# diputuskan (lihat task #122).
-data-idx/json/ohlc/
+# data-idx/json/ohlc/ SENGAJA TIDAK diabaikan lagi (#122 selesai, 16 Agu 2026).
+# Vercel merakit produksi dengan menyalin ../data-idx/json apa adanya, jadi
+# berkas yang tak ikut git = chart per emiten mati di produksi. 962 berkas
+# ≈ 40 MB, tiap berkas ≈ 40 KB — jauh di bawah ambang GitHub (peringatan 50
+# MiB/berkas, repo ideal <1 GB). Yang perlu ditinjau nanti bukan ukurannya
+# hari ini, tapi pertumbuhan hariannya: riwayat git tak pernah menyusut.
