@@ -120,7 +120,16 @@
     right: 10px; left: 10px; bottom: 76px; width: auto;
     max-height: calc(100dvh - 150px);
   }
-  .tp-tombol { right: 12px; bottom: 12px; }
+  /* Tombol DIKECILKAN di telepon: 56px yang pas di layar 1.536px terbaca
+     jauh lebih besar di layar 412px — proporsinya ikut lebar layar, bukan
+     ikut piksel. 46px masih di atas ambang target sentuh 44px, jadi
+     mengecilkannya tak mengorbankan kemudahan menekan. */
+  .tp-tombol { right: 12px; bottom: 12px; height: 46px; min-width: 46px; }
+  .tp-lambang { width: 46px; font-size: 19px; }
+  .tp-ai { top: 4px; right: 5px; font-size: 7.5px; padding: 1px 4px; }
+  /* Label panjang tak pernah muncul di telepon (tak ada hover), jadi
+     ruangnya tak perlu disiapkan. */
+  .tp-teks { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
