@@ -68,9 +68,30 @@ export function GrafikEmiten() {
     if (!el) return
     const chart = createChart(el, {
       autoSize: true,
+      // Bawaan lightweight-charts memberi label bulan berbahasa Inggris
+      // ("Oct", "Dec", "May") — di situs yang seluruhnya berbahasa Indonesia
+      // itu terbaca seperti komponen pinjaman yang lupa diterjemahkan.
+      // `locale` mengurus tooltip & harga; label sumbu waktu punya jalurnya
+      // sendiri lewat `tickMarkFormatter`, jadi keduanya perlu disetel.
+      localization: {
+        locale: 'id-ID',
+        dateFormat: 'dd MMM yyyy',
+      },
       layout: { background: { color: 'transparent' } },
       rightPriceScale: { borderVisible: false },
-      timeScale: { borderVisible: false },
+      timeScale: {
+        borderVisible: false,
+        tickMarkFormatter: (waktu: unknown) => {
+          // `time` bisa berupa string 'YYYY-MM-DD' (yang kita pakai) atau
+          // detik epoch — ditangani keduanya supaya tak diam-diam kosong.
+          const d = typeof waktu === 'string' ? new Date(waktu) : new Date(Number(waktu) * 1000)
+          if (Number.isNaN(d.getTime())) return ''
+          const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+          // Januari menampilkan tahunnya — penanda pergantian tahun di sumbu
+          // yang rentangnya bertahun-tahun.
+          return d.getMonth() === 0 ? String(d.getFullYear()) : BULAN[d.getMonth()]
+        },
+      },
       // vertTouchDrag:false — geser jari VERTIKAL di atas kanvas tetap
       // menggulung HALAMAN, bukan ditelan chart. Sama dengan alasan
       // `touch-action: pan-y` di hit-rect SVG SeasonalityHarian (#172):
