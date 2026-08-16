@@ -22,7 +22,8 @@ import { DatePicker } from '../../components/dasbor/DatePicker'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
 import { AlasanField } from '../../components/dasbor/AlasanField'
-import { IkonJenjang, TanggaJenjang } from '../../components/dasbor/TanggaJenjang'
+import { IkonJenjang } from '../../components/dasbor/IkonJenjang'
+import { TanggaJenjang } from '../../components/dasbor/TanggaJenjang'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { ALASAN_MIN, alasanValid } from '../../lib/alasanValidasi'
@@ -391,7 +392,7 @@ function KartuJenjang({ profil, superadmin }: { profil: ProfilSaya; superadmin: 
             <span className="muted" title="Superadmin tidak dibatasi jenjang maupun kuota harian">Tanpa jenjang</span>
           ) : (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <IkonJenjang tier={r.jenjangSaatIni.tier} size={15} />
+              <IkonJenjang tier={r.jenjangSaatIni.tier} nama={r.jenjangSaatIni.nama} size={20} />
               <b>{r.jenjangSaatIni.nama}</b> <span className="muted">(tier {r.jenjangSaatIni.tier})</span>
             </span>
           )}

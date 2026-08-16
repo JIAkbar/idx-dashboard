@@ -15,7 +15,7 @@ import {
 import { namaTampil } from '../../lib/namaTampil'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { IkonMenu, IKON_CARI, IKON_PERINGATAN, IKON_KUNCI } from '../../components/dasbor/IkonMenu'
-import { IkonJenjang } from '../../components/dasbor/TanggaJenjang'
+import { IkonJenjang } from '../../components/dasbor/IkonJenjang'
 import { AksesDitolak } from './AdminLayout'
 import './AdminShared.css'
 import { pesanGalat } from '../../lib/pesanGalat'
@@ -225,7 +225,7 @@ export function AktivitasAdmin() {
                         <td>
                           {berjenjang ? (
                             <span className="chip aa-jenjang" title={`Tier ${r.tier}`}>
-                              <IkonJenjang tier={r.tier ?? 0} size={12} /> {r.jenjang}
+                              <IkonJenjang tier={r.tier ?? 0} nama={r.jenjang} size={18} /> {r.jenjang}
                             </span>
                           ) : (
                             <span className="muted" title="Superadmin tidak dibatasi jenjang">Tanpa jenjang</span>

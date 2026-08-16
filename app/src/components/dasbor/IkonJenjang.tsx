@@ -25,6 +25,12 @@ const LOGAM = [
   { nama: 'Diamond', isi: '#4FA8D8', kilau: '#B6ECFF' },
 ]
 
+/** Warna logam terang satu tier — untuk bingkai/aksen di luar SVG (mis. kartu
+ *  tangga jenjang) supaya lencana dan wadahnya tak pernah berselisih warna. */
+export function warnaJenjang(tier: number): string {
+  return LOGAM[Math.min(Math.max(tier, 0), LOGAM.length - 1)].kilau
+}
+
 /** Titik-titik takik di lingkar medali — satu per tier, mulai dari atas. */
 function takik(tier: number, r: number) {
   return Array.from({ length: Math.max(tier, 0) }, (_, i) => {
