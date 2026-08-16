@@ -106,7 +106,7 @@ menonjol:
 Ada juga keterbatasan yang diakui sendiri: EMA150/EMA200 dihitung dari histori
 144 hari, jadi ~22% dan ~32% nilainya masih "menempel" ke harga hari pertama —
 dan SMA150/SMA200 **sengaja tidak dibuat** karena tak bisa didekati bertahap
-seperti EMA. Daftar lengkap sub-bagian ada di `panduan-sple-info.txt`.
+seperti EMA. Rumus dan kutipan lengkapnya ada di `metodologi-sple-info.md`.
 
 ---
 
@@ -284,7 +284,7 @@ nego).
 |---|---|
 | `info-01…09-*.png` | Screenshot tiap section sple-info (laptop 1536×960) |
 | `mf-01…03-*.png` | Screenshot sple-mf |
-| `panduan-sple-info.txt` | Ekstraksi teks tab Panduan |
+| `metodologi-sple-info.md` | Kutipan tab Panduan: rumus indikator, Wyckoff 6 fase, RS/Minervini, ambang valuasi, harmonic, keterbatasan yang mereka akui sendiri |
 
 Salinan HTML kedua situs (6,0 MB + 1,4 MB) sengaja **tidak** dimasukkan ke
 repo — dipakai sekali untuk analisis lokal, mudah diunduh ulang kapan saja.
