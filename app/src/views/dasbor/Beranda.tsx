@@ -57,30 +57,68 @@ function PapanBeranda() {
   )
 }
 
-/** Jalur kabar di Beranda — lima teratas, sisanya di halaman Kabar Pasar. */
+/**
+ * Sumber yang tampil di Beranda — EMPAT inti, ditulis eksplisit (bukan
+ * "seluruh sumber di kabar.json") karena halaman /kabar akan menampung lebih
+ * banyak sumber (CNBC Indonesia, detikFinance, dst) yang sengaja tidak ikut
+ * membanjiri pintu masuk situs. Urutan array = urutan kolom.
+ *
+ * 'Stockbit Snips' didaftarkan lebih dulu dari datanya ada: berkasnya
+ * (`data-idx/json/snips.json`) sedang dipanen proses lain dan boleh belum
+ * ada saat ini dijalankan. Begitu `useKabar()`/kabar.json ikut memuat item
+ * bersumber ini, kolomnya otomatis terisi tanpa sentuh berkas ini lagi.
+ */
+const SUMBER_BERANDA = ['IDX', 'IPOT News', 'Stockbit Snips', 'Kontan'] as const
+
+/** Kabar per kolom. Empat dipilih (bukan tiga) supaya kolom yang datanya
+ *  deras (IDX, Kontan) tak terasa terpotong pendek dibanding kolom lain —
+ *  dengan jumlah SAMA di tiap kolom, tinggi ideal tetap seimbang selama
+ *  datanya cukup, dan kolom yang datanya tipis (Stockbit di awal) memang
+ *  wajar lebih pendek karena isinya sungguh belum sebanyak itu. */
+const KABAR_PER_KOLOM = 4
+
+/** Jalur kabar di Beranda — satu kolom per sumber, lengkap di halaman Kabar Pasar. */
 function JalurKabar() {
   const { kabar } = useKabar()
-  const item = (kabar?.item ?? []).slice(0, 5)
-  if (item.length === 0) return null
+  const semua = kabar?.item ?? []
+  if (semua.length === 0) return null
   return (
     <section className="brd-kabar">
       <div className="brd-h">
         <span className="lbl">Kabar pasar</span>
         <Link className="brd-semua" to="/kabar">Semua kabar →</Link>
       </div>
-      <div className="brd-kabar-list">
-        {item.map((i, n) => (
-          <a key={`${i.tautan}-${n}`} className={`kbr-it${i.jenis === 'pengumuman' ? ' resmi' : ''}`}
-            href={i.tautan} target="_blank" rel="noopener noreferrer"
-            style={{ '--i': String(n) } as Record<string, string>}>
-            <span className="kbr-meta">
-              <span className={`kbr-sum s-${i.sumber.split(' ')[0].toLowerCase()}`}>{i.sumber}</span>
-              {i.jenis === 'pengumuman' && <span className="kbr-resmi">Pengumuman resmi</span>}
-              <span className="kbr-waktu">{waktuKabar(i.waktu)}</span>
-            </span>
-            <span className="kbr-judul">{i.judul}</span>
-          </a>
-        ))}
+      <div className="brd-kabar-kolom">
+        {SUMBER_BERANDA.map((sumber) => {
+          const item = semua.filter((i) => i.sumber === sumber).slice(0, KABAR_PER_KOLOM)
+          return (
+            <div className="brd-kabar-kol" key={sumber}>
+              <span className="lbl brd-kabar-kol-h">{sumber}</span>
+              {item.length === 0 ? (
+                // Keadaan kosong jujur — bukan dikarang, bukan disembunyikan.
+                // Berlaku juga untuk sumber yang datanya belum sempat dipanen.
+                <p className="muted brd-kabar-kosong">Belum ada.</p>
+              ) : (
+                <div className="brd-kabar-kol-list">
+                  {item.map((i, n) => (
+                    <a key={`${i.tautan}-${n}`} className={`kbr-it${i.jenis === 'pengumuman' ? ' resmi' : ''}`}
+                      href={i.tautan} target="_blank" rel="noopener noreferrer" title={i.judul}
+                      style={{ '--i': String(n) } as Record<string, string>}>
+                      {/* Lencana sumber tak diulang di sini — kepala kolom
+                          sudah bilang sumbernya, dan menghapusnya menghemat
+                          tinggi baris supaya kolom lebih rapat sebaris. */}
+                      <span className="kbr-meta">
+                        {i.jenis === 'pengumuman' && <span className="kbr-resmi">Pengumuman resmi</span>}
+                        <span className="kbr-waktu">{waktuKabar(i.waktu)}</span>
+                      </span>
+                      <span className="kbr-judul">{i.judul}</span>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
     </section>
   )

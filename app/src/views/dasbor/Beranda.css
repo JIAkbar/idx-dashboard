@@ -30,6 +30,23 @@
 .lantai .brd-semua { font-size: 11px; color: var(--amber); text-decoration: none; }
 .lantai .brd-semua:hover { text-decoration: underline; }
 
+/* ── Kabar pasar: satu kolom per sumber ─────────────────────────────────── */
+/* EMPAT kolom fisik di layar lebar, turun ke 2 lalu 1 — dua ambang eksplisit,
+   bukan auto-fit: dengan auto-fit, kolom sumber yang datanya tipis (mis.
+   Stockbit di awal) akan melebar sendiri mengisi ruang kosong dan kolom
+   berikutnya loncat baris di lebar yang tak terduga (aturan §178 soal
+   auto-fit sudah pernah menjebak di brd-grid bawahnya — di sini kolomnya
+   punya IDENTITAS masing-masing, jadi jumlahnya harus pasti, bukan dihitung
+   ulang oleh grid). */
+.lantai .brd-kabar-kolom {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; align-items: start;
+}
+@media (max-width: 1080px) { .lantai .brd-kabar-kolom { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .lantai .brd-kabar-kolom { grid-template-columns: 1fr; gap: 20px; } }
+.lantai .brd-kabar-kol-h { display: block; margin-bottom: 8px; }
+.lantai .brd-kabar-kol-list { display: grid; gap: 8px; align-items: stretch; }
+.lantai .brd-kabar-kosong { font-size: 11.5px; }
+
 /* ── Kabar: edisi terbit terakhir ───────────────────────────────────────── */
 .lantai .brd-kabar-list { display: grid; gap: 8px; }
 .lantai .brd-kabar-it {
