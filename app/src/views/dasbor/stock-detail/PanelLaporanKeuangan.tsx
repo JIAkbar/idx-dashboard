@@ -1,10 +1,11 @@
 import { useMemo, useRef, useState } from 'react'
 import type { ChartConfiguration } from 'chart.js/auto'
-import { useStockKeuangan, type PeriodeKeuangan } from '../../../lib/dasbor/stockDetailData'
+import { useStockKeuangan, useStockFundamental, type PeriodeKeuangan } from '../../../lib/dasbor/stockDetailData'
 import { fRingkas, fEps } from '../../../lib/dasbor/stockDetailFormat'
 import { useChartCanvas } from '../../../lib/dasbor/useChartJs'
 import { useTheme } from '../../../context/ThemeContext'
 import { IkonMenu, IKON_JAM } from '../../../components/dasbor/IkonMenu'
+import { gabungkanBaris, labelAsal } from '../../../lib/dasbor/fundamentalGabungan'
 
 type PeriodMode = 'kuartal' | 'tahunan'
 type SubTab = 'laba_rugi' | 'neraca' | 'arus_kas'
@@ -58,6 +59,9 @@ function bacaToken(el: HTMLElement | null, nama: string, fallback: string): stri
  */
 export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
   const { data: kd, loading } = useStockKeuangan(ticker)
+  // A0: menambal ruas kosong (operating_cf dkk.) dari data-idx/json/fundamental/,
+  // lihat lib/dasbor/fundamentalGabungan.ts untuk aturan penggabungannya.
+  const { data: fd } = useStockFundamental(ticker)
   const [periodMode, setPeriodMode] = useState<PeriodMode>('kuartal')
   const [subTab, setSubTab] = useState<SubTab>('laba_rugi')
   const { theme } = useTheme()
@@ -65,7 +69,9 @@ export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
 
   const periods = useMemo(() => {
     const src = kd ? (periodMode === 'kuartal' ? kd.kuartal : kd.tahunan) : {}
-    return Object.keys(src).sort().slice(-8).map((iso) => ({ iso, val: src[iso] }))
+    const semuaIso = Object.keys(src).sort()
+    const terbaru = semuaIso[semuaIso.length - 1]
+    return semuaIso.slice(-8).map((iso) => ({ iso, val: src[iso], terbaru: iso === terbaru }))
   }, [kd, periodMode])
 
   const chartConfig = useMemo<ChartConfiguration<'bar'> | null>(() => {
@@ -164,16 +170,30 @@ export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
                         <tr key={baris.key}>
                           <td>{baris.label}</td>
                           {periods.map((p) => {
-                            const v = p.val[baris.key]
+                            const { nilai: v, asal } = gabungkanBaris(baris.key, p.val[baris.key], p.iso, periodMode, fd, p.terbaru)
                             const teks = v == null ? '—' : baris.key === 'eps' ? fEps(v) : fRingkas(v)
-                            const penuh = v == null ? undefined : v.toLocaleString('id-ID')
-                            return <td key={p.iso} className="r" title={penuh}>{teks}</td>
+                            const tambalan = asal && asal !== 'keuangan'
+                            const penuh = v == null ? undefined : `${v.toLocaleString('id-ID')}${tambalan ? ` — ${labelAsal(asal)}` : ''}`
+                            return (
+                              <td key={p.iso} className="r" title={penuh}>
+                                {teks}
+                                {tambalan && <sup style={{ color: 'var(--text3)' }}>†</sup>}
+                              </td>
+                            )
                           })}
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
+                {periods.some((p) => BARIS[subTab].some((b) => {
+                  const asal = gabungkanBaris(b.key, p.val[b.key], p.iso, periodMode, fd, p.terbaru).asal
+                  return asal && asal !== 'keuangan'
+                })) && (
+                  <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 6 }}>
+                    † ditambal dari data fundamental (bukan laporan periode ini) — arahkan kursor ke angka untuk detail asalnya.
+                  </p>
+                )}
               </>
             )}
           </>
