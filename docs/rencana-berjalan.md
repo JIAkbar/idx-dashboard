@@ -266,6 +266,47 @@ sampai ketemu.
 **Bergantung pada C2** (indikator per emiten). Datanya sudah lengkap: OHLCV 5
 tahun untuk 962 emiten.
 
+### #173 — Tabel Akses perlu hierarki induk–turunan
+
+Diminta Johan 17 Agu 2026: *"perlu dibuat turunan nya misal Bulletin Arus
+Pasar (bulletin) - tombol Probabilitas & VolVal (probvv)"* — supaya kejadiannya
+tak terlupa.
+
+**Masalahnya.** Tabel Akses menyajikan sebelas kunci sebagai daftar RATA,
+padahal isinya tiga jenis yang berbeda sifat:
+
+| Kunci | Sebenarnya apa | Bukti di kode |
+|---|---|---|
+| `bulletin` | **halaman** | rute `/bulletin` |
+| `probvv` | **kolom/tombol DI DALAM** halaman Bulletin | `Bulletin.tsx:136` — `boleh('probvv')` mengunci satu kolom di tabel Bulletin |
+| `seasonality` | **halaman** | rute `/seasonality` |
+| `seasonality-hari` | **tab DI DALAM** halaman Seasonality | `Seasonality.tsx:43` — `boleh('seasonality-hari')` mengunci satu tab |
+
+Karena disajikan rata, superadmin tak bisa melihat bahwa mengunci `bulletin`
+otomatis membuat `probvv` tak terjangkau — kunci anak jadi tak berarti kalau
+induknya sudah tertutup. Sekarang hubungan itu **hanya ada di kepala**, dan
+itu persis yang diminta Johan supaya tak terlupa.
+
+**Yang perlu dikerjakan:**
+
+1. Kolom `induk` di `akses_halaman` (nullable, menunjuk `kunci` lain).
+   Isi awal: `probvv` → `bulletin`, `seasonality-hari` → `seasonality`.
+2. Tabel Akses menampilkannya **bertingkat** — anak menjorok di bawah
+   induknya, dengan label jenisnya ("tombol", "tab", "kolom"), bukan daftar
+   rata yang diurutkan angka.
+3. **Peringatan saat induk lebih ketat dari anaknya.** Kalau `bulletin` diset
+   Diamond sementara `probvv` Pemula, angka Pemula itu bohong — anak tak
+   pernah terjangkau. Cukup peringatan yang terlihat, jangan dipaksa otomatis:
+   memaksa berarti mengubah setelan yang tak diminta.
+4. Urutan tampil ikut hierarki, bukan kolom `urutan` yang sekarang diisi
+   manual (70, 80, 90…). Kolom itu boleh tetap ada untuk mengurutkan
+   sesama-saudara.
+
+**Bukan cuma kerapian.** Kunci anak yang induknya tertutup adalah setelan yang
+tak pernah berlaku — dan setelan yang tak berlaku tapi terlihat aktif adalah
+bentuk lain dari angka yang berbohong, sekeluarga dengan akurasi 100% palsu
+(#160) dan kuota yang tak sesuai server.
+
 ### #168 — Cara scraping arsip berita yang benar (belum dibahas)
 
 Batasnya sudah diketahui: endpoint IPOT mengabaikan `halaman`, jadi mentok

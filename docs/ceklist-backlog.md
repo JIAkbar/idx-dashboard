@@ -40,7 +40,8 @@ itu yang menentukan urutan — bukan besar-kecilnya saja.
 | ☐ | 7 | **A1** | Rata-rata 5 tahun + ambang verdict valuasi | A0 | **Kunci kedalaman AI** — tiap angka jadi punya pembanding (riset ASK SPLE) |
 | ☐ | 8 | **B2** | Broker summary harian ke JSON | — | 88 broker/tanggal; sekarang masih di-parse dari PDF |
 | ☐ | 9 | **B4** | Pasar NEGO / Bandar Flow | — | Ruas ada di `GetStockSummary`, belum dipanen |
-| ☐ | 10 | **#165** | Thumbnail dibuat saat unggah | — | Gambar 420–520 KB berhenti dipakai di kotak 40 px |
+| ☐ | 10 | **#173** | Tabel Akses bertingkat (induk–turunan): `probvv` di dalam `bulletin`, `seasonality-hari` di dalam `seasonality` | — | Kunci anak yang induknya tertutup = setelan yang tak pernah berlaku |
+| ☐ | 10b | **#165** | Thumbnail dibuat saat unggah | — | Gambar 420–520 KB berhenti dipakai di kotak 40 px |
 | ☐ | 11 | **#171** | Rule engine paham dari satu kata | — | Peta sinonim, tahan salah ketik, kata tunggal ditawari cabang |
 | ☐ | 12 | **#172** | Emiten dijawab analisa + chip saran | A1 | Tanya PAPAN berhenti menjawab satu kalimat sama untuk semua pertanyaan |
 
