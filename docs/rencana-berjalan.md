@@ -110,6 +110,36 @@ Tiga yang operasional:
 | 149 | Buktikan trigger notifikasi kurasi jalan | Tabel/RLS/trigger/lonceng sudah terpasang, tapi sengaja TIDAK dipicu di sesi ini: memicunya berarti mengirim kabar ke kontributor sungguhan. Cek lonceng setelah kurasi berikutnya; kalau kosong, periksa trigger `setoran_kabari_kurasi` |
 | 150 | Perluas cakupan laporan keuangan | Panen menghasilkan 646 dari 963 emiten. Sisanya kemungkinan tak punya laporan di Yahoo — perlu dipastikan mana yang memang kosong dan mana yang gagal ambil |
 
+### 📰 Kabar pasar — pembagian jalur panen (catatan 16 Agu)
+
+Panen kabar **boleh dipecah dua jalur**, dan itu justru menghilangkan
+ketergantungan pada mesin rumahan untuk sebagian besar sumbernya:
+
+| Jalur | Sumber | Kenapa |
+|---|---|---|
+| **GitHub Actions** (awan, selalu hidup) | Kontan, CNBC Indonesia, detikFinance, IDX Channel — dan media lain yang RSS-nya terbuka | Tak ada blokir IP; feed publik biasa. Jalan walau komputer Johan mati |
+| **Mesin rumahan** (`JALANKAN_OTOMATIS.bat` / `panen_kabar.ps1`) | IDX berita, IDX pengumuman emiten, IPOT News | Endpoint IDX **403 dari IP datacenter**; ini yang tak bisa pindah ke awan |
+
+Ongkosnya: dua jalur menulis ke satu berkas `kabar.json`, jadi perlu aturan
+gabung yang jelas (jalur awan menulis sumber miliknya saja, jalur rumahan
+menulis miliknya, keduanya merge alih-alih menimpa). Retensi `--hari` yang
+sudah ada membuat penggabungan itu aman.
+
+**Feed yang sudah diuji 16 Agu** (dari mesin ini, dengan `User-Agent` peramban):
+
+| Feed | Hasil |
+|---|---|
+| `investasi.kontan.co.id/rss` | ✅ 200, ±25 item — sudah dipakai |
+| `cnbcindonesia.com/market/rss` | ✅ 200, **100 item** |
+| `finance.detik.com/rss` | ✅ 200, **100 item** |
+| `idxchannel.com/rss` | ✅ 200, 10 item |
+| `bisnis.com/index/rss` & `market.bisnis.com/index/rss` | ⚠️ 200 tapi **nol `<item>`** — halaman HTML, bukan feed. Perlu jalur lain kalau tetap mau |
+| `emitennews.com/rss` · `investor.id/rss` · `idnfinancials.com/id/rss` · `pasardana.id/feed` | ❌ 404/500/308 |
+
+Aturan tampilan yang sudah diputuskan: **Beranda hanya empat sumber inti**
+(IDX, IPOT News, Stockbit Snips, Kontan) dalam empat kolom; sumber tambahan
+mana pun hanya muncul di halaman `/kabar`.
+
 ### 🐞 Bug & utang terbuka dari kerja admin 16 Agu — **dahulukan ini**
 
 Yang sedang berjalan sudah dipakai kontributor sungguhan, jadi barisan ini
