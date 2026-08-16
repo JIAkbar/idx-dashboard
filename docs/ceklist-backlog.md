@@ -3,6 +3,42 @@
 Papan status kerja borongan 16 Agustus 2026. Centang = selesai & terverifikasi
 (tsc + uji + dua viewport kalau menyentuh tampilan).
 
+Terakhir diperbarui: **16 Agu 2026, malam**. Seluruhnya masih **commit lokal —
+belum di-push** (aturan rilis: `git push` hanya setelah Johan bilang "live").
+
+## Antrean berikutnya — urutan yang disepakati Johan
+
+| ☐ | # | Tugas | Catatan |
+|---|---|---|---|
+| ☐ | 169 | **Halaman baru hasil bedah SPLE** | `sple-info` & `sple-mf` (`?kode=TINS` → ada halaman per emiten). Bedah sebelumnya baru arsitektur; langkah pertama menyusun daftar halaman & fitur, tiap baris "punya/tidak punya" **wajib dibuktikan perintah** (§182) |
+| ☐ | 170 | **Penyeragaman kendali** | Tombol kalender, kotak cari, pemilih rentang waktu tak senada antar halaman: campur `<select>` bawaan, `Dropdown` proyek, `DatePicker`. Menyeragamkan + mencabut duplikat, bukan bikin baru. **Setelah #169** supaya tak dikerjakan dua kali |
+| ☐ | 168 | Cara scraping arsip berita yang benar | Endpoint IPOT mengabaikan `halaman` → mentok ±200 berita/kanal. Menelusuri `news_id` mundur **tidak dilakukan tanpa pembahasan** (ribuan permintaan ke server orang) |
+| ☐ | 167 | Lapisan Gemini Flash di Tanya PAPAN | Ditunda **setelah #169**: halaman baru menambah data yang juga harus dijangkau rule-engine dulu |
+| ☐ | 165 | Thumbnail dibuat saat unggah | Sekarang gambar penuh 420–520 KB dikecilkan ke 40px di peramban |
+| ☐ | 166 | Rakit ulang mesin Mingguan & Bulanan | Keduanya dicabut dari manifest 16 Agu — mingguan 21 dari 24 halaman identik karakter-per-karakter dengan edisi harian. Empat perbaikan sudah dirinci di `rencana-berjalan.md` |
+| ☐ | 162 | Sebab MBMA | Belum ditelusuri |
+| ☐ | 161 | Pesan galat unggah masih generik | Menyebut empat kemungkinan sekaligus, bukan sebab yang sebenarnya |
+
+## Selesai — gelombang ketiga (16 Agu, siang–malam)
+
+| ☑ | # | Tugas | Catatan |
+|---|---|---|---|
+| ☑ | — | **Beranda baru** | Halaman utama bukan lagi dasbor: PAPAN + IHSG lilin YTD, ringkasan pasar, terbit terakhir, kabar 4 kolom, kartu menu |
+| ☑ | — | **Ringkasan pasar dari aturan** | Ambangnya **dikalibrasi dari 2.409 hari bursa** (`scripts/kalibrasi_ambang.py`), bukan ditebak. Bukan LLM |
+| ☑ | — | **Kabar Pasar** (`/kabar`) | 1.028 kabar, 5 sumber. Tab & daftar bulan **diturunkan dari data**, jadi ikut tumbuh/menyusut sendiri |
+| ☑ | — | Arsip IPOT | 737 item, 13 Jul–16 Agu. **Temuan: endpoint mengabaikan `halaman`** — YTD tak terjangkau, sisanya jadi #168 |
+| ☑ | — | Arsip Stockbit Snips | 238 item setahun lewat `?format=json` Squarespace |
+| ☑ | — | CNBC & detikFinance dicabut | CNBC isinya bukan pasar murni; detik timeout berulang. Item lamanya dibuang dari `kabar.json` |
+| ☑ | — | Tautan per pengumuman IDX | `attachments[]` yang `IsAttachment:false` = PDF dokumennya. Sebelumnya semua baris menunjuk satu halaman pencarian |
+| ☑ | — | **Tanya PAPAN** | Tombol mengambang + panel. Menjawab data harian, lintas waktu, per emiten, KSEI, grup, kalender + 32 entri pengetahuan + **75 istilah glosarium** yang ditambang dari terbitan PAPAN sendiri |
+| ☑ | — | Panen otomatis | GitHub Actions tiap 2 jam untuk sumber tanpa batasan IP |
+| ☑ | 160 | **Sisa migrasi `'ditolak'` dituntaskan** | 3 objek SQL diperbaiki + 7 berkas klien. Akurasi berhenti selalu 100%: superadmin kini 96% (22/23) |
+| ☑ | 163 | Baris yatim INDY | Dihapus atas persetujuan Johan. **Nol baris yatim, nol berkas yatim**, 24 setoran |
+| ☑ | — | Keterangan aturan kurasi di superadmin | Panel lipat: apa yang hilang & apa yang tetap ada, diturunkan dari kode + fungsi SQL yang berjalan |
+| ☑ | — | Urutan hapus berkas dibalik | Baris dulu, berkas belakangan + periksa hasilnya. **RLS yang menolak DELETE tidak melempar galat** — itu yang dulu melahirkan baris yatim |
+| ☑ | — | Batang gulir 2px jadi aturan bawaan | Dulu disalin per komponen, jadi panel baru kebagian batang tebal sistem. Terukur 15px → 1px |
+| ☑ | — | `CLAUDE.md` di-track | Dikeluarkan dari `.gitignore` supaya aturannya terbawa ke tiap worktree baru |
+
 ## Selesai
 
 | ☑ | # | Tugas | Catatan |
