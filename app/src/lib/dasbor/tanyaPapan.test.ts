@@ -150,6 +150,12 @@ describe('jawab — basis teks (pengetahuan + glosarium)', () => {
     expect(j.teks).toContain('6.401,89')
   })
 
+  it('"kondisi pasar sekarang" dijawab ringkasan hari itu, bukan ditolak', () => {
+    const j = jawab('bagaimana kondisi pasar sekarang?', konteks())
+    expect(j.takPaham).toBeFalsy()
+    expect(j.topik).toBe('ihsg')
+  })
+
   it('kunci pendek tak ikut cocok di tengah kata lain', () => {
     // "ara" pernah cocok di dalam "sekarang" — jebakan yang sudah sekali
     // menggigit di `pengetahuan.ts` dan tak boleh lahir lagi lewat glosarium.

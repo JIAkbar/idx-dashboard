@@ -549,8 +549,12 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
     }
   }
 
-  // ── IHSG / indeks ────────────────────────────────────────────────────────
-  if (punya(t, 'ihsg', 'indeks', 'pasar hari ini', 'penutupan')) {
+  // ── IHSG / indeks / kondisi pasar ────────────────────────────────────────
+  // "bagaimana kondisi pasar sekarang?" adalah pertanyaan pertama yang
+  // wajar diketik orang, tapi sempat jatuh ke "belum bisa saya jawab" karena
+  // tak menyebut kata "IHSG" sama sekali. Jawabannya sama persis dengan
+  // pertanyaan IHSG — ringkasan hari itu memang jawaban untuk keduanya.
+  if (punya(t, 'ihsg', 'indeks', 'pasar hari ini', 'penutupan', 'kondisi pasar', 'pasar sekarang', 'pasar gimana', 'pasar bagaimana')) {
     return { teks: `${r.headline}. ${r.ringkasan}`, topik: 'ihsg', ke: '/indeks', keLabel: 'Papan IHSG' }
   }
 
