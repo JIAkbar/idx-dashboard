@@ -296,3 +296,63 @@ ditampilkan apa adanya, bukan ditutup dengan angka nol.
 
 **Panen ini baru TW2 2026 (satu periode).** Cara menambah periodenya ada di
 docstring skripnya.
+
+
+---
+
+## ⚠️ JEBAKAN: kunci periodenya sama, artinya TIDAK
+
+Ini yang paling mudah merusak dan paling sulit terlihat. Kedua sumber memakai
+kunci periode `2026-06-30`, tapi angkanya menghitung rentang yang berbeda:
+
+| Sumber | Yang dihitung |
+|---|---|
+| `keuangan/` (yfinance) | Kuartal **diskret** — hanya Apr–Jun |
+| `keuangan_idx/` (XBRL IDX) | Laporan interim **kumulatif** — Jan–Jun |
+
+Terukur 17 Agu 2026, ruas `revenue` periode `2026-06-30`:
+
+| Emiten | yfinance | XBRL IDX | Rasio |
+|---|---|---|---|
+| TLKM | 38.689.000.000.000 | 75.878.000.000.000 | **1,96×** |
+| ASII | 79.245.000.000.000 | 157.913.000.000.000 | **1,99×** |
+| ICBP | 20.147.664.000.000 | 41.863.388.000.000 | **2,08×** |
+
+**Menggabungkan keduanya per-ruas dengan aturan "yang tidak null menang" akan
+menghasilkan angka yang salah hampir dua kali lipat, tanpa satu pun galat.**
+Neraca (`total_assets`, `total_liabilities`, `cash`) aman karena posisi pada
+satu tanggal — yang berbahaya khusus ruas ARUS: `revenue`, `cogs`,
+`gross_profit`, `operating_income`, `net_income`, dan ketiga ruas arus kas.
+
+`fundamentalGabungan.ts` **belum** membaca `keuangan_idx/` — jadi belum ada
+kerusakan hari ini. Yang wajib diputuskan sebelum menyambungkannya: apakah
+angka XBRL dikonversi ke kuartal diskret (kumulatif TW2 dikurangi kumulatif
+TW1), atau kedua bentuk disimpan berdampingan dengan label yang jelas. **Jangan
+disambung dulu sebelum itu diputuskan.**
+
+### Kenapa ruas bank kosong di XBRL
+
+Bukan kegagalan panen: taksonomi "Financial and Sharia Industry" memang tak
+punya baris "Revenue" tunggal — pendapatan bunga, premi, dan komisi terpisah.
+Jadi `revenue`/`cogs`/`gross_profit` null untuk bank di XBRL adalah keadaan
+yang benar, dan justru di situ yfinance menambal.
+
+### Catatan lain dari panen pertama
+
+- **Bucket `tahunan` kosong untuk SEMUA emiten** — TW2 tak memuat angka tahun
+  penuh teraudit. Perlu dijalankan lagi dengan `--periode audit`.
+- **Skala pelaporan berbeda antar emiten.** TLKM melapor dalam **miliaran**,
+  sementara BBCA/ASII/ACST dalam **jutaan**. Versi pertama parser hanya
+  mengenal juta/ribu dan diam-diam memakai skala 1 untuk TLKM — seluruh
+  angkanya 1.000× terlalu kecil tanpa galat. Sekarang ruas "Level of rounding"
+  dibaca per berkas.
+- **Satuan EPS tidak konsisten di berkas sumbernya sendiri**: BBCA/BMRI/ICBP
+  menandai rupiah penuh, TLKM/ASII/ACST menandainya ikut skala jutaan.
+  Diatasi dengan ambang kewajaran (0,001–1.000.000 rupiah/lembar) — diuji pada
+  10 emiten rintisan, **belum** pada seluruh 774. Kalau ada EPS yang terlihat
+  aneh di layar, ini titik periksa pertama.
+- **ANTM dan AADI tidak ada** di daftar 778 laporan TW2 2026 dari API IDX
+  sendiri — diverifikasi langsung, bukan bug skrip. ANTM emiten besar; layak
+  ditanyakan kenapa absen.
+- Sheet dikenali lewat **judulnya**, bukan nomor sheet: penomoran berbeda per
+  industri (1xxx Umum, 3xxx Infrastruktur, 4xxx Keuangan & Syariah).
