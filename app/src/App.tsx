@@ -7,6 +7,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { PenjagaHalaman } from './components/PenjagaHalaman'
 import { DasborLayout } from './components/dasbor/DasborLayout'
 import { PemuatHalaman } from './components/dasbor/PemuatHalaman'
+import { Beranda } from './views/dasbor/Beranda'
 import { IndeksDunia } from './views/dasbor/IndeksDunia'
 import { TopStocks } from './views/dasbor/TopStocks'
 import { TopBroker } from './views/dasbor/TopBroker'
@@ -61,9 +62,15 @@ function App() {
               komponen pemuat baru. */}
           <Suspense fallback={<PemuatHalaman />}>
           <Routes>
-            {/* Publik — dasbor, tanpa login. Index = Indeks Dunia (panel "active" default di index_live.html). */}
+            {/* Publik — dasbor, tanpa login. Index = Beranda: pintu masuk
+                yang menyebut identitas PAPAN (data & informasi), kabar edisi
+                terbaru, lalu kartu ke tiap halaman. Indeks Dunia — yang dulu
+                menempati '/' — pindah ke /indeks dengan kunci aksesnya
+                (`dasbor`) ikut pindah; Beranda sendiri terbuka untuk siapa
+                pun, termasuk yang belum masuk. */}
             <Route element={<DasborLayout />}>
-              <Route path="/" element={<PenjagaHalaman kunci="dasbor"><IndeksDunia /></PenjagaHalaman>} />
+              <Route path="/" element={<Beranda />} />
+              <Route path="/indeks" element={<PenjagaHalaman kunci="dasbor"><IndeksDunia /></PenjagaHalaman>} />
               {/* Sweep 15 Agu: SETIAP halaman yang punya rute sendiri wajib
                   punya kunci akses. Top Stocks & Top Broker sebelumnya tidak
                   terdaftar sama sekali — halaman tanpa aturan berarti celah

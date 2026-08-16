@@ -1,0 +1,101 @@
+/* Beranda — pintu masuk PAPAN. Semua warna dari token .lantai (lihat catatan
+   panjang di lantai.css): halaman ini dirender di dalam .lantai, jadi tak ada
+   satu pun nilai warna mentah di berkas ini. */
+
+.lantai .brd-kepala {
+  border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--bg2); padding: 26px 24px;
+}
+.lantai .brd-kepala h1 {
+  margin: 0; font-family: var(--disp); font-weight: 700;
+  /* clamp: judul identitas harus besar di desktop tanpa memaksa telepon
+     menggulung mendatar. Nilai tengah ber-unit viewport (aturan §178). */
+  font-size: clamp(30px, 5vw, 46px); letter-spacing: .02em; line-height: 1.05;
+}
+.lantai .brd-tagline {
+  margin: 10px 0 0; max-width: 68ch; font-size: 13px; line-height: 1.75; color: var(--text2);
+}
+.lantai .brd-tagline b { color: var(--text); font-weight: 700; }
+
+/* Strip pasar — angka nyata, bukan hiasan; karena itu monospace & tabular. */
+.lantai .brd-strip {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line);
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+}
+.lantai .brd-strip-lbl { font-size: 10px; letter-spacing: .14em; color: var(--text3); }
+.lantai .brd-strip-num { font-size: 20px; }
+.lantai .brd-strip-chg { font-size: 12px; }
+.lantai .brd-strip-chg.up { color: var(--green); }
+.lantai .brd-strip-chg.dn { color: var(--red); }
+.lantai .brd-strip-tgl { font-size: 10.5px; color: var(--text3); }
+
+.lantai .brd-h {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 10px; margin: 26px 0 10px;
+}
+.lantai .brd-semua { font-size: 11px; color: var(--amber); text-decoration: none; }
+.lantai .brd-semua:hover { text-decoration: underline; }
+
+/* ── Kabar: edisi terbit terakhir ───────────────────────────────────────── */
+.lantai .brd-kabar-list { display: grid; gap: 8px; }
+.lantai .brd-kabar-it {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--bg2); padding: 11px 14px; text-decoration: none; color: inherit;
+  transition: border-color .16s ease, transform .16s ease;
+}
+.lantai .brd-kabar-it:hover { border-color: var(--amber); transform: translateY(-1px); }
+.lantai .brd-tipe {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase;
+  border: 1px solid var(--line2); border-radius: 999px; padding: 2px 8px; color: var(--text3);
+  flex: none;
+}
+.lantai .brd-tipe.t-harian { border-color: var(--amber); color: var(--amber); }
+.lantai .brd-kabar-tgl { font-size: 12.5px; color: var(--text); flex: 1; min-width: 190px; }
+.lantai .brd-kabar-emiten { display: flex; gap: 4px; flex-wrap: wrap; }
+.lantai .brd-tick, .lantai .brd-lebih {
+  font-family: var(--mono); font-size: 10px; color: var(--text2);
+  background: var(--bg3); border-radius: 3px; padding: 2px 5px;
+}
+.lantai .brd-lebih { color: var(--text3); }
+
+/* ── Kartu menu ─────────────────────────────────────────────────────────── */
+/* auto-fit + minmax: jumlah kolom dihitung sendiri oleh grid, nol media
+   query — 1 kolom di telepon sampai 4 di layar lebar (aturan §178). */
+.lantai .brd-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px;
+}
+.lantai .brd-kartu {
+  display: grid; gap: 4px; align-content: start;
+  border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--bg2); padding: 14px 15px;
+  text-decoration: none; color: inherit; text-align: left;
+  font: inherit; cursor: pointer;
+  transition: border-color .16s ease, background .16s ease, transform .16s ease;
+}
+.lantai .brd-kartu:hover { border-color: var(--amber); background: var(--bg3); transform: translateY(-2px); }
+.lantai .brd-kartu:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.lantai .brd-kartu-ikon { display: inline-flex; color: var(--amber); }
+.lantai .brd-kartu-ikon .dasbor-ikon { stroke: currentColor; }
+.lantai .brd-kartu-kode {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .18em; color: var(--text3); margin-top: 6px;
+}
+.lantai .brd-kartu-judul { font-size: 14px; font-weight: 700; color: var(--text); }
+.lantai .brd-kartu-ringkas { font-size: 11.5px; line-height: 1.6; color: var(--text3); }
+.lantai .brd-kartu-kunci {
+  display: inline-flex; align-items: center; gap: 5px; margin-top: 6px;
+  font-family: var(--mono); font-size: 10px; color: var(--amber);
+}
+.lantai .brd-kartu-kunci .dasbor-ikon { stroke: currentColor; }
+/* Terkunci tetap bisa diklik — halaman tujuannya yang menjelaskan syaratnya
+   (PenjagaHalaman), jadi kartunya cuma diredupkan, bukan dimatikan. */
+.lantai .brd-kartu.kunci .brd-kartu-ikon { color: var(--text3); }
+/* Kartu aksi (Masuk / Area Kontributor) — satu-satunya kartu berwarna penuh,
+   karena dia satu-satunya yang mengubah keadaan, bukan memindahkan halaman. */
+.lantai .brd-kartu-aksi { border-color: var(--amber); background: var(--amber-dim); }
+.lantai .brd-kartu-aksi .brd-kartu-ringkas { color: var(--text2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lantai .brd-kartu:hover, .lantai .brd-kabar-it:hover { transform: none; }
+}

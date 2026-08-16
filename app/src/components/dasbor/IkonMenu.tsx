@@ -61,6 +61,7 @@ export const IKON_LONCENG = 'M12 3a5 5 0 00-5 5c0 4-1.5 5.5-2 6h14c-.5-.5-2-2-2-
 export const IKON_TONG = 'M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2M6 7l1 13a1 1 0 001 1h10a1 1 0 001-1l1-13M10 11v6M14 11v6' // hapus unggahan
 export const IKON_GAMBAR = 'M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1zM3.5 15.5L8.5 10l4 4 3-3 5 5M9 9h.01' // pilih berkas gambar
 export const IKON_TAMBAH = 'M12 5v14M5 12h14' // tombol tambah (mis. "+ Tambah Emiten")
+export const IKON_PANAH_KANAN = 'M5 12h13M13 6l6 6-6 6' // menuju — kartu aksi Beranda
 export const IKON_PENSIL = 'M4 20h4L19 9a2.1 2.1 0 00-3-3L5 17v3zM14.5 6.5l3 3' // pensil — ubah unggahan yang sudah masuk
 export const IKON_KUNCI = 'M7 10V7a5 5 0 0110 0v3M5 10h14a1 1 0 011 1v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9a1 1 0 011-1zM12 14v3' // gembok — atur ulang sandi
 export const IKON_RADAR = 'M12 3a9 9 0 109 9M12 7a5 5 0 105 5M12 12l5.5-5.5M12 12h.01' // sama dgn ikon "Radar Watchlist" di rail (menu.ts) — tab Radar AdminLayout
