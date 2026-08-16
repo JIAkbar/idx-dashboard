@@ -42,6 +42,47 @@ di-push**. 55 commit menunggu aba-aba "live".
 | **Gemini Flash** | ⏸ **Setelah SPLE.** Halaman baru dari SPLE akan menambah data yang juga harus dijangkau — lebih hemat menyetel LLM sekali setelah cakupan rule-engine lengkap |
 | **Arsip IPOT** | ⏸ **Biarkan tumbuh sendiri**, dan jadikan backlog: bahas dulu cara scraping yang tepat, jangan menembak `news_id` satu per satu |
 | **CLAUDE.md** | ✅ **Di-track.** Sudah dikeluarkan dari `.gitignore` supaya aturannya terbawa ke tiap worktree baru |
+| **Baris yatim INDY** | ✅ **Dihapus** atas persetujuan Johan. Nol baris yatim & nol berkas yatim tersisa (24 setoran) |
+
+Urutan kerja berikutnya yang disepakati: **#169 (halaman baru dari SPLE)**
+lalu **#170 (penyeragaman kendali)**.
+
+### #169 — Halaman baru hasil bedah SPLE (fokus berikutnya)
+
+Sumbernya dua dasbor pesaing yang sudah dibedah statis sesi lalu
+(`memory/riset-sple.md`: LLM-nya Claude Haiku 4.5, fundamentalnya dari RDFE
+berbayar):
+
+- `https://sple-info.netlify.app/`
+- `https://sple-mf.netlify.app/` (menerima `?kode=TINS` — jadi ada halaman
+  per emiten)
+
+Bedah sebelumnya menghasilkan peta **arsitektur**, belum daftar halaman &
+fitur yang mau ditandingi. Langkah pertama: susun daftar itu dulu — tiap
+baris "punya/tidak punya" **wajib punya perintah yang membuktikannya**,
+bukan disusun dari ingatan (pelajaran §182: dugaan "cuma punya PER/PBV"
+ternyata 147 ruas). Baru setelah itu diputuskan halaman baru mana yang
+dibangun dan urutannya.
+
+### #170 — Refactor kendali: tombol & kontrol belum seragam
+
+Dikeluhkan Johan 16 Agu 2026: tombol kalender, kotak pencarian, pemilih
+rentang waktu, dan kawan-kawannya **tidak senada antar halaman** — beberapa
+`<select>` bawaan, beberapa `Dropdown` proyek, beberapa `DatePicker`, dengan
+ukuran dan bingkai yang tak sama.
+
+Bahan yang sudah ada dan seharusnya jadi acuan: `components/dasbor/Dropdown.tsx`,
+`DatePicker.tsx`, kelas `.af-cari`, `.tabs/.tab`, `.dd-btn`, `.inp`. Jadi ini
+bukan bikin baru, melainkan **menyeragamkan yang sudah ada lalu mencabut
+duplikatnya**.
+
+Prinsip yang sudah terbukti di sesi ini dan berlaku di sini: gaya bersama
+ditulis sebagai **aturan bawaan**, bukan disalin per komponen — begitu harus
+disalin supaya bekerja, ia akan berhenti bekerja (kasus batang gulir 2px,
+kemampuan §188).
+
+Dikerjakan **setelah** #169, karena halaman baru dari SPLE akan menambah
+kendali baru; menyeragamkan sekarang berarti menyeragamkan dua kali.
 
 ### #168 — Cara scraping arsip berita yang benar (belum dibahas)
 
