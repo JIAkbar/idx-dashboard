@@ -77,7 +77,7 @@ export function HalamanRingkasan({ ed, skorMap }: { ed: Edisi; skorMap: SkorMap 
           <b>Skor komposit 0–100:</b> Technical 35% · Big Money Flow 30% · Risk/reward 20% · Liquidity
           10% · IHSG sensitivity 5%. Pemetaan risiko: ≥80 Menengah · 55–79 Tinggi · &lt;55 Ekstrem.{' '}
           <b>Sumber data:</b> harga Yahoo Finance; pivot &amp; EMA dari chart TradingView; arus broker
-          dari orderbook Stockbit (transkripsi manual, diverifikasi). Komponen data yang tidak tersedia
+          dari broker summary Stockbit (transkripsi manual, diverifikasi). Komponen data yang tidak tersedia
           tidak pernah diisi perkiraan — halaman terkait akan menampilkan penanda kesenjangan data dan
           skor diberi penalti. Peringkat bersifat komparatif antar emiten edisi ini, bukan sinyal beli
           otomatis.

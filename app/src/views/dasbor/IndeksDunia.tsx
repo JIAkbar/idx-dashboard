@@ -1,4 +1,4 @@
-import { useMemo, type CSSProperties } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { ChartConfiguration } from 'chart.js/auto'
 import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
@@ -8,6 +8,7 @@ import { useDataHarian, type TanggalIndex } from '../../lib/dasbor/dataHarian'
 import { hitungYtdPct } from '../../lib/dasbor/ytd'
 import { fN, fp, fmtNF } from '../../lib/dasbor/format'
 import { useChartCanvas } from '../../lib/dasbor/useChartJs'
+import { useIhsgBuka } from '../../lib/dasbor/ihsgOhlc'
 import { useTheme } from '../../context/ThemeContext'
 import { IkonMenu, IKON_PERINGATAN, IKON_GLOBE, IKON_PENGGARIS, IKON_GRAFIK_BATANG } from '../../components/dasbor/IkonMenu'
 import { LilinHarian } from '../../components/dasbor/LilinHarian'
@@ -30,31 +31,85 @@ function tglSingkat(iso: string) {
   return new Date(`${iso}T12:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
 }
 
+/** "12 Feb 2019" — dipakai rentang multi-tahun, di mana "12 Feb" saja tak
+ *  memberi tahu tahun berapa titik tertinggi itu terjadi. */
+function tglSingkatTahun(iso: string) {
+  return new Date(`${iso}T12:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+/** Pilihan rentang chart IHSG. `tahun: 0` = seluruh riwayat. */
+const RENTANG = [
+  { id: 'ytd', chip: 'YTD', judul: 'Tahun Berjalan', tahun: null },
+  { id: '1t', chip: '1T', judul: '1 Tahun', tahun: 1 },
+  { id: '5t', chip: '5T', judul: '5 Tahun', tahun: 5 },
+  { id: '10t', chip: '10T', judul: '10 Tahun', tahun: 10 },
+  { id: 'max', chip: 'Semua', judul: 'Sejak 1990', tahun: 0 },
+] as const
+
+type RentangId = (typeof RENTANG)[number]['id']
+
 function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
   const { theme } = useTheme()
+  const [rentang, setRentang] = useState<RentangId>('ytd')
+  // Riwayat panjang (354 KB, 1990-sekarang) BARU diunduh saat rentang selain
+  // YTD dipilih — pengunjung yang cuma melihat tahun berjalan tak perlu
+  // membayarnya, karena seri YTD sudah ikut index.json yang memang termuat.
+  const [riwayat, setRiwayat] = useState<TanggalIndex[] | null>(null)
+  useEffect(() => {
+    if (rentang === 'ytd' || riwayat) return
+    let batal = false
+    fetch('/data-idx/json/ihsg_harian.json')
+      .then((r) => r.json())
+      .then((j: { tutup: Record<string, number> }) => {
+        if (batal) return
+        setRiwayat(Object.entries(j.tutup).map(([iso, ihsg]) => ({
+          date_iso: iso, date_id: tglSingkatTahun(iso), ihsg,
+        } as TanggalIndex)))
+      })
+      .catch(() => {})
+    return () => { batal = true }
+  }, [rentang, riwayat])
 
-  // High/low/terkini tahun berjalan dari seri yang sama dengan chart.
+  const pilih = RENTANG.find((r) => r.id === rentang) ?? RENTANG[0]
+  // Selagi riwayat masih diunduh, seri YTD tetap ditampilkan — grafik yang
+  // berkedip kosong lebih buruk daripada grafik yang sebentar lebih pendek.
+  const seri = useMemo(() => {
+    if (pilih.tahun === null || !riwayat) return dates
+    if (pilih.tahun === 0) return riwayat
+    const batas = new Date()
+    batas.setFullYear(batas.getFullYear() - pilih.tahun)
+    const iso = batas.toISOString().slice(0, 10)
+    return riwayat.filter((d) => d.date_iso >= iso)
+  }, [pilih, riwayat, dates])
+
+  // High/low/terkini dari seri yang sama dengan chart.
   const info = useMemo(() => {
-    if (dates.length === 0) return null
-    let hi = dates[0]
-    let lo = dates[0]
-    dates.forEach((d) => {
+    if (seri.length === 0) return null
+    let hi = seri[0]
+    let lo = seri[0]
+    seri.forEach((d) => {
       if (d.ihsg > hi.ihsg) hi = d
       if (d.ihsg < lo.ihsg) lo = d
     })
-    const last = dates[dates.length - 1]
-    return { hi, lo, last, ytdPct: hitungYtdPct(last.ihsg, dates) }
-  }, [dates])
+    const last = seri[seri.length - 1]
+    // YTD punya definisi resminya sendiri (penutupan tahun lalu, bukan titik
+    // pertama yang kebetulan ada di seri); rentang lain memang diukur dari
+    // ujung kiri grafiknya.
+    const pct = pilih.tahun === null
+      ? hitungYtdPct(last.ihsg, seri)
+      : ((last.ihsg - seri[0].ihsg) * 100) / seri[0].ihsg
+    return { hi, lo, last, ytdPct: pct }
+  }, [seri, pilih])
 
   const config = useMemo<ChartConfiguration<'line', number[], string> | null>(() => {
-    if (dates.length === 0 || !info) return null
+    if (seri.length === 0 || !info) return null
     const isDark = theme === 'dark'
     const amber = isDark ? '#F0A62B' : '#B87A10'
     const amberFill = isDark ? 'rgba(240,166,43,.22)' : 'rgba(184,122,16,.16)'
     // Garis panduan high/low: warna --text3 tiap tema, alpha lembut.
     const guide = isDark ? 'rgba(92,107,126,.55)' : 'rgba(136,150,168,.55)'
     const guideDs = (nilai: number) => ({
-      data: dates.map(() => nilai),
+      data: seri.map(() => nilai),
       borderColor: guide,
       borderDash: [4, 4] as number[],
       borderWidth: 1,
@@ -64,9 +119,9 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
     return {
       type: 'line',
       data: {
-        labels: dates.map((d) => d.date_id),
+        labels: seri.map((d) => d.date_id),
         datasets: [{
-          data: dates.map((d) => d.ihsg),
+          data: seri.map((d) => d.ihsg),
           borderColor: amber,
           backgroundColor: amberFill,
           borderWidth: 1.8,
@@ -98,13 +153,13 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
         scales: { x: { display: false }, y: { display: false } },
       },
     }
-  }, [dates, info, theme])
+  }, [seri, info, theme])
   const canvasRef = useChartCanvas(config)
 
   return (
     <div className="board-side">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
-        <span className="lbl">IHSG — Tahun Berjalan</span>
+        <span className="lbl">IHSG — {pilih.judul}</span>
         {info && (
           <span className="num" style={{ fontSize: 12, fontWeight: 700 }}>
             {fN(info.last.ihsg)}{' '}
@@ -113,6 +168,22 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
             )}
           </span>
         )}
+      </div>
+      {/* Pemilih rentang — chip, bukan dropdown: lima pilihan yang semuanya
+          pendek lebih cepat dibaca berjajar daripada disembunyikan di balik
+          satu klik. */}
+      <div className="ihsg-rentang">
+        {RENTANG.map((r) => (
+          <button
+            key={r.id}
+            type="button"
+            className={'chip-t' + (rentang === r.id ? ' on' : '')}
+            aria-pressed={rentang === r.id}
+            onClick={() => setRentang(r.id)}
+          >
+            {r.chip}
+          </button>
+        ))}
       </div>
       {/* canvas dipaksa display:block+width:100% LEWAT STYLE (bukan andalkan
           Chart.js) — .board-side flex item, canvas default-nya display:inline
@@ -125,8 +196,8 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
       </div>
       {info && (
         <div className="num" style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 6, fontSize: 10, color: 'var(--text3)', flexWrap: 'wrap' }}>
-          <span>Tertinggi <span className="up">{fN(info.hi.ihsg)}</span> · {tglSingkat(info.hi.date_iso)}</span>
-          <span>Terendah <span className="dn">{fN(info.lo.ihsg)}</span> · {tglSingkat(info.lo.date_iso)}</span>
+          <span>Tertinggi <span className="up">{fN(info.hi.ihsg)}</span> · {(pilih.tahun === null ? tglSingkat : tglSingkatTahun)(info.hi.date_iso)}</span>
+          <span>Terendah <span className="dn">{fN(info.lo.ihsg)}</span> · {(pilih.tahun === null ? tglSingkat : tglSingkatTahun)(info.lo.date_iso)}</span>
         </div>
       )}
     </div>
@@ -306,6 +377,10 @@ function PanelSkeleton({ tanggalTersedia, tanggalAktif, pilihTanggal, loading }:
 export function IndeksDunia() {
   const { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error } = useDataHarian()
   const navigate = useNavigate()
+  // Dipanggil SEBELUM early-return loading/error — hook tak boleh dilewati di
+  // sebagian render. `null` kalau tanggalnya belum dipanen Yahoo (panen jalan
+  // sore); lilin lalu mundur ke penutupan kemarin seperti sebelum #108.
+  const buka = useIhsgBuka(tanggalAktif ?? undefined)
 
   const world = hari?.world ?? []
 
@@ -379,9 +454,9 @@ export function IndeksDunia() {
           {hari.ihsg_prev != null && hari.ihsg_high != null && hari.ihsg_low != null && (
             <div className="lilin-hari">
               <LilinHarian
-                dasar={hari.ihsg_prev} tutup={hari.ihsg_value}
+                dasar={buka ?? hari.ihsg_prev} tutup={hari.ihsg_value}
                 tinggi={hari.ihsg_high} rendah={hari.ihsg_low}
-                judul={`Rentang hari: ${fN(hari.ihsg_low)} sampai ${fN(hari.ihsg_high)}, tutup ${fN(hari.ihsg_value)}`}
+                judul={`Rentang hari: ${fN(hari.ihsg_low)} sampai ${fN(hari.ihsg_high)}, ${buka ? `buka ${fN(buka)}, ` : ''}tutup ${fN(hari.ihsg_value)}`}
               />
               <div className="lilin-ket">
                 <span className="lbl">Rentang hari</span>
@@ -389,7 +464,9 @@ export function IndeksDunia() {
                   {fN(hari.ihsg_low)} <span className="muted">→</span> {fN(hari.ihsg_high)}
                 </span>
                 <span className="lilin-catatan">
-                  Badan dari penutupan kemarin ke penutupan hari ini — harga buka belum dipanen.
+                  {buka
+                    ? <>Badan dari harga buka {fN(buka)} ke penutupan {fN(hari.ihsg_value)}.</>
+                    : <>Badan dari penutupan kemarin ke penutupan hari ini — harga buka hari ini belum dipanen.</>}
                 </span>
               </div>
             </div>

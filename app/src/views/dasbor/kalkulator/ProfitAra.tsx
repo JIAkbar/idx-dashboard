@@ -2,17 +2,13 @@ import { useMemo, useState } from 'react'
 import { fN } from '../../../lib/dasbor/format'
 import { PosisiBar } from './PosisiBar'
 import { IkonMenu, IKON_UANG, IKON_GRAFIK_NAIK } from '../../../components/dasbor/IkonMenu'
+import { batasAra, batasArb, keFraksi } from '../../../lib/fraksiHarga'
 
-/** Tick size IDX — port PROFIT.tick() index_live.html baris 3184-3188. */
-function tick(p: number): number {
-  const t = p < 200 ? 1 : p < 500 ? 2 : p < 2000 ? 5 : p < 5000 ? 10 : 25
-  return Math.round(p / t) * t
-}
-
-/** Persentase ARA berdasar harga — port PROFIT.araRate() baris 3189. */
-function araRate(p: number): number {
-  return p < 200 ? 35 : p <= 5000 ? 25 : 20
-}
+// Fraksi & batas auto rejection TIDAK ditulis ulang di sini. Port aslinya
+// (index_live.html) menyalinnya dengan batas EKSKLUSIF (`p < 200`), padahal
+// aturan BEI inklusif — harga tepat 200 masih fraksi Rp 1 dan ARA 35%. Satu
+// sumber: lib/fraksiHarga.ts (#128).
+const araRate = batasAra
 
 interface ProfitAraProps {
   feeBeli: number
@@ -43,7 +39,9 @@ export function ProfitAra({ feeBeli, feeJual, setFeeBeli, setFeeJual }: ProfitAr
   function handleSetMode(m: 'ara' | 'arb') {
     const buyN = parseFloat(buy) || 0
     if (!buyN) return
-    const price = m === 'ara' ? tick(buyN * (1 + araRate(buyN) / 100)) : tick(buyN * (1 - 0.15))
+    const price = m === 'ara'
+      ? keFraksi(buyN * (1 + batasAra(buyN) / 100))
+      : keFraksi(buyN * (1 - batasArb(buyN) / 100))
     setSell(String(price))
     setAraArbMode(m)
   }
@@ -70,13 +68,16 @@ export function ProfitAra({ feeBeli, feeJual, setFeeBeli, setFeeJual }: ProfitAr
   const araTable = useMemo(() => {
     if (!(buyN > 0)) return null
     const ara = araRate(buyN)
-    const arb = 15
+    const arb = batasArb(buyN)
     const rows: { day: number; ap: number; bp: number }[] = []
     let ap = buyN
     let bp = buyN
     for (let d = 1; d <= 5; d++) {
-      ap = tick(ap * (1 + ara / 100))
-      bp = tick(bp * (1 - arb / 100))
+      // Batasnya dihitung ULANG tiap hari dari harga hari itu: harga yang
+      // menembus 200 atau 5.000 pindah jenjang, dan memakai batas hari
+      // pertama untuk lima hari memberi proyeksi yang terlalu jauh.
+      ap = keFraksi(ap * (1 + batasAra(ap) / 100))
+      bp = keFraksi(bp * (1 - batasArb(bp) / 100))
       rows.push({ day: d, ap, bp })
     }
     return { ara, arb, rows }
@@ -147,7 +148,7 @@ export function ProfitAra({ feeBeli, feeJual, setFeeBeli, setFeeJual }: ProfitAr
           <div className="panel-h">
             <span className="lbl"><IkonMenu d={IKON_GRAFIK_NAIK} size={13} /> Proyeksi ARA / ARB</span>
             <span className="num" style={{ fontSize: 10, color: 'var(--text3)' }}>
-              ARB = 15% (uniform, April 2025)
+              ARA = ARB, simetris sejak 4 Sep 2023
             </span>
           </div>
           <div className="panel-b">

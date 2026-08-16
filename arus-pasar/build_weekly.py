@@ -74,11 +74,11 @@ def halaman_sampul_mingguan(ed, urut, skor_map, riwayat, total_muncul):
     <div style="border-bottom:1px solid color-mix(in srgb, var(--ink) 35%, transparent);padding-bottom:6mm">
       <div style="font-size:8pt;letter-spacing:.3em;text-transform:uppercase;color:color-mix(in srgb, var(--ink) 70%, transparent)">
         Tinjauan Teknikal &amp; Arus Dana — Edisi Mingguan</div>
-      <div style="font-family:Georgia,Cambria,serif;font-size:46pt;font-weight:700;line-height:1.05;margin-top:4mm">
+      <div style="font-family:var(--disp);font-size:46pt;font-weight:700;line-height:1.05;margin-top:4mm">
         ARUS PASAR</div>
     </div>
     <div style="margin-top:8mm;font-size:13pt">{ed["tanggal_id"]}</div>
-    <div style="font-family:Consolas,monospace;font-size:9pt;color:color-mix(in srgb, var(--ink) 75%, transparent);margin-top:1.5mm">
+    <div style="font-family:var(--mono);font-size:9pt;color:color-mix(in srgb, var(--ink) 75%, transparent);margin-top:1.5mm">
       {ed["edisi"]} · {len(urut)} emiten unik · {total_muncul} kemunculan harian</div>
     <div style="margin-top:12mm">
       <div style="font-size:7pt;letter-spacing:.24em;text-transform:uppercase;color:color-mix(in srgb, var(--ink) 60%, transparent);
@@ -88,7 +88,7 @@ def halaman_sampul_mingguan(ed, urut, skor_map, riwayat, total_muncul):
         border-bottom:1px solid color-mix(in srgb, var(--ink) 16%, transparent);font-variant-numeric:tabular-nums}}
         .c-tk{{font-size:14pt;font-weight:800;width:24mm}}
         .c-lbl{{flex:1;font-size:9.5pt;color:color-mix(in srgb, var(--ink) 85%, transparent)}}
-        .c-prog{{display:block;font-size:7pt;color:color-mix(in srgb, var(--ink) 55%, transparent);font-family:Consolas,monospace}}
+        .c-prog{{display:block;font-size:7pt;color:color-mix(in srgb, var(--ink) 55%, transparent);font-family:var(--mono)}}
         .c-skor{{font-size:14pt;font-weight:800}}</style>
       {isi}
       <div class="c-row"><span class="c-tk" style="font-size:9.5pt;font-weight:700">Peringkat</span>
@@ -207,10 +207,10 @@ def main():
     # ── Rakit halaman ────────────────────────────────────────────────────────
     gaya_ekstra = ('<style>.prog{border-left:3px solid var(--teal);padding:1.5mm 0 1.5mm 4mm;'
                    'margin-top:3mm;font-size:8pt;font-variant-numeric:tabular-nums}'
-                   '.prog b{font-family:Consolas,monospace;font-weight:700}'
+                   '.prog b{font-family:var(--mono);font-weight:700}'
                    '.prog .l{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;'
                    'color:var(--mute);margin-right:3mm}'
-                   'table.ring .prog-cell{font-family:Consolas,monospace;font-size:7.4pt;'
+                   'table.ring .prog-cell{font-family:var(--mono);font-size:7.4pt;'
                    'color:var(--ink2);white-space:nowrap}</style>')
     pages = [palet.blok_tema(EDISI_PALET) + gaya_ekstra
              + halaman_sampul_mingguan(ed_mingguan, urut, skor_map, riwayat, total_muncul)]
@@ -242,6 +242,7 @@ def main():
     ohlc_kecil = {k: v[-260:] for k, v in ohlc.items() if k != "JKSE"}
     html = (tpl.replace("{{JUDUL}}", f"Arus Pasar Mingguan {kode}")
                .replace("/*PALET*/", palet.blok_css(EDISI_PALET))
+               .replace("/*FONT*/", palet.blok_font())
                .replace("<!--PAGES-->", "\n".join(pages))
                .replace("/*OHLC*/{}", json.dumps(ohlc_kecil, separators=(",", ":")))
                .replace("/*DRAWCALLS*/", "\n".join(draw)))

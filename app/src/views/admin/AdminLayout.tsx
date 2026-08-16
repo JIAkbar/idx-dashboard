@@ -13,6 +13,7 @@ import { perluSambutan, kunciSambutan, kunciBeku, kunciJenjang, perluRayakan } f
 import { statusBekuSaya, type StatusBeku } from '../../lib/statusBeku'
 import { namaTampil } from '../../lib/namaTampil'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
+import { LoncengNotifikasi } from '../../components/dasbor/LoncengNotifikasi'
 import {
   IkonMenu,
   IKON_CATATAN,
@@ -219,7 +220,7 @@ export function AdminLayout() {
       <div className="vhead" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1>Arus Pasar</h1>
-          <span className="sub">{superadmin ? 'Area admin — unggah & kelola edisi' : 'Kontributor — setor orderbook harian'}</span>
+          <span className="sub">{superadmin ? 'Area admin — unggah & kelola edisi' : 'Kontributor — setor broker summary harian'}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
           {kuota != null && (
@@ -228,6 +229,7 @@ export function AdminLayout() {
             </span>
           )}
           <span className="muted" title={session?.user.email}>{namaTampil(profil, session)}</span>
+          <LoncengNotifikasi />
           <button type="button" className="dd-btn" onClick={() => setKonfirmKeluar(true)}>Keluar</button>
         </div>
       </div>
@@ -260,7 +262,7 @@ export function AdminLayout() {
             yang disetujui — akun dibekukan otomatis kalau mencapai <b>{bekuInfo.ambang} hari kerja</b>.
           </p>
           <p className="muted" style={{ margin: 0, fontSize: 11.5, lineHeight: 1.55 }}>
-            Sisa <b>{Math.max(0, bekuInfo.ambang - bekuInfo.hari)} hari kerja</b> lagi. Setor orderbook
+            Sisa <b>{Math.max(0, bekuInfo.ambang - bekuInfo.hari)} hari kerja</b> lagi. Setor broker summary
             hari ini lalu tunggu dikurasi superadmin — status "disetujui" yang mereset hitungan ini,
             bukan sekadar mengunggah.
           </p>
@@ -300,8 +302,8 @@ export function AdminLayout() {
                 )}
                 <p className="muted" style={{ margin: 0, fontSize: 11.5, lineHeight: 1.55 }}>
                   {superadmin
-                    ? 'Unggah screenshot orderbook harian, kurasi setoran, pantau Radar WDWL, dan kelola rak terbitan Arus Pasar — semuanya di tab-tab atas.'
-                    : 'Unggah screenshot orderbook harian dan pantau rak terbitan Arus Pasar — semuanya di tab-tab atas.'}
+                    ? 'Unggah screenshot broker summary harian, kurasi setoran, pantau Radar WDWL, dan kelola rak terbitan Arus Pasar — semuanya di tab-tab atas.'
+                    : 'Unggah screenshot broker summary harian dan pantau rak terbitan Arus Pasar — semuanya di tab-tab atas.'}
                 </p>
                 {!superadmin && profil && <SambutanJenjang profil={profil} />}
                 <button
@@ -310,7 +312,7 @@ export function AdminLayout() {
                   style={{ width: '100%' }}
                   onClick={superadmin ? tutupSambutan : setorDariSambutan}
                 >
-                  {superadmin ? 'Mulai' : 'Setor orderbook'}
+                  {superadmin ? 'Mulai' : 'Setor broker summary'}
                 </button>
               </div>
             </div>
@@ -384,7 +386,7 @@ function SambutanJenjang({ profil }: { profil: ProfilSaya }) {
       <div className="af-sambut-angka">
         <div>
           <span className="l">Kuota harian</span>
-          <b>{r.kuotaEfektif} orderbook</b>
+          <b>{r.kuotaEfektif} broker summary</b>
         </div>
         <div>
           <span className="l">Disetujui</span>

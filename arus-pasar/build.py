@@ -786,7 +786,7 @@ def halaman_peringkat(ed, skor_map):
 
 
 def render_pdf(html_path):
-    """Render HTML -> PDF (chromium headless, tunggu chart canvas selesai)."""
+    """Render HTML -> PDF (chromium headless, tunggu chart canvas + font)."""
     from playwright.sync_api import sync_playwright
     pdf_path = html_path.with_suffix(".pdf")
     with sync_playwright() as p:
@@ -794,6 +794,11 @@ def render_pdf(html_path):
         page = b.new_page()
         page.goto(html_path.resolve().as_uri())
         page.wait_for_function("window.__chartsDone === true")
+        # Font DITUNGGU terpisah (#127). Chromium mencetak begitu diperintah,
+        # tak peduli @font-face masih di-decode: hasilnya PDF berisi Segoe UI
+        # padahal halaman yang sama di layar sudah memakai Red Hat — gagal
+        # yang tak memberi satu pun pesan galat.
+        page.wait_for_function("document.fonts.status === 'loaded'")
         page.pdf(path=str(pdf_path), format="A4", print_background=True,
                  margin={"top": "0", "right": "0", "bottom": "0", "left": "0"},
                  prefer_css_page_size=True)
@@ -823,6 +828,22 @@ def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     tgl = args[0] if args else "2026-08-10"
     ed = json.loads((AKAR / "edisi" / f"{tgl}.json").read_text(encoding="utf-8"))
+
+    # #138 — emiten yang DIKELUARKAN dari edisi ini. Bukan penolakan data:
+    # setorannya tetap 'disetujui' dan kreditnya tetap milik kontributor
+    # (kolom `setoran.dimuat` di Supabase). Daftarnya dibawa lewat argumen,
+    # bukan dibaca langsung dari DB, supaya perakitan tetap bisa jalan tanpa
+    # kredensial — layar Kurasi menyalinnya lewat "Salin daftar masuk edisi".
+    kecuali = set()
+    for a in sys.argv[1:]:
+        if a.startswith("--kecuali="):
+            kecuali = {t.strip().upper() for t in a.split("=", 1)[1].split(",") if t.strip()}
+    if kecuali:
+        semula = len(ed["emiten"])
+        ed["emiten"] = [em for em in ed["emiten"] if em["ticker"].upper() not in kecuali]
+        print(f"  #138: {semula - len(ed['emiten'])} emiten dikeluarkan ({', '.join(sorted(kecuali))})")
+        if not ed["emiten"]:
+            sys.exit("Semua emiten dikeluarkan — tidak ada yang bisa dirakit.")
     ohlc = json.loads((AKAR / "cache" / f"ohlc-{tgl}.json").read_text(encoding="utf-8"))
 
     prob_map = prob.analisa_edisi(ohlc, [em["ticker"] for em in ed["emiten"]])
@@ -884,6 +905,7 @@ def main():
                   if k != "JKSE" or hal_ihsg}
     html = (tpl.replace("{{JUDUL}}", f"Arus Pasar {ed['edisi']}")
                .replace("/*PALET*/", palet.blok_css(EDISI_PALET))
+               .replace("/*FONT*/", palet.blok_font())
                .replace("<!--PAGES-->", "\n".join(pages))
                .replace("/*OHLC*/{}", json.dumps(ohlc_kecil, separators=(",", ":")))
                .replace("/*DRAWCALLS*/", "\n".join(draw)))

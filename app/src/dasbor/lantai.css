@@ -1154,7 +1154,10 @@
 .lantai .mc-rk.rk2{background:var(--line2);color:var(--text);font-weight:700}
 .lantai .mc-rk.rk3{background:var(--bg3);color:var(--text2);font-weight:700;border:1px solid var(--line2)}
 .lantai .mc-v{font-size:12px;text-align:right}
-.lantai .mc-p{font-size:11px;text-align:right}
+/* Badge persen di baris kapitalisasi (#107) — dijadikan blok rata kanan
+   supaya tepi kanannya sejajar dengan kolom nilai di atasnya, bukan
+   mengambang mengikuti panjang angkanya. */
+.lantai .mc-p{font-size:10.5px;justify-self:end}
 
 /* kontribusi IHSG — poin indeks digambar sebagai batang di dalam sel */
 .lantai .kontrib-jd{display:flex;justify-content:space-between;padding:9px 14px 5px}
@@ -1932,6 +1935,83 @@
   box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--amber) 70%, transparent);
   transition: transform .12s ease, box-shadow .12s ease;
 }
+/* Warna & huruf tombol datang dari `.lantai .btn-p` — kerangka ini WAJIB
+   dibungkus .lantai (lihat PenjagaHalaman.tsx), karena di luar itu seluruh
+   token tema kosong dan tautannya jatuh ke biru bawaan peramban. */
+.pgh-cta .pgh-tautan { text-decoration: none; }
+.pgh-cta .btn-p:disabled { opacity: .55; cursor: default; }
+/* ===== Lonceng notifikasi (#137 hasil kurasi + #123 kabar fitur) =========== */
+.lantai .ntf-bungkus { position: relative; display: inline-flex; }
+.lantai .ntf-tombol { position: relative; padding: 5px 8px; }
+.lantai .ntf-tombol.ada { border-color: var(--amber); color: var(--amber); }
+/* Lencana menempel di sudut ikon, bukan di sebelahnya: tombolnya sempit dan
+   angka yang berdiri sendiri akan menggeser lebar tiap kali jumlahnya ganti. */
+.lantai .ntf-lencana {
+  position: absolute; top: -5px; right: -5px; min-width: 15px; height: 15px;
+  padding: 0 3px; border-radius: 999px; background: var(--amber); color: var(--amber-ink);
+  font-family: var(--mono); font-size: 9px; line-height: 15px; text-align: center; font-weight: 700;
+}
+.lantai .ntf-panel {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 40; width: min(340px, 88vw);
+  background: var(--bg1); border: 1px solid var(--line); border-radius: var(--r);
+  box-shadow: 0 20px 50px -22px rgba(0,0,0,.8); overflow: hidden;
+}
+/* Di layar sempit tombol loncengnya tidak duduk di tepi kanan (kepala
+   membungkus), jadi jangkar `right: 0` menyeret panel keluar layar ke KIRI
+   — terukur -75px pada 412px. Di bawah 700px panel dipusatkan ke layar,
+   bukan ke tombolnya. */
+@media (max-width: 700px) {
+  /* `left: 50%` tidak menolong: persennya dihitung dari BUNGKUS, bukan layar,
+     jadi panel tetap ikut posisi tombol. Yang dibutuhkan jangkar ke viewport,
+     dan itu artinya position: fixed. */
+  .lantai .ntf-panel {
+    position: fixed; top: 64px; left: 8px; right: 8px; width: auto; max-width: none;
+  }
+}
+.lantai .ntf-kepala {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 8px 12px; border-bottom: 1px solid var(--line);
+}
+.lantai .ntf-semua {
+  background: none; border: 0; padding: 0; cursor: pointer;
+  color: var(--amber); font-size: 10.5px; font-family: inherit; text-decoration: underline dotted;
+}
+.lantai .ntf-isi { max-height: 60vh; overflow-y: auto; }
+.lantai .ntf-kosong { margin: 0; padding: 18px 12px; font-size: 11.5px; line-height: 1.6; }
+.lantai .ntf-it {
+  display: grid; gap: 2px; padding: 9px 12px; border-bottom: 1px solid var(--line);
+  color: inherit; text-decoration: none; cursor: pointer;
+}
+.lantai .ntf-it:last-child { border-bottom: 0; }
+.lantai .ntf-it:hover { background: var(--bg2); }
+/* Yang belum dibaca ditandai GARIS di tepi, bukan latar penuh: latar berwarna
+   pada beberapa baris sekaligus membuat panel terbaca seperti peringatan. */
+.lantai .ntf-it.belum { border-left: 2px solid var(--amber); padding-left: 10px; }
+.lantai .ntf-judul { font-size: 11.5px; font-weight: 700; }
+.lantai .ntf-pesan { font-size: 11px; line-height: 1.55; color: var(--text2); }
+.lantai .ntf-waktu { font-size: 10px; color: var(--text3); font-family: var(--mono); }
+
+/* Pemilih sumber tab hari (#131b) — IHSG atau satu emiten. Kotak carinya
+   dibatasi lebarnya: di baris yang sama dengan chip, kotak yang menyerap
+   seluruh sisa lebar membuat chip terlihat seperti tempelan. */
+.lantai .sea-hari-sumber { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.lantai .sea-cari-hari { position: relative; flex: 1 1 220px; max-width: 320px; }
+
+/* Pemilih rentang chart IHSG (#124) — chip sempit, satu baris; di lebar sempit
+   membungkus ketimbang menggulung karena lima chip pendek masih muat dua baris
+   tanpa memakan tinggi grafiknya. */
+.lantai .ihsg-rentang { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 6px; }
+.lantai .ihsg-rentang .chip-t { padding: 2px 8px; font-size: 10px; cursor: pointer; }
+.lantai .ihsg-rentang .chip-t.on { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
+
+/* Jarak menuju jenjang — sebangun dengan .sea-jarak di tab Seasonality supaya
+   syarat yang sama tidak tampil dengan dua wajah berbeda. */
+.pgh-jarak {
+  margin: 10px 0 2px; padding: 9px 13px; border-radius: var(--r);
+  background: var(--amber-dim); border-left: 3px solid var(--amber);
+  font-size: 11.5px; line-height: 1.7; color: var(--text2); text-align: left;
+}
+.pgh-jarak b { color: var(--amber); }
 .pgh-cta .btn-p:hover, .pgh-cta .pgh-tautan:hover {
   transform: translateY(-1px);
   box-shadow: 0 12px 26px -10px color-mix(in srgb, var(--amber) 85%, transparent);

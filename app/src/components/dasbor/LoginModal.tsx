@@ -110,7 +110,7 @@ const BENEFIT_LOGIN = [
   ['Radar WDWL', 'Layar pantau emiten yang sedang diawasi, plus arsip pemindaian lama.'],
   ['Peta Investor', 'Pemegang saham di atas 1% dari data KSEI: siapa masuk, siapa keluar.'],
   ['Broker Summary', 'Arus broker harian — inventory, kuadran, nego, dan alur dana.'],
-  ['Bedah Arus Saham', 'PDF satu emiten satu edisi: bacaan orderbook + distribusi harga.'],
+  ['Bedah Arus Saham', 'PDF satu emiten satu edisi: bacaan broker summary + distribusi harga.'],
   ['Forum tanpa batas', 'Tamu dibatasi 5 pesan sehari. Akun aktif menulis sepuasnya.'],
   // Butir ini menyebut yang PALING membedakan PAPAN, jadi ditaruh terakhir —
   // posisi yang paling diingat dalam daftar. Kalimatnya sengaja menyebut
@@ -141,7 +141,7 @@ function PanelBenefit({ kembali }: { kembali: () => void }) {
   return (
     <div className="panel-b login-benefit">
       <p className="login-sub" style={{ marginBottom: 4 }}>
-        Akun PAPAN tidak dijual. Kamu mendapatkannya dengan menyetor orderbook —
+        Akun PAPAN tidak dijual. Kamu mendapatkannya dengan menyetor broker summary —
         makin banyak setoran yang lolos kurasi, makin banyak yang terbuka.
       </p>
 

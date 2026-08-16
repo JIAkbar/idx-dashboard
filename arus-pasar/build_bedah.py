@@ -48,7 +48,7 @@ BSTYLE = f"<style>{palet.blok_css(EDISI_PALET)}</style>" + """
 <style>
   .band{background:var(--brand);border-bottom:1px solid var(--ink)}
   .chartwrap{background:var(--panel)}
-  .bd-judul{font-family:Georgia,Cambria,serif;font-size:30pt;font-weight:700;line-height:1.08;margin-top:10mm}
+  .bd-judul{font-family:var(--disp);font-size:30pt;font-weight:700;line-height:1.08;margin-top:10mm}
   .bd-tk{font-family:var(--mono);font-size:20pt;font-weight:800;margin-top:8mm}
   .bd-tk small{font-family:var(--disp);font-size:9.5pt;font-weight:400;color:var(--mute);margin-left:8px}
   .bd-vonis{font-size:10.5pt;color:var(--ink2);line-height:1.65;text-align:justify;margin-top:6mm;text-wrap:pretty}
@@ -188,7 +188,7 @@ def hal_pcd(bd, r):
       const bw=(W-pad.l-pad.r)/K.length*.82;
       K.forEach(([p,v])=>{{x.fillStyle=p<=C?"{c_untung}":"{c_rugi}";
         x.fillRect(X(p)-bw/2,Y(v),bw,H-pad.b-Y(v));}});
-      x.font="14px Cascadia Code, Consolas, monospace";x.textAlign="center";
+      x.font="14px Red Hat Mono, Consolas, monospace";x.textAlign="center";
       let taken=[];
       const garis=[["p25",P25,"{c_persentil}",1,[4,4]],["p50",P50,"{c_persentil}",1,[4,4]],
                    ["p75",P75,"{c_persentil}",1,[4,4]],["PCD "+PCDV.toLocaleString('id',{{maximumFractionDigits:0}}),PCDV,"{c_pcd}",2,[]],
@@ -397,7 +397,7 @@ def hal_broker_seri(bd, flow, peran=None):
       const bw=(W-pad.l-pad.r)/D.length;
       x.strokeStyle="rgba(18,32,46,.20)";x.lineWidth=1;
       x.beginPath();x.moveTo(pad.l,Y0);x.lineTo(W-pad.r,Y0);x.stroke();
-      x.font="15px Cascadia Code, Consolas, monospace";x.textAlign="center";
+      x.font="15px Red Hat Mono, Consolas, monospace";x.textAlign="center";
       D.forEach(([d,v],i)=>{{
         const cx=pad.l+bw*(i+.5);
         x.fillStyle=v>=0?"rgba(18,135,63,.55)":"rgba(198,54,43,.55)";
@@ -627,6 +627,7 @@ def main():
     tpl = (AKAR / "template.html").read_text(encoding="utf-8")
     html = (tpl.replace("{{JUDUL}}", f"Bedah Arus Saham {bd['edisi']}")
                .replace("/*PALET*/", palet.blok_css(EDISI_PALET))
+               .replace("/*FONT*/", palet.blok_font())
                .replace("<!--PAGES-->", "\n".join(pages))
                .replace("/*OHLC*/{}", json.dumps({bd["ticker"]: ohlc[bd["ticker"]]},
                                                  separators=(",", ":")))

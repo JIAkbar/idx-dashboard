@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { fraksi, keFraksi, batasAra, hariAraMinimal } from './fraksiHarga'
+import { fraksi, keFraksi, batasAra, batasArb, hariAraMinimal } from './fraksiHarga'
 
 describe('fraksi', () => {
   it('memakai batas atas INKLUSIF — titik yang paling sering salah', () => {
@@ -51,6 +51,12 @@ describe('auto rejection', () => {
     expect(batasAra(150)).toBe(35)
     expect(batasAra(1000)).toBe(25)
     expect(batasAra(9000)).toBe(20)
+  })
+
+  it('ARB simetris dengan ARA (sejak 4 Sep 2023), bukan 15% seragam', () => {
+    expect(batasArb(150)).toBe(35)
+    expect(batasArb(1000)).toBe(25)
+    expect(batasArb(9000)).toBe(20)
   })
 
   it('menghitung hari ARA bertingkat, bukan satu batas untuk seluruh jalan', () => {

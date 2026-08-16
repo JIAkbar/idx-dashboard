@@ -23,7 +23,9 @@ Dipakai: build.py ("daily"), build_bedah.py ("single"), build_weekly.py
 blok_css(edisi) utk mengisi placeholder /*PALET*/ di template.html, dan
 blok_tema(edisi) utk window.__TEMA yang dibaca gambarChart().
 """
+import base64
 import json
+from pathlib import Path
 
 # ── Enam token dasar per terbitan (JANGAN UBAH — sudah disetujui user) ──────
 PALET = {
@@ -112,6 +114,63 @@ def blok_css(edisi):
     t = token(edisi)
     baris = ";".join(f"--{k}:{v}" for k, v in t.items())
     return f":root{{{baris}}}"
+
+
+# ── Huruf terbitan (#127) ────────────────────────────────────────────────────
+# Sebelum ini PDF memakai Bahnschrift + Cascadia (font bawaan Windows),
+# sementara web memakai Red Hat — dua wajah untuk satu produk. Berkas fontnya
+# sudah ada di repo (app/public/fonts, SIL OFL 1.1), jadi tak perlu diunduh
+# ulang atau dipasang ke sistem.
+#
+# Fontnya DITANAM sebagai data URI, bukan dirujuk lewat path. Chromium
+# headless membuka keluaran/*.html lewat file://, dan di origin file:// setiap
+# berkas dianggap asal berbeda — permintaan font ke direktori lain diblokir
+# diam-diam, PDF-nya lalu jatuh ke Segoe UI tanpa satu pun pesan galat
+# (terlihat 16 Agu 2026: PDF berisi Georgia + SegoeUI, bukan Red Hat).
+# Menanam ±196 KB font juga membuat HTML terbitan berdiri sendiri — arsip yang
+# dibuka bertahun-tahun kemudian tetap tampil dengan huruf yang benar.
+_FONT = [
+    ("Red Hat Display", 700, "RedHatDisplay-700"),
+    ("Red Hat Display", 800, "RedHatDisplay-800"),
+    ("Red Hat Text", 400, "RedHatText-400"),
+    ("Red Hat Text", 500, "RedHatText-500"),
+    ("Red Hat Text", 700, "RedHatText-700"),
+    ("Red Hat Mono", 400, "RedHatMono-400"),
+    ("Red Hat Mono", 600, "RedHatMono-600"),
+]
+_FONT_DIR = Path(__file__).parent.parent / "app" / "public" / "fonts"
+
+
+def blok_font():
+    """@font-face Red Hat (font ditanam) + variabel --disp/--ui/--mono,
+    TELANJANG (tanpa tag <style>) — sama seperti blok_css(), siap sisip ke
+    placeholder /*FONT*/ yang sudah berada di dalam <style> template."""
+    cek_font()
+    muka = "".join(
+        f"@font-face{{font-family:'{nama}';font-style:normal;font-weight:{berat};"
+        # Tanda kutip WAJIB: base64 memuat '=' dan '/', dan url() tanpa kutip
+        # menolak keduanya — tanpa kutip aturannya diabaikan diam-diam dan PDF
+        # kembali ke huruf cadangan.
+        f'src:url("data:font/woff2;base64,'
+        f"{base64.b64encode((_FONT_DIR / f'{berkas}.woff2').read_bytes()).decode()}\")"
+        f" format('woff2')}}"
+        for nama, berat, berkas in _FONT
+    )
+    return muka + (
+        ":root{"
+        "--disp:'Red Hat Display','Red Hat Text','Segoe UI',system-ui,sans-serif;"
+        "--ui:'Red Hat Text','Segoe UI',system-ui,sans-serif;"
+        "--mono:'Red Hat Mono','Cascadia Mono',Consolas,monospace"
+        "}"
+    )
+
+
+def cek_font():
+    """Berkas font yang hilang = PDF diam-diam jatuh ke huruf cadangan, dan itu
+    baru ketahuan setelah edisi terbit. Dipanggil generator sebelum render."""
+    hilang = [f"{b}.woff2" for _, _, b in _FONT if not (_FONT_DIR / f"{b}.woff2").exists()]
+    if hilang:
+        raise FileNotFoundError(f"font terbitan hilang di {_FONT_DIR}: {', '.join(hilang)}")
 
 
 def blok_tema(edisi):

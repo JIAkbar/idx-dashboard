@@ -51,7 +51,7 @@
    keluar batas kartu — dan tinggi tiap tombol jadi tak sama.
    `flex:1 1 0` menyamakan dasarnya ke nol supaya ruang dibagi RATA, dan
    min-width:0 mengizinkan tombol menyusut di bawah lebar kontennya. */
-.lantai .ks-aksi { display: flex; gap: 6px; margin-top: 2px; align-items: stretch; }
+.lantai .ks-aksi { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; align-items: stretch; }
 .lantai .ks-aksi .dd-btn {
   flex: 1 1 0; min-width: 0; justify-content: center; padding: 6px 6px;
   font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -65,3 +65,13 @@
 .lantai .ks-aksi .dd-btn:disabled { opacity: .45; cursor: default; }
 /* Grid auto-fill(minmax(240px,1fr)) sudah jatuh ke 1 kolom sendiri di layar
    telepon (~380-410px konten) — tidak perlu override media query lagi. */
+
+/* Tombol "masuk edisi" (#138) turun ke barisnya sendiri, dipisah garis: tiga
+   tombol di atasnya menjawab "datanya benar?", yang ini menjawab "masuk edisi
+   hari ini?" — pertanyaan redaksi, bukan kurasi. Dipaksa 100% supaya tidak
+   ikut berdesakan di baris yang sudah penuh. */
+.lantai .ks-aksi .ks-dimuat {
+  flex: 1 0 100%; margin-top: 2px; padding-top: 8px;
+  border-top: 1px solid var(--line); border-radius: 0;
+}
+.lantai .ks-aksi .ks-dimuat:not(:disabled) { color: var(--amber); border-color: var(--line); }

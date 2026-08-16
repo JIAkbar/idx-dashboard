@@ -3,9 +3,11 @@ import { BULAN, ringkasEmiten, vonisUji, type RingkasBulan, type RingkasEmiten, 
 import { muatIndeks, muatIhsg, muatSeri, type BarisIndeks } from '../../lib/seasonalityData'
 import { pesanGalat } from '../../lib/pesanGalat'
 import { SeasonalityHarian } from './SeasonalityHarian'
+import { SeasonalityKomparasi } from './SeasonalityKomparasi'
 import { IkonMenu, IKON_CARI, IKON_SILANG, IKON_PERINGATAN, IKON_KUNCI } from '../../components/dasbor/IkonMenu'
 import { useAksesHalaman } from '../../context/AksesHalamanContext'
-import { daftarJenjang, hitungRingkasanSetoranSaya, type JenjangRow } from '../../lib/jenjang'
+import { useJarakJenjang } from '../../lib/jarakJenjang'
+import { PenunjukJarak } from '../../components/dasbor/PenunjukJarak'
 
 const MAKS = 5
 const BLN3 = BULAN.map((b) => b.slice(0, 3))
@@ -37,36 +39,14 @@ export function Seasonality() {
   // terpisah dari kunci halamannya. Halamannya terbuka untuk Pemula supaya
   // dia melihat apa yang sedang dikejar; tab yang bahannya paling mahal
   // disiapkan itulah yang berjenjang.
-  const { daftar, boleh, alasan } = useAksesHalaman()
+  const { boleh, alasan } = useAksesHalaman()
   const bolehHari = boleh('seasonality-hari')
   const alasanHari = alasan('seasonality-hari')
-  // Jarak menuju tab yang terkunci dihitung dalam satuan yang bisa
-  // dikerjakan orangnya: berapa setoran lagi. "Perlu jenjang Perak" tak
-  // memberi tahu apa pun tentang usaha yang dibutuhkan — dan syarat yang
-  // tak bisa diukur tak akan dikejar siapa pun.
-  const [jarak, setJarak] = useState<{ nama: string; kurangSetoran: number; akurasiKurang: number | null } | null>(null)
-  useEffect(() => {
-    if (bolehHari) return
-    let batal = false
-    void Promise.all([daftarJenjang(), hitungRingkasanSetoranSaya()])
-      .then(([js, s]: [JenjangRow[], { disetujui: number; ditolak: number }]) => {
-        if (batal) return
-        // Tier target dibaca dari tabel Akses, bukan ditulis tetap di sini —
-        // superadmin boleh memindahkannya ke Perunggu atau Emas kapan saja.
-        const tierPerlu = daftar?.find((h) => h.kunci === 'seasonality-hari')?.min_tier ?? 2
-        const target = js.find((j) => j.tier === tierPerlu)
-        if (!target) return
-        const dikurasi = s.disetujui + s.ditolak
-        const pct = dikurasi === 0 ? 100 : Math.round((s.disetujui * 100) / dikurasi)
-        setJarak({
-          nama: target.nama,
-          kurangSetoran: Math.max(0, target.min_disetujui - s.disetujui),
-          akurasiKurang: pct >= (target.min_akurasi ?? 0) ? null : (target.min_akurasi ?? 0) - pct,
-        })
-      })
-      .catch(() => {})
-    return () => { batal = true }
-  }, [bolehHari, daftar])
+  // Jarak menuju tab yang terkunci dihitung dalam satuan yang bisa dikerjakan
+  // orangnya: berapa setoran lagi. Logikanya satu sumber dengan kerangka
+  // halaman terkunci (PenjagaHalaman) lewat `useJarakJenjang` — pernah jadi
+  // dua salinan yang berbeda bunyi.
+  const jarak = useJarakJenjang('seasonality-hari', !bolehHari)
   const kotak = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -132,7 +112,7 @@ export function Seasonality() {
         <span className="sub">
           {tab === 'bulan'
             ? `pola bulanan ${indeks ? indeks.length.toLocaleString('id-ID') : '—'} emiten, diuji lawan kebetulan`
-            : 'pola hari dalam seminggu di IHSG, diuji lawan kebetulan'}
+            : 'pola hari dalam seminggu, diuji lawan kebetulan'}
         </span>
       </div>
 
@@ -168,16 +148,7 @@ export function Seasonality() {
                 menguji polanya lawan 2.000 pengacakan — bahan yang paling mahal disiapkan
                 di halaman ini.
               </p>
-              {jarak && (
-                <p className="sea-jarak">
-                  {jarak.kurangSetoran > 0
-                    ? <><b>{jarak.kurangSetoran} setoran orderbook lagi</b> yang disetujui untuk mencapai {jarak.nama}.</>
-                    : <>Jumlah setoranmu sudah cukup untuk {jarak.nama}.</>}
-                  {jarak.akurasiKurang !== null && (
-                    <> Akurasimu juga perlu naik <b>{jarak.akurasiKurang} poin</b> — keduanya harus terpenuhi bersamaan.</>
-                  )}
-                </p>
-              )}
+              {jarak && <PenunjukJarak jarak={jarak} className="sea-jarak" />}
             </div>
           </div>
         </section>
@@ -279,13 +250,18 @@ export function Seasonality() {
                 </tbody>
               </table>
             </div>
-            <div className="panel-b sea-legenda">
+            <div className="panel-b sea-legenda sea-legenda-matriks">
               <span>Jarang naik</span>
               <span className="skala"><i className="s-d2" /><i className="s-d1" /><i className="s-n" /><i className="s-u1" /><i className="s-u2" /></span>
               <span>Sering naik</span>
               <span className="muted">· <i className="tipis-demo" /> sampel di bawah 5 tahun · angka = peluang tersusut</span>
             </div>
           </section>
+
+          {/* Chart menyusul matriks, bukan menggantikannya: angka pastinya
+              tetap dibaca dari tabel, chart menjawab pertanyaan lain —
+              bulan mana yang polanya bersamaan di beberapa emiten. */}
+          <SeasonalityKomparasi ringkas={ringkas} />
 
           {terpilih && fokus && (
             <LaciBulan kode={fokus.kode} nama={petaNama[fokus.kode] ?? fokus.kode} b={terpilih}

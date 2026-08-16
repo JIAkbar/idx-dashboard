@@ -1,18 +1,14 @@
 /**
  * Satu lilin (candlestick) untuk sehari perdagangan.
  *
- * PAPAN belum memanen harga PEMBUKAAN (backlog #108), jadi badan lilin
- * digambar dari **penutupan kemarin ke penutupan hari ini**, bukan buka-tutup
- * sebenarnya. Untuk indeks selisihnya biasanya tipis — pembukaan hampir selalu
- * rapat ke penutupan sebelumnya — tapi di hari yang membuka dengan gap, badan
- * ini lebih panjang daripada lilin sungguhan.
- *
- * Karena itu labelnya menyebut "penutupan ke penutupan" dan tidak pernah
- * mengaku OHLC penuh. Begitu #108 selesai, cukup ganti `dasar` dengan harga
- * buka — bentuk dan seluruh perhitungan di bawah tidak berubah.
+ * Sejak #108 harga BUKA IHSG dipanen (`ihsg_ohlc_ringkas.json`), jadi `dasar`
+ * normalnya berisi harga buka sungguhan. Pemanggil tetap boleh mengirim
+ * penutupan kemarin sebagai cadangan untuk hari yang belum dipanen — bentuk
+ * dan seluruh perhitungan di bawah tidak peduli mana yang dikirim, tapi
+ * KETERANGAN di sebelah lilin wajib menyebut yang mana (lihat IndeksDunia).
  */
 export function LilinHarian({ dasar, tutup, tinggi, rendah, lebar = 34, tinggiPx = 76, judul }: {
-  /** Penutupan kemarin (sementara berdiri sebagai harga buka). */
+  /** Harga buka; penutupan kemarin sebagai cadangan kalau buka belum ada. */
   dasar: number
   tutup: number
   tinggi: number

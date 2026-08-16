@@ -5,6 +5,7 @@ import {
   daftarSetoran,
   kurasiSetoran,
   mintaRevisiSetoran,
+  setDimuat,
   urlScreenshots,
   type SetoranRow,
   type StatusSetoran,
@@ -28,24 +29,24 @@ function waktuManusiawi(iso: string): string {
   return `${d.getDate()} ${bulan} ${d.getFullYear()}, ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-const LABEL_JENIS: Record<SetoranRow['jenis'], string> = { orderbook: 'Orderbook', chart: 'Chart', bedah: 'Bedah' }
-const LABEL_STATUS: Record<StatusSetoran, string> = { menunggu: 'Menunggu', revisi: 'Perlu revisi', disetujui: 'Disetujui', ditolak: 'Ditolak' }
+const LABEL_JENIS: Record<SetoranRow['jenis'], string> = { orderbook: 'Broker Summary', chart: 'Chart', bedah: 'Bedah' }
+const LABEL_STATUS: Record<StatusSetoran, string> = { menunggu: 'Menunggu', revisi: 'Perlu revisi', disetujui: 'Disetujui', dihapus: 'Dihapus' }
 // 'revisi' pakai kelas 'warn' yang sama dengan 'menunggu' — sama-sama keadaan
-// menunggu tindakan (dari penyetor), bukan kegagalan seperti 'ditolak'.
-const KELAS_STATUS: Record<StatusSetoran, string> = { menunggu: 'warn', revisi: 'warn', disetujui: 'up', ditolak: 'dn' }
+// menunggu tindakan (dari penyetor), bukan akhir seperti 'dihapus'.
+const KELAS_STATUS: Record<StatusSetoran, string> = { menunggu: 'warn', revisi: 'warn', disetujui: 'up', dihapus: 'dn' }
 
 const TAB_STATUS: { id: StatusSetoran | 'semua'; label: string }[] = [
   { id: 'menunggu', label: 'Menunggu' },
   { id: 'revisi', label: 'Perlu revisi' },
   { id: 'disetujui', label: 'Disetujui' },
-  { id: 'ditolak', label: 'Ditolak' },
+  { id: 'dihapus', label: 'Dihapus' },
   { id: 'semua', label: 'Semua' },
 ]
 
 /**
  * Halaman "Kurasi Setoran" (/admin/kurasi, Admin Fase 3) — khusus superadmin:
  * tinjau tiap baris `setoran` (satu berkas = satu baris) per tanggal, setujui
- * atau tolak (massal maupun satu-satu), dan salin daftar ticker yang sudah
+ * revisi, atau hapus (massal maupun satu-satu), dan salin daftar ticker yang sudah
  * disetujui untuk dirakit ke bulletin. Semua aksi lewat `kurasiSetoran` —
  * server (trigger/RLS) yang menegakkan "kolom kurasi cuma bisa diubah
  * superadmin", guard di sini cuma UX (hindari kedip form yang pasti ditolak).
@@ -93,7 +94,7 @@ export function KurasiSetoran() {
   }, [toast])
 
   const ringkasan = useMemo(() => {
-    const r = { menunggu: 0, revisi: 0, disetujui: 0, ditolak: 0 }
+    const r = { menunggu: 0, revisi: 0, disetujui: 0, dihapus: 0 }
     for (const s of setoran ?? []) r[s.status]++
     return r
   }, [setoran])
@@ -134,16 +135,32 @@ export function KurasiSetoran() {
     }
   }
 
-  async function tolak(paths: string[], catatan: string) {
+  async function hapus(paths: string[], catatan: string) {
     tandaiSibuk(paths, true)
     try {
-      await kurasiSetoran(paths, 'ditolak', catatan)
-      setToast({ ok: true, pesan: paths.length === 1 ? '1 setoran ditolak.' : `${paths.length} setoran ditolak.` })
+      await kurasiSetoran(paths, 'dihapus', catatan)
+      setToast({ ok: true, pesan: paths.length === 1 ? '1 setoran dihapus.' : `${paths.length} setoran dihapus.` })
       setPilih(new Set())
       setTolakTarget(null)
       setMuat((m) => m + 1)
     } catch (e) {
-      setToast({ ok: false, pesan: pesanGalat(e, 'Gagal menolak.') })
+      setToast({ ok: false, pesan: pesanGalat(e, 'Gagal menghapus.') })
+    } finally {
+      tandaiSibuk(paths, false)
+    }
+  }
+
+  /** #138 — masukkan/keluarkan dari edisi. Sengaja TIDAK menyentuh status:
+   *  kontributor tetap dapat kreditnya, redaksi tetap bisa memangkas isi. */
+  async function ubahDimuat(paths: string[], dimuat: boolean) {
+    tandaiSibuk(paths, true)
+    try {
+      await setDimuat(paths, dimuat)
+      setToast({ ok: true, pesan: dimuat ? 'Dimasukkan ke edisi.' : 'Dikeluarkan dari edisi — kredit kontributor tidak berubah.' })
+      setPilih(new Set())
+      setMuat((m) => m + 1)
+    } catch (e) {
+      setToast({ ok: false, pesan: pesanGalat(e, 'Gagal mengubah isi edisi.') })
     } finally {
       tandaiSibuk(paths, false)
     }
@@ -174,10 +191,13 @@ export function KurasiSetoran() {
     setLightbox({ items: entri.map((e) => ({ src: urls[e.path], keterangan: e.ket })), index: idx })
   }
 
+  /** Daftar yang benar-benar MASUK EDISI: disetujui DAN dimuat (#138).
+   *  Inilah yang dipakai saat transkripsi & perakitan PDF — bukan seluruh yang
+   *  disetujui, karena sebagian sengaja disimpan di luar edisi hari itu. */
   async function salinDisetujui() {
-    const tickers = [...new Set((setoran ?? []).filter((s) => s.status === 'disetujui').map((s) => s.ticker))].sort()
+    const tickers = [...new Set((setoran ?? []).filter((s) => s.status === 'disetujui' && s.dimuat).map((s) => s.ticker))].sort()
     if (tickers.length === 0) {
-      setToast({ ok: false, pesan: 'Belum ada yang disetujui untuk tanggal ini.' })
+      setToast({ ok: false, pesan: 'Belum ada setoran yang masuk edisi untuk tanggal ini.' })
       return
     }
     try {
@@ -199,10 +219,10 @@ export function KurasiSetoran() {
       <section className="panel">
         <div className="panel-h" style={{ alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
           <span className="lbl">
-            {ringkasan.menunggu} menunggu · {ringkasan.revisi} perlu revisi · {ringkasan.disetujui} disetujui · {ringkasan.ditolak} ditolak
+            {ringkasan.menunggu} menunggu · {ringkasan.revisi} perlu revisi · {ringkasan.disetujui} disetujui · {ringkasan.dihapus} dihapus
           </span>
           <button type="button" className="dd-btn" onClick={salinDisetujui}>
-            <IkonMenu d={IKON_PAPAN_KLIP} size={12} /> Salin daftar disetujui
+            <IkonMenu d={IKON_PAPAN_KLIP} size={12} /> Salin daftar masuk edisi
           </button>
         </div>
         <div className="panel-b">
@@ -243,7 +263,7 @@ export function KurasiSetoran() {
                   <IkonMenu d={IKON_PERINGATAN} size={12} /> Minta revisi terpilih
                 </button>
                 <button type="button" className="dd-btn merah" onClick={() => setTolakTarget([...pilih])}>
-                  <IkonMenu d={IKON_SILANG} size={12} /> Tolak terpilih
+                  <IkonMenu d={IKON_SILANG} size={12} /> Hapus terpilih
                 </button>
               </div>
             </div>
@@ -265,6 +285,9 @@ export function KurasiSetoran() {
                         onChange={() => togglePilih(s.path)}
                       />
                       <span className={`chip ${KELAS_STATUS[s.status]}`}>{LABEL_STATUS[s.status]}</span>
+                      {s.status === 'disetujui' && !s.dimuat && (
+                        <span className="chip" title="Disetujui, tapi sengaja tidak dimuat di edisi ini">Di luar edisi</span>
+                      )}
                     </div>
                     {urls[s.path] ? (
                       <button type="button" className="ks-thumb" title="Klik untuk pratinjau besar" onClick={() => bukaPratinjau(s.path)}>
@@ -280,7 +303,7 @@ export function KurasiSetoran() {
                       <span className="muted" style={{ fontSize: 10.5 }}>{LABEL_JENIS[s.jenis]} · {nama}</span>
                       <span className="muted" style={{ fontSize: 10 }}>{waktuManusiawi(s.dibuat_pada)}</span>
                       <p className="ks-alasan">{s.alasan?.trim() || '(tanpa alasan — superadmin)'}</p>
-                      {(s.status === 'ditolak' || s.status === 'revisi') && s.catatan_kurator && (
+                      {(s.status === 'dihapus' || s.status === 'revisi') && s.catatan_kurator && (
                         <p className="ks-catatan"><IkonMenu d={IKON_PERINGATAN} size={11} /> {s.catatan_kurator}</p>
                       )}
                     </div>
@@ -291,8 +314,17 @@ export function KurasiSetoran() {
                       <button type="button" className="dd-btn" disabled={proses || s.status === 'revisi'} onClick={() => setRevisiTarget([s.path])}>
                         <IkonMenu d={IKON_PERINGATAN} size={12} /> Revisi
                       </button>
-                      <button type="button" className="dd-btn merah" disabled={proses || s.status === 'ditolak'} onClick={() => setTolakTarget([s.path])}>
-                        <IkonMenu d={IKON_SILANG} size={12} /> Tolak
+                      <button type="button" className="dd-btn merah" disabled={proses || s.status === 'dihapus'} onClick={() => setTolakTarget([s.path])}>
+                        <IkonMenu d={IKON_SILANG} size={12} /> Hapus
+                      </button>
+                      {/* Baris keempat, dipisah garis: tiga tombol di atasnya
+                          menjawab "datanya benar?", yang ini menjawab "masuk
+                          edisi hari ini?" — pertanyaan redaksi, bukan kurasi. */}
+                      <button type="button" className="dd-btn ks-dimuat" disabled={proses || s.status !== 'disetujui'}
+                        title={s.status !== 'disetujui' ? 'Hanya setoran disetujui yang bisa masuk edisi' : undefined}
+                        onClick={() => ubahDimuat([s.path], !s.dimuat)}>
+                        <IkonMenu d={s.dimuat ? IKON_CENTANG : IKON_SILANG} size={12} />{' '}
+                        {s.dimuat ? 'Di edisi' : 'Di luar edisi'}
                       </button>
                     </div>
                   </div>
@@ -307,7 +339,7 @@ export function KurasiSetoran() {
         <TolakModal
           jumlah={tolakTarget.length}
           onClose={() => setTolakTarget(null)}
-          onKirim={(catatan) => tolak(tolakTarget, catatan)}
+          onKirim={(catatan) => hapus(tolakTarget, catatan)}
         />
       )}
 
@@ -339,15 +371,15 @@ export function KurasiSetoran() {
   )
 }
 
-/** Modal catatan kurator saat menolak ATAU minta revisi — catatan wajib diisi
+/** Modal catatan kurator saat MENGHAPUS atau minta revisi — catatan wajib diisi
  *  di kedua varian (kontributor berhak tahu alasan/apa yang perlu diperbaiki),
  *  dipakai satuan maupun massal. Diekspor supaya kurasi cepat dari tabel
  *  "Sudah Diunggah" (UnggahHarian.tsx) pakai modal yang SAMA, bukan menulis
  *  ulang logikanya. `varian` cuma mengubah judul/teks — logika & bentuk
  *  form-nya identik, jadi satu modal dipakai ulang alih-alih dua. */
-export function TolakModal({ jumlah, varian = 'tolak', onClose, onKirim }: {
+export function TolakModal({ jumlah, varian = 'hapus', onClose, onKirim }: {
   jumlah: number
-  varian?: 'tolak' | 'revisi'
+  varian?: 'hapus' | 'revisi'
   onClose: () => void
   onKirim: (catatan: string) => void
 }) {
@@ -359,7 +391,7 @@ export function TolakModal({ jumlah, varian = 'tolak', onClose, onKirim }: {
   async function submit(e: FormEvent) {
     e.preventDefault()
     if (!catatan.trim()) {
-      setErr(revisi ? 'Catatan wajib diisi — penyetor perlu tahu apa yang harus diperbaiki.' : 'Catatan wajib diisi — kontributor berhak tahu alasan penolakan.')
+      setErr(revisi ? 'Catatan wajib diisi — penyetor perlu tahu apa yang harus diperbaiki.' : 'Catatan wajib diisi — kontributor berhak tahu kenapa setorannya dihapus.')
       return
     }
     setKirim(true)
@@ -370,7 +402,7 @@ export function TolakModal({ jumlah, varian = 'tolak', onClose, onKirim }: {
 
   const label = revisi
     ? (jumlah === 1 ? 'Minta revisi setoran ini?' : `Minta revisi ${jumlah} setoran?`)
-    : (jumlah === 1 ? 'Tolak setoran ini?' : `Tolak ${jumlah} setoran?`)
+    : (jumlah === 1 ? 'Hapus setoran ini?' : `Hapus ${jumlah} setoran?`)
 
   return (
     <ModalKecil label={label} onClose={() => { if (!kirim) onClose() }}>
@@ -382,12 +414,12 @@ export function TolakModal({ jumlah, varian = 'tolak', onClose, onKirim }: {
             rows={3}
             value={catatan}
             onChange={(e) => setCatatan(e.target.value)}
-            placeholder={revisi ? 'Apa yang perlu diperbaiki — akan terlihat oleh penyetor.' : 'Alasan penolakan — akan terlihat oleh penyetor.'}
+            placeholder={revisi ? 'Apa yang perlu diperbaiki — akan terlihat oleh penyetor.' : 'Kenapa dihapus — akan terlihat oleh penyetor.'}
             style={{ resize: 'vertical', fontFamily: 'inherit' }}
           />
         </div>
         <button type="submit" className={revisi ? 'btn-p' : 'btn-p af-btn-keluar'} disabled={kirim}>
-          {revisi ? (kirim ? 'Mengirim…' : 'Minta revisi') : (kirim ? 'Menolak…' : 'Tolak')}
+          {revisi ? (kirim ? 'Mengirim…' : 'Minta revisi') : (kirim ? 'Menghapus…' : 'Hapus')}
         </button>
         {err && <p className="af-err" style={{ margin: 0 }}>{err}</p>}
       </form>

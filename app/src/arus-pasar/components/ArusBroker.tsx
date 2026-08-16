@@ -71,7 +71,7 @@ export function ArusBroker({ em, ed }: { em: Emiten; ed: Edisi }) {
         </tbody>
       </table>
       <div className="brksrc">
-        Sumber: orderbook Stockbit, transkripsi manual terverifikasi. Peran broker: RITEL &amp; SCALP
+        Sumber: broker summary Stockbit, transkripsi manual terverifikasi. Peran broker: RITEL &amp; SCALP
         mengubah tafsir angka, bukan sekadar label.
       </div>
     </aside>

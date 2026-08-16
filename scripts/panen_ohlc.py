@@ -79,8 +79,11 @@ def rapi(x):
     return int(f) if f == int(f) else round(f, 2)
 
 
-def ambil(kode: str, p1: int | None, p2: int | None, rentang: str | None) -> dict:
-    dasar = f"https://query1.finance.yahoo.com/v8/finance/chart/{kode}.JK?interval=1d"
+def ambil(simbol: str, p1: int | None, p2: int | None, rentang: str | None) -> dict:
+    """`simbol` = simbol Yahoo LENGKAP ("BBCA.JK", "%5EJKSE") — akhiran `.JK`
+    sengaja tidak ditempel di sini supaya indeks (^JKSE, dipanen
+    `panen_ihsg.py`) bisa memakai mesin permintaan yang sama."""
+    dasar = f"https://query1.finance.yahoo.com/v8/finance/chart/{simbol}?interval=1d"
     url = f"{dasar}&period1={p1}&period2={p2}" if rentang is None else f"{dasar}&range={rentang}"
     req = urllib.request.Request(url, headers=KEPALA)
     galat = None
@@ -186,15 +189,15 @@ def main() -> None:
                     # Karena itu selalu period1/period2, tak pernah range=max.
                     p2 = int(datetime.now(timezone.utc).timestamp())
                     p1 = int((datetime.now(timezone.utc) - timedelta(days=365 * arg.tahun + 10)).timestamp())
-                    data = ambil(kode, p1, p2, None)
+                    data = ambil(f"{kode}.JK", p1, p2, None)
                 else:
                     p2 = int(datetime.now(timezone.utc).timestamp())
                     p1 = int(datetime(1996, 1, 1, tzinfo=timezone.utc).timestamp())
-                    data = ambil(kode, p1, p2, None)
+                    data = ambil(f"{kode}.JK", p1, p2, None)
             else:
                 # Harian: 5 hari terakhir sudah lebih dari cukup untuk menambal
                 # libur panjang, dan muatannya sepersekian riwayat penuh.
-                data = ambil(kode, None, None, "5d")
+                data = ambil(f"{kode}.JK", None, None, "5d")
         except Ditolak as e:
             tolak_beruntun += 1
             print(f"  ! {kode}: ditolak ({e})")

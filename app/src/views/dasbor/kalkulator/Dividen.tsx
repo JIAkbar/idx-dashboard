@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { fN } from '../../../lib/dasbor/format'
 import { PosisiBar } from './PosisiBar'
 import { IkonMenu, IKON_UANG_KERTAS, IKON_GRAFIK_BATANG } from '../../../components/dasbor/IkonMenu'
+import { batasArb } from '../../../lib/fraksiHarga'
 
 interface DividenProps {
   feeBeli: number
@@ -49,7 +50,9 @@ export function Dividen({ feeBeli, setFeeBeli }: DividenProps) {
       { label: 'Market @ Break-even', price: bep },
       { label: 'Saham turun 5%', price: buyN * 0.95 },
       { label: 'Saham turun 10%', price: buyN * 0.9 },
-      { label: 'ARB (turun 15%)', price: buyN * 0.85 },
+      // ARB simetris dengan ARA sejak 4 Sep 2023 — persennya ikut jenjang
+      // harga, bukan 15% seragam (lihat lib/fraksiHarga.ts, #128).
+      { label: `ARB (turun ${batasArb(buyN)}%)`, price: buyN * (1 - batasArb(buyN) / 100) },
       { label: 'Turun 30%', price: buyN * 0.7 },
     ].map((sc) => {
       const mktVal = sc.price * shares

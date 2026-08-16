@@ -210,7 +210,12 @@ export function TopStocks() {
               <Link to={`/chart?sym=${m.c}`} className="tick">{m.c}</Link>
               <div className="bar-tr"><div className="bar-fl" style={{ width: `${(m.v / mx * 100).toFixed(0)}%` }} /></div>
               <span className="mc-v num">{m.v}T</span>
-              <span className="mc-p num">{m.p}%</span>
+              {/* Badge, bukan angka telanjang (#107): kolom ini bersebelahan
+                  dengan nilai kapitalisasi yang juga angka, dan dua angka
+                  berdampingan tanpa pembeda bentuk terbaca sebagai satu deret.
+                  Warnanya juga menjawab "naik atau turun?" tanpa harus membaca
+                  tanda minusnya. */}
+              <span className={`ytd-bdg mc-p ${m.p >= 0 ? 'u' : 'd'}`}>{fp(m.p)}</span>
             </div>
           ))}
         </div>

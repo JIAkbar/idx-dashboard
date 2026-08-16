@@ -57,6 +57,7 @@ export const IKON_GIR = 'M12 8a4 4 0 100 8 4 4 0 000-8zM12 2v3M12 19v3M4.2 4.2l2
 export const IKON_API = 'M12 2.5c1.6 2.6 4 5.3 4 9a4 4 0 01-8 0c0-1.4.5-2.4 1.2-3.3-.1 1.2.4 1.8.9 2 .3-1.9-.5-3-.1-5.3.7.9 1.3 1.6 2 2.6z' // ganti 🔥
 export const IKON_PENGGARIS = 'M3 8h18v8H3zM7 8v3M11 8v3M15 8v3M19 8v3' // ganti 📐
 export const IKON_KALENDER = 'M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1zM4 9.5h16M8 3v4M16 3v4' // field tanggal (DatePicker)
+export const IKON_LONCENG = 'M12 3a5 5 0 00-5 5c0 4-1.5 5.5-2 6h14c-.5-.5-2-2-2-6a5 5 0 00-5-5zM10 18a2 2 0 004 0' // notifikasi (#137/#123)
 export const IKON_TONG = 'M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2M6 7l1 13a1 1 0 001 1h10a1 1 0 001-1l1-13M10 11v6M14 11v6' // hapus unggahan
 export const IKON_GAMBAR = 'M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1zM3.5 15.5L8.5 10l4 4 3-3 5 5M9 9h.01' // pilih berkas gambar
 export const IKON_TAMBAH = 'M12 5v14M5 12h14' // tombol tambah (mis. "+ Tambah Emiten")

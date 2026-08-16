@@ -11,9 +11,10 @@
  * Batasnya EKSKLUSIF di atas: harga tepat 2.000 masih fraksi Rp 5, mulai
  * 2.001 baru Rp 10. Titik batas inilah yang paling sering salah dipakai.
  *
- * Sumber: aturan fraksi harga BEI (lima jenjang) dan ketentuan auto rejection.
- * ARB seragam 15% berlaku sejak 5 Juni 2023 — sebelumnya 7% dan bertingkat.
- * Kalau BEI mengubahnya lagi, HANYA berkas ini yang perlu disunting.
+ * Sumber: aturan fraksi harga BEI (lima jenjang) dan ketentuan auto rejection
+ * Peraturan II-A (Kep-00055/BEI/03-2023). ARB SIMETRIS dengan ARA sejak
+ * 4 September 2023. Kalau BEI mengubahnya lagi, HANYA berkas ini yang perlu
+ * disunting.
  */
 
 export interface Jenjang {
@@ -72,8 +73,18 @@ export function batasAra(hargaAcuan: number): number {
   return 20
 }
 
-/** ARB seragam 15% untuk semua rentang, berlaku sejak 5 Juni 2023. */
-export const BATAS_ARB = 15
+/**
+ * Batas auto rejection BAWAH (persen) — SAMA dengan ARA sejak aturan simetris.
+ *
+ * Riwayatnya: ARB dipangkas jadi 7% pada masa pandemi, dinaikkan ke 15%
+ * seragam 5 Juni 2023 (tahap I), lalu dikembalikan SIMETRIS dengan ARA pada
+ * **4 September 2023** (tahap II) — dasarnya Kep-00055/BEI/03-2023 tentang
+ * Peraturan II-A. Angka 15% yang sempat tertulis di sini adalah tahap I yang
+ * sudah tidak berlaku; diperbaiki 16 Agu 2026 (#128).
+ */
+export function batasArb(hargaAcuan: number): number {
+  return batasAra(hargaAcuan)
+}
 
 /**
  * Berapa hari ARA berturut-turut minimal untuk naik `persen` dari harga acuan.

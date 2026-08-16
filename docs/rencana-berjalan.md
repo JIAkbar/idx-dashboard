@@ -37,6 +37,44 @@ Terakhir diperbarui: 16 Agustus 2026 (dini hari — setelah sesi admin, jenjang 
 | — | Tanggal setoran mundur ke hari bursa (`lib/tanggalBursa.ts`, 4 salinan disatukan) | 16 Agu 2026 |
 | 141 | Setoran ditolak berhenti dihukum tiga kali (kuota, kunci emiten, hapus) | 16 Agu 2026 |
 
+## 📋 Status borongan 16 Agu 2026 → `docs/ceklist-backlog.md`
+
+Sesi borongan menutup **17 item**: #139, #144, #109b, #143, #108, #124, #128,
+#127, #122, #132, #131b, #99, #107 (sebagian), lalu — setelah izin migrasi DB
+dibuka — #142, #137, #123, #138.
+
+Yang tersisa tinggal tiga, semuanya menunggu keputusan atau data:
+
+- **#145** — arti "bar tembus" di dasbor belum punya rujukan di kode.
+- **#146** — definisi "divergensi tiga lapis" (#130) menentukan seluruh
+  perhitungan, jadi harus ditetapkan lebih dulu.
+- **#129** — bandarmologi tetap terhalang sumber: broker per emiten tak ada di
+  endpoint publik IDX.
+
+Empat migrasi yang diterapkan: `setoran_status_dihapus_gantikan_ditolak`,
+`buat_tabel_notifikasi`, `notifikasi_policy_rls`, `trigger_notifikasi_kurasi`,
+`kunci_fungsi_trigger_kurasi`, `setoran_kolom_dimuat`.
+
+## 🆕 Antrean baru — dibuka 16 Agu 2026
+
+Tiga yang menunggu KEPUTUSAN (tak bisa ditebak tanpa salah sasaran):
+
+| # | Tugas | Yang perlu diputuskan |
+|---|---|---|
+| 145 | "Bar tembus" di dasbor (sisa #107) | Istilahnya tak punya rujukan di kode. (a) bar kapitalisasi yang boleh melewati kotak untuk nilai ekstrem, atau (b) bar dua arah dari sumbu nol seperti `BatangPeringkat`? Keduanya mengubah arti visual yang berbeda |
+| 146 | Definisi "divergensi tiga lapis" (#130) | Tiga lapis mana: harga vs volume, volume vs frekuensi, asing vs domestik? Urutan lapisnya menentukan seluruh perhitungan dan tampilannya |
+| 129 | Chart bandarmologi | Bukan keputusan desain — **sumber datanya belum ada**. Broker per emiten tak tersedia di endpoint publik IDX; butuh sumber lain sebelum bisa dimulai |
+
+Tiga yang operasional:
+
+| # | Tugas | Keterangan |
+|---|---|---|
+| 148 | Daftarkan `JALANKAN_OTOMATIS.bat` ke Task Scheduler | Langkah panen harga (IHSG + OHLC emiten) sudah disisipkan sebagai langkah 5/7, tapi **berkas .bat masuk `.gitignore`** — perubahannya cuma ada di mesin ini. Sampai terdaftar, panen harian tetap manual |
+| 149 | Buktikan trigger notifikasi kurasi jalan | Tabel/RLS/trigger/lonceng sudah terpasang, tapi sengaja TIDAK dipicu di sesi ini: memicunya berarti mengirim kabar ke kontributor sungguhan. Cek lonceng setelah kurasi berikutnya; kalau kosong, periksa trigger `setoran_kabari_kurasi` |
+| 150 | Perluas cakupan laporan keuangan | Panen menghasilkan 646 dari 963 emiten. Sisanya kemungkinan tak punya laporan di Yahoo — perlu dipastikan mana yang memang kosong dan mana yang gagal ambil |
+
+Tabel di bawah ini tetap dipertahankan sebagai rujukan ongkos-vs-hasil.
+
 ## ⏳ Antrean kerja — diurutkan dari yang paling murah
 
 Urutannya bukan menurut siapa yang minta, tapi menurut **ongkos dibanding
@@ -134,7 +172,7 @@ Baris terakhir yang paling penting dipahami: indikator baku **bukan** alasan
 membangun ini. Semuanya sudah ada di mana-mana dan masing-masing cuma
 belasan baris. Yang membenarkan ongkosnya adalah lima baris di atasnya.
 
-### ⚠️ Keputusan yang MENUNGGU Johan
+### ✅ Keputusan: opsi A (Johan, 16 Agu 2026)
 
 "Kode sumber kita sendiri" bisa berarti dua hal yang ongkosnya jauh berbeda:
 
@@ -149,7 +187,7 @@ Termasuk menulis ulang sumbu waktu yang melompati hari libur, zoom-pan yang
 mulus di ponsel, penjajaran multi-panel, dan crosshair. Ongkos: besar, dan
 sebagian besarnya habis di pekerjaan yang tak terlihat sebagai fitur.
 
-Rekomendasi: **A**. Yang Johan sebut — "bisa improvisasi lebih detail" —
+**Johan memilih A (16 Agu 2026).** Yang Johan sebut — "bisa improvisasi lebih detail" —
 seluruhnya ada di lapisan indikator dan overlay, dan lapisan itu 100% milik
 kita di opsi A. Opsi B menambah kendali atas bagian yang justru tak ada
 bedanya bagi pembaca. Kalau nanti penggambarnya terasa membatasi, menukar
@@ -204,6 +242,8 @@ Lihat #143 untuk pilihan jalurnya.
 | Berkas terkurasi | Tak bisa dihapus/diganti penyetornya begitu status keluar dari `menunggu`; superadmin tetap bebas |
 | Identitas penyetor | Tak terlihat antar-kontributor. Yang ditampilkan cuma "Sudah disetor" — cukup untuk mencegah kerja ganda |
 | Kredit & jenjang | Ikut setoran **disetujui**, BUKAN yang dimuat di edisi. Kerjanya sudah dilakukan; dimuat atau tidak itu keputusan redaksi, bukan ukuran kerjanya |
+| Notifikasi | Satu tabel `notifikasi` untuk hasil kurasi DAN kabar fitur — bentuknya sama (pesan pendek, status dibaca, satu lonceng). `untuk=NULL` berarti pengumuman untuk semua, bukan satu baris per orang |
+| Isi edisi | Kolom `setoran.dimuat` (default TRUE), terpisah dari status kurasi. Perakitan memangkas lewat `build.py --kecuali=TICKER,…` — bukan membaca DB, supaya jalur rakit tetap tanpa kredensial |
 | Isi PDF | Ikut filter superadmin (`dimuat`), terpisah dari kurasi. Menolak setoran yang benar demi memangkas isi edisi bukan lagi satu-satunya cara |
 
 ## Aturan yang berlaku

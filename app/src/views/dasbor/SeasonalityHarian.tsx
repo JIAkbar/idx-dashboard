@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { HARI, ringkasHarian, vonisUji, type RingkasHarian } from '../../lib/seasonality'
 import { pesanGalat } from '../../lib/pesanGalat'
-import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_PERINGATAN, IKON_CARI, IKON_SILANG } from '../../components/dasbor/IkonMenu'
+import { muatIndeks, type BarisIndeks } from '../../lib/seasonalityData'
 
 /** Tiap pilihan menghitung batas bawahnya sendiri saat diklik — bukan disimpan
  *  sebagai tanggal tetap, supaya MTD/YTD tetap benar kalau halaman dibiarkan
@@ -46,9 +47,10 @@ const BLN_PENDEK = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep
 /**
  * Pola hari dalam seminggu — tab kedua Seasonality.
  *
- * Untuk sekarang IHSG saja: datanya sudah ada (ihsg_harian.json, 8.849 hari
- * sejak 1990) sementara harga harian per emiten baru akan dipanen. Memisah
- * keduanya membuat bagian yang siap tidak ikut tertahan.
+ * Sumbernya IHSG (ihsg_harian.json, 8.849 hari sejak 1990) ATAU satu emiten
+ * (#131b — data OHLC 5 tahun per emiten dipanen di #122). Perhitungannya sama
+ * persis untuk keduanya; yang berbeda cuma bentuk berkasnya, dan itu
+ * diseragamkan saat dimuat.
  *
  * Grafik balapannya meniru bentuk yang beredar untuk pasar AS, tapi dengan
  * satu tambahan yang justru menentukan: hasilnya diuji lawan pengacakan
@@ -59,29 +61,91 @@ export function SeasonalityHarian() {
   const [tutup, setTutup] = useState<Record<string, number> | null>(null)
   const [galat, setGalat] = useState<string | null>(null)
   const [pilih, setPilih] = useState('Semua')
+  // Sumbernya boleh IHSG atau satu emiten (#131b). Berkas OHLC per emiten baru
+  // ada setelah #122 dipanen; sebelum itu tab ini memang cuma IHSG.
+  const [kode, setKode] = useState('IHSG')
+  const [cari, setCari] = useState('')
+  const [daftar, setDaftar] = useState<BarisIndeks[] | null>(null)
+
+  useEffect(() => { muatIndeks().then(setDaftar).catch(() => {}) }, [])
 
   useEffect(() => {
-    fetch('/data-idx/json/ihsg_harian.json')
-      .then((r) => r.json())
-      .then((d: { tutup: Record<string, number> }) => setTutup(d.tutup))
-      .catch((e: unknown) => setGalat(pesanGalat(e, 'Gagal memuat data IHSG harian.')))
-  }, [])
+    let batal = false
+    setTutup(null)
+    setGalat(null)
+    const alamat = kode === 'IHSG'
+      ? '/data-idx/json/ihsg_harian.json'
+      : `/data-idx/json/ohlc/${kode}.json`
+    fetch(alamat)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      // Dua bentuk berkas: IHSG menyimpan peta {tanggal: tutup}, emiten
+      // menyimpan baris OHLCV. Yang dibutuhkan ringkasHarian() cuma
+      // penutupannya, jadi baris emiten diperas jadi peta yang sama.
+      .then((d: { tutup?: Record<string, number>; d?: Array<[string, number, number, number, number, number]> }) => {
+        if (batal) return
+        setTutup(d.tutup ?? Object.fromEntries((d.d ?? []).map((b) => [b[0], b[4]])))
+      })
+      .catch((e: unknown) => {
+        if (!batal) setGalat(pesanGalat(e, `Gagal memuat data harian ${kode}.`))
+      })
+    return () => { batal = true }
+  }, [kode])
+
+  const saran = useMemo(() => {
+    const q = cari.trim().toUpperCase()
+    if (!daftar || q.length < 1) return []
+    return daftar.filter((b) => b.k.startsWith(q) || b.n.toUpperCase().includes(q)).slice(0, 8)
+  }, [daftar, cari])
 
   const sejak = (RENTANG.find(([n]) => n === pilih)?.[1] ?? (() => ''))()
 
   const r: RingkasHarian | null = useMemo(
-    () => (tutup ? ringkasHarian('IHSG', tutup, sejak) : null),
-    [tutup, sejak],
+    () => (tutup ? ringkasHarian(kode, tutup, sejak) : null),
+    [tutup, sejak, kode],
   )
 
-  if (galat) return <div className="panel panel-b"><p className="muted">{galat}</p></div>
-  if (!tutup) return <div className="fd-empty"><p>Memuat data IHSG…</p></div>
+  const pemilih = (
+    <div className="panel">
+      <div className="panel-b sea-hari-sumber">
+        <span className="lbl">Sumber</span>
+        <button type="button" className={'bchip bchip-klik' + (kode === 'IHSG' ? ' on' : '')}
+          onClick={() => { setKode('IHSG'); setCari('') }}>IHSG</button>
+        {kode !== 'IHSG' && (
+          <button type="button" className="sea-chip" onClick={() => { setKode('IHSG'); setCari('') }} title={`Kembali ke IHSG`}>
+            {kode} <IkonMenu d={IKON_SILANG} size={9} />
+          </button>
+        )}
+        <div className="sea-cari sea-cari-hari">
+          <IkonMenu d={IKON_CARI} size={14} />
+          <input className="inp" value={cari} placeholder="…atau satu emiten"
+            onChange={(e) => setCari(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && saran[0]) { setKode(saran[0].k); setCari('') } }} />
+          {saran.length > 0 && (
+            <ul className="sea-saran" role="listbox">
+              {saran.map((b) => (
+                <li key={b.k}>
+                  <button type="button" className="sea-saran-it" onClick={() => { setKode(b.k); setCari('') }}>
+                    <span className="kd">{b.k}</span>
+                    <span className="nm">{b.n}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+
+  if (galat) return <>{pemilih}<div className="panel panel-b"><p className="muted">{galat}</p></div></>
+  if (!tutup) return <>{pemilih}<div className="fd-empty"><p>Memuat data harian {kode}…</p></div></>
 
   const v = r ? vonisUji(r.uji) : null
   const urut = r ? [...r.perHari].sort((a, b) => b.kumulatif - a.kumulatif) : []
 
   return (
     <>
+      {pemilih}
       <section className="panel">
         <div className="panel-b sea-hari-kepala">
           <div className="sea-tahun">
@@ -93,8 +157,8 @@ export function SeasonalityHarian() {
           </div>
           <span className="v-note">
             {r
-              ? `IHSG · ${r.mulai} → ${r.akhir} · ${r.totalObservasi.toLocaleString('id-ID')} hari bursa`
-              : 'IHSG · rentang ini belum cukup panjang'}
+              ? `${kode} · ${r.mulai} → ${r.akhir} · ${r.totalObservasi.toLocaleString('id-ID')} hari bursa`
+              : `${kode} · rentang ini belum cukup panjang`}
           </span>
         </div>
       </section>

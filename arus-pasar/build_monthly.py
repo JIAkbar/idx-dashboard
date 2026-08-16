@@ -95,7 +95,7 @@ table.sc th{font-size:6.1pt;color:var(--mute);text-transform:uppercase;letter-sp
   text-align:left;padding:0 2mm 2mm 0;border-bottom:1px solid var(--hair)}
 table.sc td{padding:2.4mm 2mm 2.4mm 0;border-bottom:1px solid var(--hair);vertical-align:top}
 table.sc .tk{font-weight:800;font-size:9.5pt}
-table.sc .prog-cell{font-family:Consolas,monospace;font-size:7.2pt;white-space:nowrap}
+table.sc .prog-cell{font-family:var(--mono);font-size:7.2pt;white-space:nowrap}
 .vd{display:inline-block;font-size:6.4pt;font-weight:800;letter-spacing:.08em;
   padding:.9mm 1.8mm;border:1px solid currentColor;white-space:nowrap}
 .vd-ok{color:var(--bull)}.vd-bad{color:var(--bear)}.vd-run{color:var(--side)}.vd-nd{color:var(--mute)}
@@ -124,11 +124,11 @@ def halaman_sampul_bulanan(ed, picks_urut, jml, total_muncul):
     <div style="border-bottom:1px solid color-mix(in srgb, var(--ink) 35%, transparent);padding-bottom:6mm">
       <div style="font-size:8pt;letter-spacing:.3em;text-transform:uppercase;color:color-mix(in srgb, var(--ink) 70%, transparent)">
         Scorecard &amp; Rekap — Edisi Bulanan</div>
-      <div style="font-family:Georgia,Cambria,serif;font-size:46pt;font-weight:700;line-height:1.05;margin-top:4mm">
+      <div style="font-family:var(--disp);font-size:46pt;font-weight:700;line-height:1.05;margin-top:4mm">
         ARUS PASAR</div>
     </div>
     <div style="margin-top:8mm;font-size:13pt">{ed["tanggal_id"]}</div>
-    <div style="font-family:Consolas,monospace;font-size:9pt;color:color-mix(in srgb, var(--ink) 75%, transparent);margin-top:1.5mm">
+    <div style="font-family:var(--mono);font-size:9pt;color:color-mix(in srgb, var(--ink) 75%, transparent);margin-top:1.5mm">
       {ed["edisi"]} · {n} pick unik · {total_muncul} kemunculan harian</div>
     <div style="margin-top:10mm;display:flex;gap:6mm;font-variant-numeric:tabular-nums">
       <div style="background:color-mix(in srgb, var(--ink) 8%, transparent);padding:4mm 5mm;flex:1">
@@ -397,6 +397,7 @@ def main():
     tpl = (AKAR / "template.html").read_text(encoding="utf-8")
     html = (tpl.replace("{{JUDUL}}", f"Arus Pasar Bulanan {kode}")
                .replace("/*PALET*/", palet.blok_css(EDISI_PALET))
+               .replace("/*FONT*/", palet.blok_font())
                .replace("<!--PAGES-->", "\n".join(pages)))
     dir_keluar.mkdir(exist_ok=True)
     keluar = dir_keluar / f"{kode}.html"

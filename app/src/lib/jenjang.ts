@@ -34,7 +34,7 @@ export async function hitungRingkasanSetoranSaya(): Promise<{ disetujui: number;
   if (!user) return { disetujui: 0, ditolak: 0 }
   const [disetujui, ditolak] = await Promise.all([
     supabase.from('setoran').select('*', { count: 'exact', head: true }).eq('penyetor', user.id).eq('status', 'disetujui'),
-    supabase.from('setoran').select('*', { count: 'exact', head: true }).eq('penyetor', user.id).eq('status', 'ditolak'),
+    supabase.from('setoran').select('*', { count: 'exact', head: true }).eq('penyetor', user.id).eq('status', 'dihapus'),
   ])
   if (disetujui.error) throw disetujui.error
   if (ditolak.error) throw ditolak.error

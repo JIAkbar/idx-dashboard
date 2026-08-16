@@ -42,7 +42,7 @@ export async function simpanEdisi(
 
 /** Status kurasi & jenis baris tabel `setoran` (backend Fase 3, sudah jadi —
  *  lihat trigger & policy storage yang menegakkan aturan ini di server). */
-export type StatusSetoran = 'menunggu' | 'revisi' | 'disetujui' | 'ditolak'
+export type StatusSetoran = 'menunggu' | 'revisi' | 'disetujui' | 'dihapus'
 export type JenisSetoran = 'orderbook' | 'chart' | 'bedah'
 
 /** Satu baris `setoran`, dengan embed profil penyetor (email/alias) — dasar
@@ -60,6 +60,9 @@ export interface SetoranRow {
   kurator: string | null
   dikurasi_pada: string | null
   dibuat_pada: string
+  /** #138 — ikut dirakit ke PDF edisi? Keputusan REDAKSI, bukan kurasi.
+   *  Kredit & jenjang kontributor tetap ikut `status`, bukan kolom ini. */
+  dimuat: boolean
   profil: { email: string; alias: string | null } | null
 }
 
@@ -133,10 +136,14 @@ export async function ubahAlasanSetoran(path: string, alasan: string): Promise<v
   if (error) throw error
 }
 
-/** Kurasi massal (superadmin) — setujui/tolak sekumpulan path sekaligus.
+/** Kurasi massal (superadmin) — setujui/hapus sekumpulan path sekaligus.
  *  Server menolak kolom kurasi utk non-superadmin; validasi "catatan wajib
- *  saat menolak" ada di pemanggil (UI), bukan di sini. */
-export async function kurasiSetoran(paths: string[], status: 'disetujui' | 'ditolak', catatanKurator?: string): Promise<void> {
+ *  saat menghapus" ada di pemanggil (UI), bukan di sini.
+ *
+ *  Status 'ditolak' DIBUANG di #142: dia tak menjawab apa pun — berkasnya
+ *  tinggal, penyetor tak bisa memperbaiki, akurasinya turun. Yang tersisa tiga
+ *  aksi dengan tiga makna jelas: setujui, revisi, hapus. */
+export async function kurasiSetoran(paths: string[], status: 'disetujui' | 'dihapus', catatanKurator?: string): Promise<void> {
   if (paths.length === 0) return
   const { data: { user } } = await supabase.auth.getUser()
   const { error } = await supabase
@@ -148,6 +155,16 @@ export async function kurasiSetoran(paths: string[], status: 'disetujui' | 'dito
       dikurasi_pada: new Date().toISOString(),
     })
     .in('path', paths)
+  if (error) throw error
+}
+
+/** #138 — masukkan/keluarkan setoran dari edisi hari itu. Terpisah dari
+ *  `kurasiSetoran`: menolak data yang benar demi memangkas isi edisi adalah
+ *  hukuman untuk kerja yang tak bersalah, dan itu justru yang dihindari kolom
+ *  `dimuat`. */
+export async function setDimuat(paths: string[], dimuat: boolean): Promise<void> {
+  if (paths.length === 0) return
+  const { error } = await supabase.from('setoran').update({ dimuat }).in('path', paths)
   if (error) throw error
 }
 

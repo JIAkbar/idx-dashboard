@@ -91,7 +91,7 @@ export function PanduanScreenshot({ superadmin, defaultBuka }: { superadmin: boo
   return (
     <section className="panel af-panduan">
       <button type="button" className="af-panduan-h" onClick={() => setBuka((v) => !v)} aria-expanded={buka}>
-        <span className="lbl"><IkonMenu d={IKON_PERLUAS} size={14} /> Cara screenshot orderbook</span>
+        <span className="lbl"><IkonMenu d={IKON_PERLUAS} size={14} /> Cara screenshot broker summary</span>
         <span className="af-panduan-chevron" aria-hidden="true">{buka ? '▲' : '▼'}</span>
       </button>
       {buka && (
@@ -111,7 +111,7 @@ export function PanduanScreenshot({ superadmin, defaultBuka }: { superadmin: boo
                 terbaca seperti syarat. Yang dibutuhkan transkripsi cuma
                 angkanya — aplikasi mana pun boleh, asal isinya lengkap. */}
             <li>
-              <b>Aplikasi bebas.</b> Orderbook dari sekuritas mana pun diterima — Stockbit, IPOT,
+              <b>Aplikasi bebas.</b> Broker summary dari sekuritas mana pun diterima — Stockbit, IPOT,
               Mirae, Ajaib, BNI Bions, dan lainnya. Contoh di bawah kebetulan memakai Stockbit;
               yang dinilai isinya, bukan aplikasinya.
             </li>
@@ -236,7 +236,7 @@ function FormTambahContoh({ urutanAwal, onClose, onSukses }: { urutanAwal: numbe
   }
 
   return (
-    <ModalKecil label="Tambah contoh orderbook" onClose={() => { if (!kirim) onClose() }}>
+    <ModalKecil label="Tambah contoh broker summary" onClose={() => { if (!kirim) onClose() }}>
       <form onSubmit={submit} style={{ display: 'grid', gap: 12 }}>
         <div className="field">
           <span className="lbl">Gambar</span>
@@ -244,7 +244,7 @@ function FormTambahContoh({ urutanAwal, onClose, onSukses }: { urutanAwal: numbe
         </div>
         <div className="field">
           <span className="lbl">Judul (opsional)</span>
-          <input className="inp" type="text" value={judul} onChange={(e) => setJudul(e.target.value)} placeholder="mis. Orderbook layar penuh — benar" />
+          <input className="inp" type="text" value={judul} onChange={(e) => setJudul(e.target.value)} placeholder="mis. Broker summary layar penuh — benar" />
         </div>
         <div className="field">
           <span className="lbl">Keterangan (opsional)</span>

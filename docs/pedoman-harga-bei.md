@@ -27,14 +27,17 @@ baru Rp 10. Titik batas inilah yang paling sering salah dipakai.
 
 ## Auto rejection
 
-| Harga acuan | ARA |
-|---|---|
-| ≤ Rp 200 | 35% |
-| Rp 200 – 5.000 | 25% |
-| > Rp 5.000 | 20% |
+| Harga acuan | ARA | ARB |
+|---|---|---|
+| ≤ Rp 200 | 35% | 35% |
+| Rp 200 – 5.000 | 25% | 25% |
+| > Rp 5.000 | 20% | 20% |
 
-**ARB seragam 15%** untuk semua rentang, berlaku sejak **5 Juni 2023**
-(sebelumnya 7% dan bertingkat).
+**ARB SIMETRIS dengan ARA sejak 4 September 2023** (tahap II normalisasi,
+dasar Kep-00055/BEI/03-2023 tentang Peraturan II-A). Riwayatnya: 7% dan
+bertingkat pada masa pandemi, 15% seragam mulai 5 Juni 2023 (tahap I), lalu
+simetris penuh. Angka 15% yang sempat dipakai PAPAN adalah tahap I yang sudah
+kedaluwarsa — diperbaiki 16 Agustus 2026 (#128).
 
 ## Cara pakai
 
