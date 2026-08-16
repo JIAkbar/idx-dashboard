@@ -1,10 +1,16 @@
 """Jalankan: python scripts/test_panen_ipot_arsip.py — nol framework, sesuai konvensi repo.
 
-Mengunci bug yang sempat kejadian: panen ulang (resume) berhenti terlalu dini
-karena halaman pertama isinya semua sudah ada di arsip lama (dedup), padahal
-tanggalnya belum tembus --sejak. Perbaikannya: berhenti hanya kalau halaman
-BENAR-BENAR kosong atau tanggal sudah lebih tua dari --sejak — bukan kalau
-tak ada item BARU.
+Mengunci DUA bug yang sempat kejadian:
+
+1. Panen ulang (resume) berhenti terlalu dini karena halaman pertama isinya
+   semua sudah ada di arsip lama (dedup), padahal tanggalnya belum tembus
+   --sejak. Perbaikannya: berhenti hanya kalau halaman BENAR-BENAR kosong
+   atau tanggal sudah lebih tua dari --sejak — bukan kalau tak ada item BARU.
+2. Endpoint IPOT mengabaikan parameter `halaman` di luar batas tertentu dan
+   membalas HALAMAN YANG SAMA berulang-ulang (bukan kosong) — terbukti 16
+   Agu 2026, seluruh empat kanal menembak 500 halaman/`--maks-halaman` tanpa
+   maju, 2443 detik untuk nol progres. Perbaikannya: bandingkan set news_id
+   halaman ini dengan halaman sebelumnya, berhenti kalau persis sama.
 """
 import sys, os
 from datetime import date
@@ -69,6 +75,22 @@ def test_berhenti_saat_tanggal_lewat_sejak():
     assert halaman == 1, "berhenti di halaman yang sama begitu ketemu tanggal lewat"
 
 
+def test_berhenti_saat_halaman_kembar():
+    # Halaman 0 dan 1 (dan seterusnya kalau dibiarkan) membalas news_id yang
+    # PERSIS SAMA — simulasi endpoint yang mengabaikan `halaman` di luar batas.
+    kembar = _halaman([("1", "Aug 15, 2026 - 10:00", "Item A"),
+                        ("2", "Aug 15, 2026 - 09:00", "Item B")])
+
+    def palsu_ambil(url, headers, percobaan=4):
+        return _Balasan(kembar)  # SELALU balasan yang sama, apa pun `halaman`-nya
+
+    with patch.object(pia, "ambil_dengan_ulang", palsu_ambil):
+        item, halaman, tertua = pia.panen_kanal("stocks", "Saham", date(2026, 1, 1), 500, set())
+
+    assert halaman == 2, f"harus berhenti begitu halaman kedua kembar, dapat {halaman} (bukan 500)"
+    assert len(item) == 2, "item halaman pertama tetap masuk, cuma pengulangannya yang dibuang"
+
+
 def test_news_id():
     assert pia._news_id("newsDetail.php?jdl=x&news_id=233822&group_news=IPOTNEWS") == "233822"
     assert pia._news_id("newsDetail.php?jdl=x") is None
@@ -77,6 +99,7 @@ def test_news_id():
 def main():
     test_resume_tak_berhenti_dini_karena_dedup()
     test_berhenti_saat_tanggal_lewat_sejak()
+    test_berhenti_saat_halaman_kembar()
     test_news_id()
     print("OK")
 
