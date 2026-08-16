@@ -48,7 +48,7 @@ itu yang menentukan urutan — bukan besar-kecilnya saja.
 
 | ☐ | Urut | Fase | Tugas | Bergantung | Membuka |
 |---|---|---|---|---|---|
-| ☐ | 13 | **C2** | Indikator per emiten — RSI, MACD, BB, ATR, Fib, Ichimoku, VWAP, Heikin Ashi, **Stochastic** | — | Prasyarat screener DAN #130. Data OHLCV 5 tahun sudah lengkap |
+| ☐ | 13 | **C2** | Indikator per emiten — **spek lengkap: `docs/spek-indikator.md`** (4 grup; termasuk SMA/EMA 150-200 yang di sisi SPLE mustahil, plus OBV & VWAP) | — | Prasyarat screener DAN #130. Data OHLCV 5 tahun sudah lengkap |
 | ☐ | 14 | **Chart 3** | Chart dasar: lilin + volume + zoom (opsi A, `lightweight-charts`) | C2 | **Rilis yang bisa diumumkan.** Sekarang `/chart` masih widget TradingView |
 | ☐ | 15 | **C3** | Screener seluruh emiten | C2 + B1 | 967×147 ruas akhirnya punya layar penyaring |
 | ☐ | 16 | **A2** | Bedah Emiten — 12 section, satu commit per section | A0 + A1 | Padanan sple-mf, plus Altman Z & F-Score yang tak mereka punya |
