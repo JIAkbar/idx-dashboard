@@ -123,4 +123,7 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   seasonality: 'seasonality',
   bulletin: 'bulletin',
   feedback: 'saran',
+  // Grafik Emiten (tahap 3 chart PAPAN, 17 Agu 2026) — perlu login, baris
+  // `akses_halaman` ditambahkan bareng rutenya, bukan menyusul.
+  grafik: 'grafik',
 }

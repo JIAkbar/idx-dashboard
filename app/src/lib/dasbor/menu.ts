@@ -60,6 +60,16 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M7 5v14M5 8h4v8H5zM15 3v18M13 7h4v9h-4z',
   },
   {
+    // Chart PAPAN (tahap 3, 17 Agu 2026) — beda dari 'chart' (widget
+    // TradingView di atas): lilin+volume dari OHLC lokal PAPAN sendiri,
+    // kanvas milik sendiri supaya overlay khas PAPAN (pita musiman,
+    // akumulasi broker, penanda Radar) bisa dipasang di tahap berikutnya.
+    // Kode 'CHT' sudah dipakai TradingView, jadi 'GRF'.
+    id: 'grafik', path: '/grafik', label: 'Grafik Emiten', kode: 'GRF',
+    ringkas: 'Lilin dan volume satu emiten dari data OHLC PAPAN sendiri — bisa di-zoom dan digeser.',
+    ikon: 'M4 3v18M2 8h4v6H2zM11 2v20M9 6h4v10H9zM18 5v16M16 9h4v8h-4z',
+  },
+  {
     id: 'stock-detail', path: '/stock-detail', label: 'Stock Detail', kode: 'DTL',
     ringkas: 'Satu emiten dibedah: harga, laporan keuangan, valuasi, dan arus asing.', mulaiKelompok: true,
     ikon: 'M10 4a6 6 0 100 12 6 6 0 000-12zM14.5 14.5L20 20M8 10h4M10 8v4',

@@ -1,0 +1,28 @@
+/* Grafik Emiten — lilin + volume (lightweight-charts). Warna diberikan lewat
+   opsi JS (dibaca dari token .lantai saat mount/ganti tema), BUKAN di sini —
+   lihat GrafikEmiten.tsx. CSS ini murni ukuran & tata letak. */
+.lantai .grf-cari-baris { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.lantai .grf-kode-aktif {
+  font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--amber);
+  background: var(--amber-dim); border: 1px solid var(--amber); border-radius: 4px;
+  padding: 3px 10px;
+}
+.lantai .grf-rentang { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.lantai .grf-rentang .bchip.on { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); }
+
+/* Tinggi tetap: lightweight-charts (autoSize) butuh induk dengan tinggi
+   eksplisit, bukan auto — tanpa ini kanvas kolaps jadi 0px. Diperkecil di
+   telepon (breakpoint 700px, sama dengan seluruh Lantai) supaya sumbu &
+   label tak berdesakan di layar sempit. */
+.lantai .grf-chart-wrap { height: 460px; width: 100%; }
+@media (max-width: 700px) {
+  .lantai .grf-chart-wrap { height: 340px; }
+}
+/* Selagi data belum ada, DISEMBUNYIKAN LEWAT OPACITY — bukan `display:none`.
+   lightweight-charts (autoSize) memasang ResizeObserver ke elemen ini saat
+   dibuat; `display:none` bikin lebarnya 0 SAAT chart pertama kali dibuat, dan
+   begitu tampil lagi bar spacing yang sudah telanjur dihitung dari lebar 0
+   tak dihitung ulang — lilinnya numpuk di satu sisi. `opacity` menyembunyikan
+   tampilannya tapi kotak layoutnya (makanya lebar yang dilihat ResizeObserver)
+   tetap ada dari awal. */
+.lantai .grf-chart-wrap.memuat { opacity: 0; }
