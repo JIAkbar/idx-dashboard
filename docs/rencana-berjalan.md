@@ -110,11 +110,38 @@ Tiga yang operasional:
 | 149 | Buktikan trigger notifikasi kurasi jalan | Tabel/RLS/trigger/lonceng sudah terpasang, tapi sengaja TIDAK dipicu di sesi ini: memicunya berarti mengirim kabar ke kontributor sungguhan. Cek lonceng setelah kurasi berikutnya; kalau kosong, periksa trigger `setoran_kabari_kurasi` |
 | 150 | Perluas cakupan laporan keuangan | Panen menghasilkan 646 dari 963 emiten. Sisanya kemungkinan tak punya laporan di Yahoo — perlu dipastikan mana yang memang kosong dan mana yang gagal ambil |
 
-Satu sisa dari perbaikan regresi 16 Agu sore:
+### 🐞 Bug & utang terbuka dari kerja admin 16 Agu — **dahulukan ini**
+
+Yang sedang berjalan sudah dipakai kontributor sungguhan, jadi barisan ini
+didahulukan daripada fitur baru mana pun.
 
 | # | Tugas | Keterangan |
 |---|---|---|
-| 160 | Bersihkan sisa status `'ditolak'` di TIGA objek SQL terakhir | `berkas_masih_menunggu()` (berkas milik setoran `dihapus` tak bisa dihapus penyetornya), `hitung_jenjang()` dan `ringkasan_keaktifan()` (penyebut akurasi kehilangan setoran yang ditolak → akurasi selalu 100%, kolom "ditolak" selalu 0). Sisi klien (`lib/jenjang.ts`) sudah memakai `'dihapus'`; SQL-nya yang tertinggal. Migrasinya sudah ditulis tapi **ditolak classifier izin** — perlu dijalankan ulang dengan persetujuan Johan |
+| 160 | Bersihkan sisa status `'ditolak'` di TIGA objek SQL terakhir | `berkas_masih_menunggu()` (berkas milik setoran `dihapus` tak bisa dihapus penyetornya), `hitung_jenjang()` dan `ringkasan_keaktifan()` (penyebut akurasi kehilangan setoran yang ditolak → **akurasi selalu 100%**, kolom "Ditolak" di tab Aktivitas **selalu 0**). Sisi klien (`lib/jenjang.ts`) sudah memakai `'dihapus'`; SQL-nya yang tertinggal. Migrasinya sudah ditulis tapi **ditolak classifier izin** — perlu dijalankan ulang dengan persetujuan Johan |
+| 161 | Pesan galat unggah masih generik | `terjemahkanGalatUnggah()` di `UnggahHarian.tsx` mengubah SEMUA galat RLS jadi satu kalimat yang menyebut empat kemungkinan sekaligus. Saat penolakan MBMA 14 Agu diselidiki, tak satu pun dari empat itu benar — dan sebab aslinya jadi tak bisa dilacak. Sertakan detail teknis server (boleh dilipat) alih-alih menelannya. Kelas bug yang sama dengan #121 |
+| 162 | Penyebab penolakan unggah MBMA belum terbukti | Semua syarat lolos saat diuji ulang (kuota 12, emiten belum disetor, tanggal sah), tapi percobaan gagal tak meninggalkan jejak — barisnya dihapus otomatis saat upload gagal. Bergantung #161: tanpa pesan galat yang jujur, kejadian berikutnya juga tak akan terlacak |
+| 163 | Baris `setoran` INDY 14 Agu tanpa berkas | Status `dihapus`, berkasnya sudah lenyap dari bucket. Sisa dari bug policy `setoran_hapus` yang baru diperbaiki hari ini (`hapusScreenshot` menelan galat hapus baris). Tinggal diputuskan: dibiarkan sebagai catatan penolakan, atau dibersihkan |
+| 164 | Edisi Mingguan & Bulanan **menunggu review Johan** | `AP-W140826-E01` dan `AP-M0826-E01` sudah live, dirakit dari **dua hari bursa saja** (10 & 13 Agu) dengan 24 emiten yang sama persis — edisi berjudul "Bulanan · Agustus 2026" yang isinya dua hari, dan banyak isinya tumpang tindih dengan yang mingguan. Muncul tiba-tiba karena dibuat tanpa diminta. Johan akan mereview PDF-nya sendiri; **jangan dicabut, diperbaiki, atau dirakit ulang sebelum hasil reviewnya keluar.** Kunci Bulletin di Diamond adalah penahan sengaja selama masa review — jangan diubah |
+
+### 🧭 Jalur fundamental (replikasi SPLE) — belum dimulai satu pun
+
+Rencana lengkapnya di `docs/workflow-fundamental.md` (jalur A fundamental →
+halaman Bedah Emiten 12 section, B metadata resmi IDX, C lubang lain).
+Riset sumbernya di `docs/riset/sple/`. Dicatat di sini supaya tak hilang
+jejaknya selagi kita menambal admin:
+
+| Fase | Isi | Butuh panen? |
+|---|---|---|
+| B1 | Sektor IDX-IC resmi (#157) — menggantikan klasifikasi Yahoo di Sektor, Stock Detail, Screener | Tidak |
+| A0 | Satukan `keuangan/` + `fundamental/` — menambal `operating_cf` yang kosong 80% di panel yang SUDAH ada | Tidak |
+| A1 | Rata-rata 5 tahun + ambang verdict valuasi (dua sumbu: riwayat sendiri & median sektor) | Tidak |
+| B2 | Broker summary harian dari `GetBrokerSummary` sebagai sumber kedua Top Broker | Tidak |
+| A2 | Halaman **Bedah Emiten**, 12 section, satu commit per section | Tidak (pakai A0/A1) |
+| A3 · B3 | Panen laporan keuangan XLSX ber-XBRL (#156) lalu pemegang saham pengendali (#158) | Ya |
+| C1–C8 | Berita/RSS, indikator per emiten, screener, heatmap, watchlist, dst | Sebagian |
+
+Empat yang pertama (B1 · A0 · A1 · B2) semuanya murah dan tak menunggu panen
+apa pun — itu titik mulai yang disarankan **setelah** barisan bug di atas.
 
 Tabel di bawah ini tetap dipertahankan sebagai rujukan ongkos-vs-hasil.
 
@@ -295,6 +322,7 @@ Lihat #143 untuk pilihan jalurnya.
 
 ## Aturan yang berlaku
 
+- **Jangan menerbitkan artefak yang tidak diminta.** "Rakit ulang semua" berarti merakit ulang yang SUDAH ada, bukan menambah jenis terbitan baru. Edisi Mingguan & Bulanan muncul tiba-tiba di Bulletin karena aturan ini belum tertulis (#164). Artefak yang dilihat pembaca — edisi, halaman, pengumuman — hanya lahir dari permintaan eksplisit; kalau menurutmu perlu ada, tawarkan dulu.
 - **Paket rilis WA** wajib tiap fitur/halaman publik baru: screenshot desktop + mobile, naskah fungsi & keunggulan. Backend tidak diumumkan.
 - **Verifikasi dua viewport** sebelum melapor selesai: laptop 1536×960×1.25, telepon 412×915×2.625.
 - **Istilah yang benar: BROKER SUMMARY**, bukan "orderbook". Yang TERLIHAT pengguna sudah bersih (termasuk judul contoh di galeri panduan, diperbaiki di DB 16 Agu). Yang masih memakai istilah lama adalah **kontrak teknis**: nama path storage `{TICKER}-orderbook.ext`, kolom `setoran.jenis`, tabel `contoh_orderbook`, dan fungsi SQL `hitung_orderbook_hari()` — menggantinya berarti memindahkan berkas lama dan menulis ulang kebijakan storage, jadi ditahan sampai ada alasan yang lebih besar (#144). Jangan menambah pemakaian baru di teks yang dibaca pengguna.
