@@ -127,11 +127,21 @@ def idx_pengumuman(batas: int) -> list[dict]:
         # Kode_Emiten datang dipadatkan spasi selebar 100 karakter, dan bisa
         # memuat beberapa kode sekaligus.
         kode = [k for k in re.split(r"[\s,;]+", (p.get("Kode_Emiten") or "")) if k]
+        # Tautan PER PENGUMUMAN, bukan halaman daftar. Tiap baris membawa
+        # `attachments`: yang `IsAttachment: false` adalah dokumen utamanya,
+        # sisanya lampiran. Sebelumnya semua baris ditunjuk ke satu URL
+        # generik yang sama — pembaca yang mengklik mendarat di halaman
+        # pencarian dan harus mencari sendiri pengumuman yang barusan
+        # dibacanya. Halaman daftar tetap jadi cadangan kalau memang tak ada
+        # berkas terlampir.
+        lampiran = baris.get("attachments") or []
+        utama = next((a for a in lampiran if not a.get("IsAttachment")), None) or (lampiran[0] if lampiran else None)
+        tautan = (utama or {}).get("FullSavePath") or "https://www.idx.co.id/id/perusahaan-tercatat/keterbukaan-informasi"
         out.append({
             "sumber": "IDX",
             "jenis": "pengumuman",
             "judul": (p.get("JudulPengumuman") or p.get("PerihalPengumuman") or "").strip(),
-            "tautan": "https://www.idx.co.id/id/perusahaan-tercatat/keterbukaan-informasi",
+            "tautan": tautan,
             "waktu": wib(p.get("TglPengumuman")),
             "emiten": kode[:6],
             "nomor": (p.get("NoPengumuman") or "").strip() or None,

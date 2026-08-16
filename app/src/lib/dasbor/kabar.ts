@@ -33,6 +33,35 @@ let cache: Kabar | null = null
 let cacheArsip: Kabar | null = null
 
 /**
+ * Gabung tiga berkas jadi satu daftar, buang yang benar-benar kembar.
+ *
+ * Kunci kembarnya **tautan + judul + waktu**, bukan tautan saja. Seluruh
+ * pengumuman resmi IDX yang tak punya berkas terlampir jatuh ke satu URL
+ * generik yang sama (halaman "keterbukaan informasi"), jadi dedup ber-tautan
+ * meringkas belasan pengumuman berbeda menjadi satu baris — tanpa galat,
+ * tanpa peringatan, cuma daftar yang diam-diam menyusut. Dari layar itu
+ * terbaca sebagai "beritanya tidak ada" atau "situsnya mati", bentuk
+ * kegagalan yang jauh lebih mahal daripada duplikat yang lolos.
+ *
+ * Urutan masuk menentukan siapa yang menang: `utama` (paling segar) di depan,
+ * lalu snips, lalu arsip.
+ */
+export function gabungKabar(utama: Kabar, snips: KabarItem[], arsip: KabarItem[]): Kabar {
+  const terlihat = new Set<string>()
+  const unik = [...utama.item, ...snips, ...arsip].filter((i) => {
+    const k = `${i.tautan}|${i.judul}|${i.waktu ?? ''}`
+    if (terlihat.has(k)) return false
+    terlihat.add(k)
+    return true
+  })
+  return {
+    ...utama,
+    sumber: [...new Set([...(utama.sumber ?? []), ...unik.map((i) => i.sumber)])],
+    item: unik.sort((a, b) => (b.waktu ?? '').localeCompare(a.waktu ?? '')),
+  }
+}
+
+/**
  * Kabar pasar dari berkas statis, bukan dari peramban pengunjung.
  *
  * Sengaja TIDAK memanggil RSS/endpoint IDX langsung dari klien: sumbernya
@@ -74,19 +103,7 @@ export function useKabar(denganArsip = false) {
         : kosong,
     ])
       .then(([utama, snips, arsip]: [Kabar, { item?: KabarItem[] }, { item?: KabarItem[] }]) => {
-        // Arsip IPOT beririsan dengan `kabar.json` — panen harian mengambil
-        // halaman pertama kanal yang sama. Dibuang berdasarkan tautan
-        // (mengandung `news_id`, jadi unik per berita); yang lebih dulu
-        // menang, dan `kabar.json` sengaja ditaruh paling depan karena
-        // itulah yang paling segar.
-        const semua = [...utama.item, ...(snips.item ?? []), ...(arsip.item ?? [])]
-        const terlihat = new Set<string>()
-        const unik = semua.filter((i) => !terlihat.has(i.tautan) && terlihat.add(i.tautan))
-        const gabung: Kabar = {
-          ...utama,
-          sumber: [...new Set([...(utama.sumber ?? []), ...unik.map((i) => i.sumber)])],
-          item: unik.sort((a, b) => (b.waktu ?? '').localeCompare(a.waktu ?? '')),
-        }
+        const gabung = gabungKabar(utama, snips.item ?? [], arsip.item ?? [])
         if (denganArsip) cacheArsip = gabung
         else cache = gabung
         if (!batal) setKabar(gabung)

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useKabar, waktuKabar, type KabarItem } from '../../lib/dasbor/kabar'
 import { IkonMenu, IKON_CARI, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
+import { Dropdown } from '../../components/dasbor/Dropdown'
 import './Kabar.css'
 
 const PER_HAL = 12
@@ -100,20 +101,33 @@ export function Kabar() {
               </button>
             ))}
           </span>
-          {/* Saringan bulan baru muncul kalau arsipnya memang lintas bulan —
-              di berkas yang cuma berumur sepekan, kotak ini tak menjelaskan
+          {/* Bulan dan pencarian DISATUKAN jadi satu kendali. Dua kotak
+              terpisah di header ber-`space-between` saling terlempar ke ujung
+              yang berbeda, dan yang di tengah terbaca seperti tersesat.
+              Keduanya menyaring daftar yang sama, jadi memang satu alat.
+              Saringan bulan sendiri baru muncul kalau arsipnya lintas bulan —
+              di berkas yang cuma berumur sepekan, kotak itu tak menjelaskan
               apa pun. */}
-          {BULAN.length > 1 && (
-            <select className="inp kbr-bulan" value={bulan} aria-label="Saring bulan"
-              onChange={(e) => setBulan(e.target.value)}>
-              <option value="">Semua bulan</option>
-              {BULAN.map((b) => <option key={b} value={b}>{labelBulan(b)}</option>)}
-            </select>
-          )}
-          <span className="af-cari">
-            <IkonMenu d={IKON_CARI} size={13} />
-            <input className="inp" type="search" value={cari} onChange={(e) => setCari(e.target.value)}
-              placeholder="Cari judul / emiten…" aria-label="Cari kabar" />
+          <span className="kbr-alat">
+            {/* `Dropdown` proyek, bukan <select> bawaan: daftar pilihan
+                <select> digambar sistem operasi, jadi muncul putih terang di
+                atas panel gelap dan tak bisa ditema. */}
+            {BULAN.length > 1 && (
+              <span className="kbr-bulan">
+                <Dropdown
+                  ariaLabel="Saring bulan"
+                  nilai={bulan}
+                  onGanti={setBulan}
+                  opsi={[{ nilai: '', label: 'Semua bulan' },
+                    ...BULAN.map((b) => ({ nilai: b, label: labelBulan(b) }))]}
+                />
+              </span>
+            )}
+            <span className="af-cari">
+              <IkonMenu d={IKON_CARI} size={13} />
+              <input className="inp" type="search" value={cari} onChange={(e) => setCari(e.target.value)}
+                placeholder="Cari judul / emiten…" aria-label="Cari kabar" />
+            </span>
           </span>
         </div>
 

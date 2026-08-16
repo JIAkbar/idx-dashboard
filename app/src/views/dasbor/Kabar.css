@@ -2,9 +2,33 @@
 
 .lantai .kbr-h { align-items: center; flex-wrap: wrap; gap: 8px; }
 .lantai .kbr-tabs { flex-wrap: wrap; }
-/* Saringan bulan — lebarnya dipatok supaya tak ikut memakan kolom cari saat
-   nama bulannya panjang ("September 2026"). */
-.lantai .kbr-bulan { flex: none; width: auto; min-width: 130px; font-size: 11.5px; }
+/* Bulan + cari sebagai SATU kendali bersambung.
+   Sebelumnya keduanya anak langsung `.panel-h` yang ber-`space-between`:
+   yang satu terlempar ke ujung kanan, yang satu menggantung di tengah tanpa
+   sandaran. Disatukan dalam satu bingkai, keduanya terbaca sebagai satu alat
+   saring — yang memang begitu kenyataannya, keduanya menyaring daftar yang
+   sama. */
+.lantai .kbr-alat {
+  display: flex; align-items: stretch; margin-left: auto;
+  border: 1px solid var(--line); border-radius: var(--r); background: var(--bg3);
+  /* TANPA `overflow: hidden`. Sempat dipasang untuk merapikan sudut bingkai,
+     dan itu memotong `.dd-menu` yang melayang keluar dari bingkainya —
+     daftar bulannya berubah jadi sepotong bilah aneh di header. Sudutnya
+     tetap rapi karena anak-anaknya tak berlatar sendiri. */
+}
+.lantai .kbr-alat:focus-within { border-color: var(--amber); }
+/* Tombol dropdown kehilangan bingkai & latarnya sendiri di dalam bingkai
+   bersama — yang tersisa cuma garis pemisah ke kotak cari. Menunya (.dd-menu)
+   TIDAK ikut diubah: dia melayang di luar dan sudah bertema. */
+.lantai .kbr-bulan { display: flex; }
+.lantai .kbr-bulan .dd-btn {
+  border: 0; border-right: 1px solid var(--line); border-radius: 0;
+  background: transparent; min-width: 132px; justify-content: space-between;
+}
+.lantai .kbr-bulan .dd-btn:hover { color: var(--amber); }
+/* Kotak cari kehilangan bingkainya sendiri di dalam sini — bingkai ganda
+   membuat dua kendali yang bersebelahan terlihat seperti bertumpuk. */
+.lantai .kbr-alat .af-cari { border: 0; border-radius: 0; background: transparent; }
 .lantai .kbr-sumber { margin: 0 0 12px; font-size: 11.5px; line-height: 1.7; }
 .lantai .kbr-sumber b { color: var(--text2); }
 
