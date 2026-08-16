@@ -300,3 +300,60 @@ Dua jalan, keputusan Johan:
 
 Yang belum diputuskan juga: `CHT` sudah dipakai widget TradingView, jadi chart
 PAPAN belum punya singkatan. Tiga huruf berhenti membedakan di jumlah segini.
+
+
+---
+
+## Audit 18 item lama — 17 Agu 2026
+
+Johan meminta review dari awal: mana yang sudah selesai. Tiap baris diperiksa
+langsung ke kode dan (untuk yang menyangkut skema) ke basis data live, **bukan
+ke berkas ceklist ini** — berkas ceklist bukan bukti bahwa kodenya ada.
+
+**Hasil: 12 SELESAI · 5 SEBAGIAN · 1 BELUM · 1 DIPARKIR.**
+
+### Selesai, terbukti
+
+| # | Bukti |
+|---|---|
+| 108 | `ihsg_harian.json` n=8.849, ruas `buka` 8.849/8.849 terisi, 1990-04-06 → 2026-08-14 |
+| 109b | `exportPeta.ts` cuma `exportEmiten()` + `exportInvestor()`; mode "seluruh dataset" tak ada lagi |
+| 128 | `fraksiHarga.ts:14` merujuk Kep-00055/BEI/03-2023, ada berkas ujinya |
+| 139 | `PenjagaHalaman.tsx` — `children` tak pernah di-mount kalau ditolak (bukan ditutup CSS) |
+| 143 | `rencana-berjalan.md:624` keputusan opsi A |
+| 137 | Trigger `setoran_kabari_kurasi` → `kabari_hasil_kurasi()`, diperiksa lewat `pg_get_functiondef` |
+| 142 | `setoran_status_check` = `menunggu/revisi/disetujui/dihapus` — `ditolak` sudah tak ada |
+| 127 | `palet.py:145` `@font-face` data URI + `build.py:801` menunggu `document.fonts.status` |
+| 124 | `IndeksDunia.tsx:41` array RENTANG + judul dinamis |
+| 132 | `SeasonalityKomparasi.tsx` 101 baris, terpasang di `Seasonality.tsx:271` |
+| 138 | Kolom `setoran.dimuat` + tombol "Di edisi" + `build.py:837` benar-benar memfilter |
+| 122 | `ohlc/` 963 berkas (962 sukses + `_gagal.json`), 37,3 MB, BBCA 2021-08-09 → 2026-08-14 |
+| 131b | `SeasonalityHarian.tsx:57` mendukung satu emiten, bukan cuma IHSG |
+
+### Sebagian — dan apa persisnya yang tersisa
+
+| # | Sudah | Belum |
+|---|---|---|
+| 144 | Lapis TEKS: label "Broker Summary" di UI, entri glosarium menjelaskan istilah keliru | Lapis DATA masih `orderbook`: constraint `setoran_jenis_check`, tipe `JenisSetoran`, tabel `contoh_orderbook`, pola path storage `{TICKER}-orderbook.ext` |
+| 99 | Panel lengkap: kuartal/tahunan × laba rugi/neraca/arus kas | Cakupan data 646/959. Kodenya sendiri mengakui di `stockDetailData.ts:348` |
+| 123 | Skema siap: `umumkanFitur()`, RLS `untuk IS NULL`, lonceng merender generik | `umumkanFitur(` **tak dipanggil di mana pun** — tak ada pemicu, tabel `notifikasi` 0 baris |
+| 107 | Badge % (`TopStocks.tsx:218`), klik ke chart (`:141`) | "Bar tembus" tak ada — tapi memang sudah dipisah jadi #145, bukan utang #107 |
+| — | — | Skrip panen XBRL resmi IDX **belum ada**. `sumber-fundamental-idx.md:231` menyebut `scripts/panen_lapkeu_idx.py` sebagai rencana; berkasnya tidak ada |
+
+### Belum & diparkir
+
+- **#130** divergensi tiga lapis — **tak ada jejak sama sekali** di `app/src`
+  (grep `divergensi`/`stochastic` kosong; satu-satunya kecocokan "divergensi
+  asing" itu konsep lain). `docs/spek-indikator.md` baru spek. Butuh indikator
+  (termasuk Stochastic) lebih dulu.
+- **#129** bandarmologi — diparkir atas keputusan Johan. Penghalangnya tetap
+  sama: `GetBrokerSummary` mengabaikan `stockCode`, hasilnya selalu level pasar.
+
+### Temuan yang mengubah rencana
+
+Panen ulang `fetch_keuangan.py` untuk 313 emiten yang kurang **mengembalikan
+"kosong" untuk semuanya** — bukan "gagal (rate limit)", melainkan yfinance
+memang tak punya laporan keuangan untuk emiten-emiten itu. Artinya celah
+646→959 **tidak bisa ditutup lewat yfinance sama sekali**, dan XBRL resmi IDX
+bukan sekadar sumber yang lebih baik — ia satu-satunya jalan untuk 313 emiten
+itu.
