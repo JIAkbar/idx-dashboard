@@ -69,11 +69,20 @@ Empat dari riset SPLE 16 Agu 2026 (`docs/riset/sple/README.md`):
 
 | # | Tugas | Kenapa |
 |---|---|---|
-| 151 | **Selidiki jalur IDX API untuk broker summary per emiten** | Dasbor SPLE memakainya lewat dua Netlify Function (`broker-data`, `broker-market`) — jadi jalurnya ADA, berlawanan dengan catatan lama kita. Saat diuji balasannya `IDX API 403` (IP datacenter diblokir, persis masalah GitHub Actions kita). Panen kita jalan dari IP rumahan, jadi justru lebih mungkin berhasil. **Ini membuka #129** |
+| 151 | **Selidiki jalur IDX API untuk broker summary per emiten** (cakupan menyempit — lihat `docs/sumber-fundamental-idx.md`: level PASAR sudah terbukti bisa, per EMITEN belum ketemu) | Dasbor SPLE memakainya lewat dua Netlify Function (`broker-data`, `broker-market`) — jadi jalurnya ADA, berlawanan dengan catatan lama kita. Saat diuji balasannya `IDX API 403` (IP datacenter diblokir, persis masalah GitHub Actions kita). Panen kita jalan dari IP rumahan, jadi justru lebih mungkin berhasil. **Ini membuka #129** |
 | 152 | **Panen ruas pasar NEGO** (non-reguler) | SPLE menampilkannya sebagai "Bandar Flow": volume/value/frekuensi nego + rasio nego vs reguler. Ruasnya sudah ada di `GetStockSummary` yang kita panen tiap hari — tinggal dipakai |
 | 153 | Halaman bedah fundamental per emiten | Padanan sple-mf: Money Flow 5 langkah, Quality of Earnings, Valuation Verdict (PER & PBV terpisah + fair value), laporan keuangan 5 tahun. Data keuangan kita sudah 646 emiten |
 | ~~155~~ | ~~Grup Konglomerat di web kita~~ | ✅ Selesai 16 Agu — tab baru di Peta Investor, 11 grup / 82 emiten, **diturunkan dari nama pemegang saham KSEI** (`scripts/petakan_grup.py`), tiap chip menyimpan buktinya |
 | 154 | Peringatan konteks + tanggal metodologi di tiap halaman analitik | Yang membuat SPLE dipercaya bukan sinyalnya, tapi panduannya: rumus terbuka, perubahan bertanggal, keterbatasan diakui sendiri |
+
+Empat dari uji endpoint IDX 16 Agu 2026 (`docs/sumber-fundamental-idx.md`):
+
+| # | Tugas | Kenapa |
+|---|---|---|
+| 156 | **Panen laporan keuangan resmi IDX** (XLSX ber-XBRL) | Diuji langsung: 778 emiten TW2 2026, 777 punya .xlsx, terbuka dari IP rumahan. Ratusan ruas per periode vs 15 dari Yahoo, dan tanpa lubang `operating_cf` 80% / `eps` 71% yang kita alami sekarang |
+| 157 | Ambil sektor IDX-IC resmi dari sheet `1000000` | Klasifikasi Yahoo bukan IDX-IC; sheet itu memuat sektor→subsektor→industri→subindustri resmi |
+| 158 | Tarik "pemegang saham pengendali" dari laporan resmi | Pelengkap #155 yang sekarang hanya dari KSEI — menutup celah kepemilikan lewat perusahaan bernama netral |
+| 159 | Panen `GetBrokerSummary` harian ke JSON | 88 broker per tanggal, sekarang kita parse dari PDF |
 
 Tiga yang operasional:
 
