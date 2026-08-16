@@ -143,3 +143,85 @@ pemeriksaannya tak bergantung pada kepatuhan model.
 
 Sudah terbukti berjalan: saat diuji "berapa IHSG hari ini kira-kira?", jawaban
 kita adalah "PAPAN belum punya datanya", bukan tebakan.
+
+---
+
+## API-nya ketahuan dari BENTUK balasannya
+
+Nama modelnya memang tak pernah muncul di klien, tapi balasan
+`/.netlify/functions/ask` membawa sidik jari vendor:
+
+```json
+{"text":"…","stop":"end_turn"}
+```
+
+`end_turn` itu kosakata **Anthropic Messages API** (`stop_reason`). Pembanding
+di vendor lain berbeda dan tak bisa tertukar:
+
+| Vendor | Ruas | Nilai saat selesai normal |
+|---|---|---|
+| **Anthropic** | `stop_reason` | **`end_turn`** ← yang dipakai SPLE |
+| OpenAI | `finish_reason` | `stop` |
+| Google Gemini | `finishReason` | `STOP` |
+
+Jadi ASK SPLE berjalan di atas **Claude (Anthropic)**, bukan Gemini atau GPT.
+Ini menguatkan catatan riset sebelumnya (`memory/riset-sple.md`) yang menyebut
+Claude Haiku 4.5 — versi persisnya tetap tak terbukti dari sini, karena
+servernya cuma meneruskan `text` dan `stop`.
+
+**Cara membuktikannya bisa dipakai ulang**: jangan cari nama model, cari
+kosakata ruasnya. Nama bisa disembunyikan; bentuk balasan API sulit disamarkan
+tanpa menulis ulang pembungkusnya.
+
+## Tiga cacat yang terlihat dari muatan aslinya
+
+Sekarang muatan permintaannya terbaca utuh, dan ada tiga hal yang justru
+menjadi pelajaran buat kita:
+
+**1. `null` dikirim mentah ke model.**
+
+```
+LABA disetahunkan: Rp 5429 M (YoY 313.31%) | EPS Rp null (YoY null%)
+```
+
+Model menerima kata "null" sebagai fakta. Ini bahan bakar karangan: yang
+kosong sebaiknya **dihilangkan dari konteks**, bukan dikirim sebagai "null".
+Aturan untuk `rakitKonteks()` kita: ruas kosong tak usah ikut.
+
+**2. Passcode dikirim di badan permintaan, tiap kali.**
+Bukan token sesi, bukan header — ikut di JSON bersama pertanyaannya. Kalau
+PAPAN kelak memakai gerbang serupa, jangan tiru bentuk ini.
+
+**3. Konteks pasar dipepetkan jadi satu baris tanpa label waktu yang jelas.**
+
+```
+Konteks pasar: FNet -399B · Picks: TINS, BBRI, ANTM, … · 14 Agustus 2026
+```
+
+"FNet -399B" tanpa satuan dan tanpa keterangan periode. Model harus menebak
+artinya — dan kalau menebak salah, pembaca yang menanggung.
+
+## Daftar perbaikan PAPAN yang lahir dari riset ini
+
+Diurut dari yang paling menentukan:
+
+1. **Rakit konteks PER EMITEN** — sekarang `rakitKonteks()` cuma mengirim
+   ringkasan pasar harian, jadi pertanyaan emiten dijawab tanpa bahan. Ikuti
+   pola berlabel milik mereka (satu baris per topik), ambil dari 147 ruas
+   `fundamental/` yang sudah kita punya. **Ini sumber seluruh perbedaan
+   kedalaman.** → sudah masuk #172
+2. **Tiap angka dibawa bersama pembandingnya** — rata-rata 5/10 tahun, median
+   sektor, atau nilai wajar. "PER 5,34x (avg5th 5,47x)" bermakna, "PER 5,34x"
+   tidak. Kita bahkan punya `pe_vs_sector_pct` yang tak mereka punya. → A1
+3. **Ruas kosong DIBUANG dari konteks**, jangan dikirim sebagai `null`.
+4. **Penolakan yang menawarkan jalan kembali** — punya mereka menutup dengan
+   "Butuh analisis fundamental TINS lebih detail?" dan itu terasa membantu;
+   punya kita berhenti di "belum bisa saya jawab". → bagian dari #171/#172
+5. **Perintah sistem mengunci BENTUK** (tabel wajib, batas kata, bagian yang
+   wajib selesai), bukan cuma nada. Konsistensi keluaran mereka datang dari
+   sini.
+6. **Pertahankan pemeriksaan angka sesudah jawaban jadi.** Riset ini justru
+   membuktikan nilainya: model mereka melanggar perintahnya sendiri di
+   pertanyaan ramalan harga. Perintah bukan mekanisme.
+7. **Jangan tiru stance beli/tahan/hindari.** Itu rekomendasi berlabel bukan
+   rekomendasi.
