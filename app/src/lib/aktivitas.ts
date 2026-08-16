@@ -16,7 +16,7 @@ export interface RingkasanKeaktifan {
   aktif: boolean
   setoran: number
   disetujui: number
-  ditolak: number
+  dihapus: number
   menunggu: number
   /** Persen (0–100). `null` = belum ada setoran yang dikurasi. */
   akurasi: number | null

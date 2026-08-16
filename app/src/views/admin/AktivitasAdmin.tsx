@@ -207,7 +207,7 @@ export function AktivitasAdmin() {
                     <th>Jenjang</th>
                     <th className="af-c">Setoran</th>
                     <th className="af-c">Disetujui</th>
-                    <th className="af-c">Ditolak</th>
+                    <th className="af-c">Dihapus</th>
                     <th className="af-c">Menunggu</th>
                     <th className="af-c">Akurasi</th>
                     <th>Terakhir setor</th>
@@ -233,7 +233,7 @@ export function AktivitasAdmin() {
                         </td>
                         <td className="af-c">{r.setoran}</td>
                         <td className="af-c">{r.disetujui}</td>
-                        <td className="af-c">{r.ditolak}</td>
+                        <td className="af-c">{r.dihapus}</td>
                         <td className="af-c">{r.menunggu}</td>
                         <td className="af-c">{r.akurasi === null ? '—' : `${r.akurasi}%`}</td>
                         <td>{waktuManusiawi(r.terakhir_setor)}</td>

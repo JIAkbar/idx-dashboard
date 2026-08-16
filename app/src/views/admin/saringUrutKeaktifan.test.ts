@@ -12,7 +12,7 @@ function baris(p: Partial<RingkasanKeaktifan>): RingkasanKeaktifan {
     aktif: true,
     setoran: 0,
     disetujui: 0,
-    ditolak: 0,
+    dihapus: 0,
     menunggu: 0,
     akurasi: null,
     terakhir_setor: null,

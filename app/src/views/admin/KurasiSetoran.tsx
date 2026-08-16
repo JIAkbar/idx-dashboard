@@ -449,7 +449,7 @@ function AturanKurasi() {
               <td><b>Dikembalikan</b></td>
               <td><b>Tidak</b> — emitennya terbuka lagi</td>
               <td>Tidak</td>
-              <td>Tidak menambah</td>
+              <td><b>Menurunkan akurasi</b></td>
             </tr>
           </tbody>
         </table>
@@ -480,12 +480,13 @@ function AturanKurasi() {
           memangkas isi edisi bukan alasan menghukum kerja yang benar.
         </li>
         <li className="ks-aturan-catat">
-          ⚠ <b>Akurasi saat ini selalu terbaca 100%.</b> Rumusnya masih
-          membagi dengan status <code>ditolak</code> yang sudah tidak dipakai
-          lagi sejak status diganti jadi <code>dihapus</code>, sehingga
-          penyebutnya tak pernah bertambah. Artinya <b>menghapus setoran hari
-          ini tidak menurunkan akurasi siapa pun</b> — bukan karena aturannya
-          begitu, tapi karena perbaikannya (#160) belum dijalankan.
+          <b>Akurasi = disetujui ÷ (disetujui + dihapus).</b> Jadi menghapus
+          setoran <b>menurunkan akurasi penyetornya</b>, dan itu ikut
+          menentukan jenjang — tiap jenjang punya syarat akurasi minimum.
+          Setoran <b>“perlu revisi” sengaja tidak masuk hitungan</b>: revisi
+          adalah permintaan perbaikan, bukan vonis. Kalau revisi ikut
+          menghukum, kontributor akan menghindarinya — persis kebalikan dari
+          maksudnya.
         </li>
       </ul>
     </details>

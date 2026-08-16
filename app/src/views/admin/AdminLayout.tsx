@@ -349,7 +349,7 @@ export function AdminLayout() {
  * lebih mengganggu daripada blok yang menyusul sepersekian detik kemudian.
  */
 function SambutanJenjang({ profil }: { profil: ProfilSaya }) {
-  const [data, setData] = useState<{ jenjang: JenjangRow[]; angka: { disetujui: number; ditolak: number } } | null>(null)
+  const [data, setData] = useState<{ jenjang: JenjangRow[]; angka: { disetujui: number; dihapus: number } } | null>(null)
 
   useEffect(() => {
     let batal = false
@@ -364,7 +364,7 @@ function SambutanJenjang({ profil }: { profil: ProfilSaya }) {
   if (!data || data.jenjang.length === 0) return null
   const r = ringkasanJenjang(
     profil.tier ?? 0, profil.kuota_manual ?? null,
-    data.angka.disetujui, data.angka.ditolak, data.jenjang
+    data.angka.disetujui, data.angka.dihapus, data.jenjang
   )
   const ajakan = !r.berikutnya
     ? 'Kamu sudah di jenjang tertinggi — setoranmu yang menjaga bulletin tetap terbit tiap hari.'

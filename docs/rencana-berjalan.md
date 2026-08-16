@@ -34,17 +34,27 @@ di-push**. 55 commit menunggu aba-aba "live".
   `IsAttachment: false` adalah PDF dokumennya. Sebelumnya semua baris
   menunjuk ke satu halaman pencarian.
 
-### Sisa & yang perlu keputusan Johan
+### Keputusan Johan, 16 Agu 2026 (malam)
 
-- **#160** — migrasi `berkas_masih_menunggu`, `hitung_jenjang`,
-  `ringkasan_keaktifan` masih menyaring `'ditolak'` yang sudah tak ada.
-  Menunggu izin menjalankan migrasi.
-- **Gemini Flash** — lapisan terakhir Tanya PAPAN, belum disetel. Syaratnya
-  sudah diputuskan: kunci di Edge Function/GitHub Secrets, dan keluaran LLM
-  yang memuat angka di luar masukan **dibuang**, bukan ditampilkan.
-- Menelusuri `news_id` IPOT mundur satu per satu bisa menembus batas 1 bulan,
-  tapi berarti ribuan permintaan ke server orang — **belum dikerjakan, perlu
-  izin**.
+| Hal | Putusan |
+|---|---|
+| **#160** | ✅ **Dijalankan.** Migrasi `bersihkan_sisa_status_ditolak` sudah diterapkan; nol sisa `'ditolak'` di seluruh objek DB, dan penamaannya ikut dirapikan di klien |
+| **Gemini Flash** | ⏸ **Setelah SPLE.** Halaman baru dari SPLE akan menambah data yang juga harus dijangkau — lebih hemat menyetel LLM sekali setelah cakupan rule-engine lengkap |
+| **Arsip IPOT** | ⏸ **Biarkan tumbuh sendiri**, dan jadikan backlog: bahas dulu cara scraping yang tepat, jangan menembak `news_id` satu per satu |
+| **CLAUDE.md** | ✅ **Di-track.** Sudah dikeluarkan dari `.gitignore` supaya aturannya terbawa ke tiap worktree baru |
+
+### #168 — Cara scraping arsip berita yang benar (belum dibahas)
+
+Batasnya sudah diketahui: endpoint IPOT mengabaikan `halaman`, jadi mentok
+±200 berita per kanal. Yang **tidak** akan dilakukan tanpa pembahasan:
+menelusuri `news_id` mundur satu per satu (ribuan permintaan ke server orang,
+dan yang diambil halaman artikel bukan daftar).
+
+Yang perlu dibahas lebih dulu: apakah ada endpoint arsip resmi yang belum
+ketemu, apakah sumber lain (Snips sudah terbukti punya arsip setahun lewat
+`?format=json` Squarespace) punya pola serupa, dan berapa laju permintaan yang
+pantas kalau memang harus menelusuri. Prinsipnya sama dengan yang sudah
+dipakai: metadata saja, tak menyalin isi, dan tak membebani sumbernya.
 
 
 ## ✅ Sudah selesai — dari permintaan Johan

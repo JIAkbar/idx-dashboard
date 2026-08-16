@@ -30,13 +30,13 @@ export function useJarakJenjang(kunci: string, aktif: boolean): JarakJenjang | n
     if (!aktif) return
     let batal = false
     void Promise.all([daftarJenjang(), hitungRingkasanSetoranSaya()])
-      .then(([js, s]: [JenjangRow[], { disetujui: number; ditolak: number }]) => {
+      .then(([js, s]: [JenjangRow[], { disetujui: number; dihapus: number }]) => {
         if (batal) return
         const tierPerlu = daftar?.find((h) => h.kunci === kunci)?.min_tier
         if (tierPerlu == null) return
         const target = js.find((j) => j.tier === tierPerlu)
         if (!target) return
-        const dikurasi = s.disetujui + s.ditolak
+        const dikurasi = s.disetujui + s.dihapus
         const pct = dikurasi === 0 ? 100 : Math.round((s.disetujui * 100) / dikurasi)
         setJarak({
           nama: target.nama,

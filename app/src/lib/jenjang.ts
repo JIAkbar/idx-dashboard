@@ -29,16 +29,16 @@ export async function daftarJenjang(): Promise<JenjangRow[]> {
  *  tanggal) — dasar kartu jenjang di tab Unggah. `menunggu` tidak dihitung
  *  (belum ikut akurasi). RLS tabel `setoran` sudah membatasi ke baris sendiri,
  *  jadi query di sini tak perlu filter tambahan selain status. */
-export async function hitungRingkasanSetoranSaya(): Promise<{ disetujui: number; ditolak: number }> {
+export async function hitungRingkasanSetoranSaya(): Promise<{ disetujui: number; dihapus: number }> {
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { disetujui: 0, ditolak: 0 }
-  const [disetujui, ditolak] = await Promise.all([
+  if (!user) return { disetujui: 0, dihapus: 0 }
+  const [disetujui, dihapus] = await Promise.all([
     supabase.from('setoran').select('*', { count: 'exact', head: true }).eq('penyetor', user.id).eq('status', 'disetujui'),
     supabase.from('setoran').select('*', { count: 'exact', head: true }).eq('penyetor', user.id).eq('status', 'dihapus'),
   ])
   if (disetujui.error) throw disetujui.error
-  if (ditolak.error) throw ditolak.error
-  return { disetujui: disetujui.count ?? 0, ditolak: ditolak.count ?? 0 }
+  if (dihapus.error) throw dihapus.error
+  return { disetujui: disetujui.count ?? 0, dihapus: dihapus.count ?? 0 }
 }
 
 export interface RingkasanJenjang {
@@ -67,12 +67,12 @@ export function ringkasanJenjang(
   tierSaatIni: number,
   kuotaManual: number | null,
   disetujui: number,
-  ditolak: number,
+  dihapus: number,
   daftar: JenjangRow[]
 ): RingkasanJenjang {
   const urut = [...daftar].sort((a, b) => a.tier - b.tier)
   const jenjangSaatIni = urut.find((j) => j.tier === tierSaatIni) ?? urut[0]
-  const dikurasi = disetujui + ditolak
+  const dikurasi = disetujui + dihapus
   const akurasiPersen = dikurasi > 0 ? (disetujui / dikurasi) * 100 : null
   const kuotaEfektif = kuotaManual ?? jenjangSaatIni.kuota
   const berikutnya = urut.find((j) => j.tier === tierSaatIni + 1) ?? null

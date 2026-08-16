@@ -376,7 +376,7 @@ function EditAlasanModal({ ticker, entries, onClose, onSukses }: {
  */
 function KartuJenjang({ profil, superadmin }: { profil: ProfilSaya; superadmin: boolean }) {
   const [jenjang, setJenjang] = useState<JenjangRow[] | null>(null)
-  const [angka, setAngka] = useState<{ disetujui: number; ditolak: number } | null>(null)
+  const [angka, setAngka] = useState<{ disetujui: number; dihapus: number } | null>(null)
 
   useEffect(() => {
     let batal = false
@@ -394,7 +394,7 @@ function KartuJenjang({ profil, superadmin }: { profil: ProfilSaya; superadmin: 
   }, [])
 
   if (!jenjang || jenjang.length === 0 || !angka) return null
-  const r = ringkasanJenjang(profil.tier ?? 0, profil.kuota_manual ?? null, angka.disetujui, angka.ditolak, jenjang)
+  const r = ringkasanJenjang(profil.tier ?? 0, profil.kuota_manual ?? null, angka.disetujui, angka.dihapus, jenjang)
 
   return (
     <section className="panel">
