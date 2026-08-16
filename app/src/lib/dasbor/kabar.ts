@@ -13,6 +13,9 @@ export interface KabarItem {
   /** Kode emiten yang disebut pengumuman resmi; kosong untuk berita umum. */
   emiten: string[]
   nomor?: string | null
+  /** Kanal topik di sumbernya — sekarang cuma IPOT News yang punya (Saham,
+   *  Ekonomi, IPS News, Market/JCI), karena dipanen per kanal. */
+  kanal?: string
 }
 
 export interface Kabar {

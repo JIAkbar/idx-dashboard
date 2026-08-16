@@ -5,10 +5,25 @@ import './Kabar.css'
 
 const PER_HAL = 12
 
-/** Saringan sumber. 'Pengumuman' bukan sumber tapi JENIS — dinaikkan ke baris
- *  yang sama karena itulah pembedaan yang paling sering dicari: pengumuman
- *  resmi emiten punya bobot lain daripada berita media. */
-const TAB = ['Semua', 'Pengumuman IDX', 'IDX', 'IPOT News', 'Kontan'] as const
+/** Dua tab pertama SELALU ada; sisanya diturunkan dari data.
+ *
+ *  Sebelumnya seluruh daftar tab ditulis tetap di sini, dan akibatnya sumber
+ *  baru (CNBC Indonesia, detikFinance) sudah ikut terpanen tapi TAK PUNYA
+ *  tabnya — hanya kelihatan di "Semua", jadi seolah panennya gagal. Daftar
+ *  yang ditulis tangan selalu ketinggalan dari daftar yang tumbuh. */
+const TAB_TETAP = ['Semua', 'Pengumuman IDX'] as const
+
+function daftarTab(item: KabarItem[]): string[] {
+  const sumber = [...new Set(item.filter((i) => i.jenis !== 'pengumuman').map((i) => i.sumber))]
+  // IDX & IPOT di depan (sumber primer bursa), sisanya alfabetis.
+  const utama = ['IDX', 'IPOT News']
+  sumber.sort((a, b) => {
+    const ia = utama.indexOf(a), ib = utama.indexOf(b)
+    if (ia !== -1 || ib !== -1) return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib)
+    return a.localeCompare(b)
+  })
+  return [...TAB_TETAP, ...sumber]
+}
 
 export function saringKabar(item: KabarItem[], tab: string, cari: string): KabarItem[] {
   const q = cari.trim().toLowerCase()
@@ -35,11 +50,13 @@ export function saringKabar(item: KabarItem[], tab: string, cari: string): Kabar
  */
 export function Kabar() {
   const { kabar, galat } = useKabar()
-  const [tab, setTab] = useState<(typeof TAB)[number]>('Semua')
+  const [tab, setTab] = useState<string>('Semua')
   const [cari, setCari] = useState('')
   const [hal, setHal] = useState(0)
 
   useEffect(() => { setHal(0) }, [tab, cari])
+
+  const TAB = useMemo(() => daftarTab(kabar?.item ?? []), [kabar])
 
   const tersaring = useMemo(() => saringKabar(kabar?.item ?? [], tab, cari), [kabar, tab, cari])
   const tampil = tersaring.slice(hal * PER_HAL, (hal + 1) * PER_HAL)
@@ -68,8 +85,12 @@ export function Kabar() {
 
         <div className="panel-b">
           <p className="muted kbr-sumber">
-            Judul dan tautan dari <b>IDX</b> (berita &amp; pengumuman resmi emiten),
-            <b> IPOT News</b>, dan <b>Kontan</b>. PAPAN menautkan, tidak menyalin isinya.
+            {/* Sumbernya disebut dari DATA, bukan dari daftar yang diketik —
+                supaya kalimat ini tak pernah menjanjikan sumber yang sedang
+                kosong, atau melupakan sumber yang baru masuk. */}
+            Judul dan tautan dari{' '}
+            <b>{(kabar?.sumber ?? []).join(', ') || 'sumber yang sedang dimuat'}</b>
+            {' '}— termasuk pengumuman resmi emiten dari IDX. PAPAN menautkan, tidak menyalin isinya.
             {kabar && <> Terakhir diperbarui {waktuKabar(kabar.dipanen)}.</>}
           </p>
 
@@ -99,6 +120,9 @@ export function Kabar() {
               >
                 <span className="kbr-meta">
                   <span className={`kbr-sum s-${i.sumber.split(' ')[0].toLowerCase()}`}>{i.sumber}</span>
+                  {/* Kanal IPOT (Saham · Ekonomi · IPS News · Market/JCI) —
+                      dipanen per topik, jadi topiknya layak terlihat. */}
+                  {i.kanal && <span className="kbr-kanal">{i.kanal}</span>}
                   {i.jenis === 'pengumuman' && <span className="kbr-resmi">Pengumuman resmi</span>}
                   <span className="kbr-waktu">{waktuKabar(i.waktu)}</span>
                 </span>

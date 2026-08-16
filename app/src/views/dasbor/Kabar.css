@@ -69,3 +69,10 @@
   .lantai .kbr-it { animation: none; }
   .lantai .kbr-it:hover { transform: none; }
 }
+
+/* Kanal topik sumber (IPOT: Saham · Ekonomi · IPS News · Market/JCI). Warna
+   lebih tenang daripada lencana sumber — dia keterangan, bukan identitas. */
+.lantai .kbr-kanal {
+  color: var(--text3); letter-spacing: .06em; text-transform: uppercase;
+  border-left: 1px solid var(--line2); padding-left: 8px;
+}
