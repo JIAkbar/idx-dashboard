@@ -550,7 +550,7 @@ export function PapanIhsg({ hari, tanggalTersedia, buka, kepala, tanpaMeta }: {
               <span className="lilin-catatan">
                 {buka
                   ? <>Badan dari harga buka {fN(buka)} ke penutupan {fN(hari.ihsg_value)}.</>
-                  : <>Badan dari penutupan kemarin ke penutupan hari ini — harga buka hari ini belum dipanen.</>}
+                  : <>Badan dari penutupan kemarin ke penutupan hari ini — harga buka hari ini belum diperbarui.</>}
               </span>
             </div>
           </div>

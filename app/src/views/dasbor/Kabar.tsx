@@ -70,7 +70,7 @@ export function Kabar() {
           <p className="muted kbr-sumber">
             Judul dan tautan dari <b>IDX</b> (berita &amp; pengumuman resmi emiten),
             <b> IPOT News</b>, dan <b>Kontan</b>. PAPAN menautkan, tidak menyalin isinya.
-            {kabar && <> Terakhir dipanen {waktuKabar(kabar.dipanen)}.</>}
+            {kabar && <> Terakhir diperbarui {waktuKabar(kabar.dipanen)}.</>}
           </p>
 
           {!kabar && !galat && <p className="muted">Memuat…</p>}
@@ -79,7 +79,7 @@ export function Kabar() {
               <p style={{ marginBottom: 8 }}><IkonMenu d={IKON_KOTAK_ARSIP} size={26} /></p>
               <p>Kabar belum tersedia.</p>
               <p style={{ fontSize: 10, marginTop: 6 }}>
-                Berkas <code>kabar.json</code> belum ada — panen belum pernah dijalankan.
+                Berkas <code>kabar.json</code> belum ada — pembaruan belum pernah dijalankan.
               </p>
             </div>
           )}

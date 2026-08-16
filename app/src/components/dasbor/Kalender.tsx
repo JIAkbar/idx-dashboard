@@ -548,7 +548,7 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
           tip = 'Sesi hari ini belum ditutup atau datanya belum masuk'
         } else {
           label = 'Tanpa data'
-          tip = 'Tidak ada data untuk tanggal ini — libur bursa atau data belum dipanen'
+          tip = 'Tidak ada data untuk tanggal ini — libur bursa atau data belum diperbarui'
         }
         return (
           <div
