@@ -1,9 +1,12 @@
 # Panen kabar dari sumber yang TIDAK terikat IP rumahan.
 #
 # Pembagiannya sengaja:
-#   awan (berkas ini)  → Kontan, CNBC Indonesia, detikFinance — feed publik
-#                         biasa, jalan walau komputer Johan mati
-#   mesin rumahan      → IDX berita, IDX pengumuman, IPOT News
+#   awan (berkas ini)  → Kontan — feed publik biasa, jalan walau komputer
+#                         Johan mati
+#   mesin rumahan      → IDX berita, IDX pengumuman, IPOT News + arsipnya
+#
+# CNBC Indonesia dan detikFinance dicabut 16 Agu 2026 (alasannya di
+# `scripts/panen_kabar.py`), jadi jalur awan kini tinggal satu sumber.
 #
 # IDX menjawab 403 dari IP datacenter (lihat docs/sumber-fundamental-idx.md),
 # jadi bagian itu TIDAK boleh dipindah ke sini — kalau dipaksa, yang terjadi
@@ -46,8 +49,8 @@ jobs:
       - name: Pasang dependensi
         run: pip install --quiet requests
 
-      - name: Panen (Kontan, CNBC, detikFinance)
-        run: python scripts/panen_kabar.py --batas 30 --hanya kontan,cnbc,detik
+      - name: Panen (Kontan)
+        run: python scripts/panen_kabar.py --batas 30 --hanya kontan
 
       - name: Commit kalau ada perubahan
         run: |

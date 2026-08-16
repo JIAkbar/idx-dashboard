@@ -60,9 +60,9 @@ function PapanBeranda() {
 
 /**
  * Sumber yang tampil di Beranda — EMPAT inti, ditulis eksplisit (bukan
- * "seluruh sumber di kabar.json") karena halaman /kabar akan menampung lebih
- * banyak sumber (CNBC Indonesia, detikFinance, dst) yang sengaja tidak ikut
- * membanjiri pintu masuk situs. Urutan array = urutan kolom.
+ * "seluruh sumber di kabar.json") karena halaman /kabar boleh menampung
+ * sumber tambahan yang sengaja tidak ikut membanjiri pintu masuk situs.
+ * Urutan array = urutan kolom.
  *
  * 'Stockbit Snips' didaftarkan lebih dulu dari datanya ada: berkasnya
  * (`data-idx/json/snips.json`) sedang dipanen proses lain dan boleh belum

@@ -8,9 +8,11 @@ const PER_HAL = 12
 /** Dua tab pertama SELALU ada; sisanya diturunkan dari data.
  *
  *  Sebelumnya seluruh daftar tab ditulis tetap di sini, dan akibatnya sumber
- *  baru (CNBC Indonesia, detikFinance) sudah ikut terpanen tapi TAK PUNYA
- *  tabnya — hanya kelihatan di "Semua", jadi seolah panennya gagal. Daftar
- *  yang ditulis tangan selalu ketinggalan dari daftar yang tumbuh. */
+ *  yang baru masuk sudah ikut terpanen tapi TAK PUNYA tabnya — hanya
+ *  kelihatan di "Semua", jadi seolah panennya gagal. Daftar yang ditulis
+ *  tangan selalu ketinggalan dari daftar yang tumbuh; sekaligus daftar ini
+ *  ikut menyusut sendiri saat sebuah sumber dicabut (CNBC & detikFinance,
+ *  16 Agu 2026) tanpa perlu disunting lagi. */
 const TAB_TETAP = ['Semua', 'Pengumuman IDX'] as const
 
 function daftarTab(item: KabarItem[]): string[] {

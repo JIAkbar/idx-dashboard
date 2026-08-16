@@ -117,8 +117,18 @@ ketergantungan pada mesin rumahan untuk sebagian besar sumbernya:
 
 | Jalur | Sumber | Kenapa |
 |---|---|---|
-| **GitHub Actions** (awan, selalu hidup) | Kontan, CNBC Indonesia, detikFinance, IDX Channel — dan media lain yang RSS-nya terbuka | Tak ada blokir IP; feed publik biasa. Jalan walau komputer Johan mati |
-| **Mesin rumahan** (`JALANKAN_OTOMATIS.bat` / `panen_kabar.ps1`) | IDX berita, IDX pengumuman emiten, IPOT News | Endpoint IDX **403 dari IP datacenter**; ini yang tak bisa pindah ke awan |
+| **GitHub Actions** (awan, selalu hidup) | Kontan — dan media lain yang RSS-nya terbuka | Tak ada blokir IP; feed publik biasa. Jalan walau komputer Johan mati |
+| **Mesin rumahan** (`JALANKAN_OTOMATIS.bat` / `panen_kabar.ps1`) | IDX berita, IDX pengumuman emiten, IPOT News + arsip IPOT | Endpoint IDX **403 dari IP datacenter**; ini yang tak bisa pindah ke awan |
+
+**Keputusan 16 Agu (sore): CNBC Indonesia & detikFinance DICABUT.** Feed CNBC
+beralamat `/market/rss` tapi isinya campur berita umum, dan menyaring judul
+dengan kata kunci pasar cuma memindahkan tebakan ke tempat lain. detikFinance
+menjawab kalau diuji satuan tapi dua panen berturut-turut kena timeout —
+sumber yang cuma kadang menjawab membuat jumlah item naik-turun tanpa sebab
+yang terbaca. Arsip IPOT (`scripts/panen_ipot_arsip.py`, mundur sampai 1
+Januari) jauh lebih tebal dan lebih relevan daripada keduanya digabung.
+Item lama keduanya sudah dibuang dari `kabar.json`; tab `/kabar` menyusut
+sendiri karena daftarnya diturunkan dari data.
 
 Ongkosnya: dua jalur menulis ke satu berkas `kabar.json`, jadi perlu aturan
 gabung yang jelas (jalur awan menulis sumber miliknya saja, jalur rumahan
@@ -130,8 +140,8 @@ sudah ada membuat penggabungan itu aman.
 | Feed | Hasil |
 |---|---|
 | `investasi.kontan.co.id/rss` | ✅ 200, ±25 item — sudah dipakai |
-| `cnbcindonesia.com/market/rss` | ✅ 200, **100 item** |
-| `finance.detik.com/rss` | ✅ 200, **100 item** |
+| `cnbcindonesia.com/market/rss` | ✅ 200, 100 item — **dicabut**, isinya bukan pasar murni |
+| `finance.detik.com/rss` | ✅ 200, 100 item saat diuji satuan — **dicabut**, timeout saat panen sungguhan |
 | `idxchannel.com/rss` | ✅ 200, 10 item |
 | `bisnis.com/index/rss` & `market.bisnis.com/index/rss` | ⚠️ 200 tapi **nol `<item>`** — halaman HTML, bukan feed. Perlu jalur lain kalau tetap mau |
 | `emitennews.com/rss` · `investor.id/rss` · `idnfinancials.com/id/rss` · `pasardana.id/feed` | ❌ 404/500/308 |

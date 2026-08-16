@@ -192,7 +192,11 @@ def ipot(batas: int) -> list[dict]:
                    "X-Requested-With": "XMLHttpRequest"})
         if not r:
             continue
-        teks = r.text.replace("\/", "/").replace('\\"', '"')
+        # String mentah (r"") wajib di sini: "\/" itu escape tak sah, dan
+        # Python memang belum mengubahnya — tapi peringatannya sudah keluar
+        # dan versi mendatang akan menerjemahkannya. Escape yang diam-diam
+        # berubah arti adalah cara paling senyap merusak pengurai teks.
+        teks = r.text.replace(r"\/", "/").replace(r'\"', '"')
         n = 0
         for m in _ITEM_IPOT.finditer(teks):
             judul = re.sub(r"<[^>]+>", " ", m.group(3))
@@ -219,9 +223,9 @@ def ipot(batas: int) -> list[dict]:
 
 
 def rss(nama: str, url: str, batas: int) -> list[dict]:
-    """Pembaca RSS umum — dipakai Kontan, CNBC Indonesia, dan detikFinance.
+    """Pembaca RSS umum — sekarang hanya dipakai Kontan.
 
-    Ketiganya feed publik biasa **tanpa batasan IP**, beda dari endpoint IDX.
+    Feed publik biasa **tanpa batasan IP**, beda dari endpoint IDX.
     Itu yang membuat mereka bisa dipanen dari GitHub Actions (lihat
     `--hanya` di bawah dan `docs/panen-kabar.md`).
     """
@@ -268,7 +272,7 @@ def main() -> int:
                     help="berapa hari kabar disimpan sebelum dibuang (default 7)")
     ap.add_argument("--hanya", default="",
                     help="panen sebagian sumber saja, dipisah koma "
-                         "(idx, idx-pengumuman, ipot, kontan, cnbc, detik). "
+                         "(idx, idx-pengumuman, ipot, kontan). "
                          "Dipakai jalur GitHub Actions yang cuma boleh memanen "
                          "sumber tanpa batasan IP")
     args = ap.parse_args()
@@ -280,8 +284,15 @@ def main() -> int:
         "idx-pengumuman": ("IDX pengumuman", idx_pengumuman),
         "ipot": ("IPOT News", ipot),
         "kontan": ("Kontan", lambda b: rss("Kontan", "https://investasi.kontan.co.id/rss", b)),
-        "cnbc": ("CNBC Indonesia", lambda b: rss("CNBC Indonesia", "https://www.cnbcindonesia.com/market/rss", b)),
-        "detik": ("detikFinance", lambda b: rss("detikFinance", "https://finance.detik.com/rss", b)),
+        # CNBC Indonesia dan detikFinance DICABUT (16 Agu 2026):
+        #   - CNBC: URL-nya `/market/rss` tapi isinya campur berita umum
+        #     ("Bupati Terkaya di Jawa Hidup Serba Mewah"). Menyaring judul
+        #     dengan kata kunci pasar cuma memindahkan tebakan ke tempat lain.
+        #   - detikFinance: feed-nya hidup kalau diuji satuan, tapi dua panen
+        #     berturut-turut kena timeout — sumber yang cuma kadang menjawab
+        #     membuat jumlah item naik-turun tanpa sebab yang terbaca.
+        # Arsip IPOT (`panen_ipot_arsip.py`) jauh lebih tebal dan relevan
+        # daripada keduanya digabung, jadi dicabut tanpa rugi.
     }
     pilih = [k.strip() for k in args.hanya.split(",") if k.strip()] if args.hanya else list(SUMBER)
     tak_dikenal = [k for k in pilih if k not in SUMBER]
