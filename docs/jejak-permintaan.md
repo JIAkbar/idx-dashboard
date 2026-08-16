@@ -1,4 +1,25 @@
-# Jejak permintaan — apa yang diminta, sebelum & sesudah
+# Lembar Kerja — papan pekerjaan PAPAN
+
+> **Ini papan pekerjaan yang diwajibkan `kemampuan-workflow.md` §174.**
+> Namanya "Lembar Kerja", bukan "papan", karena produknya sendiri bernama
+> PAPAN dan "sudah masuk papan?" jadi ambigu tepat di kalimat yang dipakai
+> menagih. Mekanismenya tak berubah — cuma sebutannya.
+>
+> **Bentuk baku sepuluh kolom** untuk baris BARU mulai 17 Agu 2026:
+>
+> `# · Tugas · Asal perintah · Halaman · Komponen (file:baris) · Sebelumnya ·
+> Jadi · Alasan · Status & bukti · Changelog`
+>
+> Baris sesi 16 Agu di bawah ditulis sebelum konvensi ini diadopsi di sini,
+> jadi bentuknya masih empat kolom (permintaan · sebelum · sesudah · commit).
+> **Sengaja tidak ditulis ulang** — memundurkan pekerjaan yang sudah selesai
+> untuk memenuhi format hanya memindahkan waktu dari pekerjaan berikutnya, dan
+> isinya toh sudah menjawab pertanyaan yang sama. Yang mengikat mulai sekarang
+> adalah baris baru.
+
+---
+
+## Catatan asal: apa yang diminta, sebelum & sesudah
 
 Dibuat atas permintaan Johan 16 Agustus 2026: *"perlu ada ceklist backlog dalam
 bentuk tabel yang mana ada perintah saya dan sebelum dan sesudah perubahan."*

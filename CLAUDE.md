@@ -81,6 +81,34 @@ berisi sektor IDX-IC resmi dan pemegang saham pengendali. Runbook lengkapnya di
 - **Kunci dedup jangan cuma tautan.** Pengumuman resmi IDX tanpa lampiran semuanya menunjuk ke satu URL generik (halaman keterbukaan informasi), jadi dedup ber-tautan meringkas belasan pengumuman berbeda jadi SATU baris — tanpa galat, cuma daftar yang menyusut diam-diam dan dari layar terbaca sebagai "beritanya tidak ada". Pakai tautan + judul + waktu (`gabungKabar()` di `lib/dasbor/kabar.ts`, sudah ada tesnya).
 - **Pemanen berhenti kalau halaman KEMBAR PERSIS, bukan kalau "tak ada item baru".** Endpoint IPOT mengabaikan parameter `halaman` (halaman 0/1/5/50 membalas 200 `news_id` yang sama), dan panen ulang yang wajar juga menghasilkan nol item baru — syarat itu tak bisa membedakan "arsipnya habis" dari "sumbernya jalan di tempat". Tanpa pemeriksaan sidik halaman, skripnya menembak 1.000 permintaan selama 20 menit untuk nol hasil.
 
+### Lembar Kerja — papan pekerjaan proyek ini
+
+Konvensi lintas proyek `kemampuan-workflow.md` §174 mewajibkan **papan
+pekerjaan** untuk tiap perintah, sekecil apa pun. Di proyek ini namanya
+**Lembar Kerja**, bukan "papan" — produknya sendiri bernama PAPAN, dan
+"sudah masuk papan?" jadi ambigu justru di kalimat yang dipakai menagih.
+Mekanismenya tak berubah, cuma sebutannya.
+
+Rumahnya: **`docs/jejak-permintaan.md`**.
+
+Sepuluh kolom bakunya (§174 — jangan ditambah, jangan dikurangi):
+
+`# · Tugas · Asal perintah · Halaman · Komponen (file:baris) · Sebelumnya ·
+Jadi · Alasan · Status & bukti · Changelog`
+
+Yang paling sering dilanggar dan paling mahal:
+
+- **Asal perintah dikutip VERBATIM**, bukan diparafrase. Kolom ini sumber
+  kebenaran kalau nanti ada beda tafsir soal lingkup.
+- **Nomor tugas tak pernah berdiri sendiri.** Menyebut "#172" di ringkasan
+  wajib disertai nama tugas dan kutipan perintahnya — memaksa pembaca
+  menggulir balik berarti memindahkan beban ingat ke orang yang tak sedang
+  memegang konteksnya.
+- **"Selesai" tanpa bukti di kolom Status tidak dihitung selesai.** Hash
+  commit, `tsc bersih`, hasil uji, atau tangkapan layar.
+- **Ambang penyajian**: 1–4 baris boleh langsung di obrolan; 5+ baris ke
+  berkas, dengan ringkasan 3–5 baris tetap wajib di obrolan.
+
 ### Cara kerja & rilis — WAJIB
 
 **Kerjakan semua di localhost. Jangan push tanpa diminta.** Aturan ini berlaku sejak
