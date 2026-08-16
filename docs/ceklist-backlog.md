@@ -287,6 +287,14 @@ laptop 768px) punya ruang lebih sedikit — ambangnya bisa 1 ikon atau nol.
 **Empat halaman yang direncanakan** (chart PAPAN, penyaring fundamental,
 backtesting, bandarmologi) berarti kelebihan ±2 ikon.
 
+> **Update 17 Agu 2026** — Grafik Emiten (ikon `GRF`) sudah ditambahkan (chart
+> PAPAN tahap 3). Terukur ulang di 1536×960 lewat posisi ikon terakhir
+> sungguhan (bukan tinggi kotak `.dasbor-rail-list`, yang ternyata kotak flex
+> tetap — tidak tumbuh mengikuti isi): sisa ruang sesudah ikon ke-16 **≈52,6px**,
+> muat **1 ikon lagi**, bukan 2. Tiga sisa (penyaring fundamental, backtesting,
+> bandarmologi) tetap kelebihan ±2 — jalan keluarnya (`overflow-y:auto` atau
+> submenu) masih backlog, belum dikerjakan sesi ini.
+
 Dua jalan, keputusan Johan:
 
 1. **Asuransi murah, sekarang**: `overflow-y: auto` pada `.dasbor-rail-list`

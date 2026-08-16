@@ -3,7 +3,52 @@
 Catatan hidup — diperbarui tiap ada keputusan. Ditulis ke berkas supaya tidak
 bergantung pada ingatan percakapan (yang bisa diringkas dan kehilangan detail).
 
-Terakhir diperbarui: 16 Agustus 2026 (malam — setelah sesi Beranda, Kabar Pasar & Tanya PAPAN).
+Terakhir diperbarui: 17 Agustus 2026 (setelah sesi Grafik Emiten, chart PAPAN tahap 3).
+
+## 📌 Sesi 17 Agu 2026 — Grafik Emiten (chart PAPAN tahap 3)
+
+**Selesai & commit `3d47eca5`** (checkout utama, belum di-push). Rute `/grafik`
+baru — lilin (candlestick) + volume dari `data-idx/json/ohlc/<KODE>.json`
+(tahap 1/2), digambar `lightweight-charts@5.2.1` (opsi A, keputusan
+sebelumnya). **Beda dari `/chart`**: itu widget TradingView yang menggambar
+data TradingView sendiri; `/grafik` kanvas milik PAPAN sendiri — perlu supaya
+overlay khas PAPAN (pita musiman, akumulasi broker, penanda Radar — tahap
+berikutnya) bisa dipasang di atasnya.
+
+Isinya: lilin+volume satu emiten, zoom/geser bawaan lightweight-charts,
+pemilih rentang 1/3/5 thn/Semua (`.bchip.bchip-klik`, kosakata sama halaman
+lain), kotak cari emiten dipakai ulang dari pola SeasonalityHarian +
+`kamusEmiten.ts`. Dijaga login — baris `akses_halaman` kunci `grafik`,
+`tingkat='login'`, `min_tier=0`, `urutan=150`. Ikon rail `GRF` (kode `CHT`
+sudah dipakai TradingView).
+
+**Bug ditemukan & ditambal saat verifikasi devtools** (bukan cuma dilaporkan
+"kelihatan jalan" — diukur): container chart disembunyikan lewat
+`display:none` selama data belum termuat, dan `autoSize`-nya lightweight-charts
+memasang `ResizeObserver` SAAT chart dibuat (mount, saat container masih
+`display:none` alias lebar 0). Begitu data datang dan `display` balik ke
+`block`, `fitContent()` sempat jalan dengan lebar lama sebelum `ResizeObserver`
+sempat mengoreksi — lilinnya numpuk di satu sisi kanvas, sisanya kosong.
+**Ditambal**: sembunyikan lewat `opacity` (kotak layout tetap ada dari awal,
+`ResizeObserver` dapat lebar sungguhan sejak mount). Lihat komentar
+`.grf-chart-wrap.memuat` di `GrafikEmiten.css` — pola ini relevan untuk chart
+lain yang dipasang berikutnya (Bedah Emiten, dst), bukan cuma di sini.
+
+`vertTouchDrag: false` sengaja dimatikan di opsi chart — bawaan lightweight-
+charts menelan gestur geser VERTIKAL di kanvas (dipakai buat pan harga),
+padahal di halaman biasa (bukan widget layar-penuh) itu seharusnya tetap
+menggulung halaman. Sama alasannya dengan `touch-action: pan-y` di hit-rect
+SVG SeasonalityHarian (#172).
+
+Angka terukur (BBCA, viewport 1536×960×1.25, rentang default "1 thn"): 244
+lilin terpasang, cocok dengan hitungan manual dari `BBCA.json` (potong ke
+`akhir - 1 tahun` = 2025-08-14 → 2026-08-14, juga 244 baris). Tinggi kanvas
+460px (desktop) / 340px (telepon, breakpoint 700px). Rail nav: sisa ruang
+sesudah ikon ke-16 (GRF) **≈52,6px** — cukup untuk **1 ikon lagi**, bukan 2
+seperti tercatat #175 sebelum sesi ini (itu dihitung sebelum GRF ditambahkan).
+
+7 tes baru di `lib/dasbor/grafikEmiten.test.ts` (murni: potong rentang, pisah
+lilin/volume) — total 291 (dari 284).
 
 ## 📌 Sesi 16 Agu 2026 (siang–malam) — Beranda, Kabar, Tanya PAPAN
 
