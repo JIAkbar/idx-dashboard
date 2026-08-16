@@ -156,7 +156,15 @@ export function KurasiSetoran() {
     tandaiSibuk(paths, true)
     try {
       await setDimuat(paths, dimuat)
-      setToast({ ok: true, pesan: dimuat ? 'Dimasukkan ke edisi.' : 'Dikeluarkan dari edisi — kredit kontributor tidak berubah.' })
+      // Toast lama ("Dimasukkan ke edisi") terbaca seolah PDF-nya sudah
+      // berubah. Tidak — kolom `dimuat` cuma penanda; PDF baru berubah setelah
+      // `arus-pasar/build.py` dijalankan ulang, dan itu manual.
+      setToast({
+        ok: true,
+        pesan: dimuat
+          ? 'Ditandai masuk edisi — berlaku saat edisi dirakit ulang.'
+          : 'Ditandai di luar edisi — kredit kontributor tidak berubah.',
+      })
       setPilih(new Set())
       setMuat((m) => m + 1)
     } catch (e) {
@@ -195,14 +203,27 @@ export function KurasiSetoran() {
    *  Inilah yang dipakai saat transkripsi & perakitan PDF — bukan seluruh yang
    *  disetujui, karena sebagian sengaja disimpan di luar edisi hari itu. */
   async function salinDisetujui() {
-    const tickers = [...new Set((setoran ?? []).filter((s) => s.status === 'disetujui' && s.dimuat).map((s) => s.ticker))].sort()
-    if (tickers.length === 0) {
-      setToast({ ok: false, pesan: 'Belum ada setoran yang masuk edisi untuk tanggal ini.' })
+    const disetujui = (setoran ?? []).filter((s) => s.status === 'disetujui')
+    const masuk = [...new Set(disetujui.filter((s) => s.dimuat).map((s) => s.ticker))].sort()
+    const keluar = [...new Set(disetujui.filter((s) => !s.dimuat).map((s) => s.ticker))].sort()
+    if (masuk.length === 0 && keluar.length === 0) {
+      setToast({ ok: false, pesan: 'Belum ada setoran disetujui untuk tanggal ini.' })
       return
     }
+    // Dua daftar, dan yang KEDUA yang berbentuk argumen siap tempel.
+    // `build.py --kecuali=` menerima daftar yang DIKELUARKAN; menempelkan
+    // daftar "masuk edisi" ke sana membuang persis yang seharusnya dimuat —
+    // dan kalau semuanya dimuat, build.py berhenti dengan "Semua emiten
+    // dikeluarkan". Polaritasnya ditulis eksplisit supaya tak bisa tertukar.
+    const teks = [
+      `Masuk edisi (${masuk.length}): ${masuk.join(', ') || '—'}`,
+      keluar.length
+        ? [`Di luar edisi (${keluar.length}) — tempel ke build.py:`, `--kecuali=${keluar.join(',')}`].join('\n')
+        : 'Di luar edisi: tidak ada — jalankan build.py tanpa --kecuali.',
+    ].join('\n')
     try {
-      await navigator.clipboard.writeText(tickers.join(', '))
-      setToast({ ok: true, pesan: `${tickers.length} ticker disalin ke clipboard.` })
+      await navigator.clipboard.writeText(teks)
+      setToast({ ok: true, pesan: `${masuk.length} masuk edisi, ${keluar.length} dikeluarkan — disalin.` })
     } catch {
       setToast({ ok: false, pesan: 'Gagal menyalin — clipboard tidak tersedia di browser ini.' })
     }
@@ -286,10 +307,18 @@ export function KurasiSetoran() {
                         checked={pilih.has(s.path)}
                         onChange={() => togglePilih(s.path)}
                       />
-                      <span className={`chip ${KELAS_STATUS[s.status]}`}>{LABEL_STATUS[s.status]}</span>
-                      {s.status === 'disetujui' && !s.dimuat && (
-                        <span className="chip" title="Disetujui, tapi sengaja tidak dimuat di edisi ini">Di luar edisi</span>
-                      )}
+                      {/* Lencana jenis. Sebelumnya jenis setoran cuma tertulis
+                          sebagai teks abu-abu di tengah kartu, satu baris dengan
+                          nama kontributor — jadi kartu Bedah dan kartu Broker
+                          Summary terlihat persis sama sampai dibaca. Padahal
+                          keduanya beda produk: Bedah dirakit jadi PDF studi satu
+                          emiten, Broker Summary jadi edisi harian. */}
+                      <span className="ks-kartu-kanan">
+                        <span className={`chip ${KELAS_STATUS[s.status]}`}>{LABEL_STATUS[s.status]}</span>
+                        {s.status === 'disetujui' && !s.dimuat && (
+                          <span className="chip" title="Disetujui, tapi sengaja tidak dimuat di edisi ini">Di luar edisi</span>
+                        )}
+                      </span>
                     </div>
                     {urls[s.path] ? (
                       <button type="button" className="ks-thumb" title="Klik untuk pratinjau besar" onClick={() => bukaPratinjau(s.path)}>
@@ -301,8 +330,17 @@ export function KurasiSetoran() {
                       </div>
                     )}
                     <div className="ks-info">
-                      <span className="tick">{s.ticker}</span>
-                      <span className="muted" style={{ fontSize: 10.5 }}>{LABEL_JENIS[s.jenis]} · {nama}</span>
+                      {/* Lencana jenis duduk di baris ticker, bukan di kepala
+                          kartu: di kepala ia berebut lebar dengan chip status
+                          ("Perlu revisi" lebih panjang dari "Disetujui") dan
+                          membungkus ke baris kedua, sehingga tinggi kepala tiap
+                          kartu jadi beda-beda. Di sini lebarnya lega karena kode
+                          emiten cuma 4 huruf. */}
+                      <span className="ks-tick-baris">
+                        <span className="tick">{s.ticker}</span>
+                        <span className={`chip ks-jenis ks-jenis-${s.jenis}`}>{LABEL_JENIS[s.jenis]}</span>
+                      </span>
+                      <span className="muted" style={{ fontSize: 10.5 }}>{nama}</span>
                       <span className="muted" style={{ fontSize: 10 }}>{waktuManusiawi(s.dibuat_pada)}</span>
                       <p className="ks-alasan">{s.alasan?.trim() || '(tanpa alasan — superadmin)'}</p>
                       {(s.status === 'dihapus' || s.status === 'revisi') && s.catatan_kurator && (
@@ -483,6 +521,17 @@ function AturanKurasi() {
           <b>“Di edisi” terpisah dari “Disetujui”.</b> Setoran yang disetujui
           tapi tidak dimuat tetap dihitung penuh untuk jenjang penyetor —
           memangkas isi edisi bukan alasan menghukum kerja yang benar.
+        </li>
+        <li className="ks-aturan-catat">
+          <b>Menandai “Di edisi” tidak menerbitkan apa pun.</b> Ia cuma
+          mengubah penanda di basis data. PDF edisi dirakit terpisah oleh{' '}
+          <code>arus-pasar/build.py</code>, dijalankan <b>manual</b> — tak ada
+          penjadwalan, dan skrip itu tidak membaca basis data sama sekali.
+          Jembatannya tombol <b>“Salin daftar masuk edisi”</b> di atas:
+          salinannya memuat daftar yang masuk <i>dan</i> argumen{' '}
+          <code>--kecuali=</code> berisi yang dikeluarkan. Perhatikan
+          polaritasnya — <code>--kecuali</code> menerima yang{' '}
+          <b>DIKELUARKAN</b>, bukan yang masuk.
         </li>
         <li className="ks-aturan-catat">
           <b>Akurasi = disetujui ÷ (disetujui + dihapus).</b> Jadi menghapus

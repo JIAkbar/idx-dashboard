@@ -63,7 +63,16 @@
   padding: 10px; transition: border-color .12s;
 }
 .lantai .ks-kartu.pilih { border-color: var(--amber); background: var(--amber-dim); }
-.lantai .ks-kartu-atas { display: flex; align-items: center; justify-content: space-between; }
+.lantai .ks-kartu-atas { display: flex; align-items: center; gap: 6px; }
+.lantai .ks-kartu-kanan { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+/* Lencana jenis setoran. Warnanya membedakan produk, bukan status — sengaja
+   tidak memakai hijau/merah/amber yang sudah dipakai chip status, supaya dua
+   lencana bersebelahan tak terbaca sebagai dua status. */
+.lantai .ks-tick-baris { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.lantai .ks-jenis { font-size: 9.5px; letter-spacing: .04em; text-transform: uppercase; padding: 2px 7px; }
+.lantai .ks-jenis-orderbook { background: var(--bg3); color: var(--text2); border: 1px solid var(--line2); }
+.lantai .ks-jenis-bedah { background: rgba(120, 160, 255, .14); color: #8fb0ff; border: 1px solid rgba(120, 160, 255, .35); }
+.lantai .ks-jenis-chart { background: rgba(160, 130, 255, .14); color: #b09aff; border: 1px solid rgba(160, 130, 255, .35); }
 
 .lantai .ks-thumb {
   display: block; width: 100%; height: 128px; padding: 0;
@@ -75,7 +84,12 @@
 .lantai .ks-thumb-kosong { display: flex; align-items: center; justify-content: center; color: var(--text3); cursor: default; }
 .lantai .ks-thumb-kosong .dasbor-ikon { stroke: var(--text3); }
 
-.lantai .ks-info { display: flex; flex-direction: column; gap: 3px; }
+/* `flex: 1` membuat blok info memakan sisa tinggi kartu sehingga `.ks-aksi`
+   selalu menempel ke dasar. Tanpa ini tinggi tombol mengikuti panjang alasan
+   tiap setoran, dan tiga kartu bersebelahan menaruh tombolnya di tiga
+   ketinggian berbeda — "naik turun tangga". Kartu sendiri sudah sama tinggi
+   karena `.ks-grid` memakai align-items:stretch bawaan grid. */
+.lantai .ks-info { display: flex; flex-direction: column; gap: 3px; flex: 1; }
 .lantai .ks-alasan {
   margin: 4px 0 0; font-size: 11px; line-height: 1.5; color: var(--text2);
   overflow-wrap: anywhere;
