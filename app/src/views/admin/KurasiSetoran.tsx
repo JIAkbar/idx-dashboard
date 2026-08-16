@@ -226,6 +226,8 @@ export function KurasiSetoran() {
           </button>
         </div>
         <div className="panel-b">
+          <AturanKurasi />
+
           <div className="ks-filter">
             <DatePicker value={tanggal} onChange={setTanggal} ariaLabel="Tanggal kurasi" />
             <div className="tabs" role="tablist" aria-label="Filter status setoran">
@@ -368,6 +370,125 @@ export function KurasiSetoran() {
         </div>
       )}
     </>
+  )
+}
+
+/**
+ * Keterangan aturan kurasi — apa yang benar-benar terjadi pada tiap tindakan.
+ *
+ * Isinya diturunkan dari kode & fungsi SQL yang sedang berjalan, BUKAN dari
+ * niat desainnya:
+ *   - `kurasiSetoran()` / `mintaRevisiSetoran()` — cuma UPDATE `status`
+ *   - `hitung_orderbook_hari()` — kuota harian, semua kecuali `dihapus`
+ *   - `emiten_sudah_disetor()` — kunci emiten, semua kecuali `dihapus`
+ *   - `berkas_masih_menunggu()` — penyetor boleh mengganti berkasnya sendiri
+ *   - `hitung_jenjang()` — akurasi
+ *   - `kabari_hasil_kurasi()` — pemberitahuan otomatis
+ * Kalau salah satunya diubah, teks di sini WAJIB ikut diperiksa — keterangan
+ * yang menyimpang dari perilaku nyata lebih buruk daripada tak ada keterangan.
+ *
+ * Dilipat (`<details>`) supaya tak memakan ruang kerja harian: yang dibutuhkan
+ * tiap hari daftar setorannya, bukan aturannya.
+ */
+function AturanKurasi() {
+  return (
+    <details className="ks-aturan">
+      <summary>
+        <IkonMenu d={IKON_PERINGATAN} size={12} />
+        Aturan kurasi — apa yang hilang dan apa yang tetap ada
+      </summary>
+
+      <p className="ks-aturan-inti">
+        <b>Tidak ada tindakan kurasi yang menghapus berkasnya.</b> Semua tombol di
+        halaman ini hanya mengubah <i>status</i> baris setoran; tangkapan layar
+        yang sudah diunggah tetap tersimpan dan tetap bisa dibuka dari kartunya,
+        termasuk yang berstatus <b>Dihapus</b>. Yang berubah cuma: ikut edisi
+        atau tidak, memakan kuota atau tidak, dan mengunci emiten atau tidak.
+      </p>
+
+      <div className="af-gulir">
+        <table className="tbl ks-aturan-tabel">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Berkas</th>
+              <th>Kuota harian penyetor</th>
+              <th>Emiten terkunci hari itu</th>
+              <th>Penyetor boleh ganti/hapus</th>
+              <th>Jenjang &amp; akurasi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Menunggu</b></td>
+              <td>Tersimpan</td>
+              <td>Terpakai</td>
+              <td>Ya</td>
+              <td>Ya</td>
+              <td>Belum dihitung</td>
+            </tr>
+            <tr>
+              <td><b>Perlu revisi</b></td>
+              <td>Tersimpan</td>
+              <td>Terpakai</td>
+              <td>Ya</td>
+              <td><b>Ya</b> — berkasnya boleh diganti</td>
+              <td><b>Tidak menurunkan akurasi</b></td>
+            </tr>
+            <tr>
+              <td><b>Disetujui</b></td>
+              <td>Tersimpan &amp; terkunci</td>
+              <td>Terpakai</td>
+              <td>Ya</td>
+              <td>Tidak</td>
+              <td>Menambah jumlah disetujui</td>
+            </tr>
+            <tr>
+              <td><b>Dihapus</b></td>
+              <td><b>Tetap tersimpan</b></td>
+              <td><b>Dikembalikan</b></td>
+              <td><b>Tidak</b> — emitennya terbuka lagi</td>
+              <td>Tidak</td>
+              <td>Tidak menambah</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ul className="ks-aturan-poin">
+        <li>
+          <b>“Dihapus” bukan penghapusan berkas, tapi pengeluaran dari antrean
+          edisi.</b> Kuota harian penyetor dikembalikan dan emitennya terbuka
+          lagi untuk hari itu — jadi orang lain (atau penyetor yang sama) bisa
+          menyetor ulang emiten tersebut.
+        </li>
+        <li>
+          <b>“Perlu revisi” adalah satu-satunya jalan yang menyuruh memperbaiki
+          tanpa menghukum.</b> Kuotanya tetap terpakai dan emitennya tetap
+          terkunci — memang disengaja, supaya emiten yang sudah dikerjakan tak
+          direbut orang lain selagi diperbaiki. Catatan kurator <b>wajib
+          diisi</b>: tanpa itu penyetor tak tahu apa yang harus diperbaiki.
+        </li>
+        <li>
+          <b>Catatan kurator terlihat oleh penyetor</b>, dan tiap perubahan
+          status (disetujui / perlu revisi / dihapus) otomatis mengirim
+          pemberitahuan ke penyetornya.
+        </li>
+        <li>
+          <b>“Di edisi” terpisah dari “Disetujui”.</b> Setoran yang disetujui
+          tapi tidak dimuat tetap dihitung penuh untuk jenjang penyetor —
+          memangkas isi edisi bukan alasan menghukum kerja yang benar.
+        </li>
+        <li className="ks-aturan-catat">
+          ⚠ <b>Akurasi saat ini selalu terbaca 100%.</b> Rumusnya masih
+          membagi dengan status <code>ditolak</code> yang sudah tidak dipakai
+          lagi sejak status diganti jadi <code>dihapus</code>, sehingga
+          penyebutnya tak pernah bertambah. Artinya <b>menghapus setoran hari
+          ini tidak menurunkan akurasi siapa pun</b> — bukan karena aturannya
+          begitu, tapi karena perbaikannya (#160) belum dijalankan.
+        </li>
+      </ul>
+    </details>
   )
 }
 

@@ -10,6 +10,48 @@
 /* Baris filter: date picker + tab status, sebaris di layar lebar, tumpuk di sempit. */
 .lantai .ks-filter { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
+/* Keterangan aturan kurasi — DILIPAT baku. Yang dibutuhkan tiap hari daftar
+   setorannya; aturannya dibaca sekali lalu jarang, jadi tak pantas memakan
+   layar teratas selamanya. */
+.lantai .ks-aturan {
+  margin-bottom: 12px; border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--bg3);
+}
+.lantai .ks-aturan > summary {
+  display: flex; align-items: center; gap: 7px; cursor: pointer;
+  padding: 9px 12px; font-family: var(--mono); font-size: 11px;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--text2);
+}
+.lantai .ks-aturan > summary:hover { color: var(--amber); }
+.lantai .ks-aturan[open] > summary { border-bottom: 1px solid var(--line); }
+.lantai .ks-aturan .dasbor-ikon { flex: none; }
+
+.lantai .ks-aturan-inti {
+  margin: 0; padding: 11px 12px; font-size: 11.5px; line-height: 1.75; color: var(--text2);
+  border-bottom: 1px solid var(--line);
+}
+.lantai .ks-aturan-inti b { color: var(--text); }
+
+.lantai .ks-aturan .af-gulir { padding: 10px 12px 0; }
+.lantai .ks-aturan-tabel { font-size: 11px; min-width: 640px; }
+.lantai .ks-aturan-tabel th { white-space: nowrap; }
+.lantai .ks-aturan-tabel td { vertical-align: top; line-height: 1.55; }
+
+.lantai .ks-aturan-poin {
+  margin: 0; padding: 10px 12px 12px 28px; display: grid; gap: 7px;
+  font-size: 11.5px; line-height: 1.75; color: var(--text3);
+}
+.lantai .ks-aturan-poin b { color: var(--text2); }
+/* Catatan cacat yang MASIH hidup dibedakan warnanya — kalau menyatu dengan
+   poin lain, yang terbaca "begitulah aturannya", padahal ini justru hal yang
+   sedang menunggu diperbaiki. */
+.lantai .ks-aturan-poin .ks-aturan-catat { color: var(--amber); }
+.lantai .ks-aturan-poin .ks-aturan-catat b { color: var(--amber); }
+.lantai .ks-aturan-poin code {
+  font-family: var(--mono); font-size: 10.5px; padding: 1px 4px;
+  border: 1px solid var(--line); border-radius: 4px; color: var(--text2);
+}
+
 /* Grid kartu setoran — auto-fit, minimal 240px per kartu. */
 .lantai .ks-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
