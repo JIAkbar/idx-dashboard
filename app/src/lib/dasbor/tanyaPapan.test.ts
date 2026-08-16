@@ -130,6 +130,34 @@ describe('jawab — batas kemampuan', () => {
   })
 })
 
+describe('jawab — basis teks (pengetahuan + glosarium)', () => {
+  it('istilah dari glosarium dijawab, bukan ditolak', () => {
+    const j = jawab('apa itu big dist?', konteks())
+    expect(j.takPaham).toBeFalsy()
+    expect(j.teks.toLowerCase()).toContain('dist')
+  })
+
+  it('"apa itu IHSG" dijawab ARTINYA, bukan angka hari ini', () => {
+    // Tanpa blok MINTA_ARTI yang dicek lebih dulu, blok IHSG akan membajak
+    // pertanyaan ini dan menjawab "6.401,89" — angkanya benar, pertanyaannya
+    // yang salah dijawab.
+    const j = jawab('apa itu IHSG?', konteks())
+    expect(j.teks).not.toContain('6.401,89')
+  })
+
+  it('"IHSG hari ini berapa" TETAP dijawab angka — blok arti tak boleh serakah', () => {
+    const j = jawab('IHSG hari ini berapa?', konteks())
+    expect(j.teks).toContain('6.401,89')
+  })
+
+  it('kunci pendek tak ikut cocok di tengah kata lain', () => {
+    // "ara" pernah cocok di dalam "sekarang" — jebakan yang sudah sekali
+    // menggigit di `pengetahuan.ts` dan tak boleh lahir lagi lewat glosarium.
+    const j = jawab('bagaimana kondisi pasar sekarang?', konteks())
+    expect(j.teks.toLowerCase()).not.toContain('auto reject')
+  })
+})
+
 // ── Kamus emiten (harga/nama/grup) — bahan pertanyaan per-emiten baru ──────
 const kamus: KamusEmiten = {
   harga: { BBCA: 6300 },

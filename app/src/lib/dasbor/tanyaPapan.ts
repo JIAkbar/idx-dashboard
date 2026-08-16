@@ -7,6 +7,8 @@ import type { StockFundamental } from './stockDetailData'
 import type { InvestorMapEntry } from './petaInvestorData'
 import { holderType } from './petaInvestorData'
 import type { BarisOhlc } from './ihsgOhlc'
+import { cariPengetahuan } from './pengetahuan'
+import { cariGlosarium } from './glosarium'
 import { HOLIDAYS, todayIsoJakarta } from '../../components/dasbor/Kalender'
 
 /**
@@ -280,6 +282,39 @@ function jawabGrupNama(nama: string, g: GrupEntry): Jawaban {
   }
 }
 
+/**
+ * Jawaban dari dua basis TEKS (bukan angka hari berjalan): `pengetahuan.ts`
+ * untuk "bagaimana platform ini bekerja", `glosarium.json` untuk "apa arti
+ * kata ini".
+ *
+ * Urutannya sengaja: pengetahuan dulu. Keduanya bisa sama-sama memuat kata
+ * "ARA", tapi pengetahuan menjawabnya lengkap dengan aturan bursanya,
+ * sementara glosarium cuma memberi definisi sebaris. Yang lebih lengkap
+ * menang; glosarium jadi jaring di bawahnya, yang justru jauh lebih lebar
+ * (75 istilah, ditambang dari terbitan PAPAN sendiri).
+ */
+function jawabTeks(pertanyaan: string): Jawaban | null {
+  const p = cariPengetahuan(pertanyaan)
+  if (p) return { teks: `${p.judul}. ${p.isi}`, ke: p.ke, keLabel: p.keLabel }
+
+  const g = cariGlosarium(pertanyaan)
+  if (g) {
+    // Catatan dibawa serta kalau ada — di situlah koreksi istilah tinggal
+    // (mis. "orderbook" yang sebenarnya broker summary, atau PCD yang cuma
+    // aproksimasi dari OHLCV). Definisi tanpa catatannya bisa menyesatkan
+    // justru pada istilah yang paling perlu diluruskan.
+    const bagian = [`${g.istilah}: ${g.definisi}`]
+    if (g.catatan) bagian.push(g.catatan)
+    if (g.contoh) bagian.push(`Contoh pemakaian di terbitan PAPAN: "${g.contoh}"`)
+    return { teks: bagian.join(' '), ke: g.ke, keLabel: g.ke ? 'Buka halaman terkait' : undefined }
+  }
+  return null
+}
+
+/** Pertanyaan yang jelas MINTA DEFINISI, bukan angka. Dicek lebih dulu supaya
+ *  "apa itu IHSG" dijawab artinya, bukan angkanya hari ini. */
+const MINTA_ARTI = /\b(apa itu|apa arti|artinya|maksudnya|definisi|istilah|singkatan dari|kepanjangan)\b/i
+
 /** Pertanyaan contoh — ditawarkan di antarmuka supaya pengguna tahu batas
  *  kemampuannya tanpa harus menebak-nebak. */
 export const CONTOH_TANYA = [
@@ -348,6 +383,16 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
       return { teks: 'Susulan dari yang mana? Tanyakan dulu satu hal — misalnya IHSG, arus asing, atau sektor.', takPaham: true }
     }
     t = lanjut
+  }
+
+  // ── Minta ARTI, bukan angka ──────────────────────────────────────────────
+  // "apa itu IHSG" harus dijawab definisinya, bukan angkanya hari ini — jadi
+  // blok ini duluan. Kalau ternyata istilahnya tak dikenal, jangan berhenti:
+  // jatuh terus ke blok-blok data di bawah, karena "apa itu" juga dipakai
+  // orang untuk menanyakan hal yang memang berupa angka.
+  if (MINTA_ARTI.test(pertanyaan)) {
+    const j = jawabTeks(pertanyaan)
+    if (j) return j
   }
 
   // ── Kenapa disebut kuat/tipis — pertanyaan tentang METODE, bukan angka ───
@@ -627,6 +672,14 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
     }
     return { teks: `${kode}: ${bagian.join('; ')}.`, ke: '/stock-detail', keLabel: 'Buka Stock Detail' }
   }
+
+  // ── Jaring terakhir sebelum menyerah: basis teks ─────────────────────────
+  // Ditaruh di SINI, bukan di atas, supaya pertanyaan berangka selalu dijawab
+  // angka hari berjalan lebih dulu. Baru kalau tak ada blok data yang
+  // mengenali pertanyaannya, kata-katanya dicoba dicocokkan ke pengetahuan
+  // platform dan glosarium istilah.
+  const teks = jawabTeks(pertanyaan)
+  if (teks) return teks
 
   return {
     teks:
