@@ -3,6 +3,19 @@
    satu pun nilai warna mentah di berkas ini. */
 
 
+/* Identitas DI DALAM papan IHSG (kepala Beranda). Papannya sendiri sama
+   persis dengan halaman Indeks Dunia — yang membedakan cuma sisipan ini
+   dan apa yang menyusul di bawahnya. */
+.lantai .brd-identitas { margin-bottom: 14px; }
+.lantai .brd-nama {
+  margin: 0; font-family: var(--disp); font-weight: 700; line-height: 1;
+  font-size: clamp(30px, 3.8vw, 44px); letter-spacing: .02em;
+}
+.lantai .brd-tagline {
+  margin: 6px 0 0; max-width: 72ch; font-size: 12px; line-height: 1.7; color: var(--text3);
+}
+.lantai .brd-tagline b { color: var(--text2); }
+
 /* Tempat papan selagi datanya diambil — tinggi disamakan supaya kartu di
    bawahnya tidak melompat saat papan muncul. */
 .lantai .brd-papan-memuat {

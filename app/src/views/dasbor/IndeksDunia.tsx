@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { ChartConfiguration } from 'chart.js/auto'
 import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
@@ -382,11 +382,15 @@ function PanelSkeleton({ tanggalTersedia, tanggalAktif, pilihTanggal, loading }:
  * papan yang SAMA, bukan salinannya: dua papan yang menampilkan angka sama
  * dari dua potong kode akan berselisih pada perubahan pertama.
  */
-export function PapanIhsg({ hari, tanggalTersedia, buka }: {
+export function PapanIhsg({ hari, tanggalTersedia, buka, kepala }: {
   hari: DataHarian
   tanggalTersedia: TanggalIndex[]
   /** Harga buka hari itu; `null` kalau panen Yahoo belum jalan (lihat useIhsgBuka). */
   buka: number | null
+  /** Sisipan di atas label papan — dipakai Beranda untuk menaruh nama PAPAN
+   *  dan kalimat identitas DI DALAM papan, bukan sebagai kotak terpisah di
+   *  atasnya. Halaman Indeks Dunia tidak mengisinya. */
+  kepala?: ReactNode
 }) {
   const naik = hari.ihsg_pct >= 0
   const ytdPct = hitungYtdPct(hari.ihsg_value, tanggalTersedia)
@@ -405,6 +409,7 @@ export function PapanIhsg({ hari, tanggalTersedia, buka }: {
   return (
     <div className="board">
       <div className="board-main">
+        {kepala}
         <span className="lbl">
           Indeks Harga Saham Gabungan · {hari.date_id} · hari bursa ke-{hari.trading_day}
         </span>
