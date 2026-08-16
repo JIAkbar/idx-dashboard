@@ -139,45 +139,82 @@ def idx_pengumuman(batas: int) -> list[dict]:
     return out
 
 
-def ipot(batas: int) -> list[dict]:
-    """IPOT News tidak menyediakan RSS — daftarnya diambil dari HTML.
+# Empat kanal IPOT News yang ditunjuk Johan. `newsList.php` yang dipakai
+# sebelumnya adalah daftar campur — di sana berita bursa berdampingan dengan
+# politik Amerika dan pemilu Zambia. Kanal per topik ini yang isinya pasar.
+IPOT_KANAL = [
+    ("stocks", "Saham"),
+    ("economy", "Ekonomi"),
+    ("ipsnews", "IPS News"),
+    ("jci", "Market/JCI"),
+]
 
-    Judulnya ada di parameter `jdl` pada tautan (garis bawah = spasi), jadi
-    tak perlu mem-parse seluruh pohon HTML: satu regex atas tautan detail
-    sudah memberi judul + id beritanya sekaligus.
+# Halaman kanal itu sendiri cuma kerangka — daftarnya diambil JavaScript dari
+# endpoint di bawah, yang membalas JSON berisi potongan HTML per halaman.
+# Ditemukan dengan membaca lalu lintas jaringan halamannya, bukan menebak URL.
+IPOT_AJAX = "https://www.indopremier.com/module/newsresearch/ajax/ajax_generalNewsPagesMore.php"
+
+# "Saturday, Aug 15, 2026 - 11:46 WIB"
+_WAKTU_IPOT = re.compile(r"<small>[^,]+,\s*([A-Za-z]{3})\s+(\d{1,2}),\s*(\d{4})\s*-\s*(\d{1,2}):(\d{2})", re.I)
+_ITEM_IPOT = re.compile(
+    r'<small>(.*?)</small>.*?<a href="(newsDetail\.php\?[^"]+)"[^>]*>(.*?)</a>',
+    re.S)
+_BULAN_EN = {b: i for i, b in enumerate(
+    ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"], 1)}
+
+
+def _waktu_ipot(potongan: str) -> str | None:
+    m = _WAKTU_IPOT.search(potongan)
+    if not m:
+        return None
+    bln = _BULAN_EN.get(m.group(1).lower())
+    if not bln:
+        return None
+    try:
+        return datetime(int(m.group(3)), bln, int(m.group(2)),
+                        int(m.group(4)), int(m.group(5)), tzinfo=WIB).isoformat()
+    except ValueError:
+        return None
+
+
+def ipot(batas: int) -> list[dict]:
+    """IPOT News — empat kanal topik, lewat endpoint AJAX-nya.
+
+    Berbeda dari daftar umum yang dipakai sebelumnya, potongan HTML di sini
+    MEMBAWA WAKTU TERBIT ("Saturday, Aug 15, 2026 - 11:46 WIB"), jadi kabar
+    IPOT tak lagi tampil tanpa tanggal dan bisa diurut bersama sumber lain.
     """
-    r = ambil("https://www.indopremier.com/ipotnews/newsList.php", HEADER_UMUM)
-    if not r:
-        return []
     out, terlihat = [], set()
-    # Judul diambil dari TEKS di dalam <a>, bukan dari parameter `jdl` di URL:
-    # parameter itu sudah kehilangan tanda baca (titik, koma, persen jadi
-    # spasi) sehingga "IDXTRANS Melaju 5,29%" tercetak "IDXTRANS Melaju 5 29%".
-    pola = re.compile(
-        r'href="(newsDetail\.php\?jdl=([^&"]+)&news_id=(\d+)[^"]*)"[^>]*>(.*?)</a>',
-        re.S)
-    for m in pola.finditer(r.text):
-        nid = m.group(3)
-        if nid in terlihat:
+    per_kanal = max(1, batas // len(IPOT_KANAL))
+    for level4, nama in IPOT_KANAL:
+        r = ambil(f"{IPOT_AJAX}?halaman=0&level4={level4}",
+                  {**HEADER_UMUM, "Referer": f"https://www.indopremier.com/ipotnews/nw-saham.php?level4={level4}",
+                   "X-Requested-With": "XMLHttpRequest"})
+        if not r:
             continue
-        terlihat.add(nid)
-        judul = re.sub(r"<[^>]+>", " ", m.group(4))
-        judul = re.sub(r"\s{2,}", " ", html.unescape(judul)).strip()
-        if not judul:  # tautan gambar tanpa teks — pakai parameter sebagai cadangan
-            judul = re.sub(r"\s{2,}", " ", urllib.parse.unquote(m.group(2)).replace("_", " ")).strip()
-        out.append({
-            "sumber": "IPOT News",
-            "jenis": "berita",
-            "judul": judul,
-            "tautan": "https://www.indopremier.com/ipotnews/" + m.group(1).replace("&", "&amp;").replace("&amp;", "&"),
-            # Halaman daftar tidak memuat tanggal per baris; biarkan kosong
-            # alih-alih menebak "hari ini" — tanggal karangan lebih buruk
-            # daripada tanggal yang tak ada.
-            "waktu": None,
-            "emiten": [],
-        })
-        if len(out) >= batas:
-            break
+        teks = r.text.replace("\/", "/").replace('\\"', '"')
+        n = 0
+        for m in _ITEM_IPOT.finditer(teks):
+            judul = re.sub(r"<[^>]+>", " ", m.group(3))
+            judul = re.sub(r"\s{2,}", " ", html.unescape(judul)).strip()
+            tautan = html.unescape(m.group(2))
+            nid = re.search(r"news_id=(\d+)", tautan)
+            kunci = nid.group(1) if nid else tautan
+            if not judul or kunci in terlihat:
+                continue
+            terlihat.add(kunci)
+            out.append({
+                "sumber": "IPOT News",
+                "jenis": "berita",
+                "kanal": nama,
+                "judul": judul,
+                "tautan": "https://www.indopremier.com/ipotnews/" + tautan,
+                "waktu": _waktu_ipot(m.group(0)),
+                "emiten": [],
+            })
+            n += 1
+            if n >= per_kanal:
+                break
     return out
 
 
@@ -268,9 +305,11 @@ def main() -> int:
 
     batas_waktu = (datetime.now(WIB) - timedelta(days=args.hari)).isoformat()
     sebelum = len(unik)
-    # Item tanpa waktu (IPOT) TIDAK ikut dibuang oleh saringan umur — kita tak
-    # tahu umurnya, dan menebaknya berarti membuang kabar yang mungkin baru.
-    unik = [i for i in unik if not i.get("waktu") or i["waktu"] >= batas_waktu]
+    # Sejak IPOT dipanen lewat kanal topiknya, KEEMPAT sumber membawa waktu
+    # terbit. Jadi item tanpa waktu = sisa panen lama sebelum perbaikan itu,
+    # dan justru harus luruh. (Pengecualian lama "tanpa waktu jangan dibuang"
+    # dicabut: sekarang dia cuma membuat sampah menetap selamanya.)
+    unik = [i for i in unik if i.get("waktu") and i["waktu"] >= batas_waktu]
 
     isi = {
         "dipanen": datetime.now(WIB).isoformat(timespec="seconds"),
