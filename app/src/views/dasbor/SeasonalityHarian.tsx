@@ -235,10 +235,19 @@ export function SeasonalityHarian() {
               </div>
             )}
           </div>
-          <span className="v-note">
-            {r
-              ? `${kode} · ${r.mulai} → ${r.akhir} · ${r.totalObservasi.toLocaleString('id-ID')} hari bursa`
-              : `${kode} · rentang ini belum cukup panjang`}
+          <span className="v-note sea-rentang-note">
+            {r ? (
+              <>
+                <span className="sea-rentang-sumber">{kode}</span>
+                {' · '}
+                <span className="sea-rentang-tanggal">{r.mulai} → {r.akhir}</span>
+                {' · '}
+                <span className="sea-rentang-jumlah">{r.totalObservasi.toLocaleString('id-ID')}</span>
+                {' hari bursa'}
+              </>
+            ) : (
+              <>{kode} · rentang ini belum cukup panjang</>
+            )}
           </span>
         </div>
       </section>

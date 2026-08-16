@@ -2399,7 +2399,7 @@
 .lantai .sea-chip {
   display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
   font-family: var(--mono); font-size: 11px; font-weight: 700;
-  padding: 4px 10px; border-radius: 99px;
+  height: 26px; padding: 0 12px; border-radius: 4px;
   background: var(--amber-dim); border: 1px solid var(--amber); color: var(--amber);
 }
 .lantai .sea-tahun { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -2504,6 +2504,14 @@
 
 /* ===== Seasonality · tab hari dalam seminggu ============================== */
 .lantai .sea-hari-kepala { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+/* Baris keterangan rentang (sumber · tanggal · jumlah hari bursa) — tiga
+   informasi berbeda dipisah warna supaya bisa dipindai cepat, bukan satu
+   kalimat abu-abu rata. Pemisah "·" dan "hari bursa" ikut var(--text3) bawaan
+   .sea-rentang-note, tak perlu span sendiri. */
+.lantai .sea-rentang-note { color: var(--text3); }
+.lantai .sea-rentang-sumber { color: var(--amber); font-weight: 700; font-family: var(--mono); }
+.lantai .sea-rentang-tanggal { color: var(--text2); font-family: var(--mono); }
+.lantai .sea-rentang-jumlah { color: var(--green); font-weight: 700; font-family: var(--mono); }
 /* Di layar sempit judul dan keterangannya berbagi baris jadi dua kolom
    selebar ±180px, dan keduanya membungkus tiga baris. Menumpuk memberi
    keduanya lebar penuh dengan tinggi yang justru lebih pendek. */
