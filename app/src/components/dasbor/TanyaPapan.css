@@ -6,25 +6,67 @@
 
 .tp-tombol {
   position: fixed; right: 18px; bottom: 18px; z-index: 60;
-  width: 52px; height: 52px; border-radius: 50%;
-  display: grid; place-items: center; cursor: pointer;
-  background: var(--accent, #F0A62B); color: #0B1017;
-  border: none; box-shadow: 0 8px 22px -8px rgba(0, 0, 0, .6);
-  transition: transform .22s cubic-bezier(.2,.7,.3,1), box-shadow .22s ease;
+  height: 56px; min-width: 56px; padding: 0; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 0; cursor: pointer;
+  /* Gradasi, bukan warna rata: dua warna merek (amber → cyan) menurun
+     diagonal, dengan sedikit kilau di sudut kiri atas supaya tombolnya
+     terbaca sebagai benda, bukan lingkaran datar. */
+  background:
+    radial-gradient(120% 120% at 22% 18%, rgba(255,255,255,.38) 0%, rgba(255,255,255,0) 42%),
+    linear-gradient(135deg, #FFC65C 0%, var(--accent, #F0A62B) 45%, #E2872A 72%, #6FD3E6 140%);
+  color: #0B1017; border: none;
+  box-shadow: 0 10px 26px -10px rgba(0, 0, 0, .65);
+  /* Lebar ikut isi saat hover (label muncul), jadi transisinya di width. */
+  transition: transform .26s cubic-bezier(.2,.7,.3,1),
+              box-shadow .26s ease, padding .26s cubic-bezier(.2,.7,.3,1);
 }
-.tp-tombol:hover { transform: translateY(-2px) scale(1.04); }
-.tp-tombol.buka { transform: rotate(-8deg) scale(.96); }
-.tp-tombol:focus-visible { outline: 2px solid var(--accent, #F0A62B); outline-offset: 3px; }
+.tp-tombol:hover { transform: translateY(-2px); padding-right: 18px; }
+.tp-tombol.buka { transform: scale(.94); }
+.tp-tombol:focus-visible { outline: 2px solid var(--accent, #F0A62B); outline-offset: 4px; }
+
+/* Gerak yang dipakai sekarang: cahaya BERNAPAS di dalam bayangan tombol —
+   selalu terkurung bentuknya sendiri, berapa pun lebar tombolnya. Ini
+   penggantinya cincin conic yang tadinya berputar dan bocor keluar pil. */
+@keyframes tp-napas {
+  0%, 100% { box-shadow: 0 10px 26px -10px rgba(0,0,0,.65), 0 0 0 0 rgba(240,166,43,.42); }
+  50%      { box-shadow: 0 10px 26px -10px rgba(0,0,0,.65), 0 0 22px 3px rgba(240,166,43,.34); }
+}
+
 .tp-lambang {
-  font-family: var(--disp, inherit); font-weight: 800; font-size: 22px; line-height: 1;
+  position: relative; z-index: 1;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .35);
+  width: 56px; flex: none; text-align: center;
+  font-family: var(--disp, inherit); font-weight: 800; font-size: 23px; line-height: 1;
 }
-/* Denyut halus sekali saat halaman dibuka — menandai keberadaannya tanpa
-   berkedip terus-menerus. */
-@keyframes tp-denyut {
-  0% { box-shadow: 0 0 0 0 rgba(240, 166, 43, .5); }
-  100% { box-shadow: 0 0 0 16px rgba(240, 166, 43, 0); }
+/* Label "AI" menempel di bahu huruf P — kecil, tapi itu yang menjelaskan
+   tombolnya tanpa satu kata pun tambahan. */
+.tp-ai {
+  position: absolute; top: 6px; right: 8px; z-index: 2;
+  font-family: var(--mono, monospace); font-size: 8.5px; font-weight: 700;
+  letter-spacing: .06em; line-height: 1;
+  /* Kepingan gelap supaya "AI" tetap terbaca di atas gradasi terang.
+     Sempat dicoba huruf bergradasi lewat background-clip — hasilnya justru
+     transparan di atas latar gelap, alias hilang. */
+  background: #0B1017; color: #FFC65C;
+  border: 1px solid rgba(255, 198, 92, .55);
+  border-radius: 999px; padding: 2px 5px;
+  box-shadow: 0 2px 6px -2px rgba(0, 0, 0, .6);
 }
-.tp-tombol { animation: tp-denyut 1.6s ease-out .8s 2; }
+.tp-tombol:hover .tp-ai { transform: translateY(-1px); }
+/* Nama panjangnya baru muncul saat kursor mampir — di layar sempit tombol
+   bundar sudah cukup, dan label permanen memakan ruang yang bukan miliknya. */
+.tp-teks {
+  max-width: 0; overflow: hidden; white-space: nowrap;
+  font-size: 12.5px; font-weight: 700; letter-spacing: .01em;
+  transition: max-width .26s cubic-bezier(.2,.7,.3,1), opacity .2s ease;
+  opacity: 0;
+}
+.tp-tombol:hover .tp-teks { max-width: 140px; opacity: 1; }
+
+/* Napas pelan tanpa henti (3,2 detik) — cukup untuk menandai bahwa tombol
+   ini hidup, cukup lambat untuk tidak mengganggu saat membaca angka. */
+.tp-tombol { animation: tp-napas 3.2s ease-in-out infinite; }
+.tp-tombol:hover, .tp-tombol.buka { animation-play-state: paused; }
 
 .tp-panel {
   position: fixed; right: 18px; bottom: 82px; z-index: 60;

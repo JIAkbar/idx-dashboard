@@ -65,7 +65,14 @@ export function TanyaPapan() {
         title="Tanya PAPAN — jawaban ditarik dari data"
         onClick={() => setBuka((v) => !v)}
       >
+        {/* Lambang P + label AI + nama yang memanjang saat disentuh.
+            Cincin conic yang berputar SEMPAT dipasang lalu dibuang: begitu
+            tombol memanjang jadi pil, gradasinya menyapu ke luar bentuknya —
+            animasi yang menuntut bentuk tetap tak cocok dipasang di elemen
+            yang berubah lebar. */}
         <span className="tp-lambang">P</span>
+        <span className="tp-ai" aria-hidden="true">AI</span>
+        <span className="tp-teks">Tanya PAPAN</span>
       </button>
 
       {buka && (

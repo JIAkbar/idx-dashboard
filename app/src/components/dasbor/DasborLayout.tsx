@@ -83,9 +83,11 @@ export function DasborLayout() {
                 Sumber data: <b>Statistik Ringkas IDX</b> (idx.co.id), Yahoo Finance, dan KSEI.
                 PAPAN (Pusat Analisa Pasar Nusantara) bukan produk resmi Bursa Efek Indonesia.
               </span>
-              <span className="dasbor-kaki-kanan">
-                Buletin analisa: <b>Arus Pasar</b>
-              </span>
+              {/* "Buletin analisa: Arus Pasar" DIBUANG (16 Agu): tempatnya di
+                  pojok kanan bawah kini ditempati tombol Tanya PAPAN yang
+                  mengambang, jadi teksnya tertimpa di tiap halaman. Isinya pun
+                  tak hilang — Bulletin punya menu sendiri (BLT) dan kartu di
+                  Beranda. */}
             </footer>
           </div>
         </div>
