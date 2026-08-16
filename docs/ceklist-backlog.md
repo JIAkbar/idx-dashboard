@@ -14,6 +14,69 @@ dimulai, yang selalu melebihkan:
 git rev-list --count origin/main..HEAD
 ```
 
+## 🚦 Urutan kerja — dari paling RINGAN ke paling MAHAL
+
+Disusun 17 Agu 2026 atas permintaan Johan. **Ini urutan eksekusi yang mengikat**;
+tabel bertema di bawahnya cuma pengelompokan.
+
+Membacanya: kerjakan dari atas. Tiap baris menyebut apa yang DIBUKANYA, karena
+itu yang menentukan urutan — bukan besar-kecilnya saja.
+
+### Ringan (jam-jaman, tak butuh panen data baru)
+
+| ☐ | Urut | Fase | Tugas | Bergantung | Membuka |
+|---|---|---|---|---|---|
+| ☐ | 1 | **B1** | Sektor IDX-IC resmi dari sheet `1000000` | — | Screener, Bedah, banding sektor. Klasifikasi Yahoo bukan IDX-IC |
+| ☐ | 2 | **A0** | Satukan `keuangan/` + `fundamental/` | — | Menambal `operating_cf` kosong **80%** di Stock Detail yang SUDAH ada |
+| ☐ | 3 | **C6** | Halaman metodologi & glosarium | — | 75 istilah sudah jadi `glosarium.json`, tinggal dipindah ke layar |
+| ☐ | 4 | **C7** | Foreign flow 5D/10D | — | Agregasi `ds_*.json`, murni skrip |
+| ☐ | 5 | **C8** | Watchlist | — | localStorage, tanpa server |
+| ☐ | 6 | **C4** | Heatmap & market breadth | — | Dari data harian yang sudah ada |
+
+### Sedang (sehari-dua, sebagian butuh hitungan baru)
+
+| ☐ | Urut | Fase | Tugas | Bergantung | Membuka |
+|---|---|---|---|---|---|
+| ☐ | 7 | **A1** | Rata-rata 5 tahun + ambang verdict valuasi | A0 | **Kunci kedalaman AI** — tiap angka jadi punya pembanding (riset ASK SPLE) |
+| ☐ | 8 | **B2** | Broker summary harian ke JSON | — | 88 broker/tanggal; sekarang masih di-parse dari PDF |
+| ☐ | 9 | **B4** | Pasar NEGO / Bandar Flow | — | Ruas ada di `GetStockSummary`, belum dipanen |
+| ☐ | 10 | **#165** | Thumbnail dibuat saat unggah | — | Gambar 420–520 KB berhenti dipakai di kotak 40 px |
+| ☐ | 11 | **#171** | Rule engine paham dari satu kata | — | Peta sinonim, tahan salah ketik, kata tunggal ditawari cabang |
+| ☐ | 12 | **#172** | Emiten dijawab analisa + chip saran | A1 | Tanya PAPAN berhenti menjawab satu kalimat sama untuk semua pertanyaan |
+
+### Besar (berhari-hari, halaman/mesin baru)
+
+| ☐ | Urut | Fase | Tugas | Bergantung | Membuka |
+|---|---|---|---|---|---|
+| ☐ | 13 | **C2** | Indikator per emiten — RSI, MACD, BB, ATR, Fib, Ichimoku, VWAP, Heikin Ashi, **Stochastic** | — | Prasyarat screener DAN #130. Data OHLCV 5 tahun sudah lengkap |
+| ☐ | 14 | **Chart 3** | Chart dasar: lilin + volume + zoom (opsi A, `lightweight-charts`) | C2 | **Rilis yang bisa diumumkan.** Sekarang `/chart` masih widget TradingView |
+| ☐ | 15 | **C3** | Screener seluruh emiten | C2 + B1 | 967×147 ruas akhirnya punya layar penyaring |
+| ☐ | 16 | **A2** | Bedah Emiten — 12 section, satu commit per section | A0 + A1 | Padanan sple-mf, plus Altman Z & F-Score yang tak mereka punya |
+| ☐ | 17 | **#130** | Divergensi tiga lapis (harga + stochastic + volume) | C2 + Chart 3 | Definisi sudah beres dari Johan 17 Agu |
+| ☐ | 18 | **A3** | Panen laporan keuangan resmi IDX (XLSX ber-XBRL) | A2 | 777/778 emiten TW2 2026; menutup kedalaman 9 tahun/16 kuartal |
+| ☐ | 19 | **B3** | Pemegang saham pengendali | A3 | Menutup celah kepemilikan lewat perusahaan perantara |
+| ☐ | 20 | **#166** | Rakit ulang mesin Mingguan & Bulanan | — | Sekarang 21 dari 24 halaman identik dengan edisi harian |
+| ☐ | 21 | **#170** | Penyeragaman kendali (tombol, kalender, cari, rentang) | 14–16 | **Sengaja terakhir** — halaman baru menambah kendali baru |
+
+### Menunggu pembahasan, bukan menunggu giliran
+
+| ☐ | # | Tugas | Yang menghalangi |
+|---|---|---|---|
+| ☐ | #167 | Penyetelan lanjutan lapis Gemini | Menunggu cakupan rule-engine lengkap (setelah #171/#172) |
+| ☐ | #168 | Cara scraping arsip berita yang benar | Perlu dibahas dulu — jangan menembak `news_id` satu per satu |
+| ☐ | #129 | Chart bandarmologi | **Terhalang data**, bukan giliran: broker per emiten tak ada di endpoint publik mana pun |
+
+### Kenapa urutannya begini
+
+- **Enam pertama tak bergantung apa pun** — laju terasa sejak hari pertama, dan
+  A0 memperbaiki halaman yang sudah dipakai, bukan menambah halaman baru.
+- **A1 naik lebih tinggi dari besarnya** karena riset ASK SPLE membuktikan
+  kedalaman jawaban datang dari angka yang punya pembanding, bukan dari model.
+- **C2 mendahului C3 dan #130** — screener tanpa kolom indikator cuma tabel
+  harga, dan divergensi butuh Stochastic yang lahir di C2.
+- **#170 sengaja paling akhir.** Menyeragamkan kendali sebelum halaman barunya
+  ada berarti menyeragamkan dua kali.
+
 ## Antrean berikutnya — **halaman & fitur baru dari riset SPLE**
 
 > Jejak permintaan (**apa yang diminta Johan · sebelum · sesudah**) ada di
