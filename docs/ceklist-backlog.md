@@ -259,7 +259,7 @@ yang dikeluarkan dipangkas dengan `--kecuali=TICKER,…` saat merakit.
 
 ---
 
-## #174 — Rel navigasi: batasnya 2 ikon lagi, dan luapannya senyap
+## #175 — Rel navigasi: batasnya 2 ikon lagi, dan luapannya senyap
 
 Dicatat 17 Agu 2026 atas permintaan Johan: *"untuk menu rail untuk sementara
 dibiarkan gini dulu kan bisa scrolling ya, jadi dipikirkan kemudian jadikan
