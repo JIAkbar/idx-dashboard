@@ -2538,6 +2538,17 @@
 @media (prefers-reduced-motion: reduce) {
   .lantai .sb-garis, .lantai .sb-ujung { animation: none; stroke-dashoffset: 0; opacity: 1; }
 }
+/* Tooltip/crosshair Balapan (#172) — zona tangkap transparan di atas plot,
+   plus garis bidik + kotak keterangan yang muncul saat dihover/disentuh.
+   Tanpa animasi/transisi di sini (nempel instan ke posisi kursor, wajar untuk
+   crosshair), jadi tak ada yang perlu digating lewat prefers-reduced-motion. */
+.lantai .sb-hit { fill: transparent; cursor: crosshair; touch-action: pan-y; }
+.lantai .sb-crosshair-garis { stroke: var(--text3); stroke-width: 1; stroke-dasharray: 2 3; }
+.lantai .sb-tip-titik { stroke: var(--bg2); stroke-width: 1.5; }
+.lantai .sb-tip-box { fill: var(--bg2); stroke: var(--line2); stroke-width: 1; }
+.lantai .sb-tip-tgl { font-family: var(--mono); font-size: 10.5px; fill: var(--text2); }
+.lantai .sb-tip-pct { font-family: var(--mono); font-size: 14px; font-weight: 700; }
+.lantai .sb-tip-ket { font-family: var(--mono); font-size: 9.5px; fill: var(--text3); }
 .lantai .sea-hari-tbl { min-width: 640px; }
 .lantai .sea-hari-tbl td.up { color: var(--green); }
 .lantai .sea-hari-tbl td.dn { color: var(--red); }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { HARI, ringkasHarian, hariBursaDiRentang, vonisUji, type RingkasHarian } from '../../lib/seasonality'
 import { pesanGalat } from '../../lib/pesanGalat'
 import { IkonMenu, IKON_PERINGATAN, IKON_CARI, IKON_SILANG } from '../../components/dasbor/IkonMenu'
@@ -293,7 +293,7 @@ export function SeasonalityHarian() {
         </div>
       )}
 
-      {r && v && <>
+      {r && v && tutup && <>
 
       <section className="panel">
         <div className="panel-h">
@@ -301,7 +301,7 @@ export function SeasonalityHarian() {
           <span className="v-note">pertumbuhan kumulatif sejak {r.mulai.slice(0, 4)}</span>
         </div>
         <div className="panel-b">
-          <Balapan r={r} kunci={pilih} />
+          <Balapan r={r} kunci={pilih} tutup={tutup} />
         </div>
       </section>
 
@@ -376,7 +376,7 @@ export function SeasonalityHarian() {
  * Dengan dashoffset, path digambar sekali lalu compositor yang menganimasikan
  * penyingkapannya. Tak ada render ulang sama sekali selama animasi berjalan.
  */
-function Balapan({ r, kunci }: { r: RingkasHarian; kunci: string }) {
+function Balapan({ r, kunci, tutup }: { r: RingkasHarian; kunci: string; tutup: Record<string, number> }) {
   // viewBox lebih sempit di layar kecil. Ukuran teks di dalam SVG ikut
   // diskalakan bersama viewBox-nya: kotak 900 lebar yang dipaksa masuk ke
   // 394px menyusutkan label 12px jadi sekitar 5px — ada di layar, tak terbaca.
@@ -394,6 +394,51 @@ function Balapan({ r, kunci }: { r: RingkasHarian; kunci: string }) {
   const x = (i: number) => PAD.kiri + (i / Math.max(1, r.jejak.length - 1)) * (W - PAD.kiri - PAD.kanan)
   const y = (v: number) => PAD.atas + (1 - (v - min) / Math.max(1e-9, maks - min)) * (H - PAD.atas - PAD.bawah)
   const akhir = r.jejak[r.jejak.length - 1]
+
+  // Tooltip/crosshair (#172, Johan: "opsi A" — kursor menyusuri garis, bukan
+  // titik/batang per hari). Biaya rendernya cuma menambah satu overlay dan
+  // beberapa elemen SVG saat dihover, tak menambah simpul path — jadi batas
+  // "maksimal 1Y" yang tadinya dikhawatirkan tak diperlukan untuk fitur ini.
+  //
+  // Persen perubahan hariannya dihitung dari `tutup` MENTAH (bukan dari
+  // r.jejak, yang bisa dijarangkan di rentang sangat panjang) — hari bursa
+  // sebelumnya dicari lewat peta tanggal→indeks yang di-memo sekali, supaya
+  // tiap pointermove tetap O(1), bukan mencari ulang di seluruh riwayat.
+  const [hoverI, setHoverI] = useState<number | null>(null)
+  useEffect(() => setHoverI(null), [r])
+
+  const tglUrut = useMemo(() => Object.keys(tutup).sort(), [tutup])
+  const idxTgl = useMemo(() => {
+    const m = new Map<string, number>()
+    tglUrut.forEach((t, i) => m.set(t, i))
+    return m
+  }, [tglUrut])
+
+  function pindaiTitik(e: ReactPointerEvent<SVGRectElement>) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const frac = rect.width > 0 ? Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width)) : 0
+    setHoverI(Math.round(frac * (r.jejak.length - 1)))
+  }
+  function mulaiTitik(e: ReactPointerEvent<SVGRectElement>) {
+    // Capture itu cuma supaya jari yang bergeser sedikit ke luar zona tetap
+    // "dipegang" elemen ini — bukan syarat supaya titiknya kebaca. Browser
+    // bisa menolak capture untuk pointer yang belum ia lacak sendiri (mis.
+    // event sintetis), dan penolakan itu tak boleh membatalkan pembacaan.
+    try { e.currentTarget.setPointerCapture(e.pointerId) } catch { /* abaikan */ }
+    pindaiTitik(e)
+  }
+
+  const iAktif = hoverI === null ? null : Math.min(Math.max(hoverI, 0), r.jejak.length - 1)
+  const titik = iAktif === null ? null : (() => {
+    const j = r.jejak[iAktif]
+    const idx = idxTgl.get(j.tgl)
+    const prevTgl = idx !== undefined && idx > 0 ? tglUrut[idx - 1] : null
+    const perubahan = prevTgl && tutup[prevTgl] > 0 ? (tutup[j.tgl] / tutup[prevTgl] - 1) * 100 : null
+    const hari = new Date(j.tgl + 'T00:00:00Z').getUTCDay() - 1 // 0=Senin … 4=Jumat
+    const tgl = new Date(j.tgl + 'T00:00:00Z')
+    const tglFmt = `${tgl.getUTCDate()} ${BLN_PENDEK[tgl.getUTCMonth()]} ${tgl.getUTCFullYear()}`
+    return { i: iAktif, j, hari, perubahan, tglFmt }
+  })()
 
   // Penanda waktu dipilih menurut panjang rentangnya: di bawah 2 tahun tiap
   // bulan (atau tiap 2 bulan kalau padat), di atas itu tiap tahun. Menampilkan
@@ -432,6 +477,18 @@ function Balapan({ r, kunci }: { r: RingkasHarian; kunci: string }) {
     }
     return Math.ceil(L) + 10
   })
+
+  // Kotak tooltip menempel di sisi kanan titik, dan lompat ke kiri kalau
+  // akan terpotong tepi kanan grafik — pola flip standar, bukan sekadar
+  // ditempel selalu di satu sisi.
+  const tipW = sempit ? 150 : 178
+  const tipH = 54
+  let tipX = 0, tipY = 0
+  if (titik) {
+    const cx = x(titik.i)
+    tipX = cx + 10 + tipW > W - 2 ? cx - tipW - 10 : cx + 10
+    tipY = PAD.atas + 4
+  }
 
   return (
     <div className="sea-balapan">
@@ -473,6 +530,35 @@ function Balapan({ r, kunci }: { r: RingkasHarian; kunci: string }) {
             <text x={x(t.i)} y={H - 6} textAnchor="middle" className="sb-sumbu">{t.label}</text>
           </g>
         ))}
+
+        {/* Zona tangkap kursor/sentuh — satu persegi transparan menutupi
+            seluruh area plot. `touch-action: pan-y` (di CSS, lewat kelas
+            sb-hit) sengaja dipilih ketimbang preventDefault manual: gulir
+            VERTIKAL halaman tetap jalan walau jari menyentuh grafik, cuma
+            gestur horizontal yang diserahkan ke JS di sini (#172). */}
+        <rect x={PAD.kiri} y={0} width={Math.max(0, W - PAD.kiri - PAD.kanan)} height={H}
+          className="sb-hit" pointerEvents="all"
+          onPointerDown={mulaiTitik} onPointerMove={pindaiTitik}
+          onPointerLeave={() => setHoverI(null)} onPointerCancel={() => setHoverI(null)} />
+
+        {titik && (
+          <g className="sb-crosshair" pointerEvents="none">
+            <line x1={x(titik.i)} x2={x(titik.i)} y1={PAD.atas} y2={H - PAD.bawah} className="sb-crosshair-garis" />
+            <circle cx={x(titik.i)} cy={y(titik.j.nilai[titik.hari])} r="4"
+              fill={WARNA[titik.hari]} className="sb-tip-titik" />
+            <rect x={tipX} y={tipY} width={tipW} height={tipH} rx="4" className="sb-tip-box" />
+            <text x={tipX + 10} y={tipY + 17} className="sb-tip-tgl">
+              <tspan fill={WARNA[titik.hari]} fontWeight="700">{HARI[titik.hari]}</tspan>, {titik.tglFmt}
+            </text>
+            <text x={tipX + 10} y={tipY + 36} className="sb-tip-pct"
+              fill={titik.perubahan === null ? 'var(--text3)' : titik.perubahan >= 0 ? 'var(--green)' : 'var(--red)'}>
+              {titik.perubahan === null
+                ? 'data hari sebelumnya tak ada'
+                : `${titik.perubahan >= 0 ? '+' : ''}${titik.perubahan.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`}
+            </text>
+            <text x={tipX + 10} y={tipY + 49} className="sb-tip-ket">menggerakkan garis {HARI[titik.hari]}</text>
+          </g>
+        )}
       </svg>
     </div>
   )
