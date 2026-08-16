@@ -128,11 +128,18 @@ export function Seasonality() {
         {/* Tab terkunci tetap TERLIHAT, tidak disembunyikan. Yang tak
             kelihatan tak bisa dikejar — kontributor Pemula perlu tahu apa
             yang menunggunya di Perak supaya jenjangnya punya arti. */}
+        {/* "Harian", bukan "Hari dalam Seminggu" (permintaan Johan) — sejajar
+            dengan "Bulanan" di sebelahnya: satu pasang tab, satu mempelajari
+            pola per BULAN, satu per HARI. Nama sejajar membuat hubungan itu
+            terbaca tanpa dijelaskan, dan sama panjang di telepon (nama lama
+            makan dua baris di sana). Risikonya "Harian" terbaca sebagai
+            "data harian" — subjudul di bawah (mengikuti tab aktif) menutup
+            celah itu dengan menyebut maksud sebenarnya. */}
         <button type="button" role="tab" aria-selected={tab === 'hari'}
           className={'tab' + (tab === 'hari' ? ' on' : '') + (bolehHari ? '' : ' tab-kunci')}
           title={bolehHari ? undefined : alasanHari.kalimat}
           onClick={() => setTab('hari')}>
-          Hari dalam Seminggu
+          Harian
           {!bolehHari && <IkonMenu d={IKON_KUNCI} size={11} />}
         </button>
       </div>

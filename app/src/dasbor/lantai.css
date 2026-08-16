@@ -2398,6 +2398,24 @@
 }
 .lantai .sea-tahun { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .lantai .sea-tahun .bchip.on { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); }
+/* Toggle Praset / Tanggal ke tanggal (#170 K9) — `.tabs`/`.tab` yang sama
+   dipakai di seluruh Lantai (mis. Bulanan/Harian di Seasonality.tsx, tab
+   halaman ini sendiri), bukan pil baru. */
+.lantai .sea-mode { flex-shrink: 0; }
+/* Bilah tunggal (#170 opsi B) — dua DatePicker duduk dalam SATU bingkai
+   dengan pemisah, meniru pola `.kbr-alat` (Kabar.tsx): bingkai bersama
+   membuat keduanya terbaca sebagai satu rentang, bukan dua kotak lepas. */
+.lantai .sea-rentang-bilah {
+  display: flex; align-items: stretch;
+  border: 1px solid var(--line); border-radius: var(--r); background: var(--bg3);
+}
+.lantai .sea-rentang-bilah:focus-within { border-color: var(--amber); }
+.lantai .sea-rentang-bilah .dpk-wrap { flex: 1; min-width: 0; }
+.lantai .sea-rentang-bilah .dpk-btn { border: 0; border-radius: 0; background: transparent; }
+.lantai .sea-rentang-panah {
+  display: flex; align-items: center; flex-shrink: 0; padding: 0 8px;
+  color: var(--text3); border-left: 1px solid var(--line); border-right: 1px solid var(--line);
+}
 
 /* Matriks: warna dari peluang tersusut. Lima tingkat, bukan gradasi halus —
    mata membedakan lima langkah dengan andal, dua puluh tidak. */

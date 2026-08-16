@@ -1,8 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
-import { HARI, ringkasHarian, vonisUji, type RingkasHarian } from '../../lib/seasonality'
+import { HARI, ringkasHarian, hariBursaDiRentang, vonisUji, type RingkasHarian } from '../../lib/seasonality'
 import { pesanGalat } from '../../lib/pesanGalat'
 import { IkonMenu, IKON_PERINGATAN, IKON_CARI, IKON_SILANG } from '../../components/dasbor/IkonMenu'
 import { muatIndeks, type BarisIndeks } from '../../lib/seasonalityData'
+import { DatePicker } from '../../components/dasbor/DatePicker'
+
+/** Hari bursa minimum buat rentang bebas = satu putaran Senin–Jumat penuh
+ *  (#170 K9, perintah Johan). Di bawah itu bukan pintu tertutup — cuma pesan
+ *  yang menyebut berapa yang ada dan berapa yang dibutuhkan; halaman ini
+ *  untuk orang yang sedang MENGUJI, bukan sekadar percaya tombol praset. */
+const AMBANG_BEBAS = 5
 
 /** Tiap pilihan menghitung batas bawahnya sendiri saat diklik — bukan disimpan
  *  sebagai tanggal tetap, supaya MTD/YTD tetap benar kalau halaman dibiarkan
@@ -60,7 +67,18 @@ const BLN_PENDEK = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep
 export function SeasonalityHarian() {
   const [tutup, setTutup] = useState<Record<string, number> | null>(null)
   const [galat, setGalat] = useState<string | null>(null)
-  const [pilih, setPilih] = useState('Semua')
+  // Bawaan "1 thn" (bukan "Semua"): "Semua" menarik 8.848 hari sejak 1990 dan
+  // grafik kumulatifnya jadi didominasi rezim pasar 1990-an yang sudah tak
+  // relevan buat pembaca hari ini. Satu tahun terakhir itu jendela yang bisa
+  // dinilai orang dari ingatannya sendiri — sejalan dengan alasan utama tab
+  // ini: hasilnya harus bisa DIBUKTIKAN, bukan dipercaya begitu saja.
+  const [pilih, setPilih] = useState('1 thn')
+  // Praset ATAU rentang bebas — praset tetap jalan pintas bawaan, rentang
+  // bebas (#170 K9) mengundang pembaca membuktikan sendiri lewat jendela
+  // yang ia pilih, bukan yang disodorkan.
+  const [modeBebas, setModeBebas] = useState(false)
+  const [dariBebas, setDariBebas] = useState('')
+  const [sampaiBebas, setSampaiBebas] = useState('')
   // Sumbernya boleh IHSG atau satu emiten (#131b). Berkas OHLC per emiten baru
   // ada setelah #122 dipanen; sebelum itu tab ini memang cuma IHSG.
   const [kode, setKode] = useState('IHSG')
@@ -91,17 +109,56 @@ export function SeasonalityHarian() {
     return () => { batal = true }
   }, [kode])
 
+  // Rentang bebas dikosongkan tiap ganti sumber — IHSG dan satu emiten punya
+  // cakupan tanggal yang beda jauh (8.848 hari vs 5 tahun terakhir), jadi
+  // pasangan tanggal lama bisa jatuh di luar data yang baru. Kosong lalu
+  // diisi ulang oleh keBebas() lebih jujur daripada diam-diam menjepitnya.
+  useEffect(() => { setDariBebas(''); setSampaiBebas('') }, [kode])
+
   const saran = useMemo(() => {
     const q = cari.trim().toUpperCase()
     if (!daftar || q.length < 1) return []
     return daftar.filter((b) => b.k.startsWith(q) || b.n.toUpperCase().includes(q)).slice(0, 8)
   }, [daftar, cari])
 
-  const sejak = (RENTANG.find(([n]) => n === pilih)?.[1] ?? (() => ''))()
+  // Hari-hari BERDATA saja, dipakai sebagai `tersedia` DatePicker — kalender
+  // otomatis mengunci diri ke rentang data yang sah (tak perlu jepit manual
+  // sesudahnya), dan reset tiap ganti sumber supaya IHSG vs satu emiten tak
+  // saling mewarisi hari yang tak ada di data yang baru.
+  const tersediaSet = useMemo(() => new Set(tutup ? Object.keys(tutup) : []), [tutup])
+  const tglTersedia = useMemo(() => [...tersediaSet].sort(), [tersediaSet])
+  const akhirData = tglTersedia[tglTersedia.length - 1] ?? ''
+
+  /** Ganti mode ke rentang bebas; kalau belum pernah diisi, mulai dari
+   *  jendela yang sama dengan praset bawaan (1 tahun terakhir) supaya kedua
+   *  pemilih tak muncul kosong. */
+  function keBebas() {
+    setModeBebas(true)
+    if (!dariBebas || !sampaiBebas) {
+      setDariBebas(geser(1))
+      setSampaiBebas(akhirData)
+    }
+  }
+
+  /** Dua ujung ditukar otomatis kalau "dari" dipilih setelah "sampai" —
+   *  meniru pola yang sama di /broker-summary (`keRentangBebas`), supaya
+   *  klik yang kepeleset urutannya tak perlu diulang dari awal. */
+  function ubahBebas(dari: string, sampai: string) {
+    if (dari && sampai && dari > sampai) { setDariBebas(sampai); setSampaiBebas(dari) }
+    else { setDariBebas(dari); setSampaiBebas(sampai) }
+  }
+
+  const sejak = modeBebas ? dariBebas : (RENTANG.find(([n]) => n === pilih)?.[1] ?? (() => ''))()
+  const sampai = modeBebas ? sampaiBebas : ''
 
   const r: RingkasHarian | null = useMemo(
-    () => (tutup ? ringkasHarian(kode, tutup, sejak) : null),
-    [tutup, sejak, kode],
+    () => (tutup ? ringkasHarian(kode, tutup, sejak, sampai) : null),
+    [tutup, sejak, sampai, kode],
+  )
+
+  const hariBursaTerpilih = useMemo(
+    () => (tutup ? hariBursaDiRentang(tutup, sejak, sampai) : 0),
+    [tutup, sejak, sampai],
   )
 
   const pemilih = (
@@ -150,10 +207,33 @@ export function SeasonalityHarian() {
         <div className="panel-b sea-hari-kepala">
           <div className="sea-tahun">
             <span className="lbl">Rentang</span>
-            {RENTANG.map(([label]) => (
+            {/* Praset ATAU tanggal-ke-tanggal — praset tetap jalan pintas
+                bawaan (tab kiri), tapi tak lagi satu-satunya jalan masuk.
+                Praset menyuruh percaya; rentang bebas mengundang membuktikan
+                sendiri (#170 K9). */}
+            <div className="tabs sea-mode" role="tablist" aria-label="Cara memilih rentang">
+              <button type="button" role="tab" aria-selected={!modeBebas}
+                className={'tab' + (modeBebas ? '' : ' on')} onClick={() => setModeBebas(false)}>
+                Praset
+              </button>
+              <button type="button" role="tab" aria-selected={modeBebas}
+                className={'tab' + (modeBebas ? ' on' : '')} onClick={keBebas}>
+                Tanggal ke tanggal
+              </button>
+            </div>
+            {!modeBebas && RENTANG.map(([label]) => (
               <button key={label} type="button" className={'bchip bchip-klik' + (pilih === label ? ' on' : '')}
                 onClick={() => setPilih(label)}>{label}</button>
             ))}
+            {modeBebas && (
+              <div className="sea-rentang-bilah">
+                <DatePicker value={dariBebas} onChange={(iso) => ubahBebas(iso, sampaiBebas)}
+                  tersedia={tersediaSet} ariaLabel="Tanggal mulai rentang bebas" />
+                <span className="sea-rentang-panah" aria-hidden="true">→</span>
+                <DatePicker value={sampaiBebas} onChange={(iso) => ubahBebas(dariBebas, iso)}
+                  tersedia={tersediaSet} ariaLabel="Tanggal akhir rentang bebas" rata="kanan" />
+              </div>
+            )}
           </div>
           <span className="v-note">
             {r
@@ -163,9 +243,32 @@ export function SeasonalityHarian() {
         </div>
       </section>
 
+      {/* Kalender di atas sudah membatasi pilihan ke hari ber-data lewat
+          `tersedia` (DatePicker) — tak ada jalan memilih tanggal di luar
+          cakupan ${kode}, jadi tak perlu menjepit apa pun sesudahnya. */}
       {!r && (
         <div className="fd-empty" style={{ padding: '40px 20px' }}>
-          <p style={{ fontSize: 14 }}>Rentang ini belum punya satu pun perubahan harga.</p>
+          <p style={{ fontSize: 14 }}>
+            {modeBebas && dariBebas && sampaiBebas
+              // Bukan pintu tertutup: sebut angkanya. Orang yang sedang
+              // mengetes rentangnya sendiri butuh tahu ADA APA, bukan cuma
+              // "gagal" — apalagi kalau sebabnya cuma jarak dua hari.
+              ? `Baru ${hariBursaTerpilih} hari bursa di rentang ini — dibutuhkan minimal ${AMBANG_BEBAS} (satu putaran Senin–Jumat penuh) untuk mulai menghitung pola per hari.`
+              : 'Rentang ini belum punya satu pun perubahan harga.'}
+          </p>
+        </div>
+      )}
+
+      {/* Ambang 5 hari bursa (#170 K9) — cuma relevan di rentang bebas,
+          karena praset praktis selalu jauh di atasnya. Bukan galat merah:
+          angkanya tetap dihitung dan ditampilkan di bawah, cuma diberi tahu
+          dasarnya setipis apa. */}
+      {modeBebas && r && hariBursaTerpilih < AMBANG_BEBAS && (
+        <div className="sea-tipis">
+          <b>Baru {hariBursaTerpilih} hari bursa — di bawah standar minimal {AMBANG_BEBAS} (satu putaran
+          Senin–Jumat penuh).</b> Angka di bawah tetap dihitung dari data yang ada, tapi urutannya
+          masih sangat mudah berubah kalau satu hari saja ditambah atau dikurangi. Perlebar
+          rentangnya untuk dasar yang lebih stabil.
         </div>
       )}
 

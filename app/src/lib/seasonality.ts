@@ -365,6 +365,15 @@ export function ujiPermutasiEmber(
   }
 }
 
+/** Hari bursa yang BENAR-BENAR ada datanya di rentang [sejakTgl, sampaiTgl]
+ *  (batas kosong = tak dibatasi) — beda dari selisih tanggal kalender, yang
+ *  bisa jauh lebih besar kalau ada libur panjang di tengah rentangnya.
+ *  Dipakai buat menilai ambang rentang bebas (#170 K9) sebelum ATAU sesudah
+ *  ringkasHarian dipanggil, jadi tak terikat pada `RingkasHarian` yang bisa null. */
+export function hariBursaDiRentang(tutup: Record<string, number>, sejakTgl = '', sampaiTgl = ''): number {
+  return Object.keys(tutup).filter((t) => t >= sejakTgl && (!sampaiTgl || t <= sampaiTgl)).length
+}
+
 /** Ringkas pola hari-dalam-seminggu dari seri harga penutupan harian. */
 export function ringkasHarian(
   kode: string,
@@ -373,8 +382,12 @@ export function ringkasHarian(
    *  tanggal, bukan tahun, supaya MTD dan YTD bisa diminta dengan cara yang
    *  sama seperti "5 tahun terakhir". */
   sejakTgl = '',
+  /** Batas atas "YYYY-MM-DD"; string kosong berarti sampai data terakhir.
+   *  Ditambahkan untuk rentang bebas (#170 K9) — parameter opsional di ujung
+   *  supaya pemanggil lama (batas bawah saja) tidak berubah perilakunya. */
+  sampaiTgl = '',
 ): RingkasHarian | null {
-  const tgl = Object.keys(tutup).filter((t) => t >= sejakTgl).sort()
+  const tgl = Object.keys(tutup).filter((t) => t >= sejakTgl && (!sampaiTgl || t <= sampaiTgl)).sort()
   // Ambangnya sengaja RENDAH. Versi pertama menolak di bawah 25 hari bursa,
   // dan itu keliru arahnya: orang yang membuka MTD justru sedang ingin
   // melihat bagaimana angkanya terbentuk. Menolak menghitung menyembunyikan

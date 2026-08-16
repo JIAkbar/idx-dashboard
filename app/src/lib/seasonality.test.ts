@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { peluangTersusut, selangWilson, ujiPermutasi, ringkasEmiten, ALFA } from './seasonality'
+import { peluangTersusut, selangWilson, ujiPermutasi, ringkasEmiten, ALFA, ringkasHarian, hariBursaDiRentang } from './seasonality'
 
 describe('peluangTersusut', () => {
   it('menarik sampel tipis ke peluang dasar', () => {
@@ -131,5 +131,60 @@ describe('ringkasEmiten', () => {
 
   it('seri kosong mengembalikan null, bukan objek palsu', () => {
     expect(ringkasEmiten('KOSONG', {})).toBeNull()
+  })
+})
+
+describe('ringkasHarian', () => {
+  // 2024-01-01 = Senin. Tiga pekan penuh Senin–Jumat, 15 hari bursa.
+  const tanggal = [
+    '2024-01-01', '2024-01-02', '2024-01-03', '2024-01-04', '2024-01-05',
+    '2024-01-08', '2024-01-09', '2024-01-10', '2024-01-11', '2024-01-12',
+    '2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19',
+  ]
+  const tutup = Object.fromEntries(tanggal.map((t, i) => [t, 100 + i]))
+
+  it('tanpa batas atas berperilaku sama seperti sebelumnya (kompatibel mundur)', () => {
+    const r = ringkasHarian('T', tutup, '2024-01-08')!
+    // mulai = tanggal diff PERTAMA (hari kedua di rentang) — hari pertama
+    // dipakai sebagai basis, belum punya persen perubahan sendiri.
+    expect(r.mulai).toBe('2024-01-09')
+    expect(r.akhir).toBe('2024-01-19')
+    expect(r.totalObservasi).toBe(9) // 10 hari di rentang - 1 diff pertama
+  })
+
+  it('batas atas memotong data, tidak menariknya sampai akhir', () => {
+    const r = ringkasHarian('T', tutup, '', '2024-01-10')!
+    expect(r.akhir).toBe('2024-01-10')
+    expect(r.mulai).toBe('2024-01-02') // diff pertama jatuh di hari kedua
+    expect(r.totalObservasi).toBe(7) // 8 hari (01-08..10) - 1
+  })
+
+  it('batas bawah dan atas dipakai bersamaan', () => {
+    const r = ringkasHarian('T', tutup, '2024-01-08', '2024-01-12')!
+    expect(r.mulai).toBe('2024-01-09')
+    expect(r.akhir).toBe('2024-01-12')
+    expect(r.totalObservasi).toBe(4) // 5 hari bursa - 1
+  })
+})
+
+describe('hariBursaDiRentang', () => {
+  const tanggal = [
+    '2024-01-01', '2024-01-02', '2024-01-03', '2024-01-04', '2024-01-05',
+    '2024-01-08', '2024-01-09', '2024-01-10', '2024-01-11', '2024-01-12',
+  ]
+  const tutup = Object.fromEntries(tanggal.map((t, i) => [t, 100 + i]))
+
+  it('menghitung hari bursa yang benar-benar ada datanya, bukan selisih kalender', () => {
+    // 01-05 (Jum) → 01-08 (Sen): 4 hari kalender lompat akhir pekan, tapi
+    // cuma 2 hari bursa yang punya data di rentang itu.
+    expect(hariBursaDiRentang(tutup, '2024-01-05', '2024-01-08')).toBe(2)
+  })
+
+  it('rentang penuh seminggu = 5, pas di ambang minimum', () => {
+    expect(hariBursaDiRentang(tutup, '2024-01-08', '2024-01-12')).toBe(5)
+  })
+
+  it('batas kosong berarti tak dibatasi', () => {
+    expect(hariBursaDiRentang(tutup)).toBe(tanggal.length)
   })
 })
