@@ -127,3 +127,126 @@ Berguna untuk melengkapi metadata emiten yang sekarang diambil dari Yahoo.
 | 157 | Ambil sektor/subsektor/industri/subindustri IDX-IC resmi dari sheet `1000000` — menggantikan klasifikasi Yahoo |
 | 158 | Tarik "informasi pemegang saham pengendali" dari laporan resmi — pelengkap grup konglomerat (#155) yang sekarang hanya dari KSEI |
 | 159 | Panen `GetBrokerSummary` harian ke JSON (88 broker) — pelengkap yang sekarang diparse dari PDF |
+
+---
+
+## 6. Runbook — cara memanggilnya
+
+Semua contoh sudah **diuji dari mesin rumahan** 16 Agustus 2026. Wajib pakai
+User-Agent peramban; tanpa itu IDX menolak.
+
+```bash
+UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+```
+
+### 6.1 Daftar laporan keuangan satu periode
+
+```bash
+curl -s -A "$UA"   "https://www.idx.co.id/primary/ListedCompany/GetFinancialReport?indexFrom=1&pageSize=1000&year=2026&reportType=rdf&EmitenType=s&periode=tw2&kodeEmiten=&SortColumn=KodeEmiten&SortOrder=asc"
+```
+
+| Parameter | Nilai | Catatan |
+|---|---|---|
+| `year` | `2026` | Tahun buku |
+| `periode` | `tw1` `tw2` `tw3` `audit` | `audit` = laporan tahunan |
+| `EmitenType` | `s` | Saham |
+| `reportType` | `rdf` | |
+| `kodeEmiten` | `BBCA` atau kosong | Kosong = semua |
+| `pageSize` | `1000` | Cukup untuk seluruh emiten |
+
+Balasan: `ResultCount` + `Results[]`, tiap entri punya `KodeEmiten`,
+`Report_Period`, `Report_Year`, `File_Modified`, dan `Attachments[]`.
+
+### 6.2 Unduh berkas lampiran
+
+`Attachments[].File_Path` sudah berisi jalur relatif. Tempelkan ke host,
+**spasi harus di-encode jadi `%20`**:
+
+```bash
+BASE="https://www.idx.co.id"
+PATH_XLSX="/Portals/0/StaticData/ListedCompanies/Corporate_Actions/New_Info_JSX/Jenis_Informasi/01_Laporan_Keuangan/02_Soft_Copy_Laporan_Keuangan//Laporan%20Keuangan%20Tahun%202026/TW2/BBCA/FinancialStatement-2026-II-BBCA.xlsx"
+curl -s -A "$UA" -o BBCA-TW2-2026.xlsx "$BASE$PATH_XLSX"
+```
+
+Perhatikan `//` ganda di tengah jalur — itu memang apa adanya dari API, jangan
+dirapikan. Berkasnya **tidak terenkripsi**, langsung terbaca `openpyxl`.
+
+### 6.3 Sheet yang penting di XLSX
+
+| Sheet | Isi | Yang diambil |
+|---|---|---|
+| `1000000` | Informasi umum | Nama, kode, **sektor/subsektor/industri/subindustri**, standar akuntansi, **pemegang saham pengendali** |
+| `4220000` | Posisi keuangan | Aset, liabilitas, ekuitas (238 baris) |
+| `4312000` / `4322000` | Laba rugi komprehensif | Pendapatan sampai laba bersih |
+| `4410000` (+`PY`) | Perubahan ekuitas | Dengan kolom tahun sebelumnya |
+| `4510000` / `4520000` | Arus kas | CFO/CFI/CFF — **ruas yang 80% kosong di Yahoo** |
+
+Tiap baris dwibahasa: kolom label Indonesia dan Inggris berdampingan, jadi
+pencocokan pos sebaiknya lewat label Inggris yang lebih stabil.
+
+### 6.4 Broker summary harian
+
+```bash
+curl -s -A "$UA"   "https://www.idx.co.id/primary/TradingSummary/GetBrokerSummary?length=100&start=0&date=20260814"
+```
+
+88 broker: `IDFirm`, `FirmName`, `Volume`, `Value`, `Frequency`.
+`stockCode` **diabaikan** — tidak ada rincian per emiten lewat endpoint ini.
+
+### 6.5 Profil perusahaan
+
+```bash
+curl -s -A "$UA"   "https://www.idx.co.id/primary/ListedCompany/GetCompanyProfiles?start=0&length=1000&emitenType=s"
+```
+
+962 emiten: alamat, BAE, industri, subindustri, email, situs, jenis efek.
+
+### 6.6 Yang TIDAK berhasil
+
+| Dicoba | Hasil |
+|---|---|
+| Halaman **Financial Data and Ratio** (digital statistic) | Tombol "Terapkan" tak memicu satu pun permintaan XHR; unduhan PDF/Excel tampaknya dirakit di server per permintaan manual. Endpoint API-nya belum ketemu |
+| `StatisticData/GetFinancialDataRatio` dan tiga variasi tebakan | 404 |
+| `GetBrokerSummary` + `stockCode` | Parameter diabaikan |
+| `GetFinancialStatement` | 404 — nama yang benar `GetFinancialReport` |
+
+### 6.7 Sopan santun & jadwal
+
+- **Hanya dari IP rumahan.** Dari runner/datacenter → 403.
+- Satu permintaan pada satu waktu, jeda acak, backoff menghormati penolakan —
+  pola yang sudah dipakai `panen_ohlc.py`.
+- Laporan keuangan **berubah per kuartal**, bukan harian. Panen penuh cukup
+  saat musim rilis (akhir Apr / Jul / Okt / Mar). 777 berkas × ~300 KB ≈ 230 MB
+  sekali jalan.
+- **Simpan hasil parse, bukan berkas mentahnya.** Pola yang sama dengan
+  `keuangan/<KODE>.json` sekarang.
+- Broker summary & profil: harian/mingguan, ringan.
+
+---
+
+## 7. Rencana implementasi — apa masuk ke halaman mana
+
+| Data baru | Halaman PAPAN | Bagian | Berkas yang disentuh |
+|---|---|---|---|
+| **Laporan keuangan resmi** (#156) | **Stock Detail** | Panel "Laporan Keuangan" yang sudah ada — sumbernya diganti/digabung | `scripts/panen_lapkeu_idx.py` (baru) → `data-idx/json/keuangan/<KODE>.json` · `lib/dasbor/stockDetailData.ts` |
+| **Sektor IDX-IC resmi** (#157) | **Sektor & Indeks**, **Screener** (nanti), **Stock Detail** | Ganti klasifikasi Yahoo; jadi dasar filter sektor | `data-idx/json/emiten_sektor.json` (baru) · `lib/dasbor/*` |
+| **Pemegang saham pengendali** (#158) | **Peta Investor** → tab **Grup Konglomerat** | Pelengkap pencocokan KSEI; menutup celah SPV bernama netral | `scripts/petakan_grup.py` (`TAMBAHAN_MANUAL` diganti sumber resmi) |
+| **Broker summary harian** (#159) | **Top Broker** | Sumber kedua di samping parse PDF — saling periksa | `scripts/panen_broker_idx.py` (baru) → `data-idx/json/broker_harian.json` |
+| **Profil perusahaan** | **Stock Detail** | Kepala emiten: alamat, situs, BAE, jenis efek | `data-idx/json/profil_emiten.json` (baru) |
+
+### Urutan yang masuk akal
+
+1. **#157 sektor IDX-IC** — paling murah (satu sheet, satu berkas kecil), tapi
+   dipakai banyak halaman. Sekalian memperbaiki dasar filter untuk screener.
+2. **#159 broker harian** — ringan, dan langsung memberi pembanding untuk
+   angka yang sekarang diparse dari PDF.
+3. **#156 laporan keuangan** — paling berat, tapi menutup lubang `operating_cf`
+   80% dan `eps` 71% yang sekarang membuat panel Stock Detail bolong.
+4. **#158 pemegang saham pengendali** — setelah #156, karena datanya ikut di
+   berkas yang sama (sheet `1000000`).
+
+### Yang TIDAK berubah
+
+Rasio dan metrik turunan (Altman Z, F-Score, ROIC, beta, target analis, median
+sektor) **tetap dari Yahoo** — IDX tidak menyediakannya, dan itu justru
+keunggulan `fundamental/` kita yang 147 ruas.
