@@ -84,14 +84,42 @@ export const PENGETAHUAN: Entri[] = [
   },
   {
     id: 'cara-jadi-kontributor',
-    kunci: ['jadi kontributor', 'cara kontributor', 'gabung', 'daftar', 'daftar akun', 'registrasi', 'ikut menyetor'],
+    kunci: ['jadi kontributor', 'cara kontributor', 'gabung', 'daftar', 'daftar akun', 'registrasi', 'ikut menyetor',
+      'kewajiban', 'tugas kontributor'],
     judul: 'Cara menjadi kontributor',
     isi:
       'Akun kontributor dibuat oleh pengurus, bukan lewat pendaftaran mandiri — supaya tiap setoran punya ' +
-      'penanggung jawab yang jelas. Kontributor menyetor tangkapan layar broker summary harian sesuai kalender ' +
-      'bursa; setoran yang lolos kurasi menambah jenjang dan kuotanya. Ajukan lewat halaman Kritik & Saran.',
+      'penanggung jawab yang jelas. Kewajibannya: menyetor tangkapan layar broker summary sesuai kalender bursa ' +
+      'dan format yang diminta; setoran yang lolos kurasi menambah jenjang dan kuotanya. Ajukan lewat halaman ' +
+      'Kritik & Saran.',
     ke: '/feedback',
     keLabel: 'Buka Kritik & Saran',
+  },
+  {
+    // Ditambahkan setelah Johan melaporkan "benefit nya" (soal jadi kontributor)
+    // tak terjawab 16 Agu 2026 — kata "benefit"/"untung"/"manfaat" sama sekali
+    // tak muncul di kunci mana pun, jadi bukan soal imbuhan tapi entrinya
+    // memang belum ada. Kunci frase (mis. 'untung kontributor') sengaja
+    // dipasang di samping kunci satu-kata supaya skornya menang lawan
+    // 'cara-jadi-kontributor' saat dua-duanya sama-sama kena kata "kontributor".
+    id: 'manfaat-kontributor',
+    kunci: ['untung', 'keuntungan', 'manfaat', 'benefit',
+      'untung kontributor', 'keuntungan kontributor', 'manfaat kontributor', 'benefit kontributor'],
+    judul: 'Manfaat jadi kontributor',
+    isi:
+      'Kontributor naik jenjang dari setoran yang disetujui, dan jenjang yang lebih tinggi membuka kuota ' +
+      'setoran harian dan fitur bertahap yang tidak tersedia di jenjang bawah. Kredit kenaikan jenjang ' +
+      'mengikuti setoran yang disetujui — bukan yang akhirnya dimuat di edisi Arus Pasar.',
+  },
+  {
+    id: 'privasi-kontributor',
+    kunci: ['privasi', 'data saya', 'data pribadi', 'identitas kontributor', 'siapa yang bisa lihat', 'email'],
+    judul: 'Privasi data kontributor',
+    isi:
+      'Identitas penyetor tidak terlihat oleh kontributor lain — yang ditampilkan cuma status "Sudah disetor", ' +
+      'cukup untuk mencegah kerja ganda. Redaksi (superadmin) melihat identitas penyetor untuk keperluan kurasi. ' +
+      'Saya tidak membuka isi data pribadi atau setoran punya kontributor tertentu — itu memang sengaja tidak ' +
+      'dibuka lewat sini.',
   },
   {
     id: 'hitung-akurasi',
@@ -116,7 +144,7 @@ export const PENGETAHUAN: Entri[] = [
   {
     id: 'bukan-saran-investasi',
     kunci: ['layak dibeli', 'saham bagus', 'rekomendasi saham', 'saran investasi', 'beli apa',
-      'harus beli', 'prediksi harga', 'saham naik besok'],
+      'harus beli', 'prediksi harga', 'saham naik besok', 'prediksi', 'saham gorengan', 'ramalan harga'],
     judul: 'PAPAN tidak memberi rekomendasi beli/jual',
     isi:
       'PAPAN menyajikan data dan metode perhitungannya, bukan saran investasi. Tidak ada halaman di sini yang ' +
@@ -210,7 +238,7 @@ export const PENGETAHUAN: Entri[] = [
   },
   {
     id: 'kredit-setoran',
-    kunci: ['kredit kontributor', 'dimuat edisi', 'tidak dimuat'],
+    kunci: ['kredit kontributor', 'dimuat edisi', 'tidak dimuat', 'muncul edisi'],
     judul: 'Kredit kontributor',
     isi:
       'Kredit dan kenaikan jenjang mengikuti setoran yang disetujui, bukan yang akhirnya dimuat di edisi Arus ' +
@@ -233,7 +261,7 @@ export const PENGETAHUAN: Entri[] = [
   // ── Sumber data & istilah pasar ───────────────────────────────────────────
   {
     id: 'sumber-data',
-    kunci: ['sumber data', 'dari mana data', 'data dari mana'],
+    kunci: ['sumber data', 'dari mana data', 'data dari mana', 'laporan keuangan'],
     judul: 'Sumber data PAPAN',
     isi:
       'Data pasar PAPAN berasal dari situs resmi IDX (statistik ringkas harian dan laporan keuangan XBRL per ' +
@@ -242,12 +270,27 @@ export const PENGETAHUAN: Entri[] = [
   },
   {
     id: 'sumber-data-peran',
-    kunci: ['idx atau yahoo', 'kapan pakai yahoo', 'harga buka sejarah'],
+    kunci: ['idx atau yahoo', 'kapan pakai yahoo', 'harga buka sejarah', 'harga buka kosong'],
     judul: 'IDX vs Yahoo Finance',
     isi:
       'IDX jadi sumber utama untuk hari berjalan dan riwayat sejak awal 2020 (volume, frekuensi, arus asing), ' +
       'sedangkan Yahoo Finance dipakai untuk riwayat sebelum 2020 dan harga pembukaan historis — harga buka ' +
       'dari IDX sendiri sering kosong, terutama sebelum 2025.',
+  },
+  {
+    // Sumber jadwal: docs/PIPELINE-DATA.md — lapis utama (PC lokal) jalan
+    // 18:30 WIB, cadangan GitHub Actions 20:00 WIB kalau lapis utama gagal.
+    // Bursa tutup 16:15 WIB, jadi "kenapa data hari ini belum ada" wajar
+    // ditanya sebelum sore.
+    id: 'kesegaran-data',
+    kunci: ['update jam berapa', 'seberapa baru', 'data hari ini belum ada', 'diperbarui kapan',
+      'data real time', 'belum update'],
+    judul: 'Kapan data diperbarui',
+    isi:
+      'Data pasar PAPAN diperbarui otomatis tiap hari bursa, sore-malam setelah bursa tutup pukul 16:15 WIB — ' +
+      'proses utama berjalan sekitar 18:30 WIB, dengan cadangan otomatis sekitar 20:00 WIB kalau yang utama ' +
+      'gagal. Bukan data real-time detik demi detik. Kalau data hari itu belum muncul menjelang malam, ' +
+      'kemungkinan proses pembaruannya belum jalan atau sempat gagal — coba lagi nanti malam atau besok pagi.',
   },
   {
     id: 'istilah-net-foreign',
@@ -348,7 +391,7 @@ export const PENGETAHUAN: Entri[] = [
   },
   {
     id: 'halaman-top-broker',
-    kunci: ['top broker', 'apa itu top broker'],
+    kunci: ['top broker', 'apa itu top broker', 'broker paling aktif'],
     judul: 'Top Broker',
     isi: 'Top Broker menampilkan broker paling aktif per hari — nilai transaksi, jumlah lot, dan arah bersihnya.',
     ke: '/broker',
@@ -364,7 +407,7 @@ export const PENGETAHUAN: Entri[] = [
   },
   {
     id: 'halaman-chart',
-    kunci: ['halaman chart', 'apa itu chart'],
+    kunci: ['halaman chart', 'apa itu chart', 'chart'],
     judul: 'Chart',
     isi: 'Chart menampilkan grafik lilin (candlestick) IHSG dengan rentang sampai 10 tahun dan penanda level kunci.',
     ke: '/chart',
@@ -436,7 +479,7 @@ export const PENGETAHUAN: Entri[] = [
   },
   {
     id: 'halaman-forum',
-    kunci: ['halaman forum', 'apa itu forum'],
+    kunci: ['halaman forum', 'apa itu forum', 'forum'],
     judul: 'Forum',
     isi: 'Forum adalah ruang diskusi antar-anggota PAPAN, dikelompokkan per topik.',
     ke: '/forum',
@@ -444,7 +487,7 @@ export const PENGETAHUAN: Entri[] = [
   },
   {
     id: 'halaman-feedback',
-    kunci: ['kritik dan saran', 'apa itu kritik saran'],
+    kunci: ['kritik dan saran', 'apa itu kritik saran', 'kritik saran'],
     judul: 'Kritik & Saran',
     isi: 'Kritik & Saran adalah jalur untuk menyampaikan koreksi data atau usulan fitur langsung ke redaksi PAPAN.',
     ke: '/feedback',
