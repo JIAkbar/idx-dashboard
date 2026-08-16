@@ -16,6 +16,10 @@ git rev-list --count origin/main..HEAD
 
 ## Antrean berikutnya — **halaman & fitur baru dari riset SPLE**
 
+> Jejak permintaan (**apa yang diminta Johan · sebelum · sesudah**) ada di
+> `docs/jejak-permintaan.md` — itu yang menjawab "kenapa baris ini ada",
+> yang tak terjawab papan centang mana pun.
+>
 > Rencana kerjanya **sudah tertulis lengkap** di `docs/workflow-fundamental.md`
 > (jalur A/B/C), risetnya di `docs/riset/sple/`. Jangan menyusun ulang — tabel
 > di bawah cuma papan centangnya.
