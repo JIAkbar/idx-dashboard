@@ -302,13 +302,13 @@ export function BedahUnggah() {
           <div className="field">
             <span className="lbl">Emiten</span>
             {!emitenBebas && terkunci ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <span className="chip up" style={{ fontFamily: 'var(--mono)' }}>Sedang mengerjakan: {terkunci}</span>
+              <div className="af-emiten-lock">
+                <span className="chip warn">Sedang mengerjakan: {terkunci}</span>
                 <span className="muted" style={{ fontSize: 11 }}>
                   {arsip?.find((b) => b.ticker === terkunci)?.tanggalList.length ?? 0} tanggal tersimpan
                 </span>
-                <button type="button" className="dd-btn" onClick={() => { setModeTambah(true); setTicker('') }}>
-                  <IkonMenu d={IKON_TAMBAH} size={12} /> Tambah emiten
+                <button type="button" className="btn-p af-tambah" onClick={() => { setModeTambah(true); setTicker('') }}>
+                  <IkonMenu d={IKON_TAMBAH} size={13} /> Tambah Emiten
                 </button>
               </div>
             ) : (
@@ -323,8 +323,7 @@ export function BedahUnggah() {
                 {terkunci && (
                   <button
                     type="button"
-                    className="dd-btn"
-                    style={{ marginTop: 6 }}
+                    className="dd-btn af-emiten-batal"
                     onClick={() => { setModeTambah(false); setTicker('') }}
                   >
                     Batal, kembali ke {terkunci}

@@ -338,6 +338,13 @@
 }
 .lantai .af-tambah .dasbor-ikon { stroke: var(--amber-ink); }
 
+/* Baris "emiten terkunci" tab Bedah (kolom Emiten diganti chip begitu ada
+   unggahan pertama) — chip status + keterangan tanggal + tombol ganti,
+   sejajar & wrap. */
+.lantai .af-emiten-lock { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+/* Tombol "Batal, kembali ke X" di bawah StockAutocomplete saat mode Tambah emiten. */
+.lantai .af-emiten-batal { margin-top: 6px; }
+
 /* Kartu tanggal Kotak Masuk — berjajar horizontal, wrap. */
 .lantai .af-kartu-wrap { display: flex; flex-wrap: wrap; gap: 10px; }
 .lantai .af-kartu { flex: 0 1 200px; min-width: 160px; text-align: left; cursor: pointer; }
