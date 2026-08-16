@@ -55,6 +55,15 @@ Empat migrasi yang diterapkan: `setoran_status_dihapus_gantikan_ditolak`,
 `buat_tabel_notifikasi`, `notifikasi_policy_rls`, `trigger_notifikasi_kurasi`,
 `kunci_fungsi_trigger_kurasi`, `setoran_kolom_dimuat`.
 
+## 🚦 Aturan rilis — berlaku sejak 16 Agu 2026
+
+**Semua dikerjakan di localhost. `git push` hanya setelah Johan menyatakan live.**
+Commit lokal boleh dan dianjurkan; mendorong ke `origin/main` memicu build Vercel, jadi
+tiap push adalah rilis produksi. Lihat `CLAUDE.md` bagian "Cara kerja & rilis".
+
+Sekalian: tiap tugas habis, tutup sesi dengan memperbarui **empat** tempat — CLAUDE.md,
+berkas ini, memori proyek, dan `kemampuan-*.md` lintas proyek.
+
 ## 🗺️ Workflow pekerjaan → `docs/workflow-fundamental.md`
 
 Temuan riset SPLE + uji endpoint IDX sudah disusun jadi rencana kerja
@@ -83,7 +92,8 @@ Empat dari riset SPLE 16 Agu 2026 (`docs/riset/sple/README.md`):
 | ~~155~~ | ~~Grup Konglomerat di web kita~~ | ✅ Selesai 16 Agu — tab baru di Peta Investor, 11 grup / 82 emiten, **diturunkan dari nama pemegang saham KSEI** (`scripts/petakan_grup.py`), tiap chip menyimpan buktinya |
 | 154 | Peringatan konteks + tanggal metodologi di tiap halaman analitik | Yang membuat SPLE dipercaya bukan sinyalnya, tapi panduannya: rumus terbuka, perubahan bertanggal, keterbatasan diakui sendiri |
 
-Empat dari uji endpoint IDX 16 Agu 2026 (`docs/sumber-fundamental-idx.md`):
+Empat dari uji endpoint IDX 16 Agu 2026 (`docs/sumber-fundamental-idx.md`) —
+**belum satu pun dipanen**, baru diuji bahwa endpointnya terbuka:
 
 | # | Tugas | Kenapa |
 |---|---|---|
