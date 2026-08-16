@@ -288,3 +288,21 @@
 @media (prefers-reduced-motion: reduce) {
   .lantai .brd-chip:hover, .lantai .brd-katalis-it:hover { transform: none; }
 }
+
+/* Telepon: kabar DIPANGKAS, bukan dihapus.
+   Beranda ini pintu masuk merek — yang harus terlihat lebih dulu adalah
+   edisi PAPAN sendiri dan kartu menunya. Di layar 412px, empat sumber ×
+   empat kabar berarti 16 kartu bertumpuk; "Jelajahi data" terdorong jauh
+   ke bawah dan orang berhenti menggulung sebelum sampai ke sana.
+   Dua kabar per sumber sudah cukup menunjukkan bahwa aliran ini hidup;
+   selebihnya menunggu di halaman Kabar lewat tautan "Semua kabar". */
+@media (max-width: 900px) {
+  .lantai .brd-kabar-kol-list .kbr-it:nth-child(n + 3) { display: none; }
+}
+@media (max-width: 560px) {
+  /* Lebih sempit lagi: satu kabar per sumber. Empat baris untuk empat
+     sumber — cukup sebagai tanda, bukan sebagai bacaan. */
+  .lantai .brd-kabar-kol-list .kbr-it:nth-child(n + 2) { display: none; }
+  /* Jarak antar kolom dirapatkan karena isinya kini pendek. */
+  .lantai .brd-kabar-kolom { gap: 14px; }
+}
