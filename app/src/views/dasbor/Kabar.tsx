@@ -27,7 +27,7 @@ function daftarTab(item: KabarItem[]): string[] {
   return [...TAB_TETAP, ...sumber]
 }
 
-export function saringKabar(item: KabarItem[], tab: string, cari: string): KabarItem[] {
+export function saringKabar(item: KabarItem[], tab: string, cari: string, bulan = ''): KabarItem[] {
   const q = cari.trim().toLowerCase()
   return item.filter((i) => {
     const cocokTab =
@@ -37,8 +37,26 @@ export function saringKabar(item: KabarItem[], tab: string, cari: string): Kabar
     const cocokCari = !q
       || i.judul.toLowerCase().includes(q)
       || i.emiten.some((e) => e.toLowerCase().includes(q))
-    return cocokTab && cocokCari
+    // Tanpa waktu = tak bisa dipastikan masuk bulan mana; disembunyikan saat
+    // bulan dipilih, bukan diikutkan ke bulan mana pun.
+    const cocokBulan = !bulan || (i.waktu ?? '').slice(0, 7) === bulan
+    return cocokTab && cocokCari && cocokBulan
   })
+}
+
+/** Daftar bulan yang benar-benar ada isinya, terbaru dulu. Diturunkan dari
+ *  data dengan alasan yang sama seperti daftar tab: arsip yang tumbuh mundur
+ *  tiap kali dipanen tak boleh menunggu daftar bulan disunting tangan. */
+export function daftarBulan(item: KabarItem[]): string[] {
+  return [...new Set(item.map((i) => (i.waktu ?? '').slice(0, 7)).filter(Boolean))].sort().reverse()
+}
+
+const NAMA_BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+
+function labelBulan(ym: string): string {
+  const [th, bl] = ym.split('-')
+  return `${NAMA_BULAN[Number(bl) - 1]} ${th}`
 }
 
 /**
@@ -51,16 +69,20 @@ export function saringKabar(item: KabarItem[], tab: string, cari: string): Kabar
  * bukan dari peramban pengunjung (lihat catatan di `lib/dasbor/kabar.ts`).
  */
 export function Kabar() {
-  const { kabar, galat } = useKabar()
+  // `true` = ikut menarik arsip IPOT (mundur sampai awal tahun). Cuma halaman
+  // ini yang membayar ukurannya; Beranda tetap memakai versi ringan.
+  const { kabar, galat } = useKabar(true)
   const [tab, setTab] = useState<string>('Semua')
   const [cari, setCari] = useState('')
+  const [bulan, setBulan] = useState('')
   const [hal, setHal] = useState(0)
 
-  useEffect(() => { setHal(0) }, [tab, cari])
+  useEffect(() => { setHal(0) }, [tab, cari, bulan])
 
   const TAB = useMemo(() => daftarTab(kabar?.item ?? []), [kabar])
+  const BULAN = useMemo(() => daftarBulan(kabar?.item ?? []), [kabar])
 
-  const tersaring = useMemo(() => saringKabar(kabar?.item ?? [], tab, cari), [kabar, tab, cari])
+  const tersaring = useMemo(() => saringKabar(kabar?.item ?? [], tab, cari, bulan), [kabar, tab, cari, bulan])
   const tampil = tersaring.slice(hal * PER_HAL, (hal + 1) * PER_HAL)
 
   return (
@@ -78,6 +100,16 @@ export function Kabar() {
               </button>
             ))}
           </span>
+          {/* Saringan bulan baru muncul kalau arsipnya memang lintas bulan —
+              di berkas yang cuma berumur sepekan, kotak ini tak menjelaskan
+              apa pun. */}
+          {BULAN.length > 1 && (
+            <select className="inp kbr-bulan" value={bulan} aria-label="Saring bulan"
+              onChange={(e) => setBulan(e.target.value)}>
+              <option value="">Semua bulan</option>
+              {BULAN.map((b) => <option key={b} value={b}>{labelBulan(b)}</option>)}
+            </select>
+          )}
           <span className="af-cari">
             <IkonMenu d={IKON_CARI} size={13} />
             <input className="inp" type="search" value={cari} onChange={(e) => setCari(e.target.value)}

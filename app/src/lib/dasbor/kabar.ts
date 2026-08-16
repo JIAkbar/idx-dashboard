@@ -25,8 +25,12 @@ export interface Kabar {
 }
 
 /** Cache modul: pindah halaman lalu kembali tak menarik ulang berkasnya —
- *  pola sama dengan `useBulletinList`. */
+ *  pola sama dengan `useBulletinList`. DUA cache, karena isinya beda: yang
+ *  ringan (tanpa arsip IPOT) dipakai semua halaman, yang lengkap cuma
+ *  `/kabar`. Satu cache saja akan membuat halaman ringan ikut menerima muatan
+ *  berat begitu `/kabar` pernah dibuka. */
 let cache: Kabar | null = null
+let cacheArsip: Kabar | null = null
 
 /**
  * Kabar pasar dari berkas statis, bukan dari peramban pengunjung.
@@ -37,12 +41,12 @@ let cache: Kabar | null = null
  * ke server orang untuk data yang sama. Panen dijalankan di mesin rumahan
  * (`scripts/panen_kabar.py`), hasilnya berkas JSON yang ikut ter-deploy.
  */
-export function useKabar() {
-  const [kabar, setKabar] = useState<Kabar | null>(cache)
+export function useKabar(denganArsip = false) {
+  const [kabar, setKabar] = useState<Kabar | null>(denganArsip ? cacheArsip : cache)
   const [galat, setGalat] = useState(false)
 
   useEffect(() => {
-    if (cache) return
+    if (denganArsip ? cacheArsip : cache) return
     let batal = false
     // DUA berkas, satu aliran. `kabar.json` berumur pendek (retensi 7 hari,
     // dipanen tiap jam); `snips.json` arsip panjang Stockbit Snips setahun
@@ -50,25 +54,46 @@ export function useKabar() {
     // ikut menghapus arsip — di sini keduanya digabung lagi jadi satu daftar.
     // Snips diperlakukan opsional: kalau berkasnya belum ada, kabar tetap
     // tampil dan cuma kolom Stockbit yang kosong.
+    //
+    // Berkas ketiga, `ipot_arsip.json`, cuma ditarik kalau diminta
+    // (`denganArsip`): isinya arsip IPOT mundur sampai awal tahun, jadi
+    // ukurannya berlipat dari dua berkas lain. Halaman `/kabar` memang butuh
+    // kedalamannya; Beranda tidak — dan menariknya di semua halaman berarti
+    // membayar megabita untuk empat baris kabar terbaru.
+    const kosong = Promise.resolve({ item: [] as KabarItem[] })
     Promise.all([
       fetch('/data-idx/json/kabar.json')
         .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status))))),
       fetch('/data-idx/json/snips.json')
         .then((r) => (r.ok ? r.json() : { item: [] }))
         .catch(() => ({ item: [] })),
+      denganArsip
+        ? fetch('/data-idx/json/ipot_arsip.json')
+          .then((r) => (r.ok ? r.json() : { item: [] }))
+          .catch(() => ({ item: [] }))
+        : kosong,
     ])
-      .then(([utama, snips]: [Kabar, { item?: KabarItem[] }]) => {
+      .then(([utama, snips, arsip]: [Kabar, { item?: KabarItem[] }, { item?: KabarItem[] }]) => {
+        // Arsip IPOT beririsan dengan `kabar.json` — panen harian mengambil
+        // halaman pertama kanal yang sama. Dibuang berdasarkan tautan
+        // (mengandung `news_id`, jadi unik per berita); yang lebih dulu
+        // menang, dan `kabar.json` sengaja ditaruh paling depan karena
+        // itulah yang paling segar.
+        const semua = [...utama.item, ...(snips.item ?? []), ...(arsip.item ?? [])]
+        const terlihat = new Set<string>()
+        const unik = semua.filter((i) => !terlihat.has(i.tautan) && terlihat.add(i.tautan))
         const gabung: Kabar = {
           ...utama,
-          sumber: [...new Set([...(utama.sumber ?? []), ...((snips.item?.length ?? 0) > 0 ? ['Stockbit Snips'] : [])])],
-          item: [...utama.item, ...(snips.item ?? [])].sort((a, b) => (b.waktu ?? '').localeCompare(a.waktu ?? '')),
+          sumber: [...new Set([...(utama.sumber ?? []), ...unik.map((i) => i.sumber)])],
+          item: unik.sort((a, b) => (b.waktu ?? '').localeCompare(a.waktu ?? '')),
         }
-        cache = gabung
+        if (denganArsip) cacheArsip = gabung
+        else cache = gabung
         if (!batal) setKabar(gabung)
       })
       .catch(() => !batal && setGalat(true))
     return () => { batal = true }
-  }, [])
+  }, [denganArsip])
 
   return { kabar, galat }
 }
