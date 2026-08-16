@@ -60,8 +60,31 @@ export const PENGETAHUAN: Entri[] = [
       'kontributor — jenjang naik dari kontribusi setoran, bukan dari pembayaran.',
   },
   {
+    id: 'login-masuk',
+    kunci: ['login', 'masuk', 'sign in', 'lupa sandi', 'lupa password', 'akun saya'],
+    judul: 'Masuk ke akun',
+    isi:
+      'Tombol masuk ada di pojok kanan atas halaman — dipakai kontributor dan pengurus untuk membuka Area ' +
+      'Kontributor. Seluruh halaman data bisa dibaca tanpa masuk. Lupa sandi atau akun terkunci: hubungi ' +
+      'pengurus lewat halaman Kritik & Saran, sandi tidak bisa diatur ulang sendiri.',
+    ke: '/feedback',
+    keLabel: 'Hubungi lewat Kritik & Saran',
+  },
+  {
+    id: 'batas-kemampuan',
+    kunci: ['kok belum bisa jawab', 'tidak bisa jawab', 'gak bisa jawab', 'bisa jawab apa',
+      'kamu bisa apa', 'kemampuanmu'],
+    judul: 'Yang bisa dan belum bisa saya jawab',
+    isi:
+      'Saya menjawab dari data yang sudah dihitung PAPAN: angka IHSG dan arus asing hari itu, sektor, saham ' +
+      'naik/turun, harga dan valuasi per emiten, kepemilikan KSEI, grup konglomerat, kalender bursa, edisi, ' +
+      'kabar, serta arti istilah dan cara kerja tiap halaman. Yang belum: prakiraan harga, rekomendasi ' +
+      'beli/jual, dan hal di luar pasar saham Indonesia. Kalau pertanyaanmu ditolak padahal masuk daftar di ' +
+      'atas, itu kekurangan saya mengenali kalimatnya — coba sebut kata kuncinya lebih langsung.',
+  },
+  {
     id: 'cara-jadi-kontributor',
-    kunci: ['jadi kontributor', 'cara kontributor', 'gabung', 'daftar akun', 'ikut menyetor'],
+    kunci: ['jadi kontributor', 'cara kontributor', 'gabung', 'daftar', 'daftar akun', 'registrasi', 'ikut menyetor'],
     judul: 'Cara menjadi kontributor',
     isi:
       'Akun kontributor dibuat oleh pengurus, bukan lewat pendaftaran mandiri — supaya tiap setoran punya ' +

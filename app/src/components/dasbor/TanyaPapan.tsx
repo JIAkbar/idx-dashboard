@@ -7,6 +7,7 @@ import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import { fetchFundamental } from '../../lib/dasbor/stockDetailData'
 import { loadInvestorMap } from '../../lib/dasbor/petaInvestorData'
 import { jawab, CONTOH_TANYA, type Jawaban, type Topik, type DataButuh, type OhlcRingkas } from '../../lib/dasbor/tanyaPapan'
+import { tanyaAI, rakitKonteks } from '../../lib/dasbor/tanyaAI'
 import { IkonMenu, IKON_SILANG } from './IkonMenu'
 import './TanyaPapan.css'
 
@@ -54,7 +55,19 @@ interface Baris {
   teks: string
   ke?: string
   keLabel?: string
+  /** Jawaban ini datang dari model bahasa, bukan dari data yang dihitung.
+   *  Bedanya WAJIB terlihat pembaca — itu inti janji panel ini. */
+  dariAI?: boolean
 }
+
+/** Jeda minimum sebelum jawaban muncul.
+ *
+ *  Jawaban aturan datang dalam hitungan milidetik, dan itu justru terbaca
+ *  seperti templat yang sudah disiapkan, bukan seperti sesuatu yang membaca
+ *  pertanyaannya. Jedanya bukan kepura-puraan berpikir — panel memang sedang
+ *  menunggu (berkas per-emiten, kadang lapis AI), dan jeda seragam membuat
+ *  yang cepat dan yang lambat terasa satu perilaku, bukan dua. */
+const JEDA_MIN = 520
 
 /**
  * "Tanya PAPAN" — tombol mengambang berlambang P + panel percakapan.
@@ -72,6 +85,7 @@ export function TanyaPapan() {
   const [buka, setBuka] = useState(false)
   const [teks, setTeks] = useState('')
   const [riwayat, setRiwayat] = useState<Baris[]>([])
+  const [berpikir, setBerpikir] = useState(false)
   // Topik jawaban terakhir — bahan sambungan untuk pertanyaan sependek
   // "kenapa?". Disimpan di ref, bukan state: nilainya tak menggambar apa pun,
   // dan menaruhnya di state berarti satu render tambahan tiap tanya.
@@ -93,7 +107,7 @@ export function TanyaPapan() {
 
   // Gulir ke jawaban terbaru — percakapan yang jawabannya di luar layar
   // terasa seperti tak menjawab.
-  useEffect(() => { akhirRef.current?.scrollIntoView({ block: 'end' }) }, [riwayat])
+  useEffect(() => { akhirRef.current?.scrollIntoView({ block: 'end' }) }, [riwayat, berpikir])
 
   async function kirim(pertanyaan: string) {
     const q = pertanyaan.trim()
@@ -111,6 +125,9 @@ export function TanyaPapan() {
       topik: topikRef.current,
       kamus,
     }
+    setBerpikir(true)
+    const mulai = Date.now()
+
     let j: Jawaban = jawab(q, ctx)
     // Mekanisme dua-langkah (#lihat tanyaPapan.ts): jawab() minta berkas
     // PER-EMITEN yang belum ada di konteks, di sini diambil, lalu jawab()
@@ -119,10 +136,29 @@ export function TanyaPapan() {
       const data = await ambilButuh(j.butuh)
       j = jawab(q, { ...ctx, data })
     }
+
+    // Lapis AI cuma dipanggil kalau mesin aturan MENYERAH. Urutannya begitu
+    // supaya pertanyaan yang punya jawaban pasti di data kita tak pernah
+    // dilempar ke model bahasa — itu membayar token untuk angka yang sudah
+    // kita hitung sendiri, sekaligus membuka pintu jawaban yang mengarang.
+    let dariAI = false
+    if (j.takPaham) {
+      const ai = await tanyaAI(q, rakitKonteks(hari ?? null, edisi ?? null, kabar?.item ?? null))
+      if (ai) {
+        j = { ...j, teks: ai.teks, takPaham: false }
+        dariAI = ai.dariAI
+      }
+    }
+
+    // Jeda seragam — lihat JEDA_MIN.
+    const sisa = JEDA_MIN - (Date.now() - mulai)
+    if (sisa > 0) await new Promise((r) => setTimeout(r, sisa))
+    setBerpikir(false)
+
     // Topik hanya diperbarui kalau jawabannya memang mengenali sesuatu —
     // jawaban "tak paham" tak boleh menghapus konteks yang masih berguna.
     if (j.topik) topikRef.current = j.topik
-    setRiwayat((r) => [...r, { dari: 'papan', teks: j.teks, ke: j.ke, keLabel: j.keLabel }])
+    setRiwayat((r) => [...r, { dari: 'papan', teks: j.teks, ke: j.ke, keLabel: j.keLabel, dariAI }])
   }
 
   return (
@@ -170,6 +206,14 @@ export function TanyaPapan() {
             {riwayat.map((b, i) => (
               <div key={i} className={`tp-baris ${b.dari}`}>
                 <span className="tp-gelembung">{b.teks}</span>
+                {/* Jawaban dari model bahasa DITANDAI. Panel ini berjanji
+                    menjawab dari data yang sudah dihitung; begitu ada jawaban
+                    yang tidak begitu, pembaca berhak tahu yang mana. */}
+                {b.dariAI && (
+                  <span className="tp-tanda-ai" title="Disusun model bahasa dari data PAPAN, bukan angka yang dihitung langsung">
+                    disusun AI
+                  </span>
+                )}
                 {b.ke && (
                   <Link className="tp-tautan" to={b.ke} onClick={() => setBuka(false)}>
                     {b.keLabel ?? 'Buka halaman'} →
@@ -177,6 +221,14 @@ export function TanyaPapan() {
                 )}
               </div>
             ))}
+            {berpikir && (
+              <div className="tp-baris papan" aria-live="polite">
+                <span className="tp-gelembung tp-mikir">
+                  <i /><i /><i />
+                  <span className="tp-mikir-teks">menelusuri data…</span>
+                </span>
+              </div>
+            )}
             <div ref={akhirRef} />
           </div>
 
@@ -192,7 +244,7 @@ export function TanyaPapan() {
               placeholder="Tanya soal pasar hari ini…"
               aria-label="Pertanyaan"
             />
-            <button type="submit" className="btn-p" disabled={!teks.trim()}>Kirim</button>
+            <button type="submit" className="btn-p" disabled={!teks.trim() || berpikir}>Kirim</button>
           </form>
         </div>
       )}

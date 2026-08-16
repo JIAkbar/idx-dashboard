@@ -136,3 +136,39 @@
   .tp-tombol, .tp-panel { animation: none; }
   .tp-tombol:hover { transform: none; }
 }
+
+/* ── Gelembung "sedang berpikir" ──────────────────────────────────────────
+   Diminta Johan: jawaban jangan muncul seketika. Alasannya bukan gaya-gayaan
+   — jawaban yang datang 8 ms setelah tombol ditekan terbaca sebagai templat
+   yang sudah disiapkan, bukan sebagai sesuatu yang membaca pertanyaannya.
+
+   Tiga titik yang naik-turun bergantian, ditambah keterangan singkat supaya
+   yang terjadi bisa dibaca, bukan cuma ditebak dari gerakan. */
+.lantai .tp-mikir { display: inline-flex; align-items: center; gap: 4px; padding: 9px 12px; }
+.lantai .tp-mikir i {
+  width: 5px; height: 5px; border-radius: 99px; background: var(--amber);
+  opacity: .35; animation: tp-titik 1.15s ease-in-out infinite;
+}
+.lantai .tp-mikir i:nth-child(2) { animation-delay: .16s; }
+.lantai .tp-mikir i:nth-child(3) { animation-delay: .32s; }
+@keyframes tp-titik {
+  0%, 60%, 100% { transform: translateY(0); opacity: .35; }
+  30%           { transform: translateY(-3px); opacity: 1; }
+}
+.lantai .tp-mikir-teks {
+  margin-left: 5px; font-family: var(--mono, monospace); font-size: 10px;
+  letter-spacing: .03em; color: var(--text3);
+}
+
+/* Penanda jawaban yang disusun model bahasa. Sengaja kecil dan kalem: ini
+   keterangan asal-usul, bukan lencana kebanggaan — dan panel ini justru
+   berjanji sebagian besar jawabannya BUKAN dari model. */
+.lantai .tp-tanda-ai {
+  font-family: var(--mono, monospace); font-size: 9px; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--text3);
+  border: 1px solid var(--line); border-radius: 999px; padding: 1px 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lantai .tp-mikir i { animation: none; opacity: .7; }
+}
