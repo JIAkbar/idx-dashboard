@@ -137,8 +137,16 @@
 .lantai .af-aksibar .dd-btn.merah { color: var(--red); border-color: var(--red); gap: 5px; }
 .lantai .af-aksibar .dd-btn.merah .dasbor-ikon { stroke: currentColor; }
 
-/* Kolom aksi (hapus) — rata kanan, tidak melebar. */
+/* Kolom aksi (ubah + hapus) — rata kanan, tidak melebar. */
 .lantai th.af-aksi, .lantai td.af-aksi { text-align: right; white-space: nowrap; width: 1%; }
+.lantai .af-ubah {
+  background: none; border: none; cursor: pointer; padding: 3px;
+  color: var(--text3); display: inline-flex; vertical-align: middle; margin-right: 2px;
+}
+.lantai .af-ubah:hover { color: var(--amber); }
+.lantai .af-ubah:disabled { cursor: not-allowed; opacity: .35; }
+.lantai .af-ubah:disabled:hover { color: var(--text3); }
+.lantai .af-ubah .dasbor-ikon { stroke: currentColor; }
 .lantai .af-hapus {
   background: none; border: none; cursor: pointer; padding: 3px;
   color: var(--text3); display: inline-flex; vertical-align: middle;

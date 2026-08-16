@@ -110,6 +110,12 @@ Tiga yang operasional:
 | 149 | Buktikan trigger notifikasi kurasi jalan | Tabel/RLS/trigger/lonceng sudah terpasang, tapi sengaja TIDAK dipicu di sesi ini: memicunya berarti mengirim kabar ke kontributor sungguhan. Cek lonceng setelah kurasi berikutnya; kalau kosong, periksa trigger `setoran_kabari_kurasi` |
 | 150 | Perluas cakupan laporan keuangan | Panen menghasilkan 646 dari 963 emiten. Sisanya kemungkinan tak punya laporan di Yahoo — perlu dipastikan mana yang memang kosong dan mana yang gagal ambil |
 
+Satu sisa dari perbaikan regresi 16 Agu sore:
+
+| # | Tugas | Keterangan |
+|---|---|---|
+| 160 | Bersihkan sisa status `'ditolak'` di TIGA objek SQL terakhir | `berkas_masih_menunggu()` (berkas milik setoran `dihapus` tak bisa dihapus penyetornya), `hitung_jenjang()` dan `ringkasan_keaktifan()` (penyebut akurasi kehilangan setoran yang ditolak → akurasi selalu 100%, kolom "ditolak" selalu 0). Sisi klien (`lib/jenjang.ts`) sudah memakai `'dihapus'`; SQL-nya yang tertinggal. Migrasinya sudah ditulis tapi **ditolak classifier izin** — perlu dijalankan ulang dengan persetujuan Johan |
+
 Tabel di bawah ini tetap dipertahankan sebagai rujukan ongkos-vs-hasil.
 
 ## ⏳ Antrean kerja — diurutkan dari yang paling murah
@@ -282,12 +288,17 @@ Lihat #143 untuk pilihan jalurnya.
 | Notifikasi | Satu tabel `notifikasi` untuk hasil kurasi DAN kabar fitur — bentuknya sama (pesan pendek, status dibaca, satu lonceng). `untuk=NULL` berarti pengumuman untuk semua, bukan satu baris per orang |
 | Isi edisi | Kolom `setoran.dimuat` (default TRUE), terpisah dari status kurasi. Perakitan memangkas lewat `build.py --kecuali=TICKER,…` — bukan membaca DB, supaya jalur rakit tetap tanpa kredensial |
 | Isi PDF | Ikut filter superadmin (`dimuat`), terpisah dari kurasi. Menolak setoran yang benar demi memangkas isi edisi bukan lagi satu-satunya cara |
+| Kolom & unggahan Chart | **Dibuang** dari tab Unggah (16 Agu). Chart TradingView tak pernah jadi bahan transkripsi — grafiknya sudah kita punya sendiri dari OHLC hasil panen. Berkas chart lama tetap di storage dan ikut terhapus bersama barisnya; yang hilang cuma kolom tabel dan kolom isian |
+| Tanggal setoran | Wajib **hari bursa**. Dijaga di tiga lapis: DatePicker cuma menampilkan Senin–Jumat, `hariBursa()` menolak saat submit (tanggal panggung bisa datang dari Kotak Masuk), dan aturannya ditulis sebagai butir pertama panduan. Libur nasional belum tersambung — akhir pekan menutup sebagian besar kasusnya |
+| Panduan sebelum setoran pertama | Akun yang belum pernah menyetor melihat modal **"Baca dulu"** saat menekan Tambah Emiten, bukan langsung kolom isian. Sekali per sesi, dengan jalan keluar "Nanti dulu" — form kosong tak memberi tahu apa pun soal layar penuh, baris broker terpotong, atau tanggal bursa, dan kekeliruan itu baru ketahuan setelah diminta revisi |
+| Mengubah setoran | Tombol pensil di kolom Aksi. Gambar boleh tidak diganti (yang berubah cuma alasan). Kalau diganti: berkas lama **dihapus dulu, baru** yang baru diunggah — kebijakan storage menolak kontributor menimpa emiten yang sudah punya setoran hari itu, dan ekstensi berkas ikut masuk nama path. Risikonya disebut terus terang di modal |
 
 ## Aturan yang berlaku
 
 - **Paket rilis WA** wajib tiap fitur/halaman publik baru: screenshot desktop + mobile, naskah fungsi & keunggulan. Backend tidak diumumkan.
 - **Verifikasi dua viewport** sebelum melapor selesai: laptop 1536×960×1.25, telepon 412×915×2.625.
-- **Istilah yang benar: BROKER SUMMARY**, bukan "orderbook". Seluruh aplikasi masih memakai istilah lama (#144) — jangan menambah pemakaian baru.
+- **Istilah yang benar: BROKER SUMMARY**, bukan "orderbook". Yang TERLIHAT pengguna sudah bersih (termasuk judul contoh di galeri panduan, diperbaiki di DB 16 Agu). Yang masih memakai istilah lama adalah **kontrak teknis**: nama path storage `{TICKER}-orderbook.ext`, kolom `setoran.jenis`, tabel `contoh_orderbook`, dan fungsi SQL `hitung_orderbook_hari()` — menggantinya berarti memindahkan berkas lama dan menulis ulang kebijakan storage, jadi ditahan sampai ada alasan yang lebih besar (#144). Jangan menambah pemakaian baru di teks yang dibaca pengguna.
+- **Mengubah nilai status/enum wajib disertai sapuan pembacanya.** Migrasi #142 mengganti `'ditolak'` → `'dihapus'` tanpa memeriksa siapa yang MEMBACA nilai itu; enam objek SQL tertinggal menyaring nilai yang tak pernah ada lagi, dan akibatnya diam — setoran terhapus tetap memakan kuota, mengunci emitennya, dan akurasi jenjang jadi selalu 100%. Cara memeriksanya satu perintah: `select proname from pg_proc where prosrc like '%<nilai lama>%'` ditambah `pg_policies` untuk `qual`/`with_check`.
 - **Nada pesan ke kontributor** berbentuk apresiasi, bukan pemberitahuan penolakan. Setoran yang disetujui tapi tak dimuat di edisi harus terbaca sebagai terima kasih atas kerjanya — pengakuan di depan, keterangan teknis di belakang.
 - **Harga apa pun** yang ditampilkan wajib lewat `keFraksi()` — lihat `docs/pedoman-harga-bei.md`. Kecuali rata-rata biaya (cost basis) hasil hitungan, yang memang tak wajib jatuh di tick.
 - **Grid pembungkus halaman** wajib `minmax(0, 1fr)`, bukan `auto`. Kolom `auto` melebar mengikuti anak terlebar (tabel ber-min-width), dan karena `.dasbor-main` memotong bukan menggulung, kelebihannya jadi tak terjangkau di ponsel. Ditemukan pada Seasonality 15 Agu 2026.

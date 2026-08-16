@@ -12,6 +12,7 @@ import {
   IKON_GAMBAR,
   IKON_KOTAK_ARSIP,
   IKON_PAPAN_KLIP,
+  IKON_PENSIL,
   IKON_PERINGATAN,
   IKON_SILANG,
   IKON_TAMBAH,
@@ -42,10 +43,10 @@ import {
 } from '../../lib/supabaseEdisi'
 import { useBulletinList } from '../../lib/dasbor/bulletin'
 import { TolakModal } from './KurasiSetoran'
-import { PanduanScreenshot } from './PanduanScreenshot'
+import { AturanScreenshot, PanduanScreenshot } from './PanduanScreenshot'
 import './AdminShared.css'
 import { pesanGalat } from '../../lib/pesanGalat'
-import { tanggalBursaTerakhir as tanggalHariIni } from '../../lib/tanggalBursa'
+import { hariBursa, tanggalBursaTerakhir as tanggalHariIni } from '../../lib/tanggalBursa'
 
 
 /** ISO `YYYY-MM-DD` → "Kamis, 13 Agu 2026" (judul panggung utama). */
@@ -122,21 +123,6 @@ const LABEL_STATUS: Record<StatusSetoran, string> = { menunggu: 'Menunggu', revi
 // menunggu tindakan (dari penyetor), bukan akhir seperti 'dihapus'.
 const KELAS_STATUS: Record<StatusSetoran, string> = { menunggu: 'warn', revisi: 'warn', disetujui: 'up', dihapus: 'dn' }
 
-/** Keterangan aksi saat emiten yang dipilih di form sudah punya unggahan
- *  (upsert eksplisit, #100) — orderbook selalu wajib dipilih ulang tiap
- *  submit (validasi tak berubah) jadi selalu dianggap diganti; chart cuma
- *  disebut kalau memang ada perubahan (dipilih baru / dipertahankan). */
-function pesanAksiDuplikat(existing: Baris, chartFile: File | null): string {
-  if (chartFile) {
-    return existing.chart
-      ? 'unggahan baru akan MENGGANTIKAN yang lama.'
-      : 'broker summary lama akan diganti, chart baru akan melengkapi (bukan menggantinya).'
-  }
-  return existing.chart
-    ? 'broker summary lama akan diganti; chart lama tetap dipertahankan.'
-    : 'unggahan baru akan MENGGANTIKAN yang lama.'
-}
-
 /** Galat RLS/kebijakan storage (backend Fase 1, #100) datang sebagai teks
  *  generik Postgres ("new row violates row-level security policy…") tanpa
  *  sebutkan alasan spesifik — server sengaja tak membocorkan detail kebijakan.
@@ -171,14 +157,13 @@ function PanelKosong({ ikon, pesan, petunjuk }: { ikon: string; pesan: string; p
  * berkas di sini (batas kepercayaan form): non-gambar ditolak dengan error
  * inline, parent hanya pernah menerima File gambar valid atau null.
  *
- * Heuristik orientasi (non-blokir): orderbook Stockbit umumnya memanjang ke
- * bawah, chart TradingView melebar — kalau orientasinya kebalik, tampil
- * peringatan kuning tapi unggah tetap boleh (heuristik bisa salah; isi gambar
- * sesungguhnya diverifikasi di tahap transkripsi).
+ * Heuristik orientasi (non-blokir): broker summary umumnya memanjang ke bawah
+ * — kalau gambarnya justru melebar, tampil peringatan kuning tapi unggah tetap
+ * boleh (heuristik bisa salah; isi gambar sesungguhnya diverifikasi di tahap
+ * transkripsi).
  */
-function PilihGambar({ label, jenis, file, onFile, onPratinjau }: {
+function PilihGambar({ label, file, onFile, onPratinjau }: {
   label: string
-  jenis: 'orderbook' | 'chart'
   file: File | null
   onFile: (f: File | null) => void
   /** Klik thumbnail → lightbox pratinjau besar (object URL lokal, pra-unggah). */
@@ -201,18 +186,13 @@ function PilihGambar({ label, jenis, file, onFile, onPratinjau }: {
     // terjadi di tahap transkripsi, bukan di client.
     const img = new Image()
     img.onload = () => {
-      const melebar = img.naturalWidth > img.naturalHeight
-      if (jenis === 'orderbook' && melebar) {
-        setWarn('Gambar ini melebar — screenshot broker summary Stockbit biasanya memanjang ke bawah. Periksa lagi; tetap bisa diunggah.')
-      } else if (jenis === 'chart' && !melebar) {
-        setWarn('Gambar ini memanjang ke bawah — chart TradingView biasanya melebar. Periksa lagi; tetap bisa diunggah.')
-      } else {
-        setWarn('')
-      }
+      setWarn(img.naturalWidth > img.naturalHeight
+        ? 'Gambar ini melebar — screenshot broker summary biasanya memanjang ke bawah. Periksa lagi; tetap bisa diunggah.'
+        : '')
     }
     img.src = u
     return () => URL.revokeObjectURL(u)
-  }, [file, jenis])
+  }, [file])
 
   function pilih(e: ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0] ?? null
@@ -249,10 +229,10 @@ function PilihGambar({ label, jenis, file, onFile, onPratinjau }: {
               title="Klik untuk pratinjau besar"
               onClick={() => onPratinjau({
                 src: url,
-                keterangan: `${jenis === 'orderbook' ? 'Broker Summary' : 'Chart'} · ${file.name} (belum diunggah)`,
+                keterangan: `Broker Summary · ${file.name} (belum diunggah)`,
               })}
             >
-              <img src={url} alt={`Pratinjau ${jenis}: ${file.name}`} />
+              <img src={url} alt={`Pratinjau broker summary: ${file.name}`} />
             </button>
           )}
           <div className="af-file-baris">
@@ -515,7 +495,6 @@ export function UnggahHarian() {
 
   const [ticker, setTicker] = useState('')
   const [orderbook, setOrderbook] = useState<File | null>(null)
-  const [chart, setChart] = useState<File | null>(null)
   const [alasan, setAlasan] = useState('')
   const [sudah, setSudah] = useState<Baris[]>([])
   /** Baris `setoran` (Fase 3) tanggal aktif — digabung ke `sudah` (lihat
@@ -524,6 +503,16 @@ export function UnggahHarian() {
   const [formErr, setFormErr] = useState('')
   /** Modal form "Tambah Emiten" — aksi CRUD selalu modal (konsisten pola proyek). */
   const [formBuka, setFormBuka] = useState(false)
+  /** Baris yang sedang diubah lewat tombol pensil — form yang sama dipakai
+   *  ulang, cuma emitennya terkunci dan gambarnya opsional (kalau tak dipilih,
+   *  yang berubah hanya alasan). null = form dalam mode tambah. */
+  const [editBaris, setEditBaris] = useState<Baris | null>(null)
+  /** Modal "baca dulu" sebelum form pertama kali — akun yang belum pernah
+   *  menyetor melihat aturannya lebih dulu, bukan langsung kolom isian. */
+  const [gerbangPanduan, setGerbangPanduan] = useState(false)
+  /** Sudah lewat gerbang panduan di sesi ini? Sekali saja, bukan tiap kali
+   *  tombol ditekan — mengulangnya jadi hambatan, bukan bantuan. */
+  const panduanTerbaca = useRef(false)
   const [mengunggah, setMengunggah] = useState(false)
   const [resetKey, setResetKey] = useState(0)
   /** Counter pemicu muat ulang daftar (naik setelah unggah/hapus sukses). */
@@ -724,20 +713,30 @@ export function UnggahHarian() {
   function bersihkan() {
     setTicker('')
     setOrderbook(null)
-    setChart(null)
     setAlasan('')
     setFormErr('')
     setResetKey((k) => k + 1)
   }
 
+  function tutupForm() {
+    setFormBuka(false)
+    setEditBaris(null)
+    bersihkan()
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!ticker.trim() || !orderbook) {
+    // Mode ubah: gambar boleh tidak diganti (yang berubah cuma alasan).
+    if (!ticker.trim() || (!orderbook && !editBaris)) {
       setFormErr('Emiten dan screenshot broker summary wajib diisi.')
       return
     }
     if (tanggal > hariIni) {
       setFormErr('Tanggal ini di masa depan — broker summary masa depan tidak diterima.')
+      return
+    }
+    if (!hariBursa(tanggal)) {
+      setFormErr(`${tanggalManusiawi(tanggal)} bukan hari bursa — tidak ada broker summary untuk tanggal ini. Pilih hari bursa terakhir sebelumnya.`)
       return
     }
     if (!alasanValid(alasan, superadmin)) {
@@ -746,7 +745,7 @@ export function UnggahHarian() {
     }
     const kode = ticker.trim().toUpperCase()
     const adaSebelum = sudah.some((b) => b.ticker === kode)
-    if (kontributor && adaSebelum) {
+    if (!editBaris && kontributor && adaSebelum) {
       setFormErr(`${kode} sudah disetor akun lain untuk ${tanggalManusiawi(tanggal)} — pilih emiten lain.`)
       return
     }
@@ -754,20 +753,57 @@ export function UnggahHarian() {
     setFormErr('')
     try {
       const alasanKirim = alasan.trim()
-      await unggahScreenshot(orderbook, tanggal, kode, 'orderbook', alasanKirim)
-      if (chart) await unggahScreenshot(chart, tanggal, kode, 'chart', alasanKirim)
-      setToast({
-        ok: true,
-        pesan: adaSebelum ? `${kode} diperbarui · ${chart ? 2 : 1} gambar` : `${kode} · ${chart ? 2 : 1} gambar tersimpan`,
-      })
-      bersihkan()
-      setFormBuka(false)
+      if (editBaris) {
+        await simpanPerubahan(editBaris, kode, alasanKirim)
+      } else {
+        await unggahScreenshot(orderbook as File, tanggal, kode, 'orderbook', alasanKirim)
+        setToast({ ok: true, pesan: adaSebelum ? `${kode} diperbarui.` : `${kode} tersimpan.` })
+      }
+      tutupForm()
       setMuat((m) => m + 1)
     } catch (err) {
       setToast({ ok: false, pesan: terjemahkanGalatUnggah(pesanGalat(err, 'Gagal unggah.')) })
     } finally {
       setMengunggah(false)
     }
+  }
+
+  /**
+   * Simpan hasil mode ubah. Gambar baru TIDAK ditimpa di tempat: berkas lama
+   * dihapus dulu, baru yang baru diunggah.
+   *
+   * Bukan pilihan gaya. Kebijakan storage menolak kontributor menyentuh emiten
+   * yang sudah punya setoran hari itu (`emiten_sudah_disetor`), jadi "unggah
+   * menimpa" pasti gagal untuk mereka. Selain itu ekstensi berkas ikut masuk
+   * nama path, jadi mengganti PNG dengan JPG tanpa menghapus yang lama
+   * meninggalkan dua berkas untuk satu emiten.
+   *
+   * Konsekuensinya jujur disebut di modal: kalau unggahan barunya gagal,
+   * yang lama sudah hilang dan harus disetor ulang. Berkasnya masih ada di
+   * komputer penyetor, jadi ongkos kegagalan = mengulang satu unggahan.
+   */
+  async function simpanPerubahan(baris: Baris, kode: string, alasanKirim: string) {
+    if (!orderbook) {
+      const entries = [baris.setoranOb, baris.setoranCh].filter((s): s is SetoranRow => !!s)
+      if (entries.length === 0) throw new Error('Baris ini tidak punya data setoran — ganti gambarnya untuk memperbaruinya.')
+      await Promise.all(entries.map((s) => ubahAlasanSetoran(s.path, alasanKirim)))
+      setToast({ ok: true, pesan: `Alasan ${kode} diperbarui.` })
+      return
+    }
+    if (baris.orderbook) await hapusScreenshot([baris.orderbook])
+    await unggahScreenshot(orderbook, tanggal, kode, 'orderbook', alasanKirim)
+    setToast({ ok: true, pesan: `${kode} diganti dengan screenshot baru.` })
+  }
+
+  /** Buka form dalam mode ubah — emiten & alasan diisi dari baris yang diklik. */
+  function klikUbah(b: Baris) {
+    setEditBaris(b)
+    setTicker(b.ticker)
+    setAlasan((b.setoranOb?.alasan || b.setoranCh?.alasan || '').trim())
+    setOrderbook(null)
+    setFormErr('')
+    setResetKey((k) => k + 1)
+    setFormBuka(true)
   }
 
   async function jalankanHapus(target: Baris[]) {
@@ -795,6 +831,14 @@ export function UnggahHarian() {
    *  server sudah mengecualikan superadmin dari batas ini). Gagal cek di
    *  client (mis. jaringan) tidak menghalangi — server tetap wasit akhir. */
   async function klikTambahEmiten() {
+    // Akun yang belum pernah menyetor membaca aturannya dulu. Form kosong
+    // yang langsung muncul tidak memberi tahu apa pun tentang layar penuh,
+    // baris broker yang terpotong, atau tanggal bursa — dan kekeliruan itu
+    // baru ketahuan setelah unggahannya diminta revisi.
+    if (panduanDefaultBuka === true && !panduanTerbaca.current) {
+      setGerbangPanduan(true)
+      return
+    }
     if (superadmin) {
       setFormBuka(true)
       return
@@ -858,18 +902,14 @@ export function UnggahHarian() {
   }
 
   /**
-   * Buka lightbox dari tabel "Sudah Diunggah": kumpulkan SEMUA gambar tanggal
-   * ini (urut per emiten, orderbook lalu chart) supaya ‹ › bisa jalan antar
-   * gambar emiten yang sama maupun antar emiten, lalu minta signed URL batch
-   * (bucket privat) dan mulai dari gambar yang diklik.
+   * Buka lightbox dari tabel "Sudah Diunggah": kumpulkan broker summary SEMUA
+   * emiten tanggal ini supaya ‹ › bisa jalan antar emiten, lalu minta signed
+   * URL batch (bucket privat) dan mulai dari gambar yang diklik.
    */
   async function bukaPratinjau(path: string) {
     const tglPendek = tanggalManusiawi(tanggal).replace(/^[^,]+, /, '')
     const entri = sudah.flatMap((b) =>
-      [
-        b.orderbook ? { path: b.orderbook, ket: `${b.ticker} · Broker Summary · ${tglPendek}` } : null,
-        b.chart ? { path: b.chart, ket: `${b.ticker} · Chart · ${tglPendek}` } : null,
-      ].filter((x): x is { path: string; ket: string } => x !== null)
+      b.orderbook ? [{ path: b.orderbook, ket: `${b.ticker} · Broker Summary · ${tglPendek}` }] : []
     )
     try {
       const urls = await urlScreenshots(entri.map((e) => e.path))
@@ -960,11 +1000,10 @@ export function UnggahHarian() {
                     <col style={{ width: '3%' }} />
                     <col style={{ width: '9%' }} />
                     <col style={{ width: '11%' }} />
-                    <col style={{ width: '38%' }} />
-                    <col style={{ width: '9%' }} />
-                    <col style={{ width: '9%' }} />
+                    <col style={{ width: '43%' }} />
+                    <col style={{ width: '10%' }} />
                     <col style={{ width: '12%' }} />
-                    <col style={{ width: '9%' }} />
+                    <col style={{ width: '12%' }} />
                   </colgroup>
                   <thead>
                     <tr>
@@ -982,7 +1021,6 @@ export function UnggahHarian() {
                       <th>Penyetor</th>
                       <th>Alasan</th>
                       <th className="af-c">Broker Summary</th>
-                      <th className="af-c">Chart</th>
                       <th className="af-c">Status</th>
                       <th className="af-aksi">Aksi</th>
                     </tr>
@@ -996,6 +1034,10 @@ export function UnggahHarian() {
                         (s): s is SetoranRow => !!s && s.penyetor === session?.user.id && (s.status === 'menunggu' || s.status === 'revisi')
                       )
                       const boleh = bolehHapusBaris(b)
+                      // Setoran yang sudah disetujui sudah dipakai edisi —
+                      // menggantinya diam-diam berarti mengubah bahan yang
+                      // sudah dinilai. Superadmin tetap boleh (dia kuratornya).
+                      const bolehUbah = boleh && (superadmin || status === 'menunggu' || status === 'revisi')
                       const judulKunci = 'Hanya penyetor berkas ini atau superadmin yang bisa menghapusnya.'
                       // Berkasnya ada tapi baris setorannya tidak sampai ke
                       // sini: bagi superadmin (yang RLS-nya melihat semua) itu
@@ -1050,10 +1092,6 @@ export function UnggahHarian() {
                               judul={`broker summary ${b.ticker}`} onBuka={bukaPratinjau} />
                           </td>
                           <td className="af-c">
-                            <SelBerkas path={b.chart} url={b.chart ? thumb[b.chart] : undefined}
-                              judul={`chart ${b.ticker}`} onBuka={bukaPratinjau} />
-                          </td>
-                          <td className="af-c">
                             {status ? (
                               superadmin ? (
                                 <StatusAksi
@@ -1081,6 +1119,20 @@ export function UnggahHarian() {
                             )}
                           </td>
                           <td className="af-aksi">
+                            <button
+                              type="button"
+                              className="af-ubah"
+                              title={
+                                !boleh ? judulKunci
+                                  : bolehUbah ? `Ubah unggahan ${b.ticker}`
+                                    : 'Setoran yang sudah disetujui hanya bisa diubah superadmin.'
+                              }
+                              aria-label={`Ubah unggahan ${b.ticker}`}
+                              disabled={!bolehUbah}
+                              onClick={() => klikUbah(b)}
+                            >
+                              <IkonMenu d={IKON_PENSIL} size={13} />
+                            </button>
                             <button
                               type="button"
                               className="af-hapus"
@@ -1164,29 +1216,43 @@ export function UnggahHarian() {
       </section>
 
       {formBuka && (
-        <ModalKecil className="af-form-modal" label="Tambah emiten — unggah screenshot" onClose={() => { if (!mengunggah) setFormBuka(false) }}>
+        <ModalKecil
+          className="af-form-modal"
+          label={editBaris ? `Ubah unggahan — ${editBaris.ticker}` : 'Tambah emiten — unggah screenshot'}
+          onClose={() => { if (!mengunggah) tutupForm() }}
+        >
           <p className="muted" style={{ margin: 0, fontSize: 11 }}>
-            Broker summary wajib, chart opsional. Jenis berkas diperiksa saat dipilih;
-            isi gambar diverifikasi saat transkripsi.
+            {editBaris
+              ? 'Biarkan kolom gambar kosong kalau yang diubah hanya alasannya. Kalau gambar diganti, berkas lama dihapus lebih dulu — bila unggahan barunya gagal, setor ulang emiten ini.'
+              : 'Jenis berkas diperiksa saat dipilih; isi gambar diverifikasi saat transkripsi.'}
           </p>
           <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12 }}>
             <div className="field">
               <span className="lbl">Tanggal</span>
               <DatePicker value={tanggal} onChange={setTanggal} maks={hariIni} />
-              <p className="muted" style={{ margin: '4px 0 0', fontSize: 10.5 }}>Broker summary masa depan tidak diterima.</p>
+              <p className="muted" style={{ margin: '4px 0 0', fontSize: 10.5 }}>
+                Ikuti kalender bursa — hanya hari bursa yang punya broker summary.
+                Sabtu, Minggu, dan libur bursa tidak diterima, begitu juga tanggal di masa depan.
+              </p>
             </div>
             <div className="field">
               <span className="lbl">Emiten</span>
-              <StockAutocomplete
-                stocks={index?.stocks ?? []}
-                value={ticker}
-                onChange={setTicker}
-                onSelect={setTicker}
-                placeholder="Ketik kode / nama emiten…"
-                tandai={new Set(sudah.map((b) => b.ticker))}
-                labelTanda="sudah ada"
-              />
-              {existingBaris && (
+              {editBaris ? (
+                // Emiten dikunci saat mode ubah: menggantinya berarti setoran
+                // yang lain sama sekali, bukan perubahan atas baris ini.
+                <input className="inp" type="text" value={editBaris.ticker} readOnly aria-readonly="true" />
+              ) : (
+                <StockAutocomplete
+                  stocks={index?.stocks ?? []}
+                  value={ticker}
+                  onChange={setTicker}
+                  onSelect={setTicker}
+                  placeholder="Ketik kode / nama emiten…"
+                  tandai={new Set(sudah.map((b) => b.ticker))}
+                  labelTanda="sudah ada"
+                />
+              )}
+              {!editBaris && existingBaris && (
                 <p className="af-dup">
                   <IkonMenu d={IKON_PERINGATAN} size={12} />
                   <span>
@@ -1196,7 +1262,7 @@ export function UnggahHarian() {
                       </>
                     ) : (
                       <>
-                        <b>{existingBaris.ticker}</b> sudah terunggah (broker summary {existingBaris.orderbook ? '✓' : '—'}, chart {existingBaris.chart ? '✓' : '—'}) — {pesanAksiDuplikat(existingBaris, chart)}
+                        <b>{existingBaris.ticker}</b> sudah terunggah untuk tanggal ini — unggahan baru akan MENGGANTIKAN yang lama.
                       </>
                     )}
                   </span>
@@ -1206,26 +1272,19 @@ export function UnggahHarian() {
             <AlasanField value={alasan} onChange={setAlasan} superadmin={superadmin} />
             <PilihGambar
               key={`ob-${resetKey}`}
-              label="Broker Summary (Stockbit) — wajib"
-              jenis="orderbook"
+              label={editBaris ? 'Broker Summary — pilih hanya kalau mau diganti' : 'Broker Summary — wajib'}
               file={orderbook}
               onFile={setOrderbook}
-              onPratinjau={(g) => setLightbox({ items: [g], index: 0 })}
-            />
-            <PilihGambar
-              key={`ch-${resetKey}`}
-              label="Chart (TradingView) — opsional"
-              jenis="chart"
-              file={chart}
-              onFile={setChart}
               onPratinjau={(g) => setLightbox({ items: [g], index: 0 })}
             />
             <button
               type="submit"
               className="btn-p"
-              disabled={mengunggah || (kontributor && Boolean(existingBaris)) || !alasanValid(alasan, superadmin)}
+              disabled={mengunggah || (!editBaris && kontributor && Boolean(existingBaris)) || !alasanValid(alasan, superadmin)}
             >
-              {mengunggah ? (existingBaris ? 'Memperbarui…' : 'Mengunggah…') : (existingBaris ? 'Perbarui' : 'Unggah')}
+              {mengunggah
+                ? (editBaris ? 'Menyimpan…' : existingBaris ? 'Memperbarui…' : 'Mengunggah…')
+                : (editBaris ? 'Simpan' : existingBaris ? 'Perbarui' : 'Unggah')}
             </button>
             {formErr && <p className="af-err" style={{ margin: 0 }}>{formErr}</p>}
           </form>
@@ -1261,6 +1320,30 @@ export function UnggahHarian() {
           <IkonMenu d={toast.ok ? IKON_CENTANG : IKON_PERINGATAN} size={15} />
           <span>{toast.pesan}</span>
         </div>
+      )}
+
+      {gerbangPanduan && (
+        <ModalKecil className="af-form-modal" label="Baca dulu — cara screenshot broker summary" onClose={() => setGerbangPanduan(false)}>
+          <p className="muted" style={{ margin: 0, fontSize: 11.5 }}>
+            Setoran pertamamu. Lima aturan ini yang paling sering membuat unggahan
+            diminta revisi — sesudah ini kamu tidak akan ditanya lagi.
+          </p>
+          <AturanScreenshot />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="button"
+              className="btn-p"
+              onClick={() => {
+                panduanTerbaca.current = true
+                setGerbangPanduan(false)
+                klikTambahEmiten()
+              }}
+            >
+              Saya paham — lanjut unggah
+            </button>
+            <button type="button" className="dd-btn" onClick={() => setGerbangPanduan(false)}>Nanti dulu</button>
+          </div>
+        </ModalKecil>
       )}
 
       {kuotaHabis && (
@@ -1300,8 +1383,8 @@ export function UnggahHarian() {
           <p style={{ margin: 0, fontSize: 12.5 }}>
             {hapusTarget.length === 1 ? (
               <>
-                Screenshot {hapusTarget[0].orderbook && hapusTarget[0].chart ? 'broker summary & chart' : hapusTarget[0].orderbook ? 'broker summary' : 'chart'}{' '}
-                <b>{hapusTarget[0].ticker}</b> untuk {tanggal} akan dihapus permanen dari penyimpanan.
+                Screenshot broker summary <b>{hapusTarget[0].ticker}</b> untuk {tanggal} akan
+                dihapus permanen dari penyimpanan.
               </>
             ) : (
               <>

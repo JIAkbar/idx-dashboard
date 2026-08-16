@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { tanggalBursaTerakhir } from './tanggalBursa'
+import { hariBursa, tanggalBursaTerakhir } from './tanggalBursa'
 
 // Jam 10 pagi waktu lokal — jauh dari tengah malam, supaya tesnya tidak
 // bergantung pada zona waktu mesin yang menjalankannya.
@@ -39,5 +39,22 @@ describe('tanggalBursaTerakhir', () => {
     const salinan = new Date(asli)
     tanggalBursaTerakhir(asli)
     expect(asli.getTime()).toBe(salinan.getTime())
+  })
+})
+
+describe('hariBursa', () => {
+  it('Senin–Jumat hari bursa', () => {
+    expect(hariBursa('2026-08-17')).toBe(true) // Senin
+    expect(hariBursa('2026-08-14')).toBe(true) // Jumat
+  })
+
+  it('Sabtu & Minggu bukan hari bursa', () => {
+    expect(hariBursa('2026-08-15')).toBe(false)
+    expect(hariBursa('2026-08-16')).toBe(false)
+  })
+
+  it('tanggal tak berbentuk ISO ditolak, bukan dianggap hari bursa', () => {
+    expect(hariBursa('')).toBe(false)
+    expect(hariBursa('bukan-tanggal')).toBe(false)
   })
 })

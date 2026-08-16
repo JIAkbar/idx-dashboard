@@ -21,6 +21,18 @@
  *  kelihatan karena tanggalnya juga kosong di strip kalender.
  *  ponytail: cukup akhir pekan; sambungkan daftar libur kalau ternyata
  *  setoran salah-tanggal masih terjadi di sekitar libur panjang. */
+/** `YYYY-MM-DD` itu hari bursa? Sekarang cuma memeriksa akhir pekan — sama
+ *  keterbatasannya dengan `tanggalBursaTerakhir()` di bawah (libur nasional
+ *  belum tersambung). Dipakai form unggah sebagai jaring kedua: DatePicker
+ *  memang hanya menampilkan Senin–Jumat, tapi tanggal panggung juga bisa
+ *  datang dari Kotak Masuk dan dari konteks yang tersimpan. */
+export function hariBursa(iso: string): boolean {
+  const [t, b, d] = iso.split('-').map(Number)
+  if (!t || !b || !d) return false
+  const hari = new Date(t, b - 1, d).getDay()
+  return hari !== 0 && hari !== 6
+}
+
 export function tanggalBursaTerakhir(kini: Date = new Date()): string {
   const d = new Date(kini)
   const hari = d.getDay()

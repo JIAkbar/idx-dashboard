@@ -13,7 +13,43 @@ import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { pesanGalat } from '../../lib/pesanGalat'
 
 /**
- * Panel "Cara screenshot orderbook" (Fase 5) — panduan teks + galeri contoh
+ * Aturan screenshot broker summary — dipakai DUA tempat: panel lipat di tab
+ * Unggah dan modal "baca dulu" untuk akun yang belum pernah menyetor. Satu
+ * salinan saja; aturan yang ditulis dua kali akan menyimpang di kemudian hari.
+ */
+export function AturanScreenshot() {
+  return (
+    <ul className="af-panduan-list">
+      <li>
+        <b>Ikuti kalender bursa.</b> Broker summary hanya ada untuk <b>hari bursa</b> —
+        Sabtu, Minggu, dan hari libur bursa tidak punya penutupan sama sekali.
+        Yang disetor hari Senin adalah penutupan Senin itu; kalau baru sempat
+        menyetor keesokan harinya, pilih tanggal bursanya, bukan tanggal saat mengunggah.
+      </li>
+      <li>
+        <b>Ambil dalam mode layar penuh</b> (F11, atau tombol layar penuh aplikasi broker) — bukan sekadar saran:
+        emiten ramai broker seperti <b>DSSA</b> terpotong di jendela biasa, sementara emiten sepi seperti{' '}
+        <b>MCAS</b> muat tanpa masalah. Tanpa layar penuh, baris broker paling bawah bisa hilang tanpa terlihat hilang.
+      </li>
+      <li>
+        Wajib terlihat: <b>kode emiten</b>, <b>tanggal</b>, kolom <b>bid/offer beserta antriannya</b>,{' '}
+        <b>total volume</b>, dan <b>seluruh baris broker sampai bawah</b>.
+      </li>
+      <li>Jangan memotong atau menyunting gambar, jangan menutupi angka.</li>
+      {/* Contoh di galeri kebetulan semuanya dari Stockbit, dan itu terbaca
+          seperti syarat. Yang dibutuhkan transkripsi cuma angkanya —
+          aplikasi mana pun boleh, asal isinya lengkap. */}
+      <li>
+        <b>Aplikasi bebas.</b> Broker summary dari sekuritas mana pun diterima — Stockbit, IPOT,
+        Mirae, Ajaib, BNI Bions, dan lainnya. Contoh di bawah kebetulan memakai Stockbit;
+        yang dinilai isinya, bukan aplikasinya.
+      </li>
+    </ul>
+  )
+}
+
+/**
+ * Panel "Cara screenshot broker summary" (Fase 5) — panduan teks + galeri contoh
  * `contoh_orderbook`, dipasang di tab Unggah dekat form Tambah Emiten.
  * Dilipat/dibuka (`buka` state lokal); nilai awal ditentukan pemanggil lewat
  * `defaultBuka` (UnggahHarian.tsx: terbuka utk akun yang belum pernah
@@ -96,26 +132,7 @@ export function PanduanScreenshot({ superadmin, defaultBuka }: { superadmin: boo
       </button>
       {buka && (
         <div className="panel-b">
-          <ul className="af-panduan-list">
-            <li>
-              <b>Ambil dalam mode layar penuh</b> (F11, atau tombol layar penuh aplikasi broker) — bukan sekadar saran:
-              emiten ramai broker seperti <b>DSSA</b> terpotong di jendela biasa, sementara emiten sepi seperti{' '}
-              <b>MCAS</b> muat tanpa masalah. Tanpa layar penuh, baris broker paling bawah bisa hilang tanpa terlihat hilang.
-            </li>
-            <li>
-              Wajib terlihat: <b>kode emiten</b>, <b>tanggal</b>, kolom <b>bid/offer beserta antriannya</b>,{' '}
-              <b>total volume</b>, dan <b>seluruh baris broker sampai bawah</b>.
-            </li>
-            <li>Jangan memotong atau menyunting gambar, jangan menutupi angka.</li>
-            {/* Contoh di bawah kebetulan semuanya dari Stockbit, dan itu
-                terbaca seperti syarat. Yang dibutuhkan transkripsi cuma
-                angkanya — aplikasi mana pun boleh, asal isinya lengkap. */}
-            <li>
-              <b>Aplikasi bebas.</b> Broker summary dari sekuritas mana pun diterima — Stockbit, IPOT,
-              Mirae, Ajaib, BNI Bions, dan lainnya. Contoh di bawah kebetulan memakai Stockbit;
-              yang dinilai isinya, bukan aplikasinya.
-            </li>
-          </ul>
+          <AturanScreenshot />
 
           {contoh === null && <p className="muted" style={{ fontSize: 11 }}>Memuat contoh…</p>}
 
