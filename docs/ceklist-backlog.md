@@ -52,6 +52,8 @@ git rev-list --count origin/main..HEAD
 
 | ☐ | # | Tugas | Catatan |
 |---|---|---|---|
+| ☐ | 172 | **Emiten dijawab analisa + saran pertanyaan** | PENTING. Sekarang `DSSA`, `analisa DSSA`, dan `DSSA diakumulasi broker apa` dijawab kalimat yang sama persis, tautannya selalu Stock Detail. Perlu: jawaban dirakit dari semua sudut, tautan mengikuti aspek yang ditanya, chip saran lanjutan yang diturunkan dari data yang benar-benar ada, dan sambungan kata ganti ("keenam itu") |
+| ☐ | 171 | **Rule engine paham dari satu kata** | Peta sinonim terpusat, tahan salah ketik ringan, kata tunggal dijawab ringkas + menawarkan cabang |
 | ☐ | 170 | **Penyeragaman kendali** | Tombol kalender, kotak cari, pemilih rentang waktu tak senada: campur `<select>` bawaan, `Dropdown` proyek, `DatePicker`. Menyeragamkan + mencabut duplikat. **Sesudah halaman baru jadi** supaya tak dikerjakan dua kali |
 | ☐ | 168 | Cara scraping arsip berita yang benar | Endpoint IPOT mengabaikan `halaman` → mentok ±200 berita/kanal. Menelusuri `news_id` mundur **tidak dilakukan tanpa pembahasan** |
 | ☐ | 167 | Lapis Gemini Flash di Tanya PAPAN (C9) | Lapis aturannya sudah jalan. LLM ditunda sampai halaman baru jadi — datanya bertambah, cakupan rule-engine harus lengkap dulu |

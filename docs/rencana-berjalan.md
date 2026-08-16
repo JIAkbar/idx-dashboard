@@ -137,6 +137,56 @@ kurang cara menemukannya.** Ronde 1 sembilan lubang, sembilan-sembilanya
 karena pencocokan frasa terlalu kaku; ronde 2 dua puluh lima lubang, sebagian
 besar karena kunci terlalu sempit.
 
+### #172 — Emiten dijawab ANALISA + saran pertanyaan lanjutan (penting)
+
+Diminta Johan 16 Agu 2026 malam, setelah menguji sendiri dan menyimpulkan
+"masih belum nyambung".
+
+**Yang terjadi sekarang.** Semua pertanyaan tentang satu emiten jatuh ke satu
+kalimat yang sama, apa pun yang ditanyakan:
+
+| Diketik | Dijawab |
+|---|---|
+| `DSSA` | "DSSA: peringkat 4 nilai transaksi terbesar; dibahas di 2 edisi" |
+| `analisa DSSA` | **kalimat yang sama persis** |
+| `DSSA di akumulasi oleh broker apa?` | **kalimat yang sama persis** |
+
+Jadi mesin mengenali KODENYA tapi mengabaikan APA YANG DITANYAKAN. Tautannya
+pun selalu ke Stock Detail, padahal pertanyaan broker mestinya ke Broker
+Summary, pertanyaan pola musiman ke Seasonality, kepemilikan ke Peta Investor.
+
+**Yang perlu dikerjakan:**
+
+1. **Jawaban per emiten dirakit dari SEMUA sudut yang kita punya**, bukan satu
+   baris peringkat: posisi harian, fundamental (147 ruas), kepemilikan KSEI,
+   grup konglomerat, pola musiman, status Radar, edisi yang membahasnya, kabar
+   yang menyebutnya. Sebagian sudah ada di `jawab()`, tapi kalah dulu oleh
+   blok peringkat.
+2. **Aspek pertanyaan menentukan isi DAN tautannya.** "broker" → Broker
+   Summary, "musiman/bulan apa" → Seasonality, "siapa pemilik" → Peta
+   Investor, "murah/mahal" → Stock Detail valuasi. Satu emiten bisa punya
+   banyak pintu; sekarang cuma satu yang dipakai.
+3. **Saran pertanyaan lanjutan di bawah jawaban** (yang Johan sebut "tooltips
+   atau ramalan teks"): 3-4 chip yang bisa diklik, **diturunkan dari data yang
+   memang ada untuk emiten itu** — jangan menawarkan "arus broker DSSA" kalau
+   broker summary-nya tak pernah disetor. Chip yang menjanjikan sesuatu yang
+   tak ada lebih buruk daripada tak ada chip.
+4. **Jawaban yang mengaku tak tahu WAJIB menyebut apa yang ada.** "Belum ada
+   data broker untuk DSSA — yang ada: peringkat harian, valuasi, kepemilikan
+   KSEI." Itu yang membuat panel terasa nyambung, bukan panjangnya kalimat.
+
+**Sepupunya, kerjakan sekalian:** sambungan berkata ganti masih putus.
+"apa manfaatnya dari keenam itu?" sesudah jawaban daftar jenjang tak dikenali
+(jatuh ke lapis AI, dan AI-nya menjawab bahwa rujukannya tak jelas), padahal
+"keenam itu" jelas menunjuk jawaban sebelumnya. `topik` sekarang cuma menyimpan
+JENIS jawaban, bukan isinya — perlu menyimpan juga entitas terakhir yang
+disebut (kode emiten, daftar yang baru ditampilkan) supaya rujukan seperti
+"itu", "yang tadi", "keenam itu" punya sandaran.
+
+Berhubungan dengan [[#171]] (paham dari satu kata) — keduanya soal yang sama:
+mesin sudah punya datanya, yang kurang cara menghubungkan pertanyaan ke data
+itu.
+
 ### #168 — Cara scraping arsip berita yang benar (belum dibahas)
 
 Batasnya sudah diketahui: endpoint IPOT mengabaikan `halaman`, jadi mentok
