@@ -232,3 +232,59 @@
 /* Baris kabar di dalam kolom yang lebih sempit: waktu tak lagi didorong ke
    ujung kanan yang jauh, tapi duduk rapat sesudah label sumbernya. */
 .lantai .brd-kabar-list .kbr-waktu { margin-left: auto; }
+
+/* ── Ringkasan pasar (padanan "Coffee Morning") ─────────────────────────── */
+.lantai .brd-ringkas {
+  margin-top: 26px; border: 1px solid var(--line); border-left: 3px solid var(--amber);
+  border-radius: var(--r); background: var(--bg2); padding: 16px 18px;
+}
+.lantai .brd-ringkas-kepala {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+}
+/* Label kecil yang menyebut CARA kalimat ini dibuat. Bukan hiasan: pembaca
+   berhak tahu mana yang dihitung dan mana yang dikarang. */
+.lantai .brd-ringkas-mesin {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .04em; color: var(--text3);
+  border: 1px solid var(--line2); border-radius: 999px; padding: 2px 8px;
+}
+.lantai .brd-ringkas-judul {
+  margin: 10px 0 0; font-family: var(--disp); font-weight: 700;
+  font-size: clamp(16px, 1.5vw, 21px); line-height: 1.35; color: var(--text);
+}
+.lantai .brd-ringkas-isi {
+  margin: 8px 0 0; max-width: 88ch; font-size: 12.5px; line-height: 1.75; color: var(--text2);
+}
+.lantai .brd-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.lantai .brd-chip {
+  font-family: var(--mono); font-size: 10.5px; text-decoration: none;
+  border: 1px solid var(--line2); border-radius: 999px; padding: 3px 10px; color: var(--text2);
+  transition: border-color .18s ease, color .18s ease, transform .18s ease;
+}
+.lantai .brd-chip:hover { border-color: var(--amber); color: var(--text); transform: translateY(-1px); }
+.lantai .brd-chip.up { color: var(--green); border-color: color-mix(in srgb, var(--green) 45%, transparent); }
+.lantai .brd-chip.dn { color: var(--red); border-color: color-mix(in srgb, var(--red) 45%, transparent); }
+
+.lantai .brd-katalis { display: grid; gap: 6px; margin-top: 14px; }
+.lantai .brd-katalis .lbl { margin-bottom: 2px; }
+.lantai .brd-katalis-it {
+  display: grid; gap: 2px; padding: 9px 12px; text-decoration: none;
+  border: 1px solid var(--line); border-left: 2px solid var(--line2);
+  border-radius: var(--r); background: var(--bg1, var(--bg2));
+  transition: border-color .18s ease, transform .18s ease;
+}
+.lantai .brd-katalis-it:hover { border-color: var(--amber); transform: translateX(2px); }
+.lantai .brd-katalis-it.up { border-left-color: var(--green); }
+.lantai .brd-katalis-it.dn { border-left-color: var(--red); }
+.lantai .brd-katalis-it.netral { border-left-color: var(--amber); }
+.lantai .brd-katalis-it b { font-size: 12.5px; color: var(--text); }
+.lantai .brd-katalis-it span { font-size: 11.5px; line-height: 1.6; color: var(--text3); }
+.lantai .brd-ringkas-kaki { margin: 12px 0 0; font-size: 10.5px; color: var(--text3); }
+@media (min-width: 900px) {
+  /* Empat katalis jadi dua kolom di layar lebar — satu kolom panjang membuat
+     kartu ini setinggi papan IHSG-nya sendiri. */
+  .lantai .brd-katalis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lantai .brd-katalis .lbl { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lantai .brd-chip:hover, .lantai .brd-katalis-it:hover { transform: none; }
+}

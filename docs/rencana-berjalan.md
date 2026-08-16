@@ -140,6 +140,27 @@ Aturan tampilan yang sudah diputuskan: **Beranda hanya empat sumber inti**
 (IDX, IPOT News, Stockbit Snips, Kontan) dalam empat kolom; sumber tambahan
 mana pun hanya muncul di halaman `/kabar`.
 
+### 🤖 #167 — Lapisan AI di atas ringkasan pasar (ide, belum dikerjakan)
+
+Ringkasan naratif harian sudah jadi (`lib/dasbor/ringkasHarian.ts`,
+rule-engine, 11 uji). Ide lanjutannya: **agen AI sebagai keunggulan PAPAN**,
+dengan satu aturan yang tak boleh dilanggar — LLM menulis **DI ATAS** fakta
+yang sudah terkunci mesin aturan, tidak pernah menggantikannya.
+
+Bentuk yang masuk akal, diurut dari yang paling aman:
+
+| Tahap | Isi | Risikonya |
+|---|---|---|
+| A | LLM menulis ulang kalimat rule-engine jadi lebih luwes; angkanya dikunci dari input | Kecil — fakta tak bisa berubah, cuma gaya bahasanya |
+| B | LLM merangkai narasi lintas hari ("pekan ini asing keluar lima hari beruntun") | Sedang — perlu jendela data yang jelas |
+| C | Tanya-jawab data ("emiten mana yang broker-nya akumulasi 3 hari?") | Besar — jawaban harus selalu menyertakan query/angka pendukungnya |
+
+Yang membedakan dari dasbor lain: mereka menaruh LLM di DEPAN data, kita
+menaruhnya di BELAKANG — tiap kalimat tetap punya angka yang bisa diklik.
+Pertanyaan yang belum dijawab: biaya per hari, kunci API disimpan di mana
+(Edge Function, bukan klien), dan bagaimana menandai kalimat mana yang
+ditulis mesin. Dibahas setelah barisan bug di bawah beres.
+
 ### 🐞 Bug & utang terbuka dari kerja admin 16 Agu — **dahulukan ini**
 
 Yang sedang berjalan sudah dipakai kontributor sungguhan, jadi barisan ini

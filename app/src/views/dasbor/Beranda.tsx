@@ -7,6 +7,7 @@ import { PETA_MENU_KUNCI } from '../../lib/aksesHalaman'
 import { useDataHarian } from '../../lib/dasbor/dataHarian'
 import { useIhsgBuka } from '../../lib/dasbor/ihsgOhlc'
 import { useKabar, waktuKabar } from '../../lib/dasbor/kabar'
+import { rangkumHari } from '../../lib/dasbor/ringkasHarian'
 import { useBulletinList, tipeEdisi } from '../../lib/dasbor/bulletin'
 import { PapanIhsg } from './IndeksDunia'
 import { IkonMenu, IKON_KUNCI, IKON_PANAH_KANAN } from '../../components/dasbor/IkonMenu'
@@ -76,6 +77,54 @@ const SUMBER_BERANDA = ['IDX', 'IPOT News', 'Stockbit Snips', 'Kontan'] as const
  *  datanya cukup, dan kolom yang datanya tipis (Stockbit di awal) memang
  *  wajar lebih pendek karena isinya sungguh belum sebanyak itu. */
 const KABAR_PER_KOLOM = 4
+
+/**
+ * Ringkasan Pasar — angka penutupan hari itu dirakit jadi kalimat.
+ *
+ * Padanan "Coffee Morning" yang dipakai dasbor lain, dengan satu perbedaan
+ * yang disengaja: di sana narasinya teks mati yang tak menunjuk ke mana pun,
+ * di sini **tiap chip dan tiap katalis menautkan ke halaman yang membuktikan
+ * angkanya**. Kalimatnya sendiri dirakit rule-engine (`rangkumHari`), bukan
+ * LLM — supaya "kenapa disebut menguat kuat?" bisa dijawab dengan ambang,
+ * bukan dengan "begitu kata modelnya".
+ */
+function RingkasanPasar() {
+  const { hari, loading } = useDataHarian()
+  if (loading && !hari) return null
+  if (!hari) return null
+
+  const r = rangkumHari(hari)
+  return (
+    <section className="brd-ringkas">
+      <div className="brd-ringkas-kepala">
+        <span className="lbl">Ringkasan pasar · {hari.date_id}</span>
+        <span className="brd-ringkas-mesin" title="Kalimat dirakit dari ambang angka yang tertulis di kode, bukan dari model bahasa">
+          dirakit dari angka, bukan ditulis AI
+        </span>
+      </div>
+      <h2 className="brd-ringkas-judul">{r.headline}</h2>
+      {r.ringkasan && <p className="brd-ringkas-isi">{r.ringkasan}</p>}
+      <div className="brd-chips">
+        {r.chips.map((c) => (
+          <Link key={c.label} to={c.ke ?? '/indeks'} className={`brd-chip ${c.nada}`}>{c.label}</Link>
+        ))}
+      </div>
+      <div className="brd-katalis">
+        <span className="lbl">Katalis utama</span>
+        {r.katalis.map((k) => (
+          <Link key={k.judul} to={k.ke ?? '/indeks'} className={`brd-katalis-it ${k.nada}`}>
+            <b>{k.judul}</b>
+            <span>{k.isi}</span>
+          </Link>
+        ))}
+      </div>
+      <p className="brd-ringkas-kaki">
+        Sumber angka: Statistik Ringkas IDX · penutupan {hari.date_id}. Klik mana pun untuk
+        menelusuri angkanya.
+      </p>
+    </section>
+  )
+}
 
 /** Jalur kabar di Beranda — satu kolom per sumber, lengkap di halaman Kabar Pasar. */
 function JalurKabar() {
@@ -185,6 +234,8 @@ export function Beranda() {
 
       {/* Edisi PAPAN lebih dulu, kabar pihak ketiga menyusul: yang kita
           kerjakan sendiri harus berdiri di depan yang kita tautkan. */}
+      <RingkasanPasar />
+
       <KartuKabar />
 
       <JalurKabar />
