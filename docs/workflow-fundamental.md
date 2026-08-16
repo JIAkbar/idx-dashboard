@@ -169,18 +169,26 @@ rasio nego terhadap reguler.
 
 Diurut ongkos-vs-hasil. Tiap butir sudah punya bahannya kecuali C1.
 
-| # | Pekerjaan | Bahan | Ongkos |
-|---|---|---|---|
-| C1 | **Berita / Live News** | ❌ belum ada — perlu pengumpul RSS di server | Sedang |
-| C2 | **Indikator per emiten** (RSI, MACD, BB, ATR, Fib, Ichimoku, VWAP, Heikin Ashi) | OHLCV 5 tahun; rumus sudah ada di `lib/radar/` | Sedang |
-| C3 | **Screener** seluruh emiten | `fundamental/` 967×147 + `ohlc/` + B1 | Sedang-besar |
-| C4 | Heatmap & market breadth | data harian | Kecil |
-| C5 | Ringkasan naratif harian | data harian lengkap | Sedang (perumusan) |
-| C6 | Halaman metodologi di web | sudah tertulis di `docs/` | Kecil |
-| C7 | Foreign flow 5D/10D | agregasi `ds_*.json` | Kecil |
-| C8 | Watchlist | localStorage | Kecil |
+| # | Pekerjaan | Bahan | Ongkos | Status |
+|---|---|---|---|---|
+| C1 | **Berita / Live News** | ~~belum ada~~ | Sedang | ✅ **SELESAI 16 Agu** — `/kabar`, 1.028 kabar, 5 sumber; `scripts/panen_kabar.py` + GitHub Actions tiap 2 jam |
+| C2 | **Indikator per emiten** (RSI, MACD, BB, ATR, Fib, Ichimoku, VWAP, Heikin Ashi) | OHLCV 5 tahun; rumus sudah ada di `lib/radar/` | Sedang | ☐ **berikutnya** |
+| C3 | **Screener** seluruh emiten | `fundamental/` 967×147 + `ohlc/` + B1 | Sedang-besar | ☐ **halaman BARU**, sesudah C2 |
+| C4 | Heatmap & market breadth | data harian | Kecil | ☐ |
+| C5 | Ringkasan naratif harian | data harian lengkap | Sedang (perumusan) | ✅ **SELESAI 16 Agu** — `lib/dasbor/ringkasHarian.ts`, ambangnya **dikalibrasi dari 2.409 hari bursa**, bukan ditebak |
+| C6 | Halaman metodologi di web | sudah tertulis di `docs/` | Kecil | 🟡 sebagian — 75 istilah sudah jadi `glosarium.json` (dipakai Tanya PAPAN), **halamannya belum ada** |
+| C7 | Foreign flow 5D/10D | agregasi `ds_*.json` | Kecil | ☐ |
+| C8 | Watchlist | localStorage | Kecil | ☐ |
+| C9 | **Chat AI ala ASK SPLE** | ~~belum diputuskan~~ | Sedang | ✅ **SELESAI 16 Agu (lapis aturan)** — Tanya PAPAN menjawab dari data, bukan model bahasa. Lapis Gemini Flash ditunda sampai halaman baru jadi (#167) |
 
 **C2 mendahului C3**: screener tanpa kolom indikator hanya jadi tabel harga.
+
+> **Rekonsiliasi 16 Agu (malam).** C1, C5, dan C9 dikerjakan di sesi
+> Beranda/Kabar/Tanya PAPAN **tanpa dokumen ini ikut diperbarui**, jadi sempat
+> terbaca seolah belum ada — dan hampir membuat pekerjaan yang sudah jadi
+> direncanakan ulang dari nol. Tiap fase jalur A/B/C yang selesai **wajib**
+> dicatat statusnya di sini. Rencana yang tak menyusul kenyataan bukan cuma
+> basi; ia menyuruh mengerjakan ulang.
 
 ---
 

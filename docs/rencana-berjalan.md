@@ -49,22 +49,36 @@ pasti basi sebelum sesinya selesai).
 Urutan kerja berikutnya yang disepakati: **#169 (halaman baru dari SPLE)**
 lalu **#170 (penyeragaman kendali)**.
 
-### #169 — Halaman baru hasil bedah SPLE (fokus berikutnya)
+### #169 — Lanjutkan jalur SPLE → `docs/workflow-fundamental.md`
 
-Sumbernya dua dasbor pesaing yang sudah dibedah statis sesi lalu
-(`memory/riset-sple.md`: LLM-nya Claude Haiku 4.5, fundamentalnya dari RDFE
-berbayar):
+⚠️ **Bukan rencana baru.** Riset SPLE sudah selesai dan rencananya sudah
+tertulis lengkap sejak 16 Agu pagi — jangan menyusunnya ulang:
 
-- `https://sple-info.netlify.app/`
-- `https://sple-mf.netlify.app/` (menerima `?kode=TINS` — jadi ada halaman
-  per emiten)
+| Berkas | Isi |
+|---|---|
+| `docs/riset/sple/peta-section.md` | Tiap section kedua situs: anchor → fungsi render → sumber data. 138 fungsi, 144 elemen ber-id, ditelusuri dari kode |
+| `docs/riset/sple/metodologi-sple-info.md` | Rumus mereka: entry/SL/TP, screener M/V/T, harmonic (BC/AB 0,382–0,886), 4 preset + angka backtest |
+| `docs/riset/sple/banding-fitur.md` | PAPAN vs SPLE + kolom ketersediaan data kita |
+| `docs/riset/sple/*.png` | 12 tangkapan layar tiap section |
+| `docs/workflow-fundamental.md` | **Rencana kerjanya**: jalur A (fundamental → Bedah Emiten 12 section), B (metadata IDX), C (lubang lain) |
 
-Bedah sebelumnya menghasilkan peta **arsitektur**, belum daftar halaman &
-fitur yang mau ditandingi. Langkah pertama: susun daftar itu dulu — tiap
-baris "punya/tidak punya" **wajib punya perintah yang membuktikannya**,
-bukan disusun dari ingatan (pelajaran §182: dugaan "cuma punya PER/PBV"
-ternyata 147 ruas). Baru setelah itu diputuskan halaman baru mana yang
-dibangun dan urutannya.
+**Rekonsiliasi 16 Agu malam — tiga fase ternyata sudah selesai** tanpa
+dokumennya diperbarui: **C1 berita** (`/kabar`), **C5 ringkasan naratif**
+(kalibrasi 2.409 hari bursa), dan **C9 chat AI** (Tanya PAPAN lapis aturan).
+Nyaris direncanakan ulang dari nol. Statusnya kini tercatat di jalur C.
+
+Empat pekerjaan berikutnya menurut urutan dokumen itu — semuanya kecil dan
+**tak bergantung panen apa pun**:
+
+1. **B1** sektor IDX-IC resmi (dipakai semua halaman lain)
+2. **A0** satukan dua sumber fundamental — menambal `operating_cf` kosong 80%
+   di panel Stock Detail yang **sudah ada**
+3. **A1** rata-rata 5 tahun + ambang verdict valuasi
+4. **B2** broker summary harian ke JSON
+
+Lalu **A2 Bedah Emiten** (halaman baru, 12 section, satu commit per section),
+dan di jalur terpisah **C2 indikator → C3 screener** (halaman baru juga —
+C2 wajib duluan, screener tanpa kolom indikator cuma jadi tabel harga).
 
 ### #170 — Refactor kendali: tombol & kontrol belum seragam
 

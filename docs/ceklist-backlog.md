@@ -6,18 +6,56 @@ Papan status kerja borongan 16 Agustus 2026. Centang = selesai & terverifikasi
 Terakhir diperbarui: **16 Agu 2026, malam**. Seluruhnya masih **commit lokal —
 belum di-push** (aturan rilis: `git push` hanya setelah Johan bilang "live").
 
-## Antrean berikutnya — urutan yang disepakati Johan
+## Antrean berikutnya — **halaman & fitur baru dari riset SPLE**
+
+> Rencana kerjanya **sudah tertulis lengkap** di `docs/workflow-fundamental.md`
+> (jalur A/B/C), risetnya di `docs/riset/sple/`. Jangan menyusun ulang — tabel
+> di bawah cuma papan centangnya.
+
+**Empat ini dulu — semuanya kecil dan tak bergantung panen apa pun:**
+
+| ☐ | Fase | Tugas | Kenapa duluan |
+|---|---|---|---|
+| ☐ | **B1** | Sektor IDX-IC resmi (#157) | Dipakai hampir semua halaman lain — screener, bedah, banding sektor |
+| ☐ | **A0** | Satukan dua sumber fundamental | Menambal `operating_cf` kosong **80%** di panel Stock Detail yang **sudah ada**. Murni kode, tanpa panen |
+| ☐ | **A1** | Rata-rata 5 tahun + ambang verdict valuasi | Verdict kita **dua sumbu**: riwayat emiten sendiri **dan** median sektornya (`pe_vs_sector_pct` sudah ada). Konflik antar-sumbu wajib disebut |
+| ☐ | **B2** | Broker summary harian ke JSON (#159) | 88 broker per tanggal; sekarang masih di-parse dari PDF |
+
+**Halaman & fitur BARU:**
+
+| ☐ | Fase | Halaman/fitur baru | Bahan | Syarat |
+|---|---|---|---|---|
+| ☐ | **C2** | **Indikator per emiten** — RSI, MACD, Bollinger, ATR, Fibonacci, Ichimoku, VWAP, Heikin Ashi | OHLCV 5 tahun; rumus sudah ada di `lib/radar/` | **wajib sebelum C3** |
+| ☐ | **C3** | **Screener seluruh emiten — halaman baru** | `fundamental/` 967×147 + `ohlc/` 962 + B1 | butuh C2, kalau tidak cuma jadi tabel harga |
+| ☐ | **A2** | **Bedah Emiten — halaman baru, 12 section** (padanan sple-mf) | Tujuh dari sebelas section bahannya sudah ada | A0 + A1 |
+| ☐ | **C6** | Halaman metodologi/glosarium di web | 75 istilah sudah jadi `glosarium.json` | — |
+| ☐ | **C4** | Heatmap & market breadth | data harian | — |
+| ☐ | **C7** | Foreign flow 5D/10D | agregasi `ds_*.json` | — |
+| ☐ | **C8** | Watchlist | localStorage | — |
+| ☐ | **B4** | Pasar NEGO / Bandar Flow (#152) | ruas ada di `GetStockSummary`, belum dipanen | — |
+| ☐ | **A3** | Panen laporan keuangan resmi IDX (#156) | 777/778 emiten TW2 2026, XLSX ber-XBRL | sesudah A2, supaya datanya punya tempat |
+| ☐ | **B3** | Pemegang saham pengendali (#158) | laporan resmi IDX | butuh A3 |
+
+**Sisanya:**
 
 | ☐ | # | Tugas | Catatan |
 |---|---|---|---|
-| ☐ | 169 | **Halaman baru hasil bedah SPLE** | `sple-info` & `sple-mf` (`?kode=TINS` → ada halaman per emiten). Bedah sebelumnya baru arsitektur; langkah pertama menyusun daftar halaman & fitur, tiap baris "punya/tidak punya" **wajib dibuktikan perintah** (§182) |
-| ☐ | 170 | **Penyeragaman kendali** | Tombol kalender, kotak cari, pemilih rentang waktu tak senada antar halaman: campur `<select>` bawaan, `Dropdown` proyek, `DatePicker`. Menyeragamkan + mencabut duplikat, bukan bikin baru. **Setelah #169** supaya tak dikerjakan dua kali |
-| ☐ | 168 | Cara scraping arsip berita yang benar | Endpoint IPOT mengabaikan `halaman` → mentok ±200 berita/kanal. Menelusuri `news_id` mundur **tidak dilakukan tanpa pembahasan** (ribuan permintaan ke server orang) |
-| ☐ | 167 | Lapisan Gemini Flash di Tanya PAPAN | Ditunda **setelah #169**: halaman baru menambah data yang juga harus dijangkau rule-engine dulu |
-| ☐ | 165 | Thumbnail dibuat saat unggah | Sekarang gambar penuh 420–520 KB dikecilkan ke 40px di peramban |
-| ☐ | 166 | Rakit ulang mesin Mingguan & Bulanan | Keduanya dicabut dari manifest 16 Agu — mingguan 21 dari 24 halaman identik karakter-per-karakter dengan edisi harian. Empat perbaikan sudah dirinci di `rencana-berjalan.md` |
-| ☐ | 162 | Sebab MBMA | Belum ditelusuri |
-| ☐ | 161 | Pesan galat unggah masih generik | Menyebut empat kemungkinan sekaligus, bukan sebab yang sebenarnya |
+| ☐ | 170 | **Penyeragaman kendali** | Tombol kalender, kotak cari, pemilih rentang waktu tak senada: campur `<select>` bawaan, `Dropdown` proyek, `DatePicker`. Menyeragamkan + mencabut duplikat. **Sesudah halaman baru jadi** supaya tak dikerjakan dua kali |
+| ☐ | 168 | Cara scraping arsip berita yang benar | Endpoint IPOT mengabaikan `halaman` → mentok ±200 berita/kanal. Menelusuri `news_id` mundur **tidak dilakukan tanpa pembahasan** |
+| ☐ | 167 | Lapis Gemini Flash di Tanya PAPAN (C9) | Lapis aturannya sudah jalan. LLM ditunda sampai halaman baru jadi — datanya bertambah, cakupan rule-engine harus lengkap dulu |
+| ☐ | 166 | Rakit ulang mesin Mingguan & Bulanan | Mingguan 21 dari 24 halaman identik karakter-per-karakter dengan edisi harian |
+| ☐ | 165 | Thumbnail dibuat saat unggah | Gambar penuh 420–520 KB dikecilkan ke 40px di peramban |
+| ☐ | 162 | Sebab penolakan MBMA | Bergantung #161 |
+| ☐ | 161 | Pesan galat unggah masih generik | Menyebut empat kemungkinan sekaligus, bukan sebab sebenarnya |
+| ☐ | 154 | Peringatan konteks + tanggal metodologi di tiap halaman analitik | Yang membuat SPLE dipercaya bukan sinyalnya, tapi panduannya |
+| ☐ | 151 | Broker per emiten — sumbernya belum ketemu | `GetBrokerSummary` **mengabaikan** `stockCode`, hasilnya selalu level pasar |
+
+**Menunggu keputusan Johan** (tak bisa dikerjakan tanpa jawabannya):
+
+| ☐ | # | Pertanyaan |
+|---|---|---|
+| ☐ | 145 | "Bar tembus" maksudnya apa — bar kapitalisasi yang melewati kotak, atau bar dua arah dari sumbu nol? |
+| ☐ | 146 | "Divergensi tiga lapis" — lapis mana: harga vs volume, volume vs frekuensi, asing vs domestik? Urutannya menentukan seluruh perhitungan |
 
 ## Selesai — gelombang ketiga (16 Agu, siang–malam)
 
