@@ -42,6 +42,7 @@ function PapanBeranda() {
       hari={hari}
       tanggalTersedia={tanggalTersedia}
       buka={buka}
+      tanpaMeta
       kepala={
         <div className="brd-identitas">
           <h1 className="brd-nama">PAPAN</h1>

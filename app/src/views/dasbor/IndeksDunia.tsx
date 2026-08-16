@@ -8,7 +8,7 @@ import { useDataHarian, type DataHarian, type TanggalIndex } from '../../lib/das
 import { hitungYtdPct } from '../../lib/dasbor/ytd'
 import { fN, fp, fmtNF } from '../../lib/dasbor/format'
 import { useChartCanvas } from '../../lib/dasbor/useChartJs'
-import { useIhsgBuka } from '../../lib/dasbor/ihsgOhlc'
+import { useIhsgBuka, useIhsgOhlc, type BarisOhlc } from '../../lib/dasbor/ihsgOhlc'
 import { useTheme } from '../../context/ThemeContext'
 import { IkonMenu, IKON_PERINGATAN, IKON_GLOBE, IKON_PENGGARIS, IKON_GRAFIK_BATANG } from '../../components/dasbor/IkonMenu'
 import { LilinHarian } from '../../components/dasbor/LilinHarian'
@@ -71,16 +71,39 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
   }, [rentang, riwayat])
 
   const pilih = RENTANG.find((r) => r.id === rentang) ?? RENTANG[0]
+  // Lilin hanya untuk rentang yang datanya memang punya buka/tinggi/rendah.
+  // `ihsg_ohlc_ringkas.json` memuat 250 hari bursa terakhir — cukup untuk YTD
+  // dan 1 tahun. Rentang lebih panjang jatuh ke garis, bukan karena malas
+  // tapi karena riwayat panjang kita cuma menyimpan PENUTUPAN; menggambar
+  // lilin dari satu angka berarti mengarang tiga angka lainnya.
+  const ohlcSemua = useIhsgOhlc()
+  const lilin: BarisOhlc[] | null = useMemo(() => {
+    if (!ohlcSemua || (pilih.id !== 'ytd' && pilih.id !== '1t')) return null
+    if (pilih.id === 'ytd') {
+      const awalTahun = `${new Date().getFullYear()}-01-01`
+      return ohlcSemua.filter((b) => b[0] >= awalTahun)
+    }
+    const batas = new Date()
+    batas.setFullYear(batas.getFullYear() - 1)
+    const iso = batas.toISOString().slice(0, 10)
+    return ohlcSemua.filter((b) => b[0] >= iso)
+  }, [ohlcSemua, pilih])
   // Selagi riwayat masih diunduh, seri YTD tetap ditampilkan — grafik yang
   // berkedip kosong lebih buruk daripada grafik yang sebentar lebih pendek.
   const seri = useMemo(() => {
+    // Satu sumber angka: kalau lilin tersedia, ringkasan hi/lo/terkini dibaca
+    // dari PENUTUPAN lilin yang sama — bukan dari seri lain yang kebetulan
+    // mirip.
+    if (lilin) {
+      return lilin.map((b) => ({ date_iso: b[0], date_id: tglSingkat(b[0]), ihsg: b[4] } as TanggalIndex))
+    }
     if (pilih.tahun === null || !riwayat) return dates
     if (pilih.tahun === 0) return riwayat
     const batas = new Date()
     batas.setFullYear(batas.getFullYear() - pilih.tahun)
     const iso = batas.toISOString().slice(0, 10)
     return riwayat.filter((d) => d.date_iso >= iso)
-  }, [pilih, riwayat, dates])
+  }, [pilih, riwayat, dates, lilin])
 
   // High/low/terkini dari seri yang sama dengan chart.
   const info = useMemo(() => {
@@ -95,15 +118,86 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
     // YTD punya definisi resminya sendiri (penutupan tahun lalu, bukan titik
     // pertama yang kebetulan ada di seri); rentang lain memang diukur dari
     // ujung kiri grafiknya.
+    // YTD SELALU dihitung dari seri index.json (`dates`), bukan dari seri yang
+    // sedang digambar: seri lilin mulai di bar pertama tahun ini, sementara
+    // YTD resmi diukur dari PENUTUPAN TAHUN LALU. Sempat meleset ke -26,82%
+    // di sini padahal chip di papan yang sama menyebut -28,43% — dua angka
+    // berbeda untuk hal yang sama di satu kartu.
     const pct = pilih.tahun === null
-      ? hitungYtdPct(last.ihsg, seri)
+      ? hitungYtdPct(last.ihsg, dates)
       : ((last.ihsg - seri[0].ihsg) * 100) / seri[0].ihsg
     return { hi, lo, last, ytdPct: pct }
-  }, [seri, pilih])
+  }, [seri, pilih, dates])
 
-  const config = useMemo<ChartConfiguration<'line', number[], string> | null>(() => {
+  const config = useMemo<ChartConfiguration<'line' | 'bar', (number | [number, number])[], string> | null>(() => {
     if (seri.length === 0 || !info) return null
     const isDark = theme === 'dark'
+    const hijau = isDark ? '#2FBF71' : '#1E8E52'
+    const merah = isDark ? '#E5484D' : '#C42B31'
+
+    // ── Lilin: sumbu batang (wick) + badan, dua dataset bar mengambang.
+    // Chart.js tak punya tipe candlestick bawaan; plugin finansialnya berarti
+    // satu dependensi baru untuk dua dataset yang bisa ditulis sendiri.
+    if (lilin) {
+      const warna = lilin.map((b) => (b[4] >= b[1] ? hijau : merah))
+      // Badan menyempit sendiri saat harinya banyak: 145 hari YTD di lebar
+      // papan ±5px per lilin, jadi tebal tetap akan bertumpuk.
+      const tebal = lilin.length > 180 ? 2 : lilin.length > 120 ? 3 : 5
+      return {
+        type: 'bar',
+        data: {
+          labels: lilin.map((b) => tglSingkat(b[0])),
+          datasets: [
+            { // sumbu: rendah → tinggi
+              data: lilin.map((b) => [b[3], b[2]]),
+              backgroundColor: warna, barThickness: 1,
+              categoryPercentage: 1, barPercentage: 1,
+            },
+            { // badan: buka ↔ tutup
+              data: lilin.map((b) => [Math.min(b[1], b[4]), Math.max(b[1], b[4])]),
+              backgroundColor: warna, barThickness: tebal,
+              categoryPercentage: 1, barPercentage: 1,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              filter: (item) => item.datasetIndex === 1,
+              callbacks: {
+                title: (items) => {
+                  const b = lilin[items[0].dataIndex]
+                  return new Date(`${b[0]}T12:00:00`).toLocaleDateString('id-ID',
+                    { day: 'numeric', month: 'long', year: 'numeric' })
+                },
+                label: (ctx) => {
+                  const b = lilin[ctx.dataIndex]
+                  const pct = ((b[4] - b[1]) * 100) / b[1]
+                  return [`Buka ${fN(b[1])}  Tinggi ${fN(b[2])}`,
+                          `Rendah ${fN(b[3])}  Tutup ${fN(b[4])}`,
+                          `Hari ini ${fp(pct)}`]
+                },
+              },
+            },
+          },
+          scales: {
+            x: { display: false, stacked: false },
+            // Sumbu-y lilin TIDAK boleh mulai dari nol: badan lilin akan
+            // gepeng jadi garis. Batasnya diberi napas 1,5% di atas & bawah.
+            y: {
+              display: false,
+              min: Math.min(...lilin.map((b) => b[3])) * 0.985,
+              max: Math.max(...lilin.map((b) => b[2])) * 1.015,
+            },
+          },
+        },
+      } as ChartConfiguration<'bar', (number | [number, number])[], string>
+    }
+
     const amber = isDark ? '#F0A62B' : '#B87A10'
     const amberFill = isDark ? 'rgba(240,166,43,.22)' : 'rgba(184,122,16,.16)'
     // Garis panduan high/low: warna --text3 tiap tema, alpha lembut.
@@ -382,7 +476,7 @@ function PanelSkeleton({ tanggalTersedia, tanggalAktif, pilihTanggal, loading }:
  * papan yang SAMA, bukan salinannya: dua papan yang menampilkan angka sama
  * dari dua potong kode akan berselisih pada perubahan pertama.
  */
-export function PapanIhsg({ hari, tanggalTersedia, buka, kepala }: {
+export function PapanIhsg({ hari, tanggalTersedia, buka, kepala, tanpaMeta }: {
   hari: DataHarian
   tanggalTersedia: TanggalIndex[]
   /** Harga buka hari itu; `null` kalau panen Yahoo belum jalan (lihat useIhsgBuka). */
@@ -391,6 +485,11 @@ export function PapanIhsg({ hari, tanggalTersedia, buka, kepala }: {
    *  dan kalimat identitas DI DALAM papan, bukan sebagai kotak terpisah di
    *  atasnya. Halaman Indeks Dunia tidak mengisinya. */
   kepala?: ReactNode
+  /** Sembunyikan baris ruas (volume, nilai, frekuensi, kapitalisasi, kurs).
+   *  Beranda mematikannya: lima angka itu bahan kerja, dan halaman kerjanya
+   *  ada di /indeks — pintu masuk cukup dengan indeks, arah, dan rentang
+   *  harinya. */
+  tanpaMeta?: boolean
 }) {
   const naik = hari.ihsg_pct >= 0
   const ytdPct = hitungYtdPct(hari.ihsg_value, tanggalTersedia)
@@ -456,14 +555,16 @@ export function PapanIhsg({ hari, tanggalTersedia, buka, kepala }: {
             </div>
           </div>
         )}
-        <div className="board-meta">
-          {meta.map(([label, isi]) => (
-            <div className="bm" key={label}>
-              <span className="lbl">{label}</span>
-              <span className="num">{isi}</span>
-            </div>
-          ))}
-        </div>
+        {!tanpaMeta && (
+          <div className="board-meta">
+            {meta.map(([label, isi]) => (
+              <div className="bm" key={label}>
+                <span className="lbl">{label}</span>
+                <span className="num">{isi}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       <IhsgYtdChart dates={tanggalTersedia} />
     </div>
