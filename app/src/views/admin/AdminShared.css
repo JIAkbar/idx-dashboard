@@ -630,28 +630,15 @@
    Tombolnya diberi nama "Lebih baru / Lebih lama", bukan "Sebelumnya /
    Berikutnya": daftarnya terurut waktu terbalik, jadi "berikutnya" ambigu —
    pembaca tidak tahu itu maju ke masa lalu atau ke masa kini. */
-.lantai .af-paginasi {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; flex-wrap: wrap; margin-top: 12px;
-}
-.lantai .af-paginasi > .muted { font-family: var(--mono); font-size: 11px; }
-.lantai .af-paginasi-tbl { display: flex; gap: 6px; }
-.lantai .af-paginasi-tbl .dd-btn { white-space: nowrap; }
 
 /* Kotak cari di kepala panel — kembaran `.aa-cari` (AkunAdmin.css) yang
    dipindah ke berkas bersama karena panel kedua sekarang memakainya. Ikon
    dan input berbagi satu bingkai supaya fokusnya terlihat sebagai satu
    kontrol, bukan ikon yang kebetulan berdiri di sebelah kotak. */
-.lantai .af-cari {
-  position: relative; display: flex; align-items: center; gap: 8px;
-  min-width: 210px; max-width: 320px;
-  background: var(--bg2); border: 1px solid var(--line2);
-  border-radius: var(--r-kecil); padding-left: 11px;
-}
-.lantai .af-cari:focus-within { border-color: var(--amber); }
-.lantai .af-cari svg { flex: none; color: var(--text3); }
-.lantai .af-cari .inp { border: 0; background: transparent; padding-left: 0; border-radius: 0; }
-.lantai .af-cari .inp:focus { border-color: transparent; }
+/* .af-cari & .af-paginasi PINDAH ke lantai.css — keduanya kini dipakai
+   halaman publik (Kabar Pasar) juga, dan berkas ini cuma diimpor area
+   admin. Gejalanya khas: ikon cari melayang di luar kotaknya dan
+   paginasi menempel ke daftar di atasnya. */
 
 /* Chip jenjang berikon — ikonnya sejajar tengah dengan teksnya. */
 .lantai .chip.aa-jenjang { display: inline-flex; align-items: center; gap: 4px; }

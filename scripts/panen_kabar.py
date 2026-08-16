@@ -27,6 +27,7 @@ import argparse
 import json
 import re
 import sys
+import html
 import urllib.parse
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone, timedelta
@@ -149,13 +150,21 @@ def ipot(batas: int) -> list[dict]:
     if not r:
         return []
     out, terlihat = [], set()
-    for m in re.finditer(r'href="(newsDetail\.php\?jdl=([^&"]+)&news_id=(\d+)[^"]*)"', r.text):
+    # Judul diambil dari TEKS di dalam <a>, bukan dari parameter `jdl` di URL:
+    # parameter itu sudah kehilangan tanda baca (titik, koma, persen jadi
+    # spasi) sehingga "IDXTRANS Melaju 5,29%" tercetak "IDXTRANS Melaju 5 29%".
+    pola = re.compile(
+        r'href="(newsDetail\.php\?jdl=([^&"]+)&news_id=(\d+)[^"]*)"[^>]*>(.*?)</a>',
+        re.S)
+    for m in pola.finditer(r.text):
         nid = m.group(3)
         if nid in terlihat:
             continue
         terlihat.add(nid)
-        judul = urllib.parse.unquote(m.group(2)).replace("_", " ").strip()
-        judul = re.sub(r"\s{2,}", " ", judul)
+        judul = re.sub(r"<[^>]+>", " ", m.group(4))
+        judul = re.sub(r"\s{2,}", " ", html.unescape(judul)).strip()
+        if not judul:  # tautan gambar tanpa teks — pakai parameter sebagai cadangan
+            judul = re.sub(r"\s{2,}", " ", urllib.parse.unquote(m.group(2)).replace("_", " ")).strip()
         out.append({
             "sumber": "IPOT News",
             "jenis": "berita",
@@ -212,6 +221,8 @@ def urut(items: list[dict]) -> list[dict]:
 def main() -> int:
     ap = argparse.ArgumentParser(description="Panen kabar pasar untuk halaman Kabar PAPAN")
     ap.add_argument("--batas", type=int, default=30, help="item per sumber (default 30)")
+    ap.add_argument("--hari", type=int, default=7,
+                    help="berapa hari kabar disimpan sebelum dibuang (default 7)")
     args = ap.parse_args()
 
     semua: list[dict] = []
@@ -236,14 +247,41 @@ def main() -> int:
         terlihat.add(kunci)
         unik.append(it)
 
+    # ── Gabung dengan panen sebelumnya ──────────────────────────────────────
+    # Tiap panen cuma mengambil ±25 item terbaru per sumber. Kalau berkasnya
+    # ditimpa, kabar dua jam lalu yang sudah tergeser dari halaman depan
+    # sumbernya ikut hilang — arsipnya tak pernah lebih panjang dari satu
+    # panen. Digabung, jadi makin sering dipanen makin lengkap, dan yang lewat
+    # `--hari` dibuang supaya berkasnya tak tumbuh selamanya.
+    lama: list[dict] = []
+    if KELUARAN.exists():
+        try:
+            lama = json.loads(KELUARAN.read_text(encoding="utf-8")).get("item", [])
+        except Exception:  # noqa: BLE001 — berkas rusak bukan alasan gagal panen
+            lama = []
+
+    for it in lama:
+        kunci = re.sub(r"\W+", "", it.get("judul", "").lower())[:70]
+        if kunci and kunci not in terlihat:
+            terlihat.add(kunci)
+            unik.append(it)
+
+    batas_waktu = (datetime.now(WIB) - timedelta(days=args.hari)).isoformat()
+    sebelum = len(unik)
+    # Item tanpa waktu (IPOT) TIDAK ikut dibuang oleh saringan umur — kita tak
+    # tahu umurnya, dan menebaknya berarti membuang kabar yang mungkin baru.
+    unik = [i for i in unik if not i.get("waktu") or i["waktu"] >= batas_waktu]
+
     isi = {
         "dipanen": datetime.now(WIB).isoformat(timespec="seconds"),
+        "retensi_hari": args.hari,
         "sumber": ["IDX", "IPOT News", "Kontan"],
         "item": urut(unik),
     }
     KELUARAN.parent.mkdir(parents=True, exist_ok=True)
     KELUARAN.write_text(json.dumps(isi, ensure_ascii=False, indent=1), encoding="utf-8")
-    print(f"OK -> {KELUARAN} ({len(unik)} item unik dari {len(semua)})")
+    print(f"OK -> {KELUARAN} ({len(unik)} item, {len(semua)} baru dipanen, "
+          f"{sebelum - len(unik)} dibuang karena lewat {args.hari} hari)")
     return 0
 
 

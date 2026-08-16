@@ -15,6 +15,12 @@
 @media (min-width: 800px) {
   .lantai .kbr-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+/* Tinggi kartu SAMA RATA sebaris. `align-items: start` membuat tiap kartu
+   setinggi isinya sendiri, jadi judul dua baris di kiri berdampingan dengan
+   judul satu baris di kanan — tepi bawahnya bertangga. `stretch` (bawaan
+   grid) menyamakan keduanya setinggi baris. */
+.lantai .kbr-list { align-items: stretch; }
+.lantai .kbr-it { align-content: start; }
 
 .lantai .kbr-it {
   display: grid; gap: 5px;
@@ -43,8 +49,16 @@
 }
 .lantai .kbr-sum.s-idx { color: var(--amber); border-color: var(--amber); }
 .lantai .kbr-resmi { color: var(--amber); letter-spacing: .08em; text-transform: uppercase; }
-.lantai .kbr-waktu { color: var(--text3); margin-left: auto; }
-.lantai .kbr-judul { font-size: 13px; line-height: 1.55; color: var(--text); }
+.lantai .kbr-waktu { color: var(--text3); margin-left: auto; flex: none; }
+/* Judul dipotong DUA BARIS dengan elipsis, bukan dibiarkan memanjang:
+   satu judul 3 baris menaikkan tinggi seluruh barisnya, dan daftar yang
+   dipindai cepat lebih butuh tepi yang rata daripada judul utuh. Judul
+   penuh tetap terbaca lewat tooltip `title` dan di halaman sumbernya. */
+.lantai .kbr-judul {
+  font-size: 13px; line-height: 1.55; color: var(--text);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 .lantai .kbr-emiten { display: flex; gap: 4px; flex-wrap: wrap; }
 
 @media (max-width: 560px) {

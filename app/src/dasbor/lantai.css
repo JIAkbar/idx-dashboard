@@ -2533,3 +2533,24 @@
 .lantai .pi-toolbar .pi-head-actions { flex: 0 1 300px; min-width: 180px; display: block; }
 .lantai .pi-toolbar .pi-srch-container { position: relative; }
 .lantai .pi-toolbar .pi-search-go, .lantai .pi-toolbar .dd-btn { flex: none; white-space: nowrap; }
+
+/* ── Kotak cari & paginasi (dipakai bersama admin + halaman publik) ─────
+   Dulu tinggal di AdminShared.css; begitu halaman Kabar Pasar memakainya,
+   gayanya hilang karena berkas itu cuma diimpor area admin. */
+.lantai .af-cari {
+  position: relative; display: flex; align-items: center; gap: 8px;
+  min-width: 210px; max-width: 320px;
+  background: var(--bg2); border: 1px solid var(--line2);
+  border-radius: var(--r-kecil); padding-left: 11px;
+}
+.lantai .af-cari:focus-within { border-color: var(--amber); }
+.lantai .af-cari svg { flex: none; color: var(--text3); }
+.lantai .af-cari .inp { border: 0; background: transparent; padding-left: 0; border-radius: 0; }
+.lantai .af-cari .inp:focus { border-color: transparent; }
+.lantai .af-paginasi {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin-top: 12px;
+}
+.lantai .af-paginasi > .muted { font-family: var(--mono); font-size: 11px; }
+.lantai .af-paginasi-tbl { display: flex; gap: 6px; }
+.lantai .af-paginasi-tbl .dd-btn { white-space: nowrap; }
