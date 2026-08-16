@@ -70,3 +70,44 @@ lihat `docs/rencana-berjalan.md` #148.
 Kedua jalur butuh mesin ini menyala saat jadwalnya jalan (Task Scheduler
 Windows, bukan layanan cloud) — kalau PC mati/tidur, panen jam itu terlewat
 dan menunggu jadwal berikutnya.
+
+## Stockbit Snips — arsip terpisah
+
+`scripts/panen_snips.py` menulis `data-idx/json/snips.json` dari arsip
+Stockbit Snips (`snips.stockbit.com`), buletin ringkas pasar modal Indonesia
+dari Stockbit Investment Research.
+
+**Kenapa dipisah dari `kabar.json`, bukan digabung jadi sumber ke-5:**
+`kabar.json` punya retensi 7 hari (`--hari` di `panen_kabar.py`) — berkas itu
+memang dirancang jadi jendela geser yang ditimpa tiap panen. Arsip Snips
+justru mau disimpan **1 tahun**, supaya bisa ditelusuri ke belakang. Kalau
+digabung, salah satu retensi harus mengalah — jadi lebih sederhana pisah
+berkas, dan nanti digabung saat dipakai di halaman (bukan saat disimpan).
+
+**Cara aksesnya:** situsnya Squarespace. Tak ada RSS (`/feed`, `/rss` semua
+404), tapi tiap halaman koleksi menjawab JSON kalau diberi `?format=json` —
+API bawaan Squarespace, bukan endpoint rahasia atau celah. Koleksi
+`snips-terbaru` (ditemukan lewat `sitemap.xml`, yang menjawab 200) adalah
+arsip utamanya. Paginasinya lewat parameter `offset=<epoch-ms>` yang dibalas
+di `pagination.nextPageOffset` pada tiap halaman.
+
+Diuji 16 Agustus 2026 dari IP rumahan: 238 item terpanen, rentang
+2025-08-19 s.d. 2026-08-14 (hampir pas 12 bulan), ~15 halaman permintaan,
+tak ada penolakan/blokir.
+
+**Jalan manual:**
+
+```
+py -3.14 scripts\panen_snips.py            # arsip 365 hari (default)
+py -3.14 scripts\panen_snips.py --hari 30  # arsip pendek, buat uji cepat
+```
+
+Bentuk tiap item sama dengan `kabar.json` (`sumber`, `jenis`, `judul`,
+`tautan`, `waktu` ber-offset WIB, `emiten`) supaya gampang digabung di sisi
+pembaca — `jenis` untuk Snips selalu `"snips"` dan `emiten` selalu kosong
+(judulnya kadang menyebut kode saham, tapi ekstraksi otomatis belum
+dikerjakan). Isi tulisannya sengaja TIDAK disalin, cuma metadata + tautan.
+
+Belum dijadwalkan di Task Scheduler — jalan manual dulu sampai ritme
+pembaruan arsipnya (perkiraan ~0,75 tulisan/hari) dipastikan cukup dipanen
+mingguan, bukan harian seperti `kabar.json`.
