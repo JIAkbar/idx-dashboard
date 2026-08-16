@@ -16,7 +16,9 @@ data yang tertanam di halaman, dan uji langsung endpoint AI-nya.
 | Data per | 2026-08-14 (snapshot harian) | 2026-08-14 |
 
 Keduanya **satu berkas HTML statis di Netlify** — tak ada framework, tak ada
-basis data. Seluruh data hari itu ditanam sebagai objek JavaScript di dalam
+basis data. Terverifikasi: nol jejak React/Vue/Svelte/jQuery, DOM diisi lewat
+`innerHTML` (91× dan 33×) dan `getElementById` (225× dan 128×). Peta lengkap
+section→sumber ada di `peta-section.md`. Seluruh data hari itu ditanam sebagai objek JavaScript di dalam
 halaman; yang dinamis hanya dipanggil lewat Netlify Functions.
 
 Screenshot ada di folder yang sama (`info-*.png`, `mf-*.png`).
@@ -284,6 +286,7 @@ nego).
 |---|---|
 | `info-01…09-*.png` | Screenshot tiap section sple-info (laptop 1536×960) |
 | `mf-01…03-*.png` | Screenshot sple-mf |
+| `peta-section.md` | **Peta tiap section → id/anchor → fungsi render → sumber datanya**, hasil bedah statis kedua berkas. Termasuk bukti bahwa keduanya vanilla JS, bukan React |
 | `metodologi-sple-info.md` | Kutipan tab Panduan: rumus indikator, Wyckoff 6 fase, RS/Minervini, ambang valuasi, harmonic, keterbatasan yang mereka akui sendiri |
 
 Salinan HTML kedua situs (6,0 MB + 1,4 MB) sengaja **tidak** dimasukkan ke
