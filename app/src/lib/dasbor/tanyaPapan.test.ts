@@ -1,6 +1,9 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { jawab, type KonteksTanya } from './tanyaPapan'
 import type { DataHarian, TanggalIndex } from './dataHarian'
+import type { KamusEmiten } from './kamusEmiten'
+import type { StockFundamental } from './stockDetailData'
+import type { InvestorMapEntry } from './petaInvestorData'
 
 const hari = {
   date_id: 'Jumat, 14 Agustus 2026',
@@ -123,6 +126,172 @@ describe('jawab — batas kemampuan', () => {
 
   it('tanpa data hari ini tak memaksakan jawaban', () => {
     const j = jawab('IHSG berapa?', konteks({ hari: null }))
+    expect(j.takPaham).toBe(true)
+  })
+})
+
+// ── Kamus emiten (harga/nama/grup) — bahan pertanyaan per-emiten baru ──────
+const kamus: KamusEmiten = {
+  harga: { BBCA: 6300 },
+  hargaBulan: '2026-08',
+  emiten: [
+    { kode: 'BBCA', nama: 'Bank Central Asia Tbk.' },
+    { kode: 'ICBP', nama: 'Indofood CBP Sukses Makmur Tbk.' },
+  ],
+  grup: {
+    Salim: { kode: 'SLM', anggota: [{ kode: 'ICBP', lewat: 'INDOFOOD SUKSES MAKMUR TBK', pct: 80.53, kelas: 'Corporate', harga: 7600, pct1d: 0.66 }] },
+  },
+}
+
+const fd: StockFundamental = {
+  ticker: 'BBCA', name: 'Bank Central Asia Tbk.', sector: 'Financial Services', industry: 'Banks - Regional',
+  updated: '2026-08-13 21:13', last_price: 6375, prev_close: 6350, pe: 13.51, pb: 2.8957, roe: 0.21818,
+}
+
+describe('jawab — mekanisme dua-langkah (berkas per-emiten)', () => {
+  it('harga: minta butuh dulu, baru jawab setelah data terisi', () => {
+    const j1 = jawab('harga BBCA berapa?', konteks({ kamus }))
+    expect(j1.butuh).toEqual({ jenis: 'fundamental', kode: 'BBCA' })
+
+    const j2 = jawab('harga BBCA berapa?', konteks({ kamus, data: { jenis: 'fundamental', kode: 'BBCA', payload: fd } }))
+    expect(j2.teks).toContain('Rp6.375')
+    expect(j2.teks).toContain('13 Agu 2026')
+    expect(j2.topik).toBe('hargaEmiten')
+  })
+
+  it('harga: jatuh ke cadangan bulanan kalau fundamental tak punya last_price', () => {
+    const j = jawab('harga BBCA berapa?', konteks({
+      kamus, data: { jenis: 'fundamental', kode: 'BBCA', payload: { ...fd, last_price: null } },
+    }))
+    expect(j.teks).toContain('Rp6.300')
+    expect(j.teks).toContain('cadangan bulanan')
+    expect(j.teks).toContain('Agustus 2026')
+  })
+
+  it('nama perusahaan dikenali, bukan cuma kode', () => {
+    const j = jawab('harga bank central asia berapa?', konteks({ kamus }))
+    expect(j.butuh).toEqual({ jenis: 'fundamental', kode: 'BBCA' })
+  })
+
+  it('valuasi: PER/PBV/ROE dari fundamental', () => {
+    const j = jawab('PER BBCA berapa?', konteks({ kamus, data: { jenis: 'fundamental', kode: 'BBCA', payload: fd } }))
+    expect(j.teks).toContain('PER 13,51×')
+    expect(j.teks).toContain('PBV 2,90×')
+    expect(j.teks).toContain('ROE 21,82%')
+    expect(j.topik).toBe('valuasiEmiten')
+  })
+
+  it('sektor per-emiten dijawab dari fundamental, bukan sektor pasar', () => {
+    const j = jawab('BBCA sektor apa?', konteks({ kamus, data: { jenis: 'fundamental', kode: 'BBCA', payload: fd } }))
+    expect(j.teks).toContain('Financial Services')
+    expect(j.teks).toContain('Banks - Regional')
+    expect(j.topik).toBe('sektorEmiten')
+  })
+
+  it('kinerja setahun dihitung dari OHLC, termasuk jarak dari puncak 52 minggu', () => {
+    // Tanggal "awal" sengaja jauh dari batas 365 hari (bukan pas di pinggirnya)
+    // — supaya hasil tak goyah kalau `new Date().setDate()` bergeser ±1 hari
+    // gara-gara zona waktu mesin yang menjalankan tes.
+    const ohlc = {
+      kode: 'BBCA',
+      d: [
+        ['2025-09-01', 8000, 8000, 7900, 8000, 100],
+        ['2026-02-01', 6000, 9000, 5900, 6000, 100],
+        ['2026-08-14', 6300, 6350, 6275, 6350, 100],
+      ] as [string, number, number, number, number, number][],
+    }
+    const j1 = jawab('BBCA setahun terakhir?', konteks({ kamus }))
+    expect(j1.butuh).toEqual({ jenis: 'ohlc', kode: 'BBCA' })
+
+    const j2 = jawab('BBCA setahun terakhir?', konteks({ kamus, data: { jenis: 'ohlc', kode: 'BBCA', payload: ohlc } }))
+    expect(j2.teks).toContain('turun')
+    expect(j2.teks).toContain('9.000')
+    expect(j2.topik).toBe('kinerjaEmiten')
+  })
+
+  it('pemilik: agregat asing/domestik/korporasi/individu, TANPA nama pemegang saham', () => {
+    const entry: InvestorMapEntry = {
+      code: 'BBCA', issuer: 'BANK CENTRAL ASIA Tbk',
+      holders: [
+        { name: 'PT DWIMURIA INVESTAMA ANDALAN', cls: 'Corporate', lf: 'L', pct: 54.94 },
+        { name: 'ANTHONI SALIM', cls: 'Individual', lf: 'L', pct: 1.15 },
+        { name: 'GOVERNMENT OF NORWAY', cls: 'Sovereign Wealth Fund', lf: 'F', pct: 1.01 },
+      ],
+    }
+    const j1 = jawab('siapa pemilik BBCA?', konteks({}))
+    expect(j1.butuh).toEqual({ jenis: 'investor', kode: 'BBCA' })
+
+    const j2 = jawab('siapa pemilik BBCA?', konteks({ data: { jenis: 'investor', kode: 'BBCA', payload: entry } }))
+    expect(j2.teks).toContain('domestik 56,09%')
+    expect(j2.teks).toContain('asing 1,01%')
+    expect(j2.teks).not.toContain('ANTHONI SALIM')
+    expect(j2.teks).not.toContain('DWIMURIA')
+  })
+
+  it('pertanyaan "siapa direktur" TETAP tak dijawab — bukan dibajak jadi pertanyaan pemilik', () => {
+    const j = jawab('siapa direktur BBCA?', konteks({ kamus }))
+    expect(j.takPaham).toBe(true)
+    expect(j.butuh).toBeUndefined()
+  })
+})
+
+describe('jawab — grup konglomerat', () => {
+  it('grup disebut namanya → daftar anggota', () => {
+    const j = jawab('grup Salim isinya apa?', konteks({ kamus }))
+    expect(j.teks).toContain('ICBP')
+    expect(j.topik).toBe('grup')
+  })
+
+  it('kode disebut → grup yang memuatnya', () => {
+    const j = jawab('ICBP grup apa?', konteks({ kamus }))
+    expect(j.teks).toContain('Salim')
+  })
+
+  it('kode tak masuk grup mana pun dijawab jujur', () => {
+    const j = jawab('BBCA grup apa?', konteks({ kamus }))
+    expect(j.takPaham).toBe(true)
+    expect(j.teks).toContain('tidak teridentifikasi')
+  })
+})
+
+describe('jawab — kalender bursa (besok libur?)', () => {
+  afterEach(() => { vi.useRealTimers() })
+
+  it('akhir pekan dijawab tutup', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-08-14T05:00:00Z')) // Jumat WIB — besok Sabtu
+    const j = jawab('besok libur bursa?', konteks())
+    expect(j.teks).toContain('tutup')
+    expect(j.teks).toContain('akhir pekan')
+    expect(j.topik).toBe('kalender')
+  })
+
+  it('hari kerja biasa dijawab buka', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-08-19T05:00:00Z')) // Rabu WIB — besok Kamis
+    const j = jawab('besok bursa buka?', konteks())
+    expect(j.teks).toContain('buka seperti biasa')
+  })
+})
+
+describe('jawab — deteksi kode tak salah tangkap kata umum', () => {
+  it('"sektor apa yang kuat" TETAP dijawab market-wide, bukan dibajak jadi sektor emiten KUAT', () => {
+    const j = jawab('sektor apa yang kuat?', konteks({ kamus }))
+    expect(j.teks).toContain('Healthcare')
+    expect(j.butuh).toBeUndefined()
+  })
+
+  it('kode huruf kecil TIDAK dianggap disebut (harus kapital seperti ticker)', () => {
+    const j = jawab('bagaimana bbca hari ini', konteks({ kamus }))
+    // Tanpa "BBCA" kapital, deteksi jatuh ke pencarian nama — "bbca" bukan
+    // nama perusahaan, jadi tetap tak ketemu kode.
+    expect(j.butuh).toBeUndefined()
+  })
+})
+
+describe('jawab — susulan atas topik baru tak menebak (dan tak crash)', () => {
+  it('"kenapa?" setelah topik hargaEmiten mengaku tak tahu, bukan lempar error', () => {
+    const j = jawab('kenapa?', konteks({ topik: 'hargaEmiten' }))
     expect(j.takPaham).toBe(true)
   })
 })

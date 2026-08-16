@@ -48,6 +48,15 @@ export type GraphSelection =
 let cache: InvestorMapEntry[] | null = null
 let inflight: Promise<InvestorMapEntry[]> | null = null
 
+/** Fetch imperatif (bukan hook) — dipakai Tanya PAPAN lewat mekanisme `butuh`
+ *  dua-langkah: jawab() minta jenis 'investor', TanyaPapan.tsx memanggil ini,
+ *  lalu memanggil jawab() lagi dengan hasilnya. Cache modul sama dengan
+ *  `usePetaInvestor`, jadi tidak fetch dua kali kalau user sudah pernah buka
+ *  halaman Peta Investor. */
+export function loadInvestorMap(): Promise<InvestorMapEntry[]> {
+  return load()
+}
+
 function load(): Promise<InvestorMapEntry[]> {
   if (cache) return Promise.resolve(cache)
   if (!inflight) {

@@ -2,6 +2,12 @@ import type { DataHarian, TanggalIndex } from './dataHarian'
 import type { EdisiBulletin } from './bulletin'
 import type { KabarItem } from './kabar'
 import { rangkumHari, ASAL_AMBANG } from './ringkasHarian'
+import type { KamusEmiten, EmitenEntry, GrupEntry } from './kamusEmiten'
+import type { StockFundamental } from './stockDetailData'
+import type { InvestorMapEntry } from './petaInvestorData'
+import { holderType } from './petaInvestorData'
+import type { BarisOhlc } from './ihsgOhlc'
+import { HOLIDAYS, todayIsoJakarta } from '../../components/dasbor/Kalender'
 
 /**
  * Mesin jawab "Tanya PAPAN" — tahap pertama: **menjawab dari data, bukan dari
@@ -15,8 +21,28 @@ import { rangkumHari, ASAL_AMBANG } from './ringkasHarian'
  * itu. LLM nanti menambah yang memang tak bisa dilakukan di sini: pertanyaan
  * bebas yang tak cocok dengan pola mana pun.
  *
- * Fungsi MURNI: konteks dioper dari pemanggil, tak ada fetch di dalam.
+ * Fungsi MURNI: konteks dioper dari pemanggil, tak ada fetch di dalam. Untuk
+ * pertanyaan yang butuh berkas PER-EMITEN (fundamental/ohlc/investor — bisa
+ * ratusan KB, tak boleh diborong ke semua pemuatan), `jawab()` mengembalikan
+ * `{ butuh: {...} }` alih-alih fetch sendiri. Lihat `Jawaban.butuh` dan
+ * `KonteksTanya.data` — pemanggil (TanyaPapan.tsx) yang mengambil berkasnya
+ * lalu memanggil `jawab()` lagi dengan hasilnya terisi.
  */
+
+/** Ringkas `data-idx/json/ohlc/{KODE}.json` — cuma `d` yang dipakai di sini. */
+export interface OhlcRingkas {
+  kode: string
+  d: BarisOhlc[]
+}
+
+/** Hasil fetch tahap-2 (lihat `Jawaban.butuh`). `payload: null` = fetch
+ *  selesai tapi datanya memang tak ada (404 — emiten tak punya berkas itu),
+ *  BEDA dengan "belum dicoba" (kalau itu, field ini simply tak cocok kode
+ *  yang sedang ditanya, dan `jawab()` akan minta `butuh` lagi). */
+export type DataButuh =
+  | { jenis: 'fundamental'; kode: string; payload: StockFundamental | null }
+  | { jenis: 'ohlc'; kode: string; payload: OhlcRingkas | null }
+  | { jenis: 'investor'; kode: string; payload: InvestorMapEntry | null }
 
 export interface KonteksTanya {
   hari: DataHarian | null
@@ -29,11 +55,23 @@ export interface KonteksTanya {
    *  rujukan — dan pertanyaan susulan sependek itu justru yang paling wajar
    *  diketik orang setelah membaca satu jawaban. */
   topik?: Topik | null
+  /** Kamus KECIL (harga cadangan, daftar emiten, grup konglomerat) — dimuat
+   *  sekali lewat `useKamusEmiten`, dioper murni di sini (tanpa fetch
+   *  tambahan). `null`/`undefined` = belum termuat; pertanyaan yang
+   *  membutuhkannya dijawab jujur, bukan dipaksakan. */
+  kamus?: KamusEmiten | null
+  /** Hasil fetch tahap-2 untuk pertanyaan yang butuh berkas PER-EMITEN.
+   *  Lihat `DataButuh`/`Jawaban.butuh`. */
+  data?: DataButuh | null
 }
 
-/** Topik yang bisa dilanjutkan pertanyaan susulan. */
+/** Topik yang bisa dilanjutkan pertanyaan susulan. Topik per-emiten & kalender
+ *  SENGAJA tak masuk peta susulan (`balik` di bawah) — lihat catatannya di
+ *  sana. */
 export type Topik = 'ihsg' | 'asing' | 'sektor' | 'gainer' | 'loser' | 'penggerak'
-  | 'valuasi' | 'edisi' | 'kabar' | 'ambang' | 'lintasWaktu' | null
+  | 'valuasi' | 'edisi' | 'kabar' | 'ambang' | 'lintasWaktu' | 'kalender' | 'grup'
+  | 'hargaEmiten' | 'valuasiEmiten' | 'sektorEmiten' | 'kinerjaEmiten' | 'pemilikEmiten'
+  | null
 
 export interface Jawaban {
   teks: string
@@ -46,6 +84,11 @@ export interface Jawaban {
   /** true = tak ada pola yang cocok. Dipisah supaya antarmuka bisa menawarkan
    *  jalan lain, dan supaya kelak gampang dialihkan ke LLM. */
   takPaham?: boolean
+  /** Jawaban ini butuh berkas PER-EMITEN yang belum ada di `KonteksTanya.data`
+   *  — `jawab()` TIDAK fetch sendiri (tetap fungsi murni). Pemanggil
+   *  mengambil berkasnya lalu memanggil `jawab()` lagi dengan pertanyaan yang
+   *  SAMA dan `data` terisi. */
+  butuh?: { jenis: DataButuh['jenis']; kode: string }
 }
 
 const rp = (n: number, des = 2) =>
@@ -59,6 +102,184 @@ const miliar = (n: number) =>
 const bersih = (s: string) => s.toLowerCase().replace(/[^a-z0-9\s]/g, ' ')
 const punya = (t: string, ...kata: string[]) => kata.some((k) => t.includes(k))
 
+const BULAN_PENDEK = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+const BULAN_PANJANG = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+]
+
+/** "2026-08-13 21:13" (bentuk `updated` di fundamental/*.json) → "13 Agu 2026". */
+function fmtUpdated(s?: string | null): string {
+  if (!s) return '—'
+  const [tgl] = s.split(' ')
+  const [y, m, d] = tgl.split('-').map(Number)
+  if (!y || !m || !d) return s
+  return `${d} ${BULAN_PENDEK[m - 1]} ${y}`
+}
+
+/** "2026-08" (bentuk `bulan` di harga_terakhir.json) → "Agustus 2026". */
+function labelBulan(ym?: string): string {
+  if (!ym) return '—'
+  const [y, m] = ym.split('-').map(Number)
+  return m ? `${BULAN_PANJANG[m - 1]} ${y}` : ym
+}
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/** "PT Bank Central Asia Tbk." → "bank central asia" — badan hukum (pt/tbk/
+ *  persero) dibuang supaya cocok dengan cara orang menyebut nama perusahaan
+ *  sehari-hari ("bank central asia", bukan "pt bank central asia tbk"). */
+function normalisasiNama(s: string): string {
+  return bersih(s).replace(/\b(tbk|pt|persero)\b/g, '').replace(/\s+/g, ' ').trim()
+}
+
+/** Cari kode emiten dari NAMA yang disebut di pertanyaan (`t` sudah `bersih()`
+ *  ). Dicocokkan sebagai kata utuh (`\b...\b`), bukan potongan bebas — supaya
+ *  "bank" saja (kata umum) tak asal menempel ke emiten pertama yang namanya
+ *  memuat "bank". Kalau beberapa nama cocok, menang yang PALING PANJANG
+ *  (paling spesifik). O(n) atas daftar emiten (~960) — cukup murah untuk
+ *  dijalankan sekali per pertanyaan, tak perlu index tambahan. */
+function cariKodeDariNama(daftar: EmitenEntry[], t: string): string | null {
+  let terbaik: { kode: string; panjang: number } | null = null
+  for (const e of daftar) {
+    const nama = normalisasiNama(e.nama)
+    if (nama.length < 4) continue
+    if (new RegExp(`\\b${escapeRegex(nama)}\\b`).test(t) && (!terbaik || nama.length > terbaik.panjang)) {
+      terbaik = { kode: e.kode, panjang: nama.length }
+    }
+  }
+  return terbaik?.kode ?? null
+}
+
+/** Perubahan setahun + kisaran 52 minggu dari baris OHLC mentah — dihitung
+ *  dari harga sungguhan, bukan dipercaya begitu saja dari ruas siap-pakai
+ *  manapun. Jendela 365 hari KALENDER ke belakang dari baris terakhir
+ *  (bukan hitung mundur N baris) supaya tetap benar walau ada hari libur
+ *  panjang yang membuat jumlah baris per tahun tak selalu sama. */
+function ringkasKinerja1Thn(rows: BarisOhlc[]) {
+  const last = rows[rows.length - 1]
+  const akhir = last[4]
+  const akhirTgl = last[0]
+  const cutoff = new Date(akhirTgl)
+  cutoff.setDate(cutoff.getDate() - 365)
+  const jendela = rows.filter((r) => new Date(r[0]) >= cutoff)
+  if (jendela.length < 2) return null
+  const awal = jendela[0][4]
+  const awalTgl = jendela[0][0]
+  const hi = Math.max(...jendela.map((r) => r[2]))
+  const hiTgl = jendela.find((r) => r[2] === hi)?.[0] ?? akhirTgl
+  const lo = Math.min(...jendela.map((r) => r[3]))
+  return {
+    pct: awal ? ((akhir - awal) * 100) / awal : 0,
+    awal, awalTgl, akhir, akhirTgl, hi, hiTgl, lo,
+    jarakPuncak: hi ? ((akhir - hi) * 100) / hi : 0,
+  }
+}
+
+/** Besok (WIB) libur bursa? Cuma dua sumber yang JUJUR ada: akhir pekan
+ *  (selalu benar) dan `HOLIDAYS` — daftar tanggal merah manual yang sama
+ *  dipakai Kalender.tsx (lihat catatan ponytail-nya: libur nasional yang
+ *  belum ditambahkan ke situ tidak akan terdeteksi di sini juga). */
+function besokLiburBursa(): { iso: string; libur: boolean; alasan: string | null } {
+  const d = new Date(`${todayIsoJakarta()}T12:00:00`)
+  d.setDate(d.getDate() + 1)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const iso = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+  const dow = d.getDay()
+  if (dow === 0 || dow === 6) return { iso, libur: true, alasan: 'akhir pekan' }
+  if (HOLIDAYS[iso]) return { iso, libur: true, alasan: HOLIDAYS[iso] }
+  return { iso, libur: false, alasan: null }
+}
+
+const linkEmiten = (kode: string) => ({ ke: `/stock-detail?sym=${kode}`, keLabel: 'Buka Stock Detail' })
+
+function jawabHarga(kode: string, fd: StockFundamental | null, kamus?: KamusEmiten | null): Jawaban {
+  if (fd?.last_price != null) {
+    const prev = fd.prev_close
+    const bag = prev ? ` (${pct(((fd.last_price - prev) * 100) / prev)} dari penutupan sebelumnya)` : ''
+    return { teks: `${kode}: Rp${rp(fd.last_price, 0)}${bag}, per ${fmtUpdated(fd.updated)}.`, topik: 'hargaEmiten', ...linkEmiten(kode) }
+  }
+  // Cadangan bulanan (harga_terakhir.json) — dipakai kalau harga langsung tak
+  // ada di berkas fundamental. Berkas itu sendiri bilang ini "cadangan", jadi
+  // jangan disebut sebagai harga langsung.
+  const cad = kamus?.harga[kode]
+  if (cad != null) {
+    return {
+      teks: `${kode}: Rp${rp(cad, 0)} — penutupan cadangan bulanan ${labelBulan(kamus?.hargaBulan)} (harga langsung tak tersedia untuk emiten ini).`,
+      topik: 'hargaEmiten', ...linkEmiten(kode),
+    }
+  }
+  return { teks: `Harga ${kode} tidak ditemukan.`, takPaham: true, ...linkEmiten(kode) }
+}
+
+function jawabValuasi(kode: string, fd: StockFundamental | null): Jawaban {
+  if (!fd || (fd.pe == null && fd.pb == null && fd.roe == null)) {
+    return { teks: `Data valuasi ${kode} belum ada.`, takPaham: true, topik: 'valuasiEmiten', ...linkEmiten(kode) }
+  }
+  return {
+    teks: `${kode}: PER ${fd.pe != null ? `${rp(fd.pe)}×` : '—'}, PBV ${fd.pb != null ? `${rp(fd.pb)}×` : '—'}, ROE ${fd.roe != null ? `${rp(fd.roe * 100)}%` : '—'}.`,
+    topik: 'valuasiEmiten', ...linkEmiten(kode),
+  }
+}
+
+function jawabSektor(kode: string, fd: StockFundamental | null): Jawaban {
+  if (!fd || !fd.sector) return { teks: `Data sektor ${kode} belum ada.`, takPaham: true, topik: 'sektorEmiten', ...linkEmiten(kode) }
+  return { teks: `${kode} — sektor ${fd.sector}${fd.industry ? `, industri ${fd.industry}` : ''}.`, topik: 'sektorEmiten', ...linkEmiten(kode) }
+}
+
+function jawabKinerja(kode: string, od: OhlcRingkas | null): Jawaban {
+  const rk = od && od.d.length > 1 ? ringkasKinerja1Thn(od.d) : null
+  if (!rk) return { teks: `Riwayat harga ${kode} belum cukup untuk dihitung.`, takPaham: true, topik: 'kinerjaEmiten', ...linkEmiten(kode) }
+  return {
+    teks:
+      `${kode} setahun terakhir ${rk.pct >= 0 ? 'naik' : 'turun'} ${rp(Math.abs(rk.pct))}%, ` +
+      `dari Rp${rp(rk.awal, 0)} (${rk.awalTgl}) ke Rp${rp(rk.akhir, 0)} (${rk.akhirTgl}). ` +
+      `Kisaran 52 minggu Rp${rp(rk.lo, 0)}–Rp${rp(rk.hi, 0)}, sekarang ${pct(rk.jarakPuncak)} dari puncak (${rk.hiTgl}).`,
+    topik: 'kinerjaEmiten', ...linkEmiten(kode),
+  }
+}
+
+const linkInvestor = { ke: '/peta-investor', keLabel: 'Peta Investor' }
+
+/** Komposisi kepemilikan KSEI ≥1% — DIRINGKAS jadi persentase per kelompok,
+ *  TANPA menyebut nama satu pun pemegang saham (individu maupun korporasi).
+ *  Ini permintaan eksplisit, bukan sekadar konservatif: chatbot publik yang
+ *  menyorot nama pemilik saham per pertanyaan berisiko disalahgunakan untuk
+ *  memantau orang, walau datanya sendiri publik (KSEI). */
+function jawabPemilik(kode: string, entry: InvestorMapEntry | null): Jawaban {
+  if (!entry || entry.holders.length === 0) {
+    return { teks: `${kode} tak punya data pemegang saham ≥1% di KSEI yang tercatat di sini.`, takPaham: true, topik: 'pemilikEmiten', ...linkInvestor }
+  }
+  let asing = 0, domestik = 0, korporasi = 0, individu = 0, lain = 0, total = 0
+  for (const h of entry.holders) {
+    total += h.pct
+    if (h.lf === 'F') asing += h.pct
+    else domestik += h.pct
+    const tipe = holderType(h.cls)
+    if (tipe === 'CORP') korporasi += h.pct
+    else if (tipe === 'IND') individu += h.pct
+    else lain += h.pct
+  }
+  return {
+    teks:
+      `Dari pemegang saham KSEI ≥1% ${kode} (${rp(total)}% tercatat, sisanya tersebar di bawah ambang per pemegang): ` +
+      `domestik ${rp(domestik)}%, asing ${rp(asing)}%. Berdasar jenis: korporasi ${rp(korporasi)}%` +
+      (individu > 0 ? `, individu ${rp(individu)}%` : '') +
+      (lain > 0 ? `, lainnya ${rp(lain)}%` : '') + '.',
+    topik: 'pemilikEmiten', ...linkInvestor,
+  }
+}
+
+function jawabGrupNama(nama: string, g: GrupEntry): Jawaban {
+  const anggota = g.anggota.map((a) => a.kode)
+  return {
+    teks: `Grup ${nama}: ${anggota.length} emiten — ${anggota.slice(0, 12).join(', ')}${anggota.length > 12 ? ', dan lainnya' : ''}.`,
+    topik: 'grup', ...linkInvestor,
+  }
+}
+
 /** Pertanyaan contoh — ditawarkan di antarmuka supaya pengguna tahu batas
  *  kemampuannya tanpa harus menebak-nebak. */
 export const CONTOH_TANYA = [
@@ -66,8 +287,8 @@ export const CONTOH_TANYA = [
   'IHSG sepekan terakhir bagaimana?',
   'Asing net buy atau net sell?',
   'Sektor apa yang paling kuat?',
-  'Bagaimana BBCA?',
-  'Kenapa disebut menguat kuat?',
+  'Harga BBCA berapa?',
+  'PER BBCA berapa?',
 ]
 
 /** Pertanyaan susulan yang terlalu pendek untuk berdiri sendiri. Dicocokkan
@@ -116,8 +337,17 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
       ambang: 'kenapa kuat ambang', lintasWaktu: 'ihsg sepekan',
     }
     // "kenapa" atas topik IHSG artinya: apa yang menggerakkannya hari itu.
-    t = k.topik === 'ihsg' && /kenapa|mengapa|kok/.test(pertanyaan.toLowerCase())
-      ? 'penggerak' : balik[k.topik]
+    const keIhsgPenggerak = k.topik === 'ihsg' && /kenapa|mengapa|kok/.test(pertanyaan.toLowerCase())
+    const lanjut = keIhsgPenggerak ? 'penggerak' : balik[k.topik]
+    // Topik BARU (per-emiten: harga/valuasi/sektor/kinerja/pemilik, dan
+    // kalender/grup) sengaja TAK masuk `balik` — sambungan generik seperti
+    // "kenapa?" tak punya cukup konteks untuk tahu emiten mana yang
+    // dimaksud (topik cuma menyimpan JENIS jawaban, bukan kodenya). Mengaku
+    // tak tahu di sini lebih jujur daripada menjawab emiten yang salah.
+    if (!lanjut) {
+      return { teks: 'Susulan dari yang mana? Tanyakan dulu satu hal — misalnya IHSG, arus asing, atau sektor.', takPaham: true }
+    }
+    t = lanjut
   }
 
   // ── Kenapa disebut kuat/tipis — pertanyaan tentang METODE, bukan angka ───
@@ -132,6 +362,56 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
     }
   }
 
+  // ── Kalender bursa — "besok libur?" ──────────────────────────────────────
+  // Cuma dua sumber jujur: akhir pekan (selalu benar) dan daftar tanggal
+  // merah manual (HOLIDAYS di Kalender.tsx) — jadi jawabannya ikut menyebut
+  // batasannya sendiri, bukan berpura-pura tahu SELURUH kalender libur
+  // nasional.
+  if (punya(t, 'besok') && punya(t, 'libur', 'buka', 'bursa')) {
+    const { iso, libur, alasan } = besokLiburBursa()
+    const label = new Date(`${iso}T12:00:00`).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })
+    return {
+      teks: libur
+        ? `Besok (${label}) bursa tutup — ${alasan}.`
+        : `Besok (${label}) bursa buka seperti biasa (kalau tak ada libur nasional mendadak yang belum tercatat di sini).`,
+      topik: 'kalender', ke: '/indeks', keLabel: 'Lihat Kalender Bursa',
+    }
+  }
+
+  // ── Deteksi kode emiten — dipakai banyak blok di bawah ───────────────────
+  // Regex atas TEKS ASLI (bukan `.toUpperCase()`) — kode dianggap disebut
+  // HANYA kalau memang diketik kapital, seperti orang menulis ticker
+  // ("BBCA", bukan "bbca"). Ini bukan sekadar gaya: kalau teks di-uppercase
+  // dulu, kata umum 4 huruf apa pun ("kuat", "data", "atas"...) ikut cocok
+  // regex — dan karena blok-blok baru di bawah ini dicek SEBELUM blok
+  // market-wide (harus, supaya "PER BBCA" tak dibajak blok valuasi pasar),
+  // kata umum yang salah dikira kode akan membajak jawaban market-wide juga
+  // ("sektor apa yang kuat?" nyaris terbaca sebagai "sektor emiten KUAT").
+  // "IHSG" dikecualikan eksplisit: itu indeks, bukan kode saham, tapi bentuk
+  // hurufnya kebetulan cocok kalau memang diketik kapital (lazim) — tanpa
+  // pengecualian ini "IHSG sepekan terakhir?" akan dibajak jadi pertanyaan
+  // kinerja emiten bernama IHSG.
+  // Nama emiten dicoba HANYA kalau regex gagal DAN kamus sudah termuat —
+  // pencarian nama (di ~960 emiten) baru jalan waktu benar-benar perlu, dan
+  // dicocokkan sebagai FRASA nama perusahaan (bukan kata tunggal), jadi jauh
+  // lebih kecil peluang nyangkut ke kalimat yang tak terkait.
+  let kode = pertanyaan.match(/\b[A-Z]{4}\b/)?.[0] ?? null
+  if (kode === 'IHSG') kode = null
+  if (!kode && k.kamus) kode = cariKodeDariNama(k.kamus.emiten, t)
+
+  // ── Kepemilikan — "siapa pemilik BBCA?" ──────────────────────────────────
+  // Diperiksa SEBELUM blok "siapa" generik: pertanyaan ini juga memuat kata
+  // "siapa", tapi TIDAK menanyakan identitas orang seperti direksi/komisaris
+  // — ini menanyakan KOMPOSISI kepemilikan publik KSEI, yang datanya memang
+  // kita punya (lihat catatan privasi di jawabPemilik: agregat saja, tanpa
+  // nama).
+  if (kode && punya(t, 'siapa') && punya(t, 'pemilik', 'pemegang saham', 'kepemilikan')) {
+    if (k.data && k.data.jenis === 'investor' && k.data.kode === kode) {
+      return jawabPemilik(kode, k.data.payload)
+    }
+    return { butuh: { jenis: 'investor', kode }, teks: `Mengambil data pemegang saham ${kode}…` }
+  }
+
   // ── Pertanyaan tentang ORANG (siapa direktur, siapa komisaris, dst) ─────
   // "siapa" menanyakan identitas, bukan data pasar — dan tahap ini tak punya
   // data personalia sama sekali. Diperiksa SEBELUM blok kode emiten karena
@@ -139,6 +419,49 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
   // dan sekadar menyebut kode tak membuatnya jadi pertanyaan data pasar.
   if (punya(t, 'siapa')) {
     return { teks: 'Belum ada data personalia (direksi/komisaris) di tahap ini — coba tanya soal data pasar.', takPaham: true }
+  }
+
+  // ── Grup konglomerat — "grup Salim isinya apa?" / "BBCA grup apa?" ──────
+  if (punya(t, 'grup', 'konglomerat') && k.kamus) {
+    const namaGrup = Object.keys(k.kamus.grup).find((nm) => t.includes(bersih(nm)))
+    if (namaGrup) return jawabGrupNama(namaGrup, k.kamus.grup[namaGrup])
+    if (kode) {
+      const entry = Object.entries(k.kamus.grup).find(([, g]) => g.kode === kode || g.anggota.some((a) => a.kode === kode))
+      if (entry) {
+        const [nm, g] = entry
+        return { teks: `${kode} bagian dari grup ${nm} (${g.anggota.length} emiten).`, topik: 'grup', ...linkInvestor }
+      }
+      return {
+        teks: `${kode} tidak teridentifikasi masuk grup konglomerat mana pun (ambang kepemilikan ≥1%).`,
+        topik: 'grup', ...linkInvestor, takPaham: true,
+      }
+    }
+  }
+
+  // ── Harga / valuasi / sektor SATU emiten — dari fundamental/{KODE}.json ──
+  // Ketiganya berbagi SATU fetch (jenis 'fundamental') karena satu berkas itu
+  // memuat ketiganya sekaligus — tak ada gunanya minta tiga kali.
+  if (kode) {
+    const sebutHarga = punya(t, 'harga')
+    const sebutValuasi = /\bper\b/.test(t) || punya(t, 'pbv', 'valuasi', 'roe')
+    const sebutSektor = punya(t, 'sektor', 'industri')
+    if (sebutHarga || sebutValuasi || sebutSektor) {
+      if (k.data && k.data.jenis === 'fundamental' && k.data.kode === kode) {
+        const fd = k.data.payload
+        if (sebutHarga) return jawabHarga(kode, fd, k.kamus)
+        if (sebutValuasi) return jawabValuasi(kode, fd)
+        return jawabSektor(kode, fd)
+      }
+      return { butuh: { jenis: 'fundamental', kode }, teks: `Mengambil data ${kode}…` }
+    }
+  }
+
+  // ── Kinerja setahun SATU emiten — dari ohlc/{KODE}.json ──────────────────
+  if (kode && punya(t, 'setahun', '52 minggu', 'tahun terakhir', '1 tahun')) {
+    if (k.data && k.data.jenis === 'ohlc' && k.data.kode === kode) {
+      return jawabKinerja(kode, k.data.payload)
+    }
+    return { butuh: { jenis: 'ohlc', kode }, teks: `Mengambil data ${kode}…` }
   }
 
   if (!h) {
@@ -241,7 +564,7 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
     }
   }
 
-  // ── Valuasi ──────────────────────────────────────────────────────────────
+  // ── Valuasi pasar ────────────────────────────────────────────────────────
   if (punya(t, 'per', 'pbv', 'valuasi')) {
     if (h.mkt_per == null && h.mkt_pbv == null) return { teks: 'Data valuasi pasar hari ini belum ada.', takPaham: true }
     return {
@@ -270,8 +593,7 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
     }
   }
 
-  // ── Emiten disebut langsung (4 huruf kapital di pertanyaan asli) ─────────
-  const kode = pertanyaan.toUpperCase().match(/\b[A-Z]{4}\b/)?.[0]
+  // ── Emiten disebut langsung (kode ATAU nama, sudah dideteksi di atas) ────
   if (kode) {
     // Satu emiten dijawab dari SEMUA sudut yang kita punya hari itu: posisinya
     // di papan peringkat, kontribusinya ke indeks, edisi yang membahasnya, dan

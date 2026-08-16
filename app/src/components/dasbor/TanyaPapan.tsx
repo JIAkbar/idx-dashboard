@@ -3,9 +3,51 @@ import { Link } from 'react-router-dom'
 import { useDataHarian } from '../../lib/dasbor/dataHarian'
 import { useBulletinList } from '../../lib/dasbor/bulletin'
 import { useKabar } from '../../lib/dasbor/kabar'
-import { jawab, CONTOH_TANYA, type Jawaban } from '../../lib/dasbor/tanyaPapan'
+import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
+import { fetchFundamental } from '../../lib/dasbor/stockDetailData'
+import { loadInvestorMap } from '../../lib/dasbor/petaInvestorData'
+import { jawab, CONTOH_TANYA, type Jawaban, type Topik, type DataButuh, type OhlcRingkas } from '../../lib/dasbor/tanyaPapan'
 import { IkonMenu, IKON_SILANG } from './IkonMenu'
 import './TanyaPapan.css'
+
+/** Cache modul berkas OHLC per emiten dipakai Tanya PAPAN — sama pola dengan
+ *  `fundamentalCache`/`loadInvestorMap`, tapi belum ada pemakai lain yang
+ *  butuh cache imperatif untuk berkas ini, jadi ditaruh lokal di sini saja
+ *  (bukan lib bersama) sampai ada pemakai kedua. `null` = 404 (emiten tak
+ *  punya berkas OHLC), dicache juga supaya tak fetch ulang percuma. */
+const ohlcCache = new Map<string, OhlcRingkas | null>()
+function fetchOhlcRingkas(kode: string): Promise<OhlcRingkas | null> {
+  const cached = ohlcCache.get(kode)
+  if (cached !== undefined) return Promise.resolve(cached)
+  return fetch(`/data-idx/json/ohlc/${kode}.json`)
+    .then((r) => (r.ok ? (r.json() as Promise<OhlcRingkas>) : Promise.reject(new Error('not found'))))
+    .then((d) => {
+      ohlcCache.set(kode, d)
+      return d
+    })
+    .catch(() => {
+      ohlcCache.set(kode, null)
+      return null
+    })
+}
+
+/** Tahap-2 mekanisme dua-langkah (lihat komentar `jawab()`/`Jawaban.butuh`
+ *  di tanyaPapan.ts): ambil berkas PER-EMITEN yang diminta, sesuai jenisnya.
+ *  `jawab()` sendiri sengaja tak fetch apa pun — ini satu-satunya tempat
+ *  fetch untuk fitur Tanya PAPAN terjadi. */
+async function ambilButuh(butuh: NonNullable<Jawaban['butuh']>): Promise<DataButuh> {
+  if (butuh.jenis === 'fundamental') {
+    return { jenis: 'fundamental', kode: butuh.kode, payload: await fetchFundamental(butuh.kode) }
+  }
+  if (butuh.jenis === 'ohlc') {
+    return { jenis: 'ohlc', kode: butuh.kode, payload: await fetchOhlcRingkas(butuh.kode) }
+  }
+  // investor_map.json satu berkas untuk SEMUA emiten (584 KB) — di-fetch
+  // sekali lewat cache modul `loadInvestorMap` (dipakai bareng halaman Peta
+  // Investor), lalu disaring ke satu kode di sini.
+  const daftar = await loadInvestorMap().catch(() => [])
+  return { jenis: 'investor', kode: butuh.kode, payload: daftar.find((e) => e.code === butuh.kode) ?? null }
+}
 
 interface Baris {
   dari: 'orang' | 'papan'
@@ -30,9 +72,14 @@ export function TanyaPapan() {
   const [buka, setBuka] = useState(false)
   const [teks, setTeks] = useState('')
   const [riwayat, setRiwayat] = useState<Baris[]>([])
-  const { hari } = useDataHarian()
+  // Topik jawaban terakhir — bahan sambungan untuk pertanyaan sependek
+  // "kenapa?". Disimpan di ref, bukan state: nilainya tak menggambar apa pun,
+  // dan menaruhnya di state berarti satu render tambahan tiap tanya.
+  const topikRef = useRef<Topik>(null)
+  const { hari, tanggalTersedia } = useDataHarian()
   const { daftar: edisi } = useBulletinList()
   const { kabar } = useKabar()
+  const kamus = useKamusEmiten()
   const akhirRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -48,12 +95,34 @@ export function TanyaPapan() {
   // terasa seperti tak menjawab.
   useEffect(() => { akhirRef.current?.scrollIntoView({ block: 'end' }) }, [riwayat])
 
-  function kirim(pertanyaan: string) {
+  async function kirim(pertanyaan: string) {
     const q = pertanyaan.trim()
     if (!q) return
-    const j: Jawaban = jawab(q, { hari: hari ?? null, edisi: edisi ?? null, kabar: kabar?.item ?? null })
-    setRiwayat((r) => [...r, { dari: 'orang', teks: q }, { dari: 'papan', teks: j.teks, ke: j.ke, keLabel: j.keLabel }])
+    // Pertanyaan orang tampil SEGERA (tak menunggu fetch tahap-2 kalau ada)
+    // — jeda satu-dua berkas kecil tak boleh terasa seperti panel diam.
+    setRiwayat((r) => [...r, { dari: 'orang', teks: q }])
     setTeks('')
+
+    const ctx = {
+      hari: hari ?? null,
+      seri: tanggalTersedia ?? null,
+      edisi: edisi ?? null,
+      kabar: kabar?.item ?? null,
+      topik: topikRef.current,
+      kamus,
+    }
+    let j: Jawaban = jawab(q, ctx)
+    // Mekanisme dua-langkah (#lihat tanyaPapan.ts): jawab() minta berkas
+    // PER-EMITEN yang belum ada di konteks, di sini diambil, lalu jawab()
+    // dipanggil ULANG dengan pertanyaan yang SAMA dan `data` terisi.
+    if (j.butuh) {
+      const data = await ambilButuh(j.butuh)
+      j = jawab(q, { ...ctx, data })
+    }
+    // Topik hanya diperbarui kalau jawabannya memang mengenali sesuatu —
+    // jawaban "tak paham" tak boleh menghapus konteks yang masih berguna.
+    if (j.topik) topikRef.current = j.topik
+    setRiwayat((r) => [...r, { dari: 'papan', teks: j.teks, ke: j.ke, keLabel: j.keLabel }])
   }
 
   return (

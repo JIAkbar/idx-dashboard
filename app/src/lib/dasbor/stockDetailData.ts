@@ -275,6 +275,26 @@ export function useStockIndex() {
 
 const fundamentalCache = new Map<string, StockFundamental>()
 
+/** Fetch imperatif (bukan hook), cache modul sama dengan `useStockFundamental`
+ *  — dipakai Tanya PAPAN lewat mekanisme `butuh` dua-langkah (tanyaPapan.ts):
+ *  jawab() minta jenis 'fundamental', TanyaPapan.tsx memanggil ini lalu
+ *  memanggil jawab() lagi dengan hasilnya. `null` = 404 (emiten tak punya
+ *  berkas fundamental), bukan error — dibedakan dari "belum dicoba". */
+export function fetchFundamental(ticker: string): Promise<StockFundamental | null> {
+  const cached = fundamentalCache.get(ticker)
+  if (cached) return Promise.resolve(cached)
+  return fetch(`/data-idx/json/fundamental/${ticker}.json`)
+    .then((r) => {
+      if (!r.ok) throw new Error('not found')
+      return r.json() as Promise<StockFundamental>
+    })
+    .then((fd) => {
+      fundamentalCache.set(ticker, fd)
+      return fd
+    })
+    .catch(() => null)
+}
+
 /** Data fundamental satu saham, fetch on-demand tiap kode dipilih/dicari. */
 export function useStockFundamental(ticker: string | null) {
   const [data, setData] = useState<StockFundamental | null>(ticker ? (fundamentalCache.get(ticker) ?? null) : null)

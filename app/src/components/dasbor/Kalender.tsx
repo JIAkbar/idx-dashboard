@@ -53,8 +53,10 @@ const BULAN = [
 // sel "Sab"/"Min" cuma noise — permintaan user, lanjutan #75).
 const DOW_LABEL = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum']
 
-/** Tanggal merah manual — port index_live.html baris 2431-2435. */
-const HOLIDAYS: Record<string, string> = {
+/** Tanggal merah manual — port index_live.html baris 2431-2435. Diekspor:
+ *  Tanya PAPAN (tanyaPapan.ts) memakainya juga untuk pertanyaan "besok libur
+ *  bursa?" — satu sumber, jangan disalin. */
+export const HOLIDAYS: Record<string, string> = {
   '2026-06-01': 'Hari Lahir Pancasila',
   '2026-05-29': 'Kenaikan Isa Almasih',
 }
