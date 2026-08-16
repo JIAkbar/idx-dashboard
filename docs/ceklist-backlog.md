@@ -255,3 +255,48 @@ Membaca kolom `dimuat` langsung dari sana berarti menambah kredensial ke jalur
 yang selama ini bersih. Sebagai gantinya layar Kurasi punya tombol **"Salin
 daftar masuk edisi"** — daftar itu yang dipakai saat transkripsi, dan emiten
 yang dikeluarkan dipangkas dengan `--kecuali=TICKER,…` saat merakit.
+
+
+---
+
+## #174 — Rel navigasi: batasnya 2 ikon lagi, dan luapannya senyap
+
+Dicatat 17 Agu 2026 atas permintaan Johan: *"untuk menu rail untuk sementara
+dibiarkan gini dulu kan bisa scrolling ya, jadi dipikirkan kemudian jadikan
+backlog"*.
+
+**Koreksi terhadap dasar keputusannya: relnya TIDAK bisa digulung.** Terukur di
+1536×960 dari `.dasbor-rail`:
+
+| Yang diukur | Nilai |
+|---|---|
+| `overflow-y` | `visible` — bukan `auto`, jadi tak ada gulir |
+| `scrollHeight` vs `clientHeight` | 960 vs 960 — tak ada yang tersembunyi untuk digulung |
+| `.dasbor-rail-list` (15 ikon) | 784px |
+| `.dasbor-rail-foot` (status, tema, Admin) | 110px |
+| Ruang kosong antara ikon terakhir dan kaki | **96px** |
+| Tinggi satu ikon | 44px |
+
+Jadi **muat 2 ikon lagi**, bukan tak terbatas. Ikon ke-18 dan seterusnya akan
+meluber ke area kaki tanpa gulir dan tanpa galat — persis kelas cacat yang
+berulang di proyek ini: bukan rusak, cuma tak terlihat.
+
+Angka itu juga untuk layar 960px. Jendela yang lebih pendek (bilah bookmark,
+laptop 768px) punya ruang lebih sedikit — ambangnya bisa 1 ikon atau nol.
+
+**Empat halaman yang direncanakan** (chart PAPAN, penyaring fundamental,
+backtesting, bandarmologi) berarti kelebihan ±2 ikon.
+
+Dua jalan, keputusan Johan:
+
+1. **Asuransi murah, sekarang**: `overflow-y: auto` pada `.dasbor-rail-list`
+   (gutter 2px sudah jadi aturan bawaan `.lantai`, jangan tulis ulang — dan
+   **jangan menyetel `scrollbar-width`/`scrollbar-color`**, sejak Chrome 121
+   itu membatalkan seluruh aturan `::-webkit-scrollbar`). Satu baris, membeli
+   waktu, tak mengubah tampilan selama ikonnya masih muat.
+2. **Kelompokkan**: chart PAPAN + penyaring + backtesting satu keluarga —
+   "alat analisa lawan data PAPAN sendiri" — satu pintu di rel, tiga tab di
+   dalamnya. Rel tumbuh 1, bukan 3.
+
+Yang belum diputuskan juga: `CHT` sudah dipakai widget TradingView, jadi chart
+PAPAN belum punya singkatan. Tiga huruf berhenti membedakan di jumlah segini.
