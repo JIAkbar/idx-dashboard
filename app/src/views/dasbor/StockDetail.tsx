@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { useStockFundamental, useStockIndex } from '../../lib/dasbor/stockDetailData'
+import { useSektorIdx, sektorEmiten, papanBerisiko } from '../../lib/dasbor/sektorIdx'
 import { fMC, fv, fvx } from '../../lib/dasbor/stockDetailFormat'
 import { FdPercent } from '../../components/dasbor/FdPercent'
 import { PanelValuasi, PanelPerSaham, PanelSolvency, PanelEfektivitas, PanelSkor } from './stock-detail/KolomValuasi'
@@ -58,6 +59,9 @@ export function StockDetail() {
   const [inputVal, setInputVal] = useState('')
   const [activeTicker, setActiveTicker] = useState<string | null>(null)
   const { data: fd, loading, error } = useStockFundamental(activeTicker)
+  // Klasifikasi IDX-IC resmi (B1) — berkasnya kecil & di-cache modul.
+  const daftarSektor = useSektorIdx()
+  const idxSektor = sektorEmiten(daftarSektor, activeTicker || '')
   const [sp, setSp] = useSearchParams()
   const tab: Tab = sp.get('tab') === 'valuasi' ? 'valuasi' : 'statistik'
 
@@ -167,7 +171,30 @@ export function StockDetail() {
             <div className="ident">
               <span className="tk">{fd.ticker} · IDX</span>
               <div className="nm">{fd.name || ''}</div>
-              <div className="sek">{fd.sector || ''}{fd.industry ? ' · ' + fd.industry : ''}</div>
+              {/* Klasifikasi IDX-IC RESMI kalau ada, turun sampai subsektor.
+                  Yang lama (`fd.sector`/`fd.industry`) berasal dari Yahoo dan
+                  bukan IDX-IC — dipakai sebagai cadangan supaya emiten yang
+                  belum terpanen tak jadi kosong. */}
+              <div className="sek">
+                {idxSektor?.sektor
+                  ? <>{idxSektor.sektor}{idxSektor.subsektor ? ' · ' + idxSektor.subsektor : ''}</>
+                  : <>{fd.sector || ''}{fd.industry ? ' · ' + fd.industry : ''}</>}
+              </div>
+              {/* Papan pencatatan. "Pemantauan Khusus" ditandai dan ditaruh di
+                  KEPALA halaman — itu penanda risiko dari bursa (154 dari 962
+                  emiten), dan angka fundamental apa pun tentang emiten itu
+                  harus dibaca dengan penanda ini terlihat lebih dulu, bukan
+                  sesudah pembacanya menyimpulkan sesuatu. */}
+              {idxSektor?.papan && (
+                <span
+                  className={`badge${papanBerisiko(idxSektor.papan) ? ' badge-risiko' : ''}`}
+                  title={papanBerisiko(idxSektor.papan)
+                    ? 'Papan Pemantauan Khusus — bursa menempatkan emiten di sini karena memenuhi kriteria tertentu (mis. harga sangat rendah, likuiditas tipis, opini auditor disclaimer, atau dalam PKPU).'
+                    : `Papan pencatatan ${idxSektor.papan}${idxSektor.tercatat ? ` · tercatat ${idxSektor.tercatat}` : ''}`}
+                >
+                  {papanBerisiko(idxSektor.papan) ? '⚠ ' : ''}Papan {idxSektor.papan}
+                </span>
+              )}
               {mataUang && <span className="badge">Laporan: {mataUang}</span>}
             </div>
             <div className="harga">

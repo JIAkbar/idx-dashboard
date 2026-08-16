@@ -2572,3 +2572,14 @@
 .lantai .af-paginasi > .muted { font-family: var(--mono); font-size: 11px; }
 .lantai .af-paginasi-tbl { display: flex; gap: 6px; }
 .lantai .af-paginasi-tbl .dd-btn { white-space: nowrap; }
+
+/* Lencana PAPAN PENCATATAN berisiko (Pemantauan Khusus).
+   Sengaja memakai warna merah tema, bukan amber seperti .badge biasa: ini
+   penanda risiko dari bursa, dan 154 dari 962 emiten ada di papan itu. Kalau
+   tampilannya sama dengan lencana "Laporan: IDR" di sebelahnya, ia berhenti
+   berfungsi sebagai peringatan dan cuma jadi hiasan. */
+.lantai .badge.badge-risiko {
+  background: var(--red-bg);
+  color: var(--red-txt);
+  border: 1px solid var(--red);
+}
