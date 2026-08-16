@@ -201,6 +201,71 @@ Berhubungan dengan [[#171]] (paham dari satu kata) — keduanya soal yang sama:
 mesin sudah punya datanya, yang kurang cara menghubungkan pertanyaan ke data
 itu.
 
+### 🎯 #130 — Divergensi tiga lapis (definisi Johan, 17 Agu 2026)
+
+Bunyi keputusannya: *"lebih kepada teknikal analisis dimana kamu harus bisa
+tentukan chart itu membentuk pola bearish divergent atau bullish divergen,
+kolaborasi dengan indikator stochastic, mungkin volume lebih baik dibanding
+umumnya."*
+
+Jadi tiga lapisnya **bukan** harga/volume/frekuensi seperti dugaan awal
+melainkan:
+
+| Lapis | Isi | Perannya |
+|---|---|---|
+| 1 | **Harga** — puncak & lembah (swing pivot) | menentukan ADA-tidaknya pola |
+| 2 | **Stochastic** — momentum | pembanding yang menyatakan divergensi |
+| 3 | **Volume** | **pengesah**, bukan sekadar pelengkap |
+
+Pilihan Stochastic (bukan RSI/MACD) disengaja Johan: "dibanding umumnya".
+RSI & MACD sudah ada di `lib/radar/`, Stochastic belum — jadi ia lahir bareng
+C2 indikator.
+
+**Definisi polanya** (regular divergence, yang klasik):
+
+- **Bearish** — harga membentuk puncak LEBIH TINGGI, stochastic membentuk
+  puncak LEBIH RENDAH. Naiknya kehilangan tenaga.
+- **Bullish** — harga membentuk lembah LEBIH RENDAH, stochastic membentuk
+  lembah LEBIH TINGGI. Turunnya kehilangan tenaga.
+
+**Lapis volume sebagai pengesah** — ini yang membedakan dari kebanyakan
+indikator divergensi:
+
+- Bearish sah kalau puncak kedua terjadi dengan **volume lebih rendah**
+  daripada puncak pertama (naik tanpa dukungan = distribusi).
+- Bullish sah kalau lembah kedua terjadi dengan **volume lebih rendah**
+  daripada lembah pertama (jual mengering).
+- Volume yang bergerak berlawanan **tidak membatalkan** polanya, tapi
+  menurunkan derajatnya — dan derajat itu WAJIB terlihat pembaca.
+
+**Derajat keyakinan**, ditampilkan apa adanya:
+
+| Derajat | Syarat |
+|---|---|
+| Kuat | harga + stochastic + volume ketiganya sejalan |
+| Sedang | harga + stochastic sejalan, volume tak mendukung |
+| Lemah | jarak antar-pivot terlalu jauh/dekat, atau salah satu pivot ragu |
+
+**Yang harus diputuskan saat mengerjakan, JANGAN ditebak sendiri** — semuanya
+menentukan hasil dan wajib bisa diaudit:
+
+1. Deteksi pivot: pakai zigzag ambang persen (riset SPLE memakai swing minimal
+   3% dari 108 hari — angka itu titik awal yang masuk akal, bukan kebenaran).
+2. Parameter Stochastic: %K, %D, perataan. Bawaan 14/3/3 kecuali ada alasan.
+3. Jarak sah antar-pivot: dua pivot yang terlalu berdekatan bukan divergensi,
+   yang terlalu berjauhan tak lagi berhubungan.
+4. Volume dibandingkan sebagai rata-rata di sekitar pivot, bukan satu batang —
+   satu batang terlalu berisik.
+
+**Aturan PAPAN yang tetap berlaku di sini:** ini penyajian pola, BUKAN
+rekomendasi beli/jual. Ambangnya **dikalibrasi dari data**, bukan diambil dari
+buku — persis seperti ambang narasi harian yang dihitung dari 2.409 hari bursa.
+Dan kalau polanya tak ada, jawabannya "tak ada divergensi" — bukan mencari-cari
+sampai ketemu.
+
+**Bergantung pada C2** (indikator per emiten). Datanya sudah lengkap: OHLCV 5
+tahun untuk 962 emiten.
+
 ### #168 — Cara scraping arsip berita yang benar (belum dibahas)
 
 Batasnya sudah diketahui: endpoint IPOT mengabaikan `halaman`, jadi mentok
@@ -288,8 +353,8 @@ Tiga yang menunggu KEPUTUSAN (tak bisa ditebak tanpa salah sasaran):
 
 | # | Tugas | Yang perlu diputuskan |
 |---|---|---|
-| 145 | "Bar tembus" di dasbor (sisa #107) | Istilahnya tak punya rujukan di kode. (a) bar kapitalisasi yang boleh melewati kotak untuk nilai ekstrem, atau (b) bar dua arah dari sumbu nol seperti `BatangPeringkat`? Keduanya mengubah arti visual yang berbeda |
-| 146 | Definisi "divergensi tiga lapis" (#130) | Tiga lapis mana: harga vs volume, volume vs frekuensi, asing vs domestik? Urutan lapisnya menentukan seluruh perhitungan dan tampilannya |
+| ~~145~~ ⏭️ | ~~"Bar tembus" di dasbor~~ — **DILEWATI** atas keputusan Johan 17 Agu 2026. Istilahnya tak pernah punya rujukan di kode dan tak ada yang menunggunya; ditutup daripada menggantung selamanya
+| ~~146~~ ✅ | ~~Definisi "divergensi tiga lapis"~~ — **SUDAH DIDEFINISIKAN** Johan 17 Agu 2026. Spesifikasinya di bawah; #130 tak lagi terhalang, tinggal menunggu C2 (indikator per emiten)
 | 129 | Chart bandarmologi | Bukan keputusan desain — **sumber datanya belum ada**. Broker per emiten tak tersedia di endpoint publik IDX; butuh sumber lain sebelum bisa dimulai |
 
 Empat dari riset SPLE 16 Agu 2026 (`docs/riset/sple/README.md`):

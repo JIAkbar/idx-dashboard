@@ -68,8 +68,8 @@ git rev-list --count origin/main..HEAD
 
 | ☐ | # | Pertanyaan |
 |---|---|---|
-| ☐ | 145 | "Bar tembus" maksudnya apa — bar kapitalisasi yang melewati kotak, atau bar dua arah dari sumbu nol? |
-| ☐ | 146 | "Divergensi tiga lapis" — lapis mana: harga vs volume, volume vs frekuensi, asing vs domestik? Urutannya menentukan seluruh perhitungan |
+| ☑ | 145 | **DILEWATI** (Johan, 17 Agu) — istilahnya tak pernah punya rujukan di kode |
+| ☑ | 146 | **DIDEFINISIKAN** (Johan, 17 Agu) — harga + stochastic + volume sebagai pengesah. Spesifikasi lengkap di `rencana-berjalan.md`; #130 tinggal menunggu C2 |
 
 ## Selesai — gelombang ketiga (16 Agu, siang–malam)
 
