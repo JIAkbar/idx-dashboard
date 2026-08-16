@@ -458,6 +458,42 @@ function bersih(s: string): string {
 }
 
 /**
+ * Imbuhan Indonesia yang dilepas sebelum kata dicocokkan.
+ *
+ * Inilah yang membuat pencocokan kata-utuh masuk akal di bahasa yang
+ * menempelkan imbuhan ke kata dasarnya. "benefitnya" gagal cocok dengan kunci
+ * "benefit", "dihitung" gagal dengan "hitung", "keuntungan" gagal dengan
+ * "untung" -- dan tiap kegagalan itu terbaca pengguna sebagai "AI-nya bodoh",
+ * padahal entrinya ada dan isinya benar.
+ *
+ * Sengaja BUKAN pemenggal kata penuh: stemmer agresif memotong sampai akar
+ * yang tak lagi berarti dan justru melahirkan kecocokan palsu. Yang dilepas
+ * hanya imbuhan yang jelas bukan bagian kata dasarnya, dan cuma kalau sisanya
+ * masih >= 4 huruf.
+ */
+const AKHIRAN = ['nya', 'kah', 'lah', 'pun', 'ku', 'mu']
+const AWALAN = ['meng', 'meny', 'mem', 'men', 'ber', 'ter', 'di', 'ke', 'me', 'pe']
+
+function pangkas(kata: string): string {
+  let k = kata
+  for (const a of AKHIRAN) {
+    if (k.endsWith(a) && k.length - a.length >= 4) { k = k.slice(0, -a.length); break }
+  }
+  for (const a of AWALAN) {
+    if (k.startsWith(a) && k.length - a.length >= 4) { k = k.slice(a.length); break }
+  }
+  return k
+}
+
+/** Bentuk sebuah kata yang dianggap sama: aslinya DAN hasil pangkasnya.
+ *  Aslinya tetap disimpan supaya kata yang memang berawalan sama ("kertas",
+ *  "kepala", "menu") tak kehilangan bentuk sebenarnya. */
+function bentuk(kata: string): string[] {
+  const p = pangkas(kata)
+  return p === kata ? [kata] : [kata, p]
+}
+
+/**
  * Cari entri pengetahuan yang paling cocok dengan pertanyaan.
  *
  * Skornya jumlah kata kunci yang muncul sebagai substring di pertanyaan yang
@@ -483,10 +519,13 @@ export function cariPengetahuan(pertanyaan: string): Entri | null {
   // cocok dengan "data PAPAN dari mana" hanya karena satu kata menyelip di
   // tengah. Terukur: 9 dari 20 pertanyaan wajar tak terjawab, dan sebagian
   // besar entrinya SUDAH ADA, cuma tak tersentuh.
+  // Tiap kata pertanyaan diperluas jadi bentuk asli + bentuk terpangkas,
+  // supaya "benefitnya" tetap menemui kunci "benefit". Lihat `pangkas()`.
+  const kataLuas = new Set(kata.flatMap(bentuk))
   const cocok = (k: string): boolean => {
     const kb = bersih(k)
-    if (!kb.includes(' ')) return kata.includes(kb)
-    return kb.split(' ').every((w) => kata.includes(w))
+    if (!kb.includes(' ')) return kataLuas.has(kb) || kataLuas.has(pangkas(kb))
+    return kb.split(' ').every((w) => kataLuas.has(w) || kataLuas.has(pangkas(w)))
   }
 
   let terbaik: Entri | null = null
