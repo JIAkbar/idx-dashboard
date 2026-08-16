@@ -95,11 +95,23 @@ export async function unggahScreenshot(
 ): Promise<string> {
   const ext = file.name.split('.').pop() || 'png'
   const path = `${tanggal}/${ticker}-${jenis}.${ext}`
-  await upsertBarisSetoran(path, tanggal, ticker, jenis, alasan)
+
+  // Tiap galat DITANDAI TAHAPNYA. Dua tahap ini ditolak server dengan kalimat
+  // yang mirip ("row-level security"), padahal penyebabnya berbeda jauh:
+  // tahap baris = alasan/penyetor/status, tahap berkas = kuota, emiten
+  // bentrok, tanggal, atau bentuk nama berkas. Tanpa penanda ini, penyelidikan
+  // penolakan 14 & 16 Agu berputar di tempat karena tak ada yang tahu bagian
+  // mana yang sebenarnya menolak.
+  try {
+    await upsertBarisSetoran(path, tanggal, ticker, jenis, alasan)
+  } catch (e) {
+    throw new Error(`[tahap: baris setoran] ${e instanceof Error ? e.message : String(e)}`)
+  }
+
   const { error } = await supabase.storage.from('screenshots').upload(path, file, { upsert: true })
   if (error) {
     await supabase.from('setoran').delete().eq('path', path)
-    throw error
+    throw new Error(`[tahap: unggah berkas] ${error.message}`)
   }
   return path
 }

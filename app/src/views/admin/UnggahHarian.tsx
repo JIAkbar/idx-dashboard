@@ -153,7 +153,19 @@ const KELAS_STATUS: Record<StatusSetoran, string> = { menunggu: 'warn', revisi: 
 function terjemahkanGalatUnggah(pesan: string): string {
   const p = pesan.toLowerCase()
   if (p.includes('row-level security') || p.includes('violates') || p.includes('policy') || p.includes('permission denied') || p.includes('403')) {
-    return 'Unggahan ditolak server — kemungkinan kuota harian sudah habis, emiten ini sudah disetor akun lain, tanggalnya di masa depan, atau kamu tidak punya izin untuk jenis unggahan ini.'
+    // #161 — empat kemungkinan tetap disebut, tapi pesan aslinya IKUT DIBAWA.
+    //
+    // Versi lama berhenti di daftar kemungkinan itu saja. Saat penolakan MBMA
+    // 14 Agu diselidiki, tak satu pun dari empatnya benar — dan sebab aslinya
+    // tak bisa dilacak karena keterangan servernya sudah telanjur dibuang.
+    // Berulang 16 Agu (AADI, akun Warda dan akun Perak): tiap penjaga server
+    // diuji satu per satu dan SEMUANYA lolos, jadi yang menolak bukan yang
+    // tertulis di kalimat ini.
+    //
+    // Menerjemahkan galat itu menolong; MENGHAPUS galat aslinya membutakan
+    // orang yang harus memperbaikinya.
+    return 'Unggahan ditolak server — kemungkinan kuota harian sudah habis, emiten ini sudah disetor akun lain, ' +
+      `tanggalnya di masa depan, atau kamu tidak punya izin untuk jenis unggahan ini.\n\nKeterangan server: ${pesan}`
   }
   return pesan
 }
