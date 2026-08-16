@@ -37,6 +37,21 @@ function kunciEmitenAktif(userId: string): string {
 }
 
 /** "bedah/AADI/2026-08-14/broksum-rentang.png" → "Broker Summary rentang". */
+/** Rentang tanggal arsip satu emiten, ringkas: satu tanggal ditulis apa
+ *  adanya, banyak tanggal jadi "3 Agu – 14 Agu (5)". Menampilkan JUMLAH saja
+ *  di bawah kepala kolom "Tanggal" membuat kepala kolomnya berbohong. */
+function rentangTanggal(daftar: Array<{ tanggal: string }>): string {
+  if (!daftar.length) return '—'
+  const urut = daftar.map((t) => t.tanggal).sort()
+  const pendek = (iso: string) => {
+    const [, b, h] = iso.split('-')
+    const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+    return `${Number(h)} ${BULAN[Number(b) - 1] ?? b}`
+  }
+  if (urut.length === 1) return pendek(urut[0])
+  return `${pendek(urut[0])} – ${pendek(urut[urut.length - 1])} (${urut.length})`
+}
+
 function labelJenisBedah(path: string): string {
   const jenis = (path.split('/').pop() ?? '').split('.')[0]
   if (jenis === 'broksum-rentang') return 'Broker Summary rentang'
@@ -361,11 +376,17 @@ export function BedahUnggah() {
         {arsip && arsip.length > 0 && (
           <div style={{ marginTop: 16 }}>
             <p className="lbl" style={{ marginBottom: 6 }}>Arsip unggahan Bedah</p>
+            {/* `.af-gulir` — wadah gulir yang sudah dipakai tabel admin lain.
+                Tanpa ini tabelnya meluber 87px ke luar panel di layar 412px dan
+                kolom paling kanan (tombol Buka, lalu Hapus di dalamnya) jatuh di
+                bagian yang terpotong: dari layar terbaca sebagai tombol yang
+                tertutup, bukan tombol yang perlu digeser. */}
+            <div className="af-gulir">
             <table className="tbl">
               <thead>
                 <tr>
                   <th>Emiten</th>
-                  <th className="r">Tanggal</th>
+                  <th className="r">Rentang tanggal</th>
                   <th className="r">Berkas</th>
                   <th className="r">Buka</th>
                 </tr>
@@ -377,12 +398,30 @@ export function BedahUnggah() {
                     <Fragment key={b.ticker}>
                       <tr>
                         <td className="tick">{b.ticker}</td>
-                        <td className="r num">{b.tanggalList.length}</td>
+                        {/* Dulu sel ini menampilkan JUMLAH tanggal di bawah kolom
+                            berjudul "Tanggal" — kepala kolom menjanjikan tanggal,
+                            selnya memberi angka "1". Sekarang yang tampil rentang
+                            sebenarnya; jumlahnya sudah terbaca dari barisnya saat
+                            dibuka. */}
+                        <td className="r num" style={{ whiteSpace: 'nowrap' }}>{rentangTanggal(b.tanggalList)}</td>
                         <td className="r num">{b.jumlahBerkas}</td>
                         <td className="r">
-                          <button type="button" className="af-centang af-lihat" onClick={() => toggleExpand(b.ticker)}>
-                            <IkonMenu d={IKON_CENTANG} size={13} />
-                            <span className="lihat-lbl">{terbuka ? 'Tutup' : 'Buka'}</span>
+                          {/* Dulu tombol ini memakai ikon CENTANG dengan label
+                              ber-`opacity:0` sampai disentuh kursor (`.af-lihat`).
+                              Akibatnya yang terlihat cuma tanda centang — yang
+                              justru terbaca "sudah selesai", bukan "klik untuk
+                              membuka" — dan tombol HAPUS di dalamnya jadi tak
+                              pernah ditemukan orang. Johan menanyakannya langsung:
+                              "dimana tombol delete nya ya?". Sekarang labelnya
+                              selalu tampak dan ikonnya menunjuk arah buka/tutup. */}
+                          <button
+                            type="button"
+                            className="dd-btn bdh-buka"
+                            aria-expanded={terbuka}
+                            onClick={() => toggleExpand(b.ticker)}
+                          >
+                            <span className={`bdh-panah${terbuka ? ' buka' : ''}`} aria-hidden="true">›</span>
+                            {terbuka ? 'Tutup' : `Buka ${b.jumlahBerkas} berkas`}
                           </button>
                         </td>
                       </tr>
@@ -422,6 +461,7 @@ export function BedahUnggah() {
                 })}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </div>

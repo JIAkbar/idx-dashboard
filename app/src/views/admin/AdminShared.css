@@ -649,3 +649,13 @@
 
 /* Chip jenjang berikon — ikonnya sejajar tengah dengan teksnya. */
 .lantai .chip.aa-jenjang { display: inline-flex; align-items: center; gap: 4px; }
+
+/* Tombol buka/tutup baris arsip Bedah.
+   Sengaja TIDAK memakai `.af-lihat`: kelas itu menyembunyikan labelnya sampai
+   disentuh kursor, dan di tabel arsip yang isinya tombol hapus, label
+   tersembunyi berarti tombol hapusnya tak pernah ditemukan. Di telepon, yang
+   tak punya hover, ia bahkan tak pernah muncul sama sekali. */
+.lantai .bdh-buka { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.lantai .bdh-panah { display: inline-block; transition: transform .16s ease; font-size: 13px; line-height: 1; }
+.lantai .bdh-panah.buka { transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) { .lantai .bdh-panah { transition: none; } }

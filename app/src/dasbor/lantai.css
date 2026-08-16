@@ -818,7 +818,13 @@
 /* #3: chip PilRow klik ke Grafik Jaringan (emiten di By Investor, investor di
    By Stock) — pemegang tr sudah punya onClick sendiri, chip stopPropagation
    di PilRow.tsx. */
-.lantai .bchip-klik{cursor:pointer}
+/* Chip yang BISA DIKLIK adalah kendali, bukan lencana — jadi tingginya
+   disamakan dengan `.tab` (26px), bukan dengan `.bchip` pasif yang cuma
+   berpadding 1px. Johan 17 Agu: "tinggi tombol ini disamakan dengan tinggi
+   tombol bulan atau harian biar gak kecil kasian kalau manusia punya mata
+   minus". Sengaja dipasang di `.bchip-klik`, bukan `.bchip`: yang pasif tetap
+   ringkas, yang ditekan jari jadi setinggi target sentuh yang wajar. */
+.lantai .bchip-klik{cursor:pointer;display:inline-flex;align-items:center;height:26px;padding:0 12px;font-size:11px}
 .lantai .bchip-klik:hover{border-color:var(--amber);color:var(--amber)}
 .lantai .spark{stroke-width:1.5;fill:none}
 /* Lajur pil (Peta Investor, Task 12) — sel berisi 3 .bchip yang HARUS muat satu
@@ -2482,7 +2488,11 @@
 .lantai .sea-uji-baris .ks { color: var(--text3); font-size: 11.5px; line-height: 1.6; }
 
 .lantai .sea-kaki {
-  font-size: 11.5px; color: var(--text3); line-height: 1.8; max-width: 82ch;
+  /* Dulu `max-width: 82ch` — batas lebar baca yang benar untuk teks panjang,
+     tapi di layar lebar kotaknya jadi menggantung sendirian di kiri dengan
+     ruang kosong sepanjang layar di kanannya. Lebarnya sekarang ikut panel;
+     keterbacaan dijaga font kecil + line-height 1.8, bukan lebar terpotong. */
+  font-size: 11.5px; color: var(--text3); line-height: 1.8; width: 100%;
   padding: 14px 16px; background: var(--bg2); border-radius: var(--r); margin: 0;
 }
 .lantai .sea-kaki b { color: var(--text2); }
@@ -2600,4 +2610,16 @@
   background: var(--red-bg);
   color: var(--red-txt);
   border: 1px solid var(--red);
+}
+
+/* Kepala panel di layar telepon.
+   `.panel-h` itu flex satu baris `space-between` — di 412px judul dan
+   keterangan kanannya berbagi lebar jadi dua kolom sempit, keduanya
+   membungkus 2-3 baris, dan hasilnya terbaca seperti dua kalimat yang
+   bertabrakan (Seasonality Harian: "Kalau hanya memegang di satu hari" vs
+   "pertumbuhan kumulatif sejak 2025"). Membolehkan wrap membuat keduanya
+   dapat lebar penuh dengan tinggi total yang justru lebih pendek. Panel yang
+   isinya memang muat satu baris tak berubah sama sekali. */
+@media (max-width: 560px) {
+  .lantai .panel-h { flex-wrap: wrap; }
 }
