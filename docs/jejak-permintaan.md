@@ -52,6 +52,7 @@
 | 60 | Tooltip crosshair grafik Balapan | "apakah bisa di setiap hari nya di munculkan kenaikan dan penurunan saham nya ? ... ok Opsi A dulu saja, jadi ketika kursor menyentuh akan muncul setiap titik dimana kenaikannya berapa gitu ya ?" | Seasonality tab HARIAN | `SeasonalityHarian.tsx:379` (`Balapan`), `lantai.css` (dekat `.sb-*`) | Grafik balapan tak punya cara melihat angka harian sebenarnya — cuma garis kumulatif | Overlay Pointer Events (mouse+touch) menampilkan tanggal+hari, persen perubahan harga NYATA dari `tutup` mentah (hijau/merah), dan penanda garis hari mana yang disuapi tanggal itu | Opsi A (tooltip) dipilih karena biaya rendernya tetap satu overlay di rentang apa pun — batas "maksimal 1Y" yang dikhawatirkan jadi tak perlu untuk fitur ini | Selesai — `a00fd593`; `tsc`+`vitest` bersih, 3 tanggal diverifikasi lewat `pointermove` sintetis, satu angka (+1,24% @ 10 Feb 2026) dicocokkan manual dari `ihsg_harian.json`; sentuh diuji `pointerdown/move/cancel` di 412×915, `scrollWidth` tetap 412 | Added |
 | 61 | Rel navigasi ditunda, jadi backlog | "untuk menu rail untuk sementara dibiarkan gini dulu kan bisa scrolling ya, jadi dipikirkan kemudian jadikan backlog" | semua halaman (rel kiri) | `.dasbor-rail-list` (`lantai.css`) | Dianggap bisa digulung sehingga penambahan ikon aman | Dicatat sebagai #174 dengan angka terukur; tak ada perubahan kode | **Relnya tidak bisa digulung** — `overflow-y: visible`, `scrollHeight` = `clientHeight` = 960. Sisa ruang 96px = 2 ikon; yang ke-18 meluber ke area kaki tanpa gulir dan tanpa galat | Dicatat — `docs/ceklist-backlog.md` §175; keputusan (gulir vs kelompokkan) menunggu Johan | — |
 | 62 | Lapis AI dikunci untuk yang sudah masuk | "fitur-fitur baru tersebut ubah ke perlu login supaya non publik karena biaya mahal harus di usahakan dengan berkontribusi" | semua halaman (panel Tanya PAPAN) | `supabase/functions/tanya-ai/index.ts:134,256`, `TanyaPapan.tsx:145`, `tanyaAI.ts:80` | Panel AI terbuka untuk siapa pun; kuota cuma per IP, dan IP bisa diganti dengan pindah jaringan | Gerbang login di Edge Function (401 `perluLogin`) + kuota per **pengguna**; klien tak memanggil lapis AI sama sekali kalau belum masuk | Menyembunyikan tombol di klien tak menahan siapa pun — fungsinya bisa dipanggil langsung dengan curl, dan di situlah biaya Gemini terjadi. Jadi gerbangnya di server, klien cuma kenyamanan | Selesai — diuji di konteks tamu terpisah: `adaSesi:false`, jawaban mesin aturan tetap keluar plus keterangan sebab, tanpa panggilan AI. Pengguna masuk tetap normal. `tsc` bersih, 284 tes hijau | Changed |
+| 63 | Grafik Emiten — chart PAPAN tahap 3 | "Tugas: Chart PAPAN tahap 3 — lilin + volume + zoom, satu emiten. Ini tahap 3 dari jalur chart yang sudah diputuskan Johan (opsi A, `lightweight-charts`)." + "fitur baru tidak boleh publik karena biayanya harus diusahakan dengan berkontribusi" | Rute baru `/grafik` | `GrafikEmiten.tsx`, `grafikEmiten.ts`, `GrafikEmiten.css`, `App.tsx`, `menu.ts`, `aksesHalaman.ts`, tabel `akses_halaman` | Chart PAPAN tahap 3 belum mulai (☐, `jejak-permintaan.md` referensi lama); `/chart` cuma widget TradingView, tak ada kanvas milik PAPAN sendiri | Halaman baru: lilin+volume dari `ohlc/<KODE>.json`, zoom/geser bawaan lightweight-charts, pemilih rentang 1/3/5 thn/Semua, cari emiten (pola SeasonalityHarian+kamusEmiten), dijaga login (`akses_halaman` kunci `grafik`), ikon rail GRF | Overlay khas PAPAN (tahap 6: pita musiman, akumulasi broker, Radar) cuma bisa dipasang di kanvas sendiri, bukan iframe TradingView | Selesai — `3d47eca5` (+ `fe5abf16` docs). `tsc` bersih, 291 tes (dari 284). Terukur devtools: 244 lilin BBCA cocok hitungan manual `BBCA.json`, tinggi kanvas 460px, zoom+geser dibuktikan lewat rentang waktu sebelum/sesudah, kedua tema terbaca, mobile tanpa luber (`scrollWidth` 412), guard tamu terbukti (kerangka terkunci, nol request `ohlc/BBCA.json`). Bug ditemukan+ditambal saat verifikasi: kanvas numpuk gara-gara `display:none` vs `autoSize`/`ResizeObserver` (`kemampuan-web-dev.md` §189) | Added |
 
 ---
 
@@ -185,13 +186,13 @@ Tahapnya (dari `rencana-berjalan.md`):
 |---|---|---|
 | 1 | #122 panen OHLC 5 tahun | ✅ 962 emiten, 37,3 MB |
 | 2 | #108 harga buka IHSG | ✅ 8.849 hari 1990–2026 |
-| 3 | Chart dasar: lilin + volume + zoom, satu emiten | ☐ **belum mulai** |
+| 3 | Chart dasar: lilin + volume + zoom, satu emiten | ✅ 17 Agu 2026 — `/grafik`, `3d47eca5` (#63) |
 | 4 | Indikator baku: MA, EMA, RSI, MACD, Bollinger | ☐ |
 | 5 | #130 divergensi tiga lapis | ☐ butuh #146 |
 | 6 | Overlay khas PAPAN: pita musiman, akumulasi broker, penanda Radar | ☐ |
 | 7 | #129 bandarmologi multi-panel | ☐ butuh sumber broker per emiten |
 
-**Pondasinya (tahap 1–2) sudah berdiri**; yang belum dimulai justru chartnya
-sendiri. Tahap 3 sudah cukup jadi rilis yang bisa diumumkan. Tahap 6 yang
-membuatnya tak punya pembanding — dan itu semua bergantung data yang cuma
-PAPAN punya, bukan pada mesin gambarnya.
+**Pondasi + chart dasar (tahap 1–3) sudah berdiri.** Tahap 3 sudah dirilis
+(rute `/grafik`, dijaga login) — tahap 4 (indikator) yang berikutnya kalau
+diminta. Tahap 6 yang membuatnya tak punya pembanding — dan itu semua
+bergantung data yang cuma PAPAN punya, bukan pada mesin gambarnya.
