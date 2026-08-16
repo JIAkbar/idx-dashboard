@@ -1,59 +1,35 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useLoginModalOpsional } from '../../context/LoginModalContext'
 import { useAksesHalaman } from '../../context/AksesHalamanContext'
 import { MENU_ITEMS } from '../../lib/dasbor/menu'
 import { PETA_MENU_KUNCI } from '../../lib/aksesHalaman'
-import { fetchIndex, type TanggalIndex } from '../../lib/dasbor/dataHarian'
+import { useDataHarian } from '../../lib/dasbor/dataHarian'
+import { useIhsgBuka } from '../../lib/dasbor/ihsgOhlc'
 import { useBulletinList, tipeEdisi } from '../../lib/dasbor/bulletin'
+import { PapanIhsg } from './IndeksDunia'
 import { IkonMenu, IKON_KUNCI, IKON_PANAH_KANAN } from '../../components/dasbor/IkonMenu'
 import './Beranda.css'
 
 /** Berapa edisi terbaru yang tampil di jalur kabar. */
 const KABAR_TAMPIL = 4
 
-function persen(n: number): string {
-  const s = n.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  return `${n >= 0 ? '+' : '−'}${s.replace('-', '')}%`
-}
-
 /**
- * Strip keadaan pasar — satu baris angka nyata di bawah judul.
+ * Papan pasar di kepala Beranda — memakai `PapanIhsg` yang SAMA dengan
+ * halaman Indeks Dunia, bukan ringkasannya sendiri.
  *
- * Sengaja dari `data-idx/json/index.json` (berkas ringkas yang sudah memuat
- * penutupan & perubahan IHSG per hari bursa), BUKAN dari `useDataHarian` yang
- * menarik seluruh data hari itu: halaman ini pintu masuk, jadi yang boleh
- * ditunggu cuma yang benar-benar ditampilkan.
+ * Versi pertama Beranda cuma menaruh satu baris "IHSG 6.401,89 +1,59%", dan
+ * kepalanya jadi kotak lapang berisi dua kalimat — ruang kosong yang tak
+ * membayar sewanya. Papan penuh mengisi ruang itu dengan yang memang jadi
+ * alasan orang membuka PAPAN: angkanya.
  */
-function StripPasar() {
-  const [baris, setBaris] = useState<TanggalIndex | null>(null)
+function PapanBeranda() {
+  const { tanggalTersedia, hari, tanggalAktif, loading } = useDataHarian()
+  const buka = useIhsgBuka(tanggalAktif ?? undefined)
 
-  useEffect(() => {
-    let batal = false
-    fetchIndex()
-      .then((d) => !batal && setBaris(d.length ? d[d.length - 1] : null))
-      // Halaman tetap berguna tanpa strip ini — jangan tampilkan galat di
-      // pintu masuk untuk sesuatu yang sifatnya pelengkap.
-      .catch(() => {})
-    return () => { batal = true }
-  }, [])
-
-  if (!baris) return null
-  const naik = baris.ihsg_pct >= 0
-  return (
-    <div className="brd-strip">
-      <span className="brd-strip-lbl">IHSG</span>
-      {/* maximumFractionDigits WAJIB berdampingan dengan minimum: tanpa itu
-          6401.888 tercetak "6.401,888" — tiga desimal, beda dari angka yang
-          sama di halaman lain. */}
-      <b className="brd-strip-num">
-        {baris.ihsg.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-      </b>
-      <span className={`brd-strip-chg ${naik ? 'up' : 'dn'}`}>{persen(baris.ihsg_pct)}</span>
-      <span className="brd-strip-tgl">{baris.date_id} · hari bursa ke-{baris.trading_day}</span>
-    </div>
-  )
+  if (loading && !hari) return <div className="brd-papan-memuat" aria-hidden="true" />
+  if (!hari) return null
+  return <PapanIhsg hari={hari} tanggalTersedia={tanggalTersedia} buka={buka} />
 }
 
 /** Kartu kabar: satu edisi terbit. Judulnya tanggal, bukan kode — yang dicari
@@ -113,24 +89,24 @@ export function Beranda() {
   // peramban. Tiap view dasbor membungkus dirinya sendiri (lihat IndeksDunia).
   return (
     <div className="lantai">
+      {/* Kepala dirampingkan jadi satu pita: nama + satu kalimat identitas.
+          Papan angka yang mengisi ruangnya, bukan padding. */}
       <section className="brd-kepala">
-        <div className="brd-kepala-teks">
-          <h1>PAPAN</h1>
-          <p className="brd-tagline">
-            Pusat Analisa Pasar Nusantara — <b>data</b> dan <b>informasi</b> Bursa Efek Indonesia,
-            disajikan apa adanya: angkanya bisa ditelusuri, metodenya terbuka, dan yang belum
-            kami punya kami sebut belum punya.
-          </p>
-          <StripPasar />
-        </div>
+        <h1>PAPAN</h1>
+        <p className="brd-tagline">
+          Pusat Analisa Pasar Nusantara — <b>data</b> dan <b>informasi</b> Bursa Efek Indonesia.
+          Angkanya bisa ditelusuri, metodenya terbuka, dan yang belum kami punya kami sebut belum punya.
+        </p>
       </section>
+
+      <PapanBeranda />
 
       <KartuKabar />
 
       <section className="brd-menu">
         <div className="brd-h"><span className="lbl">Jelajahi data</span></div>
         <div className="brd-grid">
-          {MENU_ITEMS.map((m) => {
+          {MENU_ITEMS.map((m, i) => {
             // Pemetaan menu→kunci akses dipinjam dari sumber yang sama dengan
             // rail & laci (PETA_MENU_KUNCI) — id menu TIDAK selalu sama dengan
             // kunci aksesnya: 'broker' (Top Broker) berpasangan dengan
@@ -138,7 +114,12 @@ export function Beranda() {
             const kunci = PETA_MENU_KUNCI[m.id]
             const terkunci = kunci ? !boleh(kunci) : false
             return (
-              <Link key={m.id} to={m.path} className={`brd-kartu${terkunci ? ' kunci' : ''}`}>
+              <Link
+                key={m.id}
+                to={m.path}
+                className={`brd-kartu${terkunci ? ' kunci' : ''}`}
+                style={{ '--i': String(i) } as Record<string, string>}
+              >
                 <span className="brd-kartu-ikon"><IkonMenu d={m.ikon} size={22} /></span>
                 <span className="brd-kartu-kode">{m.kode}</span>
                 <span className="brd-kartu-judul">{m.label}</span>
@@ -156,7 +137,8 @@ export function Beranda() {
               area kontributor (kalau sudah). Ditaruh sebaris dengan kartu
               lain karena statusnya sama — satu tempat yang bisa dituju. */}
           {session ? (
-            <Link to="/admin" className="brd-kartu brd-kartu-aksi">
+            <Link to="/admin" className="brd-kartu brd-kartu-aksi"
+              style={{ '--i': String(MENU_ITEMS.length) } as Record<string, string>}>
               <span className="brd-kartu-ikon"><IkonMenu d={IKON_PANAH_KANAN} size={22} /></span>
               <span className="brd-kartu-kode">AKU</span>
               <span className="brd-kartu-judul">Area Kontributor</span>
@@ -165,7 +147,12 @@ export function Beranda() {
               </span>
             </Link>
           ) : (
-            <button type="button" className="brd-kartu brd-kartu-aksi" onClick={() => modalLogin?.buka()}>
+            <button
+              type="button"
+              className="brd-kartu brd-kartu-aksi"
+              style={{ '--i': String(MENU_ITEMS.length) } as Record<string, string>}
+              onClick={() => modalLogin?.buka()}
+            >
               <span className="brd-kartu-ikon"><IkonMenu d={IKON_KUNCI} size={22} /></span>
               <span className="brd-kartu-kode">MSK</span>
               <span className="brd-kartu-judul">Masuk</span>

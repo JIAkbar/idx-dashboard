@@ -4,7 +4,7 @@ import type { ChartConfiguration } from 'chart.js/auto'
 import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
 import { Kalender } from '../../components/dasbor/Kalender'
 import { Papan } from '../../components/dasbor/Papan'
-import { useDataHarian, type TanggalIndex } from '../../lib/dasbor/dataHarian'
+import { useDataHarian, type DataHarian, type TanggalIndex } from '../../lib/dasbor/dataHarian'
 import { hitungYtdPct } from '../../lib/dasbor/ytd'
 import { fN, fp, fmtNF } from '../../lib/dasbor/format'
 import { useChartCanvas } from '../../lib/dasbor/useChartJs'
@@ -374,6 +374,97 @@ function PanelSkeleton({ tanggalTersedia, tanggalAktif, pilihTanggal, loading }:
   )
 }
 
+/**
+ * Papan IHSG — angka besar, chip perubahan, lilin hari, ruas volume/nilai,
+ * dan grafik rentang di sebelahnya.
+ *
+ * Diekstrak dari badan IndeksDunia (16 Agu 2026) supaya Beranda memakai
+ * papan yang SAMA, bukan salinannya: dua papan yang menampilkan angka sama
+ * dari dua potong kode akan berselisih pada perubahan pertama.
+ */
+export function PapanIhsg({ hari, tanggalTersedia, buka }: {
+  hari: DataHarian
+  tanggalTersedia: TanggalIndex[]
+  /** Harga buka hari itu; `null` kalau panen Yahoo belum jalan (lihat useIhsgBuka). */
+  buka: number | null
+}) {
+  const naik = hari.ihsg_pct >= 0
+  const ytdPct = hitungYtdPct(hari.ihsg_value, tanggalTersedia)
+  // Perubahan poin dihitung dari ihsg_prev, bukan dibaca dari ihsg_change:
+  // ruas itu bolong di 38 dari 93 berkas harian (lihat dataHarian.ts).
+  const delta = hari.ihsg_prev == null ? null : hari.ihsg_value - hari.ihsg_prev
+  // Ruas hilang tampil "—", bukan 0 — nol terbaca seperti angka nyata.
+  const meta: [string, string][] = [
+    ['Volume', hari.vol_today == null ? '—' : `${fN(hari.vol_today, 0)} Jt lbr`],
+    ['Nilai', hari.val_idr_today == null ? '—' : `${fN(hari.val_idr_today, 0)} M IDR`],
+    ['Frekuensi', hari.freq_today == null ? '—' : `${fN(hari.freq_today, 0)} Rb kali`],
+    ['Kapitalisasi', hari.mcap_idr == null ? '—' : `${fN(hari.mcap_idr, 0)} T IDR`],
+    ['USD/IDR BI', hari.usd_idr == null ? '—' : fN(hari.usd_idr, 0)],
+  ]
+
+  return (
+    <div className="board">
+      <div className="board-main">
+        <span className="lbl">
+          Indeks Harga Saham Gabungan · {hari.date_id} · hari bursa ke-{hari.trading_day}
+        </span>
+        <Papan nilai={hari.ihsg_value} />
+        <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <span className={`chip ${naik ? 'up' : 'dn'}`}>
+            {naik ? '▲' : '▼'} {delta === null ? '' : `${fN(delta)} `}({fp(hari.ihsg_pct)})
+          </span>
+          {/* YTD dulu selalu +0,00% karena dibaca dari ruas ihsg_ytd yang tak
+              pernah ada; sekarang dihitung dari index.json — dan kalau tidak
+              bisa dihitung, tampil "—" bukan nol. */}
+          <span className={`chip${ytdPct === null ? '' : ytdPct >= 0 ? ' up' : ' dn'}`}>
+            YTD {ytdPct === null ? '—' : fp(ytdPct)}
+          </span>
+          {hari.ihsg_high != null && hari.ihsg_low != null && (
+            <span className="chip warn">
+              Tertinggi {fN(hari.ihsg_high)} · Terendah {fN(hari.ihsg_low)}
+            </span>
+          )}
+        </div>
+
+        {/* Lilin hari ini di samping angkanya. Angka menyebut di mana IHSG
+            berhenti; lilin menyebut jalan yang ditempuhnya ke sana — hari
+            yang tutup +1% setelah sempat -2% terbaca sangat berbeda dari
+            hari yang naik lurus, dan itu selisih yang hilang kalau cuma ada
+            satu angka. */}
+        {hari.ihsg_prev != null && hari.ihsg_high != null && hari.ihsg_low != null && (
+          <div className="lilin-hari">
+            <LilinHarian
+              dasar={buka ?? hari.ihsg_prev} tutup={hari.ihsg_value}
+              tinggi={hari.ihsg_high} rendah={hari.ihsg_low}
+              judul={`Rentang hari: ${fN(hari.ihsg_low)} sampai ${fN(hari.ihsg_high)}, ${buka ? `buka ${fN(buka)}, ` : ''}tutup ${fN(hari.ihsg_value)}`}
+            />
+            <div className="lilin-ket">
+              <span className="lbl">Rentang hari</span>
+              <span className="lilin-angka">
+                {fN(hari.ihsg_low)} <span className="muted">→</span> {fN(hari.ihsg_high)}
+              </span>
+              <span className="lilin-catatan">
+                {buka
+                  ? <>Badan dari harga buka {fN(buka)} ke penutupan {fN(hari.ihsg_value)}.</>
+                  : <>Badan dari penutupan kemarin ke penutupan hari ini — harga buka hari ini belum dipanen.</>}
+              </span>
+            </div>
+          </div>
+        )}
+        <div className="board-meta">
+          {meta.map(([label, isi]) => (
+            <div className="bm" key={label}>
+              <span className="lbl">{label}</span>
+              <span className="num">{isi}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <IhsgYtdChart dates={tanggalTersedia} />
+    </div>
+  )
+}
+
 export function IndeksDunia() {
   const { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error } = useDataHarian()
   const navigate = useNavigate()
@@ -404,84 +495,13 @@ export function IndeksDunia() {
     )
   }
 
-  const naik = hari.ihsg_pct >= 0
-  const ytdPct = hitungYtdPct(hari.ihsg_value, tanggalTersedia)
-  // Perubahan poin dihitung dari ihsg_prev, bukan dibaca dari ihsg_change:
-  // ruas itu bolong di 38 dari 93 berkas harian (lihat dataHarian.ts).
-  const delta = hari.ihsg_prev == null ? null : hari.ihsg_value - hari.ihsg_prev
-  // Ruas hilang tampil "—", bukan 0 — nol terbaca seperti angka nyata.
-  const meta: [string, string][] = [
-    ['Volume', hari.vol_today == null ? '—' : `${fN(hari.vol_today, 0)} Jt lbr`],
-    ['Nilai', hari.val_idr_today == null ? '—' : `${fN(hari.val_idr_today, 0)} M IDR`],
-    ['Frekuensi', hari.freq_today == null ? '—' : `${fN(hari.freq_today, 0)} Rb kali`],
-    ['Kapitalisasi', hari.mcap_idr == null ? '—' : `${fN(hari.mcap_idr, 0)} T IDR`],
-    ['USD/IDR BI', hari.usd_idr == null ? '—' : fN(hari.usd_idr, 0)],
-  ]
   const indonesia = world.find((w) => w.is_idx)
 
   let curR = ''
 
   return (
     <div className="lantai">
-      <div className="board">
-        <div className="board-main">
-          <span className="lbl">
-            Indeks Harga Saham Gabungan · {hari.date_id} · hari bursa ke-{hari.trading_day}
-          </span>
-          <Papan nilai={hari.ihsg_value} />
-          <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <span className={`chip ${naik ? 'up' : 'dn'}`}>
-              {naik ? '▲' : '▼'} {delta === null ? '' : `${fN(delta)} `}({fp(hari.ihsg_pct)})
-            </span>
-            {/* YTD dulu selalu +0,00% karena dibaca dari ruas ihsg_ytd yang tak
-                pernah ada; sekarang dihitung dari index.json — dan kalau tidak
-                bisa dihitung, tampil "—" bukan nol. */}
-            <span className={`chip${ytdPct === null ? '' : ytdPct >= 0 ? ' up' : ' dn'}`}>
-              YTD {ytdPct === null ? '—' : fp(ytdPct)}
-            </span>
-            {hari.ihsg_high != null && hari.ihsg_low != null && (
-              <span className="chip warn">
-                Tertinggi {fN(hari.ihsg_high)} · Terendah {fN(hari.ihsg_low)}
-              </span>
-            )}
-          </div>
-
-          {/* Lilin hari ini di samping angkanya. Angka menyebut di mana IHSG
-              berhenti; lilin menyebut jalan yang ditempuhnya ke sana — hari
-              yang tutup +1% setelah sempat -2% terbaca sangat berbeda dari
-              hari yang naik lurus, dan itu selisih yang hilang kalau cuma ada
-              satu angka. */}
-          {hari.ihsg_prev != null && hari.ihsg_high != null && hari.ihsg_low != null && (
-            <div className="lilin-hari">
-              <LilinHarian
-                dasar={buka ?? hari.ihsg_prev} tutup={hari.ihsg_value}
-                tinggi={hari.ihsg_high} rendah={hari.ihsg_low}
-                judul={`Rentang hari: ${fN(hari.ihsg_low)} sampai ${fN(hari.ihsg_high)}, ${buka ? `buka ${fN(buka)}, ` : ''}tutup ${fN(hari.ihsg_value)}`}
-              />
-              <div className="lilin-ket">
-                <span className="lbl">Rentang hari</span>
-                <span className="lilin-angka">
-                  {fN(hari.ihsg_low)} <span className="muted">→</span> {fN(hari.ihsg_high)}
-                </span>
-                <span className="lilin-catatan">
-                  {buka
-                    ? <>Badan dari harga buka {fN(buka)} ke penutupan {fN(hari.ihsg_value)}.</>
-                    : <>Badan dari penutupan kemarin ke penutupan hari ini — harga buka hari ini belum dipanen.</>}
-                </span>
-              </div>
-            </div>
-          )}
-          <div className="board-meta">
-            {meta.map(([label, isi]) => (
-              <div className="bm" key={label}>
-                <span className="lbl">{label}</span>
-                <span className="num">{isi}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <IhsgYtdChart dates={tanggalTersedia} />
-      </div>
+      <PapanIhsg hari={hari} tanggalTersedia={tanggalTersedia} buka={buka} />
 
       <div className="grid2 w-kiri">
         <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} memuat={loading && !hari} />
