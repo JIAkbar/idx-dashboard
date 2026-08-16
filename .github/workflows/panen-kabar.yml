@@ -1,0 +1,64 @@
+# Panen kabar dari sumber yang TIDAK terikat IP rumahan.
+#
+# Pembagiannya sengaja:
+#   awan (berkas ini)  → Kontan, CNBC Indonesia, detikFinance — feed publik
+#                         biasa, jalan walau komputer Johan mati
+#   mesin rumahan      → IDX berita, IDX pengumuman, IPOT News
+#
+# IDX menjawab 403 dari IP datacenter (lihat docs/sumber-fundamental-idx.md),
+# jadi bagian itu TIDAK boleh dipindah ke sini — kalau dipaksa, yang terjadi
+# bukan galat melainkan kabar IDX diam-diam kosong tiap kali runner jalan.
+# IPOT ikut ditahan di rumah karena belum pernah diuji dari IP datacenter;
+# menaruhnya di sini berarti menebak.
+#
+# Aman dijalankan berdampingan: `panen_kabar.py` MENGGABUNG dengan isi berkas
+# yang sudah ada dan membuang duplikat berdasarkan judul, jadi jalur awan dan
+# jalur rumahan tidak saling menimpa.
+
+name: Panen kabar (sumber awan)
+
+on:
+  schedule:
+    # Tiap 2 jam pada jam sibuk WIB (00:00–12:00 UTC = 07:00–19:00 WIB).
+    # Berita pasar bergerak sepanjang hari bursa; di luar itu jarang berubah.
+    - cron: '0 0,2,4,6,8,10,12 * * 1-6'
+  workflow_dispatch:        # bisa dipicu manual dari tab Actions
+
+# Butuh menulis balik ke repo (hasil panen di-commit).
+permissions:
+  contents: write
+
+concurrency:
+  # Dua jalannya sekaligus akan berebut commit ke berkas yang sama.
+  group: panen-kabar
+  cancel-in-progress: false
+
+jobs:
+  panen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Pasang dependensi
+        run: pip install --quiet requests
+
+      - name: Panen (Kontan, CNBC, detikFinance)
+        run: python scripts/panen_kabar.py --batas 30 --hanya kontan,cnbc,detik
+
+      - name: Commit kalau ada perubahan
+        run: |
+          if git diff --quiet -- data-idx/json/kabar.json; then
+            echo "Tidak ada kabar baru — tidak commit."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data-idx/json/kabar.json
+          git commit -m "data: kabar dari sumber awan $(date -u +'%Y-%m-%d %H:%M UTC')"
+          # Rebase dulu: jalur rumahan bisa saja mendorong commit lebih dulu.
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

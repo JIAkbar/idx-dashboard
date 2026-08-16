@@ -218,14 +218,20 @@ def ipot(batas: int) -> list[dict]:
     return out
 
 
-def kontan(batas: int) -> list[dict]:
-    r = ambil("https://investasi.kontan.co.id/rss", HEADER_UMUM)
+def rss(nama: str, url: str, batas: int) -> list[dict]:
+    """Pembaca RSS umum — dipakai Kontan, CNBC Indonesia, dan detikFinance.
+
+    Ketiganya feed publik biasa **tanpa batasan IP**, beda dari endpoint IDX.
+    Itu yang membuat mereka bisa dipanen dari GitHub Actions (lihat
+    `--hanya` di bawah dan `docs/panen-kabar.md`).
+    """
+    r = ambil(url, HEADER_UMUM)
     if not r:
         return []
     try:
         akar = ET.fromstring(r.content)
     except ET.ParseError as e:
-        print(f"  ! RSS Kontan tak terbaca — {e}", file=sys.stderr)
+        print(f"  ! RSS {nama} tak terbaca — {e}", file=sys.stderr)
         return []
     out = []
     for item in akar.iterfind(".//item")[:batas] if False else list(akar.iterfind(".//item"))[:batas]:
@@ -241,7 +247,7 @@ def kontan(batas: int) -> list[dict]:
             except ValueError:
                 continue
         if judul and tautan:
-            out.append({"sumber": "Kontan", "jenis": "berita", "judul": judul,
+            out.append({"sumber": nama, "jenis": "berita", "judul": judul,
                         "tautan": tautan, "waktu": waktu, "emiten": []})
     return out
 
@@ -260,11 +266,31 @@ def main() -> int:
     ap.add_argument("--batas", type=int, default=30, help="item per sumber (default 30)")
     ap.add_argument("--hari", type=int, default=7,
                     help="berapa hari kabar disimpan sebelum dibuang (default 7)")
+    ap.add_argument("--hanya", default="",
+                    help="panen sebagian sumber saja, dipisah koma "
+                         "(idx, idx-pengumuman, ipot, kontan, cnbc, detik). "
+                         "Dipakai jalur GitHub Actions yang cuma boleh memanen "
+                         "sumber tanpa batasan IP")
     args = ap.parse_args()
 
+    # kunci → (label, fungsi). Kunci dipakai `--hanya` supaya jalur awan bisa
+    # memanen HANYA sumber yang tak terikat IP rumahan.
+    SUMBER = {
+        "idx": ("IDX berita", idx_berita),
+        "idx-pengumuman": ("IDX pengumuman", idx_pengumuman),
+        "ipot": ("IPOT News", ipot),
+        "kontan": ("Kontan", lambda b: rss("Kontan", "https://investasi.kontan.co.id/rss", b)),
+        "cnbc": ("CNBC Indonesia", lambda b: rss("CNBC Indonesia", "https://www.cnbcindonesia.com/market/rss", b)),
+        "detik": ("detikFinance", lambda b: rss("detikFinance", "https://finance.detik.com/rss", b)),
+    }
+    pilih = [k.strip() for k in args.hanya.split(",") if k.strip()] if args.hanya else list(SUMBER)
+    tak_dikenal = [k for k in pilih if k not in SUMBER]
+    if tak_dikenal:
+        raise SystemExit(f"Sumber tak dikenal: {', '.join(tak_dikenal)}. Pilihan: {', '.join(SUMBER)}")
+
     semua: list[dict] = []
-    for nama, fn in (("IDX berita", idx_berita), ("IDX pengumuman", idx_pengumuman),
-                     ("IPOT News", ipot), ("Kontan", kontan)):
+    for kunci in pilih:
+        nama, fn = SUMBER[kunci]
         hasil = fn(args.batas)
         print(f"  {nama}: {len(hasil)} item")
         semua.extend(hasil)
@@ -314,7 +340,7 @@ def main() -> int:
     isi = {
         "dipanen": datetime.now(WIB).isoformat(timespec="seconds"),
         "retensi_hari": args.hari,
-        "sumber": ["IDX", "IPOT News", "Kontan"],
+        "sumber": sorted({i["sumber"] for i in unik}),
         "item": urut(unik),
     }
     KELUARAN.parent.mkdir(parents=True, exist_ok=True)

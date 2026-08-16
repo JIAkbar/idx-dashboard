@@ -93,6 +93,8 @@ export function Kabar() {
                 key={`${i.tautan}-${n}`}
                 className={`kbr-it${i.jenis === 'pengumuman' ? ' resmi' : ''}`}
                 href={i.tautan} target="_blank" rel="noopener noreferrer"
+                // Judul dipotong dua baris di CSS; tooltip menyimpan versi utuhnya.
+                title={i.judul}
                 style={{ '--i': String(n) } as Record<string, string>}
               >
                 <span className="kbr-meta">

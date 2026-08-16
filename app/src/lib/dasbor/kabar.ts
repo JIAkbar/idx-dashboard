@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 export interface KabarItem {
   /** 'IDX' · 'IPOT News' · 'Kontan' — nama yang ditampilkan apa adanya. */
   sumber: string
-  jenis: 'berita' | 'pengumuman'
+  jenis: 'berita' | 'pengumuman' | 'snips'
   judul: string
   tautan: string
   /** ISO ber-offset WIB. `null` untuk sumber yang halaman daftarnya tak
@@ -41,11 +41,27 @@ export function useKabar() {
   useEffect(() => {
     if (cache) return
     let batal = false
-    fetch('/data-idx/json/kabar.json')
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-      .then((d: Kabar) => {
-        cache = d
-        if (!batal) setKabar(d)
+    // DUA berkas, satu aliran. `kabar.json` berumur pendek (retensi 7 hari,
+    // dipanen tiap jam); `snips.json` arsip panjang Stockbit Snips setahun
+    // yang dipanen jarang. Dipisah di sisi panen supaya retensi kabar tak
+    // ikut menghapus arsip — di sini keduanya digabung lagi jadi satu daftar.
+    // Snips diperlakukan opsional: kalau berkasnya belum ada, kabar tetap
+    // tampil dan cuma kolom Stockbit yang kosong.
+    Promise.all([
+      fetch('/data-idx/json/kabar.json')
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status))))),
+      fetch('/data-idx/json/snips.json')
+        .then((r) => (r.ok ? r.json() : { item: [] }))
+        .catch(() => ({ item: [] })),
+    ])
+      .then(([utama, snips]: [Kabar, { item?: KabarItem[] }]) => {
+        const gabung: Kabar = {
+          ...utama,
+          sumber: [...new Set([...(utama.sumber ?? []), ...((snips.item?.length ?? 0) > 0 ? ['Stockbit Snips'] : [])])],
+          item: [...utama.item, ...(snips.item ?? [])].sort((a, b) => (b.waktu ?? '').localeCompare(a.waktu ?? '')),
+        }
+        cache = gabung
+        if (!batal) setKabar(gabung)
       })
       .catch(() => !batal && setGalat(true))
     return () => { batal = true }

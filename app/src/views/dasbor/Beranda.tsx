@@ -183,9 +183,11 @@ export function Beranda() {
     <div className="lantai">
       <PapanBeranda />
 
-      <JalurKabar />
-
+      {/* Edisi PAPAN lebih dulu, kabar pihak ketiga menyusul: yang kita
+          kerjakan sendiri harus berdiri di depan yang kita tautkan. */}
       <KartuKabar />
+
+      <JalurKabar />
 
       <section className="brd-menu">
         <div className="brd-h"><span className="lbl">Jelajahi data</span></div>
