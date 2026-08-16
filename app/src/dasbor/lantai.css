@@ -1940,6 +1940,38 @@
    token tema kosong dan tautannya jatuh ke biru bawaan peramban. */
 .pgh-cta .pgh-tautan { text-decoration: none; }
 .pgh-cta .btn-p:disabled { opacity: .55; cursor: default; }
+/* ===== Grup Konglomerat (#155) — chip per emiten, dikelompokkan per grup ==== */
+.lantai .gk-isi { display: flex; flex-direction: column; gap: 14px; }
+.lantai .gk-grup { display: flex; flex-direction: column; gap: 6px; }
+.lantai .gk-kepala { display: flex; align-items: baseline; gap: 8px; }
+.lantai .gk-nama { font-family: var(--disp); font-size: 13px; font-weight: 700; }
+.lantai .gk-kode {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .06em;
+  padding: 1px 5px; border-radius: var(--r-kecil);
+  background: var(--amber-dim); color: var(--amber);
+}
+.lantai .gk-jml { font-size: 10.5px; color: var(--text3); }
+.lantai .gk-chip-baris { display: flex; flex-wrap: wrap; gap: 5px; }
+/* Chip memakai warna naik/turun, BUKAN gradasi porsi kepemilikan: yang
+   dijawab sekilas adalah "grup ini hari ini bagaimana", dan mencampur dua
+   makna ke satu warna membuat keduanya tak terbaca. */
+.lantai .gk-chip {
+  display: inline-flex; align-items: baseline; gap: 5px;
+  padding: 3px 8px; border-radius: var(--r-kecil);
+  border: 1px solid var(--line); text-decoration: none;
+  font-family: var(--mono); font-size: 10.5px; color: var(--text);
+}
+.lantai .gk-chip:hover { border-color: var(--amber); }
+.lantai .gk-chip .gk-pct { font-size: 9.5px; color: var(--text3); }
+.lantai .gk-chip.naik { border-color: color-mix(in srgb, var(--green) 45%, transparent); background: var(--green-dim); }
+.lantai .gk-chip.naik .gk-pct { color: var(--green); }
+.lantai .gk-chip.turun { border-color: color-mix(in srgb, var(--red) 45%, transparent); background: var(--red-dim); }
+.lantai .gk-chip.turun .gk-pct { color: var(--red); }
+.lantai .gk-catatan {
+  margin: 4px 0 0; padding-top: 10px; border-top: 1px solid var(--line);
+  font-size: 10.5px; line-height: 1.7; color: var(--text3);
+}
+
 /* ===== Lonceng notifikasi (#137 hasil kurasi + #123 kabar fitur) =========== */
 .lantai .ntf-bungkus { position: relative; display: inline-flex; }
 .lantai .ntf-tombol { position: relative; padding: 5px 8px; }

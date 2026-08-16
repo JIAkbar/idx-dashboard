@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { GrupKonglomerat } from '../../components/dasbor/GrupKonglomerat'
 import { GrafikJaringan } from '../../components/dasbor/GrafikJaringan'
 import { WARNA } from '../../lib/dasbor/graphRender'
 import { getInvestorMap, usePetaInvestor, type GraphSelection, type InvestorMapEntry } from '../../lib/dasbor/petaInvestorData'
@@ -12,7 +13,7 @@ import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_ULANG, IKON_KLIK, IKON_PERLUA
 /** Panah unduh ke tray — sama dengan IKON_UNDUH lokal Bulletin.tsx. */
 const IKON_UNDUH = 'M12 4v10M7.5 10.5L12 15l4.5-4.5M5 19h14'
 
-type ViewTab = 'grafik' | 'stock' | 'investor'
+type ViewTab = 'grafik' | 'stock' | 'investor' | 'grup'
 
 const DEFAULT_NODE_COUNT = 10
 const INVESTOR_FOCUS_LIMIT = 60
@@ -21,6 +22,7 @@ const TABS: { id: ViewTab; label: string }[] = [
   { id: 'grafik', label: 'Grafik Jaringan' },
   { id: 'stock', label: 'By Stock' },
   { id: 'investor', label: 'By Investor' },
+  { id: 'grup', label: 'Grup Konglomerat' },
 ]
 
 /** Legenda memakai objek WARNA yang SAMA dengan graf — bukan salinan nilai warnanya. */
@@ -193,6 +195,8 @@ export function PetaInvestor() {
               )}
             </div>
           </div>
+
+          {activeView === 'grup' && <GrupKonglomerat />}
 
           {activeView === 'grafik' && (
             <>
