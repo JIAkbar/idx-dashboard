@@ -27,7 +27,7 @@ itu yang menentukan urutan — bukan besar-kecilnya saja.
 | ☐ | Urut | Fase | Tugas | Bergantung | Membuka |
 |---|---|---|---|---|---|
 | ☑ | 1 | **B1** | ~~Sektor IDX-IC resmi~~ — **SELESAI 17 Agu**: `scripts/panen_sektor_idx.py` → 962 emiten, 11 sektor, plus papan pencatatan. Ternyata cukup `GetCompanyProfiles`, BUKAN sheet `1000000` | — | Panen selesai; penyambungan ke layar menyusul |
-| ☐ | 2 | **A0** | Satukan `keuangan/` + `fundamental/` | — | Menambal `operating_cf` kosong **80%** di Stock Detail yang SUDAH ada |
+| ☑ | 2 | **A0** | ~~Satukan `keuangan/` + `fundamental/`~~ — **SELESAI 17 Agu**: `operating_cf` 8,5% → **99,4%**, `eps` 29% → **99,8%**. Sel tertambal ditandai † + asal angkanya | — | `076ec76b`, 278 tes |
 | ☐ | 3 | **C6** | Halaman metodologi & glosarium | — | 75 istilah sudah jadi `glosarium.json`, tinggal dipindah ke layar |
 | ☐ | 4 | **C7** | Foreign flow 5D/10D | — | Agregasi `ds_*.json`, murni skrip |
 | ☐ | 5 | **C8** | Watchlist | — | localStorage, tanpa server |
