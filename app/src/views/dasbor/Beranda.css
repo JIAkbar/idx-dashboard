@@ -2,23 +2,6 @@
    panjang di lantai.css): halaman ini dirender di dalam .lantai, jadi tak ada
    satu pun nilai warna mentah di berkas ini. */
 
-/* Kepala = pita ramping. Tanpa kotak & tanpa padding besar: yang mengisi
-   ruang di pintu masuk seharusnya angka pasar, bukan bidang kosong. */
-.lantai .brd-kepala {
-  display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
-  padding-bottom: 2px;
-}
-.lantai .brd-kepala h1 {
-  margin: 0; font-family: var(--disp); font-weight: 700;
-  /* clamp: besar di desktop tanpa memaksa telepon menggulung mendatar.
-     Nilai tengah ber-unit viewport (aturan §178). */
-  font-size: clamp(26px, 3.4vw, 38px); letter-spacing: .02em; line-height: 1;
-}
-.lantai .brd-tagline {
-  margin: 0; flex: 1; min-width: 280px; max-width: 74ch;
-  font-size: 12.5px; line-height: 1.7; color: var(--text3);
-}
-.lantai .brd-tagline b { color: var(--text2); font-weight: 700; }
 
 /* Tempat papan selagi datanya diambil — tinggi disamakan supaya kartu di
    bawahnya tidak melompat saat papan muncul. */
@@ -152,11 +135,23 @@
 
 /* ── Ringkas pasar (kepala) ─────────────────────────────────────────────── */
 .lantai .brd-pasar {
-  display: grid; grid-template-columns: minmax(220px, 300px) 1fr; gap: 16px;
+  display: grid; grid-template-columns: minmax(300px, 460px) 1fr; gap: 16px;
   border: 1px solid var(--line); border-radius: var(--r);
   background: var(--bg2); padding: 16px 18px;
 }
 .lantai .brd-pasar-utama { display: grid; align-content: center; gap: 4px; }
+/* Nama produk sekarang tinggal di kartu yang sama dengan angkanya. Ukurannya
+   dikunci clamp supaya tetap besar di desktop tanpa memaksa telepon
+   menggulung mendatar (aturan §178). */
+.lantai .brd-nama {
+  margin: 0; font-family: var(--disp); font-weight: 700; line-height: 1;
+  font-size: clamp(30px, 3.8vw, 44px); letter-spacing: .02em;
+}
+.lantai .brd-pasar .brd-tagline {
+  margin: 0 0 10px; max-width: 62ch; font-size: 12px; line-height: 1.7; color: var(--text3);
+}
+.lantai .brd-pasar .brd-tagline b { color: var(--text2); }
+.lantai .brd-pasar-utama .lbl { margin-top: 4px; }
 .lantai .brd-pasar-angka { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .lantai .brd-pasar-angka b {
   font-family: var(--mono); font-variant-numeric: tabular-nums;
@@ -170,7 +165,8 @@
 /* auto-fit: enam sel jadi 3×2 di layar sedang, 6×1 di layar lebar, 2×3 di
    telepon — tanpa satu pun media query (aturan §178). */
 .lantai .brd-pasar-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 10px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 14px 10px;
+  align-content: center;   /* sejajar tengah dgn blok kiri, bukan menggantung di atas */
   border-left: 1px solid var(--line); padding-left: 16px;
 }
 .lantai .brd-pasar-sel { display: grid; gap: 2px; align-content: start; }
@@ -184,15 +180,3 @@
   .lantai .brd-pasar-grid { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 12px; }
 }
 
-/* ── Tentang (kaki) ─────────────────────────────────────────────────────── */
-.lantai .brd-tentang {
-  margin-top: 26px; padding: 20px 22px;
-  border: 1px solid var(--line); border-radius: var(--r); background: var(--bg2);
-}
-.lantai .brd-tentang h2 {
-  margin: 0 0 6px; font-family: var(--disp); font-weight: 700; font-size: 20px; letter-spacing: .02em;
-}
-.lantai .brd-tentang p {
-  margin: 0; max-width: 78ch; font-size: 12.5px; line-height: 1.8; color: var(--text3);
-}
-.lantai .brd-tentang b { color: var(--text2); }

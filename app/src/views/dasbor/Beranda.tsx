@@ -50,6 +50,14 @@ function RingkasPasar() {
   return (
     <section className="brd-pasar">
       <div className="brd-pasar-utama">
+        {/* Identitas duduk SATU KARTU dengan angkanya: nama tanpa angka cuma
+            klaim, angka tanpa nama cuma tabel. Berdampingan, keduanya saling
+            menjelaskan — dan pintu masuk jadi satu blok, bukan dua. */}
+        <h1 className="brd-nama">PAPAN</h1>
+        <p className="brd-tagline">
+          Pusat Analisa Pasar Nusantara — <b>data</b> dan <b>informasi</b> Bursa Efek Indonesia.
+          Angkanya bisa ditelusuri, metodenya terbuka, dan yang belum kami punya kami sebut belum punya.
+        </p>
         <span className="lbl">IHSG · {hari.date_id}</span>
         <div className="brd-pasar-angka">
           <b className={naik ? 'up' : 'dn'}>{fN(hari.ihsg_value)}</b>
@@ -225,16 +233,6 @@ export function Beranda() {
         </div>
       </section>
 
-      {/* Identitas ditutup di kaki, bukan dibuka di kepala: pengunjung yang
-          baru datang lebih dulu butuh angka dan kabar; pernyataan siapa kami
-          justru lebih dipercaya SESUDAH isinya terlihat. */}
-      <section className="brd-tentang">
-        <h2>PAPAN</h2>
-        <p>
-          Pusat Analisa Pasar Nusantara — <b>data</b> dan <b>informasi</b> Bursa Efek Indonesia.
-          Angkanya bisa ditelusuri, metodenya terbuka, dan yang belum kami punya kami sebut belum punya.
-        </p>
-      </section>
     </div>
   )
 }
