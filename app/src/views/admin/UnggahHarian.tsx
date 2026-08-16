@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type RefObject } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type RefObject } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useProfilSaya, type ProfilSaya } from '../../lib/profilSaya'
@@ -101,12 +101,31 @@ function statusGabungan(b: Baris): StatusSetoran | undefined {
  * Centang tetap jadi keadaan awal (dan cadangan kalau URL gagal) supaya
  * tabelnya tidak terlihat rusak selama URL bertanda tangan masih diambil.
  */
-function SelBerkas({ path, url, judul, onBuka }: {
+function SelBerkas({ path, url, judul, onBuka, onTampak }: {
   path?: string; url?: string; judul: string; onBuka: (p: string) => void
+  /** Dipanggil saat sel ini benar-benar terlihat — pemicu permintaan URL
+   *  bertanda tangan (lihat useThumbTampak). */
+  onTampak: (p: string) => void
 }) {
+  const ref = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el || !path || url) return
+    const pengamat = new IntersectionObserver((entri) => {
+      if (entri.some((e) => e.isIntersecting)) {
+        onTampak(path)
+        pengamat.disconnect()
+      }
+    }, { rootMargin: '200px' })
+    pengamat.observe(el)
+    return () => pengamat.disconnect()
+  }, [path, url, onTampak])
+
   if (!path) return <>—</>
   return (
     <button
+      ref={ref}
       type="button"
       className={url ? 'af-thumb' : 'af-centang af-lihat'}
       title={`Lihat screenshot ${judul}`}
@@ -676,21 +695,56 @@ export function UnggahHarian() {
     }))
   }, [sudah, setoranTanggal])
 
-  /** Thumbnail tabel. URL bertanda tangan kedaluwarsa satu jam, jadi disimpan
-   *  per-tanggal dan ditarik ulang tiap tanggalnya berganti — bukan di-cache
-   *  selamanya, yang akan berakhir sebagai deretan gambar rusak. */
+  /**
+   * Thumbnail tabel, DIMUAT SAAT TERLIHAT SAJA.
+   *
+   * Dulu seluruh gambar tanggal itu ditandatangani dan diunduh sekaligus saat
+   * halaman dibuka. Screenshot broker summary berukuran 420–520 KB masing-
+   * masing dan ditampilkan di kotak 40px — pada tanggal ramai seperti 13 Agu
+   * (22 emiten) itu ±10 MB yang diunduh cuma untuk gambar sebesar perangko,
+   * dan halaman terasa menggantung beberapa detik sebelum tenang. Supabase
+   * Image Transformation (yang bisa mengecilkan di server) tidak tersedia di
+   * paket free, jadi yang bisa dikurangi adalah JUMLAHNYA, bukan ukurannya.
+   *
+   * Sekarang tiap sel memberi tahu saat dirinya terlihat (IntersectionObserver
+   * + margin 200px), permintaannya dikumpulkan sebentar lalu dikirim sebagai
+   * SATU panggilan batch. Baris di luar layar tak pernah diunduh sampai
+   * digulir. URL bertanda tangan tetap berumur sejam dan dibuang tiap tanggal
+   * berganti — bukan di-cache selamanya, yang akan berakhir sebagai deretan
+   * gambar rusak.
+   */
   const [thumb, setThumb] = useState<Record<string, string>>({})
+  const antre = useRef<Set<string>>(new Set())
+  const sudahDiminta = useRef<Set<string>>(new Set())
+  const jadwal = useRef<number | null>(null)
+
+  // Ganti tanggal = kumpulan berkas lain: buang URL lama dan izinkan
+  // permintaan ulang, kalau tidak baris tanggal baru memakai URL tetangganya.
   useEffect(() => {
-    let batal = false
-    const paths = sudahMerged.flatMap((b) => [b.orderbook, b.chart].filter((p): p is string => !!p))
-    if (paths.length === 0) { setThumb({}); return }
-    urlScreenshots(paths)
-      .then((u) => !batal && setThumb(u))
-      // Gagal ambil URL bukan kondisi galat: tabelnya tetap berguna tanpa
-      // gambar kecil, dan tombol "Lihat" punya jalurnya sendiri.
-      .catch(() => !batal && setThumb({}))
-    return () => { batal = true }
-  }, [sudahMerged])
+    setThumb({})
+    antre.current.clear()
+    sudahDiminta.current.clear()
+  }, [tanggal, muat])
+
+  const mintaThumb = useCallback((path: string) => {
+    if (sudahDiminta.current.has(path)) return
+    sudahDiminta.current.add(path)
+    antre.current.add(path)
+    if (jadwal.current !== null) return
+    jadwal.current = window.setTimeout(() => {
+      jadwal.current = null
+      const paths = [...antre.current]
+      antre.current.clear()
+      if (paths.length === 0) return
+      urlScreenshots(paths)
+        .then((u) => setThumb((lama) => ({ ...lama, ...u })))
+        // Gagal ambil URL bukan kondisi galat: tabelnya tetap berguna tanpa
+        // gambar kecil, dan tombol "Lihat" punya jalurnya sendiri.
+        .catch(() => {})
+    }, 120)
+  }, [])
+
+  useEffect(() => () => { if (jadwal.current !== null) clearTimeout(jadwal.current) }, [])
 
   const wadahTabel = useRef<HTMLDivElement>(null)
   useTinggiSepuluhBaris(wadahTabel, sudahMerged.length)
@@ -1097,7 +1151,7 @@ export function UnggahHarian() {
                           </td>
                           <td className="af-c">
                             <SelBerkas path={b.orderbook} url={b.orderbook ? thumb[b.orderbook] : undefined}
-                              judul={`broker summary ${b.ticker}`} onBuka={bukaPratinjau} />
+                              judul={`broker summary ${b.ticker}`} onBuka={bukaPratinjau} onTampak={mintaThumb} />
                           </td>
                           <td className="af-c">
                             {status ? (
