@@ -50,7 +50,10 @@ export function AksesHalamanProvider({ children }: { children: ReactNode }) {
   const value: AksesHalamanValue = {
     daftar,
     boleh: (kunci) => bolehBukaKunci(daftar, kunci),
-    alasan: (kunci) => alasanKunci(daftar, kunci, Boolean(session), namaTier),
+    alasan: (kunci) => alasanKunci(
+      daftar, kunci, Boolean(session), namaTier,
+      jenjang.length > 0 ? Math.max(...jenjang.map((j) => j.tier)) : null
+    ),
     alasanRingkas: (kunci) => alasanSingkat(daftar, kunci, Boolean(session), namaTier),
   }
 

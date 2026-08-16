@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useProfilSaya } from '../../lib/profilSaya'
-import { daftarAkun, buatAkun, hapusAkun, resetSandi, setProfil, ubahEmail, type AkunRow } from '../../lib/adminAkun'
+import { daftarAkun, buatAkun, hapusAkun, hitungSetoranAkun, resetSandi, setProfil, ubahEmail, type AkunRow } from '../../lib/adminAkun'
 import { daftarJenjang, type JenjangRow } from '../../lib/jenjang'
 import { IkonMenu, IKON_CARI, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_SALIN, IKON_SURAT, IKON_TAMBAH, IKON_TONG, IKON_ULANG } from '../../components/dasbor/IkonMenu'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
@@ -598,6 +598,19 @@ function FormTambahAkun({ onClose, onSukses }: { onClose: () => void; onSukses: 
 function FormHapusAkun({ akun, onClose, onSukses }: { akun: AkunRow; onClose: () => void; onSukses: (pesan: string) => void }) {
   const [kirim, setKirim] = useState(false)
   const [err, setErr] = useState('')
+  /** null = angka dampak belum sampai; tombol hapus ditahan sampai ada, supaya
+   *  keputusan tak pernah diambil tanpa tahu berapa yang ikut terbawa. */
+  const [dampak, setDampak] = useState<{ total: number; disetujui: number } | null>(null)
+
+  useEffect(() => {
+    let batal = false
+    hitungSetoranAkun(akun.id)
+      .then((d) => !batal && setDampak(d))
+      .catch(() => !batal && setDampak({ total: -1, disetujui: -1 }))
+    return () => {
+      batal = true
+    }
+  }, [akun.id])
 
   async function hapus() {
     setKirim(true)
@@ -618,8 +631,34 @@ function FormHapusAkun({ akun, onClose, onSukses }: { akun: AkunRow; onClose: ()
         Akun <b>{akun.alias || '(tanpa alias)'}</b> ({akun.email}) akan dihapus <b>permanen</b> — tindakan ini tidak
         bisa dibatalkan.
       </p>
+      {/* Yang hilang bersama akunnya tidak bisa ditebak dari kalimat
+          "dihapus permanen" — rantai `on delete cascade` di basis data
+          membawa lebih banyak daripada yang orang bayangkan. */}
+      <div className="aa-dampak">
+        <span className="lbl">Yang ikut terhapus</span>
+        <ul>
+          <li>
+            <b>
+              {dampak === null ? 'menghitung…' : dampak.total < 0 ? 'gagal dihitung' : `${dampak.total} setoran`}
+            </b>
+            {dampak !== null && dampak.total > 0 && ` (${dampak.disetujui} sudah disetujui)`} — seluruh riwayat
+            kontribusinya, termasuk yang sudah masuk edisi terbit
+          </li>
+          <li>Notifikasi & akses khusus yang pernah diberikan ke akun ini</li>
+          <li>Kredit jenjang dan akurasinya — tak bisa dipulihkan dengan membuat akun bernama sama</li>
+        </ul>
+        <span className="lbl" style={{ marginTop: 6 }}>Yang TETAP tinggal</span>
+        <ul>
+          <li>Berkas screenshot di penyimpanan — jadi yatim, tanpa baris yang merujuknya</li>
+          <li>Tulisannya di Forum dan jejak aksesnya — tetap ada, cuma kehilangan nama penulis</li>
+          <li>PDF edisi yang sudah terbit — dirakit dari angka hasil transkripsi, bukan dari akun ini</li>
+        </ul>
+        <p className="muted" style={{ margin: '6px 0 0', fontSize: 11 }}>
+          Kalau tujuannya cuma menghentikan akses, <b>nonaktifkan</b> saja — semua di atas tetap utuh.
+        </p>
+      </div>
       <div style={{ display: 'flex', gap: 8 }}>
-        <button type="button" className="btn-p af-btn-keluar" disabled={kirim} onClick={hapus}>
+        <button type="button" className="btn-p af-btn-keluar" disabled={kirim || dampak === null} onClick={hapus}>
           {kirim ? 'Menghapus…' : 'Ya, Hapus Permanen'}
         </button>
         <button type="button" className="dd-btn" disabled={kirim} onClick={onClose}>Batal</button>

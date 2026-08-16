@@ -137,6 +137,33 @@
 .lantai .af-aksibar .dd-btn.merah { color: var(--red); border-color: var(--red); gap: 5px; }
 .lantai .af-aksibar .dd-btn.merah .dasbor-ikon { stroke: currentColor; }
 
+/* ── Tangga jenjang (kartu Jenjang Kontributor) ──────────────────────────
+   Enam kolom seukuran di layar lebar; di bawah 720px jadi gulir mendatar
+   supaya tak ada jenjang yang terpotong tanpa terlihat terpotong. */
+.lantai .af-tangga {
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(96px, 1fr);
+  gap: 6px; margin-top: 12px; overflow-x: auto; padding-bottom: 2px;
+}
+.lantai .af-tangga-it {
+  display: grid; gap: 2px; justify-items: center; text-align: center;
+  border: 1px solid var(--line); border-radius: var(--r); padding: 7px 5px;
+  font-family: var(--mono); font-size: 10px; color: var(--text3);
+  background: var(--bg2);
+}
+.lantai .af-tangga-ikon .dasbor-ikon { stroke: var(--tier-warna); }
+.lantai .af-tangga-nama { font-size: 11px; color: var(--text2); font-weight: 600; }
+.lantai .af-tangga-kuota { color: var(--text3); }
+/* Jenjang yang sudah dilewati: penuh warna tapi tenang. */
+.lantai .af-tangga-it.lewat { opacity: .8; }
+.lantai .af-tangga-it.lewat .af-tangga-nama { color: var(--text); }
+/* Jenjang sekarang: satu-satunya yang berbingkai warna tiernya. */
+.lantai .af-tangga-it.kini {
+  border-color: var(--tier-warna); background: var(--bg3);
+}
+.lantai .af-tangga-it.kini .af-tangga-nama { color: var(--text); }
+/* Yang belum tercapai diredupkan — masih terbaca, tapi jelas bukan milikmu. */
+.lantai .af-tangga-it.nanti { opacity: .5; }
+
 /* Kolom aksi (ubah + hapus) — rata kanan, tidak melebar. */
 .lantai th.af-aksi, .lantai td.af-aksi { text-align: right; white-space: nowrap; width: 1%; }
 .lantai .af-ubah {
@@ -583,3 +610,21 @@
 .lantai .af-paginasi > .muted { font-family: var(--mono); font-size: 11px; }
 .lantai .af-paginasi-tbl { display: flex; gap: 6px; }
 .lantai .af-paginasi-tbl .dd-btn { white-space: nowrap; }
+
+/* Kotak cari di kepala panel — kembaran `.aa-cari` (AkunAdmin.css) yang
+   dipindah ke berkas bersama karena panel kedua sekarang memakainya. Ikon
+   dan input berbagi satu bingkai supaya fokusnya terlihat sebagai satu
+   kontrol, bukan ikon yang kebetulan berdiri di sebelah kotak. */
+.lantai .af-cari {
+  position: relative; display: flex; align-items: center; gap: 8px;
+  min-width: 210px; max-width: 320px;
+  background: var(--bg2); border: 1px solid var(--line2);
+  border-radius: var(--r-kecil); padding-left: 11px;
+}
+.lantai .af-cari:focus-within { border-color: var(--amber); }
+.lantai .af-cari svg { flex: none; color: var(--text3); }
+.lantai .af-cari .inp { border: 0; background: transparent; padding-left: 0; border-radius: 0; }
+.lantai .af-cari .inp:focus { border-color: transparent; }
+
+/* Chip jenjang berikon — ikonnya sejajar tengah dengan teksnya. */
+.lantai .chip.aa-jenjang { display: inline-flex; align-items: center; gap: 4px; }

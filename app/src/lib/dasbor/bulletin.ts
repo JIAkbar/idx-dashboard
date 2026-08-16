@@ -17,6 +17,26 @@ export interface EdisiBulletin {
   analisa?: AnalisaEmiten[]
 }
 
+export type TipeEdisi = 'Harian' | 'Mingguan' | 'Bulanan' | 'Bedah'
+
+/**
+ * Tipe edisi dari kodenya (#92) — pola generator arus-pasar: `AP-<ddmmyy>`
+ * harian (build.py), `AP-W<ddmmyy>` mingguan (build_weekly.py), `AP-M<mmyy>`
+ * bulanan (build_monthly.py), `BA-<...>` Bedah Arus Saham; edisi uji
+ * berprefiks `UJI-`.
+ *
+ * Tinggal di lib, bukan di salah satu halaman: halaman Bulletin publik dan
+ * Rak Terbitan admin sama-sama menyaring dengan aturan ini, dan aturan yang
+ * disalin akan menyimpang begitu ada jenis edisi baru.
+ */
+export function tipeEdisi(kode: string): TipeEdisi {
+  const k = kode.replace(/^UJI-/, '')
+  if (k.startsWith('AP-W')) return 'Mingguan'
+  if (k.startsWith('AP-M')) return 'Bulanan'
+  if (k.startsWith('BA-')) return 'Bedah'
+  return 'Harian'
+}
+
 /** Satu baris analitik emiten dari keluaran/<kode>.analisa.json. */
 export interface AnalisaEmiten {
   ticker: string

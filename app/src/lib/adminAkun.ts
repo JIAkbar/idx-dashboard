@@ -19,6 +19,25 @@ export interface AkunRow {
   beku_otomatis?: boolean
 }
 
+/**
+ * Berapa baris `setoran` yang IKUT TERHAPUS kalau akun ini dihapus.
+ *
+ * Bukan hiasan modal: FK `setoran.penyetor` memakai `on delete cascade`, jadi
+ * menghapus akun juga membuang seluruh riwayat setorannya — sementara berkas
+ * screenshot-nya TETAP tinggal di bucket tanpa baris yang merujuknya. Angka
+ * ini yang membedakan "hapus akun kosong" dari "hapus 40 setoran sekaligus",
+ * dan keduanya sebelumnya terlihat sama persis di layar.
+ */
+export async function hitungSetoranAkun(profilId: string): Promise<{ total: number; disetujui: number }> {
+  const [total, disetujui] = await Promise.all([
+    supabase.from('setoran').select('*', { count: 'exact', head: true }).eq('penyetor', profilId),
+    supabase.from('setoran').select('*', { count: 'exact', head: true }).eq('penyetor', profilId).eq('status', 'disetujui'),
+  ])
+  if (total.error) throw total.error
+  if (disetujui.error) throw disetujui.error
+  return { total: total.count ?? 0, disetujui: disetujui.count ?? 0 }
+}
+
 type Aksi = 'daftar' | 'buat' | 'reset_sandi' | 'set_profil' | 'hapus' | 'set_email'
 
 /** Keputusan murni "perlu diulang atau tidak" (dites tanpa jaringan, lihat

@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { useBulletinList } from '../../lib/dasbor/bulletin'
+import { tipeEdisi, useBulletinList } from '../../lib/dasbor/bulletin'
 import { useAksesHalaman } from '../../context/AksesHalamanContext'
 import { IkonMenu, IKON_KUNCI, IKON_SILANG, IKON_MATA } from '../../components/dasbor/IkonMenu'
 
@@ -56,19 +56,8 @@ const fmtIhsg = (v: number) =>
   v.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const fmtPct = (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(2).replace('.', ',')}%`
 
-/**
- * Tipe edisi dari kode (#92) — pola generator arus-pasar: AP-<ddmmyy> harian
- * (build.py), AP-W<ddmmyy> mingguan (build_weekly.py), AP-M<mmyy> bulanan
- * (build_monthly.py); edisi uji berprefiks UJI-. #6 (14 Agu): BA-<...> = Bedah
- * (produk PDF "Bedah Arus Saham", generator terpisah dibangun paralel).
- */
-function tipeEdisi(kode: string): 'Harian' | 'Mingguan' | 'Bulanan' | 'Bedah' {
-  const k = kode.replace(/^UJI-/, '')
-  if (k.startsWith('AP-W')) return 'Mingguan'
-  if (k.startsWith('AP-M')) return 'Bulanan'
-  if (k.startsWith('BA-')) return 'Bedah'
-  return 'Harian'
-}
+// tipeEdisi() pindah ke lib/dasbor/bulletin.ts — Rak Terbitan di admin
+// menyaring dengan aturan yang sama persis.
 
 /**
  * Pengganti tabel Probabilitas/VolVal utk pengunjung terkunci (kunci

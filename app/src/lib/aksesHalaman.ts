@@ -45,7 +45,11 @@ export function alasanKunci(
   daftar: HalamanSaya[] | null,
   kunci: string,
   adaSesi: boolean,
-  namaTier: (tier: number) => string
+  namaTier: (tier: number) => string,
+  /** Tier paling tinggi yang ada di tabel `jenjang`. Dipakai cuma untuk
+   *  memilih kalimat: "Diamond atau lebih tinggi" menjanjikan jenjang yang
+   *  tidak ada. `null` = daftar jenjang belum termuat, pakai kalimat aman. */
+  tierTertinggi: number | null = null
 ): AlasanKunci {
   if (!adaSesi) {
     return { judul: 'Masuk dulu', kalimat: 'Halaman ini perlu akun untuk dibuka.', sasaran: 'login' }
@@ -55,10 +59,13 @@ export function alasanKunci(
     return { judul: 'Khusus superadmin', kalimat: 'Halaman ini cuma bisa dibuka superadmin.', sasaran: 'superadmin' }
   }
   const namaMin = baris?.min_tier != null ? namaTier(baris.min_tier) : null
+  const puncak = tierTertinggi != null && baris?.min_tier === tierTertinggi
   return {
     judul: 'Jenjang belum cukup',
     kalimat: namaMin
-      ? `Perlu jenjang kontributor ${namaMin} atau lebih tinggi untuk membuka halaman ini.`
+      ? puncak
+        ? `Perlu jenjang kontributor ${namaMin} — jenjang tertinggi — untuk membuka halaman ini.`
+        : `Perlu jenjang kontributor ${namaMin} atau lebih tinggi untuk membuka halaman ini.`
       : 'Akun ini belum bisa membuka halaman ini.',
     sasaran: 'jenjang',
   }

@@ -14,7 +14,8 @@ import {
 } from '../../lib/aktivitas'
 import { namaTampil } from '../../lib/namaTampil'
 import { Dropdown } from '../../components/dasbor/Dropdown'
-import { IkonMenu, IKON_PERINGATAN, IKON_KUNCI } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_CARI, IKON_PERINGATAN, IKON_KUNCI } from '../../components/dasbor/IkonMenu'
+import { IkonJenjang } from '../../components/dasbor/TanggaJenjang'
 import { AksesDitolak } from './AdminLayout'
 import './AdminShared.css'
 import { pesanGalat } from '../../lib/pesanGalat'
@@ -47,6 +48,36 @@ function waktuManusiawi(iso: string | null): string {
   return `${d.getDate()} ${bulan} ${d.getFullYear()}, ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
+/** Berapa kontributor per halaman di panel Keaktifan. */
+export const KEAKTIFAN_PER_HAL = 10
+
+/**
+ * Saring + urutkan baris keaktifan: cocokkan `cari` ke alias, email, dan nama
+ * jenjang; urutkan **jenjang tertinggi dulu**.
+ *
+ * Fungsi murni supaya bisa diuji tanpa jaringan (lihat berkas uji sebelah) —
+ * pola yang sama dengan `saringUrutAkun` di AkunAdmin.
+ *
+ * Pemecah seri sengaja berlapis: tier sama itu lumrah (13 dari 13 kontributor
+ * sekarang tier 0), jadi tanpa lapis kedua urutannya akan terlihat acak dan
+ * berubah-ubah tiap muat. Setelah tier: yang paling banyak disetujui, lalu
+ * yang paling banyak menyetor, baru nama sebagai penentu terakhir yang stabil.
+ */
+export function saringUrutKeaktifan(baris: RingkasanKeaktifan[], cari: string): RingkasanKeaktifan[] {
+  const q = cari.trim().toLowerCase()
+  const cocok = q
+    ? baris.filter((r) =>
+        [r.alias, r.email, r.jenjang].some((t) => (t ?? '').toLowerCase().includes(q))
+      )
+    : baris
+  return [...cocok].sort((a, b) =>
+    (b.tier ?? 0) - (a.tier ?? 0) ||
+    b.disetujui - a.disetujui ||
+    b.setoran - a.setoran ||
+    (a.alias || a.email).localeCompare(b.alias || b.email)
+  )
+}
+
 /**
  * Tab "Aktivitas" (/admin/aktivitas, superadmin saja, Fase 4) — tiga panel:
  * keaktifan kontributor, sinyal bruteforce, dan jejak akses terakhir. Semua
@@ -60,6 +91,8 @@ export function AktivitasAdmin() {
   const [keaktifan, setKeaktifan] = useState<RingkasanKeaktifan[] | null>(null)
   const [akun, setAkun] = useState<AkunRow[] | null>(null)
   const [galatKeaktifan, setGalatKeaktifan] = useState('')
+  const [cariKeaktifan, setCariKeaktifan] = useState('')
+  const [halKeaktifan, setHalKeaktifan] = useState(0)
 
   const [jendela, setJendela] = useState('15')
   const [bruteforce, setBruteforce] = useState<SinyalBruteforce[] | null>(null)
@@ -108,6 +141,7 @@ export function AktivitasAdmin() {
   // Ganti saringan jenis mengembalikan pembaca ke halaman pertama — halaman 3
   // dari daftar lama hampir pasti tidak ada di daftar yang baru disaring.
   useEffect(() => { setHalaman(0) }, [jenisFilter])
+  useEffect(() => { setHalKeaktifan(0) }, [cariKeaktifan])
 
   useEffect(() => {
     if (!superadmin) return
@@ -131,17 +165,41 @@ export function AktivitasAdmin() {
   if (!superadmin) return <AksesDitolak pesan="Halaman ini khusus superadmin." />
 
   const peranById = new Map((akun ?? []).map((a) => [a.id, a.peran]))
+  const keaktifanTersaring = saringUrutKeaktifan(keaktifan ?? [], cariKeaktifan)
+  const keaktifanHalaman = keaktifanTersaring.slice(
+    halKeaktifan * KEAKTIFAN_PER_HAL,
+    (halKeaktifan + 1) * KEAKTIFAN_PER_HAL
+  )
 
   return (
     <>
       <section className="panel">
-        <div className="panel-h"><span className="lbl">Keaktifan kontributor{keaktifan ? ` (${keaktifan.length})` : ''}</span></div>
+        <div className="panel-h" style={{ alignItems: 'center' }}>
+          <span className="lbl">
+            Keaktifan kontributor{keaktifan ? ` (${keaktifan.length})` : ''}
+            {cariKeaktifan.trim() && keaktifan ? ` · ${keaktifanTersaring.length} cocok` : ''}
+          </span>
+          <span className="af-cari">
+            <IkonMenu d={IKON_CARI} size={13} />
+            <input
+              className="inp"
+              type="search"
+              value={cariKeaktifan}
+              onChange={(e) => setCariKeaktifan(e.target.value)}
+              placeholder="Cari nama, email, jenjang…"
+              aria-label="Cari kontributor"
+            />
+          </span>
+        </div>
         <div className="panel-b">
           {galatKeaktifan && <p className="af-err">{galatKeaktifan}</p>}
           {keaktifan === null && !galatKeaktifan && <p className="muted">Memuat…</p>}
           {keaktifan && keaktifan.length === 0 && <p className="muted">Belum ada kontributor.</p>}
-          {keaktifan && keaktifan.length > 0 && (
-            <div className={`af-gulir aa-tbl-wrap${keaktifan.length > 10 ? ' af-gulir-cap' : ''}`}>
+          {keaktifan && keaktifan.length > 0 && keaktifanTersaring.length === 0 && (
+            <p className="muted">Tak ada kontributor yang cocok dengan “{cariKeaktifan.trim()}”.</p>
+          )}
+          {keaktifanHalaman.length > 0 && (
+            <div className="af-gulir aa-tbl-wrap">
               <table className="tbl aa-tbl">
                 <thead>
                   <tr>
@@ -158,7 +216,7 @@ export function AktivitasAdmin() {
                   </tr>
                 </thead>
                 <tbody>
-                  {keaktifan.map((r) => {
+                  {keaktifanHalaman.map((r) => {
                     const berjenjang = peranById.get(r.id) !== 'superadmin'
                     const diamPeringatan = r.hari_diam >= AMBANG_DIAM_PERINGATAN
                     return (
@@ -166,7 +224,9 @@ export function AktivitasAdmin() {
                         <td>{namaTampil({ alias: r.alias, email: r.email }, null)}</td>
                         <td>
                           {berjenjang ? (
-                            <span className="chip" title={`Tier ${r.tier}`}>{r.jenjang}</span>
+                            <span className="chip aa-jenjang" title={`Tier ${r.tier}`}>
+                              <IkonJenjang tier={r.tier ?? 0} size={12} /> {r.jenjang}
+                            </span>
                           ) : (
                             <span className="muted" title="Superadmin tidak dibatasi jenjang">Tanpa jenjang</span>
                           )}
@@ -192,6 +252,30 @@ export function AktivitasAdmin() {
                   })}
                 </tbody>
               </table>
+            </div>
+          )}
+          {keaktifanTersaring.length > KEAKTIFAN_PER_HAL && (
+            <div className="af-paginasi">
+              <span className="muted">
+                {halKeaktifan * KEAKTIFAN_PER_HAL + 1}–
+                {Math.min((halKeaktifan + 1) * KEAKTIFAN_PER_HAL, keaktifanTersaring.length)} dari{' '}
+                {keaktifanTersaring.length}
+              </span>
+              <span className="af-paginasi-tbl">
+                <button
+                  type="button" className="dd-btn" disabled={halKeaktifan === 0}
+                  onClick={() => setHalKeaktifan((h) => Math.max(0, h - 1))}
+                >
+                  ‹ Sebelumnya
+                </button>
+                <button
+                  type="button" className="dd-btn"
+                  disabled={(halKeaktifan + 1) * KEAKTIFAN_PER_HAL >= keaktifanTersaring.length}
+                  onClick={() => setHalKeaktifan((h) => h + 1)}
+                >
+                  Berikutnya ›
+                </button>
+              </span>
             </div>
           )}
         </div>

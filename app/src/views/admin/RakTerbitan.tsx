@@ -1,5 +1,9 @@
-import { useBulletinList } from '../../lib/dasbor/bulletin'
-import { IkonMenu, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
+import { useState } from 'react'
+import { tipeEdisi, useBulletinList, type TipeEdisi } from '../../lib/dasbor/bulletin'
+import { IkonMenu, IKON_CARI, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
+import './AdminShared.css'
+
+const TIPE_TAB = ['Semua', 'Harian', 'Mingguan', 'Bulanan', 'Bedah'] as const
 
 /** Blok kosong seragam utk panel tanpa isi — pola fd-empty StockDetail.tsx,
  *  disalin dari UnggahHarian.tsx (dipakai 2 tab, terlalu kecil utk diekstrak
@@ -24,11 +28,50 @@ function PanelKosong({ ikon, pesan, petunjuk }: { ikon: string; pesan: string; p
  */
 export function RakTerbitan() {
   const { daftar: edisi, error: err } = useBulletinList()
+  const [tipe, setTipe] = useState<(typeof TIPE_TAB)[number]>('Semua')
+  const [cari, setCari] = useState('')
+
+  // Saringan yang sama persis dengan halaman Bulletin publik — kode edisi ATAU
+  // emiten yang dibahas, supaya "di edisi mana MBMA terakhir muncul?" terjawab
+  // tanpa membuka PDF satu per satu.
+  const q = cari.trim().toUpperCase()
+  const tampil = (edisi ?? []).filter((r) => {
+    const cocokTipe = tipe === 'Semua' || tipeEdisi(r.kode) === (tipe as TipeEdisi)
+    const cocokCari = !q || r.kode.toUpperCase().includes(q) || r.emiten.some((e) => e.includes(q))
+    return cocokTipe && cocokCari
+  })
 
   return (
     <>
       <section className="panel">
-        <div className="panel-h"><span className="lbl">Rak terbitan</span></div>
+        <div className="panel-h" style={{ alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+          <span className="lbl">Rak terbitan{edisi ? ` (${edisi.length})` : ''}</span>
+          <span className="tabs blt-tabs" role="tablist" aria-label="Filter tipe edisi">
+            {TIPE_TAB.map((t) => (
+              <button
+                key={t}
+                type="button"
+                role="tab"
+                aria-selected={tipe === t}
+                className={`tab${tipe === t ? ' on' : ''}`}
+                onClick={() => setTipe(t)}
+              >
+                {t}
+              </button>
+            ))}
+          </span>
+          <span className="af-cari">
+            <IkonMenu d={IKON_CARI} size={13} />
+            <input
+              className="inp"
+              type="search"
+              value={cari}
+              onChange={(e) => setCari(e.target.value)}
+              placeholder="Cari kode edisi / emiten…"
+              aria-label="Cari edisi"
+            />
+          </span>
+        </div>
         <div className="panel-b">
           <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
             Arsip edisi bulletin yang sudah dirakit dari unggahan.
@@ -41,11 +84,15 @@ export function RakTerbitan() {
               petunjuk="Edisi yang sudah dirakit dari unggahan akan tampil di rak ini."
             />
           )}
-          {edisi && edisi.length > 0 && (
+          {edisi && edisi.length > 0 && tampil.length === 0 && (
+            <p className="muted">Tak ada edisi yang cocok dengan saringan ini.</p>
+          )}
+          {tampil.length > 0 && (
             <table className="tbl">
               <thead>
                 <tr>
                   <th>Kode</th>
+                  <th>Tipe</th>
                   <th>Tanggal</th>
                   <th>Status</th>
                   <th className="r">Emiten</th>
@@ -53,7 +100,7 @@ export function RakTerbitan() {
                 </tr>
               </thead>
               <tbody>
-                {edisi.map((r) => (
+                {tampil.map((r) => (
                   <tr key={r.kode}>
                     <td>
                       <span className="tick">{r.kode}</span>
@@ -70,6 +117,7 @@ export function RakTerbitan() {
                         </span>
                       )}
                     </td>
+                    <td><span className="chip">{tipeEdisi(r.kode)}</span></td>
                     <td>{r.tanggal_id}</td>
                     <td><span className="chip up">terbit</span></td>
                     <td className="r num">{r.emiten.length}</td>

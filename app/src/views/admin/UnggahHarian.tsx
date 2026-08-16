@@ -22,6 +22,7 @@ import { DatePicker } from '../../components/dasbor/DatePicker'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
 import { AlasanField } from '../../components/dasbor/AlasanField'
+import { IkonJenjang, TanggaJenjang } from '../../components/dasbor/TanggaJenjang'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { ALASAN_MIN, alasanValid } from '../../lib/alasanValidasi'
@@ -389,7 +390,10 @@ function KartuJenjang({ profil, superadmin }: { profil: ProfilSaya; superadmin: 
           {superadmin ? (
             <span className="muted" title="Superadmin tidak dibatasi jenjang maupun kuota harian">Tanpa jenjang</span>
           ) : (
-            <><b>{r.jenjangSaatIni.nama}</b> <span className="muted">(tier {r.jenjangSaatIni.tier})</span></>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              <IkonJenjang tier={r.jenjangSaatIni.tier} size={15} />
+              <b>{r.jenjangSaatIni.nama}</b> <span className="muted">(tier {r.jenjangSaatIni.tier})</span>
+            </span>
           )}
         </div>
         <div>
@@ -421,6 +425,9 @@ function KartuJenjang({ profil, superadmin }: { profil: ProfilSaya; superadmin: 
             </b>
           )}
         </div>
+      </div>
+      <div className="panel-b" style={{ paddingTop: 0 }}>
+        <TanggaJenjang daftar={jenjang} tierSaatIni={superadmin ? null : (profil.tier ?? 0)} />
       </div>
     </section>
   )

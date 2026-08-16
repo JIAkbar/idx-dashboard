@@ -108,3 +108,16 @@
    ikut melebarkan kolomnya. */
 .lantai .aa-kuota-dd .muted { white-space: nowrap; }
 
+
+/* Rincian dampak di modal hapus akun — dua daftar berdampingan artinya
+   (yang hilang vs yang tinggal) sengaja dibedakan warnanya, karena yang
+   paling sering disalahpahami bukan "permanen"-nya, tapi CAKUPANNYA. */
+.lantai .aa-dampak {
+  border: 1px solid var(--line); border-radius: var(--r);
+  padding: 9px 11px; background: var(--bg2); font-size: 11.5px;
+}
+.lantai .aa-dampak .lbl { display: block; font-size: 10px; letter-spacing: .06em; }
+.lantai .aa-dampak ul { margin: 4px 0 0; padding-left: 16px; display: grid; gap: 3px; }
+.lantai .aa-dampak li { color: var(--text2); }
+.lantai .aa-dampak ul:first-of-type li { color: var(--red); }
+.lantai .aa-dampak ul:first-of-type li b { color: var(--red); }
