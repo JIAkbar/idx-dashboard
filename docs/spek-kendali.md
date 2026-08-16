@@ -22,7 +22,7 @@ kerjanya, bukan ringkasan.
 | K6 | *"kartu broksum juga perlu di update"* | Broker Summary |
 | K7 | *"di page radar ini belum kesentuh sama sekali karena data masih di gmail"* | Radar Watchlist |
 | K8 | *"terus bar nya juga perlu di rapikan"* | Radar Watchlist |
-| K9 | *"page season lebih parah lagi pakai default di 1Y saja dan perlu ada kalender rentang yang seragam"* | Seasonality |
+| K9 | *"page season lebih parah lagi pakai default di 1Y saja dan perlu ada kalender rentang yang seragam"* — **diperjelas 17 Agu**: *"kalau bisa pakai rentang waktu tidak hanya tombol-tombol waktu itu tapi bisa tanggal ke tanggal dengan minim 5 hari bursa"* | Seasonality |
 | K10 | *"teks nya juga IHSG terlalu kecil juga kenapa BUMI itu malah rounded kan aneh jadi tidak seragam"* | Seasonality — pemilih sumber |
 
 ---
@@ -112,3 +112,36 @@ Bulletin. Satu halaman satu commit, supaya bisa ditolak satu per satu.
 - Bentuk akhir kosakata waktu (prinsip 4) — saya usulkan, Johan yang memilih.
 - Arti "rentang" untuk Grup Konglomerat (K4).
 - Cara data Radar masuk sistem (K7).
+
+
+---
+
+## Klarifikasi K9 (17 Agu 2026) — dan kenapa ini bukan sekadar kendali
+
+Audit membantah bagian "default di 1Y": kedua tab Seasonality sebenarnya
+default ke **Semua** (`SeasonalityHarian.tsx:63`, `Seasonality.tsx:35`). Saat
+ditanyakan, maksud Johan ternyata berbeda dari yang saya tulis — dan lebih
+penting:
+
+> *"kalau bisa pakai rentang waktu tidak hanya tombol-tombol waktu itu tapi
+> bisa tanggal ke tanggal dengan minim 5 hari bursa, kenapa dan bakal aneh?
+> karena user belum tentu yakin dengan sistem ini karena di luar sana tidak
+> ada"*
+
+Jadi keluhannya bukan nilai bawaannya, melainkan **tak adanya rentang tanggal
+sama sekali** — dan alasannya soal KEPERCAYAAN, bukan kenyamanan.
+
+Halaman ini menyajikan pola hari-dalam-seminggu yang diuji lawan 2.000
+pengacakan; metode itu tak ada di aplikasi lain. Pengguna yang belum percaya
+tak bisa membuktikan apa pun dari tombol praset — **praset menyuruh percaya,
+rentang bebas mengundang membuktikan.** Orang bisa memilih jendelanya sendiri
+dan melihat apakah polanya bertahan.
+
+Ambang **5 hari bursa** = satu putaran Senin–Jumat penuh. Yang dihitung hari
+bursa yang benar-benar ADA DATANYA, bukan selisih tanggal kalender — rentang
+tujuh hari yang kena libur panjang bisa cuma berisi dua hari bursa.
+
+Pelajaran cara kerjanya: **audit yang membantah klaim tak berarti klaimnya
+salah** — ia berarti kalimatnya perlu ditanyakan ulang. Kalau saya menutup K9
+sebagai "tidak terbukti", fitur yang justru paling menjawab keraguan pengguna
+tak akan pernah dibuat.
