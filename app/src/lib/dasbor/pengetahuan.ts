@@ -52,6 +52,16 @@ export const PENGETAHUAN: Entri[] = [
       'Bursa Efek Indonesia.',
   },
   {
+    id: 'model-ai',
+    kunci: ['model ai', 'ai apa', 'pakai ai', 'llm', 'gemini', 'chatgpt', 'kecerdasan buatan'],
+    judul: 'Model AI yang dipakai Tanya PAPAN',
+    isi:
+      'Sebagian besar pertanyaan dijawab mesin aturan PAPAN sendiri — ditarik langsung dari data yang sudah ' +
+      'dihitung, tanpa model bahasa sama sekali. Hanya pertanyaan yang tak dikenali pola mana pun yang ' +
+      'diteruskan ke Gemini Flash lewat server PAPAN, dan jawabannya ditandai "disusun AI" supaya bedanya ' +
+      'terlihat. Jawaban model yang memuat angka di luar data PAPAN dibuang, tidak ditampilkan.',
+  },
+  {
     id: 'biaya-papan',
     kunci: ['gratis', 'bayar', 'biaya', 'berlangganan', 'harga langganan'],
     judul: 'Biaya',
@@ -84,8 +94,12 @@ export const PENGETAHUAN: Entri[] = [
   },
   {
     id: 'cara-jadi-kontributor',
+    // 'kewajiban kontributor' didaftarkan UTUH, bukan cuma 'kewajiban': entri
+    // manfaat kini punya kunci satu kata 'kontributor', dan tanpa frasa dua
+    // kata di sini pertanyaan "kewajiban kontributor apa saja" seri lalu jatuh
+    // ke entri yang salah. Kunci yang lebih spesifik harus lebih panjang.
     kunci: ['jadi kontributor', 'cara kontributor', 'gabung', 'daftar', 'daftar akun', 'registrasi', 'ikut menyetor',
-      'kewajiban', 'tugas kontributor'],
+      'kewajiban', 'kewajiban kontributor', 'tugas kontributor'],
     judul: 'Cara menjadi kontributor',
     isi:
       'Akun kontributor dibuat oleh pengurus, bukan lewat pendaftaran mandiri — supaya tiap setoran punya ' +
@@ -103,8 +117,7 @@ export const PENGETAHUAN: Entri[] = [
     // dipasang di samping kunci satu-kata supaya skornya menang lawan
     // 'cara-jadi-kontributor' saat dua-duanya sama-sama kena kata "kontributor".
     id: 'manfaat-kontributor',
-    kunci: ['untung', 'keuntungan', 'manfaat', 'benefit',
-      'untung kontributor', 'keuntungan kontributor', 'manfaat kontributor', 'benefit kontributor'],
+    kunci: ['kontributor', 'manfaat kontributor', 'benefit', 'keuntungan kontributor', 'untung jadi kontributor'],
     judul: 'Manfaat jadi kontributor',
     isi:
       'Kontributor naik jenjang dari setoran yang disetujui, dan jenjang yang lebih tinggi membuka kuota ' +
@@ -211,7 +224,10 @@ export const PENGETAHUAN: Entri[] = [
   // ── Kebijakan kontributor (docs/rencana-berjalan.md) ─────────────────────
   {
     id: 'jenjang-kontributor',
-    kunci: ['jenjang', 'kuota', 'tier kontributor', 'naik jenjang', 'level kontributor'],
+    // Kata TUNGGAL ikut didaftarkan: orang benar-benar mengetik "tier" atau
+    // "level" saja, dan tanpa ini pertanyaannya jatuh ke lapis AI padahal
+    // jawabannya pasti ada di sini (diuji Johan 16 Agu 2026).
+    kunci: ['jenjang', 'kuota', 'tier', 'level', 'tingkat', 'tier kontributor', 'naik jenjang', 'level kontributor'],
     judul: 'Jenjang kontributor',
     isi:
       'Kontributor PAPAN naik jenjang berdasarkan jumlah setoran disetujui dan akurasi kurasi, dengan kuota ' +

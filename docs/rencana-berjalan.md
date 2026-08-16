@@ -107,6 +107,36 @@ kemampuan §188).
 Dikerjakan **setelah** #169, karena halaman baru dari SPLE akan menambah
 kendali baru; menyeragamkan sekarang berarti menyeragamkan dua kali.
 
+### #171 — Rule engine paham dari SATU KATA
+
+Diminta Johan 16 Agu 2026 setelah menguji sendiri: *"perlu kembangin rule
+engine yang lebih luas lagi supaya dengan 1 kata saja sudah paham"*.
+
+Yang dia ketik dan gagal: `kontributor`, `tier`, `level`, `model ai`. Tiga
+pertama sudah ditambal hari itu juga (kata tunggal didaftarkan sebagai kunci)
+dan entri `model-ai` dibuat, tapi cara menambalnya masih satu per satu — dan
+itu tak akan mengejar cara orang bertanya.
+
+Yang perlu dikerjakan, bukan sekadar menambah kunci lagi:
+
+- **Peta sinonim terpusat** (`tier` = `level` = `jenjang` = `tingkat`;
+  `benefit` = `manfaat` = `keuntungan`), supaya satu istilah baru cukup
+  didaftarkan sekali, bukan di tiap entri yang menyinggungnya.
+- **Tahan salah ketik ringan** — Johan mengetik `benegit`, dan itu jatuh ke
+  lapis AI padahal jawabannya pasti ada. Jarak Levenshtein ≤1 untuk kata ≥6
+  huruf sudah menutup sebagian besar kasus tanpa melahirkan kecocokan palsu.
+- **Kata tunggal = niat luas**, jadi jawabannya sebaiknya ringkas + menawarkan
+  cabang ("mau yang mana: syarat naik jenjang, kuota, atau daftar jenjangnya?")
+  alih-alih menebak satu entri.
+- **Ukur, jangan rasakan.** Baterai di `pengetahuan.test.ts` sudah jadi alat
+  ukurnya; tambahkan gelombang pertanyaan satu-kata ke situ lebih dulu, baru
+  perbaiki sampai hijau.
+
+Prinsip yang sudah terbukti dua ronde: **entrinya biasanya sudah ada, yang
+kurang cara menemukannya.** Ronde 1 sembilan lubang, sembilan-sembilanya
+karena pencocokan frasa terlalu kaku; ronde 2 dua puluh lima lubang, sebagian
+besar karena kunci terlalu sempit.
+
 ### #168 — Cara scraping arsip berita yang benar (belum dibahas)
 
 Batasnya sudah diketahui: endpoint IPOT mengabaikan `halaman`, jadi mentok

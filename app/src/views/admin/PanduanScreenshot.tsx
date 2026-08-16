@@ -13,13 +13,38 @@ import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { pesanGalat } from '../../lib/pesanGalat'
 
 /**
- * Aturan screenshot broker summary — dipakai DUA tempat: panel lipat di tab
- * Unggah dan modal "baca dulu" untuk akun yang belum pernah menyetor. Satu
- * salinan saja; aturan yang ditulis dua kali akan menyimpang di kemudian hari.
+ * Aturan screenshot broker summary — dipakai TIGA tempat: panel lipat di tab
+ * Unggah, modal "baca dulu" untuk akun yang belum pernah menyetor, dan panel
+ * lipat di tab Bedah (`bedah=true`, butir rentang+done summary tambahan di
+ * depan). Satu salinan saja; aturan yang ditulis dua kali akan menyimpang di
+ * kemudian hari.
  */
-export function AturanScreenshot() {
+export function AturanScreenshot({ bedah = false }: { bedah?: boolean } = {}) {
   return (
     <ul className="af-panduan-list">
+      {bedah && (
+        <>
+          <li>
+            <b>Ini broker summary RENTANG, bukan harian.</b> Bedah Arus Saham menelusuri satu
+            emiten sepanjang beberapa hari — screenshot broker summary <b>rentang tanggal</b> jadi
+            bahan wajib (salah satu), dan screenshot <b>Done Summary</b> (rekap transaksi) jadi pelengkap opsional.
+          </li>
+          <li>
+            <b>Pilih emiten sekali, lalu setor tanggal demi tanggal.</b> Setelah emiten dipilih,
+            unggah broker summary rentang (dan done summary bila ada) untuk tiap hari bursa yang
+            ingin dibedah — boleh cuma beberapa hari, boleh sebulan penuh (±21 hari bursa).
+          </li>
+          <li>
+            <b>Emiten terkunci setelah unggahan pertama</b> — kolom Emiten diganti chip "Sedang
+            mengerjakan" supaya kamu tak perlu memilih ulang tiap tanggal. Tekan{' '}
+            <b>"+ Tambah emiten"</b> untuk pindah ke emiten lain; emiten lama tidak hilang, arsipnya tetap ada.
+          </li>
+          <li>
+            Mengunggah ulang <b>jenis berkas yang sama</b> di <b>tanggal yang sama</b> akan{' '}
+            <b>menimpa</b> yang lama, bukan menambah baris baru.
+          </li>
+        </>
+      )}
       <li>
         <b>Ikuti kalender bursa.</b> Broker summary hanya ada untuk <b>hari bursa</b> —
         Sabtu, Minggu, dan hari libur bursa tidak punya penutupan sama sekali.
@@ -59,8 +84,13 @@ export function AturanScreenshot() {
  * (Akses/Akun/dst) — kontennya cuma dipakai panel ini, jadi menaruhnya di
  * mana pun selain sini berarti superadmin harus lompat tab buat mengelola
  * sesuatu yang efeknya cuma terlihat di tab Unggah.
+ *
+ * `bedah` (opsional, default false) menyalakan judul + butir aturan khusus
+ * Bedah Arus Saham (broker summary RENTANG + Done Summary) — dipakai di
+ * BedahUnggah.tsx. Galeri contoh & pengelolaannya tetap sama komponen, sama
+ * data (`contoh_orderbook`): yang berbeda cuma kalimatnya.
  */
-export function PanduanScreenshot({ superadmin, defaultBuka }: { superadmin: boolean; defaultBuka: boolean }) {
+export function PanduanScreenshot({ superadmin, defaultBuka, bedah = false }: { superadmin: boolean; defaultBuka: boolean; bedah?: boolean }) {
   const [buka, setBuka] = useState(defaultBuka)
   const [contoh, setContoh] = useState<ContohOrderbook[] | null>(null)
   const [urls, setUrls] = useState<Record<string, string>>({})
@@ -127,12 +157,12 @@ export function PanduanScreenshot({ superadmin, defaultBuka }: { superadmin: boo
   return (
     <section className="panel af-panduan">
       <button type="button" className="af-panduan-h" onClick={() => setBuka((v) => !v)} aria-expanded={buka}>
-        <span className="lbl"><IkonMenu d={IKON_PERLUAS} size={14} /> Cara screenshot broker summary</span>
+        <span className="lbl"><IkonMenu d={IKON_PERLUAS} size={14} /> Cara screenshot broker summary{bedah ? ' rentang + Done Summary' : ''}</span>
         <span className="af-panduan-chevron" aria-hidden="true">{buka ? '▲' : '▼'}</span>
       </button>
       {buka && (
         <div className="panel-b">
-          <AturanScreenshot />
+          <AturanScreenshot bedah={bedah} />
 
           {contoh === null && <p className="muted" style={{ fontSize: 11 }}>Memuat contoh…</p>}
 

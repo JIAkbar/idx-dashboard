@@ -349,6 +349,25 @@ export async function unggahBedah(
   return path
 }
 
+/** Ticker Bedah terakhir yang disetor PENGGUNA SENDIRI (baris `setoran`
+ *  jenis 'bedah', terbaru dulu) — dipakai BedahUnggah.tsx sbg fallback saat
+ *  kunci emiten (localStorage) kosong, mis. browser baru atau storage
+ *  dibersihkan. Cuma kemudahan antarmuka, bukan sumber kebenaran. */
+export async function tickerBedahTerakhirSaya(): Promise<string | null> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+  const { data, error } = await supabase
+    .from('setoran')
+    .select('ticker')
+    .eq('penyetor', user.id)
+    .eq('jenis', 'bedah')
+    .order('dibuat_pada', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (error) return null
+  return (data as { ticker: string } | null)?.ticker ?? null
+}
+
 /** Nama berkas Bedah yang sudah terunggah untuk satu emiten + tanggal. */
 export async function daftarBedah(ticker: string, tanggal: string): Promise<string[]> {
   const { data, error } = await supabase.storage.from('screenshots').list(`bedah/${ticker}/${tanggal}`)
@@ -356,12 +375,20 @@ export async function daftarBedah(ticker: string, tanggal: string): Promise<stri
   return (data ?? []).map((f) => f.name)
 }
 
+/** Satu tanggal di arsip Bedah satu emiten — `paths` = berkas (broksum-rentang
+ *  dan/atau done-summary) yang tersimpan untuk tanggal itu. */
+export interface BedahArsipTanggal {
+  tanggal: string
+  paths: string[]
+}
+
 export interface BedahArsipBaris {
   ticker: string
-  tanggalTerakhir: string
+  /** Diurutkan tanggal menaik — satu emiten kini wajar punya banyak tanggal
+   *  (itu inti "Bedah Arus Saham": satu emiten lintas waktu), jadi arsipnya
+   *  tidak lagi diringkas jadi satu "tanggal terakhir". */
+  tanggalList: BedahArsipTanggal[]
   jumlahBerkas: number
-  /** Path lengkap semua berkas emiten ini (semua tanggal) — bahan lightbox. */
-  paths: string[]
 }
 
 /** Arsip unggahan Bedah digrup per emiten (bedah/{TICKER}/{tanggal}/{jenis}.ext).
@@ -374,15 +401,15 @@ export async function daftarBedahArsip(): Promise<BedahArsipBaris[]> {
   const baris = await Promise.all(
     tickers.map(async (ticker): Promise<BedahArsipBaris> => {
       const { data: folderTanggal } = await supabase.storage.from('screenshots').list(`bedah/${ticker}`)
-      const tanggalList = (folderTanggal ?? []).filter((f) => f.id === null).map((f) => f.name).sort()
-      const perTanggal = await Promise.all(
-        tanggalList.map(async (tgl) => {
+      const tanggalNama = (folderTanggal ?? []).filter((f) => f.id === null).map((f) => f.name).sort()
+      const tanggalList = await Promise.all(
+        tanggalNama.map(async (tgl): Promise<BedahArsipTanggal> => {
           const { data: berkas } = await supabase.storage.from('screenshots').list(`bedah/${ticker}/${tgl}`)
-          return (berkas ?? []).map((f) => `bedah/${ticker}/${tgl}/${f.name}`)
+          return { tanggal: tgl, paths: (berkas ?? []).map((f) => `bedah/${ticker}/${tgl}/${f.name}`) }
         })
       )
-      const paths = perTanggal.flat()
-      return { ticker, tanggalTerakhir: tanggalList[tanggalList.length - 1] ?? '', jumlahBerkas: paths.length, paths }
+      const jumlahBerkas = tanggalList.reduce((n, t) => n + t.paths.length, 0)
+      return { ticker, tanggalList, jumlahBerkas }
     })
   )
   return baris.sort((a, b) => a.ticker.localeCompare(b.ticker))
