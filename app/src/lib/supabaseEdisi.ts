@@ -261,6 +261,29 @@ export async function hitungSetoranMenunggu(): Promise<number> {
   return count ?? 0
 }
 
+/** Jumlah baris `setoran` berstatus `menunggu`, PER TANGGAL, untuk 90 hari
+ *  terakhir — dasar badge kalender pemilih tanggal di layar Kurasi. PostgREST
+ *  tak punya GROUP BY sisi server; kolom `tanggal` mentah ditarik (jendela
+ *  DIBATASI 90 hari, disebut eksplisit di sini supaya tak diam-diam memotong
+ *  tanpa jejak — bukan seluruh riwayat) lalu diagregasi di klien. */
+export async function hitungMenungguKurasi(): Promise<Map<string, number>> {
+  const batas = new Date()
+  batas.setDate(batas.getDate() - 90)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const batasIso = `${batas.getFullYear()}-${pad(batas.getMonth() + 1)}-${pad(batas.getDate())}`
+  const { data, error } = await supabase
+    .from('setoran')
+    .select('tanggal')
+    .eq('status', 'menunggu')
+    .gte('tanggal', batasIso)
+  if (error) throw error
+  const peta = new Map<string, number>()
+  for (const r of (data ?? []) as { tanggal: string }[]) {
+    peta.set(r.tanggal, (peta.get(r.tanggal) ?? 0) + 1)
+  }
+  return peta
+}
+
 /** True kalau pengguna sudah PERNAH punya baris `setoran` (semua status,
  *  semua tanggal) — dasar default buka/tutup panel panduan screenshot (Fase
  *  5): akun yang belum pernah menyetor lebih butuh panduan terbuka duluan. */

@@ -26,7 +26,7 @@ function urai(iso: string): { t: number; b: number; d: number } | null {
  * Nilai masuk/keluar tetap string ISO `YYYY-MM-DD` — kompatibel penuh dengan
  * pemakaian input date sebelumnya.
  */
-export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 'kiri' }: {
+export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 'kiri', tanda }: {
   value: string
   onChange: (iso: string) => void
   /** Kalau diisi: hanya tanggal di set ini yang bisa dipilih (hari ber-data),
@@ -40,6 +40,10 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
   /** 'kanan' = popover rata kanan tombol — untuk pemicu dekat tepi kanan
    *  layar (header /broker-summary) supaya tidak terpotong viewport. */
   rata?: 'kiri' | 'kanan'
+  /** Opsional — tanggal (ISO) → jumlah, dasar lencana kecil di sudut sel
+   *  (mis. setoran menunggu kurasi). Tak diisi = tak ada perubahan tampilan
+   *  sama sekali dari perilaku sebelumnya (dipakai banyak halaman lain). */
+  tanda?: ReadonlyMap<string, number>
 }) {
   const [open, setOpen] = useState(false)
   const kini = new Date()
@@ -151,23 +155,34 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
           {Array.from({ length: offset }, (_, i) => <span key={`k${i}`} />)}
           {hariKerja.map((d) => {
             const iso = keIso(tahun, bulan, d)
+            const jmlTanda = tanda?.get(iso) ?? 0
             const cls = [
               'dpk-hari',
               iso === isoIni ? ' now' : '',
               iso === value ? ' sel' : '',
+              jmlTanda > 0 ? ' bertanda' : '',
             ].join('')
             const lewatMaks = maks !== undefined && iso > maks
             const nonaktif = (tersedia ? !tersedia.has(iso) : false) || lewatMaks
+            const judul = lewatMaks
+              ? 'Tanggal masa depan tidak diterima'
+              : tersedia && !tersedia.has(iso)
+                ? 'Tidak ada data pada tanggal ini'
+                : jmlTanda > 0
+                  ? `${jmlTanda} setoran menunggu kurasi`
+                  : undefined
             return (
               <button
                 key={iso}
                 type="button"
                 className={cls}
                 disabled={nonaktif}
-                title={lewatMaks ? 'Tanggal masa depan tidak diterima' : tersedia && !tersedia.has(iso) ? 'Tidak ada data pada tanggal ini' : undefined}
+                title={judul}
+                aria-label={judul ? `${d} — ${judul}` : undefined}
                 onClick={() => { onChange(iso); setOpen(false) }}
               >
                 {d}
+                {jmlTanda > 0 && <span className="dpk-tanda" aria-hidden="true">{jmlTanda > 9 ? '9+' : jmlTanda}</span>}
               </button>
             )
           })}

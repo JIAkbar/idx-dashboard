@@ -34,6 +34,7 @@
   color: var(--text3); text-align: center; padding: 3px 0;
 }
 .lantai .dpk-hari {
+  position: relative;
   font-family: var(--mono); font-size: 11px; color: var(--text2);
   text-align: center; padding: 5px 0; border-radius: 4px;
   background: none; border: none; cursor: pointer;
@@ -45,6 +46,19 @@
 /* Tanggal tanpa data (prop `tersedia`, #79C) — redup, tak merespons hover. */
 .lantai .dpk-hari:disabled { opacity: .32; cursor: default; }
 .lantai .dpk-hari:disabled:hover { background: none; color: var(--text2); }
+
+/* Lencana jumlah (prop opsional `tanda`, mis. setoran menunggu kurasi) — bulat
+   kecil di sudut sel, sama gaya dengan .admin-tab-badge (red solid) supaya
+   satu bahasa visual dgn lencana tab Kurasi. Absolute: sel tetap seukuran
+   biasa, lencananya numpang di atas tanpa mendorong grid. */
+.lantai .dpk-tanda {
+  position: absolute; top: -2px; right: -2px;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 12px; height: 12px; padding: 0 2px;
+  border-radius: 99px; font-size: 7.5px; font-weight: 700;
+  font-family: var(--mono); line-height: 1;
+  background: var(--red); color: #fff;
+}
 
 /* ─── Stepper ‹ › mengapit field (#97) ───
    .dpk-wrap flex + .dd flex:1 menjaga perilaku lebar lama: di .field modal

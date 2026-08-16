@@ -3,6 +3,7 @@ import { useProfilSaya } from '../../lib/profilSaya'
 import { useAdminTanggal } from '../../context/AdminTanggalContext'
 import {
   daftarSetoran,
+  hitungMenungguKurasi,
   kurasiSetoran,
   mintaRevisiSetoran,
   setDimuat,
@@ -68,6 +69,21 @@ export function KurasiSetoran() {
   const [revisiTarget, setRevisiTarget] = useState<string[] | null>(null)
   const [lightbox, setLightbox] = useState<{ items: GambarLightbox[]; index: number } | null>(null)
   const [toast, setToast] = useState<{ ok: boolean; pesan: string } | null>(null)
+  /** Badge kalender DatePicker — tanggal → jumlah menunggu kurasi (90 hari
+   *  terakhir, lihat hitungMenungguKurasi). Dimuat ulang bareng `muat` supaya
+   *  lencana ikut berubah begitu satu setoran selesai dikurasi. */
+  const [tandaKurasi, setTandaKurasi] = useState<Map<string, number>>(new Map())
+
+  useEffect(() => {
+    if (!superadmin) return
+    let batal = false
+    hitungMenungguKurasi()
+      .then((m) => !batal && setTandaKurasi(m))
+      .catch(() => {})
+    return () => {
+      batal = true
+    }
+  }, [superadmin, muat])
 
   useEffect(() => {
     if (!superadmin) return
@@ -250,7 +266,7 @@ export function KurasiSetoran() {
           <AturanKurasi />
 
           <div className="ks-filter">
-            <DatePicker value={tanggal} onChange={setTanggal} ariaLabel="Tanggal kurasi" />
+            <DatePicker value={tanggal} onChange={setTanggal} ariaLabel="Tanggal kurasi" tanda={tandaKurasi} />
             <div className="tabs" role="tablist" aria-label="Filter status setoran">
               {TAB_STATUS.map((t) => (
                 <button
