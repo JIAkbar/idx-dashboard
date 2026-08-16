@@ -250,3 +250,49 @@ curl -s -A "$UA"   "https://www.idx.co.id/primary/ListedCompany/GetCompanyProfil
 Rasio dan metrik turunan (Altman Z, F-Score, ROIC, beta, target analis, median
 sektor) **tetap dari Yahoo** — IDX tidak menyediakannya, dan itu justru
 keunggulan `fundamental/` kita yang 147 ruas.
+
+
+---
+
+## Hasil panen pertama — 17 Agu 2026
+
+`scripts/panen_keuangan_idx.py` dijalankan penuh untuk TW2 2026. Keluarannya
+`data-idx/json/keuangan_idx/`, berskema identik dengan `keuangan/` (15 ruas per
+periode) plus ruas `"sumber": "idx-xbrl"`.
+
+| | Berkas |
+|---|---|
+| yfinance (`keuangan/`) | 646 |
+| XBRL IDX (`keuangan_idx/`) | **774** |
+| **Gabungan** | **873** dari 959 |
+
+**Yang paling penting, dan tak terduga dari dua arah:**
+
+- **227 emiten hanya ada di XBRL** — yfinance tak punya apa pun untuk mereka.
+  Ini terbukti bukan soal rate limit: panen ulang `fetch_keuangan.py` untuk 313
+  emiten yang kurang menghasilkan `0 berhasil, 313 kosong, 0 gagal`.
+- **99 emiten justru hanya ada di yfinance.** Jadi XBRL **tidak boleh
+  menggantikan** sumber lama — mengganti berarti kehilangan 99 emiten.
+
+Untuk 546 emiten yang ada di kedua sumber, dibandingkan pada periode terakhir
+masing-masing:
+
+| | Rata-rata ruas terisi (dari 15) |
+|---|---|
+| yfinance | 12,8 |
+| XBRL IDX | **13,1** |
+
+- XBRL lebih lengkap: **288** emiten
+- yfinance lebih lengkap: **95** emiten
+- Imbang: 163 emiten
+
+Kesimpulannya menguatkan rancangan `fundamentalGabungan.ts` yang sudah ada:
+**dua sumber yang saling menambal**, bukan satu yang menang mutlak. Yang perlu
+diputuskan berikutnya adalah urutan menangnya per-ruas, bukan per-sumber.
+
+Sisa **86 emiten** tak punya data di sumber mana pun — kemungkinan besar emiten
+yang memang belum menyampaikan laporan TW2 2026, dan itu keadaan yang harus
+ditampilkan apa adanya, bukan ditutup dengan angka nol.
+
+**Panen ini baru TW2 2026 (satu periode).** Cara menambah periodenya ada di
+docstring skripnya.
