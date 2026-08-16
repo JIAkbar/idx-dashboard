@@ -3,7 +3,49 @@
 Catatan hidup — diperbarui tiap ada keputusan. Ditulis ke berkas supaya tidak
 bergantung pada ingatan percakapan (yang bisa diringkas dan kehilangan detail).
 
-Terakhir diperbarui: 16 Agustus 2026 (dini hari — setelah sesi admin, jenjang & kurasi).
+Terakhir diperbarui: 16 Agustus 2026 (malam — setelah sesi Beranda, Kabar Pasar & Tanya PAPAN).
+
+## 📌 Sesi 16 Agu 2026 (siang–malam) — Beranda, Kabar, Tanya PAPAN
+
+Semua di bawah ini **sudah jalan di localhost dan di-commit lokal; belum
+di-push**. 55 commit menunggu aba-aba "live".
+
+### Yang selesai
+
+| Bagian | Hasil |
+|---|---|
+| **Beranda baru** | Halaman utama bukan lagi dasbor: PAPAN + IHSG (lilin YTD), ringkasan pasar, terbit terakhir, kabar 4 kolom, kartu menu |
+| **Ringkasan pasar** | Naratif dari aturan, bukan LLM — ambangnya **dikalibrasi dari 2.409 hari bursa** (`scripts/kalibrasi_ambang.py`), bukan ditebak |
+| **Kabar Pasar** (`/kabar`) | 1.028 kabar, 5 sumber, tab & daftar bulan diturunkan dari data |
+| **Arsip IPOT** | 737 item, 13 Jul–16 Agu (`scripts/panen_ipot_arsip.py`) |
+| **Arsip Snips** | 238 item setahun (`scripts/panen_snips.py`) |
+| **Tanya PAPAN** | Tombol mengambang + panel; menjawab dari data harian, lintas waktu, per emiten, KSEI, grup, kalender — plus 32 entri pengetahuan platform & **75 istilah glosarium** yang ditambang dari terbitan PAPAN sendiri |
+| **Panen otomatis** | GitHub Actions tiap 2 jam untuk sumber tanpa batasan IP |
+
+### Temuan yang mengubah rencana
+
+- **Endpoint IPOT mengabaikan parameter `halaman`.** Halaman 0, 1, 5, dan 50
+  membalas 200 `news_id` yang sama persis. Kedalaman maksimal ~200 berita per
+  kanal (±1 bulan) — **YTD tidak bisa dicapai dari endpoint ini.** Arsipnya
+  tumbuh dengan cara lain: skripnya menggabung, jadi panen berkala membentuk
+  arsip panjang dari jendela satu bulan yang bergeser.
+- **CNBC & detikFinance dicabut** (alasan di bagian jalur panen di bawah).
+- **Pengumuman IDX punya tautan per pengumuman** — `attachments[]` yang
+  `IsAttachment: false` adalah PDF dokumennya. Sebelumnya semua baris
+  menunjuk ke satu halaman pencarian.
+
+### Sisa & yang perlu keputusan Johan
+
+- **#160** — migrasi `berkas_masih_menunggu`, `hitung_jenjang`,
+  `ringkasan_keaktifan` masih menyaring `'ditolak'` yang sudah tak ada.
+  Menunggu izin menjalankan migrasi.
+- **Gemini Flash** — lapisan terakhir Tanya PAPAN, belum disetel. Syaratnya
+  sudah diputuskan: kunci di Edge Function/GitHub Secrets, dan keluaran LLM
+  yang memuat angka di luar masukan **dibuang**, bukan ditampilkan.
+- Menelusuri `news_id` IPOT mundur satu per satu bisa menembus batas 1 bulan,
+  tapi berarti ribuan permintaan ke server orang — **belum dikerjakan, perlu
+  izin**.
+
 
 ## ✅ Sudah selesai — dari permintaan Johan
 
