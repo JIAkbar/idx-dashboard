@@ -404,6 +404,11 @@ function AturanKurasi() {
         yang sudah diunggah tetap tersimpan dan tetap bisa dibuka dari kartunya,
         termasuk yang berstatus <b>Dihapus</b>. Yang berubah cuma: ikut edisi
         atau tidak, memakan kuota atau tidak, dan mengunci emiten atau tidak.
+        <br />
+        Satu-satunya yang benar-benar membuang berkas dari penyimpanan adalah
+        tombol <b>“Hapus berkas”</b> di tab Unggah — dan itu cuma bisa dipakai
+        penyetornya sendiri selagi setorannya masih <b>Menunggu</b> atau{' '}
+        <b>Perlu revisi</b>.
       </p>
 
       <div className="af-gulir">

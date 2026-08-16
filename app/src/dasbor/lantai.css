@@ -456,10 +456,9 @@
      (terukur langsung 15 Agu 2026). Firefox jatuh ke batang bawaannya. */
   padding-right: 6px;
 }
-.lantai .login-benefit::-webkit-scrollbar { width: 2px; }
-.lantai .login-benefit::-webkit-scrollbar-track { background: transparent; }
-.lantai .login-benefit::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 99px; }
-.lantai .login-benefit::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+/* Batang gulirnya sendiri diatur aturan BAWAAN `.lantai` di bawah — dulu
+   ditulis ulang khusus di sini, dan tiap panel baru yang lupa menyalinnya
+   dapat batang tebal bawaan sistem (Tanya PAPAN, 16 Agu). */
 .lantai .lb-blok { display: flex; flex-direction: column; gap: 8px; }
 .lantai .lb-judul {
   font-family: var(--disp); font-size: 9px; font-weight: 700;
@@ -675,6 +674,27 @@
   --border2: var(--line2);
   --accent: var(--amber);
 }
+
+/* ── Batang gulir: gutter tipis 2px, BERLAKU BAKU untuk semua yang menggulung
+   di dalam .lantai ────────────────────────────────────────────────────────
+   Ditulis sebagai aturan bawaan, bukan per komponen. Sebelumnya tiap panel
+   menyalin blok yang sama, dan yang lupa menyalinnya kebagian batang tebal
+   bawaan sistem — persis yang terjadi di panel Tanya PAPAN (16 Agu 2026).
+   Daftar yang ditulis tangan selalu ketinggalan dari komponen yang tumbuh.
+
+   SENGAJA tanpa `scrollbar-width`/`scrollbar-color` standar: sejak Chrome
+   121, menyetel salah satunya membuat SELURUH aturan ::-webkit-scrollbar
+   diabaikan — yang menang "thin" 11px, bukan 2px ini (terukur 15 Agu 2026).
+   Firefox jatuh ke batang bawaannya, dan itu diterima.
+
+   Komponen yang memang butuh batang lebih tebal (mis. `.sek-emiten` 4px)
+   tinggal menimpanya; selektornya lebih spesifik jadi otomatis menang. */
+.lantai ::-webkit-scrollbar { width: 2px; height: 2px; }
+.lantai ::-webkit-scrollbar-track { background: transparent; }
+.lantai ::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 99px; }
+.lantai ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+/* Sudut pertemuan dua batang — tanpa ini muncul kotak abu bawaan sistem. */
+.lantai ::-webkit-scrollbar-corner { background: transparent; }
 
 /* Pembungkus view = padanan .content artifact (baris 96). Task 1 melewatkannya
    dengan alasan .dasbor-main sudah setara, padahal .dasbor-main hanya mengatur

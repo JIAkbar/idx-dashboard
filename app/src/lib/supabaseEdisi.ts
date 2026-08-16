@@ -104,17 +104,48 @@ export async function unggahScreenshot(
   return path
 }
 
-/** Hapus screenshot dari bucket "screenshots" berdasarkan path lengkap
- *  ({tanggal}/{nama}) — sekalian hapus baris `setoran` dengan path itu (Fase
- *  3). Galat hapus baris setoran ditelan (bukan dilempar): storage sudah
- *  terhapus duluan (aksi utama), RLS setoran juga bisa menolak diam-diam
- *  (mis. baris bukan milik sendiri / sudah dikurasi) — bukan kegagalan yang
- *  perlu menggagalkan hapus berkas di mata pengguna. */
+/**
+ * Hapus screenshot dari bucket "screenshots" berdasarkan path lengkap
+ * ({tanggal}/{nama}) — berikut baris `setoran` yang menunjuk ke situ.
+ *
+ * URUTANNYA PENTING: **baris dulu, berkas belakangan.** Versi pertama
+ * melakukan sebaliknya dan menelan galat hapus baris dengan alasan "storage
+ * sudah terhapus duluan, jadi bukan kegagalan di mata pengguna" — dan itulah
+ * yang menghasilkan baris yatim: RLS menolak menghapus baris yang sudah
+ * dikurasi, tapi berkasnya sudah telanjur hilang. Yang tersisa: kartu setoran
+ * dengan gambar rusak, selamanya, tanpa satu pun galat tercatat. (Bukti masih
+ * ada di basis data: `2026-08-14/INDY-orderbook.jpg`.)
+ *
+ * Baris `setoran` adalah catatan otoritatifnya — kalau ia menolak dihapus,
+ * berkasnya memang belum boleh hilang. Storage yang tertinggal tanpa baris
+ * masih bisa disapu belakangan; baris tanpa berkas tidak bisa dipulihkan.
+ */
 export async function hapusScreenshot(paths: string[]): Promise<void> {
   if (paths.length === 0) return
+
+  const { error: galatBaris } = await supabase.from('setoran').delete().in('path', paths)
+  if (galatBaris) throw galatBaris
+
+  // RLS yang menolak DELETE **tidak melempar galat** — ia cuma menyaring
+  // barisnya, dan hasilnya "sukses" tanpa satu baris pun terhapus. Jadi
+  // keberhasilannya harus DIPERIKSA, bukan dipercaya: baris yang masih ada
+  // setelah delete berarti tak boleh dihapus, dan berkasnya ikut tidak boleh
+  // hilang. (Baris tak ada sejak awal — contoh/, bedah/, radar/ — memang wajar
+  // dan tak menghalangi apa pun.)
+  const { data: tersisa, error: galatCek } = await supabase
+    .from('setoran').select('path').in('path', paths)
+  if (galatCek) throw galatCek
+  const tertahan = (tersisa ?? []).map((r) => r.path as string)
+  if (tertahan.length > 0) {
+    throw new Error(
+      tertahan.length === paths.length
+        ? 'Berkas ini tak bisa dihapus — setorannya sudah dikurasi atau bukan milikmu.'
+        : `${tertahan.length} berkas tak bisa dihapus (sudah dikurasi atau bukan milikmu): ${tertahan.join(', ')}.`,
+    )
+  }
+
   const { error } = await supabase.storage.from('screenshots').remove(paths)
   if (error) throw error
-  await supabase.from('setoran').delete().in('path', paths).then(() => {}, () => {})
 }
 
 /** Baris `setoran` untuk satu tanggal (semua jenis/status) — dasar badge
