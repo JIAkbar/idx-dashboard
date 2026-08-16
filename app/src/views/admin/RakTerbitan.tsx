@@ -87,7 +87,12 @@ export function RakTerbitan() {
           {edisi && edisi.length > 0 && tampil.length === 0 && (
             <p className="muted">Tak ada edisi yang cocok dengan saringan ini.</p>
           )}
+          {/* Pembungkus .af-gulir WAJIB: tabel ini 476px sementara panelnya
+              394px di telepon, dan panel MEMOTONG (overflow-x: visible)
+              alih-alih menggulung — kolom Emiten & PDF jadi tak terjangkau
+              sama sekali, bukan sekadar perlu digeser. */}
           {tampil.length > 0 && (
+            <div className="af-gulir">
             <table className="tbl">
               <thead>
                 <tr>
@@ -136,6 +141,7 @@ export function RakTerbitan() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </section>

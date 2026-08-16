@@ -149,6 +149,30 @@
   border: 1px solid var(--line); border-radius: var(--r); padding: 7px 5px;
   font-family: var(--mono); font-size: 10px; color: var(--text3);
   background: var(--bg2);
+  transition: transform .16s ease, border-color .16s ease, background .16s ease, opacity .16s ease;
+  /* Naik berurutan dari kiri ke kanan saat kartu muncul — tangga dibaca
+     sebagai JALUR, dan urutan kemunculannya yang menyampaikan itu. Jeda per
+     anak tangga dari --i (dipasang di JSX), 45ms cukup terasa berurutan
+     tanpa membuat yang terakhir terasa lambat. */
+  animation: af-tangga-naik .32s ease both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+@keyframes af-tangga-naik {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: none; }
+}
+.lantai .af-tangga-it:hover { transform: translateY(-2px); border-color: var(--tier-warna); }
+/* Anak tangga yang sedang ditempati berdenyut sekali saat muncul, lalu diam.
+   Denyut yang terus berulang di panel yang selalu terbuka jadi gangguan. */
+@keyframes af-tangga-denyut {
+  0%   { box-shadow: 0 0 0 0 color-mix(in oklab, var(--tier-warna) 55%, transparent); }
+  100% { box-shadow: 0 0 0 9px transparent; }
+}
+/* Hormati setelan "kurangi gerak" OS — animasi hias, bukan informasi. */
+@media (prefers-reduced-motion: reduce) {
+  .lantai .af-tangga-it,
+  .lantai .af-tangga-it.kini { animation: none; }
+  .lantai .af-tangga-it:hover { transform: none; }
 }
 .lantai .af-tangga-ikon .dasbor-ikon { stroke: var(--tier-warna); }
 .lantai .af-tangga-nama { font-size: 11px; color: var(--text2); font-weight: 600; }
@@ -159,6 +183,9 @@
 /* Jenjang sekarang: satu-satunya yang berbingkai warna tiernya. */
 .lantai .af-tangga-it.kini {
   border-color: var(--tier-warna); background: var(--bg3);
+  animation:
+    af-tangga-naik .32s ease both,
+    af-tangga-denyut .9s ease-out .5s 1 both;
 }
 .lantai .af-tangga-it.kini .af-tangga-nama { color: var(--text); }
 /* Yang belum tercapai diredupkan — masih terbaca, tapi jelas bukan milikmu. */

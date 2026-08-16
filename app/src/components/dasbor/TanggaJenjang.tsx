@@ -56,7 +56,7 @@ export function TanggaJenjang({ daftar, tierSaatIni }: { daftar: JenjangRow[]; t
   const urut = [...daftar].sort((a, b) => a.tier - b.tier)
   return (
     <div className="af-tangga" role="list" aria-label="Tangga jenjang kontributor">
-      {urut.map((j) => {
+      {urut.map((j, i) => {
         const lewat = tierSaatIni !== null && j.tier < tierSaatIni
         const kini = tierSaatIni !== null && j.tier === tierSaatIni
         const kelas = kini ? 'kini' : lewat ? 'lewat' : 'nanti'
@@ -65,7 +65,10 @@ export function TanggaJenjang({ daftar, tierSaatIni }: { daftar: JenjangRow[]; t
             key={j.tier}
             role="listitem"
             className={`af-tangga-it ${kelas}`}
-            style={{ '--tier-warna': (LAMBANG[j.tier] ?? LAMBANG[0]).warna } as Record<string, string>}
+            style={{
+              '--tier-warna': (LAMBANG[j.tier] ?? LAMBANG[0]).warna,
+              '--i': String(i),
+            } as Record<string, string>}
             title={`${j.nama} — ${syarat(j)} Kuota ${j.kuota}/hari.${j.hak ? ` Hak: ${j.hak}` : ''}`}
           >
             <span className="af-tangga-ikon"><IkonJenjang tier={j.tier} size={17} /></span>
