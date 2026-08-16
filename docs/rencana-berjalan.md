@@ -7,10 +7,17 @@ Terakhir diperbarui: 16 Agustus 2026 (malam — setelah sesi Beranda, Kabar Pasa
 
 ## 📌 Sesi 16 Agu 2026 (siang–malam) — Beranda, Kabar, Tanya PAPAN
 
-Semua di bawah ini **sudah jalan di localhost dan di-commit lokal; belum
-di-push**. 60+ commit menunggu aba-aba "live" (hitung persisnya:
-`git log --oneline b4374765..HEAD | wc -l` — angka yang ditulis tangan di sini
-pasti basi sebelum sesinya selesai).
+**Sudah live 16 Agu 2026 malam** — 48 commit didorong ke `main`
+(`778ec1c2..94958c5a`, 73 berkas, +17.054/−374) atas aba-aba Johan.
+
+> **Cara menghitung yang menunggu push — patokannya `origin/main`, titik.**
+> ```bash
+> git rev-list --count origin/main..HEAD
+> ```
+> Sesi ini sempat salah lapor: dihitung dari commit teratas saat sesi dimulai,
+> hasilnya 55 lalu 61, padahal yang benar-benar belum live cuma 48 — selisih 15
+> commit sudah ter-push di sesi sebelumnya. Patokan awal-sesi tak tahu apa-apa
+> soal apa yang sudah ada di produksi, jadi angkanya **selalu melebihkan**.
 
 ### Yang selesai
 

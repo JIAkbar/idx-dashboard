@@ -3,8 +3,16 @@
 Papan status kerja borongan 16 Agustus 2026. Centang = selesai & terverifikasi
 (tsc + uji + dua viewport kalau menyentuh tampilan).
 
-Terakhir diperbarui: **16 Agu 2026, malam**. Seluruhnya masih **commit lokal —
-belum di-push** (aturan rilis: `git push` hanya setelah Johan bilang "live").
+Terakhir diperbarui: **16 Agu 2026, malam**. Seluruh yang tercentang di bawah
+**sudah live** (48 commit, `778ec1c2..94958c5a`).
+
+Aturan rilis tetap: `git push` hanya setelah Johan bilang "live", dan yang
+menunggu push dihitung dari `origin/main` — bukan dari commit teratas saat sesi
+dimulai, yang selalu melebihkan:
+
+```bash
+git rev-list --count origin/main..HEAD
+```
 
 ## Antrean berikutnya — **halaman & fitur baru dari riset SPLE**
 
