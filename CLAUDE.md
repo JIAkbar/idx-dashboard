@@ -81,13 +81,21 @@ berisi sektor IDX-IC resmi dan pemegang saham pengendali. Runbook lengkapnya di
 - **Kunci dedup jangan cuma tautan.** Pengumuman resmi IDX tanpa lampiran semuanya menunjuk ke satu URL generik (halaman keterbukaan informasi), jadi dedup ber-tautan meringkas belasan pengumuman berbeda jadi SATU baris — tanpa galat, cuma daftar yang menyusut diam-diam dan dari layar terbaca sebagai "beritanya tidak ada". Pakai tautan + judul + waktu (`gabungKabar()` di `lib/dasbor/kabar.ts`, sudah ada tesnya).
 - **Pemanen berhenti kalau halaman KEMBAR PERSIS, bukan kalau "tak ada item baru".** Endpoint IPOT mengabaikan parameter `halaman` (halaman 0/1/5/50 membalas 200 `news_id` yang sama), dan panen ulang yang wajar juga menghasilkan nol item baru — syarat itu tak bisa membedakan "arsipnya habis" dari "sumbernya jalan di tempat". Tanpa pemeriksaan sidik halaman, skripnya menembak 1.000 permintaan selama 20 menit untuk nol hasil.
 
-### Lembar Kerja — papan pekerjaan proyek ini
+### Papan Pekerjaan — WAJIB tiap balasan
 
-Konvensi lintas proyek `kemampuan-workflow.md` §174 mewajibkan **papan
-pekerjaan** untuk tiap perintah, sekecil apa pun. Di proyek ini namanya
-**Lembar Kerja**, bukan "papan" — produknya sendiri bernama PAPAN, dan
-"sudah masuk papan?" jadi ambigu justru di kalimat yang dipakai menagih.
-Mekanismenya tak berubah, cuma sebutannya.
+Konvensi lintas proyek `kemampuan-workflow.md` §174 mewajibkan **Papan
+Pekerjaan** untuk tiap perintah, sekecil apa pun. Johan menegaskan 17 Agu
+2026: *"saat ini dan seterusnya gunakan selalu Papan Pekerjaan (bukan papan
+progress)"*.
+
+**Sebutannya tetap "Papan Pekerjaan"** walau produknya juga bernama PAPAN —
+usulan mengganti nama jadi "Lembar Kerja" ditolak Johan. Yang membedakan
+cukup huruf besarnya dan konteks kalimatnya.
+
+Bedanya dengan papan progress, dan ini inti §174: papan progress melapor apa
+yang SUDAH jalan; Papan Pekerjaan mencatat **perintahnya, sebelum-sesudahnya,
+alasannya, dan buktinya** — sehingga bisa dipakai MENOLAK perubahan sebelum
+dikerjakan, bukan cuma membaca laporan setelahnya.
 
 Rumahnya: **`docs/jejak-permintaan.md`**.
 

@@ -62,9 +62,14 @@ itu yang menentukan urutan — bukan besar-kecilnya saja.
 
 | ☐ | # | Tugas | Yang menghalangi |
 |---|---|---|---|
-| ☐ | #167 | Penyetelan lanjutan lapis Gemini | Menunggu cakupan rule-engine lengkap (setelah #171/#172) |
+| 🅿️ | #167 | Penyetelan lanjutan lapis Gemini | **DIPARKIR** atas keputusan Johan 17 Agu 2026 — "tetap jadikan backlog sampai saya panggil kmu lagi". Jangan diangkat sendiri ke antrean kerja |
 | ☐ | #168 | Cara scraping arsip berita yang benar | Perlu dibahas dulu — jangan menembak `news_id` satu per satu |
-| ☐ | #129 | Chart bandarmologi | **Terhalang data**, bukan giliran: broker per emiten tak ada di endpoint publik mana pun |
+| 🅿️ | #129 | Chart bandarmologi | **DIPARKIR** atas keputusan Johan 17 Agu 2026, alasan yang sama. Tetap terhalang data juga: broker per emiten tak ada di endpoint publik mana pun |
+
+> 🅿️ = **diparkir**, bukan antre. Bedanya penting: yang antre boleh naik sendiri
+> begitu penghalangnya hilang; yang diparkir **hanya boleh diangkat kalau Johan
+> memanggilnya**. Menawarkannya berulang kali sama saja mengabaikan keputusan
+> yang sudah diambil.
 
 ### Kenapa urutannya begini
 

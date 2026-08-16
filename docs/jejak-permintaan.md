@@ -1,9 +1,12 @@
-# Lembar Kerja — papan pekerjaan PAPAN
+# Papan Pekerjaan
 
-> **Ini papan pekerjaan yang diwajibkan `kemampuan-workflow.md` §174.**
-> Namanya "Lembar Kerja", bukan "papan", karena produknya sendiri bernama
-> PAPAN dan "sudah masuk papan?" jadi ambigu tepat di kalimat yang dipakai
-> menagih. Mekanismenya tak berubah — cuma sebutannya.
+> **Papan pekerjaan yang diwajibkan `kemampuan-workflow.md` §174.**
+> Sebutannya tetap "Papan Pekerjaan" walau produknya juga bernama PAPAN —
+> usulan mengganti nama jadi "Lembar Kerja" ditolak Johan 17 Agu 2026.
+>
+> **Bukan papan progress.** Papan progress melapor apa yang sudah jalan; papan
+> ini mencatat perintahnya, sebelum-sesudahnya, alasannya, dan buktinya —
+> sehingga bisa dipakai MENOLAK perubahan sebelum dikerjakan.
 >
 > **Bentuk baku sepuluh kolom** untuk baris BARU mulai 17 Agu 2026:
 >
@@ -16,6 +19,26 @@
 > untuk memenuhi format hanya memindahkan waktu dari pekerjaan berikutnya, dan
 > isinya toh sudah menjawab pertanyaan yang sama. Yang mengikat mulai sekarang
 > adalah baris baru.
+
+---
+
+## Sesi 17 Agustus 2026 — bentuk baku sepuluh kolom (§174)
+
+| # | Tugas | Asal perintah | Halaman | Komponen (`file:baris`) | Sebelumnya | Jadi | Alasan | Status & bukti | Changelog |
+|---|---|---|---|---|---|---|---|---|---|
+| 37 | Betulkan setelan lapis AI yang salah isi | "jadi TANYA_AI_AKTIF, TANYA_AI_BATAS_IP, dan TANYA_AI_MODEL jadi true ya" | — (Edge Function) | `supabase/functions/tanya-ai/index.ts:26` | `Number("true")` jadi NaN dan `n <= NaN` selalu false — tiap pertanyaan dianggap lewat batas, "Batas NaN pertanyaan" bocor ke layar | `angkaSetelan()` mengabaikan isi tak masuk akal, jatuh ke bawaan | Setelan opsional yang salah isi tak boleh melumpuhkan lapis; sakelar hidup/mati tetap mutlak | Selesai — diuji langsung ke fungsinya | Fixed |
+| 38 | Rantai model + matikan penalaran | (lanjutan #37) | — | `supabase/functions/tanya-ai/index.ts:44` | Satu nama model: `gemini-2.0-flash` ditarik Google (404), `gemini-flash-latest` kena 503 | Rantai 4 model + `thinkingBudget: 0`, 700 token | Nama model yang dihafal justru sumber pemadaman; jatah keluaran habis untuk menalar jadi jawaban terpotong | Selesai — `0b67b2a9`, jawaban utuh dari `gemini-flash-latest` | Fixed |
+| 39 | Unggahan kontributor selalu ditolak | "ada bug nih terkait logika, akun warda upload tapi data tidak masuk" | `/admin` tab Unggah | policy `unggah_screenshots` + `emiten_sudah_disetor()` | `ada_alasan` menuntut baris setoran ADA, `NOT emiten_sudah_disetor` menuntut TIDAK ada — ditolak oleh barisnya sendiri, selalu | `emiten_sudah_disetor` mengecualikan baris milik sendiri | Maksud aturannya "sudah disetor AKUN LAIN", dan itu sudah tertulis di pesan galatnya sejak awal | Selesai — migrasi `emiten_sudah_disetor_kecualikan_diri`; diuji dua arah (AADI lolos, PADI/ESSA tetap terkunci) | Fixed |
+| 40 | Galat unggah bawa keterangan server | (temuan saat #39) | `/admin` tab Unggah | `UnggahHarian.tsx:153`, `supabaseEdisi.ts:99` | Empat kemungkinan disebut, keterangan server dibuang — #162 tak pernah terlacak | Keterangan server ikut + penanda tahap `[baris setoran]`/`[unggah berkas]` | Menerjemahkan galat menolong; MENGHAPUS galat aslinya membutakan yang memperbaikinya | Selesai — `71733906`; tanpa ini #39 tak akan ketemu | Fixed |
+| 41 | Rem borongan setoran | "apakah jika nanti dia upload tanggal 10, 11, 12, 13, 14 otomatis dia bisa cepat naik level?" | `/admin` tab Unggah | `tanggal_dalam_jendela()`, `setoran_hari_ini_saya()` | Tak ada batas mundur; Perak memborong 145 hari bursa = 435 setoran, melampaui syarat Diamond | Jendela 5 hari kerja + laju 2x kuota per hari kalender | Kuota berlaku per TANGGAL bukan per hari nyata — selisih itu yang dipakai memborong | Selesai — migrasi `rem_borongan_setoran`; diuji (14 Agu lolos, 7 Agu lolos, 5 Jan ditolak) | Added |
+| 42 | Bedah boleh lintas tanggal | "upload per tanggal per emiten itu bisa misal 5 langsung yakan? karena ini single bukan data daily" | `/admin` tab Bedah | `hitung_bedah_emiten_tanggal()`, `bedah_hari_ini_saya()` | `hitung_bedah_hari < 1` lintas emiten — berkas KEDUA selalu ditolak, tanggal kedua ikut terkunci | 2 berkas per emiten per tanggal, lintas tanggal bebas, laju 50/hari | Bedah itu studi satu emiten lintas waktu, bukan potret satu hari bursa | Selesai — migrasi `bedah_boleh_rentang_tanggal` + `bedah_laju_harian_50` | Fixed |
+| 43 | Tab Bedah setara tab Unggah | "harusnya sama sih dengan fitur unggah di kasih fungsi hapus dan cara screenshot broker summary" | `/admin` tab Bedah | `BedahUnggah.tsx`, `PanduanScreenshot.tsx` | Tak ada hapus, tak ada panduan, arsip cuma menyimpan tanggal terakhir | Hapus per berkas, panduan dipakai ulang (prop `bedah`), arsip per tanggal, kunci emiten + Tambah Emiten | Dua tab yang sifatnya sama tak boleh beda perlakuan | Selesai — `94133bdc` + `b3520ded`; hapus diuji live (berkas 2 jadi 1) | Added |
+| 44 | Reset akurasi kontributor | "saya sebagai superadmin bisa reset akurasi itu penting, karena pendidikan tidak harus selalu punishment" | `/admin` tab Akun | `profil.akurasi_sejak`, `AkunAdmin.tsx`, `jenjang.ts:34` | Akurasi dihitung dari SELURUH riwayat; satu periode buruk menempel selamanya | Titik mulai `akurasi_sejak` — riwayat tak dihapus, jumlah disetujui tak berubah, bisa dibatalkan | Menghapus baris memalsukan sejarah; menggeser jendela hitung tidak | Selesai — `6e27a167`, 266 tes, diuji 2 akun dua arah | Added |
+| 45 | Kata tunggal dikenali Tanya PAPAN | "perlu kembangin rule engine yang lebih luas lagi supaya dengan 1 kata saja sudah paham" | Semua halaman (panel) | `pengetahuan.ts:41,70` | `kontributor`, `tier`, `level`, `model ai` semuanya gagal dijawab | Kata tunggal jadi kunci + entri `model-ai` baru | Entrinya sudah ada, yang kurang cara menemukannya | Selesai — `94133bdc`, 265 tes; sisanya jadi #171 | Fixed |
+| 46 | Definisi divergensi tiga lapis | "harus bisa tentukan chart itu membentuk pola bearish divergent atau bullish divergen, kolaborasi dengan indikator stochastic, mungkin volume" | — (spesifikasi) | `docs/rencana-berjalan.md` | #146 menggantung sejak 15 Agu; #130 terhalang tanpa definisi | Harga + Stochastic + Volume sebagai PENGESAH, berikut derajat keyakinan | Lapis volume sebagai pengesah itu yang membedakan dari indikator divergensi kebanyakan | Selesai — `ad6f6c79`; #145 dilewati atas keputusan Johan | — |
+| 47 | Bedah ASK SPLE | "kalau mau coba-coba bisa tuh di sple-mf... pakai devtools chrome lebih leluasa" | (situs pihak ketiga) | `docs/riset/sple/ask-sple.md` | Kedalaman AI mereka belum diketahui sebabnya | Prompt + 29 ruas konteks terdokumentasi; API terbukti Anthropic dari `stop: end_turn` | Gerbangnya kolom sandi — dibedah dari sisi klien, kolom sandi tak disentuh | Selesai — `06a3efd6`, `f9c13f71`, `898bbf44` | — |
+| 48 | Urutan kerja ringan ke mahal | "buatlah ceklist tabel workflow dari yang paling ringan sampai yang paling mahal" | — | `docs/ceklist-backlog.md` | Antrean dikelompokkan per tema, tanpa urutan eksekusi | 21 baris berurut + kolom bergantung/membuka | Urutan ditentukan oleh apa yang DIBUKA, bukan besar-kecilnya | Selesai — `93a7d835` | — |
+| 49 | Adopsi §174 + parkir #167/#129 | "gunakan selalu Papan Pekerjaan (bukan papan progress)" · "tetap jadikan backlog sampai saya panggil kmu lagi" | — | `CLAUDE.md`, berkas ini, `ceklist-backlog.md` | Sesi ini tak memakai papan §174; #167/#129 bisa terangkat sendiri | Papan wajib tiap balasan; #167/#129 ditandai diparkir | Yang diparkir hanya boleh diangkat kalau dipanggil — menawarkan berulang mengabaikan keputusan | Selesai — commit ini | — |
 
 ---
 
