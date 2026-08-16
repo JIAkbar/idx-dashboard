@@ -29,6 +29,7 @@ const ChartIndeks = lazy(() => import('./views/dasbor/ChartIndeks').then((m) => 
 const BrokerSummary = lazy(() => import('./views/dasbor/BrokerSummary').then((m) => ({ default: m.BrokerSummary })))
 const StockDetail = lazy(() => import('./views/dasbor/StockDetail').then((m) => ({ default: m.StockDetail })))
 const PetaInvestor = lazy(() => import('./views/dasbor/PetaInvestor').then((m) => ({ default: m.PetaInvestor })))
+const Kabar = lazy(() => import('./views/dasbor/Kabar').then((m) => ({ default: m.Kabar })))
 const Bulletin = lazy(() => import('./views/dasbor/Bulletin').then((m) => ({ default: m.Bulletin })))
 const Radar = lazy(() => import('./views/dasbor/Radar').then((m) => ({ default: m.Radar })))
 const Seasonality = lazy(() => import('./views/dasbor/Seasonality').then((m) => ({ default: m.Seasonality })))
@@ -87,6 +88,7 @@ function App() {
               <Route path="/peta-investor" element={<PenjagaHalaman kunci="peta"><PetaInvestor /></PenjagaHalaman>} />
               <Route path="/broker-summary" element={<PenjagaHalaman kunci="broker"><BrokerSummary /></PenjagaHalaman>} />
               <Route path="/kalkulator" element={<PenjagaHalaman kunci="kalkulator"><KalkulatorJia /></PenjagaHalaman>} />
+              <Route path="/kabar" element={<Kabar />} />
               <Route path="/bulletin" element={<PenjagaHalaman kunci="bulletin"><Bulletin /></PenjagaHalaman>} />
               {/* Kunci 'radar' (label "Radar WDWL") menunjuk HALAMAN PUBLIK ini,
                   bukan tab admin tempat sumbernya diunggah — produknya yang

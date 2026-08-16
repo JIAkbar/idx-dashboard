@@ -5,31 +5,99 @@ import { useAksesHalaman } from '../../context/AksesHalamanContext'
 import { MENU_ITEMS } from '../../lib/dasbor/menu'
 import { PETA_MENU_KUNCI } from '../../lib/aksesHalaman'
 import { useDataHarian } from '../../lib/dasbor/dataHarian'
-import { useIhsgBuka } from '../../lib/dasbor/ihsgOhlc'
+import { useKabar, waktuKabar } from '../../lib/dasbor/kabar'
 import { useBulletinList, tipeEdisi } from '../../lib/dasbor/bulletin'
-import { PapanIhsg } from './IndeksDunia'
+import { fN, fp, fmtNF } from '../../lib/dasbor/format'
 import { IkonMenu, IKON_KUNCI, IKON_PANAH_KANAN } from '../../components/dasbor/IkonMenu'
+// Gaya baris kabar (.kbr-*) hidup di Kabar.css dan dipakai juga di sini.
+// WAJIB diimpor: halaman Kabar dimuat malas (lazy), jadi tanpa impor ini
+// jalur kabar Beranda tampil sebagai tautan biru tanpa gaya sampai
+// pengunjung kebetulan membuka /kabar lebih dulu.
+import './Kabar.css'
 import './Beranda.css'
 
 /** Berapa edisi terbaru yang tampil di jalur kabar. */
 const KABAR_TAMPIL = 4
 
 /**
- * Papan pasar di kepala Beranda — memakai `PapanIhsg` yang SAMA dengan
- * halaman Indeks Dunia, bukan ringkasannya sendiri.
+ * Ringkas pasar — kepala Beranda.
  *
- * Versi pertama Beranda cuma menaruh satu baris "IHSG 6.401,89 +1,59%", dan
- * kepalanya jadi kotak lapang berisi dua kalimat — ruang kosong yang tak
- * membayar sewanya. Papan penuh mengisi ruang itu dengan yang memang jadi
- * alasan orang membuka PAPAN: angkanya.
+ * SENGAJA bukan papan `/indeks`: halaman ini pintu masuk, bukan meja kerja.
+ * Yang dibawa cuma yang menjawab "pasar hari ini bagaimana" dalam sekali
+ * pandang — indeks, arah, arus asing, dan denyut transaksi. Papan penuh
+ * (angka bergaya papan bursa, lilin hari, grafik tahun berjalan) tetap satu
+ * klik jauhnya lewat tautan di sudut, dan menyalinnya ke sini cuma akan
+ * membuat dua halaman yang sama persis.
  */
-function PapanBeranda() {
-  const { tanggalTersedia, hari, tanggalAktif, loading } = useDataHarian()
-  const buka = useIhsgBuka(tanggalAktif ?? undefined)
+function RingkasPasar() {
+  const { hari, loading } = useDataHarian()
 
   if (loading && !hari) return <div className="brd-papan-memuat" aria-hidden="true" />
   if (!hari) return null
-  return <PapanIhsg hari={hari} tanggalTersedia={tanggalTersedia} buka={buka} />
+
+  const naik = hari.ihsg_pct >= 0
+  const delta = hari.ihsg_prev == null ? null : hari.ihsg_value - hari.ihsg_prev
+  const nfIdr = hari.nf_today_idr ?? 0
+  const angka: [string, string, string?][] = [
+    ['Net Foreign', fmtNF(nfIdr), nfIdr < 0 ? 'dn' : 'up'],
+    ['Volume', hari.vol_today == null ? '—' : `${fN(hari.vol_today, 0)} Jt`],
+    ['Nilai', hari.val_idr_today == null ? '—' : `${fN(hari.val_idr_today, 0)} M`],
+    ['Frekuensi', hari.freq_today == null ? '—' : `${fN(hari.freq_today, 0)} Rb`],
+    ['Market PER', hari.mkt_per == null ? '—' : fN(hari.mkt_per, 2)],
+    ['Market PBV', hari.mkt_pbv == null ? '—' : fN(hari.mkt_pbv, 2)],
+  ]
+
+  return (
+    <section className="brd-pasar">
+      <div className="brd-pasar-utama">
+        <span className="lbl">IHSG · {hari.date_id}</span>
+        <div className="brd-pasar-angka">
+          <b className={naik ? 'up' : 'dn'}>{fN(hari.ihsg_value)}</b>
+          <span className={`brd-pasar-chg ${naik ? 'up' : 'dn'}`}>
+            {naik ? '▲' : '▼'} {delta === null ? '' : `${fN(Math.abs(delta))} `}({fp(hari.ihsg_pct)})
+          </span>
+        </div>
+        <Link className="brd-semua" to="/indeks">Papan lengkap &amp; kalender bursa →</Link>
+      </div>
+      <div className="brd-pasar-grid">
+        {angka.map(([label, isi, warna]) => (
+          <div className="brd-pasar-sel" key={label}>
+            <span className="lbl">{label}</span>
+            <span className={`num ${warna ?? ''}`}>{isi}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+/** Jalur kabar di Beranda — lima teratas, sisanya di halaman Kabar Pasar. */
+function JalurKabar() {
+  const { kabar } = useKabar()
+  const item = (kabar?.item ?? []).slice(0, 5)
+  if (item.length === 0) return null
+  return (
+    <section className="brd-kabar">
+      <div className="brd-h">
+        <span className="lbl">Kabar pasar</span>
+        <Link className="brd-semua" to="/kabar">Semua kabar →</Link>
+      </div>
+      <div className="brd-kabar-list">
+        {item.map((i, n) => (
+          <a key={`${i.tautan}-${n}`} className={`kbr-it${i.jenis === 'pengumuman' ? ' resmi' : ''}`}
+            href={i.tautan} target="_blank" rel="noopener noreferrer"
+            style={{ '--i': String(n) } as Record<string, string>}>
+            <span className="kbr-meta">
+              <span className={`kbr-sum s-${i.sumber.split(' ')[0].toLowerCase()}`}>{i.sumber}</span>
+              {i.jenis === 'pengumuman' && <span className="kbr-resmi">Pengumuman resmi</span>}
+              <span className="kbr-waktu">{waktuKabar(i.waktu)}</span>
+            </span>
+            <span className="kbr-judul">{i.judul}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )
 }
 
 /** Kartu kabar: satu edisi terbit. Judulnya tanggal, bukan kode — yang dicari
@@ -89,17 +157,9 @@ export function Beranda() {
   // peramban. Tiap view dasbor membungkus dirinya sendiri (lihat IndeksDunia).
   return (
     <div className="lantai">
-      {/* Kepala dirampingkan jadi satu pita: nama + satu kalimat identitas.
-          Papan angka yang mengisi ruangnya, bukan padding. */}
-      <section className="brd-kepala">
-        <h1>PAPAN</h1>
-        <p className="brd-tagline">
-          Pusat Analisa Pasar Nusantara — <b>data</b> dan <b>informasi</b> Bursa Efek Indonesia.
-          Angkanya bisa ditelusuri, metodenya terbuka, dan yang belum kami punya kami sebut belum punya.
-        </p>
-      </section>
+      <RingkasPasar />
 
-      <PapanBeranda />
+      <JalurKabar />
 
       <KartuKabar />
 
@@ -163,6 +223,17 @@ export function Beranda() {
             </button>
           )}
         </div>
+      </section>
+
+      {/* Identitas ditutup di kaki, bukan dibuka di kepala: pengunjung yang
+          baru datang lebih dulu butuh angka dan kabar; pernyataan siapa kami
+          justru lebih dipercaya SESUDAH isinya terlihat. */}
+      <section className="brd-tentang">
+        <h2>PAPAN</h2>
+        <p>
+          Pusat Analisa Pasar Nusantara — <b>data</b> dan <b>informasi</b> Bursa Efek Indonesia.
+          Angkanya bisa ditelusuri, metodenya terbuka, dan yang belum kami punya kami sebut belum punya.
+        </p>
       </section>
     </div>
   )

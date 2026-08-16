@@ -90,8 +90,14 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1zM4 9.5h16M8 3v4M16 3v4M8 13h2M12 13h2M8 16.5h2M12 16.5h2',
   },
   {
+    id: 'kabar', path: '/kabar', label: 'Kabar Pasar', kode: 'NWS',
+    ringkas: 'Berita & pengumuman resmi IDX, IPOT News, dan Kontan dalam satu aliran — PAPAN menautkan, tidak menyalin.',
+    mulaiKelompok: true,
+    ikon: 'M4 5a1 1 0 011-1h11l4 4v11a1 1 0 01-1 1H5a1 1 0 01-1-1zM15 4v4h4M8 11h8M8 14h8M8 17h5',
+  },
+  {
     id: 'bulletin', path: '/bulletin', label: 'Bulletin Arus Pasar', kode: 'BLT',
-    ringkas: 'Arsip edisi Arus Pasar — tinjauan teknikal dan arus dana, lengkap dengan PDF-nya.', mulaiKelompok: true,
+    ringkas: 'Arsip edisi Arus Pasar — tinjauan teknikal dan arus dana, lengkap dengan PDF-nya.',
     ikon: 'M5 4h11l3 3v13a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1zM16 4v4h3M8 10h7M8 13h7M8 16h4',
   },
   {

@@ -149,3 +149,50 @@
   .lantai .brd-kartu:hover, .lantai .brd-kabar-it:hover { transform: none; }
   .lantai .brd-kartu::after { display: none; }
 }
+
+/* ── Ringkas pasar (kepala) ─────────────────────────────────────────────── */
+.lantai .brd-pasar {
+  display: grid; grid-template-columns: minmax(220px, 300px) 1fr; gap: 16px;
+  border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--bg2); padding: 16px 18px;
+}
+.lantai .brd-pasar-utama { display: grid; align-content: center; gap: 4px; }
+.lantai .brd-pasar-angka { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.lantai .brd-pasar-angka b {
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: clamp(28px, 3.6vw, 40px); line-height: 1;
+}
+.lantai .brd-pasar-angka b.up { color: var(--green); }
+.lantai .brd-pasar-angka b.dn { color: var(--red); }
+.lantai .brd-pasar-chg { font-family: var(--mono); font-size: 12px; }
+.lantai .brd-pasar-chg.up { color: var(--green); }
+.lantai .brd-pasar-chg.dn { color: var(--red); }
+/* auto-fit: enam sel jadi 3×2 di layar sedang, 6×1 di layar lebar, 2×3 di
+   telepon — tanpa satu pun media query (aturan §178). */
+.lantai .brd-pasar-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 10px;
+  border-left: 1px solid var(--line); padding-left: 16px;
+}
+.lantai .brd-pasar-sel { display: grid; gap: 2px; align-content: start; }
+.lantai .brd-pasar-sel .num {
+  font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 14px; color: var(--text);
+}
+.lantai .brd-pasar-sel .num.up { color: var(--green); }
+.lantai .brd-pasar-sel .num.dn { color: var(--red); }
+@media (max-width: 720px) {
+  .lantai .brd-pasar { grid-template-columns: 1fr; }
+  .lantai .brd-pasar-grid { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 12px; }
+}
+
+/* ── Tentang (kaki) ─────────────────────────────────────────────────────── */
+.lantai .brd-tentang {
+  margin-top: 26px; padding: 20px 22px;
+  border: 1px solid var(--line); border-radius: var(--r); background: var(--bg2);
+}
+.lantai .brd-tentang h2 {
+  margin: 0 0 6px; font-family: var(--disp); font-weight: 700; font-size: 20px; letter-spacing: .02em;
+}
+.lantai .brd-tentang p {
+  margin: 0; max-width: 78ch; font-size: 12.5px; line-height: 1.8; color: var(--text3);
+}
+.lantai .brd-tentang b { color: var(--text2); }
