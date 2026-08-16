@@ -17,8 +17,9 @@ import { IkonMenu, IKON_KUNCI, IKON_PANAH_KANAN } from '../../components/dasbor/
 import './Kabar.css'
 import './Beranda.css'
 
-/** Berapa edisi terbaru yang tampil di jalur kabar. */
-const KABAR_TAMPIL = 4
+/** Berapa kabar & edisi yang tampil di Beranda. Enam, bukan lima: daftarnya
+ *  dua kolom, dan angka ganjil menyisakan satu petak kosong di sudut. */
+const KABAR_TAMPIL = 6
 
 /**
  * Kepala Beranda: papan IHSG yang SAMA dengan halaman Indeks Dunia —
@@ -101,7 +102,7 @@ function KartuKabar() {
       {daftar !== null && edisi.length === 0 && (
         <p className="muted" style={{ fontSize: 11.5 }}>Belum ada edisi terbit.</p>
       )}
-      <div className="brd-kabar-list">
+      <div className="brd-dua-kolom">
         {edisi.map((e) => (
           <Link key={e.kode} className="brd-kabar-it" to="/bulletin" title={`${e.judul} — ${e.kode}`}>
             <span className={`brd-tipe t-${tipeEdisi(e.kode).toLowerCase()}`}>{tipeEdisi(e.kode)}</span>

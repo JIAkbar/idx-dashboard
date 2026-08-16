@@ -193,3 +193,25 @@
   .lantai .brd-pasar-grid { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 12px; }
 }
 
+
+/* Dua kolom untuk daftar di Beranda (kabar & edisi terbit).
+   Satu kolom selebar 1.700px membuat baris yang isinya cuma judul pendek
+   terbaca seperti pita kosong: matanya harus melintasi ruang hampa dari
+   judul ke waktu di ujung kanan. Dua kolom memotong jarak itu separuh dan
+   memendekkan halaman — dua-duanya keluhan yang sama.
+   auto-fit + minmax: jadi satu kolom sendiri di bawah ±760px, tanpa media
+   query terpisah (aturan §178). */
+.lantai .brd-kabar-list,
+.lantai .brd-dua-kolom {
+  display: grid; grid-template-columns: 1fr; gap: 8px; align-items: start;
+}
+/* TEPAT DUA kolom, bukan auto-fit: di layar 1.700px auto-fit menghasilkan
+   empat kolom, dan lima kabar jadi baris kedua berisi satu kartu yatim.
+   Jumlah kolom di sini urusan komposisi, bukan urusan muat-tidak-muat. */
+@media (min-width: 760px) {
+  .lantai .brd-kabar-list,
+  .lantai .brd-dua-kolom { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+/* Baris kabar di dalam kolom yang lebih sempit: waktu tak lagi didorong ke
+   ujung kanan yang jauh, tapi duduk rapat sesudah label sumbernya. */
+.lantai .brd-kabar-list .kbr-waktu { margin-left: auto; }

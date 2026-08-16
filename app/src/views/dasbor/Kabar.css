@@ -5,7 +5,16 @@
 .lantai .kbr-sumber { margin: 0 0 12px; font-size: 11.5px; line-height: 1.7; }
 .lantai .kbr-sumber b { color: var(--text2); }
 
-.lantai .kbr-list { display: grid; gap: 7px; }
+/* Dua kolom di layar lebar: satu kolom selebar 1.700px memaksa mata
+   melintasi ruang kosong dari judul ke waktu di ujung kanan, dan 12 baris
+   jadi halaman yang panjangnya tak perlu. auto-fit menurunkannya sendiri
+   jadi satu kolom di bawah ±800px — tanpa media query terpisah. */
+.lantai .kbr-list {
+  display: grid; grid-template-columns: 1fr; gap: 7px; align-items: start;
+}
+@media (min-width: 800px) {
+  .lantai .kbr-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 .lantai .kbr-it {
   display: grid; gap: 5px;
