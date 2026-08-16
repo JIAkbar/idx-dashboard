@@ -33,8 +33,51 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 
 const KUNCI = Deno.env.get('GEMINI_API_KEY') ?? ''
 const AKTIF = (Deno.env.get('TANYA_AI_AKTIF') ?? '').toLowerCase() === 'true'
-const BATAS_HARIAN = Number(Deno.env.get('TANYA_AI_BATAS_IP') ?? '30')
-const MODEL = Deno.env.get('TANYA_AI_MODEL') ?? 'gemini-2.0-flash'
+const BATAS_HARIAN = angkaSetelan('TANYA_AI_BATAS_IP', 30)
+const MODEL = rantaiModel()
+
+
+/**
+ * Setelan yang salah isi TIDAK BOLEH melumpuhkan lapis ini.
+ *
+ * Kejadian nyata 16 Agu 2026: `TANYA_AI_BATAS_IP` diisi "true" (ikut-ikutan
+ * sakelar di sebelahnya), `Number("true")` jadi NaN, dan `n <= NaN` selalu
+ * false -- tiap pertanyaan langsung dianggap melewati batas, lengkap dengan
+ * kalimat "Batas NaN pertanyaan" yang bocor ke layar pengunjung.
+ * `TANYA_AI_MODEL` pun diisi "true", yang ditolak Google sebagai nama model.
+ *
+ * Setelan yang tak masuk akal sekarang DIABAIKAN dan jatuh ke bawaannya.
+ * Sakelar hidup/mati tetap dihormati mutlak -- yang dilonggarkan hanya dua
+ * setelan opsional, karena salah isi di situ berakibat mati total sementara
+ * maksudnya cuma menyetel angka.
+ */
+function angkaSetelan(nama: string, bawaan: number): number {
+  const n = Number((Deno.env.get(nama) ?? '').trim())
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : bawaan
+}
+
+/**
+ * Rantai model, dicoba berurutan sampai ada yang menjawab.
+ *
+ * `gemini-2.0-flash` yang dipakai versi pertama ternyata sudah ditarik Google
+ * ("no longer available") dan seluruh lapis AI mati karena itu. Alias
+ * `-latest` membuat penarikan model berikutnya tak mengulang pemadaman yang
+ * sama. Ongkosnya: perilakunya bisa berubah tanpa pemberitahuan -- diterima,
+ * karena keluaran model di sini sudah dijaga pemeriksa angka dan panjangnya
+ * dibatasi.
+ */
+function rantaiModel(): string[] {
+  const m = (Deno.env.get('TANYA_AI_MODEL') ?? '').trim()
+  // Nama model Google selalu memuat tanda hubung, tak pernah kata tunggal
+  // seperti "true"/"aktif".
+  const sah = /^[a-z0-9.-]+$/i.test(m) && m.includes('-')
+  // Daftar ini DITANYAKAN ke endpoint /v1beta/models, bukan dihafal dari
+  // dokumentasi: `gemini-2.0-flash` sudah ditarik dan `gemini-2.5-flash`
+  // "no longer available to new users" -- nama model yang diingat justru
+  // sumber pemadamannya.
+  const bawaan = ['gemini-flash-latest', 'gemini-3.5-flash', 'gemini-flash-lite-latest', 'gemini-3.1-flash-lite']
+  return sah ? [m, ...bawaan.filter((b) => b !== m)] : bawaan
+}
 
 const SB_URL = Deno.env.get('SUPABASE_URL') ?? ''
 const SB_SERVICE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -87,7 +130,11 @@ async function kuotaTerpakai(ip: string): Promise<{ lolos: boolean; jumlah: numb
     if (!r.ok) return { lolos: true, jumlah: 0 } // pembatas rusak bukan alasan menolak pengunjung
     const baris = await r.json()
     const b = Array.isArray(baris) ? baris[0] : baris
-    return { lolos: Boolean(b?.lolos), jumlah: Number(b?.jumlah ?? 0) }
+    const jumlah = Number(b?.jumlah ?? 0)
+    // Keputusan lolos DIHITUNG ULANG di sini, bukan sekadar percaya balasan —
+    // batas yang dipakai fungsi ini sudah dibersihkan `angkaSetelan()`,
+    // sementara nilai mentahnya bisa saja ngawur.
+    return { lolos: Number.isFinite(jumlah) ? jumlah <= BATAS_HARIAN : true, jumlah }
   } catch {
     return { lolos: true, jumlah: 0 }
   }
@@ -106,6 +153,47 @@ ATURAN YANG TIDAK BOLEH DILANGGAR:
    pembuka. Tanpa emoji.
 5. Kalau ditanya hal di luar pasar saham Indonesia dan situs ini, katakan itu
    di luar cakupanmu.`
+
+/** Coba tiap model sampai ada yang menjawab. `null` kalau semuanya gagal —
+ *  pemanggil yang memutuskan cara memberitahunya. */
+async function tanyaGemini(pertanyaan: string, konteks: string): Promise<{ teks: string; model: string } | null> {
+  for (const model of MODEL) {
+    try {
+      const r = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': KUNCI },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: PERINTAH }] },
+            contents: [{ role: 'user', parts: [{ text: `KONTEKS:
+${konteks}
+
+PERTANYAAN: ${pertanyaan}` }] }],
+            // `thinkingBudget: 0` WAJIB. Gemini Flash generasi baru memakai
+            // jatah keluaran untuk menalar lebih dulu, dan dengan batas 320
+            // token jawabannya terpotong di tengah kalimat ("Di situs PAPAN,
+            // Anda dapat mengakses berbagai data" -- habis di situ). Jawaban
+            // di sini pendek dan sudah ditopang konteks.
+            generationConfig: { temperature: 0.2, maxOutputTokens: 700, thinkingConfig: { thinkingBudget: 0 } },
+          }),
+        },
+      )
+      if (!r.ok) {
+        console.error(`Model ${model} menolak ${r.status}`, (await r.text()).slice(0, 200))
+        continue
+      }
+      const data = await r.json()
+      const teks: string = (data?.candidates?.[0]?.content?.parts ?? [])
+        .map((p: { text?: string }) => p?.text ?? '').join('').trim()
+      if (teks) return { teks, model }
+      console.error(`Model ${model} menjawab kosong`)
+    } catch (e) {
+      console.error(`Model ${model} galat`, e)
+    }
+  }
+  return null
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
@@ -136,44 +224,19 @@ Deno.serve(async (req) => {
     })
   }
 
-  try {
-    const r = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': KUNCI },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: PERINTAH }] },
-          contents: [{ role: 'user', parts: [{ text: `KONTEKS:\n${konteks}\n\nPERTANYAAN: ${pertanyaan}` }] }],
-          generationConfig: { temperature: 0.2, maxOutputTokens: 320 },
-        }),
-      },
-    )
-    if (!r.ok) {
-      const detail = await r.text()
-      console.error('Gemini menolak', r.status, detail.slice(0, 300))
-      return balas({ galat: 'Lapis AI sedang tak bisa dihubungi.' }, 502)
-    }
-    const data = await r.json()
-    const teks: string = (data?.candidates?.[0]?.content?.parts ?? [])
-      .map((p: { text?: string }) => p?.text ?? '').join('').trim()
-    if (!teks) return balas({ galat: 'Lapis AI tak memberi jawaban.' }, 502)
+  const hasil = await tanyaGemini(pertanyaan, konteks)
+  if (!hasil) return balas({ galat: 'Lapis AI sedang tak bisa dihubungi.' }, 502)
 
-    // Penjaga terakhir — lihat catatan (3) di kepala berkas.
-    const asing = angkaAsing(teks, `${konteks} ${pertanyaan}`)
-    if (asing.length > 0) {
-      console.warn('Jawaban dibuang, angka di luar konteks:', asing.join(', '))
-      return balas({
-        ditolak: true,
-        alasan: 'angka-di-luar-konteks',
-        teks: 'Jawaban dari lapis AI dibuang karena memuat angka yang tak ada di data PAPAN. ' +
-          'Lebih baik tak menjawab daripada menyebut angka yang tak bisa ditelusuri.',
-      })
-    }
-
-    return balas({ teks, model: MODEL, sisaKuota: Math.max(0, BATAS_HARIAN - jumlah) })
-  } catch (e) {
-    console.error('Galat memanggil Gemini', e)
-    return balas({ galat: 'Lapis AI sedang tak bisa dihubungi.' }, 502)
+  const asing = angkaAsing(hasil.teks, `${konteks} ${pertanyaan}`)
+  if (asing.length > 0) {
+    console.warn('Jawaban dibuang, angka di luar konteks:', asing.join(', '))
+    return balas({
+      ditolak: true,
+      alasan: 'angka-di-luar-konteks',
+      teks: 'Jawaban dari lapis AI dibuang karena memuat angka yang tak ada di data PAPAN. ' +
+        'Lebih baik tak menjawab daripada menyebut angka yang tak bisa ditelusuri.',
+    })
   }
+
+  return balas({ teks: hasil.teks, model: hasil.model, sisaKuota: Math.max(0, BATAS_HARIAN - jumlah) })
 })
