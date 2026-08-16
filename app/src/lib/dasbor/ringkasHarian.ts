@@ -1,4 +1,5 @@
 import type { DataHarian, SectorRow } from './dataHarian'
+import ambangPasar from './ambangPasar.json'
 
 /**
  * Ringkasan naratif harian — angka pasar dirakit jadi kalimat.
@@ -35,17 +36,36 @@ export interface RingkasHarian {
   katalis: Katalis[]
 }
 
-/** Ambang yang menentukan pilihan kata. Dikumpulkan di satu tempat supaya
- *  bisa dibaca (dan diperdebatkan) tanpa menyisir seluruh berkas. */
+/**
+ * Ambang yang menentukan pilihan kata.
+ *
+ * Dua yang pertama DIHITUNG dari sejarah IHSG, bukan ditebak:
+ * `scripts/kalibrasi_ambang.py` membaca 10 tahun penutupan harian lalu
+ * menulis `ambangPasar.json`. "Menguat kuat" = besaran gerak yang cuma
+ * terjadi di 15% hari teratas (persentil 85); "nyaris datar" = 30% hari
+ * paling adem. Versi pertama memakai 1,0% dan 0,25% — angka yang terdengar
+ * wajar tapi tak pernah diuji ke datanya sendiri; hasil kalibrasi ternyata
+ * 1,27% dan 0,28%, jadi sebutan "kuat" dulu memang terlalu murah.
+ *
+ * Dijalankan ulang berkala, bukan harian: watak pasar bergeser pelan, dan
+ * ambang yang berubah tiap hari membuat kalimat kemarin tak bisa
+ * dibandingkan dengan kalimat hari ini.
+ */
 const AMBANG = {
-  /** ≥ ini disebut "menguat kuat"/"melemah tajam", di bawahnya "tipis". */
-  gerakBesar: 1.0,
-  gerakTipis: 0.25,
-  /** Net foreign dianggap layak disebut kalau melewati ini (miliar rupiah). */
+  gerakBesar: ambangPasar.gerakBesar,
+  gerakTipis: ambangPasar.gerakTipis,
+  /** Net foreign dianggap layak disebut kalau melewati ini (miliar rupiah).
+   *  MASIH TEBAKAN — riwayat `nf_*` per hari belum dikumpulkan jadi satu seri,
+   *  jadi belum bisa dikalibrasi seperti dua ambang di atas. */
   nfBerarti: 300,
-  /** Kenaikan satu saham yang layak disebut sebagai penggerak. */
+  /** Kenaikan satu saham yang layak disebut sebagai penggerak. MASIH TEBAKAN,
+   *  alasan yang sama: butuh sebaran gainers harian lintas tahun. */
   lonjakan: 10,
 }
+
+/** Konteks kalibrasi untuk ditampilkan di antarmuka — pembaca yang bertanya
+ *  "kenapa disebut kuat?" bisa dijawab dengan jendela datanya. */
+export const ASAL_AMBANG = ambangPasar
 
 const rp = (n: number, des = 2) =>
   n.toLocaleString('id-ID', { minimumFractionDigits: des, maximumFractionDigits: des })

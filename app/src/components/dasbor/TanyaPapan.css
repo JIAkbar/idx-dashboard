@@ -1,0 +1,87 @@
+/* Tanya PAPAN — tombol mengambang + panel percakapan.
+   Tombolnya HIDUP DI LUAR .lantai (dipasang di shell), jadi warnanya tak bisa
+   memakai token .lantai. Dipakai token .dasbor-shell yang memang tersedia di
+   lapisan itu — pelajaran dari kartu terkunci yang dulu kehilangan seluruh
+   warnanya karena hal yang sama. */
+
+.tp-tombol {
+  position: fixed; right: 18px; bottom: 18px; z-index: 60;
+  width: 52px; height: 52px; border-radius: 50%;
+  display: grid; place-items: center; cursor: pointer;
+  background: var(--accent, #F0A62B); color: #0B1017;
+  border: none; box-shadow: 0 8px 22px -8px rgba(0, 0, 0, .6);
+  transition: transform .22s cubic-bezier(.2,.7,.3,1), box-shadow .22s ease;
+}
+.tp-tombol:hover { transform: translateY(-2px) scale(1.04); }
+.tp-tombol.buka { transform: rotate(-8deg) scale(.96); }
+.tp-tombol:focus-visible { outline: 2px solid var(--accent, #F0A62B); outline-offset: 3px; }
+.tp-lambang {
+  font-family: var(--disp, inherit); font-weight: 800; font-size: 22px; line-height: 1;
+}
+/* Denyut halus sekali saat halaman dibuka — menandai keberadaannya tanpa
+   berkedip terus-menerus. */
+@keyframes tp-denyut {
+  0% { box-shadow: 0 0 0 0 rgba(240, 166, 43, .5); }
+  100% { box-shadow: 0 0 0 16px rgba(240, 166, 43, 0); }
+}
+.tp-tombol { animation: tp-denyut 1.6s ease-out .8s 2; }
+
+.tp-panel {
+  position: fixed; right: 18px; bottom: 82px; z-index: 60;
+  width: min(400px, calc(100vw - 36px)); max-height: min(560px, calc(100dvh - 120px));
+  display: flex; flex-direction: column; gap: 10px;
+  background: var(--bg2); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 14px; box-shadow: 0 20px 48px -20px rgba(0, 0, 0, .7);
+  animation: tp-masuk .22s cubic-bezier(.2,.7,.3,1) both;
+}
+@keyframes tp-masuk { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.lantai .tp-kepala { display: flex; align-items: center; justify-content: space-between; }
+.lantai .tp-tutup {
+  background: none; border: none; cursor: pointer; color: var(--text3); display: flex; padding: 2px;
+}
+.lantai .tp-tutup:hover { color: var(--red); }
+.lantai .tp-tutup .dasbor-ikon { stroke: currentColor; }
+.lantai .tp-catatan { margin: 0; font-size: 10.5px; line-height: 1.6; color: var(--text3); }
+.lantai .tp-catatan b { color: var(--text2); }
+
+.lantai .tp-isi { flex: 1; overflow-y: auto; display: grid; gap: 8px; align-content: start; padding-right: 2px; }
+.lantai .tp-contoh { display: grid; gap: 5px; }
+.lantai .tp-contoh-it {
+  text-align: left; background: var(--bg3); border: 1px solid var(--line);
+  border-radius: var(--r); padding: 7px 10px; font: inherit; font-size: 11.5px;
+  color: var(--text2); cursor: pointer;
+}
+.lantai .tp-contoh-it:hover { border-color: var(--amber); color: var(--text); }
+
+.lantai .tp-baris { display: grid; gap: 3px; justify-items: start; }
+.lantai .tp-baris.orang { justify-items: end; }
+.lantai .tp-gelembung {
+  max-width: 92%; font-size: 12px; line-height: 1.6;
+  border: 1px solid var(--line); border-radius: var(--r); padding: 8px 11px;
+  background: var(--bg1, var(--bg2)); color: var(--text2);
+}
+.lantai .tp-baris.orang .tp-gelembung {
+  background: var(--amber-dim); border-color: var(--amber); color: var(--text);
+}
+.lantai .tp-tautan { font-size: 10.5px; color: var(--amber); text-decoration: none; }
+.lantai .tp-tautan:hover { text-decoration: underline; }
+
+.lantai .tp-kirim { display: flex; gap: 6px; }
+.lantai .tp-kirim .inp { flex: 1; min-width: 0; }
+.lantai .tp-kirim .btn-p { white-space: nowrap; }
+
+/* Telepon: panel menempel penuh di bawah — panel melayang selebar 400px di
+   layar 412px menyisakan tepi yang tak berguna. */
+@media (max-width: 560px) {
+  .tp-panel {
+    right: 10px; left: 10px; bottom: 76px; width: auto;
+    max-height: calc(100dvh - 150px);
+  }
+  .tp-tombol { right: 12px; bottom: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tp-tombol, .tp-panel { animation: none; }
+  .tp-tombol:hover { transform: none; }
+}

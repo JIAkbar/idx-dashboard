@@ -4,6 +4,7 @@ import { Sidebar } from './Sidebar'
 import { LaciMobile } from './LaciMobile'
 import { PitaKurs } from './PitaKurs'
 import { LoginModal } from './LoginModal'
+import { TanyaPapan } from './TanyaPapan'
 import { LoginModalProvider } from '../../context/LoginModalContext'
 import { useTheme } from '../../context/ThemeContext'
 import '../../dasbor/lantai.css'
@@ -98,6 +99,10 @@ export function DasborLayout() {
           onMasuk={() => { setLaciKiri(false); setLoginOpen(true) }}
         />
         {loginOpen && <LoginModal onClose={() => setLoginOpen(false)} />}
+        {/* Mengambang di pojok kanan bawah, ikut ke SEMUA halaman publik —
+            dipasang di shell, bukan per halaman, supaya tak ada halaman yang
+            kehilangan pintu tanyanya. */}
+        <TanyaPapan />
       </div>
     </LoginModalProvider>
   )
