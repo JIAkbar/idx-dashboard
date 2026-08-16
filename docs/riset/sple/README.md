@@ -286,6 +286,7 @@ nego).
 |---|---|
 | `info-01…09-*.png` | Screenshot tiap section sple-info (laptop 1536×960) |
 | `mf-01…03-*.png` | Screenshot sple-mf |
+| `banding-fitur.md` | **Ceklist banding PAPAN vs SPLE** per kategori: data, section, indikator, sinyal, AI, operasional — plus lima lubang terbesar kita dan lima keunggulan yang tak mereka punya |
 | `peta-section.md` | **Peta tiap section → id/anchor → fungsi render → sumber datanya**, hasil bedah statis kedua berkas. Termasuk bukti bahwa keduanya vanilla JS, bukan React |
 | `metodologi-sple-info.md` | Kutipan tab Panduan: rumus indikator, Wyckoff 6 fase, RS/Minervini, ambang valuasi, harmonic, keterbatasan yang mereka akui sendiri |
 
