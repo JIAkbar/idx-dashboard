@@ -8,6 +8,7 @@ import { fetchFundamental } from '../../lib/dasbor/stockDetailData'
 import { loadInvestorMap } from '../../lib/dasbor/petaInvestorData'
 import { jawab, CONTOH_TANYA, type Jawaban, type Topik, type DataButuh, type OhlcRingkas } from '../../lib/dasbor/tanyaPapan'
 import { tanyaAI, rakitKonteks } from '../../lib/dasbor/tanyaAI'
+import { useAuth } from '../../context/AuthContext'
 import { IkonMenu, IKON_SILANG } from './IkonMenu'
 import './TanyaPapan.css'
 
@@ -82,6 +83,11 @@ const JEDA_MIN = 520
  * Dipasang di DasborLayout supaya ikut ke semua halaman publik.
  */
 export function TanyaPapan() {
+  // Lapis AI berbiaya per pertanyaan, jadi hanya untuk yang sudah masuk.
+  // Ini penjaga KENYAMANAN — supaya tamu tak menunggu jeda lalu dapat
+  // penolakan; gerbang yang sebenarnya ada di Edge Function, karena
+  // fungsi itu bisa dipanggil langsung tanpa lewat halaman ini.
+  const { session } = useAuth()
   const [buka, setBuka] = useState(false)
   const [teks, setTeks] = useState('')
   const [riwayat, setRiwayat] = useState<Baris[]>([])
@@ -142,11 +148,22 @@ export function TanyaPapan() {
     // dilempar ke model bahasa — itu membayar token untuk angka yang sudah
     // kita hitung sendiri, sekaligus membuka pintu jawaban yang mengarang.
     let dariAI = false
-    if (j.takPaham) {
+    if (j.takPaham && session) {
       const ai = await tanyaAI(q, rakitKonteks(hari ?? null, edisi ?? null, kabar?.item ?? null))
       if (ai) {
         j = { ...j, teks: ai.teks, takPaham: false }
         dariAI = ai.dariAI
+      }
+    } else if (j.takPaham) {
+      // Tamu tetap mendapat seluruh mesin aturan — yang ditahan cuma lapis AI.
+      // Kalimatnya menyebut sebabnya (berbiaya), bukan sekadar "tidak boleh".
+      j = {
+        ...j,
+        teks: `${j.teks}
+
+Lapis AI-nya khusus yang sudah masuk — tiap pertanyaan ke sana ` +
+          'berbiaya, jadi jatahnya dipegang kontributor. Pertanyaan soal angka pasar tetap ' +
+          'dijawab dari data tanpa perlu masuk.',
       }
     }
 

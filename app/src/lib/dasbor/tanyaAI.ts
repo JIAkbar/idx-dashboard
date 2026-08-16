@@ -76,7 +76,17 @@ export async function tanyaAI(pertanyaan: string, konteks: string): Promise<Jawa
     const { data, error } = await supabase.functions.invoke('tanya-ai', {
       body: { pertanyaan, konteks },
     })
-    if (error) return null
+    // `invoke` menjadikan status non-2xx sebagai `error`, jadi balasan 401
+    // "perlu login" ikut ke sini. Ia TIDAK boleh ditelan jadi null diam-diam:
+    // itu satu-satunya kabar kenapa lapis AI tak menjawab.
+    if (error) {
+      const ctx = (error as { context?: Response }).context
+      if (ctx?.status === 401) {
+        const d = await ctx.json().catch(() => null) as { teks?: string } | null
+        return d?.teks ? { teks: d.teks, dariAI: false } : null
+      }
+      return null
+    }
     const d = data as { teks?: string; mati?: boolean; batas?: boolean; ditolak?: boolean }
     if (d?.mati) return null
     // Batas harian dan penolakan penjaga angka TETAP disampaikan — keduanya

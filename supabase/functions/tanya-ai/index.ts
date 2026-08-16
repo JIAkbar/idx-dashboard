@@ -34,6 +34,9 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 const KUNCI = Deno.env.get('GEMINI_API_KEY') ?? ''
 const AKTIF = (Deno.env.get('TANYA_AI_AKTIF') ?? '').toLowerCase() === 'true'
 const BATAS_HARIAN = angkaSetelan('TANYA_AI_BATAS_IP', 30)
+/** Kunci anon dipakai HANYA sebagai `apikey` saat memverifikasi token pemanggil
+ *  ke `/auth/v1/user`. Ia tak memberi hak apa pun sendiri. */
+const SB_ANON = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
 const MODEL = rantaiModel()
 
 
@@ -115,7 +118,39 @@ function angkaAsing(jawaban: string, konteks: string): string[] {
   return bilangan(jawaban).filter((b) => Number(b) > 100 && !punya.has(b))
 }
 
-async function kuotaTerpakai(ip: string): Promise<{ lolos: boolean; jumlah: number }> {
+/**
+ * Siapa yang memanggil? Mengembalikan id pengguna kalau permintaannya membawa
+ * JWT pengguna yang sah, `null` kalau tidak.
+ *
+ * Ini penting dan halus: `supabase.functions.invoke()` SELALU mengirim header
+ * `Authorization`, tapi bagi pengunjung yang belum masuk isinya kunci anon —
+ * bukan JWT pengguna. Jadi "ada header Authorization" bukan bukti sudah login;
+ * yang membuktikan cuma `/auth/v1/user` menjawab 200 dengan sebuah id.
+ *
+ * Menyembunyikan tombolnya di klien TIDAK cukup: siapa pun bisa memanggil
+ * fungsi ini langsung dengan curl. Gerbangnya harus di sini, di server, karena
+ * di sinilah biaya Gemini benar-benar terjadi.
+ */
+async function penggunaDariToken(req: Request): Promise<string | null> {
+  const auth = req.headers.get('Authorization') ?? ''
+  if (!auth.toLowerCase().startsWith('bearer ') || !SB_URL || !SB_ANON) return null
+  try {
+    const r = await fetch(`${SB_URL}/auth/v1/user`, {
+      headers: { apikey: SB_ANON, Authorization: auth },
+    })
+    if (!r.ok) return null
+    const u = await r.json()
+    const id = typeof u?.id === 'string' ? u.id : null
+    return id && id.length > 0 ? id : null
+  } catch {
+    // Gagal menghubungi lapis auth = TIDAK boleh dianggap sudah login. Beda
+    // dari pembatas kuota yang sengaja fail-open: yang ini gerbang biaya, dan
+    // membuka gerbang saat ragu persis kesalahan yang mahal.
+    return null
+  }
+}
+
+async function kuotaTerpakai(kunci: string): Promise<{ lolos: boolean; jumlah: number }> {
   if (!SB_URL || !SB_SERVICE) return { lolos: true, jumlah: 0 }
   try {
     const r = await fetch(`${SB_URL}/rest/v1/rpc/pakai_kuota_tanya_ai`, {
@@ -125,9 +160,9 @@ async function kuotaTerpakai(ip: string): Promise<{ lolos: boolean; jumlah: numb
         Authorization: `Bearer ${SB_SERVICE}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ alamat: ip, batas: BATAS_HARIAN }),
+      body: JSON.stringify({ alamat: kunci, batas: BATAS_HARIAN }),
     })
-    if (!r.ok) return { lolos: true, jumlah: 0 } // pembatas rusak bukan alasan menolak pengunjung
+    if (!r.ok) return { lolos: true, jumlah: 0 } // pembatas rusak bukan alasan menolak pengguna yang sudah masuk
     const baris = await r.json()
     const b = Array.isArray(baris) ? baris[0] : baris
     const jumlah = Number(b?.jumlah ?? 0)
@@ -214,8 +249,24 @@ Deno.serve(async (req) => {
   const konteks = (badan.konteks ?? '').slice(0, 12000)
   if (!pertanyaan) return balas({ galat: 'Pertanyaan kosong.' }, 400)
 
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'tanpa-ip'
-  const { lolos, jumlah } = await kuotaTerpakai(ip)
+  // Gerbang login. Diperiksa SEBELUM kuota dan sebelum panggilan keluar, jadi
+  // pengunjung yang belum masuk tak pernah membebani jatah maupun tagihan.
+  // Johan 17 Agu 2026: "ubah ke perlu login supaya non publik karena biaya
+  // mahal harus di usahakan dengan berkontribusi".
+  const pengguna = await penggunaDariToken(req)
+  if (!pengguna) {
+    return balas({
+      perluLogin: true,
+      teks: 'Tanya PAPAN hanya untuk yang sudah masuk. Lapis AI ini berbiaya per ' +
+        'pertanyaan, jadi jatahnya dipegang kontributor. Pertanyaan soal angka pasar ' +
+        'tetap dijawab dari data tanpa perlu masuk.',
+    }, 401)
+  }
+
+  // Kuota dihitung per PENGGUNA, bukan per IP. Batas ber-IP bocor dua arah:
+  // satu orang bisa berpindah jaringan untuk menyetel ulang jatahnya, dan
+  // sebaliknya satu kantor ber-NAT berbagi satu jatah tanpa alasan.
+  const { lolos, jumlah } = await kuotaTerpakai(`pengguna:${pengguna}`)
   if (!lolos) {
     return balas({
       batas: true,
