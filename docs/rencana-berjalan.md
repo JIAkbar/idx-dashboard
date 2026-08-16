@@ -55,6 +55,14 @@ Empat migrasi yang diterapkan: `setoran_status_dihapus_gantikan_ditolak`,
 `buat_tabel_notifikasi`, `notifikasi_policy_rls`, `trigger_notifikasi_kurasi`,
 `kunci_fungsi_trigger_kurasi`, `setoran_kolom_dimuat`.
 
+## 🗺️ Workflow pekerjaan → `docs/workflow-fundamental.md`
+
+Temuan riset SPLE + uji endpoint IDX sudah disusun jadi rencana kerja
+bertahap: jalur A (fundamental → halaman Bedah Emiten), jalur B (metadata
+resmi IDX), jalur C (lubang lain dari banding fitur). Tiap fase punya
+"selesai kalau" yang bisa diperiksa, dan empat pekerjaan pertama semuanya
+kecil serta tak bergantung panen apa pun.
+
 ## 🆕 Antrean baru — dibuka 16 Agu 2026
 
 Tiga yang menunggu KEPUTUSAN (tak bisa ditebak tanpa salah sasaran):
