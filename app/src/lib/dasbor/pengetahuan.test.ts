@@ -62,3 +62,45 @@ describe('cariPengetahuan', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 })
+
+/**
+ * Baterai cakupan — 20 pertanyaan yang wajar diketik pengunjung, dicoba
+ * langsung di panel Tanya PAPAN 16 Agu 2026. Waktu itu **sembilan gagal
+ * (45%)**, dan sebagian besar entrinya SUDAH ADA — cuma kuncinya terlalu
+ * sempit sehingga tak pernah tersentuh.
+ *
+ * Ditulis sebagai tes supaya cakupannya TERUKUR, bukan dirasakan: menambah
+ * entri baru gampang, yang sulit adalah tahu mana yang belum terjawab.
+ * Tiap pertanyaan yang pernah gagal masuk sini permanen.
+ */
+describe('cariPengetahuan — baterai cakupan pertanyaan pengunjung', () => {
+  const WAJIB: Array<[string, string]> = [
+    ['apa itu PAPAN', 'tentang-papan'],
+    ['PAPAN gratis atau bayar', 'biaya-papan'],
+    ['bagaimana cara jadi kontributor', 'cara-jadi-kontributor'],
+    ['kalkulator bisa apa saja', 'halaman-kalkulator'],
+    ['data PAPAN dari mana', 'sumber-data'],
+    ['kenapa data broker cuma sebagian emiten', 'broker-sebagian-emiten'],
+    ['saham apa yang layak dibeli', 'bukan-saran-investasi'],
+    ['bagaimana PAPAN menghitung akurasi kontributor', 'hitung-akurasi'],
+    ['apa itu papan pencatatan', 'papan-pencatatan'],
+  ]
+
+  it.each(WAJIB)('“%s” dijawab entri %s', (tanya, id) => {
+    expect(cariPengetahuan(tanya)?.id).toBe(id)
+  })
+
+  it('pertanyaan umum lain tetap terjawab — bukan sekadar yang dites di atas', () => {
+    const lain = ['apa itu ARA', 'kuota setoran harian berapa', 'halaman radar isinya apa',
+      'seasonality itu apa', 'bulletin terbit kapan', 'bedanya PAPAN dengan RTI']
+    const gagal = lain.filter((q) => cariPengetahuan(q) === null)
+    expect(gagal).toEqual([])
+  })
+
+  it('pertanyaan di luar cakupan TETAP dijawab null — jangan dipaksa cocok', () => {
+    // Ambang keterbukaan kunci punya batas: kalau apa pun ikut cocok, jawaban
+    // yang salah akan terasa seperti jawaban yang benar.
+    expect(cariPengetahuan('resep rendang padang')).toBeNull()
+    expect(cariPengetahuan('cuaca besok hujan tidak')).toBeNull()
+  })
+})

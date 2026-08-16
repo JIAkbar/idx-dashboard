@@ -31,6 +31,99 @@ export interface Entri {
 }
 
 export const PENGETAHUAN: Entri[] = [
+  // ── Tentang PAPAN sendiri ────────────────────────────────────────────────
+  // Ditambahkan setelah pengukuran 16 Agu 2026: dari 20 pertanyaan wajar,
+  // sembilan tak terjawab — dan yang paling telak "apa itu PAPAN". Basis
+  // pengetahuan yang tahu fraksi harga tapi tak bisa menyebut dirinya sendiri
+  // adalah lubang yang cuma kelihatan kalau benar-benar ditanyai.
+  {
+    id: 'tentang-papan',
+    // 'apa itu papan' SENGAJA tidak didaftarkan: ia beririsan penuh dengan
+    // kunci 'papan', jadi cuma menggandakan skor entri ini — dan itu membuat
+    // "apa itu papan pencatatan" dijawab profil PAPAN alih-alih entri papan
+    // pencatatan. Kunci yang beririsan bukan menambah ketepatan, melainkan
+    // membajak entri yang lebih spesifik.
+    kunci: ['papan', 'situs ini', 'website ini', 'aplikasi ini'],
+    judul: 'PAPAN — Pusat Analisa Pasar Nusantara',
+    isi:
+      'PAPAN menyajikan data dan informasi Bursa Efek Indonesia: angka harian pasar, fundamental per emiten, ' +
+      'kepemilikan saham dari KSEI, pola musiman, dan terbitan analisa. Prinsipnya angkanya bisa ditelusuri ke ' +
+      'sumbernya, metodenya terbuka, dan yang belum kami punya kami sebut belum punya. PAPAN bukan produk resmi ' +
+      'Bursa Efek Indonesia.',
+  },
+  {
+    id: 'biaya-papan',
+    kunci: ['gratis', 'bayar', 'biaya', 'berlangganan', 'harga langganan'],
+    judul: 'Biaya',
+    isi:
+      'Halaman data PAPAN terbuka untuk umum tanpa biaya. Sebagian fitur terbuka bertahap mengikuti jenjang ' +
+      'kontributor — jenjang naik dari kontribusi setoran, bukan dari pembayaran.',
+  },
+  {
+    id: 'cara-jadi-kontributor',
+    kunci: ['jadi kontributor', 'cara kontributor', 'gabung', 'daftar akun', 'ikut menyetor'],
+    judul: 'Cara menjadi kontributor',
+    isi:
+      'Akun kontributor dibuat oleh pengurus, bukan lewat pendaftaran mandiri — supaya tiap setoran punya ' +
+      'penanggung jawab yang jelas. Kontributor menyetor tangkapan layar broker summary harian sesuai kalender ' +
+      'bursa; setoran yang lolos kurasi menambah jenjang dan kuotanya. Ajukan lewat halaman Kritik & Saran.',
+    ke: '/feedback',
+    keLabel: 'Buka Kritik & Saran',
+  },
+  {
+    id: 'hitung-akurasi',
+    kunci: ['hitung akurasi', 'menghitung akurasi', 'akurasi kontributor', 'rumus akurasi', 'akurasi dihitung'],
+    judul: 'Cara akurasi kontributor dihitung',
+    isi:
+      'Akurasi = setoran disetujui dibagi (disetujui + dihapus). Setoran berstatus "perlu revisi" sengaja TIDAK ' +
+      'ikut dihitung: revisi adalah permintaan perbaikan, bukan vonis — kalau ikut menghukum, kontributor justru ' +
+      'akan menghindarinya. Setoran yang masih menunggu juga belum dihitung.',
+  },
+  {
+    id: 'broker-sebagian-emiten',
+    kunci: ['broker sebagian', 'kenapa broker', 'broker tidak lengkap', 'broker semua emiten'],
+    judul: 'Kenapa broker summary hanya sebagian emiten',
+    isi:
+      'Rekap broker per emiten tidak tersedia di endpoint publik IDX mana pun — yang terbuka hanya rekap level ' +
+      'pasar untuk 88 broker, tanpa rincian per saham. Karena itu broker summary PAPAN berasal dari setoran ' +
+      'kontributor, jadi cakupannya sebatas emiten yang disetor hari itu. Ini keterbatasan sumber, bukan pilihan.',
+    ke: '/broker-summary',
+    keLabel: 'Buka Broker Summary',
+  },
+  {
+    id: 'bukan-saran-investasi',
+    kunci: ['layak dibeli', 'saham bagus', 'rekomendasi saham', 'saran investasi', 'beli apa',
+      'harus beli', 'prediksi harga', 'saham naik besok'],
+    judul: 'PAPAN tidak memberi rekomendasi beli/jual',
+    isi:
+      'PAPAN menyajikan data dan metode perhitungannya, bukan saran investasi. Tidak ada halaman di sini yang ' +
+      'menyebut sebuah saham layak dibeli atau dijual — yang ada angka, pola, dan aturan yang dipakai ' +
+      'menghitungnya, supaya keputusan tetap di tangan pembacanya. Radar Watchlist pun daftar berbasis aturan ' +
+      'yang syaratnya terbuka, bukan rekomendasi.',
+    ke: '/radar',
+    keLabel: 'Buka Radar Watchlist',
+  },
+  {
+    id: 'beda-dengan-lain',
+    kunci: ['bedanya papan', 'beda dengan', 'dibanding aplikasi', 'kelebihan papan', 'keunggulan'],
+    judul: 'Bedanya dengan aplikasi pasar lain',
+    isi:
+      'Yang tak umum ada di tempat lain: kepemilikan saham dari KSEI beserta peta jaringan dan grup ' +
+      'konglomeratnya, pola musiman yang diuji lawan 2.000 pengacakan, riwayat IHSG sejak 1990 dan OHLCV lima ' +
+      'tahun untuk hampir seluruh emiten, harga yang selalu dibulatkan ke fraksi bursa sehingga benar-benar bisa ' +
+      'dipesan, serta terbitan analisa berkala. Yang belum ada juga disebut terus terang.',
+  },
+  {
+    id: 'halaman-beranda',
+    kunci: ['beranda', 'halaman utama', 'halaman depan'],
+    judul: 'Beranda',
+    isi:
+      'Beranda memuat papan IHSG hari berjalan, ringkasan pasar yang dirakit dari angka (bukan ditulis model ' +
+      'bahasa), terbitan terakhir, kabar dari empat sumber, dan kartu menu ke seluruh halaman.',
+    ke: '/',
+    keLabel: 'Buka Beranda',
+  },
+
   // ── Aturan bursa (docs/pedoman-harga-bei.md + lib/fraksiHarga.ts) ───────
   {
     id: 'fraksi-harga',
@@ -67,7 +160,7 @@ export const PENGETAHUAN: Entri[] = [
   // ── Kebijakan kontributor (docs/rencana-berjalan.md) ─────────────────────
   {
     id: 'jenjang-kontributor',
-    kunci: ['jenjang', 'tier kontributor', 'naik jenjang', 'level kontributor'],
+    kunci: ['jenjang', 'kuota', 'tier kontributor', 'naik jenjang', 'level kontributor'],
     judul: 'Jenjang kontributor',
     isi:
       'Kontributor PAPAN naik jenjang berdasarkan jumlah setoran disetujui dan akurasi kurasi, dengan kuota ' +
@@ -280,7 +373,7 @@ export const PENGETAHUAN: Entri[] = [
   },
   {
     id: 'halaman-kalkulator',
-    kunci: ['halaman kalkulator', 'apa itu kalkulator'],
+    kunci: ['kalkulator', 'halaman kalkulator', 'apa itu kalkulator'],
     judul: 'Kalkulator',
     isi: 'Kalkulator menghitung average down, target ARA, risk-reward, dividen, dan titik pulih — hasilnya dibulatkan ke fraksi harga bursa.',
     ke: '/kalkulator',
@@ -288,7 +381,7 @@ export const PENGETAHUAN: Entri[] = [
   },
   {
     id: 'halaman-radar',
-    kunci: ['radar watchlist', 'apa itu radar'],
+    kunci: ['radar', 'radar watchlist', 'wdwl'],
     judul: 'Radar Watchlist',
     isi: 'Radar Watchlist adalah daftar pantau berbasis aturan — emiten yang memenuhi syarat tertentu, bukan tebakan atau rekomendasi.',
     ke: '/radar',
@@ -312,7 +405,7 @@ export const PENGETAHUAN: Entri[] = [
   },
   {
     id: 'halaman-bulletin',
-    kunci: ['bulletin arus pasar', 'apa itu bulletin', 'arus pasar'],
+    kunci: ['bulletin', 'bulletin arus pasar', 'arus pasar', 'terbitan'],
     judul: 'Bulletin Arus Pasar',
     isi: 'Bulletin Arus Pasar adalah arsip edisi Arus Pasar — tinjauan teknikal dan arus dana, lengkap dengan PDF-nya.',
     ke: '/bulletin',
@@ -359,19 +452,34 @@ export function cariPengetahuan(pertanyaan: string): Entri | null {
 
   // Kata kunci SATU kata dicocokkan sebagai kata utuh (bukan substring) —
   // tanpa ini, kunci pendek seperti "ara" ikut cocok di dalam "sekarang".
-  // Kunci berupa FRASE (mengandung spasi) tetap dicocokkan sebagai substring,
-  // supaya "apa itu seasonality" tetap cocok dengan frase "apa itu seasonality".
+  //
+  // Kunci berupa FRASE dicocokkan sebagai KUMPULAN KATA, bukan potongan huruf
+  // berurutan: semua katanya harus ada, urutannya bebas, kata lain boleh
+  // menyelip. Versi pertama menuntut frasenya utuh dan berdampingan, dan itu
+  // gagal pada cara orang benar-benar bertanya — kunci "data dari mana" tak
+  // cocok dengan "data PAPAN dari mana" hanya karena satu kata menyelip di
+  // tengah. Terukur: 9 dari 20 pertanyaan wajar tak terjawab, dan sebagian
+  // besar entrinya SUDAH ADA, cuma tak tersentuh.
   const cocok = (k: string): boolean => {
     const kb = bersih(k)
-    return kb.includes(' ') ? t.includes(kb) : kata.includes(kb)
+    if (!kb.includes(' ')) return kata.includes(kb)
+    return kb.split(' ').every((w) => kata.includes(w))
   }
 
   let terbaik: Entri | null = null
   let skorTerbaik = 0
+  let panjangTerbaik = 0
   for (const entri of PENGETAHUAN) {
-    const skor = entri.kunci.filter(cocok).length
-    if (skor > skorTerbaik) {
+    const kena = entri.kunci.filter(cocok)
+    const skor = kena.length
+    // Seri dimenangkan kunci yang PALING PANJANG. Tanpa ini, entri umum
+    // "tentang-papan" (kunci satu kata 'papan') mengalahkan entri spesifik
+    // "hitung-akurasi" hanya karena urutannya lebih dulu di daftar —
+    // pertanyaan yang lebih spesifik justru dijawab yang lebih umum.
+    const panjang = kena.reduce((m, k) => Math.max(m, k.length), 0)
+    if (skor > skorTerbaik || (skor === skorTerbaik && skor > 0 && panjang > panjangTerbaik)) {
       skorTerbaik = skor
+      panjangTerbaik = panjang
       terbaik = entri
     }
   }
