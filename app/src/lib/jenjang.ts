@@ -25,20 +25,17 @@ export async function daftarJenjang(): Promise<JenjangRow[]> {
   return cacheJenjang
 }
 
-/** Jumlah setoran `disetujui` & `ditolak` milik PENGGUNA SENDIRI (semua
- *  tanggal) — dasar kartu jenjang di tab Unggah. `menunggu` tidak dihitung
- *  (belum ikut akurasi). RLS tabel `setoran` sudah membatasi ke baris sendiri,
- *  jadi query di sini tak perlu filter tambahan selain status. */
-export async function hitungRingkasanSetoranSaya(): Promise<{ disetujui: number; dihapus: number }> {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { disetujui: 0, dihapus: 0 }
-  const [disetujui, dihapus] = await Promise.all([
-    supabase.from('setoran').select('*', { count: 'exact', head: true }).eq('penyetor', user.id).eq('status', 'disetujui'),
-    supabase.from('setoran').select('*', { count: 'exact', head: true }).eq('penyetor', user.id).eq('status', 'dihapus'),
-  ])
-  if (disetujui.error) throw disetujui.error
-  if (dihapus.error) throw dihapus.error
-  return { disetujui: disetujui.count ?? 0, dihapus: dihapus.count ?? 0 }
+/** Ringkasan akurasi milik PENGGUNA SENDIRI — dasar kartu jenjang di tab
+ *  Unggah. Lewat RPC `akurasi_saya()`, BUKAN dihitung ulang di sini: dulu ada
+ *  dua query count langsung ke `setoran` tanpa jendela `akurasi_sejak`, jadi
+ *  angkanya bisa berbeda dari yang dipakai server (`hitung_jenjang()`)
+ *  menentukan jenjang sesungguhnya begitu superadmin mereset akurasi
+ *  seseorang. `sejak` null = akurasi dihitung dari seluruh riwayat. */
+export async function hitungRingkasanSetoranSaya(): Promise<{ disetujui: number; dihapus: number; sejak: string | null }> {
+  const { data, error } = await supabase.rpc('akurasi_saya')
+  if (error) throw error
+  const baris = data?.[0]
+  return { disetujui: baris?.disetujui ?? 0, dihapus: baris?.dihapus ?? 0, sejak: baris?.sejak ?? null }
 }
 
 export interface RingkasanJenjang {
@@ -54,6 +51,9 @@ export interface RingkasanJenjang {
   kurangSetoran: number
   /** Akurasi sudah memenuhi syarat `berikutnya` (tak berarti otomatis naik — cuma salah satu syarat). */
   akurasiCukup: boolean
+  /** `null` = akurasi dihitung dari seluruh riwayat. String ISO = superadmin
+   *  pernah mereset akurasi akun ini, dihitung ulang sejak tanggal itu. */
+  akurasiSejak: string | null
 }
 
 /**
@@ -68,7 +68,8 @@ export function ringkasanJenjang(
   kuotaManual: number | null,
   disetujui: number,
   dihapus: number,
-  daftar: JenjangRow[]
+  daftar: JenjangRow[],
+  akurasiSejak: string | null = null
 ): RingkasanJenjang {
   const urut = [...daftar].sort((a, b) => a.tier - b.tier)
   const jenjangSaatIni = urut.find((j) => j.tier === tierSaatIni) ?? urut[0]
@@ -78,9 +79,9 @@ export function ringkasanJenjang(
   const berikutnya = urut.find((j) => j.tier === tierSaatIni + 1) ?? null
 
   if (!berikutnya) {
-    return { jenjangSaatIni, kuotaEfektif, disetujui, akurasiPersen, berikutnya: null, kurangSetoran: 0, akurasiCukup: true }
+    return { jenjangSaatIni, kuotaEfektif, disetujui, akurasiPersen, berikutnya: null, kurangSetoran: 0, akurasiCukup: true, akurasiSejak }
   }
   const kurangSetoran = Math.max(0, berikutnya.min_disetujui - disetujui)
   const akurasiCukup = berikutnya.min_akurasi === null || (akurasiPersen ?? 0) >= berikutnya.min_akurasi
-  return { jenjangSaatIni, kuotaEfektif, disetujui, akurasiPersen, berikutnya, kurangSetoran, akurasiCukup }
+  return { jenjangSaatIni, kuotaEfektif, disetujui, akurasiPersen, berikutnya, kurangSetoran, akurasiCukup, akurasiSejak }
 }

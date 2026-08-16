@@ -74,7 +74,7 @@
    menggulir jauh ke samping di telepon — kolom pertamanya terdorong keluar
    layar dan yang tampak cuma dropdown tanpa tahu itu halaman apa. */
 .lantai .aa-tbl { table-layout: fixed; }
-.lantai .aa-tbl-akun { min-width: 1180px; }
+.lantai .aa-tbl-akun { min-width: 1216px; }
 
 /* Tabel dengan sedikit kolom (Akses, Aktivitas) dibiarkan selebar wadahnya —
    isinya muat tanpa gulir samping, jadi tidak perlu lebar minimum sama sekali. */
@@ -84,7 +84,10 @@
    Email / Atur Ulang Sandi / Hapus") memakan 300px tiap baris dan membuat
    tabel menggulir sangat jauh di telepon; ikon memangkasnya ke 120px, dan
    min-width tabel ikut turun 1360 → 1180. Nama aksinya tidak hilang — pindah
-   ke title (tetikus) + aria-label (pembaca layar). */
+   ke title (tetikus) + aria-label (pembaca layar). Kolom naik lagi ke 156px
+   (min-width tabel 1180 → 1216) begitu ikon ke-4 (Reset/Batalkan akurasi)
+   ditambahkan — hanya tampil di baris kontributor, jadi baris superadmin
+   tetap tiga ikon. */
 .lantai .aa-aksi { display: flex; gap: 6px; justify-content: flex-end; }
 .lantai .aa-ikon {
   width: 30px; height: 30px; padding: 0; flex-shrink: 0;

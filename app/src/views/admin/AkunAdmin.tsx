@@ -191,6 +191,7 @@ export function AkunAdmin() {
   const [resetTarget, setResetTarget] = useState<AkunRow | null>(null)
   const [hapusTarget, setHapusTarget] = useState<AkunRow | null>(null)
   const [emailTarget, setEmailTarget] = useState<AkunRow | null>(null)
+  const [resetAkurasiTarget, setResetAkurasiTarget] = useState<AkunRow | null>(null)
 
   const superadmin = profil?.peran === 'superadmin'
   const tampil = useMemo(() => saringUrutAkun(akun ?? [], cari, urut), [akun, cari, urut])
@@ -225,7 +226,7 @@ export function AkunAdmin() {
 
   async function ubahProfil(
     baris: AkunRow,
-    patch: Partial<{ kuota_harian: number; boleh_bedah: boolean; aktif: boolean; kuota_manual: number | null; beku_otomatis: boolean; tier: number }>
+    patch: Partial<{ kuota_harian: number; boleh_bedah: boolean; aktif: boolean; kuota_manual: number | null; beku_otomatis: boolean; tier: number; akurasi_sejak: string | null }>
   ) {
     tandaiSibuk(baris.id, true)
     try {
@@ -285,12 +286,12 @@ export function AkunAdmin() {
                     dengan auto, "Tanpa jenjang" dan dropdown "Ikut jenjang"
                     pecah dua baris dan tinggi tiap baris jadi berbeda-beda.
                     Email sengaja jadi kolom penyerap — satu-satunya yang
-                    panjangnya tak terduga. Σ kolom tetap = 990px (aksi turun
-                    300→120 sejak tombolnya jadi ikon), plus jatah minimum
-                    Email 190px → min-width tabel 1.180px (lihat .aa-tbl di
-                    AkunAdmin.css; kalau kolom di sini berubah, angka itu WAJIB
-                    dihitung ulang, kalau tidak kolom penyerap kolaps di layar
-                    sempit). */}
+                    panjangnya tak terduga. Σ kolom tetap = 1.026px (aksi
+                    120→156 sejak tombol Reset akurasi jadi ikon ke-4), plus
+                    jatah minimum Email 190px → min-width tabel 1.216px
+                    (lihat .aa-tbl di AkunAdmin.css; kalau kolom di sini
+                    berubah, angka itu WAJIB dihitung ulang, kalau tidak
+                    kolom penyerap kolaps di layar sempit). */}
                 <colgroup>
                   <col />
                   <col style={{ width: 120 }} />
@@ -301,7 +302,7 @@ export function AkunAdmin() {
                   <col style={{ width: 100 }} />
                   <col style={{ width: 70 }} />
                   <col style={{ width: 150 }} />
-                  <col style={{ width: 120 }} />
+                  <col style={{ width: 156 }} />
                 </colgroup>
                 <thead>
                   <tr>
@@ -347,13 +348,29 @@ export function AkunAdmin() {
                               menunggu perhitungan otomatis mengejar itu menghukum
                               orang yang sudah terbukti. Server tetap wasit kuotanya. */}
                           {berjenjang ? (
-                            <Dropdown
-                              opsi={jenjangOpsi}
-                              nilai={String(tier)}
-                              ariaLabel={`Jenjang — ${a.email}`}
-                              disabled={sedangProses || jenjangOpsi.length === 0}
-                              onGanti={(n) => ubahProfil(a, { tier: Number(n) })}
-                            />
+                            <>
+                              <Dropdown
+                                opsi={jenjangOpsi}
+                                nilai={String(tier)}
+                                ariaLabel={`Jenjang — ${a.email}`}
+                                disabled={sedangProses || jenjangOpsi.length === 0}
+                                onGanti={(n) => ubahProfil(a, { tier: Number(n) })}
+                              />
+                              {/* Akurasi direset (pendidikan, bukan hukuman): jendela
+                                  hitung akurasi dimulai ulang dari tanggal ini, tapi
+                                  jumlah setoran disetujui TETAP sepanjang masa —
+                                  caption ini satu-satunya tempat yang menyebutkannya
+                                  di tabel. */}
+                              {a.akurasi_sejak && (
+                                <div
+                                  className="muted aa-nowrap"
+                                  style={{ fontSize: 10, marginTop: 2 }}
+                                  title={`Akurasi dihitung ulang sejak ${waktuManusiawi(a.akurasi_sejak)} — setoran disetujui sebelumnya tetap dihitung.`}
+                                >
+                                  akurasi sejak {waktuManusiawi(a.akurasi_sejak).split(',')[0]}
+                                </div>
+                              )}
+                            </>
                           ) : (
                             <span className="muted aa-nowrap" title="Superadmin tidak dibatasi jenjang maupun kuota harian">
                               Tanpa jenjang
@@ -417,6 +434,23 @@ export function AkunAdmin() {
                             >
                               <IkonMenu d={IKON_KUNCI} size={13} />
                             </button>
+                            {/* Reset/batalkan akurasi — kontributor saja (superadmin
+                                tidak berjenjang, tidak berarti apa-apa untuknya).
+                                Satu tombol, dua aksi tergantung status: mereset
+                                (wajib lewat modal konfirmasi, lihat FormResetAkurasi)
+                                atau membatalkan reset yang sudah ada (langsung, sama
+                                seperti sakelar Aktif/Beku di sebelah — reversibel,
+                                tidak butuh konfirmasi). */}
+                            {berjenjang && (
+                              <button
+                                type="button" className="dd-btn aa-ikon" disabled={sedangProses}
+                                title={a.akurasi_sejak ? 'Batalkan reset akurasi' : 'Reset akurasi'}
+                                aria-label={`${a.akurasi_sejak ? 'Batalkan reset akurasi' : 'Reset akurasi'} — ${a.email}`}
+                                onClick={() => (a.akurasi_sejak ? ubahProfil(a, { akurasi_sejak: null }) : setResetAkurasiTarget(a))}
+                              >
+                                <IkonMenu d={IKON_ULANG} size={13} />
+                              </button>
+                            )}
                             <button
                               type="button" className="dd-btn merah aa-ikon" disabled={sedangProses}
                               title="Hapus akun" aria-label={`Hapus akun — ${a.email}`}
@@ -471,6 +505,18 @@ export function AkunAdmin() {
             setAkun((list) => list && list.map((a) => (a.id === emailTarget.id ? { ...a, email: emailBaru } : a)))
             setToast({ ok: true, pesan })
             setEmailTarget(null)
+          }}
+        />
+      )}
+
+      {resetAkurasiTarget && (
+        <FormResetAkurasi
+          akun={resetAkurasiTarget}
+          onClose={() => setResetAkurasiTarget(null)}
+          onSukses={(pesan) => {
+            setToast({ ok: true, pesan })
+            setResetAkurasiTarget(null)
+            setMuat((m) => m + 1)
           }}
         />
       )}
@@ -660,6 +706,52 @@ function FormHapusAkun({ akun, onClose, onSukses }: { akun: AkunRow; onClose: ()
       <div style={{ display: 'flex', gap: 8 }}>
         <button type="button" className="btn-p af-btn-keluar" disabled={kirim || dampak === null} onClick={hapus}>
           {kirim ? 'Menghapus…' : 'Ya, Hapus Permanen'}
+        </button>
+        <button type="button" className="dd-btn" disabled={kirim} onClick={onClose}>Batal</button>
+      </div>
+      {err && <p className="af-err" style={{ margin: 0 }}>{err}</p>}
+    </ModalKecil>
+  )
+}
+
+/**
+ * Modal konfirmasi "Reset akurasi" (pendidikan, bukan hukuman — permintaan
+ * Johan: kontributor bisa belajar dari kesalahan dan naik jenjang lagi lewat
+ * kurasi yang baik). Berbeda dari FormHapusAkun, tindakan ini REVERSIBEL —
+ * tombol "Batalkan reset" di baris tabel mengembalikannya kapan pun — jadi
+ * modalnya menegaskan itu, bukan menakut-nakuti seperti modal hapus.
+ */
+function FormResetAkurasi({ akun, onClose, onSukses }: { akun: AkunRow; onClose: () => void; onSukses: (pesan: string) => void }) {
+  const [kirim, setKirim] = useState(false)
+  const [err, setErr] = useState('')
+
+  async function konfirmasi() {
+    setKirim(true)
+    setErr('')
+    try {
+      await setProfil(akun.id, { akurasi_sejak: new Date().toISOString() })
+      onSukses(`Akurasi ${akun.alias || akun.email} dihitung ulang.`)
+    } catch (e) {
+      setErr(pesanGalat(e, 'Gagal mereset akurasi.'))
+    } finally {
+      setKirim(false)
+    }
+  }
+
+  return (
+    <ModalKecil label={`Reset akurasi — ${akun.alias || akun.email}`} onClose={() => { if (!kirim) onClose() }}>
+      <p style={{ margin: 0, fontSize: 12.5 }}>
+        Akurasi <b>{akun.alias || akun.email}</b> akan dihitung ulang <b>mulai sekarang</b> — kontributor akan
+        dikabari lewat notifikasi bahwa catatan lamanya tidak lagi membebani.
+      </p>
+      <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, color: 'var(--text2)', display: 'grid', gap: 3 }}>
+        <li>Riwayat setoran <b>tidak dihapus</b> — semuanya tetap tersimpan apa adanya.</li>
+        <li>Jumlah setoran <b>disetujui tetap dihitung penuh</b>, sepanjang masa — kerja yang sudah diakui tidak hilang.</li>
+        <li>Tindakan ini <b>bisa dibatalkan</b> kapan pun lewat tombol "Batalkan reset" di baris yang sama.</li>
+      </ul>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button type="button" className="btn-p" disabled={kirim} onClick={konfirmasi}>
+          {kirim ? 'Menyimpan…' : 'Ya, Reset Akurasi'}
         </button>
         <button type="button" className="dd-btn" disabled={kirim} onClick={onClose}>Batal</button>
       </div>

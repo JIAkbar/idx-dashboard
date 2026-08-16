@@ -17,6 +17,10 @@ export interface AkunRow {
   tier?: number | null
   kuota_manual?: number | null
   beku_otomatis?: boolean
+  /** Reset akurasi (pendidikan bukan hukuman): `null` = akurasi dihitung dari
+   *  seluruh riwayat, string ISO = dihitung ulang sejak tanggal itu. Jumlah
+   *  setoran disetujui TIDAK terpengaruh — itu dihitung sepanjang masa. */
+  akurasi_sejak?: string | null
 }
 
 /**
@@ -137,6 +141,10 @@ export function setProfil(
      *  memberi kontributor titik awal yang pantas tanpa menunggu perhitungan
      *  otomatis mengejar. Kuota tetap ditegakkan server lewat kuota_saya(). */
     tier: number
+    /** Reset akurasi — string ISO = mulai hitung ulang dari sekarang, `null` =
+     *  batalkan reset (kembali ke seluruh riwayat). `null` di sini BERMAKNA,
+     *  sama seperti kuota_manual di atas. */
+    akurasi_sejak: string | null
   }>
 ) {
   return panggilAdminAkun<{ ok: true }>('set_profil', { id, ...patch })

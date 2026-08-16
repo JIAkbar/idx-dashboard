@@ -55,4 +55,10 @@ describe('ringkasanJenjang', () => {
     expect(r.kurangSetoran).toBe(0)
     expect(r.akurasiCukup).toBe(true)
   })
+
+  it('akurasiSejak null kalau tak diisi (default), diteruskan apa adanya kalau diisi', () => {
+    expect(ringkasanJenjang(0, null, 0, 0, JENJANG).akurasiSejak).toBeNull()
+    const r = ringkasanJenjang(1, null, 14, 6, JENJANG, '2026-08-16T00:00:00Z')
+    expect(r.akurasiSejak).toBe('2026-08-16T00:00:00Z')
+  })
 })

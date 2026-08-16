@@ -388,7 +388,7 @@ function EditAlasanModal({ ticker, entries, onClose, onSukses }: {
  */
 function KartuJenjang({ profil, superadmin }: { profil: ProfilSaya; superadmin: boolean }) {
   const [jenjang, setJenjang] = useState<JenjangRow[] | null>(null)
-  const [angka, setAngka] = useState<{ disetujui: number; dihapus: number } | null>(null)
+  const [angka, setAngka] = useState<{ disetujui: number; dihapus: number; sejak: string | null } | null>(null)
 
   useEffect(() => {
     let batal = false
@@ -406,7 +406,7 @@ function KartuJenjang({ profil, superadmin }: { profil: ProfilSaya; superadmin: 
   }, [])
 
   if (!jenjang || jenjang.length === 0 || !angka) return null
-  const r = ringkasanJenjang(profil.tier ?? 0, profil.kuota_manual ?? null, angka.disetujui, angka.dihapus, jenjang)
+  const r = ringkasanJenjang(profil.tier ?? 0, profil.kuota_manual ?? null, angka.disetujui, angka.dihapus, jenjang, angka.sejak)
 
   return (
     <section className="panel">
@@ -458,11 +458,27 @@ function KartuJenjang({ profil, superadmin }: { profil: ProfilSaya; superadmin: 
           )}
         </div>
       </div>
+      {!superadmin && r.akurasiSejak && (
+        <div className="panel-b" style={{ paddingTop: 0 }}>
+          <p className="muted" style={{ margin: 0, fontSize: 11.5 }}>
+            Akurasimu dihitung ulang mulai {tanggalPendek(r.akurasiSejak)} — catatan sebelumnya tidak lagi
+            membebani, dan setoran disetujuimu tetap dihitung penuh seperti biasa.
+          </p>
+        </div>
+      )}
       <div className="panel-b" style={{ paddingTop: 0 }}>
         <TanggaJenjang daftar={jenjang} tierSaatIni={superadmin ? null : (profil.tier ?? 0)} />
       </div>
     </section>
   )
+}
+
+/** ISO datetime → "16 Agu 2026" (tanpa jam) — cukup untuk kalimat kartu jenjang. */
+function tanggalPendek(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return '—'
+  const bulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'][d.getMonth()]
+  return `${d.getDate()} ${bulan} ${d.getFullYear()}`
 }
 
 /** Berapa baris tabel yang tampak sebelum harus digulir. */
