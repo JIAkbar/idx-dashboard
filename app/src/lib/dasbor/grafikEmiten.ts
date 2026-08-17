@@ -48,10 +48,43 @@ export function keDataLilinVolume(
   const lilin: LilinData[] = []
   const volume: VolumeData[] = []
   for (const [tanggal, buka, tinggi, rendah, tutup, vol] of baris) {
+    if (hariTanpaPerdagangan(buka, tinggi, rendah, tutup, vol)) continue
     lilin.push({ time: tanggal, open: buka, high: tinggi, low: rendah, close: tutup })
     volume.push({ time: tanggal, value: vol, color: tutup >= buka ? warnaNaik : warnaTurun })
   }
   return { lilin, volume }
+}
+
+/**
+ * Hari yang ADA di berkas tapi TIDAK ada perdagangannya.
+ *
+ * Berkas OHLC memuat baris untuk hari-hari semacam ini dengan volume 0 dan
+ * harga yang dibawa dari hari sebelumnya, sehingga buka=tinggi=rendah=tutup.
+ * Kalau ikut digambar, hasilnya garis mendatar setipis benang di antara lilin
+ * sungguhan plus batang volume setinggi nol — dan saat kursor berhenti di
+ * situ, tooltipnya menyebut sebuah hari yang sebenarnya tak punya transaksi.
+ * Johan 17 Agu 2026: "data kosong kok masih di gambar di canvas?".
+ *
+ * Terukur pada 400 emiten: **398 di antaranya punya baris seperti ini**,
+ * total 28.225 baris. Jadi ini bukan kasus pinggiran.
+ *
+ * Kedua syarat diminta bersamaan, bukan salah satu. Volume 0 saja tak cukup
+ * sebagai bukti: kalau harganya bergerak sementara volumenya tercatat nol,
+ * yang salah justru ruas volumenya, dan membuang lilin yang harganya nyata
+ * berarti menghapus data yang benar. Sebaliknya buka=tinggi=rendah=tutup saja
+ * juga tak cukup — hari yang kena auto-reject batas atas/bawah bisa datar
+ * dengan volume besar, dan hari itu sungguh diperdagangkan.
+ */
+function hariTanpaPerdagangan(
+  buka: number,
+  tinggi: number,
+  rendah: number,
+  tutup: number,
+  vol: number,
+): boolean {
+  const takAdaVolume = !vol || vol <= 0
+  const hargaTakBergerak = buka === tinggi && tinggi === rendah && rendah === tutup
+  return takAdaVolume && hargaTakBergerak
 }
 
 /** Label chip → jumlah tahun ke belakang dari tanggal TERAKHIR data (bukan

@@ -49,3 +49,32 @@ describe('potongRentang', () => {
     expect(potongRentang(seri, '2099-01-01')).toEqual([])
   })
 })
+
+describe('hari tanpa perdagangan', () => {
+  const N = '#0f0'
+  const T = '#f00'
+
+  it('membuang baris volume 0 yang harganya tak bergerak', () => {
+    const { lilin, volume } = keDataLilinVolume(
+      [
+        ['2026-05-13', 6100, 6150, 6050, 6125, 1_000],
+        ['2026-05-14', 6125, 6125, 6125, 6125, 0],
+        ['2026-05-15', 6125, 6200, 6100, 6180, 2_000],
+      ],
+      N,
+      T,
+    )
+    expect(lilin.map((l) => l.time)).toEqual(['2026-05-13', '2026-05-15'])
+    expect(volume.map((v) => v.time)).toEqual(['2026-05-13', '2026-05-15'])
+  })
+
+  it('MEMPERTAHANKAN hari datar yang volumenya besar — auto-reject tetap hari bursa', () => {
+    const { lilin } = keDataLilinVolume([['2026-05-14', 6100, 6100, 6100, 6100, 9_000_000]], N, T)
+    expect(lilin).toHaveLength(1)
+  })
+
+  it('MEMPERTAHANKAN hari bervolume nol yang harganya bergerak — yang salah ruas volumenya', () => {
+    const { lilin } = keDataLilinVolume([['2026-05-14', 6100, 6200, 6050, 6150, 0]], N, T)
+    expect(lilin).toHaveLength(1)
+  })
+})
