@@ -465,3 +465,260 @@ export function hitungInstans(inst: InstansIndikator, tutup: number[]): GarisInd
     }
   }
 }
+
+/* ------------------------------------------------------------------ *
+ * Pola (#tahap 5, dropdown TERPISAH dari indikator). Beda sifat dari
+ * indikator dan itu sebabnya menunya dipisah: indikator menghitung satu
+ * deret sepanjang data dan menggambarnya apa adanya; pola MENEMUKAN
+ * KEJADIAN — nol, satu, atau belasan — lalu menggambar temuannya.
+ *
+ * Seluruh isi bagian ini menjelaskan APA yang ditemukan dan APA syaratnya.
+ * Tidak ada, dan tidak boleh ada, kalimat saran beli/jual di sini maupun di
+ * label yang diturunkan darinya.
+ * ------------------------------------------------------------------ */
+
+export type JenisPola = 'doubleBottom'
+export type InstansPola = Instans<JenisPola>
+
+export interface SpekPola {
+  label: string
+  param: SpekParam[]
+}
+
+export const SPEK_POLA: Record<JenisPola, SpekPola> = {
+  doubleBottom: {
+    label: 'Double Bottom',
+    param: [
+      { kunci: 'jendela', label: 'Jendela pivot', bawaan: 5, min: 1, maks: 60, bulat: true },
+      { kunci: 'atr', label: 'Periode ATR', bawaan: 14, min: 2, maks: 200, bulat: true, bandingLilin: true },
+      { kunci: 'toleransi', label: 'Toleransi ×ATR', bawaan: 1, min: 0.05, maks: 10, bulat: false },
+      { kunci: 'jarakMin', label: 'Jarak min', bawaan: 10, min: 2, maks: 2000, bulat: true },
+      // 60 lilin ≈ tiga bulan bursa. Terukur atas BBCA 1.204 lilin: jarak
+      // maksimum 120 dengan kedalaman minimum 2 menghasilkan 41 temuan —
+      // benar menurut syaratnya, tapi terlalu padat untuk dibaca; 60 dengan
+      // kedalaman 3 menghasilkan 17. Keduanya bisa diubah pengguna, ini cuma
+      // titik berangkat yang masih terbaca.
+      { kunci: 'jarakMaks', label: 'Jarak maks', bawaan: 60, min: 3, maks: 2000, bulat: true },
+      { kunci: 'kedalamanMin', label: 'Kedalaman min ×ATR', bawaan: 3, min: 0.1, maks: 20, bulat: false },
+    ],
+  },
+}
+
+export function labelInstansPola(inst: InstansPola): string {
+  return SPEK_POLA[inst.jenis].label
+}
+
+/**
+ * ATR (Average True Range) ala Wilder. Dipakai sebagai SATUAN JARAK di
+ * seluruh pencarian pola, menggantikan toleransi persen tetap: toleransi
+ * "2%" memperlakukan saham 50 rupiah (fraksi 1 = 2% penuh, satu tick sudah
+ * memakan seluruh jatah) dan saham 50.000 rupiah (2% = 1.000, puluhan tick)
+ * dengan dua ukuran yang salah satunya pasti keliru. ATR mengukur seberapa
+ * jauh saham ITU memang biasa bergerak sehari, jadi angka parameternya
+ * berarti sama di seluruh papan.
+ *
+ * True Range = terbesar dari (tinggi-rendah), |tinggi - tutup kemarin|,
+ * |rendah - tutup kemarin| — ruas kedua & ketiga yang membuat lompatan
+ * pembukaan (gap) ikut terhitung. Bibitnya rata-rata sederhana `periode` TR
+ * pertama, lalu pemulusan Wilder.
+ */
+export function hitungATR(lilin: LilinData[], periode: number): Array<number | null> {
+  const hasil: Array<number | null> = new Array(lilin.length).fill(null)
+  if (lilin.length <= periode) return hasil
+  const tr: number[] = []
+  for (let i = 0; i < lilin.length; i++) {
+    const l = lilin[i]
+    if (i === 0) { tr.push(l.high - l.low); continue }
+    const tutupKemarin = lilin[i - 1].close
+    tr.push(Math.max(l.high - l.low, Math.abs(l.high - tutupKemarin), Math.abs(l.low - tutupKemarin)))
+  }
+  let jumlah = 0
+  for (let i = 1; i <= periode; i++) jumlah += tr[i]
+  let atr = jumlah / periode
+  hasil[periode] = atr
+  for (let i = periode + 1; i < lilin.length; i++) {
+    atr = (atr * (periode - 1) + tr[i]) / periode
+    hasil[i] = atr
+  }
+  return hasil
+}
+
+/**
+ * Indeks pivot rendah: titik yang `jendela` lilin di kiri DAN kanannya tak
+ * ada yang lebih rendah. Dua catatan yang menentukan benar-salahnya:
+ *
+ * 1. Jendela penuh diwajibkan di kedua sisi, jadi `jendela` lilin terakhir
+ *    tak pernah jadi pivot. Itu bukan kekurangan — pivot memang baru bisa
+ *    disebut pivot setelah harga terbukti berbalik, dan mengaku menemukan
+ *    pivot di lilin paling kanan berarti mengaku tahu hari esok.
+ * 2. Dataran datar (beberapa lilin dengan rendah yang persis sama) diambil
+ *    yang PERTAMA — kiri diperiksa lebih ketat (harus benar-benar lebih
+ *    tinggi) daripada kanan. Tanpa aturan pemutus ini satu dataran lima hari
+ *    menghasilkan lima "lembah" yang saling berpasangan jadi pola palsu.
+ */
+export function cariPivotRendah(rendah: number[], jendela: number): number[] {
+  const hasil: number[] = []
+  for (let i = jendela; i < rendah.length - jendela; i++) {
+    let pivot = true
+    for (let j = i - jendela; j < i; j++) if (rendah[j] <= rendah[i]) { pivot = false; break }
+    if (pivot) for (let j = i + 1; j <= i + jendela; j++) if (rendah[j] < rendah[i]) { pivot = false; break }
+    if (pivot) hasil.push(i)
+  }
+  return hasil
+}
+
+/** Kebalikan `cariPivotRendah` — aturan dataran datar & jendela penuhnya sama. */
+export function cariPivotTinggi(tinggi: number[], jendela: number): number[] {
+  const hasil: number[] = []
+  for (let i = jendela; i < tinggi.length - jendela; i++) {
+    let pivot = true
+    for (let j = i - jendela; j < i; j++) if (tinggi[j] >= tinggi[i]) { pivot = false; break }
+    if (pivot) for (let j = i + 1; j <= i + jendela; j++) if (tinggi[j] > tinggi[i]) { pivot = false; break }
+    if (pivot) hasil.push(i)
+  }
+  return hasil
+}
+
+/**
+ * Status sebuah pola. Ketiganya ditampilkan, tak ada yang disembunyikan —
+ * pola yang batal justru keterangan paling berguna tentang seberapa sering
+ * bentuk itu tidak berlanjut.
+ */
+export type StatusPola = 'terbentuk' | 'terkonfirmasi' | 'batal'
+
+export interface DoubleBottom {
+  iLembah1: number
+  iLembah2: number
+  iLeher: number
+  waktuLembah1: string
+  waktuLembah2: string
+  waktuLeher: string
+  hargaLembah1: number
+  hargaLembah2: number
+  hargaLeher: number
+  /** Jarak leher ke lembah terdangkal, dalam satuan ATR di lembah kedua. */
+  kedalamanAtr: number
+  status: StatusPola
+  iKonfirmasi: number | null
+  waktuKonfirmasi: string | null
+  /**
+   * Volume di lilin penembus leher lebih besar dari rata-rata 20 lilin
+   * sebelumnya. PENGUAT, bukan syarat: dijadikan syarat wajib, ia membuang
+   * pola yang bentuk harganya sudah lengkap hanya karena ruas volume hari
+   * itu kebetulan sepi — dan ruas volume adalah ruas yang paling sering
+   * cacat di berkas harian.
+   */
+  volumeMenguat: boolean
+}
+
+export interface ParamDoubleBottom {
+  jendela: number
+  atr: number
+  toleransi: number
+  jarakMin: number
+  jarakMaks: number
+  kedalamanMin: number
+}
+
+/** Panjang jendela pembanding volume di lilin penembus leher. Angka bulat
+ *  yang lazim dipakai sebagai "rata-rata volume sebulan bursa"; dibiarkan
+ *  tetap karena volumeMenguat cuma penanda tambahan, bukan syarat lolos. */
+const JENDELA_VOLUME = 20
+
+/**
+ * Mencari Double Bottom: dua lembah sepadan yang dipisahkan sebuah puncak
+ * (leher). Urutan saringannya sengaja dari yang paling murah ke yang paling
+ * mahal, dan tiap saringan menolak sesuatu yang nyata:
+ *
+ * 1. Jarak antar lembah di dalam [jarakMin, jarakMaks] — dua lembah tiga
+ *    lilin berjauhan itu satu ayunan yang sama, dua lembah tiga tahun
+ *    berjauhan itu dua kejadian yang tak berhubungan.
+ * 2. Selisih harga kedua lembah <= toleransi × ATR.
+ * 3. Ada pivot TINGGI di antara keduanya (lehernya); yang tertinggi dipakai.
+ * 4. Kedalaman leher ke lembah TERDANGKAL >= kedalamanMin × ATR — tanpa
+ *    saringan ini, tiap riak kecil di sepanjang tren lolos sebagai pola.
+ *
+ * `volume` boleh array kosong (mis. di uji); tanpa volume, `volumeMenguat`
+ * selalu false — itu penanda tambahan, bukan syarat.
+ */
+export function cariDoubleBottom(
+  lilin: LilinData[],
+  volume: number[],
+  p: ParamDoubleBottom,
+): DoubleBottom[] {
+  if (lilin.length === 0) return []
+  const atr = hitungATR(lilin, p.atr)
+  const pivotRendah = cariPivotRendah(lilin.map((l) => l.low), p.jendela)
+  const pivotTinggi = cariPivotTinggi(lilin.map((l) => l.high), p.jendela)
+
+  // Satu lembah kedua bisa berpasangan dengan beberapa lembah pertama yang
+  // sama-sama lolos. Yang disimpan cuma pasangan TERDALAM per lembah kedua:
+  // menggambar semuanya berarti menumpuk garis leher yang saling menimpa di
+  // wilayah yang sama, dan pembaca tak bisa lagi membedakannya.
+  const terbaik = new Map<number, DoubleBottom>()
+
+  for (let a = 0; a < pivotRendah.length; a++) {
+    for (let b = a + 1; b < pivotRendah.length; b++) {
+      const i1 = pivotRendah[a]
+      const i2 = pivotRendah[b]
+      const jarak = i2 - i1
+      if (jarak < p.jarakMin) continue
+      // pivotRendah menaik, jadi b berikutnya cuma makin jauh.
+      if (jarak > p.jarakMaks) break
+
+      const skala = atr[i2]
+      if (skala === null || skala <= 0) continue
+
+      const h1 = lilin[i1].low
+      const h2 = lilin[i2].low
+      if (Math.abs(h1 - h2) > p.toleransi * skala) continue
+
+      let iLeher = -1
+      for (const it of pivotTinggi) {
+        if (it <= i1) continue
+        if (it >= i2) break
+        if (iLeher === -1 || lilin[it].high > lilin[iLeher].high) iLeher = it
+      }
+      if (iLeher === -1) continue
+
+      const leher = lilin[iLeher].high
+      const kedalaman = leher - Math.max(h1, h2)
+      if (kedalaman < p.kedalamanMin * skala) continue
+
+      // Status ditentukan dengan menyusuri lilin SESUDAH lembah kedua sampai
+      // salah satu batas tersentuh lebih dulu — mana yang duluan, itu yang
+      // menentukan. Tak tersentuh sama sekali berarti polanya masih berdiri.
+      const dasar = Math.min(h1, h2)
+      let status: StatusPola = 'terbentuk'
+      let iKonfirmasi: number | null = null
+      for (let i = i2 + 1; i < lilin.length; i++) {
+        if (lilin[i].close > leher) { status = 'terkonfirmasi'; iKonfirmasi = i; break }
+        if (lilin[i].low < dasar) { status = 'batal'; break }
+      }
+
+      let volumeMenguat = false
+      if (iKonfirmasi !== null && volume.length === lilin.length) {
+        const mulai = Math.max(0, iKonfirmasi - JENDELA_VOLUME)
+        if (iKonfirmasi > mulai) {
+          let jumlah = 0
+          for (let i = mulai; i < iKonfirmasi; i++) jumlah += volume[i]
+          volumeMenguat = volume[iKonfirmasi] > jumlah / (iKonfirmasi - mulai)
+        }
+      }
+
+      const temuan: DoubleBottom = {
+        iLembah1: i1, iLembah2: i2, iLeher,
+        waktuLembah1: lilin[i1].time, waktuLembah2: lilin[i2].time, waktuLeher: lilin[iLeher].time,
+        hargaLembah1: h1, hargaLembah2: h2, hargaLeher: leher,
+        kedalamanAtr: kedalaman / skala,
+        status, iKonfirmasi,
+        waktuKonfirmasi: iKonfirmasi === null ? null : lilin[iKonfirmasi].time,
+        volumeMenguat,
+      }
+      const lama = terbaik.get(i2)
+      if (!lama || temuan.kedalamanAtr > lama.kedalamanAtr) terbaik.set(i2, temuan)
+    }
+  }
+
+  return [...terbaik.values()].sort((x, y) => x.iLembah2 - y.iLembah2)
+}

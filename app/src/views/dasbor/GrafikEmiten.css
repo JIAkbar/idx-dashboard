@@ -44,6 +44,20 @@
    baris yang sama, pesannya terpotong justru saat paling perlu dibaca. */
 .lantai .grf-ind-galat { flex: 1 0 100%; margin: 0; font-size: 11px; color: var(--red); }
 
+/* Hasil pencarian pola. Tanggal & harga persisnya tak terbaca dari penanda di
+   kanvas, jadi ditulis sebagai daftar teks di sampingnya. */
+.lantai .grf-pola-hasil { margin: 0 0 10px; display: flex; flex-direction: column; gap: 8px; }
+.lantai .grf-pola-judul { margin: 0 0 4px; font-size: 11.5px; font-weight: 600; color: var(--text2); }
+.lantai .grf-pola-daftar { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.lantai .grf-pola-daftar li {
+  display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline;
+  font-family: var(--mono); font-size: 11px; color: var(--text2);
+}
+.lantai .grf-pola-status {
+  color: var(--ind-warna); font-weight: 700; text-transform: uppercase;
+  font-size: 9.5px; letter-spacing: .08em; min-width: 88px;
+}
+
 /* Legenda: nilai indikator aktif pada titik yang disorot kursor. Baris teks
    biasa (bukan chip) — beda peran dari daftar instans di atasnya. */
 .lantai .grf-legenda {

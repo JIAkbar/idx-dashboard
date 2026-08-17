@@ -4,7 +4,8 @@ import {
   hitungMA, hitungEMA, hitungRSI, hitungMACD, hitungBollinger, keSeriGaris,
   SPEK_INDIKATOR, buatInstans, galatNilaiParam, galatInstans, labelInstansIndikator,
   hitungInstans, PALET_INDIKATOR,
-  type InstansIndikator, type SpekParam,
+  hitungATR, cariPivotRendah, cariPivotTinggi, cariDoubleBottom,
+  type InstansIndikator, type SpekParam, type LilinData, type ParamDoubleBottom,
 } from './grafikEmiten'
 import type { BarisOhlc } from './ihsgOhlc'
 
@@ -320,5 +321,153 @@ describe('hitungInstans', () => {
     // Deret naik 1..300: MA di titik terakhir = rata-rata `periode` angka
     // terakhir = 300 - (periode-1)/2.
     expect(hasil.map((g) => g.nilai[299])).toEqual([290.5, 275.5, 200.5])
+  })
+})
+
+/* ---------------- Pola: Double Bottom (tahap 5) ---------------- */
+
+/** Deret buatan: satu harga per hari, buka=tinggi=rendah=tutup. Bentuk paling
+ *  polos yang mungkin — dengan begitu True Range tiap hari persis sama dengan
+ *  besar langkahnya, jadi ATR-nya bisa dihitung tangan dan tiap penolakan bisa
+ *  ditelusuri ke satu syarat tertentu, bukan ke bayangan tinggi/rendah. */
+function lilinDari(harga: number[]): LilinData[] {
+  return harga.map((h, i) => ({
+    time: new Date(Date.UTC(2024, 0, 1 + i)).toISOString().slice(0, 10),
+    open: h, high: h, low: h, close: h,
+  }))
+}
+
+/** Tangga lurus dari `dari` ke `sampai` (inklusif) berlangkah `langkah`. */
+function ramp(dari: number, sampai: number, langkah = 2): number[] {
+  const arah = sampai >= dari ? 1 : -1
+  const out: number[] = []
+  for (let v = dari; arah > 0 ? v <= sampai : v >= sampai; v += arah * langkah) out.push(v)
+  return out
+}
+
+const P: ParamDoubleBottom = {
+  jendela: 2, atr: 5, toleransi: 1, jarakMin: 5, jarakMaks: 40, kedalamanMin: 2,
+}
+
+// Turun 100->80 (lembah 1 di indeks 10), naik ke 96 (leher di indeks 18),
+// turun ke 81 (lembah 2 di indeks 26), lalu naik sampai 95 — tak pernah
+// menutup di atas leher, tak pernah jatuh di bawah 80.
+const HARGA_TERBENTUK = [...ramp(100, 80), ...ramp(82, 96), ...ramp(94, 82), 81, ...ramp(83, 95)]
+
+describe('hitungATR', () => {
+  it('deret berlangkah tetap 2 -> ATR 2 (True Range = besar langkahnya)', () => {
+    const atr = hitungATR(lilinDari(ramp(100, 80)), 5)
+    expect(atr[4]).toBeNull() // bibit baru siap di indeks = periode
+    expect(atr[5]).toBeCloseTo(2, 10)
+    expect(atr[10]).toBeCloseTo(2, 10)
+  })
+  it('lompatan pembukaan ikut terhitung — TR bukan cuma tinggi-rendah', () => {
+    // Tutup 100 lalu esoknya seluruh lilin ada di 120: tinggi-rendah = 0,
+    // tapi |tinggi - tutup kemarin| = 20.
+    const l: LilinData[] = [
+      { time: '2024-01-01', open: 100, high: 100, low: 100, close: 100 },
+      { time: '2024-01-02', open: 120, high: 120, low: 120, close: 120 },
+      { time: '2024-01-03', open: 120, high: 120, low: 120, close: 120 },
+    ]
+    expect(hitungATR(l, 2)[2]).toBeCloseTo(10, 10) // (20 + 0) / 2
+  })
+  it('data lebih pendek dari periode -> seluruhnya null, bukan NaN', () => {
+    expect(hitungATR(lilinDari([1, 2, 3]), 10)).toEqual([null, null, null])
+  })
+})
+
+describe('cariPivotRendah / cariPivotTinggi', () => {
+  it('menemukan dasar & puncak lembah tunggal', () => {
+    expect(cariPivotRendah([...ramp(10, 2), ...ramp(4, 10)], 2)).toEqual([4])
+    expect(cariPivotTinggi([...ramp(2, 10), ...ramp(8, 2)], 2)).toEqual([4])
+  })
+  it('dataran datar menghasilkan SATU pivot (yang pertama), bukan sederet', () => {
+    // Tanpa aturan pemutus, [5,5,5] di dasar jadi tiga "lembah" yang saling
+    // berpasangan jadi pola palsu.
+    expect(cariPivotRendah([9, 8, 7, 5, 5, 5, 7, 8, 9], 2)).toEqual([3])
+  })
+  it('jendela penuh diwajibkan — lilin terakhir tak pernah jadi pivot', () => {
+    // 1 di indeks terakhir jelas paling rendah, tapi belum terbukti berbalik.
+    expect(cariPivotRendah([9, 8, 7, 6, 5, 1], 2)).toEqual([])
+  })
+})
+
+describe('cariDoubleBottom', () => {
+  it('TERBENTUK: dua lembah + leher lengkap, harga belum menembus leher', () => {
+    const hasil = cariDoubleBottom(lilinDari(HARGA_TERBENTUK), [], P)
+    expect(hasil).toHaveLength(1)
+    const db = hasil[0]
+    expect(db.status).toBe('terbentuk')
+    expect(db.iKonfirmasi).toBeNull()
+    expect([db.iLembah1, db.iLeher, db.iLembah2]).toEqual([10, 18, 26])
+    expect([db.hargaLembah1, db.hargaLeher, db.hargaLembah2]).toEqual([80, 96, 81])
+    expect(db.waktuLembah1).toBe('2024-01-11')
+    expect(db.waktuLembah2).toBe('2024-01-27')
+    // ATR di lembah kedua = 1,8 (langkah 2 selama 4 hari, lalu 1 hari
+    // berlangkah 1: (2*4 + 1)/5). Kedalaman 96-81 = 15 -> 8,33 ATR.
+    expect(db.kedalamanAtr).toBeCloseTo(15 / 1.8, 6)
+  })
+
+  it('TERKONFIRMASI: ada penutupan di atas leher sesudah lembah kedua', () => {
+    const harga = [...ramp(100, 80), ...ramp(82, 96), ...ramp(94, 82), 81, ...ramp(83, 97)]
+    const hasil = cariDoubleBottom(lilinDari(harga), [], P)
+    expect(hasil).toHaveLength(1)
+    expect(hasil[0].status).toBe('terkonfirmasi')
+    expect(hasil[0].iKonfirmasi).toBe(34)
+    expect(hasil[0].waktuKonfirmasi).toBe('2024-02-04')
+    expect(harga[34]).toBe(97) // memang di atas leher 96
+  })
+
+  it('BATAL: harga jatuh di bawah lembah terendah sebelum menembus leher', () => {
+    const harga = [...ramp(100, 80), ...ramp(82, 96), ...ramp(94, 82), 81, 83, 85, 84, 82, 79, 77, 75]
+    const hasil = cariDoubleBottom(lilinDari(harga), [], P)
+    expect(hasil).toHaveLength(1)
+    expect(hasil[0].status).toBe('batal')
+    expect(hasil[0].iKonfirmasi).toBeNull()
+  })
+
+  it('DITOLAK: bentuknya mirip tapi kedalamannya kurang', () => {
+    // Lembah 80 dan 81 dengan leher cuma 86 — kedalaman 5 = 2,78 ATR.
+    const harga = [...ramp(100, 80), ...ramp(82, 86), 84, 82, 81, ...ramp(83, 95)]
+    expect(cariDoubleBottom(lilinDari(harga), [], { ...P, kedalamanMin: 4 })).toEqual([])
+    // Data yang SAMA lolos begitu ambangnya diturunkan — membuktikan yang
+    // menolak memang syarat kedalaman, bukan syarat lain yang kebetulan ikut
+    // gagal di deret ini.
+    const longgar = cariDoubleBottom(lilinDari(harga), [], { ...P, kedalamanMin: 2 })
+    expect(longgar).toHaveLength(1)
+    expect(longgar[0].kedalamanAtr).toBeCloseTo(5 / 1.8, 6)
+  })
+
+  it('DITOLAK: kedua lembah terlalu berjauhan', () => {
+    // Jarak 26-10 = 16 lilin.
+    expect(cariDoubleBottom(lilinDari(HARGA_TERBENTUK), [], { ...P, jarakMaks: 10 })).toEqual([])
+    expect(cariDoubleBottom(lilinDari(HARGA_TERBENTUK), [], { ...P, jarakMaks: 40 })).toHaveLength(1)
+  })
+
+  it('DITOLAK: kedua lembah terlalu berdekatan — satu ayunan yang sama', () => {
+    expect(cariDoubleBottom(lilinDari(HARGA_TERBENTUK), [], { ...P, jarakMin: 20 })).toEqual([])
+  })
+
+  it('DITOLAK: harga kedua lembah terlalu jauh berbeda untuk toleransi ATR', () => {
+    // Lembah 80 dan 88 — selisih 8, ATR di lembah kedua 2 -> 4 ATR.
+    const harga = [...ramp(100, 80), ...ramp(82, 96), ...ramp(94, 88), ...ramp(90, 98)]
+    expect(cariDoubleBottom(lilinDari(harga), [], { ...P, toleransi: 1 })).toEqual([])
+    expect(cariDoubleBottom(lilinDari(harga), [], { ...P, toleransi: 5 })).toHaveLength(1)
+  })
+
+  it('volume menguat itu PENANDA, bukan syarat: tanpa volume pola tetap ditemukan', () => {
+    const harga = [...ramp(100, 80), ...ramp(82, 96), ...ramp(94, 82), 81, ...ramp(83, 97)]
+    const lilin = lilinDari(harga)
+    const sepi = cariDoubleBottom(lilin, harga.map(() => 1_000), P)
+    expect(sepi[0].status).toBe('terkonfirmasi')
+    expect(sepi[0].volumeMenguat).toBe(false)
+    // Volume melonjak persis di lilin penembus leher (indeks 34).
+    const ramai = harga.map((_, i) => (i === 34 ? 9_000_000 : 1_000))
+    expect(cariDoubleBottom(lilin, ramai, P)[0].volumeMenguat).toBe(true)
+  })
+
+  it('data kosong / terlalu pendek -> tak ada temuan, bukan galat', () => {
+    expect(cariDoubleBottom([], [], P)).toEqual([])
+    expect(cariDoubleBottom(lilinDari([1, 2, 3]), [], P)).toEqual([])
   })
 })

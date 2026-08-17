@@ -1,20 +1,23 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
-  createChart, CandlestickSeries, HistogramSeries, LineSeries, LineStyle,
-  type IChartApi, type ISeriesApi, type MouseEventParams, type SeriesType, type Time,
+  createChart, createSeriesMarkers, CandlestickSeries, HistogramSeries, LineSeries, LineStyle,
+  type IChartApi, type IPriceLine, type ISeriesApi, type ISeriesMarkersPluginApi,
+  type MouseEventParams, type SeriesMarker, type SeriesType, type Time,
 } from 'lightweight-charts'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import {
   keDataLilinVolume, batasBawahRentang, potongRentang, RENTANG_GRAFIK, RENTANG_BAWAAN,
-  keSeriGaris, SPEK_INDIKATOR, buatInstans, galatInstans, labelInstansIndikator, hitungInstans,
-  type BerkasOhlcEmiten, type InstansIndikator, type JenisIndikator, type SpekParam,
+  keSeriGaris, SPEK_INDIKATOR, SPEK_POLA, labelInstansIndikator, labelInstansPola,
+  hitungInstans, cariDoubleBottom,
+  type BerkasOhlcEmiten, type DoubleBottom, type JenisIndikator, type JenisPola,
+  type ParamDoubleBottom, type StatusPola,
 } from '../../lib/dasbor/grafikEmiten'
 import { Dropdown } from '../../components/dasbor/Dropdown'
+import { useDaftarInstans, BarisInstans } from '../../components/dasbor/DaftarInstans'
 import { fN } from '../../lib/dasbor/format'
 import { pesanGalat } from '../../lib/pesanGalat'
 import {
   IkonMenu, IKON_CARI, IKON_SILANG, IKON_GRAFIK_NAIK, IKON_INFO,
-  IKON_MATA, IKON_MATA_CORET, IKON_TONG,
 } from '../../components/dasbor/IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 import './GrafikEmiten.css'
@@ -26,6 +29,35 @@ const DEFAULT_KODE = 'BBCA'
  *  dan langsung muncul di menu. */
 const OPSI_INDIKATOR = (Object.keys(SPEK_INDIKATOR) as JenisIndikator[])
   .map((jenis) => ({ nilai: jenis, label: SPEK_INDIKATOR[jenis].label }))
+
+/** Dropdown POLA berdiri sendiri, terpisah dari indikator (Johan: "jadi
+ *  indikator dan pattern dibedakan dropdown nya"). Bukan sekadar rapian
+ *  tampilan: indikator menghitung satu deret sepanjang data, pola menemukan
+ *  kejadian yang bisa nol, satu, atau belasan — dua hal yang di satu menu
+ *  akan terbaca seolah sejenis. */
+const OPSI_POLA = (Object.keys(SPEK_POLA) as JenisPola[])
+  .map((jenis) => ({ nilai: jenis, label: SPEK_POLA[jenis].label }))
+
+const spekIndikator = (jenis: JenisIndikator) => SPEK_INDIKATOR[jenis].param
+const spekPola = (jenis: JenisPola) => SPEK_POLA[jenis].param
+
+/** Keterangan status — MENJELASKAN apa yang ditemukan dan apa syaratnya,
+ *  bukan apa yang harus dilakukan. Tak ada, dan tak boleh ada, kalimat saran
+ *  beli/jual di sini (aturan mengikat CLAUDE.md, berlaku seluruh situs). */
+const ARTI_STATUS: Record<StatusPola, string> = {
+  terbentuk: 'kedua lembah dan lehernya lengkap, harga belum menutup di atas leher',
+  terkonfirmasi: 'ada penutupan di atas leher sesudah lembah kedua',
+  batal: 'harga jatuh di bawah lembah terendah sebelum menembus leher',
+}
+
+/** Warna penanda pola per status. Sengaja BUKAN hijau/merah: di halaman yang
+ *  seluruh lilinnya sudah memakai hijau/merah sebagai naik/turun, dua warna
+ *  itu akan terbaca sebagai penilaian bagus/buruk atas polanya. */
+const WARNA_STATUS: Record<StatusPola, string> = {
+  terbentuk: '--amber',
+  terkonfirmasi: '--blue',
+  batal: '--text3',
+}
 
 const PANDUAN_INDIKATOR: Array<{ label: string; teks: string }> = [
   { label: 'MA (Moving Average)',
@@ -42,16 +74,18 @@ const PANDUAN_INDIKATOR: Array<{ label: string; teks: string }> = [
     teks: 'Satu jenis boleh dimasukkan berkali-kali dengan parameter berbeda — MA 20, MA 50, dan MA 200 bisa hidup bersamaan, masing-masing punya warna, kolom parameter, dan sakelar tampilnya sendiri.' },
 ]
 
-/** Kunci gabungan id instans + nama ruas, dipakai menyimpan TEKS yang sedang
- *  diketik (lihat `paramTeks` di komponen). */
-const kunciTeks = (id: string, kunci: string) => `${id}:${kunci}`
-
-/** Id instans baru. `crypto.randomUUID` ada di seluruh peramban yang
- *  didukung; jam + acak sebagai jaring pengaman kalau halaman dibuka lewat
- *  konteks tak-aman (http polos), di mana API itu tak tersedia. */
-function idBaru(): string {
-  return globalThis.crypto?.randomUUID?.() ?? `i${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-}
+const PANDUAN_POLA: Array<{ label: string; teks: string }> = [
+  { label: 'Double Bottom — apa yang dicari',
+    teks: 'Dua lembah yang harganya sepadan, dipisahkan sebuah puncak di antaranya (leher). Lembah dicari sebagai pivot: titik yang sekian lilin di kiri dan kanannya tak ada yang lebih rendah — karena itu beberapa lilin terakhir tak pernah menghasilkan pivot, sebuah pivot baru bisa disebut pivot setelah harga terbukti berbalik.' },
+  { label: 'Kenapa toleransinya dihitung dari ATR, bukan persen',
+    teks: 'ATR mengukur seberapa jauh saham itu memang biasa bergerak dalam sehari. Toleransi persen tetap memperlakukan saham 50 rupiah dan saham 50.000 rupiah dengan ukuran yang salah satunya pasti keliru; "1 × ATR" berarti hal yang sama di seluruh papan.' },
+  { label: 'Kedalaman minimum',
+    teks: 'Jarak dari leher turun ke lembah terdangkal harus melebihi sekian kali ATR. Tanpa syarat ini, tiap riak kecil di sepanjang tren ikut lolos sebagai pola.' },
+  { label: 'Tiga status',
+    teks: `Terbentuk — ${ARTI_STATUS.terbentuk}. Terkonfirmasi — ${ARTI_STATUS.terkonfirmasi}. Batal — ${ARTI_STATUS.batal}. Ketiganya ditampilkan; yang batal justru keterangan paling berguna tentang seberapa sering bentuk itu tidak berlanjut.` },
+  { label: 'Volume saat menembus leher',
+    teks: 'Ditandai terpisah sebagai penguat, bukan syarat. Dijadikan syarat wajib, ia membuang pola yang bentuk harganya sudah lengkap hanya karena ruas volume hari itu kebetulan sepi — dan ruas volume adalah ruas yang paling sering cacat.' },
+]
 
 /**
  * Grafik Emiten (chart PAPAN tahap 3) — lilin + volume dari OHLC lokal
@@ -69,15 +103,6 @@ export function GrafikEmiten() {
   const [berkas, setBerkas] = useState<BerkasOhlcEmiten | null>(null)
   const [galat, setGalat] = useState<string | null>(null)
   const [rentangLabel, setRentangLabel] = useState<string>(RENTANG_BAWAAN)
-  // Indikator bukan lagi sakelar nyala/mati tapi DAFTAR instans — lihat
-  // `InstansIndikator` di grafikEmiten.ts.
-  const [indikator, setIndikator] = useState<InstansIndikator[]>([])
-  // Teks yang sedang DIKETIK di kolom parameter, terpisah dari angka yang
-  // sudah tersimpan di instans. Perlu dipisah karena kolom teks sempat
-  // melewati keadaan tak sah di tengah pengetikan (kosong, "2." , "-") dan
-  // angka di instans tak boleh ikut melewatinya: yang tergambar selalu nilai
-  // sah terakhir, sementara kolomnya menampilkan apa adanya + alasan tolakan.
-  const [paramTeks, setParamTeks] = useState<Record<string, string>>({})
   // Waktu titik yang sedang disorot kursor ('yyyy-mm-dd') — null berarti
   // "belum digeser, pakai titik TERAKHIR" (legenda tetap berguna sebelum
   // pembaca menyentuh kanvas sama sekali).
@@ -116,6 +141,12 @@ export function GrafikEmiten() {
   // `addSeries(..., paneIndex)` — bukan chart kedua yang sumbu waktunya harus
   // disinkron manual: satu chart, beberapa pane, sumbu waktu otomatis selaras).
   const seriIndRef = useRef<Array<ISeriesApi<SeriesType>>>([])
+  // Gambar pola: garis leher (price line) + penanda di lembah/leher/penembusan.
+  // Keduanya API bawaan lightweight-charts, BUKAN <div> melayang yang
+  // posisinya dihitung sendiri — posisi hitungan sendiri langsung meleset
+  // begitu pembaca menggeser atau memperbesar sumbu waktunya.
+  const garisLeherRef = useRef<IPriceLine[]>([])
+  const penandaRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null)
 
   // Chart dibuat SEKALI saat mount (bukan tiap ganti emiten/rentang) — data &
   // warnanya diperbarui lewat setData()/applyOptions() di efek-efek di bawah.
@@ -178,6 +209,10 @@ export function GrafikEmiten() {
     chartRef.current = chart
     candleRef.current = candle
     volRef.current = vol
+    // Plugin penanda dibuat SEKALI di sini; efek pola cuma memanggil
+    // setMarkers() di atasnya. Membuatnya ulang tiap kali daftar pola berubah
+    // menumpuk beberapa plugin di satu seri, dan yang lama tetap menggambar.
+    penandaRef.current = createSeriesMarkers(candle, [])
     // Hook QA dev-only — verifikasi zoom/geser butuh rentang waktu yang
     // TERLIHAT (bukan cuma data yang di-setData), dan lightweight-charts
     // menggambar lewat canvas (tak ada teks DOM buat dibaca devtools).
@@ -258,6 +293,10 @@ export function GrafikEmiten() {
     }
   }, [lilin, volume])
 
+  // Dua daftar instans, dua dropdown, satu aturan main (lihat DaftarInstans).
+  const ind = useDaftarInstans<JenisIndikator>(spekIndikator, lilin.length)
+  const pol = useDaftarInstans<JenisPola>(spekPola, lilin.length)
+
   // Deret tiap instans, dihitung dari `lilin` — SUDAH tersaring
   // hariTanpaPerdagangan lewat keDataLilinVolume di atas, bukan `berkas.d`
   // mentah, supaya angkanya sama dengan yang benar-benar tergambar di lilin.
@@ -266,11 +305,21 @@ export function GrafikEmiten() {
   const garisPerInstans = useMemo(() => {
     const tutup = lilin.map((l) => l.close)
     const waktu = lilin.map((l) => l.time)
-    return indikator.map((inst) => ({
+    return ind.daftar.map((inst) => ({
       inst,
       garis: hitungInstans(inst, tutup).map((g) => ({ ...g, seri: keSeriGaris(waktu, g.nilai) })),
     }))
-  }, [indikator, lilin])
+  }, [ind.daftar, lilin])
+
+  // Temuan pola per instans. Sama seperti indikator: dihitung dari `lilin`
+  // yang sudah tersaring, bukan dari `berkas.d` mentah — kalau tidak, indeks
+  // lembah yang ditemukan menunjuk lilin yang berbeda dari yang tergambar.
+  const polaPerInstans = useMemo(() => pol.daftar.map((inst) => ({
+    inst,
+    temuan: inst.jenis === 'doubleBottom'
+      ? cariDoubleBottom(lilin, volume.map((v) => v.value), inst.param as unknown as ParamDoubleBottom)
+      : ([] as DoubleBottom[]),
+  })), [pol.daftar, lilin, volume])
 
   // Peta waktu->nilai per garis, dipakai legenda (lookup langsung, tak perlu
   // scan array tiap kursor bergeser). Histogram tak masuk legenda — angkanya
@@ -343,57 +392,61 @@ export function GrafikEmiten() {
     return { waktu, baris }
   }, [waktuSorot, lilin, petaLegenda])
 
-  /* ---------------- Kelola daftar instans indikator ---------------- */
+  // Gambar pola di kanvas: garis leher mendatar + penanda di lembah, leher,
+  // dan lilin penembusnya.
+  useEffect(() => {
+    const chart = chartRef.current
+    const candle = candleRef.current
+    const el = containerRef.current
+    if (!chart || !candle || !el) return
+    const cs = getComputedStyle(el)
+    const baca = (nama: string) => cs.getPropertyValue(nama).trim() || '#888D99'
 
-  const tambahIndikator = useCallback((jenis: string) => {
-    setIndikator((list) => [
-      ...list,
-      buatInstans(jenis as JenisIndikator, SPEK_INDIKATOR[jenis as JenisIndikator].param, idBaru(), list.length),
-    ])
-  }, [])
+    for (const g of garisLeherRef.current) candle.removePriceLine(g)
+    garisLeherRef.current = []
 
-  const hapusIndikator = useCallback((id: string) => {
-    setIndikator((list) => list.filter((x) => x.id !== id))
-    // Teks yang sedang diketik untuk instans yang sudah tak ada ikut dibuang,
-    // kalau tidak ia akan menempel pada instans baru yang kebetulan sama id-nya.
-    setParamTeks((t) => Object.fromEntries(Object.entries(t).filter(([k]) => !k.startsWith(`${id}:`))))
-  }, [])
-
-  const sakelarTampil = useCallback((id: string) => {
-    setIndikator((list) => list.map((x) => (x.id === id ? { ...x, tampil: !x.tampil } : x)))
-  }, [])
-
-  /** Teks yang harus TERLIHAT di kolom: yang sedang diketik kalau ada, kalau
-   *  tidak angka yang tersimpan di instans. */
-  const teksInstans = useCallback(
-    (inst: InstansIndikator, param: SpekParam[]): Record<string, string> => Object.fromEntries(
-      param.map((s) => [s.kunci, paramTeks[kunciTeks(inst.id, s.kunci)] ?? String(inst.param[s.kunci])]),
-    ),
-    [paramTeks],
-  )
-
-  const galatPerInstans = useMemo(() => {
-    const peta: Record<string, Record<string, string>> = {}
-    for (const inst of indikator) {
-      const param = SPEK_INDIKATOR[inst.jenis].param
-      peta[inst.id] = galatInstans(param, teksInstans(inst, param), lilin.length)
+    const penanda: Array<SeriesMarker<Time>> = []
+    for (const { inst, temuan } of polaPerInstans) {
+      if (!inst.tampil) continue
+      for (const db of temuan) {
+        const warna = baca(WARNA_STATUS[db.status])
+        penanda.push(
+          { time: db.waktuLembah1, position: 'belowBar', color: warna, shape: 'circle', text: 'Lembah 1' },
+          { time: db.waktuLeher, position: 'aboveBar', color: warna, shape: 'circle', text: `Leher ${fN(db.hargaLeher, 0)}` },
+          { time: db.waktuLembah2, position: 'belowBar', color: warna, shape: 'circle', text: `Lembah 2 · ${db.status}` },
+        )
+        if (db.waktuKonfirmasi) {
+          penanda.push({
+            time: db.waktuKonfirmasi, position: 'aboveBar', color: warna, shape: 'circle',
+            text: db.volumeMenguat ? 'Tembus leher · volume menguat' : 'Tembus leher',
+          })
+        }
+      }
+      // Garis leher cuma untuk temuan TERAKHIR tiap instans. `createPriceLine`
+      // membentang selebar kanvas — belasan di antaranya saling menimpa dan
+      // tak satu pun lagi bisa dibaca sebagai leher milik pola yang mana.
+      // Penandanya sendiri tetap dipasang untuk SEMUA temuan; penanda menempel
+      // pada lilinnya, jadi banyak pun tak saling menutupi.
+      const akhir = temuan[temuan.length - 1]
+      if (akhir) {
+        garisLeherRef.current.push(candle.createPriceLine({
+          price: akhir.hargaLeher,
+          color: baca(WARNA_STATUS[akhir.status]),
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: `Leher ${labelInstansPola(inst)}`,
+        }))
+      }
     }
-    return peta
-  }, [indikator, teksInstans, lilin.length])
+    // lightweight-charts mewajibkan penanda urut menaik menurut waktu; tanpa
+    // urutan itu sebagian penanda diam-diam tak digambar.
+    penanda.sort((a, b) => String(a.time).localeCompare(String(b.time)))
+    penandaRef.current?.setMarkers(penanda)
 
-  /** Ganti satu ruas parameter. Teksnya SELALU tersimpan (kalau tidak, kolom
-   *  tak bisa diketik sampai selesai); angkanya cuma ikut berubah kalau lolos
-   *  validasi — masukan yang ditolak membiarkan garis lama tetap tergambar
-   *  alih-alih menggantinya dengan NaN yang lenyap tanpa galat. */
-  const gantiParam = useCallback((inst: InstansIndikator, spek: SpekParam, nilai: string) => {
-    setParamTeks((t) => ({ ...t, [kunciTeks(inst.id, spek.kunci)]: nilai }))
-    const param = SPEK_INDIKATOR[inst.jenis].param
-    const galat = galatInstans(param, { ...teksInstans(inst, param), [spek.kunci]: nilai }, lilin.length)
-    if (galat[spek.kunci]) return
-    setIndikator((list) => list.map(
-      (x) => (x.id === inst.id ? { ...x, param: { ...x.param, [spek.kunci]: Number(nilai) } } : x),
-    ))
-  }, [teksInstans, lilin.length])
+    // Angka terukur buat verifikasi/QA — kanvas tak punya DOM per-penanda.
+    el.dataset.polaDitemukan = String(polaPerInstans.reduce((n, x) => n + x.temuan.length, 0))
+  }, [polaPerInstans, theme])
 
   const pemilih = (
     <div className="panel">
@@ -445,60 +498,53 @@ export function GrafikEmiten() {
           {galat && <p className="muted">{galat}</p>}
           {!galat && !berkas && <div className="fd-empty"><p>Memuat data harga {kode}…</p></div>}
 
-          {/* Dropdown "Indikator" (bukan deretan tombol seperti sebelumnya):
-              memilih jenis MENAMBAH satu instans baru, tak menyalakan sakelar.
-              Karena itu `nilai` sengaja dibiarkan kosong — tak ada jenis yang
-              "terpilih", yang ada cuma daftar instans di bawahnya. */}
+          {/* Dua dropdown TERPISAH — indikator dan pola (Johan: "jadi
+              indikator dan pattern dibedakan dropdown nya"). Memilih jenis
+              MENAMBAH satu instans baru, tak menyalakan sakelar; karena itu
+              `nilai` sengaja dibiarkan kosong — tak ada jenis yang "terpilih",
+              yang ada cuma daftar instans di bawahnya. */}
           <div className="grf-ind">
             <Dropdown opsi={OPSI_INDIKATOR} nilai="" placeholder="+ Indikator"
-              ariaLabel="Tambah indikator" onGanti={tambahIndikator} />
+              ariaLabel="Tambah indikator" onGanti={ind.tambah} />
+            <Dropdown opsi={OPSI_POLA} nilai="" placeholder="+ Pola"
+              ariaLabel="Tambah pola" onGanti={pol.tambah} />
           </div>
 
-          {indikator.length > 0 && (
-            <ul className="grf-ind-daftar">
-              {indikator.map((inst) => {
-                const spek = SPEK_INDIKATOR[inst.jenis]
-                const teks = teksInstans(inst, spek.param)
-                const galat = galatPerInstans[inst.id] ?? {}
-                return (
-                  <li key={inst.id} className={'grf-ind-baris' + (inst.tampil ? '' : ' redup')}
-                    style={{ '--ind-warna': `var(${inst.warna})` } as React.CSSProperties}>
-                    <span className="grf-ind-warna" aria-hidden="true" />
-                    <span className="grf-ind-nama">{labelInstansIndikator(inst)}</span>
-                    {spek.param.map((s) => (
-                      <label key={s.kunci} className="grf-ind-param">
-                        <span className="grf-ind-param-lbl">{s.label}</span>
-                        <input className={'inp grf-ind-inp' + (galat[s.kunci] ? ' salah' : '')}
-                          inputMode="decimal" value={teks[s.kunci]}
-                          aria-invalid={galat[s.kunci] ? true : undefined}
-                          aria-label={`${s.label} ${labelInstansIndikator(inst)}`}
-                          onChange={(e) => gantiParam(inst, s, e.target.value)} />
-                      </label>
-                    ))}
-                    <button type="button" className="bchip bchip-klik grf-ind-aksi"
-                      aria-pressed={inst.tampil}
-                      title={inst.tampil ? 'Sembunyikan sementara' : 'Tampilkan lagi'}
-                      onClick={() => sakelarTampil(inst.id)}>
-                      <IkonMenu d={inst.tampil ? IKON_MATA : IKON_MATA_CORET} size={12} />
-                    </button>
-                    <button type="button" className="bchip bchip-klik grf-ind-aksi"
-                      title={`Hapus ${labelInstansIndikator(inst)}`}
-                      onClick={() => hapusIndikator(inst.id)}>
-                      <IkonMenu d={IKON_TONG} size={12} />
-                    </button>
-                    {/* Alasan tolakan ditulis DI BARIS ITU SENDIRI, bukan di
-                        satu kotak galat bersama: dengan beberapa instans hidup
-                        bersamaan, pesan yang menggantung jauh dari kolomnya tak
-                        memberi tahu kolom mana yang harus diperbaiki. */}
-                    {Object.entries(galat).map(([kunci, pesan]) => (
-                      <p key={kunci} className="grf-ind-galat">
-                        {spek.param.find((s) => s.kunci === kunci)?.label}: {pesan}
-                      </p>
-                    ))}
-                  </li>
-                )
-              })}
-            </ul>
+          <BarisInstans kelola={ind} label={labelInstansIndikator} />
+          <BarisInstans kelola={pol} label={labelInstansPola} />
+
+          {/* Hasil pencarian pola: apa yang ditemukan, di tanggal berapa, dan
+              atas dasar apa. Berupa daftar teks di samping gambarnya karena
+              tanggal & harga persisnya tak terbaca dari penanda di kanvas. */}
+          {polaPerInstans.some(({ inst }) => inst.tampil) && (
+            <div className="grf-pola-hasil">
+              {polaPerInstans.filter(({ inst }) => inst.tampil).map(({ inst, temuan }) => (
+                <div key={inst.id}>
+                  <p className="grf-pola-judul">
+                    {labelInstansPola(inst)}: {temuan.length === 0
+                      ? 'tak ada yang memenuhi syarat pada rentang ini'
+                      : `${temuan.length} ditemukan`}
+                  </p>
+                  {temuan.length > 0 && (
+                    <ul className="grf-pola-daftar">
+                      {temuan.slice(-8).reverse().map((db) => (
+                        <li key={`${db.iLembah1}-${db.iLembah2}`}
+                          style={{ '--ind-warna': `var(${WARNA_STATUS[db.status]})` } as React.CSSProperties}>
+                          <span className="grf-pola-status">{db.status}</span>
+                          <span>
+                            lembah {db.waktuLembah1} ({fN(db.hargaLembah1, 0)}) &amp; {db.waktuLembah2} ({fN(db.hargaLembah2, 0)})
+                            {' · '}leher {db.waktuLeher} ({fN(db.hargaLeher, 0)})
+                            {' · '}kedalaman {fN(db.kedalamanAtr, 1)}× ATR
+                            {db.waktuKonfirmasi ? ` · tembus ${db.waktuKonfirmasi}` : ''}
+                            {db.volumeMenguat ? ' · volume menguat' : ''}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
 
           {/* Legenda: satu baris per instans yang tampil, di titik yang
@@ -557,6 +603,18 @@ export function GrafikEmiten() {
             <summary><IkonMenu d={IKON_INFO} size={12} /> Apa arti indikator-indikator ini?</summary>
             <dl className="grf-panduan-daftar">
               {PANDUAN_INDIKATOR.map(({ label, teks }) => (
+                <div key={label} className="grf-panduan-item">
+                  <dt>{label}</dt>
+                  <dd>{teks}</dd>
+                </div>
+              ))}
+            </dl>
+          </details>
+
+          <details className="grf-panduan">
+            <summary><IkonMenu d={IKON_INFO} size={12} /> Bagaimana pola dicari?</summary>
+            <dl className="grf-panduan-daftar">
+              {PANDUAN_POLA.map(({ label, teks }) => (
                 <div key={label} className="grf-panduan-item">
                   <dt>{label}</dt>
                   <dd>{teks}</dd>
