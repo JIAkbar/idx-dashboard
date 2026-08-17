@@ -14,10 +14,14 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
  *    lapis AI bisa dimatikan dari dasbor Supabase **tanpa deploy ulang** —
  *    itu syarat yang diminta Johan sebelum memasangnya.
  *
- * 2. KUOTA PER IP. Fungsi ini terbuka tanpa login (panel Tanya PAPAN memang
- *    untuk umum), jadi tanpa pembatas ia menjadi proksi Gemini terbuka yang
- *    siapa pun bisa kuras. Batas harian ditegakkan di basis data, bukan di
- *    memori — memori instance Edge hilang tiap dingin.
+ * 2. WAJIB MASUK, LALU KUOTA PER PENGGUNA. Lapis ini berbiaya per pertanyaan,
+ *    jadi jatahnya dipegang yang sudah masuk. Gerbangnya di sini, bukan di
+ *    klien: menyembunyikan tombol tak menahan siapa pun karena fungsi ini bisa
+ *    dipanggil langsung dengan curl, dan di sinilah biaya Gemini terjadi.
+ *    Batas harian ditegakkan di basis data, bukan di memori — memori instance
+ *    Edge hilang tiap dingin. Kuotanya per PENGGUNA, bukan per IP: batas ber-IP
+ *    bocor dua arah, satu orang bisa berpindah jaringan untuk menyetel ulang
+ *    jatahnya, dan satu kantor ber-NAT berbagi satu jatah tanpa alasan.
  *
  * 3. ANGKA TAK BOLEH DIKARANG. Model diberi konteks berisi angka hari itu dan
  *    diperintahkan tidak menyebut angka di luar konteks. Perintah saja tak
