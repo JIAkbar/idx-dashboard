@@ -722,3 +722,150 @@ export function cariDoubleBottom(
 
   return [...terbaik.values()].sort((x, y) => x.iLembah2 - y.iLembah2)
 }
+
+/* ------------------------------------------------------------------ *
+ * Template (#tahap 5). Susunan indikator + pola disimpan dengan nama dan
+ * bisa dimuat kembali; satu di antaranya boleh ditandai BAWAAN dan dimuat
+ * sendiri saat halaman dibuka. Johan: "ada fungsi simpan nya juga, buat
+ * template juga sewaktu-waktu di buka bisa load otomatis template tersebut".
+ *
+ * Disimpan di localStorage, BUKAN Supabase. Ini preferensi tampilan, bukan
+ * data bersama: menaruhnya di server menambah satu tabel, satu set aturan
+ * RLS, dan satu jalur galat jaringan baru demi sesuatu yang tak perlu
+ * berpindah perangkat — dan halaman jadi bisa gagal memuat susunan grafik
+ * hanya karena jaringan sedang buruk. Kalau kelak memang perlu ikut akun,
+ * yang berganti cukup LAPIS PENYIMPANANNYA: `bacaTemplateTersimpan` dan
+ * `tulisTemplateTersimpan` di bawah adalah satu-satunya dua fungsi yang tahu
+ * di mana datanya duduk; seluruh aturan pengelolaannya sudah murni dan tak
+ * perlu disentuh.
+ * ------------------------------------------------------------------ */
+
+export const VERSI_TEMPLATE = 1
+export const KUNCI_TEMPLATE = 'papan:grafik-template'
+
+/**
+ * Satu template.
+ *
+ * Yang TIDAK disimpan sama pentingnya dengan yang disimpan: **kode emiten
+ * tidak pernah masuk ke sini**. Johan menegaskan bentuknya lewat cara
+ * memakainya — "sewaktu-waktu buka lagi itu tinggal ganti saham nya" — jadi
+ * satu template "Modelku" harus bisa dipakai untuk BBCA hari ini dan TLKM
+ * besok tanpa disimpan ulang. Template yang membawa kode emiten akan
+ * memindahkan pembaca ke saham lain tiap kali dimuat, dan itu kebalikan dari
+ * yang diminta.
+ *
+ * `jenisChart` dan `rentang` opsional supaya template yang tersimpan sebelum
+ * kedua ruas ini ada tetap terbaca — dilewatkan ke nilai bawaan, bukan
+ * ditolak. Menaikkan versi demi dua ruas tambahan akan membuang seluruh
+ * template yang sudah dibuat orang, dan itu harga yang jauh lebih mahal.
+ */
+export interface TemplateGrafik {
+  versi: number
+  nama: string
+  bawaan: boolean
+  indikator: InstansIndikator[]
+  pola: InstansPola[]
+  jenisChart?: string
+  rentang?: string
+}
+
+function instansSah<J extends string>(v: unknown, jenisDikenal: readonly string[]): v is Instans<J> {
+  if (!v || typeof v !== 'object') return false
+  const o = v as Record<string, unknown>
+  if (typeof o.id !== 'string' || typeof o.warna !== 'string' || typeof o.tampil !== 'boolean') return false
+  // Jenis yang tak dikenal HARUS ditolak di sini. Dibiarkan lewat, ia baru
+  // meledak jauh kemudian saat spek parameternya dicari dan tak ada —
+  // menjatuhkan seluruh halaman demi satu baris template usang.
+  if (typeof o.jenis !== 'string' || !jenisDikenal.includes(o.jenis)) return false
+  if (!o.param || typeof o.param !== 'object') return false
+  return Object.values(o.param as Record<string, unknown>).every((x) => typeof x === 'number' && Number.isFinite(x))
+}
+
+/**
+ * Membaca daftar template dari teks JSON. Segala bentuk yang tak dikenal
+ * ditolak DENGAN SOPAN — dilewati, bukan dilempar: template lama yang
+ * bentuknya sudah berubah harus berakhir sebagai satu baris yang hilang dari
+ * daftar, bukan sebagai halaman kosong yang tak memberi petunjuk apa pun.
+ */
+export function uraiTemplate(raw: string | null): TemplateGrafik[] {
+  if (!raw) return []
+  let data: unknown
+  try { data = JSON.parse(raw) } catch { return [] }
+  if (!Array.isArray(data)) return []
+  const jenisIndikator = Object.keys(SPEK_INDIKATOR)
+  const jenisPola = Object.keys(SPEK_POLA)
+  const hasil: TemplateGrafik[] = []
+  for (const t of data) {
+    if (!t || typeof t !== 'object') continue
+    const o = t as Record<string, unknown>
+    if (o.versi !== VERSI_TEMPLATE) continue
+    if (typeof o.nama !== 'string' || !o.nama.trim()) continue
+    const indikator = Array.isArray(o.indikator) ? o.indikator : []
+    const pola = Array.isArray(o.pola) ? o.pola : []
+    if (!indikator.every((x) => instansSah<JenisIndikator>(x, jenisIndikator))) continue
+    if (!pola.every((x) => instansSah<JenisPola>(x, jenisPola))) continue
+    hasil.push({
+      versi: VERSI_TEMPLATE,
+      nama: o.nama,
+      bawaan: o.bawaan === true,
+      indikator: indikator as InstansIndikator[],
+      pola: pola as InstansPola[],
+      // Kode emiten sengaja TIDAK dibaca walau ada di berkas lama — lihat
+      // catatan di TemplateGrafik.
+      ...(typeof o.jenisChart === 'string' ? { jenisChart: o.jenisChart } : {}),
+      ...(typeof o.rentang === 'string' ? { rentang: o.rentang } : {}),
+    })
+  }
+  return hasil
+}
+
+/** Simpan (atau timpa, kalau namanya sudah ada) satu template. Nama dipakai
+ *  sebagai identitas supaya "simpan lagi dengan nama yang sama" berarti
+ *  memperbarui, bukan diam-diam menumpuk kembaran yang tak bisa dibedakan. */
+export function simpanTemplate(
+  daftar: TemplateGrafik[],
+  nama: string,
+  isi: Pick<TemplateGrafik, 'indikator' | 'pola' | 'jenisChart' | 'rentang'>,
+): TemplateGrafik[] {
+  const bersih = nama.trim()
+  if (!bersih) return daftar
+  const lama = daftar.find((t) => t.nama === bersih)
+  const baru: TemplateGrafik = {
+    versi: VERSI_TEMPLATE, nama: bersih, bawaan: lama?.bawaan ?? false, ...isi,
+  }
+  return lama ? daftar.map((t) => (t.nama === bersih ? baru : t)) : [...daftar, baru]
+}
+
+export function hapusTemplate(daftar: TemplateGrafik[], nama: string): TemplateGrafik[] {
+  return daftar.filter((t) => t.nama !== nama)
+}
+
+/** Tandai satu template sebagai bawaan; menandai yang sama sekali lagi
+ *  melepasnya. Cuma boleh ada SATU bawaan — kalau tidak, "dimuat otomatis
+ *  saat halaman dibuka" jadi pertanyaan yang mana yang menang. */
+export function tandaiBawaan(daftar: TemplateGrafik[], nama: string): TemplateGrafik[] {
+  const sudah = daftar.find((t) => t.nama === nama)?.bawaan === true
+  return daftar.map((t) => ({ ...t, bawaan: !sudah && t.nama === nama }))
+}
+
+/** Ganti nama. Nama kosong, atau nama yang sudah dipakai template lain,
+ *  ditolak — daftar dikembalikan apa adanya. */
+export function ubahNamaTemplate(daftar: TemplateGrafik[], lama: string, baru: string): TemplateGrafik[] {
+  const bersih = baru.trim()
+  if (!bersih || bersih === lama) return daftar
+  if (daftar.some((t) => t.nama === bersih)) return daftar
+  return daftar.map((t) => (t.nama === lama ? { ...t, nama: bersih } : t))
+}
+
+/* Dua fungsi berikut satu-satunya yang tahu di mana template disimpan —
+   lihat catatan panjang di kepala bagian ini. Keduanya menelan galat: kuota
+   penuh atau localStorage yang dimatikan (mode privat) tak boleh menjatuhkan
+   halaman grafik, cukup berarti templatenya tak bertahan. */
+
+export function bacaTemplateTersimpan(): TemplateGrafik[] {
+  try { return uraiTemplate(localStorage.getItem(KUNCI_TEMPLATE)) } catch { return [] }
+}
+
+export function tulisTemplateTersimpan(daftar: TemplateGrafik[]): void {
+  try { localStorage.setItem(KUNCI_TEMPLATE, JSON.stringify(daftar)) } catch { /* kuota penuh / mode privat */ }
+}

@@ -41,6 +41,18 @@ const OPSI_INDIKATOR = (Object.keys(SPEK_INDIKATOR) as JenisIndikator[])
  *  akan terbaca seolah sejenis. */
 const JENIS_POLA = Object.keys(SPEK_POLA) as JenisPola[]
 
+/**
+ * Berapa temuan pola TERBARU yang digambar penandanya di kanvas.
+ *
+ * Bukan pembatasan pencarian — seluruh temuan tetap dihitung dan jumlah
+ * penuhnya tetap disebut. Yang dibatasi cuma yang digambar. BBCA rentang
+ * Semua dengan parameter bawaan menghasilkan 17 pola; 17 x 4 penanda saling
+ * bertindihan sampai tak satu pun labelnya terbaca, dan gambar yang tak
+ * terbaca lebih buruk daripada gambar yang mengaku cuma menampilkan sebagian.
+ * Yang ingin melihat lebih lama ke belakang bisa mempersempit rentang.
+ */
+const MAKS_PENANDA_POLA = 6
+
 /** Dua jenis gambar harga, cukup dua. Heikin Ashi / Bar / Area sengaja tak
  *  ditambahkan — Johan: "ada seperti untuk chart chandles dan line saja dulu". */
 export type JenisChart = 'lilin' | 'garis'
@@ -596,11 +608,21 @@ export function GrafikEmiten() {
     tulisTemplateTersimpan(baru)
   }
 
+  /** Muat template. Kode emiten SENGAJA tak ikut — yang sedang dibuka tetap
+   *  yang sedang dibuka. Itu justru inti bentuknya: "sewaktu-waktu buka lagi
+   *  itu tinggal ganti saham nya". */
   const muatTemplate = (t: TemplateGrafik) => {
     ind.gantiSemua(t.indikator)
     pol.gantiSemua(t.pola)
+    if (t.jenisChart === 'lilin' || t.jenisChart === 'garis') setJenisChart(t.jenisChart)
+    // Rentang yang tak dikenal (label pernah berubah) dilewati, bukan disetel
+    // ke label yang tak ada — chip yang tak cocok apa pun akan membuat seluruh
+    // pemilih rentang tampak mati.
+    if (t.rentang && RENTANG_GRAFIK.some(([label]) => label === t.rentang)) setRentangLabel(t.rentang)
     setNamaTemplate(t.nama)
   }
+
+  const isiTemplate = () => ({ indikator: ind.daftar, pola: pol.daftar, jenisChart, rentang: rentangLabel })
 
   // Template bawaan dimuat sendiri saat halaman dibuka (Johan: "sewaktu-waktu
   // di buka bisa load otomatis template tersebut"). Deps sengaja kosong: ini
@@ -629,7 +651,7 @@ export function GrafikEmiten() {
     const penanda: Array<SeriesMarker<Time>> = []
     for (const { inst, temuan } of polaPerInstans) {
       if (!inst.tampil) continue
-      for (const db of temuan) {
+      for (const db of temuan.slice(-MAKS_PENANDA_POLA)) {
         const warna = baca(WARNA_STATUS[db.status])
         penanda.push(
           { time: db.waktuLembah1, position: 'belowBar', color: warna, shape: 'circle', text: 'Lembah 1' },
@@ -754,7 +776,7 @@ export function GrafikEmiten() {
                 onChange={(e) => setNamaTemplate(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && namaTemplate.trim()) {
-                    simpanDaftarTemplate(simpanTemplate(template, namaTemplate, ind.daftar, pol.daftar))
+                    simpanDaftarTemplate(simpanTemplate(template, namaTemplate, isiTemplate()))
                   }
                 }} />
               <button type="button" className="bchip bchip-klik"
@@ -762,7 +784,7 @@ export function GrafikEmiten() {
                 title={template.some((t) => t.nama === namaTemplate.trim())
                   ? 'Timpa template dengan susunan sekarang'
                   : 'Simpan susunan sekarang sebagai template baru'}
-                onClick={() => simpanDaftarTemplate(simpanTemplate(template, namaTemplate, ind.daftar, pol.daftar))}>
+                onClick={() => simpanDaftarTemplate(simpanTemplate(template, namaTemplate, isiTemplate()))}>
                 {template.some((t) => t.nama === namaTemplate.trim()) ? 'Timpa' : 'Simpan'}
               </button>
             </div>
@@ -789,6 +811,8 @@ export function GrafikEmiten() {
                     )}
                     <span className="grf-template-isi">
                       {t.indikator.length} indikator · {t.pola.length} pola
+                      {t.jenisChart ? ` · ${t.jenisChart}` : ''}{t.rentang ? ` · ${t.rentang}` : ''}
+                      {' · emiten tak ikut disimpan'}
                     </span>
                     <button type="button" className="bchip bchip-klik"
                       aria-pressed={t.bawaan}
@@ -819,10 +843,12 @@ export function GrafikEmiten() {
                     {labelInstansPola(inst)}: {temuan.length === 0
                       ? 'tak ada yang memenuhi syarat pada rentang ini'
                       : `${temuan.length} ditemukan`}
+                    {temuan.length > MAKS_PENANDA_POLA
+                      && ` — ${MAKS_PENANDA_POLA} terbaru digambar di kanvas`}
                   </p>
                   {temuan.length > 0 && (
                     <ul className="grf-pola-daftar">
-                      {temuan.slice(-8).reverse().map((db) => (
+                      {temuan.slice(-MAKS_PENANDA_POLA).reverse().map((db) => (
                         <li key={`${db.iLembah1}-${db.iLembah2}`}
                           style={{ '--ind-warna': `var(${WARNA_STATUS[db.status]})` } as React.CSSProperties}>
                           <span className="grf-pola-status">{db.status}</span>

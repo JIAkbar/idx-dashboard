@@ -5,7 +5,9 @@ import {
   SPEK_INDIKATOR, buatInstans, galatNilaiParam, galatInstans, labelInstansIndikator,
   hitungInstans, PALET_INDIKATOR,
   hitungATR, cariPivotRendah, cariPivotTinggi, cariDoubleBottom,
+  VERSI_TEMPLATE, uraiTemplate, simpanTemplate, hapusTemplate, tandaiBawaan, ubahNamaTemplate,
   type InstansIndikator, type SpekParam, type LilinData, type ParamDoubleBottom,
+  type TemplateGrafik,
 } from './grafikEmiten'
 import type { BarisOhlc } from './ihsgOhlc'
 
@@ -469,5 +471,118 @@ describe('cariDoubleBottom', () => {
   it('data kosong / terlalu pendek -> tak ada temuan, bukan galat', () => {
     expect(cariDoubleBottom([], [], P)).toEqual([])
     expect(cariDoubleBottom(lilinDari([1, 2, 3]), [], P)).toEqual([])
+  })
+})
+
+/* ---------------- Template (tahap 5) ---------------- */
+
+const instMA = (periode: number): InstansIndikator =>
+  ({ id: `ma-${periode}`, jenis: 'ma', param: { periode }, warna: '--amber', tampil: true })
+
+const templateContoh = (nama: string, bawaan = false): TemplateGrafik => ({
+  versi: VERSI_TEMPLATE, nama, bawaan, indikator: [instMA(20), instMA(200)], pola: [],
+})
+
+describe('uraiTemplate', () => {
+  it('bolak-balik utuh: yang ditulis sama dengan yang dibaca', () => {
+    const asli = [templateContoh('Harian', true), templateContoh('Mingguan')]
+    expect(uraiTemplate(JSON.stringify(asli))).toEqual(asli)
+  })
+  it('penyimpanan kosong / JSON rusak -> daftar kosong, bukan lemparan galat', () => {
+    expect(uraiTemplate(null)).toEqual([])
+    expect(uraiTemplate('')).toEqual([])
+    expect(uraiTemplate('{bukan json')).toEqual([])
+    expect(uraiTemplate('{"bukan":"array"}')).toEqual([])
+  })
+  it('versi tak dikenal DILEWATI dengan sopan, yang sezaman tetap terbaca', () => {
+    const campur = [
+      { ...templateContoh('Masa depan'), versi: 99 },
+      { ...templateContoh('Purba'), versi: 0 },
+      templateContoh('Sekarang'),
+    ]
+    expect(uraiTemplate(JSON.stringify(campur)).map((t) => t.nama)).toEqual(['Sekarang'])
+  })
+  it('jenis indikator yang tak dikenal ditolak — kalau lewat, ia meledak jauh kemudian', () => {
+    const rusak = [{ ...templateContoh('Rusak'), indikator: [{ ...instMA(20), jenis: 'ichimoku' }] }]
+    expect(uraiTemplate(JSON.stringify(rusak))).toEqual([])
+  })
+  it('parameter bukan angka (atau NaN) ditolak', () => {
+    const teks = [{ ...templateContoh('Teks'), indikator: [{ ...instMA(20), param: { periode: '20' } }] }]
+    expect(uraiTemplate(JSON.stringify(teks))).toEqual([])
+  })
+  it('nama kosong ditolak — template tanpa nama tak bisa dipilih lagi', () => {
+    expect(uraiTemplate(JSON.stringify([{ ...templateContoh('x'), nama: '  ' }]))).toEqual([])
+  })
+})
+
+describe('simpanTemplate', () => {
+  it('nama baru ditambahkan di ujung', () => {
+    const hasil = simpanTemplate([templateContoh('A')], 'B', { indikator: [instMA(50)], pola: [] })
+    expect(hasil.map((t) => t.nama)).toEqual(['A', 'B'])
+  })
+  it('nama yang sudah ada DITIMPA, bukan menumpuk kembaran', () => {
+    const hasil = simpanTemplate([templateContoh('A')], 'A', { indikator: [instMA(50)], pola: [] })
+    expect(hasil).toHaveLength(1)
+    expect(hasil[0].indikator).toEqual([instMA(50)])
+  })
+  it('menimpa tak menghilangkan tanda bawaan yang sudah ada', () => {
+    expect(simpanTemplate([templateContoh('A', true)], 'A', { indikator: [], pola: [] })[0].bawaan).toBe(true)
+  })
+  it('nama kosong / spasi saja tak menyimpan apa pun', () => {
+    const awal = [templateContoh('A')]
+    expect(simpanTemplate(awal, '   ', { indikator: [], pola: [] })).toBe(awal)
+  })
+  it('spasi di ujung nama dirapikan', () => {
+    expect(simpanTemplate([], '  Harian  ', { indikator: [], pola: [] })[0].nama).toBe('Harian')
+  })
+})
+
+describe('tandaiBawaan', () => {
+  it('cuma satu yang boleh jadi bawaan', () => {
+    const hasil = tandaiBawaan([templateContoh('A', true), templateContoh('B')], 'B')
+    expect(hasil.map((t) => t.bawaan)).toEqual([false, true])
+  })
+  it('menandai yang sudah bawaan melepasnya — tak ada bawaan sama sekali', () => {
+    expect(tandaiBawaan([templateContoh('A', true)], 'A').map((t) => t.bawaan)).toEqual([false])
+  })
+})
+
+describe('ubahNamaTemplate & hapusTemplate', () => {
+  it('mengganti nama', () => {
+    expect(ubahNamaTemplate([templateContoh('A')], 'A', 'Z').map((t) => t.nama)).toEqual(['Z'])
+  })
+  it('nama yang bentrok ditolak — dua template senama tak bisa dibedakan lagi', () => {
+    const awal = [templateContoh('A'), templateContoh('B')]
+    expect(ubahNamaTemplate(awal, 'A', 'B')).toBe(awal)
+  })
+  it('nama kosong ditolak', () => {
+    const awal = [templateContoh('A')]
+    expect(ubahNamaTemplate(awal, 'A', '  ')).toBe(awal)
+  })
+  it('menghapus menurut nama', () => {
+    expect(hapusTemplate([templateContoh('A'), templateContoh('B')], 'A').map((t) => t.nama)).toEqual(['B'])
+  })
+})
+
+describe('template tak pernah membawa kode emiten', () => {
+  it('ruas kode di berkas lama diabaikan saat dibaca', () => {
+    const berkode = [{ ...templateContoh('Modelku'), kode: 'BBCA', emiten: 'BBCA' }]
+    const dibaca = uraiTemplate(JSON.stringify(berkode))[0] as unknown as Record<string, unknown>
+    expect(dibaca.kode).toBeUndefined()
+    expect(dibaca.emiten).toBeUndefined()
+    expect(dibaca.nama).toBe('Modelku')
+  })
+  it('jenis chart & rentang ikut disimpan dan terbaca kembali', () => {
+    const disimpan = simpanTemplate([], 'Modelku',
+      { indikator: [instMA(20)], pola: [], jenisChart: 'garis', rentang: '3 thn' })
+    const bolakBalik = uraiTemplate(JSON.stringify(disimpan))[0]
+    expect(bolakBalik.jenisChart).toBe('garis')
+    expect(bolakBalik.rentang).toBe('3 thn')
+  })
+  it('template lama tanpa jenisChart/rentang tetap terbaca — bukan ditolak', () => {
+    const lama = uraiTemplate(JSON.stringify([templateContoh('Lama')]))
+    expect(lama).toHaveLength(1)
+    expect(lama[0].jenisChart).toBeUndefined()
+    expect(lama[0].rentang).toBeUndefined()
   })
 })
