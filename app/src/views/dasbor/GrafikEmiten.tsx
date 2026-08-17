@@ -41,6 +41,11 @@ const OPSI_INDIKATOR = (Object.keys(SPEK_INDIKATOR) as JenisIndikator[])
  *  akan terbaca seolah sejenis. */
 const JENIS_POLA = Object.keys(SPEK_POLA) as JenisPola[]
 
+/** Dua jenis gambar harga, cukup dua. Heikin Ashi / Bar / Area sengaja tak
+ *  ditambahkan — Johan: "ada seperti untuk chart chandles dan line saja dulu". */
+export type JenisChart = 'lilin' | 'garis'
+const JENIS_CHART: Array<[JenisChart, string]> = [['lilin', 'Lilin'], ['garis', 'Garis']]
+
 const spekIndikator = (jenis: JenisIndikator) => SPEK_INDIKATOR[jenis].param
 const spekPola = (jenis: JenisPola) => SPEK_POLA[jenis].param
 
@@ -120,6 +125,12 @@ export function GrafikEmiten() {
   const [berkas, setBerkas] = useState<BerkasOhlcEmiten | null>(null)
   const [galat, setGalat] = useState<string | null>(null)
   const [rentangLabel, setRentangLabel] = useState<string>(RENTANG_BAWAAN)
+  const [jenisChart, setJenisChart] = useState<JenisChart>('lilin')
+  // Bertambah tiap seri harga dibuat ulang. Efek-efek yang MENEMPEL pada seri
+  // harga (data, warna, garis leher pola) memakainya sebagai dependensi:
+  // tanpa itu mereka tak tahu serinya sudah berganti dan tetap memegang seri
+  // yang sudah dibongkar — grafiknya kosong tanpa satu pun galat.
+  const [versiSeriHarga, setVersiSeriHarga] = useState(0)
   /**
    * Perbesar/perkecil rentang waktu yang terlihat, berpusat di TENGAH layar.
    * Tombol nyata, bukan cuma roda tikus — di telepon roda tikus tak ada, dan
@@ -169,7 +180,11 @@ export function GrafikEmiten() {
   // Bungkus kanvas — acuan posisi legenda dalam-kanvas (lihat `posPane`).
   const bungkusRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
-  const candleRef = useRef<ISeriesApi<'Candlestick'> | null>(null)
+  // Seri harga: lilin ATAU garis, ditukar lewat `jenisChart`. Disimpan
+  // sebagai ISeriesApi<SeriesType> karena jenisnya berganti saat berjalan;
+  // yang butuh jenis pastinya menanyakannya lewat `seriesType()`, bukan
+  // menebak dari state di sebelahnya.
+  const hargaRef = useRef<ISeriesApi<SeriesType> | null>(null)
   const volRef = useRef<ISeriesApi<'Histogram'> | null>(null)
   // Seri indikator. Dulu satu ref per garis; sekarang jumlahnya mengikuti
   // jumlah instans (tak terbatas), jadi disimpan sebagai daftar dan dibongkar
@@ -242,20 +257,16 @@ export function GrafikEmiten() {
       // milik halaman.
       handleScroll: { vertTouchDrag: false },
     })
-    const candle = chart.addSeries(CandlestickSeries)
-    const vol = chart.addSeries(HistogramSeries, { priceFormat: { type: 'volume' }, priceScaleId: 'vol' })
-    // Volume duduk di 22% bawah panel yang sama; lilin memakai sisanya —
+    // Volume duduk di 22% bawah panel yang sama; seri harga memakai sisanya —
     // pola resmi lightweight-charts utk "volume di panel bawah" tanpa perlu
-    // chart terpisah yang harus disinkronkan manual.
+    // chart terpisah yang harus disinkronkan manual. Volume dibuat DI SINI
+    // (bukan bersama seri harga) supaya pane 0 tak pernah kosong saat jenis
+    // chart ditukar: pane yang kehilangan seri terakhirnya ikut dibongkar,
+    // dan bersamanya watermark yang menempel padanya.
+    const vol = chart.addSeries(HistogramSeries, { priceFormat: { type: 'volume' }, priceScaleId: 'vol' })
     vol.priceScale().applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } })
-    candle.priceScale().applyOptions({ scaleMargins: { top: 0.08, bottom: 0.26 } })
     chartRef.current = chart
-    candleRef.current = candle
     volRef.current = vol
-    // Plugin penanda dibuat SEKALI di sini; efek pola cuma memanggil
-    // setMarkers() di atasnya. Membuatnya ulang tiap kali daftar pola berubah
-    // menumpuk beberapa plugin di satu seri, dan yang lama tetap menggambar.
-    penandaRef.current = createSeriesMarkers(candle, [])
     const pane0 = chart.panes()[0]
     if (pane0) watermarkRef.current = createTextWatermark(pane0, { horzAlign: 'center', vertAlign: 'center', lines: [] })
     // Hook QA dev-only — verifikasi zoom/geser butuh rentang waktu yang
@@ -275,10 +286,45 @@ export function GrafikEmiten() {
       chart.unsubscribeCrosshairMove(saatGeserKursor)
       chart.remove()
       chartRef.current = null
-      candleRef.current = null
+      hargaRef.current = null
       volRef.current = null
+      penandaRef.current = null
     }
   }, [])
+
+  /**
+   * Seri harga — dibuat ulang tiap kali jenis chart ditukar. Urutannya
+   * menentukan: seri BARU dipasang dulu, baru yang lama dibongkar. Terbalik,
+   * pane 0 sempat kehilangan seluruh seri harganya, dan pane yang kosong
+   * ikut dibongkar lightweight-charts bersama apa pun yang menempel padanya.
+   *
+   * Seri indikator TIDAK ikut terhapus: masing-masing berdiri sendiri di
+   * `seriIndRef` dan tak punya hubungan induk-anak dengan seri harga. Yang
+   * memang menempel pada seri harga cuma dua — plugin penanda dan garis
+   * leher pola — dan keduanya dipasang ulang di sini / di efek pola.
+   */
+  useEffect(() => {
+    const chart = chartRef.current
+    if (!chart) return
+    const lama = hargaRef.current
+    const baru: ISeriesApi<SeriesType> = jenisChart === 'lilin'
+      ? chart.addSeries(CandlestickSeries)
+      : chart.addSeries(LineSeries, { lineWidth: 2, priceLineVisible: false })
+    baru.priceScale().applyOptions({ scaleMargins: { top: 0.08, bottom: 0.26 } })
+    hargaRef.current = baru
+    if (lama) {
+      // Garis leher milik seri lama ikut mati bersamanya — dilepas dari
+      // daftar TANPA removePriceLine (serinya sudah tak ada; memanggilnya di
+      // atas seri mati itu galat). Efek pola menggambarnya ulang.
+      garisLeherRef.current = []
+      chart.removeSeries(lama)
+    }
+    // Plugin penanda menempel pada SERI, bukan chart — harus dipasang ulang
+    // di seri yang baru, kalau tidak penanda pola lenyap begitu jenis chart
+    // ditukar dan tak pernah kembali sampai halaman dimuat ulang.
+    penandaRef.current = createSeriesMarkers(baru, [])
+    setVersiSeriHarga((v) => v + 1)
+  }, [jenisChart])
 
   // Warna dibaca dari getComputedStyle DI DALAM .lantai (containerRef ada di
   // bawah wrapper .lantai) — token --green/--red/--line/--text2 didefinisikan
@@ -301,11 +347,19 @@ export function GrafikEmiten() {
       rightPriceScale: { borderColor: line },
       timeScale: { borderColor: line },
     })
-    candleRef.current?.applyOptions({
-      upColor: green, downColor: red, borderUpColor: green, borderDownColor: red,
-      wickUpColor: green, wickDownColor: red,
-    })
-  }, [theme])
+    const harga = hargaRef.current
+    if (harga?.seriesType() === 'Candlestick') {
+      (harga as ISeriesApi<'Candlestick'>).applyOptions({
+        upColor: green, downColor: red, borderUpColor: green, borderDownColor: red,
+        wickUpColor: green, wickDownColor: red,
+      })
+    } else if (harga?.seriesType() === 'Line') {
+      // Garis harga tunggal tak punya arah naik/turun per titik — dipakai
+      // token --amber, warna aksen situs, bukan hijau atau merah yang di sini
+      // akan mengaku tahu sesuatu yang tak diketahuinya.
+      (harga as ISeriesApi<'Line'>).applyOptions({ color: baca('--amber') })
+    }
+  }, [theme, versiSeriHarga])
 
   // Watermark kode emiten — ikut berganti saat emiten diganti, dan warnanya
   // dibaca ulang tiap tema ditukar. BEDA dari tanda PAPAN di pojok kiri
@@ -345,7 +399,12 @@ export function GrafikEmiten() {
   }, [berkas, rentangLabel, theme])
 
   useEffect(() => {
-    candleRef.current?.setData(lilin)
+    const harga = hargaRef.current
+    if (harga?.seriesType() === 'Candlestick') {
+      (harga as ISeriesApi<'Candlestick'>).setData(lilin)
+    } else if (harga?.seriesType() === 'Line') {
+      (harga as ISeriesApi<'Line'>).setData(lilin.map((l) => ({ time: l.time, value: l.close })))
+    }
     volRef.current?.setData(volume)
     chartRef.current?.timeScale().fitContent()
     // Angka terukur buat verifikasi/QA (bukan data sensitif — cuma jumlah &
@@ -359,7 +418,7 @@ export function GrafikEmiten() {
       el.dataset.tglPertama = lilin[0]?.time ?? ''
       el.dataset.tglAkhir = lilin[lilin.length - 1]?.time ?? ''
     }
-  }, [lilin, volume])
+  }, [lilin, volume, versiSeriHarga])
 
   // Dua daftar instans, dua dropdown, satu aturan main (lihat DaftarInstans).
   const ind = useDaftarInstans<JenisIndikator>(spekIndikator, lilin.length)
@@ -558,13 +617,13 @@ export function GrafikEmiten() {
   // dan lilin penembusnya.
   useEffect(() => {
     const chart = chartRef.current
-    const candle = candleRef.current
+    const harga = hargaRef.current
     const el = containerRef.current
-    if (!chart || !candle || !el) return
+    if (!chart || !harga || !el) return
     const cs = getComputedStyle(el)
     const baca = (nama: string) => cs.getPropertyValue(nama).trim() || '#888D99'
 
-    for (const g of garisLeherRef.current) candle.removePriceLine(g)
+    for (const g of garisLeherRef.current) harga.removePriceLine(g)
     garisLeherRef.current = []
 
     const penanda: Array<SeriesMarker<Time>> = []
@@ -591,7 +650,7 @@ export function GrafikEmiten() {
       // pada lilinnya, jadi banyak pun tak saling menutupi.
       const akhir = temuan[temuan.length - 1]
       if (akhir) {
-        garisLeherRef.current.push(candle.createPriceLine({
+        garisLeherRef.current.push(harga.createPriceLine({
           price: akhir.hargaLeher,
           color: baca(WARNA_STATUS[akhir.status]),
           lineWidth: 1,
@@ -608,7 +667,7 @@ export function GrafikEmiten() {
 
     // Angka terukur buat verifikasi/QA — kanvas tak punya DOM per-penanda.
     el.dataset.polaDitemukan = String(polaPerInstans.reduce((n, x) => n + x.temuan.length, 0))
-  }, [polaPerInstans, theme])
+  }, [polaPerInstans, theme, versiSeriHarga])
 
   const pemilih = (
     <div className="panel">
@@ -647,8 +706,17 @@ export function GrafikEmiten() {
       {pemilih}
       <section className="panel">
         <div className="panel-h">
-          <span className="lbl"><IkonMenu d={IKON_GRAFIK_NAIK} size={13} /> {kode} — Lilin &amp; Volume</span>
+          <span className="lbl"><IkonMenu d={IKON_GRAFIK_NAIK} size={13} /> {kode} — Harga &amp; Volume</span>
           <div className="grf-rentang">
+            {/* Jenis gambar harga. Menukarnya membangun ulang seri harga tapi
+                TIDAK menyentuh indikator & pola — lihat efek `jenisChart`. */}
+            {JENIS_CHART.map(([nilai, label]) => (
+              <button key={nilai} type="button"
+                className={'bchip bchip-klik' + (jenisChart === nilai ? ' on' : '')}
+                aria-pressed={jenisChart === nilai}
+                onClick={() => setJenisChart(nilai)}>{label}</button>
+            ))}
+            <span className="grf-pisah" aria-hidden="true" />
             {RENTANG_GRAFIK.map(([label]) => (
               <button key={label} type="button"
                 className={'bchip bchip-klik' + (rentangLabel === label ? ' on' : '')}

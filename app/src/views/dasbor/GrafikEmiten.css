@@ -9,6 +9,10 @@
 }
 .lantai .grf-rentang { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .lantai .grf-rentang .bchip.on { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); }
+.lantai .grf-rentang .bchip { margin-right: 0; }
+/* Pemisah tipis antara chip jenis chart dan chip rentang — dua kelompok yang
+   sama bentuknya bersebelahan terbaca sebagai satu deretan pilihan. */
+.lantai .grf-pisah { width: 1px; height: 16px; background: var(--line2); margin: 0 3px; }
 
 /* Baris dropdown penambah indikator/pola (tahap 5) — dulu deretan chip
    sakelar; sekarang menu, karena jenisnya boleh dimasukkan berkali-kali dan
