@@ -105,11 +105,23 @@ export function hariBursa(iso: string): boolean {
   return true
 }
 
-/** Alasan sebuah tanggal bukan hari bursa, untuk ditulis di layar — null kalau
- *  ia memang hari bursa. */
+/**
+ * Alasan sebuah tanggal bukan hari bursa, untuk ditulis di layar — null kalau
+ * ia memang hari bursa.
+ *
+ * Kalimatnya dirancang untuk dibaca di dalam tanda kurung ("bukan hari bursa
+ * (…)"), jadi jangan di-`toLowerCase()` di pemanggil: itu merusak nama libur
+ * yang berupa nama diri ("hut kemerdekaan ri").
+ */
 export function alasanBukanHariBursa(iso: string): string | null {
   if (hariBursa(iso)) return null
-  return HOLIDAYS[iso] ?? 'Bursa tutup'
+  if (HOLIDAYS[iso]) return HOLIDAYS[iso]
+  const [t, b, d] = iso.split('-').map(Number)
+  const hari = t && b && d ? new Date(t, b - 1, d).getDay() : -1
+  if (hari === 0 || hari === 6) return 'akhir pekan'
+  // Hari kerja yang tak tercatat di daftar hari bursa: libur dadakan atau cuti
+  // bersama yang tak pernah masuk daftar tanggal merah mana pun.
+  return 'tidak ada penutupan tercatat'
 }
 
 const keIso = (d: Date) => {

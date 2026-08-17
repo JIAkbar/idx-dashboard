@@ -844,7 +844,7 @@ export function UnggahHarian() {
     // libur (kejadian 17 Agu 2026) menyetor tanpa pernah diberi tahu.
     if (liburDipilih && !nonBursaDisadari) {
       setNonBursaDisadari(true)
-      setFormErr(`${tanggalManusiawi(tanggal)} bukan hari bursa (${liburDipilih.toLowerCase()}) — biasanya tidak ada broker summary untuk tanggal ini. Pilih hari bursa terakhir sebelumnya, atau tekan Unggah sekali lagi kalau memang disengaja.`)
+      setFormErr(`${tanggalManusiawi(tanggal)} bukan hari bursa (${liburDipilih}) — biasanya tidak ada broker summary untuk tanggal ini. Pilih hari bursa terakhir sebelumnya, atau tekan Unggah sekali lagi kalau memang disengaja.`)
       return
     }
     if (!alasanValid(alasan, superadmin)) {
@@ -1346,7 +1346,7 @@ export function UnggahHarian() {
                 <p className="af-dup" style={{ marginTop: 6 }}>
                   <IkonMenu d={IKON_PERINGATAN} size={12} />
                   <span>
-                    <b>{tanggalManusiawi(tanggal)}</b> bukan hari bursa ({liburDipilih.toLowerCase()}) —
+                    <b>{tanggalManusiawi(tanggal)}</b> bukan hari bursa ({liburDipilih}) —
                     tidak ada penutupan, jadi biasanya juga tidak ada broker summary.
                     Yakin mau menyetor untuk tanggal ini?
                   </span>

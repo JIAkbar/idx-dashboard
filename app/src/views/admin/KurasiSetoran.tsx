@@ -634,7 +634,7 @@ function PindahTanggalModal({ setoran, sibuk, onClose, onKirim }: {
         {libur && tanggal !== setoran.tanggal && (
           <p className="af-dup" style={{ margin: 0 }}>
             <IkonMenu d={IKON_PERINGATAN} size={12} />
-            <span>{tanggal} juga bukan hari bursa ({libur.toLowerCase()}).</span>
+            <span>{tanggal} juga bukan hari bursa ({libur}).</span>
           </p>
         )}
         <button
