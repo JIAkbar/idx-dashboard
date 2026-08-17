@@ -10,21 +10,49 @@
 .lantai .grf-rentang { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .lantai .grf-rentang .bchip.on { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); }
 
-/* Sakelar indikator (tahap 4) — chip yang sama polanya dengan .grf-rentang,
-   ditaruh baris sendiri di panel-b (bukan panel-h, supaya tak berebut
-   tempat dengan chip rentang saat layar sempit). flex-wrap wajib: 7 chip
-   tak muat satu baris di 412px. */
-.lantai .grf-ind { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-.lantai .grf-ind .bchip.on { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); }
+/* Baris dropdown penambah indikator/pola (tahap 5) — dulu deretan chip
+   sakelar; sekarang menu, karena jenisnya boleh dimasukkan berkali-kali dan
+   deretan sakelar tak bisa mewakili "MA tiga kali dengan periode berbeda".
+   Tetap di panel-b (bukan panel-h) supaya tak berebut tempat dengan chip
+   rentang di layar sempit. */
+.lantai .grf-ind { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+
+/* Daftar instans. Tiap baris membawa warnanya sendiri lewat --ind-warna
+   (disetel dari JSX karena nilainya per-instans, tak bisa jadi kelas tetap);
+   seluruh warna di baris ini turun dari situ, jadi token temanya tetap satu
+   sumber. */
+.lantai .grf-ind-daftar { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.lantai .grf-ind-baris {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+  padding: 6px 10px; border: 1px solid var(--line); border-radius: var(--r-kecil); background: var(--bg2);
+}
+.lantai .grf-ind-baris.redup { opacity: 0.5; }
+.lantai .grf-ind-warna { width: 10px; height: 10px; border-radius: 2px; background: var(--ind-warna); flex: none; }
+.lantai .grf-ind-nama {
+  font-family: var(--mono); font-size: 11.5px; font-weight: 700; color: var(--ind-warna);
+  min-width: 92px;
+}
+.lantai .grf-ind-param { display: flex; align-items: center; gap: 5px; }
+.lantai .grf-ind-param-lbl { font-size: 10.5px; color: var(--text3); }
+/* Kolom angka sempit: `.inp` bawaan lebar 100% dan akan mendorong tombol
+   aksi keluar baris. */
+.lantai .grf-ind-inp { width: 68px; padding: 4px 7px; font-size: 11.5px; height: 26px; }
+.lantai .grf-ind-inp.salah { border-color: var(--red); }
+.lantai .grf-ind-inp.salah:focus { border-color: var(--red); }
+.lantai .grf-ind-aksi { padding: 0 8px; margin-right: 0; }
+/* Galat memaksa baris baru penuh (flex-basis 100%) — ditempel di ujung kanan
+   baris yang sama, pesannya terpotong justru saat paling perlu dibaca. */
+.lantai .grf-ind-galat { flex: 1 0 100%; margin: 0; font-size: 11px; color: var(--red); }
 
 /* Legenda: nilai indikator aktif pada titik yang disorot kursor. Baris teks
-   biasa (bukan chip) — beda peran dari sakelar di atasnya. */
+   biasa (bukan chip) — beda peran dari daftar instans di atasnya. */
 .lantai .grf-legenda {
-  display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline;
+  display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline;
   font-family: var(--mono); font-size: 11.5px; color: var(--text2);
   margin-bottom: 8px; min-height: 16px;
 }
 .lantai .grf-legenda-tgl { color: var(--text3); }
+.lantai .grf-legenda-it { color: var(--ind-warna); }
 
 /* Panduan singkat — pola <details>/<summary> yang sama dengan AturanKurasi
    (admin/KurasiSetoran.tsx), ditulis ulang di sini karena berkas admin tak
@@ -90,5 +118,4 @@
    gantinya, bukan menunggu sentuhan yang lepas lagi begitu jari diangkat. */
 @media (hover: none) {
   .lantai .grf-tanda-papan { opacity: 0.45; }
-}
 }

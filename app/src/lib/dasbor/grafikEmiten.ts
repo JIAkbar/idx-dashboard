@@ -98,6 +98,11 @@ export const RENTANG_GRAFIK: Array<[label: string, tahun: number | null]> = [
   ['Semua', null],
 ]
 
+/** Rentang yang aktif saat halaman pertama dibuka. Johan 17 Agu 2026: "buat
+ *  default nya semua". Ditulis sebagai konstanta (bukan angka indeks) supaya
+ *  chip yang tersorot dan data yang tergambar mustahil berbeda. */
+export const RENTANG_BAWAAN = 'Semua'
+
 /** Tanggal ISO batas bawah rentang, dihitung mundur dari `akhirData` (bukan
  *  `new Date()` — lihat komentar RENTANG_GRAFIK). `tahun: null` -> string
  *  kosong (tak ada batas bawah, seluruh data lolos). */
@@ -263,12 +268,200 @@ export function keSeriGaris(waktu: string[], nilai: Array<number | null>): Titik
   return hasil
 }
 
-/** Periode bawaan tiap indikator — dipakai komponen supaya angka tak
- *  tertulis dua kali (di sini dan di label layar). */
-export const INDIKATOR_DEFAULT = {
-  ma: [20, 50] as const,
-  ema: [20, 50] as const,
-  rsi: 14,
-  macd: { cepat: 12, lambat: 26, sinyal: 9 },
-  bollinger: { periode: 20, k: 2 },
+/* ------------------------------------------------------------------ *
+ * Instans indikator (#tahap 5). Indikator berhenti jadi sakelar nyala/mati
+ * dan jadi DAFTAR instans: MA 20, MA 50, dan MA 200 bisa hidup bersamaan,
+ * masing-masing dengan parameter, warna, dan sakelar tampilnya sendiri.
+ * Johan 17 Agu 2026: "setiap indikator bisa di masukkan berkali-kali".
+ * ------------------------------------------------------------------ */
+
+export type JenisIndikator = 'ma' | 'ema' | 'bb' | 'rsi' | 'macd'
+
+/** Satu kolom masukan pada sebuah instans: batas-batasnya ditulis DI SINI,
+ *  sekali, dan dipakai bersama oleh validasi, nilai bawaan, dan label kolom
+ *  di layar — supaya ketiganya tak bisa berselisih. */
+export interface SpekParam {
+  kunci: string
+  label: string
+  bawaan: number
+  min: number
+  maks: number
+  /** Periode harus bilangan bulat; pengali simpangan baku tidak. */
+  bulat: boolean
+  /** Ruas yang tak boleh melebihi jumlah lilin yang tergambar. Periode
+   *  sepanjang itu membuat seluruh deret hasilnya `null` — garisnya lenyap
+   *  tanpa satu pun galat, dan itulah kegagalan senyap yang harus dicegat
+   *  di kolomnya, bukan dibiarkan sampai ke kanvas. */
+  bandingLilin?: boolean
+}
+
+export interface SpekIndikator {
+  label: string
+  param: SpekParam[]
+  /** true = garisnya menumpang di panel harga; false = pane terpisah di
+   *  bawahnya (RSI/MACD skalanya sama sekali bukan rupiah). */
+  diPanelHarga: boolean
+}
+
+const PERIODE = (bawaan: number, label = 'Periode'): SpekParam =>
+  ({ kunci: 'periode', label, bawaan, min: 2, maks: 1000, bulat: true, bandingLilin: true })
+
+export const SPEK_INDIKATOR: Record<JenisIndikator, SpekIndikator> = {
+  ma: { label: 'MA', diPanelHarga: true, param: [PERIODE(20)] },
+  ema: { label: 'EMA', diPanelHarga: true, param: [PERIODE(20)] },
+  bb: {
+    label: 'BB',
+    diPanelHarga: true,
+    param: [
+      PERIODE(20),
+      { kunci: 'k', label: 'Simpangan', bawaan: 2, min: 0.1, maks: 10, bulat: false },
+    ],
+  },
+  rsi: { label: 'RSI', diPanelHarga: false, param: [PERIODE(14)] },
+  macd: {
+    label: 'MACD',
+    diPanelHarga: false,
+    param: [
+      { kunci: 'cepat', label: 'Cepat', bawaan: 12, min: 2, maks: 1000, bulat: true, bandingLilin: true },
+      { kunci: 'lambat', label: 'Lambat', bawaan: 26, min: 2, maks: 1000, bulat: true, bandingLilin: true },
+      { kunci: 'sinyal', label: 'Sinyal', bawaan: 9, min: 2, maks: 1000, bulat: true, bandingLilin: true },
+    ],
+  },
+}
+
+/** Satu baris di daftar indikator/pola: identitas, jenis, parameter, warna,
+ *  dan sakelar tampil sementara. Bentuknya sama untuk indikator dan pola
+ *  supaya penyimpanan template & pembuatan instans tak perlu ditulis dua
+ *  kali. `warna` menyimpan NAMA TOKEN CSS (mis. '--amber'), bukan
+ *  heksadesimal — dengan begitu satu instans yang sama ikut berganti warna
+ *  saat tema terang/gelap ditukar. */
+export interface Instans<J extends string> {
+  id: string
+  jenis: J
+  param: Record<string, number>
+  warna: string
+  tampil: boolean
+}
+
+export type InstansIndikator = Instans<JenisIndikator>
+
+/** Warna instans baru diambil berputar dari daftar ini. Semuanya token yang
+ *  sudah ada di `.lantai` dan sudah lolos kontras di kedua tema. */
+export const PALET_INDIKATOR = ['--amber', '--blue', '--green', '--red', '--text2', '--text3']
+
+/** Instans baru berisi nilai bawaan seluruh parameter jenisnya. `id` dilempar
+ *  dari luar (pemanggil yang tahu cara membuat id unik — `crypto.randomUUID`
+ *  di peramban, string tetap di uji) supaya fungsi ini tetap murni. */
+export function buatInstans<J extends string>(
+  jenis: J,
+  param: SpekParam[],
+  id: string,
+  urutanWarna: number,
+): Instans<J> {
+  return {
+    id,
+    jenis,
+    param: Object.fromEntries(param.map((s) => [s.kunci, s.bawaan])),
+    warna: PALET_INDIKATOR[urutanWarna % PALET_INDIKATOR.length],
+    tampil: true,
+  }
+}
+
+/** Galat satu kolom masukan, dibaca dari TEKS yang diketik (bukan dari angka
+ *  yang sudah terlanjur dikonversi) — `Number('')` itu 0 dan `Number('12abc')`
+ *  itu NaN, dan keduanya harus terbaca sebagai masukan salah, bukan sebagai
+ *  angka yang kebetulan lolos. Mengembalikan `null` kalau tak ada masalah. */
+export function galatNilaiParam(spek: SpekParam, teks: string, jumlahLilin: number): string | null {
+  const t = teks.trim()
+  if (!t) return 'Wajib diisi.'
+  const n = Number(t)
+  if (!Number.isFinite(n)) return 'Bukan angka.'
+  if (spek.bulat && !Number.isInteger(n)) return 'Harus bilangan bulat.'
+  if (n < spek.min) return `Minimum ${spek.min}.`
+  if (n > spek.maks) return `Maksimum ${spek.maks}.`
+  if (spek.bandingLilin && jumlahLilin > 0 && n > jumlahLilin) {
+    return `Lebih besar dari jumlah lilin (${jumlahLilin}) — garisnya tak akan muncul.`
+  }
+  return null
+}
+
+/**
+ * Seluruh galat sebuah instans, per kunci parameter. Selain memeriksa tiap
+ * kolom sendiri-sendiri, di sini juga tempatnya aturan ANTAR kolom: MACD
+ * dengan periode cepat >= lambat menghasilkan garis yang membalik artinya
+ * tanpa satu pun galat, jadi ditolak di kolom 'cepat'.
+ */
+export function galatInstans(
+  param: SpekParam[],
+  teks: Record<string, string>,
+  jumlahLilin: number,
+): Record<string, string> {
+  const galat: Record<string, string> = {}
+  for (const spek of param) {
+    const g = galatNilaiParam(spek, teks[spek.kunci] ?? '', jumlahLilin)
+    if (g) galat[spek.kunci] = g
+  }
+  const punyaMacd = teks.cepat !== undefined && teks.lambat !== undefined
+  if (punyaMacd && !galat.cepat && !galat.lambat && Number(teks.cepat) >= Number(teks.lambat)) {
+    galat.cepat = 'Harus lebih kecil dari periode lambat.'
+  }
+  const jarak = teks.jarakMin !== undefined && teks.jarakMaks !== undefined
+  if (jarak && !galat.jarakMin && !galat.jarakMaks && Number(teks.jarakMin) > Number(teks.jarakMaks)) {
+    galat.jarakMin = 'Harus lebih kecil dari jarak maksimum.'
+  }
+  return galat
+}
+
+/** Label layar sebuah instans indikator, LENGKAP dengan parameternya — "MA
+ *  200", bukan "MA". Dengan beberapa instans jenis yang sama hidup bersamaan,
+ *  label tanpa angka tak lagi bisa membedakan barisnya. */
+export function labelInstansIndikator(inst: InstansIndikator): string {
+  const p = inst.param
+  switch (inst.jenis) {
+    case 'ma': return `MA ${p.periode}`
+    case 'ema': return `EMA ${p.periode}`
+    case 'bb': return `BB ${p.periode}±${p.k}`
+    case 'rsi': return `RSI ${p.periode}`
+    case 'macd': return `MACD ${p.cepat}/${p.lambat}/${p.sinyal}`
+  }
+}
+
+/** Satu deret yang harus digambar untuk sebuah instans. Satu instans bisa
+ *  menghasilkan lebih dari satu (BB tiga pita, MACD dua garis + histogram). */
+export interface GarisIndikator {
+  nama: string
+  nilai: Array<number | null>
+  /** Digambar sebagai histogram (batang), bukan garis. */
+  histogram?: boolean
+  /** Garis pendamping — digambar putus-putus & lebih redup dari garis utama. */
+  bantu?: boolean
+}
+
+/** Menerjemahkan satu instans jadi deret-deret siap gambar. Semua indikator
+ *  masuk lewat pintu ini, jadi komponen tak perlu tahu bahwa BB menghasilkan
+ *  tiga deret sementara MA cuma satu. */
+export function hitungInstans(inst: InstansIndikator, tutup: number[]): GarisIndikator[] {
+  const p = inst.param
+  const label = labelInstansIndikator(inst)
+  switch (inst.jenis) {
+    case 'ma': return [{ nama: label, nilai: hitungMA(tutup, p.periode) }]
+    case 'ema': return [{ nama: label, nilai: hitungEMA(tutup, p.periode) }]
+    case 'rsi': return [{ nama: label, nilai: hitungRSI(tutup, p.periode) }]
+    case 'bb': {
+      const bb = hitungBollinger(tutup, p.periode, p.k)
+      return [
+        { nama: label, nilai: bb.tengah },
+        { nama: `${label} atas`, nilai: bb.atas, bantu: true },
+        { nama: `${label} bawah`, nilai: bb.bawah, bantu: true },
+      ]
+    }
+    case 'macd': {
+      const m = hitungMACD(tutup, p.cepat, p.lambat, p.sinyal)
+      return [
+        { nama: label, nilai: m.macd },
+        { nama: `${label} sinyal`, nilai: m.sinyal, bantu: true },
+        { nama: `${label} histogram`, nilai: m.histogram, histogram: true },
+      ]
+    }
+  }
 }

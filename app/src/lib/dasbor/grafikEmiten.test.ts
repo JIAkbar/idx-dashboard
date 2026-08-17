@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
-  keDataLilinVolume, batasBawahRentang, potongRentang,
+  keDataLilinVolume, batasBawahRentang, potongRentang, RENTANG_GRAFIK, RENTANG_BAWAAN,
   hitungMA, hitungEMA, hitungRSI, hitungMACD, hitungBollinger, keSeriGaris,
+  SPEK_INDIKATOR, buatInstans, galatNilaiParam, galatInstans, labelInstansIndikator,
+  hitungInstans, PALET_INDIKATOR,
+  type InstansIndikator, type SpekParam,
 } from './grafikEmiten'
 import type { BarisOhlc } from './ihsgOhlc'
 
@@ -179,5 +182,143 @@ describe('keSeriGaris', () => {
       { time: '2024-01-02', value: 5 },
       { time: '2024-01-03', value: 7 },
     ])
+  })
+})
+
+describe('RENTANG_BAWAAN', () => {
+  it('bawaannya "Semua" dan label itu benar-benar ada di RENTANG_GRAFIK', () => {
+    expect(RENTANG_BAWAAN).toBe('Semua')
+    const cocok = RENTANG_GRAFIK.find(([label]) => label === RENTANG_BAWAAN)
+    expect(cocok).toBeDefined()
+    // Bawaan harus yang TIDAK memotong data — kalau ini berubah jadi angka,
+    // chip yang tersorot dan data yang tergambar mulai bercerita beda.
+    expect(cocok?.[1]).toBeNull()
+  })
+})
+
+/* ---------------- Instans indikator (tahap 5) ---------------- */
+
+const spekPeriode = SPEK_INDIKATOR.ma.param[0]
+
+describe('buatInstans', () => {
+  it('mengisi seluruh parameter dengan nilai bawaan jenisnya', () => {
+    const inst = buatInstans('macd', SPEK_INDIKATOR.macd.param, 'x1', 0)
+    expect(inst).toEqual({
+      id: 'x1', jenis: 'macd', tampil: true,
+      warna: PALET_INDIKATOR[0],
+      param: { cepat: 12, lambat: 26, sinyal: 9 },
+    })
+  })
+  it('warna berputar mengikuti urutan, tak pernah keluar dari palet', () => {
+    const n = PALET_INDIKATOR.length
+    expect(buatInstans('ma', SPEK_INDIKATOR.ma.param, 'a', n).warna).toBe(PALET_INDIKATOR[0])
+    expect(buatInstans('ma', SPEK_INDIKATOR.ma.param, 'b', n + 2).warna).toBe(PALET_INDIKATOR[2])
+  })
+})
+
+describe('galatNilaiParam', () => {
+  it('kosong ditolak — Number("") itu 0, bukan "belum diisi"', () => {
+    expect(galatNilaiParam(spekPeriode, '', 500)).toBe('Wajib diisi.')
+    expect(galatNilaiParam(spekPeriode, '   ', 500)).toBe('Wajib diisi.')
+  })
+  it('bukan angka ditolak', () => {
+    expect(galatNilaiParam(spekPeriode, '12abc', 500)).toBe('Bukan angka.')
+  })
+  it('nol & negatif ditolak lewat batas minimum', () => {
+    expect(galatNilaiParam(spekPeriode, '0', 500)).toBe('Minimum 2.')
+    expect(galatNilaiParam(spekPeriode, '-5', 500)).toBe('Minimum 2.')
+  })
+  it('pecahan ditolak untuk ruas yang harus bulat', () => {
+    expect(galatNilaiParam(spekPeriode, '20.5', 500)).toBe('Harus bilangan bulat.')
+  })
+  it('periode lebih panjang dari jumlah lilin ditolak — itu garis yang lenyap senyap', () => {
+    expect(galatNilaiParam(spekPeriode, '300', 250))
+      .toBe('Lebih besar dari jumlah lilin (250) — garisnya tak akan muncul.')
+  })
+  it('jumlah lilin 0 (data belum dimuat) tak dipakai membatasi apa pun', () => {
+    expect(galatNilaiParam(spekPeriode, '300', 0)).toBeNull()
+  })
+  it('pengali simpangan baku boleh pecahan', () => {
+    const k = SPEK_INDIKATOR.bb.param[1]
+    expect(galatNilaiParam(k, '2.5', 500)).toBeNull()
+    expect(galatNilaiParam(k, '0', 500)).toBe('Minimum 0.1.')
+  })
+  it('di atas batas atas ditolak', () => {
+    expect(galatNilaiParam(spekPeriode, '5000', 0)).toBe('Maksimum 1000.')
+  })
+})
+
+describe('galatInstans', () => {
+  it('instans sehat tak menghasilkan galat sama sekali', () => {
+    expect(galatInstans(SPEK_INDIKATOR.macd.param, { cepat: '12', lambat: '26', sinyal: '9' }, 500)).toEqual({})
+  })
+  it('MACD cepat >= lambat ditolak di kolom cepat', () => {
+    const g = galatInstans(SPEK_INDIKATOR.macd.param, { cepat: '26', lambat: '26', sinyal: '9' }, 500)
+    expect(g.cepat).toBe('Harus lebih kecil dari periode lambat.')
+  })
+  it('aturan antar-kolom tak menimpa galat kolomnya sendiri', () => {
+    const g = galatInstans(SPEK_INDIKATOR.macd.param, { cepat: '', lambat: '26', sinyal: '9' }, 500)
+    expect(g.cepat).toBe('Wajib diisi.')
+  })
+  it('jarak min > jarak maks ditolak (dipakai parameter pola)', () => {
+    const spek: SpekParam[] = [
+      { kunci: 'jarakMin', label: 'Min', bawaan: 10, min: 2, maks: 500, bulat: true },
+      { kunci: 'jarakMaks', label: 'Maks', bawaan: 120, min: 3, maks: 500, bulat: true },
+    ]
+    expect(galatInstans(spek, { jarakMin: '200', jarakMaks: '100' }, 0).jarakMin)
+      .toBe('Harus lebih kecil dari jarak maksimum.')
+  })
+})
+
+describe('labelInstansIndikator', () => {
+  const inst = (jenis: InstansIndikator['jenis'], param: Record<string, number>): InstansIndikator =>
+    ({ id: 'i', jenis, param, warna: '--amber', tampil: true })
+  it('menyebut parameternya — "MA 200", bukan "MA"', () => {
+    expect(labelInstansIndikator(inst('ma', { periode: 200 }))).toBe('MA 200')
+    expect(labelInstansIndikator(inst('ema', { periode: 9 }))).toBe('EMA 9')
+    expect(labelInstansIndikator(inst('rsi', { periode: 14 }))).toBe('RSI 14')
+    expect(labelInstansIndikator(inst('bb', { periode: 20, k: 2 }))).toBe('BB 20±2')
+    expect(labelInstansIndikator(inst('macd', { cepat: 12, lambat: 26, sinyal: 9 }))).toBe('MACD 12/26/9')
+  })
+  it('dua instans jenis sama berbeda periode punya label berbeda', () => {
+    expect(labelInstansIndikator(inst('ma', { periode: 20 })))
+      .not.toBe(labelInstansIndikator(inst('ma', { periode: 50 })))
+  })
+})
+
+describe('hitungInstans', () => {
+  const tutup = [10, 11, 12, 11, 13, 14, 16]
+  it('MA menghasilkan satu deret, isinya sama dengan hitungMA langsung', () => {
+    const inst = buatInstans('ma', SPEK_INDIKATOR.ma.param, 'i', 0)
+    inst.param.periode = 3
+    const garis = hitungInstans(inst, tutup)
+    expect(garis).toHaveLength(1)
+    expect(garis[0].nama).toBe('MA 3')
+    expect(garis[0].nilai).toEqual(hitungMA(tutup, 3))
+  })
+  it('BB menghasilkan tiga pita, dua di antaranya ditandai garis bantu', () => {
+    const inst = buatInstans('bb', SPEK_INDIKATOR.bb.param, 'i', 0)
+    inst.param.periode = 3
+    const garis = hitungInstans(inst, tutup)
+    expect(garis.map((g) => g.bantu)).toEqual([undefined, true, true])
+    expect(garis[0].nilai).toEqual(hitungBollinger(tutup, 3, 2).tengah)
+  })
+  it('MACD menghasilkan dua garis + satu histogram', () => {
+    const inst = buatInstans('macd', SPEK_INDIKATOR.macd.param, 'i', 0)
+    inst.param = { cepat: 2, lambat: 3, sinyal: 2 }
+    const garis = hitungInstans(inst, tutup)
+    expect(garis.map((g) => g.histogram)).toEqual([undefined, undefined, true])
+    expect(garis[2].nilai).toEqual(hitungMACD(tutup, 2, 3, 2).histogram)
+  })
+  it('tiga instans MA berbeda periode hidup bersamaan tanpa saling menimpa', () => {
+    const hasil = [20, 50, 200].map((periode, i) => {
+      const inst = buatInstans('ma', SPEK_INDIKATOR.ma.param, `ma${i}`, i)
+      inst.param.periode = periode
+      return hitungInstans(inst, Array.from({ length: 300 }, (_, j) => j + 1))[0]
+    })
+    expect(hasil.map((g) => g.nama)).toEqual(['MA 20', 'MA 50', 'MA 200'])
+    // Deret naik 1..300: MA di titik terakhir = rata-rata `periode` angka
+    // terakhir = 300 - (periode-1)/2.
+    expect(hasil.map((g) => g.nilai[299])).toEqual([290.5, 275.5, 200.5])
   })
 })

@@ -1,52 +1,57 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   createChart, CandlestickSeries, HistogramSeries, LineSeries, LineStyle,
-  type IChartApi, type ISeriesApi, type MouseEventParams, type Time,
+  type IChartApi, type ISeriesApi, type MouseEventParams, type SeriesType, type Time,
 } from 'lightweight-charts'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import {
-  keDataLilinVolume, batasBawahRentang, potongRentang, RENTANG_GRAFIK,
-  hitungMA, hitungEMA, hitungRSI, hitungMACD, hitungBollinger, keSeriGaris,
-  INDIKATOR_DEFAULT, type BerkasOhlcEmiten, type TitikGaris,
+  keDataLilinVolume, batasBawahRentang, potongRentang, RENTANG_GRAFIK, RENTANG_BAWAAN,
+  keSeriGaris, SPEK_INDIKATOR, buatInstans, galatInstans, labelInstansIndikator, hitungInstans,
+  type BerkasOhlcEmiten, type InstansIndikator, type JenisIndikator, type SpekParam,
 } from '../../lib/dasbor/grafikEmiten'
+import { Dropdown } from '../../components/dasbor/Dropdown'
 import { fN } from '../../lib/dasbor/format'
 import { pesanGalat } from '../../lib/pesanGalat'
-import { IkonMenu, IKON_CARI, IKON_SILANG, IKON_GRAFIK_NAIK, IKON_INFO } from '../../components/dasbor/IkonMenu'
+import {
+  IkonMenu, IKON_CARI, IKON_SILANG, IKON_GRAFIK_NAIK, IKON_INFO,
+  IKON_MATA, IKON_MATA_CORET, IKON_TONG,
+} from '../../components/dasbor/IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 import './GrafikEmiten.css'
 
 const DEFAULT_KODE = 'BBCA'
 
-/** Satu sakelar indikator: kunci state, label layar (dengan periode —
- *  "MA 20" bukan cuma "MA", pembaca tak bisa menebak periodenya), dan token
- *  warna CSS yang dipakai buat garisnya. Dipakai dua tempat: render tombol
- *  sakelar & susun ulang seri chart, supaya keduanya tak bisa tak sinkron. */
-const IKS = INDIKATOR_DEFAULT
-type KunciIndikator = 'ma20' | 'ma50' | 'ema20' | 'ema50' | 'bb' | 'rsi' | 'macd'
-const DAFTAR_INDIKATOR: Array<{ kunci: KunciIndikator; label: string }> = [
-  { kunci: 'ma20', label: `MA ${IKS.ma[0]}` },
-  { kunci: 'ma50', label: `MA ${IKS.ma[1]}` },
-  { kunci: 'ema20', label: `EMA ${IKS.ema[0]}` },
-  { kunci: 'ema50', label: `EMA ${IKS.ema[1]}` },
-  { kunci: 'bb', label: `BB ${IKS.bollinger.periode}` },
-  { kunci: 'rsi', label: `RSI ${IKS.rsi}` },
-  { kunci: 'macd', label: `MACD ${IKS.macd.cepat}/${IKS.macd.lambat}/${IKS.macd.sinyal}` },
-]
-const IND_AWAL: Record<KunciIndikator, boolean> =
-  { ma20: false, ma50: false, ema20: false, ema50: false, bb: false, rsi: false, macd: false }
+/** Pilihan dropdown "Indikator" — diturunkan dari SPEK_INDIKATOR, bukan
+ *  daftar kedua yang ditulis tangan: jenis baru cukup didaftarkan di spek
+ *  dan langsung muncul di menu. */
+const OPSI_INDIKATOR = (Object.keys(SPEK_INDIKATOR) as JenisIndikator[])
+  .map((jenis) => ({ nilai: jenis, label: SPEK_INDIKATOR[jenis].label }))
 
 const PANDUAN_INDIKATOR: Array<{ label: string; teks: string }> = [
-  { label: `MA ${IKS.ma[0]} / MA ${IKS.ma[1]}`,
-    teks: 'Rata-rata harga tutup selama 20/50 hari terakhir, diperbarui tiap hari. Mengikuti arah harga dengan jeda — makin panjang periodenya, makin lambat mengikuti.' },
-  { label: `EMA ${IKS.ema[0]} / EMA ${IKS.ema[1]}`,
+  { label: 'MA (Moving Average)',
+    teks: 'Rata-rata harga tutup selama sekian hari terakhir, diperbarui tiap hari. Mengikuti arah harga dengan jeda — makin panjang periodenya, makin lambat mengikuti.' },
+  { label: 'EMA (Exponential Moving Average)',
     teks: 'Sama seperti MA, tapi hari-hari terakhir dibobot lebih berat. Bereaksi lebih cepat ke perubahan harga, juga lebih cepat berbalik saat harga berbalik.' },
-  { label: 'Bollinger Bands',
+  { label: 'BB (Bollinger Bands)',
     teks: 'Pita di atas dan bawah rata-rata harga, lebarnya mengikuti seberapa liar harga bergerak belakangan (simpangan baku). Pita melebar saat harga bergejolak, menyempit saat tenang — bukan penanda murah/mahal.' },
-  { label: `RSI ${IKS.rsi}`,
+  { label: 'RSI (Relative Strength Index)',
     teks: 'Mengukur seberapa cepat harga bergerak belakangan, bukan seberapa murah sahamnya. Bergerak antara 0-100; makin dekat ke ujung, makin cepat pergerakan searah baru-baru ini.' },
   { label: 'MACD',
     teks: 'Selisih dua rata-rata bergerak (EMA cepat dan lambat) beserta garis sinyalnya. Menunjukkan perubahan momentum, bukan level harga — angkanya tak sebanding antar saham berharga beda.' },
+  { label: 'Beberapa instans sekaligus',
+    teks: 'Satu jenis boleh dimasukkan berkali-kali dengan parameter berbeda — MA 20, MA 50, dan MA 200 bisa hidup bersamaan, masing-masing punya warna, kolom parameter, dan sakelar tampilnya sendiri.' },
 ]
+
+/** Kunci gabungan id instans + nama ruas, dipakai menyimpan TEKS yang sedang
+ *  diketik (lihat `paramTeks` di komponen). */
+const kunciTeks = (id: string, kunci: string) => `${id}:${kunci}`
+
+/** Id instans baru. `crypto.randomUUID` ada di seluruh peramban yang
+ *  didukung; jam + acak sebagai jaring pengaman kalau halaman dibuka lewat
+ *  konteks tak-aman (http polos), di mana API itu tak tersedia. */
+function idBaru(): string {
+  return globalThis.crypto?.randomUUID?.() ?? `i${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+}
 
 /**
  * Grafik Emiten (chart PAPAN tahap 3) — lilin + volume dari OHLC lokal
@@ -63,8 +68,16 @@ export function GrafikEmiten() {
   const [cari, setCari] = useState('')
   const [berkas, setBerkas] = useState<BerkasOhlcEmiten | null>(null)
   const [galat, setGalat] = useState<string | null>(null)
-  const [rentangLabel, setRentangLabel] = useState<string>('1 thn')
-  const [ind, setInd] = useState(IND_AWAL)
+  const [rentangLabel, setRentangLabel] = useState<string>(RENTANG_BAWAAN)
+  // Indikator bukan lagi sakelar nyala/mati tapi DAFTAR instans — lihat
+  // `InstansIndikator` di grafikEmiten.ts.
+  const [indikator, setIndikator] = useState<InstansIndikator[]>([])
+  // Teks yang sedang DIKETIK di kolom parameter, terpisah dari angka yang
+  // sudah tersimpan di instans. Perlu dipisah karena kolom teks sempat
+  // melewati keadaan tak sah di tengah pengetikan (kosong, "2." , "-") dan
+  // angka di instans tak boleh ikut melewatinya: yang tergambar selalu nilai
+  // sah terakhir, sementara kolomnya menampilkan apa adanya + alasan tolakan.
+  const [paramTeks, setParamTeks] = useState<Record<string, string>>({})
   // Waktu titik yang sedang disorot kursor ('yyyy-mm-dd') — null berarti
   // "belum digeser, pakai titik TERAKHIR" (legenda tetap berguna sebelum
   // pembaca menyentuh kanvas sama sekali).
@@ -96,22 +109,13 @@ export function GrafikEmiten() {
   const chartRef = useRef<IChartApi | null>(null)
   const candleRef = useRef<ISeriesApi<'Candlestick'> | null>(null)
   const volRef = useRef<ISeriesApi<'Histogram'> | null>(null)
-  // Seri indikator overlay (panel harga, pane 0) — satu ref per garis.
-  const ma20Ref = useRef<ISeriesApi<'Line'> | null>(null)
-  const ma50Ref = useRef<ISeriesApi<'Line'> | null>(null)
-  const ema20Ref = useRef<ISeriesApi<'Line'> | null>(null)
-  const ema50Ref = useRef<ISeriesApi<'Line'> | null>(null)
-  const bbAtasRef = useRef<ISeriesApi<'Line'> | null>(null)
-  const bbTengahRef = useRef<ISeriesApi<'Line'> | null>(null)
-  const bbBawahRef = useRef<ISeriesApi<'Line'> | null>(null)
-  // Seri RSI/MACD — pane TERPISAH di bawah panel harga (jalur pane native
-  // lightweight-charts 5.x, `addSeries(..., paneIndex)` — bukan chart kedua
-  // yang sumbu waktunya harus disinkron manual: satu chart, beberapa pane,
-  // sumbu waktu otomatis selaras).
-  const rsiRef = useRef<ISeriesApi<'Line'> | null>(null)
-  const macdRef = useRef<ISeriesApi<'Line'> | null>(null)
-  const macdSinyalRef = useRef<ISeriesApi<'Line'> | null>(null)
-  const macdHistRef = useRef<ISeriesApi<'Histogram'> | null>(null)
+  // Seri indikator. Dulu satu ref per garis; sekarang jumlahnya mengikuti
+  // jumlah instans (tak terbatas), jadi disimpan sebagai daftar dan dibongkar
+  // seluruhnya tiap kali disusun ulang. RSI/MACD tetap dapat pane TERPISAH di
+  // bawah panel harga (jalur pane native lightweight-charts 5.x,
+  // `addSeries(..., paneIndex)` — bukan chart kedua yang sumbu waktunya harus
+  // disinkron manual: satu chart, beberapa pane, sumbu waktu otomatis selaras).
+  const seriIndRef = useRef<Array<ISeriesApi<SeriesType>>>([])
 
   // Chart dibuat SEKALI saat mount (bukan tiap ganti emiten/rentang) — data &
   // warnanya diperbarui lewat setData()/applyOptions() di efek-efek di bawah.
@@ -254,98 +258,65 @@ export function GrafikEmiten() {
     }
   }, [lilin, volume])
 
-  // Nilai mentah tiap indikator, dihitung dari `lilin` — SUDAH tersaring
+  // Deret tiap instans, dihitung dari `lilin` — SUDAH tersaring
   // hariTanpaPerdagangan lewat keDataLilinVolume di atas, bukan `berkas.d`
   // mentah, supaya angkanya sama dengan yang benar-benar tergambar di lilin.
-  const seriIndikator = useMemo(() => {
+  // Satu memo dipakai dua pembaca (penggambar seri & legenda) supaya angka
+  // yang tergambar dan angka yang terbaca mustahil berbeda.
+  const garisPerInstans = useMemo(() => {
     const tutup = lilin.map((l) => l.close)
     const waktu = lilin.map((l) => l.time)
-    const bb = hitungBollinger(tutup, IKS.bollinger.periode, IKS.bollinger.k)
-    const macd = hitungMACD(tutup, IKS.macd.cepat, IKS.macd.lambat, IKS.macd.sinyal)
-    return {
-      ma20: keSeriGaris(waktu, hitungMA(tutup, IKS.ma[0])),
-      ma50: keSeriGaris(waktu, hitungMA(tutup, IKS.ma[1])),
-      ema20: keSeriGaris(waktu, hitungEMA(tutup, IKS.ema[0])),
-      ema50: keSeriGaris(waktu, hitungEMA(tutup, IKS.ema[1])),
-      bbAtas: keSeriGaris(waktu, bb.atas),
-      bbTengah: keSeriGaris(waktu, bb.tengah),
-      bbBawah: keSeriGaris(waktu, bb.bawah),
-      rsi: keSeriGaris(waktu, hitungRSI(tutup, IKS.rsi)),
-      macd: keSeriGaris(waktu, macd.macd),
-      macdSinyal: keSeriGaris(waktu, macd.sinyal),
-      macdHist: keSeriGaris(waktu, macd.histogram),
-    }
-  }, [lilin])
+    return indikator.map((inst) => ({
+      inst,
+      garis: hitungInstans(inst, tutup).map((g) => ({ ...g, seri: keSeriGaris(waktu, g.nilai) })),
+    }))
+  }, [indikator, lilin])
 
-  // Peta waktu->nilai per indikator, dipakai legenda (lookup langsung, tak
-  // perlu scan array tiap kursor bergeser).
-  const petaIndikator = useMemo(() => {
-    const peta = (s: TitikGaris[]) => new Map(s.map((p) => [p.time, p.value]))
-    return {
-      ma20: peta(seriIndikator.ma20), ma50: peta(seriIndikator.ma50),
-      ema20: peta(seriIndikator.ema20), ema50: peta(seriIndikator.ema50),
-      bbAtas: peta(seriIndikator.bbAtas), bbTengah: peta(seriIndikator.bbTengah), bbBawah: peta(seriIndikator.bbBawah),
-      rsi: peta(seriIndikator.rsi), macd: peta(seriIndikator.macd), macdSinyal: peta(seriIndikator.macdSinyal),
-    }
-  }, [seriIndikator])
+  // Peta waktu->nilai per garis, dipakai legenda (lookup langsung, tak perlu
+  // scan array tiap kursor bergeser). Histogram tak masuk legenda — angkanya
+  // cuma selisih dua garis yang sudah tertulis di sebelahnya.
+  const petaLegenda = useMemo(() => garisPerInstans.map(({ inst, garis }) => ({
+    inst,
+    peta: garis.filter((g) => !g.histogram).map((g) => new Map(g.seri.map((p) => [p.time, p.value]))),
+  })), [garisPerInstans])
 
-  // Susun ulang seluruh seri indikator dari nol tiap kali sakelar/data/tema
-  // berubah — jumlahnya kecil (maks 11 seri), jadi diff per-indikator cuma
-  // menambah kerumitan tanpa manfaat terukur.
+  // Susun ulang seluruh seri indikator dari nol tiap kali daftar/data/tema
+  // berubah — membongkar-pasang beberapa belas seri jauh lebih murah daripada
+  // melacak instans mana yang berubah, dan tak bisa hanyut dari state-nya.
   useEffect(() => {
     const chart = chartRef.current
     const el = containerRef.current
     if (!chart || !el) return
     const cs = getComputedStyle(el)
-    const baca = (nama: string, fallback: string) => cs.getPropertyValue(nama).trim() || fallback
-    const amber = baca('--amber', '#D9A441')
-    const text2 = baca('--text2', '#9AA5B1')
-    const text3 = baca('--text3', '#6B7684')
+    const baca = (nama: string, fallback = '#888D99') => cs.getPropertyValue(nama).trim() || fallback
     const green = baca('--green', '#38B77E')
     const red = baca('--red', '#E6635A')
 
-    const buang = <T extends 'Line' | 'Histogram'>(r: React.MutableRefObject<ISeriesApi<T> | null>) => {
-      if (r.current) { chart.removeSeries(r.current); r.current = null }
-    }
-    buang(ma20Ref); buang(ma50Ref); buang(ema20Ref); buang(ema50Ref)
-    buang(bbAtasRef); buang(bbTengahRef); buang(bbBawahRef)
-    buang(rsiRef); buang(macdRef); buang(macdSinyalRef); buang(macdHistRef)
+    for (const s of seriIndRef.current) chart.removeSeries(s)
+    seriIndRef.current = []
 
     const opsiGaris = { lineWidth: 1 as const, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false }
-    if (ind.ma20) { ma20Ref.current = chart.addSeries(LineSeries, { ...opsiGaris, color: amber }); ma20Ref.current.setData(seriIndikator.ma20) }
-    if (ind.ma50) { ma50Ref.current = chart.addSeries(LineSeries, { ...opsiGaris, color: text2 }); ma50Ref.current.setData(seriIndikator.ma50) }
-    if (ind.ema20) { ema20Ref.current = chart.addSeries(LineSeries, { ...opsiGaris, color: green }); ema20Ref.current.setData(seriIndikator.ema20) }
-    if (ind.ema50) { ema50Ref.current = chart.addSeries(LineSeries, { ...opsiGaris, color: red }); ema50Ref.current.setData(seriIndikator.ema50) }
-    if (ind.bb) {
-      bbTengahRef.current = chart.addSeries(LineSeries, { ...opsiGaris, color: text2 })
-      bbAtasRef.current = chart.addSeries(LineSeries, { ...opsiGaris, color: text3, lineStyle: LineStyle.Dashed })
-      bbBawahRef.current = chart.addSeries(LineSeries, { ...opsiGaris, color: text3, lineStyle: LineStyle.Dashed })
-      bbTengahRef.current.setData(seriIndikator.bbTengah)
-      bbAtasRef.current.setData(seriIndikator.bbAtas)
-      bbBawahRef.current.setData(seriIndikator.bbBawah)
-    }
-
-    // RSI & MACD: pane baru di bawah panel harga (pane 0), bukan chart
-    // kedua — sumbu waktunya otomatis selaras dengan panel harga karena
-    // masih satu chart yang sama.
     let paneBerikut = 1
-    if (ind.rsi) {
-      rsiRef.current = chart.addSeries(LineSeries, { ...opsiGaris, color: amber }, paneBerikut)
-      rsiRef.current.setData(seriIndikator.rsi)
-      paneBerikut++
-    }
-    if (ind.macd) {
-      macdHistRef.current = chart.addSeries(
-        HistogramSeries, { priceLineVisible: false, lastValueVisible: false }, paneBerikut,
-      )
-      macdHistRef.current.setData(
-        seriIndikator.macdHist.map((p) => ({ ...p, color: p.value >= 0 ? green : red })),
-      )
-      macdRef.current = chart.addSeries(LineSeries, { ...opsiGaris, color: amber }, paneBerikut)
-      macdRef.current.setData(seriIndikator.macd)
-      macdSinyalRef.current = chart.addSeries(LineSeries, { ...opsiGaris, color: red }, paneBerikut)
-      macdSinyalRef.current.setData(seriIndikator.macdSinyal)
-      paneBerikut++
+    for (const { inst, garis } of garisPerInstans) {
+      if (!inst.tampil) continue
+      const spek = SPEK_INDIKATOR[inst.jenis]
+      const pane = spek.diPanelHarga ? 0 : paneBerikut++
+      const warna = baca(inst.warna)
+      for (const g of garis) {
+        if (g.histogram) {
+          const s = chart.addSeries(HistogramSeries, { priceLineVisible: false, lastValueVisible: false }, pane)
+          s.setData(g.seri.map((p) => ({ ...p, color: p.value >= 0 ? green : red })))
+          seriIndRef.current.push(s)
+        } else {
+          const s = chart.addSeries(
+            LineSeries,
+            { ...opsiGaris, color: warna, lineStyle: g.bantu ? LineStyle.Dashed : LineStyle.Solid },
+            pane,
+          )
+          s.setData(g.seri)
+          seriIndRef.current.push(s)
+        }
+      }
     }
 
     // Panel harga tetap yang paling besar — tanpa ini pane RSI/MACD sama
@@ -353,24 +324,76 @@ export function GrafikEmiten() {
     const panes = chart.panes()
     panes[0]?.setStretchFactor(3)
     for (let i = 1; i < panes.length; i++) panes[i]?.setStretchFactor(1.1)
-  }, [ind, seriIndikator, theme])
+  }, [garisPerInstans, theme])
 
-  // Legenda: nilai indikator aktif pada titik yang disorot kursor, jatuh
-  // balik ke titik TERAKHIR selagi kursor belum digeser ke kanvas.
+  // Legenda: satu baris per instans yang tampil, menyebut parameternya
+  // ("MA 200", bukan "MA"), pada titik yang disorot kursor — jatuh balik ke
+  // titik TERAKHIR selagi kursor belum digeser ke kanvas.
   const legenda = useMemo(() => {
     const waktu = waktuSorot ?? lilin[lilin.length - 1]?.time ?? null
     if (!waktu) return null
-    const v = (peta: Map<string, number>) => { const x = peta.get(waktu); return x === undefined ? '—' : fN(x) }
-    const bagian: string[] = []
-    if (ind.ma20) bagian.push(`MA ${IKS.ma[0]} ${v(petaIndikator.ma20)}`)
-    if (ind.ma50) bagian.push(`MA ${IKS.ma[1]} ${v(petaIndikator.ma50)}`)
-    if (ind.ema20) bagian.push(`EMA ${IKS.ema[0]} ${v(petaIndikator.ema20)}`)
-    if (ind.ema50) bagian.push(`EMA ${IKS.ema[1]} ${v(petaIndikator.ema50)}`)
-    if (ind.bb) bagian.push(`BB ${IKS.bollinger.periode} ${v(petaIndikator.bbAtas)}/${v(petaIndikator.bbTengah)}/${v(petaIndikator.bbBawah)}`)
-    if (ind.rsi) bagian.push(`RSI ${IKS.rsi} ${v(petaIndikator.rsi)}`)
-    if (ind.macd) bagian.push(`MACD ${v(petaIndikator.macd)} · Sinyal ${v(petaIndikator.macdSinyal)}`)
-    return { waktu, teks: bagian.join(' · ') }
-  }, [waktuSorot, lilin, ind, petaIndikator])
+    const baris = petaLegenda
+      .filter(({ inst }) => inst.tampil)
+      .map(({ inst, peta }) => ({
+        id: inst.id,
+        warna: inst.warna,
+        label: labelInstansIndikator(inst),
+        nilai: peta.map((p) => { const x = p.get(waktu); return x === undefined ? '—' : fN(x) }).join(' / '),
+      }))
+    return { waktu, baris }
+  }, [waktuSorot, lilin, petaLegenda])
+
+  /* ---------------- Kelola daftar instans indikator ---------------- */
+
+  const tambahIndikator = useCallback((jenis: string) => {
+    setIndikator((list) => [
+      ...list,
+      buatInstans(jenis as JenisIndikator, SPEK_INDIKATOR[jenis as JenisIndikator].param, idBaru(), list.length),
+    ])
+  }, [])
+
+  const hapusIndikator = useCallback((id: string) => {
+    setIndikator((list) => list.filter((x) => x.id !== id))
+    // Teks yang sedang diketik untuk instans yang sudah tak ada ikut dibuang,
+    // kalau tidak ia akan menempel pada instans baru yang kebetulan sama id-nya.
+    setParamTeks((t) => Object.fromEntries(Object.entries(t).filter(([k]) => !k.startsWith(`${id}:`))))
+  }, [])
+
+  const sakelarTampil = useCallback((id: string) => {
+    setIndikator((list) => list.map((x) => (x.id === id ? { ...x, tampil: !x.tampil } : x)))
+  }, [])
+
+  /** Teks yang harus TERLIHAT di kolom: yang sedang diketik kalau ada, kalau
+   *  tidak angka yang tersimpan di instans. */
+  const teksInstans = useCallback(
+    (inst: InstansIndikator, param: SpekParam[]): Record<string, string> => Object.fromEntries(
+      param.map((s) => [s.kunci, paramTeks[kunciTeks(inst.id, s.kunci)] ?? String(inst.param[s.kunci])]),
+    ),
+    [paramTeks],
+  )
+
+  const galatPerInstans = useMemo(() => {
+    const peta: Record<string, Record<string, string>> = {}
+    for (const inst of indikator) {
+      const param = SPEK_INDIKATOR[inst.jenis].param
+      peta[inst.id] = galatInstans(param, teksInstans(inst, param), lilin.length)
+    }
+    return peta
+  }, [indikator, teksInstans, lilin.length])
+
+  /** Ganti satu ruas parameter. Teksnya SELALU tersimpan (kalau tidak, kolom
+   *  tak bisa diketik sampai selesai); angkanya cuma ikut berubah kalau lolos
+   *  validasi — masukan yang ditolak membiarkan garis lama tetap tergambar
+   *  alih-alih menggantinya dengan NaN yang lenyap tanpa galat. */
+  const gantiParam = useCallback((inst: InstansIndikator, spek: SpekParam, nilai: string) => {
+    setParamTeks((t) => ({ ...t, [kunciTeks(inst.id, spek.kunci)]: nilai }))
+    const param = SPEK_INDIKATOR[inst.jenis].param
+    const galat = galatInstans(param, { ...teksInstans(inst, param), [spek.kunci]: nilai }, lilin.length)
+    if (galat[spek.kunci]) return
+    setIndikator((list) => list.map(
+      (x) => (x.id === inst.id ? { ...x, param: { ...x.param, [spek.kunci]: Number(nilai) } } : x),
+    ))
+  }, [teksInstans, lilin.length])
 
   const pemilih = (
     <div className="panel">
@@ -422,20 +445,74 @@ export function GrafikEmiten() {
           {galat && <p className="muted">{galat}</p>}
           {!galat && !berkas && <div className="fd-empty"><p>Memuat data harga {kode}…</p></div>}
 
+          {/* Dropdown "Indikator" (bukan deretan tombol seperti sebelumnya):
+              memilih jenis MENAMBAH satu instans baru, tak menyalakan sakelar.
+              Karena itu `nilai` sengaja dibiarkan kosong — tak ada jenis yang
+              "terpilih", yang ada cuma daftar instans di bawahnya. */}
           <div className="grf-ind">
-            {DAFTAR_INDIKATOR.map(({ kunci, label }) => (
-              <button key={kunci} type="button"
-                className={'bchip bchip-klik' + (ind[kunci] ? ' on' : '')}
-                onClick={() => setInd((s) => ({ ...s, [kunci]: !s[kunci] }))}>{label}</button>
-            ))}
+            <Dropdown opsi={OPSI_INDIKATOR} nilai="" placeholder="+ Indikator"
+              ariaLabel="Tambah indikator" onGanti={tambahIndikator} />
           </div>
 
-          {/* Legenda: nilai indikator AKTIF di titik yang disorot kursor —
-              cuma nama indikator tanpa angka tak banyak gunanya (§tahap 4). */}
-          {legenda && legenda.teks && (
+          {indikator.length > 0 && (
+            <ul className="grf-ind-daftar">
+              {indikator.map((inst) => {
+                const spek = SPEK_INDIKATOR[inst.jenis]
+                const teks = teksInstans(inst, spek.param)
+                const galat = galatPerInstans[inst.id] ?? {}
+                return (
+                  <li key={inst.id} className={'grf-ind-baris' + (inst.tampil ? '' : ' redup')}
+                    style={{ '--ind-warna': `var(${inst.warna})` } as React.CSSProperties}>
+                    <span className="grf-ind-warna" aria-hidden="true" />
+                    <span className="grf-ind-nama">{labelInstansIndikator(inst)}</span>
+                    {spek.param.map((s) => (
+                      <label key={s.kunci} className="grf-ind-param">
+                        <span className="grf-ind-param-lbl">{s.label}</span>
+                        <input className={'inp grf-ind-inp' + (galat[s.kunci] ? ' salah' : '')}
+                          inputMode="decimal" value={teks[s.kunci]}
+                          aria-invalid={galat[s.kunci] ? true : undefined}
+                          aria-label={`${s.label} ${labelInstansIndikator(inst)}`}
+                          onChange={(e) => gantiParam(inst, s, e.target.value)} />
+                      </label>
+                    ))}
+                    <button type="button" className="bchip bchip-klik grf-ind-aksi"
+                      aria-pressed={inst.tampil}
+                      title={inst.tampil ? 'Sembunyikan sementara' : 'Tampilkan lagi'}
+                      onClick={() => sakelarTampil(inst.id)}>
+                      <IkonMenu d={inst.tampil ? IKON_MATA : IKON_MATA_CORET} size={12} />
+                    </button>
+                    <button type="button" className="bchip bchip-klik grf-ind-aksi"
+                      title={`Hapus ${labelInstansIndikator(inst)}`}
+                      onClick={() => hapusIndikator(inst.id)}>
+                      <IkonMenu d={IKON_TONG} size={12} />
+                    </button>
+                    {/* Alasan tolakan ditulis DI BARIS ITU SENDIRI, bukan di
+                        satu kotak galat bersama: dengan beberapa instans hidup
+                        bersamaan, pesan yang menggantung jauh dari kolomnya tak
+                        memberi tahu kolom mana yang harus diperbaiki. */}
+                    {Object.entries(galat).map(([kunci, pesan]) => (
+                      <p key={kunci} className="grf-ind-galat">
+                        {spek.param.find((s) => s.kunci === kunci)?.label}: {pesan}
+                      </p>
+                    ))}
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+
+          {/* Legenda: satu baris per instans yang tampil, di titik yang
+              disorot kursor — cuma nama indikator tanpa angka tak banyak
+              gunanya (§tahap 4). */}
+          {legenda && legenda.baris.length > 0 && (
             <div className="grf-legenda">
               <span className="grf-legenda-tgl">{legenda.waktu}</span>
-              <span>{legenda.teks}</span>
+              {legenda.baris.map((b) => (
+                <span key={b.id} className="grf-legenda-it"
+                  style={{ '--ind-warna': `var(${b.warna})` } as React.CSSProperties}>
+                  {b.label} {b.nilai}
+                </span>
+              ))}
             </div>
           )}
 
