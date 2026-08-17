@@ -46,6 +46,12 @@
 /* Tanggal tanpa data (prop `tersedia`, #79C) — redup, tak merespons hover. */
 .lantai .dpk-hari:disabled { opacity: .32; cursor: default; }
 .lantai .dpk-hari:disabled:hover { background: none; color: var(--text2); }
+/* Libur bursa — redup tapi TETAP bisa diklik (peringatan, bukan larangan), jadi
+   sengaja lebih terang daripada :disabled dan hover-nya tidak dimatikan.
+   Coretan miring membedakannya dari sekadar "tak terpilih" pada layar yang
+   kontrasnya rendah, karena redup saja terbaca sebagai warna teks biasa. */
+.lantai .dpk-hari.libur { opacity: .55; text-decoration: line-through; }
+.lantai .dpk-hari.libur.sel { opacity: 1; }
 
 /* Lencana jumlah (prop opsional `tanda`, mis. setoran menunggu kurasi) — bulat
    kecil di sudut sel, sama gaya dengan .admin-tab-badge (red solid) supaya

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { IkonMenu, IKON_KALENDER } from './IkonMenu'
 import { useSwipe } from './useSwipe'
+import { alasanBukanHariBursa } from '../../lib/tanggalBursa'
 import './DatePicker.css'
 
 const NAMA_BULAN = [
@@ -156,11 +157,19 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
           {hariKerja.map((d) => {
             const iso = keIso(tahun, bulan, d)
             const jmlTanda = tanda?.get(iso) ?? 0
+            // Hari libur bursa DIREDUPKAN, bukan dimatikan. Ia tetap bisa
+            // diklik: aturannya "peringatan, bukan larangan" — mungkin ada
+            // kasus sah yang belum terbayang, dan mengunci tanggalnya cuma
+            // menghasilkan orang buntu tanpa jalan keluar. Semua DatePicker di
+            // aplikasi ini memilih tanggal bursa, jadi tandanya benar di semua
+            // pemakaian dan tak perlu prop baru untuk menyalakannya.
+            const alasanLibur = alasanBukanHariBursa(iso)
             const cls = [
               'dpk-hari',
               iso === isoIni ? ' now' : '',
               iso === value ? ' sel' : '',
               jmlTanda > 0 ? ' bertanda' : '',
+              alasanLibur ? ' libur' : '',
             ].join('')
             const lewatMaks = maks !== undefined && iso > maks
             const nonaktif = (tersedia ? !tersedia.has(iso) : false) || lewatMaks
@@ -168,9 +177,11 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
               ? 'Tanggal masa depan tidak diterima'
               : tersedia && !tersedia.has(iso)
                 ? 'Tidak ada data pada tanggal ini'
-                : jmlTanda > 0
-                  ? `${jmlTanda} setoran menunggu kurasi`
-                  : undefined
+                : alasanLibur
+                  ? `${alasanLibur} — bukan hari bursa`
+                  : jmlTanda > 0
+                    ? `${jmlTanda} setoran menunggu kurasi`
+                    : undefined
             return (
               <button
                 key={iso}

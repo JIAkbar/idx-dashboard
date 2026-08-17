@@ -48,7 +48,7 @@ import { TolakModal } from './KurasiSetoran'
 import { AturanScreenshot, PanduanScreenshot } from './PanduanScreenshot'
 import './AdminShared.css'
 import { pesanGalat } from '../../lib/pesanGalat'
-import { hariBursa, tanggalBursaTerakhir as tanggalHariIni } from '../../lib/tanggalBursa'
+import { alasanBukanHariBursa, todayIsoJakarta } from '../../lib/tanggalBursa'
 
 
 /** ISO `YYYY-MM-DD` → "Kamis, 13 Agu 2026" (judul panggung utama). */
@@ -556,6 +556,11 @@ export function UnggahHarian() {
    *  `sudahMerged`) utk badge status & alasan di tabel "Sudah Diunggah". */
   const [setoranTanggal, setSetoranTanggal] = useState<SetoranRow[] | null>(null)
   const [formErr, setFormErr] = useState('')
+  /** Peringatan "bukan hari bursa" sudah ditampilkan untuk tanggal yang sedang
+   *  dipilih? Direset tiap kali tanggalnya berganti supaya konfirmasi satu
+   *  tanggal tidak diam-diam berlaku untuk tanggal berikutnya. */
+  const [nonBursaDisadari, setNonBursaDisadari] = useState(false)
+  useEffect(() => { setNonBursaDisadari(false) }, [tanggal])
   /** Modal form "Tambah Emiten" — aksi CRUD selalu modal (konsisten pola proyek). */
   const [formBuka, setFormBuka] = useState(false)
   /** Baris yang sedang diubah lewat tombol pensil — form yang sama dipakai
@@ -702,7 +707,14 @@ export function UnggahHarian() {
    *  afordans upsert (chip keterangan + label tombol PERBARUI). */
   const kodeAktif = ticker.trim().toUpperCase()
   const existingBaris = kodeAktif ? sudah.find((b) => b.ticker === kodeAktif) : undefined
-  const hariIni = tanggalHariIni()
+  /** Batas atas tanggal setoran = HARI INI SUNGGUHAN, bukan hari bursa
+   *  terakhir. Keduanya sempat satu variabel, dan begitu `tanggalBursaTerakhir`
+   *  ikut melewati libur nasional, hari libur itu jatuh "di masa depan" —
+   *  tertolak keras dengan kalimat yang salah, padahal aturannya peringatan.
+   *  Yang membatasi masa depan adalah kalender, yang menandai libur adalah
+   *  `hariBursa`; dua pertanyaan berbeda, dua nilai berbeda. */
+  const hariIni = todayIsoJakarta()
+  const liburDipilih = alasanBukanHariBursa(tanggal)
   /** Kontributor (bukan superadmin) TIDAK boleh menimpa emiten yang sudah
    *  disetor siapa pun untuk tanggal ini (#101) — beda dari perilaku lama
    *  (upsert bebas) yang cuma masuk akal selagi hanya ada satu admin.
@@ -825,8 +837,14 @@ export function UnggahHarian() {
       setFormErr('Tanggal ini di masa depan — broker summary masa depan tidak diterima.')
       return
     }
-    if (!hariBursa(tanggal)) {
-      setFormErr(`${tanggalManusiawi(tanggal)} bukan hari bursa — tidak ada broker summary untuk tanggal ini. Pilih hari bursa terakhir sebelumnya.`)
+    // Libur bursa: PERINGATAN, bukan larangan. Tekan sekali → dijelaskan dan
+    // dihentikan; tekan lagi → jalan. Larangan keras akan membuat kasus sah
+    // yang belum terbayang jadi buntu tanpa jalan keluar, dan superadmin pun
+    // ikut terkunci; sebaliknya tanpa jeda ini, orang yang tidak tahu bursa
+    // libur (kejadian 17 Agu 2026) menyetor tanpa pernah diberi tahu.
+    if (liburDipilih && !nonBursaDisadari) {
+      setNonBursaDisadari(true)
+      setFormErr(`${tanggalManusiawi(tanggal)} bukan hari bursa (${liburDipilih.toLowerCase()}) — biasanya tidak ada broker summary untuk tanggal ini. Pilih hari bursa terakhir sebelumnya, atau tekan Unggah sekali lagi kalau memang disengaja.`)
       return
     }
     if (!alasanValid(alasan, superadmin)) {
@@ -1320,10 +1338,25 @@ export function UnggahHarian() {
             <div className="field">
               <span className="lbl">Tanggal</span>
               <DatePicker value={tanggal} onChange={setTanggal} maks={hariIni} />
-              <p className="muted" style={{ margin: '4px 0 0', fontSize: 10.5 }}>
-                Ikuti kalender bursa — hanya hari bursa yang punya broker summary.
-                Sabtu, Minggu, dan libur bursa tidak diterima, begitu juga tanggal di masa depan.
-              </p>
+              {liburDipilih ? (
+                // Peringatan muncul SEBELUM tombol ditekan, bukan cuma sebagai
+                // galat sesudahnya: yang salah tanggal biasanya tak sadar ada
+                // yang perlu diperiksa, jadi memberitahunya di akhir berarti
+                // memberitahunya setelah berkasnya telanjur salah tempat.
+                <p className="af-dup" style={{ marginTop: 6 }}>
+                  <IkonMenu d={IKON_PERINGATAN} size={12} />
+                  <span>
+                    <b>{tanggalManusiawi(tanggal)}</b> bukan hari bursa ({liburDipilih.toLowerCase()}) —
+                    tidak ada penutupan, jadi biasanya juga tidak ada broker summary.
+                    Yakin mau menyetor untuk tanggal ini?
+                  </span>
+                </p>
+              ) : (
+                <p className="muted" style={{ margin: '4px 0 0', fontSize: 10.5 }}>
+                  Ikuti kalender bursa — hanya hari bursa yang punya broker summary.
+                  Sabtu, Minggu, dan libur bursa tidak diterima, begitu juga tanggal di masa depan.
+                </p>
+              )}
             </div>
             <div className="field">
               <span className="lbl">Emiten</span>

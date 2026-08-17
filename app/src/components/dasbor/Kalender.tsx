@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { TanggalIndex } from '../../lib/dasbor/dataHarian'
 import { PRESET_RENTANG, rentangPreset, type RentangTanggal } from '../../lib/dasbor/periode'
+import { HOLIDAYS, todayIsoJakarta } from '../../lib/tanggalBursa'
 import { IkonMenu, IKON_PERINGATAN, IKON_CENTANG } from './IkonMenu'
 import { Dropdown } from './Dropdown'
 import { useSwipe } from './useSwipe'
@@ -53,13 +54,11 @@ const BULAN = [
 // sel "Sab"/"Min" cuma noise — permintaan user, lanjutan #75).
 const DOW_LABEL = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum']
 
-/** Tanggal merah manual — port index_live.html baris 2431-2435. Diekspor:
- *  Tanya PAPAN (tanyaPapan.ts) memakainya juga untuk pertanyaan "besok libur
- *  bursa?" — satu sumber, jangan disalin. */
-export const HOLIDAYS: Record<string, string> = {
-  '2026-06-01': 'Hari Lahir Pancasila',
-  '2026-05-29': 'Kenaikan Isa Almasih',
-}
+/** Tanggal merah manual. Daftarnya sekarang tinggal di `lib/tanggalBursa.ts`
+ *  supaya `hariBursa()` (validasi form setoran admin) memakai daftar yang sama;
+ *  di-ekspor ulang dari sini karena Tanya PAPAN (tanyaPapan.ts) sudah lama
+ *  mengimpornya lewat jalur ini. Satu sumber, jangan disalin. */
+export { HOLIDAYS }
 
 function pad2(n: number) {
   return String(n).padStart(2, '0')
@@ -71,15 +70,10 @@ export function fmtMenit(min: number) {
   return `${pad2(Math.floor(min / 60))}:${pad2(min % 60)}`
 }
 
-/**
- * Tanggal hari ini di zona WIB (Asia/Jakarta), BUKAN `toISOString()` (UTC) —
- * itu salah sebelum jam 07:00 WIB karena UTC masih tanggal "kemarin". Pakai
- * `Intl.DateTimeFormat` locale `en-CA` yang defaultnya sudah format
- * YYYY-MM-DD, jadi tidak perlu susun manual.
- */
-export function todayIsoJakarta() {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date())
-}
+/** Pindah rumah ke `lib/tanggalBursa.ts` bersama HOLIDAYS — halaman admin
+ *  butuh "hari ini WIB" tanpa ikut menyeret komponen kalender dasbor. Diekspor
+ *  ulang dari sini karena tanyaPapan.ts & uji Kalender sudah memakai jalur ini. */
+export { todayIsoJakarta }
 
 /** [label, mulaiMenit, selesaiMenit, warna] — jam resmi IDX pasar reguler,
  * versi user-facing yang disederhanakan (Pra-Penutupan 15:50–16:02 mencakup
