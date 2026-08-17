@@ -3,7 +3,41 @@
 Catatan hidup — diperbarui tiap ada keputusan. Ditulis ke berkas supaya tidak
 bergantung pada ingatan percakapan (yang bisa diringkas dan kehilangan detail).
 
-Terakhir diperbarui: 17 Agustus 2026 (setelah sesi Grafik Emiten, chart PAPAN tahap 3).
+Terakhir diperbarui: 17 Agustus 2026 (setelah sesi arsip mentah seluruh pemanen).
+
+## 📌 Sesi 17 Agu 2026 — Arsip mentah untuk seluruh pemanen (`scripts/`)
+
+Johan: *"jangan asal maen buang data yang sudah di panen, gini ini jadi
+masalah kan harus unduh lagi, simpan backup saja sewaktu perlu kita gunakan
+gini"* — *"tidak hanya tiap XLSX, tapi semua data yang berkaitan dengan Papan
+simpan di folder itu"*.
+
+`panen_keuangan_idx.py` sudah menerapkan pola ini (`ARSIP_MENTAH`,
+`jalur_arsip`, `ambil_xlsx`). Pembantu bersamanya sekarang dipisah ke
+`scripts/arsip_mentah.py` (`simpan`/`baca`/`ambil_atau_unduh`) dan dipasang ke
+sepuluh pemanen yang sebelumnya tak menyimpan mentahnya sama sekali:
+`panen_ohlc.py`/`panen_ihsg.py` (satu fungsi `ambil()` dipakai bersama),
+`panen_kabar.py`, `panen_sektor_idx.py`, `panen_seasonality.py`,
+`panen_ipot_arsip.py`, `fetch_broker_summary.py`, `fetch_investor_map.py`,
+`fetch_fundamental.py`, `fetch_keuangan.py`. Semua tertulis ke
+`_arsip-mentah/<sumber>/...` (sudah di `.gitignore`, terverifikasi
+`git status` bersih setelah panen uji).
+
+Untuk `yfinance` (fetch_fundamental/fetch_keuangan) tak ada respons HTTP
+mentah yang bisa dicegat — yang diarsipkan adalah objek `info` (dict) dan
+DataFrame/Series laporan keuangan APA ADANYA dari pustaka (lewat
+`to_json()`), bukan byte HTTP asli. Ditandai jelas di komentar `_arsip_yf()`.
+
+**Belum dipindah (sengaja):** `data-idx/daily/` (270 MB PDF harian) dan
+`data-idx/weekly/` (69 MB PDF mingguan) sudah berperan sebagai arsip mentah
+dan sudah di-gitignore — TAPI jalurnya masih tertanam di
+`scripts/download_idx.py`, `scripts/parse_idx_pdf.py`,
+`scripts/parse_idx_weekly.py`, dan `.github/workflows/update.yml`.
+Memindahkannya ke `_arsip-mentah/` menyentuh CI produksi dan perlu diverifikasi
+terpisah — dicatat di sini sebagai pekerjaan lanjutan, bukan dikerjakan sesi
+ini. `fetch_investor_map.py` juga sudah punya arsip PDF-nya sendiri di
+`data owner/` (di luar repo, sudah berfungsi) — dibiarkan di tempatnya,
+cuma respons JSON pencarian pengumumannya yang baru ditambah arsipnya.
 
 ## 📌 Sesi 17 Agu 2026 — Grafik Emiten (chart PAPAN tahap 3)
 

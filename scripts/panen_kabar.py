@@ -35,6 +35,9 @@ from pathlib import Path
 
 import requests
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import arsip_mentah  # noqa: E402 — reuse, lihat CLAUDE.md rung 2
+
 AKAR = Path(__file__).resolve().parent.parent
 KELUARAN = AKAR / "data-idx" / "json" / "kabar.json"
 WIB = timezone(timedelta(hours=7))
@@ -67,14 +70,24 @@ def _pemanasan_idx() -> None:
         pass
 
 
-def ambil(url: str, headers: dict, timeout: int = 45) -> requests.Response | None:
+def ambil(url: str, headers: dict, timeout: int = 45, arsip: str | None = None) -> requests.Response | None:
     """GET yang tak pernah menggagalkan seluruh panen: satu sumber mati bukan
-    alasan tiga sumber lain ikut hilang dari halaman."""
+    alasan tiga sumber lain ikut hilang dari halaman.
+
+    `arsip` (opsional): label sumber ("idx-berita", "ipot-stocks", dst) —
+    kalau diisi, badan respons MENTAH disimpan ke
+    `_arsip-mentah/kabar/<tanggal>/<arsip>.<ext>` sebelum diparse.
+    """
     if "idx.co.id" in url:
         _pemanasan_idx()
     try:
         r = SESI.get(url, headers=headers, timeout=timeout)
         r.raise_for_status()
+        if arsip:
+            ct = r.headers.get("Content-Type", "")
+            ext = "json" if "json" in ct else ("xml" if "xml" in ct else "html")
+            tanggal = datetime.now(WIB).strftime("%Y-%m-%d")
+            arsip_mentah.simpan("kabar", tanggal, f"{arsip}.{ext}", data=r.text)
         return r
     except Exception as e:  # noqa: BLE001 — sengaja menangkap semuanya
         print(f"  ! gagal {url[:60]}… — {e}", file=sys.stderr)
@@ -98,7 +111,7 @@ def wib(iso: str | None) -> str | None:
 def idx_berita(batas: int) -> list[dict]:
     url = ("https://www.idx.co.id/primary/NewsAnnouncement/GetNewsSearch"
            f"?locale=id-id&pageSize={batas}&pageNumber=1")
-    r = ambil(url, HEADER_IDX)
+    r = ambil(url, HEADER_IDX, arsip="idx-berita")
     if not r:
         return []
     out = []
@@ -118,7 +131,7 @@ def idx_berita(batas: int) -> list[dict]:
 def idx_pengumuman(batas: int) -> list[dict]:
     url = ("https://www.idx.co.id/primary/ListedCompany/GetAnnouncement"
            f"?indexFrom=0&pageSize={batas}&dateFrom=&dateTo=&lang=id&keyword=")
-    r = ambil(url, HEADER_IDX)
+    r = ambil(url, HEADER_IDX, arsip="idx-pengumuman")
     if not r:
         return []
     out = []
@@ -199,7 +212,8 @@ def ipot(batas: int) -> list[dict]:
     for level4, nama in IPOT_KANAL:
         r = ambil(f"{IPOT_AJAX}?halaman=0&level4={level4}",
                   {**HEADER_UMUM, "Referer": f"https://www.indopremier.com/ipotnews/nw-saham.php?level4={level4}",
-                   "X-Requested-With": "XMLHttpRequest"})
+                   "X-Requested-With": "XMLHttpRequest"},
+                  arsip=f"ipot-{level4}")
         if not r:
             continue
         # String mentah (r"") wajib di sini: "\/" itu escape tak sah, dan
@@ -239,7 +253,7 @@ def rss(nama: str, url: str, batas: int) -> list[dict]:
     Itu yang membuat mereka bisa dipanen dari GitHub Actions (lihat
     `--hanya` di bawah dan `docs/panen-kabar.md`).
     """
-    r = ambil(url, HEADER_UMUM)
+    r = ambil(url, HEADER_UMUM, arsip=f"rss-{nama.lower()}")
     if not r:
         return []
     try:

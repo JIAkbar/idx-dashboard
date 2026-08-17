@@ -21,6 +21,9 @@ import argparse, json, sys, time
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import arsip_mentah  # noqa: E402 — reuse, lihat CLAUDE.md rung 2
+
 ROOT = Path(__file__).parent.parent
 OUT_DIR = ROOT / "data-idx" / "json" / "broker"
 HALAMAN = "https://www.idx.co.id/id/data-pasar/ringkasan-perdagangan"
@@ -42,6 +45,13 @@ def ambil(pg, tgl_ymd):
         return None
     j = json.loads(res["body"])
     data = j.get("data") or []
+    if data:
+        # Pembeda = tanggal yang DIMINTA (bukan tanggal panen) — satu tanggal
+        # bursa cuma punya satu jawaban yang benar, jadi backfill/re-panen di
+        # hari lain tetap menulis ke jalur yang sama (idempoten), bukan
+        # menumpuk salinan.
+        tgl_iso = f"{tgl_ymd[:4]}-{tgl_ymd[4:6]}-{tgl_ymd[6:8]}"
+        arsip_mentah.simpan("broker-summary", f"{tgl_iso}.json", data=data)
     return data or None  # recordsTotal 0 = bukan hari bursa
 
 

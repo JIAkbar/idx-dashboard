@@ -28,6 +28,9 @@ from pathlib import Path
 
 import requests
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import arsip_mentah  # noqa: E402 — reuse, lihat CLAUDE.md rung 2
+
 AKAR = Path(__file__).resolve().parent.parent
 KELUARAN = AKAR / "data-idx" / "json" / "emiten_sektor.json"
 WIB = timezone(timedelta(hours=7))
@@ -55,7 +58,13 @@ def main() -> int:
               file=sys.stderr)
         return 1
 
-    baris = r.json().get("data") or []
+    hasil = r.json()
+    # Arsip respons MENTAH sebelum diparse — pembeda tanggal panen karena
+    # klasifikasi sektor bisa direvisi IDX dari waktu ke waktu.
+    tanggal = datetime.now(WIB).strftime("%Y-%m-%d")
+    arsip_mentah.simpan("sektor-idx", f"{tanggal}.json", data=hasil)
+
+    baris = hasil.get("data") or []
     if not baris:
         print("Balasan kosong — berkas lama TIDAK ditimpa.", file=sys.stderr)
         return 1

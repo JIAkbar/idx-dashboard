@@ -20,8 +20,10 @@ import yfinance as yf
 from yfinance.exceptions import YFRateLimitError
 import json, os, sys, time
 from datetime import datetime
+from pathlib import Path
 
-from fetch_fundamental import DEFAULT_TICKERS, sg  # reuse — lihat CLAUDE.md rung 2 (jangan duplikasi)
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from fetch_fundamental import DEFAULT_TICKERS, sg, _arsip_yf  # reuse — lihat CLAUDE.md rung 2 (jangan duplikasi)
 
 # Baris yang diambil dari tiap statement yfinance. Nama baris bisa berbeda
 # antar emiten/versi yfinance — dicocokkan case-insensitive, dilewati kalau tak ada.
@@ -111,6 +113,7 @@ def fetch_satu(ticker_code, max_coba=3):
 def _fetch_satu(ticker_code):
     t = yf.Ticker(f"{ticker_code}.JK")
     info = aman(lambda: t.info) or {}
+    _arsip_yf(ticker_code, "info", info)
     currency = sg(info, "financialCurrency") or "IDR"
 
     qfin = aman(lambda: t.quarterly_income_stmt)
@@ -119,6 +122,10 @@ def _fetch_satu(ticker_code):
     abs_ = aman(lambda: t.balance_sheet)
     qcf  = aman(lambda: t.quarterly_cashflow)
     acf  = aman(lambda: t.cashflow)
+    for nama, obj in (("quarterly_income_stmt", qfin), ("income_stmt", afin),
+                       ("quarterly_balance_sheet", qbs), ("balance_sheet", abs_),
+                       ("quarterly_cashflow", qcf), ("cashflow", acf)):
+        _arsip_yf(ticker_code, nama, obj)
 
     kuartal = merge_periods(
         periods_dict(qfin, INCOME_ROWS),

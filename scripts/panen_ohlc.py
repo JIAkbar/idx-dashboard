@@ -48,6 +48,9 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import arsip_mentah  # noqa: E402 — reuse, lihat CLAUDE.md rung 2
+
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 AKAR = Path(__file__).parent.parent
@@ -90,7 +93,16 @@ def ambil(simbol: str, p1: int | None, p2: int | None, rentang: str | None) -> d
     for n in range(len(TUNGGU_ULANG)):
         try:
             with urllib.request.urlopen(req, timeout=30) as r:
-                return json.load(r)
+                hasil = json.load(r)
+                # Arsip respons MENTAH Yahoo sebelum diparse — dipakai bersama
+                # panen_ihsg.py (yang memanggil fungsi ini juga). Pembeda pakai
+                # TANGGAL PANEN + rentang/periode: hari yang berbeda tak boleh
+                # saling menimpa (harga bisa direvisi Yahoo di kemudian hari).
+                kode = simbol.replace(".JK", "").replace("%5E", "")
+                pembeda = rentang or f"{p1}-{p2}"
+                tanggal = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                arsip_mentah.simpan("ohlc", kode, f"{tanggal}_{pembeda}.json", data=hasil)
+                return hasil
         except urllib.error.HTTPError as e:
             if e.code in (429, 403):
                 saran = e.headers.get("Retry-After")

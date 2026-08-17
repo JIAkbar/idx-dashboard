@@ -53,6 +53,9 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import arsip_mentah  # noqa: E402 — reuse, lihat CLAUDE.md rung 2
+
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 AKAR = Path(__file__).parent.parent
@@ -84,7 +87,13 @@ def ambil(kode: str, rentang: str) -> dict:
     for n in range(len(TUNGGU_ULANG)):
         try:
             with urllib.request.urlopen(req, timeout=30) as r:
-                return json.load(r)
+                hasil = json.load(r)
+                # Arsip respons MENTAH — tanggal panen masuk jalur karena
+                # bulan berjalan berubah tiap kali dipanen ulang (mode harian
+                # menimpa bulan-bulan terakhir).
+                tanggal = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                arsip_mentah.simpan("seasonality", kode, f"{tanggal}_{rentang}.json", data=hasil)
+                return hasil
         except urllib.error.HTTPError as e:
             if e.code in (429, 403):
                 # Hormati Retry-After kalau server menyebutnya; ia tahu lebih

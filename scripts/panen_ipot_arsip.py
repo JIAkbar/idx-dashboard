@@ -35,6 +35,7 @@ import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import panen_kabar as pk  # noqa: E402 — reuse konstanta & regex IPOT, lihat docstring
+import arsip_mentah  # noqa: E402 — reuse, lihat CLAUDE.md rung 2
 
 AKAR = Path(__file__).resolve().parent.parent
 KELUARAN = AKAR / "data-idx" / "json" / "ipot_arsip.json"
@@ -89,6 +90,12 @@ def panen_kanal(level4: str, nama: str, sejak: date, maks_halaman: int,
             {**pk.HEADER_UMUM, "Referer": referer, "X-Requested-With": "XMLHttpRequest"})
         if not r:
             break  # sumber tak menjawab — laporkan sejauh yang berhasil, jangan memaksa
+        # Arsip respons MENTAH — pembeda TANGGAL PANEN (bukan tanggal berita:
+        # endpoint mengabaikan parameter `halaman`, lihat catatan di bawah,
+        # jadi "halaman 0" bisa membawa isi berbeda tiap kali dipanen ulang).
+        tanggal_panen = datetime.now().strftime("%Y-%m-%d")
+        arsip_mentah.simpan("ipot", tanggal_panen, f"{level4}-halaman-{halaman}.json",
+                             data=r.text)
         teks = r.text.replace(r"\/", "/").replace(r'\"', '"')
         terlihat_di_halaman = 0  # item terurai di halaman ini, dedup atau tidak
         sidik: set[str] = set()  # news_id di halaman ini — untuk deteksi halaman kembar

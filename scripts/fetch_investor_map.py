@@ -24,6 +24,9 @@ from collections import Counter
 from datetime import date, timedelta
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import arsip_mentah  # noqa: E402 — reuse, lihat CLAUDE.md rung 2
+
 ROOT = Path(__file__).parent.parent
 OUT = ROOT / "data-idx" / "json" / "investor_map.json"
 META = ROOT / "data-idx" / "json" / "investor_map.meta.json"
@@ -73,6 +76,11 @@ def cari_pengumuman(pg):
         res = pg.evaluate(JS_FETCH, url)
         if res["status"] != 200:
             raise RuntimeError(f"GetAllAnnouncement HTTP {res['status']}")
+        # Arsip respons MENTAH per jendela pencarian — pembeda tanggal panen +
+        # jarak mundur, supaya panen di hari lain tak menimpa jendela lama.
+        tanggal_panen = date.today().isoformat()
+        arsip_mentah.simpan("investor-map", tanggal_panen, f"pengumuman-mundur-{mundur}.json",
+                             data=res["body"])
         items = json.loads(res["body"]).get("Items") or []
         calon = [it for it in items
                  if "di atas 1%" in (it.get("Title") or "")

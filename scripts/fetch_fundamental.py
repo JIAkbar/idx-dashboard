@@ -18,6 +18,31 @@ from yfinance.exceptions import YFRateLimitError
 import json, os, sys, time, requests
 import pandas as pd
 from datetime import datetime, date
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import arsip_mentah  # noqa: E402 — reuse, lihat CLAUDE.md rung 2
+
+
+def _arsip_yf(ticker: str, nama: str, obj) -> None:
+    """Simpan objek yfinance MENTAH sebelum diolah — bukan respons HTTP asli
+    (yfinance tak membukanya), tapi yang terdekat yang bisa didapat: `info`
+    (dict) dan DataFrame/Series laporan keuangan APA ADANYA dari pustaka.
+    Tiap field di sini = satu request Yahoo terpisah; mengarsipkannya berarti
+    menambah/mengubah rasio turunan di kemudian hari tak perlu memanggil
+    Yahoo lagi untuk 959 emiten."""
+    if obj is None:
+        return
+    try:
+        if isinstance(obj, dict):
+            arsip_mentah.simpan("fundamental", ticker, f"{nama}.json", data=json.dumps(obj, default=str))
+        elif hasattr(obj, "empty"):
+            if obj.empty:
+                return
+            arsip_mentah.simpan("fundamental", ticker, f"{nama}.json", data=obj.to_json(date_format="iso"))
+    except Exception as e:  # noqa: BLE001 — arsip gagal bukan alasan panen gagal
+        print(f"   ! arsip {ticker}/{nama} gagal: {e}", flush=True)
+
 
 # ─── 959 saham IDX — sumber: IDX Ringkasan Saham 2026-06-05 (idx.co.id) ──────────
 DEFAULT_TICKERS = sorted(set([
@@ -331,6 +356,7 @@ def fetch_stock(ticker_code):
     try:
         t = yf.Ticker(ticker_jk)
         info = t.info
+        _arsip_yf(ticker_code, "info", info)
         name = sg(info,"longName") or sg(info,"shortName")
         if not name:
             return None
@@ -348,15 +374,21 @@ def fetch_stock(ticker_code):
         qfin = aman(lambda: t.quarterly_financials)
         qbs  = aman(lambda: t.quarterly_balance_sheet)
         qcf  = aman(lambda: t.quarterly_cashflow)
+        for _nama, _obj in (("financials", fin), ("balance_sheet", bs), ("cashflow", cf),
+                             ("quarterly_financials", qfin), ("quarterly_balance_sheet", qbs),
+                             ("quarterly_cashflow", qcf)):
+            _arsip_yf(ticker_code, _nama, _obj)
 
         # Dividends: satu kali fetch, dipakai dua blok (hist_dps_a + div_history) —
         # sebelumnya t.dividends dipanggil 2x = 2x request history(period=max) ke Yahoo.
         divs_raw = aman(lambda: t.dividends)
+        _arsip_yf(ticker_code, "dividends", divs_raw)
 
         # ── Harga historis ────────────────────────────────────────────────
         try:
             # 5y (sebelumnya 1y): tetap SATU call history, sekalian buat perf 1y/3y/5y.
             hist = t.history(period="5y")
+            _arsip_yf(ticker_code, "history_5y", hist)
             pp   = price_perf(hist)
         except YFRateLimitError:
             raise
