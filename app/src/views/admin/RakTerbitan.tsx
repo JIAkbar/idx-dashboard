@@ -124,7 +124,11 @@ export function RakTerbitan() {
                 {tampil.map((r) => (
                   <tr key={r.kode}>
                     <td>{r.tanggal_id}</td>
-                    <td><span className="chip">{tipeEdisi(r.kode)}</span></td>
+                    {/* Warna per tipe, bukan satu abu-abu untuk semuanya.
+                        Kolom ini ADA supaya empat jenis edisi bisa dibedakan
+                        sekilas; kalau lencananya seragam, ia cuma mengulang
+                        teks yang sudah terbaca dan tak membantu memindai. */}
+                    <td><span className={`chip tipe-edisi t-${tipeEdisi(r.kode).toLowerCase()}`}>{tipeEdisi(r.kode)}</span></td>
                     <td>
                       <span className="tick">{r.kode}</span>
                       {r.update_dari != null && r.emiten.length > r.update_dari && (
