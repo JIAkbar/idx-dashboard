@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  createChart, createSeriesMarkers, CandlestickSeries, HistogramSeries, LineSeries, LineStyle,
+  createChart, createSeriesMarkers, createTextWatermark,
+  CandlestickSeries, HistogramSeries, LineSeries, LineStyle,
   type IChartApi, type IPriceLine, type ISeriesApi, type ISeriesMarkersPluginApi,
+  type ITextWatermarkPluginApi,
   type MouseEventParams, type SeriesMarker, type SeriesType, type Time,
 } from 'lightweight-charts'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
@@ -41,6 +43,20 @@ const JENIS_POLA = Object.keys(SPEK_POLA) as JenisPola[]
 
 const spekIndikator = (jenis: JenisIndikator) => SPEK_INDIKATOR[jenis].param
 const spekPola = (jenis: JenisPola) => SPEK_POLA[jenis].param
+
+/**
+ * Token warna heksadesimal -> rgba dengan alfa. Watermark lightweight-charts
+ * menerima satu string warna dan tak punya ruas opacity sendiri, sementara
+ * token `.lantai` semuanya heksadesimal pekat — jadi alfanya harus dijahitkan
+ * di sini. Nilai yang tak dikenali dikembalikan apa adanya: lebih baik
+ * watermark yang kelewat pekat daripada kanvas yang gagal digambar.
+ */
+function warnaSamar(hex: string, alfa: number): string {
+  const m = /^#([0-9a-f]{6})$/i.exec(hex.trim())
+  if (!m) return hex
+  const n = parseInt(m[1], 16)
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alfa})`
+}
 
 /** Keterangan status — MENJELASKAN apa yang ditemukan dan apa syaratnya,
  *  bukan apa yang harus dilakukan. Tak ada, dan tak boleh ada, kalimat saran
@@ -150,6 +166,12 @@ export function GrafikEmiten() {
   // begitu pembaca menggeser atau memperbesar sumbu waktunya.
   const garisLeherRef = useRef<IPriceLine[]>([])
   const penandaRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null)
+  // Watermark kode emiten di latar area harga. Dipakai plugin BAWAAN
+  // lightweight-charts v5 (`createTextWatermark`) — sudah menggambar di
+  // lapisan kanvas yang benar, di belakang lilin, dan ikut berpindah sendiri
+  // saat pane berubah ukuran. Elemen CSS di belakang kanvas akan menuntut
+  // pengukuran ulang yang sama dengan legenda, untuk hasil yang lebih buruk.
+  const watermarkRef = useRef<ITextWatermarkPluginApi<Time> | null>(null)
 
   // Chart dibuat SEKALI saat mount (bukan tiap ganti emiten/rentang) — data &
   // warnanya diperbarui lewat setData()/applyOptions() di efek-efek di bawah.
@@ -216,6 +238,8 @@ export function GrafikEmiten() {
     // setMarkers() di atasnya. Membuatnya ulang tiap kali daftar pola berubah
     // menumpuk beberapa plugin di satu seri, dan yang lama tetap menggambar.
     penandaRef.current = createSeriesMarkers(candle, [])
+    const pane0 = chart.panes()[0]
+    if (pane0) watermarkRef.current = createTextWatermark(pane0, { horzAlign: 'center', vertAlign: 'center', lines: [] })
     // Hook QA dev-only — verifikasi zoom/geser butuh rentang waktu yang
     // TERLIHAT (bukan cuma data yang di-setData), dan lightweight-charts
     // menggambar lewat canvas (tak ada teks DOM buat dibaca devtools).
@@ -264,6 +288,29 @@ export function GrafikEmiten() {
       wickUpColor: green, wickDownColor: red,
     })
   }, [theme])
+
+  // Watermark kode emiten — ikut berganti saat emiten diganti, dan warnanya
+  // dibaca ulang tiap tema ditukar. BEDA dari tanda PAPAN di pojok kiri
+  // bawah; keduanya hidup bersamaan, satu menandai emitennya, satu menandai
+  // siapa yang menggambar.
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el || !watermarkRef.current) return
+    const teks = getComputedStyle(el).getPropertyValue('--text').trim() || '#888D99'
+    watermarkRef.current.applyOptions({
+      visible: true,
+      lines: [{
+        text: kode,
+        // Sangat redup: watermark ini duduk persis di belakang lilin, dan
+        // apa pun yang lebih pekat mulai mengganggu isi yang justru datang
+        // untuk dibaca.
+        color: warnaSamar(teks, 0.08),
+        fontSize: 76,
+        fontFamily: "'Red Hat Mono', Consolas, ui-monospace, monospace",
+        fontStyle: 'bold',
+      }],
+    })
+  }, [kode, theme])
 
   // Lilin + volume dipotong ke rentang terpilih. Ikut `theme` di deps supaya
   // warna volume (dihitung per-batang, beda dari upColor/downColor series
