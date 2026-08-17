@@ -120,6 +120,24 @@ export function GrafikEmiten() {
   const [berkas, setBerkas] = useState<BerkasOhlcEmiten | null>(null)
   const [galat, setGalat] = useState<string | null>(null)
   const [rentangLabel, setRentangLabel] = useState<string>(RENTANG_BAWAAN)
+  /**
+   * Perbesar/perkecil rentang waktu yang terlihat, berpusat di TENGAH layar.
+   * Tombol nyata, bukan cuma roda tikus — di telepon roda tikus tak ada, dan
+   * cubit dua jari tak selalu terbaca sebagai zoom di dalam kanvas yang juga
+   * menangkap geseran. `faktor > 1` memperkecil (rentang melebar).
+   */
+  const zoom = useCallback((faktor: number) => {
+    const skala = chartRef.current?.timeScale()
+    const r = skala?.getVisibleLogicalRange()
+    if (!skala || !r) return
+    const tengah = (r.from + r.to) / 2
+    const separuh = ((r.to - r.from) / 2) * faktor
+    // Rentang logis boleh melewati ujung data (itu yang membuat ada ruang
+    // kosong di kanan seperti bawaan chart), jadi tak perlu dijepit ke
+    // [0, jumlahLilin] — menjepitnya justru membuat zoom terasa mentok.
+    skala.setVisibleLogicalRange({ from: tengah - separuh, to: tengah + separuh })
+  }, [])
+
   // Waktu titik yang sedang disorot kursor ('yyyy-mm-dd') — null berarti
   // "belum digeser, pakai titik TERAKHIR" (legenda tetap berguna sebelum
   // pembaca menyentuh kanvas sama sekali).
@@ -779,6 +797,18 @@ export function GrafikEmiten() {
                 dengan tanda PAPAN di bawah: React tak pernah rebutan anak
                 elemen dengan DOM yang dikelola lightweight-charts. Posisi
                 atasnya diukur dari DOM pane-nya sendiri (lihat `ukurPane`). */}
+            {/* Tombol zoom — pojok kanan bawah kanvas, di atas sumbu waktu.
+                Roda tikus & cubit tetap jalan; ini yang membuatnya terjangkau
+                di telepon, tempat roda tikus tak ada sama sekali. */}
+            <div className="grf-zoom">
+              <button type="button" className="grf-zoom-btn" title="Perbesar"
+                onClick={() => zoom(1 / 1.3)}>+</button>
+              <button type="button" className="grf-zoom-btn" title="Perkecil"
+                onClick={() => zoom(1.3)}>−</button>
+              <button type="button" className="grf-zoom-btn grf-zoom-muat" title="Muat semua data"
+                onClick={() => chartRef.current?.timeScale().fitContent()}>⤢</button>
+            </div>
+
             {legenda?.perPane.map(([pane, baris]) => (
               <div key={pane} className="grf-legenda-kanvas" style={{ top: `${(posPane[pane] ?? 0) + 6}px` }}>
                 {pane === 0 && <span className="grf-legenda-tgl">{legenda.waktu}</span>}
