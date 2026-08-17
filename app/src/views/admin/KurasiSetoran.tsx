@@ -620,7 +620,7 @@ function PindahTanggalModal({ setoran, sibuk, onClose, onKirim }: {
   const nama = setoran.profil?.alias || setoran.profil?.email || 'penyetornya'
 
   return (
-    <ModalKecil label={`Pindahkan ${setoran.ticker} ke tanggal lain?`} onClose={() => { if (!sibuk) onClose() }}>
+    <ModalKecil className="ks-pindah-modal" label={`Pindahkan ${setoran.ticker} ke tanggal lain?`} onClose={() => { if (!sibuk) onClose() }}>
       <div style={{ display: 'grid', gap: 12 }}>
         <p className="muted" style={{ margin: 0, fontSize: 11, lineHeight: 1.6 }}>
           Berkas dan barisnya berpindah bersama — berkasnya dipindah lebih dulu,

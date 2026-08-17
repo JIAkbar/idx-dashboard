@@ -107,11 +107,18 @@
    keluar batas kartu — dan tinggi tiap tombol jadi tak sama.
    `flex:1 1 0` menyamakan dasarnya ke nol supaya ruang dibagi RATA, dan
    min-width:0 mengizinkan tombol menyusut di bawah lebar kontennya. */
-.lantai .ks-aksi { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; align-items: stretch; }
+/* Angka di bawah ini DITURUNKAN DARI PENGUKURAN pada kartu tersempit yang
+   mungkin (grid `minmax(240px, 1fr)`), bukan dikira-kira. Pada 240px isi kartu
+   tinggal 218px; dengan gap 6px dan padding 6px, tiap tombol dapat 39px untuk
+   teks sedangkan "Setujui" menuntut 45,6px — labelnya terpangkas jadi "Setuju…"
+   diam-diam, karena `text-overflow: ellipsis` memang tak pernah mengeluh.
+   Sekarang: gap 4px + padding 4px + font 10px → ruang teks 47px untuk kebutuhan
+   43,4px. Kalau salah satu angka ini dinaikkan lagi, UKUR ULANG pada 240px. */
+.lantai .ks-aksi { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; align-items: stretch; }
 .lantai .ks-aksi .dd-btn {
-  flex: 1 1 0; min-width: 0; justify-content: center; padding: 6px 6px;
-  font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  gap: 4px;
+  flex: 1 1 0; min-width: 0; justify-content: center; padding: 6px 4px;
+  font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  gap: 3px;
 }
 /* Ikon tak boleh ikut menyusut — begitu tergencet, yang tersisa cuma
    coretan setengah yang lebih membingungkan daripada tak ada ikon. */
@@ -122,15 +129,35 @@
 /* Grid auto-fill(minmax(240px,1fr)) sudah jatuh ke 1 kolom sendiri di layar
    telepon (~380-410px konten) — tidak perlu override media query lagi. */
 
-/* Baris kedua, dipisah garis dari tiga tombol kurasi di atasnya: "masuk edisi
+/* Dua tombol yang BUKAN kurasi, masing-masing satu baris penuh: "masuk edisi
    hari ini?" (#138, pertanyaan redaksi) dan "tanggalnya benar?" (koreksi
-   setoran salah-tanggal) — dua-duanya bukan kurasi. Berbagi satu baris berdua
-   supaya kartunya tidak bertambah tinggi dua kali; garis atasnya tersambung
-   sendiri karena keduanya duduk di baris flex yang sama. */
+   setoran salah-tanggal).
+
+   `flex: 1 0 100%` bukan hiasan, ia yang MEMAKSA pindah baris. Tiga tombol
+   kurasi di atas memakai `flex: 1 1 0` — dasar nol, jadi mereka tak pernah
+   ikut mendorong pembungkusnya penuh dan tak pernah memicu wrap sendiri.
+   Sempat dicoba `flex: 1 1 calc(50% - 3px)` supaya dua tombol ini berbagi satu
+   baris: hasilnya KELIMA tombol jatuh ke satu baris, ruangnya dibagi lima, dan
+   ketiga tombol kurasi menyusut sampai labelnya terpangkas jadi "Setu · Revi ·
+   Hap". Basis 100% tak muat berdampingan dengan apa pun, jadi tiap tombol
+   dipastikan turun ke barisnya sendiri.
+
+   Garis pemisah hanya di tombol PERTAMA dari dua ini: garis kedua akan terbaca
+   sebagai dua kelompok terpisah, padahal keduanya sama-sama "bukan kurasi". */
 .lantai .ks-aksi .ks-dimuat,
-.lantai .ks-aksi .ks-pindah {
-  flex: 1 1 calc(50% - 3px); margin-top: 2px; padding-top: 8px;
-  border-top: 1px solid var(--line); border-radius: 0;
-}
+.lantai .ks-aksi .ks-pindah { flex: 1 0 100%; margin-top: 2px; border-radius: 0; }
+.lantai .ks-aksi .ks-dimuat { padding-top: 8px; border-top: 1px solid var(--line); }
 .lantai .ks-aksi .ks-dimuat:not(:disabled) { color: var(--amber); border-color: var(--line); }
-.lantai .ks-aksi .ks-pindah { border-color: var(--line); }
+
+/* Modal pindah tanggal. `.dasbor-modal .panel { overflow: hidden }` (lantai.css)
+   memotong popover DatePicker sampai grid tanggalnya tak terlihat sama sekali —
+   modal yang tak bisa dipakai untuk satu-satunya tugasnya. Dibuka per-modal,
+   bukan digeneralkan ke .dasbor-modal: pola yang sama sudah dipakai form unggah
+   (.af-form-modal di AdminShared.css), dan modal lain memang butuh potongan itu. */
+.dasbor-modal.ks-pindah-modal .panel { overflow: visible; }
+/* Kalendernya dibuka KE ATAS, memakai konvensi `.dd.dd-atas` yang sudah ada di
+   lantai.css. Membuka ke bawah membuatnya menutupi tombol "Pindahkan" —
+   kalender dan tombolnya tak pernah terlihat bersamaan, padahal keduanya
+   dibutuhkan berbarengan. Yang tertutup sekarang cuma paragraf keterangan,
+   yang memang dibaca sekali di awal. */
+.dasbor-modal.ks-pindah-modal .dpk-pop { top: auto; bottom: calc(100% + 5px); }
