@@ -381,6 +381,46 @@ def cari_xlsx(entri: dict) -> dict | None:
     return None
 
 
+# Arsip berkas MENTAH. Sengaja di luar repo (lihat .gitignore) supaya 200-an MB
+# XLSX tak ikut tiap kloning, tapi TETAP ADA di cakram.
+#
+# Johan 17 Agu 2026: "jangan asal maen buang data yang sudah di panen, gini ini
+# jadi masalah kan harus unduh lagi, simpan backup saja sewaktu perlu kita
+# gunakan gini". Latar belakangnya nyata: versi pertama skrip ini memeras XLSX
+# jadi 15 ruas lalu membuang berkasnya. Begitu muncul kebutuhan ruas lain
+# (neraca saja 238 baris), satu-satunya jalan adalah mengunduh ulang seluruh
+# 900-an emiten — padahal endpoint-nya sering menolak 403 dan panen penuh makan
+# berjam-jam.
+#
+# Aturan yang berlaku sejak sekarang: yang mahal itu MENGAMBILNYA, bukan
+# menyimpannya. Simpan mentahnya, parse-nya boleh diulang kapan saja.
+ARSIP_MENTAH = AKAR / "_arsip-mentah" / "keuangan_idx"
+
+
+def jalur_arsip(kode: str, tahun: int, periode: str) -> Path:
+    return ARSIP_MENTAH / str(tahun) / periode / f"{kode}.xlsx"
+
+
+def ambil_xlsx(sesi: requests.Session, file_path: str, kode: str,
+               tahun: int, periode: str) -> bytes:
+    """Isi XLSX — dari arsip cakram kalau ada, kalau tidak baru diunduh.
+
+    Ini yang membuat penambahan ruas di kemudian hari tak berbiaya jaringan
+    sama sekali: jalankan ulang dengan `--paksa`, seluruh berkas dibaca dari
+    cakram, tak satu pun permintaan keluar.
+    """
+    berkas = jalur_arsip(kode, tahun, periode)
+    if berkas.exists() and berkas.stat().st_size > 0:
+        return berkas.read_bytes()
+    konten = unduh_xlsx(sesi, file_path)
+    try:
+        berkas.parent.mkdir(parents=True, exist_ok=True)
+        berkas.write_bytes(konten)
+    except OSError as e:  # cakram penuh / izin -- panen JANGAN ikut gagal
+        print(f" [arsip gagal: {e}]", end="")
+    return konten
+
+
 def unduh_xlsx(sesi: requests.Session, file_path: str) -> bytes:
     url = HOST + urllib.parse.quote(file_path)
     galat: Exception | None = None
@@ -487,7 +527,7 @@ def main() -> int:
             continue
 
         try:
-            konten = unduh_xlsx(sesi, att["File_Path"])
+            konten = ambil_xlsx(sesi, att["File_Path"], kode, args.tahun, args.periode)
             wb = load_workbook(io.BytesIO(konten), data_only=True, read_only=True)
             data_periode, currency = ekstrak(wb)
             wb.close()

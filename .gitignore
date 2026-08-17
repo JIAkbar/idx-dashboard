@@ -39,3 +39,9 @@ arus-pasar/keluaran-uji/
 # ≈ 40 MB, tiap berkas ≈ 40 KB — jauh di bawah ambang GitHub (peringatan 50
 # MiB/berkas, repo ideal <1 GB). Yang perlu ditinjau nanti bukan ukurannya
 # hari ini, tapi pertumbuhan hariannya: riwayat git tak pernah menyusut.
+
+# Arsip berkas MENTAH hasil panen (XLSX laporan keuangan IDX, dll).
+# Sengaja tak masuk git: ratusan MB tak perlu ikut tiap kloning. Tapi WAJIB
+# tetap ada di cakram -- yang mahal itu mengambilnya, bukan menyimpannya.
+# Lihat komentar ARSIP_MENTAH di scripts/panen_keuangan_idx.py.
+_arsip-mentah/
