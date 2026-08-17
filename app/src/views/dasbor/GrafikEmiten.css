@@ -60,15 +60,49 @@
 
 /* Bungkus kanvas + tanda PAPAN — lihat komentar di GrafikEmiten.tsx dekat
    attributionLogo:false: ini pengganti logo TradingView yang dimatikan,
-   bukan hiasan lepas. position:relative di sini (bukan di .grf-chart-wrap
-   sendiri) supaya elemen yang dikelola lightweight-charts tak ikut disentuh. */
+   bukan hiasan lepas. Atribusi lisensinya sendiri ada di kaki situs global
+   (DasborLayout.tsx), bukan di sini. position:relative di sini (bukan di
+   .grf-chart-wrap sendiri) supaya elemen yang dikelola lightweight-charts
+   tak ikut disentuh. */
 .lantai .grf-kanvas-bungkus { position: relative; }
+/* Johan (putaran kedua): "terpampang nyata" — watermark BESAR (112px) di
+   TENGAH kanvas, bukan pojok kiri bawah kecil (26px) seperti versi
+   pertama. Pojok kiri bawah dibuang karena di ukuran besar ia menabrak
+   label sumbu waktu (Sep/Okt/Nov…) DAN batang volume, yang keduanya
+   memang hidup di situ. Tengah dipilih karena posisi itu (a) selalu ada di
+   dalam area lilin harga, bukan di pinggir yang ditempati furnitur chart
+   lain, dan (b) pola yang sama dipakai watermark simbol TradingView asli
+   yang dijadikan acuan.
+   `top:35%` (bukan 50%) sengaja: `.grf-chart-wrap` tingginya TETAP (460px)
+   berapa pun pane aktif — RSI/MACD menyusutkan proporsi pane harga di
+   dalam tinggi itu, bukan menambah tinggi total. Dihitung dari margin
+   priceScale pane harga (candle 8%–74%, volume mulai 82%) untuk tiga
+   kombinasi pane (harga saja / +1 indikator / +2 indikator via
+   stretchFactor 3:1.1:1.1 di GrafikEmiten.tsx): 35% dari tinggi total
+   selalu jatuh di atas awal batang volume di ketiganya — 50% TIDAK (di
+   kombinasi harga+2-indikator, 50% sudah masuk zona volume). */
 .lantai .grf-tanda-papan {
-  position: absolute; left: 10px; bottom: 10px; width: 26px; height: 26px;
-  opacity: 0.16; pointer-events: none; user-select: none;
+  position: absolute; left: 50%; top: 35%; width: 112px; height: 112px;
+  transform: translate(-50%, -50%);
+  opacity: 0.24; pointer-events: none; user-select: none;
+  transition: opacity 0.2s ease;
 }
-
-/* Baris atribusi lisensi — kecil tapi WAJIB terlihat, lihat komentar di JSX. */
-.lantai .grf-atribusi { margin: 8px 0 0; font-size: 10.5px; color: var(--text3); }
-.lantai .grf-atribusi a { color: var(--text3); text-decoration: underline; }
-.lantai .grf-atribusi a:hover { color: var(--amber); }
+/* Johan: tegaskan "ini produk asli kami" pas kanvasnya sedang dipakai —
+   diam-diam halus, menguat saat kursor masuk wadah grafik. Hover dipasang
+   di WADAH (.grf-kanvas-bungkus), bukan di tandanya sendiri: tandanya
+   pointer-events:none jadi tak pernah menerima event hover-nya sendiri. */
+.lantai .grf-kanvas-bungkus:hover .grf-tanda-papan { opacity: 0.7; }
+@media (prefers-reduced-motion: reduce) {
+  .lantai .grf-tanda-papan { transition: none; }
+}
+/* Telepon tak punya hover — keadaan diam sedikit lebih pekat daripada versi
+   desktop (0.24) sebagai gantinya, bukan menunggu sentuhan yang lepas lagi
+   begitu jari diangkat. */
+@media (hover: none) {
+  .lantai .grf-tanda-papan { opacity: 0.34; }
+}
+/* Diperkecil di layar sempit (breakpoint 700px, sama dengan .grf-chart-wrap
+   di atas) — 112px di kanvas 340px tinggi akan menutup separuh lilin. */
+@media (max-width: 700px) {
+  .lantai .grf-tanda-papan { width: 64px; height: 64px; }
+}

@@ -81,7 +81,16 @@ export function DasborLayout() {
             <footer className="dasbor-kaki">
               <span>
                 Sumber data: <b>Statistik Ringkas IDX</b> (idx.co.id), Yahoo Finance, dan KSEI.
-                PAPAN (Pusat Analisa Pasar Nusantara) bukan produk resmi Bursa Efek Indonesia.
+                {/* Klausa atribusi WAJIB lisensi Apache 2.0 lightweight-charts
+                    (dipakai /grafik) — README-nya mensyaratkan tautan nyata ke
+                    tradingview.com di halaman situs yang terlihat pengguna.
+                    Sengaja di KAKI GLOBAL (bukan di halaman /grafik sendiri,
+                    lihat riwayat commit) supaya halaman chart-nya tetap terbaca
+                    sebagai produk PAPAN. Jangan hapus tautan ini. */}
+                {' '}Grafik memakai Lightweight Charts™ (
+                <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer"
+                  style={{ color: 'var(--text2)' }}>TradingView</a>
+                ). PAPAN (Pusat Analisa Pasar Nusantara) bukan produk resmi Bursa Efek Indonesia.
               </span>
               {/* "Buletin analisa: Arus Pasar" DIBUANG (16 Agu): tempatnya di
                   pojok kanan bawah kini ditempati tombol Tanya PAPAN yang

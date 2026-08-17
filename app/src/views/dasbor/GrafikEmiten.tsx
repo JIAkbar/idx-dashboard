@@ -443,7 +443,10 @@ export function GrafikEmiten() {
               containerRef dengan kanvasnya sendiri; tanda PAPAN dipasang
               sebagai SAUDARA di bungkus ini (bukan anak containerRef) supaya
               React tak pernah rebutan anak elemen dengan DOM yang dikelola
-              lightweight-charts secara imperatif. */}
+              lightweight-charts secara imperatif. Hover DI WADAH INI
+              (bukan di tanda sendiri — tandanya pointer-events:none, tak
+              bisa di-hover) yang mempertegas tanda lewat CSS
+              `.grf-kanvas-bungkus:hover .grf-tanda-papan` di GrafikEmiten.css. */}
           <div className="grf-kanvas-bungkus">
             {/* Kanvas SELALU dipasang dengan ukuran final sejak awal (opacity,
                 bukan display:none) — lihat komentar .grf-chart-wrap.memuat di
@@ -452,18 +455,26 @@ export function GrafikEmiten() {
             <div ref={containerRef} className={'grf-chart-wrap' + (berkas ? '' : ' memuat')} />
             {/* Tanda PAPAN — pengganti logo TradingView yang dimatikan lewat
                 attributionLogo:false di atas (lihat komentar lisensi di situ).
-                Pakai favicon.svg yang sudah ada (bukan gambar baru), watermark
-                halus pojok kiri bawah, tak menghalangi kursor/crosshair. */}
-            <img src="/favicon.svg" alt="" className="grf-tanda-papan" />
+                Atribusi lisensinya sendiri PINDAH ke kaki situs global
+                (DasborLayout.tsx), BUKAN dihapus — lihat komentar di sana.
+                Bentuknya SAMA dengan favicon.svg yang sudah ada (bukan
+                lambang baru) — ditulis ulang sebagai SVG inline (bukan
+                <img src="/favicon.svg">) supaya warnanya bisa ikut token
+                tema (--amber/--amber-ink) alih-alih heksadesimal tetap
+                bawaan berkas SVG-nya. Watermark BESAR (lihat ukuran di CSS,
+                Johan minta "terpampang nyata") di TENGAH kanvas — bukan
+                pojok kiri bawah seperti versi pertama, karena di ukuran
+                besar pojok itu menabrak label sumbu waktu & batang volume.
+                Menguat saat wadahnya di-hover (lihat CSS), tak menghalangi
+                kursor/crosshair. */}
+            <svg className="grf-tanda-papan" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+              <rect x="4" y="4" width="56" height="56" rx="10" fill="var(--amber)" />
+              <text x="32" y="33" textAnchor="middle" dominantBaseline="central"
+                fontFamily="Consolas, 'Cascadia Mono', ui-monospace, monospace"
+                fontSize="38" fontWeight="700" fill="var(--amber-ink)">P</text>
+              <rect x="4" y="31" width="56" height="2" fill="var(--amber-ink)" opacity="0.32" />
+            </svg>
           </div>
-
-          {/* Atribusi WAJIB lisensi Apache 2.0 lightweight-charts — lihat
-              komentar attributionLogo di atas. Harus TERLIHAT tanpa diklik,
-              bukan disembunyikan di balik panduan yang bisa ditutup. */}
-          <p className="grf-atribusi">
-            Grafik digambar dengan Lightweight Charts™ dari{' '}
-            <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">TradingView</a>.
-          </p>
 
           <details className="grf-panduan">
             <summary><IkonMenu d={IKON_INFO} size={12} /> Apa arti indikator-indikator ini?</summary>
