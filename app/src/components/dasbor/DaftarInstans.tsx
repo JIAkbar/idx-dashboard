@@ -56,18 +56,35 @@ export interface DaftarInstans<J extends string> {
 export function useDaftarInstans<J extends string>(
   paramSpek: (jenis: J) => SpekParam[],
   jumlahLilin: number,
+  /**
+   * Batasi satu instans per jenis. Dipakai POLA, tidak dipakai indikator, dan
+   * bedanya mendasar: `MA 20` + `MA 200` dua garis berbeda yang berguna
+   * bersamaan, sedangkan dua Double Bottom cuma menggambar hal yang sama dua
+   * kali di atas dirinya sendiri — daftar temuannya tercetak dobel, penanda
+   * di kanvas dobel, garis lehernya dobel. Johan 17 Agu 2026, setelah
+   * melihatnya di layar: "untuk pola hanya bisa masukin 1x saja, tapi untuk
+   * indikator boleh berkali-kali".
+   */
+  satuPerJenis = false,
 ): DaftarInstans<J> {
   const [daftar, setDaftar] = useState<Array<Instans<J>>>([])
   const [teks, setTeks] = useState<Record<string, string>>({})
 
   const gantiSemua = useCallback((baru: Array<Instans<J>>) => {
-    setDaftar(baru)
+    // Template lama bisa memuat lebih dari satu instans sejenis (disimpan
+    // sebelum batas ini ada). Disaring di sini juga, bukan cuma di `tambah` —
+    // kalau tidak, batasnya bisa dilangkahi lewat pintu belakang template.
+    setDaftar(satuPerJenis
+      ? baru.filter((x, i) => baru.findIndex((y) => y.jenis === x.jenis) === i)
+      : baru)
     setTeks({})
-  }, [])
+  }, [satuPerJenis])
 
   const tambah = useCallback((jenis: string) => {
-    setDaftar((list) => [...list, buatInstans(jenis as J, paramSpek(jenis as J), idBaru(), list.length)])
-  }, [paramSpek])
+    setDaftar((list) => (satuPerJenis && list.some((x) => x.jenis === jenis)
+      ? list
+      : [...list, buatInstans(jenis as J, paramSpek(jenis as J), idBaru(), list.length)]))
+  }, [paramSpek, satuPerJenis])
 
   const hapus = useCallback((id: string) => {
     setDaftar((list) => list.filter((x) => x.id !== id))

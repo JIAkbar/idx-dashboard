@@ -3,6 +3,10 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 export interface OpsiDropdown {
   nilai: string
   label: string
+  /** Tetap TERLIHAT tapi tak bisa dipilih. Menyembunyikannya begitu saja
+   *  membuat menu menyusut tanpa keterangan — pembaca tak tahu pilihannya
+   *  hilang karena sudah dipakai atau karena ia salah ingat. */
+  nonaktif?: boolean
 }
 
 interface DropdownProps {
@@ -142,6 +146,8 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
             type="button"
             role="option"
             aria-selected={o.nilai === nilai}
+            aria-disabled={o.nonaktif || undefined}
+            disabled={o.nonaktif}
             className={`dd-it${o.nilai === nilai ? ' sel' : ''}`}
             onClick={() => {
               onGanti(o.nilai)

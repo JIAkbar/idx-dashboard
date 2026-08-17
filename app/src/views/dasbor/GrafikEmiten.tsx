@@ -9,15 +9,17 @@ import {
   keDataLilinVolume, batasBawahRentang, potongRentang, RENTANG_GRAFIK, RENTANG_BAWAAN,
   keSeriGaris, SPEK_INDIKATOR, SPEK_POLA, labelInstansIndikator, labelInstansPola,
   hitungInstans, cariDoubleBottom,
+  bacaTemplateTersimpan, tulisTemplateTersimpan, simpanTemplate, hapusTemplate,
+  tandaiBawaan, ubahNamaTemplate,
   type BerkasOhlcEmiten, type DoubleBottom, type JenisIndikator, type JenisPola,
-  type ParamDoubleBottom, type StatusPola,
+  type ParamDoubleBottom, type StatusPola, type TemplateGrafik,
 } from '../../lib/dasbor/grafikEmiten'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { useDaftarInstans, BarisInstans } from '../../components/dasbor/DaftarInstans'
 import { fN } from '../../lib/dasbor/format'
 import { pesanGalat } from '../../lib/pesanGalat'
 import {
-  IkonMenu, IKON_CARI, IKON_SILANG, IKON_GRAFIK_NAIK, IKON_INFO,
+  IkonMenu, IKON_CARI, IKON_SILANG, IKON_GRAFIK_NAIK, IKON_INFO, IKON_TONG,
 } from '../../components/dasbor/IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 import './GrafikEmiten.css'
@@ -35,8 +37,7 @@ const OPSI_INDIKATOR = (Object.keys(SPEK_INDIKATOR) as JenisIndikator[])
  *  tampilan: indikator menghitung satu deret sepanjang data, pola menemukan
  *  kejadian yang bisa nol, satu, atau belasan — dua hal yang di satu menu
  *  akan terbaca seolah sejenis. */
-const OPSI_POLA = (Object.keys(SPEK_POLA) as JenisPola[])
-  .map((jenis) => ({ nilai: jenis, label: SPEK_POLA[jenis].label }))
+const JENIS_POLA = Object.keys(SPEK_POLA) as JenisPola[]
 
 const spekIndikator = (jenis: JenisIndikator) => SPEK_INDIKATOR[jenis].param
 const spekPola = (jenis: JenisPola) => SPEK_POLA[jenis].param
@@ -295,7 +296,18 @@ export function GrafikEmiten() {
 
   // Dua daftar instans, dua dropdown, satu aturan main (lihat DaftarInstans).
   const ind = useDaftarInstans<JenisIndikator>(spekIndikator, lilin.length)
-  const pol = useDaftarInstans<JenisPola>(spekPola, lilin.length)
+  const pol = useDaftarInstans<JenisPola>(spekPola, lilin.length, true)
+
+  // Jenis pola yang sudah ada di daftar tetap TERLIHAT di menu, tapi tak bisa
+  // dipilih lagi — lihat alasan batasnya di useDaftarInstans.
+  const opsiPola = useMemo(() => JENIS_POLA.map((jenis) => {
+    const sudah = pol.daftar.some((x) => x.jenis === jenis)
+    return {
+      nilai: jenis,
+      label: sudah ? `${SPEK_POLA[jenis].label} · sudah ada` : SPEK_POLA[jenis].label,
+      nonaktif: sudah,
+    }
+  }), [pol.daftar])
 
   // Deret tiap instans, dihitung dari `lilin` — SUDAH tersaring
   // hariTanpaPerdagangan lewat keDataLilinVolume di atas, bukan `berkas.d`
@@ -391,6 +403,37 @@ export function GrafikEmiten() {
       }))
     return { waktu, baris }
   }, [waktuSorot, lilin, petaLegenda])
+
+  /* ---------------- Template ---------------- */
+
+  // Dibaca SEKALI lewat penginisialisasi useState — bukan di dalam useEffect
+  // yang jalan sesudah render pertama. Bedanya terasa: dengan useEffect,
+  // halaman sempat tampil kosong dulu lalu tiba-tiba terisi.
+  const [template, setTemplate] = useState<TemplateGrafik[]>(bacaTemplateTersimpan)
+  const [namaTemplate, setNamaTemplate] = useState('')
+  const [namaDiubah, setNamaDiubah] = useState<{ lama: string; teks: string } | null>(null)
+
+  const simpanDaftarTemplate = (baru: TemplateGrafik[]) => {
+    setTemplate(baru)
+    tulisTemplateTersimpan(baru)
+  }
+
+  const muatTemplate = (t: TemplateGrafik) => {
+    ind.gantiSemua(t.indikator)
+    pol.gantiSemua(t.pola)
+    setNamaTemplate(t.nama)
+  }
+
+  // Template bawaan dimuat sendiri saat halaman dibuka (Johan: "sewaktu-waktu
+  // di buka bisa load otomatis template tersebut"). Deps sengaja kosong: ini
+  // sekali seumur mount, bukan tiap kali daftar template berubah — kalau
+  // tidak, menandai bawaan yang lain akan langsung menimpa susunan yang
+  // sedang dikerjakan.
+  const bawaanRef = useRef(template.find((t) => t.bawaan))
+  useEffect(() => {
+    if (bawaanRef.current) muatTemplate(bawaanRef.current)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Gambar pola di kanvas: garis leher mendatar + penanda di lembah, leher,
   // dan lilin penembusnya.
@@ -506,12 +549,77 @@ export function GrafikEmiten() {
           <div className="grf-ind">
             <Dropdown opsi={OPSI_INDIKATOR} nilai="" placeholder="+ Indikator"
               ariaLabel="Tambah indikator" onGanti={ind.tambah} />
-            <Dropdown opsi={OPSI_POLA} nilai="" placeholder="+ Pola"
+            <Dropdown opsi={opsiPola} nilai="" placeholder="+ Pola"
               ariaLabel="Tambah pola" onGanti={pol.tambah} />
           </div>
 
           <BarisInstans kelola={ind} label={labelInstansIndikator} />
           <BarisInstans kelola={pol} label={labelInstansPola} />
+
+          {/* Template: menyimpan susunan indikator + pola dengan nama, dan
+              memuatnya kembali. Disimpan di localStorage — alasannya panjang
+              dan ada di grafikEmiten.ts (ringkasnya: ini preferensi tampilan,
+              bukan data bersama). */}
+          <div className="grf-template">
+            <div className="grf-template-simpan">
+              <input className="inp grf-template-nama" value={namaTemplate}
+                placeholder="Nama template…" aria-label="Nama template"
+                onChange={(e) => setNamaTemplate(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && namaTemplate.trim()) {
+                    simpanDaftarTemplate(simpanTemplate(template, namaTemplate, ind.daftar, pol.daftar))
+                  }
+                }} />
+              <button type="button" className="bchip bchip-klik"
+                disabled={!namaTemplate.trim()}
+                title={template.some((t) => t.nama === namaTemplate.trim())
+                  ? 'Timpa template dengan susunan sekarang'
+                  : 'Simpan susunan sekarang sebagai template baru'}
+                onClick={() => simpanDaftarTemplate(simpanTemplate(template, namaTemplate, ind.daftar, pol.daftar))}>
+                {template.some((t) => t.nama === namaTemplate.trim()) ? 'Timpa' : 'Simpan'}
+              </button>
+            </div>
+
+            {template.length > 0 && (
+              <ul className="grf-template-daftar">
+                {template.map((t) => (
+                  <li key={t.nama} className="grf-template-baris">
+                    {namaDiubah?.lama === t.nama ? (
+                      <input className="inp grf-template-nama" autoFocus value={namaDiubah.teks}
+                        aria-label={`Nama baru untuk ${t.nama}`}
+                        onChange={(e) => setNamaDiubah({ lama: t.nama, teks: e.target.value })}
+                        onBlur={() => {
+                          simpanDaftarTemplate(ubahNamaTemplate(template, t.nama, namaDiubah.teks))
+                          setNamaDiubah(null)
+                        }}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') e.currentTarget.blur() }} />
+                    ) : (
+                      <button type="button" className="bchip bchip-klik grf-template-muat"
+                        title={`Muat ${t.nama}`} onClick={() => muatTemplate(t)}>
+                        {t.bawaan && <span className="grf-template-tanda" title="Dimuat otomatis saat halaman dibuka">•</span>}
+                        {t.nama}
+                      </button>
+                    )}
+                    <span className="grf-template-isi">
+                      {t.indikator.length} indikator · {t.pola.length} pola
+                    </span>
+                    <button type="button" className="bchip bchip-klik"
+                      aria-pressed={t.bawaan}
+                      title={t.bawaan ? 'Berhenti memuatnya otomatis' : 'Muat otomatis saat halaman dibuka'}
+                      onClick={() => simpanDaftarTemplate(tandaiBawaan(template, t.nama))}>Bawaan</button>
+                    <button type="button" className="bchip bchip-klik"
+                      title={`Ganti nama ${t.nama}`}
+                      onClick={() => setNamaDiubah({ lama: t.nama, teks: t.nama })}>Ganti nama</button>
+                    <button type="button" className="bchip bchip-klik"
+                      title={`Hapus ${t.nama}`}
+                      onClick={() => simpanDaftarTemplate(hapusTemplate(template, t.nama))}>
+                      <IkonMenu d={IKON_TONG} size={11} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
           {/* Hasil pencarian pola: apa yang ditemukan, di tanggal berapa, dan
               atas dasar apa. Berupa daftar teks di samping gambarnya karena
