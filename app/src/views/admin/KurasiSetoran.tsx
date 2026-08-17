@@ -6,12 +6,14 @@ import {
   hitungMenungguKurasi,
   kurasiSetoran,
   mintaRevisiSetoran,
+  pindahTanggalSetoran,
   setDimuat,
   urlScreenshots,
   type SetoranRow,
   type StatusSetoran,
 } from '../../lib/supabaseEdisi'
-import { IkonMenu, IKON_CENTANG, IKON_PAPAN_KLIP, IKON_PERINGATAN, IKON_SILANG } from '../../components/dasbor/IkonMenu'
+import { alasanBukanHariBursa, todayIsoJakarta } from '../../lib/tanggalBursa'
+import { IkonMenu, IKON_CENTANG, IKON_KALENDER, IKON_PAPAN_KLIP, IKON_PERINGATAN, IKON_SILANG } from '../../components/dasbor/IkonMenu'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
@@ -67,6 +69,8 @@ export function KurasiSetoran() {
   const [sibuk, setSibuk] = useState<Set<string>>(new Set())
   const [tolakTarget, setTolakTarget] = useState<string[] | null>(null)
   const [revisiTarget, setRevisiTarget] = useState<string[] | null>(null)
+  /** Setoran yang sedang dipilihkan tanggal barunya (modal pindah tanggal). */
+  const [pindahTarget, setPindahTarget] = useState<SetoranRow | null>(null)
   const [lightbox, setLightbox] = useState<{ items: GambarLightbox[]; index: number } | null>(null)
   const [toast, setToast] = useState<{ ok: boolean; pesan: string } | null>(null)
   /** Badge kalender DatePicker — tanggal → jumlah menunggu kurasi (90 hari
@@ -187,6 +191,26 @@ export function KurasiSetoran() {
       setToast({ ok: false, pesan: pesanGalat(e, 'Gagal mengubah isi edisi.') })
     } finally {
       tandaiSibuk(paths, false)
+    }
+  }
+
+  /** Pindahkan satu setoran ke tanggal lain — untuk setoran yang masuk di
+   *  tanggal keliru (mis. bursa libur). Bukan tindakan kurasi: status, kredit,
+   *  dan penyetornya tidak berubah, cuma tanggalnya. */
+  async function pindahTanggal(s: SetoranRow, tanggalBaru: string) {
+    tandaiSibuk([s.path], true)
+    try {
+      await pindahTanggalSetoran(s.path, tanggalBaru)
+      setPindahTarget(null)
+      // Tanggal tujuan disebut lengkap: setelah pindah, setorannya HILANG dari
+      // layar ini (yang tampil cuma tanggal panggung), dan menghilang tanpa
+      // keterangan ke mana terbaca sebagai terhapus.
+      setToast({ ok: true, pesan: `${s.ticker} dipindahkan ke ${tanggalBaru} — kredit penyetornya tidak berubah.` })
+      setMuat((m) => m + 1)
+    } catch (e) {
+      setToast({ ok: false, pesan: pesanGalat(e, 'Gagal memindahkan tanggal.') })
+    } finally {
+      tandaiSibuk([s.path], false)
     }
   }
 
@@ -373,14 +397,20 @@ export function KurasiSetoran() {
                       <button type="button" className="dd-btn merah" disabled={proses || s.status === 'dihapus'} onClick={() => setTolakTarget([s.path])}>
                         <IkonMenu d={IKON_SILANG} size={12} /> Hapus
                       </button>
-                      {/* Baris keempat, dipisah garis: tiga tombol di atasnya
-                          menjawab "datanya benar?", yang ini menjawab "masuk
-                          edisi hari ini?" — pertanyaan redaksi, bukan kurasi. */}
+                      {/* Baris kedua, dipisah garis: tiga tombol di atasnya
+                          menjawab "datanya benar?". Dua ini pertanyaan lain —
+                          "masuk edisi hari ini?" (redaksi) dan "tanggalnya
+                          benar?" (koreksi), keduanya bukan kurasi. */}
                       <button type="button" className="dd-btn ks-dimuat" disabled={proses || s.status !== 'disetujui'}
                         title={s.status !== 'disetujui' ? 'Hanya setoran disetujui yang bisa masuk edisi' : undefined}
                         onClick={() => ubahDimuat([s.path], !s.dimuat)}>
                         <IkonMenu d={s.dimuat ? IKON_CENTANG : IKON_SILANG} size={12} />{' '}
                         {s.dimuat ? 'Di edisi' : 'Di luar edisi'}
+                      </button>
+                      <button type="button" className="dd-btn ks-pindah" disabled={proses}
+                        title="Pindahkan setoran ini ke tanggal lain — berkas & barisnya berpindah bersama"
+                        onClick={() => setPindahTarget(s)}>
+                        <IkonMenu d={IKON_KALENDER} size={12} /> Pindah tanggal
                       </button>
                     </div>
                   </div>
@@ -405,6 +435,15 @@ export function KurasiSetoran() {
           varian="revisi"
           onClose={() => setRevisiTarget(null)}
           onKirim={(catatan) => revisi(revisiTarget, catatan)}
+        />
+      )}
+
+      {pindahTarget && (
+        <PindahTanggalModal
+          setoran={pindahTarget}
+          sibuk={sibuk.has(pindahTarget.path)}
+          onClose={() => setPindahTarget(null)}
+          onKirim={(tgl) => pindahTanggal(pindahTarget, tgl)}
         />
       )}
 
@@ -560,6 +599,54 @@ function AturanKurasi() {
         </li>
       </ul>
     </details>
+  )
+}
+
+/**
+ * Modal pemilih tanggal tujuan saat memindahkan setoran.
+ *
+ * Kasus yang melahirkannya: 17 Agu 2026 bursa libur, dua kontributor tetap
+ * menyetor untuk tanggal itu. Setorannya benar, cuma tanggalnya salah — jadi
+ * yang dibutuhkan pemindahan, bukan penghapusan, dan nadanya ikut begitu.
+ */
+function PindahTanggalModal({ setoran, sibuk, onClose, onKirim }: {
+  setoran: SetoranRow
+  sibuk: boolean
+  onClose: () => void
+  onKirim: (tanggalBaru: string) => void
+}) {
+  const [tanggal, setTanggal] = useState(setoran.tanggal)
+  const libur = alasanBukanHariBursa(tanggal)
+  const nama = setoran.profil?.alias || setoran.profil?.email || 'penyetornya'
+
+  return (
+    <ModalKecil label={`Pindahkan ${setoran.ticker} ke tanggal lain?`} onClose={() => { if (!sibuk) onClose() }}>
+      <div style={{ display: 'grid', gap: 12 }}>
+        <p className="muted" style={{ margin: 0, fontSize: 11, lineHeight: 1.6 }}>
+          Berkas dan barisnya berpindah bersama — berkasnya dipindah lebih dulu,
+          dan kalau barisnya gagal ikut, berkasnya dikembalikan. Status kurasi,
+          kredit, dan kepemilikan tidak berubah: setoran ini tetap milik <b>{nama}</b>.
+        </p>
+        <div className="field">
+          <span className="lbl">Tanggal tujuan</span>
+          <DatePicker value={tanggal} onChange={setTanggal} maks={todayIsoJakarta()} ariaLabel="Tanggal tujuan pemindahan" />
+        </div>
+        {libur && tanggal !== setoran.tanggal && (
+          <p className="af-dup" style={{ margin: 0 }}>
+            <IkonMenu d={IKON_PERINGATAN} size={12} />
+            <span>{tanggal} juga bukan hari bursa ({libur.toLowerCase()}).</span>
+          </p>
+        )}
+        <button
+          type="button"
+          className="btn-p"
+          disabled={sibuk || tanggal === setoran.tanggal}
+          onClick={() => onKirim(tanggal)}
+        >
+          {sibuk ? 'Memindahkan…' : tanggal === setoran.tanggal ? 'Pilih tanggal lain dulu' : `Pindahkan ke ${tanggal}`}
+        </button>
+      </div>
+    </ModalKecil>
   )
 }
 

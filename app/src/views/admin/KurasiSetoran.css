@@ -122,12 +122,15 @@
 /* Grid auto-fill(minmax(240px,1fr)) sudah jatuh ke 1 kolom sendiri di layar
    telepon (~380-410px konten) — tidak perlu override media query lagi. */
 
-/* Tombol "masuk edisi" (#138) turun ke barisnya sendiri, dipisah garis: tiga
-   tombol di atasnya menjawab "datanya benar?", yang ini menjawab "masuk edisi
-   hari ini?" — pertanyaan redaksi, bukan kurasi. Dipaksa 100% supaya tidak
-   ikut berdesakan di baris yang sudah penuh. */
-.lantai .ks-aksi .ks-dimuat {
-  flex: 1 0 100%; margin-top: 2px; padding-top: 8px;
+/* Baris kedua, dipisah garis dari tiga tombol kurasi di atasnya: "masuk edisi
+   hari ini?" (#138, pertanyaan redaksi) dan "tanggalnya benar?" (koreksi
+   setoran salah-tanggal) — dua-duanya bukan kurasi. Berbagi satu baris berdua
+   supaya kartunya tidak bertambah tinggi dua kali; garis atasnya tersambung
+   sendiri karena keduanya duduk di baris flex yang sama. */
+.lantai .ks-aksi .ks-dimuat,
+.lantai .ks-aksi .ks-pindah {
+  flex: 1 1 calc(50% - 3px); margin-top: 2px; padding-top: 8px;
   border-top: 1px solid var(--line); border-radius: 0;
 }
 .lantai .ks-aksi .ks-dimuat:not(:disabled) { color: var(--amber); border-color: var(--line); }
+.lantai .ks-aksi .ks-pindah { border-color: var(--line); }

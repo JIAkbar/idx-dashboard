@@ -160,6 +160,81 @@ export async function hapusScreenshot(paths: string[]): Promise<void> {
   if (error) throw error
 }
 
+/** Jalur yang sama, tapi di tanggal lain. Bentuk jalur setoran cuma dua:
+ *  `{tanggal}/{TICKER}-{jenis}.{ext}` (harian) dan
+ *  `bedah/{TICKER}/{tanggal}/{jenis}.{ext}`. Bentuk lain (mis. `radar/`) tidak
+ *  punya baris `setoran`, jadi melemparnya lebih jujur daripada menebak. */
+export function jalurDiTanggal(path: string, tanggalBaru: string): string {
+  const p = path.split('/')
+  const iso = /^\d{4}-\d{2}-\d{2}$/
+  if (iso.test(p[0])) return [tanggalBaru, ...p.slice(1)].join('/')
+  if (p[0] === 'bedah' && iso.test(p[2] ?? '')) return [p[0], p[1], tanggalBaru, ...p.slice(3)].join('/')
+  throw new Error(`Jalur "${path}" tidak berpola tanggal — tak bisa dipindahkan.`)
+}
+
+/**
+ * Pindahkan satu setoran ke tanggal lain (superadmin) — untuk setoran yang
+ * masuk di tanggal keliru, mis. hari bursa libur.
+ *
+ * TANGGALNYA IKUT TERTANAM DI JALUR BERKAS, jadi ini bukan sekadar `UPDATE
+ * setoran SET tanggal`. Kalau cuma barisnya yang diubah, `path`-nya masih
+ * menunjuk folder tanggal lama dan kartunya jadi bergambar rusak — kelas cacat
+ * yang sudah pernah terjadi di proyek ini (lihat `hapusScreenshot`).
+ *
+ * Urutannya, dan alasan tiap langkah:
+ *   1. Bentrok diperiksa DULU, sebelum apa pun disentuh. Menimpa setoran orang
+ *      lain berarti menghapus kerjanya tanpa dia tahu.
+ *   2. Berkas dipindah lebih dulu — inilah satu-satunya langkah yang BISA
+ *      DIBATALKAN. Baris yang sudah berubah tak punya jalan pulang yang aman
+ *      kalau berkasnya ternyata tak bisa ikut.
+ *   3. Baris menyusul, dan hasilnya DIPERIKSA: RLS yang menolak UPDATE tidak
+ *      melempar galat, ia menyaring barisnya dan hasilnya "sukses" dengan nol
+ *      baris terpengaruh. Sudah pernah kejadian di proyek ini.
+ *   4. Baris gagal → berkas dikembalikan ke jalur lama. Tanpa ini, berkas dan
+ *      baris berpisah dan tak ada yang tahu.
+ *
+ * `penyetor` sengaja tidak disentuh: yang berpindah tanggalnya, bukan
+ * kepemilikannya. Begitu juga `status`/`dimuat` — memindahkan tanggal bukan
+ * tindakan kurasi.
+ */
+export async function pindahTanggalSetoran(path: string, tanggalBaru: string): Promise<string> {
+  const pathBaru = jalurDiTanggal(path, tanggalBaru)
+  if (pathBaru === path) throw new Error('Setoran ini sudah ada di tanggal itu.')
+
+  const { data: bentrok, error: galatCek } = await supabase
+    .from('setoran').select('ticker,jenis').eq('path', pathBaru).maybeSingle()
+  if (galatCek) throw galatCek
+  if (bentrok) {
+    const b = bentrok as { ticker: string; jenis: JenisSetoran }
+    throw new Error(`${b.ticker} (${b.jenis}) sudah punya setoran di ${tanggalBaru} — pindahkan atau hapus yang di sana dulu.`)
+  }
+
+  const { error: galatPindah } = await supabase.storage.from('screenshots').move(path, pathBaru)
+  if (galatPindah) throw new Error(`[tahap: pindah berkas] ${galatPindah.message}`)
+
+  const { data: terubah, error: galatBaris } = await supabase
+    .from('setoran')
+    .update({ tanggal: tanggalBaru, path: pathBaru })
+    .eq('path', path)
+    .select('path')
+
+  const gagal = galatBaris
+    ?? ((terubah ?? []).length === 0
+      ? new Error('Barisnya tidak berubah — setoran ini tak ada lagi, atau kamu tidak berhak mengubahnya.')
+      : null)
+  if (gagal) {
+    // Kembalikan berkasnya. Kalau pengembalian ini pun gagal, katakan
+    // jalurnya: berkas yang berpindah sendirian tak akan ketahuan dari layar
+    // mana pun, dan orang yang membereskannya butuh tahu ia ada di mana.
+    const { error: galatPulang } = await supabase.storage.from('screenshots').move(pathBaru, path)
+    if (galatPulang) {
+      throw new Error(`${gagal.message} Berkasnya TIDAK bisa dikembalikan dan sekarang ada di "${pathBaru}" — pindahkan manual ke "${path}".`)
+    }
+    throw gagal
+  }
+  return pathBaru
+}
+
 /** Baris `setoran` untuk satu tanggal (semua jenis/status) — dasar badge
  *  status di AdminHome & daftar kartu halaman Kurasi. */
 export async function daftarSetoran(tanggal: string): Promise<SetoranRow[]> {
