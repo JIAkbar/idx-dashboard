@@ -5,9 +5,10 @@ import {
   SPEK_INDIKATOR, buatInstans, galatNilaiParam, galatInstans, labelInstansIndikator,
   hitungInstans, PALET_INDIKATOR,
   hitungATR, cariPivotRendah, cariPivotTinggi, cariDoubleBottom,
+  hitungOBV, cariLonjakanVolume,
   VERSI_TEMPLATE, uraiTemplate, simpanTemplate, hapusTemplate, tandaiBawaan, ubahNamaTemplate,
   type InstansIndikator, type SpekParam, type LilinData, type ParamDoubleBottom,
-  type TemplateGrafik,
+  type TemplateGrafik, type ParamLonjakanVolume,
 } from './grafikEmiten'
 import type { BarisOhlc } from './ihsgOhlc'
 
@@ -584,5 +585,134 @@ describe('template tak pernah membawa kode emiten', () => {
     expect(lama).toHaveLength(1)
     expect(lama[0].jenisChart).toBeUndefined()
     expect(lama[0].rentang).toBeUndefined()
+  })
+})
+
+/* ---------------- OBV ---------------- */
+
+describe('hitungOBV', () => {
+  it('menambah volume saat tutup naik, mengurangi saat turun, diam saat sama', () => {
+    //        10   11(+)  11(=)  9(-)   12(+)
+    // vol:  100   200    300    400    500
+    // obv:    0   200    200   -200     300
+    expect(hitungOBV([10, 11, 11, 9, 12], [100, 200, 300, 400, 500]))
+      .toEqual([0, 200, 200, -200, 300])
+  })
+  it('titik pertama 0, bukan volume hari itu — arah hari pertama tak bisa ditentukan', () => {
+    expect(hitungOBV([10, 9], [999, 100])).toEqual([0, -100])
+  })
+  it('deret kosong -> array kosong, bukan lemparan galat', () => {
+    expect(hitungOBV([], [])).toEqual([])
+  })
+  it('lewat hitungInstans: OBV tak berparameter dan memakai volume', () => {
+    const inst = buatInstans('obv', SPEK_INDIKATOR.obv.param, 'o', 0)
+    expect(inst.param).toEqual({})
+    expect(labelInstansIndikator(inst)).toBe('OBV')
+    const garis = hitungInstans(inst, [10, 11, 9], [100, 200, 300])
+    expect(garis).toHaveLength(1)
+    expect(garis[0].nilai).toEqual([0, 200, -100])
+  })
+})
+
+/* ---------------- Pola: Lonjakan Volume ---------------- */
+
+const PV: ParamLonjakanVolume = { periode: 5, ambang: 1.5, ambangKuat: 3, naikMin: 2 }
+
+/** Deret datar: harga 100 tiap hari, volume 1.000 tiap hari — pembagi RVOL
+ *  jadi persis 1.000 dan tiap angka di bawah bisa dihitung tangan. */
+function dasarVolume(n: number) {
+  const harga = new Array(n).fill(100)
+  const volume = new Array(n).fill(1_000)
+  return { harga, volume }
+}
+
+describe('cariLonjakanVolume', () => {
+  it('TERKONFIRMASI: harga naik >= ambang persen dan RVOL >= ambang', () => {
+    const { harga, volume } = dasarVolume(10)
+    harga[7] = 103 // +3% dari 100
+    volume[7] = 2_000 // RVOL 2,0
+    const hasil = cariLonjakanVolume(lilinDari(harga), volume, PV)
+    expect(hasil.map((x) => x.status)).toEqual(['terkonfirmasi'])
+    expect(hasil[0].rvol).toBeCloseTo(2, 6)
+    expect(hasil[0].ubahPersen).toBeCloseTo(3, 6)
+    expect(hasil[0].rataVolume).toBeCloseTo(1_000, 6)
+    expect(hasil[0].waktu).toBe('2024-01-08')
+  })
+
+  it('KUAT: RVOL >= ambang kuat ditandai berbeda dari terkonfirmasi biasa', () => {
+    const { harga, volume } = dasarVolume(10)
+    harga[7] = 103
+    volume[7] = 4_000 // RVOL 4,0
+    const hasil = cariLonjakanVolume(lilinDari(harga), volume, PV)
+    expect(hasil.map((x) => x.status)).toEqual(['kuat'])
+    expect(hasil[0].rvol).toBeCloseTo(4, 6)
+  })
+
+  it('TAK TERKONFIRMASI: harga naik tapi volumenya di BAWAH rata-rata', () => {
+    const { harga, volume } = dasarVolume(10)
+    harga[7] = 105 // +5%
+    volume[7] = 400 // RVOL 0,4 — naik tanpa dukungan volume
+    const hasil = cariLonjakanVolume(lilinDari(harga), volume, PV)
+    expect(hasil.map((x) => x.status)).toEqual(['takTerkonfirmasi'])
+    expect(hasil[0].rvol).toBeCloseTo(0.4, 6)
+  })
+
+  it('DITOLAK: volume melonjak tapi harga TURUN — itu keadaan lain', () => {
+    const { harga, volume } = dasarVolume(10)
+    // Turunnya BERTAHAN sampai ujung deret. Kalau cuma satu hari, hari
+    // berikutnya memantul balik ke 100 dan pantulan itu sendiri kenaikan
+    // 6,4% yang sah — yang tertangkap bukan lagi kasus yang sedang diuji.
+    for (let i = 7; i < harga.length; i++) harga[i] = 94 // -6% lalu datar
+    volume[7] = 9_000 // RVOL 9,0
+    expect(cariLonjakanVolume(lilinDari(harga), volume, PV)).toEqual([])
+  })
+
+  it('DITOLAK: kenaikan di bawah ambang persen, sebesar apa pun volumenya', () => {
+    const { harga, volume } = dasarVolume(10)
+    harga[7] = 100.5 // +0,5%, di bawah naikMin 2
+    volume[7] = 9_000
+    expect(cariLonjakanVolume(lilinDari(harga), volume, PV)).toEqual([])
+  })
+
+  it('DITOLAK: naik, volume di atas rata-rata tapi belum sampai ambang', () => {
+    const { harga, volume } = dasarVolume(10)
+    harga[7] = 103
+    volume[7] = 1_200 // RVOL 1,2 — antara 1 dan ambang 1,5
+    expect(cariLonjakanVolume(lilinDari(harga), volume, PV)).toEqual([])
+  })
+
+  it('hari bervolume nol TIDAK merusak rata-rata — ia tak pernah sampai ke sini', () => {
+    // Dibangun dari baris OHLC MENTAH lalu disaring keDataLilinVolume, persis
+    // seperti jalur di komponen. Baris ke-4 hari tanpa perdagangan (volume 0,
+    // harga tak bergerak); kalau ikut terhitung, pembagi RVOL turun dari 1.000
+    // jadi 800 dan RVOL 2,0 di bawah akan terbaca 2,5 — pola yang angkanya
+    // meyakinkan tapi salah.
+    const mentah: BarisOhlc[] = []
+    for (let i = 0; i < 12; i++) {
+      const tgl = `2024-02-${String(i + 1).padStart(2, '0')}`
+      if (i === 3) mentah.push([tgl, 100, 100, 100, 100, 0]) // tanpa perdagangan
+      else mentah.push([tgl, 99, 101, 98, 100, 1_000])
+    }
+    // Hari lonjakan: +3% dengan volume 2.000.
+    mentah[10] = ['2024-02-11', 100, 104, 100, 103, 2_000]
+    const { lilin, volume } = keDataLilinVolume(mentah, 'H', 'M')
+    expect(lilin).toHaveLength(11) // satu baris terbuang
+    const hasil = cariLonjakanVolume(lilin, volume.map((v) => v.value), PV)
+    expect(hasil).toHaveLength(1)
+    expect(hasil[0].rvol).toBeCloseTo(2, 6)
+    expect(hasil[0].rataVolume).toBeCloseTo(1_000, 6)
+  })
+
+  it('rata-rata pembagi TIDAK memasukkan hari itu sendiri', () => {
+    // Kalau hari itu ikut, pembagi jadi (5*1.000 + 6.000)/6 = 1.833 dan RVOL
+    // 6,0 akan terbaca 3,27 — lonjakan diredam oleh dirinya sendiri.
+    const { harga, volume } = dasarVolume(10)
+    harga[7] = 103
+    volume[7] = 6_000
+    expect(cariLonjakanVolume(lilinDari(harga), volume, PV)[0].rvol).toBeCloseTo(6, 6)
+  })
+
+  it('panjang lilin & volume tak sama -> tak ada temuan, bukan angka ngawur', () => {
+    expect(cariLonjakanVolume(lilinDari([1, 2, 3]), [1, 2], PV)).toEqual([])
   })
 })

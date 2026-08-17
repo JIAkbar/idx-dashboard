@@ -259,6 +259,34 @@ export interface TitikGaris {
   value: number
 }
 
+/**
+ * On-Balance Volume — volume hari itu DITAMBAHKAN kalau harga tutup naik,
+ * DIKURANGKAN kalau turun, dan diabaikan kalau sama. Angka mutlaknya tak
+ * berarti apa-apa (bergantung dari mana penjumlahan dimulai); yang dibaca
+ * arahnya.
+ *
+ * Melengkapi pola Lonjakan Volume, bukan mengulanginya: pola itu melihat
+ * SATU hari, OBV menumpuk arah volume sepanjang riwayat — pertanyaan yang
+ * sama pada rentang waktu berbeda, dan satu hari saja bukti yang tipis.
+ *
+ * Titik pertama 0 sebagai titik berangkat (bukan `null`): tanpa hari
+ * sebelumnya, arah hari pertama tak bisa ditentukan, dan menaruh volume hari
+ * itu di sana akan membuat lompatan semu di ujung kiri grafik.
+ */
+export function hitungOBV(tutup: number[], volume: number[]): Array<number | null> {
+  const hasil: Array<number | null> = new Array(tutup.length).fill(null)
+  if (tutup.length === 0) return hasil
+  let obv = 0
+  hasil[0] = 0
+  for (let i = 1; i < tutup.length; i++) {
+    const vol = volume[i] ?? 0
+    if (tutup[i] > tutup[i - 1]) obv += vol
+    else if (tutup[i] < tutup[i - 1]) obv -= vol
+    hasil[i] = obv
+  }
+  return hasil
+}
+
 export function keSeriGaris(waktu: string[], nilai: Array<number | null>): TitikGaris[] {
   const hasil: TitikGaris[] = []
   for (let i = 0; i < nilai.length; i++) {
@@ -275,7 +303,7 @@ export function keSeriGaris(waktu: string[], nilai: Array<number | null>): Titik
  * Johan 17 Agu 2026: "setiap indikator bisa di masukkan berkali-kali".
  * ------------------------------------------------------------------ */
 
-export type JenisIndikator = 'ma' | 'ema' | 'bb' | 'rsi' | 'macd'
+export type JenisIndikator = 'ma' | 'ema' | 'bb' | 'rsi' | 'macd' | 'obv'
 
 /** Satu kolom masukan pada sebuah instans: batas-batasnya ditulis DI SINI,
  *  sekali, dan dipakai bersama oleh validasi, nilai bawaan, dan label kolom
@@ -318,6 +346,9 @@ export const SPEK_INDIKATOR: Record<JenisIndikator, SpekIndikator> = {
     ],
   },
   rsi: { label: 'RSI', diPanelHarga: false, param: [PERIODE(14)] },
+  // OBV tak punya parameter sama sekali — ia menjumlah seluruh riwayat, tak
+  // ada jendela yang bisa disetel. Barisnya di layar cuma nama + sakelar.
+  obv: { label: 'OBV', diPanelHarga: false, param: [] },
   macd: {
     label: 'MACD',
     diPanelHarga: false,
@@ -422,6 +453,7 @@ export function labelInstansIndikator(inst: InstansIndikator): string {
     case 'ema': return `EMA ${p.periode}`
     case 'bb': return `BB ${p.periode}±${p.k}`
     case 'rsi': return `RSI ${p.periode}`
+    case 'obv': return 'OBV'
     case 'macd': return `MACD ${p.cepat}/${p.lambat}/${p.sinyal}`
   }
 }
@@ -440,13 +472,18 @@ export interface GarisIndikator {
 /** Menerjemahkan satu instans jadi deret-deret siap gambar. Semua indikator
  *  masuk lewat pintu ini, jadi komponen tak perlu tahu bahwa BB menghasilkan
  *  tiga deret sementara MA cuma satu. */
-export function hitungInstans(inst: InstansIndikator, tutup: number[]): GarisIndikator[] {
+export function hitungInstans(
+  inst: InstansIndikator,
+  tutup: number[],
+  volume: number[] = [],
+): GarisIndikator[] {
   const p = inst.param
   const label = labelInstansIndikator(inst)
   switch (inst.jenis) {
     case 'ma': return [{ nama: label, nilai: hitungMA(tutup, p.periode) }]
     case 'ema': return [{ nama: label, nilai: hitungEMA(tutup, p.periode) }]
     case 'rsi': return [{ nama: label, nilai: hitungRSI(tutup, p.periode) }]
+    case 'obv': return [{ nama: label, nilai: hitungOBV(tutup, volume) }]
     case 'bb': {
       const bb = hitungBollinger(tutup, p.periode, p.k)
       return [
@@ -477,7 +514,7 @@ export function hitungInstans(inst: InstansIndikator, tutup: number[]): GarisInd
  * label yang diturunkan darinya.
  * ------------------------------------------------------------------ */
 
-export type JenisPola = 'doubleBottom'
+export type JenisPola = 'doubleBottom' | 'lonjakanVolume'
 export type InstansPola = Instans<JenisPola>
 
 export interface SpekPola {
@@ -500,6 +537,15 @@ export const SPEK_POLA: Record<JenisPola, SpekPola> = {
       // titik berangkat yang masih terbaca.
       { kunci: 'jarakMaks', label: 'Jarak maks', bawaan: 60, min: 3, maks: 2000, bulat: true },
       { kunci: 'kedalamanMin', label: 'Kedalaman min ×ATR', bawaan: 3, min: 0.1, maks: 20, bulat: false },
+    ],
+  },
+  lonjakanVolume: {
+    label: 'Lonjakan Volume',
+    param: [
+      { kunci: 'periode', label: 'Periode rata-rata', bawaan: 20, min: 2, maks: 500, bulat: true, bandingLilin: true },
+      { kunci: 'ambang', label: 'Ambang RVOL', bawaan: 1.5, min: 1, maks: 50, bulat: false },
+      { kunci: 'ambangKuat', label: 'Ambang RVOL kuat', bawaan: 3, min: 1, maks: 100, bulat: false },
+      { kunci: 'naikMin', label: 'Kenaikan min %', bawaan: 2, min: 0.1, maks: 50, bulat: false },
     ],
   },
 }
@@ -721,6 +767,100 @@ export function cariDoubleBottom(
   }
 
   return [...terbaik.values()].sort((x, y) => x.iLembah2 - y.iLembah2)
+}
+
+/* ------------------------------------------------------------------ *
+ * Pola: Lonjakan Volume (`lonjakanVolume`). Johan: "tambahkan 1 pola lagi
+ * volume value dimana volume naik, harga ikut naik tapi ada teknikal nya".
+ *
+ * Dasarnya RVOL (relative volume) — volume hari itu dibagi rata-rata volume
+ * `periode` hari SEBELUMNYA. Ambang yang lazim dipakai: 1,5x sebagai batas
+ * minimum konfirmasi sebuah tembusan, 3x ke atas sebagai keikutsertaan besar.
+ * Rujukan: luxalgo.com/blog/how-volume-confirms-breakouts-in-trading,
+ * deepvue.com/technical-analysis/volume-analysis-secrets.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Tiga keadaan yang ditandai, dan yang KETIGA justru yang paling berharga.
+ *
+ * `takTerkonfirmasi` — harga naik berarti tapi volumenya JUSTRU di bawah
+ * rata-rata — wajib ada dan wajib tampil. Menampilkan hanya kenaikan yang
+ * disertai volume akan membuat halaman ini jadi corong sinyal beli; yang
+ * membuatnya jujur justru penanda "naiknya tak didukung volume".
+ */
+export type StatusLonjakan = 'terkonfirmasi' | 'kuat' | 'takTerkonfirmasi'
+
+export interface LonjakanVolume {
+  i: number
+  waktu: string
+  /** Volume hari itu dibagi rata-rata `periode` hari sebelumnya. */
+  rvol: number
+  /** Perubahan harga tutup terhadap hari sebelumnya, dalam persen. */
+  ubahPersen: number
+  volume: number
+  rataVolume: number
+  status: StatusLonjakan
+}
+
+export interface ParamLonjakanVolume {
+  periode: number
+  ambang: number
+  ambangKuat: number
+  naikMin: number
+}
+
+/**
+ * Mencari hari-hari yang volumenya menonjol dibanding kebiasaannya sendiri.
+ *
+ * Rata-rata pembagi diambil dari `periode` hari SEBELUM hari itu, bukan
+ * termasuk hari itu: dimasukkan, lonjakan hari ini ikut mengangkat
+ * pembaginya sendiri dan RVOL-nya jadi lebih kecil dari yang sebenarnya —
+ * makin besar lonjakannya, makin besar peredamannya.
+ *
+ * `lilin` dan `volume` WAJIB yang sudah tersaring `hariTanpaPerdagangan`
+ * (lewat `keDataLilinVolume`). Di pola ini akibatnya lebih tajam daripada di
+ * indikator: hari bervolume nol yang ikut terhitung akan MENURUNKAN
+ * pembaginya dan melahirkan RVOL palsu yang besar — pola yang tak pernah
+ * terjadi, dilaporkan dengan angka yang meyakinkan.
+ */
+export function cariLonjakanVolume(
+  lilin: LilinData[],
+  volume: number[],
+  p: ParamLonjakanVolume,
+): LonjakanVolume[] {
+  const hasil: LonjakanVolume[] = []
+  if (lilin.length !== volume.length) return hasil
+  for (let i = Math.max(1, p.periode); i < lilin.length; i++) {
+    let jumlah = 0
+    for (let j = i - p.periode; j < i; j++) jumlah += volume[j]
+    const rata = jumlah / p.periode
+    if (rata <= 0) continue
+    const rvol = volume[i] / rata
+    const tutupKemarin = lilin[i - 1].close
+    if (tutupKemarin <= 0) continue
+    const ubahPersen = ((lilin[i].close - tutupKemarin) / tutupKemarin) * 100
+
+    // Kenaikan harga yang BERARTI adalah syarat masuk ketiga keadaan. Tanpa
+    // ambang itu, tiap kenaikan setengah tick bervolume tipis ikut ditandai
+    // dan yang tersisa cuma kanvas penuh penanda tanpa isi.
+    if (ubahPersen < p.naikMin) continue
+
+    let status: StatusLonjakan
+    if (rvol >= p.ambangKuat) status = 'kuat'
+    else if (rvol >= p.ambang) status = 'terkonfirmasi'
+    else if (rvol < 1) status = 'takTerkonfirmasi'
+    // Di antara 1 dan ambang: naik, volumenya di atas rata-rata tapi belum
+    // sampai ambang konfirmasi. Tak masuk keadaan mana pun — menyebutnya
+    // terkonfirmasi berarti menurunkan ambang diam-diam, menyebutnya tak
+    // terkonfirmasi tidak benar karena volumenya memang di atas rata-rata.
+    else continue
+
+    hasil.push({
+      i, waktu: lilin[i].time, rvol, ubahPersen,
+      volume: volume[i], rataVolume: rata, status,
+    })
+  }
+  return hasil
 }
 
 /* ------------------------------------------------------------------ *

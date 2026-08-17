@@ -10,11 +10,12 @@ import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import {
   keDataLilinVolume, batasBawahRentang, potongRentang, RENTANG_GRAFIK, RENTANG_BAWAAN,
   keSeriGaris, SPEK_INDIKATOR, SPEK_POLA, labelInstansIndikator, labelInstansPola,
-  hitungInstans, cariDoubleBottom,
+  hitungInstans, cariDoubleBottom, cariLonjakanVolume,
   bacaTemplateTersimpan, tulisTemplateTersimpan, simpanTemplate, hapusTemplate,
   tandaiBawaan, ubahNamaTemplate,
   type BerkasOhlcEmiten, type DoubleBottom, type JenisIndikator, type JenisPola,
-  type ParamDoubleBottom, type StatusPola, type TemplateGrafik,
+  type ParamDoubleBottom, type ParamLonjakanVolume, type StatusPola, type StatusLonjakan,
+  type LonjakanVolume, type TemplateGrafik,
 } from '../../lib/dasbor/grafikEmiten'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { useDaftarInstans, BarisInstans } from '../../components/dasbor/DaftarInstans'
@@ -93,6 +94,23 @@ const WARNA_STATUS: Record<StatusPola, string> = {
   batal: '--text3',
 }
 
+/** Keterangan tiga keadaan Lonjakan Volume — menjelaskan apa yang DIUKUR,
+ *  bukan apa yang harus dilakukan. */
+const ARTI_LONJAKAN: Record<StatusLonjakan, string> = {
+  terkonfirmasi: 'harga naik dan volumenya di atas ambang RVOL',
+  kuat: 'sama, tapi RVOL-nya melewati ambang kuat — keikutsertaan besar',
+  takTerkonfirmasi: 'harga naik tapi volumenya justru DI BAWAH rata-rata',
+}
+
+/** Warna keadaan Lonjakan Volume. `takTerkonfirmasi` sengaja abu netral, bukan
+ *  hijau: ia menandai kenaikan yang TIDAK didukung volume, dan hijau di
+ *  halaman ini terbaca sebagai kabar baik. */
+const WARNA_LONJAKAN: Record<StatusLonjakan, string> = {
+  terkonfirmasi: '--blue',
+  kuat: '--amber',
+  takTerkonfirmasi: '--text3',
+}
+
 const PANDUAN_INDIKATOR: Array<{ label: string; teks: string }> = [
   { label: 'MA (Moving Average)',
     teks: 'Rata-rata harga tutup selama sekian hari terakhir, diperbarui tiap hari. Mengikuti arah harga dengan jeda — makin panjang periodenya, makin lambat mengikuti.' },
@@ -119,6 +137,12 @@ const PANDUAN_POLA: Array<{ label: string; teks: string }> = [
     teks: `Terbentuk — ${ARTI_STATUS.terbentuk}. Terkonfirmasi — ${ARTI_STATUS.terkonfirmasi}. Batal — ${ARTI_STATUS.batal}. Ketiganya ditampilkan; yang batal justru keterangan paling berguna tentang seberapa sering bentuk itu tidak berlanjut.` },
   { label: 'Volume saat menembus leher',
     teks: 'Ditandai terpisah sebagai penguat, bukan syarat. Dijadikan syarat wajib, ia membuang pola yang bentuk harganya sudah lengkap hanya karena ruas volume hari itu kebetulan sepi — dan ruas volume adalah ruas yang paling sering cacat.' },
+  { label: 'Lonjakan Volume — apa yang diukur',
+    teks: 'RVOL (relative volume) membandingkan volume hari itu dengan rata-rata volume 20 hari sebelumnya. RVOL 2 berarti hari itu diperdagangkan dua kali lebih ramai dari kebiasaannya sendiri. Rata-rata pembaginya sengaja tidak memasukkan hari itu — dimasukkan, lonjakannya ikut mengangkat pembaginya sendiri dan angkanya jadi lebih kecil dari yang sebenarnya.' },
+  { label: 'Tiga keadaan Lonjakan Volume',
+    teks: `Terkonfirmasi — ${ARTI_LONJAKAN.terkonfirmasi}. Kuat — ${ARTI_LONJAKAN.kuat}. Tak terkonfirmasi — ${ARTI_LONJAKAN.takTerkonfirmasi}. Kenaikan harga tanpa kenaikan volume berarti sedikit pihak yang ikut; keadaan ketiga itu justru yang membuat daftar ini bukan sekadar kumpulan hari yang menyenangkan.` },
+  { label: 'OBV melengkapi, bukan mengulang',
+    teks: 'Pola Lonjakan Volume melihat SATU hari. Indikator OBV (On-Balance Volume, ada di dropdown Indikator) menumpuk arah volume sepanjang riwayat: ditambah saat harga tutup naik, dikurangi saat turun. Angka mutlaknya tak berarti — yang dibaca arahnya. Satu hari saja bukti yang tipis.' },
 ]
 
 /**
@@ -211,6 +235,9 @@ export function GrafikEmiten() {
   // begitu pembaca menggeser atau memperbesar sumbu waktunya.
   const garisLeherRef = useRef<IPriceLine[]>([])
   const penandaRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null)
+  // Penanda pola berbasis volume duduk di seri VOLUME — plugin sendiri,
+  // supaya tak berebut tempat dengan penanda pola berbasis harga.
+  const penandaVolRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null)
   // Watermark kode emiten di latar area harga. Dipakai plugin BAWAAN
   // lightweight-charts v5 (`createTextWatermark`) — sudah menggambar di
   // lapisan kanvas yang benar, di belakang lilin, dan ikut berpindah sendiri
@@ -279,6 +306,7 @@ export function GrafikEmiten() {
     vol.priceScale().applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } })
     chartRef.current = chart
     volRef.current = vol
+    penandaVolRef.current = createSeriesMarkers(vol, [])
     const pane0 = chart.panes()[0]
     if (pane0) watermarkRef.current = createTextWatermark(pane0, { horzAlign: 'center', vertAlign: 'center', lines: [] })
     // Hook QA dev-only — verifikasi zoom/geser butuh rentang waktu yang
@@ -301,6 +329,7 @@ export function GrafikEmiten() {
       hargaRef.current = null
       volRef.current = null
       penandaRef.current = null
+      penandaVolRef.current = null
     }
   }, [])
 
@@ -455,21 +484,33 @@ export function GrafikEmiten() {
   const garisPerInstans = useMemo(() => {
     const tutup = lilin.map((l) => l.close)
     const waktu = lilin.map((l) => l.time)
+    const vol = volume.map((v) => v.value)
     return ind.daftar.map((inst) => ({
       inst,
-      garis: hitungInstans(inst, tutup).map((g) => ({ ...g, seri: keSeriGaris(waktu, g.nilai) })),
+      garis: hitungInstans(inst, tutup, vol).map((g) => ({ ...g, seri: keSeriGaris(waktu, g.nilai) })),
     }))
-  }, [ind.daftar, lilin])
+  }, [ind.daftar, lilin, volume])
 
   // Temuan pola per instans. Sama seperti indikator: dihitung dari `lilin`
   // yang sudah tersaring, bukan dari `berkas.d` mentah — kalau tidak, indeks
   // lembah yang ditemukan menunjuk lilin yang berbeda dari yang tergambar.
-  const polaPerInstans = useMemo(() => pol.daftar.map((inst) => ({
-    inst,
-    temuan: inst.jenis === 'doubleBottom'
-      ? cariDoubleBottom(lilin, volume.map((v) => v.value), inst.param as unknown as ParamDoubleBottom)
-      : ([] as DoubleBottom[]),
-  })), [pol.daftar, lilin, volume])
+  const polaPerInstans = useMemo(() => {
+    const vol = volume.map((v) => v.value)
+    // Dua jenis pola disimpan di dua ruas terpisah, bukan satu array bertipe
+    // gabungan: bentuk temuannya memang berbeda (Double Bottom punya dua
+    // lembah dan sebuah leher, Lonjakan Volume punya satu hari dan sebuah
+    // rasio), dan memaksanya jadi satu bentuk cuma memindahkan percabangan
+    // ke tiap pembacanya.
+    return pol.daftar.map((inst) => ({
+      inst,
+      doubleBottom: inst.jenis === 'doubleBottom'
+        ? cariDoubleBottom(lilin, vol, inst.param as unknown as ParamDoubleBottom)
+        : ([] as DoubleBottom[]),
+      lonjakan: inst.jenis === 'lonjakanVolume'
+        ? cariLonjakanVolume(lilin, vol, inst.param as unknown as ParamLonjakanVolume)
+        : ([] as LonjakanVolume[]),
+    }))
+  }, [pol.daftar, lilin, volume])
 
   // Peta waktu->nilai per garis, dipakai legenda (lookup langsung, tak perlu
   // scan array tiap kursor bergeser). Histogram tak masuk legenda — angkanya
@@ -649,8 +690,22 @@ export function GrafikEmiten() {
     garisLeherRef.current = []
 
     const penanda: Array<SeriesMarker<Time>> = []
-    for (const { inst, temuan } of polaPerInstans) {
+    // Penanda Lonjakan Volume dipasang di seri VOLUME, bukan seri harga:
+    // di seri harga ia berebut tempat dengan penanda Double Bottom, dan di
+    // bawah batang volume justru di situ angkanya berarti.
+    const penandaVolume: Array<SeriesMarker<Time>> = []
+    for (const { inst, doubleBottom, lonjakan } of polaPerInstans) {
       if (!inst.tampil) continue
+      for (const lv of lonjakan.slice(-MAKS_PENANDA_POLA)) {
+        penandaVolume.push({
+          time: lv.waktu, position: 'belowBar', shape: 'circle',
+          color: baca(WARNA_LONJAKAN[lv.status]),
+          // Angka RVOL ikut di label — itu yang membuat penandanya bisa
+          // DIPERIKSA, bukan dipercaya.
+          text: `${fN(lv.rvol, 1)}×`,
+        })
+      }
+      const temuan = doubleBottom
       for (const db of temuan.slice(-MAKS_PENANDA_POLA)) {
         const warna = baca(WARNA_STATUS[db.status])
         penanda.push(
@@ -686,9 +741,13 @@ export function GrafikEmiten() {
     // urutan itu sebagian penanda diam-diam tak digambar.
     penanda.sort((a, b) => String(a.time).localeCompare(String(b.time)))
     penandaRef.current?.setMarkers(penanda)
+    penandaVolume.sort((a, b) => String(a.time).localeCompare(String(b.time)))
+    penandaVolRef.current?.setMarkers(penandaVolume)
 
     // Angka terukur buat verifikasi/QA — kanvas tak punya DOM per-penanda.
-    el.dataset.polaDitemukan = String(polaPerInstans.reduce((n, x) => n + x.temuan.length, 0))
+    el.dataset.polaDitemukan = String(
+      polaPerInstans.reduce((n, x) => n + x.doubleBottom.length + x.lonjakan.length, 0),
+    )
   }, [polaPerInstans, theme, versiSeriHarga])
 
   const pemilih = (
@@ -834,37 +893,57 @@ export function GrafikEmiten() {
 
           {/* Hasil pencarian pola: apa yang ditemukan, di tanggal berapa, dan
               atas dasar apa. Berupa daftar teks di samping gambarnya karena
-              tanggal & harga persisnya tak terbaca dari penanda di kanvas. */}
+              tanggal, harga, dan rasio persisnya tak terbaca dari penanda di
+              kanvas — dan angka itulah yang membuat temuannya bisa diperiksa. */}
           {polaPerInstans.some(({ inst }) => inst.tampil) && (
             <div className="grf-pola-hasil">
-              {polaPerInstans.filter(({ inst }) => inst.tampil).map(({ inst, temuan }) => (
-                <div key={inst.id}>
-                  <p className="grf-pola-judul">
-                    {labelInstansPola(inst)}: {temuan.length === 0
-                      ? 'tak ada yang memenuhi syarat pada rentang ini'
-                      : `${temuan.length} ditemukan`}
-                    {temuan.length > MAKS_PENANDA_POLA
-                      && ` — ${MAKS_PENANDA_POLA} terbaru digambar di kanvas`}
-                  </p>
-                  {temuan.length > 0 && (
-                    <ul className="grf-pola-daftar">
-                      {temuan.slice(-MAKS_PENANDA_POLA).reverse().map((db) => (
-                        <li key={`${db.iLembah1}-${db.iLembah2}`}
-                          style={{ '--ind-warna': `var(${WARNA_STATUS[db.status]})` } as React.CSSProperties}>
-                          <span className="grf-pola-status">{db.status}</span>
-                          <span>
-                            lembah {db.waktuLembah1} ({fN(db.hargaLembah1, 0)}) &amp; {db.waktuLembah2} ({fN(db.hargaLembah2, 0)})
-                            {' · '}leher {db.waktuLeher} ({fN(db.hargaLeher, 0)})
-                            {' · '}kedalaman {fN(db.kedalamanAtr, 1)}× ATR
-                            {db.waktuKonfirmasi ? ` · tembus ${db.waktuKonfirmasi}` : ''}
-                            {db.volumeMenguat ? ' · volume menguat' : ''}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
+              {polaPerInstans.filter(({ inst }) => inst.tampil).map(({ inst, doubleBottom, lonjakan }) => {
+                const jumlah = doubleBottom.length + lonjakan.length
+                return (
+                  <div key={inst.id}>
+                    <p className="grf-pola-judul">
+                      {labelInstansPola(inst)}: {jumlah === 0
+                        ? 'tak ada yang memenuhi syarat pada rentang ini'
+                        : `${jumlah} ditemukan`}
+                      {jumlah > MAKS_PENANDA_POLA
+                        && ` — ${MAKS_PENANDA_POLA} terbaru digambar di kanvas`}
+                    </p>
+                    {doubleBottom.length > 0 && (
+                      <ul className="grf-pola-daftar">
+                        {doubleBottom.slice(-MAKS_PENANDA_POLA).reverse().map((db) => (
+                          <li key={`${db.iLembah1}-${db.iLembah2}`}
+                            style={{ '--ind-warna': `var(${WARNA_STATUS[db.status]})` } as React.CSSProperties}>
+                            <span className="grf-pola-status">{db.status}</span>
+                            <span>
+                              lembah {db.waktuLembah1} ({fN(db.hargaLembah1, 0)}) &amp; {db.waktuLembah2} ({fN(db.hargaLembah2, 0)})
+                              {' · '}leher {db.waktuLeher} ({fN(db.hargaLeher, 0)})
+                              {' · '}kedalaman {fN(db.kedalamanAtr, 1)}× ATR
+                              {db.waktuKonfirmasi ? ` · tembus ${db.waktuKonfirmasi}` : ''}
+                              {db.volumeMenguat ? ' · volume menguat' : ''}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {lonjakan.length > 0 && (
+                      <ul className="grf-pola-daftar">
+                        {lonjakan.slice(-MAKS_PENANDA_POLA).reverse().map((lv) => (
+                          <li key={lv.i}
+                            style={{ '--ind-warna': `var(${WARNA_LONJAKAN[lv.status]})` } as React.CSSProperties}>
+                            <span className="grf-pola-status">
+                              {lv.status === 'takTerkonfirmasi' ? 'tak terkonfirmasi' : lv.status}
+                            </span>
+                            <span>
+                              {lv.waktu} · harga +{fN(lv.ubahPersen, 2)}%
+                              {' · '}RVOL {fN(lv.rvol, 1)}× (volume {fN(lv.volume, 0)} vs rata-rata {fN(lv.rataVolume, 0)})
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )}
 
