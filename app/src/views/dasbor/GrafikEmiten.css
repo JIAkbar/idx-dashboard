@@ -57,3 +57,18 @@
    tampilannya tapi kotak layoutnya (makanya lebar yang dilihat ResizeObserver)
    tetap ada dari awal. */
 .lantai .grf-chart-wrap.memuat { opacity: 0; }
+
+/* Bungkus kanvas + tanda PAPAN — lihat komentar di GrafikEmiten.tsx dekat
+   attributionLogo:false: ini pengganti logo TradingView yang dimatikan,
+   bukan hiasan lepas. position:relative di sini (bukan di .grf-chart-wrap
+   sendiri) supaya elemen yang dikelola lightweight-charts tak ikut disentuh. */
+.lantai .grf-kanvas-bungkus { position: relative; }
+.lantai .grf-tanda-papan {
+  position: absolute; left: 10px; bottom: 10px; width: 26px; height: 26px;
+  opacity: 0.16; pointer-events: none; user-select: none;
+}
+
+/* Baris atribusi lisensi — kecil tapi WAJIB terlihat, lihat komentar di JSX. */
+.lantai .grf-atribusi { margin: 8px 0 0; font-size: 10.5px; color: var(--text3); }
+.lantai .grf-atribusi a { color: var(--text3); text-decoration: underline; }
+.lantai .grf-atribusi a:hover { color: var(--amber); }

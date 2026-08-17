@@ -131,7 +131,18 @@ export function GrafikEmiten() {
         locale: 'id-ID',
         dateFormat: 'dd MMM yyyy',
       },
-      layout: { background: { color: 'transparent' } },
+      // attributionLogo:false MEMATIKAN logo TradingView bawaan di pojok
+      // kanvas — chart ini gambar data PAPAN sendiri, bukan produk
+      // TradingView. INI BUKAN sekadar hiasan yang bebas dihapus: lisensi
+      // Apache 2.0 lightweight-charts MEWAJIBKAN atribusi ("This license
+      // requires specifying TradingView as the product creator... You shall
+      // add the attribution notice... and a link to
+      // https://www.tradingview.com/ to the page... available to your
+      // users" — README.md lightweight-charts). `attributionLogo` cuma
+      // salah satu CARA memenuhi syarat itu; mematikannya TANPA mengganti
+      // = melanggar lisensi. Gantinya: baris atribusi di kaki halaman
+      // (lihat JSX, dekat "Sumber data") — jangan hapus baris itu juga.
+      layout: { background: { color: 'transparent' }, attributionLogo: false },
       rightPriceScale: { borderVisible: false },
       timeScale: {
         borderVisible: false,
@@ -428,11 +439,31 @@ export function GrafikEmiten() {
             </div>
           )}
 
-          {/* Kanvas SELALU dipasang dengan ukuran final sejak awal (opacity,
-              bukan display:none) — lihat komentar .grf-chart-wrap.memuat di
-              GrafikEmiten.css: autoSize butuh lebar sungguhan sejak elemen
-              dibuat, bukan sejak elemen "muncul". */}
-          <div ref={containerRef} className={'grf-chart-wrap' + (berkas ? '' : ' memuat')} />
+          {/* Bungkus TERPISAH dari containerRef — lightweight-charts mengisi
+              containerRef dengan kanvasnya sendiri; tanda PAPAN dipasang
+              sebagai SAUDARA di bungkus ini (bukan anak containerRef) supaya
+              React tak pernah rebutan anak elemen dengan DOM yang dikelola
+              lightweight-charts secara imperatif. */}
+          <div className="grf-kanvas-bungkus">
+            {/* Kanvas SELALU dipasang dengan ukuran final sejak awal (opacity,
+                bukan display:none) — lihat komentar .grf-chart-wrap.memuat di
+                GrafikEmiten.css: autoSize butuh lebar sungguhan sejak elemen
+                dibuat, bukan sejak elemen "muncul". */}
+            <div ref={containerRef} className={'grf-chart-wrap' + (berkas ? '' : ' memuat')} />
+            {/* Tanda PAPAN — pengganti logo TradingView yang dimatikan lewat
+                attributionLogo:false di atas (lihat komentar lisensi di situ).
+                Pakai favicon.svg yang sudah ada (bukan gambar baru), watermark
+                halus pojok kiri bawah, tak menghalangi kursor/crosshair. */}
+            <img src="/favicon.svg" alt="" className="grf-tanda-papan" />
+          </div>
+
+          {/* Atribusi WAJIB lisensi Apache 2.0 lightweight-charts — lihat
+              komentar attributionLogo di atas. Harus TERLIHAT tanpa diklik,
+              bukan disembunyikan di balik panduan yang bisa ditutup. */}
+          <p className="grf-atribusi">
+            Grafik digambar dengan Lightweight Charts™ dari{' '}
+            <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">TradingView</a>.
+          </p>
 
           <details className="grf-panduan">
             <summary><IkonMenu d={IKON_INFO} size={12} /> Apa arti indikator-indikator ini?</summary>
