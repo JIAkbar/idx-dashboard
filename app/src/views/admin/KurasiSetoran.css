@@ -155,9 +155,20 @@
    bukan digeneralkan ke .dasbor-modal: pola yang sama sudah dipakai form unggah
    (.af-form-modal di AdminShared.css), dan modal lain memang butuh potongan itu. */
 .dasbor-modal.ks-pindah-modal .panel { overflow: visible; }
-/* Kalendernya dibuka KE ATAS, memakai konvensi `.dd.dd-atas` yang sudah ada di
-   lantai.css. Membuka ke bawah membuatnya menutupi tombol "Pindahkan" —
-   kalender dan tombolnya tak pernah terlihat bersamaan, padahal keduanya
-   dibutuhkan berbarengan. Yang tertutup sekarang cuma paragraf keterangan,
-   yang memang dibaca sekali di awal. */
-.dasbor-modal.ks-pindah-modal .dpk-pop { top: auto; bottom: calc(100% + 5px); }
+/* Kalendernya MENGALIR di dalam modal, bukan melayang di atasnya.
+   Dua percobaan sebelumnya gagal karena sama-sama melayang: membuka ke bawah
+   membuatnya terpotong tepi modal, membuka ke atas membuatnya menutupi
+   keterangan — dan di jendela pendek, terpotong lagi. Selama ia melayang,
+   selalu ada ukuran layar yang membuatnya jatuh di tempat yang salah.
+   Dibuat mengalir, modalnya tumbuh mengikuti isinya: tak ada yang bisa
+   memotong, tak ada yang tertutupi, dan tak ada perhitungan posisi yang bisa
+   meleset. Johan melaporkannya dua kali — "masih terutupi nih di page admin".
+   `overflow: visible` di atas tetap perlu untuk jaga-jaga. */
+.dasbor-modal.ks-pindah-modal .dpk-pop {
+  position: static; margin-top: 6px; width: 100%; max-width: none;
+  box-shadow: none;
+}
+/* Modal jadi lebih tinggi karena kalendernya ikut mengalir. Di jendela pendek
+   (mis. peramban dengan bilah bookmark, atau layar laptop 768px) isinya
+   digulung, bukan terpotong. `dvh` bukan `vh` — bilah alamat ponsel. */
+.dasbor-modal.ks-pindah-modal .panel-b { max-height: 78dvh; overflow-y: auto; }
