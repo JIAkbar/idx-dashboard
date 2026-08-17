@@ -1,4 +1,4 @@
-import type { PeriodeKeuangan, QuarterMap, StockFundamental, YearMap } from './stockDetailData'
+import type { PeriodeKeuangan, QuarterMap, StockFundamental, StockKeuangan, YearMap } from './stockDetailData'
 
 /**
  * A0: satukan `keuangan/{TICKER}.json` (per-periode, presisi tapi berlubang —
@@ -35,6 +35,9 @@ export type AsalAngka =
   | 'fundamental-tahunan'
   | 'fundamental-ttm'
   | 'fundamental-kini'
+  | 'idx'
+  | 'idx-kumulatif'
+  | 'yahoo'
 
 export interface AngkaGabungan {
   nilai: number | null
@@ -185,5 +188,90 @@ export function labelAsal(asal: AsalAngka): string {
     case 'fundamental-tahunan': return 'fundamental — tahun padanan'
     case 'fundamental-ttm': return 'fundamental — TTM (12 bulan terakhir, bukan periode tunggal)'
     case 'fundamental-kini': return 'fundamental — kuartal terakhir yang diketahui'
+    case 'idx': return 'IDX — laporan resmi bursa (XBRL)'
+    case 'idx-kumulatif': return 'IDX — kumulatif tahun berjalan (YTD); kuartal pembanding belum tersedia, belum bisa didiskretkan'
+    case 'yahoo': return 'Yahoo Finance'
   }
+}
+
+/**
+ * B1: satukan data-idx/json/keuangan_idx/{TICKER}.json (laporan resmi bursa,
+ * XBRL) dengan data-idx/json/keuangan/{TICKER}.json (yfinance) — dua sumber
+ * per-periode BERBEDA MAKNA di kunci yang sama, lihat docs/sumber-fundamental-idx.md
+ * bagian JEBAKAN:
+ * - `tahunan`: setahun penuh di kedua sumber → aman, gabung langsung.
+ * - `kuartal`: yfinance sudah DISKRET (Apr-Jun), IDX interim KUMULATIF sejak
+ *   awal tahun (Jan-Jun) — terukur di revenue 2026-06-30: TLKM 1,96x,
+ *   ASII 1,99x, ICBP 2,08x. Kudu didiskretkan dulu sebelum dibandingkan.
+ *
+ * Ruas "arus" (laba rugi + arus kas) — satu-satunya yang boleh dikurangi buat
+ * mengubah kumulatif jadi diskret. Ruas neraca (posisi per tanggal) TIDAK
+ * PERNAH dikurangi — itu snapshot, bukan akumulasi sejak awal tahun.
+ */
+const FIELD_ARUS = new Set<keyof PeriodeKeuangan>([
+  'revenue', 'cogs', 'gross_profit', 'operating_income', 'net_income', 'eps',
+  'operating_cf', 'investing_cf', 'financing_cf', 'free_cf',
+])
+
+/**
+ * Baca satu ruas dari satu periode KUARTAL milik IDX, dikonversi jadi
+ * diskret kalau ruasnya arus dan kuartal sebelumnya (tahun sama) tersedia:
+ * TW2 diskret = TW2 kumulatif − TW1, TW3 diskret = TW3 kumulatif − TW2, dst.
+ * TW1 tak butuh pengurang (kumulatif == diskret sejak awal tahun).
+ *
+ * KEPUTUSAN kalau pengurangnya tak ada (kasus NORMAL sekarang — panen baru
+ * punya TW2 2026, belum ada TW1 pembandingnya): nilai kumulatif dikembalikan
+ * APA ADANYA, ditandai eksplisit `asal: 'idx-kumulatif'`. Dipilih ketimbang
+ * menyembunyikannya jadi null, supaya panel tetap menampilkan satu-satunya
+ * angka IDX yang ada — tapi labelnya wajib bilang ini YTD, bukan kuartal
+ * tunggal (lihat labelAsal & badge "B·YTD" di PanelLaporanKeuangan).
+ */
+export function bacaKuartalIdx(
+  kuartalIdx: Record<string, PeriodeKeuangan>,
+  field: keyof PeriodeKeuangan,
+  iso: string,
+): AngkaGabungan {
+  const v = kuartalIdx[iso]?.[field]
+  if (v == null) return { nilai: null, asal: null }
+  if (!FIELD_ARUS.has(field)) return { nilai: v, asal: 'idx' } // ruas neraca: snapshot, tak dikonversi
+
+  const [tahun, bulan] = iso.split('-')
+  const q = Math.ceil(Number(bulan) / 3)
+  if (q === 1) return { nilai: v, asal: 'idx' } // Q1 kumulatif == diskret
+
+  const isoSebelumnya = q === 2 ? `${tahun}-03-31` : q === 3 ? `${tahun}-06-30` : `${tahun}-09-30`
+  const pengurang = kuartalIdx[isoSebelumnya]?.[field]
+  if (pengurang == null) return { nilai: v, asal: 'idx-kumulatif' }
+
+  return { nilai: v - pengurang, asal: 'idx' }
+}
+
+/**
+ * Gabungkan satu ruas satu periode dari TIGA sumber, urutan prioritas:
+ * 1. IDX XBRL — laporan resmi bursa, kuartal dikonversi lewat `bacaKuartalIdx`.
+ * 2. Yahoo Finance — dipakai kalau IDX tak punya ruas ini untuk periode ini
+ *    (mis. BBCA: `revenue` kosong di XBRL tapi `operating_income` justru
+ *    yfinance yang kosong — saling menambal per-ruas, bukan per-periode).
+ * 3. `gabungkanBaris` yang sudah ada (fundamental) — tambalan terakhir kalau
+ *    dua sumber laporan periode-presisi di atas berdua kosong.
+ */
+export function gabungkanBarisKeuangan(
+  field: keyof PeriodeKeuangan,
+  iso: string,
+  mode: 'kuartal' | 'tahunan',
+  yfPeriode: PeriodeKeuangan | null | undefined,
+  idx: Pick<StockKeuangan, 'kuartal' | 'tahunan'> | null | undefined,
+  fd: StockFundamental | null | undefined,
+  terbaru: boolean,
+): AngkaGabungan {
+  if (idx) {
+    const nilaiTahunan = idx.tahunan[iso]?.[field]
+    const dariIdx = mode === 'kuartal'
+      ? bacaKuartalIdx(idx.kuartal, field, iso)
+      : nilaiTahunan != null ? { nilai: nilaiTahunan, asal: 'idx' as const } : { nilai: null, asal: null }
+    if (dariIdx.nilai != null) return dariIdx
+  }
+  const dariYahoo = yfPeriode?.[field] ?? null
+  if (dariYahoo != null) return { nilai: dariYahoo, asal: 'yahoo' }
+  return gabungkanBaris(field, null, iso, mode, fd, terbaru)
 }

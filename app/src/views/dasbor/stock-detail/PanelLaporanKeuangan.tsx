@@ -1,11 +1,11 @@
 import { useMemo, useRef, useState } from 'react'
 import type { ChartConfiguration } from 'chart.js/auto'
-import { useStockKeuangan, useStockFundamental, type PeriodeKeuangan } from '../../../lib/dasbor/stockDetailData'
+import { useStockKeuangan, useStockKeuanganIdx, useStockFundamental, type PeriodeKeuangan } from '../../../lib/dasbor/stockDetailData'
 import { fRingkas, fEps } from '../../../lib/dasbor/stockDetailFormat'
 import { useChartCanvas } from '../../../lib/dasbor/useChartJs'
 import { useTheme } from '../../../context/ThemeContext'
 import { IkonMenu, IKON_JAM } from '../../../components/dasbor/IkonMenu'
-import { gabungkanBaris, labelAsal } from '../../../lib/dasbor/fundamentalGabungan'
+import { gabungkanBarisKeuangan, labelAsal, type AsalAngka } from '../../../lib/dasbor/fundamentalGabungan'
 
 type PeriodMode = 'kuartal' | 'tahunan'
 type SubTab = 'laba_rugi' | 'neraca' | 'arus_kas'
@@ -50,15 +50,34 @@ function bacaToken(el: HTMLElement | null, nama: string, fallback: string): stri
   return v || fallback
 }
 
+/** Lencana superscript pendek per sel — angka resmi bursa (IDX) dan angka
+ * agregator (Yahoo/fundamental) tak boleh terlihat sama persis tanpa cara
+ * membedakannya (lihat tooltip sel via labelAsal untuk keterangan penuh). */
+function lencanaAsal(asal: AsalAngka): string {
+  switch (asal) {
+    case 'idx': return 'B'
+    case 'idx-kumulatif': return 'B·YTD'
+    case 'yahoo': return 'Y'
+    default: return '†' // fundamental-* — tambalan lama, bukan laporan periode ini
+  }
+}
+
 /**
  * Panel "Laporan Keuangan" ala Yahoo Finance /financials — chart batang
  * Pendapatan vs Laba Bersih (tetap tampil apa pun sub-tabnya, sama seperti
  * referensi) + tabel breakdown Laba Rugi/Neraca/Arus Kas di bawahnya.
- * Sumber: data-idx/json/keuangan/{TICKER}.json (scripts/fetch_keuangan.py) —
- * TIDAK semua emiten punya berkas ini, jadi state kosong wajib sopan (bukan error).
+ * Sumber DUA berkas per-periode, digabung ruas-per-ruas (lihat
+ * lib/dasbor/fundamentalGabungan.ts — gabungkanBarisKeuangan):
+ * data-idx/json/keuangan_idx/{TICKER}.json (resmi bursa, XBRL, MENANG kalau
+ * ada) dan data-idx/json/keuangan/{TICKER}.json (yfinance, tambalan). Kalau
+ * keduanya kosong untuk ruas ini baru jatuh ke data-idx/json/fundamental/.
+ * TIDAK semua emiten punya kedua berkas keuangan, jadi state kosong wajib
+ * sopan (bukan error) dan panel tetap terisi selama SALAH SATU ada.
  */
 export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
-  const { data: kd, loading } = useStockKeuangan(ticker)
+  const { data: kd, loading: loadingYf } = useStockKeuangan(ticker)
+  const { data: idx, loading: loadingIdx } = useStockKeuanganIdx(ticker)
+  const loading = loadingYf || loadingIdx
   // A0: menambal ruas kosong (operating_cf dkk.) dari data-idx/json/fundamental/,
   // lihat lib/dasbor/fundamentalGabungan.ts untuk aturan penggabungannya.
   const { data: fd } = useStockFundamental(ticker)
@@ -67,12 +86,16 @@ export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
   const { theme } = useTheme()
   const wrapRef = useRef<HTMLDivElement>(null)
 
+  const adaData = !!kd || !!idx
+  const currency = idx?.currency ?? kd?.currency ?? null
+
   const periods = useMemo(() => {
-    const src = kd ? (periodMode === 'kuartal' ? kd.kuartal : kd.tahunan) : {}
-    const semuaIso = Object.keys(src).sort()
+    const srcYf = kd ? (periodMode === 'kuartal' ? kd.kuartal : kd.tahunan) : {}
+    const srcIdx = idx ? (periodMode === 'kuartal' ? idx.kuartal : idx.tahunan) : {}
+    const semuaIso = Array.from(new Set([...Object.keys(srcYf), ...Object.keys(srcIdx)])).sort()
     const terbaru = semuaIso[semuaIso.length - 1]
-    return semuaIso.slice(-8).map((iso) => ({ iso, val: src[iso], terbaru: iso === terbaru }))
-  }, [kd, periodMode])
+    return semuaIso.slice(-8).map((iso) => ({ iso, yf: srcYf[iso], terbaru: iso === terbaru }))
+  }, [kd, idx, periodMode])
 
   const chartConfig = useMemo<ChartConfiguration<'bar'> | null>(() => {
     if (periods.length === 0) return null
@@ -87,8 +110,8 @@ export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
       data: {
         labels: periods.map((p) => labelPeriode(p.iso, periodMode)),
         datasets: [
-          { label: 'Pendapatan', data: periods.map((p) => p.val.revenue), backgroundColor: blue, borderRadius: 3, maxBarThickness: 28 },
-          { label: 'Laba Bersih', data: periods.map((p) => p.val.net_income), backgroundColor: green, borderRadius: 3, maxBarThickness: 28 },
+          { label: 'Pendapatan', data: periods.map((p) => gabungkanBarisKeuangan('revenue', p.iso, periodMode, p.yf, idx, null, p.terbaru).nilai), backgroundColor: blue, borderRadius: 3, maxBarThickness: 28 },
+          { label: 'Laba Bersih', data: periods.map((p) => gabungkanBarisKeuangan('net_income', p.iso, periodMode, p.yf, idx, null, p.terbaru).nilai), backgroundColor: green, borderRadius: 3, maxBarThickness: 28 },
         ],
       },
       options: {
@@ -99,7 +122,7 @@ export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
           legend: { position: 'bottom', labels: { color: text2, boxWidth: 10, font: { size: 10 } } },
           tooltip: {
             callbacks: {
-              label: (ctx) => `${ctx.dataset.label}: ${(kd?.currency === 'USD' ? 'US$ ' : 'Rp ')}${fRingkas(ctx.parsed.y)}`,
+              label: (ctx) => `${ctx.dataset.label}: ${(currency === 'USD' ? 'US$ ' : 'Rp ')}${fRingkas(ctx.parsed.y)}`,
             },
           },
         },
@@ -113,7 +136,7 @@ export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
     // tapi WAJIB di deps supaya chart dibangun ulang saat tema di-toggle —
     // tanpa ini toggle gelap/terang tak mengubah warna chart yang sudah ada.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [periods, periodMode, kd?.currency, theme])
+  }, [periods, idx, periodMode, currency, theme])
 
   const canvasRef = useChartCanvas(chartConfig)
 
@@ -131,14 +154,14 @@ export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
           <p style={{ fontSize: 11, color: 'var(--text3)' }}><IkonMenu d={IKON_JAM} size={12} /> Memuat laporan keuangan…</p>
         )}
 
-        {!loading && !kd && (
+        {!loading && !adaData && (
           <p style={{ fontSize: 11, color: 'var(--text3)' }}>Belum ada data laporan keuangan untuk emiten ini.</p>
         )}
 
-        {!loading && kd && (
+        {!loading && adaData && (
           <>
-            {kd.currency && kd.currency !== 'IDR' && (
-              <span className="badge" style={{ marginTop: 0, marginBottom: 10 }}>Laporan dalam {kd.currency} — bukan Rupiah</span>
+            {currency && currency !== 'IDR' && (
+              <span className="badge" style={{ marginTop: 0, marginBottom: 10 }}>Laporan dalam {currency} — bukan Rupiah</span>
             )}
 
             {periods.length === 0 && (
@@ -170,14 +193,13 @@ export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
                         <tr key={baris.key}>
                           <td>{baris.label}</td>
                           {periods.map((p) => {
-                            const { nilai: v, asal } = gabungkanBaris(baris.key, p.val[baris.key], p.iso, periodMode, fd, p.terbaru)
+                            const { nilai: v, asal } = gabungkanBarisKeuangan(baris.key, p.iso, periodMode, p.yf, idx, fd, p.terbaru)
                             const teks = v == null ? '—' : baris.key === 'eps' ? fEps(v) : fRingkas(v)
-                            const tambalan = asal && asal !== 'keuangan'
-                            const penuh = v == null ? undefined : `${v.toLocaleString('id-ID')}${tambalan ? ` — ${labelAsal(asal)}` : ''}`
+                            const penuh = v == null || !asal ? undefined : `${v.toLocaleString('id-ID')} — ${labelAsal(asal)}`
                             return (
                               <td key={p.iso} className="r" title={penuh}>
                                 {teks}
-                                {tambalan && <sup style={{ color: 'var(--text3)' }}>†</sup>}
+                                {asal && <sup style={{ color: 'var(--text3)' }}>{lencanaAsal(asal)}</sup>}
                               </td>
                             )
                           })}
@@ -186,14 +208,9 @@ export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
                     </tbody>
                   </table>
                 </div>
-                {periods.some((p) => BARIS[subTab].some((b) => {
-                  const asal = gabungkanBaris(b.key, p.val[b.key], p.iso, periodMode, fd, p.terbaru).asal
-                  return asal && asal !== 'keuangan'
-                })) && (
-                  <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 6 }}>
-                    † ditambal dari data fundamental (bukan laporan periode ini) — arahkan kursor ke angka untuk detail asalnya.
-                  </p>
-                )}
+                <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 6 }}>
+                  B = IDX (laporan resmi bursa) · B·YTD = IDX kumulatif tahun berjalan, kuartal pembanding belum tersedia · Y = Yahoo Finance · † = ditambal dari data fundamental (bukan laporan periode ini). Arahkan kursor ke angka untuk detail asalnya.
+                </p>
               </>
             )}
           </>

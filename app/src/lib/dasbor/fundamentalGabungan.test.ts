@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { gabungkanBaris, gabungkanPeriode, labelAsal } from './fundamentalGabungan'
+import { bacaKuartalIdx, gabungkanBaris, gabungkanBarisKeuangan, gabungkanPeriode, labelAsal } from './fundamentalGabungan'
 import type { PeriodeKeuangan, StockFundamental } from './stockDetailData'
 
 const fd = {
@@ -72,9 +72,78 @@ describe('gabungkanPeriode — seluruh baris sekaligus', () => {
 
   it('field tanpa padanan (asal null) tidak diberi label', () => {
     // labelAsal cuma dipanggil untuk asal non-null di UI — pastikan tiap AsalAngka non-null punya label tak kosong
-    const asalNonNull = ['keuangan', 'fundamental-kuartal', 'fundamental-tahunan', 'fundamental-ttm', 'fundamental-kini'] as const
+    const asalNonNull = [
+      'keuangan', 'fundamental-kuartal', 'fundamental-tahunan', 'fundamental-ttm', 'fundamental-kini',
+      'idx', 'idx-kumulatif', 'yahoo',
+    ] as const
     for (const asal of asalNonNull) {
       expect(labelAsal(asal).length).toBeGreaterThan(0)
     }
+  })
+})
+
+// B1: gabung keuangan_idx (XBRL resmi bursa) dengan keuangan (yfinance) —
+// lihat komentar bacaKuartalIdx/gabungkanBarisKeuangan di fundamentalGabungan.ts.
+describe('bacaKuartalIdx — kumulatif IDX dikonversi jadi diskret', () => {
+  const kuartalDenganTw1 = {
+    '2026-03-31': { revenue: 100, total_assets: 500 } as unknown as PeriodeKeuangan,
+    '2026-06-30': { revenue: 250, total_assets: 520 } as unknown as PeriodeKeuangan,
+  }
+
+  it('TW2 dengan TW1 tersedia → dikurangi jadi diskret', () => {
+    expect(bacaKuartalIdx(kuartalDenganTw1, 'revenue', '2026-06-30')).toEqual({ nilai: 150, asal: 'idx' })
+  })
+
+  it('TW2 TANPA TW1 → TIDAK diam-diam dianggap diskret; disimpan kumulatif bertanda eksplisit', () => {
+    const kuartalTanpaTw1 = { '2026-06-30': { revenue: 250 } as unknown as PeriodeKeuangan }
+    expect(bacaKuartalIdx(kuartalTanpaTw1, 'revenue', '2026-06-30')).toEqual({ nilai: 250, asal: 'idx-kumulatif' })
+  })
+
+  it('ruas neraca (total_assets) TIDAK dikurangi meski TW1 tersedia — itu snapshot, bukan arus', () => {
+    expect(bacaKuartalIdx(kuartalDenganTw1, 'total_assets', '2026-06-30')).toEqual({ nilai: 520, asal: 'idx' })
+  })
+
+  it('TW1 (Q1) tak butuh pengurang — kumulatif == diskret sejak awal tahun', () => {
+    expect(bacaKuartalIdx(kuartalDenganTw1, 'revenue', '2026-03-31')).toEqual({ nilai: 100, asal: 'idx' })
+  })
+
+  it('ruas tak tersedia di IDX untuk periode ini → null, bukan 0', () => {
+    expect(bacaKuartalIdx(kuartalDenganTw1, 'operating_income', '2026-06-30')).toEqual({ nilai: null, asal: null })
+  })
+})
+
+describe('gabungkanBarisKeuangan — prioritas IDX > Yahoo > fundamental (tambalan lama)', () => {
+  it('tahunan: IDX non-null menang, tak ada konversi', () => {
+    const idx = { kuartal: {}, tahunan: { '2025-12-31': { revenue: 900 } as unknown as PeriodeKeuangan } }
+    const yf = { revenue: 800 } as unknown as PeriodeKeuangan
+    expect(gabungkanBarisKeuangan('revenue', '2025-12-31', 'tahunan', yf, idx, null, false))
+      .toEqual({ nilai: 900, asal: 'idx' })
+  })
+
+  it('tahunan: IDX null untuk ruas ini → Yahoo menambal', () => {
+    const idx = { kuartal: {}, tahunan: { '2025-12-31': { revenue: null } as unknown as PeriodeKeuangan } }
+    const yf = { revenue: 800 } as unknown as PeriodeKeuangan
+    expect(gabungkanBarisKeuangan('revenue', '2025-12-31', 'tahunan', yf, idx, null, false))
+      .toEqual({ nilai: 800, asal: 'yahoo' })
+  })
+
+  it('kuartal: BBCA nyata — revenue kosong di IDX tapi ada di Yahoo, saling menambal per-ruas', () => {
+    const idx = {
+      kuartal: { '2026-06-30': { revenue: null, operating_income: 36451829000000 } as unknown as PeriodeKeuangan },
+      tahunan: {},
+    }
+    const yf = { revenue: 28891999000000, operating_income: null } as unknown as PeriodeKeuangan
+    expect(gabungkanBarisKeuangan('revenue', '2026-06-30', 'kuartal', yf, idx, null, true))
+      .toEqual({ nilai: 28891999000000, asal: 'yahoo' })
+    // Fixture ini tak punya TW1 — sesuai data nyata sekarang (panen baru punya TW2 2026),
+    // jadi operating_income tetap kumulatif bertanda, bukan idx polos.
+    expect(gabungkanBarisKeuangan('operating_income', '2026-06-30', 'kuartal', yf, idx, null, true))
+      .toEqual({ nilai: 36451829000000, asal: 'idx-kumulatif' })
+  })
+
+  it('kedua sumber presisi kosong → jatuh ke tambalan fundamental lama (tak diubah perilakunya)', () => {
+    const fd = { q_ocf: { '2026': { Q2: -15658754000000 } } } as unknown as StockFundamental
+    expect(gabungkanBarisKeuangan('operating_cf', '2026-06-30', 'kuartal', null, null, fd, false))
+      .toEqual({ nilai: -15658754000000, asal: 'fundamental-kuartal' })
   })
 })

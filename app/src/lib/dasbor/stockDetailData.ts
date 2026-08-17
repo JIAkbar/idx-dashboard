@@ -226,11 +226,16 @@ export interface PeriodeKeuangan {
   free_cf: number | null
 }
 
-/** Bentuk data-idx/json/keuangan/{TICKER}.json (lihat scripts/fetch_keuangan.py). */
+/** Bentuk data-idx/json/keuangan/{TICKER}.json (lihat scripts/fetch_keuangan.py).
+ * Bentuknya identik dengan data-idx/json/keuangan_idx/{TICKER}.json (panen XBRL
+ * resmi bursa) — beda cuma `sumber` (cuma ada di berkas IDX) dan makna kuartalnya:
+ * yfinance sudah diskret, IDX interim KUMULATIF sejak awal tahun (lihat
+ * fundamentalGabungan.ts untuk konversinya). */
 export interface StockKeuangan {
   ticker: string
   currency: string
   diperbarui: string
+  sumber?: string
   kuartal: Record<string, PeriodeKeuangan>
   tahunan: Record<string, PeriodeKeuangan>
 }
@@ -342,50 +347,60 @@ export function useStockFundamental(ticker: string | null) {
   return { data, loading, error }
 }
 
-const keuanganCache = new Map<string, StockKeuangan | null>()
-
 /**
- * Panel "Laporan Keuangan" — data-idx/json/keuangan/{TICKER}.json belum dipanen
- * untuk semua emiten (lihat scripts/fetch_keuangan.py). 404/gagal fetch DISENGAJA
- * jadi data=null tanpa `error` — panel tampil "belum ada data", bukan pesan galat.
+ * Panel "Laporan Keuangan" bersumber dari DUA berkas per-periode identik
+ * bentuknya — data-idx/json/keuangan/{TICKER}.json (yfinance, dipanen
+ * scripts/fetch_keuangan.py) dan data-idx/json/keuangan_idx/{TICKER}.json
+ * (resmi bursa, XBRL). Keduanya belum dipanen untuk semua emiten, jadi
+ * 404/gagal fetch DISENGAJA jadi data=null tanpa `error` — panel gabungkan
+ * berdua lewat fundamentalGabungan.ts dan tampil "belum ada data" cuma kalau
+ * KEDUANYA kosong, bukan pesan galat.
  */
-export function useStockKeuangan(ticker: string | null) {
-  const [data, setData] = useState<StockKeuangan | null>(ticker ? (keuanganCache.get(ticker) ?? null) : null)
-  const [loading, setLoading] = useState(false)
+function buatHookKeuangan(basePath: string) {
+  const cache = new Map<string, StockKeuangan | null>()
+  return function useHook(ticker: string | null) {
+    const [data, setData] = useState<StockKeuangan | null>(ticker ? (cache.get(ticker) ?? null) : null)
+    const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    if (!ticker) {
-      setData(null)
-      return
-    }
-    if (keuanganCache.has(ticker)) {
-      setData(keuanganCache.get(ticker) ?? null)
-      return
-    }
-    let cancelled = false
-    setLoading(true)
-    fetch(`/data-idx/json/keuangan/${ticker}.json`)
-      .then((r) => {
-        if (!r.ok) throw new Error('not found')
-        return r.json() as Promise<StockKeuangan>
-      })
-      .then((kd) => {
-        if (cancelled) return
-        keuanganCache.set(ticker, kd)
-        setData(kd)
-      })
-      .catch(() => {
-        if (cancelled) return
-        keuanganCache.set(ticker, null)
+    useEffect(() => {
+      if (!ticker) {
         setData(null)
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [ticker])
+        return
+      }
+      if (cache.has(ticker)) {
+        setData(cache.get(ticker) ?? null)
+        return
+      }
+      let cancelled = false
+      setLoading(true)
+      fetch(`${basePath}/${ticker}.json`)
+        .then((r) => {
+          if (!r.ok) throw new Error('not found')
+          return r.json() as Promise<StockKeuangan>
+        })
+        .then((kd) => {
+          if (cancelled) return
+          cache.set(ticker, kd)
+          setData(kd)
+        })
+        .catch(() => {
+          if (cancelled) return
+          cache.set(ticker, null)
+          setData(null)
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false)
+        })
+      return () => {
+        cancelled = true
+      }
+    }, [ticker])
 
-  return { data, loading }
+    return { data, loading }
+  }
 }
+
+export const useStockKeuangan = buatHookKeuangan('/data-idx/json/keuangan')
+/** Sama seperti `useStockKeuangan`, tapi sumbernya laporan resmi bursa (XBRL)
+ * — kuartalnya KUMULATIF, bukan diskret (lihat fundamentalGabungan.ts). */
+export const useStockKeuanganIdx = buatHookKeuangan('/data-idx/json/keuangan_idx')
