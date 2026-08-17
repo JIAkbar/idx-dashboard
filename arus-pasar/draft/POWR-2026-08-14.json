@@ -1,0 +1,56 @@
+{
+  "ticker": "POWR",
+  "tanggal": "2026-08-14",
+  "_verifikasi": "BELUM",
+  "_catatan": "Sumber bukan tab 'Broker Summary' standar, melainkan tab Orderbook > Broker Action versi ponsel (layar sempit) — kolom S.Freq dan S.avg (harga rata-rata jual) terpotong di luar layar dan tidak terlihat sama sekali di gambar. harga_rata2 sisi jual diisi null untuk seluruh baris, bukan ditebak.",
+  "beli": [
+    ["ZP", 1600, 20000, 805],
+    ["AK", 383, 4800, 802],
+    ["BK", 102, 1300, 805],
+    ["CC", 94.6, 1200, 803],
+    ["MG", 80, 1000, 800],
+    ["XC", 75, 938, 801],
+    ["DH", 45.4, 571, 795],
+    ["LG", 40, 499, 803],
+    ["TP", 34.4, 425, 810],
+    ["BB", 9.1, 115, 795]
+  ],
+  "jual": [
+    ["XL", 862.6, 10800, null],
+    ["DR", 514.1, 6400, null],
+    ["CP", 374, 4600, null],
+    ["PD", 246.6, 3000, null],
+    ["OD", 168.9, 2100, null],
+    ["BQ", 80.7, 1000, null],
+    ["XA", 71.1, 880, null],
+    ["NI", 70.3, 873, null],
+    ["YP", 53.2, 641, null],
+    ["IF", 18.6, 233, null]
+  ],
+  "_mentah": {
+    "beli": [
+      "ZP 1,6B 20K 282 805",
+      "AK 383M 4,8K 300 802",
+      "BK 102M 1,3K 26 805",
+      "CC 94,6M 1,2K 53 803",
+      "MG 80M 1K 2 800",
+      "XC 75M 938 36 801",
+      "DH 45,4M 571 5 795",
+      "LG 40M 499 14 803",
+      "TP 34,4M 425 12 810",
+      "BB 9,1M 115 6 795"
+    ],
+    "jual": [
+      "XL 862,6M 10,8K (S.avg tak terlihat, kolom terpotong)",
+      "DR 514,1M 6,4K (S.avg tak terlihat)",
+      "CP 374M 4,6K (S.avg tak terlihat)",
+      "PD 246,6M 3K (S.avg tak terlihat)",
+      "OD 168,9M 2,1K (S.avg tak terlihat)",
+      "BQ 80,7M 1K (S.avg tak terlihat)",
+      "XA 71,1M 880 (S.avg tak terlihat)",
+      "NI 70,3M 873 (S.avg tak terlihat)",
+      "YP 53,2M 641 (S.avg tak terlihat)",
+      "IF 18,6M 233 (S.avg tak terlihat)"
+    ]
+  }
+}

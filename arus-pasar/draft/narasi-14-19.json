@@ -1,0 +1,134 @@
+[
+  {
+    "ticker": "GIAA",
+    "label": "Breakout Volume Besar — Ritel Ikut Beli, Scalper Ambil Untung",
+    "catatan": "Level penentu ada di pivot 74 — bertahan di atasnya membuka jalan ke R1 80.",
+    "narasi_flow": "AK jadi pembeli terbesar dengan Rp2.700 juta, diikuti SS dan AZ; ritel (XL) turut di sisi beli dengan Rp331,9 juta. Di sisi jual, YP — broker berperan scalper — jadi penjual terbesar dengan Rp1.700 juta di rata-rata harga 75, sedikit di bawah closing 76. Net masih positif Rp1.119,2 juta.",
+    "narasi_teknikal": "Close 76 naik 5,56% dengan volume 1.248,69 juta lembar, jauh di atas EMA50 (59, jarak +28,81%). Harga berada di atas pivot 74, mendekati R1 80.",
+    "strategi": "Berlaku selama close bertahan di atas pivot 74; validasi lanjutan bila tembus R1 80 dengan volume yang terjaga.",
+    "konsekuensi": "Bila close turun ke bawah S1 70, keseimbangan net beli hari ini bisa terkoreksi dan momentum breakout melemah.",
+    "rationale_rank": "Volume breakout terbesar di kelompok ini dengan net beli positif meski asing masih net sell pasar.",
+    "skenario": {
+      "bull": {
+        "konfirmasi": "Close bertahan di atas pivot 74 dengan volume besar berlanjut",
+        "rute": "Ke arah R1 80, lalu R2 84 dan R3 90 bila momentum terjaga",
+        "risiko": "Jika muncul aksi jual susulan dari scalper (YP) tanpa penyerapan baru, kenaikan bisa berbalik cepat"
+      },
+      "bear": {
+        "konfirmasi": "Close turun ke bawah S1 70",
+        "rute": "Berpotensi lanjut ke S2 64 dan S3 60",
+        "risiko": "Validasi breakout hari ini batal, momentum kembali ke area sebelum kenaikan"
+      }
+    }
+  },
+  {
+    "ticker": "HRUM",
+    "label": "Konsolidasi Naik — Net Beli Tipis di Atas EMA50",
+    "catatan": "EMA50 di 824 dan pivot 842 saling berdekatan — bertahannya harga di atas keduanya adalah kunci hari ini.",
+    "narasi_flow": "AK jadi pembeli terbesar dengan Rp1.200 juta. Di sisi jual, CC tercatat terbesar dengan Rp583,1 juta, dengan ritel (XL) turut di sisi jual, sementara scalper absen dari daftar jual teratas. Net masih positif tipis, Rp123,6 juta.",
+    "narasi_teknikal": "Close 850 naik 1,8%, bertahan di atas EMA50 (824, jarak +3,16%) dan di atas pivot 842, mendekati R1 863. Volume 12,36 juta lembar.",
+    "strategi": "Berlaku selama harga bertahan di atas EMA50 824 dan pivot 842; penerusan butuh tembus R1 863.",
+    "konsekuensi": "Bila close turun ke bawah S1 828, posisi kembali ke bawah EMA50 dan setup ini batal.",
+    "rationale_rank": "Net beli tipis dengan harga bertahan di atas EMA50, tanpa tekanan jual dari scalper.",
+    "skenario": {
+      "bull": {
+        "konfirmasi": "Tembus R1 863 dengan volume terjaga",
+        "rute": "Lanjut ke R2 877 dan R3 898",
+        "risiko": "Jika penembusan gagal (false break), harga bisa turun kembali ke pivot 842"
+      },
+      "bear": {
+        "konfirmasi": "Close di bawah S1 828",
+        "rute": "Turun ke S2 807, lalu S3 793",
+        "risiko": "Kehilangan status di atas EMA50, tren naik jangka pendek melemah"
+      }
+    }
+  },
+  {
+    "ticker": "MDKA",
+    "label": "Akumulasi Besar — Satu Broker Dominan di Tengah Distribusi Scalper",
+    "catatan": "Pivot 2863 jadi batas penentu; tembus R1 2987 akan mengonfirmasi kelanjutan kenaikan.",
+    "narasi_flow": "AK jadi pembeli terbesar dengan Rp36.800 juta, jauh di atas broker lain. Di sisi jual, OD tercatat terbesar dengan Rp22.300 juta; kedua scalper (MG, YP) dan ritel (XL) sama-sama tercatat di sisi jual. Net beli tetap besar, Rp5.955,7 juta.",
+    "narasi_teknikal": "Close 2900 naik 3,94%, di atas EMA50 (2775, jarak +4,5%) dan di atas pivot 2863, namun masih di bawah R1 2987. Volume 48,56 juta lembar.",
+    "strategi": "Berlaku selama close bertahan di atas pivot 2863; validasi kuat bila tembus R1 2987.",
+    "konsekuensi": "Bila close turun ke bawah S1 2777, momentum beli hari ini kehilangan pijakan dan setup batal.",
+    "rationale_rank": "Net beli terbesar di kelompok ini, didorong satu broker pembeli dominan (AK).",
+    "skenario": {
+      "bull": {
+        "konfirmasi": "Tembus R1 2987",
+        "rute": "Lanjut ke R2 3073, lalu R3 3197",
+        "risiko": "Konsentrasi beli pada satu broker (AK) membuat kenaikan rentan bila broker itu berhenti menyerap"
+      },
+      "bear": {
+        "konfirmasi": "Close di bawah S1 2777",
+        "rute": "Turun ke S2 2653, lalu S3 2567",
+        "risiko": "Tekanan jual dari dua scalper (MG, YP) berlanjut dan menekan harga lebih dalam"
+      }
+    }
+  },
+  {
+    "ticker": "INDY",
+    "label": "Net Beli Kuat — Broker Dominan di Sisi Beli, Ritel Absen",
+    "catatan": "Pivot 2533 adalah level penentu; EMA50 2463 di bawahnya jadi lapisan penopang kedua.",
+    "narasi_flow": "AK jadi pembeli terbesar dengan Rp10.100 juta, mendominasi sisi beli. Sisi jual lebih terpecah antar broker, dengan scalper (YP) turut menjual; ritel (XL) tidak tercatat di kedua sisi top 10 hari ini. Net beli tercatat Rp4.215,3 juta.",
+    "narasi_teknikal": "Close 2560 naik 2,4%, bertahan di atas pivot 2533 dan EMA50 2463 (jarak +3,94%), namun masih di bawah R1 2637. Volume 27,3 juta lembar.",
+    "strategi": "Berlaku selama close bertahan di atas pivot 2533; validasi lanjutan bila tembus R1 2637.",
+    "konsekuensi": "Bila close turun ke bawah S1 2457, posisi kembali di bawah EMA50 dan setup ini batal.",
+    "rationale_rank": "Net beli kuat dengan dominasi satu broker pembeli, sisi jual terpecah tanpa tekanan besar dari satu pihak.",
+    "skenario": {
+      "bull": {
+        "konfirmasi": "Tembus R1 2637",
+        "rute": "Lanjut ke R2 2713, lalu R3 2817",
+        "risiko": "Dominasi AK di sisi beli membuat kenaikan rentan bila minat beli itu surut"
+      },
+      "bear": {
+        "konfirmasi": "Close di bawah S1 2457",
+        "rute": "Turun ke S2 2353, lalu S3 2277",
+        "risiko": "Kehilangan level EMA50, tren naik jangka pendek melemah"
+      }
+    }
+  },
+  {
+    "ticker": "ANTM",
+    "label": "Net Beli Terbesar di Kelompok — Satu Broker Borong, Jual Merata",
+    "catatan": "EMA50 (3033) dan pivot (3043) berimpit tipis — level ini paling menentukan arah lanjutan.",
+    "narasi_flow": "AK jadi pembeli tunggal terbesar dengan Rp57.300 juta, jauh melampaui broker lain. Sisi jual lebih merata di banyak broker, dipimpin YU dengan Rp12.400 juta; scalper (YP) dan ritel (XL) turut tercatat di sisi jual. Net beli tercatat Rp19.922,8 juta, terbesar di kelompok ini.",
+    "narasi_teknikal": "Close 3070 naik 2,33%, tipis di atas EMA50 (3033, jarak +1,22%) dan di atas pivot 3043, mendekati R1 3117. Volume 83,22 juta lembar.",
+    "strategi": "Berlaku selama close bertahan di atas EMA50 3033 dan pivot 3043; validasi lanjutan bila tembus R1 3117.",
+    "konsekuensi": "Bila close turun ke bawah S1 2997, harga kembali di bawah EMA50 dan setup ini batal.",
+    "rationale_rank": "Net beli nominal terbesar di kelompok ini, didorong dominasi satu broker pembeli.",
+    "skenario": {
+      "bull": {
+        "konfirmasi": "Tembus R1 3117 dengan volume terjaga",
+        "rute": "Lanjut ke R2 3163, lalu R3 3237",
+        "risiko": "Ketergantungan pada satu broker pembeli (AK) membuat kenaikan rentan bila serapan itu berhenti"
+      },
+      "bear": {
+        "konfirmasi": "Close di bawah S1 2997",
+        "rute": "Turun ke S2 2923, lalu S3 2877",
+        "risiko": "Jarak ke EMA50 tipis (+1,22%) membuat harga mudah jatuh ke bawah rata-rata bila tekanan jual meningkat"
+      }
+    }
+  },
+  {
+    "ticker": "PADI",
+    "label": "Rebound dalam Tren Lemah — Harga Masih di Bawah EMA50",
+    "catatan": "EMA50 di 76 masih di atas harga saat ini — level itu jadi penentu apakah rebound ini berlanjut atau berhenti di pivot 70.",
+    "narasi_flow": "MU jadi pembeli dominan dengan Rp4.000 juta (577.600 lot), jauh di atas broker lain. AK tercatat terbesar di sisi jual namun jauh lebih kecil, Rp1.300 juta; ritel (XL) turut tercatat di sisi jual, scalper absen dari daftar jual teratas. Net beli tercatat Rp788,5 juta.",
+    "narasi_teknikal": "Close 71 naik 4,41%, di atas pivot 70, namun masih di bawah EMA50 (76), berjarak -6,58% — rebound ini belum membawa harga kembali ke atas rata-rata 50 harinya. Volume 237,0 juta lembar; arah tercatat netral.",
+    "strategi": "Berlaku selama close bertahan di atas pivot 70; posisi masih di bawah EMA50 sehingga penerusan butuh konfirmasi lebih lanjut lewat R1 73.",
+    "konsekuensi": "Bila close turun ke bawah S1 68, rebound hari ini gugur dan tekanan jual bisa berlanjut ke S2 65.",
+    "rationale_rank": "Rebound bervolume besar dengan pembeli tunggal dominan (MU), meski harga masih di bawah EMA50.",
+    "skenario": {
+      "bull": {
+        "konfirmasi": "Tembus R1 73 dan bertahan di atasnya",
+        "rute": "Lanjut ke R2 75, lalu R3 78 mendekati EMA50 76",
+        "risiko": "Selama masih di bawah EMA50, rebound berisiko berhenti di tengah jalan jika minat beli MU tidak berlanjut"
+      },
+      "bear": {
+        "konfirmasi": "Close di bawah S1 68",
+        "rute": "Turun ke S2 65, lalu S3 63",
+        "risiko": "Tren turun jangka menengah (di bawah EMA50) berlanjut, rebound hari ini dianggap gagal"
+      }
+    }
+  }
+]
