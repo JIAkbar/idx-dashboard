@@ -116,3 +116,159 @@ export function potongRentang<T extends { time: string }>(data: T[], batasBawah:
   const i = data.findIndex((b) => b.time >= batasBawah)
   return i === -1 ? [] : data.slice(i)
 }
+
+/* ------------------------------------------------------------------ *
+ * Indikator baku (tahap 4). Semua fungsi murni: masukan array harga
+ * tutup (SUDAH tersaring lewat hariTanpaPerdagangan — dipanggil lewat
+ * `keDataLilinVolume`, jangan hitung dari `d` mentah), keluaran array
+ * sepanjang masukan dengan `null` di posisi yang belum cukup riwayat.
+ * `keSeriGaris` di bawah membuang posisi `null` itu supaya siap dipakai
+ * `LineSeries.setData()` (lightweight-charts menolak nilai bukan-angka).
+ * ------------------------------------------------------------------ */
+
+/** Rata-rata bergerak sederhana (Simple Moving Average). */
+export function hitungMA(tutup: number[], periode: number): Array<number | null> {
+  const hasil: Array<number | null> = new Array(tutup.length).fill(null)
+  let jumlah = 0
+  for (let i = 0; i < tutup.length; i++) {
+    jumlah += tutup[i]
+    if (i >= periode) jumlah -= tutup[i - periode]
+    if (i >= periode - 1) hasil[i] = jumlah / periode
+  }
+  return hasil
+}
+
+/** Rata-rata bergerak eksponensial. Bibitnya SMA `periode` titik pertama
+ *  (konvensi umum), baru dilanjut rumus rekursif `(harga - emaSebelum) * k +
+ *  emaSebelum` dengan `k = 2 / (periode + 1)`. */
+export function hitungEMA(tutup: number[], periode: number): Array<number | null> {
+  const hasil: Array<number | null> = new Array(tutup.length).fill(null)
+  if (tutup.length < periode) return hasil
+  const k = 2 / (periode + 1)
+  let sma = 0
+  for (let i = 0; i < periode; i++) sma += tutup[i]
+  sma /= periode
+  hasil[periode - 1] = sma
+  let ema = sma
+  for (let i = periode; i < tutup.length; i++) {
+    ema = (tutup[i] - ema) * k + ema
+    hasil[i] = ema
+  }
+  return hasil
+}
+
+/** RSI (Relative Strength Index) ala Wilder — pemulusan eksponensial pada
+ *  rata-rata untung/rugi, bukan rata-rata sederhana yang dihitung ulang tiap
+ *  jendela. Bibitnya rata-rata sederhana dari `periode` selisih pertama. */
+export function hitungRSI(tutup: number[], periode: number): Array<number | null> {
+  const hasil: Array<number | null> = new Array(tutup.length).fill(null)
+  if (tutup.length <= periode) return hasil
+  let untung = 0
+  let rugi = 0
+  for (let i = 1; i <= periode; i++) {
+    const selisih = tutup[i] - tutup[i - 1]
+    if (selisih > 0) untung += selisih
+    else rugi += -selisih
+  }
+  untung /= periode
+  rugi /= periode
+  hasil[periode] = rugi === 0 ? 100 : 100 - 100 / (1 + untung / rugi)
+  for (let i = periode + 1; i < tutup.length; i++) {
+    const selisih = tutup[i] - tutup[i - 1]
+    const untungHariIni = selisih > 0 ? selisih : 0
+    const rugiHariIni = selisih < 0 ? -selisih : 0
+    untung = (untung * (periode - 1) + untungHariIni) / periode
+    rugi = (rugi * (periode - 1) + rugiHariIni) / periode
+    hasil[i] = rugi === 0 ? 100 : 100 - 100 / (1 + untung / rugi)
+  }
+  return hasil
+}
+
+export interface HasilMACD {
+  macd: Array<number | null>
+  sinyal: Array<number | null>
+  histogram: Array<number | null>
+}
+
+/** MACD = EMA cepat - EMA lambat; garis sinyal = EMA dari garis MACD;
+ *  histogram = MACD - sinyal. Standar 12/26/9 dilempar dari pemanggil. */
+export function hitungMACD(
+  tutup: number[],
+  periodeCepat: number,
+  periodeLambat: number,
+  periodeSinyal: number,
+): HasilMACD {
+  const cepat = hitungEMA(tutup, periodeCepat)
+  const lambat = hitungEMA(tutup, periodeLambat)
+  const macd: Array<number | null> = tutup.map((_, i) => {
+    const c = cepat[i]
+    const l = lambat[i]
+    return c === null || l === null ? null : c - l
+  })
+  // EMA garis sinyal dihitung di atas deret MACD yang SUDAH terisi (tanpa
+  // null di depan) — hitungEMA butuh deret rapat, bukan yang berlubang.
+  const mulai = macd.findIndex((v) => v !== null)
+  const sinyal: Array<number | null> = new Array(tutup.length).fill(null)
+  if (mulai !== -1) {
+    const rapat = macd.slice(mulai) as number[]
+    const emaRapat = hitungEMA(rapat, periodeSinyal)
+    for (let i = 0; i < emaRapat.length; i++) sinyal[mulai + i] = emaRapat[i]
+  }
+  const histogram: Array<number | null> = tutup.map((_, i) => {
+    const m = macd[i]
+    const s = sinyal[i]
+    return m === null || s === null ? null : m - s
+  })
+  return { macd, sinyal, histogram }
+}
+
+export interface HasilBollinger {
+  tengah: Array<number | null>
+  atas: Array<number | null>
+  bawah: Array<number | null>
+}
+
+/** Bollinger Bands: pita tengah = MA `periode`, pita atas/bawah = tengah ±
+ *  `k` simpangan baku POPULASI (dibagi `periode`, bukan `periode - 1`) dari
+ *  jendela yang sama — konvensi standar Bollinger. */
+export function hitungBollinger(tutup: number[], periode: number, k: number): HasilBollinger {
+  const tengah = hitungMA(tutup, periode)
+  const atas: Array<number | null> = new Array(tutup.length).fill(null)
+  const bawah: Array<number | null> = new Array(tutup.length).fill(null)
+  for (let i = periode - 1; i < tutup.length; i++) {
+    const rata = tengah[i] as number
+    let jumlahKuadrat = 0
+    for (let j = i - periode + 1; j <= i; j++) jumlahKuadrat += (tutup[j] - rata) ** 2
+    const simpanganBaku = Math.sqrt(jumlahKuadrat / periode)
+    atas[i] = rata + k * simpanganBaku
+    bawah[i] = rata - k * simpanganBaku
+  }
+  return { tengah, atas, bawah }
+}
+
+/** Titik siap `LineSeries.setData()`: zip waktu+nilai, buang posisi `null`
+ *  (belum cukup riwayat) — lightweight-charts tak menerima nilai kosong di
+ *  tengah deret LineData. */
+export interface TitikGaris {
+  time: string
+  value: number
+}
+
+export function keSeriGaris(waktu: string[], nilai: Array<number | null>): TitikGaris[] {
+  const hasil: TitikGaris[] = []
+  for (let i = 0; i < nilai.length; i++) {
+    const v = nilai[i]
+    if (v !== null) hasil.push({ time: waktu[i], value: v })
+  }
+  return hasil
+}
+
+/** Periode bawaan tiap indikator — dipakai komponen supaya angka tak
+ *  tertulis dua kali (di sini dan di label layar). */
+export const INDIKATOR_DEFAULT = {
+  ma: [20, 50] as const,
+  ema: [20, 50] as const,
+  rsi: 14,
+  macd: { cepat: 12, lambat: 26, sinyal: 9 },
+  bollinger: { periode: 20, k: 2 },
+}

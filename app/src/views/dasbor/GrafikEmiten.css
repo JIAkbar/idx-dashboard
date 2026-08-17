@@ -10,6 +10,37 @@
 .lantai .grf-rentang { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .lantai .grf-rentang .bchip.on { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); }
 
+/* Sakelar indikator (tahap 4) — chip yang sama polanya dengan .grf-rentang,
+   ditaruh baris sendiri di panel-b (bukan panel-h, supaya tak berebut
+   tempat dengan chip rentang saat layar sempit). flex-wrap wajib: 7 chip
+   tak muat satu baris di 412px. */
+.lantai .grf-ind { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.lantai .grf-ind .bchip.on { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); }
+
+/* Legenda: nilai indikator aktif pada titik yang disorot kursor. Baris teks
+   biasa (bukan chip) — beda peran dari sakelar di atasnya. */
+.lantai .grf-legenda {
+  display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline;
+  font-family: var(--mono); font-size: 11.5px; color: var(--text2);
+  margin-bottom: 8px; min-height: 16px;
+}
+.lantai .grf-legenda-tgl { color: var(--text3); }
+
+/* Panduan singkat — pola <details>/<summary> yang sama dengan AturanKurasi
+   (admin/KurasiSetoran.tsx), ditulis ulang di sini karena berkas admin tak
+   boleh disentuh dari halaman dasbor publik ini. */
+.lantai .grf-panduan { margin-top: 12px; border: 1px solid var(--line); border-radius: 6px; }
+.lantai .grf-panduan > summary {
+  display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;
+  padding: 8px 12px; font-size: 12px; font-weight: 600; color: var(--text2);
+}
+.lantai .grf-panduan > summary:hover { color: var(--amber); }
+.lantai .grf-panduan[open] > summary { border-bottom: 1px solid var(--line); }
+.lantai .grf-panduan-daftar { padding: 10px 12px; margin: 0; }
+.lantai .grf-panduan-item { padding: 5px 0; }
+.lantai .grf-panduan-item dt { font-size: 11.5px; font-weight: 700; color: var(--text); }
+.lantai .grf-panduan-item dd { margin: 2px 0 0; font-size: 11.5px; line-height: 1.55; color: var(--text2); }
+
 /* Tinggi tetap: lightweight-charts (autoSize) butuh induk dengan tinggi
    eksplisit, bukan auto — tanpa ini kanvas kolaps jadi 0px. Diperkecil di
    telepon (breakpoint 700px, sama dengan seluruh Lantai) supaya sumbu &
