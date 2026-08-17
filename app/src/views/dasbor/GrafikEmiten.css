@@ -84,15 +84,31 @@
   font-size: 9.5px; letter-spacing: .08em; min-width: 88px;
 }
 
-/* Legenda: nilai indikator aktif pada titik yang disorot kursor. Baris teks
-   biasa (bukan chip) — beda peran dari daftar instans di atasnya. */
-.lantai .grf-legenda {
-  display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline;
-  font-family: var(--mono); font-size: 11.5px; color: var(--text2);
-  margin-bottom: 8px; min-height: 16px;
+/* Legenda DI DALAM kanvas, menumpuk di pojok kiri atas tiap pane (pola
+   TradingView). `top` disetel dari JS karena nilainya diukur dari DOM pane
+   yang bersangkutan — tinggi pane berubah mengikuti jumlah indikator, jadi
+   tak ada angka tetap yang bisa ditulis di sini.
+
+   pointer-events:none di wadahnya WAJIB: legenda duduk persis di atas area
+   gambar, dan tanpa itu crosshair mati begitu kursor lewat di bawah teksnya.
+   Dua tombol per baris mengembalikan pointer-events untuk dirinya sendiri. */
+.lantai .grf-legenda-kanvas {
+  position: absolute; left: 10px; z-index: 3;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
+  pointer-events: none; user-select: none;
+  font-family: var(--mono); font-size: 10.5px; line-height: 1.55;
 }
 .lantai .grf-legenda-tgl { color: var(--text3); }
-.lantai .grf-legenda-it { color: var(--ind-warna); }
+.lantai .grf-legenda-baris { display: inline-flex; align-items: center; gap: 5px; }
+.lantai .grf-legenda-titik { width: 7px; height: 7px; border-radius: 2px; background: var(--ind-warna); flex: none; }
+.lantai .grf-legenda-nama { color: var(--ind-warna); font-weight: 700; }
+.lantai .grf-legenda-nilai { color: var(--text2); font-variant-numeric: tabular-nums; }
+.lantai .grf-legenda-btn {
+  pointer-events: auto; display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; padding: 0; border: none; background: none;
+  color: var(--text3); opacity: .5; cursor: pointer;
+}
+.lantai .grf-legenda-btn:hover { opacity: 1; color: var(--amber); }
 
 /* Panduan singkat — pola <details>/<summary> yang sama dengan AturanKurasi
    (admin/KurasiSetoran.tsx), ditulis ulang di sini karena berkas admin tak

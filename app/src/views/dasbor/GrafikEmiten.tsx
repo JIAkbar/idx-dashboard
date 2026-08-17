@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   createChart, createSeriesMarkers, CandlestickSeries, HistogramSeries, LineSeries, LineStyle,
   type IChartApi, type IPriceLine, type ISeriesApi, type ISeriesMarkersPluginApi,
@@ -19,7 +19,7 @@ import { useDaftarInstans, BarisInstans } from '../../components/dasbor/DaftarIn
 import { fN } from '../../lib/dasbor/format'
 import { pesanGalat } from '../../lib/pesanGalat'
 import {
-  IkonMenu, IKON_CARI, IKON_SILANG, IKON_GRAFIK_NAIK, IKON_INFO, IKON_TONG,
+  IkonMenu, IKON_CARI, IKON_SILANG, IKON_GRAFIK_NAIK, IKON_INFO, IKON_TONG, IKON_MATA,
 } from '../../components/dasbor/IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 import './GrafikEmiten.css'
@@ -132,6 +132,8 @@ export function GrafikEmiten() {
   }, [kamus, cari])
 
   const containerRef = useRef<HTMLDivElement>(null)
+  // Bungkus kanvas — acuan posisi legenda dalam-kanvas (lihat `posPane`).
+  const bungkusRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
   const candleRef = useRef<ISeriesApi<'Candlestick'> | null>(null)
   const volRef = useRef<ISeriesApi<'Histogram'> | null>(null)
@@ -341,6 +343,50 @@ export function GrafikEmiten() {
     peta: garis.filter((g) => !g.histogram).map((g) => new Map(g.seri.map((p) => [p.time, p.value]))),
   })), [garisPerInstans])
 
+  // Pane mana yang dipakai tiap instans. Dihitung SEKALI di sini lalu dibaca
+  // dua tempat (penggambar seri & legenda dalam-kanvas) — dihitung sendiri
+  // di masing-masing, legendanya bisa muncul di pane yang bukan miliknya
+  // begitu salah satu urutannya berubah.
+  const panePerInstans = useMemo(() => {
+    const peta = new Map<string, number>()
+    let berikut = 1
+    for (const inst of ind.daftar) {
+      if (!inst.tampil) continue
+      peta.set(inst.id, SPEK_INDIKATOR[inst.jenis].diPanelHarga ? 0 : berikut++)
+    }
+    return peta
+  }, [ind.daftar])
+
+  // Jarak atas tiap pane dari ujung atas bungkus kanvas, dipakai menempatkan
+  // legenda di pojok kiri atas pane MASING-MASING (RSI/MACD punya legendanya
+  // sendiri, seperti TradingView). Diukur dari DOM pane-nya sendiri
+  // (`getHTMLElement`), bukan dijumlah dari tinggi + tebal pemisah yang
+  // ditebak — tebakan itu meleset beberapa piksel dan legendanya duduk
+  // separuh di luar panenya.
+  const [posPane, setPosPane] = useState<number[]>([0])
+  const ukurPane = useCallback(() => {
+    const chart = chartRef.current
+    const bungkus = bungkusRef.current
+    if (!chart || !bungkus) return
+    const atasBungkus = bungkus.getBoundingClientRect().top
+    const pos = chart.panes().map((p) => {
+      const el = p.getHTMLElement()
+      return el ? el.getBoundingClientRect().top - atasBungkus : 0
+    })
+    // Dibandingkan dulu supaya tak memicu render ulang tanpa perubahan nyata —
+    // fungsi ini dipanggil dari ResizeObserver, dan render yang memicu ukur
+    // yang memicu render adalah lingkaran yang tak berhenti sendiri.
+    setPosPane((lama) => (lama.length === pos.length && lama.every((v, i) => Math.abs(v - pos[i]) < 1) ? lama : pos))
+  }, [])
+
+  useEffect(() => {
+    const bungkus = bungkusRef.current
+    if (!bungkus) return
+    const pengamat = new ResizeObserver(() => ukurPane())
+    pengamat.observe(bungkus)
+    return () => pengamat.disconnect()
+  }, [ukurPane])
+
   // Susun ulang seluruh seri indikator dari nol tiap kali daftar/data/tema
   // berubah — membongkar-pasang beberapa belas seri jauh lebih murah daripada
   // melacak instans mana yang berubah, dan tak bisa hanyut dari state-nya.
@@ -357,11 +403,9 @@ export function GrafikEmiten() {
     seriIndRef.current = []
 
     const opsiGaris = { lineWidth: 1 as const, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false }
-    let paneBerikut = 1
     for (const { inst, garis } of garisPerInstans) {
-      if (!inst.tampil) continue
-      const spek = SPEK_INDIKATOR[inst.jenis]
-      const pane = spek.diPanelHarga ? 0 : paneBerikut++
+      const pane = panePerInstans.get(inst.id)
+      if (pane === undefined) continue // tak tampil
       const warna = baca(inst.warna)
       for (const g of garis) {
         if (g.histogram) {
@@ -385,24 +429,34 @@ export function GrafikEmiten() {
     const panes = chart.panes()
     panes[0]?.setStretchFactor(3)
     for (let i = 1; i < panes.length; i++) panes[i]?.setStretchFactor(1.1)
-  }, [garisPerInstans, theme])
+    // Diukur SESUDAH tata letak dihitung ulang, bukan di baris yang sama —
+    // tinggi pane baru belum berlaku pada saat setStretchFactor kembali.
+    requestAnimationFrame(ukurPane)
+  }, [garisPerInstans, panePerInstans, theme, ukurPane])
 
-  // Legenda: satu baris per instans yang tampil, menyebut parameternya
+  // Legenda: satu baris pendek per instans yang tampil, menyebut parameternya
   // ("MA 200", bukan "MA"), pada titik yang disorot kursor — jatuh balik ke
-  // titik TERAKHIR selagi kursor belum digeser ke kanvas.
+  // titik TERAKHIR selagi kursor belum digeser ke kanvas. Dikelompokkan per
+  // pane: yang menumpang di panel harga muncul di pojok kiri atas panel
+  // harga, RSI/MACD di pojok kiri atas pane-nya sendiri.
   const legenda = useMemo(() => {
     const waktu = waktuSorot ?? lilin[lilin.length - 1]?.time ?? null
     if (!waktu) return null
-    const baris = petaLegenda
-      .filter(({ inst }) => inst.tampil)
-      .map(({ inst, peta }) => ({
+    const perPane = new Map<number, Array<{ id: string; warna: string; label: string; nilai: string }>>()
+    for (const { inst, peta } of petaLegenda) {
+      const pane = panePerInstans.get(inst.id)
+      if (pane === undefined) continue
+      const baris = perPane.get(pane) ?? []
+      baris.push({
         id: inst.id,
         warna: inst.warna,
         label: labelInstansIndikator(inst),
         nilai: peta.map((p) => { const x = p.get(waktu); return x === undefined ? '—' : fN(x) }).join(' / '),
-      }))
-    return { waktu, baris }
-  }, [waktuSorot, lilin, petaLegenda])
+      })
+      perPane.set(pane, baris)
+    }
+    return { waktu, perPane: [...perPane.entries()].sort((a, b) => a[0] - b[0]) }
+  }, [waktuSorot, lilin, petaLegenda, panePerInstans])
 
   /* ---------------- Template ---------------- */
 
@@ -655,21 +709,6 @@ export function GrafikEmiten() {
             </div>
           )}
 
-          {/* Legenda: satu baris per instans yang tampil, di titik yang
-              disorot kursor — cuma nama indikator tanpa angka tak banyak
-              gunanya (§tahap 4). */}
-          {legenda && legenda.baris.length > 0 && (
-            <div className="grf-legenda">
-              <span className="grf-legenda-tgl">{legenda.waktu}</span>
-              {legenda.baris.map((b) => (
-                <span key={b.id} className="grf-legenda-it"
-                  style={{ '--ind-warna': `var(${b.warna})` } as React.CSSProperties}>
-                  {b.label} {b.nilai}
-                </span>
-              ))}
-            </div>
-          )}
-
           {/* Bungkus TERPISAH dari containerRef — lightweight-charts mengisi
               containerRef dengan kanvasnya sendiri; tanda PAPAN dipasang
               sebagai SAUDARA di bungkus ini (bukan anak containerRef) supaya
@@ -678,12 +717,45 @@ export function GrafikEmiten() {
               (bukan di tanda sendiri — tandanya pointer-events:none, tak
               bisa di-hover) yang mempertegas tanda lewat CSS
               `.grf-kanvas-bungkus:hover .grf-tanda-papan` di GrafikEmiten.css. */}
-          <div className="grf-kanvas-bungkus">
+          <div className="grf-kanvas-bungkus" ref={bungkusRef}>
             {/* Kanvas SELALU dipasang dengan ukuran final sejak awal (opacity,
                 bukan display:none) — lihat komentar .grf-chart-wrap.memuat di
                 GrafikEmiten.css: autoSize butuh lebar sungguhan sejak elemen
                 dibuat, bukan sejak elemen "muncul". */}
             <div ref={containerRef} className={'grf-chart-wrap' + (berkas ? '' : ' memuat')} />
+
+            {/* Legenda DI DALAM kanvas, pojok kiri atas tiap pane — seperti
+                TradingView, dan sebabnya bukan sekadar mirip-miripan: di luar
+                kanvas tiap indikator memakan satu baris penuh dan mendorong
+                grafiknya turun terus seiring instans bertambah. Dipasang
+                sebagai SAUDARA kanvas (bukan anaknya) dengan alasan yang sama
+                dengan tanda PAPAN di bawah: React tak pernah rebutan anak
+                elemen dengan DOM yang dikelola lightweight-charts. Posisi
+                atasnya diukur dari DOM pane-nya sendiri (lihat `ukurPane`). */}
+            {legenda?.perPane.map(([pane, baris]) => (
+              <div key={pane} className="grf-legenda-kanvas" style={{ top: `${(posPane[pane] ?? 0) + 6}px` }}>
+                {pane === 0 && <span className="grf-legenda-tgl">{legenda.waktu}</span>}
+                {baris.map((b) => (
+                  <span key={b.id} className="grf-legenda-baris"
+                    style={{ '--ind-warna': `var(${b.warna})` } as React.CSSProperties}>
+                    <span className="grf-legenda-titik" aria-hidden="true" />
+                    <span className="grf-legenda-nama">{b.label}</span>
+                    <span className="grf-legenda-nilai">{b.nilai}</span>
+                    {/* Dua tombol ini satu-satunya yang MENERIMA kursor di
+                        legenda (pointer-events:auto di CSS) — sisanya tembus
+                        supaya crosshair tak terhalang teks. */}
+                    <button type="button" className="grf-legenda-btn"
+                      title={`Sembunyikan ${b.label}`} onClick={() => ind.sakelarTampil(b.id)}>
+                      <IkonMenu d={IKON_MATA} size={11} />
+                    </button>
+                    <button type="button" className="grf-legenda-btn"
+                      title={`Hapus ${b.label}`} onClick={() => ind.hapus(b.id)}>
+                      <IkonMenu d={IKON_SILANG} size={9} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            ))}
             {/* Tanda PAPAN — pengganti logo TradingView yang dimatikan lewat
                 attributionLogo:false di atas (lihat komentar lisensi di situ).
                 Atribusi lisensinya sendiri PINDAH ke kaki situs global
