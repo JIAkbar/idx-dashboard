@@ -338,8 +338,33 @@ def ambil_daftar(sesi: requests.Session, tahun: int, periode: str) -> dict:
         "EmitenType": "s", "periode": periode, "kodeEmiten": "",
         "SortColumn": "KodeEmiten", "SortOrder": "asc",
     }
-    r = sesi.get(LIST_URL, params=params, headers=HEADER, timeout=60)
-    r.raise_for_status()
+    # 403 di endpoint ini TRANSIEN, bukan penolakan menetap. Terbukti 17 Agu
+    # 2026: dalam satu proses yang sama, panen AUDIT 2020 lolos penuh (699
+    # emiten), 2021 mulai tersendat (26 gagal), lalu 2022-2025 gagal SEMUA di
+    # langkah pengambilan daftar ini. Diuji ulang beberapa menit kemudian dari
+    # IP yang sama: tahun 2022 masih 403 tapi 2025 menjawab 200 dengan 882
+    # hasil -- jadi yang terjadi pembatasan laju, bukan pemblokiran.
+    #
+    # Tanpa percobaan ulang, SATU 403 membatalkan seluruh tahun. Padahal
+    # biayanya cuma menunggu: jeda menaik 5, 15, 30, 60 detik.
+    jeda = [5, 15, 30, 60]
+    galat_terakhir: Exception | None = None
+    for percobaan in range(len(jeda) + 1):
+        try:
+            r = sesi.get(LIST_URL, params=params, headers=HEADER, timeout=60)
+            r.raise_for_status()
+            break
+        except Exception as e:  # noqa: BLE001
+            galat_terakhir = e
+            if percobaan >= len(jeda):
+                raise
+            tunggu = jeda[percobaan]
+            print(f"    daftar {periode.upper()} {tahun} ditolak ({e.__class__.__name__}) "
+                  f"-- coba lagi dalam {tunggu} detik "
+                  f"[{percobaan + 1}/{len(jeda)}]", flush=True)
+            time.sleep(tunggu)
+    else:  # pragma: no cover - dijaga `raise` di atas
+        raise galat_terakhir or RuntimeError("daftar laporan tak terambil")
     hasil = {}
     for entri in (r.json().get("Results") or []):
         kode = (entri.get("KodeEmiten") or "").strip().upper()
