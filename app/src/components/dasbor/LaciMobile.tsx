@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { MENU_ITEMS } from '../../lib/dasbor/menu'
+import { MENU_KELOMPOK } from '../../lib/dasbor/menu'
 import { IkonMenu, IKON_KUNCI } from './IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 import { useAuth } from '../../context/AuthContext'
@@ -55,32 +55,43 @@ export function LaciMobile({ buka, onTutup, onMasuk }: {
           </button>
         </div>
 
+        {/* Kelompok yang sama dengan rail desktop (#175), tapi TANPA flyout:
+            layar sempit tak punya ruang untuk lapis kedua yang melayang, jadi
+            kelompoknya jadi tajuk dan menunya menjorok di bawahnya. */}
         <div className="dasbor-laci-kiri-list">
-          {MENU_ITEMS.map((item) => {
-            // Cuma item bermapping eksplisit yang dicek — lihat komentar sama
-            // di Sidebar.tsx (jangan fallback ke item.id, bisa nyasar ke kunci
-            // halaman lain yang kebetulan namanya sama).
-            const kunci = PETA_MENU_KUNCI[item.id]
-            const terkunci = kunci ? !boleh(kunci) : false
-            return (
-              <NavLink
-                key={item.id}
-                to={item.path}
-                end={item.path === '/'}
-                className={({ isActive }) => 'dasbor-laci-item' + (isActive ? ' active' : '')}
-                onClick={onTutup}
-                title={terkunci ? alasanRingkas(kunci!) : undefined}
-              >
-                <IkonMenu d={item.ikon} size={19} />
-                <span>{item.label}</span>
-                {terkunci ? (
-                  <IkonMenu d={IKON_KUNCI} size={14} />
-                ) : (
-                  item.badge && <span className="dasbor-nav-badge">{item.badge}</span>
-                )}
-              </NavLink>
-            )
-          })}
+          {MENU_KELOMPOK.map((grup) => (
+            <div className="dasbor-laci-grup" key={grup.id}>
+              <div className="dasbor-laci-grup-jd">
+                <IkonMenu d={grup.ikon} size={14} />
+                <span>{grup.label}</span>
+              </div>
+              {grup.items.map((item) => {
+                // Cuma item bermapping eksplisit yang dicek — lihat komentar
+                // sama di Sidebar.tsx (jangan fallback ke item.id, bisa nyasar
+                // ke kunci halaman lain yang kebetulan namanya sama).
+                const kunci = PETA_MENU_KUNCI[item.id]
+                const terkunci = kunci ? !boleh(kunci) : false
+                return (
+                  <NavLink
+                    key={item.id}
+                    to={item.path}
+                    end={item.path === '/'}
+                    className={({ isActive }) => 'dasbor-laci-item' + (isActive ? ' active' : '')}
+                    onClick={onTutup}
+                    title={terkunci ? alasanRingkas(kunci!) : undefined}
+                  >
+                    <IkonMenu d={item.ikon} size={19} />
+                    <span>{item.label}</span>
+                    {terkunci ? (
+                      <IkonMenu d={IKON_KUNCI} size={14} />
+                    ) : (
+                      item.badge && <span className="dasbor-nav-badge">{item.badge}</span>
+                    )}
+                  </NavLink>
+                )
+              })}
+            </div>
+          ))}
         </div>
 
         <div className="dasbor-laci-kiri-aksi">
