@@ -213,7 +213,7 @@ def band(ed, eyebrow="Tinjauan Teknikal & Arus Dana Harian"):
 def kaki(ed):
     return f'''<footer class="foot">
     <span class="kode">{ed["edisi"]}</span>
-    <span>© {ed["tanggal_id"].split()[-1]} Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© {ed["tanggal_id"].split()[-1]} PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>'''
 
 
@@ -381,10 +381,16 @@ def strip_prob(h):
             f'{isi}</div>')
 
 
-def kartu_skenario(em):
-    """Scenario Map 3 kartu + Aturan Eksekusi. Field edisi `skenario` menang;
-    tanpa field itu, FALLBACK dirakit dari target/invalidation/pivot/strategi
-    supaya edisi lama tetap terakit tanpa edit."""
+def peta_skenario(em):
+    """Dict skenario lengkap (bull/retest/invalid/aturan) untuk satu emiten.
+
+    Field edisi `skenario` MENANG per kunci; kunci yang tak diisi dirakit dari
+    target/invalidation/pivot/strategi. Dipisah dari kartu_skenario() supaya
+    perakit lain (build_bedah.hal_skenario) memakai fallback yang sama —
+    sebelum ini ia membaca sk["retest"]/sk["invalid"] langsung dan meledak
+    KeyError untuk emiten yang edisinya menulis skenario bull/bear saja
+    (mis. ARCI 14 Agu).
+    """
     p = em["pivot"]; c = em["ohlc_hari"]["c"]
     sk = {
         "bull": {"konfirmasi": f'Close &gt;{fmt(p["R1"])} dengan volume di atas rerata 20 hari',
@@ -416,7 +422,13 @@ def kartu_skenario(em):
 
 def halaman_emiten(em, sk, ed, ohlc, idx, pr=None, alias=None):
     o = em["ohlc_hari"]; p = em["pivot"]
-    badge_kredit = f'<div class="ek-badge">▪ Disetor oleh {alias}</div>' if alias else ""
+    # Kredit kontributor BERDAMPINGAN dengan kode emiten (permintaan user 17
+    # Agu: "dimunculkan di samping nama emiten si kontributor nya"). Sumber
+    # utamanya ruas `kontributor` di edisi; berkas kredit-<EDISI>.json hanya
+    # menimpa kalau ada. Kecil & redup: pengakuan, bukan perebut perhatian.
+    penyetor = alias or em.get("kontributor")
+    kredit_tk = (f'<span class="tk-kredit">setoran <b>{penyetor}</b></span>'
+                 if penyetor else "")
     chg_cls = "bull" if o["chg"] >= 0 else "bear"
     tanda = "+" if o["chg"] >= 0 else "−"
     kata = em["label"].split("—")[0].strip()
@@ -443,7 +455,7 @@ def halaman_emiten(em, sk, ed, ohlc, idx, pr=None, alias=None):
   {band(ed)}
   <div class="inner">
     <div class="trow">
-      <div class="tk">${em["ticker"]}<small>{em["nama"]}</small></div>
+      <div class="tk">${em["ticker"]}<small>{em["nama"]}</small>{kredit_tk}</div>
       <div class="px"><span class="h">{fmt(o["c"])}</span><br>
         <span class="c {chg_cls}">{tanda}{fmt(abs(o["chg"]))} ({tanda}{fmt(abs(o["pct"]),2)}%)</span></div>
     </div>
@@ -456,7 +468,6 @@ def halaman_emiten(em, sk, ed, ohlc, idx, pr=None, alias=None):
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">{ed["tanggal_flow"]} · Net</span></h3>
-        {badge_kredit}
         <div class="meter"><i style="left:{em["slider_pct"]}%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -467,7 +478,8 @@ def halaman_emiten(em, sk, ed, ohlc, idx, pr=None, alias=None):
           <tr class="tot"><td>NET</td><td colspan="3" class="{net_cls}">{net_txt}
             <small style="color:var(--mute);font-weight:400"> (B {fmt_rp(tb)} · S {fmt_rp(tj)})</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit{
+          f' — setoran {penyetor}, hak cipta setoran ada padanya' if penyetor else ""}.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -488,7 +500,7 @@ def halaman_emiten(em, sk, ed, ohlc, idx, pr=None, alias=None):
           <div class="k sup">Support</div><div class="v">{sup}{ragu}</div>
           <div class="k res">Resistance</div><div class="v">{res}</div>
         </div>
-        {kartu_skenario(em)}
+        {peta_skenario(em)}
         {strip_prob(pr)}
         <div class="skor">
           <div class="head"><span class="t">Skor Komposit</span><span class="n">{sk["total"]:.0f}<small style="font-size:7pt;color:var(--mute)">/100</small></span></div>
@@ -567,9 +579,9 @@ def halaman_sampul(ed, skor_map):
         <span><span class="l">IHSG</span><b>{ed["ihsg"]["nilai"]}</b> <span class="c-{ed["ihsg"]["cls"]}">{ed["ihsg"]["pct"]}</span></span>
         <span><span class="l">{ed["nf"]["label"]}</span><b class="c-{ed["nf"]["cls"]}">{ed["nf"]["nilai"]}</b> {ed["nf"]["ket"]}</span>
       </div>
-      <div class="cv-legal">© {ed["tanggal_id"].split()[-1]} Johan Iriawan Akbar — PAPAN (Pusat Analisa Pasar Nusantara). Hak cipta dilindungi.<br>
+      <div class="cv-legal">© {ed["tanggal_id"].split()[-1]} PAPAN — Pusat Analisa Pasar Nusantara. Hak cipta dilindungi.<br>
       Analisis probabilistik, bukan ajakan transaksi.<br>
-      Data: TradingView &amp; Stockbit, Yahoo Finance.</div>
+      Data: TradingView &amp; Stockbit.</div>
     </div>
   </div>
 </div>'''
@@ -602,27 +614,30 @@ def halaman_ringkasan(ed, skor_map, prob_map=None):
     <h3 class="rule">Metodologi</h3>
     <p class="metode"><b>Skor komposit 0–100:</b> Technical 35% · Big Money Flow 30% · Risk/reward 20% ·
     Liquidity 10% · IHSG sensitivity 5%. Pemetaan risiko: ≥80 Menengah · 55–79 Tinggi · &lt;55 Ekstrem.</p>
-    <p class="metode"><b>Sumber data:</b> harga Yahoo Finance &amp; statistik resmi IDX; pivot &amp; EMA dihitung dari data
+    <p class="metode"><b>Sumber data:</b> statistik resmi IDX; pivot &amp; EMA dihitung dari data
     harga; arus broker dari Broker Summary Stockbit. Komponen data yang tidak tersedia tidak
     pernah diisi perkiraan — halaman terkait akan menampilkan penanda kesenjangan data dan skor
     diberi penalti. Peringkat bersifat komparatif antar emiten edisi ini, bukan sinyal beli otomatis.</p>
     <p class="metode"><b>Kolom Prob 5h:</b> probabilitas historis close 5 hari ke depan lebih tinggi,
     dari backtest setup serupa (posisi vs EMA50, pivot harian, rasio volume 20 hari, posisi di
-    rentang 20 hari) atas seluruh seri harga cache edisi ini; n = jumlah sampel setup serupa.
+    rentang 20 hari) atas seluruh seri harga emiten edisi ini; n = jumlah sampel setup serupa.
     Label "k/4" berarti pencocokan dilonggarkan ke k fitur karena sampel penuh &lt;30.</p>'''
     kepala_tabel = ('<tr><th>Ticker</th><th>Emiten</th><th>Close</th><th>±%</th><th>Bias</th>'
                     '<th>Prob 5h</th><th>Skor</th><th>Risiko</th></tr>')
 
     # Paginasi: baris .ring 2-lajur tinggi — edisi gemuk (>10) tembus footer
     # kalau dipaksa 1 halaman. Kapasitas konservatif: hal-1 (dengan lede,
-    # tanpa penutup) 14 baris; sambungan 16; hal terakhir (bawa ihsgbar +
-    # metodologi) maks 10. Edisi ≤10 tetap persis 1 halaman seperti dulu.
+    # tanpa penutup) 13 baris; sambungan 15; hal terakhir (bawa ihsgbar +
+    # metodologi) maks 9. Edisi ≤10 tetap persis 1 halaman seperti dulu.
+    # Angka diturunkan satu takik 17 Agu: kapasitas lama menyisakan sisa
+    # beberapa milimeter yang menabrak kaki halaman di PDF (tak terlihat di
+    # HTML karena halaman layar boleh memanjang).
     if n <= 10:
         potongan = [baris]
     else:
-        potongan, sisa = [baris[:14]], baris[14:]
-        while len(sisa) > 10:
-            potongan.append(sisa[:16]); sisa = sisa[16:]
+        potongan, sisa = [baris[:13]], baris[13:]
+        while len(sisa) > 9:
+            potongan.append(sisa[:15]); sisa = sisa[15:]
         potongan.append(sisa)
 
     halaman = []
@@ -666,21 +681,22 @@ def muat_kredit(edisi):
 def halaman_kolofon(ed, kredit=None):
     """Halaman penutup terbitan: monogram + wordmark PAPAN, peran Developer
     (utama) & Analisa/Penyusun (kedua) — keduanya Johan Iriawan Akbar — lalu
-    kontributor. Dengan kredit.json: alias unik + jumlah emiten yang
-    disetornya edisi ini, urut kontribusi terbanyak. Tanpa kredit.json:
-    daftar nama hardcode lama (edisi lama tetap terbit sama)."""
+    kontributor. Nama penyetor diambil dari ruas `kontributor` tiap emiten di
+    edisi — berkas kredit terpisah hanya menimpa kalau ada: alias unik +
+    jumlah emiten yang disetornya, urut kontribusi terbanyak. Edisi tanpa
+    ruas itu tetap terbit dengan daftar nama lama."""
     kontrib = (kredit or {}).get("kontributor") or {}
-    if kontrib:
-        cnt = {}
-        for em in ed["emiten"]:
-            alias = kontrib.get(em["ticker"])
-            if alias:
-                cnt[alias] = cnt.get(alias, 0) + 1
+    cnt = {}
+    for em in ed["emiten"]:
+        alias = kontrib.get(em["ticker"]) or em.get("kontributor")
+        if alias:
+            cnt[alias] = cnt.get(alias, 0) + 1
+    if cnt:
         urut = sorted(cnt.items(), key=lambda kv: -kv[1])
-        judul_kontrib = "Kontributor Edisi Ini"
+        judul_kontrib = "Kontributor Edisi Ini <span class=\"kf-hak\">pemilik hak cipta setoran masing-masing</span>"
         sel = "\n".join(
             f'<div class="kf-nama"><span>{alias}</span><span class="kf-jml">{n} emiten</span></div>'
-            for alias, n in urut) or '<div class="kf-nama"><span>belum ada setoran tercatat</span></div>'
+            for alias, n in urut)
     else:
         nama_lama = ["Agitama Wahyu Putra Dita", "Mohamad Miftahul Ulum", "Ali Supian",
                      "Wardani W.", "Dhafina S. F.", "Erika J.", "Difla S.", "Ratu N. A. A."]
@@ -706,7 +722,9 @@ def halaman_kolofon(ed, kredit=None):
 {sel}
       </div>
     </div>
-    <div class="kf-kaki">© {tahun} Johan Iriawan Akbar — PAPAN. Hak cipta dilindungi.<br>
+    <div class="kf-kaki">© {tahun} PAPAN — Pusat Analisa Pasar Nusantara. Hak cipta dilindungi.<br>
+    Hak cipta setiap setoran Broker Summary tetap pada kontributor yang menyetorkannya;
+    PAPAN memuatnya atas izin mereka dan mencantumkan namanya di halaman emiten terkait.<br>
     Terbitan Arus Pasar disusun untuk edukasi analisa pasar, bukan ajakan transaksi.</div>
   </div>
 </div>'''
@@ -750,16 +768,19 @@ def halaman_peringkat(ed, skor_map):
     kepala_tabel = '''<tr><th>#</th><th>Ticker</th><th>Skor</th><th>Tek/35</th><th>Flow/30</th><th>R:R/20</th>
         <th>Lik/10</th><th>IHSG/5</th><th style="text-align:left;padding-left:5mm">Rationale</th><th>Risiko</th></tr>'''
 
-    # Paginasi (pola sama halaman_ringkasan): edisi >12 tembus footer di 1
-    # halaman. Hal-1 (lede) 16 baris; sambungan 20; hal terakhir bawa blok
-    # Model/Eksekusi/Integritas maks 12. Edisi ≤12 tetap 1 halaman.
+    # Paginasi (pola sama halaman_ringkasan): edisi >11 tembus footer di 1
+    # halaman. Hal-1 (lede) 11 baris; sambungan 14; hal terakhir bawa blok
+    # Model/Eksekusi/Integritas maks 9. Edisi ≤11 tetap 1 halaman.
+    # Angka lama (16/20/12) dihitung dari rationale satu baris; kenyataannya
+    # kebanyakan rationale memakan dua sampai tiga baris, sehingga halaman
+    # pertama edisi 20 emiten meluber ±31 mm dan menimpa kaki halaman.
     n = len(urut)
-    if n <= 12:
+    if n <= 11:
         potongan = [baris]
     else:
-        potongan, sisa = [baris[:16]], baris[16:]
-        while len(sisa) > 12:
-            potongan.append(sisa[:20]); sisa = sisa[20:]
+        potongan, sisa = [baris[:11]], baris[11:]
+        while len(sisa) > 9:
+            potongan.append(sisa[:14]); sisa = sisa[14:]
         potongan.append(sisa)
 
     halaman = []

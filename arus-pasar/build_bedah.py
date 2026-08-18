@@ -91,7 +91,24 @@ def tanggal_id(iso):
     return f"{int(h)} {BULAN_ID[int(b) - 1]} {t}"
 
 
+def ket_batas_data(bd, cutoff):
+    """Kalimat pita 'Batas Data'. Bedah yang dirakit dari edisi hari yang SAMA
+    (BUMI/ARCI 14 Agu) ditutup di sesi tanggal terbitnya sendiri — kalimat lama
+    yang berbunyi 'perdagangan hari terbit belum tercakup' jadi bohong di kasus
+    itu, jadi kalimatnya mengikuti kenyataan, bukan sebaliknya."""
+    if cutoff == bd["tanggal_id"].split(", ")[-1]:
+        return (f'Seluruh angka terbitan ini ditutup pada penutupan sesi <b>{cutoff}</b> — '
+                'sesi bursa terakhir yang sudah selesai saat terbitan dirakit. Ini bukan '
+                'data waktu nyata: harga, arus broker, dan probabilitas tidak berubah lagi '
+                'setelah angka ditutup.')
+    return (f'Seluruh angka terbitan ini ditutup pada sesi <b>{cutoff}</b> — perdagangan '
+            f'hari terbit ({bd["tanggal_id"]}) belum tercakup. Ini bukan data waktu nyata: '
+            'harga, arus broker, dan probabilitas dihitung dari sesi bursa yang sudah '
+            'selesai sebelum tanggal rilis.')
+
+
 def hal_sampul(bd, em, r, pr, cutoff):
+    ket_cutoff = ket_batas_data(bd, cutoff)
     o = em["ohlc_hari"]
     gap = (r["pcd"] - r["close"]) / r["close"] * 100
     arah = "di bawah" if gap > 0 else "di atas"
@@ -117,15 +134,13 @@ def hal_sampul(bd, em, r, pr, cutoff):
     <div class="bd-vonis">{bd["vonis"]}</div>
     <div class="bd-cutoff">
       <span class="l">Batas Data</span>
-      Seluruh angka terbitan ini ditutup pada sesi <b>{cutoff}</b> — perdagangan hari terbit
-      ({bd["tanggal_id"]}) belum tercakup. Ini bukan data waktu nyata: harga, arus broker, dan
-      probabilitas dihitung dari sesi bursa yang sudah selesai sebelum tanggal rilis.
+      {ket_cutoff}
     </div>
     <div class="cv-foot">
       <div class="cv-stats">{sel}</div>
-      <div class="cv-legal">© {bd["tanggal_id"].split()[-1]} Johan Iriawan Akbar — PAPAN (Pusat Analisa Pasar Nusantara). Hak cipta dilindungi.<br>
+      <div class="cv-legal">© {bd["tanggal_id"].split()[-1]} PAPAN — Pusat Analisa Pasar Nusantara. Hak cipta dilindungi.<br>
       Analisis probabilistik, bukan ajakan transaksi. PCD = aproksimasi OHLCV, bukan data done per harga.<br>
-      Data per {cutoff} (bukan waktu nyata) · sumber: Yahoo Finance &amp; Stockbit.</div>
+      Data per {cutoff} (bukan waktu nyata) · sumber: riwayat harga bursa &amp; Broker Summary Stockbit.</div>
     </div>
   </div>
 </div>'''
@@ -232,8 +247,12 @@ def hal_teknikal(bd, em, ohlc, pr):
     res = " <span>|</span> ".join(B.fmt(p[k]) for k in ("R1", "R2", "R3"))
     seri = ohlc[bd["ticker"]]
     rentang_cap = "1 Tahun" if len(seri) >= 252 else f'Sejak Listing ({seri[0]["d"]})'
-    pool_lbl = (f'pool cache edisi {bd["edisi_sumber"]}' if "edisi_sumber" in bd
-                else f'pool cache {bd["cache"]} + seri {bd["ticker"]} sendiri')
+    # Nama berkas/istilah dapur tak boleh muncul di produk — sebut pool-nya
+    # dengan tanggal edisi yang bermakna bagi pembaca, bukan nama cache.
+    pool_lbl = (f'pool riwayat harga edisi {tanggal_id(bd["edisi_sumber"])}'
+                if "edisi_sumber" in bd
+                else f'pool riwayat harga edisi {tanggal_id(bd["cache"])} '
+                     f'+ seri {bd["ticker"]} sendiri')
     return f'''
 <div class="page s-{B.sentimen(em)}">
   <span class="senti-edge"></span>
@@ -291,7 +310,7 @@ def hal_broker(bd, em, ed_sumber):
           <tr class="tot"><td>NET</td><td colspan="3" class="{net_cls}">{net_txt}
             <small style="color:var(--mute);font-weight:400"> (B {B.fmt_rp(tb)} · S {B.fmt_rp(tj)})</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit. Peran broker: RITEL &amp; SCALP
+        <div class="brksrc">Sumber: Broker Summary Stockbit. Peran broker: RITEL &amp; SCALP
           mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section>
@@ -612,6 +631,14 @@ def main():
         hal4 = hal_broker_seri(bd, flow, ed_sumber["peran_broker"] if ed_sumber else None)
     elif ed_sumber:
         hal4 = hal_broker(bd, em, ed_sumber)
+    elif em.get("beli"):
+        # Bedah standalone yang setorannya cuma SATU hari Broker Summary
+        # (BUMI 14 Agu): barisnya dibawa langsung di blok `em`, jadi tak perlu
+        # berkas flow multi-hari — chart net-per-hari satu batang tidak
+        # memberi tahu apa pun yang tak sudah terbaca dari tabelnya.
+        hal4 = hal_broker(bd, em, {"peran_broker": bd.get("peran_broker",
+                                                          {"ritel": [], "scalper": []}),
+                                   "tanggal_flow": bd["tanggal_flow"]})
     else:
         hal4 = hal_broker_kosong(bd)
 

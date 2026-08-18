@@ -52,13 +52,26 @@
   .band .e{text-align:right;font-size:7.5pt;color:var(--ink2);line-height:1.5}
   .band .e .kode{font-family:var(--mono);font-size:8pt;color:var(--teal)}
 
-  .inner{padding:6mm 14mm 0;display:flex;flex-direction:column;flex:1;min-height:0}
+  /* overflow:hidden itu PENGAMAN, bukan tata letak. Sebelum ini isi yang
+     kelebihan tinggi menetes keluar kotak .inner dan menimpa .foot — di layar
+     tak kentara karena latar gelapnya senada, di PDF terbaca sebagai baris
+     hak cipta yang bertumpuk skor komposit (temuan 17 Agu). Kapasitas tiap
+     halaman sudah dikecilkan supaya tak ada yang benar-benar terpotong; klip
+     ini hanya menjamin kaki halaman tak pernah tertimpa lagi. */
+  .inner{padding:6mm 14mm 0;display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+  .cols>*{min-width:0}
 
   /* ── Judul emiten ── */
   .trow{display:flex;justify-content:space-between;align-items:flex-end;
     border-bottom:1px solid var(--hair);padding-bottom:2mm}
   .trow .tk{font-family:var(--mono);font-size:19pt;font-weight:800;letter-spacing:-.01em;line-height:1}
   .trow .tk small{font-family:var(--disp);font-size:9pt;font-weight:400;color:var(--mute);margin-left:8px;letter-spacing:0}
+  /* Kredit kontributor berdampingan dengan kode emiten — kecil & redup,
+     pengakuan yang tak merebut perhatian dari harga. */
+  .trow .tk .tk-kredit{font-family:var(--disp);font-size:6.4pt;font-weight:400;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--mute);
+    margin-left:8px;vertical-align:3px;white-space:nowrap}
+  .trow .tk .tk-kredit b{font-weight:700;color:var(--ink2);letter-spacing:.04em;text-transform:none;font-size:7.2pt}
   .trow .px{text-align:right;font-variant-numeric:tabular-nums;line-height:1.1;font-family:var(--mono)}
   .trow .px .h{font-size:19pt;font-weight:800}
   .trow .px .c{font-size:9pt;font-weight:700}
@@ -194,8 +207,8 @@
   .skor .leg{display:flex;gap:5mm;font-size:6.3pt;color:var(--mute);margin-top:1.5mm;
     font-variant-numeric:tabular-nums;font-family:var(--mono)}
 
-  .foot{border-top:1px solid var(--hair);margin:3mm 14mm 0;padding:2mm 0 5mm;
-    display:flex;justify-content:space-between;font-size:6.5pt;color:var(--mute)}
+  .foot{border-top:1px solid var(--hair);margin:3mm 14mm 0;padding:2mm 0 5mm;flex:none;
+    display:flex;justify-content:space-between;gap:6mm;font-size:6.5pt;color:var(--mute)}
   .foot .kode{font-family:var(--mono)}
 
   /* ── Sampul (sistem sentimen) ── */
@@ -220,12 +233,16 @@
   .cvrow .lb{flex:1;color:var(--ink2);font-size:9.5pt}
   .cvrow .sk{font-family:var(--mono);font-size:12pt;font-weight:800}
   /* sampul padat 7-20 emiten: 2 kolom, label pendek */
-  .cover .wm-big.kecil{font-size:30pt;line-height:1.1}
-  .cv-list.padat{columns:2;column-gap:9mm;margin-top:7mm}
-  .cv-list.padat .cvrow{padding:1.7mm 0;gap:3mm;break-inside:avoid}
-  .cv-list.padat .tkk{font-size:10pt;width:17mm}
-  .cv-list.padat .lb{font-size:7.3pt}
-  .cv-list.padat .sk{font-size:10pt}
+  /* Sampul padat (11–28 emiten): baris dilonggarkan supaya daftar dua lajur
+     mengisi tinggi halaman, bukan menumpuk di sepertiga atas dan meninggalkan
+     rongga kosong sebesar sepertiga halaman di bawahnya (temuan 17 Agu:
+     "daily kurang rapi nih susunan nya"). */
+  .cover .wm-big.kecil{font-size:34pt;line-height:1.1}
+  .cv-list.padat{columns:2;column-gap:10mm;margin-top:9mm}
+  .cv-list.padat .cvrow{padding:3.1mm 0;gap:3.5mm;break-inside:avoid}
+  .cv-list.padat .tkk{font-size:11pt;width:18mm}
+  .cv-list.padat .lb{font-size:8pt;line-height:1.35}
+  .cv-list.padat .sk{font-size:11pt}
   .cv-foot{margin-top:auto;padding-bottom:14mm}
   /* kotak stat berlabel gaya sampul lama (V2) — angka besar kebaca, bukan
      satu baris kecil; label kecil di atas angka. */
@@ -285,6 +302,8 @@
   .kf-nama{font-family:var(--mono);font-size:10.5pt;color:var(--ink2);padding:2.2mm 0;
     border-bottom:1px solid color-mix(in srgb, var(--ink) 5%, transparent);display:flex;justify-content:space-between;gap:4mm}
   .kf-jml{color:var(--mute);font-size:8.5pt;font-weight:400;white-space:nowrap}
+  .kf-hak{display:block;font-size:6.6pt;letter-spacing:.1em;text-transform:none;
+    color:var(--mute);margin-top:1.5mm;font-weight:400}
   .kf-kaki{margin-top:auto;padding-top:14mm;font-size:7.5pt;color:var(--mute);line-height:1.9}
   /* badge kredit kontributor di kartu emiten — kecil, redup, tidak mencuri
      perhatian dari angka */
@@ -354,11 +373,18 @@
 
   /* ── Peringkat ── */
   table.rank{width:100%;border-collapse:collapse;font-size:8.8pt;font-variant-numeric:tabular-nums}
+  /* Kolom angka WAJIB punya jarak horizontal. Tanpa padding kanan, judul
+     kolom saling berdempet jadi satu kata ("TICKERSKORTEK/35FLOW/30") dan
+     nomor urut menempel ke ticker ("17PRDL") — cacat yang baru kelihatan di
+     PDF edisi 20 emiten. */
   table.rank th{font-size:6.3pt;color:var(--mute);text-transform:uppercase;letter-spacing:.14em;
-    text-align:right;padding:2mm 0 1.5mm;border-bottom:1px solid var(--hair);font-weight:700}
+    text-align:right;padding:2mm 3mm 1.5mm 0;border-bottom:1px solid var(--hair);font-weight:700;
+    white-space:nowrap}
   table.rank th:nth-child(-n+2){text-align:left}
-  table.rank td{padding:2.8mm 0;border-bottom:1px solid color-mix(in srgb, var(--ink) 5%, transparent);text-align:right}
+  table.rank td{padding:2.8mm 3mm 2.8mm 0;border-bottom:1px solid color-mix(in srgb, var(--ink) 5%, transparent);text-align:right}
   table.rank td:nth-child(-n+2){text-align:left}
+  table.rank th:first-child,table.rank td:first-child{width:7mm;padding-right:2mm}
+  table.rank th:nth-child(2),table.rank td:nth-child(2){width:16mm}
   table.rank .tk{font-weight:800;font-size:10pt;font-family:var(--mono)}
   table.rank .total{font-weight:800;font-size:12pt;font-family:var(--mono)}
   .blok{margin-top:4.5mm}
@@ -435,84 +461,9 @@
 <div class="c-row"><span class="c-tk">AVIA</span>
         <span class="c-lbl">Sideways — Konsolidasi Tepat di EMA50<span class="c-prog"></span></span>
         <span class="c-skor">62</span></div>
-<div class="c-row"><span class="c-tk">GIAA</span>
-        <span class="c-lbl">Breakout Volume Besar — Ritel Ikut Beli, Scalper Ambil Untung<span class="c-prog"></span></span>
-        <span class="c-skor">62</span></div>
-<div class="c-row"><span class="c-tk">MMIX</span>
-        <span class="c-lbl">Waspada — Dominasi Satu Pihak YB–XA<span class="c-prog"></span></span>
-        <span class="c-skor">62</span></div>
-<div class="c-row"><span class="c-tk">PSAB</span>
-        <span class="c-lbl">Pullback — KZ Menampung di Koreksi<span class="c-prog"></span></span>
-        <span class="c-skor">58</span></div>
-<div class="c-row"><span class="c-tk">CDIA</span>
-        <span class="c-lbl">Flat di Pivot — Net Beli Institusi Diam-diam<span class="c-prog"></span></span>
-        <span class="c-skor">58</span></div>
-<div class="c-row"><span class="c-tk">EMAS</span>
-        <span class="c-lbl">Satu Broker Dominasi Jual, Net Nyaris Impas<span class="c-prog"></span></span>
-        <span class="c-skor">57</span></div>
-<div class="c-row"><span class="c-tk">WMUU</span>
-        <span class="c-lbl">Akumulasi Tipis, Ritel Ikut Masuk<span class="c-prog"></span></span>
-        <span class="c-skor">56</span></div>
-<div class="c-row"><span class="c-tk">VIVA</span>
-        <span class="c-lbl">Spekulatif — Momentum Kencang, Risiko Setara<span class="c-prog"></span></span>
-        <span class="c-skor">56</span></div>
-<div class="c-row"><span class="c-tk">BREN</span>
-        <span class="c-lbl">Bearish — Arus Silang di Area Low<span class="c-prog"></span></span>
-        <span class="c-skor">56</span></div>
-<div class="c-row"><span class="c-tk">BRPT</span>
-        <span class="c-lbl">Bearish — Distribusi ke Ritel<span class="c-prog"></span></span>
-        <span class="c-skor">55</span></div>
-<div class="c-row"><span class="c-tk">BUMI</span>
-        <span class="c-lbl">Bearish — Jual Terkonsentrasi Satu Pintu<span class="c-prog"></span></span>
-        <span class="c-skor">54</span></div>
-<div class="c-row"><span class="c-tk">PTRO</span>
-        <span class="c-lbl">Bearish — Distribusi di Puncak Tren<span class="c-prog"></span></span>
-        <span class="c-skor">54</span></div>
-<div class="c-row"><span class="c-tk">DSSA</span>
-        <span class="c-lbl">Sideways — Akumulasi Terselubung<span class="c-prog"></span></span>
-        <span class="c-skor">54</span></div>
-<div class="c-row"><span class="c-tk">ASPR</span>
-        <span class="c-lbl">Rebound — Institusi Menyerap dari Ritel<span class="c-prog"></span></span>
-        <span class="c-skor">54</span></div>
-<div class="c-row"><span class="c-tk">SRSN</span>
-        <span class="c-lbl">Beli Terkonsentrasi, Net Flow Nyaris Datar<span class="c-prog"></span></span>
-        <span class="c-skor">54</span></div>
-<div class="c-row"><span class="c-tk">PRDL</span>
-        <span class="c-lbl">Turun Tipis di Bawah Pivot — Ritel Top Seller<span class="c-prog"></span></span>
-        <span class="c-skor">53</span></div>
-<div class="c-row"><span class="c-tk">PADI</span>
-        <span class="c-lbl">Rebound dalam Tren Lemah — Harga Masih di Bawah EMA50<span class="c-prog"></span></span>
-        <span class="c-skor">53</span></div>
-<div class="c-row"><span class="c-tk">IOTF</span>
-        <span class="c-lbl">Waspada — Volume Puncak, Harga Gagal Naik<span class="c-prog"></span></span>
-        <span class="c-skor">52</span></div>
-<div class="c-row"><span class="c-tk">DEWI</span>
-        <span class="c-lbl">Sideways — Jeda di Tren Naik<span class="c-prog"></span></span>
-        <span class="c-skor">52</span></div>
-<div class="c-row"><span class="c-tk">MCAS</span>
-        <span class="c-lbl">Waspada — Naik Lanjut, Volume Menipis<span class="c-prog"></span></span>
-        <span class="c-skor">52</span></div>
-<div class="c-row"><span class="c-tk">DEWA</span>
-        <span class="c-lbl">Bearish — Distribusi Ganda AK+MG<span class="c-prog"></span></span>
-        <span class="c-skor">49</span></div>
-<div class="c-row"><span class="c-tk">MBMA</span>
-        <span class="c-lbl">Rebound ke EMA50 — Institusi Net Jual Tipis<span class="c-prog">Sen 58 → Kam 37 → Jum 49</span></span>
-        <span class="c-skor">49</span></div>
-<div class="c-row"><span class="c-tk">DMAS</span>
-        <span class="c-lbl">Netral-Konstruktif — Institusi Menyerap Pelan<span class="c-prog"></span></span>
-        <span class="c-skor">49</span></div>
-<div class="c-row"><span class="c-tk">EMMI</span>
-        <span class="c-lbl">Bearish — Downtrend Muda, Likuiditas Tipis<span class="c-prog"></span></span>
-        <span class="c-skor">48</span></div>
-<div class="c-row"><span class="c-tk">KIJA</span>
-        <span class="c-lbl">Di Bawah EMA50, Tekanan Jual Menumpuk<span class="c-prog"></span></span>
-        <span class="c-skor">46</span></div>
-<div class="c-row"><span class="c-tk">ENRG</span>
-        <span class="c-lbl">Bearish — Tren Turun, Ritel Menampung<span class="c-prog"></span></span>
-        <span class="c-skor">38</span></div>
-<div class="c-row"><span class="c-tk">WIFI</span>
-        <span class="c-lbl">Bearish — Tipis Tanpa Penyangga<span class="c-prog"></span></span>
-        <span class="c-skor">37</span></div>
+<div class="c-row"><span class="c-tk" style="font-size:9.5pt;font-weight:700">+26</span>
+        <span class="c-lbl">emiten lain dengan skor lebih rendah — daftar penuh di Ringkasan Mingguan</span>
+        <span class="c-skor"></span></div>
       <div class="c-row"><span class="c-tk" style="font-size:9.5pt;font-weight:700">Peringkat</span>
         <span class="c-lbl">Quant Opportunity Ranking mingguan — komponen skor terbuka</span><span class="c-skor"></span></div>
     </div>
@@ -521,8 +472,8 @@
       <div style="font-size:7pt;color:color-mix(in srgb, var(--ink) 55%, transparent);margin-top:5mm;line-height:1.7">
         Skor tiap emiten dihitung ulang per hari dengan model harian yang sama; emiten yang muncul
         di beberapa edisi ditampilkan sekali dengan progresi skornya.<br>
-        Analisis probabilistik, bukan ajakan transaksi. Data: TradingView &amp; Stockbit
-       , Yahoo Finance.</div>
+        © 2026 PAPAN — Pusat Analisa Pasar Nusantara. Hak cipta dilindungi.<br>
+        Analisis probabilistik, bukan ajakan transaksi. Data: TradingView &amp; Stockbit.</div>
     </div>
   </div>
 </div>
@@ -643,7 +594,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -760,7 +711,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -870,7 +821,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -882,7 +833,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$INDY<small>Indika Energy Tbk</small></div>
+      <div class="tk">$INDY<small>Indika Energy Tbk</small><span class="tk-kredit">setoran <b>Ali Supian</b></span></div>
       <div class="px"><span class="h">2.560</span><br>
         <span class="c bull">+60 (+2,40%)</span></div>
     </div>
@@ -895,7 +846,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:57%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -924,7 +874,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp4,2 miliar
             <small style="color:var(--mute);font-weight:400"> (B 16,5B · S 12,3B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Ali Supian, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -958,7 +908,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -970,7 +920,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$MDKA<small>PT Merdeka Copper Gold Tbk.</small></div>
+      <div class="tk">$MDKA<small>PT Merdeka Copper Gold Tbk.</small><span class="tk-kredit">setoran <b>Ali Supian</b></span></div>
       <div class="px"><span class="h">2.900</span><br>
         <span class="c bull">+110 (+3,94%)</span></div>
     </div>
@@ -983,7 +933,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:59%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1012,7 +961,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp6,0 miliar
             <small style="color:var(--mute);font-weight:400"> (B 75,0B · S 69,0B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Ali Supian, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -1046,7 +995,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -1058,7 +1007,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$ANTM<small>PT ANTAM (Persero) Tbk</small></div>
+      <div class="tk">$ANTM<small>PT ANTAM (Persero) Tbk</small><span class="tk-kredit">setoran <b>Ali Supian</b></span></div>
       <div class="px"><span class="h">3.070</span><br>
         <span class="c bull">+70 (+2,33%)</span></div>
     </div>
@@ -1071,7 +1020,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:61%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1100,7 +1048,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp19,9 miliar
             <small style="color:var(--mute);font-weight:400"> (B 89,2B · S 69,3B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Ali Supian, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -1134,7 +1082,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -1146,7 +1094,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$TOBA<small>PT TBS Energi Utama Tbk</small></div>
+      <div class="tk">$TOBA<small>PT TBS Energi Utama Tbk</small><span class="tk-kredit">setoran <b>Bot Papan</b></span></div>
       <div class="px"><span class="h">520</span><br>
         <span class="c bull">+20 (+4,00%)</span></div>
     </div>
@@ -1159,7 +1107,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:53%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1188,7 +1135,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp206,8 juta
             <small style="color:var(--mute);font-weight:400"> (B 1,5B · S 1,3B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Bot Papan, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -1222,7 +1169,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -1247,7 +1194,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:63%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1276,7 +1222,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp3,1 miliar
             <small style="color:var(--mute);font-weight:400"> (B 20,2B · S 17,1B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -1310,7 +1256,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -1322,7 +1268,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$ADRO<small>Alamtri Resources Indonesia Tbk</small></div>
+      <div class="tk">$ADRO<small>Alamtri Resources Indonesia Tbk</small><span class="tk-kredit">setoran <b>Agitama</b></span></div>
       <div class="px"><span class="h">2.530</span><br>
         <span class="c bull">+60 (+2,43%)</span></div>
     </div>
@@ -1335,7 +1281,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:66%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1364,7 +1309,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp2,9 miliar
             <small style="color:var(--mute);font-weight:400"> (B 24,3B · S 21,4B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Agitama, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -1398,7 +1343,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -1410,7 +1355,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$VKTR<small>PT VKTR Teknologi Mobilitas Tbk</small></div>
+      <div class="tk">$VKTR<small>PT VKTR Teknologi Mobilitas Tbk</small><span class="tk-kredit">setoran <b>Bot Papan</b></span></div>
       <div class="px"><span class="h">885</span><br>
         <span class="c bull">+65 (+7,93%)</span></div>
     </div>
@@ -1424,7 +1369,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:56%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1453,7 +1397,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp2,7 miliar
             <small style="color:var(--mute);font-weight:400"> (B 33,1B · S 30,4B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Bot Papan, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -1487,7 +1431,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -1512,7 +1456,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:58%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1541,7 +1484,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp425,8 juta
             <small style="color:var(--mute);font-weight:400"> (B 6,4B · S 5,9B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -1575,7 +1518,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -1587,7 +1530,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$POWR<small>PT Cikarang Listrindo Tbk.</small></div>
+      <div class="tk">$POWR<small>PT Cikarang Listrindo Tbk.</small><span class="tk-kredit">setoran <b>Deonal Ramadhan</b></span></div>
       <div class="px"><span class="h">810</span><br>
         <span class="c bull">+5 (+0,62%)</span></div>
     </div>
@@ -1600,7 +1543,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:67%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1629,7 +1571,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp3,4 juta
             <small style="color:var(--mute);font-weight:400"> (B 2,5B · S 2,5B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Deonal Ramadhan, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -1663,7 +1605,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -1675,7 +1617,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$SRTG<small>PT Saratoga Investama Sedaya Tbk.</small></div>
+      <div class="tk">$SRTG<small>PT Saratoga Investama Sedaya Tbk.</small><span class="tk-kredit">setoran <b>Agitama</b></span></div>
       <div class="px"><span class="h">1.840</span><br>
         <span class="c bull">+15 (+0,82%)</span></div>
     </div>
@@ -1688,7 +1630,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:64%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1717,7 +1658,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp457,8 juta
             <small style="color:var(--mute);font-weight:400"> (B 3,9B · S 3,4B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Agitama, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -1751,7 +1692,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -1776,7 +1717,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:50%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1805,7 +1745,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp71,7 juta
             <small style="color:var(--mute);font-weight:400"> (B 11,5B · S 11,4B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -1839,7 +1779,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -1851,7 +1791,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$ARCI<small>PT Archi Indonesia Tbk</small></div>
+      <div class="tk">$ARCI<small>PT Archi Indonesia Tbk</small><span class="tk-kredit">setoran <b>Bot Papan</b></span></div>
       <div class="px"><span class="h">1.225</span><br>
         <span class="c bull">+25 (+2,08%)</span></div>
     </div>
@@ -1865,7 +1805,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:64%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1894,7 +1833,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp433,3 juta
             <small style="color:var(--mute);font-weight:400"> (B 5,7B · S 5,2B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Bot Papan, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -1928,7 +1867,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -1940,7 +1879,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$GTSI<small>PT GTS Internasional Tbk</small></div>
+      <div class="tk">$GTSI<small>PT GTS Internasional Tbk</small><span class="tk-kredit">setoran <b>Bot Papan</b></span></div>
       <div class="px"><span class="h">182</span><br>
         <span class="c bull">+2 (+1,11%)</span></div>
     </div>
@@ -1953,7 +1892,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:62%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -1982,7 +1920,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bear">−Rp13,2 juta
             <small style="color:var(--mute);font-weight:400"> (B 697,9M · S 711,1M)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Bot Papan, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -2016,7 +1954,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -2028,7 +1966,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$HRUM<small>Harum Energy Tbk</small></div>
+      <div class="tk">$HRUM<small>Harum Energy Tbk</small><span class="tk-kredit">setoran <b>Ali Supian</b></span></div>
       <div class="px"><span class="h">850</span><br>
         <span class="c bull">+15 (+1,80%)</span></div>
     </div>
@@ -2041,7 +1979,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:61%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2070,7 +2007,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp123,6 juta
             <small style="color:var(--mute);font-weight:400"> (B 2,4B · S 2,3B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Ali Supian, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -2104,7 +2041,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -2129,7 +2066,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:50%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2158,7 +2094,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp23,3 juta
             <small style="color:var(--mute);font-weight:400"> (B 1,8B · S 1,8B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -2192,7 +2128,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -2204,7 +2140,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$GIAA<small>Garuda Indonesia (Persero) Tbk</small></div>
+      <div class="tk">$GIAA<small>Garuda Indonesia (Persero) Tbk</small><span class="tk-kredit">setoran <b>Janto</b></span></div>
       <div class="px"><span class="h">76</span><br>
         <span class="c bull">+4 (+5,56%)</span></div>
     </div>
@@ -2217,7 +2153,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:60%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2246,7 +2181,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp1,1 miliar
             <small style="color:var(--mute);font-weight:400"> (B 8,2B · S 7,1B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Janto, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -2280,7 +2215,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -2305,7 +2240,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:50%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2331,7 +2265,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp105,2 juta
             <small style="color:var(--mute);font-weight:400"> (B 11,4B · S 11,3B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -2365,7 +2299,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -2390,7 +2324,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:52%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2419,7 +2352,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bear">−Rp116,4 juta
             <small style="color:var(--mute);font-weight:400"> (B 8,6B · S 8,8B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -2453,7 +2386,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -2465,7 +2398,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$CDIA<small>PT Chandra Daya Investasi Tbk</small></div>
+      <div class="tk">$CDIA<small>PT Chandra Daya Investasi Tbk</small><span class="tk-kredit">setoran <b>Bot Papan</b></span></div>
       <div class="px"><span class="h">705</span><br>
         <span class="c bull">+0 (+0,00%)</span></div>
     </div>
@@ -2478,7 +2411,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:55%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2507,7 +2439,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp805,6 juta
             <small style="color:var(--mute);font-weight:400"> (B 9,3B · S 8,5B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Bot Papan, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -2541,7 +2473,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -2553,7 +2485,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$EMAS<small>PT Merdeka Gold Resources Tbk</small></div>
+      <div class="tk">$EMAS<small>PT Merdeka Gold Resources Tbk</small><span class="tk-kredit">setoran <b>Agitama</b></span></div>
       <div class="px"><span class="h">7.550</span><br>
         <span class="c bear">−50 (−0,66%)</span></div>
     </div>
@@ -2566,7 +2498,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:44%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2595,7 +2526,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bear">−Rp77,9 juta
             <small style="color:var(--mute);font-weight:400"> (B 50,8B · S 50,8B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Agitama, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -2629,7 +2560,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -2641,7 +2572,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$WMUU<small>PT Widodo Makmur Unggas Tbk</small></div>
+      <div class="tk">$WMUU<small>PT Widodo Makmur Unggas Tbk</small><span class="tk-kredit">setoran <b>Bot Papan</b></span></div>
       <div class="px"><span class="h">55</span><br>
         <span class="c bull">+1 (+1,85%)</span></div>
     </div>
@@ -2654,7 +2585,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:50%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2683,7 +2613,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp64,5 juta
             <small style="color:var(--mute);font-weight:400"> (B 1,0B · S 939,9M)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Bot Papan, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -2717,7 +2647,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -2742,7 +2672,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:55%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2771,7 +2700,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp422,4 juta
             <small style="color:var(--mute);font-weight:400"> (B 6,1B · S 5,7B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -2805,7 +2734,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -2830,7 +2759,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:38%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2859,7 +2787,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bear">−Rp4,3 miliar
             <small style="color:var(--mute);font-weight:400"> (B 129,1B · S 133,4B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -2893,7 +2821,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -2918,7 +2846,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:12%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -2947,7 +2874,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bear">−Rp25,6 miliar
             <small style="color:var(--mute);font-weight:400"> (B 98,0B · S 123,6B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -2981,7 +2908,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -3006,7 +2933,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:12%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -3035,7 +2961,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bear">−Rp20,1 miliar
             <small style="color:var(--mute);font-weight:400"> (B 86,1B · S 106,2B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -3069,7 +2995,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -3094,7 +3020,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:12%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -3123,7 +3048,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bear">−Rp30,1 miliar
             <small style="color:var(--mute);font-weight:400"> (B 91,4B · S 121,5B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -3157,7 +3082,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -3182,7 +3107,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:55%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -3211,7 +3135,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bear">−Rp1,9 miliar
             <small style="color:var(--mute);font-weight:400"> (B 152,0B · S 153,9B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -3245,7 +3169,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -3270,7 +3194,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:58%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -3299,7 +3222,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp116,7 juta
             <small style="color:var(--mute);font-weight:400"> (B 3,8B · S 3,7B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -3333,7 +3256,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -3345,7 +3268,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$SRSN<small>Indo Acidatama Tbk</small></div>
+      <div class="tk">$SRSN<small>Indo Acidatama Tbk</small><span class="tk-kredit">setoran <b>Agitama</b></span></div>
       <div class="px"><span class="h">70</span><br>
         <span class="c bull">+0 (+0,00%)</span></div>
     </div>
@@ -3358,7 +3281,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:50%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -3387,7 +3309,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp1,5 juta
             <small style="color:var(--mute);font-weight:400"> (B 858,4M · S 856,9M)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Agitama, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -3421,7 +3343,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -3433,7 +3355,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$PRDL<small>PT Prodia Diagnostic Line Tbk</small></div>
+      <div class="tk">$PRDL<small>PT Prodia Diagnostic Line Tbk</small><span class="tk-kredit">setoran <b>Bot Papan</b></span></div>
       <div class="px"><span class="h">264</span><br>
         <span class="c bear">−6 (−2,22%)</span></div>
     </div>
@@ -3446,7 +3368,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:46%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -3475,7 +3396,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bear">−Rp47,9 juta
             <small style="color:var(--mute);font-weight:400"> (B 1,4B · S 1,5B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Bot Papan, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -3509,7 +3430,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -3521,7 +3442,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$PADI<small>Minna Padi Investama Sekuritas Tbk</small></div>
+      <div class="tk">$PADI<small>Minna Padi Investama Sekuritas Tbk</small><span class="tk-kredit">setoran <b>Deonal Ramadhan</b></span></div>
       <div class="px"><span class="h">71</span><br>
         <span class="c bull">+3 (+4,41%)</span></div>
     </div>
@@ -3534,7 +3455,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:60%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -3563,7 +3483,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp788,5 juta
             <small style="color:var(--mute);font-weight:400"> (B 5,3B · S 4,6B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Deonal Ramadhan, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -3597,7 +3517,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -3622,7 +3542,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:42%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -3651,7 +3570,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp3,6 juta
             <small style="color:var(--mute);font-weight:400"> (B 2,1B · S 2,1B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -3685,7 +3604,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -3710,7 +3629,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:50%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -3739,7 +3657,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bear">−Rp58,1 juta
             <small style="color:var(--mute);font-weight:400"> (B 2,7B · S 2,8B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -3773,7 +3691,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -3798,7 +3716,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:48%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -3827,7 +3744,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp10,7 juta
             <small style="color:var(--mute);font-weight:400"> (B 397,6M · S 386,9M)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -3861,7 +3778,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -3886,7 +3803,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:14%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -3915,7 +3831,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bear">−Rp15,7 miliar
             <small style="color:var(--mute);font-weight:400"> (B 60,8B · S 76,5B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -3949,7 +3865,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -3961,7 +3877,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$MBMA<small>PT Merdeka Battery Materials Tbk</small></div>
+      <div class="tk">$MBMA<small>PT Merdeka Battery Materials Tbk</small><span class="tk-kredit">setoran <b>Bot Papan</b></span></div>
       <div class="px"><span class="h">525</span><br>
         <span class="c bull">+15 (+2,94%)</span></div>
     </div>
@@ -3975,7 +3891,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:62%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -4004,7 +3919,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bear">−Rp253,2 juta
             <small style="color:var(--mute);font-weight:400"> (B 12,8B · S 13,0B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Bot Papan, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -4038,7 +3953,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -4063,7 +3978,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:53%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -4092,7 +4006,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bear">−Rp2,0 juta
             <small style="color:var(--mute);font-weight:400"> (B 2,6B · S 2,6B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -4126,7 +4040,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -4151,7 +4065,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:42%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -4180,7 +4093,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp59,7 juta
             <small style="color:var(--mute);font-weight:400"> (B 1,0B · S 961,0M)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -4214,7 +4127,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -4226,7 +4139,7 @@
   </header>
   <div class="inner">
     <div class="trow">
-      <div class="tk">$KIJA<small>Kawasan Industri Jababeka Tbk</small></div>
+      <div class="tk">$KIJA<small>Kawasan Industri Jababeka Tbk</small><span class="tk-kredit">setoran <b>Agitama</b></span></div>
       <div class="px"><span class="h">123</span><br>
         <span class="c bear">−1 (−0,81%)</span></div>
     </div>
@@ -4239,7 +4152,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">14 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:60%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -4268,7 +4180,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bear">−Rp531,8 juta
             <small style="color:var(--mute);font-weight:400"> (B 7,4B · S 7,9B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit — setoran Agitama, hak cipta setoran ada padanya.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -4302,7 +4214,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -4327,7 +4239,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:25%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -4356,7 +4267,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bear">−Rp4,4 miliar
             <small style="color:var(--mute);font-weight:400"> (B 54,8B · S 59,2B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -4390,7 +4301,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -4415,7 +4326,6 @@
     <div class="cols">
       <aside>
         <h3 class="rule">Arus Broker <span class="r">13 Agu 26 · Net</span></h3>
-        
         <div class="meter"><i style="left:26%"></i></div>
         <div class="meterlbl"><span>Big Dist</span><span>Netral</span><span>Big Acc</span></div>
         <table class="brk">
@@ -4444,7 +4354,7 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bear">−Rp793,6 juta
             <small style="color:var(--mute);font-weight:400"> (B 6,9B · S 7,7B)</small></td></tr>
         </table>
-        <div class="brksrc">Sumber: orderbook Stockbit.
+        <div class="brksrc">Sumber: Broker Summary Stockbit.
           Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
@@ -4478,7 +4388,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 
@@ -4489,7 +4399,7 @@
   </header>
   <div class="inner">
     <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Peringkat Peluang</div>
-      <div class="px" style="font-size:8pt;color:var(--mute)">Risk-adjusted · komparatif · bagian 1/3</div></div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">Risk-adjusted · komparatif · bagian 1/4</div></div>
     <p class="lede">INDY mencetak skor tertinggi (71) — pendorong
     utamanya struktur teknikal, dengan catatan arus dana bukan kekuatannya. WIFI di posisi
     akhir: likuiditas tipis, sinyal lemah.</p>
@@ -4573,7 +4483,27 @@
         <td>4</td>
         <td style="text-align:left;padding-left:5mm">Volume naik 2×, flow berimbang</td>
         <td><span class="risk TINGGI">TINGGI</span></td></tr>
-<tr><td>12</td><td class="tk">ARCI</td>
+    </table>
+    
+  </div>
+  <footer class="foot">
+    <span class="kode">AP-W140826-E01</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
+  </footer>
+</div>
+<div class="page">
+  <header class="band">
+    <div class="m"><h1>ARUS PASAR</h1><div class="sub">Quant Opportunity Ranking</div></div>
+    <div class="e">Edisi Mingguan · 10–14 Agustus 2026<br><span class="kode">AP-W140826-E01</span></div>
+  </header>
+  <div class="inner">
+    <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Peringkat Peluang</div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">Risk-adjusted · komparatif · bagian 2/4</div></div>
+    
+    <table class="rank">
+      <tr><th>#</th><th>Ticker</th><th>Skor</th><th>Tek/35</th><th>Flow/30</th><th>R:R/20</th>
+        <th>Lik/10</th><th>IHSG/5</th><th style="text-align:left;padding-left:5mm">Rationale</th><th>Risiko</th></tr>
+      <tr><td>12</td><td class="tk">ARCI</td>
         <td class="total">63</td>
         <td>27</td><td>16</td>
         <td>10</td><td>6</td>
@@ -4608,27 +4538,7 @@
         <td>5</td>
         <td style="text-align:left;padding-left:5mm">Volume breakout terbesar di kelompok ini dengan net beli positif meski asing masih net sell pasar.</td>
         <td><span class="risk TINGGI">TINGGI</span></td></tr>
-    </table>
-    
-  </div>
-  <footer class="foot">
-    <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
-  </footer>
-</div>
-<div class="page">
-  <header class="band">
-    <div class="m"><h1>ARUS PASAR</h1><div class="sub">Quant Opportunity Ranking</div></div>
-    <div class="e">Edisi Mingguan · 10–14 Agustus 2026<br><span class="kode">AP-W140826-E01</span></div>
-  </header>
-  <div class="inner">
-    <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Peringkat Peluang</div>
-      <div class="px" style="font-size:8pt;color:var(--mute)">Risk-adjusted · komparatif · bagian 2/3</div></div>
-    
-    <table class="rank">
-      <tr><th>#</th><th>Ticker</th><th>Skor</th><th>Tek/35</th><th>Flow/30</th><th>R:R/20</th>
-        <th>Lik/10</th><th>IHSG/5</th><th style="text-align:left;padding-left:5mm">Rationale</th><th>Risiko</th></tr>
-      <tr><td>17</td><td class="tk">MMIX</td>
+<tr><td>17</td><td class="tk">MMIX</td>
         <td class="total">62</td>
         <td>28</td><td>15</td>
         <td>9</td><td>6</td>
@@ -4691,7 +4601,27 @@
         <td>4</td>
         <td style="text-align:left;padding-left:5mm">AK jual dominan 4x pembeli terbesar</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
-<tr><td>26</td><td class="tk">PTRO</td>
+    </table>
+    
+  </div>
+  <footer class="foot">
+    <span class="kode">AP-W140826-E01</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
+  </footer>
+</div>
+<div class="page">
+  <header class="band">
+    <div class="m"><h1>ARUS PASAR</h1><div class="sub">Quant Opportunity Ranking</div></div>
+    <div class="e">Edisi Mingguan · 10–14 Agustus 2026<br><span class="kode">AP-W140826-E01</span></div>
+  </header>
+  <div class="inner">
+    <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Peringkat Peluang</div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">Risk-adjusted · komparatif · bagian 3/4</div></div>
+    
+    <table class="rank">
+      <tr><th>#</th><th>Ticker</th><th>Skor</th><th>Tek/35</th><th>Flow/30</th><th>R:R/20</th>
+        <th>Lik/10</th><th>IHSG/5</th><th style="text-align:left;padding-left:5mm">Rationale</th><th>Risiko</th></tr>
+      <tr><td>26</td><td class="tk">PTRO</td>
         <td class="total">54</td>
         <td>12</td><td>8</td>
         <td>20</td><td>10</td>
@@ -4768,27 +4698,7 @@
         <td>4</td>
         <td style="text-align:left;padding-left:5mm">Rebound tajam menguji EMA50 dari bawah dengan volume besar, arus ritel justru masuk di sisi beli</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
-    </table>
-    
-  </div>
-  <footer class="foot">
-    <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
-  </footer>
-</div>
-<div class="page">
-  <header class="band">
-    <div class="m"><h1>ARUS PASAR</h1><div class="sub">Quant Opportunity Ranking</div></div>
-    <div class="e">Edisi Mingguan · 10–14 Agustus 2026<br><span class="kode">AP-W140826-E01</span></div>
-  </header>
-  <div class="inner">
-    <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Peringkat Peluang</div>
-      <div class="px" style="font-size:8pt;color:var(--mute)">Risk-adjusted · komparatif · bagian 3/3</div></div>
-    
-    <table class="rank">
-      <tr><th>#</th><th>Ticker</th><th>Skor</th><th>Tek/35</th><th>Flow/30</th><th>R:R/20</th>
-        <th>Lik/10</th><th>IHSG/5</th><th style="text-align:left;padding-left:5mm">Rationale</th><th>Risiko</th></tr>
-      <tr><td>37</td><td class="tk">DMAS</td>
+<tr><td>37</td><td class="tk">DMAS</td>
         <td class="total">49</td>
         <td>12</td><td>13</td>
         <td>14</td><td>6</td>
@@ -4809,7 +4719,27 @@
         <td>4</td>
         <td style="text-align:left;padding-left:5mm">Net jual terbesar di grup ini, dengan harga sudah berada di bawah EMA50 — kandidat pengawasan tekanan jual lanjutan.</td>
         <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
-<tr><td>40</td><td class="tk">ENRG</td>
+    </table>
+    
+  </div>
+  <footer class="foot">
+    <span class="kode">AP-W140826-E01</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
+  </footer>
+</div>
+<div class="page">
+  <header class="band">
+    <div class="m"><h1>ARUS PASAR</h1><div class="sub">Quant Opportunity Ranking</div></div>
+    <div class="e">Edisi Mingguan · 10–14 Agustus 2026<br><span class="kode">AP-W140826-E01</span></div>
+  </header>
+  <div class="inner">
+    <div class="trow" style="margin-bottom:4mm"><div class="tk" style="font-size:14pt">Peringkat Peluang</div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">Risk-adjusted · komparatif · bagian 4/4</div></div>
+    
+    <table class="rank">
+      <tr><th>#</th><th>Ticker</th><th>Skor</th><th>Tek/35</th><th>Flow/30</th><th>R:R/20</th>
+        <th>Lik/10</th><th>IHSG/5</th><th style="text-align:left;padding-left:5mm">Rationale</th><th>Risiko</th></tr>
+      <tr><td>40</td><td class="tk">ENRG</td>
         <td class="total">38</td>
         <td>0</td><td>4</td>
         <td>20</td><td>10</td>
@@ -4842,7 +4772,7 @@
   </div>
   <footer class="foot">
     <span class="kode">AP-W140826-E01</span>
-    <span>© 2026 Johan Iriawan Akbar — PAPAN · Analisis probabilistik, bukan ajakan transaksi.</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
   </footer>
 </div>
 <script>

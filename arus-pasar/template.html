@@ -52,13 +52,26 @@
   .band .e{text-align:right;font-size:7.5pt;color:var(--ink2);line-height:1.5}
   .band .e .kode{font-family:var(--mono);font-size:8pt;color:var(--teal)}
 
-  .inner{padding:6mm 14mm 0;display:flex;flex-direction:column;flex:1;min-height:0}
+  /* overflow:hidden itu PENGAMAN, bukan tata letak. Sebelum ini isi yang
+     kelebihan tinggi menetes keluar kotak .inner dan menimpa .foot — di layar
+     tak kentara karena latar gelapnya senada, di PDF terbaca sebagai baris
+     hak cipta yang bertumpuk skor komposit (temuan 17 Agu). Kapasitas tiap
+     halaman sudah dikecilkan supaya tak ada yang benar-benar terpotong; klip
+     ini hanya menjamin kaki halaman tak pernah tertimpa lagi. */
+  .inner{padding:6mm 14mm 0;display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+  .cols>*{min-width:0}
 
   /* ── Judul emiten ── */
   .trow{display:flex;justify-content:space-between;align-items:flex-end;
     border-bottom:1px solid var(--hair);padding-bottom:2mm}
   .trow .tk{font-family:var(--mono);font-size:19pt;font-weight:800;letter-spacing:-.01em;line-height:1}
   .trow .tk small{font-family:var(--disp);font-size:9pt;font-weight:400;color:var(--mute);margin-left:8px;letter-spacing:0}
+  /* Kredit kontributor berdampingan dengan kode emiten — kecil & redup,
+     pengakuan yang tak merebut perhatian dari harga. */
+  .trow .tk .tk-kredit{font-family:var(--disp);font-size:6.4pt;font-weight:400;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--mute);
+    margin-left:8px;vertical-align:3px;white-space:nowrap}
+  .trow .tk .tk-kredit b{font-weight:700;color:var(--ink2);letter-spacing:.04em;text-transform:none;font-size:7.2pt}
   .trow .px{text-align:right;font-variant-numeric:tabular-nums;line-height:1.1;font-family:var(--mono)}
   .trow .px .h{font-size:19pt;font-weight:800}
   .trow .px .c{font-size:9pt;font-weight:700}
@@ -194,8 +207,8 @@
   .skor .leg{display:flex;gap:5mm;font-size:6.3pt;color:var(--mute);margin-top:1.5mm;
     font-variant-numeric:tabular-nums;font-family:var(--mono)}
 
-  .foot{border-top:1px solid var(--hair);margin:3mm 14mm 0;padding:2mm 0 5mm;
-    display:flex;justify-content:space-between;font-size:6.5pt;color:var(--mute)}
+  .foot{border-top:1px solid var(--hair);margin:3mm 14mm 0;padding:2mm 0 5mm;flex:none;
+    display:flex;justify-content:space-between;gap:6mm;font-size:6.5pt;color:var(--mute)}
   .foot .kode{font-family:var(--mono)}
 
   /* ── Sampul (sistem sentimen) ── */
@@ -220,12 +233,16 @@
   .cvrow .lb{flex:1;color:var(--ink2);font-size:9.5pt}
   .cvrow .sk{font-family:var(--mono);font-size:12pt;font-weight:800}
   /* sampul padat 7-20 emiten: 2 kolom, label pendek */
-  .cover .wm-big.kecil{font-size:30pt;line-height:1.1}
-  .cv-list.padat{columns:2;column-gap:9mm;margin-top:7mm}
-  .cv-list.padat .cvrow{padding:1.7mm 0;gap:3mm;break-inside:avoid}
-  .cv-list.padat .tkk{font-size:10pt;width:17mm}
-  .cv-list.padat .lb{font-size:7.3pt}
-  .cv-list.padat .sk{font-size:10pt}
+  /* Sampul padat (11–28 emiten): baris dilonggarkan supaya daftar dua lajur
+     mengisi tinggi halaman, bukan menumpuk di sepertiga atas dan meninggalkan
+     rongga kosong sebesar sepertiga halaman di bawahnya (temuan 17 Agu:
+     "daily kurang rapi nih susunan nya"). */
+  .cover .wm-big.kecil{font-size:34pt;line-height:1.1}
+  .cv-list.padat{columns:2;column-gap:10mm;margin-top:9mm}
+  .cv-list.padat .cvrow{padding:3.1mm 0;gap:3.5mm;break-inside:avoid}
+  .cv-list.padat .tkk{font-size:11pt;width:18mm}
+  .cv-list.padat .lb{font-size:8pt;line-height:1.35}
+  .cv-list.padat .sk{font-size:11pt}
   .cv-foot{margin-top:auto;padding-bottom:14mm}
   /* kotak stat berlabel gaya sampul lama (V2) — angka besar kebaca, bukan
      satu baris kecil; label kecil di atas angka. */
@@ -285,6 +302,8 @@
   .kf-nama{font-family:var(--mono);font-size:10.5pt;color:var(--ink2);padding:2.2mm 0;
     border-bottom:1px solid color-mix(in srgb, var(--ink) 5%, transparent);display:flex;justify-content:space-between;gap:4mm}
   .kf-jml{color:var(--mute);font-size:8.5pt;font-weight:400;white-space:nowrap}
+  .kf-hak{display:block;font-size:6.6pt;letter-spacing:.1em;text-transform:none;
+    color:var(--mute);margin-top:1.5mm;font-weight:400}
   .kf-kaki{margin-top:auto;padding-top:14mm;font-size:7.5pt;color:var(--mute);line-height:1.9}
   /* badge kredit kontributor di kartu emiten — kecil, redup, tidak mencuri
      perhatian dari angka */
@@ -354,11 +373,18 @@
 
   /* ── Peringkat ── */
   table.rank{width:100%;border-collapse:collapse;font-size:8.8pt;font-variant-numeric:tabular-nums}
+  /* Kolom angka WAJIB punya jarak horizontal. Tanpa padding kanan, judul
+     kolom saling berdempet jadi satu kata ("TICKERSKORTEK/35FLOW/30") dan
+     nomor urut menempel ke ticker ("17PRDL") — cacat yang baru kelihatan di
+     PDF edisi 20 emiten. */
   table.rank th{font-size:6.3pt;color:var(--mute);text-transform:uppercase;letter-spacing:.14em;
-    text-align:right;padding:2mm 0 1.5mm;border-bottom:1px solid var(--hair);font-weight:700}
+    text-align:right;padding:2mm 3mm 1.5mm 0;border-bottom:1px solid var(--hair);font-weight:700;
+    white-space:nowrap}
   table.rank th:nth-child(-n+2){text-align:left}
-  table.rank td{padding:2.8mm 0;border-bottom:1px solid color-mix(in srgb, var(--ink) 5%, transparent);text-align:right}
+  table.rank td{padding:2.8mm 3mm 2.8mm 0;border-bottom:1px solid color-mix(in srgb, var(--ink) 5%, transparent);text-align:right}
   table.rank td:nth-child(-n+2){text-align:left}
+  table.rank th:first-child,table.rank td:first-child{width:7mm;padding-right:2mm}
+  table.rank th:nth-child(2),table.rank td:nth-child(2){width:16mm}
   table.rank .tk{font-weight:800;font-size:10pt;font-family:var(--mono)}
   table.rank .total{font-weight:800;font-size:12pt;font-family:var(--mono)}
   .blok{margin-top:4.5mm}

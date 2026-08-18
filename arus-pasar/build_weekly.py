@@ -56,14 +56,27 @@ def hitung_skor(em, ed, ohlc):
             "korr": korr, "total": total, "risiko": tingkat_risiko(total)}
 
 
+MAKS_SAMPUL = 15  # baris daftar yang muat di sampul mingguan tanpa meluber
+
+
 def halaman_sampul_mingguan(ed, urut, skor_map, riwayat, total_muncul):
+    # Sampul mingguan pekan 10–14 Agu memuat 41 emiten unik: seluruh daftar
+    # dicetak apa adanya sehingga separuhnya jatuh di luar halaman bersama
+    # baris IHSG dan hak ciptanya (temuan 17 Agu). Sampul memang bukan daftar
+    # isi lengkap — itu tugas halaman Ringkasan Mingguan.
+    tampil = urut[:MAKS_SAMPUL]
     isi = "\n".join(
         f'''<div class="c-row"><span class="c-tk">{em["ticker"]}</span>
         <span class="c-lbl">{em["label"]}<span class="c-prog">{
             teks_progresi(riwayat[em["ticker"]]) if len(riwayat[em["ticker"]]) > 1 else ""
         }</span></span>
         <span class="c-skor">{skor_map[em["ticker"]]["total"]:.0f}</span></div>'''
-        for em in urut)
+        for em in tampil)
+    if len(urut) > MAKS_SAMPUL:
+        isi += (f'''\n<div class="c-row"><span class="c-tk" style="font-size:9.5pt;font-weight:700">+{
+            len(urut) - MAKS_SAMPUL}</span>
+        <span class="c-lbl">emiten lain dengan skor lebih rendah — daftar penuh di Ringkasan Mingguan</span>
+        <span class="c-skor"></span></div>''')
     # Teks sampul full-bleed pakai var(--ink) (bukan #fff hardcode) + color-mix
     # atas var(--ink) utk versi tembus pandang — supaya kontras BENAR di kedua
     # arah tema: --ink terang di atas --brand gelap (Weekly), --ink gelap di
@@ -99,8 +112,8 @@ def halaman_sampul_mingguan(ed, urut, skor_map, riwayat, total_muncul):
       <div style="font-size:7pt;color:color-mix(in srgb, var(--ink) 55%, transparent);margin-top:5mm;line-height:1.7">
         Skor tiap emiten dihitung ulang per hari dengan model harian yang sama; emiten yang muncul
         di beberapa edisi ditampilkan sekali dengan progresi skornya.<br>
-        Analisis probabilistik, bukan ajakan transaksi. Data: TradingView &amp; Stockbit
-       , Yahoo Finance.</div>
+        © {ed["tanggal_id"].split()[-1]} PAPAN — Pusat Analisa Pasar Nusantara. Hak cipta dilindungi.<br>
+        Analisis probabilistik, bukan ajakan transaksi. Data: TradingView &amp; Stockbit.</div>
     </div>
   </div>
 </div>'''

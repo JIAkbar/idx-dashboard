@@ -157,8 +157,8 @@ def halaman_sampul_bulanan(ed, picks_urut, jml, total_muncul):
         Tiap pick dievaluasi terhadap target &amp; invalidation yang ditulis di edisi pertamanya,
         memakai bar OHLC nyata sesudah tanggal pick — dari {tuntas} pick tuntas, kejadian kronologis
         pertama yang menang. Data yang tidak tersedia ditampilkan jujur sebagai TANPA DATA.<br>
-        Analisis probabilistik, bukan ajakan transaksi. Data: TradingView &amp; Stockbit
-       , Yahoo Finance.</div>
+        © {ed["tanggal_id"].split()[-1]} PAPAN — Pusat Analisa Pasar Nusantara. Hak cipta dilindungi.<br>
+        Analisis probabilistik, bukan ajakan transaksi. Data: TradingView &amp; Stockbit.</div>
     </div>
   </div>
 </div>'''
@@ -381,8 +381,9 @@ def main():
         "peran_broker": ed_akhir["peran_broker"],
         "emiten": emiten_akhir,
         "catatan_verifikasi": (f"Rekap {len(edisi_list)} edisi harian {BULAN[bln]} {thn}. "
-                               f"Evaluasi scorecard memakai cache OHLC terbaru yang tersedia "
-                               f"({semua_cache[-1].name}). " + ed_akhir["catatan_verifikasi"]),
+                               f"Evaluasi scorecard memakai riwayat harga terbaru yang tersedia "
+                               f"(sesi bursa s.d. {semua_cache[-1].stem[5:]}). "
+                               + ed_akhir["catatan_verifikasi"]),
     }
 
     # ── Rakit halaman (tanpa chart -> OHLC payload kosong, drawcalls kosong) ─
