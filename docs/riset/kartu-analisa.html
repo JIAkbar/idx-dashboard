@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kartu Analisa Emiten — inventaris bahan &amp; purwarupa</title>
+<style>
+  :root{
+    --bg:#0b0e13; --bg2:#11161f; --bg3:#161d29; --line:#232c3b; --line2:#2e3a4d;
+    --text:#e6ecf5; --text2:#9fb0c6; --text3:#6d7f97;
+    --amber:#f0b429; --green:#3ecf8e; --red:#f2545b; --blue:#5aa9f0; --violet:#a78bfa;
+    --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font:15px/1.6 -apple-system,"Segoe UI",Inter,Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .bungkus{max-width:1180px;margin:0 auto;padding:32px 20px 80px}
+  h1{font-size:1.9rem;line-height:1.2;margin:0 0 6px;letter-spacing:-.02em}
+  h2{font-size:1.25rem;margin:0 0 4px;letter-spacing:-.01em}
+  h3{font-size:1rem;margin:0 0 8px;color:var(--text2);font-weight:600}
+  p{margin:0 0 12px;color:var(--text2)}
+  a{color:var(--blue)}
+  code,.mono{font-family:var(--mono);font-size:.86em}
+
+  /* --- kepala --- */
+  .kepala{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:32px}
+  .jejak{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);margin:0 0 10px}
+  .kepala p{max-width:74ch}
+
+  /* --- penanda bagian --- */
+  .bagian{margin:52px 0 22px;padding-top:26px;border-top:1px solid var(--line)}
+  .bagian:first-of-type{border-top:0;padding-top:0}
+  .nomor{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;color:var(--text3);text-transform:uppercase}
+
+  .cap{display:inline-block;font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;
+    text-transform:uppercase;padding:3px 8px;border-radius:4px;vertical-align:middle;margin-left:8px}
+  .cap-internal{background:rgba(167,139,250,.14);color:var(--violet);border:1px solid rgba(167,139,250,.32)}
+  .cap-publik{background:rgba(62,207,142,.12);color:var(--green);border:1px solid rgba(62,207,142,.3)}
+
+  /* --- tabel --- */
+  .gulung{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--bg2)}
+  table{border-collapse:collapse;width:100%;min-width:720px;font-size:.88rem}
+  th,td{padding:10px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+  th{background:var(--bg3);color:var(--text2);font-weight:600;font-size:.76rem;
+    letter-spacing:.06em;text-transform:uppercase;position:sticky;top:0}
+  tr:last-child td{border-bottom:0}
+  td small{color:var(--text3);display:block;margin-top:3px;font-size:.86em;line-height:1.45}
+
+  .st{font-family:var(--mono);font-size:.72rem;font-weight:600;white-space:nowrap;
+    padding:2px 7px;border-radius:4px;display:inline-block}
+  .st-ada{background:rgba(62,207,142,.13);color:var(--green)}
+  .st-turun{background:rgba(240,180,41,.13);color:var(--amber)}
+  .st-tidak{background:rgba(242,84,91,.13);color:var(--red)}
+  .st-batas{background:rgba(90,169,240,.13);color:var(--blue)}
+
+  /* --- kartu emiten --- */
+  .kartu{background:var(--bg2);border:1px solid var(--line);border-radius:14px;
+    overflow:hidden;margin-bottom:26px}
+  .k-atas{display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;justify-content:space-between;
+    padding:16px 20px;background:linear-gradient(180deg,var(--bg3),var(--bg2));border-bottom:1px solid var(--line)}
+  .k-tik{font-family:var(--mono);font-size:1.5rem;font-weight:700;letter-spacing:.02em}
+  .k-nama{color:var(--text3);font-size:.82rem;display:block;font-family:inherit;font-weight:400;letter-spacing:0;margin-top:2px}
+  .k-harga{font-family:var(--mono);font-size:1.5rem;font-weight:700;text-align:right}
+  .naik{color:var(--green)} .turun{color:var(--red)}
+  .k-harga small{display:block;font-size:.8rem;font-weight:600}
+
+  .k-isi{padding:18px 20px}
+  /* align-items:start — tanpa ini blok "aliran asing tidak tersedia" ikut
+     diregangkan setinggi blok fundamental di sebelahnya dan menyisakan ±200px
+     ruang kosong merah di layar lebar. */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;align-items:start}
+  .blok{background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:13px 15px}
+  .blok h4{margin:0 0 9px;font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--text3);font-weight:700;font-family:var(--mono)}
+  .blok.gap{border-color:rgba(242,84,91,.4);background:rgba(242,84,91,.06)}
+  .blok.gap h4{color:var(--red)}
+
+  .baris{display:flex;justify-content:space-between;gap:12px;padding:4px 0;font-size:.87rem}
+  .baris + .baris{border-top:1px dashed rgba(255,255,255,.05)}
+  .baris span:first-child{color:var(--text2)}
+  .baris span:last-child{font-family:var(--mono);text-align:right;white-space:nowrap}
+
+  .lvl{font-family:var(--mono);font-size:.87rem;padding:5px 0;display:flex;
+    justify-content:space-between;gap:10px;align-items:baseline}
+  .lvl + .lvl{border-top:1px dashed rgba(255,255,255,.05)}
+  .lvl > span:first-child{white-space:nowrap}
+  .lvl b{font-weight:700}
+  .lvl em{font-style:normal;color:var(--text3);font-size:.78rem;font-family:inherit}
+
+  .asal{margin-top:10px;padding-top:9px;border-top:1px solid var(--line2);
+    font-size:.74rem;line-height:1.5;color:var(--text3)}
+  .asal b{color:var(--text2);font-weight:600}
+
+  table.tp{min-width:0;width:100%;font-size:.82rem;margin-top:2px}
+  table.tp th{position:static;background:transparent;border-bottom:1px solid var(--line2);
+    padding:5px 8px 5px 0;font-size:.66rem}
+  table.tp td{padding:7px 8px 7px 0;border-bottom:1px dashed rgba(255,255,255,.06);font-family:var(--mono)}
+  table.tp tr:last-child td{border-bottom:0}
+  table.tp td:first-child{color:var(--text)}
+
+  .tesis{border-left:3px solid var(--amber);padding:2px 0 2px 14px;margin:16px 0 0}
+  .tesis p{margin:0 0 8px;color:var(--text2);font-size:.9rem}
+  .tesis p:last-child{margin:0}
+  .tesis b{color:var(--text)}
+
+  .catat{background:rgba(90,169,240,.07);border:1px solid rgba(90,169,240,.25);
+    border-radius:9px;padding:12px 15px;margin:18px 0;font-size:.86rem;color:var(--text2)}
+  .catat b{color:var(--blue)}
+  .awas{background:rgba(242,84,91,.07);border-color:rgba(242,84,91,.28)}
+  .awas b{color:var(--red)}
+
+  ol.antre{counter-reset:a;list-style:none;padding:0;margin:0}
+  ol.antre li{counter-increment:a;position:relative;padding:14px 0 14px 46px;border-bottom:1px solid var(--line)}
+  ol.antre li:last-child{border-bottom:0}
+  ol.antre li::before{content:counter(a);position:absolute;left:0;top:14px;width:30px;height:30px;
+    border-radius:8px;background:var(--bg3);border:1px solid var(--line2);color:var(--amber);
+    font-family:var(--mono);font-size:.85rem;font-weight:700;display:grid;place-items:center}
+  ol.antre h4{margin:0 0 4px;font-size:.95rem}
+  ol.antre p{margin:0;font-size:.86rem}
+  .harga-tag{font-family:var(--mono);font-size:.7rem;padding:2px 7px;border-radius:4px;
+    background:var(--bg3);border:1px solid var(--line2);color:var(--text2);margin-left:8px;white-space:nowrap}
+
+  .kaki{margin-top:56px;padding-top:22px;border-top:1px solid var(--line);
+    font-size:.8rem;color:var(--text3);line-height:1.65}
+  .kaki strong{color:var(--text2)}
+
+  @media (max-width:640px){
+    .bungkus{padding:22px 14px 60px}
+    h1{font-size:1.45rem}
+    .k-tik,.k-harga{font-size:1.25rem}
+    /* Kepala kartu membungkus di lebar telepon; rata kanan menyisakan harga
+       melayang di tengah baris sendiri. Rata kiri menyejajarkannya dengan tiker. */
+    .k-harga{text-align:left}
+    .k-atas{padding:14px}
+    .k-isi{padding:14px}
+  }
+</style>
+</head>
+<body>
+<div class="bungkus">
+
+<header class="kepala">
+  <p class="jejak">PAPAN · Riset internal · 18 Agustus 2026</p>
+  <h1>Kartu Analisa Emiten</h1>
+  <p>Inventaris bahan yang benar-benar tersedia, lalu purwarupa kartu yang setiap angkanya
+  dihitung dari bahan itu — bukan disalin dari terbitan lain dan bukan dikarang. Tiga bagian:
+  <b>daftar bahan</b> (internal), <b>tiga kartu berisi angka nyata</b>, dan <b>antrean pekerjaan</b>
+  supaya kartunya bisa terbit sendiri tiap hari (internal).</p>
+  <p style="color:var(--text3);font-size:.86rem;margin:0">Prinsip yang dipegang sepanjang dokumen:
+  <b style="color:var(--text2)">enam elemen jujur lebih bernilai daripada sembilan elemen yang dua di
+  antaranya dikarang.</b> Elemen yang bahannya tidak ada ditulis tidak ada, lengkap dengan alasannya.</p>
+</header>
+
+<!-- ══════════════════════════ BAGIAN 1 ══════════════════════════ -->
+<section>
+  <div class="bagian">
+    <p class="nomor">Bagian 1</p>
+    <h2>Inventaris bahan <span class="cap cap-internal">internal</span></h2>
+  </div>
+  <p>Tiap elemen kartu acuan diperiksa satu per satu terhadap isi repo per 18 Agustus 2026.
+  Empat status: <span class="st st-ada">ADA</span> siap pakai,
+  <span class="st st-turun">DITURUNKAN</span> bahannya ada tapi angkanya belum pernah dihitung,
+  <span class="st st-batas">TERBATAS</span> ada tapi dengan batas yang mengubah cara memakainya,
+  <span class="st st-tidak">TIDAK ADA</span> tak boleh ditampilkan sampai dipanen.</p>
+
+  <div class="gulung">
+  <table>
+    <thead><tr><th style="width:20%">Elemen kartu acuan</th><th style="width:11%">Status</th><th style="width:30%">Berkas &amp; ruas</th><th>Catatan</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>Harga, perubahan harian</b></td>
+        <td><span class="st st-ada">ADA</span></td>
+        <td class="mono">data-idx/json/ohlc/&lt;KODE&gt;.json — <code>d[] = [tgl,O,H,L,C,V]</code></td>
+        <td>964 emiten, 10 tahun harian. Untuk 2016–2025 kolom Open berasal dari Yahoo; arsip IDX sendiri baru mulai 2020 dan ruas <code>OpenPrice</code>-nya bolong parah (5–8% sebelum 2025).</td>
+      </tr>
+      <tr>
+        <td><b>Market Structure — H4 sideways</b></td>
+        <td><span class="st st-batas">TERBATAS</span></td>
+        <td class="mono">app/src/lib/dasbor/kerangkaWaktu.ts — <code>KERANGKA</code>, <code>ambilIntraday()</code>, <code>rakitBar()</code></td>
+        <td>Bisa sejak hari ini: 5m/15m/30m riwayat ±1 bulan, 1h ±2 tahun, 4h dirakit dari 1h.
+          <small>Batas yang menentukan: intraday diambil <b>saat halaman dibuka</b>, tidak pernah disimpan. Tanpa arsip, tak ada kartu batch dan tak ada statistik jam-an.</small></td>
+      </tr>
+      <tr>
+        <td><b>H1 support 147 / resist 149</b></td>
+        <td><span class="st st-batas">TERBATAS</span></td>
+        <td class="mono">idem + <code>cariPivotRendah()</code> / <code>cariPivotTinggi()</code> di lib/dasbor/grafikEmiten.ts</td>
+        <td>Primitif pivot fraktal sudah ada dan dipakai purwarupa ini di kerangka harian. Di H1 hanya hidup selama sesi peramban.</td>
+      </tr>
+      <tr>
+        <td><b>Money Flow — “Asing Beli 3,1 B, 3 hari”</b></td>
+        <td><span class="st st-tidak">TIDAK ADA</span></td>
+        <td class="mono">— tidak ada berkasnya</td>
+        <td><b>Diperiksa ulang, dan hasilnya bercabang dua.</b>
+          <small>(a) <code>ds_*.json</code> memang punya aliran asing, tapi <b>level pasar</b> (<code>nf_today_idr</code>, <code>nf_ytd_idr</code>) — bukan per emiten. Ruas <code>broker_*</code> juga se-pasar.</small>
+          <small>(b) Per emiten, <code>ForeignBuy</code>/<code>ForeignSell</code> <b>benar ada di sumbernya</b> — terverifikasi 15 Agu 2026 (scripts/cek_broker_emiten.py: DART 13 Agu 2026, ForeignBuy 226.500, ForeignSell 21.500) — tapi <b>tidak pernah disimpan</b> oleh pemanen mana pun di repo ini.</small>
+          <small>(c) Satuannya <b>lembar, bukan rupiah</b>. Angka “3,1 B” gaya acuan butuh perkalian harga; yang paling dekat adalah VWAP harian = Value ÷ Volume, dan hasilnya wajib disebut <b>perkiraan</b>.</small>
+          <small>Sampai dipanen, blok ini di kartu diisi blok kekosongan, bukan angka.</small></td>
+      </tr>
+      <tr>
+        <td><b>Sektor</b></td>
+        <td><span class="st st-ada">ADA</span></td>
+        <td class="mono">data-idx/json/emiten_sektor.json via lib/dasbor/sektorIdx.ts — <code>sektor</code>, <code>subindustri</code>, <code>papan</code>, <code>tercatat</code></td>
+        <td>IDX-IC resmi, lebih dalam daripada acuan: sampai subindustri, plus <b>papan pencatatan</b>. 154 dari 962 emiten ada di Papan Pemantauan Khusus — penanda risiko yang harus terbaca sebelum angka apa pun.</td>
+      </tr>
+      <tr>
+        <td><b>“Karakter Emiten: Suka Sideways”</b></td>
+        <td><span class="st st-turun">DITURUNKAN</span></td>
+        <td class="mono">ohlc/*.json → Efficiency Ratio (skrip riset, lihat Bagian 2)</td>
+        <td>Acuan menuliskannya tanpa satu pun angka — itu horoskop. Diganti Efficiency Ratio Kaufman 20 hari, median seumur data, lalu <b>diperingkat terhadap 911 emiten lain</b> yang riwayatnya ≥250 lilin. Label barunya membawa persentil dan jumlah observasi.</td>
+      </tr>
+      <tr>
+        <td><b>Posisi terhadap MA20</b></td>
+        <td><span class="st st-ada">ADA</span></td>
+        <td class="mono">lib/dasbor/grafikEmiten.ts — <code>hitungMA</code>, <code>hitungEMA</code></td>
+        <td>MA/EMA/RSI/MACD/Bollinger/OBV/ATR/Stochastic/StochRSI/Williams %R/VWAP sudah terpasang, ditambah 386 indikator dari katalog pustaka.</td>
+      </tr>
+      <tr>
+        <td><b>StochRSI 29/34 Oversold</b></td>
+        <td><span class="st st-ada">ADA</span></td>
+        <td class="mono">idem + lib/dasbor/katalogIndikator.ts</td>
+        <td>Tersedia di semua kerangka waktu yang datanya ada.</td>
+      </tr>
+      <tr>
+        <td><b>ENTRY / SL / R:R</b></td>
+        <td><span class="st st-turun">DITURUNKAN</span></td>
+        <td class="mono">klaster pivot + lib/fraksiHarga.ts <code>keFraksi()</code></td>
+        <td>R:R acuan (1:0,8) cuma perbandingan jarak — dua level dibagi, nol informasi tentang peluang.
+          <small>Diganti <b>harapan empiris</b>: peluang target tersentuh lebih dulu dikali imbalannya, dikurangi peluang stop tersentuh lebih dulu dikali kerugiannya. Semua harga dibulatkan ke fraksi BEI, karena level yang tak bisa dipesan di bursa adalah level palsu.</small></td>
+      </tr>
+      <tr>
+        <td><b>TP1 / TP2 / TP3 + persen</b></td>
+        <td><span class="st st-turun">DITURUNKAN</span></td>
+        <td class="mono">klaster pivot resistance dari 500 lilin terakhir</td>
+        <td>Level yang jaraknya &lt;0,5 ATR dari harga sekarang dibuang — itu bukan level, itu rentang hari ini.</td>
+      </tr>
+      <tr>
+        <td><b>Penanda “HIT” pada TP</b></td>
+        <td><span class="st st-tidak">TIDAK ADA</span></td>
+        <td class="mono">— belum ada arsip kartu per emiten</td>
+        <td>Butuh kartu kemarin untuk bisa bilang “sudah kena”. Arsip Radar (lib/radar/arsip.ts) menyimpan barisnya sendiri, bukan kartu emiten. Murah dibangun, tapi hasilnya baru ada setelah beberapa minggu berjalan.</td>
+      </tr>
+      <tr>
+        <td><b>Ekspektasi waktu “TP1 ~18 jam”</b></td>
+        <td><span class="st st-turun">DITURUNKAN</span><br><small style="color:var(--text3)">dalam hari bursa, bukan jam</small></td>
+        <td class="mono">ohlc/*.json → first-passage empiris (skrip riset)</td>
+        <td><b>Justru di sini keunggulan kita, dan sekaligus batasnya.</b>
+          <small>10 tahun harian memungkinkan distribusi waktu-ke-target yang sungguhan: dari tiap hari historis, berapa hari bursa sampai target tersentuh — dan berapa sering stop tersentuh lebih dulu.</small>
+          <small>Satuan <b>jam</b> tidak bisa dijujurkan: 5m–30m cuma ±1 bulan riwayat, 1h ±2 tahun, dan keduanya tak diarsipkan. Kartu ini melapor dalam hari bursa dan menyebut alasannya.</small></td>
+      </tr>
+      <tr>
+        <td><b>Skor 79 + label TAJAM</b></td>
+        <td><span class="st st-turun">DITURUNKAN</span></td>
+        <td class="mono">lib/radar/skor.ts (pola, bukan mesinnya)</td>
+        <td>Mesin skor Radar sudah benar caranya — prior netral 50, tiap sinyal menggeser sebesar hit-rate yang <b>dikalibrasi dari arsip sendiri</b>, sampel tipis disusutkan ke prior, jumlah sampel ikut dilaporkan.
+          <small>Tapi kalibrasinya dari arsip Radar WDWL, bukan dari OHLC emiten — <b>tak boleh dipinjam mentah-mentah</b>. Untuk kartu emiten, dasar kalibrasinya adalah first-passage di Bagian 2. Sampai itu dikerjakan, kartu tidak menampilkan skor tunggal.</small></td>
+      </tr>
+      <tr>
+        <td colspan="4" style="background:var(--bg3);color:var(--text3);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono)">Yang kita punya dan acuan tidak</td>
+      </tr>
+      <tr>
+        <td><b>Musiman + uji permutasi</b></td>
+        <td><span class="st st-ada">ADA</span></td>
+        <td class="mono">app/src/lib/seasonality.ts — <code>peluangTersusut</code>, <code>selangWilson</code>, <code>unggulPasar</code>, <code>ujiPermutasi</code>, <code>vonisUji</code></td>
+        <td>Lima lapis penawar cara tabel musiman menyesatkan: penyusutan sampel tipis (α=6), selang Wilson, pemisahan musiman emiten dari musiman pasar, dan uji permutasi berbenih tetap.</td>
+      </tr>
+      <tr>
+        <td><b>Fundamental &amp; valuasi</b></td>
+        <td><span class="st st-ada">ADA</span></td>
+        <td class="mono">data-idx/json/fundamental/*.json + keuangan_idx/ (XBRL 2019–2025)</td>
+        <td>PER/PBV/ROE/DER/marjin/pertumbuhan/dividen. <b>Dua jebakan tercatat:</b> ruas ringkas seperti <code>eps</code> itu salinan mentah dari sumber (kosong ≠ datanya tak ada), dan <code>der</code> berskala persen sementara <code>der_q</code> rasio — selisihnya ±99×.</td>
+      </tr>
+      <tr>
+        <td><b>Katalis &amp; berita</b></td>
+        <td><span class="st st-ada">ADA</span></td>
+        <td class="mono">data-idx/json/kabar.json — 4 sumber, retensi 7 hari, ruas <code>emiten[]</code></td>
+        <td>Termasuk pengumuman resmi IDX. Retensi 7 hari berarti kartu bisa menyebut katalis pekan berjalan, bukan riwayat panjang.</td>
+      </tr>
+      <tr>
+        <td><b>Likuiditas &amp; fraksi bursa</b></td>
+        <td><span class="st st-ada">ADA</span></td>
+        <td class="mono">ohlc/*.json + lib/fraksiHarga.ts — <code>keFraksi</code>, <code>batasAra</code>, <code>hariAraMinimal</code></td>
+        <td>Nilai transaksi harian, dan pembulatan semua level ke harga yang benar-benar bisa dipesan.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════ BAGIAN 2 ══════════════════════════ -->
+<section>
+  <div class="bagian">
+    <p class="nomor">Bagian 2</p>
+    <h2>Purwarupa kartu — angka nyata <span class="cap cap-publik">contoh tampilan pembaca</span></h2>
+  </div>
+  <p>Tiga emiten yang bergerak pada 18 Agustus 2026, dihitung ulang dari nol. Setiap blok membawa
+  baris <b>asal-usul</b> yang menyebut metodenya, dan setiap klaim probabilistik membawa jumlah
+  observasinya. Tidak ada satu angka pun di halaman ini yang diketik tangan.</p>
+
+  <div class="catat">
+    <b>Metode support &amp; resistance.</b> Pivot fraktal (ekstrem lokal dalam jendela ±5 lilin) dari
+    500 lilin harian terakhir, lalu digabungkan jadi klaster bila jaraknya kurang dari 0,75 ATR.
+    Jumlah anggota klaster = berapa kali pasar benar-benar berbalik di situ, dan itulah yang
+    ditulis sebagai <b>n sentuhan</b>. Klaster yang jaraknya &lt;0,5 ATR dari harga sekarang dibuang.
+    Hasil akhirnya dibulatkan ke fraksi harga BEI — ke bawah untuk support, ke atas untuk resistance.
+  </div>
+
+  <div class="catat">
+    <b>Metode ekspektasi waktu.</b> Untuk tiap hari dalam seluruh riwayat emiten: seandainya masuk
+    di harga penutupan hari itu dengan target +x% dan pembatal −y% yang sama seperti kartu hari ini,
+    mana yang tersentuh lebih dulu dalam 20 hari bursa berikutnya, dan pada hari ke berapa?
+    Kalau keduanya tersentuh di hari yang sama, dihitung sebagai <b>pembatal</b> — dari lilin harian
+    kita tidak tahu urutan intraday-nya, dan asumsi yang menguntungkan adalah cara paling halus
+    membohongi diri sendiri.
+  </div>
+
+  <!-- ─────────── ARCI ─────────── -->
+  <article class="kartu">
+    <div class="k-atas">
+      <div>
+        <span class="k-tik">ARCI</span>
+        <span class="k-nama">PT Archi Indonesia Tbk · Barang Baku / Emas · Papan Pengembangan · tercatat 28 Jun 2021</span>
+      </div>
+      <div class="k-harga naik">1.320<small>+7,76% · 18 Agu 2026</small></div>
+    </div>
+    <div class="k-isi">
+      <div class="grid">
+
+        <div class="blok">
+          <h4>Struktur harga</h4>
+          <div class="baris"><span>MA20</span><span class="naik">1.143 · di atas</span></div>
+          <div class="baris"><span>MA50</span><span class="naik">1.057 · di atas</span></div>
+          <div class="baris"><span>MA200</span><span class="turun">1.396 · di bawah</span></div>
+          <div class="baris"><span>ATR 14 hari</span><span>69 (5,24%)</span></div>
+          <div class="baris"><span>RSI 14</span><span>69,0</span></div>
+          <div class="baris"><span>StochRSI</span><span>K 66 / D 64</span></div>
+          <div class="asal"><b>Asal:</b> 1.238 lilin harian sejak 28 Jun 2021. Harga di atas dua rata-rata pendek tapi masih di bawah MA200 — pemulihan di dalam tren turun yang lebih panjang, bukan tren naik yang sudah mapan.</div>
+        </div>
+
+        <div class="blok">
+          <h4>Level · n sentuhan</h4>
+          <div class="lvl"><span><b class="turun">R3</b> 2.020</span><em>1 sentuhan · Mar 2026</em></div>
+          <div class="lvl"><span><b class="turun">R2</b> 1.800</span><em>4 sentuhan · Mar 2026</em></div>
+          <div class="lvl"><span><b class="turun">R1</b> 1.660</span><em>4 sentuhan · Mei 2026</em></div>
+          <div class="lvl" style="border-top:1px solid var(--line2);margin-top:5px;padding-top:8px"><span><b>harga</b> 1.320</span><em>penutupan</em></div>
+          <div class="lvl"><span><b class="naik">S1</b> 1.080</span><em>5 sentuhan · 29 Jul 2026</em></div>
+          <div class="lvl"><span><b class="naik">S2</b> 935</span><em>1 sentuhan · Okt 2025</em></div>
+          <div class="lvl"><span><b class="naik">S3</b> 845</span><em>2 sentuhan · 1 Jul 2026</em></div>
+          <div class="asal"><b>Asal:</b> klaster pivot fraktal ±5, toleransi 0,75 ATR. S1 yang bersentuhan lima kali jauh lebih berarti daripada S2 yang cuma sekali — jumlahnya sengaja ditampilkan supaya perbedaan itu terlihat.</div>
+        </div>
+
+        <div class="blok">
+          <h4>Karakter emiten</h4>
+          <div class="baris"><span>Efficiency Ratio 20h</span><span>0,231</span></div>
+          <div class="baris"><span>Persentil pasar</span><span>77</span></div>
+          <div class="baris"><span>Median 911 emiten</span><span>0,200</span></div>
+          <div class="baris"><span>Likuiditas (median 20h)</span><span>Rp 36,3 M/hari</span></div>
+          <div class="asal"><b>Asal:</b> Efficiency Ratio Kaufman = perubahan bersih 20 hari dibagi total jarak yang ditempuh. Mendekati 1 berarti tren bersih, mendekati 0 berarti bolak-balik.
+            <b>Vonis:</b> ARCI berada di persentil 77 dari 911 emiten — <b>lebih trending daripada mayoritas pasar</b>, bukan “suka sideways”. Label kebalikannya akan salah.</div>
+        </div>
+
+        <div class="blok">
+          <h4>Musiman — Agustus</h4>
+          <div class="baris"><span>Naik</span><span>5 dari 6 tahun</span></div>
+          <div class="baris"><span>Angka mentah</span><span>83%</span></div>
+          <div class="baris"><span>Setelah disusutkan</span><span>68%</span></div>
+          <div class="baris"><span>Selang 95% (Wilson)</span><span>44% – 97%</span></div>
+          <div class="baris"><span>Median imbal Agustus</span><span class="naik">+3,52%</span></div>
+          <div class="baris"><span>Peluang dasar emiten</span><span>53% (62 bulan)</span></div>
+          <div class="asal"><b>Asal:</b> imbal bulanan seumur data. <b>Baca dengan hati-hati:</b> enam pengamatan, dan selangnya membentang 44–97% — itu praktis “antara koin dan hampir pasti”. Angka 83% yang biasa dipajang aplikasi lain adalah angka yang menyembunyikan rentang ini.</div>
+        </div>
+
+        <div class="blok gap">
+          <h4>Aliran asing — tidak tersedia</h4>
+          <p style="margin:0;font-size:.86rem">Aliran dana asing <b>per emiten</b> tidak tersimpan di sistem kami.
+          Yang ada hanya aliran asing tingkat pasar, dan itu tidak menjawab pertanyaan tentang satu saham.</p>
+          <div class="asal">Tidak ada angka broker atau asing yang direkayasa untuk mengisi ruang ini.
+          Selama blok ini kosong, seluruh pembacaan di kartu bersandar pada struktur harga, volume, dan statistik riwayat saja — dan itu disebutkan, bukan disamarkan.</div>
+        </div>
+
+        <div class="blok">
+          <h4>Fundamental ringkas</h4>
+          <div class="baris"><span>PER</span><span>13,8×</span></div>
+          <div class="baris"><span>PBV</span><span>4,20×</span></div>
+          <div class="baris"><span>ROE</span><span>36,2%</span></div>
+          <div class="baris"><span>DER</span><span>123,0%</span></div>
+          <div class="baris"><span>Pendapatan YoY</span><span class="naik">+50,8%</span></div>
+          <div class="baris"><span>Laba bersih YoY</span><span class="naik">+189,7%</span></div>
+          <div class="asal"><b>Asal:</b> ringkasan fundamental per 13 Agu 2026. Pertumbuhan laba tiga digit menjelaskan kenapa harga bisa jauh di atas MA50 tanpa terlihat mustahil — tapi utang di atas 100% ekuitas membuat penurunan harga emas berdampak berlipat.</div>
+        </div>
+
+      </div>
+
+      <div class="blok" style="margin-top:16px">
+        <h4>Skenario &amp; ekspektasi waktu — dihitung dari 1.217 hari historis</h4>
+        <div style="overflow-x:auto">
+        <table class="tp">
+          <thead><tr><th>Level</th><th>Jarak</th><th>Target dulu</th><th>Pembatal dulu</th><th>Tak keduanya</th><th>Median waktu</th><th>Q1–Q3</th><th>Harapan</th></tr></thead>
+          <tbody>
+            <tr><td>R1 1.660</td><td>+25,76%</td><td class="naik">18,3%</td><td class="turun">14,7%</td><td>67,0%</td><td>12 hari bursa</td><td>7–15</td><td class="naik">+2,05%</td></tr>
+            <tr><td>R2 1.800</td><td>+36,36%</td><td class="naik">8,5%</td><td class="turun">14,7%</td><td>76,7%</td><td>12,5 hari bursa</td><td>8–16</td><td class="naik">+0,43%</td></tr>
+            <tr><td>R3 2.020</td><td>+53,03%</td><td class="naik">3,8%</td><td class="turun">14,7%</td><td>81,5%</td><td>15 hari bursa</td><td>10–18</td><td class="turun">−0,67%</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="asal"><b>Pembatal tesis:</b> penutupan di bawah <b>1.080</b> (−18,18%) — klaster support dengan lima sentuhan, terakhir 29 Juli 2026.
+          <br><b>Asal semua kolom:</b> first-passage empiris, horizon 20 hari bursa, pembatal −18,18% dipakai seragam di ketiga baris. Kolom “Harapan” = peluang target × imbalannya − peluang pembatal × kerugiannya.
+          <br><b>Yang dikatakan tabel ini:</b> dua pertiga kejadian historis berakhir <b>tanpa</b> menyentuh target maupun pembatal dalam 20 hari — pergerakan besar bukan hasil yang biasa, melainkan yang jarang. Dan R3 berharapan negatif: jarak targetnya tidak lagi sepadan dengan risiko yang sama.</div>
+      </div>
+
+      <div class="tesis">
+        <p><b>Yang terbaca.</b> Harga merebut kembali MA20 dan MA50 dengan kenaikan 7,76% di sesi terakhir,
+        tapi MA200 di 1.396 masih berada di atas harga — struktur pemulihan, belum tren naik yang mapan.
+        Fundamentalnya menopang cerita itu: laba bersih tumbuh tiga digit dari basis tahun lalu.</p>
+        <p><b>Yang membatalkan.</b> Penutupan di bawah 1.080 menghapus dasar seluruh pembacaan ini —
+        di situlah lima kali percobaan penurunan berhenti, dan di situ pula angka-angka pada tabel di
+        atas kehilangan konteksnya.</p>
+        <p><b>Yang perlu diingat.</b> Jarak ke pembatal 18,18% adalah risiko yang besar untuk ukuran satu
+        posisi. Historisnya, imbalan terbaik ada pada level terdekat, bukan yang terjauh.</p>
+      </div>
+    </div>
+  </article>
+
+  <!-- ─────────── WIFI ─────────── -->
+  <article class="kartu">
+    <div class="k-atas">
+      <div>
+        <span class="k-tik">WIFI</span>
+        <span class="k-nama">PT Solusi Sinergi Digital Tbk · Teknologi / Aplikasi &amp; Jasa Internet · Papan Pengembangan · tercatat 30 Des 2020</span>
+      </div>
+      <div class="k-harga naik">2.120<small>+9,56% · 18 Agu 2026</small></div>
+    </div>
+    <div class="k-isi">
+      <div class="grid">
+
+        <div class="blok">
+          <h4>Struktur harga</h4>
+          <div class="baris"><span>MA20</span><span class="naik">1.984 · di atas</span></div>
+          <div class="baris"><span>MA50</span><span class="naik">1.802 · di atas</span></div>
+          <div class="baris"><span>MA200</span><span class="turun">2.522 · di bawah</span></div>
+          <div class="baris"><span>ATR 14 hari</span><span>97 (4,57%)</span></div>
+          <div class="baris"><span>RSI 14</span><span>62,4</span></div>
+          <div class="baris"><span>StochRSI</span><span>K 48 / D 32</span></div>
+          <div class="asal"><b>Asal:</b> 1.356 lilin harian sejak 30 Des 2020. Pola yang sama dengan ARCI — di atas dua rata-rata pendek, masih 15,9% di bawah MA200.</div>
+        </div>
+
+        <div class="blok">
+          <h4>Level · n sentuhan</h4>
+          <div class="lvl"><span><b class="turun">R3</b> 2.570</span><em>4 sentuhan · Apr 2026</em></div>
+          <div class="lvl"><span><b class="turun">R2</b> 2.420</span><em>4 sentuhan · Mei 2026</em></div>
+          <div class="lvl"><span><b class="turun">R1</b> 2.190</span><em>5 sentuhan · 22 Jul 2026</em></div>
+          <div class="lvl" style="border-top:1px solid var(--line2);margin-top:5px;padding-top:8px"><span><b>harga</b> 2.120</span><em>penutupan</em></div>
+          <div class="lvl"><span><b class="naik">S1</b> 2.050</span><em>8 sentuhan · Apr 2026</em></div>
+          <div class="lvl"><span><b class="naik">S2</b> 1.895</span><em>3 sentuhan · 29 Jul 2026</em></div>
+          <div class="lvl"><span><b class="naik">S3</b> 1.800</span><em>1 sentuhan · Mei 2026</em></div>
+          <div class="asal"><b>Asal:</b> metode sama. S1 di 2.050 adalah level tersibuk di kartu ini — delapan kali disentuh — tapi lihat peringatan di bawah sebelum memakainya sebagai pembatal.</div>
+        </div>
+
+        <div class="blok">
+          <h4>Karakter emiten</h4>
+          <div class="baris"><span>Efficiency Ratio 20h</span><span>0,257</span></div>
+          <div class="baris"><span>Persentil pasar</span><span>90</span></div>
+          <div class="baris"><span>Median 911 emiten</span><span>0,200</span></div>
+          <div class="baris"><span>Likuiditas (median 20h)</span><span>Rp 35,1 M/hari</span></div>
+          <div class="asal"><b>Vonis:</b> persentil 90 — salah satu emiten <b>paling trending</b> di bursa, kebalikan dari “suka sideways”. Konsekuensinya bukan pujian melainkan peringatan: emiten yang bergerak searah dengan efisien juga bergerak searah dengan efisien saat arahnya berbalik.</div>
+        </div>
+
+        <div class="blok">
+          <h4>Musiman — Agustus</h4>
+          <div class="baris"><span>Naik</span><span>2 dari 6 tahun</span></div>
+          <div class="baris"><span>Angka mentah</span><span>33%</span></div>
+          <div class="baris"><span>Setelah disusutkan</span><span>37%</span></div>
+          <div class="baris"><span>Selang 95% (Wilson)</span><span>10% – 70%</span></div>
+          <div class="baris"><span>Median imbal Agustus</span><span class="turun">−3,98%</span></div>
+          <div class="baris"><span>Peluang dasar emiten</span><span>41% (68 bulan)</span></div>
+          <div class="asal"><b>Baca dengan hati-hati:</b> selang 10–70% mencakup angka dasar emitennya sendiri (41%). Dengan enam pengamatan, <b>tidak ada bukti Agustus berbeda</b> dari bulan mana pun bagi emiten ini — dan itu kesimpulan yang sah, bukan kegagalan.</div>
+        </div>
+
+        <div class="blok gap">
+          <h4>Aliran asing — tidak tersedia</h4>
+          <p style="margin:0;font-size:.86rem">Sama seperti kartu sebelumnya: aliran dana asing per emiten
+          tidak tersimpan. Tidak diisi perkiraan.</p>
+          <div class="asal">Pada emiten yang naik 9,56% dalam sehari, justru blok inilah yang paling ingin
+          dibaca orang. Menuliskannya kosong lebih berguna daripada mengisinya dengan angka tingkat pasar
+          yang tampak relevan padahal bukan tentang saham ini.</div>
+        </div>
+
+        <div class="blok">
+          <h4>Fundamental ringkas</h4>
+          <div class="baris"><span>PER</span><span>18,7×</span></div>
+          <div class="baris"><span>PBV</span><span>1,35×</span></div>
+          <div class="baris"><span>ROE</span><span>16,1%</span></div>
+          <div class="baris"><span>DER</span><span>115,8%</span></div>
+          <div class="baris"><span>Pendapatan YoY</span><span class="naik">+179,3%</span></div>
+          <div class="baris"><span>Laba bersih YoY</span><span class="naik">+14,7%</span></div>
+          <div class="asal"><b>Asal:</b> ringkasan fundamental per 13 Agu 2026. Perhatikan selisihnya: pendapatan tumbuh 179% sementara laba bersih hanya 14,7% — pertumbuhan yang belum tembus ke bawah, dan pada DER 116% itu perbedaan yang penting.</div>
+        </div>
+
+      </div>
+
+      <div class="blok" style="margin-top:16px">
+        <h4>Skenario &amp; ekspektasi waktu — dihitung dari 1.335 hari historis</h4>
+        <div style="overflow-x:auto">
+        <table class="tp">
+          <thead><tr><th>Level</th><th>Jarak</th><th>Target dulu</th><th>Pembatal dulu</th><th>Tak keduanya</th><th>Median waktu</th><th>Q1–Q3</th><th>Harapan</th></tr></thead>
+          <tbody>
+            <tr><td>R1 2.190</td><td>+3,30%</td><td class="naik">48,3%</td><td class="turun">51,7%</td><td>0,0%</td><td>1 hari bursa</td><td>1–2</td><td class="turun">−0,11%</td></tr>
+            <tr><td>R2 2.420</td><td>+14,15%</td><td class="naik">20,3%</td><td class="turun">78,1%</td><td>1,6%</td><td>5 hari bursa</td><td>3–9</td><td class="naik">+0,30%</td></tr>
+            <tr><td>R3 2.570</td><td>+21,23%</td><td class="naik">12,9%</td><td class="turun">81,9%</td><td>5,2%</td><td>6 hari bursa</td><td>3–12</td><td class="naik">+0,03%</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="asal"><b>Pembatal tesis:</b> penutupan di bawah <b>2.050</b> (−3,30%).</div>
+      </div>
+
+      <div class="catat awas" style="margin-top:14px">
+        <b>Peringatan yang dihasilkan metode ini sendiri.</b> Jarak ke pembatal (3,30%) lebih kecil
+        daripada satu ATR harian (4,57%). Artinya level itu berada <b>di dalam ayunan harian normal</b>
+        emiten ini, dan angka pada baris pertama tabel membuktikannya: dari 1.335 kejadian historis,
+        praktis semuanya selesai dalam satu hari dan pembatal tersentuh lebih dulu 51,7% — lemparan
+        koin, bukan rencana. Pembatal yang layak untuk WIFI adalah <b>1.895</b> (−10,6%), klaster
+        dengan tiga sentuhan yang berada di luar jangkauan satu hari perdagangan.
+        <br><br>Ini contoh yang justru ingin kami pertahankan di purwarupa: kartu yang menunjukkan
+        rencananya sendiri tidak layak lebih berguna daripada kartu yang memoles angkanya sampai enak dibaca.
+      </div>
+
+      <div class="tesis">
+        <p><b>Yang terbaca.</b> Kenaikan 9,56% membawa harga menempel tepat di bawah R1 2.190 — level
+        dengan lima sentuhan sejak Juli. Emitennya termasuk paling trending di bursa (persentil 90),
+        jadi penembusan level cenderung berlanjut, bukan langsung berbalik.</p>
+        <p><b>Yang membatalkan.</b> Kembali di bawah 1.895 mengembalikan harga ke rentang Mei–Juli dan
+        menghapus alasan struktural untuk memperhatikan emiten ini.</p>
+        <p><b>Yang perlu diingat.</b> Musiman Agustus lemah (2 dari 6 tahun), dan pendapatan yang tumbuh
+        179% belum diikuti laba. Naiknya harga hari ini tidak menjawab keduanya.</p>
+      </div>
+    </div>
+  </article>
+
+  <!-- ─────────── BUMI ─────────── -->
+  <article class="kartu">
+    <div class="k-atas">
+      <div>
+        <span class="k-tik">BUMI</span>
+        <span class="k-nama">PT Bumi Resources Tbk · Energi / Produksi Batu Bara · Papan Utama · tercatat 30 Jul 1990</span>
+      </div>
+      <div class="k-harga naik">184<small>+1,66% · 18 Agu 2026</small></div>
+    </div>
+    <div class="k-isi">
+      <div class="grid">
+
+        <div class="blok">
+          <h4>Struktur harga</h4>
+          <div class="baris"><span>MA20</span><span class="naik">174 · di atas</span></div>
+          <div class="baris"><span>MA50</span><span class="naik">159 · di atas</span></div>
+          <div class="baris"><span>MA200</span><span class="turun">228 · di bawah</span></div>
+          <div class="baris"><span>ATR 14 hari</span><span>9,3 (5,04%)</span></div>
+          <div class="baris"><span>RSI 14</span><span>60,4</span></div>
+          <div class="baris"><span>StochRSI</span><span>K 47 / D 50</span></div>
+          <div class="asal"><b>Asal:</b> 2.469 lilin harian sejak 10 Agu 2016 — riwayat terpanjang di antara ketiga kartu, dan satu-satunya yang mencakup lebih dari satu siklus batu bara penuh.</div>
+        </div>
+
+        <div class="blok">
+          <h4>Level · n sentuhan</h4>
+          <div class="lvl"><span><b class="turun">R3</b> 268</span><em>2 sentuhan · Apr 2026</em></div>
+          <div class="lvl"><span><b class="turun">R2</b> 248</span><em>2 sentuhan · Mei 2026</em></div>
+          <div class="lvl"><span><b class="turun">R1</b> 194</span><em>3 sentuhan · 10 Agu 2026</em></div>
+          <div class="lvl" style="border-top:1px solid var(--line2);margin-top:5px;padding-top:8px"><span><b>harga</b> 184</span><em>penutupan</em></div>
+          <div class="lvl"><span><b class="naik">S1</b> 157</span><em>2 sentuhan · 29 Jul 2026</em></div>
+          <div class="lvl"><span><b class="naik">S2</b> 128</span><em>10 sentuhan · 1 Jul 2026</em></div>
+          <div class="lvl"><span><b class="naik">S3</b> 108</span><em>11 sentuhan · Sep 2025</em></div>
+          <div class="asal"><b>Asal:</b> metode sama. Yang layak dicatat: S2 dan S3 masing-masing bersentuhan 10 dan 11 kali — dasar yang dibangun selama berbulan-bulan, jauh lebih kokoh daripada S1 yang baru dua kali.</div>
+        </div>
+
+        <div class="blok">
+          <h4>Karakter emiten</h4>
+          <div class="baris"><span>Efficiency Ratio 20h</span><span>0,216</span></div>
+          <div class="baris"><span>Persentil pasar</span><span>67</span></div>
+          <div class="baris"><span>Median 911 emiten</span><span>0,200</span></div>
+          <div class="baris"><span>Likuiditas (median 20h)</span><span>Rp 553,5 M/hari</span></div>
+          <div class="asal"><b>Vonis:</b> sedikit di atas median pasar — <b>tidak menonjol ke arah mana pun</b>. Yang menonjol justru likuiditasnya: Rp553 miliar sehari, lima belas kali ARCI dan WIFI, sehingga posisi besar bisa masuk-keluar tanpa menggerakkan harganya sendiri.</div>
+        </div>
+
+        <div class="blok">
+          <h4>Musiman — Agustus</h4>
+          <div class="baris"><span>Naik</span><span>4 dari 10 tahun</span></div>
+          <div class="baris"><span>Angka mentah</span><span>40%</span></div>
+          <div class="baris"><span>Setelah disusutkan</span><span>39%</span></div>
+          <div class="baris"><span>Selang 95% (Wilson)</span><span>17% – 69%</span></div>
+          <div class="baris"><span>Median imbal Agustus</span><span class="turun">−0,90%</span></div>
+          <div class="baris"><span>Peluang dasar emiten</span><span>38% (120 bulan)</span></div>
+          <div class="asal"><b>Baca dengan hati-hati:</b> 40% Agustus vs 38% dasar — <b>selisihnya nol dalam praktik</b>, meski sampelnya paling tebal di kartu ini (10 tahun). Musiman yang tidak mengatakan apa-apa juga wajib ditampilkan; menyembunyikannya dan hanya memajang emiten yang polanya kuat adalah cara membuat pembaca percaya musiman selalu berarti.</div>
+        </div>
+
+        <div class="blok gap">
+          <h4>Aliran asing — tidak tersedia</h4>
+          <p style="margin:0;font-size:.86rem">Aliran dana asing per emiten tidak tersimpan di sistem kami.</p>
+          <div class="asal">Pada emiten selikuid ini, ketiadaan blok tersebut adalah kehilangan yang nyata
+          dan disebut apa adanya — bukan ditutupi dengan angka yang kedengaran mirip.</div>
+        </div>
+
+        <div class="blok">
+          <h4>Fundamental ringkas</h4>
+          <div class="baris"><span>PER</span><span>30,4×</span></div>
+          <div class="baris"><span>PBV</span><span>2,49×</span></div>
+          <div class="baris"><span>ROE</span><span>5,4%</span></div>
+          <div class="baris"><span>DER</span><span>24,8%</span></div>
+          <div class="baris"><span>Pendapatan YoY</span><span class="naik">+36,4%</span></div>
+          <div class="baris"><span>Laba bersih YoY</span><span class="naik">+1.027,8%</span></div>
+          <div class="asal"><b>Asal:</b> ringkasan fundamental per 13 Agu 2026. Lonjakan laba 1.028% berasal dari basis yang sangat kecil — ROE tetap 5,4%, dan PER 30× tergolong mahal untuk emiten batu bara. Pertumbuhan persentase besar dari basis kecil adalah salah satu angka paling mudah disalahbaca di seluruh laporan keuangan.</div>
+        </div>
+
+      </div>
+
+      <div class="blok" style="margin-top:16px">
+        <h4>Skenario &amp; ekspektasi waktu — dihitung dari 2.448 hari historis</h4>
+        <div style="overflow-x:auto">
+        <table class="tp">
+          <thead><tr><th>Level</th><th>Jarak</th><th>Target dulu</th><th>Pembatal dulu</th><th>Tak keduanya</th><th>Median waktu</th><th>Q1–Q3</th><th>Harapan</th></tr></thead>
+          <tbody>
+            <tr><td>R1 194</td><td>+5,43%</td><td class="naik">62,4%</td><td class="turun">20,7%</td><td>16,9%</td><td>3 hari bursa</td><td>1–6</td><td class="naik">+0,35%</td></tr>
+            <tr><td>R2 248</td><td>+34,78%</td><td class="naik">14,6%</td><td class="turun">30,4%</td><td>55,0%</td><td>11 hari bursa</td><td>7–16</td><td class="naik">+0,63%</td></tr>
+            <tr><td>R3 268</td><td>+45,65%</td><td class="naik">9,7%</td><td class="turun">30,5%</td><td>59,8%</td><td>12 hari bursa</td><td>7–16</td><td class="turun">−0,04%</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="asal"><b>Pembatal tesis:</b> penutupan di bawah <b>157</b> (−14,67%).
+          <br><b>Yang dikatakan tabel ini:</b> R1 tersentuh lebih dulu pada 62,4% kejadian historis dengan median tiga hari bursa — angka tertinggi di seluruh dokumen ini, dan alasannya sederhana: jaraknya cuma sedikit di atas satu ATR. Semakin jauh targetnya, semakin kecil peluangnya dan semakin lama waktunya; R3 sudah berharapan negatif. <b>Itulah bentuk sebenarnya dari “rasio imbalan-risiko” — kurva, bukan satu angka 1:0,8.</b></div>
+      </div>
+
+      <div class="tesis">
+        <p><b>Yang terbaca.</b> Harga bertahan di atas MA20 dan MA50 setelah membangun dasar sepanjang
+        Juli, dengan dua klaster support tebal (10 dan 11 sentuhan) di 128 dan 108 sebagai lantai
+        struktural. MA200 di 228 tetap menjadi batas atas tren besar yang belum berubah arah.</p>
+        <p><b>Yang membatalkan.</b> Penutupan di bawah 157 menghapus struktur pemulihan Juli–Agustus
+        dan mengembalikan harga ke rentang yang sepanjang tahun ini didominasi penurunan.</p>
+        <p><b>Yang perlu diingat.</b> Valuasi tidak murah (PER 30×) meski laba melonjak, karena lonjakannya
+        berasal dari basis kecil. Musiman Agustus tidak memberi informasi tambahan sama sekali.</p>
+      </div>
+    </div>
+  </article>
+
+  <div class="catat">
+    <b>Perbandingan dengan kartu acuan, secara terbuka.</b> Acuan menulis “R:R 1:0,8”, “TP1 ~18 jam”,
+    dan “Karakter Emiten: Suka Sideways” — tiga klaim tanpa satu pun jumlah observasi. Ketiganya di sini
+    diganti oleh angka yang bisa ditelusuri: harapan empiris dari 1.217–2.448 kejadian, median waktu
+    dalam hari bursa berikut kuartilnya, dan persentil terhadap 911 emiten. Sebaliknya, satu blok yang
+    dimiliki acuan — aliran dana asing per emiten — <b>tidak dimiliki</b> di sini, dan itu ditulis kosong
+    alih-alih ditiru bentuknya.
+  </div>
+</section>
+
+<!-- ══════════════════════════ BAGIAN 3 ══════════════════════════ -->
+<section>
+  <div class="bagian">
+    <p class="nomor">Bagian 3</p>
+    <h2>Antrean pekerjaan <span class="cap cap-internal">internal</span></h2>
+  </div>
+  <p>Berurut dari yang paling murah. “Murah” di sini berarti sedikit permintaan jaringan dan sedikit
+  risiko penolakan sumber, bukan sedikit baris kode.</p>
+
+  <ol class="antre">
+    <li>
+      <h4>Bekukan perhitungan kartu jadi berkas turunan <span class="harga-tag">nol jaringan</span></h4>
+      <p>Seluruh angka di Bagian 2 lahir dari <code>data-idx/json/ohlc/</code> yang sudah ada di cakram.
+      Menjalankannya untuk 964 emiten dan menyimpan hasilnya (level, sentuhan, first-passage, ER, musiman)
+      sebagai berkas turunan tidak butuh satu pun permintaan jaringan. Ini yang mengubah purwarupa jadi
+      halaman yang bisa dibuka siapa saja tanpa menunggu hitungan.</p>
+    </li>
+    <li>
+      <h4>Tambahkan ruas aliran asing &amp; frekuensi ke pemanen harian <span class="harga-tag">1 permintaan/hari</span></h4>
+      <p><code>ForeignBuy</code>, <code>ForeignSell</code>, <code>Frequency</code>, <code>Value</code>,
+      <code>NonRegularVolume</code> per emiten sudah tersedia di respons yang sama yang dipanen setiap hari —
+      hanya tidak pernah disimpan. Satu permintaan memberi 963 emiten sekaligus.
+      <b>Ini satu-satunya yang membuka blok Money Flow.</b> Simpan juga VWAP turunan
+      (Value ÷ Volume) supaya aliran asing bisa dinyatakan dalam rupiah, dan tandai jelas bahwa itu perkiraan.
+      Ingat aturan repo: berkas mentahnya diarsipkan, jangan dibuang setelah diperas.</p>
+    </li>
+    <li>
+      <h4>Arsipkan snapshot kartu harian <span class="harga-tag">nol jaringan</span></h4>
+      <p>Simpan level, target, dan pembatal tiap emiten per tanggal. Dua hal langsung terbuka:
+      penanda <b>HIT</b> pada target (butuh kartu kemarin untuk dibandingkan), dan bahan kalibrasi skor
+      yang benar-benar dari kartu ini, bukan pinjaman dari mesin skor Radar.</p>
+    </li>
+    <li>
+      <h4>Susul riwayat aliran asing per tanggal sejak 2020 <span class="harga-tag">±1.600 permintaan</span></h4>
+      <p>Sumber yang sama menerima parameter tanggal, jadi riwayatnya bisa ditarik ke belakang. Ini yang
+      mengubah Money Flow dari “3 hari terakhir” menjadi klaim yang bisa diuji: berapa sering akumulasi
+      asing n-hari benar-benar diikuti kenaikan pada emiten itu — pertanyaan yang tidak bisa dijawab oleh
+      terbitan mana pun yang cuma menampilkan angka tiga hari terakhir. Perlu dijadwalkan pelan; sumbernya
+      pernah menolak beruntun.</p>
+    </li>
+    <li>
+      <h4>Kalibrasi skor tunggal kartu <span class="harga-tag">nol jaringan, setelah 1 &amp; 3</span></h4>
+      <p>Ikuti pola mesin skor Radar — prior netral 50, tiap komponen menggeser sebesar hit-rate yang
+      diukur, sampel tipis disusutkan, jumlah sampel ikut ditampilkan — tapi kalibrasinya dari
+      first-passage kartu ini. Selama belum dikalibrasi, kartu tidak menampilkan skor, karena angka
+      tunggal tanpa kalibrasi persis jenis kepercayaan palsu yang ingin dihindari dokumen ini.</p>
+    </li>
+    <li>
+      <h4>Arsipkan lilin 1 jam harian <span class="harga-tag">964 permintaan/hari</span></h4>
+      <p>Satu-satunya jalan agar ekspektasi waktu bisa dinyatakan dalam <b>jam</b>, bukan hari bursa.
+      Riwayat sumbernya cuma ±2 tahun untuk 1 jam, jadi setiap hari yang tidak diarsipkan hilang permanen —
+      tapi biayanya harian dan besar. Kerjakan hanya kalau satuan jam benar-benar dibutuhkan; sampai saat
+      itu, hari bursa adalah jawaban yang jujur.</p>
+    </li>
+    <li>
+      <h4>Rincian broker per emiten <span class="harga-tag">berbayar</span></h4>
+      <p>Tidak ada di sumber publik mana pun: parameter kode emiten diabaikan dan hasilnya selalu tingkat
+      pasar, sementara bursa menutup kode broker selama jam perdagangan sejak Desember 2021. Hanya vendor
+      berlisensi. Sampai itu diputuskan, blok Money Flow paling jauh bisa menjawab “asing atau bukan”,
+      tidak pernah “broker mana”.</p>
+    </li>
+  </ol>
+</section>
+
+<footer class="kaki">
+  <p><strong>Disclaimer.</strong> Seluruh isi halaman ini bersifat <strong>edukatif dan informasional</strong>.
+  Ini <strong>bukan rekomendasi investasi</strong>, bukan ajakan membeli atau menjual efek apa pun, dan
+  <strong>bukan nasihat dari penasihat investasi berizin</strong>. Angka probabilitas, level harga, dan
+  ekspektasi waktu di sini adalah <strong>ringkasan statistik dari data historis</strong> — kinerja masa lalu
+  tidak menjamin hasil di masa depan, dan tidak ada satu pun angka di halaman ini yang merupakan prediksi.</p>
+  <p><strong>Manajemen risiko.</strong> Tabel first-passage menunjukkan bahwa pada mayoritas kejadian
+  historis, harga tidak menyentuh target maupun pembatal dalam horizon yang diukur — hasil yang paling
+  sering terjadi adalah “tidak terjadi apa-apa”. Setiap keputusan transaksi menanggung risiko kehilangan
+  sebagian atau seluruh modal. Batasi ukuran posisi terhadap total portofolio, tetapkan batas kerugian
+  sebelum masuk bukan sesudahnya, dan sebarkan risiko antar-emiten dan antar-sektor. Emiten di Papan
+  Pemantauan Khusus menanggung risiko tambahan yang tidak tercermin di rasio keuangan mana pun.
+  Keputusan tetap sepenuhnya berada pada masing-masing pembaca.</p>
+  <p style="margin-top:14px;color:var(--line2)">PAPAN · riset internal · disusun 18 Agustus 2026 ·
+  angka dihitung ulang dari data harian per 18 Agustus 2026 · skrip perhitungan:
+  <code>scripts/riset/kartu_analisa.py</code> (swauji: <code>--uji</code>)</p>
+</footer>
+
+</div>
+</body>
+</html>
