@@ -1,0 +1,32 @@
+{
+ "edisi": "BA-BUMI-140826-E01",
+ "tipe": "bedah",
+ "ticker": "BUMI",
+ "nama": "PT Bumi Resources Tbk.",
+ "tanggal": "2026-08-14",
+ "tanggal_id": "Jumat, 14 Agustus 2026",
+ "cache": "2026-08-14",
+ "vonis": "BUMI menutup 181 (+1,69%) dengan nilai transaksi besar dan sisi beli yang jauh lebih terkonsentrasi daripada sisi jualnya: NI Rp24,4 miliar dan BK Rp18 miliar memimpin, sementara penjual terbesar YU dan CC masing-masing Rp21,4 miliar. Rasio broker 24 pembeli lawan 42 penjual dengan net beli Rp91,5 miliar menunjukkan barang berpindah dari banyak tangan kecil ke sedikit tangan besar dalam satu sesi.",
+ "interpretasi_pcd": "Zona modal dihitung dari riwayat harga dua tahun. Harga 181 berada di atas EMA50 170, jadi mayoritas pemegang dari periode terakhir berada dalam posisi untung tipis — kondisi yang membuat tekanan jual dari pemegang lama relatif ringan selama harga bertahan.",
+ "narasi_flow": "Satu sesi 14 Agustus: net beli Rp91,5 miliar dengan 24 pembeli lawan 42 penjual. Top 5 pembeli menyerap 16,2% volume — ditandai Normal Acc oleh Stockbit. Sisi jual menyebar ke lebih banyak broker dengan nilai per broker lebih kecil.",
+ "catatan_flow": "BARU SATU HARI. Arus di atas dari setoran 14 Agustus saja; pola akumulasi lintas minggu belum bisa dibuktikan dari satu sesi.",
+ "catatan_verifikasi": "Data terbitan ini ditutup pada sesi bursa 14 Agustus 2026 — bukan data waktu nyata. Arus broker berasal dari satu hari setoran (14 Agu); pola lintas waktu belum bisa disimpulkan dari satu sesi. Angka PCD/zona modal dihitung mesin dari riwayat harga, bukan dari done summary per harga.",
+ "em": {
+  "label": "Serapan Terkonsentrasi dalam Satu Sesi",
+  "arah": "bull",
+  "narasi_teknikal": "Menutup 181 (+1,69%), 6,5% di atas EMA50 170 dan di atas pivot P 179. Struktur naik, R1 185 jadi ujian terdekat.",
+  "strategi": "Berlaku selama close bertahan di atas S1 176; penembusan R1 185 diperlukan untuk mengonfirmasi kelanjutan serapan.",
+  "skenario": {
+   "bull": {
+    "konfirmasi": "Close di atas 185 (R1)",
+    "rute": "185 → 191",
+    "risiko": "Baru satu sesi; belum ada bukti pola berlanjut"
+   },
+   "bear": {
+    "konfirmasi": "Close di bawah 176 (S1)",
+    "rute": "176 → 172",
+    "risiko": "Penjual yang menyebar kembali menekan"
+   }
+  }
+ }
+}

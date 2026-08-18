@@ -496,8 +496,25 @@ def hal_broker_kosong(bd):
 
 
 def hal_skenario(bd, em):
-    sk = em["skenario"]
     p = em["pivot"]
+    # Edisi harian menulis skenario `bull`/`bear` saja, sedangkan halaman ini
+    # butuh bull/retest/invalid + aturan. Kunci yang tak ditulis dirakit dari
+    # pivot & invalidation, bukan membuat KeyError -- sebelum ini tiap emiten
+    # yang skenarionya cuma dua kunci menggagalkan seluruh perakitan.
+    sk = dict(em["skenario"] or {})
+    sk.setdefault("bull", {"konfirmasi": f'Close di atas {B.fmt(p["R1"])} (R1)',
+                           "rute": f'{B.fmt(p["R1"])} -> {B.fmt(p["R2"])}',
+                           "risiko": "Butuh volume pengiring; tanpa itu tembusan rawan gagal"})
+    sk.setdefault("retest", {"konfirmasi": f'Pantulan bertahan di atas pivot {B.fmt(p["P"])}',
+                             "rute": f'{B.fmt(p["P"])} -> {B.fmt(p["R1"])}',
+                             "risiko": "Uji ulang yang gagal mengembalikan tekanan jual"})
+    inv = sk.pop("bear", None)
+    sk.setdefault("invalid", inv or {"konfirmasi": em.get("invalidation") or f'Close di bawah {B.fmt(p["S1"])}',
+                                     "rute": f'{B.fmt(p["S1"])} -> {B.fmt(p["S2"])}',
+                                     "risiko": "Struktur naik batal, arus beli kehilangan penopang"})
+    sk.setdefault("aturan", em.get("strategi") or
+                  f'Berlaku selama harga bertahan di atas {B.fmt(p["S1"])}; '
+                  f'penembusan {B.fmt(p["R1"])} diperlukan untuk konfirmasi.')
 
     def krt(kunci, judul, cls):
         d = sk[kunci]

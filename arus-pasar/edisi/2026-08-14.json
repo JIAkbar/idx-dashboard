@@ -6,3521 +6,3864 @@
  "ihsg_baris": "IHSG 6.401,89 ▲ +1,59%",
  "catatan_verifikasi": "Arus broker ditranskripsi dari Broker Summary Stockbit dan diverifikasi redaksi. Pivot & EMA dihitung dari data harga; level target/invalidation bersifat teknikal-otomatis (R1/R2/R3, batal di bawah S1). DRAF ANALIS: narasi Technical View IHSG, halaman Sentimen, dan kartu skenario emiten edisi ini MENUNGGU VERIFIKASI user sebelum distribusi. Rilis ulang edisi: 14 emiten gelombang kedua ditambahkan (total 22) dari screenshot broker summary yang diunggah menyusul; harga rata-rata sisi jual tidak tampil di sumber sehingga diturunkan dari nilai/lot. Narasi dan vonis emiten tambahan adalah draf analis menunggu verifikasi.",
  "peran_broker": {
- "ritel": [
-  "XL"
- ],
- "scalper": [
-  "YP",
-  "MG",
-  "BQ"
- ]
+  "ritel": [
+   "XL"
+  ],
+  "scalper": [
+   "YP",
+   "MG",
+   "BQ"
+  ]
  },
  "emiten": [
- {
-  "ticker": "PRDL",
-  "nama": "PT Prodia Diagnostic Line Tbk",
-  "ohlc_hari": {
-  "o": 272,
-  "h": 272,
-  "l": 260,
-  "c": 264,
-  "chg": -6,
-  "pct": -2.22,
-  "vol_juta": 18.86
+  {
+   "ticker": "PRDL",
+   "nama": "PT Prodia Diagnostic Line Tbk",
+   "ohlc_hari": {
+    "o": 272,
+    "h": 272,
+    "l": 260,
+    "c": 264,
+    "chg": -6,
+    "pct": -2.22,
+    "vol_juta": 18.86
+   },
+   "ema50": 247,
+   "pivot": {
+    "P": 265,
+    "R1": 271,
+    "R2": 277,
+    "R3": 283,
+    "S1": 259,
+    "S2": 253,
+    "S3": 247
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "AK",
+     755.5,
+     28700,
+     263
+    ],
+    [
+     "PD",
+     146.3,
+     5600,
+     263
+    ],
+    [
+     "XA",
+     130.8,
+     5000,
+     263
+    ],
+    [
+     "NI",
+     100.7,
+     3800,
+     263
+    ],
+    [
+     "CC",
+     97.8,
+     3700,
+     264
+    ],
+    [
+     "GR",
+     92.8,
+     3500,
+     262
+    ],
+    [
+     "DH",
+     48.9,
+     1800,
+     265
+    ],
+    [
+     "CP",
+     31.9,
+     1200,
+     263
+    ],
+    [
+     "OD",
+     31.3,
+     1200,
+     264
+    ],
+    [
+     "RO",
+     11.4,
+     434,
+     263
+    ]
+   ],
+   "jual": [
+    [
+     "XL",
+     752.7,
+     28700,
+     264
+    ],
+    [
+     "XC",
+     258,
+     9900,
+     263
+    ],
+    [
+     "YP",
+     177.1,
+     6700,
+     263
+    ],
+    [
+     "KK",
+     118.3,
+     4500,
+     263
+    ],
+    [
+     "AO",
+     106.1,
+     4000,
+     265
+    ],
+    [
+     "DR",
+     28.7,
+     1100,
+     263
+    ],
+    [
+     "YB",
+     26.6,
+     996,
+     263
+    ],
+    [
+     "AG",
+     11.8,
+     445,
+     264
+    ],
+    [
+     "AI",
+     10.7,
+     410,
+     262
+    ],
+    [
+     "BQ",
+     5.3,
+     199,
+     266
+    ]
+   ],
+   "arah": "netral",
+   "target": "271 / 277 / 283",
+   "invalidation": "Close <259",
+   "slider_pct": 46,
+   "flow_kelas": "Distribution",
+   "label": "Turun Tipis di Bawah Pivot — Ritel Top Seller",
+   "catatan": "S1 259 jadi level penentu — di bawahnya tekanan jual berpeluang lanjut ke arah EMA50 247.",
+   "narasi_flow": "Total jual (Rp1.495,3 juta) sedikit melampaui total beli (Rp1.447,4 juta), net -Rp47,9 juta. XL sebagai broker ritel jadi top seller dengan Rp752,7 juta, diimbangi AK sebagai top buyer Rp755,5 juta; scalper YP dan BQ juga tercatat di sisi jual.",
+   "narasi_teknikal": "Close 264 turun 2,22% dan berhenti di bawah pivot P265, meski masih 6,88% di atas EMA50 247. Rentang harian yang lebar (272-260) menunjukkan tekanan jual sempat kuat sebelum harga naik dari titik terendah.",
+   "strategi": "Berlaku selama harga bertahan di atas S1 259; penembusan kembali R1 271 diperlukan untuk mengonfirmasi pembalikan ke atas.",
+   "konsekuensi": "Close di bawah S1 259 membuka ruang penurunan lanjutan ke S2 253, mendekati level EMA50 di 247.",
+   "rationale_rank": "Distribusi net tipis dengan ritel sebagai top seller, menguji ulang zona EMA50",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Close kembali di atas pivot P265 dan menembus R1 271",
+     "rute": "R2 277 / R3 283",
+     "risiko": "Rebound tanpa disertai penambahan volume beli berisiko gagal di R1"
+    },
+    "bear": {
+     "konfirmasi": "Close di bawah S1 259",
+     "rute": "S2 253 / S3 247 (berimpit EMA50)",
+     "risiko": "Zona EMA50 di 247 historis jadi area penyerapan, berpotensi memicu pembalikan cepat"
+    }
+   },
+   "kontributor": "Bot Papan"
   },
-  "ema50": 247,
-  "pivot": {
-  "P": 265,
-  "R1": 271,
-  "R2": 277,
-  "R3": 283,
-  "S1": 259,
-  "S2": 253,
-  "S3": 247
+  {
+   "ticker": "MBMA",
+   "nama": "PT Merdeka Battery Materials Tbk",
+   "ohlc_hari": {
+    "o": 510,
+    "h": 530,
+    "l": 500,
+    "c": 525,
+    "chg": 15,
+    "pct": 2.94,
+    "vol_juta": 81.94
+   },
+   "ema50": 527,
+   "pivot": {
+    "P": 518,
+    "R1": 537,
+    "R2": 548,
+    "R3": 567,
+    "S1": 507,
+    "S2": 488,
+    "S3": 477
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "PD",
+     4000,
+     75600,
+     521
+    ],
+    [
+     "AK",
+     3200,
+     62700,
+     522
+    ],
+    [
+     "TP",
+     1600,
+     30700,
+     521
+    ],
+    [
+     "BK",
+     1500,
+     29300,
+     519
+    ],
+    [
+     "XC",
+     669.5,
+     13400,
+     515
+    ],
+    [
+     "XL",
+     541.1,
+     10000,
+     517
+    ],
+    [
+     "MG",
+     535.5,
+     10500,
+     511
+    ],
+    [
+     "SQ",
+     457.9,
+     9200,
+     510
+    ],
+    [
+     "LG",
+     173.7,
+     3500,
+     507
+    ],
+    [
+     "NI",
+     97.8,
+     1900,
+     514
+    ]
+   ],
+   "jual": [
+    [
+     "YU",
+     4700,
+     90700,
+     513
+    ],
+    [
+     "AZ",
+     2900,
+     55800,
+     517
+    ],
+    [
+     "CC",
+     2000,
+     37600,
+     517
+    ],
+    [
+     "CP",
+     1500,
+     28600,
+     510
+    ],
+    [
+     "BQ",
+     788.2,
+     15000,
+     517
+    ],
+    [
+     "OD",
+     484.1,
+     9300,
+     519
+    ],
+    [
+     "GR",
+     246.6,
+     4700,
+     521
+    ],
+    [
+     "YB",
+     178.9,
+     3500,
+     516
+    ],
+    [
+     "DH",
+     124.5,
+     2400,
+     513
+    ],
+    [
+     "HD",
+     106.4,
+     2000,
+     517
+    ]
+   ],
+   "arah": "netral",
+   "target": "537 / 548 / 567",
+   "invalidation": "Close <507",
+   "slider_pct": 62,
+   "flow_kelas": "Distribution",
+   "label": "Rebound ke EMA50 — Institusi Net Jual Tipis",
+   "catatan": "EMA50 527, hanya 0,38% di atas close — level ini jadi penentu arah lanjutan.",
+   "narasi_flow": "Net jual tipis -Rp253,2 juta meski harga menguat 2,94%. Top buyer PD mencatat Rp4.000 juta, top seller YU Rp4.700 juta. Menariknya, broker ritel XL justru berada di sisi beli, sementara scalper BQ tercatat di sisi jual dengan porsi jauh lebih kecil.",
+   "narasi_teknikal": "Close 525 sudah melewati pivot P518 namun masih 0,38% di bawah EMA50 527 — dua level nyaris berimpit. Volume tercatat 81,94 juta, salah satu yang terbesar di antara emiten yang diulas hari ini.",
+   "strategi": "Berlaku selama harga bertahan di atas pivot P518/S1 507; penembusan EMA50 527 dan R1 537 diperlukan untuk konfirmasi kelanjutan penguatan.",
+   "konsekuensi": "Gagal menembus EMA50 527 dan turun ke bawah S1 507 membatalkan setup, membuka ruang ke S2 488 / S3 477.",
+   "rationale_rank": "Rebound tajam menguji EMA50 dari bawah dengan volume besar, arus ritel justru masuk di sisi beli",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Close menembus EMA50 527 dan R1 537",
+     "rute": "R2 548 / R3 567",
+     "risiko": "Net jual institusi yang masih berlanjut dapat menahan laju di zona EMA50"
+    },
+    "bear": {
+     "konfirmasi": "Close kembali di bawah S1 507",
+     "rute": "S2 488 / S3 477",
+     "risiko": "Arus beli ritel yang masih aktif berpotensi menahan penurunan lebih lanjut"
+    }
+   },
+   "kontributor": "Bot Papan"
   },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "AK",
-   755.5,
-   28700,
-   263
-  ],
-  [
-   "PD",
-   146.3,
-   5600,
-   263
-  ],
-  [
-   "XA",
-   130.8,
-   5000,
-   263
-  ],
-  [
-   "NI",
-   100.7,
-   3800,
-   263
-  ],
-  [
-   "CC",
-   97.8,
-   3700,
-   264
-  ],
-  [
-   "GR",
-   92.8,
-   3500,
-   262
-  ],
-  [
-   "DH",
-   48.9,
-   1800,
-   265
-  ],
-  [
-   "CP",
-   31.9,
-   1200,
-   263
-  ],
-  [
-   "OD",
-   31.3,
-   1200,
-   264
-  ],
-  [
-   "RO",
-   11.4,
-   434,
-   263
-  ]
-  ],
-  "jual": [
-  [
-   "XL",
-   752.7,
-   28700,
-   264
-  ],
-  [
-   "XC",
-   258,
-   9900,
-   263
-  ],
-  [
-   "YP",
-   177.1,
-   6700,
-   263
-  ],
-  [
-   "KK",
-   118.3,
-   4500,
-   263
-  ],
-  [
-   "AO",
-   106.1,
-   4000,
-   265
-  ],
-  [
-   "DR",
-   28.7,
-   1100,
-   263
-  ],
-  [
-   "YB",
-   26.6,
-   996,
-   263
-  ],
-  [
-   "AG",
-   11.8,
-   445,
-   264
-  ],
-  [
-   "AI",
-   10.7,
-   410,
-   262
-  ],
-  [
-   "BQ",
-   5.3,
-   199,
-   266
-  ]
-  ],
-  "arah": "netral",
-  "target": "271 / 277 / 283",
-  "invalidation": "Close <259",
-  "slider_pct": 46,
-  "flow_kelas": "Distribution",
-  "label": "Turun Tipis di Bawah Pivot — Ritel Top Seller",
-  "catatan": "S1 259 jadi level penentu — di bawahnya tekanan jual berpeluang lanjut ke arah EMA50 247.",
-  "narasi_flow": "Total jual (Rp1.495,3 juta) sedikit melampaui total beli (Rp1.447,4 juta), net -Rp47,9 juta. XL sebagai broker ritel jadi top seller dengan Rp752,7 juta, diimbangi AK sebagai top buyer Rp755,5 juta; scalper YP dan BQ juga tercatat di sisi jual.",
-  "narasi_teknikal": "Close 264 turun 2,22% dan berhenti di bawah pivot P265, meski masih 6,88% di atas EMA50 247. Rentang harian yang lebar (272-260) menunjukkan tekanan jual sempat kuat sebelum harga naik dari titik terendah.",
-  "strategi": "Berlaku selama harga bertahan di atas S1 259; penembusan kembali R1 271 diperlukan untuk mengonfirmasi pembalikan ke atas.",
-  "konsekuensi": "Close di bawah S1 259 membuka ruang penurunan lanjutan ke S2 253, mendekati level EMA50 di 247.",
-  "rationale_rank": "Distribusi net tipis dengan ritel sebagai top seller, menguji ulang zona EMA50",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Close kembali di atas pivot P265 dan menembus R1 271",
-   "rute": "R2 277 / R3 283",
-   "risiko": "Rebound tanpa disertai penambahan volume beli berisiko gagal di R1"
+  {
+   "ticker": "VKTR",
+   "nama": "PT VKTR Teknologi Mobilitas Tbk",
+   "ohlc_hari": {
+    "o": 820,
+    "h": 920,
+    "l": 810,
+    "c": 885,
+    "chg": 65,
+    "pct": 7.93,
+    "vol_juta": 201.42
+   },
+   "ema50": 741,
+   "pivot": {
+    "P": 872,
+    "R1": 933,
+    "R2": 982,
+    "R3": 1043,
+    "S1": 823,
+    "S2": 762,
+    "S3": 713
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "PD",
+     8400,
+     94200,
+     888
+    ],
+    [
+     "AK",
+     7600,
+     86100,
+     881
+    ],
+    [
+     "CC",
+     6400,
+     73600,
+     884
+    ],
+    [
+     "YU",
+     3800,
+     44600,
+     858
+    ],
+    [
+     "DR",
+     2400,
+     29300,
+     850
+    ],
+    [
+     "TP",
+     1500,
+     16400,
+     887
+    ],
+    [
+     "AI",
+     860,
+     9800,
+     881
+    ],
+    [
+     "AZ",
+     772.6,
+     8800,
+     881
+    ],
+    [
+     "YJ",
+     746.7,
+     8400,
+     887
+    ],
+    [
+     "HP",
+     580.5,
+     6400,
+     900
+    ]
+   ],
+   "jual": [
+    [
+     "XL",
+     17500,
+     202300,
+     879
+    ],
+    [
+     "ZP",
+     3300,
+     36900,
+     874
+    ],
+    [
+     "XC",
+     1900,
+     22400,
+     879
+    ],
+    [
+     "SQ",
+     1900,
+     21300,
+     883
+    ],
+    [
+     "YP",
+     1200,
+     13300,
+     881
+    ],
+    [
+     "OD",
+     1100,
+     11600,
+     903
+    ],
+    [
+     "CP",
+     1000,
+     11600,
+     881
+    ],
+    [
+     "KK",
+     1000,
+     12300,
+     870
+    ],
+    [
+     "LG",
+     760.1,
+     8500,
+     883
+    ],
+    [
+     "KI",
+     745.8,
+     7900,
+     896
+    ]
+   ],
+   "arah": "bull",
+   "target": "933 / 982 / 1043",
+   "invalidation": "Close <823",
+   "slider_pct": 56,
+   "flow_kelas": "Accumulation",
+   "label": "Akumulasi Kuat — Ritel Lepas Saham dalam Volume Besar",
+   "catatan": "Pivot 872 sudah ditembus jauh; S1 823 jadi batas validitas akumulasi.",
+   "narasi_flow": "Net beli mencapai +Rp2.653,9 juta, net terbesar di antara ketujuh emiten yang diulas. Top buyer PD Rp8.400 juta, namun broker ritel XL tercatat sebagai penjual tunggal terbesar dengan Rp17.500 juta — hampir separuh dari total jual Rp30.405,9 juta. Scalper YP turut di sisi jual dengan porsi jauh lebih kecil.",
+   "narasi_teknikal": "Close 885 melesat 7,93%, sempat menyentuh 920 sebelum turun kembali, tetap bertahan di atas pivot P872 dan 19,43% di atas EMA50 741. Volume 201,42 juta, tertinggi di antara emiten yang diulas.",
+   "strategi": "Berlaku selama harga bertahan di atas pivot 872/S1 823; breakout R1 933 melanjutkan konfirmasi tren naik.",
+   "konsekuensi": "Turun ke bawah S1 823 membatalkan momentum jangka pendek, membuka ruang ke S2 762 mendekati EMA50.",
+   "rationale_rank": "Net beli institusi terbesar hari ini dengan volume tertinggi, meski diimbangi profit taking ritel yang besar",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Close di atas R1 933",
+     "rute": "R2 982 / R3 1043",
+     "risiko": "Pelepasan lanjutan dari sisi ritel dapat menahan harga sebelum breakout tercapai"
+    },
+    "bear": {
+     "konfirmasi": "Close turun ke bawah S1 823",
+     "rute": "S2 762 / S3 713",
+     "risiko": "Net beli institusi yang masih positif berpotensi memicu pembalikan cepat"
+    }
+   },
+   "kontributor": "Bot Papan"
   },
-  "bear": {
-   "konfirmasi": "Close di bawah S1 259",
-   "rute": "S2 253 / S3 247 (berimpit EMA50)",
-   "risiko": "Zona EMA50 di 247 historis jadi area penyerapan, berpotensi memicu pembalikan cepat"
+  {
+   "ticker": "TOBA",
+   "nama": "PT TBS Energi Utama Tbk",
+   "ohlc_hari": {
+    "o": 500,
+    "h": 535,
+    "l": 500,
+    "c": 520,
+    "chg": 20,
+    "pct": 4.0,
+    "vol_juta": 17.03
+   },
+   "ema50": 471,
+   "pivot": {
+    "P": 518,
+    "R1": 537,
+    "R2": 553,
+    "R3": 572,
+    "S1": 502,
+    "S2": 483,
+    "S3": 467
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "CC",
+     688.9,
+     12800,
+     529
+    ],
+    [
+     "XL",
+     495.6,
+     9600,
+     520
+    ],
+    [
+     "XC",
+     158.5,
+     3000,
+     519
+    ],
+    [
+     "CP",
+     68.8,
+     1300,
+     520
+    ],
+    [
+     "IU",
+     36.8,
+     700,
+     525
+    ],
+    [
+     "ZP",
+     13,
+     535,
+     516
+    ],
+    [
+     "AO",
+     9.6,
+     187,
+     515
+    ],
+    [
+     "HD",
+     3.5,
+     101,
+     511
+    ],
+    [
+     "LG",
+     3.4,
+     67,
+     525
+    ],
+    [
+     "XA",
+     2.8,
+     55,
+     509
+    ]
+   ],
+   "jual": [
+    [
+     "PD",
+     240.1,
+     4600,
+     520
+    ],
+    [
+     "DX",
+     233.5,
+     4500,
+     521
+    ],
+    [
+     "AK",
+     210.1,
+     4000,
+     520
+    ],
+    [
+     "AT",
+     143,
+     2700,
+     526
+    ],
+    [
+     "MG",
+     99.8,
+     2000,
+     508
+    ],
+    [
+     "IF",
+     99,
+     2000,
+     507
+    ],
+    [
+     "OD",
+     89,
+     1700,
+     520
+    ],
+    [
+     "SQ",
+     57.5,
+     1100,
+     519
+    ],
+    [
+     "MI",
+     51.5,
+     1000,
+     515
+    ],
+    [
+     "KK",
+     50.6,
+     952,
+     519
+    ]
+   ],
+   "arah": "bull",
+   "target": "537 / 553 / 572",
+   "invalidation": "Close <502",
+   "slider_pct": 53,
+   "flow_kelas": "Accumulation",
+   "label": "Akumulasi Solid — Breakout di Atas Pivot",
+   "catatan": "Pivot 518 sudah dilewati; S1 502 jadi batas bawah yang menjaga tren naik.",
+   "narasi_flow": "Net beli +Rp206,8 juta, dengan top buyer CC (Rp688,9 juta) jauh melampaui top seller PD (Rp240,1 juta). Broker ritel XL berada di sisi beli, sementara scalper MG tercatat di sisi jual dengan porsi kecil.",
+   "narasi_teknikal": "Close 520 naik 4%, sedikit di atas pivot P518 dan 10,4% di atas EMA50 471.",
+   "strategi": "Berlaku selama close bertahan di atas pivot 518/S1 502; breakout R1 537 melanjutkan penguatan.",
+   "konsekuensi": "Turun ke bawah S1 502 membatalkan setup, membuka ruang ke S2 483/S3 467.",
+   "rationale_rank": "Net beli konsisten dengan top buyer jauh mengungguli top seller, ritel turut di sisi beli",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Close di atas R1 537",
+     "rute": "R2 553 / R3 572",
+     "risiko": "Kenaikan 4% dalam sehari rentan koreksi jika tidak diikuti volume tambahan"
+    },
+    "bear": {
+     "konfirmasi": "Close turun ke bawah S1 502",
+     "rute": "S2 483 / S3 467 (mendekati EMA50 471)",
+     "risiko": "Net beli institusi yang masih positif berpotensi menahan penurunan"
+    }
+   },
+   "kontributor": "Bot Papan"
+  },
+  {
+   "ticker": "GTSI",
+   "nama": "PT GTS Internasional Tbk",
+   "ohlc_hari": {
+    "o": 181,
+    "h": 183,
+    "l": 175,
+    "c": 182,
+    "chg": 2,
+    "pct": 1.11,
+    "vol_juta": 18.22
+   },
+   "ema50": 161,
+   "pivot": {
+    "P": 180,
+    "R1": 185,
+    "R2": 188,
+    "R3": 193,
+    "S1": 177,
+    "S2": 172,
+    "S3": 169
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "SQ",
+     138.5,
+     7700,
+     179
+    ],
+    [
+     "AZ",
+     136.7,
+     7500,
+     182
+    ],
+    [
+     "GR",
+     103.6,
+     5700,
+     179
+    ],
+    [
+     "CC",
+     100.7,
+     5600,
+     181
+    ],
+    [
+     "AK",
+     81.6,
+     4800,
+     179
+    ],
+    [
+     "KK",
+     52.6,
+     2900,
+     181
+    ],
+    [
+     "CP",
+     40.2,
+     2300,
+     181
+    ],
+    [
+     "HP",
+     17.3,
+     961,
+     179
+    ],
+    [
+     "AT",
+     13.6,
+     750,
+     181
+    ],
+    [
+     "ZP",
+     13.1,
+     738,
+     179
+    ]
+   ],
+   "jual": [
+    [
+     "XL",
+     126.4,
+     7200,
+     180
+    ],
+    [
+     "MG",
+     124.6,
+     7100,
+     178
+    ],
+    [
+     "PD",
+     119.6,
+     6700,
+     179
+    ],
+    [
+     "DR",
+     111.6,
+     6300,
+     179
+    ],
+    [
+     "OD",
+     95.9,
+     5300,
+     181
+    ],
+    [
+     "YP",
+     57.2,
+     3100,
+     180
+    ],
+    [
+     "XC",
+     27.3,
+     1500,
+     180
+    ],
+    [
+     "DH",
+     21.8,
+     1200,
+     182
+    ],
+    [
+     "TP",
+     18.2,
+     1000,
+     181
+    ],
+    [
+     "RO",
+     8.5,
+     470,
+     182
+    ]
+   ],
+   "arah": "bull",
+   "target": "185 / 188 / 193",
+   "invalidation": "Close <177",
+   "slider_pct": 62,
+   "flow_kelas": "Distribution",
+   "label": "Distribusi Tipis — Ritel dan Scalper Kompak Jual",
+   "catatan": "Pivot 180 jadi penentu; close di bawahnya membuka ruang ke S1 177.",
+   "narasi_flow": "Net jual tipis -Rp13,2 juta. Broker ritel XL jadi top seller (Rp126,4 juta), diikuti scalper MG dan YP yang juga tercatat di sisi jual. Top buyer SQ mencatat Rp138,5 juta, sedikit di atas nilai jual terbesar.",
+   "narasi_teknikal": "Close 182 naik 1,11%, tepat di atas pivot P180 dan 13,04% di atas EMA50 161.",
+   "strategi": "Berlaku selama close bertahan di atas pivot 180/S1 177; breakout R1 185 mengonfirmasi kelanjutan penguatan.",
+   "konsekuensi": "Turun ke bawah S1 177 membatalkan setup meski net jual masih tipis, membuka ruang ke S2 172/S3 169.",
+   "rationale_rank": "Distribusi net tipis dengan broker ritel dan dua scalper kompak di sisi jual, harga masih bertahan di atas pivot",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Close di atas R1 185",
+     "rute": "R2 188 / R3 193",
+     "risiko": "Distribusi ritel dan scalper yang berlanjut dapat menahan laju di sekitar pivot"
+    },
+    "bear": {
+     "konfirmasi": "Close turun ke bawah S1 177",
+     "rute": "S2 172 / S3 169",
+     "risiko": "Net jual yang masih tipis membuka peluang pembalikan cepat"
+    }
+   },
+   "kontributor": "Bot Papan"
+  },
+  {
+   "ticker": "CDIA",
+   "nama": "PT Chandra Daya Investasi Tbk",
+   "ohlc_hari": {
+    "o": 705,
+    "h": 715,
+    "l": 685,
+    "c": 705,
+    "chg": 0,
+    "pct": 0.0,
+    "vol_juta": 45.46
+   },
+   "ema50": 707,
+   "pivot": {
+    "P": 702,
+    "R1": 718,
+    "R2": 732,
+    "R3": 748,
+    "S1": 688,
+    "S2": 672,
+    "S3": 658
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "OD",
+     3100,
+     44700,
+     698
+    ],
+    [
+     "CC",
+     2900,
+     41200,
+     707
+    ],
+    [
+     "XC",
+     1100,
+     14800,
+     705
+    ],
+    [
+     "AK",
+     979,
+     13800,
+     704
+    ],
+    [
+     "LG",
+     386.2,
+     5400,
+     710
+    ],
+    [
+     "BK",
+     310,
+     4200,
+     710
+    ],
+    [
+     "DX",
+     211.8,
+     3000,
+     702
+    ],
+    [
+     "NI",
+     133.2,
+     2000,
+     702
+    ],
+    [
+     "MG",
+     124.2,
+     1800,
+     698
+    ],
+    [
+     "YB",
+     93,
+     1300,
+     705
+    ]
+   ],
+   "jual": [
+    [
+     "XL",
+     2300,
+     33700,
+     700
+    ],
+    [
+     "YP",
+     1600,
+     22600,
+     707
+    ],
+    [
+     "ZP",
+     1200,
+     16600,
+     707
+    ],
+    [
+     "SQ",
+     897.6,
+     12800,
+     702
+    ],
+    [
+     "HP",
+     760.2,
+     10700,
+     708
+    ],
+    [
+     "SH",
+     568,
+     8000,
+     710
+    ],
+    [
+     "EP",
+     371.8,
+     5200,
+     706
+    ],
+    [
+     "XA",
+     326.8,
+     4600,
+     710
+    ],
+    [
+     "CP",
+     317.4,
+     4500,
+     707
+    ],
+    [
+     "YU",
+     190,
+     2700,
+     703
+    ]
+   ],
+   "arah": "netral",
+   "target": "718 / 732 / 748",
+   "invalidation": "Close <688",
+   "slider_pct": 55,
+   "flow_kelas": "Accumulation",
+   "label": "Flat di Pivot — Net Beli Institusi Diam-diam",
+   "catatan": "Pivot 702 dan EMA50 707 nyaris berimpit — keduanya jadi zona penentu arah lanjutan.",
+   "narasi_flow": "Net beli +Rp805,6 juta meski harga ditutup flat (chg 0). Top buyer OD mencatat Rp3.100 juta, jauh melampaui top seller — broker ritel XL — di Rp2.300 juta. Scalper YP juga tercatat di sisi jual dengan porsi lebih kecil.",
+   "narasi_teknikal": "Close 705 tak berubah dari hari sebelumnya, nyaris berimpit dengan pivot P702 dan EMA50 707 (jarak hanya -0,28%).",
+   "strategi": "Berlaku selama harga bertahan di atas S1 688; penembusan EMA50 707 dan R1 718 diperlukan untuk konfirmasi kelanjutan akumulasi.",
+   "konsekuensi": "Turun ke bawah S1 688 membatalkan setup meski net beli masih positif, membuka ruang ke S2 672/S3 658.",
+   "rationale_rank": "Net beli institusi signifikan di tengah harga yang flat, indikasi akumulasi tanpa pergerakan harga mencolok",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Close menembus EMA50 707 dan R1 718",
+     "rute": "R2 732 / R3 748",
+     "risiko": "Harga yang mandek di sekitar pivot berisiko gagal breakout jika volume tak bertambah"
+    },
+    "bear": {
+     "konfirmasi": "Close turun ke bawah S1 688",
+     "rute": "S2 672 / S3 658",
+     "risiko": "Net beli institusi yang masih positif berpotensi menahan penurunan"
+    }
+   },
+   "kontributor": "Bot Papan"
+  },
+  {
+   "ticker": "ARCI",
+   "nama": "PT Archi Indonesia Tbk",
+   "ohlc_hari": {
+    "o": 1180,
+    "h": 1230,
+    "l": 1170,
+    "c": 1225,
+    "chg": 25,
+    "pct": 2.08,
+    "vol_juta": 14.88
+   },
+   "ema50": 1134,
+   "pivot": {
+    "P": 1208,
+    "R1": 1247,
+    "R2": 1268,
+    "R3": 1307,
+    "S1": 1187,
+    "S2": 1148,
+    "S3": 1127
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "YU",
+     3000,
+     25000,
+     1216
+    ],
+    [
+     "CC",
+     669.7,
+     5800,
+     1192
+    ],
+    [
+     "LG",
+     590.5,
+     4800,
+     1219
+    ],
+    [
+     "AZ",
+     384.4,
+     3200,
+     1201
+    ],
+    [
+     "DR",
+     311,
+     2500,
+     1211
+    ],
+    [
+     "KI",
+     300.8,
+     2500,
+     1223
+    ],
+    [
+     "NI",
+     291.4,
+     2400,
+     1213
+    ],
+    [
+     "EP",
+     57.2,
+     510,
+     1198
+    ],
+    [
+     "AT",
+     34.7,
+     289,
+     1199
+    ],
+    [
+     "CP",
+     24.1,
+     188,
+     1210
+    ]
+   ],
+   "jual": [
+    [
+     "ZP",
+     1300,
+     10400,
+     1209
+    ],
+    [
+     "AK",
+     928.5,
+     7500,
+     1207
+    ],
+    [
+     "YP",
+     703.1,
+     5700,
+     1213
+    ],
+    [
+     "XL",
+     452.5,
+     3900,
+     1197
+    ],
+    [
+     "KK",
+     444,
+     3700,
+     1203
+    ],
+    [
+     "XC",
+     436.6,
+     3600,
+     1205
+    ],
+    [
+     "MG",
+     275.3,
+     2300,
+     1178
+    ],
+    [
+     "PD",
+     249.2,
+     2100,
+     1196
+    ],
+    [
+     "DH",
+     232.2,
+     2000,
+     1190
+    ],
+    [
+     "BK",
+     209.1,
+     1700,
+     1214
+    ]
+   ],
+   "arah": "bull",
+   "target": "1247 / 1268 / 1307",
+   "invalidation": "Close <1187",
+   "slider_pct": 64,
+   "flow_kelas": "Accumulation",
+   "label": "Akumulasi Berlanjut — Close Dekat High Harian",
+   "catatan": "Pivot 1208 sudah ditembus; S1 1187 jadi batas validitas kelanjutan akumulasi.",
+   "narasi_flow": "Net beli +Rp433,3 juta, dengan top buyer YU (Rp3.000 juta) lebih dari dua kali nilai top seller ZP (Rp1.300 juta). Broker ritel XL dan scalper YP, MG berada di sisi jual, namun dengan nilai jauh lebih kecil dibanding sisi beli.",
+   "narasi_teknikal": "Close 1225 naik 2,08%, mendekati high harian 1230, bertahan di atas pivot P1208 dan 8,02% di atas EMA50 1134.",
+   "strategi": "Berlaku selama harga bertahan di atas pivot 1208/S1 1187; breakout R1 1247 melanjutkan konfirmasi penguatan.",
+   "konsekuensi": "Turun ke bawah S1 1187 membatalkan setup, membuka ruang ke S2 1148/S3 1127.",
+   "rationale_rank": "Net beli solid dengan close mendekati level tertinggi hari ini",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Close di atas R1 1247",
+     "rute": "R2 1268 / R3 1307",
+     "risiko": "Momentum berpotensi melambat setelah dua hari penguatan berturut-turut"
+    },
+    "bear": {
+     "konfirmasi": "Close turun ke bawah S1 1187",
+     "rute": "S2 1148 / S3 1127",
+     "risiko": "Net beli institusi yang masih positif berpotensi memicu pembalikan cepat"
+    }
+   },
+   "kontributor": "Bot Papan"
+  },
+  {
+   "ticker": "WMUU",
+   "nama": "PT Widodo Makmur Unggas Tbk",
+   "ohlc_hari": {
+    "o": 54,
+    "h": 56,
+    "l": 54,
+    "c": 55,
+    "chg": 1,
+    "pct": 1.85,
+    "vol_juta": 96.77
+   },
+   "ema50": 54,
+   "pivot": {
+    "P": 55,
+    "R1": 56,
+    "R2": 57,
+    "R3": 58,
+    "S1": 54,
+    "S2": 53,
+    "S3": 52
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "XC",
+     426.9,
+     78500,
+     55
+    ],
+    [
+     "XL",
+     202.8,
+     34200,
+     55
+    ],
+    [
+     "LG",
+     84.1,
+     15600,
+     54
+    ],
+    [
+     "PD",
+     69.2,
+     12600,
+     55
+    ],
+    [
+     "NI",
+     65.7,
+     11900,
+     55
+    ],
+    [
+     "AT",
+     47.6,
+     8700,
+     54
+    ],
+    [
+     "AO",
+     47.3,
+     8800,
+     54
+    ],
+    [
+     "MG",
+     23,
+     4300,
+     55
+    ],
+    [
+     "HP",
+     20,
+     3700,
+     55
+    ],
+    [
+     "GR",
+     17.8,
+     3300,
+     54
+    ]
+   ],
+   "jual": [
+    [
+     "CC",
+     255.2,
+     46300,
+     55
+    ],
+    [
+     "YP",
+     217.1,
+     39600,
+     55
+    ],
+    [
+     "CP",
+     124.4,
+     22000,
+     55
+    ],
+    [
+     "SF",
+     98.3,
+     17800,
+     55
+    ],
+    [
+     "YB",
+     62.5,
+     11100,
+     55
+    ],
+    [
+     "SQ",
+     55.5,
+     10600,
+     55
+    ],
+    [
+     "DR",
+     54.1,
+     9900,
+     55
+    ],
+    [
+     "ZP",
+     26.5,
+     4800,
+     55
+    ],
+    [
+     "XA",
+     25.3,
+     4600,
+     55
+    ],
+    [
+     "BQ",
+     21,
+     3900,
+     55
+    ]
+   ],
+   "arah": "bull",
+   "target": "56 / 57 / 58",
+   "invalidation": "Close <54",
+   "slider_pct": 50,
+   "flow_kelas": "Accumulation",
+   "label": "Akumulasi Tipis, Ritel Ikut Masuk",
+   "catatan": "Level paling menentukan ada di 54 — berimpit S1 dan EMA50.",
+   "narasi_flow": "XC memimpin sisi beli dengan 426.9 juta, dan ritel (XL) turut berada di sisi beli, bukan melepas. Sisi jual dipimpin CC 255.2 juta, dengan scalper YP dan BQ ikut menjual. Net flow tipis positif 64.5 juta menandakan akumulasi belum besar tapi konsisten.",
+   "narasi_teknikal": "Close 55 naik 1.85%, tepat di pivot P dan sedikit di atas EMA50 54 — jarak baru 1.85%. Volume 96.77 juta cukup ramai untuk saham harga rendah ini.",
+   "strategi": "Bertahan di atas S1/EMA50 54 dan tembus R1 56 untuk konfirmasi lanjutan.",
+   "konsekuensi": "Kalau close turun di bawah 54, EMA50 dan S1 sama-sama jebol dan sinyal akumulasi hari ini batal.",
+   "rationale_rank": "Net flow positif dengan ritel ikut membeli, bukan melepas seperti kebanyakan emiten lain di grup ini.",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Close di atas R1 56",
+     "rute": "Lanjut ke 57 (R2) lalu 58 (R3)",
+     "risiko": "Kalau gagal tembus R1, harga rawan sideways di sekitar pivot 55"
+    },
+    "bear": {
+     "konfirmasi": "Close di bawah S1/EMA50 54",
+     "rute": "Turun ke 53 (S2) lalu 52 (S3)",
+     "risiko": "Akumulasi XC dan ritel hari ini kalah oleh tekanan jual CC, YP, dan BQ"
+    }
+   },
+   "kontributor": "Bot Papan"
+  },
+  {
+   "ticker": "SRTG",
+   "nama": "PT Saratoga Investama Sedaya Tbk.",
+   "ohlc_hari": {
+    "o": 1825,
+    "h": 1845,
+    "l": 1790,
+    "c": 1840,
+    "chg": 15,
+    "pct": 0.82,
+    "vol_juta": 3.67
+   },
+   "ema50": 1690,
+   "pivot": {
+    "P": 1825,
+    "R1": 1860,
+    "R2": 1880,
+    "R3": 1915,
+    "S1": 1805,
+    "S2": 1770,
+    "S3": 1750
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "LG",
+     2000,
+     11000,
+     1839
+    ],
+    [
+     "OD",
+     1200,
+     6600,
+     1831
+    ],
+    [
+     "CC",
+     458.4,
+     2500,
+     1816
+    ],
+    [
+     "ZP",
+     127.9,
+     695,
+     1840
+    ],
+    [
+     "YB",
+     66.4,
+     361,
+     1838
+    ],
+    [
+     "YJ",
+     17.8,
+     100,
+     1804
+    ],
+    [
+     "HD",
+     15.5,
+     86,
+     1819
+    ],
+    [
+     "PC",
+     10.2,
+     56,
+     1815
+    ],
+    [
+     "DR",
+     1.6,
+     9,
+     1795
+    ],
+    [
+     "AO",
+     0.36,
+     2,
+     1800
+    ]
+   ],
+   "jual": [
+    [
+     "AK",
+     858.4,
+     4700,
+     1825
+    ],
+    [
+     "YP",
+     614.7,
+     3400,
+     1814
+    ],
+    [
+     "XL",
+     515.1,
+     2800,
+     1827
+    ],
+    [
+     "HP",
+     460.5,
+     2500,
+     1842
+    ],
+    [
+     "SQ",
+     277.3,
+     1500,
+     1825
+    ],
+    [
+     "PD",
+     230.3,
+     1300,
+     1832
+    ],
+    [
+     "NI",
+     190.7,
+     1000,
+     1843
+    ],
+    [
+     "EP",
+     109.5,
+     596,
+     1830
+    ],
+    [
+     "AI",
+     92,
+     500,
+     1840
+    ],
+    [
+     "BK",
+     91.9,
+     500,
+     1826
+    ]
+   ],
+   "arah": "bull",
+   "target": "1860 / 1880 / 1915",
+   "invalidation": "Close <1805",
+   "slider_pct": 64,
+   "flow_kelas": "Accumulation",
+   "label": "Net Beli Institusi Tebal, Ritel Melepas",
+   "catatan": "Level paling menentukan di pivot P 1825, sudah dilewati close 1840.",
+   "narasi_flow": "LG memimpin sisi beli dengan 2000 juta, jauh di atas AK 858.4 juta yang teratas di sisi jual. Ritel (XL) justru tercatat di sisi jual 515.1 juta, dan scalper YP juga melepas 614.7 juta. Net flow positif 457.8 juta — broker besar menyerap meski ritel dan sebagian scalper keluar.",
+   "narasi_teknikal": "Close 1840 naik 0.82%, sudah jauh di atas EMA50 1690 dengan jarak 8.88%, dan berada di atas pivot P 1825. Volume 3.67 juta tergolong tipis untuk saham ini.",
+   "strategi": "Bertahan di atas pivot P 1825 dan S1 1805, lalu tembus R1 1860 untuk konfirmasi lanjutan.",
+   "konsekuensi": "Kalau close turun di bawah S1 1805, sinyal net beli institusi hari ini gagal ditindaklanjuti.",
+   "rationale_rank": "Net beli terbesar kedua di grup ini, ditopang satu broker besar (LG) yang jauh melampaui broker jual manapun.",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Close di atas R1 1860",
+     "rute": "Lanjut ke 1880 (R2) lalu 1915 (R3)",
+     "risiko": "Kalau momentum tak lanjut, harga bisa mentok di R1 menunggu volume tambahan"
+    },
+    "bear": {
+     "konfirmasi": "Close di bawah S1 1805",
+     "rute": "Turun ke 1770 (S2) lalu 1750 (S3)",
+     "risiko": "Net beli LG hari ini terbukti cuma penyerapan jangka pendek dari pelepasan ritel dan YP"
+    }
+   },
+   "kontributor": "Agitama"
+  },
+  {
+   "ticker": "EMAS",
+   "nama": "PT Merdeka Gold Resources Tbk",
+   "ohlc_hari": {
+    "o": 7500,
+    "h": 7750,
+    "l": 7450,
+    "c": 7550,
+    "chg": -50,
+    "pct": -0.66,
+    "vol_juta": 12.17
+   },
+   "ema50": 6801,
+   "pivot": {
+    "P": 7583,
+    "R1": 7717,
+    "R2": 7883,
+    "R3": 8017,
+    "S1": 7417,
+    "S2": 7283,
+    "S3": 7117
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "PD",
+     13000,
+     17300,
+     7526
+    ],
+    [
+     "ZP",
+     8500,
+     11300,
+     7570
+    ],
+    [
+     "SQ",
+     8100,
+     10500,
+     7691
+    ],
+    [
+     "BB",
+     4800,
+     6300,
+     7543
+    ],
+    [
+     "KZ",
+     3800,
+     5000,
+     7618
+    ],
+    [
+     "AK",
+     3700,
+     5000,
+     7587
+    ],
+    [
+     "YP",
+     3100,
+     4200,
+     7568
+    ],
+    [
+     "CC",
+     2900,
+     3700,
+     7650
+    ],
+    [
+     "AG",
+     2000,
+     2700,
+     7550
+    ],
+    [
+     "XL",
+     870.3,
+     1200,
+     7593
+    ]
+   ],
+   "jual": [
+    [
+     "AZ",
+     32900,
+     43600,
+     7545
+    ],
+    [
+     "BK",
+     5500,
+     7200,
+     7588
+    ],
+    [
+     "BQ",
+     4400,
+     5800,
+     7516
+    ],
+    [
+     "NI",
+     1900,
+     2500,
+     7584
+    ],
+    [
+     "AI",
+     1500,
+     2000,
+     7550
+    ],
+    [
+     "EP",
+     1400,
+     1900,
+     7593
+    ],
+    [
+     "DH",
+     906.8,
+     1200,
+     7562
+    ],
+    [
+     "XC",
+     900.9,
+     1200,
+     7646
+    ],
+    [
+     "LG",
+     792.3,
+     1100,
+     7544
+    ],
+    [
+     "XA",
+     648.2,
+     842,
+     7666
+    ]
+   ],
+   "arah": "netral",
+   "target": "7717 / 7883 / 8017",
+   "invalidation": "Close <7417",
+   "slider_pct": 44,
+   "flow_kelas": "Distribution",
+   "label": "Satu Broker Dominasi Jual, Net Nyaris Impas",
+   "catatan": "Level paling menentukan di S1 7417 — jarak masih jauh dari close 7550.",
+   "narasi_flow": "Sisi jual didominasi AZ sendirian dengan 32900 juta, jauh melebihi broker manapun di sisi beli — PD 13000 juta yang teratas. Ritel (XL) justru berada di sisi beli 870.3 juta, dan scalper BQ tercatat di sisi jual. Total beli dan jual nyaris seimbang, net tipis negatif 77.9 juta.",
+   "narasi_teknikal": "Close 7550 turun 0.66% dan berada di bawah pivot P 7583, meski masih jauh di atas EMA50 6801 dengan jarak 11.01%. Volume 12.17 juta.",
+   "strategi": "Pertahankan di atas S1 7417, dan close kembali di atas pivot P 7583 untuk konfirmasi arah naik lanjut.",
+   "konsekuensi": "Kalau close turun di bawah S1 7417, tekanan jual AZ yang dominan berpotensi berlanjut lebih dalam.",
+   "rationale_rank": "Nilai transaksi terbesar di grup ini, dengan satu broker jual (AZ) yang porsinya jauh melampaui broker lain — layak diawasi kelanjutannya.",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Close di atas R1 7717",
+     "rute": "Lanjut ke 7883 (R2) lalu 8017 (R3)",
+     "risiko": "Kalau AZ lanjut melepas di level lebih tinggi, kenaikan bisa tertahan"
+    },
+    "bear": {
+     "konfirmasi": "Close di bawah S1 7417",
+     "rute": "Turun ke 7283 (S2) lalu 7117 (S3)",
+     "risiko": "Distribusi AZ jadi awal koreksi lebih lanjut setelah harga jauh di atas EMA50"
+    }
+   },
+   "kontributor": "Agitama"
+  },
+  {
+   "ticker": "SRSN",
+   "nama": "Indo Acidatama Tbk",
+   "ohlc_hari": {
+    "o": 70,
+    "h": 71,
+    "l": 69,
+    "c": 70,
+    "chg": 0,
+    "pct": 0.0,
+    "vol_juta": 19.22
+   },
+   "ema50": 68,
+   "pivot": {
+    "P": 70,
+    "R1": 71,
+    "R2": 72,
+    "R3": 73,
+    "S1": 69,
+    "S2": 68,
+    "S3": 67
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "NI",
+     597.4,
+     85300,
+     70
+    ],
+    [
+     "CC",
+     116.3,
+     16600,
+     70
+    ],
+    [
+     "XC",
+     69.6,
+     9900,
+     70
+    ],
+    [
+     "YP",
+     32.4,
+     4600,
+     70
+    ],
+    [
+     "AO",
+     14.2,
+     2000,
+     71
+    ],
+    [
+     "SQ",
+     14.2,
+     2000,
+     70
+    ],
+    [
+     "GR",
+     7.4,
+     1100,
+     70
+    ],
+    [
+     "AK",
+     4.3,
+     601,
+     71
+    ],
+    [
+     "YB",
+     2.3,
+     335,
+     70
+    ],
+    [
+     "RO",
+     0.294,
+     42,
+     70
+    ]
+   ],
+   "jual": [
+    [
+     "CP",
+     317.8,
+     45400,
+     70
+    ],
+    [
+     "XL",
+     265.1,
+     38000,
+     70
+    ],
+    [
+     "EP",
+     146.2,
+     20900,
+     70
+    ],
+    [
+     "MG",
+     75.2,
+     10600,
+     71
+    ],
+    [
+     "PD",
+     23.6,
+     3400,
+     70
+    ],
+    [
+     "BK",
+     14.7,
+     2100,
+     70
+    ],
+    [
+     "KK",
+     4.9,
+     694,
+     70
+    ],
+    [
+     "DH",
+     4.3,
+     616,
+     70
+    ],
+    [
+     "OD",
+     2.8,
+     399,
+     70
+    ],
+    [
+     "DR",
+     2.3,
+     326,
+     70
+    ]
+   ],
+   "arah": "bull",
+   "target": "71 / 72 / 73",
+   "invalidation": "Close <69",
+   "slider_pct": 50,
+   "flow_kelas": "Accumulation",
+   "label": "Beli Terkonsentrasi, Net Flow Nyaris Datar",
+   "catatan": "Level paling menentukan di pivot P70, persis di harga close hari ini.",
+   "narasi_flow": "NI mendominasi sisi beli dengan 597.4 juta, sementara sisi jual lebih terbagi — CP 317.8 juta teratas, disusul ritel (XL) 265.1 juta dan scalper MG 75.2 juta. Net flow nyaris datar, hanya positif 1.5 juta.",
+   "narasi_teknikal": "Close 70 tak berubah dari open (0%), tepat di pivot P dan sedikit di atas EMA50 68 dengan jarak 2.94%. Volume 19.22 juta tergolong ramai untuk saham harga rendah ini.",
+   "strategi": "Bertahan di atas pivot P70 dan tembus R1 71 untuk konfirmasi lanjutan naik.",
+   "konsekuensi": "Kalau close turun di bawah S1 69, penyerapan NI belum cukup menahan tekanan jual gabungan CP, XL, dan MG.",
+   "rationale_rank": "Konsentrasi beli tunggal (NI) yang besar berhadapan dengan sisi jual yang terbagi ke banyak broker.",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Close di atas R1 71",
+     "rute": "Lanjut ke 72 (R2) lalu 73 (R3)",
+     "risiko": "Kalau NI berhenti menyerap, harga bisa balik ke pivot 70"
+    },
+    "bear": {
+     "konfirmasi": "Close di bawah S1 69",
+     "rute": "Turun ke 68 (S2, berimpit EMA50) lalu 67 (S3)",
+     "risiko": "Net flow yang nyaris datar berarti belum ada dorongan riil untuk naik lebih jauh"
+    }
+   },
+   "kontributor": "Agitama"
+  },
+  {
+   "ticker": "KIJA",
+   "nama": "Kawasan Industri Jababeka Tbk",
+   "ohlc_hari": {
+    "o": 124,
+    "h": 124,
+    "l": 119,
+    "c": 123,
+    "chg": -1,
+    "pct": -0.81,
+    "vol_juta": 117.18
+   },
+   "ema50": 131,
+   "pivot": {
+    "P": 122,
+    "R1": 125,
+    "R2": 127,
+    "R3": 130,
+    "S1": 120,
+    "S2": 117,
+    "S3": 115
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "LG",
+     3900,
+     322200,
+     122
+    ],
+    [
+     "GR",
+     1100,
+     94700,
+     121
+    ],
+    [
+     "SQ",
+     856.8,
+     71400,
+     120
+    ],
+    [
+     "AK",
+     418.4,
+     35100,
+     120
+    ],
+    [
+     "CP",
+     253.6,
+     21500,
+     120
+    ],
+    [
+     "XL",
+     226.1,
+     18800,
+     121
+    ],
+    [
+     "AI",
+     186.7,
+     15600,
+     120
+    ],
+    [
+     "TP",
+     155.1,
+     13000,
+     119
+    ],
+    [
+     "NI",
+     146.4,
+     12300,
+     120
+    ],
+    [
+     "KK",
+     136,
+     11300,
+     120
+    ]
+   ],
+   "jual": [
+    [
+     "CC",
+     4800,
+     397600,
+     120
+    ],
+    [
+     "KZ",
+     854.1,
+     70600,
+     121
+    ],
+    [
+     "AZ",
+     577.7,
+     47600,
+     121
+    ],
+    [
+     "BB",
+     489,
+     40300,
+     121
+    ],
+    [
+     "KI",
+     367.3,
+     29500,
+     122
+    ],
+    [
+     "RO",
+     306.4,
+     24500,
+     123
+    ],
+    [
+     "ZP",
+     147.8,
+     12000,
+     122
+    ],
+    [
+     "YP",
+     134.8,
+     10500,
+     122
+    ],
+    [
+     "BQ",
+     118.6,
+     10000,
+     119
+    ],
+    [
+     "YB",
+     115.2,
+     9400,
+     122
+    ]
+   ],
+   "arah": "bear",
+   "target": "125 / 127 / 130",
+   "invalidation": "Close <120",
+   "slider_pct": 60,
+   "flow_kelas": "Distribution",
+   "label": "Di Bawah EMA50, Tekanan Jual Menumpuk",
+   "catatan": "Level paling menentukan di S1 120 — hanya 3 poin dari close 123.",
+   "narasi_flow": "CC memimpin sisi jual dengan 4800 juta, melebihi LG 3900 juta yang teratas di sisi beli. Ritel (XL) justru tercatat di sisi beli 226.1 juta, sementara scalper YP dan BQ berada di sisi jual. Net flow negatif 531.8 juta menegaskan tekanan distribusi.",
+   "narasi_teknikal": "Close 123 turun 0.81% dan berada di bawah EMA50 131 dengan jarak -6.11% — posisi teknikal melemah meski close masih di atas pivot P122. Volume besar 117.18 juta.",
+   "strategi": "Bertahan di atas S1 120, dan tembus R1 125 untuk membalik momentum jual yang dipimpin CC.",
+   "konsekuensi": "Kalau close turun di bawah S1 120, tekanan distribusi berpotensi berlanjut menuju S2/S3.",
+   "rationale_rank": "Net jual terbesar di grup ini, dengan harga sudah berada di bawah EMA50 — kandidat pengawasan tekanan jual lanjutan.",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Close di atas R1 125",
+     "rute": "Lanjut ke 127 (R2) lalu 130 (R3)",
+     "risiko": "Kalau CC lanjut melepas di harga lebih tinggi, rebound bisa tertahan"
+    },
+    "bear": {
+     "konfirmasi": "Close di bawah S1 120",
+     "rute": "Turun ke 117 (S2) lalu 115 (S3)",
+     "risiko": "Posisi di bawah EMA50 berlanjut jadi tren turun jangka pendek"
+    }
+   },
+   "kontributor": "Agitama"
+  },
+  {
+   "ticker": "ADRO",
+   "nama": "Alamtri Resources Indonesia Tbk",
+   "ohlc_hari": {
+    "o": 2470,
+    "h": 2530,
+    "l": 2460,
+    "c": 2530,
+    "chg": 60,
+    "pct": 2.43,
+    "vol_juta": 18.03
+   },
+   "ema50": 2441,
+   "pivot": {
+    "P": 2507,
+    "R1": 2553,
+    "R2": 2577,
+    "R3": 2623,
+    "S1": 2483,
+    "S2": 2437,
+    "S3": 2413
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "AK",
+     12400,
+     49600,
+     2506
+    ],
+    [
+     "LG",
+     7700,
+     30500,
+     2518
+    ],
+    [
+     "ZP",
+     1300,
+     5300,
+     2503
+    ],
+    [
+     "GR",
+     797.2,
+     3200,
+     2503
+    ],
+    [
+     "BK",
+     733.1,
+     2800,
+     2517
+    ],
+    [
+     "DX",
+     696,
+     2800,
+     2462
+    ],
+    [
+     "EP",
+     326.5,
+     1300,
+     2499
+    ],
+    [
+     "TP",
+     246.4,
+     985,
+     2504
+    ],
+    [
+     "SQ",
+     78.1,
+     320,
+     2497
+    ],
+    [
+     "HD",
+     25.5,
+     104,
+     2510
+    ]
+   ],
+   "jual": [
+    [
+     "RX",
+     6800,
+     27300,
+     2509
+    ],
+    [
+     "YU",
+     3500,
+     14000,
+     2511
+    ],
+    [
+     "XL",
+     2700,
+     10700,
+     2505
+    ],
+    [
+     "CC",
+     2600,
+     10300,
+     2500
+    ],
+    [
+     "CP",
+     1600,
+     6500,
+     2529
+    ],
+    [
+     "YP",
+     1300,
+     5000,
+     2509
+    ],
+    [
+     "BQ",
+     828.5,
+     3300,
+     2508
+    ],
+    [
+     "MG",
+     758.3,
+     3000,
+     2520
+    ],
+    [
+     "DR",
+     669.2,
+     2700,
+     2513
+    ],
+    [
+     "YJ",
+     599.6,
+     2400,
+     2519
+    ]
+   ],
+   "arah": "bull",
+   "target": "2553 / 2577 / 2623",
+   "invalidation": "Close <2483",
+   "slider_pct": 66,
+   "flow_kelas": "Accumulation",
+   "label": "Net Beli Terbesar di Grup, Ritel dan Scalper Melepas",
+   "catatan": "Level paling menentukan di R1 2553, satu-satunya penghalang sebelum area kosong ke atas.",
+   "narasi_flow": "AK memimpin sisi beli dengan 12400 juta, jauh melebihi RX 6800 juta yang teratas di sisi jual. Ritel (XL) berada di sisi jual 2700 juta, dan ketiga broker berlabel scalper — YP, BQ, MG — semuanya turut melepas. Net flow positif 2947.2 juta, terbesar di antara tujuh emiten ini.",
+   "narasi_teknikal": "Close 2530 naik 2.43%, sudah di atas pivot P 2507 dan EMA50 2441 dengan jarak 3.65%. Volume 18.03 juta.",
+   "strategi": "Bertahan di atas S1 2483, dan tembus R1 2553 untuk lanjut ke area R2/R3.",
+   "konsekuensi": "Kalau close turun di bawah S1 2483, sinyal akumulasi AK hari ini gagal ditindaklanjuti.",
+   "rationale_rank": "Net beli absolut terbesar di grup ini — broker besar menyerap sementara ritel dan seluruh broker scalper melepas.",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Close di atas R1 2553",
+     "rute": "Lanjut ke 2577 (R2) lalu 2623 (R3)",
+     "risiko": "Kalau volume susut, momentum kenaikan bisa tak berlanjut"
+    },
+    "bear": {
+     "konfirmasi": "Close di bawah S1 2483",
+     "rute": "Turun ke 2437 (S2, dekat EMA50) lalu 2413 (S3)",
+     "risiko": "Net beli AK hari ini terbukti cuma aksi jangka pendek, bukan akumulasi berkelanjutan"
+    }
+   },
+   "kontributor": "Agitama"
+  },
+  {
+   "ticker": "POWR",
+   "nama": "PT Cikarang Listrindo Tbk.",
+   "ohlc_hari": {
+    "o": 805,
+    "h": 810,
+    "l": 795,
+    "c": 810,
+    "chg": 5,
+    "pct": 0.62,
+    "vol_juta": 4.43
+   },
+   "ema50": 733,
+   "pivot": {
+    "P": 805,
+    "R1": 815,
+    "R2": 820,
+    "R3": 830,
+    "S1": 800,
+    "S2": 790,
+    "S3": 785
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "ZP",
+     1600,
+     20000,
+     805
+    ],
+    [
+     "AK",
+     383,
+     4800,
+     802
+    ],
+    [
+     "BK",
+     102,
+     1300,
+     805
+    ],
+    [
+     "CC",
+     94.6,
+     1200,
+     803
+    ],
+    [
+     "MG",
+     80,
+     1000,
+     800
+    ],
+    [
+     "XC",
+     75,
+     938,
+     801
+    ],
+    [
+     "DH",
+     45.4,
+     571,
+     795
+    ],
+    [
+     "LG",
+     40,
+     499,
+     803
+    ],
+    [
+     "TP",
+     34.4,
+     425,
+     810
+    ],
+    [
+     "BB",
+     9.1,
+     115,
+     795
+    ]
+   ],
+   "jual": [
+    [
+     "XL",
+     862.6,
+     10800,
+     810
+    ],
+    [
+     "DR",
+     514.1,
+     6400,
+     810
+    ],
+    [
+     "CP",
+     374,
+     4600,
+     810
+    ],
+    [
+     "PD",
+     246.6,
+     3000,
+     810
+    ],
+    [
+     "OD",
+     168.9,
+     2100,
+     810
+    ],
+    [
+     "BQ",
+     80.7,
+     1000,
+     810
+    ],
+    [
+     "XA",
+     71.1,
+     880,
+     810
+    ],
+    [
+     "NI",
+     70.3,
+     873,
+     810
+    ],
+    [
+     "YP",
+     53.2,
+     641,
+     810
+    ],
+    [
+     "IF",
+     18.6,
+     233,
+     810
+    ]
+   ],
+   "catatan_data": "Harga rata-rata sisi jual tak terbaca di screenshot; dipakai harga penutupan hari itu.",
+   "arah": "bull",
+   "target": "815 / 820 / 830",
+   "invalidation": "Close <800",
+   "slider_pct": 67,
+   "flow_kelas": "Accumulation",
+   "label": "Naik Tipis Tanpa Dorongan Net Flow",
+   "catatan": "Level paling menentukan di pivot P805/S1 800 — close 810 baru sedikit di atasnya.",
+   "narasi_flow": "ZP memimpin sisi beli dengan 1600 juta. Sisi jual dipimpin ritel (XL) dengan 862.6 juta, dan scalper BQ serta YP turut berada di sisi jual. Net flow nyaris datar, hanya positif 3.4 juta, meski harga naik 0.62%.",
+   "narasi_teknikal": "Close 810 naik tipis dan sudah jauh di atas EMA50 733 dengan jarak 10.5%, berada di atas pivot P 805. Volume tipis 4.43 juta.",
+   "strategi": "Bertahan di atas pivot P805/S1 800, dan tembus R1 815 untuk lanjut ke area R2/R3.",
+   "konsekuensi": "Kalau close turun di bawah S1 800, kenaikan hari ini rawan koreksi karena tak ditopang net flow yang berarti.",
+   "rationale_rank": "Kenaikan harga tidak dibarengi net flow signifikan — layak diawasi karena volume tipis dan ritel menjadi penjual terbesar.",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Close di atas R1 815",
+     "rute": "Lanjut ke 820 (R2) lalu 830 (R3)",
+     "risiko": "Kalau ZP berhenti menyerap, kenaikan sulit berlanjut mengingat net flow yang tipis"
+    },
+    "bear": {
+     "konfirmasi": "Close di bawah S1 800",
+     "rute": "Turun ke 790 (S2) lalu 785 (S3)",
+     "risiko": "Net flow yang nyaris datar menandakan kenaikan hari ini rapuh terhadap pembalikan"
+    }
+   },
+   "kontributor": "Deonal Ramadhan"
+  },
+  {
+   "ticker": "GIAA",
+   "nama": "Garuda Indonesia (Persero) Tbk",
+   "ohlc_hari": {
+    "o": 72,
+    "h": 78,
+    "l": 68,
+    "c": 76,
+    "chg": 4,
+    "pct": 5.56,
+    "vol_juta": 1248.69
+   },
+   "ema50": 59,
+   "pivot": {
+    "P": 74,
+    "R1": 80,
+    "R2": 84,
+    "R3": 90,
+    "S1": 70,
+    "S2": 64,
+    "S3": 60
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "AK",
+     2700,
+     359800,
+     75
+    ],
+    [
+     "SS",
+     2300,
+     300000,
+     76
+    ],
+    [
+     "AZ",
+     1300,
+     170700,
+     75
+    ],
+    [
+     "OD",
+     365.4,
+     48200,
+     75
+    ],
+    [
+     "IF",
+     350.3,
+     46500,
+     75
+    ],
+    [
+     "XL",
+     331.9,
+     18700,
+     75
+    ],
+    [
+     "XC",
+     286.5,
+     35100,
+     75
+    ],
+    [
+     "BQ",
+     263.6,
+     35300,
+     75
+    ],
+    [
+     "AT",
+     185.2,
+     24600,
+     75
+    ],
+    [
+     "CD",
+     147.4,
+     20800,
+     71
+    ]
+   ],
+   "jual": [
+    [
+     "YP",
+     1700,
+     220500,
+     75
+    ],
+    [
+     "CC",
+     964.3,
+     104800,
+     75
+    ],
+    [
+     "SQ",
+     908.1,
+     119600,
+     74
+    ],
+    [
+     "NI",
+     859.4,
+     112900,
+     74
+    ],
+    [
+     "PD",
+     550,
+     72700,
+     75
+    ],
+    [
+     "KK",
+     512,
+     63300,
+     75
+    ],
+    [
+     "GR",
+     421.2,
+     58900,
+     74
+    ],
+    [
+     "YJ",
+     419.1,
+     55900,
+     75
+    ],
+    [
+     "CP",
+     404.7,
+     42200,
+     75
+    ],
+    [
+     "LG",
+     372.3,
+     51800,
+     72
+    ]
+   ],
+   "arah": "bull",
+   "target": "80 / 84 / 90",
+   "invalidation": "Close <70",
+   "slider_pct": 60,
+   "flow_kelas": "Accumulation",
+   "label": "Breakout Volume Besar — Ritel Ikut Beli, Scalper Ambil Untung",
+   "catatan": "Level penentu ada di pivot 74 — bertahan di atasnya membuka jalan ke R1 80.",
+   "narasi_flow": "AK jadi pembeli terbesar dengan Rp2.700 juta, diikuti SS dan AZ; ritel (XL) turut di sisi beli dengan Rp331,9 juta. Di sisi jual, YP — broker berperan scalper — jadi penjual terbesar dengan Rp1.700 juta di rata-rata harga 75, sedikit di bawah closing 76. Net masih positif Rp1.119,2 juta.",
+   "narasi_teknikal": "Close 76 naik 5,56% dengan volume 1.248,69 juta lembar, jauh di atas EMA50 (59, jarak +28,81%). Harga berada di atas pivot 74, mendekati R1 80.",
+   "strategi": "Berlaku selama close bertahan di atas pivot 74; validasi lanjutan bila tembus R1 80 dengan volume yang terjaga.",
+   "konsekuensi": "Bila close turun ke bawah S1 70, keseimbangan net beli hari ini bisa terkoreksi dan momentum breakout melemah.",
+   "rationale_rank": "Volume breakout terbesar di kelompok ini dengan net beli positif meski asing masih net sell pasar.",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Close bertahan di atas pivot 74 dengan volume besar berlanjut",
+     "rute": "Ke arah R1 80, lalu R2 84 dan R3 90 bila momentum terjaga",
+     "risiko": "Jika muncul aksi jual susulan dari scalper (YP) tanpa penyerapan baru, kenaikan bisa berbalik cepat"
+    },
+    "bear": {
+     "konfirmasi": "Close turun ke bawah S1 70",
+     "rute": "Berpotensi lanjut ke S2 64 dan S3 60",
+     "risiko": "Validasi breakout hari ini batal, momentum kembali ke area sebelum kenaikan"
+    }
+   },
+   "kontributor": "Janto"
+  },
+  {
+   "ticker": "HRUM",
+   "nama": "Harum Energy Tbk",
+   "ohlc_hari": {
+    "o": 840,
+    "h": 855,
+    "l": 820,
+    "c": 850,
+    "chg": 15,
+    "pct": 1.8,
+    "vol_juta": 12.36
+   },
+   "ema50": 824,
+   "pivot": {
+    "P": 842,
+    "R1": 863,
+    "R2": 877,
+    "R3": 898,
+    "S1": 828,
+    "S2": 807,
+    "S3": 793
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "AK",
+     1200,
+     14400,
+     837
+    ],
+    [
+     "XA",
+     301.3,
+     3500,
+     848
+    ],
+    [
+     "ZP",
+     252.9,
+     2900,
+     847
+    ],
+    [
+     "NI",
+     222.7,
+     2600,
+     841
+    ],
+    [
+     "AZ",
+     146.1,
+     1600,
+     846
+    ],
+    [
+     "YP",
+     95.9,
+     1300,
+     834
+    ],
+    [
+     "TP",
+     62.4,
+     754,
+     831
+    ],
+    [
+     "SQ",
+     57.2,
+     669,
+     847
+    ],
+    [
+     "GR",
+     47.2,
+     598,
+     835
+    ],
+    [
+     "OD",
+     32.1,
+     388,
+     840
+    ]
+   ],
+   "jual": [
+    [
+     "CC",
+     583.1,
+     6900,
+     850
+    ],
+    [
+     "XL",
+     451.8,
+     5500,
+     850
+    ],
+    [
+     "XC",
+     261.8,
+     3100,
+     850
+    ],
+    [
+     "PD",
+     202.4,
+     2400,
+     850
+    ],
+    [
+     "BK",
+     199.2,
+     2400,
+     850
+    ],
+    [
+     "DR",
+     142.3,
+     1700,
+     850
+    ],
+    [
+     "DH",
+     141.2,
+     1700,
+     850
+    ],
+    [
+     "KK",
+     130.7,
+     1500,
+     850
+    ],
+    [
+     "LS",
+     100.7,
+     1200,
+     850
+    ],
+    [
+     "EP",
+     81,
+     974,
+     850
+    ]
+   ],
+   "catatan_data": "Harga rata-rata sisi jual tak terbaca di screenshot; dipakai harga penutupan hari itu.",
+   "arah": "bull",
+   "target": "863 / 877 / 898",
+   "invalidation": "Close <828",
+   "slider_pct": 61,
+   "flow_kelas": "Accumulation",
+   "label": "Konsolidasi Naik — Net Beli Tipis di Atas EMA50",
+   "catatan": "EMA50 di 824 dan pivot 842 saling berdekatan — bertahannya harga di atas keduanya adalah kunci hari ini.",
+   "narasi_flow": "AK jadi pembeli terbesar dengan Rp1.200 juta. Di sisi jual, CC tercatat terbesar dengan Rp583,1 juta, dengan ritel (XL) turut di sisi jual, sementara scalper absen dari daftar jual teratas. Net masih positif tipis, Rp123,6 juta.",
+   "narasi_teknikal": "Close 850 naik 1,8%, bertahan di atas EMA50 (824, jarak +3,16%) dan di atas pivot 842, mendekati R1 863. Volume 12,36 juta lembar.",
+   "strategi": "Berlaku selama harga bertahan di atas EMA50 824 dan pivot 842; penerusan butuh tembus R1 863.",
+   "konsekuensi": "Bila close turun ke bawah S1 828, posisi kembali ke bawah EMA50 dan setup ini batal.",
+   "rationale_rank": "Net beli tipis dengan harga bertahan di atas EMA50, tanpa tekanan jual dari scalper.",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Tembus R1 863 dengan volume terjaga",
+     "rute": "Lanjut ke R2 877 dan R3 898",
+     "risiko": "Jika penembusan gagal (false break), harga bisa turun kembali ke pivot 842"
+    },
+    "bear": {
+     "konfirmasi": "Close di bawah S1 828",
+     "rute": "Turun ke S2 807, lalu S3 793",
+     "risiko": "Kehilangan status di atas EMA50, tren naik jangka pendek melemah"
+    }
+   },
+   "kontributor": "Ali Supian"
+  },
+  {
+   "ticker": "MDKA",
+   "nama": "PT Merdeka Copper Gold Tbk.",
+   "ohlc_hari": {
+    "o": 2790,
+    "h": 2950,
+    "l": 2740,
+    "c": 2900,
+    "chg": 110,
+    "pct": 3.94,
+    "vol_juta": 48.56
+   },
+   "ema50": 2775,
+   "pivot": {
+    "P": 2863,
+    "R1": 2987,
+    "R2": 3073,
+    "R3": 3197,
+    "S1": 2777,
+    "S2": 2653,
+    "S3": 2567
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "AK",
+     36800,
+     126700,
+     2893
+    ],
+    [
+     "DX",
+     21100,
+     72600,
+     2907
+    ],
+    [
+     "NI",
+     4300,
+     14900,
+     2892
+    ],
+    [
+     "SQ",
+     4100,
+     14100,
+     2868
+    ],
+    [
+     "LG",
+     3400,
+     11900,
+     2896
+    ],
+    [
+     "SH",
+     2000,
+     6700,
+     2916
+    ],
+    [
+     "AZ",
+     1900,
+     7000,
+     2761
+    ],
+    [
+     "BB",
+     772.8,
+     2600,
+     2885
+    ],
+    [
+     "AT",
+     402.4,
+     1400,
+     2855
+    ],
+    [
+     "TP",
+     180.5,
+     644,
+     2819
+    ]
+   ],
+   "jual": [
+    [
+     "OD",
+     22300,
+     76500,
+     2900
+    ],
+    [
+     "PD",
+     21900,
+     75300,
+     2900
+    ],
+    [
+     "BK",
+     7400,
+     25800,
+     2900
+    ],
+    [
+     "XL",
+     4500,
+     15600,
+     2900
+    ],
+    [
+     "YU",
+     3400,
+     12000,
+     2900
+    ],
+    [
+     "CC",
+     2500,
+     8400,
+     2900
+    ],
+    [
+     "MG",
+     2500,
+     8900,
+     2900
+    ],
+    [
+     "YP",
+     2000,
+     6900,
+     2900
+    ],
+    [
+     "XC",
+     1400,
+     4700,
+     2900
+    ],
+    [
+     "YJ",
+     1100,
+     3900,
+     2900
+    ]
+   ],
+   "catatan_data": "Harga rata-rata sisi jual tak terbaca di screenshot; dipakai harga penutupan hari itu.",
+   "arah": "bull",
+   "target": "2987 / 3073 / 3197",
+   "invalidation": "Close <2777",
+   "slider_pct": 59,
+   "flow_kelas": "Accumulation",
+   "label": "Akumulasi Besar — Satu Broker Dominan di Tengah Distribusi Scalper",
+   "catatan": "Pivot 2863 jadi batas penentu; tembus R1 2987 akan mengonfirmasi kelanjutan kenaikan.",
+   "narasi_flow": "AK jadi pembeli terbesar dengan Rp36.800 juta, jauh di atas broker lain. Di sisi jual, OD tercatat terbesar dengan Rp22.300 juta; kedua scalper (MG, YP) dan ritel (XL) sama-sama tercatat di sisi jual. Net beli tetap besar, Rp5.955,7 juta.",
+   "narasi_teknikal": "Close 2900 naik 3,94%, di atas EMA50 (2775, jarak +4,5%) dan di atas pivot 2863, namun masih di bawah R1 2987. Volume 48,56 juta lembar.",
+   "strategi": "Berlaku selama close bertahan di atas pivot 2863; validasi kuat bila tembus R1 2987.",
+   "konsekuensi": "Bila close turun ke bawah S1 2777, momentum beli hari ini kehilangan pijakan dan setup batal.",
+   "rationale_rank": "Net beli terbesar di kelompok ini, didorong satu broker pembeli dominan (AK).",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Tembus R1 2987",
+     "rute": "Lanjut ke R2 3073, lalu R3 3197",
+     "risiko": "Konsentrasi beli pada satu broker (AK) membuat kenaikan rentan bila broker itu berhenti menyerap"
+    },
+    "bear": {
+     "konfirmasi": "Close di bawah S1 2777",
+     "rute": "Turun ke S2 2653, lalu S3 2567",
+     "risiko": "Tekanan jual dari dua scalper (MG, YP) berlanjut dan menekan harga lebih dalam"
+    }
+   },
+   "kontributor": "Ali Supian"
+  },
+  {
+   "ticker": "INDY",
+   "nama": "Indika Energy Tbk",
+   "ohlc_hari": {
+    "o": 2500,
+    "h": 2610,
+    "l": 2430,
+    "c": 2560,
+    "chg": 60,
+    "pct": 2.4,
+    "vol_juta": 27.3
+   },
+   "ema50": 2463,
+   "pivot": {
+    "P": 2533,
+    "R1": 2637,
+    "R2": 2713,
+    "R3": 2817,
+    "S1": 2457,
+    "S2": 2353,
+    "S3": 2277
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "AK",
+     10100,
+     39400,
+     2560
+    ],
+    [
+     "GR",
+     2900,
+     11200,
+     2547
+    ],
+    [
+     "AZ",
+     1900,
+     7100,
+     2590
+    ],
+    [
+     "DR",
+     588.4,
+     2300,
+     2558
+    ],
+    [
+     "TP",
+     395.1,
+     1500,
+     2586
+    ],
+    [
+     "FS",
+     192.4,
+     755,
+     2549
+    ],
+    [
+     "AI",
+     174.1,
+     677,
+     2574
+    ],
+    [
+     "AT",
+     120.4,
+     501,
+     2532
+    ],
+    [
+     "AO",
+     91.6,
+     356,
+     2566
+    ],
+    [
+     "YB",
+     75.3,
+     318,
+     2528
+    ]
+   ],
+   "jual": [
+    [
+     "IF",
+     2000,
+     7700,
+     2560
+    ],
+    [
+     "BK",
+     1800,
+     7000,
+     2560
+    ],
+    [
+     "DX",
+     1700,
+     6500,
+     2560
+    ],
+    [
+     "CC",
+     1100,
+     4700,
+     2560
+    ],
+    [
+     "CP",
+     1100,
+     4500,
+     2560
+    ],
+    [
+     "YP",
+     1000,
+     4000,
+     2560
+    ],
+    [
+     "KK",
+     994.4,
+     3800,
+     2560
+    ],
+    [
+     "SQ",
+     961.4,
+     3700,
+     2560
+    ],
+    [
+     "OD",
+     887,
+     3400,
+     2560
+    ],
+    [
+     "LG",
+     779.2,
+     3000,
+     2560
+    ]
+   ],
+   "catatan_data": "Harga rata-rata sisi jual tak terbaca di screenshot; dipakai harga penutupan hari itu.",
+   "arah": "bull",
+   "target": "2637 / 2713 / 2817",
+   "invalidation": "Close <2457",
+   "slider_pct": 57,
+   "flow_kelas": "Accumulation",
+   "label": "Net Beli Kuat — Broker Dominan di Sisi Beli, Ritel Absen",
+   "catatan": "Pivot 2533 adalah level penentu; EMA50 2463 di bawahnya jadi lapisan penopang kedua.",
+   "narasi_flow": "AK jadi pembeli terbesar dengan Rp10.100 juta, mendominasi sisi beli. Sisi jual lebih terpecah antar broker, dengan scalper (YP) turut menjual; ritel (XL) tidak tercatat di kedua sisi top 10 hari ini. Net beli tercatat Rp4.215,3 juta.",
+   "narasi_teknikal": "Close 2560 naik 2,4%, bertahan di atas pivot 2533 dan EMA50 2463 (jarak +3,94%), namun masih di bawah R1 2637. Volume 27,3 juta lembar.",
+   "strategi": "Berlaku selama close bertahan di atas pivot 2533; validasi lanjutan bila tembus R1 2637.",
+   "konsekuensi": "Bila close turun ke bawah S1 2457, posisi kembali di bawah EMA50 dan setup ini batal.",
+   "rationale_rank": "Net beli kuat dengan dominasi satu broker pembeli, sisi jual terpecah tanpa tekanan besar dari satu pihak.",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Tembus R1 2637",
+     "rute": "Lanjut ke R2 2713, lalu R3 2817",
+     "risiko": "Dominasi AK di sisi beli membuat kenaikan rentan bila minat beli itu surut"
+    },
+    "bear": {
+     "konfirmasi": "Close di bawah S1 2457",
+     "rute": "Turun ke S2 2353, lalu S3 2277",
+     "risiko": "Kehilangan level EMA50, tren naik jangka pendek melemah"
+    }
+   },
+   "kontributor": "Ali Supian"
+  },
+  {
+   "ticker": "ANTM",
+   "nama": "PT ANTAM (Persero) Tbk",
+   "ohlc_hari": {
+    "o": 3000,
+    "h": 3090,
+    "l": 2970,
+    "c": 3070,
+    "chg": 70,
+    "pct": 2.33,
+    "vol_juta": 83.22
+   },
+   "ema50": 3033,
+   "pivot": {
+    "P": 3043,
+    "R1": 3117,
+    "R2": 3163,
+    "R3": 3237,
+    "S1": 2997,
+    "S2": 2923,
+    "S3": 2877
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "AK",
+     57300,
+     187900,
+     3051
+    ],
+    [
+     "NI",
+     12200,
+     39600,
+     3060
+    ],
+    [
+     "ZP",
+     8800,
+     29300,
+     3038
+    ],
+    [
+     "LG",
+     5000,
+     16400,
+     3061
+    ],
+    [
+     "AZ",
+     2100,
+     6700,
+     3066
+    ],
+    [
+     "RF",
+     1500,
+     5000,
+     3045
+    ],
+    [
+     "YB",
+     758.2,
+     2500,
+     3057
+    ],
+    [
+     "KK",
+     614.2,
+     2100,
+     3035
+    ],
+    [
+     "AI",
+     488.7,
+     1600,
+     3067
+    ],
+    [
+     "AO",
+     461.7,
+     1500,
+     3070
+    ]
+   ],
+   "jual": [
+    [
+     "YU",
+     12400,
+     40900,
+     3070
+    ],
+    [
+     "BB",
+     11700,
+     38300,
+     3070
+    ],
+    [
+     "EP",
+     10300,
+     33600,
+     3070
+    ],
+    [
+     "YP",
+     8400,
+     27600,
+     3070
+    ],
+    [
+     "AG",
+     6200,
+     20300,
+     3070
+    ],
+    [
+     "CC",
+     5700,
+     18900,
+     3070
+    ],
+    [
+     "TP",
+     5000,
+     16300,
+     3070
+    ],
+    [
+     "XL",
+     3300,
+     10900,
+     3070
+    ],
+    [
+     "BK",
+     3200,
+     10100,
+     3070
+    ],
+    [
+     "DH",
+     3100,
+     10300,
+     3070
+    ]
+   ],
+   "catatan_data": "Harga rata-rata sisi jual tak terbaca di screenshot; dipakai harga penutupan hari itu.",
+   "arah": "bull",
+   "target": "3117 / 3163 / 3237",
+   "invalidation": "Close <2997",
+   "slider_pct": 61,
+   "flow_kelas": "Accumulation",
+   "label": "Net Beli Terbesar di Kelompok — Satu Broker Borong, Jual Merata",
+   "catatan": "EMA50 (3033) dan pivot (3043) berimpit tipis — level ini paling menentukan arah lanjutan.",
+   "narasi_flow": "AK jadi pembeli tunggal terbesar dengan Rp57.300 juta, jauh melampaui broker lain. Sisi jual lebih merata di banyak broker, dipimpin YU dengan Rp12.400 juta; scalper (YP) dan ritel (XL) turut tercatat di sisi jual. Net beli tercatat Rp19.922,8 juta, terbesar di kelompok ini.",
+   "narasi_teknikal": "Close 3070 naik 2,33%, tipis di atas EMA50 (3033, jarak +1,22%) dan di atas pivot 3043, mendekati R1 3117. Volume 83,22 juta lembar.",
+   "strategi": "Berlaku selama close bertahan di atas EMA50 3033 dan pivot 3043; validasi lanjutan bila tembus R1 3117.",
+   "konsekuensi": "Bila close turun ke bawah S1 2997, harga kembali di bawah EMA50 dan setup ini batal.",
+   "rationale_rank": "Net beli nominal terbesar di kelompok ini, didorong dominasi satu broker pembeli.",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Tembus R1 3117 dengan volume terjaga",
+     "rute": "Lanjut ke R2 3163, lalu R3 3237",
+     "risiko": "Ketergantungan pada satu broker pembeli (AK) membuat kenaikan rentan bila serapan itu berhenti"
+    },
+    "bear": {
+     "konfirmasi": "Close di bawah S1 2997",
+     "rute": "Turun ke S2 2923, lalu S3 2877",
+     "risiko": "Jarak ke EMA50 tipis (+1,22%) membuat harga mudah jatuh ke bawah rata-rata bila tekanan jual meningkat"
+    }
+   },
+   "kontributor": "Ali Supian"
+  },
+  {
+   "ticker": "PADI",
+   "nama": "Minna Padi Investama Sekuritas Tbk",
+   "ohlc_hari": {
+    "o": 68,
+    "h": 72,
+    "l": 67,
+    "c": 71,
+    "chg": 3,
+    "pct": 4.41,
+    "vol_juta": 237.0
+   },
+   "ema50": 76,
+   "pivot": {
+    "P": 70,
+    "R1": 73,
+    "R2": 75,
+    "R3": 78,
+    "S1": 68,
+    "S2": 65,
+    "S3": 63
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "MU",
+     4000,
+     577600,
+     70
+    ],
+    [
+     "MG",
+     561.1,
+     80200,
+     70
+    ],
+    [
+     "NI",
+     281.4,
+     40700,
+     69
+    ],
+    [
+     "AO",
+     123.1,
+     17600,
+     70
+    ],
+    [
+     "BQ",
+     111.7,
+     15700,
+     71
+    ],
+    [
+     "SH",
+     67,
+     10000,
+     67
+    ],
+    [
+     "MI",
+     67,
+     10000,
+     67
+    ],
+    [
+     "SA",
+     67,
+     10000,
+     67
+    ],
+    [
+     "YU",
+     40.1,
+     6100,
+     68
+    ],
+    [
+     "DX",
+     31.4,
+     4500,
+     70
+    ]
+   ],
+   "jual": [
+    [
+     "AK",
+     1300,
+     188000,
+     71
+    ],
+    [
+     "YB",
+     675.7,
+     96900,
+     71
+    ],
+    [
+     "CC",
+     456,
+     64500,
+     71
+    ],
+    [
+     "XC",
+     405.4,
+     58400,
+     71
+    ],
+    [
+     "GR",
+     405.1,
+     57800,
+     71
+    ],
+    [
+     "XA",
+     398.1,
+     57300,
+     71
+    ],
+    [
+     "IH",
+     320.9,
+     48000,
+     71
+    ],
+    [
+     "KI",
+     245,
+     34900,
+     71
+    ],
+    [
+     "AT",
+     197.3,
+     29600,
+     71
+    ],
+    [
+     "XL",
+     157.8,
+     30300,
+     71
+    ]
+   ],
+   "catatan_data": "Harga rata-rata sisi jual tak terbaca di screenshot; dipakai harga penutupan hari itu.",
+   "arah": "netral",
+   "target": "73 / 75 / 78",
+   "invalidation": "Close <68",
+   "slider_pct": 60,
+   "flow_kelas": "Accumulation",
+   "label": "Rebound dalam Tren Lemah — Harga Masih di Bawah EMA50",
+   "catatan": "EMA50 di 76 masih di atas harga saat ini — level itu jadi penentu apakah rebound ini berlanjut atau berhenti di pivot 70.",
+   "narasi_flow": "MU jadi pembeli dominan dengan Rp4.000 juta (577.600 lot), jauh di atas broker lain. AK tercatat terbesar di sisi jual namun jauh lebih kecil, Rp1.300 juta; ritel (XL) turut tercatat di sisi jual, scalper absen dari daftar jual teratas. Net beli tercatat Rp788,5 juta.",
+   "narasi_teknikal": "Close 71 naik 4,41%, di atas pivot 70, namun masih di bawah EMA50 (76), berjarak -6,58% — rebound ini belum membawa harga kembali ke atas rata-rata 50 harinya. Volume 237,0 juta lembar; arah tercatat netral.",
+   "strategi": "Berlaku selama close bertahan di atas pivot 70; posisi masih di bawah EMA50 sehingga penerusan butuh konfirmasi lebih lanjut lewat R1 73.",
+   "konsekuensi": "Bila close turun ke bawah S1 68, rebound hari ini gugur dan tekanan jual bisa berlanjut ke S2 65.",
+   "rationale_rank": "Rebound bervolume besar dengan pembeli tunggal dominan (MU), meski harga masih di bawah EMA50.",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Tembus R1 73 dan bertahan di atasnya",
+     "rute": "Lanjut ke R2 75, lalu R3 78 mendekati EMA50 76",
+     "risiko": "Selama masih di bawah EMA50, rebound berisiko berhenti di tengah jalan jika minat beli MU tidak berlanjut"
+    },
+    "bear": {
+     "konfirmasi": "Close di bawah S1 68",
+     "rute": "Turun ke S2 65, lalu S3 63",
+     "risiko": "Tren turun jangka menengah (di bawah EMA50) berlanjut, rebound hari ini dianggap gagal"
+    }
+   },
+   "kontributor": "Deonal Ramadhan"
+  },
+  {
+   "ticker": "SSIA",
+   "nama": "PT Surya Semesta Internusa Tbk",
+   "ohlc_hari": {
+    "o": 1665,
+    "h": 1695,
+    "l": 1630,
+    "c": 1670,
+    "chg": 10,
+    "pct": 0.6,
+    "vol_juta": 7.31
+   },
+   "ema50": 1625,
+   "pivot": {
+    "P": 1665,
+    "R1": 1700,
+    "R2": 1730,
+    "R3": 1765,
+    "S1": 1635,
+    "S2": 1600,
+    "S3": 1570
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "BB",
+     2700,
+     16000,
+     1671
+    ],
+    [
+     "EL",
+     246.3,
+     1500,
+     1642
+    ],
+    [
+     "GR",
+     184.7,
+     1100,
+     1665
+    ],
+    [
+     "DH",
+     158.2,
+     946,
+     1674
+    ],
+    [
+     "YB",
+     124.8,
+     754,
+     1665
+    ],
+    [
+     "XA",
+     20.1,
+     123,
+     1659
+    ],
+    [
+     "SQ",
+     15.6,
+     89,
+     1679
+    ],
+    [
+     "ZP",
+     15.1,
+     90,
+     1674
+    ],
+    [
+     "IF",
+     10,
+     60,
+     1660
+    ],
+    [
+     "NI",
+     5.4,
+     31,
+     1661
+    ]
+   ],
+   "jual": [
+    [
+     "LG",
+     464.5,
+     0,
+     1670
+    ],
+    [
+     "AK",
+     461,
+     0,
+     1670
+    ],
+    [
+     "DR",
+     455.8,
+     0,
+     1670
+    ],
+    [
+     "BK",
+     417.5,
+     0,
+     1670
+    ],
+    [
+     "MG",
+     268.5,
+     0,
+     1670
+    ],
+    [
+     "CC",
+     218.1,
+     0,
+     1670
+    ],
+    [
+     "YP",
+     197.5,
+     0,
+     1670
+    ],
+    [
+     "XL",
+     167.8,
+     0,
+     1670
+    ],
+    [
+     "PD",
+     132.6,
+     0,
+     1670
+    ],
+    [
+     "CP",
+     130.7,
+     0,
+     1670
+    ]
+   ],
+   "kontributor": "Warda W.",
+   "catatan_data": "Kolom S.lot dan S.avg terpotong di layar sempit — hanya nilai jual yang terbaca.",
+   "arah": "bull",
+   "target": "1700 / 1730 / 1765",
+   "invalidation": "Close <1635",
+   "slider_pct": 54,
+   "flow_kelas": "Accumulation",
+   "label": "Satu Broker Borong — Sisi Jual Merata Tipis",
+   "catatan": "EMA50 1.625 jadi alas terdekat; selama di atasnya struktur naiknya utuh.",
+   "narasi_flow": "BB sendirian membeli Rp2.700 juta, lebih besar dari seluruh sisi jual digabung. Penjualnya menyebar rata di bawah Rp500 juta tanpa satu pun yang menonjol — barang berpindah dari banyak tangan ke satu tangan.",
+   "narasi_teknikal": "Menutup 1.670 (+0,60%), 2,77% di atas EMA50 1.625 dan di atas pivot P. Kenaikannya tipis, jadi yang menonjol arus brokernya, bukan pergerakan harganya.",
+   "strategi": "Berlaku selama close bertahan di atas EMA50 1.625; R1 jadi ujian pertama kelanjutannya.",
+   "konsekuensi": "Kehilangan 1.625 membuat serapan satu broker itu tak berlanjut jadi tren.",
+   "rationale_rank": "Satu pembeli melebihi total sisi jual",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Close di atas R1 dengan volume",
+     "rute": "R1 → R2",
+     "risiko": "Kenaikan harga tipis, belum ada dorongan harga"
+    },
+    "bear": {
+     "konfirmasi": "Close di bawah S1",
+     "rute": "S1 → S2",
+     "risiko": "Serapan BB berhenti, penjual merata menekan"
+    }
+   }
+  },
+  {
+   "ticker": "ALII",
+   "nama": "PT Ancara Logistics Indonesia Tbk",
+   "ohlc_hari": {
+    "o": 800,
+    "h": 815,
+    "l": 785,
+    "c": 815,
+    "chg": 20,
+    "pct": 2.52,
+    "vol_juta": 0.86
+   },
+   "ema50": 775,
+   "pivot": {
+    "P": 805,
+    "R1": 825,
+    "R2": 835,
+    "R3": 855,
+    "S1": 795,
+    "S2": 775,
+    "S3": 765
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "SQ",
+     453.9,
+     5600,
+     808
+    ],
+    [
+     "YP",
+     84.4,
+     1100,
+     795
+    ],
+    [
+     "BK",
+     27.3,
+     336,
+     812
+    ],
+    [
+     "AK",
+     22.1,
+     275,
+     804
+    ],
+    [
+     "CC",
+     20.6,
+     254,
+     805
+    ],
+    [
+     "TP",
+     8.5,
+     104,
+     815
+    ],
+    [
+     "HD",
+     0.727,
+     9,
+     804
+    ],
+    [
+     "DR",
+     0.4025,
+     5,
+     805
+    ],
+    [
+     "NI",
+     0.2445,
+     3,
+     815
+    ]
+   ],
+   "jual": [
+    [
+     "CP",
+     248.3,
+     3100,
+     815
+    ],
+    [
+     "AZ",
+     107.2,
+     1300,
+     815
+    ],
+    [
+     "YB",
+     74.1,
+     936,
+     815
+    ],
+    [
+     "KI",
+     69.7,
+     861,
+     815
+    ],
+    [
+     "XC",
+     34,
+     419,
+     815
+    ],
+    [
+     "MG",
+     31.9,
+     400,
+     815
+    ],
+    [
+     "XL",
+     29.8,
+     363,
+     815
+    ],
+    [
+     "PD",
+     10.6,
+     131,
+     815
+    ],
+    [
+     "TF",
+     4.2,
+     51,
+     815
+    ],
+    [
+     "EP",
+     3.6,
+     44,
+     815
+    ]
+   ],
+   "kontributor": "Warda W.",
+   "catatan_data": "Kolom S.avg terpotong di layar sempit — harga rata-rata sisi jual tak terbaca.",
+   "arah": "bull",
+   "target": "825 / 835 / 855",
+   "invalidation": "Close <795",
+   "slider_pct": 67,
+   "flow_kelas": "Accumulation",
+   "label": "Naik 2,52% — Net Beli Nyaris Impas",
+   "catatan": "Harga bergerak jauh lebih tegas daripada arus brokernya.",
+   "narasi_flow": "SQ memimpin beli Rp453,9 juta, CP memimpin jual Rp248,3 juta. Selisih bersihnya cuma Rp4,8 juta — praktis seimbang, jadi kenaikan hari ini tidak ditopang net beli yang besar.",
+   "narasi_teknikal": "Menutup 815 (+2,52%), 5,16% di atas EMA50 775. Harga memimpin, arus broker belum mengikuti.",
+   "strategi": "Berlaku selama close bertahan di atas EMA50 775; kelanjutannya perlu net beli yang lebih tebal, bukan sekadar harga naik.",
+   "konsekuensi": "Tanpa net beli yang menebal, kenaikan pada arus seimbang mudah berbalik.",
+   "rationale_rank": "Kenaikan tegas tanpa dukungan net flow",
+   "skenario": {
+    "bull": {
+     "konfirmasi": "Close di atas R1 disertai net beli menebal",
+     "rute": "R1 → R2",
+     "risiko": "Net flow nyaris impas, belum ada pihak yang benar-benar menyerap"
+    },
+    "bear": {
+     "konfirmasi": "Close di bawah S1",
+     "rute": "S1 → S2",
+     "risiko": "Kenaikan tanpa arus mudah luruh"
+    }
+   }
   }
-  },
-  "kontributor": "Bot Papan"
- },
- {
-  "ticker": "MBMA",
-  "nama": "PT Merdeka Battery Materials Tbk",
-  "ohlc_hari": {
-  "o": 510,
-  "h": 530,
-  "l": 500,
-  "c": 525,
-  "chg": 15,
-  "pct": 2.94,
-  "vol_juta": 81.94
-  },
-  "ema50": 527,
-  "pivot": {
-  "P": 518,
-  "R1": 537,
-  "R2": 548,
-  "R3": 567,
-  "S1": 507,
-  "S2": 488,
-  "S3": 477
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "PD",
-   4000,
-   75600,
-   521
-  ],
-  [
-   "AK",
-   3200,
-   62700,
-   522
-  ],
-  [
-   "TP",
-   1600,
-   30700,
-   521
-  ],
-  [
-   "BK",
-   1500,
-   29300,
-   519
-  ],
-  [
-   "XC",
-   669.5,
-   13400,
-   515
-  ],
-  [
-   "XL",
-   541.1,
-   10000,
-   517
-  ],
-  [
-   "MG",
-   535.5,
-   10500,
-   511
-  ],
-  [
-   "SQ",
-   457.9,
-   9200,
-   510
-  ],
-  [
-   "LG",
-   173.7,
-   3500,
-   507
-  ],
-  [
-   "NI",
-   97.8,
-   1900,
-   514
-  ]
-  ],
-  "jual": [
-  [
-   "YU",
-   4700,
-   90700,
-   513
-  ],
-  [
-   "AZ",
-   2900,
-   55800,
-   517
-  ],
-  [
-   "CC",
-   2000,
-   37600,
-   517
-  ],
-  [
-   "CP",
-   1500,
-   28600,
-   510
-  ],
-  [
-   "BQ",
-   788.2,
-   15000,
-   517
-  ],
-  [
-   "OD",
-   484.1,
-   9300,
-   519
-  ],
-  [
-   "GR",
-   246.6,
-   4700,
-   521
-  ],
-  [
-   "YB",
-   178.9,
-   3500,
-   516
-  ],
-  [
-   "DH",
-   124.5,
-   2400,
-   513
-  ],
-  [
-   "HD",
-   106.4,
-   2000,
-   517
-  ]
-  ],
-  "arah": "netral",
-  "target": "537 / 548 / 567",
-  "invalidation": "Close <507",
-  "slider_pct": 62,
-  "flow_kelas": "Distribution",
-  "label": "Rebound ke EMA50 — Institusi Net Jual Tipis",
-  "catatan": "EMA50 527, hanya 0,38% di atas close — level ini jadi penentu arah lanjutan.",
-  "narasi_flow": "Net jual tipis -Rp253,2 juta meski harga menguat 2,94%. Top buyer PD mencatat Rp4.000 juta, top seller YU Rp4.700 juta. Menariknya, broker ritel XL justru berada di sisi beli, sementara scalper BQ tercatat di sisi jual dengan porsi jauh lebih kecil.",
-  "narasi_teknikal": "Close 525 sudah melewati pivot P518 namun masih 0,38% di bawah EMA50 527 — dua level nyaris berimpit. Volume tercatat 81,94 juta, salah satu yang terbesar di antara emiten yang diulas hari ini.",
-  "strategi": "Berlaku selama harga bertahan di atas pivot P518/S1 507; penembusan EMA50 527 dan R1 537 diperlukan untuk konfirmasi kelanjutan penguatan.",
-  "konsekuensi": "Gagal menembus EMA50 527 dan turun ke bawah S1 507 membatalkan setup, membuka ruang ke S2 488 / S3 477.",
-  "rationale_rank": "Rebound tajam menguji EMA50 dari bawah dengan volume besar, arus ritel justru masuk di sisi beli",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Close menembus EMA50 527 dan R1 537",
-   "rute": "R2 548 / R3 567",
-   "risiko": "Net jual institusi yang masih berlanjut dapat menahan laju di zona EMA50"
-  },
-  "bear": {
-   "konfirmasi": "Close kembali di bawah S1 507",
-   "rute": "S2 488 / S3 477",
-   "risiko": "Arus beli ritel yang masih aktif berpotensi menahan penurunan lebih lanjut"
-  }
-  },
-  "kontributor": "Bot Papan"
- },
- {
-  "ticker": "VKTR",
-  "nama": "PT VKTR Teknologi Mobilitas Tbk",
-  "ohlc_hari": {
-  "o": 820,
-  "h": 920,
-  "l": 810,
-  "c": 885,
-  "chg": 65,
-  "pct": 7.93,
-  "vol_juta": 201.42
-  },
-  "ema50": 741,
-  "pivot": {
-  "P": 872,
-  "R1": 933,
-  "R2": 982,
-  "R3": 1043,
-  "S1": 823,
-  "S2": 762,
-  "S3": 713
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "PD",
-   8400,
-   94200,
-   888
-  ],
-  [
-   "AK",
-   7600,
-   86100,
-   881
-  ],
-  [
-   "CC",
-   6400,
-   73600,
-   884
-  ],
-  [
-   "YU",
-   3800,
-   44600,
-   858
-  ],
-  [
-   "DR",
-   2400,
-   29300,
-   850
-  ],
-  [
-   "TP",
-   1500,
-   16400,
-   887
-  ],
-  [
-   "AI",
-   860,
-   9800,
-   881
-  ],
-  [
-   "AZ",
-   772.6,
-   8800,
-   881
-  ],
-  [
-   "YJ",
-   746.7,
-   8400,
-   887
-  ],
-  [
-   "HP",
-   580.5,
-   6400,
-   900
-  ]
-  ],
-  "jual": [
-  [
-   "XL",
-   17500,
-   202300,
-   879
-  ],
-  [
-   "ZP",
-   3300,
-   36900,
-   874
-  ],
-  [
-   "XC",
-   1900,
-   22400,
-   879
-  ],
-  [
-   "SQ",
-   1900,
-   21300,
-   883
-  ],
-  [
-   "YP",
-   1200,
-   13300,
-   881
-  ],
-  [
-   "OD",
-   1100,
-   11600,
-   903
-  ],
-  [
-   "CP",
-   1000,
-   11600,
-   881
-  ],
-  [
-   "KK",
-   1000,
-   12300,
-   870
-  ],
-  [
-   "LG",
-   760.1,
-   8500,
-   883
-  ],
-  [
-   "KI",
-   745.8,
-   7900,
-   896
-  ]
-  ],
-  "arah": "bull",
-  "target": "933 / 982 / 1043",
-  "invalidation": "Close <823",
-  "slider_pct": 56,
-  "flow_kelas": "Accumulation",
-  "label": "Akumulasi Kuat — Ritel Lepas Saham dalam Volume Besar",
-  "catatan": "Pivot 872 sudah ditembus jauh; S1 823 jadi batas validitas akumulasi.",
-  "narasi_flow": "Net beli mencapai +Rp2.653,9 juta, net terbesar di antara ketujuh emiten yang diulas. Top buyer PD Rp8.400 juta, namun broker ritel XL tercatat sebagai penjual tunggal terbesar dengan Rp17.500 juta — hampir separuh dari total jual Rp30.405,9 juta. Scalper YP turut di sisi jual dengan porsi jauh lebih kecil.",
-  "narasi_teknikal": "Close 885 melesat 7,93%, sempat menyentuh 920 sebelum turun kembali, tetap bertahan di atas pivot P872 dan 19,43% di atas EMA50 741. Volume 201,42 juta, tertinggi di antara emiten yang diulas.",
-  "strategi": "Berlaku selama harga bertahan di atas pivot 872/S1 823; breakout R1 933 melanjutkan konfirmasi tren naik.",
-  "konsekuensi": "Turun ke bawah S1 823 membatalkan momentum jangka pendek, membuka ruang ke S2 762 mendekati EMA50.",
-  "rationale_rank": "Net beli institusi terbesar hari ini dengan volume tertinggi, meski diimbangi profit taking ritel yang besar",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Close di atas R1 933",
-   "rute": "R2 982 / R3 1043",
-   "risiko": "Pelepasan lanjutan dari sisi ritel dapat menahan harga sebelum breakout tercapai"
-  },
-  "bear": {
-   "konfirmasi": "Close turun ke bawah S1 823",
-   "rute": "S2 762 / S3 713",
-   "risiko": "Net beli institusi yang masih positif berpotensi memicu pembalikan cepat"
-  }
-  },
-  "kontributor": "Bot Papan"
- },
- {
-  "ticker": "TOBA",
-  "nama": "PT TBS Energi Utama Tbk",
-  "ohlc_hari": {
-  "o": 500,
-  "h": 535,
-  "l": 500,
-  "c": 520,
-  "chg": 20,
-  "pct": 4.0,
-  "vol_juta": 17.03
-  },
-  "ema50": 471,
-  "pivot": {
-  "P": 518,
-  "R1": 537,
-  "R2": 553,
-  "R3": 572,
-  "S1": 502,
-  "S2": 483,
-  "S3": 467
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "CC",
-   688.9,
-   12800,
-   529
-  ],
-  [
-   "XL",
-   495.6,
-   9600,
-   520
-  ],
-  [
-   "XC",
-   158.5,
-   3000,
-   519
-  ],
-  [
-   "CP",
-   68.8,
-   1300,
-   520
-  ],
-  [
-   "IU",
-   36.8,
-   700,
-   525
-  ],
-  [
-   "ZP",
-   13,
-   535,
-   516
-  ],
-  [
-   "AO",
-   9.6,
-   187,
-   515
-  ],
-  [
-   "HD",
-   3.5,
-   101,
-   511
-  ],
-  [
-   "LG",
-   3.4,
-   67,
-   525
-  ],
-  [
-   "XA",
-   2.8,
-   55,
-   509
-  ]
-  ],
-  "jual": [
-  [
-   "PD",
-   240.1,
-   4600,
-   520
-  ],
-  [
-   "DX",
-   233.5,
-   4500,
-   521
-  ],
-  [
-   "AK",
-   210.1,
-   4000,
-   520
-  ],
-  [
-   "AT",
-   143,
-   2700,
-   526
-  ],
-  [
-   "MG",
-   99.8,
-   2000,
-   508
-  ],
-  [
-   "IF",
-   99,
-   2000,
-   507
-  ],
-  [
-   "OD",
-   89,
-   1700,
-   520
-  ],
-  [
-   "SQ",
-   57.5,
-   1100,
-   519
-  ],
-  [
-   "MI",
-   51.5,
-   1000,
-   515
-  ],
-  [
-   "KK",
-   50.6,
-   952,
-   519
-  ]
-  ],
-  "arah": "bull",
-  "target": "537 / 553 / 572",
-  "invalidation": "Close <502",
-  "slider_pct": 53,
-  "flow_kelas": "Accumulation",
-  "label": "Akumulasi Solid — Breakout di Atas Pivot",
-  "catatan": "Pivot 518 sudah dilewati; S1 502 jadi batas bawah yang menjaga tren naik.",
-  "narasi_flow": "Net beli +Rp206,8 juta, dengan top buyer CC (Rp688,9 juta) jauh melampaui top seller PD (Rp240,1 juta). Broker ritel XL berada di sisi beli, sementara scalper MG tercatat di sisi jual dengan porsi kecil.",
-  "narasi_teknikal": "Close 520 naik 4%, sedikit di atas pivot P518 dan 10,4% di atas EMA50 471.",
-  "strategi": "Berlaku selama close bertahan di atas pivot 518/S1 502; breakout R1 537 melanjutkan penguatan.",
-  "konsekuensi": "Turun ke bawah S1 502 membatalkan setup, membuka ruang ke S2 483/S3 467.",
-  "rationale_rank": "Net beli konsisten dengan top buyer jauh mengungguli top seller, ritel turut di sisi beli",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Close di atas R1 537",
-   "rute": "R2 553 / R3 572",
-   "risiko": "Kenaikan 4% dalam sehari rentan koreksi jika tidak diikuti volume tambahan"
-  },
-  "bear": {
-   "konfirmasi": "Close turun ke bawah S1 502",
-   "rute": "S2 483 / S3 467 (mendekati EMA50 471)",
-   "risiko": "Net beli institusi yang masih positif berpotensi menahan penurunan"
-  }
-  },
-  "kontributor": "Bot Papan"
- },
- {
-  "ticker": "GTSI",
-  "nama": "PT GTS Internasional Tbk",
-  "ohlc_hari": {
-  "o": 181,
-  "h": 183,
-  "l": 175,
-  "c": 182,
-  "chg": 2,
-  "pct": 1.11,
-  "vol_juta": 18.22
-  },
-  "ema50": 161,
-  "pivot": {
-  "P": 180,
-  "R1": 185,
-  "R2": 188,
-  "R3": 193,
-  "S1": 177,
-  "S2": 172,
-  "S3": 169
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "SQ",
-   138.5,
-   7700,
-   179
-  ],
-  [
-   "AZ",
-   136.7,
-   7500,
-   182
-  ],
-  [
-   "GR",
-   103.6,
-   5700,
-   179
-  ],
-  [
-   "CC",
-   100.7,
-   5600,
-   181
-  ],
-  [
-   "AK",
-   81.6,
-   4800,
-   179
-  ],
-  [
-   "KK",
-   52.6,
-   2900,
-   181
-  ],
-  [
-   "CP",
-   40.2,
-   2300,
-   181
-  ],
-  [
-   "HP",
-   17.3,
-   961,
-   179
-  ],
-  [
-   "AT",
-   13.6,
-   750,
-   181
-  ],
-  [
-   "ZP",
-   13.1,
-   738,
-   179
-  ]
-  ],
-  "jual": [
-  [
-   "XL",
-   126.4,
-   7200,
-   180
-  ],
-  [
-   "MG",
-   124.6,
-   7100,
-   178
-  ],
-  [
-   "PD",
-   119.6,
-   6700,
-   179
-  ],
-  [
-   "DR",
-   111.6,
-   6300,
-   179
-  ],
-  [
-   "OD",
-   95.9,
-   5300,
-   181
-  ],
-  [
-   "YP",
-   57.2,
-   3100,
-   180
-  ],
-  [
-   "XC",
-   27.3,
-   1500,
-   180
-  ],
-  [
-   "DH",
-   21.8,
-   1200,
-   182
-  ],
-  [
-   "TP",
-   18.2,
-   1000,
-   181
-  ],
-  [
-   "RO",
-   8.5,
-   470,
-   182
-  ]
-  ],
-  "arah": "bull",
-  "target": "185 / 188 / 193",
-  "invalidation": "Close <177",
-  "slider_pct": 62,
-  "flow_kelas": "Distribution",
-  "label": "Distribusi Tipis — Ritel dan Scalper Kompak Jual",
-  "catatan": "Pivot 180 jadi penentu; close di bawahnya membuka ruang ke S1 177.",
-  "narasi_flow": "Net jual tipis -Rp13,2 juta. Broker ritel XL jadi top seller (Rp126,4 juta), diikuti scalper MG dan YP yang juga tercatat di sisi jual. Top buyer SQ mencatat Rp138,5 juta, sedikit di atas nilai jual terbesar.",
-  "narasi_teknikal": "Close 182 naik 1,11%, tepat di atas pivot P180 dan 13,04% di atas EMA50 161.",
-  "strategi": "Berlaku selama close bertahan di atas pivot 180/S1 177; breakout R1 185 mengonfirmasi kelanjutan penguatan.",
-  "konsekuensi": "Turun ke bawah S1 177 membatalkan setup meski net jual masih tipis, membuka ruang ke S2 172/S3 169.",
-  "rationale_rank": "Distribusi net tipis dengan broker ritel dan dua scalper kompak di sisi jual, harga masih bertahan di atas pivot",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Close di atas R1 185",
-   "rute": "R2 188 / R3 193",
-   "risiko": "Distribusi ritel dan scalper yang berlanjut dapat menahan laju di sekitar pivot"
-  },
-  "bear": {
-   "konfirmasi": "Close turun ke bawah S1 177",
-   "rute": "S2 172 / S3 169",
-   "risiko": "Net jual yang masih tipis membuka peluang pembalikan cepat"
-  }
-  },
-  "kontributor": "Bot Papan"
- },
- {
-  "ticker": "CDIA",
-  "nama": "PT Chandra Daya Investasi Tbk",
-  "ohlc_hari": {
-  "o": 705,
-  "h": 715,
-  "l": 685,
-  "c": 705,
-  "chg": 0,
-  "pct": 0.0,
-  "vol_juta": 45.46
-  },
-  "ema50": 707,
-  "pivot": {
-  "P": 702,
-  "R1": 718,
-  "R2": 732,
-  "R3": 748,
-  "S1": 688,
-  "S2": 672,
-  "S3": 658
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "OD",
-   3100,
-   44700,
-   698
-  ],
-  [
-   "CC",
-   2900,
-   41200,
-   707
-  ],
-  [
-   "XC",
-   1100,
-   14800,
-   705
-  ],
-  [
-   "AK",
-   979,
-   13800,
-   704
-  ],
-  [
-   "LG",
-   386.2,
-   5400,
-   710
-  ],
-  [
-   "BK",
-   310,
-   4200,
-   710
-  ],
-  [
-   "DX",
-   211.8,
-   3000,
-   702
-  ],
-  [
-   "NI",
-   133.2,
-   2000,
-   702
-  ],
-  [
-   "MG",
-   124.2,
-   1800,
-   698
-  ],
-  [
-   "YB",
-   93,
-   1300,
-   705
-  ]
-  ],
-  "jual": [
-  [
-   "XL",
-   2300,
-   33700,
-   700
-  ],
-  [
-   "YP",
-   1600,
-   22600,
-   707
-  ],
-  [
-   "ZP",
-   1200,
-   16600,
-   707
-  ],
-  [
-   "SQ",
-   897.6,
-   12800,
-   702
-  ],
-  [
-   "HP",
-   760.2,
-   10700,
-   708
-  ],
-  [
-   "SH",
-   568,
-   8000,
-   710
-  ],
-  [
-   "EP",
-   371.8,
-   5200,
-   706
-  ],
-  [
-   "XA",
-   326.8,
-   4600,
-   710
-  ],
-  [
-   "CP",
-   317.4,
-   4500,
-   707
-  ],
-  [
-   "YU",
-   190,
-   2700,
-   703
-  ]
-  ],
-  "arah": "netral",
-  "target": "718 / 732 / 748",
-  "invalidation": "Close <688",
-  "slider_pct": 55,
-  "flow_kelas": "Accumulation",
-  "label": "Flat di Pivot — Net Beli Institusi Diam-diam",
-  "catatan": "Pivot 702 dan EMA50 707 nyaris berimpit — keduanya jadi zona penentu arah lanjutan.",
-  "narasi_flow": "Net beli +Rp805,6 juta meski harga ditutup flat (chg 0). Top buyer OD mencatat Rp3.100 juta, jauh melampaui top seller — broker ritel XL — di Rp2.300 juta. Scalper YP juga tercatat di sisi jual dengan porsi lebih kecil.",
-  "narasi_teknikal": "Close 705 tak berubah dari hari sebelumnya, nyaris berimpit dengan pivot P702 dan EMA50 707 (jarak hanya -0,28%).",
-  "strategi": "Berlaku selama harga bertahan di atas S1 688; penembusan EMA50 707 dan R1 718 diperlukan untuk konfirmasi kelanjutan akumulasi.",
-  "konsekuensi": "Turun ke bawah S1 688 membatalkan setup meski net beli masih positif, membuka ruang ke S2 672/S3 658.",
-  "rationale_rank": "Net beli institusi signifikan di tengah harga yang flat, indikasi akumulasi tanpa pergerakan harga mencolok",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Close menembus EMA50 707 dan R1 718",
-   "rute": "R2 732 / R3 748",
-   "risiko": "Harga yang mandek di sekitar pivot berisiko gagal breakout jika volume tak bertambah"
-  },
-  "bear": {
-   "konfirmasi": "Close turun ke bawah S1 688",
-   "rute": "S2 672 / S3 658",
-   "risiko": "Net beli institusi yang masih positif berpotensi menahan penurunan"
-  }
-  },
-  "kontributor": "Bot Papan"
- },
- {
-  "ticker": "ARCI",
-  "nama": "PT Archi Indonesia Tbk",
-  "ohlc_hari": {
-  "o": 1180,
-  "h": 1230,
-  "l": 1170,
-  "c": 1225,
-  "chg": 25,
-  "pct": 2.08,
-  "vol_juta": 14.88
-  },
-  "ema50": 1134,
-  "pivot": {
-  "P": 1208,
-  "R1": 1247,
-  "R2": 1268,
-  "R3": 1307,
-  "S1": 1187,
-  "S2": 1148,
-  "S3": 1127
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "YU",
-   3000,
-   25000,
-   1216
-  ],
-  [
-   "CC",
-   669.7,
-   5800,
-   1192
-  ],
-  [
-   "LG",
-   590.5,
-   4800,
-   1219
-  ],
-  [
-   "AZ",
-   384.4,
-   3200,
-   1201
-  ],
-  [
-   "DR",
-   311,
-   2500,
-   1211
-  ],
-  [
-   "KI",
-   300.8,
-   2500,
-   1223
-  ],
-  [
-   "NI",
-   291.4,
-   2400,
-   1213
-  ],
-  [
-   "EP",
-   57.2,
-   510,
-   1198
-  ],
-  [
-   "AT",
-   34.7,
-   289,
-   1199
-  ],
-  [
-   "CP",
-   24.1,
-   188,
-   1210
-  ]
-  ],
-  "jual": [
-  [
-   "ZP",
-   1300,
-   10400,
-   1209
-  ],
-  [
-   "AK",
-   928.5,
-   7500,
-   1207
-  ],
-  [
-   "YP",
-   703.1,
-   5700,
-   1213
-  ],
-  [
-   "XL",
-   452.5,
-   3900,
-   1197
-  ],
-  [
-   "KK",
-   444,
-   3700,
-   1203
-  ],
-  [
-   "XC",
-   436.6,
-   3600,
-   1205
-  ],
-  [
-   "MG",
-   275.3,
-   2300,
-   1178
-  ],
-  [
-   "PD",
-   249.2,
-   2100,
-   1196
-  ],
-  [
-   "DH",
-   232.2,
-   2000,
-   1190
-  ],
-  [
-   "BK",
-   209.1,
-   1700,
-   1214
-  ]
-  ],
-  "arah": "bull",
-  "target": "1247 / 1268 / 1307",
-  "invalidation": "Close <1187",
-  "slider_pct": 64,
-  "flow_kelas": "Accumulation",
-  "label": "Akumulasi Berlanjut — Close Dekat High Harian",
-  "catatan": "Pivot 1208 sudah ditembus; S1 1187 jadi batas validitas kelanjutan akumulasi.",
-  "narasi_flow": "Net beli +Rp433,3 juta, dengan top buyer YU (Rp3.000 juta) lebih dari dua kali nilai top seller ZP (Rp1.300 juta). Broker ritel XL dan scalper YP, MG berada di sisi jual, namun dengan nilai jauh lebih kecil dibanding sisi beli.",
-  "narasi_teknikal": "Close 1225 naik 2,08%, mendekati high harian 1230, bertahan di atas pivot P1208 dan 8,02% di atas EMA50 1134.",
-  "strategi": "Berlaku selama harga bertahan di atas pivot 1208/S1 1187; breakout R1 1247 melanjutkan konfirmasi penguatan.",
-  "konsekuensi": "Turun ke bawah S1 1187 membatalkan setup, membuka ruang ke S2 1148/S3 1127.",
-  "rationale_rank": "Net beli solid dengan close mendekati level tertinggi hari ini",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Close di atas R1 1247",
-   "rute": "R2 1268 / R3 1307",
-   "risiko": "Momentum berpotensi melambat setelah dua hari penguatan berturut-turut"
-  },
-  "bear": {
-   "konfirmasi": "Close turun ke bawah S1 1187",
-   "rute": "S2 1148 / S3 1127",
-   "risiko": "Net beli institusi yang masih positif berpotensi memicu pembalikan cepat"
-  }
-  },
-  "kontributor": "Bot Papan"
- },
- {
-  "ticker": "WMUU",
-  "nama": "PT Widodo Makmur Unggas Tbk",
-  "ohlc_hari": {
-  "o": 54,
-  "h": 56,
-  "l": 54,
-  "c": 55,
-  "chg": 1,
-  "pct": 1.85,
-  "vol_juta": 96.77
-  },
-  "ema50": 54,
-  "pivot": {
-  "P": 55,
-  "R1": 56,
-  "R2": 57,
-  "R3": 58,
-  "S1": 54,
-  "S2": 53,
-  "S3": 52
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "XC",
-   426.9,
-   78500,
-   55
-  ],
-  [
-   "XL",
-   202.8,
-   34200,
-   55
-  ],
-  [
-   "LG",
-   84.1,
-   15600,
-   54
-  ],
-  [
-   "PD",
-   69.2,
-   12600,
-   55
-  ],
-  [
-   "NI",
-   65.7,
-   11900,
-   55
-  ],
-  [
-   "AT",
-   47.6,
-   8700,
-   54
-  ],
-  [
-   "AO",
-   47.3,
-   8800,
-   54
-  ],
-  [
-   "MG",
-   23,
-   4300,
-   55
-  ],
-  [
-   "HP",
-   20,
-   3700,
-   55
-  ],
-  [
-   "GR",
-   17.8,
-   3300,
-   54
-  ]
-  ],
-  "jual": [
-  [
-   "CC",
-   255.2,
-   46300,
-   55
-  ],
-  [
-   "YP",
-   217.1,
-   39600,
-   55
-  ],
-  [
-   "CP",
-   124.4,
-   22000,
-   55
-  ],
-  [
-   "SF",
-   98.3,
-   17800,
-   55
-  ],
-  [
-   "YB",
-   62.5,
-   11100,
-   55
-  ],
-  [
-   "SQ",
-   55.5,
-   10600,
-   55
-  ],
-  [
-   "DR",
-   54.1,
-   9900,
-   55
-  ],
-  [
-   "ZP",
-   26.5,
-   4800,
-   55
-  ],
-  [
-   "XA",
-   25.3,
-   4600,
-   55
-  ],
-  [
-   "BQ",
-   21,
-   3900,
-   55
-  ]
-  ],
-  "arah": "bull",
-  "target": "56 / 57 / 58",
-  "invalidation": "Close <54",
-  "slider_pct": 50,
-  "flow_kelas": "Accumulation",
-  "label": "Akumulasi Tipis, Ritel Ikut Masuk",
-  "catatan": "Level paling menentukan ada di 54 — berimpit S1 dan EMA50.",
-  "narasi_flow": "XC memimpin sisi beli dengan 426.9 juta, dan ritel (XL) turut berada di sisi beli, bukan melepas. Sisi jual dipimpin CC 255.2 juta, dengan scalper YP dan BQ ikut menjual. Net flow tipis positif 64.5 juta menandakan akumulasi belum besar tapi konsisten.",
-  "narasi_teknikal": "Close 55 naik 1.85%, tepat di pivot P dan sedikit di atas EMA50 54 — jarak baru 1.85%. Volume 96.77 juta cukup ramai untuk saham harga rendah ini.",
-  "strategi": "Bertahan di atas S1/EMA50 54 dan tembus R1 56 untuk konfirmasi lanjutan.",
-  "konsekuensi": "Kalau close turun di bawah 54, EMA50 dan S1 sama-sama jebol dan sinyal akumulasi hari ini batal.",
-  "rationale_rank": "Net flow positif dengan ritel ikut membeli, bukan melepas seperti kebanyakan emiten lain di grup ini.",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Close di atas R1 56",
-   "rute": "Lanjut ke 57 (R2) lalu 58 (R3)",
-   "risiko": "Kalau gagal tembus R1, harga rawan sideways di sekitar pivot 55"
-  },
-  "bear": {
-   "konfirmasi": "Close di bawah S1/EMA50 54",
-   "rute": "Turun ke 53 (S2) lalu 52 (S3)",
-   "risiko": "Akumulasi XC dan ritel hari ini kalah oleh tekanan jual CC, YP, dan BQ"
-  }
-  },
-  "kontributor": "Bot Papan"
- },
- {
-  "ticker": "SRTG",
-  "nama": "PT Saratoga Investama Sedaya Tbk.",
-  "ohlc_hari": {
-  "o": 1825,
-  "h": 1845,
-  "l": 1790,
-  "c": 1840,
-  "chg": 15,
-  "pct": 0.82,
-  "vol_juta": 3.67
-  },
-  "ema50": 1690,
-  "pivot": {
-  "P": 1825,
-  "R1": 1860,
-  "R2": 1880,
-  "R3": 1915,
-  "S1": 1805,
-  "S2": 1770,
-  "S3": 1750
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "LG",
-   2000,
-   11000,
-   1839
-  ],
-  [
-   "OD",
-   1200,
-   6600,
-   1831
-  ],
-  [
-   "CC",
-   458.4,
-   2500,
-   1816
-  ],
-  [
-   "ZP",
-   127.9,
-   695,
-   1840
-  ],
-  [
-   "YB",
-   66.4,
-   361,
-   1838
-  ],
-  [
-   "YJ",
-   17.8,
-   100,
-   1804
-  ],
-  [
-   "HD",
-   15.5,
-   86,
-   1819
-  ],
-  [
-   "PC",
-   10.2,
-   56,
-   1815
-  ],
-  [
-   "DR",
-   1.6,
-   9,
-   1795
-  ],
-  [
-   "AO",
-   0.36,
-   2,
-   1800
-  ]
-  ],
-  "jual": [
-  [
-   "AK",
-   858.4,
-   4700,
-   1825
-  ],
-  [
-   "YP",
-   614.7,
-   3400,
-   1814
-  ],
-  [
-   "XL",
-   515.1,
-   2800,
-   1827
-  ],
-  [
-   "HP",
-   460.5,
-   2500,
-   1842
-  ],
-  [
-   "SQ",
-   277.3,
-   1500,
-   1825
-  ],
-  [
-   "PD",
-   230.3,
-   1300,
-   1832
-  ],
-  [
-   "NI",
-   190.7,
-   1000,
-   1843
-  ],
-  [
-   "EP",
-   109.5,
-   596,
-   1830
-  ],
-  [
-   "AI",
-   92,
-   500,
-   1840
-  ],
-  [
-   "BK",
-   91.9,
-   500,
-   1826
-  ]
-  ],
-  "arah": "bull",
-  "target": "1860 / 1880 / 1915",
-  "invalidation": "Close <1805",
-  "slider_pct": 64,
-  "flow_kelas": "Accumulation",
-  "label": "Net Beli Institusi Tebal, Ritel Melepas",
-  "catatan": "Level paling menentukan di pivot P 1825, sudah dilewati close 1840.",
-  "narasi_flow": "LG memimpin sisi beli dengan 2000 juta, jauh di atas AK 858.4 juta yang teratas di sisi jual. Ritel (XL) justru tercatat di sisi jual 515.1 juta, dan scalper YP juga melepas 614.7 juta. Net flow positif 457.8 juta — broker besar menyerap meski ritel dan sebagian scalper keluar.",
-  "narasi_teknikal": "Close 1840 naik 0.82%, sudah jauh di atas EMA50 1690 dengan jarak 8.88%, dan berada di atas pivot P 1825. Volume 3.67 juta tergolong tipis untuk saham ini.",
-  "strategi": "Bertahan di atas pivot P 1825 dan S1 1805, lalu tembus R1 1860 untuk konfirmasi lanjutan.",
-  "konsekuensi": "Kalau close turun di bawah S1 1805, sinyal net beli institusi hari ini gagal ditindaklanjuti.",
-  "rationale_rank": "Net beli terbesar kedua di grup ini, ditopang satu broker besar (LG) yang jauh melampaui broker jual manapun.",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Close di atas R1 1860",
-   "rute": "Lanjut ke 1880 (R2) lalu 1915 (R3)",
-   "risiko": "Kalau momentum tak lanjut, harga bisa mentok di R1 menunggu volume tambahan"
-  },
-  "bear": {
-   "konfirmasi": "Close di bawah S1 1805",
-   "rute": "Turun ke 1770 (S2) lalu 1750 (S3)",
-   "risiko": "Net beli LG hari ini terbukti cuma penyerapan jangka pendek dari pelepasan ritel dan YP"
-  }
-  },
-  "kontributor": "Agitama"
- },
- {
-  "ticker": "EMAS",
-  "nama": "PT Merdeka Gold Resources Tbk",
-  "ohlc_hari": {
-  "o": 7500,
-  "h": 7750,
-  "l": 7450,
-  "c": 7550,
-  "chg": -50,
-  "pct": -0.66,
-  "vol_juta": 12.17
-  },
-  "ema50": 6801,
-  "pivot": {
-  "P": 7583,
-  "R1": 7717,
-  "R2": 7883,
-  "R3": 8017,
-  "S1": 7417,
-  "S2": 7283,
-  "S3": 7117
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "PD",
-   13000,
-   17300,
-   7526
-  ],
-  [
-   "ZP",
-   8500,
-   11300,
-   7570
-  ],
-  [
-   "SQ",
-   8100,
-   10500,
-   7691
-  ],
-  [
-   "BB",
-   4800,
-   6300,
-   7543
-  ],
-  [
-   "KZ",
-   3800,
-   5000,
-   7618
-  ],
-  [
-   "AK",
-   3700,
-   5000,
-   7587
-  ],
-  [
-   "YP",
-   3100,
-   4200,
-   7568
-  ],
-  [
-   "CC",
-   2900,
-   3700,
-   7650
-  ],
-  [
-   "AG",
-   2000,
-   2700,
-   7550
-  ],
-  [
-   "XL",
-   870.3,
-   1200,
-   7593
-  ]
-  ],
-  "jual": [
-  [
-   "AZ",
-   32900,
-   43600,
-   7545
-  ],
-  [
-   "BK",
-   5500,
-   7200,
-   7588
-  ],
-  [
-   "BQ",
-   4400,
-   5800,
-   7516
-  ],
-  [
-   "NI",
-   1900,
-   2500,
-   7584
-  ],
-  [
-   "AI",
-   1500,
-   2000,
-   7550
-  ],
-  [
-   "EP",
-   1400,
-   1900,
-   7593
-  ],
-  [
-   "DH",
-   906.8,
-   1200,
-   7562
-  ],
-  [
-   "XC",
-   900.9,
-   1200,
-   7646
-  ],
-  [
-   "LG",
-   792.3,
-   1100,
-   7544
-  ],
-  [
-   "XA",
-   648.2,
-   842,
-   7666
-  ]
-  ],
-  "arah": "netral",
-  "target": "7717 / 7883 / 8017",
-  "invalidation": "Close <7417",
-  "slider_pct": 44,
-  "flow_kelas": "Distribution",
-  "label": "Satu Broker Dominasi Jual, Net Nyaris Impas",
-  "catatan": "Level paling menentukan di S1 7417 — jarak masih jauh dari close 7550.",
-  "narasi_flow": "Sisi jual didominasi AZ sendirian dengan 32900 juta, jauh melebihi broker manapun di sisi beli — PD 13000 juta yang teratas. Ritel (XL) justru berada di sisi beli 870.3 juta, dan scalper BQ tercatat di sisi jual. Total beli dan jual nyaris seimbang, net tipis negatif 77.9 juta.",
-  "narasi_teknikal": "Close 7550 turun 0.66% dan berada di bawah pivot P 7583, meski masih jauh di atas EMA50 6801 dengan jarak 11.01%. Volume 12.17 juta.",
-  "strategi": "Pertahankan di atas S1 7417, dan close kembali di atas pivot P 7583 untuk konfirmasi arah naik lanjut.",
-  "konsekuensi": "Kalau close turun di bawah S1 7417, tekanan jual AZ yang dominan berpotensi berlanjut lebih dalam.",
-  "rationale_rank": "Nilai transaksi terbesar di grup ini, dengan satu broker jual (AZ) yang porsinya jauh melampaui broker lain — layak diawasi kelanjutannya.",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Close di atas R1 7717",
-   "rute": "Lanjut ke 7883 (R2) lalu 8017 (R3)",
-   "risiko": "Kalau AZ lanjut melepas di level lebih tinggi, kenaikan bisa tertahan"
-  },
-  "bear": {
-   "konfirmasi": "Close di bawah S1 7417",
-   "rute": "Turun ke 7283 (S2) lalu 7117 (S3)",
-   "risiko": "Distribusi AZ jadi awal koreksi lebih lanjut setelah harga jauh di atas EMA50"
-  }
-  },
-  "kontributor": "Agitama"
- },
- {
-  "ticker": "SRSN",
-  "nama": "Indo Acidatama Tbk",
-  "ohlc_hari": {
-  "o": 70,
-  "h": 71,
-  "l": 69,
-  "c": 70,
-  "chg": 0,
-  "pct": 0.0,
-  "vol_juta": 19.22
-  },
-  "ema50": 68,
-  "pivot": {
-  "P": 70,
-  "R1": 71,
-  "R2": 72,
-  "R3": 73,
-  "S1": 69,
-  "S2": 68,
-  "S3": 67
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "NI",
-   597.4,
-   85300,
-   70
-  ],
-  [
-   "CC",
-   116.3,
-   16600,
-   70
-  ],
-  [
-   "XC",
-   69.6,
-   9900,
-   70
-  ],
-  [
-   "YP",
-   32.4,
-   4600,
-   70
-  ],
-  [
-   "AO",
-   14.2,
-   2000,
-   71
-  ],
-  [
-   "SQ",
-   14.2,
-   2000,
-   70
-  ],
-  [
-   "GR",
-   7.4,
-   1100,
-   70
-  ],
-  [
-   "AK",
-   4.3,
-   601,
-   71
-  ],
-  [
-   "YB",
-   2.3,
-   335,
-   70
-  ],
-  [
-   "RO",
-   0.294,
-   42,
-   70
-  ]
-  ],
-  "jual": [
-  [
-   "CP",
-   317.8,
-   45400,
-   70
-  ],
-  [
-   "XL",
-   265.1,
-   38000,
-   70
-  ],
-  [
-   "EP",
-   146.2,
-   20900,
-   70
-  ],
-  [
-   "MG",
-   75.2,
-   10600,
-   71
-  ],
-  [
-   "PD",
-   23.6,
-   3400,
-   70
-  ],
-  [
-   "BK",
-   14.7,
-   2100,
-   70
-  ],
-  [
-   "KK",
-   4.9,
-   694,
-   70
-  ],
-  [
-   "DH",
-   4.3,
-   616,
-   70
-  ],
-  [
-   "OD",
-   2.8,
-   399,
-   70
-  ],
-  [
-   "DR",
-   2.3,
-   326,
-   70
-  ]
-  ],
-  "arah": "bull",
-  "target": "71 / 72 / 73",
-  "invalidation": "Close <69",
-  "slider_pct": 50,
-  "flow_kelas": "Accumulation",
-  "label": "Beli Terkonsentrasi, Net Flow Nyaris Datar",
-  "catatan": "Level paling menentukan di pivot P70, persis di harga close hari ini.",
-  "narasi_flow": "NI mendominasi sisi beli dengan 597.4 juta, sementara sisi jual lebih terbagi — CP 317.8 juta teratas, disusul ritel (XL) 265.1 juta dan scalper MG 75.2 juta. Net flow nyaris datar, hanya positif 1.5 juta.",
-  "narasi_teknikal": "Close 70 tak berubah dari open (0%), tepat di pivot P dan sedikit di atas EMA50 68 dengan jarak 2.94%. Volume 19.22 juta tergolong ramai untuk saham harga rendah ini.",
-  "strategi": "Bertahan di atas pivot P70 dan tembus R1 71 untuk konfirmasi lanjutan naik.",
-  "konsekuensi": "Kalau close turun di bawah S1 69, penyerapan NI belum cukup menahan tekanan jual gabungan CP, XL, dan MG.",
-  "rationale_rank": "Konsentrasi beli tunggal (NI) yang besar berhadapan dengan sisi jual yang terbagi ke banyak broker.",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Close di atas R1 71",
-   "rute": "Lanjut ke 72 (R2) lalu 73 (R3)",
-   "risiko": "Kalau NI berhenti menyerap, harga bisa balik ke pivot 70"
-  },
-  "bear": {
-   "konfirmasi": "Close di bawah S1 69",
-   "rute": "Turun ke 68 (S2, berimpit EMA50) lalu 67 (S3)",
-   "risiko": "Net flow yang nyaris datar berarti belum ada dorongan riil untuk naik lebih jauh"
-  }
-  },
-  "kontributor": "Agitama"
- },
- {
-  "ticker": "KIJA",
-  "nama": "Kawasan Industri Jababeka Tbk",
-  "ohlc_hari": {
-  "o": 124,
-  "h": 124,
-  "l": 119,
-  "c": 123,
-  "chg": -1,
-  "pct": -0.81,
-  "vol_juta": 117.18
-  },
-  "ema50": 131,
-  "pivot": {
-  "P": 122,
-  "R1": 125,
-  "R2": 127,
-  "R3": 130,
-  "S1": 120,
-  "S2": 117,
-  "S3": 115
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "LG",
-   3900,
-   322200,
-   122
-  ],
-  [
-   "GR",
-   1100,
-   94700,
-   121
-  ],
-  [
-   "SQ",
-   856.8,
-   71400,
-   120
-  ],
-  [
-   "AK",
-   418.4,
-   35100,
-   120
-  ],
-  [
-   "CP",
-   253.6,
-   21500,
-   120
-  ],
-  [
-   "XL",
-   226.1,
-   18800,
-   121
-  ],
-  [
-   "AI",
-   186.7,
-   15600,
-   120
-  ],
-  [
-   "TP",
-   155.1,
-   13000,
-   119
-  ],
-  [
-   "NI",
-   146.4,
-   12300,
-   120
-  ],
-  [
-   "KK",
-   136,
-   11300,
-   120
-  ]
-  ],
-  "jual": [
-  [
-   "CC",
-   4800,
-   397600,
-   120
-  ],
-  [
-   "KZ",
-   854.1,
-   70600,
-   121
-  ],
-  [
-   "AZ",
-   577.7,
-   47600,
-   121
-  ],
-  [
-   "BB",
-   489,
-   40300,
-   121
-  ],
-  [
-   "KI",
-   367.3,
-   29500,
-   122
-  ],
-  [
-   "RO",
-   306.4,
-   24500,
-   123
-  ],
-  [
-   "ZP",
-   147.8,
-   12000,
-   122
-  ],
-  [
-   "YP",
-   134.8,
-   10500,
-   122
-  ],
-  [
-   "BQ",
-   118.6,
-   10000,
-   119
-  ],
-  [
-   "YB",
-   115.2,
-   9400,
-   122
-  ]
-  ],
-  "arah": "bear",
-  "target": "125 / 127 / 130",
-  "invalidation": "Close <120",
-  "slider_pct": 60,
-  "flow_kelas": "Distribution",
-  "label": "Di Bawah EMA50, Tekanan Jual Menumpuk",
-  "catatan": "Level paling menentukan di S1 120 — hanya 3 poin dari close 123.",
-  "narasi_flow": "CC memimpin sisi jual dengan 4800 juta, melebihi LG 3900 juta yang teratas di sisi beli. Ritel (XL) justru tercatat di sisi beli 226.1 juta, sementara scalper YP dan BQ berada di sisi jual. Net flow negatif 531.8 juta menegaskan tekanan distribusi.",
-  "narasi_teknikal": "Close 123 turun 0.81% dan berada di bawah EMA50 131 dengan jarak -6.11% — posisi teknikal melemah meski close masih di atas pivot P122. Volume besar 117.18 juta.",
-  "strategi": "Bertahan di atas S1 120, dan tembus R1 125 untuk membalik momentum jual yang dipimpin CC.",
-  "konsekuensi": "Kalau close turun di bawah S1 120, tekanan distribusi berpotensi berlanjut menuju S2/S3.",
-  "rationale_rank": "Net jual terbesar di grup ini, dengan harga sudah berada di bawah EMA50 — kandidat pengawasan tekanan jual lanjutan.",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Close di atas R1 125",
-   "rute": "Lanjut ke 127 (R2) lalu 130 (R3)",
-   "risiko": "Kalau CC lanjut melepas di harga lebih tinggi, rebound bisa tertahan"
-  },
-  "bear": {
-   "konfirmasi": "Close di bawah S1 120",
-   "rute": "Turun ke 117 (S2) lalu 115 (S3)",
-   "risiko": "Posisi di bawah EMA50 berlanjut jadi tren turun jangka pendek"
-  }
-  },
-  "kontributor": "Agitama"
- },
- {
-  "ticker": "ADRO",
-  "nama": "Alamtri Resources Indonesia Tbk",
-  "ohlc_hari": {
-  "o": 2470,
-  "h": 2530,
-  "l": 2460,
-  "c": 2530,
-  "chg": 60,
-  "pct": 2.43,
-  "vol_juta": 18.03
-  },
-  "ema50": 2441,
-  "pivot": {
-  "P": 2507,
-  "R1": 2553,
-  "R2": 2577,
-  "R3": 2623,
-  "S1": 2483,
-  "S2": 2437,
-  "S3": 2413
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "AK",
-   12400,
-   49600,
-   2506
-  ],
-  [
-   "LG",
-   7700,
-   30500,
-   2518
-  ],
-  [
-   "ZP",
-   1300,
-   5300,
-   2503
-  ],
-  [
-   "GR",
-   797.2,
-   3200,
-   2503
-  ],
-  [
-   "BK",
-   733.1,
-   2800,
-   2517
-  ],
-  [
-   "DX",
-   696,
-   2800,
-   2462
-  ],
-  [
-   "EP",
-   326.5,
-   1300,
-   2499
-  ],
-  [
-   "TP",
-   246.4,
-   985,
-   2504
-  ],
-  [
-   "SQ",
-   78.1,
-   320,
-   2497
-  ],
-  [
-   "HD",
-   25.5,
-   104,
-   2510
-  ]
-  ],
-  "jual": [
-  [
-   "RX",
-   6800,
-   27300,
-   2509
-  ],
-  [
-   "YU",
-   3500,
-   14000,
-   2511
-  ],
-  [
-   "XL",
-   2700,
-   10700,
-   2505
-  ],
-  [
-   "CC",
-   2600,
-   10300,
-   2500
-  ],
-  [
-   "CP",
-   1600,
-   6500,
-   2529
-  ],
-  [
-   "YP",
-   1300,
-   5000,
-   2509
-  ],
-  [
-   "BQ",
-   828.5,
-   3300,
-   2508
-  ],
-  [
-   "MG",
-   758.3,
-   3000,
-   2520
-  ],
-  [
-   "DR",
-   669.2,
-   2700,
-   2513
-  ],
-  [
-   "YJ",
-   599.6,
-   2400,
-   2519
-  ]
-  ],
-  "arah": "bull",
-  "target": "2553 / 2577 / 2623",
-  "invalidation": "Close <2483",
-  "slider_pct": 66,
-  "flow_kelas": "Accumulation",
-  "label": "Net Beli Terbesar di Grup, Ritel dan Scalper Melepas",
-  "catatan": "Level paling menentukan di R1 2553, satu-satunya penghalang sebelum area kosong ke atas.",
-  "narasi_flow": "AK memimpin sisi beli dengan 12400 juta, jauh melebihi RX 6800 juta yang teratas di sisi jual. Ritel (XL) berada di sisi jual 2700 juta, dan ketiga broker berlabel scalper — YP, BQ, MG — semuanya turut melepas. Net flow positif 2947.2 juta, terbesar di antara tujuh emiten ini.",
-  "narasi_teknikal": "Close 2530 naik 2.43%, sudah di atas pivot P 2507 dan EMA50 2441 dengan jarak 3.65%. Volume 18.03 juta.",
-  "strategi": "Bertahan di atas S1 2483, dan tembus R1 2553 untuk lanjut ke area R2/R3.",
-  "konsekuensi": "Kalau close turun di bawah S1 2483, sinyal akumulasi AK hari ini gagal ditindaklanjuti.",
-  "rationale_rank": "Net beli absolut terbesar di grup ini — broker besar menyerap sementara ritel dan seluruh broker scalper melepas.",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Close di atas R1 2553",
-   "rute": "Lanjut ke 2577 (R2) lalu 2623 (R3)",
-   "risiko": "Kalau volume susut, momentum kenaikan bisa tak berlanjut"
-  },
-  "bear": {
-   "konfirmasi": "Close di bawah S1 2483",
-   "rute": "Turun ke 2437 (S2, dekat EMA50) lalu 2413 (S3)",
-   "risiko": "Net beli AK hari ini terbukti cuma aksi jangka pendek, bukan akumulasi berkelanjutan"
-  }
-  },
-  "kontributor": "Agitama"
- },
- {
-  "ticker": "POWR",
-  "nama": "PT Cikarang Listrindo Tbk.",
-  "ohlc_hari": {
-  "o": 805,
-  "h": 810,
-  "l": 795,
-  "c": 810,
-  "chg": 5,
-  "pct": 0.62,
-  "vol_juta": 4.43
-  },
-  "ema50": 733,
-  "pivot": {
-  "P": 805,
-  "R1": 815,
-  "R2": 820,
-  "R3": 830,
-  "S1": 800,
-  "S2": 790,
-  "S3": 785
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "ZP",
-   1600,
-   20000,
-   805
-  ],
-  [
-   "AK",
-   383,
-   4800,
-   802
-  ],
-  [
-   "BK",
-   102,
-   1300,
-   805
-  ],
-  [
-   "CC",
-   94.6,
-   1200,
-   803
-  ],
-  [
-   "MG",
-   80,
-   1000,
-   800
-  ],
-  [
-   "XC",
-   75,
-   938,
-   801
-  ],
-  [
-   "DH",
-   45.4,
-   571,
-   795
-  ],
-  [
-   "LG",
-   40,
-   499,
-   803
-  ],
-  [
-   "TP",
-   34.4,
-   425,
-   810
-  ],
-  [
-   "BB",
-   9.1,
-   115,
-   795
-  ]
-  ],
-  "jual": [
-  [
-   "XL",
-   862.6,
-   10800,
-   810
-  ],
-  [
-   "DR",
-   514.1,
-   6400,
-   810
-  ],
-  [
-   "CP",
-   374,
-   4600,
-   810
-  ],
-  [
-   "PD",
-   246.6,
-   3000,
-   810
-  ],
-  [
-   "OD",
-   168.9,
-   2100,
-   810
-  ],
-  [
-   "BQ",
-   80.7,
-   1000,
-   810
-  ],
-  [
-   "XA",
-   71.1,
-   880,
-   810
-  ],
-  [
-   "NI",
-   70.3,
-   873,
-   810
-  ],
-  [
-   "YP",
-   53.2,
-   641,
-   810
-  ],
-  [
-   "IF",
-   18.6,
-   233,
-   810
-  ]
-  ],
-  "catatan_data": "Harga rata-rata sisi jual tak terbaca di screenshot; dipakai harga penutupan hari itu.",
-  "arah": "bull",
-  "target": "815 / 820 / 830",
-  "invalidation": "Close <800",
-  "slider_pct": 67,
-  "flow_kelas": "Accumulation",
-  "label": "Naik Tipis Tanpa Dorongan Net Flow",
-  "catatan": "Level paling menentukan di pivot P805/S1 800 — close 810 baru sedikit di atasnya.",
-  "narasi_flow": "ZP memimpin sisi beli dengan 1600 juta. Sisi jual dipimpin ritel (XL) dengan 862.6 juta, dan scalper BQ serta YP turut berada di sisi jual. Net flow nyaris datar, hanya positif 3.4 juta, meski harga naik 0.62%.",
-  "narasi_teknikal": "Close 810 naik tipis dan sudah jauh di atas EMA50 733 dengan jarak 10.5%, berada di atas pivot P 805. Volume tipis 4.43 juta.",
-  "strategi": "Bertahan di atas pivot P805/S1 800, dan tembus R1 815 untuk lanjut ke area R2/R3.",
-  "konsekuensi": "Kalau close turun di bawah S1 800, kenaikan hari ini rawan koreksi karena tak ditopang net flow yang berarti.",
-  "rationale_rank": "Kenaikan harga tidak dibarengi net flow signifikan — layak diawasi karena volume tipis dan ritel menjadi penjual terbesar.",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Close di atas R1 815",
-   "rute": "Lanjut ke 820 (R2) lalu 830 (R3)",
-   "risiko": "Kalau ZP berhenti menyerap, kenaikan sulit berlanjut mengingat net flow yang tipis"
-  },
-  "bear": {
-   "konfirmasi": "Close di bawah S1 800",
-   "rute": "Turun ke 790 (S2) lalu 785 (S3)",
-   "risiko": "Net flow yang nyaris datar menandakan kenaikan hari ini rapuh terhadap pembalikan"
-  }
-  },
-  "kontributor": "Deonal Ramadhan"
- },
- {
-  "ticker": "GIAA",
-  "nama": "Garuda Indonesia (Persero) Tbk",
-  "ohlc_hari": {
-  "o": 72,
-  "h": 78,
-  "l": 68,
-  "c": 76,
-  "chg": 4,
-  "pct": 5.56,
-  "vol_juta": 1248.69
-  },
-  "ema50": 59,
-  "pivot": {
-  "P": 74,
-  "R1": 80,
-  "R2": 84,
-  "R3": 90,
-  "S1": 70,
-  "S2": 64,
-  "S3": 60
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "AK",
-   2700,
-   359800,
-   75
-  ],
-  [
-   "SS",
-   2300,
-   300000,
-   76
-  ],
-  [
-   "AZ",
-   1300,
-   170700,
-   75
-  ],
-  [
-   "OD",
-   365.4,
-   48200,
-   75
-  ],
-  [
-   "IF",
-   350.3,
-   46500,
-   75
-  ],
-  [
-   "XL",
-   331.9,
-   18700,
-   75
-  ],
-  [
-   "XC",
-   286.5,
-   35100,
-   75
-  ],
-  [
-   "BQ",
-   263.6,
-   35300,
-   75
-  ],
-  [
-   "AT",
-   185.2,
-   24600,
-   75
-  ],
-  [
-   "CD",
-   147.4,
-   20800,
-   71
-  ]
-  ],
-  "jual": [
-  [
-   "YP",
-   1700,
-   220500,
-   75
-  ],
-  [
-   "CC",
-   964.3,
-   104800,
-   75
-  ],
-  [
-   "SQ",
-   908.1,
-   119600,
-   74
-  ],
-  [
-   "NI",
-   859.4,
-   112900,
-   74
-  ],
-  [
-   "PD",
-   550,
-   72700,
-   75
-  ],
-  [
-   "KK",
-   512,
-   63300,
-   75
-  ],
-  [
-   "GR",
-   421.2,
-   58900,
-   74
-  ],
-  [
-   "YJ",
-   419.1,
-   55900,
-   75
-  ],
-  [
-   "CP",
-   404.7,
-   42200,
-   75
-  ],
-  [
-   "LG",
-   372.3,
-   51800,
-   72
-  ]
-  ],
-  "arah": "bull",
-  "target": "80 / 84 / 90",
-  "invalidation": "Close <70",
-  "slider_pct": 60,
-  "flow_kelas": "Accumulation",
-  "label": "Breakout Volume Besar — Ritel Ikut Beli, Scalper Ambil Untung",
-  "catatan": "Level penentu ada di pivot 74 — bertahan di atasnya membuka jalan ke R1 80.",
-  "narasi_flow": "AK jadi pembeli terbesar dengan Rp2.700 juta, diikuti SS dan AZ; ritel (XL) turut di sisi beli dengan Rp331,9 juta. Di sisi jual, YP — broker berperan scalper — jadi penjual terbesar dengan Rp1.700 juta di rata-rata harga 75, sedikit di bawah closing 76. Net masih positif Rp1.119,2 juta.",
-  "narasi_teknikal": "Close 76 naik 5,56% dengan volume 1.248,69 juta lembar, jauh di atas EMA50 (59, jarak +28,81%). Harga berada di atas pivot 74, mendekati R1 80.",
-  "strategi": "Berlaku selama close bertahan di atas pivot 74; validasi lanjutan bila tembus R1 80 dengan volume yang terjaga.",
-  "konsekuensi": "Bila close turun ke bawah S1 70, keseimbangan net beli hari ini bisa terkoreksi dan momentum breakout melemah.",
-  "rationale_rank": "Volume breakout terbesar di kelompok ini dengan net beli positif meski asing masih net sell pasar.",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Close bertahan di atas pivot 74 dengan volume besar berlanjut",
-   "rute": "Ke arah R1 80, lalu R2 84 dan R3 90 bila momentum terjaga",
-   "risiko": "Jika muncul aksi jual susulan dari scalper (YP) tanpa penyerapan baru, kenaikan bisa berbalik cepat"
-  },
-  "bear": {
-   "konfirmasi": "Close turun ke bawah S1 70",
-   "rute": "Berpotensi lanjut ke S2 64 dan S3 60",
-   "risiko": "Validasi breakout hari ini batal, momentum kembali ke area sebelum kenaikan"
-  }
-  },
-  "kontributor": "Janto"
- },
- {
-  "ticker": "HRUM",
-  "nama": "Harum Energy Tbk",
-  "ohlc_hari": {
-  "o": 840,
-  "h": 855,
-  "l": 820,
-  "c": 850,
-  "chg": 15,
-  "pct": 1.8,
-  "vol_juta": 12.36
-  },
-  "ema50": 824,
-  "pivot": {
-  "P": 842,
-  "R1": 863,
-  "R2": 877,
-  "R3": 898,
-  "S1": 828,
-  "S2": 807,
-  "S3": 793
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "AK",
-   1200,
-   14400,
-   837
-  ],
-  [
-   "XA",
-   301.3,
-   3500,
-   848
-  ],
-  [
-   "ZP",
-   252.9,
-   2900,
-   847
-  ],
-  [
-   "NI",
-   222.7,
-   2600,
-   841
-  ],
-  [
-   "AZ",
-   146.1,
-   1600,
-   846
-  ],
-  [
-   "YP",
-   95.9,
-   1300,
-   834
-  ],
-  [
-   "TP",
-   62.4,
-   754,
-   831
-  ],
-  [
-   "SQ",
-   57.2,
-   669,
-   847
-  ],
-  [
-   "GR",
-   47.2,
-   598,
-   835
-  ],
-  [
-   "OD",
-   32.1,
-   388,
-   840
-  ]
-  ],
-  "jual": [
-  [
-   "CC",
-   583.1,
-   6900,
-   850
-  ],
-  [
-   "XL",
-   451.8,
-   5500,
-   850
-  ],
-  [
-   "XC",
-   261.8,
-   3100,
-   850
-  ],
-  [
-   "PD",
-   202.4,
-   2400,
-   850
-  ],
-  [
-   "BK",
-   199.2,
-   2400,
-   850
-  ],
-  [
-   "DR",
-   142.3,
-   1700,
-   850
-  ],
-  [
-   "DH",
-   141.2,
-   1700,
-   850
-  ],
-  [
-   "KK",
-   130.7,
-   1500,
-   850
-  ],
-  [
-   "LS",
-   100.7,
-   1200,
-   850
-  ],
-  [
-   "EP",
-   81,
-   974,
-   850
-  ]
-  ],
-  "catatan_data": "Harga rata-rata sisi jual tak terbaca di screenshot; dipakai harga penutupan hari itu.",
-  "arah": "bull",
-  "target": "863 / 877 / 898",
-  "invalidation": "Close <828",
-  "slider_pct": 61,
-  "flow_kelas": "Accumulation",
-  "label": "Konsolidasi Naik — Net Beli Tipis di Atas EMA50",
-  "catatan": "EMA50 di 824 dan pivot 842 saling berdekatan — bertahannya harga di atas keduanya adalah kunci hari ini.",
-  "narasi_flow": "AK jadi pembeli terbesar dengan Rp1.200 juta. Di sisi jual, CC tercatat terbesar dengan Rp583,1 juta, dengan ritel (XL) turut di sisi jual, sementara scalper absen dari daftar jual teratas. Net masih positif tipis, Rp123,6 juta.",
-  "narasi_teknikal": "Close 850 naik 1,8%, bertahan di atas EMA50 (824, jarak +3,16%) dan di atas pivot 842, mendekati R1 863. Volume 12,36 juta lembar.",
-  "strategi": "Berlaku selama harga bertahan di atas EMA50 824 dan pivot 842; penerusan butuh tembus R1 863.",
-  "konsekuensi": "Bila close turun ke bawah S1 828, posisi kembali ke bawah EMA50 dan setup ini batal.",
-  "rationale_rank": "Net beli tipis dengan harga bertahan di atas EMA50, tanpa tekanan jual dari scalper.",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Tembus R1 863 dengan volume terjaga",
-   "rute": "Lanjut ke R2 877 dan R3 898",
-   "risiko": "Jika penembusan gagal (false break), harga bisa turun kembali ke pivot 842"
-  },
-  "bear": {
-   "konfirmasi": "Close di bawah S1 828",
-   "rute": "Turun ke S2 807, lalu S3 793",
-   "risiko": "Kehilangan status di atas EMA50, tren naik jangka pendek melemah"
-  }
-  },
-  "kontributor": "Ali Supian"
- },
- {
-  "ticker": "MDKA",
-  "nama": "PT Merdeka Copper Gold Tbk.",
-  "ohlc_hari": {
-  "o": 2790,
-  "h": 2950,
-  "l": 2740,
-  "c": 2900,
-  "chg": 110,
-  "pct": 3.94,
-  "vol_juta": 48.56
-  },
-  "ema50": 2775,
-  "pivot": {
-  "P": 2863,
-  "R1": 2987,
-  "R2": 3073,
-  "R3": 3197,
-  "S1": 2777,
-  "S2": 2653,
-  "S3": 2567
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "AK",
-   36800,
-   126700,
-   2893
-  ],
-  [
-   "DX",
-   21100,
-   72600,
-   2907
-  ],
-  [
-   "NI",
-   4300,
-   14900,
-   2892
-  ],
-  [
-   "SQ",
-   4100,
-   14100,
-   2868
-  ],
-  [
-   "LG",
-   3400,
-   11900,
-   2896
-  ],
-  [
-   "SH",
-   2000,
-   6700,
-   2916
-  ],
-  [
-   "AZ",
-   1900,
-   7000,
-   2761
-  ],
-  [
-   "BB",
-   772.8,
-   2600,
-   2885
-  ],
-  [
-   "AT",
-   402.4,
-   1400,
-   2855
-  ],
-  [
-   "TP",
-   180.5,
-   644,
-   2819
-  ]
-  ],
-  "jual": [
-  [
-   "OD",
-   22300,
-   76500,
-   2900
-  ],
-  [
-   "PD",
-   21900,
-   75300,
-   2900
-  ],
-  [
-   "BK",
-   7400,
-   25800,
-   2900
-  ],
-  [
-   "XL",
-   4500,
-   15600,
-   2900
-  ],
-  [
-   "YU",
-   3400,
-   12000,
-   2900
-  ],
-  [
-   "CC",
-   2500,
-   8400,
-   2900
-  ],
-  [
-   "MG",
-   2500,
-   8900,
-   2900
-  ],
-  [
-   "YP",
-   2000,
-   6900,
-   2900
-  ],
-  [
-   "XC",
-   1400,
-   4700,
-   2900
-  ],
-  [
-   "YJ",
-   1100,
-   3900,
-   2900
-  ]
-  ],
-  "catatan_data": "Harga rata-rata sisi jual tak terbaca di screenshot; dipakai harga penutupan hari itu.",
-  "arah": "bull",
-  "target": "2987 / 3073 / 3197",
-  "invalidation": "Close <2777",
-  "slider_pct": 59,
-  "flow_kelas": "Accumulation",
-  "label": "Akumulasi Besar — Satu Broker Dominan di Tengah Distribusi Scalper",
-  "catatan": "Pivot 2863 jadi batas penentu; tembus R1 2987 akan mengonfirmasi kelanjutan kenaikan.",
-  "narasi_flow": "AK jadi pembeli terbesar dengan Rp36.800 juta, jauh di atas broker lain. Di sisi jual, OD tercatat terbesar dengan Rp22.300 juta; kedua scalper (MG, YP) dan ritel (XL) sama-sama tercatat di sisi jual. Net beli tetap besar, Rp5.955,7 juta.",
-  "narasi_teknikal": "Close 2900 naik 3,94%, di atas EMA50 (2775, jarak +4,5%) dan di atas pivot 2863, namun masih di bawah R1 2987. Volume 48,56 juta lembar.",
-  "strategi": "Berlaku selama close bertahan di atas pivot 2863; validasi kuat bila tembus R1 2987.",
-  "konsekuensi": "Bila close turun ke bawah S1 2777, momentum beli hari ini kehilangan pijakan dan setup batal.",
-  "rationale_rank": "Net beli terbesar di kelompok ini, didorong satu broker pembeli dominan (AK).",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Tembus R1 2987",
-   "rute": "Lanjut ke R2 3073, lalu R3 3197",
-   "risiko": "Konsentrasi beli pada satu broker (AK) membuat kenaikan rentan bila broker itu berhenti menyerap"
-  },
-  "bear": {
-   "konfirmasi": "Close di bawah S1 2777",
-   "rute": "Turun ke S2 2653, lalu S3 2567",
-   "risiko": "Tekanan jual dari dua scalper (MG, YP) berlanjut dan menekan harga lebih dalam"
-  }
-  },
-  "kontributor": "Ali Supian"
- },
- {
-  "ticker": "INDY",
-  "nama": "Indika Energy Tbk",
-  "ohlc_hari": {
-  "o": 2500,
-  "h": 2610,
-  "l": 2430,
-  "c": 2560,
-  "chg": 60,
-  "pct": 2.4,
-  "vol_juta": 27.3
-  },
-  "ema50": 2463,
-  "pivot": {
-  "P": 2533,
-  "R1": 2637,
-  "R2": 2713,
-  "R3": 2817,
-  "S1": 2457,
-  "S2": 2353,
-  "S3": 2277
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "AK",
-   10100,
-   39400,
-   2560
-  ],
-  [
-   "GR",
-   2900,
-   11200,
-   2547
-  ],
-  [
-   "AZ",
-   1900,
-   7100,
-   2590
-  ],
-  [
-   "DR",
-   588.4,
-   2300,
-   2558
-  ],
-  [
-   "TP",
-   395.1,
-   1500,
-   2586
-  ],
-  [
-   "FS",
-   192.4,
-   755,
-   2549
-  ],
-  [
-   "AI",
-   174.1,
-   677,
-   2574
-  ],
-  [
-   "AT",
-   120.4,
-   501,
-   2532
-  ],
-  [
-   "AO",
-   91.6,
-   356,
-   2566
-  ],
-  [
-   "YB",
-   75.3,
-   318,
-   2528
-  ]
-  ],
-  "jual": [
-  [
-   "IF",
-   2000,
-   7700,
-   2560
-  ],
-  [
-   "BK",
-   1800,
-   7000,
-   2560
-  ],
-  [
-   "DX",
-   1700,
-   6500,
-   2560
-  ],
-  [
-   "CC",
-   1100,
-   4700,
-   2560
-  ],
-  [
-   "CP",
-   1100,
-   4500,
-   2560
-  ],
-  [
-   "YP",
-   1000,
-   4000,
-   2560
-  ],
-  [
-   "KK",
-   994.4,
-   3800,
-   2560
-  ],
-  [
-   "SQ",
-   961.4,
-   3700,
-   2560
-  ],
-  [
-   "OD",
-   887,
-   3400,
-   2560
-  ],
-  [
-   "LG",
-   779.2,
-   3000,
-   2560
-  ]
-  ],
-  "catatan_data": "Harga rata-rata sisi jual tak terbaca di screenshot; dipakai harga penutupan hari itu.",
-  "arah": "bull",
-  "target": "2637 / 2713 / 2817",
-  "invalidation": "Close <2457",
-  "slider_pct": 57,
-  "flow_kelas": "Accumulation",
-  "label": "Net Beli Kuat — Broker Dominan di Sisi Beli, Ritel Absen",
-  "catatan": "Pivot 2533 adalah level penentu; EMA50 2463 di bawahnya jadi lapisan penopang kedua.",
-  "narasi_flow": "AK jadi pembeli terbesar dengan Rp10.100 juta, mendominasi sisi beli. Sisi jual lebih terpecah antar broker, dengan scalper (YP) turut menjual; ritel (XL) tidak tercatat di kedua sisi top 10 hari ini. Net beli tercatat Rp4.215,3 juta.",
-  "narasi_teknikal": "Close 2560 naik 2,4%, bertahan di atas pivot 2533 dan EMA50 2463 (jarak +3,94%), namun masih di bawah R1 2637. Volume 27,3 juta lembar.",
-  "strategi": "Berlaku selama close bertahan di atas pivot 2533; validasi lanjutan bila tembus R1 2637.",
-  "konsekuensi": "Bila close turun ke bawah S1 2457, posisi kembali di bawah EMA50 dan setup ini batal.",
-  "rationale_rank": "Net beli kuat dengan dominasi satu broker pembeli, sisi jual terpecah tanpa tekanan besar dari satu pihak.",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Tembus R1 2637",
-   "rute": "Lanjut ke R2 2713, lalu R3 2817",
-   "risiko": "Dominasi AK di sisi beli membuat kenaikan rentan bila minat beli itu surut"
-  },
-  "bear": {
-   "konfirmasi": "Close di bawah S1 2457",
-   "rute": "Turun ke S2 2353, lalu S3 2277",
-   "risiko": "Kehilangan level EMA50, tren naik jangka pendek melemah"
-  }
-  },
-  "kontributor": "Ali Supian"
- },
- {
-  "ticker": "ANTM",
-  "nama": "PT ANTAM (Persero) Tbk",
-  "ohlc_hari": {
-  "o": 3000,
-  "h": 3090,
-  "l": 2970,
-  "c": 3070,
-  "chg": 70,
-  "pct": 2.33,
-  "vol_juta": 83.22
-  },
-  "ema50": 3033,
-  "pivot": {
-  "P": 3043,
-  "R1": 3117,
-  "R2": 3163,
-  "R3": 3237,
-  "S1": 2997,
-  "S2": 2923,
-  "S3": 2877
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "AK",
-   57300,
-   187900,
-   3051
-  ],
-  [
-   "NI",
-   12200,
-   39600,
-   3060
-  ],
-  [
-   "ZP",
-   8800,
-   29300,
-   3038
-  ],
-  [
-   "LG",
-   5000,
-   16400,
-   3061
-  ],
-  [
-   "AZ",
-   2100,
-   6700,
-   3066
-  ],
-  [
-   "RF",
-   1500,
-   5000,
-   3045
-  ],
-  [
-   "YB",
-   758.2,
-   2500,
-   3057
-  ],
-  [
-   "KK",
-   614.2,
-   2100,
-   3035
-  ],
-  [
-   "AI",
-   488.7,
-   1600,
-   3067
-  ],
-  [
-   "AO",
-   461.7,
-   1500,
-   3070
-  ]
-  ],
-  "jual": [
-  [
-   "YU",
-   12400,
-   40900,
-   3070
-  ],
-  [
-   "BB",
-   11700,
-   38300,
-   3070
-  ],
-  [
-   "EP",
-   10300,
-   33600,
-   3070
-  ],
-  [
-   "YP",
-   8400,
-   27600,
-   3070
-  ],
-  [
-   "AG",
-   6200,
-   20300,
-   3070
-  ],
-  [
-   "CC",
-   5700,
-   18900,
-   3070
-  ],
-  [
-   "TP",
-   5000,
-   16300,
-   3070
-  ],
-  [
-   "XL",
-   3300,
-   10900,
-   3070
-  ],
-  [
-   "BK",
-   3200,
-   10100,
-   3070
-  ],
-  [
-   "DH",
-   3100,
-   10300,
-   3070
-  ]
-  ],
-  "catatan_data": "Harga rata-rata sisi jual tak terbaca di screenshot; dipakai harga penutupan hari itu.",
-  "arah": "bull",
-  "target": "3117 / 3163 / 3237",
-  "invalidation": "Close <2997",
-  "slider_pct": 61,
-  "flow_kelas": "Accumulation",
-  "label": "Net Beli Terbesar di Kelompok — Satu Broker Borong, Jual Merata",
-  "catatan": "EMA50 (3033) dan pivot (3043) berimpit tipis — level ini paling menentukan arah lanjutan.",
-  "narasi_flow": "AK jadi pembeli tunggal terbesar dengan Rp57.300 juta, jauh melampaui broker lain. Sisi jual lebih merata di banyak broker, dipimpin YU dengan Rp12.400 juta; scalper (YP) dan ritel (XL) turut tercatat di sisi jual. Net beli tercatat Rp19.922,8 juta, terbesar di kelompok ini.",
-  "narasi_teknikal": "Close 3070 naik 2,33%, tipis di atas EMA50 (3033, jarak +1,22%) dan di atas pivot 3043, mendekati R1 3117. Volume 83,22 juta lembar.",
-  "strategi": "Berlaku selama close bertahan di atas EMA50 3033 dan pivot 3043; validasi lanjutan bila tembus R1 3117.",
-  "konsekuensi": "Bila close turun ke bawah S1 2997, harga kembali di bawah EMA50 dan setup ini batal.",
-  "rationale_rank": "Net beli nominal terbesar di kelompok ini, didorong dominasi satu broker pembeli.",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Tembus R1 3117 dengan volume terjaga",
-   "rute": "Lanjut ke R2 3163, lalu R3 3237",
-   "risiko": "Ketergantungan pada satu broker pembeli (AK) membuat kenaikan rentan bila serapan itu berhenti"
-  },
-  "bear": {
-   "konfirmasi": "Close di bawah S1 2997",
-   "rute": "Turun ke S2 2923, lalu S3 2877",
-   "risiko": "Jarak ke EMA50 tipis (+1,22%) membuat harga mudah jatuh ke bawah rata-rata bila tekanan jual meningkat"
-  }
-  },
-  "kontributor": "Ali Supian"
- },
- {
-  "ticker": "PADI",
-  "nama": "Minna Padi Investama Sekuritas Tbk",
-  "ohlc_hari": {
-  "o": 68,
-  "h": 72,
-  "l": 67,
-  "c": 71,
-  "chg": 3,
-  "pct": 4.41,
-  "vol_juta": 237.0
-  },
-  "ema50": 76,
-  "pivot": {
-  "P": 70,
-  "R1": 73,
-  "R2": 75,
-  "R3": 78,
-  "S1": 68,
-  "S2": 65,
-  "S3": 63
-  },
-  "pivot_ragu": [],
-  "beli": [
-  [
-   "MU",
-   4000,
-   577600,
-   70
-  ],
-  [
-   "MG",
-   561.1,
-   80200,
-   70
-  ],
-  [
-   "NI",
-   281.4,
-   40700,
-   69
-  ],
-  [
-   "AO",
-   123.1,
-   17600,
-   70
-  ],
-  [
-   "BQ",
-   111.7,
-   15700,
-   71
-  ],
-  [
-   "SH",
-   67,
-   10000,
-   67
-  ],
-  [
-   "MI",
-   67,
-   10000,
-   67
-  ],
-  [
-   "SA",
-   67,
-   10000,
-   67
-  ],
-  [
-   "YU",
-   40.1,
-   6100,
-   68
-  ],
-  [
-   "DX",
-   31.4,
-   4500,
-   70
-  ]
-  ],
-  "jual": [
-  [
-   "AK",
-   1300,
-   188000,
-   71
-  ],
-  [
-   "YB",
-   675.7,
-   96900,
-   71
-  ],
-  [
-   "CC",
-   456,
-   64500,
-   71
-  ],
-  [
-   "XC",
-   405.4,
-   58400,
-   71
-  ],
-  [
-   "GR",
-   405.1,
-   57800,
-   71
-  ],
-  [
-   "XA",
-   398.1,
-   57300,
-   71
-  ],
-  [
-   "IH",
-   320.9,
-   48000,
-   71
-  ],
-  [
-   "KI",
-   245,
-   34900,
-   71
-  ],
-  [
-   "AT",
-   197.3,
-   29600,
-   71
-  ],
-  [
-   "XL",
-   157.8,
-   30300,
-   71
-  ]
-  ],
-  "catatan_data": "Harga rata-rata sisi jual tak terbaca di screenshot; dipakai harga penutupan hari itu.",
-  "arah": "netral",
-  "target": "73 / 75 / 78",
-  "invalidation": "Close <68",
-  "slider_pct": 60,
-  "flow_kelas": "Accumulation",
-  "label": "Rebound dalam Tren Lemah — Harga Masih di Bawah EMA50",
-  "catatan": "EMA50 di 76 masih di atas harga saat ini — level itu jadi penentu apakah rebound ini berlanjut atau berhenti di pivot 70.",
-  "narasi_flow": "MU jadi pembeli dominan dengan Rp4.000 juta (577.600 lot), jauh di atas broker lain. AK tercatat terbesar di sisi jual namun jauh lebih kecil, Rp1.300 juta; ritel (XL) turut tercatat di sisi jual, scalper absen dari daftar jual teratas. Net beli tercatat Rp788,5 juta.",
-  "narasi_teknikal": "Close 71 naik 4,41%, di atas pivot 70, namun masih di bawah EMA50 (76), berjarak -6,58% — rebound ini belum membawa harga kembali ke atas rata-rata 50 harinya. Volume 237,0 juta lembar; arah tercatat netral.",
-  "strategi": "Berlaku selama close bertahan di atas pivot 70; posisi masih di bawah EMA50 sehingga penerusan butuh konfirmasi lebih lanjut lewat R1 73.",
-  "konsekuensi": "Bila close turun ke bawah S1 68, rebound hari ini gugur dan tekanan jual bisa berlanjut ke S2 65.",
-  "rationale_rank": "Rebound bervolume besar dengan pembeli tunggal dominan (MU), meski harga masih di bawah EMA50.",
-  "skenario": {
-  "bull": {
-   "konfirmasi": "Tembus R1 73 dan bertahan di atasnya",
-   "rute": "Lanjut ke R2 75, lalu R3 78 mendekati EMA50 76",
-   "risiko": "Selama masih di bawah EMA50, rebound berisiko berhenti di tengah jalan jika minat beli MU tidak berlanjut"
-  },
-  "bear": {
-   "konfirmasi": "Close di bawah S1 68",
-   "rute": "Turun ke S2 65, lalu S3 63",
-   "risiko": "Tren turun jangka menengah (di bawah EMA50) berlanjut, rebound hari ini dianggap gagal"
-  }
-  },
-  "kontributor": "Deonal Ramadhan"
- }
  ],
  "ihsg": {
- "nilai": "6.401,89",
- "pct": "+1,59%",
- "cls": "bull"
+  "nilai": "6.401,89",
+  "pct": "+1,59%",
+  "cls": "bull"
  },
  "nf": {
- "label": "Net Foreign Sell Reguler",
- "nilai": "Rp1,03 triliun",
- "ket": "(14 Agu)",
- "cls": "bear"
+  "label": "Net Foreign Sell Reguler",
+  "nilai": "Rp1,03 triliun",
+  "ket": "(14 Agu)",
+  "cls": "bear"
  },
  "konteks": "Rebound tajam setelah koreksi; asing masih net sell — kekuatan datang dari domestik",
  "ihsg_view": {
- "naratif": "IHSG ditutup 6,401,89, menguat 1,59% setelah koreksi 1,13% sehari sebelumnya, Rentang harian 6,267,41–6,401,89, Asing masih mencatat net sell Rp1,03 triliun di pasar reguler (YTD −Rp72,87 triliun), jadi kenaikan hari ini ditopang pembeli domestik, Nilai transaksi Rp12,43 triliun, di bawah rata-rata Rp22,01 triliun — penguatan terjadi pada likuiditas yang tipis,",
- "level": {},
- "skenario": "Bertahan di atas 6.301 — penutupan kemarin — menjaga rebound ini tetap utuh; kembali ke bawahnya membatalkannya dan mengembalikan tekanan yang sama seperti 13 Agustus. Rentang harian 6.267–6.402 jadi batas yang diuji lebih dulu.",
- "kesimpulan": "Kenaikan 1,59% terjadi sementara asing masih net sell Rp1,03 triliun, jadi penopangnya domestik. Nilai transaksi Rp12,43 triliun masih di bawah rata-rata Rp22,01 triliun — penguatan pada likuiditas tipis lebih mudah berbalik daripada yang disertai volume, dan itu yang perlu diawasi lebih dulu."
+  "naratif": "IHSG ditutup 6,401,89, menguat 1,59% setelah koreksi 1,13% sehari sebelumnya, Rentang harian 6,267,41–6,401,89, Asing masih mencatat net sell Rp1,03 triliun di pasar reguler (YTD −Rp72,87 triliun), jadi kenaikan hari ini ditopang pembeli domestik, Nilai transaksi Rp12,43 triliun, di bawah rata-rata Rp22,01 triliun — penguatan terjadi pada likuiditas yang tipis,",
+  "level": {},
+  "skenario": "Bertahan di atas 6.301 — penutupan kemarin — menjaga rebound ini tetap utuh; kembali ke bawahnya membatalkannya dan mengembalikan tekanan yang sama seperti 13 Agustus. Rentang harian 6.267–6.402 jadi batas yang diuji lebih dulu.",
+  "kesimpulan": "Kenaikan 1,59% terjadi sementara asing masih net sell Rp1,03 triliun, jadi penopangnya domestik. Nilai transaksi Rp12,43 triliun masih di bawah rata-rata Rp22,01 triliun — penguatan pada likuiditas tipis lebih mudah berbalik daripada yang disertai volume, dan itu yang perlu diawasi lebih dulu."
  },
  "sentimen": {
- "skor": null,
- "poin": [
-  {
-  "judul": "Net Sell Asing Rp1,03 Triliun",
-  "isi": "Asing net sell Rp1,03 triliun di pasar reguler; YTD −Rp72,87 triliun, IHSG tetap menguat, artinya serapan datang dari investor domestik,"
-  },
-  {
-  "judul": "Likuiditas Di Bawah Rata-rata",
-  "isi": "Nilai transaksi Rp12.43 triliun lawan rata-rata Rp22.01 triliun. frekuensi 1.730 ribu kali lawan rata-rata 2.511 ribu. Kenaikan pada volume tipis lebih rapuh daripada yang disertai volume."
-  }
- ],
- "kesimpulan": "Pasar naik tanpa dukungan asing dan tanpa dukungan volume. Dua-duanya membuat kenaikan ini lebih rapuh daripada angkanya terlihat: yang menyerap barang hari ini investor domestik, pada nilai transaksi separuh rata-rata."
+  "skor": null,
+  "poin": [
+   {
+    "judul": "Net Sell Asing Rp1,03 Triliun",
+    "isi": "Asing net sell Rp1,03 triliun di pasar reguler; YTD −Rp72,87 triliun, IHSG tetap menguat, artinya serapan datang dari investor domestik,"
+   },
+   {
+    "judul": "Likuiditas Di Bawah Rata-rata",
+    "isi": "Nilai transaksi Rp12.43 triliun lawan rata-rata Rp22.01 triliun. frekuensi 1.730 ribu kali lawan rata-rata 2.511 ribu. Kenaikan pada volume tipis lebih rapuh daripada yang disertai volume."
+   }
+  ],
+  "kesimpulan": "Pasar naik tanpa dukungan asing dan tanpa dukungan volume. Dua-duanya membuat kenaikan ini lebih rapuh daripada angkanya terlihat: yang menyerap barang hari ini investor domestik, pada nilai transaksi separuh rata-rata."
  },
- "update_dari": 20,
+ "update_dari": 22,
  "kredit_kontributor": [
- "Agitama",
- "Ali Supian",
- "Bot Papan",
- "Deonal Ramadhan",
- "Janto"
+  "Agitama",
+  "Ali Supian",
+  "Bot Papan",
+  "Deonal Ramadhan",
+  "Janto",
+  "Warda W."
  ]
 }
