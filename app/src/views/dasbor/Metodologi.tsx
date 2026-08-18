@@ -50,12 +50,11 @@ export function Metodologi() {
             <h3>Sumber harga: IDX + Yahoo Finance, saling menambal</h3>
             <p>
               Hari berjalan dan riwayat harian sejak awal 2020 (High/Low/Close/Volume, asing, frekuensi
-              transaksi) diambil dari IDX (<code>GetStockSummary</code>). Harga BUKA riwayat dan data sebelum
+              transaksi) diambil dari IDX. Harga BUKA riwayat dan data sebelum
               2020 diambil dari Yahoo Finance — ruas <code>OpenPrice</code> IDX bolong parah pada rentang lama
               (8% terisi Januari 2020, membaik jadi 74% Agustus 2026). Kandang OHLC lokal (dipakai halaman
               Grafik Emiten) mengikuti pola ini: kedalaman sekitar 10 tahun per emiten.
             </p>
-            <p className="muted mtd-rujuk">Rujukan: <code>docs/sumber-data-harga.md</code></p>
           </div>
 
           <div className="mtd-kartu">
@@ -67,7 +66,6 @@ export function Metodologi() {
               Auto rejection: 35% (≤Rp 200), 25% (Rp 200–5.000), 20% (&gt;Rp 5.000), simetris ARA/ARB sejak
               4 September 2023.
             </p>
-            <p className="muted mtd-rujuk">Rujukan: <code>docs/pedoman-harga-bei.md</code>, <code>lib/fraksiHarga.ts</code></p>
           </div>
 
           <div className="mtd-kartu">
@@ -83,9 +81,6 @@ export function Metodologi() {
               membawa lencana asalnya (<code>B</code> laporan bursa, <code>B·YTD</code> interim kumulatif).
               Ruas yang tak ada di kedua sumber dibiarkan kosong — bukan diisi nol.
             </p>
-            <p className="muted mtd-rujuk">
-              Rujukan: <code>lib/dasbor/fundamentalGabungan.ts</code>, <code>docs/sumber-fundamental-idx.md</code>
-            </p>
           </div>
 
           <div className="mtd-kartu">
@@ -96,7 +91,6 @@ export function Metodologi() {
               Sampel kecil ditarik ke prior netral 50% (semakin sedikit sampel, semakin dekat ke netral)
               supaya sinyal langka tak dibaca lebih pasti daripada datanya sendiri.
             </p>
-            <p className="muted mtd-rujuk">Rujukan: <code>lib/radar/skor.ts</code></p>
           </div>
         </div>
       </section>

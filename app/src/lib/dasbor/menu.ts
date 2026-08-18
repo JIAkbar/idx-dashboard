@@ -158,11 +158,6 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M5 4h11l3 3v13a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1zM16 4v4h3M8 10h7M8 13h7M8 16h4',
   },
   {
-    id: 'forum', path: '/forum', label: 'Forum', kode: 'FRM', grup: 'baca',
-    ringkas: 'Ruang diskusi antar-anggota, per topik.',
-    ikon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v10a1 1 0 01-1 1h-8l-4 4v-4H5a1 1 0 01-1-1zM8 9h8M8 12h5',
-  },
-  {
     id: 'feedback', path: '/feedback', label: 'Kritik & Saran', kode: 'SRN', grup: 'baca',
     ringkas: 'Sampaikan koreksi data atau usulan fitur langsung ke redaksi.',
     ikon: 'M21 12a8 8 0 01-8 8H4l2.4-2.9A8 8 0 1121 12zM9 11h6M9 14h4',

@@ -24,7 +24,13 @@
   display: grid; grid-template-columns: 1fr; gap: 8px;
 }
 @media (min-width: 900px) {
-  .lantai .mtd-list { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  /* `align-items: start` DIBUANG (18 Agu 2026): ia membuat tiap kartu
+     setinggi isinya sendiri, jadi kartu kiri dan kanan di baris yang sama
+     berakhir di ketinggian berbeda dan mata kehilangan garis bacanya.
+     Bawaan grid (`stretch`) menyamakan tinggi per baris — yang dibaca
+     sejajar memang harus sejajar. Kelas kesalahan yang sama dengan baris
+     sampul GTSI/KIJA di terbitan PDF. */
+  .lantai .mtd-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 .lantai .mtd-entri {

@@ -127,6 +127,32 @@ Yang paling sering dilanggar dan paling mahal:
 - **Ambang penyajian**: 1–4 baris boleh langsung di obrolan; 5+ baris ke
   berkas, dengan ringkasan 3–5 baris tetap wajib di obrolan.
 
+### Empat aturan yang lahir 18 Agustus 2026 — mengikat, bukan anjuran
+
+Lahir dari kesalahan nyata hari itu; tiap satunya sudah dibayar.
+
+1. **Sebelum mengirim agen untuk pekerjaan mahal, periksa dulu asumsinya
+   dengan cara yang murah.** Panen 2016–2019 dikirim tanpa memeriksa apakah
+   IDX menyajikan tahun-tahun itu; satu agen habis satu siklus penuh, lalu
+   2018 menjawab `ResultCount 0`. Membuka satu URL di peramban sudah
+   menjawabnya lebih dulu. Selaras `hemat.md` §0 — **akar dulu, baru eksekusi**.
+2. **Agen yang meluncurkan proses latar DILARANG menunggu.** Notifikasi
+   selesainya tak sampai ke agen; ia berhenti, lalu harus dibangunkan. Terjadi
+   empat kali, masing-masing ±120 ribu token untuk nol pekerjaan baru.
+   Instruksinya: luncurkan, laporkan, berhenti — pemanggil yang memantau.
+3. **Sonnet untuk yang speknya sudah tajam, Opus hanya untuk keputusan
+   terbuka.** Bukan aturan baru (§14, insiden PAPAN 14 Agu), tapi hari itu
+   dilanggar lagi: agen Opus berturut-turut 408k, 274k, 253k, 231k token.
+4. **Sebelum apa pun TAYANG, jalankan satu pass khusus kebocoran** — terpisah
+   dari pass kebenaran. Pertanyaannya bukan "apakah ini benar" melainkan
+   "**apa yang halaman ini bocorkan**": nama endpoint, jalur berkas internal,
+   aturan penggabungan, ambang skor. Halaman Metodologi terbit dengan
+   `Rujukan: lib/dasbor/fundamentalGabungan.ts` tercetak di layar publik —
+   dan itu lolos karena reviewnya cuma memeriksa apakah isinya BENAR. Dua
+   pertanyaan berbeda; yang satu tak pernah menangkap yang lain. Tier model
+   tak menolong di sini: pertanyaan yang tak diajukan tak akan dijawab
+   sepintar apa pun modelnya.
+
 ### Cara kerja & rilis — WAJIB
 
 **Kerjakan semua di localhost. Jangan push tanpa diminta.** Aturan ini berlaku sejak

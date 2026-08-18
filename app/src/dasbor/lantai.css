@@ -150,7 +150,7 @@
 /* ===== RAIL KIRI — menu dinamai KODE tiga huruf gaya ticker bursa ===== */
 .dasbor-rail {
   flex: none;
-  width: 76px;
+  width: 88px;
   background: var(--bg2);
   border-right: 1px solid var(--border);
   position: sticky;
@@ -201,11 +201,15 @@
 .dasbor-rail-grup.buka { color: var(--accent); background: var(--accent-soft); }
 .dasbor-rail-item {
   width: 100%;
-  /* Dirapatkan 15 Agu: 12 menu + tombol tema + Masuk sudah menyentuh tepi
-     bawah di laptop 960px, dan Forum masih harus masuk. Padding 9/8 → 6/5
-     dan ikon 20 → 18 memberi ruang dua item tanpa terasa sesak. */
-  padding: 6px 0 5px;
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  /* Dirapatkan 15 Agu waktu rail masih memuat 12 menu satuan + tombol tema
+     + Masuk, dan semuanya menyentuh tepi bawah di laptop 960px. Sesudah menu
+     dikelompokkan, yang tampil di rail cuma LIMA ikon kelompok — alasan
+     pemampatannya hilang, tapi pemampatannya tak pernah dibatalkan. Angka di
+     bawah mengembalikannya ke ukuran yang nyaman disentuh, bukan
+     membesar-besarkan: 44px tinggi minimum sesuai target sentuh #170. */
+  padding: 11px 0 9px;
+  min-height: 44px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
   color: var(--text3);
   text-decoration: none;
   border-left: 2px solid transparent;
@@ -231,7 +235,7 @@
 }
 .dasbor-rail-kode {
   font-family: "Red Hat Mono", ui-monospace, Consolas, monospace;
-  font-size: 9.5px; letter-spacing: .1em;
+  font-size: 11px; letter-spacing: .1em;
 }
 
 /* Flyout kelompok — `position: fixed` karena .dasbor-rail-list menggulung dan

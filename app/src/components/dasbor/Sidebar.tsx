@@ -2,6 +2,9 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { MENU_KELOMPOK, type GrupId, type MenuGrup, type MenuItem } from '../../lib/dasbor/menu'
 import { IkonMenu, IKON_KUNCI } from './IkonMenu'
+
+/** Rumah — hanya dipakai pintu Beranda di rail & laci. */
+const IKON_RUMAH = 'M4 11.5 12 4l8 7.5M6.5 10v9h11v-9'
 import { useTheme } from '../../context/ThemeContext'
 import { useAuth } from '../../context/AuthContext'
 import { useAksesHalaman } from '../../context/AksesHalamanContext'
@@ -51,6 +54,21 @@ export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
       </Link>
 
       <div className="dasbor-rail-list">
+        {/* Beranda berdiri sendiri di atas kelompok, bukan di dalam salah
+            satunya: ia bukan bagian dari Pasar/Emiten/Aliran/Analisa/Baca,
+            ia titik pulang. Sebelumnya satu-satunya jalannya lambang PAPAN di
+            puncak rail — dan lambang merek dibaca sebagai identitas, bukan
+            tombol. */}
+        <NavLink
+          to="/"
+          end
+          className={({ isActive }) => 'dasbor-rail-item' + (isActive ? ' active' : '')}
+          title="Beranda"
+          onClick={(e) => klik(e, '/')}
+        >
+          <IkonMenu d={IKON_RUMAH} size={22} />
+          <span className="dasbor-rail-kode">HOME</span>
+        </NavLink>
         {MENU_KELOMPOK.map((grup) => (
           <RailGrup
             key={grup.id}
@@ -219,7 +237,7 @@ function RailGrup({ grup, buka, onToggle, onTutup, pathname, klik, boleh, alasan
         // lihat lib/prefetchRute.ts.
         onPointerEnter={() => grup.items.forEach((m) => prefetchRute(m.path))}
       >
-        <IkonMenu d={grup.ikon} size={18} />
+        <IkonMenu d={grup.ikon} size={22} />
         <span className="dasbor-rail-kode">{grup.kode}</span>
         {semuaTerkunci && (
           <span className="dasbor-kunci-badge" aria-hidden="true">

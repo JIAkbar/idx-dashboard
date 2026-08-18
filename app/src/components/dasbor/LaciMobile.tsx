@@ -1,6 +1,9 @@
 import { useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { MENU_KELOMPOK } from '../../lib/dasbor/menu'
+
+/** Rumah — pintu Beranda di laci telepon. */
+const IKON_RUMAH_LACI = 'M4 11.5 12 4l8 7.5M6.5 10v9h11v-9'
 import { IkonMenu, IKON_KUNCI } from './IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 import { useAuth } from '../../context/AuthContext'
@@ -59,6 +62,16 @@ export function LaciMobile({ buka, onTutup, onMasuk }: {
             layar sempit tak punya ruang untuk lapis kedua yang melayang, jadi
             kelompoknya jadi tajuk dan menunya menjorok di bawahnya. */}
         <div className="dasbor-laci-kiri-list">
+          {/* Di telepon rail tak pernah tampil, jadi tanpa baris ini Beranda
+              tak punya pintu sama sekali dari laci. */}
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) => 'dasbor-laci-item' + (isActive ? ' active' : '')}
+            onClick={onTutup}
+          >
+            <IkonMenu d={IKON_RUMAH_LACI} size={18} /> Beranda
+          </NavLink>
           {MENU_KELOMPOK.map((grup) => (
             <div className="dasbor-laci-grup" key={grup.id}>
               <div className="dasbor-laci-grup-jd">
