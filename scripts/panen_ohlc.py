@@ -33,10 +33,20 @@ Mode:
   python scripts/panen_ohlc.py                  # harian: tambah hari baru saja
   python scripts/panen_ohlc.py --batas 5        # uji cepat
   python scripts/panen_ohlc.py --tahun 3        # batasi riwayat saat --penuh
+  python scripts/panen_ohlc.py --penuh --paksa  # tarik ulang SEMUA walau sudah cukup
 
 Pengaman terhadap Yahoo sama persis dengan panen_seasonality.py: satu
 permintaan pada satu waktu, jeda acak, backoff yang menghormati Retry-After,
 dan berhenti setelah tiga penolakan beruntun.
+
+LANJUTKAN SETELAH BERHENTI
+--------------------------
+Panen --penuh --tahun 10 atas ~960 emiten makan berjam-jam dan Yahoo bisa
+menolak (429/403) di tengah jalan. --lewati-cukup nyala OTOMATIS saat --penuh
+(matikan dengan --paksa): emiten yang berkasnya sudah tercatat pernah ditarik
+sedalam --tahun (ruas "th_full", diisi tiap kali panen penuh berhasil) tidak
+ditarik ulang. Cukup jalankan perintah yang sama lagi — ia melanjutkan dari
+emiten yang belum kebagian, bukan mengulang dari awal.
 """
 import argparse
 import json
@@ -157,13 +167,38 @@ def ke_baris(data: dict) -> list[list]:
     return baris
 
 
-def simpan(kode: str, baris: list[list]) -> int:
+def simpan(kode: str, baris: list[list], th_full: int | None = None) -> int:
     KELUARAN.mkdir(parents=True, exist_ok=True)
     p = KELUARAN / f"{kode}.json"
-    p.write_text(json.dumps({
-        "kode": kode, "mulai": baris[0][0], "akhir": baris[-1][0], "n": len(baris), "d": baris,
-    }, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    obj = {"kode": kode, "mulai": baris[0][0], "akhir": baris[-1][0], "n": len(baris), "d": baris}
+    if th_full is not None:
+        # Dicatat SETIAP kali (penuh maupun refresh harian yang meneruskan nilai
+        # lama) supaya `cukup()` di bawah tahu seberapa dalam emiten ini PERNAH
+        # diminta — dipakai --lewati-cukup, lihat penjelasan di sana.
+        obj["th_full"] = th_full
+    p.write_text(json.dumps(obj, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     return p.stat().st_size
+
+
+def cukup(lama: dict, tahun_target: int) -> bool:
+    """True kalau berkas ini sudah PERNAH ditarik sedalam (atau lebih dalam)
+    dari `tahun_target` — dipakai --lewati-cukup supaya panen 10-tahun yang
+    berhenti di tengah jalan (penolakan Yahoo) bisa dilanjutkan tanpa menarik
+    ulang emiten yang sudah beres.
+
+    Sengaja dicek dari ruas `th_full` (kedalaman yang PERNAH diminta), BUKAN
+    dari selisih tanggal `mulai` ke target: emiten yang IPO-nya belum 10 tahun
+    tak akan pernah punya `mulai` sedalam target walau sudah ditarik semaksimal
+    mungkin, dan kalau patokannya tanggal, emiten begitu akan ditarik ulang
+    setiap kali skrip ini jalan — sia-sia, karena Yahoo tak akan pernah
+    mengembalikan riwayat yang memang belum ada.
+    """
+    th = lama.get("th_full")
+    if th is None:
+        return False  # berkas lama dari sebelum ruas ini ada — kedalamannya tak tercatat
+    if th == 0:
+        return True  # pernah ditarik SEMAKSIMAL Yahoo (range 1996-sekarang), tak mungkin lebih
+    return th >= tahun_target
 
 
 def main() -> None:
@@ -172,7 +207,16 @@ def main() -> None:
     ap.add_argument("--tahun", type=int, default=5, help="riwayat berapa tahun saat --penuh (0 = maksimum)")
     ap.add_argument("--batas", type=int, default=0, help="berhenti setelah sekian emiten (uji)")
     ap.add_argument("--cermin", action="store_true", help="salin juga ke app/public")
+    ap.add_argument("--lewati-cukup", action="store_true",
+                     help="lewati emiten yang riwayatnya sudah sedalam --tahun (nyala default saat --penuh)")
+    ap.add_argument("--paksa", action="store_true",
+                     help="matikan --lewati-cukup — tarik ulang semua emiten walau sudah cukup")
     arg = ap.parse_args()
+    # --penuh menyalakan --lewati-cukup secara default (panen 10-tahun makan
+    # berjam-jam dan sering berhenti di tengah karena penolakan Yahoo —
+    # melanjutkan tanpa menarik ulang yang sudah beres itu intinya). --paksa
+    # selalu menang, dipakai kalau memang mau menarik ulang semuanya.
+    lewati_cukup = (not arg.paksa) and (arg.lewati_cukup or arg.penuh)
 
     kode_semua = [e["kode"] for e in json.loads(DAFTAR.read_text(encoding="utf-8"))["emiten"]]
     if arg.batas:
@@ -180,7 +224,7 @@ def main() -> None:
 
     KELUARAN.mkdir(parents=True, exist_ok=True)
     tolak_beruntun = 0
-    baru = segar = lewat = 0
+    baru = segar = lewat = sudah_cukup = 0
     total_byte = 0
     gagal: dict[str, str] = {}
     t0 = time.time()
@@ -192,6 +236,10 @@ def main() -> None:
         # harian: menambah satu hari ke berkas yang belum ada tak menghasilkan
         # riwayat apa pun.
         penuh = arg.penuh or lama is None
+
+        if penuh and lewati_cukup and lama is not None and cukup(lama, arg.tahun):
+            sudah_cukup += 1
+            continue
 
         try:
             if penuh:
@@ -230,7 +278,7 @@ def main() -> None:
             gagal[kode] = "seri kosong"
             lewat += 1
         elif penuh:
-            total_byte += simpan(kode, baris)
+            total_byte += simpan(kode, baris, th_full=arg.tahun)
             baru += 1
         else:
             # Gabung menurut tanggal: hari yang sudah ada DITIMPA, bukan
@@ -239,7 +287,9 @@ def main() -> None:
             peta = {b[0]: b for b in lama["d"]}
             for b in baris:
                 peta[b[0]] = b
-            total_byte += simpan(kode, [peta[k] for k in sorted(peta)])
+            # th_full diteruskan dari berkas lama (bukan diisi ulang) — refresh
+            # harian cuma menambah hari baru, bukan menyelami lebih dalam.
+            total_byte += simpan(kode, [peta[k] for k in sorted(peta)], th_full=lama.get("th_full"))
             segar += 1
 
         if i % 50 == 0:
@@ -255,7 +305,8 @@ def main() -> None:
     besar = sum(x.stat().st_size for x in semua)
     print(f"\n{len(semua)} berkas · {besar/1024/1024:.1f} MB total · "
           f"rata-rata {besar/max(1,len(semua))/1024:.0f} KB")
-    print(f"{baru} ditarik penuh · {segar} disegarkan · {lewat} dilewati · {len(gagal)} gagal")
+    print(f"{baru} ditarik penuh · {segar} disegarkan · {sudah_cukup} sudah cukup (dilewati) · "
+          f"{lewat} dilewati (gagal) · {len(gagal)} gagal")
     print(f"Durasi {int(time.time() - t0)}s")
     if gagal:
         (KELUARAN / "_gagal.json").write_text(json.dumps(gagal, ensure_ascii=False, indent=2), encoding="utf-8")
