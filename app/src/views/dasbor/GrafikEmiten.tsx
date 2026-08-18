@@ -13,17 +13,19 @@ import {
   keSeriGaris, SPEK_INDIKATOR, SPEK_POLA, labelInstansIndikator, labelInstansPola,
   hitungInstans, cariDoubleBottom, cariLonjakanVolume,
   bacaTemplateTersimpan, tulisTemplateTersimpan, simpanTemplate, hapusTemplate,
-  tandaiBawaan, ubahNamaTemplate,
+  tandaiBawaan, ubahNamaTemplate, penandaDiSekitar,
   type BerkasOhlcEmiten, type DoubleBottom, type JenisIndikator, type JenisPola,
   type ParamDoubleBottom, type ParamLonjakanVolume, type StatusPola, type StatusLonjakan,
   type LonjakanVolume, type TemplateGrafik,
 } from '../../lib/dasbor/grafikEmiten'
 import { Dropdown } from '../../components/dasbor/Dropdown'
-import { useDaftarInstans, BarisInstans } from '../../components/dasbor/DaftarInstans'
+import { useDaftarInstans, SetelanInstans } from '../../components/dasbor/DaftarInstans'
+import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { fN } from '../../lib/dasbor/format'
 import { pesanGalat } from '../../lib/pesanGalat'
 import {
   IkonMenu, IKON_CARI, IKON_SILANG, IKON_GRAFIK_NAIK, IKON_INFO, IKON_TONG, IKON_MATA,
+  IKON_MATA_CORET, IKON_GIR,
 } from '../../components/dasbor/IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 import './GrafikEmiten.css'
@@ -59,6 +61,44 @@ const MAKS_PENANDA_POLA = 6
  *  ditambahkan — Johan: "ada seperti untuk chart chandles dan line saja dulu". */
 export type JenisChart = 'lilin' | 'garis'
 const JENIS_CHART: Array<[JenisChart, string]> = [['lilin', 'Lilin'], ['garis', 'Garis']]
+
+/** Satu baris legenda dalam-kanvas. `ranah` menentukan daftar mana yang
+ *  dipanggil saat tombol mata/hapus/gir ditekan — indikator dan pola punya
+ *  dua `useDaftarInstans` terpisah, dan barisnya duduk berdampingan. */
+interface BarisLegenda {
+  id: string
+  ranah: 'ind' | 'pol'
+  tampil: boolean
+  warna: string
+  label: string
+  nilai: string
+}
+
+/**
+ * Satu penanda pola di kanvas, beserta KETERANGANNYA.
+ *
+ * Keterangan itu dulu ditulis langsung di `text` penanda lightweight-charts,
+ * dan di situlah keluhan Johan 18 Agu 2026 lahir: *"Pola nya juga tembus
+ * harusnya dibuat tooltips saja, pola nya tembus"*. Penanda pola berdempetan
+ * secara alami (lembah kedua dan penembusan lehernya kerap cuma berjarak
+ * satu-dua lilin), dan label yang menempel padanya saling menimpa sampai tak
+ * satu pun terbaca. Penandanya tetap — yang pindah teksnya.
+ *
+ * `token` disimpan sebagai NAMA VARIABEL CSS (mis. `--amber`), bukan warna
+ * yang sudah dibaca: penanda kanvas butuh nilai heksadesimalnya (kanvas tak
+ * mengenal variabel CSS) sedangkan tooltip berupa DOM yang justru harus ikut
+ * berganti sendiri saat tema ditukar. Satu daftar, dua pembaca, nol
+ * kemungkinan warna tooltip dan warna penandanya berbeda.
+ */
+interface PenandaPola {
+  time: string
+  /** Penanda volume duduk di seri volume, bukan seri harga — dua plugin
+   *  penanda terpisah supaya tak berebut tempat. */
+  seri: 'harga' | 'volume'
+  posisi: 'aboveBar' | 'belowBar'
+  token: string
+  teks: string
+}
 
 const spekIndikator = (jenis: JenisIndikator) => SPEK_INDIKATOR[jenis].param
 const spekPola = (jenis: JenisPola) => SPEK_POLA[jenis].param
@@ -186,10 +226,19 @@ export function GrafikEmiten() {
     skala.setVisibleLogicalRange({ from: tengah - separuh, to: tengah + separuh })
   }, [])
 
-  // Waktu titik yang sedang disorot kursor ('yyyy-mm-dd') — null berarti
-  // "belum digeser, pakai titik TERAKHIR" (legenda tetap berguna sebelum
-  // pembaca menyentuh kanvas sama sekali).
-  const [waktuSorot, setWaktuSorot] = useState<string | null>(null)
+  // Titik yang sedang disorot kursor: waktunya ('yyyy-mm-dd') DAN letaknya di
+  // dalam kanvas. `null` berarti "belum disentuh, pakai titik TERAKHIR"
+  // (legenda tetap berguna sebelum pembaca menyentuh kanvas sama sekali).
+  //
+  // Letaknya ikut disimpan karena tooltip pola harus muncul DI DEKAT
+  // penandanya; tooltip yang selalu di pojok memaksa mata bolak-balik antara
+  // penanda dan keterangannya, dan itu persis kerja yang tooltipnya harusnya
+  // hilangkan.
+  const [sorot, setSorot] = useState<{ waktu: string; x: number; y: number } | null>(null)
+  /** Instans mana yang panel setelannya sedang terbuka (id), null = tak ada.
+   *  Satu saja pada satu waktu: dua panel melayang bersamaan akan saling
+   *  menutupi di kanvas telepon yang lebarnya cuma 380-an piksel. */
+  const [setelanTerbuka, setSetelanTerbuka] = useState<string | null>(null)
 
   // Satu emiten, satu fetch — sama seperti SeasonalityHarian, BUKAN memuat
   // seluruh 963 berkas OHLC sekaligus.
@@ -320,11 +369,25 @@ export function GrafikEmiten() {
     // saat kursor keluar dari kanvas — dibiarkan `null` supaya legenda jatuh
     // balik ke titik TERAKHIR, bukan hilang.
     const saatGeserKursor = (param: MouseEventParams<Time>) => {
-      setWaktuSorot(typeof param.time === 'string' ? param.time : null)
+      if (typeof param.time === 'string' && param.point) {
+        setSorot({ waktu: param.time, x: param.point.x, y: param.point.y })
+        return
+      }
+      // Sorotan DIBUANG hanya di perangkat ber-hover. Di telepon, crosshair
+      // ikut hilang begitu jari diangkat — membuang sorotan di situ berarti
+      // tooltip lenyap sepersekian detik sesudah diketuk, tanpa pernah sempat
+      // dibaca. Di sana ia bertahan sampai ketukan berikutnya.
+      if (window.matchMedia('(hover: hover)').matches) setSorot(null)
     }
     chart.subscribeCrosshairMove(saatGeserKursor)
+    // Klik/ketuk ikut dilanggan supaya tooltip pola punya jalur SENTUH: di
+    // telepon tak ada hover sama sekali, dan crosshair cuma bergerak selagi
+    // jari menempel — sekali diangkat, keterangannya lenyap sebelum sempat
+    // dibaca. Ketukan menahannya sampai ketukan berikutnya.
+    chart.subscribeClick(saatGeserKursor)
     return () => {
       chart.unsubscribeCrosshairMove(saatGeserKursor)
+      chart.unsubscribeClick(saatGeserKursor)
       chart.remove()
       chartRef.current = null
       hargaRef.current = null
@@ -542,11 +605,19 @@ export function GrafikEmiten() {
   // ditebak — tebakan itu meleset beberapa piksel dan legendanya duduk
   // separuh di luar panenya.
   const [posPane, setPosPane] = useState<number[]>([0])
+  // Ukuran bungkus kanvas — dipakai tooltip pola memutuskan ke arah mana ia
+  // dibuka: di separuh kanan kanvas ia harus membuka ke KIRI, kalau tidak
+  // isinya terpotong tepi kanvas justru saat penandanya paling baru (dan
+  // penanda terbaru selalu di kanan).
+  const [ukuranBungkus, setUkuranBungkus] = useState({ w: 0, h: 0 })
   const ukurPane = useCallback(() => {
     const chart = chartRef.current
     const bungkus = bungkusRef.current
     if (!chart || !bungkus) return
-    const atasBungkus = bungkus.getBoundingClientRect().top
+    const rBungkus = bungkus.getBoundingClientRect()
+    setUkuranBungkus((lama) => (Math.abs(lama.w - rBungkus.width) < 1 && Math.abs(lama.h - rBungkus.height) < 1
+      ? lama : { w: rBungkus.width, h: rBungkus.height }))
+    const atasBungkus = rBungkus.top
     const pos = chart.panes().map((p) => {
       const el = p.getHTMLElement()
       return el ? el.getBoundingClientRect().top - atasBungkus : 0
@@ -618,23 +689,48 @@ export function GrafikEmiten() {
   // pane: yang menumpang di panel harga muncul di pojok kiri atas panel
   // harga, RSI/MACD di pojok kiri atas pane-nya sendiri.
   const legenda = useMemo(() => {
-    const waktu = waktuSorot ?? lilin[lilin.length - 1]?.time ?? null
-    if (!waktu) return null
-    const perPane = new Map<number, Array<{ id: string; warna: string; label: string; nilai: string }>>()
-    for (const { inst, peta } of petaLegenda) {
-      const pane = panePerInstans.get(inst.id)
-      if (pane === undefined) continue
+    const waktu = sorot?.waktu ?? lilin[lilin.length - 1]?.time ?? null
+    // Pane 0 SELALU ada walau belum ada satu pun instans — ia yang memuat
+    // tombol "+ Indikator"/"+ Pola". Tanpa itu, kendali penambahnya cuma
+    // muncul setelah ada yang ditambahkan, yaitu setelah tak diperlukan lagi.
+    const perPane = new Map<number, BarisLegenda[]>([[0, []]])
+    const dorong = (pane: number, b: BarisLegenda) => {
       const baris = perPane.get(pane) ?? []
-      baris.push({
-        id: inst.id,
-        warna: inst.warna,
-        label: labelInstansIndikator(inst),
-        nilai: peta.map((p) => { const x = p.get(waktu); return x === undefined ? '—' : fN(x) }).join(' / '),
-      })
+      baris.push(b)
       perPane.set(pane, baris)
     }
+    for (const { inst, peta } of petaLegenda) {
+      // Instans yang SEDANG DISEMBUNYIKAN tetap didaftar (redup, di pane 0):
+      // tombol "tampilkan lagi" dulu ada di baris bawah kanvas yang kini
+      // sudah tak ada, jadi tanpa ini menyembunyikan sebuah indikator sama
+      // dengan menguncinya — tak ada lagi pintu untuk mengembalikannya.
+      const pane = panePerInstans.get(inst.id) ?? 0
+      dorong(pane, {
+        id: inst.id,
+        ranah: 'ind',
+        tampil: inst.tampil,
+        warna: inst.warna,
+        label: labelInstansIndikator(inst),
+        nilai: !inst.tampil || !waktu
+          ? ''
+          : peta.map((p) => { const x = p.get(waktu); return x === undefined ? '—' : fN(x) }).join(' / '),
+      })
+    }
+    // Pola selalu di pane 0: temuannya digambar di panel harga & volume, tak
+    // pernah punya pane sendiri.
+    for (const { inst, doubleBottom, lonjakan } of polaPerInstans) {
+      const jumlah = doubleBottom.length + lonjakan.length
+      dorong(0, {
+        id: inst.id,
+        ranah: 'pol',
+        tampil: inst.tampil,
+        warna: inst.warna,
+        label: labelInstansPola(inst),
+        nilai: jumlah === 0 ? 'tak ada' : `${jumlah} temuan`,
+      })
+    }
     return { waktu, perPane: [...perPane.entries()].sort((a, b) => a[0] - b[0]) }
-  }, [waktuSorot, lilin, petaLegenda, panePerInstans])
+  }, [sorot, lilin, petaLegenda, panePerInstans, polaPerInstans])
 
   /* ---------------- Template ---------------- */
 
@@ -677,8 +773,50 @@ export function GrafikEmiten() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  /**
+   * Penanda pola + keterangannya, dihitung SEKALI lalu dipakai dua pembaca:
+   * penggambar kanvas di bawah ini dan tooltip di JSX. Dipisah jadi dua
+   * perhitungan, penanda yang tergambar dan keterangan yang terbaca bisa
+   * berbeda tanpa satu pun galat — jenis kesalahan yang paling mahal karena
+   * hasilnya tetap terlihat masuk akal.
+   *
+   * Sudah urut menaik menurut waktu di sini: lightweight-charts mewajibkannya
+   * dan diam-diam tak menggambar sebagian penanda kalau dilanggar.
+   */
+  const penandaPola = useMemo<PenandaPola[]>(() => {
+    const out: PenandaPola[] = []
+    for (const { inst, doubleBottom, lonjakan } of polaPerInstans) {
+      if (!inst.tampil) continue
+      const nama = labelInstansPola(inst)
+      for (const lv of lonjakan.slice(-MAKS_PENANDA_POLA)) {
+        out.push({
+          time: lv.waktu, seri: 'volume', posisi: 'belowBar', token: WARNA_LONJAKAN[lv.status],
+          // Angka RVOL ikut di keterangan — itu yang membuat penandanya bisa
+          // DIPERIKSA, bukan dipercaya.
+          teks: `${nama} · RVOL ${fN(lv.rvol, 1)}× · ${lv.status === 'takTerkonfirmasi' ? 'tak terkonfirmasi' : lv.status}`,
+        })
+      }
+      for (const db of doubleBottom.slice(-MAKS_PENANDA_POLA)) {
+        const token = WARNA_STATUS[db.status]
+        out.push(
+          { time: db.waktuLembah1, seri: 'harga', posisi: 'belowBar', token, teks: `${nama} · Lembah 1 ${fN(db.hargaLembah1, 0)}` },
+          { time: db.waktuLeher, seri: 'harga', posisi: 'aboveBar', token, teks: `${nama} · Leher ${fN(db.hargaLeher, 0)}` },
+          { time: db.waktuLembah2, seri: 'harga', posisi: 'belowBar', token, teks: `${nama} · Lembah 2 ${fN(db.hargaLembah2, 0)} · ${db.status}` },
+        )
+        if (db.waktuKonfirmasi) {
+          out.push({
+            time: db.waktuKonfirmasi, seri: 'harga', posisi: 'aboveBar', token,
+            teks: `${nama} · Tembus leher${db.volumeMenguat ? ' · volume menguat' : ''}`,
+          })
+        }
+      }
+    }
+    return out.sort((a, b) => a.time.localeCompare(b.time))
+  }, [polaPerInstans])
+
   // Gambar pola di kanvas: garis leher mendatar + penanda di lembah, leher,
-  // dan lilin penembusnya.
+  // dan lilin penembusnya. Penanda TANPA `text` — keterangannya pindah ke
+  // tooltip (lihat PenandaPola).
   useEffect(() => {
     const chart = chartRef.current
     const harga = hargaRef.current
@@ -690,66 +828,47 @@ export function GrafikEmiten() {
     for (const g of garisLeherRef.current) harga.removePriceLine(g)
     garisLeherRef.current = []
 
-    const penanda: Array<SeriesMarker<Time>> = []
-    // Penanda Lonjakan Volume dipasang di seri VOLUME, bukan seri harga:
-    // di seri harga ia berebut tempat dengan penanda Double Bottom, dan di
-    // bawah batang volume justru di situ angkanya berarti.
-    const penandaVolume: Array<SeriesMarker<Time>> = []
-    for (const { inst, doubleBottom, lonjakan } of polaPerInstans) {
+    const keMarker = (p: PenandaPola): SeriesMarker<Time> => ({
+      time: p.time, position: p.posisi, shape: 'circle', color: baca(p.token),
+    })
+    penandaRef.current?.setMarkers(penandaPola.filter((p) => p.seri === 'harga').map(keMarker))
+    // Penanda Lonjakan Volume dipasang di seri VOLUME, bukan seri harga: di
+    // seri harga ia berebut tempat dengan penanda Double Bottom, dan di bawah
+    // batang volume justru di situ angkanya berarti.
+    penandaVolRef.current?.setMarkers(penandaPola.filter((p) => p.seri === 'volume').map(keMarker))
+
+    for (const { inst, doubleBottom } of polaPerInstans) {
       if (!inst.tampil) continue
-      for (const lv of lonjakan.slice(-MAKS_PENANDA_POLA)) {
-        penandaVolume.push({
-          time: lv.waktu, position: 'belowBar', shape: 'circle',
-          color: baca(WARNA_LONJAKAN[lv.status]),
-          // Angka RVOL ikut di label — itu yang membuat penandanya bisa
-          // DIPERIKSA, bukan dipercaya.
-          text: `${fN(lv.rvol, 1)}×`,
-        })
-      }
-      const temuan = doubleBottom
-      for (const db of temuan.slice(-MAKS_PENANDA_POLA)) {
-        const warna = baca(WARNA_STATUS[db.status])
-        penanda.push(
-          { time: db.waktuLembah1, position: 'belowBar', color: warna, shape: 'circle', text: 'Lembah 1' },
-          { time: db.waktuLeher, position: 'aboveBar', color: warna, shape: 'circle', text: `Leher ${fN(db.hargaLeher, 0)}` },
-          { time: db.waktuLembah2, position: 'belowBar', color: warna, shape: 'circle', text: `Lembah 2 · ${db.status}` },
-        )
-        if (db.waktuKonfirmasi) {
-          penanda.push({
-            time: db.waktuKonfirmasi, position: 'aboveBar', color: warna, shape: 'circle',
-            text: db.volumeMenguat ? 'Tembus leher · volume menguat' : 'Tembus leher',
-          })
-        }
-      }
       // Garis leher cuma untuk temuan TERAKHIR tiap instans. `createPriceLine`
       // membentang selebar kanvas — belasan di antaranya saling menimpa dan
       // tak satu pun lagi bisa dibaca sebagai leher milik pola yang mana.
-      // Penandanya sendiri tetap dipasang untuk SEMUA temuan; penanda menempel
-      // pada lilinnya, jadi banyak pun tak saling menutupi.
-      const akhir = temuan[temuan.length - 1]
-      if (akhir) {
-        garisLeherRef.current.push(harga.createPriceLine({
-          price: akhir.hargaLeher,
-          color: baca(WARNA_STATUS[akhir.status]),
-          lineWidth: 1,
-          lineStyle: LineStyle.Dashed,
-          axisLabelVisible: true,
-          title: `Leher ${labelInstansPola(inst)}`,
-        }))
-      }
+      const akhir = doubleBottom[doubleBottom.length - 1]
+      if (!akhir) continue
+      garisLeherRef.current.push(harga.createPriceLine({
+        price: akhir.hargaLeher,
+        color: baca(WARNA_STATUS[akhir.status]),
+        lineWidth: 1,
+        lineStyle: LineStyle.Dashed,
+        axisLabelVisible: true,
+        title: `Leher ${labelInstansPola(inst)}`,
+      }))
     }
-    // lightweight-charts mewajibkan penanda urut menaik menurut waktu; tanpa
-    // urutan itu sebagian penanda diam-diam tak digambar.
-    penanda.sort((a, b) => String(a.time).localeCompare(String(b.time)))
-    penandaRef.current?.setMarkers(penanda)
-    penandaVolume.sort((a, b) => String(a.time).localeCompare(String(b.time)))
-    penandaVolRef.current?.setMarkers(penandaVolume)
 
     // Angka terukur buat verifikasi/QA — kanvas tak punya DOM per-penanda.
     el.dataset.polaDitemukan = String(
       polaPerInstans.reduce((n, x) => n + x.doubleBottom.length + x.lonjakan.length, 0),
     )
-  }, [polaPerInstans, theme, versiSeriHarga])
+    el.dataset.penandaPola = String(penandaPola.length)
+  }, [penandaPola, polaPerInstans, theme, versiSeriHarga])
+
+  // Isi tooltip pola: penanda di lilin yang sedang disorot DAN satu lilin di
+  // kiri-kanannya (lihat `penandaDiSekitar` — dua penanda berdempetan wajib
+  // disebut keduanya, bukan menang-menangan).
+  const indeksWaktu = useMemo(() => new Map(lilin.map((l, i) => [l.time, i])), [lilin])
+  const isiTip = useMemo(
+    () => (sorot ? penandaDiSekitar(penandaPola, indeksWaktu, sorot.waktu, 1) : []),
+    [sorot, penandaPola, indeksWaktu],
+  )
 
   const pemilih = (
     <div className="panel">
@@ -810,25 +929,164 @@ export function GrafikEmiten() {
           {galat && <p className="muted">{galat}</p>}
           {!galat && !berkas && <div className="fd-empty"><p>Memuat data harga {kode}…</p></div>}
 
-          {/* Dua dropdown TERPISAH — indikator dan pola (Johan: "jadi
-              indikator dan pattern dibedakan dropdown nya"). Memilih jenis
-              MENAMBAH satu instans baru, tak menyalakan sakelar; karena itu
-              `nilai` sengaja dibiarkan kosong — tak ada jenis yang "terpilih",
-              yang ada cuma daftar instans di bawahnya. */}
-          <div className="grf-ind">
-            <Dropdown opsi={OPSI_INDIKATOR} nilai="" placeholder="+ Indikator"
-              ariaLabel="Tambah indikator" onGanti={ind.tambah} />
-            <Dropdown opsi={opsiPola} nilai="" placeholder="+ Pola"
-              ariaLabel="Tambah pola" onGanti={pol.tambah} />
-          </div>
+          {/* Bungkus TERPISAH dari containerRef — lightweight-charts mengisi
+              containerRef dengan kanvasnya sendiri; tanda PAPAN dipasang
+              sebagai SAUDARA di bungkus ini (bukan anak containerRef) supaya
+              React tak pernah rebutan anak elemen dengan DOM yang dikelola
+              lightweight-charts secara imperatif. Hover DI WADAH INI
+              (bukan di tanda sendiri — tandanya pointer-events:none, tak
+              bisa di-hover) yang mempertegas tanda lewat CSS
+              `.grf-kanvas-bungkus:hover .grf-tanda-papan` di GrafikEmiten.css. */}
+          <div className="grf-kanvas-bungkus" ref={bungkusRef}>
+            {/* Kanvas SELALU dipasang dengan ukuran final sejak awal (opacity,
+                bukan display:none) — lihat komentar .grf-chart-wrap.memuat di
+                GrafikEmiten.css: autoSize butuh lebar sungguhan sejak elemen
+                dibuat, bukan sejak elemen "muncul". */}
+            <div ref={containerRef} className={'grf-chart-wrap' + (berkas ? '' : ' memuat')} />
 
-          <BarisInstans kelola={ind} label={labelInstansIndikator} />
-          <BarisInstans kelola={pol} label={labelInstansPola} />
+            {/* Legenda DI DALAM kanvas, pojok kiri atas tiap pane — seperti
+                TradingView, dan sebabnya bukan sekadar mirip-miripan: di luar
+                kanvas tiap indikator memakan satu baris penuh dan mendorong
+                grafiknya turun terus seiring instans bertambah. Dipasang
+                sebagai SAUDARA kanvas (bukan anaknya) dengan alasan yang sama
+                dengan tanda PAPAN di bawah: React tak pernah rebutan anak
+                elemen dengan DOM yang dikelola lightweight-charts. Posisi
+                atasnya diukur dari DOM pane-nya sendiri (lihat `ukurPane`). */}
+            {/* Tombol zoom — pojok kanan bawah kanvas, di atas sumbu waktu.
+                Roda tikus & cubit tetap jalan; ini yang membuatnya terjangkau
+                di telepon, tempat roda tikus tak ada sama sekali. */}
+            <div className="grf-zoom">
+              {/* aria-label wajib: isinya glyph telanjang (+, −, ⤢), dan pembaca
+                  layar mengumumkan simbolnya, bukan maksudnya. `title` saja
+                  tak cukup — ia bantuan untuk tetikus, bukan nama elemen. */}
+              <button type="button" className="grf-zoom-btn" title="Perbesar" aria-label="Perbesar"
+                onClick={() => zoom(1 / 1.3)}>+</button>
+              <button type="button" className="grf-zoom-btn" title="Perkecil" aria-label="Perkecil"
+                onClick={() => zoom(1.3)}>−</button>
+              <button type="button" className="grf-zoom-btn grf-zoom-muat" title="Muat semua data" aria-label="Muat semua data"
+                onClick={() => chartRef.current?.timeScale().fitContent()}>⤢</button>
+            </div>
+
+            {legenda.perPane.map(([pane, baris]) => (
+              <div key={pane} className="grf-legenda-kanvas" style={{ top: `${(posPane[pane] ?? 0) + 6}px` }}>
+                {pane === 0 && (
+                  <>
+                    {/* Dua dropdown TERPISAH — indikator dan pola (Johan:
+                        "jadi indikator dan pattern dibedakan dropdown nya").
+                        Memilih jenis MENAMBAH satu instans baru, tak
+                        menyalakan sakelar; karena itu `nilai` sengaja
+                        dibiarkan kosong — tak ada jenis yang "terpilih", yang
+                        ada cuma daftar instans di bawahnya. Duduk DI DALAM
+                        kanvas sejak 18 Agu 2026, bersama legendanya. */}
+                    <span className="grf-kendali-kanvas">
+                      <Dropdown opsi={OPSI_INDIKATOR} nilai="" placeholder="+ Indikator"
+                        ariaLabel="Tambah indikator" onGanti={ind.tambah} />
+                      <Dropdown opsi={opsiPola} nilai="" placeholder="+ Pola"
+                        ariaLabel="Tambah pola" onGanti={pol.tambah} />
+                    </span>
+                    <span className="grf-legenda-tgl">{legenda.waktu}</span>
+                  </>
+                )}
+                {baris.map((b) => {
+                  // `sakelarTampil`/`hapus` sama bentuknya di kedua daftar, jadi
+                  // boleh dipanggil lewat gabungan keduanya. Instansnya TIDAK:
+                  // `SetelanInstans` ber-generik pada jenisnya, dan gabungan
+                  // dua daftar bertipe beda tak bisa memuaskan satu generik —
+                  // karena itu panelnya dipasang di dua cabang terpisah di
+                  // bawah, bukan satu cabang bertipe gabungan.
+                  const kelola = b.ranah === 'ind' ? ind : pol
+                  const instInd = b.ranah === 'ind' ? ind.daftar.find((x) => x.id === b.id) : undefined
+                  const instPol = b.ranah === 'pol' ? pol.daftar.find((x) => x.id === b.id) : undefined
+                  return (
+                    <span key={b.id} className={'grf-legenda-baris' + (b.tampil ? '' : ' redup')}
+                      style={{ '--ind-warna': `var(${b.warna})` } as React.CSSProperties}>
+                      <span className="grf-legenda-titik" aria-hidden="true" />
+                      <span className="grf-legenda-nama">{b.label}</span>
+                      <span className="grf-legenda-nilai">{b.nilai}</span>
+                      {/* Kelompok tombol ini satu-satunya yang MENERIMA kursor
+                          di legenda (pointer-events:auto di CSS) — sisanya
+                          tembus supaya crosshair tak terhalang teks. */}
+                      <span className="ti-grup grf-legenda-aksi">
+                        <TombolIkon d={IKON_GIR} ukuranIkon={12}
+                          label={`Setelan ${b.label}`}
+                          onClick={() => setSetelanTerbuka((x) => (x === b.id ? null : b.id))} />
+                        <TombolIkon d={b.tampil ? IKON_MATA : IKON_MATA_CORET} ukuranIkon={12}
+                          label={b.tampil ? `Sembunyikan ${b.label}` : `Tampilkan ${b.label}`}
+                          onClick={() => kelola.sakelarTampil(b.id)} />
+                        {/* Sengaja BUKAN nada="merah": modifier itu memberi
+                            garis tepi merah permanen, dan tiga kotak merah
+                            menyala di atas gambar harga terbaca sebagai
+                            peringatan tentang sahamnya, bukan tentang tombol.
+                            Warnanya muncul saat disorot, seperti tombol ikon
+                            lain di kanvas. */}
+                        <TombolIkon d={IKON_TONG} ukuranIkon={12}
+                          label={`Hapus ${b.label}`}
+                          onClick={() => { kelola.hapus(b.id); setSetelanTerbuka(null) }} />
+                      </span>
+                      {setelanTerbuka === b.id && instInd && (
+                        <SetelanInstans kelola={ind} inst={instInd} nama={b.label}
+                          onTutup={() => setSetelanTerbuka(null)} />
+                      )}
+                      {setelanTerbuka === b.id && instPol && (
+                        <SetelanInstans kelola={pol} inst={instPol} nama={b.label}
+                          onTutup={() => setSetelanTerbuka(null)} />
+                      )}
+                    </span>
+                  )
+                })}
+              </div>
+            ))}
+
+            {/* Tooltip pola — menggantikan teks yang dulu menempel di tiap
+                penanda dan saling menimpa. Muncul di dekat kursor/ketukan,
+                menyebut SEMUA penanda di sekitarnya (lihat `penandaDiSekitar`).
+                pointer-events:none supaya ia tak pernah merebut kursor dari
+                kanvas yang justru sedang menghitung crosshair-nya. */}
+            {sorot && isiTip.length > 0 && (
+              <div className="grf-pola-tip" role="status" style={{
+                left: sorot.x,
+                top: sorot.y,
+                transform: `translate(${sorot.x > ukuranBungkus.w / 2 ? 'calc(-100% - 14px)' : '14px'}, ${sorot.y > ukuranBungkus.h / 2 ? 'calc(-100% - 14px)' : '14px'})`,
+              }}>
+                {isiTip.map((p) => (
+                  <span key={`${p.time}-${p.teks}`} className="grf-pola-tip-baris"
+                    style={{ '--ind-warna': `var(${p.token})` } as React.CSSProperties}>
+                    <span className="grf-legenda-titik" aria-hidden="true" />
+                    <span className="grf-pola-tip-tgl">{p.time}</span>
+                    <span>{p.teks}</span>
+                  </span>
+                ))}
+              </div>
+            )}
+            {/* Tanda PAPAN — pengganti logo TradingView yang dimatikan lewat
+                attributionLogo:false di atas (lihat komentar lisensi di situ).
+                Atribusi lisensinya sendiri PINDAH ke kaki situs global
+                (DasborLayout.tsx), BUKAN dihapus — lihat komentar di sana.
+                Bentuknya SAMA dengan favicon.svg yang sudah ada (bukan
+                lambang baru) — ditulis ulang sebagai SVG inline (bukan
+                <img src="/favicon.svg">) supaya warnanya bisa ikut token
+                tema (--amber/--amber-ink) alih-alih heksadesimal tetap
+                bawaan berkas SVG-nya. Watermark BESAR (lihat ukuran di CSS,
+                Johan minta "terpampang nyata") di TENGAH kanvas — bukan
+                pojok kiri bawah seperti versi pertama, karena di ukuran
+                besar pojok itu menabrak label sumbu waktu & batang volume.
+                Menguat saat wadahnya di-hover (lihat CSS), tak menghalangi
+                kursor/crosshair. */}
+            <svg className="grf-tanda-papan" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+              <rect x="4" y="4" width="56" height="56" rx="10" fill="var(--amber)" />
+              <text x="32" y="33" textAnchor="middle" dominantBaseline="central"
+                fontFamily="Consolas, 'Cascadia Mono', ui-monospace, monospace"
+                fontSize="38" fontWeight="700" fill="var(--amber-ink)">P</text>
+              <rect x="4" y="31" width="56" height="2" fill="var(--amber-ink)" opacity="0.32" />
+            </svg>
+          </div>
 
           {/* Template: menyimpan susunan indikator + pola dengan nama, dan
               memuatnya kembali. Disimpan di localStorage — alasannya panjang
               dan ada di grafikEmiten.ts (ringkasnya: ini preferensi tampilan,
-              bukan data bersama). */}
+              bukan data bersama). DI BAWAH kanvas sejak 18 Agu 2026: di atas
+              kanvas ia mendorong grafiknya turun sejauh tinggi daftarnya
+              sendiri, dan itu bagian dari keluhan yang sama dengan indikator. */}
           <div className="grf-template">
             <div className="grf-template-simpan">
               <input className="inp grf-template-nama" value={namaTemplate}
@@ -947,91 +1205,6 @@ export function GrafikEmiten() {
               })}
             </div>
           )}
-
-          {/* Bungkus TERPISAH dari containerRef — lightweight-charts mengisi
-              containerRef dengan kanvasnya sendiri; tanda PAPAN dipasang
-              sebagai SAUDARA di bungkus ini (bukan anak containerRef) supaya
-              React tak pernah rebutan anak elemen dengan DOM yang dikelola
-              lightweight-charts secara imperatif. Hover DI WADAH INI
-              (bukan di tanda sendiri — tandanya pointer-events:none, tak
-              bisa di-hover) yang mempertegas tanda lewat CSS
-              `.grf-kanvas-bungkus:hover .grf-tanda-papan` di GrafikEmiten.css. */}
-          <div className="grf-kanvas-bungkus" ref={bungkusRef}>
-            {/* Kanvas SELALU dipasang dengan ukuran final sejak awal (opacity,
-                bukan display:none) — lihat komentar .grf-chart-wrap.memuat di
-                GrafikEmiten.css: autoSize butuh lebar sungguhan sejak elemen
-                dibuat, bukan sejak elemen "muncul". */}
-            <div ref={containerRef} className={'grf-chart-wrap' + (berkas ? '' : ' memuat')} />
-
-            {/* Legenda DI DALAM kanvas, pojok kiri atas tiap pane — seperti
-                TradingView, dan sebabnya bukan sekadar mirip-miripan: di luar
-                kanvas tiap indikator memakan satu baris penuh dan mendorong
-                grafiknya turun terus seiring instans bertambah. Dipasang
-                sebagai SAUDARA kanvas (bukan anaknya) dengan alasan yang sama
-                dengan tanda PAPAN di bawah: React tak pernah rebutan anak
-                elemen dengan DOM yang dikelola lightweight-charts. Posisi
-                atasnya diukur dari DOM pane-nya sendiri (lihat `ukurPane`). */}
-            {/* Tombol zoom — pojok kanan bawah kanvas, di atas sumbu waktu.
-                Roda tikus & cubit tetap jalan; ini yang membuatnya terjangkau
-                di telepon, tempat roda tikus tak ada sama sekali. */}
-            <div className="grf-zoom">
-              {/* aria-label wajib: isinya glyph telanjang (+, −, ⤢), dan pembaca
-                  layar mengumumkan simbolnya, bukan maksudnya. `title` saja
-                  tak cukup — ia bantuan untuk tetikus, bukan nama elemen. */}
-              <button type="button" className="grf-zoom-btn" title="Perbesar" aria-label="Perbesar"
-                onClick={() => zoom(1 / 1.3)}>+</button>
-              <button type="button" className="grf-zoom-btn" title="Perkecil" aria-label="Perkecil"
-                onClick={() => zoom(1.3)}>−</button>
-              <button type="button" className="grf-zoom-btn grf-zoom-muat" title="Muat semua data" aria-label="Muat semua data"
-                onClick={() => chartRef.current?.timeScale().fitContent()}>⤢</button>
-            </div>
-
-            {legenda?.perPane.map(([pane, baris]) => (
-              <div key={pane} className="grf-legenda-kanvas" style={{ top: `${(posPane[pane] ?? 0) + 6}px` }}>
-                {pane === 0 && <span className="grf-legenda-tgl">{legenda.waktu}</span>}
-                {baris.map((b) => (
-                  <span key={b.id} className="grf-legenda-baris"
-                    style={{ '--ind-warna': `var(${b.warna})` } as React.CSSProperties}>
-                    <span className="grf-legenda-titik" aria-hidden="true" />
-                    <span className="grf-legenda-nama">{b.label}</span>
-                    <span className="grf-legenda-nilai">{b.nilai}</span>
-                    {/* Dua tombol ini satu-satunya yang MENERIMA kursor di
-                        legenda (pointer-events:auto di CSS) — sisanya tembus
-                        supaya crosshair tak terhalang teks. */}
-                    <button type="button" className="grf-legenda-btn"
-                      title={`Sembunyikan ${b.label}`} onClick={() => ind.sakelarTampil(b.id)}>
-                      <IkonMenu d={IKON_MATA} size={11} />
-                    </button>
-                    <button type="button" className="grf-legenda-btn"
-                      title={`Hapus ${b.label}`} onClick={() => ind.hapus(b.id)}>
-                      <IkonMenu d={IKON_SILANG} size={9} />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            ))}
-            {/* Tanda PAPAN — pengganti logo TradingView yang dimatikan lewat
-                attributionLogo:false di atas (lihat komentar lisensi di situ).
-                Atribusi lisensinya sendiri PINDAH ke kaki situs global
-                (DasborLayout.tsx), BUKAN dihapus — lihat komentar di sana.
-                Bentuknya SAMA dengan favicon.svg yang sudah ada (bukan
-                lambang baru) — ditulis ulang sebagai SVG inline (bukan
-                <img src="/favicon.svg">) supaya warnanya bisa ikut token
-                tema (--amber/--amber-ink) alih-alih heksadesimal tetap
-                bawaan berkas SVG-nya. Watermark BESAR (lihat ukuran di CSS,
-                Johan minta "terpampang nyata") di TENGAH kanvas — bukan
-                pojok kiri bawah seperti versi pertama, karena di ukuran
-                besar pojok itu menabrak label sumbu waktu & batang volume.
-                Menguat saat wadahnya di-hover (lihat CSS), tak menghalangi
-                kursor/crosshair. */}
-            <svg className="grf-tanda-papan" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-              <rect x="4" y="4" width="56" height="56" rx="10" fill="var(--amber)" />
-              <text x="32" y="33" textAnchor="middle" dominantBaseline="central"
-                fontFamily="Consolas, 'Cascadia Mono', ui-monospace, monospace"
-                fontSize="38" fontWeight="700" fill="var(--amber-ink)">P</text>
-              <rect x="4" y="31" width="56" height="2" fill="var(--amber-ink)" opacity="0.32" />
-            </svg>
-          </div>
 
           <details className="grf-panduan">
             <summary><IkonMenu d={IKON_INFO} size={12} /> Apa arti indikator-indikator ini?</summary>

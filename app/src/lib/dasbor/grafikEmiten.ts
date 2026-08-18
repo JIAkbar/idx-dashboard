@@ -864,6 +864,36 @@ export function cariLonjakanVolume(
   return hasil
 }
 
+/**
+ * Penanda pola yang harus disebut tooltip saat kursor berada di `waktu`.
+ *
+ * Kenapa ini bukan sekadar `peta.get(waktu)`: penanda pola duduk di lilin
+ * yang bisa berdempetan (lembah 2 dan penembusan lehernya kerap cuma
+ * berjarak satu-dua lilin), dan pada rentang bertahun-tahun satu lilin
+ * lebarnya kurang dari satu piksel. Crosshair lightweight-charts menempel ke
+ * SATU lilin, jadi tooltip yang cuma membaca lilin itu akan diam-diam
+ * menyembunyikan penanda tetangganya yang secara visual tepat di bawah
+ * kursor — persis "menang-menangan" yang harus dihindari. `radius` diukur
+ * dalam INDEKS LILIN, bukan hari kalender: hari libur bursa tak boleh
+ * melebarkan jangkauan tooltip.
+ *
+ * Waktu yang tak ada di `indeksWaktu` (mis. penanda dari rentang yang sudah
+ * dipotong) mengembalikan daftar kosong, bukan melempar.
+ */
+export function penandaDiSekitar<T extends { time: string }>(
+  penanda: T[],
+  indeksWaktu: Map<string, number>,
+  waktu: string,
+  radius = 1,
+): T[] {
+  const pusat = indeksWaktu.get(waktu)
+  if (pusat === undefined) return []
+  return penanda.filter((p) => {
+    const i = indeksWaktu.get(p.time)
+    return i !== undefined && Math.abs(i - pusat) <= radius
+  })
+}
+
 /* ------------------------------------------------------------------ *
  * Template (#tahap 5). Susunan indikator + pola disimpan dengan nama dan
  * bisa dimuat kembali; satu di antaranya boleh ditandai BAWAAN dan dimuat

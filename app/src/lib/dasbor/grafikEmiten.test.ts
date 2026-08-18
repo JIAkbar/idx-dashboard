@@ -7,6 +7,7 @@ import {
   hitungATR, cariPivotRendah, cariPivotTinggi, cariDoubleBottom,
   hitungOBV, cariLonjakanVolume,
   VERSI_TEMPLATE, uraiTemplate, simpanTemplate, hapusTemplate, tandaiBawaan, ubahNamaTemplate,
+  penandaDiSekitar,
   type InstansIndikator, type SpekParam, type LilinData, type ParamDoubleBottom,
   type TemplateGrafik, type ParamLonjakanVolume,
 } from './grafikEmiten'
@@ -714,5 +715,42 @@ describe('cariLonjakanVolume', () => {
 
   it('panjang lilin & volume tak sama -> tak ada temuan, bukan angka ngawur', () => {
     expect(cariLonjakanVolume(lilinDari([1, 2, 3]), [1, 2], PV)).toEqual([])
+  })
+})
+
+describe('penandaDiSekitar', () => {
+  // Empat lilin berurutan; hari libur SENGAJA ada di tengah (5 lalu 8 Jan)
+  // supaya terlihat bahwa jangkauannya indeks lilin, bukan hari kalender.
+  const waktu = ['2024-01-03', '2024-01-04', '2024-01-05', '2024-01-08', '2024-01-09']
+  const indeks = new Map(waktu.map((t, i) => [t, i]))
+  const penanda = [
+    { time: '2024-01-03', teks: 'Lembah 1' },
+    { time: '2024-01-05', teks: 'Leher' },
+    { time: '2024-01-08', teks: 'Lembah 2' },
+  ]
+
+  it('menyebut DUA penanda berdempetan, bukan salah satu saja', () => {
+    // Kursor di 5 Jan: lehernya sendiri + Lembah 2 yang cuma satu lilin di
+    // kanannya. Inilah tumpukan yang dulu jadi label saling tembus.
+    expect(penandaDiSekitar(penanda, indeks, '2024-01-05').map((p) => p.teks))
+      .toEqual(['Leher', 'Lembah 2'])
+  })
+
+  it('radius 0 cuma penanda di lilin itu sendiri', () => {
+    expect(penandaDiSekitar(penanda, indeks, '2024-01-05', 0).map((p) => p.teks)).toEqual(['Leher'])
+  })
+
+  it('lilin tanpa penanda di sekitarnya -> kosong, tooltip tak muncul', () => {
+    expect(penandaDiSekitar(penanda, indeks, '2024-01-09', 0)).toEqual([])
+  })
+
+  it('libur bursa tak melebarkan jangkauan — jaraknya indeks lilin', () => {
+    // 8 Jan berjarak 3 HARI dari 5 Jan tapi cuma 1 LILIN; keduanya harus ikut.
+    expect(penandaDiSekitar(penanda, indeks, '2024-01-08').map((p) => p.teks))
+      .toEqual(['Leher', 'Lembah 2'])
+  })
+
+  it('waktu di luar rentang yang tergambar -> kosong, bukan galat', () => {
+    expect(penandaDiSekitar(penanda, indeks, '2023-12-31')).toEqual([])
   })
 })

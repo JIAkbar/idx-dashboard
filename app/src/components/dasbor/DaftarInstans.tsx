@@ -2,7 +2,8 @@ import { useCallback, useMemo, useState } from 'react'
 import {
   buatInstans, galatInstans, type Instans, type SpekParam,
 } from '../../lib/dasbor/grafikEmiten'
-import { IkonMenu, IKON_MATA, IKON_MATA_CORET, IKON_TONG } from './IkonMenu'
+import { IKON_SILANG } from './IkonMenu'
+import { TombolIkon } from './TombolIkon'
 
 /**
  * Daftar instans berparameter — dipakai DUA KALI di Grafik Emiten: sekali
@@ -120,60 +121,63 @@ export function useDaftarInstans<J extends string>(
   return { daftar, gantiSemua, tambah, hapus, sakelarTampil, teksInstans, galat, gantiParam, paramSpek }
 }
 
-interface BarisProps<J extends string> {
+interface SetelanProps<J extends string> {
   kelola: DaftarInstans<J>
-  label: (inst: Instans<J>) => string
+  inst: Instans<J>
+  nama: string
+  onTutup: () => void
 }
 
-/** Baris-baris daftar instans: swatch warna, nama berikut parameternya, kolom
- *  masukan tiap ruas, sakelar sembunyi, dan tombol hapus. */
-export function BarisInstans<J extends string>({ kelola, label }: BarisProps<J>) {
-  if (kelola.daftar.length === 0) return null
+/**
+ * Setelan parameter SATU instans, berupa panel kecil MELAYANG di atas kanvas.
+ *
+ * Sebelumnya ini deretan baris `<li>` di ATAS grafik (satu baris per instans,
+ * lengkap dengan kolom parameternya). Johan 18 Agu 2026: *"indikator masih
+ * buat baris baru, harusnya di dalam chart saja termasuk setup nya"* — dan
+ * keluhannya bukan soal rasa semata: tiap instans yang ditambahkan mendorong
+ * kanvasnya turun, jadi makin serius seseorang memakai halaman ini makin
+ * sedikit grafik yang terlihat. Panel melayang tak punya tinggi di aliran
+ * dokumen, jadi jumlah instans tak lagi mengubah tata letak sama sekali.
+ *
+ * Yang TIDAK berubah: seluruh aturan teks-vs-angka tetap di `useDaftarInstans`
+ * (lihat catatan panjang di sana). Panel ini cuma jendela ke state yang sama.
+ */
+export function SetelanInstans<J extends string>({ kelola, inst, nama, onTutup }: SetelanProps<J>) {
+  const param = kelola.paramSpek(inst.jenis)
+  const teks = kelola.teksInstans(inst)
+  const galat = kelola.galat[inst.id] ?? {}
   return (
-    <ul className="grf-ind-daftar">
-      {kelola.daftar.map((inst) => {
-        const param = kelola.paramSpek(inst.jenis)
-        const teks = kelola.teksInstans(inst)
-        const galat = kelola.galat[inst.id] ?? {}
-        const nama = label(inst)
-        return (
-          <li key={inst.id} className={'grf-ind-baris' + (inst.tampil ? '' : ' redup')}
-            style={{ '--ind-warna': `var(${inst.warna})` } as React.CSSProperties}>
-            <span className="grf-ind-warna" aria-hidden="true" />
-            <span className="grf-ind-nama">{nama}</span>
-            {param.map((s) => (
-              <label key={s.kunci} className="grf-ind-param">
-                <span className="grf-ind-param-lbl">{s.label}</span>
-                <input className={'inp grf-ind-inp' + (galat[s.kunci] ? ' salah' : '')}
-                  inputMode="decimal" value={teks[s.kunci]}
-                  aria-invalid={galat[s.kunci] ? true : undefined}
-                  aria-label={`${s.label} ${nama}`}
-                  onChange={(e) => kelola.gantiParam(inst, s, e.target.value)} />
-              </label>
-            ))}
-            <button type="button" className="dd-btn grf-ind-aksi"
-              aria-pressed={inst.tampil}
-              title={inst.tampil ? 'Sembunyikan sementara' : 'Tampilkan lagi'}
-              onClick={() => kelola.sakelarTampil(inst.id)}>
-              <IkonMenu d={inst.tampil ? IKON_MATA : IKON_MATA_CORET} size={12} />
-            </button>
-            <button type="button" className="dd-btn grf-ind-aksi"
-              title={`Hapus ${nama}`}
-              onClick={() => kelola.hapus(inst.id)}>
-              <IkonMenu d={IKON_TONG} size={12} />
-            </button>
-            {/* Alasan tolakan ditulis DI BARIS ITU SENDIRI, bukan di satu kotak
-                galat bersama: dengan beberapa instans hidup bersamaan, pesan
-                yang menggantung jauh dari kolomnya tak memberi tahu kolom mana
-                yang harus diperbaiki. */}
-            {Object.entries(galat).map(([kunci, pesan]) => (
-              <p key={kunci} className="grf-ind-galat">
-                {param.find((s) => s.kunci === kunci)?.label}: {pesan}
-              </p>
-            ))}
-          </li>
-        )
-      })}
-    </ul>
+    // Escape menutup: panel ini menutupi sebagian gambar, dan satu-satunya
+    // jalan lain menutupnya adalah menemukan lagi tombol gir yang sekarang
+    // ada di baliknya.
+    <div className="grf-setelan" role="dialog" aria-label={`Setelan ${nama}`}
+      onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); onTutup() } }}>
+      <div className="grf-setelan-h">
+        <span className="grf-setelan-nama" style={{ '--ind-warna': `var(${inst.warna})` } as React.CSSProperties}>
+          {nama}
+        </span>
+        <TombolIkon d={IKON_SILANG} label="Tutup setelan" ariaLabel={`Tutup setelan ${nama}`}
+          ukuranIkon={10} className="grf-setelan-x" onClick={onTutup} />
+      </div>
+      {param.map((s) => (
+        <label key={s.kunci} className="grf-setelan-baris">
+          <span className="grf-setelan-lbl">{s.label}</span>
+          <input className={'inp grf-ind-inp' + (galat[s.kunci] ? ' salah' : '')}
+            inputMode="decimal" value={teks[s.kunci]}
+            aria-invalid={galat[s.kunci] ? true : undefined}
+            aria-label={`${s.label} ${nama}`}
+            onChange={(e) => kelola.gantiParam(inst, s, e.target.value)} />
+        </label>
+      ))}
+      {/* Alasan tolakan ditulis DI PANEL ITU SENDIRI, bukan di satu kotak galat
+          bersama: dengan beberapa instans hidup bersamaan, pesan yang
+          menggantung jauh dari kolomnya tak memberi tahu kolom mana yang harus
+          diperbaiki. */}
+      {Object.entries(galat).map(([kunci, pesan]) => (
+        <p key={kunci} className="grf-ind-galat">
+          {param.find((s) => s.kunci === kunci)?.label}: {pesan}
+        </p>
+      ))}
+    </div>
   )
 }
