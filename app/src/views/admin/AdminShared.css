@@ -185,6 +185,21 @@
 /* Yang belum tercapai diredupkan — masih terbaca, tapi jelas bukan milikmu. */
 .lantai .af-tangga-it.nanti { opacity: .5; }
 
+/* Ruas ringkas jenjang kontributor. Dulu flex + gap 22px inline: di 412px
+   kelima ruasnya berdesakan jadi baris ganjil ("SETORAN DISETUJUI" dan
+   "AKURASI" nyaris bertabrakan). Grid auto-fit memberi 2 kolom di telepon dan
+   selebar isinya di laptop, tanpa breakpoint yang harus ditebak. */
+.lantai .af-statgrid {
+  display: grid; gap: 14px 22px; font-size: 12.5px;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+}
+/* Baris kepala admin: kuota, nama, lonceng, Keluar. Boleh membungkus dan rata
+   kanan, supaya di layar sempit ia turun rapi alih-alih mendorong lebar. */
+.lantai .af-kepala-aksi {
+  display: flex; align-items: center; gap: 8px; font-size: 11px;
+  flex-wrap: wrap; justify-content: flex-end;
+}
+
 /* Kolom aksi (ubah + hapus) — rata kanan, tidak melebar. */
 .lantai th.af-aksi, .lantai td.af-aksi { text-align: right; white-space: nowrap; width: 1%; }
 /* .af-ubah/.af-hapus/.buang dihapus (#170) — ketiganya tombol ikon 19-20px
@@ -508,7 +523,33 @@
    isyarat "bisa digeser" lebih penting). Selector 3-kelas biar menang
    spesifisitas atas `.lantai .tabs{scrollbar-width:none}`. */
 .lantai .tabs.admin-tabbar { margin-top: 10px; }
-.lantai .tabs.admin-tabbar { scrollbar-width: thin; }
+/* `scrollbar-width: thin` DIBUANG (18 Agu 2026). Sejak Chrome 121, menyetel
+   scrollbar-width ATAU scrollbar-color membuat SELURUH aturan
+   ::-webkit-scrollbar di bawah ini diabaikan — yang menang "thin" bawaan
+   (~11px), bukan 4px yang diminta. Jebakan ini sudah tercatat di CLAUDE.md
+   dan ternyata hidup di berkas ini sendiri.
+
+   Sembilan tab tak akan pernah muat di 412px, jadi menggulir memang jawabannya
+   — yang kurang cuma TANDA bahwa masih ada lanjutannya. Itu diurus dua hal:
+   batang gulir tipis yang benar-benar tampil, dan pudaran di tepi kanan
+   (mask-image) yang hilang sendiri begitu digulir mentok. */
+.lantai .tabs.admin-tabbar {
+  mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent 100%);
+  /* Pudarannya harus ikut diperhitungkan saat menggulirkan tab aktif ke dalam
+     pandangan, kalau tidak `scrollIntoView` menempelkannya PERSIS di tepi dan
+     pudaran itu sendiri yang menyembunyikannya — terukur: tab aktif berakhir
+     20px di luar tepi bilah. scroll-padding dihormati scrollIntoView. */
+  scroll-padding-inline: 34px;
+}
+/* Kalau isinya muat seluruhnya, tak ada yang perlu dipudarkan. */
+@supports (animation-timeline: scroll()) {
+  .lantai .tabs.admin-tabbar { animation: tabbar-fade linear; animation-timeline: scroll(self inline); }
+  @keyframes tabbar-fade {
+    to { mask-image: linear-gradient(to right, #000 100%, #000 100%);
+         -webkit-mask-image: linear-gradient(to right, #000 100%, #000 100%); }
+  }
+}
 .lantai .tabs.admin-tabbar::-webkit-scrollbar { display: block; height: 4px; }
 .lantai .tabs.admin-tabbar::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 99px; }
 .lantai .tabs.admin-tabbar::-webkit-scrollbar-thumb:hover { background: var(--text3); }

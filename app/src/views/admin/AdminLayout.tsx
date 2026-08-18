@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useProfilSaya, type ProfilSaya } from '../../lib/profilSaya'
@@ -215,6 +215,30 @@ export function AdminLayout() {
     { to: '/admin/riwayat', label: 'Changelog', ikon: IKON_CATATAN, tampil: superadmin },
   ]
 
+  // Tab aktif digulirkan ke dalam pandangan. Di 412px cuma empat dari sembilan
+  // tab yang muat, jadi membuka /admin/akun lewat tautan langsung menampilkan
+  // bilah tab yang tab aktifnya ada di luar layar — pembaca melihat "UNGGAH"
+  // tersorot padahal yang terbuka "AKUN". `nearest` supaya bilah tak bergeser
+  // sama sekali kalau tab aktifnya memang sudah kelihatan.
+  const tabbarRef = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const bar = tabbarRef.current
+    const aktif = bar?.querySelector<HTMLElement>('.tab.on')
+    if (!bar || !aktif) return
+    // Dihitung sendiri, bukan `scrollIntoView`: bilah ini punya pudaran 22px di
+    // tepi kanan, dan scrollIntoView menempelkan tab aktif tepat di tepi
+    // sehingga pudarannya sendiri yang menyembunyikannya (terukur: tab berakhir
+    // 20px di luar, lalu 14px di dalam — tak pernah benar-benar lolos).
+    const TEPI = 36
+    const kiri = aktif.offsetLeft - TEPI
+    const kanan = aktif.offsetLeft + aktif.offsetWidth + TEPI - bar.clientWidth
+    if (bar.scrollLeft > kiri) bar.scrollLeft = Math.max(0, kiri)
+    else if (bar.scrollLeft < kanan) bar.scrollLeft = kanan
+    // `superadmin` ikut jadi ketergantungan: lima tab terakhir baru muncul
+    // setelah profil termuat, jadi efek yang cuma bergantung pathname berjalan
+    // saat bilahnya masih berisi empat tab dan tak menemukan tab aktifnya.
+  }, [location.pathname, superadmin])
+
   return (
     <div className="lantai admin-view">
       <div className="vhead" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
@@ -222,7 +246,7 @@ export function AdminLayout() {
           <h1>Arus Pasar</h1>
           <span className="sub">{superadmin ? 'Area admin — unggah & kelola edisi' : 'Kontributor — setor broker summary harian'}</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
+        <div className="af-kepala-aksi">
           {kuota != null && (
             <span className="af-kuota-info" title="Angka ini datang dari server (kuota_saya()), bukan hitungan layar">
               Kuota hari ini: {kuota}/hari
@@ -234,7 +258,7 @@ export function AdminLayout() {
         </div>
       </div>
 
-      <nav className="tabs admin-tabbar" role="tablist" aria-label="Bagian admin">
+      <nav className="tabs admin-tabbar" role="tablist" aria-label="Bagian admin" ref={tabbarRef}>
         {tabs.filter((t) => t.tampil).map((t) => (
           // NavLink otomatis pasang aria-current="page" pada tab aktif (perilaku
           // bawaan React Router) — tak perlu diurus manual di sini.

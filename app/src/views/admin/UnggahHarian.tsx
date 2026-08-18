@@ -410,7 +410,7 @@ function KartuJenjang({ profil, superadmin }: { profil: ProfilSaya; superadmin: 
   return (
     <section className="panel">
       <div className="panel-h"><span className="lbl">Jenjang kontributor</span></div>
-      <div className="panel-b" style={{ display: 'flex', flexWrap: 'wrap', gap: 22, fontSize: 12.5 }}>
+      <div className="panel-b af-statgrid">
         {/* Superadmin tidak berjenjang: `kuota_saya()` di server mengecualikannya,
             jadi menampilkan "Perunggu · 2/hari" untuknya menyebut angka yang tidak
             pernah dipakai — dan bertabrakan dengan "50/hari" di header halaman
