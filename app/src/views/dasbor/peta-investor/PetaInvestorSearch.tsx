@@ -1,3 +1,5 @@
+import { TombolIkon } from '../../../components/dasbor/TombolIkon'
+import { IKON_SILANG } from '../../../components/dasbor/IkonMenu'
 import { forwardRef, useImperativeHandle, useState } from 'react'
 import { searchPetaInvestor, type GraphSelection, type InvestorMapEntry } from '../../../lib/dasbor/petaInvestorData'
 
@@ -87,7 +89,13 @@ export const PetaInvestorSearch = forwardRef<PetaInvestorSearchHandle, PetaInves
           onKeyDown={(e) => { if (e.key === 'Enter') go() }}
         />
         {value && (
-          <span className="pi-search-x" onMouseDown={() => { onClear(); setOpen(false) }}>✕</span>
+          <TombolIkon
+            d={IKON_SILANG}
+            ukuranIkon={11}
+            label="Bersihkan pencarian"
+            onClick={() => { onClear(); setOpen(false) }}
+            className="pi-search-x"
+          />
         )}
         {open && q && (
           <div className="pi-search-drop">

@@ -26,6 +26,7 @@ export function TombolIkon({
   d,
   label,
   onClick,
+  ariaLabel,
   nada = 'normal',
   disabled = false,
   ukuranIkon = 14,
@@ -37,6 +38,10 @@ export function TombolIkon({
    *  `aria-label` sekaligus `title`. */
   label: string
   onClick: () => void
+  /** Isi kalau nama untuk pembaca layar perlu lebih panjang daripada judulnya
+   *  — mis. tabel akun: judul "Hapus akun", aria-label "Hapus akun — <email>",
+   *  karena di luar barisnya judul saja tak memberi tahu akun yang mana. */
+  ariaLabel?: string
   /** `merah` untuk aksi merusak (hapus/tolak) — mengikuti modifier `.merah`
    *  yang sudah dipakai kendali lain, bukan warna inline sendiri. */
   nada?: 'normal' | 'merah'
@@ -50,7 +55,7 @@ export function TombolIkon({
       type="button"
       className={cls}
       disabled={disabled}
-      aria-label={label}
+      aria-label={ariaLabel ?? label}
       title={label}
       onClick={onClick}
     >

@@ -2,6 +2,7 @@ import { Fragment, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { tipeEdisi, useBulletinList } from '../../lib/dasbor/bulletin'
 import { useAksesHalaman } from '../../context/AksesHalamanContext'
+import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { IkonMenu, IKON_KUNCI, IKON_SILANG, IKON_MATA } from '../../components/dasbor/IkonMenu'
 
 /** Panah unduh ke tray — lokal view ini, belum ada padanannya di IkonMenu.tsx. */
@@ -199,15 +200,13 @@ export function Bulletin() {
                 aria-label="Cari emiten atau kode edisi"
               />
               {cari !== '' && (
-                <button
-                  type="button"
-                  className="blt-cari-x"
+                <TombolIkon
+                  d={IKON_SILANG}
+                  ukuranIkon={11}
+                  label="Bersihkan pencarian"
                   onClick={() => setCari('')}
-                  title="Bersihkan pencarian"
-                  aria-label="Bersihkan pencarian"
-                >
-                  <IkonMenu d={IKON_SILANG} size={11} />
-                </button>
+                  className="blt-cari-x"
+                />
               )}
             </span>
           )}
@@ -456,9 +455,7 @@ export function Bulletin() {
                 <IkonMenu d={IKON_UNDUH} size={13} />
                 Unduh
               </a>
-              <button type="button" className="blt-modal-x" onClick={() => setLihat(null)} aria-label="Tutup pratinjau">
-                <IkonMenu d={IKON_SILANG} size={14} />
-              </button>
+              <TombolIkon d={IKON_SILANG} label="Tutup pratinjau" onClick={() => setLihat(null)} />
             </div>
             <iframe className="blt-frame" src={`/arus-pasar/keluaran/${lihat.pdf}`} title={`PDF ${lihat.kode}`} />
           </div>

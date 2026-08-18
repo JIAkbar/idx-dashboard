@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useRef, useState, type FormEvent } from 'react'
+import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { IkonMenu, IKON_CENTANG, IKON_GAMBAR, IKON_PERINGATAN, IKON_SILANG, IKON_TAMBAH, IKON_TONG } from '../../components/dasbor/IkonMenu'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
@@ -98,18 +99,16 @@ function SlotBerkas({ label, file, onFile }: {
           <div className="af-file-baris">
             <span className="nama" title={file.name}>{file.name}</span>
             <span className="uk">{ukuranBerkas(file.size)}</span>
-            <button
-              type="button"
-              className="buang"
-              aria-label="Buang pilihan"
+            <TombolIkon
+              d={IKON_SILANG}
+              label="Buang pilihan"
+              ukuranIkon={12}
               onClick={() => {
                 if (inputRef.current) inputRef.current.value = ''
                 setErr('')
                 onFile(null)
               }}
-            >
-              <IkonMenu d={IKON_SILANG} size={12} />
-            </button>
+            />
           </div>
         </div>
       )}

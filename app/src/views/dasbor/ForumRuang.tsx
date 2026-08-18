@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { IsiPesan } from '../../components/dasbor/IsiPesan'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
@@ -207,10 +208,7 @@ export function ForumRuang() {
                 — dan aturannya (kapital, 4 huruf) cukup ketat untuk membuat
                 percobaan pertama gagal diam-diam. Panduannya ditaruh persis di
                 sebelah kotak tulis, tempat pertanyaannya muncul. */}
-            <button type="button" className="forum-info" onClick={() => setPanduanTag(true)}
-              title="Cara menandai emiten" aria-label="Cara menandai emiten">
-              <IkonMenu d={IKON_INFO} size={14} />
-            </button>
+            <TombolIkon d={IKON_INFO} label="Cara menandai emiten" onClick={() => setPanduanTag(true)} />
           </div>
           <form className="panel-b forum-compose" onSubmit={kirim}>
             {balasKe && (

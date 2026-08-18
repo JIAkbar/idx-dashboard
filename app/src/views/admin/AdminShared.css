@@ -31,12 +31,6 @@
 .lantai .af-file .uk {
   flex-shrink: 0; font-family: var(--mono); font-size: 10px; color: var(--text3);
 }
-.lantai .af-file .buang {
-  background: none; border: none; cursor: pointer; padding: 4px;
-  color: var(--text3); display: flex; flex-shrink: 0;
-}
-.lantai .af-file .buang:hover { color: var(--red); }
-.lantai .af-file .buang .dasbor-ikon { stroke: currentColor; }
 
 /* Chip keterangan "emiten sudah terunggah" (upsert eksplisit, #100) — bawah
    field Emiten di form Tambah Emiten, warna amber pola .af-aksibar. */
@@ -193,22 +187,9 @@
 
 /* Kolom aksi (ubah + hapus) — rata kanan, tidak melebar. */
 .lantai th.af-aksi, .lantai td.af-aksi { text-align: right; white-space: nowrap; width: 1%; }
-.lantai .af-ubah {
-  background: none; border: none; cursor: pointer; padding: 3px;
-  color: var(--text3); display: inline-flex; vertical-align: middle; margin-right: 2px;
-}
-.lantai .af-ubah:hover { color: var(--amber); }
-.lantai .af-ubah:disabled { cursor: not-allowed; opacity: .35; }
-.lantai .af-ubah:disabled:hover { color: var(--text3); }
-.lantai .af-ubah .dasbor-ikon { stroke: currentColor; }
-.lantai .af-hapus {
-  background: none; border: none; cursor: pointer; padding: 3px;
-  color: var(--text3); display: inline-flex; vertical-align: middle;
-}
-.lantai .af-hapus:hover { color: var(--red); }
-.lantai .af-hapus:disabled { cursor: not-allowed; opacity: .35; }
-.lantai .af-hapus:disabled:hover { color: var(--text3); }
-.lantai .af-hapus .dasbor-ikon { stroke: currentColor; }
+/* .af-ubah/.af-hapus/.buang dihapus (#170) — ketiganya tombol ikon 19-20px
+   dengan kelas sendiri-sendiri, sekarang dipikul TombolIkon. Yang tersisa di
+   berkas ini cuma penataan kolomnya, bukan bentuk tombolnya. */
 .lantai .af-centang { color: var(--green); }
 .lantai .af-centang .dasbor-ikon { stroke: currentColor; }
 
@@ -618,14 +599,14 @@
 .lantai .af-galeri-tag.up { background: var(--green-dim); color: var(--green); }
 .lantai .af-galeri-tag.dn { background: var(--red-dim); color: var(--red); }
 .lantai .af-galeri-judul { font-size: 10.5px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lantai .af-galeri-hapus {
-  position: absolute; top: 6px; right: 6px; width: 22px; height: 22px;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(8, 9, 12, .55); border: none; border-radius: 4px; cursor: pointer; color: #fff;
+/* Bentuk tombolnya dari .ti (TombolIkon). Yang khas di sini cuma letaknya
+   (menumpang di sudut gambar) dan latar gelapnya, karena ikon putih di atas
+   screenshot terang tak akan terbaca tanpa itu. */
+.lantai .ti.af-galeri-hapus {
+  position: absolute; top: 6px; right: 6px;
+  background: rgba(8, 9, 12, .55); border-color: transparent; color: #fff;
 }
-.lantai .af-galeri-hapus:hover { background: var(--red); }
-.lantai .af-galeri-hapus:disabled { opacity: .4; cursor: not-allowed; }
-.lantai .af-galeri-hapus .dasbor-ikon { stroke: currentColor; }
+.lantai .ti.af-galeri-hapus:hover:not(:disabled) { background: var(--red); color: #fff; border-color: transparent; }
 
 /* ── Tab Aktivitas (Fase 4) ───────────────────────────────────────────── */
 /* User agent — potong satu baris, title bawaan browser tampilkan lengkapnya. */

@@ -1,3 +1,5 @@
+import { TombolIkon } from '../../../components/dasbor/TombolIkon'
+import { IKON_SILANG } from '../../../components/dasbor/IkonMenu'
 import { holderType, type GraphSelection, type InvestorMapEntry } from '../../../lib/dasbor/petaInvestorData'
 import { afiliasiUntukEmiten } from '../../../lib/dasbor/brokerAfiliasi'
 import { IkonMenu, IKON_GLOBE, IKON_LOKASI } from '../../../components/dasbor/IkonMenu'
@@ -29,7 +31,7 @@ export function DetailPanel({ allData, selected, onClose }: DetailPanelProps) {
             <div className="pi-panel-title" style={{ color: 'var(--amber)' }}>{em.code}</div>
             <div className="pi-panel-sub">{em.issuer}</div>
           </div>
-          <button type="button" className="pi-panel-close" onClick={onClose}>×</button>
+          <TombolIkon d={IKON_SILANG} label="Tutup panel" onClick={onClose} />
         </div>
         <div className="pi-panel-body">
           <div className="pi-panel-section-label">IDX 1% SHAREHOLDERS</div>
@@ -105,7 +107,7 @@ export function DetailPanel({ allData, selected, onClose }: DetailPanelProps) {
           <div className="pi-panel-title">{selected.name}</div>
           <div className="pi-panel-sub">{selected.cls || '—'} · {flag}</div>
         </div>
-        <button type="button" className="pi-panel-close" onClick={onClose}>×</button>
+        <TombolIkon d={IKON_SILANG} label="Tutup panel" onClick={onClose} />
       </div>
       <div className="pi-panel-body">
         <div className="pi-panel-section-label">PORTOFOLIO SAHAM ({holdings.length} emiten)</div>

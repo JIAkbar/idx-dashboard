@@ -55,9 +55,9 @@
 .lantai .aa-email .inp { border: 0; background: transparent; padding-right: 2px; min-width: 0; border-radius: 0; }
 .lantai .aa-email .inp:focus { border-color: transparent; }
 .lantai .aa-email-dom { font-family: var(--mono); font-size: 12.5px; color: var(--text3); white-space: nowrap; }
-.lantai .aa-salin { display: flex; align-items: center; margin-left: 8px; padding: 4px; border-radius: 5px; color: var(--text3); }
-.lantai .aa-salin:hover:not(:disabled) { background: var(--amber-dim); color: var(--amber); }
-.lantai .aa-salin:disabled { opacity: .35; cursor: default; }
+/* Bentuknya dari .ti (TombolIkon) — di sini tinggal jaraknya dari alamat
+   email di sebelah kiri. */
+.lantai .ti.aa-salin { margin-left: 8px; }
 
 /* Checkbox biasa + label sebaris (form Tambah Akun — izin Bedah awal). */
 .lantai .aa-cek-baris { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text); cursor: pointer; }
@@ -88,11 +88,10 @@
    (min-width tabel 1180 → 1216) begitu ikon ke-4 (Reset/Batalkan akurasi)
    ditambahkan — hanya tampil di baris kontributor, jadi baris superadmin
    tetap tiga ikon. */
-.lantai .aa-aksi { display: flex; gap: 6px; justify-content: flex-end; }
-.lantai .aa-ikon {
-  width: 30px; height: 30px; padding: 0; flex-shrink: 0;
-  display: inline-flex; align-items: center; justify-content: center;
-}
+/* gap-nya sekarang dari .ti-grup (12px) — bukan angka sendiri: area klik
+   TombolIkon melar 6px ke tiap sisi, dan di deretan yang berujung tombol
+   Hapus akun, jarak yang lebih rapat membuat klik meleset jatuh ke sana. */
+.lantai .aa-aksi { display: flex; justify-content: flex-end; }
 /* Sel sempit tidak boleh membungkus — begitu pecah dua baris, tinggi baris
    jadi tak seragam dan tabel terlihat berantakan. §172 SAKTI: kalau konten
    tidak muat, PENDEKKAN kontennya (label dipangkas, sisanya ke tooltip),

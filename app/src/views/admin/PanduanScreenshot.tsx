@@ -7,6 +7,7 @@ import {
   type ContohOrderbook,
 } from '../../lib/contohOrderbook'
 import { urlScreenshots } from '../../lib/supabaseEdisi'
+import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { IkonMenu, IKON_PERLUAS, IKON_TAMBAH, IKON_TONG, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
@@ -181,16 +182,16 @@ export function PanduanScreenshot({ superadmin, defaultBuka, bedah = false }: { 
                   <span className={`af-galeri-tag ${c.benar ? 'up' : 'dn'}`}>{c.benar ? 'Benar' : 'Terpotong — jangan begini'}</span>
                   {c.judul && <span className="af-galeri-judul">{c.judul}</span>}
                   {superadmin && (
-                    <button
-                      type="button"
-                      className="af-galeri-hapus"
-                      title="Hapus contoh ini"
-                      aria-label={`Hapus contoh ${c.judul || c.path}`}
+                    <TombolIkon
+                      d={IKON_TONG}
+                      nada="merah"
+                      ukuranIkon={12}
+                      label="Hapus contoh ini"
+                      ariaLabel={`Hapus contoh ${c.judul || c.path}`}
                       disabled={hapusSibuk.has(c.path)}
                       onClick={() => hapus(c.path)}
-                    >
-                      <IkonMenu d={IKON_TONG} size={12} />
-                    </button>
+                      className="af-galeri-hapus"
+                    />
                   )}
                 </div>
               ))}

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useProfilSaya } from '../../lib/profilSaya'
 import { daftarAkun, buatAkun, hapusAkun, hitungSetoranAkun, resetSandi, setProfil, ubahEmail, type AkunRow } from '../../lib/adminAkun'
 import { daftarJenjang, type JenjangRow } from '../../lib/jenjang'
+import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { IkonMenu, IKON_CARI, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_SALIN, IKON_SURAT, IKON_TAMBAH, IKON_TONG, IKON_ULANG } from '../../components/dasbor/IkonMenu'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { Dropdown } from '../../components/dasbor/Dropdown'
@@ -103,8 +104,11 @@ function TombolSalin({ teks, judul }: { teks: string; judul: string }) {
     return () => clearTimeout(t)
   }, [tersalin])
   return (
-    <button
-      type="button" className="aa-salin" title={judul} aria-label={judul}
+    <TombolIkon
+      d={tersalin ? IKON_CENTANG : IKON_SALIN}
+      ukuranIkon={13}
+      className="aa-salin"
+      label={judul}
       disabled={!teks}
       onClick={() => {
         // Clipboard API bisa ditolak (izin, konteks non-secure). Diamkan
@@ -113,9 +117,7 @@ function TombolSalin({ teks, judul }: { teks: string; judul: string }) {
         // umpan balik sama sekali.
         void navigator.clipboard.writeText(teks).then(() => setTersalin(true), () => {})
       }}
-    >
-      <IkonMenu d={tersalin ? IKON_CENTANG : IKON_SALIN} size={13} />
-    </button>
+    />
   )
 }
 
@@ -419,21 +421,17 @@ export function AkunAdmin() {
                             Nama aksinya tetap terbaca lewat title (tetikus) dan
                             aria-label (pembaca layar) — yang hilang cuma lebarnya. */}
                         <td className="af-aksi">
-                          <div className="aa-aksi">
-                            <button
-                              type="button" className="dd-btn aa-ikon" disabled={sedangProses}
-                              title="Ubah email" aria-label={`Ubah email — ${a.email}`}
+                          <div className="aa-aksi ti-grup">
+                            <TombolIkon
+                              d={IKON_SURAT} ukuranIkon={13} disabled={sedangProses}
+                              label="Ubah email" ariaLabel={`Ubah email — ${a.email}`}
                               onClick={() => setEmailTarget(a)}
-                            >
-                              <IkonMenu d={IKON_SURAT} size={13} />
-                            </button>
-                            <button
-                              type="button" className="dd-btn aa-ikon" disabled={sedangProses}
-                              title="Atur ulang sandi" aria-label={`Atur ulang sandi — ${a.email}`}
+                            />
+                            <TombolIkon
+                              d={IKON_KUNCI} ukuranIkon={13} disabled={sedangProses}
+                              label="Atur ulang sandi" ariaLabel={`Atur ulang sandi — ${a.email}`}
                               onClick={() => setResetTarget(a)}
-                            >
-                              <IkonMenu d={IKON_KUNCI} size={13} />
-                            </button>
+                            />
                             {/* Reset/batalkan akurasi — kontributor saja (superadmin
                                 tidak berjenjang, tidak berarti apa-apa untuknya).
                                 Satu tombol, dua aksi tergantung status: mereset
@@ -442,22 +440,18 @@ export function AkunAdmin() {
                                 seperti sakelar Aktif/Beku di sebelah — reversibel,
                                 tidak butuh konfirmasi). */}
                             {berjenjang && (
-                              <button
-                                type="button" className="dd-btn aa-ikon" disabled={sedangProses}
-                                title={a.akurasi_sejak ? 'Batalkan reset akurasi' : 'Reset akurasi'}
-                                aria-label={`${a.akurasi_sejak ? 'Batalkan reset akurasi' : 'Reset akurasi'} — ${a.email}`}
+                              <TombolIkon
+                                d={IKON_ULANG} ukuranIkon={13} disabled={sedangProses}
+                                label={a.akurasi_sejak ? 'Batalkan reset akurasi' : 'Reset akurasi'}
+                                ariaLabel={`${a.akurasi_sejak ? 'Batalkan reset akurasi' : 'Reset akurasi'} — ${a.email}`}
                                 onClick={() => (a.akurasi_sejak ? ubahProfil(a, { akurasi_sejak: null }) : setResetAkurasiTarget(a))}
-                              >
-                                <IkonMenu d={IKON_ULANG} size={13} />
-                              </button>
+                              />
                             )}
-                            <button
-                              type="button" className="dd-btn merah aa-ikon" disabled={sedangProses}
-                              title="Hapus akun" aria-label={`Hapus akun — ${a.email}`}
+                            <TombolIkon
+                              d={IKON_TONG} nada="merah" ukuranIkon={13} disabled={sedangProses}
+                              label="Hapus akun" ariaLabel={`Hapus akun — ${a.email}`}
                               onClick={() => setHapusTarget(a)}
-                            >
-                              <IkonMenu d={IKON_TONG} size={13} />
-                            </button>
+                            />
                           </div>
                         </td>
                       </tr>

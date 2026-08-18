@@ -18,6 +18,7 @@ import {
   IKON_TAMBAH,
   IKON_TONG,
 } from '../../components/dasbor/IkonMenu'
+import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
@@ -271,9 +272,7 @@ function PilihGambar({ label, file, onFile, onPratinjau }: {
           <div className="af-file-baris">
             <span className="nama" title={file.name}>{file.name}</span>
             <span className="uk">{ukuranBerkas(file.size)}</span>
-            <button type="button" className="buang" aria-label="Buang pilihan" onClick={buang}>
-              <IkonMenu d={IKON_SILANG} size={12} />
-            </button>
+            <TombolIkon d={IKON_SILANG} label="Buang pilihan" ukuranIkon={12} onClick={buang} />
           </div>
         </div>
       )}
@@ -1227,30 +1226,32 @@ export function UnggahHarian() {
                             )}
                           </td>
                           <td className="af-aksi">
-                            <button
-                              type="button"
-                              className="af-ubah"
-                              title={
-                                !boleh ? judulKunci
-                                  : bolehUbah ? `Ubah unggahan ${b.ticker}`
-                                    : 'Setoran yang sudah disetujui hanya bisa diubah superadmin.'
-                              }
-                              aria-label={`Ubah unggahan ${b.ticker}`}
-                              disabled={!bolehUbah}
-                              onClick={() => klikUbah(b)}
-                            >
-                              <IkonMenu d={IKON_PENSIL} size={13} />
-                            </button>
-                            <button
-                              type="button"
-                              className="af-hapus"
-                              title={boleh ? `Hapus unggahan ${b.ticker}` : judulKunci}
-                              aria-label={`Hapus unggahan ${b.ticker}`}
-                              disabled={!boleh}
-                              onClick={() => setHapusTarget([b])}
-                            >
-                              <IkonMenu d={IKON_TONG} size={14} />
-                            </button>
+                            {/* .ti-grup, bukan sekadar dua tombol bersebelahan:
+                                area klik TombolIkon melar 6px ke tiap sisi, dan
+                                di pasangan ubah/hapus tumpang tindihnya berarti
+                                klik yang meleset bisa menghapus. */}
+                            <div className="ti-grup">
+                              <TombolIkon
+                                d={IKON_PENSIL}
+                                ukuranIkon={13}
+                                label={
+                                  !boleh ? judulKunci
+                                    : bolehUbah ? `Ubah unggahan ${b.ticker}`
+                                      : 'Setoran yang sudah disetujui hanya bisa diubah superadmin.'
+                                }
+                                ariaLabel={`Ubah unggahan ${b.ticker}`}
+                                disabled={!bolehUbah}
+                                onClick={() => klikUbah(b)}
+                              />
+                              <TombolIkon
+                                d={IKON_TONG}
+                                nada="merah"
+                                label={boleh ? `Hapus unggahan ${b.ticker}` : judulKunci}
+                                ariaLabel={`Hapus unggahan ${b.ticker}`}
+                                disabled={!boleh}
+                                onClick={() => setHapusTarget([b])}
+                              />
+                            </div>
                           </td>
                         </tr>
                       )
