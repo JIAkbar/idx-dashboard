@@ -191,11 +191,12 @@
       </tr>
       <tr>
         <td><b>Money Flow — “Asing Beli 3,1 B, 3 hari”</b></td>
-        <td><span class="st st-turun">BARU DIPANEN</span><br><small style="color:var(--text3)">status berubah 18 Agu 2026</small></td>
+        <td><span class="st st-ada">ADA</span><br><small style="color:var(--text3)">berubah dua kali pada 18 Agu 2026</small></td>
         <td class="mono">data-idx/json/asing/&lt;KODE&gt;.json — <code>d[] = [tgl,beli,jual,volume,value,frek]</code></td>
         <td><b>Berubah di tengah penyusunan dokumen ini.</b>
-          <small>Saat inventaris ini disusun, ruas tersebut belum pernah disimpan. Panennya mendarat beberapa jam kemudian dan kini menarik riwayat mundur sejak <b>2 Januari 2020</b> — batas paling awal yang disimpan sumbernya; tanggal 2019 ke belakang menjawab HTTP 200 dengan daftar kosong, bukan penolakan.</small>
-          <small><b>Kartu di Bagian 2 sengaja belum memakainya</b> — panennya belum sampai ke tanggal kartu, dan angka yang belum ada tidak dikarang untuk menutup lubang.</small>
+          <small>Saat inventaris ini disusun, ruas tersebut belum pernah disimpan. Panennya mendarat beberapa jam kemudian dan kini <b>lengkap</b>: 989 emiten, median 1.593 hari bursa, <b>2 Januari 2020 sampai 18 Agustus 2026</b>. Batas paling awal itu milik sumbernya, bukan pilihan kita — 30 Desember 2019 hari bursa normal dan tetap menjawab HTTP 200 dengan daftar kosong, bukan penolakan.</small>
+          <small><b>Satuannya lembar, bukan rupiah</b>, dan itu diukur bukan diasumsikan: se-pasar 18 Agu, ForeignBuy 5,03e9 terhadap Volume 2,88e10 dan Value 1,37e13. Sebagai rupiah itu 0,04% nilai transaksi pasar — mustahil; sebagai lembar 17% volume — wajar. Nol emiten punya ForeignBuy melebihi Volume-nya.</small>
+          <small>Kartu di Bagian 2 disusun sebelum panen ini mendarat, jadi blok asingnya masih kosong. Halaman <b>Kartu Analisa</b> di aplikasi memakainya.</small>
           <small>(a) <code>ds_*.json</code> memang punya aliran asing, tapi <b>level pasar</b> (<code>nf_today_idr</code>, <code>nf_ytd_idr</code>) — bukan per emiten. Ruas <code>broker_*</code> juga se-pasar.</small>
           <small>(b) Per emiten, <code>ForeignBuy</code>/<code>ForeignSell</code> <b>benar ada di sumbernya</b> — terverifikasi 15 Agu 2026 (scripts/cek_broker_emiten.py: DART 13 Agu 2026, ForeignBuy 226.500, ForeignSell 21.500) — tapi <b>tidak pernah disimpan</b> oleh pemanen mana pun di repo ini.</small>
           <small>(c) Satuannya <b>lembar, bukan rupiah</b>. Angka “3,1 B” gaya acuan butuh perkalian harga; yang paling dekat adalah VWAP harian = Value ÷ Volume, dan hasilnya wajib disebut <b>perkiraan</b>.</small>
@@ -375,9 +376,9 @@
         </div>
 
         <div class="blok gap">
-          <h4>Aliran asing — belum sampai tanggal ini</h4>
-          <p style="margin:0;font-size:.86rem">Aliran dana asing <b>per emiten</b> baru mulai dipanen dan riwayatnya belum
-          mencapai 18 Agustus 2026. Yang siap hanya aliran tingkat pasar, dan itu tidak menjawab pertanyaan tentang satu saham.</p>
+          <h4>Aliran asing — tidak dipakai di purwarupa ini</h4>
+          <p style="margin:0;font-size:.86rem">Purwarupa ini disusun sebelum aliran asing per emiten selesai dipanen.
+          Datanya kini ada (2020–2026, satuan <b>lembar</b>), dan yang memakainya adalah halaman Kartu Analisa di aplikasi.</p>
           <div class="asal">Tidak ada angka broker atau asing yang direkayasa untuk mengisi ruang ini.
           Selama blok ini kosong, seluruh pembacaan di kartu bersandar pada struktur harga, volume, dan statistik riwayat saja — dan itu disebutkan, bukan disamarkan.</div>
         </div>
@@ -481,9 +482,9 @@
         </div>
 
         <div class="blok gap">
-          <h4>Aliran asing — belum sampai tanggal ini</h4>
-          <p style="margin:0;font-size:.86rem">Sama seperti kartu sebelumnya: panennya belum mencapai tanggal kartu.
-          Tidak diisi perkiraan.</p>
+          <h4>Aliran asing — tidak dipakai di purwarupa ini</h4>
+          <p style="margin:0;font-size:.86rem">Sama seperti kartu sebelumnya: datanya mendarat sesudah purwarupa ini dihitung.
+          Tidak diisi perkiraan surut.</p>
           <div class="asal">Pada emiten yang naik 9,56% dalam sehari, justru blok inilah yang paling ingin
           dibaca orang. Menuliskannya kosong lebih berguna daripada mengisinya dengan angka tingkat pasar
           yang tampak relevan padahal bukan tentang saham ini.</div>
@@ -596,8 +597,8 @@
         </div>
 
         <div class="blok gap">
-          <h4>Aliran asing — belum sampai tanggal ini</h4>
-          <p style="margin:0;font-size:.86rem">Panen aliran asing per emiten sedang berjalan mundur dari 2020 dan belum mencapai Agustus 2026.</p>
+          <h4>Aliran asing — tidak dipakai di purwarupa ini</h4>
+          <p style="margin:0;font-size:.86rem">Panen aliran asing per emiten sudah selesai (2020–2026), tapi sesudah angka-angka purwarupa ini dihitung.</p>
           <div class="asal">Pada emiten selikuid ini, ketiadaan blok tersebut adalah kehilangan yang nyata
           dan disebut apa adanya — bukan ditutupi dengan angka yang kedengaran mirip.</div>
         </div>
@@ -648,8 +649,8 @@
     dan “Karakter Emiten: Suka Sideways” — tiga klaim tanpa satu pun jumlah observasi. Ketiganya di sini
     diganti oleh angka yang bisa ditelusuri: harapan empiris dari 1.217–2.448 kejadian, median waktu
     dalam hari bursa berikut kuartilnya, dan persentil terhadap 911 emiten. Sebaliknya, satu blok yang
-    dimiliki acuan — aliran dana asing per emiten — <b>belum siap</b> di sini pada tanggal kartu, dan itu ditulis kosong
-    alih-alih ditiru bentuknya.
+    dimiliki acuan — aliran dana asing per emiten — <b>mendarat sesudah</b> purwarupa ini dihitung, dan blok itu dibiarkan kosong
+    alih-alih diisi surut. Halaman Kartu Analisa di aplikasi yang memakainya, dengan satuan lembar yang disebut terang-terangan.
   </div>
 </section>
 
@@ -687,13 +688,14 @@
       yang benar-benar dari kartu ini, bukan pinjaman dari mesin skor Radar.</p>
     </li>
     <li>
-      <h4>Susul riwayat aliran asing per tanggal sejak 2020 <span class="harga-tag">sedang berjalan</span></h4>
+      <h4>Susul riwayat aliran asing per tanggal sejak 2020 <span class="harga-tag">selesai</span></h4>
       <p>Sumber yang sama menerima parameter tanggal, jadi riwayatnya bisa ditarik ke belakang. Ini yang
       mengubah Money Flow dari “3 hari terakhir” menjadi klaim yang bisa diuji: berapa sering akumulasi
       asing n-hari benar-benar diikuti kenaikan pada emiten itu — pertanyaan yang tidak bisa dijawab oleh
       terbitan mana pun yang cuma menampilkan angka tiga hari terakhir. Perlu dijadwalkan pelan; sumbernya
-      pernah menolak beruntun. <b>Berjalan sejak 18 Agu 2026</b> — sudah melewati 2020–2022; batas paling awal
-      yang tersedia adalah 2 Januari 2020, sebelum itu sumbernya menjawab kosong.</p>
+      pernah menolak beruntun. <b>Selesai 18 Agu 2026</b> — 989 emiten, median 1.593 hari bursa, nol tanggal gagal dari
+      1.729 hari kerja yang dicoba. Batas paling awal 2 Januari 2020; sebelum itu sumbernya menjawab kosong, bukan menolak.
+      Mentahnya diarsipkan ter-gzip, sehingga menambah ruas lain kelak tak butuh satu pun permintaan jaringan.</p>
     </li>
     <li>
       <h4>Kalibrasi skor tunggal kartu <span class="harga-tag">nol jaringan, setelah 1 &amp; 3</span></h4>
