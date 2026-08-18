@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { useStockFundamental, useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useSektorIdx, sektorEmiten, papanBerisiko } from '../../lib/dasbor/sektorIdx'
@@ -11,6 +11,7 @@ import { PanelKuartalan, PanelProfitabilitas, PanelGrowth, PanelDividen, PanelRi
 import { PanelIncome, PanelBalance, PanelCashflow, PanelPerformance, PanelTahunan } from './stock-detail/KolomLaporan'
 import { PanelValuasiInteraktif } from './stock-detail/PanelValuasiInteraktif'
 import { PanelLaporanKeuangan } from './stock-detail/PanelLaporanKeuangan'
+import { PanelAliranAsing } from '../../components/dasbor/PanelAliranAsing'
 import { IkonMenu, IKON_CARI, IKON_PERINGATAN, IKON_JAM } from '../../components/dasbor/IkonMenu'
 
 type Tab = 'statistik' | 'valuasi'
@@ -245,9 +246,6 @@ export function StockDetail() {
 
           <div style={{ fontSize: 9, color: 'var(--text3)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span><IkonMenu d={IKON_JAM} size={11} /> Data delay · Diperbarui: {fd.updated || '—'}</span>
-            <Link to={`/forum/${fd.ticker}`} className="dd-btn">
-              Diskusi {fd.ticker}
-            </Link>
           </div>
 
           <div className="tabs" role="tablist" aria-label="Tab Detail Saham">
@@ -272,6 +270,13 @@ export function StockDetail() {
                di luar .duo — perlu lebar penuh untuk chart & tabel periode,
                bukan kolom sempit 340px seperti panel ringkas lain. */
             <PanelLaporanKeuangan ticker={fd.ticker} />
+          )}
+
+          {tab === 'statistik' && (
+            /* Aliran Asing — panen terpisah (data-idx/json/asing/), lebar
+               penuh sama seperti Laporan Keuangan (grafik + tabel butuh
+               ruang, bukan kolom sempit .duo). */
+            <PanelAliranAsing ticker={fd.ticker} />
           )}
 
           {tab === 'statistik' && (

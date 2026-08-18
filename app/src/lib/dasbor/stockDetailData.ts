@@ -413,3 +413,90 @@ export const useStockKeuangan = buatHookKeuangan('/data-idx/json/keuangan')
 /** Sama seperti `useStockKeuangan`, tapi sumbernya laporan resmi bursa (XBRL)
  * — kuartalnya KUMULATIF, bukan diskret (lihat fundamentalGabungan.ts). */
 export const useStockKeuanganIdx = buatHookKeuangan('/data-idx/json/keuangan_idx')
+
+/** Satu baris data-idx/json/asing/{TICKER}.json — beli/jual/volume dalam
+ * LEMBAR, value dalam rupiah (nilai transaksi pasar hari itu, BUKAN nilai
+ * rupiah aliran asing — IDX tidak melaporkan itu, lihat `catatan` mentah). */
+export interface AsingHarian {
+  tanggal: string
+  beli: number
+  jual: number
+  volume: number
+  value: number
+  frekuensi: number
+}
+
+/** Bentuk mentah berkas — baris `d` array posisional sesuai `ruas`. */
+interface AsingRaw {
+  kode: string
+  mulai: string
+  akhir: string
+  n: number
+  d: [string, number, number, number, number, number][]
+}
+
+export interface AsingData {
+  kode: string
+  mulai: string
+  akhir: string
+  n: number
+  d: AsingHarian[]
+}
+
+const asingCache = new Map<string, AsingData | null>()
+
+/**
+ * Aliran asing harian per emiten. Panennya berjalan terpisah dan belum
+ * menjangkau semua emiten (dan riwayat yang sudah ada pun masih bertambah
+ * per emiten) — 404/gagal fetch sengaja jadi `data: null` TANPA error, sama
+ * seperti `useStockKeuangan`: "belum tersedia" itu keadaan wajar, bukan galat.
+ * Baris array diparse jadi objek supaya field-nya bernama, bukan indeks
+ * tebakan (urutan aslinya cuma dijamin lewat `ruas` di berkas mentah).
+ */
+export function useStockAsing(ticker: string | null) {
+  const [data, setData] = useState<AsingData | null>(ticker ? (asingCache.get(ticker) ?? null) : null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!ticker) {
+      setData(null)
+      return
+    }
+    if (asingCache.has(ticker)) {
+      setData(asingCache.get(ticker) ?? null)
+      return
+    }
+    let cancelled = false
+    setLoading(true)
+    fetch(`/data-idx/json/asing/${ticker}.json`)
+      .then((r) => {
+        if (!r.ok) throw new Error('not found')
+        return r.json() as Promise<AsingRaw>
+      })
+      .then((raw) => {
+        if (cancelled) return
+        const parsed: AsingData = {
+          kode: raw.kode,
+          mulai: raw.mulai,
+          akhir: raw.akhir,
+          n: raw.n,
+          d: raw.d.map(([tanggal, beli, jual, volume, value, frekuensi]) => ({ tanggal, beli, jual, volume, value, frekuensi })),
+        }
+        asingCache.set(ticker, parsed)
+        setData(parsed)
+      })
+      .catch(() => {
+        if (cancelled) return
+        asingCache.set(ticker, null)
+        setData(null)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [ticker])
+
+  return { data, loading }
+}
