@@ -114,11 +114,42 @@ KELUARAN_DIR = AKAR / "data-idx" / "json" / "keuangan_idx"
 WIB = timezone(timedelta(hours=7))
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
-HEADER = {"User-Agent": UA, "Referer": "https://www.idx.co.id/id", "Accept": "application/json"}
+      "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+
+# Header ala peramban SUNGGUHAN, bukan tiga baris seadanya (18 Agu 2026).
+#
+# Sebelumnya header cuma {User-Agent, Referer: /id, Accept: application/json},
+# dan seluruh panggilan mulai dijawab 403 -- termasuk tahun 2025 yang beberapa
+# jam sebelumnya berhasil dipanen 882 emiten. Dugaan pertama "IP-nya diblokir"
+# SALAH, dan itu terbukti dalam satu langkah: URL yang sama persis dibuka di
+# Chrome menjawab 200 dengan 664 hasil untuk AUDIT 2019. Yang membedakan bukan
+# alamatnya, melainkan bentuk permintaannya.
+#
+# Yang menyembuhkan: kumpulan header yang benar-benar dikirim peramban --
+# Accept-Language, sec-ch-ua*, Sec-Fetch-*, dan Referer yang menunjuk ke
+# HALAMAN LAPORAN KEUANGAN, bukan ke beranda. Sesudah ini `requests` biasa
+# menjawab 200 lagi tanpa perlu pustaka apa pun.
+#
+# Kalau suatu saat ini pun ditolak, jalan berikutnya `curl_cffi` (sudah
+# terpasang, versi 0.16.0) dengan `impersonate="chrome124"` -- ia meniru sidik
+# jari TLS, satu lapis lebih dalam daripada header. Sudah diuji hari ini dan
+# juga menjawab 200. Jangan menaikkan laju permintaan sebagai jalan keluar;
+# yang ditolak bentuk permintaannya, bukan jumlahnya.
+_HDR_PERAMBAN = {
+    "User-Agent": UA,
+    "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+    "sec-ch-ua": '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Windows"',
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-origin",
+    "Referer": "https://www.idx.co.id/id/perusahaan-tercatat/laporan-keuangan-dan-tahunan/",
+}
+HEADER = {**_HDR_PERAMBAN, "Accept": "application/json, text/plain, */*"}
 # Unduhan xlsx GAGAL 406 kalau dikirim header "Accept: application/json" yang
 # sama dengan panggilan API JSON -- perlu header terpisah tanpa itu.
-HEADER_FILE = {"User-Agent": UA, "Referer": "https://www.idx.co.id/id"}
+HEADER_FILE = {**_HDR_PERAMBAN}
 PEMANASAN = "https://www.idx.co.id/id"
 LIST_URL = "https://www.idx.co.id/primary/ListedCompany/GetFinancialReport"
 HOST = "https://www.idx.co.id"
