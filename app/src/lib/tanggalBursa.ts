@@ -143,3 +143,24 @@ export function tanggalBursaTerakhir(kini: Date = new Date()): string {
   }
   return keIso(d)
 }
+
+/**
+ * Berapa hari BURSA berlalu sejak `dariIso` sampai `sampaiIso` (eksklusif
+ * `dariIso`, inklusif `sampaiIso`) — dipakai penanda "data basi" (kartu,
+ * dsb). `dariIso == sampaiIso` -> 0. Batas 60 langkah kalender: cukup untuk
+ * ~2 bulan basi, dan mencegah galat input (tanggal terbalik) berputar lama.
+ */
+export function hariBursaSejak(dariIso: string, sampaiIso: string): number {
+  if (!dariIso || !sampaiIso || sampaiIso <= dariIso) return 0
+  const [t, b, tgl] = dariIso.split('-').map(Number)
+  if (!t || !b || !tgl) return 0
+  const d = new Date(t, b - 1, tgl)
+  let n = 0
+  for (let i = 0; i < 60; i++) {
+    d.setDate(d.getDate() + 1)
+    const iso = keIso(d)
+    if (hariBursa(iso)) n++
+    if (iso >= sampaiIso) break
+  }
+  return n
+}

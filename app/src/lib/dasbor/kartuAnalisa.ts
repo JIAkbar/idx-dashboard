@@ -19,6 +19,10 @@ export interface LevelSR {
 
 export interface FirstPassage {
   n: number
+  /** `n` dibagi horizon (jendela beruntun beririsan 19/20 harinya) — perkiraan
+   *  jumlah bukti BEBAS, jauh lebih jujur daripada `n` mentah. Dihitung di
+   *  Python (`first_passage()`), bukan di sini. */
+  n_efektif?: number
   kena?: number
   stop?: number
   lewat?: number
@@ -27,6 +31,10 @@ export interface FirstPassage {
   median_hari?: number | null
   q1?: number | null
   q3?: number | null
+  /** SENGAJA tidak ditampilkan di layar (lihat KartuAnalisa.tsx) — jalur yang
+   *  tak pernah menyentuh apa pun diberi imbal 0% oleh rumus ini, padahal
+   *  posisi itu tetap berakhir di suatu harga. Datanya tetap disimpan untuk
+   *  dipakai lagi kalau metodenya diperbaiki. */
   harapan?: number
 }
 
@@ -234,6 +242,33 @@ export function pembatalDalamAtr(k: Pick<KartuEmiten, 'stop_pct' | 'atr_pct'>): 
   return k.atr_pct != null && k.stop_pct < k.atr_pct
 }
 
+/**
+ * "Tak keduanya" (sisa peluang first-passage): `100 - target - pembatal`.
+ * `Math.max(0, …)` — kalau `kena+stop == total` (tak ada `lewat`), sisanya
+ * SECARA MATEMATIS nol, tapi pembagian float (`kena/total*100` dst) kadang
+ * mendarat di `-1e-13` alih-alih tepat nol. Tanpa dijepit, layar menampilkan
+ * "-0,0%" — probabilitas negatif yang tak mungkin ada, cuma noise pembulatan.
+ */
+export function takKeduanya(f: Pick<FirstPassage, 'n' | 'p_kena' | 'p_stop'>): number | null {
+  return f.n ? Math.max(0, 100 - (f.p_kena ?? 0) - (f.p_stop ?? 0)) : null
+}
+
+export type TingkatBasi = 'segar' | 'agak' | 'basi'
+
+/**
+ * Tingkat basi kartu, dari selisih hari BURSA sejak `k.dihitung` (dihitung
+ * pemanggil lewat `hariBursaSejak()`, lib/tanggalBursa.ts — bukan di sini,
+ * supaya modul ini tak perlu tahu jam berapa sekarang). 0 hari -> segar,
+ * tanpa lencana. 1-4 -> agak (lencana abu). >=5 -> basi (lencana merah, dan
+ * ruas momentum di kartu ringkas diredam — level TIDAK, level bergerak
+ * lambat, momentum yang basi itu yang berbohong).
+ */
+export function tingkatBasi(selisihHariBursa: number): TingkatBasi {
+  if (selisihHariBursa <= 0) return 'segar'
+  if (selisihHariBursa <= 4) return 'agak'
+  return 'basi'
+}
+
 function fmtHarga(v: number): string {
   return Math.round(v).toLocaleString('id-ID')
 }
@@ -284,7 +319,7 @@ export function bangunTesis(k: KartuEmiten): Tesis {
 
   const s1 = k.support[0]
   membatalkan.push(
-    `Penutupan di bawah ${fmtHarga(k.stop)} (${fmtPct(-k.stop_pct, 2)})`
+    `Tersentuh intraday di bawah ${fmtHarga(k.stop)} (${fmtPct(-k.stop_pct, 2)})`
     + (s1 ? ` — klaster support dengan ${s1.sentuhan} sentuhan, terakhir ${s1.terakhir}.` : '.'),
   )
 

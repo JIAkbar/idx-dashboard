@@ -234,6 +234,13 @@ def first_passage(d: dict, naik_pct: float, turun_pct: float, horizon: int = 20)
     q = lambda p: hari_kena[min(len(hari_kena) - 1, int(p * len(hari_kena)))] if hari_kena else None
     return {
         "n": total,
+        # `n` conta hari MULAI, dan jendela `horizon` hari yang beruntun saling
+        # beririsan (hari t & t+1 berbagi 19/20 harinya kalau horizon=20) — jadi
+        # `n` bukan bukti bebas sebanyak itu. n_efektif ~= jumlah jendela yang
+        # TAK beririsan yang muat di rentang yang sama, perkiraan kasar tapi
+        # jujur (n / horizon). Dipakai di kartu ringkas supaya angka yang
+        # ditonjolkan bukan yang paling melebih-lebihkan.
+        "n_efektif": round(total / horizon),
         "kena": kena,
         "stop": stop,
         "lewat": total - kena - stop,
@@ -488,6 +495,7 @@ def uji() -> None:
              "l": [100 + i for i in range(60)], "tgl": [""] * 60}
     f = first_passage(lurus, 3.0, 50.0, 20)
     assert f["p_stop"] == 0 and f["p_kena"] > 99, f
+    assert f["n_efektif"] == round(f["n"] / 20), f  # n dibagi horizon, bukan disalin dari n
     # ER deret naik lurus = 1; deret bolak-balik ≈ 0
     assert er([100 + i for i in range(40)]) > 0.99
     assert er([100 + (i % 2) for i in range(40)]) < 0.05

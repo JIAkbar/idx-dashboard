@@ -2908,3 +2908,17 @@
 .lantai .tp-tbl th { text-align: left; padding: 4px 8px 4px 0; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); font-weight: 600; border-bottom: 1px solid var(--line2); }
 .lantai .tp-tbl td { padding: 6px 8px 6px 0; border-bottom: 1px dashed var(--line); font-family: var(--mono); white-space: nowrap; }
 .lantai .tp-tbl tr:last-child td { border-bottom: 0; }
+
+/* Kartu-per-baris — pengganti `.tp-tbl` di layar sempit (di bawah 560px tabel
+   8+ kolom cuma bisa dibaca dengan menggulung mendatar, dan kolom kanan
+   praktis tak pernah terbaca). `.tp-kartu-wrap` disembunyikan di layar lebar
+   (tabel yang tampil), lalu keduanya ditukar di breakpoint — TIDAK sekadar
+   overflow-x:auto + disebut selesai. Primitif generik supaya halaman
+   analitik berikutnya (mis. Bedah Emiten) memakainya tanpa menyalin CSS. */
+.lantai .tp-kartu-wrap { display: none; }
+.lantai .tp-kartu { border: 1px solid var(--line); border-radius: var(--r-kecil); padding: 8px 10px; margin-top: 8px; }
+.lantai .tp-kartu:first-child { margin-top: 0; }
+@media (max-width: 560px) {
+  .lantai .tp-tbl-wrap { display: none; }
+  .lantai .tp-kartu-wrap { display: block; }
+}

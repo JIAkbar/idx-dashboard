@@ -3,9 +3,11 @@ import { useSearchParams } from 'react-router-dom'
 import { Dropdown, type OpsiDropdown } from '../../components/dasbor/Dropdown'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
+import { papanBerisiko } from '../../lib/dasbor/sektorIdx'
+import { hariBursaSejak, todayIsoJakarta } from '../../lib/tanggalBursa'
 import { BULAN } from '../../lib/seasonality'
 import {
-  useIndeksKartu, useKartu, pembatalDalamAtr, bangunTesis,
+  useIndeksKartu, useKartu, pembatalDalamAtr, bangunTesis, tingkatBasi, takKeduanya as hitungTakKeduanya,
   type KartuEmiten, type LevelSR, type TargetItem, type FirstPassage,
 } from '../../lib/dasbor/kartuAnalisa'
 import './KartuAnalisa.css'
@@ -49,21 +51,42 @@ function BarisLevel({ tipe, urutan, lv }: { tipe: 'R' | 'S'; urutan: number; lv:
   )
 }
 
-/** Satu baris tabel skenario first-passage (horizon 20 hari — kolom utama kartu). */
+/** Satu baris tabel skenario first-passage (horizon 20 hari — kolom utama kartu).
+ *  TIDAK ADA kolom "Harapan": jalur yang tak pernah menyentuh target maupun
+ *  pembatal diberi imbal persis 0% oleh rumusnya, padahal posisi itu tetap
+ *  berakhir di suatu harga — tandanya bisa terbalik. Datanya tetap ada di
+ *  `fp.harapan` (JSON), cuma tidak ditampilkan. */
 function BarisSkenario({ t }: { t: TargetItem }) {
   const f: FirstPassage = t.fp
-  const takKeduanya = f.n ? 100 - (f.p_kena ?? 0) - (f.p_stop ?? 0) : null
+  const sisa = hitungTakKeduanya(f)
   return (
     <tr>
       <td>{fmtHarga(t.harga)}</td>
       <td>{fmtPct(t.pct, 2)}</td>
       <td className="up">{fmtPct0(f.p_kena)}</td>
       <td className="dn">{fmtPct0(f.p_stop)}</td>
-      <td>{takKeduanya == null ? '—' : fmtPct0(takKeduanya)}</td>
+      <td>{sisa == null ? '—' : fmtPct0(sisa)}</td>
       <td>{f.median_hari == null ? '—' : `${fmtDes(f.median_hari, f.median_hari % 1 ? 1 : 0)} hb`}</td>
       <td>{f.q1 == null || f.q3 == null ? '—' : `${f.q1}–${f.q3}`}</td>
-      <td className={naikTurun(f.harapan)}>{fmtPct(f.harapan, 2)}</td>
     </tr>
+  )
+}
+
+/** Sama isinya dengan `BarisSkenario`, tapi kartu-per-baris (bukan `<tr>`) —
+ *  dipakai di 412px lewat CSS (lihat KartuAnalisa.css) supaya tabel 7 kolom
+ *  tidak menggulung mendatar dengan kolom kanan yang tak pernah terbaca. */
+function KartuSkenario({ t }: { t: TargetItem }) {
+  const f: FirstPassage = t.fp
+  const sisa = hitungTakKeduanya(f)
+  return (
+    <div className="tp-kartu">
+      <div className="baris"><span>Level</span><span>{fmtHarga(t.harga)} ({fmtPct(t.pct, 2)})</span></div>
+      <div className="baris"><span>Target dulu</span><span className="up">{fmtPct0(f.p_kena)}</span></div>
+      <div className="baris"><span>Pembatal dulu</span><span className="dn">{fmtPct0(f.p_stop)}</span></div>
+      <div className="baris"><span>Tak keduanya</span><span>{sisa == null ? '—' : fmtPct0(sisa)}</span></div>
+      <div className="baris"><span>Median waktu</span><span>{f.median_hari == null ? '—' : `${fmtDes(f.median_hari, f.median_hari % 1 ? 1 : 0)} hb`}</span></div>
+      <div className="baris"><span>Q1–Q3</span><span>{f.q1 == null || f.q3 == null ? '—' : `${f.q1}–${f.q3} hb`}</span></div>
+    </div>
   )
 }
 
@@ -223,13 +246,16 @@ function KartuSatuEmiten({ kode }: { kode: string }) {
         </div>
 
         <div className="blok" style={{ marginTop: 12 }}>
-          <h4>Skenario &amp; Ekspektasi Waktu — dihitung dari {k.target[0]?.fp.n?.toLocaleString('id-ID') ?? '—'} hari historis</h4>
-          <div style={{ overflowX: 'auto' }}>
+          <h4>
+            Skenario &amp; Ekspektasi Waktu — dihitung dari {k.target[0]?.fp.n?.toLocaleString('id-ID') ?? '—'} hari mulai
+            {k.target[0]?.fp.n_efektif != null && ` (≈${k.target[0].fp.n_efektif.toLocaleString('id-ID')} jendela bebas)`}
+          </h4>
+          <div className="tp-tbl-wrap" style={{ overflowX: 'auto' }}>
             <table className="tp-tbl">
               <thead>
                 <tr>
                   <th>Level</th><th>Jarak</th><th>Target dulu</th><th>Pembatal dulu</th>
-                  <th>Tak keduanya</th><th>Median waktu</th><th>Q1–Q3</th><th>Harapan</th>
+                  <th>Tak keduanya</th><th>Median waktu</th><th>Q1–Q3</th>
                 </tr>
               </thead>
               <tbody>
@@ -237,9 +263,13 @@ function KartuSatuEmiten({ kode }: { kode: string }) {
               </tbody>
             </table>
           </div>
+          <div className="tp-kartu-wrap">
+            {k.target.map((t, i) => <KartuSkenario key={i} t={t} />)}
+          </div>
           <div className="asal">
-            <b>Pembatal tesis:</b> penutupan di bawah {fmtHarga(k.stop)} ({fmtPct(-k.stop_pct, 2)}).
-            <br /><b>Asal:</b> first-passage empiris, horizon 20 hari bursa — dari tiap hari historis, target atau pembatal mana yang tersentuh lebih dulu. Kalau keduanya tersentuh hari yang sama, dihitung sebagai pembatal (konservatif, urutan intraday tak diketahui dari lilin harian).
+            <b>Pembatal tesis:</b> tersentuh intraday di bawah {fmtHarga(k.stop)} ({fmtPct(-k.stop_pct, 2)}).
+            <br /><b>Asal:</b> first-passage empiris, horizon 20 hari bursa — dari tiap hari historis, target atau pembatal mana yang tersentuh lebih dulu (low/high intraday, bukan penutupan). Kalau keduanya tersentuh hari yang sama, dihitung sebagai pembatal (konservatif, urutan intraday tak diketahui dari lilin harian).
+            <br /><b>n</b> = jumlah hari mulai; jendela {'>'}1 hari saling beririsan, jadi n bukan bukti bebas sebanyak itu — ≈n/20 jendela bebas ({'"'}jendela bebas{'"'} di atas) adalah perkiraan yang lebih jujur.
           </div>
         </div>
 
@@ -262,6 +292,163 @@ function KartuSatuEmiten({ kode }: { kode: string }) {
   )
 }
 
+/** Kalimat kompak posisi harga vs MA20/50/200, dikelompokkan per arah
+ *  ("Di atas MA20 & MA50, di bawah MA200") — dipakai HANYA di kartu ringkas;
+ *  Lengkap punya narasi lebih lengkap lewat `bangunTesis()`. */
+function ringkasStruktur(k: KartuEmiten): string | null {
+  type Bag = { arah: 'atas' | 'bawah'; label: string }
+  const item = ([
+    k.ma20 != null ? { arah: k.harga >= k.ma20 ? 'atas' : 'bawah', label: 'MA20' } : null,
+    k.ma50 != null ? { arah: k.harga >= k.ma50 ? 'atas' : 'bawah', label: 'MA50' } : null,
+    k.ma200 != null ? { arah: k.harga >= k.ma200 ? 'atas' : 'bawah', label: 'MA200' } : null,
+  ] as (Bag | null)[]).filter((x): x is Bag => x !== null)
+  if (item.length === 0) return null
+  const grup: { arah: string; label: string[] }[] = []
+  for (const it of item) {
+    const akhir = grup[grup.length - 1]
+    if (akhir && akhir.arah === it.arah) akhir.label.push(it.label)
+    else grup.push({ arah: it.arah, label: [it.label] })
+  }
+  const teks = grup.map((g) => `di ${g.arah} ${g.label.join(' & ')}`).join(', ')
+  return teks.charAt(0).toUpperCase() + teks.slice(1)
+}
+
+/**
+ * Kartu Ringkas — satu kartu padat seukuran ponsel per emiten (tab Ringkas
+ * `/kartu?tab=ringkas`). SENGAJA jauh lebih sedikit dari tab Lengkap: cuma
+ * S1/R1 (bukan enam level), satu angka first-passage (R1), musiman & S2/S3/
+ * R2/R3 disembunyikan di balik "Lihat detail" (bukan dihapus — tetap bisa
+ * dicapai tanpa pindah tab). TIDAK ADA skor tunggal, ekspektasi dalam jam,
+ * ENTRY/SL/R:R, atau penanda "HIT" — lihat CLAUDE.md kenapa.
+ */
+function KartuRingkasSatuEmiten({ kode }: { kode: string }) {
+  const { data: k, status } = useKartu(kode)
+  const kamus = useKamusEmiten()
+  const nama = kamus?.emiten.find((e) => e.kode === kode)?.nama
+
+  if (status === 'memuat') {
+    return <div className="panel kta-kartu kta-ringkas"><div className="panel-b"><p style={{ margin: 0, color: 'var(--text3)', fontSize: 12 }}>Memuat {kode}…</p></div></div>
+  }
+  if (status === 'belum-tersedia' || !k) {
+    return (
+      <div className="panel kta-kartu kta-ringkas">
+        <div className="panel-b">
+          <p style={{ margin: 0, color: 'var(--text3)', fontSize: 12 }}>Kartu {kode} belum tersedia.</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Basi dihitung dari hari BURSA sejak `dihitung`, bukan tanggal kalender
+  // (lib/tanggalBursa.ts — proyek ini melarang `new Date()` lepas untuk
+  // aritmetika tanggal semacam ini, sudah dua kali jadi bug).
+  const selisih = hariBursaSejak(k.dihitung, todayIsoJakarta())
+  const tier = tingkatBasi(selisih)
+  // Momentum (RSI/StochRSI/ER/asing 5h) diredam kalau basi >=5 hari bursa —
+  // LEVEL tidak, level bergerak lambat, momentun yang basi itu yang bohong.
+  const redupStyle = tier === 'basi' ? { opacity: 0.55 } : undefined
+
+  const struktur = ringkasStruktur(k)
+  const s1 = k.support[0]
+  const r1 = k.resistance[0]
+  const t1 = k.target[0]
+  const f1 = t1?.fp
+  const takKeduanya1 = f1 ? hitungTakKeduanya(f1) : null
+  const peringatanAtr = pembatalDalamAtr(k)
+  const s = k.sektor
+  const berisiko = papanBerisiko(s.papan)
+  const asingP5 = k.asing?.periode['5']
+  const satBeli = k.asing?.satuan.beli ?? 'lembar'
+
+  return (
+    <article className="panel kta-kartu kta-ringkas">
+      <div className="panel-h kta-kepala">
+        <div>
+          <a className="tick kta-tik" href={`/grafik?kode=${kode}`}>{kode}</a>
+          <span className="kta-nama">{nama ?? s.nama ?? kode}</span>
+        </div>
+        <div className={`kta-harga ${naikTurun(k.chg)}`}>
+          {fmtHarga(k.harga)}
+          <small>{fmtPct(k.chg)} · {k.tgl}</small>
+        </div>
+      </div>
+
+      <div className="panel-b">
+        {tier !== 'segar' && (
+          <span className={tier === 'basi' ? 'badge badge-risiko kta-basi' : 'chip-t kta-basi'}>
+            {tier === 'basi' ? '⚠ ' : ''}data {selisih} hari bursa lalu
+          </span>
+        )}
+
+        {struktur && (
+          <p className="kta-struktur">
+            {struktur} · ATR <span style={redupStyle}>{fmtPct0(k.atr_pct)}</span> · RSI <span style={redupStyle}>{fmtDes(k.rsi, 0)}</span>
+          </p>
+        )}
+
+        {r1 && <BarisLevel tipe="R" urutan={1} lv={r1} />}
+        {s1 && <BarisLevel tipe="S" urutan={1} lv={s1} />}
+
+        {f1 && (
+          <div className="baris">
+            <span>R1 tersentuh dulu</span>
+            <span className="up">{fmtPct0(f1.p_kena)} <span style={{ color: 'var(--text3)', fontWeight: 400 }}>(n≈{f1.n_efektif ?? '—'})</span></span>
+          </div>
+        )}
+        {takKeduanya1 != null && (
+          <div className="baris"><span>Tak keduanya</span><span>{fmtPct0(takKeduanya1)}</span></div>
+        )}
+        {f1?.median_hari != null && (
+          <div className="baris"><span>Median waktu</span><span>{fmtDes(f1.median_hari, f1.median_hari % 1 ? 1 : 0)} hb</span></div>
+        )}
+
+        <div className="kta-chip-baris">
+          {s.sektor && <span className="chip-t">{s.sektor}</span>}
+          {k.er_persentil != null && k.er_n_populasi != null && (
+            <span className="chip-t" style={redupStyle}>Karakter: persentil {Math.round(k.er_persentil)} dari {k.er_n_populasi}</span>
+          )}
+          {k.stochrsi && (
+            <span className="chip-t" style={redupStyle}>StochRSI {Math.round(k.stochrsi[0])}/{Math.round(k.stochrsi[1])}</span>
+          )}
+          {berisiko && <span className="badge badge-risiko">⚠ Papan {s.papan}</span>}
+        </div>
+
+        <div className="baris">
+          <span>Asing net 5h</span>
+          {asingP5
+            ? <span className={naikTurun(asingP5.net)} style={redupStyle}>{asingP5.net >= 0 ? '+' : ''}{fRingkas(asingP5.net)} {satBeli}</span>
+            : <span style={{ color: 'var(--text3)' }}>belum tersedia</span>}
+        </div>
+
+        {peringatanAtr && k.atr_pct != null && (
+          <div className="catat awas kta-awas-ringkas">
+            Pembatal ({fmtPct0(k.stop_pct)}) ada di dalam satu ATR harian ({fmtPct0(k.atr_pct)}) — bukan level yang berarti, lemparan koin.
+          </div>
+        )}
+
+        <details className="kta-lihat">
+          <summary>Lihat detail</summary>
+          <div className="asal" style={{ marginTop: 6 }}>
+            {(k.resistance.length > 1 || k.support.length > 1) && (
+              <div style={{ marginBottom: 8 }}>
+                {k.resistance.slice(1).map((lv, i) => <BarisLevel key={`r${i}`} tipe="R" urutan={i + 2} lv={lv} />)}
+                {k.support.slice(1).map((lv, i) => <BarisLevel key={`s${i}`} tipe="S" urutan={i + 2} lv={lv} />)}
+              </div>
+            )}
+            <div className="baris"><span>Musiman {BULAN[Number(k.tgl.slice(5, 7)) - 1]}</span><span>{k.musiman.naik} dari {k.musiman.n} tahun naik</span></div>
+            <div className="baris"><span>Selang 95% (Wilson)</span><span>{fmtPct0(k.musiman.bawah, 0)} – {fmtPct0(k.musiman.atas, 0)} (n={k.musiman.n})</span></div>
+            <p style={{ margin: '8px 0 0' }}>
+              <b>Asal:</b> S/R dari klaster pivot fraktal (500 lilin terakhir sejak {k.mulai}). First-passage dari
+              seluruh riwayat, horizon 20 hari bursa, disentuh low/high intraday (bukan penutupan). Musiman dari
+              imbal bulanan + selang Wilson. Rincian penuh &amp; tabel skenario R2/R3 ada di tab Lengkap.
+            </p>
+          </div>
+        </details>
+      </div>
+    </article>
+  )
+}
+
 /**
  * Kartu Analisa Emiten (`/kartu`) — kartu per emiten dirakit dari berkas
  * turunan `data-idx/json/kartu/<KODE>.json` (ditulis
@@ -274,6 +461,8 @@ function KartuSatuEmiten({ kode }: { kode: string }) {
  * SENGAJA tidak ada: skor tunggal (belum dikalibrasi — lihat modul Python),
  * bahasa ajakan beli/jual, dan jalur berkas/nama fungsi di layar.
  */
+type TabKartu = 'lengkap' | 'ringkas'
+
 export function KartuAnalisa() {
   const indeks = useIndeksKartu()
   const kamus = useKamusEmiten()
@@ -282,6 +471,15 @@ export function KartuAnalisa() {
     const q = (param.get('kode') ?? '').trim().toUpperCase()
     return /^[A-Z0-9]{2,6}$/.test(q) ? q : ''
   })
+  const tab: TabKartu = param.get('tab') === 'ringkas' ? 'ringkas' : 'lengkap'
+
+  function pilihTab(t: TabKartu) {
+    setParam((lama) => {
+      const baru = new URLSearchParams(lama)
+      if (t === 'ringkas') baru.set('tab', 'ringkas'); else baru.delete('tab')
+      return baru
+    }, { replace: true })
+  }
 
   const opsi = useMemo<OpsiDropdown[]>(() => {
     const dasar: OpsiDropdown[] = [{ nilai: '', label: 'Semua emiten' }]
@@ -324,13 +522,31 @@ export function KartuAnalisa() {
         </div>
       </div>
 
+      <div className="tabs" role="tablist" aria-label="Bentuk kartu">
+        <button
+          type="button" role="tab" aria-selected={tab === 'lengkap'}
+          className={`tab${tab === 'lengkap' ? ' on' : ''}`}
+          onClick={() => pilihTab('lengkap')}
+        >
+          Lengkap
+        </button>
+        <button
+          type="button" role="tab" aria-selected={tab === 'ringkas'}
+          className={`tab${tab === 'ringkas' ? ' on' : ''}`}
+          onClick={() => pilihTab('ringkas')}
+        >
+          Ringkas
+        </button>
+      </div>
+
       {!indeks && <p style={{ color: 'var(--text3)', fontSize: 12.5 }}>Memuat daftar emiten…</p>}
 
       {indeks && daftarTampil.length === 0 && !filter && (
         <p style={{ color: 'var(--text3)', fontSize: 12.5 }}>Pilih satu emiten dari daftar di atas untuk melihat kartunya.</p>
       )}
 
-      {daftarTampil.map((e) => <KartuSatuEmiten key={e.kode} kode={e.kode} />)}
+      {tab === 'lengkap' && daftarTampil.map((e) => <KartuSatuEmiten key={e.kode} kode={e.kode} />)}
+      {tab === 'ringkas' && daftarTampil.map((e) => <KartuRingkasSatuEmiten key={e.kode} kode={e.kode} />)}
 
       <div className="catat">
         <b>Metode.</b> Seluruh angka di kartu ini dihitung dari data harga historis PAPAN sendiri — klaster

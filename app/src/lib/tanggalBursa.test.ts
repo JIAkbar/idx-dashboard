@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { hariBursa, lupakanDaftarHariBursa, pasangDaftarHariBursa, tanggalBursaTerakhir } from './tanggalBursa'
+import { hariBursa, hariBursaSejak, lupakanDaftarHariBursa, pasangDaftarHariBursa, tanggalBursaTerakhir } from './tanggalBursa'
 
 // Daftar hari bursa itu keadaan tingkat-modul. Tanpa pembersihan ini, uji yang
 // memasangnya akan diam-diam mengubah jawaban uji berikutnya.
@@ -96,5 +96,23 @@ describe('hariBursa', () => {
     pasangDaftarHariBursa(['2026-07-07', '2026-07-09'], '2026-07-09')
     expect(hariBursa('2026-07-10')).toBe(true)  // Jumat, sesudah cakupan
     expect(hariBursa('2026-07-11')).toBe(false) // Sabtu tetap bukan hari bursa
+  })
+})
+
+describe('hariBursaSejak', () => {
+  it('tanggal sama -> 0', () => {
+    expect(hariBursaSejak('2026-08-18', '2026-08-18')).toBe(0)
+  })
+
+  it('Selasa ke Rabu (hari bursa berturutan) -> 1', () => {
+    expect(hariBursaSejak('2026-08-18', '2026-08-19')).toBe(1)
+  })
+
+  it('Jumat ke Senin berikutnya -> 1 (akhir pekan tak dihitung)', () => {
+    expect(hariBursaSejak('2026-08-14', '2026-08-18')).toBe(1) // 14 Jumat, 17 libur HUT RI, 18 Selasa
+  })
+
+  it('rentang terbalik -> 0, bukan galat', () => {
+    expect(hariBursaSejak('2026-08-18', '2026-08-14')).toBe(0)
   })
 })

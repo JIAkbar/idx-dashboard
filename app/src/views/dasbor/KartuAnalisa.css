@@ -58,3 +58,22 @@
 @media (max-width: 640px) {
   .kta-harga { text-align: left; }
 }
+
+/* Tab Ringkas (#170 .tabs, ?tab=ringkas) — kartu padat SEUKURAN PONSEL, jadi
+   lebarnya dikunci kecil bahkan di layar lebar (acuan Johan: kartu aplikasi
+   ponsel, bukan panel dasbor lebar penuh). Bentuknya (baris, chip, badge,
+   details) tetap dari primitif generik lantai.css — di sini cuma lebar &
+   jarak sesuai #170 prinsip 4. */
+.kta-ringkas { max-width: 380px; }
+.kta-basi { display: inline-block; margin-bottom: 8px; font-size: 10.5px; cursor: default; }
+.kta-struktur { margin: 0 0 8px; font-size: 12px; color: var(--text2); }
+.kta-chip-baris { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.kta-chip-baris .chip-t { cursor: default; padding: 4px 10px; }
+.kta-awas-ringkas { margin-top: 8px; font-size: 11px; padding: 8px 10px; }
+.kta-lihat { margin-top: 8px; }
+.kta-lihat summary { cursor: pointer; font-size: 11.5px; color: var(--text3); }
+.kta-lihat summary:hover { color: var(--amber); }
+
+@media (max-width: 480px) {
+  .kta-ringkas { max-width: 100%; }
+}
