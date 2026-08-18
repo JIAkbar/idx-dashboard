@@ -1,0 +1,47 @@
+/**
+ * Statistik Berkala — PENEMPATAN & LEBAR saja (aturan #170: kelas ber-awalan
+ * halaman tak boleh mendefinisikan BENTUK). Semua bentuk kendali datang dari
+ * komponen kanonis: .chip-t (PemilihRentang), .lt (LangkahTanggal), .dd-btn
+ * (Dropdown), .tabs/.tab, .panel, .tbl, .tiles/.tile.
+ */
+
+/* Judul kiri, kendali kanan — sama seperti kepala halaman Radar. */
+.lantai .stb-head { justify-content: space-between; }
+
+.lantai .stb-nav { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* Panah–pemilih–panah dalam satu baris. Jarak 6px: keduanya BUKAN tombol ikon
+   bersebelahan (ada Dropdown di antaranya), jadi area klik ::after 44px milik
+   .lt-sebaris tidak saling tindih. */
+.lantai .stb-langkah { display: flex; align-items: center; gap: 6px; }
+
+/* Daftar edisi bisa 30-an baris; beri menunya batas tinggi supaya tak
+   menutupi seluruh layar telepon. */
+.lantai .stb-langkah .dd-menu { max-height: 320px; }
+
+.lantai .stb-kosong { margin: 0; padding: 12px 14px; font-size: 12px; }
+.lantai .stb-pesan { text-align: center; padding: 40px 20px; }
+.lantai .stb-sumber { font-size: 11px; margin: 4px 2px 0; }
+
+/* Tabel indeks (45 baris IDX, 33 baris dunia) menggulung di dalam panelnya
+   sendiri, bukan memanjangkan halaman. Batang gulirnya mengikuti aturan
+   bawaan .lantai (gutter 2px) — JANGAN tulis ulang di sini. */
+.lantai .stb-panjang { max-height: 460px; overflow-y: auto; }
+
+@media (max-width: 720px) {
+  /* Di telepon kendali turun ke barisnya sendiri dan mengisi penuh lebar;
+     tanpa ini Dropdown edisi terjepit di sisa lebar judul. */
+  .lantai .stb-nav { width: 100%; }
+  .lantai .stb-langkah { flex: 1 1 100%; }
+  /* Pemilih edisi mengisi ruang antara kedua panah — tanpa `width:100%` pada
+     tombolnya, yang melar cuma pembungkus `.dd` dan panah "berikutnya"
+     terlempar sendirian ke tepi kanan layar, jauh dari pasangannya. */
+  .lantai .stb-langkah .dd { flex: 1 1 auto; min-width: 0; }
+  .lantai .stb-langkah .dd-btn { width: 100%; justify-content: space-between; }
+  .lantai .stb-panjang { max-height: 360px; }
+}
+
+/* Panel bersebelahan berdiri setinggi ISINYA sendiri. Tanpa ini, panel pendek
+   (mis. IHSG 3 baris) diregangkan mengikuti tetangganya yang panjang dan
+   menyisakan kotak kosong yang terbaca seperti data yang hilang. */
+.lantai .stb-jajar { align-items: start; }

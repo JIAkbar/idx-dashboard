@@ -33,6 +33,7 @@ const Radar = lazy(() => import('./views/dasbor/Radar').then((m) => ({ default: 
 const Seasonality = lazy(() => import('./views/dasbor/Seasonality').then((m) => ({ default: m.Seasonality })))
 const GrafikEmiten = lazy(() => import('./views/dasbor/GrafikEmiten').then((m) => ({ default: m.GrafikEmiten })))
 const Metodologi = lazy(() => import('./views/dasbor/Metodologi').then((m) => ({ default: m.Metodologi })))
+const StatistikBerkala = lazy(() => import('./views/dasbor/StatistikBerkala').then((m) => ({ default: m.StatistikBerkala })))
 const AdminLayout = lazy(() => import('./views/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })))
 const UnggahHarian = lazy(() => import('./views/admin/UnggahHarian').then((m) => ({ default: m.UnggahHarian })))
 const AkunAdmin = lazy(() => import('./views/admin/AkunAdmin').then((m) => ({ default: m.AkunAdmin })))
@@ -83,6 +84,13 @@ function App() {
                   punya kuncinya sendiri, 'topbroker'. */}
               <Route path="/broker" element={<PenjagaHalaman kunci="topbroker"><TopBroker /></PenjagaHalaman>} />
               <Route path="/sector" element={<PenjagaHalaman kunci="sektor"><SektorIndeks /></PenjagaHalaman>} />
+              {/* Statistik Berkala — rekap pekan bursa dari terbitan resmi IDX
+                  (arsipnya sudah lama dipanen tapi belum pernah punya layar).
+                  Kunci 'statistik' belum ada barisnya di `akses_halaman`, dan
+                  itu memang aman: kunci tak dikenal fail-open (aksesHalaman.ts),
+                  jadi halamannya publik sampai Johan mengatur tingkatnya dari
+                  tab Akses — tanpa menyentuh kode lagi. */}
+              <Route path="/statistik" element={<PenjagaHalaman kunci="statistik"><StatistikBerkala /></PenjagaHalaman>} />
               <Route path="/chart" element={<PenjagaHalaman kunci="chart"><ChartIndeks /></PenjagaHalaman>} />
               <Route path="/stock-detail" element={<PenjagaHalaman kunci="detail"><StockDetail /></PenjagaHalaman>} />
               <Route path="/peta-investor" element={<PenjagaHalaman kunci="peta"><PetaInvestor /></PenjagaHalaman>} />

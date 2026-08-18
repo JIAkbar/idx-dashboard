@@ -90,6 +90,16 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M4 19h16M4 15l4-5 4 3 5-7 3 4',
   },
   {
+    // Statistik Berkala — rekap SATU PEKAN bursa dari terbitan resmi IDX.
+    // Ditaruh di kelompok Pasar karena isinya seluruh pasar (bukan satu
+    // emiten, bukan aliran dana): nilai transaksi, IHSG, indeks dunia,
+    // peringkat saham & broker sepekan. Kode 'STA' — 'STK' sudah dipakai Top
+    // Stocks dan 'SEK' Sektor & Indeks.
+    id: 'statistik', path: '/statistik', label: 'Statistik Berkala', kode: 'STA', grup: 'pasar',
+    ringkas: 'Rekap satu pekan bursa dari terbitan resmi IDX — tiap angka berpasangan dengan pekan sebelumnya.',
+    ikon: 'M4 20h16M7 20V10M12 20V4M17 20v-7M4 7h6M4 13h3',
+  },
+  {
     id: 'broker', path: '/broker', label: 'Top Broker', kode: 'BRK', grup: 'pasar',
     ringkas: 'Broker paling aktif per hari — nilai, lot, dan arah bersihnya.',
     ikon: 'M4 20V9m5.4 11V4m5.2 16v-8m5.4 8V7',

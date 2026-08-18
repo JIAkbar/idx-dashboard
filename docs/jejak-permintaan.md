@@ -269,3 +269,29 @@ frekuensi di `top_saham`/`top_broker`. Ada di bulanan, TIDAK ada di mingguan:
 `sektor` (11 sektor IDX-IC), `syariah`, `sekuritas_tercatat`,
 `indeks_kinerja` (1M/3M/6M/1Y/3Y/5Y/10Y + volatilitas), kolom pembanding YoY
 dan YTD, serta Market PER/PBV.
+
+---
+
+## Sesi 18 Agustus 2026 (malam) — layar untuk statistik mingguan
+
+| # | Tugas | Asal perintah | Halaman | Komponen (`file:baris`) | Sebelumnya | Jadi | Alasan | Status & bukti | Changelog |
+|---|---|---|---|---|---|---|---|---|---|
+| 153 | Halaman Statistik Berkala — arsip mingguan IDX akhirnya punya layar | "kan kemarin ada data weekly dan monthly sudah di panen tapi belum ada UI nya, kerjakan" | **/statistik** (baru), grup Pasar, kode `STA` | `app/src/lib/dasbor/statistikBerkala.ts` (baru), `app/src/views/dasbor/StatistikBerkala.tsx` + `.css` (baru), `app/src/lib/dasbor/menu.ts:98`, `app/src/lib/aksesHalaman.ts:130`, `app/src/App.tsx:35,84` | **33 berkas `ws_*.json` + `index_weekly.json` dipanen sejak lama dan tak pernah dibaca aplikasi** — `grep` untuk `index_weekly`/`ws_` di seluruh `app/src` mengembalikan nol | Satu layar: pilih pekan (panah + daftar 33 edisi), lima tab — Ringkasan · Saham · Broker · Indeks · Transaksi | Bentuknya "pilih satu edisi" karena hampir tiap angka di berkasnya SUDAH berpasangan dengan pekan sebelumnya. Pembanding sengaja TIDAK dihitung ulang dari edisi tetangga: arsipnya berlubang (pekan 16–17 Mar cuma dua hari bursa), jadi hasilnya akan beda dari terbitan resmi IDX tanpa satu pun galat | Selesai — 33 edisi di pemilih, 0 luber mendatar di 412px (kelima tab), 0 galat konsol, `tsc -b --force` bersih, `vitest` 623 hijau (16 baru) | Added |
+| 154 | Ruas kosong tampil "—", bukan nol | (bagian dari #153) | /statistik | `statistikBerkala.ts` (`angka`, `persen`, `persenBanding`, `selisihBanding`) | — (kode baru) | `null`/ruas hilang → "—"; 0 yang memang tertulis di sumber tetap 0 | Terukur di data nyata: `net_asing` ADA di 32 edisi tapi TIDAK di edisi 14 Agu; `rentang_minggu` kosong di 3 edisi; `reit`/`dinfra`/`obligasi_pemerintah_usd` null di SELURUH 33 edisi. Nol di sana berbunyi "asing tidak bertransaksi" — pernyataan yang salah | Selesai — uji `statistikBerkala.test.ts` mengunci keduanya (kosong→"—", 0 sumber→0) | Added |
+| 155 | Persen PANGSA dipisah dari persen PERUBAHAN | (temuan saat verifikasi #153) | /statistik | `statistikBerkala.ts` (`pangsa()`), `StatistikBerkala.tsx` (Top Saham/Broker, Rekap per papan) | Kolom `%` porsi pasar dicetak lewat `persen()` → **"+86,96%"** pada Pasar Reguler | `pangsa()` tanpa tanda → "86,96%", judul kolom jadi "% pasar" | Dua jenis persen hidup di berkas yang sama dan cuma dibedakan nama ruasnya: `top_saham[].persen` itu porsi total, `top_gainers[].persen` itu perubahan. "+86,96%" terbaca "naik 87%" padahal artinya "87% dari seluruh volume" — salah baca yang tak memunculkan galat apa pun | Selesai — uji `pangsa(86.96)==='86,96%'` vs `persen(86.96)==='+86,96%'` | Fixed |
+| 156 | Bulanan: menunya TERLIHAT tapi MATI | "monthly ... belum ada UI nya" + batas "jangan menampilkan ruas karangan" | /statistik (chip "1 Bulan") | `StatistikBerkala.tsx:205`, `statistikBerkala.ts` (kepala berkas), `PemilihRentang.tsx` (+`opsi[].nonaktif`) | Rencana awal: bulanan meniru mingguan, jadi cukup ditukar sumbernya | Chip "1 Bulan" tampil `disabled` dengan alasan di `title`; pemuatnya sudah generik, layarnya belum | `ms_2607.json` mendarat di tengah sesi ini dan ternyata **bukan** cermin mingguan: `bulan_ini`/`bulan_lalu`/`tahun_lalu`/`mom`/`yoy`, gainers pakai `sebelumnya`/`penutupan`, plus blok tanpa padanan (`sektor`, `syariah`, `sekuritas_tercatat`, `indeks_kinerja`). Merendernya lewat komponen mingguan = panel kosong yang terbaca rusak; menebak artinya = angka karangan | Selesai (sengaja belum aktif) — chip `disabled=true` terverifikasi di peramban; `bacaIndeks` sudah tahan bentuk bulanan (uji urut `ms_2606`/`ms_2607`) | Added |
+| 157 | Pass kebocoran | (batas tugas) | /statistik | `statistikBerkala.ts` (tipe `EdisiBerkala`) | Berkas sumber memuat `_sumber_pdf`, `_halaman_diambil`, `_halaman_dilewati` | Ruas ber-awalan `_` tak didaftarkan di tipe & tak pernah dirender | Halaman Metodologi hari ini sempat tayang dengan nama berkas internal tercetak di layar publik | Selesai — pindai teks kelima tab: nihil untuk `ws_2`/`ms_2`/`_sumber`/`.json`/`data-idx`/`/src/`/`.pdf`/`undefined`/`NaN` | Fixed |
+
+**Kenapa `/statistik` publik.** Kunci `statistik` sudah dipasang di rute dan
+di `PETA_MENU_KUNCI`, tapi barisnya belum ada di tabel `akses_halaman` —
+kunci tak dikenal **fail-open** (`aksesHalaman.ts:30`), jadi halamannya
+terbuka sampai Johan menetapkan tingkatnya dari tab Akses, tanpa menyentuh
+kode lagi. Yang penting kuncinya ADA, supaya halaman ini tak jadi celah yang
+tak kelihatan dari panel — persis yang dulu terjadi pada Top Stocks & Top
+Broker.
+
+**Yang belum dibuat, dan tidak dihalangi tata letak ini.** Deret lintas-edisi
+(tren nilai transaksi 33 pekan dalam satu grafik) perlu memuat seluruh arsip
+(±34 KB × 33 ≈ 1,1 MB); halaman ini memuat satu edisi saja. Pemilih edisinya
+berdiri di kepala halaman, jadi deret itu cukup ditambahkan sebagai tab
+keenam tanpa menyentuh yang sudah ada.

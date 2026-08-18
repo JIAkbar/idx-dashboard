@@ -23,7 +23,11 @@ export function PemilihRentang<T extends string>({
   ariaLabel = 'Rentang waktu',
   className = '',
 }: {
-  opsi: readonly { id: T; label: string; judul?: string }[]
+  /** `nonaktif` = pilihan TETAP TERLIHAT tapi tak bisa ditekan (pola sama
+   *  dengan `OpsiDropdown.nonaktif`). Dipakai saat datanya memang belum ada —
+   *  menyembunyikannya membuat daftar menyusut tanpa keterangan, dan
+   *  membiarkannya aktif membuka layar kosong yang terbaca sebagai rusak. */
+  opsi: readonly { id: T; label: string; judul?: string; nonaktif?: boolean }[]
   nilai: T
   onGanti: (id: T) => void
   ariaLabel?: string
@@ -40,6 +44,7 @@ export function PemilihRentang<T extends string>({
           // Pembaca layar mengumumkan "ditekan" — tanpa itu, satu-satunya tanda
           // pilihan aktif adalah warna, yang tak terbaca sama sekali.
           aria-pressed={o.id === nilai}
+          disabled={o.nonaktif}
           title={o.judul}
           onClick={() => onGanti(o.id)}
         >
