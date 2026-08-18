@@ -20,11 +20,15 @@ Yang dihitung, dan dari mana:
 | Likuiditas            | idem                          | median nilai transaksi 20 hari           |
 | Sektor / papan        | data-idx/json/emiten_sektor.json | apa adanya                            |
 | Fundamental ringkas   | data-idx/json/fundamental/<KODE>.json | apa adanya                      |
-| Aliran asing          | TIDAK ADA                     | lihat catatan di bawah                   |
+| Aliran asing (ringkas)| data-idx/json/asing/<KODE>.json | net beli/jual LEMBAR + porsi thd volume pasar, 5h & 20h |
 
-Aliran asing per emiten TIDAK dihitung di sini dan tidak boleh dikarang:
-ForeignBuy/ForeignSell memang ada di IDX GetStockSummary (terverifikasi
-15 Agu 2026, scripts/cek_broker_emiten.py) tapi TIDAK PERNAH DISIMPAN di repo.
+Aliran asing per emiten dipanen sejak 18 Agu 2026 (989 emiten, commit
+5793317d) — beli/jual dalam LEMBAR, bukan rupiah (IDX tidak melaporkan aliran
+asing dalam rupiah). Blok ini SENGAJA cuma ringkasan (net + porsi terhadap
+volume pasar); panel lengkap ada di Stock Detail, bukan di kartu ini.
+`asing_ringkas()`/`ringkas_asing_dari()` di bawah, berkas yang tak ada
+mengembalikan `None` — pembaca kartu WAJIB menampilkan "belum tersedia",
+bukan 0 (nol berarti asing tak bertransaksi, itu klaim berbeda).
 
 Swauji: `python scripts/riset/kartu_analisa.py --uji`.
 """
@@ -39,6 +43,8 @@ from pathlib import Path
 
 AKAR = Path(__file__).resolve().parents[2]
 OHLC = AKAR / "data-idx" / "json" / "ohlc"
+ASING = AKAR / "data-idx" / "json" / "asing"
+KARTU_DIR = AKAR / "data-idx" / "json" / "kartu"
 
 # ---------------------------------------------------------------- fraksi BEI
 JENJANG = [(200, 1), (500, 2), (2000, 5), (5000, 10), (math.inf, 25)]
@@ -331,6 +337,47 @@ def fundamental(kode: str) -> dict:
     )}
 
 
+# --------------------------------------------------------------------- asing
+def ringkas_asing_dari(baris: list[list], hari: int) -> dict:
+    """Jumlah `hari` baris TERAKHIR dari deret [tgl,beli,jual,volume,value,frek]
+    (data-idx/json/asing/<KODE>.json — 'volume' di situ adalah volume PASAR
+    hari itu, sama dengan ruas V di ohlc/<KODE>.json, terverifikasi 18 Agu 2026).
+    Porsi = jumlah beli (atau jual) periode dibagi jumlah volume pasar periode
+    yang SAMA — dijumlah dulu baru dibagi, bukan rata-rata porsi harian,
+    supaya hari sepi tak membobot sama besar dengan hari ramai."""
+    slc = baris[-hari:]
+    beli = sum(r[1] for r in slc)
+    jual = sum(r[2] for r in slc)
+    vol = sum(r[3] for r in slc)
+    return {
+        "n": len(slc),
+        "beli": beli,
+        "jual": jual,
+        "net": beli - jual,
+        "porsi_beli_pct": (beli / vol * 100) if vol else None,
+        "porsi_jual_pct": (jual / vol * 100) if vol else None,
+    }
+
+
+def asing_ringkas(kode: str, hari_list: tuple[int, ...] = (5, 20)) -> dict | None:
+    """None kalau emiten belum punya berkas asing — pembaca WAJIB menampilkan
+    'belum tersedia', bukan 0 (lihat catatan modul)."""
+    p = ASING / f"{kode}.json"
+    if not p.exists():
+        return None
+    a = json.loads(p.read_text(encoding="utf-8"))
+    baris = a.get("d") or []
+    if not baris:
+        return None
+    return {
+        "satuan": a.get("satuan", {}),
+        "mulai": a.get("mulai"),
+        "akhir": a.get("akhir"),
+        "n_total": len(baris),
+        "periode": {str(h): ringkas_asing_dari(baris, h) for h in hari_list},
+    }
+
+
 # ------------------------------------------------------------------ perakit
 def kartu(kode: str, peringkat_er: dict[str, float] | None = None) -> dict:
     d = muat(kode)
@@ -382,6 +429,8 @@ def kartu(kode: str, peringkat_er: dict[str, float] | None = None) -> dict:
         "musiman": musiman_bulan(d, int(t[-1][5:7])),
         "sektor": sektor(kode),
         "fundamental": fundamental(kode),
+        "asing": asing_ringkas(kode),
+        "dihitung": t[-1],
     }
 
 
@@ -413,6 +462,16 @@ def cetak(k: dict) -> None:
     p(f"  MUSIMAN bulan ini: {m['naik']}/{m['n']} naik = {m['mentah']:.0f}% mentah, "
       f"tersusut {m['tersusut']:.0f}%, Wilson 95% {m['bawah']:.0f}-{m['atas']:.0f}%, "
       f"median {m['median']:+.2f}% (dasar emiten {m['dasar']:.0f}% dari {m['total_bulan']} bulan)")
+    asg = k.get("asing")
+    if not asg:
+        p("  ASING belum tersedia untuk emiten ini")
+    else:
+        for h in ("5", "20"):
+            pr = asg["periode"].get(h)
+            if not pr:
+                continue
+            p(f"  ASING {h}h  beli {pr['beli']:,.0f} lbr ({pr['porsi_beli_pct']:.1f}% vol pasar) · "
+              f"jual {pr['jual']:,.0f} lbr ({pr['porsi_jual_pct']:.1f}%) · net {pr['net']:+,.0f} lbr (n={pr['n']})")
 
 
 def uji() -> None:
@@ -435,7 +494,47 @@ def uji() -> None:
     # Wilson 5/5 tak boleh 100-100
     b, a = wilson(5, 5)
     assert b < 60 and a > 99
+    # asing: 3 hari, porsi dijumlah dulu baru dibagi (bukan rata-rata harian)
+    b3 = [["d1", 10, 5, 100, 0, 0], ["d2", 20, 20, 200, 0, 0], ["d3", 5, 25, 50, 0, 0]]
+    r = ringkas_asing_dari(b3, 3)
+    assert r["n"] == 3 and r["beli"] == 35 and r["jual"] == 50 and r["net"] == -15
+    assert abs(r["porsi_beli_pct"] - 35 / 350 * 100) < 1e-9
+    assert abs(r["porsi_jual_pct"] - 50 / 350 * 100) < 1e-9
+    # volume nol -> porsi None, bukan ZeroDivisionError
+    r0 = ringkas_asing_dari([["d1", 1, 1, 0, 0, 0]], 1)
+    assert r0["porsi_beli_pct"] is None and r0["porsi_jual_pct"] is None
     print("kartu_analisa: swauji lolos")
+
+
+def kode_populasi(min_n: int = 250) -> list[str]:
+    """Kode emiten dengan riwayat >= min_n lilin — sumber daftar untuk --semua."""
+    out = []
+    for p in sorted(OHLC.glob("*.json")):
+        try:
+            d = json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if d.get("n", 0) >= min_n:
+            out.append(d["kode"])
+    return out
+
+
+def tulis_berkas_kartu(hasil: dict[str, dict]) -> None:
+    """Tulis data-idx/json/kartu/<KODE>.json (satu per emiten) + index.json
+    (daftar kode + tanggal hitung, supaya halaman tahu apa yang tersedia tanpa
+    menebak nama berkas). Dipanggil dari --tulis, bukan otomatis tiap run —
+    menjalankan skrip riset ini tanpa flag itu TIDAK mengubah berkas apa pun."""
+    KARTU_DIR.mkdir(parents=True, exist_ok=True)
+    daftar = []
+    for kd, h in sorted(hasil.items()):
+        (KARTU_DIR / f"{kd}.json").write_text(json.dumps(h, indent=1, default=str), encoding="utf-8")
+        daftar.append({"kode": kd, "dihitung": h["dihitung"]})
+    idx = {
+        "diperbarui": __import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "emiten": daftar,
+    }
+    (KARTU_DIR / "index.json").write_text(json.dumps(idx, indent=1, ensure_ascii=False), encoding="utf-8")
+    print(f"\ntersimpan: {len(daftar)} berkas kartu + index.json -> {KARTU_DIR}")
 
 
 if __name__ == "__main__":
@@ -443,18 +542,53 @@ if __name__ == "__main__":
     if "--uji" in arg:
         uji()
         raise SystemExit(0)
-    kode = arg or ["ARCI", "WIFI", "BUMI"]
+    tulis = "--tulis" in arg
+    semua = "--semua" in arg
+    maks = None
+    if "--maks" in arg:
+        i_maks = arg.index("--maks")
+        maks = int(arg[i_maks + 1])
+    else:
+        i_maks = None
+    positional = [a for i, a in enumerate(arg) if not a.startswith("--") and i - 1 != i_maks]
+
+    if semua:
+        kode = kode_populasi()
+        if maks:
+            kode = kode[:maks]
+        print(f"mode --semua: {len(kode)} emiten (riwayat >=250 lilin){f', dibatasi --maks {maks}' if maks else ''}")
+    else:
+        kode = positional or ["ARCI", "WIFI", "BUMI"]
+
     print("menghitung Efficiency Ratio seluruh emiten (dasar persentil)...", flush=True)
     pop = dict(er_populasi())
     nilai_pop = sorted(pop.values())
     kuartil = lambda p: nilai_pop[int(p * len(nilai_pop))]
     print(f"  {len(pop)} emiten ber-riwayat >=250 lilin — ER20 median pasar {statistics.median(nilai_pop):.3f}, "
           f"P25 {kuartil(0.25):.3f}, P75 {kuartil(0.75):.3f}")
-    hasil = {}
-    for k in kode:
-        h = kartu(k, pop)
-        hasil[k] = h
-        cetak(h)
+
+    hasil: dict[str, dict] = {}
+    gagal: list[str] = []
+    ringkas_saja = len(kode) > 10  # cetak() penuh cuma buat daftar pendek — ratusan emiten bikin log tak terbaca
+    for i, kd in enumerate(kode, 1):
+        try:
+            h = kartu(kd, pop)
+        except Exception as e:  # emiten dengan riwayat aneh/pendek tak boleh menghentikan seluruh batch
+            gagal.append(kd)
+            print(f"  [{i}/{len(kode)}] {kd}: GAGAL — {e}")
+            continue
+        hasil[kd] = h
+        if ringkas_saja:
+            if i % 50 == 0 or i == len(kode):
+                print(f"  [{i}/{len(kode)}] ...")
+        else:
+            cetak(h)
+    if gagal:
+        print(f"\n{len(gagal)} emiten gagal dihitung: {', '.join(gagal)}")
+
+    if tulis:
+        tulis_berkas_kartu(hasil)
+
     tujuan = os.environ.get("KARTU_OUT")
     if tujuan:
         Path(tujuan).write_text(json.dumps(hasil, indent=1, default=str), encoding="utf-8")

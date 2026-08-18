@@ -41,7 +41,11 @@ jobs:
       - name: Install Python packages
         run: |
           pip install -r requirements.txt
-          playwright install chromium --with-deps
+          # Playwright TIDAK dipasang di sini. download_idx.py membuangnya
+          # (be02bb01) dan tak ada satu pun skrip yang dijalankan workflow ini
+          # memakainya; yang masih butuh (cek_broker_summary, fetch_investor_map)
+          # jalan dari mesin rumahan. Memasangnya berarti mengunduh peramban
+          # ratusan MB tiap run untuk pekerjaan yang tak menyentuhnya.
 
       # 4. Download PDF IDX (harian + mingguan + bulanan Equity)
       #    CATATAN blokir (Agustus 2026): IDX kerap menolak/melambatkan IP

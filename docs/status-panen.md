@@ -17,7 +17,7 @@ data baru, dan membaca mtime membuat data basi terlihat segar.
 |---|---|---|---|---|---|---|
 | **OHLC harian** | Grafik Emiten, Tanya PAPAN | Yahoo Finance | **18 Agu 2026** | 964 | ❌ manual | `panen_ohlc.py` — **"Panen Lagi"** |
 | **Aliran asing** | Stock Detail, Kartu Analisa *(UI sedang dikerjakan)* | IDX `GetStockSummary` | **2 Jan 2020 → 18 Agu 2026** (median 1.593 hari bursa) | 989 | ❌ manual | `panen_asing.py` — **"Panen Lagi"** |
-| **Statistik harian** | Kalender Bursa, Beranda | IDX PDF harian | **18 Agu 2026** | 143 | ⚙️ Actions 14/16/18 UTC Sen–Jum | `update.yml` |
+| **Statistik harian** | Kalender Bursa, Beranda | IDX PDF harian | **18 Agu 2026** | 143 | ⚠️ Actions **gagal sejak ≥14 Agu** — perbaikannya belum di-push | `update.yml` |
 | **Statistik mingguan** | Statistik Berkala | IDX PDF mingguan | 14 Agu 2026 | 33 | ⚙️ Actions (ikut `update.yml`) | `update.yml` |
 | **Statistik bulanan** | Statistik Berkala *(chip nonaktif — skema beda, belum dipetakan)* | IDX PDF bulanan `MS<YYMM>-E` | Sep 2025 – Jul 2026 | 11 | ❌ manual | **"Panen Lagi"** |
 | **Kabar** | Beranda, Kabar Pasar | IPOT · IDX berita · IDX pengumuman · Kontan | **18 Agu 2026** | — | ⚙️ Actions tiap 2 jam — **semua sumber dicoba**, hasil per sumber tampil di ringkasan run | `panen-kabar.yml` |
@@ -79,3 +79,20 @@ tak perlu menebak.
 ter-gzip (1.729 berkas, 140 MB); `--dari-arsip` membangun ulang seluruh
 2020–2026 dalam 29 detik tanpa satu pun permintaan jaringan. 26 dari 32 ruas
 belum dipakai dan sudah tersimpan.
+
+## Yang terlihat hijau padahal tidak (18 Agu 2026)
+
+Dua workflow **sukses** sambil gagal. Ini kelas kegagalan paling mahal di
+proyek ini, dan tabel di atas ikut menipu selama beberapa hari.
+
+- **`panen-kabar.yml`** — run 32139468436 hijau, commit terkirim, padahal
+  log memuat `IDX berita: 0 item` dan `IDX pengumuman: 0 item` (keduanya 403).
+  Satu sumber hidup (IPOT, 28 item) sudah cukup membuat panen terlihat sehat.
+- **`update.yml`** — gagal sejak ≥14 Agu karena Playwright `wait_for_selector`
+  timeout, dan tabel ini tetap menulis "⚙️ Actions". Skripnya sudah dibuang
+  Playwright-nya (`be02bb01`) tapi belum di-push; langkah `playwright install`
+  yang tersisa di workflow juga sudah dibuang hari ini.
+
+Pelajarannya untuk kolom "Otomatis?": **status di kolom itu wajib berasal dari
+run terakhir yang benar-benar diperiksa, bukan dari niat workflow-nya.**
+"⚙️ Actions" tanpa memeriksa run terakhir adalah klaim, bukan fakta.

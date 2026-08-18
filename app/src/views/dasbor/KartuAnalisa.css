@@ -1,0 +1,60 @@
+/*
+ * Kartu Analisa Emiten (`/kartu`) — penempatan & lebar SAJA (prinsip 4,
+ * #170). Bentuknya (kartu, blok, baris, level, tesis, catatan) datang dari
+ * primitif generik di dasbor/lantai.css (`.panel`, `.blok-grid`, `.blok`,
+ * `.baris`, `.lvl`, `.asal`, `.tesis`, `.catat`) — TIDAK didefinisikan ulang
+ * di sini, supaya halaman analitik berikutnya (mis. Bedah Emiten) memakai
+ * bentuk yang sama tanpa menyalin CSS ini.
+ */
+
+.kta-kepala {
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: baseline;
+}
+
+.kta-tik {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.kta-nama {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--text3);
+  font-family: var(--ui);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.kta-harga {
+  font-family: var(--mono);
+  font-size: 20px;
+  font-weight: 700;
+  text-align: right;
+}
+.kta-harga small {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--mono);
+}
+
+.kta-pilih .panel-b { padding: 10px 14px; }
+
+.kta-kaki {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--text3);
+  line-height: 1.6;
+}
+.kta-kaki strong { color: var(--text2); }
+.kta-kaki p { margin: 0 0 10px; }
+.kta-kaki p:last-child { margin-bottom: 0; }
+
+@media (max-width: 640px) {
+  .kta-harga { text-align: left; }
+}

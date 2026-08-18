@@ -827,3 +827,33 @@ Lihat #143 untuk pilihan jalurnya.
 - **Nada pesan ke kontributor** berbentuk apresiasi, bukan pemberitahuan penolakan. Setoran yang disetujui tapi tak dimuat di edisi harus terbaca sebagai terima kasih atas kerjanya — pengakuan di depan, keterangan teknis di belakang.
 - **Harga apa pun** yang ditampilkan wajib lewat `keFraksi()` — lihat `docs/pedoman-harga-bei.md`. Kecuali rata-rata biaya (cost basis) hasil hitungan, yang memang tak wajib jatuh di tick.
 - **Grid pembungkus halaman** wajib `minmax(0, 1fr)`, bukan `auto`. Kolom `auto` melebar mengikuti anak terlebar (tabel ber-min-width), dan karena `.dasbor-main` memotong bukan menggulung, kelebihannya jadi tak terjangkau di ponsel. Ditemukan pada Seasonality 15 Agu 2026.
+
+## Keputusan: kuartal XBRL ditampilkan DISKRET (18 Agu 2026)
+
+Johan, verbatim: *"diskret saja biar bisa dibandingkan antar kuartal"* —
+menjawab pilihan antara menampilkan interim IDX apa adanya (kumulatif, sama
+seperti terbitan resmi) atau menurunkannya jadi kuartal berdiri sendiri.
+
+Konsekuensi yang mengikat:
+
+- Turunannya `Q1 = TW1`, `Q2 = TW2 − TW1`, `Q3 = TW3 − TW2`,
+  `Q4 = Tahunan(audit) − TW3`. Tahunan auditan sudah diarsipkan, jadi yang
+  perlu dipanen tiga interim per tahun, bukan empat.
+- **Hanya ruas ARUS** (pendapatan, beban, laba, arus kas) yang boleh
+  dikurangkan. Ruas NERACA adalah posisi pada satu tanggal; menguranginya
+  menghasilkan perubahan neraca yang terbaca sebagai neraca kuartal — salah
+  tanpa terlihat salah.
+- **Kumulatif aslinya tetap disimpan.** Terbitan resmi IDX kumulatif; kalau
+  ada yang mencocokkan angka kita ke laporan resmi, keduanya harus bisa
+  ditunjukkan.
+- Kuartal yang pengurangnya hilang ditulis `null`, **tidak pernah `0`** —
+  nol berarti "labanya nol", dan itu klaim. Keluhan yang memicu keputusan ini
+  justru layar yang menampilkan `0` untuk ARCI yang berlaba Rp532 miliar.
+- Gerbang verifikasi: jumlah 4 kuartal diskret ≈ tahunan auditan. Melenceng
+  >5% pada ruas laba berarti asumsi diskret/kumulatifnya salah — berhenti,
+  jangan simpan.
+
+Prasyarat yang belum ada saat keputusan diambil: XBRL di cakram cuma
+menyimpan **satu** periode interim per emiten (774 emiten 1 periode, 175
+nol termasuk ARCI), karena panen sebelumnya hanya mengambil TW2 2026. Jadi
+diskret belum bisa diturunkan sampai TW1/TW2/TW3 dipanen.

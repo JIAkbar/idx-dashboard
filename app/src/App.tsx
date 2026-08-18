@@ -32,6 +32,7 @@ const Bulletin = lazy(() => import('./views/dasbor/Bulletin').then((m) => ({ def
 const Radar = lazy(() => import('./views/dasbor/Radar').then((m) => ({ default: m.Radar })))
 const Seasonality = lazy(() => import('./views/dasbor/Seasonality').then((m) => ({ default: m.Seasonality })))
 const GrafikEmiten = lazy(() => import('./views/dasbor/GrafikEmiten').then((m) => ({ default: m.GrafikEmiten })))
+const KartuAnalisa = lazy(() => import('./views/dasbor/KartuAnalisa').then((m) => ({ default: m.KartuAnalisa })))
 const Metodologi = lazy(() => import('./views/dasbor/Metodologi').then((m) => ({ default: m.Metodologi })))
 const StatistikBerkala = lazy(() => import('./views/dasbor/StatistikBerkala').then((m) => ({ default: m.StatistikBerkala })))
 const AdminLayout = lazy(() => import('./views/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })))
@@ -109,6 +110,12 @@ function App() {
                   OHLC lokal, tahap 3. Perlu login (keputusan Johan 17 Agu
                   2026): fitur baru tak boleh publik. */}
               <Route path="/grafik" element={<PenjagaHalaman kunci="grafik"><GrafikEmiten /></PenjagaHalaman>} />
+              {/* Kartu Analisa Emiten — kartu per emiten dirakit dari
+                  data-idx/json/kartu/<KODE>.json (scripts/riset/kartu_analisa.py
+                  --tulis). Kunci 'kta' belum punya baris di `akses_halaman`
+                  (pola sama 'statistik') -> publik sampai Johan mengatur
+                  tingkatnya dari tab Akses, tanpa perlu menyentuh kode lagi. */}
+              <Route path="/kartu" element={<PenjagaHalaman kunci="kta"><KartuAnalisa /></PenjagaHalaman>} />
               <Route path="/feedback" element={<PenjagaHalaman kunci="saran"><Feedback /></PenjagaHalaman>} />
               {/* Backlog C6 — publik SENGAJA tanpa PenjagaHalaman: glosarium &
                   metodologi justru untuk pembaca yang belum percaya sistemnya,

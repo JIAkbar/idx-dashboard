@@ -126,6 +126,13 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   // Grafik Emiten (tahap 3 chart PAPAN, 17 Agu 2026) — perlu login, baris
   // `akses_halaman` ditambahkan bareng rutenya, bukan menyusul.
   grafik: 'grafik',
+  // Kartu Analisa Emiten (18 Agu 2026). Baris `akses_halaman` BELUM ada di
+  // database sesi ini (pola sama 'statistik' di bawah) -> kunci tak dikenal
+  // fail-open, jadi halamannya publik sampai tingkatnya diatur dari tab
+  // Akses. Yang penting kuncinya sudah terpasang di sini, supaya halaman ini
+  // tak jadi celah yang tak kelihatan dari panel (persis yang dulu terjadi
+  // pada Top Stocks & Top Broker).
+  kartu: 'kta',
   // Statistik Berkala (18 Agu 2026). Barisnya BELUM ada di `akses_halaman` —
   // sengaja: kunci tak dikenal fail-open, jadi halamannya publik sampai
   // tingkatnya diatur dari tab Akses. Yang penting kuncinya sudah terpasang,

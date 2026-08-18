@@ -155,6 +155,15 @@ export const MENU_ITEMS: MenuItem[] = [
     ringkas: 'Hitung average down, target ARA, risk-reward, dividen, dan titik pulih.',
     ikon: 'M6 3h12a1 1 0 011 1v16a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1zM8 7h8M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01',
   },
+  {
+    // Kartu Analisa Emiten (18 Agu 2026) — kartu per emiten dari berkas
+    // turunan scripts/riset/kartu_analisa.py: struktur harga, level S/R
+    // dengan n sentuhan, ekspektasi waktu first-passage, musiman, fundamental.
+    // Kode 'KTA' — 'KAL' Kalkulator, 'RDR' Radar sudah dipakai.
+    id: 'kartu', path: '/kartu', label: 'Kartu Analisa', kode: 'KTA', grup: 'analisa',
+    ringkas: 'Kartu per emiten: struktur harga, level dengan n sentuhan, ekspektasi waktu, musiman, dan fundamental — tiap angka membawa asal-usulnya.',
+    ikon: 'M4 4h16v16H4zM4 9h16M9 9v11M14 13h3M14 16h3',
+  },
 
   // ── Baca ───────────────────────────────────────────────────────────────
   {

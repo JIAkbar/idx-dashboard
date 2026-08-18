@@ -2868,3 +2868,43 @@
   cursor: pointer; text-align: inherit;
 }
 .lantai .th-sort:hover { color: var(--amber); }
+
+/* ── Blok kartu analitik — primitif generik "grid dari sub-panel bertajuk"
+   (#183, lahir dengan Kartu Analisa Emiten, pakai ulang di halaman analitik
+   berikutnya — mis. Bedah Emiten). BUKAN spesifik satu halaman: `.blok`/
+   `.baris`/`.lvl`/`.asal`/`.tesis`/`.catat` di sini, kelas berawalan halaman
+   (mis. `.kta-*`) HANYA untuk penempatan & lebar per prinsip 4 (#170). ───── */
+.lantai .blok-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; align-items: start; }
+.lantai .blok { background: var(--bg2); border: 1px solid var(--line); border-radius: var(--r-kecil); padding: 12px 14px; }
+.lantai .blok h4 { margin: 0 0 8px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); font-weight: 700; }
+/* Blok yang kehilangan bahannya (mis. aliran asing belum dipanen emiten ini) —
+   dibedakan warnanya, bukan disembunyikan: ketiadaan data adalah informasi. */
+.lantai .blok.blok-kosong { border-color: var(--red-dim); background: rgba(230,99,90,.05); }
+.lantai .blok.blok-kosong h4 { color: var(--red); }
+
+.lantai .baris { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: 12.5px; }
+.lantai .baris + .baris { border-top: 1px dashed var(--line); }
+.lantai .baris > span:first-child { color: var(--text2); }
+.lantai .baris > span:last-child { font-family: var(--mono); text-align: right; white-space: nowrap; }
+
+.lantai .lvl { font-family: var(--mono); font-size: 12.5px; padding: 4px 0; display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.lantai .lvl + .lvl { border-top: 1px dashed var(--line); }
+.lantai .lvl em { font-style: normal; color: var(--text3); font-size: 10.5px; }
+.lantai .lvl.lvl-acuan { border-top: 1px solid var(--line2); margin-top: 4px; padding-top: 8px; }
+
+.lantai .asal { margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 11px; line-height: 1.55; color: var(--text3); }
+.lantai .asal b { color: var(--text2); font-weight: 600; }
+
+.lantai .tesis { border-left: 3px solid var(--amber); padding: 1px 0 1px 13px; margin: 14px 0 0; display: flex; flex-direction: column; gap: 8px; }
+.lantai .tesis p { margin: 0; color: var(--text2); font-size: 12.5px; line-height: 1.55; }
+.lantai .tesis b { color: var(--text); }
+
+.lantai .catat { background: rgba(91,148,232,.08); border: 1px solid rgba(91,148,232,.28); border-radius: var(--r-kecil); padding: 11px 14px; margin: 4px 0; font-size: 12px; color: var(--text2); line-height: 1.55; }
+.lantai .catat b { color: var(--blue); }
+.lantai .catat.awas { background: var(--red-dim); border-color: rgba(230,99,90,.3); }
+.lantai .catat.awas b { color: var(--red); }
+
+.lantai .tp-tbl { width: 100%; font-size: 11.5px; border-collapse: collapse; }
+.lantai .tp-tbl th { text-align: left; padding: 4px 8px 4px 0; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); font-weight: 600; border-bottom: 1px solid var(--line2); }
+.lantai .tp-tbl td { padding: 6px 8px 6px 0; border-bottom: 1px dashed var(--line); font-family: var(--mono); white-space: nowrap; }
+.lantai .tp-tbl tr:last-child td { border-bottom: 0; }

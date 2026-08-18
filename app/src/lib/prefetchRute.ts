@@ -24,6 +24,7 @@ const PETA: Record<string, () => Promise<unknown>> = {
   '/bulletin': () => import('../views/dasbor/Bulletin'),
   '/radar': () => import('../views/dasbor/Radar'),
   '/seasonality': () => import('../views/dasbor/Seasonality'),
+  '/kartu': () => import('../views/dasbor/KartuAnalisa'),
   '/admin': () => import('../views/admin/AdminLayout'),
 }
 
