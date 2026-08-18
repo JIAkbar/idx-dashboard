@@ -86,12 +86,94 @@ export function useAlatGambar(opts: {
   const kodeRef = useRef(kode)
   kodeRef.current = kode
 
+  /**
+   * Pan/zoom chart (Johan, tangkapan layar 18 Agu: "waktu gambar kenapa
+   * chart nya ikutan gerak"). Kanvas & bilah alat gambar berbagi kontainer
+   * yang sama, jadi satu gerakan seret dibaca DUA KALI — sekali oleh
+   * `chart.handleScroll` bawaan (pan), sekali oleh listener alat gambar. Dua
+   * kondisi WAJIB mematikannya, bukan cuma satu: alat gambar aktif
+   * (`alatAktifRef`, tempel-titik ATAU kuas), DAN sedang menyeret anchor
+   * gambar yang SUDAH ADA (`seretAnchorRef`, drag-reshape bawaan manager —
+   * ini berlaku juga saat `alatAktif` null / mode kursor).
+   *
+   * Nilai ASLI (`panAsliRef`) dibaca dari `chart.options()` SEKALI saat
+   * pertama kali dimatikan, dipulihkan APA ADANYA saat kedua kondisi di atas
+   * sama-sama lepas — bukan konstanta tertulis ulang di sini, supaya
+   * `handleScroll:{vertTouchDrag:false}` dari `GrafikEmiten.tsx` (chart di
+   * telepon: geser vertikal tetap milik HALAMAN, bukan chart) tetap hidup
+   * sesudah pemulihan walau berkas ini tak tahu apa isinya.
+   */
+  const panAsliRef = useRef<{
+    handleScroll: ReturnType<IChartApi['options']>['handleScroll']
+    handleScale: ReturnType<IChartApi['options']>['handleScale']
+  } | null>(null)
+  const seretAnchorRef = useRef(false)
+  const terapkanPan = useCallback(() => {
+    const chart = chartRef.current
+    if (!chart) return
+    const matikan = alatAktifRef.current !== null || seretAnchorRef.current
+    if (matikan) {
+      if (!panAsliRef.current) {
+        // `chart.options()` mengembalikan REFERENSI HIDUP ke state internal
+        // lightweight-charts, BUKAN salinan — terukur langsung (log QA 18 Agu
+        // 2026): begitu `applyOptions({handleScroll:false,...})` dipanggil
+        // sesudahnya, objek yang SAMA ikut berubah jadi `false` juga, dan
+        // pemulihan berikutnya menerapkan nilai yang sudah rusak. `structuredClone`
+        // memutus tautan itu — WAJIB, bukan kehati-hatian berlebih.
+        const o = chart.options()
+        panAsliRef.current = structuredClone({ handleScroll: o.handleScroll, handleScale: o.handleScale })
+      }
+      chart.applyOptions({ handleScroll: false, handleScale: false })
+    } else if (panAsliRef.current) {
+      chart.applyOptions({ handleScroll: panAsliRef.current.handleScroll, handleScale: panAsliRef.current.handleScale })
+      panAsliRef.current = null
+    }
+  }, [chartRef])
+
+  // Jejak goresan kuas & jalur keluarnya — REF (bukan closure lokal di dalam
+  // efek kuas) supaya Escape/klik-kanan (efek keyboard di bawah) bisa
+  // menjangkau dan membatalkan goresan yang SEDANG berlangsung. Closure lokal
+  // tak bisa dijangkau dari efek lain sama sekali.
+  const kuasAktifRef = useRef(false)
+  const titikKuasRef = useRef<Anchor[]>([])
+
+  /** Batalkan APA PUN yang sedang berlangsung — dipanggil dari Escape & klik
+   *  kanan. Titik klik-klik yang belum genap DIBUANG (bukan disimpan sebagai
+   *  gambar setengah jadi), goresan kuas yang sedang ditarik DIHENTIKAN tanpa
+   *  menjadi gambar. Pan TIDAK dipulihkan di sini — itu urusan `pilihAlat`,
+   *  dipanggil terpisah oleh pemanggil kalau memang bermaksud keluar dari
+   *  mode alat gambar sepenuhnya (lihat komentar di pemanggilnya). */
+  const batalkanSedangDigambar = useCallback(() => {
+    titikSedangRef.current = []
+    kuasAktifRef.current = false
+    titikKuasRef.current = []
+  }, [])
+
   const mintaPustaka = useCallback(() => {
     if (pustaka || galat) return
     muatPustakaGambar()
       .then(setPustaka)
       .catch((e: unknown) => setGalat(e instanceof Error ? e.message : 'Gagal memuat alat gambar.'))
   }, [pustaka, galat])
+
+  /**
+   * Muat pustaka OTOMATIS kalau emiten ini punya gambar tersimpan —
+   * `bacaGambarTersimpan` sendiri murah (satu `localStorage.getItem` + parse
+   * JSON, bukan impor 2,7 MB), jadi memeriksanya di SETIAP kode tak melanggar
+   * alasan impor dinamis (lihat `gambarPustaka.ts`).
+   *
+   * Tanpa efek ini, muat ulang halaman meninggalkan gambar yang sudah
+   * disimpan TAK TERLIHAT sampai pembaca kebetulan menyentuh bilah alat
+   * gambar — dan dari layar itu terbaca sebagai "gambarnya hilang", padahal
+   * datanya utuh di localStorage (cuma belum digambar ulang). Terukur 18 Agu
+   * 2026: garis horizontal yang baru disimpan lenyap dari layar sesudah
+   * reload sampai bilah disentuh — persis kegagalan senyap yang dilarang
+   * CLAUDE.md.
+   */
+  useEffect(() => {
+    if (bacaGambarTersimpan(kode).length > 0) mintaPustaka()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kode])
 
   /** Ekspor manager -> `GambarTersimpan[]` -> localStorage EMITEN AKTIF SAAT
    *  INI (`kodeRef`, bukan `kode` dari closure — event manager bisa terlambat
@@ -130,7 +212,7 @@ export function useAlatGambar(opts: {
       alatTertundaRef.current = id
       return
     }
-    titikSedangRef.current = []
+    batalkanSedangDigambar()
     alatAktifRef.current = id
     setAlatAktifState(id)
     managerRef.current?.setActiveTool(id)
@@ -138,7 +220,12 @@ export function useAlatGambar(opts: {
     // tadi terpilih tak boleh ikut terseret saat pembaca menempatkan titik
     // gambar yang BARU di kanvas yang sama.
     if (id) managerRef.current?.deselectAll()
-  }, [pustaka])
+    // `id !== null` (alat gambar dipilih) MEMATIKAN pan; `id === null`
+    // (kembali ke kursor) MEMULIHKANNYA — "keadaan bawaannya" (Johan). Kalau
+    // sedang menyeret anchor gambar lain (`seretAnchorRef`), `terapkanPan`
+    // sendiri yang menahannya tetap mati sampai seretan itu juga selesai.
+    terapkanPan()
+  }, [pustaka, batalkanSedangDigambar, terapkanPan])
 
   useEffect(() => {
     if (pustaka && alatTertundaRef.current) {
@@ -238,12 +325,15 @@ export function useAlatGambar(opts: {
   }, [pustaka, chartRef, seriesRef, pilihAlat])
 
   /* ---------------- Kuas: seret mentah ---------------- */
+  // Jejaknya di REF hoisted (`kuasAktifRef`/`titikKuasRef`), bukan closure
+  // lokal — `batalkanSedangDigambar` (Escape/klik-kanan) harus bisa
+  // menjangkaunya dari LUAR efek ini untuk menghentikan goresan yang sedang
+  // ditarik. `pxTerakhir` tetap closure lokal (murni jarak-piksel-minimum,
+  // tak pernah perlu dibatalkan dari luar).
   useEffect(() => {
     const container = containerRef.current
     const chart = chartRef.current
     if (!container || !chart || !pustaka) return
-    let menggambar = false
-    let titik: Anchor[] = []
     let pxTerakhir: { x: number; y: number } | null = null
 
     const keAnchor = (ev: MouseEvent): { a: Anchor; px: { x: number; y: number } } | null => {
@@ -260,30 +350,31 @@ export function useAlatGambar(opts: {
       if (alatAktifRef.current !== 'brush') return
       const t = keAnchor(ev)
       if (!t) return
-      menggambar = true
-      titik = [t.a]
+      kuasAktifRef.current = true
+      titikKuasRef.current = [t.a]
       pxTerakhir = t.px
     }
     const gerak = (ev: MouseEvent) => {
-      if (!menggambar) return
+      if (!kuasAktifRef.current) return
       const t = keAnchor(ev)
       if (!t) return
       if (pxTerakhir) {
         const jarak = Math.hypot(t.px.x - pxTerakhir.x, t.px.y - pxTerakhir.y)
         if (jarak < JARAK_MIN_KUAS) return
       }
-      titik.push(t.a)
+      titikKuasRef.current.push(t.a)
       pxTerakhir = t.px
     }
     const naik = () => {
-      if (!menggambar) return
-      menggambar = false
+      if (!kuasAktifRef.current) return
+      const titik = titikKuasRef.current
+      kuasAktifRef.current = false
+      titikKuasRef.current = []
+      pxTerakhir = null
       if (titik.length >= 2) {
         const gambar = pustaka.getToolRegistry().createDrawing('brush', idBaru(), titik)
         if (gambar) managerRef.current?.addDrawing(gambar)
       }
-      titik = []
-      pxTerakhir = null
       pilihAlat(null)
     }
 
@@ -297,11 +388,60 @@ export function useAlatGambar(opts: {
     }
   }, [pustaka, chartRef, containerRef, seriesRef, pilihAlat])
 
-  /* ---------------- Keyboard: Escape batal, Delete/Backspace hapus ---------------- */
+  /* ---------------- Pan mati selagi menyeret ANCHOR gambar yang sudah ada ---------------- */
+  // Berlaku independen dari `alatAktif` — mode KURSOR (alatAktif null) yang
+  // justru paling sering dipakai menyeret titik gambar lama. Meniru cek yang
+  // sama dengan `DrawingManager.handleMouseDown` bawaan pustaka (hitTestAnchor
+  // pada gambar terpilih) — bukan menyalin state internalnya, cuma bertanya
+  // pertanyaan yang sama lewat API publik `hitTestAnchor`.
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container || !pustaka) return
+
+    const turun = (ev: MouseEvent) => {
+      const manager = managerRef.current
+      if (!manager?.getSelectedDrawing()) return
+      const r = container.getBoundingClientRect()
+      const kena = manager.hitTestAnchor({ x: ev.clientX - r.left, y: ev.clientY - r.top })
+      if (kena === null) return
+      seretAnchorRef.current = true
+      terapkanPan()
+    }
+    const naik = () => {
+      if (!seretAnchorRef.current) return
+      seretAnchorRef.current = false
+      terapkanPan()
+    }
+
+    container.addEventListener('mousedown', turun)
+    window.addEventListener('mouseup', naik)
+    return () => {
+      container.removeEventListener('mousedown', turun)
+      window.removeEventListener('mouseup', naik)
+    }
+  }, [pustaka, containerRef, terapkanPan])
+
+  /**
+   * Keyboard: Escape membatalkan, Delete/Backspace menghapus.
+   *
+   * Escape DUA TAHAP — sengaja, bukan kelalaian: tahap pertama membuang
+   * titik/goresan yang BELUM genap tapi alat gambarnya tetap terpilih (siap
+   * menggambar bentuk berikutnya, pan tetap mati — itu memang keadaannya
+   * selagi alat gambar aktif). Tahap kedua (Escape lagi, atau tak ada apa pun
+   * yang sedang digambar) baru keluar sepenuhnya ke kursor lewat `pilihAlat`,
+   * dan DI SITULAH pan dipulihkan. Jalur ini juga yang mencegah "chart hang"
+   * kalau Escape ditekan di tengah goresan kuas (mouse masih tertekan): efek
+   * kuas sendiri tak pernah tahu Escape ditekan, jadi `batalkanSedangDigambar`
+   * WAJIB menjangkau `kuasAktifRef` dari sini — tanpa itu goresannya baru
+   * berhenti saat tombol tetikus benar-benar dilepas.
+   */
   useEffect(() => {
     const saatTombol = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (titikSedangRef.current.length > 0) { titikSedangRef.current = []; return }
+        if (titikSedangRef.current.length > 0 || kuasAktifRef.current) {
+          batalkanSedangDigambar()
+          return
+        }
         if (alatAktifRef.current) pilihAlat(null)
         return
       }
@@ -315,7 +455,28 @@ export function useAlatGambar(opts: {
     }
     document.addEventListener('keydown', saatTombol)
     return () => document.removeEventListener('keydown', saatTombol)
-  }, [pilihAlat])
+  }, [pilihAlat, batalkanSedangDigambar])
+
+  /**
+   * Klik kanan membatalkan alat gambar SEPENUHNYA (bukan dua tahap seperti
+   * Escape) — konvensi umum aplikasi chart, dan lebih penting: jalur keluar
+   * kedua supaya pan tak pernah terjebak mati kalau pembaca lebih terbiasa
+   * klik kanan daripada Escape. `preventDefault` cuma selagi alat gambar
+   * benar-benar aktif — di mode kursor, menu klik-kanan bawaan peramban
+   * (mis. "Simpan gambar sebagai…") tetap harus jalan seperti biasa.
+   */
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+    const saatKlikKanan = (e: MouseEvent) => {
+      if (!alatAktifRef.current) return
+      e.preventDefault()
+      batalkanSedangDigambar()
+      pilihAlat(null)
+    }
+    container.addEventListener('contextmenu', saatKlikKanan)
+    return () => container.removeEventListener('contextmenu', saatKlikKanan)
+  }, [containerRef, pilihAlat, batalkanSedangDigambar])
 
   return { pustaka, galat, alatAktif, pilihAlat, adaTerpilih, hapusTerpilih, mintaPustaka }
 }

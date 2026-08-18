@@ -422,6 +422,17 @@
    saat; yang benar membiarkan flex membaginya. */
 .lantai .grf-panel:fullscreen { display: flex; flex-direction: column; }
 .lantai .grf-panel:fullscreen .panel-b { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+/* `.grf-kanvas-area` (bilah alat + bungkus kanvas, #185) duduk DI ANTARA
+   `.panel-b` dan `.grf-kanvas-bungkus` — simpul yang dulu tak ada saat rantai
+   layar-penuh ini ditulis. Tanpa `flex:1; min-height:0` DI SINI JUGA, simpul
+   ini jatuh balik ke `flex:0 1 auto; min-height:auto` (bawaan flex item) dan
+   memutus seluruh rantai di bawahnya — `.grf-kanvas-bungkus` & `.grf-chart-
+   wrap` boleh punya flex:1 masing-masing, tapi tak ada gunanya kalau induk
+   yang menyediakan ruangnya sendiri tak pernah melar. Gejalanya: kanvas
+   mentok ke tinggi kontennya (460px, aturan dasar), sisa layar hitam kosong.
+   `display:flex` di sini SUDAH ada dari aturan dasar (`.grf-kanvas-area`
+   row alat+kanvas) — cuma flex:1/min-height:0 yang perlu ditambahkan. */
+.lantai .grf-panel:fullscreen .grf-kanvas-area { flex: 1; min-height: 0; }
 .lantai .grf-panel:fullscreen .grf-kanvas-bungkus { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .lantai .grf-panel:fullscreen .grf-chart-wrap { flex: 1; min-height: 0; height: auto !important; }
 /* Layar penuh dipakai untuk MEMBACA GRAFIK. Kotak template dan dua blok
