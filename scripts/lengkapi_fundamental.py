@@ -292,13 +292,17 @@ def jalankan(verbose: bool = True) -> dict[str, int]:
         idx = json.loads(p_idx.read_text(encoding="utf-8")) if p_idx.exists() else None
 
         asal = lengkapi(fd, idx)
-        lama = fd.get("asal_turunan") or {}
-        if not asal and not lama:
+        # Tak ada yang ditambal -> berkas TIDAK disentuh sama sekali. Versi
+        # pertama membuang `asal_turunan` lama di cabang ini dengan alasan
+        # "fetch baru sudah mengisi aslinya" — salah, dan bikin skripnya tak
+        # idempoten: jalan kedua tanpa fetch di antaranya menemukan seluruh
+        # ruas sudah terisi (oleh jalan pertama), menyimpulkan tak ada yang
+        # ditambal, lalu MENGHAPUS jejak asal 418 berkas. Jejaknya memang tak
+        # pernah bisa basi: `fetch_fundamental.py` menulis tiap berkas dari
+        # nol, jadi `asal_turunan` peninggalan lama mustahil selamat.
+        if not asal:
             continue
-        if asal:
-            fd["asal_turunan"] = asal
-        elif lama:
-            fd.pop("asal_turunan")          # fetch baru sudah mengisi aslinya
+        fd["asal_turunan"] = asal
         # separators sama persis dengan fetch_fundamental.py:1033 — kalau beda,
         # seluruh 967 berkas ikut berubah formatnya dan diff-nya jadi tak
         # terbaca walau isinya cuma bertambah satu ruas.
@@ -404,6 +408,13 @@ def _uji() -> None:
     utuh = {"q_eps": {}, "altman_z": None, "last_price": 1.0}
     lengkapi(utuh, idx_acro)
     assert utuh["q_eps"] == {} and utuh["altman_z"] is None
+
+    # 5. IDEMPOTEN: jalan kedua atas hasil jalan pertama tak mengubah apa pun
+    # dan tak menghapus apa pun. Versi pertama gagal di sini — ia membuang
+    # `asal_turunan` 418 berkas karena mengira jejaknya basi.
+    sebelum = dict(acro)
+    assert lengkapi(acro, idx_acro) == {}
+    assert acro == sebelum
 
     print("uji lengkapi_fundamental: LOLOS")
 
