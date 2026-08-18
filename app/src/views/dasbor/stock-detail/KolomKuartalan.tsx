@@ -3,7 +3,7 @@ import type { QuarterMap, StockFundamental } from '../../../lib/dasbor/stockDeta
 import { FdPercent } from '../../../components/dasbor/FdPercent'
 import { LencanaTurunan } from '../../../components/dasbor/LencanaTurunan'
 
-type QMode = 'ni' | 'eps' | 'rev'
+export type QMode = 'ni' | 'eps' | 'rev'
 
 const TABS: { id: QMode; label: string }[] = [
   { id: 'ni', label: 'Net Income' },
@@ -21,6 +21,23 @@ function TR(lbl: string, val: ReactNode) {
 }
 
 /**
+ * Format satu sel tabel Kuartalan/Annualised/TTM — `null`/`undefined` (bahan
+ * tak ada, mis. kuartal yang tak dipanen atau dilewati sanity-check backend)
+ * WAJIB "—", HANYA nol sungguhan (v === 0) yang boleh dirender "0". Diekspor
+ * & diuji sendiri (KolomKuartalan.test.ts) karena inilah tepat titik yang
+ * dulu bikin bug q_eps ARCI (CLAUDE.md 18 Agu 2026) terlihat "datanya
+ * kosong" padahal sebenarnya "backend salah menghitung, tapi angkanya bukan
+ * null" — dua akar masalah beda yang gampang tertukar kalau titik render-nya
+ * tak diuji terpisah dari titik hitungnya.
+ */
+export function fmtCell(v: number | null | undefined, mode: QMode): string {
+  if (v == null) return '—'
+  return mode === 'eps'
+    ? Number(v).toLocaleString('id-ID', { maximumFractionDigits: 0 })
+    : (v / 1e9).toLocaleString('id-ID', { maximumFractionDigits: 0 })
+}
+
+/**
  * Port fdQTabBuild() index_live.html baris 3928-3993. Re-layout mockup
  * stock-detail-relayout.html: seksi ekstra "Dividen & Yield" + "Info Pasar"
  * yang dulu numpang di mode Net Income DIHAPUS — datanya sekarang tampil
@@ -29,12 +46,7 @@ function TR(lbl: string, val: ReactNode) {
  */
 function QuarterlyTable({ fd, mode }: { fd: StockFundamental; mode: QMode }) {
   const qData: QuarterMap = (mode === 'ni' ? fd.q_net_income : mode === 'eps' ? fd.q_eps : fd.q_revenue) ?? {}
-  const fmtCell = (v: number | null | undefined) => {
-    if (v == null) return '—'
-    return mode === 'eps'
-      ? Number(v).toLocaleString('id-ID', { maximumFractionDigits: 0 })
-      : (v / 1e9).toLocaleString('id-ID', { maximumFractionDigits: 0 })
-  }
+  const fmt = (v: number | null | undefined) => fmtCell(v, mode)
 
   const years = Object.keys(qData).map(Number).sort((a, b) => b - a).slice(0, 3)
   const quarters = ['Q1', 'Q2', 'Q3', 'Q4']
@@ -67,7 +79,7 @@ function QuarterlyTable({ fd, mode }: { fd: StockFundamental; mode: QMode }) {
           {quarters.map((q) => (
             <tr key={q}>
               <td>{q}</td>
-              {years.map((y) => <td key={y} className="r">{fmtCell(qData[String(y)]?.[q])}</td>)}
+              {years.map((y) => <td key={y} className="r">{fmt(qData[String(y)]?.[q])}</td>)}
             </tr>
           ))}
           <tr className="fd-divider">
@@ -76,12 +88,12 @@ function QuarterlyTable({ fd, mode }: { fd: StockFundamental; mode: QMode }) {
               const ymap = qData[String(y)] || {}
               const vals = Object.values(ymap).filter((v) => v != null)
               const sum = vals.length ? vals.reduce((a, b) => a + b, 0) : null
-              return <td key={y} className="r">{fmtCell(sum)}</td>
+              return <td key={y} className="r">{fmt(sum)}</td>
             })}
           </tr>
           <tr className="ttm-row">
             <td>TTM</td>
-            <td className="r">{fmtCell(ttmSum)}</td>
+            <td className="r">{fmt(ttmSum)}</td>
             {blankCols > 0 && <td colSpan={blankCols} />}
           </tr>
         </tbody>

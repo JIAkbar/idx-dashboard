@@ -79,10 +79,6 @@ di `PanelLaporanKeuangan.tsx`.
 - `dividend_yield` 557 sisanya — **347 tak pernah bagi dividen sama sekali**,
   **210 terakhir bagi lebih dari 12 bulan lalu**. Cuma 4 yang benar-benar
   lubang, dan keempatnya sudah terisi.
-- `q_eps` — **tak diisi sama sekali.** XBRL IDX cuma punya SATU periode
-  kuartal (`2026-06-30`) untuk seluruh 774 emiten, dan itu KUMULATIF sejak
-  awal tahun. Tanpa TW1 pembanding ia tak bisa didiskretkan; menulisnya ke
-  `q_eps[2026]["Q2"]` = menyebut EPS setengah tahun sebagai EPS satu kuartal.
 - `altman_z` — **tak diisi sama sekali.** Z" butuh modal kerja dan saldo laba.
   `lq_wc` ada di **3 dari 398** emiten yang kosong, saldo laba tak pernah
   diekspor, dan `panen_keuangan_idx.py` tak memanen keduanya. **Jalan
@@ -94,6 +90,56 @@ di `PanelLaporanKeuangan.tsx`.
   ada gunanya.
 
 **Ongkos**: kecil. Jangan ulangi pengukurannya — angkanya sudah di tabel atas.
+
+---
+
+### A0c · q_eps kuartalan — BUKAN sengaja kosong, itu bug currency — ✅ **SELESAI 18 Agu**
+
+Klaim A0b di atas ("q_eps tak diisi karena XBRL IDX cuma punya 1 periode
+kumulatif") **salah** — itu menggambarkan jalur XBRL yang tak pernah dipakai.
+`q_eps` sebenarnya SUDAH dihitung `fetch_fundamental.py` sejak awal, dari
+`q_net_income` yfinance (`quarterly_financials`, dikonfirmasi **DISKRET**
+per kuartal — jumlah 4 kuartal ≈ nilai tahunan di 122 sampel, bukan
+kumulatif). Bug-nya: net income kuartal dibagi `shares` **SEBELUM**
+disamakan ke IDR (`konversi_dict_ke_idr`), bukan sesudah — beda dari
+rev_ps/cash_ps/fcf_ps/ocf_ps yang semuanya benar. Untuk 85 emiten pelapor
+non-IDR (`financial_currency = USD`), hasilnya kepotong ke **0,00** (ARCI:
+532 miliar IDR net income / kurs ±16.300 / 25,2 miliar saham = 0,001
+USD/saham). Laporan Johan ("data-datanya kosong, katanya panen lengkap?")
+persis gejala ini di tabel EPS Kuartalan Stock Detail.
+
+**Dibetulkan di DUA tempat**:
+1. `scripts/fetch_fundamental.py` — `q_eps` sekarang dihitung dari `q_ni_idr`
+   (SUDAH IDR), bukan `q_ni` mentah. Root cause, mencegah bug ini muncul lagi
+   di panen berikutnya.
+2. `scripts/lengkapi_fundamental.py` — `q_eps_baru()` menambal 967 berkas
+   LAMA (nol permintaan jaringan), **84 emiten diperbaiki**.
+
+**Dua guard WAJIB ada di `q_eps_baru()`** — ditemukan lewat sanity-check
+sum-4-kuartal vs `eps` TTM saat menjalankan patch-nya, BUKAN teori:
+- `shares_masuk_akal()` — `shares` yfinance kadang ketinggalan pemecahan
+  saham (BBNI: tersimpan 578,7 juta, tersirat dari `market_cap/harga` 37,26
+  MILIAR — rasio 0,0155×). **38 emiten** kena ini (kebanyakan bank/API),
+  q_eps-nya **TIDAK disentuh** (sudah salah sebelum sesi ini, beda root
+  cause, di luar lingkup — laporan saja, belum diperbaiki).
+- Sanity-check ke `eps` tahunan (>50× ditolak SELURUH berkas) — ketemu di
+  RIGS: `shares`-nya justru KONSISTEN (jadi guard pertama tak menangkap),
+  tapi `q_net_income`-nya sendiri korup ~11.000× (indikasi `financial_currency`
+  salah dilabeli USD padahal datanya sudah IDR → konversi dobel). q_eps RIGS
+  sengaja dibiarkan versi LAMA (kebetulan benar, bukan dari fix ini).
+
+**Rendering**: `KolomKuartalan.tsx` (`fmtCell`, sekarang diekspor & diuji di
+`KolomKuartalan.test.ts`) SUDAH benar sejak awal — `v == null` → `—`, `v ===
+0` → `0`. Bug ARCI di layar bukan salah render, murni backend menulis `0.0`
+literal (bukan `null`) untuk kuartal yang sebenarnya ada datanya.
+
+**Belum selesai**: 38 emiten `shares`-tak-konsisten di atas — perlu sumber
+`shares` lain (mis. `GetCompanyProfiles`/XBRL) atau re-fetch yfinance,
+di luar lingkup "nol permintaan jaringan"-nya `lengkapi_fundamental.py`.
+
+**Ongkos**: kecil (patch), sedang (guard-nya butuh 2 putaran sanity-check
+manual sebelum aman ditulis — jangan skip langkah itu kalau menambah ruas
+turunan baru yang mirip).
 
 ---
 

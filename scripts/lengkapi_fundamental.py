@@ -30,14 +30,24 @@ ATURAN yang tak boleh dilanggar
    menulis ulang berkas dari nol, jadi tambalan lama hilang sendiri dan
    skrip ini idempoten tanpa perlu menghapus apa pun.
 
+`q_eps` beda dari ruas lain di atas — bukan "isi kalau kosong" tapi "timpa
+kalau SALAH". `fetch_fundamental.py` menghitungnya dari `q_net_income`
+(yfinance `quarterly_financials`, sudah dikonfirmasi DISKRET per kuartal,
+bukan kumulatif — jumlah 4 kuartal ≈ nilai tahunan di 122 sampel) dibagi
+`shares`. Sampai 18 Agu 2026 pembaginya salah: net income kuartal dibagi
+SEBELUM disamakan ke IDR, bukan sesudah — untuk 85 emiten pelapor non-IDR
+(USD) hasilnya kepotong ke 0,00 (contoh ARCI: 532 miliar IDR / kurs ±16.300 /
+25,2 miliar saham = 0,001 USD/saham). `fetch_fundamental.py` sudah dibetulkan
+di sumbernya (q_eps dihitung dari `q_ni_idr`, sama seperti rev_ps/cash_ps/
+fcf_ps); fungsi `q_eps_baru()` di sini menambal 967 berkas LAMA yang sudah
+telanjur menyimpan versi buggy-nya. **84 dari 85** benar-benar ditulis ulang
+(idempoten — hasilnya selalu genap sama dengan `q_net_income`/`shares` saat
+itu); 1 (RIGS) sengaja DILEWATI oleh guard sanity-check kedua di bawah karena
+`q_net_income`-nya sendiri korup ~11.000× (bug lain, bukan currency-timing),
+dan versi LAMA-nya kebetulan benar — lihat docstring `q_eps_baru`.
+
 Yang SENGAJA TIDAK diisi (dan kenapa) — lihat juga docs/workflow-fundamental.md:
 
-* `q_eps` — XBRL IDX hanya punya SATU periode kuartal (2026-06-30) untuk
-  seluruh 774 emiten, dan itu KUMULATIF sejak awal tahun. Tanpa TW1
-  pembanding, angka itu tak bisa didiskretkan; menuliskannya ke
-  `q_eps[2026]["Q2"]` berarti menyebut EPS setengah tahun sebagai EPS satu
-  kuartal — persis jebakan "dua sumber kunci sama, rentang beda" yang sudah
-  dibayar mahal di proyek ini (revenue TLKM 1,96x).
 * `altman_z` — Z" butuh modal kerja dan saldo laba (retained earnings).
   Modal kerja ada di 3 dari 398 emiten yang kosong, saldo laba tak pernah
   diekspor sama sekali, dan `panen_keuangan_idx.py` tak memanen keduanya.
@@ -170,6 +180,78 @@ def f_score_xbrl(idx: dict | None) -> tuple[int | None, int]:
     return (skor if n else None), n
 
 
+def shares_masuk_akal(fd: dict) -> bool:
+    """`shares` (yfinance `sharesOutstanding`) dicek silang ke `market_cap ÷
+    last_price` — dua ruas independen dari `shares` sendiri. Ketemu 18 Agu
+    2026 lewat q_eps: BBNI cs. (38 emiten, kebanyakan bank) punya `shares`
+    yang KETINGGALAN pemecahan saham / korporasi — BBNI tersimpan 578,7 juta
+    padahal tersirat dari market_cap/harga 37,26 MILIAR (rasio 0,0155x).
+    `eps` tahunan BBNI tetap benar (554,9, dari `trailingEps` Yahoo langsung,
+    bukan dibagi `shares`), tapi q_net_income/shares akan menghasilkan angka
+    yang 60x lebih besar dari yang sebenarnya — salah, bukan sekadar beda
+    pembulatan. Tak ada pembanding (mis. mcap/harga kosong) -> anggap oke,
+    jangan diblokir tanpa bukti."""
+    saham = angka(fd.get("shares"))
+    mcap = angka(fd.get("market_cap"))
+    harga = angka(fd.get("last_price"))
+    if not saham or not mcap or not harga or harga <= 0:
+        return True
+    tersirat = mcap / harga
+    if tersirat <= 0:
+        return True
+    rasio = saham / tersirat
+    return 0.5 <= rasio <= 2.0
+
+
+def q_eps_baru(fd: dict) -> dict:
+    """Hitung ULANG q_eps dari q_net_income (SUDAH IDR di berkas ini) / shares.
+
+    Beda dari `lengkapi()` yang cuma mengisi ruas kosong: ini menimpa juga
+    nilai yang SUDAH ADA kalau salah — lihat docstring modul. `q_net_income`
+    dan `shares` ada di berkas yang sama, jadi nol permintaan tambahan.
+    Kuartal yang bahannya tak ada (net income atau shares tak diketahui)
+    memang tak masuk ke hasil — beda dengan laba kuartal SUNGGUHAN nol yang
+    tetap membagi jadi 0,0 (dua "aku tak tahu" vs "labanya nol" tak boleh
+    tertukar, sama seperti aturan #2 di docstring modul).
+
+    `shares` sendiri bisa salah (lihat `shares_masuk_akal`) — kalau begitu,
+    HASILNYA TAK DITULIS SAMA SEKALI (dict kosong), bukan angka yang cuma
+    "kelihatan masuk akal". 2 emiten (BRMS, GIAA) kena ini bersamaan dengan
+    bug currency: q_eps lama-nya (0,0) SAMA SALAHNYA, tapi menimpanya dengan
+    angka besar-tapi-salah lebih berbahaya karena kelihatan meyakinkan.
+
+    Sanity check KEDUA — hasilnya dibandingkan ke `eps` tahunan (trailingEps,
+    dipercaya karena `pe = harga/eps` selalu konsisten dgn ruas `pe`). Kalau
+    satu kuartal saja > 50x |eps tahunan| (atau > 100 kalau eps kecil), SELURUH
+    berkas itu dilewati — bukan cuma kuartal itu, laporan boleh lengkap atau
+    tak sama sekali. Ketemu di RIGS: q_net_income-nya sendiri korup ~11.000x
+    (kemungkinan financial_currency salah dilabeli USD padahal datanya sudah
+    IDR, jadi terkonversi DUA KALI) — `shares` di RIGS justru konsisten
+    (rasio 1,0 ke market_cap), jadi guard di atas tak menangkapnya."""
+    if not shares_masuk_akal(fd):
+        return {}
+    saham = angka(fd.get("shares"))
+    qni = fd.get("q_net_income") or {}
+    if not saham or not qni:
+        return {}
+    eps_thn = angka(fd.get("eps"))
+    batas = max(abs(eps_thn) * 50, 100) if eps_thn is not None and abs(eps_thn) >= 1 else None
+    out: dict = {}
+    for y, qs in qni.items():
+        baris = {}
+        for q, v in (qs or {}).items():
+            ni = angka(v)
+            if ni is None:
+                continue
+            nilai = round(ni / saham, 2)
+            if batas is not None and abs(nilai) > batas:
+                return {}
+            baris[q] = nilai
+        if baris:
+            out[y] = baris
+    return out
+
+
 def kosong(v) -> bool:
     """Ruas dianggap kosong kalau null, atau map/list tanpa isi (`hist_eps`
     yang gagal dihitung ditulis `{}`, bukan null — dua bentuk 'tidak tahu'
@@ -270,6 +352,14 @@ def lengkapi(fd: dict, idx: dict | None) -> dict[str, str]:
         if peta:
             fd["hist_eps"] = peta
             asal["hist_eps"] = IDX
+
+    # ── EPS kuartalan — TIMPA kalau beda, bukan cuma kalau kosong ─────────
+    # (lihat docstring modul + q_eps_baru: versi lama bisa 0,0 padahal
+    # q_net_income-nya besar, bug currency utk pelapor non-IDR).
+    qeps_baru = q_eps_baru(fd)
+    if qeps_baru and qeps_baru != (fd.get("q_eps") or {}):
+        fd["q_eps"] = qeps_baru
+        asal["q_eps"] = TURUNAN
 
     # ── Piotroski F-Score parsial ────────────────────────────────────────
     if kosong(fd.get("f_score")) and idx:
@@ -404,10 +494,78 @@ def _uji() -> None:
     lengkapi(rugi, None)
     assert rugi["eps"] == -50.0 and rugi["pe"] is None
 
-    # 4. q_eps & altman_z TIDAK PERNAH disentuh (lihat docstring modul).
+    # 4. altman_z TIDAK PERNAH disentuh (lihat docstring modul).
     utuh = {"q_eps": {}, "altman_z": None, "last_price": 1.0}
     lengkapi(utuh, idx_acro)
-    assert utuh["q_eps"] == {} and utuh["altman_z"] is None
+    assert utuh["altman_z"] is None
+
+    # 4b. q_eps DITIMPA kalau salah — kasus nyata ARCI 18 Agu 2026: net income
+    # kuartalan SUDAH IDR (532,585 miliar dkk.), 25,235 miliar saham, tapi
+    # q_eps lama semuanya 0.0 (bug lama: dibagi dari net income MENTAH/USD
+    # sebelum konversi). Harus jadi 21,11 / 22,2 / 17,42 / 7,29 — bukan 0.
+    arci = {
+        "shares": 25235000000, "last_price": 1200.0,
+        "q_net_income": {"2026": {"Q1": 532585084428.0},
+                          "2025": {"Q4": 560293259824.0, "Q2": 439516836604.0,
+                                   "Q1": 183853873456.0}},
+        "q_eps": {"2026": {"Q1": 0.0},
+                  "2025": {"Q4": 0.0, "Q2": 0.0, "Q1": 0.0}},
+    }
+    asal_arci = lengkapi(arci, None)
+    assert arci["q_eps"] == {"2026": {"Q1": 21.11},
+                              "2025": {"Q4": 22.2, "Q2": 17.42, "Q1": 7.29}}, arci["q_eps"]
+    assert asal_arci["q_eps"] == TURUNAN
+
+    # 4c. Laba kuartal SUNGGUHAN nol -> q_eps tetap 0,0 (bukan null/dilewati) —
+    # beda dari 4d di bawah (bahan tak ada -> tak disentuh sama sekali).
+    labarugi_nol = {"shares": 1000, "q_net_income": {"2025": {"Q1": 0.0}}, "q_eps": {}}
+    lengkapi(labarugi_nol, None)
+    assert labarugi_nol["q_eps"] == {"2025": {"Q1": 0.0}}
+
+    # 4d. shares tak ada -> q_eps TAK disentuh (tetap kosong, tak dikarang 0).
+    tanpa_saham = {"shares": None, "q_net_income": {"2025": {"Q1": 100.0}}, "q_eps": {}}
+    asal_tanpa_saham = lengkapi(tanpa_saham, None)
+    assert tanpa_saham["q_eps"] == {}
+    assert "q_eps" not in asal_tanpa_saham
+
+    # 4f. shares TAK KONSISTEN dgn market_cap/harga (kasus nyata BBNI: 578,7
+    # juta tersimpan vs 37,26 miliar tersirat, rasio 0,0155x) -> q_eps TAK
+    # ditulis sama sekali, walau q_net_income & shares "ada". Angka yang
+    # kelihatan masuk akal tapi salah 60x lebih berbahaya dari 0,0 yang
+    # jelas-jelas mencurigakan.
+    saham_salah = {"shares": 578683733, "market_cap": 134497043480576.0,
+                    "last_price": 3610.0,
+                    "q_net_income": {"2026": {"Q1": 5660764000000.0}}, "q_eps": {}}
+    asal_saham_salah = lengkapi(saham_salah, None)
+    assert saham_salah["q_eps"] == {}
+    assert "q_eps" not in asal_saham_salah
+
+    # 4g. q_net_income sendiri korup (kasus nyata RIGS: shares KONSISTEN ke
+    # market_cap, jadi guard 4f tak nangkap, tapi hasilnya 2.653x eps tahunan
+    # -> guard KEDUA yang harus menahannya). SELURUH berkas dilewati, bukan
+    # cuma kuartal yang meleset.
+    rigs = {"shares": 609130000, "market_cap": 420299702272.0, "last_price": 690.0,
+            "eps": 141.85,
+            "q_net_income": {"2026": {"Q1": 229302877922788.0}}, "q_eps": {}}
+    asal_rigs = lengkapi(rigs, None)
+    assert rigs["q_eps"] == {}
+    assert "q_eps" not in asal_rigs
+
+    # 4h. Satu kuartal besar tapi MASIH dalam batas wajar (kasus nyata TPIA:
+    # laba sekali-jalan Q2 2025 -> q_eps kuartal itu 18,8x eps tahunan, di
+    # bawah batas 50x) -> TETAP ditulis, bukan ditolak.
+    tpia = {"shares": 86464496192, "market_cap": 178116857167872.0,
+            "last_price": 2060.0, "eps": 14.26,
+            "q_net_income": {"2025": {"Q2": 23210216276000.0}}, "q_eps": {}}
+    asal_tpia = lengkapi(tpia, None)
+    assert tpia["q_eps"] == {"2025": {"Q2": 268.44}}, tpia["q_eps"]
+    assert asal_tpia["q_eps"] == TURUNAN
+
+    # 4e. IDEMPOTEN: kalau q_eps SUDAH benar (mis. pelapor IDR, tak pernah
+    # kena bug), jalan kedua tak menganggapnya berubah.
+    sudah_benar = {"shares": 1000, "q_net_income": {"2025": {"Q1": 100.0}},
+                    "q_eps": {"2025": {"Q1": 0.1}}}
+    assert "q_eps" not in lengkapi(sudah_benar, None)
 
     # 5. IDEMPOTEN: jalan kedua atas hasil jalan pertama tak mengubah apa pun
     # dan tak menghapus apa pun. Versi pertama gagal di sini — ia membuang

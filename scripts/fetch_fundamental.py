@@ -405,14 +405,15 @@ def fetch_stock(ticker_code):
         q_tax    = df_quarterly(qfin, "Tax Provision")
         q_pretax = df_quarterly(qfin, "Pretax Income")
 
-        # EPS quarterly: Net Income / Shares
         # shares None eksplisit bila sharesOutstanding tidak ada (fallback lama `or 1`
         # menghasilkan rev_ps/q_eps = nilai absolut menyamar per-saham — data palsu).
         shares = sg(info,"sharesOutstanding")
-        q_eps  = {}
-        if shares:
-            for y, qmap in q_ni.items():
-                q_eps[y] = {q: round(v/shares, 2) for q, v in qmap.items()}
+        # q_eps dihitung DI BAWAH (setelah q_ni_idr ada) — net income kuartalan
+        # harus disamakan ke IDR dulu sebelum dibagi saham, sama seperti rev_ps/
+        # cash_ps/fcf_ps/ocf_ps. Bug lama: dibagi dari q_ni MENTAH (USD utk
+        # pelapor non-IDR) → q_eps 62+ emiten kepotong ke 0.00 (532 miliar IDR
+        # net income / kurs / 25 miliar saham = 0,001 USD/saham, round(.,2)=0.0)
+        # padahal ttm_net_income & q_net_income di berkas yang sama sudah benar.
 
         # Quarterly balance sheet
         q_assets = df_quarterly(qbs, "Total Assets")
@@ -773,6 +774,12 @@ def fetch_stock(ticker_code):
         # q_revenue/q_net_income (output) — bukan konversi dobel.
         q_rev_idr = konversi_dict_ke_idr(q_rev, fin_cur, kurs)
         q_ni_idr  = konversi_dict_ke_idr(q_ni, fin_cur, kurs)
+        # EPS quarterly: Net Income (SUDAH IDR) / Shares — lihat catatan di blok
+        # "shares" di atas kenapa ini dipindah kesini, bukan dari q_ni mentah.
+        q_eps = {}
+        if shares:
+            for y, qmap in q_ni_idr.items():
+                q_eps[y] = {q: round(v/shares, 2) for q, v in qmap.items()}
         sel_q = sorted({(int(y), q) for y, m in q_rev_idr.items() for q in m} |
                        {(int(y), q) for y, m in q_ni_idr.items() for q in m},
                        reverse=True)[:12]
@@ -925,9 +932,11 @@ def fetch_stock(ticker_code):
 
             # === QUARTERLY DATA (untuk tabel) ===
             # Dict {year: value} / {year: {quarter: value}} — disamakan ke IDR lewat
-            # konversi_dict_ke_idr, KECUALI q_eps: EPS sudah IDR-scale langsung dari
-            # Yahoo per temuan empiris Task 9 (lihat komentar di blok eps/eps_fwd di
-            # atas) — mengalikan lagi dengan kurs akan melipatgandakannya.
+            # konversi_dict_ke_idr. q_eps dihitung dari q_ni_idr (SUDAH IDR) di atas
+            # — beda dari eps/eps_fwd tahunan (trailingEps/forwardEps) yang memang
+            # sudah IDR-scale langsung dari Yahoo (temuan empiris Task 9); q_ni
+            # kuartalan di sini adalah baris laporan mentah, BUKAN rasio siap pakai
+            # Yahoo, jadi tetap perlu dikonversi seperti rev_ps/cash_ps/fcf_ps.
             "q_revenue":    q_rev_idr,
             "q_net_income": q_ni_idr,
             "q_eps":        q_eps,
