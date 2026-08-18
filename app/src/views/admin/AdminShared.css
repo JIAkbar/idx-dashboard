@@ -671,8 +671,8 @@
    Terbukti: warnanya benar di localhost tapi tetap abu-abu di produksi.
    Menambah `span` menaikkan kekhususan ke (0,2,1) sehingga hasilnya tak lagi
    bergantung urutan berkas. */
-.lantai span.tipe-edisi { font-size: 10px; letter-spacing: .04em; text-transform: uppercase; border: 1px solid transparent; }
-.lantai span.tipe-edisi.t-harian   { background: rgba(120, 160, 255, .14); color: #8fb0ff; border-color: rgba(120, 160, 255, .35); }
-.lantai span.tipe-edisi.t-mingguan { background: rgba(120, 210, 190, .14); color: #78d2be; border-color: rgba(120, 210, 190, .35); }
-.lantai span.tipe-edisi.t-bulanan  { background: rgba(160, 130, 255, .14); color: #b09aff; border-color: rgba(160, 130, 255, .35); }
-.lantai span.tipe-edisi.t-bedah    { background: rgba(255, 150, 110, .14); color: #ff9b74; border-color: rgba(255, 150, 110, .35); }
+.lantai span.tipe-edisi { font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; border: 1px solid transparent; }
+.lantai span.tipe-edisi.t-harian   { background: rgba(120, 160, 255, .26); color: #adc4ff; border-color: rgba(120, 160, 255, .6); }
+.lantai span.tipe-edisi.t-mingguan { background: rgba(120, 210, 190, .26); color: #8fdfcd; border-color: rgba(120, 210, 190, .6); }
+.lantai span.tipe-edisi.t-bulanan  { background: rgba(160, 130, 255, .26); color: #c2b0ff; border-color: rgba(160, 130, 255, .6); }
+.lantai span.tipe-edisi.t-bedah    { background: rgba(255, 150, 110, .26); color: #ffb08f; border-color: rgba(255, 150, 110, .6); }
