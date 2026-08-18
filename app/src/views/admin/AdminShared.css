@@ -660,19 +660,5 @@
 .lantai .bdh-panah.buka { transform: rotate(90deg); }
 @media (prefers-reduced-motion: reduce) { .lantai .bdh-panah { transition: none; } }
 
-/* Lencana tipe edisi di Rak Terbitan. Empat jenis, empat warna — sebelumnya
-   semuanya `.chip` abu-abu, jadi kolom TIPE cuma mengulang teks tanpa
-   membantu memindai. Warnanya dipilih yang TIDAK dipakai chip status
-   (hijau/merah/amber) supaya dua lencana bersebelahan tak tertukar arti:
-   yang satu bicara jenis, yang lain bicara keadaan. */
-/* `span.` sengaja — bukan hiasan. `.lantai .chip` dan `.lantai .tipe-edisi`
-   punya kekhususan yang SAMA (0,2,0), jadi pemenangnya ditentukan urutan muat,
-   dan urutan itu bisa berbeda antara server pengembangan dan bundel produksi.
-   Terbukti: warnanya benar di localhost tapi tetap abu-abu di produksi.
-   Menambah `span` menaikkan kekhususan ke (0,2,1) sehingga hasilnya tak lagi
-   bergantung urutan berkas. */
-.lantai span.tipe-edisi { font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; border: 1px solid transparent; }
-.lantai span.tipe-edisi.t-harian   { background: rgba(120, 160, 255, .26); color: #adc4ff; border-color: rgba(120, 160, 255, .6); }
-.lantai span.tipe-edisi.t-mingguan { background: rgba(120, 210, 190, .26); color: #8fdfcd; border-color: rgba(120, 210, 190, .6); }
-.lantai span.tipe-edisi.t-bulanan  { background: rgba(160, 130, 255, .26); color: #c2b0ff; border-color: rgba(160, 130, 255, .6); }
-.lantai span.tipe-edisi.t-bedah    { background: rgba(255, 150, 110, .26); color: #ffb08f; border-color: rgba(255, 150, 110, .6); }
+/* Lencana tipe edisi: paletnya kini tinggal di lantai.css supaya admin,
+   Bulletin, dan Beranda memakai warna yang sama persis. */

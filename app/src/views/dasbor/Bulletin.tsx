@@ -270,7 +270,7 @@ export function Bulletin() {
                             </span>
                           )}
                         </td>
-                        <td><span className="bchip blt-tipe">{tipeEdisi(e.kode)}</span></td>
+                        <td><span className={`bchip blt-tipe tipe-edisi t-${tipeEdisi(e.kode).toLowerCase()}`}>{tipeEdisi(e.kode)}</span></td>
                         <td>{e.tanggal_id}</td>
                         <td className="r num blt-ihsg">
                           {h ? (

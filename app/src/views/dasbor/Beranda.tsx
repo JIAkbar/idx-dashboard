@@ -192,7 +192,7 @@ function KartuKabar() {
       <div className="brd-dua-kolom">
         {edisi.map((e) => (
           <Link key={e.kode} className="brd-kabar-it" to="/bulletin" title={`${e.judul} — ${e.kode}`}>
-            <span className={`brd-tipe t-${tipeEdisi(e.kode).toLowerCase()}`}>{tipeEdisi(e.kode)}</span>
+            <span className={`brd-tipe tipe-edisi t-${tipeEdisi(e.kode).toLowerCase()}`}>{tipeEdisi(e.kode)}</span>
             <span className="brd-kabar-tgl">{e.tanggal_id}</span>
             <span className="brd-kabar-emiten">
               {e.emiten.slice(0, 6).map((t) => <span key={t} className="brd-tick">{t}</span>)}

@@ -1463,7 +1463,17 @@
 .lantai .blt-cari-x{position:absolute;right:3px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:none;background:none;padding:0;color:var(--text3);cursor:pointer;border-radius:4px;transition:color .15s}
 .lantai .blt-cari-x:hover{color:var(--amber)}
 .lantai .blt-ihsg{white-space:nowrap}
-.lantai .blt-tipe{margin-right:0;color:var(--text2);white-space:nowrap}
+.lantai .blt-tipe{margin-right:0;white-space:nowrap}
+/* Warna lencana tipe edisi — SATU definisi untuk Rak Terbitan (admin),
+   Bulletin, dan Beranda. Sebelumnya cuma ada di AdminShared.css, sehingga
+   halaman publik tetap menampilkan keempat tipe dengan abu-abu yang sama dan
+   kolom TIPE di sana tak membantu memindai apa pun. Paletnya sengaja
+   menghindari hijau/merah/amber yang sudah dipakai chip status. */
+.lantai .tipe-edisi{font-size:10px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;border:1px solid transparent}
+.lantai .tipe-edisi.t-harian{background:rgba(120,160,255,.26);color:#adc4ff;border-color:rgba(120,160,255,.6)}
+.lantai .tipe-edisi.t-mingguan{background:rgba(120,210,190,.26);color:#8fdfcd;border-color:rgba(120,210,190,.6)}
+.lantai .tipe-edisi.t-bulanan{background:rgba(160,130,255,.26);color:#c2b0ff;border-color:rgba(160,130,255,.6)}
+.lantai .tipe-edisi.t-bedah{background:rgba(255,150,110,.26);color:#ffb08f;border-color:rgba(255,150,110,.6)}
 .lantai .blt-em{cursor:pointer;color:var(--text2);transition:color .15s,border-color .15s,background .15s}
 .lantai .blt-em:hover{color:var(--amber);border-color:var(--amber);background:var(--amber-dim)}
 .lantai .blt-reset{border:none;background:none;padding:0;font:inherit;color:var(--amber);cursor:pointer;text-decoration:underline}
