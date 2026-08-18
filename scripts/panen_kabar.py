@@ -37,6 +37,7 @@ import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import arsip_mentah  # noqa: E402 — reuse, lihat CLAUDE.md rung 2
+import idx_net  # noqa: E402 — satu pintu jaringan IDX (curl_cffi)
 
 AKAR = Path(__file__).resolve().parent.parent
 KELUARAN = AKAR / "data-idx" / "json" / "kabar.json"
@@ -72,25 +73,6 @@ HEADER_UMUM = {"User-Agent": UA}
 
 
 SESI = requests.Session()
-_idx_siap = False
-
-
-def _pemanasan_idx() -> None:
-    """Sentuh halaman depan IDX sekali sebelum memanggil API-nya.
-
-    `ListedCompany/GetAnnouncement` menjawab **403 tanpa cookie sesi**, padahal
-    `NewsAnnouncement/GetNewsSearch` di host yang sama menerima permintaan
-    polos. Bedanya baru terlihat saat dua endpoint dipanggil berdampingan —
-    header peramban saja tidak cukup untuk yang satu itu.
-    """
-    global _idx_siap
-    if _idx_siap:
-        return
-    _idx_siap = True
-    try:
-        SESI.get("https://www.idx.co.id/id", headers=HEADER_UMUM, timeout=30)
-    except Exception:  # noqa: BLE001 — pemanasan gagal bukan alasan berhenti
-        pass
 
 
 def ambil(url: str, headers: dict, timeout: int = 45, arsip: str | None = None) -> requests.Response | None:
@@ -101,11 +83,19 @@ def ambil(url: str, headers: dict, timeout: int = 45, arsip: str | None = None) 
     kalau diisi, badan respons MENTAH disimpan ke
     `_arsip-mentah/kabar/<tanggal>/<arsip>.<ext>` sebelum diparse.
     """
-    if "idx.co.id" in url:
-        _pemanasan_idx()
     try:
-        r = SESI.get(url, headers=headers, timeout=timeout)
-        r.raise_for_status()
+        if "idx.co.id" in url:
+            # Lewat curl_cffi, BUKAN requests (18 Agu 2026). Terukur:
+            # NewsAnnouncement/GetNewsSearch -> 403 lewat requests, 200 lewat
+            # curl_cffi impersonate=chrome124. Pembedanya sidik jari TLS.
+            # Pemanasan cookie (dulu `_pemanasan_idx`) pindah ke idx_net;
+            # GetAnnouncement tetap butuh itu, jadi tak boleh ikut dibuang.
+            # Sumber NON-IDX (IPOT dsb.) sengaja TETAP di `requests` — tak ada
+            # yang perlu disembuhkan di sana.
+            r = idx_net.get(url, headers=headers, timeout=timeout)
+        else:
+            r = SESI.get(url, headers=headers, timeout=timeout)
+            r.raise_for_status()
         if arsip:
             ct = r.headers.get("Content-Type", "")
             ext = "json" if "json" in ct else ("xml" if "xml" in ct else "html")

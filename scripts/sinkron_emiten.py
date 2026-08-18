@@ -2,9 +2,11 @@
 """Sinkronisasi daftar emiten dengan bursa nyata (deteksi IPO baru).
 
 Endpoint: /primary/TradingSummary/GetStockSummary?date=YYYYMMDD&start=0&length=9999
-(963+ saham, field StockCode/StockName) — sumber sama dgn fetch_broker_summary.py,
-akses WAJIB page.evaluate(fetch) dari dalam halaman ringkasan-perdagangan (akses
-langsung = 403 Cloudflare).
+(963+ saham, field StockCode/StockName) — sumber sama dgn fetch_broker_summary.py.
+Dulu akses WAJIB lewat page.evaluate(fetch) dari dalam halaman; sejak 18 Agu
+2026 tidak lagi. Yang ditolak SIDIK JARI TLS, bukan asal permintaannya:
+`curl_cffi` impersonate=chrome124 (lewat `idx_net`) menjawab 200 dari Python
+biasa — terukur 20260818 -> 200, 963 baris. Playwright dibuang.
 
 Alur: ambil daftar resmi IDX → diff dgn data-idx/json/fundamental/index.json →
 ticker baru dipanen via `fetch_fundamental.py <TICKER> ...` (CLI itu sudah
@@ -26,47 +28,38 @@ from pathlib import Path
 # subprocess-nya; stdout sendiri ikut diamankan di sini.
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import idx_net  # noqa: E402 — satu pintu jaringan IDX (curl_cffi)
+
 ROOT = Path(__file__).parent.parent
 FUND_DIR = ROOT / "data-idx" / "json" / "fundamental"
 OUT_FILE = ROOT / "data-idx" / "json" / "daftar_emiten.json"
 HALAMAN = "https://www.idx.co.id/id/data-pasar/ringkasan-perdagangan"
 ENDPOINT = ("https://www.idx.co.id/primary/TradingSummary/GetStockSummary"
             "?date={tgl}&start=0&length=9999")
-UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-      "Chrome/124.0.0.0 Safari/537.36")
-JS_FETCH = """async (url) => {
-  const r = await fetch(url, {headers: {"Accept": "application/json"}});
-  return {status: r.status, body: await r.text()};
-}"""
 PYTHON = sys.executable  # panggil dgn interpreter yg sama (wajib py 3.14 + libs)
 
 
 def ambil_daftar_resmi():
     """Coba mundur dari hari ini s.d. 7 hari — return (tgl_iso, [{kode,nama}])."""
-    from playwright.sync_api import sync_playwright
-    with sync_playwright() as p:
-        b = p.chromium.launch(headless=True)
-        pg = b.new_page(user_agent=UA)
-        pg.goto(HALAMAN, wait_until="domcontentloaded", timeout=60000)
-        pg.wait_for_timeout(5000)
-
-        d = date.today()
-        for _ in range(7):
-            if d.weekday() < 5:  # bukan akhir pekan
-                tgl_ymd = d.strftime("%Y%m%d")
-                res = pg.evaluate(JS_FETCH, ENDPOINT.format(tgl=tgl_ymd))
-                if res["status"] == 200:
-                    j = json.loads(res["body"])
-                    data = j.get("data") or []
-                    if data:
-                        b.close()
-                        emiten = sorted(
-                            {(r["StockCode"], r["StockName"]) for r in data},
-                            key=lambda x: x[0])
-                        return d.isoformat(), [{"kode": k, "nama": n} for k, n in emiten]
-                print(f"  [--] {tgl_ymd}: kosong/gagal (HTTP {res['status']})")
-            d -= timedelta(days=1)
-        b.close()
+    d = date.today()
+    for _ in range(7):
+        if d.weekday() < 5:  # bukan akhir pekan
+            tgl_ymd = d.strftime("%Y%m%d")
+            # Satu tanggal gagal BUKAN alasan berhenti — hari berikutnya masih
+            # boleh dicoba; yang fatal cuma kalau tujuh-tujuhnya kosong.
+            try:
+                data = idx_net.get(ENDPOINT.format(tgl=tgl_ymd),
+                                   referer=HALAMAN).json().get("data") or []
+            except Exception as e:  # noqa: BLE001
+                print(f"  [--] {tgl_ymd}: {type(e).__name__}: {e}")
+                data = []
+            if data:
+                emiten = sorted({(r["StockCode"], r["StockName"]) for r in data},
+                                key=lambda x: x[0])
+                return d.isoformat(), [{"kode": k, "nama": n} for k, n in emiten]
+            print(f"  [--] {tgl_ymd}: kosong (libur bursa?)")
+        d -= timedelta(days=1)
     return None, []
 
 

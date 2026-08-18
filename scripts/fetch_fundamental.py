@@ -22,6 +22,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import arsip_mentah  # noqa: E402 — reuse, lihat CLAUDE.md rung 2
+import idx_net  # noqa: E402 — satu pintu jaringan IDX (curl_cffi)
 
 
 def _arsip_yf(ticker: str, nama: str, obj) -> None:
@@ -131,24 +132,19 @@ DEFAULT_TICKERS = sorted(set([
 # ─── Fetch daftar semua saham IDX ─────────────────────────────────────────
 def fetch_all_idx_tickers():
     print("\nMengambil daftar saham IHSG dari API IDX ...")
-    session = requests.Session()
-    session.headers.update({
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/json, text/javascript, */*; q=0.01",
-        "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8",
-        "X-Requested-With": "XMLHttpRequest",
-        "Referer": "https://www.idx.co.id/id/data-pasar/data-saham/daftar-saham/",
-    })
-    # Ambil cookie dulu
-    try:
-        session.get("https://www.idx.co.id/id/data-pasar/data-saham/daftar-saham/", timeout=10)
-    except Exception:
-        pass
+    # `requests` -> `curl_cffi` (18 Agu 2026): endpoint IDX menolak requests
+    # dengan 403 walau headernya lengkap; pembedanya sidik jari TLS. Yahoo
+    # SENGAJA tetap pakai requests di berkas ini — Yahoo tak bermasalah.
+    REF = "https://www.idx.co.id/id/data-pasar/data-saham/daftar-saham/"
 
     endpoints = [
-        ("GetSecurities",
-         "https://www.idx.co.id/primary/StockData/GetSecurities",
-         {"start":0,"length":9999,"exchange":"idx","type":"s"},
+        # `StockData/GetSecurities` DIHAPUS dari daftar: endpoint itu menjawab
+        # 503 Varnish lewat requests MAUPUN curl_cffi — mati di sisi IDX, bukan
+        # gejala blokir. Penggantinya yang hidup `GetSecuritiesStock` (962 baris,
+        # ruas "Code"), diuji 18 Agu 2026.
+        ("GetSecuritiesStock",
+         "https://www.idx.co.id/primary/StockData/GetSecuritiesStock",
+         {"start":0,"length":9999,"code":"","sector":"","board":"","language":"id-id"},
          ["data","Data"], ["StockCode","Code","code","symbol"]),
         ("GetCompanyProfiles",
          "https://www.idx.co.id/primary/ListedCompany/GetCompanyProfiles",
@@ -159,7 +155,7 @@ def fetch_all_idx_tickers():
     for name, url, params, data_keys, code_keys in endpoints:
         print(f"  Endpoint {name} ... ", end="", flush=True)
         try:
-            r = session.get(url, params=params, timeout=25)
+            r = idx_net.get(url, params=params, timeout=25, referer=REF)
             if not r.text.strip():
                 print("kosong"); continue
             j = r.json()

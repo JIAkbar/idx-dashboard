@@ -1,193 +1,227 @@
 """
-IDX Statistics Downloader (harian + mingguan)
-==============================================
-Download otomatis IDX Daily Statistics (ds_*.pdf) dan Weekly Statistics
-(ws_*.pdf) dari idx.co.id.
+IDX Statistics Downloader (harian + mingguan + BULANAN)
+========================================================
+Unduh IDX Daily (ds_), Weekly (ws_) dan Monthly Equity (ms_) Statistics dari
+idx.co.id.
 
-Simpan ke: data-idx/daily/ (ds_) dan data-idx/weekly/ (ws_)
+Simpan ke: data-idx/daily/ (ds_), data-idx/weekly/ (ws_), data-idx/monthly/ (ms_)
+Mentahnya diarsipkan ke `_arsip-mentah/statistik/` dan DIBACA DULU sebelum
+menembak jaringan (aturan keras proyek: yang mahal mengambilnya, bukan
+menyimpannya).
 
 Cara pakai:
   python scripts/download_idx.py --hari-ini                  # daily bulan berjalan
-  python scripts/download_idx.py --hari-ini --jenis semua    # daily + weekly
-  python scripts/download_idx.py --jenis mingguan --semua    # semua weekly yang terlisting
+  python scripts/download_idx.py --hari-ini --jenis semua    # daily + weekly + monthly
+  python scripts/download_idx.py --jenis mingguan --semua    # semua weekly tahun ini
+  python scripts/download_idx.py --jenis bulanan --mundur 12 # 12 bulan terakhir
   python scripts/download_idx.py --bulan 6                   # daily bulan tertentu
 
-Catatan blokir bot (riwayat nyata, Agustus 2026): halaman IDX kerap TIMEOUT
-dari IP datacenter (GitHub Actions runner) — `wait_until="networkidle"` tidak
-pernah tercapai. Dari IP rumahan biasanya lancar. Mitigasi di file ini:
-goto pakai "domcontentloaded" + tunggu selector anchor PDF (bukan networkidle),
-retry 3x, dan exit code != 0 kalau gagal total supaya workflow CI menandai
-gagal dengan jujur (bukan sukses semu).
+DUA PERUBAHAN BESAR, 18 Agustus 2026
+------------------------------------
+1. **Playwright dibuang.** Halaman statistik itu Nuxt; daftar PDF-nya diambil
+   JavaScript dari `/primary/Statistic/GetStatistic` (ditemukan dengan membaca
+   bundel `_nuxt/*.js`, bukan menebak URL). Memanggil endpoint itu langsung
+   membalas JSON berisi `number`/`description`/`file` — tak perlu meluncurkan
+   Chromium, tak perlu mengklik tab, tak perlu `wait_until` yang sering timeout
+   dari IP datacenter. Parameternya persis yang dikirim halaman aslinya:
+       harian    : type=daily&StartDate=..&EndDate=..&keyword=
+       mingguan  : type=weekly&year=YYYY
+       bulanan   : type=monthly&year=YYYY
+   (juga ada quarterly & yearly — belum dipakai.)
+2. **`requests` -> `curl_cffi`** lewat `idx_net`. Terukur hari ini: endpoint
+   IDX menolak `requests` dengan 403 walau headernya lengkap, dan menerima
+   `curl_cffi impersonate=chrome124`. Pembedanya sidik jari TLS, bukan header
+   dan bukan alamat IP.
+
+BULANAN: yang diambil hanya varian **-E (Equity)**. Tiap bulan IDX menerbitkan
+tiga berkas dengan nomor `MS<YYMM>-E` (Equity), `-B` (Bond) dan `-SW`
+(Structured Warrant). Yang sebanding dengan ds_/ws_ — dan satu-satunya yang
+isinya saham — cuma Equity. Bond & Structured Warrant sengaja dilewati sampai
+ada yang memakainya; mengunduh yang tak dibaca cuma menambah berkas.
+
+Satu berkas gagal TIDAK membunuh sisa panen: tiap item ditangkap sendiri,
+dihitung sebagai gagal, panen lanjut.
 """
 
-import argparse, re, sys, time
-from datetime import datetime
+import argparse
+import re
+import sys
+from datetime import date, datetime
 from pathlib import Path
 
-ROOT_DIR   = Path(__file__).parent.parent
-DAILY_DIR  = ROOT_DIR / "data-idx" / "daily"
-WEEKLY_DIR = ROOT_DIR / "data-idx" / "weekly"
-IDX_URL    = "https://www.idx.co.id/id/data-pasar/laporan-statistik/statistik"
-HEADERS    = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                  "Chrome/124.0.0.0 Safari/537.36",
-    "Referer": "https://www.idx.co.id/",
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import arsip_mentah  # noqa: E402 — reuse, lihat CLAUDE.md rung 2
+import idx_net  # noqa: E402
+
+ROOT_DIR    = Path(__file__).parent.parent
+DAILY_DIR   = ROOT_DIR / "data-idx" / "daily"
+WEEKLY_DIR  = ROOT_DIR / "data-idx" / "weekly"
+MONTHLY_DIR = ROOT_DIR / "data-idx" / "monthly"
+
+HALAMAN  = "https://www.idx.co.id/id/data-pasar/laporan-statistik/statistik"
+API      = "https://www.idx.co.id/primary/Statistic/GetStatistic"
+
+# prefix nama file -> (folder tujuan, tipe di API)
+JENIS = {
+    "ds": (DAILY_DIR,   "daily"),
+    "ws": (WEEKLY_DIR,  "weekly"),
+    "ms": (MONTHLY_DIR, "monthly"),
 }
+ARG2PREFIX = {"harian": ["ds"], "mingguan": ["ws"], "bulanan": ["ms"],
+              "semua": ["ds", "ws", "ms"]}
 
-# prefix nama file -> folder tujuan
-JENIS_MAP = {"ds": DAILY_DIR, "ws": WEEKLY_DIR}
-
-
-# halaman statistik punya tab teks: Harian | Mingguan | Bulanan | Triwulan |
-# Tahunan — default "Harian" (ds_). File ws_ baru muncul setelah tab
-# "Mingguan" diklik (render client-side, URL tidak berubah).
-TAB_LABEL = {"ds": "Harian", "ws": "Mingguan"}
+# Varian bulanan yang dipanen. "E" = Equity. Lihat catatan modul.
+MS_VARIAN = "E"
 
 
-def _kumpul_link(page, prefix):
+def _nama_berkas(prefix: str, nomor: str) -> str | None:
+    """`DS260818` -> ds_260818.pdf · `WS260814` -> ws_260814.pdf ·
+    `MS2607-E` -> ms_2607.pdf (varian -B/-SW dilewati -> None).
+
+    Nama dibangun dari ruas `number`, BUKAN dari nama berkas di URL: URL
+    bulanan berbentuk `/Media/<hash>/ms_equity_2607.pdf` sehingga penamaan
+    ikut-URL menghasilkan tiga pola berbeda untuk tiga jenis yang sama.
+    """
+    nomor = (nomor or "").strip().upper()
+    if prefix == "ms":
+        m = re.fullmatch(r"MS(\d{4})-([A-Z]+)", nomor)
+        if not m or m.group(2) != MS_VARIAN:
+            return None
+        return f"ms_{m.group(1)}.pdf"
+    m = re.fullmatch(rf"{prefix.upper()}(\d{{6}})", nomor)
+    return f"{prefix}_{m.group(1)}.pdf" if m else None
+
+
+def daftar(prefix: str, *, tahun: int | None, mulai: str | None, sampai: str | None) -> list[tuple[str, str]]:
+    """Panggil GetStatistic -> [(nama_berkas, url_pdf)].
+
+    Melempar RuntimeError kalau endpointnya tak menjawab — kegagalan jaringan
+    harus kelihatan (exit code != 0), bukan terbaca sebagai "belum terbit".
+    """
+    tipe = JENIS[prefix][1]
+    if tipe == "daily":
+        params = {"type": "daily", "lang": "id", "keyword": "",
+                  "StartDate": mulai or "", "EndDate": sampai or ""}
+    else:
+        params = {"type": tipe, "lang": "id", "year": tahun or date.today().year}
+    r = idx_net.get(API, params=params, referer=HALAMAN)
     out = []
-    for a in page.query_selector_all("a[href*='.pdf']"):
-        href = (a.get_attribute("href") or "").strip()
-        nama = href.lower().rsplit("/", 1)[-1]
-        if not re.match(rf"{prefix}_\d{{6}}\.pdf$", nama):
-            continue
-        if href.startswith("/"):
-            href = "https://www.idx.co.id" + href
-        out.append(href)
+    for baris in (r.json() or []):
+        try:
+            nama = _nama_berkas(prefix, baris.get("number", ""))
+            if not nama:
+                continue
+            url = (baris.get("file") or "").strip()
+            if not url:
+                continue
+            if url.startswith("/"):
+                url = "https://www.idx.co.id" + url
+            out.append((nama, url))
+        except Exception as e:  # noqa: BLE001 — satu baris rusak != daftar gagal
+            print(f"  [SKIP] baris tak terbaca: {e}")
     return out
 
 
-def get_links_playwright(jenis_aktif, retry=3):
-    """Scrape link PDF dari halaman statistik IDX per jenis yang diminta.
-
-    jenis_aktif: subset dari ["ds","ws"]. Return {"ds": [...], "ws": [...]}.
-    Raise kalau gagal total setelah `retry` percobaan.
-    """
-    from playwright.sync_api import sync_playwright
-
-    galat_terakhir = None
-    for percobaan in range(1, retry + 1):
-        try:
-            with sync_playwright() as p:
-                browser = p.chromium.launch(headless=True)
-                page = browser.new_page(user_agent=HEADERS["User-Agent"])
-                print(f"Membuka halaman IDX Statistics... (percobaan {percobaan}/{retry})")
-                # "domcontentloaded" bukan "networkidle": halaman IDX terus
-                # streaming analytics sehingga networkidle sering tak pernah
-                # tercapai dari IP datacenter -> timeout semu padahal konten ada.
-                page.goto(IDX_URL, wait_until="domcontentloaded", timeout=45000)
-                # tunggu anchor PDF pertama muncul (render client-side)
-                page.wait_for_selector("a[href*='.pdf']", timeout=30000)
-                out = {"ds": [], "ws": []}
-                for jenis in jenis_aktif:
-                    if jenis != "ds":   # tab default = Harian, lainnya perlu klik
-                        page.get_by_text(TAB_LABEL[jenis], exact=True).first.click()
-                        page.wait_for_timeout(3000)
-                    # tampilkan semua baris kalau ada dropdown page-size
-                    try:
-                        page.select_option("select", "-1")
-                        page.wait_for_timeout(2000)
-                    except Exception:
-                        pass
-                    out[jenis] = _kumpul_link(page, jenis)
-                browser.close()
-                return out
-        except Exception as e:
-            galat_terakhir = e
-            print(f"  gagal: {type(e).__name__}: {e}")
-            if percobaan < retry:
-                time.sleep(5 * percobaan)
-    raise RuntimeError(f"Gagal scrape halaman IDX setelah {retry}x: {galat_terakhir}")
-
-
-def filter_links(links, bulan=None, tahun=None):
-    if not (bulan or tahun):
-        return links
-    hasil = []
-    for url in links:
-        m = re.search(r"(?:ds|ws)_(\d{2})(\d{2})(\d{2})\.pdf", url, re.I)
-        if m:
-            yy, mm, _dd = m.groups()
-            if bulan and int(mm) != bulan:
-                continue
-            if tahun and (2000 + int(yy)) != tahun:
-                continue
-            hasil.append(url)
-    return hasil
-
-
-def download_file(url, output_dir):
-    import requests
-    filename = url.split("/")[-1].lower()
-    out = output_dir / filename
+def unduh(nama: str, url: str, tujuan: Path, prefix: str) -> bool:
+    """Simpan satu PDF. Arsip mentah dibaca DULU; jaringan cuma kalau perlu."""
+    out = tujuan / nama
     if out.exists() and out.stat().st_size > 10000:
-        print(f"  [SKIP] {filename} sudah ada ({out.stat().st_size//1024} KB)")
+        print(f"  [SKIP] {nama} sudah ada ({out.stat().st_size // 1024} KB)")
         return True
     try:
-        r = requests.get(url, headers=HEADERS, timeout=60, stream=True)
-        r.raise_for_status()
-        with open(out, "wb") as f:
-            for chunk in r.iter_content(8192):
-                f.write(chunk)
-        print(f"  [OK]   {filename} ({out.stat().st_size//1024} KB)")
+        isi = arsip_mentah.ambil_atau_unduh(
+            "statistik", prefix, nama,
+            unduh=lambda: idx_net.get(url, headers=idx_net.HDR_FILE,
+                                      referer=HALAMAN, timeout=120).content)
+        if len(isi) < 10000 or not isi.startswith(b"%PDF"):
+            raise ValueError(f"bukan PDF utuh ({len(isi)} byte)")
+        out.write_bytes(isi)
+        print(f"  [OK]   {nama} ({len(isi) // 1024} KB)")
         return True
-    except Exception as e:
-        print(f"  [ERR]  {filename}: {e}")
+    except Exception as e:  # noqa: BLE001 — satu berkas gagal != panen mati
+        print(f"  [ERR]  {nama}: {e}")
         return False
+
+
+def _batas_yymm(mundur: int) -> str:
+    """YYMM periode terlama yang masih diterima untuk `--mundur N` bulan."""
+    t = date.today()
+    m, y = t.month - mundur + 1, t.year
+    while m <= 0:
+        m += 12
+        y -= 1
+    return f"{y % 100:02d}{m:02d}"
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--bulan",    type=int)
-    ap.add_argument("--tahun",    type=int, default=datetime.now().year)
-    ap.add_argument("--semua",    action="store_true")
+    ap.add_argument("--bulan", type=int)
+    ap.add_argument("--tahun", type=int, default=datetime.now().year)
+    ap.add_argument("--semua", action="store_true")
     ap.add_argument("--hari-ini", action="store_true")
-    ap.add_argument("--jenis",    choices=["harian", "mingguan", "semua"],
-                    default="harian",
-                    help="harian=ds_ saja (default, kompatibel lama), "
-                         "mingguan=ws_ saja, semua=keduanya")
+    ap.add_argument("--mundur", type=int, default=0,
+                    help="mingguan/bulanan: berapa bulan ke belakang (boleh lintas tahun)")
+    ap.add_argument("--jenis", choices=list(ARG2PREFIX), default="harian",
+                    help="harian=ds_ (default), mingguan=ws_, bulanan=ms_ (Equity), semua=ketiganya")
     args = ap.parse_args()
-
-    DAILY_DIR.mkdir(parents=True, exist_ok=True)
-    WEEKLY_DIR.mkdir(parents=True, exist_ok=True)
 
     if args.hari_ini:
         bulan, tahun = datetime.now().month, datetime.now().year
     elif args.semua:
-        bulan, tahun = None, None
+        bulan, tahun = None, args.tahun
     else:
-        bulan = args.bulan or datetime.now().month
-        tahun = args.tahun
+        bulan, tahun = args.bulan or datetime.now().month, args.tahun
 
-    jenis_aktif = ["ds", "ws"] if args.jenis == "semua" else \
-                  (["ws"] if args.jenis == "mingguan" else ["ds"])
+    # Mingguan/bulanan dikunci PER TAHUN di API, jadi "12 bulan terakhir"
+    # hampir selalu perlu dua tahun ditanyakan lalu dipotong di sisi kita.
+    batas_ms = _batas_yymm(args.mundur) if args.mundur else None
+    tahun_list = [tahun]
+    if batas_ms:
+        tahun_list = list(range(2000 + int(batas_ms[:2]), tahun + 1))
 
-    print(f"\nDownload IDX Statistics ({args.jenis})"
-          + (f" — Bulan {bulan}/{tahun}" if bulan else " — Semua"))
-    try:
-        semua_link = get_links_playwright(jenis_aktif)
-    except ImportError:
-        print("ERROR: Playwright tidak terinstall. "
-              "Jalankan: pip install playwright && playwright install chromium")
-        sys.exit(2)
-    except RuntimeError as e:
-        print(f"ERROR: {e}")
-        sys.exit(1)   # kegagalan jaringan/blokir HARUS kelihatan di CI
+    prefixes = ARG2PREFIX[args.jenis]
+    print(f"\nUnduh IDX Statistics ({args.jenis})"
+          + (f" — bulan {bulan}/{tahun}" if bulan and "ds" in prefixes else "")
+          + (f" — mundur {args.mundur} bulan (>= {batas_ms})" if batas_ms else ""))
 
-    total_ok = total = 0
-    for jenis in jenis_aktif:
-        links = filter_links(semua_link[jenis], bulan=bulan, tahun=tahun)
-        if not links:
-            print(f"[{jenis}] tidak ada file cocok (mungkin belum terbit).")
+    total = total_ok = gagal_daftar = 0
+    for prefix in prefixes:
+        tujuan = JENIS[prefix][0]
+        tujuan.mkdir(parents=True, exist_ok=True)
+        item: list[tuple[str, str]] = []
+        try:
+            if prefix == "ds":
+                # API harian dikunci rentang tanggal, persis seperti halamannya.
+                if bulan:
+                    mulai = date(tahun, bulan, 1).isoformat()
+                    akhir = date(tahun + bulan // 12, bulan % 12 + 1, 1)
+                    sampai = min(akhir, date.today()).isoformat()
+                else:
+                    mulai = sampai = None   # kosong = seluruh yang terlisting
+                item = daftar("ds", tahun=tahun, mulai=mulai, sampai=sampai)
+            else:
+                for t in tahun_list:
+                    item += daftar(prefix, tahun=t, mulai=None, sampai=None)
+                if batas_ms:
+                    # ds_/ws_ pakai YYMMDD, ms_ pakai YYMM — potong sama-sama
+                    # di 4 digit pertama supaya perbandingannya setara.
+                    item = [(n, u) for n, u in item if n[3:7] >= batas_ms]
+        except Exception as e:  # noqa: BLE001 — satu jenis gagal != jenis lain batal
+            print(f"[{prefix}] GAGAL mengambil daftar: {e}")
+            gagal_daftar += 1
             continue
-        tujuan = JENIS_MAP[jenis]
-        print(f"[{jenis}] {len(links)} file -> {tujuan}")
-        total += len(links)
-        total_ok += sum(download_file(u, tujuan) for u in links)
 
-    print(f"\nSelesai: {total_ok}/{total} file berhasil.")
-    if total and total_ok == 0:
-        sys.exit(1)
+        if not item:
+            print(f"[{prefix}] tidak ada berkas cocok (mungkin belum terbit).")
+            continue
+        print(f"[{prefix}] {len(item)} berkas -> {tujuan}")
+        total += len(item)
+        for nama, url in item:
+            total_ok += unduh(nama, url, tujuan, prefix)
+
+    print(f"\nSelesai: {total_ok}/{total} berkas berhasil.")
+    if gagal_daftar == len(prefixes) or (total and total_ok == 0):
+        sys.exit(1)   # blokir/jaringan HARUS terbaca gagal di CI
 
 
 if __name__ == "__main__":

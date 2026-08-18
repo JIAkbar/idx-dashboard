@@ -34,7 +34,7 @@ jobs:
           pip install -r requirements.txt
           playwright install chromium --with-deps
 
-      # 4. Download PDF IDX (harian + mingguan)
+      # 4. Download PDF IDX (harian + mingguan + bulanan Equity)
       #    CATATAN blokir (Agustus 2026): IDX kerap menolak/melambatkan IP
       #    datacenter GitHub — download_idx.py sekarang exit!=0 kalau scrape
       #    gagal total, jadi run ini MERAH saat diblokir (bukan sukses semu
@@ -45,11 +45,12 @@ jobs:
         run: |
           python scripts/download_idx.py --hari-ini --jenis semua
 
-      # 5. Parse semua PDF baru → JSON (harian + mingguan)
+      # 5. Parse semua PDF baru → JSON (harian + mingguan + bulanan)
       - name: Parse PDF ke JSON
         run: |
           python scripts/parse_idx_pdf.py --semua
           python scripts/parse_idx_weekly.py --semua
+          python scripts/parse_idx_monthly.py --semua
 
       # 6. Commit & push jika ada perubahan
       - name: Commit & push data baru
