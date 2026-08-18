@@ -603,7 +603,19 @@ def main() -> int:
             kosong += 1
             print(" - kosong (semua ruas null)")
         else:
-            simpan(kode, tanggal, bucket, data_periode, currency)
+            # Penulisan bisa gagal sesaat di Windows (kunci antivirus/pencadangan).
+            # Dicoba ulang sekali; kalau tetap gagal, emiten ini saja yang hilang.
+            try:
+                simpan(kode, tanggal, bucket, data_periode, currency)
+            except OSError as e:
+                time.sleep(1.5)
+                try:
+                    simpan(kode, tanggal, bucket, data_periode, currency)
+                except OSError as e2:
+                    gagal += 1
+                    print(f" - gagal menulis ({e2})")
+                    time.sleep(random.uniform(*JEDA))
+                    continue
             ok += 1
             print(f" - ok ({currency}, {terisi}/{len(ALL_KEYS)} ruas terisi)")
 
