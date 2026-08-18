@@ -308,14 +308,13 @@ export function Bulletin() {
                             {e.analisa && e.analisa.length > 0 && (
                               <button
                                 type="button"
-                                className="blt-dl"
+                                className={`blt-dl${buka ? ' on' : ''}`}
                                 onClick={() => setDetail(buka ? null : e.kode)}
                                 title={
                                   !probvvBoleh
                                     ? alasan('probvv').kalimat
                                     : buka ? 'Tutup tabel probabilitas' : 'Tabel probabilitas per emiten'
                                 }
-                                style={buka ? { color: 'var(--amber)', borderColor: 'var(--amber)' } : undefined}
                               >
                                 {!probvvBoleh && <IkonMenu d={IKON_KUNCI} size={11} />}
                                 {buka ? 'Tutup' : 'Prob'}

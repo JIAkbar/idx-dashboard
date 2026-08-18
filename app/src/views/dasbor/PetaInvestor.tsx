@@ -1,3 +1,4 @@
+import { Dropdown } from '../../components/dasbor/Dropdown'
 import { TombolLayarPenuh } from '../../components/dasbor/TombolLayarPenuh'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { GrupKonglomerat } from '../../components/dasbor/GrupKonglomerat'
@@ -55,7 +56,6 @@ export function PetaInvestor() {
   const graphCardRef = useRef<HTMLDivElement>(null)
   const [fsAktif, setFsAktif] = useState(false)
   // Menu Export XLS — dua mode: emiten+cabang / investor.
-  const [exportBuka, setExportBuka] = useState(false)
   // Tombol "Tampilkan" pindah ke baris tab (dulu berdesakan dgn kotak cari di
   // mobile) — logika go() tetap milik PetaInvestorSearch, dipicu via ref.
   const searchRef = useRef<PetaInvestorSearchHandle>(null)
@@ -154,47 +154,42 @@ export function PetaInvestor() {
             </div>
             <PetaInvestorSearch ref={searchRef} data={data} value={searchValue} onChange={setSearchValue} onSelect={handleSelect} onClear={handleClear} />
             <button type="button" className="pi-search-go" onClick={() => searchRef.current?.tampilkan()}>Tampilkan</button>
-            <div className={`dd${exportBuka ? ' open' : ''}`} style={{ position: 'relative' }}>
-              <button
-                type="button"
-                className="dd-btn"
-                onClick={() => setExportBuka((v) => !v)}
-                onBlur={() => setTimeout(() => setExportBuka(false), 200)}
-                title="Unduh data Peta Investor sebagai berkas Excel"
-              >
-                <IkonMenu d={IKON_UNDUH} size={13} /> Export XLS
-              </button>
-              {exportBuka && (
-                <div className="dd-menu" style={{ display: 'block', right: 0, left: 'auto' }}>
-                  <button
-                    type="button"
-                    className="dd-it"
-                    disabled={selectedDetail?.type !== 'emiten'}
-                    style={selectedDetail?.type !== 'emiten' ? { opacity: 0.45, cursor: 'not-allowed' } : undefined}
-                    onMouseDown={() => {
-                      if (selectedDetail?.type === 'emiten') exportEmiten(data, selectedDetail.code)
-                    }}
-                  >
-                    {selectedDetail?.type === 'emiten'
-                      ? `Emiten ${selectedDetail.code} + cabang`
-                      : 'Emiten + cabang (pilih emiten dulu)'}
-                  </button>
-                  <button
-                    type="button"
-                    className="dd-it"
-                    disabled={selectedDetail?.type !== 'investor'}
-                    style={selectedDetail?.type !== 'investor' ? { opacity: 0.45, cursor: 'not-allowed' } : undefined}
-                    onMouseDown={() => {
-                      if (selectedDetail?.type === 'investor') exportInvestor(data, selectedDetail.name)
-                    }}
-                  >
-                    {selectedDetail?.type === 'investor'
-                      ? `Portofolio ${selectedDetail.name.slice(0, 24)}`
-                      : 'Portofolio investor (pilih investor dulu)'}
-                  </button>
-                </div>
-              )}
-            </div>
+            {/* K3: dulu .dd/.dd-btn/.dd-menu/.dd-it ditulis ulang di sini lengkap
+                dengan posisi inline, onBlur bertimer, dan opacity nonaktif per
+                item — padahal Dropdown.tsx sudah menangani semuanya dan dipakai
+                dengan benar oleh ByStock/ByInvestor di halaman anak yang sama.
+                Yang ikut didapat: Escape menutup, panah atas/bawah berpindah
+                item, dan menu yang tak lagi kabur saat fokus berpindah. */}
+            <Dropdown
+              opsi={[
+                {
+                  nilai: 'emiten',
+                  nonaktif: selectedDetail?.type !== 'emiten',
+                  label: selectedDetail?.type === 'emiten'
+                    ? `Emiten ${selectedDetail.code} + cabang`
+                    : 'Emiten + cabang (pilih emiten dulu)',
+                },
+                {
+                  nilai: 'investor',
+                  nonaktif: selectedDetail?.type !== 'investor',
+                  label: selectedDetail?.type === 'investor'
+                    ? `Portofolio ${selectedDetail.name.slice(0, 24)}`
+                    : 'Portofolio investor (pilih investor dulu)',
+                },
+              ]}
+              // Menu AKSI, bukan pemilih nilai: nilai sengaja dikosongkan supaya
+              // tombolnya selalu berbunyi "Export XLS" dan tak ada item yang
+              // tertandai terpilih setelah diklik.
+              nilai=""
+              placeholder="Export XLS"
+              ikon={IKON_UNDUH}
+              rata="kanan"
+              ariaLabel="Unduh data Peta Investor sebagai berkas Excel"
+              onGanti={(v) => {
+                if (v === 'emiten' && selectedDetail?.type === 'emiten') exportEmiten(data, selectedDetail.code)
+                if (v === 'investor' && selectedDetail?.type === 'investor') exportInvestor(data, selectedDetail.name)
+              }}
+            />
           </div>
 
           {activeView === 'grup' && <GrupKonglomerat />}

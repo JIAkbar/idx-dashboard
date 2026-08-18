@@ -941,6 +941,10 @@
    — dropdown dekat tepi bawah wadah pendek (mis. modal Tambah Akun, #3) tidak
    lagi menutupi kontrol di bawahnya. */
 .lantai .dd.dd-atas .dd-menu{top:auto;bottom:calc(100% + 5px)}
+/* Menu rata kanan tombol (#170) — untuk pemicu dekat tepi kanan bilah, mis.
+   Export XLS di Peta Investor. Dulu dipasang lewat gaya inline di satu
+   pemakaian, jadi pemakaian berikutnya pasti mengulanginya. */
+.lantai .dd.dd-kanan .dd-menu{left:auto;right:0}
 .lantai .dd-it{display:flex;width:100%;text-align:left;padding:6px 10px;border-radius:4px;font-family:var(--mono);font-size:11.5px;color:var(--text2);white-space:nowrap}
 .lantai .dd-it:hover{background:var(--amber-dim);color:var(--text)}
 .lantai .dd-it.sel{color:var(--amber)}
@@ -1465,6 +1469,9 @@
 .lantai .blt-no{font-family:var(--mono);font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums}
 .lantai .blt-dl{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.07em;color:var(--text2);border:1px solid var(--line2);border-radius:99px;padding:4px 12px 4px 10px;text-decoration:none;white-space:nowrap;font-variant-numeric:tabular-nums;transition:color .12s,border-color .12s,background .12s}
 .lantai .blt-dl:hover{color:var(--amber);border-color:var(--amber);background:var(--amber-dim)}
+/* Keadaan aktif lewat kelas, bukan warna inline di satu pemakaian (#170) —
+   semua kendali lain (.tab.on, .chip-t.on, .tile.on) sudah begitu. */
+.lantai .blt-dl.on{color:var(--amber);border-color:var(--amber)}
 /* #92 — pencarian emiten di header panel (input .inp 32px + tombol × di dalam),
    kolom IHSG gabung badge Δ% (.ytd-bdg), badge Tipe & chip emiten numpang
    .bchip (chip = <button> klik → isi filter). Mobile ≤560px: input pindah

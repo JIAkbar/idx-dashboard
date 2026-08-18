@@ -433,16 +433,14 @@ export function BedahUnggah() {
                                 <span key={p} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                   <button
                                     type="button"
-                                    className="dd-btn"
-                                    style={{ fontSize: 10.5, padding: '4px 8px' }}
+                                    className="dd-btn dd-btn-kecil"
                                     onClick={() => bukaArsip(b, p)}
                                   >
                                     {labelJenisBedah(p)}
                                   </button>
                                   <button
                                     type="button"
-                                    className="dd-btn"
-                                    style={{ padding: '4px 6px', color: 'var(--red)', borderColor: 'var(--red)' }}
+                                    className="dd-btn dd-btn-kecil merah"
                                     title={`Hapus ${labelJenisBedah(p)}`}
                                     aria-label={`Hapus ${labelJenisBedah(p)} — ${b.ticker} ${t.tanggal}`}
                                     onClick={() => setHapusTarget({ ticker: b.ticker, tanggal: t.tanggal, path: p })}

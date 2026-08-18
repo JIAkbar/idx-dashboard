@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { Kalender } from '../../components/dasbor/Kalender'
 import { useDataHarian } from '../../lib/dasbor/dataHarian'
@@ -16,7 +15,6 @@ import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
  * punya reset button global). Ditaruh inline di sini, bukan di lantai.css,
  * karena file itu di luar cakupan Task 6.
  */
-const thBtn: CSSProperties = { font: 'inherit', color: 'inherit', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }
 
 type UrutState<T> = { kunci: keyof T; arah: 'naik' | 'turun'; klik: (k: keyof T) => void }
 
@@ -25,7 +23,7 @@ function thSort<T extends object>(s: UrutState<T>, k: keyof T, label: string, ka
   const aktif = s.kunci === k
   return (
     <th className={kanan ? 'r' : undefined}>
-      <button type="button" style={thBtn} onClick={() => s.klik(k)}>
+      <button type="button" className="th-sort" onClick={() => s.klik(k)}>
         {label}{aktif ? (s.arah === 'naik' ? ' ▲' : ' ▼') : ''}
       </button>
     </th>

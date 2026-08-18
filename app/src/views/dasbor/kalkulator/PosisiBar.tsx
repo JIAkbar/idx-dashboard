@@ -32,7 +32,7 @@ export function PosisiBar({ kode, onKode, lots, onLots, avg, onAvg, onFill }: Po
           <span className="lbl">Avg Cost</span>
           <input className="inp" type="number" name="avg" placeholder="0" min={0} value={avg} onChange={(e) => onAvg(e.target.value)} />
         </div>
-        <button className="btn-p" style={{ fontSize: 11, padding: '7px 14px' }} onClick={onFill}>↩ Isi Kalkulator</button>
+        <button className="btn-p btn-p-kecil" onClick={onFill}>↩ Isi Kalkulator</button>
       </div>
       <span className="v-note">Isi posisi untuk auto-fill ↓</span>
     </div>

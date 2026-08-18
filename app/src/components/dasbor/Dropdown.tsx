@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { IkonMenu } from './IkonMenu'
 
 export interface OpsiDropdown {
   nilai: string
@@ -18,6 +19,13 @@ interface DropdownProps {
   placeholder?: string
   /** Kunci interaksi selagi ada aksi in-flight (pola tombol Lantai lain, mis. Sakelar AkunAdmin.tsx). */
   disabled?: boolean
+  /** Path ikon dari IkonMenu, ditaruh di depan label tombol. Dipakai menu yang
+   *  bertindak sebagai AKSI, bukan pemilih nilai — mis. Export XLS di Peta
+   *  Investor, tempat ikon unduh yang menjelaskan apa yang akan terjadi (#170). */
+  ikon?: string
+  /** Menu rata kanan tombol — untuk pemicu dekat tepi kanan bilah, supaya
+   *  menunya tidak terpotong viewport. */
+  rata?: 'kiri' | 'kanan'
 }
 
 /**
@@ -28,7 +36,7 @@ interface DropdownProps {
  * amber (`.sel`). Keyboard: Escape menutup, panah atas/bawah memindah fokus
  * antar item, Enter memilih (klik native tombol terfokus).
  */
-export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disabled }: DropdownProps) {
+export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disabled, ikon, rata }: DropdownProps) {
   const [open, setOpen] = useState(false)
   // Bug modal Tambah Akun (#3, 15 Agu 2026): dd-menu buka ke BAWAH baku dan
   // menutupi kontrol di bawahnya (mis. tombol submit) di modal pendek. Diukur
@@ -107,7 +115,7 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
   }
 
   return (
-    <div className={`dd${open ? ' open' : ''}${bukaAtas ? ' dd-atas' : ''}`} ref={ref} onKeyDown={onKeyDown}>
+    <div className={`dd${open ? ' open' : ''}${bukaAtas ? ' dd-atas' : ''}${rata === 'kanan' ? ' dd-kanan' : ''}`} ref={ref} onKeyDown={onKeyDown}>
       <button
         type="button"
         className="dd-btn"
@@ -117,6 +125,7 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
         disabled={disabled}
         onClick={() => setOpen((v) => !v)}
       >
+        {ikon && <IkonMenu d={ikon} size={13} />}
         {label}
         <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
       </button>
