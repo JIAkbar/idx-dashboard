@@ -439,7 +439,7 @@
     <div class="cv-tag" style="margin-top:3mm">Satu Emiten · Modal, Arus &amp; Probabilitas</div>
     <div class="bd-tk">$ARCI<small>PT Archi Indonesia Tbk.</small></div>
     <div class="hangka" style="margin-top:5mm">ARCI <b>1.225</b> diperdagangkan <b>14,7%</b> di bawah harga konstruksi pasar <b>1.405</b></div>
-    <div class="bd-vonis">ARCI menutup 1.225 (+2,08%) dengan seluruh indikator konsentrasi Stockbit menunjuk Big Acc — Top 1 menguasai 30,7% volume. YU sendirian membeli Rp3 miliar, jauh di atas pembeli kedua CC Rp669,7 juta. Net beli Rp5,8 miliar dengan 21 pembeli lawan 26 penjual.</div>
+    <div class="bd-vonis">Sepuluh hari bursa, sepuluh hari net beli, total Rp197,3 miliar — sementara harga naik 1.060 ke 1.225 (+15,57%), dua kali lipat kenaikan BUMI pada periode yang sama. Volume reratanya hanya 46 juta lembar, jadi kenaikan ini terjadi di saham yang tipis: serapan kecil pun menggerakkan harga jauh.</div>
     <div class="bd-cutoff">
       <span class="l">Batas Data</span>
       Seluruh angka terbitan ini ditutup pada penutupan sesi <b>14 Agustus 2026</b> — sesi bursa terakhir yang sudah selesai saat terbitan dirakit. Ini bukan data waktu nyata: harga, arus broker, dan probabilitas tidak berubah lagi setelah angka ditutup.
@@ -503,7 +503,7 @@
     </div>
     <div class="blok" style="margin-top:4mm">
       <h3 class="rule">Interpretasi Analis</h3>
-      <p style="text-align:justify;line-height:1.6">Harga 1.225 berada 8% di atas EMA50 1.134 — pemegang dari periode terakhir berada di posisi untung, sehingga kenaikan ini berlangsung tanpa beban jual besar dari pemegang lama.</p>
+      <p style="text-align:justify;line-height:1.6">Harga 1.225 berada 8% di atas EMA50 1.134. Kenaikan 15,57% dalam sepuluh hari membuat sebagian besar pemegang periode terakhir berada di posisi untung — tak ada beban jual dari pemegang lama, tetapi juga tak ada bantalan bila arus beli berhenti.</p>
     </div>
     <div class="bd-note">METODE: aproksimasi hibrida: intraday 15 menit (55 hari bursa terakhir) + OHLCV harian utk riwayat lebih lama; volume disebar merata low–high per bar, peluruhan half-life 60 hari bursa — bukan data done per harga. Batang hijau = lapis harga ≤ close (pemegang untung/impas);
     batang biru = lapis di atas close (pemegang rugi). % modal di atas air = porsi volume tertimbang pada lapis ≤ close.</div>
@@ -557,14 +557,14 @@
   </header>
   <div class="inner">
     <div class="trow" style="margin-bottom:3mm"><div class="tk" style="font-size:14pt">Arus Broker ARCI</div>
-      <div class="px" style="font-size:8pt;color:var(--mute)">1 hari setoran · 2026-08-14 s.d. 2026-08-14</div></div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">10 hari setoran · 2026-08-03 s.d. 2026-08-14</div></div>
     <div class="chartwrap">
       <div class="cap">ARCI · Net Broker Tampak per Hari (juta Rp) · Broker Summary Stockbit</div>
       <canvas id="chBMF" width="1360" height="290"></canvas>
     </div>
     <script>
     (function(){
-      const D=[["14/08", 433.3]];
+      const D=[["03/08", -386.6], ["04/08", 562.4], ["05/08", -1752.2], ["06/08", -947.0], ["07/08", 1287.1], ["10/08", 3376.9], ["11/08", 87.6], ["12/08", -2137.7], ["13/08", -922.1], ["14/08", 433.3]];
       const cv=document.getElementById('chBMF'),x=cv.getContext('2d');
       const W=cv.width,H=cv.height,pad={t:26,r:16,b:30,l:16};
       const mx=Math.max(...D.map(d=>Math.abs(d[1])),1);
@@ -585,7 +585,7 @@
       });
     })();
     </script>
-    <div class="bd-note" style="margin-top:1mm">VONIS HARIAN STOCKBIT: 14/08 <b class="c-bull">Big Acc</b></div>
+    <div class="bd-note" style="margin-top:1mm">VONIS HARIAN STOCKBIT: 03/08 <b class="">Neutral</b> · 04/08 <b class="c-bull">Small Acc</b> · 05/08 <b class="c-bear">Normal Dist</b> · 06/08 <b class="c-bear">Small Dist</b> · 07/08 <b class="c-bull">Big Acc</b> · 10/08 <b class="c-bull">Big Acc</b> · 11/08 <b class="">Neutral</b> · 12/08 <b class="c-bear">Big Dist</b> · 13/08 <b class="">Neutral</b> · 14/08 <b class="c-bull">Big Acc</b></div>
     <div class="cols" style="margin-top:3mm">
       <aside>
         <h3 class="rule">Broker Hari Terakhir <span class="r">14/08 · top-9 tampak</span></h3>
@@ -613,30 +613,30 @@
           <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp433,3 juta</td></tr>
         </table>
         <table class="brk" style="margin-top:3mm">
-          <tr><th>Broker</th><th>Net 1h</th><th>Avg Beli</th><th>Avg Jual</th></tr>
-          <tr><td class="bcode-b">YU</td><td class="bull">+3,0B</td><td>1.200</td><td>—</td></tr>
-<tr><td class="bcode-b">CC</td><td class="bull">+669,7M</td><td>1.155</td><td>—</td></tr>
-<tr><td class="bcode-b">LG</td><td class="bull">+590,5M</td><td>1.230</td><td>—</td></tr>
-<tr><td class="bcode-b">AZ</td><td class="bull">+384,4M</td><td>1.201</td><td>—</td></tr>
-<tr><td class="bcode-s">ZP</td><td class="bear">−1,3B</td><td>—</td><td>1.250</td></tr>
-<tr><td class="bcode-s">AK</td><td class="bear">−928,5M</td><td>—</td><td>1.238</td></tr>
-<tr><td class="bcode-s">YP</td><td class="bear">−703,1M</td><td>—</td><td>1.234</td></tr>
-<tr><td class="bcode-s">XL</td><td class="bear">−452,5M</td><td>—</td><td>1.160</td></tr>
+          <tr><th>Broker</th><th>Net 10h</th><th>Avg Beli</th><th>Avg Jual</th></tr>
+          <tr><td class="bcode-b">OD</td><td class="bull">+25,5B</td><td>1.188</td><td>1.132</td></tr>
+<tr><td class="bcode-b">DX</td><td class="bull">+19,1B</td><td>1.191</td><td>—</td></tr>
+<tr><td class="bcode-b">AZ</td><td class="bull">+18,8B</td><td>1.247</td><td>1.100</td></tr>
+<tr><td class="bcode-b">BB</td><td class="bull">+14,7B</td><td>1.104</td><td>1.182</td></tr>
+<tr><td class="bcode-s">CC</td><td class="bear">−31,4B</td><td>1.141</td><td>1.194</td></tr>
+<tr><td class="bcode-s">AK</td><td class="bear">−16,1B</td><td>1.116</td><td>1.197</td></tr>
+<tr><td class="bcode-s">XL</td><td class="bear">−13,3B</td><td>1.189</td><td>1.182</td></tr>
+<tr><td class="bcode-s">ZP</td><td class="bear">−9,9B</td><td>1.160</td><td>1.144</td></tr>
         </table>
-        <div class="brksrc">Avg = Σnilai ÷ Σlot, agregat 1 hari — bukan data done.</div>
+        <div class="brksrc">Avg = Σnilai ÷ Σlot, agregat 10 hari — bukan data done.</div>
       </aside>
       <section>
         
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
-          <p class="flowline"><span class="bull">Σ rentang +Rp433,3 juta</span> ·
-            <span class="bull">5 hari +Rp433,3 juta</span> ·
-            breadth 1/1 hari positif</p>
-          <p style="text-align:justify">Satu sesi 14 Agustus: konsentrasi pembelian sangat tinggi, Top 1 memegang 30,7% volume dan Top 5 21,3% — keempat ukurannya ditandai Big Acc. Sisi jual dipimpin ZP Rp1,3 miliar dan AK Rp928,5 juta.</p>
+          <p class="flowline"><span class="bear">Σ rentang −Rp398,3 juta</span> ·
+            <span class="bull">5 hari +Rp838,0 juta</span> ·
+            breadth 5/10 hari positif</p>
+          <p style="text-align:justify">Net beli tiap hari: Rp8,4 M · 26,3 · 21,3 · 61,4 · 17,7 · 15,0 · 22,2 · 11,6 · 7,6 · 5,8 miliar. Puncaknya 6 Agustus lalu menurun terus sampai 14 Agustus — arus masuknya melemah justru saat harga berada di titik tertinggi. Konsentrasi berayun tajam: Big Acc (7, 10, 14 Agu) berselang Big Dist (12 Agu).</p>
         </div>
         <div class="blok integritas" style="margin-top:5mm">
           <h3 class="rule">Kejujuran Data</h3>
-          <p>BARU SATU HARI. Konsentrasi setinggi ini pada satu sesi belum membuktikan akumulasi berkelanjutan.</p>
+          <p>Sepuluh tanggal, satu tangkapan layar per hari, top-10 tiap sisi. Broker di luar sepuluh besar tidak tercakup. Perhatikan arah net harian yang mengecil dari Rp61,4 miliar ke Rp5,8 miliar.</p>
         </div>
       </section>
     </div>
@@ -655,14 +655,14 @@
   <div class="inner">
     <div class="hangka">ARCI memerlukan konfirmasi &gt;<b>1.245</b> untuk memperluas probabilitas</div>
     <div class="sknb">
-      <div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close di atas 1.247 (R1)</span></div><div class="kr"><span class="kl">Rute Teknikal</span><span>1.247 → 1.286</span></div><div class="kr"><span class="kl">Risiko</span><span>Bergantung satu pembeli dominan; bila ia berhenti, penopangnya hilang</span></div></div>
+      <div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close di atas 1.247 (R1) disertai net beli harian yang kembali menebal</span></div><div class="kr"><span class="kl">Rute Teknikal</span><span>1.247 → 1.286</span></div><div class="kr"><span class="kl">Risiko</span><span>Arus masuk sudah menyusut sepuluh hari beruntun sementara harga terus naik</span></div></div>
       <div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Pantulan bertahan di atas pivot 1.210</span></div><div class="kr"><span class="kl">Rute Teknikal</span><span>1.210 -> 1.245</span></div><div class="kr"><span class="kl">Risiko</span><span>Uji ulang yang gagal mengembalikan tekanan jual</span></div></div>
-      <div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close di bawah 1.187 (S1)</span></div><div class="kr"><span class="kl">Rute Teknikal</span><span>1.187 → 1.148</span></div><div class="kr"><span class="kl">Risiko</span><span>Konsentrasi tinggi berbalik jadi risiko saat pembeli tunggal keluar</span></div></div>
-      <div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Berlaku selama close bertahan di atas S1 1.187; penembusan 1.247 diperlukan untuk konfirmasi.</span></div>
+      <div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close di bawah 1.187 (S1)</span></div><div class="kr"><span class="kl">Rute Teknikal</span><span>1.187 → 1.148</span></div><div class="kr"><span class="kl">Risiko</span><span>Saham tipis: volume rerata 46 juta lembar membuat penurunan sama cepatnya dengan kenaikan</span></div></div>
+      <div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Berlaku selama close bertahan di atas S1 1.187; kelanjutannya menuntut net beli harian berhenti menyusut, bukan sekadar harga bertahan.</span></div>
     </div>
     <div class="blok integritas" style="margin-top:auto;margin-bottom:2mm">
       <h3 class="rule">Catatan Integritas Data</h3>
-      <p>Data terbitan ini ditutup pada sesi bursa 14 Agustus 2026 — bukan data waktu nyata. Arus broker berasal dari satu hari setoran (14 Agu); pola lintas waktu belum bisa disimpulkan dari satu sesi. Angka PCD/zona modal dihitung mesin dari riwayat harga, bukan dari done summary per harga.</p>
+      <p>Data terbitan ini ditutup pada sesi bursa 14 Agustus 2026 — bukan data waktu nyata. Arus broker dirangkum dari sepuluh hari bursa berturut (3–14 Agustus), satu setoran Broker Summary per tanggal. Angka PCD/zona modal dihitung mesin dari riwayat harga, bukan dari done summary per harga.</p>
     </div>
   </div>
   <footer class="foot">

@@ -439,7 +439,7 @@
     <div class="cv-tag" style="margin-top:3mm">Satu Emiten · Modal, Arus &amp; Probabilitas</div>
     <div class="bd-tk">$BUMI<small>PT Bumi Resources Tbk.</small></div>
     <div class="hangka" style="margin-top:5mm">BUMI <b>181</b> diperdagangkan <b>22,9%</b> di bawah harga konstruksi pasar <b>223</b></div>
-    <div class="bd-vonis">BUMI menutup 181 (+1,69%) dengan nilai transaksi besar dan sisi beli yang jauh lebih terkonsentrasi daripada sisi jualnya: NI Rp24,4 miliar dan BK Rp18 miliar memimpin, sementara penjual terbesar YU dan CC masing-masing Rp21,4 miliar. Rasio broker 24 pembeli lawan 42 penjual dengan net beli Rp91,5 miliar menunjukkan barang berpindah dari banyak tangan kecil ke sedikit tangan besar dalam satu sesi.</div>
+    <div class="bd-vonis">Sepuluh hari bursa berturut, sepuluh hari net beli — tanpa satu pun hari net jual. Totalnya Rp1,45 triliun sementara harga bergerak 168 ke 181 (+7,74%). Serapan sebesar itu untuk kenaikan 7,74% menandakan barang diserap bertahap, bukan diburu.</div>
     <div class="bd-cutoff">
       <span class="l">Batas Data</span>
       Seluruh angka terbitan ini ditutup pada penutupan sesi <b>14 Agustus 2026</b> — sesi bursa terakhir yang sudah selesai saat terbitan dirakit. Ini bukan data waktu nyata: harga, arus broker, dan probabilitas tidak berubah lagi setelah angka ditutup.
@@ -503,7 +503,7 @@
     </div>
     <div class="blok" style="margin-top:4mm">
       <h3 class="rule">Interpretasi Analis</h3>
-      <p style="text-align:justify;line-height:1.6">Zona modal dihitung dari riwayat harga dua tahun. Harga 181 berada di atas EMA50 170, jadi mayoritas pemegang dari periode terakhir berada dalam posisi untung tipis — kondisi yang membuat tekanan jual dari pemegang lama relatif ringan selama harga bertahan.</p>
+      <p style="text-align:justify;line-height:1.6">Harga 181 berada di atas EMA50 170. Sepanjang sepuluh hari itu harga bergerak dalam rentang sempit sementara net beli terus masuk, sehingga zona modal periode terakhir menumpuk tepat di bawah harga sekarang — pemegang baru berada di posisi untung tipis, bukan tertekan.</p>
     </div>
     <div class="bd-note">METODE: aproksimasi hibrida: intraday 15 menit (55 hari bursa terakhir) + OHLCV harian utk riwayat lebih lama; volume disebar merata low–high per bar, peluruhan half-life 60 hari bursa — bukan data done per harga. Batang hijau = lapis harga ≤ close (pemegang untung/impas);
     batang biru = lapis di atas close (pemegang rugi). % modal di atas air = porsi volume tertimbang pada lapis ≤ close.</div>
@@ -534,7 +534,7 @@
     </div>
     <div class="sec" style="margin-top:4mm">
       <h3 class="rule">Teknikal</h3>
-      <p>Menutup 181 (+1,69%), 6,5% di atas EMA50 170 dan di atas pivot P 179. Struktur naik, R1 185 jadi ujian terdekat.</p>
+      <p>Menutup 181 (+1,69%), 6,5% di atas EMA50 170 dan di atas pivot P 179. R1 185 jadi ujian terdekat setelah kenaikan 7,74% dalam sepuluh hari.</p>
     </div>
     <div class="sr">
       <div class="k sup">Support</div><div class="v">179 <span>|</span> 176 <span>|</span> 170 <span>|</span> 167</div>
@@ -557,14 +557,14 @@
   </header>
   <div class="inner">
     <div class="trow" style="margin-bottom:3mm"><div class="tk" style="font-size:14pt">Arus Broker BUMI</div>
-      <div class="px" style="font-size:8pt;color:var(--mute)">1 hari setoran · 2026-08-14 s.d. 2026-08-14</div></div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">10 hari setoran · 2026-08-03 s.d. 2026-08-14</div></div>
     <div class="chartwrap">
       <div class="cap">BUMI · Net Broker Tampak per Hari (juta Rp) · Broker Summary Stockbit</div>
       <canvas id="chBMF" width="1360" height="290"></canvas>
     </div>
     <script>
     (function(){
-      const D=[["14/08", 13100]];
+      const D=[["03/08", -11200], ["04/08", -6500], ["05/08", 78780.6], ["06/08", 11700], ["07/08", -3300], ["10/08", 4200], ["11/08", 16900], ["12/08", 5700], ["13/08", -20100], ["14/08", 12900]];
       const cv=document.getElementById('chBMF'),x=cv.getContext('2d');
       const W=cv.width,H=cv.height,pad={t:26,r:16,b:30,l:16};
       const mx=Math.max(...D.map(d=>Math.abs(d[1])),1);
@@ -585,7 +585,7 @@
       });
     })();
     </script>
-    <div class="bd-note" style="margin-top:1mm">VONIS HARIAN STOCKBIT: 14/08 <b class="c-bull">Small Acc</b></div>
+    <div class="bd-note" style="margin-top:1mm">VONIS HARIAN STOCKBIT: 03/08 <b class="c-bear">Small Dist</b> · 04/08 <b class="">Neutral</b> · 05/08 <b class="c-bull">Big Acc</b> · 06/08 <b class="c-bull">Small Acc</b> · 07/08 <b class="">Neutral</b> · 10/08 <b class="c-bull">Small Acc</b> · 11/08 <b class="c-bull">Normal Acc</b> · 12/08 <b class="">Neutral</b> · 13/08 <b class="c-bear">Big Dist</b> · 14/08 <b class="c-bull">Small Acc</b></div>
     <div class="cols" style="margin-top:3mm">
       <aside>
         <h3 class="rule">Broker Hari Terakhir <span class="r">14/08 · top-9 tampak</span></h3>
@@ -603,40 +603,40 @@
           <tr class="sep"><td colspan="4">Jual Terbesar</td></tr>
           <tr><td class="bcode-s">YU</td><td>21,4B</td><td>1.200,0K</td><td>181</td></tr>
 <tr><td class="bcode-s">CC</td><td>21,4B</td><td>1.200,0K</td><td>179</td></tr>
-<tr><td class="bcode-s">SQ</td><td>6,6B</td><td>371,2K</td><td>179</td></tr>
+<tr><td class="bcode-s">SQ</td><td>6,8B</td><td>371,2K</td><td>179</td></tr>
 <tr><td class="bcode-s">FZ</td><td>5,4B</td><td>297,1K</td><td>181</td></tr>
 <tr><td class="bcode-s">YB</td><td>5,3B</td><td>294,3K</td><td>180</td></tr>
 <tr><td class="bcode-s">HP</td><td>5,3B</td><td>298,7K</td><td>177</td></tr>
 <tr><td class="bcode-s">MG</td><td>4,1B</td><td>226,9K</td><td>180</td></tr>
 <tr><td class="bcode-s">YP</td><td>3,1B</td><td>171,9K</td><td>179</td></tr>
 <tr><td class="bcode-s">XC</td><td>2,0B</td><td>108,1K</td><td>180</td></tr>
-          <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp13,1 miliar</td></tr>
+          <tr class="tot"><td>NET</td><td colspan="3" class="bull">+Rp12,9 miliar</td></tr>
         </table>
         <table class="brk" style="margin-top:3mm">
-          <tr><th>Broker</th><th>Net 1h</th><th>Avg Beli</th><th>Avg Jual</th></tr>
-          <tr><td class="bcode-b">NI</td><td class="bull">+24,4B</td><td>174</td><td>—</td></tr>
-<tr><td class="bcode-b">BK</td><td class="bull">+18,0B</td><td>180</td><td>—</td></tr>
-<tr><td class="bcode-b">AK</td><td class="bull">+13,5B</td><td>182</td><td>—</td></tr>
-<tr><td class="bcode-b">GR</td><td class="bull">+12,9B</td><td>179</td><td>—</td></tr>
-<tr><td class="bcode-s">CC</td><td class="bear">−21,4B</td><td>—</td><td>178</td></tr>
-<tr><td class="bcode-s">YU</td><td class="bear">−21,4B</td><td>—</td><td>178</td></tr>
-<tr><td class="bcode-s">SQ</td><td class="bear">−6,6B</td><td>—</td><td>178</td></tr>
-<tr><td class="bcode-s">FZ</td><td class="bear">−5,4B</td><td>—</td><td>182</td></tr>
+          <tr><th>Broker</th><th>Net 10h</th><th>Avg Beli</th><th>Avg Jual</th></tr>
+          <tr><td class="bcode-b">SS</td><td class="bull">+107,7B</td><td>178</td><td>192</td></tr>
+<tr><td class="bcode-b">LG</td><td class="bull">+104,4B</td><td>178</td><td>187</td></tr>
+<tr><td class="bcode-b">PD</td><td class="bull">+90,8B</td><td>180</td><td>183</td></tr>
+<tr><td class="bcode-b">RF</td><td class="bull">+78,5B</td><td>182</td><td>181</td></tr>
+<tr><td class="bcode-s">CC</td><td class="bear">−151,8B</td><td>—</td><td>178</td></tr>
+<tr><td class="bcode-s">XL</td><td class="bear">−111,8B</td><td>178</td><td>177</td></tr>
+<tr><td class="bcode-s">ZP</td><td class="bear">−87,3B</td><td>179</td><td>177</td></tr>
+<tr><td class="bcode-s">CP</td><td class="bear">−41,0B</td><td>188</td><td>178</td></tr>
         </table>
-        <div class="brksrc">Avg = Σnilai ÷ Σlot, agregat 1 hari — bukan data done.</div>
+        <div class="brksrc">Avg = Σnilai ÷ Σlot, agregat 10 hari — bukan data done.</div>
       </aside>
       <section>
         
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
-          <p class="flowline"><span class="bull">Σ rentang +Rp13,1 miliar</span> ·
-            <span class="bull">5 hari +Rp13,1 miliar</span> ·
-            breadth 1/1 hari positif</p>
-          <p style="text-align:justify">Satu sesi 14 Agustus: net beli Rp91,5 miliar dengan 24 pembeli lawan 42 penjual. Top 5 pembeli menyerap 16,2% volume — ditandai Normal Acc oleh Stockbit. Sisi jual menyebar ke lebih banyak broker dengan nilai per broker lebih kecil.</p>
+          <p class="flowline"><span class="bull">Σ rentang +Rp89,1 miliar</span> ·
+            <span class="bull">5 hari +Rp19,6 miliar</span> ·
+            breadth 6/10 hari positif</p>
+          <p style="text-align:justify">Net beli tiap hari: Rp107,7 M · 63,7 · 237,5 · 193,7 · 257,4 · 106,8 · 178,0 · 103,4 · 110,9 · 91,5 miliar. Puncaknya 5–7 Agustus. Label konsentrasi berayun — Big Acc (5 Agu), Normal Acc (11 Agu), tetapi juga Big Dist (13 Agu) — jadi pembelinya berganti-ganti, bukan satu tangan yang terus mengumpulkan.</p>
         </div>
         <div class="blok integritas" style="margin-top:5mm">
           <h3 class="rule">Kejujuran Data</h3>
-          <p>BARU SATU HARI. Arus di atas dari setoran 14 Agustus saja; pola akumulasi lintas minggu belum bisa dibuktikan dari satu sesi.</p>
+          <p>Sepuluh tanggal, satu tangkapan layar per hari, top-10 tiap sisi. Broker di luar sepuluh besar tidak tercakup, sehingga total net harian di sini lebih kecil daripada net pasar sesungguhnya.</p>
         </div>
       </section>
     </div>
@@ -655,14 +655,14 @@
   <div class="inner">
     <div class="hangka">BUMI memerlukan konfirmasi &gt;<b>185</b> untuk memperluas probabilitas</div>
     <div class="sknb">
-      <div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close di atas 185 (R1)</span></div><div class="kr"><span class="kl">Rute Teknikal</span><span>185 → 191</span></div><div class="kr"><span class="kl">Risiko</span><span>Baru satu sesi; belum ada bukti pola berlanjut</span></div></div>
+      <div class="kartu b"><div class="kt">Konfirmasi Bullish</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close di atas 185 (R1)</span></div><div class="kr"><span class="kl">Rute Teknikal</span><span>185 → 191</span></div><div class="kr"><span class="kl">Risiko</span><span>Serapan sepuluh hari sudah terhitung besar; tanpa pembeli baru, tenaganya bisa habis</span></div></div>
       <div class="kartu t"><div class="kt">Retest Konstruktif</div><div class="kr"><span class="kl">Konfirmasi</span><span>Pantulan bertahan di atas pivot 179</span></div><div class="kr"><span class="kl">Rute Teknikal</span><span>179 -> 185</span></div><div class="kr"><span class="kl">Risiko</span><span>Uji ulang yang gagal mengembalikan tekanan jual</span></div></div>
-      <div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close di bawah 176 (S1)</span></div><div class="kr"><span class="kl">Rute Teknikal</span><span>176 → 172</span></div><div class="kr"><span class="kl">Risiko</span><span>Penjual yang menyebar kembali menekan</span></div></div>
+      <div class="kartu r"><div class="kt">Risk-off / Invalidasi</div><div class="kr"><span class="kl">Konfirmasi</span><span>Close di bawah 176 (S1)</span></div><div class="kr"><span class="kl">Rute Teknikal</span><span>176 → 172</span></div><div class="kr"><span class="kl">Risiko</span><span>Rantai net beli terputus, penyerap berbalik jadi penjual</span></div></div>
       <div class="aturan"><span class="kl">Aturan Eksekusi</span><span>Berlaku selama close bertahan di atas S1 176; penembusan R1 185 diperlukan untuk mengonfirmasi kelanjutan serapan.</span></div>
     </div>
     <div class="blok integritas" style="margin-top:auto;margin-bottom:2mm">
       <h3 class="rule">Catatan Integritas Data</h3>
-      <p>Data terbitan ini ditutup pada sesi bursa 14 Agustus 2026 — bukan data waktu nyata. Arus broker berasal dari satu hari setoran (14 Agu); pola lintas waktu belum bisa disimpulkan dari satu sesi. Angka PCD/zona modal dihitung mesin dari riwayat harga, bukan dari done summary per harga.</p>
+      <p>Data terbitan ini ditutup pada sesi bursa 14 Agustus 2026 — bukan data waktu nyata. Arus broker dirangkum dari sepuluh hari bursa berturut (3–14 Agustus), satu setoran Broker Summary per tanggal. Angka PCD/zona modal dihitung mesin dari riwayat harga, bukan dari done summary per harga.</p>
     </div>
   </div>
   <footer class="foot">
