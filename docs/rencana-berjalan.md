@@ -166,6 +166,32 @@ Lalu **A2 Bedah Emiten** (halaman baru, 12 section, satu commit per section),
 dan di jalur terpisah **C2 indikator → C3 screener** (halaman baru juga —
 C2 wajib duluan, screener tanpa kolom indikator cuma jadi tabel harga).
 
+### Data — panen 18 Agustus 2026
+
+**OHLCV diperdalam 5 → 10 tahun** (`ce0b03e`). Median 2.256 baris/emiten (dari
+1.208), 472 emiten kini mulai 2016. `panen_ohlc.py` punya `--lewati-cukup`
+sehingga panen yang putus bisa dilanjutkan; patokannya ruas `th_full`
+(kedalaman yang PERNAH diminta), bukan tanggal `mulai` — emiten IPO baru tak
+akan pernah memenuhi patokan tanggal dan akan ditarik ulang selamanya.
+
+**Ruas fundamental ringkas ditambal** (`b6717c0f`, `78ec759d`). `eps` 84→98%,
+`hist_eps` 67→97%, `f_score` 66→97%, `roe` 88→98%, `der` 79→93%. Akarnya:
+ruas-ruas itu **salinan mentah `info` yfinance**, jadi kosong begitu yfinance
+tak punya kuncinya — padahal `ttm_net_income`/`shares`/`last_price` ada di
+berkas yang sama. `scripts/lengkapi_fundamental.py` menurunkannya tanpa satu
+pun permintaan jaringan, dijalankan sesudah `fetch_fundamental.py`.
+
+`q_eps` dan `altman_z` **sengaja tidak diisi**: XBRL cuma punya satu periode
+kuartal dan itu kumulatif (mengisinya = menyebut EPS setengah tahun sebagai
+EPS satu kuartal), dan Altman butuh modal kerja + saldo laba yang belum
+dipanen. Jalan naiknya di `docs/workflow-fundamental.md` A0b.
+
+**Yang belum ditutup dan perlu diputuskan:** OHLC kini punya data sampai
+**2026-08-18**, sementara `data-idx/json/index.json` (indeks harian dasbor)
+berhenti di **2026-08-14**. Halaman yang membaca lilin harian sudah tahu dua
+hari bursa yang belum diketahui sisa dasbor. Perlu panen harian menyusul, atau
+`/grafik` dibatasi mengikuti `index.json` — pilih satu, jangan dibiarkan.
+
 ### #170 — Refactor kendali: tombol & kontrol belum seragam
 
 > **SELESAI 18 Agustus 2026** untuk K1, K2, K3, K5, K8, K10 dan seluruh temuan
