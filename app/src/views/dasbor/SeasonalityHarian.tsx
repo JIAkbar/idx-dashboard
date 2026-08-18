@@ -172,7 +172,7 @@ export function SeasonalityHarian() {
             {kode} <IkonMenu d={IKON_SILANG} size={9} />
           </button>
         )}
-        <div className="sea-cari sea-cari-hari">
+        <div className="af-cari sea-cari sea-cari-hari">
           <IkonMenu d={IKON_CARI} size={14} />
           <input className="inp" value={cari} placeholder="…atau satu emiten"
             onChange={(e) => setCari(e.target.value)}

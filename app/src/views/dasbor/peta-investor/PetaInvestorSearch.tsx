@@ -1,5 +1,5 @@
 import { TombolIkon } from '../../../components/dasbor/TombolIkon'
-import { IKON_SILANG } from '../../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_SILANG, IKON_CARI } from '../../../components/dasbor/IkonMenu'
 import { forwardRef, useImperativeHandle, useState } from 'react'
 import { searchPetaInvestor, type GraphSelection, type InvestorMapEntry } from '../../../lib/dasbor/petaInvestorData'
 
@@ -75,10 +75,11 @@ export const PetaInvestorSearch = forwardRef<PetaInvestorSearchHandle, PetaInves
 
   return (
     <div className="pi-head-actions">
-      <div className="pi-srch-container">
+      <div className="af-cari pi-srch-container">
+        <IkonMenu d={IKON_CARI} size={13} />
         <input
-          className="pi-search"
-          type="text"
+          className="inp pi-search"
+          type="search"
           placeholder="Cari emiten atau investor…"
           autoComplete="off"
           spellCheck={false}

@@ -1337,8 +1337,13 @@
    baris tab, lihat PetaInvestor.tsx) — itu penyebab keduanya berdesakan di
    mobile. */
 .lantai .pi-head-actions { display: flex; gap: 8px; align-items: center; flex: 1 1 100%; }
-.lantai .pi-srch-container { position: relative; flex: 1; }
-.lantai .pi-search { height: 32px; padding: 0 36px 0 12px; border-radius: var(--r-kecil, 8px); border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text); font-size: 12px; width: 100%; outline: none; text-transform: uppercase; letter-spacing: .3px; }
+/* Wadahnya kini .af-cari (#170): sebelumnya input custom dengan tinggi,
+   radius, dan warna border sendiri — sama fungsinya dengan kotak cari admin
+   tapi tak pernah ikut kalau gaya bersamanya berubah. Yang tersisa khas di
+   sini: field selalu selebar barisnya, dan nilai ketikan huruf besar (kode
+   saham). */
+.lantai .af-cari.pi-srch-container { flex: 1; max-width: none; }
+.lantai .pi-search { padding-right: 30px; text-transform: uppercase; letter-spacing: .3px; }
 /* #77b: uppercase hanya untuk nilai ketikan (kode saham) — placeholder tetap
    sentence case seperti konvensi placeholder lain. */
 .lantai .pi-search::placeholder { text-transform: none; letter-spacing: normal; }
@@ -1462,7 +1467,9 @@
    .bchip (chip = <button> klik → isi filter). Mobile ≤560px: input pindah
    baris sendiri (blt-h flex-wrap + basis 100%). */
 .lantai .blt-h{flex-wrap:wrap}
-.lantai .blt-cari{position:relative;flex:none;width:210px}
+/* Wadahnya kini .af-cari (#170) — yang khas Bulletin cuma lebarnya, karena
+   ia duduk sebaris dengan deret chip filter yang panjangnya berubah-ubah. */
+.lantai .af-cari.blt-cari{flex:none;width:210px;min-width:0}
 .lantai .blt-cari .inp{padding-right:30px}
 /* Bentuknya dari .ti; di sini tinggal letaknya di dalam kotak cari. Dulu 24px
    sementara tombol tutup modal di halaman yang SAMA 32px (#170). */
@@ -2127,7 +2134,7 @@
    dibatasi lebarnya: di baris yang sama dengan chip, kotak yang menyerap
    seluruh sisa lebar membuat chip terlihat seperti tempelan. */
 .lantai .sea-hari-sumber { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.lantai .sea-cari-hari { position: relative; flex: 1 1 220px; max-width: 320px; }
+.lantai .af-cari.sea-cari-hari { flex: 1 1 220px; max-width: 320px; }
 
 /* Pemilih rentang chart IHSG (#124) — chip sempit, satu baris; di lebar sempit
    membungkus ketimbang menggulung karena lima chip pendek masih muat dua baris
@@ -2448,7 +2455,9 @@
 .lantai.seasonality { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 .lantai.seasonality > .panel { min-width: 0; }
 .lantai .sea-cari-blok { display: grid; gap: 12px; }
-.lantai .sea-cari { position: relative; display: flex; align-items: center; gap: 8px; }
+/* Wadahnya kini .af-cari (#170) — duplikat ketiga dari kotak cari yang sama.
+   Sisanya cuma daftar saran yang menggantung di bawahnya. */
+.lantai .af-cari.sea-cari { max-width: none; }
 .lantai .sea-cari .inp { flex: 1; }
 .lantai .sea-saran {
   position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 4px);

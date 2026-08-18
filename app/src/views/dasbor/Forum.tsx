@@ -1,3 +1,4 @@
+import { IkonMenu, IKON_CARI } from '../../components/dasbor/IkonMenu'
 import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { ambilRingkasanRuang, waktuRelatif, type RuangRingkasan } from '../../lib/forum'
@@ -60,10 +61,13 @@ export function Forum() {
 
       <aside className="forum-rel">
 
-        <input
-          className="inp" placeholder="Cari ruang…" value={cari}
-          onChange={(e) => setCari(e.target.value)} aria-label="Cari ruang forum"
-        />
+        <span className="af-cari forum-cari">
+          <IkonMenu d={IKON_CARI} size={13} />
+          <input
+            className="inp" type="search" placeholder="Cari ruang…" value={cari}
+            onChange={(e) => setCari(e.target.value)} aria-label="Cari ruang forum"
+          />
+        </span>
 
         {galat && <p className="muted" style={{ fontSize: 11.5 }}>{galat}</p>}
         {!galat && ruang === null && <p className="muted" style={{ fontSize: 11.5 }}>Memuat ruang…</p>}

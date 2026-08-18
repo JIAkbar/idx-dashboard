@@ -266,7 +266,7 @@ export function AkunAdmin() {
           {akun && akun.length === 0 && <p className="muted">Belum ada akun.</p>}
           {akun && akun.length > 0 && (
             <div className="aa-kontrol">
-              <div className="aa-cari">
+              <div className="af-cari aa-cari">
                 <IkonMenu d={IKON_CARI} size={13} />
                 <input
                   className="inp" value={cari} type="search" autoComplete="off"

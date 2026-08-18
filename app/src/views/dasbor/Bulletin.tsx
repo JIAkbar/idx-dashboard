@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { tipeEdisi, useBulletinList } from '../../lib/dasbor/bulletin'
 import { useAksesHalaman } from '../../context/AksesHalamanContext'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
-import { IkonMenu, IKON_KUNCI, IKON_SILANG, IKON_MATA } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_KUNCI, IKON_SILANG, IKON_MATA, IKON_CARI } from '../../components/dasbor/IkonMenu'
 
 /** Panah unduh ke tray — lokal view ini, belum ada padanannya di IkonMenu.tsx. */
 const IKON_UNDUH = 'M12 4v10M7.5 10.5L12 15l4.5-4.5M5 19h14'
@@ -190,10 +190,11 @@ export function Bulletin() {
             </span>
           )}
           {daftar && daftar.length > 0 && (
-            <span className="blt-cari">
+            <span className="af-cari blt-cari">
+              <IkonMenu d={IKON_CARI} size={13} />
               <input
                 className="inp"
-                type="text"
+                type="search"
                 value={cari}
                 onChange={(ev) => setCari(ev.target.value)}
                 placeholder="Cari emiten…"

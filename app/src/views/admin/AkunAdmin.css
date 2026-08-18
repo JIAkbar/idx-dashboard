@@ -39,12 +39,11 @@
 /* Radius skala KECIL, bukan var(--r): kotak ini lebih tinggi daripada
    dropdown di sebelahnya, dan radius 12px pada kotak yang lebih tinggi
    terbaca lebih bulat walau angkanya sama. */
-.lantai .aa-cari { position: relative; display: flex; align-items: center; gap: 8px; flex: 1; min-width: 200px;
-  background: var(--bg2); border: 1px solid var(--line2); border-radius: var(--r-kecil); padding-left: 11px; }
-.lantai .aa-cari:focus-within { border-color: var(--amber); }
-.lantai .aa-cari svg { flex: none; color: var(--text3); }
-.lantai .aa-cari .inp { border: 0; background: transparent; padding-left: 0; border-radius: 0; }
-.lantai .aa-cari .inp:focus { border-color: transparent; }
+/* Wadahnya kini .af-cari (#170) — .aa-cari dulu salinan nyaris identik yang
+   berdiri sendiri di berkas ini, jadi setiap perubahan gaya kotak cari
+   bersama tak pernah sampai ke halaman Akun. Sisanya cuma lebar di dalam
+   .aa-kontrol. */
+.lantai .af-cari.aa-cari { flex: 1; min-width: 200px; max-width: none; }
 
 /* Kolom email dengan domain tempelan. Kotak luarnya yang menggambar bingkai
    dan keadaan fokus, bukan input di dalamnya — supaya "nama" dan "@papan.id"

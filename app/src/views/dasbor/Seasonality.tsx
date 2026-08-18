@@ -166,7 +166,7 @@ export function Seasonality() {
 
       <section className="panel">
         <div className="panel-b sea-cari-blok">
-          <div className="sea-cari">
+          <div className="af-cari sea-cari">
             <IkonMenu d={IKON_CARI} size={14} />
             <input
               ref={kotak} className="inp" value={cari} disabled={!indeks || dipilih.length >= MAKS}
