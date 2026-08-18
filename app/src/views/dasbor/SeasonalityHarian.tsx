@@ -1,6 +1,6 @@
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import { useEffect, useMemo, useState, type PointerEvent as ReactPointerEvent } from 'react'
-import { HARI, ringkasHarian, hariBursaDiRentang, vonisUji, type RingkasHarian } from '../../lib/seasonality'
+import { HARI, ringkasHarian, hariBursaDiRentang, vonisUji, rentangSumbuBalapan, type RingkasHarian } from '../../lib/seasonality'
 import { pesanGalat } from '../../lib/pesanGalat'
 import { IkonMenu, IKON_PERINGATAN, IKON_CARI, IKON_SILANG } from '../../components/dasbor/IkonMenu'
 import { muatIndeks, type BarisIndeks } from '../../lib/seasonalityData'
@@ -392,9 +392,38 @@ function Balapan({ r, kunci, tutup }: { r: RingkasHarian; kunci: string; tutup: 
     ? { atas: 12, kanan: 78, bawah: 30, kiri: 42 }
     : { atas: 14, kanan: 104, bawah: 34, kiri: 56 }
 
-  const semua = r.jejak.flatMap((j) => j.nilai)
-  const min = Math.min(0, ...semua)
-  const maks = Math.max(...semua)
+  // Filter sembunyi/tampilkan per hari (#182, Johan: "garis line nya itukan
+  // saling rapat... jadi saling tumpang tindih, penglihatan jadinya bias").
+  // Minimal satu hari selalu tampil — toggleHari menolak menyembunyikan yang
+  // terakhir tersisa, supaya sumbu (lewat rentangSumbuBalapan) tak pernah
+  // kolaps ke satu titik.
+  const [sembunyi, setSembunyi] = useState<Set<number>>(() => new Set())
+
+  function toggleHari(h: number) {
+    setSembunyi((prev) => {
+      const next = new Set(prev)
+      if (next.has(h)) {
+        next.delete(h)
+      } else {
+        if (prev.size >= HARI.length - 1) return prev // jangan sembunyikan yang terakhir
+        next.add(h)
+      }
+      return next
+    })
+  }
+
+  /** "Cuma ini" — klik dua kali sembunyikan empat hari lainnya sekaligus.
+   *  Klik dua kali lagi pada hari yang sama mengembalikan semua (satu
+   *  tindakan balik, bukan mengklik ulang tiap hari satu per satu). */
+  function soloHari(h: number) {
+    setSembunyi((prev) => {
+      const sudahSolo = prev.size === HARI.length - 1 && !prev.has(h)
+      if (sudahSolo) return new Set()
+      return new Set(HARI.map((_, i) => i).filter((i) => i !== h))
+    })
+  }
+
+  const { min, maks } = rentangSumbuBalapan(r.jejak, sembunyi)
   const x = (i: number) => PAD.kiri + (i / Math.max(1, r.jejak.length - 1)) * (W - PAD.kiri - PAD.kanan)
   const y = (v: number) => PAD.atas + (1 - (v - min) / Math.max(1e-9, maks - min)) * (H - PAD.atas - PAD.bawah)
   const akhir = r.jejak[r.jejak.length - 1]
@@ -496,6 +525,35 @@ function Balapan({ r, kunci, tutup }: { r: RingkasHarian; kunci: string; tutup: 
 
   return (
     <div className="sea-balapan">
+      {/* Sakelar per hari — deretan chip (bukan legenda-dalam-SVG): posisi
+          label ujung garis bergeser saat sumbu menyesuaikan, jadi tak bisa
+          jadi sakelar yang stabil untuk hari yang justru sedang disembunyikan.
+          Chip tetap di tempat yang sama terlepas apa yang tampil di grafik. */}
+      <div className="sea-hari-filter" role="group" aria-label="Sembunyikan atau tampilkan garis tiap hari">
+        {HARI.map((nama, h) => {
+          const tampil = !sembunyi.has(h)
+          const nilaiAkhir = akhir.nilai[h]
+          return (
+            <button
+              key={nama}
+              type="button"
+              className="chip-t"
+              style={tampil ? { borderColor: WARNA[h], color: WARNA[h] } : { opacity: 0.45 }}
+              aria-pressed={tampil}
+              aria-label={`${nama}, ${tampil ? 'ditampilkan' : 'disembunyikan'}. Klik untuk ${tampil ? 'menyembunyikan' : 'menampilkan'}, klik dua kali untuk hanya menampilkan ${nama}.`}
+              onClick={() => toggleHari(h)}
+              onDoubleClick={() => soloHari(h)}
+            >
+              {nama} {nilaiAkhir >= 0 ? '+' : ''}{Math.round(nilaiAkhir)}%
+            </button>
+          )
+        })}
+        {sembunyi.size > 0 && (
+          <button type="button" className="chip-t" onClick={() => setSembunyi(new Set())}>
+            Tampilkan semua
+          </button>
+        )}
+      </div>
       {/* key memaksa elemen dibuat ulang saat rentang berganti — animasi CSS
           tidak akan mengulang sendiri kalau elemennya cuma diperbarui. */}
       <svg key={kunci} viewBox={`0 0 ${W} ${H}`} role="img"
@@ -508,22 +566,25 @@ function Balapan({ r, kunci, tutup }: { r: RingkasHarian; kunci: string; tutup: 
           <text x={PAD.kiri - 8} y={y(min) - 2} textAnchor="end" className="sb-sumbu">{Math.round(min)}%</text>
         )}
 
-        {HARI.map((nama, h) => (
-          <g key={nama}>
-            <path
-              className="sb-garis"
-              style={{ ['--L' as string]: panjang[h] }}
-              d={r.jejak.map((j, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(j.nilai[h]).toFixed(1)}`).join(' ')}
-              fill="none" stroke={WARNA[h]} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round"
-            />
-            <g className="sb-ujung">
-              <circle cx={x(r.jejak.length - 1)} cy={y(akhir.nilai[h])} r="3.5" fill={WARNA[h]} />
-              <text x={x(r.jejak.length - 1) + 8} y={y(akhir.nilai[h]) + 4} fill={WARNA[h]} className="sb-label">
-                {nama} {akhir.nilai[h] >= 0 ? '+' : ''}{Math.round(akhir.nilai[h])}%
-              </text>
+        {HARI.map((nama, h) => {
+          if (sembunyi.has(h)) return null
+          return (
+            <g key={nama}>
+              <path
+                className="sb-garis"
+                style={{ ['--L' as string]: panjang[h] }}
+                d={r.jejak.map((j, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(j.nilai[h]).toFixed(1)}`).join(' ')}
+                fill="none" stroke={WARNA[h]} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round"
+              />
+              <g className="sb-ujung">
+                <circle cx={x(r.jejak.length - 1)} cy={y(akhir.nilai[h])} r="3.5" fill={WARNA[h]} />
+                <text x={x(r.jejak.length - 1) + 8} y={y(akhir.nilai[h]) + 4} fill={WARNA[h]} className="sb-label">
+                  {nama} {akhir.nilai[h] >= 0 ? '+' : ''}{Math.round(akhir.nilai[h])}%
+                </text>
+              </g>
             </g>
-          </g>
-        ))}
+          )
+        })}
         {/* Sumbu waktu: penanda BULAN untuk rentang pendek, TAHUN untuk
             rentang panjang. Tanpa ini, garis yang naik-turun tak punya
             jangkar — orang melihat bentuk tapi tak tahu kapan itu terjadi. */}

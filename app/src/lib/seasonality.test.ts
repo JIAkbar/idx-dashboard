@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { peluangTersusut, selangWilson, ujiPermutasi, ringkasEmiten, ALFA, ringkasHarian, hariBursaDiRentang } from './seasonality'
+import {
+  peluangTersusut, selangWilson, ujiPermutasi, ringkasEmiten, ALFA,
+  ringkasHarian, hariBursaDiRentang, rentangSumbuBalapan,
+} from './seasonality'
 
 describe('peluangTersusut', () => {
   it('menarik sampel tipis ke peluang dasar', () => {
@@ -186,5 +189,37 @@ describe('hariBursaDiRentang', () => {
 
   it('batas kosong berarti tak dibatasi', () => {
     expect(hariBursaDiRentang(tutup)).toBe(tanggal.length)
+  })
+})
+
+describe('rentangSumbuBalapan', () => {
+  // Lima hari, nilai akhir jauh berbeda — Jumat (indeks 4) yang paling
+  // ekstrem, mendominasi skala kalau semua dihitung.
+  const jejak = [
+    { nilai: [0, 0, 0, 0, 0] },
+    { nilai: [5, -2, 1, 3, 40] },
+    { nilai: [8, -6, 2, 5, 90] },
+  ]
+
+  it('tanpa yang disembunyikan, rentang ditarik oleh hari paling ekstrem', () => {
+    const { min, maks } = rentangSumbuBalapan(jejak, new Set())
+    expect(maks).toBe(90) // Jumat
+    expect(min).toBe(-6) // Selasa, dan tetap turun ke 0 kalau positif
+  })
+
+  it('menyembunyikan hari paling ekstrem MELEBARKAN sumbu untuk sisanya', () => {
+    // #182: ini bukti utama fitur — sembunyikan Jumat, skala harus menciut
+    // ke rentang hari-hari yang tersisa, bukan tetap terentang oleh Jumat
+    // yang sudah tak tergambar.
+    const { min, maks } = rentangSumbuBalapan(jejak, new Set([4]))
+    expect(maks).toBe(8) // Senin, tanpa Jumat
+    expect(min).toBe(-6) // Selasa tetap paling rendah
+    expect(maks).toBeLessThan(90)
+  })
+
+  it('kalau semua hari (secara keliru) disembunyikan, jatuh balik ke seluruhnya — sumbu tak pernah kolaps', () => {
+    const kosong = rentangSumbuBalapan(jejak, new Set([0, 1, 2, 3, 4]))
+    const penuh = rentangSumbuBalapan(jejak, new Set())
+    expect(kosong).toEqual(penuh)
   })
 })

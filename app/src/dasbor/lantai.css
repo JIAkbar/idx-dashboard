@@ -2630,6 +2630,9 @@
 }
 .lantai .sea-balapan { position: relative; }
 .lantai .sea-balapan svg { width: 100%; height: auto; display: block; }
+/* Sakelar per hari (#182) — penempatan saja; bentuk pilnya tetap .chip-t,
+   warnanya diset inline per hari (sama pola dengan WARNA di tabel rincian). */
+.lantai .sea-hari-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .lantai .sb-sumbu { font-family: var(--mono); font-size: 10px; fill: var(--text3); }
 .lantai .sb-label { font-family: var(--mono); font-size: 11px; font-weight: 700; }
 /* Penyingkapan garis dijalankan compositor lewat dashoffset — bukan state

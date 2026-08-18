@@ -306,6 +306,28 @@ export interface RingkasHarian {
 }
 
 /**
+ * Rentang sumbu Y grafik balapan, dihitung HANYA dari hari yang sedang
+ * tampil — bukan dari seluruh lima hari selalu (#182, filter sembunyi/
+ * tampilkan). Kalau tidak, menyembunyikan garis paling ekstrem tak menolong
+ * apa pun: skalanya tetap terentang oleh garis yang sudah tak tampak, dan
+ * sisanya justru makin rapat kelihatannya.
+ *
+ * `sembunyi` kosong (semua tampil) atau berisi seluruh hari (dijaga tak
+ * pernah terjadi di UI — selalu minimal satu tampil) sama-sama jatuh balik
+ * ke seluruh lima hari, supaya sumbu tak pernah kolaps ke [0, 0].
+ */
+export function rentangSumbuBalapan(
+  jejak: Array<{ nilai: number[] }>,
+  sembunyi: ReadonlySet<number>,
+): { min: number; maks: number } {
+  const semuaHari = HARI.map((_, h) => h)
+  const tampak = semuaHari.filter((h) => !sembunyi.has(h))
+  const pakai = tampak.length ? tampak : semuaHari
+  const nilai = jejak.flatMap((j) => pakai.map((h) => j.nilai[h]))
+  return { min: Math.min(0, ...nilai), maks: nilai.length ? Math.max(...nilai) : 0 }
+}
+
+/**
  * Uji permutasi untuk ember apa pun — versi umum dari `ujiPermutasi`.
  *
  * Yang diacak tetap PELABELAN, bukan nilainya: imbal aslinya utuh, cuma
