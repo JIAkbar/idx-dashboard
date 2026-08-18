@@ -41,6 +41,62 @@ itu. Diperiksa pada 5 emiten sampel lintas sektor.
 
 ---
 
+### A0b · Ruas RINGKAS fundamental yang tak pernah dihitung — ✅ **SELESAI 18 Agu**
+
+A0 menggabung tabel **per periode**. Yang tersisa lubangnya adalah ruas
+**ringkas** di kepala `fundamental/<KODE>.json` — `eps`, `pe`, `der`, `roe`,
+`dividend_yield` — dan semuanya ternyata bukan hasil hitungan kita sama
+sekali, melainkan SALINAN LANGSUNG `info` yfinance (`trailingEps`,
+`trailingPE`, `debtToEquity`, `returnOnEquity`, `dividendYield`,
+`fetch_fundamental.py:835-891`). Begitu yfinance tak punya kuncinya, ruasnya
+kosong selamanya — walaupun `ttm_net_income`, `shares`, `last_price`, dan
+`der_q` ada di berkas yang sama. Lubangnya **"tak pernah dihitung"**, bukan
+"sumbernya tak punya".
+
+`scripts/lengkapi_fundamental.py` (nol permintaan jaringan, dijalankan
+SESUDAH `fetch_fundamental.py` di alur CI — `fetch` menulis ulang berkas dari
+nol, jadi tambalannya wajib dihitung ulang tiap kali):
+
+| ruas | sebelum | sesudah | dari |
+|---|---|---|---|
+| `eps` | 84% | **98%** | `ttm_net_income ÷ shares`; cadangan EPS tahunan XBRL |
+| `hist_eps` | 67% | **97%** | EPS tahunan XBRL apa adanya — BUKAN `hist_net_income ÷ shares`, karena jumlah saham yang kita punya cuma yang SEKARANG sedangkan EPS 2022 harus dibagi saham 2022 |
+| `f_score` | 66% | **97%** | Piotroski **parsial** 7 dari 9 komponen dari XBRL tahunan (`f_score_n` mencatat berapa yang terhitung, jadi 5/7 tak terbaca 5/9) |
+| `der` | 79% | **93%** | `der_q × 100` — terukur `der/der_q` median 99,4× di 514 emiten, jadi `der` persen & `der_q` rasio; cadangan XBRL |
+| `roe` | 88% | **98%** | `ttm_net_income ÷ lq_equity`, lalu `÷ (bv × shares)`, lalu XBRL tahunan |
+| `pe` | 62% | **69%** | `last_price ÷ eps`, **hanya kalau EPS > 0** |
+| `dividend_yield` | 41% | 42% | DPS 12 bulan terakhir dari `div_history` (satu-satunya yang punya `ex_date`) ÷ harga |
+
+Tiap angka turunan menulis asalnya ke `asal_turunan` dan tampil berlencana
+superscript `≈` (dihitung ulang) atau `B` (laporan resmi bursa) —
+`components/dasbor/LencanaTurunan.tsx`, alasannya sama dengan `lencanaAsal`
+di `PanelLaporanKeuangan.tsx`.
+
+**Yang tetap kosong, dan itu jawaban yang benar:**
+
+- `pe` 292 sisanya — **278 di antaranya EPS ≤ 0**. Emiten rugi tak punya
+  P/E; yfinance pun tak memberikannya. Bukan lubang data.
+- `dividend_yield` 557 sisanya — **347 tak pernah bagi dividen sama sekali**,
+  **210 terakhir bagi lebih dari 12 bulan lalu**. Cuma 4 yang benar-benar
+  lubang, dan keempatnya sudah terisi.
+- `q_eps` — **tak diisi sama sekali.** XBRL IDX cuma punya SATU periode
+  kuartal (`2026-06-30`) untuk seluruh 774 emiten, dan itu KUMULATIF sejak
+  awal tahun. Tanpa TW1 pembanding ia tak bisa didiskretkan; menulisnya ke
+  `q_eps[2026]["Q2"]` = menyebut EPS setengah tahun sebagai EPS satu kuartal.
+- `altman_z` — **tak diisi sama sekali.** Z" butuh modal kerja dan saldo laba.
+  `lq_wc` ada di **3 dari 398** emiten yang kosong, saldo laba tak pernah
+  diekspor, dan `panen_keuangan_idx.py` tak memanen keduanya. **Jalan
+  naiknya** (bersama A3): tambah `Total current assets`, `Total current
+  liabilities`, `Retained earnings` ke `ekstrak()` lalu panen ulang periode
+  terbaru. Arsip mentah sudah ada untuk audit 2022/2023/2024 (2.548 XLSX di
+  `_arsip-mentah/keuangan_idx/`, nol biaya jaringan) tapi 2025/2026 belum,
+  jadi tetap perlu satu panen — dan Altman dari neraca dua tahun lalu tak
+  ada gunanya.
+
+**Ongkos**: kecil. Jangan ulangi pengukurannya — angkanya sudah di tabel atas.
+
+---
+
 ### A1 · Rata-rata historis & ambang verdict valuasi
 
 **Kerjakan**: hitung `per5y`, `pbv5y`, `roe5y`, `roe10y`, `der5y`, `dy5y` dari

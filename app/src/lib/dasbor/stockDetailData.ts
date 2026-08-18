@@ -192,6 +192,15 @@ export interface StockFundamental {
   shares_outstanding?: number | null
   free_float_pct?: number | null
 
+  /**
+   * Ruas mana saja di berkas ini yang BUKAN angka asli yfinance, melainkan
+   * hasil hitungan `scripts/lengkapi_fundamental.py` — `'turunan'` (dari ruas
+   * lain di berkas ini) atau `'idx'` (dari laporan resmi bursa/XBRL).
+   * Hanya berisi ruas yang benar-benar ditambal; ruas yang aslinya sudah ada
+   * tak muncul di sini sama sekali. Dibaca `LencanaTurunan`.
+   */
+  asal_turunan?: Record<string, 'turunan' | 'idx'>
+
   sector_pe_median?: number | null
   sector_pb_median?: number | null
   sector_npm_median?: number | null

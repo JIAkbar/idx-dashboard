@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import type { QuarterMap, StockFundamental } from '../../../lib/dasbor/stockDetailData'
 import { FdPercent } from '../../../components/dasbor/FdPercent'
+import { LencanaTurunan } from '../../../components/dasbor/LencanaTurunan'
 
 type QMode = 'ni' | 'eps' | 'rev'
 
@@ -172,7 +173,7 @@ export function PanelDividen({ fd }: { fd: StockFundamental }) {
           <tbody>
             {TR('Dividen/Saham', fd.dividend ? 'Rp ' + Number(fd.dividend).toLocaleString('id-ID', { maximumFractionDigits: 0 }) : '—')}
             {TR('Payout Ratio', <FdPercent v={fd.payout_ratio != null ? fd.payout_ratio * 100 : null} d={1} />)}
-            {TR('Div Yield', <FdPercent v={fd.dividend_yield} />)}
+            {TR('Div Yield', <><FdPercent v={fd.dividend_yield} /><LencanaTurunan fd={fd} ruas="dividend_yield" /></>)}
             {TR('Ex-Date', fd.ex_dividend_date || '—')}
           </tbody>
         </table>

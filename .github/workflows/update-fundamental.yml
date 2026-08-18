@@ -49,6 +49,15 @@ jobs:
           python scripts/fetch_fundamental.py --$MODE
         continue-on-error: false
 
+      # 4b. Tambal ruas yang yfinance tak punya (eps/pe/der/roe/hist_eps/
+      #     f_score) dari ruas lain di berkas yang sama + laporan resmi bursa.
+      #     WAJIB sesudah langkah 4: fetch menulis ulang tiap berkas dari nol,
+      #     jadi tambalan lama ikut terhapus dan harus dihitung ulang di sini.
+      #     Nol permintaan jaringan — seluruh bahannya sudah ada di repo.
+      - name: Lengkapi ruas fundamental turunan
+        run: python scripts/lengkapi_fundamental.py
+        continue-on-error: false
+
       # 5. Commit & push jika ada perubahan JSON
       - name: Commit & push data fundamental
         run: |

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import type { StockFundamental } from '../../../lib/dasbor/stockDetailData'
 import { fB, fMC, fv, fvx } from '../../../lib/dasbor/stockDetailFormat'
 import { FdPercent } from '../../../components/dasbor/FdPercent'
+import { LencanaTurunan } from '../../../components/dasbor/LencanaTurunan'
 
 /** Baris <tr> label + nilai rata-kanan — port TR() index_live.html baris 4044. */
 function TR(lbl: string, val: ReactNode) {
@@ -29,7 +30,7 @@ export function PanelValuasi({ fd }: { fd: StockFundamental }) {
         <table>
           <tbody>
             {TR('P/E (Annualised)', fvx(fd.pe_annualised))}
-            {TR('P/E (TTM)', fvx(fd.pe))}
+            {TR('P/E (TTM)', <>{fvx(fd.pe)}<LencanaTurunan fd={fd} ruas="pe" /></>)}
             {TR('Forward P/E', fvx(fd.forward_pe))}
             {TR('Earnings Yield', <FdPercent v={fd.earn_yield} />)}
             {TR('P/S (TTM)', fvx(fd.ps))}
@@ -55,7 +56,7 @@ export function PanelPerSaham({ fd }: { fd: StockFundamental }) {
       <div className="panel-b">
         <table>
           <tbody>
-            {TR('EPS (TTM)', rp(fd.eps))}
+            {TR('EPS (TTM)', <>{rp(fd.eps)}<LencanaTurunan fd={fd} ruas="eps" /></>)}
             {TR('EPS Forward', rp(fd.eps_fwd))}
             {TR('Revenue/Share', rp(fd.rev_ps))}
             {TR('Cash/Share', rp(fd.cash_ps))}
@@ -93,7 +94,7 @@ export function PanelSolvency({ fd }: { fd: StockFundamental }) {
           <tbody>
             {TR('Current Ratio', fvx(fd.current_ratio))}
             {TR('Quick Ratio', fvx(fd.quick_ratio))}
-            {TR('DER (Q)', fvx(fd.der_q ?? fd.der))}
+            {TR('DER (Q)', <>{fvx(fd.der_q ?? fd.der)}{fd.der_q == null && <LencanaTurunan fd={fd} ruas="der" />}</>)}
             {TR('LT Debt/Equity (Q)', fvx(fd.lt_der_q))}
             {TR('Liabilities/Equity (Q)', fvx(fd.tl_eq_q))}
             {TR('Debt/Assets (Q)', fvx(fd.td_ta_q))}
@@ -117,7 +118,7 @@ export function PanelEfektivitas({ fd }: { fd: StockFundamental }) {
         <table>
           <tbody>
             {TR('ROA (TTM)', <FdPercent v={fd.roa != null ? fd.roa * 100 : null} />)}
-            {TR('ROE (TTM)', <FdPercent v={fd.roe != null ? fd.roe * 100 : null} />)}
+            {TR('ROE (TTM)', <><FdPercent v={fd.roe != null ? fd.roe * 100 : null} /><LencanaTurunan fd={fd} ruas="roe" /></>)}
             {TR('ROCE (TTM)', <FdPercent v={fd.roce != null ? fd.roce * 100 : null} />)}
             {TR('ROIC (TTM)', <FdPercent v={fd.roic != null ? fd.roic * 100 : null} />)}
             {TR('Days Sales Outstanding', fHari(fd.days_sales_outstanding))}

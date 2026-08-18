@@ -4,6 +4,7 @@ import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { useStockFundamental, useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useSektorIdx, sektorEmiten, papanBerisiko } from '../../lib/dasbor/sektorIdx'
 import { fMC, fv, fvx } from '../../lib/dasbor/stockDetailFormat'
+import { LencanaTurunan } from '../../components/dasbor/LencanaTurunan'
 import { FdPercent } from '../../components/dasbor/FdPercent'
 import { PanelValuasi, PanelPerSaham, PanelSolvency, PanelEfektivitas, PanelSkor } from './stock-detail/KolomValuasi'
 import { PanelKuartalan, PanelProfitabilitas, PanelGrowth, PanelDividen, PanelRiwayatDividen } from './stock-detail/KolomKuartalan'
@@ -222,18 +223,18 @@ export function StockDetail() {
 
           {/* Strip rasio full-width 6 sel */}
           <div className="rasio">
-            <RasioCell lbl="P/E (TTM)" v={fvx(fd.pe)} sub={fd.forward_pe != null ? `fwd ${fvx(fd.forward_pe)}` : null} />
+            <RasioCell lbl="P/E (TTM)" v={<>{fvx(fd.pe)}<LencanaTurunan fd={fd} ruas="pe" /></>} sub={fd.forward_pe != null ? `fwd ${fvx(fd.forward_pe)}` : null} />
             <RasioCell lbl="P/B" v={fvx(fd.pb)} sub={fd.bv != null ? `BV Rp ${fv(fd.bv)}` : null} />
             <RasioCell lbl="P/S (TTM)" v={fvx(fd.ps)} sub={fd.rev_ps != null ? `Rev/shr Rp ${fv(fd.rev_ps)}` : null} />
             <RasioCell
               lbl="Earnings Yield"
-              v={earningsYield != null ? (earningsYield >= 0 ? '+' : '') + earningsYield.toFixed(2) + '%' : '—'}
+              v={<>{earningsYield != null ? (earningsYield >= 0 ? '+' : '') + earningsYield.toFixed(2) + '%' : '—'}<LencanaTurunan fd={fd} ruas="eps" /></>}
               cls={earningsYield != null ? (earningsYield >= 0 ? 'up' : 'dn') : undefined}
               sub={fd.eps != null ? `EPS Rp ${fv(fd.eps)}` : null}
             />
             <RasioCell
               lbl="Div Yield"
-              v={fd.dividend_yield != null ? '+' + fd.dividend_yield.toFixed(2) + '%' : '—'}
+              v={<>{fd.dividend_yield != null ? '+' + fd.dividend_yield.toFixed(2) + '%' : '—'}<LencanaTurunan fd={fd} ruas="dividend_yield" /></>}
               cls={fd.dividend_yield != null ? 'up' : undefined}
               sub={fd.dividend != null
                 ? `Rp ${fv(fd.dividend)}${fd.payout_ratio != null ? ` · payout ${(fd.payout_ratio * 100).toFixed(0)}%` : ''}`
