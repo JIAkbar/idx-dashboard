@@ -112,7 +112,24 @@ const miliar = (n: number) =>
   Math.abs(n) >= 1000 ? `Rp${rp(Math.abs(n) / 1000)} triliun` : `Rp${rp(Math.abs(n), 0)} miliar`
 
 const bersih = (s: string) => s.toLowerCase().replace(/[^a-z0-9\s]/g, ' ')
-const punya = (t: string, ...kata: string[]) => kata.some((k) => t.includes(k))
+
+/**
+ * Kata pemicu dicocokkan dari AWAL kata, bukan sebagai potongan bebas.
+ *
+ * `includes()` polos membuat pemicu pendek nyangkut di tengah kata lain, dan
+ * hasilnya jawaban yang percaya diri untuk pertanyaan yang sama sekali lain —
+ * tiga yang terukur: "asing" di dalam "masing-masing" ("berapa PER
+ * masing-masing sektor" dijawab arus asing se-pasar), "siapa" di dalam
+ * "persiapan" ("apa saja persiapan sebelum bursa buka" dijawab "belum ada data
+ * personalia"), dan "buka" di dalam "pembukaan" ("besok harga pembukaan IHSG
+ * berapa" dijawab kalender bursa).
+ *
+ * Yang dipakai batas AWAL saja (`\bkata`, bukan `\bkata\b`) — bukan kelalaian:
+ * bahasa Indonesia menempelkan akhiran, jadi "sektornya", "kabarnya", dan
+ * "gainers" harus tetap kena pemicu "sektor", "kabar", "gainer".
+ */
+const punya = (t: string, ...kata: string[]) =>
+  kata.some((k) => new RegExp(`\\b${escapeRegex(k)}`).test(t))
 
 const BULAN_PENDEK = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 const BULAN_PANJANG = [
@@ -163,6 +180,23 @@ function cariKodeDariNama(daftar: EmitenEntry[], t: string): string | null {
     }
   }
   return terbaik?.kode ?? null
+}
+
+/** SEMUA kode saham yang disebut, urut kemunculan, tanpa kembar. "IHSG"
+ *  dikecualikan: bentuk hurufnya kebetulan cocok tapi itu indeks, bukan
+ *  emiten. Dulu cuma yang PERTAMA diambil, dan sisanya hilang tanpa jejak —
+ *  "harga BBCA sama BBRI berapa" dijawab BBCA saja, seolah BBRI tak ada. */
+function kodeDisebut(pertanyaan: string, kamus?: KamusEmiten | null): string[] {
+  const semua = pertanyaan.match(/\b[A-Z]{4}\b/g) ?? []
+  const kandidat = [...new Set(semua)].filter((x) => x !== 'IHSG')
+  // Kalau SELURUH pertanyaan diketik kapital, "diketik kapital" berhenti jadi
+  // penanda ticker — dan tiap kata empat huruf ikut terbaca sebagai kode.
+  // Terukur: "SEKTOR APA YANG PALING LEMAH???" dijawab "Data sektor YANG belum
+  // ada". Di situ kodenya wajib benar-benar ada di daftar emiten; kalau daftar
+  // itu belum termuat, lebih baik tak ada kode sama sekali daripada kode
+  // karangan.
+  if (/[a-z]/.test(pertanyaan)) return kandidat
+  return kandidat.filter((x) => kamus?.emiten.some((e) => e.kode === x))
 }
 
 /** Perubahan setahun + kisaran 52 minggu dari baris OHLC mentah — dihitung
@@ -316,13 +350,28 @@ function jawabGrupNama(nama: string, g: GrupEntry): Jawaban {
  * TITIK KELUAR (satu-satunya tempat teks basis jadi jawaban), bukan
  * ditambal satu per satu di datanya.
  */
+/** Nama ruas internal: huruf kecil ber-garis-bawah — `operating_cf`,
+ *  `ttm_net_income`, `nf_ytd_idr`. Bentuk ini tak pernah berarti apa pun bagi
+ *  pembaca; ia nama kolom di berkas kami. */
+const RUAS_INTERNAL = /\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b/
+
 function saring(s: string): string {
-  return s
+  const bersihkan = (x: string) => x
     // Kurung yang memuat nama berkas: "(lihat `arus-pasar/pcd.py`)".
     .replace(/\s*\([^)]*\.(?:py|ts|tsx|js|mjs|json|md|sql|ya?ml)\b[^)]*\)/gi, '')
     .replace(/`/g, '')
     .replace(/\s+([.,;])/g, '$1')
     .trim()
+
+  // Kalimat yang menyebut nama ruas internal dibuang UTUH. Menghapus katanya
+  // saja meninggalkan kalimat cacat ("… tercatat 80% kosong di sumber Yahoo"),
+  // dan kalimat cacat lebih membingungkan daripada kalimat yang tak ada.
+  // Ketahuan waktu sapuan kebocoran diperlebar ke SELURUH korpus, bukan cuma
+  // ke basis teks: catatan glosarium "arus kas" mencetak `operating_cf`.
+  const kalimat = bersihkan(s).split(/(?<=\.)\s+/).filter((x) => !RUAS_INTERNAL.test(x))
+  return kalimat.length > 0
+    ? kalimat.join(' ')
+    : bersihkan(s).replace(new RegExp(RUAS_INTERNAL.source, 'g'), '').replace(/\s+/g, ' ').trim()
 }
 
 function jawabTeks(pertanyaan: string): Jawaban | null {
@@ -360,7 +409,115 @@ const MINTA_ARTI =
  * terus terang PAPAN tak memberi rekomendasi.
  */
 const MINTA_REKOMENDASI =
-  /\b(rekomendasi|layak (di)?beli|saham bagus|bagus (ga|gak|tidak|enggak)|bagus mana|mana yang (lebih )?bagus|lebih bagus|pilih mana|mending(an)? mana|beli apa|harus beli|jual apa|prediksi|ramalan|prospek besok|gorengan)\b/i
+  /\b(rekomendasi|layak (di)?beli|saham bagus|bagus (ga|gak|tidak|enggak)|bagus mana|mana yang (lebih )?bagus|lebih bagus|pilih mana|mending(an)? mana|beli apa\b(?! saja)|harus beli|jual apa|prediksi|ramalan|prospek besok|gorengan|tips (trading|saham|beli)|saran (portofolio|saham|investasi)|saham (murah|potensial|multibagger)|worth it|waktu yang tepat|sebaiknya (beli|jual|masuk)|beli sekarang|menjanjikan|prospektif)\b/
+
+/**
+ * Minta TARGET/level keputusan — bentuk rekomendasi yang menyamar jadi
+ * pertanyaan angka. "target harga BBCA berapa" dulu dijawab harga hari ini:
+ * angkanya benar sebagai harga, tapi yang ditanya angka MASA DEPAN, dan
+ * jawaban itu terbaca seolah PAPAN punya targetnya.
+ *
+ * Pengecualian `cara/rumus/hitung` disengaja: "bagaimana cara menghitung
+ * target harga setelah ARA" menanyakan METODE, dan metode itu memang kami
+ * jelaskan (aturan auto rejection) — yang ditolak keputusannya, bukan
+ * aritmetikanya.
+ */
+const MINTA_TARGET =
+  /\b(target (harga|jual|beli|profit)|cut ?loss|stop ?loss|take profit|entry (di|point|nya)|masuk di harga)\b/
+
+/**
+ * Pertanyaan tentang HARI YANG BELUM BERJALAN. Wajib ditolak, bukan dijawab
+ * angka hari ini: "IHSG besok naik atau turun" dan "kapan IHSG naik lagi"
+ * sama-sama dijawab ringkasan hari berjalan — pembaca tak punya satu pun
+ * penanda bahwa yang dibacanya bukan jawaban pertanyaannya.
+ *
+ * "halaman depan" sengaja tak kena karena "depan" hanya dihitung sebagai
+ * pasangan satuan waktu ("pekan depan", "bulan depan").
+ */
+const MASA_DEPAN =
+  /\b(besok|esok|lusa|nanti|mendatang)\b|\b(hari|pekan|minggu|bulan|kuartal|tahun) depan\b|\bke depan\b|\bakhir (tahun|bulan|pekan)\b|\b(sehari|sepekan|seminggu|sebulan|setahun|beberapa hari) lagi\b|\bkapan\b[^?]*\b(naik|turun|rebound|pulih|balik|bangkit|datang|tiba|mulai)\b|\b(mau|akan|arah\w*) ke ?mana\b/
+
+/**
+ * Pertanyaan tentang TANGGAL LAIN di masa lalu. Dipisah dari "kemarin" (yang
+ * memang bisa dijawab dari seri) karena riwayat per tanggal sembarang tak
+ * diindeks di sini — dan menjawabnya dengan angka hari berjalan atau dengan
+ * persentase rentang adalah bentuk kesalahan yang sama: benar sebagai angka,
+ * bukan jawaban pertanyaannya. Terukur: "harga BBCA bulan lalu berapa"
+ * dijawab harga hari ini, "IHSG pekan lalu ditutup di berapa" dijawab
+ * persentase sepekan.
+ */
+const MASA_LALU = /\b(pekan|minggu|bulan|kuartal|tahun|hari) lalu\b|\btanggal \d/
+
+/**
+ * Perhitungan ANDAI — skenario harga. Wajib memuat angka: tanpa syarat itu
+ * "kalau setoran saya perlu revisi apakah akurasi saya ikut turun" (kalimat
+ * yang sudah ada di korpus) ikut tersapu, padahal itu pertanyaan kebijakan.
+ */
+const ANDAI = /\b(kalau|kalo|jika|seandainya|misal(kan|nya)?|andai)\b/
+
+/**
+ * Pertanyaan KAPABILITAS — "apakah ada", "punya tidak", "bisa tidak".
+ * Jawabannya harus ya/tidak beserta batasnya, bukan brosur: "apakah PAPAN
+ * punya data intraday" dulu dijawab profil PAPAN, yang tak memuat kata
+ * "intraday" sama sekali dan membuat penanya menyimpulkan sendiri.
+ */
+const TANYA_KAPABILITAS =
+  /\b(apakah|adakah|bisakah|punya|ada|bisa|support|mendukung|tersedia|menyediakan)\b/
+
+/** Yang memang TIDAK ada di PAPAN — dijawab "tidak" berikut batasnya. */
+const ABSEN: [RegExp, string][] = [
+  [/\b(intraday|real ?time|realtime|tick by tick|per menit|per detik|streaming)\b/,
+    'Belum ada. Angka di PAPAN adalah data HARIAN yang diperbarui setelah bursa tutup — proses utamanya sekitar ' +
+    '18:30 WIB. Tidak ada harga intraday, real-time, maupun streaming di sini.'],
+  [/\b(notifikasi|notif|alert|alarm|pemberitahuan)\b/,
+    'Belum ada notifikasi atau alert harga. Yang tersedia halaman data yang dibuka sendiri, dan Radar Watchlist ' +
+    'yang syarat penyaringnya terbuka.'],
+  [/\b(kripto|crypto|bitcoin|forex|valas|reksa ?dana|obligasi|komoditas)\b/,
+    'Tidak ada. PAPAN hanya menyajikan pasar saham Indonesia (BEI), ditambah penutupan indeks dunia di halaman ' +
+    'Indeks Dunia. Instrumen di luar itu tidak dikumpulkan di sini.'],
+]
+
+/**
+ * Ruas PER EMITEN yang belum dihitung di panel ini.
+ *
+ * Ini penutup lubang paling besar yang terukur: blok "emiten disebut
+ * langsung" adalah keranjang untuk SETIAP kalimat yang memuat kode saham,
+ * jadi "volume BBCA hari ini berapa", "EPS BBCA berapa", dan "market cap BBCA
+ * berapa" semuanya dijawab profil peringkat harian yang sama — "naik +1,10%
+ * … peringkat 1 nilai transaksi terbesar". Tak satu pun ruas yang ditanya ada
+ * di jawabannya, dan tak ada satu pun penanda bahwa pertanyaannya tak
+ * terjawab. Ditambal di akar (sebelum keranjangnya), bukan per kalimat.
+ */
+const RUAS_BELUM: [RegExp, string][] = [
+  [/\b(volume|lembar|frekuensi|freq)\b/, 'volume dan frekuensi per emiten'],
+  [/\b(market ?cap|kapitalisasi)\b/, 'kapitalisasi pasar per emiten'],
+  [/\b(eps|der|roa|dar|nilai buku|book value|laba bersih|pendapatan|revenue|arus kas|saham beredar|jumlah saham|shares)\b/, 'ruas laporan keuangan itu'],
+  [/\b(dividen|dividend|yield)\b/, 'jadwal dan besaran dividen'],
+  [/\b(nilai transaksi|turnover)\b/, 'nilai transaksi per emiten'],
+  [/\b(bid|offer|antrian|order ?book)\b/, 'antrian bid/offer'],
+  [/\b(fee|komisi|biaya (transaksi|beli|jual)|pajak)\b/, 'biaya transaksi dan pajak'],
+]
+
+/** Rekor sepanjang riwayat — jendela yang dihitung di sini cuma 365 hari,
+ *  jadi "harga tertinggi BBCA sepanjang masa" tak boleh dijawab harga
+ *  terakhir (yang dilakukannya sebelum ini, tanpa penanda apa pun). */
+const REKOR_PENUH = /\bsepanjang masa\b|\ball ?time\b|\bath\b|\bsejak ipo\b|\bsepanjang sejarah\b|\btertinggi sepanjang\b/
+
+/**
+ * "PER" si rasio, bukan "per" kata depan.
+ *
+ * `\bper\b` polos ikut kena "per emiten", "per hari", "per lembar" — dan
+ * frasa itu justru sangat lazim di pertanyaan pasar. Terukur: "apakah ada
+ * data broker per emiten untuk semua saham" dijawab "PER pasar 14,20×".
+ * Ronde sebelumnya sudah menyempitkan `includes('per')` jadi kata utuh;
+ * ternyata kata utuhnya sendiri masih dua arti.
+ */
+const RASIO_PER =
+  /\bper\b(?! (emiten|saham|hari|tanggal|lembar|bulan|tahun|pekan|minggu|kuartal|unit|orang|broker|sektor|kode|baris|halaman))/
+
+/** Membandingkan dua emiten — belum dikerjakan, dan menjawab salah satunya
+ *  diam-diam membuat yang satunya terbaca "tidak ada". */
+const BANDING = /\b(vs|versus|dibanding(kan)?|banding|antara|lebih (likuid|murah|mahal|besar|kecil|untung|bagus|baik|rendah|tinggi)|mana yang|\batau\b)\b/i
 
 /** Kata TUNGGAL yang menunjuk lebih dari satu hal di PAPAN. Menebak salah satu
  *  cabangnya sama saja menjawab pertanyaan yang tak ditanyakan — jadi
@@ -423,7 +580,25 @@ function beruntun(seri: TanggalIndex[]): { arah: 'naik' | 'turun'; hari: number 
   return { arah, hari: n }
 }
 
+/**
+ * Satu pertanyaan bisa menyebut lebih dari satu emiten, dan mesin ini hanya
+ * menjawab yang pertama. Itu boleh — yang tak boleh MENDIAMKANNYA: "harga
+ * BBCA sama BBRI berapa" dijawab harga BBCA saja, dan dari layar terbaca
+ * seolah BBRI tak punya data.
+ *
+ * Catatan ditempel di pembungkus, bukan di tiap blok: emiten dijawab dari
+ * belasan cabang berbeda dan menambahkannya satu per satu berarti ada yang
+ * terlewat sejak hari pertama.
+ */
 export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
+  const j = jawabInti(pertanyaan, k)
+  const disebut = kodeDisebut(pertanyaan, k.kamus)
+  const lain = disebut.filter((x) => x !== (j.subjek ?? disebut[0]))
+  if (j.butuh || j.takPaham || lain.length === 0) return j
+  return { ...j, teks: `${j.teks} (Saya menjawab satu emiten per pertanyaan — untuk ${lain.join(', ')} tanyakan terpisah.)` }
+}
+
+function jawabInti(pertanyaan: string, k: KonteksTanya): Jawaban {
   // Normalisasi dipusatkan di `teksTanya.ts` — sama persis dengan yang dipakai
   // pengetahuan & glosarium, supaya "brp"/"hijau" dikenali ketiganya.
   let t = normalTanya(pertanyaan)
@@ -473,6 +648,39 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
     t = lanjut
   }
 
+  // ── Susulan yang MEMBAWA maksud baru: ganti ruas, atau ganti emiten ──────
+  // Dua bentuk yang paling wajar diketik setelah satu jawaban per-emiten, dan
+  // dua-duanya dulu meleset: "sektornya?" dijawab sektor SE-PASAR (bukan
+  // sektor emiten yang sedang dibahas), dan "kalau BBRI?" dijawab profil
+  // peringkat BBRI (bukan ruas yang sedang dibahas). Keduanya dirakit ulang
+  // jadi pertanyaan penuh, persis seperti susulan biasa di atas.
+  const RUAS_SUSULAN: [RegExp, (kd: string) => string][] = [
+    [/^(harga|harganya)\??$/, (kd) => `harga ${kd}`],
+    [/^(valuasi|valuasinya|per pbv|pe|pernya)\??$/, (kd) => `PER PBV ${kd}`],
+    [/^(sektor|sektornya|industrinya)\??$/, (kd) => `sektor ${kd}`],
+    [/^(pemilik|pemiliknya|pemegang sahamnya)\??$/, (kd) => `siapa pemilik ${kd}`],
+    [/^(grup|grupnya)\??$/, (kd) => `${kd} grup apa`],
+    [/^(setahun|kinerjanya|setahun terakhir)\??$/, (kd) => `${kd} setahun terakhir`],
+  ]
+  if (k.subjek) {
+    const ruas = RUAS_SUSULAN.find(([pola]) => pola.test(t.trim()))
+    if (ruas) return jawab(ruas[1](k.subjek), { ...k, topik: null, subjek: null, data: k.data })
+  }
+  // "kalau BBRI?" — emiten baru, ruas yang sama. Dibatasi kalimat pendek
+  // supaya kalimat penuh yang kebetulan memuat kode tak ikut tersapu.
+  const gantiSubjek = t.trim().split(' ').length <= 3 ? kodeDisebut(pertanyaan, k.kamus)[0] : undefined
+  if (gantiSubjek && gantiSubjek !== k.subjek && k.topik) {
+    const perRuas: Record<string, (kd: string) => string> = {
+      hargaEmiten: (kd) => `harga ${kd}`,
+      valuasiEmiten: (kd) => `PER PBV ${kd}`,
+      sektorEmiten: (kd) => `sektor ${kd}`,
+      kinerjaEmiten: (kd) => `${kd} setahun terakhir`,
+      pemilikEmiten: (kd) => `siapa pemilik ${kd}`,
+    }
+    const rakitBaru = perRuas[k.topik]
+    if (rakitBaru) return jawab(rakitBaru(gantiSubjek), { ...k, topik: null, subjek: null, data: k.data })
+  }
+
   // ── Minta ARTI, bukan angka ──────────────────────────────────────────────
   // "apa itu IHSG" harus dijawab definisinya, bukan angkanya hari ini — jadi
   // blok ini duluan. Kalau ternyata istilahnya tak dikenal, jangan berhenti:
@@ -481,14 +689,32 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
   if (MINTA_ARTI.test(t)) {
     const j = jawabTeks(pertanyaan)
     if (j) return j
+    // Istilahnya tak dikenal. Dulu blok ini jatuh terus ke blok data, dan
+    // hasilnya "apa itu indeks sektoral" dijawab angka IHSG hari ini —
+    // pertanyaan ARTI dijawab ANGKA. Yang boleh jatuh terus sekarang hanya
+    // kalimat yang memang ikut meminta angka.
+    if (!punya(t, 'berapa', 'hari ini', 'sekarang')) {
+      return {
+        teks: 'Istilah itu belum ada di glosarium PAPAN, jadi saya tak mau mengarang artinya. '
+          + 'Coba istilah lain, atau tanyakan angkanya langsung.',
+        takPaham: true, ke: '/metodologi', keLabel: 'Metodologi & Glosarium',
+      }
+    }
   }
 
   // ── Minta rekomendasi/ramalan — dijawab terus terang, bukan dialihkan ─────
   // Lihat catatan MINTA_REKOMENDASI: tanpa blok ini pertanyaan "saham apa yang
   // layak dibeli minggu ini" dijawab angka IHSG sepekan.
-  if (MINTA_REKOMENDASI.test(t)) {
+  const mintaMetode = /\b(cara|rumus|hitung|menghitung|dihitung)\b/.test(t)
+  if (MINTA_REKOMENDASI.test(t) || (MINTA_TARGET.test(t) && !mintaMetode)) {
     const e = PENGETAHUAN.find((x) => x.id === 'bukan-saran-investasi')
     if (e) return { teks: `${e.judul}. ${e.isi}`, ke: e.ke, keLabel: e.keLabel }
+  }
+
+  // ── Pertanyaan kapabilitas — dijawab ya/tidak berikut batasnya ────────────
+  if (TANYA_KAPABILITAS.test(t)) {
+    const absen = ABSEN.find(([pola]) => pola.test(t))
+    if (absen) return { teks: absen[1], takPaham: true, ke: '/', keLabel: 'Lihat halaman yang ada' }
   }
 
   // ── Kenapa disebut kuat/tipis — pertanyaan tentang METODE, bukan angka ───
@@ -519,6 +745,19 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
     }
   }
 
+  // ── Hari yang belum berjalan — tak ada angkanya, dan itu yang dikatakan ───
+  // Diperiksa SESUDAH kalender (yang memang boleh menjawab "besok libur?")
+  // tapi SEBELUM blok data mana pun, karena hampir semua blok di bawah dengan
+  // senang hati menjawabnya memakai angka hari berjalan.
+  if (MASA_DEPAN.test(t)) {
+    return {
+      teks:
+        'Belum terjadi, jadi belum ada angkanya. PAPAN menyajikan angka yang sudah tercatat dan metode ' +
+        'menghitungnya — tidak ada prakiraan harga, indeks, maupun arah pasar untuk hari yang belum berjalan.',
+      takPaham: true, ke: '/chart', keLabel: 'Lihat riwayat di Chart',
+    }
+  }
+
   // ── Deteksi kode emiten — dipakai banyak blok di bawah ───────────────────
   // Regex atas TEKS ASLI (bukan `.toUpperCase()`) — kode dianggap disebut
   // HANYA kalau memang diketik kapital, seperti orang menulis ticker
@@ -536,9 +775,34 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
   // pencarian nama (di ~960 emiten) baru jalan waktu benar-benar perlu, dan
   // dicocokkan sebagai FRASA nama perusahaan (bukan kata tunggal), jadi jauh
   // lebih kecil peluang nyangkut ke kalimat yang tak terkait.
-  let kode = pertanyaan.match(/\b[A-Z]{4}\b/)?.[0] ?? null
-  if (kode === 'IHSG') kode = null
+  const semuaKode = kodeDisebut(pertanyaan, k.kamus)
+  let kode: string | null = semuaKode[0] ?? null
   if (!kode && k.kamus) kode = cariKodeDariNama(k.kamus.emiten, t)
+
+  // ── Membandingkan dua emiten — dikatakan, bukan didiamkan ────────────────
+  // "antara BBCA dan BBRI mana yang lebih likuid" dulu dijawab profil BBCA
+  // saja. Yang membaca tak punya cara tahu BBRI diabaikan, dan pertanyaannya
+  // justru soal perbandingannya.
+  if (semuaKode.length > 1 && BANDING.test(t)) {
+    return {
+      teks: `Saya belum membandingkan dua emiten. Tanyakan satu per satu — ${semuaKode.join(' lalu ')} — ` +
+        `atau bandingkan sendiri lewat Stock Detail.`,
+      takPaham: true, ke: '/stock-detail', keLabel: 'Buka Stock Detail',
+    }
+  }
+
+  // ── Skenario "kalau … turun sekian" — itu pekerjaan Kalkulator ───────────
+  // Syarat angka melekat di ANDAI: lihat catatannya. Tanpa blok ini "kalau
+  // BBCA turun 5% jadi berapa" dijawab profil peringkat harian BBCA.
+  if ((ANDAI.test(t) || punya(t, 'berapa lot')) && /\d/.test(t)
+    && punya(t, 'harga', 'turun', 'naik', 'beli', 'jual', 'rugi', 'untung', 'tembus', 'sentuh', 'average', 'rata rata', 'lot')) {
+    return {
+      teks:
+        'Skenario harga tidak saya hitung di panel ini. Kalkulator PAPAN menghitungnya: average down, target ' +
+        'ARA/ARB, risk-reward, dividen, dan titik pulih — hasilnya dibulatkan ke fraksi harga bursa.',
+      takPaham: true, ke: '/kalkulator', keLabel: 'Buka Kalkulator',
+    }
+  }
 
   // ── Kepemilikan — "siapa pemilik BBCA?" ──────────────────────────────────
   // Diperiksa SEBELUM blok "siapa" generik: pertanyaan ini juga memuat kata
@@ -546,7 +810,7 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
   // — ini menanyakan KOMPOSISI kepemilikan publik KSEI, yang datanya memang
   // kita punya (lihat catatan privasi di jawabPemilik: agregat saja, tanpa
   // nama).
-  if (kode && punya(t, 'siapa') && punya(t, 'pemilik', 'pemegang saham', 'kepemilikan')) {
+  if (kode && /\bsiapa(kah)?\b/.test(t) && punya(t, 'pemilik', 'pemegang saham', 'kepemilikan')) {
     if (k.data && k.data.jenis === 'investor' && k.data.kode === kode) {
       return jawabPemilik(kode, k.data.payload)
     }
@@ -558,7 +822,9 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
   // data personalia sama sekali. Diperiksa SEBELUM blok kode emiten karena
   // pertanyaan macam ini sering ikut menyebut kode ("siapa direktur BBCA?"),
   // dan sekadar menyebut kode tak membuatnya jadi pertanyaan data pasar.
-  if (punya(t, 'siapa')) {
+  // `\bsiapa\b` UTUH, bukan awalan: "siapapun bisa jadi kontributor?" bukan
+  // pertanyaan personalia, tapi dulu dijawab "belum ada data direksi".
+  if (/\bsiapa(kah)?\b/.test(t)) {
     return { teks: 'Belum ada data personalia (direksi/komisaris) di tahap ini — coba tanya soal data pasar.', takPaham: true }
   }
 
@@ -584,8 +850,19 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
   // memuat ketiganya sekaligus — tak ada gunanya minta tiga kali.
   if (kode) {
     const sebutHarga = punya(t, 'harga')
-    const sebutValuasi = /\bper\b/.test(t) || punya(t, 'pbv', 'valuasi', 'roe')
+    const sebutValuasi = RASIO_PER.test(t) || punya(t, 'pbv', 'valuasi', 'roe')
     const sebutSektor = punya(t, 'sektor', 'industri')
+    // Harga & valuasi TERIKAT WAKTU: yang saya punya angka terakhir, bukan
+    // arsip per tanggal. "harga BBCA bulan lalu berapa" dijawab harga hari ini
+    // — benar sebagai angka, salah sebagai jawaban, dan tak ada penandanya.
+    // Sektor sengaja tak ikut: sektor emiten tak berubah harian.
+    if ((sebutHarga || sebutValuasi) && (MASA_LALU.test(t) || punya(t, 'kemarin') || REKOR_PENUH.test(t))) {
+      return {
+        teks: `Saya menjawab dari angka terakhir ${kode}, bukan arsip per tanggal. Riwayat harga per hari ada di ` +
+          `Stock Detail dan Chart.`,
+        takPaham: true, ...linkEmiten(kode),
+      }
+    }
     if (sebutHarga || sebutValuasi || sebutSektor) {
       if (k.data && k.data.jenis === 'fundamental' && k.data.kode === kode) {
         const fd = k.data.payload
@@ -605,6 +882,39 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
     return { butuh: { jenis: 'ohlc', kode }, teks: `Mengambil data ${kode}…` }
   }
 
+  // ── Ruas per emiten yang memang belum dihitung di sini ───────────────────
+  // Lihat catatan RUAS_BELUM: tanpa blok ini semuanya jatuh ke keranjang
+  // "emiten disebut langsung" dan dijawab profil peringkat yang sama.
+  if (kode) {
+    // Kinerja per emiten cuma dihitung untuk jendela 365 hari. "sejak awal
+    // tahun" adalah jendela LAIN, dan menjawabnya dengan perubahan hari ini
+    // (yang dilakukan keranjang di bawah) meleset dua kali: periodenya salah,
+    // ruasnya pun bukan yang ditanya.
+    if (punya(t, 'sejak awal tahun', 'ytd', 'year to date', 'sejak januari', 'tahun berjalan')) {
+      return {
+        teks: `Kinerja ${kode} yang saya hitung jendelanya 365 hari terakhir, bukan sejak awal tahun. ` +
+          `Tanyakan "${kode} setahun terakhir", atau lihat rentang bebas di Stock Detail.`,
+        takPaham: true, ...linkEmiten(kode),
+      }
+    }
+    if (REKOR_PENUH.test(t)) {
+      return {
+        teks: `Rekor sepanjang masa ${kode} tidak saya hitung di sini — jendela yang saya punya 365 hari `
+          + `terakhir (kisaran 52 minggu). Riwayat penuhnya ada di Stock Detail.`,
+        takPaham: true, ...linkEmiten(kode),
+      }
+    }
+    const belum = RUAS_BELUM.find(([pola]) => pola.test(t))
+    if (belum) {
+      return {
+        teks: `${belum[1].charAt(0).toUpperCase()}${belum[1].slice(1)} belum saya hitung di panel ini — ` +
+          `yang saya punya untuk ${kode}: harga, valuasi (PER/PBV/ROE), sektor, kinerja setahun, dan komposisi ` +
+          `pemegang saham KSEI. Angka selengkapnya ada di Stock Detail.`,
+        takPaham: true, ...linkEmiten(kode),
+      }
+    }
+  }
+
   if (!h) {
     return { teks: 'Data hari ini belum termuat. Coba lagi sebentar lagi.', takPaham: true }
   }
@@ -620,6 +930,20 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
   // memang tentang indeks: menyebut pasar/indeks, atau cukup pendek sehingga
   // tak mungkin membawa maksud lain.
   const soalIndeks = !kode && (punya(t, 'ihsg', 'indeks', 'pasar', 'bursa') || t.split(' ').length <= 5)
+
+  // ── Tanggal lain di masa lalu — bukan rentang "sampai sekarang" ──────────
+  // "IHSG pekan lalu ditutup di berapa" dijawab "sepekan +0,80%": itu
+  // PERUBAHAN, bukan penutupan, dan bukan pekan yang dimaksud. Dipisah lebih
+  // dulu supaya blok rentang di bawahnya tetap boleh menjawab "sepekan
+  // terakhir" — yang memang rentang sampai hari ini.
+  if (soalIndeks && MASA_LALU.test(t)) {
+    return {
+      teks: `Saya menjawab dari hari bursa terakhir; penutupan per tanggal tertentu tidak saya indeks di sini. ` +
+        `Riwayat lengkapnya ada di halaman Chart.`,
+      takPaham: true, ke: '/chart', keLabel: 'Lihat chart',
+    }
+  }
+
   if (soalIndeks && punya(t, 'pekan', 'minggu', 'bulan', 'beruntun', 'berturut', 'sebulan', 'sepekan', 'ytd', 'tahun berjalan')) {
     const seri = k.seri ?? []
     if (seri.length < 6) {
@@ -679,7 +1003,29 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
   // wajar diketik orang, tapi sempat jatuh ke "belum bisa saya jawab" karena
   // tak menyebut kata "IHSG" sama sekali. Jawabannya sama persis dengan
   // pertanyaan IHSG — ringkasan hari itu memang jawaban untuk keduanya.
-  if (punya(t, 'ihsg', 'indeks', 'pasar hari ini', 'penutupan', 'kondisi pasar', 'pasar sekarang', 'pasar gimana', 'pasar bagaimana')) {
+  // Pertanyaan kabar sengaja dikecualikan: "berita hari ini tentang IHSG apa"
+  // memuat kata IHSG, dan blok ini berdiri lebih dulu — jadi permintaan berita
+  // dijawab ringkasan indeks tanpa satu pun berita di dalamnya.
+  // Blok ini pemicunya paling lebar di seluruh mesin, dan karena berdiri
+  // paling awal ia menyerap pertanyaan yang sebenarnya milik blok lain di
+  // bawahnya. Tiga yang terukur: "berita hari ini tentang IHSG apa" (kabar),
+  // "brp pbv pasar skrg" — "pasar sekarang" persis salah satu pemicunya —
+  // (valuasi), dan "berapa poin BBCA menyumbang ke IHSG" (penggerak).
+  const soalKabar = punya(t, 'kabar', 'berita', 'news', 'pengumuman')
+  const soalValuasiPasar = RASIO_PER.test(t) || punya(t, 'pbv', 'valuasi')
+  const soalPenggerak = punya(t, 'penggerak', 'penyumbang', 'menyumbang', 'sumbangan') || /\bleaders?\b/.test(t)
+  if (!soalKabar && !soalValuasiPasar && !soalPenggerak
+    && (/\bindeks\b/.test(t) || punya(t, 'ihsg', 'pasar hari ini', 'penutupan', 'kondisi pasar', 'pasar sekarang', 'pasar gimana', 'pasar bagaimana'))) {
+    // Ringkasan harian tak memuat volume/frekuensi/kapitalisasi. Menyodorkan
+    // ringkasan untuk pertanyaan ruas itu memberi angka yang tak ditanyakan —
+    // "berapa volume IHSG hari ini" dijawab "IHSG menguat kuat +1,59%".
+    if (punya(t, 'volume', 'frekuensi', 'lembar', 'kapitalisasi', 'market cap')) {
+      return {
+        teks: 'Volume, frekuensi, dan kapitalisasi tidak ada di ringkasan harian yang saya pakai — yang saya punya ' +
+          'penutupan indeks, perubahannya, arus asing, sektor, dan papan peringkat. Angka aktivitas ada di Top Stocks.',
+        takPaham: true, ke: '/stocks', keLabel: 'Buka Top Stocks',
+      }
+    }
     return { teks: `${r.headline}. ${r.ringkasan}`, topik: 'ihsg', ke: '/indeks', keLabel: 'Papan IHSG' }
   }
 
@@ -695,6 +1041,34 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
         takPaham: true, ...linkEmiten(kode),
       }
     }
+    // Kepemilikan asing (persen, dari KSEI) dan ARUS asing (rupiah, harian)
+    // adalah dua besaran berbeda yang sama-sama disebut "asing". "berapa
+    // persen kepemilikan asing di seluruh pasar" dijawab "net sell Rp1,03
+    // triliun" — satuannya pun berbeda.
+    if (punya(t, 'kepemilikan', 'pemilik', 'pemegang saham', 'porsi')) {
+      return {
+        teks: 'Kepemilikan asing (persen, dari KSEI) beda dengan arus asing (rupiah, harian) yang saya punya di '
+          + 'sini. Komposisi kepemilikan ada di Peta Investor.',
+        takPaham: true, ...linkInvestor,
+      }
+    }
+    // Sama persoalannya satu tingkat di atas: arus asing yang saya punya
+    // angka SE-PASAR, bukan per sektor. Menjawabnya tanpa penanda membuat
+    // angka pasar terbaca sebagai angka sektor yang ditanya.
+    if (punya(t, 'sektor', 'sector')) {
+      return {
+        teks: 'Arus asing per sektor belum saya hitung — angka yang saya punya arus asing tingkat pasar. ' +
+          'Kinerja per sektor ada di halaman Sektor & Indeks.',
+        takPaham: true, ke: '/sector', keLabel: 'Sektor & Indeks',
+      }
+    }
+    if (punya(t, 'apa saja', 'saham apa', 'emiten apa', 'yang mana')) {
+      return {
+        teks: 'Rincian asing beli/jual per emiten belum saya hitung — yang saya punya angka bersihnya di tingkat '
+          + 'pasar. Rincian per emiten ada di halaman Stock Detail.',
+        takPaham: true, ke: '/stock-detail', keLabel: 'Buka Stock Detail',
+      }
+    }
     const nf = h.nf_today_idr
     if (nf == null) return { teks: 'Data arus asing hari ini belum ada di berkas harian.', takPaham: true }
     const ytd = h.nf_ytd_idr
@@ -708,6 +1082,16 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
 
   // ── Sektor ───────────────────────────────────────────────────────────────
   if (punya(t, 'sektor', 'sector')) {
+    // Yang saya punya per sektor cuma perubahan harganya. "PBV sektor
+    // healthcare berapa" dijawab daftar sektor terkuat/terlemah — ruas yang
+    // ditanya tak ada di dalamnya.
+    if (soalValuasiPasar) {
+      return {
+        teks: 'Valuasi per sektor (PER/PBV) belum saya hitung di sini — yang saya punya perubahan harga per '
+          + 'sektor hari ini, dan PER/PBV di tingkat pasar. Rinciannya ada di halaman Sektor & Indeks.',
+        takPaham: true, ke: '/sector', keLabel: 'Sektor & Indeks',
+      }
+    }
     const s = [...(h.sectors ?? [])].sort((a, b) => b.d - a.d)
     if (s.length === 0) return { teks: 'Data sektor hari ini belum ada.', takPaham: true }
     const rapi = (n: string) => n.replace(/^\[[A-Z]\]\s*/, '')
@@ -743,7 +1127,7 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
   // kontributor) dijawab "Penyumbang terbesar ke IHSG" — benar sebagai angka,
   // sama sekali bukan pertanyaannya. Kata itu baru dihitung kalau memang
   // menunjuk indeks.
-  if (punya(t, 'penggerak', 'leader', 'penyumbang') || /kontribusi[^.]*\b(indeks|ihsg)\b/.test(t)) {
+  if (soalPenggerak || /kontribusi[^.]*\b(indeks|ihsg)\b/.test(t)) {
     const p = (h.leaders_today ?? []).slice(0, 3)
     if (p.length === 0) return { teks: 'Data penggerak indeks hari ini belum ada.', takPaham: true }
     return {
@@ -755,7 +1139,7 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
   // ── Valuasi pasar ────────────────────────────────────────────────────────
   // `\bper\b`, bukan potongan: dengan `includes('per')` setiap kalimat yang
   // memuat "perlu", "persen", atau "diperbarui" dijawab valuasi pasar.
-  if (/\bper\b/.test(t) || punya(t, 'pbv', 'valuasi')) {
+  if (soalValuasiPasar) {
     if (h.mkt_per == null && h.mkt_pbv == null) return { teks: 'Data valuasi pasar hari ini belum ada.', takPaham: true }
     return {
       teks: `PER pasar ${h.mkt_per == null ? '—' : `${rp(h.mkt_per)}×`}, PBV ${h.mkt_pbv == null ? '—' : `${rp(h.mkt_pbv)}×`} pada penutupan ${h.date_id}.`,
@@ -792,8 +1176,8 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
     const bagian: string[] = []
     const g = (h.gainers ?? []).find((x) => x.c === kode)
     const l = (h.losers ?? []).find((x) => x.c === kode)
-    if (g) bagian.push(`naik ${pct(g.p)} ke ${rp(g.pr, 0)} — masuk top gainers hari ini`)
-    if (l) bagian.push(`turun ${pct(l.p)} ke ${rp(l.pr, 0)} — masuk top losers hari ini`)
+    if (g) bagian.push(`naik ${pct(g.p)} (Rp${rp(Math.abs(g.td), 0)}) ke ${rp(g.pr, 0)} — masuk top gainers hari ini`)
+    if (l) bagian.push(`turun ${pct(l.p)} (Rp${rp(Math.abs(l.td), 0)}) ke ${rp(l.pr, 0)} — masuk top losers hari ini`)
 
     const lead = (h.leaders_today ?? []).find((x) => x.c === kode)
     const lag = (h.laggards_today ?? []).find((x) => x.c === kode)
@@ -834,6 +1218,15 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
   if (kataT.length <= 3) {
     const ambigu = kataT.find((w) => CABANG[w])
     if (ambigu) return { teks: CABANG[ambigu], takPaham: true }
+  }
+
+  // ── Kapabilitas yang tak masuk daftar ABSEN: jawab batas kemampuannya ────
+  // "apakah PAPAN bisa X" untuk X yang tak dikenali lebih baik dijawab dengan
+  // daftar apa yang bisa dan tak bisa, daripada dengan "belum bisa saya jawab"
+  // yang tak memberi tahu apa pun tentang batasnya.
+  if (TANYA_KAPABILITAS.test(t) && punya(t, 'papan', 'kamu', 'situs ini', 'aplikasi ini', 'di sini', 'fitur')) {
+    const e = PENGETAHUAN.find((x) => x.id === 'batas-kemampuan')
+    if (e) return { teks: `${e.judul}. ${e.isi}`, takPaham: true }
   }
 
   return {

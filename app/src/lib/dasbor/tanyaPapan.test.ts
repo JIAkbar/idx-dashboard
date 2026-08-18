@@ -622,6 +622,139 @@ describe('korpus latih — tiap panjang masukan dijawab benar, tak ada yang sala
   })
 })
 
+// ════════════════════════════════════════════════════════════════════════════
+// KORPUS LUAR-GLOSARIUM — ronde kedua, 18 Agu 2026
+// ════════════════════════════════════════════════════════════════════════════
+/**
+ * Korpus di atas diturunkan dari `glosarium.json` + `pengetahuan.ts`, jadi ia
+ * hanya menguji pertanyaan yang bentuknya SUDAH mirip isi basis pengetahuan.
+ * Korpus di bawah ini sengaja dikarang di luar keduanya, dan hasil ukuran
+ * pertamanya menjelaskan kenapa itu perlu: dari 58 pertanyaan, **32 dijawab
+ * salah sasaran** — percaya diri, berangka, dan sama sekali bukan jawaban
+ * pertanyaannya. Korpus lama sudah 112/112 hijau saat itu.
+ *
+ * Enam sudut yang dipakai, tiap satunya menyasar satu cara mesin bisa keliru
+ * TANPA kelihatan keliru:
+ *   - `hijack`   — kata pemicu nyangkut di dalam kata lain atau di arti lain
+ *   - `lingkup`  — ruas/periode/satuan yang keliru (angka pasar untuk
+ *                  pertanyaan emiten, hari ini untuk "bulan lalu", rupiah
+ *                  untuk "berapa persen")
+ *   - `syarat`   — pertanyaan bertingkat, bersyarat, atau membandingkan
+ *   - `susulan`  — sambungan yang mengganti RUAS atau mengganti EMITEN
+ *   - `luar`     — di luar jangkauan; WAJIB ditolak, karena jawaban yang
+ *                  terdengar seperti nasihat investasi jauh lebih berbahaya
+ *                  daripada "tidak tahu"
+ *   - `informal` — huruf besar semua, singkatan, salah ketik
+ *
+ * Aturan mainnya sama dengan korpus di atas: `harus` yang tak cocok TAPI
+ * mesinnya mengaku tak tahu digolongkan "takTahu" (boleh), sedangkan tak cocok
+ * SAMBIL percaya diri digolongkan "salah" (tidak boleh). Karena itu banyak
+ * baris di bawah `harus`-nya justru kalimat pengakuan — itu memang jawaban
+ * yang benar untuk pertanyaan yang datanya tak ada.
+ */
+export const KORPUS_LUAR: { q: string; kel: string; harus: RegExp; ctx?: Partial<KonteksTanya> }[] = [
+  // ── hijack: pemicu nyangkut di dalam kata lain ──────────────────────────
+  // "asing" di "masing-masing", "siapa" di "persiapan", "buka" di "pembukaan",
+  // "leader" di "leaderboard", "per" di "per emiten". Semuanya pernah dijawab
+  // angka yang keliru, bukan "tidak tahu".
+  { q: 'berapa PER masing-masing sektor hari ini', kel: 'hijack', harus: /per sektor|sektor/i },
+  { q: 'apa saja persiapan sebelum bursa buka', kel: 'hijack', harus: /^(?!.*personalia)/ },
+  { q: 'siapapun bisa jadi kontributor?', kel: 'hijack', harus: /kontributor/i },
+  { q: 'leaderboard kontributor ada tidak', kel: 'hijack', harus: /kontributor/i },
+  { q: 'apakah ada data broker per emiten untuk semua saham', kel: 'hijack', harus: /broker/i },
+  { q: 'berita hari ini tentang IHSG apa', kel: 'hijack', harus: /kabar/i },
+  { q: 'apa arti pembukaan dan penutupan bursa', kel: 'hijack', harus: /^(?!.*dibekukan)/ },
+  { q: 'apa itu indeks sektoral', kel: 'hijack', harus: /glosarium/i },
+  { q: 'apakah PAPAN punya data intraday', kel: 'hijack', harus: /intraday/i },
+  { q: 'apakah ada data kripto di sini', kel: 'hijack', harus: /saham Indonesia/i },
+  { q: 'apakah ada notifikasi harga', kel: 'hijack', harus: /notifikasi|alert/i },
+
+  // ── lingkup: ruas / periode / satuan yang keliru ────────────────────────
+  { q: 'volume BBCA hari ini berapa', kel: 'lingkup', harus: /volume dan frekuensi/i },
+  { q: 'frekuensi transaksi BBCA berapa', kel: 'lingkup', harus: /volume dan frekuensi/i },
+  { q: 'nilai transaksi BBCA hari ini berapa', kel: 'lingkup', harus: /nilai transaksi per emiten/i },
+  { q: 'market cap BBCA berapa', kel: 'lingkup', harus: /kapitalisasi pasar per emiten/i },
+  { q: 'EPS BBCA berapa', kel: 'lingkup', harus: /laporan keuangan/i },
+  { q: 'DER BBCA berapa', kel: 'lingkup', harus: /laporan keuangan/i },
+  { q: 'berapa jumlah saham beredar BBCA', kel: 'lingkup', harus: /laporan keuangan/i },
+  { q: 'dividen BBCA berapa', kel: 'lingkup', harus: /dividen/i },
+  { q: 'kalau saya jual BBCA hari ini kena fee berapa', kel: 'lingkup', harus: /biaya transaksi/i },
+  { q: 'berapa harga tertinggi BBCA sepanjang masa', kel: 'lingkup', harus: /angka terakhir|arsip/i },
+  { q: 'harga BBCA bulan lalu berapa', kel: 'lingkup', harus: /angka terakhir|arsip/i },
+  { q: 'PBV BBCA tahun lalu berapa', kel: 'lingkup', harus: /angka terakhir|arsip/i },
+  { q: 'BBCA naik berapa persen sejak awal tahun', kel: 'lingkup', harus: /365 hari|setahun terakhir/i },
+  { q: 'IHSG pekan lalu ditutup di berapa', kel: 'lingkup', harus: /hari bursa terakhir/i },
+  { q: 'IHSG tahun lalu berapa', kel: 'lingkup', harus: /hari bursa terakhir/i },
+  { q: 'berapa volume IHSG hari ini', kel: 'lingkup', harus: /tidak ada di ringkasan harian/i },
+  { q: 'asing net buy di sektor keuangan berapa', kel: 'lingkup', harus: /per sektor/i },
+  { q: 'berapa persen kepemilikan asing di seluruh pasar', kel: 'lingkup', harus: /Peta Investor|kepemilikan asing/i },
+  { q: 'asing beli apa saja hari ini', kel: 'lingkup', harus: /per emiten/i },
+  { q: 'PBV sektor healthcare berapa', kel: 'lingkup', harus: /valuasi per sektor/i },
+  { q: 'berapa PER rata-rata sektor keuangan', kel: 'lingkup', harus: /valuasi per sektor/i },
+  { q: 'berapa poin BBCA menyumbang ke IHSG', kel: 'lingkup', harus: /poin|penyumbang/i },
+
+  // ── syarat: bertingkat, bersyarat, membandingkan ────────────────────────
+  { q: 'kalau BBCA turun 5% jadi berapa', kel: 'syarat', harus: /Kalkulator/i },
+  { q: 'kalau saya beli BBCA di 6000 berapa target ARA nya', kel: 'syarat', harus: /Kalkulator/i },
+  { q: 'berapa kerugian saya kalau BBCA turun ke 5000', kel: 'syarat', harus: /Kalkulator/i },
+  { q: 'kalau saya average down BBCA di 6000 berapa rata-ratanya', kel: 'syarat', harus: /Kalkulator/i },
+  { q: 'berapa lot yang bisa saya beli dengan 10 juta di BBCA', kel: 'syarat', harus: /Kalkulator/i },
+  { q: 'jika IHSG tembus 7000 apa yang terjadi', kel: 'syarat', harus: /Kalkulator/i },
+  { q: 'antara BBCA dan BBRI mana yang lebih likuid', kel: 'syarat', harus: /belum membandingkan/i },
+  { q: 'BBCA atau ICBP yang PER-nya lebih rendah', kel: 'syarat', harus: /belum membandingkan/i },
+  { q: 'harga BBCA sama BBRI berapa', kel: 'syarat', harus: /BBRI tanyakan terpisah/ },
+  { q: 'BBCA dan ICBP sektornya apa', kel: 'syarat', harus: /ICBP tanyakan terpisah/ },
+
+  // ── susulan yang mengganti RUAS atau EMITEN ─────────────────────────────
+  { q: 'sektornya?', kel: 'susulan', harus: /Financial Services/, ctx: { topik: 'hargaEmiten', subjek: 'BBCA' } },
+  { q: 'valuasinya?', kel: 'susulan', harus: /PER 13,51/, ctx: { topik: 'hargaEmiten', subjek: 'BBCA' } },
+  { q: 'harganya?', kel: 'susulan', harus: /6\.375/, ctx: { topik: 'pemilikEmiten', subjek: 'BBCA' } },
+  { q: 'pemiliknya?', kel: 'susulan', harus: /domestik/i, ctx: { topik: 'valuasiEmiten', subjek: 'BBCA' } },
+  { q: 'grupnya?', kel: 'susulan', harus: /Salim/, ctx: { topik: 'sektorEmiten', subjek: 'ICBP' } },
+  { q: 'kalau ICBP?', kel: 'susulan', harus: /sektor ICBP/i, ctx: { topik: 'sektorEmiten', subjek: 'BBCA' } },
+  { q: 'kalau BBRI?', kel: 'susulan', harus: /Harga BBRI/i, ctx: { topik: 'hargaEmiten', subjek: 'BBCA' } },
+
+  // ── luar jangkauan: WAJIB ditolak, bukan dijawab angka hari ini ─────────
+  { q: 'IHSG besok naik atau turun', kel: 'luar', harus: /belum berjalan|belum ada angkanya/i },
+  { q: 'kapan IHSG naik lagi', kel: 'luar', harus: /belum berjalan|belum ada angkanya/i },
+  { q: 'sebulan lagi IHSG kira-kira berapa', kel: 'luar', harus: /belum berjalan|belum ada angkanya/i },
+  { q: 'besok harga pembukaan IHSG berapa', kel: 'luar', harus: /belum berjalan|belum ada angkanya/i },
+  { q: 'IHSG akhir tahun di berapa', kel: 'luar', harus: /belum berjalan|belum ada angkanya/i },
+  { q: 'IHSG minggu depan gimana', kel: 'luar', harus: /belum berjalan|belum ada angkanya/i },
+  { q: 'menurutmu IHSG mau kemana', kel: 'luar', harus: /belum berjalan|belum ada angkanya/i },
+  { q: 'target harga BBCA berapa', kel: 'luar', harus: /tidak memberi rekomendasi/i },
+  { q: 'kapan sebaiknya cut loss', kel: 'luar', harus: /tidak memberi rekomendasi/i },
+  { q: 'kasih tips trading dong', kel: 'luar', harus: /tidak memberi rekomendasi/i },
+  { q: 'boleh minta saran portofolio', kel: 'luar', harus: /tidak memberi rekomendasi/i },
+  { q: 'saham murah yang potensial apa', kel: 'luar', harus: /tidak memberi rekomendasi/i },
+  { q: 'saham bank mana yang paling menjanjikan', kel: 'luar', harus: /tidak memberi rekomendasi/i },
+  { q: 'apakah sekarang waktu yang tepat untuk masuk', kel: 'luar', harus: /tidak memberi rekomendasi/i },
+  { q: 'bagusnya saya beli sekarang atau tunggu', kel: 'luar', harus: /tidak memberi rekomendasi/i },
+  { q: 'worth it gak beli sekarang', kel: 'luar', harus: /tidak memberi rekomendasi/i },
+  // "cara MENGHITUNG target harga" menanyakan metode, dan metodenya memang
+  // kami jelaskan — penjagaan rekomendasi tak boleh ikut menyapunya.
+  { q: 'bagaimana cara menghitung target harga setelah ARA', kel: 'luar', harus: /auto rejection|35%|25%/i },
+
+  // ── informal: huruf besar semua, singkatan, salah ketik ─────────────────
+  { q: 'SEKTOR APA YANG PALING LEMAH???', kel: 'informal', harus: /Healthcare|Properti/ },
+  { q: 'IHSG GIMANA HARI INI???', kel: 'informal', harus: /6\.401,89/ },
+  { q: 'SIAPA PEMILIK BBCA', kel: 'informal', harus: /domestik/i },
+  { q: 'APA ITU ARA', kel: 'informal', harus: /auto rejection/i },
+  { q: 'frksi harga berapa', kel: 'informal', harus: /kelipatan|fraksi/i },
+  { q: 'net sell asing brp trilyun', kel: 'informal', harus: /net sell/i },
+  { q: 'asing gmn hr ini', kel: 'informal', harus: /net sell|net buy/i },
+  { q: 'PER BBCA brp ya', kel: 'informal', harus: /PER 13,51/ },
+  { q: 'top loser hari ini apa', kel: 'informal', harus: /losers/i },
+  { q: 'brp pbv pasar skrg', kel: 'informal', harus: /PBV 1,80/ },
+]
+
+describe('korpus luar-glosarium — jawaban percaya diri yang salah sasaran', () => {
+  it.each(KORPUS_LUAR)('[$kel] $q', (k) => {
+    const j = tanya(k.q, k.ctx)
+    expect(`${k.harus.test(j.teks) ? 'benar' : j.takPaham ? 'takTahu' : 'salah'} :: ${j.teks}`).toMatch(/^benar/)
+  })
+})
+
 describe('tak ada kebocoran — jawaban tak menyebut isi dapur', () => {
   it('catatan glosarium yang merujuk berkas repo dibersihkan sebelum tampil', () => {
     // PCD adalah kasus nyatanya: catatannya berakhir "(lihat `arus-pasar/pcd.py`)".
@@ -636,6 +769,18 @@ describe('tak ada kebocoran — jawaban tak menyebut isi dapur', () => {
       const j = tanya(`apa itu ${e.istilah}`)
       expect(j.teks, `istilah ${e.id}`).not.toMatch(/\.(py|ts|tsx|json|md|sql|ya?ml)\b/i)
       expect(j.teks, `istilah ${e.id}`).not.toMatch(/https?:\/\/|localhost|supabase|_arsip|scripts\//i)
+    }
+  })
+
+  it('SELURUH korpus disapu — bukan cuma glosarium & pengetahuan', () => {
+    // Sapuan ronde pertama hanya melewati basis TEKS. Yang tak terlewati:
+    // jawaban rakitan mesin sendiri — dan justru di situ nama endpoint, jalur
+    // berkas, dan ambang internal paling gampang menyelip, karena kalimatnya
+    // ditulis tangan satu per satu. Pertanyaannya bukan "apakah ini benar"
+    // melainkan "apa yang bocor" (aturan 18 Agu 2026 #4).
+    const bocor = /\.(py|ts|tsx|js|mjs|json|md|sql|ya?ml)\b|https?:\/\/|localhost|supabase|_arsip|scripts\/|\blib\/|\/src\/|data-idx|GetStockSummary|GetFinancialReport|GetBrokerSummary|yfinance|\bfetch\(|\.json\b/i
+    for (const k of [...KORPUS, ...TAHAN_SIMPAN, ...KORPUS_LUAR]) {
+      expect(tanya(k.q, k.ctx).teks, `pertanyaan: ${k.q}`).not.toMatch(bocor)
     }
   })
 

@@ -122,9 +122,47 @@ function jarak(a: string, b: string, batas: number): number {
  */
 export function mirip(a: string, b: string): boolean {
   if (a === b) return true
+  if (vokalHilang(a, b)) return true
   const n = Math.min(a.length, b.length)
   if (n < 6 || a[0] !== b[0]) return false
-  const batas = n >= 8 ? 2 : 1
+  // Dua edit hanya diizinkan kalau panjangnya BERBEDA — artinya ada huruf yang
+  // hilang/tertambah, bentuk salah ketik yang wajar ("divergen" →
+  // "divergensi"). Kalau panjangnya sama, dua edit berarti dua SUBSTITUSI, dan
+  // itu sudah cukup untuk melompat ke kata lain yang sah: "pembukaan" dan
+  // "pembekuan" berjarak tepat dua substitusi, dan gara-gara itu "apa arti
+  // pembukaan dan penutupan bursa" dijawab aturan pembekuan akun kontributor.
+  const batas = n >= 8 && a.length !== b.length ? 2 : 1
   if (Math.abs(a.length - b.length) > batas) return false
   return jarak(a, b, batas) <= batas
+}
+
+/**
+ * Satu kata adalah kata lain yang HURUF VOKALNYA dibuang: "frksi" → "fraksi",
+ * "kntributor" → "kontributor".
+ *
+ * Ini jalan keluar untuk salah ketik pada kata pendek TANPA melonggarkan
+ * ambang `mirip()` — pelonggaran itu sudah ditolak sekali dengan alasan yang
+ * masih berlaku: "ara" dan "arb" berjarak satu SUBSTITUSI tapi artinya
+ * berlawanan. Yang diizinkan di sini cuma PENGHAPUSAN vokal, tak pernah
+ * substitusi, jadi pasangan berbahaya itu tetap tak bisa saling cocok:
+ * kerangka konsonannya berbeda ("r" lawan "rb"), begitu juga "datar"/"daftar"
+ * ("dtr" lawan "dftr").
+ *
+ * Syaratnya ketat supaya tak melahirkan kecocokan palsu: huruf pertama sama,
+ * kerangka konsonan sama persis, yang pendek minimal 4 huruf, dan bedanya
+ * paling banyak 3 vokal.
+ */
+const VOKAL = /[aeiou]/g
+function vokalHilang(a: string, b: string): boolean {
+  const [pendek, panjang] = a.length <= b.length ? [a, b] : [b, a]
+  if (pendek.length < 4 || pendek === panjang) return false
+  if (panjang.length - pendek.length > 3) return false
+  if (pendek[0] !== panjang[0]) return false
+  if (pendek.replace(VOKAL, '') !== panjang.replace(VOKAL, '')) return false
+  // Yang pendek harus benar-benar bisa DIPEROLEH dari yang panjang dengan
+  // membuang huruf (bukan sekadar berkerangka sama) — tanpa ini "bandar" dan
+  // "bunder" dianggap sama karena kerangkanya sama-sama "bndr".
+  let i = 0
+  for (const c of panjang) if (c === pendek[i]) i++
+  return i === pendek.length
 }
