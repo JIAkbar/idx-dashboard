@@ -127,6 +127,31 @@ Yang paling sering dilanggar dan paling mahal:
 - **Ambang penyajian**: 1–4 baris boleh langsung di obrolan; 5+ baris ke
   berkas, dengan ringkasan 3–5 baris tetap wajib di obrolan.
 
+### Status panen WAJIB berupa tabel — `docs/status-panen.md`
+
+Johan 18 Agu 2026: *"aturan WAJIB buat tabel seperti ini dan perlu di lengkapi
+lagi, halaman di papan apa nya, sumber dari mana, terakhir update kapan, status
+gmn apakah sudah otomatis apa harus lewat claude code dan pakai trigger dengan
+kata 'Panen Lagi'"*.
+
+Tiap kali ditanya "sudah panen?" atau melapor soal data, jawabannya **tabel di
+`docs/status-panen.md`** — diperbarui, bukan diketik ulang dari ingatan.
+Kolomnya tetap: **sumber · halaman PAPAN yang memakainya · asal data · isi
+terakhir · jumlah berkas · otomatis atau manual · pemicunya**.
+
+Dua hal yang gampang salah dan mahal:
+
+- **"Isi terakhir" dibaca dari DALAM berkas, bukan dari mtime.** Berkas bisa
+  ditulis ulang tanpa membawa data baru; melaporkan mtime membuat data basi
+  terlihat segar. Terjadi hari ini: broker summary "tersentuh 1 menit lalu"
+  padahal isinya masih 14 Agustus.
+- **Kolom "halaman pemakai" wajib diisi jujur, termasuk kalau jawabannya
+  "belum dipakai".** Statistik mingguan dipanen 33 pekan dan tak pernah dibaca
+  satu halaman pun sampai Johan menanyakannya; aliran asing sekarang di posisi
+  yang sama. Kolom itu satu-satunya yang membuat data-yang-menganggur terlihat.
+
+Kata pemicu panen manual lewat Claude Code: **"Panen Lagi"**.
+
 ### Empat aturan yang lahir 18 Agustus 2026 — mengikat, bukan anjuran
 
 Lahir dari kesalahan nyata hari itu; tiap satunya sudah dibayar.
