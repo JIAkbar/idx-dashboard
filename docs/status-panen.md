@@ -16,10 +16,10 @@ data baru, dan membaca mtime membuat data basi terlihat segar.
 | Sumber | Halaman PAPAN | Asal data | Isi terakhir | Berkas | Otomatis? | Pemicu |
 |---|---|---|---|---|---|---|
 | **OHLC harian** | Grafik Emiten, Tanya PAPAN | Yahoo Finance | **18 Agu 2026** | 964 | ❌ manual | `panen_ohlc.py` — **"Panen Lagi"** |
-| **Aliran asing** | *(belum dipakai)* | IDX `GetStockSummary` | **18 Agu 2026** | 963 | ❌ manual | `panen_asing.py` — **"Panen Lagi"** |
-| **Statistik harian** | Kalender Bursa, Beranda | IDX PDF harian | **18 Agu 2026** | 143 | ⚙️ Actions 13:00 UTC Sen–Jum | `update.yml` |
+| **Aliran asing** | Stock Detail *(UI sedang dikerjakan)* | IDX `GetStockSummary` | **2020 → 18 Agu 2026** (panen riwayat berjalan) | 989 | ❌ manual | `panen_asing.py` — **"Panen Lagi"** |
+| **Statistik harian** | Kalender Bursa, Beranda | IDX PDF harian | **18 Agu 2026** | 143 | ⚙️ Actions 14/16/18 UTC Sen–Jum | `update.yml` |
 | **Statistik mingguan** | Statistik Berkala | IDX PDF mingguan | 14 Agu 2026 | 33 | ⚙️ Actions (ikut `update.yml`) | `update.yml` |
-| **Statistik bulanan** | Statistik Berkala | IDX PDF bulanan `MS<YYMM>-E` | *(panen pertama)* | 11 | ❌ manual | **"Panen Lagi"** |
+| **Statistik bulanan** | Statistik Berkala *(chip nonaktif — skema beda, belum dipetakan)* | IDX PDF bulanan `MS<YYMM>-E` | Sep 2025 – Jul 2026 | 11 | ❌ manual | **"Panen Lagi"** |
 | **Kabar** | Beranda, Kabar Pasar | IPOT · IDX berita · IDX pengumuman · Kontan | **18 Agu 2026** | — | ⚙️ Actions tiap 2 jam | `panen-kabar.yml` |
 | **Broker summary** | Broker Summary | Setoran kontributor (screenshot) | **18 Agu 2026** | 753 | 👤 kontributor + kurasi admin | halaman `/admin` |
 | **Fundamental** | Stock Detail | yfinance + turunan lokal | 18 Agu 2026 | 967 | ⚙️ Actions akhir bulan | `update-fundamental.yml` |
@@ -46,6 +46,9 @@ lengkap. Uji yang membedakan: buka URL yang sama di peramban — kalau peramban
 - Broker summary **per emiten** tak tersedia di endpoint publik mana pun —
   `GetBrokerSummary` mengabaikan `stockCode` dan selalu menjawab level pasar.
 
-**Aliran asing belum punya pemakai.** Datanya sudah ada 963 emiten, tapi belum
-satu halaman pun membacanya. Itu keadaan yang sama dengan statistik mingguan
-sebelum hari ini: dipanen berbulan-bulan, tak pernah sampai ke layar.
+**Aliran asing: kedalaman riwayat 2020, bukan sehari.** Terukur 18 Agu 2026:
+722 emiten sudah memuat 2020 penuh (242 hari bursa), 267 sisanya masih berisi
+pass uji sepekan dan sedang menyusul. Batas sumbernya awal 2020 — tanggal 2019
+ke belakang menjawab **HTTP 200 dengan `data` kosong**, bukan 403. Bedanya
+penting: 403 berarti bentuk permintaan salah dan bisa diakali; 200-kosong
+berarti IDX memang tak menyimpannya, jadi jangan dicoba ulang.

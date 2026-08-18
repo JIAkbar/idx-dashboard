@@ -1,9 +1,18 @@
 name: Update IDX Dashboard
 
 on:
-  # Otomatis setiap hari kerja pukul 20:00 WIB (= 13:00 UTC)
+  # IDX merilis statistik harian pukul 18.00-20.00 WIB. Jadwal lama 13:00 UTC
+  # = 20:00 WIB, tepat di UJUNG jendela itu: kalau rilisnya telat sedikit,
+  # panen menembak berkas yang belum ada dan harinya hilang tanpa ada yang
+  # menyadari sampai kalendernya terlihat bolong.
+  #
+  # Tiga percobaan, semuanya SESUDAH jendela rilis: 21:00, 23:00, dan 01:00 WIB
+  # (hari berikutnya). Percobaan kedua & ketiga murah — kalau tanggalnya sudah
+  # masuk, pemanen melewatinya. Yang mahal justru satu percobaan yang meleset.
   schedule:
-    - cron: '0 13 * * 1-5'
+    - cron: '0 14 * * 1-5'   # 21:00 WIB
+    - cron: '0 16 * * 1-5'   # 23:00 WIB
+    - cron: '0 18 * * 1-5'   # 01:00 WIB hari berikutnya
   # Bisa dijalankan manual dari tab Actions di GitHub
   workflow_dispatch:
 
