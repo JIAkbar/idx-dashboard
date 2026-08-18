@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { Link } from 'react-router-dom'
 import { tipeEdisi, useBulletinList } from '../../lib/dasbor/bulletin'
 import { useAksesHalaman } from '../../context/AksesHalamanContext'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
@@ -369,7 +370,7 @@ export function Bulletin() {
                                 <tbody>
                                   {e.analisa.map((a) => (
                                     <tr key={a.ticker}>
-                                      <td><span className="tick">{a.ticker}</span></td>
+                                      <td><Link className="tick" to={`/grafik?kode=${a.ticker}`}>{a.ticker}</Link></td>
                                       <td style={{ fontSize: 11, color: 'var(--text2)' }}>{a.label}</td>
                                       <td className="r num">{a.close.toLocaleString('id-ID')}</td>
                                       <td className={`r num ${a.pct >= 0 ? 'up' : 'dn'}`}>{fmtPct(a.pct)}</td>

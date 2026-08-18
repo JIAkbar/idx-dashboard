@@ -350,7 +350,7 @@ export function SektorIndeks() {
                   {daftar.map((e) => {
                     const pct = pctSaham(hari, e.ticker)
                     return (
-                      <Link key={e.ticker} to={`/chart?sym=${e.ticker}`} className="sek-em">
+                      <Link key={e.ticker} to={`/grafik?kode=${e.ticker}`} className="sek-em">
                         <span className="tick">{e.ticker}</span>
                         <span className="sek-em-nm">{e.name}</span>
                         {pct !== null && (

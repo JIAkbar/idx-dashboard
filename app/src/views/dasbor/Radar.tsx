@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { Link } from 'react-router-dom'
 import {
   tanggalPanjang,
   useArsipRadar,
@@ -123,7 +124,9 @@ function TabelPapan({ rows, arsip }: { rows: BarisRadar[]; arsip: ArsipRadar }) 
             return (
               <tr key={`${row.tik}-${i}`} className={row.zona ? `rdr-z-${row.zona}` : undefined}>
                 <td className="tick">
-                  {row.tik}
+                  {indeks
+                    ? row.tik
+                    : <Link className="tick" to={`/grafik?kode=${row.tik}`}>{row.tik}</Link>}
                   {row.hari_ke !== null && <small title={`${row.hari_ke} hari beruntun masuk daftar`}>{row.hari_ke}</small>}
                 </td>
                 <td className="r num">{fmtHarga(row.s)}</td>
@@ -339,7 +342,7 @@ export function Radar() {
                   return (
                     <div key={tik} className="rdr-rbu-c">
                       <div className="h">
-                        <b className="tick">{tik}</b>
+                        <Link className="tick" to={`/grafik?kode=${tik}`}><b>{tik}</b></Link>
                         <span>MetaStock · sorotan penulis</span>
                       </div>
                       <GambarRbu
@@ -376,7 +379,7 @@ export function Radar() {
             {mingguan.slice(0, 10).map((r) => (
               <div key={r.tik} className="rdr-rankrow">
                 <span className="t">
-                  {r.tik}
+                  <Link className="tick" to={`/grafik?kode=${r.tik}`}>{r.tik}</Link>
                   <small>
                     {r.zonaAkhir && r.zonaAkhir !== r.zonaAwal
                       ? `naik zona → ${zonaLabel[r.zonaAkhir]}`

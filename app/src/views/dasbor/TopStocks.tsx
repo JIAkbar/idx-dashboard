@@ -137,7 +137,7 @@ export function TopStocks() {
 
   const contribRow = (x: StockContribRow, dir: 'up' | 'dn') => (
     <tr key={x.c}>
-      <td><Link to={`/chart?sym=${x.c}`} className={`tick ${dir}`}>{x.c}</Link></td>
+      <td><Link to={`/grafik?kode=${x.c}`} className={`tick ${dir}`}>{x.c}</Link></td>
       <td className={`r num ${x.p >= 0 ? 'up' : 'dn'}`}>{fp(x.p)}</td>
       <td className={`r num ${x.ih >= 0 ? 'up' : 'dn'}`}>{x.ih >= 0 ? '+' : ''}{x.ih.toFixed(2)}</td>
     </tr>
@@ -206,7 +206,7 @@ export function TopStocks() {
           {mcap.map((m, i) => (
             <div className="mc-row" key={m.c}>
               <span className={'mc-rk' + (i < 3 ? ` rk${i + 1}` : '')}>{i + 1}</span>
-              <Link to={`/chart?sym=${m.c}`} className="tick">{m.c}</Link>
+              <Link to={`/grafik?kode=${m.c}`} className="tick">{m.c}</Link>
               <div className="bar-tr"><div className="bar-fl" style={{ width: `${(m.v / mx * 100).toFixed(0)}%` }} /></div>
               <span className="mc-v num">{m.v}T</span>
               {/* Badge, bukan angka telanjang (#107): kolom ini bersebelahan
@@ -235,7 +235,7 @@ export function TopStocks() {
               <tbody>
                 {gainersS.urut.map((x) => (
                   <tr key={x.c}>
-                    <td><Link to={`/chart?sym=${x.c}`} className="tick up">{x.c}</Link></td>
+                    <td><Link to={`/grafik?kode=${x.c}`} className="tick up">{x.c}</Link></td>
                     <td className="r num muted">{fN(x.pr, 0)}</td>
                     <td className="r num green">{fN(x.td, 0)}</td>
                     <td className="r"><span className={`ytd-bdg ${x.p >= 0 ? 'u' : 'd'}`}>{fp(x.p)}</span></td>
@@ -259,7 +259,7 @@ export function TopStocks() {
               <tbody>
                 {losersS.urut.map((x) => (
                   <tr key={x.c}>
-                    <td><Link to={`/chart?sym=${x.c}`} className="tick dn">{x.c}</Link></td>
+                    <td><Link to={`/grafik?kode=${x.c}`} className="tick dn">{x.c}</Link></td>
                     <td className="r num muted">{fN(x.pr, 0)}</td>
                     <td className="r num red">{fN(x.td, 0)}</td>
                     <td className="r"><span className={`ytd-bdg ${x.p >= 0 ? 'u' : 'd'}`}>{fp(x.p)}</span></td>

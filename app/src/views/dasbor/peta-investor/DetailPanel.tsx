@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { TombolIkon } from '../../../components/dasbor/TombolIkon'
 import { IKON_SILANG } from '../../../components/dasbor/IkonMenu'
 import { holderType, type GraphSelection, type InvestorMapEntry } from '../../../lib/dasbor/petaInvestorData'
@@ -67,13 +68,14 @@ export function DetailPanel({ allData, selected, onClose }: DetailPanelProps) {
                       <span className="bchip">GRUP {a.grup.toUpperCase()}</span>
                       {/* saham segrup broker ini — emiten yang sedang dibuka ditandai amber */}
                       {a.emiten.map((t) => (
-                        <span
+                        <Link
                           key={t}
                           className="bchip"
+                          to={`/grafik?kode=${t}`}
                           style={t === em.code
                             ? { color: 'var(--amber)', borderColor: 'var(--amber)', fontWeight: 700 }
                             : undefined}
-                        >{t}</span>
+                        >{t}</Link>
                       ))}
                     </div>
                   </div>
@@ -113,7 +115,7 @@ export function DetailPanel({ allData, selected, onClose }: DetailPanelProps) {
         <div className="pi-panel-section-label">PORTOFOLIO SAHAM ({holdings.length} emiten)</div>
         {holdings.map((h) => (
           <div className="pi-panel-row" key={h.code}>
-            <span className="bchip" style={{ marginRight: 0 }}>{h.code}</span>
+            <Link className="bchip" to={`/grafik?kode=${h.code}`} style={{ marginRight: 0 }}>{h.code}</Link>
             <div className="pi-panel-row-issuer" title={h.issuer}>{h.issuer}</div>
             <div className="pi-panel-row-pct num" style={{ color: PCT_CLR }}>{h.pct}%</div>
           </div>

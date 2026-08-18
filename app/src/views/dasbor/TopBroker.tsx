@@ -75,7 +75,7 @@ export function TopBroker() {
 
   const tblStock = (s: UrutState<StockRankRow> & { urut: StockRankRow[] }) => s.urut.map((x) => (
     <tr key={x.c}>
-      <td><Link to={`/chart?sym=${x.c}`} className="tick">{x.c}</Link></td>
+      <td><Link to={`/grafik?kode=${x.c}`} className="tick">{x.c}</Link></td>
       <td className="r num">{fN(x.v, 0)}</td>
       <td className="r num muted">{x.p}%</td>
     </tr>

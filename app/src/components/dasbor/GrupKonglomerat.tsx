@@ -73,7 +73,7 @@ export function GrupKonglomerat() {
               {g.anggota.map((a) => (
                 <Link
                   key={a.kode}
-                  to={`/stock-detail?sym=${a.kode}`}
+                  to={`/grafik?kode=${a.kode}`}
                   className={'gk-chip ' + (a.pct1d == null ? 'nol' : a.pct1d > 0 ? 'naik' : a.pct1d < 0 ? 'turun' : 'nol')}
                   title={
                     a.lewat
