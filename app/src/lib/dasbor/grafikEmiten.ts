@@ -4,8 +4,11 @@
  * sumber (`ohlc/<KODE>.json`) didokumentasikan di `ihsgOhlc.ts` (`BarisOhlc`):
  * satu baris = [tanggal, buka, tinggi, rendah, tutup, volume].
  */
+import { Stochastic, StochRSI, VWAP, WilliamsPercentRange } from 'lightweight-charts-indicators'
+import type { Bar } from 'oakscriptjs'
 import { LABEL_RENTANG } from './periode'
 import type { BarisOhlc } from './ihsgOhlc'
+import { HARI, ringkasHarian, vonisUji, type RingkasHari } from '../seasonality'
 
 export interface BerkasOhlcEmiten {
   kode: string
@@ -288,6 +291,61 @@ export function hitungOBV(tutup: number[], volume: number[]): Array<number | nul
   return hasil
 }
 
+/* ------------------------------------------------------------------ *
+ * Jembatan ke `lightweight-charts-indicators` (MIT, di atas `oakscriptjs`).
+ * Dipakai HANYA untuk empat indikator yang belum ada di sini — Stochastic,
+ * StochRSI, Williams %R, VWAP. Enam yang sudah ada (MA/EMA/RSI/MACD/BB/OBV)
+ * SENGAJA tidak ditukar ke pustaka: semuanya sudah punya uji sendiri, dan
+ * menukar implementasi teruji dengan pustaka pra-1.0 berarti menukar risiko
+ * yang sudah diketahui dengan risiko yang belum. Yang dilakukan sebaliknya:
+ * RSI kita diuji SILANG terhadap RSI pustaka (grafikEmiten.test.ts) — cocok
+ * berarti keduanya saling menguatkan.
+ * ------------------------------------------------------------------ */
+
+/** Satu titik keluaran pustaka. Bentuk longgar (bukan `TimeValue` pustaka)
+ *  supaya berkas ini tak ikut terikat pada tipe internalnya. */
+interface TitikPustaka { time: unknown; value: number | null }
+
+/**
+ * Menjalankan satu fungsi `calculate` pustaka lalu mengembalikan deret yang
+ * SEJAJAR INDEKS dengan `lilin` — bentuk yang sudah dipakai seluruh indikator
+ * di berkas ini (`Array<number | null>`, `null` di posisi yang belum cukup
+ * riwayat).
+ *
+ * Waktunya dikirim sebagai DETIK EPOCH sungguhan, bukan nomor urut lilin.
+ * Itu bukan pilihan gaya: VWAP menghitung ulang akumulasinya tiap kali batas
+ * jangkar (pekan/bulan) terlampaui, dan batas itu dibaca dari tanggal. Dengan
+ * nomor urut, VWAP tak akan pernah menemukan batas mana pun dan hasilnya satu
+ * garis akumulasi seumur data — salah tanpa satu pun galat.
+ *
+ * Pemetaan baliknya lewat waktu (bukan urutan) supaya tetap benar seandainya
+ * versi pustaka berikutnya memangkas titik warm-up dari keluarannya.
+ */
+function plotPustaka(
+  lilin: LilinData[],
+  volume: number[],
+  hitung: (bars: Bar[]) => { plots: Record<string, TitikPustaka[]> },
+): Record<string, Array<number | null>> {
+  if (!lilin.length) return {}
+  const bars: Bar[] = lilin.map((l, i) => ({
+    time: Math.floor(Date.parse(`${l.time}T00:00:00Z`) / 1000),
+    open: l.open, high: l.high, low: l.low, close: l.close, volume: volume[i] ?? 0,
+  }))
+  const indeks = new Map(bars.map((b, i) => [b.time, i]))
+  const keluar: Record<string, Array<number | null>> = {}
+  for (const [nama, titik] of Object.entries(hitung(bars).plots)) {
+    const deret: Array<number | null> = new Array(lilin.length).fill(null)
+    for (const t of titik) {
+      const i = indeks.get(Number(t.time))
+      // NaN ikut disaring di sini: pustaka memakainya sebagai "belum ada
+      // nilai", sedangkan lightweight-charts menolak deret bernilai NaN.
+      if (i !== undefined && typeof t.value === 'number' && Number.isFinite(t.value)) deret[i] = t.value
+    }
+    keluar[nama] = deret
+  }
+  return keluar
+}
+
 export function keSeriGaris(waktu: string[], nilai: Array<number | null>): TitikGaris[] {
   const hasil: TitikGaris[] = []
   for (let i = 0; i < nilai.length; i++) {
@@ -304,7 +362,9 @@ export function keSeriGaris(waktu: string[], nilai: Array<number | null>): Titik
  * Johan 17 Agu 2026: "setiap indikator bisa di masukkan berkali-kali".
  * ------------------------------------------------------------------ */
 
-export type JenisIndikator = 'ma' | 'ema' | 'bb' | 'rsi' | 'macd' | 'obv'
+export type JenisIndikator =
+  | 'ma' | 'ema' | 'bb' | 'rsi' | 'macd' | 'obv'
+  | 'stoch' | 'stochrsi' | 'wpr' | 'vwap'
 
 /** Satu kolom masukan pada sebuah instans: batas-batasnya ditulis DI SINI,
  *  sekali, dan dipakai bersama oleh validasi, nilai bawaan, dan label kolom
@@ -317,6 +377,15 @@ export interface SpekParam {
   maks: number
   /** Periode harus bilangan bulat; pengali simpangan baku tidak. */
   bulat: boolean
+  /**
+   * Ruas yang isinya PILIHAN, bukan angka bebas — dirender sebagai `Dropdown`
+   * di `SetelanInstans`. Nilainya tetap angka (biar template & validasi tak
+   * perlu tahu apa-apa soal ruas jenis baru), yang berganti cuma cara
+   * memilihnya. Dipakai dua ruas yang jawabannya memang terhingga: hari
+   * musiman (Senin–Jumat) dan jangkar VWAP (pekan/bulan) — mengetik "3" untuk
+   * Kamis adalah teka-teki, bukan masukan.
+   */
+  pilihan?: Array<{ nilai: number; label: string }>
   /** Ruas yang tak boleh melebihi jumlah lilin yang tergambar. Periode
    *  sepanjang itu membuat seluruh deret hasilnya `null` — garisnya lenyap
    *  tanpa satu pun galat, dan itulah kegagalan senyap yang harus dicegat
@@ -350,6 +419,49 @@ export const SPEK_INDIKATOR: Record<JenisIndikator, SpekIndikator> = {
   // OBV tak punya parameter sama sekali — ia menjumlah seluruh riwayat, tak
   // ada jendela yang bisa disetel. Barisnya di layar cuma nama + sakelar.
   obv: { label: 'OBV', diPanelHarga: false, param: [] },
+  // Empat berikut dihitung pustaka (lihat plotPustaka). Nama parameternya
+  // sengaja mengikuti nama masukan pustaka — kalau kelak angkanya dicurigai,
+  // yang membaca kode ini bisa langsung mencocokkannya dengan dokumentasi
+  // pustaka tanpa menebak ruas mana yang berganti nama di tengah jalan.
+  stoch: {
+    label: 'Stoch',
+    diPanelHarga: false,
+    param: [
+      { kunci: 'periodeK', label: 'Periode %K', bawaan: 14, min: 1, maks: 1000, bulat: true, bandingLilin: true },
+      { kunci: 'smoothK', label: 'Haluskan %K', bawaan: 1, min: 1, maks: 100, bulat: true },
+      { kunci: 'periodeD', label: 'Periode %D', bawaan: 3, min: 1, maks: 100, bulat: true },
+    ],
+  },
+  stochrsi: {
+    label: 'StochRSI',
+    diPanelHarga: false,
+    param: [
+      { kunci: 'periodeRsi', label: 'Periode RSI', bawaan: 14, min: 2, maks: 1000, bulat: true, bandingLilin: true },
+      { kunci: 'periodeStoch', label: 'Periode Stoch', bawaan: 14, min: 1, maks: 1000, bulat: true, bandingLilin: true },
+      { kunci: 'smoothK', label: 'Haluskan %K', bawaan: 3, min: 1, maks: 100, bulat: true },
+      { kunci: 'smoothD', label: 'Haluskan %D', bawaan: 3, min: 1, maks: 100, bulat: true },
+    ],
+  },
+  wpr: { label: 'W%R', diPanelHarga: false, param: [PERIODE(14)] },
+  vwap: {
+    label: 'VWAP',
+    // Satu-satunya dari keempatnya yang MENUMPANG di panel harga: satuannya
+    // rupiah, sama dengan lilinnya.
+    diPanelHarga: true,
+    param: [{
+      kunci: 'jangkar',
+      label: 'Jangkar',
+      // Bawaan pustaka '1D' — dan pada data HARIAN itu menjadikan VWAP
+      // menghitung ulang tiap lilin, jadi hasilnya cuma harga rata-rata lilin
+      // itu sendiri: sebuah garis yang menempel pada harga dan tak
+      // memberitahu apa pun. Jangkar terkecil yang berarti di sini pekan.
+      bawaan: 2,
+      min: 1,
+      maks: 2,
+      bulat: true,
+      pilihan: [{ nilai: 1, label: 'Pekan' }, { nilai: 2, label: 'Bulan' }],
+    }],
+  },
   macd: {
     label: 'MACD',
     diPanelHarga: false,
@@ -456,6 +568,10 @@ export function labelInstansIndikator(inst: InstansIndikator): string {
     case 'rsi': return `RSI ${p.periode}`
     case 'obv': return 'OBV'
     case 'macd': return `MACD ${p.cepat}/${p.lambat}/${p.sinyal}`
+    case 'stoch': return `Stoch ${p.periodeK}/${p.smoothK}/${p.periodeD}`
+    case 'stochrsi': return `StochRSI ${p.periodeRsi}/${p.periodeStoch}/${p.smoothK}/${p.smoothD}`
+    case 'wpr': return `W%R ${p.periode}`
+    case 'vwap': return `VWAP ${p.jangkar === 1 ? 'pekan' : 'bulan'}`
   }
 }
 
@@ -477,6 +593,12 @@ export function hitungInstans(
   inst: InstansIndikator,
   tutup: number[],
   volume: number[] = [],
+  /** Lilin penuh (buka/tinggi/rendah/tutup + waktu). Hanya empat indikator
+   *  pustaka yang memerlukannya — Stochastic, StochRSI, W%R, dan VWAP tak bisa
+   *  dihitung dari harga tutup saja. Ditaruh di ujung dan opsional supaya
+   *  seluruh pemanggil lama (dan ujinya) tak berubah; tanpa lilin, keempatnya
+   *  mengembalikan deret kosong, bukan angka tebakan. */
+  lilin: LilinData[] = [],
 ): GarisIndikator[] {
   const p = inst.param
   const label = labelInstansIndikator(inst)
@@ -501,6 +623,34 @@ export function hitungInstans(
         { nama: `${label} histogram`, nilai: m.histogram, histogram: true },
       ]
     }
+    case 'stoch': {
+      const pl = plotPustaka(lilin, volume, (b) => Stochastic.calculate(b, {
+        periodK: p.periodeK, smoothK: p.smoothK, periodD: p.periodeD,
+      }))
+      return [
+        { nama: `${label} %K`, nilai: pl.plot0 ?? [] },
+        { nama: `${label} %D`, nilai: pl.plot1 ?? [], bantu: true },
+      ]
+    }
+    case 'stochrsi': {
+      const pl = plotPustaka(lilin, volume, (b) => StochRSI.calculate(b, {
+        lengthRSI: p.periodeRsi, lengthStoch: p.periodeStoch, smoothK: p.smoothK, smoothD: p.smoothD,
+      }))
+      return [
+        { nama: `${label} %K`, nilai: pl.plot0 ?? [] },
+        { nama: `${label} %D`, nilai: pl.plot1 ?? [], bantu: true },
+      ]
+    }
+    case 'wpr': {
+      const pl = plotPustaka(lilin, volume, (b) => WilliamsPercentRange.calculate(b, { length: p.periode }))
+      return [{ nama: label, nilai: pl.plot0 ?? [] }]
+    }
+    case 'vwap': {
+      const pl = plotPustaka(lilin, volume, (b) => VWAP.calculate(b, {
+        anchor: p.jangkar === 1 ? '1W' : '1M', showBands: false,
+      }))
+      return [{ nama: label, nilai: pl.plot0 ?? [] }]
+    }
   }
 }
 
@@ -515,7 +665,7 @@ export function hitungInstans(
  * label yang diturunkan darinya.
  * ------------------------------------------------------------------ */
 
-export type JenisPola = 'doubleBottom' | 'lonjakanVolume'
+export type JenisPola = 'doubleBottom' | 'lonjakanVolume' | 'musiman'
 export type InstansPola = Instans<JenisPola>
 
 export interface SpekPola {
@@ -549,10 +699,27 @@ export const SPEK_POLA: Record<JenisPola, SpekPola> = {
       { kunci: 'naikMin', label: 'Kenaikan min %', bawaan: 2, min: 0.1, maks: 50, bulat: false },
     ],
   },
+  musiman: {
+    label: 'Musiman',
+    param: [{
+      kunci: 'hari',
+      label: 'Hari',
+      bawaan: 0,
+      min: 0,
+      maks: 4,
+      bulat: true,
+      pilihan: HARI.map((nama, i) => ({ nilai: i, label: nama })),
+    }],
+  },
 }
 
+/** Nama pola untuk legenda. Musiman menyebut HARI yang dipilih — tanpa itu
+ *  legendanya cuma berbunyi "Musiman", dan pertanyaan pertama pembacanya
+ *  ("musiman apa?") justru tak terjawab oleh baris yang seharusnya
+ *  menjawabnya. */
 export function labelInstansPola(inst: InstansPola): string {
-  return SPEK_POLA[inst.jenis].label
+  const dasar = SPEK_POLA[inst.jenis].label
+  return inst.jenis === 'musiman' ? `${dasar} · ${HARI[inst.param.hari] ?? '—'}` : dasar
 }
 
 /**
@@ -862,6 +1029,85 @@ export function cariLonjakanVolume(
     })
   }
   return hasil
+}
+
+/* ------------------------------------------------------------------ *
+ * Pola: Musiman hari-dalam-pekan (`musiman`). Johan 18 Agu 2026: "berikan
+ * pola di chart untuk bisa insert seasonality, misal hari senin kan tinggi si
+ * BBCA nah di chart nya muncul misal tampilkan selasa, berarti menunjuka ke
+ * candle selasa".
+ *
+ * TIDAK menghitung apa pun sendiri — seluruh angkanya datang dari
+ * `ringkasHarian` di `lib/seasonality.ts`, sumber yang sama dengan halaman
+ * /seasonality. Kalau kanvas ini menghitung versinya sendiri, dua halaman bisa
+ * menyebut angka berbeda untuk hal yang persis sama, dan begitu itu terjadi
+ * keduanya berhenti bisa dipercaya — bukan salah satunya.
+ * ------------------------------------------------------------------ */
+
+/** 0=Senin … 4=Jumat; akhir pekan menghasilkan -1 atau 5 (tak pernah cocok
+ *  dengan hari pilihan yang selalu 0-4). UTC, sama dengan `ringkasHarian` —
+ *  waktu lokal akan menggeser tanggal satu hari di zona timur GMT dan penanda
+ *  "Selasa" akan jatuh di lilin Senin. */
+export function hariPekan(tgl: string): number {
+  return new Date(`${tgl}T00:00:00Z`).getUTCDay() - 1
+}
+
+export interface TemuanMusiman {
+  /** 0=Senin … 4=Jumat. */
+  hari: number
+  /** Ringkasan hari itu APA ADANYA dari `ringkasHarian` — n, peluang mentah,
+   *  peluang tersusut, selang Wilson, median, rata-rata, kumulatif. */
+  ringkas: RingkasHari
+  /** Vonis uji permutasi hari-dalam-pekan; berlaku untuk POLA HARIAN emiten
+   *  secara keseluruhan, bukan khusus hari yang dipilih (yang diuji: "apakah
+   *  harinya penting sama sekali"). */
+  vonis: { kuat: boolean; teks: string }
+  /** Seluruh observasi harian di rentang ini, lima hari digabung — pembanding
+   *  yang membuat `ringkas.n` bisa dinilai tipis atau tidaknya. */
+  totalObservasi: number
+  /** Tanggal lilin yang jatuh di hari itu DAN punya imbal (lilin pertama tak
+   *  punya hari sebelumnya, jadi tak terhitung — sama persis dengan aturan
+   *  `ringkasHarian`, supaya jumlah penanda di kanvas = `ringkas.n`). */
+  waktu: string[]
+}
+
+/**
+ * Ringkasan musiman satu hari, DIHITUNG DARI LILIN YANG SEDANG TERGAMBAR.
+ *
+ * Keputusan rentang — dan alasannya, karena dua-duanya masuk akal:
+ *
+ * Pilihan yang diambil: rentang perhitungan = rentang chip yang sedang aktif
+ * (1T/3T/5T/Semua), yaitu `lilin` yang dikirim ke sini. Alasannya satu dan
+ * menentukan: penanda musiman duduk DI ATAS lilin-lilin itu, dan tooltipnya
+ * menyebut sebuah angka. Kalau angkanya dihitung dari rentang lain, pembaca
+ * melihat penanda pada 240 lilin sambil membaca statistik dari 1.200 lilin
+ * yang tak ada di layar — dan tak ada apa pun di antarmuka yang bisa
+ * memberitahunya. Berganti chip sekarang berarti bertanya ulang "bagaimana
+ * pola harinya DI RENTANG INI", dan itu pertanyaan yang sah.
+ *
+ * Yang ditolak: rentang tetap (mis. selalu 5 tahun) — lebih stabil angkanya,
+ * tapi memutus hubungan antara yang tergambar dan yang tertulis. Juga ditolak:
+ * mengikuti JENDELA ZOOM, bukan chip. Zoom berubah tiap kali pembaca menggeser
+ * grafik, dan statistik yang angkanya bergoyang selagi digeser mengundang
+ * orang berhenti di jendela yang angkanya paling disukai.
+ *
+ * `null` kalau lilinnya terlalu sedikit untuk menghasilkan satu imbal pun.
+ */
+export function cariMusiman(lilin: LilinData[], hari: number): TemuanMusiman | null {
+  if (lilin.length < 2) return null
+  const tutup: Record<string, number> = {}
+  for (const l of lilin) tutup[l.time] = l.close
+  // Tanpa batas tanggal: `lilin` SUDAH dipotong ke rentang chip di pemanggil.
+  // Memotongnya lagi di sini berarti dua tempat yang harus sepakat soal batas.
+  const r = ringkasHarian('', tutup)
+  const ringkas = r?.perHari[hari]
+  if (!r || !ringkas) return null
+  const waktu: string[] = []
+  for (let i = 1; i < lilin.length; i++) {
+    if (!(lilin[i - 1].close > 0)) continue
+    if (hariPekan(lilin[i].time) === hari) waktu.push(lilin[i].time)
+  }
+  return { hari, ringkas, vonis: vonisUji(r.uji), totalObservasi: r.totalObservasi, waktu }
 }
 
 /**

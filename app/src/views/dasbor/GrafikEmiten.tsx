@@ -11,12 +11,12 @@ import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import {
   keDataLilinVolume, batasBawahRentang, potongRentang, RENTANG_GRAFIK, RENTANG_BAWAAN,
   keSeriGaris, SPEK_INDIKATOR, SPEK_POLA, labelInstansIndikator, labelInstansPola,
-  hitungInstans, cariDoubleBottom, cariLonjakanVolume,
+  hitungInstans, cariDoubleBottom, cariLonjakanVolume, cariMusiman,
   bacaTemplateTersimpan, tulisTemplateTersimpan, simpanTemplate, hapusTemplate,
   tandaiBawaan, ubahNamaTemplate, penandaDiSekitar,
   type BerkasOhlcEmiten, type DoubleBottom, type JenisIndikator, type JenisPola,
   type ParamDoubleBottom, type ParamLonjakanVolume, type StatusPola, type StatusLonjakan,
-  type LonjakanVolume, type TemplateGrafik,
+  type LonjakanVolume, type TemplateGrafik, type TemuanMusiman,
 } from '../../lib/dasbor/grafikEmiten'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { useDaftarInstans, SetelanInstans } from '../../components/dasbor/DaftarInstans'
@@ -56,6 +56,23 @@ const JENIS_POLA = Object.keys(SPEK_POLA) as JenisPola[]
  * Yang ingin melihat lebih lama ke belakang bisa mempersempit rentang.
  */
 const MAKS_PENANDA_POLA = 6
+
+/**
+ * Berapa lilin TERAKHIR yang ditandai pola Musiman.
+ *
+ * Batas ini lahir dari layar, bukan dari teori: BBCA rentang Semua punya 490
+ * hari Selasa, dan 490 kotak di kanvas selebar 1.600 piksel berjarak tiga
+ * piksel satu sama lain — hasilnya satu pita pekat yang MENUTUPI garis
+ * harganya sendiri (terlihat di tangkapan layar verifikasi pertama, 18 Agu
+ * 2026). Menandai "semua Selasa" jadi tak menunjukkan satu Selasa pun.
+ *
+ * 60 kira-kira setahun perdagangan hari itu: pada rentang 1 Tahun hampir
+ * seluruhnya tergambar, pada rentang panjang yang tergambar bagian terbaru dan
+ * sisanya disebut angkanya di bawah kanvas. Yang TIDAK ikut dibatasi:
+ * statistiknya — n, selang, dan uji tetap dihitung dari SELURUH hari di
+ * rentang itu. Yang dibatasi cuma yang digambar, sama seperti MAKS_PENANDA_POLA.
+ */
+const MAKS_PENANDA_MUSIMAN = 60
 
 /** Dua jenis gambar harga, cukup dua. Heikin Ashi / Bar / Area sengaja tak
  *  ditambahkan — Johan: "ada seperti untuk chart chandles dan line saja dulu". */
@@ -98,6 +115,11 @@ interface PenandaPola {
   posisi: 'aboveBar' | 'belowBar'
   token: string
   teks: string
+  /** Bentuk penanda. Bawaan lingkaran (Double Bottom & Lonjakan Volume sudah
+   *  memakainya); Musiman memakai KOTAK supaya "hari yang ditunjuk" tak
+   *  tertukar dengan "kejadian yang ditemukan" — dua hal yang sangat berbeda
+   *  walau sama-sama tergambar di bawah lilin. */
+  bentuk?: 'circle' | 'square'
 }
 
 const spekIndikator = (jenis: JenisIndikator) => SPEK_INDIKATOR[jenis].param
@@ -163,6 +185,16 @@ const PANDUAN_INDIKATOR: Array<{ label: string; teks: string }> = [
     teks: 'Mengukur seberapa cepat harga bergerak belakangan, bukan seberapa murah sahamnya. Bergerak antara 0-100; makin dekat ke ujung, makin cepat pergerakan searah baru-baru ini.' },
   { label: 'MACD',
     teks: 'Selisih dua rata-rata bergerak (EMA cepat dan lambat) beserta garis sinyalnya. Menunjukkan perubahan momentum, bukan level harga — angkanya tak sebanding antar saham berharga beda.' },
+  { label: 'Stochastic (%K dan %D)',
+    teks: 'Menempatkan harga tutup hari ini di dalam rentang tertinggi-terendah sekian hari terakhir: 0 berarti persis di dasar rentang, 100 di puncaknya. %D adalah versi %K yang sudah dihaluskan. Mengukur posisi di dalam rentang, bukan arah tren.' },
+  { label: 'StochRSI',
+    teks: 'Rumus Stochastic yang diterapkan pada nilai RSI, bukan pada harga. Karena itu ia bergerak jauh lebih cepat dan lebih sering menyentuh ujung 0/100 daripada RSI biasa — lebih peka, dan sekaligus lebih sering berteriak.' },
+  { label: 'W%R (Williams %R)',
+    teks: 'Jarak harga tutup dari harga TERTINGGI sekian hari terakhir, dinyatakan −100 sampai 0. Isi ukurannya sama dengan Stochastic %K, cuma dibalik dan digeser skalanya.' },
+  { label: 'VWAP (Volume Weighted Average Price)',
+    teks: 'Harga rata-rata yang dibobot volume, dihitung menumpuk sejak awal pekan atau awal bulan lalu dimulai ulang di batas berikutnya. Menjawab "berapa harga rata-rata yang benar-benar dibayar orang sejauh ini", bukan sekadar rata-rata harga penutupan. Jangkar harian sengaja tidak disediakan: pada data harian ia dimulai ulang tiap lilin dan hasilnya cuma harga lilin itu sendiri.' },
+  { label: 'Empat yang dihitung pustaka luar',
+    teks: 'Stochastic, StochRSI, W%R, dan VWAP dihitung pustaka lightweight-charts-indicators (MIT); enam lainnya (MA, EMA, BB, RSI, MACD, OBV) dihitung kode PAPAN sendiri dan tetap begitu — semuanya sudah punya ujinya sendiri. Sebagai pemeriksaan silang, RSI PAPAN diadu dengan RSI pustaka pada data yang sama di dalam uji otomatis.' },
   { label: 'Beberapa instans sekaligus',
     teks: 'Satu jenis boleh dimasukkan berkali-kali dengan parameter berbeda — MA 20, MA 50, dan MA 200 bisa hidup bersamaan, masing-masing punya warna, kolom parameter, dan sakelar tampilnya sendiri.' },
 ]
@@ -182,9 +214,53 @@ const PANDUAN_POLA: Array<{ label: string; teks: string }> = [
     teks: 'RVOL (relative volume) membandingkan volume hari itu dengan rata-rata volume 20 hari sebelumnya. RVOL 2 berarti hari itu diperdagangkan dua kali lebih ramai dari kebiasaannya sendiri. Rata-rata pembaginya sengaja tidak memasukkan hari itu — dimasukkan, lonjakannya ikut mengangkat pembaginya sendiri dan angkanya jadi lebih kecil dari yang sebenarnya.' },
   { label: 'Tiga keadaan Lonjakan Volume',
     teks: `Terkonfirmasi — ${ARTI_LONJAKAN.terkonfirmasi}. Kuat — ${ARTI_LONJAKAN.kuat}. Tak terkonfirmasi — ${ARTI_LONJAKAN.takTerkonfirmasi}. Kenaikan harga tanpa kenaikan volume berarti sedikit pihak yang ikut; keadaan ketiga itu justru yang membuat daftar ini bukan sekadar kumpulan hari yang menyenangkan.` },
+  { label: 'Musiman — apa yang ditandai',
+    teks: 'Pilih satu hari (Senin–Jumat) dan lilin hari itu ditandai kotak di kanvas. Kotaknya menunjuk "ini hari yang dimaksud", bukan menyarankan apa pun; angkanya ada di tooltip dan di daftar bawah. Yang ditandai 60 lilin terakhir saja — pada rentang bertahun-tahun, menandai semuanya menghasilkan satu pita pekat yang justru menutupi harganya. Angka statistiknya tetap dihitung dari seluruh hari di rentang itu.' },
+  { label: 'Musiman — kenapa n selalu ikut disebut',
+    teks: 'Peluang naik 60% dari 12 hari dan dari 240 hari terlihat sama meyakinkannya di layar, padahal yang pertama hampir pasti kebetulan. Karena itu jumlah observasi (n), selang kepercayaan 95%, dan hasil uji permutasi selalu menempel pada angkanya — di legenda, di tooltip, dan di daftar.' },
+  { label: 'Musiman — rentang perhitungannya',
+    teks: 'Persis rentang yang sedang tergambar (chip 1T/3T/5T/Semua). Mengganti chip berarti menghitung ulang pola harinya pada rentang itu — angka yang tertulis selalu berasal dari lilin yang terlihat, tak pernah dari data yang tak ada di layar. Angkanya sendiri datang dari perhitungan yang sama dengan halaman Seasonality, bukan hitungan kedua.' },
   { label: 'OBV melengkapi, bukan mengulang',
     teks: 'Pola Lonjakan Volume melihat SATU hari. Indikator OBV (On-Balance Volume, ada di dropdown Indikator) menumpuk arah volume sepanjang riwayat: ditambah saat harga tutup naik, dikurangi saat turun. Angka mutlaknya tak berarti — yang dibaca arahnya. Satu hari saja bukti yang tipis.' },
 ]
+
+/**
+ * Angka musiman hari terpilih, di bawah kanvas — tempat angka yang tak muat di
+ * tooltip: selang Wilson, median, rata-rata, dan kumulatifnya.
+ *
+ * Peluang MENTAH dan TERSUSUT ditulis berdampingan, bukan salah satunya.
+ * Mentah itu yang dilihat orang di aplikasi sekuritas ("naik 62%"); tersusut
+ * itu angka yang sudah ditarik ke peluang dasar emiten sesuai ketipisan
+ * sampel. Menampilkan yang mentah saja mengulang persis kesalahan yang
+ * seharusnya ditambal halaman ini; menampilkan yang tersusut saja membuat
+ * angkanya tak bisa dicocokkan dengan sumber mana pun di luar.
+ */
+function RingkasanMusiman({ m, warna }: { m: TemuanMusiman; warna: string }) {
+  const r = m.ringkas
+  return (
+    <ul className="grf-pola-daftar">
+      <li style={{ '--ind-warna': `var(${warna})` } as React.CSSProperties}>
+        <span className="grf-pola-status">peluang naik</span>
+        <span>
+          {fN(r.mentah, 1)}% mentah · {fN(r.tersusut, 1)}% tersusut
+          {' · '}selang 95% {fN(r.bawah, 1)}–{fN(r.atas, 1)}%
+          {' · '}n={r.n} dari {m.totalObservasi} hari bursa
+        </span>
+      </li>
+      <li style={{ '--ind-warna': `var(${warna})` } as React.CSSProperties}>
+        <span className="grf-pola-status">besaran</span>
+        <span>
+          median {fN(r.median, 2)}% · rata-rata {fN(r.rata2, 2)}%
+          {' · '}kumulatif {fN(r.kumulatif, 1)}% (hasil mengalikan seluruh imbal hari itu)
+        </span>
+      </li>
+      <li style={{ '--ind-warna': `var(${m.vonis.kuat ? '--amber' : '--text3'})` } as React.CSSProperties}>
+        <span className="grf-pola-status">uji</span>
+        <span>{m.vonis.teks}</span>
+      </li>
+    </ul>
+  )
+}
 
 /**
  * Grafik Emiten (chart PAPAN tahap 3) — lilin + volume dari OHLC lokal
@@ -551,7 +627,9 @@ export function GrafikEmiten() {
     const vol = volume.map((v) => v.value)
     return ind.daftar.map((inst) => ({
       inst,
-      garis: hitungInstans(inst, tutup, vol).map((g) => ({ ...g, seri: keSeriGaris(waktu, g.nilai) })),
+      // `lilin` ikut dikirim: Stochastic/StochRSI/W%R/VWAP tak bisa dihitung
+      // dari harga tutup saja (butuh tinggi/rendah, dan VWAP butuh tanggalnya).
+      garis: hitungInstans(inst, tutup, vol, lilin).map((g) => ({ ...g, seri: keSeriGaris(waktu, g.nilai) })),
     }))
   }, [ind.daftar, lilin, volume])
 
@@ -573,6 +651,9 @@ export function GrafikEmiten() {
       lonjakan: inst.jenis === 'lonjakanVolume'
         ? cariLonjakanVolume(lilin, vol, inst.param as unknown as ParamLonjakanVolume)
         : ([] as LonjakanVolume[]),
+      // Musiman dihitung dari `lilin` yang sama — jadi rentang perhitungannya
+      // persis rentang yang tergambar (alasan lengkapnya di `cariMusiman`).
+      musiman: inst.jenis === 'musiman' ? cariMusiman(lilin, inst.param.hari) : null,
     }))
   }, [pol.daftar, lilin, volume])
 
@@ -718,7 +799,7 @@ export function GrafikEmiten() {
     }
     // Pola selalu di pane 0: temuannya digambar di panel harga & volume, tak
     // pernah punya pane sendiri.
-    for (const { inst, doubleBottom, lonjakan } of polaPerInstans) {
+    for (const { inst, doubleBottom, lonjakan, musiman } of polaPerInstans) {
       const jumlah = doubleBottom.length + lonjakan.length
       dorong(0, {
         id: inst.id,
@@ -726,7 +807,12 @@ export function GrafikEmiten() {
         tampil: inst.tampil,
         warna: inst.warna,
         label: labelInstansPola(inst),
-        nilai: jumlah === 0 ? 'tak ada' : `${jumlah} temuan`,
+        // Musiman bukan "temuan": ia satu ringkasan, bukan daftar kejadian.
+        // `n` ikut disebut di legenda — angka peluang tanpa jumlah observasi
+        // di sebelahnya terlihat sama meyakinkannya dari 12 maupun 240 hari.
+        nilai: musiman
+          ? `naik ${fN(musiman.ringkas.tersusut, 0)}% · n=${musiman.ringkas.n}`
+          : jumlah === 0 ? 'tak ada' : `${jumlah} temuan`,
       })
     }
     return { waktu, perPane: [...perPane.entries()].sort((a, b) => a[0] - b[0]) }
@@ -785,9 +871,27 @@ export function GrafikEmiten() {
    */
   const penandaPola = useMemo<PenandaPola[]>(() => {
     const out: PenandaPola[] = []
-    for (const { inst, doubleBottom, lonjakan } of polaPerInstans) {
+    for (const { inst, doubleBottom, lonjakan, musiman } of polaPerInstans) {
       if (!inst.tampil) continue
       const nama = labelInstansPola(inst)
+      if (musiman) {
+        // Dipotong ke MAKS_PENANDA_MUSIMAN lilin terakhir (bukan
+        // MAKS_PENANDA_POLA yang cuma 6 — di sini penandanya label hari, bukan
+        // temuan, dan enam Selasa terakhir bukan jawaban atas "tampilkan
+        // Selasa"). Alasan angkanya ada di konstantanya.
+        const r = musiman.ringkas
+        const teks = [
+          `${nama} · naik ${fN(r.mentah, 0)}% mentah, ${fN(r.tersusut, 0)}% tersusut`,
+          `n=${r.n} dari ${musiman.totalObservasi} hari · selang ${fN(r.bawah, 0)}–${fN(r.atas, 0)}%`,
+          // Vonis uji WAJIB ikut. Peluang 60% dari 12 observasi dan dari 240
+          // observasi terlihat sama meyakinkannya di layar, dan cuma kalimat
+          // ini yang membedakannya.
+          musiman.vonis.teks,
+        ].join(' · ')
+        for (const t of musiman.waktu.slice(-MAKS_PENANDA_MUSIMAN)) {
+          out.push({ time: t, seri: 'harga', posisi: 'belowBar', token: inst.warna, bentuk: 'square', teks })
+        }
+      }
       for (const lv of lonjakan.slice(-MAKS_PENANDA_POLA)) {
         out.push({
           time: lv.waktu, seri: 'volume', posisi: 'belowBar', token: WARNA_LONJAKAN[lv.status],
@@ -829,7 +933,7 @@ export function GrafikEmiten() {
     garisLeherRef.current = []
 
     const keMarker = (p: PenandaPola): SeriesMarker<Time> => ({
-      time: p.time, position: p.posisi, shape: 'circle', color: baca(p.token),
+      time: p.time, position: p.posisi, shape: p.bentuk ?? 'circle', color: baca(p.token),
     })
     penandaRef.current?.setMarkers(penandaPola.filter((p) => p.seri === 'harga').map(keMarker))
     // Penanda Lonjakan Volume dipasang di seri VOLUME, bukan seri harga: di
@@ -859,6 +963,14 @@ export function GrafikEmiten() {
       polaPerInstans.reduce((n, x) => n + x.doubleBottom.length + x.lonjakan.length, 0),
     )
     el.dataset.penandaPola = String(penandaPola.length)
+    // Tanggal seluruh penanda Musiman, HANYA di dev — dipakai membuktikan
+    // penandanya benar-benar jatuh di hari yang dipilih (tiap tanggal dicek
+    // getUTCDay-nya di devtools). Kanvas tak punya DOM per-penanda, jadi tanpa
+    // ini "sudah dicek" cuma berarti "sudah dilihat sekilas".
+    // `import.meta.env.DEV` di-tree-shake Vite di build produksi.
+    if (import.meta.env.DEV) {
+      el.dataset.musimanTgl = penandaPola.filter((p) => p.bentuk === 'square').map((p) => p.time).join(',')
+    }
   }, [penandaPola, polaPerInstans, theme, versiSeriHarga])
 
   // Isi tooltip pola: penanda di lilin yang sedang disorot DAN satu lilin di
@@ -1156,8 +1268,22 @@ export function GrafikEmiten() {
               kanvas — dan angka itulah yang membuat temuannya bisa diperiksa. */}
           {polaPerInstans.some(({ inst }) => inst.tampil) && (
             <div className="grf-pola-hasil">
-              {polaPerInstans.filter(({ inst }) => inst.tampil).map(({ inst, doubleBottom, lonjakan }) => {
+              {polaPerInstans.filter(({ inst }) => inst.tampil).map(({ inst, doubleBottom, lonjakan, musiman }) => {
                 const jumlah = doubleBottom.length + lonjakan.length
+                if (inst.jenis === 'musiman') {
+                  return (
+                    <div key={inst.id}>
+                      <p className="grf-pola-judul">
+                        {labelInstansPola(inst)}: {musiman
+                          ? `${musiman.ringkas.n} hari di rentang ini`
+                          : 'rentangnya terlalu pendek untuk dihitung'}
+                        {musiman && musiman.ringkas.n > MAKS_PENANDA_MUSIMAN
+                          && ` — ${MAKS_PENANDA_MUSIMAN} terakhir ditandai di kanvas (angka di bawah tetap dari seluruh ${musiman.ringkas.n} hari); persempit rentang untuk melihat lebih ke belakang`}
+                      </p>
+                      {musiman && <RingkasanMusiman m={musiman} warna={inst.warna} />}
+                    </div>
+                  )
+                }
                 return (
                   <div key={inst.id}>
                     <p className="grf-pola-judul">

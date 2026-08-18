@@ -154,6 +154,10 @@
 .lantai .grf-setelan-x { width: 22px; height: 22px; }
 .lantai .grf-setelan-baris { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .lantai .grf-setelan-lbl { font-size: 10.5px; color: var(--text3); }
+/* Ruas berpilihan (hari Musiman, jangkar VWAP) — deretan .chip-t. Dibungkus
+   flex-wrap karena lima nama hari lebih lebar dari panel 188px di laptop;
+   di telepon panelnya selebar layar dan kelimanya muat satu baris. */
+.lantai .grf-setelan-pilihan { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
 
 /* Tooltip pola. Isinya dulu label yang menempel di tiap penanda dan saling
    menimpa sampai tak terbaca (keluhan Johan 18 Agu 2026). Letaknya disetel
@@ -161,7 +165,15 @@
    membuka ke kiri supaya tak terpotong tepi. */
 .lantai .grf-pola-tip {
   position: absolute; z-index: 4; pointer-events: none;
-  max-width: 250px; padding: 6px 9px;
+  /* `width: max-content` WAJIB berpasangan dengan max-width di sini. Tooltip
+     ini absolut dengan `left` sebesar posisi kursor (pembalikan arahnya lewat
+     transform, yang berlaku SESUDAH tata letak) — jadi tanpa max-content
+     lebarnya dihitung dari sisa ruang di KANAN kursor. Di dekat tepi kanan
+     kanvas sisa itu tinggal seratusan piksel dan kotaknya memanjang ke bawah
+     jadi pita sempit setinggi kanvas. Baru terlihat setelah pola Musiman
+     membawa teks panjang (n + vonis uji); penanda lama teksnya pendek dan
+     kebetulan tak pernah kena. */
+  width: max-content; max-width: 250px; padding: 6px 9px;
   background: var(--bg2); border: 1px solid var(--line2); border-radius: var(--r-kecil);
   box-shadow: 0 6px 18px rgb(0 0 0 / .35);
   display: flex; flex-direction: column; gap: 3px;
@@ -210,7 +222,16 @@
        menempel ke dasar berarti kolom parameter TERAKHIR selalu tertutup
        olehnya — terukur di telepon 412px, kolom "Kedalaman min ×ATR" Double
        Bottom persis di baliknya. */
-    position: fixed; inset: auto 10px 64px 10px; z-index: 40;
+    /* Jarak dari dasar = 64px DITAMBAH tinggi bilah alamat yang sedang tampil.
+       `100lvh` selalu tinggi penuh (915px di Xiaomi 14 Ultra FHD+), `100dvh`
+       tinggi yang benar-benar terlihat saat itu (810px selagi bilah alamat
+       muncul) — selisihnya nol kalau bilahnya tersembunyi, jadi rumus ini tak
+       mengubah apa pun di keadaan itu. Tanpa ini, BARIS TERAKHIR panel selalu
+       berakhir di ~836px: di emulator terlihat baik-baik saja (emulator tak
+       punya bilah alamat), di telepon sungguhan ia duduk di balik bilah itu
+       dan tak bisa disentuh sama sekali — terukur 18 Agu 2026 pada chip
+       "Jumat" pola Musiman. */
+    position: fixed; inset: auto 10px calc(100lvh - 100dvh + 64px) 10px; z-index: 40;
     min-width: 0; padding: 12px 14px 14px;
     /* Pola berparameter banyak (Double Bottom: enam) di layar pendek bisa
        melebihi ruang yang ada — digulung, bukan terpotong. Batang gulirnya

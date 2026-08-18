@@ -160,14 +160,42 @@ export function SetelanInstans<J extends string>({ kelola, inst, nama, onTutup }
           ukuranIkon={10} className="grf-setelan-x" onClick={onTutup} />
       </div>
       {param.map((s) => (
-        <label key={s.kunci} className="grf-setelan-baris">
-          <span className="grf-setelan-lbl">{s.label}</span>
-          <input className={'inp grf-ind-inp' + (galat[s.kunci] ? ' salah' : '')}
-            inputMode="decimal" value={teks[s.kunci]}
-            aria-invalid={galat[s.kunci] ? true : undefined}
-            aria-label={`${s.label} ${nama}`}
-            onChange={(e) => kelola.gantiParam(inst, s, e.target.value)} />
-        </label>
+        // Ruas ber-`pilihan` (hari musiman, jangkar VWAP) jadi deretan `.chip-t`
+        // kanonis (#170), bukan kolom angka: jawabannya terhingga, dan meminta
+        // orang mengetik "3" untuk Kamis berarti memindahkan sebuah tabel
+        // terjemahan ke dalam kepalanya. Nilainya tetap angka — validasi,
+        // template, dan perhitungannya tak tahu ada yang berbeda di sini.
+        //
+        // Chip, BUKAN Dropdown, dan itu diputuskan setelah melihat layarnya:
+        // di telepon panel ini jadi lembar bawah ber-`overflow-y: auto`
+        // (GrafikEmiten.css), dan menu popup yang keluar dari kotaknya
+        // TERPOTONG oleh scroll container itu — terukur 18 Agu 2026, dari lima
+        // hari cuma "Jumat" yang terlihat. Chip juga satu ketukan, bukan dua.
+        //
+        // <label> hanya dipakai pada kolom teks: membungkus sekelompok tombol
+        // dengan <label> membuat kliknya diteruskan ke kontrol pertama.
+        s.pilihan ? (
+          <div key={s.kunci} className="grf-setelan-baris" role="group" aria-label={`${s.label} ${nama}`}>
+            <span className="grf-setelan-lbl">{s.label}</span>
+            <span className="grf-setelan-pilihan">
+              {s.pilihan.map((o) => (
+                <button key={o.nilai} type="button"
+                  className={'chip-t' + (Number(teks[s.kunci]) === o.nilai ? ' on' : '')}
+                  aria-pressed={Number(teks[s.kunci]) === o.nilai}
+                  onClick={() => kelola.gantiParam(inst, s, String(o.nilai))}>{o.label}</button>
+              ))}
+            </span>
+          </div>
+        ) : (
+          <label key={s.kunci} className="grf-setelan-baris">
+            <span className="grf-setelan-lbl">{s.label}</span>
+            <input className={'inp grf-ind-inp' + (galat[s.kunci] ? ' salah' : '')}
+              inputMode="decimal" value={teks[s.kunci]}
+              aria-invalid={galat[s.kunci] ? true : undefined}
+              aria-label={`${s.label} ${nama}`}
+              onChange={(e) => kelola.gantiParam(inst, s, e.target.value)} />
+          </label>
+        )
       ))}
       {/* Alasan tolakan ditulis DI PANEL ITU SENDIRI, bukan di satu kotak galat
           bersama: dengan beberapa instans hidup bersamaan, pesan yang

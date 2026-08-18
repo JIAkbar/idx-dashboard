@@ -5,7 +5,7 @@ import {
   SPEK_INDIKATOR, buatInstans, galatNilaiParam, galatInstans, labelInstansIndikator,
   hitungInstans, PALET_INDIKATOR,
   hitungATR, cariPivotRendah, cariPivotTinggi, cariDoubleBottom,
-  hitungOBV, cariLonjakanVolume,
+  hitungOBV, cariLonjakanVolume, cariMusiman, SPEK_POLA, labelInstansPola,
   VERSI_TEMPLATE, uraiTemplate, simpanTemplate, hapusTemplate, tandaiBawaan, ubahNamaTemplate,
   penandaDiSekitar,
   type InstansIndikator, type SpekParam, type LilinData, type ParamDoubleBottom,
@@ -752,5 +752,170 @@ describe('penandaDiSekitar', () => {
 
   it('waktu di luar rentang yang tergambar -> kosong, bukan galat', () => {
     expect(penandaDiSekitar(penanda, indeks, '2023-12-31')).toEqual([])
+  })
+})
+
+/* ------------------------------------------------------------------ *
+ * Empat indikator dari pustaka + uji SILANG RSI.
+ * ------------------------------------------------------------------ */
+
+/** Deret lilin harian buatan yang deterministik (bukan Math.random — uji yang
+ *  datanya berubah tiap jalan tak bisa dipakai membandingkan apa pun). Mulai
+ *  1 Jan 2024 (Senin), maju satu hari kalender per lilin. */
+function lilinUji(n: number): LilinData[] {
+  const out: LilinData[] = []
+  let p = 1000
+  for (let i = 0; i < n; i++) {
+    const r = Math.sin(i * 1.7) * 12 + Math.cos(i * 0.4) * 5
+    p = Math.max(50, p + r)
+    const t = new Date(Date.UTC(2024, 0, 1 + i)).toISOString().slice(0, 10)
+    out.push({ time: t, open: p - r / 2, high: p + 6, low: p - 7, close: p })
+  }
+  return out
+}
+
+describe('uji silang RSI: kode PAPAN vs pustaka lightweight-charts-indicators', () => {
+  it('keduanya sepakat sampai batas ketelitian bilangan pecahan', async () => {
+    // Kalau uji ini gagal, JANGAN diam-diam memilih salah satunya — itu berarti
+    // salah satu dari keduanya keliru dan kita belum tahu yang mana.
+    const { RSI } = await import('lightweight-charts-indicators')
+    const lilin = lilinUji(200)
+    const bars = lilin.map((l) => ({
+      time: Math.floor(Date.parse(`${l.time}T00:00:00Z`) / 1000),
+      open: l.open, high: l.high, low: l.low, close: l.close, volume: 1000,
+    }))
+    const pustaka = RSI.calculate(bars, { length: 14 }).plots.plot0.map((x) => x.value)
+    const kita = hitungRSI(lilin.map((l) => l.close), 14)
+
+    // Titik pertama yang berisi harus sama — beda satu lilin saja berarti salah
+    // satunya memakai konvensi bibit yang berbeda.
+    const adaNilai = (v: number | null) => v !== null && Number.isFinite(v)
+    expect(pustaka.findIndex(adaNilai)).toBe(kita.findIndex(adaNilai))
+
+    let selisihMaks = 0
+    let dibandingkan = 0
+    for (let i = 0; i < lilin.length; i++) {
+      if (!adaNilai(pustaka[i]) || !adaNilai(kita[i])) continue
+      dibandingkan++
+      selisihMaks = Math.max(selisihMaks, Math.abs((pustaka[i] as number) - (kita[i] as number)))
+    }
+    expect(dibandingkan).toBeGreaterThan(180)
+    // 1e-9 pada skala 0-100: jauh lebih ketat dari yang bisa dilihat mata, tapi
+    // longgar terhadap urutan penjumlahan pecahan yang memang boleh berbeda.
+    expect(selisihMaks).toBeLessThan(1e-9)
+  })
+})
+
+describe('indikator pustaka', () => {
+  const lilin = lilinUji(120)
+  const volume = lilin.map((_, i) => 1000 + i)
+  const buat = (jenis: 'stoch' | 'stochrsi' | 'wpr' | 'vwap') =>
+    buatInstans(jenis, SPEK_INDIKATOR[jenis].param, `i-${jenis}`, 0)
+
+  it('Stochastic: dua deret (%K dan %D), keduanya 0-100', () => {
+    const garis = hitungInstans(buat('stoch'), lilin.map((l) => l.close), volume, lilin)
+    expect(garis.map((g) => g.nama)).toEqual(['Stoch 14/1/3 %K', 'Stoch 14/1/3 %D'])
+    expect(garis[1].bantu).toBe(true)
+    const isi = garis[0].nilai.filter((v): v is number => v !== null)
+    expect(isi.length).toBeGreaterThan(100)
+    expect(Math.min(...isi)).toBeGreaterThanOrEqual(0)
+    expect(Math.max(...isi)).toBeLessThanOrEqual(100)
+  })
+
+  it('StochRSI: dua deret, panjangnya sejajar lilin', () => {
+    const garis = hitungInstans(buat('stochrsi'), lilin.map((l) => l.close), volume, lilin)
+    expect(garis).toHaveLength(2)
+    expect(garis[0].nilai).toHaveLength(lilin.length)
+    expect(garis[0].nilai.filter((v) => v !== null).length).toBeGreaterThan(50)
+  })
+
+  it('Williams %R: satu deret, seluruhnya di antara -100 dan 0', () => {
+    const garis = hitungInstans(buat('wpr'), lilin.map((l) => l.close), volume, lilin)
+    expect(garis).toHaveLength(1)
+    const isi = garis[0].nilai.filter((v): v is number => v !== null)
+    expect(isi.length).toBeGreaterThan(100)
+    expect(Math.min(...isi)).toBeGreaterThanOrEqual(-100)
+    expect(Math.max(...isi)).toBeLessThanOrEqual(0)
+  })
+
+  it('VWAP: jangkar pekan dan bulan menghasilkan garis yang BERBEDA', () => {
+    // Kalau keduanya sama, jangkarnya tak terbaca sama sekali — yang persis
+    // terjadi kalau waktunya dikirim sebagai nomor urut lilin, bukan tanggal.
+    const bulan = buat('vwap')
+    const pekan = buat('vwap')
+    pekan.param.jangkar = 1
+    const gB = hitungInstans(bulan, lilin.map((l) => l.close), volume, lilin)[0]
+    const gP = hitungInstans(pekan, lilin.map((l) => l.close), volume, lilin)[0]
+    expect(gB.nama).toBe('VWAP bulan')
+    expect(gP.nama).toBe('VWAP pekan')
+    expect(gB.nilai).not.toEqual(gP.nilai)
+    // VWAP dimulai sejak lilin pertama (tak ada warm-up) dan selalu berada di
+    // sekitar harga — kalau ia jatuh ke nol, pemetaan waktunya yang meleset.
+    const isi = gB.nilai.filter((v): v is number => v !== null)
+    expect(isi).toHaveLength(lilin.length)
+    expect(Math.min(...isi)).toBeGreaterThan(0)
+  })
+
+  it('tanpa lilin: deret kosong, bukan angka tebakan', () => {
+    expect(hitungInstans(buat('wpr'), [10, 11, 12])[0].nilai).toEqual([])
+  })
+})
+
+/* ------------------------------------------------------------------ *
+ * Pola Musiman.
+ * ------------------------------------------------------------------ */
+
+describe('cariMusiman', () => {
+  // 300 hari kalender berturut-turut: akhir pekan ikut ada di dalamnya dan
+  // HARUS tersaring sendiri, sama seperti ringkasHarian.
+  const lilin = lilinUji(300)
+
+  it('penanda jatuh PERSIS di hari yang dipilih', () => {
+    for (let hari = 0; hari < 5; hari++) {
+      const m = cariMusiman(lilin, hari)
+      expect(m).not.toBeNull()
+      expect(m!.waktu.length).toBeGreaterThan(30)
+      for (const t of m!.waktu) {
+        // getUTCDay: 1=Senin … 5=Jumat.
+        expect(new Date(`${t}T00:00:00Z`).getUTCDay()).toBe(hari + 1)
+      }
+    }
+  })
+
+  it('jumlah penanda = n yang disebut tooltip — bukan dua hitungan berbeda', () => {
+    for (let hari = 0; hari < 5; hari++) {
+      const m = cariMusiman(lilin, hari)!
+      expect(m.waktu).toHaveLength(m.ringkas.n)
+    }
+  })
+
+  it('angkanya datang dari ringkasHarian, bukan hitungan kedua', async () => {
+    const { ringkasHarian } = await import('../seasonality')
+    const tutup = Object.fromEntries(lilin.map((l) => [l.time, l.close]))
+    const acuan = ringkasHarian('X', tutup)!
+    const m = cariMusiman(lilin, 2)!
+    expect(m.ringkas).toEqual(acuan.perHari[2])
+    expect(m.totalObservasi).toBe(acuan.totalObservasi)
+  })
+
+  it('rentang perhitungan mengikuti lilin yang dikirim', () => {
+    // Potongan separuh terakhir harus menghasilkan n yang lebih kecil — bukti
+    // angkanya benar-benar dihitung dari yang tergambar, bukan dari seluruh
+    // riwayat yang kebetulan ada di berkas.
+    const penuh = cariMusiman(lilin, 0)!
+    const separuh = cariMusiman(lilin.slice(150), 0)!
+    expect(separuh.ringkas.n).toBeLessThan(penuh.ringkas.n)
+    expect(separuh.waktu[0] >= lilin[150].time).toBe(true)
+  })
+
+  it('lilin terlalu sedikit -> null, bukan angka dari udara', () => {
+    expect(cariMusiman(lilin.slice(0, 1), 0)).toBeNull()
+  })
+
+  it('label instans menyebut harinya', () => {
+    const inst = buatInstans('musiman', SPEK_POLA.musiman.param, 'i', 0)
+    expect(labelInstansPola(inst)).toBe('Musiman · Senin')
+    inst.param.hari = 4
+    expect(labelInstansPola(inst)).toBe('Musiman · Jumat')
   })
 })
