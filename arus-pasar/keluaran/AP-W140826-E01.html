@@ -414,7 +414,34 @@
 </style>
 </head>
 <body>
-<script>window.__TEMA = {"emas": [[20, "#6FE3D9", 1], [50, "#37B8AF", 1], [60, "#7E97B8", 1], [100, "#A583D6", 1], [200, "#E0955A", 1.5]], "bull": "#5BD98A", "bear": "#FF8B7A", "bullSoft": "rgba(91,217,138,0.3)", "bearSoft": "rgba(255,139,122,0.3)", "teks": "#EAF1F5", "teksLembut": "rgba(234,241,245,0.55)", "grid": "rgba(234,241,245,0.28)", "pivot": "#A8B9C4"};</script><style>.prog{border-left:3px solid var(--teal);padding:1.5mm 0 1.5mm 4mm;margin-top:3mm;font-size:8pt;font-variant-numeric:tabular-nums}.prog b{font-family:var(--mono);font-weight:700}.prog .l{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-right:3mm}table.ring .prog-cell{font-family:var(--mono);font-size:7.4pt;color:var(--ink2);white-space:nowrap}</style>
+<script>window.__TEMA = {"emas": [[20, "#6FE3D9", 1], [50, "#37B8AF", 1], [60, "#7E97B8", 1], [100, "#A583D6", 1], [200, "#E0955A", 1.5]], "bull": "#5BD98A", "bear": "#FF8B7A", "bullSoft": "rgba(91,217,138,0.3)", "bearSoft": "rgba(255,139,122,0.3)", "teks": "#EAF1F5", "teksLembut": "rgba(234,241,245,0.55)", "grid": "rgba(234,241,245,0.28)", "pivot": "#A8B9C4"};</script><style>.prog{border-left:3px solid var(--teal);padding:1.5mm 0 1.5mm 4mm;margin-top:3mm;font-size:8pt;font-variant-numeric:tabular-nums}.prog b{font-family:var(--mono);font-weight:700}.prog .l{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-right:3mm}table.ring .prog-cell{font-family:var(--mono);font-size:7.4pt;color:var(--ink2);white-space:nowrap}</style><style>
+/* Tinggi baris dan lebar kolom DIPATOK (colgroup + height tetap): isi yang
+   menentukan ukuran adalah cara dua cacat tata letak terakhir lahir. */
+table.pola{width:100%;border-collapse:collapse;table-layout:fixed;
+  font-size:7.8pt;font-variant-numeric:tabular-nums}
+table.pola th{height:5mm;font-size:5.8pt;color:var(--mute);text-transform:uppercase;
+  letter-spacing:.12em;font-weight:700;text-align:left;padding:0 2mm 1mm 0;
+  border-bottom:1px solid var(--hair);white-space:nowrap}
+table.pola td{height:5.4mm;padding:0 2mm 0 0;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;border-bottom:1px solid color-mix(in srgb, var(--ink) 5%, transparent)}
+/* Kolom angka rata-kanan WAJIB berjarak kiri: tanpa padding-left, "0" dan
+   "SEARAH +" saling menempel jadi "0SEARAH" (terlihat hanya di PDF). */
+table.pola th.n,table.pola td.n{text-align:right;padding:0 0 0 3mm}
+table.pola td.nol{color:var(--mute)}
+table.pola td.k{font-family:var(--mono);font-weight:800;font-size:8.6pt}
+table.pola td.n{font-family:var(--mono);font-weight:700}
+table.pola td .sub{font-weight:400;color:var(--mute);font-size:6.4pt}
+table.pola tr.sela td{height:3.4mm;font-size:5.8pt;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--mute);border-bottom:1px solid var(--hair);
+  padding-top:1.6mm;vertical-align:bottom}
+.pola-h{font-size:6.6pt;letter-spacing:.18em;text-transform:uppercase;font-weight:700;
+  color:var(--ink2);margin:0 0 1.8mm}
+.pola-h span{letter-spacing:0;text-transform:none;font-weight:400;color:var(--mute)}
+.pola-grid{display:grid;grid-template-columns:1fr 1fr;gap:7mm 9mm;align-items:start}
+.pola-note{font-size:6.5pt;color:var(--mute);line-height:1.55;margin:1.8mm 0 0}
+.pola-kosong{font-size:7.4pt;color:var(--mute);line-height:1.5;margin:0}
+.pola-tag{font-family:var(--mono);font-size:6.4pt;font-weight:700;letter-spacing:.06em}
+</style>
 <div class="page" style="background:var(--brand);color:var(--ink)">
   <div style="padding:16mm 18mm 0;flex:1;display:flex;flex-direction:column">
     <div style="border-bottom:1px solid color-mix(in srgb, var(--ink) 35%, transparent);padding-bottom:6mm">
@@ -586,6 +613,117 @@
         Analisis probabilistik, bukan ajakan transaksi. Data: TradingView &amp; Stockbit.</div>
     </div>
   </div>
+</div>
+
+<div class="page">
+  <header class="band">
+    <div class="m"><h1>ARUS PASAR</h1><div class="sub">Pola Sepekan</div></div>
+    <div class="e">Edisi Mingguan · 10–14 Agustus 2026<br><span class="kode">AP-W140826-E01</span></div>
+  </header>
+  <div class="inner">
+    <div class="trow" style="margin-bottom:3.5mm">
+      <div class="tk" style="font-size:14pt">Pola Sepekan</div>
+      <div class="px" style="font-size:8pt;color:var(--mute)">3 edisi harian ·
+        47 emiten-hari · 43 emiten unik</div>
+    </div>
+    <p class="lede" style="font-size:8.4pt;margin-bottom:4mm">Halaman ini dihitung dari
+    <b>seluruh</b> kemunculan tiap emiten sepanjang rentang, bukan dari posisi hari terakhir.
+    Yang terbaca di sini tak terbaca di satu pun edisi harian: broker mana yang berulang,
+    emiten mana yang netnya menumpuk searah, dan mana yang cuma lewat sekali.</p>
+
+    <div class="pola-h">1 · Broker paling sering muncul <span>— dari 47 emiten-hari</span></div>
+    <div class="pola-grid" style="gap:0 9mm">
+      <div>
+        <table class="pola">
+          <colgroup><col style="width:16mm"><col style="width:22mm"><col></colgroup>
+          <tr><th>Sisi Beli</th><th class="n">Emiten-hari</th><th class="n">Total Nilai</th></tr>
+          <tr><td class="k">AK</td><td class="n">25<span class="sub">/47</span></td><td class="n">156,0B</td></tr>
+<tr><td class="k">LG</td><td class="n">20<span class="sub">/47</span></td><td class="n">78,0B</td></tr>
+<tr><td class="k">XC</td><td class="n">20<span class="sub">/47</span></td><td class="n">44,5B</td></tr>
+<tr><td class="k">NI</td><td class="n">20<span class="sub">/47</span></td><td class="n">32,4B</td></tr>
+<tr><td class="k">CC</td><td class="n">19<span class="sub">/47</span></td><td class="n">37,2B</td></tr>
+<tr><td class="k">ZP</td><td class="n">18<span class="sub">/47</span></td><td class="n">37,5B</td></tr>
+<tr><td class="k">YP</td><td class="n">17<span class="sub">/47</span></td><td class="n">79,0B</td></tr>
+<tr><td class="k">SQ</td><td class="n">17<span class="sub">/47</span></td><td class="n">57,4B</td></tr>
+        </table>
+      </div>
+      <div>
+        <table class="pola">
+          <colgroup><col style="width:16mm"><col style="width:22mm"><col></colgroup>
+          <tr><th>Sisi Jual</th><th class="n">Emiten-hari</th><th class="n">Total Nilai</th></tr>
+          <tr><td class="k">XL</td><td class="n">30<span class="sub">/47</span></td><td class="n">75,3B</td></tr>
+<tr><td class="k">YP</td><td class="n">26<span class="sub">/47</span></td><td class="n">26,1B</td></tr>
+<tr><td class="k">CC</td><td class="n">25<span class="sub">/47</span></td><td class="n">112,5B</td></tr>
+<tr><td class="k">BK</td><td class="n">22<span class="sub">/47</span></td><td class="n">139,7B</td></tr>
+<tr><td class="k">XC</td><td class="n">21<span class="sub">/47</span></td><td class="n">11,8B</td></tr>
+<tr><td class="k">AK</td><td class="n">20<span class="sub">/47</span></td><td class="n">235,9B</td></tr>
+<tr><td class="k">PD</td><td class="n">19<span class="sub">/47</span></td><td class="n">51,3B</td></tr>
+<tr><td class="k">MG</td><td class="n">18<span class="sub">/47</span></td><td class="n">89,1B</td></tr>
+        </table>
+      </div>
+    </div>
+    <p class="pola-note">Batas data: tiap edisi harian hanya memuat <b>sepuluh broker terbesar</b>
+    per sisi per emiten. Angka di atas adalah frekuensi masuk sepuluh besar — bukan seluruh
+    aktivitas broker tersebut, dan bukan pula kepemilikan. Satu broker bisa aktif tanpa pernah
+    masuk sepuluh besar.</p>
+
+    <div class="pola-grid" style="margin-top:6mm">
+      <div>
+        <div class="pola-h">2 · Net kumulatif sepekan <span>— jumlah semua hari</span></div>
+        <table class="pola">
+          <colgroup><col style="width:16mm"><col style="width:15mm"><col></colgroup>
+          <tr><th>Ticker</th><th class="n">Hari</th><th class="n">Net Kumulatif</th></tr>
+          <tr><td class="k">ANTM</td><td class="n">1<span class="sub">/3</span></td><td class="n bull">+Rp19,9B</td></tr>
+<tr><td class="k">MDKA</td><td class="n">1<span class="sub">/3</span></td><td class="n bull">+Rp6,0B</td></tr>
+<tr><td class="k">INDY</td><td class="n">1<span class="sub">/3</span></td><td class="n bull">+Rp4,2B</td></tr>
+<tr><td class="k">VKTR</td><td class="n">2<span class="sub">/3</span></td><td class="n bull">+Rp3,8B</td></tr>
+<tr><td class="k">EXCL</td><td class="n">1<span class="sub">/3</span></td><td class="n bull">+Rp3,1B</td></tr>
+<tr><td class="k">ADRO</td><td class="n">1<span class="sub">/3</span></td><td class="n bull">+Rp2,9B</td></tr>
+<tr><td class="k">ARCI</td><td class="n">2<span class="sub">/3</span></td><td class="n bull">+Rp1,7B</td></tr>
+<tr><td class="k">GIAA</td><td class="n">1<span class="sub">/3</span></td><td class="n bull">+Rp1,1B</td></tr>
+<tr><td class="k">CDIA</td><td class="n">1<span class="sub">/3</span></td><td class="n bull">+Rp805,6M</td></tr>
+<tr><td class="k">PADI</td><td class="n">1<span class="sub">/3</span></td><td class="n bull">+Rp788,5M</td></tr>
+          <tr class="sela"><td colspan="3">Net kumulatif terendah</td></tr>
+          <tr><td class="k">MBMA</td><td class="n">3<span class="sub">/3</span></td><td class="n bear">−Rp7,4B</td></tr>
+<tr><td class="k">DEWA</td><td class="n">1<span class="sub">/3</span></td><td class="n bear">−Rp15,7B</td></tr>
+<tr><td class="k">BUMI</td><td class="n">1<span class="sub">/3</span></td><td class="n bear">−Rp20,1B</td></tr>
+<tr><td class="k">BRPT</td><td class="n">1<span class="sub">/3</span></td><td class="n bear">−Rp25,6B</td></tr>
+<tr><td class="k">PTRO</td><td class="n">1<span class="sub">/3</span></td><td class="n bear">−Rp30,1B</td></tr>
+        </table>
+        <p class="pola-note">Kolom Hari wajib dibaca bersama nilainya: net besar dari satu hari
+        adalah peristiwa, net sedang yang berulang adalah pola. Nilai memakai top-10 broker saja.</p>
+      </div>
+      <div>
+        <div class="pola-h">3 · Konsistensi arah <span>— emiten yang muncul ≥2 hari</span></div>
+        <table class="pola">
+      <colgroup><col style="width:15mm"><col style="width:11mm"><col style="width:12mm"><col style="width:12mm"><col></colgroup>
+      <tr><th>Ticker</th><th class="n">Hari</th><th class="n">Net +</th><th class="n">Net −</th>
+        <th style="padding-left:3mm">Arah</th></tr>
+      <tr><td class="k">VKTR</td><td class="n">2</td><td class="n bull">2</td><td class="n nol">0</td><td class="bull" style="padding-left:3mm"><span class="pola-tag">SEARAH +</span></td></tr>
+<tr><td class="k">ARCI</td><td class="n">2</td><td class="n bull">2</td><td class="n nol">0</td><td class="bull" style="padding-left:3mm"><span class="pola-tag">SEARAH +</span></td></tr>
+<tr><td class="k">MBMA</td><td class="n">3</td><td class="n bull">1</td><td class="n bear">2</td><td class="" style="padding-left:3mm"><span class="pola-tag">campur</span></td></tr>
+    </table>
+    <p class="pola-note">2 dari 3 emiten berulang punya net searah di seluruh
+    harinya. Sisanya berganti arah — netnya hasil saling hapus, bukan satu kecenderungan.
+    </p>
+        <div class="pola-h" style="margin-top:6mm">4 · Emiten paling persisten</div>
+        <table class="pola">
+      <colgroup><col style="width:15mm"><col style="width:15mm"><col></colgroup>
+      <tr><th>Ticker</th><th class="n">Muncul</th><th style="padding-left:3mm">Progresi Skor</th></tr>
+      <tr><td class="k">MBMA</td><td class="n">3<span class="sub">/3</span></td><td style="padding-left:3mm;font-family:var(--mono);font-size:6.6pt;color:var(--ink2)">Sen 58 → Kam 37 → Jum 49</td></tr>
+<tr><td class="k">VKTR</td><td class="n">2<span class="sub">/3</span></td><td style="padding-left:3mm;font-family:var(--mono);font-size:6.6pt;color:var(--ink2)">Sen 70 → Jum 65</td></tr>
+<tr><td class="k">ARCI</td><td class="n">2<span class="sub">/3</span></td><td style="padding-left:3mm;font-family:var(--mono);font-size:6.6pt;color:var(--ink2)">Sen 67 → Jum 63</td></tr>
+    </table>
+    <p class="pola-note">Muncul berulang berarti emiten itu lolos penyaringan harian lebih dari
+    sekali — bukan penilaian atas arah harganya. Skor tiap hari dihitung ulang dengan model
+    harian yang sama.</p>
+      </div>
+    </div>
+  </div>
+  <footer class="foot">
+    <span class="kode">AP-W140826-E01</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
+  </footer>
 </div>
 
 <div class="page">
