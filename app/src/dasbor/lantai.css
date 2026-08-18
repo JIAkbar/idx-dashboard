@@ -945,6 +945,12 @@
    Export XLS di Peta Investor. Dulu dipasang lewat gaya inline di satu
    pemakaian, jadi pemakaian berikutnya pasti mengulanginya. */
 .lantai .dd.dd-kanan .dd-menu{left:auto;right:0}
+
+/* Wadah PemilihRentang (#170). Halaman yang punya kebutuhan khas — .bs-preset
+   yang harus bisa menyusut di telepon, .ihsg-rentang yang chipnya lebih kecil
+   karena duduk di kepala chart — menimpanya lewat className sendiri, dan
+   itulah satu-satunya yang boleh berbeda antar halaman. */
+.lantai .pilih-rentang{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .lantai .dd-it{display:flex;width:100%;text-align:left;padding:6px 10px;border-radius:4px;font-family:var(--mono);font-size:11.5px;color:var(--text2);white-space:nowrap}
 .lantai .dd-it:hover{background:var(--amber-dim);color:var(--text)}
 .lantai .dd-it.sel{color:var(--amber)}
@@ -1850,6 +1856,13 @@
    diam-diam di layar sempit alih-alih wrap ke baris baru. */
 .lantai .bs-preset{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;flex:1 1 auto;min-width:0}
 .lantai .bs-tgl{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+@media (max-width: 560px) {
+  .lantai .bs-tgl{flex-wrap:wrap;justify-content:center;flex:1 1 100%}
+  /* Tiap pemilih tanggal dapat barisnya sendiri; "s.d." jadi pemisah di
+     antaranya, bukan sisa yang menggantung di ujung baris pertama. */
+  .lantai .bs-tgl .dpk-wrap{flex:1 1 100%;min-width:0}
+  .lantai .bs-tgl > .lbl{flex:1 1 100%;text-align:center}
+}
 .lantai .vcard .v-tgl{font-size:20px}
 .lantai .vcard .v-tgl.rentang{font-size:15px}
 .lantai .f-cap{max-width:200px}

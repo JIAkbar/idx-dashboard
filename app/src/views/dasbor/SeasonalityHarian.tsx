@@ -1,3 +1,4 @@
+import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import { useEffect, useMemo, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { HARI, ringkasHarian, hariBursaDiRentang, vonisUji, type RingkasHarian } from '../../lib/seasonality'
 import { pesanGalat } from '../../lib/pesanGalat'
@@ -15,15 +16,15 @@ const AMBANG_BEBAS = 5
  *  sebagai tanggal tetap, supaya MTD/YTD tetap benar kalau halaman dibiarkan
  *  terbuka melewati tengah malam atau pergantian bulan. */
 const RENTANG: Array<[string, () => string]> = [
-  ['Semua', () => ''],
-  ['MTD', () => new Date().toISOString().slice(0, 8) + '01'],
-  ['YTD', () => new Date().getUTCFullYear() + '-01-01'],
-  ['1 thn', () => geser(1)],
-  ['2 thn', () => geser(2)],
-  ['3 thn', () => geser(3)],
-  ['5 thn', () => geser(5)],
-  ['10 thn', () => geser(10)],
-  ['20 thn', () => geser(20)],
+  [LABEL_RENTANG.semua, () => ''],
+  [LABEL_RENTANG.mtd, () => new Date().toISOString().slice(0, 8) + '01'],
+  [LABEL_RENTANG.ytd, () => new Date().getUTCFullYear() + '-01-01'],
+  [LABEL_RENTANG.y1, () => geser(1)],
+  [LABEL_RENTANG.y2, () => geser(2)],
+  [LABEL_RENTANG.y3, () => geser(3)],
+  [LABEL_RENTANG.y5, () => geser(5)],
+  [LABEL_RENTANG.y10, () => geser(10)],
+  [LABEL_RENTANG.y20, () => geser(20)],
 ]
 
 function geser(tahun: number): string {
@@ -67,12 +68,12 @@ const BLN_PENDEK = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep
 export function SeasonalityHarian() {
   const [tutup, setTutup] = useState<Record<string, number> | null>(null)
   const [galat, setGalat] = useState<string | null>(null)
-  // Bawaan "1 thn" (bukan "Semua"): "Semua" menarik 8.848 hari sejak 1990 dan
+  // Bawaan "1 Tahun" (bukan "Semua"): "Semua" menarik 8.848 hari sejak 1990 dan
   // grafik kumulatifnya jadi didominasi rezim pasar 1990-an yang sudah tak
   // relevan buat pembaca hari ini. Satu tahun terakhir itu jendela yang bisa
   // dinilai orang dari ingatannya sendiri — sejalan dengan alasan utama tab
   // ini: hasilnya harus bisa DIBUKTIKAN, bukan dipercaya begitu saja.
-  const [pilih, setPilih] = useState('1 thn')
+  const [pilih, setPilih] = useState<string>(LABEL_RENTANG.y1)
   // Praset ATAU rentang bebas — praset tetap jalan pintas bawaan, rentang
   // bebas (#170 K9) mengundang pembaca membuktikan sendiri lewat jendela
   // yang ia pilih, bukan yang disodorkan.

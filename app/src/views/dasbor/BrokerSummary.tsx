@@ -1,3 +1,5 @@
+import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
+import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import { useMemo, useState, type ReactNode } from 'react'
 import { useBrokerHarian, labelTanggal } from '../../lib/dasbor/brokerHarian'
 import { useDsIso } from '../../lib/dasbor/flowNego'
@@ -27,13 +29,16 @@ const TAB_HARIAN: Record<Tab, boolean> = { inventory: true, quadrant: true, nego
  * mundur hari kalender dari tanggal berdata terakhir; YTD = 1 Januari tahun
  * berjalan. pilihRentang otomatis snap ke hari berdata di dalamnya. */
 type PresetId = 'w1' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1'
+/* Labelnya dari LABEL_RENTANG (#170): daftar ini dulu mengeja sendiri empat
+   kata yang sudah dieja PRESET_RENTANG, jadi keduanya bisa menyimpang tanpa
+   ada yang menyadarinya. Yang khas di sini cuma jumlah harinya. */
 const PRESET_BROKER: { id: PresetId; label: string; hari: number }[] = [
-  { id: 'w1', label: '1 Minggu', hari: 7 },
-  { id: 'b1', label: '1 Bulan', hari: 30 },
-  { id: 'b3', label: '3 Bulan', hari: 91 },
-  { id: 'b6', label: '6 Bulan', hari: 182 },
-  { id: 'ytd', label: 'YTD', hari: 0 },
-  { id: 'y1', label: '1 Tahun', hari: 365 },
+  { id: 'w1', label: LABEL_RENTANG.w1, hari: 7 },
+  { id: 'b1', label: LABEL_RENTANG.b1, hari: 30 },
+  { id: 'b3', label: LABEL_RENTANG.b3, hari: 91 },
+  { id: 'b6', label: LABEL_RENTANG.b6, hari: 182 },
+  { id: 'ytd', label: LABEL_RENTANG.ytd, hari: 0 },
+  { id: 'y1', label: LABEL_RENTANG.y1, hari: 365 },
 ]
 
 function mundurIso(iso: string, hari: number): string {
@@ -186,18 +191,12 @@ export function BrokerSummary() {
                 <button type="button" role="tab" aria-selected={modeRentang} className={'tab' + (modeRentang ? ' on' : '')} onClick={() => keRentang(preset ?? 'w1')}>Rentang</button>
               </div>
               {modeRentang && (
-                <div className="bs-preset">
-                  {PRESET_BROKER.map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      className={`chip-t${preset === p.id ? ' on' : ''}`}
-                      onClick={() => keRentang(p.id)}
-                    >
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
+                <PemilihRentang
+                  className="bs-preset"
+                  opsi={PRESET_BROKER}
+                  nilai={preset ?? 'w1'}
+                  onGanti={keRentang}
+                />
               )}
               <div className="bs-tgl">
                 {modeRentang ? (

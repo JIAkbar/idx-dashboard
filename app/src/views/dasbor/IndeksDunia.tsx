@@ -1,3 +1,5 @@
+import { LABEL_RENTANG } from '../../lib/dasbor/periode'
+import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { ChartConfiguration } from 'chart.js/auto'
@@ -39,11 +41,11 @@ function tglSingkatTahun(iso: string) {
 
 /** Pilihan rentang chart IHSG. `tahun: 0` = seluruh riwayat. */
 const RENTANG = [
-  { id: 'ytd', chip: 'YTD', judul: 'Tahun Berjalan', tahun: null },
-  { id: '1t', chip: '1T', judul: '1 Tahun', tahun: 1 },
-  { id: '5t', chip: '5T', judul: '5 Tahun', tahun: 5 },
-  { id: '10t', chip: '10T', judul: '10 Tahun', tahun: 10 },
-  { id: 'max', chip: 'Semua', judul: 'Sejak 1990', tahun: 0 },
+  { id: 'ytd', label: LABEL_RENTANG.ytd, judul: 'Tahun Berjalan', tahun: null },
+  { id: 'y1', label: LABEL_RENTANG.y1, judul: '1 Tahun', tahun: 1 },
+  { id: 'y5', label: LABEL_RENTANG.y5, judul: '5 Tahun', tahun: 5 },
+  { id: 'y10', label: LABEL_RENTANG.y10, judul: '10 Tahun', tahun: 10 },
+  { id: 'semua', label: LABEL_RENTANG.semua, judul: 'Sejak 1990', tahun: 0 },
 ] as const
 
 type RentangId = (typeof RENTANG)[number]['id']
@@ -78,7 +80,7 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
   // lilin dari satu angka berarti mengarang tiga angka lainnya.
   const ohlcSemua = useIhsgOhlc()
   const lilin: BarisOhlc[] | null = useMemo(() => {
-    if (!ohlcSemua || (pilih.id !== 'ytd' && pilih.id !== '1t')) return null
+    if (!ohlcSemua || (pilih.id !== 'ytd' && pilih.id !== 'y1')) return null
     if (pilih.id === 'ytd') {
       const awalTahun = `${new Date().getFullYear()}-01-01`
       return ohlcSemua.filter((b) => b[0] >= awalTahun)
@@ -266,19 +268,13 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
       {/* Pemilih rentang — chip, bukan dropdown: lima pilihan yang semuanya
           pendek lebih cepat dibaca berjajar daripada disembunyikan di balik
           satu klik. */}
-      <div className="ihsg-rentang">
-        {RENTANG.map((r) => (
-          <button
-            key={r.id}
-            type="button"
-            className={'chip-t' + (rentang === r.id ? ' on' : '')}
-            aria-pressed={rentang === r.id}
-            onClick={() => setRentang(r.id)}
-          >
-            {r.chip}
-          </button>
-        ))}
-      </div>
+      <PemilihRentang
+        className="ihsg-rentang"
+        opsi={RENTANG}
+        nilai={rentang}
+        onGanti={setRentang}
+        ariaLabel="Rentang chart IHSG"
+      />
       {/* canvas dipaksa display:block+width:100% LEWAT STYLE (bukan andalkan
           Chart.js) — .board-side flex item, canvas default-nya display:inline
           lebar intrinsik 300px; kalau Chart.js sempat baca lebar container

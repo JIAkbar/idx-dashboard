@@ -151,13 +151,13 @@ export function BarisInstans<J extends string>({ kelola, label }: BarisProps<J>)
                   onChange={(e) => kelola.gantiParam(inst, s, e.target.value)} />
               </label>
             ))}
-            <button type="button" className="bchip bchip-klik grf-ind-aksi"
+            <button type="button" className="dd-btn grf-ind-aksi"
               aria-pressed={inst.tampil}
               title={inst.tampil ? 'Sembunyikan sementara' : 'Tampilkan lagi'}
               onClick={() => kelola.sakelarTampil(inst.id)}>
               <IkonMenu d={inst.tampil ? IKON_MATA : IKON_MATA_CORET} size={12} />
             </button>
-            <button type="button" className="bchip bchip-klik grf-ind-aksi"
+            <button type="button" className="dd-btn grf-ind-aksi"
               title={`Hapus ${nama}`}
               onClick={() => kelola.hapus(inst.id)}>
               <IkonMenu d={IKON_TONG} size={12} />

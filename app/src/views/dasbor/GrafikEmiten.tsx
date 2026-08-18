@@ -1,3 +1,4 @@
+import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   createChart, createSeriesMarkers, createTextWatermark,
@@ -774,7 +775,7 @@ export function GrafikEmiten() {
           )}
         </div>
         {cari && (
-          <button type="button" className="bchip bchip-klik" onClick={() => setCari('')} title="Batalkan pencarian">
+          <button type="button" className="dd-btn" onClick={() => setCari('')} title="Batalkan pencarian">
             <IkonMenu d={IKON_SILANG} size={9} />
           </button>
         )}
@@ -793,16 +794,16 @@ export function GrafikEmiten() {
                 TIDAK menyentuh indikator & pola — lihat efek `jenisChart`. */}
             {JENIS_CHART.map(([nilai, label]) => (
               <button key={nilai} type="button"
-                className={'bchip bchip-klik' + (jenisChart === nilai ? ' on' : '')}
+                className={`chip-t${jenisChart === nilai ? ' on' : ''}`}
                 aria-pressed={jenisChart === nilai}
                 onClick={() => setJenisChart(nilai)}>{label}</button>
             ))}
             <span className="grf-pisah" aria-hidden="true" />
-            {RENTANG_GRAFIK.map(([label]) => (
-              <button key={label} type="button"
-                className={'bchip bchip-klik' + (rentangLabel === label ? ' on' : '')}
-                onClick={() => setRentangLabel(label)}>{label}</button>
-            ))}
+            <PemilihRentang
+              opsi={RENTANG_GRAFIK.map(([label]) => ({ id: label, label }))}
+              nilai={rentangLabel}
+              onGanti={setRentangLabel}
+            />
           </div>
         </div>
         <div className="panel-b">
@@ -838,7 +839,7 @@ export function GrafikEmiten() {
                     simpanDaftarTemplate(simpanTemplate(template, namaTemplate, isiTemplate()))
                   }
                 }} />
-              <button type="button" className="bchip bchip-klik"
+              <button type="button" className="dd-btn"
                 disabled={!namaTemplate.trim()}
                 title={template.some((t) => t.nama === namaTemplate.trim())
                   ? 'Timpa template dengan susunan sekarang'
@@ -862,7 +863,7 @@ export function GrafikEmiten() {
                         }}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') e.currentTarget.blur() }} />
                     ) : (
-                      <button type="button" className="bchip bchip-klik grf-template-muat"
+                      <button type="button" className="dd-btn grf-template-muat"
                         title={`Muat ${t.nama}`} onClick={() => muatTemplate(t)}>
                         {t.bawaan && <span className="grf-template-tanda" title="Dimuat otomatis saat halaman dibuka">•</span>}
                         {t.nama}
@@ -873,14 +874,14 @@ export function GrafikEmiten() {
                       {t.jenisChart ? ` · ${t.jenisChart}` : ''}{t.rentang ? ` · ${t.rentang}` : ''}
                       {' · emiten tak ikut disimpan'}
                     </span>
-                    <button type="button" className="bchip bchip-klik"
+                    <button type="button" className="dd-btn"
                       aria-pressed={t.bawaan}
                       title={t.bawaan ? 'Berhenti memuatnya otomatis' : 'Muat otomatis saat halaman dibuka'}
                       onClick={() => simpanDaftarTemplate(tandaiBawaan(template, t.nama))}>Bawaan</button>
-                    <button type="button" className="bchip bchip-klik"
+                    <button type="button" className="dd-btn"
                       title={`Ganti nama ${t.nama}`}
                       onClick={() => setNamaDiubah({ lama: t.nama, teks: t.nama })}>Ganti nama</button>
-                    <button type="button" className="bchip bchip-klik"
+                    <button type="button" className="dd-btn"
                       title={`Hapus ${t.nama}`}
                       onClick={() => simpanDaftarTemplate(hapusTemplate(template, t.nama))}>
                       <IkonMenu d={IKON_TONG} size={11} />

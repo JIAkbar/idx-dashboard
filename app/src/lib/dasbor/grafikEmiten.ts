@@ -4,6 +4,7 @@
  * sumber (`ohlc/<KODE>.json`) didokumentasikan di `ihsgOhlc.ts` (`BarisOhlc`):
  * satu baris = [tanggal, buka, tinggi, rendah, tutup, volume].
  */
+import { LABEL_RENTANG } from './periode'
 import type { BarisOhlc } from './ihsgOhlc'
 
 export interface BerkasOhlcEmiten {
@@ -92,16 +93,16 @@ function hariTanpaPerdagangan(
  *  panen belum jalan, dan menghitung dari hari ini bisa memotong lilin
  *  terbaru yang sebenarnya masih ada. `null` = 'Semua', tak dipotong. */
 export const RENTANG_GRAFIK: Array<[label: string, tahun: number | null]> = [
-  ['1 thn', 1],
-  ['3 thn', 3],
-  ['5 thn', 5],
-  ['Semua', null],
+  [LABEL_RENTANG.y1, 1],
+  [LABEL_RENTANG.y3, 3],
+  [LABEL_RENTANG.y5, 5],
+  [LABEL_RENTANG.semua, null],
 ]
 
 /** Rentang yang aktif saat halaman pertama dibuka. Johan 17 Agu 2026: "buat
  *  default nya semua". Ditulis sebagai konstanta (bukan angka indeks) supaya
  *  chip yang tersorot dan data yang tergambar mustahil berbeda. */
-export const RENTANG_BAWAAN = 'Semua'
+export const RENTANG_BAWAAN: string = LABEL_RENTANG.semua
 
 /** Tanggal ISO batas bawah rentang, dihitung mundur dari `akhirData` (bukan
  *  `new Date()` — lihat komentar RENTANG_GRAFIK). `tahun: null` -> string

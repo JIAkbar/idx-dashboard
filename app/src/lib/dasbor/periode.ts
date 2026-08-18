@@ -43,14 +43,48 @@ export interface RentangTanggal {
   akhir: string
 }
 
+/**
+ * Kosakata waktu tunggal (#170, prinsip 4 `docs/spek-kendali.md`).
+ *
+ * Audit `docs/audit-kendali.md` §3.2 menemukan tiga cara menulis hal yang
+ * sama — "1 Tahun" di Broker Summary, "1T" di Indeks Dunia, "1 thn" di
+ * Seasonality — dan Seasonality memakai "20 thn" sementara Indeks Dunia
+ * memakai "10T" untuk maksud yang sama persis.
+ *
+ * Yang dipilih: kata penuh, mengikuti `PRESET_RENTANG` di bawah — satu-satunya
+ * penulisan yang memang sudah dipakai bersama tiga halaman (Kalender Bursa,
+ * Top Stocks, Sektor), jadi menyeragamkan ke sana mengubah paling sedikit
+ * layar. Singkatan "1T"/"1 thn" dibuang: hemat beberapa piksel, tapi "T" bisa
+ * terbaca sebagai triliun di halaman yang di sebelahnya memang menampilkan
+ * nilai transaksi dalam triliun.
+ *
+ * Daftar ini BUKAN daftar pilihan satu halaman — tiap halaman mengambil
+ * bagian yang berlaku untuknya. Yang tak berlaku dihilangkan, bukan ditulis
+ * dengan gaya lain (prinsip 4).
+ */
+export const LABEL_RENTANG = {
+  w1: '1 Minggu',
+  b1: '1 Bulan',
+  b3: '3 Bulan',
+  b6: '6 Bulan',
+  mtd: 'MTD',
+  ytd: 'YTD',
+  y1: '1 Tahun',
+  y2: '2 Tahun',
+  y3: '3 Tahun',
+  y5: '5 Tahun',
+  y10: '10 Tahun',
+  y20: '20 Tahun',
+  semua: 'Semua',
+} as const
+
+export type KunciRentang = keyof typeof LABEL_RENTANG
+
 export type PresetRentang = 'w1' | 'b1' | 'b3' | 'ytd'
 
-export const PRESET_RENTANG: { id: PresetRentang; label: string }[] = [
-  { id: 'w1', label: '1 Minggu' },
-  { id: 'b1', label: '1 Bulan' },
-  { id: 'b3', label: '3 Bulan' },
-  { id: 'ytd', label: 'YTD' },
-]
+export const PRESET_RENTANG: { id: PresetRentang; label: string }[] =
+  (['w1', 'b1', 'b3', 'ytd'] as const).map((id) => ({ id, label: LABEL_RENTANG[id] }))
+
 
 const HARI_PRESET: Record<Exclude<PresetRentang, 'ytd'>, number> = { w1: 7, b1: 30, b3: 91 }
 
