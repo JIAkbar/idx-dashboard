@@ -43,8 +43,31 @@ KELUARAN = AKAR / "data-idx" / "json" / "kabar.json"
 WIB = timezone(timedelta(hours=7))
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
-HEADER_IDX = {"User-Agent": UA, "Referer": "https://www.idx.co.id/id", "Accept": "application/json"}
+      "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+
+# Header ala peramban SUNGGUHAN. Bentuk lama (UA + Referer beranda + Accept
+# json) mulai dijawab 403 oleh IDX, dan `panen_keuangan_idx.py` sudah
+# diperbaiki 18 Agu 2026 -- berkas ini punya salinan headernya sendiri dan
+# tertinggal, jadi IDX berita & pengumuman mati bahkan dari mesin rumahan.
+# Tak ada yang menyadarinya karena Kontan + IPOT tetap mengisi kabar.json.
+#
+# Yang menyembuhkan: Accept-Language, sec-ch-ua*, Sec-Fetch-*, dan Referer
+# yang menunjuk ke halaman yang wajar memuat panggilan itu -- bukan beranda.
+_HDR_PERAMBAN = {
+    "User-Agent": UA,
+    "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+    "sec-ch-ua": '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Windows"',
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-origin",
+}
+HEADER_IDX = {
+    **_HDR_PERAMBAN,
+    "Accept": "application/json, text/plain, */*",
+    "Referer": "https://www.idx.co.id/id/berita/berita",
+}
 HEADER_UMUM = {"User-Agent": UA}
 
 

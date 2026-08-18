@@ -26,6 +26,14 @@ on:
     # Berita pasar bergerak sepanjang hari bursa; di luar itu jarang berubah.
     - cron: '0 0,2,4,6,8,10,12 * * 1-6'
   workflow_dispatch:        # bisa dipicu manual dari tab Actions
+    inputs:
+      sumber:
+        description: >-
+          Sumber yang dipanen (pisahkan koma). Dipakai untuk MENGUJI sumber
+          mana yang tembus dari IP datacenter GitHub, karena itu tak bisa
+          dijawab dari mesin rumahan. Pilihan: ipot, idx, idx-pengumuman, kontan
+        required: false
+        default: 'ipot,idx,idx-pengumuman'
 
 # Butuh menulis balik ke repo (hasil panen di-commit).
 permissions:
@@ -49,8 +57,19 @@ jobs:
       - name: Pasang dependensi
         run: pip install --quiet requests
 
-      - name: Panen (Kontan)
-        run: python scripts/panen_kabar.py --batas 30 --hanya kontan
+      # Kontan DICABUT dari jalur awan 18 Agu 2026: RSS-nya menjawab 200 dari
+      # mesin rumahan tanpa header apa pun, tapi 403 dari IP datacenter GitHub
+      # -- blokir per-IP, jadi tak ada header yang bisa menolong. Karena Kontan
+      # satu-satunya sumber di sini, workflow ini dijamin merah tiap 2 jam, dan
+      # alarm yang selalu merah berhenti jadi alarm.
+      #
+      # Sumbernya kini bisa dipilih lewat input supaya bisa DIUJI dari sini --
+      # pertanyaan "tembus dari datacenter atau tidak" mustahil dijawab dari
+      # rumah. Bawaan jadwal memakai sumber yang belum terbukti diblokir.
+      - name: Panen
+        run: >-
+          python scripts/panen_kabar.py --batas 30
+          --hanya "${{ github.event.inputs.sumber || 'ipot,idx,idx-pengumuman' }}"
 
       - name: Commit kalau ada perubahan
         run: |
