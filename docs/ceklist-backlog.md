@@ -3,8 +3,18 @@
 Papan status kerja borongan 16 Agustus 2026. Centang = selesai & terverifikasi
 (tsc + uji + dua viewport kalau menyentuh tampilan).
 
-Terakhir diperbarui: **16 Agu 2026, malam**. Seluruh yang tercentang di bawah
-**sudah live** (48 commit, `778ec1c2..94958c5a`).
+Terakhir diperbarui: **18 Agu 2026** — sesudah audit ulang seluruh baris lawan
+kode yang benar-benar berjalan (hasilnya di bagian "Audit ulang 18 Agu 2026" di
+bawah). Yang tercentang sampai 16 Agu **sudah live** (48 commit,
+`778ec1c2..94958c5a`); yang dicentang 17–18 Agu masih di checkout lokal.
+
+> ⚠️ **Berkas ini pernah berbohong ke dua arah, dan itu yang paling mahal.**
+> Audit 18 Agu menemukan **lima baris ☐ yang ternyata sudah jadi** (B2, B4,
+> Chart 3, A3, #161) dan **enam baris ☐ yang sebagian besarnya sudah jalan**.
+> Sebaliknya ada juga baris **☑ yang barangnya mati** (#123). Aturannya sekarang:
+> centang hanya boleh dipasang bersama **bukti di barisnya** — hash commit,
+> `berkas:baris`, atau jumlah berkas data — dan bukti itu harus menunjukkan
+> barangnya **dipanggil**, bukan cuma ada.
 
 Aturan rilis tetap: `git push` hanya setelah Johan bilang "live", dan yang
 menunggu push dihitung dari `origin/main` — bukan dari commit teratas saat sesi
@@ -28,35 +38,35 @@ itu yang menentukan urutan — bukan besar-kecilnya saja.
 |---|---|---|---|---|---|
 | ☑ | 1 | **B1** | ~~Sektor IDX-IC resmi~~ — **SELESAI 17 Agu**: `scripts/panen_sektor_idx.py` → 962 emiten, 11 sektor, plus papan pencatatan. Ternyata cukup `GetCompanyProfiles`, BUKAN sheet `1000000` | — | Panen selesai; penyambungan ke layar menyusul |
 | ☑ | 2 | **A0** | ~~Satukan `keuangan/` + `fundamental/`~~ — **SELESAI 17 Agu**: `operating_cf` 8,5% → **99,4%**, `eps` 29% → **99,8%**. Sel tertambal ditandai † + asal angkanya | — | `076ec76b`, 278 tes |
-| ☐ | 3 | **C6** | Halaman metodologi & glosarium | — | 75 istilah sudah jadi `glosarium.json`, tinggal dipindah ke layar |
-| ☐ | 4 | **C7** | Foreign flow 5D/10D | — | Agregasi `ds_*.json`, murni skrip |
-| ☐ | 5 | **C8** | Watchlist | — | localStorage, tanpa server |
-| ☐ | 6 | **C4** | Heatmap & market breadth | — | Dari data harian yang sudah ada |
+| ☐ | 3 | **C6** | Halaman metodologi & glosarium | — | 75 istilah sudah jadi `glosarium.json`, tinggal dipindah ke layar. **BELUM** — `glosarium.json` cuma dibaca `tanyaPapan.ts`; tak ada rute `/metodologi` di `App.tsx` maupun entri di `menu.ts` |
+| ☐ | 4 | **C7** | Foreign flow 5D/10D — **SEBAGIAN** | — | **Sudah:** agregasi `ds_*.json` jadi net foreign harian + kumulatif, tab **Flow** di `/broker-summary` (`lib/dasbor/flowNego.ts`, `BrokerSummary.tsx:255`, ada `flowNego.test.ts`), preset 1 Minggu/1 Bulan/3 Bulan/YTD. **Belum:** angkanya level PASAR (`nf_today_idr`), belum ada kolom 5D/10D **per emiten** |
+| ☐ | 5 | **C8** | Watchlist | — | localStorage, tanpa server. **BELUM** — nol jejak; "Radar Watchlist" (`menu.ts:139`) halaman lain, jangan tertukar |
+| ☐ | 6 | **C4** | Heatmap & market breadth — **SEBAGIAN** | — | **Sudah:** heatmap sektor buatan sendiri (`SektorIndeks.tsx:302`, dari data harian) + widget heatmap TradingView di `/chart`. **Belum:** market breadth — `ringkasHarian.ts` tak menghitung advance/decline sama sekali |
 
 ### Sedang (sehari-dua, sebagian butuh hitungan baru)
 
 | ☐ | Urut | Fase | Tugas | Bergantung | Membuka |
 |---|---|---|---|---|---|
-| ☐ | 7 | **A1** | Rata-rata 5 tahun + ambang verdict valuasi | A0 | **Kunci kedalaman AI** — tiap angka jadi punya pembanding (riset ASK SPLE) |
-| ☐ | 8 | **B2** | Broker summary harian ke JSON | — | 88 broker/tanggal; sekarang masih di-parse dari PDF |
-| ☐ | 9 | **B4** | Pasar NEGO / Bandar Flow | — | Ruas ada di `GetStockSummary`, belum dipanen |
-| ☐ | 10 | **#173** | Tabel Akses bertingkat (induk–turunan): `probvv` di dalam `bulletin`, `seasonality-hari` di dalam `seasonality` | — | Kunci anak yang induknya tertutup = setelan yang tak pernah berlaku |
-| ☐ | 10b | **#165** | Thumbnail dibuat saat unggah | — | Gambar 420–520 KB berhenti dipakai di kotak 40 px |
-| ☐ | 11 | **#171** | Rule engine paham dari satu kata | — | Peta sinonim, tahan salah ketik, kata tunggal ditawari cabang |
-| ☐ | 12 | **#172** | Emiten dijawab analisa + chip saran | A1 | Tanya PAPAN berhenti menjawab satu kalimat sama untuk semua pertanyaan |
+| ☐ | 7 | **A1** | Rata-rata 5 tahun + ambang verdict valuasi | A0 ✅ | **Kunci kedalaman AI** — tiap angka jadi punya pembanding (riset ASK SPLE). **BELUM** — yang ada cuma ruas mentah `pe_vs_sector_pct` (`stockDetailData.ts:210`); nol rerata historis, nol ambang verdict. Prasyaratnya kini **lebih kuat dari saat baris ini ditulis**: A3 memberi riwayat resmi bursa, bukan cuma 5 tahun yfinance |
+| ☑ | ~~8~~ | **B2** | ~~Broker summary harian ke JSON~~ — **SELESAI**: `scripts/fetch_broker_summary.py` menembak `GetBrokerSummary` langsung, **753 berkas** `bs_YYMMDD.json` (2023-06-15 → 2026-08-14), `broker/index.json` diperbarui 17 Agu; dibaca `lib/dasbor/brokerHarian.ts:84`. **Sudah bukan dari PDF** | — | Bukti: 753 berkas + pembacanya hidup |
+| ☑ | ~~9~~ | **B4** | ~~Pasar NEGO / Bandar Flow~~ — **SELESAI (level pasar)**: `lib/dasbor/flowNego.ts` + tab **NEGO** & **Flow** (`BrokerSummary.tsx:254-255`), ber-`flowNego.test.ts` | — | Sisa yang belum: pecahan per emiten — dicatat di C7 urut 4, bukan di sini |
+| ☐ | 10 | **#173** | Tabel Akses bertingkat (induk–turunan): `probvv` di dalam `bulletin`, `seasonality-hari` di dalam `seasonality` | — | Kunci anak yang induknya tertutup = setelan yang tak pernah berlaku. **BELUM** — nol kata `induk` di `lib/aksesHalaman.ts`, `AksesAdmin.tsx`, maupun `supabase/` |
+| ☐ | 10b | **#165** | Thumbnail dibuat saat unggah | — | Gambar 420–520 KB berhenti dipakai di kotak 40 px. **BELUM** — nol `drawImage`/`toBlob` di jalur unggah. Yang sudah ada cuma penundaan: `UnggahHarian.tsx:738` memuat thumbnail **saat terlihat saja**, jadi bandwidth-nya tetap gambar penuh |
+| ☐ | 11 | **#171** | Rule engine paham dari satu kata — **SEBAGIAN** | — | **Sudah:** imbuhan Indonesia dilepas sebelum dicocokkan (`pengetahuan.ts:533-534`, `6f8f076d`), kata tunggal didaftarkan sebagai kunci (`94133bdc`). **Belum:** peta sinonim terpusat, toleransi salah ketik (nol jejak Levenshtein), kata tunggal ditawari cabang |
+| ☐ | 12 | **#172** | Emiten dijawab analisa + chip saran — **SEBAGIAN** | A1 | **Sudah:** aspek sudah bercabang — `jawabHarga`/`jawabValuasi`/`jawabSektor`/`jawabKinerja`/`jawabPemilik` (`tanyaPapan.ts:200-296`), tautannya ikut aspek. **Belum:** aspek **broker** (tak ada cabang ke Broker Summary), chip saran lanjutan (`interface Jawaban` tak punya ruasnya), dan sambungan kata ganti — komentar `tanyaPapan.ts:378-381` mengakui sendiri `topik` cuma menyimpan JENIS jawaban, bukan kode emitennya |
 
 ### Besar (berhari-hari, halaman/mesin baru)
 
 | ☐ | Urut | Fase | Tugas | Bergantung | Membuka |
 |---|---|---|---|---|---|
-| ☐ | 13 | **C2** | Indikator per emiten — **spek lengkap: `docs/spek-indikator.md`** (4 grup; termasuk SMA/EMA 150-200 yang di sisi SPLE mustahil, plus OBV & VWAP) | — | Prasyarat screener DAN #130. Data OHLCV 5 tahun sudah lengkap |
-| ☐ | 14 | **Chart 3** | Chart dasar: lilin + volume + zoom (opsi A, `lightweight-charts`) | C2 | **Rilis yang bisa diumumkan.** Sekarang `/chart` masih widget TradingView |
-| ☐ | 15 | **C3** | Screener seluruh emiten | C2 + B1 | 967×147 ruas akhirnya punya layar penyaring |
-| ☐ | 16 | **A2** | Bedah Emiten — 12 section, satu commit per section | A0 + A1 | Padanan sple-mf, plus Altman Z & F-Score yang tak mereka punya |
-| ☐ | 17 | **#130** | Divergensi tiga lapis (harga + stochastic + volume) | C2 + Chart 3 | Definisi sudah beres dari Johan 17 Agu |
-| ☐ | 18 | **A3** | Panen laporan keuangan resmi IDX (XLSX ber-XBRL) | A2 | 777/778 emiten TW2 2026; menutup kedalaman 9 tahun/16 kuartal |
-| ☐ | 19 | **B3** | Pemegang saham pengendali | A3 | Menutup celah kepemilikan lewat perusahaan perantara |
-| ☐ | 20 | **#166** | Rakit ulang mesin Mingguan & Bulanan | — | Sekarang 21 dari 24 halaman identik dengan edisi harian |
+| ☐ | 13 | **C2** | Indikator per emiten — **SEBAGIAN, jauh lebih maju dari yang tertulis dulu**. Spek: `docs/spek-indikator.md` (4 grup) | — | **Sudah:** MA, EMA, RSI, MACD, Bollinger, **OBV**, ATR sebagai instans **berparameter** yang bisa dipasang berkali-kali, plus pola Double Bottom & Lonjakan Volume dan template `localStorage` — `lib/dasbor/grafikEmiten.ts` (1.010 baris), `5bdc09b8` `2aa235ef` `f39fb953` `09bdd051`. **Belum, menurut speknya sendiri:** Grup 1 **Stochastic** (prasyarat #130), StochRSI, Williams %R · Grup 3 Wyckoff Phase, **VWAP** · seluruh Grup 4 Harmonic. Data OHLCV kini **10 tahun** (`ce0b03e`, median 2.256 baris/emiten), bukan 5 |
+| ☑ | ~~14~~ | **Chart 3** | ~~Chart dasar: lilin + volume + zoom~~ — **SELESAI 17 Agu**: rute `/grafik` terdaftar `App.tsx:113`, `GrafikEmiten.tsx` + `3d47eca5`; sesudahnya bertambah jenis chart Lilin/Garis (`57555f33`) dan perbesar/perkecil/muat-semua (`f03be621`) | — | `/chart` TradingView **tetap ada** dan memang halaman lain — jangan dikira ini belum jalan gara-gara itu |
+| ☐ | 14 | **C3** | Screener seluruh emiten | C2 (sebagian ✅) + B1 ✅ | 967×147 ruas akhirnya punya layar penyaring. **BELUM** — nol jejak. Prasyaratnya kini nyaris beres: B1 selesai, C2 sudah punya tujuh indikator terhitung |
+| ☐ | 15 | **A2** | Bedah Emiten — 12 section, satu commit per section | A0 ✅ + A1 | Padanan sple-mf, plus Altman Z & F-Score yang tak mereka punya. **BELUM sebagai halaman.** Jangan tertukar: `arus-pasar/build_bedah.py` + tab admin `BedahTab` itu **edisi terbitan** "Bedah", bukan halaman analisa 12 section |
+| ☐ | 16 | **#130** | Divergensi tiga lapis (harga + stochastic + volume) | C2 (Stochastic) + Chart 3 ✅ | Definisi sudah beres dari Johan 17 Agu. **BELUM** — nol `stochastic`/`divergen` di kode. Separuh lapis 1 sudah ada: `cariPivotRendah`/`cariPivotTinggi` (`grafikEmiten.ts:606,618`). Satu-satunya penghalang tersisa = Stochastic |
+| ☑ | ~~18~~ | **A3** | ~~Panen laporan keuangan resmi IDX (XLSX ber-XBRL)~~ — **SELESAI 17 Agu**: `scripts/panen_keuangan_idx.py`, `data-idx/json/keuangan_idx/` **943 berkas, nol yang kosong** (`1e4a40be`), lalu disambungkan ke panel Stock Detail (`bde4b97e`) | ~~A2~~ — ternyata tak perlu menunggu A2 | Menutup 313 emiten yang **tak bisa** ditutup lewat yfinance sama sekali |
+| ☐ | 17 | **B3** | Pemegang saham pengendali | ~~A3~~ ✅ **penghalangnya sudah hilang** | Menutup celah kepemilikan lewat perusahaan perantara. **BELUM** — nol kata `pengendali` di `scripts/` maupun `app/src`. **Naik dari urut 19**: prasyarat A3 sudah selesai dan mentah XBRL-nya sudah diarsipkan di `_arsip-mentah/`, jadi menambah ruas ini **tak berbiaya jaringan sama sekali** |
+| ☐ | 18 | **#166** | Rakit ulang mesin Mingguan & Bulanan — **SEBAGIAN** | — | **Sudah:** Bulanan kini **murni agregat** (sampul, scorecard, statistik, peringkat — nol halaman emiten salinan harian, `build_monthly.py:391-397`); Mingguan dapat halaman **Pola Sepekan** + ringkasan mingguan + strip Progresi Skor (`284f0003`, `39545443`). **Belum:** halaman per-emiten Mingguan **masih memanggil `halaman_emiten()` milik `build.py`** (`build_weekly.py:469`) — itu sumber keluhan "identik dengan edisi harian" |
 | ☑ | ~~21~~ **NAIK** | **#170** | **Selesai 18 Agu** (K1/K2/K3/K5/K8/K10 + seluruh temuan audit); K4/K6/K7 menunggu keputusan Johan. Penyeragaman kendali — **spek: `docs/spek-kendali.md`** (10 keluhan verbatim). Tahap: audit → komponen kanonis → terapkan per halaman | — | **Diangkat jadi pekerjaan utama 17 Agu** atas perintah Johan; alasan "sengaja terakhir" dibatalkan |
 
 ### Menunggu pembahasan, bukan menunggu giliran
@@ -83,6 +93,23 @@ itu yang menentukan urutan — bukan besar-kecilnya saja.
 - **#170 sengaja paling akhir.** Menyeragamkan kendali sebelum halaman barunya
   ada berarti menyeragamkan dua kali.
 
+**Perubahan urutan 18 Agu 2026, dan alasannya.** Nomor urut ditutup rapat
+setelah B2, B4, Chart 3 dan A3 dicoret — nomor yang bolong membuat orang
+mengira ada baris yang hilang. Satu baris benar-benar **berpindah tempat**:
+
+- **B3 pemegang saham pengendali naik dari 19 ke 17.** Ia diletakkan di bawah
+  karena "butuh A3" — dan A3 ternyata sudah selesai sejak 17 Agu. Baris ini
+  duduk di antrean tanpa penghalang tanpa ada yang tahu. Ongkosnya juga turun:
+  XLSX mentahnya sudah diarsipkan di `_arsip-mentah/`, jadi menambah ruas tak
+  menembak jaringan sama sekali (aturan arsip mentah di `CLAUDE.md`).
+- **A3 dicoret dari posisi 18 berikut ketergantungannya pada A2.** Urutan
+  lamanya ("sesudah A2, supaya datanya punya tempat") terbukti salah arah:
+  datanya dipanen duluan dan justru A2 yang sekarang punya bahan.
+- **C2 tidak dinaikkan walau ongkos sisanya sekarang paling kecil** — itu
+  keputusan Johan (urutan ringan → mahal mengikat), bukan keputusan saya.
+  Usulannya ada di catatan audit di bawah; kalau disetujui, C2-sisa pindah ke
+  tier Ringan.
+
 ## Antrean berikutnya — **halaman & fitur baru dari riset SPLE**
 
 > Jejak permintaan (**apa yang diminta Johan · sebelum · sesudah**) ada di
@@ -93,29 +120,35 @@ itu yang menentukan urutan — bukan besar-kecilnya saja.
 > (jalur A/B/C), risetnya di `docs/riset/sple/`. Jangan menyusun ulang — tabel
 > di bawah cuma papan centangnya.
 
+> ⚠️ **Dua tabel di bawah ini SALINAN LAMA (16 Agu) dan sudah kedaluwarsa.**
+> Statusnya tak diperbarui sejak ditulis, dan itu yang membuat B1/A0/B2/B4/A3
+> terlihat masih terbuka padahal sudah selesai. **Patokannya tabel "Urutan
+> kerja" di atas, bukan yang ini.** Dipertahankan hanya karena kolom "Kenapa
+> duluan"/"Bahan"-nya masih menjelaskan asal-usul tiap fase.
+
 **Empat ini dulu — semuanya kecil dan tak bergantung panen apa pun:**
 
-| ☐ | Fase | Tugas | Kenapa duluan |
+| ☑ | Fase | Tugas | Kenapa duluan |
 |---|---|---|---|
-| ☐ | **B1** | Sektor IDX-IC resmi (#157) | Dipakai hampir semua halaman lain — screener, bedah, banding sektor |
-| ☐ | **A0** | Satukan dua sumber fundamental | Menambal `operating_cf` kosong **80%** di panel Stock Detail yang **sudah ada**. Murni kode, tanpa panen |
+| ☑ | **B1** | Sektor IDX-IC resmi (#157) — **selesai** `4b659427`+`b60c5f66` | Dipakai hampir semua halaman lain — screener, bedah, banding sektor |
+| ☑ | **A0** | Satukan dua sumber fundamental — **selesai** `076ec76b` | Menambal `operating_cf` kosong **80%** di panel Stock Detail yang **sudah ada**. Murni kode, tanpa panen |
 | ☐ | **A1** | Rata-rata 5 tahun + ambang verdict valuasi | Verdict kita **dua sumbu**: riwayat emiten sendiri **dan** median sektornya (`pe_vs_sector_pct` sudah ada). Konflik antar-sumbu wajib disebut |
-| ☐ | **B2** | Broker summary harian ke JSON (#159) | 88 broker per tanggal; sekarang masih di-parse dari PDF |
+| ☑ | **B2** | Broker summary harian ke JSON (#159) — **selesai**, 753 berkas `bs_*.json` | 88 broker per tanggal; **sudah tidak lagi** di-parse dari PDF |
 
 **Halaman & fitur BARU:**
 
 | ☐ | Fase | Halaman/fitur baru | Bahan | Syarat |
 |---|---|---|---|---|
-| ☐ | **C2** | **Indikator per emiten** — RSI, MACD, Bollinger, ATR, Fibonacci, Ichimoku, VWAP, Heikin Ashi | OHLCV 5 tahun; rumus sudah ada di `lib/radar/` | **wajib sebelum C3** |
-| ☐ | **C3** | **Screener seluruh emiten — halaman baru** | `fundamental/` 967×147 + `ohlc/` 962 + B1 | butuh C2, kalau tidak cuma jadi tabel harga |
-| ☐ | **A2** | **Bedah Emiten — halaman baru, 12 section** (padanan sple-mf) | Tujuh dari sebelas section bahannya sudah ada | A0 + A1 |
+| ◐ | **C2** | **Indikator per emiten** — sebagian: MA/EMA/RSI/MACD/Bollinger/OBV/ATR sudah jalan; Stochastic, VWAP, StochRSI, Williams %R, Wyckoff, Harmonic belum | OHLCV **10 tahun**; rumus sudah ada di `lib/radar/` + `lib/dasbor/grafikEmiten.ts` | **wajib sebelum C3** |
+| ☐ | **C3** | **Screener seluruh emiten — halaman baru** | `fundamental/` 967×147 + `ohlc/` **964** + B1 ✅ | butuh C2, kalau tidak cuma jadi tabel harga |
+| ☐ | **A2** | **Bedah Emiten — halaman baru, 12 section** (padanan sple-mf) | Tujuh dari sebelas section bahannya sudah ada; A3 menambah lagi | A0 ✅ + A1 |
 | ☐ | **C6** | Halaman metodologi/glosarium di web | 75 istilah sudah jadi `glosarium.json` | — |
-| ☐ | **C4** | Heatmap & market breadth | data harian | — |
-| ☐ | **C7** | Foreign flow 5D/10D | agregasi `ds_*.json` | — |
+| ◐ | **C4** | Heatmap & market breadth — heatmap sektor sudah ada, breadth belum | data harian | — |
+| ◐ | **C7** | Foreign flow 5D/10D — level pasar sudah ada, per emiten belum | agregasi `ds_*.json` | — |
 | ☐ | **C8** | Watchlist | localStorage | — |
-| ☐ | **B4** | Pasar NEGO / Bandar Flow (#152) | ruas ada di `GetStockSummary`, belum dipanen | — |
-| ☐ | **A3** | Panen laporan keuangan resmi IDX (#156) | 777/778 emiten TW2 2026, XLSX ber-XBRL | sesudah A2, supaya datanya punya tempat |
-| ☐ | **B3** | Pemegang saham pengendali (#158) | laporan resmi IDX | butuh A3 |
+| ☑ | **B4** | Pasar NEGO / Bandar Flow (#152) — **selesai**, tab NEGO & Flow | ruas `GetStockSummary` sudah dipakai lewat `ds_*.json` | — |
+| ☑ | **A3** | Panen laporan keuangan resmi IDX (#156) — **selesai** `1e4a40be`, 943 berkas | 777/778 emiten TW2 2026, XLSX ber-XBRL | ~~sesudah A2~~ — ternyata tak perlu menunggu |
+| ☐ | **B3** | Pemegang saham pengendali (#158) | laporan resmi IDX (**sudah dipanen & diarsipkan**) | ~~butuh A3~~ ✅ sudah bebas |
 
 **Sisanya:**
 
@@ -128,8 +161,8 @@ itu yang menentukan urutan — bukan besar-kecilnya saja.
 | ☐ | 167 | Lapis Gemini Flash di Tanya PAPAN (C9) | Lapis aturannya sudah jalan. LLM ditunda sampai halaman baru jadi — datanya bertambah, cakupan rule-engine harus lengkap dulu |
 | ☐ | 166 | Rakit ulang mesin Mingguan & Bulanan | Mingguan 21 dari 24 halaman identik karakter-per-karakter dengan edisi harian |
 | ☐ | 165 | Thumbnail dibuat saat unggah | Gambar penuh 420–520 KB dikecilkan ke 40px di peramban |
-| ☐ | 162 | Sebab penolakan MBMA | Bergantung #161 |
-| ☐ | 161 | Pesan galat unggah masih generik | Menyebut empat kemungkinan sekaligus, bukan sebab sebenarnya |
+| ☐ | 162 | Sebab penolakan MBMA | ~~Bergantung #161~~ — **#161 sudah selesai**, jadi alat diagnosanya sudah ada. Tinggal memakainya |
+| ☑ | 161 | ~~Pesan galat unggah masih generik~~ — **SELESAI** `71733906`: galat membawa keterangan server + menandai tahapnya | Seluruh penjaga server sudah diuji satu per satu sebagai akun kontributor di dalam transaksi yang di-rollback |
 | ☐ | 154 | Peringatan konteks + tanggal metodologi di tiap halaman analitik | Yang membuat SPLE dipercaya bukan sinyalnya, tapi panduannya |
 | ☐ | 151 | Broker per emiten — sumbernya belum ketemu | `GetBrokerSummary` **mengabaikan** `stockCode`, hasilnya selalu level pasar |
 
@@ -172,7 +205,7 @@ itu yang menentukan urutan — bukan besar-kecilnya saja.
 | ☑ | 124 | Chart IHSG: pemilih rentang + judul | Chip YTD/1T/5T/10T/Semua; riwayat 36 tahun diunduh hanya saat diminta |
 | ☑ | 128 | Cocokkan fraksi harga ke dokumen IDX | Fraksi lima jenjang BENAR. **ARB 15% ternyata usang** — diperbaiki jadi simetris |
 | ☑ | 127 | PDF bulletin: daftarkan Red Hat | Font ditanam data URI + render menunggu `document.fonts` |
-| ☑ | 122 | Panen OHLC harian 5 tahun seluruh emiten | 962 dari 963 emiten, 37,3 MB. Hanya GOTOM gagal (tak ada di Yahoo) |
+| ☑ | 122 | Panen OHLC harian seluruh emiten — **diperdalam 5 → 10 tahun 18 Agu** (`ce0b03e`) | 962 dari 963 emiten. Median **2.256 baris/emiten** (dari 1.208), 472 emiten kini mulai 2016. Hanya GOTOM gagal (tak ada di Yahoo). `--lewati-cukup` membuat panen yang putus bisa dilanjutkan |
 | ☑ | 132 | Chart komparasi Seasonality antar-emiten | Garis per emiten, sumbu dikunci 0–100%, bulan tanpa data digambar putus |
 | ☑ | 131b | Seasonality tab 2 — bagian emiten | Pemilih sumber IHSG ↔ satu emiten, memakai OHLC hasil #122 |
 | ☑ | 99 | Stock Detail: laporan keuangan kuartalan | Panelnya sudah lengkap (kuartal/tahunan × laba rugi/neraca/arus kas); yang kurang cuma cakupan data — panen seluruh emiten dijalankan |
@@ -346,7 +379,7 @@ ke berkas ceklist ini** — berkas ceklist bukan bukti bahwa kodenya ada.
 | 99 | Panel lengkap: kuartal/tahunan × laba rugi/neraca/arus kas | Cakupan data 646/959. Kodenya sendiri mengakui di `stockDetailData.ts:348` |
 | 123 | Skema siap: `umumkanFitur()`, RLS `untuk IS NULL`, lonceng merender generik | `umumkanFitur(` **tak dipanggil di mana pun** — tak ada pemicu, tabel `notifikasi` 0 baris |
 | 107 | Badge % (`TopStocks.tsx:218`), klik ke chart (`:141`) | "Bar tembus" tak ada — tapi memang sudah dipisah jadi #145, bukan utang #107 |
-| — | — | Skrip panen XBRL resmi IDX **belum ada**. `sumber-fundamental-idx.md:231` menyebut `scripts/panen_lapkeu_idx.py` sebagai rencana; berkasnya tidak ada |
+| — | ~~Skrip panen XBRL resmi IDX belum ada~~ — **sudah ada sejak 17 Agu**: `scripts/panen_keuangan_idx.py`, 943 berkas (`1e4a40be`). Namanya bukan `panen_lapkeu_idx.py` seperti direncanakan | — |
 
 ### Belum & diparkir
 
@@ -365,3 +398,63 @@ memang tak punya laporan keuangan untuk emiten-emiten itu. Artinya celah
 646→959 **tidak bisa ditutup lewat yfinance sama sekali**, dan XBRL resmi IDX
 bukan sekadar sumber yang lebih baik — ia satu-satunya jalan untuk 313 emiten
 itu.
+
+---
+
+## Audit ulang 18 Agu 2026 — daftarnya melenceng ke DUA arah
+
+Diperiksa langsung ke kode, data, dan `git log`, **bukan ke centang berkas ini**.
+Patokan bukti: rutenya terdaftar, fungsinya diekspor **dan dipanggil**, berkas
+datanya ada **dan tidak kosong**. Uji: `392/392 vitest hijau`.
+
+### Arah pertama — ditandai ☐ padahal sudah jadi
+
+**Lima selesai penuh:**
+
+| Item | Bukti |
+|---|---|
+| **B2** broker summary ke JSON | `scripts/fetch_broker_summary.py`; 753 `bs_YYMMDD.json` (2023-06-15→2026-08-14); dibaca `brokerHarian.ts:84` |
+| **B4** Pasar NEGO / Bandar Flow | `flowNego.ts` + tab NEGO & Flow `BrokerSummary.tsx:254-255`; `flowNego.test.ts` |
+| **Chart 3** lilin+volume+zoom | rute `/grafik` `App.tsx:113`; `3d47eca5`, `57555f33`, `f03be621` |
+| **A3** panen XBRL resmi IDX | `panen_keuangan_idx.py`; 943 berkas, **nol kosong**; `1e4a40be` + `bde4b97e` |
+| **#161** pesan galat unggah | `71733906` |
+
+**Enam lagi sebagian besarnya sudah jalan** dan ditandai ☐ tanpa keterangan:
+C2 (tujuh indikator + dua pola + template), C4 (heatmap sektor), C7 (flow level
+pasar), #166 (Bulanan sudah murni agregat), #171 (imbuhan dilepas), #172 (aspek
+sudah bercabang lima).
+
+### Arah kedua — lebih berbahaya: ditandai ☑ padahal mati
+
+| Item | Apa yang sebenarnya terjadi |
+|---|---|
+| **#123** badge/notifikasi fitur baru — ☑ di tabel "gelombang kedua" | `umumkanFitur()` ada di `lib/notifikasi.ts:57` dan **tak dipanggil dari mana pun**. Skema, RLS, dan lonceng hidup; pemicunya tidak. Sudah tertulis di audit 17 Agu, tapi centangnya tak pernah dicabut — jadi daftarnya menyebut "selesai" untuk fitur yang tak pernah bisa menyala |
+| **#144** sweep orderbook → broker summary — ☑ | Lapis DATA masih `orderbook`: `lib/contohOrderbook.ts` masih membaca tabel `contoh_orderbook`, tipe `JenisSetoran` masih hidup di `supabaseEdisi.ts`. Yang selesai cuma lapis teks |
+
+Pelajarannya sama untuk keduanya: **"berkasnya ada" bukan bukti.** Yang
+membuktikan sebuah fitur hidup adalah ada yang **memanggilnya**.
+
+### Yang belum punya baris sama sekali di daftar ini
+
+- **`ohlc/` sudah sampai 2026-08-18, `data-idx/json/index.json` berhenti di
+  2026-08-14.** Halaman yang membaca lilin harian tahu dua hari bursa yang
+  belum diketahui sisa dasbor. Tercatat di `rencana-berjalan.md` sebagai "perlu
+  diputuskan" tapi tak pernah jadi baris backlog — jadi tak ada yang
+  mengantrekannya. Dua jalan: panen harian menyusul, atau `/grafik` dibatasi
+  mengikuti `index.json`.
+- **`docs/jejak-permintaan.md` bagian "Chart PAPAN sendiri" masih menandai
+  tahap 4 (indikator baku) ☐** padahal sudah rilis (`5bdc09b8`). Bukan
+  wewenang berkas ini untuk memperbaikinya — dicatat supaya tak dipakai sebagai
+  patokan.
+
+### Usulan yang menunggu jawaban Johan (jangan dikerjakan sebelum dijawab)
+
+1. **Naikkan sisa C2 ke tier Ringan?** Yang tersisa cuma Stochastic, VWAP,
+   StochRSI, dan Williams %R — dan kerangkanya (instans berparameter, legenda,
+   pane) sudah berdiri, jadi biayanya sekarang setara item tier Ringan, bukan
+   tier Besar. Kalau naik, ia langsung membuka **#130** (Stochastic itu lapis 2,
+   satu-satunya penghalang tersisa) **dan** C3. Urutan ringan→mahal itu perintah
+   Johan, jadi pemindahannya juga harus dari Johan.
+2. **#170 K4/K6/K7** tetap menunggu — pertanyaannya di
+   `docs/spek-kendali.md` bagian "Yang TIDAK dikerjakan".
+3. **#168** cara scraping arsip berita — tetap menunggu pembahasan.
