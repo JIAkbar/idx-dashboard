@@ -239,9 +239,17 @@
      "daily kurang rapi nih susunan nya"). */
   .cover .wm-big.kecil{font-size:34pt;line-height:1.1}
   .cv-list.padat{columns:2;column-gap:10mm;margin-top:9mm}
-  .cv-list.padat .cvrow{padding:3.1mm 0;gap:3.5mm;break-inside:avoid}
+  /* Tinggi baris DIPATOK, tidak mengikuti panjang labelnya. Dengan
+     `columns:2` tiap baris setinggi isinya sendiri, sehingga label satu baris
+     dan dua baris membuat lajur kiri dan kanan bergeser makin jauh ke bawah —
+     GTSI di kiri tak lagi sejajar dengan KIJA di kanan (temuan 18 Agu).
+     Tinggi tetap + label dibatasi dua baris membuat baris ke-n di kedua lajur
+     selalu berada di garis yang sama. */
+  .cv-list.padat .cvrow{padding:0;gap:3.5mm;break-inside:avoid;
+    min-height:13.2mm;height:13.2mm;align-items:center}
   .cv-list.padat .tkk{font-size:11pt;width:18mm}
-  .cv-list.padat .lb{font-size:8pt;line-height:1.35}
+  .cv-list.padat .lb{font-size:8pt;line-height:1.35;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .cv-list.padat .sk{font-size:11pt}
   .cv-foot{margin-top:auto;padding-bottom:14mm}
   /* kotak stat berlabel gaya sampul lama (V2) — angka besar kebaca, bukan
