@@ -1300,8 +1300,11 @@
 .lantai .pi-graph svg { touch-action: none; display: block; }
 /* Tombol layar penuh graf — overlay pojok kanan-atas AREA GRAF (anak
    .pi-graph-wrap, bukan kartu — supaya tidak menimpa kepala panel detail). */
-.lantai .pi-fs-btn { position: absolute; top: 10px; right: 10px; z-index: 20; display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: var(--r-kecil, 8px); border: 0.5px solid var(--border2); background: var(--card); color: var(--text2); font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
-.lantai .pi-fs-btn:hover { color: var(--text); border-color: var(--accent); }
+/* Bentuknya kini TombolLayarPenuh (#170) — sama dengan dua tombol layar penuh
+   lain yang dulu ditulis terpisah. Yang khas di sini: ia menumpang di sudut
+   kanvas grafik, jadi butuh posisi absolut dan latar pekat supaya terbaca di
+   atas simpul jaringan. */
+.lantai .dd-btn.pi-fs-btn { position: absolute; top: 10px; right: 10px; z-index: 20; background: var(--card); }
 /* Layar penuh (#51 reuse): aturan umum .panel:fullscreen memaksa kolom untuk
    halaman chart — kartu graf tetap baris graf|panel detail; tinggi graf ikut
    layar (menang atas 360px !important mobile karena selektor lebih spesifik). */
@@ -2476,14 +2479,12 @@
 .lantai .sea-saran-it .rg { font-family: var(--mono); font-size: 9.5px; color: var(--text3); }
 
 .lantai .sea-chip-baris { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.lantai .sea-chip {
-  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
-  font-family: var(--mono); font-size: 11px; font-weight: 700;
-  height: 26px; padding: 0 12px; border-radius: 4px;
-  background: var(--amber-dim); border: 1px solid var(--amber); color: var(--amber);
-}
+/* K10 selesai di sini: .sea-chip tak lagi menggambar bentuknya sendiri, ia
+   cuma .chip-t.on yang kebetulan menggendong ikon silang. Dulu chip IHSG dan
+   chip emiten terpilih duduk bersebelahan dengan dua bentuk berbeda. */
+.lantai .chip-t.sea-chip { gap: 6px; }
 .lantai .sea-tahun { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.lantai .sea-tahun .bchip.on { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); }
+
 /* Toggle Praset / Tanggal ke tanggal (#170 K9) — `.tabs`/`.tab` yang sama
    dipakai di seluruh Lantai (mis. Bulanan/Harian di Seasonality.tsx, tab
    halaman ini sendiri), bukan pil baru. */

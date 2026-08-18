@@ -201,7 +201,7 @@ export function Seasonality() {
           <div className="sea-tahun">
             <span className="lbl">Mulai dari</span>
             {[0, 2010, 2015, 2020].map((t) => (
-              <button key={t} type="button" className={'bchip bchip-klik' + (sejak === t ? ' on' : '')}
+              <button key={t} type="button" className={`chip-t${sejak === t ? ' on' : ''}`}
                 onClick={() => setSejak(t)}>{t === 0 ? 'Semua' : t}</button>
             ))}
           </div>
@@ -323,7 +323,7 @@ function LaciBulan({ kode, nama, b, onTutup }: {
     <section className="panel sea-laci">
       <div className="panel-h">
         <span className="lbl">{kode} · {BULAN[b.bulan - 1]}</span>
-        <button type="button" className="bchip bchip-klik" onClick={onTutup}>Tutup</button>
+        <button type="button" className="dd-btn" onClick={onTutup}>Tutup</button>
       </div>
       <div className="panel-b sea-laci-isi">
         <div className="sea-laci-angka">

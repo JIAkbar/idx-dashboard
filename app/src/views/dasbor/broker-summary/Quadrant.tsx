@@ -1,10 +1,10 @@
+import { TombolLayarPenuh } from '../../../components/dasbor/TombolLayarPenuh'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChartConfiguration, Plugin } from 'chart.js/auto'
 import { useChartCanvas } from '../../../lib/dasbor/useChartJs'
 import { useTheme } from '../../../context/ThemeContext'
 import { fmtB } from '../../../lib/dasbor/brokerSummaryFormat'
 import type { BrokerRow } from '../../../lib/dasbor/brokerSummaryData'
-import { IkonMenu, IKON_PERLUAS } from '../../../components/dasbor/IkonMenu'
 
 interface QuadrantProps {
   brokers: BrokerRow[]
@@ -197,17 +197,7 @@ export function Quadrant({ brokers }: QuadrantProps) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
         <div className="lbl" style={{ flex: 1, minWidth: 0 }}>⊞ Kuadran Broker — X: Frekuensi (log), Y: Nilai (log), Ukuran: Nilai · garis putus = median</div>
         {typeof document !== 'undefined' && document.fullscreenEnabled && (
-          <button
-            className="bchip"
-            style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}
-            onClick={() => {
-              if (fs) document.exitFullscreen?.().catch(() => {})
-              else wrapRef.current?.requestFullscreen?.()?.catch(() => {})
-            }}
-            title={fs ? 'Keluar layar penuh' : 'Layar penuh'}
-          >
-            {fs ? <IkonMenu d="M6 6l12 12M18 6L6 18" size={12} /> : <IkonMenu d={IKON_PERLUAS} size={12} />} {fs ? 'Keluar' : 'Layar Penuh'}
-          </button>
+          <TombolLayarPenuh target={wrapRef} aktif={fs} labelKeluar="Keluar" />
         )}
       </div>
       <div className="chart-wrap chart-tinggi">

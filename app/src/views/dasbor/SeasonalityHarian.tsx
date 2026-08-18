@@ -165,10 +165,13 @@ export function SeasonalityHarian() {
     <div className="panel">
       <div className="panel-b sea-hari-sumber">
         <span className="lbl">Sumber</span>
-        <button type="button" className={'bchip bchip-klik' + (kode === 'IHSG' ? ' on' : '')}
+        {/* K10: dulu IHSG memakai .bchip dan emiten terpilih memakai .sea-chip —
+            dua kelas, dua bentuk, bersebelahan, untuk pilihan yang sama persis.
+            Sekarang keduanya .chip-t, kelas kanonis "pilih satu dari beberapa". */}
+        <button type="button" className={`chip-t${kode === 'IHSG' ? ' on' : ''}`}
           onClick={() => { setKode('IHSG'); setCari('') }}>IHSG</button>
         {kode !== 'IHSG' && (
-          <button type="button" className="sea-chip" onClick={() => { setKode('IHSG'); setCari('') }} title={`Kembali ke IHSG`}>
+          <button type="button" className="chip-t on sea-chip" onClick={() => { setKode('IHSG'); setCari('') }} title={`Kembali ke IHSG`}>
             {kode} <IkonMenu d={IKON_SILANG} size={9} />
           </button>
         )}
@@ -222,7 +225,7 @@ export function SeasonalityHarian() {
               </button>
             </div>
             {!modeBebas && RENTANG.map(([label]) => (
-              <button key={label} type="button" className={'bchip bchip-klik' + (pilih === label ? ' on' : '')}
+              <button key={label} type="button" className={`chip-t${pilih === label ? ' on' : ''}`}
                 onClick={() => setPilih(label)}>{label}</button>
             ))}
             {modeBebas && (

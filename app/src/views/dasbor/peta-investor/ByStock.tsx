@@ -128,7 +128,7 @@ export function ByStock({ data, onSelect }: ByStockProps) {
           )}
           {!habis && ioGagal && (
             <div style={{ textAlign: 'center', padding: 10 }}>
-              <button type="button" className="bchip" style={{ cursor: 'pointer' }} onClick={muatLagi}>
+              <button type="button" className="dd-btn" onClick={muatLagi}>
                 Tampilkan {Math.min(rows.length - visible.length, PAGE)} lagi (sisa {rows.length - visible.length})
               </button>
             </div>

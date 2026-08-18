@@ -1,7 +1,8 @@
+import { TombolLayarPenuh } from '../../components/dasbor/TombolLayarPenuh'
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { TradingViewChart } from '../../components/dasbor/TradingViewChart'
-import { IkonMenu, IKON_PERLUAS, IKON_GRAFIK_NAIK, IKON_API } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_GRAFIK_NAIK, IKON_API } from '../../components/dasbor/IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 
 /** Port TV_GROUPS index_live.html baris 3442-3466 — dua simbol dikoreksi
@@ -69,35 +70,6 @@ const GROUP_LABEL: Record<TvGroup, string> = {
 }
 
 type TvGroup = keyof typeof TV_GROUPS
-
-/** Layar penuh lewat Fullscreen API bawaan peramban, bukan simulasi lewat CSS
- * class + state React. ESC-menutup, ukuran layar telepon, dan urutan tumpuk
- * semua ditangani peramban sendiri — satu-satunya glue yang masih perlu kita
- * tulis ada di .lantai .panel:fullscreen (lantai.css) supaya anak yang tinggi
- * pikselnya tetap (.tv-section-inner) ikut melebar mengisi layar. */
-function penuh(ref: React.RefObject<HTMLDivElement | null>) {
-  ref.current?.requestFullscreen?.()?.catch(() => {})
-}
-
-function keluarPenuh() {
-  document.exitFullscreen?.().catch(() => {})
-}
-
-/** Tombol Layar Penuh yang jadi tombol Keluar (ikon X, bukan emoji) begitu
- * panel ini yang sedang aktif fullscreen — lihat `fullscreenchange` listener
- * di bawah, biar tetap sinkron kalau user keluar lewat Esc. */
-function TombolLayarPenuh({ panelRef, aktif }: { panelRef: React.RefObject<HTMLDivElement | null>; aktif: boolean }) {
-  return (
-    <button
-      className="bchip"
-      style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
-      onClick={() => (aktif ? keluarPenuh() : penuh(panelRef))}
-      title={aktif ? 'Keluar layar penuh' : 'Layar penuh'}
-    >
-      {aktif ? <IkonMenu d="M6 6l12 12M18 6L6 18" size={12} /> : <IkonMenu d={IKON_PERLUAS} size={12} />} {aktif ? 'Keluar Layar Penuh' : 'Layar Penuh'}
-    </button>
-  )
-}
 
 /**
  * Menu Chart — port index_live.html baris 1063-1116 (markup) + 3442-3561 (logic).
@@ -205,7 +177,7 @@ export function ChartIndeks() {
       <div className="panel" ref={chartPanelRef}>
         <div className="panel-h">
           <span className="lbl"><IkonMenu d={IKON_GRAFIK_NAIK} size={13} /> Chart Indeks IDX</span>
-          <TombolLayarPenuh panelRef={chartPanelRef} aktif={panelFs !== null && panelFs === chartPanelRef.current} />
+          <TombolLayarPenuh target={chartPanelRef} aktif={panelFs !== null && panelFs === chartPanelRef.current} />
         </div>
         <div className="panel-b">
           <div className="tabs" role="tablist" aria-label="Grup Indeks">
@@ -229,8 +201,7 @@ export function ChartIndeks() {
                 <button
                   key={s}
                   type="button"
-                  className="bchip"
-                  style={aktif ? { borderColor: 'var(--amber)', color: 'var(--amber)', cursor: 'pointer' } : { cursor: 'pointer' }}
+                  className={`chip-t${aktif ? ' on' : ''}`}
                   onClick={() => setSym(s)}
                 >
                   {label}
@@ -247,7 +218,7 @@ export function ChartIndeks() {
       <div className="panel" ref={heatPanelRef}>
         <div className="panel-h">
           <span className="lbl"><IkonMenu d={IKON_API} size={13} /> Heatmap Saham IDX</span>
-          <TombolLayarPenuh panelRef={heatPanelRef} aktif={panelFs !== null && panelFs === heatPanelRef.current} />
+          <TombolLayarPenuh target={heatPanelRef} aktif={panelFs !== null && panelFs === heatPanelRef.current} />
         </div>
         <div className="panel-b">
           <div className="tv-section-inner" style={{ height: 400, borderRadius: 8, overflow: 'hidden' }}>

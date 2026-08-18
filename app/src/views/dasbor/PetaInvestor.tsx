@@ -1,3 +1,4 @@
+import { TombolLayarPenuh } from '../../components/dasbor/TombolLayarPenuh'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { GrupKonglomerat } from '../../components/dasbor/GrupKonglomerat'
 import { GrafikJaringan } from '../../components/dasbor/GrafikJaringan'
@@ -8,7 +9,7 @@ import { ByInvestor } from './peta-investor/ByInvestor'
 import { DetailPanel } from './peta-investor/DetailPanel'
 import { PetaInvestorSearch, type PetaInvestorSearchHandle } from './peta-investor/PetaInvestorSearch'
 import { exportEmiten, exportInvestor } from '../../lib/dasbor/exportPeta'
-import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_ULANG, IKON_KLIK, IKON_PERLUAS } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_ULANG, IKON_KLIK } from '../../components/dasbor/IkonMenu'
 
 /** Panah unduh ke tray — sama dengan IKON_UNDUH lokal Bulletin.tsx. */
 const IKON_UNDUH = 'M12 4v10M7.5 10.5L12 15l4.5-4.5M5 19h14'
@@ -209,18 +210,7 @@ export function PetaInvestor() {
               </div>
               <div className="panel pi-graph-card" ref={graphCardRef}>
                 <GrafikJaringan allData={data} emitenList={emitenList} focusCode={focusCode} onSelect={handleSelect}>
-                  <button
-                    type="button"
-                    className="pi-fs-btn"
-                    onClick={() => {
-                      if (fsAktif) document.exitFullscreen?.().catch(() => {})
-                      else graphCardRef.current?.requestFullscreen?.()?.catch(() => {})
-                    }}
-                    title={fsAktif ? 'Keluar layar penuh' : 'Layar penuh'}
-                  >
-                    {fsAktif ? <IkonMenu d="M6 6l12 12M18 6L6 18" size={13} /> : <IkonMenu d={IKON_PERLUAS} size={13} />}
-                    <span>{fsAktif ? 'Keluar' : 'Layar Penuh'}</span>
-                  </button>
+                  <TombolLayarPenuh target={graphCardRef} aktif={fsAktif} labelKeluar="Keluar" className="pi-fs-btn" />
                 </GrafikJaringan>
                 {selectedDetail && <DetailPanel allData={data} selected={selectedDetail} onClose={() => setSelectedDetail(null)} />}
               </div>

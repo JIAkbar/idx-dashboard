@@ -244,7 +244,7 @@ export function StockDetail() {
 
           <div style={{ fontSize: 9, color: 'var(--text3)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span><IkonMenu d={IKON_JAM} size={11} /> Data delay · Diperbarui: {fd.updated || '—'}</span>
-            <Link to={`/forum/${fd.ticker}`} className="bchip bchip-klik" style={{ cursor: 'pointer' }}>
+            <Link to={`/forum/${fd.ticker}`} className="dd-btn">
               Diskusi {fd.ticker}
             </Link>
           </div>

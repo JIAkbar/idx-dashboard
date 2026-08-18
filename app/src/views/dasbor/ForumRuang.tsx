@@ -214,7 +214,7 @@ export function ForumRuang() {
             {balasKe && (
               <div className="forum-balas-ke">
                 <span>Membalas {namaPenulis(balasKe, session?.user.id, profil?.alias, petaAlias)}: &ldquo;{ringkas(balasKe.isi)}&rdquo;</span>
-                <button type="button" className="bchip bchip-klik" style={{ cursor: 'pointer' }} onClick={() => setBalasKe(null)}>Batal</button>
+                <button type="button" className="dd-btn" onClick={() => setBalasKe(null)}>Batal</button>
               </div>
             )}
             <KotakTulisTag
@@ -240,7 +240,7 @@ export function ForumRuang() {
               <p style={{ fontSize: 11, color: 'var(--red)', margin: 0 }}>
                 {kirimGalat}
                 {kuotaHabis && loginModal && (
-                  <> · <button type="button" className="bchip bchip-klik" style={{ cursor: 'pointer' }} onClick={() => loginModal.buka()}>Buat akun</button></>
+                  <> · <button type="button" className="dd-btn" onClick={() => loginModal.buka()}>Buat akun</button></>
                 )}
               </p>
             )}
@@ -387,10 +387,10 @@ function PesanBaris({ p, sesiId, alias, petaAlias, superadmin, onBalas, onLapor,
       )}
       <IsiPesan teks={p.isi} />
       <div className="forum-msg-aksi">
-        <button type="button" className="bchip bchip-klik" style={{ cursor: 'pointer' }} onClick={onBalas}>Balas</button>
-        <button type="button" className="bchip bchip-klik" style={{ cursor: 'pointer' }} onClick={onLapor}>Laporkan</button>
+        <button type="button" className="dd-btn" onClick={onBalas}>Balas</button>
+        <button type="button" className="dd-btn" onClick={onLapor}>Laporkan</button>
         {superadmin && (
-          <button type="button" className="bchip bchip-klik forum-hapus" style={{ cursor: 'pointer' }}
+          <button type="button" className="dd-btn merah forum-hapus"
             onClick={onHapus} title="Hapus pesan ini">
             <IkonMenu d={IKON_TONG} size={11} /> Hapus
           </button>
