@@ -32,6 +32,8 @@ import { useDaftarInstans } from '../../components/dasbor/DaftarInstans'
 import { ModalSetelanInstans } from '../../components/dasbor/ModalSetelanInstans'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { TombolLayarPenuh } from '../../components/dasbor/TombolLayarPenuh'
+import { AlatGambar } from '../../components/dasbor/AlatGambar'
+import { useAlatGambar } from '../../lib/dasbor/useAlatGambar'
 import { fN } from '../../lib/dasbor/format'
 import { pesanGalat } from '../../lib/pesanGalat'
 import {
@@ -689,6 +691,19 @@ export function GrafikEmiten() {
     penandaRef.current = createSeriesMarkers(baru, [])
     setVersiSeriHarga((v) => v + 1)
   }, [jenisChart])
+
+  /**
+   * Alat gambar (#185) — bilah kiri kanvas ala TradingView. Seluruh orkestrasi
+   * (pustaka dinamis, manager, klik-klik tempel titik, kuas, penyimpanan per
+   * emiten) ada di `useAlatGambar.ts`; berkas ini cuma menyerahkan ref chart/
+   * seri/kontainer yang SUDAH ADA dan merender `<AlatGambar>`. Diletakkan
+   * SESUDAH efek pembuatan chart & seri harga (di atas) supaya begitu efek
+   * internal hook ini berjalan, `chartRef.current`/`hargaRef.current` sudah
+   * terisi — urutan efek React mengikuti urutan pemanggilan hook di sini.
+   */
+  const alatGambar = useAlatGambar({
+    chartRef, seriesRef: hargaRef, containerRef, kode, versiSeriHarga,
+  })
 
   // Sumbu waktu menampilkan JAM hanya pada kerangka intraday. Disetel di efek
   // sendiri (bukan di opsi pembuatan chart) karena kerangkanya bisa ditukar
@@ -1504,6 +1519,21 @@ export function GrafikEmiten() {
             </div>
           )}
 
+          {/* Area kanvas: bilah alat gambar (kiri, desktop) + bungkus kanvas.
+              Row di desktop, kolom di telepon (bilah jadi baris mendatar yang
+              bisa disembunyikan — lihat AlatGambar.tsx & blok telepon di CSS).
+              Tinggi kanvas TAK berubah karena bilah ini — cuma lebar yang
+              dibagi, sama seperti legenda dalam-kanvas tak menambah tinggi. */}
+          <div className="grf-kanvas-area">
+            <AlatGambar
+              pustaka={alatGambar.pustaka}
+              galat={alatGambar.galat}
+              alatAktif={alatGambar.alatAktif}
+              onPilihAlat={alatGambar.pilihAlat}
+              adaTerpilih={alatGambar.adaTerpilih}
+              onHapusTerpilih={alatGambar.hapusTerpilih}
+              onSentuh={alatGambar.mintaPustaka}
+            />
           {/* Bungkus TERPISAH dari containerRef — lightweight-charts mengisi
               containerRef dengan kanvasnya sendiri; tanda PAPAN dipasang
               sebagai SAUDARA di bungkus ini (bukan anak containerRef) supaya
@@ -1641,6 +1671,7 @@ export function GrafikEmiten() {
                 fontSize="38" fontWeight="700" fill="var(--amber-ink)">P</text>
               <rect x="4" y="31" width="56" height="2" fill="var(--amber-ink)" opacity="0.32" />
             </svg>
+          </div>
           </div>
 
           {/* Bilah bawah — rentang tampil, zona waktu, mode skala. Sama seperti

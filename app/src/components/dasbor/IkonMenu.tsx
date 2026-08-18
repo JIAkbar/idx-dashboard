@@ -72,3 +72,13 @@ export const IKON_INFO = 'M12 21a9 9 0 100-18 9 9 0 000 18zM12 11v6M12 7.5h.01' 
 export const IKON_LILIN = 'M8 3v18M5 7h6v10H5zM16 3v18M13 10h6v6h-6z' // dua lilin — pilihan jenis gambar harga di Grafik Emiten
 export const IKON_KAMERA = 'M4 7h3l1.5-2h7L17 7h3a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V8a1 1 0 011-1zM12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z' // simpan tangkapan kanvas jadi PNG
 export const IKON_SALIN ='M9 9h10a1 1 0 011 1v10a1 1 0 01-1 1H9a1 1 0 01-1-1V10a1 1 0 011-1zM5 15H4a1 1 0 01-1-1V4a1 1 0 011-1h10a1 1 0 011 1v1' // dua lembar bertumpuk — salin ke papan klip
+
+/* ---------- Bilah alat gambar (Grafik Emiten, #185) ---------- */
+export const IKON_KURSOR = 'M5 3l6.5 16.5 2-6.5 6.5-2z' // panah pilih — sama bentuk dgn IKON_KLIK, dipakai terpisah supaya makna "alat kursor/pilih" tak tercampur "klik di sini"
+export const IKON_GARIS_TREN = 'M4 20L20 4' // diagonal — garis tren
+export const IKON_GARIS_H = 'M3 12h18M4 9v6M20 9v6' // garis horizontal, ujung ditandai tegak kecil
+export const IKON_GARIS_V = 'M12 3v18M9 4h6M9 20h6' // garis vertikal, ujung ditandai datar kecil
+export const IKON_FIBONACCI = 'M3 5h18M3 9h13M3 13h18M3 17h8M3 21h18' // lima garis panjang berbeda — tangga retracement
+export const IKON_PERSEGI = 'M4 6h16v12H4z' // rectangle
+export const IKON_TEKS = 'M5 5h14M12 5v14M8 19h8' // huruf T bertumpu
+export const IKON_KUAS = 'M18.4 3c.9 0 1.6.7 1.6 1.6 0 .4-.2.8-.5 1.1L11 14.2l-3.2-3.2 8.5-8.5c.3-.3.7-.5 1.1-.5zM7 12l-3.5 8.5S6 20 8 18l3-3' // kuas — freehand

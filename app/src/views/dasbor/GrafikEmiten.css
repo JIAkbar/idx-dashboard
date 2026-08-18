@@ -346,6 +346,56 @@
 .lantai .grf-panduan-item dt { font-size: 11.5px; font-weight: 700; color: var(--text); }
 .lantai .grf-panduan-item dd { margin: 2px 0 0; font-size: 11.5px; line-height: 1.55; color: var(--text2); }
 
+/* ---------- Bilah alat gambar (#185) ---------- */
+/* Row: bilah alat (kiri) + bungkus kanvas (kanan), berbagi tinggi yang sama —
+   TINGGI KANVAS TAK BERUBAH karena bilah ini, cuma lebar yang dibagi. `align-
+   items: stretch` (bawaan flex) yang membuat bilah setinggi bungkus kanvas di
+   sebelahnya, bukan angka tetap yang bisa lepas sinkron saat kanvas berganti
+   tinggi (layar penuh, mis.). `min-width: 0` WAJIB di bungkus kanvas — tanpa
+   itu ia menolak menyusut di bawah lebar kontennya sendiri dan mendorong
+   bilah alat keluar viewport di layar sempit (aturan grid/flex minmax(0,1fr)
+   yang sama, CLAUDE.md). */
+.lantai .grf-kanvas-area { display: flex; align-items: stretch; gap: 8px; }
+.lantai .grf-kanvas-area .grf-kanvas-bungkus { flex: 1 1 auto; min-width: 0; }
+
+.lantai .grf-alat-gambar { flex: none; }
+/* Toggle "buka/tutup" cuma berarti di telepon (blok media di bawah) —
+   disembunyikan di desktop lewat display:none, bukan dihapus dari DOM, supaya
+   tak ada percabangan render terpisah untuk dua ukuran layar. */
+.lantai .grf-alat-toggle { display: none; }
+.lantai .grf-kanvas-area .grf-alat-isi {
+  flex-direction: column; padding: 6px 4px;
+  border: 1px solid var(--line); border-radius: var(--r-kecil); background: var(--bg2);
+}
+.lantai .grf-kanvas-area .grf-alat-isi .ti { width: 30px; height: 30px; }
+.lantai .grf-kanvas-area .grf-alat-isi .ti.on { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); }
+.lantai .grf-kanvas-area .grf-alat-isi .dd-btn { width: 30px; height: 30px; padding: 0; justify-content: center; font-size: 13px; }
+.lantai .grf-kanvas-area .grf-alat-isi .dd-btn svg { display: none; } /* chevron bawaan Dropdown — bilah ini sempit, "⋯" saja cukup */
+/* Pemisah horizontal (bilah ini vertikal) antara alat & tombol Hapus —
+   padanan `.grf-pisah` toolbar atas, cuma orientasinya diputar. */
+.lantai .grf-alat-pisah { height: 1px; margin: 2px 3px; background: var(--line2); }
+
+/* ---------- Telepon: bilah jadi baris mendatar di balik satu tombol ---------- */
+/* Kenapa bukan bilah vertikal permanen: 412px sudah sempit untuk kanvas
+   sendiri (lihat blok telepon .grf-chart-wrap di bawah, 340px), dan bilah
+   vertikal 30px+padding+border memangkas ~10% lebar itu SETIAP SAAT walau
+   pembacanya tak sedang menggambar. Kenapa bukan dihilangkan sama sekali:
+   menggambar dari telepon tetap harus bisa. Jalan tengahnya satu tombol
+   (IKON_KUAS, sama dgn tombol layar-penuh/kamera di toolbar atas) yang
+   membuka baris mendatar SEMENTARA — kanvas penuh kalau tak dipakai, alat
+   lengkap begitu dibuka. */
+@media (max-width: 700px) {
+  .lantai .grf-kanvas-area { flex-direction: column; }
+  .lantai .grf-alat-toggle { display: flex; align-self: flex-start; }
+  .lantai .grf-kanvas-area .grf-alat-isi { display: none; }
+  .lantai .grf-kanvas-area .grf-alat-isi.buka {
+    display: flex; flex-direction: row; overflow-x: auto; max-width: 100%; padding-bottom: 2px;
+  }
+  .lantai .grf-kanvas-area .grf-alat-isi .ti,
+  .lantai .grf-kanvas-area .grf-alat-isi .dd-btn { width: 34px; height: 34px; flex: none; }
+  .lantai .grf-alat-pisah { width: 1px; height: 20px; margin: 0 4px; }
+}
+
 /* ---------- Kanvas ---------- */
 /* Tinggi TETAP: lightweight-charts (autoSize) butuh induk dengan tinggi
    eksplisit, bukan auto — tanpa ini kanvas kolaps jadi 0px. Tetap juga dalam
