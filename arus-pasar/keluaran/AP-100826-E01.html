@@ -68,10 +68,17 @@
   .trow .tk small{font-family:var(--disp);font-size:9pt;font-weight:400;color:var(--mute);margin-left:8px;letter-spacing:0}
   /* Kredit kontributor berdampingan dengan kode emiten — kecil & redup,
      pengakuan yang tak merebut perhatian dari harga. */
-  .trow .tk .tk-kredit{font-family:var(--disp);font-size:6.4pt;font-weight:400;
+  /* Lencana setoran: kotak sendiri supaya nama kontributor tak terbaca
+     sebagai lanjutan judul emiten. Warna amber redup — pengakuan yang
+     terlihat, bukan yang berebut perhatian dengan kode emitennya. */
+  .trow .tk .tk-kredit{display:inline-flex;align-items:center;gap:1.4mm;
+    background:color-mix(in srgb, var(--amber) 14%, transparent);
+    border:.3pt solid color-mix(in srgb, var(--amber) 45%, transparent);
+    border-radius:1mm;padding:.5mm 1.6mm;
+    font-family:var(--disp);font-size:6.4pt;font-weight:400;
     letter-spacing:.12em;text-transform:uppercase;color:var(--mute);
     margin-left:8px;vertical-align:3px;white-space:nowrap}
-  .trow .tk .tk-kredit b{font-weight:700;color:var(--ink2);letter-spacing:.04em;text-transform:none;font-size:7.2pt}
+  .trow .tk .tk-kredit b{font-weight:700;color:var(--amber);letter-spacing:.04em;text-transform:none;font-size:7.2pt}
   .trow .px{text-align:right;font-variant-numeric:tabular-nums;line-height:1.1;font-family:var(--mono)}
   .trow .px .h{font-size:19pt;font-weight:800}
   .trow .px .c{font-size:9pt;font-weight:700}
@@ -173,9 +180,14 @@
   .konsek{font-size:8pt;color:var(--mute);margin:0}
 
   /* strip probabilitas historis — 1 baris kecil dekat skor komposit */
+  /* white-space:nowrap dibuang: barisnya tumbuh mengikuti jumlah angka
+     (VolVal + persen senyap + n) sampai melewati lebar halaman, lalu menimpa
+     baris hak cipta di bawahnya. Dibiarkan membungkus, dengan jarak aman ke
+     kaki. */
   .probstrip{font-family:var(--mono);font-size:6.4pt;color:var(--mute);
     border-top:1px solid var(--hair);padding-top:.7mm;margin-top:.7mm;
-    white-space:nowrap;font-variant-numeric:tabular-nums}
+    margin-bottom:1.6mm;line-height:1.5;overflow-wrap:anywhere;
+    font-variant-numeric:tabular-nums}
   .probstrip .pl{font-family:var(--disp);font-size:5.8pt;font-weight:700;
     letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);margin-right:2mm}
   .probstrip b{color:var(--ink)}
@@ -239,9 +251,17 @@
      "daily kurang rapi nih susunan nya"). */
   .cover .wm-big.kecil{font-size:34pt;line-height:1.1}
   .cv-list.padat{columns:2;column-gap:10mm;margin-top:9mm}
-  .cv-list.padat .cvrow{padding:3.1mm 0;gap:3.5mm;break-inside:avoid}
+  /* Tinggi baris DIPATOK, tidak mengikuti panjang labelnya. Dengan
+     `columns:2` tiap baris setinggi isinya sendiri, sehingga label satu baris
+     dan dua baris membuat lajur kiri dan kanan bergeser makin jauh ke bawah —
+     GTSI di kiri tak lagi sejajar dengan KIJA di kanan (temuan 18 Agu).
+     Tinggi tetap + label dibatasi dua baris membuat baris ke-n di kedua lajur
+     selalu berada di garis yang sama. */
+  .cv-list.padat .cvrow{padding:0;gap:3.5mm;break-inside:avoid;
+    min-height:13.2mm;height:13.2mm;align-items:center}
   .cv-list.padat .tkk{font-size:11pt;width:18mm}
-  .cv-list.padat .lb{font-size:8pt;line-height:1.35}
+  .cv-list.padat .lb{font-size:8pt;line-height:1.35;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .cv-list.padat .sk{font-size:11pt}
   .cv-foot{margin-top:auto;padding-bottom:14mm}
   /* kotak stat berlabel gaya sampul lama (V2) — angka besar kebaca, bukan
@@ -447,14 +467,14 @@
         <td><span class="pill bull">BULLISH</span><br><span class="lbl-sisa">MOMENTUM RAPUH</span></td>
         <td class="num prob">53%<br><small>n182</small></td>
         <td class="num c-bull">71</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk RENDAH">RENDAH</span></td></tr>
 <tr><td class="tk">ARCI</td><td>Archi Indonesia</td>
         <td class="num">1.235</td>
         <td class="num bull">+4,66%</td>
         <td><span class="pill bull">BULLISH</span><br><span class="lbl-sisa">UJI PIVOT R1</span></td>
         <td class="num prob">53%<br><small>n182</small></td>
         <td class="num c-bull">67</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td class="tk">MBMA</td><td>Merdeka Battery Materials</td>
         <td class="num">550</td>
         <td class="num bull">+3,77%</td>
@@ -541,7 +561,7 @@
       <section style="display:flex;flex-direction:column;min-height:0">
         <div class="bias">
           <div class="lbl"><span class="bull">BULLISH</span> — UJI PIVOT R1</div>
-          <div class="risk TINGGI">Risiko TINGGI</div>
+          <div class="risk MENENGAH">Risiko MENENGAH</div>
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
@@ -715,7 +735,7 @@
       <section style="display:flex;flex-direction:column;min-height:0">
         <div class="bias">
           <div class="lbl"><span class="bull">BULLISH</span> — MOMENTUM RAPUH</div>
-          <div class="risk TINGGI">Risiko TINGGI</div>
+          <div class="risk RENDAH">Risiko RENDAH</div>
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
@@ -767,14 +787,14 @@
         <td>20</td><td>10</td>
         <td>4</td>
         <td style="text-align:left;padding-left:5mm">Momentum kuat, flow scalper</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk RENDAH">RENDAH</span></td></tr>
 <tr><td>2</td><td class="tk">ARCI</td>
         <td class="total">67</td>
         <td>31</td><td>19</td>
         <td>4</td><td>10</td>
         <td>4</td>
         <td style="text-align:left;padding-left:5mm">Akumulasi institusi + uji R1</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td>3</td><td class="tk">MBMA</td>
         <td class="total">58</td>
         <td>27</td><td>10</td>
@@ -932,3 +952,10 @@ window.__chartsDone = true;
 </script>
 </body>
 </html>
+
+  /* Lencana jenjang kontributor di sebelah namanya. */
+  .trow .tk .tk-jenjang{font-family:var(--disp);font-size:5.4pt;font-weight:700;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--mute);
+    border-left:.3pt solid color-mix(in srgb, var(--amber) 45%, transparent);padding-left:1.4mm}
+  /* Narasi Arus Dana & Teknikal dibuat rata kiri-kanan (permintaan 18 Agu). */
+  .blok p, .blok4 p, .narasi p, p.nr{text-align:justify;hyphens:auto}

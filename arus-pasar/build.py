@@ -106,8 +106,18 @@ def skor_ihsg(tk, ohlc):
 
 
 def tingkat_risiko(total):
-    if total >= 80: return "MENENGAH"
-    if total >= 55: return "TINGGI"
+    """Lima tingkat, ambangnya mengikuti sebaran skor yang benar-benar terjadi.
+
+    Ambang lama (>=80 menengah, >=55 tinggi) dipasang tanpa melihat sebaran:
+    skor nyata edisi harian bergerak 46-71 dengan median 63, sehingga tak ada
+    satu pun emiten yang pernah keluar dari TINGGI/EKSTREM dan labelnya
+    berhenti membedakan apa pun. Johan 18 Agu: "saya tidak semua itu resiko
+    tinggi tapi ada klasifikasi nya". Ambang di bawah membelah sebaran itu
+    jadi lima pita yang benar-benar terisi."""
+    if total >= 70: return "RENDAH"
+    if total >= 63: return "MENENGAH"
+    if total >= 56: return "TINGGI"
+    if total >= 49: return "SANGAT TINGGI"
     return "EKSTREM"
 
 
@@ -185,7 +195,7 @@ def muat_ds(tgl):
     return baca(stem), baca(stems[i - 1])
 
 
-def skor_sentimen(ds, ds_prev):
+def skor_sentimen(ds, ds_prev, ed=None):
     """Komponen TERUKUR (clamp 0–10; formula dicetak di halaman):
     dunia  = 5 + 2,5 × rerata Δ% bursa dunia overnight (non-IDX)
     rupiah = 5 − 5 × Δ% USD/IDR harian
@@ -197,8 +207,20 @@ def skor_sentimen(ds, ds_prev):
     nf_t = ds["nf_today_idr"] / 1000
     kl = lambda v: max(0.0, min(10.0, v))
     s_w, s_u, s_n = kl(5 + 2.5 * d_w), kl(5 - 5 * d_u), kl(5 + 2.5 * nf_t)
-    return {"dunia": (d_w, s_w), "rupiah": (d_u, s_u), "asing": (nf_t, s_n),
-            "skor": round((s_w + s_u + s_n) / 3, 1)}
+    hasil = {"dunia": (d_w, s_w), "rupiah": (d_u, s_u), "asing": (nf_t, s_n)}
+    komp = [s_w, s_u, s_n]
+    # Komponen keempat memakai data PAPAN SENDIRI: agregat net beli dikurangi
+    # net jual seluruh emiten edisi ini, hasil transkripsi setoran kontributor.
+    # Tiga komponen lain makro dan bisa didapat siapa pun; yang ini tidak.
+    if ed and ed.get("emiten"):
+        net_juta = sum(sum(r[1] for r in e["beli"]) - sum(r[1] for r in e["jual"])
+                       for e in ed["emiten"])
+        br_t = net_juta / 1_000_000
+        s_b = kl(5 + 2.5 * br_t)
+        hasil["broker"] = (br_t, s_b)
+        komp.append(s_b)
+    hasil["skor"] = round(sum(komp) / len(komp), 1)
+    return hasil
 
 
 # ── Potongan HTML ────────────────────────────────────────────────────────────
@@ -300,7 +322,7 @@ def halaman_sentimen(ed, ds, ds_prev):
     st = ed.get("sentimen")
     if not st:
         return None
-    k = skor_sentimen(ds, ds_prev)
+    k = skor_sentimen(ds, ds_prev, ed)
     skor = st.get("skor") or k["skor"]
     cls = "c-bull" if skor >= 6.5 else "c-side" if skor >= 4.5 else "c-bear"
     sel_bar = "".join(f'<i class="{"isi" if i < round(skor) else ""}"></i>' for i in range(10))
@@ -311,6 +333,9 @@ def halaman_sentimen(ed, ds, ds_prev):
         ("Rupiah (USD/IDR)", f'{fmt(ds["usd_idr"])} ({tanda(k["rupiah"][0])}%)', k["rupiah"][1], "vs hari bursa sebelumnya"),
         ("Arus Asing Reguler", f'{tanda(k["asing"][0])} T', k["asing"][1], ds["nf_today_status"]),
     ]
+    if "broker" in k:
+        komp.append(("Arus Broker Edisi Ini", f'{tanda(k["broker"][0])} T', k["broker"][1],
+                     f'{len(ed["emiten"])} emiten \u00b7 setoran kontributor'))
     sel_komp = "\n".join(
         f'<div class="k"><div class="l">{n}</div><div class="v">{v}</div>'
         f'<div class="s">{ket} → {fmt(s, 1)}/10</div></div>' for n, v, s, ket in komp)
@@ -318,6 +343,12 @@ def halaman_sentimen(ed, ds, ds_prev):
         f'<div class="poin"><div class="no">{i + 1}</div>'
         f'<div><h4>{p["judul"]}</h4><p>{p["isi"]}</p></div></div>'
         for i, p in enumerate(st["poin"]))
+    ANGKA = {1: "Satu", 2: "Dua", 3: "Tiga", 4: "Empat", 5: "Lima", 6: "Enam"}
+    n_poin = len(st["poin"])
+    judul_poin = f'{ANGKA.get(n_poin, n_poin)} Hal yang Menggerakkan Pasar'
+    daftar_komp = "dunia, rupiah, asing" + (", broker" if "broker" in k else "")
+    rumus_broker = (" \u00b7 broker = 5 + 2,5 \u00d7 (net broker agregat edisi, Rp T)"
+                    if "broker" in k else "")
     manual = "" if st.get("skor") is None else \
         f' · nilai akhir dioverride analis: {fmt(skor, 1)} (model: {fmt(k["skor"], 1)})'
     return f'''
@@ -331,10 +362,10 @@ def halaman_sentimen(ed, ds, ds_prev):
     <div class="sent-komp">
       {sel_komp}
     </div>
-    <div class="formula">Formula: skor = rerata(dunia, rupiah, asing) · dunia = 5 + 2,5 ×
-    rerata Δ% bursa dunia · rupiah = 5 − 5 × Δ% USD/IDR · asing = 5 + 2,5 × (NF hari, Rp T)
+    <div class="formula">Formula: skor = rerata({daftar_komp}) · dunia = 5 + 2,5 ×
+    rerata Δ% bursa dunia · rupiah = 5 − 5 × Δ% USD/IDR · asing = 5 + 2,5 × (NF hari, Rp T){rumus_broker}
     · tiap komponen dibatasi 0–10{manual}</div>
-    <h3 class="rule">Empat Hal yang Menggerakkan Pasar</h3>
+    <h3 class="rule">{judul_poin}</h3>
     <div class="poin-grid">
       {poin}
     </div>
@@ -427,7 +458,9 @@ def halaman_emiten(em, sk, ed, ohlc, idx, pr=None, alias=None):
     # utamanya ruas `kontributor` di edisi; berkas kredit-<EDISI>.json hanya
     # menimpa kalau ada. Kecil & redup: pengakuan, bukan perebut perhatian.
     penyetor = alias or em.get("kontributor")
-    kredit_tk = (f'<span class="tk-kredit">setoran <b>{penyetor}</b></span>'
+    jenjang = (ed.get("jenjang_kontributor") or {}).get(penyetor or "", "")
+    jj = f'<span class="tk-jenjang">{jenjang}</span>' if jenjang else ""
+    kredit_tk = (f'<span class="tk-kredit">setoran <b>{penyetor}</b>{jj}</span>'
                  if penyetor else "")
     chg_cls = "bull" if o["chg"] >= 0 else "bear"
     tanda = "+" if o["chg"] >= 0 else "−"

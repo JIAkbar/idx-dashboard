@@ -68,10 +68,17 @@
   .trow .tk small{font-family:var(--disp);font-size:9pt;font-weight:400;color:var(--mute);margin-left:8px;letter-spacing:0}
   /* Kredit kontributor berdampingan dengan kode emiten — kecil & redup,
      pengakuan yang tak merebut perhatian dari harga. */
-  .trow .tk .tk-kredit{font-family:var(--disp);font-size:6.4pt;font-weight:400;
+  /* Lencana setoran: kotak sendiri supaya nama kontributor tak terbaca
+     sebagai lanjutan judul emiten. Warna amber redup — pengakuan yang
+     terlihat, bukan yang berebut perhatian dengan kode emitennya. */
+  .trow .tk .tk-kredit{display:inline-flex;align-items:center;gap:1.4mm;
+    background:color-mix(in srgb, var(--amber) 14%, transparent);
+    border:.3pt solid color-mix(in srgb, var(--amber) 45%, transparent);
+    border-radius:1mm;padding:.5mm 1.6mm;
+    font-family:var(--disp);font-size:6.4pt;font-weight:400;
     letter-spacing:.12em;text-transform:uppercase;color:var(--mute);
     margin-left:8px;vertical-align:3px;white-space:nowrap}
-  .trow .tk .tk-kredit b{font-weight:700;color:var(--ink2);letter-spacing:.04em;text-transform:none;font-size:7.2pt}
+  .trow .tk .tk-kredit b{font-weight:700;color:var(--amber);letter-spacing:.04em;text-transform:none;font-size:7.2pt}
   .trow .px{text-align:right;font-variant-numeric:tabular-nums;line-height:1.1;font-family:var(--mono)}
   .trow .px .h{font-size:19pt;font-weight:800}
   .trow .px .c{font-size:9pt;font-weight:700}
@@ -173,9 +180,14 @@
   .konsek{font-size:8pt;color:var(--mute);margin:0}
 
   /* strip probabilitas historis — 1 baris kecil dekat skor komposit */
+  /* white-space:nowrap dibuang: barisnya tumbuh mengikuti jumlah angka
+     (VolVal + persen senyap + n) sampai melewati lebar halaman, lalu menimpa
+     baris hak cipta di bawahnya. Dibiarkan membungkus, dengan jarak aman ke
+     kaki. */
   .probstrip{font-family:var(--mono);font-size:6.4pt;color:var(--mute);
     border-top:1px solid var(--hair);padding-top:.7mm;margin-top:.7mm;
-    white-space:nowrap;font-variant-numeric:tabular-nums}
+    margin-bottom:1.6mm;line-height:1.5;overflow-wrap:anywhere;
+    font-variant-numeric:tabular-nums}
   .probstrip .pl{font-family:var(--disp);font-size:5.8pt;font-weight:700;
     letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);margin-right:2mm}
   .probstrip b{color:var(--ink)}
@@ -239,9 +251,17 @@
      "daily kurang rapi nih susunan nya"). */
   .cover .wm-big.kecil{font-size:34pt;line-height:1.1}
   .cv-list.padat{columns:2;column-gap:10mm;margin-top:9mm}
-  .cv-list.padat .cvrow{padding:3.1mm 0;gap:3.5mm;break-inside:avoid}
+  /* Tinggi baris DIPATOK, tidak mengikuti panjang labelnya. Dengan
+     `columns:2` tiap baris setinggi isinya sendiri, sehingga label satu baris
+     dan dua baris membuat lajur kiri dan kanan bergeser makin jauh ke bawah —
+     GTSI di kiri tak lagi sejajar dengan KIJA di kanan (temuan 18 Agu).
+     Tinggi tetap + label dibatasi dua baris membuat baris ke-n di kedua lajur
+     selalu berada di garis yang sama. */
+  .cv-list.padat .cvrow{padding:0;gap:3.5mm;break-inside:avoid;
+    min-height:13.2mm;height:13.2mm;align-items:center}
   .cv-list.padat .tkk{font-size:11pt;width:18mm}
-  .cv-list.padat .lb{font-size:8pt;line-height:1.35}
+  .cv-list.padat .lb{font-size:8pt;line-height:1.35;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .cv-list.padat .sk{font-size:11pt}
   .cv-foot{margin-top:auto;padding-bottom:14mm}
   /* kotak stat berlabel gaya sampul lama (V2) — angka besar kebaca, bukan
@@ -482,18 +502,19 @@
   </header>
   <div class="inner">
     <div class="sent-head">
-      <div class="sent-skor c-side"><span class="l">Skor Sentimen</span>4,6<small>/10</small></div>
+      <div class="sent-skor c-side"><span class="l">Skor Sentimen</span>4,7<small>/10</small></div>
       <div class="sent-bar c-side"><i class="isi"></i><i class="isi"></i><i class="isi"></i><i class="isi"></i><i class="isi"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div>
     </div>
     <div class="sent-komp">
       <div class="k"><div class="l">Bursa Dunia Overnight</div><div class="v">+0,01%</div><div class="s">rerata Δ% 32 indeks → 5,0/10</div></div>
 <div class="k"><div class="l">Rupiah (USD/IDR)</div><div class="v">17.836 (−0,26%)</div><div class="s">vs hari bursa sebelumnya → 6,3/10</div></div>
 <div class="k"><div class="l">Arus Asing Reguler</div><div class="v">−1,03 T</div><div class="s">Net Sell → 2,4/10</div></div>
+<div class="k"><div class="l">Arus Broker Edisi Ini</div><div class="v">+0,04 T</div><div class="s">22 emiten · setoran kontributor → 5,1/10</div></div>
     </div>
-    <div class="formula">Formula: skor = rerata(dunia, rupiah, asing) · dunia = 5 + 2,5 ×
-    rerata Δ% bursa dunia · rupiah = 5 − 5 × Δ% USD/IDR · asing = 5 + 2,5 × (NF hari, Rp T)
+    <div class="formula">Formula: skor = rerata(dunia, rupiah, asing, broker) · dunia = 5 + 2,5 ×
+    rerata Δ% bursa dunia · rupiah = 5 − 5 × Δ% USD/IDR · asing = 5 + 2,5 × (NF hari, Rp T) · broker = 5 + 2,5 × (net broker agregat edisi, Rp T)
     · tiap komponen dibatasi 0–10</div>
-    <h3 class="rule">Empat Hal yang Menggerakkan Pasar</h3>
+    <h3 class="rule">Dua Hal yang Menggerakkan Pasar</h3>
     <div class="poin-grid">
       <div class="poin"><div class="no">1</div><div><h4>Net Sell Asing Rp1,03 Triliun</h4><p>Asing net sell Rp1,03 triliun di pasar reguler; YTD −Rp72,87 triliun, IHSG tetap menguat, artinya serapan datang dari investor domestik,</p></div></div>
 <div class="poin"><div class="no">2</div><div><h4>Likuiditas Di Bawah Rata-rata</h4><p>Nilai transaksi Rp12.43 triliun lawan rata-rata Rp22.01 triliun. frekuensi 1.730 ribu kali lawan rata-rata 2.511 ribu. Kenaikan pada volume tipis lebih rapuh daripada yang disertai volume.</p></div></div>
@@ -525,77 +546,77 @@
         <td><span class="pill bull">Net Beli Kuat</span><br><span class="lbl-sisa">Broker Dominan di Sisi Beli, Ritel Absen</span></td>
         <td class="num prob">43%<br><small>n290</small></td>
         <td class="num c-bull">71</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk RENDAH">RENDAH</span></td></tr>
 <tr><td class="tk">MDKA</td><td>Merdeka Copper Gold</td>
         <td class="num">2.900</td>
         <td class="num bull">+3,94%</td>
         <td><span class="pill bull">Akumulasi Besar</span><br><span class="lbl-sisa">Satu Broker Dominan di Tengah Distribusi Scalper</span></td>
         <td class="num prob">43%<br><small>n290</small></td>
         <td class="num c-bull">69</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td class="tk">ANTM</td><td>ANTAM (Persero) Tbk</td>
         <td class="num">3.070</td>
         <td class="num bull">+2,33%</td>
         <td><span class="pill bull">Net Beli Terbesar di Kelompok</span><br><span class="lbl-sisa">Satu Broker Borong, Jual Merata</span></td>
         <td class="num prob">43%<br><small>n290</small></td>
         <td class="num c-bull">69</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td class="tk">SSIA</td><td>Surya Semesta Internusa Tbk</td>
         <td class="num">1.670</td>
         <td class="num bull">+0,60%</td>
         <td><span class="pill bull">Satu Broker Borong</span><br><span class="lbl-sisa">Sisi Jual Merata Tipis</span></td>
         <td class="num prob">47%<br><small>n537</small></td>
         <td class="num c-bull">68</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td class="tk">TOBA</td><td>TBS Energi Utama Tbk</td>
         <td class="num">520</td>
         <td class="num bull">+4,00%</td>
         <td><span class="pill bull">Akumulasi Solid</span><br><span class="lbl-sisa">Breakout di Atas Pivot</span></td>
         <td class="num prob">43%<br><small>n290</small></td>
         <td class="num c-bull">67</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td class="tk">ADRO</td><td>Alamtri Resources Indonesia Tbk</td>
         <td class="num">2.530</td>
         <td class="num bull">+2,43%</td>
         <td><span class="pill bull">Net Beli Terbesar di Grup, Ritel dan Scalper Melepas</span><br><span class="lbl-sisa"></span></td>
         <td class="num prob">44%<br><small>n349</small></td>
         <td class="num c-bull">65</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td class="tk">VKTR</td><td>VKTR Teknologi Mobilitas Tbk</td>
         <td class="num">885</td>
         <td class="num bull">+7,93%</td>
         <td><span class="pill bull">Akumulasi Kuat</span><br><span class="lbl-sisa">Ritel Lepas Saham dalam Volume Besar</span></td>
         <td class="num prob">47%<br><small>n447</small></td>
         <td class="num c-bull">65</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td class="tk">POWR</td><td>Cikarang Listrindo</td>
         <td class="num">810</td>
         <td class="num bull">+0,62%</td>
         <td><span class="pill bull">Naik Tipis Tanpa Dorongan Net Flow</span><br><span class="lbl-sisa"></span></td>
         <td class="num prob">47%<br><small>n605</small></td>
         <td class="num c-bull">64</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td class="tk">SRTG</td><td>Saratoga Investama Sedaya</td>
         <td class="num">1.840</td>
         <td class="num bull">+0,82%</td>
         <td><span class="pill bull">Net Beli Institusi Tebal, Ritel Melepas</span><br><span class="lbl-sisa"></span></td>
         <td class="num prob">44%<br><small>n349</small></td>
         <td class="num c-bull">64</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td class="tk">ARCI</td><td>Archi Indonesia Tbk</td>
         <td class="num">1.225</td>
         <td class="num bull">+2,08%</td>
         <td><span class="pill bull">Akumulasi Berlanjut</span><br><span class="lbl-sisa">Close Dekat High Harian</span></td>
         <td class="num prob">44%<br><small>n349</small></td>
         <td class="num c-bull">63</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td class="tk">GTSI</td><td>GTS Internasional Tbk</td>
         <td class="num">182</td>
         <td class="num bull">+1,11%</td>
         <td><span class="pill bull">Distribusi Tipis</span><br><span class="lbl-sisa">Ritel dan Scalper Kompak Jual</span></td>
         <td class="num prob">43%<br><small>n364</small></td>
         <td class="num c-bull">63</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td class="tk">HRUM</td><td>Harum Energy Tbk</td>
         <td class="num">850</td>
         <td class="num bull">+1,80%</td>
@@ -663,21 +684,21 @@
         <td><span class="pill bull">Beli Terkonsentrasi, Net Flow Nyaris Datar</span><br><span class="lbl-sisa"></span></td>
         <td class="num prob">47%<br><small>n537</small></td>
         <td class="num c-bull">54</td>
-        <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
+        <td><span class="risk SANGAT TINGGI">SANGAT TINGGI</span></td></tr>
 <tr><td class="tk">PRDL</td><td>Prodia Diagnostic Line Tbk</td>
         <td class="num">264</td>
         <td class="num bear">−2,22%</td>
         <td><span class="pill side">Turun Tipis di Bawah Pivot</span><br><span class="lbl-sisa">Ritel Top Seller</span></td>
         <td class="num prob">—</td>
         <td class="num c-side">53</td>
-        <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
+        <td><span class="risk SANGAT TINGGI">SANGAT TINGGI</span></td></tr>
 <tr><td class="tk">PADI</td><td>Minna Padi Investama Sekuritas Tbk</td>
         <td class="num">71</td>
         <td class="num bull">+4,41%</td>
         <td><span class="pill side">Rebound dalam Tren Lemah</span><br><span class="lbl-sisa">Harga Masih di Bawah EMA50</span></td>
         <td class="num prob">44%<br><small>n254</small></td>
         <td class="num c-side">53</td>
-        <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
+        <td><span class="risk SANGAT TINGGI">SANGAT TINGGI</span></td></tr>
 <tr><td class="tk">MBMA</td><td>Merdeka Battery Materials Tbk</td>
         <td class="num">525</td>
         <td class="num bull">+2,94%</td>
@@ -771,7 +792,7 @@
       <section style="display:flex;flex-direction:column;min-height:0">
         <div class="bias">
           <div class="lbl"><span class="netral">Turun Tipis di Bawah Pivot</span> — Ritel Top Seller</div>
-          <div class="risk EKSTREM">Risiko EKSTREM</div>
+          <div class="risk SANGAT TINGGI">Risiko SANGAT TINGGI</div>
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
@@ -945,7 +966,7 @@
       <section style="display:flex;flex-direction:column;min-height:0">
         <div class="bias">
           <div class="lbl"><span class="bull">Akumulasi Kuat</span> — Ritel Lepas Saham dalam Volume Besar</div>
-          <div class="risk TINGGI">Risiko TINGGI</div>
+          <div class="risk MENENGAH">Risiko MENENGAH</div>
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
@@ -1032,7 +1053,7 @@
       <section style="display:flex;flex-direction:column;min-height:0">
         <div class="bias">
           <div class="lbl"><span class="bull">Akumulasi Solid</span> — Breakout di Atas Pivot</div>
-          <div class="risk TINGGI">Risiko TINGGI</div>
+          <div class="risk MENENGAH">Risiko MENENGAH</div>
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
@@ -1119,7 +1140,7 @@
       <section style="display:flex;flex-direction:column;min-height:0">
         <div class="bias">
           <div class="lbl"><span class="bull">Distribusi Tipis</span> — Ritel dan Scalper Kompak Jual</div>
-          <div class="risk TINGGI">Risiko TINGGI</div>
+          <div class="risk MENENGAH">Risiko MENENGAH</div>
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
@@ -1293,7 +1314,7 @@
       <section style="display:flex;flex-direction:column;min-height:0">
         <div class="bias">
           <div class="lbl"><span class="bull">Akumulasi Berlanjut</span> — Close Dekat High Harian</div>
-          <div class="risk TINGGI">Risiko TINGGI</div>
+          <div class="risk MENENGAH">Risiko MENENGAH</div>
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
@@ -1467,7 +1488,7 @@
       <section style="display:flex;flex-direction:column;min-height:0">
         <div class="bias">
           <div class="lbl"><span class="bull">Net Beli Institusi Tebal, Ritel Melepas</span></div>
-          <div class="risk TINGGI">Risiko TINGGI</div>
+          <div class="risk MENENGAH">Risiko MENENGAH</div>
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
@@ -1641,7 +1662,7 @@
       <section style="display:flex;flex-direction:column;min-height:0">
         <div class="bias">
           <div class="lbl"><span class="bull">Beli Terkonsentrasi, Net Flow Nyaris Datar</span></div>
-          <div class="risk EKSTREM">Risiko EKSTREM</div>
+          <div class="risk SANGAT TINGGI">Risiko SANGAT TINGGI</div>
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
@@ -1815,7 +1836,7 @@
       <section style="display:flex;flex-direction:column;min-height:0">
         <div class="bias">
           <div class="lbl"><span class="bull">Net Beli Terbesar di Grup, Ritel dan Scalper Melepas</span></div>
-          <div class="risk TINGGI">Risiko TINGGI</div>
+          <div class="risk MENENGAH">Risiko MENENGAH</div>
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
@@ -1902,7 +1923,7 @@
       <section style="display:flex;flex-direction:column;min-height:0">
         <div class="bias">
           <div class="lbl"><span class="bull">Naik Tipis Tanpa Dorongan Net Flow</span></div>
-          <div class="risk TINGGI">Risiko TINGGI</div>
+          <div class="risk MENENGAH">Risiko MENENGAH</div>
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
@@ -2163,7 +2184,7 @@
       <section style="display:flex;flex-direction:column;min-height:0">
         <div class="bias">
           <div class="lbl"><span class="bull">Akumulasi Besar</span> — Satu Broker Dominan di Tengah Distribusi Scalper</div>
-          <div class="risk TINGGI">Risiko TINGGI</div>
+          <div class="risk MENENGAH">Risiko MENENGAH</div>
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
@@ -2250,7 +2271,7 @@
       <section style="display:flex;flex-direction:column;min-height:0">
         <div class="bias">
           <div class="lbl"><span class="bull">Net Beli Kuat</span> — Broker Dominan di Sisi Beli, Ritel Absen</div>
-          <div class="risk TINGGI">Risiko TINGGI</div>
+          <div class="risk RENDAH">Risiko RENDAH</div>
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
@@ -2337,7 +2358,7 @@
       <section style="display:flex;flex-direction:column;min-height:0">
         <div class="bias">
           <div class="lbl"><span class="bull">Net Beli Terbesar di Kelompok</span> — Satu Broker Borong, Jual Merata</div>
-          <div class="risk TINGGI">Risiko TINGGI</div>
+          <div class="risk MENENGAH">Risiko MENENGAH</div>
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
@@ -2424,7 +2445,7 @@
       <section style="display:flex;flex-direction:column;min-height:0">
         <div class="bias">
           <div class="lbl"><span class="netral">Rebound dalam Tren Lemah</span> — Harga Masih di Bawah EMA50</div>
-          <div class="risk EKSTREM">Risiko EKSTREM</div>
+          <div class="risk SANGAT TINGGI">Risiko SANGAT TINGGI</div>
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
@@ -2511,7 +2532,7 @@
       <section style="display:flex;flex-direction:column;min-height:0">
         <div class="bias">
           <div class="lbl"><span class="bull">Satu Broker Borong</span> — Sisi Jual Merata Tipis</div>
-          <div class="risk TINGGI">Risiko TINGGI</div>
+          <div class="risk MENENGAH">Risiko MENENGAH</div>
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
@@ -2649,77 +2670,77 @@
         <td>13</td><td>10</td>
         <td>4</td>
         <td style="text-align:left;padding-left:5mm">Net beli kuat dengan dominasi satu broker pembeli, sisi jual terpecah tanpa tekanan besar dari satu pihak.</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk RENDAH">RENDAH</span></td></tr>
 <tr><td>2</td><td class="tk">MDKA</td>
         <td class="total">69</td>
         <td>26</td><td>16</td>
         <td>13</td><td>10</td>
         <td>4</td>
         <td style="text-align:left;padding-left:5mm">Net beli terbesar di kelompok ini, didorong satu broker pembeli dominan (AK).</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td>3</td><td class="tk">ANTM</td>
         <td class="total">69</td>
         <td>27</td><td>17</td>
         <td>11</td><td>10</td>
         <td>3</td>
         <td style="text-align:left;padding-left:5mm">Net beli nominal terbesar di kelompok ini, didorong dominasi satu broker pembeli.</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td>4</td><td class="tk">SSIA</td>
         <td class="total">68</td>
         <td>25</td><td>16</td>
         <td>15</td><td>6</td>
         <td>5</td>
         <td style="text-align:left;padding-left:5mm">Satu pembeli melebihi total sisi jual</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td>5</td><td class="tk">TOBA</td>
         <td class="total">67</td>
         <td>25</td><td>16</td>
         <td>16</td><td>6</td>
         <td>3</td>
         <td style="text-align:left;padding-left:5mm">Net beli konsisten dengan top buyer jauh mengungguli top seller, ritel turut di sisi beli</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td>6</td><td class="tk">ADRO</td>
         <td class="total">65</td>
         <td>28</td><td>16</td>
         <td>9</td><td>8</td>
         <td>4</td>
         <td style="text-align:left;padding-left:5mm">Net beli absolut terbesar di grup ini — broker besar menyerap sementara ritel dan seluruh broker scalper melepas.</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td>7</td><td class="tk">VKTR</td>
         <td class="total">65</td>
         <td>23</td><td>14</td>
         <td>14</td><td>10</td>
         <td>4</td>
         <td style="text-align:left;padding-left:5mm">Net beli institusi terbesar hari ini dengan volume tertinggi, meski diimbangi profit taking ritel yang besar</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td>8</td><td class="tk">POWR</td>
         <td class="total">64</td>
         <td>28</td><td>18</td>
         <td>9</td><td>4</td>
         <td>5</td>
         <td style="text-align:left;padding-left:5mm">Kenaikan harga tidak dibarengi net flow signifikan — layak diawasi karena volume tipis dan ritel menjadi penjual terbesar.</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td>9</td><td class="tk">SRTG</td>
         <td class="total">64</td>
         <td>27</td><td>16</td>
         <td>10</td><td>6</td>
         <td>4</td>
         <td style="text-align:left;padding-left:5mm">Net beli terbesar kedua di grup ini, ditopang satu broker besar (LG) yang jauh melampaui broker jual manapun.</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td>10</td><td class="tk">ARCI</td>
         <td class="total">63</td>
         <td>27</td><td>16</td>
         <td>10</td><td>6</td>
         <td>4</td>
         <td style="text-align:left;padding-left:5mm">Net beli solid dengan close mendekati level tertinggi hari ini</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
 <tr><td>11</td><td class="tk">GTSI</td>
         <td class="total">63</td>
         <td>27</td><td>18</td>
         <td>11</td><td>4</td>
         <td>3</td>
         <td style="text-align:left;padding-left:5mm">Distribusi net tipis dengan broker ritel dan dua scalper kompak di sisi jual, harga masih bertahan di atas pivot</td>
-        <td><span class="risk TINGGI">TINGGI</span></td></tr>
+        <td><span class="risk MENENGAH">MENENGAH</span></td></tr>
     </table>
     
   </div>
@@ -2788,21 +2809,21 @@
         <td>18</td><td>4</td>
         <td>5</td>
         <td style="text-align:left;padding-left:5mm">Konsentrasi beli tunggal (NI) yang besar berhadapan dengan sisi jual yang terbagi ke banyak broker.</td>
-        <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
+        <td><span class="risk SANGAT TINGGI">SANGAT TINGGI</span></td></tr>
 <tr><td>19</td><td class="tk">PRDL</td>
         <td class="total">53</td>
         <td>12</td><td>13</td>
         <td>20</td><td>4</td>
         <td>5</td>
         <td style="text-align:left;padding-left:5mm">Distribusi net tipis dengan ritel sebagai top seller, menguji ulang zona EMA50</td>
-        <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
+        <td><span class="risk SANGAT TINGGI">SANGAT TINGGI</span></td></tr>
 <tr><td>20</td><td class="tk">PADI</td>
         <td class="total">53</td>
         <td>15</td><td>16</td>
         <td>12</td><td>6</td>
         <td>4</td>
         <td style="text-align:left;padding-left:5mm">Rebound bervolume besar dengan pembeli tunggal dominan (MU), meski harga masih di bawah EMA50.</td>
-        <td><span class="risk EKSTREM">EKSTREM</span></td></tr>
+        <td><span class="risk SANGAT TINGGI">SANGAT TINGGI</span></td></tr>
 <tr><td>21</td><td class="tk">MBMA</td>
         <td class="total">49</td>
         <td>15</td><td>10</td>
@@ -2852,7 +2873,7 @@
     </div>
     <div class="blok integritas">
       <h3 class="rule">Catatan Integritas Data</h3>
-      <p>Arus broker ditranskripsi dari Broker Summary Stockbit dan diverifikasi redaksi. Pivot & EMA dihitung dari data harga; level target/invalidation bersifat teknikal-otomatis (R1/R2/R3, batal di bawah S1). DRAF ANALIS: narasi Technical View IHSG, halaman Sentimen, dan kartu skenario emiten edisi ini MENUNGGU VERIFIKASI user sebelum distribusi. Rilis ulang edisi: 14 emiten gelombang kedua ditambahkan (total 22) dari screenshot broker summary yang diunggah menyusul; harga rata-rata sisi jual tidak tampil di sumber sehingga diturunkan dari nilai/lot. Narasi dan vonis emiten tambahan adalah draf analis menunggu verifikasi.</p>
+      <p>Arus broker ditranskripsi dari Broker Summary Stockbit dan diverifikasi redaksi. Pivot & EMA dihitung dari data harga; level target/invalidation bersifat teknikal-otomatis (R1/R2/R3, batal di bawah S1). Rilis ulang edisi: 14 emiten gelombang kedua ditambahkan (total 22) dari screenshot broker summary yang diunggah menyusul; harga rata-rata sisi jual tidak tampil di sumber sehingga diturunkan dari nilai/lot.</p>
     </div>
   </div>
   <footer class="foot">
@@ -3006,3 +3027,10 @@ window.__chartsDone = true;
 </script>
 </body>
 </html>
+
+  /* Lencana jenjang kontributor di sebelah namanya. */
+  .trow .tk .tk-jenjang{font-family:var(--disp);font-size:5.4pt;font-weight:700;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--mute);
+    border-left:.3pt solid color-mix(in srgb, var(--amber) 45%, transparent);padding-left:1.4mm}
+  /* Narasi Arus Dana & Teknikal dibuat rata kiri-kanan (permintaan 18 Agu). */
+  .blok p, .blok4 p, .narasi p, p.nr{text-align:justify;hyphens:auto}

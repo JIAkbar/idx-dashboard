@@ -72,10 +72,10 @@ BSTYLE = f"<style>{palet.blok_css(EDISI_PALET)}</style>" + """
   .sknb .kartu.r{border-color:var(--bear);background:var(--bear-dim)}
   .sknb .kt{font-size:10pt;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2mm}
   .sknb .kartu.b .kt{color:var(--bull)} .sknb .kartu.t .kt{color:var(--teal)} .sknb .kartu.r .kt{color:var(--bear)}
-  .sknb .kr{display:grid;grid-template-columns:24mm 1fr;gap:4mm;font-size:8.8pt;line-height:1.5;
+  .sknb .kr{display:grid;grid-template-columns:30mm 1fr;gap:5mm;font-size:8.8pt;line-height:1.5;
     color:var(--ink2);padding:1mm 0;font-variant-numeric:tabular-nums}
   .sknb .kl{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);padding-top:.6mm}
-  .sknb .aturan{display:grid;grid-template-columns:24mm 1fr;gap:4mm;font-size:9.3pt;font-weight:700;
+  .sknb .aturan{display:grid;grid-template-columns:30mm 1fr;gap:5mm;font-size:9.3pt;font-weight:700;
     padding:2.5mm 4.5mm;border:1px solid var(--hair);border-radius:1.5mm}
   .sknb .aturan .kl{font-weight:400}
 </style>""" + palet.blok_tema(EDISI_PALET)

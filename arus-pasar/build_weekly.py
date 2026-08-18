@@ -56,7 +56,7 @@ def hitung_skor(em, ed, ohlc):
             "korr": korr, "total": total, "risiko": tingkat_risiko(total)}
 
 
-MAKS_SAMPUL = 15  # baris daftar yang muat di sampul mingguan tanpa meluber
+MAKS_SAMPUL = 44  # dua lajur x 22 baris; lihat .c-list di sampul
 
 
 def halaman_sampul_mingguan(ed, urut, skor_map, riwayat, total_muncul):
@@ -83,7 +83,7 @@ def halaman_sampul_mingguan(ed, urut, skor_map, riwayat, total_muncul):
     # atas --brand terang (kalau kelak terbitan lain pakai kepala sampul ini).
     return f'''
 <div class="page" style="background:var(--brand);color:var(--ink)">
-  <div style="padding:22mm 20mm 0;flex:1;display:flex;flex-direction:column">
+  <div style="padding:16mm 18mm 0;flex:1;display:flex;flex-direction:column">
     <div style="border-bottom:1px solid color-mix(in srgb, var(--ink) 35%, transparent);padding-bottom:6mm">
       <div style="font-size:8pt;letter-spacing:.3em;text-transform:uppercase;color:color-mix(in srgb, var(--ink) 70%, transparent)">
         Tinjauan Teknikal &amp; Arus Dana — Edisi Mingguan</div>
@@ -93,17 +93,26 @@ def halaman_sampul_mingguan(ed, urut, skor_map, riwayat, total_muncul):
     <div style="margin-top:8mm;font-size:13pt">{ed["tanggal_id"]}</div>
     <div style="font-family:var(--mono);font-size:9pt;color:color-mix(in srgb, var(--ink) 75%, transparent);margin-top:1.5mm">
       {ed["edisi"]} · {len(urut)} emiten unik · {total_muncul} kemunculan harian</div>
-    <div style="margin-top:12mm">
+    <div style="margin-top:7mm">
       <div style="font-size:7pt;letter-spacing:.24em;text-transform:uppercase;color:color-mix(in srgb, var(--ink) 60%, transparent);
         border-bottom:1px solid color-mix(in srgb, var(--ink) 35%, transparent);padding-bottom:2mm;margin-bottom:3mm;
         display:flex;justify-content:space-between"><span>Dalam Edisi Ini — posisi terkini</span><span>Skor</span></div>
-      <style>.c-row{{display:flex;align-items:baseline;gap:6mm;padding:2.8mm 0;
-        border-bottom:1px solid color-mix(in srgb, var(--ink) 16%, transparent);font-variant-numeric:tabular-nums}}
-        .c-tk{{font-size:14pt;font-weight:800;width:24mm}}
-        .c-lbl{{flex:1;font-size:9.5pt;color:color-mix(in srgb, var(--ink) 85%, transparent)}}
-        .c-prog{{display:block;font-size:7pt;color:color-mix(in srgb, var(--ink) 55%, transparent);font-family:var(--mono)}}
-        .c-skor{{font-size:14pt;font-weight:800}}</style>
-      {isi}
+      <style>
+        /* Dua lajur. Satu lajur cuma memuat 15 baris, sehingga 43 emiten
+           dipangkas jadi "+28 lainnya" dan sampulnya berhenti jadi daftar isi.
+           Tinggi baris DIPATOK supaya baris ke-n di kedua lajur sejajar --
+           tanpa itu label satu baris dan dua baris menggeser lajur kanan. */
+        .c-list{{columns:2;column-gap:9mm}}
+        .c-row{{display:flex;align-items:center;gap:3.5mm;padding:0;height:8.6mm;
+        break-inside:avoid;border-bottom:1px solid color-mix(in srgb, var(--ink) 16%, transparent);
+        font-variant-numeric:tabular-nums}}
+        .c-tk{{font-size:10.5pt;font-weight:800;width:15mm;flex:none}}
+        .c-lbl{{flex:1;min-width:0;font-size:7.4pt;line-height:1.3;
+        color:color-mix(in srgb, var(--ink) 85%, transparent);
+        display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}}
+        .c-prog{{display:block;font-size:6pt;color:color-mix(in srgb, var(--ink) 55%, transparent);font-family:var(--mono)}}
+        .c-skor{{font-size:10.5pt;font-weight:800;flex:none}}</style>
+      <div class="c-list">{isi}</div>
       <div class="c-row"><span class="c-tk" style="font-size:9.5pt;font-weight:700">Peringkat</span>
         <span class="c-lbl">Quant Opportunity Ranking mingguan — komponen skor terbuka</span><span class="c-skor"></span></div>
     </div>

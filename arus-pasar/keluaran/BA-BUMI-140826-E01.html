@@ -68,10 +68,17 @@
   .trow .tk small{font-family:var(--disp);font-size:9pt;font-weight:400;color:var(--mute);margin-left:8px;letter-spacing:0}
   /* Kredit kontributor berdampingan dengan kode emiten — kecil & redup,
      pengakuan yang tak merebut perhatian dari harga. */
-  .trow .tk .tk-kredit{font-family:var(--disp);font-size:6.4pt;font-weight:400;
+  /* Lencana setoran: kotak sendiri supaya nama kontributor tak terbaca
+     sebagai lanjutan judul emiten. Warna amber redup — pengakuan yang
+     terlihat, bukan yang berebut perhatian dengan kode emitennya. */
+  .trow .tk .tk-kredit{display:inline-flex;align-items:center;gap:1.4mm;
+    background:color-mix(in srgb, var(--amber) 14%, transparent);
+    border:.3pt solid color-mix(in srgb, var(--amber) 45%, transparent);
+    border-radius:1mm;padding:.5mm 1.6mm;
+    font-family:var(--disp);font-size:6.4pt;font-weight:400;
     letter-spacing:.12em;text-transform:uppercase;color:var(--mute);
     margin-left:8px;vertical-align:3px;white-space:nowrap}
-  .trow .tk .tk-kredit b{font-weight:700;color:var(--ink2);letter-spacing:.04em;text-transform:none;font-size:7.2pt}
+  .trow .tk .tk-kredit b{font-weight:700;color:var(--amber);letter-spacing:.04em;text-transform:none;font-size:7.2pt}
   .trow .px{text-align:right;font-variant-numeric:tabular-nums;line-height:1.1;font-family:var(--mono)}
   .trow .px .h{font-size:19pt;font-weight:800}
   .trow .px .c{font-size:9pt;font-weight:700}
@@ -173,9 +180,14 @@
   .konsek{font-size:8pt;color:var(--mute);margin:0}
 
   /* strip probabilitas historis — 1 baris kecil dekat skor komposit */
+  /* white-space:nowrap dibuang: barisnya tumbuh mengikuti jumlah angka
+     (VolVal + persen senyap + n) sampai melewati lebar halaman, lalu menimpa
+     baris hak cipta di bawahnya. Dibiarkan membungkus, dengan jarak aman ke
+     kaki. */
   .probstrip{font-family:var(--mono);font-size:6.4pt;color:var(--mute);
     border-top:1px solid var(--hair);padding-top:.7mm;margin-top:.7mm;
-    white-space:nowrap;font-variant-numeric:tabular-nums}
+    margin-bottom:1.6mm;line-height:1.5;overflow-wrap:anywhere;
+    font-variant-numeric:tabular-nums}
   .probstrip .pl{font-family:var(--disp);font-size:5.8pt;font-weight:700;
     letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);margin-right:2mm}
   .probstrip b{color:var(--ink)}
@@ -239,9 +251,17 @@
      "daily kurang rapi nih susunan nya"). */
   .cover .wm-big.kecil{font-size:34pt;line-height:1.1}
   .cv-list.padat{columns:2;column-gap:10mm;margin-top:9mm}
-  .cv-list.padat .cvrow{padding:3.1mm 0;gap:3.5mm;break-inside:avoid}
+  /* Tinggi baris DIPATOK, tidak mengikuti panjang labelnya. Dengan
+     `columns:2` tiap baris setinggi isinya sendiri, sehingga label satu baris
+     dan dua baris membuat lajur kiri dan kanan bergeser makin jauh ke bawah —
+     GTSI di kiri tak lagi sejajar dengan KIJA di kanan (temuan 18 Agu).
+     Tinggi tetap + label dibatasi dua baris membuat baris ke-n di kedua lajur
+     selalu berada di garis yang sama. */
+  .cv-list.padat .cvrow{padding:0;gap:3.5mm;break-inside:avoid;
+    min-height:13.2mm;height:13.2mm;align-items:center}
   .cv-list.padat .tkk{font-size:11pt;width:18mm}
-  .cv-list.padat .lb{font-size:8pt;line-height:1.35}
+  .cv-list.padat .lb{font-size:8pt;line-height:1.35;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .cv-list.padat .sk{font-size:11pt}
   .cv-foot{margin-top:auto;padding-bottom:14mm}
   /* kotak stat berlabel gaya sampul lama (V2) — angka besar kebaca, bukan
@@ -422,10 +442,10 @@
   .sknb .kartu.r{border-color:var(--bear);background:var(--bear-dim)}
   .sknb .kt{font-size:10pt;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2mm}
   .sknb .kartu.b .kt{color:var(--bull)} .sknb .kartu.t .kt{color:var(--teal)} .sknb .kartu.r .kt{color:var(--bear)}
-  .sknb .kr{display:grid;grid-template-columns:24mm 1fr;gap:4mm;font-size:8.8pt;line-height:1.5;
+  .sknb .kr{display:grid;grid-template-columns:30mm 1fr;gap:5mm;font-size:8.8pt;line-height:1.5;
     color:var(--ink2);padding:1mm 0;font-variant-numeric:tabular-nums}
   .sknb .kl{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);padding-top:.6mm}
-  .sknb .aturan{display:grid;grid-template-columns:24mm 1fr;gap:4mm;font-size:9.3pt;font-weight:700;
+  .sknb .aturan{display:grid;grid-template-columns:30mm 1fr;gap:5mm;font-size:9.3pt;font-weight:700;
     padding:2.5mm 4.5mm;border:1px solid var(--hair);border-radius:1.5mm}
   .sknb .aturan .kl{font-weight:400}
 </style><script>window.__TEMA = {"emas": [[20, "#0E8F87", 1], [50, "#0A6E68", 1.2], [60, "#4A6B8A", 1], [100, "#6B4FA8", 1], [200, "#B06A2C", 1.5]], "bull": "#0F7A38", "bear": "#B3271E", "bullSoft": "rgba(15,122,56,0.3)", "bearSoft": "rgba(179,39,30,0.3)", "teks": "#0F1A22", "teksLembut": "rgba(15,26,34,0.55)", "grid": "rgba(15,26,34,0.14)", "pivot": "#57687A"};</script>
@@ -438,14 +458,14 @@
     <div class="bd-judul">BEDAH<br>ARUS SAHAM</div>
     <div class="cv-tag" style="margin-top:3mm">Satu Emiten · Modal, Arus &amp; Probabilitas</div>
     <div class="bd-tk">$BUMI<small>PT Bumi Resources Tbk.</small></div>
-    <div class="hangka" style="margin-top:5mm">BUMI <b>181</b> diperdagangkan <b>22,9%</b> di bawah harga konstruksi pasar <b>223</b></div>
+    <div class="hangka" style="margin-top:5mm">BUMI <b>181</b> diperdagangkan <b>22,9%</b> di bawah harga konstruksi pasar <b>222</b></div>
     <div class="bd-vonis">Sepuluh hari bursa berturut, sepuluh hari net beli — tanpa satu pun hari net jual. Totalnya Rp1,45 triliun sementara harga bergerak 168 ke 181 (+7,74%). Serapan sebesar itu untuk kenaikan 7,74% menandakan barang diserap bertahap, bukan diburu.</div>
     <div class="bd-cutoff">
       <span class="l">Batas Data</span>
       Seluruh angka terbitan ini ditutup pada penutupan sesi <b>14 Agustus 2026</b> — sesi bursa terakhir yang sudah selesai saat terbitan dirakit. Ini bukan data waktu nyata: harga, arus broker, dan probabilitas tidak berubah lagi setelah angka ditutup.
     </div>
     <div class="cv-foot">
-      <div class="cv-stats"><span><span class="l">Close</span><b>181 <span class="c-bull" style="font-size:8pt">+1,69%</span></b></span><span><span class="l">PCD (konstruksi)</span><b>223</b></span><span><span class="l">Modal di atas air</span><b>41,3%</b></span><span><span class="l">P(naik 5 hari)</span><b>45% <small style="color:var(--mute)">n357</small></b></span></div>
+      <div class="cv-stats"><span><span class="l">Close</span><b>181 <span class="c-bull" style="font-size:8pt">+1,69%</span></b></span><span><span class="l">PCD (konstruksi)</span><b>222</b></span><span><span class="l">Modal di atas air</span><b>41,3%</b></span><span><span class="l">P(naik 5 hari)</span><b>45% <small style="color:var(--mute)">n357</small></b></span></div>
       <div class="cv-legal">© 2026 PAPAN — Pusat Analisa Pasar Nusantara. Hak cipta dilindungi.<br>
       Analisis probabilistik, bukan ajakan transaksi. PCD = aproksimasi OHLCV, bukan data done per harga.<br>
       Data per 14 Agustus 2026 (bukan waktu nyata) · sumber: riwayat harga bursa &amp; Broker Summary Stockbit.</div>
@@ -461,12 +481,12 @@
   <div class="inner">
     <div class="hangka">Modal pasar BUMI terkonsentrasi <b>166</b>–<b>254</b>; close <b>181</b> di lapis bawah zona</div>
     <div class="chartwrap">
-      <div class="cap">BUMI · Distribusi Volume × Harga · Peluruhan Half-life 60 Hari · 1651 Bar</div>
+      <div class="cap">BUMI · Distribusi Volume × Harga · Peluruhan Half-life 60 Hari · 1629 Bar</div>
       <canvas id="chPCD" width="1360" height="430"></canvas>
     </div>
     <script>
     (function(){
-      const K=[[111.0, 436326694.6], [112.0, 509736877.8], [113.0, 502699144.8], [114.0, 528714096.4], [115.0, 439212003.6], [116.0, 367006364.6], [117.0, 336269458.6], [118.0, 358973473.3], [119.0, 345949751.1], [120.0, 378813972.0], [121.0, 342530323.4], [122.0, 295639073.2], [123.0, 271372654.5], [124.0, 202244748.6], [125.0, 198854469.3], [126.0, 240365213.8], [127.0, 216001192.8], [128.0, 226893219.6], [129.0, 448617206.0], [130.0, 726688851.6], [131.0, 906267704.6], [132.0, 1015570779.6], [133.0, 1187319331.5], [134.0, 1589100356.9], [135.0, 1682465400.6], [136.0, 1823258155.4], [137.0, 1996946355.7], [138.0, 2142647501.0], [139.0, 3092979116.7], [140.0, 3433152813.1], [141.0, 3791943747.2], [142.0, 2874250316.1], [143.0, 2249482925.1], [144.0, 1950249174.5], [145.0, 1889984590.2], [146.0, 1817329303.6], [147.0, 2142160820.4], [148.0, 2925148213.0], [149.0, 3354387815.9], [150.0, 3275682734.0], [151.0, 2633862253.1], [152.0, 2115313478.0], [153.0, 1645064919.2], [154.0, 1469656714.9], [155.0, 1150850526.2], [156.0, 1194399394.2], [157.0, 1973700908.5], [158.0, 1932410655.4], [159.0, 2567048320.2], [160.0, 2652092282.1], [161.0, 2359089740.7], [162.0, 1877106534.7], [163.0, 1654920630.3], [164.0, 2622544980.6], [165.0, 3128971827.3], [166.0, 3454772572.0], [167.0, 4106927965.8], [168.0, 5079693577.5], [169.0, 4756497362.9], [170.0, 4269301164.0], [171.0, 3835739263.1], [172.0, 3471436623.2], [173.0, 3381297146.6], [174.0, 3254774449.0], [175.0, 3283381628.4], [176.0, 3140599523.5], [177.0, 2726855929.5], [178.0, 3303390473.2], [179.0, 3986478248.4], [180.0, 3786132792.0], [181.0, 3887801668.0], [182.0, 3705452574.1], [183.0, 3125091534.3], [184.0, 2334107500.4], [185.0, 2483536976.4], [186.0, 2278490276.0], [187.0, 2750469530.0], [188.0, 2397004788.3], [189.0, 1998497673.2], [190.0, 1893215138.7], [191.0, 1725823358.9], [192.0, 966208059.2], [193.0, 787832670.7], [194.0, 759668020.3], [195.0, 546755946.2], [196.0, 523725856.0], [197.0, 309286418.9], [198.0, 500071437.7], [199.0, 309286418.9], [200.0, 638328060.1], [201.0, 309286418.9], [202.0, 1103288980.3], [203.0, 243372871.0], [204.0, 1037375432.5], [205.0, 243372871.0], [206.0, 1499959754.3], [207.0, 129643421.7], [208.0, 1768178508.5], [209.0, 129643421.7], [210.0, 2048033789.7], [211.0, 129643421.7], [212.0, 2048033789.7], [214.0, 1934307965.9], [216.0, 2280064638.7], [218.0, 2888936587.6], [220.0, 3434532694.2], [222.0, 3154701463.6], [224.0, 3413559761.7], [226.0, 3756252747.0], [228.0, 4229837294.8], [230.0, 4492989039.9], [232.0, 4218025834.7], [234.0, 3846729729.4], [236.0, 3526788094.8], [238.0, 3952147343.1], [240.0, 4467694391.9], [242.0, 4204117905.6], [244.0, 4418443542.3], [246.0, 4385294178.2], [248.0, 4394761516.0], [250.0, 4613327907.6], [252.0, 4338449175.5], [254.0, 4129618448.5], [256.0, 3356656946.9], [258.0, 2770491030.6], [260.0, 2598596132.1], [262.0, 2771263215.5], [264.0, 2311854333.4], [266.0, 2231740962.3], [268.0, 1685811650.6], [270.0, 1642983704.0], [272.0, 1642983704.0], [274.0, 1469673386.5], [276.0, 1574745958.8], [278.0, 1441930272.1], [280.0, 1322772263.9], [282.0, 1322772263.9], [284.0, 961374942.9], [286.0, 1187932041.2], [288.0, 976647964.7], [290.0, 976647964.7], [292.0, 1100717783.8], [294.0, 1706598052.9], [296.0, 1252381484.7], [298.0, 1094564957.2], [300.0, 607363190.5], [302.0, 607363190.5], [304.0, 607363190.5], [306.0, 607363190.5], [308.0, 105072572.3], [310.0, 105072572.3], [312.0, 105072572.3], [314.0, 105072572.3], [316.0, 105072572.3], [318.0, 105072572.3], [320.0, 105072572.3], [322.0, 105072572.3], [324.0, 105072572.3], [326.0, 233221352.4], [328.0, 359369230.5], [330.0, 537292966.9], [332.0, 631745749.7], [334.0, 690881037.4], [336.0, 690881037.4], [338.0, 652090541.7], [340.0, 723796782.9], [342.0, 723796782.9], [344.0, 723796782.9], [346.0, 986462999.0], [348.0, 860315120.9], [350.0, 860315120.9], [352.0, 794033044.3], [354.0, 924014738.5], [356.0, 924014738.5], [358.0, 924014738.5], [360.0, 925330334.2], [362.0, 921598806.2], [364.0, 921598806.2], [366.0, 806816708.9], [368.0, 806816708.9], [370.0, 788417243.5], [372.0, 788417243.5], [374.0, 704579311.5], [376.0, 794569404.8], [378.0, 713654832.6], [380.0, 701457047.6], [382.0, 701457047.6], [384.0, 593254637.9], [386.0, 528797403.1], [388.0, 528797403.1], [390.0, 630406624.3], [392.0, 630406624.3], [394.0, 677713145.4], [396.0, 664577269.8], [398.0, 573203587.1], [400.0, 573203587.1], [402.0, 501497345.8], [404.0, 565941435.6], [406.0, 565941435.6], [408.0, 475951342.3], [410.0, 453316437.0], [412.0, 453316437.0], [414.0, 498333752.8], [416.0, 498333752.8], [418.0, 498333752.8], [420.0, 580678613.6], [422.0, 580678613.6], [424.0, 580678613.6], [426.0, 504625296.2], [428.0, 504625296.2], [430.0, 440181206.4], [432.0, 440181206.4], [434.0, 440181206.4], [436.0, 346865116.6], [438.0, 346865116.6], [440.0, 346865116.6], [442.0, 269012722.1], [444.0, 269012722.1], [446.0, 269012722.1], [448.0, 269012722.1], [450.0, 198425524.4], [452.0, 374245036.7], [454.0, 374245036.7], [456.0, 483796791.1], [458.0, 483796791.1], [460.0, 483796791.1], [462.0, 415022648.7], [464.0, 415022648.7], [466.0, 415022648.7], [468.0, 415022648.7], [470.0, 415022648.7]],PCDV=222.5,P25=166.0,P50=202.0,P75=254.0,C=181.0;
+      const K=[[111.0, 436326694.6], [112.0, 509736877.8], [113.0, 502699144.8], [114.0, 528714096.4], [115.0, 439212003.6], [116.0, 367006364.6], [117.0, 336269458.6], [118.0, 358973473.3], [119.0, 345949751.1], [120.0, 378813972.0], [121.0, 342530323.4], [122.0, 295639073.2], [123.0, 271372654.5], [124.0, 202244748.6], [125.0, 198854469.3], [126.0, 240365213.8], [127.0, 216001192.8], [128.0, 226893219.6], [129.0, 448617206.0], [130.0, 726688851.6], [131.0, 906267704.6], [132.0, 1015570779.6], [133.0, 1187319331.5], [134.0, 1589100356.9], [135.0, 1682465400.6], [136.0, 1823258155.4], [137.0, 1996946355.7], [138.0, 2142647501.0], [139.0, 3092979116.7], [140.0, 3433152813.1], [141.0, 3791943747.2], [142.0, 2874250316.1], [143.0, 2249482925.1], [144.0, 1950249174.5], [145.0, 1889984590.2], [146.0, 1817329303.6], [147.0, 2142160820.4], [148.0, 2925148213.0], [149.0, 3354387815.9], [150.0, 3275682734.0], [151.0, 2633862253.1], [152.0, 2115313478.0], [153.0, 1645064919.2], [154.0, 1469656714.9], [155.0, 1150850526.2], [156.0, 1194399394.2], [157.0, 1973700908.5], [158.0, 1932410655.4], [159.0, 2567048320.2], [160.0, 2652092282.1], [161.0, 2359089740.7], [162.0, 1877106534.7], [163.0, 1654920630.3], [164.0, 2622544980.6], [165.0, 3128971827.3], [166.0, 3461757107.4], [167.0, 4156397658.6], [168.0, 5031198201.1], [169.0, 4651179455.5], [170.0, 4137682105.5], [171.0, 3855081399.2], [172.0, 3477872229.4], [173.0, 3425798900.6], [174.0, 3299276203.0], [175.0, 3347724848.3], [176.0, 3229990178.8], [177.0, 2816246584.8], [178.0, 3303390473.2], [179.0, 3986478248.4], [180.0, 3786132792.0], [181.0, 3887801668.0], [182.0, 3705452574.1], [183.0, 3125091534.3], [184.0, 2334107500.4], [185.0, 2483536976.4], [186.0, 2278490276.0], [187.0, 2750469530.0], [188.0, 2397004788.3], [189.0, 1998497673.2], [190.0, 1893215138.7], [191.0, 1725823358.9], [192.0, 966208059.2], [193.0, 787832670.7], [194.0, 759668020.3], [195.0, 546755946.2], [196.0, 523725856.0], [197.0, 309286418.9], [198.0, 500071437.7], [199.0, 309286418.9], [200.0, 638328060.1], [201.0, 309286418.9], [202.0, 1103288980.3], [203.0, 243372871.0], [204.0, 1037375432.5], [205.0, 243372871.0], [206.0, 1499959754.3], [207.0, 129643421.7], [208.0, 1768178508.5], [209.0, 129643421.7], [210.0, 2048033789.7], [211.0, 129643421.7], [212.0, 2048033789.7], [214.0, 1934307965.9], [216.0, 2280064638.7], [218.0, 2888936587.6], [220.0, 3434532694.2], [222.0, 3154701463.6], [224.0, 3413559761.7], [226.0, 3756252747.0], [228.0, 4229837294.8], [230.0, 4492989039.9], [232.0, 4218025834.7], [234.0, 3846729729.4], [236.0, 3526788094.8], [238.0, 3952147343.1], [240.0, 4467694391.9], [242.0, 4204117905.6], [244.0, 4418443542.3], [246.0, 4385294178.2], [248.0, 4394761516.0], [250.0, 4613327907.6], [252.0, 4338449175.5], [254.0, 4129618448.5], [256.0, 3356656946.9], [258.0, 2770491030.6], [260.0, 2598596132.1], [262.0, 2771263215.5], [264.0, 2311854333.4], [266.0, 2231740962.3], [268.0, 1685811650.6], [270.0, 1642983704.0], [272.0, 1642983704.0], [274.0, 1469673386.5], [276.0, 1574745958.8], [278.0, 1441930272.1], [280.0, 1322772263.9], [282.0, 1322772263.9], [284.0, 961374942.9], [286.0, 1187932041.2], [288.0, 976647964.7], [290.0, 976647964.7], [292.0, 1100717783.8], [294.0, 1706598052.9], [296.0, 1252381484.7], [298.0, 1094564957.2], [300.0, 607363190.5], [302.0, 607363190.5], [304.0, 607363190.5], [306.0, 607363190.5], [308.0, 105072572.3], [310.0, 105072572.3], [312.0, 105072572.3], [314.0, 105072572.3], [316.0, 105072572.3], [318.0, 105072572.3], [320.0, 105072572.3], [322.0, 105072572.3], [324.0, 105072572.3], [326.0, 233221352.4], [328.0, 359369230.5], [330.0, 537292966.9], [332.0, 631745749.7], [334.0, 690881037.4], [336.0, 690881037.4], [338.0, 652090541.7], [340.0, 723796782.9], [342.0, 723796782.9], [344.0, 723796782.9], [346.0, 986462999.0], [348.0, 860315120.9], [350.0, 860315120.9], [352.0, 794033044.3], [354.0, 924014738.5], [356.0, 924014738.5], [358.0, 924014738.5], [360.0, 925330334.2], [362.0, 921598806.2], [364.0, 921598806.2], [366.0, 806816708.9], [368.0, 806816708.9], [370.0, 788417243.5], [372.0, 788417243.5], [374.0, 704579311.5], [376.0, 794569404.8], [378.0, 713654832.6], [380.0, 701457047.6], [382.0, 701457047.6], [384.0, 593254637.9], [386.0, 528797403.1], [388.0, 528797403.1], [390.0, 630406624.3], [392.0, 630406624.3], [394.0, 677713145.4], [396.0, 664577269.8], [398.0, 573203587.1], [400.0, 573203587.1], [402.0, 501497345.8], [404.0, 565941435.6], [406.0, 565941435.6], [408.0, 475951342.3], [410.0, 453316437.0], [412.0, 453316437.0], [414.0, 498333752.8], [416.0, 498333752.8], [418.0, 498333752.8], [420.0, 580678613.6], [422.0, 580678613.6], [424.0, 580678613.6], [426.0, 504625296.2], [428.0, 504625296.2], [430.0, 440181206.4], [432.0, 440181206.4], [434.0, 440181206.4], [436.0, 346865116.6], [438.0, 346865116.6], [440.0, 346865116.6], [442.0, 269012722.1], [444.0, 269012722.1], [446.0, 269012722.1], [448.0, 269012722.1], [450.0, 198425524.4], [452.0, 374245036.7], [454.0, 374245036.7], [456.0, 483796791.1], [458.0, 483796791.1], [460.0, 483796791.1], [462.0, 415022648.7], [464.0, 415022648.7], [466.0, 415022648.7], [468.0, 415022648.7], [470.0, 415022648.7]],PCDV=222.5,P25=166.0,P50=202.0,P75=254.0,C=181.0;
       const cv=document.getElementById('chPCD'),x=cv.getContext('2d');
       const W=cv.width,H=cv.height,pad={t:44,r:16,b:30,l:16};
       const lo=K[0][0],hi=K[K.length-1][0],mx=Math.max(...K.map(k=>k[1]));
@@ -494,7 +514,7 @@
     })();
     </script>
     <div class="bd-lvl">
-      <div class="lvl"><div class="r"><span class="l">PCD — rata-rata modal</span><b class="c-side">223</b></div>
+      <div class="lvl"><div class="r"><span class="l">PCD — rata-rata modal</span><b class="c-side">222</b></div>
 <div class="r"><span class="l">Median modal (p50)</span><b class="">202</b></div>
 <div class="r"><span class="l">Close terakhir</span><b class="c-bear">181</b></div></div>
       <div class="lvl"><div class="r"><span class="l">Lapis modal bawah (p25)</span><b class="c-bull">166</b></div>
@@ -505,7 +525,7 @@
       <h3 class="rule">Interpretasi Analis</h3>
       <p style="text-align:justify;line-height:1.6">Harga 181 berada di atas EMA50 170. Sepanjang sepuluh hari itu harga bergerak dalam rentang sempit sementara net beli terus masuk, sehingga zona modal periode terakhir menumpuk tepat di bawah harga sekarang — pemegang baru berada di posisi untung tipis, bukan tertekan.</p>
     </div>
-    <div class="bd-note">METODE: aproksimasi hibrida: intraday 15 menit (55 hari bursa terakhir) + OHLCV harian utk riwayat lebih lama; volume disebar merata low–high per bar, peluruhan half-life 60 hari bursa — bukan data done per harga. Batang hijau = lapis harga ≤ close (pemegang untung/impas);
+    <div class="bd-note">METODE: aproksimasi hibrida: intraday 15 menit (54 hari bursa terakhir) + OHLCV harian utk riwayat lebih lama; volume disebar merata low–high per bar, peluruhan half-life 60 hari bursa — bukan data done per harga. Batang hijau = lapis harga ≤ close (pemegang untung/impas);
     batang biru = lapis di atas close (pemegang rugi). % modal di atas air = porsi volume tertimbang pada lapis ≤ close.</div>
   </div>
   <footer class="foot">
@@ -761,3 +781,10 @@ window.__chartsDone = true;
 </script>
 </body>
 </html>
+
+  /* Lencana jenjang kontributor di sebelah namanya. */
+  .trow .tk .tk-jenjang{font-family:var(--disp);font-size:5.4pt;font-weight:700;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--mute);
+    border-left:.3pt solid color-mix(in srgb, var(--amber) 45%, transparent);padding-left:1.4mm}
+  /* Narasi Arus Dana & Teknikal dibuat rata kiri-kanan (permintaan 18 Agu). */
+  .blok p, .blok4 p, .narasi p, p.nr{text-align:justify;hyphens:auto}
