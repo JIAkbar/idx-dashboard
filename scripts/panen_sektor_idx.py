@@ -54,8 +54,21 @@ def main() -> int:
         r.raise_for_status()
     except Exception as e:  # noqa: BLE001
         print(f"Gagal mengambil profil emiten: {e}", file=sys.stderr)
-        print("Ingat: endpoint IDX hanya terbuka dari IP rumahan, 403 dari datacenter.",
-              file=sys.stderr)
+        # Pesan ini dulu berbunyi "endpoint IDX hanya terbuka dari IP rumahan,
+        # 403 dari datacenter" — dan itu menyesatkan sampai memakan waktu nyata
+        # (18 Agu 2026): ia menuntun pembacanya menyalahkan ALAMAT, lalu menunggu
+        # atau pindah mesin, padahal 403 hari itu datang dari bentuk permintaan dan
+        # alamatnya tak pernah berubah. Pesan galat yang menyebut satu sebab dengan
+        # yakin lebih buruk daripada tak ada pesan sama sekali: ia menutup arah
+        # pemeriksaan lain. Sekarang menyebut uji yang MEMBEDAKAN keduanya.
+        print(
+            "403 di sini biasanya BENTUK permintaan, bukan alamat IP. Uji dulu: buka URL "
+            "yang sama di peramban. Kalau peramban menjawab 200, yang ditolak sidik jari "
+            "permintaannya \u2014 perbaiki header (lihat _HDR_PERAMBAN) atau pakai "
+            "curl_cffi impersonate=chrome124. Kalau peramban IKUT 403, barulah curigai "
+            "alamat/IP.",
+            file=sys.stderr,
+        )
         return 1
 
     hasil = r.json()
