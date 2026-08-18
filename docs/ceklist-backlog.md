@@ -57,7 +57,7 @@ itu yang menentukan urutan — bukan besar-kecilnya saja.
 | ☐ | 18 | **A3** | Panen laporan keuangan resmi IDX (XLSX ber-XBRL) | A2 | 777/778 emiten TW2 2026; menutup kedalaman 9 tahun/16 kuartal |
 | ☐ | 19 | **B3** | Pemegang saham pengendali | A3 | Menutup celah kepemilikan lewat perusahaan perantara |
 | ☐ | 20 | **#166** | Rakit ulang mesin Mingguan & Bulanan | — | Sekarang 21 dari 24 halaman identik dengan edisi harian |
-| ☐ | ~~21~~ **NAIK** | **#170** | Penyeragaman kendali — **spek: `docs/spek-kendali.md`** (10 keluhan verbatim). Tahap: audit → komponen kanonis → terapkan per halaman | — | **Diangkat jadi pekerjaan utama 17 Agu** atas perintah Johan; alasan "sengaja terakhir" dibatalkan |
+| ☑ | ~~21~~ **NAIK** | **#170** | **Selesai 18 Agu** (K1/K2/K3/K5/K8/K10 + seluruh temuan audit); K4/K6/K7 menunggu keputusan Johan. Penyeragaman kendali — **spek: `docs/spek-kendali.md`** (10 keluhan verbatim). Tahap: audit → komponen kanonis → terapkan per halaman | — | **Diangkat jadi pekerjaan utama 17 Agu** atas perintah Johan; alasan "sengaja terakhir" dibatalkan |
 
 ### Menunggu pembahasan, bukan menunggu giliran
 

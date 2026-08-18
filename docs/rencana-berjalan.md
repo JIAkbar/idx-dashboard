@@ -168,6 +168,19 @@ C2 wajib duluan, screener tanpa kolom indikator cuma jadi tabel harga).
 
 ### #170 — Refactor kendali: tombol & kontrol belum seragam
 
+> **SELESAI 18 Agustus 2026** untuk K1, K2, K3, K5, K8, K10 dan seluruh temuan
+> audit yang tak butuh keputusan baru. Hasil lengkap + apa yang sengaja tidak
+> dikerjakan: `docs/spek-kendali.md` bagian "Hasil gelombang #170".
+>
+> **Masih menunggu Johan:** K4 (rentang Grup Konglomerat menghitung apa?),
+> K6 (kartu broksum — apa yang salah dari kartunya?), K7 (jalur data Radar,
+> bukan pekerjaan tampilan).
+>
+> Komponen kanonis yang lahir dari gelombang ini dan wajib dipakai kendali
+> baru: `LangkahTanggal`, `TombolIkon`, `PemilihRentang`, `TombolLayarPenuh`,
+> plus kelas `.af-cari`, `.chip-t`, `.bilah-rentang`, `.ti-grup`, `.th-sort`.
+
+
 Dikeluhkan Johan 16 Agu 2026: tombol kalender, kotak pencarian, pemilih
 rentang waktu, dan kawan-kawannya **tidak senada antar halaman** — beberapa
 `<select>` bawaan, beberapa `Dropdown` proyek, beberapa `DatePicker`, dengan

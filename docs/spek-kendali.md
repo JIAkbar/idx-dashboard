@@ -145,3 +145,62 @@ Pelajaran cara kerjanya: **audit yang membantah klaim tak berarti klaimnya
 salah** — ia berarti kalimatnya perlu ditanyakan ulang. Kalau saya menutup K9
 sebagai "tidak terbukti", fitur yang justru paling menjawab keraguan pengguna
 tak akan pernah dibuat.
+---
+
+## Hasil gelombang #170 (18 Agustus 2026)
+
+Dikerjakan atas perintah Johan *"sekalian gelombang #170"*, setelah ia menunjuk
+artifact **Sapuan Kendali PAPAN** dengan kalimat *"cek di artifact pernah kita
+diskusi soal komponen"*.
+
+### Yang selesai
+
+| Keluhan | Hasil | Commit |
+|---|---|---|
+| **K1** panah kecil di sebelah kalender besar | `LangkahTanggal` — 44×44 penuh, 32×32 sebaris dengan area klik 44px | `aa4bceeb` |
+| **K2** bentuk pemilih rentang beda-beda | `PemilihRentang` + `LABEL_RENTANG` satu kosakata | `ebaa3f95` |
+| **K3** tombol ekspor kaku | Memakai `Dropdown.tsx` yang sudah ada, plus prop `ikon`/`rata` | `57d5d8a2` |
+| **K5** kalender rentang Broker Summary | `.bilah-rentang` — dua DatePicker dalam satu bingkai | `2749499a` |
+| **K8** bar Radar tak rapi | Pemilih edisi ke `.chip-t`, stepper ke `LangkahTanggal` | `aa4bceeb` |
+| **K10** IHSG kotak vs BUMI bulat | Keduanya `.chip-t`; `.sea-chip` tinggal varian ber-ikon | `9a21058c` |
+| — (audit §3.1.3) | Enam wadah kotak cari jadi satu `.af-cari` | `c2cafbf1` |
+| — (audit §3.1.4) | Sebelas kelas tombol ikon jadi satu `TombolIkon` | `5a362d4a` |
+| — (audit §3.1.5) | `.bchip` kembali ke tugas aslinya; 10 gaya inline penambal hilang | `9a21058c` |
+| — (audit §3.1.6) | Tiga tombol Layar Penuh jadi satu komponen | `9a21058c` |
+| — (audit §3.3) | `thBtn`, `.blt-dl.on`, `.dd-btn-kecil`, `.btn-p-kecil`, `.merah` umum | `57d5d8a2` |
+
+Dua cacat yang baru ketahuan saat verifikasi, keduanya membuat kendali **tak
+bisa dipakai sama sekali** dan keduanya sudah ada sebelum #170:
+
+- Baris dua pemilih tanggal Broker Summary `flex:0 0 auto` — di 412px ujung
+  kanannya jatuh di luar viewport **tanpa gulir**, jadi tanggal akhir tak bisa
+  diubah dari telepon.
+- `.pi-search-x` sebuah `<span>` ber-`onMouseDown`: tak bisa difokus, tak
+  merespons Enter, tak punya nama untuk pembaca layar.
+
+### Keputusan yang saya ambil sendiri, dan alasannya
+
+Prinsip 4 menyerahkan **kosakata final** ke Johan. Karena perintahnya
+mengerjakan seluruh gelombang, saya memilih **kata penuh** (`1 Minggu · 1 Bulan
+· 3 Bulan · 6 Bulan · MTD · YTD · 1 Tahun · … · Semua`) dengan alasan yang bisa
+dibantah dalam satu berkas (`LABEL_RENTANG` di `lib/dasbor/periode.ts`):
+
+1. Itu satu-satunya penulisan yang **sudah** dipakai bersama tiga halaman
+   (Kalender Bursa, Top Stocks, Sektor), jadi menyeragamkan ke sana mengubah
+   paling sedikit layar.
+2. `1T` hemat beberapa piksel tapi `T` bisa terbaca **triliun** di halaman yang
+   di sebelahnya memang menampilkan nilai transaksi dalam triliun.
+3. Terukur muat: lima chip Indeks Dunia satu baris di 412px; enam chip Broker
+   Summary membungkus dua baris tanpa luber.
+
+Kalau Johan lebih suka bentuk pendek artifact (`1M · 3B · YTD · 1T`), yang
+perlu diubah cuma isi `LABEL_RENTANG` — pemakainya sudah tak mengeja apa pun.
+
+### Yang TIDAK dikerjakan, dan kenapa
+
+| # | Kenapa berhenti |
+|---|---|
+| **K4** rentang Grup Konglomerat | Spek melarang menebak: rentangnya menghitung **apa**? Perubahan kepemilikan, atau kinerja anggota grup di dalam rentang? Dua jawaban itu menghasilkan halaman yang berbeda, bukan sekadar kendali yang berbeda. **Perlu keputusan Johan.** |
+| **K6** "kartu broksum juga perlu di update" | Kalimatnya tak menyebut apa yang salah dari kartunya. Presetnya sudah seragam lewat K2/K5; sisanya perlu ditunjuk. **Perlu keterangan Johan.** |
+| **K7** Radar | Datanya masih di Gmail. Bentuk kendalinya sudah dirapikan (K8), tapi jalur masuk datanya bukan pekerjaan tampilan. |
+| `.aa-sakelar`, `.pilih` kartu strategi, `.tile` heatmap, `.gk-chip` | Audit §3.6 menyatakan beda kebutuhan — sengaja tidak dipaksa seragam. |
