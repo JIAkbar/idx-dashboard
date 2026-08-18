@@ -9,11 +9,26 @@ export interface BarisIndeks {
   /** jumlah bulan */ j: number
 }
 
+/** Baris `belum` — emitennya ADA, datanya belum setahun penuh.
+ *
+ *  Ambang 12 imbal bulanan disengaja: di bawah setahun, tak ada satu pun bulan
+ *  kalender yang punya pembanding, jadi "pola musiman"-nya cuma kebetulan yang
+ *  dibaca sebagai pola. Yang salah dulu bukan ambangnya melainkan diamnya —
+ *  mencari EMAS (tercatat 23 Sep 2025) tak memunculkan apa pun, dan tak ada
+ *  yang membedakan "emitennya tak ada" dari "belum cukup untuk dihitung". */
+export interface BarisBelum {
+  /** kode */ k: string
+  /** nama */ n: string
+  /** jumlah imbal bulanan yang sudah terkumpul (butuh 12) */ j: number
+  /** tanggal pencatatan di bursa, YYYY-MM-DD */ t: string | null
+}
+
 const AKAR = '/data-idx/json/seasonality'
 
 /** Berkas huruf yang sudah diunduh — 24 berkas, tak perlu diambil dua kali. */
 const singgahHuruf = new Map<string, Promise<Record<string, SeriImbal>>>()
 let singgahIndeks: Promise<BarisIndeks[]> | null = null
+let singgahBelum: Promise<BarisBelum[]> | null = null
 let singgahIhsg: Promise<SeriImbal> | null = null
 
 async function ambilJson<T>(url: string): Promise<T> {
@@ -25,6 +40,15 @@ async function ambilJson<T>(url: string): Promise<T> {
 export function muatIndeks(): Promise<BarisIndeks[]> {
   singgahIndeks ??= ambilJson<{ emiten: BarisIndeks[] }>(`${AKAR}/indeks.json`).then((d) => d.emiten)
   return singgahIndeks
+}
+
+/** Emiten yang ada tapi datanya belum setahun penuh. Kosong kalau berkas
+ *  indeksnya versi lama — halaman tetap jalan, cuma tak bisa menjelaskan. */
+export function muatBelum(): Promise<BarisBelum[]> {
+  singgahBelum ??= ambilJson<{ belum?: BarisBelum[] }>(`${AKAR}/indeks.json`)
+    .then((d) => d.belum ?? [])
+    .catch(() => [])
+  return singgahBelum
 }
 
 export function muatIhsg(): Promise<SeriImbal> {

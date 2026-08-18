@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { BULAN, ringkasEmiten, vonisUji, type RingkasBulan, type RingkasEmiten, type SeriImbal } from '../../lib/seasonality'
-import { muatIndeks, muatIhsg, muatSeri, type BarisIndeks } from '../../lib/seasonalityData'
+import { muatIndeks, muatIhsg, muatSeri, muatBelum, type BarisIndeks, type BarisBelum } from '../../lib/seasonalityData'
 import { pesanGalat } from '../../lib/pesanGalat'
 import { SeasonalityHarian } from './SeasonalityHarian'
 import { SeasonalityKomparasi } from './SeasonalityKomparasi'
@@ -54,6 +54,19 @@ export function Seasonality() {
       .then(([i, h]) => { setIndeks(i); setIhsg(h) })
       .catch((e: unknown) => setGalat(pesanGalat(e, 'Gagal memuat data seasonality.')))
   }, [])
+
+  const [belum, setBelum] = useState<BarisBelum[]>([])
+  useEffect(() => { muatBelum().then(setBelum).catch(() => setBelum([])) }, [])
+
+  /** Emiten yang cocok TAPI datanya belum setahun penuh — ditampilkan dengan
+   *  alasannya, bukan dihilangkan. Ambang 12 imbal bulanan disengaja: di bawah
+   *  setahun tak ada satu pun bulan kalender yang punya pembanding. Yang salah
+   *  dulu diamnya, bukan ambangnya. */
+  const saranBelum = useMemo(() => {
+    const q = cari.trim().toUpperCase()
+    if (q.length < 1) return []
+    return belum.filter((b) => b.k.startsWith(q) || b.n.toUpperCase().includes(q)).slice(0, 4)
+  }, [belum, cari])
 
   const saran = useMemo(() => {
     const q = cari.trim().toUpperCase()
@@ -174,7 +187,7 @@ export function Seasonality() {
               onChange={(e) => setCari(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && saran[0]) void tambah(saran[0].k) }}
             />
-            {saran.length > 0 && (
+            {(saran.length > 0 || saranBelum.length > 0) && (
               <ul className="sea-saran" role="listbox">
                 {saran.map((b) => (
                   <li key={b.k}>
@@ -183,6 +196,20 @@ export function Seasonality() {
                       <span className="nm">{b.n}</span>
                       <span className="rg">{b.m} → {b.a}</span>
                     </button>
+                  </li>
+                ))}
+                {saranBelum.map((b) => (
+                  <li key={`belum-${b.k}`}>
+                    {/* Bukan tombol — tak ada yang bisa dibuka. Kotak yang bisa
+                        ditekan lalu diam lebih membingungkan daripada baris
+                        yang jelas cuma keterangan. */}
+                    <div className="sea-saran-it sea-saran-belum">
+                      <span className="kd">{b.k}</span>
+                      <span className="nm">{b.n}</span>
+                      <span className="ket">
+                        belum bisa dihitung — baru {b.j} bulan{b.t ? `, tercatat ${b.t}` : ''}; pola musiman butuh 12
+                      </span>
+                    </div>
                   </li>
                 ))}
               </ul>

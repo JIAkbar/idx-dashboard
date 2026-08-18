@@ -2922,3 +2922,15 @@
   .lantai .tp-tbl-wrap { display: none; }
   .lantai .tp-kartu-wrap { display: block; }
 }
+
+/* Baris "belum bisa dihitung" di saran Seasonality — emitennya ADA, datanya
+   belum setahun penuh. Tak bisa ditekan (tak ada yang dibuka), jadi ia dibuat
+   terbaca sebagai keterangan, bukan sebagai pilihan yang kebetulan mati. */
+.lantai .sea-saran-belum { cursor: default; opacity: .78; flex-wrap: wrap; align-items: baseline; }
+/* flex-basis 100% memaksa keterangan turun ke baris sendiri. Tanpa itu ia
+   terdorong ke ujung kanan baris dan terbaca sebagai kolom lain, bukan sebagai
+   alasan milik emiten di sebelah kirinya. */
+.lantai .sea-saran-belum .ket {
+  flex: 1 1 100%; margin-top: 2px; font-size: 11px; line-height: 1.45;
+  color: var(--text3); font-family: var(--mono); white-space: normal;
+}

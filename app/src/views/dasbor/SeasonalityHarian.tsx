@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState, type PointerEvent as ReactPointerEvent } 
 import { HARI, ringkasHarian, hariBursaDiRentang, vonisUji, rentangSumbuBalapan, type RingkasHarian } from '../../lib/seasonality'
 import { pesanGalat } from '../../lib/pesanGalat'
 import { IkonMenu, IKON_PERINGATAN, IKON_CARI, IKON_SILANG } from '../../components/dasbor/IkonMenu'
-import { muatIndeks, type BarisIndeks } from '../../lib/seasonalityData'
+import { muatIndeks, type BarisIndeks, muatBelum} from '../../lib/seasonalityData'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 
 /** Hari bursa minimum buat rentang bebas = satu putaran Senin–Jumat penuh
@@ -84,6 +84,8 @@ export function SeasonalityHarian() {
   // ada setelah #122 dipanen; sebelum itu tab ini memang cuma IHSG.
   const [kode, setKode] = useState('IHSG')
   const [cari, setCari] = useState('')
+  const [belum, setBelum] = useState<{ k: string; n: string; j: number; t: string | null }[]>([])
+  useEffect(() => { muatBelum().then(setBelum).catch(() => setBelum([])) }, [])
   const [daftar, setDaftar] = useState<BarisIndeks[] | null>(null)
 
   useEffect(() => { muatIndeks().then(setDaftar).catch(() => {}) }, [])
@@ -121,6 +123,20 @@ export function SeasonalityHarian() {
     if (!daftar || q.length < 1) return []
     return daftar.filter((b) => b.k.startsWith(q) || b.n.toUpperCase().includes(q)).slice(0, 8)
   }, [daftar, cari])
+
+  /** Emiten yang cocok TAPI belum setahun penuh, ditampilkan di bawah hasil
+   *  biasa dengan alasannya.
+   *
+   *  Syaratnya sengaja BUKAN "tampilkan kalau hasil biasa kosong". Mengetik
+   *  "emas" memunculkan SMKL dan TMAS — keduanya cocok karena "emas" ada di
+   *  dalam namanya — sehingga pencarian merasa berhasil sementara EMAS, kode
+   *  yang persis diketik, tetap hilang. Jadi yang menentukan adalah apakah
+   *  kueri cocok, bukan apakah daftar lain kebetulan terisi. */
+  const saranBelum = useMemo(() => {
+    const q = cari.trim().toUpperCase()
+    if (q.length < 1) return []
+    return belum.filter((b) => b.k.startsWith(q) || b.n.toUpperCase().includes(q)).slice(0, 4)
+  }, [belum, cari])
 
   // Hari-hari BERDATA saja, dipakai sebagai `tersedia` DatePicker — kalender
   // otomatis mengunci diri ke rentang data yang sah (tak perlu jepit manual
@@ -181,7 +197,10 @@ export function SeasonalityHarian() {
           <input className="inp" value={cari} placeholder="…atau satu emiten"
             onChange={(e) => setCari(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && saran[0]) { setKode(saran[0].k); setCari('') } }} />
-          {saran.length > 0 && (
+          {/* SATU daftar untuk keduanya. Dua <ul> terpisah saling menimpa —
+              `.sea-saran` berposisi absolut, jadi yang kedua menutupi yang
+              pertama dan hasil yang bisa dibuka justru hilang dari layar. */}
+          {(saran.length > 0 || saranBelum.length > 0) && (
             <ul className="sea-saran" role="listbox">
               {saran.map((b) => (
                 <li key={b.k}>
@@ -189,6 +208,20 @@ export function SeasonalityHarian() {
                     <span className="kd">{b.k}</span>
                     <span className="nm">{b.n}</span>
                   </button>
+                </li>
+              ))}
+              {saranBelum.map((b) => (
+                <li key={`belum-${b.k}`}>
+                  {/* Sengaja BUKAN tombol: tak ada yang bisa dibuka, dan kotak
+                      yang bisa ditekan lalu tak melakukan apa-apa lebih
+                      membingungkan daripada baris yang jelas tak bisa ditekan. */}
+                  <div className="sea-saran-it sea-saran-belum">
+                    <span className="kd">{b.k}</span>
+                    <span className="nm">{b.n}</span>
+                    <span className="ket">
+                      belum bisa dihitung — baru {b.j} bulan{b.t ? `, tercatat ${b.t}` : ''}; pola musiman butuh 12
+                    </span>
+                  </div>
                 </li>
               ))}
             </ul>

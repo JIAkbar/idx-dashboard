@@ -31,6 +31,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 AKAR = Path(__file__).parent.parent
 SUMBER = AKAR / "data-idx" / "json" / "seasonality" / "harga_bulanan.json"
 DAFTAR = AKAR / "data-idx" / "json" / "daftar_emiten.json"
+SEKTOR = AKAR / "data-idx" / "json" / "emiten_sektor.json"
 KELUAR = AKAR / "data-idx" / "json" / "seasonality"
 CERMIN = AKAR / "app" / "public" / "data-idx" / "json" / "seasonality"
 
@@ -54,14 +55,33 @@ def imbal_bulanan(seri: dict[str, float]) -> dict[str, float]:
 def main() -> None:
     panen = json.loads(SUMBER.read_text(encoding="utf-8"))
     nama = {e["kode"]: e["nama"] for e in json.loads(DAFTAR.read_text(encoding="utf-8"))["emiten"]}
+    # Tanggal pencatatan tidak ada di daftar_emiten.json; ia hidup di
+    # emiten_sektor.json (IDX-IC resmi). Dipakai supaya alasan "belum setahun"
+    # bisa menyebut SEJAK KAPAN, bukan cuma "datanya kurang" -- pembaca yang
+    # tahu emitennya baru IPO langsung mengerti, yang tidak tahu jadi tahu.
+    _sektor = SEKTOR.read_text(encoding="utf-8") if SEKTOR.exists() else "{}"
+    tercatat = {k: v.get("tercatat") for k, v in
+                (json.loads(_sektor).get("emiten") or {}).items()}
 
     kelompok: dict[str, dict] = {}
     indeks = []
+    belum = []
     for kode, seri in panen["seri"].items():
         imbal = imbal_bulanan(seri)
         if len(imbal) < 12:
             # Kurang dari setahun penuh: tak ada satu pun bulan kalender yang
             # punya pembanding, jadi seasonality-nya belum berarti apa-apa.
+            #
+            # Emiten ini TETAP didaftarkan, di daftar terpisah `belum`. Tanpa
+            # itu halaman diam sama sekali: Johan mencari EMAS (tercatat 23 Sep
+            # 2025, baru 11 imbal) dan tak ada satu kata pun yang membedakan
+            # "kami tak punya emitennya" dari "datanya belum cukup untuk
+            # dihitung". Yang tahu alasannya justru langkah ini, jadi alasannya
+            # dibawa ke datanya alih-alih ditebak ulang di layar.
+            belum.append({
+                "k": kode, "n": nama.get(kode, kode),
+                "j": len(imbal), "t": tercatat.get(kode),
+            })
             continue
         huruf = kode[0].upper()
         kelompok.setdefault(huruf, {})[kode] = imbal
@@ -84,6 +104,9 @@ def main() -> None:
         "catatan": ("Rentang data BUKAN sejak IPO — Yahoo praktis mulai menyimpan IDX "
                     "sekitar tahun 2000, dan awalnya berbeda tiap emiten."),
         "emiten": sorted(indeks, key=lambda x: x["k"]),
+        # Ada emitennya, datanya belum setahun penuh. Dipakai kotak pencarian
+        # untuk menjawab, bukan diam.
+        "belum": sorted(belum, key=lambda x: x["k"]),
     }, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
     CERMIN.mkdir(parents=True, exist_ok=True)
