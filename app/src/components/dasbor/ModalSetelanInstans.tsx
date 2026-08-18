@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   PALET_INDIKATOR, galatInstans, salinInstans, terapkanDraf,
   type GayaPlot, type Instans, type SpekParam,
@@ -40,7 +40,7 @@ const GAYA_GARIS: Array<[number, string]> = [[0, 'Solid'], [2, 'Dashed'], [1, 'D
 const TEBAL: number[] = [1, 2, 3]
 
 export function ModalSetelanInstans<J extends string>({
-  inst, nama, param, plot, jumlahLilin, onSimpan, onTutup, onBawaan,
+  inst, nama, param, plot, jumlahLilin, onSimpan, onTutup, onBawaan, onPratinjau,
 }: {
   inst: Instans<J>
   nama: string
@@ -55,11 +55,27 @@ export function ModalSetelanInstans<J extends string>({
   onTutup: () => void
   /** Instans "pabrik" jenis ini — isi tombol `Defaults`. */
   onBawaan: () => Instans<J>
+  /** Menggambar ulang kanvas dengan draf, TANPA menyimpannya. Dipanggil tiap
+   *  draf berubah supaya penilaian dilakukan dari grafiknya, bukan dari angka
+   *  yang harus dibayangkan. Pemanggil WAJIB menyimpan instans aslinya dan
+   *  memulihkannya saat modal ditutup tanpa `Ok` — kalau tidak, pratinjau ini
+   *  berubah jadi penerapan seketika, sifat yang justru dibuang dari panel
+   *  melayang lama. */
+  onPratinjau?: (draf: Instans<J>) => void
 }) {
   const [tab, setTab] = useState<Tab>('inputs')
   // Draf: salinan DALAM. Lihat catatan `salinInstans` — salinan dangkal
   // membuat `Cancel` berbohong tanpa satu pun galat.
   const [draf, setDraf] = useState<Instans<J>>(() => salinInstans(inst))
+
+  // Pratinjau hidup: tiap draf berubah, kanvas digambar ulang dengan nilai itu
+  // TANPA menyimpannya. Efek, bukan dipanggil di tiap setDraf — kalau ditempel
+  // di tiap pemanggil, satu jalur yang lupa memanggilnya membuat pratinjau
+  // diam-diam berhenti bekerja untuk sebagian kendali saja, dan itu jenis
+  // kerusakan yang tak terlihat sampai ada yang mengeluh.
+  useEffect(() => {
+    onPratinjau?.(draf)
+  }, [draf, onPratinjau])
   // Teks terpisah dari angka, aturan yang sama dengan `useDaftarInstans`:
   // kolom pasti melewati keadaan tak sah di tengah pengetikan ("", "2.", "-").
   const [teks, setTeks] = useState<Record<string, string>>(

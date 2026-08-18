@@ -75,13 +75,18 @@
 /* ---------- Modal setelan (Inputs · Style · Visibility) ---------- */
 /* Kerangkanya `ModalKecil` + primitif `.tabs`/`.tab` yang sudah dipakai
    seluruh aplikasi — yang ditambahkan di sini cuma isi tiap tab. */
-.lantai .grf-modal-setelan { max-width: 520px; }
+/* 560px: tiga tab + baris parameter dua kolom muat tanpa membungkus. */
+.lantai .grf-modal-setelan { max-width: 560px; }
 .lantai .grf-setel-isi {
   display: flex; flex-direction: column; gap: 8px;
   /* Katalog pustaka punya entri berparameter banyak; digulung, bukan
      terpotong. Batang gulirnya ikut aturan bersama `.lantai
      ::-webkit-scrollbar`. */
-  max-height: 52dvh; overflow-y: auto;
+  /* 72dvh, naik dari 52dvh: di layar 738px yang lama cuma menyisakan ~384px
+     untuk isi, dan indikator katalog pustaka bisa punya banyak parameter —
+     jadi pekerjaan yang seharusnya satu pandangan berubah jadi menggulung
+     terus-menerus. */
+  max-height: 72dvh; overflow-y: auto;
 }
 .lantai .grf-setel-baris {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -431,5 +436,5 @@
      pertiga lebarnya. */
   .lantai .grf-pola-tip { max-width: 200px; }
   .lantai .grf-setel-baris { min-height: 34px; }
-  .lantai .grf-setel-isi { max-height: 46dvh; }
+  .lantai .grf-setel-isi { max-height: 62dvh; }
 }
