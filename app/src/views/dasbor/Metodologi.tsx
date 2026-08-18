@@ -77,10 +77,15 @@ export function Metodologi() {
               resmi IDX (interim <b>kumulatif</b> sejak awal tahun buku). Keduanya berbagi kunci periode yang
               sama persis (mis. <code>2026-06-30</code>) tapi menghitung rentang berbeda — revenue TLKM 1,96×
               lebih besar di XBRL untuk kunci yang sama, karena satu diskret satu kumulatif. Kedua sumber
-              masih disimpan terpisah (<code>keuangan/</code> vs <code>keuangan_idx/</code>); belum
-              digabungkan otomatis sampai aturan konversinya diputuskan.
+              tetap disimpan terpisah (<code>keuangan/</code> vs <code>keuangan_idx/</code>) supaya
+              asalnya tak pernah hilang, tapi <b>digabungkan saat ditampilkan</b>: laporan resmi bursa
+              menang bila ada, interim kumulatif dikonversi lebih dulu jadi kuartal diskret, dan tiap sel
+              membawa lencana asalnya (<code>B</code> laporan bursa, <code>B·YTD</code> interim kumulatif).
+              Ruas yang tak ada di kedua sumber dibiarkan kosong — bukan diisi nol.
             </p>
-            <p className="muted mtd-rujuk">Rujukan: <code>docs/sumber-fundamental-idx.md</code></p>
+            <p className="muted mtd-rujuk">
+              Rujukan: <code>lib/dasbor/fundamentalGabungan.ts</code>, <code>docs/sumber-fundamental-idx.md</code>
+            </p>
           </div>
 
           <div className="mtd-kartu">

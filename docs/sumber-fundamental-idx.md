@@ -324,11 +324,20 @@ Neraca (`total_assets`, `total_liabilities`, `cash`) aman karena posisi pada
 satu tanggal — yang berbahaya khusus ruas ARUS: `revenue`, `cogs`,
 `gross_profit`, `operating_income`, `net_income`, dan ketiga ruas arus kas.
 
-`fundamentalGabungan.ts` **belum** membaca `keuangan_idx/` — jadi belum ada
-kerusakan hari ini. Yang wajib diputuskan sebelum menyambungkannya: apakah
-angka XBRL dikonversi ke kuartal diskret (kumulatif TW2 dikurangi kumulatif
-TW1), atau kedua bentuk disimpan berdampingan dengan label yang jelas. **Jangan
-disambung dulu sebelum itu diputuskan.**
+**Sudah disambung sejak #67** (`bde4b97e`, 17 Agu 2026) — paragraf di bawah ini
+dulu berbunyi "`fundamentalGabungan.ts` **belum** membaca `keuangan_idx/`, jangan
+disambung dulu", dan kalimat itu tertinggal berhari-hari sesudah penyambungannya
+selesai. Akibatnya nyata: 18 Agu 2026 halaman Metodologi publik ikut menyatakan
+kedua sumber "belum digabungkan", karena penulisnya mengutip berkas ini dengan
+patuh. Peringatan yang sudah dijalankan wajib ditutup di tempat ia ditulis —
+kalau tidak, ia terus dipatuhi.
+
+Yang akhirnya diputuskan dan sudah berjalan: angka XBRL **dikonversi ke kuartal
+diskret** (kumulatif TW2 dikurangi kumulatif TW1) sebelum dipakai, laporan resmi
+bursa menang bila ada, dan tiap sel membawa lencana asalnya di
+`PanelLaporanKeuangan.tsx` (`B` = laporan bursa, `B·YTD` = interim kumulatif).
+Berkasnya tetap disimpan terpisah supaya asal angkanya tak pernah hilang;
+penggabungannya terjadi saat ditampilkan, bukan saat dipanen.
 
 ### Kenapa ruas bank kosong di XBRL
 
