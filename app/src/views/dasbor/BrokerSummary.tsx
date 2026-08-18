@@ -204,9 +204,16 @@ export function BrokerSummary() {
                     {/* Rentang bebas — dua DatePicker mulai/akhir, hanya hari
                         ber-data yang bisa dipilih; urutan terbalik otomatis
                         ditukar di pilihRentang. */}
-                    <DatePicker value={mulaiIso} onChange={(iso) => keRentangBebas(iso, akhirIso)} tersedia={tersedia} ariaLabel="Tanggal mulai rentang" rata="kanan" />
-                    <span className="lbl" aria-hidden="true">s.d.</span>
-                    <DatePicker value={akhirIso} onChange={(iso) => keRentangBebas(mulaiIso, iso)} tersedia={tersedia} ariaLabel="Tanggal akhir rentang" rata="kanan" />
+                    {/* K5: dua pemilih tanggal dalam SATU bingkai (.bilah-rentang,
+                        pola yang sama dengan Seasonality Harian). Sebelumnya
+                        keduanya kotak lepas yang kebetulan bersebelahan, dan
+                        "s.d." di antaranya satu-satunya petunjuk bahwa mereka
+                        satu rentang. */}
+                    <div className="bilah-rentang">
+                      <DatePicker value={mulaiIso} onChange={(iso) => keRentangBebas(iso, akhirIso)} tersedia={tersedia} ariaLabel="Tanggal mulai rentang" rata="kanan" />
+                      <span className="bilah-rentang-pisah" aria-hidden="true">s.d.</span>
+                      <DatePicker value={akhirIso} onChange={(iso) => keRentangBebas(mulaiIso, iso)} tersedia={tersedia} ariaLabel="Tanggal akhir rentang" rata="kanan" />
+                    </div>
                   </>
                 ) : (
                   <DatePicker

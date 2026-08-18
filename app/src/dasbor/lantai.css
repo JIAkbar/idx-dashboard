@@ -1857,11 +1857,17 @@
 .lantai .bs-preset{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;flex:1 1 auto;min-width:0}
 .lantai .bs-tgl{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 @media (max-width: 560px) {
+  /* Bilahnya melebar penuh, dan isinya membungkus jadi tiga baris: mulai,
+     pemisah, akhir. Sebelum #170 barisnya `flex:0 0 auto` sehingga di 412px
+     ujung kanannya jatuh di luar viewport tanpa gulir — tanggal akhir tak bisa
+     diubah sama sekali dari telepon. */
   .lantai .bs-tgl{flex-wrap:wrap;justify-content:center;flex:1 1 100%}
-  /* Tiap pemilih tanggal dapat barisnya sendiri; "s.d." jadi pemisah di
-     antaranya, bukan sisa yang menggantung di ujung baris pertama. */
-  .lantai .bs-tgl .dpk-wrap{flex:1 1 100%;min-width:0}
-  .lantai .bs-tgl > .lbl{flex:1 1 100%;text-align:center}
+  .lantai .bs-tgl .bilah-rentang{flex:1 1 100%;flex-wrap:wrap}
+  /* Selector disamakan panjangnya dengan aturan dasar .bilah-rentang
+     .dpk-wrap yang berada LEBIH BAWAH di berkas ini — kalau tidak, aturan
+     dasar itu menang dan kedua pemilih menyusut sampai lebar nol. */
+  .lantai .bs-tgl .bilah-rentang .dpk-wrap{flex:1 1 100%;min-width:0}
+  .lantai .bs-tgl .bilah-rentang-pisah{flex:1 1 100%;justify-content:center;border-left:0;border-right:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:3px 0}
 }
 .lantai .vcard .v-tgl{font-size:20px}
 .lantai .vcard .v-tgl.rentang{font-size:15px}
@@ -2509,17 +2515,20 @@
    dipakai di seluruh Lantai (mis. Bulanan/Harian di Seasonality.tsx, tab
    halaman ini sendiri), bukan pil baru. */
 .lantai .sea-mode { flex-shrink: 0; }
-/* Bilah tunggal (#170 opsi B) — dua DatePicker duduk dalam SATU bingkai
+/* Bilah rentang (#170 opsi B, K5) — dua DatePicker duduk dalam SATU bingkai
    dengan pemisah, meniru pola `.kbr-alat` (Kabar.tsx): bingkai bersama
-   membuat keduanya terbaca sebagai satu rentang, bukan dua kotak lepas. */
-.lantai .sea-rentang-bilah {
+   membuat keduanya terbaca sebagai satu rentang, bukan dua kotak lepas yang
+   kebetulan bersebelahan. Kelasnya `.bilah-rentang` (bukan `.sea-*`) sejak
+   Broker Summary memakainya juga — nama ber-awalan halaman adalah alasan
+   kenapa pola ini disalin, bukan dipakai bersama. */
+.lantai .bilah-rentang {
   display: flex; align-items: stretch;
   border: 1px solid var(--line); border-radius: var(--r); background: var(--bg3);
 }
-.lantai .sea-rentang-bilah:focus-within { border-color: var(--amber); }
-.lantai .sea-rentang-bilah .dpk-wrap { flex: 1; min-width: 0; }
-.lantai .sea-rentang-bilah .dpk-btn { border: 0; border-radius: 0; background: transparent; }
-.lantai .sea-rentang-panah {
+.lantai .bilah-rentang:focus-within { border-color: var(--amber); }
+.lantai .bilah-rentang .dpk-wrap { flex: 1; min-width: 0; }
+.lantai .bilah-rentang .dpk-btn { border: 0; border-radius: 0; background: transparent; }
+.lantai .bilah-rentang-pisah {
   display: flex; align-items: center; flex-shrink: 0; padding: 0 8px;
   color: var(--text3); border-left: 1px solid var(--line); border-right: 1px solid var(--line);
 }

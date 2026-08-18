@@ -230,10 +230,10 @@ export function SeasonalityHarian() {
                 onClick={() => setPilih(label)}>{label}</button>
             ))}
             {modeBebas && (
-              <div className="sea-rentang-bilah">
+              <div className="bilah-rentang">
                 <DatePicker value={dariBebas} onChange={(iso) => ubahBebas(iso, sampaiBebas)}
                   tersedia={tersediaSet} ariaLabel="Tanggal mulai rentang bebas" />
-                <span className="sea-rentang-panah" aria-hidden="true">→</span>
+                <span className="bilah-rentang-pisah" aria-hidden="true">→</span>
                 <DatePicker value={sampaiBebas} onChange={(iso) => ubahBebas(dariBebas, iso)}
                   tersedia={tersediaSet} ariaLabel="Tanggal akhir rentang bebas" rata="kanan" />
               </div>
