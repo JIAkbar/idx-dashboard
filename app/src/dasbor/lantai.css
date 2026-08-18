@@ -934,7 +934,16 @@
 /* max-height + scroll internal (#79C): daftar panjang (mis. 26+ tanggal)
    jangan menjulur keluar layar; item terpilih di-scrollIntoView saat buka
    (Dropdown.tsx). Scrollbar tipis ikut blok "permukaan peramban". */
-.lantai .dd-menu{position:absolute;top:calc(100% + 5px);left:0;min-width:max-content;max-height:320px;overflow-y:auto;background:var(--bg1);border:1px solid var(--line2);border-radius:var(--r);padding:4px;display:none;z-index:50;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+/* max-width WAJIB berpasangan dengan min-width:max-content. Menu melebar
+   mengikuti label TERPANJANG, dan sejak katalog indikator masuk (386 baris,
+   ada yang sepanjang "Directional Movement Index + ADX & Key Levels") itu
+   berarti 434px di telepon selebar 412px — separuh menu di luar layar dan tak
+   bisa digeser ke mana pun. Terukur 18 Agu 2026. `100vw - 24px` menjaganya
+   tetap di dalam layar apa pun; di layar lebar batas 360px tak pernah
+   tercapai oleh menu pendek mana pun yang sudah ada. `width` (bukan
+   `min-width`) karena min-width MENANG atas max-width menurut spesifikasi —
+   dengan min-width:max-content, batasnya diabaikan diam-diam. */
+.lantai .dd-menu{position:absolute;top:calc(100% + 5px);left:0;width:max-content;max-width:min(360px,calc(100vw - 24px));max-height:320px;overflow-y:auto;background:var(--bg1);border:1px solid var(--line2);border-radius:var(--r);padding:4px;display:none;z-index:50;box-shadow:0 10px 28px rgba(0,0,0,.35)}
 .lantai .dd.open .dd-menu{display:block;animation:vin .14s ease}
 @keyframes vin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 /* Buka ke ATAS (Dropdown.tsx mengukur ruang viewport lalu memasang kelas ini)
@@ -952,6 +961,13 @@
    itulah satu-satunya yang boleh berbeda antar halaman. */
 .lantai .pilih-rentang{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .lantai .dd-it{display:flex;width:100%;text-align:left;padding:6px 10px;border-radius:4px;font-family:var(--mono);font-size:11.5px;color:var(--text2);white-space:nowrap}
+/* Teks pilihan yang kepanjangan dipotong elipsis — DI DALAM span sendiri,
+   bukan dengan mengubah .dd-it jadi block: kelas itu dipakai juga oleh menu
+   beraksi (Unggah Harian) yang isinya ikon + teks berdampingan, dan
+   membongkar flex-nya akan menumpuk keduanya. Membungkus jadi dua-tiga baris
+   ditolak: di daftar 386 item, tinggi baris yang tak seragam membuat
+   menggulirnya jadi menebak. */
+.lantai .dd-it-teks{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lantai .dd-it:hover{background:var(--amber-dim);color:var(--text)}
 .lantai .dd-it.sel{color:var(--amber)}
 /* Kotak cari menempel di atas daftar saat digulir — daftar akun bisa panjang,
@@ -964,6 +980,16 @@
 .lantai .dd-cari:focus{outline:none;background:var(--bg1);border-bottom-color:var(--amber)}
 .lantai .dd-cari::placeholder{color:var(--text3)}
 .lantai .dd-kosong{margin:2px 0;padding:8px 10px;font-size:11px;color:var(--text3)}
+/* Judul kelompok di dalam menu (Dropdown `opsi[].grup`). Menempel saat
+   digulir dengan alasan yang sama seperti kotak cari: menu katalog indikator
+   panjangnya ratusan baris, dan judul yang ikut tergulir hilang membuat
+   pembaca di tengah daftar tak lagi tahu ia sedang di kelompok mana.
+   `top` 26px, di bawah kotak cari yang juga sticky — kalau 0, keduanya
+   bertumpuk di garis yang sama dan judulnya tertutup. */
+.lantai .dd-grup{position:sticky;top:26px;z-index:1;margin:6px 0 2px;padding:4px 10px;
+  background:var(--bg2);border-bottom:1px solid var(--line);
+  font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3)}
+.lantai .dd-grup:first-child{margin-top:0}
 
 /* inputs */
 .lantai .inp{background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:12.5px;padding:7px 11px;width:100%}

@@ -4,8 +4,8 @@
  * sumber (`ohlc/<KODE>.json`) didokumentasikan di `ihsgOhlc.ts` (`BarisOhlc`):
  * satu baris = [tanggal, buka, tinggi, rendah, tutup, volume].
  */
-import { Stochastic, StochRSI, VWAP, WilliamsPercentRange } from 'lightweight-charts-indicators'
 import type { Bar } from 'oakscriptjs'
+import type { Katalog } from './katalogIndikator'
 import { LABEL_RENTANG } from './periode'
 import type { BarisOhlc } from './ihsgOhlc'
 import { HARI, ringkasHarian, vonisUji, type RingkasHari } from '../seasonality'
@@ -293,13 +293,17 @@ export function hitungOBV(tutup: number[], volume: number[]): Array<number | nul
 
 /* ------------------------------------------------------------------ *
  * Jembatan ke `lightweight-charts-indicators` (MIT, di atas `oakscriptjs`).
- * Dipakai HANYA untuk empat indikator yang belum ada di sini — Stochastic,
- * StochRSI, Williams %R, VWAP. Enam yang sudah ada (MA/EMA/RSI/MACD/BB/OBV)
- * SENGAJA tidak ditukar ke pustaka: semuanya sudah punya uji sendiri, dan
- * menukar implementasi teruji dengan pustaka pra-1.0 berarti menukar risiko
- * yang sudah diketahui dengan risiko yang belum. Yang dilakukan sebaliknya:
- * RSI kita diuji SILANG terhadap RSI pustaka (grafikEmiten.test.ts) — cocok
- * berarti keduanya saling menguatkan.
+ * Enam indikator yang sudah ada (MA/EMA/RSI/MACD/BB/OBV) SENGAJA tidak ditukar
+ * ke pustaka: semuanya sudah punya uji sendiri, dan menukar implementasi teruji
+ * dengan pustaka pra-1.0 berarti menukar risiko yang sudah diketahui dengan
+ * risiko yang belum. Yang dilakukan sebaliknya: RSI kita diuji SILANG terhadap
+ * RSI pustaka (grafikEmiten.test.ts) — cocok berarti keduanya saling
+ * menguatkan.
+ *
+ * Rumus pustakanya sendiri TIDAK diimpor di sini. Yang masuk cuma `Katalog`
+ * (tipe) dan fungsi hitung yang dibawa entrinya — pustakanya dimuat lewat impor
+ * dinamis di `katalogIndikator.ts`, dan satu impor statis di berkas mana pun
+ * akan menarik seluruh 1,9 MB-nya ke potongan /grafik. Lihat catatan di sana.
  * ------------------------------------------------------------------ */
 
 /** Satu titik keluaran pustaka. Bentuk longgar (bukan `TimeValue` pustaka)
@@ -362,9 +366,27 @@ export function keSeriGaris(waktu: string[], nilai: Array<number | null>): Titik
  * Johan 17 Agu 2026: "setiap indikator bisa di masukkan berkali-kali".
  * ------------------------------------------------------------------ */
 
-export type JenisIndikator =
+/** Sepuluh jenis KURASI PAPAN — yang punya label, parameter, dan (untuk enam
+ *  yang pertama) rumus Indonesia sendiri. */
+export type JenisAsli =
   | 'ma' | 'ema' | 'bb' | 'rsi' | 'macd' | 'obv'
   | 'stoch' | 'stochrsi' | 'wpr' | 'vwap'
+
+/**
+ * Jenis sebuah instans indikator: salah satu dari sepuluh kurasi, ATAU
+ * `p:<id>` — satu entri katalog pustaka (`katalogIndikator.ts`).
+ *
+ * Awalan `p:` bukan hiasan. Ia yang membuat template lama tetap terbaca (tak
+ * ada jenis lama yang mengandung titik dua), membuat jenis katalog bisa
+ * dikenali TANPA katalognya dimuat, dan membuat tabrakan nama mustahil kalau
+ * kelak ada sumber indikator kedua.
+ */
+export type JenisIndikator = JenisAsli | `p:${string}`
+
+/** Id entri katalog dari sebuah jenis, atau `null` kalau itu jenis kurasi. */
+export function idPustaka(jenis: string): string | null {
+  return jenis.startsWith('p:') ? jenis.slice(2) : null
+}
 
 /** Satu kolom masukan pada sebuah instans: batas-batasnya ditulis DI SINI,
  *  sekali, dan dipakai bersama oleh validasi, nilai bawaan, dan label kolom
@@ -404,7 +426,7 @@ export interface SpekIndikator {
 const PERIODE = (bawaan: number, label = 'Periode'): SpekParam =>
   ({ kunci: 'periode', label, bawaan, min: 2, maks: 1000, bulat: true, bandingLilin: true })
 
-export const SPEK_INDIKATOR: Record<JenisIndikator, SpekIndikator> = {
+export const SPEK_INDIKATOR: Record<JenisAsli, SpekIndikator> = {
   ma: { label: 'MA', diPanelHarga: true, param: [PERIODE(20)] },
   ema: { label: 'EMA', diPanelHarga: true, param: [PERIODE(20)] },
   bb: {
@@ -556,11 +578,41 @@ export function galatInstans(
   return galat
 }
 
+/**
+ * Spek sebuah jenis — kurasi PAPAN atau entri katalog pustaka. Satu pintu
+ * untuk KEDUANYA, karena tiga pembaca (kolom setelan, penempatan pane, menu)
+ * harus mustahil berbeda pendapat soal jenis yang sama.
+ *
+ * `null` berarti jenis katalog yang katalognya BELUM dimuat (atau id yang
+ * sudah tak ada di versi pustaka berikutnya). Pemanggilnya menggambar kosong
+ * dan mencoba lagi begitu katalognya tiba — bukan melempar, karena satu
+ * template usang tak boleh menjatuhkan seluruh halaman.
+ */
+export function spekJenis(jenis: string, katalog?: Katalog | null): SpekIndikator | null {
+  const id = idPustaka(jenis)
+  if (id === null) return SPEK_INDIKATOR[jenis as JenisAsli] ?? null
+  const e = katalog?.get(id)
+  return e ? { label: e.singkat, param: e.param, diPanelHarga: e.diPanelHarga } : null
+}
+
 /** Label layar sebuah instans indikator, LENGKAP dengan parameternya — "MA
  *  200", bukan "MA". Dengan beberapa instans jenis yang sama hidup bersamaan,
- *  label tanpa angka tak lagi bisa membedakan barisnya. */
-export function labelInstansIndikator(inst: InstansIndikator): string {
+ *  label tanpa angka tak lagi bisa membedakan barisnya.
+ *
+ *  Instans katalog memakai nama pendek pustaka + nilai ruas ANGKA-nya (ruas
+ *  berpilihan dilewati: "SuperTrend 10/3" terbaca, "SuperTrend 10/3/1"
+ *  dengan 1 berarti indeks pilihan tidak). Tanpa katalog, yang tersisa
+ *  id-nya sendiri — masih bisa dikenali, dan itu lebih baik daripada baris
+ *  kosong. */
+export function labelInstansIndikator(inst: InstansIndikator, katalog?: Katalog | null): string {
   const p = inst.param
+  const id = idPustaka(inst.jenis)
+  if (id !== null) {
+    const e = katalog?.get(id)
+    if (!e) return id
+    const angka = e.param.filter((s) => !s.pilihan).map((s) => p[s.kunci]).filter((v) => v !== undefined)
+    return angka.length ? `${e.singkat} ${angka.join('/')}` : e.singkat
+  }
   switch (inst.jenis) {
     case 'ma': return `MA ${p.periode}`
     case 'ema': return `EMA ${p.periode}`
@@ -572,6 +624,8 @@ export function labelInstansIndikator(inst: InstansIndikator): string {
     case 'stochrsi': return `StochRSI ${p.periodeRsi}/${p.periodeStoch}/${p.smoothK}/${p.smoothD}`
     case 'wpr': return `W%R ${p.periode}`
     case 'vwap': return `VWAP ${p.jangkar === 1 ? 'pekan' : 'bulan'}`
+    // Jenis `p:` sudah keluar di atas; cabang ini cuma menutup tipe.
+    default: return inst.jenis
   }
 }
 
@@ -593,15 +647,20 @@ export function hitungInstans(
   inst: InstansIndikator,
   tutup: number[],
   volume: number[] = [],
-  /** Lilin penuh (buka/tinggi/rendah/tutup + waktu). Hanya empat indikator
-   *  pustaka yang memerlukannya — Stochastic, StochRSI, W%R, dan VWAP tak bisa
-   *  dihitung dari harga tutup saja. Ditaruh di ujung dan opsional supaya
-   *  seluruh pemanggil lama (dan ujinya) tak berubah; tanpa lilin, keempatnya
-   *  mengembalikan deret kosong, bukan angka tebakan. */
+  /** Lilin penuh (buka/tinggi/rendah/tutup + waktu). Dibutuhkan seluruh
+   *  indikator pustaka — tak satu pun bisa dihitung dari harga tutup saja.
+   *  Ditaruh di ujung dan opsional supaya pemanggil lama (dan ujinya) tak
+   *  berubah; tanpa lilin, hasilnya deret kosong, bukan angka tebakan. */
   lilin: LilinData[] = [],
+  /** Katalog pustaka yang sudah dimuat. `null`/tak diisi berarti belum tiba —
+   *  indikator pustaka menggambar kosong dan digambar ulang sendiri begitu
+   *  katalognya sampai (katalog ikut jadi dependensi memo pemanggilnya). */
+  katalog?: Katalog | null,
 ): GarisIndikator[] {
   const p = inst.param
-  const label = labelInstansIndikator(inst)
+  const label = labelInstansIndikator(inst, katalog)
+  const idKatalog = idPustaka(inst.jenis)
+  if (idKatalog !== null) return garisPustaka(katalog, idKatalog, label, lilin, volume, p)
   switch (inst.jenis) {
     case 'ma': return [{ nama: label, nilai: hitungMA(tutup, p.periode) }]
     case 'ema': return [{ nama: label, nilai: hitungEMA(tutup, p.periode) }]
@@ -623,35 +682,65 @@ export function hitungInstans(
         { nama: `${label} histogram`, nilai: m.histogram, histogram: true },
       ]
     }
-    case 'stoch': {
-      const pl = plotPustaka(lilin, volume, (b) => Stochastic.calculate(b, {
+    // Empat berikut memakai RUMUS pustaka lewat katalog yang sama dengan
+    // seluruh entri lain — yang dikurasi cuma label, nama parameter, dan
+    // bawaannya. Nama ruas di sini adalah nama ruas PUSTAKA (`periodK`,
+    // `lengthRSI`, `anchor`), bukan nama kolom kita: itu yang dipahami
+    // `keMasukanPustaka`.
+    case 'stoch':
+      return garisPustaka(katalog, 'stoch', label, lilin, volume, {
         periodK: p.periodeK, smoothK: p.smoothK, periodD: p.periodeD,
-      }))
-      return [
-        { nama: `${label} %K`, nilai: pl.plot0 ?? [] },
-        { nama: `${label} %D`, nilai: pl.plot1 ?? [], bantu: true },
-      ]
-    }
-    case 'stochrsi': {
-      const pl = plotPustaka(lilin, volume, (b) => StochRSI.calculate(b, {
+      })
+    case 'stochrsi':
+      return garisPustaka(katalog, 'stoch-rsi', label, lilin, volume, {
         lengthRSI: p.periodeRsi, lengthStoch: p.periodeStoch, smoothK: p.smoothK, smoothD: p.smoothD,
-      }))
-      return [
-        { nama: `${label} %K`, nilai: pl.plot0 ?? [] },
-        { nama: `${label} %D`, nilai: pl.plot1 ?? [], bantu: true },
-      ]
-    }
-    case 'wpr': {
-      const pl = plotPustaka(lilin, volume, (b) => WilliamsPercentRange.calculate(b, { length: p.periode }))
-      return [{ nama: label, nilai: pl.plot0 ?? [] }]
-    }
-    case 'vwap': {
-      const pl = plotPustaka(lilin, volume, (b) => VWAP.calculate(b, {
-        anchor: p.jangkar === 1 ? '1W' : '1M', showBands: false,
-      }))
-      return [{ nama: label, nilai: pl.plot0 ?? [] }]
-    }
+      })
+    case 'wpr':
+      return garisPustaka(katalog, 'williams-r', label, lilin, volume, { length: p.periode })
+    case 'vwap':
+      // `jangkar` 1/2 kebetulan PERSIS indeks '1W'/'1M' di daftar pilihan
+      // pustaka ['1D','1W','1M'] — dan itu memang disengaja: bawaan kita 2
+      // (bulan) sekaligus menutup jebakan jangkar harian yang di data harian
+      // membuat VWAP jadi harga lilin itu sendiri.
+      return garisPustaka(katalog, 'vwap', label, lilin, volume, { anchor: p.jangkar })
+    // Jenis `p:` sudah keluar sebelum switch; cabang ini cuma menutup tipe.
+    default: return [{ nama: label, nilai: [] }]
   }
+}
+
+/**
+ * Deret-deret sebuah entri katalog, siap gambar.
+ *
+ * Dua aturan penamaan yang menjaga legenda tetap terbaca:
+ * 1. Deret yang SELURUHNYA kosong dibuang. Beberapa entri pustaka mengumumkan
+ *    plot yang cuma terisi kalau sakelar opsionalnya dinyalakan (pita VWAP,
+ *    divergensi RSI) — dibiarkan, legendanya penuh baris bernilai "—".
+ * 2. Kalau yang tersisa cuma satu deret, namanya = label instans saja
+ *    ("W%R 14"); kalau lebih, judul plot pustaka ditempel ("Stoch 14/1/3 %K").
+ *
+ * Deret pertama digambar penuh, sisanya `bantu` (putus-putus & lebih redup) —
+ * konvensi yang sudah dipakai BB dan MACD di berkas ini.
+ */
+function garisPustaka(
+  katalog: Katalog | null | undefined,
+  id: string,
+  label: string,
+  lilin: LilinData[],
+  volume: number[],
+  masukan: Record<string, number>,
+): GarisIndikator[] {
+  const e = katalog?.get(id)
+  if (!e || !lilin.length) return [{ nama: label, nilai: [] }]
+  const pl = plotPustaka(lilin, volume, (b) => e.hitung(b, masukan))
+  const isi = e.kunciPlot
+    .map((kunci, i) => ({ judul: e.judulPlot[i], nilai: pl[kunci] ?? [] }))
+    .filter((g) => g.nilai.some((v) => v !== null))
+  if (!isi.length) return [{ nama: label, nilai: [] }]
+  return isi.map((g, i) => ({
+    nama: isi.length === 1 ? label : `${label} ${g.judul}`,
+    nilai: g.nilai,
+    ...(i > 0 ? { bantu: true } : {}),
+  }))
 }
 
 /* ------------------------------------------------------------------ *
@@ -1193,7 +1282,14 @@ function instansSah<J extends string>(v: unknown, jenisDikenal: readonly string[
   // Jenis yang tak dikenal HARUS ditolak di sini. Dibiarkan lewat, ia baru
   // meledak jauh kemudian saat spek parameternya dicari dan tak ada —
   // menjatuhkan seluruh halaman demi satu baris template usang.
-  if (typeof o.jenis !== 'string' || !jenisDikenal.includes(o.jenis)) return false
+  // Jenis katalog (`p:<id>`) lolos tanpa dicocokkan ke daftar: katalognya
+  // dimuat belakangan (impor dinamis), jadi menuntutnya ada DI SINI berarti
+  // membuang seluruh template berisi indikator pustaka setiap kali halaman
+  // dibuka. Id yang sudah tak ada di versi pustaka berikutnya berakhir sebagai
+  // satu baris legenda tanpa garis, bukan sebagai halaman yang jatuh —
+  // `spekJenis` & `garisPustaka` sudah menanganinya.
+  if (typeof o.jenis !== 'string') return false
+  if (!o.jenis.startsWith('p:') && !jenisDikenal.includes(o.jenis)) return false
   if (!o.param || typeof o.param !== 'object') return false
   return Object.values(o.param as Record<string, unknown>).every((x) => typeof x === 'number' && Number.isFinite(x))
 }

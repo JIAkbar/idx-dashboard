@@ -1,0 +1,251 @@
+/**
+ * Katalog indikator pustaka — 457 rumus dari `lightweight-charts-indicators`
+ * (MIT, di atas `oakscriptjs`), dibaca dari REGISTRY pustaka, bukan dari daftar
+ * yang ditulis tangan.
+ *
+ * Johan 18 Agu 2026: *"katanya indikator nya banyak? sudah ada repo github
+ * untuk menunjang"*.
+ *
+ * Kenapa registry, bukan daftar sendiri: daftar tangan pasti basi begitu
+ * pustakanya naik versi — indikator baru tak muncul, indikator yang berganti
+ * nama parameter diam-diam dihitung dengan masukan yang salah. Registry
+ * membawa NAMA, KATEGORI, `overlay` (menumpang di panel harga atau tidak),
+ * seluruh spek masukan beserta batasnya, dan fungsi hitungnya sendiri; semua
+ * yang dibutuhkan menu dan penggambar ada di situ.
+ *
+ * ------------------------------------------------------------------
+ * IMPOR DINAMIS — DAN INI SYARAT, BUKAN PILIHAN GAYA.
+ *
+ * Berkas pustaka itu satu bundel 1,9 MB berisi keseluruhan 457 rumus, dan
+ * begitu registry-nya disentuh tak ada satu pun yang bisa dipangkas
+ * tree-shaking (registry menunjuk seluruhnya). Diimpor secara STATIS dari mana
+ * pun di aplikasi, seluruh 1,9 MB itu masuk ke potongan /grafik dan diunduh
+ * setiap orang yang membuka halaman — termasuk yang cuma ingin melihat lilin.
+ *
+ * Karena itu: **jangan pernah menambahkan `import ... from
+ * 'lightweight-charts-indicators'` di berkas mana pun**. Satu saja impor statis
+ * di suatu tempat membatalkan seluruh manfaat berkas ini tanpa satu pun galat —
+ * yang berubah cuma angka di laporan build. Impor TIPE (`import type`) aman;
+ * ia terhapus saat kompilasi.
+ * ------------------------------------------------------------------
+ */
+import type { SpekParam } from './grafikEmiten'
+
+/** Bentuk satu ruas masukan di registry pustaka. Ditulis ulang di sini (bukan
+ *  diimpor sebagai tipe) supaya berkas ini tak menarik apa pun dari pustaka
+ *  saat kompilasi, dan supaya bentuk yang kita ANDALKAN tercatat hitam di atas
+ *  putih — kalau versi berikutnya mengubahnya, yang gagal kompilasi berkas
+ *  ini, bukan halaman yang diam-diam kosong. */
+interface RuasMasukan {
+  id: string
+  type: 'int' | 'float' | 'string' | 'bool' | 'source' | 'color'
+  title: string
+  defval: unknown
+  min?: number
+  max?: number
+  options?: unknown[]
+}
+
+interface EntriRegistry {
+  id: string
+  group: string
+  name: string
+  shortName: string
+  description?: string
+  category: string
+  overlay: boolean
+  inputConfig?: RuasMasukan[]
+  plotConfig?: Array<{ id: string; title: string }>
+  defaultInputs: Record<string, unknown>
+  calculate: (bars: unknown[], inputs?: Record<string, unknown>) => {
+    plots: Record<string, Array<{ time: unknown; value: number | null }>>
+  }
+}
+
+export interface EntriKatalog {
+  /** Id pustaka, mis. 'supertrend'. Jenis instansnya `p:supertrend`. */
+  id: string
+  nama: string
+  singkat: string
+  kategori: string
+  /** Dari registry, bukan tebakan kita — lihat catatan di `KATEGORI`. */
+  diPanelHarga: boolean
+  param: SpekParam[]
+  /** Judul tiap deret keluaran, urut sesuai `plotConfig`. */
+  judulPlot: string[]
+  /** Kunci plot ('plot0', 'plot1', …) urut sama dengan `judulPlot`. */
+  kunciPlot: string[]
+  hitung: (bars: unknown[], param: Record<string, number>) => {
+    plots: Record<string, Array<{ time: unknown; value: number | null }>>
+  }
+}
+
+export type Katalog = Map<string, EntriKatalog>
+
+/**
+ * Urutan kelompok di menu. Nama kategorinya milik registry (kolom `category`)
+ * — TIDAK dikarang ulang; yang kita tentukan cuma urutan tampil dan
+ * terjemahannya. Kategori yang muncul di registry tapi tak terdaftar di sini
+ * tetap tampil, di bawah, dengan namanya sendiri: kategori baru di versi
+ * pustaka berikutnya tak boleh membuat indikatornya lenyap dari menu.
+ */
+export const KATEGORI: Array<[inggris: string, indonesia: string]> = [
+  ['Moving Averages', 'Rata-rata bergerak'],
+  ['Oscillators', 'Osilator'],
+  ['Momentum', 'Momentum'],
+  ['Trend', 'Tren'],
+  ['Volatility', 'Volatilitas'],
+  ['Channels & Bands', 'Pita & kanal'],
+  ['Volume', 'Volume'],
+  ['Candlestick Patterns', 'Pola lilin'],
+]
+
+/**
+ * Id pustaka yang TIDAK dimasukkan ke katalog karena PAPAN sudah punya
+ * rumusnya sendiri (dan ujinya sendiri — lihat grafikEmiten.test.ts).
+ *
+ * Bukan soal harga diri: dua "RSI" di satu menu berarti dua garis yang boleh
+ * berbeda tanpa ada yang tahu mana yang benar. Yang dipakai tetap punya kita;
+ * kesetaraan angkanya dijaga uji silang RSI, bukan asumsi.
+ */
+export const ID_SUDAH_ADA = new Set([
+  'sma', 'ema', 'rsi', 'macd', 'bb', 'obv', 'atr',
+  // Empat berikut sudah dikurasi jadi jenis sendiri (label & parameter
+  // Indonesia, jangkar VWAP yang tak degenerate di data harian) — rumusnya
+  // tetap milik pustaka, jalurnya lewat `hitungInstans`.
+  'stoch', 'stoch-rsi', 'williams-r', 'vwap',
+])
+
+/** Ruas masukan pustaka -> satu kolom di panel setelan. `null` = tak
+ *  ditampilkan dan dibiarkan memakai bawaan pustaka:
+ *  - `source` (close/hl2/hlc3/…): pilihan yang cuma berarti kalau pembacanya
+ *    sudah tahu isi rumusnya; bawaannya selalu yang lazim.
+ *  - `bool` & `color`: kolom kita cuma mengenal angka, dan menambah dua jenis
+ *    ruas baru demi sakelar yang jarang dipakai bukan tukar yang setara. */
+export function keSpekParam(ruas: RuasMasukan): SpekParam | null {
+  if (ruas.type === 'int' || ruas.type === 'float') {
+    return {
+      kunci: ruas.id,
+      label: ruas.title,
+      bawaan: Number(ruas.defval) || 0,
+      // Batas bawaan sengaja lebar, bukan ketat: registry tak selalu menyebut
+      // min/max, dan menebak batas yang tak disebut berarti menolak nilai yang
+      // sebenarnya sah di rumus itu.
+      min: ruas.min ?? -100000,
+      maks: ruas.max ?? 100000,
+      bulat: ruas.type === 'int',
+      // Periode yang lebih panjang dari jumlah lilin membuat seluruh deretnya
+      // `null` — garisnya lenyap tanpa galat. Ruas yang namanya berbau periode
+      // ikut dijaga aturan yang sudah ada; sisanya tidak, karena "offset 500"
+      // memang bukan periode.
+      bandingLilin: /len|length|period|panjang/i.test(ruas.id),
+    }
+  }
+  if (ruas.type === 'string' && Array.isArray(ruas.options) && ruas.options.length > 1) {
+    const opsi = ruas.options.map((o) => String(o))
+    const bawaan = Math.max(0, opsi.indexOf(String(ruas.defval)))
+    return {
+      kunci: ruas.id,
+      label: ruas.title,
+      // Disimpan sebagai INDEKS, bukan teksnya: seluruh jalur instans
+      // (validasi, template, penyimpanan) sudah berupa angka, dan menambahkan
+      // ruas bertipe teks berarti menyentuh semuanya demi satu kasus.
+      bawaan,
+      min: 0,
+      maks: opsi.length - 1,
+      bulat: true,
+      pilihan: opsi.map((label, nilai) => ({ nilai, label })),
+    }
+  }
+  return null
+}
+
+/** Kebalikannya: nilai kolom (angka) -> masukan pustaka. Ruas berpilihan
+ *  dikembalikan jadi teks aslinya. Ruas yang tak kita tampilkan tak dikirim
+ *  sama sekali — `calculate` menggabungkannya sendiri dengan `defaultInputs`. */
+export function keMasukanPustaka(
+  ruas: RuasMasukan[],
+  param: Record<string, number>,
+): Record<string, unknown> {
+  const keluar: Record<string, unknown> = {}
+  for (const r of ruas) {
+    const v = param[r.id]
+    if (v === undefined || !Number.isFinite(v)) continue
+    if (r.type === 'string' && Array.isArray(r.options)) keluar[r.id] = r.options[v] ?? r.defval
+    else if (r.type === 'int' || r.type === 'float') keluar[r.id] = v
+  }
+  return keluar
+}
+
+/**
+ * Satu entri registry -> entri katalog, atau `null` kalau tak bisa digambar
+ * dengan jujur oleh kanvas ini.
+ *
+ * Yang ditolak dan kenapa: entri TANPA `plotConfig` (73 dari 457 — hampir
+ * seluruhnya pola lilin yang keluarannya penanda/label, bukan deret angka).
+ * Kanvas ini menggambar deret; entri semacam itu akan ditambahkan, muncul di
+ * legenda, dan tak menggambar apa pun — indikator yang "menyala tapi kosong"
+ * jauh lebih buruk daripada indikator yang jujur tak ada di menu.
+ */
+export function keEntriKatalog(e: EntriRegistry): EntriKatalog | null {
+  if (!e.plotConfig?.length) return null
+  const ruas = e.inputConfig ?? []
+  return {
+    id: e.id,
+    nama: e.name,
+    singkat: e.shortName || e.name,
+    kategori: e.category,
+    // Langsung dari registry. Menebak sendiri berarti menaruh osilator 0-100
+    // di skala rupiah (garisnya rata di dasar kanvas) atau menaruh garis harga
+    // di panel bawah — dua-duanya salah dan dua-duanya senyap.
+    diPanelHarga: e.overlay === true,
+    param: ruas.map(keSpekParam).filter((s): s is SpekParam => s !== null),
+    judulPlot: e.plotConfig.map((p, i) => p.title || `Deret ${i + 1}`),
+    kunciPlot: e.plotConfig.map((p) => p.id),
+    hitung: (bars, param) => e.calculate(bars, keMasukanPustaka(ruas, param)),
+  }
+}
+
+let terpasang: Promise<Katalog> | null = null
+
+/**
+ * Memuat katalog SEKALI lalu memakai ulang janjinya. Dipanggil saat pembaca
+ * membuka menu Indikator (dan saat template memuat instans pustaka), bukan
+ * saat halaman dibuka — lihat catatan impor dinamis di kepala berkas.
+ *
+ * Gagal muat (jaringan putus di tengah) mengembalikan katalog KOSONG, bukan
+ * melempar: yang hilang cuma katalog tambahannya, dan menjatuhkan seluruh
+ * halaman grafik karena itu adalah harga yang tak sebanding. Janjinya
+ * dilepaskan supaya percobaan berikutnya benar-benar mencoba lagi.
+ */
+export function muatKatalog(): Promise<Katalog> {
+  if (!terpasang) {
+    terpasang = import('lightweight-charts-indicators')
+      .then((m) => {
+        const peta: Katalog = new Map()
+        for (const e of m.indicatorRegistry as unknown as EntriRegistry[]) {
+          // `ID_SUDAH_ADA` TIDAK disaring di sini: empat di antaranya (Stoch,
+          // StochRSI, W%R, VWAP) justru dihitung lewat entri ini — yang
+          // dikurasi cuma label & parameternya. Yang menyaringnya menu (lihat
+          // `opsiKatalog` di GrafikEmiten.tsx), karena yang tak boleh dobel
+          // memang barisnya di menu, bukan rumusnya di peta.
+          const entri = keEntriKatalog(e)
+          if (entri) peta.set(entri.id, entri)
+        }
+        return peta
+      })
+      .catch(() => {
+        terpasang = null
+        return new Map<string, EntriKatalog>()
+      })
+  }
+  return terpasang
+}
+
+/* Katalog TIDAK disimpan sebagai variabel modul yang dibaca diam-diam oleh
+   perhitungan. Ia dipegang state React dan DILEWATKAN ke tiap pemanggil
+   (`hitungInstans`, spek parameter, penempatan pane). Alasannya bukan
+   kerapian: memo React membandingkan dependensinya: katalog yang datang lewat
+   variabel modul tak pernah masuk daftar itu, jadi garis-garis yang sudah
+   telanjur digambar kosong tak akan pernah digambar ulang saat katalognya
+   akhirnya tiba — dan tak ada satu pun galat yang muncul. */

@@ -11,14 +11,18 @@ import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import {
   keDataLilinVolume, batasBawahRentang, potongRentang, RENTANG_GRAFIK, RENTANG_BAWAAN,
   keSeriGaris, SPEK_INDIKATOR, SPEK_POLA, labelInstansIndikator, labelInstansPola,
+  spekJenis, idPustaka,
   hitungInstans, cariDoubleBottom, cariLonjakanVolume, cariMusiman,
   bacaTemplateTersimpan, tulisTemplateTersimpan, simpanTemplate, hapusTemplate,
   tandaiBawaan, ubahNamaTemplate, penandaDiSekitar,
-  type BerkasOhlcEmiten, type DoubleBottom, type JenisIndikator, type JenisPola,
+  type BerkasOhlcEmiten, type DoubleBottom, type JenisAsli, type JenisIndikator, type JenisPola,
   type ParamDoubleBottom, type ParamLonjakanVolume, type StatusPola, type StatusLonjakan,
   type LonjakanVolume, type TemplateGrafik, type TemuanMusiman,
 } from '../../lib/dasbor/grafikEmiten'
 import { Dropdown } from '../../components/dasbor/Dropdown'
+import {
+  muatKatalog, KATEGORI, ID_SUDAH_ADA, type Katalog,
+} from '../../lib/dasbor/katalogIndikator'
 import { useDaftarInstans, SetelanInstans } from '../../components/dasbor/DaftarInstans'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { fN } from '../../lib/dasbor/format'
@@ -32,11 +36,11 @@ import './GrafikEmiten.css'
 
 const DEFAULT_KODE = 'BBCA'
 
-/** Pilihan dropdown "Indikator" — diturunkan dari SPEK_INDIKATOR, bukan
- *  daftar kedua yang ditulis tangan: jenis baru cukup didaftarkan di spek
- *  dan langsung muncul di menu. */
-const OPSI_INDIKATOR = (Object.keys(SPEK_INDIKATOR) as JenisIndikator[])
-  .map((jenis) => ({ nilai: jenis, label: SPEK_INDIKATOR[jenis].label }))
+/** Pilihan dropdown "Indikator" bagian ATAS — sepuluh kurasi PAPAN,
+ *  diturunkan dari SPEK_INDIKATOR (bukan daftar kedua yang ditulis tangan).
+ *  Katalog pustaka menyusul di bawahnya, dari registry, begitu dimuat. */
+const OPSI_KURASI = (Object.keys(SPEK_INDIKATOR) as JenisAsli[])
+  .map((jenis) => ({ nilai: jenis as string, label: SPEK_INDIKATOR[jenis].label, grup: 'Pilihan PAPAN' }))
 
 /** Dropdown POLA berdiri sendiri, terpisah dari indikator (Johan: "jadi
  *  indikator dan pattern dibedakan dropdown nya"). Bukan sekadar rapian
@@ -122,7 +126,6 @@ interface PenandaPola {
   bentuk?: 'circle' | 'square'
 }
 
-const spekIndikator = (jenis: JenisIndikator) => SPEK_INDIKATOR[jenis].param
 const spekPola = (jenis: JenisPola) => SPEK_POLA[jenis].param
 
 /**
@@ -193,8 +196,12 @@ const PANDUAN_INDIKATOR: Array<{ label: string; teks: string }> = [
     teks: 'Jarak harga tutup dari harga TERTINGGI sekian hari terakhir, dinyatakan −100 sampai 0. Isi ukurannya sama dengan Stochastic %K, cuma dibalik dan digeser skalanya.' },
   { label: 'VWAP (Volume Weighted Average Price)',
     teks: 'Harga rata-rata yang dibobot volume, dihitung menumpuk sejak awal pekan atau awal bulan lalu dimulai ulang di batas berikutnya. Menjawab "berapa harga rata-rata yang benar-benar dibayar orang sejauh ini", bukan sekadar rata-rata harga penutupan. Jangkar harian sengaja tidak disediakan: pada data harian ia dimulai ulang tiap lilin dan hasilnya cuma harga lilin itu sendiri.' },
-  { label: 'Empat yang dihitung pustaka luar',
-    teks: 'Stochastic, StochRSI, W%R, dan VWAP dihitung pustaka lightweight-charts-indicators (MIT); enam lainnya (MA, EMA, BB, RSI, MACD, OBV) dihitung kode PAPAN sendiri dan tetap begitu — semuanya sudah punya ujinya sendiri. Sebagai pemeriksaan silang, RSI PAPAN diadu dengan RSI pustaka pada data yang sama di dalam uji otomatis.' },
+  { label: 'Katalog pustaka — ratusan indikator lain',
+    teks: 'Di bawah "Pilihan PAPAN" pada menu Indikator ada katalog penuh pustaka lightweight-charts-indicators (MIT), dikelompokkan menurut kategori pustakanya sendiri: rata-rata bergerak, osilator, momentum, tren, volatilitas, pita & kanal, volume, pola lilin. Ketik di kotak cari untuk menyaringnya. Daftarnya dibaca dari registry pustaka, bukan disalin — versi pustaka berikutnya langsung terbaca apa adanya.' },
+  { label: 'Katalog: apa yang tidak ikut, dan kenapa',
+    teks: 'Indikator yang keluarannya bukan deret angka (kebanyakan pola lilin yang menggambar penanda) tidak dimasukkan — kanvas ini menggambar deret, dan indikator yang menyala tapi tak menggambar apa pun lebih membingungkan daripada indikator yang jujur tak ada. Penempatannya (menumpang di panel harga atau panel sendiri di bawah) juga dibaca dari registry, bukan ditebak. Sebagian parameter yang bukan angka — pilihan sumber harga, sakelar ya/tidak — memakai bawaan pustaka.' },
+  { label: 'Sepuluh yang dikurasi, dan pemeriksaan silangnya',
+    teks: 'MA, EMA, BB, RSI, MACD, dan OBV dihitung kode PAPAN sendiri; Stochastic, StochRSI, W%R, dan VWAP memakai rumus pustaka tapi dengan label dan parameter yang sudah dirapikan. Kesepuluhnya muncul paling atas di menu, dan versi pustaka dari enam yang pertama sengaja tidak ikut di katalog supaya tak ada dua garis bernama sama yang boleh berbeda. Sebagai pemeriksaan silang, RSI PAPAN diadu dengan RSI pustaka pada data yang sama di dalam uji otomatis.' },
   { label: 'Beberapa instans sekaligus',
     teks: 'Satu jenis boleh dimasukkan berkali-kali dengan parameter berbeda — MA 20, MA 50, dan MA 200 bisa hidup bersamaan, masing-masing punya warna, kolom parameter, dan sakelar tampilnya sendiri.' },
 ]
@@ -315,6 +322,23 @@ export function GrafikEmiten() {
    *  Satu saja pada satu waktu: dua panel melayang bersamaan akan saling
    *  menutupi di kanvas telepon yang lebarnya cuma 380-an piksel. */
   const [setelanTerbuka, setSetelanTerbuka] = useState<string | null>(null)
+
+  /**
+   * Katalog indikator pustaka (457 entri) — `null` selagi belum dimuat.
+   *
+   * Dimuat SESUAI PERMINTAAN, bukan saat halaman dibuka: bundelnya 1,9 MB dan
+   * sebagian besar pembaca /grafik tak pernah membuka menu indikator sama
+   * sekali. Pemicunya dua, dan keduanya perlu:
+   * 1. pembaca menyentuh dropdown Indikator (menunya memang butuh isinya), dan
+   * 2. template yang dimuat membawa instans `p:` (garisnya harus tergambar
+   *    tanpa pembacanya perlu membuka menu apa pun).
+   */
+  const [katalog, setKatalog] = useState<Katalog | null>(null)
+  const mintaKatalog = useCallback(() => {
+    // `muatKatalog` sendiri sudah menyimpan janjinya, jadi memanggilnya
+    // berkali-kali (tiap sentuhan menu) tak mengunduh berkali-kali.
+    void muatKatalog().then((k) => setKatalog((lama) => lama ?? k))
+  }, [])
 
   // Satu emiten, satu fetch — sama seperti SeasonalityHarian, BUKAN memuat
   // seluruh 963 berkas OHLC sekaligus.
@@ -602,11 +626,52 @@ export function GrafikEmiten() {
   }, [lilin, volume, versiSeriHarga])
 
   // Dua daftar instans, dua dropdown, satu aturan main (lihat DaftarInstans).
+  // Spek parameter sebuah jenis — kurasi ATAU entri katalog. Ikut `katalog` di
+  // deps supaya kolom setelan instans pustaka muncul begitu katalognya tiba,
+  // bukan tetap kosong sampai halaman dimuat ulang.
+  const spekIndikator = useCallback(
+    (jenis: JenisIndikator) => spekJenis(jenis, katalog)?.param ?? [],
+    [katalog],
+  )
   const ind = useDaftarInstans<JenisIndikator>(spekIndikator, lilin.length)
   const pol = useDaftarInstans<JenisPola>(spekPola, lilin.length, true)
 
   // Jenis pola yang sudah ada di daftar tetap TERLIHAT di menu, tapi tak bisa
   // dipilih lagi — lihat alasan batasnya di useDaftarInstans.
+  /**
+   * Isi dropdown "+ Indikator": sepuluh kurasi PAPAN di atas, lalu seluruh
+   * katalog pustaka dikelompokkan per KATEGORI REGISTRY.
+   *
+   * Kategorinya milik pustaka (`entri.kategori`) — bukan taksonomi karangan
+   * sendiri yang harus dijaga tetap sinkron tiap kali pustakanya naik versi.
+   * Urutan kelompoknya yang kita tentukan (`KATEGORI`), dan kategori yang tak
+   * terdaftar di situ tetap muncul di bawah dengan namanya sendiri: kategori
+   * baru tak boleh membuat indikatornya lenyap dari menu tanpa ada yang tahu.
+   *
+   * Yang tak masuk: entri yang rumusnya sudah kita punya (`ID_SUDAH_ADA`) —
+   * dua "RSI" di satu menu berarti dua garis yang boleh berbeda tanpa ada yang
+   * tahu mana yang benar.
+   */
+  const opsiIndikator = useMemo(() => {
+    if (!katalog) {
+      return [...OPSI_KURASI, {
+        nilai: '', label: 'Memuat katalog pustaka…', nonaktif: true, grup: 'Katalog pustaka',
+      }]
+    }
+    const urutan = new Map(KATEGORI.map(([ing], i) => [ing, i]))
+    const entri = [...katalog.values()]
+      .filter((e) => !ID_SUDAH_ADA.has(e.id))
+      .sort((a, b) => (urutan.get(a.kategori) ?? 99) - (urutan.get(b.kategori) ?? 99)
+        || a.nama.localeCompare(b.nama))
+    return [...OPSI_KURASI, ...entri.map((e) => ({
+      nilai: `p:${e.id}`,
+      // Nama panjang + pendek keduanya ikut supaya kotak cari menemukannya
+      // lewat singkatan ("ADX") maupun kata lengkapnya ("Directional").
+      label: e.nama === e.singkat ? e.nama : `${e.nama} · ${e.singkat}`,
+      grup: KATEGORI.find(([ing]) => ing === e.kategori)?.[1] ?? e.kategori,
+    }))]
+  }, [katalog])
+
   const opsiPola = useMemo(() => JENIS_POLA.map((jenis) => {
     const sudah = pol.daftar.some((x) => x.jenis === jenis)
     return {
@@ -629,9 +694,9 @@ export function GrafikEmiten() {
       inst,
       // `lilin` ikut dikirim: Stochastic/StochRSI/W%R/VWAP tak bisa dihitung
       // dari harga tutup saja (butuh tinggi/rendah, dan VWAP butuh tanggalnya).
-      garis: hitungInstans(inst, tutup, vol, lilin).map((g) => ({ ...g, seri: keSeriGaris(waktu, g.nilai) })),
+      garis: hitungInstans(inst, tutup, vol, lilin, katalog).map((g) => ({ ...g, seri: keSeriGaris(waktu, g.nilai) })),
     }))
-  }, [ind.daftar, lilin, volume])
+  }, [ind.daftar, lilin, volume, katalog])
 
   // Temuan pola per instans. Sama seperti indikator: dihitung dari `lilin`
   // yang sudah tersaring, bukan dari `berkas.d` mentah — kalau tidak, indeks
@@ -674,10 +739,14 @@ export function GrafikEmiten() {
     let berikut = 1
     for (const inst of ind.daftar) {
       if (!inst.tampil) continue
-      peta.set(inst.id, SPEK_INDIKATOR[inst.jenis].diPanelHarga ? 0 : berikut++)
+      // Jenis pustaka yang katalognya belum tiba dianggap PANEL SENDIRI
+      // (bukan menumpang di panel harga): salah menaruh osilator 0-100 di
+      // skala rupiah membuatnya rata di dasar kanvas dan terlihat seperti
+      // indikator rusak; sebaliknya panel kosong sesaat cuma terlihat lengang.
+      peta.set(inst.id, spekJenis(inst.jenis, katalog)?.diPanelHarga ? 0 : berikut++)
     }
     return peta
-  }, [ind.daftar])
+  }, [ind.daftar, katalog])
 
   // Jarak atas tiap pane dari ujung atas bungkus kanvas, dipakai menempatkan
   // legenda di pojok kiri atas pane MASING-MASING (RSI/MACD punya legendanya
@@ -791,7 +860,7 @@ export function GrafikEmiten() {
         ranah: 'ind',
         tampil: inst.tampil,
         warna: inst.warna,
-        label: labelInstansIndikator(inst),
+        label: labelInstansIndikator(inst, katalog),
         nilai: !inst.tampil || !waktu
           ? ''
           : peta.map((p) => { const x = p.get(waktu); return x === undefined ? '—' : fN(x) }).join(' / '),
@@ -816,7 +885,7 @@ export function GrafikEmiten() {
       })
     }
     return { waktu, perPane: [...perPane.entries()].sort((a, b) => a[0] - b[0]) }
-  }, [sorot, lilin, petaLegenda, panePerInstans, polaPerInstans])
+  }, [sorot, lilin, petaLegenda, panePerInstans, polaPerInstans, katalog])
 
   /* ---------------- Template ---------------- */
 
@@ -836,6 +905,11 @@ export function GrafikEmiten() {
    *  yang sedang dibuka. Itu justru inti bentuknya: "sewaktu-waktu buka lagi
    *  itu tinggal ganti saham nya". */
   const muatTemplate = (t: TemplateGrafik) => {
+    // Template yang membawa instans katalog (`p:`) memicu unduhan katalognya
+    // sendiri — kalau tidak, garis-garisnya diam kosong sampai pembacanya
+    // kebetulan membuka menu Indikator, dan dari layar itu terbaca sebagai
+    // template yang rusak.
+    if (t.indikator.some((x) => idPustaka(x.jenis) !== null)) mintaKatalog()
     ind.gantiSemua(t.indikator)
     pol.gantiSemua(t.pola)
     if (t.jenisChart === 'lilin' || t.jenisChart === 'garis') setJenisChart(t.jenisChart)
@@ -1091,8 +1165,17 @@ export function GrafikEmiten() {
                         ada cuma daftar instans di bawahnya. Duduk DI DALAM
                         kanvas sejak 18 Agu 2026, bersama legendanya. */}
                     <span className="grf-kendali-kanvas">
-                      <Dropdown opsi={OPSI_INDIKATOR} nilai="" placeholder="+ Indikator"
-                        ariaLabel="Tambah indikator" onGanti={ind.tambah} />
+                      {/* Sentuhan APA PUN pada dropdown ini memulai unduhan
+                          katalog (1,9 MB, sekali seumur sesi). Ditaruh di
+                          pembungkusnya, bukan sebagai prop baru di Dropdown:
+                          yang perlu diketahui cuma "pembaca menuju menu ini",
+                          dan itu sudah terjawab pointer/fokus — tanpa menambah
+                          satu lagi tanggung jawab ke komponen yang dipakai
+                          belasan halaman lain. */}
+                      <span onPointerDownCapture={mintaKatalog} onFocusCapture={mintaKatalog}>
+                        <Dropdown opsi={opsiIndikator} nilai="" placeholder="+ Indikator"
+                          ariaLabel="Tambah indikator" onGanti={ind.tambah} />
+                      </span>
                       <Dropdown opsi={opsiPola} nilai="" placeholder="+ Pola"
                         ariaLabel="Tambah pola" onGanti={pol.tambah} />
                     </span>

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { IkonMenu } from './IkonMenu'
 
 export interface OpsiDropdown {
@@ -8,6 +8,12 @@ export interface OpsiDropdown {
    *  membuat menu menyusut tanpa keterangan — pembaca tak tahu pilihannya
    *  hilang karena sudah dipakai atau karena ia salah ingat. */
   nonaktif?: boolean
+  /** Judul kelompok. Item BERURUTAN dengan grup yang sama muncul di bawah satu
+   *  judul; pengelompokannya mengikuti URUTAN array, bukan disortir ulang di
+   *  sini — pemanggil yang tahu urutan mana yang berarti (mis. katalog
+   *  indikator: rata-rata bergerak dulu, pola lilin terakhir). Menu tanpa
+   *  `grup` sama sekali tampil persis seperti sebelumnya. */
+  grup?: string
 }
 
 interface DropdownProps {
@@ -149,9 +155,18 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
           />
         )}
         {pakaiCari && tampil.length === 0 && <p className="dd-kosong">Tak ada yang cocok.</p>}
-        {tampil.map((o) => (
+        {tampil.map((o, i) => (
+          <Fragment key={o.nilai}>
+            {/* Judul kelompok muncul saat grupnya BERGANTI — bukan sekali di
+                atas: dengan menu ratusan baris, judul yang cuma ada di puncak
+                sudah lama tergulung hilang saat pembacanya sampai ke tengah.
+                Dihitung dari daftar yang SUDAH tersaring kotak cari, jadi
+                kelompok yang seluruh isinya tersaring tak meninggalkan judul
+                yang menggantung tanpa isi. */}
+            {o.grup && o.grup !== tampil[i - 1]?.grup && (
+              <p className="dd-grup" role="presentation">{o.grup}</p>
+            )}
           <button
-            key={o.nilai}
             type="button"
             role="option"
             aria-selected={o.nilai === nilai}
@@ -166,8 +181,11 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
               ref.current?.querySelector<HTMLButtonElement>('.dd-btn')?.focus()
             }}
           >
-            {o.label}
+            {/* `title` menyimpan nama penuhnya: label katalog indikator bisa
+                jauh lebih panjang dari menu dan dipotong elipsis. */}
+            <span className="dd-it-teks" title={o.label}>{o.label}</span>
           </button>
+          </Fragment>
         ))}
       </div>
     </div>

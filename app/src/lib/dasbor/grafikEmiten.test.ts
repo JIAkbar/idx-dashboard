@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import {
   keDataLilinVolume, batasBawahRentang, potongRentang, RENTANG_GRAFIK, RENTANG_BAWAAN,
   hitungMA, hitungEMA, hitungRSI, hitungMACD, hitungBollinger, keSeriGaris,
@@ -11,6 +11,7 @@ import {
   type InstansIndikator, type SpekParam, type LilinData, type ParamDoubleBottom,
   type TemplateGrafik, type ParamLonjakanVolume,
 } from './grafikEmiten'
+import { muatKatalog, keSpekParam, keMasukanPustaka, ID_SUDAH_ADA, KATEGORI } from './katalogIndikator'
 import type { BarisOhlc } from './ihsgOhlc'
 
 const baris: BarisOhlc[] = [
@@ -811,9 +812,13 @@ describe('indikator pustaka', () => {
   const volume = lilin.map((_, i) => 1000 + i)
   const buat = (jenis: 'stoch' | 'stochrsi' | 'wpr' | 'vwap') =>
     buatInstans(jenis, SPEK_INDIKATOR[jenis].param, `i-${jenis}`, 0)
+  // Katalog dimuat sekali untuk seluruh blok — di peramban ia datang lewat
+  // impor dinamis, di sini lewat fungsi yang sama persis.
+  let katalog: Awaited<ReturnType<typeof muatKatalog>>
+  beforeAll(async () => { katalog = await muatKatalog() })
 
   it('Stochastic: dua deret (%K dan %D), keduanya 0-100', () => {
-    const garis = hitungInstans(buat('stoch'), lilin.map((l) => l.close), volume, lilin)
+    const garis = hitungInstans(buat('stoch'), lilin.map((l) => l.close), volume, lilin, katalog)
     expect(garis.map((g) => g.nama)).toEqual(['Stoch 14/1/3 %K', 'Stoch 14/1/3 %D'])
     expect(garis[1].bantu).toBe(true)
     const isi = garis[0].nilai.filter((v): v is number => v !== null)
@@ -823,14 +828,14 @@ describe('indikator pustaka', () => {
   })
 
   it('StochRSI: dua deret, panjangnya sejajar lilin', () => {
-    const garis = hitungInstans(buat('stochrsi'), lilin.map((l) => l.close), volume, lilin)
+    const garis = hitungInstans(buat('stochrsi'), lilin.map((l) => l.close), volume, lilin, katalog)
     expect(garis).toHaveLength(2)
     expect(garis[0].nilai).toHaveLength(lilin.length)
     expect(garis[0].nilai.filter((v) => v !== null).length).toBeGreaterThan(50)
   })
 
   it('Williams %R: satu deret, seluruhnya di antara -100 dan 0', () => {
-    const garis = hitungInstans(buat('wpr'), lilin.map((l) => l.close), volume, lilin)
+    const garis = hitungInstans(buat('wpr'), lilin.map((l) => l.close), volume, lilin, katalog)
     expect(garis).toHaveLength(1)
     const isi = garis[0].nilai.filter((v): v is number => v !== null)
     expect(isi.length).toBeGreaterThan(100)
@@ -844,8 +849,8 @@ describe('indikator pustaka', () => {
     const bulan = buat('vwap')
     const pekan = buat('vwap')
     pekan.param.jangkar = 1
-    const gB = hitungInstans(bulan, lilin.map((l) => l.close), volume, lilin)[0]
-    const gP = hitungInstans(pekan, lilin.map((l) => l.close), volume, lilin)[0]
+    const gB = hitungInstans(bulan, lilin.map((l) => l.close), volume, lilin, katalog)[0]
+    const gP = hitungInstans(pekan, lilin.map((l) => l.close), volume, lilin, katalog)[0]
     expect(gB.nama).toBe('VWAP bulan')
     expect(gP.nama).toBe('VWAP pekan')
     expect(gB.nilai).not.toEqual(gP.nilai)
@@ -857,7 +862,14 @@ describe('indikator pustaka', () => {
   })
 
   it('tanpa lilin: deret kosong, bukan angka tebakan', () => {
-    expect(hitungInstans(buat('wpr'), [10, 11, 12])[0].nilai).toEqual([])
+    expect(hitungInstans(buat('wpr'), [10, 11, 12], [], [], katalog)[0].nilai).toEqual([])
+  })
+
+  it('tanpa katalog (belum termuat): deret kosong, bukan galat', () => {
+    // Keadaan nyata di peramban selama unduhan katalog berjalan.
+    const garis = hitungInstans(buat('stoch'), lilin.map((l) => l.close), volume, lilin, null)
+    expect(garis).toHaveLength(1)
+    expect(garis[0].nilai).toEqual([])
   })
 })
 
@@ -917,5 +929,94 @@ describe('cariMusiman', () => {
     expect(labelInstansPola(inst)).toBe('Musiman · Senin')
     inst.param.hari = 4
     expect(labelInstansPola(inst)).toBe('Musiman · Jumat')
+  })
+})
+
+/* ------------------------------------------------------------------ *
+ * Katalog pustaka (457 entri, dibaca dari registry).
+ * ------------------------------------------------------------------ */
+
+describe('katalogIndikator', () => {
+  it('memuat ratusan entri, semuanya berkategori & punya deret keluaran', async () => {
+    const k = await muatKatalog()
+    expect(k.size).toBeGreaterThan(300)
+    for (const e of k.values()) {
+      expect(e.kategori).toBeTruthy()
+      expect(e.judulPlot.length).toBeGreaterThan(0)
+      expect(e.judulPlot).toHaveLength(e.kunciPlot.length)
+      expect(typeof e.diPanelHarga).toBe('boolean')
+    }
+  })
+
+  it('kategori registry semuanya punya terjemahan — kalau gagal, ada kategori BARU', async () => {
+    // Bukan uji kosmetik: kategori yang tak dikenal masih tampil (dengan nama
+    // Inggrisnya), dan uji inilah satu-satunya yang memberitahu bahwa versi
+    // pustaka berikutnya menambah kelompok yang perlu diterjemahkan.
+    const k = await muatKatalog()
+    const dikenal = new Set(KATEGORI.map(([ing]) => ing))
+    const asing = [...new Set([...k.values()].map((e) => e.kategori))].filter((c) => !dikenal.has(c))
+    expect(asing).toEqual([])
+  })
+
+  it('yang rumusnya sudah kita punya tetap ADA di peta (dipakai empat kurasi), tapi ditandai', async () => {
+    const k = await muatKatalog()
+    // Peta menyimpan semuanya; menu yang menyaring — lihat catatan di
+    // muatKatalog. Yang penting: id-id ini benar-benar ada, kalau tidak empat
+    // indikator kurasi berhenti menggambar tanpa satu pun galat.
+    for (const id of ID_SUDAH_ADA) expect(k.has(id)).toBe(true)
+  })
+
+  it('ruas masukan: angka jadi kolom, daftar pilihan jadi chip, sisanya dilewati', () => {
+    expect(keSpekParam({ id: 'length', type: 'int', title: 'Length', defval: 14, min: 1 }))
+      .toMatchObject({ kunci: 'length', bawaan: 14, min: 1, bulat: true, bandingLilin: true })
+    expect(keSpekParam({ id: 'mult', type: 'float', title: 'StdDev', defval: 2 }))
+      .toMatchObject({ bulat: false, bandingLilin: false })
+    const pilihan = keSpekParam({
+      id: 'anchor', type: 'string', title: 'Anchor', defval: '1W', options: ['1D', '1W', '1M'],
+    })
+    // Bawaannya INDEKS pilihan, bukan teksnya.
+    expect(pilihan).toMatchObject({ bawaan: 1, min: 0, maks: 2 })
+    expect(pilihan?.pilihan?.map((o) => o.label)).toEqual(['1D', '1W', '1M'])
+    expect(keSpekParam({ id: 'src', type: 'source', title: 'Source', defval: 'close' })).toBeNull()
+    expect(keSpekParam({ id: 'show', type: 'bool', title: 'Show', defval: false })).toBeNull()
+  })
+
+  it('indeks pilihan dikembalikan jadi teks aslinya saat memanggil pustaka', () => {
+    const ruas = [
+      { id: 'anchor' as const, type: 'string' as const, title: 'A', defval: '1D', options: ['1D', '1W', '1M'] },
+      { id: 'length' as const, type: 'int' as const, title: 'L', defval: 14 },
+      { id: 'src' as const, type: 'source' as const, title: 'S', defval: 'close' },
+    ]
+    expect(keMasukanPustaka(ruas, { anchor: 2, length: 20, src: 0 }))
+      .toEqual({ anchor: '1M', length: 20 })
+  })
+
+  it('entri katalog benar-benar menghitung: SuperTrend menggambar deret berisi', async () => {
+    const k = await muatKatalog()
+    const inst = buatInstans('p:supertrend', k.get('supertrend')!.param, 'i-st', 0)
+    const lilin = lilinUji(120)
+    const garis = hitungInstans(inst, lilin.map((l) => l.close), lilin.map(() => 1000), lilin, k)
+    expect(garis.length).toBeGreaterThan(0)
+    expect(garis[0].nilai.filter((v) => v !== null).length).toBeGreaterThan(50)
+    // Label memakai nama PENDEK pustaka + nilai ruas angkanya ('ST 10/3').
+    expect(labelInstansIndikator(inst, k)).toBe(`${k.get('supertrend')!.singkat} 10/3`)
+  })
+
+  it('instans katalog tanpa katalog: label jatuh ke id, deret kosong, tak melempar', () => {
+    const inst = buatInstans('p:supertrend', [], 'i-st', 0)
+    expect(labelInstansIndikator(inst)).toBe('supertrend')
+    expect(hitungInstans(inst, [1, 2, 3], [], [], null)[0].nilai).toEqual([])
+  })
+
+  it('template berisi jenis `p:` tetap terbaca walau katalognya belum dimuat', () => {
+    const t = [{
+      versi: VERSI_TEMPLATE, nama: 'Punyaku', bawaan: false,
+      indikator: [{ id: 'a', jenis: 'p:supertrend', param: { length: 10 }, warna: '--amber', tampil: true }],
+      pola: [],
+    }]
+    expect(uraiTemplate(JSON.stringify(t))[0].indikator[0].jenis).toBe('p:supertrend')
+    // Jenis karangan yang BUKAN `p:` tetap ditolak seperti sebelumnya.
+    const palsu = JSON.stringify([{ ...t[0], indikator: [{ ...t[0].indikator[0], jenis: 'entahapa' }] }])
+    expect(uraiTemplate(palsu)).toEqual([])
   })
 })
