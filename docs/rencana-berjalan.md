@@ -3,7 +3,31 @@
 Catatan hidup — diperbarui tiap ada keputusan. Ditulis ke berkas supaya tidak
 bergantung pada ingatan percakapan (yang bisa diringkas dan kehilangan detail).
 
-Terakhir diperbarui: 17 Agustus 2026 (setelah sesi arsip mentah seluruh pemanen).
+Terakhir diperbarui: 18 Agustus 2026 (setelah sesi jumlah saham resmi bursa).
+
+## 📌 Sesi 18 Agu 2026 — Jumlah saham resmi bursa (`ListedShares`)
+
+Lanjutan A0c. Perintah Johan: *"cari sumber `shares` yang lebih andal untuk 38
+emiten ini ... Verifikasi dengan sumber independen (situs IDX resmi/RTI)
+sebelum menulis"*.
+
+**Keputusan yang sudah diambil — jangan diperdebatkan ulang:**
+
+| Keputusan | Alasan |
+|---|---|
+| `shares` bersumber `ListedShares` IDX (`GetStockSummary`), disimpan sebagai `saham` di `daftar_emiten.json` | Sudah ada di payload yang `sinkron_emiten.py` ambil tiap hari — nol permintaan tambahan, sumbernya bursa sendiri |
+| `market_cap ÷ last_price` **ditolak** sebagai sumber | `marketCap` Yahoo berasal dari `sharesOutstanding` Yahoo juga → ikut basi. Salah di AISA, LPPF, ZBRA, MSKY |
+| `GetCompanyProfiles` **tidak dipakai** | Tak perlu — `GetStockSummary` sudah membawa angkanya, dan itu endpoint yang sudah rutin dipanggil |
+| Ambang koreksi 2× | Beda di bawah itu treasury/waktu potret (101 emiten). Angka yang sama dipakai `shares_masuk_akal()` |
+| `float_shares` tak diskalakan | `floatShares` Yahoo tak konsisten basisnya; `float_pct` memilih basis yang jatuh di 0–100%, sisanya `null` |
+
+Rinciannya: `docs/workflow-fundamental.md` A0d · Papan Pekerjaan #180–183 di
+`docs/jejak-permintaan.md`.
+
+**Sisa yang sengaja dibiarkan** (bukan lupa): `market_cap` kosong di 13 emiten
+disuspensi · `float_shares` aneh di 7 emiten yang `shares`-nya sudah cocok ·
+CNTB/CNTX/NIPS tak ada di daftar IDX · `q_eps` MDKA & MSKY masih >20× `eps`
+tahunan (akarnya `trailingEps` yang basi, bukan `shares`).
 
 ## 📌 Sesi 17 Agu 2026 — Arsip mentah untuk seluruh pemanen (`scripts/`)
 

@@ -190,7 +190,17 @@ def shares_masuk_akal(fd: dict) -> bool:
     bukan dibagi `shares`), tapi q_net_income/shares akan menghasilkan angka
     yang 60x lebih besar dari yang sebenarnya — salah, bukan sekadar beda
     pembulatan. Tak ada pembanding (mis. mcap/harga kosong) -> anggap oke,
-    jangan diblokir tanpa bukti."""
+    jangan diblokir tanpa bukti.
+
+    SEJAK `shares_sumber == "idx"` ADA (`fetch_fundamental.py`, `saham_idx`),
+    cek market_cap DILEWATI untuk emiten itu: angkanya sudah jumlah saham
+    tercatat resmi bursa, dan justru `market_cap` Yahoo-lah yang basi di
+    AISA (tersirat 3,81 miliar vs 9,31 miliar resmi — dikonfirmasi ulang oleh
+    ekuitas/nilai buku DAN EPS laporan XBRL), LPPF, dan ZBRA. Tanpa
+    pengecualian ini, ketiganya tetap terblokir setelah `shares`-nya dibetulkan.
+    """
+    if fd.get("shares_sumber") == "idx":
+        return True
     saham = angka(fd.get("shares"))
     mcap = angka(fd.get("market_cap"))
     harga = angka(fd.get("last_price"))
@@ -539,6 +549,17 @@ def _uji() -> None:
     asal_saham_salah = lengkapi(saham_salah, None)
     assert saham_salah["q_eps"] == {}
     assert "q_eps" not in asal_saham_salah
+
+    # 4f-bis. `shares_sumber == "idx"` MEMBATALKAN guard 4f — kasus nyata AISA:
+    # shares 9.311.800.000 (ListedShares resmi bursa) vs market_cap/harga yang
+    # cuma 3,81 miliar, rasio 2,45x. Di sini yang basi justru market_cap Yahoo,
+    # dan tanpa pengecualian ini AISA tetap tanpa q_eps setelah dibetulkan.
+    #   5.660.764.000.000 / 9.311.800.000 = 607,91...
+    aisa = {"shares": 9311800000, "market_cap": 3805720129 * 386.0,
+            "last_price": 386.0, "shares_sumber": "idx",
+            "q_net_income": {"2026": {"Q1": 5660764000000.0}}, "q_eps": {}}
+    assert lengkapi(aisa, None)["q_eps"] == TURUNAN
+    assert aisa["q_eps"] == {"2026": {"Q1": 607.91}}, aisa["q_eps"]
 
     # 4g. q_net_income sendiri korup (kasus nyata RIGS: shares KONSISTEN ke
     # market_cap, jadi guard 4f tak nangkap, tapi hasilnya 2.653x eps tahunan

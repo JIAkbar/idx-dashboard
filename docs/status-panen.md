@@ -23,7 +23,8 @@ data baru, dan membaca mtime membuat data basi terlihat segar.
 | **Kabar** | Beranda, Kabar Pasar | IPOT · IDX berita · IDX pengumuman · Kontan | **18 Agu 2026** | — | ⚙️ Actions tiap 2 jam — **semua sumber dicoba**, hasil per sumber tampil di ringkasan run | `panen-kabar.yml` |
 | **Stockbit Snips** | Kabar Pasar (tab STOCKBIT SNIPS) | `snips.stockbit.com` (Squarespace `?format=json`) | 14 Agu 2026 | 238 | ⚙️ Actions tiap 2 jam (ikut `panen-kabar.yml`, sejak 18 Agu 2026) | `panen-kabar.yml` |
 | **Broker summary** | Broker Summary | Setoran kontributor (screenshot) | **18 Agu 2026** | 753 | 👤 kontributor + kurasi admin | halaman `/admin` |
-| **Fundamental** | Stock Detail | yfinance + turunan lokal | 18 Agu 2026 | 967 | ⚙️ Actions akhir bulan | `update-fundamental.yml` |
+| **Fundamental** | Stock Detail, Bedah Emiten | yfinance + turunan lokal + `ListedShares` IDX | **18 Agu 2026** | 965 | ⚙️ Actions akhir bulan | `update-fundamental.yml` |
+| **Daftar emiten + jumlah saham** | (dipakai `fetch_fundamental.py`, bukan halaman) | IDX `GetStockSummary` (`ListedShares`) | **18 Agu 2026** | 963 emiten | ❌ manual | `sinkron_emiten.py` — **"Panen Lagi"** |
 | **Keuangan XBRL IDX** | Stock Detail | IDX `GetFinancialReport` | **2019–2025** (7 thn buku) | 949 | ❌ manual | `panen_keuangan_idx.py` — **"Panen Lagi"** |
 | **Keuangan yfinance** | Stock Detail | yfinance | 17 Agu 2026 | 646 | ⚙️ ikut `update-fundamental.yml` | — |
 | **Seasonality bulanan** | Seasonality | Yahoo (penutupan bulanan) | 17 Agu 2026 | — | ❌ manual | `panen_seasonality.py` — **"Panen Lagi"** |

@@ -133,13 +133,73 @@ sum-4-kuartal vs `eps` TTM saat menjalankan patch-nya, BUKAN teori:
 0` → `0`. Bug ARCI di layar bukan salah render, murni backend menulis `0.0`
 literal (bukan `null`) untuk kuartal yang sebenarnya ada datanya.
 
-**Belum selesai**: 38 emiten `shares`-tak-konsisten di atas — perlu sumber
-`shares` lain (mis. `GetCompanyProfiles`/XBRL) atau re-fetch yfinance,
-di luar lingkup "nol permintaan jaringan"-nya `lengkapi_fundamental.py`.
+**Belum selesai**: 38 emiten `shares`-tak-konsisten di atas — ✅ **ditutup A0d**.
 
 **Ongkos**: kecil (patch), sedang (guard-nya butuh 2 putaran sanity-check
 manual sebelum aman ditulis — jangan skip langkah itu kalau menambah ruas
 turunan baru yang mirip).
+
+---
+
+### A0d · `shares` diambil dari bursa, bukan dari agregator — ✅ **SELESAI 18 Agu**
+
+Lanjutan langsung A0c. Yang dicari: sumber jumlah saham yang tak ketinggalan
+aksi korporasi. Yang ketemu **sudah ada di payload yang kita ambil tiap hari**:
+`GetStockSummary` membawa ruas **`ListedShares`** per emiten, dan
+`sinkron_emiten.py` selama ini membuangnya (hanya `StockCode`/`StockName` yang
+disimpan). Nol permintaan jaringan tambahan, dan sumbernya bursa sendiri.
+
+**Kandidat yang DITOLAK — `market_cap ÷ last_price`.** Terdengar masuk akal
+(dua ruas independen dari `shares`), tapi `marketCap` Yahoo dihitung dari
+`sharesOutstanding` Yahoo juga, jadi **ikut basi di emiten yang sama**.
+Terukur salah di 4 dari 51: AISA tersirat 3,81 miliar saham padahal resmi
+9,31 miliar; LPPF 1,17 vs 2,23 miliar; ZBRA 534 juta vs 2,51 miliar; MSKY 5×.
+Pembanding independennya EPS laporan XBRL IDX (`net_income ÷ eps`) dan
+ekuitas ÷ nilai buku — keduanya sepakat dengan IDX, melawan `market_cap`.
+`market_cap/harga` tetap berguna sebagai **detektor** (`shares_masuk_akal()`),
+tapi tak pernah sebagai **sumber**.
+
+**51 emiten dikoreksi, bukan 38.** Angka 38 di A0c lahir dari wasit yang
+sendirinya basi. Terhadap `ListedShares`: 43 emiten beda >2× (tambahan NEST,
+RIMO, IIKP, PIPA, MORA, **MSKY** — yang ini 5× KEBESARAN, reverse split, arah
+sebaliknya dari BBNI) + 8 emiten yang `shares`-nya kosong sama sekali
+(BNGA, EMMI, PRDL, SCPI, SUGI, TRIL, TRIO, TRUK).
+
+**Alur yang dipasang** (tiga berkas, masing-masing satu tempat):
+
+1. `sinkron_emiten.py` — simpan `saham` (=`ListedShares`) di `daftar_emiten.json`.
+2. `fetch_fundamental.py` — `saham_idx()` membaca berkas itu (lokal, nol
+   jaringan); `shares` dikoreksi **sebelum satu pun turunan dihitung**, dan
+   berkasnya menandai `shares_sumber: "idx" | "yahoo"`. Ambangnya 2×: di bawah
+   itu bedanya treasury/waktu potret (101 emiten — wajar, tak disentuh).
+3. `lengkapi_fundamental.py` — `shares_masuk_akal()` mengalah pada
+   `shares_sumber == "idx"`, kalau tidak AISA/LPPF/ZBRA tetap tanpa `q_eps`
+   justru sesudah dibetulkan.
+
+**Yang ikut sembuh sendiri** karena koreksinya di hulu: `q_eps`, `hist_eps`,
+`hist_bv`, `rev_ps`, `cash_ps`, `fcf_ps`, `ocf_ps`, `ps`, `price_cf`,
+`price_fcf`. BBNI: `hist_eps` 2025 dari 34.631 jadi 542,75 (EPS resmi XBRL
+536,9); `q_eps` Q2 2026 dari 8.804,59 jadi 137,99.
+
+**Pelajaran yang mahal — membetulkan hulu membuat hilirnya bertengkar.**
+Sesudah `shares` benar, `float_pct` BBNI terbaca **0,61%** (dulu 38,84%) dan
+`market_cap` AISA tinggal 41% dari saham × harga. Keduanya regresi yang
+lahir dari perbaikan itu sendiri, dan **hanya ketahuan karena sapuan regresi
+dijalankan atas SELURUH 965 berkas**, bukan atas emiten yang diperiksa tangan.
+Tambalannya: `market_cap` = saham tercatat × harga (definisi bursa) untuk
+emiten ber-`shares_sumber = "idx"`; `float_pct` mencoba dua basis dan memakai
+yang jatuh di 0–100%. Percobaan pertama — menskalakan `floatShares` dengan
+rasio saham lama/baru — **memburukkan** AISA jadi 1.669%, karena `floatShares`
+Yahoo ternyata **tak selalu sebasis** `sharesOutstanding`-nya sendiri.
+
+**Cara menjalankan ulang** (urutannya mengikat):
+
+```bash
+python scripts/sinkron_emiten.py && python scripts/fetch_fundamental.py --semua && python scripts/lengkapi_fundamental.py
+```
+
+**Ongkos**: kecil. Satu permintaan IDX yang memang sudah dilakukan, ditambah
+panen ulang yfinance untuk emiten yang terdampak saja.
 
 ---
 

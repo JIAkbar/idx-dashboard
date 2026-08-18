@@ -41,7 +41,7 @@ PYTHON = sys.executable  # panggil dgn interpreter yg sama (wajib py 3.14 + libs
 
 
 def ambil_daftar_resmi():
-    """Coba mundur dari hari ini s.d. 7 hari — return (tgl_iso, [{kode,nama}])."""
+    """Coba mundur dari hari ini s.d. 7 hari — return (tgl_iso, [{kode,nama,saham}])."""
     d = date.today()
     for _ in range(7):
         if d.weekday() < 5:  # bukan akhir pekan
@@ -55,9 +55,22 @@ def ambil_daftar_resmi():
                 print(f"  [--] {tgl_ymd}: {type(e).__name__}: {e}")
                 data = []
             if data:
-                emiten = sorted({(r["StockCode"], r["StockName"]) for r in data},
-                                key=lambda x: x[0])
-                return d.isoformat(), [{"kode": k, "nama": n} for k, n in emiten]
+                # `ListedShares` ikut disimpan sebagai `saham`. Payload ini sudah
+                # diambil untuk daftar emiten, jadi ongkos jaringannya NOL — tapi
+                # isinya menutup lubang mahal: `sharesOutstanding` yfinance
+                # ketinggalan aksi korporasi di 43 emiten (BBNI tersimpan 578,7
+                # juta, resmi IDX 36,92 MILIAR; MSKY justru 5x KEBESARAN karena
+                # reverse split), dan SETIAP ruas per-saham membaginya.
+                # Pembacanya: `fetch_fundamental.py` (`saham_idx`).
+                emiten = {}
+                for r in data:
+                    s = r.get("ListedShares")
+                    emiten[r["StockCode"]] = {
+                        "kode": r["StockCode"],
+                        "nama": r["StockName"],
+                        "saham": int(s) if isinstance(s, (int, float)) and s > 0 else None,
+                    }
+                return d.isoformat(), [emiten[k] for k in sorted(emiten)]
             print(f"  [--] {tgl_ymd}: kosong (libur bursa?)")
         d -= timedelta(days=1)
     return None, []

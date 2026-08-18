@@ -233,6 +233,37 @@ def konversi_dict_ke_idr(d, mata_uang, kurs_usd_idr):
             out[k] = konversi_ke_idr(v, mata_uang, kurs_usd_idr)
     return out
 
+_SAHAM_IDX: dict | None = None
+
+def saham_idx(kode):
+    """Jumlah saham TERCATAT resmi IDX (`ListedShares`) dari
+    `data-idx/json/daftar_emiten.json` — berkas lokal, NOL permintaan jaringan
+    (`sinkron_emiten.py` sudah menyimpannya dari payload yang memang diambilnya).
+
+    Kenapa ada: `sharesOutstanding` yfinance ketinggalan aksi korporasi di 43
+    emiten per 18 Agu 2026 — BBNI tersimpan 578.683.733 padahal resmi IDX
+    36.924.339.786 (0,0157x, pemecahan saham tak terbaca), MSKY sebaliknya
+    9,97 miliar vs 1,99 miliar resmi (5,0x, reverse split). Ruas `eps` tahunan
+    selamat karena disalin langsung dari `trailingEps`, tapi SEMUA yang dibagi
+    `shares` di berkas ini — q_eps, hist_eps, hist_bv, rev_ps, cash_ps, fcf_ps,
+    ocf_ps, float_pct — ikut salah dengan faktor yang sama, tanpa satu pun galat.
+    Balikan None kalau emiten tak ada di daftar (mis. disuspensi: CNTB, CNTX,
+    NIPS) — pemanggil yang memutuskan, jangan menebak.
+    """
+    global _SAHAM_IDX
+    if _SAHAM_IDX is None:
+        p = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                          '..', 'data-idx', 'json', 'daftar_emiten.json'))
+        try:
+            with open(p, encoding='utf-8') as f:
+                _SAHAM_IDX = {e["kode"]: e.get("saham") for e in json.load(f)["emiten"]}
+        except Exception as e:  # noqa: BLE001 — daftar hilang/tua bukan alasan gagal panen
+            print(f"   ⚠ daftar_emiten.json tak terbaca ({type(e).__name__}) — "
+                  f"shares memakai yfinance apa adanya")
+            _SAHAM_IDX = {}
+    v = _SAHAM_IDX.get(kode)
+    return v if isinstance(v, (int, float)) and v > 0 else None
+
 def get_latest_kurs():
     """Kurs USD/IDR terbaru dari data-idx/json/ds_*.json (snapshot harian IHSG)."""
     data_dir = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data-idx', 'json'))
@@ -408,6 +439,18 @@ def fetch_stock(ticker_code):
         # shares None eksplisit bila sharesOutstanding tidak ada (fallback lama `or 1`
         # menghasilkan rev_ps/q_eps = nilai absolut menyamar per-saham — data palsu).
         shares = sg(info,"sharesOutstanding")
+        shares_sumber = "yahoo" if shares else None
+        # Koreksi ke jumlah saham tercatat resmi IDX — WAJIB di sini, sebelum
+        # satu pun turunan per-saham dihitung (lihat `saham_idx`). Ambangnya 2x:
+        # beda di bawah itu treasury/waktu potret (101 emiten, wajar), di atasnya
+        # selalu aksi korporasi yang tak terbaca yfinance (43 emiten, terukur
+        # 18 Agu 2026). `market_cap` Yahoo TIDAK dipakai sebagai wasit — ia
+        # sendiri basi di AISA (3,81 M vs 9,31 M resmi), LPPF, dan ZBRA.
+        shares_yf = shares          # dipakai menskalakan floatShares di bawah
+        s_idx = saham_idx(ticker_code)
+        if s_idx and (not shares or not (0.5 <= shares / s_idx <= 2.0)):
+            shares = s_idx
+            shares_sumber = "idx"
         # q_eps dihitung DI BAWAH (setelah q_ni_idr ada) — net income kuartalan
         # harus disamakan ke IDR dulu sebelum dibagi saham, sama seperti rev_ps/
         # cash_ps/fcf_ps/ocf_ps. Bug lama: dibagi dari q_ni MENTAH (USD utk
@@ -634,8 +677,31 @@ def fetch_stock(ticker_code):
         ev_revenue_val = round(ev_val/ttm_rev_idr, 2) if (ev_val and ttm_rev_idr and ttm_rev_idr!=0) else None
 
         # Free float %
+        # `marketCap` Yahoo dihitung dari `sharesOutstanding` versinya sendiri,
+        # jadi ikut basi persis di emiten yang `shares`-nya dikoreksi (AISA
+        # tersirat 3,81 miliar saham, MSKY 5x kebesaran). Dihitung ulang dengan
+        # definisi yang dipakai bursa: saham tercatat x harga terakhir. Emiten
+        # lain tak disentuh — angka Yahoo tetap menang di sana.
+        mcap = sg(info,"marketCap")
+        if shares_sumber == "idx" and shares and last_price:
+            mcap = round(shares * last_price)
+
         float_sh = sg(info,"floatShares")
-        float_pct = (float_sh/shares*100) if (float_sh and shares and shares!=0) else None
+        # `floatShares` Yahoo TIDAK selalu sebasis dengan `sharesOutstanding`-nya
+        # sendiri: di BBNI keduanya sepasang (224,7 juta / 578,7 juta = 38,84%,
+        # cocok dgn free float resmi), di AISA `floatShares` justru sudah memakai
+        # jumlah saham TERKINI (2,25 miliar) sementara `sharesOutstanding` masih
+        # yang lama. Menskalakannya dengan satu rumus tetap malah memburukkan
+        # keduanya (AISA sempat terbaca 1.669%). Jadi: coba kedua basis, pakai
+        # yang jatuh di rentang yang mungkin. Tak ada yang masuk akal -> None,
+        # bukan angka mustahil yang terbaca seolah data (aturan #2 modul).
+        float_pct = None
+        for basis in (shares_yf, shares):
+            if float_sh and basis:
+                p = float_sh / basis * 100
+                if 0 < p <= 100:
+                    float_pct = p
+                    break
 
         # Beta & 52W Change
         beta = sg(info,"beta")
@@ -816,6 +882,10 @@ def fetch_stock(ticker_code):
             "avg_volume":       sg(info,"averageVolume"),
             "avg_volume_10d":   sg(info,"averageDailyVolume10Day"),
             "shares":           shares,
+            # "idx" = jumlah saham dikoreksi ke ListedShares resmi bursa karena
+            # yfinance ketinggalan aksi korporasi. Dibaca `shares_masuk_akal()`
+            # di lengkapi_fundamental.py: tanda ini menang atas cek market_cap.
+            "shares_sumber":    shares_sumber,
             "float_shares":     float_sh,
             "float_pct":        round(float_pct,2) if float_pct else None,
             # Field tambahan dashboard (dari info yang sama, nol request ekstra).
@@ -927,7 +997,7 @@ def fetch_stock(ticker_code):
             "ttm_fcf":      konversi_ke_idr(ttm_fcf, fin_cur, kurs),
 
             # === MARKET CAP & ENTERPRISE VALUE ===
-            "market_cap":       sg(info,"marketCap"),
+            "market_cap":       mcap,
             "enterprise_value": sg(info,"enterpriseValue"),
 
             # === QUARTERLY DATA (untuk tabel) ===
