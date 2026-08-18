@@ -49,6 +49,10 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=600')
     return res.status(200).json(await r.json())
   } catch (e) {
-    return res.status(502).json({ galat: `Gagal menghubungi Yahoo: ${String(e)}` })
+    // Galat aslinya DICATAT, bukan dikirim. `String(e)` bisa memuat nama host,
+    // jalur, atau jejak tumpukan runtime — pembaca tak bisa berbuat apa-apa
+    // dengan itu, dan penyerang bisa. Pass kebocoran (CLAUDE.md 18 Agu).
+    console.error('proksi yahoo gagal:', e)
+    return res.status(502).json({ galat: 'Gagal menghubungi Yahoo.' })
   }
 }
