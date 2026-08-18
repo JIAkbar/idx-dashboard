@@ -647,3 +647,39 @@ describe('tak ada kebocoran — jawaban tak menyebut isi dapur', () => {
     }
   })
 })
+
+describe('jawab — angka tingkat pasar tak dipakai menjawab pertanyaan tingkat emiten', () => {
+  it('"net buy asing di BBCA" TIDAK dijawab arus asing se-pasar', () => {
+    const j = tanya('net buy asing di BBCA berapa')
+    expect(j.teks).not.toContain('Rp1,03 triliun')
+    expect(j.teks).toContain('per emiten')
+    expect(j.takPaham).toBe(true)
+  })
+
+  it('arus asing TANPA kode emiten tetap dijawab angka se-pasar', () => {
+    expect(tanya('asing net buy atau net sell').teks).toContain('net sell')
+  })
+
+  it('"IHSG kemarin" dijawab hari sebelumnya, bukan hari berjalan', () => {
+    // Tanggal hari berjalan dicocokkan ke seri lebih dulu; di sini sengaja
+    // dibuat cocok supaya jalur tepatnya teruji.
+    const seri2 = [
+      { ...seri[0], date_id: 'Kamis, 13 Agustus 2026', ihsg: 6301.77 },
+      { ...seri[1], date_id: 'Jumat, 14 Agustus 2026', ihsg: 6401.89 },
+    ]
+    const j = jawab('IHSG kemarin berapa', konteks({ seri: seri2 }))
+    expect(j.teks).toContain('6.301,77')
+    expect(j.teks).toContain('13 Agustus')
+  })
+
+  it('"IHSG kemarin" mengaku terbatas kalau tanggalnya tak terlacak di seri', () => {
+    const j = jawab('IHSG kemarin berapa', konteks())
+    expect(j.takPaham).toBe(true)
+    expect(j.teks).toContain('hari bursa terakhir')
+  })
+
+  it('"bagus mana" antara dua emiten dijawab: PAPAN tak memberi rekomendasi', () => {
+    const j = tanya('BBCA vs BBRI bagus mana')
+    expect(j.teks).toContain('tidak memberi rekomendasi')
+  })
+})

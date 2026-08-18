@@ -360,7 +360,7 @@ const MINTA_ARTI =
  * terus terang PAPAN tak memberi rekomendasi.
  */
 const MINTA_REKOMENDASI =
-  /\b(rekomendasi|layak (di)?beli|saham bagus|bagus (ga|gak|tidak|enggak)|beli apa|harus beli|jual apa|prediksi|ramalan|prospek besok|gorengan)\b/i
+  /\b(rekomendasi|layak (di)?beli|saham bagus|bagus (ga|gak|tidak|enggak)|bagus mana|mana yang (lebih )?bagus|lebih bagus|pilih mana|mending(an)? mana|beli apa|harus beli|jual apa|prediksi|ramalan|prospek besok|gorengan)\b/i
 
 /** Kata TUNGGAL yang menunjuk lebih dari satu hal di PAPAN. Menebak salah satu
  *  cabangnya sama saja menjawab pertanyaan yang tak ditanyakan — jadi
@@ -652,6 +652,28 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
     }
   }
 
+  // ── "IHSG kemarin berapa" — hari LAIN, bukan hari berjalan ───────────────
+  // Dulu dijawab ringkasan hari berjalan: angkanya benar, harinya bukan yang
+  // ditanya, dan tak ada satu pun penanda bahwa harinya berbeda. Hari
+  // sebelumnya diambil dari seri dengan MENCOCOKKAN tanggal hari berjalan
+  // dulu — kalau tak ketemu (format tanggal berbeda), lebih baik menunjuk
+  // Chart daripada menebak baris mana yang "kemarin".
+  if (punya(t, 'kemarin', 'hari sebelumnya')) {
+    const s = k.seri ?? []
+    const i = s.findIndex((x) => x.date_id === h.date_id)
+    const lalu = i > 0 ? s[i - 1] : null
+    return lalu
+      ? {
+        teks: `Penutupan hari bursa sebelumnya (${lalu.date_id}): ${rp(lalu.ihsg)}. ` +
+          `Hari berjalan (${h.date_id}) ${rp(h.ihsg_value)}.`,
+        topik: 'lintasWaktu', ke: '/chart', keLabel: 'Lihat chart',
+      }
+      : {
+        teks: `Saya menjawab dari hari bursa terakhir (${h.date_id}); penutupan per tanggal lain ada di halaman Chart.`,
+        takPaham: true, ke: '/chart', keLabel: 'Lihat chart',
+      }
+  }
+
   // ── IHSG / indeks / kondisi pasar ────────────────────────────────────────
   // "bagaimana kondisi pasar sekarang?" adalah pertanyaan pertama yang
   // wajar diketik orang, tapi sempat jatuh ke "belum bisa saya jawab" karena
@@ -663,6 +685,16 @@ export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
 
   // ── Arus asing ───────────────────────────────────────────────────────────
   if (punya(t, 'asing', 'foreign', 'net buy', 'net sell')) {
+    // "net buy asing di BBCA berapa" dulu dijawab angka SE-PASAR tanpa satu
+    // kata pun yang menandai bedanya — pembaca wajar mengiranya angka BBCA.
+    // Angka tingkat pasar bukan jawaban untuk pertanyaan tingkat emiten.
+    if (kode) {
+      return {
+        teks: `Arus asing per emiten belum saya hitung di sini — angka yang saya punya arus asing tingkat pasar, ` +
+          `bukan ${kode}. Rincian asing per emiten ada di halaman Stock Detail.`,
+        takPaham: true, ...linkEmiten(kode),
+      }
+    }
     const nf = h.nf_today_idr
     if (nf == null) return { teks: 'Data arus asing hari ini belum ada di berkas harian.', takPaham: true }
     const ytd = h.nf_ytd_idr
