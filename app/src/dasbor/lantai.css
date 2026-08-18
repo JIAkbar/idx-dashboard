@@ -1102,7 +1102,7 @@
    7 hari (flex:1) supaya segmen jeda waktu kebaca — bukan lagi mini 110px. */
 .lantai .csb-sesi{display:flex;align-items:center;gap:8px;flex:1;min-width:0;font-family:var(--mono);font-size:11px;color:var(--text2);padding-left:14px;border-left:1px solid var(--line)}
 .lantai .csb-sesi .sesi-bar-wrap{flex:1;min-width:0}
-.lantai .csb-hari{display:flex;gap:5px;margin-left:auto}
+.lantai .csb-hari{display:flex;align-items:center;gap:5px;margin-left:auto}
 .lantai .csb-d{min-width:44px;text-align:center;border:1px solid var(--line);border-radius:var(--r);padding:4px 6px;background:var(--bg2);cursor:pointer;font-family:var(--mono)}
 .lantai span.csb-d{cursor:default}
 /* .dw/.dd/.dp: span di dalam .csb-d — .dd di sini cuma angka tanggal (numpang
@@ -1645,7 +1645,7 @@
 .lantai .pi-view-tab, .lantai .pi-search, .lantai .pi-search-go,
 .lantai .pi-search-reset, .lantai .pi-tbl-search, .lantai .pi-tbl-select,
 .lantai .pi-loadmore, .lantai .pi-panel-close,
-.lantai .dpk-nav, .lantai .dpk-hari,
+.lantai .dpk-hari,
 .dasbor-shell .bdg, .dasbor-shell .bchip, .dasbor-nav-badge,
 .dasbor-shell .dasbor-laci-item, .dasbor-shell .dasbor-laci-tombol { border-radius: 4px; }
 
@@ -1654,7 +1654,7 @@
    di sini cuma melengkapi yang belum punya & menyeragamkan transisinya. */
 .lantai .dd-btn, .lantai .csb-more, .lantai .chip-t, .lantai .blt-dl,
 .lantai .pi-view-tab, .lantai .pi-loadmore, .lantai .rate button,
-.lantai .dpk-nav, .lantai .btn-p, .lantai .tab {
+.lantai .btn-p, .lantai .tab {
   transition: color .15s ease-out, border-color .15s ease-out,
     background .15s ease-out, transform .15s ease-out, box-shadow .15s ease-out;
   letter-spacing: .02em;
@@ -1671,7 +1671,7 @@
   .lantai .btn-p:active, .lantai .dd-btn:active, .lantai .csb-more:active,
   .lantai .chip-t:active, .lantai .pi-view-tab:active, .lantai .pi-search-go:active,
   .lantai .pi-loadmore:active, .lantai .rate button:active, .lantai .blt-dl:active,
-  .lantai .tab:active { transform: none; }
+  .lantai .tab:active, .lantai .lt:active, .lantai .ti:active { transform: none; }
 }
 
 /* #89 chart indeks — lajur chip pemilih indeks (/chart). Reset margin-right:7px
@@ -1915,14 +1915,16 @@
 
 /* Navigasi arsip per tanggal: tombol tanggal + stepper ‹ › */
 .lantai .rdr-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* Pemilih edisi: kelas sendiri (~23px, angka tanggal telanjang) diganti
+   .chip-t — kelas kanonis "pilih satu dari beberapa" yang sudah setinggi 32px
+   dan punya state .on. Yang tersisa di sini cuma penataan barisnya (#170). */
 .lantai .rdr-arsip{display:flex;gap:5px;flex-wrap:wrap}
-.lantai .rdr-arsip button{font-family:var(--mono);font-size:11px;padding:6px 10px;border-radius:4px;border:1px solid var(--line2);background:none;color:var(--text3);cursor:pointer}
-.lantai .rdr-arsip button.on{background:var(--amber);border-color:var(--amber);color:var(--amber-ink);font-weight:700}
-.lantai .rdr-arsip button:hover:not(.on){border-color:var(--amber);color:var(--text)}
+.lantai .rdr-arsip .chip-t{padding:6px 10px;font-size:11px}
+/* Stepper edisi tetap satu bingkai bersambung, tapi panahnya kini
+   LangkahTanggal (44px, target sentuh terpenuhi). Bingkainya yang melepas
+   border tiap panah, bukan panahnya yang mengecil. */
 .lantai .rdr-stepper{display:flex;align-items:center;border:1px solid var(--line2);border-radius:4px;overflow:hidden}
-.lantai .rdr-stepper button{background:none;border:none;color:var(--text2);font-family:var(--mono);font-size:13px;padding:7px 11px;cursor:pointer}
-.lantai .rdr-stepper button:hover:not(:disabled){background:var(--amber-dim);color:var(--text)}
-.lantai .rdr-stepper button:disabled{opacity:.35;cursor:default}
+.lantai .rdr-stepper .lt{border:0;border-radius:0;background:none}
 .lantai .rdr-stepper .tgl{font-family:var(--mono);font-size:12.5px;color:var(--text);padding:7px 14px;border-inline:1px solid var(--line2);font-weight:700;white-space:nowrap}
 
 /* Tabel papan: warna ticker per zona + superscript hari beruntun */
@@ -2711,3 +2713,82 @@
 @media (max-width: 560px) {
   .lantai .panel-h { flex-wrap: wrap; }
 }
+
+/* ═══ #170 — kendali kanonis ═══════════════════════════════════════════════
+   Audit lengkapnya di docs/audit-kendali.md; speknya di docs/spek-kendali.md.
+   Blok ini rumah bagi kendali yang sebelumnya ditulis ulang di banyak tempat
+   dengan ukuran berbeda-beda. Aturan yang mengikat: satu kendali satu kelas,
+   target sentuh 44px, dan tak ada gaya inline untuk hal yang berulang. */
+
+/* ── Panah langkah (LangkahTanggal.tsx) ──
+   44×44 sungguhan. Sebelumnya tugas ini dipikul .dd-btn (34×32) di Kalender,
+   .dpk-nav (24) dan .dpk-step (26×32) di DatePicker, dan .rdr-stepper (~30)
+   di Radar — empat ukuran untuk satu maksud, semuanya lebih kecil daripada
+   sel tanggal yang mereka apit. */
+.lantai .lt {
+  width: 44px; height: 44px; flex-shrink: 0; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--bg3); border: 1px solid var(--line2); border-radius: 4px;
+  color: var(--text2); cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.lantai .lt svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.lantai .lt:hover:not(:disabled) { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
+.lantai .lt:active:not(:disabled) { transform: translateY(1px); }
+.lantai .lt:disabled { opacity: .4; cursor: default; }
+
+/* Varian sebaris: kotak 32px supaya sejajar field/tab yang sudah baku 32px
+   (#77b), area klik tetap 44px lewat ::after yang menembus keluar kotak.
+   Memaksa 44px visual di sini membuat panah lebih tinggi daripada field yang
+   diapitnya — persis ketimpangan yang sedang diperbaiki, cuma terbalik. */
+.lantai .lt-sebaris { width: 32px; height: 32px; position: relative; }
+.lantai .lt-sebaris svg { width: 14px; height: 14px; }
+.lantai .lt-sebaris::after { content: ''; position: absolute; inset: -6px; }
+
+/* ── Tombol ikon kecil (TombolIkon.tsx) ──
+   Kotak 32px, area klik 44px lewat ::after. Menggantikan sembilan kelas yang
+   rentang ukurannya 14–32px (audit §3.1.4). */
+.lantai .ti {
+  width: 32px; height: 32px; flex-shrink: 0; padding: 0; position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: none; border: 1px solid transparent; border-radius: 4px;
+  color: var(--text3); cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.lantai .ti::after { content: ''; position: absolute; inset: -6px; }
+.lantai .ti .dasbor-ikon { stroke: currentColor; }
+.lantai .ti:hover:not(:disabled) { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
+.lantai .ti:active:not(:disabled) { transform: translateY(1px); }
+.lantai .ti:disabled { opacity: .4; cursor: default; }
+
+/* Dua tombol ikon bersebelahan WAJIB berjarak ≥12px: area klik masing-masing
+   melar 6px ke setiap sisi, jadi jarak yang lebih rapat membuat keduanya
+   tumpang tindih dan klik di celah jatuh ke tombol yang menang tumpukan.
+   Di pasangan "ubah/hapus" yang satu itu menghapus, jadi ini bukan soal rasa. */
+.lantai .ti-grup { display: inline-flex; align-items: center; gap: 12px; }
+
+/* Aksi merusak. Sebelumnya ditulis tiga kali dengan induk berbeda
+   (.af-aksibar .dd-btn.merah, .ks-aksi .dd-btn.merah, .af-status-dd .dd-it.merah)
+   sehingga tombol keempat yang menyalin kelasnya saja tidak ikut merah —
+   itu yang terjadi di BedahUnggah.tsx dan ditambal warna inline. */
+.lantai .dd-btn.merah, .lantai .ti.merah, .lantai .btn-p.merah { color: var(--red); border-color: var(--red); }
+.lantai .dd-btn.merah .dasbor-ikon, .lantai .ti.merah .dasbor-ikon { stroke: currentColor; }
+.lantai .ti.merah:hover:not(:disabled), .lantai .dd-btn.merah:hover:not(:disabled) { border-color: var(--red); color: var(--red); background: var(--red-bg); }
+
+/* ── Varian ukuran, menggantikan override inline (audit §3.3) ── */
+.lantai .dd-btn.dd-btn-kecil { height: 26px; font-size: 10.5px; padding-left: 8px; padding-right: 8px; }
+.lantai .btn-p.btn-p-kecil { font-size: 11px; padding-left: 14px; padding-right: 14px; }
+
+/* Item dropdown nonaktif — sebelumnya {opacity:.45,cursor:'not-allowed'}
+   inline di tiap pemakaian (PetaInvestor). cursor default, bukan not-allowed:
+   tak ada yang dilarang, pilihannya memang sedang tak tersedia. */
+.lantai .dd-it:disabled { opacity: .45; cursor: default; }
+.lantai .dd-it:disabled:hover { background: none; color: inherit; }
+
+/* Kepala kolom tabel yang bisa diurut. Objek gaya inline identik didefinisikan
+   dua kali (TopStocks.tsx:20, TopBroker.tsx:19) lalu dipakai di 12 titik. */
+.lantai .th-sort {
+  font: inherit; color: inherit; background: none; border: 0; padding: 0;
+  cursor: pointer; text-align: inherit;
+}
+.lantai .th-sort:hover { color: var(--amber); }

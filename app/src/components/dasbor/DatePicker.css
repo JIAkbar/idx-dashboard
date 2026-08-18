@@ -19,13 +19,6 @@
 
 .lantai .dpk-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .lantai .dpk-bulan { font-family: var(--disp); font-weight: 700; font-size: 12px; letter-spacing: .05em; }
-.lantai .dpk-nav {
-  width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
-  background: none; border: 1px solid var(--line2); border-radius: 4px;
-  color: var(--text2); cursor: pointer;
-}
-.lantai .dpk-nav:hover { border-color: var(--amber); color: var(--amber); }
-.lantai .dpk-nav svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; }
 
 .lantai .dpk-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
 .lantai .dpk-dow {
@@ -67,17 +60,12 @@
 }
 
 /* ─── Stepper ‹ › mengapit field (#97) ───
+   Panahnya sendiri kini LangkahTanggal varian `sebaris` (#170): dua ukuran
+   berbeda yang dulu ada di berkas ini — .dpk-nav 24px untuk nav bulan dan
+   .dpk-step 26×32px untuk stepper hari — dihapus. Komponen kanonis yang punya
+   dua ukuran untuk maksud yang sama justru sumber ketidakseragaman terbesar
+   (audit §3.1.2).
    .dpk-wrap flex + .dd flex:1 menjaga perilaku lebar lama: di .field modal
    admin field tetap full-width, di header flex-wrap tetap seukuran konten. */
 .lantai .dpk-wrap { display: flex; align-items: center; gap: 4px; }
 .lantai .dpk-wrap .dd { flex: 1; min-width: 0; }
-.lantai .dpk-step {
-  width: 26px; height: 32px; flex-shrink: 0;
-  display: inline-flex; align-items: center; justify-content: center;
-  background: none; border: 1px solid var(--line2); border-radius: 4px;
-  color: var(--text2); cursor: pointer;
-}
-.lantai .dpk-step svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; }
-.lantai .dpk-step:hover { border-color: var(--amber); color: var(--amber); }
-.lantai .dpk-step:disabled { opacity: .32; cursor: default; }
-.lantai .dpk-step:disabled:hover { border-color: var(--line2); color: var(--text2); }

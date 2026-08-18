@@ -5,6 +5,7 @@ import { HOLIDAYS, todayIsoJakarta } from '../../lib/tanggalBursa'
 import { IkonMenu, IKON_PERINGATAN, IKON_CENTANG } from './IkonMenu'
 import { Dropdown } from './Dropdown'
 import { useSwipe } from './useSwipe'
+import { LangkahTanggal } from './LangkahTanggal'
 
 interface KalenderProps {
   /**
@@ -461,29 +462,21 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
 
   const hariNav = (
     <div className="hari-nav">
-          <button
-            type="button"
-            className="dd-btn"
+          <LangkahTanggal
+            arah="mundur"
             disabled={!hariSebelum}
             onClick={() => hariSebelum && gotoHari(hariSebelum)}
-            aria-label="Hari bursa sebelumnya"
-            title="Hari bursa sebelumnya"
-          >
-            <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg>
-          </button>
+            label="Hari bursa sebelumnya"
+          />
           <span className="hari-nav-lbl">
             {tanggalAktif ? (dataMap.get(tanggalAktif)?.date_id ?? tanggalAktif) : '—'}
           </span>
-          <button
-            type="button"
-            className="dd-btn"
+          <LangkahTanggal
+            arah="maju"
             disabled={!hariSesudah}
             onClick={() => hariSesudah && gotoHari(hariSesudah)}
-            aria-label="Hari bursa berikutnya"
-            title="Hari bursa berikutnya"
-          >
-            <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" /></svg>
-          </button>
+            label="Hari bursa berikutnya"
+          />
     </div>
   )
 
@@ -635,16 +628,12 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
             {/* Stepper ‹ › per-hari bursa (#97) — konsisten dengan hariNav
                 grid penuh; disembunyikan di mode Rentang (tidak berubah). */}
             {!modeRentang && (
-              <button
-                type="button"
-                className="dd-btn"
+              <LangkahTanggal
+                arah="mundur"
                 disabled={!hariSebelum}
                 onClick={() => hariSebelum && gotoHari(hariSebelum)}
-                aria-label="Hari bursa sebelumnya"
-                title="Hari bursa sebelumnya"
-              >
-                <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg>
-              </button>
+                label="Hari bursa sebelumnya"
+              />
             )}
             {weekDays.map(({ iso, dayNum, data }, i) => {
               const isAktifHari = rentang
@@ -679,16 +668,12 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
               )
             })}
             {!modeRentang && (
-              <button
-                type="button"
-                className="dd-btn"
+              <LangkahTanggal
+                arah="maju"
                 disabled={!hariSesudah}
                 onClick={() => hariSesudah && gotoHari(hariSesudah)}
-                aria-label="Hari bursa berikutnya"
-                title="Hari bursa berikutnya"
-              >
-                <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" /></svg>
-              </button>
+                label="Hari bursa berikutnya"
+              />
             )}
           </div>
           {btnHariIni}

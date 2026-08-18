@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { IkonMenu, IKON_KALENDER } from './IkonMenu'
 import { useSwipe } from './useSwipe'
+import { LangkahTanggal } from './LangkahTanggal'
 import { alasanBukanHariBursa } from '../../lib/tanggalBursa'
 import './DatePicker.css'
 
@@ -127,9 +128,13 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
     const iso = arah === -1 ? isoPrev : isoNext
     const label = arah === -1 ? 'Tanggal ber-data sebelumnya' : 'Tanggal ber-data berikutnya'
     return (
-      <button type="button" className="dpk-step" disabled={!iso} aria-label={label} title={label} onClick={() => iso && onChange(iso)}>
-        <svg viewBox="0 0 24 24"><path d={arah === -1 ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6'} /></svg>
-      </button>
+      <LangkahTanggal
+        arah={arah === -1 ? 'mundur' : 'maju'}
+        ukuran="sebaris"
+        disabled={!iso}
+        label={label}
+        onClick={() => iso && onChange(iso)}
+      />
     )
   }
 
@@ -143,13 +148,9 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
       </button>
       <div className="dd-menu dpk-pop" role="dialog" aria-label="Pilih tanggal" {...swipeBulan}>
         <div className="dpk-head">
-          <button type="button" className="dpk-nav" aria-label="Bulan sebelumnya" onClick={() => geser(-1)}>
-            <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg>
-          </button>
+          <LangkahTanggal arah="mundur" ukuran="sebaris" label="Bulan sebelumnya" onClick={() => geser(-1)} />
           <span className="dpk-bulan">{NAMA_BULAN[bulan]} {tahun}</span>
-          <button type="button" className="dpk-nav" aria-label="Bulan berikutnya" onClick={() => geser(1)}>
-            <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" /></svg>
-          </button>
+          <LangkahTanggal arah="maju" ukuran="sebaris" label="Bulan berikutnya" onClick={() => geser(1)} />
         </div>
         <div className="dpk-grid">
           {NAMA_HARI.map((h) => <span key={h} className="dpk-dow">{h}</span>)}

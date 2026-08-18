@@ -8,6 +8,7 @@ import {
 } from '../../lib/radar/arsip'
 import { skorRadar } from '../../lib/radar/skor'
 import { rollupBulanan, rollupMingguan } from '../../lib/radar/rollup'
+import { LangkahTanggal } from '../../components/dasbor/LangkahTanggal'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
 // Gaya lightbox (.af-lb-*) hidup di AdminShared.css (dulu AdminHome.css,
 // pindah folder saat rombak shell tab #shell-tab), ter-scope .lantai —
@@ -279,7 +280,7 @@ export function Radar() {
               <button
                 key={e.date_iso}
                 type="button"
-                className={i === idx ? 'on' : undefined}
+                className={`chip-t${i === idx ? ' on' : ''}`}
                 title={tanggalPanjang(e.date_iso)}
                 onClick={() => setPilih(i)}
               >
@@ -288,9 +289,9 @@ export function Radar() {
             ))}
           </div>
           <div className="rdr-stepper">
-            <button type="button" aria-label="Edisi sebelumnya" disabled={idx === 0} onClick={() => setPilih(idx - 1)}>‹</button>
+            <LangkahTanggal arah="mundur" label="Edisi sebelumnya" disabled={idx === 0} onClick={() => setPilih(idx - 1)} />
             <span className="tgl">{tanggalPanjang(edisi.date_iso)}</span>
-            <button type="button" aria-label="Edisi berikutnya" disabled={idx === arsip.length - 1} onClick={() => setPilih(idx + 1)}>›</button>
+            <LangkahTanggal arah="maju" label="Edisi berikutnya" disabled={idx === arsip.length - 1} onClick={() => setPilih(idx + 1)} />
           </div>
         </div>
       </div>
