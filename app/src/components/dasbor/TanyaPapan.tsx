@@ -96,6 +96,11 @@ export function TanyaPapan() {
   // "kenapa?". Disimpan di ref, bukan state: nilainya tak menggambar apa pun,
   // dan menaruhnya di state berarti satu render tambahan tiap tanya.
   const topikRef = useRef<Topik>(null)
+  // Emiten yang sedang dibicarakan — pasangan `topikRef`. Tanpa ini "berapa?"
+  // sesudah "harga BBCA" tak tahu emitennya (topik cuma menyimpan JENIS
+  // jawaban), dan panel terpaksa balik bertanya padahal orangnya jelas masih
+  // membicarakan BBCA.
+  const subjekRef = useRef<string | null>(null)
   const { hari, tanggalTersedia } = useDataHarian()
   const { daftar: edisi } = useBulletinList()
   const { kabar } = useKabar()
@@ -129,6 +134,7 @@ export function TanyaPapan() {
       edisi: edisi ?? null,
       kabar: kabar?.item ?? null,
       topik: topikRef.current,
+      subjek: subjekRef.current,
       kamus,
     }
     setBerpikir(true)
@@ -174,7 +180,13 @@ Lapis AI-nya khusus yang sudah masuk — tiap pertanyaan ke sana ` +
 
     // Topik hanya diperbarui kalau jawabannya memang mengenali sesuatu —
     // jawaban "tak paham" tak boleh menghapus konteks yang masih berguna.
-    if (j.topik) topikRef.current = j.topik
+    if (j.topik) {
+      topikRef.current = j.topik
+      // Subjek ikut topiknya: jawaban market-wide (tanpa emiten) MENGHAPUS
+      // subjek lama, supaya "berapa?" sesudah pindah topik tak menjawab emiten
+      // yang sudah tak dibicarakan.
+      subjekRef.current = j.subjek ?? null
+    }
     setRiwayat((r) => [...r, { dari: 'papan', teks: j.teks, ke: j.ke, keLabel: j.keLabel, dariAI }])
   }
 

@@ -1,9 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { jawab, type KonteksTanya } from './tanyaPapan'
+import { jawab, type DataButuh, type KonteksTanya, type OhlcRingkas } from './tanyaPapan'
 import type { DataHarian, TanggalIndex } from './dataHarian'
 import type { KamusEmiten } from './kamusEmiten'
 import type { StockFundamental } from './stockDetailData'
 import type { InvestorMapEntry } from './petaInvestorData'
+import { GLOSARIUM } from './glosarium'
+import { PENGETAHUAN } from './pengetahuan'
 
 const hari = {
   date_id: 'Jumat, 14 Agustus 2026',
@@ -13,6 +15,8 @@ const hari = {
   ihsg_prev: 6301.77,
   nf_today_idr: -1034.66,
   nf_ytd_idr: -72870,
+  mkt_per: 14.2,
+  mkt_pbv: 1.8,
   gainers: [{ c: 'TEBE', pr: 1375, td: 275, p: 25 }, { c: 'BBCA', pr: 9000, td: 100, p: 1.1 }],
   losers: [{ c: 'BAIK', pr: 390, td: -68, p: -14.85 }],
   leaders_today: [{ c: 'BYAN', p: 14400, ih: 39.11 }],
@@ -327,5 +331,319 @@ describe('jawab — susulan atas topik baru tak menebak (dan tak crash)', () => 
   it('"kenapa?" setelah topik hargaEmiten mengaku tak tahu, bukan lempar error', () => {
     const j = jawab('kenapa?', konteks({ topik: 'hargaEmiten' }))
     expect(j.takPaham).toBe(true)
+  })
+})
+
+// ════════════════════════════════════════════════════════════════════════════
+// KORPUS LATIH — seluruh rentang panjang masukan
+// ════════════════════════════════════════════════════════════════════════════
+/**
+ * Korpus permanen untuk melatih & mengukur mesin aturan, disusun atas
+ * permintaan Johan 18 Agu 2026: *"coba kata per kata, 2 kata, 3 kata, banyak
+ * kata, saling berkata"* — mesin harus diuji pada SELURUH rentang panjang
+ * masukan, bukan cuma kalimat rapi.
+ *
+ * Tiap baris membawa `harus`: pola yang WAJIB ada di jawaban. Dari situ tiap
+ * hasil digolongkan tiga:
+ *   - `benar`   — `harus` cocok
+ *   - `takTahu` — tak cocok tapi mesin mengaku tak tahu (`takPaham`)
+ *   - `salah`   — tak cocok DAN mesin percaya diri menjawab topik lain
+ * Golongan `salah` yang paling merusak: pembaca tak punya cara tahu
+ * jawabannya keliru. Karena itu ia diuji satu per satu di bawah, sementara
+ * `takTahu` cuma dibatasi jumlahnya.
+ *
+ * Ringkasan angkanya: `UKUR=1 npx vitest run tanyaPapan`
+ */
+export type Kelompok = '1 kata' | '2 kata' | '3 kata' | 'kalimat panjang' | 'salah ketik' | 'percakapan'
+
+interface Kasus {
+  q: string
+  kel: Kelompok
+  harus: RegExp
+  ctx?: Partial<KonteksTanya>
+}
+
+const ohlcBBCA: OhlcRingkas = {
+  kode: 'BBCA',
+  d: [
+    ['2025-09-01', 8000, 8000, 7900, 8000, 100],
+    ['2026-02-01', 6000, 9000, 5900, 6000, 100],
+    ['2026-08-14', 6300, 6350, 6275, 6350, 100],
+  ],
+}
+
+const investorBBCA: InvestorMapEntry = {
+  code: 'BBCA', issuer: 'BANK CENTRAL ASIA Tbk',
+  holders: [
+    { name: 'PT DWIMURIA INVESTAMA ANDALAN', cls: 'Corporate', lf: 'L', pct: 54.94 },
+    { name: 'GOVERNMENT OF NORWAY', cls: 'Sovereign Wealth Fund', lf: 'F', pct: 1.01 },
+  ],
+}
+
+/** Menjawab seperti antarmuka sungguhan: kalau `jawab()` minta berkas
+ *  per-emiten (mekanisme dua-langkah), berkasnya disodorkan lalu `jawab()`
+ *  dipanggil ulang — persis yang dikerjakan TanyaPapan.tsx. */
+export function tanya(q: string, p: Partial<KonteksTanya> = {}) {
+  const k = konteks({ kamus, ...p })
+  const j1 = jawab(q, k)
+  if (!j1.butuh) return j1
+  const { jenis, kode } = j1.butuh
+  const payload =
+    jenis === 'fundamental' ? (kode === 'BBCA' ? fd : null)
+      : jenis === 'ohlc' ? (kode === 'BBCA' ? ohlcBBCA : null)
+        : (kode === 'BBCA' ? investorBBCA : null)
+  return jawab(q, { ...k, data: { jenis, kode, payload } as DataButuh })
+}
+
+export const KORPUS: Kasus[] = [
+  // ── 1 kata ────────────────────────────────────────────────────────────────
+  { q: 'bandar', kel: '1 kata', harus: /bandar/i },
+  { q: 'ara', kel: '1 kata', harus: /auto rejection/i },
+  { q: 'arb', kel: '1 kata', harus: /auto rejection/i },
+  { q: 'akumulasi', kel: '1 kata', harus: /akumulasi/i },
+  { q: 'distribusi', kel: '1 kata', harus: /distribusi/i },
+  { q: 'divergensi', kel: '1 kata', harus: /divergensi/i },
+  { q: 'pcd', kel: '1 kata', harus: /PCD|distribusi/i },
+  { q: 'radar', kel: '1 kata', harus: /radar/i },
+  { q: 'jenjang', kel: '1 kata', harus: /jenjang/i },
+  { q: 'kuota', kel: '1 kata', harus: /kuota|jenjang/i },
+  { q: 'kurasi', kel: '1 kata', harus: /kurasi|setujui|revisi/i },
+  { q: 'akurasi', kel: '1 kata', harus: /akurasi/i },
+  { q: 'fraksi', kel: '1 kata', harus: /fraksi|kelipatan/i },
+  { q: 'lot', kel: '1 kata', harus: /lot/i },
+  { q: 'spread', kel: '1 kata', harus: /spread/i },
+  { q: 'macd', kel: '1 kata', harus: /MACD/i },
+  { q: 'breakout', kel: '1 kata', harus: /breakout/i },
+  { q: 'likuiditas', kel: '1 kata', harus: /likuiditas/i },
+  { q: 'seasonality', kel: '1 kata', harus: /musiman|seasonality/i },
+  { q: 'ihsg', kel: '1 kata', harus: /6\.401,89|IHSG/i },
+  { q: 'asing', kel: '1 kata', harus: /net sell|net buy/i },
+  { q: 'broker', kel: '1 kata', harus: /broker/i },
+  { q: 'emiten', kel: '1 kata', harus: /emiten/i },
+  { q: 'harga', kel: '1 kata', harus: /harga/i },
+  { q: 'dividen', kel: '1 kata', harus: /dividen/i },
+  { q: 'gorengan', kel: '1 kata', harus: /rekomendasi|saran investasi/i },
+  { q: 'kontributor', kel: '1 kata', harus: /kontributor/i },
+  { q: 'login', kel: '1 kata', harus: /masuk|akun/i },
+  { q: 'gratis', kel: '1 kata', harus: /biaya/i },
+  { q: 'kalkulator', kel: '1 kata', harus: /kalkulator/i },
+
+  // ── 2 kata ────────────────────────────────────────────────────────────────
+  { q: 'apa bandar', kel: '2 kata', harus: /bandar/i },
+  { q: 'arti ara', kel: '2 kata', harus: /auto rejection/i },
+  { q: 'cara kontribusi', kel: '2 kata', harus: /kontributor/i },
+  { q: 'broker summary', kel: '2 kata', harus: /broker summary/i },
+  { q: 'saham gorengan', kel: '2 kata', harus: /rekomendasi|saran investasi/i },
+  { q: 'net sell', kel: '2 kata', harus: /net sell|net buy/i },
+  { q: 'top gainer', kel: '2 kata', harus: /gainers/i },
+  { q: 'naik jenjang', kel: '2 kata', harus: /jenjang/i },
+  { q: 'kenapa broker', kel: '2 kata', harus: /broker/i },
+  { q: 'pasar nego', kel: '2 kata', harus: /nego/i },
+  { q: 'laba bersih', kel: '2 kata', harus: /laba/i },
+  { q: 'arus kas', kel: '2 kata', harus: /arus kas|CFO/i },
+  { q: 'harga BBCA', kel: '2 kata', harus: /6\.375/ },
+  { q: 'PER BBCA', kel: '2 kata', harus: /PER 13,51/ },
+  { q: 'sektor terkuat', kel: '2 kata', harus: /Healthcare/ },
+  { q: 'libur besok', kel: '2 kata', harus: /bursa (tutup|buka)/i },
+  { q: 'grup Salim', kel: '2 kata', harus: /ICBP/ },
+  { q: 'belum update', kel: '2 kata', harus: /diperbarui|16:15/i },
+  { q: 'saham hijau', kel: '2 kata', harus: /gainers/i },
+  { q: 'saham merah', kel: '2 kata', harus: /losers/i },
+
+  // ── 3 kata ────────────────────────────────────────────────────────────────
+  { q: 'apa itu akumulasi', kel: '3 kata', harus: /akumulasi/i },
+  { q: 'bagaimana skor radar', kel: '3 kata', harus: /radar/i },
+  { q: 'kenapa data kosong', kel: '3 kata', harus: /diperbarui|belum|sumber/i },
+  { q: 'apa itu PCD', kel: '3 kata', harus: /PCD|distribusi/i },
+  { q: 'cara jadi kontributor', kel: '3 kata', harus: /kontributor/i },
+  { q: 'apa itu ARA', kel: '3 kata', harus: /auto rejection/i },
+  { q: 'berapa fraksi harga', kel: '3 kata', harus: /kelipatan|fraksi/i },
+  { q: 'siapa pemilik BBCA', kel: '3 kata', harus: /domestik/i },
+  { q: 'IHSG hari ini', kel: '3 kata', harus: /6\.401,89/ },
+  { q: 'asing net sell', kel: '3 kata', harus: /net sell/i },
+  { q: 'sektor paling kuat', kel: '3 kata', harus: /Healthcare/ },
+  { q: 'saham paling naik', kel: '3 kata', harus: /gainers/i },
+  { q: 'apa itu bandar', kel: '3 kata', harus: /bandar/i },
+  { q: 'data dari mana', kel: '3 kata', harus: /IDX|KSEI|sumber/i },
+  { q: 'IHSG sepekan terakhir', kel: '3 kata', harus: /sepekan/i },
+  { q: 'BBCA sektor apa', kel: '3 kata', harus: /Financial Services/ },
+  { q: 'kenapa disebut kuat', kel: '3 kata', harus: /ambang|persentil|hari bursa/i },
+  { q: 'apa itu jenjang', kel: '3 kata', harus: /jenjang/i },
+  { q: 'data diperbarui kapan', kel: '3 kata', harus: /18:30|16:15|diperbarui/i },
+  { q: 'PAPAN itu apa', kel: '3 kata', harus: /Bursa Efek Indonesia|Pusat Analisa/i },
+
+  // ── kalimat panjang ───────────────────────────────────────────────────────
+  {
+    q: 'kenapa laporan keuangan emiten ini kosong padahal di aplikasi lain ada',
+    kel: 'kalimat panjang', harus: /XBRL|IDX|sumber|laporan keuangan/i,
+  },
+  {
+    q: 'bagaimana cara saya menjadi kontributor PAPAN dan apa saja syaratnya',
+    kel: 'kalimat panjang', harus: /kontributor/i,
+  },
+  {
+    q: 'apa bedanya broker summary dengan orderbook yang biasa saya lihat di aplikasi sekuritas',
+    kel: 'kalimat panjang', harus: /broker summary/i,
+  },
+  {
+    q: 'tolong jelaskan bagaimana PAPAN menghitung akurasi kontributor',
+    kel: 'kalimat panjang', harus: /akurasi/i,
+  },
+  {
+    q: 'kalau setoran saya perlu revisi apakah akurasi saya ikut turun',
+    kel: 'kalimat panjang', harus: /revisi/i,
+  },
+  {
+    q: 'berapa batas auto rejection atas untuk saham dengan harga acuan seribu rupiah',
+    kel: 'kalimat panjang', harus: /35%|25%|20%/,
+  },
+  {
+    q: 'apakah PAPAN bisa memberi rekomendasi saham yang layak dibeli minggu ini',
+    kel: 'kalimat panjang', harus: /bukan saran investasi|rekomendasi|keputusan tetap/i,
+  },
+  {
+    q: 'kenapa data hari ini belum ada padahal bursa sudah tutup sejak sore',
+    kel: 'kalimat panjang', harus: /18:30|20:00|diperbarui/i,
+  },
+  {
+    q: 'sektor mana yang paling menguat hari ini dan berapa persen kenaikannya',
+    kel: 'kalimat panjang', harus: /Healthcare/,
+  },
+  {
+    q: 'berapa harga saham Bank Central Asia sekarang',
+    kel: 'kalimat panjang', harus: /6\.375|6\.300/,
+  },
+  {
+    q: 'apakah besok bursa libur karena tanggal merah nasional',
+    kel: 'kalimat panjang', harus: /bursa (tutup|buka)/i,
+  },
+  {
+    q: 'apa saja keuntungan yang saya dapat kalau menjadi kontributor PAPAN',
+    kel: 'kalimat panjang', harus: /jenjang|kuota|kontributor/i,
+  },
+  {
+    q: 'bagaimana cara menghitung target harga setelah ARA tiga hari berturut-turut',
+    kel: 'kalimat panjang', harus: /auto rejection|35%|25%/i,
+  },
+  {
+    q: 'saya ingin tahu berapa kali BBCA disebut di edisi Arus Pasar terakhir',
+    kel: 'kalimat panjang', harus: /BBCA|edisi/i,
+  },
+  {
+    q: 'kenapa broker summary di PAPAN cuma tersedia untuk sebagian emiten saja',
+    kel: 'kalimat panjang', harus: /setoran kontributor|endpoint publik|sebatas emiten/i,
+  },
+
+  // ── salah ketik & tak baku ────────────────────────────────────────────────
+  { q: 'akumulsi', kel: 'salah ketik', harus: /akumulasi/i },
+  { q: 'bandarmologi', kel: 'salah ketik', harus: /bandar|broker summary/i },
+  { q: 'gmn cara naik jenjang', kel: 'salah ketik', harus: /jenjang/i },
+  { q: 'apasih itu ARA', kel: 'salah ketik', harus: /auto rejection/i },
+  { q: 'brp harga BBCA', kel: 'salah ketik', harus: /6\.375/ },
+  { q: 'ihsg brp skrg', kel: 'salah ketik', harus: /6\.401,89/ },
+  { q: 'apa itu fraksi hrga', kel: 'salah ketik', harus: /kelipatan|fraksi/i },
+  { q: 'kontributr', kel: 'salah ketik', harus: /kontributor/i },
+  { q: 'divergen', kel: 'salah ketik', harus: /divergensi/i },
+  { q: 'seasonaliti', kel: 'salah ketik', harus: /musiman|seasonality/i },
+  { q: 'asing net sel', kel: 'salah ketik', harus: /net sell|net buy/i },
+  { q: 'apa itu akumulsi', kel: 'salah ketik', harus: /akumulasi/i },
+  { q: 'jenjng kontributor', kel: 'salah ketik', harus: /jenjang/i },
+  { q: 'broker sumary', kel: 'salah ketik', harus: /broker summary/i },
+  { q: 'kalkultor', kel: 'salah ketik', harus: /kalkulator/i },
+
+  // ── percakapan (menyambung jawaban sebelumnya) ────────────────────────────
+  { q: 'kenapa?', kel: 'percakapan', harus: /BYAN/, ctx: { topik: 'ihsg' } },
+  { q: 'berapa?', kel: 'percakapan', harus: /net sell/i, ctx: { topik: 'asing' } },
+  { q: 'detailnya', kel: 'percakapan', harus: /Healthcare/, ctx: { topik: 'sektor' } },
+  { q: 'kenapa?', kel: 'percakapan', harus: /Susulan dari yang mana/, ctx: { topik: null } },
+  { q: 'contohnya?', kel: 'percakapan', harus: /gainers/i, ctx: { topik: 'gainer' } },
+  { q: 'lanjut', kel: 'percakapan', harus: /kabar|termuat/i, ctx: { topik: 'kabar' } },
+  { q: 'terus?', kel: 'percakapan', harus: /losers/i, ctx: { topik: 'loser' } },
+  { q: 'apa lagi?', kel: 'percakapan', harus: /Healthcare/, ctx: { topik: 'sektor' } },
+  { q: 'berapa?', kel: 'percakapan', harus: /6\.375/, ctx: { topik: 'hargaEmiten', subjek: 'BBCA' } },
+  { q: 'detailnya', kel: 'percakapan', harus: /PER 13,51/, ctx: { topik: 'valuasiEmiten', subjek: 'BBCA' } },
+  { q: 'kenapa?', kel: 'percakapan', harus: /Susulan dari yang mana/, ctx: { topik: 'hargaEmiten' } },
+  { q: 'jelaskan', kel: 'percakapan', harus: /sepekan|sebulan/i, ctx: { topik: 'lintasWaktu' } },
+]
+
+/**
+ * Set TAHAN-SIMPAN (hold-out): pertanyaan yang sengaja TIDAK dipakai menyetel
+ * mesin. Korpus di atas dipakai memperbaiki, jadi angkanya pasti bagus — yang
+ * benar-benar mengukur "mesinnya paham" cuma pertanyaan yang belum pernah
+ * dilihat waktu memperbaiki. Angkanya dilaporkan terpisah, dan penurunan di
+ * sini jauh lebih penting daripada kenaikan di korpus setelan.
+ */
+export const TAHAN_SIMPAN: Kasus[] = [
+  { q: 'pivot', kel: '1 kata', harus: /pivot/i },
+  { q: 'sponsor', kel: '1 kata', harus: /sponsor/i },
+  { q: 'oscillator', kel: '1 kata', harus: /oscillator|RSI/i },
+  { q: 'vonis', kel: '1 kata', harus: /vonis/i },
+  { q: 'forum', kel: '1 kata', harus: /forum|diskusi/i },
+  { q: 'privasi', kel: '1 kata', harus: /identitas|privasi/i },
+  { q: 'apa ihsg', kel: '2 kata', harus: /IHSG/i },
+  { q: 'top broker', kel: '2 kata', harus: /broker/i },
+  { q: 'lupa sandi', kel: '2 kata', harus: /sandi|pengurus/i },
+  { q: 'hari bursa', kel: '2 kata', harus: /hari bursa/i },
+  { q: 'kapitalisasi pasar', kel: '2 kata', harus: /kapitalisasi/i },
+  { q: 'akun beku', kel: '2 kata', harus: /beku|dibekukan/i },
+  { q: 'apa itu pivot', kel: '3 kata', harus: /pivot/i },
+  { q: 'kenapa akun dibekukan', kel: '3 kata', harus: /beku|dibekukan|setoran/i },
+  { q: 'berapa PBV pasar', kel: '3 kata', harus: /PBV/i },
+  { q: 'top gainers hari ini', kel: '3 kata', harus: /gainers/i },
+  { q: 'kenapa harga di sini beda dengan aplikasi sekuritas saya', kel: 'kalimat panjang', harus: /fraksi|diperbarui|16:15|sumber/i },
+  { q: 'bagaimana PAPAN memastikan angka yang ditampilkan benar', kel: 'kalimat panjang', harus: /sumber|telusuri|metode/i },
+  { q: 'kalau akun saya dibekukan bagaimana cara mengaktifkannya lagi', kel: 'kalimat panjang', harus: /beku|setoran|pengurus/i },
+  { q: 'berapa jumlah sektor yang menguat hari ini di bursa', kel: 'kalimat panjang', harus: /sektor menguat/i },
+  { q: 'kapitalisas pasar', kel: 'salah ketik', harus: /kapitalisasi/i },
+  { q: 'gmn cara login', kel: 'salah ketik', harus: /masuk|akun/i },
+  { q: 'likuidits', kel: 'salah ketik', harus: /likuiditas/i },
+  { q: 'brp per pasar', kel: 'salah ketik', harus: /PER pasar/i },
+  { q: 'kenapa?', kel: 'percakapan', harus: /BYAN|poin/i, ctx: { topik: 'penggerak' } },
+  { q: 'contohnya', kel: 'percakapan', harus: /edisi|terbit/i, ctx: { topik: 'edisi' } },
+  { q: 'terus?', kel: 'percakapan', harus: /Financial Services/, ctx: { topik: 'sektorEmiten', subjek: 'BBCA' } },
+]
+
+type Hasil = 'benar' | 'takTahu' | 'salah'
+
+export function nilaiKasus(k: Kasus): Hasil {
+  const j = tanya(k.q, k.ctx)
+  if (k.harus.test(j.teks)) return 'benar'
+  return j.takPaham ? 'takTahu' : 'salah'
+}
+
+describe('korpus latih — tiap panjang masukan dijawab benar, tak ada yang salah sasaran', () => {
+  // Diuji SATU PER SATU, bukan sebagai jumlah agregat: agregat yang turun dari
+  // 139 ke 137 tetap hijau kalau ambangnya dilonggarkan, sedangkan baris merah
+  // langsung menunjuk pertanyaan mana yang rusak.
+  it.each([...KORPUS, ...TAHAN_SIMPAN])('[$kel] $q', (k) => {
+    // Pesan gagalnya sengaja memuat jawaban sungguhan — yang perlu dibaca
+    // kalau ini merah adalah apa yang DIJAWAB mesin, bukan sekadar "false".
+    expect(`${nilaiKasus(k)} :: ${tanya(k.q, k.ctx).teks}`).toMatch(/^benar/)
+  })
+})
+
+describe('tak ada kebocoran — jawaban tak menyebut isi dapur', () => {
+  it('catatan glosarium yang merujuk berkas repo dibersihkan sebelum tampil', () => {
+    // PCD adalah kasus nyatanya: catatannya berakhir "(lihat `arus-pasar/pcd.py`)".
+    const j = tanya('apa itu PCD')
+    expect(j.teks).toContain('PCD')
+    expect(j.teks).not.toContain('.py')
+    expect(j.teks).not.toContain('`')
+  })
+
+  it('SELURUH istilah glosarium aman ditampilkan, bukan cuma yang sudah ketahuan', () => {
+    for (const e of GLOSARIUM) {
+      const j = tanya(`apa itu ${e.istilah}`)
+      expect(j.teks, `istilah ${e.id}`).not.toMatch(/\.(py|ts|tsx|json|md|sql|ya?ml)\b/i)
+      expect(j.teks, `istilah ${e.id}`).not.toMatch(/https?:\/\/|localhost|supabase|_arsip|scripts\//i)
+    }
+  })
+
+  it('SELURUH entri pengetahuan aman ditampilkan', () => {
+    for (const e of PENGETAHUAN) {
+      const j = tanya(e.kunci[0])
+      expect(j.teks, `entri ${e.id}`).not.toMatch(/\.(py|ts|tsx|json|md|sql|ya?ml)\b/i)
+      expect(j.teks, `entri ${e.id}`).not.toMatch(/https?:\/\/|localhost|supabase|_arsip|scripts\//i)
+    }
   })
 })

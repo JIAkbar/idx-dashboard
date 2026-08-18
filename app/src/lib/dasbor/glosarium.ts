@@ -14,6 +14,7 @@
  */
 
 import data from './glosarium.json'
+import { bentuk, mirip, normalTanya, pangkas } from './teksTanya'
 
 export interface EntriGlosarium {
   id: string
@@ -64,6 +65,21 @@ export function cariGlosarium(pertanyaan: string): EntriGlosarium | null {
   const t = pertanyaan.trim()
   if (!t) return null
 
+  // Dua jalur pencocokan. Jalur regex (di bawah) tetap yang utama — ia yang
+  // menangani kunci berupa pola dan frasa. Jalur kata dipakai sebagai
+  // pelengkap supaya salah ketik dan padanan kata ("brp", "hijau") tetap
+  // sampai ke istilah yang benar; ambang `mirip()` yang menjaga "ara" tak
+  // pernah menempel ke "arb".
+  const kataLuas = [...new Set(normalTanya(t).split(' ').flatMap(bentuk))].filter(Boolean)
+  const samaAtauMirip = (w: string): boolean =>
+    kataLuas.some((q) => q === w || q === pangkas(w) || mirip(q, w))
+  const cocokKata = (k: string): boolean => {
+    if (META.test(k)) return false
+    const kb = normalTanya(k)
+    if (!kb) return false
+    return kb.split(' ').every(samaAtauMirip)
+  }
+
   let terbaik: EntriGlosarium | null = null
   let skorTerbaik = 0
   let panjangTerbaik = 0
@@ -72,7 +88,7 @@ export function cariGlosarium(pertanyaan: string): EntriGlosarium | null {
     let skor = 0
     let panjang = 0
     for (const k of e.kunci) {
-      if (pola(k).test(t)) {
+      if (pola(k).test(t) || cocokKata(k)) {
         skor += 1
         panjang = Math.max(panjang, k.length)
       }

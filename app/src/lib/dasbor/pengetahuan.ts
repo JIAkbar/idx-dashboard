@@ -19,6 +19,8 @@
  * — kalimat tanpa angka lebih baik daripada angka yang tak terverifikasi.
  */
 
+import { bentuk, mirip, normalTanya, pangkas } from './teksTanya'
+
 export interface Entri {
   id: string
   /** Kata kunci pemicu, huruf kecil, tanpa tanda baca. */
@@ -98,7 +100,7 @@ export const PENGETAHUAN: Entri[] = [
     // manfaat kini punya kunci satu kata 'kontributor', dan tanpa frasa dua
     // kata di sini pertanyaan "kewajiban kontributor apa saja" seri lalu jatuh
     // ke entri yang salah. Kunci yang lebih spesifik harus lebih panjang.
-    kunci: ['jadi kontributor', 'cara kontributor', 'gabung', 'daftar', 'daftar akun', 'registrasi', 'ikut menyetor',
+    kunci: ['jadi kontributor', 'cara kontributor', 'kontribusi', 'cara kontribusi', 'gabung', 'daftar', 'daftar akun', 'registrasi', 'ikut menyetor',
       'kewajiban', 'kewajiban kontributor', 'tugas kontributor'],
     judul: 'Cara menjadi kontributor',
     isi:
@@ -136,7 +138,7 @@ export const PENGETAHUAN: Entri[] = [
   },
   {
     id: 'hitung-akurasi',
-    kunci: ['hitung akurasi', 'menghitung akurasi', 'akurasi kontributor', 'rumus akurasi', 'akurasi dihitung'],
+    kunci: ['akurasi', 'hitung akurasi', 'menghitung akurasi', 'akurasi kontributor', 'rumus akurasi', 'akurasi dihitung'],
     judul: 'Cara akurasi kontributor dihitung',
     isi:
       'Akurasi = setoran disetujui dibagi (disetujui + dihapus). Setoran berstatus "perlu revisi" sengaja TIDAK ' +
@@ -455,7 +457,7 @@ export const PENGETAHUAN: Entri[] = [
   },
   {
     id: 'halaman-kalkulator',
-    kunci: ['kalkulator', 'halaman kalkulator', 'apa itu kalkulator'],
+    kunci: ['kalkulator', 'halaman kalkulator', 'apa itu kalkulator', 'dividen', 'average down', 'risk reward'],
     judul: 'Kalkulator',
     isi: 'Kalkulator menghitung average down, target ARA, risk-reward, dividen, dan titik pulih — hasilnya dibulatkan ke fraksi harga bursa.',
     ke: '/kalkulator',
@@ -511,47 +513,6 @@ export const PENGETAHUAN: Entri[] = [
   },
 ]
 
-/** Huruf kecil, tanda baca dibuang, spasi dirapikan — sama dengan cara `tanyaPapan.ts` membersihkan input. */
-function bersih(s: string): string {
-  return s.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim()
-}
-
-/**
- * Imbuhan Indonesia yang dilepas sebelum kata dicocokkan.
- *
- * Inilah yang membuat pencocokan kata-utuh masuk akal di bahasa yang
- * menempelkan imbuhan ke kata dasarnya. "benefitnya" gagal cocok dengan kunci
- * "benefit", "dihitung" gagal dengan "hitung", "keuntungan" gagal dengan
- * "untung" -- dan tiap kegagalan itu terbaca pengguna sebagai "AI-nya bodoh",
- * padahal entrinya ada dan isinya benar.
- *
- * Sengaja BUKAN pemenggal kata penuh: stemmer agresif memotong sampai akar
- * yang tak lagi berarti dan justru melahirkan kecocokan palsu. Yang dilepas
- * hanya imbuhan yang jelas bukan bagian kata dasarnya, dan cuma kalau sisanya
- * masih >= 4 huruf.
- */
-const AKHIRAN = ['nya', 'kah', 'lah', 'pun', 'ku', 'mu']
-const AWALAN = ['meng', 'meny', 'mem', 'men', 'ber', 'ter', 'di', 'ke', 'me', 'pe']
-
-function pangkas(kata: string): string {
-  let k = kata
-  for (const a of AKHIRAN) {
-    if (k.endsWith(a) && k.length - a.length >= 4) { k = k.slice(0, -a.length); break }
-  }
-  for (const a of AWALAN) {
-    if (k.startsWith(a) && k.length - a.length >= 4) { k = k.slice(a.length); break }
-  }
-  return k
-}
-
-/** Bentuk sebuah kata yang dianggap sama: aslinya DAN hasil pangkasnya.
- *  Aslinya tetap disimpan supaya kata yang memang berawalan sama ("kertas",
- *  "kepala", "menu") tak kehilangan bentuk sebenarnya. */
-function bentuk(kata: string): string[] {
-  const p = pangkas(kata)
-  return p === kata ? [kata] : [kata, p]
-}
-
 /**
  * Cari entri pengetahuan yang paling cocok dengan pertanyaan.
  *
@@ -564,7 +525,7 @@ function bentuk(kata: string): string[] {
  * pun yang cocok, kembalikan `null` — jangan menebak entri terdekat.
  */
 export function cariPengetahuan(pertanyaan: string): Entri | null {
-  const t = bersih(pertanyaan)
+  const t = normalTanya(pertanyaan)
   if (!t) return null
   const kata = t.split(' ')
 
@@ -580,11 +541,17 @@ export function cariPengetahuan(pertanyaan: string): Entri | null {
   // besar entrinya SUDAH ADA, cuma tak tersentuh.
   // Tiap kata pertanyaan diperluas jadi bentuk asli + bentuk terpangkas,
   // supaya "benefitnya" tetap menemui kunci "benefit". Lihat `pangkas()`.
-  const kataLuas = new Set(kata.flatMap(bentuk))
+  // Salah ketik ditoleransi lewat `mirip()` (jarak edit berambang menurut
+  // panjang kata) — tanpa itu "akumulsi", "kontributr", dan "seasonaliti"
+  // jatuh ke "belum bisa saya jawab" padahal entrinya ada. Ambangnya ketat
+  // untuk kata pendek; alasannya ada di catatan `mirip()`.
+  const kataLuas = [...new Set(kata.flatMap(bentuk))]
+  const samaAtauMirip = (w: string): boolean =>
+    kataLuas.some((q) => q === w || q === pangkas(w) || mirip(q, w))
   const cocok = (k: string): boolean => {
-    const kb = bersih(k)
-    if (!kb.includes(' ')) return kataLuas.has(kb) || kataLuas.has(pangkas(kb))
-    return kb.split(' ').every((w) => kataLuas.has(w) || kataLuas.has(pangkas(w)))
+    const kb = normalTanya(k)
+    if (!kb.includes(' ')) return samaAtauMirip(kb)
+    return kb.split(' ').every(samaAtauMirip)
   }
 
   let terbaik: Entri | null = null
