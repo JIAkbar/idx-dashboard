@@ -116,3 +116,83 @@ di mana pun yang cuma memakai OHLCV.
 Catatan kejujuran: divergensi adalah pengamatan, bukan ramalan. Kalau
 ditampilkan, sebutkan berapa sering pola serupa berlanjut secara historis —
 pola yang sama dengan yang sudah dipakai halaman Seasonality.
+
+---
+
+## Aliran asing per emiten — SUDAH DIPANEN (18 Agu 2026)
+
+`ForeignBuy`/`ForeignSell` di atas tak lagi cuma "ada di sumber": sekarang
+tersimpan per emiten di **`data-idx/json/asing/<KODE>.json`**, dipanen oleh
+`scripts/panen_asing.py`. Divergensi harga-vs-net-asing yang disebut di bagian
+sebelumnya kini punya datanya.
+
+**Bentuknya** (per emiten, meniru `ohlc/<KODE>.json` — membuka satu emiten
+tak boleh berarti mengunduh seluruh pasar):
+
+```json
+{"kode":"AADI",
+ "satuan":{"beli":"lembar","jual":"lembar","volume":"lembar",
+           "value":"rupiah","frekuensi":"kali"},
+ "ruas":["tanggal","beli","jual","volume","value","frekuensi"],
+ "mulai":"2024-12-05","akhir":"2026-08-18","n":398,
+ "d":[["2024-12-05",0,3000,459400,3055010000,1891], ...]}
+```
+
+**Satuan — sudah diukur, jangan ditebak.** `beli`/`jual`/`volume` LEMBAR,
+`value` RUPIAH, `frekuensi` kali. Bukti: se-pasar 18 Agu 2026 menjumlah
+ForeignBuy 5,03e9 sementara Volume 2,88e10 dan Value 1,37e13 — sebagai rupiah
+itu cuma 0,04% nilai transaksi pasar (mustahil), sebagai lembar 17% volume
+(wajar); dan tak satu pun emiten hari itu punya ForeignBuy > Volume.
+
+**IDX tidak melaporkan aliran asing dalam RUPIAH.** Rupiahnya hanya bisa
+ditaksir (lembar × `value`/`volume`) — taksiran, bukan data, jadi sengaja tak
+disimpan. Kalau nanti ditampilkan sebagai rupiah, sebut itu taksiran.
+
+**`net` tidak disimpan** — turunan murni `beli - jual`, dan menyimpannya
+menambah ~15% berat unduhan tanpa menambah satu pun informasi. Hitung di
+pembacanya.
+
+### Batas riwayat: 2020-01-02 — jangan coba lebih tua
+
+Diuji satu panggilan per tanggal, 18 Agu 2026. HTTP **200** semua, yang
+membedakan hanya isinya:
+
+| Tanggal | Baris | | Tanggal | Baris |
+|---|---|---|---|---|
+| 2020-01-02 | 671 | | 2019-12-30 | **0** |
+| 2020-01-03 | 671 | | 2019-12-27 | **0** |
+| 2020-01-06 | 671 | | 2019-12-02 | **0** |
+| | | | 2019-09-02 | **0** |
+| | | | 2018-01-02 / 2015-01-05 / 2010-01-04 | **0** |
+
+30 Des 2019 hari bursa (bukan libur), dan balasannya bukan galat — 200 dengan
+`data: []`. Itu batas sumbernya, bukan gejala jaringan. **Jangan menjadwalkan
+percobaan ulang untuk tanggal sebelum 2020-01-02.** Pelajaran yang sama sudah
+dibayar sekali hari ini: panen XBRL 2016-2019 habis satu siklus penuh sebelum
+ketahuan IDX memang tak menyajikannya.
+
+Catatan baca: **0 baris juga yang dibalas hari libur/akhir pekan** (17 Agu
+2026, HUT RI, balas 0). Jadi "0 baris" TIDAK sama dengan gagal — pemanen
+melewatinya, tidak menghitungnya sebagai galat, dan tidak mengulangnya.
+
+### Angka panen pertama
+
+989 emiten · 2020-01-02 s/d 2026-08-18 · median **1.593** baris/emiten
+(min 12, max 1.593) · 1.593 hari bursa, 136 tanggal balas 0 baris (libur) ·
+**0 tanggal gagal** dari 1.729 hari kerja · keluaran 57,8 MB (±57 KB/emiten).
+
+Cek tangan lolos di tiga tahun berbeda — berkas vs endpoint langsung, sama
+persis: BBCA 2026-08-14, ANTM 2023-04-17, TLKM 2020-06-02.
+
+### Mengulang / menambah ruas tanpa biaya jaringan
+
+Mentahnya diarsipkan ter-gzip di `_arsip-mentah/asing/<tahun>/<YYYYMMDD>.json.gz`
+(1.729 berkas, 140 MB — vs ~1 GB kalau tak dikompresi) dan dibaca **sebelum**
+menembak jaringan. Menambah ruas dari 32 ruas `GetStockSummary` yang belum
+dipakai cukup:
+
+    py -3.14 scripts/panen_asing.py --dari-arsip     # 29 detik, 0 permintaan
+
+Arsip itu sekaligus penanda kemajuan — putus di tengah lalu dijalankan ulang
+akan melewati tanggal yang sudah terarsip. Tak ada berkas kemajuan terpisah
+yang bisa tak sinkron dengan arsipnya.
