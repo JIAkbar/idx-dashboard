@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import {
-  keDataLilinVolume, batasBawahRentang, potongRentang, RENTANG_GRAFIK, RENTANG_BAWAAN,
+  keDataLilinVolume, batasBawahHari, potongRentang, RENTANG_KAKI, RENTANG_KAKI_BAWAAN,
+  salinInstans, terapkanDraf,
   hitungMA, hitungEMA, hitungRSI, hitungMACD, hitungBollinger, keSeriGaris,
   SPEK_INDIKATOR, buatInstans, galatNilaiParam, galatInstans, labelInstansIndikator,
   hitungInstans, PALET_INDIKATOR,
@@ -36,16 +37,22 @@ describe('keDataLilinVolume', () => {
   })
 })
 
-describe('batasBawahRentang', () => {
+describe('batasBawahHari', () => {
   it('dihitung mundur dari akhir DATA, bukan dari hari ini', () => {
-    expect(batasBawahRentang('2026-08-14', 1)).toBe('2025-08-14')
-    expect(batasBawahRentang('2026-08-14', 5)).toBe('2021-08-14')
+    expect(batasBawahHari('2026-08-14', 1)).toBe('2026-08-13')
+    expect(batasBawahHari('2026-08-14', 365)).toBe('2025-08-14')
   })
-  it('null (Semua) -> string kosong, tak ada batas', () => {
-    expect(batasBawahRentang('2026-08-14', null)).toBe('')
+  it('null (All) -> string kosong, tak ada batas', () => {
+    expect(batasBawahHari('2026-08-14', null)).toBe('')
   })
   it('akhirData kosong -> string kosong (belum ada data)', () => {
-    expect(batasBawahRentang('', 1)).toBe('')
+    expect(batasBawahHari('', 1)).toBe('')
+  })
+  it('menerima waktu INTRADAY sebagai akhir data', () => {
+    // Kaki rentang dipakai bersama kerangka 5m/1h yang waktunya berjam.
+    // Tanpa `slice(0, 10)` di dalamnya, `new Date` menolak dan seluruh
+    // pemotongan rentang diam-diam jadi "tak ada batas".
+    expect(batasBawahHari('2026-08-14 15:30', 5)).toBe('2026-08-09')
   })
 })
 
@@ -191,14 +198,55 @@ describe('keSeriGaris', () => {
   })
 })
 
-describe('RENTANG_BAWAAN', () => {
-  it('bawaannya "Semua" dan label itu benar-benar ada di RENTANG_GRAFIK', () => {
-    expect(RENTANG_BAWAAN).toBe('Semua')
-    const cocok = RENTANG_GRAFIK.find(([label]) => label === RENTANG_BAWAAN)
+describe('RENTANG_KAKI_BAWAAN', () => {
+  it('bawaannya "All" dan label itu benar-benar ada di RENTANG_KAKI', () => {
+    expect(RENTANG_KAKI_BAWAAN).toBe('All')
+    const cocok = RENTANG_KAKI.find(([label]) => label === RENTANG_KAKI_BAWAAN)
     expect(cocok).toBeDefined()
     // Bawaan harus yang TIDAK memotong data — kalau ini berubah jadi angka,
     // chip yang tersorot dan data yang tergambar mulai bercerita beda.
     expect(cocok?.[1]).toBeNull()
+  })
+})
+
+/* ---------------- Draf modal setelan: Cancel wajib benar-benar batal ------ */
+
+describe('salinInstans', () => {
+  const asli = buatInstans('ma', SPEK_INDIKATOR.ma.param, 'i1', 0)
+
+  it('param disalin DALAM — mengubah draf tak menyentuh aslinya', () => {
+    // Inilah yang membuat tombol Cancel jujur. `{...inst}` saja lolos tipe,
+    // lolos tinjauan, dan tetap membuat tiap ketikan di modal langsung berlaku
+    // pada instans yang sedang tergambar.
+    const draf = salinInstans(asli)
+    draf.param.periode = 200
+    expect(asli.param.periode).toBe(20)
+  })
+
+  it('gaya per plot ikut disalin dalam', () => {
+    const berGaya = { ...asli, gaya: { 0: { warna: '--blue' } } }
+    const draf = salinInstans(berGaya)
+    draf.gaya![0].warna = '--red'
+    expect(berGaya.gaya[0].warna).toBe('--blue')
+  })
+})
+
+describe('terapkanDraf', () => {
+  const asli = buatInstans('ma', SPEK_INDIKATOR.ma.param, 'i1', 0)
+
+  it('teks sah -> instans baru berisi angkanya', () => {
+    const hasil = terapkanDraf(asli, SPEK_INDIKATOR.ma.param, { periode: '50' }, 500)
+    expect(hasil?.param.periode).toBe(50)
+    // Aslinya tetap utuh: yang dikembalikan salinan, bukan objek yang sama.
+    expect(asli.param.periode).toBe(20)
+  })
+
+  it('teks tak sah -> null, dan Ok tak boleh menutup modal', () => {
+    expect(terapkanDraf(asli, SPEK_INDIKATOR.ma.param, { periode: '' }, 500)).toBeNull()
+    expect(terapkanDraf(asli, SPEK_INDIKATOR.ma.param, { periode: '1.5' }, 500)).toBeNull()
+    // Periode lebih panjang dari jumlah lilin: garisnya akan lenyap tanpa satu
+    // pun galat, jadi ditolak di kolomnya.
+    expect(terapkanDraf(asli, SPEK_INDIKATOR.ma.param, { periode: '900' }, 500)).toBeNull()
   })
 })
 

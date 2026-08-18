@@ -6,7 +6,6 @@
  */
 import type { Bar } from 'oakscriptjs'
 import type { Katalog } from './katalogIndikator'
-import { LABEL_RENTANG } from './periode'
 import type { BarisOhlc } from './ihsgOhlc'
 import { HARI, ringkasHarian, vonisUji, type RingkasHari } from '../seasonality'
 
@@ -91,31 +90,47 @@ function hariTanpaPerdagangan(
   return takAdaVolume && hargaTakBergerak
 }
 
-/** Label chip → jumlah tahun ke belakang dari tanggal TERAKHIR data (bukan
- *  dari hari ini): data OHLC berhenti beberapa hari sebelum "sekarang" kalau
- *  panen belum jalan, dan menghitung dari hari ini bisa memotong lilin
- *  terbaru yang sebenarnya masih ada. `null` = 'Semua', tak dipotong. */
-export const RENTANG_GRAFIK: Array<[label: string, tahun: number | null]> = [
-  [LABEL_RENTANG.y1, 1],
-  [LABEL_RENTANG.y3, 3],
-  [LABEL_RENTANG.y5, 5],
-  [LABEL_RENTANG.semua, null],
+/**
+ * Rentang di BILAH BAWAH kanvas — `1D 5D 1M 3M 6M 1Y 5Y All`, persis deretan
+ * yang ada di kaki chart Stockbit/TradingView.
+ *
+ * Satuannya HARI. Daftar sebelumnya (1T/3T/5T/Semua) memakai satuan TAHUN dan
+ * dibuang bersama chip-nya: separuh isi kaki baru (1D, 5D, 1M) mustahil
+ * dinyatakan sebagai bilangan tahun bulat, dan menyimpan dua daftar rentang
+ * berdampingan berarti dua tempat yang bisa berselisih soal rentang mana yang
+ * sedang aktif.
+ *
+ * Labelnya sengaja PENDEK dan berbahasa chart (1D/1M/1Y), bukan `LABEL_RENTANG`
+ * yang berbahasa Indonesia panjang: delapan chip "1 Bulan"/"3 Bulan"/"1 Tahun"
+ * tak muat di kaki kanvas 412px, dan justru kaki inilah yang paling sering
+ * ditekan.
+ */
+export const RENTANG_KAKI: Array<[label: string, hari: number | null]> = [
+  ['1D', 1],
+  ['5D', 5],
+  ['1M', 31],
+  ['3M', 92],
+  ['6M', 183],
+  ['1Y', 365],
+  ['5Y', 1826],
+  ['All', null],
 ]
+
+/** Tanggal ISO batas bawah sebuah rentang berbasis HARI, dihitung mundur dari
+ *  tanggal TERAKHIR data — bukan dari hari ini. Data OHLC berhenti beberapa
+ *  hari sebelum "sekarang" kalau panen belum jalan, dan menghitung dari hari
+ *  ini memotong lilin terbaru yang sebenarnya masih ada. */
+export function batasBawahHari(akhirData: string, hari: number | null): string {
+  if (hari === null || !akhirData) return ''
+  const d = new Date(`${akhirData.slice(0, 10)}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() - hari)
+  return d.toISOString().slice(0, 10)
+}
 
 /** Rentang yang aktif saat halaman pertama dibuka. Johan 17 Agu 2026: "buat
  *  default nya semua". Ditulis sebagai konstanta (bukan angka indeks) supaya
  *  chip yang tersorot dan data yang tergambar mustahil berbeda. */
-export const RENTANG_BAWAAN: string = LABEL_RENTANG.semua
-
-/** Tanggal ISO batas bawah rentang, dihitung mundur dari `akhirData` (bukan
- *  `new Date()` — lihat komentar RENTANG_GRAFIK). `tahun: null` -> string
- *  kosong (tak ada batas bawah, seluruh data lolos). */
-export function batasBawahRentang(akhirData: string, tahun: number | null): string {
-  if (tahun === null || !akhirData) return ''
-  const d = new Date(`${akhirData}T00:00:00Z`)
-  d.setUTCFullYear(d.getUTCFullYear() - tahun)
-  return d.toISOString().slice(0, 10)
-}
+export const RENTANG_KAKI_BAWAAN = 'All'
 
 /** Potong lilin+volume ke rentang [batasBawah, ∞). Dua array dipotong
  *  bersamaan (indeksnya selalu selaras — sama-sama diturunkan dari `d` yang
@@ -507,6 +522,82 @@ export interface Instans<J extends string> {
   param: Record<string, number>
   warna: string
   tampil: boolean
+  /** Gaya PER PLOT, berkunci indeks deret dari `hitungInstans` — BB punya tiga
+   *  pita, MACD dua garis + histogram, dan sebelum ini ketiganya terpaksa
+   *  sewarna karena warna cuma ada satu per instans. Kosong = pakai warna &
+   *  gaya instansnya (semua kunci opsional, jadi instans lama tetap terbaca). */
+  gaya?: Record<number, GayaPlot>
+  /** Angka di belakang koma pada lencana sumbu & legenda. `undefined` =
+   *  ikut format bawaan. Ruas OUTPUTS di modal setelan. */
+  presisi?: number
+  /** Tampilkan lencana nilai terakhir di sumbu kanan. Bawaan: ya. */
+  labelSumbu?: boolean
+  /** Tampilkan angkanya di baris status/legenda. Bawaan: ya. */
+  nilaiStatus?: boolean
+  /**
+   * Kerangka waktu tempat instans ini TIDAK digambar (tab Visibility) —
+   * disimpan sebagai id telanjang ('5m', 'D', …), bukan tipe `IdKerangka`,
+   * supaya berkas ini tak perlu mengimpor `kerangkaWaktu.ts` yang sudah
+   * mengimpor tipe dari sini.
+   *
+   * Disimpan sebagai daftar yang DISEMBUNYIKAN, bukan yang ditampilkan:
+   * dengan begitu instans lama (dan template lama) yang ruas ini tak ada
+   * berarti "tampil di mana saja", bukan "tak tampil di mana pun".
+   */
+  sembunyiDi?: string[]
+}
+
+/** Gaya sebuah plot tunggal di dalam satu instans. Semua opsional: yang tak
+ *  disetel jatuh ke gaya instansnya. */
+export interface GayaPlot {
+  /** Token CSS (mis. '--blue'), bukan heksadesimal — alasannya sama dengan
+   *  `Instans.warna`: ikut berganti sendiri saat tema ditukar. */
+  warna?: string
+  /** 0=Solid, 1=Dotted, 2=Dashed — angka `LineStyle` lightweight-charts,
+   *  disimpan sebagai angka telanjang supaya template tetap JSON murni. */
+  garis?: number
+  tebal?: number
+  tampil?: boolean
+}
+
+/**
+ * Salinan DALAM sebuah instans — dipakai modal setelan sebagai draf.
+ *
+ * `{...inst}` saja TIDAK cukup dan di situlah bahayanya: `param` dan `gaya`
+ * objek, jadi salinan dangkal tetap menunjuk objek yang sama dan tiap ketikan
+ * di modal langsung mengubah instans aslinya. Tombol `Cancel` kemudian
+ * "membatalkan" sesuatu yang sudah terlanjur berlaku — persis keluhan yang
+ * modal ini datang untuk memperbaiki, cuma sekarang tersembunyi di balik
+ * tombol yang mengaku membatalkan.
+ */
+export function salinInstans<J extends string>(inst: Instans<J>): Instans<J> {
+  return {
+    ...inst,
+    param: { ...inst.param },
+    gaya: inst.gaya
+      ? Object.fromEntries(Object.entries(inst.gaya).map(([k, v]) => [k, { ...v }]))
+      : undefined,
+  }
+}
+
+/**
+ * Terapkan teks yang diketik di modal ke sebuah draf instans.
+ *
+ * `null` kalau ada kolom yang tak sah — pemanggilnya (tombol Ok) menolak
+ * menutup, bukan menyimpan angka setengah jadi. Dipisah jadi fungsi murni
+ * supaya aturan "Ok hanya berlaku kalau seluruh kolom sah" bisa diuji tanpa
+ * merender modal.
+ */
+export function terapkanDraf<J extends string>(
+  draf: Instans<J>,
+  param: SpekParam[],
+  teks: Record<string, string>,
+  jumlahLilin: number,
+): Instans<J> | null {
+  if (Object.keys(galatInstans(param, teks, jumlahLilin)).length > 0) return null
+  const salin = salinInstans(draf)
+  for (const s of param) salin.param[s.kunci] = Number(teks[s.kunci])
+  return salin
 }
 
 export type InstansIndikator = Instans<JenisIndikator>
@@ -1138,7 +1229,10 @@ export function cariLonjakanVolume(
  *  waktu lokal akan menggeser tanggal satu hari di zona timur GMT dan penanda
  *  "Selasa" akan jatuh di lilin Senin. */
 export function hariPekan(tgl: string): number {
-  return new Date(`${tgl}T00:00:00Z`).getUTCDay() - 1
+  // `slice(0, 10)` supaya waktu intraday ('2026-08-18 09:30') ikut terbaca —
+  // tanpa itu `new Date('2026-08-18 09:30T00:00:00Z')` jadi Invalid Date dan
+  // seluruh penanda musiman lenyap tanpa satu pun galat.
+  return new Date(`${tgl.slice(0, 10)}T00:00:00Z`).getUTCDay() - 1
 }
 
 export interface TemuanMusiman {
@@ -1184,6 +1278,14 @@ export interface TemuanMusiman {
  */
 export function cariMusiman(lilin: LilinData[], hari: number): TemuanMusiman | null {
   if (lilin.length < 2) return null
+  // Kerangka waktu INTRADAY ditolak, bukan dihitung diam-diam. `ringkasHarian`
+  // memakai kunci tanggal: dengan lilin 5 menit, 78 lilin satu hari yang sama
+  // saling menimpa di satu kunci dan yang tersisa cuma lilin terakhir tiap
+  // hari — angkanya tetap keluar, tetap terlihat masuk akal, dan menjawab
+  // pertanyaan yang sama sekali berbeda dari yang ditanyakan. Kegagalan senyap
+  // persis seperti yang dilarang CLAUDE.md; jadi dijegal di sini, bukan di
+  // salah satu pemanggilnya.
+  if (lilin.some((l) => l.time.length > 10)) return null
   const tutup: Record<string, number> = {}
   for (const l of lilin) tutup[l.time] = l.close
   // Tanpa batas tanggal: `lilin` SUDAH dipotong ke rentang chip di pemanggil.

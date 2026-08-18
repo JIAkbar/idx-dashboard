@@ -1,35 +1,42 @@
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   createChart, createSeriesMarkers, createTextWatermark,
   CandlestickSeries, HistogramSeries, LineSeries, LineStyle,
   type IChartApi, type IPriceLine, type ISeriesApi, type ISeriesMarkersPluginApi,
-  type ITextWatermarkPluginApi,
+  type ITextWatermarkPluginApi, type LineWidth,
   type MouseEventParams, type SeriesMarker, type SeriesType, type Time,
 } from 'lightweight-charts'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import {
-  keDataLilinVolume, batasBawahRentang, potongRentang, RENTANG_GRAFIK, RENTANG_BAWAAN,
+  keDataLilinVolume, batasBawahHari, potongRentang, RENTANG_KAKI, RENTANG_KAKI_BAWAAN,
   keSeriGaris, SPEK_INDIKATOR, SPEK_POLA, labelInstansIndikator, labelInstansPola,
   spekJenis, idPustaka,
   hitungInstans, cariDoubleBottom, cariLonjakanVolume, cariMusiman,
   bacaTemplateTersimpan, tulisTemplateTersimpan, simpanTemplate, hapusTemplate,
   tandaiBawaan, ubahNamaTemplate, penandaDiSekitar,
   type BerkasOhlcEmiten, type DoubleBottom, type JenisAsli, type JenisIndikator, type JenisPola,
-  type ParamDoubleBottom, type ParamLonjakanVolume, type StatusPola, type StatusLonjakan,
-  type LonjakanVolume, type TemplateGrafik, type TemuanMusiman,
+  type LilinData, type ParamDoubleBottom, type ParamLonjakanVolume, type StatusPola, type StatusLonjakan,
+  type LonjakanVolume, type TemplateGrafik, type TemuanMusiman, type VolumeData,
 } from '../../lib/dasbor/grafikEmiten'
+import {
+  ambilIntraday, dariEpoch, dariWaktuChart, intraday, keWaktuChart,
+  kunciBulan, kunciPekan, rakitBar, KERANGKA, KERANGKA_BAWAAN, type IdKerangka,
+} from '../../lib/dasbor/kerangkaWaktu'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import {
   muatKatalog, KATEGORI, ID_SUDAH_ADA, type Katalog,
 } from '../../lib/dasbor/katalogIndikator'
-import { useDaftarInstans, SetelanInstans } from '../../components/dasbor/DaftarInstans'
+import { useDaftarInstans } from '../../components/dasbor/DaftarInstans'
+import { ModalSetelanInstans } from '../../components/dasbor/ModalSetelanInstans'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
+import { TombolLayarPenuh } from '../../components/dasbor/TombolLayarPenuh'
 import { fN } from '../../lib/dasbor/format'
 import { pesanGalat } from '../../lib/pesanGalat'
 import {
-  IkonMenu, IKON_CARI, IKON_SILANG, IKON_GRAFIK_NAIK, IKON_INFO, IKON_TONG, IKON_MATA,
-  IKON_MATA_CORET, IKON_GIR,
+  IkonMenu, IKON_CARI, IKON_SILANG, IKON_INFO, IKON_TONG, IKON_MATA,
+  IKON_MATA_CORET, IKON_GIR, IKON_LILIN, IKON_GRAFIK_NAIK, IKON_KAMERA,
 } from '../../components/dasbor/IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 import './GrafikEmiten.css'
@@ -48,6 +55,8 @@ const OPSI_KURASI = (Object.keys(SPEK_INDIKATOR) as JenisAsli[])
  *  kejadian yang bisa nol, satu, atau belasan — dua hal yang di satu menu
  *  akan terbaca seolah sejenis. */
 const JENIS_POLA = Object.keys(SPEK_POLA) as JenisPola[]
+
+const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 
 /**
  * Berapa temuan pola TERBARU yang digambar penandanya di kanvas.
@@ -79,9 +88,24 @@ const MAKS_PENANDA_POLA = 6
 const MAKS_PENANDA_MUSIMAN = 60
 
 /** Dua jenis gambar harga, cukup dua. Heikin Ashi / Bar / Area sengaja tak
- *  ditambahkan — Johan: "ada seperti untuk chart chandles dan line saja dulu". */
+ *  ditambahkan — Johan: "ada seperti untuk chart chandles dan line saja dulu".
+ *  Sejak tata letak mengikuti TradingView, keduanya jadi TOMBOL IKON di bilah
+ *  atas (bukan chip berteks) — di bilah yang juga memuat delapan kerangka
+ *  waktu, dua kata "Lilin"/"Garis" memakan tempat yang justru dibutuhkan
+ *  kerangka waktunya. */
 export type JenisChart = 'lilin' | 'garis'
-const JENIS_CHART: Array<[JenisChart, string]> = [['lilin', 'Lilin'], ['garis', 'Garis']]
+const JENIS_CHART: Array<[JenisChart, string, string]> = [
+  ['lilin', 'Lilin', IKON_LILIN],
+  ['garis', 'Garis', IKON_GRAFIK_NAIK],
+]
+
+/** Mode skala harga sumbu kanan — padanan `%` / `log` di kaki chart acuan.
+ *  Nilainya angka `PriceScaleMode` lightweight-charts (0 Normal, 1 Logarithmic,
+ *  2 Percentage). */
+const MODE_SKALA: Array<[string, string, number, string]> = [
+  ['persen', '%', 2, 'Skala persentase — semua diukur dari titik pertama yang terlihat'],
+  ['log', 'log', 1, 'Skala logaritmik — jarak yang sama berarti persentase yang sama'],
+]
 
 /** Satu baris legenda dalam-kanvas. `ranah` menentukan daftar mana yang
  *  dipanggil saat tombol mata/hapus/gir ditekan — indikator dan pola punya
@@ -197,13 +221,13 @@ const PANDUAN_INDIKATOR: Array<{ label: string; teks: string }> = [
   { label: 'VWAP (Volume Weighted Average Price)',
     teks: 'Harga rata-rata yang dibobot volume, dihitung menumpuk sejak awal pekan atau awal bulan lalu dimulai ulang di batas berikutnya. Menjawab "berapa harga rata-rata yang benar-benar dibayar orang sejauh ini", bukan sekadar rata-rata harga penutupan. Jangkar harian sengaja tidak disediakan: pada data harian ia dimulai ulang tiap lilin dan hasilnya cuma harga lilin itu sendiri.' },
   { label: 'Katalog pustaka — ratusan indikator lain',
-    teks: 'Di bawah "Pilihan PAPAN" pada menu Indikator ada katalog penuh pustaka lightweight-charts-indicators (MIT), dikelompokkan menurut kategori pustakanya sendiri: rata-rata bergerak, osilator, momentum, tren, volatilitas, pita & kanal, volume, pola lilin. Ketik di kotak cari untuk menyaringnya. Daftarnya dibaca dari registry pustaka, bukan disalin — versi pustaka berikutnya langsung terbaca apa adanya.' },
+    teks: 'Di bawah "Pilihan PAPAN" pada menu ƒx Indikator ada katalog penuh pustaka lightweight-charts-indicators (MIT), dikelompokkan menurut kategori pustakanya sendiri: rata-rata bergerak, osilator, momentum, tren, volatilitas, pita & kanal, volume, pola lilin. Ketik di kotak cari untuk menyaringnya. Daftarnya dibaca dari registry pustaka, bukan disalin — versi pustaka berikutnya langsung terbaca apa adanya.' },
   { label: 'Katalog: apa yang tidak ikut, dan kenapa',
     teks: 'Indikator yang keluarannya bukan deret angka (kebanyakan pola lilin yang menggambar penanda) tidak dimasukkan — kanvas ini menggambar deret, dan indikator yang menyala tapi tak menggambar apa pun lebih membingungkan daripada indikator yang jujur tak ada. Penempatannya (menumpang di panel harga atau panel sendiri di bawah) juga dibaca dari registry, bukan ditebak. Sebagian parameter yang bukan angka — pilihan sumber harga, sakelar ya/tidak — memakai bawaan pustaka.' },
   { label: 'Sepuluh yang dikurasi, dan pemeriksaan silangnya',
     teks: 'MA, EMA, BB, RSI, MACD, dan OBV dihitung kode PAPAN sendiri; Stochastic, StochRSI, W%R, dan VWAP memakai rumus pustaka tapi dengan label dan parameter yang sudah dirapikan. Kesepuluhnya muncul paling atas di menu, dan versi pustaka dari enam yang pertama sengaja tidak ikut di katalog supaya tak ada dua garis bernama sama yang boleh berbeda. Sebagai pemeriksaan silang, RSI PAPAN diadu dengan RSI pustaka pada data yang sama di dalam uji otomatis.' },
   { label: 'Beberapa instans sekaligus',
-    teks: 'Satu jenis boleh dimasukkan berkali-kali dengan parameter berbeda — MA 20, MA 50, dan MA 200 bisa hidup bersamaan, masing-masing punya warna, kolom parameter, dan sakelar tampilnya sendiri.' },
+    teks: 'Satu jenis boleh dimasukkan berkali-kali dengan parameter berbeda — MA 20, MA 50, dan MA 200 bisa hidup bersamaan, masing-masing punya warna, parameter, dan sakelar tampilnya sendiri. Warna, gaya garis, dan ketebalan tiap plot diatur di tab Style pada modal setelan (ikon gir di baris legenda).' },
 ]
 
 const PANDUAN_POLA: Array<{ label: string; teks: string }> = [
@@ -223,12 +247,14 @@ const PANDUAN_POLA: Array<{ label: string; teks: string }> = [
     teks: `Terkonfirmasi — ${ARTI_LONJAKAN.terkonfirmasi}. Kuat — ${ARTI_LONJAKAN.kuat}. Tak terkonfirmasi — ${ARTI_LONJAKAN.takTerkonfirmasi}. Kenaikan harga tanpa kenaikan volume berarti sedikit pihak yang ikut; keadaan ketiga itu justru yang membuat daftar ini bukan sekadar kumpulan hari yang menyenangkan.` },
   { label: 'Musiman — apa yang ditandai',
     teks: 'Pilih satu hari (Senin–Jumat) dan lilin hari itu ditandai kotak di kanvas. Kotaknya menunjuk "ini hari yang dimaksud", bukan menyarankan apa pun; angkanya ada di tooltip dan di daftar bawah. Yang ditandai 60 lilin terakhir saja — pada rentang bertahun-tahun, menandai semuanya menghasilkan satu pita pekat yang justru menutupi harganya. Angka statistiknya tetap dihitung dari seluruh hari di rentang itu.' },
+  { label: 'Musiman — kenapa cuma di kerangka harian ke atas',
+    teks: 'Pada kerangka intraday (5m sampai 4h) pola ini sengaja tidak dihitung sama sekali. Perhitungannya berkunci TANGGAL, jadi 78 lilin lima menit di hari yang sama akan saling menimpa di satu kunci dan yang tersisa cuma lilin terakhir tiap hari — angkanya tetap keluar dan tetap terlihat masuk akal, padahal menjawab pertanyaan yang sama sekali lain.' },
   { label: 'Musiman — kenapa n selalu ikut disebut',
     teks: 'Peluang naik 60% dari 12 hari dan dari 240 hari terlihat sama meyakinkannya di layar, padahal yang pertama hampir pasti kebetulan. Karena itu jumlah observasi (n), selang kepercayaan 95%, dan hasil uji permutasi selalu menempel pada angkanya — di legenda, di tooltip, dan di daftar.' },
   { label: 'Musiman — rentang perhitungannya',
-    teks: 'Persis rentang yang sedang tergambar (chip 1T/3T/5T/Semua). Mengganti chip berarti menghitung ulang pola harinya pada rentang itu — angka yang tertulis selalu berasal dari lilin yang terlihat, tak pernah dari data yang tak ada di layar. Angkanya sendiri datang dari perhitungan yang sama dengan halaman Seasonality, bukan hitungan kedua.' },
+    teks: 'Persis rentang yang sedang tergambar (chip di kaki kanvas). Mengganti chip berarti menghitung ulang pola harinya pada rentang itu — angka yang tertulis selalu berasal dari lilin yang terlihat, tak pernah dari data yang tak ada di layar. Angkanya sendiri datang dari perhitungan yang sama dengan halaman Seasonality, bukan hitungan kedua.' },
   { label: 'OBV melengkapi, bukan mengulang',
-    teks: 'Pola Lonjakan Volume melihat SATU hari. Indikator OBV (On-Balance Volume, ada di dropdown Indikator) menumpuk arah volume sepanjang riwayat: ditambah saat harga tutup naik, dikurangi saat turun. Angka mutlaknya tak berarti — yang dibaca arahnya. Satu hari saja bukti yang tipis.' },
+    teks: 'Pola Lonjakan Volume melihat SATU hari. Indikator OBV (On-Balance Volume, ada di menu ƒx Indikator) menumpuk arah volume sepanjang riwayat: ditambah saat harga tutup naik, dikurangi saat turun. Angka mutlaknya tak berarti — yang dibaca arahnya. Satu hari saja bukti yang tipis.' },
 ]
 
 /**
@@ -270,27 +296,81 @@ function RingkasanMusiman({ m, warna }: { m: TemuanMusiman; warna: string }) {
 }
 
 /**
- * Grafik Emiten (chart PAPAN tahap 3) — lilin + volume dari OHLC lokal
- * (`data-idx/json/ohlc/<KODE>.json`, tahap 1/2), digambar `lightweight-charts`
- * (opsi A, keputusan Johan). BEDA dari /chart (`ChartIndeks.tsx`): itu widget
- * TradingView yang menggambar data TradingView sendiri; ini kanvas milik
- * PAPAN sendiri — perlu supaya overlay khas PAPAN (pita musiman, akumulasi
- * broker, penanda Radar — tahap berikutnya) bisa dipasang.
+ * Grafik Emiten (chart PAPAN) — lilin + volume, digambar `lightweight-charts`.
+ *
+ * Tata letaknya mengikuti acuan Stockbit/TradingView yang ditetapkan Johan:
+ * bilah atas (cari · kerangka waktu · jenis chart · ƒx Indikator · layar penuh
+ * & kamera), kanvas bertingkat dengan legenda per panel di pojok kiri atas,
+ * dan bilah bawah (rentang · UTC+7 · % / log / auto).
+ *
+ * BEDA dari /chart (`ChartIndeks.tsx`): itu widget TradingView yang menggambar
+ * data TradingView sendiri; ini kanvas milik PAPAN — perlu supaya overlay khas
+ * PAPAN (pola musiman, Double Bottom, Lonjakan Volume) bisa dipasang di
+ * atasnya.
+ *
+ * Yang SENGAJA tidak ada, walau ada di gambar acuan: bilah alat gambar di kiri
+ * (garis tren, Fibonacci, kuas, penggaris, magnet). Tiap alat itu subsistem
+ * sendiri — primitive gambar, titik pegangan, uji-kena, seret-ubah, simpan
+ * per emiten — dan bilah yang tombolnya tak melakukan apa-apa lebih buruk
+ * daripada tak ada bilahnya.
  */
 export function GrafikEmiten() {
   const { theme } = useTheme()
   const kamus = useKamusEmiten()
-  const [kode, setKode] = useState(DEFAULT_KODE)
+  /**
+   * Emiten & kerangka boleh datang dari URL (`/grafik?kode=BBRI&tf=1h`).
+   *
+   * Johan 18 Agu 2026: *"semua kode emiten on click nya ke chart"* — seluruh
+   * kode emiten di aplikasi menaut ke halaman ini, jadi tautannya HARUS bisa
+   * membawa emiten yang diklik. Tanpa ruas ini, tiap tautan mendarat di BBCA
+   * dan pembacanya menyimpulkan tautannya rusak.
+   *
+   * Dibaca SEKALI lewat penginisialisasi useState, bukan disinkronkan dua arah
+   * tiap render: URL yang mengejar state yang mengejar URL adalah lingkaran
+   * yang berhenti di tempat yang sulit ditebak.
+   */
+  const [param, setParam] = useSearchParams()
+  const [kode, setKode] = useState(() => {
+    const q = (param.get('kode') ?? '').trim().toUpperCase()
+    // Disaring BENTUKNYA di sini (huruf/angka, 2–6 aksara). Kecocokan dengan
+    // emiten yang benar-benar ada diperiksa belakangan, saat kamus tiba —
+    // kamusnya belum ada pada saat render pertama.
+    return /^[A-Z0-9]{2,6}$/.test(q) ? q : DEFAULT_KODE
+  })
+  /** Kode di URL yang ternyata bukan emiten mana pun. Disebut di layar, bukan
+   *  diganti diam-diam: pembaca yang mengetik "BBRII" harus tahu kenapa yang
+   *  terbuka BBCA. */
+  const [kodeAsing, setKodeAsing] = useState<string | null>(null)
   const [cari, setCari] = useState('')
   const [berkas, setBerkas] = useState<BerkasOhlcEmiten | null>(null)
   const [galat, setGalat] = useState<string | null>(null)
-  const [rentangLabel, setRentangLabel] = useState<string>(RENTANG_BAWAAN)
+  const [rentangLabel, setRentangLabel] = useState<string>(RENTANG_KAKI_BAWAAN)
   const [jenisChart, setJenisChart] = useState<JenisChart>('lilin')
+  const [kerangka, setKerangka] = useState<IdKerangka>(() => {
+    const q = param.get('tf')
+    return KERANGKA.some((k) => k.id === q) ? (q as IdKerangka) : KERANGKA_BAWAAN
+  })
+  /** Mode skala sumbu kanan: '' normal, 'persen', atau 'log'. Tiga keadaan,
+   *  bukan dua sakelar bebas — `%` dan `log` di lightweight-charts satu ruas
+   *  `mode` yang sama, jadi dua sakelar terpisah akan menjanjikan kombinasi
+   *  yang mustahil. */
+  const [modeSkala, setModeSkala] = useState('')
+  const [autoSkala, setAutoSkala] = useState(true)
+  /** Panel indikator (pane > 0) yang sedang dilipat — tanda `^` di legendanya. */
+  const [lipat, setLipat] = useState<number[]>([])
   // Bertambah tiap seri harga dibuat ulang. Efek-efek yang MENEMPEL pada seri
   // harga (data, warna, garis leher pola) memakainya sebagai dependensi:
   // tanpa itu mereka tak tahu serinya sudah berganti dan tetap memegang seri
   // yang sudah dibongkar — grafiknya kosong tanpa satu pun galat.
   const [versiSeriHarga, setVersiSeriHarga] = useState(0)
+
+  const containerRef = useRef<HTMLDivElement>(null)
+  // Bungkus kanvas — acuan posisi legenda dalam-kanvas (lihat `posPane`).
+  const bungkusRef = useRef<HTMLDivElement>(null)
+  // Panel utuh (bilah atas + kanvas + kaki) — sasaran tombol layar penuh.
+  const panelRef = useRef<HTMLElement>(null)
+  const chartRef = useRef<IChartApi | null>(null)
+
   /**
    * Perbesar/perkecil rentang waktu yang terlihat, berpusat di TENGAH layar.
    * Tombol nyata, bukan cuma roda tikus — di telepon roda tikus tak ada, dan
@@ -309,8 +389,8 @@ export function GrafikEmiten() {
     skala.setVisibleLogicalRange({ from: tengah - separuh, to: tengah + separuh })
   }, [])
 
-  // Titik yang sedang disorot kursor: waktunya ('yyyy-mm-dd') DAN letaknya di
-  // dalam kanvas. `null` berarti "belum disentuh, pakai titik TERAKHIR"
+  // Titik yang sedang disorot kursor: waktunya (waktu internal) DAN letaknya
+  // di dalam kanvas. `null` berarti "belum disentuh, pakai titik TERAKHIR"
   // (legenda tetap berguna sebelum pembaca menyentuh kanvas sama sekali).
   //
   // Letaknya ikut disimpan karena tooltip pola harus muncul DI DEKAT
@@ -318,18 +398,16 @@ export function GrafikEmiten() {
   // penanda dan keterangannya, dan itu persis kerja yang tooltipnya harusnya
   // hilangkan.
   const [sorot, setSorot] = useState<{ waktu: string; x: number; y: number } | null>(null)
-  /** Instans mana yang panel setelannya sedang terbuka (id), null = tak ada.
-   *  Satu saja pada satu waktu: dua panel melayang bersamaan akan saling
-   *  menutupi di kanvas telepon yang lebarnya cuma 380-an piksel. */
+  /** Instans mana yang MODAL setelannya sedang terbuka (id), null = tak ada. */
   const [setelanTerbuka, setSetelanTerbuka] = useState<string | null>(null)
 
   /**
-   * Katalog indikator pustaka (457 entri) — `null` selagi belum dimuat.
+   * Katalog indikator pustaka — `null` selagi belum dimuat.
    *
    * Dimuat SESUAI PERMINTAAN, bukan saat halaman dibuka: bundelnya 1,9 MB dan
    * sebagian besar pembaca /grafik tak pernah membuka menu indikator sama
    * sekali. Pemicunya dua, dan keduanya perlu:
-   * 1. pembaca menyentuh dropdown Indikator (menunya memang butuh isinya), dan
+   * 1. pembaca menyentuh menu ƒx Indikator (menunya memang butuh isinya), dan
    * 2. template yang dimuat membawa instans `p:` (garisnya harus tergambar
    *    tanpa pembacanya perlu membuka menu apa pun).
    */
@@ -353,6 +431,85 @@ export function GrafikEmiten() {
     return () => { batal = true }
   }, [kode])
 
+  /**
+   * Lilin INTRADAY — ditarik saat emiten/kerangka intraday dipilih, bukan
+   * dipanen massal: halaman ini membuka SATU emiten pada satu waktu, dan
+   * memanen 963 emiten × empat kerangka dari sumber pihak ketiga demi satu
+   * yang sedang dibaca adalah biaya yang tak pernah kembali.
+   *
+   * Warnanya diisi netral di sini dan ditimpa mengikuti tema di memo `lilin`
+   * di bawah — kalau warna ditentukan di sini, menukar tema akan memaksa
+   * unduhan ulang seluruh riwayat intradaynya.
+   */
+  const [intra, setIntra] = useState<{ lilin: LilinData[]; volume: VolumeData[] } | null>(null)
+  const [galatIntra, setGalatIntra] = useState<string | null>(null)
+  const [muatIntra, setMuatIntra] = useState(false)
+  useEffect(() => {
+    if (!intraday(kerangka)) { setIntra(null); setGalatIntra(null); setMuatIntra(false); return }
+    let batal = false
+    setIntra(null)
+    setGalatIntra(null)
+    setMuatIntra(true)
+    ambilIntraday(kode, kerangka, '#38B77E', '#E6635A')
+      .then((d) => { if (!batal) setIntra(d) })
+      .catch((e: unknown) => {
+        if (!batal) setGalatIntra(pesanGalat(e, `Gagal memuat lilin ${kerangka} untuk ${kode}.`))
+      })
+      .finally(() => { if (!batal) setMuatIntra(false) })
+    return () => { batal = true }
+  }, [kode, kerangka])
+
+  /**
+   * URL menyusul keadaan halaman — `replace`, BUKAN `push`.
+   *
+   * Dengan `push`, tombol Kembali peramban berubah jadi riwayat tiap emiten
+   * yang pernah dibuka: menekan Kembali sekali dari BBRI tidak mengembalikan
+   * pembaca ke halaman asalnya, melainkan ke emiten sebelumnya di halaman yang
+   * sama. Enam emiten dilihat berarti enam kali Kembali sebelum benar-benar
+   * keluar.
+   */
+  useEffect(() => {
+    setParam((lama) => {
+      const baru = new URLSearchParams(lama)
+      baru.set('kode', kode)
+      // Kerangka bawaan tak ditulis: URL terpendek yang tetap tepat, dan
+      // tautan '?kode=BBRI' yang dibagikan orang tetap terbaca apa adanya.
+      if (kerangka === KERANGKA_BAWAAN) baru.delete('tf')
+      else baru.set('tf', kerangka)
+      return baru
+    }, { replace: true })
+    // `setParam` sengaja tak masuk deps: identitasnya berganti tiap render
+    // react-router, dan efek yang bergantung padanya berjalan tanpa henti.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kode, kerangka])
+
+  /**
+   * Kode dari URL yang bukan emiten mana pun — dijatuhkan ke bawaan DAN
+   * disebut di layar. Diperiksa di sini, bukan saat membaca URL, karena kamus
+   * emiten tiba belakangan (fetch tersendiri).
+   *
+   * Yang TIDAK dilakukan: membiarkan fetch OHLC-nya gagal dan menampilkan
+   * "Gagal memuat data harga". Pesan itu terbaca sebagai gangguan jaringan,
+   * padahal yang salah kodenya — dua masalah yang penanganannya berbeda.
+   */
+  useEffect(() => {
+    if (!kamus || kamus.emiten.length === 0) return
+    if (kamus.emiten.some((e) => e.kode === kode)) return
+    setKodeAsing(kode)
+    setKode(DEFAULT_KODE)
+  }, [kamus, kode])
+
+  /** Pembaca memilih emiten dari kotak cari. Di sinilah pemberitahuan "kode
+   *  tak dikenal" dibuang — BUKAN di efek pemeriksa di atas: efek itu berjalan
+   *  lagi sesaat setelah jatuh ke bawaan, dan membuang pemberitahuannya di
+   *  sana berarti pemberitahuan itu tak pernah sempat terlihat sama sekali
+   *  (terukur 18 Agu 2026: `?kode=ZZZZ` diam-diam membuka BBCA). */
+  const pilihEmiten = useCallback((k: string) => {
+    setKode(k)
+    setCari('')
+    setKodeAsing(null)
+  }, [])
+
   // Pola kotak cari + saran — disalin dari SeasonalityHarian.tsx, sumbernya
   // kamusEmiten.ts (963 emiten, sudah dimuat halaman lain juga lewat hook
   // yang sama, jadi tak ada unduhan berlipat kalau kedua halaman dibuka).
@@ -362,10 +519,6 @@ export function GrafikEmiten() {
     return kamus.emiten.filter((e) => e.kode.startsWith(q) || e.nama.toUpperCase().includes(q)).slice(0, 8)
   }, [kamus, cari])
 
-  const containerRef = useRef<HTMLDivElement>(null)
-  // Bungkus kanvas — acuan posisi legenda dalam-kanvas (lihat `posPane`).
-  const bungkusRef = useRef<HTMLDivElement>(null)
-  const chartRef = useRef<IChartApi | null>(null)
   // Seri harga: lilin ATAU garis, ditukar lewat `jenisChart`. Disimpan
   // sebagai ISeriesApi<SeriesType> karena jenisnya berganti saat berjalan;
   // yang butuh jenis pastinya menanyakannya lewat `seriesType()`, bukan
@@ -391,8 +544,7 @@ export function GrafikEmiten() {
   // Watermark kode emiten di latar area harga. Dipakai plugin BAWAAN
   // lightweight-charts v5 (`createTextWatermark`) — sudah menggambar di
   // lapisan kanvas yang benar, di belakang lilin, dan ikut berpindah sendiri
-  // saat pane berubah ukuran. Elemen CSS di belakang kanvas akan menuntut
-  // pengukuran ulang yang sama dengan legenda, untuk hasil yang lebih buruk.
+  // saat pane berubah ukuran.
   const watermarkRef = useRef<ITextWatermarkPluginApi<Time> | null>(null)
 
   // Chart dibuat SEKALI saat mount (bukan tiap ganti emiten/rentang) — data &
@@ -422,18 +574,26 @@ export function GrafikEmiten() {
       // https://www.tradingview.com/ to the page... available to your
       // users" — README.md lightweight-charts). `attributionLogo` cuma
       // salah satu CARA memenuhi syarat itu; mematikannya TANPA mengganti
-      // = melanggar lisensi. Gantinya: baris atribusi di kaki halaman
-      // (lihat JSX, dekat "Sumber data") — jangan hapus baris itu juga.
+      // = melanggar lisensi. Gantinya: baris atribusi di kaki situs global
+      // (DasborLayout.tsx) — jangan hapus baris itu juga.
       layout: { background: { color: 'transparent' }, attributionLogo: false },
       rightPriceScale: { borderVisible: false },
       timeScale: {
         borderVisible: false,
-        tickMarkFormatter: (waktu: unknown) => {
-          // `time` bisa berupa string 'YYYY-MM-DD' (yang kita pakai) atau
-          // detik epoch — ditangani keduanya supaya tak diam-diam kosong.
+        tickMarkFormatter: (waktu: unknown, tipe?: number) => {
+          // Intraday datang sebagai epoch detik. `tipe` (TickMarkType) 0–2
+          // berarti "ini pergantian tahun/bulan/hari" — di situ tanggalnya
+          // yang berguna, di antaranya jamnya. Tanpa pembedaan ini, sumbu
+          // kerangka 5 menit cuma berisi deretan jam tanpa satu pun petunjuk
+          // hari apa yang sedang dilihat.
+          if (typeof waktu === 'number') {
+            const s = dariEpoch(waktu)
+            return tipe !== undefined && tipe <= 2
+              ? `${s.slice(8, 10)} ${BULAN[Number(s.slice(5, 7)) - 1]}`
+              : s.slice(11)
+          }
           const d = typeof waktu === 'string' ? new Date(waktu) : new Date(Number(waktu) * 1000)
           if (Number.isNaN(d.getTime())) return ''
-          const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
           // Januari menampilkan tahunnya — penanda pergantian tahun di sumbu
           // yang rentangnya bertahun-tahun.
           return d.getMonth() === 0 ? String(d.getFullYear()) : BULAN[d.getMonth()]
@@ -469,8 +629,12 @@ export function GrafikEmiten() {
     // saat kursor keluar dari kanvas — dibiarkan `null` supaya legenda jatuh
     // balik ke titik TERAKHIR, bukan hilang.
     const saatGeserKursor = (param: MouseEventParams<Time>) => {
-      if (typeof param.time === 'string' && param.point) {
-        setSorot({ waktu: param.time, x: param.point.x, y: param.point.y })
+      // `dariWaktuChart` mengembalikan waktu INTERNAL — untuk intraday, epoch
+      // yang dilaporkan chart dikembalikan ke bentuk 'yyyy-mm-dd HH:mm' yang
+      // dipakai seluruh peta legenda & pencarian penanda.
+      const w = dariWaktuChart(param.time)
+      if (w && param.point) {
+        setSorot({ waktu: w, x: param.point.x, y: param.point.y })
         return
       }
       // Sorotan DIBUANG hanya di perangkat ber-hover. Di telepon, crosshair
@@ -502,11 +666,6 @@ export function GrafikEmiten() {
    * menentukan: seri BARU dipasang dulu, baru yang lama dibongkar. Terbalik,
    * pane 0 sempat kehilangan seluruh seri harganya, dan pane yang kosong
    * ikut dibongkar lightweight-charts bersama apa pun yang menempel padanya.
-   *
-   * Seri indikator TIDAK ikut terhapus: masing-masing berdiri sendiri di
-   * `seriIndRef` dan tak punya hubungan induk-anak dengan seri harga. Yang
-   * memang menempel pada seri harga cuma dua — plugin penanda dan garis
-   * leher pola — dan keduanya dipasang ulang di sini / di efek pola.
    */
   useEffect(() => {
     const chart = chartRef.current
@@ -530,6 +689,24 @@ export function GrafikEmiten() {
     penandaRef.current = createSeriesMarkers(baru, [])
     setVersiSeriHarga((v) => v + 1)
   }, [jenisChart])
+
+  // Sumbu waktu menampilkan JAM hanya pada kerangka intraday. Disetel di efek
+  // sendiri (bukan di opsi pembuatan chart) karena kerangkanya bisa ditukar
+  // kapan saja tanpa membangun ulang chart-nya.
+  useEffect(() => {
+    chartRef.current?.applyOptions({
+      timeScale: { timeVisible: intraday(kerangka), secondsVisible: false },
+    })
+  }, [kerangka])
+
+  // Mode skala sumbu kanan (`%` / `log`) + auto-fit. Ikut `versiSeriHarga`
+  // supaya setelan bertahan saat jenis chart ditukar — seri barunya memakai
+  // skala 'right' yang sama, tapi opsinya harus dipasang ulang sesudah seri
+  // lama dibongkar.
+  useEffect(() => {
+    const mode = MODE_SKALA.find(([id]) => id === modeSkala)?.[2] ?? 0
+    chartRef.current?.priceScale('right').applyOptions({ mode, autoScale: autoSkala })
+  }, [modeSkala, autoSkala, versiSeriHarga])
 
   // Warna dibaca dari getComputedStyle DI DALAM .lantai (containerRef ada di
   // bawah wrapper .lantai) — token --green/--red/--line/--text2 didefinisikan
@@ -567,9 +744,7 @@ export function GrafikEmiten() {
   }, [theme, versiSeriHarga])
 
   // Watermark kode emiten — ikut berganti saat emiten diganti, dan warnanya
-  // dibaca ulang tiap tema ditukar. BEDA dari tanda PAPAN di pojok kiri
-  // bawah; keduanya hidup bersamaan, satu menandai emitennya, satu menandai
-  // siapa yang menggambar.
+  // dibaca ulang tiap tema ditukar.
   useEffect(() => {
     const el = containerRef.current
     if (!el || !watermarkRef.current) return
@@ -589,28 +764,57 @@ export function GrafikEmiten() {
     })
   }, [kode, theme])
 
-  // Lilin + volume dipotong ke rentang terpilih. Ikut `theme` di deps supaya
-  // warna volume (dihitung per-batang, beda dari upColor/downColor series
-  // lilin yang cukup lewat applyOptions) ikut berubah saat tema diganti.
+  /**
+   * Lilin + volume yang benar-benar tergambar, dari tiga jalur yang menyatu di
+   * satu bentuk: intraday dari Yahoo, harian dari berkas lokal, pekanan/bulanan
+   * DIRAKIT dari harian.
+   *
+   * Ikut `theme` di deps supaya warna volume (dihitung per-batang, beda dari
+   * upColor/downColor seri lilin yang cukup lewat applyOptions) ikut berubah
+   * saat tema diganti — termasuk untuk lilin intraday yang tak boleh diunduh
+   * ulang cuma karena temanya ditukar.
+   */
   const { lilin, volume } = useMemo(() => {
-    if (!berkas) return { lilin: [], volume: [] }
     const cs = containerRef.current ? getComputedStyle(containerRef.current) : null
     const green = cs?.getPropertyValue('--green').trim() || '#38B77E'
     const red = cs?.getPropertyValue('--red').trim() || '#E6635A'
-    const semua = keDataLilinVolume(berkas.d, green, red)
-    const [, tahun] = RENTANG_GRAFIK.find(([label]) => label === rentangLabel) ?? RENTANG_GRAFIK[0]
-    const batas = batasBawahRentang(berkas.akhir, tahun)
-    return { lilin: potongRentang(semua.lilin, batas), volume: potongRentang(semua.volume, batas) }
-  }, [berkas, rentangLabel, theme])
+    let dasar: { lilin: LilinData[]; volume: VolumeData[] } | null = null
+    if (intraday(kerangka)) {
+      dasar = intra
+    } else if (berkas) {
+      dasar = keDataLilinVolume(berkas.d, green, red)
+      if (kerangka === 'W') dasar = rakitBar(dasar.lilin, dasar.volume, kunciPekan, green, red)
+      else if (kerangka === 'M') dasar = rakitBar(dasar.lilin, dasar.volume, kunciBulan, green, red)
+    }
+    if (!dasar || dasar.lilin.length === 0) return { lilin: [], volume: [] }
+    const d = dasar
+    const vol = d.volume.map((v, i) => ({
+      ...v, color: d.lilin[i].close >= d.lilin[i].open ? green : red,
+    }))
+    // Batas rentang dihitung dari lilin TERAKHIR yang ada, bukan dari hari ini:
+    // data berhenti beberapa hari sebelum "sekarang" kalau panen belum jalan,
+    // dan menghitung dari hari ini memotong lilin terbaru yang masih ada.
+    const akhir = d.lilin[d.lilin.length - 1].time.slice(0, 10)
+    const [, hari] = RENTANG_KAKI.find(([l]) => l === rentangLabel) ?? RENTANG_KAKI[RENTANG_KAKI.length - 1]
+    const batas = batasBawahHari(akhir, hari)
+    return { lilin: potongRentang(d.lilin, batas), volume: potongRentang(vol, batas) }
+  }, [berkas, intra, kerangka, rentangLabel, theme])
+
+  /** Waktu internal -> tipe `Time` lightweight-charts. Dipakai di SETIAP
+   *  `setData`/penanda: satu-satunya tempat bentuk waktu berpindah dunia. */
+  const keChart = useCallback(
+    <T extends { time: string }>(arr: T[]) => arr.map((d) => ({ ...d, time: keWaktuChart(d.time) as Time })),
+    [],
+  )
 
   useEffect(() => {
     const harga = hargaRef.current
     if (harga?.seriesType() === 'Candlestick') {
-      (harga as ISeriesApi<'Candlestick'>).setData(lilin)
+      (harga as ISeriesApi<'Candlestick'>).setData(keChart(lilin))
     } else if (harga?.seriesType() === 'Line') {
-      (harga as ISeriesApi<'Line'>).setData(lilin.map((l) => ({ time: l.time, value: l.close })))
+      (harga as ISeriesApi<'Line'>).setData(keChart(lilin.map((l) => ({ time: l.time, value: l.close }))))
     }
-    volRef.current?.setData(volume)
+    volRef.current?.setData(keChart(volume))
     chartRef.current?.timeScale().fitContent()
     // Angka terukur buat verifikasi/QA (bukan data sensitif — cuma jumlah &
     // rentang tanggal yang sudah tampak di sumbu chart-nya sendiri). Canvas
@@ -622,10 +826,24 @@ export function GrafikEmiten() {
       el.dataset.jumlahLilin = String(lilin.length)
       el.dataset.tglPertama = lilin[0]?.time ?? ''
       el.dataset.tglAkhir = lilin[lilin.length - 1]?.time ?? ''
+      el.dataset.kerangka = kerangka
+      // Jarak antar-lilin dalam DETIK — bukti bahwa tombol "5m" benar-benar
+      // menarik lilin lima menit dan bukan sekadar tak melempar galat; jumlah
+      // bar saja tak bisa membedakannya dari data harian yang kebetulan banyak.
+      //
+      // MEDIAN dari 20 jarak terakhir, bukan jarak dua lilin terakhir: lilin
+      // paling ujung hampir selalu SETENGAH JADI (bursa masih buka), jadi
+      // ukuran dari sana melaporkan 240 detik untuk kerangka 5 menit — angka
+      // yang terlihat salah padahal datanya benar.
+      const detik = (t: string) => new Date(`${t.replace(' ', 'T')}Z`).getTime() / 1000
+      const jarak = lilin.slice(-21).slice(1).map((l, i) => detik(l.time) - detik(lilin.slice(-21)[i].time))
+      el.dataset.jarakBar = jarak.length
+        ? String(Math.round([...jarak].sort((a, b) => a - b)[Math.floor(jarak.length / 2)]))
+        : ''
     }
-  }, [lilin, volume, versiSeriHarga])
+  }, [lilin, volume, versiSeriHarga, keChart, kerangka])
 
-  // Dua daftar instans, dua dropdown, satu aturan main (lihat DaftarInstans).
+  // Dua daftar instans, dua menu, satu aturan main (lihat DaftarInstans).
   // Spek parameter sebuah jenis — kurasi ATAU entri katalog. Ikut `katalog` di
   // deps supaya kolom setelan instans pustaka muncul begitu katalognya tiba,
   // bukan tetap kosong sampai halaman dimuat ulang.
@@ -633,13 +851,26 @@ export function GrafikEmiten() {
     (jenis: JenisIndikator) => spekJenis(jenis, katalog)?.param ?? [],
     [katalog],
   )
-  const ind = useDaftarInstans<JenisIndikator>(spekIndikator, lilin.length)
-  const pol = useDaftarInstans<JenisPola>(spekPola, lilin.length, true)
+  const ind = useDaftarInstans<JenisIndikator>(spekIndikator)
+  const pol = useDaftarInstans<JenisPola>(spekPola, true)
 
-  // Jenis pola yang sudah ada di daftar tetap TERLIHAT di menu, tapi tak bisa
-  // dipilih lagi — lihat alasan batasnya di useDaftarInstans.
   /**
-   * Isi dropdown "+ Indikator": sepuluh kurasi PAPAN di atas, lalu seluruh
+   * Sebuah instans digambar sekarang atau tidak.
+   *
+   * Dua syarat, dua asal: sakelar mata di baris legenda (`tampil`) dan tab
+   * Visibility di modal setelan (`sembunyiDi`). Dipisah karena artinya memang
+   * berbeda — mata itu "sembunyikan sebentar", Visibility itu "jenis ini tak
+   * masuk akal di kerangka ini" (mis. MA 200 di kerangka 5 menit = 16 jam
+   * perdagangan, bukan 200 hari).
+   */
+  const digambar = useCallback(
+    (inst: { tampil: boolean; sembunyiDi?: string[] }) =>
+      inst.tampil && !(inst.sembunyiDi ?? []).includes(kerangka),
+    [kerangka],
+  )
+
+  /**
+   * Isi menu "ƒx Indikator": sepuluh kurasi PAPAN di atas, lalu seluruh
    * katalog pustaka dikelompokkan per KATEGORI REGISTRY.
    *
    * Kategorinya milik pustaka (`entri.kategori`) — bukan taksonomi karangan
@@ -647,15 +878,16 @@ export function GrafikEmiten() {
    * Urutan kelompoknya yang kita tentukan (`KATEGORI`), dan kategori yang tak
    * terdaftar di situ tetap muncul di bawah dengan namanya sendiri: kategori
    * baru tak boleh membuat indikatornya lenyap dari menu tanpa ada yang tahu.
-   *
-   * Yang tak masuk: entri yang rumusnya sudah kita punya (`ID_SUDAH_ADA`) —
-   * dua "RSI" di satu menu berarti dua garis yang boleh berbeda tanpa ada yang
-   * tahu mana yang benar.
    */
   const opsiIndikator = useMemo(() => {
     if (!katalog) {
+      // `nilai` sengaja BUKAN string kosong: Dropdown menampilkan label opsi
+      // yang nilainya cocok dengan prop `nilai`, dan `nilai=""` di sini membuat
+      // tombolnya berbunyi "Memuat katalog pustaka…" alih-alih "ƒx Indikator" —
+      // menu yang seolah macet padahal isinya siap dipakai (terlihat di
+      // tangkapan layar verifikasi, 18 Agu 2026).
       return [...OPSI_KURASI, {
-        nilai: '', label: 'Memuat katalog pustaka…', nonaktif: true, grup: 'Katalog pustaka',
+        nilai: '__memuat', label: 'Memuat katalog pustaka…', nonaktif: true, grup: 'Katalog pustaka',
       }]
     }
     const urutan = new Map(KATEGORI.map(([ing], i) => [ing, i]))
@@ -684,8 +916,9 @@ export function GrafikEmiten() {
   // Deret tiap instans, dihitung dari `lilin` — SUDAH tersaring
   // hariTanpaPerdagangan lewat keDataLilinVolume di atas, bukan `berkas.d`
   // mentah, supaya angkanya sama dengan yang benar-benar tergambar di lilin.
-  // Satu memo dipakai dua pembaca (penggambar seri & legenda) supaya angka
-  // yang tergambar dan angka yang terbaca mustahil berbeda.
+  // Satu memo dipakai tiga pembaca (penggambar seri, legenda, dan daftar plot
+  // di modal setelan) supaya angka yang tergambar dan angka yang terbaca
+  // mustahil berbeda.
   const garisPerInstans = useMemo(() => {
     const tutup = lilin.map((l) => l.close)
     const waktu = lilin.map((l) => l.time)
@@ -717,7 +950,8 @@ export function GrafikEmiten() {
         ? cariLonjakanVolume(lilin, vol, inst.param as unknown as ParamLonjakanVolume)
         : ([] as LonjakanVolume[]),
       // Musiman dihitung dari `lilin` yang sama — jadi rentang perhitungannya
-      // persis rentang yang tergambar (alasan lengkapnya di `cariMusiman`).
+      // persis rentang yang tergambar. `null` pada kerangka intraday, dijegal
+      // di dalam `cariMusiman` sendiri (lihat alasannya di sana).
       musiman: inst.jenis === 'musiman' ? cariMusiman(lilin, inst.param.hari) : null,
     }))
   }, [pol.daftar, lilin, volume])
@@ -738,7 +972,7 @@ export function GrafikEmiten() {
     const peta = new Map<string, number>()
     let berikut = 1
     for (const inst of ind.daftar) {
-      if (!inst.tampil) continue
+      if (!digambar(inst)) continue
       // Jenis pustaka yang katalognya belum tiba dianggap PANEL SENDIRI
       // (bukan menumpang di panel harga): salah menaruh osilator 0-100 di
       // skala rupiah membuatnya rata di dasar kanvas dan terlihat seperti
@@ -746,7 +980,7 @@ export function GrafikEmiten() {
       peta.set(inst.id, spekJenis(inst.jenis, katalog)?.diPanelHarga ? 0 : berikut++)
     }
     return peta
-  }, [ind.daftar, katalog])
+  }, [ind.daftar, katalog, digambar])
 
   // Jarak atas tiap pane dari ujung atas bungkus kanvas, dipakai menempatkan
   // legenda di pojok kiri atas pane MASING-MASING (RSI/MACD punya legendanya
@@ -801,23 +1035,46 @@ export function GrafikEmiten() {
     for (const s of seriIndRef.current) chart.removeSeries(s)
     seriIndRef.current = []
 
-    const opsiGaris = { lineWidth: 1 as const, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false }
     for (const { inst, garis } of garisPerInstans) {
       const pane = panePerInstans.get(inst.id)
-      if (pane === undefined) continue // tak tampil
-      const warna = baca(inst.warna)
-      for (const g of garis) {
+      if (pane === undefined) continue // tak tampil di kerangka ini
+      // Presisi & lencana sumbu datang dari ruas OUTPUTS modal setelan.
+      // `undefined` = ikut format bawaan lightweight-charts.
+      const format = inst.presisi === undefined
+        ? undefined
+        : { type: 'price' as const, precision: inst.presisi, minMove: 10 ** -inst.presisi }
+      const lencana = inst.labelSumbu !== false
+      for (let i = 0; i < garis.length; i++) {
+        const g = garis[i]
+        const gy = inst.gaya?.[i] ?? {}
+        // Plot yang dimatikan di tab Style dilewati — bukan digambar
+        // transparan: seri transparan tetap ikut menghitung skala pane dan
+        // diam-diam memipihkan garis yang justru sedang dilihat.
+        if (gy.tampil === false) continue
+        const warna = baca(gy.warna ?? inst.warna)
         if (g.histogram) {
-          const s = chart.addSeries(HistogramSeries, { priceLineVisible: false, lastValueVisible: false }, pane)
-          s.setData(g.seri.map((p) => ({ ...p, color: p.value >= 0 ? green : red })))
+          const s = chart.addSeries(
+            HistogramSeries,
+            { priceLineVisible: false, lastValueVisible: lencana, ...(format ? { priceFormat: format } : {}) },
+            pane,
+          )
+          s.setData(keChart(g.seri).map((p) => ({ ...p, color: p.value >= 0 ? green : red })))
           seriIndRef.current.push(s)
         } else {
           const s = chart.addSeries(
             LineSeries,
-            { ...opsiGaris, color: warna, lineStyle: g.bantu ? LineStyle.Dashed : LineStyle.Solid },
+            {
+              color: warna,
+              lineWidth: (gy.tebal ?? 1) as LineWidth,
+              lineStyle: gy.garis ?? (g.bantu ? LineStyle.Dashed : LineStyle.Solid),
+              priceLineVisible: false,
+              lastValueVisible: lencana,
+              crosshairMarkerVisible: false,
+              ...(format ? { priceFormat: format } : {}),
+            },
             pane,
           )
-          s.setData(g.seri)
+          s.setData(keChart(g.seri))
           seriIndRef.current.push(s)
         }
       }
@@ -825,13 +1082,41 @@ export function GrafikEmiten() {
 
     // Panel harga tetap yang paling besar — tanpa ini pane RSI/MACD sama
     // tingginya dengan panel harga (stretch factor bawaan sama-sama 1).
+    // Panel yang DILIPAT (`^` di legendanya) dikecilkan jadi bilah tipis,
+    // bukan dibongkar: membongkarnya berarti kehilangan baris legendanya juga,
+    // dan bersamanya satu-satunya tombol untuk membukanya lagi.
     const panes = chart.panes()
     panes[0]?.setStretchFactor(3)
-    for (let i = 1; i < panes.length; i++) panes[i]?.setStretchFactor(1.1)
+    for (let i = 1; i < panes.length; i++) panes[i]?.setStretchFactor(lipat.includes(i) ? 0.18 : 1.1)
     // Diukur SESUDAH tata letak dihitung ulang, bukan di baris yang sama —
     // tinggi pane baru belum berlaku pada saat setStretchFactor kembali.
     requestAnimationFrame(ukurPane)
-  }, [garisPerInstans, panePerInstans, theme, ukurPane])
+  }, [garisPerInstans, panePerInstans, theme, ukurPane, keChart, lipat])
+
+  // Indeks waktu -> posisi lilin. Dipakai baris status (OHLC yang mengikuti
+  // kursor) dan tooltip pola.
+  const indeksWaktu = useMemo(() => new Map(lilin.map((l, i) => [l.time, i])), [lilin])
+
+  /**
+   * Baris status di kepala panel harga — `O H L C ±selisih (±persen) Vol`
+   * pada lilin yang sedang disorot, jatuh balik ke lilin TERAKHIR selagi
+   * kursor belum menyentuh kanvas.
+   */
+  const status = useMemo(() => {
+    const i = (sorot ? indeksWaktu.get(sorot.waktu) : undefined) ?? lilin.length - 1
+    const l = lilin[i]
+    if (!l) return null
+    const sebelum = lilin[i - 1]
+    const selisih = sebelum ? l.close - sebelum.close : l.close - l.open
+    const dasar = sebelum ? sebelum.close : l.open
+    return {
+      l,
+      volume: volume[i]?.value ?? 0,
+      selisih,
+      persen: dasar ? (selisih / dasar) * 100 : 0,
+      naik: selisih >= 0,
+    }
+  }, [sorot, lilin, volume, indeksWaktu])
 
   // Legenda: satu baris pendek per instans yang tampil, menyebut parameternya
   // ("MA 200", bukan "MA"), pada titik yang disorot kursor — jatuh balik ke
@@ -841,8 +1126,7 @@ export function GrafikEmiten() {
   const legenda = useMemo(() => {
     const waktu = sorot?.waktu ?? lilin[lilin.length - 1]?.time ?? null
     // Pane 0 SELALU ada walau belum ada satu pun instans — ia yang memuat
-    // tombol "+ Indikator"/"+ Pola". Tanpa itu, kendali penambahnya cuma
-    // muncul setelah ada yang ditambahkan, yaitu setelah tak diperlukan lagi.
+    // baris status emiten.
     const perPane = new Map<number, BarisLegenda[]>([[0, []]])
     const dorong = (pane: number, b: BarisLegenda) => {
       const baris = perPane.get(pane) ?? []
@@ -851,17 +1135,17 @@ export function GrafikEmiten() {
     }
     for (const { inst, peta } of petaLegenda) {
       // Instans yang SEDANG DISEMBUNYIKAN tetap didaftar (redup, di pane 0):
-      // tombol "tampilkan lagi" dulu ada di baris bawah kanvas yang kini
-      // sudah tak ada, jadi tanpa ini menyembunyikan sebuah indikator sama
-      // dengan menguncinya — tak ada lagi pintu untuk mengembalikannya.
+      // tombol "tampilkan lagi" cuma ada di baris ini, jadi tanpa itu
+      // menyembunyikan sebuah indikator sama dengan menguncinya.
       const pane = panePerInstans.get(inst.id) ?? 0
+      const tampil = digambar(inst)
       dorong(pane, {
         id: inst.id,
         ranah: 'ind',
-        tampil: inst.tampil,
+        tampil,
         warna: inst.warna,
         label: labelInstansIndikator(inst, katalog),
-        nilai: !inst.tampil || !waktu
+        nilai: !tampil || !waktu || inst.nilaiStatus === false
           ? ''
           : peta.map((p) => { const x = p.get(waktu); return x === undefined ? '—' : fN(x) }).join(' / '),
       })
@@ -873,7 +1157,7 @@ export function GrafikEmiten() {
       dorong(0, {
         id: inst.id,
         ranah: 'pol',
-        tampil: inst.tampil,
+        tampil: digambar(inst),
         warna: inst.warna,
         label: labelInstansPola(inst),
         // Musiman bukan "temuan": ia satu ringkasan, bukan daftar kejadian.
@@ -881,11 +1165,13 @@ export function GrafikEmiten() {
         // di sebelahnya terlihat sama meyakinkannya dari 12 maupun 240 hari.
         nilai: musiman
           ? `naik ${fN(musiman.ringkas.tersusut, 0)}% · n=${musiman.ringkas.n}`
-          : jumlah === 0 ? 'tak ada' : `${jumlah} temuan`,
+          : inst.jenis === 'musiman'
+            ? 'tak berlaku di kerangka ini'
+            : jumlah === 0 ? 'tak ada' : `${jumlah} temuan`,
       })
     }
     return { waktu, perPane: [...perPane.entries()].sort((a, b) => a[0] - b[0]) }
-  }, [sorot, lilin, petaLegenda, panePerInstans, polaPerInstans, katalog])
+  }, [sorot, lilin, petaLegenda, panePerInstans, polaPerInstans, katalog, digambar])
 
   /* ---------------- Template ---------------- */
 
@@ -913,10 +1199,11 @@ export function GrafikEmiten() {
     ind.gantiSemua(t.indikator)
     pol.gantiSemua(t.pola)
     if (t.jenisChart === 'lilin' || t.jenisChart === 'garis') setJenisChart(t.jenisChart)
-    // Rentang yang tak dikenal (label pernah berubah) dilewati, bukan disetel
-    // ke label yang tak ada — chip yang tak cocok apa pun akan membuat seluruh
-    // pemilih rentang tampak mati.
-    if (t.rentang && RENTANG_GRAFIK.some(([label]) => label === t.rentang)) setRentangLabel(t.rentang)
+    // Rentang yang tak dikenal dilewati, bukan disetel ke label yang tak ada —
+    // chip yang tak cocok apa pun akan membuat seluruh pemilih rentang tampak
+    // mati. Termasuk label lama berbahasa Indonesia ("1 Tahun") dari template
+    // yang disimpan sebelum kaki kanvas memakai label pendek gaya chart.
+    if (t.rentang && RENTANG_KAKI.some(([label]) => label === t.rentang)) setRentangLabel(t.rentang)
     setNamaTemplate(t.nama)
   }
 
@@ -946,7 +1233,7 @@ export function GrafikEmiten() {
   const penandaPola = useMemo<PenandaPola[]>(() => {
     const out: PenandaPola[] = []
     for (const { inst, doubleBottom, lonjakan, musiman } of polaPerInstans) {
-      if (!inst.tampil) continue
+      if (!digambar(inst)) continue
       const nama = labelInstansPola(inst)
       if (musiman) {
         // Dipotong ke MAKS_PENANDA_MUSIMAN lilin terakhir (bukan
@@ -990,7 +1277,7 @@ export function GrafikEmiten() {
       }
     }
     return out.sort((a, b) => a.time.localeCompare(b.time))
-  }, [polaPerInstans])
+  }, [polaPerInstans, digambar])
 
   // Gambar pola di kanvas: garis leher mendatar + penanda di lembah, leher,
   // dan lilin penembusnya. Penanda TANPA `text` — keterangannya pindah ke
@@ -1007,7 +1294,7 @@ export function GrafikEmiten() {
     garisLeherRef.current = []
 
     const keMarker = (p: PenandaPola): SeriesMarker<Time> => ({
-      time: p.time, position: p.posisi, shape: p.bentuk ?? 'circle', color: baca(p.token),
+      time: keWaktuChart(p.time) as Time, position: p.posisi, shape: p.bentuk ?? 'circle', color: baca(p.token),
     })
     penandaRef.current?.setMarkers(penandaPola.filter((p) => p.seri === 'harga').map(keMarker))
     // Penanda Lonjakan Volume dipasang di seri VOLUME, bukan seri harga: di
@@ -1016,7 +1303,7 @@ export function GrafikEmiten() {
     penandaVolRef.current?.setMarkers(penandaPola.filter((p) => p.seri === 'volume').map(keMarker))
 
     for (const { inst, doubleBottom } of polaPerInstans) {
-      if (!inst.tampil) continue
+      if (!digambar(inst)) continue
       // Garis leher cuma untuk temuan TERAKHIR tiap instans. `createPriceLine`
       // membentang selebar kanvas — belasan di antaranya saling menimpa dan
       // tak satu pun lagi bisa dibaca sebagai leher milik pola yang mana.
@@ -1045,99 +1332,190 @@ export function GrafikEmiten() {
     if (import.meta.env.DEV) {
       el.dataset.musimanTgl = penandaPola.filter((p) => p.bentuk === 'square').map((p) => p.time).join(',')
     }
-  }, [penandaPola, polaPerInstans, theme, versiSeriHarga])
+  }, [penandaPola, polaPerInstans, theme, versiSeriHarga, digambar])
 
   // Isi tooltip pola: penanda di lilin yang sedang disorot DAN satu lilin di
   // kiri-kanannya (lihat `penandaDiSekitar` — dua penanda berdempetan wajib
   // disebut keduanya, bukan menang-menangan).
-  const indeksWaktu = useMemo(() => new Map(lilin.map((l, i) => [l.time, i])), [lilin])
   const isiTip = useMemo(
     () => (sorot ? penandaDiSekitar(penandaPola, indeksWaktu, sorot.waktu, 1) : []),
     [sorot, penandaPola, indeksWaktu],
   )
 
-  const pemilih = (
-    <div className="panel">
-      <div className="panel-b grf-cari-baris">
-        <span className="lbl">Emiten</span>
-        <span className="grf-kode-aktif">{kode}</span>
-        <div className="sea-cari" style={{ flex: '1 1 220px', maxWidth: 320 }}>
-          <IkonMenu d={IKON_CARI} size={14} />
-          <input className="inp" value={cari} placeholder="Cari kode atau nama emiten…"
-            onChange={(e) => setCari(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && saran[0]) { setKode(saran[0].kode); setCari('') } }} />
-          {saran.length > 0 && (
-            <ul className="sea-saran" role="listbox">
-              {saran.map((e) => (
-                <li key={e.kode}>
-                  <button type="button" className="sea-saran-it" onClick={() => { setKode(e.kode); setCari('') }}>
-                    <span className="kd">{e.kode}</span>
-                    <span className="nm">{e.nama}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        {cari && (
-          <button type="button" className="dd-btn" onClick={() => setCari('')} title="Batalkan pencarian">
-            <IkonMenu d={IKON_SILANG} size={9} />
-          </button>
-        )}
-      </div>
-    </div>
-  )
+  /* ---------------- Bilah atas ---------------- */
+
+  // Kerangka waktu aktif digulirkan ke dalam pandangan — di 412px cuma
+  // sebagian dari delapan tombol yang muat, dan tombol aktif di luar layar
+  // membuat pembaca melihat "D" tersorot padahal yang terbuka "4h". Dihitung
+  // sendiri, BUKAN `scrollIntoView`: bilah ini punya pudaran di tepi kanan,
+  // dan scrollIntoView menempelkan tombolnya tepat di tepi sehingga pudarannya
+  // sendiri yang menyembunyikannya (pola yang sama dengan AdminLayout.tsx).
+  const bilahKerangkaRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const bar = bilahKerangkaRef.current
+    const aktif = bar?.querySelector<HTMLElement>('.chip-t.on')
+    if (!bar || !aktif) return
+    const TEPI = 28
+    const kiri = aktif.offsetLeft - TEPI
+    const kanan = aktif.offsetLeft + aktif.offsetWidth + TEPI - bar.clientWidth
+    if (bar.scrollLeft > kiri) bar.scrollLeft = Math.max(0, kiri)
+    else if (bar.scrollLeft < kanan) bar.scrollLeft = kanan
+  }, [kerangka])
+
+  const [layarPenuh, setLayarPenuh] = useState(false)
+  useEffect(() => {
+    const saatGanti = () => setLayarPenuh(document.fullscreenElement === panelRef.current)
+    document.addEventListener('fullscreenchange', saatGanti)
+    return () => document.removeEventListener('fullscreenchange', saatGanti)
+  }, [])
+
+  /** Simpan kanvas jadi PNG. `takeScreenshot()` API bawaan lightweight-charts
+   *  — menggambar ulang seluruh pane ke satu kanvas lepas, jadi hasilnya ikut
+   *  memuat panel indikator di bawahnya, bukan cuma yang terlihat di layar. */
+  const simpanGambar = useCallback(() => {
+    const kanvas = chartRef.current?.takeScreenshot()
+    if (!kanvas) return
+    const a = document.createElement('a')
+    a.download = `PAPAN-${kode}-${kerangka}-${new Date().toISOString().slice(0, 10)}.png`
+    a.href = kanvas.toDataURL('image/png')
+    a.click()
+  }, [kode, kerangka])
+
+  /* ---------------- Modal setelan ---------------- */
+
+  const instTerbuka = setelanTerbuka
+    ? ind.daftar.find((x) => x.id === setelanTerbuka) ?? null
+    : null
+  const polTerbuka = setelanTerbuka && !instTerbuka
+    ? pol.daftar.find((x) => x.id === setelanTerbuka) ?? null
+    : null
+
+  const siap = lilin.length > 0
+  const kerangkaAktif = KERANGKA.find((k) => k.id === kerangka)
 
   return (
     <div className="lantai">
-      {pemilih}
-      <section className="panel">
-        <div className="panel-h">
-          <span className="lbl"><IkonMenu d={IKON_GRAFIK_NAIK} size={13} /> {kode} — Harga &amp; Volume</span>
-          <div className="grf-rentang">
-            {/* Jenis gambar harga. Menukarnya membangun ulang seri harga tapi
-                TIDAK menyentuh indikator & pola — lihat efek `jenisChart`. */}
-            {JENIS_CHART.map(([nilai, label]) => (
-              <button key={nilai} type="button"
-                className={`chip-t${jenisChart === nilai ? ' on' : ''}`}
-                aria-pressed={jenisChart === nilai}
-                onClick={() => setJenisChart(nilai)}>{label}</button>
-            ))}
-            <span className="grf-pisah" aria-hidden="true" />
-            <PemilihRentang
-              opsi={RENTANG_GRAFIK.map(([label]) => ({ id: label, label }))}
-              nilai={rentangLabel}
-              onGanti={setRentangLabel}
-            />
+      <section className="panel grf-panel" ref={panelRef}>
+        {/* Bilah atas — susunan acuan Stockbit/TradingView: cari · kerangka
+            waktu · jenis chart · ƒx Indikator · (kanan) layar penuh & kamera.
+            Menggulung MENDATAR di telepon; tombol kerangka aktif digulirkan
+            sendiri ke dalam pandangan (lihat efek di atas). */}
+        <div className="grf-toolbar">
+          <div className="grf-cari sea-cari">
+            <IkonMenu d={IKON_CARI} size={13} />
+            <span className="grf-kode-aktif">{kode}</span>
+            <input className="inp" value={cari} placeholder="Cari emiten…"
+              aria-label="Cari kode atau nama emiten"
+              onChange={(e) => setCari(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && saran[0]) pilihEmiten(saran[0].kode) }} />
+            {cari && (
+              <button type="button" className="grf-cari-x" title="Batalkan pencarian"
+                aria-label="Batalkan pencarian" onClick={() => setCari('')}>
+                <IkonMenu d={IKON_SILANG} size={9} />
+              </button>
+            )}
+            {saran.length > 0 && (
+              <ul className="sea-saran" role="listbox">
+                {saran.map((e) => (
+                  <li key={e.kode}>
+                    <button type="button" className="sea-saran-it" onClick={() => pilihEmiten(e.kode)}>
+                      <span className="kd">{e.kode}</span>
+                      <span className="nm">{e.nama}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
+
+          <span className="grf-pisah" aria-hidden="true" />
+
+          {/* Kerangka waktu. `title` tiap tombol menyebut BATAS RIWAYATNYA —
+              tanpa itu pembaca menyangka 5m punya riwayat sepuluh tahun seperti
+              D, lalu menyimpulkan datanya rusak saat grafiknya berhenti sebulan
+              lalu. 1 menit sengaja tak ada (lihat KERANGKA). */}
+          <div className="grf-kerangka" ref={bilahKerangkaRef} role="group" aria-label="Kerangka waktu">
+            {KERANGKA.map((k) => (
+              <button key={k.id} type="button"
+                className={`chip-t${kerangka === k.id ? ' on' : ''}`}
+                aria-pressed={kerangka === k.id} title={k.judul}
+                onClick={() => setKerangka(k.id)}>{k.label}</button>
+            ))}
+          </div>
+
+          <span className="grf-pisah" aria-hidden="true" />
+
+          {/* Jenis gambar harga. Menukarnya membangun ulang seri harga tapi
+              TIDAK menyentuh indikator & pola — lihat efek `jenisChart`. */}
+          <span className="ti-grup grf-jenis">
+            {JENIS_CHART.map(([nilai, label, ikon]) => (
+              <TombolIkon key={nilai} d={ikon} ukuranIkon={14} label={`Gambar sebagai ${label}`}
+                className={jenisChart === nilai ? 'on' : ''}
+                onClick={() => setJenisChart(nilai)} />
+            ))}
+          </span>
+
+          <span className="grf-pisah" aria-hidden="true" />
+
+          {/* Dua menu TERPISAH — indikator dan pola (Johan: "jadi indikator
+              dan pattern dibedakan dropdown nya"). Memilih jenis MENAMBAH satu
+              instans baru, tak menyalakan sakelar; karena itu `nilai` sengaja
+              dibiarkan kosong — tak ada jenis yang "terpilih", yang ada cuma
+              daftar instans di legenda kanvas. */}
+          <span className="grf-menu">
+            {/* Sentuhan APA PUN pada menu ini memulai unduhan katalog (1,9 MB,
+                sekali seumur sesi). Ditaruh di pembungkusnya, bukan sebagai
+                prop baru di Dropdown: yang perlu diketahui cuma "pembaca menuju
+                menu ini", dan itu sudah terjawab pointer/fokus. */}
+            <span onPointerDownCapture={mintaKatalog} onFocusCapture={mintaKatalog}>
+              <Dropdown opsi={opsiIndikator} nilai="" placeholder="ƒx Indikator"
+                ariaLabel="Tambah indikator" onGanti={ind.tambah} />
+            </span>
+            <Dropdown opsi={opsiPola} nilai="" placeholder="+ Pola"
+              ariaLabel="Tambah pola" onGanti={pol.tambah} />
+          </span>
+
+          <span className="grf-toolbar-isi" />
+
+          <TombolIkon d={IKON_KAMERA} ukuranIkon={14} label="Simpan gambar kanvas (PNG)"
+            onClick={simpanGambar} />
+          <TombolLayarPenuh target={panelRef} aktif={layarPenuh} labelKeluar="Keluar" />
         </div>
+
         <div className="panel-b">
+          {kodeAsing && (
+            <p className="muted">
+              Kode <strong>{kodeAsing}</strong> tidak ada di daftar emiten — yang
+              ditampilkan {DEFAULT_KODE}. Periksa lagi kodenya, atau cari lewat kotak
+              di atas.
+            </p>
+          )}
           {galat && <p className="muted">{galat}</p>}
-          {!galat && !berkas && <div className="fd-empty"><p>Memuat data harga {kode}…</p></div>}
+          {galatIntra && (
+            <p className="muted">
+              {galatIntra} Lilin intraday ditarik dari sumber luar dan bisa menolak
+              kapan saja. Kerangka D, W, dan M memakai data PAPAN sendiri — keduanya
+              tak pernah bergantung padanya.
+            </p>
+          )}
+          {!galat && !galatIntra && !siap && (
+            <div className="fd-empty">
+              <p>{muatIntra ? `Memuat lilin ${kerangkaAktif?.label} ${kode}…` : `Memuat data harga ${kode}…`}</p>
+            </div>
+          )}
 
           {/* Bungkus TERPISAH dari containerRef — lightweight-charts mengisi
               containerRef dengan kanvasnya sendiri; tanda PAPAN dipasang
               sebagai SAUDARA di bungkus ini (bukan anak containerRef) supaya
               React tak pernah rebutan anak elemen dengan DOM yang dikelola
-              lightweight-charts secara imperatif. Hover DI WADAH INI
-              (bukan di tanda sendiri — tandanya pointer-events:none, tak
-              bisa di-hover) yang mempertegas tanda lewat CSS
-              `.grf-kanvas-bungkus:hover .grf-tanda-papan` di GrafikEmiten.css. */}
+              lightweight-charts secara imperatif. */}
           <div className="grf-kanvas-bungkus" ref={bungkusRef}>
             {/* Kanvas SELALU dipasang dengan ukuran final sejak awal (opacity,
                 bukan display:none) — lihat komentar .grf-chart-wrap.memuat di
                 GrafikEmiten.css: autoSize butuh lebar sungguhan sejak elemen
                 dibuat, bukan sejak elemen "muncul". */}
-            <div ref={containerRef} className={'grf-chart-wrap' + (berkas ? '' : ' memuat')} />
+            <div ref={containerRef} className={'grf-chart-wrap' + (siap ? '' : ' memuat')} />
 
-            {/* Legenda DI DALAM kanvas, pojok kiri atas tiap pane — seperti
-                TradingView, dan sebabnya bukan sekadar mirip-miripan: di luar
-                kanvas tiap indikator memakan satu baris penuh dan mendorong
-                grafiknya turun terus seiring instans bertambah. Dipasang
-                sebagai SAUDARA kanvas (bukan anaknya) dengan alasan yang sama
-                dengan tanda PAPAN di bawah: React tak pernah rebutan anak
-                elemen dengan DOM yang dikelola lightweight-charts. Posisi
-                atasnya diukur dari DOM pane-nya sendiri (lihat `ukurPane`). */}
             {/* Tombol zoom — pojok kanan bawah kanvas, di atas sumbu waktu.
                 Roda tikus & cubit tetap jalan; ini yang membuatnya terjangkau
                 di telepon, tempat roda tikus tak ada sama sekali. */}
@@ -1153,45 +1531,46 @@ export function GrafikEmiten() {
                 onClick={() => chartRef.current?.timeScale().fitContent()}>⤢</button>
             </div>
 
+            {/* Legenda DI DALAM kanvas, pojok kiri atas tiap pane — seperti
+                TradingView, dan sebabnya bukan sekadar mirip-miripan: di luar
+                kanvas tiap indikator memakan satu baris penuh dan mendorong
+                grafiknya turun terus seiring instans bertambah. Posisi atasnya
+                diukur dari DOM pane-nya sendiri (lihat `ukurPane`). */}
             {legenda.perPane.map(([pane, baris]) => (
               <div key={pane} className="grf-legenda-kanvas" style={{ top: `${(posPane[pane] ?? 0) + 6}px` }}>
-                {pane === 0 && (
-                  <>
-                    {/* Dua dropdown TERPISAH — indikator dan pola (Johan:
-                        "jadi indikator dan pattern dibedakan dropdown nya").
-                        Memilih jenis MENAMBAH satu instans baru, tak
-                        menyalakan sakelar; karena itu `nilai` sengaja
-                        dibiarkan kosong — tak ada jenis yang "terpilih", yang
-                        ada cuma daftar instans di bawahnya. Duduk DI DALAM
-                        kanvas sejak 18 Agu 2026, bersama legendanya. */}
-                    <span className="grf-kendali-kanvas">
-                      {/* Sentuhan APA PUN pada dropdown ini memulai unduhan
-                          katalog (1,9 MB, sekali seumur sesi). Ditaruh di
-                          pembungkusnya, bukan sebagai prop baru di Dropdown:
-                          yang perlu diketahui cuma "pembaca menuju menu ini",
-                          dan itu sudah terjawab pointer/fokus — tanpa menambah
-                          satu lagi tanggung jawab ke komponen yang dipakai
-                          belasan halaman lain. */}
-                      <span onPointerDownCapture={mintaKatalog} onFocusCapture={mintaKatalog}>
-                        <Dropdown opsi={opsiIndikator} nilai="" placeholder="+ Indikator"
-                          ariaLabel="Tambah indikator" onGanti={ind.tambah} />
-                      </span>
-                      <Dropdown opsi={opsiPola} nilai="" placeholder="+ Pola"
-                        ariaLabel="Tambah pola" onGanti={pol.tambah} />
+                {pane === 0 && status && (
+                  // Baris status: emiten · kerangka · OHLC lilin yang disorot.
+                  // Persis baris judul panel harga di chart acuan.
+                  <span className="grf-status">
+                    <span className="grf-status-kode">{kode}</span>
+                    <span className="grf-status-tf">{kerangkaAktif?.label}</span>
+                    <span>O {fN(status.l.open)}</span>
+                    <span>H {fN(status.l.high)}</span>
+                    <span>L {fN(status.l.low)}</span>
+                    <span>C {fN(status.l.close)}</span>
+                    <span className={status.naik ? 'grf-naik' : 'grf-turun'}>
+                      {status.naik ? '+' : '−'}{fN(Math.abs(status.selisih))}
+                      {' ('}{status.naik ? '+' : '−'}{fN(Math.abs(status.persen), 2)}%)
                     </span>
+                    <span className="grf-status-vol">Vol {fN(status.volume, 0)}</span>
                     <span className="grf-legenda-tgl">{legenda.waktu}</span>
-                  </>
+                  </span>
+                )}
+                {pane > 0 && (
+                  // Lipat panel indikator. Cuma pane > 0: melipat panel HARGA
+                  // berarti menyembunyikan isi yang justru datang untuk dilihat.
+                  <button type="button" className="grf-lipat"
+                    aria-expanded={!lipat.includes(pane)}
+                    title={lipat.includes(pane) ? 'Buka panel' : 'Lipat panel'}
+                    aria-label={lipat.includes(pane) ? `Buka panel ${pane}` : `Lipat panel ${pane}`}
+                    onClick={() => setLipat((x) => (x.includes(pane) ? x.filter((i) => i !== pane) : [...x, pane]))}>
+                    {lipat.includes(pane) ? 'v' : '^'}
+                  </button>
                 )}
                 {baris.map((b) => {
                   // `sakelarTampil`/`hapus` sama bentuknya di kedua daftar, jadi
-                  // boleh dipanggil lewat gabungan keduanya. Instansnya TIDAK:
-                  // `SetelanInstans` ber-generik pada jenisnya, dan gabungan
-                  // dua daftar bertipe beda tak bisa memuaskan satu generik —
-                  // karena itu panelnya dipasang di dua cabang terpisah di
-                  // bawah, bukan satu cabang bertipe gabungan.
+                  // boleh dipanggil lewat gabungan keduanya.
                   const kelola = b.ranah === 'ind' ? ind : pol
-                  const instInd = b.ranah === 'ind' ? ind.daftar.find((x) => x.id === b.id) : undefined
-                  const instPol = b.ranah === 'pol' ? pol.daftar.find((x) => x.id === b.id) : undefined
                   return (
                     <span key={b.id} className={'grf-legenda-baris' + (b.tampil ? '' : ' redup')}
                       style={{ '--ind-warna': `var(${b.warna})` } as React.CSSProperties}>
@@ -1200,32 +1579,26 @@ export function GrafikEmiten() {
                       <span className="grf-legenda-nilai">{b.nilai}</span>
                       {/* Kelompok tombol ini satu-satunya yang MENERIMA kursor
                           di legenda (pointer-events:auto di CSS) — sisanya
-                          tembus supaya crosshair tak terhalang teks. */}
+                          tembus supaya crosshair tak terhalang teks. Ikonnya
+                          MUNCUL saat baris disentuh (CSS), bukan permanen:
+                          enam instans × tiga ikon menyala terus-menerus di atas
+                          gambar harga membuat legendanya sendiri jadi hiasan
+                          yang menutupi isinya. */}
                       <span className="ti-grup grf-legenda-aksi">
                         <TombolIkon d={IKON_GIR} ukuranIkon={12}
                           label={`Setelan ${b.label}`}
-                          onClick={() => setSetelanTerbuka((x) => (x === b.id ? null : b.id))} />
+                          onClick={() => setSetelanTerbuka(b.id)} />
                         <TombolIkon d={b.tampil ? IKON_MATA : IKON_MATA_CORET} ukuranIkon={12}
                           label={b.tampil ? `Sembunyikan ${b.label}` : `Tampilkan ${b.label}`}
                           onClick={() => kelola.sakelarTampil(b.id)} />
                         {/* Sengaja BUKAN nada="merah": modifier itu memberi
                             garis tepi merah permanen, dan tiga kotak merah
                             menyala di atas gambar harga terbaca sebagai
-                            peringatan tentang sahamnya, bukan tentang tombol.
-                            Warnanya muncul saat disorot, seperti tombol ikon
-                            lain di kanvas. */}
+                            peringatan tentang sahamnya, bukan tentang tombol. */}
                         <TombolIkon d={IKON_TONG} ukuranIkon={12}
                           label={`Hapus ${b.label}`}
                           onClick={() => { kelola.hapus(b.id); setSetelanTerbuka(null) }} />
                       </span>
-                      {setelanTerbuka === b.id && instInd && (
-                        <SetelanInstans kelola={ind} inst={instInd} nama={b.label}
-                          onTutup={() => setSetelanTerbuka(null)} />
-                      )}
-                      {setelanTerbuka === b.id && instPol && (
-                        <SetelanInstans kelola={pol} inst={instPol} nama={b.label}
-                          onTutup={() => setSetelanTerbuka(null)} />
-                      )}
                     </span>
                   )
                 })}
@@ -1256,17 +1629,11 @@ export function GrafikEmiten() {
             {/* Tanda PAPAN — pengganti logo TradingView yang dimatikan lewat
                 attributionLogo:false di atas (lihat komentar lisensi di situ).
                 Atribusi lisensinya sendiri PINDAH ke kaki situs global
-                (DasborLayout.tsx), BUKAN dihapus — lihat komentar di sana.
-                Bentuknya SAMA dengan favicon.svg yang sudah ada (bukan
-                lambang baru) — ditulis ulang sebagai SVG inline (bukan
-                <img src="/favicon.svg">) supaya warnanya bisa ikut token
-                tema (--amber/--amber-ink) alih-alih heksadesimal tetap
-                bawaan berkas SVG-nya. Watermark BESAR (lihat ukuran di CSS,
-                Johan minta "terpampang nyata") di TENGAH kanvas — bukan
-                pojok kiri bawah seperti versi pertama, karena di ukuran
-                besar pojok itu menabrak label sumbu waktu & batang volume.
-                Menguat saat wadahnya di-hover (lihat CSS), tak menghalangi
-                kursor/crosshair. */}
+                (DasborLayout.tsx), BUKAN dihapus. Bentuknya SAMA dengan
+                favicon.svg (bukan lambang baru) — SVG inline supaya warnanya
+                ikut token tema. Pojok kiri bawah & kecil, persis tempat
+                TradingView menaruh miliknya (Johan, putaran ketiga: "logo ini
+                di telakkan persis tradingview yaa, jelek terlalu besar juga"). */}
             <svg className="grf-tanda-papan" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
               <rect x="4" y="4" width="56" height="56" rx="10" fill="var(--amber)" />
               <text x="32" y="33" textAnchor="middle" dominantBaseline="central"
@@ -1276,12 +1643,35 @@ export function GrafikEmiten() {
             </svg>
           </div>
 
+          {/* Bilah bawah — rentang tampil, zona waktu, mode skala. Sama seperti
+              kaki chart acuan: yang mengubah APA yang terlihat ada di bawah
+              kanvas, yang mengubah APA yang digambar ada di atasnya. */}
+          <div className="grf-kaki">
+            <PemilihRentang
+              className="grf-kaki-rentang"
+              opsi={RENTANG_KAKI.map(([label]) => ({ id: label, label }))}
+              nilai={rentangLabel}
+              onGanti={setRentangLabel}
+            />
+            <span className="grf-kaki-isi" />
+            <span className="grf-kaki-jam" title="Seluruh waktu di halaman ini WIB (UTC+7), termasuk lilin intraday">UTC+7</span>
+            {MODE_SKALA.map(([id, label, , judul]) => (
+              <button key={id} type="button"
+                className={`chip-t grf-kaki-chip${modeSkala === id ? ' on' : ''}`}
+                aria-pressed={modeSkala === id} title={judul}
+                onClick={() => setModeSkala((x) => (x === id ? '' : id))}>{label}</button>
+            ))}
+            <button type="button"
+              className={`chip-t grf-kaki-chip${autoSkala ? ' on' : ''}`}
+              aria-pressed={autoSkala}
+              title="Skala harga menyesuaikan sendiri ke lilin yang terlihat"
+              onClick={() => setAutoSkala((x) => !x)}>auto</button>
+          </div>
+
           {/* Template: menyimpan susunan indikator + pola dengan nama, dan
               memuatnya kembali. Disimpan di localStorage — alasannya panjang
               dan ada di grafikEmiten.ts (ringkasnya: ini preferensi tampilan,
-              bukan data bersama). DI BAWAH kanvas sejak 18 Agu 2026: di atas
-              kanvas ia mendorong grafiknya turun sejauh tinggi daftarnya
-              sendiri, dan itu bagian dari keluhan yang sama dengan indikator. */}
+              bukan data bersama). */}
           <div className="grf-template">
             <div className="grf-template-simpan">
               <input className="inp grf-template-nama" value={namaTemplate}
@@ -1349,9 +1739,9 @@ export function GrafikEmiten() {
               atas dasar apa. Berupa daftar teks di samping gambarnya karena
               tanggal, harga, dan rasio persisnya tak terbaca dari penanda di
               kanvas — dan angka itulah yang membuat temuannya bisa diperiksa. */}
-          {polaPerInstans.some(({ inst }) => inst.tampil) && (
+          {polaPerInstans.some(({ inst }) => digambar(inst)) && (
             <div className="grf-pola-hasil">
-              {polaPerInstans.filter(({ inst }) => inst.tampil).map(({ inst, doubleBottom, lonjakan, musiman }) => {
+              {polaPerInstans.filter(({ inst }) => digambar(inst)).map(({ inst, doubleBottom, lonjakan, musiman }) => {
                 const jumlah = doubleBottom.length + lonjakan.length
                 if (inst.jenis === 'musiman') {
                   return (
@@ -1359,7 +1749,9 @@ export function GrafikEmiten() {
                       <p className="grf-pola-judul">
                         {labelInstansPola(inst)}: {musiman
                           ? `${musiman.ringkas.n} hari di rentang ini`
-                          : 'rentangnya terlalu pendek untuk dihitung'}
+                          : intraday(kerangka)
+                            ? 'tidak dihitung pada kerangka intraday — perhitungannya berkunci tanggal, dan lilin dalam satu hari akan saling menimpa'
+                            : 'rentangnya terlalu pendek untuk dihitung'}
                         {musiman && musiman.ringkas.n > MAKS_PENANDA_MUSIMAN
                           && ` — ${MAKS_PENANDA_MUSIMAN} terakhir ditandai di kanvas (angka di bawah tetap dari seluruh ${musiman.ringkas.n} hari); persempit rentang untuk melihat lebih ke belakang`}
                       </p>
@@ -1440,6 +1832,34 @@ export function GrafikEmiten() {
           </details>
         </div>
       </section>
+
+      {/* Modal setelan — dua cabang terpisah, bukan satu bercabang tipe:
+          `ModalSetelanInstans` ber-generik pada jenisnya, dan gabungan dua
+          daftar bertipe beda tak bisa memuaskan satu generik. */}
+      {instTerbuka && (
+        <ModalSetelanInstans
+          inst={instTerbuka}
+          nama={labelInstansIndikator(instTerbuka, katalog)}
+          param={ind.paramSpek(instTerbuka.jenis)}
+          plot={garisPerInstans.find((x) => x.inst.id === instTerbuka.id)?.garis.map((g) => g.nama) ?? []}
+          jumlahLilin={lilin.length}
+          onSimpan={ind.terapkan}
+          onTutup={() => setSetelanTerbuka(null)}
+          onBawaan={() => ind.bawaan(instTerbuka.jenis)}
+        />
+      )}
+      {polTerbuka && (
+        <ModalSetelanInstans
+          inst={polTerbuka}
+          nama={labelInstansPola(polTerbuka)}
+          param={pol.paramSpek(polTerbuka.jenis)}
+          plot={[]}
+          jumlahLilin={lilin.length}
+          onSimpan={pol.terapkan}
+          onTutup={() => setSetelanTerbuka(null)}
+          onBawaan={() => pol.bawaan(polTerbuka.jenis)}
+        />
+      )}
     </div>
   )
 }

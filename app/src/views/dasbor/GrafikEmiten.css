@@ -1,27 +1,136 @@
-/* Grafik Emiten — lilin + volume (lightweight-charts). Warna diberikan lewat
-   opsi JS (dibaca dari token .lantai saat mount/ganti tema), BUKAN di sini —
-   lihat GrafikEmiten.tsx. CSS ini murni ukuran & tata letak. */
-.lantai .grf-cari-baris { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-.lantai .grf-kode-aktif {
-  font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--amber);
-  background: var(--amber-dim); border: 1px solid var(--amber); border-radius: 4px;
-  padding: 3px 10px;
-}
-.lantai .grf-rentang { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.lantai .grf-rentang .bchip.on { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); }
-.lantai .grf-rentang .bchip { margin-right: 0; }
-/* Pemisah tipis antara chip jenis chart dan chip rentang — dua kelompok yang
-   sama bentuknya bersebelahan terbaca sebagai satu deretan pilihan. */
-.lantai .grf-pisah { width: 1px; height: 16px; background: var(--line2); margin: 0 3px; }
+/* Grafik Emiten — lilin + volume (lightweight-charts), tata letak mengikuti
+   acuan Stockbit/TradingView. Warna kanvas diberikan lewat opsi JS (dibaca
+   dari token .lantai saat mount/ganti tema), BUKAN di sini — lihat
+   GrafikEmiten.tsx. CSS ini murni ukuran & tata letak; kelas `grf-*` menempel
+   pada primitif kanonis (#170) `.chip-t` / `.ti` / `.dd-btn` / `.tabs`, bukan
+   menggantikannya. */
 
-/* Kolom angka sempit di panel setelan: `.inp` bawaan lebar 100% dan akan
-   mendorong labelnya keluar baris. */
-.lantai .grf-ind-inp { width: 68px; padding: 4px 7px; font-size: 11.5px; height: 26px; }
+/* ---------- Bilah atas ---------- */
+/* Menggantikan panel "Emiten" terpisah + baris chip di panel-h: satu bilah,
+   susunan acuan. `flex-wrap` (bukan satu baris ber-overflow) supaya kotak
+   saran pencarian yang absolut tak terpotong scroll container — yang
+   menggulung mendatar cuma kelompok kerangka waktunya, dan itu memang satu-
+   satunya yang panjang. */
+.lantai .grf-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  padding: 8px 12px; border-bottom: 1px solid var(--line);
+}
+.lantai .grf-toolbar-isi { flex: 1 1 auto; }
+/* Pemisah tipis antar kelompok — tanpa ini empat kelompok kendali yang
+   bentuknya mirip terbaca sebagai satu deretan pilihan yang panjang. */
+.lantai .grf-pisah { width: 1px; height: 18px; background: var(--line2); flex: none; }
+
+.lantai .grf-cari { display: flex; align-items: center; gap: 6px; flex: 0 1 260px; min-width: 150px; }
+.lantai .grf-cari .inp { height: 28px; padding: 4px 8px; font-size: 11.5px; min-width: 0; }
+.lantai .grf-kode-aktif {
+  font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--amber);
+  background: var(--amber-dim); border: 1px solid var(--amber); border-radius: 4px;
+  padding: 2px 8px; flex: none;
+}
+.lantai .grf-cari-x {
+  flex: none; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+  background: none; border: 0; color: var(--text3); cursor: pointer;
+}
+.lantai .grf-cari-x:hover { color: var(--amber); }
+
+/* Kerangka waktu: 5m 15m 30m 1h 4h D W M. Satu-satunya bagian bilah yang
+   menggulung mendatar; tombol aktifnya digulirkan sendiri ke dalam pandangan
+   dari JS (pola AdminLayout.tsx). JANGAN menambahkan scrollbar-width/
+   scrollbar-color di sini — sejak Chrome 121 keduanya membatalkan seluruh
+   aturan `.lantai ::-webkit-scrollbar` (jebakan tercatat di CLAUDE.md). */
+.lantai .grf-kerangka {
+  display: flex; align-items: center; gap: 3px;
+  overflow-x: auto; max-width: 100%; padding-bottom: 2px;
+}
+.lantai .grf-kerangka .chip-t { padding: 4px 10px; font-size: 11px; flex: none; }
+
+/* Jenis gambar harga — tombol ikon, bukan chip berteks: di bilah yang juga
+   memuat delapan kerangka waktu, dua kata "Lilin"/"Garis" memakan tempat yang
+   justru dibutuhkan kerangkanya. */
+.lantai .grf-jenis { gap: 2px; }
+.lantai .grf-jenis .ti { width: 28px; height: 28px; }
+.lantai .grf-jenis .ti.on { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); }
+
+.lantai .grf-menu { display: inline-flex; align-items: center; gap: 6px; }
+.lantai .grf-menu .dd-btn { height: 28px; padding: 0 10px; font-size: 11.5px; margin-right: 0; }
+.lantai .grf-toolbar .tlp { height: 28px; padding: 0 10px; font-size: 11px; margin-right: 0; }
+
+/* ---------- Bilah bawah ---------- */
+/* Yang mengubah APA YANG TERLIHAT duduk di bawah kanvas (rentang, skala);
+   yang mengubah APA YANG DIGAMBAR duduk di atasnya (emiten, kerangka,
+   indikator). Pembagian itu yang membuat kaki ini bukan sekadar tempat sisa. */
+.lantai .grf-kaki {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  padding: 8px 0 10px; border-bottom: 1px solid var(--line); margin-bottom: 10px;
+}
+.lantai .grf-kaki-isi { flex: 1 1 auto; }
+.lantai .grf-kaki-rentang { display: flex; flex-wrap: wrap; gap: 3px; }
+.lantai .grf-kaki-rentang .chip-t,
+.lantai .grf-kaki-chip { padding: 4px 10px; font-size: 10.5px; }
+.lantai .grf-kaki-jam {
+  font-family: var(--mono); font-size: 10.5px; color: var(--text3);
+  border: 1px solid var(--line); border-radius: 99px; padding: 3px 9px;
+}
+
+/* ---------- Modal setelan (Inputs · Style · Visibility) ---------- */
+/* Kerangkanya `ModalKecil` + primitif `.tabs`/`.tab` yang sudah dipakai
+   seluruh aplikasi — yang ditambahkan di sini cuma isi tiap tab. */
+.lantai .grf-modal-setelan { max-width: 520px; }
+.lantai .grf-setel-isi {
+  display: flex; flex-direction: column; gap: 8px;
+  /* Katalog pustaka punya entri berparameter banyak; digulung, bukan
+     terpotong. Batang gulirnya ikut aturan bersama `.lantai
+     ::-webkit-scrollbar`. */
+  max-height: 52dvh; overflow-y: auto;
+}
+.lantai .grf-setel-baris {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  min-height: 30px;
+}
+.lantai .grf-setel-lbl { font-size: 11.5px; color: var(--text2); }
+.lantai .grf-setel-ket { font-size: 11px; color: var(--text3); margin: 0 0 4px; line-height: 1.5; }
+.lantai .grf-setel-judul {
+  margin: 8px 0 0; padding-top: 8px; border-top: 1px solid var(--line);
+  font-family: var(--disp); font-size: 10px; font-weight: 700;
+  letter-spacing: .1em; color: var(--text3);
+}
+.lantai .grf-setel-pilihan { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+.lantai .grf-setel-pilihan .chip-t { padding: 4px 10px; font-size: 10.5px; }
+
+/* Satu baris per PLOT (BB tiga pita, MACD dua garis + histogram). Sebelum tab
+   Style ada, ketiganya terpaksa sewarna karena warna cuma ada satu per
+   instans. */
+.lantai .grf-setel-plot {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+  padding: 6px 0; border-bottom: 1px solid var(--line);
+}
+.lantai .grf-setel-plot-nama {
+  display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text);
+  flex: 1 1 130px; min-width: 0;
+}
+.lantai .grf-setel-warna { display: flex; gap: 4px; }
+.lantai .grf-swatch {
+  width: 20px; height: 20px; border-radius: 4px; cursor: pointer;
+  border: 2px solid transparent; padding: 0;
+}
+.lantai .grf-swatch.on { border-color: var(--text); }
+.lantai .grf-setel-garis { display: flex; flex-wrap: wrap; gap: 3px; }
+.lantai .grf-setel-garis .chip-t { padding: 3px 8px; font-size: 10px; }
+
+.lantai .grf-setel-kaki {
+  display: flex; align-items: center; gap: 8px;
+  padding-top: 10px; border-top: 1px solid var(--line);
+}
+.lantai .grf-setel-kaki-isi { flex: 1 1 auto; }
+.lantai .grf-setel-kaki .btn-p { padding: 7px 20px; }
+.lantai .grf-setel-kaki .btn-p:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Kolom angka sempit: `.inp` bawaan lebar 100% dan akan mendorong labelnya
+   keluar baris. */
+.lantai .grf-ind-inp { width: 84px; padding: 4px 7px; font-size: 11.5px; height: 26px; }
 .lantai .grf-ind-inp.salah { border-color: var(--red); }
 .lantai .grf-ind-inp.salah:focus { border-color: var(--red); }
-/* Galat memaksa baris penuh sendiri — ditempel di ujung kanan baris kolomnya,
-   pesannya terpotong justru saat paling perlu dibaca. */
-.lantai .grf-ind-galat { flex: 1 0 100%; margin: 4px 0 0; font-size: 11px; color: var(--red); }
+.lantai .grf-ind-galat { margin: 0; font-size: 11px; color: var(--red); }
 
 /* Item dropdown yang tak bisa dipilih (jenis pola yang sudah ada di daftar).
    Tempat semestinya aturan ini adalah lantai.css bersama primitif .dd-* yang
@@ -30,7 +139,7 @@
 .lantai .dd-it:disabled { opacity: .42; cursor: not-allowed; }
 .lantai .dd-it:disabled:hover { background: none; color: var(--text2); }
 
-/* Template: simpan & muat susunan indikator + pola. */
+/* ---------- Template ---------- */
 .lantai .grf-template {
   margin: 0 0 10px; padding: 8px 10px;
   border: 1px solid var(--line); border-radius: var(--r-kecil); background: var(--bg2);
@@ -49,8 +158,7 @@
 .lantai .grf-template-tanda { color: var(--amber); margin-right: 5px; font-size: 14px; line-height: 1; }
 .lantai .grf-template-isi { font-size: 10.5px; color: var(--text3); margin-right: auto; }
 
-/* Hasil pencarian pola. Tanggal & harga persisnya tak terbaca dari penanda di
-   kanvas, jadi ditulis sebagai daftar teks di sampingnya. */
+/* ---------- Hasil pola ---------- */
 .lantai .grf-pola-hasil { margin: 0 0 10px; display: flex; flex-direction: column; gap: 8px; }
 .lantai .grf-pola-judul { margin: 0 0 4px; font-size: 11.5px; font-weight: 600; color: var(--text2); }
 .lantai .grf-pola-daftar { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
@@ -63,9 +171,9 @@
   font-size: 9.5px; letter-spacing: .08em; min-width: 88px;
 }
 
-/* Tombol zoom di pojok kanan bawah kanvas. Diangkat 34px dari dasar supaya
-   duduk di ATAS label sumbu waktu, dan digeser 62px dari kanan supaya tak
-   menabrak label skala harga. */
+/* ---------- Tombol zoom di kanvas ---------- */
+/* Diangkat 34px dari dasar supaya duduk di ATAS label sumbu waktu, dan digeser
+   62px dari kanan supaya tak menabrak label skala harga. */
 .lantai .grf-zoom {
   position: absolute; right: 62px; bottom: 34px; z-index: 3;
   display: flex; flex-direction: column; gap: 4px;
@@ -82,16 +190,18 @@
 /* Telepon tak punya hover — keadaan diamnya lebih pekat sebagai gantinya. */
 @media (hover: none) { .lantai .grf-zoom-btn { opacity: 1; } }
 
-/* Legenda DI DALAM kanvas, menumpuk di pojok kiri atas tiap pane (pola
-   TradingView). `top` disetel dari JS karena nilainya diukur dari DOM pane
-   yang bersangkutan — tinggi pane berubah mengikuti jumlah indikator, jadi
-   tak ada angka tetap yang bisa ditulis di sini.
+/* ---------- Legenda dalam kanvas ---------- */
+/* Menumpuk di pojok kiri atas tiap pane (pola TradingView). `top` disetel dari
+   JS karena nilainya diukur dari DOM pane yang bersangkutan — tinggi pane
+   berubah mengikuti jumlah indikator, jadi tak ada angka tetap yang bisa
+   ditulis di sini.
 
    pointer-events:none di wadahnya WAJIB: legenda duduk persis di atas area
    gambar, dan tanpa itu crosshair mati begitu kursor lewat di bawah teksnya.
-   Dua tombol per baris mengembalikan pointer-events untuk dirinya sendiri. */
+   Kelompok tombol per baris mengembalikan pointer-events untuk dirinya
+   sendiri, tapi HANYA saat terlihat (lihat .grf-legenda-aksi). */
 .lantai .grf-legenda-kanvas {
-  position: absolute; left: 10px; z-index: 3;
+  position: absolute; left: 10px; right: 66px; z-index: 3;
   display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
   pointer-events: none; user-select: none;
   font-family: var(--mono); font-size: 10.5px; line-height: 1.55;
@@ -102,7 +212,55 @@
   text-shadow: 0 0 4px var(--bg), 0 0 4px var(--bg), 0 0 2px var(--bg);
 }
 .lantai .grf-legenda-tgl { color: var(--text3); }
-.lantai .grf-legenda-baris { position: relative; display: inline-flex; align-items: center; gap: 5px; }
+
+/* Baris status panel harga: emiten · kerangka · O H L C ±selisih Vol, pada
+   lilin yang sedang disorot. Boleh membungkus di layar sempit — dipotong,
+   angka penutupannya yang justru hilang duluan. */
+.lantai .grf-status {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px;
+  color: var(--text2); margin-bottom: 2px;
+}
+.lantai .grf-status-kode { font-weight: 700; color: var(--text); font-size: 12px; }
+.lantai .grf-status-tf {
+  color: var(--text3); border: 1px solid var(--line2); border-radius: 3px; padding: 0 4px;
+}
+.lantai .grf-status-vol { color: var(--text3); }
+.lantai .grf-naik { color: var(--green); }
+.lantai .grf-turun { color: var(--red); }
+
+/* Tombol lipat panel indikator (`^`). Cuma pane > 0 — melipat panel HARGA
+   berarti menyembunyikan isi yang justru datang untuk dilihat. */
+.lantai .grf-lipat {
+  pointer-events: auto; align-self: flex-start;
+  width: 20px; height: 18px; margin-bottom: 1px; padding: 0;
+  background: var(--bg2); border: 1px solid var(--line2); border-radius: 3px;
+  color: var(--text3); font-family: var(--mono); font-size: 11px; line-height: 1; cursor: pointer;
+}
+.lantai .grf-lipat:hover { color: var(--amber); border-color: var(--amber); }
+
+.lantai .grf-legenda-baris {
+  position: relative; display: inline-flex; align-items: center; gap: 5px;
+  max-width: 100%; padding: 0 4px; margin-left: -4px;
+  border: 1px solid transparent; border-radius: 4px;
+  /* BARISNYA yang menerima kursor, bukan cuma kelompok tombolnya. Versi
+     pertama cuma memberi `pointer-events: auto` ke `.grf-legenda-aksi`, dan
+     itu mengunci dirinya sendiri: selagi ikonnya tersembunyi ia ber-
+     `pointer-events: none`, jadi tak ada satu pun bagian baris yang bisa
+     di-hover — dan ikon yang muncul saat baris disentuh tak pernah muncul.
+     Terukur di tangkapan layar verifikasi 18 Agu 2026.
+
+     Harganya: crosshair mati selagi kursor persis di atas satu baris legenda.
+     Itu pita selebar teksnya dan setinggi satu baris di pojok kiri atas —
+     jauh lebih kecil daripada wadah legendanya, yang tetap tembus. */
+  pointer-events: auto;
+}
+/* Baris yang disentuh BERBINGKAI — di legenda enam instans yang barisnya
+   berjarak satu piksel, bingkai inilah yang memberitahu tombol gir/mata/hapus
+   di ujung kanan itu milik baris yang mana. */
+.lantai .grf-legenda-baris:hover,
+.lantai .grf-legenda-baris:focus-within {
+  border-color: var(--line2); background: color-mix(in srgb, var(--bg) 82%, transparent);
+}
 /* Instans yang sedang disembunyikan tetap TERDAFTAR (redup) — tombol
    "tampilkan lagi" cuma ada di baris ini, jadi menghilangkannya sama dengan
    mengunci indikatornya. */
@@ -111,58 +269,48 @@
 .lantai .grf-legenda-nama { color: var(--ind-warna); font-weight: 700; }
 .lantai .grf-legenda-nilai { color: var(--text2); font-variant-numeric: tabular-nums; }
 
-/* Tombol gir/mata/hapus per baris legenda. Bentuknya dari `.ti` (TombolIkon,
-   #170); yang disetel di sini cuma UKURAN dan area kliknya.
+/* Tombol gir/mata/hapus per baris legenda — MUNCUL SAAT BARISNYA DISENTUH,
+   bukan permanen. Enam instans × tiga ikon menyala terus-menerus di atas
+   gambar harga membuat legendanya sendiri jadi hiasan yang menutupi isinya.
 
-   Kotaknya 22px, bukan 32px bawaan: baris legenda ini setinggi satu baris
-   teks 10.5px, dan kotak 32px akan menaikkan tinggi tiap barisnya sampai
-   legenda enam instans memakan sepertiga kanvas — persis masalah yang
-   pemindahan ke dalam kanvas ini datang untuk menyelesaikan.
+   `pointer-events` ikut dimatikan selagi tak terlihat: tombol tembus pandang
+   yang tetap menangkap klik adalah jebakan yang tak punya petunjuk apa pun di
+   layar — dan salah satunya menghapus.
 
-   Halo area klik `::after` (inset -6px, jadi 44px) SENGAJA dimatikan di sini
-   dan ini pengecualian yang disadari: baris legenda berjarak ~4px, jadi halo
-   44px milik tombol HAPUS baris atas akan menjorok ke baris di bawahnya —
-   tepat di tempat tombol hapus baris itu berada. Target besar yang salah
-   sasaran lebih buruk daripada target kecil yang tepat, apalagi kalau yang
-   kebagian klik nyasarnya adalah tombol hapus. Di telepon kotaknya dibesarkan
-   (lihat blok 700px di bawah), bukan halonya. */
-.lantai .grf-legenda-aksi { pointer-events: auto; gap: 8px; margin-left: 3px; }
+   Bentuknya dari `.ti` (TombolIkon, #170); yang disetel di sini cuma UKURAN.
+   Kotaknya 22px, bukan 32px bawaan: baris legenda ini setinggi satu baris teks
+   10.5px, dan kotak 32px akan menaikkan tinggi tiap barisnya sampai legenda
+   enam instans memakan sepertiga kanvas.
+
+   Halo area klik `::after` (inset -6px, jadi 44px) SENGAJA dimatikan dan ini
+   pengecualian yang disadari: baris legenda berjarak ~4px, jadi halo 44px milik
+   tombol HAPUS baris atas akan menjorok ke baris di bawahnya — tepat di tempat
+   tombol hapus baris itu berada. Di telepon kotaknya dibesarkan (blok 700px di
+   bawah), bukan halonya. */
+.lantai .grf-legenda-aksi {
+  gap: 8px; margin-left: 3px;
+  opacity: 0; pointer-events: none; transition: opacity .12s ease;
+}
+.lantai .grf-legenda-baris:hover .grf-legenda-aksi,
+.lantai .grf-legenda-baris:focus-within .grf-legenda-aksi,
+/* Baris yang disembunyikan menampilkan ikonnya TERUS — di situ ikon mata
+   tercoret bukan sekadar tombol, ia satu-satunya keterangan kenapa barisnya
+   redup dan garisnya tak ada di kanvas. */
+.lantai .grf-legenda-baris.redup .grf-legenda-aksi { opacity: 1; pointer-events: auto; }
 .lantai .grf-legenda-aksi .ti { width: 22px; height: 22px; }
 .lantai .grf-legenda-aksi .ti::after { inset: 0; }
-
-/* Penambah indikator/pola — DI DALAM kanvas, di atas legendanya. Dulu dua
-   dropdown di baris sendiri di atas grafik; itu masih tata letak yang
-   mendorong kanvas turun, sama seperti daftar instansnya. */
-.lantai .grf-kendali-kanvas { pointer-events: auto; display: inline-flex; gap: 6px; margin-bottom: 3px; }
-.lantai .grf-kendali-kanvas .dd-btn {
-  height: 24px; padding: 0 8px; font-size: 11px; margin-right: 0;
-  background: var(--bg2); border-color: var(--line2);
+@media (prefers-reduced-motion: reduce) { .lantai .grf-legenda-aksi { transition: none; } }
+/* Telepon tak punya hover sama sekali — di sana ikonnya permanen, kalau tidak
+   tak ada satu pun jalan membuka setelan atau menghapus instans. */
+@media (hover: none) {
+  .lantai .grf-legenda-aksi { opacity: 1; pointer-events: auto; }
 }
 
-/* Panel setelan parameter — melayang dari baris legendanya, TIDAK menambah
-   tinggi halaman. Muncul di bawah baris pemiliknya supaya jelas milik siapa. */
-.lantai .grf-setelan {
-  pointer-events: auto; position: absolute; top: calc(100% + 4px); left: 0; z-index: 6;
-  min-width: 188px; padding: 8px 10px 9px;
-  background: var(--bg2); border: 1px solid var(--line2); border-radius: var(--r-kecil);
-  box-shadow: 0 6px 18px rgb(0 0 0 / .35);
-  display: flex; flex-direction: column; gap: 6px;
-  font-family: var(--font); font-size: 11.5px;
-}
-.lantai .grf-setelan-h { display: flex; align-items: center; gap: 8px; }
-.lantai .grf-setelan-nama { color: var(--ind-warna); font-family: var(--mono); font-weight: 700; font-size: 11px; margin-right: auto; }
-.lantai .grf-setelan-x { width: 22px; height: 22px; }
-.lantai .grf-setelan-baris { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.lantai .grf-setelan-lbl { font-size: 10.5px; color: var(--text3); }
-/* Ruas berpilihan (hari Musiman, jangkar VWAP) — deretan .chip-t. Dibungkus
-   flex-wrap karena lima nama hari lebih lebar dari panel 188px di laptop;
-   di telepon panelnya selebar layar dan kelimanya muat satu baris. */
-.lantai .grf-setelan-pilihan { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
-
-/* Tooltip pola. Isinya dulu label yang menempel di tiap penanda dan saling
-   menimpa sampai tak terbaca (keluhan Johan 18 Agu 2026). Letaknya disetel
-   dari JS (mengikuti kursor), arah bukanya juga — di separuh kanan kanvas ia
-   membuka ke kiri supaya tak terpotong tepi. */
+/* ---------- Tooltip pola ---------- */
+/* Isinya dulu label yang menempel di tiap penanda dan saling menimpa sampai
+   tak terbaca (keluhan Johan 18 Agu 2026). Letaknya disetel dari JS (mengikuti
+   kursor), arah bukanya juga — di separuh kanan kanvas ia membuka ke kiri
+   supaya tak terpotong tepi. */
 .lantai .grf-pola-tip {
   position: absolute; z-index: 4; pointer-events: none;
   /* `width: max-content` WAJIB berpasangan dengan max-width di sini. Tooltip
@@ -170,9 +318,7 @@
      transform, yang berlaku SESUDAH tata letak) — jadi tanpa max-content
      lebarnya dihitung dari sisa ruang di KANAN kursor. Di dekat tepi kanan
      kanvas sisa itu tinggal seratusan piksel dan kotaknya memanjang ke bawah
-     jadi pita sempit setinggi kanvas. Baru terlihat setelah pola Musiman
-     membawa teks panjang (n + vonis uji); penanda lama teksnya pendek dan
-     kebetulan tak pernah kena. */
+     jadi pita sempit setinggi kanvas. */
   width: max-content; max-width: 250px; padding: 6px 9px;
   background: var(--bg2); border: 1px solid var(--line2); border-radius: var(--r-kecil);
   box-shadow: 0 6px 18px rgb(0 0 0 / .35);
@@ -182,9 +328,7 @@
 .lantai .grf-pola-tip-baris { display: flex; align-items: baseline; gap: 6px; }
 .lantai .grf-pola-tip-tgl { color: var(--text3); flex: none; }
 
-/* Panduan singkat — pola <details>/<summary> yang sama dengan AturanKurasi
-   (admin/KurasiSetoran.tsx), ditulis ulang di sini karena berkas admin tak
-   boleh disentuh dari halaman dasbor publik ini. */
+/* ---------- Panduan ---------- */
 .lantai .grf-panduan { margin-top: 12px; border: 1px solid var(--line); border-radius: 6px; }
 .lantai .grf-panduan > summary {
   display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;
@@ -197,80 +341,35 @@
 .lantai .grf-panduan-item dt { font-size: 11.5px; font-weight: 700; color: var(--text); }
 .lantai .grf-panduan-item dd { margin: 2px 0 0; font-size: 11.5px; line-height: 1.55; color: var(--text2); }
 
-/* Tinggi tetap: lightweight-charts (autoSize) butuh induk dengan tinggi
-   eksplisit, bukan auto — tanpa ini kanvas kolaps jadi 0px. Diperkecil di
-   telepon (breakpoint 700px, sama dengan seluruh Lantai) supaya sumbu &
-   label tak berdesakan di layar sempit. */
+/* ---------- Kanvas ---------- */
+/* Tinggi TETAP: lightweight-charts (autoSize) butuh induk dengan tinggi
+   eksplisit, bukan auto — tanpa ini kanvas kolaps jadi 0px. Tetap juga dalam
+   arti kedua yang sama pentingnya: menambah panel indikator TIDAK menambah
+   tingginya, panel-panel itu berbagi 460px yang sama lewat stretch factor.
+   Itu yang membuat halaman tak makin panjang tiap indikator ditambahkan. */
 .lantai .grf-chart-wrap { height: 460px; width: 100%; }
-@media (max-width: 700px) {
-  .lantai .grf-chart-wrap { height: 340px; }
-  /* Kotak tombol legenda dibesarkan (bukan halonya — lihat alasannya di blok
-     .grf-legenda-aksi), dan barisnya diberi jarak supaya jari punya tempat. */
-  .lantai .grf-legenda-kanvas { gap: 4px; }
-  .lantai .grf-legenda-aksi { gap: 10px; }
-  .lantai .grf-legenda-aksi .ti { width: 28px; height: 28px; }
-  /* Panel setelan jadi LEMBAR BAWAH di telepon. Panel melayang selebar 190px
-     yang menggantung dari baris legenda memang muat di 412px, tapi ia jatuh
-     persis di atas lilin terbaru — bagian kanvas yang paling sering dibaca —
-     dan kolom angkanya berdesakan dengan tombol zoom. Lembar bawah menempel
-     ke tepi layar, jauh dari isi yang sedang diamati, dan kolomnya dapat
-     lebar penuh. `fixed` (bukan absolute) supaya ia tetap terjangkau walau
-     halaman sedang tergulung. */
-  .lantai .grf-setelan {
-    /* Ditahan 64px dari dasar, bukan menempel: tombol Tanya PAPAN (.tp-tombol,
-       46px + 12px margin) duduk tetap di pojok kanan bawah SETIAP halaman, dan
-       menempel ke dasar berarti kolom parameter TERAKHIR selalu tertutup
-       olehnya — terukur di telepon 412px, kolom "Kedalaman min ×ATR" Double
-       Bottom persis di baliknya. */
-    /* Jarak dari dasar = 64px DITAMBAH tinggi bilah alamat yang sedang tampil.
-       `100lvh` selalu tinggi penuh (915px di Xiaomi 14 Ultra FHD+), `100dvh`
-       tinggi yang benar-benar terlihat saat itu (810px selagi bilah alamat
-       muncul) — selisihnya nol kalau bilahnya tersembunyi, jadi rumus ini tak
-       mengubah apa pun di keadaan itu. Tanpa ini, BARIS TERAKHIR panel selalu
-       berakhir di ~836px: di emulator terlihat baik-baik saja (emulator tak
-       punya bilah alamat), di telepon sungguhan ia duduk di balik bilah itu
-       dan tak bisa disentuh sama sekali — terukur 18 Agu 2026 pada chip
-       "Jumat" pola Musiman. */
-    position: fixed; inset: auto 10px calc(100lvh - 100dvh + 64px) 10px; z-index: 40;
-    min-width: 0; padding: 12px 14px 14px;
-    /* Pola berparameter banyak (Double Bottom: enam) di layar pendek bisa
-       melebihi ruang yang ada — digulung, bukan terpotong. Batang gulirnya
-       ikut aturan bersama `.lantai ::-webkit-scrollbar`; JANGAN menambahkan
-       scrollbar-width/scrollbar-color di sini (sejak Chrome 121 keduanya
-       membatalkan seluruh aturan itu — jebakan tercatat di CLAUDE.md). */
-    max-height: 62dvh; overflow-y: auto;
-  }
-  .lantai .grf-setelan-baris { min-height: 32px; }
-  .lantai .grf-setelan-x { width: 32px; height: 32px; }
-  /* Tooltip pola menyempit: 250px di kanvas selebar ~380px menutupi dua
-     pertiga lebarnya. */
-  .lantai .grf-pola-tip { max-width: 200px; }
-}
 /* Selagi data belum ada, DISEMBUNYIKAN LEWAT OPACITY — bukan `display:none`.
    lightweight-charts (autoSize) memasang ResizeObserver ke elemen ini saat
    dibuat; `display:none` bikin lebarnya 0 SAAT chart pertama kali dibuat, dan
-   begitu tampil lagi bar spacing yang sudah telanjur dihitung dari lebar 0
-   tak dihitung ulang — lilinnya numpuk di satu sisi. `opacity` menyembunyikan
-   tampilannya tapi kotak layoutnya (makanya lebar yang dilihat ResizeObserver)
-   tetap ada dari awal. */
+   begitu tampil lagi bar spacing yang sudah telanjur dihitung dari lebar 0 tak
+   dihitung ulang — lilinnya numpuk di satu sisi. */
 .lantai .grf-chart-wrap.memuat { opacity: 0; }
+/* Layar penuh: kanvas mengisi tinggi layar dikurangi bilah atas + kaki.
+   `dvh` bukan `vh` — di telepon bilah alamat memotong ~105px yang `vh` tak
+   pernah tahu. */
+.lantai .grf-panel:fullscreen .grf-chart-wrap { height: calc(100dvh - 190px); }
 
 /* Bungkus kanvas + tanda PAPAN — lihat komentar di GrafikEmiten.tsx dekat
-   attributionLogo:false: ini pengganti logo TradingView yang dimatikan,
-   bukan hiasan lepas. Atribusi lisensinya sendiri ada di kaki situs global
-   (DasborLayout.tsx), bukan di sini. position:relative di sini (bukan di
-   .grf-chart-wrap sendiri) supaya elemen yang dikelola lightweight-charts
-   tak ikut disentuh. */
+   attributionLogo:false: ini pengganti logo TradingView yang dimatikan, bukan
+   hiasan lepas. Atribusi lisensinya sendiri ada di kaki situs global
+   (DasborLayout.tsx). position:relative di sini (bukan di .grf-chart-wrap
+   sendiri) supaya elemen yang dikelola lightweight-charts tak ikut disentuh. */
 .lantai .grf-kanvas-bungkus { position: relative; }
 /* Johan (putaran ketiga): "logo ini di telakkan persis tradingview yaa, jelek
-   terlalu besar juga". Jadi kembali ke pojok kiri bawah dan kecil — persis
-   tempat TradingView menaruh miliknya.
-
-   Putaran kedua sempat memindahkannya ke tengah kanvas berukuran 112px karena
-   di pojok ia menabrak label sumbu waktu dan batang volume. Yang keliru di situ
-   ukurannya, bukan posisinya: pada 28px tabrakan itu tak terjadi — dan itu
-   sebabnya TradingView sendiri bisa menaruhnya di sana. Watermark raksasa di
-   tengah grafik menutupi lilin, yaitu isi yang justru datang untuk dibaca. */
+   terlalu besar juga". Pojok kiri bawah dan kecil — persis tempat TradingView
+   menaruh miliknya. Pada 28px ia tak menabrak label sumbu waktu maupun batang
+   volume; pada 112px (putaran kedua) ia menutupi lilin, yaitu isi yang justru
+   datang untuk dibaca. */
 .lantai .grf-tanda-papan {
   position: absolute; left: 12px; bottom: 12px; width: 28px; height: 28px;
   opacity: 0.3; pointer-events: none; user-select: none;
@@ -283,8 +382,36 @@
 @media (prefers-reduced-motion: reduce) {
   .lantai .grf-tanda-papan { transition: none; }
 }
-/* Telepon tak punya hover — keadaan diamnya sedikit lebih pekat sebagai
-   gantinya, bukan menunggu sentuhan yang lepas lagi begitu jari diangkat. */
 @media (hover: none) {
   .lantai .grf-tanda-papan { opacity: 0.45; }
+}
+
+/* ---------- Telepon ---------- */
+@media (max-width: 700px) {
+  .lantai .grf-toolbar { padding: 8px; gap: 5px; }
+  /* Pemisah kelompok DISEMBUNYIKAN di telepon: tiap kelompok sudah dapat
+     barisnya sendiri, jadi garis vertikal 1px itu tak lagi memisahkan apa pun
+     — ia cuma menggantung sendirian di awal baris berikutnya dan terbaca
+     sebagai coretan (terlihat di tangkapan layar 412px, 18 Agu 2026). */
+  .lantai .grf-pisah { display: none; }
+  .lantai .grf-cari { flex: 1 1 100%; }
+  /* Kerangka waktu dapat baris penuh sendiri: berbagi baris dengan kotak cari,
+     yang tergulung ke luar layar justru tombol paling sering ditekan. */
+  .lantai .grf-kerangka { flex: 1 1 100%; }
+  .lantai .grf-toolbar-isi { flex-basis: 100%; height: 0; }
+  .lantai .grf-chart-wrap { height: 340px; }
+  /* Kotak tombol legenda dibesarkan (bukan halonya — lihat alasannya di blok
+     .grf-legenda-aksi), dan barisnya diberi jarak supaya jari punya tempat. */
+  .lantai .grf-legenda-kanvas { gap: 4px; right: 60px; }
+  .lantai .grf-legenda-aksi { gap: 10px; }
+  .lantai .grf-legenda-aksi .ti { width: 28px; height: 28px; }
+  /* Baris status dipendekkan: delapan ruas OHLC di kanvas selebar ~380px
+     menutupi tiga baris lilin teratas. Volume & tanggal sudah terbaca dari
+     batang volume dan sumbu waktunya sendiri. */
+  .lantai .grf-status-vol, .lantai .grf-status .grf-legenda-tgl { display: none; }
+  /* Tooltip pola menyempit: 250px di kanvas selebar ~380px menutupi dua
+     pertiga lebarnya. */
+  .lantai .grf-pola-tip { max-width: 200px; }
+  .lantai .grf-setel-baris { min-height: 34px; }
+  .lantai .grf-setel-isi { max-height: 46dvh; }
 }
