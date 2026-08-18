@@ -975,11 +975,14 @@ export function GrafikEmiten() {
                 Roda tikus & cubit tetap jalan; ini yang membuatnya terjangkau
                 di telepon, tempat roda tikus tak ada sama sekali. */}
             <div className="grf-zoom">
-              <button type="button" className="grf-zoom-btn" title="Perbesar"
+              {/* aria-label wajib: isinya glyph telanjang (+, −, ⤢), dan pembaca
+                  layar mengumumkan simbolnya, bukan maksudnya. `title` saja
+                  tak cukup — ia bantuan untuk tetikus, bukan nama elemen. */}
+              <button type="button" className="grf-zoom-btn" title="Perbesar" aria-label="Perbesar"
                 onClick={() => zoom(1 / 1.3)}>+</button>
-              <button type="button" className="grf-zoom-btn" title="Perkecil"
+              <button type="button" className="grf-zoom-btn" title="Perkecil" aria-label="Perkecil"
                 onClick={() => zoom(1.3)}>−</button>
-              <button type="button" className="grf-zoom-btn grf-zoom-muat" title="Muat semua data"
+              <button type="button" className="grf-zoom-btn grf-zoom-muat" title="Muat semua data" aria-label="Muat semua data"
                 onClick={() => chartRef.current?.timeScale().fitContent()}>⤢</button>
             </div>
 
