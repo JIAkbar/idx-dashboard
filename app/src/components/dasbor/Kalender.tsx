@@ -447,7 +447,13 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
       className="csb-more"
       disabled={sudahHariIni || !hariTerkini}
       onClick={keHariIni}
-      title="Lompat ke tanggal bursa terkini"
+      // Judul mengikuti SEBAB matinya. Sebelumnya selalu berbunyi "Lompat ke
+      // tanggal bursa terkini" walau tombolnya mati, jadi pembaca melihat
+      // tombol pudar yang menjanjikan sesuatu tanpa memberi tahu kenapa ia
+      // tak bisa ditekan — terbaca seperti kerusakan, bukan keadaan.
+      title={sudahHariIni ? 'Sudah berada di tanggal bursa terkini'
+             : !hariTerkini ? 'Tanggal bursa terkini belum diketahui'
+             : 'Lompat ke tanggal bursa terkini'}
     >
       Hari Ini
     </button>
