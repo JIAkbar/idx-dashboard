@@ -339,6 +339,37 @@ bursa menang bila ada, dan tiap sel membawa lencana asalnya di
 Berkasnya tetap disimpan terpisah supaya asal angkanya tak pernah hilang;
 penggabungannya terjadi saat ditampilkan, bukan saat dipanen.
 
+### Batas riwayat: IDX berhenti di tahun buku 2019
+
+Diukur 18 Agustus 2026, lewat peramban (supaya 403 di klien HTTP tak mengaburkan
+hasilnya) dengan `periode=audit`:
+
+| Tahun buku | `ResultCount` di IDX | Sudah dipanen |
+|---|---|---|
+| 2025 | — | 882 |
+| 2024 | — | 847 |
+| 2023 | — | 846 |
+| **2022** | **808** | **562** ← masih kurang 246, layak dipanen ulang |
+| 2021 | — | 745 |
+| 2020 | — | 699 |
+| **2019** | **664** | **664** ← dipanen 18 Agu, tuntas |
+| **2018** | **0** | — |
+| 2017 dan lebih tua | 0 | — |
+
+**2018 ke belakang bukan gagal panen — IDX memang tak menyajikannya.** Panen
+2018 melaporkan "0 berhasil, 959 kosong, 0 gagal", dan itu jawaban jujur dari
+daftar yang memang kosong. Diperiksa ulang lewat peramban: `ResultCount: 0`,
+`Results: []`.
+
+Artinya **kedalaman maksimum laporan keuangan resmi dari sumber ini 2019–2025
+(tujuh tahun buku)**, bukan sepuluh. Permintaan "fundamental 10 tahun ke
+belakang" tidak bisa dipenuhi dari IDX; yfinance pun mentok 4 tahun. Kalau 10
+tahun benar-benar diperlukan, sumbernya harus dicari di luar keduanya — dan itu
+keputusan tersendiri, bukan soal menjalankan pemanen lebih lama.
+
+Jangan menjadwalkan panen ulang untuk 2018 dan sebelumnya: hasilnya akan selalu
+nol, dan tiap percobaan tetap menembak endpoint yang gampang menolak.
+
 ### Kenapa ruas bank kosong di XBRL
 
 Bukan kegagalan panen: taksonomi "Financial and Sharia Industry" memang tak
