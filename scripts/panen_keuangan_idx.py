@@ -103,8 +103,13 @@ import urllib.parse
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-import requests
+import requests  # noqa: F401 -- dipakai untuk tipe galat di penanganan retry
+from curl_cffi import requests as cffi
 from openpyxl import load_workbook
+
+# Sidik jari peramban yang ditiru. Diganti kalau IDX mulai menolak lagi;
+# daftar nilai yang sah ada di dokumentasi curl_cffi (chrome110..chrome124, dst).
+IMPERSONATE = "chrome124"
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from fetch_fundamental import DEFAULT_TICKERS  # reuse -- lihat CLAUDE.md rung 2
@@ -328,8 +333,15 @@ def ekstrak(wb) -> tuple[dict, str]:
     labarugi = peta_dari_tipe(wb, "labarugi")
     kas = peta_dari_tipe(wb, "kas")
 
+    # `is not None` meloloskan STRING, dan satu sel neraca berisi teks membuat
+    # sum() melempar TypeError yang menggagalkan seluruh emiten. Terukur pada
+    # AUDIT 2022: 246 emiten gagal karenanya -- persis jumlah yang selama ini
+    # hilang dari periode itu. Sel berteks dilewati, bukan dijadikan nol: nol
+    # berarti "utangnya nol", dan itu pernyataan yang belum tentu benar.
     total_debt_raw = sum(
-        v for v in (neraca.get(lbl.lower()) for lbl in NERACA_DEBT_LABELS) if v is not None
+        v
+        for v in (neraca.get(lbl.lower()) for lbl in NERACA_DEBT_LABELS)
+        if isinstance(v, (int, float)) and not isinstance(v, bool)
     )
     total_debt = rp(total_debt_raw) if total_debt_raw else None
 
@@ -524,7 +536,8 @@ def main() -> int:
     bucket = "tahunan" if args.periode == "audit" else "kuartal"
     tanggal = tanggal_akhir(args.tahun, args.periode)
 
-    sesi = requests.Session()
+    # curl_cffi.Session, bukan requests.Session -- lihat catatan IMPERSONATE.
+    sesi = cffi.Session(impersonate=IMPERSONATE)
     try:
         sesi.get(PEMANASAN, headers={"User-Agent": UA}, timeout=30)
         print(f"Mengambil daftar laporan {args.periode.upper()} {args.tahun} ...")
