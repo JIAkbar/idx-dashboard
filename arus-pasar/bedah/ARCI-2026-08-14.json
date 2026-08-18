@@ -12,21 +12,31 @@
  "catatan_flow": "Sepuluh tanggal, satu tangkapan layar per hari, top-10 tiap sisi. Broker di luar sepuluh besar tidak tercakup. Perhatikan arah net harian yang mengecil dari Rp61,4 miliar ke Rp5,8 miliar.",
  "catatan_verifikasi": "Data terbitan ini ditutup pada sesi bursa 14 Agustus 2026 — bukan data waktu nyata. Arus broker dirangkum dari sepuluh hari bursa berturut (3–14 Agustus), satu setoran Broker Summary per tanggal. Angka PCD/zona modal dihitung mesin dari riwayat harga, bukan dari done summary per harga.",
  "em": {
- "label": "Naik 15,57% tapi Arus Masuk Menipis",
- "arah": "bull",
- "narasi_teknikal": "Menutup 1.225 (+2,08%), 8% di atas EMA50 1.134 dan di atas pivot P 1.208. R1 1.247 jadi ujian terdekat.",
- "strategi": "Berlaku selama close bertahan di atas S1 1.187; kelanjutannya menuntut net beli harian berhenti menyusut, bukan sekadar harga bertahan.",
- "skenario": {
-  "bull": {
-  "konfirmasi": "Close di atas 1.247 (R1) disertai net beli harian yang kembali menebal",
-  "rute": "1.247 → 1.286",
-  "risiko": "Arus masuk sudah menyusut sepuluh hari beruntun sementara harga terus naik"
-  },
-  "bear": {
-  "konfirmasi": "Close di bawah 1.187 (S1)",
-  "rute": "1.187 → 1.148",
-  "risiko": "Saham tipis: volume rerata 46 juta lembar membuat penurunan sama cepatnya dengan kenaikan"
+  "label": "Naik 15,57% tapi Arus Masuk Menipis",
+  "arah": "bull",
+  "narasi_teknikal": "Menutup 1.225 (+2,08%), 8% di atas EMA50 1.134 dan di atas pivot P 1.208. R1 1.247 jadi ujian terdekat.",
+  "strategi": "Berlaku selama close bertahan di atas S1 1.187; kelanjutannya menuntut net beli harian berhenti menyusut, bukan sekadar harga bertahan.",
+  "skenario": {
+   "bull": {
+    "konfirmasi": "Close di atas 1.247 (R1) disertai net beli harian yang kembali menebal",
+    "rute": "1.247 → 1.286",
+    "risiko": "Arus masuk sudah menyusut sepuluh hari beruntun sementara harga terus naik"
+   },
+   "bear": {
+    "konfirmasi": "Close di bawah 1.187 (S1)",
+    "rute": "1.187 → 1.148",
+    "risiko": "Saham tipis: volume rerata 46 juta lembar membuat penurunan sama cepatnya dengan kenaikan"
+   }
   }
- }
- }
+ },
+ "katalis": [
+  {
+   "tingkat": "b",
+   "tanggal": "2026-08-06",
+   "judul": "Direktur Archi Indonesia melaporkan transaksi jual beli saham ARCI",
+   "sumber": "Liputan6",
+   "tautan": "https://www.liputan6.com/saham/read/8263136/direktur-archi-indonesia-transaksi-jual-beli-saham-arci-ini-tujuannya",
+   "ringkas": "Direktur ARCI Christian Emanuel David Sompe membeli sekitar 1,26 juta saham pada 29–30 Juni di kisaran Rp905–915, lalu menjual sekitar 541 ribu saham pada 3 dan 6 Juli; alasan yang disebut adalah diversifikasi portofolio. Transaksinya terjadi lebih dari sebulan sebelum tanggal edisi ini — dicantumkan sebagai konteks kepemilikan, bukan sebagai sebab pergerakan 14 Agustus."
+  }
+ ]
 }

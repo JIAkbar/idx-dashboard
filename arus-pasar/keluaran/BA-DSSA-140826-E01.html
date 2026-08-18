@@ -454,6 +454,42 @@
   .sknb .aturan{display:grid;grid-template-columns:30mm 1fr;gap:5mm;font-size:9.3pt;font-weight:700;
     padding:2.5mm 4.5mm;border:1px solid var(--hair);border-radius:1.5mm}
   .sknb .aturan .kl{font-weight:400}
+  /* Katalis — sebab pergerakan. Tiga tingkat keyakinan dibedakan SECARA VISUAL
+     (warna pita + lencana), bukan cuma di kalimat: pembaca harus bisa melihat
+     mana fakta resmi dan mana dugaan tanpa membaca keterangannya dulu. */
+  .kat-lgd{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin:3mm 0 4mm}
+  .kat-lgd div{border-top:2px solid var(--mute);padding-top:1.6mm;font-size:6.6pt;
+    color:var(--mute);line-height:1.45}
+  .kat-lgd div b{display:block;font-family:var(--disp);font-size:6.4pt;font-weight:800;
+    letter-spacing:.14em;margin-bottom:.8mm}
+  .kat-lgd .t-a{border-color:var(--bull)} .kat-lgd .t-a b{color:var(--bull)}
+  .kat-lgd .t-b{border-color:var(--mute)} .kat-lgd .t-b b{color:var(--mute)}
+  .kat-lgd .t-c{border-color:var(--warn)} .kat-lgd .t-c b{color:var(--warn)}
+  .kat-it{border-left:3px solid var(--mute);background:var(--panel);padding:2.4mm 4mm;
+    border-radius:0 1.5mm 1.5mm 0;margin-bottom:2.6mm}
+  .kat-it.t-a{border-color:var(--bull)} .kat-it.t-b{border-color:var(--mute)}
+  .kat-it.t-c{border-color:var(--warn)}
+  .kat-it .kh{display:flex;gap:2.5mm;align-items:baseline;margin-bottom:1.2mm}
+  .kat-it .lbl{font-family:var(--disp);font-size:5.6pt;font-weight:800;letter-spacing:.14em;
+    padding:.3mm 1.4mm;border-radius:.8mm;color:#fff}
+  .kat-it.t-a .lbl{background:var(--bull)} .kat-it.t-b .lbl{background:var(--mute)}
+  .kat-it.t-c .lbl{background:var(--warn)}
+  .kat-it .tg{font-family:var(--mono);font-size:6.4pt;color:var(--mute)}
+  .kat-it .jd{font-size:9pt;font-weight:700;line-height:1.35;color:var(--ink)}
+  .kat-it .rk{font-size:8.2pt;color:var(--ink2);line-height:1.5;margin-top:1mm;text-align:justify}
+  .kat-it .sm{font-family:var(--mono);font-size:6.2pt;color:var(--mute);margin-top:1.2mm;
+    word-break:break-all;line-height:1.4}
+  .kat-it .sm a{color:var(--mute);text-decoration:none}
+  .kat-tema{width:100%;border-collapse:collapse;font-size:8.2pt;margin-top:2mm}
+  .kat-tema th{font-family:var(--disp);font-size:5.9pt;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--mute);text-align:left;padding-bottom:1.2mm;
+    border-bottom:1px solid var(--hair)}
+  .kat-tema td{padding:1.5mm 0;border-bottom:1px solid var(--hair);
+    font-variant-numeric:tabular-nums;vertical-align:top}
+  .kat-tema td.k{font-family:var(--mono);font-weight:700}
+  .kat-tema th:nth-child(3),.kat-tema td.p{padding-right:5mm}
+  .kat-tema td.p{text-align:right;font-weight:700;width:24mm}
+  .kat-tema td.a{color:var(--mute);font-size:7.2pt;line-height:1.4}
 </style><script>window.__TEMA = {"emas": [[20, "#0E8F87", 1], [50, "#0A6E68", 1.2], [60, "#4A6B8A", 1], [100, "#6B4FA8", 1], [200, "#B06A2C", 1.5]], "bull": "#0F7A38", "bear": "#B3271E", "bullSoft": "rgba(15,122,56,0.3)", "bearSoft": "rgba(179,39,30,0.3)", "teks": "#0F1A22", "teksLembut": "rgba(15,26,34,0.55)", "grid": "rgba(15,26,34,0.14)", "pivot": "#57687A"};</script>
 <div class="page">
   <header class="band">
@@ -665,6 +701,38 @@
           <p>Sembilan hari setoran Broker Summary (03–13 Agu 2026), screenshot manual. Daftar broker per hari adalah baris yang tampak di layar (terpotong scroll), bukan seluruh n_buyer/n_seller — total baris tampak tidak persis sama dengan Net Value ringkasan Stockbit; ringkasan dan label Acc/Dist tetap valid karena tercetak langsung dari Stockbit. Setoran 13 Agu memuat baris GR (jual Rp7,4 miliar) yang tidak tertangkap tabel edisi harian 13 Agu — halaman ini memakai setoran terbaru.</p>
         </div>
       </section>
+    </div>
+  </div>
+  <footer class="foot">
+    <span class="kode">BA-DSSA-140826-E01</span>
+    <span>© 2026 PAPAN — Pusat Analisa Pasar Nusantara · Analisis probabilistik, bukan ajakan transaksi.</span>
+  </footer>
+</div>
+
+<div class="page">
+  <header class="band">
+    <div class="m"><h1>ARUS PASAR</h1><div class="sub">Katalis — Sebab Pergerakan</div></div>
+    <div class="e">Jumat, 14 Agustus 2026<br><span class="kode">BA-DSSA-140826-E01</span></div>
+  </header>
+  <div class="inner">
+    <div class="hangka">DSSA: <b>tidak ditemukan</b> katalis publik pada 14 hari terakhir</div>
+    <div class="kat-lgd"><div class="t-a"><b>(a) RESMI</b>Keterbukaan informasi &amp; pengumuman bursa — dokumen resmi emiten/IDX, bukan tafsiran pihak ketiga.</div><div class="t-b"><b>(b) MEDIA</b>Berita media pada rentang yang dibedah. Berdekatan waktu belum tentu penyebab — ini konteks, bukan pembuktian.</div><div class="t-c"><b>(c) DUGAAN</b>Belum dikonfirmasi sumber resmi. Tidak pernah dinaikkan menjadi sebab, sekalipun terdengar masuk akal.</div></div>
+    <div class="blok integritas"><h3 class="rule">Tak Ditemukan Katalis Publik</h3><p style="text-align:justify">Penelusuran keterbukaan informasi IDX, pengumuman bursa, dan berita pasar pada 14 hari terakhir sampai 13 Agustus 2026 tidak menemukan satu pun peristiwa yang menyebut DSSA. Pergerakan harga pada rentang ini tidak dijelaskan oleh kabar publik yang bisa kami tunjuk sumbernya. Itu apa adanya — kami tidak menyusun sebab yang terdengar masuk akal untuk mengisi ruang ini.</p></div>
+    <div class="sec" style="margin-top:4mm">
+      <h3 class="rule">Bergerak Bersamaan — 13 Agustus 2026</h3>
+      <table class="kat-tema"><thead><tr><th>Kode</th><th>Nama</th><th style="text-align:right">1 Hari</th>
+      <th>Dasar keterkaitan</th></tr></thead><tbody><tr><td class="k">IATA</td><td>PT Karya Pacific Energy Tbk</td><td class="p c-bear">−6,25%</td><td class="a">satu subindustri IDX-IC — Produksi Batu Bara</td></tr><tr><td class="k">BUMI</td><td>Bumi Resources Tbk</td><td class="p c-bear">−3,78%</td><td class="a">satu subindustri IDX-IC — Produksi Batu Bara</td></tr><tr><td class="k">CUAN</td><td>PT Petrindo Jaya Kreasi Tbk</td><td class="p c-bear">−3,45%</td><td class="a">satu subindustri IDX-IC — Produksi Batu Bara</td></tr><tr><td class="k">AADI</td><td>PT Adaro Andalan Indonesia Tbk</td><td class="p c-bear">−3,21%</td><td class="a">satu subindustri IDX-IC — Produksi Batu Bara</td></tr></tbody></table>
+      <div class="bd-note">DSSA sendiri −1,00%. Tabel ini menunjukkan <b>keserempakan</b>, bukan sebab-akibat:
+      beberapa nama bergerak searah pada hari yang sama tidak membuktikan satu peristiwa yang sama
+      menggerakkannya. Dasar keterkaitan tiap baris ditulis supaya bisa diperiksa sendiri.</div>
+    </div>
+    <div class="blok integritas" style="margin-top:auto;margin-bottom:2mm">
+      <h3 class="rule">Batas Halaman Ini</h3>
+      <p style="text-align:justify">Yang tercantum di sini hanya peristiwa yang bisa kami tunjuk
+      sumbernya — pengumuman IDX, berita media, atau penelusuran yang tautannya dicetak di atas.
+      Katalis yang tidak terpanen tidak berarti tidak ada. Sebaliknya, tidak satu pun baris di halaman
+      ini menyatakan bahwa harga bergerak <i>karena</i> peristiwa itu; yang kami nyatakan adalah
+      peristiwanya terjadi, kapan, dan dari sumber mana. Penilaian sebab-akibat tetap milik pembaca.</p>
     </div>
   </div>
   <footer class="foot">

@@ -24,7 +24,9 @@ Halaman arus broker:
 
 Pakai: python build_bedah.py DSSA-2026-08-14 [--tanpa-pdf]
 """
-import json, sys
+import html as H
+import json, re, sys
+from datetime import date, timedelta
 from pathlib import Path
 
 import build as B
@@ -33,6 +35,7 @@ import pcd as PCD
 import prob
 
 AKAR = Path(__file__).parent
+DATA = AKAR.parent / "data-idx" / "json"
 EDISI_PALET = "single"  # Opsi A · Permukaan & Suhu — lihat palet.py
 PAL = palet.PALET[EDISI_PALET]
 
@@ -78,6 +81,42 @@ BSTYLE = f"<style>{palet.blok_css(EDISI_PALET)}</style>" + """
   .sknb .aturan{display:grid;grid-template-columns:30mm 1fr;gap:5mm;font-size:9.3pt;font-weight:700;
     padding:2.5mm 4.5mm;border:1px solid var(--hair);border-radius:1.5mm}
   .sknb .aturan .kl{font-weight:400}
+  /* Katalis — sebab pergerakan. Tiga tingkat keyakinan dibedakan SECARA VISUAL
+     (warna pita + lencana), bukan cuma di kalimat: pembaca harus bisa melihat
+     mana fakta resmi dan mana dugaan tanpa membaca keterangannya dulu. */
+  .kat-lgd{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin:3mm 0 4mm}
+  .kat-lgd div{border-top:2px solid var(--mute);padding-top:1.6mm;font-size:6.6pt;
+    color:var(--mute);line-height:1.45}
+  .kat-lgd div b{display:block;font-family:var(--disp);font-size:6.4pt;font-weight:800;
+    letter-spacing:.14em;margin-bottom:.8mm}
+  .kat-lgd .t-a{border-color:var(--bull)} .kat-lgd .t-a b{color:var(--bull)}
+  .kat-lgd .t-b{border-color:var(--mute)} .kat-lgd .t-b b{color:var(--mute)}
+  .kat-lgd .t-c{border-color:var(--warn)} .kat-lgd .t-c b{color:var(--warn)}
+  .kat-it{border-left:3px solid var(--mute);background:var(--panel);padding:2.4mm 4mm;
+    border-radius:0 1.5mm 1.5mm 0;margin-bottom:2.6mm}
+  .kat-it.t-a{border-color:var(--bull)} .kat-it.t-b{border-color:var(--mute)}
+  .kat-it.t-c{border-color:var(--warn)}
+  .kat-it .kh{display:flex;gap:2.5mm;align-items:baseline;margin-bottom:1.2mm}
+  .kat-it .lbl{font-family:var(--disp);font-size:5.6pt;font-weight:800;letter-spacing:.14em;
+    padding:.3mm 1.4mm;border-radius:.8mm;color:#fff}
+  .kat-it.t-a .lbl{background:var(--bull)} .kat-it.t-b .lbl{background:var(--mute)}
+  .kat-it.t-c .lbl{background:var(--warn)}
+  .kat-it .tg{font-family:var(--mono);font-size:6.4pt;color:var(--mute)}
+  .kat-it .jd{font-size:9pt;font-weight:700;line-height:1.35;color:var(--ink)}
+  .kat-it .rk{font-size:8.2pt;color:var(--ink2);line-height:1.5;margin-top:1mm;text-align:justify}
+  .kat-it .sm{font-family:var(--mono);font-size:6.2pt;color:var(--mute);margin-top:1.2mm;
+    word-break:break-all;line-height:1.4}
+  .kat-it .sm a{color:var(--mute);text-decoration:none}
+  .kat-tema{width:100%;border-collapse:collapse;font-size:8.2pt;margin-top:2mm}
+  .kat-tema th{font-family:var(--disp);font-size:5.9pt;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--mute);text-align:left;padding-bottom:1.2mm;
+    border-bottom:1px solid var(--hair)}
+  .kat-tema td{padding:1.5mm 0;border-bottom:1px solid var(--hair);
+    font-variant-numeric:tabular-nums;vertical-align:top}
+  .kat-tema td.k{font-family:var(--mono);font-weight:700}
+  .kat-tema th:nth-child(3),.kat-tema td.p{padding-right:5mm}
+  .kat-tema td.p{text-align:right;font-weight:700;width:24mm}
+  .kat-tema td.a{color:var(--mute);font-size:7.2pt;line-height:1.4}
 </style>""" + palet.blok_tema(EDISI_PALET)
 
 
@@ -495,6 +534,272 @@ def hal_broker_kosong(bd):
 </div>'''
 
 
+# ── Katalis — sebab pergerakan ───────────────────────────────────────────────
+# Halaman ini menjawab "kenapa", dan itu justru yang paling mudah dikarang.
+# Aturannya keras: tiap baris WAJIB membawa sumber (nama + tanggal + tautan),
+# dan tingkat keyakinannya ditulis di layar. Yang tidak punya sumber tidak
+# ditulis. Yang tidak ditemukan dinyatakan tidak ditemukan.
+TINGKAT = {
+    "a": ("RESMI", "Keterbukaan informasi &amp; pengumuman bursa — dokumen "
+                   "resmi emiten/IDX, bukan tafsiran pihak ketiga."),
+    "b": ("MEDIA", "Berita media pada rentang yang dibedah. Berdekatan waktu "
+                   "belum tentu penyebab — ini konteks, bukan pembuktian."),
+    "c": ("DUGAAN", "Belum dikonfirmasi sumber resmi. Tidak pernah dinaikkan "
+                    "menjadi sebab, sekalipun terdengar masuk akal."),
+}
+
+
+def _sumber_kabar(it):
+    """Nama sumber yang layak dicetak — 'IDX' saja tidak memberi tahu pembaca
+    apakah yang dibacanya pengumuman resmi emiten atau siaran pers bursa."""
+    if it.get("sumber") == "IDX":
+        return ("IDX — Keterbukaan Informasi" if it.get("jenis") == "pengumuman"
+                else "IDX — Berita Bursa")
+    return it.get("sumber") or "—"
+
+
+def _kunci(it):
+    """Kunci dedup katalis: tautan + judul + tanggal, BUKAN tautan saja.
+    Pengumuman IDX tanpa lampiran semuanya menunjuk ke satu URL generik
+    (lihat CLAUDE.md) — dedup ber-tautan meringkas belasan pengumuman berbeda
+    menjadi satu baris, senyap."""
+    return (it.get("tautan"), it.get("judul"), it.get("tanggal"))
+
+
+def kabar_emiten(tk, akhir, jendela, item=None):
+    """Item kabar.json yang menyebut `tk` dalam jendela [akhir-N, akhir].
+
+    Kolom `emiten` cuma terisi pada pengumuman IDX; berita media membawa kode
+    di judulnya saja, jadi judul ikut dipindai dengan batas kata (`\\bINET\\b`)
+    supaya 'MINET' atau 'INETRA' tidak ikut tertangkap.
+
+    `item` boleh diisi langsung — dipakai test_katalis.py supaya ujinya tidak
+    bergantung pada kabar.json yang isinya berputar tiap 7 hari."""
+    if item is None:
+        p = DATA / "kabar.json"
+        if not p.exists():
+            return []
+        item = json.loads(p.read_text(encoding="utf-8")).get("item", [])
+    pola = re.compile(rf"\b{tk}\b")
+    awal = (date.fromisoformat(akhir) - timedelta(days=jendela)).isoformat()
+    out = []
+    for it in item:
+        tgl = (it.get("waktu") or "")[:10]
+        if not (awal <= tgl <= akhir):
+            continue
+        if tk not in (it.get("emiten") or []) and not pola.search((it.get("judul") or "").upper()):
+            continue
+        out.append({"tingkat": "a" if it.get("sumber") == "IDX" else "b",
+                    "judul": it.get("judul") or "", "sumber": _sumber_kabar(it),
+                    "tautan": it.get("tautan") or "", "tanggal": tgl,
+                    "terkait": [k for k in (it.get("emiten") or []) if k != tk]})
+    return out
+
+
+def katalis(bd):
+    """Gabungan dua jalur: otomatis dari kabar.json + kurasi analis di blok
+    `katalis` berkas bedah (hasil penelusuran, tiap baris wajib bersumber).
+
+    kabar.json cuma menyimpan 7 hari terakhir, sedangkan edisi dirakit ulang
+    berkali-kali (delapan PDF dirakit ulang 18 Agu). Tanpa arsip, bangun ulang
+    bulan depan menghasilkan halaman katalis yang KOSONG tanpa satu pun galat —
+    persis pola 'gagal senyap' yang sudah mahal di proyek ini. Jadi hasil
+    panen disimpan ke bedah/katalis-<TK>-<tanggal>.json dan dibaca lebih dulu
+    (aturan 'simpan mentah hasil panen', CLAUDE.md)."""
+    tk, akhir = bd["ticker"], bd["tanggal"]
+    jendela = bd.get("katalis_jendela", 14)
+    arsip = AKAR / "bedah" / f"katalis-{tk}-{akhir}.json"
+    lama = json.loads(arsip.read_text(encoding="utf-8")) if arsip.exists() else []
+    gab = {_kunci(i): i for i in lama}
+    for i in kabar_emiten(tk, akhir, jendela):
+        gab[_kunci(i)] = i
+    otomatis = sorted(gab.values(), key=lambda i: i["tanggal"], reverse=True)
+    arsip.write_text(json.dumps(otomatis, ensure_ascii=False, indent=1), encoding="utf-8")
+
+    manual = [{"tingkat": "b", "terkait": [], **i} for i in bd.get("katalis", [])]
+    semua = {_kunci(i): i for i in otomatis}
+    semua.update({_kunci(i): i for i in manual})       # kurasi analis menang
+    urut = {"a": 0, "b": 1, "c": 2}
+    return sorted(semua.values(), key=lambda i: (urut.get(i["tingkat"], 3),
+                                                 [-ord(c) for c in i["tanggal"]])), jendela
+
+
+def pct_hari(tk, tgl):
+    """Perubahan penutupan `tk` pada tanggal `tgl` (%) dari data-idx OHLC.
+    None kalau tak ada barnya — emiten itu tidak diperdagangkan hari itu."""
+    p = DATA / "ohlc" / f"{tk}.json"
+    if not p.exists():
+        return None
+    d = json.loads(p.read_text(encoding="utf-8")).get("d") or []
+    for i, b in enumerate(d):
+        if b[0] == tgl:
+            return None if i == 0 or not d[i - 1][4] else (b[4] - d[i - 1][4]) / d[i - 1][4] * 100
+    return None
+
+
+def setema(tk, tgl, disebut, ambang=3.0):
+    """Emiten yang bergerak berbarengan, beserta ALASAN keterkaitannya.
+
+    Dua jalur, dan alasannya dicetak per baris supaya pembaca tahu dasar
+    pengelompokannya: (1) emiten yang disebut bersama di katalis halaman ini,
+    (2) sapuan satu subindustri IDX-IC. Jalur (1) selalu ditampilkan — 'disebut
+    tapi tidak bergerak' juga informasi; jalur (2) disaring ambang supaya
+    daftarnya bukan sekadar isi sektor."""
+    p = DATA / "emiten_sektor.json"
+    sek = json.loads(p.read_text(encoding="utf-8"))["emiten"] if p.exists() else {}
+    info = sek.get(tk) or {}
+    kand = {k: "disebut bersama pada katalis di halaman ini" for k in disebut if k != tk}
+    sub = info.get("subindustri")
+    if sub:
+        for k, v in sek.items():
+            if k != tk and v.get("subindustri") == sub:
+                kand.setdefault(k, f"satu subindustri IDX-IC — {sub}")
+    baris = []
+    for k, alasan in kand.items():
+        pc = pct_hari(k, tgl)
+        if pc is None or (abs(pc) < ambang and k not in disebut):
+            continue
+        baris.append({"kode": k, "nama": (sek.get(k) or {}).get("nama", ""),
+                      "pct": pc, "alasan": alasan})
+    baris.sort(key=lambda r: -abs(r["pct"]))
+    return baris[:7], sub
+
+
+def hal_katalis(bd, tgl_bar, kats, jendela):
+    """`tgl_bar` = sesi bursa terakhir yang masuk hitungan edisi (bar OHLC
+    terakhir), bukan tanggal terbit — keserempakan harus diukur pada hari yang
+    angkanya benar-benar dipakai halaman lain."""
+    tk, tgl = bd["ticker"], tgl_bar
+    disebut = sorted({k for i in kats for k in (i.get("terkait") or [])})
+    tema, sub = setema(tk, tgl, disebut)
+    pc_diri = pct_hari(tk, tgl)
+
+    lgd = "".join(f'<div class="t-{t}"><b>({t}) {TINGKAT[t][0]}</b>{TINGKAT[t][1]}</div>'
+                  for t in ("a", "b", "c"))
+
+    def kartu(i):
+        lbl = TINGKAT.get(i["tingkat"], TINGKAT["c"])[0]
+        rk = f'<div class="rk">{H.escape(i["ringkas"])}</div>' if i.get("ringkas") else ""
+        tautan = H.escape(i.get("tautan") or "")
+        sm = (f'<div class="sm">{H.escape(i.get("sumber") or "—")} · '
+              f'<a href="{tautan}">{tautan}</a></div>' if tautan else
+              f'<div class="sm">{H.escape(i.get("sumber") or "—")} · tautan tidak dicantumkan</div>')
+        return (f'<div class="kat-it t-{i["tingkat"]}">'
+                f'<div class="kh"><span class="lbl">{lbl}</span>'
+                f'<span class="tg">{tanggal_id(i["tanggal"])}</span></div>'
+                f'<div class="jd">{H.escape(i["judul"])}</div>{rk}{sm}</div>')
+
+    def tinggi_mm(i):
+        """Taksiran tinggi kartu (mm) untuk memutuskan pecah halaman. Halaman
+        A4 tidak menggulung — isi yang berlebih TIDAK memunculkan galat, ia
+        cuma terpotong diam-diam di bawah garis: uji pertama INET kehilangan
+        seluruh blok 'Batas Halaman Ini' dan separuh catatan tabel tanpa satu
+        pun peringatan. Taksirannya kasar dan sengaja longgar."""
+        n = 11.0 + -(-len(i.get("judul", "")) // 62) * 4.5
+        n += -(-len(i.get("ringkas") or "") // 95) * 3.6
+        n += -(-len((i.get("sumber") or "") + (i.get("tautan") or "")) // 120) * 2.6
+        return n + 2.6
+
+    if kats:
+        isi = "".join(kartu(i) for i in kats[:5])
+        n_a = sum(1 for i in kats if i["tingkat"] == "a")
+        # Jumlah dihitung per TINGKAT, bukan diklaim sebagai "katalis milik
+        # emiten ini": dokumen resmi yang terbit atas nama emiten LAIN (mis.
+        # pengumuman DOOH di halaman INET) tetap berperingkat resmi sebagai
+        # dokumen, tapi kalimatnya tak boleh berbunyi seolah emiten yang
+        # dibedah yang mengumumkannya. Nama penerbitnya ada di baris sumber.
+        headline = (f'{tk}: <b>{len(kats)}</b> catatan bersumber pada {jendela} hari terakhir — '
+                    f'<b>{n_a}</b> berperingkat resmi, <b>{len(kats) - n_a}</b> media'
+                    if n_a else
+                    f'{tk}: <b>{len(kats)}</b> catatan bersumber pada {jendela} hari terakhir, '
+                    '<b>tidak satu pun</b> berperingkat resmi')
+    else:
+        isi = ('<div class="blok integritas"><h3 class="rule">Tak Ditemukan Katalis Publik</h3>'
+               f'<p style="text-align:justify">Penelusuran keterbukaan informasi IDX, pengumuman '
+               f'bursa, dan berita pasar pada {jendela} hari terakhir sampai {tanggal_id(tgl)} '
+               f'tidak menemukan satu pun peristiwa yang menyebut {tk}. Pergerakan harga pada '
+               'rentang ini tidak dijelaskan oleh kabar publik yang bisa kami tunjuk sumbernya. '
+               'Itu apa adanya — kami tidak menyusun sebab yang terdengar masuk akal untuk '
+               'mengisi ruang ini.</p></div>')
+        headline = f'{tk}: <b>tidak ditemukan</b> katalis publik pada {jendela} hari terakhir'
+
+    if tema:
+        baris = "".join(
+            f'<tr><td class="k">{r["kode"]}</td><td>{H.escape(r["nama"])}</td>'
+            f'<td class="p c-{"bull" if r["pct"] >= 0 else "bear"}">'
+            f'{"+" if r["pct"] >= 0 else "−"}{B.fmt(abs(r["pct"]), 2)}%</td>'
+            f'<td class="a">{H.escape(r["alasan"])}</td></tr>' for r in tema)
+        diri = (f'{tk} sendiri {"+" if (pc_diri or 0) >= 0 else "−"}{B.fmt(abs(pc_diri), 2)}%'
+                if pc_diri is not None else f"{tk} tak punya bar pada tanggal itu")
+        blok_tema = f'''
+    <div class="sec" style="margin-top:4mm">
+      <h3 class="rule">Bergerak Bersamaan — {tanggal_id(tgl)}</h3>
+      <table class="kat-tema"><thead><tr><th>Kode</th><th>Nama</th><th style="text-align:right">1 Hari</th>
+      <th>Dasar keterkaitan</th></tr></thead><tbody>{baris}</tbody></table>
+      <div class="bd-note">{diri}. Tabel ini menunjukkan <b>keserempakan</b>, bukan sebab-akibat:
+      beberapa nama bergerak searah pada hari yang sama tidak membuktikan satu peristiwa yang sama
+      menggerakkannya. Dasar keterkaitan tiap baris ditulis supaya bisa diperiksa sendiri.</div>
+    </div>'''
+    else:
+        kal = (f'satu subindustri IDX-IC ({sub})' if sub else 'satu subindustri IDX-IC')
+        blok_tema = f'''
+    <div class="sec" style="margin-top:4mm">
+      <h3 class="rule">Bergerak Bersamaan — {tanggal_id(tgl)}</h3>
+      <p style="text-align:justify">Tidak ada emiten {kal} yang bergerak ±3% atau lebih pada
+      tanggal yang sama. Pergerakan {tk} pada hari itu berdiri sendiri terhadap sesama
+      subindustrinya — bukan gelombang sektoral.</p>
+    </div>'''
+
+    lebih = ""
+    if len(kats) > 5:
+        lebih = (f'<div class="bd-note">{len(kats) - 5} catatan bersumber lain pada rentang ini '
+                 f'tidak dimuat di halaman ini; seluruhnya tersimpan di arsip katalis edisi '
+                 f'({bd["ticker"]}, {tanggal_id(bd["tanggal"])}).</div>')
+
+    batas = '''
+    <div class="blok integritas" style="margin-top:auto;margin-bottom:2mm">
+      <h3 class="rule">Batas Halaman Ini</h3>
+      <p style="text-align:justify">Yang tercantum di sini hanya peristiwa yang bisa kami tunjuk
+      sumbernya — pengumuman IDX, berita media, atau penelusuran yang tautannya dicetak di atas.
+      Katalis yang tidak terpanen tidak berarti tidak ada. Sebaliknya, tidak satu pun baris di halaman
+      ini menyatakan bahwa harga bergerak <i>karena</i> peristiwa itu; yang kami nyatakan adalah
+      peristiwanya terjadi, kapan, dan dari sumber mana. Penilaian sebab-akibat tetap milik pembaca.</p>
+    </div>'''
+
+    def hal(eyebrow, isi_hal):
+        return f'''
+<div class="page">
+  {B.band(bd, eyebrow)}
+  <div class="inner">{isi_hal}
+  </div>
+  {B.kaki(bd)}
+</div>'''
+
+    def kepala(kartu_html):
+        return f'''
+    <div class="hangka">{headline}</div>
+    <div class="kat-lgd">{lgd}</div>
+    {kartu_html}{lebih}'''
+
+    tampil = kats[:5]
+    berat = [tinggi_mm(i) for i in tampil]
+    # Ambang 110mm: di bawah itu kartu + tabel keserempakan + blok batas masih
+    # muat bersama. Di atasnya halaman dipecah dua, dan kartunya dibagi
+    # setengah-setengah menurut berat — bukan semua kartu di halaman pertama,
+    # karena itu menyisakan halaman kedua yang nyaris kosong.
+    if sum(berat) <= 110:
+        return [hal("Katalis — Sebab Pergerakan", kepala(isi) + blok_tema + batas)]
+    k, jalan = len(tampil), 0.0
+    for j in range(1, len(tampil)):
+        jalan += berat[j - 1]
+        if jalan >= sum(berat) / 2:
+            k = j
+            break
+    return [hal("Katalis — Sebab Pergerakan", kepala("".join(kartu(i) for i in tampil[:k]))),
+            hal("Katalis — Lanjutan &amp; Keserempakan",
+                "".join(kartu(i) for i in tampil[k:]) + blok_tema + batas)]
+
+
 def hal_skenario(bd, em):
     p = em["pivot"]
     # Edisi harian menulis skenario `bull`/`bear` saja, sedangkan halaman ini
@@ -662,9 +967,12 @@ def main():
     # Batas data = sesi bursa terakhir yang masuk hitungan (bar terakhir OHLC),
     # BUKAN tanggal terbit — dicetak di sampul & legal supaya tidak disangka
     # waktu nyata (permintaan user 14 Agu).
-    cutoff = tanggal_id(ohlc[bd["ticker"]][-1]["d"])
+    tgl_bar = ohlc[bd["ticker"]][-1]["d"]
+    cutoff = tanggal_id(tgl_bar)
+    kats, jendela = katalis(bd)
     pages = [BSTYLE + hal_sampul(bd, em, r, pr, cutoff), hal_pcd(bd, r),
              hal_teknikal(bd, em, ohlc, pr), hal4,
+             *hal_katalis(bd, tgl_bar, kats, jendela),
              hal_skenario(bd, em)]
     draw = [f'gambarChart("chT","{bd["ticker"]}",{em["ema50"]},{json.dumps(em["pivot"])});']
 

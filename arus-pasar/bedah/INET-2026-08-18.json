@@ -1,0 +1,69 @@
+{
+ "edisi": "BA-INET-180826-E01",
+ "tipe": "bedah",
+ "ticker": "INET",
+ "nama": "PT Sinergi Inti Andalan Prima Tbk.",
+ "tanggal": "2026-08-18",
+ "tanggal_id": "Selasa, 18 Agustus 2026",
+ "cache": "2026-08-14",
+ "vonis": "Menutup 288 (+23,08%) di auto rejection atas dengan volume 1,12 miliar saham — sekitar lima kali rata-rata sepuluh hari sebelumnya. Kenaikan sebesar itu terjadi pada hari yang sama dengan tiga emiten infrastruktur digital lain, jadi yang perlu diperiksa lebih dulu bukan grafiknya, melainkan peristiwa apa yang menggerakkan keempatnya.",
+ "interpretasi_pcd": "Harga meninggalkan seluruh zona modal periode terakhir dalam satu sesi. Hampir semua pemegang yang masuk sebelum hari ini berada di posisi untung, dan tidak ada satu pun lapisan modal di atas harga sekarang yang bisa menahan koreksi — penopang terdekat adalah zona yang baru ditinggalkan, bukan struktur lama.",
+ "narasi_flow": "Belum ada setoran Broker Summary untuk tanggal ini.",
+ "catatan_flow": "Belum ada setoran Broker Summary untuk INET pada 18 Agustus 2026, sehingga komposisi pembelinya tidak bisa dinyatakan. Tidak ada angka broker yang direkayasa untuk mengisi kekosongan itu.",
+ "catatan_verifikasi": "Angka harga ditutup pada sesi bursa 18 Agustus 2026. Arus broker tidak tersedia untuk tanggal ini. Katalis dirangkum dari kabar.json (keterbukaan IDX, IPOT News, Kontan) dan penelusuran web bersumber — tiap baris membawa tautannya sendiri.",
+ "katalis": [
+  {
+   "tingkat": "b",
+   "tanggal": "2026-08-18",
+   "judul": "Saham DOOH, INET, WIFI dan IRSX kompak terbang pada sesi yang sama",
+   "sumber": "IDX Channel",
+   "tautan": "https://www.idxchannel.com/market-news/saham-dooh-inet-cs-kompak-terbang-simak-katalisnya",
+   "ringkas": "Artikel menyebut DOOH +16,33% ke 342, INET +23,93% ke 290, WIFI +8,53% dan IRSX +5,56% pada perdagangan 18 Agustus, dan mengaitkan reli keempatnya dengan rampungnya pengambilalihan 51% saham DOOH oleh PT Sinergi Internasional Investama. Pengaitan itu adalah pembacaan media atas keserempakan yang sama yang kami ukur sendiri di tabel keserempakan edisi ini — bukan pernyataan INET, dan bukan keterbukaan informasi INET.",
+   "terkait": [
+    "DOOH",
+    "WIFI",
+    "IRSX"
+   ]
+  },
+  {
+   "tingkat": "a",
+   "tanggal": "2026-08-14",
+   "judul": "DOOH — Pengumuman Perubahan Pengendali oleh Pengendali Baru",
+   "sumber": "IDX — Keterbukaan Informasi (emiten DOOH)",
+   "tautan": "https://www.idx.co.id/id/perusahaan-tercatat/keterbukaan-informasi",
+   "ringkas": "Peristiwa resmi yang menjadi rujukan berita di atas terjadi pada emiten LAIN, bukan INET: DOOH mengumumkan perubahan pengendali melalui pengendali barunya. Dicantumkan supaya pembaca melihat bahwa dokumen resminya ada, tetapi atas nama DOOH — bagi INET peristiwa ini tetap berperingkat konteks, bukan katalis resmi miliknya sendiri.",
+   "terkait": [
+    "DOOH"
+   ]
+  },
+  {
+   "tingkat": "b",
+   "tanggal": "2026-07-30",
+   "judul": "Sinergi Internasional Investama tuntaskan akuisisi 51% saham DOOH, tender offer wajib disiapkan",
+   "sumber": "Investor Trust",
+   "tautan": "https://investortrust.id/market/111275/sinergi-internasional-tuntaskan-akuisisi-51-saham-era-media-dooh-tender-offer-saham-publik-disiapkan",
+   "ringkas": "SII membeli 3.946.835.000 saham (51%) dari PT Prambanan Investasi Sukses pada harga Rp50 per saham, total sekitar Rp191,34 miliar, dan menyatakan akan menjalankan tender offer wajib sesuai POJK 9/2013. Kembali: ini peristiwa DOOH. Hubungannya dengan INET adalah tema, bukan kepemilikan — dan tema bukan sebab.",
+   "terkait": [
+    "DOOH"
+   ]
+  }
+ ],
+ "em": {
+  "label": "Auto Rejection Atas, Tema Infrastruktur Digital",
+  "arah": "bull",
+  "narasi_teknikal": "Menutup 288 di titik tertinggi hari, jauh di atas EMA50, dengan volume sekitar lima kali rata-rata sepuluh hari. Seluruh pivot resistensi hari sebelumnya sudah dilewati dalam satu sesi, sehingga tidak ada level bekas perdagangan di atas harga sekarang — acuan yang tersisa cuma proyeksi pivot.",
+  "strategi": "Hindari mengejar di area auto rejection; acuan yang bisa diuji adalah apakah harga bertahan di atas 234, batas bawah rentang hari ini.",
+  "skenario": {
+   "bull": {
+    "konfirmasi": "Close berikutnya bertahan di atas 288",
+    "rute": "288 → proyeksi pivot R1/R2",
+    "risiko": "Kenaikan satu sesi 23% tanpa keterbukaan informasi atas nama INET sendiri; temanya bisa berpindah secepat datangnya"
+   },
+   "bear": {
+    "konfirmasi": "Close di bawah 234 (batas bawah rentang hari ini)",
+    "rute": "234 → zona modal yang baru ditinggalkan",
+    "risiko": "Tidak ada lapisan modal di atas harga yang menahan koreksi; penurunan bisa menempuh seluruh kenaikan hari ini"
+   }
+  }
+ }
+}

@@ -12,21 +12,31 @@
  "catatan_flow": "Sepuluh tanggal, satu tangkapan layar per hari, top-10 tiap sisi. Broker di luar sepuluh besar tidak tercakup, sehingga total net harian di sini lebih kecil daripada net pasar sesungguhnya.",
  "catatan_verifikasi": "Data terbitan ini ditutup pada sesi bursa 14 Agustus 2026 — bukan data waktu nyata. Arus broker dirangkum dari sepuluh hari bursa berturut (3–14 Agustus), satu setoran Broker Summary per tanggal. Angka PCD/zona modal dihitung mesin dari riwayat harga, bukan dari done summary per harga.",
  "em": {
- "label": "Sepuluh Hari Net Beli Berturut",
- "arah": "bull",
- "narasi_teknikal": "Menutup 181 (+1,69%), 6,5% di atas EMA50 170 dan di atas pivot P 179. R1 185 jadi ujian terdekat setelah kenaikan 7,74% dalam sepuluh hari.",
- "strategi": "Berlaku selama close bertahan di atas S1 176; penembusan R1 185 diperlukan untuk mengonfirmasi kelanjutan serapan.",
- "skenario": {
-  "bull": {
-  "konfirmasi": "Close di atas 185 (R1)",
-  "rute": "185 → 191",
-  "risiko": "Serapan sepuluh hari sudah terhitung besar; tanpa pembeli baru, tenaganya bisa habis"
-  },
-  "bear": {
-  "konfirmasi": "Close di bawah 176 (S1)",
-  "rute": "176 → 172",
-  "risiko": "Rantai net beli terputus, penyerap berbalik jadi penjual"
+  "label": "Sepuluh Hari Net Beli Berturut",
+  "arah": "bull",
+  "narasi_teknikal": "Menutup 181 (+1,69%), 6,5% di atas EMA50 170 dan di atas pivot P 179. R1 185 jadi ujian terdekat setelah kenaikan 7,74% dalam sepuluh hari.",
+  "strategi": "Berlaku selama close bertahan di atas S1 176; penembusan R1 185 diperlukan untuk mengonfirmasi kelanjutan serapan.",
+  "skenario": {
+   "bull": {
+    "konfirmasi": "Close di atas 185 (R1)",
+    "rute": "185 → 191",
+    "risiko": "Serapan sepuluh hari sudah terhitung besar; tanpa pembeli baru, tenaganya bisa habis"
+   },
+   "bear": {
+    "konfirmasi": "Close di bawah 176 (S1)",
+    "rute": "176 → 172",
+    "risiko": "Rantai net beli terputus, penyerap berbalik jadi penjual"
+   }
   }
- }
- }
+ },
+ "katalis": [
+  {
+   "tingkat": "b",
+   "tanggal": "2026-08-05",
+   "judul": "BUMI menjawab permintaan penjelasan bursa soal rencana akuisisi Loyal Metals Ltd.",
+   "sumber": "CNBC Indonesia",
+   "tautan": "https://www.cnbcindonesia.com/market/20260805102950-17-755324/dikabarkan-mau-caplok-raksasa-tambang-australia-bos-bumi-buka-suara",
+   "ringkas": "Direksi BUMI menyatakan Scheme Implementation Deed dengan Loyal Metals Ltd. (tercatat di ASX) sudah diteken senilai sekitar AU$79,1 juta, namun transaksinya masih di tahap pemenuhan prasyarat — belum ada pengalihan dana maupun saham, dan masih menunggu persetujuan pemegang saham Loyal Metals serta proses hukum di Australia. Yang kami tunjuk adalah laporan media atas keterbukaan itu, bukan dokumen keterbukaan IDX-nya sendiri; karena itu barisnya berperingkat MEDIA, bukan RESMI."
+  }
+ ]
 }
