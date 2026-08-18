@@ -881,3 +881,28 @@ Prasyarat yang belum ada saat keputusan diambil: XBRL di cakram cuma
 menyimpan **satu** periode interim per emiten (774 emiten 1 periode, 175
 nol termasuk ARCI), karena panen sebelumnya hanya mengambil TW2 2026. Jadi
 diskret belum bisa diturunkan sampai TW1/TW2/TW3 dipanen.
+
+## Backlog: rapikan grid Kartu Analisa (tab Lengkap) — 19 Agu 2026
+
+Johan, verbatim: *"grid nya nanti di rapikan lagi ini, seperti prototype saja
+jadikan backlog"*. **Sengaja ditunda** — tab Lengkap dan Ringkas sudah benar
+isinya, ini murni tata letak.
+
+Yang terlihat di layar 1780px dan perlu dibereskan:
+
+- **"Fundamental Ringkas" turun sendirian ke baris kedua** dan menyisakan
+  ±3 kolom kosong di sebelahnya. Enam kartu di grid `auto-fit` 290px membelah
+  jadi 5+1 pada lebar itu.
+- **Tinggi kartu tidak seragam** dalam satu baris: "Karakter Emiten" berhenti
+  jauh lebih pendek daripada "Level · N Sentuhan" di sebelahnya. Preseden
+  proyek ini: kartu glosarium pernah ditolak Johan karena hal yang sama
+  ("membuat kesalahan yang sama nih, tidak sama tinggi").
+- **Isi kartu Aliran Asing membungkus buruk** — label "Porsi dari volume pasar
+  (20h)" pecah jadi lima baris karena kolom nilainya memakan lebar.
+
+Acuannya `docs/riset/kartu-analisa.html` Bagian 2 (purwarupa yang disetujui),
+bukan menyusun tata letak baru dari nol.
+
+Yang TIDAK boleh berubah saat merapikan: isi, urutan, jumlah observasi,
+satuan "lembar" pada aliran asing, dan baris asal-usul tiap kartu. Ini
+pekerjaan penempatan, bukan penyuntingan isi.
