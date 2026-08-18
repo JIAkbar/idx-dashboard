@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { gabungKabar, type Kabar, type KabarItem } from './kabar'
+import { gabungKabar, kabarTerbaru, type Kabar, type KabarItem } from './kabar'
 
 const brt = (p: Partial<KabarItem>): KabarItem => ({
   sumber: 'IPOT News', jenis: 'berita', judul: 'Judul', tautan: 'https://x/1', waktu: null, emiten: [], ...p,
@@ -47,5 +47,25 @@ describe('gabungKabar', () => {
       brt({ judul: 'baru', tautan: 'c', waktu: '2026-08-16T09:00:00+07:00' }),
     ]), [], [])
     expect(g.item.map((i) => i.judul)).toEqual(['baru', 'lama', 'tanpa waktu'])
+  })
+})
+
+describe('kabarTerbaru', () => {
+  it('dibaca dari isi, bukan dari `dipanen`', () => {
+    // Berkasnya ditulis ulang tiap 2 jam walau tak membawa kabar baru. Kalau
+    // umurnya diambil dari `dipanen`, halaman menulis "baru saja" di atas
+    // daftar yang berhenti tiga hari lalu — segar di layar, mati di data.
+    const k: Kabar = {
+      dipanen: '2026-08-18T22:00:00+07:00', sumber: [],
+      item: [brt({ tautan: 'a', waktu: '2026-08-15T09:00:00+07:00' }),
+        brt({ tautan: 'b', waktu: '2026-08-16T09:00:00+07:00' })],
+    }
+    expect(kabarTerbaru(k)).toBe('2026-08-16T09:00:00+07:00')
+  })
+
+  it('daftar kosong / item tanpa waktu → null, bukan hari ini', () => {
+    expect(kabarTerbaru(bungkus([]))).toBeNull()
+    expect(kabarTerbaru(bungkus([brt({ waktu: null })]))).toBeNull()
+    expect(kabarTerbaru(null)).toBeNull()
   })
 })

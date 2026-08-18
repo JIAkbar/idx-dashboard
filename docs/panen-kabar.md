@@ -111,3 +111,58 @@ dikerjakan). Isi tulisannya sengaja TIDAK disalin, cuma metadata + tautan.
 Belum dijadwalkan di Task Scheduler — jalan manual dulu sampai ritme
 pembaruan arsipnya (perkiraan ~0,75 tulisan/hari) dipastikan cukup dipanen
 mingguan, bukan harian seperti `kabar.json`.
+
+---
+
+## Jalur awan: semua sumber dicoba, hasilnya dilaporkan (18 Agu 2026)
+
+`panen-kabar.yml` tak lagi memanen sebagian sumber saja. Tiap 2 jam ia
+menjalankan `panen_kabar.py` (empat sumber) **dan** `panen_snips.py`, lalu
+`cek_kabar.py` menulis satu tabel ke ringkasan run: sumber · panen OK/GAGAL/
+KOSONG · jumlah item · kabar terbaru · umur · vonis.
+
+Tiga keadaan, bukan dua. **KOSONG** = sumbernya menjawab tapi nol item
+terparse — bisa memang sepi, bisa bentuk balasannya berubah dan pengurai kita
+diam-diam tak cocok lagi. Melebur keadaan itu ke "gagal" atau ke "ok"
+menghilangkan satu-satunya petunjuk bahwa pengurainya yang perlu diperbaiki,
+bukan jaringannya.
+
+Sumber yang **pernah** tembus dari IP datacenter dicatat di
+`data-idx/json/kabar-sumber-awan.json`. Hanya sumber di daftar itu yang boleh
+membuat job merah kalau berhenti tembus; yang belum pernah tembus dilaporkan
+apa adanya tanpa mewarnai job. Alarm yang merah tiap 2 jam berhenti dibaca,
+dan itu sama tak bergunanya dengan tak ada alarm.
+
+### Ambang basi — dan cara mengkalibrasi ulang
+
+Umur kabar dihitung dalam **jam kabar**: jam yang jatuh di hari bursa,
+07:00–19:00 WIB (jendela yang sama dengan cron panennya). Hari bursa dibaca
+dari `data-idx/json/ds_*.json` — kalender nyata, jadi 15–17 Agu 2026 (akhir
+pekan + Hari Kemerdekaan) tak terhitung tanpa perlu daftar libur yang disunting
+tangan.
+
+Angka ambangnya diukur dari jeda antar-item yang benar-benar terjadi, bukan
+ditebak. Ukur ulang begini:
+
+```bash
+python - <<'PY'
+import sys; sys.path.insert(0, 'scripts')
+import cek_kabar as C
+from datetime import datetime
+isi = {C.KABAR: C._muat(C.KABAR), C.SNIPS: C._muat(C.SNIPS)}
+for k, (nama, berkas, cocok, amb) in C.SUMBER.items():
+    w = sorted([i['waktu'] for i in isi[berkas] if i.get('waktu') and cocok(i)], reverse=True)
+    t = [datetime.fromisoformat(x) for x in w]
+    g = [C.jam_kabar(t[i+1], t[i]) for i in range(len(t)-1)]
+    print(f'{nama:16s} n={len(w):4d} maks={max(g):5.1f} ambang={amb}')
+PY
+```
+
+Hasil 18 Agu 2026: IPOT 4,0 · Kontan 5,0 · IDX pengumuman 6,6 · Snips 13,7 ·
+IDX berita 15,8 jam kabar. Ambang dipasang ~2–3× angka itu (18 / 18 / 18 / 30 /
+48). Kalau sebuah sumber berubah ritme, ukur dulu — jangan menaikkan ambang
+supaya alarmnya diam.
+
+**Swauji:** `python scripts/cek_kabar.py --demo` (9 kasus, termasuk yang paling
+mudah luput: keseluruhan segar tapi satu sumber diam berhari-hari, dan akhir
+pekan/libur yang tak boleh berbunyi).

@@ -27,12 +27,16 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import re
 import sys
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import requests
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import cek_kabar  # noqa: E402 — bentuk record status ditulis di berkas yang membacanya
 
 AKAR = Path(__file__).resolve().parent.parent
 KELUARAN = AKAR / "data-idx" / "json" / "snips.json"
@@ -44,6 +48,11 @@ UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
 HEADER = {"User-Agent": UA}
 
 SESI = requests.Session()
+
+# Kenapa panennya gagal — dipakai membedakan "Squarespace menolak" dari
+# "koleksinya memang kosong" di ringkasan Actions. Lihat `GALAT` di
+# `panen_kabar.py`; alasannya sama.
+GALAT: list[str] = []
 
 
 def ambil_halaman(offset: int | None, percobaan: int = 0) -> dict | None:
@@ -67,6 +76,8 @@ def ambil_halaman(offset: int | None, percobaan: int = 0) -> dict | None:
         return r.json()
     except Exception as e:  # noqa: BLE001 — sengaja menangkap semuanya
         print(f"  ! gagal ambil halaman (offset={offset}) — {e}", file=sys.stderr)
+        kode = re.search(r"(\d{3}) (?:Client|Server) Error", str(e))
+        GALAT.append(f"HTTP {kode.group(1)}" if kode else type(e).__name__)
         return None
 
 
@@ -119,9 +130,15 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Panen arsip Stockbit Snips")
     ap.add_argument("--hari", type=int, default=365,
                     help="rentang arsip yang disimpan, dalam hari (default 365)")
+    ap.add_argument("--status", default="",
+                    help="berkas JSONL: hasil panen (berhasil/gagal + kenapa). "
+                         "Dibaca scripts/cek_kabar.py")
     args = ap.parse_args()
 
     baru = panen(args.hari)
+    cek_kabar.catat(args.status, "snips", "Stockbit Snips",
+                    "ok" if baru else ("gagal" if GALAT else "kosong"),
+                    len(baru), ", ".join(dict.fromkeys(GALAT)))
     if not baru:
         print("Tidak ada item terpanen — berkas lama TIDAK ditimpa.", file=sys.stderr)
         return 1

@@ -115,6 +115,21 @@ export function useKabar(denganArsip = false) {
   return { kabar, galat }
 }
 
+/**
+ * Umur kabar dibaca dari ISI daftarnya — stempel waktu item terbaru.
+ *
+ * Ruas `dipanen` sengaja TIDAK dipakai untuk ini: berkasnya ditulis ulang tiap
+ * 2 jam walau tak membawa satu pun kabar baru, jadi "diperbarui 5 menit lalu"
+ * bisa terpampang di atas daftar yang isinya berhenti tiga hari lalu. Ini
+ * bentuk kegagalan yang sama dengan membaca mtime berkas (CLAUDE.md, kasus
+ * broker summary) — pembaca melihat angka yang segar dan menyimpulkan datanya
+ * segar.
+ */
+export function kabarTerbaru(k: Kabar | null): string | null {
+  return (k?.item ?? []).reduce<string | null>(
+    (maks, i) => (i.waktu && (!maks || i.waktu > maks) ? i.waktu : maks), null)
+}
+
 /** "2 jam lalu" / "Kamis, 14 Agu" — waktu relatif cuma sampai sehari, lewat
  *  itu tanggalnya lebih berguna daripada "31 jam lalu". */
 export function waktuKabar(iso: string | null, sekarang = new Date()): string {

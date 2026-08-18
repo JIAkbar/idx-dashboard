@@ -37,7 +37,18 @@ import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import arsip_mentah  # noqa: E402 — reuse, lihat CLAUDE.md rung 2
-import idx_net  # noqa: E402 — satu pintu jaringan IDX (curl_cffi)
+import cek_kabar  # noqa: E402 — bentuk record status ditulis di berkas yang membacanya
+
+# Impor LUNAK, sengaja. `idx_net` menarik `curl_cffi`, dan sampai 18 Agu 2026
+# impor itu di ujung berkas: satu lingkungan tanpa curl_cffi membuat SELURUH
+# skrip mati sebelum baris pertama jalan — Kontan, IPOT, dan Snips yang tak
+# pernah menyentuh idx.co.id ikut hilang karena dependensi milik sumber lain.
+# Sekarang kegagalannya dibatasi pada sumber yang memang butuh: dua sumber IDX.
+try:
+    import idx_net  # noqa: E402 — satu pintu jaringan IDX (curl_cffi)
+except Exception as _e:  # noqa: BLE001
+    idx_net = None
+    _KENAPA_TAK_ADA_IDX_NET = f"{type(_e).__name__}: {_e}"
 
 AKAR = Path(__file__).resolve().parent.parent
 KELUARAN = AKAR / "data-idx" / "json" / "kabar.json"
@@ -74,6 +85,23 @@ HEADER_UMUM = {"User-Agent": UA}
 
 SESI = requests.Session()
 
+# Kenapa tiap sumber gagal, dikumpulkan selagi panen berjalan. Tanpa ini,
+# "sumber mati" dan "sumber sepi" sama-sama tampil sebagai `0 item` — dan 403,
+# timeout, serta "bentuk balasan berubah" adalah tiga masalah berbeda dengan
+# tiga penanganan berbeda. Dikosongkan sebelum tiap sumber dipanen.
+GALAT: list[str] = []
+
+
+def _ringkas_galat(e: Exception) -> str:
+    """"HTTP 403" / "timeout" / "JSONDecodeError" — pendek, tapi cukup untuk
+    memutuskan langkah berikutnya. Teks galat utuh tetap masuk stderr."""
+    teks = str(e)
+    kode = re.search(r"HTTP (\d{3})|(\d{3}) (?:Client|Server) Error", teks)
+    if kode:
+        return f"HTTP {kode.group(1) or kode.group(2)}"
+    nama = type(e).__name__
+    return "timeout" if "Timeout" in nama or "timeout" in teks.lower() else nama
+
 
 def ambil(url: str, headers: dict, timeout: int = 45, arsip: str | None = None) -> requests.Response | None:
     """GET yang tak pernah menggagalkan seluruh panen: satu sumber mati bukan
@@ -92,6 +120,8 @@ def ambil(url: str, headers: dict, timeout: int = 45, arsip: str | None = None) 
             # GetAnnouncement tetap butuh itu, jadi tak boleh ikut dibuang.
             # Sumber NON-IDX (IPOT dsb.) sengaja TETAP di `requests` — tak ada
             # yang perlu disembuhkan di sana.
+            if idx_net is None:
+                raise RuntimeError(f"idx_net tak bisa dimuat — {_KENAPA_TAK_ADA_IDX_NET}")
             r = idx_net.get(url, headers=headers, timeout=timeout)
         else:
             r = SESI.get(url, headers=headers, timeout=timeout)
@@ -104,6 +134,7 @@ def ambil(url: str, headers: dict, timeout: int = 45, arsip: str | None = None) 
         return r
     except Exception as e:  # noqa: BLE001 — sengaja menangkap semuanya
         print(f"  ! gagal {url[:60]}… — {e}", file=sys.stderr)
+        GALAT.append(_ringkas_galat(e))
         return None
 
 
@@ -309,9 +340,10 @@ def main() -> int:
                     help="berapa hari kabar disimpan sebelum dibuang (default 7)")
     ap.add_argument("--hanya", default="",
                     help="panen sebagian sumber saja, dipisah koma "
-                         "(idx, idx-pengumuman, ipot, kontan). "
-                         "Dipakai jalur GitHub Actions yang cuma boleh memanen "
-                         "sumber tanpa batasan IP")
+                         "(idx, idx-pengumuman, ipot, kontan). Kosong = semua")
+    ap.add_argument("--status", default="",
+                    help="berkas JSONL: satu baris hasil per sumber "
+                         "(berhasil/gagal + kenapa). Dibaca scripts/cek_kabar.py")
     args = ap.parse_args()
 
     # kunci → (label, fungsi). Kunci dipakai `--hanya` supaya jalur awan bisa
@@ -339,8 +371,25 @@ def main() -> int:
     semua: list[dict] = []
     for kunci in pilih:
         nama, fn = SUMBER[kunci]
-        hasil = fn(args.batas)
-        print(f"  {nama}: {len(hasil)} item")
+        # Tiap sumber berdiri sendiri. Sebelumnya galat yang lolos dari
+        # `ambil()` (mis. balasan 200 yang bukan JSON) melempar keluar dari
+        # perulangan ini dan menghentikan SELURUH panen — sumber sehat yang
+        # antre di belakangnya ikut hilang tanpa pernah dicoba.
+        GALAT.clear()
+        try:
+            hasil = fn(args.batas)
+        except Exception as e:  # noqa: BLE001
+            print(f"  ! {nama} melempar galat — {e}", file=sys.stderr)
+            hasil = []
+            GALAT.append(_ringkas_galat(e))
+        # Tiga keadaan, bukan dua. "kosong" = sumbernya menjawab tapi nol item
+        # terparse: bisa memang sepi, bisa bentuk balasannya berubah dan
+        # pengurai kita diam-diam tak cocok lagi. Yang kedua kegagalan senyap,
+        # jadi tak boleh dilebur ke "gagal" maupun ke "ok".
+        status = "ok" if hasil else ("gagal" if GALAT else "kosong")
+        print(f"  {nama}: {len(hasil)} item [{status}{' — ' + ', '.join(dict.fromkeys(GALAT)) if GALAT else ''}]")
+        cek_kabar.catat(args.status, kunci, nama, status, len(hasil),
+                        ", ".join(dict.fromkeys(GALAT)))
         semua.extend(hasil)
 
     if not semua:

@@ -1,39 +1,39 @@
-# Panen kabar dari sumber yang TIDAK terikat IP rumahan.
+# Panen kabar dari GitHub Actions — SEMUA sumber dicoba, hasilnya dilaporkan
+# per sumber.
 #
-# Pembagiannya sengaja:
-#   awan (berkas ini)  → Kontan — feed publik biasa, jalan walau komputer
-#                         Johan mati
-#   mesin rumahan      → IDX berita, IDX pengumuman, IPOT News + arsipnya
+# Sampai 18 Agu 2026 berkas ini cuma memanen sebagian sumber karena "IDX 403
+# dari IP datacenter". Alasannya dibuat SEBELUM `scripts/idx_net.py` ada
+# (curl_cffi, sidik jari TLS) dan tak pernah diuji ulang sesudahnya. Yang
+# terbukti dari log run 32139468436: job HIJAU, commit terkirim, padahal
+# `IDX berita: 0 item` dan `IDX pengumuman: 0 item` — keduanya 403 lewat
+# `requests`. Satu sumber yang masih hidup cukup membuat panen terlihat sehat.
 #
-# CNBC Indonesia dan detikFinance dicabut 16 Agu 2026 (alasannya di
-# `scripts/panen_kabar.py`), jadi jalur awan kini tinggal satu sumber.
+# Jadi sekarang: coba semuanya, laporkan apa adanya, dan biarkan hasilnya yang
+# menjawab sumber mana yang tembus dari sini — pertanyaan yang mustahil dijawab
+# dari mesin rumahan. Yang tembus dicatat di `data-idx/json/kabar-sumber-awan.json`;
+# sumber yang PERNAH tembus lalu berhenti = job merah, sumber yang belum pernah
+# tembus tidak, supaya alarmnya tidak merah selamanya dan berhenti dibaca.
 #
-# IDX menjawab 403 dari IP datacenter (lihat docs/sumber-fundamental-idx.md),
-# jadi bagian itu TIDAK boleh dipindah ke sini — kalau dipaksa, yang terjadi
-# bukan galat melainkan kabar IDX diam-diam kosong tiap kali runner jalan.
-# IPOT ikut ditahan di rumah karena belum pernah diuji dari IP datacenter;
-# menaruhnya di sini berarti menebak.
-#
-# Aman dijalankan berdampingan: `panen_kabar.py` MENGGABUNG dengan isi berkas
-# yang sudah ada dan membuang duplikat berdasarkan judul, jadi jalur awan dan
-# jalur rumahan tidak saling menimpa.
+# Aman dijalankan berdampingan dengan jalur rumahan: `panen_kabar.py` MENGGABUNG
+# dengan isi berkas yang ada dan membuang duplikat — dua jalur tidak saling
+# menimpa.
 
-name: Panen kabar (sumber awan)
+name: Panen kabar (semua sumber)
 
 on:
   schedule:
-    # Tiap 2 jam pada jam sibuk WIB (00:00–12:00 UTC = 07:00–19:00 WIB).
-    # Berita pasar bergerak sepanjang hari bursa; di luar itu jarang berubah.
+    # Tiap 2 jam pada jendela kabar WIB (00:00–12:00 UTC = 07:00–19:00 WIB).
+    # Di luar itu sumbernya praktis diam; ambang basi di `cek_kabar.py`
+    # memakai jendela yang sama.
     - cron: '0 0,2,4,6,8,10,12 * * 1-6'
-  workflow_dispatch:        # bisa dipicu manual dari tab Actions
+  workflow_dispatch:
     inputs:
       sumber:
         description: >-
-          Sumber yang dipanen (pisahkan koma). Dipakai untuk MENGUJI sumber
-          mana yang tembus dari IP datacenter GitHub, karena itu tak bisa
-          dijawab dari mesin rumahan. Pilihan: ipot, idx, idx-pengumuman, kontan
+          Sumber kabar.json yang dipanen (pisahkan koma). Kosongkan untuk
+          semuanya. Pilihan: idx, idx-pengumuman, ipot, kontan
         required: false
-        default: 'ipot,idx,idx-pengumuman'
+        default: ''
 
 # Butuh menulis balik ke repo (hasil panen di-commit).
 permissions:
@@ -43,6 +43,10 @@ concurrency:
   # Dua jalannya sekaligus akan berebut commit ke berkas yang sama.
   group: panen-kabar
   cancel-in-progress: false
+
+env:
+  # Catatan hasil per sumber, di LUAR repo — ini bahan laporan, bukan data.
+  STATUS: ${{ runner.temp }}/status-kabar.jsonl
 
 jobs:
   panen:
@@ -54,33 +58,62 @@ jobs:
         with:
           python-version: '3.12'
 
+      # curl_cffi WAJIB: `idx_net` memakainya untuk meniru sidik jari TLS
+      # peramban. Tanpa itu dua sumber IDX mati 403 — dan sebelumnya baris ini
+      # cuma memasang `requests`, jadi jalur awan tak pernah benar-benar
+      # menguji jalur IDX yang sudah diperbaiki.
       - name: Pasang dependensi
-        run: pip install --quiet requests
+        run: pip install --quiet requests curl_cffi
 
-      # Kontan DICABUT dari jalur awan 18 Agu 2026: RSS-nya menjawab 200 dari
-      # mesin rumahan tanpa header apa pun, tapi 403 dari IP datacenter GitHub
-      # -- blokir per-IP, jadi tak ada header yang bisa menolong. Karena Kontan
-      # satu-satunya sumber di sini, workflow ini dijamin merah tiap 2 jam, dan
-      # alarm yang selalu merah berhenti jadi alarm.
-      #
-      # Sumbernya kini bisa dipilih lewat input supaya bisa DIUJI dari sini --
-      # pertanyaan "tembus dari datacenter atau tidak" mustahil dijawab dari
-      # rumah. Bawaan jadwal memakai sumber yang belum terbukti diblokir.
-      - name: Panen
+      # continue-on-error di kedua langkah panen: satu sumber (atau satu skrip)
+      # mati tidak boleh menghentikan yang lain. Vonis merah/hijau diputuskan
+      # SATU tempat, di langkah "Periksa" — bukan tersebar di exit code skrip.
+      - name: Panen kabar.json
+        continue-on-error: true
         run: >-
-          python scripts/panen_kabar.py --batas 30
-          --hanya "${{ github.event.inputs.sumber || 'ipot,idx,idx-pengumuman' }}"
+          python scripts/panen_kabar.py --batas 30 --status "$STATUS"
+          ${{ github.event.inputs.sumber && format('--hanya "{0}"', github.event.inputs.sumber) || '' }}
 
+      # Stockbit Snips: arsip 12 bulan di berkas terpisah (`snips.json`),
+      # dipakai tab STOCKBIT SNIPS di halaman Kabar. `--hari` sengaja dibiarkan
+      # bawaan 365 — angka itu juga jadi batas retensi, jadi memperkecilnya
+      # untuk "menghemat" akan MEMOTONG arsip setahun yang sudah terkumpul.
+      - name: Panen snips.json
+        continue-on-error: true
+        run: python scripts/panen_snips.py --status "$STATUS"
+
+      # Menjawab dua pertanyaan sekaligus, ke $GITHUB_STEP_SUMMARY: apakah
+      # panen barusan jalan (per sumber, dengan alasan gagalnya), dan apakah
+      # ISI kabar.json masih segar (stempel waktu item terbaru per sumber —
+      # bukan waktu berkas ditulis).
+      - name: Periksa hasil & kesegaran
+        id: cek
+        continue-on-error: true
+        run: python scripts/cek_kabar.py --status "$STATUS"
+
+      # Commit tetap jalan walau vonisnya merah: data yang berhasil terpanen
+      # tetap berguna, dan `kabar-sumber-awan.json` justru harus tersimpan
+      # supaya jalan berikutnya tahu siapa yang pernah tembus.
       - name: Commit kalau ada perubahan
+        if: always()
         run: |
-          if git diff --quiet -- data-idx/json/kabar.json; then
-            echo "Tidak ada kabar baru — tidak commit."
+          BERKAS="data-idx/json/kabar.json data-idx/json/snips.json data-idx/json/kabar-sumber-awan.json"
+          if git diff --quiet -- $BERKAS; then
+            echo "Tidak ada perubahan — tidak commit."
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data-idx/json/kabar.json
-          git commit -m "data: kabar dari sumber awan $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git add $BERKAS
+          git commit -m "data: panen kabar $(date -u +'%Y-%m-%d %H:%M UTC')"
           # Rebase dulu: jalur rumahan bisa saja mendorong commit lebih dulu.
           git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
           git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      # Vonisnya di sini, sesudah commit, supaya job merah tidak ikut membuang
+      # data yang sudah terpanen.
+      - name: Merah kalau ada sumber yang bermasalah
+        if: steps.cek.outcome == 'failure'
+        run: |
+          echo "::error::Ada sumber kabar yang gagal atau basi — lihat ringkasan di atas."
+          exit 1

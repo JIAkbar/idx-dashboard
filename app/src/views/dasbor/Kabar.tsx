@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useKabar, waktuKabar, type KabarItem } from '../../lib/dasbor/kabar'
+import { kabarTerbaru, useKabar, waktuKabar, type KabarItem } from '../../lib/dasbor/kabar'
 import { IkonMenu, IKON_CARI, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import './Kabar.css'
@@ -139,7 +139,9 @@ export function Kabar() {
             Judul dan tautan dari{' '}
             <b>{(kabar?.sumber ?? []).join(', ') || 'sumber yang sedang dimuat'}</b>
             {' '}— termasuk pengumuman resmi emiten dari IDX. PAPAN menautkan, tidak menyalin isinya.
-            {kabar && <> Terakhir diperbarui {waktuKabar(kabar.dipanen)}.</>}
+            {/* Dari ISI daftar, bukan dari ruas `dipanen` (waktu unduh) —
+                lihat `kabarTerbaru`. */}
+            {kabar && <> Kabar terbaru {waktuKabar(kabarTerbaru(kabar))}.</>}
           </p>
 
           {!kabar && !galat && <p className="muted">Memuat…</p>}

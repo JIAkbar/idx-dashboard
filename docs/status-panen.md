@@ -20,7 +20,8 @@ data baru, dan membaca mtime membuat data basi terlihat segar.
 | **Statistik harian** | Kalender Bursa, Beranda | IDX PDF harian | **18 Agu 2026** | 143 | ⚙️ Actions 14/16/18 UTC Sen–Jum | `update.yml` |
 | **Statistik mingguan** | Statistik Berkala | IDX PDF mingguan | 14 Agu 2026 | 33 | ⚙️ Actions (ikut `update.yml`) | `update.yml` |
 | **Statistik bulanan** | Statistik Berkala *(chip nonaktif — skema beda, belum dipetakan)* | IDX PDF bulanan `MS<YYMM>-E` | Sep 2025 – Jul 2026 | 11 | ❌ manual | **"Panen Lagi"** |
-| **Kabar** | Beranda, Kabar Pasar | IPOT · IDX berita · IDX pengumuman · Kontan | **18 Agu 2026** | — | ⚙️ Actions tiap 2 jam | `panen-kabar.yml` |
+| **Kabar** | Beranda, Kabar Pasar | IPOT · IDX berita · IDX pengumuman · Kontan | **18 Agu 2026** | — | ⚙️ Actions tiap 2 jam — **semua sumber dicoba**, hasil per sumber tampil di ringkasan run | `panen-kabar.yml` |
+| **Stockbit Snips** | Kabar Pasar (tab STOCKBIT SNIPS) | `snips.stockbit.com` (Squarespace `?format=json`) | 14 Agu 2026 | 238 | ⚙️ Actions tiap 2 jam (ikut `panen-kabar.yml`, sejak 18 Agu 2026) | `panen-kabar.yml` |
 | **Broker summary** | Broker Summary | Setoran kontributor (screenshot) | **18 Agu 2026** | 753 | 👤 kontributor + kurasi admin | halaman `/admin` |
 | **Fundamental** | Stock Detail | yfinance + turunan lokal | 18 Agu 2026 | 967 | ⚙️ Actions akhir bulan | `update-fundamental.yml` |
 | **Keuangan XBRL IDX** | Stock Detail | IDX `GetFinancialReport` | **2019–2025** (7 thn buku) | 949 | ❌ manual | `panen_keuangan_idx.py` — **"Panen Lagi"** |
@@ -30,10 +31,23 @@ data baru, dan membaca mtime membuat data basi terlihat segar.
 
 ## Yang perlu diketahui, bukan sekadar dilihat
 
-**Jalur awan vs jalur rumahan.** GitHub Actions berjalan dari IP datacenter, dan
-IDX memblokir sebagian panggilan dari sana. Kabar sudah dipindahkan ke sumber
-yang tembus (IPOT); Kontan dicabut dari jalur awan karena 403 per-IP. Panen yang
-menyentuh IDX secara langsung lebih andal dijalankan dari mesin rumahan.
+**Jalur awan vs jalur rumahan — sekarang diuji, bukan ditebak.** Sejak 18 Agu
+2026 `panen-kabar.yml` **mencoba semua sumber** dan melaporkan hasilnya per
+sumber ke ringkasan run; yang terbukti tembus dari IP datacenter dicatat di
+`data-idx/json/kabar-sumber-awan.json`. Sebelumnya sebagian sumber ditahan di
+rumah atas dugaan "IDX/Kontan 403 dari datacenter" — dugaan yang dibuat sebelum
+`scripts/idx_net.py` (curl_cffi) ada dan tak pernah diuji ulang sesudahnya.
+Bukti kenapa ini perlu: run `32139468436` **hijau** sambil mencatat
+`IDX berita: 0 item` dan `IDX pengumuman: 0 item` (keduanya 403 lewat
+`requests`) — satu sumber hidup cukup membuat panen terlihat sehat.
+
+**Kegagalan senyap kabar sudah punya alarm.** `scripts/cek_kabar.py` membaca
+**isi** `kabar.json` + `snips.json` (stempel waktu item terbaru **per sumber**,
+bukan mtime dan bukan ruas `dipanen`), digabung dengan hasil panen per sumber.
+Job merah kalau sumber yang PERNAH tembus dari awan berhenti tembus, atau
+datanya basi lewat ambang tanpa ada yang mengisinya. Ambangnya dihitung dalam
+**jam kabar** (hari bursa 07:00–19:00 WIB, kalender dari `ds_*.json`) supaya
+akhir pekan dan libur tak melahirkan alarm palsu.
 
 **403 IDX hampir selalu bentuk permintaan, bukan alamat IP.** Pemanen IDX kini
 memakai `curl_cffi` dengan impersonasi TLS; `requests` ditolak walau headernya
