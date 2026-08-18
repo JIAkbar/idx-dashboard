@@ -357,7 +357,25 @@
 /* Layar penuh: kanvas mengisi tinggi layar dikurangi bilah atas + kaki.
    `dvh` bukan `vh` — di telepon bilah alamat memotong ~105px yang `vh` tak
    pernah tahu. */
-.lantai .grf-panel:fullscreen .grf-chart-wrap { height: calc(100dvh - 190px); }
+/* Layar penuh: kanvas mengambil SISA ruang, bukan tinggi hasil kurang-kurangan.
+   Versi pertama memakai `calc(100dvh - 190px)` — angka 190 itu tebakan tinggi
+   bilah atas + kepala + bilah bawah, dan begitu bilah atas bertambah isi
+   (timeframe, jenis chart, kamera) tinggi sebenarnya jadi 282px. Selisih 92px
+   itu mendorong bilah bawah keluar layar tanpa satu pun galat.
+
+   Angka tetap untuk tinggi yang isinya bisa bertambah akan selalu salah suatu
+   saat; yang benar membiarkan flex membaginya. */
+.lantai .grf-panel:fullscreen { display: flex; flex-direction: column; }
+.lantai .grf-panel:fullscreen .panel-b { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.lantai .grf-panel:fullscreen .grf-kanvas-bungkus { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.lantai .grf-panel:fullscreen .grf-chart-wrap { flex: 1; min-height: 0; height: auto !important; }
+/* Layar penuh dipakai untuk MEMBACA GRAFIK. Kotak template dan dua blok
+   penjelasan tetap berguna di tata letak biasa, tapi di sini keduanya memakan
+   ruang yang justru diminta penggunanya: terukur, kanvas cuma dapat 446px dari
+   738px layar. Disembunyikan, bukan dihapus — keluar dari layar penuh
+   mengembalikannya. */
+.lantai .grf-panel:fullscreen .grf-template,
+.lantai .grf-panel:fullscreen .grf-panduan { display: none; }
 
 /* Bungkus kanvas + tanda PAPAN — lihat komentar di GrafikEmiten.tsx dekat
    attributionLogo:false: ini pengganti logo TradingView yang dimatikan, bukan
