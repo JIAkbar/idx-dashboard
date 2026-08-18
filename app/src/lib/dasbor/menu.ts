@@ -167,6 +167,14 @@ export const MENU_ITEMS: MenuItem[] = [
     ringkas: 'Sampaikan koreksi data atau usulan fitur langsung ke redaksi.',
     ikon: 'M21 12a8 8 0 01-8 8H4l2.4-2.9A8 8 0 1121 12zM9 11h6M9 14h4',
   },
+  {
+    // Backlog C6 — glosarium (75 istilah ditambang dari korpus PAPAN sendiri)
+    // + metodologi sumber data. Ikon buku terbuka, beda bentuk dari IKON_CATATAN
+    // (notepad, dipakai tab Changelog) supaya tak tertukar di flyout yang sama.
+    id: 'metodologi', path: '/metodologi', label: 'Metodologi & Glosarium', kode: 'MTD', grup: 'baca',
+    ringkas: '75 istilah PAPAN dengan definisi dan frekuensi pemakaian, plus penjelasan sumber data & batasnya.',
+    ikon: 'M4 19.5A2.5 2.5 0 016.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z',
+  },
 ]
 
 /** Kelompok beserta isinya — satu sumber untuk rail desktop (flyout) DAN laci

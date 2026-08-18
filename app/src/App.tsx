@@ -34,6 +34,7 @@ const Bulletin = lazy(() => import('./views/dasbor/Bulletin').then((m) => ({ def
 const Radar = lazy(() => import('./views/dasbor/Radar').then((m) => ({ default: m.Radar })))
 const Seasonality = lazy(() => import('./views/dasbor/Seasonality').then((m) => ({ default: m.Seasonality })))
 const GrafikEmiten = lazy(() => import('./views/dasbor/GrafikEmiten').then((m) => ({ default: m.GrafikEmiten })))
+const Metodologi = lazy(() => import('./views/dasbor/Metodologi').then((m) => ({ default: m.Metodologi })))
 const AdminLayout = lazy(() => import('./views/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })))
 const UnggahHarian = lazy(() => import('./views/admin/UnggahHarian').then((m) => ({ default: m.UnggahHarian })))
 const AkunAdmin = lazy(() => import('./views/admin/AkunAdmin').then((m) => ({ default: m.AkunAdmin })))
@@ -113,6 +114,10 @@ function App() {
                 <Route path=":kunci" element={<ForumRuang />} />
               </Route>
               <Route path="/feedback" element={<PenjagaHalaman kunci="saran"><Feedback /></PenjagaHalaman>} />
+              {/* Backlog C6 — publik SENGAJA tanpa PenjagaHalaman: glosarium &
+                  metodologi justru untuk pembaca yang belum percaya sistemnya,
+                  menguncinya di balik login melawan tujuannya sendiri. */}
+              <Route path="/metodologi" element={<Metodologi />} />
               {/* /admin ikut DI DALAM layout (rail/topbar tetap tampil) tapi
                   tetap dijaga ProtectedRoute — belum login dilempar ke /login
                   yang berujung balik ke / dengan LoginModal terbuka (#41).

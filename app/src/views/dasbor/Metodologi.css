@@ -1,0 +1,51 @@
+/* Metodologi & Glosarium (backlog C6) — semua warna dari token .lantai. */
+
+.lantai .mtd-intro { margin: 0 0 14px; font-size: 12px; line-height: 1.7; }
+
+/* Kartu metodologi: satu topik = satu kartu, sama pola dengan .kbr-it tapi
+   tanpa jadi tautan (isinya teks, bukan navigasi). */
+.lantai .mtd-kartu {
+  border: 1px solid var(--line); border-radius: var(--r); background: var(--bg2);
+  padding: 14px 16px; margin-bottom: 10px;
+}
+.lantai .mtd-kartu:last-child { margin-bottom: 0; }
+.lantai .mtd-kartu h3 { margin: 0 0 8px; font-size: 13px; color: var(--text); }
+.lantai .mtd-kartu p { margin: 0 0 8px; font-size: 12.5px; line-height: 1.7; color: var(--text2); }
+.lantai .mtd-kartu p:last-of-type { margin-bottom: 0; }
+.lantai .mtd-kartu code { font-family: var(--mono); font-size: 11px; color: var(--text2); }
+.lantai .mtd-rujuk { font-size: 10.5px !important; }
+
+/* Header glosarium: judul kiri, urutan + cari kanan — pola sama dgn .kbr-h. */
+.lantai .mtd-h { flex-wrap: wrap; gap: 8px; }
+.lantai .mtd-alat { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+.lantai .mtd-urutan .chip-t { padding: 5px 12px; font-size: 10.5px; }
+
+.lantai .mtd-list {
+  display: grid; grid-template-columns: 1fr; gap: 8px;
+}
+@media (min-width: 900px) {
+  .lantai .mtd-list { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+}
+
+.lantai .mtd-entri {
+  border: 1px solid var(--line); border-left: 2px solid var(--line2); border-radius: var(--r);
+  background: var(--bg2); padding: 11px 14px; scroll-margin-top: 16px;
+}
+.lantai .mtd-entri-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.lantai .mtd-entri h4 { margin: 0; font-size: 13px; color: var(--text); }
+.lantai .mtd-frek { font-size: 10px; font-family: var(--mono); white-space: nowrap; }
+.lantai .mtd-def { margin: 6px 0 0; font-size: 12.5px; line-height: 1.6; color: var(--text2); }
+.lantai .mtd-contoh {
+  margin: 6px 0 0; font-size: 12px; line-height: 1.6; font-style: italic; color: var(--text3);
+  border-left: 2px solid var(--line2); padding-left: 8px;
+}
+.lantai .mtd-catatan { margin: 6px 0 0 !important; font-size: 11px !important; }
+.lantai .mtd-ke {
+  display: inline-flex; align-items: center; gap: 4px; margin-top: 8px;
+  font-size: 11px; font-weight: 600; color: var(--amber); text-decoration: none;
+}
+.lantai .mtd-ke:hover { text-decoration: underline; }
+
+@media (max-width: 560px) {
+  .lantai .mtd-kartu { padding: 12px 14px; }
+}
