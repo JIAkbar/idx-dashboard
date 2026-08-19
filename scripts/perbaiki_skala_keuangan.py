@@ -41,15 +41,36 @@ sudah benar. Kasus yang membayarnya, ZBRA tahun buku 2019:
 
     `suara = [-1000]`; `len(set(suara)) == 1` dibaca sebagai SEPAKAT, padahal
     yang terjadi cuma SATU jangkar bicara dan satunya diam. ZBRA 2019 ditulis
-    1000x nilai sumbernya sendiri.
+    1000x nilai sumbernya sendiri. Dugaan awal "median seluruh riwayat" TIDAK
+    terbukti -- jangkarnya memang sudah dari tetangga terdekat; yang salah
+    adalah menerima satu suara tanpa penyanggah, diperparah karena 2019 ada di
+    ujung deret (tetangganya sesisi, semuanya sesudah restrukturisasi 2021).
 
-Dua cacat, dan keduanya ditutup di sini:
+Tiga cacat, dan ketiganya ditutup di sini:
 
-1. **Diam bukan setuju.** Sekarang KEDUA jangkar wajib bersuara dan sepakat.
-   Satu jangkar yang menuduh sendirian tidak cukup -- justru periode di ujung
-   deret (tetangganya cuma sesisi) dan emiten yang berubah ukuran drastis yang
-   paling gampang memberi satu suara yang menyesatkan.
-2. **Ditimpa di tempat = kesalahan jadi permanen.** Sesudah ZBRA 2019 ditulis
+1. **Jangkar punya PERAN, bukan suara sama rata.** `total_assets` yang
+   memutuskan; `equity` cuma boleh MEMBATALKAN, tak pernah memutuskan sendiri.
+   Diukur atas 6.574 periode berarsip: di tiga koreksi yang benar (LPPF 2023,
+   PKPK 2023, PURE 2019) `total_assets` menuduh bersih sementara `equity` diam
+   -- ekuitas memang berayun jauh lebih liar daripada aset (LPPF 2023 turun
+   ~15x karena pembagian dividen), jadi mewajibkan ekuitas ikut bersuara
+   MEMBUANG koreksi yang benar. Sebaliknya di tiga korban (ZBRA 2019, ARGO
+   2019, SGER 2023) justru `total_assets` yang tak menuduh. Aset yang
+   memutuskan, ekuitas yang menyanggah.
+2. **Arah NAIK butuh bukti lebih kuat daripada arah TURUN.** Bukan karena
+   arah naik mustahil -- versi pertama tambalan ini SEMPAT melarangnya, dan
+   sapuan atas 6.574 periode berarsip langsung menjatuhkannya: IMJS 2024 dan
+   TINS 2025-TW1 dua-duanya menyatakan "Satuan penuh" padahal isinya JUTAAN
+   (IMJS `total_assets` tercatat 29.410.622 untuk perusahaan beraset Rp 29,4
+   T). Larangan arah naik akan mengembalikan keduanya ke angka yang mustahil.
+
+   Yang benar: arah naik lebih JARANG, jadi ambang buktinya lebih tinggi. Di
+   dua kasus naik yang sah, KEDUA jangkar menuduh 1e6 dengan sisa rasio rapat
+   (IMJS 1,18 & 1,23; TINS 0,91 & 1,00). Di tiga kasus naik yang PALSU,
+   jangkarnya selalu sendirian: ZBRA cuma aset (dan itu pun sisa 1,76), ARGO
+   cuma ekuitas, SGER tak satu pun. Jadi turun boleh diputuskan aset sendiri,
+   naik wajib disepakati keduanya.
+3. **Ditimpa di tempat = kesalahan jadi permanen.** Sesudah ZBRA 2019 ditulis
    1000x, jalan berikutnya berjangkar pada angka yang sudah rusak, jadi
    membetulkannya tangan pun percuma. Sekarang nilai acuannya SELALU dihitung
    ulang dari XLSX di `_arsip-mentah/` (`dasar_arsip.py`, nol jaringan), bukan
@@ -134,7 +155,15 @@ MIN_PEMBANDING_CADANGAN = 4
 
 # Ruas jangkar penentu skala: NERACA saja. Posisi pada satu tanggal, bergerak
 # lambat, tak pernah mendekati nol pada emiten yang masih tercatat.
-JANGKAR = ("total_assets", "equity")
+#
+# PERANNYA BEDA, dan itu disengaja. `total_assets` yang MEMUTUSKAN: ia paling
+# stabil antar-periode. `equity` cuma MENYANGGAH -- ia bergerak jauh lebih
+# liar (dividen, restatement, ekuitas melintasi nol), jadi menunggu ia ikut
+# menuduh membuang koreksi yang benar, sementara membiarkannya menuduh sendiri
+# adalah persis cara ARGO 2019 nyaris ikut dinaikkan 1000x.
+JANGKAR_UTAMA = "total_assets"
+JANGKAR_SANGGAH = "equity"
+JANGKAR = (JANGKAR_UTAMA, JANGKAR_SANGGAH)
 
 # Beda sekecil ini dianggap pembulatan, bukan kesalahan skala.
 EPS_SAMA = 0.01
@@ -179,10 +208,9 @@ def putuskan(
 ) -> float:
     """Pengali yang harus dikenakan pada nilai `periode`; 1.0 = tak dikoreksi.
 
-    KEDUA jangkar wajib bersuara dan sepakat. Diam BUKAN setuju -- itu persis
-    yang merusak ZBRA 2019: `total_assets` menuduh 1000x sendirian sementara
-    `equity` menganggap nilainya wajar, dan versi lama membaca satu suara
-    tanpa penyanggah sebagai kesepakatan.
+    `total_assets` memutuskan, `equity` menyanggah, dan koreksi cuma boleh
+    MENGECILKAN. Ketiganya lahir dari enam periode yang terukur -- lihat
+    docstring modul.
     """
     urut = sorted(kerja)
     toleransi = TOLERANSI if berdasar else TOLERANSI_CADANGAN
@@ -218,19 +246,36 @@ def putuskan(
         return statistics.median(dekat) if len(dekat) >= minimal else None
 
     isi = kerja[periode]
-    suara: list[float] = []
-    for jangkar in JANGKAR:
-        v = isi.get(jangkar)
+
+    def suara(ruas: str) -> tuple[bool, float | None]:
+        """(jangkarnya bisa dinilai, tuduhannya)."""
+        v = isi.get(ruas)
         if not _angka(v) or not v:
-            return 1.0  # jangkar tak lengkap -> tak ada kesepakatan yang mungkin
-        med = median_lain(jangkar)
+            return False, None
+        med = median_lain(ruas)
         if med is None:
-            return 1.0
-        bagi = cari_pangkat(v, med, toleransi)
-        if bagi is None:
-            return 1.0  # satu jangkar bilang wajar -> tak ada kesepakatan
-        suara.append(bagi)
-    return suara[0] if len(set(suara)) == 1 else 1.0
+            return False, None
+        return True, cari_pangkat(v, med, toleransi)
+
+    bisa_utama, tuduhan = suara(JANGKAR_UTAMA)
+    if not bisa_utama or tuduhan is None:
+        return 1.0
+
+    # Penyanggah wajib BISA dinilai -- kalau ia bahkan tak punya pembanding,
+    # tak ada yang mengawasi keputusan `total_assets` dan itu terlalu sepi.
+    bisa_sanggah, sanggahan = suara(JANGKAR_SANGGAH)
+    if not bisa_sanggah:
+        return 1.0
+    if sanggahan is not None and sanggahan != tuduhan:
+        return 1.0  # dua jangkar menuduh besaran berbeda -> diam lebih aman
+
+    # Arah NAIK lebih jarang, jadi buktinya wajib lebih kuat: ekuitas harus
+    # ikut menuduh, bukan sekadar tidak menyanggah. ZBRA/ARGO/SGER tiga-tiganya
+    # naik atas satu jangkar sendirian dan tiga-tiganya salah; IMJS 2024 dan
+    # TINS 2025-TW1 naik dengan kedua jangkar sepakat dan dua-duanya benar.
+    if tuduhan > 1 and sanggahan != tuduhan:
+        return 1.0
+    return tuduhan
 
 
 def periksa_bucket(
@@ -353,6 +398,59 @@ def uji() -> None:
 
     kasus = [
         (
+            "LPPF 2023: aset menuduh 1e6, ekuitas DIAM (ayunan nyata) -> dibetulkan",
+            {
+                "2019-12-31": sehat(4.8329e12, 1.7466e12),
+                "2020-12-31": sehat(6.3191e12, 5.8112e11),
+                "2021-12-31": sehat(5.8512e12, 1.0060e12),
+                "2022-12-31": sehat(5.7502e12, 5.8016e11),
+                "2023-12-31": sehat(5.8804e18, 3.0738e16),
+                "2024-12-31": sehat(5.1408e12, 3.2579e11),
+                "2025-12-31": sehat(5.1386e12, 2.7291e11),
+            },
+            None,
+            [("2023-12-31", "total_assets", 5.8804e12),
+             ("2023-12-31", "equity", 3.0738e10)],
+        ),
+        (
+            "ARGO 2019: ekuitas menuduh SENDIRIAN, aset diam -> DIBIARKAN",
+            {
+                "2019-12-31": sehat(8.5033e7, -8.6633e7),
+                "2020-12-31": sehat(8.0185e10, -9.1996e10),
+                "2021-12-31": sehat(7.8705e10, -9.3128e10),
+                "2022-12-31": sehat(1.1295e12, -1.3824e12),
+                "2023-12-31": sehat(1.0915e12, 1.3056e11),
+                "2024-12-31": sehat(1.1203e12, 1.2188e11),
+            },
+            None,
+            [],
+        ),
+        (
+            "IMJS 2024: arah NAIK dengan KEDUA jangkar sepakat -> dibetulkan",
+            {
+                "2019-12-31": sehat(2.4296e13, 3.2819e12),
+                "2020-12-31": sehat(2.3640e13, 3.6044e12),
+                "2021-12-31": sehat(2.4715e13, 3.8101e12),
+                "2022-12-31": sehat(2.6929e13, 4.4230e12),
+                "2023-12-31": sehat(2.8712e13, 4.7378e12),
+                "2024-12-31": sehat(2.9411e7, 4.6969e6),
+                "2025-12-31": sehat(3.2902e13, 5.0934e12),
+            },
+            None,
+            [("2024-12-31", "total_assets", 2.9411e13),
+             ("2024-12-31", "equity", 4.6969e12)],
+        ),
+        (
+            "arah NAIK atas SATU jangkar saja -> DIBIARKAN (pola ZBRA/ARGO)",
+            {
+                "2020": sehat(1.0e15, 4.0e8), "2021": sehat(1.1e15, 4.1e8),
+                "2022": sehat(1.2e15, 4.2e8), "2023": sehat(1.2e9, 4.2e8),
+                "2024": sehat(1.3e15, 4.3e8),
+            },
+            None,
+            [],
+        ),
+        (
             "1e6 terlalu besar, KEDUA jangkar sepakat -> dibetulkan",
             {
                 "2020": sehat(1.0e12, 4.0e11), "2021": sehat(1.1e12, 4.1e11),
@@ -373,7 +471,7 @@ def uji() -> None:
             [("2023", "total_assets", 4.4e14), ("2023", "equity", 1.3e14)],
         ),
         (
-            "REGRESI ZBRA 2019: hanya total_assets menuduh, equity diam -> DIBIARKAN",
+            "REGRESI ZBRA 2019: sisa rasio 1,76 lewat TOLERANSI dan arahnya naik -> DIBIARKAN",
             {
                 "2019-12-31": sehat(5.5776e9, -9.0863e9),
                 "2020-12-31": sehat(6.686e9, -1.062e10),
