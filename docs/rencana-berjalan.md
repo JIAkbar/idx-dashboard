@@ -1083,6 +1083,20 @@ ulang.
 
 ## Antrean terbuka — 19 Agustus 2026, sore
 
+> **BACA JUGA `docs/ceklist-backlog.md`.** Antrean proyek ini hidup di **DUA
+> berkas**, dan itu sudah memakan korban: 19 Agu 2026 Johan bertanya "ada
+> backlog?" berkali-kali, dan tiap kali dijawab dari berkas INI saja — sehingga
+> **C3 Screener** (status "BELUM, nol jejak") tak pernah sekali pun muncul.
+> Johan: *"backlog screener aja belum kmu kerjakan sampai detik ini, payah kmu
+> tidak menepati janjimu"*.
+>
+> Yang hidup di sana dan **tidak** ada di sini: C2 indikator per emiten, **C3
+> screener**, #130 divergensi tiga lapis, B3 pemegang saham pengendali, A2
+> halaman Bedah Emiten.
+>
+> Menjawab "ada backlog?" dari satu berkas saja adalah jawaban yang **salah**,
+> bukan jawaban yang kurang lengkap.
+
 Ditulis ulang karena versi sebelumnya basi: beberapa baris masih menyebut
 "terhalang chrome-devtools" padahal penghalangnya kini **login**, bukan profil
 peramban. B1–B6 semuanya sudah dikerjakan dan tayang.
