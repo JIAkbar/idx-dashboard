@@ -1081,89 +1081,56 @@ dibuktikan NOL font Segoe tertanam — PDF hasil rakit ulang TIDAK disertakan
 di commit (edisi sudah tayang), Johan yang memutuskan kapan diterbitkan
 ulang.
 
-## Antrean terbuka — 19 Agustus 2026
+## Antrean terbuka — 19 Agustus 2026, sore
 
-Dua tabel karena keduanya menjawab pertanyaan berbeda: yang pertama menunggu
-**Johan**, yang kedua menunggu **giliran**. Butir di tabel pertama macet bukan
-karena sulit — tak ada data yang bisa memutuskannya.
+Ditulis ulang karena versi sebelumnya basi: beberapa baris masih menyebut
+"terhalang chrome-devtools" padahal penghalangnya kini **login**, bukan profil
+peramban. B1–B6 semuanya sudah dikerjakan dan tayang.
 
 ### A. Butuh keputusan Johan
 
-| # | Hal | Pilihannya | Yang dikorbankan tiap pilihan |
-|---|---|---|---|
-| A1 | **Bedah INET 18 Agu** — terbit atau tidak | (a) rakit ulang lalu terbitkan · (b) biarkan tak terbit | (a) angka PCD di edisi bertanggal 18 Agu **berubah**, karena jendela intraday 60 hari ikut maju · (b) `generate_index.py` terus mendaftarkannya sendiri tiap dijalankan, harus dicabut manual tiap kali menerbitkan apa pun |
-| A2 | **Panen statistik harian** — awan atau rumahan | (a) tetap GitHub Actions · (b) jalur rumahan jadi utama | (a) `update.yml` merah sampai 3× per hari bursa saat IDX memblokir IP runner — sinyal jujur, tapi merah berulang lama-lama berhenti dibaca · (b) panen berhenti saat komputer mati |
-| A3 | **Tingkat akses `/kartu`** | (a) tetap publik · (b) kunci di jenjang tertentu | (a) siapa pun bisa membacanya · (b) perlu diatur dari tab Akses; belum ada barisnya di `akses_halaman` |
+| # | Hal | Keadaan |
+|---|---|---|
+| A1 | Bedah INET 18 Agu | **DILEWATI** atas permintaan Johan ("INET skip saja dlu") |
+| A2 | Panen statistik harian: awan atau rumahan | **Johan minta cari alternatif lain.** Petunjuk yang belum dikejar: `download_idx.py` memanggil endpoint DAFTAR (`GetStatistic`) lalu mengunduh PDF dari URL yang diberikan daftar itu. Kalau yang diblokir cuma daftarnya sementara URL PDF-nya tembus, jalan keluarnya jauh lebih murah daripada memindahkan panen ke rumah. Belum diuji |
+| A3 | Akses `/kartu` | **DIPUTUSKAN: tetap publik** |
 
-**A2 sudah terukur, bukan dugaan.** Bentuk permintaan ditahan tetap, hanya
-jaringannya diganti: dari rumah 200 (96 baris harian, 33 mingguan, 22 bulanan),
-dari runner GitHub 403 — ketiganya. Blokirnya kumat-kumatan: hijau 10–12 Agu,
-merah 13/14/17/18.
+### B. Selesai 19 Agu — semua tayang
 
-### B. Bisa dikerjakan tanpa keputusan
+| # | Pekerjaan | Bukti |
+|---|---|---|
+| B1 | Grid Kartu Analisa tab Lengkap | kolom tetap 3×2, tinggi diseragamkan |
+| B2 | Compare symbols + Bar replay | 9 uji anti-bocor-masa-depan hijau |
+| B3 | Kuartal diskret Q4 | 949 tiker, 9.665 periode; rasio vs yfinance **1,000** |
+| B4 | Adu rancangan chart | `docs/riset/keputusan-chart.md` |
+| B5 | Adu rancangan Stock Detail | `docs/riset/keputusan-stock-detail.md` |
+| B6 | Glyph di luar subset font | nol span cadangan di PDF harian & mingguan |
 
-| # | Pekerjaan | Di mana | Kenapa belum | Biaya kasar |
-|---|---|---|---|---|
-| ~~B1~~ | ~~Rapikan grid tab Lengkap~~ — **CSS selesai 19 Agu, verifikasi visual TERHALANG** | `KartuAnalisa.tsx`, `KartuAnalisa.css` | chrome-devtools MCP terkunci sesi lain (tab "SAKTI — Monitoring Anggaran", PID 34120) — tsc/vitest 737/oxlint bersih, tapi 3 viewport belum diukur | kecil, murni CSS |
-| ~~B2~~ | ~~**Compare symbols** + **Bar replay**~~ — **KODE SELESAI 19 Agu, verifikasi visual TERHALANG** | `/grafik` — `GrafikEmiten.tsx/.css`, `grafikEmiten.ts`, `lantai.css` (token `--bnd1/2/3`), `IkonMenu.tsx` | tsc bersih · vitest **754** hijau (745 + 9 baru) · oxlint 0 galat · `npm run build` jadi. chrome-devtools MCP masih terkunci sesi lain (PID 34120, tab "SAKTI") — tiga viewport belum diukur | sedang; keduanya didukung lightweight-charts v5 |
-| ~~B3~~ | ~~Kuartal diskret **Q4**~~ — **SELESAI 19 Agu, verifikasi visual TERHALANG** | `turunkan_kuartal_diskret.py` + `fundamentalGabungan.ts` + `PanelLaporanKeuangan.tsx` | skrip sudah jalan atas data asli (949 tiker, 9.665 periode); Q4 ditutup di `bacaKuartalIdx` (audit − TW3). tsc bersih di luar berkas agen lain, vitest **745** hijau (737 + 8 baru). chrome-devtools terkunci sesi lain (PID 34120) — dua viewport belum diukur | nol jaringan |
-| B4 | Adu rancangan **chart** diulang | workflow tersimpan | 6 dari 6 agen kena server kelebihan beban | sedang; bahan TradingView sudah terekam, tak perlu disusun ulang |
-| B5 | Adu rancangan **Stock Detail** diulang | workflow tersimpan | lima usulnya jadi, sintesisnya gagal | kecil — cukup jalankan ulang tahap sintesis |
-| ~~B6~~ | ~~Susulan glyph di luar subset font~~ — **SELESAI 19 Agu** | seluruh `arus-pasar/` | `draft/` dan `cache/` ternyata bersih sejak awal. Yang tersisa satu: `build_bedah.py:272` — kemunculan **kedua** di kalimat yang sama dengan yang sudah ditambal di baris 271, pola identik dengan `build_weekly.py` (502 ditambal, 49 tidak) | — |
+Plus di luar daftar: chart chip-rentang, Annualised/TTM, mata uang XBRL per
+periode, tabel admin di ponsel, rute cadangan, Stock Detail baca `?sym=`.
 
-**Hasil B2 (19 Agu).** Dua alat TradingView, satu keputusan rancangan yang
-menentukan keduanya: **potong di HULU, jangan di hilir.**
+### C. Terbuka — butuh mata, bukan kode
 
-- **Bar replay** memotong `lilin`/`volume` di satu memo, SEBELUM indikator,
-  pola, penanda, legenda, dan garis pembanding dihitung. Semuanya turunan dua
-  array itu, jadi mundur di satu tempat berarti mundur di semuanya — dan
-  mustahil ada satu turunan yang lupa ikut. Memotong di hilir (mis. cuma di
-  `setData` seri harga) akan membuat MA 20 tetap dihitung dari data penuh
-  sementara lilinnya mundur: seluruh guna replay hilang, tanpa satu pun galat.
-  Sembilan uji baru mengunci kausalitasnya — MA/EMA/RSI/MACD/BB/OBV pada deret
-  yang dipotong di indeks 150 harus **sama persis** dengan nilai di indeks itu
-  pada deret penuh 220 titik, dan tak satu pun temuan pola boleh bertanggal
-  sesudah batas replay.
-- **Compare symbols** mengunci skala ke **persen** selama ada pembanding —
-  bukan menyarankan. Pada sumbu rupiah, emiten berharga kecil jadi garis rata
-  di dasar kanvas dan perbandingannya bukan sulit dibaca, ia salah. Basis
-  normalisasinya (lilin pertama yang TERLIHAT, jadi bergeser sendiri saat
-  sumbu digeser) ditulis di legenda — "+18%" tanpa tanggal basisnya adalah
-  angka yang tak bisa ditafsirkan dan tetap terlihat masuk akal.
-- Titik pembanding dipasang pada **waktu lilin utama**, bukan pada tanggal
-  harian pembandingnya sendiri. Seri dengan waktu di luar waktu lilin utama
-  MENAMBAH titik ke sumbu waktu chart; pada kerangka pekanan itu berarti lilin
-  mingguan tersebar renggang di antara empat tanggal kosong. `tutupSampai()`
-  (pencarian biner, tutup terakhir ≤ waktu) yang menjembatani — kunci lilin
-  pekanan jatuh di SENIN dan bulanan di TANGGAL 1, keduanya kerap libur bursa.
-- Kerangka intraday **tidak** dapat pembanding sama sekali (berkasnya harian,
-  sumbunya epoch) — legendanya menyebut alasannya, bukan diam.
+| # | Hal | Kenapa belum |
+|---|---|---|
+| C1 | **Verifikasi layar `/grafik` dan `/stock-detail`** | Keduanya di balik `PenjagaHalaman`; untuk tamu isinya tak di-mount sama sekali, jadi kanvas dan probe tak ada di DOM. Aturan proyek melarang mengisi kolom sandi. Sekali Johan login: RSI di chip `1M` harus sama dengan `Semua`; kartu Kuartalan BBCA harus berbunyi "Setahun (audit) 57.537" |
 
-**Hasil B3 (19 Agu).** Lubang Q4 ditutup di `bacaKuartalIdx`, bukan dengan
-menyambungkan berkas `keuangan_idx_diskret/` ke tampilan — rumusnya sudah ada
-di sana untuk Q2/Q3, yang kurang cuma bucket `tahunan` ikut masuk. Berkas
-diskret tetap dihasilkan sebagai lapisan data/audit, **tak dibaca satu halaman
-pun** dan **tak ikut di-commit** (949 berkas mati di git; keputusan menunggu
-Johan). Tiga temuan yang perlu diingat:
+### D. Terbuka — bisa dikerjakan
 
-- **Kontrak Q4 sengaja beda dari Q2/Q3.** Tanpa TW3, yang tersisa itu angka
-  SETAHUN PENUH — dipajang di kolom kuartal ia salah besar, bukan kurang
-  tepat. Jadi Q4-tanpa-TW3 mengembalikan null (Yahoo yang mengisi), sementara
-  Q2/Q3-tanpa-pengurang tetap menampilkan kumulatif berlencana `B·YTD` seperti
-  semula. Perilaku lama tak disentuh.
-- **228 dari 841 emiten** yang Q4 2025-nya bisa dihitung tak akan pernah
-  menampilkan kolomnya, karena daftar periode dibentuk dari kunci yfinance +
-  kunci `kuartal` IDX dan `kuartal` tak pernah memuat 12-31. Ditutup dengan
-  `isoQ4Idx()`.
-- **15 revenue diskret negatif** (0,35% dari 4.318 yang terisi) — semuanya
-  cacat SUMBER, bukan cacat rumus: 13 karena kumulatifnya TURUN (restatement /
-  penyesuaian audit), 2 karena TW1-nya memang sudah negatif di XBRL. Tak
-  dipangkas jadi nol. Yang paling parah **CDIA**: berkasnya bermata uang USD
-  tapi TW3 2025 tercatat 64.514.464.000.000 sementara TW2 66.870.123 dan audit
-  148.032.595 — satu periode ikut skala rupiah. Cacat hulu di
-  `panen_keuangan_idx.py`, bukan di penurunan diskret.
+| # | Pekerjaan | Catatan |
+|---|---|---|
+| D1 | **Perbaiki algoritma `perbaiki_skala_keuangan.py`** | Skrip itu MENGOREKSI angka yang sudah benar: ZBRA 2019 kini 1000× dari nilai sumbernya. Masalah median yang sama dengan PANI. ZBRA sengaja dibiarkan salah — membetulkannya sekarang langsung dirusak lagi oleh skrip yang sama |
+| D2 | **Kolom C: 10 kuartal diskret, nol jaringan** | Kolom pembanding di 2.615 XLSX 2025 yang SUDAH di cakram memuat seluruh interim 2024. ±20 menit, sekali jalan |
+| D3 | Satu sesi panen interim 2023 → 18 kuartal | Kolom C-nya memberi 2022 sekalian. ±2.640 permintaan, ±2 jam, wajib IP rumahan. **Probe murah dulu** (`--batas 3`) — ketersediaan interim 2023 belum pernah diuji |
+| D4 | Peta Investor tak menyebut tanggal data | Berkas metanya ada (263 byte) dan tak pernah dibaca. Jaringan kepemilikan dari pengumuman 2 Juni dibaca sebagai posisi sekarang |
+| D5 | `/kartu?kode=XXXX` tak dikenal → halaman kosong | Harus berbunyi "belum tersedia" |
+| D6 | 98 emiten pelapor USD tak punya baris "Setahun (audit)" | `fd.hist_*` punya angkanya sudah dikonversi, tapi bersumber yfinance — menyebutnya "audit" akan jadi kebohongan |
+| D7 | 3.099 dari 9.665 mata uang masih TAKSIRAN | 2020/2021/2025 audit dan 2026 TW2 tak pernah terarsip mentahnya. Menaikkannya jadi bacaan butuh unduh ulang |
+| D8 | Sembilan lompatan neraca belum terjelaskan | Empat wajar (ekuitas melintasi nol), sisanya cacat di sumber IDX sendiri |
+| D9 | `potongRentang` jadi kode mati | Tinggal dipakai ujinya saja; buang di sapuan kebersihan |
+| D10 | Satu baris `CLAUDE.md` salah | "XBRL IDX berhenti di tahun buku 2019" benar untuk DAFTAR laporan, salah untuk ISI-nya |
 
-**Cara memeriksa B6** ada di pesan commit `18dff05b`: baca cmap woff2 dengan
-fontTools untuk tahu cakupan, lalu PyMuPDF untuk tahu font mana yang
-**benar-benar menggambar teks**. `pypdf` menjawab pertanyaan yang berbeda
-(font apa yang terdaftar) dan melahirkan alarm palsu.
+**Peringatan yang harus dibaca sebelum menyentuh D2/D3:** jangan pernah
+menjalankan re-parse `--paksa` atas SELURUH arsip. `2025/audit` tidak ada di
+arsip dan 2020/2021 hanya 2 berkas — menjalankannya menyeluruh akan menghapus
+~2.330 catatan tahunan tanpa satu pun galat.
