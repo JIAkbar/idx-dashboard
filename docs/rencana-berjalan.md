@@ -966,3 +966,67 @@ injeksi CSS+markup identik ke app yang jalan). Kedua PDF Arus Pasar
 dibuktikan NOL font Segoe tertanam — PDF hasil rakit ulang TIDAK disertakan
 di commit (edisi sudah tayang), Johan yang memutuskan kapan diterbitkan
 ulang.
+
+## Antrean terbuka — ditutup 19 Agustus 2026
+
+Daftar tunggal, supaya tak perlu menelusuri beberapa bagian dokumen ini.
+Pembagiannya bukan kosmetik: tiga butir pertama macet bukan karena sulit,
+melainkan karena tak ada data yang bisa memutuskannya.
+
+### Butuh keputusan Johan
+
+1. **Bedah INET 18 Agu — terbitkan atau tidak.** PDF-nya sudah jadi tapi belum
+   pernah dirakit ulang sesudah sapuan font, jadi seluruh teksnya masih Segoe
+   UI; ia juga masih mencetak nama berkas internal di halaman 7 (sumbernya
+   sudah ditambal, PDF-nya belum). Merakit ulang menggeser jendela intraday 60
+   hari, sehingga angka PCD di edisi bertanggal 18 Agustus ikut berubah — dan
+   mengubah angka di edisi yang sudah bertanggal bukan keputusan teknis.
+   Selama belum diputuskan, `generate_index.py` mendaftarkannya sendiri tiap
+   kali dijalankan dan harus dicabut manual.
+
+2. **Panen statistik harian: awan atau rumahan.** IDX menolak IP runner GitHub
+   secara kumat-kumatan — hijau 10–12 Agu, merah 13/14/17/18. Terukur dengan
+   menahan bentuk permintaan tetap dan hanya mengganti jaringan (rumah 200,
+   runner 403). Jadi `update.yml` akan merah sampai 3× per hari bursa saat
+   blokirnya aktif. Itu sinyal jujur, tapi juga jenis merah berulang yang
+   lama-lama berhenti dibaca. Alternatifnya menjadikan jalur rumahan sebagai
+   jalur utama — konsekuensinya panen berhenti saat komputer mati.
+
+3. **Tingkat akses halaman `/kartu`.** Sekarang publik karena belum ada baris
+   di `akses_halaman`. Kalau ia termasuk yang dikunci di jenjang tertentu
+   seperti Bulletin, itu diatur dari tab Akses.
+
+### Bisa dikerjakan tanpa keputusan
+
+4. **Rapikan grid Kartu Analisa tab Lengkap.** Kartu Fundamental turun
+   sendirian ke baris kedua; tinggi kartu tak seragam dalam satu baris; label
+   Aliran Asing membungkus jadi lima baris. Acuannya purwarupa di
+   `docs/riset/kartu-analisa.html` Bagian 2. Yang boleh berubah hanya
+   penempatan — isi, urutan, jumlah observasi, satuan, dan baris asal-usul
+   tetap.
+
+5. **Compare symbols dan Bar replay di `/grafik`.** Johan menyebut keduanya
+   penting sesudah membandingkan dengan TradingView. Compare menjawab
+   "naiknya karena emitennya atau karena sektornya"; Bar replay satu-satunya
+   cara menguji pembacaan tanpa sudah tahu jawabannya.
+
+6. **Kuartal diskret Q4.** `scripts/turunkan_kuartal_diskret.py` sudah ditulis
+   dan lolos swauji, tapi **belum pernah dijalankan atas data asli**. Panen
+   TW1/TW2/TW3 2025 + audit sudah lengkap, jadi keempat kuartal 2025 kini bisa
+   diturunkan. Yang perlu diketahui: `fundamentalGabungan.ts` **sudah**
+   menurunkan Q2/Q3 secara live, tapi **Q4 tak dihitung di mana pun** — bucket
+   `tahunan` tak pernah disilangkan ke TW3.
+
+7. **Dua adu rancangan perlu dijalankan ulang.** Keduanya gagal karena server
+   kelebihan beban, bukan karena rancangannya; skripnya tersimpan lengkap
+   dengan bahannya, jadi tak perlu disusun ulang.
+   - **Chart** — apa yang kurang dari `/grafik`, dengan daftar alat TradingView
+     yang sudah dibaca langsung dari peramban. 6 dari 6 agen kena 529.
+   - **Stock Detail** — kedalaman 4 tahun. Lima usulnya jadi, sintesisnya gagal.
+
+8. **Susulan glyph di luar subset font.** Sudah disapu di `build.py`,
+   `build_bedah.py`, `build_weekly.py`, `build_monthly.py`, dan seluruh
+   `bedah/` + `edisi/`. Belum diperiksa: `draft/`, dan berkas data lain yang
+   belum pernah dirakit. Cara memeriksanya ada di pesan commit `18dff05b` —
+   ringkasnya, baca cmap woff2 dengan fontTools untuk cakupan, lalu PyMuPDF
+   untuk font yang benar-benar menggambar teks.
