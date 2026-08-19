@@ -58,7 +58,13 @@ export function LoncengNotifikasi() {
   }, [buka])
 
   function baca(id: string) {
-    void tandaiDibaca(id).then(muat).catch(() => {})
+    // catch() TIDAK boleh kosong — alasan sama dengan tombol "Tandai semua"
+    // di bawah: galat yang ditelan membuat klik yang gagal terlihat persis
+    // seperti klik yang berhasil.
+    void tandaiDibaca(id).then(muat).catch((e: unknown) => {
+      console.error('gagal menandai dibaca:', e)
+      setGagal('Gagal menandai. Coba lagi sebentar.')
+    })
   }
 
   return (
