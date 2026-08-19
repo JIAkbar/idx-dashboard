@@ -734,9 +734,16 @@ def halaman_kolofon(ed, kredit=None):
         # mengikuti status kurasi, bukan kolom `dimuat` (#138). Tanpa sapuan ini
         # penyetor yang setorannya lolos kurasi tapi tak masuk edisi hilang sama
         # sekali dari kolofon — terbaca sebagai penolakan, padahal bukan.
+        #
+        # Kata-katanya "terima kasih setorannya", BUKAN "setoran disetujui".
+        # Yang kedua adalah keterangan teknis, dan ia mendarat tepat di kolom
+        # tempat nama lain memasang jumlah emiten — jadi terbaca sebagai
+        # hitungan yang rusak, bukan sebagai pengakuan (Johan, 19 Agu: "bug nih
+        # kok ada setoran disetujui"). Aturan proyek: pengakuan di depan,
+        # keterangan teknis di belakang.
         sel += "\n" + "\n".join(
             f'<div class="kf-nama"><span>{alias}</span>'
-            f'<span class="kf-jml">setoran disetujui</span></div>'
+            f'<span class="kf-jml">terima kasih setorannya</span></div>'
             for alias in (ed.get("kredit_kontributor") or []) if alias not in cnt)
     else:
         nama_lama = ["Agitama Wahyu Putra Dita", "Mohamad Miftahul Ulum", "Ali Supian",
@@ -858,7 +865,7 @@ def render_pdf(html_path):
         page.wait_for_function("window.__chartsDone === true")
         # Font DITUNGGU terpisah (#127). Chromium mencetak begitu diperintah,
         # tak peduli @font-face masih di-decode: hasilnya PDF berisi Segoe UI
-        # padahal halaman yang sama di layar sudah memakai Red Hat — gagal
+        # padahal halaman yang sama di layar sudah memakai huruf terpasang — gagal
         # yang tak memberi satu pun pesan galat.
         page.wait_for_function("document.fonts.status === 'loaded'")
         page.pdf(path=str(pdf_path), format="A4", print_background=True,
