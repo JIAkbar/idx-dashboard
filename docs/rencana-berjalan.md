@@ -3,7 +3,59 @@
 Catatan hidup — diperbarui tiap ada keputusan. Ditulis ke berkas supaya tidak
 bergantung pada ingatan percakapan (yang bisa diringkas dan kehilangan detail).
 
-Terakhir diperbarui: 19 Agustus 2026 (setelah sesi chip rentang Grafik Emiten).
+Terakhir diperbarui: 19 Agustus 2026 (setelah sesi kartu Kuartalan — "Annualised" dibuang).
+
+## 📌 Sesi 19 Agu 2026 — "Annualised" dibuang dari kartu Kuartalan (Papan Pekerjaan #194–196)
+
+Johan: *"kerjakan chart sama annualised nya"*. Bagian **annualised**.
+
+Baris "Annualised" di kartu Kuartalan `/stock-detail` menjumlahkan kuartal yang
+kebetulan ada lalu menyebutnya setahun. Dua akibatnya berjalan bersamaan dan
+keduanya senyap: tahun berjalan yang baru dua kuartal tercetak sebagai angka
+setahun di **setiap** emiten, dan tahun buku yang sudah tutup diberi taksiran
+karangan padahal angka resminya sudah ada di cakram sejak 2019.
+
+**Keputusan yang sudah diambil — jangan diperdebatkan ulang:**
+
+| Keputusan | Alasan |
+|---|---|
+| "Annualised" **dihapus**, bukan diperbaiki | Tak ada versi benarnya: bukan setahun, bukan YTD, dan bukan taksiran yang menyatakan dirinya taksiran |
+| Tahun buku tutup → **"Setahun (audit)"** dari laporan resmi | Mengarang taksiran untuk tahun yang angka resminya sudah kita punya adalah inti kesalahannya |
+| "Sudah tutup" ditentukan dari **ada-tidaknya laporan setahunnya**, bukan kalender | Kalau angka resminya belum ada, tak ada yang perlu diklaim — selnya `—`, bukan tebakan |
+| Tahun berjalan → **"YTD (n kuartal)"**, n dipakai untuk SEMUA kolom | Begitu n sama di semua kolom, 2026 bisa diadu lurus dengan 2025. "Annualised" tak bisa diadu dengan apa pun |
+| n = kuartal pertama **berturut-turut** (Q1, Q1+Q2, …) | Menjamin kolom tahun berjalan tak pernah `—` gara-gara labelnya sendiri; tahun lain yang bolong memang `—`, dan itu jujur |
+| TTM hanya bila **4 kuartal kalender rapat** berakhir di kuartal terlapor terakhir | `length === 4` menjaga jumlah, bukan keterurutan — empat nilai teratas bisa merentang lima kuartal |
+| **Tidak** "tampil dengan catatan" | Angka tersalin ke spreadsheet orang, catatan kakinya tidak |
+| Laporan setahun **bukan rupiah → disembunyikan** | Kolom kuartal sudah dinormalkan ke rupiah di hulu, laporan setahun belum. AADI meleset ~17.000× kalau disandingkan polos |
+| **Uji penutupan tahunan tidak dipakai** sebagai penjaga | `Q1+Q2+Q3+Q4 ≡ Audit` itu identitas aljabar — lulus 100% selamanya, termasuk untuk operand yang tertukar tahun atau salah skala |
+
+**Angka bukti** (dibaca dari berkas nyata lewat fungsi render yang sama persis
+dengan yang dipakai layar, satuan miliar rupiah):
+
+| Emiten | Kolom | Annualised (sebelum) | Setahun (audit) | YTD (2 kuartal) | TTM |
+|---|---|---|---|---|---|
+| BBCA | 2026 / 2025 | 29.534 / **43.156** | — / **57.537** | 29.534 / 29.016 | **—** (rapat cuma 3) |
+| TLKM | 2026 / 2025 | 10.623 / 11.676 | — / 17.814 | 10.623 / — | **17.134** |
+| ASII | 2026 / 2025 | 12.533 / 23.811 | — / 32.769 | 12.533 / 15.515 | **—** (rapat cuma 3) |
+| AADI (pelapor USD) | 2026 / 2025 | 2.557 / 10.753 | — / — | 2.557 / 3.504 | — |
+
+BBCA 2025 tercetak `43.156` padahal laporan resminya `57.537.287.000.000`
+(Q3 tak dipanen) — meleset 25% tanpa satu pun galat.
+
+**Sapuan regresi TTM**: dari 633 emiten yang punya kuartalan, syarat lama
+meloloskan **629**, syarat baru **289**. **340 emiten (54%) selama ini memajang
+TTM palsu** — bukan kasus pinggiran.
+
+**Ketergantungan yang belum tertutup**: berkas laporan resmi menyimpan mata
+uang per BERKAS, bukan per periode. Selama panen mata uang campur (CDIA, SMMT,
+ALMI, CUAN, RIGS, MBSS dkk.) belum beres, satu periode yang salah mata uang
+tetap lolos ke baris "Setahun (audit)" tanpa terdeteksi dari sisi tampilan.
+Penjaga yang ada sekarang cuma menangkap beda mata uang antar-SUMBER, bukan
+antar-periode di dalam satu berkas.
+
+**Verifikasi peramban belum jalan** — `/stock-detail` di balik login dan
+CLAUDE.md melarang mengisi kolom sandi; rinciannya di
+`docs/jejak-permintaan.md` #194–196.
 
 ## 📌 Sesi 19 Agu 2026 — Chip rentang kaki `/grafik` (B3, Papan Pekerjaan #191–193)
 

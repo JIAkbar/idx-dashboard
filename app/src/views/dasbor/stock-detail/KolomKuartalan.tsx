@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
-import type { QuarterMap, StockFundamental } from '../../../lib/dasbor/stockDetailData'
+import type { QuarterMap, StockFundamental, StockKeuangan } from '../../../lib/dasbor/stockDetailData'
+import { useStockKeuanganIdx } from '../../../lib/dasbor/stockDetailData'
 import { FdPercent } from '../../../components/dasbor/FdPercent'
 import { LencanaTurunan } from '../../../components/dasbor/LencanaTurunan'
 
@@ -21,7 +22,7 @@ function TR(lbl: string, val: ReactNode) {
 }
 
 /**
- * Format satu sel tabel Kuartalan/Annualised/TTM — `null`/`undefined` (bahan
+ * Format satu sel tabel Kuartalan/Setahun/YTD/TTM — `null`/`undefined` (bahan
  * tak ada, mis. kuartal yang tak dipanen atau dilewati sanity-check backend)
  * WAJIB "—", HANYA nol sungguhan (v === 0) yang boleh dirender "0". Diekspor
  * & diuji sendiri (KolomKuartalan.test.ts) karena inilah tepat titik yang
@@ -37,14 +38,81 @@ export function fmtCell(v: number | null | undefined, mode: QMode): string {
     : (v / 1e9).toLocaleString('id-ID', { maximumFractionDigits: 0 })
 }
 
+/** Indeks kuartal absolut supaya "berurutan" bisa diuji dengan pengurangan. */
+function idxKuartal(y: number, q: string): number {
+  return y * 4 + (Number(q.slice(1)) - 1)
+}
+
+/**
+ * Berapa kuartal PERTAMA berturut-turut (Q1, Q1+Q2, ...) yang terisi di tahun
+ * terbaru. Inilah "n" pada label YTD: angkanya jadi bisa diadu lurus dengan
+ * tahun-tahun sebelumnya pada jumlah kuartal yang sama — sesuatu yang angka
+ * setahun-hasil-karangan tak pernah bisa. 0 = Q1 pun belum ada.
+ */
+export function ytdKuartal(qData: QuarterMap): number {
+  const tahun = Object.keys(qData).map(Number)
+  if (!tahun.length) return 0
+  const ymap = qData[String(Math.max(...tahun))] || {}
+  let n = 0
+  while (ymap['Q' + (n + 1)] != null) n++
+  return n
+}
+
+/** Jumlah Q1..Qn tahun `y`. `null` kalau ada satu saja yang bolong — sebagian
+ *  tahun tak boleh menyamar jadi YTD n kuartal. */
+export function jumlahYtd(qData: QuarterMap, y: number, n: number): number | null {
+  if (n < 1) return null
+  const ymap = qData[String(y)] || {}
+  let sum = 0
+  for (let i = 1; i <= n; i++) {
+    const v = ymap['Q' + i]
+    if (v == null) return null
+    sum += v
+  }
+  return sum
+}
+
+/**
+ * TTM hanya sah bila empat kuartal kalender BERURUTAN tanpa celah dan
+ * berakhir di kuartal terlapor terakhir. Syarat lama cuma menghitung "ada
+ * empat nilai" — empat nilai teratas bisa merentang lima kuartal (mis. Q2,
+ * Q4, Q1, Q2) dan tetap disebut TTM. `tersedia` = panjang runtun yang benar
+ * ada, dipakai memberi tahu pembaca kenapa selnya kosong.
+ */
+export function hitungTtm(qData: QuarterMap): { sum: number | null; tersedia: number } {
+  const nilai = new Map<number, number>()
+  Object.entries(qData).forEach(([y, qmap]) => {
+    Object.entries(qmap).forEach(([q, v]) => { if (v != null) nilai.set(idxKuartal(Number(y), q), v) })
+  })
+  if (!nilai.size) return { sum: null, tersedia: 0 }
+  const akhir = Math.max(...nilai.keys())
+  let runtun = 0
+  while (runtun < 4 && nilai.has(akhir - runtun)) runtun++
+  if (runtun < 4) return { sum: null, tersedia: runtun }
+  let sum = 0
+  for (let i = 0; i < 4; i++) sum += nilai.get(akhir - i) as number
+  return { sum, tersedia: 4 }
+}
+
+const RUAS_TAHUNAN = { ni: 'net_income', eps: 'eps', rev: 'revenue' } as const
+
 /**
  * Port fdQTabBuild() index_live.html baris 3928-3993. Re-layout mockup
  * stock-detail-relayout.html: seksi ekstra "Dividen & Yield" + "Info Pasar"
  * yang dulu numpang di mode Net Income DIHAPUS — datanya sekarang tampil
  * permanen di hero (.statgrid: Mkt Cap/EV/Shares/Free Float) dan strip
  * rasio + panel Dividen (Div/payout/yield), jadi murni duplikat.
+ *
+ * Baris "Annualised" DIHAPUS (19 Agu 2026): ia menjumlahkan kuartal yang
+ * kebetulan ada lalu menyebutnya setahun, jadi tahun berjalan yang baru dua
+ * kuartal tercetak sebagai angka setahun di SETIAP emiten — dan untuk tahun
+ * buku yang sudah tutup ia mengarang taksiran padahal angka resminya sudah
+ * ada di cakram. Gantinya dua baris yang keduanya bisa diadu: angka setahun
+ * dari laporan resmi, dan YTD apa adanya pada jumlah kuartal yang sama
+ * lintas tahun. Angka tersalin ke spreadsheet orang, catatan kakinya tidak
+ * — jadi kejujurannya harus ada di LABEL, bukan di catatan.
  */
-function QuarterlyTable({ fd, mode }: { fd: StockFundamental; mode: QMode }) {
+function QuarterlyTable({ fd, mode, kd }: { fd: StockFundamental; mode: QMode; kd: StockKeuangan | null }) {
   const qData: QuarterMap = (mode === 'ni' ? fd.q_net_income : mode === 'eps' ? fd.q_eps : fd.q_revenue) ?? {}
   const fmt = (v: number | null | undefined) => fmtCell(v, mode)
 
@@ -52,14 +120,14 @@ function QuarterlyTable({ fd, mode }: { fd: StockFundamental; mode: QMode }) {
   const quarters = ['Q1', 'Q2', 'Q3', 'Q4']
   const blankCols = Math.max(0, years.length - 1)
 
-  // TTM: 4 kuartal terbaru lintas tahun, urut desc (sama seperti sumber).
-  const allQ: [number, string, number][] = []
-  Object.entries(qData).forEach(([y, qmap]) => {
-    Object.entries(qmap).forEach(([q, v]) => { if (v != null) allQ.push([Number(y), q, v]) })
-  })
-  allQ.sort((a, b) => (a[0] !== b[0] ? b[0] - a[0] : b[1].localeCompare(a[1])))
-  const ttmVals = allQ.slice(0, 4).map((r) => r[2])
-  const ttmSum = ttmVals.length === 4 ? ttmVals.reduce((a, b) => a + b, 0) : null
+  const nYtd = ytdKuartal(qData)
+  const ttm = hitungTtm(qData)
+
+  /* Kolom kuartal sudah dinormalkan ke rupiah di hulu, laporan setahun BELUM
+     (98 emiten melapor dolar). Menyandingkannya apa adanya meleset ~17.000x
+     tanpa satu pun galat, jadi yang bukan rupiah sengaja tak ditampilkan. */
+  const beda = kd && kd.currency !== 'IDR' ? kd.currency : null
+  const tahunan = beda ? null : kd?.tahunan
 
   const suffix = mode === 'eps' ? 'IDR' : 'B IDR'
 
@@ -83,17 +151,25 @@ function QuarterlyTable({ fd, mode }: { fd: StockFundamental; mode: QMode }) {
             </tr>
           ))}
           <tr className="fd-divider">
-            <td>Annualised</td>
+            <td>Setahun (audit)</td>
             {years.map((y) => {
-              const ymap = qData[String(y)] || {}
-              const vals = Object.values(ymap).filter((v) => v != null)
-              const sum = vals.length ? vals.reduce((a, b) => a + b, 0) : null
-              return <td key={y} className="r">{fmt(sum)}</td>
+              const v = tahunan?.[`${y}-12-31`]?.[RUAS_TAHUNAN[mode]] ?? null
+              return (
+                <td key={y} className="r" title={v == null && beda ? `Laporan setahun disajikan dalam ${beda}, tak sebanding dengan kolom rupiah` : undefined}>
+                  {fmt(v)}
+                </td>
+              )
             })}
           </tr>
+          {nYtd > 0 && (
+            <tr>
+              <td>{`YTD (${nYtd} kuartal)`}</td>
+              {years.map((y) => <td key={y} className="r">{fmt(jumlahYtd(qData, y, nYtd))}</td>)}
+            </tr>
+          )}
           <tr className="ttm-row">
             <td>TTM</td>
-            <td className="r">{fmt(ttmSum)}</td>
+            <td className="r" title={ttm.sum == null ? `Butuh 4 kuartal berurutan, tersedia ${ttm.tersedia}` : undefined}>{fmt(ttm.sum)}</td>
             {blankCols > 0 && <td colSpan={blankCols} />}
           </tr>
         </tbody>
@@ -105,6 +181,7 @@ function QuarterlyTable({ fd, mode }: { fd: StockFundamental; mode: QMode }) {
 /** Panel kuartalan bertab (Net Income/EPS/Revenue) — kolom KIRI mockup. */
 export function PanelKuartalan({ fd }: { fd: StockFundamental }) {
   const [mode, setMode] = useState<QMode>('ni')
+  const { data: kd } = useStockKeuanganIdx(fd.ticker)
   return (
     <div className="panel">
       <div className="panel-h">
@@ -125,7 +202,7 @@ export function PanelKuartalan({ fd }: { fd: StockFundamental }) {
         </div>
       </div>
       <div className="panel-b">
-        <QuarterlyTable fd={fd} mode={mode} />
+        <QuarterlyTable fd={fd} mode={mode} kd={kd} />
       </div>
     </div>
   )
