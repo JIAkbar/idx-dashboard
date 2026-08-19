@@ -263,7 +263,7 @@ def statistik_hari(em, ohlc):
         ("EMA50", f'{fmt(em["ema50"])} <small>({f"{vs_ema:+.1f}".replace(".", ",")}%)</small>'),
         ("Pivot Harian", fmt(em["pivot"]["P"])),
         ("Volume", f'{fmt(o["vol_juta"],1)} jt <small>({fmt(vs_vol,1)}× rerata20)</small>'),
-        ("Nilai Transaksi", f'≈ Rp{fmt(nilai_b,1)} miliar'),
+        ("Nilai Transaksi", f'~ Rp{fmt(nilai_b,1)} miliar'),
     ]
     sel = "".join(f'<div class="s"><div class="l">{l}</div><div class="v">{v}</div></div>'
                   for l, v in stats)
@@ -338,7 +338,7 @@ def halaman_sentimen(ed, ds, ds_prev):
                      f'{len(ed["emiten"])} emiten \u00b7 setoran kontributor'))
     sel_komp = "\n".join(
         f'<div class="k"><div class="l">{n}</div><div class="v">{v}</div>'
-        f'<div class="s">{ket} → {fmt(s, 1)}/10</div></div>' for n, v, s, ket in komp)
+        f'<div class="s">{ket} -> {fmt(s, 1)}/10</div></div>' for n, v, s, ket in komp)
     poin = "\n".join(
         f'<div class="poin"><div class="no">{i + 1}</div>'
         f'<div><h4>{p["judul"]}</h4><p>{p["isi"]}</p></div></div>'
@@ -405,7 +405,7 @@ def strip_prob(h):
             vv_txt = f'VolVal {fmt_z(vv["z"])} normal'
         hit = (f' <small>· senyap {h["vv_hit"] * 100:.0f}% n{h["vv_n"]}</small>'
                if h["vv_hit"] is not None else "")
-        isi = (f'P(naik 5h) <b>{h["p5"] * 100:.0f}%</b> · P(≥3%) '
+        isi = (f'P(naik 5h) <b>{h["p5"] * 100:.0f}%</b> · P(>=3%) '
                f'<b>{h["p3"] * 100:.0f}%</b> <small>n{h["n"]}·{cocok}</small> · '
                f'{vv_txt}{hit}')
     return (f'<div class="probstrip"><span class="pl">Probabilitas Historis</span>'
@@ -425,7 +425,7 @@ def peta_skenario(em):
     p = em["pivot"]; c = em["ohlc_hari"]["c"]
     sk = {
         "bull": {"konfirmasi": f'Close &gt;{fmt(p["R1"])} dengan volume di atas rerata 20 hari',
-                 "rute": f'{em["target"]} (R1 → R2 → R3)',
+                 "rute": f'{em["target"]} (R1 -> R2 -> R3)',
                  "risiko": f'Gagal bertahan di atas {fmt(p["R1"])} = breakout palsu, kembali netral'},
         "retest": {"konfirmasi": f'Bertahan di {fmt(p["S1"])}–{fmt(c)} lalu rebut kembali pivot {fmt(p["P"])}',
                    "rute": f'Basis di atas {fmt(p["S1"])}; reclaim {fmt(p["P"])} lalu uji {fmt(p["R1"])}',
@@ -522,7 +522,7 @@ def halaman_emiten(em, sk, ed, ohlc, idx, pr=None, alias=None):
         </div>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
-          <p class="flowline"><span class="kw">{em["flow_kelas"]}</span> · <span class="{net_cls}">≈ {net_txt}</span> (top-10)</p>
+          <p class="flowline"><span class="kw">{em["flow_kelas"]}</span> · <span class="{net_cls}">~ {net_txt}</span> (top-10)</p>
           <p>{em["narasi_flow"]}</p>
         </div>
         <div class="sec">
@@ -646,7 +646,7 @@ def halaman_ringkasan(ed, skor_map, prob_map=None):
     </div>
     <h3 class="rule">Metodologi</h3>
     <p class="metode"><b>Skor komposit 0–100:</b> Technical 35% · Big Money Flow 30% · Risk/reward 20% ·
-    Liquidity 10% · IHSG sensitivity 5%. Pemetaan risiko: ≥80 Menengah · 55–79 Tinggi · &lt;55 Ekstrem.</p>
+    Liquidity 10% · IHSG sensitivity 5%. Pemetaan risiko: >=80 Menengah · 55–79 Tinggi · &lt;55 Ekstrem.</p>
     <p class="metode"><b>Sumber data:</b> statistik resmi IDX; pivot &amp; EMA dihitung dari data
     harga; arus broker dari Broker Summary Stockbit. Komponen data yang tidak tersedia tidak
     pernah diisi perkiraan — halaman terkait akan menampilkan penanda kesenjangan data dan skor

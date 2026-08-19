@@ -118,31 +118,40 @@ def blok_css(edisi):
 
 # ── Huruf terbitan (#127) ────────────────────────────────────────────────────
 # Sebelum ini PDF memakai Bahnschrift + Cascadia (font bawaan Windows),
-# sementara web memakai Red Hat — dua wajah untuk satu produk. Berkas fontnya
-# sudah ada di repo (app/public/fonts, SIL OFL 1.1), jadi tak perlu diunduh
-# ulang atau dipasang ke sistem.
+# sementara web memakai keluarga huruf lain — dua wajah untuk satu produk.
+# Berkas fontnya sudah ada di repo (app/public/fonts, SIL OFL 1.1), jadi tak
+# perlu diunduh ulang atau dipasang ke sistem.
+#
+# Diganti dari Red Hat ke Plus Jakarta Sans + IBM Plex Mono 19 Agu 2026
+# (permintaan Johan, sapuan font seluruh produk — web dan cetak harus
+# berwajah sama).
 #
 # Fontnya DITANAM sebagai data URI, bukan dirujuk lewat path. Chromium
 # headless membuka keluaran/*.html lewat file://, dan di origin file:// setiap
 # berkas dianggap asal berbeda — permintaan font ke direktori lain diblokir
 # diam-diam, PDF-nya lalu jatuh ke Segoe UI tanpa satu pun pesan galat
-# (terlihat 16 Agu 2026: PDF berisi Georgia + SegoeUI, bukan Red Hat).
-# Menanam ±196 KB font juga membuat HTML terbitan berdiri sendiri — arsip yang
+# (terlihat 16 Agu 2026: PDF berisi Georgia + SegoeUI, bukan huruf terpasang).
+# Menanam ±100 KB font juga membuat HTML terbitan berdiri sendiri — arsip yang
 # dibuka bertahun-tahun kemudian tetap tampil dengan huruf yang benar.
 _FONT = [
-    ("Red Hat Display", 700, "RedHatDisplay-700"),
-    ("Red Hat Display", 800, "RedHatDisplay-800"),
-    ("Red Hat Text", 400, "RedHatText-400"),
-    ("Red Hat Text", 500, "RedHatText-500"),
-    ("Red Hat Text", 700, "RedHatText-700"),
-    ("Red Hat Mono", 400, "RedHatMono-400"),
-    ("Red Hat Mono", 600, "RedHatMono-600"),
+    ("Plus Jakarta Sans", 700, "PlusJakartaSans-700"),
+    ("Plus Jakarta Sans", 800, "PlusJakartaSans-800"),
+    ("Plus Jakarta Sans", 400, "PlusJakartaSans-400"),
+    ("Plus Jakarta Sans", 500, "PlusJakartaSans-500"),
+    ("IBM Plex Mono", 400, "IBMPlexMono-400"),
+    ("IBM Plex Mono", 600, "IBMPlexMono-600"),
+    # 700 ditambah 19 Agu (bukan cuma 400/600): template.html punya beberapa
+    # selektor var(--mono) berbobot 800 (skor komposit, kode ticker) — Plex
+    # Mono TAK PUNYA wajah 800 sama sekali, jadi selektornya diturunkan ke 700
+    # (lihat template.html). Tanpa wajah 700 pun tertanam, permintaan itu
+    # meleset dari SEMUA wajah yang ada dan Chromium loncat ke Segoe UI.
+    ("IBM Plex Mono", 700, "IBMPlexMono-700"),
 ]
 _FONT_DIR = Path(__file__).parent.parent / "app" / "public" / "fonts"
 
 
 def blok_font():
-    """@font-face Red Hat (font ditanam) + variabel --disp/--ui/--mono,
+    """@font-face (font ditanam) + variabel --disp/--ui/--mono,
     TELANJANG (tanpa tag <style>) — sama seperti blok_css(), siap sisip ke
     placeholder /*FONT*/ yang sudah berada di dalam <style> template."""
     cek_font()
@@ -158,9 +167,9 @@ def blok_font():
     )
     return muka + (
         ":root{"
-        "--disp:'Red Hat Display','Red Hat Text','Segoe UI',system-ui,sans-serif;"
-        "--ui:'Red Hat Text','Segoe UI',system-ui,sans-serif;"
-        "--mono:'Red Hat Mono','Cascadia Mono',Consolas,monospace"
+        "--disp:'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif;"
+        "--ui:'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif;"
+        "--mono:'IBM Plex Mono','Cascadia Mono',Consolas,monospace"
         "}"
     )
 

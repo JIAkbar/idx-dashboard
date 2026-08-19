@@ -29,6 +29,16 @@
      navy di bulletin, putih di bedah. */
   @media print{html,body{background:var(--paper)}}
   body{font-family:var(--disp);color:var(--ink);line-height:1.45;font-size:9pt}
+  /* Pin `b`/`strong` ke 700 ABSOLUT, bukan kata kunci relatif "bolder" bawaan
+     Chromium. `<b>` bertumpuk di banyak baris (angka skor, persentase) yang
+     induknya sendiri sudah font-weight:700/800 — "bolder" lalu menghitung 900,
+     bobot yang TAK ADA di keluarga manapun yang ditanam (Jakarta maksimal 800,
+     Plex Mono maksimal 600/700). Chromium tak mensintesis atau memilih bobot
+     terdekat dalam keluarga yang sama untuk font @font-face tertanam — ia
+     lompat ke keluarga CADANGAN berikutnya, yakni Segoe UI, dan itu diam-diam:
+     terlihat sekilas seperti berhasil, ketahuan hanya lewat daftar font di
+     dalam PDF (bukan dari tampilan). Ditemukan 19 Agu 2026. */
+  b,strong{font-weight:700}
   .page{width:210mm;height:296mm;background:var(--paper);color:var(--ink);margin:0 auto;position:relative;
     display:flex;flex-direction:column;page-break-after:always;overflow:hidden}
   @media screen{.page{margin:10px auto;box-shadow:0 6px 30px rgba(0,0,0,.5)}}
@@ -64,7 +74,7 @@
   /* ── Judul emiten ── */
   .trow{display:flex;justify-content:space-between;align-items:flex-end;
     border-bottom:1px solid var(--hair);padding-bottom:2mm}
-  .trow .tk{font-family:var(--mono);font-size:19pt;font-weight:800;letter-spacing:-.01em;line-height:1}
+  .trow .tk{font-family:var(--mono);font-size:19pt;font-weight:700;letter-spacing:-.01em;line-height:1}
   .trow .tk small{font-family:var(--disp);font-size:9pt;font-weight:400;color:var(--mute);margin-left:8px;letter-spacing:0}
   /* Kredit kontributor berdampingan dengan kode emiten — kecil & redup,
      pengakuan yang tak merebut perhatian dari harga. */
@@ -80,7 +90,7 @@
     margin-left:8px;vertical-align:3px;white-space:nowrap}
   .trow .tk .tk-kredit b{font-weight:700;color:var(--amber);letter-spacing:.04em;text-transform:none;font-size:7.2pt}
   .trow .px{text-align:right;font-variant-numeric:tabular-nums;line-height:1.1;font-family:var(--mono)}
-  .trow .px .h{font-size:19pt;font-weight:800}
+  .trow .px .h{font-size:19pt;font-weight:700}
   .trow .px .c{font-size:9pt;font-weight:700}
   .bull{color:var(--bull)} .bear{color:var(--bear)}
   /* chg% harga ikut TANDA (.bull/.bear dari build.py berdasar o.chg), BUKAN
@@ -201,7 +211,7 @@
   .skor{margin-top:auto;padding-top:3mm}
   .skor .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1.5mm}
   .skor .head .t{font-size:6.5pt;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
-  .skor .head .n{font-size:12pt;font-weight:800;font-variant-numeric:tabular-nums;font-family:var(--mono)}
+  .skor .head .n{font-size:12pt;font-weight:700;font-variant-numeric:tabular-nums;font-family:var(--mono)}
   .s-bull .skor .head .n{color:var(--bull)}
   .s-side .skor .head .n{color:var(--side)}
   .s-bear .skor .head .n{color:var(--bear)}
@@ -232,7 +242,7 @@
   .senti-sum{display:flex;gap:4mm;margin-top:11mm}
   .senti-sum .b{flex:1;border-radius:1.5mm;padding:4mm 5mm;font-family:var(--mono);
     font-variant-numeric:tabular-nums}
-  .senti-sum .b .n{font-size:18pt;font-weight:800;display:block;line-height:1.15}
+  .senti-sum .b .n{font-size:18pt;font-weight:700;display:block;line-height:1.15}
   .senti-sum .b .l{font-size:6.5pt;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
   .sb-bull{background:var(--bull-dim);color:var(--bull)}
   .sb-side{background:var(--side-dim);color:var(--side)}
@@ -241,9 +251,9 @@
   .cvrow{display:flex;align-items:center;gap:5mm;padding:3mm 0;border-bottom:1px solid var(--hair);
     font-variant-numeric:tabular-nums}
   .cvrow .dot{width:3mm;height:3mm;border-radius:1mm;flex:none}
-  .cvrow .tkk{font-family:var(--mono);font-size:12pt;font-weight:800;width:24mm}
+  .cvrow .tkk{font-family:var(--mono);font-size:12pt;font-weight:700;width:24mm}
   .cvrow .lb{flex:1;color:var(--ink2);font-size:9.5pt}
-  .cvrow .sk{font-family:var(--mono);font-size:12pt;font-weight:800}
+  .cvrow .sk{font-family:var(--mono);font-size:12pt;font-weight:700}
   /* sampul padat 7-20 emiten: 2 kolom, label pendek */
   /* Sampul padat (11–28 emiten): baris dilonggarkan supaya daftar dua lajur
      mengisi tinggi halaman, bukan menumpuk di sepertiga atas dan meninggalkan
@@ -282,7 +292,7 @@
   table.ring td{padding:2.6mm 3mm 2.6mm 0;border-bottom:1px solid color-mix(in srgb, var(--ink) 5%, transparent);vertical-align:top}
   table.ring th:first-child,table.ring td:first-child{width:12mm;padding-right:4mm;
     color:var(--mute);font-family:var(--mono);font-size:8pt;text-align:left}
-  table.ring .tk{font-weight:800;font-size:10pt;font-family:var(--mono)}
+  table.ring .tk{font-weight:700;font-size:10pt;font-family:var(--mono)}
   table.ring .num{font-weight:700;font-family:var(--mono)}
   .pill{display:inline-block;font-family:var(--mono);font-size:7pt;font-weight:700;
     border-radius:1mm;padding:.6mm 2mm;letter-spacing:.04em}
@@ -350,7 +360,7 @@
   /* ── Halaman Sentimen Global & Domestik ── */
   .sent-head{display:flex;align-items:center;gap:8mm;margin:4mm 0 3.5mm;padding:4mm 5mm;
     background:var(--panel);border:1px solid var(--hair);border-radius:2mm}
-  .sent-skor{font-family:var(--mono);font-size:28pt;font-weight:800;line-height:1;white-space:nowrap}
+  .sent-skor{font-family:var(--mono);font-size:28pt;font-weight:700;line-height:1;white-space:nowrap}
   .sent-skor small{font-size:10pt;color:var(--mute);font-weight:400}
   .sent-skor .l{display:block;font-family:var(--disp);font-size:6.3pt;font-weight:700;
     letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:1.5mm}
@@ -405,8 +415,8 @@
   table.rank td:nth-child(-n+2){text-align:left}
   table.rank th:first-child,table.rank td:first-child{width:7mm;padding-right:2mm}
   table.rank th:nth-child(2),table.rank td:nth-child(2){width:16mm}
-  table.rank .tk{font-weight:800;font-size:10pt;font-family:var(--mono)}
-  table.rank .total{font-weight:800;font-size:12pt;font-family:var(--mono)}
+  table.rank .tk{font-weight:700;font-size:10pt;font-family:var(--mono)}
+  table.rank .total{font-weight:700;font-size:12pt;font-family:var(--mono)}
   .blok{margin-top:4.5mm}
   .blok p{margin:0;font-size:8.6pt;color:var(--ink2)}
   .blok.integritas{border-left:3px solid var(--warn);padding-left:4mm}
@@ -445,14 +455,14 @@ function gambarChart(id, tk, ema50, pivot, nBar){
   const X=i=>pad.l+i*(W-pad.l-pad.r)/(bars.length-1),
         Y=v=>pad.t+(hi-v)*(pBot-pad.t)/(hi-lo);
   // legenda satu baris pojok kiri atas
-  x.font="13px Cascadia Code, Consolas, monospace";x.textBaseline="middle";
+  x.font="13px IBM Plex Mono, Consolas, monospace";x.textBaseline="middle";
   let lx=pad.l+2;
   for(const [n,c,w] of EMAS){
     x.strokeStyle=c;x.lineWidth=2.5;x.beginPath();x.moveTo(lx,11);x.lineTo(lx+13,11);x.stroke();
     lx+=17;x.fillStyle=T.teks||"rgba(233,238,244,.72)";x.fillText("EMA "+n,lx,11);
     lx+=x.measureText("EMA "+n).width+13;
   }
-  x.textBaseline="alphabetic";x.font="15px Bahnschrift, Segoe UI";
+  x.textBaseline="alphabetic";x.font="15px IBM Plex Mono, Consolas, monospace";
   let yT=[];
   // label diurut nilai desc supaya tumpukan anti-tabrakan tetap berurut harga
   // (tanpa ini R1 bisa terdorong ke bawah P dan urutan kebaca acak)
@@ -501,14 +511,26 @@ function gambarChart(id, tk, ema50, pivot, nBar){
   const tick=Math.floor(maxV*.8/mag)*mag;
   x.strokeStyle=T.grid||"rgba(255,255,255,.14)";x.setLineDash([3,4]);x.beginPath();
   x.moveTo(pad.l,vY(tick));x.lineTo(W-pad.r,vY(tick));x.stroke();x.setLineDash([]);
-  x.fillStyle=T.teksLembut||"rgba(255,255,255,.45)";x.font="12px Cascadia Code, Consolas, monospace";
+  x.fillStyle=T.teksLembut||"rgba(255,255,255,.45)";x.font="12px IBM Plex Mono, Consolas, monospace";
   // ikut tumpukan anti-tabrakan label pivot (S3 bisa terdorong sampai zona volume)
   let vl=vY(tick)+4; while(yT.some(u=>Math.abs(u-vl)<15)) vl+=15;
   x.fillText(fmtVol(tick),W-pad.r+14,Math.min(vl,H-4));
   }
 }
+// Grafik ditunda sampai document.fonts.ready (#127 lanjutan, temuan 19 Agu).
+// Font @font-face di sini data URI — bytenya sudah ada di HTML tanpa jaring,
+// tapi peramban tetap mendaftarkannya secara ASINKRON (microtask font
+// loading), terpisah dari eksekusi <script> yang sinkron. Canvas fillText()
+// yang dipanggil SEBELUM font itu siap diam-diam menggambar pakai huruf
+// cadangan sistem (Segoe UI) — dan karena canvas itu BITMAP, menunggu font
+// SESUDAHNYA (build.py sudah begitu, lewat document.fonts.status) tak
+// menggambar ulang apa pun. build.py menunggu window.__chartsDone sebelum
+// mencetak; menunda gambarnya sampai fonts.ready cukup, tak perlu ubah
+// build.py.
+document.fonts.ready.then(() => {
 /*DRAWCALLS*/
 window.__chartsDone = true;
+});
 </script>
 </body>
 </html>

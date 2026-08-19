@@ -242,7 +242,7 @@ def hal_pcd(bd, r):
       const bw=(W-pad.l-pad.r)/K.length*.82;
       K.forEach(([p,v])=>{{x.fillStyle=p<=C?"{c_untung}":"{c_rugi}";
         x.fillRect(X(p)-bw/2,Y(v),bw,H-pad.b-Y(v));}});
-      x.font="14px Red Hat Mono, Consolas, monospace";x.textAlign="center";
+      x.font="14px IBM Plex Mono, Consolas, monospace";x.textAlign="center";
       let taken=[];
       const garis=[["p25",P25,"{c_persentil}",1,[4,4]],["p50",P50,"{c_persentil}",1,[4,4]],
                    ["p75",P75,"{c_persentil}",1,[4,4]],["PCD "+PCDV.toLocaleString('id',{{maximumFractionDigits:0}}),PCDV,"{c_pcd}",2,[]],
@@ -355,7 +355,7 @@ def hal_broker(bd, em, ed_sumber):
       <section>
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
-          <p class="flowline"><span class="kw c-bull">{em["flow_kelas"]}</span> · <span class="{net_cls}">≈ {net_txt}</span> (top-10)</p>
+          <p class="flowline"><span class="kw c-bull">{em["flow_kelas"]}</span> · <span class="{net_cls}">~ {net_txt}</span> (top-10)</p>
           <p style="text-align:justify">{em["narasi_flow"]}</p>
         </div>
         <div class="blok integritas" style="margin-top:5mm">
@@ -455,7 +455,7 @@ def hal_broker_seri(bd, flow, peran=None):
       const bw=(W-pad.l-pad.r)/D.length;
       x.strokeStyle="rgba(18,32,46,.20)";x.lineWidth=1;
       x.beginPath();x.moveTo(pad.l,Y0);x.lineTo(W-pad.r,Y0);x.stroke();
-      x.font="15px Red Hat Mono, Consolas, monospace";x.textAlign="center";
+      x.font="15px IBM Plex Mono, Consolas, monospace";x.textAlign="center";
       D.forEach(([d,v],i)=>{{
         const cx=pad.l+bw*(i+.5);
         x.fillStyle=v>=0?"rgba(18,135,63,.55)":"rgba(198,54,43,.55)";
@@ -516,7 +516,7 @@ def hal_broker_kosong(bd):
     <div class="blok integritas" style="margin-top:4mm">
       <h3 class="rule">Belum Ada Setoran Broker Summary</h3>
       <p style="text-align:justify">Belum ada setoran Broker Summary untuk {bd["ticker"]} — analisa arus broker
-      &amp; PCD per broker akan aktif setelah screenshot disetor (Admin → Bedah Arus Saham).</p>
+      &amp; PCD per broker akan aktif setelah screenshot disetor (Admin -> Bedah Arus Saham).</p>
     </div>
     <div class="blok" style="margin-top:5mm">
       <h3 class="rule">Dua Jenis Setoran yang Diterima</h3>
@@ -762,7 +762,7 @@ def hal_katalis(bd, tgl_bar, kats, jendela):
       <p style="text-align:justify">Yang tercantum di sini hanya peristiwa yang bisa kami tunjuk
       sumbernya — pengumuman IDX, berita media, atau penelusuran yang tautannya dicetak di atas.
       Katalis yang tidak terpanen tidak berarti tidak ada. Sebaliknya, tidak satu pun baris di halaman
-      ini menyatakan bahwa harga bergerak <i>karena</i> peristiwa itu; yang kami nyatakan adalah
+      ini menyatakan bahwa harga bergerak <u>karena</u> peristiwa itu; yang kami nyatakan adalah
       peristiwanya terjadi, kapan, dan dari sumber mana. Penilaian sebab-akibat tetap milik pembaca.</p>
     </div>'''
 
