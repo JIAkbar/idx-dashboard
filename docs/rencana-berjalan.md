@@ -907,26 +907,62 @@ Yang TIDAK boleh berubah saat merapikan: isi, urutan, jumlah observasi,
 satuan "lembar" pada aliran asing, dan baris asal-usul tiap kartu. Ini
 pekerjaan penempatan, bukan penyuntingan isi.
 
-## Backlog: notifikasi & toast — 19 Agu 2026
+## Backlog: notifikasi & toast — 19 Agu 2026 — SELESAI
 
 Johan, verbatim: *"jadikan backlog juga ini kalau tandai semua error gak bisa
 di pake"* dan *"Ubah font jelek ini juga, toastnya juga gak mewah banget, font
 nya gak bagus juga, sweep jenis font itu di hapus ganti saja"*.
 
-1. **Tombol "Tandai semua dibaca" error** di panel Kabar (lonceng, layar
-   admin). Ditemukan Johan; belum dilacak akarnya. Gejalanya: ditekan, tak
-   bisa dipakai. Panel itu memuat 9+ notifikasi setoran disetujui.
+1. **Tombol "Tandai semua dibaca" error** — diperbaiki di commit `bf552eb4`
+   (sesi lain, sebelum sesi sapuan font ini mulai): akarnya bukan tombolnya,
+   `daftarNotifikasi()` memanggil `.select('*')` polos dan mengandalkan RLS,
+   yang tembus untuk superadmin (`notifikasi_kelola_superadmin` bertipe ALL) —
+   panel menampilkan notifikasi pribadi SEMUA kontributor, dan tombol
+   "Tandai semua" menyaring `untuk=uid()` yang cocok NOL baris dari daftar
+   yang salah isi itu. Sudah disaring di kueri (`.or('untuk.eq.<uid>,untuk.
+   is.null')`). Sisa satu `catch(() => {})` di `baca()` (klik satu item)
+   dibuang di commit `b04ade63` + uji regresi `app/src/lib/notifikasi.test.ts`
+   (kunci `.or(...)` daftarNotifikasi() dan `.eq('untuk',...)`
+   tandaiSemuaDibaca() dikunci sama, supaya tak bercerai lagi diam-diam).
 
-2. **Sapuan font.** Red Hat Text/Display/Mono diganti **Plus Jakarta Sans +
-   IBM Plex Mono** (dipilih Johan 19 Agu; alasannya Plus Jakarta Sans dirancang
-   untuk Bahasa Indonesia dan lebih berkarakter). Yang perlu disentuh:
-   `app/public/fonts/` (berkas woff2 + `redhat.css`), preload di
-   `app/index.html`, variabel `--mono`/`--disp` di `lantai.css:689-690`, dan 14
-   sebutan "Red Hat" di `App.css`, `lantai.css`, `GrafikEmiten.tsx`.
-   Sudah diuji: kedua font bisa diunduh dari jsDelivr fontsource (HTTP 200).
-   **Fontnya sekarang termuat benar** — self-hosted, bukan CDN, dengan preload.
-   Jadi ini soal selera wujud font, bukan kegagalan muat; jangan salah
-   diagnosis jadi "font gagal dimuat".
+2. **Sapuan font — SELESAI.** Red Hat Text/Display/Mono diganti **Plus
+   Jakarta Sans + IBM Plex Mono** di web (`app/`, commit `50aa736e` +
+   `cb9ed1c4`) DAN di pipeline cetak Arus Pasar (`arus-pasar/palet.py` juga
+   membaca font dari `app/public/fonts/`, commit `4290ea5c` — kalau tak
+   ikut, `build.py` mati `FileNotFoundError`). Bobot yang ditanam: Jakarta
+   400/500/700/800, Plex Mono 400/600/700 (700 ditambah belakangan — lihat
+   di bawah).
 
-3. **Toast dan panel notifikasi dirombak** bersamaan dengan sapuan font
-   (Johan memilih dikerjakan sekalian, bukan ditunda).
+   Tiga bug tanam-font ketahuan pas verifikasi PDF (build sukses BUKAN
+   bukti font-nya benar — baru kelihatan dari daftar font yang BENAR-BENAR
+   tertanam di dalam PDF, lewat PyMuPDF):
+   - `<b>` bertumpuk di baris berbobot 700 menghitung "bolder" jadi 900,
+     tak ada di font manapun → Chromium loncat ke Segoe UI. Ditambal
+     `b,strong{font-weight:700}` (angka mutlak) di `template.html`.
+   - Beberapa selektor mono berbobot 800 padahal Plex Mono maksimal 700 —
+     diturunkan ke 700, wajah 700-nya ditambah (`IBMPlexMono-700.woff2`,
+     terdaftar di `palet.py` DAN `jakarta.css` — bug yang sama laten di web,
+     cuma tak kelihatan karena peramban mensintesis tebal untuk DOM biasa).
+   - Karakter di luar subset Latin fontsource (`≥ ≈ →`) di beberapa
+     f-string + satu data kurasi (`bedah/INET-2026-08-18.json`) diganti
+     ASCII (`>=`, `~`, `->`). Susulan yang BELUM dikerjakan (di-backlog-kan
+     lewat `spawn_task`): pola yang sama masih ada di `bedah/ARCI` `BUMI`
+     `CUAN` `-2026-08-14.json` dan di `build_monthly.py`/`build_weekly.py`.
+
+3. **Toast dirombak — SELESAI** (commit `189c33ab`). Markup+state yang
+   disalin ke 5 berkas admin disatukan jadi `Toast.tsx` (#170) — sekalian
+   dapat transisi KELUAR yang halus (kelas `.keluar`, unmount ditunda 220ms;
+   versi lama unmount instan tanpa animasi) dan menambal bug icon
+   `PanduanScreenshot.tsx` yang selalu tampil ikon peringatan apa pun
+   `toast.ok`-nya.
+
+Verifikasi: tsc bersih, vitest 737 hijau (734 + 3 uji baru), oxlint 0 galat
+dari berkas yang disentuh, build sukses, 3 viewport (1920×1080×1,
+1536×960×1.25, 412×915×2.625) — 0px luber mendatar di halaman depan (halaman
+`/grafik` `/stock-detail` `/kartu` di balik login, tak bisa diverifikasi
+visual langsung karena kolom sandi tak boleh diisi; toast diverifikasi lewat
+injeksi CSS+markup identik ke app yang jalan). Kedua PDF Arus Pasar
+(`build.py 2026-08-18`, `build_bedah.py INET-2026-08-18`) dirakit ulang dan
+dibuktikan NOL font Segoe tertanam — PDF hasil rakit ulang TIDAK disertakan
+di commit (edisi sudah tayang), Johan yang memutuskan kapan diterbitkan
+ulang.
