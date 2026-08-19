@@ -75,7 +75,12 @@ export function Metodologi() {
               resmi IDX (interim <b>kumulatif</b> sejak awal tahun buku). Keduanya berbagi kunci periode yang
               sama persis (mis. <code>2026-06-30</code>) tapi menghitung rentang berbeda — revenue TLKM 1,96×
               lebih besar di XBRL untuk kunci yang sama, karena satu diskret satu kumulatif. Kedua sumber
-              tetap disimpan terpisah (<code>keuangan/</code> vs <code>keuangan_idx/</code>) supaya
+              {/* Nama direktori internal TIDAK dicetak di sini. Halaman ini publik, dan
+                  menyebut "keuangan/" vs "keuangan_idx/" membocorkan tata letak penyimpanan
+                  tanpa menambah satu pun pemahaman bagi pembaca — yang perlu ia tahu adalah
+                  KEDUA SUMBERNYA disimpan utuh, bukan di folder mana. Preseden: halaman ini
+                  pernah terbit dengan nama berkas kode tercetak dan itu dinilai fatal. */}
+              tetap disimpan terpisah supaya
               asalnya tak pernah hilang, tapi <b>digabungkan saat ditampilkan</b>: laporan resmi bursa
               menang bila ada, interim kumulatif dikonversi lebih dulu jadi kuartal diskret, dan tiap sel
               membawa lencana asalnya (<code>B</code> laporan bursa, <code>B·YTD</code> interim kumulatif).
