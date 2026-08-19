@@ -329,7 +329,7 @@ def halaman_sentimen(ed, ds, ds_prev):
     tanda = lambda v: ("+" if v >= 0 else "−") + fmt(abs(v), 2)
     komp = [
         ("Bursa Dunia Overnight", f'{tanda(k["dunia"][0])}%', k["dunia"][1],
-         f'rerata Δ% {len([1 for x in ds["world"] if not x.get("is_idx")])} indeks'),
+         f'rerata perubahan% {len([1 for x in ds["world"] if not x.get("is_idx")])} indeks'),
         ("Rupiah (USD/IDR)", f'{fmt(ds["usd_idr"])} ({tanda(k["rupiah"][0])}%)', k["rupiah"][1], "vs hari bursa sebelumnya"),
         ("Arus Asing Reguler", f'{tanda(k["asing"][0])} T', k["asing"][1], ds["nf_today_status"]),
     ]
@@ -363,7 +363,7 @@ def halaman_sentimen(ed, ds, ds_prev):
       {sel_komp}
     </div>
     <div class="formula">Formula: skor = rerata({daftar_komp}) · dunia = 5 + 2,5 ×
-    rerata Δ% bursa dunia · rupiah = 5 − 5 × Δ% USD/IDR · asing = 5 + 2,5 × (NF hari, Rp T){rumus_broker}
+    rerata perubahan% bursa dunia · rupiah = 5 - 5 x perubahan% USD/IDR · asing = 5 + 2,5 × (NF hari, Rp T){rumus_broker}
     · tiap komponen dibatasi 0–10{manual}</div>
     <h3 class="rule">{judul_poin}</h3>
     <div class="poin-grid">

@@ -268,7 +268,7 @@ def hal_pcd(bd, r):
       <h3 class="rule">Interpretasi Analis</h3>
       <p style="text-align:justify;line-height:1.6">{bd["interpretasi_pcd"]}</p>
     </div>
-    <div class="bd-note">METODE: {r["metode"]}. Batang hijau = lapis harga ≤ close (pemegang untung/impas);
+    <div class="bd-note">METODE: {r["metode"]}. Batang hijau = lapis harga <= close (pemegang untung/impas);
     batang biru = lapis di atas close (pemegang rugi). % modal di atas air = porsi volume tertimbang pada lapis ≤ close.</div>
   </div>
   {B.kaki(bd)}
@@ -482,13 +482,13 @@ def hal_broker_seri(bd, flow, peran=None):
           <tr><th>Broker</th><th>Net {len(hari)}h</th><th>Avg Beli</th><th>Avg Jual</th></tr>
           {rows_agg}
         </table>
-        <div class="brksrc">Avg = Σnilai ÷ Σlot, agregat {len(hari)} hari — bukan data done.</div>
+        <div class="brksrc">Avg = total nilai / total lot, agregat {len(hari)} hari — bukan data done.</div>
       </aside>
       <section>
         {per_tbl}
         <div class="sec">
           <h3 class="rule">Arus Dana</h3>
-          <p class="flowline"><span class="{cls(total)}">Σ rentang {rp(total)}</span> ·
+          <p class="flowline"><span class="{cls(total)}">Total rentang {rp(total)}</span> ·
             <span class="{cls(tot5)}">5 hari {rp(tot5)}</span> ·
             breadth {breadth}/{len(hari)} hari positif</p>
           <p style="text-align:justify">{bd["narasi_flow"]}</p>

@@ -3,7 +3,7 @@
  "tanggal": "2026-08-14",
  "tanggal_id": "Jumat, 14 Agustus 2026",
  "tanggal_flow": "14 Agu 26",
- "ihsg_baris": "IHSG 6.401,89 ▲ +1,59%",
+ "ihsg_baris": "IHSG 6.401,89 ↑ +1,59%",
  "catatan_verifikasi": "Arus broker ditranskripsi dari Broker Summary Stockbit dan diverifikasi redaksi. Pivot & EMA dihitung dari data harga; level target/invalidation bersifat teknikal-otomatis (R1/R2/R3, batal di bawah S1). Rilis ulang edisi: 14 emiten gelombang kedua ditambahkan (total 22) dari screenshot broker summary yang diunggah menyusul; harga rata-rata sisi jual tidak tampil di sumber sehingga diturunkan dari nilai/lot.",
  "peran_broker": {
  "ritel": [
@@ -3646,12 +3646,12 @@
   "skenario": {
   "bull": {
    "konfirmasi": "Close di atas R1 dengan volume",
-   "rute": "R1 → R2",
+   "rute": "R1 -> R2",
    "risiko": "Kenaikan harga tipis, belum ada dorongan harga"
   },
   "bear": {
    "konfirmasi": "Close di bawah S1",
-   "rute": "S1 → S2",
+   "rute": "S1 -> S2",
    "risiko": "Serapan BB berhenti, penjual merata menekan"
   }
   }
@@ -3814,12 +3814,12 @@
   "skenario": {
   "bull": {
    "konfirmasi": "Close di atas R1 disertai net beli menebal",
-   "rute": "R1 → R2",
+   "rute": "R1 -> R2",
    "risiko": "Net flow nyaris impas, belum ada pihak yang benar-benar menyerap"
   },
   "bear": {
    "konfirmasi": "Close di bawah S1",
-   "rute": "S1 → S2",
+   "rute": "S1 -> S2",
    "risiko": "Kenaikan tanpa arus mudah luruh"
   }
   }

@@ -46,7 +46,7 @@ def rentang_id(a, b):
 
 
 def teks_progresi(hist):
-    return " → ".join(f"{HARI[t.weekday()]} {total:.0f}" for t, total in hist)
+    return " -> ".join(f"{HARI[t.weekday()]} {total:.0f}" for t, total in hist)
 
 
 def hitung_skor(em, ed, ohlc):
@@ -269,7 +269,7 @@ def halaman_pola_sepekan(ed, edisi_list, riwayat, skor_map, n_unik):
             f'<td class="n {"bull" if v[0] >= 0 else "bear"}">{rp_net(v[0])}</td></tr>'
             for tk, v in pasangan)
 
-    # ── 3. Konsistensi arah — hanya emiten yang muncul ≥2 hari ───────────────
+    # ── 3. Konsistensi arah — hanya emiten yang muncul >=2 hari ───────────────
     ulang = [(tk, v) for tk, v in net_em.items() if v[1] >= 2]
     searah = lambda v: v[2] == 0 or v[3] == 0
     ulang.sort(key=lambda kv: (not searah(kv[1]), -kv[1][1], -abs(kv[1][0])))
@@ -367,7 +367,7 @@ def halaman_pola_sepekan(ed, edisi_list, riwayat, skor_map, n_unik):
         adalah peristiwa, net sedang yang berulang adalah pola. Nilai memakai top-10 broker saja.</p>
       </div>
       <div>
-        <div class="pola-h">3 · Konsistensi arah <span>— emiten yang muncul ≥2 hari</span></div>
+        <div class="pola-h">3 · Konsistensi arah <span>— emiten yang muncul >=2 hari</span></div>
         {blok_kons}
         <div class="pola-h" style="margin-top:6mm">4 · Emiten paling persisten</div>
         {blok_persis}

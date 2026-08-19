@@ -169,7 +169,7 @@ def halaman_scorecard(ed, potongan, hal, n_hal, n_unik):
     for p in potongan:
         h = p["hasil"]
         prog = prog_mingguan(p["riwayat"])
-        prog_txt = " → ".join(f"{v:.0f}" for v in prog)
+        prog_txt = " -> ".join(f"{v:.0f}" for v in prog)
         sub = ""
         if h["tanggal"]:
             t = dt.date.fromisoformat(h["tanggal"])
