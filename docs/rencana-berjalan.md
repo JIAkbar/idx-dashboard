@@ -1129,6 +1129,7 @@ periode, tabel admin di ponsel, rute cadangan, Stock Detail baca `?sym=`.
 | D8 | Sembilan lompatan neraca belum terjelaskan | Empat wajar (ekuitas melintasi nol), sisanya cacat di sumber IDX sendiri |
 | D9 | `potongRentang` jadi kode mati | Tinggal dipakai ujinya saja; buang di sapuan kebersihan |
 | D10 | Satu baris `CLAUDE.md` salah | "XBRL IDX berhenti di tahun buku 2019" benar untuk DAFTAR laporan, salah untuk ISI-nya |
+| D11 | **Perbesar flyout submenu rail** | Johan: *"dibuat agak besar juga sub menu nya supaya lebih enak baca nya"*. Terukur di `lantai.css:245-280`: item `font-size: 12.5px`, `padding: 6px 7px` → tinggi baris **±29px**, di bawah target sentuh **44px** yang jadi aturan proyek sendiri. Kode 3-huruf (`.dasbor-rail-fly-kode`) dan judul kelompok (`.dasbor-rail-flyout-jd`) dua-duanya **9,5px** — di bawah ambang nyaman baca. Lebar panel `min-width: 208px`. Yang perlu naik: tinggi baris ke ≥44px, teks item ke ~13,5–14px, judul & kode ke ~10,5px, dan lebar panel menyesuaikan. **Jangan** menaikkan ukuran dengan menambah `gap` saja — yang menentukan target sentuh adalah tinggi baris, bukan jarak antar baris |
 
 **Peringatan yang harus dibaca sebelum menyentuh D2/D3:** jangan pernah
 menjalankan re-parse `--paksa` atas SELURUH arsip. `2025/audit` tidak ada di
