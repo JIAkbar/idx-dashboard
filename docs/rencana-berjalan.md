@@ -906,3 +906,27 @@ bukan menyusun tata letak baru dari nol.
 Yang TIDAK boleh berubah saat merapikan: isi, urutan, jumlah observasi,
 satuan "lembar" pada aliran asing, dan baris asal-usul tiap kartu. Ini
 pekerjaan penempatan, bukan penyuntingan isi.
+
+## Backlog: notifikasi & toast — 19 Agu 2026
+
+Johan, verbatim: *"jadikan backlog juga ini kalau tandai semua error gak bisa
+di pake"* dan *"Ubah font jelek ini juga, toastnya juga gak mewah banget, font
+nya gak bagus juga, sweep jenis font itu di hapus ganti saja"*.
+
+1. **Tombol "Tandai semua dibaca" error** di panel Kabar (lonceng, layar
+   admin). Ditemukan Johan; belum dilacak akarnya. Gejalanya: ditekan, tak
+   bisa dipakai. Panel itu memuat 9+ notifikasi setoran disetujui.
+
+2. **Sapuan font.** Red Hat Text/Display/Mono diganti **Plus Jakarta Sans +
+   IBM Plex Mono** (dipilih Johan 19 Agu; alasannya Plus Jakarta Sans dirancang
+   untuk Bahasa Indonesia dan lebih berkarakter). Yang perlu disentuh:
+   `app/public/fonts/` (berkas woff2 + `redhat.css`), preload di
+   `app/index.html`, variabel `--mono`/`--disp` di `lantai.css:689-690`, dan 14
+   sebutan "Red Hat" di `App.css`, `lantai.css`, `GrafikEmiten.tsx`.
+   Sudah diuji: kedua font bisa diunduh dari jsDelivr fontsource (HTTP 200).
+   **Fontnya sekarang termuat benar** — self-hosted, bukan CDN, dengan preload.
+   Jadi ini soal selera wujud font, bukan kegagalan muat; jangan salah
+   diagnosis jadi "font gagal dimuat".
+
+3. **Toast dan panel notifikasi dirombak** bersamaan dengan sapuan font
+   (Johan memilih dikerjakan sekalian, bukan ditunda).
