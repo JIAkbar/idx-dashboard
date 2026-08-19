@@ -1,7 +1,13 @@
 /**
- * Katalog indikator pustaka — 457 rumus dari `lightweight-charts-indicators`
- * (MIT, di atas `oakscriptjs`), dibaca dari REGISTRY pustaka, bukan dari daftar
- * yang ditulis tangan.
+ * Katalog indikator pustaka — 365 rumus TERPAKAI dari 457 di
+ * `lightweight-charts-indicators` (MIT, di atas `oakscriptjs`), dibaca dari
+ * REGISTRY pustaka, bukan dari daftar yang ditulis tangan.
+ *
+ * Yang 92 sisanya disaring dua kali, keduanya mekanis dan keduanya berjejak di
+ * `docs/riset/audit-indikator.tsv`: 73 tanpa `plotConfig` (lihat
+ * `keEntriKatalog`) dan 19 yang terbukti tak menggambar apa pun di OHLC kita
+ * (lihat `indikatorDibuang.ts`). Johan 19 Agu 2026: *"bnyk indikator yang kmu
+ * pasang tidak berfungsi mestinya pasang yang berguna saja"*.
  *
  * Johan 18 Agu 2026: *"katanya indikator nya banyak? sudah ada repo github
  * untuk menunjang"*.
@@ -30,6 +36,10 @@
  * ------------------------------------------------------------------
  */
 import type { SpekParam } from './grafikEmiten'
+// Berkas HASIL audit — dihasilkan `node scripts/audit-indikator.mjs --tulis`,
+// isinya cuma dua Set berisi teks. Aman diimpor statis: ia tak menarik apa pun
+// dari pustaka, jadi larangan di kepala berkas ini tidak berlaku untuknya.
+import { ID_DIBUANG } from './indikatorDibuang'
 
 /** Bentuk satu ruas masukan di registry pustaka. Ditulis ulang di sini (bukan
  *  diimpor sebagai tipe) supaya berkas ini tak menarik apa pun dari pustaka
@@ -186,6 +196,12 @@ export function keMasukanPustaka(
  * Kanvas ini menggambar deret; entri semacam itu akan ditambahkan, muncul di
  * legenda, dan tak menggambar apa pun — indikator yang "menyala tapi kosong"
  * jauh lebih buruk daripada indikator yang jujur tak ada di menu.
+ *
+ * Ketujuh puluh tiga itu TIDAK hilang tanpa jejak: seluruhnya terdaftar dengan
+ * alasannya di `docs/riset/audit-indikator.tsv` bervonis `BUTUH_MASUKAN_LAIN`.
+ * Yang mereka butuhkan penanda/label di atas lilin (jalur `markers`), bukan
+ * ruas data yang tak kita punya — kalau kelak jalur itu ada, mereka masuk
+ * lewat sana, bukan lewat fungsi ini.
  */
 export function keEntriKatalog(e: EntriRegistry): EntriKatalog | null {
   if (!e.plotConfig?.length) return null
@@ -224,6 +240,14 @@ export function muatKatalog(): Promise<Katalog> {
       .then((m) => {
         const peta: Katalog = new Map()
         for (const e of m.indicatorRegistry as unknown as EntriRegistry[]) {
+          // Vonis audit mekanis, BUKAN selera. 19 dari 457 entri melempar
+          // galat, mengembalikan nol nilai berhingga, atau menggambar sesuatu
+          // yang mustahil terlihat (konstan sepanjang deret, atau `overlay`
+          // yang seluruh nilainya jatuh di luar pita harga). Dibuang DI SINI,
+          // bukan di menu, supaya template lama yang menyimpan id semacam itu
+          // ikut gagal-anggun jadi "jenis tak dikenal" alih-alih menambahkan
+          // baris legenda yang selamanya kosong.
+          if (ID_DIBUANG.has(e.id)) continue
           // `ID_SUDAH_ADA` TIDAK disaring di sini: empat di antaranya (Stoch,
           // StochRSI, W%R, VWAP) justru dihitung lewat entri ini — yang
           // dikurasi cuma label & parameternya. Yang menyaringnya menu (lihat
