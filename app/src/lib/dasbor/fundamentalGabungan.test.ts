@@ -111,6 +111,34 @@ describe('bacaKuartalIdx — kumulatif IDX dikonversi jadi diskret', () => {
     expect(bacaKuartalIdx(kuartalDenganTw1, 'operating_income', '2026-06-30')).toEqual({ nilai: null, asal: null })
   })
 
+  // 19 Agu 2026 — CDIA: mata uang dideklarasikan PER LAPORAN dan penerbit boleh
+  // berganti di tengah tahun buku. Tanpa penjaga ini, `audit − TW3` beda mata
+  // uang memberi pendapatan Q4 −64,5 triliun tanpa satu pun galat.
+  describe('mata uang berganti di tengah tahun', () => {
+    const mataUangBeda = { '2026-03-31': 'USD', '2026-06-30': 'IDR' }
+    const mataUangSama = { '2026-03-31': 'USD', '2026-06-30': 'USD' }
+
+    it('pengurang beda mata uang → null, bukan selisih yang terlihat presisi', () => {
+      expect(bacaKuartalIdx(kuartalDenganTw1, 'revenue', '2026-06-30', null, mataUangBeda))
+        .toEqual({ nilai: null, asal: null })
+    })
+
+    it('mata uang sama → tetap dikurangi seperti biasa', () => {
+      expect(bacaKuartalIdx(kuartalDenganTw1, 'revenue', '2026-06-30', null, mataUangSama))
+        .toEqual({ nilai: 150, asal: 'idx' })
+    })
+
+    it('ruas neraca tak terpengaruh — tak pernah dikurangi', () => {
+      expect(bacaKuartalIdx(kuartalDenganTw1, 'total_assets', '2026-06-30', null, mataUangBeda))
+        .toEqual({ nilai: 520, asal: 'idx' })
+    })
+
+    it('peta mata uang tak ada (berkas lama) → perilaku lama tak berubah', () => {
+      expect(bacaKuartalIdx(kuartalDenganTw1, 'revenue', '2026-06-30', null, undefined))
+        .toEqual({ nilai: 150, asal: 'idx' })
+    })
+  })
+
   // B3 — Q4: IDX tak menerbitkan interim TW4; angkanya = auditan setahun − TW3.
   describe('Q4 dari laporan auditan setahun', () => {
     const kuartal2025 = {

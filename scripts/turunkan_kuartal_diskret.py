@@ -88,6 +88,14 @@ def _tahun_dari_tanggal_kuartal(kuartal: dict, tahunan: dict) -> set[int]:
     return tahun
 
 
+def mata_uang(data: dict, tanggal: str) -> str:
+    """Mata uang SATU periode. `panen_keuangan_idx.py` menulis peta `mata_uang`
+    per periode karena penerbit boleh berganti mata uang pelaporan di tengah
+    tahun buku (CDIA 2025: TW2 USD, TW3 IDR, 2026 TW1 USD lagi). Berkas lama
+    yang belum punya peta jatuh ke `currency` tingkat berkas."""
+    return (data.get("mata_uang") or {}).get(tanggal) or data.get("currency") or "IDR"
+
+
 def turunkan_satu_tiker(data: dict) -> dict:
     kuartal = data.get("kuartal") or {}
     tahunan = data.get("tahunan") or {}
@@ -106,6 +114,17 @@ def turunkan_satu_tiker(data: dict) -> dict:
                 continue  # tak ada dasar apa pun utk kuartal ini -- lewati, jangan tulis null kosongan
             pengurang = periode_tahun_ini[pengurang_key] if pengurang_key else None
 
+            # Selisih dua laporan yang mata uangnya BEDA bukan angka apa pun.
+            # CDIA: audit 2025 USD dikurangi TW3 2025 IDR memberi revenue Q4
+            # -64,5 triliun -- tak ada satu pun galat, dan angkanya terbaca
+            # seolah presisi. Kursnya tak bisa dipakai menyelamatkan: ruas
+            # "Conversion rate" di sumber hanya kurs TANGGAL PELAPORAN,
+            # sementara pos arus butuh kurs RATA-RATA periode. Jadi: null.
+            beda_mata_uang = pengurang_key is not None and pengurang is not None and (
+                mata_uang(data, f"{tahun}-{AKHIR_BULAN[langsung_key]}")
+                != mata_uang(data, f"{tahun}-{AKHIR_BULAN[pengurang_key]}")
+            )
+
             nilai: dict[str, float | None] = {}
             asal: dict[str, str | None] = {}
             for f in FIELD_NERACA:
@@ -119,9 +138,9 @@ def turunkan_satu_tiker(data: dict) -> dict:
                     asal[f] = f"langsung:{langsung_key}" if v_sumber is not None else None
                 else:
                     v_pengurang = (pengurang or {}).get(f)
-                    if v_sumber is None or v_pengurang is None:
+                    if v_sumber is None or v_pengurang is None or beda_mata_uang:
                         nilai[f] = None
-                        asal[f] = None
+                        asal[f] = "beda-mata-uang" if beda_mata_uang else None
                     else:
                         nilai[f] = v_sumber - v_pengurang
                         asal[f] = f"turunan:{langsung_key}-{pengurang_key}"
@@ -144,6 +163,7 @@ def proses_semua() -> tuple[int, int]:
         keluar = {
             "ticker": data.get("ticker", berkas.stem),
             "currency": data.get("currency", "IDR"),
+            "mata_uang": data.get("mata_uang") or {},
             "diperbarui": datetime.now(WIB).strftime("%Y-%m-%d %H:%M"),
             "kuartal_diskret": kuartal_diskret,
         }
@@ -226,6 +246,20 @@ def demo() -> None:
     # sum Q1..Q4 == tahunan (data rekaan sengaja pas)
     total = sum(kd[f"2025-{ab}"]["nilai"]["revenue"] for ab in ("03-31", "06-30", "09-30", "12-31"))
     assert total == 460, f"jumlah 4 kuartal diskret harus == audit, dapat {total}"
+
+    # Penerbit berganti mata uang di tengah tahun (kasus CDIA 2025): pengurangan
+    # DITOLAK, ruas arus null, ruas neraca tetap apa adanya.
+    data_ganti = {
+        **data,
+        "mata_uang": {"2025-03-31": "USD", "2025-06-30": "IDR",
+                      "2025-09-30": "IDR", "2025-12-31": "USD"},
+    }
+    kg = turunkan_satu_tiker(data_ganti)
+    assert kg["2025-06-30"]["nilai"]["revenue"] is None, "USD-IDR tak boleh dikurangkan"
+    assert kg["2025-06-30"]["asal"]["revenue"] == "beda-mata-uang"
+    assert kg["2025-09-30"]["nilai"]["revenue"] == 120, "IDR-IDR tetap boleh"
+    assert kg["2025-12-31"]["nilai"]["revenue"] is None, "audit USD - TW3 IDR ditolak"
+    assert kg["2025-06-30"]["nilai"]["total_assets"] == 1050, "neraca tak dikurangi, tak terpengaruh"
     print("turunkan_kuartal_diskret: swauji lolos")
 
 

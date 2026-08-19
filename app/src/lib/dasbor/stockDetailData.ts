@@ -242,7 +242,15 @@ export interface PeriodeKeuangan {
  * fundamentalGabungan.ts untuk konversinya). */
 export interface StockKeuangan {
   ticker: string
+  /** Mata uang DOMINAN berkas — ringkasan saja. Yang mengikat per periode ada
+   * di `mata_uang`; jangan pakai ruas ini untuk membandingkan dua periode. */
   currency: string
+  /** Mata uang per periode (kunci ISO yang sama dengan `kuartal`/`tahunan`).
+   * Ada hanya di berkas `keuangan_idx/` sejak 19 Agu 2026: penerbit boleh
+   * berganti mata uang pelaporan di tengah tahun buku (CDIA 2025 — TW2 USD,
+   * TW3 IDR, 2026 TW1 USD lagi), dan mengurangkan dua periode yang beda mata
+   * uang menghasilkan angka yang terlihat presisi dan salah total. */
+  mata_uang?: Record<string, string>
   diperbarui: string
   sumber?: string
   kuartal: Record<string, PeriodeKeuangan>

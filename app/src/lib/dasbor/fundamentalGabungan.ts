@@ -237,6 +237,7 @@ export function bacaKuartalIdx(
   field: keyof PeriodeKeuangan,
   iso: string,
   tahunanIdx?: Record<string, PeriodeKeuangan> | null,
+  mataUang?: Record<string, string> | null,
 ): AngkaGabungan {
   const [tahun, bulan] = iso.split('-')
   const q = Math.ceil(Number(bulan) / 3)
@@ -246,6 +247,19 @@ export function bacaKuartalIdx(
   if (q === 1) return { nilai: v, asal: 'idx' } // Q1 kumulatif == diskret
 
   const isoSebelumnya = q === 2 ? `${tahun}-03-31` : q === 3 ? `${tahun}-06-30` : `${tahun}-09-30`
+
+  // Selisih dua laporan yang MATA UANGNYA BEDA bukan angka apa pun. Penerbit
+  // boleh berganti mata uang pelaporan di tengah tahun buku: CDIA 2025 TW2 USD,
+  // TW3 IDR, lalu auditan setahun USD lagi — `audit − TW3` memberi pendapatan
+  // Q4 sebesar −64,5 triliun tanpa satu pun galat. Kursnya tak menyelamatkan:
+  // ruas "Conversion rate" di sumber cuma kurs tanggal pelaporan, sementara pos
+  // arus butuh kurs rata-rata periode. Jadi null — dan Yahoo (kuartalnya sudah
+  // diskret) yang mengisi kolomnya, seperti kasus Q4 tanpa TW3 di bawah.
+  if (mataUang && mataUang[iso] && mataUang[isoSebelumnya]
+      && mataUang[iso] !== mataUang[isoSebelumnya]) {
+    return { nilai: null, asal: null }
+  }
+
   const pengurang = kuartalIdx[isoSebelumnya]?.[field]
   if (pengurang == null) {
     // Q4 sengaja beda dari Q2/Q3: yang tersisa tanpa TW3 bukan potongan tahun
@@ -287,14 +301,14 @@ export function gabungkanBarisKeuangan(
   iso: string,
   mode: 'kuartal' | 'tahunan',
   yfPeriode: PeriodeKeuangan | null | undefined,
-  idx: Pick<StockKeuangan, 'kuartal' | 'tahunan'> | null | undefined,
+  idx: Pick<StockKeuangan, 'kuartal' | 'tahunan' | 'mata_uang'> | null | undefined,
   fd: StockFundamental | null | undefined,
   terbaru: boolean,
 ): AngkaGabungan {
   if (idx) {
     const nilaiTahunan = idx.tahunan[iso]?.[field]
     const dariIdx = mode === 'kuartal'
-      ? bacaKuartalIdx(idx.kuartal, field, iso, idx.tahunan)
+      ? bacaKuartalIdx(idx.kuartal, field, iso, idx.tahunan, idx.mata_uang)
       : nilaiTahunan != null ? { nilai: nilaiTahunan, asal: 'idx' as const } : { nilai: null, asal: null }
     if (dariIdx.nilai != null) return dariIdx
   }

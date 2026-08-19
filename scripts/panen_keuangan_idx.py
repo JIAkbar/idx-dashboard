@@ -15,6 +15,27 @@ plus satu ruas tambahan `"sumber": "idx-xbrl"` supaya asalnya bisa dibedakan
 dari berkas yfinance. Berkas ini TIDAK menimpa `keuangan/` -- direktori baru,
 keputusan menggabungkan itu ada di Johan.
 
+MATA UANG PER PERIODE (19 Agu 2026) -- tiga ruas tambahan
+---------------------------------------------------------
+`currency` tingkat berkas TIDAK LAGI jadi sumber kebenaran; ia tinggal
+ringkasan (mata uang terbanyak). Mata uang dideklarasikan PER LAPORAN dan
+penerbit boleh berganti di tengah tahun buku -- CDIA 2025/TW2 USD, 2025/TW3
+IDR (sekaligus ganti skala jadi Jutaan), 2026/TW1 USD lagi -- sehingga
+`Q4 = audit - TW3` menghasilkan pendapatan -64,5 TRILIUN tanpa satu pun galat.
+
+    "mata_uang_laporan": {tanggal: "USD"}  # terbaca dari XLSX-nya (kebenaran)
+    "mata_uang":         {tanggal: "USD"}  # lengkap; yang tak terbaca DITAKSIR
+    "kurs_laporan":      {tanggal: 16248}  # ruas "Conversion rate", apa adanya
+
+Pembaca yang MENGURANGKAN dua periode wajib memakai `mata_uang[<tanggal>]` dan
+menolak (null) kalau beda -- sudah diterapkan di `turunkan_kuartal_diskret.py`
+dan `bacaKuartalIdx` (app/src/lib/dasbor/fundamentalGabungan.ts).
+
+`kurs_laporan` DISIMPAN tapi TIDAK dipakai mengonversi: itu kurs tanggal
+pelaporan, sah untuk pos neraca saja, sedangkan pos arus (pendapatan, laba,
+arus kas) butuh kurs rata-rata periode yang tak ada di sumber. Terisi di 222
+dari 949 emiten; CDIA -- kasus yang memicu semua ini -- justru kosong.
+
 CARA KERJA
 ----------
 1. `GetFinancialReport` (docs/sumber-fundamental-idx.md #6.1) sekali panggil
@@ -77,6 +98,16 @@ PAKAI
   python scripts/panen_keuangan_idx.py --semua                  # 778 emiten TW2 2026
   python scripts/panen_keuangan_idx.py --semua --paksa          # ulang walau sudah ada
   python scripts/panen_keuangan_idx.py --semua --periode tw1    # tambah TW1
+  python scripts/panen_keuangan_idx.py --swauji                 # uji penaksir mata uang
+  python scripts/panen_keuangan_idx.py --dari-arsip --tahun 2025 --periode tw3
+
+`--dari-arsip` memeras ULANG dari `_arsip-mentah/` -- NOL permintaan jaringan.
+Ia hanya MENAMBAH: mata uang per periode selalu diperbarui, tapi nilai periode
+ditulis hanya kalau periode itu belum ada. Dua alasan: (a) periode yang
+mentahnya tak pernah terarsip (2020/2021/2025-audit, 2026-TW2, ~2.300 catatan)
+tak boleh ikut terhapus, dan (b) nilai yang ada sudah lewat
+`perbaiki_skala_keuangan.py`. Karena itu `--dari-arsip` aman dijalankan atas
+seluruh arsip (`--semua-arsip`), berbeda dari `--paksa` di jalur jaringan.
 
 Emiten yang berkasnya SUDAH punya data untuk (tanggal, bucket) yang diminta
 dilewati otomatis -- resumable kalau 778 emiten putus di tengah jalan, dan
@@ -96,10 +127,12 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import math
 import random
 import sys
 import time
 import urllib.parse
+from collections import Counter
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -265,11 +298,17 @@ def cari(peta: dict, kandidat: list[str]):
     return None
 
 
-def info_umum(wb) -> tuple[str, int]:
-    """(currency, skala) dari sheet 1000000 -- dibaca, bukan diasumsikan."""
-    currency, skala = "IDR", 1_000_000
+def info_umum(wb) -> tuple[str, int, float | None]:
+    """(currency, skala, kurs) dari sheet 1000000 -- dibaca, bukan diasumsikan.
+
+    `kurs` = ruas "Conversion rate at reporting date". Diukur 19 Agu 2026 atas
+    SELURUH arsip mentah: tak satu pun berkas mengisinya. Tetap dibaca supaya
+    kalau suatu saat terisi, konversi lintas mata uang punya dasar dari sumber
+    dan bukan angka karangan.
+    """
+    currency, skala, kurs = "IDR", 1_000_000, None
     if "1000000" not in wb.sheetnames:
-        return currency, skala
+        return currency, skala, kurs
     for row in wb["1000000"].iter_rows(values_only=True):
         if len(row) < 3 or not isinstance(row[2], str):
             continue
@@ -278,6 +317,9 @@ def info_umum(wb) -> tuple[str, int]:
             val = str(row[1] or "")
             if "/" in val:
                 currency = val.split("/")[-1].strip().upper() or "IDR"
+        elif "conversion rate at reporting date" in label_en:
+            if isinstance(row[1], (int, float)) and not isinstance(row[1], bool) and row[1]:
+                kurs = float(row[1])
         elif "level of rounding" in label_en:
             val = str(row[1] or "").lower()
             # Diuji: BBCA/ASII/ACST = "Jutaan/Million", TLKM = "Miliaran/Billion"
@@ -290,11 +332,11 @@ def info_umum(wb) -> tuple[str, int]:
                 skala = 1_000
             else:
                 skala = 1
-    return currency, skala
+    return currency, skala, kurs
 
 
-def ekstrak(wb) -> tuple[dict, str]:
-    currency, skala = info_umum(wb)
+def ekstrak(wb) -> tuple[dict, str, float | None]:
+    currency, skala, kurs = info_umum(wb)
 
     def rp(v):
         if v is None:
@@ -372,7 +414,7 @@ def ekstrak(wb) -> tuple[dict, str]:
         "financing_cf": financing_cf,
         "free_cf": free_cf,
     }
-    return data, currency
+    return data, currency, kurs
 
 
 def ambil_daftar(sesi: requests.Session, tahun: int, periode: str) -> dict:
@@ -493,7 +535,144 @@ def sudah_ada(kode: str, tanggal: str, bucket: str) -> bool:
     return tanggal in (isi.get(bucket) or {})
 
 
-def simpan(kode: str, tanggal: str, bucket: str, data_periode: dict, currency: str) -> None:
+def _ordinal(tanggal: str) -> int:
+    return datetime.strptime(tanggal, "%Y-%m-%d").toordinal()
+
+
+def _aset(periode) -> float | None:
+    v = (periode or {}).get("total_assets")
+    if isinstance(v, (int, float)) and not isinstance(v, bool) and v:
+        return abs(float(v))
+    return None
+
+
+def lengkapi_mata_uang(isi: dict) -> dict[str, str]:
+    """Peta LENGKAP tanggal -> mata uang, satu entri untuk tiap periode.
+
+    Kenapa ada (19 Agu 2026, CDIA): mata uang dideklarasikan PER LAPORAN, dan
+    penerbit berganti di tengah tahun buku. CDIA 2025/TW2 USD, 2025/TW3 IDR,
+    2026/TW1 USD lagi. Satu `currency` tingkat berkas menyembunyikan itu, dan
+    `Q4 = audit - TW3` lalu menghasilkan revenue -64,5 triliun tanpa satu pun
+    galat.
+
+    `mata_uang_laporan` = yang benar-benar terbaca dari berkas XLSX-nya
+    (kebenaran). Sebagian periode dipanen sebelum arsip mentah ada, jadi
+    berkasnya tak bisa dibaca lagi (2020/2021/2025-audit, 2026-TW2) -- untuk itu
+    mata uangnya DITAKSIR dari dua isyarat, urut:
+
+    1. JANGKAR NERACA, tapi hanya kalau JAWABANNYA TEGAS. Ganti mata uang
+       rupiah<->dolar itu lompatan ~4,2 dekade besaran; jadi jangkar dipakai
+       hanya kalau ada satu mata uang yang `total_assets`-nya sepadan (dalam
+       10x) SEKALIGUS semua mata uang lain jauh (di luar 100x). Tanpa syarat
+       ketegasan itu, SATU periode yang cacat di sumbernya menular: SGER
+       melaporkan 2023 sebagai USD dengan angka yang bukan USD maupun IDR, dan
+       jangkar polos lalu ikut melabeli 2020 & 2021 sebagai USD padahal
+       keduanya jelas rupiah.
+    2. Kalau jangkar tak tegas: TANGGAL TERDEKAT (seri -> yang lebih baru).
+
+    Alasan jangkar neraca dipilih lebih dulu daripada tanggal (pola yang sama
+    dipakai `perbaiki_skala_keuangan.py`): neraca itu posisi pada satu tanggal,
+    bergerak lambat. Tanggal saja TIDAK cukup: CDIA 2025-12-31 berjarak sama (3
+    bulan) dari 2025-09-30 (IDR) dan 2026-03-31 (USD) dan yang benar USD; ANJT
+    2025-12-31 juga seri, tapi yang benar justru tetangga yang lebih tua.
+    Jangkar menjawab keduanya benar; tanggal menjawab salah satu salah, pilihan
+    mana pun.
+
+    Kalau seluruh periode terbaca bermata uang sama, tak ada yang perlu
+    ditaksir -- itu 936 dari 949 berkas.
+    """
+    laporan: dict[str, str] = isi.get("mata_uang_laporan") or {}
+    if not laporan:
+        return {}
+    semua: dict[str, dict] = {}
+    for b in ("kuartal", "tahunan"):
+        semua.update(isi.get(b) or {})
+
+    hasil = {t: c for t, c in laporan.items() if t in semua}
+    if len(set(laporan.values())) == 1:
+        satu = next(iter(laporan.values()))
+        return {t: hasil.get(t, satu) for t in semua}
+
+    # Sepadan kalau dalam 10x (1 dekade); jauh kalau di luar 100x (2 dekade).
+    # Ganti mata uang IDR<->USD sendiri ~4,2 dekade, jadi celah 1..2 itu lebar.
+    DEKAT, JAUH = 1.0, 2.0
+
+    def terdekat_tanggal(t: str) -> str:
+        return min(laporan, key=lambda k: (abs(_ordinal(k) - _ordinal(t)), -_ordinal(k)))
+
+    for t in semua:
+        if t in hasil:
+            continue
+        a_t = _aset(semua[t])
+        jarak: dict[str, float] = {}
+        if a_t:
+            for k, c in laporan.items():
+                a_k = _aset(semua.get(k))
+                if a_k:
+                    d = abs(math.log10(a_t / a_k))
+                    jarak[c] = min(jarak.get(c, d), d)
+        menang = min(jarak, key=jarak.get) if jarak else None
+        tegas = (
+            menang is not None
+            and jarak[menang] < DEKAT
+            and all(d > JAUH for c, d in jarak.items() if c != menang)
+        )
+        hasil[t] = menang if tegas else laporan[terdekat_tanggal(t)]
+    return hasil
+
+
+def swauji_mata_uang() -> None:
+    """Swauji `lengkapi_mata_uang` -- bentuk nyata dari empat emiten yang
+    masing-masing mematahkan satu versi sebelumnya dari penaksirnya."""
+    def bikin(aset: dict[str, float], laporan: dict[str, str]) -> dict:
+        return {"kuartal": {}, "tahunan": {t: {"total_assets": v} for t, v in aset.items()},
+                "mata_uang_laporan": laporan}
+
+    # CDIA: seri tanggal (3 bulan ke belakang IDR, 3 bulan ke depan USD).
+    # Jangkar tegas -> USD, dan itu yang benar.
+    cdia = bikin(
+        {"2025-06-30": 1.39e9, "2025-09-30": 1.68e14, "2025-12-31": 1.74e9, "2026-03-31": 1.90e9},
+        {"2025-06-30": "USD", "2025-09-30": "IDR", "2026-03-31": "USD"})
+    assert lengkapi_mata_uang(cdia)["2025-12-31"] == "USD"
+
+    # ANJT: seri tanggal juga, tapi jawabannya tetangga yang LEBIH TUA.
+    anjt = bikin(
+        {"2025-09-30": 5.95e8, "2025-12-31": 3.17e8, "2026-03-31": 6.87e12, "2026-06-30": 7.05e12},
+        {"2025-09-30": "USD", "2026-03-31": "IDR"})
+    hasil = lengkapi_mata_uang(anjt)
+    assert hasil["2025-12-31"] == "USD", hasil
+    assert hasil["2026-06-30"] == "IDR", hasil
+
+    # SGER: satu periode CACAT di sumber (2023 berlabel USD dengan angka yang
+    # bukan USD maupun IDR). Jangkar tak tegas -> jatuh ke tanggal terdekat.
+    sger = bikin(
+        {"2020-12-31": 6.86e11, "2021-12-31": 1.24e12, "2022-12-31": 3.37e12,
+         "2023-12-31": 2.13e11, "2024-12-31": 4.64e12},
+        {"2022-12-31": "IDR", "2023-12-31": "USD", "2024-12-31": "IDR"})
+    hasil = lengkapi_mata_uang(sger)
+    assert hasil["2020-12-31"] == "IDR", hasil
+    assert hasil["2021-12-31"] == "IDR", hasil
+
+    # Seluruh periode terbaca satu mata uang -> tak ada yang ditaksir.
+    seragam = bikin({"2024-12-31": 1e12, "2025-12-31": 1.1e12}, {"2024-12-31": "IDR"})
+    assert lengkapi_mata_uang(seragam) == {"2024-12-31": "IDR", "2025-12-31": "IDR"}
+
+    # Belum pernah ada laporan terbaca -> peta kosong, BUKAN tebakan "IDR".
+    assert lengkapi_mata_uang(bikin({"2024-12-31": 1e12}, {})) == {}
+    print("lengkapi_mata_uang: swauji lolos")
+
+
+def _dominan(peta: dict[str, str], cadangan: str) -> str:
+    if not peta:
+        return cadangan
+    return Counter(peta.values()).most_common(1)[0][0]
+
+
+def simpan(kode: str, tanggal: str, bucket: str, data_periode: dict | None,
+           currency: str, kurs: float | None = None) -> None:
+    """Tulis satu periode. `data_periode=None` -> hanya perbarui mata uang
+    (dipakai `--dari-arsip`: nilainya sudah ada dan sudah lewat penambalan
+    skala, jadi jangan ditimpa)."""
     KELUARAN_DIR.mkdir(parents=True, exist_ok=True)
     path = KELUARAN_DIR / f"{kode}.json"
     isi = {}
@@ -503,13 +682,97 @@ def simpan(kode: str, tanggal: str, bucket: str, data_periode: dict, currency: s
         except Exception:
             isi = {}
     isi["ticker"] = kode
-    isi["currency"] = currency or isi.get("currency") or "IDR"
     isi["sumber"] = "idx-xbrl"
     isi.setdefault("kuartal", {})
     isi.setdefault("tahunan", {})
-    isi[bucket][tanggal] = data_periode
+    if data_periode is not None:
+        isi[bucket][tanggal] = data_periode
+    if currency and tanggal in (isi.get(bucket) or {}):
+        isi.setdefault("mata_uang_laporan", {})[tanggal] = currency
+        # Kurs SUMBER apa adanya (rupiah per satuan mata uang pelaporan, pada
+        # TANGGAL PELAPORAN). Disimpan, TIDAK dipakai mengonversi: kurs tanggal
+        # penutupan sah untuk pos neraca saja; pos ARUS (pendapatan, laba, arus
+        # kas) semestinya pakai kurs rata-rata periode, yang tak ada di sumber.
+        # Mengonversi dengan satu-satunya kurs yang ada akan menghasilkan angka
+        # yang terlihat presisi dan salah -- persis cacat yang sedang dibetulkan.
+        if kurs:
+            isi.setdefault("kurs_laporan", {})[tanggal] = kurs
+    isi["mata_uang"] = lengkapi_mata_uang(isi)
+    # `currency` tingkat berkas tinggal RINGKASAN (mata uang terbanyak), bukan
+    # lagi satu-satunya sumber kebenaran -- pembaca yang mengurangkan wajib
+    # memakai `mata_uang[<tanggal>]`.
+    isi["currency"] = _dominan(isi["mata_uang"], currency or isi.get("currency") or "IDR")
     isi["diperbarui"] = datetime.now(WIB).strftime("%Y-%m-%d %H:%M")
     path.write_text(json.dumps(isi, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
+
+def segarkan_mata_uang(kode: str) -> bool:
+    """Hitung ulang `mata_uang` dari `mata_uang_laporan` yang sudah tersimpan.
+    Dipakai di akhir `--dari-arsip` supaya berkas yang periodenya baru sebagian
+    diperas ulang tetap punya peta lengkap."""
+    path = KELUARAN_DIR / f"{kode}.json"
+    try:
+        isi = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return False
+    baru = lengkapi_mata_uang(isi)
+    if baru == (isi.get("mata_uang") or {}):
+        return False
+    isi["mata_uang"] = baru
+    isi["currency"] = _dominan(baru, isi.get("currency") or "IDR")
+    path.write_text(json.dumps(isi, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    return True
+
+
+def jalankan_arsip(tickers: set[str] | None, tahun: int | None, periode: str | None) -> int:
+    """Peras ULANG dari `_arsip-mentah/` -- NOL permintaan jaringan.
+
+    Hanya menambah: mata uang per periode selalu diperbarui, tapi NILAI periode
+    ditulis hanya kalau periode itu belum ada. Dua alasan, keduanya sudah
+    dibayar: (a) menjalankan ulang atas SELURUH arsip tak boleh sampai
+    menghapus periode yang mentahnya tak pernah terarsip (2020/2021/2025-audit,
+    2026-TW2 -- ~2.300 catatan), dan (b) nilai yang ada sudah lewat
+    `perbaiki_skala_keuangan.py`, menimpanya akan mengembalikan cacat skalanya.
+    """
+    berkas_arsip = sorted(ARSIP_MENTAH.glob("*/*/*.xlsx"))
+    diproses = ditambah = gagal = 0
+    kurs_ada: set[str] = set()
+    for f in berkas_arsip:
+        th, per, kode = int(f.parent.parent.name), f.parent.name, f.stem.upper()
+        if tahun and th != tahun:
+            continue
+        if periode and per != periode:
+            continue
+        if tickers and kode not in tickers:
+            continue
+        if per not in PERIODE_AKHIR:
+            continue
+        bucket = "tahunan" if per == "audit" else "kuartal"
+        tanggal = tanggal_akhir(th, per)
+        try:
+            wb = load_workbook(io.BytesIO(f.read_bytes()), data_only=True, read_only=True)
+            data_periode, currency, kurs = ekstrak(wb)
+            wb.close()
+        except Exception as e:  # noqa: BLE001
+            gagal += 1
+            print(f"  gagal {kode} {th}/{per}: {e}")
+            continue
+        diproses += 1
+        if kurs:
+            kurs_ada.add(kode)
+        baru = None
+        if not sudah_ada(kode, tanggal, bucket):
+            if sum(1 for v in data_periode.values() if v is not None) == 0:
+                continue  # semua ruas null -- jangan menulis catatan kosong
+            baru = data_periode
+            ditambah += 1
+        simpan(kode, tanggal, bucket, baru, currency, kurs)
+    disegarkan = sum(segarkan_mata_uang(p.stem) for p in sorted(KELUARAN_DIR.glob("*.json")))
+    print(f"\nArsip: {diproses} berkas diperas ulang, {ditambah} periode BARU ditulis, "
+          f"{gagal} gagal, {disegarkan} berkas peta mata uangnya disegarkan")
+    print(f"Kurs (Conversion rate) terisi di sumber: {len(kurs_ada)} emiten -- "
+          "DISIMPAN sebagai `kurs_laporan`, tidak dipakai mengonversi (lihat simpan())")
+    return 0
 
 
 def main() -> int:
@@ -520,7 +783,34 @@ def main() -> int:
     ap.add_argument("--periode", default="tw2", choices=["tw1", "tw2", "tw3", "audit"])
     ap.add_argument("--tahun", type=int, default=2026)
     ap.add_argument("--batas", type=int, default=None, help="Batasi jumlah tiker (uji cepat)")
+    ap.add_argument("--dari-arsip", action="store_true",
+                    help="Peras ulang dari _arsip-mentah/ (nol jaringan). Tanpa "
+                         "--tahun/--periode: seluruh arsip yang ada.")
+    ap.add_argument("--semua-arsip", action="store_true",
+                    help="Bersama --dari-arsip: seluruh tahun & periode yang ada di arsip")
+    ap.add_argument("--swauji", action="store_true",
+                    help="Uji penaksir mata uang per periode, tak menyentuh data")
+    ap.add_argument("--segarkan-mata-uang", action="store_true",
+                    help="Hitung ulang peta `mata_uang` seluruh berkas dari `mata_uang_laporan`")
     args = ap.parse_args()
+
+    if args.swauji:
+        swauji_mata_uang()
+        return 0
+
+    if args.segarkan_mata_uang:
+        n = sum(segarkan_mata_uang(p.stem) for p in sorted(KELUARAN_DIR.glob("*.json")))
+        print(f"{n} berkas peta mata uangnya berubah")
+        return 0
+
+    if args.dari_arsip:
+        tickers = ({t.strip().upper() for t in args.tickers.split(",") if t.strip()}
+                   if args.tickers else None)
+        return jalankan_arsip(
+            tickers,
+            None if args.semua_arsip else args.tahun,
+            None if args.semua_arsip else args.periode,
+        )
 
     if args.tickers:
         tickers = [t.strip().upper() for t in args.tickers.split(",") if t.strip()]
@@ -586,7 +876,7 @@ def main() -> int:
         try:
             konten = ambil_xlsx(sesi, att["File_Path"], kode, args.tahun, args.periode)
             wb = load_workbook(io.BytesIO(konten), data_only=True, read_only=True)
-            data_periode, currency = ekstrak(wb)
+            data_periode, currency, _kurs = ekstrak(wb)
             wb.close()
         except Ditolak:
             gagal += 1
@@ -623,6 +913,17 @@ def main() -> int:
 
     print(f"\nSelesai: {ok} berhasil, {kosong} kosong, {gagal} gagal, "
           f"{dilewati} dilewati dari {len(tickers)} emiten")
+
+    # Penambal WAJIB jalan sesudah pemanennya (CLAUDE.md, kasus
+    # `lengkapi_fundamental.py`): panen menulis ulang nilai periode dari nol,
+    # jadi tambalan skala sebelumnya ikut terhapus. `perbaiki_skala_keuangan.py`
+    # sebelumnya tak dipanggil dari mana pun -- ia menambal sekali lalu tiap
+    # panen berikutnya merusaknya lagi, tanpa satu pun galat. Dipanggil di sini,
+    # bukan diserahkan ke ingatan orang yang menjalankan panen.
+    if ok:
+        import perbaiki_skala_keuangan
+        print("\nMenambal skala (perbaiki_skala_keuangan) ...")
+        perbaiki_skala_keuangan.jalankan(tulis=True)
     return 0
 
 
