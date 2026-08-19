@@ -142,10 +142,17 @@ def panggil_api(image_paths, api_key):
 
 
 def angka(s, faktor_b, faktor_m, faktor_k):
-    """'262.1B' -> 262100.0 (juta) dst. None kalau tak bisa dikonversi."""
+    """'262.1B' -> 262100.0 (juta) dst. None kalau tak bisa dikonversi.
+
+    Koma punya DUA arti di Stockbit tergantung locale aplikasi, dan salah
+    menebaknya menggeser angka 10x tanpa satu pun galat: dengan sufiks B/M/K
+    koma itu DESIMAL ('24,3B' = 24,3 miliar -> 24300 juta), tanpa sufiks koma
+    itu pemisah ribuan ('2,558' = 2558). Versi pertama membuang semua koma,
+    jadi '24,3B' terbaca 243 miliar."""
     if not s:
         return None
-    s = s.strip().replace(",", "")
+    s = s.strip()
+    s = s.replace(",", ".") if s[-1:] in "BbMmKk" else s.replace(",", "")
     try:
         if s[-1] in "BbMmKk":
             n = float(s[:-1])
@@ -201,9 +208,14 @@ def selftest():
             {"broker": "CP", "val": "921.7M", "lot": "7.5K", "avg": "1,217"},
             {"broker": "??", "val": None, "lot": "100", "avg": "998"},
         ] + [{"broker": "AA", "val": "1B", "lot": "1K", "avg": "1,000"}] * 9,
-        "jual": [{"broker": "cc", "val": "203.5B", "lot": "2M", "avg": "1,016"}],
+        "jual": [
+            {"broker": "cc", "val": "203.5B", "lot": "2M", "avg": "1,016"},
+            # locale ID: koma = desimal saat ada sufiks (screenshot 18 Agu 26)
+            {"broker": "zp", "val": "24,3B", "lot": "94,9K", "avg": "2,558"},
+        ],
     }
     d = proses(mock, "DSSA", "2026-08-10")
+    assert d["jual"][1] == ["ZP", 24300, 94900, 2558], d["jual"][1]
     assert d["beli"][0] == ["XL", 262100, 2600000, 1016], d["beli"][0]
     assert d["beli"][1] == ["CP", 921.7, 7500, 1217], d["beli"][1]
     assert d["beli"][2][1] is None                      # sel tak terbaca -> null

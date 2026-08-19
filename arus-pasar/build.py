@@ -730,6 +730,14 @@ def halaman_kolofon(ed, kredit=None):
         sel = "\n".join(
             f'<div class="kf-nama"><span>{alias}</span><span class="kf-jml">{n} emiten</span></div>'
             for alias, n in urut)
+        # Setoran DISETUJUI yang tak jadi dimuat tetap dapat pengakuan: kredit
+        # mengikuti status kurasi, bukan kolom `dimuat` (#138). Tanpa sapuan ini
+        # penyetor yang setorannya lolos kurasi tapi tak masuk edisi hilang sama
+        # sekali dari kolofon — terbaca sebagai penolakan, padahal bukan.
+        sel += "\n" + "\n".join(
+            f'<div class="kf-nama"><span>{alias}</span>'
+            f'<span class="kf-jml">setoran disetujui</span></div>'
+            for alias in (ed.get("kredit_kontributor") or []) if alias not in cnt)
     else:
         nama_lama = ["Agitama Wahyu Putra Dita", "Mohamad Miftahul Ulum", "Ali Supian",
                      "Wardani W.", "Dhafina S. F.", "Erika J.", "Difla S.", "Ratu N. A. A."]
