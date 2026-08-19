@@ -18,10 +18,29 @@ export interface NotifikasiRow {
  *  tetap ada di tabel, tapi tak ada yang menggulung 200 baris di popover. */
 const BATAS = 30
 
+/**
+ * Notifikasi MILIK PENONTON saja, plus pengumuman bersama (`untuk` null).
+ *
+ * Saringannya WAJIB ditulis di sini dan tidak boleh diserahkan ke RLS. Versi
+ * sebelumnya memanggil `.select('*')` polos dan mengandalkan kebijakan baris:
+ * benar untuk kontributor (`notifikasi_baca` membatasi ke miliknya + null),
+ * tapi superadmin punya kebijakan `notifikasi_kelola_superadmin` bertipe ALL —
+ * jadi tak ada yang menyaring apa pun dan lonceng Johan menampilkan pesan
+ * pribadi SEMUA kontributor ("terima kasih, setoranmu menambah jenjangmu",
+ * milik Agitama, Bot Papan, Ali Supian, Erika Julianti).
+ *
+ * Akibat keduanya: "Tandai semua dibaca" ikut mati. Ia menyaring
+ * `untuk = auth.uid()`, cocok dengan NOL baris, update sukses tanpa menyentuh
+ * apa pun, lencana tetap 9+. Tombolnya tak pernah rusak — daftarnya yang salah
+ * isi. Hak ALL superadmin itu untuk mengelola, bukan untuk lonceng.
+ */
 export async function daftarNotifikasi(): Promise<NotifikasiRow[]> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
   const { data, error } = await supabase
     .from('notifikasi')
     .select('*')
+    .or(`untuk.eq.${user.id},untuk.is.null`)
     .order('dibuat_pada', { ascending: false })
     .limit(BATAS)
   if (error) throw error

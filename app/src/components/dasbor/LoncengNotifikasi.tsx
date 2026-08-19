@@ -44,6 +44,8 @@ function Baris({ n, onBaca }: { n: NotifikasiRow; onBaca: (id: string) => void }
 export function LoncengNotifikasi() {
   const { daftar, belumDibaca, muat } = useNotifikasi()
   const [buka, setBuka] = useState(false)
+  // Galat ditampilkan, bukan ditelan — lihat alasannya di tombol "Tandai semua".
+  const [gagal, setGagal] = useState<string | null>(null)
   const bungkus = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -76,13 +78,21 @@ export function LoncengNotifikasi() {
         <div className="ntf-panel">
           <div className="ntf-kepala">
             <span className="lbl">Kabar</span>
+            {/* catch() TIDAK boleh kosong. Versi sebelumnya menelan galat apa
+                pun, sehingga tombol yang tak bekerja terlihat persis seperti
+                tombol yang bekerja — dan bug ini bertahan berhari-hari tanpa
+                satu pun petunjuk kenapa. */}
             {belumDibaca > 0 && (
               <button type="button" className="ntf-semua"
-                onClick={() => void tandaiSemuaDibaca().then(muat).catch(() => {})}>
+                onClick={() => void tandaiSemuaDibaca().then(muat).catch((e) => {
+                  console.error('gagal menandai semua dibaca:', e)
+                  setGagal('Gagal menandai. Coba lagi sebentar.')
+                })}>
                 Tandai semua dibaca
               </button>
             )}
           </div>
+          {gagal && <p className="ntf-gagal" role="alert">{gagal}</p>}
           <div className="ntf-isi">
             {daftar === null && <p className="muted ntf-kosong">Memuat…</p>}
             {daftar !== null && daftar.length === 0 && (
