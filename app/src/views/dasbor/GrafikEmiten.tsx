@@ -773,7 +773,7 @@ export function GrafikEmiten() {
         // untuk dibaca.
         color: warnaSamar(teks, 0.08),
         fontSize: 76,
-        fontFamily: "'Red Hat Mono', Consolas, ui-monospace, monospace",
+        fontFamily: "'IBM Plex Mono', Consolas, ui-monospace, monospace",
         fontStyle: 'bold',
       }],
     })

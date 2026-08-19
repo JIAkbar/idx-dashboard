@@ -26,7 +26,7 @@
 
 .dasbor-shell {
   --dasbor-topbar-h: 52px;
-  font-family: "Red Hat Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -112,12 +112,12 @@
 @keyframes dasbor-pita-jalan { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .dasbor-tk {
   display: inline-flex; align-items: center; gap: 7px; padding: 0 16px;
-  font-family: "Red Hat Mono", ui-monospace, Consolas, monospace;
+  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   font-size: 11.5px; color: var(--text2);
 }
 .dasbor-tk b { color: var(--text); font-weight: 600; }
 .dasbor-tk-sep { color: var(--border2); }
-.dasbor-num { font-family: "Red Hat Mono", ui-monospace, Consolas, monospace; font-variant-numeric: tabular-nums; }
+.dasbor-num { font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace; font-variant-numeric: tabular-nums; }
 .dasbor-shell .up, .dasbor-num.up { color: var(--green); }
 .dasbor-shell .dn, .dasbor-num.dn { color: var(--red); }
 .dasbor-lbl {
@@ -176,7 +176,7 @@
   overflow: hidden;
 }
 .dasbor-rail-merek b {
-  font-family: "Red Hat Mono", ui-monospace, Consolas, monospace;
+  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   font-size: 19px; font-weight: 700; line-height: 1;
 }
 .dasbor-rail-merek span {
@@ -234,7 +234,7 @@
   background: linear-gradient(90deg, var(--accent-soft), transparent 72%);
 }
 .dasbor-rail-kode {
-  font-family: "Red Hat Mono", ui-monospace, Consolas, monospace;
+  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   font-size: 11px; letter-spacing: .1em;
 }
 
@@ -276,7 +276,7 @@
 }
 .dasbor-rail-fly-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .dasbor-rail-fly-kode {
-  font-family: "Red Hat Mono", ui-monospace, Consolas, monospace;
+  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   font-size: 9.5px; letter-spacing: .08em; color: var(--text3); flex: none;
 }
 .dasbor-rail-fly-item.active .dasbor-rail-fly-kode { color: var(--accent); }
@@ -383,7 +383,7 @@
     border-radius: var(--r-kecil, 8px);
     background: var(--accent);
     color: var(--cal-active-txt);
-    font-family: "Red Hat Mono", ui-monospace, Consolas, monospace;
+    font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
     font-size: 16px; font-weight: 700; line-height: 1;
     text-decoration: none;
     position: relative; overflow: hidden;
@@ -661,8 +661,9 @@
 .lantai {
   /* ===== Tema PAPAN Lilin (dipasang 15 Agu 2026) ==========================
      Warnanya dari arah desain "Lilin" (docs/desain/arah/papan-lilin.html);
-     sudut membulat 12px/8px dan keluarga huruf Red Hat dari "Samudra". Palet
-     lama tersimpan utuh di docs/desain/token-terpasang-sebelum-lilin.css.
+     sudut membulat 12px/8px, keluarga huruf awalnya Red Hat dari "Samudra"
+     — diganti Plus Jakarta Sans + IBM Plex Mono 19 Agu 2026 (permintaan
+     Johan). Palet lama tersimpan utuh di docs/desain/token-terpasang-sebelum-lilin.css.
 
      Nama variabelnya sengaja TIDAK ikut berganti. Arah desain memakai
      --aksen/--bull/--bear, sedangkan seluruh aplikasi ini memakai
@@ -686,9 +687,9 @@
      — beda hue per tipe holder, bukan tiga abu mirip. */
   --node-corp:#5B94E8; --node-ind:#38B77E; --node-oth:#767C8C;
   --flap:#08090C; --flap-line:rgba(255,255,255,.07);
-  --mono:"Red Hat Mono","Cascadia Mono",Consolas,"SF Mono",monospace;
-  --disp:"Red Hat Display","Segoe UI",system-ui,sans-serif;
-  --ui:"Red Hat Text","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"IBM Plex Mono","Cascadia Mono",Consolas,"SF Mono",monospace;
+  --disp:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif;
+  --ui:"Plus Jakarta Sans","Segoe UI",system-ui,-apple-system,sans-serif;
   /* 6px terbaca seperti sudut yang lupa dibulatkan; 12px membuat panel terlihat
      memang dirancang. --r-kecil untuk elemen kecil (chip, badge, tombol ikon),
      yang pada 12px justru berubah jadi kapsul. */
@@ -2933,4 +2934,13 @@
 .lantai .sea-saran-belum .ket {
   flex: 1 1 100%; margin-top: 2px; font-size: 11px; line-height: 1.45;
   color: var(--text3); font-family: var(--mono); white-space: normal;
+}
+
+/* Pesan gagal di panel lonceng. Kecil tapi wajib terlihat: tombol "Tandai
+   semua dibaca" dulu menelan galatnya, sehingga tombol yang tak bekerja
+   terlihat persis seperti yang bekerja. */
+.lantai .ntf-gagal {
+  margin: 0; padding: 8px 14px; font-size: 12px; line-height: 1.45;
+  color: var(--red); background: rgba(242, 84, 91, .08);
+  border-bottom: 1px solid var(--line);
 }
