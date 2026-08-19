@@ -8,7 +8,7 @@ import {
   hitungATR, cariPivotRendah, cariPivotTinggi, cariDoubleBottom,
   hitungOBV, cariLonjakanVolume, cariMusiman, SPEK_POLA, labelInstansPola,
   VERSI_TEMPLATE, uraiTemplate, simpanTemplate, hapusTemplate, tandaiBawaan, ubahNamaTemplate,
-  penandaDiSekitar,
+  penandaDiSekitar, tutupSampai,
   type InstansIndikator, type SpekParam, type LilinData, type ParamDoubleBottom,
   type TemplateGrafik, type ParamLonjakanVolume,
 } from './grafikEmiten'
@@ -1067,4 +1067,97 @@ describe('katalogIndikator', () => {
     const palsu = JSON.stringify([{ ...t[0], indikator: [{ ...t[0].indikator[0], jenis: 'entahapa' }] }])
     expect(uraiTemplate(palsu)).toEqual([])
   })
+})
+
+/* ------------------------------------------------------------------ *
+ * Bar replay (#187) — anti-bocor masa depan.
+ *
+ * Replay memotong `lilin`/`volume` di HULU lalu membiarkan seluruh turunan
+ * dihitung ulang dari potongan itu. Yang membuat cara itu sah cuma satu hal:
+ * setiap perhitungan di berkas ini harus KAUSAL — nilainya di indeks i tidak
+ * boleh bergantung pada data setelah i. Kalau salah satu tidak, replay akan
+ * menggambar MA/pola yang sudah tahu jawabannya, hasilnya tetap terlihat
+ * wajar di layar, dan tak ada satu pun galat yang menandainya.
+ *
+ * Ujinya membandingkan nilai pada satu indeks antara deret PENUH dan deret
+ * yang sudah dipotong tepat sesudah indeks itu. Sama = kausal.
+ * ------------------------------------------------------------------ */
+describe('Bar replay: indikator & pola ikut mundur (tak membaca masa depan)', () => {
+  // Deret bergerak yang cukup panjang & tak monoton — deret naik lurus akan
+  // meloloskan indikator bocor sekalipun.
+  const tutup = Array.from({ length: 220 }, (_, i) => (
+    100 + Math.sin(i / 6) * 12 + Math.sin(i / 31) * 25 + (i % 7) * 0.8
+  ))
+  const vol = Array.from({ length: 220 }, (_, i) => 1_000_000 + ((i * 7919) % 900_000))
+  const lilinPenuh: LilinData[] = tutup.map((c, i) => ({
+    time: `2025-${String(Math.floor(i / 20) + 1).padStart(2, '0')}-${String((i % 20) + 1).padStart(2, '0')}`,
+    open: c - 1, high: c + 2, low: c - 2, close: c,
+  }))
+  const POTONG = 150 // deret dipotong jadi 150 lilin; indeks yang diperiksa 149
+
+  it('MA/EMA/RSI/MACD/Bollinger/OBV di lilin terakhir replay = nilai di lilin yang sama pada data penuh', () => {
+    const i = POTONG - 1
+    const sebagian = tutup.slice(0, POTONG)
+    expect(hitungMA(sebagian, 20)[i]).toBe(hitungMA(tutup, 20)[i])
+    expect(hitungMA(sebagian, 200)[i]).toBe(hitungMA(tutup, 200)[i])
+    expect(hitungEMA(sebagian, 20)[i]).toBe(hitungEMA(tutup, 20)[i])
+    expect(hitungRSI(sebagian, 14)[i]).toBe(hitungRSI(tutup, 14)[i])
+    expect(hitungMACD(sebagian, 12, 26, 9).macd[i]).toBe(hitungMACD(tutup, 12, 26, 9).macd[i])
+    expect(hitungMACD(sebagian, 12, 26, 9).sinyal[i]).toBe(hitungMACD(tutup, 12, 26, 9).sinyal[i])
+    expect(hitungBollinger(sebagian, 20, 2).tengah[i]).toBe(hitungBollinger(tutup, 20, 2).tengah[i])
+    expect(hitungBollinger(sebagian, 20, 2).atas[i]).toBe(hitungBollinger(tutup, 20, 2).atas[i])
+    expect(hitungOBV(sebagian, vol.slice(0, POTONG))[i]).toBe(hitungOBV(tutup, vol)[i])
+  })
+
+  it('MA 200 pada deret yang belum cukup panjang tetap null, bukan angka hasil menoleh ke depan', () => {
+    // 150 titik < 200: MA 200 memang belum ada. Yang dijaga di sini: nilai
+    // itu null pada potongan WALAU pada data penuh (220 titik) sudah ada.
+    expect(hitungMA(tutup.slice(0, POTONG), 200)[POTONG - 1]).toBeNull()
+    expect(hitungMA(tutup, 200)[219]).not.toBeNull()
+  })
+
+  it('hitungInstans (jalur yang benar-benar dipakai kanvas) juga kausal', () => {
+    const inst = buatInstans('ma', SPEK_INDIKATOR.ma.param, 'i-ma20', 0)
+    inst.param.periode = 20
+    const i = POTONG - 1
+    const potong = hitungInstans(inst, tutup.slice(0, POTONG), vol.slice(0, POTONG), lilinPenuh.slice(0, POTONG))
+    const penuh = hitungInstans(inst, tutup, vol, lilinPenuh)
+    expect(potong[0].nilai[i]).toBe(penuh[0].nilai[i])
+  })
+
+  it('pola tak pernah menyebut kejadian SESUDAH lilin terakhir replay', () => {
+    const lilinPotong = lilinPenuh.slice(0, POTONG)
+    const batas = lilinPotong[POTONG - 1].time
+    const db = cariDoubleBottom(lilinPotong, vol.slice(0, POTONG), {
+      jendela: 5, atr: 14, toleransi: 1, jarakMin: 5, jarakMaks: 120, kedalamanMin: 1,
+    } satisfies ParamDoubleBottom)
+    for (const d of db) {
+      expect(d.waktuLembah2 <= batas).toBe(true)
+      if (d.waktuKonfirmasi !== null) expect(d.waktuKonfirmasi <= batas).toBe(true)
+    }
+    const lonjak = cariLonjakanVolume(lilinPotong, vol.slice(0, POTONG), {
+      periode: 20, ambang: 2, ambangKuat: 3, naikMin: 1,
+    } satisfies ParamLonjakanVolume)
+    for (const l of lonjak) expect(l.waktu <= batas).toBe(true)
+    // Musiman: n observasi pada potongan tak boleh melebihi n pada data penuh,
+    // dan tanggal terakhir yang dihitung tak boleh melewati batas replay.
+    const mPotong = cariMusiman(lilinPotong, 2)
+    const mPenuh = cariMusiman(lilinPenuh, 2)
+    expect(mPotong!.totalObservasi).toBeLessThanOrEqual(mPenuh!.totalObservasi)
+    for (const t of mPotong!.waktu) expect(t <= batas).toBe(true)
+  })
+})
+
+describe('tutupSampai (basis persen Compare symbols)', () => {
+  const d: LilinData[] = [
+    { time: '2026-01-05', open: 1, high: 1, low: 1, close: 100 },
+    { time: '2026-01-06', open: 1, high: 1, low: 1, close: 110 },
+    { time: '2026-01-08', open: 1, high: 1, low: 1, close: 120 },
+  ]
+  it('cocok persis', () => expect(tutupSampai(d, '2026-01-06')).toBe(110))
+  it('tanggal tanpa lilin jatuh ke tutup terakhir sebelumnya (kunci pekanan/bulanan kerap hari libur)',
+    () => expect(tutupSampai(d, '2026-01-07')).toBe(110))
+  it('sesudah lilin terakhir = tutup terakhir', () => expect(tutupSampai(d, '2026-03-01')).toBe(120))
+  it('sebelum lilin pertama = null, bukan angka karangan', () => expect(tutupSampai(d, '2025-12-31')).toBeNull())
+  it('deret kosong = null', () => expect(tutupSampai([], '2026-01-06')).toBeNull())
 })

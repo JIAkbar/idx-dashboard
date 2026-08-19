@@ -683,6 +683,11 @@
   --red:#E6635A; --red-dim:rgba(230,99,90,.14);
   --green:#38B77E; --green-dim:rgba(56,183,126,.14);
   --blue:#5B94E8;
+  /* #187 Compare symbols (/grafik): tiga warna emiten PEMBANDING. Sengaja di
+     luar PALET_INDIKATOR (--amber/--blue/--green/--red/--text2/--text3) —
+     garis pembanding dan garis indikator hidup di kanvas yang sama, dan dua
+     garis sewarna di situ tak bisa dibedakan sama sekali. */
+  --bnd1:#B48AE2; --bnd2:#4FC3D9; --bnd3:#E77FC8;
   /* #79: kategori simpul Grafik Jaringan /peta-investor (graphRender.ts WARNA)
      — beda hue per tipe holder, bukan tiga abu mirip. */
   --node-corp:#5B94E8; --node-ind:#38B77E; --node-oth:#767C8C;
@@ -707,6 +712,9 @@
   --red:#B73A31; --red-dim:rgba(183,58,49,.10);
   --green:#197047; --green-dim:rgba(25,112,71,.10);
   --blue:#2C63C4;
+  /* #187 — padanan terang --bnd1/2/3, digelapkan sampai lolos 4,5:1 di atas
+     --bg1 DAN --bg3 (garis pembanding juga dipakai sebagai teks legenda). */
+  --bnd1:#6B3FA0; --bnd2:#0F6572; --bnd3:#A33B84;
   --node-corp:#2C63C4; --node-ind:#197047; --node-oth:#767C74;
   --flap:#16181A; --flap-line:rgba(255,255,255,.10);
 }

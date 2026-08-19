@@ -15,7 +15,7 @@ import {
   spekJenis, idPustaka,
   hitungInstans, cariDoubleBottom, cariLonjakanVolume, cariMusiman,
   bacaTemplateTersimpan, tulisTemplateTersimpan, simpanTemplate, hapusTemplate,
-  tandaiBawaan, ubahNamaTemplate, penandaDiSekitar,
+  tandaiBawaan, ubahNamaTemplate, penandaDiSekitar, tutupSampai,
   type BerkasOhlcEmiten, type DoubleBottom, type JenisAsli, type JenisIndikator, type JenisPola,
   type LilinData, type ParamDoubleBottom, type ParamLonjakanVolume, type StatusPola, type StatusLonjakan,
   type LonjakanVolume, type TemplateGrafik, type TemuanMusiman, type VolumeData,
@@ -31,6 +31,8 @@ import {
 import { useDaftarInstans } from '../../components/dasbor/DaftarInstans'
 import { ModalSetelanInstans } from '../../components/dasbor/ModalSetelanInstans'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
+import { LangkahTanggal } from '../../components/dasbor/LangkahTanggal'
+import { DatePicker } from '../../components/dasbor/DatePicker'
 import { TombolLayarPenuh } from '../../components/dasbor/TombolLayarPenuh'
 import { AlatGambar } from '../../components/dasbor/AlatGambar'
 import { useAlatGambar } from '../../lib/dasbor/useAlatGambar'
@@ -39,6 +41,7 @@ import { pesanGalat } from '../../lib/pesanGalat'
 import {
   IkonMenu, IKON_CARI, IKON_SILANG, IKON_INFO, IKON_TONG, IKON_MATA,
   IKON_MATA_CORET, IKON_GIR, IKON_LILIN, IKON_GRAFIK_NAIK, IKON_KAMERA,
+  IKON_ULANG, IKON_PUTAR, IKON_JEDA,
 } from '../../components/dasbor/IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 import './GrafikEmiten.css'
@@ -109,6 +112,41 @@ const MODE_SKALA: Array<[string, string, number, string]> = [
   ['log', 'log', 1, 'Skala logaritmik — jarak yang sama berarti persentase yang sama'],
 ]
 
+/**
+ * Compare symbols (#187) — berapa emiten pembanding boleh ditumpuk sekaligus.
+ *
+ * Tiga, bukan "sebanyak yang mau". Kanvas ini sudah memuat lilin + volume +
+ * beberapa indikator; garis pembanding keempat berarti warna keempat yang
+ * harus berbeda dari SEMUA warna indikator sekaligus, dan di titik itu
+ * pembeda warnanya sudah lebih tipis daripada gunanya.
+ */
+const MAKS_BANDING = 3
+
+/** Warna garis pembanding — token khusus di `.lantai`, sengaja DI LUAR
+ *  `PALET_INDIKATOR`. Garis pembanding dan garis indikator duduk di kanvas
+ *  yang sama; dua garis sewarna di situ tak bisa dibedakan sama sekali. */
+const WARNA_BANDING = ['--bnd1', '--bnd2', '--bnd3']
+
+/** Kode berkas OHLC indeks komposit — sama bentuknya dengan berkas emiten
+ *  (`ohlc/IHSG.json`, 8.849 baris sejak 1990), jadi tak perlu jalur muat
+ *  kedua. Ini pertanyaan yang paling sering dijawab salah tanpa pembanding:
+ *  "naiknya karena emitennya, atau karena pasarnya?" */
+const KODE_IHSG = 'IHSG'
+
+/**
+ * Kecepatan putar-otomatis Bar replay, dalam LILIN PER DETIK.
+ *
+ * Ditulis sebagai lilin/detik (bukan "×") karena itu yang benar-benar diatur —
+ * "2×" tak punya arti sebelum ada kecepatan dasar yang disepakati, dan chart
+ * ini tak punya satu pun.
+ */
+const KECEPATAN_REPLAY: Array<{ id: string; label: string }> = [
+  { id: '1', label: '1/dtk' },
+  { id: '2', label: '2/dtk' },
+  { id: '5', label: '5/dtk' },
+  { id: '10', label: '10/dtk' },
+]
+
 /** Satu baris legenda dalam-kanvas. `ranah` menentukan daftar mana yang
  *  dipanggil saat tombol mata/hapus/gir ditekan — indikator dan pola punya
  *  dua `useDaftarInstans` terpisah, dan barisnya duduk berdampingan. */
@@ -153,6 +191,15 @@ interface PenandaPola {
 }
 
 const spekPola = (jenis: JenisPola) => SPEK_POLA[jenis].param
+
+/** 'yyyy-mm-dd[ HH:mm]' -> '12 Agu 2026'. Dipakai menyebut basis normalisasi
+ *  persen di legenda pembanding — di situ yang dibutuhkan tanggal yang bisa
+ *  dibaca sekilas, bukan ISO. */
+function tglPendek(waktu: string): string {
+  const bln = Number(waktu.slice(5, 7)) - 1
+  if (!BULAN[bln]) return waktu
+  return `${Number(waktu.slice(8, 10))} ${BULAN[bln]} ${waktu.slice(0, 4)}`
+}
 
 /**
  * Token warna heksadesimal -> rgba dengan alfa. Watermark lightweight-charts
@@ -358,6 +405,45 @@ export function GrafikEmiten() {
    *  yang mustahil. */
   const [modeSkala, setModeSkala] = useState('')
   const [autoSkala, setAutoSkala] = useState(true)
+
+  /* ---------------- Compare symbols (#187) ---------------- */
+
+  /** Kode emiten/indeks pembanding, maksimal `MAKS_BANDING`. Urutannya
+   *  menentukan warnanya (`WARNA_BANDING[i]`) — jadi menghapus yang tengah
+   *  memang menggeser warna yang di bawahnya, dan itu disengaja: warna
+   *  mengikuti POSISI di legenda, bukan menempel selamanya pada satu kode. */
+  const [banding, setBanding] = useState<string[]>([])
+  /** Lilin pembanding yang sudah diunduh, per kode. Array kosong = sudah
+   *  dicoba tapi gagal — bukan "belum dicoba", supaya efek pengunduh tak
+   *  mengulang permintaan yang sama tanpa henti. */
+  const [dataBanding, setDataBanding] = useState<Record<string, LilinData[]>>({})
+  /**
+   * Tanggal lilin PERTAMA yang terlihat — basis normalisasi persen.
+   *
+   * Wajib disebut di legenda. Skala persentase lightweight-charts mengukur
+   * tiap seri dari titik pertama yang TERLIHAT, jadi angkanya berubah begitu
+   * pembacanya menggeser atau memperbesar sumbu waktu. "+18%" tanpa keterangan
+   * "relatif terhadap kapan" adalah angka yang tak bisa ditafsirkan sama
+   * sekali — dan tetap terlihat masuk akal, yang justru membuatnya berbahaya.
+   */
+  const [basisPersen, setBasisPersen] = useState<string | null>(null)
+
+  /* ---------------- Bar replay (#187) ---------------- */
+
+  /**
+   * Berapa lilin PERTAMA yang ditampilkan saat replay hidup; `null` = replay
+   * mati (seluruh rentang tergambar).
+   *
+   * Ini satu-satunya tuas replay, dan letaknya sengaja di HULU: pemotongan
+   * dilakukan pada `lilin`/`volume` sebelum indikator, pola, legenda, dan
+   * penanda dihitung — semuanya turunan dari dua array itu. Memotong di
+   * hilir (mis. cuma di `setData` seri harga) akan membuat MA 20 tetap
+   * dihitung dari data penuh sementara lilinnya mundur: seluruh guna replay
+   * hilang, dan TIDAK ADA satu pun galat yang menandainya.
+   */
+  const [replay, setReplay] = useState<number | null>(null)
+  const [putar, setPutar] = useState(false)
+  const [kecepatan, setKecepatan] = useState<string>('2')
   /** Panel indikator (pane > 0) yang sedang dilipat — tanda `^` di legendanya. */
   const [lipat, setLipat] = useState<number[]>([])
   // Bertambah tiap seri harga dibuat ulang. Efek-efek yang MENEMPEL pada seri
@@ -432,6 +518,31 @@ export function GrafikEmiten() {
       .catch((e: unknown) => { if (!batal) setGalat(pesanGalat(e, `Gagal memuat data harga ${kode}.`)) })
     return () => { batal = true }
   }, [kode])
+
+  /**
+   * Lilin emiten PEMBANDING — berkas yang sama dengan emiten utama
+   * (`ohlc/<KODE>.json`), termasuk `ohlc/IHSG.json` untuk indeks komposit.
+   *
+   * Kode yang sudah ada isinya dilewati, jadi menghapus lalu menambahkan lagi
+   * pembanding yang sama tidak mengunduh ulang. Kegagalan disimpan sebagai
+   * array KOSONG, bukan dibiarkan tak terisi: tanpa itu efek ini mencoba
+   * berulang kali kode yang memang tak punya berkas.
+   */
+  useEffect(() => {
+    let batal = false
+    for (const k of banding) {
+      if (dataBanding[k]) continue
+      fetch(`/data-idx/json/ohlc/${k}.json`)
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+        .then((d: BerkasOhlcEmiten) => {
+          // Warna volume tak dipakai di sini (pembanding digambar sebagai
+          // garis harga saja), jadi keduanya kosong.
+          if (!batal) setDataBanding((x) => ({ ...x, [k]: keDataLilinVolume(d.d, '', '').lilin }))
+        })
+        .catch(() => { if (!batal) setDataBanding((x) => ({ ...x, [k]: [] })) })
+    }
+    return () => { batal = true }
+  }, [banding, dataBanding])
 
   /**
    * Lilin INTRADAY — ditarik saat emiten/kerangka intraday dipilih, bukan
@@ -534,6 +645,12 @@ export function GrafikEmiten() {
   // `addSeries(..., paneIndex)` — bukan chart kedua yang sumbu waktunya harus
   // disinkron manual: satu chart, beberapa pane, sumbu waktu otomatis selaras).
   const seriIndRef = useRef<Array<ISeriesApi<SeriesType>>>([])
+  // Garis emiten pembanding (#187) — dibongkar-pasang seluruhnya tiap daftar/
+  // data berubah, sama polanya dengan seri indikator di atas.
+  const seriBandingRef = useRef<Array<ISeriesApi<'Line'>>>([])
+  // Apakah replay SUDAH aktif pada render sebelumnya — dipakai memutuskan
+  // kapan `fitContent()` boleh dipanggil (lihat efek setData).
+  const replayAktifRef = useRef(false)
   // Gambar pola: garis leher (price line) + penanda di lembah/leher/penembusan.
   // Keduanya API bawaan lightweight-charts, BUKAN <div> melayang yang
   // posisinya dihitung sendiri — posisi hitungan sendiri langsung meleset
@@ -718,10 +835,16 @@ export function GrafikEmiten() {
   // supaya setelan bertahan saat jenis chart ditukar — seri barunya memakai
   // skala 'right' yang sama, tapi opsinya harus dipasang ulang sesudah seri
   // lama dibongkar.
+  //
+  // Selagi ada pembanding, mode DIPAKSA persentase — bukan disarankan.
+  // Menumpuk BBCA (6.300) dan INET (288) di sumbu rupiah membuat yang kecil
+  // jadi garis rata di dasar kanvas: perbandingannya bukan cuma sulit dibaca,
+  // ia salah. Chip `%`/`log` ikut dikunci di kaki supaya keadaan yang
+  // tergambar dan chip yang tersorot mustahil berbeda.
   useEffect(() => {
-    const mode = MODE_SKALA.find(([id]) => id === modeSkala)?.[2] ?? 0
+    const mode = banding.length > 0 ? 2 : (MODE_SKALA.find(([id]) => id === modeSkala)?.[2] ?? 0)
     chartRef.current?.priceScale('right').applyOptions({ mode, autoScale: autoSkala })
-  }, [modeSkala, autoSkala, versiSeriHarga])
+  }, [modeSkala, autoSkala, versiSeriHarga, banding.length])
 
   // Warna dibaca dari getComputedStyle DI DALAM .lantai (containerRef ada di
   // bawah wrapper .lantai) — token --green/--red/--line/--text2 didefinisikan
@@ -789,7 +912,7 @@ export function GrafikEmiten() {
    * saat tema diganti — termasuk untuk lilin intraday yang tak boleh diunduh
    * ulang cuma karena temanya ditukar.
    */
-  const { lilin, volume } = useMemo(() => {
+  const penuh = useMemo(() => {
     const cs = containerRef.current ? getComputedStyle(containerRef.current) : null
     const green = cs?.getPropertyValue('--green').trim() || '#38B77E'
     const red = cs?.getPropertyValue('--red').trim() || '#E6635A'
@@ -815,6 +938,24 @@ export function GrafikEmiten() {
     return { lilin: potongRentang(d.lilin, batas), volume: potongRentang(vol, batas) }
   }, [berkas, intra, kerangka, rentangLabel, theme])
 
+  /**
+   * Lilin & volume yang benar-benar dipakai SELURUH halaman — `penuh` di atas,
+   * dipotong di ujung kanan saat Bar replay hidup.
+   *
+   * SATU potongan, di hulu. Indikator (`garisPerInstans`), pola
+   * (`polaPerInstans`), penanda, legenda, tooltip, dan garis pembanding
+   * semuanya diturunkan dari dua array ini — jadi mundur di sini berarti
+   * mundur di semuanya sekaligus, dan mustahil ada satu turunan yang lupa
+   * ikut mundur. Itu justru kegagalan senyap yang paling mungkin di fitur ini:
+   * MA 20 yang tetap dihitung dari data penuh terlihat sempurna wajar di
+   * layar.
+   */
+  const { lilin, volume } = useMemo(() => (
+    replay === null
+      ? penuh
+      : { lilin: penuh.lilin.slice(0, replay), volume: penuh.volume.slice(0, replay) }
+  ), [penuh, replay])
+
   /** Waktu internal -> tipe `Time` lightweight-charts. Dipakai di SETIAP
    *  `setData`/penanda: satu-satunya tempat bentuk waktu berpindah dunia. */
   const keChart = useCallback(
@@ -830,7 +971,14 @@ export function GrafikEmiten() {
       (harga as ISeriesApi<'Line'>).setData(keChart(lilin.map((l) => ({ time: l.time, value: l.close }))))
     }
     volRef.current?.setData(keChart(volume))
-    chartRef.current?.timeScale().fitContent()
+    // Selama replay BERJALAN, jangan pasang ulang rentang terlihat: satu
+    // `fitContent()` per lilin membuat sumbu waktu melompat-lompat tiap
+    // langkah dan lilin yang baru muncul justru tak pernah sempat dilihat.
+    // Yang tetap difit: saat replay tak aktif (perilaku lama), dan SEKALI
+    // saat replay baru dinyalakan.
+    const replayAktif = replay !== null
+    if (!replayAktif || !replayAktifRef.current) chartRef.current?.timeScale().fitContent()
+    replayAktifRef.current = replayAktif
     // Angka terukur buat verifikasi/QA (bukan data sensitif — cuma jumlah &
     // rentang tanggal yang sudah tampak di sumbu chart-nya sendiri). Canvas
     // tak punya DOM per-lilin buat dibaca lewat devtools, jadi ini jalan
@@ -855,8 +1003,96 @@ export function GrafikEmiten() {
       el.dataset.jarakBar = jarak.length
         ? String(Math.round([...jarak].sort((a, b) => a - b)[Math.floor(jarak.length / 2)]))
         : ''
+      // Bukti terukur bahwa replay benar-benar memotong DATA, bukan cuma
+      // menyembunyikan sesuatu di layar: jumlah lilin yang terpasang dan
+      // tanggal ujung kanannya ikut mundur (dua dataset di atas), dan ini
+      // menyebut berapa dari total yang sedang ditampilkan.
+      el.dataset.replay = replay === null ? '' : `${replay}/${penuh.lilin.length}`
     }
-  }, [lilin, volume, versiSeriHarga, keChart, kerangka])
+  }, [lilin, volume, versiSeriHarga, keChart, kerangka, replay, penuh.lilin.length])
+
+  /**
+   * Garis emiten pembanding di panel harga (#187).
+   *
+   * Duduk di skala harga yang SAMA ('right') dengan seri utama — itu syarat
+   * mode persentase lightweight-charts bekerja seperti yang dijanjikan:
+   * setiap seri di skala itu dinormalkan ke titik pertamanya yang terlihat,
+   * jadi keduanya berangkat dari 0% di tepi kiri jendela. Skala terpisah akan
+   * menggambar dua garis yang kelihatan bisa dibandingkan padahal tidak.
+   *
+   * KERANGKA INTRADAY DILEWATI. Berkas pembanding harian; sumbu intraday
+   * memakai epoch detik. Selain waktunya bentuk lain, membandingkan satu
+   * tutup harian dengan 78 lilin lima menit menjawab pertanyaan yang sama
+   * sekali berbeda. Legendanya menyebut alasannya, bukan diam.
+   */
+  useEffect(() => {
+    const chart = chartRef.current
+    const el = containerRef.current
+    if (!chart || !el) return
+    for (const s of seriBandingRef.current) chart.removeSeries(s)
+    seriBandingRef.current = []
+    if (intraday(kerangka) || lilin.length === 0) return
+    const cs = getComputedStyle(el)
+    banding.forEach((k, i) => {
+      const d = dataBanding[k]
+      if (!d || d.length === 0) return
+      // Titiknya dipasang pada WAKTU LILIN UTAMA, bukan pada tanggal harian
+      // pembandingnya sendiri. Dua sebab, keduanya terlihat langsung di layar:
+      //
+      // 1. Rentangnya otomatis ikut — termasuk ujung kanan yang sudah mundur
+      //    saat Bar replay hidup. Garis pembanding yang tetap menjulur ke
+      //    masa depan justru membocorkan apa yang sedang disembunyikan.
+      // 2. Kerangka W/M tak jadi berlubang. Seri dengan waktu di luar waktu
+      //    lilin utama MENAMBAH titik ke sumbu waktu chart, dan pada kerangka
+      //    pekanan itu berarti lilin mingguan tersebar renggang di antara
+      //    ~4 tanggal harian kosong milik pembandingnya.
+      //
+      // `tutupSampai` (bukan pencocokan persis) karena kunci lilin pekanan
+      // jatuh di hari SENIN dan bulanan di TANGGAL 1 — keduanya kerap libur
+      // bursa, jadi tak ada barisnya di deret harian pembanding.
+      const titik: Array<{ time: Time; value: number }> = []
+      for (const l of lilin) {
+        const v = tutupSampai(d, l.time)
+        // `null` = pembandingnya belum listing pada tanggal itu. Titiknya
+        // dilewati, bukan diisi nol: nol akan tergambar sebagai jurang.
+        if (v !== null) titik.push({ time: keWaktuChart(l.time) as Time, value: v })
+      }
+      if (titik.length === 0) return
+      const s = chart.addSeries(LineSeries, {
+        color: cs.getPropertyValue(WARNA_BANDING[i]).trim() || '#B48AE2',
+        lineWidth: 2,
+        priceLineVisible: false,
+        crosshairMarkerVisible: false,
+        title: k,
+      }, 0)
+      s.setData(titik)
+      seriBandingRef.current.push(s)
+    })
+  }, [banding, dataBanding, lilin, kerangka, theme, versiSeriHarga])
+
+  /**
+   * Basis normalisasi persen = lilin PERTAMA yang terlihat.
+   *
+   * Dilanggan hanya selagi ada pembanding: tanpa pembanding tak ada yang
+   * membacanya, dan langganan perubahan rentang menyala di tiap geseran
+   * sumbu waktu.
+   */
+  useEffect(() => {
+    const chart = chartRef.current
+    if (!chart || banding.length === 0) { setBasisPersen(null); return }
+    const skala = chart.timeScale()
+    const perbarui = () => {
+      const dari = dariWaktuChart(skala.getVisibleRange()?.from)
+      // Lilin pertama yang waktunya >= tepi kiri jendela — bukan tepi kirinya
+      // sendiri: tepi itu bisa jatuh di akhir pekan atau di ruang kosong
+      // sebelum data dimulai, dan tanggal yang tak punya lilin bukan basis
+      // apa pun.
+      setBasisPersen(dari ? (lilin.find((l) => l.time >= dari)?.time ?? null) : lilin[0]?.time ?? null)
+    }
+    skala.subscribeVisibleTimeRangeChange(perbarui)
+    perbarui()
+    return () => skala.unsubscribeVisibleTimeRangeChange(perbarui)
+  }, [banding.length, lilin])
 
   // Dua daftar instans, dua menu, satu aturan main (lihat DaftarInstans).
   // Spek parameter sebuah jenis — kurasi ATAU entri katalog. Ikut `katalog` di
@@ -927,6 +1163,24 @@ export function GrafikEmiten() {
       nonaktif: sudah,
     }
   }), [pol.daftar])
+
+  /** Isi menu "+ Banding" — IHSG di kelompok sendiri paling atas, lalu
+   *  seluruh emiten. Yang sudah ditumpuk dan emiten yang sedang dibuka tetap
+   *  TERLIHAT tapi mati (pola `nonaktif` yang sama dengan menu Pola): daftar
+   *  yang menyusut diam-diam terbaca sebagai pilihan yang hilang. */
+  const opsiBanding = useMemo(() => {
+    const sudahPenuh = banding.length >= MAKS_BANDING
+    const dasar = [
+      { kode: KODE_IHSG, nama: 'Indeks Harga Saham Gabungan', grup: 'Indeks' },
+      ...(kamus?.emiten ?? []).map((e) => ({ kode: e.kode, nama: e.nama, grup: 'Emiten' })),
+    ]
+    return dasar.map((e) => ({
+      nilai: e.kode,
+      label: e.kode === kode ? `${e.kode} · sedang dibuka` : `${e.kode} · ${e.nama}`,
+      nonaktif: e.kode === kode || banding.includes(e.kode) || sudahPenuh,
+      grup: e.grup,
+    }))
+  }, [kamus, banding, kode])
 
   // Deret tiap instans, dihitung dari `lilin` — SUDAH tersaring
   // hariTanpaPerdagangan lewat keDataLilinVolume di atas, bukan `berkas.d`
@@ -1187,6 +1441,83 @@ export function GrafikEmiten() {
     }
     return { waktu, perPane: [...perPane.entries()].sort((a, b) => a[0] - b[0]) }
   }, [sorot, lilin, petaLegenda, panePerInstans, polaPerInstans, katalog, digambar])
+
+  /**
+   * Legenda pembanding — satu baris per emiten yang ditumpuk, ditambah baris
+   * emiten UTAMA di paling atas.
+   *
+   * Emiten utama ikut didaftar walau garisnya sudah jelas terlihat: yang
+   * ditanyakan bukan "berapa harga BBCA" melainkan "BBCA naik berapa persen
+   * DIBANDING IHSG", dan pertanyaan itu tak terjawab kalau salah satu
+   * angkanya harus dihitung sendiri di kepala.
+   *
+   * Semua persen diukur dari `basisPersen` — tanggal yang sama untuk semua
+   * baris, dan tanggal itu tertulis di baris keterangan di bawahnya.
+   */
+  const bandingLegenda = useMemo(() => {
+    if (banding.length === 0) return []
+    const waktu = sorot?.waktu ?? lilin[lilin.length - 1]?.time ?? null
+    const persen = (d: LilinData[]): string => {
+      if (!basisPersen || !waktu) return '—'
+      const dasar = tutupSampai(d, basisPersen)
+      const kini = tutupSampai(d, waktu)
+      if (!dasar || kini === null) return '—'
+      const p = (kini / dasar - 1) * 100
+      return `${p >= 0 ? '+' : '−'}${fN(Math.abs(p), 2)}%`
+    }
+    const takIntraday = !intraday(kerangka)
+    return [
+      { kode, warna: '--text', utama: true, nilai: takIntraday ? persen(lilin) : '' },
+      ...banding.map((k, i) => {
+        const d = dataBanding[k]
+        return {
+          kode: k,
+          warna: WARNA_BANDING[i],
+          utama: false,
+          nilai: !takIntraday
+            ? 'tak berlaku di kerangka intraday'
+            : !d ? 'memuat…' : d.length === 0 ? 'data tak ada' : persen(d),
+        }
+      }),
+    ]
+  }, [banding, dataBanding, basisPersen, sorot, lilin, kerangka, kode])
+
+  /* ---------------- Bar replay ---------------- */
+
+  /** Emiten/kerangka/rentang berganti = data di bawah replay berganti seluruh
+   *  bentuknya. Replay dimatikan, bukan dipindahkan diam-diam ke posisi ke-n
+   *  di deret yang sama sekali lain — posisi itu tak berarti apa pun di sana. */
+  useEffect(() => {
+    setReplay(null)
+    setPutar(false)
+  }, [kode, kerangka, rentangLabel])
+
+  /** Putar otomatis. Berhenti sendiri di lilin terakhir — tanpa itu, interval
+   *  tetap berdetak selamanya di ujung deret tanpa ada yang berubah di layar. */
+  useEffect(() => {
+    if (!putar || replay === null) return
+    const total = penuh.lilin.length
+    if (replay >= total) { setPutar(false); return }
+    const id = window.setInterval(() => {
+      setReplay((n) => {
+        if (n === null) return n
+        if (n + 1 >= total) { setPutar(false); return total }
+        return n + 1
+      })
+    }, 1000 / Number(kecepatan))
+    return () => window.clearInterval(id)
+  }, [putar, replay, kecepatan, penuh.lilin.length])
+
+  /** Tanggal lilin terakhir yang sedang ditampilkan replay — nilai DatePicker
+   *  dan judul bilah replay. */
+  const tglReplay = replay === null ? '' : (penuh.lilin[replay - 1]?.time.slice(0, 10) ?? '')
+
+  /** Mulai replay pada tanggal `iso` — lilin tanggal itu jadi lilin terakhir
+   *  yang terlihat. */
+  const mulaiReplayDi = useCallback((iso: string) => {
+    const i = penuh.lilin.findIndex((l) => l.time.slice(0, 10) >= iso)
+    setReplay(i === -1 ? penuh.lilin.length : Math.max(1, i + 1))
+  }, [penuh.lilin])
 
   /* ---------------- Template ---------------- */
 
@@ -1488,7 +1819,25 @@ export function GrafikEmiten() {
             </span>
             <Dropdown opsi={opsiPola} nilai="" placeholder="+ Pola"
               ariaLabel="Tambah pola" onGanti={pol.tambah} />
+            {/* Compare symbols (#187). Menambah pembanding MEMAKSA skala
+                persen — lihat efek mode skala. */}
+            <Dropdown opsi={opsiBanding} nilai="" placeholder="+ Banding"
+              ariaLabel="Tambah emiten pembanding"
+              onGanti={(k) => setBanding((x) => (x.includes(k) || x.length >= MAKS_BANDING ? x : [...x, k]))} />
           </span>
+
+          <span className="grf-pisah" aria-hidden="true" />
+
+          {/* Bar replay (#187) — menyalakannya memundurkan chart ke 70% deret
+              lalu memberi kendali maju satu lilin per klik di bilah bawah.
+              Mematikannya mengembalikan seluruh rentang apa adanya. */}
+          <TombolIkon d={IKON_ULANG} ukuranIkon={14}
+            className={replay !== null ? 'on' : ''}
+            label={replay !== null ? 'Keluar dari Bar replay' : 'Bar replay — mundurkan chart lalu maju selilin per klik'}
+            onClick={() => {
+              if (replay !== null) { setReplay(null); setPutar(false); return }
+              setReplay(Math.max(1, Math.ceil(penuh.lilin.length * 0.7)))
+            }} />
 
           <span className="grf-toolbar-isi" />
 
@@ -1585,6 +1934,35 @@ export function GrafikEmiten() {
                     <span className="grf-status-vol">Vol {fN(status.volume, 0)}</span>
                     <span className="grf-legenda-tgl">{legenda.waktu}</span>
                   </span>
+                )}
+                {/* Legenda pembanding (#187) — persen SEMUA baris diukur dari
+                    satu tanggal yang sama, dan tanggal itu disebut di baris
+                    terakhir. Tanpa penyebutan itu "+18%" adalah angka yang
+                    tak bisa ditafsirkan sama sekali, karena basisnya bergeser
+                    sendiri tiap sumbu waktu digeser. */}
+                {pane === 0 && bandingLegenda.length > 0 && (
+                  <>
+                    {bandingLegenda.map((b, i) => (
+                      <span key={b.kode} className="grf-legenda-baris grf-banding-baris"
+                        style={{ '--ind-warna': `var(${b.warna})` } as React.CSSProperties}>
+                        <span className="grf-legenda-titik" aria-hidden="true" />
+                        <span className="grf-legenda-nama">{b.kode}</span>
+                        <span className="grf-legenda-nilai">{b.nilai}</span>
+                        {!b.utama && (
+                          <span className="ti-grup grf-legenda-aksi">
+                            <TombolIkon d={IKON_SILANG} ukuranIkon={12}
+                              label={`Buang pembanding ${b.kode}`}
+                              onClick={() => setBanding((x) => x.filter((k) => k !== b.kode))} />
+                          </span>
+                        )}
+                        {i === 0 && <span className="grf-banding-utama">utama</span>}
+                      </span>
+                    ))}
+                    <span className="grf-banding-basis">
+                      % relatif terhadap {basisPersen ? tglPendek(basisPersen) : 'lilin pertama yang terlihat'}
+                      <span className="grf-banding-ket"> — bergeser sendiri saat sumbu waktu digeser</span>
+                    </span>
+                  </>
                 )}
                 {pane > 0 && (
                   // Lipat panel indikator. Cuma pane > 0: melipat panel HARGA
@@ -1686,18 +2064,82 @@ export function GrafikEmiten() {
             />
             <span className="grf-kaki-isi" />
             <span className="grf-kaki-jam" title="Seluruh waktu di halaman ini WIB (UTC+7), termasuk lilin intraday">UTC+7</span>
-            {MODE_SKALA.map(([id, label, , judul]) => (
-              <button key={id} type="button"
-                className={`chip-t grf-kaki-chip${modeSkala === id ? ' on' : ''}`}
-                aria-pressed={modeSkala === id} title={judul}
-                onClick={() => setModeSkala((x) => (x === id ? '' : id))}>{label}</button>
-            ))}
+            {MODE_SKALA.map(([id, label, , judul]) => {
+              // Selagi ada pembanding, skala DIKUNCI persen. Chip-nya tetap
+              // terlihat (bukan hilang) supaya jelas keadaan mana yang sedang
+              // berlaku dan kenapa ia tak bisa ditukar.
+              const dikunci = banding.length > 0
+              const on = dikunci ? id === 'persen' : modeSkala === id
+              return (
+                <button key={id} type="button"
+                  className={`chip-t grf-kaki-chip${on ? ' on' : ''}`}
+                  aria-pressed={on} disabled={dikunci}
+                  title={dikunci
+                    ? 'Dikunci persen selama ada emiten pembanding — pada sumbu rupiah, emiten berharga kecil jadi garis rata di dasar kanvas dan perbandingannya tak berarti'
+                    : judul}
+                  onClick={() => setModeSkala((x) => (x === id ? '' : id))}>{label}</button>
+              )
+            })}
             <button type="button"
               className={`chip-t grf-kaki-chip${autoSkala ? ' on' : ''}`}
               aria-pressed={autoSkala}
               title="Skala harga menyesuaikan sendiri ke lilin yang terlihat"
               onClick={() => setAutoSkala((x) => !x)}>auto</button>
           </div>
+
+          {/* Bilah Bar replay (#187) — muncul hanya selagi replay hidup, tepat
+              di bawah kaki: sama seperti chip rentang, ia mengubah APA YANG
+              TERLIHAT, bukan apa yang digambar. Tombol ikonnya dibungkus
+              `.ti-grup` (jarak 12px) — dua tombol ikon berdempetan punya area
+              klik 44px yang saling tindih, dan di pasangan putar/keluar yang
+              satu itu membatalkan seluruh sesi replay. */}
+          {replay !== null && (
+            <div className="grf-replay" role="group" aria-label="Bar replay">
+              <span className="grf-replay-judul">Bar replay</span>
+              {/* `tersedia` sengaja TIDAK diisi. Mengisinya menyalakan sepasang
+                  panah bawaan DatePicker, dan panah itu duduk persis di
+                  sebelah panah maju/mundur-selilin di bawah — empat panah
+                  berjajar yang dua di antaranya melangkah per TANGGAL dan dua
+                  per LILIN. Tanggal libur/akhir pekan tetap aman: DatePicker
+                  sudah meredupkannya, dan `mulaiReplayDi` menjatuhkannya ke
+                  lilin pertama sesudah tanggal itu. */}
+              <DatePicker
+                value={tglReplay}
+                onChange={mulaiReplayDi}
+                maks={penuh.lilin[penuh.lilin.length - 1]?.time.slice(0, 10)}
+                ariaLabel="Tanggal lilin terakhir yang ditampilkan replay"
+              />
+              <span className="ti-grup">
+                <LangkahTanggal arah="mundur" ukuran="sebaris" label="Mundur satu lilin"
+                  disabled={replay <= 1}
+                  onClick={() => { setPutar(false); setReplay((n) => Math.max(1, (n ?? 1) - 1)) }} />
+                <LangkahTanggal arah="maju" ukuran="sebaris" label="Maju satu lilin"
+                  disabled={replay >= penuh.lilin.length}
+                  onClick={() => { setPutar(false); setReplay((n) => Math.min(penuh.lilin.length, (n ?? 0) + 1)) }} />
+              </span>
+              <span className="ti-grup">
+                <TombolIkon d={putar ? IKON_JEDA : IKON_PUTAR} ukuranIkon={13}
+                  className={putar ? 'on' : ''}
+                  disabled={replay >= penuh.lilin.length}
+                  label={putar ? 'Hentikan putar otomatis' : 'Putar otomatis'}
+                  onClick={() => setPutar((x) => !x)} />
+                <TombolIkon d={IKON_SILANG} ukuranIkon={13}
+                  label="Keluar dari Bar replay — seluruh rentang tergambar lagi"
+                  onClick={() => { setReplay(null); setPutar(false) }} />
+              </span>
+              <PemilihRentang
+                className="grf-replay-cepat"
+                opsi={KECEPATAN_REPLAY}
+                nilai={kecepatan}
+                onGanti={setKecepatan}
+                ariaLabel="Kecepatan putar otomatis"
+              />
+              <span className="grf-replay-posisi">
+                lilin {replay} dari {penuh.lilin.length}
+                {tglReplay ? ` · ${tglPendek(tglReplay)}` : ''}
+              </span>
+            </div>
+          )}
 
           {/* Template: menyimpan susunan indikator + pola dengan nama, dan
               memuatnya kembali. Disimpan di localStorage — alasannya panjang

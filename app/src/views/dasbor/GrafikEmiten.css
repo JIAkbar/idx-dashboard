@@ -72,6 +72,51 @@
   border: 1px solid var(--line); border-radius: 99px; padding: 3px 9px;
 }
 
+/* Tombol ikon bilah atas yang punya keadaan NYALA (Bar replay). Bentuknya
+   sama dengan `.grf-jenis .ti.on` — dituliskan terpisah karena tombolnya
+   tidak duduk di dalam `.grf-jenis`, bukan karena bentuknya berbeda. */
+.lantai .grf-toolbar > .ti { width: 28px; height: 28px; }
+.lantai .grf-toolbar > .ti.on { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); }
+
+/* ---------- Bar replay (#187) ---------- */
+/* Duduk DI BAWAH kaki, bukan di bilah atas: ia mengubah apa yang terlihat,
+   bukan apa yang digambar — pembagian yang sama dengan chip rentang. Muncul
+   hanya selagi replay hidup, jadi bilah ini tak pernah memakan tempat pada
+   pemakaian biasa. */
+.lantai .grf-replay {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  padding: 8px 10px; margin: -6px 0 10px;
+  border: 1px solid var(--amber); border-radius: var(--r-kecil);
+  background: var(--amber-dim);
+}
+.lantai .grf-replay-judul {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--amber);
+}
+.lantai .grf-replay .dpk-btn { height: 28px; padding: 0 8px; font-size: 11px; }
+.lantai .grf-replay-cepat { display: flex; flex-wrap: wrap; gap: 3px; }
+.lantai .grf-replay-cepat .chip-t { padding: 4px 9px; font-size: 10.5px; }
+.lantai .grf-replay .ti.on { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); }
+.lantai .grf-replay-posisi {
+  font-family: var(--mono); font-size: 10.5px; color: var(--text2);
+  margin-left: auto;
+}
+
+/* ---------- Legenda pembanding (#187) ---------- */
+/* Baris pembanding memakai bentuk `.grf-legenda-baris` yang sudah ada — yang
+   ditambah di sini cuma lencana "utama" dan baris basis normalisasi. */
+.lantai .grf-banding-utama {
+  font-size: 9px; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--text3); border: 1px solid var(--line2); border-radius: 3px;
+  padding: 0 4px; flex: none;
+}
+/* Tanpa baris ini, "+18%" adalah angka yang tak bisa ditafsirkan: basis
+   persennya BERGESER sendiri tiap sumbu waktu digeser. */
+.lantai .grf-banding-basis {
+  display: block; font-size: 9.5px; color: var(--text3);
+  padding: 1px 0 0 12px; max-width: 340px; line-height: 1.35;
+}
+
 /* ---------- Modal setelan (Inputs · Style · Visibility) ---------- */
 /* Kerangkanya `ModalKecil` + primitif `.tabs`/`.tab` yang sudah dipakai
    seluruh aplikasi — yang ditambahkan di sini cuma isi tiap tab. */
@@ -498,4 +543,10 @@
   .lantai .grf-pola-tip { max-width: 200px; }
   .lantai .grf-setel-baris { min-height: 34px; }
   .lantai .grf-setel-isi { max-height: 62dvh; }
+  /* Basis persen tetap disebut TANGGALNYA (itu yang membuat angkanya bisa
+     ditafsirkan); yang dibuang cuma keterangan kenapa ia bergeser — dua baris
+     tambahan di atas kanvas 340px menutupi harga yang justru sedang dilihat. */
+  .lantai .grf-banding-ket { display: none; }
+  .lantai .grf-replay { gap: 8px; padding: 8px; }
+  .lantai .grf-replay-posisi { margin-left: 0; flex-basis: 100%; }
 }

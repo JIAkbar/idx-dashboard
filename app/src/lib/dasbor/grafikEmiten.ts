@@ -141,6 +141,35 @@ export function potongRentang<T extends { time: string }>(data: T[], batasBawah:
   return i === -1 ? [] : data.slice(i)
 }
 
+/**
+ * Harga tutup pada waktu `t`, atau tutup terakhir SEBELUM `t` kalau waktu itu
+ * tak ada di deret. `null` kalau seluruh deret masih di depan `t`.
+ *
+ * Dipakai Compare symbols (#187) menghitung persentase pembanding pada waktu
+ * yang sedang disorot. Pencocokan PERSIS tidak cukup: pada kerangka pekanan
+ * kunci lilinnya tanggal SENIN dan pada bulanan tanggal 1 — keduanya kerap
+ * hari libur bursa, jadi tak ada barisnya di deret harian pembanding, dan
+ * pencocokan persis akan melaporkan "—" untuk seluruh kerangka W dan M.
+ *
+ * `d` diasumsikan urut menaik menurut `time` (selalu begitu: ia turunan
+ * langsung berkas OHLC yang memang urut) — karena itu pencarian binernya sah.
+ */
+export function tutupSampai(d: LilinData[], t: string): number | null {
+  let lo = 0
+  let hi = d.length - 1
+  let hasil: number | null = null
+  while (lo <= hi) {
+    const m = (lo + hi) >> 1
+    if (d[m].time <= t) {
+      hasil = d[m].close
+      lo = m + 1
+    } else {
+      hi = m - 1
+    }
+  }
+  return hasil
+}
+
 /* ------------------------------------------------------------------ *
  * Indikator baku (tahap 4). Semua fungsi murni: masukan array harga
  * tutup (SUDAH tersaring lewat hariTanpaPerdagangan — dipanggil lewat

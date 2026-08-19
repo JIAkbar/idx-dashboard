@@ -72,6 +72,8 @@ export const IKON_INFO = 'M12 21a9 9 0 100-18 9 9 0 000 18zM12 11v6M12 7.5h.01' 
 export const IKON_LILIN = 'M8 3v18M5 7h6v10H5zM16 3v18M13 10h6v6h-6z' // dua lilin — pilihan jenis gambar harga di Grafik Emiten
 export const IKON_KAMERA = 'M4 7h3l1.5-2h7L17 7h3a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V8a1 1 0 011-1zM12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z' // simpan tangkapan kanvas jadi PNG
 export const IKON_SALIN ='M9 9h10a1 1 0 011 1v10a1 1 0 01-1 1H9a1 1 0 01-1-1V10a1 1 0 011-1zM5 15H4a1 1 0 01-1-1V4a1 1 0 011-1h10a1 1 0 011 1v1' // dua lembar bertumpuk — salin ke papan klip
+export const IKON_PUTAR = 'M8 5l11 7-11 7z' // segitiga putar — jalankan Bar replay
+export const IKON_JEDA = 'M9 5v14M15 5v14' // dua batang — hentikan sementara Bar replay
 
 /* ---------- Bilah alat gambar (Grafik Emiten, #185) ---------- */
 export const IKON_KURSOR = 'M5 3l6.5 16.5 2-6.5 6.5-2z' // panah pilih — sama bentuk dgn IKON_KLIK, dipakai terpisah supaya makna "alat kursor/pilih" tak tercampur "klik di sini"

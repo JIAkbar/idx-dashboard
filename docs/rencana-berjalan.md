@@ -1016,11 +1016,39 @@ merah 13/14/17/18.
 | # | Pekerjaan | Di mana | Kenapa belum | Biaya kasar |
 |---|---|---|---|---|
 | ~~B1~~ | ~~Rapikan grid tab Lengkap~~ — **CSS selesai 19 Agu, verifikasi visual TERHALANG** | `KartuAnalisa.tsx`, `KartuAnalisa.css` | chrome-devtools MCP terkunci sesi lain (tab "SAKTI — Monitoring Anggaran", PID 34120) — tsc/vitest 737/oxlint bersih, tapi 3 viewport belum diukur | kecil, murni CSS |
-| B2 | **Compare symbols** + **Bar replay** | `/grafik` | disebut penting sesudah membandingkan TradingView, belum dijadwalkan | sedang; keduanya didukung lightweight-charts v5 |
+| ~~B2~~ | ~~**Compare symbols** + **Bar replay**~~ — **KODE SELESAI 19 Agu, verifikasi visual TERHALANG** | `/grafik` — `GrafikEmiten.tsx/.css`, `grafikEmiten.ts`, `lantai.css` (token `--bnd1/2/3`), `IkonMenu.tsx` | tsc bersih · vitest **754** hijau (745 + 9 baru) · oxlint 0 galat · `npm run build` jadi. chrome-devtools MCP masih terkunci sesi lain (PID 34120, tab "SAKTI") — tiga viewport belum diukur | sedang; keduanya didukung lightweight-charts v5 |
 | ~~B3~~ | ~~Kuartal diskret **Q4**~~ — **SELESAI 19 Agu, verifikasi visual TERHALANG** | `turunkan_kuartal_diskret.py` + `fundamentalGabungan.ts` + `PanelLaporanKeuangan.tsx` | skrip sudah jalan atas data asli (949 tiker, 9.665 periode); Q4 ditutup di `bacaKuartalIdx` (audit − TW3). tsc bersih di luar berkas agen lain, vitest **745** hijau (737 + 8 baru). chrome-devtools terkunci sesi lain (PID 34120) — dua viewport belum diukur | nol jaringan |
 | B4 | Adu rancangan **chart** diulang | workflow tersimpan | 6 dari 6 agen kena server kelebihan beban | sedang; bahan TradingView sudah terekam, tak perlu disusun ulang |
 | B5 | Adu rancangan **Stock Detail** diulang | workflow tersimpan | lima usulnya jadi, sintesisnya gagal | kecil — cukup jalankan ulang tahap sintesis |
 | ~~B6~~ | ~~Susulan glyph di luar subset font~~ — **SELESAI 19 Agu** | seluruh `arus-pasar/` | `draft/` dan `cache/` ternyata bersih sejak awal. Yang tersisa satu: `build_bedah.py:272` — kemunculan **kedua** di kalimat yang sama dengan yang sudah ditambal di baris 271, pola identik dengan `build_weekly.py` (502 ditambal, 49 tidak) | — |
+
+**Hasil B2 (19 Agu).** Dua alat TradingView, satu keputusan rancangan yang
+menentukan keduanya: **potong di HULU, jangan di hilir.**
+
+- **Bar replay** memotong `lilin`/`volume` di satu memo, SEBELUM indikator,
+  pola, penanda, legenda, dan garis pembanding dihitung. Semuanya turunan dua
+  array itu, jadi mundur di satu tempat berarti mundur di semuanya — dan
+  mustahil ada satu turunan yang lupa ikut. Memotong di hilir (mis. cuma di
+  `setData` seri harga) akan membuat MA 20 tetap dihitung dari data penuh
+  sementara lilinnya mundur: seluruh guna replay hilang, tanpa satu pun galat.
+  Sembilan uji baru mengunci kausalitasnya — MA/EMA/RSI/MACD/BB/OBV pada deret
+  yang dipotong di indeks 150 harus **sama persis** dengan nilai di indeks itu
+  pada deret penuh 220 titik, dan tak satu pun temuan pola boleh bertanggal
+  sesudah batas replay.
+- **Compare symbols** mengunci skala ke **persen** selama ada pembanding —
+  bukan menyarankan. Pada sumbu rupiah, emiten berharga kecil jadi garis rata
+  di dasar kanvas dan perbandingannya bukan sulit dibaca, ia salah. Basis
+  normalisasinya (lilin pertama yang TERLIHAT, jadi bergeser sendiri saat
+  sumbu digeser) ditulis di legenda — "+18%" tanpa tanggal basisnya adalah
+  angka yang tak bisa ditafsirkan dan tetap terlihat masuk akal.
+- Titik pembanding dipasang pada **waktu lilin utama**, bukan pada tanggal
+  harian pembandingnya sendiri. Seri dengan waktu di luar waktu lilin utama
+  MENAMBAH titik ke sumbu waktu chart; pada kerangka pekanan itu berarti lilin
+  mingguan tersebar renggang di antara empat tanggal kosong. `tutupSampai()`
+  (pencarian biner, tutup terakhir ≤ waktu) yang menjembatani — kunci lilin
+  pekanan jatuh di SENIN dan bulanan di TANGGAL 1, keduanya kerap libur bursa.
+- Kerangka intraday **tidak** dapat pembanding sama sekali (berkasnya harian,
+  sumbunya epoch) — legendanya menyebut alasannya, bukan diam.
 
 **Hasil B3 (19 Agu).** Lubang Q4 ditutup di `bacaKuartalIdx`, bukan dengan
 menyambungkan berkas `keuangan_idx_diskret/` ke tampilan — rumusnya sudah ada
