@@ -1,11 +1,19 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Dropdown, type OpsiDropdown } from '../../components/dasbor/Dropdown'
+import { IkonMenu, IKON_CARI } from '../../components/dasbor/IkonMenu'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
+import { fN, fp } from '../../lib/dasbor/format'
 import { papanBerisiko } from '../../lib/dasbor/sektorIdx'
 import { hariBursaSejak, todayIsoJakarta } from '../../lib/tanggalBursa'
 import { BULAN } from '../../lib/seasonality'
+import { keFraksi } from '../../lib/fraksiHarga'
+import { useUrut } from '../../lib/dasbor/useUrut'
+import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
+import {
+  useRingkasKartu, keBarisTabel, saring, SARINGAN, CHIP_BAWAAN, type BarisTabel,
+} from '../../lib/dasbor/kartuRingkas'
 import {
   useIndeksKartu, useKartu, pembatalDalamAtr, bangunTesis, tingkatBasi, takKeduanya as hitungTakKeduanya,
   type KartuEmiten, type LevelSR, type TargetItem, type FirstPassage,
@@ -449,6 +457,137 @@ function KartuRingkasSatuEmiten({ kode }: { kode: string }) {
   )
 }
 
+type UrutScreener = { kunci: keyof BarisTabel; arah: 'naik' | 'turun'; klik: (k: keyof BarisTabel) => void }
+
+/** Judul kolom yang bisa diklik untuk mengurutkan — sama pola dengan `thSort`
+ *  di TopStocks.tsx/TopBroker.tsx, disalin bukan diimpor karena `keyof`-nya
+ *  berbeda tipe per tabel (kemampuan generik tak menyeberang berkas di sini). */
+function thSortScreener(s: UrutScreener, k: keyof BarisTabel, label: string, kanan = false) {
+  const aktif = s.kunci === k
+  return (
+    <th className={kanan ? 'r' : undefined}>
+      <button type="button" className="th-sort" onClick={() => s.klik(k)}>
+        {label}{aktif ? (s.arah === 'naik' ? ' ▲' : ' ▼') : ''}
+      </button>
+    </th>
+  )
+}
+
+/**
+ * Tab "Semua" (`/kartu?tab=semua`) — C3 backlog, tabel penyaring SELURUH
+ * emiten yang lolos ambang (`data-idx/json/kartu/ringkas.json`), bukan kartu
+ * satu-per-satu. SENGAJA tanpa kolom peluang (`p_kena`/`harapan`): kolom itu
+ * fungsi geometri jarak, bukan kualitas emiten — lihat kepala kartuRingkas.ts.
+ * Saringan berupa kalimat kondisi + jumlah lolos, nol chip aktif bawaan.
+ */
+function TabelScreenerKartu() {
+  const data = useRingkasKartu()
+  const sempit = useLayarSempit()
+  const [aktif, setAktif] = useState<string[]>(CHIP_BAWAAN)
+  const [cari, setCari] = useState('')
+  const ukuranHalaman = sempit ? 25 : 100
+  const [tampil, setTampil] = useState(ukuranHalaman)
+
+  const barisTabel = useMemo(() => (data ? data.emiten.map(keBarisTabel) : []), [data])
+  const hasil = useMemo(() => saring(barisTabel, aktif, cari), [barisTabel, aktif, cari])
+  const s = useUrut<BarisTabel>(hasil, 'kode', 'naik')
+
+  // Saringan/cari baru = mulai dari halaman pertama lagi, bukan menyambung
+  // dari batas lama (yang bisa lebih besar dari hasil baru).
+  useEffect(() => { setTampil(ukuranHalaman) }, [aktif, cari, ukuranHalaman])
+
+  function toggleChip(id: string) {
+    setAktif((a) => (a.includes(id) ? a.filter((x) => x !== id) : [...a, id]))
+  }
+
+  if (!data) return <p style={{ color: 'var(--text3)', fontSize: 12.5 }}>Memuat daftar emiten…</p>
+
+  const tampilBaris = s.urut.slice(0, tampil)
+  const sisa = s.urut.length - tampilBaris.length
+
+  return (
+    <div className="panel kta-screener">
+      <div className="panel-b kta-screener-alat">
+        {SARINGAN.map((sar) => {
+          const jumlah = barisTabel.filter(sar.uji).length
+          return (
+            <button
+              key={sar.id} type="button"
+              className={`chip-t${aktif.includes(sar.id) ? ' on' : ''}`}
+              onClick={() => toggleChip(sar.id)}
+            >
+              {sar.label} · {jumlah}
+            </button>
+          )
+        })}
+        <span className="af-cari kta-screener-cari">
+          <IkonMenu d={IKON_CARI} size={13} />
+          <input
+            className="inp" type="search" placeholder="Cari kode…" value={cari}
+            onChange={(e) => setCari(e.target.value.toUpperCase())}
+          />
+        </span>
+      </div>
+
+      <div className="board-tbl-wrap">
+        <table className="tbl kta-screener-tbl">
+          <thead>
+            <tr>
+              {thSortScreener(s, 'kode', 'Kode')}
+              {thSortScreener(s, 'harga', 'Harga', true)}
+              {thSortScreener(s, 'chg', '%chg', true)}
+              {thSortScreener(s, 'ma20_pct', 'vs MA20', true)}
+              {thSortScreener(s, 's1_pct', 'Jarak S1', true)}
+              {thSortScreener(s, 'r1_pct', 'Jarak R1', true)}
+              {thSortScreener(s, 'er_persentil', 'ER persentil', true)}
+              {thSortScreener(s, 'likuiditas', 'Likuiditas', true)}
+              {thSortScreener(s, 'tgl', 'Data')}
+            </tr>
+          </thead>
+          <tbody>
+            {tampilBaris.map((b) => (
+              <tr key={b.kode}>
+                <td><a href={`/grafik?kode=${b.kode}`} className="tick">{b.kode}</a></td>
+                <td className="r num">{keFraksi(b.harga, 'dekat').toLocaleString('id-ID')}</td>
+                <td className={`r num ${b.chg >= 0 ? 'up' : 'dn'}`}>{fp(b.chg)}</td>
+                <td className={`r num ${b.ma20_pct == null ? '' : b.ma20_pct >= 0 ? 'up' : 'dn'}`}>
+                  {b.ma20_pct == null ? '—' : fp(b.ma20_pct)}
+                </td>
+                <td className="r num">{b.s1_pct == null ? '—' : `${fp(b.s1_pct)} (${fN(b.s1_atr, 1)} ATR)`}</td>
+                <td className="r num">{b.r1_pct == null ? '—' : `${fp(b.r1_pct)} (${fN(b.r1_atr, 1)} ATR)`}</td>
+                <td className="r num">{b.er_persentil == null ? '—' : Math.round(b.er_persentil)}</td>
+                <td className="r num">{fRingkas(b.likuiditas)}</td>
+                <td className="num">{b.tgl}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {tampilBaris.length === 0 && (
+        <p style={{ color: 'var(--text3)', fontSize: 12.5, padding: '10px 14px' }}>
+          Tak ada emiten cocok dengan saringan/kata cari ini.
+        </p>
+      )}
+
+      {sisa > 0 && (
+        <div style={{ padding: '10px 14px' }}>
+          <button type="button" className="btn-p" onClick={() => setTampil((t) => t + ukuranHalaman)}>
+            Muat {Math.min(sisa, ukuranHalaman)} lagi
+          </button>
+        </div>
+      )}
+
+      <div className="asal kta-screener-kaki">
+        <b>{hasil.length}</b> dari {data.emiten.length} emiten lolos ambang · diperbarui {data.diperbarui}.{' '}
+        {data.tak_lolos.riwayat ? `${data.tak_lolos.riwayat} emiten belum sampai ${data.ambang.lilin} lilin riwayat. ` : ''}
+        {data.tak_lolos.likuiditas ? `${data.tak_lolos.likuiditas} emiten di bawah likuiditas Rp${fRingkas(data.ambang.likuiditas)}/hari. ` : ''}
+        Tidak ada kolom peluang tersentuh (p_kena) di tabel ini — itu fungsi jarak, bukan kualitas emiten.
+      </div>
+    </div>
+  )
+}
+
 /**
  * Kartu Analisa Emiten (`/kartu`) — kartu per emiten dirakit dari berkas
  * turunan `data-idx/json/kartu/<KODE>.json` (ditulis
@@ -461,7 +600,7 @@ function KartuRingkasSatuEmiten({ kode }: { kode: string }) {
  * SENGAJA tidak ada: skor tunggal (belum dikalibrasi — lihat modul Python),
  * bahasa ajakan beli/jual, dan jalur berkas/nama fungsi di layar.
  */
-type TabKartu = 'lengkap' | 'ringkas'
+type TabKartu = 'lengkap' | 'ringkas' | 'semua'
 
 export function KartuAnalisa() {
   const indeks = useIndeksKartu()
@@ -471,12 +610,13 @@ export function KartuAnalisa() {
     const q = (param.get('kode') ?? '').trim().toUpperCase()
     return /^[A-Z0-9]{2,6}$/.test(q) ? q : ''
   })
-  const tab: TabKartu = param.get('tab') === 'ringkas' ? 'ringkas' : 'lengkap'
+  const tabParam = param.get('tab')
+  const tab: TabKartu = tabParam === 'ringkas' ? 'ringkas' : tabParam === 'semua' ? 'semua' : 'lengkap'
 
   function pilihTab(t: TabKartu) {
     setParam((lama) => {
       const baru = new URLSearchParams(lama)
-      if (t === 'ringkas') baru.set('tab', 'ringkas'); else baru.delete('tab')
+      if (t !== 'lengkap') baru.set('tab', t); else baru.delete('tab')
       return baru
     }, { replace: true })
   }
@@ -515,12 +655,14 @@ export function KartuAnalisa() {
         <span className="sub">struktur harga, level, musiman &amp; fundamental — tiap angka membawa asal-usulnya</span>
       </div>
 
-      <div className="panel kta-pilih">
-        <div className="panel-b" style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-          <Dropdown opsi={opsi} nilai={filter} onGanti={pilih} ariaLabel="Pilih emiten" placeholder="Semua emiten" />
-          {indeks && <span style={{ fontSize: 11, color: 'var(--text3)' }}>{indeks.emiten.length} emiten tersedia · diperbarui {indeks.diperbarui}</span>}
+      {tab !== 'semua' && (
+        <div className="panel kta-pilih">
+          <div className="panel-b" style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+            <Dropdown opsi={opsi} nilai={filter} onGanti={pilih} ariaLabel="Pilih emiten" placeholder="Semua emiten" />
+            {indeks && <span style={{ fontSize: 11, color: 'var(--text3)' }}>{indeks.emiten.length} emiten tersedia · diperbarui {indeks.diperbarui}</span>}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="tabs" role="tablist" aria-label="Bentuk kartu">
         <button
@@ -537,11 +679,20 @@ export function KartuAnalisa() {
         >
           Ringkas
         </button>
+        <button
+          type="button" role="tab" aria-selected={tab === 'semua'}
+          className={`tab${tab === 'semua' ? ' on' : ''}`}
+          onClick={() => pilihTab('semua')}
+        >
+          Semua
+        </button>
       </div>
 
-      {!indeks && <p style={{ color: 'var(--text3)', fontSize: 12.5 }}>Memuat daftar emiten…</p>}
+      {tab === 'semua' && <TabelScreenerKartu />}
 
-      {indeks && daftarTampil.length === 0 && !filter && (
+      {tab !== 'semua' && !indeks && <p style={{ color: 'var(--text3)', fontSize: 12.5 }}>Memuat daftar emiten…</p>}
+
+      {tab !== 'semua' && indeks && daftarTampil.length === 0 && !filter && (
         <p style={{ color: 'var(--text3)', fontSize: 12.5 }}>Pilih satu emiten dari daftar di atas untuk melihat kartunya.</p>
       )}
 

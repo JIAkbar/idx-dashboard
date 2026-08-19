@@ -105,3 +105,15 @@
 @media (max-width: 480px) {
   .kta-ringkas { max-width: 100%; }
 }
+
+/* Tab Semua (C3 screener) — bentuk dari primitif generik yang sudah ada
+   (.chip-t, .af-cari, .inp, .tbl, .board-tbl-wrap, .th-sort, .btn-p, .asal);
+   di sini cuma penempatan & lebar (#170 prinsip 4). */
+.kta-screener-alat { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.kta-screener-cari { margin-left: auto; }
+.kta-screener-tbl { white-space: nowrap; }
+.kta-screener-kaki { margin: 10px 14px 14px; }
+
+@media (max-width: 480px) {
+  .kta-screener-cari { margin-left: 0; width: 100%; }
+}

@@ -5,6 +5,7 @@ import { pesanGalat } from '../../lib/pesanGalat'
 import { IkonMenu, IKON_PERINGATAN, IKON_CARI, IKON_SILANG } from '../../components/dasbor/IkonMenu'
 import { muatIndeks, type BarisIndeks, muatBelum} from '../../lib/seasonalityData'
 import { DatePicker } from '../../components/dasbor/DatePicker'
+import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
 
 /** Hari bursa minimum buat rentang bebas = satu putaran Senin–Jumat penuh
  *  (#170 K9, perintah Johan). Di bawah itu bukan pintu tertutup — cuma pesan
@@ -31,22 +32,6 @@ function geser(tahun: number): string {
   const d = new Date()
   d.setUTCFullYear(d.getUTCFullYear() - tahun)
   return d.toISOString().slice(0, 10)
-}
-
-/** Ikut mendengarkan perubahan, bukan sekadar membaca sekali saat render:
- *  memutar ponsel ke lanskap mengubah jawabannya, dan grafik yang menyimpan
- *  ukuran lama akan tergambar dengan skala yang salah sampai dipaksa render. */
-function useLayarSempit(batas = 700): boolean {
-  const [sempit, setSempit] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia(`(max-width: ${batas}px)`).matches,
-  )
-  useEffect(() => {
-    const mq = window.matchMedia(`(max-width: ${batas}px)`)
-    const ubah = () => setSempit(mq.matches)
-    mq.addEventListener('change', ubah)
-    return () => mq.removeEventListener('change', ubah)
-  }, [batas])
-  return sempit
 }
 
 const WARNA = ['var(--red)', 'var(--amber)', 'var(--blue)', 'var(--green)', 'var(--text)']

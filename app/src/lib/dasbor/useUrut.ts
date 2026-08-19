@@ -12,6 +12,10 @@ export function bandingkanBaris<T extends object>(
 ): number {
   const x = a[kunci]
   const y = b[kunci]
+  // Ruas kosong SELALU di bawah, di kedua arah — dibalik bersama yang lain,
+  // "urut naik" menaruh sebelas emiten tanpa R1 di puncak daftar seolah
+  // merekalah yang terdekat. Tak ada nilai berarti "tak diketahui", bukan nol.
+  if (x == null || y == null) return x == null ? (y == null ? 0 : 1) : -1
   const c =
     typeof x === 'number' && typeof y === 'number'
       ? x - y
@@ -23,9 +27,9 @@ export function bandingkanBaris<T extends object>(
  * Pengurutan tabel oleh klik judul kolom. Dipakai bersama 6 tabel Top Broker dan
  * 6 tabel Top Stocks — satu helper, bukan satu keadaan per tabel per berkas.
  */
-export function useUrut<T extends object>(baris: T[], awal: keyof T) {
+export function useUrut<T extends object>(baris: T[], awal: keyof T, arahAwal: 'naik' | 'turun' = 'turun') {
   const [kunci, setKunci] = useState<keyof T>(awal)
-  const [arah, setArah] = useState<'naik' | 'turun'>('turun')
+  const [arah, setArah] = useState<'naik' | 'turun'>(arahAwal)
 
   const urut = useMemo(
     () => [...baris].sort((a, b) => bandingkanBaris(a, b, kunci, arah)),
