@@ -995,7 +995,7 @@ merah 13/14/17/18.
 | B3 | Kuartal diskret **Q4** | `turunkan_kuartal_diskret.py` + `fundamentalGabungan.ts` | skripnya lolos swauji tapi **belum pernah jalan atas data asli** | nol jaringan — panen TW1/2/3 + audit 2025 sudah lengkap |
 | B4 | Adu rancangan **chart** diulang | workflow tersimpan | 6 dari 6 agen kena server kelebihan beban | sedang; bahan TradingView sudah terekam, tak perlu disusun ulang |
 | B5 | Adu rancangan **Stock Detail** diulang | workflow tersimpan | lima usulnya jadi, sintesisnya gagal | kecil — cukup jalankan ulang tahap sintesis |
-| B6 | Susulan glyph di luar subset font | `arus-pasar/draft/` | `build*.py`, `bedah/`, `edisi/` sudah bersih; `draft/` belum diperiksa | kecil |
+| ~~B6~~ | ~~Susulan glyph di luar subset font~~ — **SELESAI 19 Agu** | seluruh `arus-pasar/` | `draft/` dan `cache/` ternyata bersih sejak awal. Yang tersisa satu: `build_bedah.py:272` — kemunculan **kedua** di kalimat yang sama dengan yang sudah ditambal di baris 271, pola identik dengan `build_weekly.py` (502 ditambal, 49 tidak) | — |
 
 **Yang perlu diketahui sebelum menyentuh B3:** `fundamentalGabungan.ts` **sudah**
 menurunkan Q2/Q3 diskret secara live. Yang tak dihitung di mana pun hanya **Q4** —
