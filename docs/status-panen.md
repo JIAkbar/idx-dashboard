@@ -7,7 +7,7 @@
 >
 > Kata pemicu untuk panen manual lewat Claude Code: **"Panen Lagi"**.
 
-Diperbarui: **19 Agustus 2026**. Angka "isi terakhir" dibaca dari DALAM berkas,
+Diperbarui: **19 Agustus 2026** (sore — kolom pembanding masuk). Angka "isi terakhir" dibaca dari DALAM berkas,
 bukan dari waktu berkasnya ditulis — berkas bisa ditulis ulang tanpa membawa
 data baru, dan membaca mtime membuat data basi terlihat segar.
 
@@ -25,8 +25,8 @@ data baru, dan membaca mtime membuat data basi terlihat segar.
 | **Broker summary** | Broker Summary | Setoran kontributor (screenshot) | **18 Agu 2026** | 753 | 👤 kontributor + kurasi admin | halaman `/admin` |
 | **Fundamental** | Stock Detail, Bedah Emiten | yfinance + turunan lokal + `ListedShares` IDX | **18 Agu 2026** | 965 | ⚙️ Actions akhir bulan | `update-fundamental.yml` |
 | **Daftar emiten + jumlah saham** | (dipakai `fetch_fundamental.py`, bukan halaman) | IDX `GetStockSummary` (`ListedShares`) | **18 Agu 2026** | 963 emiten | ❌ manual | `sinkron_emiten.py` — **"Panen Lagi"** |
-| **Keuangan XBRL IDX** | Stock Detail | IDX `GetFinancialReport` | **2019–2025** (7 thn buku); **mata uang per periode sejak 19 Agu** (`mata_uang` · `mata_uang_laporan` · `kurs_laporan`) | 949 | ❌ manual | `panen_keuangan_idx.py` — **"Panen Lagi"**; peras ulang tanpa jaringan: `--dari-arsip` |
-| **Keuangan XBRL IDX — kuartal diskret** | **belum dipakai halaman mana pun** — Q4 di layar dihitung langsung dari sumbernya, bukan dari berkas ini | turunan lokal dari **Keuangan XBRL IDX** (Q1=TW1, Q2=TW2−TW1, Q3=TW3−TW2, Q4=audit−TW3; ruas neraca tak pernah dikurangi; **pengurangan DITOLAK kalau mata uang dua periodenya beda** — asal `beda-mata-uang`, nilainya null) | **2019 → 2026 TW2**, 9.665 periode (Q1 1.633 · Q2 1.670 · Q3 867 · Q4 5.495 — mayoritas Q4 cuma berisi neraca karena TW3 pembandingnya tak ada) | 949 | ❌ manual, nol jaringan | `turunkan_kuartal_diskret.py` — **"Panen Lagi"** |
+| **Keuangan XBRL IDX** | Stock Detail | IDX `GetFinancialReport` | **2019–2025** (7 thn buku) + **interim 2024 TW1/TW2 sejak 19 Agu sore** (827 dari 949 berkas, diperah dari kolom pembanding XLSX 2025 yang sudah di cakram — nol jaringan); mata uang per periode (`mata_uang` · `mata_uang_laporan` · `kurs_laporan`) | 949 | ❌ manual | `panen_keuangan_idx.py` — **"Panen Lagi"**; peras ulang tanpa jaringan: `--dari-arsip`; kolom pembanding: `panen_pembanding.py --semua-arsip --tulis` |
+| **Keuangan XBRL IDX — kuartal diskret** | **belum dipakai halaman mana pun** — Q4 di layar dihitung langsung dari sumbernya, bukan dari berkas ini | turunan lokal dari **Keuangan XBRL IDX** (Q1=TW1, Q2=TW2−TW1, Q3=TW3−TW2, Q4=audit−TW3; ruas neraca tak pernah dikurangi; **pengurangan DITOLAK kalau mata uang dua periodenya beda** — asal `beda-mata-uang`, nilainya null) | **2019 → 2026 TW2**, **10.800 periode** (naik dari 9.665; 2024 sendiri 1.982). Mayoritas Q4 masih cuma berisi neraca karena TW3 pembandingnya tak ada | 949 | ❌ manual, nol jaringan | `turunkan_kuartal_diskret.py` — **"Panen Lagi"** |
 | **Keuangan yfinance** | Stock Detail | yfinance | 17 Agu 2026 | 646 | ⚙️ ikut `update-fundamental.yml` | — |
 | **Seasonality bulanan** | Seasonality | Yahoo (penutupan bulanan) | 17 Agu 2026 | — | ❌ manual | `panen_seasonality.py` — **"Panen Lagi"** |
 | **Peta investor (KSEI)** | Peta Investor | KSEI | *(tak diperbarui rutin)* | — | ❌ manual | `fetch_investor_map.py` |
@@ -56,6 +56,19 @@ Job merah kalau sumber yang PERNAH tembus dari awan berhenti tembus, atau
 datanya basi lewat ambang tanpa ada yang mengisinya. Ambangnya dihitung dalam
 **jam kabar** (hari bursa 07:00–19:00 WIB, kalender dari `ds_*.json`) supaya
 akhir pekan dan libur tak melahirkan alarm palsu.
+
+**Interim 2024 sudah masuk, tapi gerbang yfinance TIDAK memvonisnya — dan itu
+harus dikatakan apa adanya.** `keuangan/` (yfinance) hanya menyimpan
+2024-12-31, sementara yang baru masuk 2024-03-31 (787 emiten) dan 2024-06-30
+(348). Irisannya nol, jadi `uji_diskret_yfinance.py --tahun 2024` menjawab nol
+baris — itu **tak teruji**, bukan lulus. Yang 2025/2026 tetap diuji dan tetap
+rasio median 1,000 di revenue, laba bersih, dan laba kotor.
+
+Penggantinya gerbang kewajaran terhadap audit tahunan 2024, yang memang
+menangkap dua kesalahan termahal di jalur ini (operand tertukar tahun, dan
+salah skala 1000×) walau ia tak membuktikan tiap angka: Q1 2024 ÷ audit 2024
+bermedian **0,237** (n=665) dan Q2 **0,243** (n=250), 91–94% jatuh di rentang
+0,15–0,40. Praktis seperempat tahun, seperti seharusnya.
 
 **403 IDX hampir selalu bentuk permintaan, bukan alamat IP.** Pemanen IDX kini
 memakai `curl_cffi` dengan impersonasi TLS; `requests` ditolak walau headernya
