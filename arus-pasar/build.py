@@ -513,7 +513,9 @@ def halaman_emiten(em, sk, ed, ohlc, idx, pr=None, alias=None):
         </table>
         <div class="brksrc">Sumber: Broker Summary Stockbit{
           f' — setoran {penyetor}, hak cipta setoran ada padanya' if penyetor else ""}.
-          Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.</div>
+          Peran broker: RITEL &amp; SCALP mengubah tafsir angka, bukan sekadar label.
+          NET di atas dari 10 broker teratas tiap sisi — bisa lebih kecil dari net seluruh pasar.{
+          f' <span class="catatan">Catatan data: {em["catatan_data"]}</span>' if em.get("catatan_data") else ""}</div>
       </aside>
       <section style="display:flex;flex-direction:column;min-height:0">
         <div class="bias">
