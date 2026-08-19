@@ -511,38 +511,118 @@ def uji() -> None:
     # volume nol -> porsi None, bukan ZeroDivisionError
     r0 = ringkas_asing_dari([["d1", 1, 1, 0, 0, 0]], 1)
     assert r0["porsi_beli_pct"] is None and r0["porsi_jual_pct"] is None
+    # ringkas: S1/R1 diambil dari klaster TERDEKAT, dan emiten tanpa klaster
+    # memberi None — bukan 0 (nol berarti "levelnya di harga nol").
+    kp = {"kode": "XX", "tgl": "2026-08-19", "harga": 100.0, "chg": 1.0, "n": 600, "ma20": 98.0,
+          "atr_pct": 3.0, "er_persentil": 40.0, "likuiditas_median20": 1e9, "stop_pct": 5.0,
+          "support": [{"harga": 95.0}, {"harga": 90.0}], "resistance": [{"harga": 110.0}]}
+    rk = ringkas_dari_kartu(kp)
+    assert rk["s1"] == 95.0 and rk["r1"] == 110.0 and rk["likuiditas"] == 1e9
+    assert ringkas_dari_kartu({**kp, "support": [], "resistance": []})["s1"] is None
+    periksa_ringkas()
     print("kartu_analisa: swauji lolos")
 
 
-def kode_populasi(min_n: int = 250) -> list[str]:
-    """Kode emiten dengan riwayat >= min_n lilin — sumber daftar untuk --semua."""
-    out = []
+# Ambang masuk kartu (docs/riset/keputusan-kartu-ringkas.md, bagian "BANYAK
+# SAHAM"). Yang tak lolos TIDAK dapat kartu, tapi JUMLAHNYA ikut ditulis ke
+# ringkas.json supaya halaman bisa mencetaknya di kaki tabel — bukan hilang
+# senyap.
+MIN_LILIN = 250
+MIN_LIKUIDITAS = 5e8  # Rp500 juta/hari, median 20 hari
+
+
+def kode_populasi(min_n: int = MIN_LILIN, min_lik: float = MIN_LIKUIDITAS) -> tuple[list[str], dict]:
+    """Kode emiten yang lolos ambang masuk, plus hitungan yang tidak per sebab.
+
+    Likuiditas disaring DI SINI, bukan sesudah kartu dirakit — emiten yang tak
+    akan dipakai tak perlu membayar ongkos first-passage."""
+    lolos: list[str] = []
+    tolak = {"riwayat": 0, "likuiditas": 0}
     for p in sorted(OHLC.glob("*.json")):
         try:
             d = json.loads(p.read_text(encoding="utf-8"))
         except Exception:
             continue
-        if d.get("n", 0) >= min_n:
-            out.append(d["kode"])
-    return out
+        if d.get("n", 0) < min_n:
+            tolak["riwayat"] += 1
+            continue
+        if statistics.median(float(r[4]) * float(r[5]) for r in d["d"][-20:]) < min_lik:
+            tolak["likuiditas"] += 1
+            continue
+        lolos.append(d["kode"])
+    return lolos, tolak
 
 
-def tulis_berkas_kartu(hasil: dict[str, dict]) -> None:
+def ringkas_dari_kartu(k: dict) -> dict:
+    """Satu baris tabel screener, DITURUNKAN dari dict kartu penuh yang sama —
+    bukan jalur hitung kedua. Dua jalur yang menghitung angka sama akan
+    menyimpang dalam sebulan tanpa satu pun galat.
+
+    Jarak ke S1/R1 (persen dan dalam ATR) sengaja TIDAK disimpan: keduanya
+    turunan aritmetika dari harga/s1/r1/atr_pct yang sudah ada di sini."""
+    sup = k.get("support") or []
+    res = k.get("resistance") or []
+    return {
+        "kode": k["kode"],
+        "tgl": k["tgl"],
+        "harga": k["harga"],
+        "chg": k["chg"],
+        "n": k["n"],
+        "ma20": k["ma20"],
+        "atr_pct": k["atr_pct"],
+        "s1": sup[0]["harga"] if sup else None,
+        "r1": res[0]["harga"] if res else None,
+        "er_persentil": k["er_persentil"],
+        "likuiditas": k["likuiditas_median20"],
+        "stop_pct": k["stop_pct"],
+    }
+
+
+def tulis_berkas_kartu(hasil: dict[str, dict], tolak: dict | None = None) -> None:
     """Tulis data-idx/json/kartu/<KODE>.json (satu per emiten) + index.json
     (daftar kode + tanggal hitung, supaya halaman tahu apa yang tersedia tanpa
-    menebak nama berkas). Dipanggil dari --tulis, bukan otomatis tiap run —
-    menjalankan skrip riset ini tanpa flag itu TIDAK mengubah berkas apa pun."""
+    menebak nama berkas) + ringkas.json (satu berkas untuk tabel screener,
+    supaya halaman tak menembak ratusan permintaan). Dipanggil dari --tulis,
+    bukan otomatis tiap run — menjalankan skrip riset ini tanpa flag itu TIDAK
+    mengubah berkas apa pun."""
     KARTU_DIR.mkdir(parents=True, exist_ok=True)
     daftar = []
+    baris = []
     for kd, h in sorted(hasil.items()):
         (KARTU_DIR / f"{kd}.json").write_text(json.dumps(h, indent=1, default=str), encoding="utf-8")
         daftar.append({"kode": kd, "dihitung": h["dihitung"]})
-    idx = {
-        "diperbarui": __import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "emiten": daftar,
+        baris.append(ringkas_dari_kartu(h))
+    waktu = __import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M")
+    (KARTU_DIR / "index.json").write_text(
+        json.dumps({"diperbarui": waktu, "emiten": daftar}, indent=1, ensure_ascii=False), encoding="utf-8")
+    ringkas = {
+        "diperbarui": waktu,
+        "ambang": {"lilin": MIN_LILIN, "likuiditas": MIN_LIKUIDITAS},
+        "tak_lolos": tolak or {},
+        "emiten": baris,
     }
-    (KARTU_DIR / "index.json").write_text(json.dumps(idx, indent=1, ensure_ascii=False), encoding="utf-8")
-    print(f"\ntersimpan: {len(daftar)} berkas kartu + index.json -> {KARTU_DIR}")
+    p_ringkas = KARTU_DIR / "ringkas.json"
+    p_ringkas.write_text(json.dumps(ringkas, ensure_ascii=False, default=str), encoding="utf-8")
+    print(f"\ntersimpan: {len(daftar)} berkas kartu + index.json + "
+          f"ringkas.json ({p_ringkas.stat().st_size/1024:.0f} KB) -> {KARTU_DIR}")
+    periksa_ringkas()
+
+
+def periksa_ringkas(contoh: int = 5) -> None:
+    """Assert kesamaan lintas berkas: baris ringkas.json HARUS identik dengan
+    turunan kartu penuh emiten yang sama. Menangkap kasus 'ringkas.json ditulis
+    dari jalur hitung lain' — kegagalan yang kalau tidak akan senyap total."""
+    import random
+    p = KARTU_DIR / "ringkas.json"
+    if not p.exists():
+        return
+    r = json.loads(p.read_text(encoding="utf-8"))
+    baris = {b["kode"]: b for b in r["emiten"]}
+    pilih = random.sample(sorted(baris), min(contoh, len(baris)))
+    for kd in pilih:
+        penuh = json.loads((KARTU_DIR / f"{kd}.json").read_text(encoding="utf-8"))
+        assert baris[kd] == ringkas_dari_kartu(penuh), f"ringkas.json != kartu penuh untuk {kd}"
+    print(f"  assert kesamaan lintas berkas lolos untuk {len(pilih)} emiten acak: {', '.join(pilih)}")
 
 
 if __name__ == "__main__":
@@ -560,11 +640,14 @@ if __name__ == "__main__":
         i_maks = None
     positional = [a for i, a in enumerate(arg) if not a.startswith("--") and i - 1 != i_maks]
 
+    tolak: dict = {}
     if semua:
-        kode = kode_populasi()
+        kode, tolak = kode_populasi()
         if maks:
             kode = kode[:maks]
-        print(f"mode --semua: {len(kode)} emiten (riwayat >=250 lilin){f', dibatasi --maks {maks}' if maks else ''}")
+        print(f"mode --semua: {len(kode)} emiten lolos ambang (riwayat >={MIN_LILIN} lilin & likuiditas "
+              f">=Rp{MIN_LIKUIDITAS/1e6:.0f} jt/hari); tak lolos: {tolak['riwayat']} riwayat, "
+              f"{tolak['likuiditas']} likuiditas{f' — dibatasi --maks {maks}' if maks else ''}")
     else:
         kode = positional or ["ARCI", "WIFI", "BUMI"]
 
@@ -595,7 +678,7 @@ if __name__ == "__main__":
         print(f"\n{len(gagal)} emiten gagal dihitung: {', '.join(gagal)}")
 
     if tulis:
-        tulis_berkas_kartu(hasil)
+        tulis_berkas_kartu(hasil, tolak)
 
     tujuan = os.environ.get("KARTU_OUT")
     if tujuan:
