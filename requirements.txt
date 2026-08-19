@@ -3,3 +3,13 @@ playwright>=1.40.0
 requests>=2.31.0
 beautifulsoup4>=4.12.0
 yfinance==0.2.66
+
+# Impersonasi TLS untuk endpoint IDX. WAJIB ada di sini, bukan dipasang
+# ad-hoc per workflow: scripts/idx_net.py mengimpornya dan DELAPAN pemanen
+# lewat sana (download_idx, fetch_broker_summary, fetch_fundamental,
+# panen_asing, panen_kabar, panen_keuangan_idx, panen_sektor_idx,
+# sinkron_emiten). update.yml dan update-fundamental.yml hanya menjalankan
+# `pip install -r requirements.txt`, jadi tanpa baris ini keduanya mati di
+# ModuleNotFoundError - dan gagalnya SESUDAH Playwright dibuang, sehingga
+# gampang disalahartikan sebagai perbaikan yang tidak bekerja.
+curl_cffi>=0.7.0
