@@ -263,9 +263,12 @@ def klasifikasi_judul(judul: str) -> str | None:
     return None
 
 
-def peta_dari_tipe(wb, tipe: str) -> dict[str, float]:
+def peta_dari_tipe(wb, tipe: str, kolom: int = 1) -> dict[str, float]:
     """Gabungkan seluruh sheet bertipe `tipe` jadi satu peta label_en(lower) -> nilai
-    periode berjalan. Hanya sheet yang JUDULnya cocok yang disentuh (sheet
+    periode berjalan (`kolom=1`, kolom B) atau periode PEMBANDING (`kolom=2`,
+    kolom C -- lihat `panen_pembanding.py`).
+
+    Hanya sheet yang JUDULnya cocok yang disentuh (sheet
     catatan/"notes" otomatis terlewat). Kalau ada beberapa varian sheet untuk
     tipe yang sama (mis. "by function" vs "by nature"), hanya satu yang
     benar-benar terisi angka -- yang lain tetap None dan tak menimpa."""
@@ -282,7 +285,7 @@ def peta_dari_tipe(wb, tipe: str) -> dict[str, float]:
         for row in baris_iter:
             if len(row) < 4:
                 continue
-            label_en, nilai = row[3], row[1]
+            label_en, nilai = row[3], row[kolom]
             if isinstance(label_en, str) and nilai is not None:
                 kunci = label_en.strip().lower()
                 if kunci not in peta:
@@ -335,7 +338,11 @@ def info_umum(wb) -> tuple[str, int, float | None]:
     return currency, skala, kurs
 
 
-def ekstrak(wb) -> tuple[dict, str, float | None]:
+def ekstrak(wb, kolom: int = 1) -> tuple[dict, str, float | None]:
+    """`kolom=1` (kolom B) = periode berjalan; `kolom=2` (kolom C) = periode
+    PEMBANDING. Skala & mata uang tetap dibaca dari sheet 1000000 kolom B --
+    deklarasi itu berlaku untuk seluruh berkas, termasuk kolom pembandingnya
+    (IAS 21: komparatif disajikan ulang dalam mata uang penyajian berjalan)."""
     currency, skala, kurs = info_umum(wb)
 
     def rp(v):
@@ -371,9 +378,9 @@ def ekstrak(wb) -> tuple[dict, str, float | None]:
             return skalaan
         return mentah  # tak satu pun wajar -- pakai mentah, lebih jujur dari menebak
 
-    neraca = peta_dari_tipe(wb, "neraca")
-    labarugi = peta_dari_tipe(wb, "labarugi")
-    kas = peta_dari_tipe(wb, "kas")
+    neraca = peta_dari_tipe(wb, "neraca", kolom)
+    labarugi = peta_dari_tipe(wb, "labarugi", kolom)
+    kas = peta_dari_tipe(wb, "kas", kolom)
 
     # `is not None` meloloskan STRING, dan satu sel neraca berisi teks membuat
     # sum() melempar TypeError yang menggagalkan seluruh emiten. Terukur pada
