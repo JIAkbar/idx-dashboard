@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { AksesHalamanProvider } from './context/AksesHalamanContext'
@@ -169,6 +169,14 @@ function App() {
               <Route path="/admin/edisi/ujicoba" element={<EdisiUjicoba />} />
               <Route path="/admin/edisi/:kode" element={<EdisiView />} />
             </Route>
+            {/* Rute cadangan. Tanpa ini, URL yang tak dikenal memberi LAYAR PUTIH
+                TOTAL — rail dan topbar ikut hilang, nol galat di konsol, dan
+                pengunjung tak punya jalan kembali selain menekan tombol mundur.
+                Terjadi nyata pada tag emiten di pesan yang menunjuk /forum/<kode>
+                sesudah halaman Forum dicabut. Diarahkan ke Beranda alih-alih
+                merender halaman 404 tersendiri: yang dibutuhkan orang tersesat
+                adalah jalan keluar, bukan pemberitahuan bahwa ia tersesat. */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           </Suspense>
         </ThemeProvider>

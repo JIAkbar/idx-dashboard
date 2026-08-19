@@ -59,7 +59,17 @@ function RasioCell({ lbl, v, cls, sub }: { lbl: string; v: ReactNode; cls?: stri
 export function StockDetail() {
   const { index } = useStockIndex()
   const [inputVal, setInputVal] = useState('')
-  const [activeTicker, setActiveTicker] = useState<string | null>(null)
+  // Emiten boleh datang dari URL. Tanpa ini, `?sym=BBCA` diabaikan dan halaman
+  // terbuka KOSONG tanpa satu pun galat — dan itu tujuan setiap tautan "Buka
+  // Stock Detail" dari Tanya PAPAN. Terima `kode` juga, karena seluruh aplikasi
+  // memakai `?kode=` untuk emiten (aturan "semua kode emiten ke chart"); nama
+  // lama `sym` DIPERTAHANKAN, bukan diganti — mengganti nilai tanpa menyapu
+  // pembacanya persis regresi #142.
+  const [activeTicker, setActiveTicker] = useState<string | null>(
+    () => new URLSearchParams(window.location.search).get('sym')?.toUpperCase()
+      ?? new URLSearchParams(window.location.search).get('kode')?.toUpperCase()
+      ?? null,
+  )
   const { data: fd, loading, error } = useStockFundamental(activeTicker)
   // Klasifikasi IDX-IC resmi (B1) — berkasnya kecil & di-cache modul.
   const daftarSektor = useSektorIdx()
@@ -252,14 +262,17 @@ export function StockDetail() {
             <button
               type="button" role="tab" aria-selected={tab === 'statistik'}
               className={'tab' + (tab === 'statistik' ? ' on' : '')}
-              onClick={() => setSp({ tab: 'statistik' }, { replace: true })}
+              /* Bentuk FUNGSIONAL, bukan objek: setSp({tab}) MENGGANTI seluruh
+                 query string, jadi ?sym= hilang begitu pengguna pindah tab dan
+                 halaman jadi kosong lagi. */
+              onClick={() => setSp((p) => { p.set('tab', 'statistik'); return p }, { replace: true })}
             >
               Statistik
             </button>
             <button
               type="button" role="tab" aria-selected={tab === 'valuasi'}
               className={'tab' + (tab === 'valuasi' ? ' on' : '')}
-              onClick={() => setSp({ tab: 'valuasi' }, { replace: true })}
+              onClick={() => setSp((p) => { p.set('tab', 'valuasi'); return p }, { replace: true })}
             >
               Valuasi
             </button>

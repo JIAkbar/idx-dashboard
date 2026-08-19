@@ -499,9 +499,10 @@ export const PENGETAHUAN: Entri[] = [
     id: 'halaman-forum',
     kunci: ['halaman forum', 'apa itu forum', 'forum'],
     judul: 'Forum',
-    isi: 'Forum adalah ruang diskusi antar-anggota PAPAN, dikelompokkan per topik.',
-    ke: '/forum',
-    keLabel: 'Buka Forum',
+    // Halamannya sudah dicabut. Entrinya DIPERTAHANKAN supaya pertanyaan
+    // "apa itu forum" dijawab terus terang alih-alih jatuh ke "tidak tahu" —
+    // tapi tanpa tautan, karena rutenya tak ada.
+    isi: 'Forum ruang diskusi antar-anggota sudah tidak tersedia di PAPAN.',
   },
   {
     id: 'halaman-feedback',

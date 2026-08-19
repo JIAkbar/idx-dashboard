@@ -45,7 +45,12 @@ export function IsiPesan({ teks }: { teks: string }) {
         typeof bagian === 'string' ? (
           <Fragment key={i}>{bagian}</Fragment>
         ) : (
-          <Link key={i} className="forum-tag" to={`/forum/${bagian.tag}`} title={`Diskusi ${bagian.tag}`}>
+          // Forum sudah dicabut (perintah Johan: "takedown page forum"), jadi
+          // tag emiten menuju GRAFIK — konsisten dengan aturan "semua kode
+          // emiten on click nya ke chart". Sebelumnya ia menunjuk /forum/<tag>
+          // yang tak punya rute sama sekali: layar putih total, rail dan topbar
+          // ikut hilang, nol galat.
+          <Link key={i} className="forum-tag" to={`/grafik?kode=${bagian.tag}`} title={`Grafik ${bagian.tag}`}>
             ${bagian.tag}
           </Link>
         )
