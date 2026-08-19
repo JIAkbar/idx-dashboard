@@ -113,7 +113,8 @@ def audit_tersimpan(kode: str, tahun_c: int) -> tuple[dict, str | None]:
             (isi.get("mata_uang_laporan") or {}).get(f"{tahun_c}-12-31"))
 
 
-def jalankan(tahun: int | None, periode: str | None, batas: int | None, tulis: bool) -> int:
+def jalankan(tahun: int | None, periode: str | None, batas: int | None, tulis: bool,
+             pecahan: tuple[int, int] | None = None) -> int:
     berkas = sorted(ARSIP_MENTAH.glob("*/*/*.xlsx"))
     dibaca = gagal = ditulis = dilewati = kosong = 0
     beda_mata_uang: list[tuple[str, str, str, str]] = []
@@ -130,6 +131,11 @@ def jalankan(tahun: int | None, periode: str | None, batas: int | None, tulis: b
             continue
         if batas and dibaca >= batas:
             break
+        # Pecahan dipisah per EMITEN, bukan per periode: satu berkas JSON hanya
+        # boleh disentuh satu proses. Membagi per periode membuat tw1/tw2/tw3
+        # menulis berkas yang sama dan saling menimpa -- tanpa satu pun galat.
+        if pecahan and sum(map(ord, kode)) % pecahan[1] != pecahan[0]:
+            continue
         th_c = th - 1
         tanggal = f"{th_c}-{PERIODE_AKHIR[per]}"
 
@@ -189,9 +195,15 @@ def main() -> int:
     ap.add_argument("--batas", type=int, default=None)
     ap.add_argument("--tulis", action="store_true", help="Benar-benar tulis (default: kaji saja)")
     ap.add_argument("--semua-arsip", action="store_true", help="Semua tahun interim di arsip")
+    ap.add_argument("--pecahan", help="i/n -- kerjakan pecahan ke-i dari n, dipisah per EMITEN "
+                                      "(aman dijalankan paralel: tak ada dua proses menulis berkas sama)")
     args = ap.parse_args()
     tahun = None if args.semua_arsip else args.tahun
-    return jalankan(tahun, args.periode, args.batas, args.tulis)
+    pecahan = None
+    if args.pecahan:
+        i, n = (int(x) for x in args.pecahan.split("/"))
+        pecahan = (i, n)
+    return jalankan(tahun, args.periode, args.batas, args.tulis, pecahan)
 
 
 def demo() -> None:
