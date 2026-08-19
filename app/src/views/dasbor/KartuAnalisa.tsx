@@ -126,7 +126,7 @@ function BlokAsing({ k }: { k: KartuEmiten }) {
         <span>Beli / Jual (5h)</span>
         <span>{fRingkas(p5?.beli)} / {fRingkas(p5?.jual)}</span>
       </div>
-      <div className="baris">
+      <div className="baris kta-asing-porsi">
         <span>Porsi dari volume pasar (20h)</span>
         <span>beli {fmtPct0(p20?.porsi_beli_pct)} · jual {fmtPct0(p20?.porsi_jual_pct)}</span>
       </div>

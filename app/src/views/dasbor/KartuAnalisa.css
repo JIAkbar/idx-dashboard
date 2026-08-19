@@ -55,8 +55,36 @@
 .kta-kaki p { margin: 0 0 10px; }
 .kta-kaki p:last-child { margin-bottom: 0; }
 
+/* Grid enam blok (tab Lengkap, `.blok-grid` generik dari lantai.css: auto-fit
+   minmax(260px,1fr), align-items:start). Dua override di sini, PENEMPATAN
+   saja — isi/urutan/jumlah blok tidak berubah (backlog "rapikan grid Kartu
+   Analisa", docs/rencana-berjalan.md § Backlog 19 Agu 2026):
+   1. Kolom TETAP 3→2→1, bukan auto-fit. Enam kartu lewat auto-fit di layar
+      1780px membelah 5+1 dan menyisakan ±3 kolom kosong pada baris kedua.
+   2. align-items:stretch supaya kartu sebaris sama tinggi (preseden: kartu
+      glosarium ditolak Johan krn tak sama tinggi) — KECUALI `.blok-kosong`
+      (Aliran Asing "belum tersedia"), sengaja align-self:start dengan alasan
+      sama seperti komentar align-items:start di docs/riset/kartu-analisa.html:
+      diregangkan setinggi tetangganya menyisakan ruang kosong merah besar. */
+.kta-kartu .blok-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+}
+.kta-kartu .blok-grid > .blok-kosong { align-self: start; }
+
+/* Baris "Porsi dari volume pasar (20h)" (blok Aliran Asing) — nilainya lebih
+   panjang dari baris lain di blok yang sama; `.baris` generik memaksa nowrap
+   pada span kanan, jadi seluruh penyempitan jatuh ke label kiri dan pecah
+   sampai lima baris. Izinkan nilainya ikut melipat supaya bebannya terbagi. */
+.kta-asing-porsi > span:last-child { white-space: normal; }
+
+@media (max-width: 900px) {
+  .kta-kartu .blok-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 @media (max-width: 640px) {
   .kta-harga { text-align: left; }
+  .kta-kartu .blok-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Tab Ringkas (#170 .tabs, ?tab=ringkas) — kartu padat SEUKURAN PONSEL, jadi

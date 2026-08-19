@@ -888,6 +888,31 @@ Johan, verbatim: *"grid nya nanti di rapikan lagi ini, seperti prototype saja
 jadikan backlog"*. **Sengaja ditunda** — tab Lengkap dan Ringkas sudah benar
 isinya, ini murni tata letak.
 
+**Giliran dikerjakan 19 Agu (sesi lanjutan).** Ketiga cacat ditambal murni di
+`KartuAnalisa.css` (+ satu className penanda di `KartuAnalisa.tsx`, isi/urutan
+tak berubah): `.kta-kartu .blok-grid` diganti dari `auto-fit minmax(260px,1fr)`
+jadi kolom TETAP `repeat(3/2/1, minmax(0,1fr))` (breakpoint 900px/640px) —
+menghapus pola 5+1 karena jumlah kolom tak lagi bergantung sisa ruang.
+`align-items: stretch` menyamakan tinggi kartu sebaris, dengan
+`.blok-kosong` (Aliran Asing "belum tersedia") dikecualikan `align-self:start`
+supaya tak ikut diregangkan (alasan sama persis komentar `align-items:start`
+di `docs/riset/kartu-analisa.html` baris 71-73). Baris "Porsi dari volume
+pasar (20h)" dapat class `.kta-asing-porsi` supaya nilainya (span kanan) boleh
+melipat, bukan dipaksa `nowrap` yang tadinya memaksa labelnya sendirian pecah
+5 baris.
+
+`npx tsc -b --force` bersih · `npx vitest run` 737/737 hijau (baseline utuh,
+tak ada tes baru — murni CSS) · `npx oxlint` 0 galat dari kedua berkas.
+**Verifikasi visual 3 viewport TERHALANG**: chrome-devtools MCP terkunci
+("browser is already running for ...chrome-profile") — dicoba `new_page` polos
+dan dengan `isolatedContext`, keduanya gagal sama. Diperiksa lewat
+`Get-CimInstance Win32_Process`: PID 34120 memegang profil itu dengan tab aktif
+"SAKTI — Monitoring Anggaran" — sesi lain sedang memakainya, bukan proses
+menganggur, jadi **tidak dimatikan**. Sesuai aturan proyek, tidak dialihkan
+diam-diam ke Playwright/alat lain. Angka `scrollWidth-clientWidth`, tinggi
+kartu sebaris, dan jumlah kolom di tiga viewport **belum diukur** — perlu
+sesi/agen lanjutan begitu chrome-devtools MCP terbuka.
+
 Yang terlihat di layar 1780px dan perlu dibereskan:
 
 - **"Fundamental Ringkas" turun sendirian ke baris kedua** dan menyisakan
@@ -990,7 +1015,7 @@ merah 13/14/17/18.
 
 | # | Pekerjaan | Di mana | Kenapa belum | Biaya kasar |
 |---|---|---|---|---|
-| B1 | Rapikan grid tab Lengkap | `KartuAnalisa.tsx`, `KartuAnalisa.css` | ditunda Johan — "seperti prototype saja jadikan backlog" | kecil, murni CSS |
+| ~~B1~~ | ~~Rapikan grid tab Lengkap~~ — **CSS selesai 19 Agu, verifikasi visual TERHALANG** | `KartuAnalisa.tsx`, `KartuAnalisa.css` | chrome-devtools MCP terkunci sesi lain (tab "SAKTI — Monitoring Anggaran", PID 34120) — tsc/vitest 737/oxlint bersih, tapi 3 viewport belum diukur | kecil, murni CSS |
 | B2 | **Compare symbols** + **Bar replay** | `/grafik` | disebut penting sesudah membandingkan TradingView, belum dijadwalkan | sedang; keduanya didukung lightweight-charts v5 |
 | B3 | Kuartal diskret **Q4** | `turunkan_kuartal_diskret.py` + `fundamentalGabungan.ts` | skripnya lolos swauji tapi **belum pernah jalan atas data asli** | nol jaringan — panen TW1/2/3 + audit 2025 sudah lengkap |
 | B4 | Adu rancangan **chart** diulang | workflow tersimpan | 6 dari 6 agen kena server kelebihan beban | sedang; bahan TradingView sudah terekam, tak perlu disusun ulang |
