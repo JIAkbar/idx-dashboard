@@ -269,7 +269,7 @@ def hal_pcd(bd, r):
       <p style="text-align:justify;line-height:1.6">{bd["interpretasi_pcd"]}</p>
     </div>
     <div class="bd-note">METODE: {r["metode"]}. Batang hijau = lapis harga <= close (pemegang untung/impas);
-    batang biru = lapis di atas close (pemegang rugi). % modal di atas air = porsi volume tertimbang pada lapis ≤ close.</div>
+    batang biru = lapis di atas close (pemegang rugi). % modal di atas air = porsi volume tertimbang pada lapis <= close.</div>
   </div>
   {B.kaki(bd)}
 </div>'''
