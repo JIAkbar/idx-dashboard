@@ -967,66 +967,42 @@ dibuktikan NOL font Segoe tertanam — PDF hasil rakit ulang TIDAK disertakan
 di commit (edisi sudah tayang), Johan yang memutuskan kapan diterbitkan
 ulang.
 
-## Antrean terbuka — ditutup 19 Agustus 2026
+## Antrean terbuka — 19 Agustus 2026
 
-Daftar tunggal, supaya tak perlu menelusuri beberapa bagian dokumen ini.
-Pembagiannya bukan kosmetik: tiga butir pertama macet bukan karena sulit,
-melainkan karena tak ada data yang bisa memutuskannya.
+Dua tabel karena keduanya menjawab pertanyaan berbeda: yang pertama menunggu
+**Johan**, yang kedua menunggu **giliran**. Butir di tabel pertama macet bukan
+karena sulit — tak ada data yang bisa memutuskannya.
 
-### Butuh keputusan Johan
+### A. Butuh keputusan Johan
 
-1. **Bedah INET 18 Agu — terbitkan atau tidak.** PDF-nya sudah jadi tapi belum
-   pernah dirakit ulang sesudah sapuan font, jadi seluruh teksnya masih Segoe
-   UI; ia juga masih mencetak nama berkas internal di halaman 7 (sumbernya
-   sudah ditambal, PDF-nya belum). Merakit ulang menggeser jendela intraday 60
-   hari, sehingga angka PCD di edisi bertanggal 18 Agustus ikut berubah — dan
-   mengubah angka di edisi yang sudah bertanggal bukan keputusan teknis.
-   Selama belum diputuskan, `generate_index.py` mendaftarkannya sendiri tiap
-   kali dijalankan dan harus dicabut manual.
+| # | Hal | Pilihannya | Yang dikorbankan tiap pilihan |
+|---|---|---|---|
+| A1 | **Bedah INET 18 Agu** — terbit atau tidak | (a) rakit ulang lalu terbitkan · (b) biarkan tak terbit | (a) angka PCD di edisi bertanggal 18 Agu **berubah**, karena jendela intraday 60 hari ikut maju · (b) `generate_index.py` terus mendaftarkannya sendiri tiap dijalankan, harus dicabut manual tiap kali menerbitkan apa pun |
+| A2 | **Panen statistik harian** — awan atau rumahan | (a) tetap GitHub Actions · (b) jalur rumahan jadi utama | (a) `update.yml` merah sampai 3× per hari bursa saat IDX memblokir IP runner — sinyal jujur, tapi merah berulang lama-lama berhenti dibaca · (b) panen berhenti saat komputer mati |
+| A3 | **Tingkat akses `/kartu`** | (a) tetap publik · (b) kunci di jenjang tertentu | (a) siapa pun bisa membacanya · (b) perlu diatur dari tab Akses; belum ada barisnya di `akses_halaman` |
 
-2. **Panen statistik harian: awan atau rumahan.** IDX menolak IP runner GitHub
-   secara kumat-kumatan — hijau 10–12 Agu, merah 13/14/17/18. Terukur dengan
-   menahan bentuk permintaan tetap dan hanya mengganti jaringan (rumah 200,
-   runner 403). Jadi `update.yml` akan merah sampai 3× per hari bursa saat
-   blokirnya aktif. Itu sinyal jujur, tapi juga jenis merah berulang yang
-   lama-lama berhenti dibaca. Alternatifnya menjadikan jalur rumahan sebagai
-   jalur utama — konsekuensinya panen berhenti saat komputer mati.
+**A2 sudah terukur, bukan dugaan.** Bentuk permintaan ditahan tetap, hanya
+jaringannya diganti: dari rumah 200 (96 baris harian, 33 mingguan, 22 bulanan),
+dari runner GitHub 403 — ketiganya. Blokirnya kumat-kumatan: hijau 10–12 Agu,
+merah 13/14/17/18.
 
-3. **Tingkat akses halaman `/kartu`.** Sekarang publik karena belum ada baris
-   di `akses_halaman`. Kalau ia termasuk yang dikunci di jenjang tertentu
-   seperti Bulletin, itu diatur dari tab Akses.
+### B. Bisa dikerjakan tanpa keputusan
 
-### Bisa dikerjakan tanpa keputusan
+| # | Pekerjaan | Di mana | Kenapa belum | Biaya kasar |
+|---|---|---|---|---|
+| B1 | Rapikan grid tab Lengkap | `KartuAnalisa.tsx`, `KartuAnalisa.css` | ditunda Johan — "seperti prototype saja jadikan backlog" | kecil, murni CSS |
+| B2 | **Compare symbols** + **Bar replay** | `/grafik` | disebut penting sesudah membandingkan TradingView, belum dijadwalkan | sedang; keduanya didukung lightweight-charts v5 |
+| B3 | Kuartal diskret **Q4** | `turunkan_kuartal_diskret.py` + `fundamentalGabungan.ts` | skripnya lolos swauji tapi **belum pernah jalan atas data asli** | nol jaringan — panen TW1/2/3 + audit 2025 sudah lengkap |
+| B4 | Adu rancangan **chart** diulang | workflow tersimpan | 6 dari 6 agen kena server kelebihan beban | sedang; bahan TradingView sudah terekam, tak perlu disusun ulang |
+| B5 | Adu rancangan **Stock Detail** diulang | workflow tersimpan | lima usulnya jadi, sintesisnya gagal | kecil — cukup jalankan ulang tahap sintesis |
+| B6 | Susulan glyph di luar subset font | `arus-pasar/draft/` | `build*.py`, `bedah/`, `edisi/` sudah bersih; `draft/` belum diperiksa | kecil |
 
-4. **Rapikan grid Kartu Analisa tab Lengkap.** Kartu Fundamental turun
-   sendirian ke baris kedua; tinggi kartu tak seragam dalam satu baris; label
-   Aliran Asing membungkus jadi lima baris. Acuannya purwarupa di
-   `docs/riset/kartu-analisa.html` Bagian 2. Yang boleh berubah hanya
-   penempatan — isi, urutan, jumlah observasi, satuan, dan baris asal-usul
-   tetap.
+**Yang perlu diketahui sebelum menyentuh B3:** `fundamentalGabungan.ts` **sudah**
+menurunkan Q2/Q3 diskret secara live. Yang tak dihitung di mana pun hanya **Q4** —
+bucket `tahunan` (audit) tak pernah disilangkan ke TW3. Jadi pekerjaannya lebih
+kecil daripada kelihatannya.
 
-5. **Compare symbols dan Bar replay di `/grafik`.** Johan menyebut keduanya
-   penting sesudah membandingkan dengan TradingView. Compare menjawab
-   "naiknya karena emitennya atau karena sektornya"; Bar replay satu-satunya
-   cara menguji pembacaan tanpa sudah tahu jawabannya.
-
-6. **Kuartal diskret Q4.** `scripts/turunkan_kuartal_diskret.py` sudah ditulis
-   dan lolos swauji, tapi **belum pernah dijalankan atas data asli**. Panen
-   TW1/TW2/TW3 2025 + audit sudah lengkap, jadi keempat kuartal 2025 kini bisa
-   diturunkan. Yang perlu diketahui: `fundamentalGabungan.ts` **sudah**
-   menurunkan Q2/Q3 secara live, tapi **Q4 tak dihitung di mana pun** — bucket
-   `tahunan` tak pernah disilangkan ke TW3.
-
-7. **Dua adu rancangan perlu dijalankan ulang.** Keduanya gagal karena server
-   kelebihan beban, bukan karena rancangannya; skripnya tersimpan lengkap
-   dengan bahannya, jadi tak perlu disusun ulang.
-   - **Chart** — apa yang kurang dari `/grafik`, dengan daftar alat TradingView
-     yang sudah dibaca langsung dari peramban. 6 dari 6 agen kena 529.
-   - **Stock Detail** — kedalaman 4 tahun. Lima usulnya jadi, sintesisnya gagal.
-
-8. **Susulan glyph di luar subset font.** Sudah disapu di `build.py`,
-   `build_bedah.py`, `build_weekly.py`, `build_monthly.py`, dan seluruh
-   `bedah/` + `edisi/`. Belum diperiksa: `draft/`, dan berkas data lain yang
-   belum pernah dirakit. Cara memeriksanya ada di pesan commit `18dff05b` —
-   ringkasnya, baca cmap woff2 dengan fontTools untuk cakupan, lalu PyMuPDF
-   untuk font yang benar-benar menggambar teks.
+**Cara memeriksa B6** ada di pesan commit `18dff05b`: baca cmap woff2 dengan
+fontTools untuk tahu cakupan, lalu PyMuPDF untuk tahu font mana yang
+**benar-benar menggambar teks**. `pypdf` menjawab pertanyaan yang berbeda
+(font apa yang terdaftar) dan melahirkan alarm palsu.
