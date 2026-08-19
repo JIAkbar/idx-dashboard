@@ -13,7 +13,8 @@ import {
 } from '../../lib/aksesAdmin'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
-import { IkonMenu, IKON_TAMBAH, IKON_TONG, IKON_CENTANG, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { Toast } from '../../components/dasbor/Toast'
+import { IkonMenu, IKON_TAMBAH, IKON_TONG } from '../../components/dasbor/IkonMenu'
 import { AksesDitolak } from './AdminLayout'
 import { PanelJenjang } from './PanelJenjang'
 import './AkunAdmin.css'
@@ -293,12 +294,7 @@ export function AksesAdmin() {
         />
       )}
 
-      {toast && (
-        <div className={`lantai af-toast${toast.ok ? '' : ' gagal'}`} role="status">
-          <IkonMenu d={toast.ok ? IKON_CENTANG : IKON_PERINGATAN} size={15} />
-          <span>{toast.pesan}</span>
-        </div>
-      )}
+      <Toast toast={toast} />
     </>
   )
 }

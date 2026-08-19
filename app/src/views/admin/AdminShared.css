@@ -290,22 +290,46 @@
    layar untuk membacanya. Sekarang menempel di kanan, sejajar kolom Aksi,
    dengan jarak yang aman dari tepi bawah.
    Masuk dari kanan (bukan naik dari bawah) supaya arah geraknya menegaskan
-   dari mana pesan itu datang. */
+   dari mana pesan itu datang.
+
+   Dirombak 19 Agu 2026 (Johan: "toastnya gak mewah banget") — dua lapis
+   bayangan (kontak tajam + ambang lebar) alih-alih satu box-shadow datar,
+   ikon dipindah ke lencana bulat berwarna supaya status kebaca dari sudut
+   mata tanpa membaca teksnya, dan transisi KELUAR ditambahkan lewat kelas
+   `.keluar` (dikendalikan komponen `Toast.tsx` — versi lama unmount instan,
+   lenyap tanpa animasi sama sekali). */
 .lantai.af-toast {
   position: fixed; right: clamp(14px, 2.5vw, 28px); bottom: clamp(24px, 6vh, 56px);
   left: auto; transform: none;
-  z-index: 95; display: flex; align-items: center; gap: 9px;
-  background: var(--bg1); border: 1px solid var(--green);
-  border-left-width: 3px; border-radius: var(--r);
-  box-shadow: 0 10px 30px -8px rgba(0,0,0,.45);
-  padding: 10px 15px; font-family: var(--mono); font-size: 11.5px; color: var(--text);
-  animation: af-toast-masuk .22s cubic-bezier(.2,.7,.3,1);
+  z-index: 95; display: flex; align-items: center; gap: 11px;
+  background: linear-gradient(180deg, var(--bg2), var(--bg1));
+  border: 1px solid var(--line2); border-left: 3px solid var(--green);
+  border-radius: var(--r);
+  box-shadow: 0 2px 8px -2px rgba(0,0,0,.35), 0 16px 40px -12px rgba(0,0,0,.5);
+  padding: 11px 16px 11px 13px; font-family: var(--mono); font-size: 11.5px; color: var(--text);
+  animation: af-toast-masuk .28s cubic-bezier(.16,1,.3,1);
   max-width: min(88vw, 460px);
 }
-.lantai.af-toast .dasbor-ikon { stroke: var(--green); flex-shrink: 0; }
-.lantai.af-toast.gagal { border-color: var(--red); }
-.lantai.af-toast.gagal .dasbor-ikon { stroke: var(--red); }
-@keyframes af-toast-masuk { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: translateX(0); } }
+.lantai.af-toast.keluar {
+  animation: af-toast-keluar .2s cubic-bezier(.4,0,1,1) forwards;
+}
+.lantai.af-toast .af-toast-ikon {
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--green-dim);
+}
+.lantai.af-toast .af-toast-ikon .dasbor-ikon { stroke: var(--green); vertical-align: 0; }
+.lantai.af-toast.gagal { border-left-color: var(--red); }
+.lantai.af-toast.gagal .af-toast-ikon { background: var(--red-dim); }
+.lantai.af-toast.gagal .af-toast-ikon .dasbor-ikon { stroke: var(--red); }
+@keyframes af-toast-masuk {
+  from { opacity: 0; transform: translateX(18px) scale(.96); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes af-toast-keluar {
+  from { opacity: 1; transform: translateX(0) scale(1); }
+  to { opacity: 0; transform: translateX(10px) scale(.97); }
+}
 
 /* Telepon: melebar sepenuhnya (teks panjang tidak terpotong di layar sempit)
    dan diangkat di atas bilah navigasi bawah + area aman perangkat, supaya
@@ -314,9 +338,19 @@
   .lantai.af-toast {
     left: 12px; right: 12px; max-width: none;
     bottom: calc(76px + env(safe-area-inset-bottom, 0px));
-    animation: af-toast-naik .22s cubic-bezier(.2,.7,.3,1);
+    animation: af-toast-naik .28s cubic-bezier(.16,1,.3,1);
   }
-  @keyframes af-toast-naik { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .lantai.af-toast.keluar {
+    animation: af-toast-keluar-bawah .2s cubic-bezier(.4,0,1,1) forwards;
+  }
+  @keyframes af-toast-naik {
+    from { opacity: 0; transform: translateY(12px) scale(.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes af-toast-keluar-bawah {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to { opacity: 0; transform: translateY(8px) scale(.97); }
+  }
 }
 
 /* Judul panggung utama "Sudah Diunggah — Kamis, 13 Agu 2026" — hierarki
@@ -512,7 +546,7 @@
 .lantai .af-status-dd .dd-it.merah { color: var(--red); }
 
 @media (prefers-reduced-motion: reduce) {
-  .lantai.af-toast { animation: none; }
+  .lantai.af-toast, .lantai.af-toast.keluar { animation: none; }
   .lantai .af-lb-bg { animation: none; }
 }
 

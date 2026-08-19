@@ -8,9 +8,10 @@ import {
 } from '../../lib/contohOrderbook'
 import { urlScreenshots } from '../../lib/supabaseEdisi'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
-import { IkonMenu, IKON_PERLUAS, IKON_TAMBAH, IKON_TONG, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_PERLUAS, IKON_TAMBAH, IKON_TONG } from '../../components/dasbor/IkonMenu'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
+import { Toast } from '../../components/dasbor/Toast'
 import { pesanGalat } from '../../lib/pesanGalat'
 
 /**
@@ -235,12 +236,7 @@ export function PanduanScreenshot({ superadmin, defaultBuka, bedah = false }: { 
         />
       )}
 
-      {toast && (
-        <div className={`lantai af-toast${toast.ok ? '' : ' gagal'}`} role="status">
-          <IkonMenu d={IKON_PERINGATAN} size={15} />
-          <span>{toast.pesan}</span>
-        </div>
-      )}
+      <Toast toast={toast} />
     </section>
   )
 }

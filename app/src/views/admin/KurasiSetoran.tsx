@@ -17,6 +17,7 @@ import { IkonMenu, IKON_CENTANG, IKON_KALENDER, IKON_PAPAN_KLIP, IKON_PERINGATAN
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
+import { Toast } from '../../components/dasbor/Toast'
 import { AksesDitolak } from './AdminLayout'
 import './KurasiSetoran.css'
 import { pesanGalat } from '../../lib/pesanGalat'
@@ -456,12 +457,7 @@ export function KurasiSetoran() {
         />
       )}
 
-      {toast && (
-        <div className={`lantai af-toast${toast.ok ? '' : ' gagal'}`} role="status">
-          <IkonMenu d={toast.ok ? IKON_CENTANG : IKON_PERINGATAN} size={15} />
-          <span>{toast.pesan}</span>
-        </div>
-      )}
+      <Toast toast={toast} />
     </>
   )
 }

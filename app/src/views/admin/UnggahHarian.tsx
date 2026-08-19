@@ -26,6 +26,7 @@ import { AlasanField } from '../../components/dasbor/AlasanField'
 import { IkonJenjang } from '../../components/dasbor/IkonJenjang'
 import { TanggaJenjang } from '../../components/dasbor/TanggaJenjang'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
+import { Toast } from '../../components/dasbor/Toast'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { ALASAN_MIN, alasanValid } from '../../lib/alasanValidasi'
 import { rangkumBerkas, type Baris as BarisDasar } from '../../lib/dasbor/screenshotBaris'
@@ -1439,12 +1440,7 @@ export function UnggahHarian() {
         />
       )}
 
-      {toast && (
-        <div className={`lantai af-toast${toast.ok ? '' : ' gagal'}`} role="status">
-          <IkonMenu d={toast.ok ? IKON_CENTANG : IKON_PERINGATAN} size={15} />
-          <span>{toast.pesan}</span>
-        </div>
-      )}
+      <Toast toast={toast} />
 
       {gerbangPanduan && (
         <ModalKecil className="af-form-modal" label="Baca dulu — cara screenshot broker summary" onClose={() => setGerbangPanduan(false)}>

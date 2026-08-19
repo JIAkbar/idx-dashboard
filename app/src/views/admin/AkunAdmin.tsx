@@ -5,6 +5,7 @@ import { daftarJenjang, type JenjangRow } from '../../lib/jenjang'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { IkonMenu, IKON_CARI, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_SALIN, IKON_SURAT, IKON_TAMBAH, IKON_TONG, IKON_ULANG } from '../../components/dasbor/IkonMenu'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
+import { Toast } from '../../components/dasbor/Toast'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { KolomSandi } from '../../components/dasbor/KolomSandi'
 import { rakitSandi } from '../../lib/sandiRakit'
@@ -527,12 +528,7 @@ export function AkunAdmin() {
         />
       )}
 
-      {toast && (
-        <div className={`lantai af-toast${toast.ok ? '' : ' gagal'}`} role="status">
-          <IkonMenu d={toast.ok ? IKON_CENTANG : IKON_PERINGATAN} size={15} />
-          <span>{toast.pesan}</span>
-        </div>
-      )}
+      <Toast toast={toast} />
     </>
   )
 }
