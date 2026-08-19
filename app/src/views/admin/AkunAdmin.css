@@ -66,6 +66,9 @@
    ke bawah baris — bug yang terlihat di tab Akun (14 Agu 2026). */
 @media (max-width: 900px) {
   .lantai .aa-tbl-wrap { overflow-x: auto; }
+  /* Batang gulirnya mengikuti aturan tipis .lantai (lantai.css) — jangan
+     menyetel scrollbar-width/color di sini: sejak Chrome 121 itu membatalkan
+     SELURUH aturan ::-webkit-scrollbar dan yang menang batang tebal bawaan. */
 }
 /* min-width HANYA untuk tabel Akun. Kelas .aa-tbl dipakai bersama oleh enam
    tabel (Akses 4 kolom, tiga tabel Aktivitas, Akun 10 kolom); memasang lebar
@@ -75,9 +78,15 @@
 .lantai .aa-tbl { table-layout: fixed; }
 .lantai .aa-tbl-akun { min-width: 1216px; }
 
-/* Tabel dengan sedikit kolom (Akses, Aktivitas) dibiarkan selebar wadahnya —
-   isinya muat tanpa gulir samping, jadi tidak perlu lebar minimum sama sekali. */
-.lantai .aa-tbl:not(.aa-tbl-akun) { table-layout: auto; }
+/* Tabel dengan sedikit kolom (Akses, Aktivitas) memakai auto-layout, TAPI tetap
+   punya lebar minimum. Tanpa itu, di 412px peramban memeras kolom pertama
+   sampai selebar satu huruf dan judulnya menumpuk vertikal — "K O N T R I B U
+   T O R". Niat aslinya benar (jangan paksa tabel 4 kolom menggulir sejauh
+   tabel 10 kolom), tapi obatnya lebih buruk daripada penyakitnya: menggulir
+   sedikit masih bisa dibaca, menumpuk satu huruf per baris tidak.
+   520px dipilih dari isinya, bukan dari angka bulat: kolom nama/label ~150px +
+   tiga sampai empat kolom angka ~90px. */
+.lantai .aa-tbl:not(.aa-tbl-akun) { table-layout: auto; min-width: 520px; }
 
 /* Kolom aksi: tombol ikon persegi tanpa teks. Tiga tombol berteks ("Ubah
    Email / Atur Ulang Sandi / Hapus") memakan 300px tiap baris dan membuat
@@ -97,8 +106,12 @@
    jangan lebarkan kolom — melebarkan satu kolom menggeser semua kolom
    sesudahnya. */
 .lantai .aa-tbl td, .lantai .aa-tbl th { white-space: nowrap; }
+/* Kolom pertama boleh membungkus (nama panjang), tapi TIDAK di tengah kata.
+   `anywhere` memecah "Kontributor" jadi sebelas baris begitu kolomnya sempit;
+   `break-word` hanya memecah kata yang benar-benar tak muat sendirian. Lebar
+   minimumnya mencegah keadaan itu terjadi sama sekali. */
 .lantai .aa-tbl td:first-child, .lantai .aa-tbl th:first-child {
-  white-space: normal; overflow-wrap: anywhere;
+  white-space: normal; overflow-wrap: break-word; min-width: 132px;
 }
 .lantai .aa-nowrap { white-space: nowrap; }
 
