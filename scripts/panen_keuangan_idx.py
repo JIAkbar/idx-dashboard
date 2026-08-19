@@ -779,6 +779,16 @@ def jalankan_arsip(tickers: set[str] | None, tahun: int | None, periode: str | N
           f"{gagal} gagal, {disegarkan} berkas peta mata uangnya disegarkan")
     print(f"Kurs (Conversion rate) terisi di sumber: {len(kurs_ada)} emiten -- "
           "DISIMPAN sebagai `kurs_laporan`, tidak dipakai mengonversi (lihat simpan())")
+
+    # Sama alasannya dengan di jalur jaringan: periode BARU yang ditulis di
+    # sini membawa deklarasi skala apa adanya, termasuk yang berbohong. Dulu
+    # tak dipanggil di sini karena penambalnya menimpa di tempat dan tak bisa
+    # dibatalkan; sejak 19 Agu 2026 ia berjangkar pada arsip yang sama dan
+    # idempoten, jadi aman dijalankan tiap kali.
+    if ditambah:
+        import perbaiki_skala_keuangan
+        print("\nMenambal skala (perbaiki_skala_keuangan) ...")
+        perbaiki_skala_keuangan.jalankan(tulis=True)
     return 0
 
 
