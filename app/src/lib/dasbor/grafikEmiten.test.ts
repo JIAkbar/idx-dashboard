@@ -199,8 +199,8 @@ describe('keSeriGaris', () => {
 })
 
 describe('RENTANG_KAKI_BAWAAN', () => {
-  it('bawaannya "All" dan label itu benar-benar ada di RENTANG_KAKI', () => {
-    expect(RENTANG_KAKI_BAWAAN).toBe('All')
+  it('bawaannya "Semua" dan label itu benar-benar ada di RENTANG_KAKI', () => {
+    expect(RENTANG_KAKI_BAWAAN).toBe('Semua')
     const cocok = RENTANG_KAKI.find(([label]) => label === RENTANG_KAKI_BAWAAN)
     expect(cocok).toBeDefined()
     // Bawaan harus yang TIDAK memotong data — kalau ini berubah jadi angka,

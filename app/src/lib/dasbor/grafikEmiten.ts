@@ -113,7 +113,7 @@ export const RENTANG_KAKI: Array<[label: string, hari: number | null]> = [
   ['6M', 183],
   ['1Y', 365],
   ['5Y', 1826],
-  ['All', null],
+  ['Semua', null],
 ]
 
 /** Tanggal ISO batas bawah sebuah rentang berbasis HARI, dihitung mundur dari
@@ -130,7 +130,7 @@ export function batasBawahHari(akhirData: string, hari: number | null): string {
 /** Rentang yang aktif saat halaman pertama dibuka. Johan 17 Agu 2026: "buat
  *  default nya semua". Ditulis sebagai konstanta (bukan angka indeks) supaya
  *  chip yang tersorot dan data yang tergambar mustahil berbeda. */
-export const RENTANG_KAKI_BAWAAN = 'All'
+export const RENTANG_KAKI_BAWAAN = 'Semua'
 
 /** Potong lilin+volume ke rentang [batasBawah, ∞). Dua array dipotong
  *  bersamaan (indeksnya selalu selaras — sama-sama diturunkan dari `d` yang
@@ -1288,20 +1288,21 @@ export interface TemuanMusiman {
  *
  * Keputusan rentang — dan alasannya, karena dua-duanya masuk akal:
  *
- * Pilihan yang diambil: rentang perhitungan = rentang chip yang sedang aktif
- * (1T/3T/5T/Semua), yaitu `lilin` yang dikirim ke sini. Alasannya satu dan
- * menentukan: penanda musiman duduk DI ATAS lilin-lilin itu, dan tooltipnya
- * menyebut sebuah angka. Kalau angkanya dihitung dari rentang lain, pembaca
- * melihat penanda pada 240 lilin sambil membaca statistik dari 1.200 lilin
- * yang tak ada di layar — dan tak ada apa pun di antarmuka yang bisa
- * memberitahunya. Berganti chip sekarang berarti bertanya ulang "bagaimana
- * pola harinya DI RENTANG INI", dan itu pertanyaan yang sah.
+ * Pilihan yang diambil: rentang perhitungan = SELURUH lilin yang dimuat,
+ * yaitu `lilin` yang dikirim ke sini. Alasannya satu dan menentukan: penanda
+ * musiman duduk DI ATAS lilin-lilin itu, dan tooltipnya menyebut sebuah
+ * angka. Kalau angkanya dihitung dari rentang lain, pembaca melihat penanda
+ * pada 240 lilin sambil membaca statistik dari 1.200 lilin yang tak ada di
+ * deret — dan tak ada apa pun di antarmuka yang bisa memberitahunya.
  *
- * Yang ditolak: rentang tetap (mis. selalu 5 tahun) — lebih stabil angkanya,
- * tapi memutus hubungan antara yang tergambar dan yang tertulis. Juga ditolak:
- * mengikuti JENDELA ZOOM, bukan chip. Zoom berubah tiap kali pembaca menggeser
- * grafik, dan statistik yang angkanya bergoyang selagi digeser mengundang
- * orang berhenti di jendela yang angkanya paling disukai.
+ * Dulu rentang itu mengikuti chip kaki, karena chip kaki memotong deretnya di
+ * hulu. Pemotongan itu sudah dibuang (chip = jendela pandang, bukan potongan
+ * data), jadi yang tersisa cuma satu deret dan satu angka — dan hubungan
+ * "yang tergambar = yang tertulis" justru jadi lebih rapat, bukan longgar.
+ *
+ * Yang ditolak: mengikuti JENDELA ZOOM. Zoom berubah tiap kali pembaca
+ * menggeser grafik, dan statistik yang angkanya bergoyang selagi digeser
+ * mengundang orang berhenti di jendela yang angkanya paling disukai.
  *
  * `null` kalau lilinnya terlalu sedikit untuk menghasilkan satu imbal pun.
  */

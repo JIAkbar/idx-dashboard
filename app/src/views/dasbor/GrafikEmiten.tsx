@@ -10,7 +10,7 @@ import {
 } from 'lightweight-charts'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import {
-  keDataLilinVolume, batasBawahHari, potongRentang, RENTANG_KAKI, RENTANG_KAKI_BAWAAN,
+  keDataLilinVolume, batasBawahHari, RENTANG_KAKI, RENTANG_KAKI_BAWAAN,
   keSeriGaris, SPEK_INDIKATOR, SPEK_POLA, labelInstansIndikator, labelInstansPola,
   spekJenis, idPustaka,
   hitungInstans, cariDoubleBottom, cariLonjakanVolume, cariMusiman,
@@ -903,9 +903,17 @@ export function GrafikEmiten() {
   }, [kode, theme])
 
   /**
-   * Lilin + volume yang benar-benar tergambar, dari tiga jalur yang menyatu di
-   * satu bentuk: intraday dari Yahoo, harian dari berkas lokal, pekanan/bulanan
+   * SELURUH lilin + volume yang dimuat, dari tiga jalur yang menyatu di satu
+   * bentuk: intraday dari Yahoo, harian dari berkas lokal, pekanan/bulanan
    * DIRAKIT dari harian.
+   *
+   * TIDAK dipotong chip rentang kaki. Dulu dipotong di sini, dan itu membuat
+   * chip rentang mengubah ANGKA, bukan cuma pandangan: RSI/EMA/MACD/ATR
+   * menyemai bibitnya di batas rentang, jadi RSI 14 pada tanggal yang sama
+   * membaca beda di "1M" dan di "Semua"; MA 200 lenyap tanpa pesan di rentang
+   * pendek; pencarian pola menemukan pola yang berbeda per chip karena ATR-nya
+   * ikut bergeser. Chip rentang sekarang murni jendela pandang —
+   * `setVisibleLogicalRange` di bawah, bukan `slice`.
    *
    * Ikut `theme` di deps supaya warna volume (dihitung per-batang, beda dari
    * upColor/downColor seri lilin yang cukup lewat applyOptions) ikut berubah
@@ -929,14 +937,59 @@ export function GrafikEmiten() {
     const vol = d.volume.map((v, i) => ({
       ...v, color: d.lilin[i].close >= d.lilin[i].open ? green : red,
     }))
-    // Batas rentang dihitung dari lilin TERAKHIR yang ada, bukan dari hari ini:
-    // data berhenti beberapa hari sebelum "sekarang" kalau panen belum jalan,
-    // dan menghitung dari hari ini memotong lilin terbaru yang masih ada.
-    const akhir = d.lilin[d.lilin.length - 1].time.slice(0, 10)
+    return { lilin: d.lilin, volume: vol }
+  }, [berkas, intra, kerangka, theme])
+
+  /**
+   * Indeks lilin PERTAMA yang masuk chip rentang kaki — satu-satunya bekas
+   * chip rentang di sisi data, dan ia cuma dipakai sebagai batas kiri jendela
+   * pandang (`setVisibleLogicalRange`) serta titik awal Bar replay.
+   *
+   * Batasnya dihitung dari lilin TERAKHIR yang ada, bukan dari hari ini: data
+   * berhenti beberapa hari sebelum "sekarang" kalau panen belum jalan, dan
+   * menghitung dari hari ini memotong lilin terbaru yang masih ada.
+   */
+  const awalRentang = useMemo(() => {
+    const n = penuh.lilin.length
+    if (n === 0) return 0
+    const akhir = penuh.lilin[n - 1].time.slice(0, 10)
     const [, hari] = RENTANG_KAKI.find(([l]) => l === rentangLabel) ?? RENTANG_KAKI[RENTANG_KAKI.length - 1]
     const batas = batasBawahHari(akhir, hari)
-    return { lilin: potongRentang(d.lilin, batas), volume: potongRentang(vol, batas) }
-  }, [berkas, intra, kerangka, rentangLabel, theme])
+    if (!batas) return 0
+    const i = penuh.lilin.findIndex((b) => b.time >= batas)
+    return i === -1 ? 0 : i
+  }, [penuh.lilin, rentangLabel])
+
+  /**
+   * Chip rentang yang tak punya riwayat untuk ditampilkan — DINONAKTIFKAN,
+   * bukan disembunyikan, dengan alasannya di `title` (pola yang sama dengan
+   * `title` batas riwayat di tombol kerangka).
+   *
+   * Yang dimatikan: setiap chip yang batas bawahnya sudah jatuh sebelum lilin
+   * pertama SETELAH chip terkecil yang begitu — chip pertama yang mencakup
+   * seluruh riwayat tetap bisa ditekan, yang di atasnya cuma menggambar
+   * gambar yang sama persis. "Semua" tak pernah dimatikan: ia jujur apa
+   * adanya, berapa pun riwayatnya. Tanpa ini, 5m/15m/30m menerima klik pada
+   * 1Y/5Y lalu menggambar satu bulan tanpa satu kata pun.
+   */
+  const rentangOpsi = useMemo(() => {
+    const n = penuh.lilin.length
+    const akhir = n ? penuh.lilin[n - 1].time.slice(0, 10) : ''
+    const awal = n ? penuh.lilin[0].time.slice(0, 10) : ''
+    const cukup = (hari: number | null) => hari === null || batasBawahHari(akhir, hari) <= awal
+    const iCukup = n ? RENTANG_KAKI.findIndex(([, hari]) => cukup(hari)) : -1
+    return RENTANG_KAKI.map(([label, hari], i) => {
+      const mati = iCukup !== -1 && hari !== null && i > iCukup
+      return {
+        id: label,
+        label,
+        nonaktif: mati,
+        judul: mati
+          ? `Riwayat ${kerangka} cuma sampai ${awal} — rentang ${label} tak punya data tambahan di luar itu`
+          : undefined,
+      }
+    })
+  }, [penuh.lilin, kerangka])
 
   /**
    * Lilin & volume yang benar-benar dipakai SELURUH halaman — `penuh` di atas,
@@ -972,23 +1025,42 @@ export function GrafikEmiten() {
     }
     volRef.current?.setData(keChart(volume))
     // Selama replay BERJALAN, jangan pasang ulang rentang terlihat: satu
-    // `fitContent()` per lilin membuat sumbu waktu melompat-lompat tiap
-    // langkah dan lilin yang baru muncul justru tak pernah sempat dilihat.
-    // Yang tetap difit: saat replay tak aktif (perilaku lama), dan SEKALI
-    // saat replay baru dinyalakan.
+    // pemasangan per lilin membuat sumbu waktu melompat-lompat tiap langkah
+    // dan lilin yang baru muncul justru tak pernah sempat dilihat. Yang tetap
+    // dipasang: saat replay tak aktif (perilaku lama), dan SEKALI saat replay
+    // baru dinyalakan.
     const replayAktif = replay !== null
-    if (!replayAktif || !replayAktifRef.current) chartRef.current?.timeScale().fitContent()
+    if (!replayAktif || !replayAktifRef.current) {
+      const ts = chartRef.current?.timeScale()
+      // Chip rentang = JENDELA PANDANG, bukan potongan data. Logical range
+      // (indeks lilin), bukan `setVisibleRange` (waktu): batas bawah rentang
+      // kerap jatuh di akhir pekan/libur bursa dan tak punya lilin sendiri,
+      // dan indeksnya sudah kita punya persis.
+      if (awalRentang > 0 && awalRentang < lilin.length) {
+        ts?.setVisibleLogicalRange({ from: awalRentang - 0.5, to: lilin.length - 0.5 })
+      } else ts?.fitContent()
+    }
     replayAktifRef.current = replayAktif
     // Angka terukur buat verifikasi/QA (bukan data sensitif — cuma jumlah &
     // rentang tanggal yang sudah tampak di sumbu chart-nya sendiri). Canvas
     // tak punya DOM per-lilin buat dibaca lewat devtools, jadi ini jalan
     // paling murah utk mengecek "berapa yang sebenarnya terpasang" tanpa
     // menambah dependency baru.
+    //
+    // DUA RUAS, bukan satu: sejak chip rentang jadi jendela pandang, "yang
+    // dimuat" dan "yang terlihat" berbeda — dan satu nama yang menanggung dua
+    // makna persis inilah yang membuat kerusakan kemarin tak terlihat.
+    // `jumlahLilin`/`tglPertama`/`tglAkhir` = yang DISERAHKAN ke setData
+    // (dasar seluruh indikator); `*Terlihat` = jendela yang sedang dipandang.
     const el = containerRef.current
     if (el) {
       el.dataset.jumlahLilin = String(lilin.length)
       el.dataset.tglPertama = lilin[0]?.time ?? ''
       el.dataset.tglAkhir = lilin[lilin.length - 1]?.time ?? ''
+      el.dataset.jumlahTerlihat = String(Math.max(0, lilin.length - awalRentang))
+      el.dataset.tglTerlihatAwal = lilin[awalRentang]?.time ?? lilin[0]?.time ?? ''
+      el.dataset.tglTerlihatAkhir = lilin[lilin.length - 1]?.time ?? ''
+      el.dataset.rentang = rentangLabel
       el.dataset.kerangka = kerangka
       // Jarak antar-lilin dalam DETIK — bukti bahwa tombol "5m" benar-benar
       // menarik lilin lima menit dan bukan sekadar tak melempar galat; jumlah
@@ -1009,7 +1081,8 @@ export function GrafikEmiten() {
       // menyebut berapa dari total yang sedang ditampilkan.
       el.dataset.replay = replay === null ? '' : `${replay}/${penuh.lilin.length}`
     }
-  }, [lilin, volume, versiSeriHarga, keChart, kerangka, replay, penuh.lilin.length])
+  }, [lilin, volume, versiSeriHarga, keChart, kerangka, replay, penuh.lilin.length,
+      awalRentang, rentangLabel])
 
   /**
    * Garis emiten pembanding di panel harga (#187).
@@ -1484,13 +1557,25 @@ export function GrafikEmiten() {
 
   /* ---------------- Bar replay ---------------- */
 
-  /** Emiten/kerangka/rentang berganti = data di bawah replay berganti seluruh
+  /** Emiten/kerangka berganti = data di bawah replay berganti seluruh
    *  bentuknya. Replay dimatikan, bukan dipindahkan diam-diam ke posisi ke-n
-   *  di deret yang sama sekali lain — posisi itu tak berarti apa pun di sana. */
+   *  di deret yang sama sekali lain — posisi itu tak berarti apa pun di sana.
+   *
+   *  `rentangLabel` ikut walau chip rentang tak lagi memotong data: titik awal
+   *  replay diletakkan pada 70% JENDELA yang sedang dipandang, jadi menggeser
+   *  jendelanya selagi replay jalan meninggalkan penunjuk di tempat yang tak
+   *  lagi ada hubungannya dengan apa yang terlihat. */
   useEffect(() => {
     setReplay(null)
     setPutar(false)
   }, [kode, kerangka, rentangLabel])
+
+  /** Chip aktif yang ternyata melampaui riwayat kerangka yang baru dipilih
+   *  (mis. pindah D -> 5m selagi "1Y" aktif) dikembalikan ke bawaan. Tanpa
+   *  ini chip yang mati tetap tersorot dan tak bisa ditekan untuk keluar. */
+  useEffect(() => {
+    if (rentangOpsi.some((o) => o.id === rentangLabel && o.nonaktif)) setRentangLabel(RENTANG_KAKI_BAWAAN)
+  }, [rentangOpsi, rentangLabel])
 
   /** Putar otomatis. Berhenti sendiri di lilin terakhir — tanpa itu, interval
    *  tetap berdetak selamanya di ujung deret tanpa ada yang berubah di layar. */
@@ -1828,15 +1913,18 @@ export function GrafikEmiten() {
 
           <span className="grf-pisah" aria-hidden="true" />
 
-          {/* Bar replay (#187) — menyalakannya memundurkan chart ke 70% deret
-              lalu memberi kendali maju satu lilin per klik di bilah bawah.
+          {/* Bar replay (#187) — menyalakannya memundurkan chart ke 70% JENDELA
+              yang sedang dipandang (bukan 70% seluruh riwayat: dengan chip
+              "1M" di atas data 10 tahun, titik itu mendarat bertahun-tahun di
+              luar layar dan replay-nya terlihat tak melakukan apa-apa) lalu
+              memberi kendali maju satu lilin per klik di bilah bawah.
               Mematikannya mengembalikan seluruh rentang apa adanya. */}
           <TombolIkon d={IKON_ULANG} ukuranIkon={14}
             className={replay !== null ? 'on' : ''}
             label={replay !== null ? 'Keluar dari Bar replay' : 'Bar replay — mundurkan chart lalu maju selilin per klik'}
             onClick={() => {
               if (replay !== null) { setReplay(null); setPutar(false); return }
-              setReplay(Math.max(1, Math.ceil(penuh.lilin.length * 0.7)))
+              setReplay(Math.max(1, awalRentang + Math.ceil((penuh.lilin.length - awalRentang) * 0.7)))
             }} />
 
           <span className="grf-toolbar-isi" />
@@ -2058,7 +2146,7 @@ export function GrafikEmiten() {
           <div className="grf-kaki">
             <PemilihRentang
               className="grf-kaki-rentang"
-              opsi={RENTANG_KAKI.map(([label]) => ({ id: label, label }))}
+              opsi={rentangOpsi}
               nilai={rentangLabel}
               onGanti={setRentangLabel}
             />

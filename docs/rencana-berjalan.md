@@ -3,7 +3,44 @@
 Catatan hidup — diperbarui tiap ada keputusan. Ditulis ke berkas supaya tidak
 bergantung pada ingatan percakapan (yang bisa diringkas dan kehilangan detail).
 
-Terakhir diperbarui: 18 Agustus 2026 (setelah sesi jumlah saham resmi bursa).
+Terakhir diperbarui: 19 Agustus 2026 (setelah sesi chip rentang Grafik Emiten).
+
+## 📌 Sesi 19 Agu 2026 — Chip rentang kaki `/grafik` (B3, Papan Pekerjaan #191–193)
+
+Johan: *"kerjakan chart sama annualised nya"*. Bagian **chart**.
+
+Akarnya satu: memo `penuh` di `GrafikEmiten.tsx` memotong deret dengan
+`potongRentang` **sebelum** indikator dihitung, jadi chip rentang mengubah
+ANGKA, bukan cuma pandangan.
+
+**Keputusan yang sudah diambil — jangan diperdebatkan ulang:**
+
+| Keputusan | Alasan |
+|---|---|
+| Deret **PENUH** ke `setData`; chip rentang = `setVisibleLogicalRange` | Satu perbaikan menutup lima gejala sekaligus (RSI/EMA/MACD per chip, MA 200 lenyap, Double Bottom beda per chip, kombinasi bersisa satu lilin, `bandingLilin` basi) |
+| **Logical range**, bukan `setVisibleRange` (waktu) | Batas bawah rentang kerap jatuh di akhir pekan/libur bursa dan tak punya lilin sendiri; indeksnya sudah kita punya persis lewat `awalRentang` |
+| Potongan **Bar replay tetap ada** | Replay memang harus menyembunyikan masa depan. 9 uji anti-bocor (#188) tetap hijau — itu wasitnya |
+| Titik awal replay = 70% **jendela**, bukan 70% seluruh riwayat | Dengan chip "1M" di atas data 10 tahun, 70% riwayat mendarat bertahun-tahun di luar layar dan replay terlihat tak melakukan apa-apa |
+| Probe QA dipisah dua ruas | `jumlahLilin`/`tglPertama`/`tglAkhir` = **dimuat**; `jumlahTerlihat`/`tglTerlihatAwal`/`tglTerlihatAkhir`/`rentang` = **terlihat**. Satu nama untuk dua makna persis yang membuat bug ini tak terlihat |
+| `rentangLabel` **tetap** mematikan replay | Titik awal replay diletakkan pada jendela yang dipandang; menggeser jendelanya selagi replay jalan meninggalkan penunjuk yang tak lagi ada hubungannya dengan layar |
+| Chip di luar riwayat **dinonaktifkan**, "Semua" tak pernah | `PemilihRentang` sudah punya `nonaktif` + `judul` (#170 K2) — nol kelas baru. "Semua" jujur apa adanya berapa pun riwayatnya |
+| Label lain **tidak** diganti ke `LABEL_RENTANG` | `grafikEmiten.ts:103-106` sudah mencatat alasannya: label panjang tak muat di kaki 412px. Cuma `All` → `Semua` |
+
+**Angka bukti** (BBCA harian, 2.469 lilin, tanggal 2026-08-18 — dihitung dari
+berkas OHLC asli):
+
+| Ruas | Deret PENUH (sesudah) | Deret dipotong 1M (sebelum) |
+|---|---|---|
+| RSI 14 | **50,0892** | **42,9136** |
+| MA 200 | **7.035,5** | **null** (garisnya hilang) |
+| ATR 14 | **153,3497** | **140,4697** |
+
+**Sisa yang sengaja dibiarkan** (bukan lupa): `potongRentang` di
+`grafikEmiten.ts:138` sekarang tak dipakai kode aplikasi (tinggal ujinya) —
+dibiarkan supaya jumlah uji tak turun tanpa alasan; buang kalau ada sapuan
+kebersihan berikutnya. **Verifikasi peramban belum jalan** — `/grafik` di balik
+login dan CLAUDE.md melarang mengisi kolom sandi; rinciannya di
+`docs/jejak-permintaan.md` B3.
 
 ## 📌 Sesi 18 Agu 2026 — Jumlah saham resmi bursa (`ListedShares`)
 
