@@ -5,7 +5,7 @@ import { fRingkas, fEps } from '../../../lib/dasbor/stockDetailFormat'
 import { useChartCanvas } from '../../../lib/dasbor/useChartJs'
 import { useTheme } from '../../../context/ThemeContext'
 import { IkonMenu, IKON_JAM } from '../../../components/dasbor/IkonMenu'
-import { gabungkanBarisKeuangan, labelAsal, type AsalAngka } from '../../../lib/dasbor/fundamentalGabungan'
+import { gabungkanBarisKeuangan, isoQ4Idx, labelAsal, type AsalAngka } from '../../../lib/dasbor/fundamentalGabungan'
 
 type PeriodMode = 'kuartal' | 'tahunan'
 type SubTab = 'laba_rugi' | 'neraca' | 'arus_kas'
@@ -92,7 +92,10 @@ export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
   const periods = useMemo(() => {
     const srcYf = kd ? (periodMode === 'kuartal' ? kd.kuartal : kd.tahunan) : {}
     const srcIdx = idx ? (periodMode === 'kuartal' ? idx.kuartal : idx.tahunan) : {}
-    const semuaIso = Array.from(new Set([...Object.keys(srcYf), ...Object.keys(srcIdx)])).sort()
+    // Q4 IDX lahir dari laporan auditan (bucket `tahunan`) − TW3, jadi kuncinya
+    // tak ada di `srcIdx` walau angkanya bisa dihitung — lihat isoQ4Idx.
+    const isoQ4 = periodMode === 'kuartal' ? isoQ4Idx(idx) : []
+    const semuaIso = Array.from(new Set([...Object.keys(srcYf), ...Object.keys(srcIdx), ...isoQ4])).sort()
     const terbaru = semuaIso[semuaIso.length - 1]
     return semuaIso.slice(-8).map((iso) => ({ iso, yf: srcYf[iso], terbaru: iso === terbaru }))
   }, [kd, idx, periodMode])

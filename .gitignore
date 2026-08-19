@@ -46,3 +46,11 @@ arus-pasar/keluaran-uji/
 # tetap ada di cakram -- yang mahal itu mengambilnya, bukan menyimpannya.
 # Lihat komentar ARSIP_MENTAH di scripts/panen_keuangan_idx.py.
 _arsip-mentah/
+
+# Kuartal diskret turunan (B3, 19 Agu 2026): 949 berkas yang BELUM dibaca satu
+# halaman pun -- Q4 di layar dihitung live di fundamentalGabungan.ts, bukan dari
+# sini. Murni turunan lokal tanpa jaringan, bisa dibangun ulang kapan saja lewat
+# `python scripts/turunkan_kuartal_diskret.py`. HAPUS BARIS INI begitu ada
+# halaman yang benar-benar mengambilnya -- Vercel merakit produksi dengan
+# menyalin data-idx/json apa adanya, jadi berkas yang tak ikut git = 404.
+data-idx/json/keuangan_idx_diskret/

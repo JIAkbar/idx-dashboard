@@ -225,25 +225,52 @@ const FIELD_ARUS = new Set<keyof PeriodeKeuangan>([
  * menyembunyikannya jadi null, supaya panel tetap menampilkan satu-satunya
  * angka IDX yang ada — tapi labelnya wajib bilang ini YTD, bukan kuartal
  * tunggal (lihat labelAsal & badge "B·YTD" di PanelLaporanKeuangan).
+ *
+ * B3 (19 Agu 2026) — Q4: IDX tak pernah menerbitkan interim TW4, jadi bucket
+ * `kuartal` TIDAK punya satu pun kunci 12-31 (diukur: 0 dari 949 berkas).
+ * Oktober–Desember lahir dari laporan AUDITAN setahun penuh yang tinggal di
+ * bucket terpisah `tahunan`, dikurangi TW3 — makanya `tahunanIdx` ikut masuk
+ * ke sini. Tanpa itu kolom Q4 selalu jatuh ke Yahoo walau angka resminya ada.
  */
 export function bacaKuartalIdx(
   kuartalIdx: Record<string, PeriodeKeuangan>,
   field: keyof PeriodeKeuangan,
   iso: string,
+  tahunanIdx?: Record<string, PeriodeKeuangan> | null,
 ): AngkaGabungan {
-  const v = kuartalIdx[iso]?.[field]
-  if (v == null) return { nilai: null, asal: null }
-  if (!FIELD_ARUS.has(field)) return { nilai: v, asal: 'idx' } // ruas neraca: snapshot, tak dikonversi
-
   const [tahun, bulan] = iso.split('-')
   const q = Math.ceil(Number(bulan) / 3)
+  const v = kuartalIdx[iso]?.[field] ?? (q === 4 ? tahunanIdx?.[iso]?.[field] : null) ?? null
+  if (v == null) return { nilai: null, asal: null }
+  if (!FIELD_ARUS.has(field)) return { nilai: v, asal: 'idx' } // ruas neraca: snapshot, tak dikonversi
   if (q === 1) return { nilai: v, asal: 'idx' } // Q1 kumulatif == diskret
 
   const isoSebelumnya = q === 2 ? `${tahun}-03-31` : q === 3 ? `${tahun}-06-30` : `${tahun}-09-30`
   const pengurang = kuartalIdx[isoSebelumnya]?.[field]
-  if (pengurang == null) return { nilai: v, asal: 'idx-kumulatif' }
+  if (pengurang == null) {
+    // Q4 sengaja beda dari Q2/Q3: yang tersisa tanpa TW3 bukan potongan tahun
+    // berjalan melainkan angka SETAHUN PENUH — dipajang di kolom kuartal itu
+    // salah besar, bukan sekadar kurang tepat, dan angka setahun itu sudah
+    // punya rumahnya sendiri di tab Tahunan. Menyerah null di sini membiarkan
+    // Yahoo (kuartalnya memang sudah diskret) yang mengisi kolomnya.
+    return q === 4 ? { nilai: null, asal: null } : { nilai: v, asal: 'idx-kumulatif' }
+  }
 
   return { nilai: v - pengurang, asal: 'idx' }
+}
+
+/**
+ * Kunci ISO Q4 yang BISA diturunkan (auditan setahun ada DAN TW3 pembandingnya
+ * ada). Daftar periode di panel dibentuk dari gabungan kunci yfinance + kunci
+ * `kuartal` IDX; karena `kuartal` tak pernah memuat 12-31, tanpa suntikan ini
+ * kolom Q4 hilang sama sekali untuk emiten yang yfinance-nya juga tak punya —
+ * terukur 228 dari 841 emiten yang Q4 2025-nya sebenarnya bisa dihitung.
+ */
+export function isoQ4Idx(idx: Pick<StockKeuangan, 'kuartal' | 'tahunan'> | null | undefined): string[] {
+  if (!idx) return []
+  return Object.keys(idx.tahunan).filter(
+    (iso) => iso.endsWith('-12-31') && idx.kuartal[`${iso.slice(0, 4)}-09-30`] != null,
+  )
 }
 
 /**
@@ -267,7 +294,7 @@ export function gabungkanBarisKeuangan(
   if (idx) {
     const nilaiTahunan = idx.tahunan[iso]?.[field]
     const dariIdx = mode === 'kuartal'
-      ? bacaKuartalIdx(idx.kuartal, field, iso)
+      ? bacaKuartalIdx(idx.kuartal, field, iso, idx.tahunan)
       : nilaiTahunan != null ? { nilai: nilaiTahunan, asal: 'idx' as const } : { nilai: null, asal: null }
     if (dariIdx.nilai != null) return dariIdx
   }

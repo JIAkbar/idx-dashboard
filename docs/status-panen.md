@@ -7,7 +7,7 @@
 >
 > Kata pemicu untuk panen manual lewat Claude Code: **"Panen Lagi"**.
 
-Diperbarui: **18 Agustus 2026**. Angka "isi terakhir" dibaca dari DALAM berkas,
+Diperbarui: **19 Agustus 2026**. Angka "isi terakhir" dibaca dari DALAM berkas,
 bukan dari waktu berkasnya ditulis — berkas bisa ditulis ulang tanpa membawa
 data baru, dan membaca mtime membuat data basi terlihat segar.
 
@@ -26,6 +26,7 @@ data baru, dan membaca mtime membuat data basi terlihat segar.
 | **Fundamental** | Stock Detail, Bedah Emiten | yfinance + turunan lokal + `ListedShares` IDX | **18 Agu 2026** | 965 | ⚙️ Actions akhir bulan | `update-fundamental.yml` |
 | **Daftar emiten + jumlah saham** | (dipakai `fetch_fundamental.py`, bukan halaman) | IDX `GetStockSummary` (`ListedShares`) | **18 Agu 2026** | 963 emiten | ❌ manual | `sinkron_emiten.py` — **"Panen Lagi"** |
 | **Keuangan XBRL IDX** | Stock Detail | IDX `GetFinancialReport` | **2019–2025** (7 thn buku) | 949 | ❌ manual | `panen_keuangan_idx.py` — **"Panen Lagi"** |
+| **Keuangan XBRL IDX — kuartal diskret** | **belum dipakai halaman mana pun** — Q4 di layar dihitung langsung dari sumbernya, bukan dari berkas ini | turunan lokal dari **Keuangan XBRL IDX** (Q1=TW1, Q2=TW2−TW1, Q3=TW3−TW2, Q4=audit−TW3; ruas neraca tak pernah dikurangi) | **2019 → 2026 TW2**, 9.665 periode (Q1 1.633 · Q2 1.670 · Q3 867 · Q4 5.495 — mayoritas Q4 cuma berisi neraca karena TW3 pembandingnya tak ada) | 949 | ❌ manual, nol jaringan | `turunkan_kuartal_diskret.py` — **"Panen Lagi"** |
 | **Keuangan yfinance** | Stock Detail | yfinance | 17 Agu 2026 | 646 | ⚙️ ikut `update-fundamental.yml` | — |
 | **Seasonality bulanan** | Seasonality | Yahoo (penutupan bulanan) | 17 Agu 2026 | — | ❌ manual | `panen_seasonality.py` — **"Panen Lagi"** |
 | **Peta investor (KSEI)** | Peta Investor | KSEI | *(tak diperbarui rutin)* | — | ❌ manual | `fetch_investor_map.py` |

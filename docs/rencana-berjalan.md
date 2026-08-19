@@ -1017,15 +1017,34 @@ merah 13/14/17/18.
 |---|---|---|---|---|
 | ~~B1~~ | ~~Rapikan grid tab Lengkap~~ — **CSS selesai 19 Agu, verifikasi visual TERHALANG** | `KartuAnalisa.tsx`, `KartuAnalisa.css` | chrome-devtools MCP terkunci sesi lain (tab "SAKTI — Monitoring Anggaran", PID 34120) — tsc/vitest 737/oxlint bersih, tapi 3 viewport belum diukur | kecil, murni CSS |
 | B2 | **Compare symbols** + **Bar replay** | `/grafik` | disebut penting sesudah membandingkan TradingView, belum dijadwalkan | sedang; keduanya didukung lightweight-charts v5 |
-| B3 | Kuartal diskret **Q4** | `turunkan_kuartal_diskret.py` + `fundamentalGabungan.ts` | skripnya lolos swauji tapi **belum pernah jalan atas data asli** | nol jaringan — panen TW1/2/3 + audit 2025 sudah lengkap |
+| ~~B3~~ | ~~Kuartal diskret **Q4**~~ — **SELESAI 19 Agu, verifikasi visual TERHALANG** | `turunkan_kuartal_diskret.py` + `fundamentalGabungan.ts` + `PanelLaporanKeuangan.tsx` | skrip sudah jalan atas data asli (949 tiker, 9.665 periode); Q4 ditutup di `bacaKuartalIdx` (audit − TW3). tsc bersih di luar berkas agen lain, vitest **745** hijau (737 + 8 baru). chrome-devtools terkunci sesi lain (PID 34120) — dua viewport belum diukur | nol jaringan |
 | B4 | Adu rancangan **chart** diulang | workflow tersimpan | 6 dari 6 agen kena server kelebihan beban | sedang; bahan TradingView sudah terekam, tak perlu disusun ulang |
 | B5 | Adu rancangan **Stock Detail** diulang | workflow tersimpan | lima usulnya jadi, sintesisnya gagal | kecil — cukup jalankan ulang tahap sintesis |
 | ~~B6~~ | ~~Susulan glyph di luar subset font~~ — **SELESAI 19 Agu** | seluruh `arus-pasar/` | `draft/` dan `cache/` ternyata bersih sejak awal. Yang tersisa satu: `build_bedah.py:272` — kemunculan **kedua** di kalimat yang sama dengan yang sudah ditambal di baris 271, pola identik dengan `build_weekly.py` (502 ditambal, 49 tidak) | — |
 
-**Yang perlu diketahui sebelum menyentuh B3:** `fundamentalGabungan.ts` **sudah**
-menurunkan Q2/Q3 diskret secara live. Yang tak dihitung di mana pun hanya **Q4** —
-bucket `tahunan` (audit) tak pernah disilangkan ke TW3. Jadi pekerjaannya lebih
-kecil daripada kelihatannya.
+**Hasil B3 (19 Agu).** Lubang Q4 ditutup di `bacaKuartalIdx`, bukan dengan
+menyambungkan berkas `keuangan_idx_diskret/` ke tampilan — rumusnya sudah ada
+di sana untuk Q2/Q3, yang kurang cuma bucket `tahunan` ikut masuk. Berkas
+diskret tetap dihasilkan sebagai lapisan data/audit, **tak dibaca satu halaman
+pun** dan **tak ikut di-commit** (949 berkas mati di git; keputusan menunggu
+Johan). Tiga temuan yang perlu diingat:
+
+- **Kontrak Q4 sengaja beda dari Q2/Q3.** Tanpa TW3, yang tersisa itu angka
+  SETAHUN PENUH — dipajang di kolom kuartal ia salah besar, bukan kurang
+  tepat. Jadi Q4-tanpa-TW3 mengembalikan null (Yahoo yang mengisi), sementara
+  Q2/Q3-tanpa-pengurang tetap menampilkan kumulatif berlencana `B·YTD` seperti
+  semula. Perilaku lama tak disentuh.
+- **228 dari 841 emiten** yang Q4 2025-nya bisa dihitung tak akan pernah
+  menampilkan kolomnya, karena daftar periode dibentuk dari kunci yfinance +
+  kunci `kuartal` IDX dan `kuartal` tak pernah memuat 12-31. Ditutup dengan
+  `isoQ4Idx()`.
+- **15 revenue diskret negatif** (0,35% dari 4.318 yang terisi) — semuanya
+  cacat SUMBER, bukan cacat rumus: 13 karena kumulatifnya TURUN (restatement /
+  penyesuaian audit), 2 karena TW1-nya memang sudah negatif di XBRL. Tak
+  dipangkas jadi nol. Yang paling parah **CDIA**: berkasnya bermata uang USD
+  tapi TW3 2025 tercatat 64.514.464.000.000 sementara TW2 66.870.123 dan audit
+  148.032.595 — satu periode ikut skala rupiah. Cacat hulu di
+  `panen_keuangan_idx.py`, bukan di penurunan diskret.
 
 **Cara memeriksa B6** ada di pesan commit `18dff05b`: baca cmap woff2 dengan
 fontTools untuk tahu cakupan, lalu PyMuPDF untuk tahu font mana yang

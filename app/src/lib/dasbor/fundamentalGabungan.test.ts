@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bacaKuartalIdx, gabungkanBaris, gabungkanBarisKeuangan, gabungkanPeriode, labelAsal } from './fundamentalGabungan'
+import { bacaKuartalIdx, gabungkanBaris, gabungkanBarisKeuangan, gabungkanPeriode, isoQ4Idx, labelAsal } from './fundamentalGabungan'
 import type { PeriodeKeuangan, StockFundamental } from './stockDetailData'
 
 const fd = {
@@ -109,6 +109,65 @@ describe('bacaKuartalIdx — kumulatif IDX dikonversi jadi diskret', () => {
 
   it('ruas tak tersedia di IDX untuk periode ini → null, bukan 0', () => {
     expect(bacaKuartalIdx(kuartalDenganTw1, 'operating_income', '2026-06-30')).toEqual({ nilai: null, asal: null })
+  })
+
+  // B3 — Q4: IDX tak menerbitkan interim TW4; angkanya = auditan setahun − TW3.
+  describe('Q4 dari laporan auditan setahun', () => {
+    const kuartal2025 = {
+      '2025-03-31': { revenue: 100, total_assets: 500 } as unknown as PeriodeKeuangan,
+      '2025-06-30': { revenue: 250, total_assets: 520 } as unknown as PeriodeKeuangan,
+      '2025-09-30': { revenue: 330, total_assets: 540 } as unknown as PeriodeKeuangan,
+    }
+    const tahunan2025 = { '2025-12-31': { revenue: 460, total_assets: 560 } as unknown as PeriodeKeuangan }
+
+    it('auditan setahun − TW3 → kuartal diskret bertanda idx', () => {
+      expect(bacaKuartalIdx(kuartal2025, 'revenue', '2025-12-31', tahunan2025)).toEqual({ nilai: 130, asal: 'idx' })
+    })
+
+    it('ruas neraca Q4 diambil apa adanya dari auditan — posisi per tanggal, bukan arus', () => {
+      expect(bacaKuartalIdx(kuartal2025, 'total_assets', '2025-12-31', tahunan2025)).toEqual({ nilai: 560, asal: 'idx' })
+    })
+
+    it('tanpa TW3 → null (BUKAN kumulatif): yang tersisa itu angka setahun penuh, salah kalau dipajang sebagai kuartal', () => {
+      expect(bacaKuartalIdx({}, 'revenue', '2025-12-31', tahunan2025)).toEqual({ nilai: null, asal: null })
+    })
+
+    it('tanpa argumen tahunan → perilaku lama tak berubah (Q4 tak dihitung)', () => {
+      expect(bacaKuartalIdx(kuartal2025, 'revenue', '2025-12-31')).toEqual({ nilai: null, asal: null })
+    })
+
+    it('jumlah 4 kuartal diskret == auditan setahun', () => {
+      const total = ['03-31', '06-30', '09-30', '12-31']
+        .map((ab) => bacaKuartalIdx(kuartal2025, 'revenue', `2025-${ab}`, tahunan2025).nilai ?? 0)
+        .reduce((a, b) => a + b, 0)
+      expect(total).toBe(tahunan2025['2025-12-31'].revenue)
+    })
+
+    it('Q4 lewat gabungkanBarisKeuangan mengalahkan Yahoo untuk kolom kuartal', () => {
+      const idx = { kuartal: kuartal2025, tahunan: tahunan2025 }
+      const yf = { revenue: 999 } as unknown as PeriodeKeuangan
+      expect(gabungkanBarisKeuangan('revenue', '2025-12-31', 'kuartal', yf, idx, null, true))
+        .toEqual({ nilai: 130, asal: 'idx' })
+      // tab Tahunan tetap menampilkan angka setahun penuh, tak ikut dikurangi
+      expect(gabungkanBarisKeuangan('revenue', '2025-12-31', 'tahunan', yf, idx, null, true))
+        .toEqual({ nilai: 460, asal: 'idx' })
+    })
+  })
+})
+
+describe('isoQ4Idx — kunci Q4 yang layak jadi kolom', () => {
+  const p = (revenue: number) => ({ revenue }) as unknown as PeriodeKeuangan
+
+  it('cuma tahun yang TW3-nya ada — tanpa pembanding, Q4 tak bisa diturunkan', () => {
+    const idx = {
+      kuartal: { '2025-09-30': p(330) },
+      tahunan: { '2024-12-31': p(400), '2025-12-31': p(460) },
+    }
+    expect(isoQ4Idx(idx)).toEqual(['2025-12-31'])
+  })
+
+  it('tanpa data IDX sama sekali → daftar kosong, bukan lempar galat', () => {
+    expect(isoQ4Idx(null)).toEqual([])
   })
 })
 
