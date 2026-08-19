@@ -735,16 +735,28 @@ def halaman_kolofon(ed, kredit=None):
         # penyetor yang setorannya lolos kurasi tapi tak masuk edisi hilang sama
         # sekali dari kolofon — terbaca sebagai penolakan, padahal bukan.
         #
-        # Kata-katanya "terima kasih setorannya", BUKAN "setoran disetujui".
-        # Yang kedua adalah keterangan teknis, dan ia mendarat tepat di kolom
-        # tempat nama lain memasang jumlah emiten — jadi terbaca sebagai
-        # hitungan yang rusak, bukan sebagai pengakuan (Johan, 19 Agu: "bug nih
-        # kok ada setoran disetujui"). Aturan proyek: pengakuan di depan,
-        # keterangan teknis di belakang.
+        # Kolomnya SELALU jumlah emiten — untuk semua kontributor, tanpa
+        # kecuali. Johan 19 Agu: "seharusnya semua kontributor bukan bilang
+        # terimakasih tapi berapa emiten". Kolom itu memang tempat angka, jadi
+        # kalimat apa pun yang mendarat di sana terbaca sebagai hitungan yang
+        # rusak; dua percobaan sebelumnya ("setoran disetujui", lalu "terima
+        # kasih setorannya") ditolak karena alasan yang sama.
+        #
+        # Angkanya = setoran yang LOLOS KURASI pada tanggal itu, bukan yang
+        # masuk badan edisi. Erika Julianti menyetor INET dan TINS; keduanya
+        # disetujui, cuma tak dimuat karena periodenya salah. Menghitungnya nol
+        # akan menghapus kerjanya, dan itu yang aturan #138 larang.
+        #
+        # `kredit_kontributor` menerima dua bentuk: "Nama" (tanpa angka) atau
+        # {"alias": "Nama", "n": 2}. Bentuk pertama dipertahankan supaya edisi
+        # lama tetap terakit.
+        def _kredit(x):
+            return (x, None) if isinstance(x, str) else (x.get("alias", ""), x.get("n"))
         sel += "\n" + "\n".join(
-            f'<div class="kf-nama"><span>{alias}</span>'
-            f'<span class="kf-jml">terima kasih setorannya</span></div>'
-            for alias in (ed.get("kredit_kontributor") or []) if alias not in cnt)
+            f'<div class="kf-nama"><span>{a}</span>'
+            + (f'<span class="kf-jml">{n} emiten</span>' if n else '')
+            + '</div>'
+            for a, n in map(_kredit, ed.get("kredit_kontributor") or []) if a and a not in cnt)
     else:
         nama_lama = ["Agitama Wahyu Putra Dita", "Mohamad Miftahul Ulum", "Ali Supian",
                      "Wardani W.", "Dhafina S. F.", "Erika J.", "Difla S.", "Ratu N. A. A."]
