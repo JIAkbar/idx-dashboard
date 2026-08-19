@@ -17,11 +17,11 @@ data baru, dan membaca mtime membuat data basi terlihat segar.
 |---|---|---|---|---|---|---|
 | **OHLC harian** | Grafik Emiten, Tanya PAPAN | Yahoo Finance | **18 Agu 2026** | 964 | ❌ manual | `panen_ohlc.py` — **"Panen Lagi"** |
 | **Aliran asing** | Stock Detail, Kartu Analisa *(UI sedang dikerjakan)* | IDX `GetStockSummary` | **2 Jan 2020 → 18 Agu 2026** (median 1.593 hari bursa) | 989 | ❌ manual | `panen_asing.py` — **"Panen Lagi"** |
-| **Statistik harian** | Kalender Bursa, Beranda | IDX PDF harian | **18 Agu 2026** | 143 | ⚠️ Actions **gagal sejak ≥14 Agu** — perbaikannya belum di-push | `update.yml` |
+| **Statistik harian** | Kalender Bursa, Beranda | IDX PDF harian | **18 Agu 2026** | 143 | ⚠️ Actions **merah 13, 14, 17, 18 Agu** — IDX 403 ke IP runner (hijau 10–12 Agu, jadi blokirnya kumat-kumatan) | `update.yml` |
 | **Statistik mingguan** | Statistik Berkala | IDX PDF mingguan | 14 Agu 2026 | 33 | ⚙️ Actions (ikut `update.yml`) | `update.yml` |
 | **Statistik bulanan** | Statistik Berkala *(chip nonaktif — skema beda, belum dipetakan)* | IDX PDF bulanan `MS<YYMM>-E` | Sep 2025 – Jul 2026 | 11 | ❌ manual | **"Panen Lagi"** |
-| **Kabar** | Beranda, Kabar Pasar | IPOT · IDX berita · IDX pengumuman · Kontan | **18 Agu 2026** | — | ⚙️ Actions tiap 2 jam — **semua sumber dicoba**, hasil per sumber tampil di ringkasan run | `panen-kabar.yml` |
-| **Stockbit Snips** | Kabar Pasar (tab STOCKBIT SNIPS) | `snips.stockbit.com` (Squarespace `?format=json`) | 14 Agu 2026 | 238 | ⚙️ Actions tiap 2 jam (ikut `panen-kabar.yml`, sejak 18 Agu 2026) | `panen-kabar.yml` |
+| **Kabar** | Beranda, Kabar Pasar | IPOT · IDX berita · IDX pengumuman · Kontan | **18 Agu 2026 12:55 UTC** (run `32139468436`, panen terakhir yang sungguh jalan) | — | ⚠️ **berhenti total 18 Agu 12:55 → 19 Agu**: berkas workflow ditolak GitHub (`runner.temp` di `env` tingkat workflow), 6 run 0 detik tanpa job. Sudah dibetulkan di pohon kerja, **belum di-push** — status "semua sumber dicoba" belum pernah terbukti dari satu run pun | `panen-kabar.yml` |
+| **Stockbit Snips** | Kabar Pasar (tab STOCKBIT SNIPS) | `snips.stockbit.com` (Squarespace `?format=json`) | 14 Agu 2026 | 238 | ⚠️ ikut mati bersama `panen-kabar.yml` — langkahnya ditambahkan 18 Agu tapi **belum pernah dijalankan sekalipun** | `panen-kabar.yml` |
 | **Broker summary** | Broker Summary | Setoran kontributor (screenshot) | **18 Agu 2026** | 753 | 👤 kontributor + kurasi admin | halaman `/admin` |
 | **Fundamental** | Stock Detail, Bedah Emiten | yfinance + turunan lokal + `ListedShares` IDX | **18 Agu 2026** | 965 | ⚙️ Actions akhir bulan | `update-fundamental.yml` |
 | **Daftar emiten + jumlah saham** | (dipakai `fetch_fundamental.py`, bukan halaman) | IDX `GetStockSummary` (`ListedShares`) | **18 Agu 2026** | 963 emiten | ❌ manual | `sinkron_emiten.py` — **"Panen Lagi"** |
@@ -41,6 +41,12 @@ rumah atas dugaan "IDX/Kontan 403 dari datacenter" — dugaan yang dibuat sebelu
 Bukti kenapa ini perlu: run `32139468436` **hijau** sambil mencatat
 `IDX berita: 0 item` dan `IDX pengumuman: 0 item` (keduanya 403 lewat
 `requests`) — satu sumber hidup cukup membuat panen terlihat sehat.
+
+**Tapi sampai 19 Agu 2026 ini masih rancangan, bukan hasil terukur.** Commit
+yang membawanya (`dcde09cd`) sekaligus membuat berkas workflow-nya ditolak
+GitHub, jadi versi "semua sumber" belum pernah jalan satu kali pun dan
+`kabar-sumber-awan.json` masih kosong. Jangan mengutip bagian ini sebagai
+bukti sumber mana yang tembus dari awan sampai ada run hijau yang mengisinya.
 
 **Kegagalan senyap kabar sudah punya alarm.** `scripts/cek_kabar.py` membaca
 **isi** `kabar.json` + `snips.json` (stempel waktu item terbaru **per sumber**,

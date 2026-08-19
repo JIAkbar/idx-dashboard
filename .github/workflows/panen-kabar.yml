@@ -46,7 +46,16 @@ concurrency:
 
 env:
   # Catatan hasil per sumber, di LUAR repo — ini bahan laporan, bukan data.
-  STATUS: ${{ runner.temp }}/status-kabar.jsonl
+  #
+  # JANGAN diganti jadi `${{ runner.temp }}`. Konteks `runner` TIDAK tersedia
+  # di `env` tingkat workflow (juga tidak di `env` tingkat job — hanya tingkat
+  # step), dan memakainya membuat GitHub menolak SELURUH berkas sebelum satu
+  # job pun dibuat: run 0 detik, nol job, nol log, cuma "This run likely failed
+  # because of a workflow file issue". Terjadi 18–19 Agu 2026 — enam run merah
+  # beruntun yang terbaca seperti panennya gagal, padahal panennya tak pernah
+  # dijalankan sama sekali. YAML-nya sah; yang menolak validasi konteks
+  # GitHub, jadi `yaml.safe_load` bersih tidak membuktikan apa pun.
+  STATUS: /tmp/status-kabar.jsonl
 
 jobs:
   panen:
