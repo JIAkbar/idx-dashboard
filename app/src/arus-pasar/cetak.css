@@ -28,6 +28,26 @@
   print-color-adjust: exact;
 }
 
+/* Halaman yang isinya BERTAMBAH seiring jumlah emiten dipasangi `.tumbuh`
+   (Ringkasan Edisi & Peringkat Peluang). Tanpa itu keduanya memakai tinggi A4
+   mati + `overflow:hidden`, jadi kelebihan barisnya dipotong TANPA JEJAK —
+   bukan lanjut ke lembar baru. Dites cuma 3 emiten (fixture Fase 2) sementara
+   edisi nyata sudah belasan, jadi kerusakannya tak pernah terlihat: nol galat,
+   daftar cuma menyusut. Halaman lain (sampul/band/per-emiten) tidak diberi
+   kelas ini karena isinya memang tak bertambah. */
+.ap-cetak .page.tumbuh {
+  height: auto;
+  min-height: 296mm;
+  overflow: visible;
+}
+/* Baris judul tabel diulang di tiap lembar saat tabelnya pecah. Ini satu-satunya
+   alasan barisnya dipindah ke <thead>: di dalam <tbody> ia cuma tercetak sekali,
+   dan lembar kedua jadi tabel angka tanpa nama kolom. */
+@media print {
+  .ap-cetak thead { display: table-header-group; }
+  .ap-cetak tr { break-inside: avoid; }
+}
+
 .ap-cetak .page {
   width: 210mm;
   height: 296mm;

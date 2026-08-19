@@ -4,7 +4,10 @@ import { Band } from './Band'
 import { Kaki } from './Kaki'
 
 /** Port 1:1 dari halaman_peringkat() di build.py, termasuk aturan tie-break
- *  "menang-pertama" ala max()/min() Python untuk pendorong/lemah. */
+ *  "menang-pertama" ala max()/min() Python untuk pendorong/lemah.
+ *
+ *  Halamannya `.tumbuh` dengan alasan yang sama seperti HalamanRingkasan:
+ *  tabelnya memuat seluruh emiten edisi. */
 export function HalamanPeringkat({ ed, skorMap }: { ed: Edisi; skorMap: SkorMap }) {
   const urut = [...ed.emiten].sort((a, b) => skorMap[b.ticker].total - skorMap[a.ticker].total)
   const atas = urut[0]
@@ -32,7 +35,7 @@ export function HalamanPeringkat({ ed, skorMap }: { ed: Edisi; skorMap: SkorMap 
   }
 
   return (
-    <div className="page">
+    <div className="page tumbuh">
       <Band ed={ed} eyebrow="Quant Opportunity Ranking" />
       <div className="inner">
         <div className="trow" style={{ marginBottom: '4mm' }}>
@@ -49,7 +52,7 @@ export function HalamanPeringkat({ ed, skorMap }: { ed: Edisi; skorMap: SkorMap 
           {bawah.rationale_rank.toLowerCase()}.
         </p>
         <table className="rank">
-          <tbody>
+          <thead>
             <tr>
               <th>#</th>
               <th>Ticker</th>
@@ -62,6 +65,8 @@ export function HalamanPeringkat({ ed, skorMap }: { ed: Edisi; skorMap: SkorMap 
               <th style={{ textAlign: 'left', paddingLeft: '5mm' }}>Rationale</th>
               <th>Risiko</th>
             </tr>
+          </thead>
+          <tbody>
             {urut.map((e, i) => {
               const sk = skorMap[e.ticker]
               return (

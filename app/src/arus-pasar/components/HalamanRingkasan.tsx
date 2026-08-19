@@ -4,13 +4,16 @@ import { fmt } from '../format'
 import { Band } from './Band'
 import { Kaki } from './Kaki'
 
-/** Port 1:1 dari halaman_ringkasan() di build.py. Baris "Tiga emiten..." dan blok
- *  IHSG sengaja hardcode — sama seperti build.py, belum menyambung ke data live. */
+/** Port 1:1 dari halaman_ringkasan() di build.py. Blok IHSG masih hardcode —
+ *  sama seperti build.py, belum menyambung ke data live.
+ *
+ *  Halamannya `.tumbuh`: tabel ini memuat SELURUH emiten edisi, jadi tingginya
+ *  ikut jumlah emiten. Dengan tinggi A4 mati kelebihannya dipotong senyap. */
 export function HalamanRingkasan({ ed, skorMap }: { ed: Edisi; skorMap: SkorMap }) {
   const urut = [...ed.emiten].sort((a, b) => skorMap[b.ticker].total - skorMap[a.ticker].total)
 
   return (
-    <div className="page">
+    <div className="page tumbuh">
       <Band ed={ed} eyebrow="Ringkasan Edisi" />
       <div className="inner">
         <div className="trow" style={{ marginBottom: '4mm' }}>
@@ -22,12 +25,15 @@ export function HalamanRingkasan({ ed, skorMap }: { ed: Edisi; skorMap: SkorMap 
           </div>
         </div>
         <p className="lede">
-          Tiga emiten dibedah dengan kerangka yang sama: struktur harga terhadap EMA50 dan Pivot Points,
+          {/* Jumlahnya MENGIKUTI isi, tidak dieja mati. Judul yang menyebut angka
+              berbeda dari isinya membuat pembaca berhenti percaya pada angka lain
+              di halaman yang sama. */}
+          {ed.emiten.length} emiten dibedah dengan kerangka yang sama: struktur harga terhadap EMA50 dan Pivot Points,
           kualitas arus dana broker (siapa yang membeli — bukan hanya berapa), rasio risk/reward,
           likuiditas, dan sensitivitas terhadap IHSG.
         </p>
         <table className="ring">
-          <tbody>
+          <thead>
             <tr>
               <th>Ticker</th>
               <th>Emiten</th>
@@ -37,6 +43,8 @@ export function HalamanRingkasan({ ed, skorMap }: { ed: Edisi; skorMap: SkorMap 
               <th>Skor</th>
               <th>Risiko</th>
             </tr>
+          </thead>
+          <tbody>
             {urut.map((e) => {
               const o = e.ohlc_hari
               const naik = o.chg >= 0
