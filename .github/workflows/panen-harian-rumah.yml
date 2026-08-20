@@ -1,0 +1,165 @@
+# Rantai panen harian PENUH — runner rumahan.
+#
+# Kenapa berkas ini ada: sampai 20 Agustus 2026, DELAPAN pemanen tak masuk
+# alur mana pun dan hanya jalan kalau ada yang mengetiknya —
+# `panen_ohlc`, `panen_asing`, `sinkron_emiten`, `fetch_broker_summary`,
+# `panen_seasonality`, `kartu_analisa`, `hitung_valuasi_historis`,
+# `panen_keuangan_idx`. Akibatnya terlihat langsung di layar hari itu: IHSG
+# sudah 20 Agustus sementara Kartu Analisa, Seasonality, dan Screener masih
+# 19 Agustus — semuanya membaca OHLC yang belum dipanen. Bukan bug; memang
+# tak pernah dijadwalkan.
+#
+# URUTANNYA MENGIKAT, dan bukan sekadar kerapian:
+#
+#   1. sinkron_emiten   -> `ListedShares` dari bursa. Jumlah saham dipakai
+#                          SETIAP ruas per-saham; salah di sini menggeser
+#                          q_eps/hist_eps/rev_ps/fcf_ps sekaligus.
+#   2. panen_ohlc       -> dibaca Kartu, Screener, Watchlist, Bedah, chart,
+#                          Seasonality. Selama ia tertinggal, semuanya
+#                          tertinggal.
+#   3. panen_asing      -> mayoritas dibangun dari arsip, nyaris nol jaringan.
+#   4. turunan          -> kartu_analisa & hitung_valuasi_historis MEMBACA
+#                          hasil 1-3. Menjalankannya lebih dulu menghasilkan
+#                          angka kemarin yang terlihat segar.
+#
+# Yang SENGAJA tidak di sini:
+#   * `panen_keuangan_idx` — kuartalan, bukan harian, dan sekali jalan bisa
+#     ribuan permintaan. Tetap dipicu tangan.
+#   * `fetch_broker_summary` — sumbernya setoran kontributor + kurasi admin,
+#     jadi ia menunggu manusia, bukan jam.
+#
+# Runner rumahan, bukan awan: IDX menolak IP datacenter GitHub (terukur
+# `update.yml` merah 13, 14, 17, 18, 19, 20 Agu) sementara dari rumah tembus
+# sekali coba.
+
+name: Panen harian penuh (runner rumahan)
+
+on:
+  schedule:
+    # 17:30 WIB / 10:30 UTC — sesudah bursa tutup (16:15 WIB) dan sesudah
+    # `update-rumah.yml` sempat menarik PDF statistiknya.
+    - cron: '30 10 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      lewati_ohlc:
+        description: 'Lewati panen OHLC (dipakai kalau cuma mau menyegarkan turunannya)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: panen-harian
+  cancel-in-progress: false
+
+jobs:
+  panen:
+    runs-on: self-hosted
+    # OHLC 960-an emiten memakan ±23 menit pada jalan penuh.
+    timeout-minutes: 90
+    defaults:
+      run:
+        # PowerShell, bukan bash — `shell: bash` di runner Windows menunjuk
+        # bash WSL yang menolak LocalSystem, dan menyebut Git Bash dengan
+        # jalur penuh ditolak runner karena mengandung spasi.
+        shell: powershell
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tentukan Python
+        id: py
+        run: |
+          $kandidat = @('C:\Python314\python.exe', 'python3', 'python')
+          foreach ($p in $kandidat) {
+            $exe = (Get-Command $p -ErrorAction SilentlyContinue).Source
+            if (-not $exe) { continue }
+            & $exe -c "import curl_cffi" 2>$null
+            if ($LASTEXITCODE -eq 0) {
+              "exe=$exe" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+              Write-Host "Python: $exe"; exit 0
+            }
+          }
+          Write-Host "::error::Tak ada Python yang punya curl_cffi."
+          exit 1
+
+      - name: 1 · Daftar emiten & jumlah saham
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/sinkron_emiten.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::sinkron_emiten gagal" }
+
+      - name: 2 · OHLC harian
+        if: ${{ github.event.inputs.lewati_ohlc != 'true' }}
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/panen_ohlc.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_ohlc gagal" }
+
+      - name: 3 · Aliran asing
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/panen_asing.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_asing gagal" }
+
+      # `--tulis` WAJIB. Tanpa itu skripnya menghitung, mencetak "[383/383]",
+      # keluar dengan kode SUKSES, dan tidak menyimpan apa pun — dari log,
+      # jalan yang tak menyimpan terlihat persis seperti jalan yang berhasil.
+      # Terjadi 20 Agu 2026.
+      - name: 4 · Kartu Analisa
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/riset/kartu_analisa.py --semua --tulis
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::kartu_analisa gagal" }
+
+      - name: 5 · Valuasi historis
+        continue-on-error: true
+        run: |
+          if (Test-Path 'scripts/hitung_valuasi_historis.py') {
+            & "${{ steps.py.outputs.exe }}" scripts/hitung_valuasi_historis.py
+            if ($LASTEXITCODE -ne 0) { Write-Host "::warning::hitung_valuasi_historis gagal" }
+          } else { Write-Host 'skrip valuasi historis tak ada — dilewati' }
+
+      - name: 6 · Seasonality
+        continue-on-error: true
+        run: |
+          if (Test-Path 'scripts/panen_seasonality.py') {
+            & "${{ steps.py.outputs.exe }}" scripts/panen_seasonality.py
+            if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_seasonality gagal" }
+          } else { Write-Host 'skrip seasonality tak ada — dilewati' }
+
+      # Vonis merah/hijau diputuskan DI SINI, satu tempat — bukan tersebar di
+      # exit code tiap langkah. Tiap langkah di atas `continue-on-error` supaya
+      # satu pemanen mati tak menghentikan yang lain; harganya, kegagalan jadi
+      # tak terlihat kalau tak ada yang memeriksa HASILNYA. Langkah ini yang
+      # memeriksa isi, bukan status langkah.
+      #
+      # Pemeriksanya skrip tersendiri, bukan here-string PowerShell di dalam
+      # YAML: `'@` wajib di kolom 0 dan itu menabrak indentasi YAML — berkas
+      # ini sempat ditolak parser karenanya.
+      - name: Periksa kesegaran
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/cek_kesegaran.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Commit kalau ada perubahan
+        if: always()
+        run: |
+          $berkas = 'data-idx/json'
+          git diff --quiet -- $berkas
+          if ($LASTEXITCODE -eq 0) { Write-Host 'Tidak ada perubahan.'; exit 0 }
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add $berkas
+          $stempel = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd HH:mm')
+          git commit -m "data: panen harian penuh $stempel UTC"
+          git pull --rebase --autostash origin $env:GITHUB_REF_NAME
+          git push origin "HEAD:$env:GITHUB_REF_NAME"
+
+      # Runner rumahan tak memulai dari mesin bersih seperti runner GitHub.
+      - name: Bersihkan sisa
+        if: always()
+        run: |
+          git clean -fdq -- data-idx
+          exit 0
