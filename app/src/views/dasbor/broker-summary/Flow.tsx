@@ -7,6 +7,7 @@ import { labelTanggal } from '../../../lib/dasbor/brokerHarian'
 import { useFlowNego } from '../../../lib/dasbor/flowNego'
 import type { BrokerRentangAktif } from '../../../lib/dasbor/brokerHarian'
 import { IkonMenu, IKON_OMBAK, IKON_ULANG, IKON_PERINGATAN } from '../../../components/dasbor/IkonMenu'
+import { AsingEmiten } from './AsingEmiten'
 
 interface FlowProps {
   tanggalAktif: string | null
@@ -75,24 +76,30 @@ export function Flow({ tanggalAktif, rentang }: FlowProps) {
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-        <p><IkonMenu d={IKON_ULANG} size={26} /></p>
-        <p className="lbl">Memuat data foreign flow…</p>
-      </div>
+      <>
+        <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+          <p><IkonMenu d={IKON_ULANG} size={26} /></p>
+          <p className="lbl">Memuat data foreign flow…</p>
+        </div>
+        <AsingEmiten />
+      </>
     )
   }
   if (error || !hari || hari.length === 0) {
     return (
-      <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-        <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
-        <p className="lbl">
-          {error
-            ? `Gagal memuat data foreign flow (${error})`
-            : cakupan
-              ? `Data harian pasar tersedia ${labelTanggal(cakupan.min)} – ${labelTanggal(cakupan.max)} — tidak ada di tanggal/rentang aktif`
-              : 'Data harian pasar belum tersedia'}
-        </p>
-      </div>
+      <>
+        <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+          <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
+          <p className="lbl">
+            {error
+              ? `Gagal memuat data foreign flow (${error})`
+              : cakupan
+                ? `Data harian pasar tersedia ${labelTanggal(cakupan.min)} – ${labelTanggal(cakupan.max)} — tidak ada di tanggal/rentang aktif`
+                : 'Data harian pasar belum tersedia'}
+          </p>
+        </div>
+        <AsingEmiten />
+      </>
     )
   }
 
@@ -111,6 +118,7 @@ export function Flow({ tanggalAktif, rentang }: FlowProps) {
         * Sumber (IDX daily statistics) hanya memuat NET foreign per hari — buy/sell terpisah tidak tersedia.
         {tanpaNf > 0 && ` ${tanpaNf} hari tanpa angka net foreign di sumber (celah pada chart).`}
       </div>
+      <AsingEmiten />
     </>
   )
 }

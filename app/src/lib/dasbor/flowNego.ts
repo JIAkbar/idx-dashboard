@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { fetchHari, fetchIndex, type DataHarian } from './dataHarian'
 import { pesanGalat } from '../pesanGalat'
+import type { AsingHarian } from './stockDetailData'
 
 /**
  * Sumber data tab Flow & NEGO /broker-summary (#99) — dari berkas harian pasar
@@ -41,6 +42,36 @@ export function ekstrakHariFlow(iso: string, d: DataHarian): HariFlow {
     ngVol: ng?.v ?? 0,
     ngFrek: ng?.f ?? 0,
   }
+}
+
+/**
+ * C7 — net foreign 5D/10D PER EMITEN (beda dari `ekstrakHariFlow` di atas,
+ * yang level PASAR). Sumber `data-idx/json/asing/{KODE}.json` (989 berkas,
+ * lihat AsingHarian di stockDetailData.ts — dipakai bareng Stock Detail,
+ * tidak diduplikasi di sini). Beli/jual/net SELALU lembar (IDX tidak
+ * melaporkan aliran asing dalam rupiah — lihat `catatan` mentah tiap berkas).
+ * Rupiah cuma TAKSIRAN: net lembar × (Σvalue ÷ Σvolume) periode yang sama
+ * (harga rata-rata tertimbang transaksi emiten itu sendiri, BUKAN market-wide)
+ * — `null` kalau jendelanya tak punya volume sama sekali.
+ */
+export interface TaksiranAsing {
+  netLembar: number
+  /** Taksiran rupiah net (beli-jual) — null kalau volume periode ini 0. */
+  rupiah: number | null
+  /** Bisa < `hari` diminta kalau riwayatnya memang lebih pendek. */
+  hariTersedia: number
+}
+
+export function taksiranNetAsing(d: AsingHarian[], hari: number): TaksiranAsing | null {
+  if (d.length === 0) return null
+  const slice = d.slice(-hari)
+  if (slice.length === 0) return null
+  const beli = slice.reduce((s, r) => s + r.beli, 0)
+  const jual = slice.reduce((s, r) => s + r.jual, 0)
+  const volume = slice.reduce((s, r) => s + r.volume, 0)
+  const value = slice.reduce((s, r) => s + r.value, 0)
+  const net = beli - jual
+  return { netLembar: net, rupiah: volume > 0 ? net * (value / volume) : null, hariTersedia: slice.length }
 }
 
 /** Mode harian memuat maksimal segini hari bursa terakhir s.d. tanggal aktif —
