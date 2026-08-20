@@ -36,7 +36,13 @@ def ema_seri(seri, n):
 
 
 def fmt(n, des=0):
-    """Format angka gaya Indonesia: ribuan titik, desimal koma."""
+    """Format angka gaya Indonesia: ribuan titik, desimal koma.
+
+    None -> "—": kolom broker terpotong di tangkapan layar sumber (S.avg/S.lot,
+    lihat catatan_data #19 Agu BBRI/ESSA/ERAA) tetap harus tercetak jujur,
+    bukan meledak jadi TypeError di tengah build."""
+    if n is None:
+        return "—"
     return f"{n:,.{des}f}".replace(",", "_").replace(".", ",").replace("_", ".")
 
 
@@ -48,6 +54,8 @@ def fmt_rp(juta):
 
 
 def fmt_lot(lot):
+    if lot is None:
+        return "—"
     return (fmt(lot / 1000, 1) + "K") if lot >= 1000 else fmt(lot)
 
 
