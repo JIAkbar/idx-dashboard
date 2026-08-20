@@ -125,15 +125,31 @@ def turunkan_satu_tiker(data: dict) -> dict:
                 != mata_uang(data, f"{tahun}-{AKHIR_BULAN[pengurang_key]}")
             )
 
+            # Periode yang LAPORANNYA sendiri cacat (`scripts/cacat_sumber.py`
+            # -- LAPD 2021/2022, ARGO 2020/2021) tak boleh menurunkan apa pun.
+            # Selisih dua laporan yang salah satunya meleset 1.000x tetap
+            # meleset 1.000x, dan begitu angkanya pindah ke berkas diskret ia
+            # kehilangan jejak asalnya. Alasannya sama persis dengan
+            # beda-mata-uang: bukan angka apa pun, jadi null.
+            cacat = data.get("cacat") or {}
+            cacat_sumber = f"{tahun}-{AKHIR_BULAN[langsung_key]}" in cacat or (
+                pengurang_key is not None
+                and f"{tahun}-{AKHIR_BULAN[pengurang_key]}" in cacat
+            )
+
             nilai: dict[str, float | None] = {}
             asal: dict[str, str | None] = {}
             for f in FIELD_NERACA:
-                v = sumber.get(f)
+                v = None if cacat_sumber else sumber.get(f)
                 nilai[f] = v
-                asal[f] = f"langsung:{langsung_key}" if v is not None else None
+                asal[f] = ("cacat-sumber" if cacat_sumber
+                           else f"langsung:{langsung_key}" if v is not None else None)
             for f in FIELD_ARUS:
                 v_sumber = sumber.get(f)
-                if pengurang_key is None:  # Q1: kumulatif == diskret
+                if cacat_sumber:
+                    nilai[f] = None
+                    asal[f] = "cacat-sumber"
+                elif pengurang_key is None:  # Q1: kumulatif == diskret
                     nilai[f] = v_sumber
                     asal[f] = f"langsung:{langsung_key}" if v_sumber is not None else None
                 else:
@@ -260,6 +276,20 @@ def demo() -> None:
     assert kg["2025-09-30"]["nilai"]["revenue"] == 120, "IDR-IDR tetap boleh"
     assert kg["2025-12-31"]["nilai"]["revenue"] is None, "audit USD - TW3 IDR ditolak"
     assert kg["2025-06-30"]["nilai"]["total_assets"] == 1050, "neraca tak dikurangi, tak terpengaruh"
+
+    # Periode yang laporannya CACAT (scripts/cacat_sumber.py) tak menurunkan
+    # apa pun -- termasuk ruas NERACA, beda dari beda-mata-uang. Di sana yang
+    # rusak cuma pengurangannya; di sini laporannya sendiri yang salah, jadi
+    # menyalinnya apa adanya sama saja menyebarkan kesalahannya tanpa jejak.
+    data_cacat = {**data, "cacat": {"2025-06-30": "aset mustahil"}}
+    kc = turunkan_satu_tiker(data_cacat)
+    assert kc["2025-06-30"]["nilai"]["total_assets"] is None
+    assert kc["2025-06-30"]["asal"]["total_assets"] == "cacat-sumber"
+    assert kc["2025-06-30"]["nilai"]["revenue"] is None
+    assert kc["2025-09-30"]["nilai"]["revenue"] is None, "Q3 = TW3-TW2, dan TW2-nya cacat"
+    assert kc["2025-09-30"]["asal"]["revenue"] == "cacat-sumber"
+    assert kc["2025-03-31"]["nilai"]["revenue"] == 100, "kuartal lain tak ikut terseret"
+    assert kc["2025-12-31"]["nilai"]["revenue"] == 130, "Q4 = audit-TW3, dua-duanya bersih"
     print("turunkan_kuartal_diskret: swauji lolos")
 
 

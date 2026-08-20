@@ -251,6 +251,16 @@ export interface StockKeuangan {
    * TW3 IDR, 2026 TW1 USD lagi), dan mengurangkan dua periode yang beda mata
    * uang menghasilkan angka yang terlihat presisi dan salah total. */
   mata_uang?: Record<string, string>
+  /** Periode yang LAPORAN RESMINYA sendiri cacat — `{tanggal: alasan}`, ditulis
+   * `scripts/cacat_sumber.py` dan dijelaskan di situ. Empat periode di dua
+   * emiten (LAPD 2021/2022, ARGO 2020/2021) yang lolos SETIAP gerbang mekanis
+   * yang kita punya: perbaikan skala diam karena arsip mentahnya tak ada, dan
+   * identitas neraca `aset == liabilitas + ekuitas` tetap lolos 0,0% karena
+   * ekuitas memang pos penyeimbang. Angkanya sengaja tak diubah — nilai
+   * benarnya tak diketahui, dan menebak lalu menuliskannya persis kesalahan
+   * yang membuat ZBRA 2019 rusak permanen. Alasannya tampil apa adanya sebagai
+   * judul lencana `!` di kepala kolom. */
+  cacat?: Record<string, string>
   diperbarui: string
   sumber?: string
   kuartal: Record<string, PeriodeKeuangan>

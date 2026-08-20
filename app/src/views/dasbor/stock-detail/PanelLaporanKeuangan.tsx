@@ -188,7 +188,19 @@ export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
                     <thead>
                       <tr>
                         <th>Metrik</th>
-                        {periods.map((p) => <th key={p.iso} className="r">{labelPeriode(p.iso, periodMode)}</th>)}
+                        {periods.map((p) => {
+                          /* Periode yang laporan resminya sendiri cacat
+                             (scripts/cacat_sumber.py). Ditaruh di KEPALA
+                             kolom, bukan per sel: yang rusak laporannya,
+                             bukan satu barisnya. */
+                          const cacat = idx?.cacat?.[p.iso]
+                          return (
+                            <th key={p.iso} className="r" title={cacat}>
+                              {labelPeriode(p.iso, periodMode)}
+                              {cacat && <sup style={{ color: 'var(--red)' }}>!</sup>}
+                            </th>
+                          )
+                        })}
                       </tr>
                     </thead>
                     <tbody>
@@ -212,7 +224,7 @@ export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
                   </table>
                 </div>
                 <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 6 }}>
-                  B = IDX (laporan resmi bursa) · B·YTD = IDX kumulatif tahun berjalan, kuartal pembanding belum tersedia · Y = Yahoo Finance · † = ditambal dari data fundamental (bukan laporan periode ini). Arahkan kursor ke angka untuk detail asalnya.
+                  B = IDX (laporan resmi bursa) · B·YTD = IDX kumulatif tahun berjalan, kuartal pembanding belum tersedia · Y = Yahoo Finance · † = ditambal dari data fundamental (bukan laporan periode ini) · <span style={{ color: 'var(--red)' }}>!</span> di kepala kolom = laporan resmi periode itu sendiri janggal, arahkan kursor untuk alasannya. Arahkan kursor ke angka untuk detail asalnya.
                 </p>
               </>
             )}
