@@ -14,11 +14,13 @@ import {
   keSeriGaris, SPEK_INDIKATOR, SPEK_POLA, labelInstansIndikator, labelInstansPola,
   spekJenis, idPustaka,
   hitungInstans, cariDoubleBottom, cariLonjakanVolume, cariMusiman,
+  cariDivergensi, stochUntukDivergensi,
   bacaTemplateTersimpan, tulisTemplateTersimpan, simpanTemplate, hapusTemplate,
   tandaiBawaan, ubahNamaTemplate, penandaDiSekitar, tutupSampai,
   type BerkasOhlcEmiten, type DoubleBottom, type JenisAsli, type JenisIndikator, type JenisPola,
   type LilinData, type ParamDoubleBottom, type ParamLonjakanVolume, type StatusPola, type StatusLonjakan,
   type LonjakanVolume, type TemplateGrafik, type TemuanMusiman, type VolumeData,
+  type Divergensi, type DerajatDivergensi, type ParamDivergensi,
 } from '../../lib/dasbor/grafikEmiten'
 import {
   ambilIntraday, dariEpoch, dariWaktuChart, intraday, keWaktuChart,
@@ -250,6 +252,26 @@ const WARNA_LONJAKAN: Record<StatusLonjakan, string> = {
   takTerkonfirmasi: '--text3',
 }
 
+/** Keterangan tiga derajat Divergensi — MENJELASKAN apa yang membuat sebuah
+ *  temuan naik/turun derajat, bukan apa yang harus dilakukan atasnya. */
+const ARTI_DERAJAT: Record<DerajatDivergensi, string> = {
+  kuat: 'harga, Stochastic, dan volume ketiganya sejalan',
+  sedang: 'harga dan Stochastic sejalan, volume tidak mendukung',
+  lemah: 'ayun harga atau selisih %K cuma pas-pasan melewati ambangnya sendiri',
+}
+
+/** Warna derajat Divergensi. Sengaja BUKAN hijau/merah walau polanya punya
+ *  arah bearish/bullish: warna di sini menyatakan seberapa kuat BUKTINYA,
+ *  dan hijau/merah di kanvas yang lilinnya sudah hijau/merah akan terbaca
+ *  sebagai penilaian bagus/buruk atas sahamnya. Arahnya dibedakan lewat
+ *  posisi penanda (di atas lilin untuk bearish, di bawah untuk bullish) dan
+ *  lewat teks tooltipnya. */
+const WARNA_DERAJAT: Record<DerajatDivergensi, string> = {
+  kuat: '--blue',
+  sedang: '--amber',
+  lemah: '--text3',
+}
+
 const PANDUAN_INDIKATOR: Array<{ label: string; teks: string }> = [
   { label: 'MA (Moving Average)',
     teks: 'Rata-rata harga tutup selama sekian hari terakhir, diperbarui tiap hari. Mengikuti arah harga dengan jeda — makin panjang periodenya, makin lambat mengikuti.' },
@@ -294,6 +316,16 @@ const PANDUAN_POLA: Array<{ label: string; teks: string }> = [
     teks: 'RVOL (relative volume) membandingkan volume hari itu dengan rata-rata volume 20 hari sebelumnya. RVOL 2 berarti hari itu diperdagangkan dua kali lebih ramai dari kebiasaannya sendiri. Rata-rata pembaginya sengaja tidak memasukkan hari itu — dimasukkan, lonjakannya ikut mengangkat pembaginya sendiri dan angkanya jadi lebih kecil dari yang sebenarnya.' },
   { label: 'Tiga keadaan Lonjakan Volume',
     teks: `Terkonfirmasi — ${ARTI_LONJAKAN.terkonfirmasi}. Kuat — ${ARTI_LONJAKAN.kuat}. Tak terkonfirmasi — ${ARTI_LONJAKAN.takTerkonfirmasi}. Kenaikan harga tanpa kenaikan volume berarti sedikit pihak yang ikut; keadaan ketiga itu justru yang membuat daftar ini bukan sekadar kumpulan hari yang menyenangkan.` },
+  { label: 'Divergensi — tiga lapis, tiga peran berbeda',
+    teks: 'Lapis harga menentukan ADA-tidaknya pola: dua puncak (bearish) atau dua lembah (bullish) yang dicari dengan pivot yang sama seperti Double Bottom. Lapis Stochastic %K dibandingkan di dua pivot yang sama dan itulah yang MENYATAKAN divergensinya — arah harga dan arah momentum harus berlawanan. Lapis volume tidak pernah menolak apa pun; ia cuma mengesahkan derajatnya.' },
+  { label: 'Divergensi — dua arah dan artinya',
+    teks: 'Bearish: harga membentuk puncak lebih tinggi sementara %K membentuk puncak lebih rendah — naiknya kehilangan tenaga. Bullish: harga membentuk lembah lebih rendah sementara %K membentuk lembah lebih tinggi — turunnya kehilangan tenaga. Penanda bearish duduk di atas lilin, bullish di bawahnya. Ini penyajian pola, bukan saran beli atau jual.' },
+  { label: 'Divergensi — kenapa volume ikut dihitung',
+    teks: 'Puncak kedua yang terbentuk dengan rata-rata volume lebih rendah dari puncak pertama berarti kenaikan tanpa dukungan; lembah kedua yang volumenya mengering berarti tekanan jual yang habis. Volume dibandingkan sebagai rata-rata beberapa lilin sampai pivot, bukan satu batang — satu batang terlalu berisik. Volume yang bergerak berlawanan menurunkan derajat, tidak membatalkan polanya.' },
+  { label: 'Divergensi — tiga derajat',
+    teks: `Kuat — ${ARTI_DERAJAT.kuat}. Sedang — ${ARTI_DERAJAT.sedang}. Lemah — ${ARTI_DERAJAT.lemah}. Dua pivot yang jaraknya di luar batas justru tidak ditampilkan sama sekali: terlalu dekat berarti masih satu ayunan yang sama, terlalu jauh berarti dua kejadian yang tak lagi berhubungan.` },
+  { label: 'Divergensi — Stochastic-nya yang mana',
+    teks: 'Deret %K yang sama persis dengan indikator Stoch di menu ƒx, lewat jalur perhitungan yang sama — jadi garis yang tergambar di panel bawah dan angka yang dipakai pola tak bisa berselisih. Bawaannya 14 dengan penghalusan 3 (bukan 1 seperti indikatornya): %K mentah berayun penuh 0–100 tiap beberapa lilin, dan "puncak %K lebih rendah" pada deret sekasar itu lebih sering kebetulan daripada tanda.' },
   { label: 'Musiman — apa yang ditandai',
     teks: 'Pilih satu hari (Senin–Jumat) dan lilin hari itu ditandai kotak di kanvas. Kotaknya menunjuk "ini hari yang dimaksud", bukan menyarankan apa pun; angkanya ada di tooltip dan di daftar bawah. Yang ditandai 60 lilin terakhir saja — pada rentang bertahun-tahun, menandai semuanya menghasilkan satu pita pekat yang justru menutupi harganya. Angka statistiknya tetap dihitung dari seluruh hari di rentang itu.' },
   { label: 'Musiman — kenapa cuma di kerangka harian ke atas',
@@ -1295,8 +1327,19 @@ export function GrafikEmiten() {
       // persis rentang yang tergambar. `null` pada kerangka intraday, dijegal
       // di dalam `cariMusiman` sendiri (lihat alasannya di sana).
       musiman: inst.jenis === 'musiman' ? cariMusiman(lilin, inst.param.hari) : null,
+      // Deret %K-nya diambil lewat `stochUntukDivergensi` — jalur yang sama
+      // dengan indikator Stoch di menu, jadi katalog ikut jadi dependensi memo
+      // ini. Tanpa itu, pola digambar kosong sekali lalu tak pernah dihitung
+      // ulang saat katalognya akhirnya tiba, dan tak ada satu pun galat.
+      divergensi: inst.jenis === 'divergensi'
+        ? cariDivergensi(
+          lilin, vol,
+          stochUntukDivergensi(lilin, vol, inst.param as unknown as ParamDivergensi, katalog),
+          inst.param as unknown as ParamDivergensi,
+        )
+        : ([] as Divergensi[]),
     }))
-  }, [pol.daftar, lilin, volume])
+  }, [pol.daftar, lilin, volume, katalog])
 
   // Peta waktu->nilai per garis, dipakai legenda (lookup langsung, tak perlu
   // scan array tiap kursor bergeser). Histogram tak masuk legenda — angkanya
@@ -1494,8 +1537,8 @@ export function GrafikEmiten() {
     }
     // Pola selalu di pane 0: temuannya digambar di panel harga & volume, tak
     // pernah punya pane sendiri.
-    for (const { inst, doubleBottom, lonjakan, musiman } of polaPerInstans) {
-      const jumlah = doubleBottom.length + lonjakan.length
+    for (const { inst, doubleBottom, lonjakan, musiman, divergensi } of polaPerInstans) {
+      const jumlah = doubleBottom.length + lonjakan.length + divergensi.length
       dorong(0, {
         id: inst.id,
         ranah: 'pol',
@@ -1663,9 +1706,37 @@ export function GrafikEmiten() {
    */
   const penandaPola = useMemo<PenandaPola[]>(() => {
     const out: PenandaPola[] = []
-    for (const { inst, doubleBottom, lonjakan, musiman } of polaPerInstans) {
+    for (const { inst, doubleBottom, lonjakan, musiman, divergensi } of polaPerInstans) {
       if (!digambar(inst)) continue
       const nama = labelInstansPola(inst)
+      for (const dv of divergensi.slice(-MAKS_PENANDA_POLA)) {
+        const token = WARNA_DERAJAT[dv.derajat]
+        // Bearish di ATAS lilin, bullish di BAWAH — arahnya terbaca dari
+        // posisi penanda, jadi warna bebas dipakai menyatakan derajat.
+        const posisi = dv.arah === 'bearish' ? 'aboveBar' : 'belowBar'
+        const ekor = `${dv.arah} ${dv.derajat} · ${dv.volumeMendukung ? 'volume mengering' : 'volume tak mendukung'}`
+        out.push(
+          {
+            time: dv.waktu1, seri: 'harga', posisi, token,
+            teks: `${nama} · ${dv.arah === 'bearish' ? 'Puncak' : 'Lembah'} 1 ${fN(dv.harga1, 0)} · %K ${fN(dv.stoch1, 1)}`,
+          },
+          {
+            time: dv.waktu2, seri: 'harga', posisi, token,
+            // Angka kedua lapis ikut di keterangan — itu yang membuat
+            // penandanya bisa DIPERIKSA, bukan dipercaya.
+            teks: `${nama} · ${dv.arah === 'bearish' ? 'Puncak' : 'Lembah'} 2 ${fN(dv.harga2, 0)}`
+              + ` · %K ${fN(dv.stoch2, 1)} (${dv.selisihStoch > 0 ? '+' : ''}${fN(dv.selisihStoch, 1)})`
+              + ` · ayun ${fN(dv.ayunPersen, 1)}% · ${ekor}`,
+          },
+          // Lapis ketiga duduk di seri VOLUME, di lilin pivot kedua: di situlah
+          // pembaca bisa melihat sendiri batang volumenya sambil membaca
+          // rasionya, dan di sana ia tak berebut tempat dengan penanda harga.
+          {
+            time: dv.waktu2, seri: 'volume', posisi: 'belowBar', token,
+            teks: `${nama} · volume ${fN(dv.volume2 / dv.volume1, 2)}× rata-rata di pivot pertama · ${ekor}`,
+          },
+        )
+      }
       if (musiman) {
         // Dipotong ke MAKS_PENANDA_MUSIMAN lilin terakhir (bukan
         // MAKS_PENANDA_POLA yang cuma 6 — di sini penandanya label hari, bukan
@@ -1752,7 +1823,7 @@ export function GrafikEmiten() {
 
     // Angka terukur buat verifikasi/QA — kanvas tak punya DOM per-penanda.
     el.dataset.polaDitemukan = String(
-      polaPerInstans.reduce((n, x) => n + x.doubleBottom.length + x.lonjakan.length, 0),
+      polaPerInstans.reduce((n, x) => n + x.doubleBottom.length + x.lonjakan.length + x.divergensi.length, 0),
     )
     el.dataset.penandaPola = String(penandaPola.length)
     // Tanggal seluruh penanda Musiman, HANYA di dev — dipakai membuktikan
@@ -2302,8 +2373,8 @@ export function GrafikEmiten() {
               kanvas — dan angka itulah yang membuat temuannya bisa diperiksa. */}
           {polaPerInstans.some(({ inst }) => digambar(inst)) && (
             <div className="grf-pola-hasil">
-              {polaPerInstans.filter(({ inst }) => digambar(inst)).map(({ inst, doubleBottom, lonjakan, musiman }) => {
-                const jumlah = doubleBottom.length + lonjakan.length
+              {polaPerInstans.filter(({ inst }) => digambar(inst)).map(({ inst, doubleBottom, lonjakan, musiman, divergensi }) => {
+                const jumlah = doubleBottom.length + lonjakan.length + divergensi.length
                 if (inst.jenis === 'musiman') {
                   return (
                     <div key={inst.id}>
@@ -2341,6 +2412,23 @@ export function GrafikEmiten() {
                               {' · '}kedalaman {fN(db.kedalamanAtr, 1)}× ATR
                               {db.waktuKonfirmasi ? ` · tembus ${db.waktuKonfirmasi}` : ''}
                               {db.volumeMenguat ? ' · volume menguat' : ''}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {divergensi.length > 0 && (
+                      <ul className="grf-pola-daftar">
+                        {divergensi.slice(-MAKS_PENANDA_POLA).reverse().map((dv) => (
+                          <li key={`${dv.arah}-${dv.i1}-${dv.i2}`}
+                            style={{ '--ind-warna': `var(${WARNA_DERAJAT[dv.derajat]})` } as React.CSSProperties}>
+                            <span className="grf-pola-status">{dv.arah} {dv.derajat}</span>
+                            <span>
+                              {dv.arah === 'bearish' ? 'puncak' : 'lembah'} {dv.waktu1} ({fN(dv.harga1, 0)})
+                              {' & '}{dv.waktu2} ({fN(dv.harga2, 0)}) · ayun {fN(dv.ayunPersen, 1)}%
+                              {' · '}%K {fN(dv.stoch1, 1)} &rarr; {fN(dv.stoch2, 1)}
+                              {' · volume '}{fN(dv.volume2 / dv.volume1, 2)}×
+                              {dv.volumeMendukung ? ' (mengering)' : ' (tak mendukung)'}
                             </span>
                           </li>
                         ))}

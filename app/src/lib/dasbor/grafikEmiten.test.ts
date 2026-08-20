@@ -7,10 +7,12 @@ import {
   hitungInstans, PALET_INDIKATOR,
   hitungATR, cariPivotRendah, cariPivotTinggi, cariDoubleBottom,
   hitungOBV, cariLonjakanVolume, cariMusiman, SPEK_POLA, labelInstansPola,
+  cariDivergensi, stochUntukDivergensi,
   VERSI_TEMPLATE, uraiTemplate, simpanTemplate, hapusTemplate, tandaiBawaan, ubahNamaTemplate,
   penandaDiSekitar, tutupSampai,
   type InstansIndikator, type SpekParam, type LilinData, type ParamDoubleBottom,
-  type TemplateGrafik, type ParamLonjakanVolume,
+  type TemplateGrafik, type ParamLonjakanVolume, type ParamDivergensi,
+  type BerkasOhlcEmiten,
 } from './grafikEmiten'
 import { muatKatalog, keSpekParam, keMasukanPustaka, ID_SUDAH_ADA, KATEGORI } from './katalogIndikator'
 import type { BarisOhlc } from './ihsgOhlc'
@@ -754,6 +756,174 @@ describe('cariLonjakanVolume', () => {
   })
 })
 
+/* ------------------------------------------------------------------ *
+ * Divergensi tiga lapis (#130).
+ *
+ * `cariDivergensi` menerima deret Stochastic sebagai ARGUMEN, jadi ujinya
+ * bisa menyetel momentum persis seperti yang mau diuji — tanpa memuat
+ * pustaka, tanpa merender apa pun, dan tanpa pertanyaan "apakah yang gagal
+ * detektornya atau Stochastic-nya".
+ * ------------------------------------------------------------------ */
+describe('cariDivergensi', () => {
+  const PD: ParamDivergensi = {
+    jendela: 3, periodeK: 14, smoothK: 3,
+    jarakMin: 10, jarakMaks: 30, ayunMin: 3, stochMin: 5, volJendela: 3,
+  }
+
+  /**
+   * Lilin dengan dataran DATAR sebagai dasar dan lekukan hanya di indeks yang
+   * disebut. Dataran datar sengaja: `cariPivotRendah`/`cariPivotTinggi`
+   * menolak titik yang tetangga kirinya sama tingginya, jadi dataran tak
+   * melahirkan pivot sama sekali dan yang tersisa persis lekukan yang ditulis
+   * di sini — sisi yang tak diuji (mis. puncak saat menguji lembah) dijamin
+   * nol temuan tanpa perlu dipercaya.
+   */
+  function lilinLekuk(n: number, lekukLow: Record<number, number>, lekukHigh: Record<number, number> = {}): LilinData[] {
+    return Array.from({ length: n }, (_, i) => {
+      const low = lekukLow[i] ?? 100
+      const high = lekukHigh[i] ?? 110
+      return { time: `2026-${String(Math.floor(i / 25) + 1).padStart(2, '0')}-${String((i % 25) + 1).padStart(2, '0')}`, open: low, high, low, close: high }
+    })
+  }
+  const stochDi = (n: number, titik: Record<number, number>) =>
+    Array.from({ length: n }, (_, i) => titik[i] ?? 50)
+  const volDi = (n: number, titik: Record<number, number>) =>
+    Array.from({ length: n }, (_, i) => titik[i] ?? 1000)
+
+  it('BULLISH kuat: lembah lebih rendah, %K lebih tinggi, volume mengering', () => {
+    const lilin = lilinLekuk(30, { 5: 90, 20: 80 })
+    // Volume di JENDELA MUNDUR lembah kedua (18,19,20) ditekan — bukan satu
+    // batang, sesuai keputusan 4 di kepala `cariDivergensi`.
+    const hasil = cariDivergensi(lilin, volDi(30, { 18: 400, 19: 400, 20: 400 }), stochDi(30, { 5: 20, 20: 40 }), PD)
+    expect(hasil).toHaveLength(1)
+    const d = hasil[0]
+    expect(d.arah).toBe('bullish')
+    expect(d.derajat).toBe('kuat')
+    expect([d.i1, d.i2]).toEqual([5, 20])
+    expect([d.harga1, d.harga2]).toEqual([90, 80])
+    expect(d.selisihStoch).toBe(20)
+    expect(d.volumeMendukung).toBe(true)
+    expect(d.ayunPersen).toBeCloseTo(11.11, 2)
+  })
+
+  it('BEARISH kuat: puncak lebih tinggi, %K lebih rendah, volume mengering', () => {
+    const lilin = lilinLekuk(30, {}, { 5: 120, 20: 135 })
+    const hasil = cariDivergensi(lilin, volDi(30, { 18: 400, 19: 400, 20: 400 }), stochDi(30, { 5: 80, 20: 55 }), PD)
+    expect(hasil).toHaveLength(1)
+    expect(hasil[0].arah).toBe('bearish')
+    expect(hasil[0].derajat).toBe('kuat')
+    expect([hasil[0].harga1, hasil[0].harga2]).toEqual([120, 135])
+    expect(hasil[0].selisihStoch).toBe(-25)
+  })
+
+  it('volume yang MENINGGI menurunkan derajat jadi sedang — tidak membatalkan polanya', () => {
+    const lilin = lilinLekuk(30, { 5: 90, 20: 80 })
+    const hasil = cariDivergensi(lilin, volDi(30, { 18: 5000, 19: 5000, 20: 5000 }), stochDi(30, { 5: 20, 20: 40 }), PD)
+    expect(hasil).toHaveLength(1)
+    expect(hasil[0].derajat).toBe('sedang')
+    expect(hasil[0].volumeMendukung).toBe(false)
+  })
+
+  it('pola yang cuma pas-pasan melewati ambangnya sendiri jadi LEMAH', () => {
+    // ayun 3,3% (ambang 3) dan selisih %K 6 (ambang 5): keduanya di bawah dua
+    // kali ambangnya, jadi satu lilin saja sudah bisa membatalkannya.
+    const lilin = lilinLekuk(30, { 5: 90, 20: 87 })
+    const hasil = cariDivergensi(lilin, volDi(30, { 18: 400, 19: 400, 20: 400 }), stochDi(30, { 5: 20, 20: 26 }), PD)
+    expect(hasil).toHaveLength(1)
+    expect(hasil[0].derajat).toBe('lemah')
+    // Volumenya mendukung, tapi `lemah` menimpanya — itu memang maksudnya.
+    expect(hasil[0].volumeMendukung).toBe(true)
+  })
+
+  it('momentum SEARAH harga bukan divergensi — nol temuan, bukan temuan lemah', () => {
+    const lilin = lilinLekuk(30, { 5: 90, 20: 80 })
+    expect(cariDivergensi(lilin, volDi(30, {}), stochDi(30, { 5: 40, 20: 20 }), PD)).toEqual([])
+  })
+
+  it('selisih %K di bawah ambang ditolak walau harganya berayun jauh', () => {
+    const lilin = lilinLekuk(30, { 5: 90, 20: 70 })
+    expect(cariDivergensi(lilin, volDi(30, {}), stochDi(30, { 5: 20, 20: 23 }), PD)).toEqual([])
+  })
+
+  it('jarak antar-pivot di luar [jarakMin, jarakMaks] ditolak sama sekali', () => {
+    const dekat = lilinLekuk(30, { 5: 90, 12: 80 })
+    expect(cariDivergensi(dekat, volDi(30, {}), stochDi(30, { 5: 20, 12: 40 }), { ...PD, jarakMin: 10 })).toEqual([])
+    const jauh = lilinLekuk(60, { 5: 90, 50: 80 })
+    expect(cariDivergensi(jauh, volDi(60, {}), stochDi(60, { 5: 20, 50: 40 }), PD)).toEqual([])
+  })
+
+  it('satu pivot kedua menghasilkan SATU temuan — pasangan ber-mutu tertinggi', () => {
+    // Lembah 25 cocok dengan lembah 5 (jarak 20) maupun 12 (jarak 13).
+    const lilin = lilinLekuk(40, { 5: 90, 12: 85, 25: 80 })
+    const hasil = cariDivergensi(
+      lilin, volDi(40, {}),
+      stochDi(40, { 5: 20, 12: 30, 25: 45 }),
+      PD,
+    )
+    // Dua pivot kedua yang mungkin (12 dan 25), masing-masing satu temuan.
+    expect(hasil.map((d) => [d.i1, d.i2])).toEqual([[5, 25]])
+  })
+
+  it('deret Stochastic kosong (katalog belum tiba) = nol temuan, bukan galat', () => {
+    const lilin = lilinLekuk(30, { 5: 90, 20: 80 })
+    expect(cariDivergensi(lilin, volDi(30, {}), [], PD)).toEqual([])
+    expect(cariDivergensi([], [], [], PD)).toEqual([])
+  })
+
+  it('%K yang belum terisi (warm-up) di salah satu pivot dilewati, bukan dianggap nol', () => {
+    const lilin = lilinLekuk(30, { 5: 90, 20: 80 })
+    const stoch: Array<number | null> = stochDi(30, { 20: 40 })
+    stoch[5] = null
+    expect(cariDivergensi(lilin, volDi(30, {}), stoch, PD)).toEqual([])
+  })
+})
+
+describe('cariDivergensi atas berkas OHLC nyata di cakram', () => {
+  // Penjaga kalibrasi, bukan sekadar "jalan". Sapuan 20 Agu 2026 atas 916
+  // berkas (1,51 juta lilin) memberi 2,83 temuan per 100 lilin dengan
+  // parameter bawaan — serapat pola Double Bottom yang sudah tayang (2,43).
+  // Kalau angka BBCA di bawah ini bergeser jauh, yang berubah ambangnya, dan
+  // itu harus disengaja.
+  it('BBCA: temuannya ada, terbagi dua arah, dan tiap ruasnya konsisten', async () => {
+    // `?raw` (bukan impor JSON biasa, bukan `node:fs`): impor JSON membuat tsc
+    // menyimpulkan tipe literal untuk 2.400-an baris dan `node:fs` butuh
+    // @types/node yang sengaja tak dipasang di tsconfig app.
+    const mentah = (await import('../../../../data-idx/json/ohlc/BBCA.json?raw')).default
+    const berkas = JSON.parse(mentah) as BerkasOhlcEmiten
+    const { lilin, volume } = keDataLilinVolume(berkas.d, '#0f0', '#f00')
+    const vol = volume.map((v) => v.value)
+    const p = Object.fromEntries(
+      SPEK_POLA.divergensi.param.map((s) => [s.kunci, s.bawaan]),
+    ) as unknown as ParamDivergensi
+    const stoch = stochUntukDivergensi(lilin, vol, p, await muatKatalog())
+    const hasil = cariDivergensi(lilin, vol, stoch, p)
+
+    expect(lilin.length).toBeGreaterThan(2000)
+    // Rentang, bukan angka pasti: berkasnya bertambah tiap hari bursa.
+    expect(hasil.length).toBeGreaterThan(20)
+    expect(hasil.length).toBeLessThan(lilin.length / 20)
+    expect(hasil.some((d) => d.arah === 'bearish')).toBe(true)
+    expect(hasil.some((d) => d.arah === 'bullish')).toBe(true)
+
+    for (const d of hasil) {
+      expect(d.i2 - d.i1).toBeGreaterThanOrEqual(p.jarakMin)
+      expect(d.i2 - d.i1).toBeLessThanOrEqual(p.jarakMaks)
+      expect(d.waktu1 < d.waktu2).toBe(true)
+      expect(d.ayunPersen).toBeGreaterThanOrEqual(p.ayunMin)
+      expect(Math.abs(d.selisihStoch)).toBeGreaterThanOrEqual(p.stochMin)
+      // Arah harga dan arah momentum WAJIB berlawanan — inti definisinya.
+      if (d.arah === 'bearish') {
+        expect(d.harga2).toBeGreaterThan(d.harga1)
+        expect(d.selisihStoch).toBeLessThan(0)
+      } else {
+        expect(d.harga2).toBeLessThan(d.harga1)
+        expect(d.selisihStoch).toBeGreaterThan(0)
+      }
+      expect(d.derajat === 'kuat' ? d.volumeMendukung : true).toBe(true)
+    }
+  })
+})
+
 describe('penandaDiSekitar', () => {
   // Empat lilin berurutan; hari libur SENGAJA ada di tengah (5 lalu 8 Jan)
   // supaya terlihat bahwa jangkauannya indeks lilin, bukan hari kalender.
@@ -1126,6 +1296,22 @@ describe('Bar replay: indikator & pola ikut mundur (tak membaca masa depan)', ()
       periode: 20, ambang: 2, ambangKuat: 3, naikMin: 1,
     } satisfies ParamLonjakanVolume)
     for (const l of lonjak) expect(l.waktu <= batas).toBe(true)
+    // Divergensi: jendela volumenya menoleh ke BELAKANG, jadi temuan yang
+    // sama harus keluar identik pada deret penuh maupun deret terpotong —
+    // jendela simetris akan membuat `volume2` (dan lewat itu derajatnya)
+    // berbeda tanpa satu pun galat.
+    const pd = { jendela: 5, periodeK: 14, smoothK: 3, jarakMin: 10, jarakMaks: 60, ayunMin: 1, stochMin: 3, volJendela: 5 } satisfies ParamDivergensi
+    const stochPenuh = tutup.map((_, i) => 50 + Math.sin(i / 9) * 30)
+    const divPotong = cariDivergensi(lilinPotong, vol.slice(0, POTONG), stochPenuh.slice(0, POTONG), pd)
+    const divPenuh = cariDivergensi(lilinPenuh, vol, stochPenuh, pd)
+    expect(divPotong.length).toBeGreaterThan(0)
+    for (const d of divPotong) expect(d.waktu2 <= batas).toBe(true)
+    // Temuan yang seluruhnya berada di dalam potongan harus PERSIS sama.
+    const sama = divPenuh.filter((d) => d.i2 < POTONG - 5)
+    for (const d of sama) {
+      expect(divPotong.find((x) => x.arah === d.arah && x.i1 === d.i1 && x.i2 === d.i2)).toEqual(d)
+    }
+    expect(sama.length).toBeGreaterThan(0)
     // Musiman: n observasi pada potongan tak boleh melebihi n pada data penuh,
     // dan tanggal terakhir yang dihitung tak boleh melewati batas replay.
     const mPotong = cariMusiman(lilinPotong, 2)

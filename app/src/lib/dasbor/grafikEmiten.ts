@@ -865,7 +865,7 @@ function garisPustaka(
  * label yang diturunkan darinya.
  * ------------------------------------------------------------------ */
 
-export type JenisPola = 'doubleBottom' | 'lonjakanVolume' | 'musiman'
+export type JenisPola = 'doubleBottom' | 'lonjakanVolume' | 'musiman' | 'divergensi'
 export type InstansPola = Instans<JenisPola>
 
 export interface SpekPola {
@@ -897,6 +897,21 @@ export const SPEK_POLA: Record<JenisPola, SpekPola> = {
       { kunci: 'ambang', label: 'Ambang RVOL', bawaan: 1.5, min: 1, maks: 50, bulat: false },
       { kunci: 'ambangKuat', label: 'Ambang RVOL kuat', bawaan: 3, min: 1, maks: 100, bulat: false },
       { kunci: 'naikMin', label: 'Kenaikan min %', bawaan: 2, min: 0.1, maks: 50, bulat: false },
+    ],
+  },
+  // Angka bawaannya dan alasan tiap satunya ada di kepala bagian
+  // `cariDivergensi` — di sini cuma batas kolomnya.
+  divergensi: {
+    label: 'Divergensi',
+    param: [
+      { kunci: 'jendela', label: 'Jendela pivot', bawaan: 5, min: 1, maks: 60, bulat: true },
+      { kunci: 'periodeK', label: 'Periode %K', bawaan: 14, min: 1, maks: 1000, bulat: true, bandingLilin: true },
+      { kunci: 'smoothK', label: 'Haluskan %K', bawaan: 3, min: 1, maks: 100, bulat: true },
+      { kunci: 'jarakMin', label: 'Jarak min', bawaan: 10, min: 2, maks: 2000, bulat: true },
+      { kunci: 'jarakMaks', label: 'Jarak maks', bawaan: 60, min: 3, maks: 2000, bulat: true },
+      { kunci: 'ayunMin', label: 'Ayun harga min %', bawaan: 3, min: 0.1, maks: 50, bulat: false },
+      { kunci: 'stochMin', label: 'Selisih %K min', bawaan: 5, min: 0.5, maks: 100, bulat: false },
+      { kunci: 'volJendela', label: 'Jendela volume', bawaan: 5, min: 1, maks: 200, bulat: true },
     ],
   },
   musiman: {
@@ -1229,6 +1244,258 @@ export function cariLonjakanVolume(
     })
   }
   return hasil
+}
+
+/* ------------------------------------------------------------------ *
+ * Pola: Divergensi tiga lapis (`divergensi`) — backlog #130, definisi Johan
+ * 17 Agu 2026: *"lebih kepada teknikal analisis dimana kamu harus bisa
+ * tentukan chart itu membentuk pola bearish divergent atau bullish divergen,
+ * kolaborasi dengan indikator stochastic, mungkin volume lebih baik dibanding
+ * umumnya."*
+ *
+ * APA YANG DIHITUNG, supaya pembaca berikutnya tak perlu menebak arti kata
+ * "divergensi" di berkas ini. Tiga lapis, dan ketiganya punya PERAN BERBEDA:
+ *
+ *   Lapis 1 · HARGA   — dua pivot ayun sejenis (dua puncak atau dua lembah).
+ *                        Menentukan ADA-tidaknya pola. Pivotnya dicari
+ *                        `cariPivotTinggi`/`cariPivotRendah` yang sudah ada,
+ *                        bukan pencari kedua.
+ *   Lapis 2 · STOCHASTIC %K — dibandingkan di dua pivot yang SAMA. Yang
+ *                        MENYATAKAN divergensinya: arah harga dan arah
+ *                        momentum harus berlawanan.
+ *   Lapis 3 · VOLUME  — PENGESAH derajat, bukan syarat lolos. Volume yang
+ *                        berlawanan menurunkan derajat, tidak membatalkan.
+ *
+ * Regular divergence (yang klasik), dua arah:
+ *   bearish — harga puncak LEBIH TINGGI, %K puncak LEBIH RENDAH.
+ *   bullish — harga lembah LEBIH RENDAH, %K lembah LEBIH TINGGI.
+ *
+ * Volume sebagai pengesah: puncak/lembah KEDUA terjadi dengan rata-rata
+ * volume LEBIH RENDAH daripada yang pertama (naik tanpa dukungan =
+ * distribusi; jual yang mengering di lembah kedua).
+ *
+ * Empat keputusan yang diminta ditulis terang-terangan (`rencana-berjalan.md`
+ * bagian #130), beserta angkanya:
+ *
+ * 1. Pivot: jendela ayun 5 lilin di kiri & kanan (`cariPivotTinggi`), bukan
+ *    zigzag persen. Alasannya bukan selera: pencari pivot itu sudah ada,
+ *    sudah diuji, dan sudah dipakai Double Bottom — pencari kedua berarti
+ *    dua definisi "puncak" di satu kanvas. Ambang persennya tetap dipakai,
+ *    tapi sebagai syarat AYUN antar-pivot (`ayunMin`, bawaan 3% mengikuti
+ *    riset SPLE), bukan sebagai cara menemukan pivotnya.
+ * 2. Stochastic 14/3/3 — bukan 14/1/3 seperti bawaan indikator Stoch di
+ *    menu. %K mentah (smoothK 1) berayun penuh 0-100 tiap beberapa lilin,
+ *    dan "puncak %K lebih rendah" di deret sekasar itu lebih sering
+ *    kebetulan daripada tanda. Angkanya tetap milik pustaka yang sama dengan
+ *    garis Stoch di menu (lihat `stochUntukDivergensi`), jadi apa yang
+ *    tergambar dan apa yang dihitung pola tak bisa berselisih.
+ * 3. Jarak sah antar-pivot: [`jarakMin`, `jarakMaks`] = [10, 60] lilin. Di
+ *    bawah 10 keduanya masih satu ayunan yang sama; di atas 60 (± tiga bulan
+ *    bursa) keduanya dua kejadian yang tak lagi berhubungan. Di LUAR rentang
+ *    itu polanya DITOLAK, bukan diturunkan jadi "lemah" — temuan yang kita
+ *    sendiri tak percayai lebih baik tak digambar daripada digambar samar.
+ * 4. Volume dibandingkan sebagai RATA-RATA `volJendela` lilin (bawaan 5),
+ *    bukan satu batang. Jendelanya menoleh ke BELAKANG (lilin ke-i mundur),
+ *    bukan simetris mengelilingi pivot: jendela simetris ikut membaca lilin
+ *    sesudah pivot, dan seluruh perhitungan di berkas ini wajib kausal
+ *    supaya Bar replay tak menggambar pola yang sudah tahu jawabannya.
+ *
+ * Derajat keyakinan — `kuat`/`sedang` diputuskan lapis volume, `lemah` adalah
+ * penimpa untuk pola yang cuma pas-pasan melewati ambangnya sendiri (lihat
+ * `MARGIN_LEMAH`). Ketiganya ditampilkan apa adanya; ini penyajian pola,
+ * BUKAN rekomendasi beli/jual.
+ * ------------------------------------------------------------------ */
+
+export type ArahDivergensi = 'bearish' | 'bullish'
+export type DerajatDivergensi = 'kuat' | 'sedang' | 'lemah'
+
+export interface Divergensi {
+  arah: ArahDivergensi
+  /** Indeks pivot pertama & kedua pada `lilin` (sudah tersaring). */
+  i1: number
+  i2: number
+  waktu1: string
+  waktu2: string
+  /** Harga pivot: `high` untuk bearish, `low` untuk bullish. */
+  harga1: number
+  harga2: number
+  stoch1: number
+  stoch2: number
+  /** Rata-rata volume `volJendela` lilin sampai pivot (inklusif). */
+  volume1: number
+  volume2: number
+  /** Besar ayun harga antar-pivot, persen dari pivot pertama. Selalu positif. */
+  ayunPersen: number
+  /** `stoch2 - stoch1`. Negatif pada bearish, positif pada bullish. */
+  selisihStoch: number
+  volumeMendukung: boolean
+  /**
+   * Seberapa jauh pola ini melewati ambangnya sendiri — yang terkecil dari
+   * (ayun ÷ ayunMin) dan (|selisih %K| ÷ stochMin). Selalu >= 1 karena
+   * keduanya sudah jadi syarat masuk. Dipakai dua hal: memutuskan `lemah`,
+   * dan memilih pasangan terbaik kalau satu pivot kedua cocok dengan
+   * beberapa pivot pertama.
+   */
+  mutu: number
+  derajat: DerajatDivergensi
+}
+
+export interface ParamDivergensi {
+  jendela: number
+  periodeK: number
+  smoothK: number
+  jarakMin: number
+  jarakMaks: number
+  ayunMin: number
+  stochMin: number
+  volJendela: number
+}
+
+/**
+ * Batas `mutu` di bawah mana sebuah divergensi disebut `lemah` — "salah satu
+ * pivot ragu" pada tabel derajat Johan, dinyatakan sebagai angka yang bisa
+ * diperiksa: pola yang ayun harganya atau selisih momentumnya kurang dari dua
+ * kali ambang minimumnya sendiri.
+ *
+ * 2× bukan angka bulat yang dipungut dari udara: pada ambang minimum, sebuah
+ * pola berdiri di atas satu tick harga dan satu poin %K — dua besaran yang
+ * sama-sama bisa berubah oleh satu lilin. Pada dua kali ambangnya, keduanya
+ * butuh gerakan yang tak bisa lagi dijelaskan oleh satu lilin.
+ */
+const MARGIN_LEMAH = 2
+
+/** Rata-rata volume `jendela` lilin SAMPAI `i` (inklusif). Menoleh ke
+ *  belakang saja — lihat keputusan 4 di kepala bagian ini. */
+function rataVolumeSampai(volume: number[], i: number, jendela: number): number {
+  const mulai = Math.max(0, i - jendela + 1)
+  let jumlah = 0
+  for (let j = mulai; j <= i; j++) jumlah += volume[j] ?? 0
+  return jumlah / (i - mulai + 1)
+}
+
+/**
+ * Deret %K Stochastic untuk pola Divergensi.
+ *
+ * Lewat `hitungInstans` — pintu yang sama persis dengan indikator Stoch di
+ * menu. Bukan kerapian: menulis rumus Stochastic kedua di berkas ini berarti
+ * garis yang TERGAMBAR di panel bawah dan angka yang DIPAKAI pola boleh
+ * berbeda tanpa ada yang tahu mana yang benar — persis alasan `ID_SUDAH_ADA`
+ * di `katalogIndikator.ts` menolak dua RSI di satu menu.
+ *
+ * Katalog belum tiba (`null`) menghasilkan deret KOSONG, dan `cariDivergensi`
+ * menjawabnya dengan nol temuan — bukan angka tebakan. Halaman menggambarnya
+ * ulang sendiri begitu katalognya sampai, karena katalog ikut jadi dependensi
+ * memo pemanggilnya.
+ */
+export function stochUntukDivergensi(
+  lilin: LilinData[],
+  volume: number[],
+  p: Pick<ParamDivergensi, 'periodeK' | 'smoothK'>,
+  katalog?: Katalog | null,
+): Array<number | null> {
+  const inst: InstansIndikator = {
+    id: 'divergensi-stoch',
+    jenis: 'stoch',
+    // `periodeD` tak ikut disetel pengguna: pola ini cuma membaca %K, dan %D
+    // tak mempengaruhi %K sama sekali. Bawaan pustaka (3) dipakai apa adanya.
+    param: { periodeK: p.periodeK, smoothK: p.smoothK, periodeD: 3 },
+    warna: '--text3',
+    tampil: true,
+  }
+  return hitungInstans(inst, lilin.map((l) => l.close), volume, lilin, katalog)[0]?.nilai ?? []
+}
+
+/**
+ * Mencari divergensi regular dua arah. `stoch` WAJIB sejajar indeks dengan
+ * `lilin` (keluaran `stochUntukDivergensi`); deret kosong = nol temuan.
+ *
+ * Fungsi MURNI: tak menyentuh katalog, DOM, maupun React — seluruh masukannya
+ * datang lewat argumen, jadi ia bisa diuji atas 900-an berkas OHLC di cakram
+ * tanpa merender apa pun.
+ *
+ * Saringannya urut dari yang paling murah ke yang paling mahal, dan tiap
+ * saringan menolak sesuatu yang nyata (angka bawaannya di kepala bagian ini):
+ *   1. jarak antar-pivot di dalam [jarakMin, jarakMaks];
+ *   2. arah harga benar DAN ayunnya >= ayunMin persen;
+ *   3. arah %K berlawanan DAN selisihnya >= stochMin poin;
+ *   4. volume — cuma menentukan derajat, tak pernah menolak.
+ *
+ * Satu pivot kedua bisa cocok dengan beberapa pivot pertama; yang disimpan
+ * cuma pasangan ber-`mutu` tertinggi per pivot kedua per arah. Menggambar
+ * semuanya berarti menumpuk penanda di lilin yang sama.
+ */
+export function cariDivergensi(
+  lilin: LilinData[],
+  volume: number[],
+  stoch: Array<number | null>,
+  p: ParamDivergensi,
+): Divergensi[] {
+  if (lilin.length === 0 || stoch.length !== lilin.length) return []
+
+  const terbaik = new Map<string, Divergensi>()
+  const cari = (
+    arah: ArahDivergensi,
+    pivot: number[],
+    hargaDi: (i: number) => number,
+  ) => {
+    for (let b = 1; b < pivot.length; b++) {
+      const i2 = pivot[b]
+      const s2 = stoch[i2]
+      if (s2 === null) continue
+      for (let a = b - 1; a >= 0; a--) {
+        const i1 = pivot[a]
+        const jarak = i2 - i1
+        if (jarak < p.jarakMin) continue
+        // `pivot` menaik, jadi a yang lebih kecil cuma makin jauh.
+        if (jarak > p.jarakMaks) break
+
+        const s1 = stoch[i1]
+        if (s1 === null) continue
+        const h1 = hargaDi(i1)
+        const h2 = hargaDi(i2)
+        if (h1 <= 0) continue
+
+        // Lapis 1 — arah harga. Bearish butuh puncak lebih TINGGI, bullish
+        // butuh lembah lebih RENDAH; keduanya harus berayun cukup jauh.
+        const naik = h2 > h1
+        if (naik !== (arah === 'bearish')) continue
+        const ayunPersen = (Math.abs(h2 - h1) / h1) * 100
+        if (ayunPersen < p.ayunMin) continue
+
+        // Lapis 2 — momentum harus melawan. Ini yang MENYATAKAN divergensinya.
+        const selisihStoch = s2 - s1
+        const melawan = arah === 'bearish' ? selisihStoch < 0 : selisihStoch > 0
+        if (!melawan || Math.abs(selisihStoch) < p.stochMin) continue
+
+        // Lapis 3 — volume. Tak pernah menolak, cuma menentukan derajat.
+        const v1 = rataVolumeSampai(volume, i1, p.volJendela)
+        const v2 = rataVolumeSampai(volume, i2, p.volJendela)
+        const volumeMendukung = v1 > 0 && v2 < v1
+
+        const mutu = Math.min(ayunPersen / p.ayunMin, Math.abs(selisihStoch) / p.stochMin)
+        const derajat: DerajatDivergensi = mutu < MARGIN_LEMAH
+          ? 'lemah'
+          : volumeMendukung ? 'kuat' : 'sedang'
+
+        const temuan: Divergensi = {
+          arah, i1, i2,
+          waktu1: lilin[i1].time, waktu2: lilin[i2].time,
+          harga1: h1, harga2: h2,
+          stoch1: s1, stoch2: s2,
+          volume1: v1, volume2: v2,
+          ayunPersen, selisihStoch, volumeMendukung, mutu, derajat,
+        }
+        const kunci = `${arah}:${i2}`
+        const lama = terbaik.get(kunci)
+        if (!lama || temuan.mutu > lama.mutu) terbaik.set(kunci, temuan)
+      }
+    }
+  }
+
+  cari('bearish', cariPivotTinggi(lilin.map((l) => l.high), p.jendela), (i) => lilin[i].high)
+  cari('bullish', cariPivotRendah(lilin.map((l) => l.low), p.jendela), (i) => lilin[i].low)
+
+  return [...terbaik.values()].sort((x, y) => x.i2 - y.i2 || x.i1 - y.i1)
 }
 
 /* ------------------------------------------------------------------ *
