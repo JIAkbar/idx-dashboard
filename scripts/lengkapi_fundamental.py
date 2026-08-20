@@ -262,6 +262,101 @@ def q_eps_baru(fd: dict) -> dict:
     return out
 
 
+# Kurs USD/IDR yang masuk akal. Bukan selera: seluruh 102 emiten pelapor
+# non-IDR di bursa ini melapor USD, dan USD/IDR tak pernah keluar dari pita ini
+# sepanjang riwayat yang kita simpan (2019-2026). Kurs di luar pita berarti
+# bahan penurunannya yang rusak, bukan kursnya.
+KURS_MIN, KURS_MAX = 5_000.0, 30_000.0
+DIR_KEU = AKAR / "data-idx" / "json" / "keuangan"
+
+
+def kurs_panen() -> float | None:
+    """Kurs USD->IDR yang DIPAKAI `fetch_fundamental.py` di panen terakhir,
+    dibaca ulang dari cakram. Nol jaringan, nol tebakan, nol asumsi.
+
+    `keuangan/<K>.json` (yfinance) menyimpan nilai MENTAH dalam mata uang
+    PELAPORAN; `fundamental/<K>.json` menyimpan pasangan tahunan yang sama
+    tapi SUDAH rupiah (`konversi_dict_ke_idr`). Rasio keduanya = kursnya,
+    persis — dan karena satu jalan panen memakai satu kurs untuk seluruh
+    emiten, sebarannya nol. Terukur 20 Agu 2026: **17.876** dari 346
+    pasangan, min == p25 == median == max.
+
+    Diambil MEDIAN, bukan rata-rata: satu pasangan yang mata uangnya salah
+    dilabeli tak boleh menggeser angka yang dipakai 12 emiten lain.
+    """
+    rasio = []
+    for p in sorted(DIR_FUND.glob("*.json")):
+        fd = json.loads(p.read_text(encoding="utf-8"))
+        if (fd.get("financial_currency") or "IDR") == "IDR":
+            continue
+        pk = DIR_KEU / p.name
+        if not pk.exists():
+            continue
+        hn = fd.get("hist_net_income") or {}
+        for iso, per in (json.loads(pk.read_text(encoding="utf-8")).get("tahunan") or {}).items():
+            mentah, idr = angka(per.get("net_income")), angka(hn.get(iso[:4]))
+            if mentah and idr:
+                rasio.append(abs(idr / mentah))
+    if not rasio:
+        return None
+    rasio.sort()
+    k = rasio[len(rasio) // 2]
+    return k if KURS_MIN <= k <= KURS_MAX else None
+
+
+def hist_eps_baru(fd: dict, idx: dict | None, kurs: float | None) -> tuple[dict, str] | None:
+    """`hist_eps` yang benar — RUPIAH, tanpa presisi yang terbuang.
+
+    Menggantikan blok lama "isi kalau kosong dari XBRL". Dua jalur, dan
+    keduanya berjangkar pada ruas yang fungsi ini TIDAK sentuh, jadi
+    idempoten: dijalankan berapa kali pun hasilnya sama, termasuk kalau
+    jalan sebelumnya salah.
+
+    1. **`hist_net_income` (SUDAH rupiah) / `shares`** — rumus yang persis
+       sama dengan `fetch_fundamental.py`, cuma tanpa kerusakannya. Di sana
+       net income DOLAR dibagi miliaran saham lalu `round(.,2)`: ARCI, ALMI,
+       LEAD dkk. tersimpan **0,00** untuk SEMUA tahun, dan yang tidak nol
+       tersimpan ~17.876x terlalu kecil di sebelah `hist_bv`/`hist_fcf`/
+       `hist_net_income` yang sudah rupiah. Nol galat.
+    2. **EPS tahunan XBRL** kalau yfinance tak punya laba tahunan sama
+       sekali (12 emiten). Diambil UTUH — bukan `hist_net_income/shares` —
+       karena EPS laporan resmi memakai rata-rata saham TERTIMBANG tahun itu,
+       sedangkan jumlah saham yang kita punya cuma yang SEKARANG. Dikonversi
+       memakai `mata_uang[<tanggal>]` laporan itu sendiri, dan dibulatkan
+       SESUDAH dikonversi: `round(0,00058 USD, 2)` = 0,00 dan 0,00 x kurs
+       tetap 0,00 — persis cara 12 berkas ini kehilangan angkanya.
+
+    Jalur 1 dilewati kalau `hist_eps` yang ada sekarang berasal dari XBRL:
+    laporan resmi menang atas turunan, sama seperti aturan #1 modul ini.
+    """
+    saham = angka(fd.get("shares"))
+    hn = fd.get("hist_net_income") or {}
+    dari_idx = (fd.get("asal_turunan") or {}).get("hist_eps") == IDX
+    if hn and saham and not dari_idx:
+        peta = {y: round(v / saham, 2) for y, v in hn.items() if angka(v)}
+        if peta:
+            return peta, TURUNAN
+    # Jalur XBRL hanya untuk yang BELUM punya angka, atau yang angkanya
+    # memang berasal dari sini (perlu dikonversi ulang). Aturan #1 modul ini:
+    # angka yfinance yang sudah ada tak pernah ditimpa penambal.
+    if idx and (dari_idx or kosong(fd.get("hist_eps"))):
+        mu = idx.get("mata_uang") or {}
+        bawaan = idx.get("currency") or "IDR"
+        peta = {}
+        for iso, per in (idx.get("tahunan") or {}).items():
+            v = angka(per.get("eps"))
+            if v is None:
+                continue
+            if mu.get(iso, bawaan) != "IDR":
+                if not kurs:
+                    continue
+                v *= kurs
+            peta[iso[:4]] = round(v, 2)
+        if peta:
+            return peta, IDX
+    return None
+
+
 def kosong(v) -> bool:
     """Ruas dianggap kosong kalau null, atau map/list tanpa isi (`hist_eps`
     yang gagal dihitung ditulis `{}`, bukan null — dua bentuk 'tidak tahu'
@@ -273,7 +368,7 @@ def kosong(v) -> bool:
     return False
 
 
-def lengkapi(fd: dict, idx: dict | None) -> dict[str, str]:
+def lengkapi(fd: dict, idx: dict | None, kurs: float | None = None) -> dict[str, str]:
     """Isi ruas kosong di `fd` DI TEMPAT. Balikan: {ruas: kode asal}."""
     asal: dict[str, str] = {}
     harga = angka(fd.get("last_price"))
@@ -349,19 +444,13 @@ def lengkapi(fd: dict, idx: dict | None) -> dict[str, str]:
                 fd["roe"] = round(ni / eq, 5)
                 asal["roe"] = IDX
 
-    # ── EPS historis tahunan ─────────────────────────────────────────────
-    # Diambil UTUH dari XBRL, bukan hist_net_income/shares: jumlah saham yang
-    # kita punya cuma yang SEKARANG, sedangkan EPS 2022 harus dibagi saham
-    # 2022. EPS di laporan resmi sudah memakai rata-rata tertimbang tahun itu.
-    if kosong(fd.get("hist_eps")) and idx:
-        peta = {}
-        for iso, per in (idx.get("tahunan") or {}).items():
-            v = angka(per.get("eps"))
-            if v is not None:
-                peta[iso[:4]] = round(v, 2)
-        if peta:
-            fd["hist_eps"] = peta
-            asal["hist_eps"] = IDX
+    # ── EPS historis tahunan — TIMPA kalau beda, bukan cuma kalau kosong ──
+    # (lihat `hist_eps_baru`: kelas bug yang sama dengan q_eps 18 Agu, tapi
+    # angkanya tidak kepotong jadi 0,00 melainkan tersimpan ~17.876x terlalu
+    # kecil — lebih berbahaya, karena "kecil" masih terbaca seperti angka.)
+    heps = hist_eps_baru(fd, idx, kurs)
+    if heps and heps[0] != (fd.get("hist_eps") or {}):
+        fd["hist_eps"], asal["hist_eps"] = heps
 
     # ── EPS kuartalan — TIMPA kalau beda, bukan cuma kalau kosong ─────────
     # (lihat docstring modul + q_eps_baru: versi lama bisa 0,0 padahal
@@ -385,13 +474,16 @@ def lengkapi(fd: dict, idx: dict | None) -> dict[str, str]:
 def jalankan(verbose: bool = True) -> dict[str, int]:
     hitung: dict[str, int] = {}
     berubah = 0
+    kurs = kurs_panen()
+    if verbose:
+        print(f"kurs panen terbaca: {kurs}")
     for berkas in sorted(DIR_FUND.glob("*.json")):
         kode = berkas.stem
         fd = json.loads(berkas.read_text(encoding="utf-8"))
         p_idx = DIR_IDX / f"{kode}.json"
         idx = json.loads(p_idx.read_text(encoding="utf-8")) if p_idx.exists() else None
 
-        asal = lengkapi(fd, idx)
+        asal = lengkapi(fd, idx, kurs)
         # Tak ada yang ditambal -> berkas TIDAK disentuh sama sekali. Versi
         # pertama membuang `asal_turunan` lama di cabang ini dengan alasan
         # "fetch baru sudah mengisi aslinya" — salah, dan bikin skripnya tak
@@ -508,6 +600,40 @@ def _uji() -> None:
     utuh = {"q_eps": {}, "altman_z": None, "last_price": 1.0}
     lengkapi(utuh, idx_acro)
     assert utuh["altman_z"] is None
+
+    # --- hist_eps pelapor USD (20 Agu 2026) -------------------------------
+    # ARCI apa adanya dari cakram: laba tahunan SUDAH rupiah di berkas yang
+    # sama, tapi hist_eps tersimpan 0,00 untuk keempat tahunnya karena
+    # fetch_fundamental membagi DOLAR lalu round(.,2).
+    #   2025: 1.820.152.535.644 / 25.235.000.000 = 72,1281... -> 72,13
+    arci = {"financial_currency": "USD", "shares": 25235000000,
+            "hist_eps": {"2025": 0.0, "2024": 0.0},
+            "hist_net_income": {"2025": 1820152535644.0, "2024": 186941005028.0}}
+    peta, asal_h = hist_eps_baru(arci, None, 17876.0)
+    assert peta == {"2025": 72.13, "2024": 7.41}, peta
+    assert asal_h == TURUNAN
+    # Idempoten: jangkarnya (hist_net_income, shares) tak ikut berubah.
+    arci["hist_eps"] = peta
+    assert hist_eps_baru(arci, None, 17876.0)[0] == peta
+
+    # BOAT: yfinance tak punya laba tahunan sama sekali, jadi EPS diambil dari
+    # XBRL — 0,00058 USD. Dibulatkan SEBELUM dikonversi hasilnya 0,00 (persis
+    # cacat yang ditambal); dikonversi dulu: 0,00058 x 17.876 = 10,368 -> 10,37.
+    boat = {"financial_currency": "USD", "shares": 3501680000,
+            "hist_eps": {"2025": 0.0}, "hist_net_income": {},
+            "asal_turunan": {"hist_eps": IDX}}
+    idx_boat = {"currency": "USD", "mata_uang": {"2025-12-31": "USD"},
+                "tahunan": {"2025-12-31": {"eps": 0.00058}}, "kuartal": {}}
+    peta, asal_h = hist_eps_baru(boat, idx_boat, 17876.0)
+    assert peta == {"2025": 10.37}, peta
+    assert asal_h == IDX
+    # Tanpa kurs, angkanya TIDAK dikarang — periodenya dilewati, bukan ditulis 0.
+    assert hist_eps_baru(boat, idx_boat, None) is None
+
+    # Pelapor rupiah tak tersentuh: hasilnya sama persis dengan yang tersimpan.
+    idr = {"financial_currency": "IDR", "shares": 1000,
+           "hist_eps": {"2025": 50.0}, "hist_net_income": {"2025": 50000.0}}
+    assert hist_eps_baru(idr, None, 17876.0)[0] == {"2025": 50.0}
 
     # 4b. q_eps DITIMPA kalau salah — kasus nyata ARCI 18 Agu 2026: net income
     # kuartalan SUDAH IDR (532,585 miliar dkk.), 25,235 miliar saham, tapi

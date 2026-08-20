@@ -506,11 +506,19 @@ def fetch_stock(ticker_code):
         a_pretax  = df_annual(fin, "Pretax Income")
 
         # ── HISTORICAL METRICS (per share, annual) ───────────────────────
-        # EPS historis tahunan = Net Income / Shares
+        # EPS historis tahunan = Net Income / Shares.
+        # Net income DISAMAKAN ke IDR LEBIH DULU, baru dibagi — alasannya persis
+        # sama dengan q_eps (CLAUDE.md 18 Agu 2026): membagi dolar dengan
+        # miliaran saham lalu round(.,2) memberi 0,00, dan mengalikan 0,00
+        # dengan kurs tetap 0,00. Sampai 20 Agu 2026 baris ini tak dikonversi
+        # sama sekali, sehingga `hist_eps` 99 emiten pelapor USD tersimpan
+        # ~17.000x terlalu kecil dan bersanding dengan `hist_net_income`/
+        # `hist_bv`/`hist_fcf` yang SUDAH rupiah — nol galat, cuma angka yang
+        # salah diam-diam.
         hist_eps_a = {}
         for yr, ni in a_ni.items():
             if ni and shares and shares > 0:
-                hist_eps_a[yr] = round(ni / shares, 2)
+                hist_eps_a[yr] = round(konversi_ke_idr(ni, fin_cur, kurs) / shares, 2)
 
         # FCF historis tahunan (prioritas: a_fcf; fallback: OCF + CapEx)
         hist_fcf_a = {}
