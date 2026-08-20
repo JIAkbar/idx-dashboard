@@ -13,6 +13,7 @@ import { AksesDitolak } from './AdminLayout'
 import { PanelJenjang } from './PanelJenjang'
 import './AkunAdmin.css'
 import { pesanGalat } from '../../lib/pesanGalat'
+import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
 
 /** Domain akun kontributor PAPAN. Ditulis sekali di sini supaya kalau suatu
  *  saat berganti, tak ada satu pun tempat yang tertinggal memakai yang lama. */
@@ -199,6 +200,21 @@ export function AkunAdmin() {
   const superadmin = profil?.peran === 'superadmin'
   const tampil = useMemo(() => saringUrutAkun(akun ?? [], cari, urut), [akun, cari, urut])
 
+  // Paginasi "Muat N lagi" — pola sama dengan tab Semua KartuAnalisa.tsx
+  // (#170-adjacent, commit 1d58712b). Angka lebih kecil daripada di sana
+  // (20/10 vs 100/25): tabel Akun 10 kolom sudah lebar sendiri, dan jumlah
+  // akun jauh di bawah jumlah emiten.
+  const sempit = useLayarSempit()
+  const ukuranHalaman = sempit ? 10 : 20
+  const [batasTampil, setBatasTampil] = useState(ukuranHalaman)
+
+  // Saringan/cari/urut baru = mulai dari halaman pertama lagi, bukan
+  // menyambung dari batas lama (yang bisa lebih besar dari hasil baru).
+  useEffect(() => { setBatasTampil(ukuranHalaman) }, [cari, urut, ukuranHalaman])
+
+  const tampilBaris = tampil.slice(0, batasTampil)
+  const sisaTampil = tampil.length - tampilBaris.length
+
   useEffect(() => {
     if (!superadmin) return
     let batal = false
@@ -322,7 +338,7 @@ export function AkunAdmin() {
                   </tr>
                 </thead>
                 <tbody>
-                  {tampil.map((a) => {
+                  {tampilBaris.map((a) => {
                     const sedangProses = sibuk.has(a.id)
                     const tier = a.tier ?? 0
                     const jenjangAkun = jenjang.find((j) => j.tier === tier)
@@ -460,6 +476,13 @@ export function AkunAdmin() {
                   })}
                 </tbody>
               </table>
+            </div>
+          )}
+          {sisaTampil > 0 && (
+            <div style={{ padding: '10px 14px 0' }}>
+              <button type="button" className="btn-p" onClick={() => setBatasTampil((t) => t + ukuranHalaman)}>
+                Muat {Math.min(sisaTampil, ukuranHalaman)} lagi
+              </button>
             </div>
           )}
         </div>
