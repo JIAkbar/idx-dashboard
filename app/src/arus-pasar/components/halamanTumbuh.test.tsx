@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import edisiUji from '../../../../arus-pasar/edisi/2026-08-14.json'
 import type { Edisi, Skor } from '../../lib/skor/types'
 import type { SkorMap } from '../skorMap'
 import { HalamanRingkasan } from './HalamanRingkasan'
@@ -20,12 +19,16 @@ import { HalamanPeringkat } from './HalamanPeringkat'
  * Dipakai `renderToStaticMarkup`, bukan jsdom + testing-library: yang perlu
  * dibuktikan cuma "semua baris ikut ter-render", dan React sudah ada di
  * dependensi. Menambah dua pustaka uji untuk satu penegasan string tak sepadan.
+ *
+ * Edisinya di-IMPOR, bukan dibaca lewat `node:fs`. Versi pertama memakai
+ * `readFileSync` + `__dirname` dan itu MEMATIKAN BUILD PRODUKSI: `npx tsc
+ * --noEmit` lolos, tapi `tsc -b` yang dipakai `npm run build` menolak nama
+ * `node:fs`/`__dirname` karena tipe Node memang tak terpasang di app ini.
+ * Akibatnya Vercel gagal membangun dan data yang sudah ter-push tak pernah
+ * sampai ke layar — nol galat di sisi saya, halaman diam di tanggal kemarin.
  */
 
-const AKAR = resolve(__dirname, '../../../..')
-const ed: Edisi = JSON.parse(
-  readFileSync(resolve(AKAR, 'arus-pasar/edisi/2026-08-14.json'), 'utf-8'),
-) as Edisi
+const ed = edisiUji as unknown as Edisi
 
 /** Skor tetap per ticker — halaman ini diuji soal KELENGKAPAN baris, bukan soal
  *  benar-salahnya rumus skor (itu punya `skor.test.ts` sendiri). Nilainya dibuat
