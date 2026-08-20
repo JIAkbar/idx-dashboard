@@ -1,0 +1,134 @@
+# Antrean PAPAN — satu-satunya sumber untuk "ada backlog?"
+
+Disatukan 20 Agu 2026 dari LIMA berkas yang sebelumnya berserak — akibat
+nyatanya sudah dibayar: **C3 Screener** tercatat "BELUM" berbulan-bulan
+karena "ada backlog?" selalu dijawab dari `rencana-berjalan.md` saja, tak
+pernah dari `ceklist-backlog.md` tempat C3 sebenarnya hidup. Johan:
+*"backlog screener aja belum kmu kerjakan sampai detik ini, payah kmu tidak
+menepati janjimu"*.
+
+**Aturan mengikat mulai sekarang**: "ada backlog?" dijawab dari berkas INI
+saja. Kelima berkas lama (`rencana-berjalan.md`, `ceklist-backlog.md`,
+`BACKLOG-SWEEP-VISUAL.md`, `RENCANA-REFACTOR-REACT.md` §9,
+`backlog-edisi.md`) tetap ada untuk riwayat/keputusan teknis, tapi bagian
+antreannya sudah dipindah ke sini. **Tiap baris "BELUM" di sini wajib dicoba
+ulang (grep/baca kode) sebelum dilaporkan** — jangan disalin dari ingatan.
+Sapuan 20 Agu menemukan **9 baris yang tercatat "belum" di berkas lama
+ternyata sudah jadi**; daftarnya di bagian "Sudah selesai" dengan bukti
+`berkas:baris`.
+
+`docs/backlog-edisi.md` **tidak disentuh** — agen lain sedang bekerja di
+area itu; dirujuk apa adanya.
+
+---
+
+## A. Menunggu keputusan Johan (tak bisa ditebak tanpa salah sasaran)
+
+| # | Pekerjaan | Asal (berkas lama) | Pertanyaan yang menunggu jawaban |
+|---|---|---|---|
+| A1 | Panen statistik harian: awan atau rumahan | `rencana-berjalan.md` "Antrean terbuka 19 Agu" A2 | `download_idx.py` memanggil endpoint DAFTAR (`GetStatistic`) lalu unduh PDF dari URL yang diberikan daftar itu. Kalau yang diblokir cuma daftarnya sementara URL PDF tembus, jalan keluarnya jauh lebih murah daripada pindah panen ke rumah — **belum diuji** |
+| A2 | Rel navigasi rail: asuransi murah vs kelompokkan submenu | `ceklist-backlog.md` #175 | Dua jalan: (1) `overflow-y:auto` di `.dasbor-rail-list`, satu baris, sementara; (2) kelompokkan chart PAPAN + penyaring + backtesting jadi satu pintu rel dengan tab di dalamnya. Sisa ruang rel di 1536×960 ≈52,6px (muat 1 ikon lagi) |
+| A3 | Bulletin Arus Pasar: konsolidasi ke Supabase `edisi` atau tetap 2 jalur paralel | `BACKLOG-SWEEP-VISUAL.md` #37 | Repo punya 2 sistem Arus Pasar paralel (file-based publik `Bulletin.tsx` vs Supabase admin `Terbitan.tsx`/`supabaseEdisi.ts`). Agen sengaja tak pakai Supabase untuk Bulletin publik karena RLS-nya belum diverifikasi publik-aman |
+| A4 | #170 sisa: K4/K6/K7 | `ceklist-backlog.md` #170, `docs/spek-kendali.md` "Yang TIDAK dikerjakan" | K4: rentang Grup Konglomerat menghitung apa? K6: kartu broksum — apa yang salah dari kartunya? K7: jalur data Radar (bukan pekerjaan tampilan) |
+| A5 | Nama produk "Arus Pasar" & palet warna (teal) dipertanyakan ulang | `RENCANA-REFACTOR-REACT.md` §9 | User belum yakin nama final; teal mirip identitas proyek SAKTI lain ("fanatik hijau" — tegur Johan). Kalau nama diputuskan, palet ikut dievaluasi |
+| A6 | Cover PDF Arus Pasar (`HalamanSampul.tsx`) — desain baru | `RENCANA-REFACTOR-REACT.md` §9 | Sekarang cuma daftar isi teks di atas warna teal polos; Johan: "bukan memunculkan daftar isi tapi cover" — perlu elemen visual. Sepaket: blok IHSG/Net Foreign dipindah dari bawah ke ATAS cover. Rencana: mockup dulu (pola sama redesign Login) sebelum eksekusi |
+| A7 | `arus-pasar/cetak.css` — tabel Ringkasan Edisi & Peringkat Peluang terpotong diam-diam di >~7 emiten | `RENCANA-REFACTOR-REACT.md` §9 | **Dikonfirmasi ulang 20 Agu masih ada**: `.ap-cetak .page{height:296mm;overflow:hidden}` (baris 40/53/59) belum berubah, cuma dites 3 emiten (fixture Fase 2), belum pernah 10–20 emiten (skala rencana asli). Dua opsi: (1) lepas `overflow:hidden`+fixed height khusus 2 halaman ini, tabel pecah ke beberapa lembar A4 + `thead` repeat; (2) pagination React — potong emiten per-N, render beberapa blok `.page` |
+| A8 | Chart.tsx (PDF Arus Pasar) — label pivot (R3/R1/P/R2/S1/S2/S3) nempel tepi kanan, kurang jelas | `RENCANA-REFACTOR-REACT.md` §9 baris #15 | Opsi: pindah label ke luar area chart, atau dihilangkan kalau tetap berantakan. **[ANTRE]**, belum diagnosa lanjut |
+
+---
+
+## B. Terbuka — bisa dikerjakan (urutan ringan→mahal mengikat, `ceklist-backlog.md`)
+
+### Ringan
+
+| # | Pekerjaan | Asal | Keadaan · Bukti/penghalang |
+|---|---|---|---|
+| B1 | C7 — Foreign flow 5D/10D **per emiten** | `ceklist-backlog.md` C7 | SEBAGIAN. Sudah: agregasi `ds_*.json` → net foreign harian+kumulatif, tab Flow di `/broker-summary` (`lib/dasbor/flowNego.ts`, `BrokerSummary.tsx:255`). Belum: kolom 5D/10D per emiten — angka sekarang level pasar (`nf_today_idr`) |
+| B2 | C8 — Watchlist **dinamis** (ikut OHLCV + harga milik) | `ceklist-backlog.md` C8 | BELUM — nol jejak kode. Spek Johan 19 Agu verbatim: *"watchlist yang dinamis jadi akan update berdasarkan data OHLCV"* + *"dan harga yang dimiliki"*. Dua sub-keputusan wajib saat implementasi: (a) harga milik = data pribadi → localStorage tak ikut pindah peranti, Supabase butuh RLS; (b) harga rata-rata hasil hitungan **tak wajib** jatuh di tick (`keFraksi()` cuma untuk harga pasar). Jangan tertukar dengan "Radar Watchlist" (`Radar.tsx:249`, arsip statis WD Watch List — halaman lain) |
+| B3 | C4 — Market breadth (advance/decline) | `ceklist-backlog.md` C4 | SEBAGIAN. Heatmap sektor sudah ada (`SektorIndeks.tsx:305`, div `.tiles`, **cek B ini sudah SELESAI** — lihat bagian Sudah Selesai #4). Breadth murni belum: `ringkasHarian.ts` tak menghitung advance/decline sama sekali |
+| B4 | #173 — Tabel Akses hierarki induk-turunan | `ceklist-backlog.md` #173, `rencana-berjalan.md` #173 | **Dicoba ulang 20 Agu — masih BELUM**: `grep induk lib/aksesHalaman.ts` nol hasil. Kolom `induk` di `akses_halaman` (nullable), tampilan bertingkat, peringatan induk lebih ketat dari anak |
+| B5 | #165 — Thumbnail dibuat saat unggah | `ceklist-backlog.md` #165 | **Dicoba ulang 20 Agu — masih BELUM**: `grep toBlob/drawImage app/src` nol hasil relevan. Yang ada cuma penundaan (`UnggahHarian.tsx:738-740` — thumbnail dimuat saat terlihat, tapi tetap gambar penuh 420-520 KB). Perlu `canvas`→WebP saat unggah + kebijakan storage disesuaikan |
+| B6 | #171 — Rule engine: peta sinonim + tahan salah ketik | `ceklist-backlog.md` #171 | **Dicoba ulang 20 Agu — masih BELUM**: `grep sinonim/levenshtein pengetahuan.ts` nol hasil. Sudah: imbuhan dilepas (`pengetahuan.ts:533-534`), kata tunggal terdaftar. Belum: peta sinonim terpusat, jarak Levenshtein ≤1, kata tunggal ditawari cabang |
+| B7 | #172 — Emiten dijawab aspek broker + chip saran + sambungan kata ganti | `ceklist-backlog.md` #172, `rencana-berjalan.md` #172 | **Dicoba ulang 20 Agu — masih SEBAGIAN**: `tanyaPapan.ts` punya `jawabHarga/jawabValuasi/jawabSektor/jawabKinerja/jawabPemilik` (baris 246-323) tapi **tak ada `jawabBroker`**. Chip saran lanjutan (`interface Jawaban` tak punya ruasnya) dan sambungan kata ganti ("keenam itu") juga belum — `tanyaPapan.ts:378-381` mengakui sendiri `topik` cuma simpan JENIS jawaban |
+| B8 | D9 — Buang `potongRentang` (kode mati) | `rencana-berjalan.md` D9 | Terkonfirmasi 19 Agu: cuma dipanggil dari 5 tempat di `grafikEmiten.test.ts` + 1 komentar. Nol pemanggil produksi. Tugas kecil sekali sapu — buang di sapuan kebersihan berikutnya |
+| B9 | D10 — Baris salah di `docs/status-panen.md:79` | `rencana-berjalan.md` D10 | "XBRL IDX berhenti di tahun buku 2019" benar untuk DAFTAR laporan, salah untuk ISI-nya. Perlu diperbaiki teksnya |
+
+### Sedang
+
+| # | Pekerjaan | Asal | Keadaan · Bukti/penghalang |
+|---|---|---|---|
+| B10 | A1 — Rata-rata 5 tahun + ambang verdict valuasi | `ceklist-backlog.md` A1 | BELUM. Yang ada cuma ruas mentah `pe_vs_sector_pct` (`stockDetailData.ts:210`); nol rerata historis, nol ambang verdict |
+| B11 | #166 — Rakit ulang mesin Mingguan & Bulanan (sisa) | `ceklist-backlog.md` #166, `rencana-berjalan.md` #166 | SEBAGIAN. Sudah: Bulanan murni agregat, Mingguan dapat halaman Pola Sepekan + strip Progresi Skor. Belum: halaman per-emiten Mingguan masih memanggil `halaman_emiten()` milik `build.py` (`build_weekly.py:469`) — sumber keluhan "identik dengan edisi harian" |
+| B12 | SW#29 — Kalender full-width di `/stocks`, `/broker` | `BACKLOG-SWEEP-VISUAL.md` #29 | Belum dicoba ulang kodenya 20 Agu (bukan salah satu dari 8 yang disebut sudah jadi). 7 kolom grid stretch penuh lebar viewport tanpa cap |
+| B13 | SW#36 — Kalkulator JIA grid terlalu lebar di desktop | `BACKLOG-SWEEP-VISUAL.md` #36 | Bukan bug CSS spesifik — rekomendasi: cap `max-width` halaman ~1400-1600px. Belum dieksekusi, perlu backtest 2 viewport begitu dikerjakan |
+| B14 | SW#20 — `hist_fcf`/`hist_bv` masih mentah USD | `BACKLOG-SWEEP-VISUAL.md` #20 | **Dicoba ulang 20 Agu**: ruas `hist_fcf` terisi non-null di 964/967 berkas (bukan lagi kosong), tapi kelas bug aslinya (konversi mata uang, kelas sama dengan fix Critical 99 emiten) **belum diverifikasi terpisah** — nilai USD-nya sendiri belum jelas sudah dikonversi atau belum |
+| B15 | RR — Sumber chart candlestick pindah ke data Stockbit (indikator lebih kaya) | `RENCANA-REFACTOR-REACT.md` §9 | Ide, belum diperinci. Chart PAPAN sekarang OHLC+EMA50+Pivot dari yfinance |
+| B16 | RR — Backup harian folder screenshot upload (bucket Supabase) | `RENCANA-REFACTOR-REACT.md` §9 | Mekanisme belum ditentukan (cron? sinkron Drive/lokal?). Isinya screenshot manual, tak reproducible kalau hilang — beda dari `data/*.json`. Sepaket: klarifikasi "2 jenis orderbook" di folder data owner lokal Johan (di luar repo) |
+| B17 | D11 — Perbesar flyout submenu rail | `rencana-berjalan.md` D11 | Terukur `lantai.css:245-280`: tinggi baris ±29px, di bawah target sentuh 44px aturan proyek sendiri. Font item 12,5px, kode+judul 9,5px. Perlu naik ke ≥44px baris / ~13,5-14px teks / ~10,5px label, lebar panel menyesuaikan. **Jangan** naikkan cuma lewat `gap` |
+| B18 | #154 — Peringatan konteks + tanggal metodologi di tiap halaman analitik | `ceklist-backlog.md` #154 | Belum. Yang membuat SPLE dipercaya bukan sinyalnya, tapi panduannya (rumus terbuka, perubahan bertanggal) |
+| B19 | #162 — Sebab penolakan unggah MBMA belum terbukti | `ceklist-backlog.md` #162 | Penghalang lama (#161) sudah selesai — alat diagnosanya (galat detail server) sudah ada. Tinggal dipakai saat kejadian serupa berikutnya |
+| B20 | D4 — Peta Investor tak menyebut tanggal data | `rencana-berjalan.md` D4 | **Dicoba ulang 20 Agu — masih BELUM**: `grep meta.json/dataTanggal PetaInvestor.tsx` nol hasil. Berkas meta (263 byte) ada, tak pernah dibaca; jaringan kepemilikan dari pengumuman 2 Juni terbaca sebagai posisi sekarang |
+| B21 | D6 — 98 emiten pelapor USD tak punya baris "Setahun (audit)" | `rencana-berjalan.md` D6 | `fd.hist_*` sudah dikonversi tapi sumbernya yfinance — menyebutnya "audit" akan jadi kebohongan |
+| B22 | D7 — 3.099 dari 9.665 mata uang masih TAKSIRAN | `rencana-berjalan.md` D7 | 2020/2021/2025 audit dan 2026 TW2 tak pernah terarsip mentahnya. Menaikkan jadi bacaan pasti butuh unduh ulang |
+| B23 | D8 — Sembilan lompatan neraca belum terjelaskan | `rencana-berjalan.md` D8 | Empat wajar (ekuitas melintasi nol), sisanya cacat di sumber IDX sendiri |
+
+### Besar
+
+| # | Pekerjaan | Asal | Keadaan · Bukti/penghalang |
+|---|---|---|---|
+| B24 | A2(ceklist) — Halaman Bedah Emiten, 12 section | `ceklist-backlog.md` A2, `rencana-berjalan.md` #153 | BELUM sebagai halaman. Jangan tertukar: `arus-pasar/build_bedah.py` + tab admin `BedahTab` itu edisi TERBITAN "Bedah", bukan halaman analisa 12 section |
+| B25 | #130 — Divergensi tiga lapis (harga + Stochastic + volume) | `ceklist-backlog.md` #130, `rencana-berjalan.md` #130 | **TAK LAGI TERHALANG sejak 19 Agu** — Stochastic sudah terpasang & bervonis BEKERJA (`katalogIndikator.ts:126`). Definisi lengkap sudah dari Johan 17 Agu (lihat `rencana-berjalan.md` bagian #130 untuk rumus derajat kuat/sedang/lemah). Lapis 1 separuh jadi (`cariPivotRendah`/`cariPivotTinggi`, `grafikEmiten.ts:606,618`). Yang tersisa: lapis 2 (Stochastic) + lapis 3 (volume pengesah) + penggabungnya |
+| B26 | B3(ceklist) — Pemegang saham pengendali | `ceklist-backlog.md` B3, `rencana-berjalan.md` #158 | BELUM — nol kata `pengendali` di `scripts/` maupun `app/src`. Prasyarat A3 (XBRL) sudah selesai & mentahnya sudah diarsipkan `_arsip-mentah/` — menambah ruas ini nol biaya jaringan |
+| B27 | C2 sisa — Wyckoff Phase (Grup 3) & Harmonic (Grup 4) | `ceklist-backlog.md` C2 | Grup 1 (Stochastic/StochRSI/Williams%R) + VWAP **SELESAI 19 Agu**. Sisa: Wyckoff Phase (nol jejak), Harmonic (nol jejak) |
+| B28 | RR#21 — Yahoo `^JKSE` sebagai sumber cadangan IHSG | `RENCANA-REFACTOR-REACT.md` §9 baris #21 | **Penghalangnya sudah hilang**: dulu bergantung "#18 dibetulkan dulu" (bug `t.history()`), dan #18(RR) sudah selesai 20 Agu (lihat Sudah Selesai). Layak diangkat jadi antrean aktif kalau Johan mau |
+
+---
+
+## C. Diparkir — bukan antre
+
+> 🅿️ = **diparkir**, bukan antre. Yang antre boleh naik sendiri begitu
+> penghalangnya hilang; yang diparkir **hanya boleh diangkat kalau Johan
+> memanggilnya**. Menawarkannya lagi sama saja mengabaikan keputusan yang
+> sudah diambil.
+
+| # | Pekerjaan | Asal | Keadaan |
+|---|---|---|---|
+| C1 🅿️ | #167 — Lapis Gemini Flash di Tanya PAPAN | `ceklist-backlog.md`, `rencana-berjalan.md` #167 | **DIPARKIR** — Johan 17 Agu 2026: *"tetap jadikan backlog sampai saya panggil kmu lagi"*. Lapis aturannya sudah jalan; LLM ditunda sampai cakupan rule-engine lengkap |
+| C2 🅿️ | #129 — Chart bandarmologi | `ceklist-backlog.md`, `rencana-berjalan.md` #129, #151 | **DIPARKIR** — keputusan Johan 17 Agu sama seperti C1. Tetap terhalang data juga: `GetBrokerSummary` mengabaikan `stockCode`, hasilnya selalu level pasar; jalur Netlify Function SPLE (yang membuktikan API-nya ADA) balas `IDX API 403` (IP datacenter diblokir) — belum diuji ulang dari IP rumahan |
+| C3 🅿️ | #168 — Cara scraping arsip berita yang benar | `ceklist-backlog.md`, `rencana-berjalan.md` #168 | **DIPARKIR** atas instruksi sesi ini (setara C1/C2). Endpoint IPOT mengabaikan `halaman` → mentok ±200 berita/kanal. Menelusuri `news_id` mundur satu per satu **tidak dilakukan tanpa pembahasan** — ribuan permintaan ke server orang |
+
+---
+
+## D. Sudah selesai — dicoba ulang 20 Agu, ternyata sudah jadi
+
+Sembilan baris ini tercatat "BELUM"/"Antre" di salah satu dari lima berkas
+lama. Diverifikasi langsung ke kode (bukan dari ingatan) sebelum dipindah
+ke sini.
+
+| # | Pekerjaan | Asal (tercatat belum di) | Bukti |
+|---|---|---|---|
+| D1 | C6 — Halaman metodologi & glosarium | `ceklist-backlog.md` C6 ("BELUM — tak ada rute `/metodologi`") | **SUDAH ADA.** `App.tsx:36,123` route `/metodologi` → `views/dasbor/Metodologi.tsx`; `Metodologi.css`, `metodologi.test.ts` turut ada. Catatan lama basi — kemungkinan dikerjakan sesudah audit 18 Agu |
+| D2 | SW#25 — Dropdown `.dd-it` latar putih di tema gelap | `BACKLOG-SWEEP-VISUAL.md` #25 ("Antre") | `lantai.css:777` — `.lantai button{font:inherit;color:inherit;background:none;border:none}` sudah menutup celah, dengan komentar eksplisit merujuk #25 di baris 773-776 |
+| D3 | SW#33 — Sektor: heatmap tile 11 sektor | `BACKLOG-SWEEP-VISUAL.md` #33 ("Antre — belum pernah diimplementasi") | `SektorIndeks.tsx:305` — `<div className="tiles">` dengan tile per sektor, warna intensitas dari data harian, klik untuk filter |
+| D4 | SW#35 — Peta Investor: tooltip nyantol stale + klik detail tak nyambung | `BACKLOG-SWEEP-VISUAL.md` #35 ("Antre") | Dua-duanya sudah ditambal. Tooltip: `GrafikJaringan.tsx:60` — `tooltipRef.current.style.display='none'` dipaksa saat ganti mode (komentar "Papan #tooltip-nyantol"). Klik detail: `graphRender.ts:438-454` — tooltip sendiri jadi target klik yang meneruskan ke `onSelect` (komentar "Papan #klik-detail-nyantol") |
+| D5 | SW#19 — Expose `financial_currency` + caveat badge di Stock Detail | `BACKLOG-SWEEP-VISUAL.md` #19 ("Antre — backend tahu, JSON belum menyertakan") | Ruas terisi **962/967** berkas `fundamental/*.json`. Dipakai `stockDetailData.ts:178` (tipe) dan `StockDetail.tsx:106` (`mataUang = fd?.financial_currency ?? fd?.currency ?? null`). **Catatan**: komentar `StockDetail.tsx:105` masih berbunyi "financial_currency masih null di semua file" — komentar itu sendiri basi, datanya sudah ada |
+| D6 | RR#17 — Data harian IDX beku 66 hari | `RENCANA-REFACTOR-REACT.md` §9 #17 ("BELUM DIPERBAIKI") | `data-idx/json/ds_*.json` terbaru **`ds_260819.json`** (19 Agustus, kemarin) — panen jalan lagi. Baris ini catatan 12 Agu; sudah dibetulkan sebelum sesi ini |
+| D7 | RR#18 — `price_perf` kosong 957/957 berkas | `RENCANA-REFACTOR-REACT.md` §9 #18 ("BELUM DIPERBAIKI — akar sudah dipastikan") | Kini terisi **962/967** berkas — ditambal `scripts/lengkapi_fundamental.py` (dicatat juga di `rencana-berjalan.md` sesi 18 Agu, tapi RR belum diperbarui sampai sesi ini) |
+| D8 | `rencana-berjalan.md` D5 — `/kartu?kode=XXXX` tak dikenal → halaman kosong | `rencana-berjalan.md` D5 (sudah ditandai "TERNYATA SUDAH JADI" 19 Agu, dipindah ke sini untuk kelengkapan) | `KartuAnalisa.tsx:163` dan `:344` sudah mencetak "Kartu {kode} belum tersedia." |
+| D9 | Grup 1 indikator (Stochastic/StochRSI/Williams%R) + VWAP | `ceklist-backlog.md` C2 (sebelumnya tercatat "belum" di banyak tempat lain) | **SELESAI 19 Agu** — jenis terkurasi sendiri di `katalogIndikator.ts:126` (`ID_SUDAH_ADA`), rumus dari pustaka, bervonis BEKERJA di `docs/riset/audit-indikator.tsv`. Ini juga yang membuka #130 (B25) |
+
+---
+
+## Catatan sumber (bukan antrean, dibiarkan di berkas asal)
+
+- `docs/rencana-berjalan.md` — riwayat keputusan sesi, sumber data (IDX vs
+  Yahoo), aturan teknis berulang. **Tetap dibaca lebih dulu** untuk konteks
+  sebelum kerja apa pun (baris pembuka berkas itu).
+- `docs/ceklist-backlog.md` — riwayat audit 17/18 Agu, tabel "Selesai"
+  lengkap per gelombang, keputusan Johan yang sudah diambil.
+- `docs/BACKLOG-SWEEP-VISUAL.md` — riwayat sweep visual 11-12 Agu, item
+  yang sudah selesai (#21-24,26-28,30-32,34,38-42) tetap tercatat di sana.
+- `docs/RENCANA-REFACTOR-REACT.md` — rencana fase migrasi React, Papan
+  Pekerjaan 9-kolom Fase 5 (baris #1-28), keputusan arsitektur §1-8.
+- `docs/backlog-edisi.md` — **tidak disentuh sesi ini**, agen lain sedang
+  bekerja di area itu.

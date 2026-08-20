@@ -1,5 +1,11 @@
 # Rencana Refactor React — IDXMI + Arus Pasar
 
+> ⚠️ **Antrean pindah ke `docs/antrean.md` (20 Agu 2026).** §9 "Backlog ide"
+> dan temuan #15/#17/#18/#19 (dua dari tiganya ternyata sudah selesai saat
+> dicoba ulang) sudah dipindah ke sana. **"Ada backlog?" dijawab dari
+> `docs/antrean.md`**, bukan dari §9 di bawah — berkas ini tetap dibaca untuk
+> rencana arsitektur & Papan Pekerjaan Fase 5.
+
 > Disusun 2026-08-10, direvisi 2026-08-10 (arsitektur hibrida), direvisi lagi 2026-08-10
 > (cakupan login diperjelas — lihat §1a).
 > Status: **Fase 0-3 selesai** (scaffold+auth+routing · mesin skor TS paritas Python ·

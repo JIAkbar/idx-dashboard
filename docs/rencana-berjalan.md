@@ -1,5 +1,13 @@
 # Rencana berjalan PAPAN
 
+> ⚠️ **Antrean pindah ke `docs/antrean.md` (20 Agu 2026).** Bagian "Antrean
+> baru", "Antrean kerja", dan "Antrean terbuka" di berkas ini dulu jadi salah
+> satu dari lima sumber backlog yang berserak — "ada backlog?" berkali-kali
+> dijawab dari sini saja, dan itu yang membuat C3 Screener (hidup di
+> `ceklist-backlog.md`) tak pernah muncul. **"Ada backlog?" sekarang dijawab
+> dari `docs/antrean.md` saja.** Bagian di bawah tetap dibaca untuk riwayat
+> keputusan & sumber data, bukan untuk status antrean terkini.
+
 Catatan hidup — diperbarui tiap ada keputusan. Ditulis ke berkas supaya tidak
 bergantung pada ingatan percakapan (yang bisa diringkas dan kehilangan detail).
 

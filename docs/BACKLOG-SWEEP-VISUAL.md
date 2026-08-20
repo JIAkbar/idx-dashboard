@@ -1,5 +1,11 @@
 # Backlog Sweep Visual — Pasca-Migrasi Lantai Bursa
 
+> ⚠️ **Antrean pindah ke `docs/antrean.md` (20 Agu 2026).** Baris yang masih
+> terbuka dari berkas ini (dan yang ternyata sudah selesai saat dicoba ulang
+> — #25, #33, #35, #19) sudah dipindah ke sana. **"Ada backlog?" dijawab dari
+> `docs/antrean.md`**, bukan dari tabel di bawah — berkas ini tetap dibaca
+> untuk detail akar masalah tiap temuan.
+
 > Ditemukan user lewat sweep manual di browser (Claude in Chrome extension), 11-12 Agustus
 > 2026, setelah 13 tugas migrasi + review akhir selesai (branch
 > `claude/artifact-react-migration-c789ac`, HEAD `969e3ab`). **Backlog dulu — belum

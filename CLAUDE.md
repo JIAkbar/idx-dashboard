@@ -137,6 +137,25 @@ Yang paling sering dilanggar dan paling mahal:
 - **Ambang penyajian**: 1–4 baris boleh langsung di obrolan; 5+ baris ke
   berkas, dengan ringkasan 3–5 baris tetap wajib di obrolan.
 
+### "Ada backlog?" dijawab dari `docs/antrean.md` — SATU-SATUNYA sumber
+
+Sebelum 20 Agu 2026 antrean berserak di lima berkas (`rencana-berjalan.md`,
+`ceklist-backlog.md`, `BACKLOG-SWEEP-VISUAL.md`, `RENCANA-REFACTOR-REACT.md`,
+`backlog-edisi.md`), dan "ada backlog?" berkali-kali dijawab dari satu berkas
+saja — C3 Screener tercatat "BELUM" berbulan-bulan karena hidupnya di berkas
+yang tak pernah dibaca. Johan: *"backlog screener aja belum kmu kerjakan
+sampai detik ini, payah kmu tidak menepati janjimu"*.
+
+Sekarang: **`docs/antrean.md` adalah satu-satunya jawaban** untuk "ada
+backlog?"/"apa yang belum dikerjakan?". Kelima berkas lama tetap ada untuk
+riwayat/keputusan teknis (dirujuk dari `antrean.md`), tapi bagian antreannya
+sudah diganti penunjuk ke sana — jangan dibaca lagi sebagai status terkini.
+
+**Tiap baris "BELUM" di `antrean.md` wajib dicoba ulang** (grep/baca kode
+yang sebenarnya) sebelum dilaporkan ke Johan — jangan disalin dari ingatan
+atau dari catatan lama. Sapuan 20 Agu menemukan sembilan baris "belum" yang
+ternyata sudah jadi karena tak pernah dicoba ulang.
+
 ### Status panen WAJIB berupa tabel — `docs/status-panen.md`
 
 Johan 18 Agu 2026: *"aturan WAJIB buat tabel seperti ini dan perlu di lengkapi

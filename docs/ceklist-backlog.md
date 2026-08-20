@@ -1,5 +1,14 @@
 # Ceklist backlog PAPAN
 
+> ⚠️ **Antrean pindah ke `docs/antrean.md` (20 Agu 2026).** Berkas ini dan
+> empat lainnya (`rencana-berjalan.md`, `BACKLOG-SWEEP-VISUAL.md`,
+> `RENCANA-REFACTOR-REACT.md`, `backlog-edisi.md`) dulu masing-masing punya
+> antrean sendiri — akibatnya "ada backlog?" dijawab salah berkali-kali
+> (C3 Screener tercatat "belum" berbulan-bulan karena tak pernah dibaca dari
+> sini). **"Ada backlog?" sekarang dijawab dari `docs/antrean.md` saja.**
+> Tabel di bawah tetap ada sebagai riwayat audit (17-19 Agu) dan bukti
+> "Selesai" — jangan dipakai lagi untuk menjawab status antrean terkini.
+
 Papan status kerja borongan 16 Agustus 2026. Centang = selesai & terverifikasi
 (tsc + uji + dua viewport kalau menyentuh tampilan).
 
