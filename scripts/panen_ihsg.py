@@ -166,6 +166,19 @@ def isi_cadangan_index(baris: list[list], hari_window: int = 14, kini: datetime 
             "ihsg_high": round(h, 3),
             "ihsg_low": round(l, 3),
             "sumber": "yahoo",
+            # Hari BERJALAN ditandai terpisah, dan bedanya terukur.
+            #
+            # Kecocokan Yahoo terhadap IDX diukur atas 144 hari: 142 cocok,
+            # selisih terbesar 0,005 poin. Tapi seluruhnya hari LAMPAU, yang
+            # penutupannya sudah final. Untuk hari berjalan Yahoo memberi
+            # nilai TERAKHIR SAAT DIBACA — kalau bursa masih buka, itu bukan
+            # penutupan.
+            #
+            # Terukur 20 Agu 2026: cadangan menulis 6.498,60 (+1,63%) sore
+            # hari; PDF resmi IDX yang terbit kemudian menyebut 6.501,585
+            # (+1,68%). Meleset 2,985 poin — kecil, tapi bukan nol, dan tanpa
+            # penanda ini ia terbaca sama pastinya dengan angka resmi bursa.
+            "sementara": tgl == hari_ini,
         }
         save_json(data, stem)
         update_index(stem, data)  # tak tahu ruas `sumber` — ditambal manual di bawah

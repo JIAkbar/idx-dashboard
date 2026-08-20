@@ -499,19 +499,37 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
           const ujung = rentang !== null && (iso === rentang.mulai || iso === rentang.akhir)
           const isAktif = modeRentang ? (ujung || iso === awalPilih) : iso === tanggalAktif
           const dlm = rentang !== null && !ujung && iso > rentang.mulai && iso < rentang.akhir
+          // `sementara` membedakan dua hal yang sama-sama bersumber Yahoo tapi
+          // sangat beda kepastiannya. Untuk hari LAMPAU angkanya penutupan
+          // final — terukur 142 dari 144 hari cocok dengan IDX, selisih
+          // terbesar 0,005 poin. Untuk hari BERJALAN ia nilai terakhir saat
+          // dibaca; kalau bursa masih buka, itu bukan penutupan. Terukur
+          // 20 Agu 2026: cadangan 6.498,60 lawan 6.501,585 resmi — meleset
+          // 2,985 poin. Kecil, tapi bukan nol.
           const cadangan = data.sumber === 'yahoo'
+          const sementara = cadangan && data.sementara === true
           return (
             <button
               key={iso}
               type="button"
               className={`cg ada${isAktif ? ' aktif' : ''}${dlm ? ' dlm' : ''}`}
               onClick={() => pilih(iso)}
-              title={cadangan ? 'Cadangan Yahoo Finance — IDX belum merilis statistik resmi hari ini' : undefined}
+              title={
+                sementara
+                  ? 'Angka sementara dari Yahoo Finance — bursa mungkin masih buka, jadi ini belum penutupan resmi. Akan tergantikan begitu IDX merilis statistik harinya.'
+                  : cadangan
+                    ? 'Cadangan Yahoo Finance — IDX belum merilis statistik resmi hari ini'
+                    : undefined
+              }
             >
               <span>{day}</span>
               <span className="num" style={{ fontSize: 9 }}>
                 {data.ihsg.toLocaleString('id-ID', { maximumFractionDigits: 0 })}
-                {cadangan && <sup style={{ fontSize: 7, color: 'var(--text3)' }}>Y</sup>}
+                {cadangan && (
+                  <sup style={{ fontSize: 7, color: sementara ? 'var(--amber)' : 'var(--text3)' }}>
+                    {sementara ? 'Y~' : 'Y'}
+                  </sup>
+                )}
               </span>
               <span
                 className="num"

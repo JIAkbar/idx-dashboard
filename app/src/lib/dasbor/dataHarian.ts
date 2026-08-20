@@ -16,6 +16,13 @@ export interface TanggalIndex {
    * isi_cadangan_index() / parse_idx_pdf.py update_index()). Tak ada ruas ini
    * = data resmi bursa, sama seperti konvensi lencanaAsal di PanelLaporanKeuangan. */
   sumber?: 'yahoo'
+  /** True hanya untuk hari BERJALAN yang ditambal cadangan — bursa mungkin
+   *  masih buka saat Yahoo dibaca, jadi angkanya nilai terakhir, bukan
+   *  penutupan. Kepastiannya beda jauh dari cadangan hari lampau: 142 dari
+   *  144 hari lampau cocok dengan IDX dengan selisih terbesar 0,005 poin,
+   *  sementara hari berjalan 20 Agu 2026 meleset 2,985 poin (6.498,60 lawan
+   *  6.501,585 resmi). Dibedakan supaya keduanya tak terbaca sama pastinya. */
+  sementara?: boolean
 }
 
 /** Satu baris tabel World (field `D.world`), lihat index_live.html baris 2740-2759. */
