@@ -12,12 +12,53 @@ from pathlib import Path
 
 AKAR = Path(__file__).parent
 
+# Edisi yang PDF-nya sudah ada tapi SENGAJA tidak diterbitkan.
+#
+# Sebelum berkas ini ada, satu-satunya cara menahan edisi adalah dengan tidak
+# merender PDF-nya — jadi setiap kali `generate_index.py` dijalankan untuk
+# menerbitkan edisi lain, ia menyapu SELURUH `keluaran/` dan menerbitkan apa
+# pun yang kebetulan ada di sana. Itu yang terjadi 20 Agu 2026: menerbitkan
+# edisi harian 19 Agustus ikut menerbitkan `BA-INET-180826-E01`, padahal Johan
+# menyatakan "INET skip saja dlu". Tak ada galat, tak ada peringatan — edisinya
+# cuma muncul di Rak Terbitan publik dan baru ketahuan karena ia melihatnya.
+#
+# Aturan proyek "jangan terbitkan yang tak diminta" tak bisa dijaga oleh niat
+# saja selama penerbitannya sapu-rata; ia butuh daftar tahan yang eksplisit.
+TAHAN = AKAR / "edisi" / "_tahan.json"
+
+
+def dibekukan() -> dict[str, str]:
+    """{kode: alasan} — edisi yang ditahan, beserta sebabnya.
+
+    Alasannya wajib ikut tersimpan: daftar kode telanjang tak bisa dibedakan
+    antara "ditahan karena diminta" dan "ditahan karena rusak", dan setahun
+    lagi tak seorang pun ingat yang mana.
+    """
+    if not TAHAN.exists():
+        return {}
+    try:
+        return json.loads(TAHAN.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as e:
+        # Gagal baca TIDAK boleh diam-diam berarti "tak ada yang ditahan" —
+        # itu justru membuat edisi tertahan ikut terbit.
+        raise SystemExit(f"{TAHAN.name} tak terbaca ({e}). Betulkan dulu; "
+                         "menerbitkan tanpa daftar tahan tidak aman.")
+
 
 def main():
+    tahan = dibekukan()
     entri = []
     for berkas in sorted((AKAR / "edisi").glob("*.json")):
+        # Berkas ber-awalan garis bawah itu berkas KENDALI, bukan edisi
+        # (`_tahan.json`). Tanpa saringan ini generator mencoba membacanya
+        # sebagai edisi dan mati di `ed["edisi"]`.
+        if berkas.name.startswith("_"):
+            continue
         ed = json.loads(berkas.read_text(encoding="utf-8"))
         kode = ed["edisi"]
+        if kode in tahan:
+            print(f"  DITAHAN {kode} — {tahan[kode]}")
+            continue
         if not (AKAR / "keluaran" / f"{kode}.pdf").exists():
             continue
         baris = {
@@ -44,6 +85,13 @@ def main():
         if "edisi" not in bd:
             continue  # sidecar (flow-<TICKER>.json dkk), bukan terbitan
         kode = bd["edisi"]
+        # Daftar tahan berlaku di SINI juga, bukan cuma untuk edisi harian.
+        # Versi pertama tambalan ini cuma menyaring loop `edisi/`, dan edisi
+        # Bedah INET tetap terbit — daftar tahan yang berlaku separuh sama
+        # tak bergunanya dengan tak ada daftar tahan.
+        if kode in tahan:
+            print(f"  DITAHAN {kode} — {tahan[kode]}")
+            continue
         if not (AKAR / "keluaran" / f"{kode}.pdf").exists():
             continue
         entri.append({
