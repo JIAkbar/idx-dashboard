@@ -16,7 +16,7 @@ import {
   hitungInstans, cariDoubleBottom, cariLonjakanVolume, cariMusiman,
   cariDivergensi, stochUntukDivergensi, cariWyckoff, cariHarmonik,
   bacaTemplateTersimpan, tulisTemplateTersimpan, simpanTemplate, hapusTemplate,
-  tandaiBawaan, ubahNamaTemplate, penandaDiSekitar, tutupSampai,
+  tandaiBawaan, ubahNamaTemplate, tutupSampai,
   type BerkasOhlcEmiten, type DoubleBottom, type JenisAsli, type JenisIndikator, type JenisPola,
   type LilinData, type ParamDoubleBottom, type ParamLonjakanVolume, type StatusPola, type StatusLonjakan,
   type LonjakanVolume, type TemplateGrafik, type TemuanMusiman, type VolumeData,
@@ -1406,6 +1406,15 @@ export function GrafikEmiten() {
    * memang tak cocok dengan `lilin[i].time` dan hasilnya cadangan itu juga —
    * benar apa adanya, karena net asing memang tercatat harian.
    */
+  // Menu bukan satu-satunya jalan masuk. Template yang memuat pola Divergensi
+  // menggambarnya tanpa pembaca menyentuh menu apa pun, dan jalur itu butuh
+  // katalog yang sama. Tanpa ini, template lama membuka halaman dengan pola
+  // yang selamanya nol temuan.
+  const perluKatalogPola = pol.daftar.some((i) => i.jenis === 'divergensi')
+  useEffect(() => {
+    if (perluKatalogPola && !katalog) mintaKatalog()
+  }, [perluKatalogPola, katalog, mintaKatalog])
+
   const perluFnet = pol.daftar.some((i) => i.jenis === 'wyckoff')
   const [fnetPeta, setFnetPeta] = useState<Map<string, number>>(() => new Map())
   useEffect(() => {
@@ -1506,19 +1515,15 @@ export function GrafikEmiten() {
   // ditebak — tebakan itu meleset beberapa piksel dan legendanya duduk
   // separuh di luar panenya.
   const [posPane, setPosPane] = useState<number[]>([0])
-  // Ukuran bungkus kanvas — dipakai tooltip pola memutuskan ke arah mana ia
-  // dibuka: di separuh kanan kanvas ia harus membuka ke KIRI, kalau tidak
-  // isinya terpotong tepi kanvas justru saat penandanya paling baru (dan
-  // penanda terbaru selalu di kanan).
-  const [ukuranBungkus, setUkuranBungkus] = useState({ w: 0, h: 0 })
   const ukurPane = useCallback(() => {
     const chart = chartRef.current
     const bungkus = bungkusRef.current
     if (!chart || !bungkus) return
-    const rBungkus = bungkus.getBoundingClientRect()
-    setUkuranBungkus((lama) => (Math.abs(lama.w - rBungkus.width) < 1 && Math.abs(lama.h - rBungkus.height) < 1
-      ? lama : { w: rBungkus.width, h: rBungkus.height }))
-    const atasBungkus = rBungkus.top
+    // Ukuran bungkus dulu ikut disimpan di sini — tooltip pola memakainya
+    // untuk memutuskan membuka ke kiri atau ke kanan. Tooltipnya dimatikan
+    // 20 Agu 2026, jadi state itu ikut dibuang; yang tersisa cuma posisi
+    // pane, yang dipakai legenda dalam-kanvas.
+    const atasBungkus = bungkus.getBoundingClientRect().top
     const pos = chart.panes().map((p) => {
       const el = p.getHTMLElement()
       return el ? el.getBoundingClientRect().top - atasBungkus : 0
@@ -2010,14 +2015,6 @@ export function GrafikEmiten() {
     }
   }, [penandaPola, polaPerInstans, theme, versiSeriHarga, digambar])
 
-  // Isi tooltip pola: penanda di lilin yang sedang disorot DAN satu lilin di
-  // kiri-kanannya (lihat `penandaDiSekitar` — dua penanda berdempetan wajib
-  // disebut keduanya, bukan menang-menangan).
-  const isiTip = useMemo(
-    () => (sorot ? penandaDiSekitar(penandaPola, indeksWaktu, sorot.waktu, 1) : []),
-    [sorot, penandaPola, indeksWaktu],
-  )
-
   /* ---------------- Bilah atas ---------------- */
 
   // Kerangka waktu aktif digulirkan ke dalam pandangan — di 412px cuma
@@ -2203,8 +2200,19 @@ export function GrafikEmiten() {
               <Dropdown opsi={opsiIndikator} nilai="" placeholder="ƒx Indikator"
                 ariaLabel="Tambah indikator" onGanti={ind.tambah} />
             </span>
-            <Dropdown opsi={opsiPola} nilai="" placeholder="+ Pola"
-              ariaLabel="Tambah pola" onGanti={pol.tambah} />
+            {/* Menu Pola ikut memicu unduhan katalog, dan itu BUKAN kehati-hatian
+                berlebih: pola Divergensi menghitung %K lewat entri Stochastic
+                milik pustaka (`stochUntukDivergensi`). Tanpa katalog, deret %K
+                kosong, nol pivot lolos, dan hasilnya dilaporkan sebagai "tak
+                ada yang memenuhi syarat pada rentang ini" — kalimat yang
+                berbohong, karena syaratnya tak pernah sempat diuji. Terukur
+                20 Agu 2026 pada BBCA rentang Semua: 0 temuan sebelum menu
+                Indikator disentuh, 62 temuan sesudahnya, tanpa satu pun
+                parameter berubah. */}
+            <span onPointerDownCapture={mintaKatalog} onFocusCapture={mintaKatalog}>
+              <Dropdown opsi={opsiPola} nilai="" placeholder="+ Pola"
+                ariaLabel="Tambah pola" onGanti={pol.tambah} />
+            </span>
             {/* Compare symbols (#187). Menambah pembanding MEMAKSA skala
                 persen — lihat efek mode skala. */}
             <Dropdown opsi={opsiBanding} nilai="" placeholder="+ Banding"
@@ -2429,27 +2437,18 @@ export function GrafikEmiten() {
               </div>
             ))}
 
-            {/* Tooltip pola — menggantikan teks yang dulu menempel di tiap
-                penanda dan saling menimpa. Muncul di dekat kursor/ketukan,
-                menyebut SEMUA penanda di sekitarnya (lihat `penandaDiSekitar`).
-                pointer-events:none supaya ia tak pernah merebut kursor dari
-                kanvas yang justru sedang menghitung crosshair-nya. */}
-            {sorot && isiTip.length > 0 && (
-              <div className="grf-pola-tip" role="status" style={{
-                left: sorot.x,
-                top: sorot.y,
-                transform: `translate(${sorot.x > ukuranBungkus.w / 2 ? 'calc(-100% - 14px)' : '14px'}, ${sorot.y > ukuranBungkus.h / 2 ? 'calc(-100% - 14px)' : '14px'})`,
-              }}>
-                {isiTip.map((p) => (
-                  <span key={`${p.time}-${p.teks}`} className="grf-pola-tip-baris"
-                    style={{ '--ind-warna': `var(${p.token})` } as React.CSSProperties}>
-                    <span className="grf-legenda-titik" aria-hidden="true" />
-                    <span className="grf-pola-tip-tgl">{p.time}</span>
-                    <span>{p.teks}</span>
-                  </span>
-                ))}
-              </div>
-            )}
+            {/* Tooltip pola DIMATIKAN 20 Agu 2026 atas permintaan Johan
+                ("disable fungsi ini, repoti aja"). Ia mengambang mengikuti
+                kursor di atas kanvas dan menutupi lilin yang justru sedang
+                dibaca; keterangan yang sama — tanggal, harga, %K, ayun, rasio
+                volume — sudah ada di daftar hasil pola di bawah kanvas, dalam
+                bentuk yang bisa dibaca tenang dan disalin.
+
+                Yang dibuang cuma penyajinya. `penandaDiSekitar()` di
+                `lib/dasbor/grafikEmiten.ts` beserta ujinya sengaja DIBIARKAN:
+                ia jawaban untuk "penanda mana yang ada di dekat titik ini",
+                dan menu klik kanan yang sedang dibahas membutuhkan jawaban
+                yang persis sama. */}
             {/* Tanda PAPAN — pengganti logo TradingView yang dimatikan lewat
                 attributionLogo:false di atas (lihat komentar lisensi di situ).
                 Atribusi lisensinya sendiri PINDAH ke kaki situs global
