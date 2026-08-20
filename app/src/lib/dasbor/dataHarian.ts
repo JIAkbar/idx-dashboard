@@ -71,6 +71,24 @@ export interface SectorRow {
   ytd: number
 }
 
+/** Satu keranjang sebaran gerak harga — `v` jumlah saham, `p` persen (dibulatkan IDX). */
+export interface PriceMovementBucket {
+  v: number
+  p: number
+}
+
+/**
+ * Sebaran gerak harga sepasar (`D.price_movement`), dasar market breadth
+ * (lib/dasbor/breadth.ts). `stocks` = jumlah saham per keranjang, `mcap` =
+ * versi berbobot kapitalisasi. Urutan LIMA keranjang tetap:
+ * [turun banyak, turun, tidak berubah, naik, naik banyak] — diverifikasi
+ * lintas 144 hari (lihat breadth.ts).
+ */
+export interface PriceMovement {
+  stocks?: PriceMovementBucket[]
+  mcap?: PriceMovementBucket[]
+}
+
 /**
  * Data satu hari (data-idx/json/${stem}.json). Field yang dipakai panel World/Stocks/
  * Broker/Sector didaftar eksplisit; field lain lewat index signature supaya
@@ -129,6 +147,7 @@ export interface DataHarian {
   featured?: SectorRow[]
   sharia?: SectorRow[]
   board?: SectorRow[]
+  price_movement?: PriceMovement
   [key: string]: unknown
 }
 

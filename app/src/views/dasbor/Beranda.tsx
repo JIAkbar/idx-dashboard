@@ -9,6 +9,7 @@ import { useIhsgBuka } from '../../lib/dasbor/ihsgOhlc'
 import { useKabar, waktuKabar } from '../../lib/dasbor/kabar'
 import { rangkumHari } from '../../lib/dasbor/ringkasHarian'
 import { useBulletinList, tipeEdisi } from '../../lib/dasbor/bulletin'
+import { PanelBreadth } from '../../components/dasbor/PanelBreadth'
 import { PapanIhsg } from './IndeksDunia'
 import { IkonMenu, IKON_KUNCI, IKON_PANAH_KANAN } from '../../components/dasbor/IkonMenu'
 // Gaya baris kabar (.kbr-*) hidup di Kabar.css dan dipakai juga di sini.
@@ -235,6 +236,8 @@ export function Beranda() {
       {/* Edisi PAPAN lebih dulu, kabar pihak ketiga menyusul: yang kita
           kerjakan sendiri harus berdiri di depan yang kita tautkan. */}
       <RingkasanPasar />
+
+      <PanelBreadth />
 
       <KartuKabar />
 
