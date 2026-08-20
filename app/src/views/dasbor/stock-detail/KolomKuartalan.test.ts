@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { fmtCell, ytdKuartal, jumlahYtd, hitungTtm } from './KolomKuartalan'
+import { fmtCell, ytdKuartal, jumlahYtd, hitungTtm, nilaiSetahun, labelSetahun } from './KolomKuartalan'
 
 /**
  * Sesi 18 Agu 2026 (bug q_eps ARCI, CLAUDE.md): backend-nya yang salah
@@ -87,5 +87,59 @@ describe('hitungTtm — keterurutan, bukan sekadar empat nilai', () => {
   it('nol sungguhan ikut dihitung, null tidak', () => {
     const q = { '2025': { Q3: 0, Q4: 5 }, '2026': { Q1: 5, Q2: 5 } }
     expect(hitungTtm(q)).toEqual({ sum: 15, tersedia: 4 })
+  })
+})
+
+/**
+ * D6 — 98 emiten pelapor USD dulu punya baris "Setahun (audit)" kosong
+ * seluruhnya, karena laporan resminya dolar sementara kolom kuartal sudah
+ * rupiah. Yang diuji di sini bukan "barisnya terisi", melainkan **angka
+ * agregator tak pernah menyamar jadi auditan**: kalau suatu hari fallback-nya
+ * dipakai tanpa mengganti label, uji ini yang gagal.
+ */
+describe('nilaiSetahun + labelSetahun (D6)', () => {
+  const fd = {
+    ticker: 'X',
+    hist_net_income: { '2025': 900, '2024': 800 },
+    hist_eps: { '2025': 72.13 },
+    hist_revenue: { '2025': 5000 },
+  } as unknown as Parameters<typeof nilaiSetahun>[0]
+
+  const per = (net: number) => ({ net_income: net } as never)
+
+  it('laporan rupiah -> auditan yang menang, label menyebut audit', () => {
+    const kd = { currency: 'IDR', tahunan: { '2025-12-31': per(1000) } } as never
+    expect(nilaiSetahun(fd, kd, 'ni', 2025)).toEqual({ v: 1000, asal: 'audit' })
+    expect(labelSetahun(['audit'])).toBe('Setahun (audit)')
+  })
+
+  it('laporan dolar -> hist_* (SUDAH rupiah), dan labelnya BUKAN audit', () => {
+    const kd = { currency: 'USD', tahunan: { '2025-12-31': per(0.056) } } as never
+    expect(nilaiSetahun(fd, kd, 'ni', 2025)).toEqual({ v: 900, asal: 'agregator' })
+    expect(labelSetahun(['agregator'])).toBe('Setahun (agregator)')
+  })
+
+  it('mata uang dibaca PER PERIODE, bukan dari ringkasan berkas (CDIA)', () => {
+    // `currency` berkas bilang USD, tapi tahun buku 2024 dilaporkan rupiah.
+    const kd = {
+      currency: 'USD',
+      mata_uang: { '2025-12-31': 'USD', '2024-12-31': 'IDR' },
+      tahunan: { '2025-12-31': per(0.056), '2024-12-31': per(1200) },
+    } as never
+    expect(nilaiSetahun(fd, kd, 'ni', 2025).asal).toBe('agregator')
+    expect(nilaiSetahun(fd, kd, 'ni', 2024)).toEqual({ v: 1200, asal: 'audit' })
+    // Campuran: label tak boleh mengklaim salah satunya untuk seluruh baris.
+    expect(labelSetahun(['agregator', 'audit'])).toBe('Setahun')
+  })
+
+  it('tak ada auditan DAN tak ada hist_* -> tetap kosong, bukan 0', () => {
+    const kd = { currency: 'IDR', tahunan: {} } as never
+    expect(nilaiSetahun(fd, kd, 'ni', 2019)).toEqual({ v: null, asal: null })
+    expect(labelSetahun([null, null])).toBe('Setahun')
+  })
+
+  it('berkas keuangan_idx tak ada sama sekali -> jatuh ke hist_*', () => {
+    expect(nilaiSetahun(fd, null, 'eps', 2025)).toEqual({ v: 72.13, asal: 'agregator' })
+    expect(nilaiSetahun(fd, null, 'rev', 2025)).toEqual({ v: 5000, asal: 'agregator' })
   })
 })

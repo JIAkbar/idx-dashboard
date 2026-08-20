@@ -95,6 +95,64 @@ export function hitungTtm(qData: QuarterMap): { sum: number | null; tersedia: nu
 }
 
 const RUAS_TAHUNAN = { ni: 'net_income', eps: 'eps', rev: 'revenue' } as const
+const RUAS_HIST = { ni: 'hist_net_income', eps: 'hist_eps', rev: 'hist_revenue' } as const
+
+export type AsalSetahun = 'audit' | 'agregator'
+
+/**
+ * Angka SETAHUN untuk satu tahun buku — beserta ASALNYA, karena label baris
+ * ini ikut berubah mengikutinya.
+ *
+ * `audit` — laporan resmi bursa (`keuangan_idx/`, XBRL). Dipakai HANYA kalau
+ * laporan tahun itu disajikan dalam RUPIAH: kolom kuartal di tabel ini sudah
+ * rupiah, dan menyandingkan dolar apa adanya meleset ~17.876x tanpa satu pun
+ * galat. Mata uangnya dibaca PER PERIODE (`mata_uang[<tanggal>]`), bukan dari
+ * `currency` tingkat berkas — penerbit boleh berganti di tengah tahun buku
+ * (CDIA 2025), dan satu ringkasan tak bisa mewakili keduanya.
+ *
+ * `agregator` — `fd.hist_*` (yfinance), yang SUDAH disamakan ke rupiah dengan
+ * kurs yang sama persis dengan kolom kuartal di atasnya, jadi bisa diadu
+ * lurus. Ini menutup 98 emiten pelapor USD yang barisnya dulu kosong — tapi
+ * angkanya BUKAN auditan, jadi labelnya tak boleh menyebut audit. Itu inti
+ * D6: yang salah bukan barisnya kosong, yang salah kalau ia diisi dengan
+ * angka agregator berlabel "audit".
+ *
+ * Prioritasnya audit dulu: laporan resmi menang kalau ada dan sebanding.
+ */
+export function nilaiSetahun(
+  fd: StockFundamental,
+  kd: StockKeuangan | null,
+  mode: QMode,
+  y: number,
+): { v: number | null; asal: AsalSetahun | null } {
+  const iso = `${y}-12-31`
+  const cur = kd?.mata_uang?.[iso] ?? kd?.currency ?? 'IDR'
+  if (cur === 'IDR') {
+    const v = kd?.tahunan?.[iso]?.[RUAS_TAHUNAN[mode]]
+    if (v != null) return { v, asal: 'audit' }
+  }
+  const h = fd[RUAS_HIST[mode]]?.[String(y)]
+  return h != null ? { v: h, asal: 'agregator' } : { v: null, asal: null }
+}
+
+/** Kosakata lencana sama persis dengan `lencanaAsal` di PanelLaporanKeuangan
+ *  (B = bursa, Y = Yahoo) — dua panel di halaman yang sama tak boleh punya
+ *  dua bahasa untuk hal yang sama. Hanya `Y` yang dicetak: audit adalah
+ *  keadaan bawaan baris ini, dan menandai bawaan cuma menambah bising. */
+const JUDUL_ASAL: Record<string, string | undefined> = {
+  audit: 'Laporan tahunan resmi bursa (XBRL)',
+  agregator: 'Yahoo Finance, disamakan ke rupiah dengan kurs yang sama dengan kolom kuartal — BUKAN angka auditan. Laporan resmi tahun ini disajikan bukan dalam rupiah, jadi tak bisa disandingkan apa adanya',
+  kosong: undefined,
+}
+
+/** Label baris Setahun — mengikuti asal sel yang BENAR-BENAR terisi, bukan
+ *  asal yang diharapkan. Campuran (emiten yang ganti mata uang di tengah
+ *  riwayat) sengaja tak diberi kata apa pun: lencana per sel yang bicara. */
+export function labelSetahun(asal: (AsalSetahun | null)[]): string {
+  const ada = new Set(asal.filter((a): a is AsalSetahun => a != null))
+  if (ada.size !== 1) return 'Setahun'
+  return ada.has('audit') ? 'Setahun (audit)' : 'Setahun (agregator)'
+}
 
 /**
  * Port fdQTabBuild() index_live.html baris 3928-3993. Re-layout mockup
@@ -124,10 +182,11 @@ function QuarterlyTable({ fd, mode, kd }: { fd: StockFundamental; mode: QMode; k
   const ttm = hitungTtm(qData)
 
   /* Kolom kuartal sudah dinormalkan ke rupiah di hulu, laporan setahun BELUM
-     (98 emiten melapor dolar). Menyandingkannya apa adanya meleset ~17.000x
-     tanpa satu pun galat, jadi yang bukan rupiah sengaja tak ditampilkan. */
-  const beda = kd && kd.currency !== 'IDR' ? kd.currency : null
-  const tahunan = beda ? null : kd?.tahunan
+     (98 emiten melapor dolar). Menyandingkannya apa adanya meleset ~17.876x
+     tanpa satu pun galat, jadi tahun yang laporannya bukan rupiah jatuh ke
+     `hist_*` yang SUDAH rupiah — dan barisnya ganti nama supaya tak ada
+     angka agregator yang menyamar jadi auditan (D6). */
+  const setahun = years.map((y) => nilaiSetahun(fd, kd, mode, y))
 
   const suffix = mode === 'eps' ? 'IDR' : 'B IDR'
 
@@ -151,12 +210,13 @@ function QuarterlyTable({ fd, mode, kd }: { fd: StockFundamental; mode: QMode; k
             </tr>
           ))}
           <tr className="fd-divider">
-            <td>Setahun (audit)</td>
-            {years.map((y) => {
-              const v = tahunan?.[`${y}-12-31`]?.[RUAS_TAHUNAN[mode]] ?? null
+            <td>{labelSetahun(setahun.map((s) => s.asal))}</td>
+            {years.map((y, i) => {
+              const { v, asal } = setahun[i]
               return (
-                <td key={y} className="r" title={v == null && beda ? `Laporan setahun disajikan dalam ${beda}, tak sebanding dengan kolom rupiah` : undefined}>
+                <td key={y} className="r" title={JUDUL_ASAL[asal ?? 'kosong']}>
                   {fmt(v)}
+                  {asal === 'agregator' && <sup style={{ color: 'var(--text3)' }}>Y</sup>}
                 </td>
               )
             })}
