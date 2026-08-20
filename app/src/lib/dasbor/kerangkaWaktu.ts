@@ -19,15 +19,15 @@
  *
  * Seluruh halaman ini memakai `time: string`: harian `'yyyy-mm-dd'`, intraday
  * `'yyyy-mm-dd HH:mm'` dalam WIB. Keduanya urut secara leksikografis, jadi
- * `potongRentang`, peta legenda, dan pencarian pola tak perlu tahu ada
- * kerangka waktu sama sekali — mereka tetap membandingkan string.
+ * peta legenda dan pencarian pola tak perlu tahu ada kerangka waktu sama
+ * sekali — mereka tetap membandingkan string.
  *
  * Konversi ke tipe `Time` lightweight-charts terjadi di SATU tempat
  * (`keWaktuChart`) tepat saat data diserahkan ke kanvas, dan kembalinya
  * (`dariWaktuChart`) saat crosshair melaporkan titik yang disorot. Alternatif
  * yang ditolak: memakai epoch angka sebagai waktu internal — itu memaksa
- * seluruh 1.400 baris `grafikEmiten.ts` (potong rentang, ATR, pivot, musiman,
- * penanda) ikut berganti tipe demi satu hal yang cuma dibutuhkan kanvas.
+ * seluruh 1.400 baris `grafikEmiten.ts` (ATR, pivot, musiman, penanda) ikut
+ * berganti tipe demi satu hal yang cuma dibutuhkan kanvas.
  */
 import type { LilinData, VolumeData } from './grafikEmiten'
 

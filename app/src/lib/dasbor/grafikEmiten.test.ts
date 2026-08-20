@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import {
-  keDataLilinVolume, batasBawahHari, potongRentang, RENTANG_KAKI, RENTANG_KAKI_BAWAAN,
+  keDataLilinVolume, batasBawahHari, RENTANG_KAKI, RENTANG_KAKI_BAWAAN,
   salinInstans, terapkanDraf,
   hitungMA, hitungEMA, hitungRSI, hitungMACD, hitungBollinger, keSeriGaris,
   SPEK_INDIKATOR, buatInstans, galatNilaiParam, galatInstans, labelInstansIndikator,
@@ -53,19 +53,6 @@ describe('batasBawahHari', () => {
     // Tanpa `slice(0, 10)` di dalamnya, `new Date` menolak dan seluruh
     // pemotongan rentang diam-diam jadi "tak ada batas".
     expect(batasBawahHari('2026-08-14 15:30', 5)).toBe('2026-08-09')
-  })
-})
-
-describe('potongRentang', () => {
-  const seri = [{ time: '2024-01-01' }, { time: '2024-06-01' }, { time: '2025-01-01' }]
-  it('batas kosong -> seluruh data lolos', () => {
-    expect(potongRentang(seri, '')).toEqual(seri)
-  })
-  it('memotong ke tanggal >= batas', () => {
-    expect(potongRentang(seri, '2024-06-01')).toEqual([{ time: '2024-06-01' }, { time: '2025-01-01' }])
-  })
-  it('batas di atas seluruh data -> array kosong', () => {
-    expect(potongRentang(seri, '2099-01-01')).toEqual([])
   })
 })
 

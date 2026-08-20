@@ -132,15 +132,6 @@ export function batasBawahHari(akhirData: string, hari: number | null): string {
  *  chip yang tersorot dan data yang tergambar mustahil berbeda. */
 export const RENTANG_KAKI_BAWAAN = 'Semua'
 
-/** Potong lilin+volume ke rentang [batasBawah, ∞). Dua array dipotong
- *  bersamaan (indeksnya selalu selaras — sama-sama diturunkan dari `d` yang
- *  sama di `keDataLilinVolume`), jadi cukup satu pencarian indeks. */
-export function potongRentang<T extends { time: string }>(data: T[], batasBawah: string): T[] {
-  if (!batasBawah) return data
-  const i = data.findIndex((b) => b.time >= batasBawah)
-  return i === -1 ? [] : data.slice(i)
-}
-
 /**
  * Harga tutup pada waktu `t`, atau tutup terakhir SEBELUM `t` kalau waktu itu
  * tak ada di deret. `null` kalau seluruh deret masih di depan `t`.
