@@ -109,6 +109,10 @@
 .lantai .tp-tautan { font-size: 10.5px; color: var(--amber); text-decoration: none; }
 .lantai .tp-tautan:hover { text-decoration: underline; }
 
+/* Chip saran lanjutan — bentuknya SAMA dengan .tp-contoh-it (dipakai lagi,
+   bukan gaya baru), cuma dibungkus baris yang boleh melipat. */
+.lantai .tp-saran { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
+
 .lantai .tp-kirim { display: flex; gap: 6px; }
 .lantai .tp-kirim .inp { flex: 1; min-width: 0; }
 .lantai .tp-kirim .btn-p { white-space: nowrap; }

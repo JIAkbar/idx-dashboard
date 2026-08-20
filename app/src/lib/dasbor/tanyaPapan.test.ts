@@ -25,6 +25,11 @@ const hari = {
     { n: '[F] Healthcare', v: 100, d: 3.09, ytd: 0 },
     { n: '[G] Properti', v: 100, d: 2.99, ytd: 0 },
   ],
+  broker_val: [
+    { cd: 'XL', nm: 'Stockbit Sekuritas Digital', v: 4196, p: 14.05 },
+    { cd: 'CC', nm: 'Mandiri Sekuritas', v: 3094, p: 8.78 },
+    { cd: 'AK', nm: 'UBS Sekuritas Indonesia', v: 2674, p: 7.6 },
+  ],
 } as unknown as DataHarian
 
 /** Seri menaik 30 hari — cukup untuk sepekan (5) dan sebulan (21). */
@@ -331,6 +336,90 @@ describe('jawab — susulan atas topik baru tak menebak (dan tak crash)', () => 
   it('"kenapa?" setelah topik hargaEmiten mengaku tak tahu, bukan lempar error', () => {
     const j = jawab('kenapa?', konteks({ topik: 'hargaEmiten' }))
     expect(j.takPaham).toBe(true)
+  })
+})
+
+describe('jawab — top broker (market-wide, dari h.broker_val)', () => {
+  it('broker paling aktif diurut nilai transaksi, tanpa fetch tahap-2', () => {
+    const j = jawab('broker paling aktif hari ini', konteks())
+    expect(j.butuh).toBeUndefined()
+    expect(j.teks).toContain('Stockbit Sekuritas Digital')
+    expect(j.teks).toContain('Mandiri Sekuritas')
+    expect(j.topik).toBe('broker')
+    expect(j.ke).toBe('/broker')
+  })
+
+  it('"top broker" tanpa kata rangking lain tetap dikenali', () => {
+    const j = jawab('top broker hari ini', konteks())
+    expect(j.teks).toContain('Stockbit')
+  })
+
+  it('data broker belum ada dijawab jujur, bukan array kosong diam-diam', () => {
+    const j = jawab('broker teraktif hari ini', konteks({ hari: { ...hari, broker_val: undefined } }))
+    expect(j.takPaham).toBe(true)
+    expect(j.teks).toContain('belum ada')
+  })
+
+  it('broker PER EMITEN (bukan market-wide) dijawab jujur belum tersedia', () => {
+    const j = jawab('broker BBCA berapa', konteks({ kamus }))
+    expect(j.takPaham).toBe(true)
+    expect(j.teks).toContain('broker per emiten')
+  })
+
+  it('bare "broker" TANPA kata rangking tetap ditawari cabang tiga arah (tak berubah)', () => {
+    const j = jawab('broker', konteks())
+    expect(j.teks).toContain('tiga hal berbeda')
+  })
+})
+
+describe('jawab — sambungan kata ganti (subjek) dengan awalan tanya', () => {
+  it('"bagaimana valuasinya?" sesudah topik hargaEmiten BBCA nyambung ke valuasi BBCA, bukan valuasi pasar', () => {
+    const j = jawab('bagaimana valuasinya?', konteks({
+      kamus, topik: 'hargaEmiten', subjek: 'BBCA',
+      data: { jenis: 'fundamental', kode: 'BBCA', payload: fd },
+    }))
+    expect(j.teks).toContain('PER 13,51')
+    expect(j.topik).toBe('valuasiEmiten')
+  })
+
+  it('"gimana sektornya?" nyambung ke sektor emiten yang sedang dibahas', () => {
+    const j = jawab('gimana sektornya?', konteks({
+      kamus, topik: 'hargaEmiten', subjek: 'BBCA',
+      data: { jenis: 'fundamental', kode: 'BBCA', payload: fd },
+    }))
+    expect(j.teks).toContain('Financial Services')
+  })
+
+  it('"berapa harganya?" (awalan + ruas) tetap menyambung', () => {
+    const j = jawab('berapa harganya?', konteks({
+      kamus, topik: 'valuasiEmiten', subjek: 'BBCA',
+      data: { jenis: 'fundamental', kode: 'BBCA', payload: fd },
+    }))
+    expect(j.teks).toContain('6.375')
+  })
+})
+
+describe('jawab — chip saran lanjutan', () => {
+  it('topik market-wide menyertakan saran pertanyaan lain', () => {
+    const j = jawab('IHSG hari ini berapa?', konteks())
+    expect(j.saran).toEqual(expect.arrayContaining(['Asing net buy atau net sell?']))
+  })
+
+  it('topik per-emiten menyarankan ruas LAIN untuk emiten yang sama, bukan ruas yang barusan ditanya', () => {
+    const j = jawab('harga BBCA berapa?', konteks({ kamus, data: { jenis: 'fundamental', kode: 'BBCA', payload: fd } }))
+    expect(j.saran).toEqual(expect.arrayContaining(['Valuasi BBCA']))
+    expect(j.saran).not.toEqual(expect.arrayContaining(['Harga BBCA']))
+  })
+
+  it('jawaban takPaham tak menyertakan saran', () => {
+    const j = jawab('siapa direktur BBCA?', konteks({ kamus }))
+    expect(j.saran).toBeUndefined()
+  })
+
+  it('jawaban "butuh" (belum ada datanya) tak menyertakan saran', () => {
+    const j = jawab('harga BBCA berapa?', konteks({ kamus }))
+    expect(j.butuh).toBeDefined()
+    expect(j.saran).toBeUndefined()
   })
 })
 

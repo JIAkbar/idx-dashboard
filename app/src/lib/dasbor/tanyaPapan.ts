@@ -77,7 +77,7 @@ export interface KonteksTanya {
 /** Topik yang bisa dilanjutkan pertanyaan susulan. Topik per-emiten & kalender
  *  SENGAJA tak masuk peta susulan (`balik` di bawah) — lihat catatannya di
  *  sana. */
-export type Topik = 'ihsg' | 'asing' | 'sektor' | 'gainer' | 'loser' | 'penggerak'
+export type Topik = 'ihsg' | 'asing' | 'sektor' | 'gainer' | 'loser' | 'penggerak' | 'broker'
   | 'valuasi' | 'edisi' | 'kabar' | 'ambang' | 'lintasWaktu' | 'kalender' | 'grup'
   | 'hargaEmiten' | 'valuasiEmiten' | 'sektorEmiten' | 'kinerjaEmiten' | 'pemilikEmiten'
   | null
@@ -101,6 +101,11 @@ export interface Jawaban {
    *  mengambil berkasnya lalu memanggil `jawab()` lagi dengan pertanyaan yang
    *  SAMA dan `data` terisi. */
   butuh?: { jenis: DataButuh['jenis']; kode: string }
+  /** Pertanyaan lanjutan yang wajar ditawarkan sebagai CHIP — bukan ditebak
+   *  otomatis. Diisi TERPUSAT di `jawab()` dari `topik`/`subjek` HASIL AKHIR
+   *  (lihat `saranUntuk`), bukan per fungsi `jawabX` — supaya daftarnya tak
+   *  bercabang jadi banyak versi. */
+  saran?: string[]
 }
 
 const rp = (n: number, des = 2) =>
@@ -286,6 +291,27 @@ function jawabKinerja(kode: string, od: OhlcRingkas | null): Jawaban {
       `dari Rp${rp(rk.awal, 0)} (${rk.awalTgl}) ke Rp${rp(rk.akhir, 0)} (${rk.akhirTgl}). ` +
       `Kisaran 52 minggu Rp${rp(rk.lo, 0)}–Rp${rp(rk.hi, 0)}, sekarang ${pct(rk.jarakPuncak)} dari puncak (${rk.hiTgl}).`,
     topik: 'kinerjaEmiten', ...linkEmiten(kode),
+  }
+}
+
+const linkBroker = { ke: '/broker', keLabel: 'Top Broker' }
+
+/**
+ * Top Broker — broker paling aktif SE-PASAR hari itu, DIURUT NILAI transaksi.
+ * Beda dari Broker Summary PER EMITEN (lihat RUAS_BELUM di bawah): data ini
+ * sudah termuat di `h.broker_val` lewat fetch harian biasa (sama field yang
+ * dipakai halaman /broker), jadi TANPA fetch tahap-2.
+ *
+ * ponytail: cuma ranking nilai transaksi. "Broker volume terbesar"/"frekuensi
+ * terbesar" belum dicabangkan ke `h.broker_vol`/`h.broker_freq` — tambahkan
+ * kalau memang ada yang menanyakannya secara eksplisit.
+ */
+function jawabBroker(h: DataHarian): Jawaban {
+  const top = (h.broker_val ?? []).slice(0, 3)
+  if (top.length === 0) return { teks: 'Data Top Broker hari ini belum ada.', takPaham: true, ...linkBroker }
+  return {
+    teks: `Broker paling aktif hari ini (nilai transaksi): ${top.map((x) => `${x.nm} ${rp(x.p)}%`).join(', ')}.`,
+    topik: 'broker', ...linkBroker,
   }
 }
 
@@ -495,6 +521,9 @@ const RUAS_BELUM: [RegExp, string][] = [
   [/\b(dividen|dividend|yield)\b/, 'jadwal dan besaran dividen'],
   [/\b(nilai transaksi|turnover)\b/, 'nilai transaksi per emiten'],
   [/\b(bid|offer|antrian|order ?book)\b/, 'antrian bid/offer'],
+  // Top Broker yang kita punya (`h.broker_val`, lihat jawabBroker) itu
+  // MARKET-WIDE, bukan per emiten — "broker BBCA" tak ada jawabannya di sini.
+  [/\bbroker\b/, 'rincian broker per emiten'],
   [/\b(fee|komisi|biaya (transaksi|beli|jual)|pajak)\b/, 'biaya transaksi dan pajak'],
 ]
 
@@ -580,6 +609,41 @@ function beruntun(seri: TanggalIndex[]): { arah: 'naik' | 'turun'; hari: number 
   return { arah, hari: n }
 }
 
+/** Pertanyaan lanjutan yang wajar sesudah tiap TOPIK PASAR (market-wide) —
+ *  ditawarkan sebagai chip, jangan ditebak otomatis (beda dari
+ *  SUSULAN/RUAS_SUSULAN yang langsung MENJAWAB kalau orangnya benar-benar
+ *  mengetik susulannya). Kalimatnya sengaja sama persis dengan yang sudah
+ *  dikenali mesin di tempat lain (CONTOH_TANYA, RUAS_SUSULAN) — bukan gaya
+ *  baru yang harus dikenali lagi dari nol. */
+const SARAN_PASAR: Partial<Record<Exclude<Topik, null>, string[]>> = {
+  ihsg: ['Asing net buy atau net sell?', 'Sektor apa yang paling kuat?'],
+  asing: ['IHSG hari ini bagaimana?', 'Sektor apa yang paling kuat?'],
+  sektor: ['Saham apa yang paling naik?', 'Asing net buy atau net sell?'],
+  gainer: ['Saham apa yang paling turun?', 'Sektor apa yang paling kuat?'],
+  loser: ['Saham apa yang paling naik?', 'Sektor apa yang paling kuat?'],
+  penggerak: ['IHSG hari ini bagaimana?', 'Saham apa yang paling naik?'],
+  valuasi: ['Sektor apa yang paling kuat?', 'IHSG hari ini bagaimana?'],
+  broker: ['IHSG hari ini bagaimana?', 'Saham apa yang paling naik?'],
+}
+
+/** Ruas per-emiten LAIN yang belum ditanyakan — dipetik dari RUAS yang SAMA
+ *  dengan `RUAS_SUSULAN` di atas (bukan daftar baru), supaya kalau ruasnya
+ *  nanti bertambah cukup diubah SATU tempat. */
+const RUAS_EMITEN: [Exclude<Topik, null>, (kd: string) => string][] = [
+  ['hargaEmiten', (kd) => `Harga ${kd}`],
+  ['valuasiEmiten', (kd) => `Valuasi ${kd}`],
+  ['sektorEmiten', (kd) => `Sektor ${kd}`],
+  ['kinerjaEmiten', (kd) => `${kd} setahun terakhir`],
+  ['pemilikEmiten', (kd) => `Siapa pemilik ${kd}`],
+]
+
+function saranUntuk(topik: Topik | undefined, subjek?: string): string[] | undefined {
+  if (topik && subjek && RUAS_EMITEN.some(([tp]) => tp === topik)) {
+    return RUAS_EMITEN.filter(([tp]) => tp !== topik).map(([, teks]) => teks(subjek))
+  }
+  return topik ? SARAN_PASAR[topik] : undefined
+}
+
 /**
  * Satu pertanyaan bisa menyebut lebih dari satu emiten, dan mesin ini hanya
  * menjawab yang pertama. Itu boleh — yang tak boleh MENDIAMKANNYA: "harga
@@ -588,14 +652,19 @@ function beruntun(seri: TanggalIndex[]): { arah: 'naik' | 'turun'; hari: number 
  *
  * Catatan ditempel di pembungkus, bukan di tiap blok: emiten dijawab dari
  * belasan cabang berbeda dan menambahkannya satu per satu berarti ada yang
- * terlewat sejak hari pertama.
+ * terlewat sejak hari pertama. Chip `saran` ditempel di sini juga, dari
+ * TOPIK/SUBJEK HASIL AKHIR — sama alasannya.
  */
 export function jawab(pertanyaan: string, k: KonteksTanya): Jawaban {
   const j = jawabInti(pertanyaan, k)
+  if (j.butuh || j.takPaham) return j
   const disebut = kodeDisebut(pertanyaan, k.kamus)
   const lain = disebut.filter((x) => x !== (j.subjek ?? disebut[0]))
-  if (j.butuh || j.takPaham || lain.length === 0) return j
-  return { ...j, teks: `${j.teks} (Saya menjawab satu emiten per pertanyaan — untuk ${lain.join(', ')} tanyakan terpisah.)` }
+  const hasil = lain.length === 0
+    ? j
+    : { ...j, teks: `${j.teks} (Saya menjawab satu emiten per pertanyaan — untuk ${lain.join(', ')} tanyakan terpisah.)` }
+  const saran = saranUntuk(hasil.topik, hasil.subjek)
+  return saran ? { ...hasil, saran } : hasil
 }
 
 function jawabInti(pertanyaan: string, k: KonteksTanya): Jawaban {
@@ -654,13 +723,19 @@ function jawabInti(pertanyaan: string, k: KonteksTanya): Jawaban {
   // sektor emiten yang sedang dibahas), dan "kalau BBRI?" dijawab profil
   // peringkat BBRI (bukan ruas yang sedang dibahas). Keduanya dirakit ulang
   // jadi pertanyaan penuh, persis seperti susulan biasa di atas.
+  // Awalan tanya opsional ("bagaimana", "gimana", "berapa") — TANPA ini
+  // "bagaimana valuasinya?" tak dikenali sebagai susulan sama sekali (cuma
+  // "valuasinya?" polos yang cocok), lalu jatuh ke blok valuasi PASAR di
+  // bawah dan menjawab PER pasar, bukan PER emiten yang sedang dibahas.
+  // ponytail: cuma awalan DI DEPAN yang ditangkap, bukan di belakang
+  // ("sektornya bagaimana?") — tambahkan kalau memang ada yang menanyakannya.
   const RUAS_SUSULAN: [RegExp, (kd: string) => string][] = [
-    [/^(harga|harganya)\??$/, (kd) => `harga ${kd}`],
-    [/^(valuasi|valuasinya|per pbv|pe|pernya)\??$/, (kd) => `PER PBV ${kd}`],
-    [/^(sektor|sektornya|industrinya)\??$/, (kd) => `sektor ${kd}`],
-    [/^(pemilik|pemiliknya|pemegang sahamnya)\??$/, (kd) => `siapa pemilik ${kd}`],
-    [/^(grup|grupnya)\??$/, (kd) => `${kd} grup apa`],
-    [/^(setahun|kinerjanya|setahun terakhir)\??$/, (kd) => `${kd} setahun terakhir`],
+    [/^(bagaimana|gimana|berapa)?\s*(harga|harganya)\??$/, (kd) => `harga ${kd}`],
+    [/^(bagaimana|gimana|berapa)?\s*(valuasi|valuasinya|per pbv|pe|pernya)\??$/, (kd) => `PER PBV ${kd}`],
+    [/^(bagaimana|gimana|berapa)?\s*(sektor|sektornya|industrinya)\??$/, (kd) => `sektor ${kd}`],
+    [/^(bagaimana|gimana|berapa)?\s*(pemilik|pemiliknya|pemegang sahamnya)\??$/, (kd) => `siapa pemilik ${kd}`],
+    [/^(bagaimana|gimana|berapa)?\s*(grup|grupnya)\??$/, (kd) => `${kd} grup apa`],
+    [/^(bagaimana|gimana|berapa)?\s*(setahun|kinerjanya|setahun terakhir)\??$/, (kd) => `${kd} setahun terakhir`],
   ]
   if (k.subjek) {
     const ruas = RUAS_SUSULAN.find(([pola]) => pola.test(t.trim()))
@@ -1120,6 +1195,14 @@ function jawabInti(pertanyaan: string, k: KonteksTanya): Jawaban {
       teks: `Top losers: ${l.map((x) => `${x.c} ${pct(x.p)}`).join(', ')}.`,
       topik: 'loser', ke: '/stocks', keLabel: 'Top Stocks',
     }
+  }
+
+  // ── Top Broker — broker paling aktif SE-PASAR (lihat jawabBroker) ────────
+  // Dibedakan dari bare "broker" (ditangani CABANG di ujung fungsi kalau tak
+  // ada kata rangking): di sini pertanyaannya sudah cukup spesifik untuk
+  // dijawab langsung, bukan ditawari cabang tiga arah.
+  if (punya(t, 'broker') && punya(t, 'paling aktif', 'teraktif', 'top broker', 'terbesar', 'tersibuk', 'paling banyak')) {
+    return jawabBroker(h)
   }
 
   // ── Penggerak indeks ─────────────────────────────────────────────────────

@@ -59,6 +59,10 @@ interface Baris {
   /** Jawaban ini datang dari model bahasa, bukan dari data yang dihitung.
    *  Bedanya WAJIB terlihat pembaca — itu inti janji panel ini. */
   dariAI?: boolean
+  /** Pertanyaan lanjutan yang ditawarkan sebagai chip (lihat `Jawaban.saran`
+   *  di tanyaPapan.ts) — klik langsung mengirim teksnya, sama seperti chip
+   *  "Coba tanya" di layar kosong. */
+  saran?: string[]
 }
 
 /** Jeda minimum sebelum jawaban muncul.
@@ -187,7 +191,7 @@ Lapis AI-nya khusus yang sudah masuk — tiap pertanyaan ke sana ` +
       // yang sudah tak dibicarakan.
       subjekRef.current = j.subjek ?? null
     }
-    setRiwayat((r) => [...r, { dari: 'papan', teks: j.teks, ke: j.ke, keLabel: j.keLabel, dariAI }])
+    setRiwayat((r) => [...r, { dari: 'papan', teks: j.teks, ke: j.ke, keLabel: j.keLabel, dariAI, saran: j.saran }])
   }
 
   return (
@@ -247,6 +251,13 @@ Lapis AI-nya khusus yang sudah masuk — tiap pertanyaan ke sana ` +
                   <Link className="tp-tautan" to={b.ke} onClick={() => setBuka(false)}>
                     {b.keLabel ?? 'Buka halaman'} →
                   </Link>
+                )}
+                {b.saran && b.saran.length > 0 && (
+                  <div className="tp-saran">
+                    {b.saran.map((s) => (
+                      <button key={s} type="button" className="tp-contoh-it" onClick={() => kirim(s)}>{s}</button>
+                    ))}
+                  </div>
                 )}
               </div>
             ))}
