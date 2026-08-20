@@ -139,4 +139,10 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   // supaya halaman ini tak jadi celah yang tak kelihatan dari panel (persis
   // yang dulu terjadi pada Top Stocks & Top Broker).
   statistik: 'statistik',
+  // Watchlist dinamis (backlog C8, 19 Agu 2026) — daftar pantau milik
+  // pembaca sendiri (localStorage), BEDA dari 'radar' (arsip WDWL berbasis
+  // aturan). Baris `akses_halaman` BELUM ada di database sesi ini (pola sama
+  // 'kta'/'statistik') -> kunci tak dikenal fail-open, publik sampai
+  // tingkatnya diatur dari tab Akses.
+  watchlist: 'watchlist',
 }

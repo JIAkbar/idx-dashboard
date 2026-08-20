@@ -151,6 +151,17 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M12 3a9 9 0 109 9M12 7a5 5 0 105 5M12 12l5.5-5.5M12 12h.01',
   },
   {
+    // Watchlist dinamis (backlog C8, 19 Agu 2026) — BEDA dari 'radar' (Radar
+    // Watchlist, arsip WDWL berbasis aturan): ini daftar pantau milik
+    // pembaca sendiri, disimpan di peranti (localStorage), bergerak
+    // mengikuti OHLCV harian + harga milik utk untung-rugi. Ikon dipakai
+    // ulang dari IKON_MATA ("mata" = memantau, sudah dipakai makna sama di
+    // toggle tampil/sembunyi Grafik Emiten) — bukan ikon baru.
+    id: 'watchlist', path: '/watchlist', label: 'Watchlist', kode: 'WCH', grup: 'analisa',
+    ringkas: 'Daftar pantau milik Anda sendiri — harga bergerak tiap hari, isi harga beli untuk melihat untung-rugi.',
+    ikon: 'M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12zM12 12m-2.6 0a2.6 2.6 0 1 0 5.2 0 2.6 2.6 0 1 0-5.2 0',
+  },
+  {
     id: 'kalkulator', path: '/kalkulator', label: 'Kalkulator', kode: 'KAL', grup: 'analisa',
     ringkas: 'Hitung average down, target ARA, risk-reward, dividen, dan titik pulih.',
     ikon: 'M6 3h12a1 1 0 011 1v16a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1zM8 7h8M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01',

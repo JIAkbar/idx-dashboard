@@ -1,0 +1,27 @@
+/* Watchlist (/watchlist) — bentuk dari primitif generik yang sudah ada
+   (.af-cari, .inp, .tbl, .board-tbl-wrap, .th-sort, .sea-saran, .ti);
+   di sini cuma penempatan & lebar (#170 prinsip 4). JANGAN sentuh
+   app/src/dasbor/lantai.css dari berkas ini. */
+
+.wl-cari { width: 100%; max-width: 360px; }
+
+.wl-tbl { white-space: nowrap; }
+
+.wl-avg { width: 100px; text-align: right; }
+
+.wl-nama {
+  display: block;
+  font-size: 11px;
+  color: var(--text3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
+}
+
+.wl-catatan { margin: 10px 14px 14px; font-size: 11.5px; }
+
+@media (max-width: 480px) {
+  .wl-cari { max-width: 100%; }
+  .wl-nama { max-width: 100px; }
+}

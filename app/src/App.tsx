@@ -35,6 +35,7 @@ const GrafikEmiten = lazy(() => import('./views/dasbor/GrafikEmiten').then((m) =
 const KartuAnalisa = lazy(() => import('./views/dasbor/KartuAnalisa').then((m) => ({ default: m.KartuAnalisa })))
 const Metodologi = lazy(() => import('./views/dasbor/Metodologi').then((m) => ({ default: m.Metodologi })))
 const StatistikBerkala = lazy(() => import('./views/dasbor/StatistikBerkala').then((m) => ({ default: m.StatistikBerkala })))
+const Watchlist = lazy(() => import('./views/dasbor/Watchlist').then((m) => ({ default: m.Watchlist })))
 const AdminLayout = lazy(() => import('./views/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })))
 const UnggahHarian = lazy(() => import('./views/admin/UnggahHarian').then((m) => ({ default: m.UnggahHarian })))
 const AkunAdmin = lazy(() => import('./views/admin/AkunAdmin').then((m) => ({ default: m.AkunAdmin })))
@@ -105,6 +106,14 @@ function App() {
                   ini terbuka untuk semua orang padahal setelannya "perlu
                   login". */}
               <Route path="/radar" element={<PenjagaHalaman kunci="radar"><Radar /></PenjagaHalaman>} />
+              {/* Watchlist dinamis (backlog C8, 19 Agu 2026) — beda dari
+                  /radar (Radar Watchlist, arsip WDWL berbasis aturan): ini
+                  daftar pantau MILIK PEMBACA SENDIRI, disimpan localStorage
+                  (lib/dasbor/watchlist.ts), bergerak mengikuti OHLCV harian.
+                  Kunci 'watchlist' belum ada baris di `akses_halaman` (pola
+                  sama 'kta'/'statistik') -> publik sampai diatur dari tab
+                  Akses, tapi kuncinya sudah terpasang di sini & PETA_MENU_KUNCI. */}
+              <Route path="/watchlist" element={<PenjagaHalaman kunci="watchlist"><Watchlist /></PenjagaHalaman>} />
               <Route path="/seasonality" element={<PenjagaHalaman kunci="seasonality"><Seasonality /></PenjagaHalaman>} />
               {/* Chart PAPAN (bukan /chart TradingView) — lilin+volume dari
                   OHLC lokal, tahap 3. Perlu login (keputusan Johan 17 Agu
