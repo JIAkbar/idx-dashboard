@@ -792,6 +792,58 @@ def jalankan_arsip(tickers: set[str] | None, tahun: int | None, periode: str | N
     return 0
 
 
+def periksa_ketersediaan() -> int:
+    """Probe MURAH sebelum panen mahal: satu permintaan DAFTAR per (tahun,
+    periode), nol unduhan XLSX.
+
+    Aturan proyek 18 Agu 2026 #1: panen 2016-2019 dikirim tanpa memeriksa
+    apakah IDX menyajikan tahun-tahun itu; satu agen habis satu siklus penuh
+    lalu 2018 menjawab `ResultCount 0`. Membuka satu URL sudah menjawabnya
+    lebih dulu. Fungsi ini membuat langkah itu tak bisa dilewati lagi.
+
+    Yang diperiksa: periode mana saja yang mata uangnya masih DITAKSIR
+    (mentahnya tak pernah terarsip), berapa yang IDX sajikan hari ini, dan
+    berapa yang benar-benar punya lampiran XLSX.
+    """
+    from collections import Counter
+
+    kurang: Counter = Counter()
+    for p in sorted(KELUARAN_DIR.glob("*.json")):
+        isi = json.loads(p.read_text(encoding="utf-8"))
+        lap = isi.get("mata_uang_laporan") or {}
+        for t in (isi.get("mata_uang") or {}):
+            if t not in lap:
+                kurang[t] += 1
+    if not kurang:
+        print("nol periode ditaksir -- tak ada yang perlu dipanen ulang")
+        return 0
+
+    akhir_ke_periode = {"03-31": "tw1", "06-30": "tw2", "09-30": "tw3", "12-31": "audit"}
+    sesi = requests.Session()
+    total_unduh = 0
+    print(f"{'periode':<12} {'ditaksir':>9} {'disajikan IDX':>14} {'ber-XLSX':>9}")
+    for tanggal, n in sorted(kurang.items()):
+        tahun, akhir = int(tanggal[:4]), tanggal[5:]
+        per = akhir_ke_periode.get(akhir)
+        if per is None:
+            print(f"{tanggal:<12} {n:>9} {'(tanggal tak dikenal)':>14}")
+            continue
+        try:
+            daftar = ambil_daftar(sesi, tahun, per)
+            berkas = sum(1 for e in daftar.values() if cari_xlsx(e))
+        except Exception as e:  # noqa: BLE001
+            print(f"{tanggal:<12} {n:>9}   GAGAL {e.__class__.__name__}")
+            continue
+        total_unduh += berkas
+        print(f"{tanggal:<12} {n:>9} {len(daftar):>14} {berkas:>9}")
+        time.sleep(2)
+    print(f"\nkalau semuanya dipanen: {total_unduh} unduhan XLSX"
+          f"  (~{total_unduh * 0.45 / 1024:.1f} GB arsip, ~{total_unduh * 0.6 / 60:.0f} menit"
+          f" pada 0,6 dtk/berkas)")
+    print("WAJIB dari IP rumahan. Jangan pakai --paksa atas SELURUH arsip.")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Panen laporan keuangan resmi IDX (XBRL)")
     ap.add_argument("--tickers", help="Daftar kode dipisah koma, mis. BBCA,TLKM")
@@ -805,6 +857,10 @@ def main() -> int:
                          "--tahun/--periode: seluruh arsip yang ada.")
     ap.add_argument("--semua-arsip", action="store_true",
                     help="Bersama --dari-arsip: seluruh tahun & periode yang ada di arsip")
+    ap.add_argument("--periksa-ketersediaan", action="store_true",
+                    help="Probe MURAH: berapa laporan yang IDX sajikan per (tahun, "
+                         "periode), plus berapa periode kita yang mata uangnya masih "
+                         "ditaksir. Nol unduhan XLSX.")
     ap.add_argument("--swauji", action="store_true",
                     help="Uji penaksir mata uang per periode, tak menyentuh data")
     ap.add_argument("--segarkan-mata-uang", action="store_true",
@@ -814,6 +870,9 @@ def main() -> int:
     if args.swauji:
         swauji_mata_uang()
         return 0
+
+    if args.periksa_ketersediaan:
+        return periksa_ketersediaan()
 
     if args.segarkan_mata_uang:
         n = sum(segarkan_mata_uang(p.stem) for p in sorted(KELUARAN_DIR.glob("*.json")))
