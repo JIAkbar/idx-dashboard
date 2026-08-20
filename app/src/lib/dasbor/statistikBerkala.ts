@@ -23,11 +23,15 @@
  * blok yang tak ada padanannya di mingguan (`sektor`, `syariah`,
  * `sekuritas_tercatat`, `indeks_kinerja` dengan kolom m1..y10).
  *
- * Karena itu PEMUATNYA dibuat tahan bentuk (jalur berkas + pembacaan indeks
- * sudah generik), tapi LAYARNYA belum: merender berkas bulanan lewat komponen
- * mingguan akan menghasilkan panel-panel kosong yang terbaca sebagai rusak,
- * dan menebak arti ruasnya berarti memajang angka karangan. Pilihan Bulanan
- * sengaja dibiarkan mati sampai bentuk itu dibaca dengan benar.
+ * Diukur ulang 20 Agu 2026 di kesebelas berkas (`ms_2509`..`ms_2607`): tiap
+ * ruas ADA dan berukuran sama di seluruh rentang — tak ada bulan yang bolong.
+ * Ruas yang bentuknya mirip mingguan (`top_gainers`/`top_losers`,
+ * `top_saham`/`top_broker`, `index_movers`) diadaptasi ke tipe mingguan lewat
+ * `bulananKeBanding()`/`bulananKePeringkat()` di bawah supaya `TabelBanding`
+ * dan `TabelPeringkat` di halaman bisa dipakai ulang; yang bentuknya sungguh
+ * lain (`ringkasan_pasar`, `asing`, `syariah`, `sektor`, `indeks_kinerja`,
+ * `rekap_transaksi`) dapat tipe dan tabelnya sendiri — memaksanya masuk
+ * bentuk mingguan berarti memajang angka karangan.
  */
 import { useCallback, useEffect, useState } from 'react'
 
@@ -130,6 +134,142 @@ export interface EdisiBerkala {
   indeks_mingguan?: BarisIndeksLokal[]
   indeks_global?: BarisIndeksGlobal[]
   dana_dihimpun?: Record<string, number | null>
+}
+
+/** Satu ruas ringkasan bulanan (`ringkasan_pasar`/`asing`/`syariah`) — sudah
+ *  bawa label & nama bagiannya sendiri dari pemanen, jadi TIDAK lewat
+ *  `labelRuas()` seperti ruas mingguan. */
+export interface RuasBulanan {
+  label?: string
+  bagian?: string
+  bulan_ini?: number | null
+  bulan_lalu?: number | null
+  tahun_lalu?: number | null
+  mom?: number | null
+  yoy?: number | null
+}
+
+export interface BarisSektor {
+  kode: string
+  nama: string
+  jumlah_saham?: number | null
+  persen_saham?: number | null
+  kapitalisasi_miliar_idr?: number | null
+  persen_kapitalisasi?: number | null
+  nilai_miliar_idr?: number | null
+  persen_nilai?: number | null
+  volume_juta_lembar?: number | null
+  frekuensi_kali?: number | null
+}
+
+export interface BarisKinerjaIndeks {
+  kode: string
+  nama: string
+  kelompok: string
+  m1?: number | null
+  m3?: number | null
+  m6?: number | null
+  y1?: number | null
+  y3?: number | null
+  y5?: number | null
+  y10?: number | null
+  volatilitas?: number | null
+}
+
+/** Gainers/losers bulanan — isinya sama dengan `BarisGerak` mingguan (harga
+ *  sebelum & sesudah + persen), cuma nama ruasnya beda. Diadaptasi lewat
+ *  `bulananKeBanding()`. */
+export interface BarisGerakBulanan {
+  kode: string
+  sebelumnya?: number | null
+  penutupan?: number | null
+  persen?: number | null
+}
+
+/** Penggerak indeks bulanan — beda dari `BarisMover` mingguan bukan cuma nama
+ *  ruas: `kapitalisasi_triliun_idr` itu kapitalisasi pasar, BUKAN kontribusi
+ *  free-float (`mcff_triliun`) seperti mingguan. Dua metrik yang beda,
+ *  sengaja tidak dipaksa satu tipe — lihat `TabelPenggerak` di halaman. */
+export interface BarisMoverBulanan {
+  kode: string
+  persen?: number | null
+  kapitalisasi_triliun_idr?: number | null
+  poin?: number | null
+}
+
+/** Top saham/broker bulanan — isinya sama dengan `BarisPeringkat` mingguan
+ *  (nilai + persen dari total), cuma nama ruasnya beda. Diadaptasi lewat
+ *  `bulananKePeringkat()`. */
+export interface BarisSahamBulanan {
+  kode: string
+  nama?: string
+  syariah?: boolean
+  bulan_ini?: number | null
+  persen_total?: number | null
+  bulan_lalu?: number | null
+  mom?: number | null
+}
+
+export interface RekapPapanBulanan {
+  volume?: { bulan?: number | null; ytd?: number | null }
+  nilai?: { bulan?: number | null; ytd?: number | null }
+  frekuensi?: { bulan?: number | null; ytd?: number | null }
+}
+
+/** Satu edisi bulanan. TIDAK sebangun dengan `EdisiBerkala` mingguan — lihat
+ *  catatan bentuk di kepala berkas ini. */
+export interface EdisiBulanan {
+  periode?: string
+  periode_id?: string
+  ringkasan_pasar?: Record<string, RuasBulanan>
+  asing?: Record<string, RuasBulanan>
+  syariah?: Record<string, RuasBulanan>
+  sektor?: BarisSektor[]
+  sekuritas_tercatat?: Record<string, number | null>
+  indeks_kinerja?: BarisKinerjaIndeks[]
+  top_saham?: Record<string, BarisSahamBulanan[]>
+  top_broker?: Record<string, BarisSahamBulanan[]>
+  top_gainers?: BarisGerakBulanan[]
+  top_losers?: BarisGerakBulanan[]
+  top_gainers_lq45?: BarisGerakBulanan[]
+  top_losers_lq45?: BarisGerakBulanan[]
+  index_movers?: Record<string, { top_leaders?: BarisMoverBulanan[]; top_laggards?: BarisMoverBulanan[] }>
+  rekap_transaksi?: Record<string, RekapPapanBulanan>
+}
+
+/** Adaptasi gainers/losers bulanan → `Banding` mingguan, supaya `TabelBanding`
+ *  yang sudah ada bisa dipakai ulang tanpa menulis tabel baru. */
+export function bulananKeBanding(g: BarisGerakBulanan): BarisGerak {
+  return { kode: g.kode, minggu_lalu: g.sebelumnya, minggu_ini: g.penutupan, persen: g.persen }
+}
+
+/** Adaptasi top saham/broker bulanan → `BarisPeringkat` mingguan, supaya
+ *  `TabelPeringkat` yang sudah ada bisa dipakai ulang. */
+export function bulananKePeringkat(s: BarisSahamBulanan): BarisPeringkat {
+  return { kode: s.kode, nama: s.nama, nilai: s.bulan_ini, persen: s.persen_total }
+}
+
+/**
+ * `top_saham.value`/`top_broker.value` DAN `.volume` bulanan diukur 20 Agu
+ * 2026 ternyata DUA peringkat digabung dalam satu larik TANPA penanda —
+ * bukan satu peringkat 30 baris:
+ *  - `value`: 15 baris pertama peringkat Nilai BULAN (baginya `bulan_ini`
+ *    dengan `persen_total` balik jadi total `Total Value b. IDR` bulanan di
+ *    `ringkasan_pasar`), 15 berikutnya peringkat Nilai YTD (balik jadi total
+ *    `Total Value (YTD) b. IDR`).
+ *  - `volume`: 15 baris pertama peringkat Volume BULAN, 15 berikutnya
+ *    peringkat FREKUENSI bulan (balik jadi `Total Frequency th. times`,
+ *    BUKAN volume YTD — kebetulan sama-sama larik kedua tapi artinya beda
+ *    dari `value`).
+ * Terukur konsisten di kesebelas berkas (`ms_2509`..`ms_2607`), bukan cuma
+ * `ms_2607`. Merender larik ini apa adanya memajang dua skala angka di bawah
+ * satu judul dan kode saham yang sama muncul dua kali (React "duplicate
+ * key"). `belahDua()` memisahkannya jadi dua larik dengan panjang sama besar
+ * (bukan diasumsikan tepat 15+15, supaya tetap aman kalau sumbernya berubah).
+ */
+export function belahDua<T>(arr: T[]): [T[], T[]] {
+  const tengah = Math.ceil(arr.length / 2)
+  return [arr.slice(0, tengah), arr.slice(tengah)]
 }
 
 /** Satu baris daftar edisi. Mingguan dan bulanan TIDAK sebangun: mingguan

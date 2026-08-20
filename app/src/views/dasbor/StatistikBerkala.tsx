@@ -7,6 +7,9 @@ import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import {
   angka,
+  belahDua,
+  bulananKeBanding,
+  bulananKePeringkat,
   labelEdisi,
   pangsa,
   persen,
@@ -14,15 +17,19 @@ import {
   selisihBanding,
   useStatistikBerkala,
   type Banding,
+  type BarisKinerjaIndeks,
   type BarisPeringkat,
+  type BarisSektor,
   type EdisiBerkala,
+  type EdisiBulanan,
   type JenisPeriode,
+  type RuasBulanan,
 } from '../../lib/dasbor/statistikBerkala'
 import './StatistikBerkala.css'
 
 /**
- * Statistik Berkala — satu pekan bursa (nanti juga satu bulan) dari terbitan
- * resmi IDX, yang selama ini sudah dipanen tapi tak pernah punya layar.
+ * Statistik Berkala — satu pekan ATAU satu bulan bursa dari terbitan resmi
+ * IDX, yang selama ini sudah dipanen tapi tak pernah punya layar.
  *
  * Kenapa bentuknya "pilih satu edisi, lihat isinya" dan bukan grafik deret
  * panjang: hampir setiap angka di berkasnya SUDAH berpasangan dengan angka
@@ -86,6 +93,8 @@ const LABEL_RUAS: Record<string, string> = {
   dinfra: 'DINFRA',
   ihsg: 'IHSG',
   lq45: 'LQ45',
+  kapitalisasi: 'Kapitalisasi',
+  futures: 'Futures',
 }
 
 function labelRuas(k: string): string {
@@ -203,19 +212,12 @@ export function StatistikBerkala() {
   const [tab, setTab] = useState<Tab>('ringkas')
   const { daftar, idx, edisi, galat, pilih } = useStatistikBerkala(jenis)
 
-  // Bulanan sengaja MATI, dan sengaja tetap TERLIHAT. Berkas bulanannya sudah
-  // ada, tapi bentuk ruasnya berbeda dari mingguan (lihat statistikBerkala.ts)
-  // — menyalakannya sekarang berarti memajang panel kosong atau angka yang
-  // artinya ditebak. Menyembunyikannya juga bukan jawaban: pembaca tak akan
-  // tahu bahwa datanya memang ada dan layarnya yang menyusul.
+  // Bulanan dan mingguan punya bentuk berkas yang beda (lihat statistikBerkala.ts),
+  // jadi tab di bawah bercabang lewat `edisiBulanan` — bukan berarti chipnya
+  // perlu dimatikan lagi.
   const opsiJenis = useMemo(() => ([
     { id: 'minggu' as const, label: LABEL_RENTANG.w1, judul: 'Rekap per pekan bursa' },
-    {
-      id: 'bulan' as const,
-      label: LABEL_RENTANG.b1,
-      nonaktif: true,
-      judul: 'Rekap bulanan sedang disiapkan — bentuk datanya berbeda dari mingguan',
-    },
+    { id: 'bulan' as const, label: LABEL_RENTANG.b1, judul: 'Rekap per bulan bursa' },
   ]), [])
 
   // Pemilih edisi: yang TERBARU di atas (yang dicari orang lebih dulu),
@@ -291,6 +293,12 @@ export function StatistikBerkala() {
     )
   }
 
+  // Bentuk berkas bulanan TIDAK sebangun dengan mingguan (lihat
+  // statistikBerkala.ts) — `useStatistikBerkala` memuat keduanya lewat jalur
+  // yang sama (`json as EdisiBerkala`), jadi di sini yang membedakannya cuma
+  // `jenis`. Cast ini sama longgarnya dengan yang sudah dilakukan si pemuat.
+  const edisiBulanan = jenis === 'bulan' ? (edisi as unknown as EdisiBulanan) : null
+
   return (
     <div className="lantai">
       {kepala}
@@ -310,11 +318,17 @@ export function StatistikBerkala() {
         ))}
       </div>
 
-      {tab === 'ringkas' && <TabRingkas edisi={edisi} labelLalu={labelLalu} labelIni={labelIni} kataPeriode={kataPeriode} />}
-      {tab === 'saham' && <TabSaham edisi={edisi} labelLalu={labelLalu} labelIni={labelIni} />}
-      {tab === 'broker' && <TabBroker edisi={edisi} />}
-      {tab === 'indeks' && <TabIndeks edisi={edisi} labelLalu={labelLalu} labelIni={labelIni} />}
-      {tab === 'transaksi' && <TabTransaksi edisi={edisi} />}
+      {tab === 'ringkas' && (edisiBulanan
+        ? <TabRingkasBulanan edisi={edisiBulanan} />
+        : <TabRingkas edisi={edisi} labelLalu={labelLalu} labelIni={labelIni} kataPeriode={kataPeriode} />)}
+      {tab === 'saham' && (edisiBulanan
+        ? <TabSahamBulanan edisi={edisiBulanan} labelLalu={labelLalu} labelIni={labelIni} />
+        : <TabSaham edisi={edisi} labelLalu={labelLalu} labelIni={labelIni} />)}
+      {tab === 'broker' && (edisiBulanan ? <TabBrokerBulanan edisi={edisiBulanan} /> : <TabBroker edisi={edisi} />)}
+      {tab === 'indeks' && (edisiBulanan
+        ? <TabIndeksBulanan edisi={edisiBulanan} />
+        : <TabIndeks edisi={edisi} labelLalu={labelLalu} labelIni={labelIni} />)}
+      {tab === 'transaksi' && (edisiBulanan ? <TabTransaksiBulanan edisi={edisiBulanan} /> : <TabTransaksi edisi={edisi} />)}
 
       <p className="muted stb-sumber">
         Sumber: terbitan statistik berkala resmi Bursa Efek Indonesia, edisi {labelEdisi(edisi)}.
@@ -488,39 +502,62 @@ function TabSaham({ edisi, labelLalu, labelIni }: { edisi: EdisiBerkala; labelLa
 
       <div className="grid2 stb-jajar">
         {movers.map(([indeks, isi]) => (
-          <div className="panel" key={indeks}>
-            <div className="panel-h"><span className="lbl">Penggerak {labelRuas(indeks)}</span></div>
-            <div className="board-tbl-wrap">
-              <table className="tbl">
-                <thead>
-                  <tr>
-                    <th>Kode</th><th>Arah</th><th className="r">Harga %</th>
-                    <th className="r">MCFF (triliun)</th><th className="r">Poin indeks</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    ...(isi.top_leaders ?? []).map((m) => ({ m, arah: 'Pendorong' })),
-                    ...(isi.top_laggards ?? []).map((m) => ({ m, arah: 'Penekan' })),
-                  ].map(({ m, arah }) => (
-                    <tr key={`${arah}-${m.kode}`}>
-                      <td><Link to={`/grafik?kode=${m.kode}`} className="tick">{m.kode}</Link></td>
-                      <td className="muted">{arah}</td>
-                      <td className={`r num ${warna(m.harga_persen ?? null)}`}>{persen(m.harga_persen)}</td>
-                      <td className="r num">{angka(m.mcff_triliun, 2)}</td>
-                      <td className={`r num ${warna(m.poin_indeks ?? null)}`}>{angka(m.poin_indeks, 2)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {(isi.top_leaders ?? []).length === 0 && (isi.top_laggards ?? []).length === 0 && (
-                <p className="muted stb-kosong">Tidak tercantum di edisi ini.</p>
-              )}
-            </div>
-          </div>
+          <TabelPenggerak
+            key={indeks}
+            judul={`Penggerak ${labelRuas(indeks)}`}
+            labelKapitalisasi="MCFF (triliun)"
+            baris={[
+              ...(isi.top_leaders ?? []).map((m) => ({
+                kode: m.kode, arah: 'Pendorong', hargaPersen: m.harga_persen, kapitalisasi: m.mcff_triliun, poinIndeks: m.poin_indeks,
+              })),
+              ...(isi.top_laggards ?? []).map((m) => ({
+                kode: m.kode, arah: 'Penekan', hargaPersen: m.harga_persen, kapitalisasi: m.mcff_triliun, poinIndeks: m.poin_indeks,
+              })),
+            ]}
+          />
         ))}
       </div>
     </>
+  )
+}
+
+/** Tabel "pendorong/penekan indeks" — dipakai ulang oleh mingguan (kolom
+ *  ketiganya MCFF, kontribusi free-float) dan bulanan (kolom ketiganya
+ *  kapitalisasi pasar). Dua metrik itu BEDA artinya, karena itu labelnya
+ *  parameter, bukan ditebak sama. */
+function TabelPenggerak({
+  judul, labelKapitalisasi, baris,
+}: {
+  judul: string
+  labelKapitalisasi: string
+  baris: { kode: string; arah: string; hargaPersen?: number | null; kapitalisasi?: number | null; poinIndeks?: number | null }[]
+}) {
+  return (
+    <div className="panel">
+      <div className="panel-h"><span className="lbl">{judul}</span></div>
+      <div className="board-tbl-wrap">
+        <table className="tbl">
+          <thead>
+            <tr>
+              <th>Kode</th><th>Arah</th><th className="r">Harga %</th>
+              <th className="r">{labelKapitalisasi}</th><th className="r">Poin indeks</th>
+            </tr>
+          </thead>
+          <tbody>
+            {baris.map((b) => (
+              <tr key={`${b.arah}-${b.kode}`}>
+                <td><Link to={`/grafik?kode=${b.kode}`} className="tick">{b.kode}</Link></td>
+                <td className="muted">{b.arah}</td>
+                <td className={`r num ${warna(b.hargaPersen ?? null)}`}>{persen(b.hargaPersen)}</td>
+                <td className="r num">{angka(b.kapitalisasi, 2)}</td>
+                <td className={`r num ${warna(b.poinIndeks ?? null)}`}>{angka(b.poinIndeks, 2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {baris.length === 0 && <p className="muted stb-kosong">Tidak tercantum di edisi ini.</p>}
+      </div>
+    </div>
   )
 }
 
@@ -723,5 +760,297 @@ function TabTransaksi({ edisi }: { edisi: EdisiBerkala }) {
         </div>
       </div>
     </>
+  )
+}
+
+/* ================= Bulanan ================= *
+ * Bentuk berkasnya beda dari mingguan (lihat statistikBerkala.ts). Ruas yang
+ * bisa diadaptasi ke tipe mingguan (gainers/losers, top saham/broker,
+ * penggerak indeks) memakai komponen tabel di atas lewat `bulananKeBanding()`
+ * / `bulananKePeringkat()`. Ruas khas bulanan (ringkasan pasar, asing,
+ * syariah, sektor, kinerja indeks, rekap transaksi) dapat tabelnya sendiri. */
+
+/** Ringkasan pasar / asing / syariah — sama-sama larik `{label, bulan_ini,
+ *  bulan_lalu, tahun_lalu, mom, yoy}`. Satu bentuk tabel untuk ketiganya. */
+function TabelRuasBulanan({ judul, baris }: { judul: string; baris: [string, RuasBulanan][] }) {
+  return (
+    <div className="panel">
+      <div className="panel-h"><span className="lbl">{judul}</span></div>
+      {baris.length === 0
+        ? <div className="panel-b"><p className="muted stb-kosong">Tidak tercantum di edisi ini.</p></div>
+        : (
+          <div className="board-tbl-wrap stb-panjang">
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>Ruas</th><th className="r">Bulan lalu</th><th className="r">Bulan ini</th>
+                  <th className="r">Tahun lalu</th><th className="r">MoM</th><th className="r">YoY</th>
+                </tr>
+              </thead>
+              <tbody>
+                {baris.map(([k, v]) => (
+                  <tr key={k}>
+                    <td>{v.label ?? labelRuas(k)}</td>
+                    <td className="r num muted">{angka(v.bulan_lalu, 3)}</td>
+                    <td className="r num">{angka(v.bulan_ini, 3)}</td>
+                    <td className="r num muted">{angka(v.tahun_lalu, 3)}</td>
+                    <td className={`r num ${warna(v.mom ?? null)}`}>{persen(v.mom)}</td>
+                    <td className={`r num ${warna(v.yoy ?? null)}`}>{persen(v.yoy)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+    </div>
+  )
+}
+
+function TabelSektor({ baris }: { baris: BarisSektor[] }) {
+  return (
+    <div className="panel">
+      <div className="panel-h"><span className="lbl">Sektor</span></div>
+      {baris.length === 0
+        ? <div className="panel-b"><p className="muted stb-kosong">Tidak tercantum di edisi ini.</p></div>
+        : (
+          <div className="board-tbl-wrap">
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>Sektor</th><th className="r">Saham</th><th className="r">% saham</th>
+                  <th className="r">Kapitalisasi (miliar)</th><th className="r">% kap</th>
+                  <th className="r">Nilai (miliar)</th><th className="r">% nilai</th>
+                  <th className="r">Volume (juta)</th><th className="r">Frekuensi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {baris.map((s) => (
+                  <tr key={s.kode}>
+                    <td>{s.nama}</td>
+                    <td className="r num">{angka(s.jumlah_saham)}</td>
+                    <td className="r num muted">{pangsa(s.persen_saham)}</td>
+                    <td className="r num">{angka(s.kapitalisasi_miliar_idr)}</td>
+                    <td className="r num muted">{pangsa(s.persen_kapitalisasi)}</td>
+                    <td className="r num">{angka(s.nilai_miliar_idr)}</td>
+                    <td className="r num muted">{pangsa(s.persen_nilai)}</td>
+                    <td className="r num">{angka(s.volume_juta_lembar)}</td>
+                    <td className="r num">{angka(s.frekuensi_kali)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+    </div>
+  )
+}
+
+/** Laporan kinerja indeks (45 indeks × m1/m3/m6/y1/y3/y5/y10 + volatilitas) —
+ *  tak ada padanannya di mingguan, jadi tabelnya sendiri. Digulung di dalam
+ *  panelnya (pola sama dengan tabel Indeks IDX mingguan). */
+function TabelKinerjaIndeks({ baris }: { baris: BarisKinerjaIndeks[] }) {
+  return (
+    <div className="panel">
+      <div className="panel-h"><span className="lbl">Kinerja Indeks</span></div>
+      {baris.length === 0
+        ? <div className="panel-b"><p className="muted stb-kosong">Tidak tercantum di edisi ini.</p></div>
+        : (
+          <div className="board-tbl-wrap stb-panjang">
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>Indeks</th><th>Kelompok</th>
+                  <th className="r">1B</th><th className="r">3B</th><th className="r">6B</th>
+                  <th className="r">1T</th><th className="r">3T</th><th className="r">5T</th><th className="r">10T</th>
+                  <th className="r">Volatilitas</th>
+                </tr>
+              </thead>
+              <tbody>
+                {baris.map((r) => (
+                  <tr key={r.kode}>
+                    <td>{r.nama}</td>
+                    <td className="muted">{r.kelompok}</td>
+                    <td className={`r num ${warna(r.m1 ?? null)}`}>{persen(r.m1)}</td>
+                    <td className={`r num ${warna(r.m3 ?? null)}`}>{persen(r.m3)}</td>
+                    <td className={`r num ${warna(r.m6 ?? null)}`}>{persen(r.m6)}</td>
+                    <td className={`r num ${warna(r.y1 ?? null)}`}>{persen(r.y1)}</td>
+                    <td className={`r num ${warna(r.y3 ?? null)}`}>{persen(r.y3)}</td>
+                    <td className={`r num ${warna(r.y5 ?? null)}`}>{persen(r.y5)}</td>
+                    <td className={`r num ${warna(r.y10 ?? null)}`}>{persen(r.y10)}</td>
+                    <td className="r num muted">{persen(r.volatilitas)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+    </div>
+  )
+}
+
+function TabRingkasBulanan({ edisi }: { edisi: EdisiBulanan }) {
+  const sek = edisi.sekuritas_tercatat ?? {}
+  const ringkas = Object.entries(edisi.ringkasan_pasar ?? {})
+  const asingRuas = Object.entries(edisi.asing ?? {})
+  const syariah = Object.entries(edisi.syariah ?? {})
+
+  return (
+    <>
+      <div className="tiles">
+        {(['saham', 'waran_terstruktur', 'etf', 'reit', 'futures'] as const).map((k) => (
+          <div className="tile" key={k}>
+            <span className="t-code">Sekuritas tercatat</span>
+            <span className="t-name">{labelRuas(k)}</span>
+            <span className="t-val num">{angka(sek[k])}</span>
+          </div>
+        ))}
+      </div>
+
+      <TabelRuasBulanan judul="Ringkasan pasar" baris={ringkas} />
+
+      <div className="grid2 stb-jajar">
+        <TabelRuasBulanan judul="Perdagangan asing" baris={asingRuas} />
+        <TabelRuasBulanan judul="Pasar syariah" baris={syariah} />
+      </div>
+    </>
+  )
+}
+
+function TabSahamBulanan({
+  edisi, labelLalu, labelIni,
+}: { edisi: EdisiBulanan; labelLalu: string; labelIni: string }) {
+  const gainers = (edisi.top_gainers ?? []).map(bulananKeBanding)
+  const losers = (edisi.top_losers ?? []).map(bulananKeBanding)
+  const gainersLq = (edisi.top_gainers_lq45 ?? []).map(bulananKeBanding)
+  const losersLq = (edisi.top_losers_lq45 ?? []).map(bulananKeBanding)
+  const top = edisi.top_saham ?? {}
+  // `value`/`volume` masing-masing dua peringkat digabung tanpa penanda —
+  // lihat catatan `belahDua()` di statistikBerkala.ts. `value` → Nilai
+  // bulan/YTD, `volume` → Volume bulan/Frekuensi bulan (BUKAN volume YTD).
+  const [nilaiBulan, nilaiYtd] = belahDua(top.value ?? [])
+  const [volumeBulan, frekuensiBulan] = belahDua(top.volume ?? [])
+  const movers = Object.entries(edisi.index_movers ?? {})
+  const sektor = edisi.sektor ?? []
+
+  const panelBanding = (judul: string, baris: ReturnType<typeof bulananKeBanding>[]) => (
+    <div className="panel">
+      <div className="panel-h"><span className="lbl">{judul}</span></div>
+      {baris.length === 0
+        ? <div className="panel-b"><p className="muted stb-kosong">Tidak tercantum di edisi ini.</p></div>
+        : (
+          <TabelBanding
+            kolomPertama="Kode"
+            labelLalu={labelLalu}
+            labelIni={labelIni}
+            baris={baris.map((g) => ({ kunci: g.kode, label: g.kode, tautanKode: g.kode, b: g }))}
+          />
+        )}
+    </div>
+  )
+
+  return (
+    <>
+      <div className="grid2 stb-jajar">
+        {panelBanding('Top Gainers', gainers)}
+        {panelBanding('Top Losers', losers)}
+      </div>
+
+      <div className="grid2 stb-jajar">
+        {panelBanding('Top Gainers LQ45', gainersLq)}
+        {panelBanding('Top Losers LQ45', losersLq)}
+      </div>
+
+      <div className="grid3 stb-jajar">
+        <TabelPeringkat judul="Top Saham — Kapitalisasi" baris={(top.kapitalisasi ?? []).map(bulananKePeringkat)} tautan />
+        <TabelPeringkat judul="Top Saham — Nilai (Bulan)" baris={nilaiBulan.map(bulananKePeringkat)} tautan />
+        <TabelPeringkat judul="Top Saham — Nilai (YTD)" baris={nilaiYtd.map(bulananKePeringkat)} tautan />
+      </div>
+      <div className="grid2 stb-jajar">
+        <TabelPeringkat judul="Top Saham — Volume (Bulan)" baris={volumeBulan.map(bulananKePeringkat)} tautan />
+        <TabelPeringkat judul="Top Saham — Frekuensi (Bulan)" baris={frekuensiBulan.map(bulananKePeringkat)} tautan />
+      </div>
+
+      <TabelSektor baris={sektor} />
+
+      <div className="grid2 stb-jajar">
+        {movers.map(([indeks, isi]) => (
+          <TabelPenggerak
+            key={indeks}
+            judul={`Penggerak ${labelRuas(indeks)}`}
+            labelKapitalisasi="Kapitalisasi (triliun IDR)"
+            baris={[
+              ...(isi.top_leaders ?? []).map((m) => ({
+                kode: m.kode, arah: 'Pendorong', hargaPersen: m.persen, kapitalisasi: m.kapitalisasi_triliun_idr, poinIndeks: m.poin,
+              })),
+              ...(isi.top_laggards ?? []).map((m) => ({
+                kode: m.kode, arah: 'Penekan', hargaPersen: m.persen, kapitalisasi: m.kapitalisasi_triliun_idr, poinIndeks: m.poin,
+              })),
+            ]}
+          />
+        ))}
+      </div>
+    </>
+  )
+}
+
+function TabBrokerBulanan({ edisi }: { edisi: EdisiBulanan }) {
+  const top = edisi.top_broker ?? {}
+  if (!top.value && !top.volume) {
+    return <PanelKosong judul="Top Broker" alasan="Edisi ini tidak memuat peringkat broker." />
+  }
+  // Sama seperti Top Saham: `value`/`volume` masing-masing dua peringkat
+  // digabung tanpa penanda — lihat catatan `belahDua()` di statistikBerkala.ts.
+  const [nilaiBulan, nilaiYtd] = belahDua(top.value ?? [])
+  const [volumeBulan, frekuensiBulan] = belahDua(top.volume ?? [])
+  return (
+    <>
+      <div className="grid2 stb-jajar">
+        <TabelPeringkat judul="Top Broker — Nilai (Bulan)" baris={nilaiBulan.map(bulananKePeringkat)} tautan={false} />
+        <TabelPeringkat judul="Top Broker — Nilai (YTD)" baris={nilaiYtd.map(bulananKePeringkat)} tautan={false} />
+      </div>
+      <div className="grid2 stb-jajar">
+        <TabelPeringkat judul="Top Broker — Volume (Bulan)" baris={volumeBulan.map(bulananKePeringkat)} tautan={false} />
+        <TabelPeringkat judul="Top Broker — Frekuensi (Bulan)" baris={frekuensiBulan.map(bulananKePeringkat)} tautan={false} />
+      </div>
+    </>
+  )
+}
+
+function TabIndeksBulanan({ edisi }: { edisi: EdisiBulanan }) {
+  return <TabelKinerjaIndeks baris={edisi.indeks_kinerja ?? []} />
+}
+
+function TabTransaksiBulanan({ edisi }: { edisi: EdisiBulanan }) {
+  const rekap = Object.entries(edisi.rekap_transaksi ?? {})
+  if (rekap.length === 0) return <PanelKosong judul="Rekap per papan" alasan="Edisi ini tidak memuat rekap transaksi." />
+  return (
+    <div className="panel">
+      <div className="panel-h"><span className="lbl">Rekap per papan</span></div>
+      <div className="board-tbl-wrap">
+        <table className="tbl">
+          <thead>
+            <tr>
+              <th>Papan</th>
+              <th className="r">Volume (bulan)</th><th className="r">Volume (YTD)</th>
+              <th className="r">Nilai (bulan)</th><th className="r">Nilai (YTD)</th>
+              <th className="r">Frekuensi (bulan)</th><th className="r">Frekuensi (YTD)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rekap.map(([k, v]) => (
+              <tr key={k}>
+                <td>{labelRuas(k)}</td>
+                <td className="r num">{angka(v.volume?.bulan)}</td>
+                <td className="r num muted">{angka(v.volume?.ytd)}</td>
+                <td className="r num">{angka(v.nilai?.bulan)}</td>
+                <td className="r num muted">{angka(v.nilai?.ytd)}</td>
+                <td className="r num">{angka(v.frekuensi?.bulan)}</td>
+                <td className="r num muted">{angka(v.frekuensi?.ytd)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   )
 }
