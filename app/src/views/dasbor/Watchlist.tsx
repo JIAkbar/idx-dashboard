@@ -12,9 +12,37 @@ import {
   type WatchlistItem, type HargaTerakhir,
 } from '../../lib/dasbor/watchlist'
 import { posisiEma, labelKeadaan, HORIZON, PERIODE, type PosisiEma } from '../../lib/dasbor/emaWatchlist'
+import {
+  ringkasAd, ringkasAsing, LABEL_VONIS, ARTI_VONIS, JENDELA,
+  type RingkasAd, type RingkasAsing,
+} from '../../lib/dasbor/akumulasi'
+import { fetchAsing } from '../../lib/dasbor/stockDetailData'
 import './Watchlist.css'
 
 type UrutState<T> = { kunci: keyof T; arah: 'naik' | 'turun'; klik: (k: keyof T) => void }
+
+/** Lembar dalam bentuk ringkas — kolom tabel tak muat "1.234.567.890 lembar",
+ *  dan angka penuhnya tetap ada di `title`. Ambangnya juta/miliar karena itu
+ *  rentang nyata net asing harian di IDX. */
+function ringkasLembar(n: number): string {
+  const tanda = n > 0 ? '+' : n < 0 ? '−' : ''
+  const a = Math.abs(n)
+  if (a >= 1e9) return `${tanda}${(a / 1e9).toLocaleString('id-ID', { maximumFractionDigits: 2 })} M`
+  if (a >= 1e6) return `${tanda}${(a / 1e6).toLocaleString('id-ID', { maximumFractionDigits: 1 })} jt`
+  if (a >= 1e3) return `${tanda}${(a / 1e3).toLocaleString('id-ID', { maximumFractionDigits: 0 })} rb`
+  return `${tanda}${a.toLocaleString('id-ID')}`
+}
+
+/** Warna vonis: hijau untuk uang masuk, merah untuk keluar. Yang "diam-diam"
+ *  memakai warna ALIRANNYA, bukan warna harganya — arah uang itu justru inti
+ *  kolom ini. */
+const KELAS_VONIS: Record<string, string> = {
+  akumulasi: 'up',
+  'akumulasi-diam': 'up',
+  distribusi: 'dn',
+  'distribusi-diam': 'dn',
+  datar: '',
+}
 
 /** Judul kolom yang bisa diklik untuk mengurutkan — pola sama TopStocks/TopBroker/KartuAnalisa. */
 function thSort<T extends object>(s: UrutState<T>, k: keyof T, label: string, kanan = false) {
@@ -40,6 +68,10 @@ interface BarisTabel {
   posisi: PosisiEma | null
   /** Peluang naik dalam persen — kolom terurut butuh angka datar, bukan objek. */
   peluang: number | null
+  ad: RingkasAd | null
+  asing: RingkasAsing | null
+  /** Net asing dalam lembar, didatarkan supaya kolomnya bisa diurutkan. */
+  asingNet: number | null
 }
 
 /**
@@ -56,7 +88,14 @@ interface BarisTabel {
 export function Watchlist() {
   const kamus = useKamusEmiten()
   const [items, setItems] = useState<WatchlistItem[]>(() => muatWatchlist())
-  const [deret, setDeret] = useState<Record<string, { harga: HargaTerakhir | null; posisi: PosisiEma } | null>>({})
+  const [deret, setDeret] = useState<Record<string, {
+    harga: HargaTerakhir | null; posisi: PosisiEma; ad: RingkasAd | null
+  } | null>>({})
+  // Aliran asing datang dari berkas TERPISAH (`asing/<KODE>.json`) dan tak
+  // ada untuk semua emiten — 48 dari 963 tak punya berkasnya sama sekali.
+  // Karena itu ia state sendiri, bukan digabung ke `deret`: satu emiten tanpa
+  // catatan asing tak boleh menahan harga & EMA-nya ikut kosong.
+  const [asing, setAsing] = useState<Record<string, RingkasAsing | null>>({})
   const [cari, setCari] = useState('')
 
   // Satu fetch per kode (cache modul di watchlist.ts mencegah unduhan ulang).
@@ -68,12 +107,23 @@ export function Watchlist() {
       if (deret[it.kode] !== undefined) continue
       fetchDeret(it.kode).then((d) => {
         if (batal) return
-        const nilai = d ? { harga: ambilHargaTerakhir(d), posisi: posisiEma(d) } : null
+        const nilai = d ? { harga: ambilHargaTerakhir(d), posisi: posisiEma(d), ad: ringkasAd(d) } : null
         setDeret((x) => ({ ...x, [it.kode]: nilai }))
       })
     }
     return () => { batal = true }
   }, [items, deret])
+
+  useEffect(() => {
+    let batal = false
+    for (const it of items) {
+      if (asing[it.kode] !== undefined) continue
+      fetchAsing(it.kode).then((a) => {
+        if (!batal) setAsing((x) => ({ ...x, [it.kode]: a ? ringkasAsing(a.d) : null }))
+      })
+    }
+    return () => { batal = true }
+  }, [items, asing])
 
   const namaKode = useMemo(() => {
     const m = new Map<string, string>()
@@ -97,6 +147,7 @@ export function Watchlist() {
   function hapus(kode: string) {
     setItems(hapusEmiten(kode))
     setDeret((x) => { const n = { ...x }; delete n[kode]; return n })
+    setAsing((x) => { const n = { ...x }; delete n[kode]; return n })
   }
   function ubahHargaMilik(kode: string, nilai: number | null) {
     setItems(simpanHargaMilik(kode, nilai))
@@ -120,8 +171,11 @@ export function Watchlist() {
       untungPersen: ur?.persen ?? null,
       posisi: isi?.posisi ?? null,
       peluang: isi?.posisi.peluang?.persen ?? null,
+      ad: isi?.ad ?? null,
+      asing: asing[it.kode] ?? null,
+      asingNet: asing[it.kode]?.netLembar ?? null,
     }
-  }), [items, deret, namaKode])
+  }), [items, deret, asing, namaKode])
 
   const s = useUrut(baris, 'kode', 'naik')
 
@@ -173,6 +227,8 @@ export function Watchlist() {
                   {thSort(s, 'untungPersen', 'Untung/Rugi (%)', true)}
                   <th className="r" title={`Posisi harga terhadap EMA ${PERIODE.join('/')}`}>EMA {PERIODE.join('/')}</th>
                   {thSort(s, 'peluang', `Peluang ${HORIZON}H`, true)}
+                  {thSort(s, 'asingNet', `Asing ${JENDELA}H`, true)}
+                  <th className="r">Akum/Dist</th>
                   <th aria-label="Aksi" />
                 </tr>
               </thead>
@@ -195,6 +251,12 @@ export function Watchlist() {
         (▲ di atas, ▼ di bawah). <b>Peluang {HORIZON}H</b> bukan ramalan: ia menghitung, dari riwayat emiten itu
         sendiri, berapa persen kejadian dengan posisi EMA yang sama ditutup lebih tinggi {HORIZON} hari bursa
         kemudian — angka masa lalu, dan masa lalu tidak mengikat masa depan. Ditampilkan hanya kalau sampelnya cukup.
+      </p>
+      <p className="wl-catatan muted">
+        <b>Asing {JENDELA}H</b> menjumlahkan beli dikurangi jual investor asing selama {JENDELA} hari bursa terakhir,
+        dalam <b>lembar</b> — IDX tidak melaporkan aliran asing dalam rupiah. <b>Akum/Dist</b> membandingkan arah garis
+        Accumulation/Distribution dengan arah harga di periode yang sama: "diam-diam" berarti keduanya berlawanan —
+        harga turun sementara uang masuk, atau sebaliknya. Keduanya menyajikan keadaan, bukan saran beli atau jual.
       </p>
       <p className="wl-catatan muted">
         Watchlist ini tersimpan di peranti ini saja (browser lokal) — tidak berpindah kalau dibuka dari ponsel atau peramban lain.
@@ -280,6 +342,32 @@ function BarisWatchlist({
           <span title={`${b.posisi.peluang.naik} dari ${b.posisi.peluang.n} kejadian serupa di riwayat ${b.kode} ditutup lebih tinggi ${HORIZON} hari bursa kemudian`}>
             {Math.round(b.posisi.peluang.persen)}%
             <span className="wl-n">n={b.posisi.peluang.n}</span>
+          </span>
+        )}
+      </td>
+      {/* Net asing dalam LEMBAR, bukan rupiah. IDX tidak melaporkan aliran
+          asing dalam rupiah; mengalikannya dengan harga rata-rata memang
+          menghasilkan angka berlabel "Rp" yang enak dibaca, tapi itu taksiran
+          kita, bukan angka bursa — dan kolom sesempit ini tak punya ruang
+          untuk menjelaskan bedanya. */}
+      <td className={`r num ${b.asing == null ? '' : b.asing.netLembar >= 0 ? 'up' : 'dn'}`}>
+        {b.asing == null ? (
+          <span className="muted" title="Emiten ini tak punya berkas aliran asing">—</span>
+        ) : (
+          <span title={`${b.asing.netLembar >= 0 ? 'Net beli' : 'Net jual'} asing ${Math.abs(b.asing.netLembar).toLocaleString('id-ID')} lembar selama ${b.asing.hari} hari bursa${
+            b.asing.porsiPersen == null ? '' : ` — ${fp(b.asing.porsiPersen)} dari seluruh volume di periode yang sama`}`}>
+            {ringkasLembar(b.asing.netLembar)}
+          </span>
+        )}
+      </td>
+      {/* Penyajian keadaan, BUKAN saran beli atau jual — larangan yang sama
+          sudah berlaku di Screener dan Kartu Analisa. */}
+      <td className="r">
+        {b.ad == null ? (
+          <span className="muted">—</span>
+        ) : (
+          <span className={`wl-ad ${KELAS_VONIS[b.ad.vonis]}`} title={ARTI_VONIS[b.ad.vonis]}>
+            {LABEL_VONIS[b.ad.vonis]}
           </span>
         )}
       </td>

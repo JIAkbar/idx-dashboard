@@ -54,3 +54,10 @@
   .wl-cari { max-width: 100%; }
   .wl-nama { max-width: 100px; }
 }
+
+/* Vonis akumulasi/distribusi — teks berwarna, bukan lencana berlatar: kolom
+   ini duduk bersebelahan dengan kolom angka, dan lencana penuh di tiap baris
+   membuat tabelnya terbaca seperti papan peringatan. */
+.lantai .wl-ad { font-size: 11.5px; font-weight: 600; }
+.lantai .wl-ad.up { color: var(--green); }
+.lantai .wl-ad.dn { color: var(--red); }
