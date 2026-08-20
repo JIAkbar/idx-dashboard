@@ -1,6 +1,6 @@
 """Panen kabar pasar → data-idx/json/kabar.json.
 
-Empat sumber, semuanya diuji hidup 16 Agustus 2026 dari IP rumahan:
+Lima sumber:
 
 | Sumber              | Cara ambil                                   | Isi                                   |
 |---------------------|----------------------------------------------|---------------------------------------|
@@ -8,6 +8,14 @@ Empat sumber, semuanya diuji hidup 16 Agustus 2026 dari IP rumahan:
 | IDX — Pengumuman    | `primary/ListedCompany/GetAnnouncement`       | Pengumuman resmi PER EMITEN           |
 | IPOT News           | HTML `ipotnews/newsList.php` (tak punya RSS)  | Berita pasar harian                   |
 | Kontan Investasi    | RSS `investasi.kontan.co.id/rss`              | Berita investasi & pasar modal        |
+| Google News RSS     | `news.google.com/rss/search` (3 kueri)        | Pencarian, bukan endpoint IDX — lihat `google_news()` |
+
+Google News RSS adalah **pencarian publik** tanpa kunci API — bukan endpoint
+idx.co.id — jadi kandidat pertama yang diuji untuk jalur awan yang tak
+bergantung IP rumahan (permintaan Johan 20 Agu 2026: "web search berita saham
+yang bisa dijalankan di github action juga"). Status pembuktian dari IP
+datacenter GitHub ada di `docs/status-panen.md`, BUKAN disimpulkan dari 200
+di mesin ini — lihat catatan di `google_news()`.
 
 **Endpoint IDX menolak permintaan tanpa header peramban** — tanpa `User-Agent`
 dan `Referer` keduanya menjawab 403/302 ke halaman 404. Ini bukan blokir IP
@@ -305,14 +313,18 @@ def ipot(batas: int) -> list[dict]:
     return out
 
 
-def rss(nama: str, url: str, batas: int) -> list[dict]:
-    """Pembaca RSS umum — sekarang hanya dipakai Kontan.
+def rss(nama: str, url: str, batas: int, arsip: str | None = None) -> list[dict]:
+    """Pembaca RSS umum — dipakai Kontan dan Google News.
 
     Feed publik biasa **tanpa batasan IP**, beda dari endpoint IDX.
     Itu yang membuat mereka bisa dipanen dari GitHub Actions (lihat
     `--hanya` di bawah dan `docs/panen-kabar.md`).
+
+    `arsip` override label arsip mentah — perlu kalau `rss()` dipanggil
+    berkali-kali dengan `nama` yang sama (Google News: 3 kueri berbeda),
+    supaya arsipnya tak saling menimpa (lihat `google_news()`).
     """
-    r = ambil(url, HEADER_UMUM, arsip=f"rss-{nama.lower()}")
+    r = ambil(url, HEADER_UMUM, arsip=arsip or f"rss-{nama.lower()}")
     if not r:
         return []
     try:
@@ -326,16 +338,86 @@ def rss(nama: str, url: str, batas: int) -> list[dict]:
         tautan = (item.findtext("link") or "").strip()
         tgl = (item.findtext("pubDate") or "").strip()
         waktu = None
-        for pola in ("%a, %d %b %Y %H:%M:%S %z", "%a, %d %b %Y %H:%M:%S"):
+        # Google News membalas "GMT" literal ("Wed, 19 Aug 2026 23:54:00
+        # GMT"), bukan offset angka — `%z` menolaknya (`does not match
+        # format`), lolos ke pola tanpa zona lalu SALAH ditandai WIB (geser
+        # 7 jam, item "basi" jadi terbaca "dari masa depan"). Diuji 20 Agu
+        # 2026: semua item Google News waktu=None sebelum ini, dan itu
+        # membuat `cek_kabar.py` membaca sumbernya seolah kosong walau
+        # panennya OK. `%Z` di sini cocok dengan token GMT tapi tak mengisi
+        # tzinfo — jadi UTC dipasang tangan, bukan lewat `t.tzinfo`.
+        # ponytail: hanya menangani GMT/UTC; kalau kelak ada feed RSS lain
+        # berzona-nama BUKAN GMT/UTC, tambah cabang, jangan diam-diam pukul
+        # rata ke UTC.
+        for pola in ("%a, %d %b %Y %H:%M:%S %z", "%a, %d %b %Y %H:%M:%S %Z", "%a, %d %b %Y %H:%M:%S"):
             try:
                 t = datetime.strptime(tgl, pola)
-                waktu = (t if t.tzinfo else t.replace(tzinfo=WIB)).isoformat()
+                if t.tzinfo:
+                    waktu = t.isoformat()
+                elif pola.endswith("%Z"):
+                    waktu = t.replace(tzinfo=timezone.utc).isoformat()
+                else:
+                    waktu = t.replace(tzinfo=WIB).isoformat()
                 break
             except ValueError:
                 continue
         if judul and tautan:
             out.append({"sumber": nama, "jenis": "berita", "judul": judul,
                         "tautan": tautan, "waktu": waktu, "emiten": []})
+    return out
+
+
+# Kueri Google News RSS — daftar, bukan satu kueri, supaya bisa diperluas
+# tanpa menulis pengurai baru (dipakai lewat `rss()` yang sudah ada).
+# TIDAK per-emiten: ~960 emiten berarti ~960 permintaan, dan kueri "emiten"
+# di bawah sendirian sudah menangkap sebagian besar berita per-emiten.
+#
+# Diuji 20 Agu 2026 dari mesin ini (bukan dari awan — lihat `google_news()`):
+# kueri LONGGAR terbukti kotor dan makanya TIDAK dipakai —
+#   "bursa when:1d" ikut menyeret "Pameran Bursa Kerja (Job Fair) 2026",
+#   "Saldo Ethereum di bursa turun 10%", "Bursa Kripto CFX Perkuat Komitmen
+#   Lingkungan", "Bursa Komoditas dan Mimpi Jadi Penentu Harga Dunia" — bursa
+#   kerja, bursa kripto, bursa komoditas, tak satu pun soal IDX.
+#   "saham" tanpa kualifikasi ikut menyeret "Mengapa saham CSL melonjak
+#   hari ini?" (saham AS) dan "Wolfspeed turun ... akibat kerugian Q4" (AS).
+# Ketiga kueri di bawah diuji BERSIH dari itu (lihat laporan panen).
+GOOGLE_NEWS_KUERI = [
+    ("umum", "saham IHSG when:1d"),
+    ("bei", '"Bursa Efek Indonesia" when:1d'),
+    ("emiten", "emiten saham when:1d"),
+]
+GOOGLE_NEWS_MIN_PER_KUERI = 15  # lantai, sama alasannya dengan IPOT_MIN_PER_KANAL
+
+
+def google_news(batas: int) -> list[dict]:
+    """Google News RSS — gabungan tiga kueri (`GOOGLE_NEWS_KUERI`), dedup sendiri.
+
+    Kandidat utama untuk jalur awan: ini PENCARIAN publik, bukan endpoint
+    idx.co.id, jadi tak terikat blokir IP datacenter yang menjegal IDX &
+    Kontan (lihat docstring modul). **Belum terbukti tembus dari awan** —
+    200 di mesin ini cuma membuktikan sumbernya hidup, bukan soal IP
+    datacenter GitHub (persis kasus IDX/Kontan yang sudah pernah menjebak,
+    lihat `docs/status-panen.md`). Baris "belum terbukti" itu hanya boleh
+    berubah sesudah ada run awan yang hijau dan benar-benar mengisinya.
+
+    Dedup di sini pakai tautan+judul+waktu (aturan proyek — jangan tautan
+    saja), tapi itu TIDAK menangkap kasus artikel sama yang dilaporkan ulang
+    penerbit berbeda dengan judul berbeda, dan URL Google News sendiri
+    (`news.google.com/rss/articles/<token>`) adalah pengalihan yang bisa
+    beda tautan untuk kueri berbeda walau artikelnya sama persis. Dedup
+    LINTAS sumber di `main()` (kunci judul saja, dipangkas 70 karakter)
+    yang menangkap sisanya.
+    """
+    out, terlihat = [], set()
+    per_kueri = max(GOOGLE_NEWS_MIN_PER_KUERI, batas // len(GOOGLE_NEWS_KUERI))
+    for label, q in GOOGLE_NEWS_KUERI:
+        url = "https://news.google.com/rss/search?q=" + urllib.parse.quote(q) + "&hl=id&gl=ID&ceid=ID:id"
+        for it in rss("Google News", url, per_kueri, arsip=f"google-news-{label}"):
+            kunci = f"{it['tautan']}|{it['judul']}|{it['waktu']}"
+            if kunci in terlihat:
+                continue
+            terlihat.add(kunci)
+            out.append(it)
     return out
 
 
@@ -355,7 +437,7 @@ def main() -> int:
                     help="berapa hari kabar disimpan sebelum dibuang (default 7)")
     ap.add_argument("--hanya", default="",
                     help="panen sebagian sumber saja, dipisah koma "
-                         "(idx, idx-pengumuman, ipot, kontan). Kosong = semua")
+                         "(idx, idx-pengumuman, ipot, kontan, google-news). Kosong = semua")
     ap.add_argument("--status", default="",
                     help="berkas JSONL: satu baris hasil per sumber "
                          "(berhasil/gagal + kenapa). Dibaca scripts/cek_kabar.py")
@@ -368,6 +450,7 @@ def main() -> int:
         "idx-pengumuman": ("IDX pengumuman", idx_pengumuman),
         "ipot": ("IPOT News", ipot),
         "kontan": ("Kontan", lambda b: rss("Kontan", "https://investasi.kontan.co.id/rss", b)),
+        "google-news": ("Google News", google_news),
         # CNBC Indonesia dan detikFinance DICABUT (16 Agu 2026):
         #   - CNBC: URL-nya `/market/rss` tapi isinya campur berita umum
         #     ("Bupati Terkaya di Jawa Hidup Serba Mewah"). Menyaring judul

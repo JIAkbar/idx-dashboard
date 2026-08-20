@@ -1,8 +1,42 @@
 # Panen kabar — otomatis, terpisah dari harga
 
-`scripts/panen_kabar.py` menulis `data-idx/json/kabar.json` dari 4 sumber
-(IDX berita, IDX pengumuman, IPOT News, Kontan RSS). Detail sumber & jebakan
-header ada di docstring skrip itu sendiri.
+`scripts/panen_kabar.py` menulis `data-idx/json/kabar.json` dari 5 sumber
+(IDX berita, IDX pengumuman, IPOT News, Kontan RSS, Google News RSS). Detail
+sumber & jebakan header ada di docstring skrip itu sendiri.
+
+## Google News RSS — kandidat pertama yang tak terikat IP rumahan
+
+Ditambahkan 20 Agu 2026 atas permintaan Johan: sumber kabar yang bisa
+dipanen dari GitHub Actions tanpa bergantung pada `panen-kabar-rumah.yml`
+(PC rumah menyala). `news.google.com/rss/search` adalah **pencarian
+publik** tanpa kunci API — bukan endpoint `idx.co.id` yang memblokir IP
+datacenter — jadi kandidat pertama.
+
+**Belum terbukti tembus dari IP datacenter GitHub** — 200 dari mesin ini
+tidak membuktikan apa pun soal itu (persis kejadian IDX/Kontan yang sudah
+menjebak sebelumnya). Lihat `docs/status-panen.md` untuk status run awan
+yang membuktikannya.
+
+Tiga kueri (`GOOGLE_NEWS_KUERI` di `panen_kabar.py`), bukan satu — dan bukan
+per-emiten (960 emiten = 960 permintaan, tak masuk akal):
+
+| Kueri | Alasan |
+|---|---|
+| `saham IHSG when:1d` | Umum, volume terbesar (100 item/24 jam saat diuji) |
+| `"Bursa Efek Indonesia" when:1d` | Spesifik BEI |
+| `emiten saham when:1d` | Berita per-emiten tanpa menembak per kode |
+
+Kueri LONGGAR terbukti kotor saat diuji dan sengaja TIDAK dipakai — `bursa
+when:1d` menyeret pameran bursa kerja, bursa kripto (Ethereum, CFX), dan
+bursa komoditas; `saham` tanpa kualifikasi menyeret saham AS (CSL,
+Wolfspeed). Detail & angka di komentar `GOOGLE_NEWS_KUERI`.
+
+Dedup dua lapis: dalam-sumber (`google_news()`, tautan+judul+waktu — aturan
+proyek, bukan tautan saja) untuk kueri yang tumpang tindih menemukan
+artikel identik, lalu lintas-sumber (`main()`, judul saja) untuk artikel
+sama yang diberitakan ulang penerbit berbeda dengan judul berbeda. Diukur
+20 Agu 2026: 45 item mentah dari 3 kueri (15 tiap kueri) → 40 unik, 5
+duplikat tersaring di lapis dalam-sumber.
 
 ## Kenapa jadwalnya terpisah dari harga
 

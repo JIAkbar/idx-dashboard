@@ -80,6 +80,10 @@ JAM_BUKA, JAM_TUTUP = 7, 19          # jendela kabar WIB, sama dengan cron panen
 #   Stockbit Snips   n=238 jeda maks 13,7 (±1 tulisan/hari, terbit sore) → 30
 #   IDX berita       n=4   jeda maks 15,8 (siaran pers, sampelnya tipis) → 48
 #
+# Google News belum punya riwayat terukur (baru masuk 20 Agu 2026) — ambang
+# 18 dipasang SAMA dengan sumber bervolume tinggi lain (IPOT/Kontan) sebagai
+# titik awal, bukan hasil ukur. Ukur ulang begitu ada riwayat nyata.
+#
 # Kalibrasi ulang: lihat blok di ujung `docs/panen-kabar.md`.
 #
 # kunci → (label, berkas, pencocok item, ambang jam kabar)
@@ -88,6 +92,7 @@ SUMBER: dict[str, tuple[str, Path, "object", float]] = {
     "idx-pengumuman": ("IDX pengumuman", KABAR, lambda i: i.get("sumber") == "IDX" and i.get("jenis") == "pengumuman", 18),
     "ipot":           ("IPOT News",      KABAR, lambda i: i.get("sumber") == "IPOT News", 18),
     "kontan":         ("Kontan",         KABAR, lambda i: i.get("sumber") == "Kontan", 18),
+    "google-news":    ("Google News",    KABAR, lambda i: i.get("sumber") == "Google News", 18),
     "snips":          ("Stockbit Snips", SNIPS, lambda i: True, 30),
 }
 

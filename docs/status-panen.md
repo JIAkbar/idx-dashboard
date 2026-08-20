@@ -7,7 +7,10 @@
 >
 > Kata pemicu untuk panen manual lewat Claude Code: **"Panen Lagi"**.
 
-Diperbarui: **19 Agustus 2026** (sore — kolom pembanding masuk). Angka "isi terakhir" dibaca dari DALAM berkas,
+Diperbarui: **19 Agustus 2026** (sore — kolom pembanding masuk); baris **Kabar**
+diperbarui lagi **20 Agustus 2026** (Google News RSS ditambah, jalur hibrida
+rumah/awan) — baris lain di tabel ini belum diaudit ulang pada tanggal itu.
+Angka "isi terakhir" dibaca dari DALAM berkas,
 bukan dari waktu berkasnya ditulis — berkas bisa ditulis ulang tanpa membawa
 data baru, dan membaca mtime membuat data basi terlihat segar.
 
@@ -20,7 +23,7 @@ data baru, dan membaca mtime membuat data basi terlihat segar.
 | **Statistik harian** | Kalender Bursa, Beranda | IDX PDF harian | **18 Agu 2026** | 143 | ⚠️ Actions **merah 13, 14, 17, 18 Agu** — IDX 403 ke IP runner (hijau 10–12 Agu, jadi blokirnya kumat-kumatan) | `update.yml` |
 | **Statistik mingguan** | Statistik Berkala | IDX PDF mingguan | 14 Agu 2026 | 33 | ⚙️ Actions (ikut `update.yml`) | `update.yml` |
 | **Statistik bulanan** | Statistik Berkala *(chip nonaktif — skema beda, belum dipetakan)* | IDX PDF bulanan `MS<YYMM>-E` | Sep 2025 – Jul 2026 | 11 | ❌ manual | **"Panen Lagi"** |
-| **Kabar** | Beranda, Kabar Pasar | IPOT · IDX berita · IDX pengumuman · Kontan | **18 Agu 2026 12:55 UTC** (run `32139468436`, panen terakhir yang sungguh jalan) | — | ⚠️ **berhenti total 18 Agu 12:55 → 19 Agu**: berkas workflow ditolak GitHub (`runner.temp` di `env` tingkat workflow), 6 run 0 detik tanpa job. Sudah dibetulkan di pohon kerja, **belum di-push** — status "semua sumber dicoba" belum pernah terbukti dari satu run pun | `panen-kabar.yml` |
+| **Kabar** | Beranda, Kabar Pasar | IPOT · IDX berita · IDX pengumuman · Kontan · **Google News RSS** (baru, 20 Agu) | Terukur lokal 20 Agu 2026: IPOT 20 Agu 08:26 WIB, Google News 20 Agu 08:41 WIB, IDX & Kontan 18 Agu 21:56 WIB (dua ini kini lewat runner rumahan) | 331 | ⚠️ hibrida sejak commit `998698f7` — IDX+Kontan di `panen-kabar-rumah.yml` (self-hosted, PC harus menyala), IPOT+Snips+**Google News** di `panen-kabar.yml` (`ubuntu-latest`). **Google News belum terbukti tembus dari IP datacenter GitHub** — 200 dari mesin ini bukan bukti; tunggu run awan hijau yang mengisi `kabar-sumber-awan.json` | `panen-kabar.yml` + `panen-kabar-rumah.yml` |
 | **Stockbit Snips** | Kabar Pasar (tab STOCKBIT SNIPS) | `snips.stockbit.com` (Squarespace `?format=json`) | 14 Agu 2026 | 238 | ⚠️ ikut mati bersama `panen-kabar.yml` — langkahnya ditambahkan 18 Agu tapi **belum pernah dijalankan sekalipun** | `panen-kabar.yml` |
 | **Broker summary** | Broker Summary | Setoran kontributor (screenshot) | **18 Agu 2026** | 753 | 👤 kontributor + kurasi admin | halaman `/admin` |
 | **Fundamental** | Stock Detail, Bedah Emiten | yfinance + turunan lokal + `ListedShares` IDX | **18 Agu 2026** | 965 | ⚙️ Actions akhir bulan | `update-fundamental.yml` |
