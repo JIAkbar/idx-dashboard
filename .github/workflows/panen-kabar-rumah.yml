@@ -62,20 +62,21 @@ jobs:
     timeout-minutes: 20
     defaults:
       run:
-        # Git Bash DISEBUT dengan jalur penuh, bukan `shell: bash`.
+        # PowerShell, BUKAN bash — dan itu keputusan sesudah dua kegagalan
+        # berturut-turut, bukan selera:
         #
-        # Di runner Windows, `bash` menunjuk `C:\WINDOWS\system32\bash.EXE` —
-        # itu bash WSL, dan layanan runner berjalan sebagai LocalSystem yang
-        # ditolak WSL mentah-mentah:
+        # 1. `shell: bash` menunjuk `C:\WINDOWS\system32\bash.EXE` = bash WSL.
+        #    Layanan runner berjalan sebagai LocalSystem, dan WSL menolaknya:
+        #    "Running WSL as local system is not supported."
         #
-        #   Running WSL as local system is not supported.
-        #   Error code: Bash/WSL_E_LOCAL_SYSTEM_NOT_SUPPORTED
+        # 2. Menyebut Git Bash dengan jalur penuh juga ditolak runner:
+        #    "Second path fragment must not be a drive or UNC name." — jalur
+        #    shell kustom tak boleh mengandung spasi seperti "Program Files".
         #
-        # Run #1 (20 Agu 2026) mati karenanya. Yang membuatnya mahal: langkah
-        # panen memakai `continue-on-error: true`, jadi kegagalan itu tak
-        # menghentikan apa pun dan baru terlihat di langkah commit — panennya
-        # sendiri tak pernah jalan padahal log job-nya penuh langkah "sukses".
-        shell: 'C:\Program Files\Git\bin\bash.exe --noprofile --norc -eo pipefail {0}'
+        # PowerShell selalu ada di Windows, tak butuh jalur kustom, dan tak
+        # bergantung pada WSL maupun Git for Windows. Kelas masalahnya hilang,
+        # bukan diakali.
+        shell: powershell
 
     steps:
       - uses: actions/checkout@v4
@@ -89,47 +90,65 @@ jobs:
       - name: Tentukan Python
         id: py
         run: |
-          for p in "/c/Python314/python.exe" "$(command -v python3)" "$(command -v python)"; do
-            [ -n "$p" ] && [ -x "$p" ] || continue
-            if "$p" -c "import curl_cffi" 2>/dev/null; then
-              echo "exe=$p" >> "$GITHUB_OUTPUT"; echo "Python: $p"; exit 0
-            fi
-          done
-          echo "::error::Tak ada Python yang punya curl_cffi. Pasang: C:\\Python314\\python.exe -m pip install curl_cffi requests"
+          $kandidat = @('C:\Python314\python.exe', 'python3', 'python')
+          foreach ($p in $kandidat) {
+            $exe = (Get-Command $p -ErrorAction SilentlyContinue).Source
+            if (-not $exe) { continue }
+            & $exe -c "import curl_cffi" 2>$null
+            if ($LASTEXITCODE -eq 0) {
+              "exe=$exe" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+              Write-Host "Python: $exe"
+              exit 0
+            }
+          }
+          Write-Host "::error::Tak ada Python yang punya curl_cffi. Pasang: C:\Python314\python.exe -m pip install curl_cffi requests"
           exit 1
 
+      # `continue-on-error` DIBATASI ke langkah panen saja, dan alasannya
+      # sempit: satu sumber mati tak boleh menghentikan sumber lain. Ia BUKAN
+      # jaring pengaman untuk kegagalan lingkungan — 20 Agu 2026 justru itu
+      # yang terjadi: shell tak bisa dijalankan, seluruh langkah tak pernah
+      # berjalan, dan `continue-on-error` menelannya sehingga job baru merah
+      # jauh belakangan di langkah commit dengan log penuh langkah "sukses".
       - name: Panen IDX + Kontan
         continue-on-error: true
-        run: >-
-          "${{ steps.py.outputs.exe }}" scripts/panen_kabar.py --batas 30
-          --status "$RUNNER_TEMP/status-kabar.jsonl"
-          --hanya "${{ github.event.inputs.sumber || 'idx,idx-pengumuman,kontan' }}"
+        run: |
+          $sumber = "${{ github.event.inputs.sumber }}"
+          if (-not $sumber) { $sumber = 'idx,idx-pengumuman,kontan' }
+          & "${{ steps.py.outputs.exe }}" scripts/panen_kabar.py --batas 30 `
+            --status "$env:RUNNER_TEMP\status-kabar.jsonl" --hanya $sumber
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       # Vonis merah/hijau diputuskan SATU tempat, sama seperti alur awan.
       - name: Periksa hasil & kesegaran
         continue-on-error: true
-        run: >-
-          "${{ steps.py.outputs.exe }}" scripts/cek_kabar.py
-          --status "$RUNNER_TEMP/status-kabar.jsonl"
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/cek_kabar.py `
+            --status "$env:RUNNER_TEMP\status-kabar.jsonl"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Commit kalau ada perubahan
         if: always()
         run: |
-          BERKAS="data-idx/json/kabar.json"
-          if git diff --quiet -- $BERKAS; then
-            echo "Tidak ada perubahan — tidak commit."
+          $berkas = 'data-idx/json/kabar.json'
+          git diff --quiet -- $berkas
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host 'Tidak ada perubahan — tidak commit.'
             exit 0
-          fi
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add $BERKAS
-          git commit -m "data: panen kabar rumahan $(date -u +'%Y-%m-%d %H:%M UTC')"
-          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          }
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add $berkas
+          $stempel = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd HH:mm')
+          git commit -m "data: panen kabar rumahan $stempel UTC"
+          git pull --rebase --autostash origin $env:GITHUB_REF_NAME
+          git push origin "HEAD:$env:GITHUB_REF_NAME"
 
       # Runner rumahan TIDAK memulai dari mesin bersih seperti runner GitHub:
       # sisa berkas satu jalan akan terbawa ke jalan berikutnya dan bisa
       # membuat `git diff` di atas salah baca.
       - name: Bersihkan sisa
         if: always()
-        run: git clean -fdq -- data-idx || true
+        run: |
+          git clean -fdq -- data-idx
+          exit 0
