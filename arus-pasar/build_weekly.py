@@ -67,11 +67,19 @@ def halaman_sampul_mingguan(ed, urut, skor_map, riwayat, total_muncul):
     # baris IHSG dan hak ciptanya (temuan 17 Agu). Sampul memang bukan daftar
     # isi lengkap — itu tugas halaman Ringkasan Mingguan.
     tampil = urut[:MAKS_SAMPUL]
+    # `.c-prog` (progresi skor lintas hari) dulu bersarang DI DALAM `.c-lbl`
+    # yang dipotong `-webkit-line-clamp:2` — label 2 baris membuat progresi
+    # jadi baris ke-3 dan ikut terpotong jadi "…", lenyap tanpa galat (temuan
+    # 20 Agu). Sekarang `.c-prog` kolom SENDIRI (adik, bukan anak `.c-lbl`),
+    # lebar tetap + ellipsis satu baris — tak lagi ikut kepotong klem label,
+    # walau rentetan panjang (5 hari) tetap bisa terpotong "…" di ujungnya
+    # (kelihatan terpotong, bukan lenyap diam-diam).
     isi = "\n".join(
         f'''<div class="c-row"><span class="c-tk">{em["ticker"]}</span>
-        <span class="c-lbl">{em["label"]}<span class="c-prog">{
+        <span class="c-lbl">{em["label"]}</span>
+        <span class="c-prog">{
             teks_progresi(riwayat[em["ticker"]]) if len(riwayat[em["ticker"]]) > 1 else ""
-        }</span></span>
+        }</span>
         <span class="c-skor">{skor_map[em["ticker"]]["total"]:.0f}</span></div>'''
         for em in tampil)
     if len(urut) > MAKS_SAMPUL:
@@ -112,7 +120,8 @@ def halaman_sampul_mingguan(ed, urut, skor_map, riwayat, total_muncul):
         .c-lbl{{flex:1;min-width:0;font-size:7.4pt;line-height:1.3;
         color:color-mix(in srgb, var(--ink) 85%, transparent);
         display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}}
-        .c-prog{{display:block;font-size:6pt;color:color-mix(in srgb, var(--ink) 55%, transparent);font-family:var(--mono)}}
+        .c-prog{{flex:none;width:20mm;font-size:5.6pt;color:color-mix(in srgb, var(--ink) 55%, transparent);
+        font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}}
         .c-skor{{font-size:10.5pt;font-weight:800;flex:none}}</style>
       <div class="c-list">{isi}</div>
       <div class="c-row"><span class="c-tk" style="font-size:9.5pt;font-weight:700">Peringkat</span>
@@ -197,6 +206,55 @@ def rp_net(juta):
     return ("+" if juta >= 0 else "−") + "Rp" + fmt_rp(abs(juta))
 
 
+# ── #166 — halaman per-emiten mingguan: `halaman_emiten()` (build.py) apa
+# adanya cuma menampilkan hari TERAKHIR emiten muncul, sumber keluhan
+# "identik dengan edisi harian". Dua blok berikut TAMBAHAN yang ditempel ke
+# halaman itu (string-replace sebelum <div class="chartwrap">, sama pola
+# dengan strip "Progresi Skor Mingguan" yang sudah ada) — bukan reuse dari
+# build.py, jadi tak menyentuhnya. ──
+
+def rentang_pekan(ohlc, ticker, edisi_list):
+    """Rentang harga & OHLC emiten SELAMA tanggal-tanggal edisi minggu ini
+    (bukan 1 hari terakhir) — dari cache OHLC (`d` ISO per bar). None kalau
+    bar utk tanggal2 itu tak ada (mis. cache lama sebelum emiten listing)."""
+    tanggal_iso = {tgl.isoformat() for tgl, _ in edisi_list}
+    bars = sorted((b for b in ohlc.get(ticker, []) if b["d"] in tanggal_iso), key=lambda b: b["d"])
+    if not bars:
+        return None
+    buka = bars[0]["o"]
+    return {
+        "lo": min(b["l"] for b in bars), "hi": max(b["h"] for b in bars),
+        "buka": buka, "tutup": bars[-1]["c"],
+        "pct": (bars[-1]["c"] - buka) / buka * 100 if buka else 0.0,
+        "n": len(bars),
+    }
+
+
+def blok_ringkasan_pekan(ticker, net_em, rentang):
+    """Panel kecil: net broker KUMULATIF sepekan (net_em dari kumpulkan_pola —
+    seluruh kemunculan, bukan cuma hari terakhir yang sudah ditampilkan
+    `halaman_emiten()`) + rentang harga sepekan. Kosong (string kosong) kalau
+    dua-duanya tak ada datanya — halaman tetap tampil tanpa panel ini."""
+    baris = []
+    net = net_em.get(ticker)
+    if net:
+        total, n_hari, n_plus, n_minus = net
+        arah = ("SEARAH +" if n_plus and not n_minus else
+                "SEARAH −" if n_minus and not n_plus else "campur")
+        baris.append(
+            f'<div class="pw-r"><span class="l">Net Broker Sepekan</span>'
+            f'<b class="{"bull" if total >= 0 else "bear"}">{rp_net(total)}</b>'
+            f'<span class="sub">{n_hari} hari · {arah} <span class="ket">(top-10/hari)</span></span></div>')
+    if rentang:
+        naik = rentang["pct"] >= 0
+        baris.append(
+            f'<div class="pw-r"><span class="l">Rentang Sepekan</span>'
+            f'<b>{fmt(rentang["lo"])}–{fmt(rentang["hi"])}</b>'
+            f'<span class="sub {"bull" if naik else "bear"}">{"+" if naik else ""}{fmt(rentang["pct"], 1)}%'
+            f' vs buka {rentang["n"]} hari lalu</span></div>')
+    return f'<div class="pw">{"".join(baris)}</div>' if baris else ""
+
+
 def periksa_pola():
     """Uji mandiri kumpulkan_pola: `py -3.14 build_weekly.py --periksa`."""
     def em(tk, beli, jual):
@@ -213,6 +271,26 @@ def periksa_pola():
     assert net_em["AAA"] == [100.0, 2, 2, 0], net_em["AAA"]   # 60 + 40, dua hari searah +
     assert net_em["BBB"] == [-80.0, 1, 0, 1], net_em["BBB"]   # muncul sekali: bukan pola
     print("periksa_pola OK")
+
+
+def periksa_ringkasan_pekan():
+    """Uji mandiri rentang_pekan/blok_ringkasan_pekan: `py -3.14 build_weekly.py --periksa`."""
+    edisi_list = [(dt.date(2026, 8, 10), None), (dt.date(2026, 8, 11), None), (dt.date(2026, 8, 12), None)]
+    ohlc = {"AAA": [
+        {"d": "2026-08-08", "o": 999, "h": 999, "l": 999, "c": 999, "v": 0},  # di luar rentang
+        {"d": "2026-08-10", "o": 100, "h": 110, "l": 95, "c": 105, "v": 0},
+        {"d": "2026-08-11", "o": 105, "h": 120, "l": 100, "c": 90, "v": 0},
+        {"d": "2026-08-12", "o": 90, "h": 95, "l": 80, "c": 92, "v": 0},
+    ]}
+    r = rentang_pekan(ohlc, "AAA", edisi_list)
+    assert r == {"lo": 80, "hi": 120, "buka": 100, "tutup": 92, "pct": -8.0, "n": 3}, r
+    assert rentang_pekan(ohlc, "ZZZ", edisi_list) is None  # ticker tak ada di cache
+
+    html = blok_ringkasan_pekan("AAA", {"AAA": [-500.0, 3, 1, 2]}, r)
+    assert "Net Broker Sepekan" in html and "−Rp500,0M" in html and "campur" in html, html
+    assert "Rentang Sepekan" in html and "80–120" in html and "-8,0%" in html, html
+    assert blok_ringkasan_pekan("ZZZ", {}, None) == ""  # nol data -> panel kosong, bukan div hampa
+    print("periksa_ringkasan_pekan OK")
 
 
 def _baris_broker_pekan(sisi, s, n_eh):
@@ -452,7 +530,22 @@ def main():
                    '.prog .l{font-size:6.3pt;letter-spacing:.14em;text-transform:uppercase;'
                    'color:var(--mute);margin-right:3mm}'
                    'table.ring .prog-cell{font-family:var(--mono);font-size:7.4pt;'
-                   'color:var(--ink2);white-space:nowrap}</style>')
+                   'color:var(--ink2);white-space:nowrap}'
+                   # #166 — panel "Ringkasan Sepekan" (net broker kumulatif + rentang
+                   # harga sepekan) di halaman per-emiten, beda dari .prog (progresi
+                   # skor) yang sudah ada: dua kotak berdampingan, bukan satu baris.
+                   '.pw{display:flex;gap:6mm;margin-top:2.5mm;flex-wrap:wrap}'
+                   '.pw-r{display:flex;flex-direction:column;gap:.6mm;font-size:7.6pt;'
+                   'padding:1.5mm 0 1.5mm 4mm;border-left:3px solid var(--teal);'
+                   'font-variant-numeric:tabular-nums}'
+                   '.pw-r .l{font-size:6.2pt;letter-spacing:.1em;text-transform:uppercase;'
+                   'color:var(--mute)}'
+                   '.pw-r b{font-family:var(--mono);font-weight:700;font-size:9.5pt}'
+                   '.pw-r .sub{font-size:6.4pt;color:var(--mute)}'
+                   # `.pw-r .sub` (spesifisitas 0,2,0) mengalahkan `.bull`/`.bear` global
+                   # (0,1,0) — override lokal wajib, bukan andalkan kelas global menang.
+                   '.pw-r .sub.bull{color:var(--bull)}.pw-r .sub.bear{color:var(--bear)}'
+                   '.pw-r .ket{text-transform:none;letter-spacing:0}</style>')
     pages = [palet.blok_tema(EDISI_PALET) + gaya_ekstra + POLA_CSS
              + halaman_sampul_mingguan(ed_mingguan, urut, skor_map, riwayat, total_muncul)]
     pages.append(halaman_pola_sepekan(ed_mingguan, edisi_list, riwayat, skor_map, len(urut)))
@@ -461,6 +554,13 @@ def main():
         pages.append(halaman_ringkasan_mingguan(ed_mingguan, pot, skor_map, riwayat,
                                                 i, len(potongan), len(urut)))
 
+    # net_em: net broker KUMULATIF per emiten sepanjang seluruh kemunculan
+    # minggu ini (bukan cuma hari terakhir) — dipakai panel Ringkasan Sepekan
+    # di tiap halaman per-emiten. `sisi`/`n_eh` di sini tak dipakai (sudah
+    # dihitung ulang di dalam halaman_pola_sepekan utk kebutuhannya sendiri);
+    # kumpulkan_pola murah (satu lintasan edisi×emiten), aman dipanggil 2x.
+    _, net_em, _ = kumpulkan_pola(edisi_list)
+
     draw = []
     for idx, em in enumerate(urut):
         _, sk, ed_sumber = terakhir[em["ticker"]]
@@ -468,12 +568,19 @@ def main():
         ed_em = {**ed_sumber, "edisi": kode, "tanggal_id": ed_mingguan["tanggal_id"]}
         hal = halaman_emiten(em, sk, ed_em, ohlc, idx)
         hist = riwayat[em["ticker"]]
+        tambahan = ""
         if len(hist) > 1:
-            strip = (f'<div class="prog"><span class="l">Progresi Skor Mingguan</span>'
+            tambahan += (f'<div class="prog"><span class="l">Progresi Skor Mingguan</span>'
                      f'<b>{teks_progresi(hist)}</b> · data halaman ini: kemunculan terakhir '
                      f'({HARI[hist[-1][0].weekday()]} {hist[-1][0].day} {BULAN[hist[-1][0].month]})</div>')
-            # sisip strip di atas chart tanpa menyentuh build.py
-            hal = hal.replace('<div class="chartwrap">', strip + '\n    <div class="chartwrap">', 1)
+        # #166 — panel Ringkasan Sepekan: net broker KUMULATIF + rentang harga
+        # sepekan, beda dari sisa halaman (yang harga/arus brokernya masih
+        # kemunculan terakhir saja) — inilah yang membedakan halaman ini dari
+        # edisi harian.
+        tambahan += blok_ringkasan_pekan(em["ticker"], net_em, rentang_pekan(ohlc, em["ticker"], edisi_list))
+        if tambahan:
+            # sisip di atas chart tanpa menyentuh build.py
+            hal = hal.replace('<div class="chartwrap">', tambahan + '\n    <div class="chartwrap">', 1)
         pages.append(hal)
         draw.append(f'gambarChart("ch{idx}","{em["ticker"]}",{em["ema50"]},'
                     f'{json.dumps(em["pivot"])});')
@@ -511,5 +618,6 @@ if __name__ == "__main__":
     import sys
     if "--periksa" in sys.argv:
         periksa_pola()
+        periksa_ringkasan_pekan()
     else:
         main()
