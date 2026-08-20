@@ -9,7 +9,9 @@
 
 Diperbarui: **19 Agustus 2026** (sore — kolom pembanding masuk); baris **Kabar**
 diperbarui lagi **20 Agustus 2026** (Google News RSS ditambah, jalur hibrida
-rumah/awan) — baris lain di tabel ini belum diaudit ulang pada tanggal itu.
+rumah/awan); baris **OHLC**, **Aliran asing**, **Valuasi historis** diperbarui
+lagi **20 Agustus 2026 malam** (panen 20 Agu dituntaskan lewat Claude Code) —
+baris lain di tabel ini belum diaudit ulang pada tanggal itu.
 Angka "isi terakhir" dibaca dari DALAM berkas,
 bukan dari waktu berkasnya ditulis — berkas bisa ditulis ulang tanpa membawa
 data baru, dan membaca mtime membuat data basi terlihat segar.
@@ -18,8 +20,8 @@ data baru, dan membaca mtime membuat data basi terlihat segar.
 
 | Sumber | Halaman PAPAN | Asal data | Isi terakhir | Berkas | Otomatis? | Pemicu |
 |---|---|---|---|---|---|---|
-| **OHLC harian** | Grafik Emiten, Tanya PAPAN | Yahoo Finance | **18 Agu 2026** | 964 | ❌ manual | `panen_ohlc.py` — **"Panen Lagi"** |
-| **Aliran asing** | Stock Detail, Kartu Analisa *(UI sedang dikerjakan)* | IDX `GetStockSummary` | **2 Jan 2020 → 18 Agu 2026** (median 1.593 hari bursa) | 989 | ❌ manual | `panen_asing.py` — **"Panen Lagi"** |
+| **OHLC harian** | Grafik Emiten, Tanya PAPAN, Kartu Analisa | Yahoo Finance | **20 Agu 2026** pada 835/964 emiten. 87 masih 19 Agu (fetch sukses, Yahoo belum publish bar 20 Agu untuk nama kurang likuid — bukan galat kita). 42 gagal "seri kosong" (ARMY, BTEL, SRIL, WSKT, dst — semuanya suspend/delisted lama, konsisten dgn riwayat sebelumnya). 40 dari 42 itu sudah mentok 17 Jul jauh sebelum hari ini | 964 | ❌ manual | `panen_ohlc.py` — **"Panen Lagi"** |
+| **Aliran asing** | Stock Detail, Kartu Analisa *(UI sedang dikerjakan)* | IDX `GetStockSummary` | **2 Jan 2020 → 20 Agu 2026** (963/963 emiten, median 1.595 hari bursa) | 989 | ❌ manual | `panen_asing.py` — **"Panen Lagi"**; ⚠️ **`--mulai` MENIMPA berkas per-emiten, bukan menggabung** — dipakai sekali 20 Agu untuk menarik 1 tanggal saja dan sempat mereduksi riwayat 6,6 tahun jadi 3 baris; pulih via `--dari-arsip` penuh (arsip mentah gz tetap utuh). Jangan pakai `--mulai` lagi sampai `tulis()` digabung dgn berkas lama |
 | **Statistik harian** | Kalender Bursa, Beranda | IDX PDF harian | **18 Agu 2026** | 143 | ⚠️ Actions **merah 13, 14, 17, 18 Agu** — IDX 403 ke IP runner (hijau 10–12 Agu, jadi blokirnya kumat-kumatan) | `update.yml` |
 | **Statistik mingguan** | Statistik Berkala | IDX PDF mingguan | 14 Agu 2026 | 33 | ⚙️ Actions (ikut `update.yml`) | `update.yml` |
 | **Statistik bulanan** | Statistik Berkala (chip **Bulanan** — nyala sejak 20 Agu 2026, #203) | IDX PDF bulanan `MS<YYMM>-E` | Sep 2025 – Jul 2026 | 11 | ❌ manual | **"Panen Lagi"** |
