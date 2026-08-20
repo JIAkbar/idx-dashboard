@@ -608,7 +608,19 @@ export function GrafikEmiten() {
   const mintaKatalog = useCallback(() => {
     // `muatKatalog` sendiri sudah menyimpan janjinya, jadi memanggilnya
     // berkali-kali (tiap sentuhan menu) tak mengunduh berkali-kali.
-    void muatKatalog().then((k) => setKatalog((lama) => lama ?? k))
+    //
+    // Katalog KOSONG tak pernah disimpan. `muatKatalog()` menjawab dengan Map
+    // kosong kalau impor dinamisnya gagal — dan itu benar-benar terjadi di
+    // produksi: berkas program dipecah per-chunk dengan hash, jadi tab yang
+    // sudah terbuka sebelum sebuah rilis meminta chunk yang tak ada lagi.
+    // Ia sendiri sudah melepas janjinya supaya percobaan berikutnya benar-benar
+    // mencoba lagi; yang tak ikut dilepas adalah state di sini. Begitu Map
+    // kosong tersimpan, `lama ?? k` membuat SETIAP percobaan berikutnya
+    // ditolak oleh nilai gagal itu — menu berhenti di "Memuat katalog
+    // pustaka…" selamanya dan indikator pustaka tak pernah tergambar, tanpa
+    // satu pun galat di layar. Dilaporkan Johan 20 Agu 2026 sebagai "pakai
+    // indikator apa gak muncul".
+    void muatKatalog().then((k) => { if (k.size > 0) setKatalog((lama) => lama ?? k) })
   }, [])
 
   // Satu emiten, satu fetch — sama seperti SeasonalityHarian, BUKAN memuat
@@ -2026,7 +2038,63 @@ export function GrafikEmiten() {
     else if (bar.scrollLeft < kanan) bar.scrollLeft = kanan
   }, [kerangka])
 
+  /**
+   * Tinggi kanvas = sisa layar, bukan 460px tetap (Johan 20 Agu 2026:
+   * "tambahkan height nya sampai mentok bawah itu ... supaya lebih luas
+   * chart nya").
+   *
+   * Diukur, bukan ditulis sebagai `calc(100dvh - Npx)`: pengurangnya adalah
+   * jarak kanvas dari puncak halaman, dan jarak itu BERUBAH — bilah atas
+   * membungkus jadi dua baris di lebar tertentu, pita peringatan emiten tak
+   * dikenal muncul-hilang, bilah Bar replay menambah satu baris lagi. Angka
+   * tetap di CSS akan benar di satu lebar dan meleset di semua lebar lain.
+   *
+   * Yang disisakan di bawah kanvas: bilah rentang (±51px) plus napas — kalau
+   * tidak, chip "1D/5D/1M…" jatuh persis di garis lipat dan halaman terlihat
+   * seperti terpotong. Layar penuh tak diukur di sini: CSS `:fullscreen`
+   * sudah punya rantai flex-nya sendiri.
+   */
   const [layarPenuh, setLayarPenuh] = useState(false)
+  const ukurTinggiKanvas = useCallback(() => {
+    const b = bungkusRef.current
+    const p = panelRef.current
+    if (!b || !p) return
+    if (document.fullscreenElement) { p.style.removeProperty('--grf-tinggi'); return }
+    const atasDokumen = b.getBoundingClientRect().top + window.scrollY
+    const sisa = window.innerHeight - atasDokumen - 84
+    const nilai = `${Math.max(360, Math.round(sisa))}px`
+    // Ditulis hanya kalau BERUBAH. ResizeObserver di bawah mengamati <body>,
+    // dan tinggi body ikut berubah tiap kali nilai ini berubah — menulis
+    // nilai yang sama berulang akan memicu putaran pemberitahuan yang tak
+    // pernah selesai.
+    if (p.style.getPropertyValue('--grf-tinggi') !== nilai) p.style.setProperty('--grf-tinggi', nilai)
+  }, [])
+  useEffect(() => {
+    ukurTinggiKanvas()
+    // Diukur lagi di frame berikutnya: pada muat pertama, bilah atas belum
+    // tentu sudah membungkus ke bentuk finalnya dan pita "Memuat…" masih
+    // menempati satu baris — pengukuran saat itu memberi kanvas 459px di
+    // tempat yang sebenarnya menyediakan 624px (terukur 20 Agu 2026).
+    const raf = requestAnimationFrame(ukurTinggiKanvas)
+    // <body>, bukan panel: yang menggeser kanvas ke bawah sering berada DI
+    // LUAR panel (pita kurs, pita peringatan). Perubahan di situ tak mengubah
+    // ukuran panel sama sekali, jadi mengamati panel saja melewatkannya.
+    const ro = new ResizeObserver(ukurTinggiKanvas)
+    ro.observe(document.body)
+    if (panelRef.current) ro.observe(panelRef.current)
+    window.addEventListener('resize', ukurTinggiKanvas)
+    document.addEventListener('fullscreenchange', ukurTinggiKanvas)
+    return () => {
+      cancelAnimationFrame(raf)
+      ro.disconnect()
+      window.removeEventListener('resize', ukurTinggiKanvas)
+      document.removeEventListener('fullscreenchange', ukurTinggiKanvas)
+    }
+    // Diukur ulang tiap kali sesuatu DI ATAS kanvas boleh berganti tinggi:
+    // pita "Memuat…"/galat/emiten tak dikenal muncul-hilang, dan bilah Bar
+    // replay menambah satu baris penuh. ResizeObserver saja tak menangkapnya —
+    // yang berubah posisi kanvas, bukan ukuran elemen yang diamati.
+  }, [ukurTinggiKanvas, lilin.length, galat, galatIntra, kodeAsing, replay, layarPenuh])
   useEffect(() => {
     const saatGanti = () => setLayarPenuh(document.fullscreenElement === panelRef.current)
     document.addEventListener('fullscreenchange', saatGanti)
@@ -2159,6 +2227,33 @@ export function GrafikEmiten() {
               if (replay !== null) { setReplay(null); setPutar(false); return }
               setReplay(Math.max(1, awalRentang + Math.ceil((penuh.lilin.length - awalRentang) * 0.7)))
             }} />
+
+          <span className="grf-pisah" aria-hidden="true" />
+
+          {/* Simpan template pindah KE SINI dari bawah kanvas (Johan 20 Agu
+              2026: "nama simpan template letakkan di navbar atas"). Yang
+              tinggal di bawah cuma DAFTAR template tersimpan — memuat template
+              itu tindakan sesekali, menyimpannya dilakukan tepat sesudah
+              menyusun indikator di bilah yang sama. Bonusnya langsung terasa
+              di tinggi kanvas: satu blok tetap hilang dari kolom bawah. */}
+          <span className="grf-template-simpan">
+            <input className="inp grf-template-nama" value={namaTemplate}
+              placeholder="Nama template…" aria-label="Nama template"
+              onChange={(e) => setNamaTemplate(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && namaTemplate.trim()) {
+                  simpanDaftarTemplate(simpanTemplate(template, namaTemplate, isiTemplate()))
+                }
+              }} />
+            <button type="button" className="dd-btn"
+              disabled={!namaTemplate.trim()}
+              title={template.some((t) => t.nama === namaTemplate.trim())
+                ? 'Timpa template dengan susunan sekarang'
+                : 'Simpan susunan sekarang sebagai template baru'}
+              onClick={() => simpanDaftarTemplate(simpanTemplate(template, namaTemplate, isiTemplate()))}>
+              {template.some((t) => t.nama === namaTemplate.trim()) ? 'Timpa' : 'Simpan'}
+            </button>
+          </span>
 
           <span className="grf-toolbar-isi" />
 
@@ -2467,25 +2562,6 @@ export function GrafikEmiten() {
               dan ada di grafikEmiten.ts (ringkasnya: ini preferensi tampilan,
               bukan data bersama). */}
           <div className="grf-template">
-            <div className="grf-template-simpan">
-              <input className="inp grf-template-nama" value={namaTemplate}
-                placeholder="Nama template…" aria-label="Nama template"
-                onChange={(e) => setNamaTemplate(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && namaTemplate.trim()) {
-                    simpanDaftarTemplate(simpanTemplate(template, namaTemplate, isiTemplate()))
-                  }
-                }} />
-              <button type="button" className="dd-btn"
-                disabled={!namaTemplate.trim()}
-                title={template.some((t) => t.nama === namaTemplate.trim())
-                  ? 'Timpa template dengan susunan sekarang'
-                  : 'Simpan susunan sekarang sebagai template baru'}
-                onClick={() => simpanDaftarTemplate(simpanTemplate(template, namaTemplate, isiTemplate()))}>
-                {template.some((t) => t.nama === namaTemplate.trim()) ? 'Timpa' : 'Simpan'}
-              </button>
-            </div>
-
             {template.length > 0 && (
               <ul className="grf-template-daftar">
                 {template.map((t) => (

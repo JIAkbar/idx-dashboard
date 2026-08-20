@@ -455,7 +455,24 @@
    arti kedua yang sama pentingnya: menambah panel indikator TIDAK menambah
    tingginya, panel-panel itu berbagi 460px yang sama lewat stretch factor.
    Itu yang membuat halaman tak makin panjang tiap indikator ditambahkan. */
-.lantai .grf-chart-wrap { height: 460px; width: 100%; }
+/* Kanvas MENGISI sisa layar, bukan 460px tetap (Johan 20 Agu 2026:
+   "tambahkan height nya sampai mentok bawah itu ... supaya lebih luas
+   chart nya"). Tinggi tetap berarti chart selalu berhenti di tengah layar
+   32 inci sementara ruang di bawahnya kosong.
+
+   Rantainya sama persis dengan yang sudah dipakai `:fullscreen` di bawah —
+   panel jadi kolom flex, tiap simpul antara wajib `min-height: 0`, dan
+   kanvas yang paling ujung mengambil sisanya. Satu simpul yang lupa
+   `min-height: 0` memutus seluruh rantai: flex item bawaannya tak boleh
+   menyusut di bawah tinggi isinya, jadi `flex: 1` di ujung tak pernah dapat
+   angka untuk dibagi.
+
+   `dvh` bukan `vh`: di ponsel, bilah alamat menutup ~105px terbawah dan `vh`
+   tak tahu itu. Pengurangnya = jarak panel dari puncak layar (pita kurs +
+   padding lantai) plus sisa napas di bawah. `min-height`, bukan `height`,
+   supaya isi di bawah kanvas (kaki, daftar template, panduan) tetap boleh
+   mendorong halaman jadi lebih panjang dan digulir seperti biasa. */
+.lantai .grf-chart-wrap { height: var(--grf-tinggi, 460px); min-height: 360px; width: 100%; }
 /* Selagi data belum ada, DISEMBUNYIKAN LEWAT OPACITY — bukan `display:none`.
    lightweight-charts (autoSize) memasang ResizeObserver ke elemen ini saat
    dibuat; `display:none` bikin lebarnya 0 SAAT chart pertama kali dibuat, dan
@@ -536,7 +553,10 @@
      yang tergulung ke luar layar justru tombol paling sering ditekan. */
   .lantai .grf-kerangka { flex: 1 1 100%; }
   .lantai .grf-toolbar-isi { flex-basis: 100%; height: 0; }
-  .lantai .grf-chart-wrap { height: 340px; }
+  /* Telepon: layar pendek, dan di bawah kanvas masih ada kaki + panduan.
+     Memaksa kanvas setinggi sisa layar di sini membuat semua kendali jatuh
+     di bawah lipatan. Kembali ke tinggi tetap yang muat satu layar. */
+  .lantai .grf-chart-wrap { height: 340px; min-height: 0; }
   /* Kotak tombol legenda dibesarkan (bukan halonya — lihat alasannya di blok
      .grf-legenda-aksi), dan barisnya diberi jarak supaya jari punya tempat. */
   .lantai .grf-legenda-kanvas { gap: 4px; right: 60px; }
