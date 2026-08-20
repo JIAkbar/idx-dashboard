@@ -202,9 +202,27 @@ def tulis(per_emiten: dict[str, list[str]], *, timpa: bool = False) -> int:
     KELUARAN.mkdir(parents=True, exist_ok=True)
     n = 0
     for kode, baris_baru in sorted(per_emiten.items()):
-        baris = sorted(baris_baru) if timpa else gabung(baris_tersimpan(kode), baris_baru)
+        lama_d = baris_tersimpan(kode)
+        baris = sorted(baris_baru) if timpa else gabung(lama_d, baris_baru)
         if not baris:
             continue
+        # Penjaga penyusutan. Menggabung SEHARUSNYA tak pernah mengurangi
+        # baris, jadi kalau ia berkurang berarti ada yang salah di hulu —
+        # bukan sesuatu yang boleh diketahui SESUDAH berkasnya ditimpa.
+        #
+        # Dibedakan dari `--timpa`, yang memang bertugas memangkas: bentuk
+        # kegagalan yang dibayar 20 Agustus 2026 bukan "menghapus", melainkan
+        # "menghapus tanpa ada yang tahu". Sekali jalan `--mulai 2026-08-18`
+        # memotong 963 berkas dari ribuan baris jadi tiga, dan tak satu pun
+        # galat muncul — yang menyelamatkan cuma arsip mentah yang kebetulan
+        # masih utuh.
+        if not timpa and len(baris) < len(lama_d):
+            raise SystemExit(
+                f"BERHENTI sebelum menimpa: {kode} akan menyusut dari {len(lama_d)} "
+                f"jadi {len(baris)} baris. Menggabung tak pernah mengurangi, jadi ini "
+                "cacat di hulu — periksa `gabung()` dan bentuk baris yang dipanen. "
+                "Berkas TIDAK disentuh; tak ada yang perlu dipulihkan."
+            )
         isi = ('{"kode":"%s","satuan":{"beli":"lembar","jual":"lembar",'
                '"volume":"lembar","value":"rupiah","frekuensi":"kali"},'
                '"ruas":["tanggal","beli","jual","volume","value","frekuensi"],'
@@ -321,6 +339,27 @@ def demo() -> None:
         # Berkas rusak diperlakukan seperti belum ada, bukan melempar.
         (tmp / "RUSK.json").write_text("{bukan json", encoding="utf-8")
         assert tulis({"RUSK": ['["2026-08-20",1,1,1,1,1]']}) == 1
+
+        # Penjaga penyusutan: berhenti SEBELUM menimpa, dan berkasnya utuh.
+        # `gabung` dipalsukan supaya membuang baris — itu satu-satunya cara
+        # meniru "cacat di hulu" tanpa menunggu bug berikutnya lahir.
+        (tmp / "SUSU.json").write_text(
+            '{"kode":"SUSU","d":[["2026-08-17",1,1,1,1,1],["2026-08-18",1,1,1,1,1]],"n":2}',
+            encoding="utf-8")
+        asli_gabung = globals()["gabung"]
+        globals()["gabung"] = lambda lama, baru: ['["2026-08-19",2,2,2,2,2]']
+        try:
+            tulis({"SUSU": ['["2026-08-19",2,2,2,2,2]']})
+            raise AssertionError("penjaga penyusutan tidak berbunyi")
+        except SystemExit as e:
+            assert "menyusut" in str(e), e
+        finally:
+            globals()["gabung"] = asli_gabung
+        utuh = json.loads((tmp / "SUSU.json").read_text(encoding="utf-8"))
+        assert utuh["n"] == 2, f"berkas wajib TIDAK tersentuh saat penjaga berbunyi: {utuh}"
+
+        # `--timpa` memang memangkas, jadi penjaga tak boleh menghalanginya.
+        assert tulis({"SUSU": ['["2026-08-19",2,2,2,2,2]']}, timpa=True) == 1
     finally:
         KELUARAN = asli
         shutil.rmtree(tmp, ignore_errors=True)
