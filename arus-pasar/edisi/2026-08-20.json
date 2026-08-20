@@ -1,0 +1,1821 @@
+{
+ "edisi": "AP-200826-E01",
+ "tanggal": "2026-08-20",
+ "tanggal_id": "Kamis, 20 Agustus 2026",
+ "tanggal_flow": "20 Agu 26",
+ "ihsg_baris": "IHSG 6.501,59 ↑ +1,68%",
+ "catatan_verifikasi": "Arus broker ditranskripsi dari Broker Summary Stockbit yang disetorkan kontributor — papan Reguler, seluruh investor, sakelar Net aktif, sehingga tiap broker hanya muncul di satu sisi dan angkanya bersih, bukan bruto. Sepuluh baris teratas tiap sisi yang dipakai. Harga, EMA50, dan level pivot dihitung ulang dari OHLC resmi, bukan disalin dari layar; level pivot dibulatkan ke fraksi harga yang sah di bursa. Pada BRMS kolom lot dan harga rata-rata sisi jual terpotong di screenshot dan dibiarkan kosong — nilai transaksinya tetap terbaca penuh.",
+ "peran_broker": {
+  "ritel": [
+   "XL"
+  ],
+  "scalper": [
+   "YP",
+   "MG",
+   "BQ"
+  ]
+ },
+ "emiten": [
+  {
+   "ticker": "AMMN",
+   "nama": "Amman Mineral Internasional Tbk.",
+   "ohlc_hari": {
+    "o": 4240,
+    "h": 4510,
+    "l": 4240,
+    "c": 4470,
+    "chg": 330,
+    "pct": 7.97,
+    "vol_juta": 161.78
+   },
+   "ema50": 4068,
+   "pivot": {
+    "P": 4180,
+    "R1": 4210,
+    "R2": 4290,
+    "R3": 4320,
+    "S1": 4100,
+    "S2": 4070,
+    "S3": 3990
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "AK",
+     271900.0,
+     614600,
+     4426
+    ],
+    [
+     "BK",
+     71100.0,
+     160700,
+     4431
+    ],
+    [
+     "BB",
+     29500.0,
+     66100,
+     4468
+    ],
+    [
+     "ZP",
+     12000.0,
+     26800,
+     4452
+    ],
+    [
+     "KZ",
+     6200.0,
+     13900,
+     4462
+    ],
+    [
+     "HD",
+     1000.0,
+     2200,
+     4428
+    ],
+    [
+     "MI",
+     554.3,
+     1200,
+     4438
+    ],
+    [
+     "AO",
+     112.2,
+     376,
+     4376
+    ],
+    [
+     "SH",
+     4.0,
+     10,
+     4340
+    ]
+   ],
+   "jual": [
+    [
+     "XL",
+     93800.0,
+     211700,
+     4433
+    ],
+    [
+     "YP",
+     41300.0,
+     93800,
+     4411
+    ],
+    [
+     "SQ",
+     29500.0,
+     66700,
+     4426
+    ],
+    [
+     "NI",
+     27700.0,
+     62700,
+     4426
+    ],
+    [
+     "XC",
+     16700.0,
+     38100,
+     4411
+    ],
+    [
+     "YU",
+     13400.0,
+     30200,
+     4432
+    ],
+    [
+     "CC",
+     13100.0,
+     28600,
+     4436
+    ],
+    [
+     "PD",
+     9700.0,
+     21800,
+     4419
+    ],
+    [
+     "OD",
+     9300.0,
+     21100,
+     4431
+    ],
+    [
+     "LG",
+     9000.0,
+     20000,
+     4452
+    ]
+   ],
+   "arah": "naik",
+   "target": "4210 / 4290 / 4320",
+   "invalidation": "Close <4100",
+   "slider_pct": 85,
+   "flow_kelas": "Strong Accumulation",
+   "label": "Naik 7,97% di atas Pivot — Strong Accumulation Net Top-10",
+   "catatan": "Batas batal dari pivot S1 4100. Sasaran dari pivot: 4210 / 4290 / 4320.",
+   "narasi_flow": "Net-beli 10 teratas Rp392,4B lawan net-jual Rp263,5B (selisih +Rp128,9B). Top net-buyer AK Rp271,9B. Top net-seller XL Rp93,8B.",
+   "narasi_teknikal": "Tutup 4.470 naik 7,97%, di atas pivot 4180 dan 9,88% di atas EMA50 4068, Rentang hari 1,37x ATR14,",
+   "strategi": "Berlaku selama penutupan bertahan di atas 4100; sasaran pertama 4210.",
+   "konsekuensi": "Penutupan di bawah 4100 membuka ruang ke 4070.",
+   "rationale_rank": "Strong Accumulation top-10 +Rp128,9B, harga di atas pivot",
+   "kontributor": "Agitama"
+  },
+  {
+   "ticker": "BRMS",
+   "nama": "Bumi Resources Minerals Tbk.",
+   "ohlc_hari": {
+    "o": 650,
+    "h": 695,
+    "l": 650,
+    "c": 685,
+    "chg": 60,
+    "pct": 9.6,
+    "vol_juta": 829.15
+   },
+   "ema50": 604,
+   "pivot": {
+    "P": 630,
+    "R1": 635,
+    "R2": 645,
+    "R3": 650,
+    "S1": 620,
+    "S2": 615,
+    "S3": 605
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "AK",
+     56300.0,
+     828400,
+     681
+    ],
+    [
+     "BK",
+     39400.0,
+     578900,
+     682
+    ],
+    [
+     "MG",
+     18100.0,
+     263700,
+     684
+    ],
+    [
+     "HP",
+     15900.0,
+     232000,
+     685
+    ],
+    [
+     "TP",
+     10800.0,
+     158000,
+     681
+    ],
+    [
+     "AZ",
+     10400.0,
+     154500,
+     676
+    ],
+    [
+     "SS",
+     10100.0,
+     149200,
+     675
+    ],
+    [
+     "PD",
+     5300.0,
+     77000,
+     682
+    ],
+    [
+     "YU",
+     5300.0,
+     77300,
+     682
+    ],
+    [
+     "ZP",
+     4600.0,
+     65900,
+     681
+    ]
+   ],
+   "jual": [
+    [
+     "XL",
+     52700.0,
+     null,
+     null
+    ],
+    [
+     "CC",
+     18600.0,
+     null,
+     null
+    ],
+    [
+     "SQ",
+     14300.0,
+     null,
+     null
+    ],
+    [
+     "CP",
+     8700.0,
+     null,
+     null
+    ],
+    [
+     "OD",
+     8600.0,
+     null,
+     null
+    ],
+    [
+     "XA",
+     7800.0,
+     null,
+     null
+    ],
+    [
+     "GR",
+     6700.0,
+     null,
+     null
+    ],
+    [
+     "NI",
+     6300.0,
+     null,
+     null
+    ],
+    [
+     "HD",
+     5500.0,
+     null,
+     null
+    ],
+    [
+     "KZ",
+     5300.0,
+     null,
+     null
+    ]
+   ],
+   "arah": "naik",
+   "target": "635 / 645 / 650",
+   "invalidation": "Close <620",
+   "slider_pct": 78,
+   "flow_kelas": "Accumulation",
+   "label": "Naik 9,60% di atas Pivot — Accumulation Net Top-10",
+   "catatan": "Batas batal dari pivot S1 620. Sasaran dari pivot: 635 / 645 / 650.",
+   "narasi_flow": "Net-beli 10 teratas Rp176,2B lawan net-jual Rp134,5B (selisih +Rp41,7B). Top net-buyer AK Rp56,3B. Top net-seller XL Rp52,7B.",
+   "narasi_teknikal": "Tutup 685 naik 9,60%, di atas pivot 630 dan 13,41% di atas EMA50 604, Rentang hari 1,29x ATR14,",
+   "strategi": "Berlaku selama penutupan bertahan di atas 620; sasaran pertama 635.",
+   "konsekuensi": "Penutupan di bawah 620 membuka ruang ke 615.",
+   "rationale_rank": "Accumulation top-10 +Rp41,7B, harga di atas pivot",
+   "kontributor": "Mifathul Ulum"
+  },
+  {
+   "ticker": "MBMA",
+   "nama": "Merdeka Battery Materials Tbk.",
+   "ohlc_hari": {
+    "o": 525,
+    "h": 580,
+    "l": 520,
+    "c": 565,
+    "chg": 55,
+    "pct": 10.78,
+    "vol_juta": 368.8
+   },
+   "ema50": 527,
+   "pivot": {
+    "P": 515,
+    "R1": 520,
+    "R2": 535,
+    "R3": 540,
+    "S1": 500,
+    "S2": 494,
+    "S3": 482
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "DR",
+     23600.0,
+     411900,
+     571
+    ],
+    [
+     "AK",
+     18500.0,
+     342500,
+     547
+    ],
+    [
+     "CC",
+     17400.0,
+     326100,
+     544
+    ],
+    [
+     "BK",
+     13400.0,
+     241300,
+     557
+    ],
+    [
+     "AO",
+     1500.0,
+     26500,
+     563
+    ],
+    [
+     "KI",
+     976.0,
+     17400,
+     556
+    ],
+    [
+     "DH",
+     965.2,
+     16300,
+     573
+    ],
+    [
+     "BR",
+     555.0,
+     10000,
+     555
+    ],
+    [
+     "BQ",
+     247.2,
+     3800,
+     560
+    ],
+    [
+     "LS",
+     210.1,
+     3700,
+     565
+    ]
+   ],
+   "jual": [
+    [
+     "ZP",
+     9600.0,
+     172400,
+     555
+    ],
+    [
+     "BB",
+     8100.0,
+     151800,
+     534
+    ],
+    [
+     "YP",
+     7300.0,
+     133400,
+     552
+    ],
+    [
+     "PD",
+     6900.0,
+     123300,
+     561
+    ],
+    [
+     "XC",
+     6500.0,
+     117100,
+     556
+    ],
+    [
+     "XL",
+     6100.0,
+     111700,
+     556
+    ],
+    [
+     "NI",
+     4500.0,
+     81100,
+     557
+    ],
+    [
+     "AZ",
+     4000.0,
+     72400,
+     549
+    ],
+    [
+     "OD",
+     3000.0,
+     53700,
+     553
+    ],
+    [
+     "AG",
+     2600.0,
+     45300,
+     566
+    ]
+   ],
+   "arah": "naik",
+   "target": "520 / 535 / 540",
+   "invalidation": "Close <500",
+   "slider_pct": 75,
+   "flow_kelas": "Accumulation",
+   "label": "Naik 10,78% di atas Pivot — Accumulation Net Top-10",
+   "catatan": "Batas batal dari pivot S1 500. Sasaran dari pivot: 520 / 535 / 540.",
+   "narasi_flow": "Net-beli 10 teratas Rp77,4B lawan net-jual Rp58,6B (selisih +Rp18,8B). Top net-buyer DR Rp23,6B. Top net-seller ZP Rp9,6B.",
+   "narasi_teknikal": "Tutup 565 naik 10,78%, di atas pivot 515 dan 7,21% di atas EMA50 527, Rentang hari 1,90x ATR14,",
+   "strategi": "Berlaku selama penutupan bertahan di atas 500; sasaran pertama 520.",
+   "konsekuensi": "Penutupan di bawah 500 membuka ruang ke 494.",
+   "rationale_rank": "Accumulation top-10 +Rp18,8B, harga di atas pivot",
+   "kontributor": "Agitama"
+  },
+  {
+   "ticker": "ARCI",
+   "nama": "Archi Indonesia Tbk.",
+   "ohlc_hari": {
+    "o": 1375,
+    "h": 1425,
+    "l": 1350,
+    "c": 1370,
+    "chg": 70,
+    "pct": 5.38,
+    "vol_juta": 109.79
+   },
+   "ema50": 1156,
+   "pivot": {
+    "P": 1295,
+    "R1": 1325,
+    "R2": 1345,
+    "R3": 1375,
+    "S1": 1275,
+    "S2": 1245,
+    "S3": 1225
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "CC",
+     17800.0,
+     127100,
+     1403
+    ],
+    [
+     "NI",
+     12200.0,
+     86600,
+     1403
+    ],
+    [
+     "KZ",
+     10600.0,
+     75600,
+     1404
+    ],
+    [
+     "GR",
+     3500.0,
+     25400,
+     1399
+    ],
+    [
+     "PD",
+     2700.0,
+     19500,
+     1397
+    ],
+    [
+     "DR",
+     2600.0,
+     18700,
+     1404
+    ],
+    [
+     "AZ",
+     2100.0,
+     15300,
+     1390
+    ],
+    [
+     "MI",
+     822.0,
+     6000,
+     1370
+    ],
+    [
+     "KI",
+     704.7,
+     5300,
+     1373
+    ],
+    [
+     "HD",
+     243.2,
+     1800,
+     1407
+    ]
+   ],
+   "jual": [
+    [
+     "XL",
+     11800.0,
+     84100,
+     1402
+    ],
+    [
+     "MG",
+     9900.0,
+     72100,
+     1389
+    ],
+    [
+     "BK",
+     5800.0,
+     41200,
+     1402
+    ],
+    [
+     "YJ",
+     2800.0,
+     20100,
+     1392
+    ],
+    [
+     "HP",
+     2800.0,
+     20000,
+     1398
+    ],
+    [
+     "DX",
+     2700.0,
+     19200,
+     1405
+    ],
+    [
+     "YP",
+     2200.0,
+     15600,
+     1402
+    ],
+    [
+     "CP",
+     1700.0,
+     11900,
+     1403
+    ],
+    [
+     "XC",
+     1700.0,
+     12300,
+     1399
+    ],
+    [
+     "KK",
+     1700.0,
+     11900,
+     1401
+    ]
+   ],
+   "arah": "naik",
+   "target": "1325 / 1345 / 1375",
+   "invalidation": "Close <1275",
+   "slider_pct": 27,
+   "flow_kelas": "Accumulation",
+   "label": "Naik 5,38% di atas Pivot — Accumulation Net Top-10",
+   "catatan": "Batas batal dari pivot S1 1275. Sasaran dari pivot: 1325 / 1345 / 1375.",
+   "narasi_flow": "Net-beli 10 teratas Rp53,3B lawan net-jual Rp43,1B (selisih +Rp10,2B). Top net-buyer CC Rp17,8B. Top net-seller XL Rp11,8B.",
+   "narasi_teknikal": "Tutup 1.370 naik 5,38%, di atas pivot 1295 dan 18,51% di atas EMA50 1156, Rentang hari 1,00x ATR14,",
+   "strategi": "Berlaku selama penutupan bertahan di atas 1275; sasaran pertama 1325.",
+   "konsekuensi": "Penutupan di bawah 1275 membuka ruang ke 1245.",
+   "rationale_rank": "Accumulation top-10 +Rp10,2B, harga di atas pivot",
+   "kontributor": "Agitama"
+  },
+  {
+   "ticker": "KIJA",
+   "nama": "Kawasan Industri Jababeka Tbk.",
+   "ohlc_hari": {
+    "o": 167,
+    "h": 214,
+    "l": 165,
+    "c": 206,
+    "chg": 41,
+    "pct": 24.85,
+    "vol_juta": 2514.07
+   },
+   "ema50": 136,
+   "pivot": {
+    "P": 177,
+    "R1": 190,
+    "R2": 216,
+    "R3": 230,
+    "S1": 151,
+    "S2": 138,
+    "S3": 112
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "ZP",
+     19700.0,
+     995600,
+     194
+    ],
+    [
+     "MG",
+     16200.0,
+     811700,
+     195
+    ],
+    [
+     "AK",
+     5400.0,
+     286800,
+     185
+    ],
+    [
+     "YP",
+     3200.0,
+     176800,
+     193
+    ],
+    [
+     "PD",
+     2500.0,
+     104900,
+     197
+    ],
+    [
+     "CC",
+     2300.0,
+     168800,
+     188
+    ],
+    [
+     "RO",
+     2000.0,
+     113200,
+     177
+    ],
+    [
+     "AO",
+     884.8,
+     47500,
+     188
+    ],
+    [
+     "PC",
+     786.9,
+     39900,
+     197
+    ],
+    [
+     "XA",
+     648.4,
+     40400,
+     179
+    ]
+   ],
+   "jual": [
+    [
+     "NI",
+     15100.0,
+     779800,
+     193
+    ],
+    [
+     "XL",
+     13700.0,
+     729900,
+     190
+    ],
+    [
+     "XC",
+     3200.0,
+     160700,
+     186
+    ],
+    [
+     "SQ",
+     2500.0,
+     137900,
+     190
+    ],
+    [
+     "SA",
+     2300.0,
+     130800,
+     178
+    ],
+    [
+     "YU",
+     2200.0,
+     116400,
+     192
+    ],
+    [
+     "OD",
+     1900.0,
+     97700,
+     189
+    ],
+    [
+     "BB",
+     1900.0,
+     102700,
+     180
+    ],
+    [
+     "EP",
+     1500.0,
+     81300,
+     187
+    ],
+    [
+     "KK",
+     1400.0,
+     71900,
+     191
+    ]
+   ],
+   "arah": "naik",
+   "target": "190 / 216 / 230",
+   "invalidation": "Close <151",
+   "slider_pct": 84,
+   "flow_kelas": "Accumulation",
+   "label": "Naik 24,85% di atas Pivot — Accumulation Net Top-10",
+   "catatan": "Batas batal dari pivot S1 151. Sasaran dari pivot: 190 / 216 / 230.",
+   "narasi_flow": "Net-beli 10 teratas Rp53,6B lawan net-jual Rp45,7B (selisih +Rp7,9B). Top net-buyer ZP Rp19,7B. Top net-seller NI Rp15,1B.",
+   "narasi_teknikal": "Tutup 206 naik 24,85%, di atas pivot 177 dan 51,47% di atas EMA50 136, Rentang hari 3,57x ATR14,",
+   "strategi": "Berlaku selama penutupan bertahan di atas 151; sasaran pertama 190.",
+   "konsekuensi": "Penutupan di bawah 151 membuka ruang ke 138.",
+   "rationale_rank": "Accumulation top-10 +Rp7,9B, harga di atas pivot",
+   "kontributor": "Agitama"
+  },
+  {
+   "ticker": "INCO",
+   "nama": "Vale Indonesia Tbk.",
+   "ohlc_hari": {
+    "o": 5175,
+    "h": 5325,
+    "l": 5175,
+    "c": 5250,
+    "chg": 175,
+    "pct": 3.45,
+    "vol_juta": 12.53
+   },
+   "ema50": 5086,
+   "pivot": {
+    "P": 5125,
+    "R1": 5200,
+    "R2": 5325,
+    "R3": 5400,
+    "S1": 5000,
+    "S2": 4920,
+    "S3": 4800
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "AK",
+     14900.0,
+     28300,
+     5277
+    ],
+    [
+     "BB",
+     8300.0,
+     15600,
+     5283
+    ],
+    [
+     "RX",
+     4400.0,
+     8300,
+     5278
+    ],
+    [
+     "AG",
+     3400.0,
+     6500,
+     5254
+    ],
+    [
+     "BK",
+     3000.0,
+     5700,
+     5264
+    ],
+    [
+     "DR",
+     763.0,
+     1400,
+     5280
+    ],
+    [
+     "TP",
+     634.6,
+     1200,
+     5270
+    ],
+    [
+     "HD",
+     522.0,
+     995,
+     5262
+    ],
+    [
+     "XA",
+     221.7,
+     417,
+     5297
+    ],
+    [
+     "NI",
+     216.1,
+     408,
+     5278
+    ]
+   ],
+   "jual": [
+    [
+     "CC",
+     6200.0,
+     11700,
+     5278
+    ],
+    [
+     "DX",
+     4200.0,
+     8000,
+     5279
+    ],
+    [
+     "KZ",
+     3700.0,
+     7100,
+     5272
+    ],
+    [
+     "PD",
+     3400.0,
+     6300,
+     5278
+    ],
+    [
+     "XL",
+     2500.0,
+     4800,
+     5276
+    ],
+    [
+     "SQ",
+     2200.0,
+     4300,
+     5265
+    ],
+    [
+     "CD",
+     1900.0,
+     3700,
+     5275
+    ],
+    [
+     "YP",
+     1800.0,
+     3500,
+     5274
+    ],
+    [
+     "GR",
+     1700.0,
+     3200,
+     5261
+    ],
+    [
+     "OD",
+     1600.0,
+     3100,
+     5274
+    ]
+   ],
+   "arah": "naik",
+   "target": "5200 / 5325 / 5400",
+   "invalidation": "Close <5000",
+   "slider_pct": 50,
+   "flow_kelas": "Accumulation",
+   "label": "Naik 3,45% di atas Pivot — Accumulation Net Top-10",
+   "catatan": "Batas batal dari pivot S1 5000. Sasaran dari pivot: 5200 / 5325 / 5400.",
+   "narasi_flow": "Net-beli 10 teratas Rp36,4B lawan net-jual Rp29,2B (selisih +Rp7,2B). Top net-buyer AK Rp14,9B. Top net-seller CC Rp6,2B.",
+   "narasi_teknikal": "Tutup 5.250 naik 3,45%, di atas pivot 5125 dan 3,22% di atas EMA50 5086, Rentang hari 0,58x ATR14,",
+   "strategi": "Berlaku selama penutupan bertahan di atas 5000; sasaran pertama 5200.",
+   "konsekuensi": "Penutupan di bawah 5000 membuka ruang ke 4920.",
+   "rationale_rank": "Accumulation top-10 +Rp7,2B, harga di atas pivot",
+   "kontributor": "Agitama"
+  },
+  {
+   "ticker": "BWPT",
+   "nama": "Eagle High Plantations Tbk.",
+   "ohlc_hari": {
+    "o": 93,
+    "h": 117,
+    "l": 92,
+    "c": 112,
+    "chg": 20,
+    "pct": 21.74,
+    "vol_juta": 2117.74
+   },
+   "ema50": 88,
+   "pivot": {
+    "P": 93,
+    "R1": 94,
+    "R2": 96,
+    "R3": 97,
+    "S1": 91,
+    "S2": 90,
+    "S3": 88
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "BK",
+     3600.0,
+     336200,
+     108
+    ],
+    [
+     "OD",
+     3500.0,
+     311200,
+     108
+    ],
+    [
+     "AK",
+     3100.0,
+     328100,
+     106
+    ],
+    [
+     "PD",
+     1300.0,
+     119200,
+     108
+    ],
+    [
+     "XL",
+     614.6,
+     -2400,
+     109
+    ],
+    [
+     "LG",
+     316.8,
+     21400,
+     110
+    ],
+    [
+     "BQ",
+     276.9,
+     51700,
+     104
+    ],
+    [
+     "YP",
+     150.1,
+     39600,
+     108
+    ],
+    [
+     "PG",
+     109.0,
+     10000,
+     109
+    ],
+    [
+     "IU",
+     77.9,
+     6500,
+     112
+    ]
+   ],
+   "jual": [
+    [
+     "YU",
+     1800.0,
+     175900,
+     107
+    ],
+    [
+     "CP",
+     1600.0,
+     152700,
+     108
+    ],
+    [
+     "DR",
+     1400.0,
+     141300,
+     103
+    ],
+    [
+     "YJ",
+     1200.0,
+     111500,
+     108
+    ],
+    [
+     "CC",
+     1100.0,
+     98200,
+     108
+    ],
+    [
+     "ZP",
+     933.8,
+     80200,
+     108
+    ],
+    [
+     "AG",
+     659.9,
+     61200,
+     108
+    ],
+    [
+     "SQ",
+     625.4,
+     62900,
+     109
+    ],
+    [
+     "EP",
+     624.6,
+     61400,
+     106
+    ],
+    [
+     "HD",
+     371.2,
+     27500,
+     110
+    ]
+   ],
+   "arah": "naik",
+   "target": "94 / 96 / 97",
+   "invalidation": "Close <91",
+   "slider_pct": 80,
+   "flow_kelas": "Accumulation",
+   "label": "Naik 21,74% di atas Pivot — Accumulation Net Top-10",
+   "catatan": "Batas batal dari pivot S1 91. Sasaran dari pivot: 94 / 96 / 97.",
+   "narasi_flow": "Net-beli 10 teratas Rp13,0B lawan net-jual Rp10,3B (selisih +Rp2,7B). Top net-buyer BK Rp3,6B. Top net-seller YU Rp1,8B.",
+   "narasi_teknikal": "Tutup 112 naik 21,74%, di atas pivot 93 dan 27,27% di atas EMA50 88, Rentang hari 3,27x ATR14,",
+   "strategi": "Berlaku selama penutupan bertahan di atas 91; sasaran pertama 94.",
+   "konsekuensi": "Penutupan di bawah 91 membuka ruang ke 90.",
+   "rationale_rank": "Accumulation top-10 +Rp2,7B, harga di atas pivot",
+   "kontributor": "Agitama"
+  },
+  {
+   "ticker": "COIN",
+   "nama": "Indokripto Koin Semesta Tbk.",
+   "ohlc_hari": {
+    "o": 755,
+    "h": 880,
+    "l": 755,
+    "c": 880,
+    "chg": 175,
+    "pct": 24.82,
+    "vol_juta": 138.59
+   },
+   "ema50": 759,
+   "pivot": {
+    "P": 730,
+    "R1": 760,
+    "R2": 815,
+    "R3": 845,
+    "S1": 675,
+    "S2": 645,
+    "S3": 590
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "ZP",
+     8100.0,
+     91700,
+     859
+    ],
+    [
+     "AZ",
+     7800.0,
+     90200,
+     859
+    ],
+    [
+     "MG",
+     7100.0,
+     80200,
+     857
+    ],
+    [
+     "PD",
+     3900.0,
+     52000,
+     799
+    ],
+    [
+     "AK",
+     3600.0,
+     44800,
+     811
+    ],
+    [
+     "AI",
+     1200.0,
+     14500,
+     850
+    ],
+    [
+     "BB",
+     1100.0,
+     13900,
+     820
+    ],
+    [
+     "CC",
+     553.5,
+     8000,
+     822
+    ],
+    [
+     "TP",
+     395.1,
+     4600,
+     837
+    ],
+    [
+     "LG",
+     325.6,
+     4000,
+     822
+    ]
+   ],
+   "jual": [
+    [
+     "XL",
+     10500.0,
+     124000,
+     821
+    ],
+    [
+     "OD",
+     7500.0,
+     87800,
+     850
+    ],
+    [
+     "XC",
+     4000.0,
+     48000,
+     824
+    ],
+    [
+     "KI",
+     2300.0,
+     27900,
+     815
+    ],
+    [
+     "NI",
+     2100.0,
+     24000,
+     845
+    ],
+    [
+     "YP",
+     2100.0,
+     23800,
+     825
+    ],
+    [
+     "BK",
+     1200.0,
+     14900,
+     803
+    ],
+    [
+     "KK",
+     770.2,
+     8800,
+     836
+    ],
+    [
+     "GR",
+     703.3,
+     8600,
+     808
+    ],
+    [
+     "SQ",
+     624.2,
+     7900,
+     819
+    ]
+   ],
+   "arah": "naik",
+   "target": "760 / 815 / 845",
+   "invalidation": "Close <675",
+   "slider_pct": 100,
+   "flow_kelas": "Neutral",
+   "label": "Naik 24,82% di atas Pivot — Neutral Net Top-10",
+   "catatan": "Batas batal dari pivot S1 675. Sasaran dari pivot: 760 / 815 / 845.",
+   "narasi_flow": "Net-beli 10 teratas Rp34,1B lawan net-jual Rp31,8B (selisih +Rp2,3B). Top net-buyer ZP Rp8,1B. Top net-seller XL Rp10,5B.",
+   "narasi_teknikal": "Tutup 880 naik 24,82%, di atas pivot 730 dan 15,94% di atas EMA50 759, Rentang hari 2,26x ATR14,",
+   "strategi": "Berlaku selama penutupan bertahan di atas 675; sasaran pertama 760.",
+   "konsekuensi": "Penutupan di bawah 675 membuka ruang ke 645.",
+   "rationale_rank": "Neutral top-10 +Rp2,3B, harga di atas pivot",
+   "kontributor": "Agitama"
+  },
+  {
+   "ticker": "BIPI",
+   "nama": "Astrindo Nusantara Infrastruktur Tbk.",
+   "ohlc_hari": {
+    "o": 151,
+    "h": 156,
+    "l": 151,
+    "c": 152,
+    "chg": 2,
+    "pct": 1.33,
+    "vol_juta": 413.2
+   },
+   "ema50": 153,
+   "pivot": {
+    "P": 150,
+    "R1": 152,
+    "R2": 155,
+    "R3": 157,
+    "S1": 147,
+    "S2": 145,
+    "S3": 142
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "AK",
+     5200.0,
+     338200,
+     153
+    ],
+    [
+     "BK",
+     2800.0,
+     185100,
+     153
+    ],
+    [
+     "PD",
+     1400.0,
+     91400,
+     153
+    ],
+    [
+     "ZP",
+     995.6,
+     65700,
+     152
+    ],
+    [
+     "BB",
+     807.6,
+     52800,
+     153
+    ],
+    [
+     "YB",
+     741.2,
+     48200,
+     153
+    ],
+    [
+     "BQ",
+     589.0,
+     37800,
+     154
+    ],
+    [
+     "CP",
+     565.0,
+     36700,
+     153
+    ],
+    [
+     "DR",
+     333.9,
+     22000,
+     153
+    ],
+    [
+     "AO",
+     298.9,
+     19700,
+     152
+    ]
+   ],
+   "jual": [
+    [
+     "GR",
+     3600.0,
+     233500,
+     null
+    ],
+    [
+     "XC",
+     1600.0,
+     101300,
+     null
+    ],
+    [
+     "CC",
+     1400.0,
+     88800,
+     null
+    ],
+    [
+     "XL",
+     1200.0,
+     80300,
+     null
+    ],
+    [
+     "PF",
+     1100.0,
+     74600,
+     null
+    ],
+    [
+     "LG",
+     772.7,
+     50800,
+     null
+    ],
+    [
+     "MG",
+     702.6,
+     47800,
+     null
+    ],
+    [
+     "YP",
+     664.2,
+     43500,
+     null
+    ],
+    [
+     "SQ",
+     648.3,
+     42500,
+     null
+    ],
+    [
+     "IF",
+     480.9,
+     31700,
+     null
+    ]
+   ],
+   "arah": "netral",
+   "target": "152 / 155 / 157",
+   "invalidation": "Close <147",
+   "slider_pct": 20,
+   "flow_kelas": "Accumulation",
+   "label": "Naik 1,33% di atas Pivot — Accumulation Net Top-10",
+   "catatan": "Batas batal dari pivot S1 147. Sasaran dari pivot: 152 / 155 / 157.",
+   "narasi_flow": "Net-beli 10 teratas Rp13,7B lawan net-jual Rp12,2B (selisih +Rp1,6B). Top net-buyer AK Rp5,2B. Top net-seller GR Rp3,6B.",
+   "narasi_teknikal": "Tutup 152 naik 1,33%, di atas pivot 150 dan 0,65% di bawah EMA50 153, Rentang hari 0,56x ATR14,",
+   "strategi": "Berlaku selama penutupan bertahan di atas 147; sasaran pertama 152.",
+   "konsekuensi": "Penutupan di bawah 147 membuka ruang ke 145.",
+   "rationale_rank": "Accumulation top-10 +Rp1,6B, harga di atas pivot",
+   "kontributor": "Warda W."
+  },
+  {
+   "ticker": "ELIT",
+   "nama": "Data Sinergitama Jaya Tbk.",
+   "ohlc_hari": {
+    "o": 180,
+    "h": 187,
+    "l": 176,
+    "c": 185,
+    "chg": 9,
+    "pct": 5.11,
+    "vol_juta": 9.7
+   },
+   "ema50": 177,
+   "pivot": {
+    "P": 177,
+    "R1": 180,
+    "R2": 183,
+    "R3": 186,
+    "S1": 174,
+    "S2": 171,
+    "S3": 168
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "LG",
+     275.6,
+     14900,
+     185
+    ],
+    [
+     "CC",
+     78.3,
+     4200,
+     183
+    ],
+    [
+     "GR",
+     75.5,
+     4200,
+     181
+    ],
+    [
+     "XC",
+     71.2,
+     3800,
+     185
+    ],
+    [
+     "CP",
+     9.0,
+     485,
+     184
+    ],
+    [
+     "YP",
+     8.4,
+     540,
+     181
+    ],
+    [
+     "IF",
+     7.3,
+     409,
+     178
+    ],
+    [
+     "BQ",
+     3.2,
+     171,
+     185
+    ],
+    [
+     "QA",
+     1.4,
+     79,
+     183
+    ],
+    [
+     "AZ",
+     1.0,
+     55,
+     183
+    ]
+   ],
+   "jual": [
+    [
+     "XL",
+     167.7,
+     8900,
+     null
+    ],
+    [
+     "SQ",
+     121.6,
+     6600,
+     null
+    ],
+    [
+     "OD",
+     75.9,
+     4300,
+     null
+    ],
+    [
+     "MG",
+     52.5,
+     2800,
+     null
+    ],
+    [
+     "PD",
+     38.0,
+     2100,
+     null
+    ],
+    [
+     "XA",
+     18.6,
+     1000,
+     null
+    ],
+    [
+     "EP",
+     10.9,
+     629,
+     null
+    ],
+    [
+     "NI",
+     10.7,
+     574,
+     null
+    ],
+    [
+     "BR",
+     9.3,
+     500,
+     null
+    ],
+    [
+     "DR",
+     8.8,
+     483,
+     null
+    ]
+   ],
+   "arah": "naik",
+   "target": "180 / 183 / 186",
+   "invalidation": "Close <174",
+   "slider_pct": 82,
+   "flow_kelas": "Neutral",
+   "label": "Naik 5,11% di atas Pivot — Neutral Net Top-10",
+   "catatan": "Batas batal dari pivot S1 174. Sasaran dari pivot: 180 / 183 / 186.",
+   "narasi_flow": "Net-beli 10 teratas Rp530,9jt lawan net-jual Rp514,0jt (selisih +Rp16,9jt). Top net-buyer LG Rp275,6jt. Top net-seller XL Rp167,7jt.",
+   "narasi_teknikal": "Tutup 185 naik 5,11%, di atas pivot 177 dan 4,52% di atas EMA50 177, Rentang hari 1,88x ATR14,",
+   "strategi": "Berlaku selama penutupan bertahan di atas 174; sasaran pertama 180.",
+   "konsekuensi": "Penutupan di bawah 174 membuka ruang ke 171.",
+   "rationale_rank": "Neutral top-10 +Rp16,9jt, harga di atas pivot",
+   "kontributor": "Warda W."
+  },
+  {
+   "ticker": "CDIA",
+   "nama": "Chandra Daya Investasi Tbk.",
+   "ohlc_hari": {
+    "o": 700,
+    "h": 725,
+    "l": 695,
+    "c": 705,
+    "chg": 15,
+    "pct": 2.17,
+    "vol_juta": 71.72
+   },
+   "ema50": 706,
+   "pivot": {
+    "P": 690,
+    "R1": 700,
+    "R2": 705,
+    "R3": 715,
+    "S1": 685,
+    "S2": 675,
+    "S3": 670
+   },
+   "pivot_ragu": [],
+   "beli": [
+    [
+     "CC",
+     8100.0,
+     114400,
+     707
+    ],
+    [
+     "BK",
+     3900.0,
+     54800,
+     710
+    ],
+    [
+     "XL",
+     3600.0,
+     50700,
+     706
+    ],
+    [
+     "AK",
+     2300.0,
+     33500,
+     702
+    ],
+    [
+     "ZP",
+     1700.0,
+     24800,
+     707
+    ],
+    [
+     "PD",
+     785.8,
+     11400,
+     701
+    ],
+    [
+     "CP",
+     501.3,
+     7100,
+     704
+    ],
+    [
+     "OD",
+     394.5,
+     5700,
+     700
+    ],
+    [
+     "AO",
+     339.2,
+     4800,
+     710
+    ],
+    [
+     "MG",
+     243.3,
+     3400,
+     705
+    ]
+   ],
+   "jual": [
+    [
+     "XA",
+     12200.0,
+     173900,
+     704
+    ],
+    [
+     "RF",
+     7200.0,
+     102500,
+     702
+    ],
+    [
+     "HP",
+     2000.0,
+     28500,
+     702
+    ],
+    [
+     "NI",
+     738.5,
+     10300,
+     710
+    ],
+    [
+     "KK",
+     407.5,
+     5700,
+     708
+    ],
+    [
+     "YP",
+     260.9,
+     3500,
+     704
+    ],
+    [
+     "LS",
+     189.1,
+     2700,
+     700
+    ],
+    [
+     "BS",
+     142.0,
+     2000,
+     710
+    ],
+    [
+     "EP",
+     56.0,
+     783,
+     707
+    ],
+    [
+     "XC",
+     53.9,
+     587,
+     707
+    ]
+   ],
+   "arah": "netral",
+   "target": "700 / 705 / 715",
+   "invalidation": "Close <685",
+   "slider_pct": 33,
+   "flow_kelas": "Neutral",
+   "label": "Naik 2,17% di atas Pivot — Neutral Net Top-10",
+   "catatan": "Batas batal dari pivot S1 685. Sasaran dari pivot: 700 / 705 / 715.",
+   "narasi_flow": "Net-beli 10 teratas Rp21,9B lawan net-jual Rp23,2B (selisih −Rp1,4B). Top net-buyer CC Rp8,1B. Top net-seller XA Rp12,2B.",
+   "narasi_teknikal": "Tutup 705 naik 2,17%, di atas pivot 690 dan 0,14% di bawah EMA50 706, Rentang hari 1,05x ATR14,",
+   "strategi": "Berlaku selama penutupan bertahan di atas 685; sasaran pertama 700.",
+   "konsekuensi": "Penutupan di bawah 685 membuka ruang ke 675.",
+   "rationale_rank": "Neutral top-10 −Rp1,4B, harga di atas pivot",
+   "kontributor": "Agitama"
+  }
+ ],
+ "ihsg": {
+  "nilai": "6.501,59",
+  "pct": "+1,68%",
+  "cls": "bull"
+ },
+ "nf": {
+  "label": "Net Foreign Buy Reguler",
+  "nilai": "Rp680,25 miliar",
+  "ket": "(20 Agu)",
+  "cls": "bull"
+ },
+ "konteks": "Indeks melompat 1,68% ke 6.501,59 — rekor penutupan tertinggi tahun ini — dengan asing net beli Rp680,25 miliar, hari kedua berturut-turut arah harga dan arah uang asing sejalan",
+ "ihsg_view": {
+  "naratif": "IHSG ditutup 6.501,59, naik 1,68% dari 6.394,13, dan untuk pertama kalinya tahun ini menembus 6.500. Rentang hariannya searah sejak awal: titik terendah 6.444,40 sudah di atas penutupan kemarin, dan indeks terus menanjak sampai 6.514,68 sebelum menutup sedikit di bawahnya — pola hari yang naik tanpa perlawanan berarti. Keluasannya mendukung: 480 saham naik lawan 196 turun (287 tak bergerak), dan pada kapitalisasi pasar 8.058 triliun rupiah naik lawan 1.884 triliun turun. Yang tidak mendukung cuma satu, dan ia layak disebut: nilai transaksi Rp15,78 triliun masih di bawah rata-rata tahun berjalan Rp21,87 triliun. Kenaikan setajam ini pada likuiditas setipis itu berarti sedikit uang menggerakkan banyak harga.",
+  "level": {},
+  "skenario": "Penutupan 6.501,59 berada di atas 6.490,91 — titik tertinggi 19 Agustus yang dua hari berturut-turut menahan kenaikan — jadi batas itu kini terlewati. Selama indeks bertahan di atas dasar rentang hari ini 6.444,40, kenaikan ini masih terbaca utuh; penutupan di bawahnya mengembalikan indeks ke rentang 6.373–6.490 yang baru saja ditinggalkan.",
+  "kesimpulan": "Hari yang jarang: harga, keluasan, dan aliran asing menunjuk ke arah yang sama. Indeks naik 1,68% menembus 6.500 untuk pertama kali tahun ini, 480 saham naik lawan 196 turun, seluruh sebelas sektor menguat, dan asing net beli Rp680,25 miliar untuk hari kedua berturut-turut. Yang menahan penilaian cuma likuiditas — nilai transaksi Rp15,78 triliun masih 28% di bawah rata-rata tahun berjalan, jadi kenaikan setajam ini digerakkan uang yang tidak banyak. Posisi asing tahun berjalan pun tetap −Rp71,61 triliun; dua hari beli belum mengubah gambar besarnya."
+ },
+ "sentimen": {
+  "skor": null,
+  "poin": [
+   {
+    "judul": "Asing Net Beli Rp680,25 Miliar, Hari Kedua Berturut-turut",
+    "isi": "Asing net beli Rp680,25 miliar di pasar reguler, menyusul Rp933,53 miliar pada 19 Agustus. Dua hari beruntun net beli setelah rentetan panjang net jual. Posisi tahun berjalan tetap dalam: −Rp71,61 triliun, jadi dua hari ini memperbaiki 2,2% dari yang keluar sepanjang 2026."
+   },
+   {
+    "judul": "Seluruh Sebelas Sektor Menguat, Bahan Baku Memimpin +3,46%",
+    "isi": "Tak ada satu pun sektor yang turun. Basic Materials +3,46%, Consumer Cyclicals +2,16%, Industrials +2,15%, Consumer Non-Cyclicals +1,98%. Energy, yang menyimpan sebagian besar emiten edisi ini, naik 1,26%. Secara tahun berjalan gambarnya masih terbalik — sepuluh dari sebelas sektor merah, Properties terdalam −28,36%."
+   },
+   {
+    "judul": "Aliran Broker Edisi Ini Searah dengan Indeks",
+    "isi": "Sepuluh dari sebelas emiten yang disetorkan kontributor mencatat net beli top-10, hanya CDIA yang net jual tipis. AMMN memimpin dengan net Rp128,9 miliar — sendirian lebih besar daripada sepuluh emiten lain digabung."
+   }
+  ],
+  "kesimpulan": "Indeks menembus 6.500 untuk pertama kali tahun ini dengan dukungan yang jarang selengkap ini: 480 saham naik lawan 196 turun, seluruh sebelas sektor menguat, dan asing net beli Rp680,25 miliar dua hari berturut-turut. Yang menahan pembacaan satu tingkat adalah likuiditasnya — nilai transaksi Rp15,78 triliun, 28% di bawah rata-rata tahun berjalan. Kenaikan pada volume setipis itu lebih mudah dibatalkan daripada kenaikan yang ramai, dan posisi asing tahun berjalan yang masih −Rp71,61 triliun mengingatkan bahwa dua hari beli belum membalik apa pun."
+ }
+}
