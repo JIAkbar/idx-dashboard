@@ -244,13 +244,13 @@
    jendela), jadi di sini cuma rupanya. */
 .dasbor-rail-flyout {
   position: fixed; z-index: 60;
-  min-width: 208px; max-width: 260px;
-  padding: 7px;
+  min-width: 240px; max-width: 300px;
+  padding: 8px;
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: var(--r-kecil, 8px);
   box-shadow: 0 10px 26px rgba(0,0,0,.22);
-  display: flex; flex-direction: column; gap: 2px;
+  display: flex; flex-direction: column; gap: 3px;
   animation: dasbor-flyout-masuk .13s ease-out;
 }
 @keyframes dasbor-flyout-masuk {
@@ -261,13 +261,14 @@
   .dasbor-rail-flyout { animation: none; }
 }
 .dasbor-rail-flyout-jd {
-  font-size: 9.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
-  color: var(--text3); padding: 3px 7px 6px;
+  font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text3); padding: 4px 9px 7px;
 }
 .dasbor-rail-fly-item {
-  display: flex; align-items: center; gap: 8px;
-  padding: 6px 7px; border-radius: 5px;
-  color: var(--text2); text-decoration: none; font-size: 12.5px;
+  display: flex; align-items: center; gap: 10px;
+  min-height: 44px;
+  padding: 10px 9px; border-radius: 6px;
+  color: var(--text2); text-decoration: none; font-size: 13.5px;
   border: 1px solid transparent;
 }
 .dasbor-rail-fly-item:hover { color: var(--text); background: var(--bg3); }
@@ -277,7 +278,7 @@
 .dasbor-rail-fly-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .dasbor-rail-fly-kode {
   font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
-  font-size: 9.5px; letter-spacing: .08em; color: var(--text3); flex: none;
+  font-size: 10.5px; letter-spacing: .08em; color: var(--text3); flex: none;
 }
 .dasbor-rail-fly-item.active .dasbor-rail-fly-kode { color: var(--accent); }
 .dasbor-rail-fly-label { flex: 1; min-width: 0; }
