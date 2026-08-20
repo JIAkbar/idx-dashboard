@@ -305,7 +305,95 @@
   color: var(--text2);
 }
 
-/* ── Seksi 12 · glosarium ── */
+/* ── Seksi 12 · banding sampai lima emiten + ekspor gambar ──
+   Semua di bawah ini PENEMPATAN dan LEBAR. Bentuk kendalinya kanonis: kotak
+   cari `.af-cari`, tombol `.chip-t`, tombol ikon `.ti` di dalam `.ti-grup`,
+   tabel `.tbl` — tak satu pun didefinisikan ulang di sini. */
+
+.lantai .bdh-cmp-bilah {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.lantai .af-cari.bdh-cmp-cari { flex: 1 1 220px; max-width: 320px; }
+.lantai .bdh-cmp-hitung { font-family: var(--mono); font-size: 10.5px; color: var(--text3); }
+/* Tombol kamera didorong ke ujung kanan supaya tak terbaca sebagai bagian
+   dari kelompok "tambah emiten" di kirinya. */
+.lantai .bdh-cmp-aksi { margin-left: auto; }
+
+/* Penolakan pilihan keenam DIKATAKAN, bukan didiamkan — nadanya penunjuk
+   arah (amber), bukan galat merah: tak ada yang rusak, cuma batasnya
+   tercapai. */
+.lantai .bdh-cmp-pesan {
+  margin: 0;
+  padding: 8px 11px;
+  background: var(--amber-dim);
+  border-left: 2px solid var(--amber);
+  border-radius: var(--r-kecil);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text2);
+}
+
+/* Lima kolom + kolom ruas tak muat di 412px. Yang menggulung WADAHNYA, bukan
+   badan halaman — grid pembungkus halaman sudah `minmax(0, 1fr)` supaya
+   kelebihan lebar berhenti di sini. */
+.lantai .bdh-cmp-wrap { overflow-x: auto; }
+.lantai .bdh-cmp-tbl { min-width: 100%; }
+.lantai .bdh-cmp-tbl th,
+.lantai .bdh-cmp-tbl td { white-space: nowrap; }
+.lantai .bdh-cmp-tbl thead th:not(:first-child) { min-width: 116px; }
+
+/* Kolom ruas menempel di kiri saat digulung: angka di kolom kelima tanpa nama
+   ruasnya cuma angka. `--bg0` sama dengan latar halaman — sel yang tembus
+   pandang akan menumpuk teks kolom yang lewat di baliknya. */
+.lantai .bdh-cmp-tbl th:first-child,
+.lantai .bdh-cmp-tbl td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--bg0);
+  border-right: 1px solid var(--line);
+}
+
+/* `display:flex` sengaja dipasang ke DIV di dalam <th>, tak pernah ke selnya:
+   sel yang jadi flex berhenti berperilaku sebagai sel tabel dan garis
+   bawahnya tak lagi sejajar dengan sel lain di baris yang sama. */
+.lantai .bdh-cmp-th {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.lantai .bdh-cmp-kode {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--text);
+}
+.lantai .bdh-cmp-nama {
+  margin-top: 2px;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 9.5px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text3);
+}
+
+.lantai .bdh-cmp-grup th {
+  padding-top: 13px;
+  color: var(--amber);
+  background: var(--bg1);
+}
+.lantai .bdh-cmp-tbl tbody tr.bdh-cmp-grup:hover { background: var(--bg1); }
+.lantai .bdh-cmp-tbl tbody tr.bdh-cmp-grup th:first-child { background: var(--bg1); }
+
+/* ── Seksi 13 · glosarium ── */
 
 .lantai .bdh-glos > div + div { margin-top: 11px; padding-top: 11px; border-top: 1px solid var(--line); }
 .lantai .bdh-glos b { font-size: 11.5px; }
@@ -319,4 +407,10 @@
   .lantai .bdh-seksi { scroll-margin-top: 56px; }
   .lantai .bdh-tbar { width: 26%; }
   .lantai .bdh-skor-total .v { font-size: 26px; }
+  /* Kotak cari mengisi barisnya sendiri; tombol kamera tetap di kanan baris
+     kedua bersama pencacah, bukan terdorong ke baris ketiga sendirian. */
+  .lantai .af-cari.bdh-cmp-cari { flex: 1 1 100%; max-width: none; }
+  .lantai .bdh-cmp-tbl thead th:not(:first-child) { min-width: 104px; }
+  .lantai .bdh-cmp-tbl th:first-child,
+  .lantai .bdh-cmp-tbl td:first-child { max-width: 148px; white-space: normal; }
 }

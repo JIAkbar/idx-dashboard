@@ -1,14 +1,20 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { PanelAliranAsing } from '../../components/dasbor/PanelAliranAsing'
 import { LencanaTurunan } from '../../components/dasbor/LencanaTurunan'
-import { IkonMenu, IKON_CARI, IKON_JAM, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { TombolIkon } from '../../components/dasbor/TombolIkon'
+import { IkonMenu, IKON_CARI, IKON_JAM, IKON_KAMERA, IKON_PERINGATAN, IKON_SILANG } from '../../components/dasbor/IkonMenu'
+import { useTheme } from '../../context/ThemeContext'
 import {
+  fetchAsing,
+  fetchFundamental,
   useStockAsing,
   useStockFundamental,
   useStockIndex,
+  type AsingHarian,
   type StockFundamental,
+  type StockIndexEntry,
 } from '../../lib/dasbor/stockDetailData'
 import { useSektorIdx, sektorEmiten, papanBerisiko } from '../../lib/dasbor/sektorIdx'
 import { usePengendali, pengendaliEmiten, labelPengendali } from '../../lib/dasbor/pengendali'
@@ -19,9 +25,16 @@ import {
   ringkasRasio,
   useValuasiHistoris,
   valuasiEmiten,
+  type DaftarValuasi,
   type RingkasRasio,
   type Vonis,
 } from '../../lib/dasbor/valuasiHistoris'
+import {
+  MAKS_BANDING,
+  kalimatTanggal,
+  susunBanding,
+  unduhBandingPng,
+} from '../../lib/dasbor/bandingEmiten'
 import {
   cagr,
   deretKuartal,
@@ -51,7 +64,7 @@ import { GLOSARIUM } from '../../lib/dasbor/glosarium'
 import './BedahEmiten.css'
 
 /**
- * Halaman **Bedah Emiten** (backlog A2 / #153) — dua belas seksi yang membaca
+ * Halaman **Bedah Emiten** (backlog A2 / #153) — tiga belas seksi yang membaca
  * satu emiten dari uang masuk sampai vonis, tiap angka membawa periode dan
  * asalnya.
  *
@@ -103,7 +116,8 @@ const SEKSI: DefSeksi[] = [
   { id: 'laporan', no: 9, judul: 'Laporan Keuangan' },
   { id: 'skor', no: 10, judul: 'Skor & Pilar' },
   { id: 'khas', no: 11, judul: 'Panel Khas PAPAN' },
-  { id: 'glosarium', no: 12, judul: 'Glosarium' },
+  { id: 'banding', no: 12, judul: 'Banding Emiten' },
+  { id: 'glosarium', no: 13, judul: 'Glosarium' },
 ]
 
 function Seksi({ def, catatan, children }: { def: DefSeksi; catatan?: ReactNode; children: ReactNode }) {
@@ -520,6 +534,232 @@ function KartuPilar({ p }: { p: Pilar }) {
 
 /* ───────────────────────── seksi 12 ───────────────────────── */
 
+/** Bahan satu kolom banding yang sudah diambil. `null` di salah satunya
+ *  berarti berkasnya memang belum ada — bukan galat, dan bukan nol. */
+interface BahanKolom {
+  fd: StockFundamental | null
+  asing: AsingHarian[] | null
+}
+
+/**
+ * **Banding sampai lima emiten**, berikut tombol ekspor gambarnya.
+ *
+ * ## Kenapa emiten jadi KOLOM, bukan baris
+ *
+ * Tabel yang emitennya jadi baris punya kepala kolom bernama "ROE", "Skor",
+ * "P/E" — dan kepala kolom mengundang satu ketukan untuk mengurutkannya.
+ * Begitu bisa diurut, tabelnya berhenti menjadi banding dan mulai terbaca
+ * sebagai peringkat "emiten terbaik", padahal tak satu pun ruas di sini adalah
+ * peringkat kualitas. Larangan yang sama sudah berlaku di Screener
+ * (`kartuRingkas.ts`): kolomnya tidak ada supaya tak bisa diurut. Di sini
+ * bentuknya yang mencegah, bukan cuma niat — dengan emiten sebagai kolom,
+ * "urutkan" tak punya arti sama sekali.
+ *
+ * Urutan kolom = urutan pembaca menambahkannya, dan emiten yang sedang dibedah
+ * selalu jadi kolom pertama.
+ *
+ * ## Batas lima
+ *
+ * Yang keenam **ditolak dengan kalimat di layar**, bukan diabaikan diam-diam.
+ * Pemilih yang menelan pilihan tanpa berkata apa-apa terbaca sebagai tombol
+ * rusak, dan orangnya akan mencoba lagi.
+ *
+ * ## Di telepon
+ *
+ * Tabelnya menggulung MENDATAR di dalam wadahnya sendiri (`.bdh-cmp-wrap`),
+ * dan kolom ruas menempel di kiri (`position: sticky`) supaya angka di kolom
+ * kelima masih tahu ia angka apa. Yang menggulung wadahnya — badan halaman
+ * tidak ikut melebar.
+ */
+function SeksiBanding({
+  awal,
+  stocks,
+  daftarValuasi,
+}: {
+  awal: string
+  stocks: StockIndexEntry[]
+  daftarValuasi: DaftarValuasi | null
+}) {
+  const { theme } = useTheme()
+  const [kode, setKode] = useState<string[]>([awal])
+  const [input, setInput] = useState('')
+  const [pesan, setPesan] = useState<string | null>(null)
+  const [bahan, setBahan] = useState<Record<string, BahanKolom>>({})
+  const [memuat, setMemuat] = useState(false)
+
+  // Emiten yang sedang dibedah adalah pokok halaman ini — berganti emiten
+  // berarti banding dimulai ulang darinya, bukan menumpuk sisa pilihan lama.
+  useEffect(() => {
+    setKode([awal])
+    setPesan(null)
+  }, [awal])
+
+  useEffect(() => {
+    const belum = kode.filter((k) => !(k in bahan))
+    if (belum.length === 0) return
+    let batal = false
+    setMemuat(true)
+    Promise.all(
+      belum.map((k) =>
+        Promise.all([fetchFundamental(k), fetchAsing(k)]).then(
+          ([fd, asing]) => [k, { fd, asing: asing?.d ?? null }] as const,
+        ),
+      ),
+    )
+      .then((pasang) => {
+        if (!batal) setBahan((p) => ({ ...p, ...Object.fromEntries(pasang) }))
+      })
+      .finally(() => {
+        if (!batal) setMemuat(false)
+      })
+    return () => {
+      batal = true
+    }
+  }, [kode, bahan])
+
+  const tabel = useMemo(
+    () => susunBanding(kode.map((k) => ({
+      kode: k,
+      fd: bahan[k]?.fd ?? null,
+      deret: valuasiEmiten(daftarValuasi, k),
+      asing: bahan[k]?.asing ?? null,
+    }))),
+    [kode, bahan, daftarValuasi],
+  )
+
+  function tambah(raw: string) {
+    const k = raw.trim().toUpperCase().replace('.JK', '')
+    if (!k) return
+    if (kode.includes(k)) {
+      setPesan(`${k} sudah ada di banding ini.`)
+      return
+    }
+    if (kode.length >= MAKS_BANDING) {
+      setPesan(`Banding dibatasi ${MAKS_BANDING} emiten — lepas salah satu dulu sebelum menambah ${k}.`)
+      return
+    }
+    setKode((p) => [...p, k])
+    setInput('')
+    setPesan(null)
+  }
+
+  function lepas(k: string) {
+    if (kode.length <= 1) {
+      setPesan('Banding butuh sedikitnya satu emiten.')
+      return
+    }
+    setKode((p) => p.filter((x) => x !== k))
+    setPesan(null)
+  }
+
+  const belumTerpanen = tabel.kolom.filter((k) => !k.ada).map((k) => k.kode)
+
+  return (
+    <>
+      <div className="bdh-cmp-bilah">
+        <span className="af-cari bdh-cmp-cari">
+          <IkonMenu d={IKON_CARI} size={13} />
+          <StockAutocomplete
+            stocks={stocks}
+            value={input}
+            onChange={setInput}
+            onSelect={tambah}
+            placeholder="Tambah emiten pembanding…"
+          />
+        </span>
+        <button
+          type="button"
+          className="chip-t"
+          onClick={() => tambah(input)}
+          disabled={kode.length >= MAKS_BANDING}
+        >
+          Tambah
+        </button>
+        <span className="bdh-cmp-hitung">{kode.length} dari {MAKS_BANDING}</span>
+        <span className="ti-grup bdh-cmp-aksi">
+          <TombolIkon
+            d={IKON_KAMERA}
+            label="Simpan banding sebagai gambar PNG"
+            onClick={() => unduhBandingPng(tabel, theme)}
+            disabled={memuat}
+          />
+        </span>
+      </div>
+
+      {pesan && <p className="bdh-cmp-pesan">{pesan}</p>}
+
+      <div className="bdh-cmp-wrap">
+        <table className="tbl bdh-cmp-tbl">
+          <thead>
+            <tr>
+              <th>Ruas</th>
+              {tabel.kolom.map((k) => (
+                /* Tombol lepas duduk DI KEPALA KOLOMNYA, bukan di baris pil
+                   terpisah: satu tempat yang menyebut emiten ini, dan tak ada
+                   kendali kedua yang perlu dicari mana yang mana. Jaraknya ke
+                   tombol kolom sebelah selebar kolom penuh, jadi area klik
+                   44px keduanya tak mungkin bertindihan. */
+                <th key={k.kode} className="r">
+                  <div className="bdh-cmp-th">
+                    <span className="bdh-cmp-kode">{k.kode}</span>
+                    <TombolIkon
+                      d={IKON_SILANG}
+                      label={`Lepas ${k.kode} dari banding`}
+                      ariaLabel={`Lepas ${k.kode} dari banding emiten`}
+                      ukuranIkon={11}
+                      onClick={() => lepas(k.kode)}
+                    />
+                  </div>
+                  <div className="bdh-cmp-nama">{k.ada ? k.nama : 'belum terpanen'}</div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {tabel.grup.map((g) => (
+              <Fragment key={g.judul}>
+                <tr className="bdh-cmp-grup">
+                  <th colSpan={tabel.kolom.length + 1}>{g.judul}</th>
+                </tr>
+                {g.baris.map((b) => (
+                  <tr key={b.label}>
+                    <td>{b.label}</td>
+                    {b.sel.map((s, i) => (
+                      <td
+                        key={tabel.kolom[i].kode}
+                        className={'r num' + (s.arah === 1 ? ' up' : s.arah === -1 ? ' dn' : '')}
+                      >
+                        {s.teks}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {belumTerpanen.length > 0 && (
+        <Kosong>
+          Berkas fundamental {belumTerpanen.join(', ')} belum tersedia — seluruh kolomnya ditulis
+          "—". Itu berarti datanya belum terpanen, bukan angkanya nol.
+        </Kosong>
+      )}
+
+      <p className="bdh-sumber">
+        {kalimatTanggal(tabel)}. Vonis valuasi diukur terhadap sejarah emiten <b>itu sendiri</b>,
+        bukan terhadap emiten di kolom sebelah: dua emiten beda sektor tak sebanding P/E-nya
+        mentah-mentah. Tabel ini tidak bisa diurutkan, dan itu disengaja — tak satu pun ruas di
+        sini merupakan peringkat kualitas. Tombol kamera menyimpan tabel ini apa adanya sebagai
+        satu berkas gambar, mengikuti tema yang sedang tampil.
+      </p>
+    </>
+  )
+}
+
+/* ───────────────────────── seksi 13 ───────────────────────── */
+
 /** Istilah yang benar-benar dipakai halaman ini dan SUDAH ada di glosarium
  *  PAPAN — diambil lewat id, bukan disalin, supaya definisinya tak bercabang
  *  dua kalau glosariumnya diperbarui. */
@@ -605,7 +845,7 @@ export function BedahEmiten() {
           <div className="empty">
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
             <p>
-              <b>Bedah satu emiten dalam dua belas seksi</b> — dari uang yang masuk sampai vonis
+              <b>Bedah satu emiten dalam tiga belas seksi</b> — dari uang yang masuk sampai vonis
               valuasi, tiap angka membawa periode dan asalnya.
             </p>
             <div className="cari">
@@ -863,8 +1103,13 @@ export function BedahEmiten() {
             </div>
           </Seksi>
 
-          {/* ── 12 · Glosarium ── */}
-          <Seksi def={SEKSI[11]} catatan="Istilah yang dipakai di halaman ini. Yang bertanda PAPAN diambil dari glosarium bersama, bukan disalin.">
+          {/* ── 12 · Banding sampai lima emiten + ekspor gambar ── */}
+          <Seksi def={SEKSI[11]} catatan="Sampai lima emiten berdampingan, ruas yang dipilih karena artinya berubah ketika disandingkan. Yang berupa deret — lintasan laba, denyut kuartalan, laporan keuangan — sengaja tidak ikut: disandingkan sebagai satu angka, deret kehilangan bagian yang membuatnya berarti.">
+            <SeksiBanding awal={fd.ticker} stocks={index?.stocks ?? []} daftarValuasi={daftarValuasi} />
+          </Seksi>
+
+          {/* ── 13 · Glosarium ── */}
+          <Seksi def={SEKSI[12]} catatan="Istilah yang dipakai di halaman ini. Yang bertanda PAPAN diambil dari glosarium bersama, bukan disalin.">
             <div className="grid2">
               <div className="panel">
                 <div className="panel-h"><span className="lbl">Dari glosarium PAPAN</span></div>

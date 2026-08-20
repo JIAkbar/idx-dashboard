@@ -464,12 +464,46 @@ export interface AsingData {
 const asingCache = new Map<string, AsingData | null>()
 
 /**
+ * Fetch imperatif (bukan hook), cache modul SAMA dengan `useStockAsing` — pola
+ * yang sama persis dengan `fetchFundamental` di atas, dan dipakai untuk alasan
+ * yang sama: banding beberapa emiten sekaligus (`bandingEmiten.ts`) tak bisa
+ * memanggil hook di dalam perulangan. Satu cache untuk keduanya supaya emiten
+ * yang sudah dibuka Bedah-nya tak diambil dua kali.
+ *
+ * `null` = 404/gagal, dan itu keadaan WAJAR: panen aliran asing berjalan
+ * terpisah dan belum menjangkau seluruh emiten.
+ */
+export function fetchAsing(ticker: string): Promise<AsingData | null> {
+  if (asingCache.has(ticker)) return Promise.resolve(asingCache.get(ticker) ?? null)
+  return fetch(`/data-idx/json/asing/${ticker}.json`)
+    .then((r) => {
+      if (!r.ok) throw new Error('not found')
+      return r.json() as Promise<AsingRaw>
+    })
+    .then((raw) => {
+      // Baris array diparse jadi objek supaya field-nya bernama, bukan indeks
+      // tebakan (urutan aslinya cuma dijamin lewat `ruas` di berkas mentah).
+      const parsed: AsingData = {
+        kode: raw.kode,
+        mulai: raw.mulai,
+        akhir: raw.akhir,
+        n: raw.n,
+        d: raw.d.map(([tanggal, beli, jual, volume, value, frekuensi]) => ({ tanggal, beli, jual, volume, value, frekuensi })),
+      }
+      asingCache.set(ticker, parsed)
+      return parsed
+    })
+    .catch(() => {
+      asingCache.set(ticker, null)
+      return null
+    })
+}
+
+/**
  * Aliran asing harian per emiten. Panennya berjalan terpisah dan belum
  * menjangkau semua emiten (dan riwayat yang sudah ada pun masih bertambah
  * per emiten) — 404/gagal fetch sengaja jadi `data: null` TANPA error, sama
  * seperti `useStockKeuangan`: "belum tersedia" itu keadaan wajar, bukan galat.
- * Baris array diparse jadi objek supaya field-nya bernama, bukan indeks
- * tebakan (urutan aslinya cuma dijamin lewat `ruas` di berkas mentah).
  */
 export function useStockAsing(ticker: string | null) {
   const [data, setData] = useState<AsingData | null>(ticker ? (asingCache.get(ticker) ?? null) : null)
@@ -486,27 +520,9 @@ export function useStockAsing(ticker: string | null) {
     }
     let cancelled = false
     setLoading(true)
-    fetch(`/data-idx/json/asing/${ticker}.json`)
-      .then((r) => {
-        if (!r.ok) throw new Error('not found')
-        return r.json() as Promise<AsingRaw>
-      })
-      .then((raw) => {
-        if (cancelled) return
-        const parsed: AsingData = {
-          kode: raw.kode,
-          mulai: raw.mulai,
-          akhir: raw.akhir,
-          n: raw.n,
-          d: raw.d.map(([tanggal, beli, jual, volume, value, frekuensi]) => ({ tanggal, beli, jual, volume, value, frekuensi })),
-        }
-        asingCache.set(ticker, parsed)
-        setData(parsed)
-      })
-      .catch(() => {
-        if (cancelled) return
-        asingCache.set(ticker, null)
-        setData(null)
+    fetchAsing(ticker)
+      .then((parsed) => {
+        if (!cancelled) setData(parsed)
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
