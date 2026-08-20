@@ -11,7 +11,24 @@
 Catatan hidup — diperbarui tiap ada keputusan. Ditulis ke berkas supaya tidak
 bergantung pada ingatan percakapan (yang bisa diringkas dan kehilangan detail).
 
-Terakhir diperbarui: 19 Agustus 2026 (setelah sesi kartu Kuartalan — "Annualised" dibuang).
+Terakhir diperbarui: 20 Agustus 2026 (chip Bulanan Statistik Berkala dinyalakan).
+
+## 📌 Sesi 20 Agu 2026 — Chip Bulanan Statistik Berkala dinyalakan (Papan Pekerjaan #203)
+
+Johan: *"kmu juga lupa yaa gak pasang datang weekly dan monthly? tidak ada UI
+tapi sudah di panen kan?"* — mingguan sudah punya UI, **bulanan** (11 berkas
+`ms_2509..ms_2607`) sudah terpanen tapi chipnya sengaja dimatikan karena
+bentuk ruasnya beda dari mingguan. Detail lengkap di Papan Pekerjaan #203
+(`docs/jejak-permintaan.md`).
+
+**Temuan yang perlu diingat sesi berikutnya**: `top_saham.value`/`.volume`
+dan `top_broker.value`/`.volume` bulanan masing-masing sebenarnya DUA
+peringkat digabung dalam satu larik tanpa penanda — `value` = Nilai
+bulan+YTD, `volume` = Volume bulan + **Frekuensi** bulan (bukan volume YTD).
+Kalau ada penambal/pemanen lain menyentuh `ms_*.json`, jangan asumsikan
+`value`/`volume` itu satu peringkat rata; `belahDua()` di
+`app/src/lib/dasbor/statistikBerkala.ts` sudah memisahkannya untuk layar,
+tapi berkas mentahnya sendiri tetap tergabung.
 
 ## 📌 Sesi 19 Agu 2026 — "Annualised" dibuang dari kartu Kuartalan (Papan Pekerjaan #194–196)
 
