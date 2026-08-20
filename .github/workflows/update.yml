@@ -59,14 +59,30 @@ jobs:
           python scripts/download_idx.py --hari-ini --jenis semua
 
       # 5. Parse semua PDF baru → JSON (harian + mingguan + bulanan)
+      #    if: always() — harus tetap jalan walau step 4 gagal (bursa mungkin
+      #    tetap merilis mingguan/bulanan walau harian diblokir sebagian).
       - name: Parse PDF ke JSON
+        if: always()
         run: |
           python scripts/parse_idx_pdf.py --semua
           python scripts/parse_idx_weekly.py --semua
           python scripts/parse_idx_monthly.py --semua
 
+      # 5b. Cadangan IHSG dari Yahoo ^JKSE (B28) — kalau step 4 diblokir total,
+      #     index.json/ds_<hari-ini>.json tak pernah lahir dan Kalender Bursa
+      #     macet di "Tanpa data" sampai ada yang panen manual. Skrip ini
+      #     CUMA mengisi entri yang IDX-nya belum ada (ditandai sumber:"yahoo",
+      #     lihat panen_ihsg.py) — tak pernah menimpa PDF resmi. Run tetap
+      #     MERAH kalau step 4 gagal (sinyal blokir dipertahankan); ini hanya
+      #     memastikan datanya tetap terisi sambil menunggu perbaikan.
+      - name: Cadangan IHSG (Yahoo ^JKSE)
+        if: always()
+        run: |
+          python scripts/panen_ihsg.py
+
       # 6. Commit & push jika ada perubahan
       - name: Commit & push data baru
+        if: always()
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

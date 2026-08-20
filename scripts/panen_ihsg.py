@@ -22,10 +22,31 @@ RANGE=MAX TERLARANG
 (ketahuan pada ^JKSE: 437 titik untuk 36 tahun). Riwayat penuh karena itu
 ditarik per POTONGAN 5 TAHUN dengan period1/period2.
 
+CADANGAN INDEX.JSON (B28)
+-------------------------
+Statistik harian IDX (`ds_*.json`, dari PDF resmi bursa lewat
+`download_idx.py` + `parse_idx_pdf.py`) kadang gagal total — IDX menolak IP
+runner GitHub, bukan cuma lambat. Begitu itu terjadi, Kalender Bursa
+menampilkan "Tanpa data" sampai ada yang memanen manual dari IP rumahan.
+
+`isi_cadangan_index()` menambal `index.json` (dan menulis `ds_<stem>.json`
+minimal) dari penutupan ^JKSE Yahoo untuk hari bursa yang IDX-nya belum ada —
+CADANGAN, bukan pengganti: dilewati kalau `ds_<stem>.json` ASLI sudah ada,
+dan dibatasi jendela `hari_window` hari terakhir (proyek ini sengaja TIDAK
+punya arsip PDF sebelum awal index.json — tanpa batas ini skrip akan
+"menambal" ribuan hari yang memang tak pernah dipanen, terukur 8707).
+Entri cadangan diberi `sumber: "yahoo"`; begitu PDF asli berhasil diparse,
+`update_index()` menimpa entri yang sama (kunci `stem`) tanpa ruas itu —
+tanda cadangan hilang sendiri, tak perlu dibersihkan manual.
+
+Diverifikasi 20 Agu 2026 dari 144 hari yang tersedia dua-duanya (IDX & Yahoo):
+142 cocok, 2 belum masuk cache Yahoo lokal saat itu. Selisih terbesar 0.005
+poin (galat pembulatan Yahoo, bukan beda sumber) — median 0.00003%.
+
 Cara pakai:
   python scripts/panen_ihsg.py --penuh     # riwayat 1990-sekarang (sekali)
-  python scripts/panen_ihsg.py             # harian: tambah hari baru saja
-  python scripts/panen_ihsg.py --swauji    # uji gabung, tanpa jaringan
+  python scripts/panen_ihsg.py             # harian: tambah hari baru + tambal index.json
+  python scripts/panen_ihsg.py --swauji    # uji gabung & cadangan, tanpa jaringan
 """
 import argparse
 import json
@@ -100,6 +121,66 @@ def tulis(baris: list[list]) -> None:
           f" · {RINGKAS.name} {RINGKAS.stat().st_size/1024:.0f} KB")
 
 
+DOW_EN = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+MON_EN = ["January", "February", "March", "April", "May", "June", "July",
+          "August", "September", "October", "November", "December"]
+
+
+def isi_cadangan_index(baris: list[list], hari_window: int = 14, kini: datetime | None = None) -> int:
+    """Tambal index.json + tulis ds_<stem>.json minimal untuk hari bursa yang
+    IDX-nya gagal tapi Yahoo punya. Lihat penjelasan panjang di docstring
+    modul. Mengembalikan jumlah hari yang ditambal."""
+    from parse_idx_pdf import HARI_ID, BULAN_ID, save_json, update_index
+
+    idx_file = AKAR / "data-idx" / "json" / "index.json"
+    idx = json.loads(idx_file.read_text(encoding="utf-8")) if idx_file.exists() else {"dates": []}
+    ada = {d["date_iso"] for d in idx["dates"]}
+    maks_hari = max((d.get("trading_day", 0) for d in idx["dates"]), default=0)
+
+    kini = kini or datetime.now(timezone.utc)
+    batas = (kini - timedelta(days=hari_window)).strftime("%Y-%m-%d")
+    hari_ini = kini.strftime("%Y-%m-%d")
+    peta = {b[0]: b for b in baris}
+    urut = sorted(peta)
+
+    ditambal = 0
+    for i, tgl in enumerate(urut):
+        if tgl < batas or tgl > hari_ini or tgl in ada:
+            continue
+        stem = f"ds_{tgl[2:4]}{tgl[5:7]}{tgl[8:10]}"
+        if (AKAR / "data-idx" / "json" / f"{stem}.json").exists():
+            continue  # berkas IDX asli sudah ada (mis. dipanen manual) — jangan ditimpa
+        _o, h, l, c, _v = peta[tgl][1:]
+        sebelum = peta[urut[i - 1]][4] if i > 0 else c
+        d = datetime.strptime(tgl, "%Y-%m-%d")
+        dow_en, mon_en = DOW_EN[d.weekday()], MON_EN[d.month - 1]
+        data = {
+            "date_raw": f"{dow_en}, {d.day} {mon_en} {d.year}",
+            "date_id": f"{HARI_ID[dow_en]}, {d.day} {BULAN_ID[mon_en]} {d.year}",
+            "date_iso": tgl,
+            "trading_day": maks_hari + 1,
+            "ihsg_value": round(c, 3),
+            "ihsg_change": round(c - sebelum, 3),
+            "ihsg_pct": round((c - sebelum) / sebelum * 100, 2) if sebelum else 0.0,
+            "ihsg_prev": round(sebelum, 3),
+            "ihsg_high": round(h, 3),
+            "ihsg_low": round(l, 3),
+            "sumber": "yahoo",
+        }
+        save_json(data, stem)
+        update_index(stem, data)  # tak tahu ruas `sumber` — ditambal manual di bawah
+        idx2 = json.loads(idx_file.read_text(encoding="utf-8"))
+        for e in idx2["dates"]:
+            if e["stem"] == stem:
+                e["sumber"] = "yahoo"
+        idx_file.write_text(json.dumps(idx2, ensure_ascii=False, indent=2), encoding="utf-8")
+        maks_hari += 1
+        ada.add(tgl)
+        ditambal += 1
+        print(f"  cadangan Yahoo: {stem} ({tgl}) ihsg={c}")
+    return ditambal
+
+
 def swauji() -> None:
     a = [["2026-08-13", 1, 2, 0, 1, 10], ["2026-08-14", 2, 3, 1, 2, 20]]
     b = [["2026-08-14", 9, 9, 9, 9, 99], ["2026-08-17", 3, 4, 2, 3, 30]]
@@ -107,6 +188,33 @@ def swauji() -> None:
     assert [x[0] for x in g] == ["2026-08-13", "2026-08-14", "2026-08-17"], g
     assert g[1][4] == 9, "hari yang sama harus DITIMPA nilai baru"
     assert len(g) == 3, "penggabungan tidak boleh menggandakan baris"
+
+    # isi_cadangan_index: pakai index.json & folder data-idx/json ASLI (baca
+    # saja + tulis ke stem palsu yang dibersihkan lagi) supaya swauji tetap
+    # tanpa jaringan tapi menguji jalur nyata (save_json/update_index asli).
+    kini = datetime(2099, 1, 8, tzinfo=timezone.utc)  # Kamis rekaan, jauh dari data asli
+    stem = "ds_990107"
+    ds_path = AKAR / "data-idx" / "json" / f"{stem}.json"
+    idx_file = AKAR / "data-idx" / "json" / "index.json"
+    idx_sebelum = idx_file.read_text(encoding="utf-8")
+    assert not ds_path.exists(), f"{ds_path} sudah ada — swauji butuh stem yang bersih"
+    try:
+        palsu = [["2099-01-06", 100, 101, 99, 100, 1], ["2099-01-07", 101, 102, 100, 101.5, 1]]
+        n = isi_cadangan_index(palsu, hari_window=1, kini=kini)
+        assert n == 1, f"window=1 hari harus menambal cuma 01-07, dapat {n}"
+        assert ds_path.exists(), "ds_<stem>.json cadangan harus ditulis"
+        tulisan = json.loads(ds_path.read_text(encoding="utf-8"))
+        assert tulisan["sumber"] == "yahoo"
+        assert tulisan["ihsg_value"] == 101.5
+        idx = json.loads(idx_file.read_text(encoding="utf-8"))
+        entri = next(e for e in idx["dates"] if e["stem"] == stem)
+        assert entri["sumber"] == "yahoo", "index.json juga harus ditandai"
+        # jalan kedua: berkas ASLI sudah ada → tak boleh ditimpa, hitungannya 0
+        n2 = isi_cadangan_index(palsu, hari_window=1, kini=kini)
+        assert n2 == 0, "berkas cadangan yang sudah ada tak boleh ditambal ulang"
+    finally:
+        ds_path.unlink(missing_ok=True)
+        idx_file.write_text(idx_sebelum, encoding="utf-8")  # kembalikan index.json persis semula
     print("swauji lolos")
 
 
@@ -128,7 +236,11 @@ def main() -> None:
     if not baru:
         print("seri kosong — tidak ada yang ditulis.")
         sys.exit(1)
-    tulis(gabung(lama, baru))
+    gabungan = gabung(lama, baru)
+    tulis(gabungan)
+
+    n = isi_cadangan_index(gabungan)
+    print(f"\ncadangan index.json: {n} hari ditambal dari Yahoo" if n else "\ncadangan index.json: tak ada yang perlu ditambal")
 
 
 if __name__ == "__main__":

@@ -10,6 +10,12 @@ export interface TanggalIndex {
   ihsg: number
   ihsg_pct: number
   trading_day: number
+  /** Hadir & bernilai 'yahoo' HANYA untuk hari cadangan (B28) — PDF resmi IDX
+   * gagal diunduh hari itu, angka ditambal dari penutupan ^JKSE Yahoo Finance.
+   * Ditimpa otomatis begitu PDF resminya berhasil diparse (lihat panen_ihsg.py
+   * isi_cadangan_index() / parse_idx_pdf.py update_index()). Tak ada ruas ini
+   * = data resmi bursa, sama seperti konvensi lencanaAsal di PanelLaporanKeuangan. */
+  sumber?: 'yahoo'
 }
 
 /** Satu baris tabel World (field `D.world`), lihat index_live.html baris 2740-2759. */
@@ -112,6 +118,9 @@ export interface DataHarian {
   ihsg_prev?: number
   ihsg_high?: number
   ihsg_low?: number
+  /** Lihat komentar sama di `TanggalIndex.sumber` — hari cadangan Yahoo (B28)
+   * hanya punya ruas IHSG-nya, world/sectors/broker dkk. kosong (bukan gagal). */
+  sumber?: 'yahoo'
   vol_today?: number
   val_idr_today?: number
   freq_today?: number

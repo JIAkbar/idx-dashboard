@@ -499,16 +499,19 @@ export function Kalender({ tanggalTersedia, tanggalAktif, onPilih, varian = 'pen
           const ujung = rentang !== null && (iso === rentang.mulai || iso === rentang.akhir)
           const isAktif = modeRentang ? (ujung || iso === awalPilih) : iso === tanggalAktif
           const dlm = rentang !== null && !ujung && iso > rentang.mulai && iso < rentang.akhir
+          const cadangan = data.sumber === 'yahoo'
           return (
             <button
               key={iso}
               type="button"
               className={`cg ada${isAktif ? ' aktif' : ''}${dlm ? ' dlm' : ''}`}
               onClick={() => pilih(iso)}
+              title={cadangan ? 'Cadangan Yahoo Finance — IDX belum merilis statistik resmi hari ini' : undefined}
             >
               <span>{day}</span>
               <span className="num" style={{ fontSize: 9 }}>
                 {data.ihsg.toLocaleString('id-ID', { maximumFractionDigits: 0 })}
+                {cadangan && <sup style={{ fontSize: 7, color: 'var(--text3)' }}>Y</sup>}
               </span>
               <span
                 className="num"
