@@ -3,7 +3,7 @@
  "tanggal": "2026-08-19",
  "tanggal_id": "Rabu, 19 Agustus 2026",
  "tanggal_flow": "19 Agu 26",
- "ihsg_baris": "IHSG 6.394,12 ↓ -0,86%",
+ "ihsg_baris": "IHSG 6.394,13 ↓ −0,86%",
  "catatan_verifikasi": "Arus broker ditranskripsi dari Broker Summary Stockbit yang disetorkan kontributor — papan Reguler, seluruh investor, sakelar Net aktif, sehingga tiap broker hanya muncul di satu sisi dan angkanya bersih, bukan bruto. Sepuluh baris teratas tiap sisi yang dipakai; setoran MBMA berasal dari IPOT sehingga urutan aslinya menurut lot, di sini diurutkan ulang menurut nilai supaya sejajar dengan sepuluh emiten lain. Pivot, EMA50, ATR14, klaster support/resistance dihitung dari harga harian bursa; seluruh level dibulatkan ke fraksi harga BEI. Empat kartu (BBRI, ESSA, ERAA, LPKR) menyertakan catatan kejujuran data karena sebagian kolom broker tertutup atau tergulung di tangkapan layar sumbernya — rinciannya ada di kartu masing-masing. Satu setoran hari ini, BBCA, lolos kurasi tapi tak dimuat: tangkapan layarnya ternyata tabel screener (Sector, RVol, SSS Score, NBSF), bukan orderbook broker summary — kreditnya tetap milik penyetornya.",
  "peran_broker": {
   "ritel": [
@@ -1794,8 +1794,8 @@
   }
  ],
  "ihsg": {
-  "nilai": "6.394,12",
-  "pct": "-0,86%",
+  "nilai": "6.394,13",
+  "pct": "−0,86%",
   "cls": "bear"
  },
  "nf": {
@@ -1804,5 +1804,33 @@
   "ket": "(19 Agu)",
   "cls": "bull"
  },
- "konteks": "Indeks terkoreksi 0,86% memutus dua sesi penguatan beruntun, asing berbalik net beli Rp933,53 miliar setelah beberapa hari net sell, namun nilai transaksi masih di bawah rata-rata"
+ "konteks": "Indeks turun 0,86% justru pada hari asing berbalik net beli Rp933,53 miliar — arah harga dan arah uang asing berlawanan",
+ "ihsg_view": {
+  "naratif": "IHSG ditutup 6.394,13, turun 0,86% dari 6.449,83. Rentang hariannya lebar dan menceritakan pembalikan: indeks sempat menyentuh 6.490,91 — di atas penutupan kemarin dan praktis menyamai puncak 18 Agustus (6.490,65) — lalu jatuh ke 6.373,81 dan menutup dekat dasar rentang. Yang membuat hari ini tidak biasa: asing berbalik NET BELI Rp933,53 miliar di pasar reguler, sesudah net jual Rp355,17 miliar sehari sebelumnya. Posisi tahun berjalan membaik jadi −Rp72,30 triliun dari −Rp73,23 triliun. Arah harga dan arah uang asing berlawanan pada hari yang sama, dan itu jarang. Papan lebar ikut turun bersama indeks: 379 saham melemah lawan 257 menguat (327 tak bergerak), dan hanya 2 dari 11 sektor menutup positif — Infrastruktur +0,43% dan Properti +0,39% — sementara Basic Materials memimpin pelemahan −1,21%. Jadi penurunan ini bukan cerita satu-dua saham berat saja. Likuiditas tetap tipis: nilai transaksi Rp14,26 triliun lawan rata-rata Rp21,91 triliun, frekuensi 2.179 ribu kali lawan rata-rata 2.506 ribu.",
+  "level": {},
+  "skenario": "Penutupan 6.394,13 berada di bawah 6.401,89 — penutupan 14 Agustus yang jadi batas bawah kenaikan dua sesi sebelumnya — jadi kenaikan itu batal. Selama indeks bertahan di atas dasar rentang hari ini 6.373,81, pelemahan ini masih terbaca sebagai koreksi di dalam rentang; penutupan di bawahnya membuka ruang turun lanjutan. Ke atas, 6.490 sudah dua hari berturut-turut menolak — 6.490,65 kemarin dan 6.490,91 hari ini — sehingga level itu kini resistensi yang teruji, bukan sekadar angka.",
+  "kesimpulan": "Dua sinyal berlawanan pada hari yang sama: harga gagal di 6.490 lalu ditutup dekat dasar rentang, sementara asing berbalik net beli Rp933,53 miliar. Yang memberatkan sisi lemah adalah sebarannya — 379 saham turun lawan 257 naik, 9 dari 11 sektor merah — dan likuiditas yang masih 35% di bawah rata-rata. Uang asing masuk, tapi belum cukup tebal untuk mengangkat papan."
+ },
+ "sentimen": {
+  "skor": null,
+  "poin": [
+   {
+    "judul": "Asing Berbalik Net Beli Rp933,53 Miliar Pada Hari Indeks Turun",
+    "isi": "Asing net beli Rp933,53 miliar di pasar reguler, berbalik dari net jual Rp355,17 miliar pada 18 Agustus. Posisi tahun berjalan menyusut jadi −Rp72,30 triliun. Indeks tetap turun 0,86%, jadi tekanan jualnya datang dari sisi domestik — kebalikan dari pola beberapa sesi terakhir."
+   },
+   {
+    "judul": "Papan Lebar Ikut Turun, Bukan Cuma Saham Berat",
+    "isi": "379 saham melemah lawan 257 menguat, 327 tak bergerak. Hanya 2 dari 11 sektor menutup positif: Infrastruktur +0,43% dan Properti +0,39%. Basic Materials memimpin pelemahan −1,21%. Penurunan yang merata lebih sulit dibantah daripada penurunan yang bertumpu pada beberapa saham berkapitalisasi besar."
+   },
+   {
+    "judul": "Likuiditas Masih Di Bawah Rata-rata",
+    "isi": "Nilai transaksi Rp14,26 triliun lawan rata-rata Rp21,91 triliun; frekuensi 2.179 ribu kali lawan rata-rata 2.506 ribu. Turun tipis dari Rp14,81 triliun pada 18 Agustus dan belum sekali pun kembali ke rata-rata pekan ini."
+   },
+   {
+    "judul": "Valuasi Pasar Turun Ke PER 12,92x, PBV 1,70x",
+    "isi": "Turun dari PER 13,06x dan PBV 1,72x pada 18 Agustus, mengikuti pelemahan indeks. Kapitalisasi pasar Rp11.246 triliun, susut Rp102 triliun dalam sehari."
+   }
+  ],
+  "kesimpulan": "Indeks kehilangan 0,86% setelah gagal bertahan di 6.490 — puncak yang sama dengan kemarin — dan pelemahannya merata ke papan lebar maupun sektor. Yang menahan pembacaan bearish satu tingkat: asing justru berbalik net beli Rp933,53 miliar hari ini. Dua sinyal ini berlawanan, dan yang berikutnya menentukan bukan angka indeks melainkan apakah nilai transaksi akhirnya kembali ke rata-rata."
+ }
 }

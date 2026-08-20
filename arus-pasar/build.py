@@ -881,20 +881,19 @@ def halaman_kolofon(ed, kredit=None, tak_pakai=None):
         a = (x if isinstance(x, str) else (x.get("alias") or "")).strip()
         if a and a not in cnt:
             lain.setdefault(a, {"tk": [], "alasan": []})
+    # Setoran yang lolos kurasi tapi TAK jadi emiten edisi tidak dicetak di PDF.
+    # Johan 20 Agu 2026: "tidak perlu ada ini di PDF, cukup di notifikasi nya".
+    #
+    # Alasannya tetap WAJIB ditulis — gerbang #181 menolak build tanpa itu — dan
+    # tetap sampai ke penyetornya lewat `<EDISI>.tak-terpakai.sql` → pemicu
+    # `setoran_kabari_dimuat` → lonceng notifikasi. Yang dibuang cuma
+    # penayangannya di halaman publik: pembaca edisi tak punya kepentingan pada
+    # setoran yang tak dimuat, penyetornya punya — dan ia sudah mendapatkannya
+    # di tempat yang benar.
+    #
+    # `lain` di atas tetap dihitung dan tetap berguna: ia yang membuat nama
+    # semacam itu TIDAK muncul di grid kredit ber-angka.
     terima = ""
-    if lain:
-        kal = []
-        for a, d in lain.items():
-            tk = f' <b>{", ".join(d["tk"])}</b>' if d["tk"] else ""
-            why = (" Belum kami muat di edisi ini — " + "; ".join(d["alasan"]) + "."
-                   if d["alasan"] else " Belum kami muat di edisi ini.")
-            kal.append(f'Terima kasih kepada {a} atas setoran{tk} yang lolos '
-                       f'kurasi hari ini.{why}')
-        # kelas kf-jml dipakai ulang (template.html milik agen lain); dua
-        # penimpa inline karena kelas itu aslinya span nowrap sebaris.
-        terima = ('\n      <div class="kf-jml" style="white-space:normal;'
-                  'text-align:center;margin-top:6mm;line-height:1.75">'
-                  + "<br>".join(kal) + '</div>')
 
     tahun = ed["tanggal_id"].split()[-1]
     return f'''
