@@ -42,6 +42,7 @@ import {
   ubahAlasanSetoran,
   unggahScreenshot,
   urlScreenshots,
+  urlScreenshotsThumb,
   type SetoranRow,
   type StatusSetoran,
 } from '../../lib/supabaseEdisi'
@@ -776,7 +777,10 @@ export function UnggahHarian() {
       const paths = [...antre.current]
       antre.current.clear()
       if (paths.length === 0) return
-      urlScreenshots(paths)
+      // #165: kotak 40px ini pakai companion thumbnail WebP (jauh < gambar
+      // asli 420-520 KB), bukan urlScreenshots biasa — lightbox (bukaPratinjau
+      // di atas) tetap full-res, cuma sel tabel ini yang tak butuh itu.
+      urlScreenshotsThumb(paths)
         .then((u) => setThumb((lama) => ({ ...lama, ...u })))
         // Gagal ambil URL bukan kondisi galat: tabelnya tetap berguna tanpa
         // gambar kecil, dan tombol "Lihat" punya jalurnya sendiri.

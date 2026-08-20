@@ -78,6 +78,57 @@ async function upsertBarisSetoran(path: string, tanggal: string, ticker: string,
   if (error) throw error
 }
 
+/** Path companion thumbnail dari path berkas asli — {tanggal}/{ticker}-{jenis}.thumb.webp.
+ *  Satu sumber dipakai baik saat unggah (buatDanUnggahThumbnail) maupun saat baca
+ *  (urlScreenshotsThumb), supaya keduanya tak pernah beda ejaan. */
+function pathThumb(path: string): string {
+  return path.replace(/\.[^./]+$/, '.thumb.webp')
+}
+
+const MAKS_SISI_THUMB = 160
+
+/** Resize gambar ke kotak maks 160px lewat <canvas>, encode WebP. `null` kalau
+ *  peramban tak mendukung `toBlob('image/webp', …)` (fallback diam-diam ke PNG
+ *  di beberapa peramban lama) — thumbnail dilewati, bukan diunggah dgn MIME
+ *  yang salah. */
+function buatThumbnailBlob(file: File): Promise<Blob | null> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    const urlObjek = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(urlObjek)
+      const skala = Math.min(1, MAKS_SISI_THUMB / Math.max(img.width, img.height))
+      const w = Math.max(1, Math.round(img.width * skala))
+      const h = Math.max(1, Math.round(img.height * skala))
+      const kanvas = document.createElement('canvas')
+      kanvas.width = w
+      kanvas.height = h
+      const ctx = kanvas.getContext('2d')
+      if (!ctx) { resolve(null); return }
+      ctx.drawImage(img, 0, 0, w, h)
+      kanvas.toBlob((b) => resolve(b && b.type === 'image/webp' ? b : null), 'image/webp', 0.75)
+    }
+    img.onerror = () => { URL.revokeObjectURL(urlObjek); resolve(null) }
+    img.src = urlObjek
+  })
+}
+
+/** Bikin & unggah thumbnail SETELAH berkas asli sukses (#165) — dipanggil
+ *  tanpa await di pemanggil (fire-and-forget): thumbnail cuma optimasi
+ *  tampilan kotak 40px, bukan data wajib, jadi kegagalannya TIDAK BOLEH
+ *  menggagalkan unggahan utama. UI lama (urlScreenshots ke path asli) sudah
+ *  jadi fallback otomatis kalau baris ini tak punya thumbnail. */
+async function buatDanUnggahThumbnail(file: File, path: string): Promise<void> {
+  try {
+    const blob = await buatThumbnailBlob(file)
+    if (!blob) return
+    await supabase.storage.from('screenshots').upload(pathThumb(path), blob, { upsert: true, contentType: 'image/webp' })
+  } catch {
+    // ponytail: diam-diam gagal — thumbnail optimasi, bukan data wajib.
+    // Upgrade ke retry/telemetri kalau kegagalannya ternyata sering di lapangan.
+  }
+}
+
 /** Unggah screenshot ke bucket privat "screenshots", path {tanggal}/{ticker}-{jenis}.{ext}.
  *  Alur Fase 3: baris `setoran` dibuat DULU (policy storage menuntutnya sudah
  *  ada), baru berkas diunggah — kalau upload gagal, baris yang baru dibuat
@@ -113,6 +164,7 @@ export async function unggahScreenshot(
     await supabase.from('setoran').delete().eq('path', path)
     throw new Error(`[tahap: unggah berkas] ${error.message}`)
   }
+  void buatDanUnggahThumbnail(file, path)
   return path
 }
 
@@ -382,6 +434,23 @@ export async function urlScreenshots(paths: string[]): Promise<Record<string, st
   const hasil: Record<string, string> = {}
   for (const d of data ?? []) {
     if (d.path && d.signedUrl) hasil[d.path] = d.signedUrl
+  }
+  return hasil
+}
+
+/** Sama seperti `urlScreenshots`, tapi buat KOTAK THUMBNAIL 40px (#165) — coba
+ *  companion `.thumb.webp` (jauh lebih kecil) dulu, jatuh ke berkas ASLI utk
+ *  path yang belum punya thumbnail (unggahan sebelum fitur ini ada). Hasilnya
+ *  tetap dikunci ke path ASLI supaya pemanggil tak perlu tahu bedanya. */
+export async function urlScreenshotsThumb(paths: string[]): Promise<Record<string, string>> {
+  if (paths.length === 0) return {}
+  const thumbUrls = await urlScreenshots(paths.map(pathThumb))
+  const belumAda = paths.filter((p) => !thumbUrls[pathThumb(p)])
+  const asli = belumAda.length > 0 ? await urlScreenshots(belumAda) : {}
+  const hasil: Record<string, string> = {}
+  for (const p of paths) {
+    const u = thumbUrls[pathThumb(p)] ?? asli[p]
+    if (u) hasil[p] = u
   }
   return hasil
 }
