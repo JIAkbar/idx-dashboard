@@ -1546,6 +1546,16 @@
 .lantai .tipe-edisi.t-mingguan{background:rgba(120,210,190,.26);color:#8fdfcd;border-color:rgba(120,210,190,.6)}
 .lantai .tipe-edisi.t-bulanan{background:rgba(160,130,255,.26);color:#c2b0ff;border-color:rgba(160,130,255,.6)}
 .lantai .tipe-edisi.t-bedah{background:rgba(255,150,110,.26);color:#ffb08f;border-color:rgba(255,150,110,.6)}
+/* Teks pucat di atas TETAP dipakai tema gelap saja — di tema terang latar
+   tintnya (.26 alpha atas --bg1 ~#FCFCFB) jadi pastel nyaris putih dan teks
+   pucat itu hilang. Latar & border dibiarkan (tipis itu yang dimaksud),
+   cuma teksnya diganti gelap pekat. Terukur (WCAG relative luminance) atas
+   latar efektifnya masing-masing: harian 7,17:1, mingguan 5,48:1, bulanan
+   7,21:1, bedah 5,6:1 — semua ≥ 4,5:1. */
+.dasbor-shell[data-theme="light"] .lantai .tipe-edisi.t-harian{color:#1a3ea8}
+.dasbor-shell[data-theme="light"] .lantai .tipe-edisi.t-mingguan{color:#0a6b54}
+.dasbor-shell[data-theme="light"] .lantai .tipe-edisi.t-bulanan{color:#4a22b8}
+.dasbor-shell[data-theme="light"] .lantai .tipe-edisi.t-bedah{color:#9c3a08}
 .lantai .blt-em{cursor:pointer;color:var(--text2);transition:color .15s,border-color .15s,background .15s}
 .lantai .blt-em:hover{color:var(--amber);border-color:var(--amber);background:var(--amber-dim)}
 .lantai .blt-reset{border:none;background:none;padding:0;font:inherit;color:var(--amber);cursor:pointer;text-decoration:underline}
