@@ -1,13 +1,19 @@
 import { supabase } from './supabase'
 
 /** Satu baris `akses_halaman` (14 baris sudah terisi, backend Fase 6). RLS:
- *  semua boleh baca (termasuk anon), cuma superadmin boleh tulis. */
+ *  semua boleh baca (termasuk anon), cuma superadmin boleh tulis.
+ *  `induk`: kunci halaman induk kalau baris ini turunan (mis. 'probvv' → 'bulletin',
+ *  'seasonality-hari' → 'seasonality'). Ditegakkan di server (`boleh_buka()`):
+ *  anak tak pernah lebih terbuka daripada induknya, jadi mengunci induk otomatis
+ *  ikut mengunci semua turunannya — tab ini cuma perlu MENAMPILKAN hierarkinya,
+ *  bukan menghitung ulang efeknya. */
 export interface HalamanBaris {
   kunci: string
   label: string
   tingkat: 'publik' | 'login' | 'superadmin'
   min_tier: number | null
   urutan: number
+  induk: string | null
 }
 
 export async function daftarHalamanAkses(): Promise<HalamanBaris[]> {

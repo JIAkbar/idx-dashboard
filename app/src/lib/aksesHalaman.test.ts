@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { alasanKunci, alasanSingkat, bolehBukaKunci, type HalamanSaya } from './aksesHalaman'
 
 const daftar: HalamanSaya[] = [
-  { kunci: 'dasbor', label: 'Dasbor', tingkat: 'publik', min_tier: null, urutan: 1, boleh: true },
-  { kunci: 'radar', label: 'Radar', tingkat: 'login', min_tier: 2, urutan: 2, boleh: false },
-  { kunci: 'akun', label: 'Akun', tingkat: 'superadmin', min_tier: null, urutan: 3, boleh: false },
+  { kunci: 'dasbor', label: 'Dasbor', tingkat: 'publik', min_tier: null, urutan: 1, boleh: true, induk: null },
+  { kunci: 'radar', label: 'Radar', tingkat: 'login', min_tier: 2, urutan: 2, boleh: false, induk: null },
+  { kunci: 'akun', label: 'Akun', tingkat: 'superadmin', min_tier: null, urutan: 3, boleh: false, induk: null },
 ]
 
 const namaTier = (t: number) => ({ 0: 'Pemula', 1: 'Perunggu', 2: 'Perak' } as Record<number, string>)[t] ?? `tier ${t}`

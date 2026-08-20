@@ -11,7 +11,12 @@
  * navigasinya yang dicegah.
  */
 
-/** Satu baris hasil `public.halaman_saya()` — lihat definisi fungsi di database. */
+/** Satu baris hasil `public.halaman_saya()` — lihat definisi fungsi di database.
+ *  `induk`: kunci halaman induk (mis. 'probvv' induknya 'bulletin'). Aturan
+ *  ANAK TAK PERNAH LEBIH TERBUKA DARIPADA INDUKNYA sudah ditegakkan di server
+ *  (`boleh_buka()` meng-AND-kan hasil baris dgn hasil induknya) — `boleh` di
+ *  sini SUDAH final, tak perlu dihitung ulang di klien. `induk` dikirim cuma
+ *  supaya UI (tab Akses) bisa menampilkan hierarkinya. */
 export interface HalamanSaya {
   kunci: string
   label: string
@@ -19,6 +24,7 @@ export interface HalamanSaya {
   min_tier: number | null
   urutan: number
   boleh: boolean
+  induk: string | null
 }
 
 /** `daftar === null` berarti belum selesai dimuat (atau RPC gagal) — fail-open. */

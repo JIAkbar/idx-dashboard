@@ -162,10 +162,19 @@ export function AksesAdmin() {
                 <tbody>
                   {halaman.map((h) => {
                     const sedangProses = sibuk.has(h.kunci)
+                    // Anak (h.induk terisi) ditandai indentasi + nama induknya —
+                    // aturannya ditegakkan di server (boleh_buka()): anak tak
+                    // pernah lebih terbuka daripada induknya, jadi mengunci
+                    // induk di baris lain otomatis ikut mengunci baris ini.
+                    // Tampilan di sini cuma supaya admin TAHU hubungannya,
+                    // bukan lagi menebak dari nama kunci.
+                    const indukLabel = h.induk ? halaman.find((x) => x.kunci === h.induk)?.label ?? h.induk : null
                     return (
                       <tr key={h.kunci}>
-                        <td>
+                        <td style={indukLabel ? { paddingLeft: 24 } : undefined}>
+                          {indukLabel && <span className="muted" title={`Turunan dari ${indukLabel} — mengunci ${indukLabel} otomatis mengunci ini juga`}>↳ </span>}
                           {h.label} <span className="muted" style={{ fontSize: 10 }}>({h.kunci})</span>
+                          {indukLabel && <span className="muted" style={{ fontSize: 10, display: 'block' }}>turunan dari {indukLabel}</span>}
                         </td>
                         <td>
                           <Dropdown
