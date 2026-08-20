@@ -6,7 +6,7 @@ import {
   hapusContohOrderbook,
   type ContohOrderbook,
 } from '../../lib/contohOrderbook'
-import { urlScreenshots } from '../../lib/supabaseEdisi'
+import { urlScreenshots } from '../../lib/supabaseSetoran'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { IkonMenu, IKON_PERLUAS, IKON_TAMBAH, IKON_TONG } from '../../components/dasbor/IkonMenu'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'

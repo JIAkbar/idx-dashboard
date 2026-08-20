@@ -18,7 +18,7 @@ import {
   unggahBedah,
   urlScreenshots,
   type BedahArsipBaris,
-} from '../../lib/supabaseEdisi'
+} from '../../lib/supabaseSetoran'
 import { pesanGalat } from '../../lib/pesanGalat'
 import { tanggalBursaTerakhir as tanggalHariIni } from '../../lib/tanggalBursa'
 import { PanduanScreenshot } from './PanduanScreenshot'

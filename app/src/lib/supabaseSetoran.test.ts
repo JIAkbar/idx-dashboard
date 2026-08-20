@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { jalurDiTanggal } from './supabaseEdisi'
+import { jalurDiTanggal } from './supabaseSetoran'
 
 /**
  * Tanggal setoran ikut tertanam di JALUR BERKAS, dan `path` adalah kunci unik

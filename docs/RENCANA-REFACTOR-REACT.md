@@ -10,7 +10,13 @@
 > (cakupan login diperjelas — lihat §1a).
 > Status: **Fase 0-3 selesai** (scaffold+auth+routing · mesin skor TS paritas Python ·
 > template PDF ter-port ke komponen React, pratinjau di `/admin/edisi/ujicoba` ·
-> kotak masuk unggah screenshot di `/admin/upload`, tabel `edisi` siap diisi Claude Code).
+> kotak masuk unggah screenshot di `/admin/upload`).
+> **Koreksi 20 Agu 2026 (A3):** kalimat "tabel `edisi` siap diisi Claude Code" tak
+> pernah terwujud — tabel itu nol baris selama hidupnya dan sudah DIPENSIUNKAN.
+> Edisi tetap dirakit `arus-pasar/build*.py` jadi PDF + `keluaran/index.json`;
+> Supabase mengurus setoran & berkasnya saja. §2 baris "Database" di bawah
+> ("Edisi, emiten, baris flow, skor — menggantikan JSON file") ikut batal untuk
+> bagian **edisi**.
 > Fase 3 sempat dibangun sebagai form input manual 30+ field lalu dikoreksi — bertentangan
 > dengan arsitektur §3 (web = wadah, Claude Code = otak); diganti kotak masuk sederhana.
 > Keputusan user: login **admin tunggal**; mesin analisa utama **Claude Code** (web = kotak masuk

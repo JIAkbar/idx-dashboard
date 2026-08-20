@@ -49,7 +49,6 @@ const RakTerbitan = lazy(() => import('./views/admin/RakTerbitan').then((m) => (
 const ChangelogAdmin = lazy(() => import('./views/admin/ChangelogAdmin').then((m) => ({ default: m.ChangelogAdmin })))
 const ChangelogPanel = lazy(() => import('./views/admin/ChangelogAdmin').then((m) => ({ default: m.ChangelogPanel })))
 const EdisiUjicoba = lazy(() => import('./views/EdisiUjicoba').then((m) => ({ default: m.EdisiUjicoba })))
-const EdisiView = lazy(() => import('./views/EdisiView').then((m) => ({ default: m.EdisiView })))
 
 function App() {
   return (
@@ -188,8 +187,13 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route element={<ProtectedRoute />}>
               <Route path="/admin/changelog" element={<ChangelogAdmin />} />
+              {/* Pratinjau komponen Terbitan (React port template PDF) dari
+                  fixture lokal. Rute `/admin/edisi/:kode` yang dulu membaca
+                  tabel Supabase `edisi` DIBUANG di A3 (20 Agu 2026): tabelnya
+                  nol baris, tak ada penulisnya, jadi rute itu selalu menjawab
+                  "Edisi tidak ditemukan". Edisi jadi tetap berupa PDF di
+                  `arus-pasar/keluaran/`, dibuka lewat /bulletin & Rak Terbitan. */}
               <Route path="/admin/edisi/ujicoba" element={<EdisiUjicoba />} />
-              <Route path="/admin/edisi/:kode" element={<EdisiView />} />
             </Route>
             {/* Rute cadangan. Tanpa ini, URL yang tak dikenal memberi LAYAR PUTIH
                 TOTAL — rail dan topbar ikut hilang, nol galat di konsol, dan

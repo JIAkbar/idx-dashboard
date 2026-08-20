@@ -23,7 +23,7 @@ export async function daftarContohOrderbook(): Promise<ContohOrderbook[]> {
 }
 
 /** Unggah gambar contoh ke bucket "screenshots", path contoh/{nama unik}.{ext}
- *  — prefiks contoh/ (pola sama radar/, bedah/ di supabaseEdisi.ts) supaya
+ *  — prefiks contoh/ (pola sama radar/, bedah/ di supabaseSetoran.ts) supaya
  *  tidak ikut hitungan Kotak Masuk (cuma folder bertanggal ISO yang dihitung
  *  di sana). Nama file diacak (bukan nama asli) — kemungkinan tabrakan antar
  *  superadmin yang unggah bersamaan diabaikan. */

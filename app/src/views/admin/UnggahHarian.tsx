@@ -45,7 +45,7 @@ import {
   urlScreenshotsThumb,
   type SetoranRow,
   type StatusSetoran,
-} from '../../lib/supabaseEdisi'
+} from '../../lib/supabaseSetoran'
 import { useBulletinList } from '../../lib/dasbor/bulletin'
 import { TolakModal } from './KurasiSetoran'
 import { AturanScreenshot, PanduanScreenshot } from './PanduanScreenshot'

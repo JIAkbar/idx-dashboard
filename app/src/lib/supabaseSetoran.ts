@@ -1,44 +1,27 @@
+/**
+ * Supabase: SETORAN kontributor + bucket "screenshots" (orderbook, chart,
+ * bedah, radar). Dulu bernama `supabaseEdisi.ts` — namanya diganti karena
+ * berkas ini tak lagi menyentuh edisi sama sekali, dan nama lamalah yang
+ * membuat pertanyaan "siapa pemilik edisi?" terbuka berbulan-bulan.
+ *
+ * BATAS YANG SENGAJA DITARIK (A3, 20 Agu 2026) — **edisi Arus Pasar tidak
+ * tinggal di Supabase.** Sampai hari ini repo punya dua jalur untuk hal yang
+ * sama: perakitan berbasis berkas (`arus-pasar/build*.py` -> `keluaran/*.pdf`
+ * + `keluaran/index.json`, dibaca `/bulletin` dan Rak Terbitan) dan tabel
+ * Supabase `edisi` yang dibaca modul ini. Yang kedua **tidak pernah diisi**:
+ * nol baris sejak dibuat, tak satu pun penulis di seluruh repo (`simpanEdisi`
+ * nol pemanggil), dan RLS-nya memberi akses PENUH ke setiap akun login —
+ * itulah alasan agen Bulletin dulu menolak memakainya untuk halaman publik
+ * (`docs/BACKLOG-SWEEP-VISUAL.md` #37). Tabelnya sudah di-DROP dan
+ * `EdisiRow`/`daftarEdisi`/`ambilEdisi`/`simpanEdisi` dibuang dari sini.
+ *
+ * Konsekuensinya, dan inilah yang membuat batas ini terbaca dari kode:
+ * **jangan menambah fungsi edisi ke berkas ini.** Sumber kebenaran edisi =
+ * berkas di `arus-pasar/` (manifest dibuat HANYA oleh `generate_index.py`,
+ * yang menghormati `edisi/_tahan.json`); pembacanya `lib/dasbor/bulletin.ts`.
+ * Supabase mengurus setoran & berkasnya, berhenti di situ.
+ */
 import { supabase } from './supabase'
-import type { Edisi, OhlcMap } from './skor/types'
-
-export interface EdisiRow {
-  id: string
-  kode: string
-  tanggal: string
-  status: 'draf' | 'terbit'
-  edisi_data: Edisi
-  ohlc_data: OhlcMap
-  created_at: string
-  updated_at: string
-}
-
-export async function daftarEdisi(): Promise<EdisiRow[]> {
-  const { data, error } = await supabase.from('edisi').select('*').order('tanggal', { ascending: false })
-  if (error) throw error
-  return data as EdisiRow[]
-}
-
-export async function ambilEdisi(kode: string): Promise<EdisiRow | null> {
-  const { data, error } = await supabase.from('edisi').select('*').eq('kode', kode).maybeSingle()
-  if (error) throw error
-  return data as EdisiRow | null
-}
-
-export async function simpanEdisi(
-  kode: string,
-  tanggal: string,
-  status: 'draf' | 'terbit',
-  edisiData: Edisi,
-  ohlcData: OhlcMap
-): Promise<void> {
-  const { error } = await supabase
-    .from('edisi')
-    .upsert(
-      { kode, tanggal, status, edisi_data: edisiData, ohlc_data: ohlcData },
-      { onConflict: 'kode' }
-    )
-  if (error) throw error
-}
 
 /** Status kurasi & jenis baris tabel `setoran` (backend Fase 3, sudah jadi —
  *  lihat trigger & policy storage yang menegakkan aturan ini di server). */

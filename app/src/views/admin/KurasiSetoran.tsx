@@ -11,7 +11,7 @@ import {
   urlScreenshots,
   type SetoranRow,
   type StatusSetoran,
-} from '../../lib/supabaseEdisi'
+} from '../../lib/supabaseSetoran'
 import { alasanBukanHariBursa, todayIsoJakarta } from '../../lib/tanggalBursa'
 import { IkonMenu, IKON_CENTANG, IKON_KALENDER, IKON_PAPAN_KLIP, IKON_PERINGATAN, IKON_SILANG } from '../../components/dasbor/IkonMenu'
 import { DatePicker } from '../../components/dasbor/DatePicker'
