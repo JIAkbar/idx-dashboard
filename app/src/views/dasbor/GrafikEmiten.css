@@ -20,7 +20,15 @@
    bentuknya mirip terbaca sebagai satu deretan pilihan yang panjang. */
 .lantai .grf-pisah { width: 1px; height: 18px; background: var(--line2); flex: none; }
 
-.lantai .grf-cari { display: flex; align-items: center; gap: 6px; flex: 0 1 260px; min-width: 150px; }
+/* `position: relative` WAJIB — daftar saran (`.sea-saran`) dipasang
+   `position: absolute` dan berjangkar ke ancestor berposisi TERDEKAT. Kotak
+   cari halaman lain memakai `.af-cari`, yang sudah relative; kotak ini punya
+   bentuknya sendiri (chip kode aktif + input terpisah) dan tak memakainya,
+   jadi sarannya berjangkar ke ancestor jauh dan `top: calc(100% + 4px)`
+   melemparkannya ke bawah panel — mengetik "mbma" memunculkan daftar yang
+   ada di DOM tapi tak pernah terlihat di dekat kotaknya. Dilaporkan Johan
+   20 Agu 2026 sebagai "kolom saham tidak muncul pilihan sahamnya". */
+.lantai .grf-cari { position: relative; display: flex; align-items: center; gap: 6px; flex: 0 1 260px; min-width: 150px; }
 .lantai .grf-cari .inp { height: 28px; padding: 4px 8px; font-size: 11.5px; min-width: 0; }
 .lantai .grf-kode-aktif {
   font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--amber);
