@@ -76,7 +76,7 @@ lengkap. Uji yang membedakan: buka URL yang sama di peramban — kalau peramban
 200, yang salah sidik jari permintaan.
 
 **Batas sumber yang sudah dipastikan, jangan dicoba ulang:**
-- XBRL IDX berhenti di tahun buku **2019**; 2018 ke belakang menjawab `ResultCount 0`.
+- Daftar laporan XBRL IDX (`GetFinancialReport`) berhenti menyebut tahun buku **2019**; 2018 ke belakang menjawab `ResultCount 0`. Ini batas DAFTARnya, bukan batas isinya — isi yang sudah dipanen mencakup 2019–2025 plus interim 2024.
 - Intraday Yahoo: 5m/15m/30m ±1 bulan, 1h ±2 tahun, **4h tak ada** (dirakit dari 1h).
 - Broker summary **per emiten** tak tersedia di endpoint publik mana pun —
   `GetBrokerSummary` mengabaikan `stockCode` dan selalu menjawab level pasar.
