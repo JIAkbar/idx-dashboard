@@ -8,11 +8,12 @@ import {
   hitungATR, cariPivotRendah, cariPivotTinggi, cariDoubleBottom,
   hitungOBV, cariLonjakanVolume, cariMusiman, SPEK_POLA, labelInstansPola,
   cariDivergensi, stochUntukDivergensi,
+  cariWyckoff, faseWyckoffDi, URUT_FASE, cariHarmonik, zigzagPivot, RASIO_HARMONIK,
   VERSI_TEMPLATE, uraiTemplate, simpanTemplate, hapusTemplate, tandaiBawaan, ubahNamaTemplate,
   penandaDiSekitar, tutupSampai,
   type InstansIndikator, type SpekParam, type LilinData, type ParamDoubleBottom,
   type TemplateGrafik, type ParamLonjakanVolume, type ParamDivergensi,
-  type BerkasOhlcEmiten,
+  type BerkasOhlcEmiten, type ParamWyckoff, type ParamHarmonik, type FaseWyckoff,
 } from './grafikEmiten'
 import { muatKatalog, keSpekParam, keMasukanPustaka, ID_SUDAH_ADA, KATEGORI } from './katalogIndikator'
 import type { BarisOhlc } from './ihsgOhlc'
@@ -1333,4 +1334,230 @@ describe('tutupSampai (basis persen Compare symbols)', () => {
   it('sesudah lilin terakhir = tutup terakhir', () => expect(tutupSampai(d, '2026-03-01')).toBe(120))
   it('sebelum lilin pertama = null, bukan angka karangan', () => expect(tutupSampai(d, '2025-12-31')).toBeNull())
   it('deret kosong = null', () => expect(tutupSampai([], '2026-01-06')).toBeNull())
+})
+
+/* ------------------------------------------------------------------ *
+ * Wyckoff Phase (Grup 3) & Harmonic Pattern (Grup 4).
+ *
+ * Deret ujinya DIBANGUN dari titik balik yang harganya dipilih supaya rasio
+ * Fibonacci-nya jatuh persis — bukan deret acak yang kebetulan menghasilkan
+ * pola. Tanpa itu, uji yang lulus tak membuktikan rasionya benar, cuma
+ * membuktikan fungsinya tak melempar.
+ * ------------------------------------------------------------------ */
+
+/** Deret lilin dari titik balik (indeks, harga), disambung lurus. Tiap lilin
+ *  buka=tinggi=rendah=tutup, jadi pivot tinggi & rendah jatuh persis di titik
+ *  yang dimaksud dan tak ada bayangan yang menggeser rasionya. */
+function deretDariTitik(titik: Array<[number, number]>): LilinData[] {
+  const harga: number[] = []
+  for (let s = 0; s + 1 < titik.length; s++) {
+    const [i0, h0] = titik[s]
+    const [i1, h1] = titik[s + 1]
+    for (let i = i0; i < i1; i++) harga.push(h0 + ((h1 - h0) * (i - i0)) / (i1 - i0))
+  }
+  harga.push(titik[titik.length - 1][1])
+  // Waktu ditulis sebagai indeks berpadding: unik, menaik, dan tetap terurut
+  // leksikografis walau deretnya lebih panjang dari sebulan kalender.
+  return harga.map((h, i) => ({
+    time: `T${String(i).padStart(4, '0')}`, open: h, high: h, low: h, close: h,
+  }))
+}
+
+const PH: ParamHarmonik = { jendela: 5, ayunMin: 3, toleransi: 0.05, bcMin: 0.382, bcMaks: 0.886 }
+
+/** Gartley bullish sempurna: XA=100, AB/XA=0,618, BC/AB=0,5, AD/XA=0,786. */
+const GARTLEY = deretDariTitik([[0, 250], [10, 100], [30, 200], [50, 138.2], [70, 169.1], [90, 121.4], [105, 180]])
+
+describe('zigzagPivot', () => {
+  it('memaksa berselang-seling dan memakai pivot yang sama dengan pola lain', () => {
+    const zz = zigzagPivot(GARTLEY, 5, 3)
+    expect(zz.map((t) => t.jenis)).toEqual(['rendah', 'tinggi', 'rendah', 'tinggi', 'rendah'])
+    expect(zz.map((t) => t.i)).toEqual([10, 30, 50, 70, 90])
+    expect(zz.map((t) => Math.round(t.harga * 10) / 10)).toEqual([100, 200, 138.2, 169.1, 121.4])
+  })
+
+  it('ayunan di bawah ambang dibuang, bukan diterima sebagai titik', () => {
+    // Riak 1% di tengah tren naik: dengan ambang 3% ia tak boleh jadi titik.
+    const riak = deretDariTitik([[0, 250], [10, 100], [30, 150], [40, 148.5], [60, 220], [70, 120]])
+    expect(zigzagPivot(riak, 5, 3).some((t) => t.i === 30 || t.i === 40)).toBe(false)
+    expect(zigzagPivot(riak, 5, 0.5).some((t) => t.i === 30)).toBe(true)
+  })
+})
+
+describe('cariHarmonik', () => {
+  it('mengenali Gartley bullish dan menyebut keempat rasionya', () => {
+    const h = cariHarmonik(GARTLEY, PH)
+    expect(h).toHaveLength(1)
+    expect(h[0].pola).toBe('gartley')
+    expect(h[0].arah).toBe('bullish')
+    expect(h[0].indeks).toEqual([10, 30, 50, 70, 90])
+    expect(h[0].ab).toBeCloseTo(0.618, 3)
+    expect(h[0].bc).toBeCloseTo(0.5, 3)
+    expect(h[0].ad).toBeCloseTo(0.786, 3)
+    expect(h[0].simpangan).toBeCloseTo(0, 6)
+  })
+
+  it('GERBANG BC/AB menolak "pola" yang koreksinya lebih panjang dari yang dikoreksi', () => {
+    // Sama persis dengan GARTLEY kecuali C dinaikkan sampai BC/AB = 1,2 —
+    // AB/XA dan AD/XA tetap 0,618 & 0,786, jadi tanpa gerbang ia LOLOS sebagai
+    // Gartley. Itulah bug 4,8x/7,4x yang SPLE perbaiki sendiri.
+    const rusak = deretDariTitik([[0, 250], [10, 100], [30, 200], [50, 138.2], [70, 212.36], [90, 121.4], [105, 260]])
+    expect(cariHarmonik(rusak, PH)).toHaveLength(0)
+    const tanpaGerbang = cariHarmonik(rusak, { ...PH, bcMin: 0, bcMaks: 99 })
+    expect(tanpaGerbang).toHaveLength(1)
+    expect(tanpaGerbang[0].pola).toBe('gartley')
+    expect(tanpaGerbang[0].bc).toBeCloseTo(1.2, 2)
+  })
+
+  it('BUTTERFLY memakai standar Carney (AD/XA 1,27-1,618), bukan 1,27-1,42 versi Screener SPLE', () => {
+    // AD/XA = 1,5: sah menurut Carney, DI LUAR ambang sempit mereka.
+    const kupu = deretDariTitik([[0, 250], [10, 100], [30, 200], [50, 121.4], [70, 160.7], [90, 50], [105, 140]])
+    const h = cariHarmonik(kupu, PH)
+    expect(h).toHaveLength(1)
+    expect(h[0].pola).toBe('butterfly')
+    expect(h[0].ab).toBeCloseTo(0.786, 3)
+    expect(h[0].ad).toBeCloseTo(1.5, 3)
+    // Pita nominalnya dikunci di sini: menyempitkannya jadi 1,42 diam-diam akan
+    // memakan uji ini, bukan lolos tanpa jejak.
+    expect(RASIO_HARMONIK.butterfly.ad).toEqual([1.27, 1.618])
+    // Bukti ambang mereka memang membuang pola sah ini: 1,5 di luar 1,42+toleransi.
+    expect(h.filter((x) => x.ad <= 1.42 + PH.toleransi)).toHaveLength(0)
+  })
+
+  it('deret tanpa lima titik balik = nol pola, bukan melempar', () => {
+    expect(cariHarmonik([], PH)).toEqual([])
+    expect(cariHarmonik(deretDariTitik([[0, 100], [20, 200]]), PH)).toEqual([])
+  })
+})
+
+const PW: ParamWyckoff = { pendek: 3, panjang: 6, volJendela: 5, fnetJendela: 5, minLilin: 1 }
+
+describe('faseWyckoffDi — enam kombinasi dua sumbu, tanpa celah & tanpa tumpang tindih', () => {
+  const kasus: Array<[harga: number, maPendek: number, maPanjang: number, fase: FaseWyckoff]> = [
+    [120, 110, 100, 'markup'], // struktur naik, harga di atas keduanya
+    [120, 100, 110, 'markupAwal'], // struktur turun, harga di atas keduanya
+    [80, 110, 100, 'markdownAwal'], // struktur naik, harga di bawah keduanya
+    [80, 100, 110, 'markdown'], // struktur turun, harga di bawah keduanya
+    [105, 110, 100, 'konsolidasi'], // pita tengah, tanpa FNet -> struktur naik
+    [105, 100, 110, 'akumulasi'], // pita tengah, tanpa FNet -> struktur turun
+  ]
+  for (const [h, a, b, fase] of kasus) {
+    it(`harga ${h} vs MA ${a}/${b} -> ${fase}`, () => {
+      expect(faseWyckoffDi(h, a, b, null)).toEqual({ fase, fnetDipakai: false })
+    })
+  }
+
+  it('keenam fase spek benar-benar terpakai, tak ada yang tak pernah muncul', () => {
+    expect([...new Set(kasus.map(([, , , f]) => f))].sort()).toEqual([...URUT_FASE].sort())
+  })
+
+  it('di PITA TENGAH, FNet yang memutuskan — dan ruas fnetDipakai menyebutkannya', () => {
+    expect(faseWyckoffDi(105, 110, 100, 5_000_000)).toEqual({ fase: 'akumulasi', fnetDipakai: true })
+    expect(faseWyckoffDi(105, 110, 100, -5_000_000)).toEqual({ fase: 'konsolidasi', fnetDipakai: true })
+    // FNet nol hampir selalu berarti "tak ada catatannya", bukan "seimbang" —
+    // jadi ia jatuh ke cadangan struktur MA, bukan dipaksa jadi salah satu.
+    expect(faseWyckoffDi(105, 110, 100, 0)).toEqual({ fase: 'konsolidasi', fnetDipakai: false })
+  })
+
+  it('FNet TIDAK menyentuh fase di luar pita tengah', () => {
+    expect(faseWyckoffDi(120, 110, 100, -9e9)).toEqual({ fase: 'markup', fnetDipakai: false })
+    expect(faseWyckoffDi(80, 100, 110, 9e9)).toEqual({ fase: 'markdown', fnetDipakai: false })
+  })
+})
+
+describe('cariWyckoff', () => {
+  const naikTurun = deretDariTitik([[0, 100], [40, 200], [80, 100], [120, 220]])
+  const vol = naikTurun.map(() => 1_000_000)
+
+  it('membelah deret jadi segmen berfase sama, berurutan dan tak bertumpang tindih', () => {
+    const seg = cariWyckoff(naikTurun, vol, [], PW)
+    expect(seg.length).toBeGreaterThan(2)
+    for (let i = 0; i < seg.length; i++) {
+      expect(seg[i].panjang).toBe(seg[i].iAkhir - seg[i].iMulai + 1)
+      if (i > 0) {
+        expect(seg[i].iMulai).toBeGreaterThan(seg[i - 1].iAkhir)
+        // Dua segmen berturutan tak pernah berfase sama — kalau sama, mereka
+        // satu segmen dan pemecahannya salah.
+        expect(seg[i].fase).not.toBe(seg[i - 1].fase)
+      }
+    }
+    const fase = new Set(seg.map((s) => s.fase))
+    expect(fase.has('markup')).toBe(true)
+    expect(fase.has('markdown')).toBe(true)
+  })
+
+  it('FNet ikut mengubah label pita tengah, dan asalnya tercatat di fnetDipakai', () => {
+    const pitaP = cariWyckoff(naikTurun, vol, naikTurun.map(() => 1_000_000), PW).filter((s) => s.fnetDipakai)
+    const pitaN = cariWyckoff(naikTurun, vol, naikTurun.map(() => -1_000_000), PW).filter((s) => s.fnetDipakai)
+    expect(pitaP.length).toBeGreaterThan(0)
+    expect(pitaP.every((s) => s.fase === 'akumulasi')).toBe(true)
+    expect(pitaN.length).toBeGreaterThan(0)
+    expect(pitaN.every((s) => s.fase === 'konsolidasi')).toBe(true)
+    // Tanpa berkas asing (larik kosong) tak ada satu pun segmen ber-fnetDipakai,
+    // dan hasilnya tetap keluar — bukan fase "tak diketahui".
+    const tanpa = cariWyckoff(naikTurun, vol, [], PW)
+    expect(tanpa.length).toBeGreaterThan(0)
+    expect(tanpa.every((s) => !s.fnetDipakai && s.fnet === null)).toBe(true)
+  })
+
+  it('minLilin membuang segmen sependek kedipan di sekitar perpotongan MA', () => {
+    const semua = cariWyckoff(naikTurun, vol, [], { ...PW, minLilin: 1 })
+    const disaring = cariWyckoff(naikTurun, vol, [], { ...PW, minLilin: 5 })
+    expect(disaring.length).toBeLessThanOrEqual(semua.length)
+    expect(disaring.every((s) => s.panjang >= 5)).toBe(true)
+  })
+
+  it('MA pendek yang tak lebih pendek dari MA panjang = nol segmen, bukan angka ngawur', () => {
+    expect(cariWyckoff(naikTurun, vol, [], { ...PW, pendek: 20, panjang: 20 })).toEqual([])
+    expect(cariWyckoff([], [], [], PW)).toEqual([])
+  })
+})
+
+/* ------------------------------------------------------------------ *
+ * Bar replay untuk KEDUA pola baru — lanjutan aturan yang sama dengan
+ * describe "Bar replay" di atas: nilai di indeks i tak boleh bergantung pada
+ * data sesudah i. Yang dibandingkan bukan cuma "tanggalnya tak melewati
+ * batas" melainkan RUAS DEMI RUAS: temuan yang seluruhnya berada di dalam
+ * potongan harus keluar identik pada deret penuh maupun terpotong.
+ * ------------------------------------------------------------------ */
+describe('Bar replay: Wyckoff & Harmonic ikut mundur (tak membaca masa depan)', () => {
+  // Dua Gartley berurutan, supaya ada pola yang seluruhnya di dalam potongan
+  // DAN ada pola sesudah batasnya.
+  const dua = deretDariTitik([
+    [0, 250], [10, 100], [30, 200], [50, 138.2], [70, 169.1], [90, 121.4],
+    [120, 300], [140, 120], [160, 220], [180, 158.2], [200, 189.1], [220, 141.4], [235, 200],
+  ])
+  const vol = dua.map((_, i) => 1_000_000 + ((i * 7919) % 900_000))
+  const POTONG = 110
+
+  it('Harmonic: pola di dalam potongan identik ruas demi ruas dengan deret penuh', () => {
+    const penuh = cariHarmonik(dua, PH)
+    const potong = cariHarmonik(dua.slice(0, POTONG), PH)
+    expect(penuh.length).toBeGreaterThan(1)
+    expect(potong.length).toBeGreaterThan(0)
+    // Tak satu pun temuan menyebut lilin sesudah batas replay.
+    for (const h of potong) expect(h.indeks[4]).toBeLessThan(POTONG)
+    // Dan yang seluruhnya di dalam potongan wajib SAMA PERSIS.
+    const sama = penuh.filter((h) => h.indeks[4] < POTONG - PH.jendela)
+    expect(sama.length).toBeGreaterThan(0)
+    for (const h of sama) {
+      expect(potong.find((x) => x.indeks[0] === h.indeks[0] && x.indeks[4] === h.indeks[4])).toEqual(h)
+    }
+  })
+
+  it('Wyckoff: segmen yang sudah tertutup di dalam potongan identik ruas demi ruas', () => {
+    const fnet = dua.map((_, i) => (i % 3 === 0 ? 500_000 : -400_000))
+    const penuh = cariWyckoff(dua, vol, fnet, PW)
+    const potong = cariWyckoff(dua.slice(0, POTONG), vol.slice(0, POTONG), fnet.slice(0, POTONG), PW)
+    expect(potong.length).toBeGreaterThan(1)
+    for (const s of potong) expect(s.iAkhir).toBeLessThan(POTONG)
+    // Segmen terakhir pada potongan memang berakhir lebih awal (ia belum tahu
+    // fasenya bertahan berapa lama lagi) — itu satu-satunya perbedaan sah, jadi
+    // yang dibandingkan segmen SEBELUM yang terakhir.
+    const tertutup = potong.slice(0, -1)
+    expect(tertutup.length).toBeGreaterThan(0)
+    for (const s of tertutup) {
+      expect(penuh.find((x) => x.iMulai === s.iMulai)).toEqual(s)
+    }
+  })
 })

@@ -14,13 +14,15 @@ import {
   keSeriGaris, SPEK_INDIKATOR, SPEK_POLA, labelInstansIndikator, labelInstansPola,
   spekJenis, idPustaka,
   hitungInstans, cariDoubleBottom, cariLonjakanVolume, cariMusiman,
-  cariDivergensi, stochUntukDivergensi,
+  cariDivergensi, stochUntukDivergensi, cariWyckoff, cariHarmonik,
   bacaTemplateTersimpan, tulisTemplateTersimpan, simpanTemplate, hapusTemplate,
   tandaiBawaan, ubahNamaTemplate, penandaDiSekitar, tutupSampai,
   type BerkasOhlcEmiten, type DoubleBottom, type JenisAsli, type JenisIndikator, type JenisPola,
   type LilinData, type ParamDoubleBottom, type ParamLonjakanVolume, type StatusPola, type StatusLonjakan,
   type LonjakanVolume, type TemplateGrafik, type TemuanMusiman, type VolumeData,
   type Divergensi, type DerajatDivergensi, type ParamDivergensi,
+  type SegmenWyckoff, type FaseWyckoff, type ParamWyckoff,
+  type Harmonik, type PolaHarmonik, type ParamHarmonik,
 } from '../../lib/dasbor/grafikEmiten'
 import {
   ambilIntraday, dariEpoch, dariWaktuChart, intraday, keWaktuChart,
@@ -272,6 +274,61 @@ const WARNA_DERAJAT: Record<DerajatDivergensi, string> = {
   lemah: '--text3',
 }
 
+/** Nama enam fase Wyckoff di layar. Ruas kodenya berbahasa camelCase supaya
+ *  aman jadi kunci; yang dibaca orang ditulis di sini sekali saja. */
+const NAMA_FASE: Record<FaseWyckoff, string> = {
+  akumulasi: 'Akumulasi',
+  markupAwal: 'Markup Awal',
+  markup: 'Markup',
+  konsolidasi: 'Konsolidasi',
+  markdownAwal: 'Markdown Awal',
+  markdown: 'Markdown',
+}
+
+/** Apa yang MEMBUAT sebuah lilin masuk fase itu — dua sumbu, bukan tafsir.
+ *  Kalimatnya sengaja menyebut syaratnya, bukan akibatnya bagi pemegang
+ *  saham: fase adalah ukuran posisi harga terhadap dua MA, bukan vonis. */
+const ARTI_FASE: Record<FaseWyckoff, string> = {
+  akumulasi: 'harga di antara kedua MA sementara MA pendek masih di bawah MA panjang',
+  markupAwal: 'harga sudah di atas kedua MA tapi MA pendek belum melewati MA panjang',
+  markup: 'harga di atas kedua MA dan MA pendek sudah di atas MA panjang',
+  konsolidasi: 'harga mundur ke antara kedua MA sementara MA pendek masih di atas MA panjang',
+  markdownAwal: 'harga jatuh di bawah kedua MA padahal MA pendek masih di atas MA panjang',
+  markdown: 'harga di bawah kedua MA dan MA pendek sudah di bawah MA panjang',
+}
+
+/** Warna fase. Tiga nada saja, dipakai bergantian menurut posisi harga
+ *  terhadap kedua MA (di atas / di antara / di bawah) — BUKAN hijau-merah:
+ *  di kanvas yang lilinnya sudah hijau-merah, dua warna itu akan terbaca
+ *  sebagai penilaian bagus-buruk atas sahamnya, dan fase bukan penilaian. */
+const WARNA_FASE: Record<FaseWyckoff, string> = {
+  akumulasi: '--text3',
+  markupAwal: '--amber',
+  markup: '--blue',
+  konsolidasi: '--text3',
+  markdownAwal: '--amber',
+  markdown: '--text2',
+}
+
+/** Nama empat pola harmonic + rasio penanda tangannya, ditulis di layar
+ *  supaya angka yang menghasilkan namanya bisa dicocokkan sendiri. */
+const NAMA_HARMONIK: Record<PolaHarmonik, string> = {
+  gartley: 'Gartley',
+  bat: 'Bat',
+  crab: 'Crab',
+  butterfly: 'Butterfly',
+}
+
+/** Warna per pola harmonic — membedakan NAMA polanya, bukan arahnya (arah
+ *  terbaca dari posisi penanda: bullish di bawah lilin, bearish di atas).
+ *  Sengaja bukan hijau/merah, alasan yang sama dengan WARNA_DERAJAT. */
+const WARNA_HARMONIK: Record<PolaHarmonik, string> = {
+  gartley: '--blue',
+  bat: '--amber',
+  crab: '--text2',
+  butterfly: '--text3',
+}
+
 const PANDUAN_INDIKATOR: Array<{ label: string; teks: string }> = [
   { label: 'MA (Moving Average)',
     teks: 'Rata-rata harga tutup selama sekian hari terakhir, diperbarui tiap hari. Mengikuti arah harga dengan jeda — makin panjang periodenya, makin lambat mengikuti.' },
@@ -334,6 +391,22 @@ const PANDUAN_POLA: Array<{ label: string; teks: string }> = [
     teks: 'Peluang naik 60% dari 12 hari dan dari 240 hari terlihat sama meyakinkannya di layar, padahal yang pertama hampir pasti kebetulan. Karena itu jumlah observasi (n), selang kepercayaan 95%, dan hasil uji permutasi selalu menempel pada angkanya — di legenda, di tooltip, dan di daftar.' },
   { label: 'Musiman — rentang perhitungannya',
     teks: 'Persis rentang yang sedang tergambar (chip di kaki kanvas). Mengganti chip berarti menghitung ulang pola harinya pada rentang itu — angka yang tertulis selalu berasal dari lilin yang terlihat, tak pernah dari data yang tak ada di layar. Angkanya sendiri datang dari perhitungan yang sama dengan halaman Seasonality, bukan hitungan kedua.' },
+  { label: 'Wyckoff Phase — dua sumbu, enam fase',
+    teks: 'Fase diturunkan dari perkalian dua hal yang masing-masing cuma punya sedikit kemungkinan: struktur MA (MA pendek di atas atau di bawah MA panjang) dan posisi harga (di atas kedua MA, di antaranya, atau di bawah keduanya). Dua kali tiga = enam, jadi tiap lilin yang MA-nya sudah lengkap dapat tepat satu fase — tak ada lilin yang memenuhi dua fase sekaligus, dan tak ada yang tak kebagian. Dibaca melingkar, keenamnya membentuk satu siklus: Akumulasi, Markup Awal, Markup, Konsolidasi, Markdown Awal, Markdown, lalu kembali.' },
+  { label: 'Wyckoff Phase — peran aliran asing, dan batasnya',
+    teks: 'Pita tengah (harga di antara kedua MA) memang ambigu, dan di situlah arah aliran asing dipakai memisahkannya: net asing beberapa lilin terakhir positif berarti Akumulasi, negatif berarti Konsolidasi. Yang wajib diketahui pembaca: catatan asing baru ada sejak 2020 sementara harga tersedia sejak 2016, jadi untuk lilin yang tak punya catatan asing penentunya jatuh ke struktur MA. Terukur di seluruh papan, 54% lilin pita tengah dilabeli aliran asing dan sisanya lewat cadangan itu — daftar di bawah menyebutkan yang mana untuk tiap segmen. Angka net asing satuannya LEMBAR, bukan rupiah; IDX tidak melaporkan aliran asing dalam rupiah.' },
+  { label: 'Wyckoff Phase — kenapa volume tidak ikut menentukan',
+    teks: 'Sebagian panduan menjadikan "volume di atas rata-rata" syarat wajib fase Markup. Di sini volume dilaporkan sebagai RVOL segmen dan tidak pernah memindahkan fase, karena syarat semacam itu diam-diam menurunkan sebuah Markup jadi Markup Awal hanya gara-gara ruas volume beberapa hari itu kebetulan sepi — dan ruas volume adalah ruas yang paling sering cacat. Alasan yang sama dipakai penanda volume di Double Bottom.' },
+  { label: 'Wyckoff Phase — kenapa segmen, bukan label harian',
+    teks: 'Yang ditandai di kanvas adalah lilin PERTAMA tiap segmen, yaitu hari fasenya berganti. Menandai tiap lilin berarti ribuan penanda yang menutupi harganya sendiri, sementara pertanyaan pembacanya justru "kapan bergantinya". Segmen yang lebih pendek dari ambang panjang minimum tidak dilaporkan: di sekitar titik silang MA, fasenya kerap berkedip sehari-dua dan kedipan itu bukan pergantian fase.' },
+  { label: 'Harmonic Pattern — lima titik dan empat rasio',
+    teks: 'Pola harmonic adalah lima titik balik berselang-seling (X-A-B-C-D) yang perbandingan panjang kakinya jatuh di angka Fibonacci tertentu. Gartley: AB/XA 0,618 dan AD/XA 0,786. Bat: AB/XA 0,382-0,50 dan AD/XA 0,886. Crab: AB/XA 0,382-0,618 dan AD/XA 1,618. Butterfly: AB/XA 0,786 dan AD/XA 1,27-1,618. Toleransi pencocokannya bisa disetel; makin lebar, makin sering dua nama pola berebut lima titik yang sama.' },
+  { label: 'Harmonic Pattern — gerbang BC/AB, dan kenapa ia lebih dulu',
+    teks: 'BC adalah koreksi atas AB, jadi ia tak bisa lebih panjang dari yang dikoreksinya. Perbandingan BC/AB diperiksa berada di 0,382-0,886 SEBELUM rasio pola dicek sama sekali. Tanpa gerbang itu muncul "pola" berrasio berkali-kali lipat yang mustahil secara definisi — terukur di papan IDX, BC/AB terbesar yang pernah muncul mencapai 486 kali dan puluhan ribu kaki punya BC/AB di atas 1. Gerbangnya membuang sekitar 61% kandidat, dan sekaligus menjamin titik C tak melewati A tanpa perlu syarat geometri tambahan.' },
+  { label: 'Harmonic Pattern — kenapa jauh lebih jarang dari pola lain',
+    teks: 'Terukur di seluruh papan: sekitar 0,07 pola per 100 lilin, sementara Divergensi 2,83 dan Double Bottom 2,43. Sebabnya bukan ambang yang kelewat ketat melainkan bentuk syaratnya — dua pola itu menuntut dua kondisi atas dua titik, harmonic menuntut empat rasio jatuh bersamaan atas lima titik. Dari seluruh jendela lima titik yang diperiksa, cuma 2% rasionya cocok dengan pola mana pun. Pola harmonic memang formasi langka; daftar yang selalu penuh justru tanda ambangnya terlalu longgar.' },
+  { label: 'Harmonic Pattern — zigzag, bukan pivot mentah',
+    teks: 'Kelima titiknya diambil dari zigzag: pivot tinggi dan rendah yang dipaksa berselang-seling, dan dua pivot sejenis berturutan digantikan yang lebih ekstrem. Tanpa pemaksaan itu, "XABCD" bisa berisi dua puncak berurutan tanpa lembah di antaranya dan kaki AB-nya bukan koreksi apa pun. Ayunan yang lebih kecil dari ambang dibuang, bukan diterima sebagai titik.' },
   { label: 'OBV melengkapi, bukan mengulang',
     teks: 'Pola Lonjakan Volume melihat SATU hari. Indikator OBV (On-Balance Volume, ada di menu ƒx Indikator) menumpuk arah volume sepanjang riwayat: ditambah saat harga tutup naik, dikurangi saat turun. Angka mutlaknya tak berarti — yang dibaca arahnya. Satu hari saja bukti yang tipis.' },
 ]
@@ -1305,6 +1378,41 @@ export function GrafikEmiten() {
     }))
   }, [ind.daftar, lilin, volume, katalog])
 
+  /**
+   * Net asing harian (LEMBAR, bukan rupiah — IDX tak melaporkan aliran asing
+   * dalam rupiah) untuk pola Wyckoff, berkunci tanggal.
+   *
+   * Ditarik HANYA kalau ada instans Wyckoff yang hidup. Ikut di fetch OHLC di
+   * atas, ia menambah satu unduhan per emiten untuk seluruh pengunjung
+   * termasuk yang tak pernah membuka pola ini — dan berkas `asing/` bukan
+   * berkas kecil (1.594 baris untuk BBCA).
+   *
+   * Gagal, tak ada berkasnya (48 dari 963 emiten), atau belum sampai =
+   * peta KOSONG, bukan angka tebakan: `cariWyckoff` menjawabnya dengan jatuh
+   * ke cadangan struktur MA dan ruas `fnetDipakai` menyebutkannya di layar.
+   * Kunci petanya tanggal, jadi pada kerangka pekanan/bulanan/intraday ia
+   * memang tak cocok dengan `lilin[i].time` dan hasilnya cadangan itu juga —
+   * benar apa adanya, karena net asing memang tercatat harian.
+   */
+  const perluFnet = pol.daftar.some((i) => i.jenis === 'wyckoff')
+  const [fnetPeta, setFnetPeta] = useState<Map<string, number>>(() => new Map())
+  useEffect(() => {
+    if (!perluFnet) return
+    let batal = false
+    // Emiten berganti = peta lama HARUS dibuang lebih dulu. Dibiarkan, fase
+    // emiten baru sempat dihitung dari aliran asing emiten lama — dan hasilnya
+    // tetap terlihat masuk akal di layar.
+    setFnetPeta(new Map())
+    fetch(`/data-idx/json/asing/${kode}.json`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((d: { d?: Array<[string, number, number, number, number, number]> }) => {
+        if (batal || !Array.isArray(d.d)) return
+        setFnetPeta(new Map(d.d.map(([tgl, beli, jual]) => [tgl, beli - jual])))
+      })
+      .catch(() => { if (!batal) setFnetPeta(new Map()) })
+    return () => { batal = true }
+  }, [kode, perluFnet])
+
   // Temuan pola per instans. Sama seperti indikator: dihitung dari `lilin`
   // yang sudah tersaring, bukan dari `berkas.d` mentah — kalau tidak, indeks
   // lembah yang ditemukan menunjuk lilin yang berbeda dari yang tergambar.
@@ -1338,8 +1446,20 @@ export function GrafikEmiten() {
           inst.param as unknown as ParamDivergensi,
         )
         : ([] as Divergensi[]),
+      // Wyckoff: satu-satunya pola yang butuh sumber di luar berkas OHLC.
+      // Peta FNet kosong bukan kegagalan — lihat keterangan di efek fetch-nya.
+      wyckoff: inst.jenis === 'wyckoff'
+        ? cariWyckoff(
+          lilin, vol,
+          lilin.map((l) => fnetPeta.get(l.time) ?? null),
+          inst.param as unknown as ParamWyckoff,
+        )
+        : ([] as SegmenWyckoff[]),
+      harmonik: inst.jenis === 'harmonik'
+        ? cariHarmonik(lilin, inst.param as unknown as ParamHarmonik)
+        : ([] as Harmonik[]),
     }))
-  }, [pol.daftar, lilin, volume, katalog])
+  }, [pol.daftar, lilin, volume, katalog, fnetPeta])
 
   // Peta waktu->nilai per garis, dipakai legenda (lookup langsung, tak perlu
   // scan array tiap kursor bergeser). Histogram tak masuk legenda — angkanya
@@ -1537,8 +1657,12 @@ export function GrafikEmiten() {
     }
     // Pola selalu di pane 0: temuannya digambar di panel harga & volume, tak
     // pernah punya pane sendiri.
-    for (const { inst, doubleBottom, lonjakan, musiman, divergensi } of polaPerInstans) {
-      const jumlah = doubleBottom.length + lonjakan.length + divergensi.length
+    for (const { inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik } of polaPerInstans) {
+      const jumlah = doubleBottom.length + lonjakan.length + divergensi.length + harmonik.length
+      // Wyckoff tak dilaporkan sebagai "sekian temuan": yang ditanyakan orang
+      // saat melihat legendanya bukan berapa kali fasenya berganti melainkan
+      // fase mana yang sedang berjalan di lilin paling kanan.
+      const faseKini = inst.jenis === 'wyckoff' ? wyckoff[wyckoff.length - 1] ?? null : null
       dorong(0, {
         id: inst.id,
         ranah: 'pol',
@@ -1552,7 +1676,11 @@ export function GrafikEmiten() {
           ? `naik ${fN(musiman.ringkas.tersusut, 0)}% · n=${musiman.ringkas.n}`
           : inst.jenis === 'musiman'
             ? 'tak berlaku di kerangka ini'
-            : jumlah === 0 ? 'tak ada' : `${jumlah} temuan`,
+            : inst.jenis === 'wyckoff'
+              ? faseKini
+                ? `${NAMA_FASE[faseKini.fase]} sejak ${faseKini.waktuMulai}`
+                : 'rentangnya terlalu pendek untuk MA-nya'
+              : jumlah === 0 ? 'tak ada' : `${jumlah} temuan`,
       })
     }
     return { waktu, perPane: [...perPane.entries()].sort((a, b) => a[0] - b[0]) }
@@ -1706,9 +1834,39 @@ export function GrafikEmiten() {
    */
   const penandaPola = useMemo<PenandaPola[]>(() => {
     const out: PenandaPola[] = []
-    for (const { inst, doubleBottom, lonjakan, musiman, divergensi } of polaPerInstans) {
+    for (const { inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik } of polaPerInstans) {
       if (!digambar(inst)) continue
       const nama = labelInstansPola(inst)
+      // Wyckoff: satu penanda di lilin PERTAMA tiap segmen — hari fasenya
+      // berganti. Menandai tiap lilin berarti ribuan penanda yang menutupi
+      // harganya sendiri (2.470 lilin untuk BBCA rentang penuh).
+      for (const w of wyckoff.slice(-MAKS_PENANDA_POLA)) {
+        const asal = w.fnetDipakai
+          ? `net asing ${fN(w.fnet ?? 0, 0)} lembar`
+          : 'struktur MA (tak ada catatan asing di lilin ini)'
+        out.push({
+          time: w.waktuMulai, seri: 'harga', posisi: 'aboveBar', token: WARNA_FASE[w.fase], bentuk: 'square',
+          teks: `${nama} · ${NAMA_FASE[w.fase]} mulai · tutup ${fN(w.harga, 0)} vs MA ${fN(w.maPendek, 0)}/${fN(w.maPanjang, 0)}`
+            + ` · ${w.panjang} lilin · RVOL ${fN(w.rvol, 2)}× · dasar label: ${asal}`,
+        })
+      }
+      // Harmonic: kelima titiknya ditandai, dan huruf yang bersangkutan ikut
+      // di keterangannya — tanpa itu penanda X, A, B, C, D tak terbedakan dan
+      // rasio di daftar bawah tak bisa dicocokkan ke lilin yang mana.
+      for (const h of harmonik.slice(-MAKS_PENANDA_POLA)) {
+        const ekor = `AB/XA ${fN(h.ab, 3)} · BC/AB ${fN(h.bc, 3)} · CD/BC ${fN(h.cd, 3)} · AD/XA ${fN(h.ad, 3)}`
+        for (let t = 0; t < 5; t++) {
+          out.push({
+            time: h.waktu[t], seri: 'harga',
+            // Bullish berakhir di lembah, jadi penandanya di bawah lilin;
+            // bearish sebaliknya. Sama seperti Divergensi — arah terbaca dari
+            // posisi, warna bebas dipakai untuk hal lain.
+            posisi: h.arah === 'bullish' ? 'belowBar' : 'aboveBar',
+            token: WARNA_HARMONIK[h.pola], bentuk: 'circle',
+            teks: `${nama} · ${NAMA_HARMONIK[h.pola]} ${h.arah} · titik ${'XABCD'[t]} ${fN(h.harga[t], 0)} · ${ekor}`,
+          })
+        }
+      }
       for (const dv of divergensi.slice(-MAKS_PENANDA_POLA)) {
         const token = WARNA_DERAJAT[dv.derajat]
         // Bearish di ATAS lilin, bullish di BAWAH — arahnya terbaca dari
@@ -1823,7 +1981,11 @@ export function GrafikEmiten() {
 
     // Angka terukur buat verifikasi/QA — kanvas tak punya DOM per-penanda.
     el.dataset.polaDitemukan = String(
-      polaPerInstans.reduce((n, x) => n + x.doubleBottom.length + x.lonjakan.length + x.divergensi.length, 0),
+      polaPerInstans.reduce(
+        (n, x) => n + x.doubleBottom.length + x.lonjakan.length + x.divergensi.length
+          + x.wyckoff.length + x.harmonik.length,
+        0,
+      ),
     )
     el.dataset.penandaPola = String(penandaPola.length)
     // Tanggal seluruh penanda Musiman, HANYA di dev — dipakai membuktikan
@@ -2373,8 +2535,9 @@ export function GrafikEmiten() {
               kanvas — dan angka itulah yang membuat temuannya bisa diperiksa. */}
           {polaPerInstans.some(({ inst }) => digambar(inst)) && (
             <div className="grf-pola-hasil">
-              {polaPerInstans.filter(({ inst }) => digambar(inst)).map(({ inst, doubleBottom, lonjakan, musiman, divergensi }) => {
+              {polaPerInstans.filter(({ inst }) => digambar(inst)).map(({ inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik }) => {
                 const jumlah = doubleBottom.length + lonjakan.length + divergensi.length
+                  + wyckoff.length + harmonik.length
                 if (inst.jenis === 'musiman') {
                   return (
                     <div key={inst.id}>
@@ -2395,11 +2558,52 @@ export function GrafikEmiten() {
                   <div key={inst.id}>
                     <p className="grf-pola-judul">
                       {labelInstansPola(inst)}: {jumlah === 0
-                        ? 'tak ada yang memenuhi syarat pada rentang ini'
-                        : `${jumlah} ditemukan`}
+                        ? inst.jenis === 'wyckoff'
+                          ? 'rentangnya terlalu pendek untuk kedua MA-nya'
+                          : 'tak ada yang memenuhi syarat pada rentang ini'
+                        : inst.jenis === 'wyckoff'
+                          ? `${jumlah} segmen fase`
+                          : `${jumlah} ditemukan`}
                       {jumlah > MAKS_PENANDA_POLA
                         && ` — ${MAKS_PENANDA_POLA} terbaru digambar di kanvas`}
                     </p>
+                    {wyckoff.length > 0 && (
+                      <ul className="grf-pola-daftar">
+                        {wyckoff.slice(-MAKS_PENANDA_POLA).reverse().map((w) => (
+                          <li key={w.iMulai}
+                            style={{ '--ind-warna': `var(${WARNA_FASE[w.fase]})` } as React.CSSProperties}>
+                            <span className="grf-pola-status" title={ARTI_FASE[w.fase]}>{NAMA_FASE[w.fase]}</span>
+                            <span>
+                              {w.waktuMulai} &rarr; {w.waktuAkhir} ({w.panjang} lilin)
+                              {' · '}tutup {fN(w.harga, 0)} vs MA {fN(w.maPendek, 0)}/{fN(w.maPanjang, 0)}
+                              {' · '}RVOL {fN(w.rvol, 2)}&times;
+                              {/* Dari mana label ini datang — FNet atau cadangan struktur
+                                  MA — ikut ditulis, karena tanpa itu pembaca tak bisa tahu
+                                  bahwa lilin sebelum 2020 memang tak punya catatan asing. */}
+                              {' · '}{w.fnetDipakai
+                                ? `net asing 5 lilin ${fN(w.fnet ?? 0, 0)} lembar`
+                                : 'tanpa catatan asing — label dari struktur MA'}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {harmonik.length > 0 && (
+                      <ul className="grf-pola-daftar">
+                        {harmonik.slice(-MAKS_PENANDA_POLA).reverse().map((h) => (
+                          <li key={h.indeks.join('-')}
+                            style={{ '--ind-warna': `var(${WARNA_HARMONIK[h.pola]})` } as React.CSSProperties}>
+                            <span className="grf-pola-status">{NAMA_HARMONIK[h.pola]} {h.arah}</span>
+                            <span>
+                              X {h.waktu[0]} &rarr; D {h.waktu[4]} ({fN(h.harga[0], 0)} &rarr; {fN(h.harga[4], 0)})
+                              {' · '}AB/XA {fN(h.ab, 3)} · BC/AB {fN(h.bc, 3)}
+                              {' · '}CD/BC {fN(h.cd, 3)} · AD/XA {fN(h.ad, 3)}
+                              {' · '}simpangan {fN(h.simpangan, 3)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                     {doubleBottom.length > 0 && (
                       <ul className="grf-pola-daftar">
                         {doubleBottom.slice(-MAKS_PENANDA_POLA).reverse().map((db) => (

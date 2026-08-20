@@ -865,7 +865,8 @@ function garisPustaka(
  * label yang diturunkan darinya.
  * ------------------------------------------------------------------ */
 
-export type JenisPola = 'doubleBottom' | 'lonjakanVolume' | 'musiman' | 'divergensi'
+export type JenisPola =
+  | 'doubleBottom' | 'lonjakanVolume' | 'musiman' | 'divergensi' | 'wyckoff' | 'harmonik'
 export type InstansPola = Instans<JenisPola>
 
 export interface SpekPola {
@@ -912,6 +913,34 @@ export const SPEK_POLA: Record<JenisPola, SpekPola> = {
       { kunci: 'ayunMin', label: 'Ayun harga min %', bawaan: 3, min: 0.1, maks: 50, bulat: false },
       { kunci: 'stochMin', label: 'Selisih %K min', bawaan: 5, min: 0.5, maks: 100, bulat: false },
       { kunci: 'volJendela', label: 'Jendela volume', bawaan: 5, min: 1, maks: 200, bulat: true },
+    ],
+  },
+  // Angka bawaannya dan alasan tiap satunya ada di kepala bagian
+  // `cariWyckoff` — di sini cuma batas kolomnya.
+  wyckoff: {
+    label: 'Wyckoff Phase',
+    param: [
+      { kunci: 'pendek', label: 'MA pendek', bawaan: 20, min: 2, maks: 400, bulat: true, bandingLilin: true },
+      { kunci: 'panjang', label: 'MA panjang', bawaan: 50, min: 3, maks: 800, bulat: true, bandingLilin: true },
+      { kunci: 'volJendela', label: 'Jendela volume', bawaan: 20, min: 1, maks: 500, bulat: true },
+      { kunci: 'fnetJendela', label: 'Jendela FNet', bawaan: 5, min: 1, maks: 200, bulat: true },
+      // 3 lilin: perpotongan MA kerap berkedip sehari-dua di sekitar
+      // titik silangnya, dan tiap kedipan itu menghasilkan satu "pergantian
+      // fase" yang tak pernah ada. Terukur di kalibrasi — lihat kepala bagian.
+      { kunci: 'minLilin', label: 'Panjang segmen min', bawaan: 3, min: 1, maks: 200, bulat: true },
+    ],
+  },
+  // Rasio bawaannya BUKAN kolom parameter: ia tanda tangan tiap pola
+  // (`RASIO_HARMONIK`), bukan selera pengguna. Yang bisa disetel cuma
+  // ketelitian pencocokannya dan gerbang kewarasannya.
+  harmonik: {
+    label: 'Harmonic Pattern',
+    param: [
+      { kunci: 'jendela', label: 'Jendela pivot', bawaan: 5, min: 1, maks: 60, bulat: true },
+      { kunci: 'ayunMin', label: 'Ayun zigzag min %', bawaan: 3, min: 0.1, maks: 50, bulat: false },
+      { kunci: 'toleransi', label: 'Toleransi rasio', bawaan: 0.05, min: 0.005, maks: 0.5, bulat: false },
+      { kunci: 'bcMin', label: 'BC/AB min', bawaan: 0.382, min: 0.05, maks: 1, bulat: false },
+      { kunci: 'bcMaks', label: 'BC/AB maks', bawaan: 0.886, min: 0.1, maks: 2, bulat: false },
     ],
   },
   musiman: {
@@ -1587,6 +1616,434 @@ export function cariMusiman(lilin: LilinData[], hari: number): TemuanMusiman | n
     if (hariPekan(lilin[i].time) === hari) waktu.push(lilin[i].time)
   }
   return { hari, ringkas, vonis: vonisUji(r.uji), totalObservasi: r.totalObservasi, waktu }
+}
+
+/* ------------------------------------------------------------------ *
+ * Pola: Wyckoff Phase (`wyckoff`). Johan 20 Agu 2026: "Wyckoff Phase &
+ * Harmonic ... di SPLE ada itu". Spek mengikatnya `docs/spek-indikator.md`
+ * Grup 3 — enam fase dengan urutan yang sudah ditetapkan di sana:
+ * Akumulasi → Markup Awal → Markup → Konsolidasi → Markdown Awal → Markdown.
+ *
+ * Kenapa DUA SUMBU, bukan daftar aturan berurutan seperti SPLE. Panduan
+ * mereka mendaftar enam kondisi yang saling tumpang tindih dan dua di
+ * antaranya bernama sama dalam dua bahasa ("Markdown Early" dan "Markdown
+ * Awal"); daftar semacam itu tidak menjawab lilin yang memenuhi dua syarat
+ * sekaligus, dan jawabannya jadi bergantung pada urutan `if` — hal yang tak
+ * terlihat sama sekali dari layar. Di sini fasenya diturunkan dari perkalian
+ * dua sumbu yang masing-masing eksklusif dan bersama-sama menutup seluruh
+ * kemungkinan, jadi TIAP lilin ber-MA lengkap dapat tepat satu fase:
+ *
+ *   |            | MA20 > MA50 (struktur naik) | MA20 <= MA50 (struktur turun) |
+ *   | harga > keduanya | Markup                | Markup Awal                   |
+ *   | harga di antara  | (lihat FNet di bawah) | (lihat FNet di bawah)         |
+ *   | harga < keduanya | Markdown Awal         | Markdown                      |
+ *
+ * Dibaca melingkar, itu persis siklus yang sudah tertulis di spek: dasar
+ * terbentuk saat MA masih turun (Akumulasi), harga menembus ke atas lebih
+ * dulu daripada MA-nya menyusul (Markup Awal), keduanya sejalan (Markup),
+ * harga mundur ke pita sementara MA masih naik (Konsolidasi), harga jatuh di
+ * bawah keduanya (Markdown Awal), lalu MA menyusul turun (Markdown).
+ *
+ * PERAN FNet — dan batasnya, disebut di muka. Pita tengah (harga di antara
+ * kedua MA) memang ambigu; di situlah SPLE memakai arah aliran asing, dan
+ * kita mengikutinya: jumlah net asing `fnetJendela` lilin ke belakang positif
+ * = Akumulasi, negatif = Konsolidasi. Yang WAJIB diingat: berkas `asing/`
+ * mulai 2020 sementara `ohlc/` mulai 2016, jadi ada lilin yang FNet-nya tak
+ * pernah ada. Untuk lilin itu penentunya jatuh ke struktur MA (naik →
+ * Konsolidasi, turun → Akumulasi) — bukan fase "tak diketahui". Ruas
+ * `fnetDipakai` menyimpan mana dari dua jalan itu yang terpakai, supaya
+ * pembaca tak perlu menebak apakah sebuah label lahir dari data asing atau
+ * dari cadangannya.
+ *
+ * Volume TIDAK ikut menentukan fase (SPLE memakainya sebagai syarat Markup).
+ * Ia dilaporkan sebagai RVOL segmen — penguat yang bisa dibaca, bukan
+ * saringan yang diam-diam memindahkan sebuah Markup jadi Markup Awal hanya
+ * karena ruas volume hari itu sepi. Alasan yang sama dipakai `volumeMenguat`
+ * di Double Bottom.
+ *
+ * Keluarannya SEGMEN (runtun lilin berfase sama), bukan label per lilin: 2.470
+ * lilin BBCA akan jadi 2.470 penanda yang mustahil dibaca, sementara yang
+ * ditanyakan pembaca sebenarnya "kapan fasenya berganti".
+ *
+ * KALIBRASI 20 Agu 2026 atas 963 berkas `ohlc/` (1.460.195 lilin ber-MA
+ * lengkap), bawaan 20/50/20/5. Sebaran per lilin — Akumulasi 12,8% · Markup
+ * Awal 8,4% · Markup 23,8% · Konsolidasi 10,2% · Markdown Awal 9,1% ·
+ * Markdown 35,8%. Tak satu pun fase memakan >60% dan yang paling jarang pun
+ * masih 8,4%, jadi keenamnya benar-benar terpakai. Markdown yang paling besar
+ * bukan cacat ambang: sebagian besar papan IDX memang berada di bawah kedua
+ * MA-nya sepanjang 2016-2026, dan ambang yang meratakan angka itu justru akan
+ * memaksakan cerita yang tak ada di datanya. Pita tengah berisi 335.569 lilin
+ * dan 54,2% di antaranya dilabeli FNet, sisanya cadangan struktur MA (915 dari
+ * 963 emiten punya berkas `asing/`, dan berkas itu mulai 2020 sementara OHLC
+ * mulai 2016). Segmen rata-rata 9,2 lilin pada `minLilin` 3.
+ * ------------------------------------------------------------------ */
+
+export type FaseWyckoff =
+  | 'akumulasi' | 'markupAwal' | 'markup' | 'konsolidasi' | 'markdownAwal' | 'markdown'
+
+/** Urutan siklus, dipakai legenda & daftar supaya keenamnya selalu tampil
+ *  dalam urutan yang sama dengan spek — bukan urutan abjad. */
+export const URUT_FASE: FaseWyckoff[] = [
+  'akumulasi', 'markupAwal', 'markup', 'konsolidasi', 'markdownAwal', 'markdown',
+]
+
+export interface SegmenWyckoff {
+  fase: FaseWyckoff
+  iMulai: number
+  iAkhir: number
+  waktuMulai: string
+  waktuAkhir: string
+  /** Jumlah lilin di segmen ini. */
+  panjang: number
+  /** Harga tutup, MA pendek, dan MA panjang di lilin PERTAMA segmen — tiga
+   *  angka yang menghasilkan labelnya, supaya bisa diperiksa ulang. */
+  harga: number
+  maPendek: number
+  maPanjang: number
+  /** Volume rata-rata segmen dibagi rata-rata `volJendela` lilin sampai lilin
+   *  sebelum segmen (menoleh ke belakang). 0 kalau pembaginya nol. */
+  rvol: number
+  /** Jumlah net asing (LEMBAR, bukan rupiah) `fnetJendela` lilin sampai lilin
+   *  pertama segmen. `null` = berkas asing tak punya lilin itu. */
+  fnet: number | null
+  /** Benar kalau label pita tengah ditentukan FNet; salah kalau jatuh ke
+   *  cadangan struktur MA. Selalu salah untuk fase di luar pita. */
+  fnetDipakai: boolean
+}
+
+export interface ParamWyckoff {
+  pendek: number
+  panjang: number
+  volJendela: number
+  fnetJendela: number
+  minLilin: number
+}
+
+/**
+ * Fase satu lilin. Dipisah dari `cariWyckoff` supaya aturannya bisa diuji
+ * langsung atas enam kombinasi sumbu tanpa merakit deret.
+ *
+ * `fnet` null ATAU nol jatuh ke cadangan struktur MA — nol bukan "seimbang
+ * yang berarti", ia hampir selalu berarti hari itu tak ada catatan asingnya.
+ */
+export function faseWyckoffDi(
+  harga: number,
+  maPendek: number,
+  maPanjang: number,
+  fnet: number | null,
+): { fase: FaseWyckoff; fnetDipakai: boolean } {
+  const strukturNaik = maPendek > maPanjang
+  const atas = Math.max(maPendek, maPanjang)
+  const bawah = Math.min(maPendek, maPanjang)
+  if (harga > atas) return { fase: strukturNaik ? 'markup' : 'markupAwal', fnetDipakai: false }
+  if (harga < bawah) return { fase: strukturNaik ? 'markdownAwal' : 'markdown', fnetDipakai: false }
+  if (fnet !== null && fnet !== 0) {
+    return { fase: fnet > 0 ? 'akumulasi' : 'konsolidasi', fnetDipakai: true }
+  }
+  return { fase: strukturNaik ? 'konsolidasi' : 'akumulasi', fnetDipakai: false }
+}
+
+/**
+ * Membagi `lilin` jadi segmen berfase sama.
+ *
+ * Fungsi MURNI: seluruh masukannya lewat argumen — tak menyentuh jaringan,
+ * DOM, maupun React, jadi bisa dijalankan atas 900-an berkas OHLC di cakram
+ * untuk mengukur sebaran fasenya.
+ *
+ * KAUSAL di tiap lilin: `hitungMA` menoleh ke belakang, rata-rata volume
+ * pembanding memakai `rataVolumeSampai` (menoleh ke belakang, alasannya di
+ * kepala bagian Divergensi), dan jumlah FNet dijumlah mundur dari lilin
+ * pertama segmen. Satu-satunya ruas yang membaca ke depan adalah `iAkhir` —
+ * dan itu memang artinya: "segmen ini bertahan sampai di sini", pernyataan
+ * tentang lilin yang sudah lewat. Pada deret terpotong, segmen terakhir cuma
+ * berakhir lebih awal; fase tiap lilin di dalamnya tak berubah.
+ *
+ * `fnet` boleh lebih pendek/kosong — indeks yang tak ada dibaca `null` dan
+ * seluruh pita tengah jatuh ke cadangan struktur MA.
+ */
+export function cariWyckoff(
+  lilin: LilinData[],
+  volume: number[],
+  fnet: Array<number | null>,
+  p: ParamWyckoff,
+): SegmenWyckoff[] {
+  if (lilin.length === 0 || p.pendek >= p.panjang) return []
+  const tutup = lilin.map((l) => l.close)
+  const maPendek = hitungMA(tutup, p.pendek)
+  const maPanjang = hitungMA(tutup, p.panjang)
+
+  /** Jumlah net asing `fnetJendela` lilin sampai `i` (inklusif). `null` kalau
+   *  tak ada satu pun lilin bercatatan asing di jendela itu — dibedakan dari
+   *  nol, yang berarti beli dan jualnya kebetulan seimbang. */
+  const fnetSampai = (i: number): number | null => {
+    let jumlah = 0
+    let ada = false
+    for (let j = Math.max(0, i - p.fnetJendela + 1); j <= i; j++) {
+      const v = fnet[j]
+      if (v === null || v === undefined) continue
+      jumlah += v
+      ada = true
+    }
+    return ada ? jumlah : null
+  }
+
+  const hasil: SegmenWyckoff[] = []
+  let mulai = -1
+  let fase: FaseWyckoff | null = null
+  let fnetDipakai = false
+
+  const tutupSegmen = (akhir: number) => {
+    if (mulai < 0 || fase === null) return
+    const panjang = akhir - mulai + 1
+    if (panjang < p.minLilin) return
+    let jumlahVol = 0
+    for (let j = mulai; j <= akhir; j++) jumlahVol += volume[j] ?? 0
+    const dasar = mulai > 0 ? rataVolumeSampai(volume, mulai - 1, p.volJendela) : 0
+    hasil.push({
+      fase,
+      iMulai: mulai,
+      iAkhir: akhir,
+      waktuMulai: lilin[mulai].time,
+      waktuAkhir: lilin[akhir].time,
+      panjang,
+      harga: lilin[mulai].close,
+      maPendek: maPendek[mulai] as number,
+      maPanjang: maPanjang[mulai] as number,
+      rvol: dasar > 0 ? (jumlahVol / panjang) / dasar : 0,
+      fnet: fnetSampai(mulai),
+      fnetDipakai,
+    })
+  }
+
+  for (let i = 0; i < lilin.length; i++) {
+    const a = maPendek[i]
+    const b = maPanjang[i]
+    if (a === null || b === null) continue
+    const kini = faseWyckoffDi(lilin[i].close, a, b, fnetSampai(i))
+    if (kini.fase !== fase) {
+      tutupSegmen(i - 1)
+      mulai = i
+      fase = kini.fase
+      fnetDipakai = kini.fnetDipakai
+    }
+  }
+  tutupSegmen(lilin.length - 1)
+  return hasil
+}
+
+/* ------------------------------------------------------------------ *
+ * Pola: Harmonic Pattern (`harmonik`). Spek `docs/spek-indikator.md` Grup 4 —
+ * ditiru dari SPLE dengan DUA koreksi yang sudah diputuskan dan tidak boleh
+ * dibatalkan diam-diam:
+ *
+ *   1. Butterfly memakai standar Carney AD/XA 1,27-1,618. Panduan SPLE sendiri
+ *      tak konsisten: bagian Modal menulis 127-161,8%, bagian Screener menulis
+ *      1,27-1,42. Yang sempit membuang Butterfly sah yang D-nya melewati 1,42.
+ *   2. BC/AB divalidasi 0,382-0,886 LEBIH DULU, sebelum rasio pola diperiksa.
+ *      Tanpa gerbang itu muncul "pola" berrasio 4,8x dan 7,4x — mustahil
+ *      secara definisi, karena BC adalah KOREKSI atas AB dan koreksi tak bisa
+ *      lebih panjang dari yang dikoreksinya. Itu bug yang mereka perbaiki
+ *      sendiri (34 pola turun jadi 17). Gerbang ini sekaligus yang menjamin C
+ *      tak melewati A, jadi tak perlu syarat geometri terpisah.
+ *
+ * Yang TIDAK ditiru: jendela 108 hari. Itu batas riwayat mereka, bukan aturan
+ * pola; kita punya 10 tahun dan polanya dicari di seluruh rentang tergambar.
+ *
+ * Fungsi MURNI, seluruh masukan lewat argumen — bisa diuji atas berkas cakram
+ * tanpa merender apa pun. KAUSAL: pivot mewajibkan jendela penuh di kedua
+ * sisi (lihat `cariPivotRendah`), jadi D tak pernah jatuh di lilin paling
+ * kanan dan tiap rasio cuma dihitung dari lima titik yang semuanya sudah
+ * lewat.
+ *
+ * KALIBRASI 20 Agu 2026 atas 963 berkas `ohlc/` (1.505.030 lilin), bawaan
+ * jendela 5 · ayun 3% · toleransi 0,05. Corongnya: 131.764 titik zigzag →
+ * 128.104 jendela XABCD diperiksa → 2.827 yang rasio polanya cocok → **1.090
+ * lolos gerbang BC/AB**, yaitu **0,07 pola per 100 lilin**, tersebar di 597
+ * dari 963 emiten.
+ *
+ * Angka itu memang jauh di bawah Divergensi (2,83) dan Double Bottom (2,43),
+ * dan sebabnya bukan ambang yang kelewat ketat melainkan bentuk syaratnya:
+ * dua pola itu menuntut DUA kondisi atas DUA pivot, harmonic menuntut EMPAT
+ * rasio jatuh bersamaan atas LIMA pivot. Dari 128.104 jendela yang diperiksa,
+ * cuma 2,2% rasionya cocok dengan pola mana pun. SPLE sendiri menuliskan hal
+ * yang sama tentang hasil mereka: "pola harmonic memang formasi langka, bukan
+ * target 'selalu ketemu'". Menaikkan toleransi ke 0,12 memang membawanya ke
+ * 0,28 per 100 lilin — tapi pada lebar segitu pita Gartley (AD 0,786) dan Bat
+ * (AD 0,886) saling bersentuhan dan namanya berhenti berarti.
+ *
+ * Bukti kedua koreksi, terukur, bukan sekadar tercatat:
+ *   - GERBANG BC/AB membuang **1.737 dari 2.827** kandidat (61,4%) — sebanding
+ *     dengan bug yang SPLE perbaiki sendiri (34 → 17). Dan memang ada yang
+ *     harus dibuang: BC/AB terbesar yang muncul di zigzag papan IDX **486,8x**,
+ *     dengan 56.273 kaki ber-BC/AB > 1. "Koreksi" yang lebih panjang dari yang
+ *     dikoreksinya bukan koreksi.
+ *   - BUTTERFLY CARNEY menghasilkan 446 pola; dengan ambang Screener SPLE
+ *     (AD <= 1,42) tinggal 291. **155 Butterfly sah akan hilang** kalau angka
+ *     mereka yang dipakai — jadi koreksi 1 berpengaruh nyata, bukan formalitas.
+ *
+ * Ayun zigzag nyaris tak menggeser hasil (2% → 1.106 pola, 3% → 1.090, 5% →
+ * 1.050, 8% → 858): gerbang BC/AB sudah lebih dulu membuang riak kecil, jadi
+ * 3% dipakai apa adanya sesuai spek dan tetap bisa disetel pengguna.
+ * ------------------------------------------------------------------ */
+
+export type PolaHarmonik = 'gartley' | 'bat' | 'crab' | 'butterfly'
+export type ArahHarmonik = 'bullish' | 'bearish'
+
+/** Titik zigzag: pivot yang sudah dipaksa berselang-seling tinggi-rendah dan
+ *  ayunannya sudah melewati ambang minimum. */
+export interface TitikZigzag {
+  i: number
+  harga: number
+  jenis: 'tinggi' | 'rendah'
+}
+
+export interface Harmonik {
+  pola: PolaHarmonik
+  arah: ArahHarmonik
+  /** Indeks kelima titik pada `lilin`, urut X-A-B-C-D. */
+  indeks: [number, number, number, number, number]
+  waktu: [string, string, string, string, string]
+  harga: [number, number, number, number, number]
+  /** AB/XA — kedalaman koreksi pertama. */
+  ab: number
+  /** BC/AB — gerbang kewarasan, wajib di dalam [bcMin, bcMaks]. */
+  bc: number
+  /** CD/BC — dilaporkan saja, tak dipakai menyaring (spek tak menyebutnya). */
+  cd: number
+  /** AD/XA — tanda tangan polanya; >1 berarti D melewati X. */
+  ad: number
+  /**
+   * Simpangan terbesar (dalam satuan rasio) dari pita nominal pola ini, 0
+   * kalau kedua rasio jatuh persis di dalamnya. Dipakai memilih pola terbaik
+   * saat satu XABCD cocok dengan lebih dari satu nama.
+   */
+  simpangan: number
+}
+
+export interface ParamHarmonik {
+  jendela: number
+  ayunMin: number
+  toleransi: number
+  bcMin: number
+  bcMaks: number
+}
+
+/**
+ * Pita rasio nominal tiap pola. Nilai titik ditulis sebagai pita ber-lebar
+ * nol dan dilebarkan `toleransi` saat dicocokkan — jadi ada SATU aturan
+ * pencocokan, bukan satu untuk nilai titik dan satu lagi untuk rentang.
+ */
+export const RASIO_HARMONIK: Record<PolaHarmonik, { ab: [number, number]; ad: [number, number] }> = {
+  gartley: { ab: [0.618, 0.618], ad: [0.786, 0.786] },
+  bat: { ab: [0.382, 0.500], ad: [0.886, 0.886] },
+  crab: { ab: [0.382, 0.618], ad: [1.618, 1.618] },
+  // Carney, bukan 1,27-1,42 versi Screener SPLE — lihat koreksi 1 di atas.
+  butterfly: { ab: [0.786, 0.786], ad: [1.270, 1.618] },
+}
+
+/** Jarak sebuah rasio ke luar pitanya, 0 kalau di dalam. */
+function simpanganPita(r: number, [lo, hi]: [number, number]): number {
+  return r < lo ? lo - r : r > hi ? r - hi : 0
+}
+
+/**
+ * Zigzag: pivot tinggi & rendah yang dipaksa berselang-seling, dengan ayunan
+ * minimal `ayunMin` persen antar titik berturutan.
+ *
+ * Dua aturan yang menentukan benar-salahnya, dan keduanya lahir dari
+ * kegagalan yang nyata kalau dilanggar:
+ *
+ *   1. Dua pivot sejenis berturutan TIDAK dua-duanya diambil — yang lebih
+ *      ekstrem menggantikan yang lain. Diambil dua-duanya, "XABCD" bisa
+ *      berisi dua puncak berurutan tanpa lembah di antaranya, dan AB-nya
+ *      bukan koreksi apa pun.
+ *   2. Ayunan yang terlalu kecil DIBUANG, bukan diterima sebagai titik. Riak
+ *      1% di tengah tren menghasilkan puluhan titik palsu dan lewat itu
+ *      ratusan kandidat pola yang rasionya kebetulan pas.
+ *
+ * Pivot-nya dari `cariPivotTinggi`/`cariPivotRendah` — pencari pivot yang
+ * sama dengan Double Bottom & Divergensi. Pencari ketiga berarti tiga
+ * definisi "lembah" yang boleh berbeda tanpa ada yang tahu mana yang benar.
+ */
+export function zigzagPivot(lilin: LilinData[], jendela: number, ayunMin: number): TitikZigzag[] {
+  const calon: TitikZigzag[] = [
+    ...cariPivotTinggi(lilin.map((l) => l.high), jendela)
+      .map((i) => ({ i, harga: lilin[i].high, jenis: 'tinggi' as const })),
+    ...cariPivotRendah(lilin.map((l) => l.low), jendela)
+      .map((i) => ({ i, harga: lilin[i].low, jenis: 'rendah' as const })),
+  ].sort((a, b) => a.i - b.i)
+
+  const out: TitikZigzag[] = []
+  for (const t of calon) {
+    const akhir = out[out.length - 1]
+    if (!akhir) { out.push(t); continue }
+    if (akhir.jenis === t.jenis) {
+      const lebihEkstrem = t.jenis === 'tinggi' ? t.harga > akhir.harga : t.harga < akhir.harga
+      if (lebihEkstrem) out[out.length - 1] = t
+      continue
+    }
+    if (akhir.harga <= 0) continue
+    const ayun = (Math.abs(t.harga - akhir.harga) / akhir.harga) * 100
+    if (ayun >= ayunMin) out.push(t)
+  }
+  return out
+}
+
+/**
+ * Mencari Gartley / Bat / Crab / Butterfly pada zigzag.
+ *
+ * Urutan saringannya dari yang paling murah ke yang paling mahal, dan tiap
+ * saringan menolak sesuatu yang nyata:
+ *   1. lima titik berselang-seling dengan D bertipe benar (rendah = bullish);
+ *   2. panjang tiap kaki > 0 — kaki nol membuat rasionya tak berhingga;
+ *   3. GERBANG BC/AB di dalam [bcMin, bcMaks] — koreksi 2 di kepala bagian;
+ *   4. AB/XA dan AD/XA di dalam pita polanya, dilebarkan `toleransi`.
+ *
+ * Satu XABCD yang cocok dengan lebih dari satu nama disimpan sekali saja,
+ * dengan nama ber-`simpangan` terkecil: Gartley (AD 0,786) dan Bat (AD 0,886)
+ * pitanya bersentuhan pada toleransi lebar, dan menggambar keduanya di lima
+ * lilin yang sama cuma menumpuk penanda tanpa menambah keterangan.
+ */
+export function cariHarmonik(lilin: LilinData[], p: ParamHarmonik): Harmonik[] {
+  const zz = zigzagPivot(lilin, p.jendela, p.ayunMin)
+  const hasil: Harmonik[] = []
+
+  for (let k = 0; k + 4 < zz.length; k++) {
+    const [X, A, B, C, D] = zz.slice(k, k + 5)
+    const arah: ArahHarmonik = D.jenis === 'rendah' ? 'bullish' : 'bearish'
+
+    const XA = Math.abs(A.harga - X.harga)
+    const AB = Math.abs(B.harga - A.harga)
+    const BC = Math.abs(C.harga - B.harga)
+    const CD = Math.abs(D.harga - C.harga)
+    const AD = Math.abs(D.harga - A.harga)
+    if (XA <= 0 || AB <= 0 || BC <= 0) continue
+
+    const bc = BC / AB
+    if (bc < p.bcMin || bc > p.bcMaks) continue
+
+    const ab = AB / XA
+    const ad = AD / XA
+    let terbaik: { pola: PolaHarmonik; simpangan: number } | null = null
+    for (const nama of Object.keys(RASIO_HARMONIK) as PolaHarmonik[]) {
+      const pita = RASIO_HARMONIK[nama]
+      const s = Math.max(simpanganPita(ab, pita.ab), simpanganPita(ad, pita.ad))
+      if (s > p.toleransi) continue
+      if (!terbaik || s < terbaik.simpangan) terbaik = { pola: nama, simpangan: s }
+    }
+    if (!terbaik) continue
+
+    hasil.push({
+      pola: terbaik.pola,
+      arah,
+      indeks: [X.i, A.i, B.i, C.i, D.i],
+      waktu: [lilin[X.i].time, lilin[A.i].time, lilin[B.i].time, lilin[C.i].time, lilin[D.i].time],
+      harga: [X.harga, A.harga, B.harga, C.harga, D.harga],
+      ab, bc, cd: CD / BC, ad,
+      simpangan: terbaik.simpangan,
+    })
+  }
+  return hasil
 }
 
 /**
