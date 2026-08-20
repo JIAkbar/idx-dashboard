@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 import type { OhlcBar, Pivot } from '../lib/skor/types'
-import { fmt } from './format'
 
 interface ChartProps {
   bars: OhlcBar[]
@@ -20,7 +19,11 @@ export function Chart({ bars: allBars, pivot }: ChartProps) {
     const bars = allBars.slice(-65)
     const W = cv.width
     const H = cv.height
-    const pad = { t: 14, r: 104, b: 14, l: 6 }
+    // r=104 sebelumnya khusus ruang label pivot (R3/R1/P/R2/S1/S2/S3) — dibuang
+    // #A8: 7 label berdesakan nempel tepi kanan, sulit dibaca, dan nilainya
+    // sudah tercetak di .sr (Support/Resistance) di halaman yang sama. `pivot`
+    // tetap dipakai di bawah untuk rentang sumbu-Y, hanya tak lagi digambar.
+    const pad = { t: 14, r: 10, b: 14, l: 6 }
     const pvals = Object.values(pivot)
     const lo = Math.min(...bars.map((b) => b.l), ...pvals) * 0.99
     const hi = Math.max(...bars.map((b) => b.h), ...pvals) * 1.01
@@ -28,22 +31,6 @@ export function Chart({ bars: allBars, pivot }: ChartProps) {
     const Y = (v: number) => pad.t + ((hi - v) * (H - pad.t - pad.b)) / (hi - lo)
 
     x.clearRect(0, 0, W, H)
-    x.font = '15px Segoe UI'
-    const yT: number[] = []
-    for (const [n, v] of Object.entries(pivot)) {
-      x.strokeStyle = '#B9C1C9'
-      x.setLineDash([3, 4])
-      x.beginPath()
-      x.moveTo(pad.l, Y(v))
-      x.lineTo(W - pad.r, Y(v))
-      x.stroke()
-      x.setLineDash([])
-      let yl = Y(v) + 5
-      while (yT.some((u) => Math.abs(u - yl) < 17)) yl += 17
-      yT.push(yl)
-      x.fillStyle = n[0] === 'R' ? '#B93A2B' : n === 'P' ? '#6B7683' : '#0A7D4F'
-      x.fillText(`${n} ${fmt(v)}`, W - pad.r + 6, yl)
-    }
 
     const bw = Math.max(3, ((W - pad.l - pad.r) / bars.length) * 0.62)
     bars.forEach((b, i) => {

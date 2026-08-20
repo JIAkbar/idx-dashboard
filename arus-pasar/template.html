@@ -461,7 +461,12 @@ function gambarChart(id, tk, ema50, pivot, nBar){
   const cv=document.getElementById(id), x=cv.getContext('2d');
   const all=OHLC[tk], bars=all.slice(-(nBar||252));
   const adaVol=all.some(b=>b.v>0); // JKSE: volume 0 semua -> panel volume dilewati
-  const W=cv.width,H=cv.height,pad={t:30,r:136,b:14,l:6};
+  // r=136 sebelumnya khusus menyisakan ruang label pivot (R3/R1/P/R2/S1/S2/S3)
+  // di tepi kanan — dibuang #A8: 7 label berdesakan nempel tepi, sulit dibaca,
+  // dan nilainya sudah tercetak di .sr (Support/Resistance per emiten) atau
+  // .lvl (Level Penting IHSG) di halaman yang sama. r=80 kini cuma menampung
+  // label volume ("999,9 Jt").
+  const W=cv.width,H=cv.height,pad={t:30,r:80,b:14,l:6};
   const volH=adaVol?Math.round(H*.20):0, gap=adaVol?10:0;
   const pBot=H-pad.b-volH-gap; // batas bawah area harga; di bawahnya panel volume
   // EMA dihitung dari riwayat penuh (~2 thn, pemanasan EMA200), digambar 252 bar
@@ -481,16 +486,13 @@ function gambarChart(id, tk, ema50, pivot, nBar){
     lx+=x.measureText("EMA "+n).width+13;
   }
   x.textBaseline="alphabetic";x.font="15px IBM Plex Mono, Consolas, monospace";
+  // Garis + label pivot (R3/R1/P/R2/S1/S2/S3) DIHAPUS dari chart di sini (#A8,
+  // 20 Agu) — tujuh label berdesakan nempel tepi kanan, sulit dibaca, dan
+  // nilainya sudah tercetak di tempat lain di halaman yang sama (.sr
+  // Support/Resistance per emiten, .lvl Level Penting IHSG). `pivot` tetap
+  // dipakai di atas untuk rentang sumbu-Y (lo/hi) supaya candle tak mepet
+  // level kunci, hanya tak lagi digambar.
   let yT=[];
-  // label diurut nilai desc supaya tumpukan anti-tabrakan tetap berurut harga
-  // (tanpa ini R1 bisa terdorong ke bawah P dan urutan kebaca acak)
-  for(const [n,v] of Object.entries(pivot).sort((a,b)=>b[1]-a[1])){
-    x.strokeStyle=T.grid||"rgba(255,255,255,.28)";x.lineWidth=1;x.setLineDash([3,4]);x.beginPath();
-    x.moveTo(pad.l,Y(v));x.lineTo(W-pad.r,Y(v));x.stroke();x.setLineDash([]);
-    let yl=Y(v)+5; while(yT.some(u=>Math.abs(u-yl)<17)) yl+=17; yT.push(yl);
-    x.fillStyle=T.pivot||"rgba(255,255,255,.72)";
-    x.fillText(n+" "+v.toLocaleString('id'),W-pad.r+14,yl);
-  }
   const bw=Math.max(3,(W-pad.l-pad.r)/bars.length*.62);
   x.lineWidth=1;
   bars.forEach((b,i)=>{
