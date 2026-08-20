@@ -1,0 +1,62 @@
+/* Gaya khas halaman Stock Detail.
+ *
+ * Berkas sendiri, BUKAN tambahan di `lantai.css` — bentuk kendali & panel
+ * umumnya sudah kanonis di sana dan yang di bawah ini murni PENEMPATAN serta
+ * penanda khas halaman ini (aturan #170: kelas ber-awalan halaman hanya boleh
+ * menyimpan penempatan/lebar, tak pernah bentuk).
+ */
+
+/* ── Pemegang saham pengendali (hero) ──
+ * Tanggal laporannya sengaja disandingkan sebaris, bukan disembunyikan di
+ * tooltip: kepemilikan berubah, dan kategori tanpa tanggal terbaca sebagai
+ * posisi hari ini. Sebagian emiten datanya dari laporan 2019.
+ */
+.lantai .sd-pengendali {
+  font-size: 10px;
+  color: var(--text3);
+  line-height: 1.6;
+  margin-top: 3px;
+}
+.lantai .sd-pengendali b {
+  color: var(--text2);
+  font-weight: 600;
+}
+
+/* ── Panel "Valuasi vs Sejarah" ── */
+
+/* Sub-judul rasio di dalam tabel panel. */
+.lantai .vh-sub td {
+  padding-top: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text2);
+  letter-spacing: .02em;
+}
+.lantai tr.vh-sub:first-child td { padding-top: 0; }
+
+/* Lencana vonis. Warnanya IKUT token tema yang sudah ada (--green/--amber/
+ * --red) supaya tetap benar di terang & gelap tanpa palet kedua. */
+.lantai .vh-vonis {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 99px;
+  font-family: var(--ui);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+.lantai .vh-murah { background: var(--green-dim); color: var(--green); }
+.lantai .vh-wajar { background: var(--amber-dim); color: var(--amber); }
+.lantai .vh-mahal { background: var(--red-dim); color: var(--red); }
+
+/* Keterangan kenapa vonis kosong / dasar hitungannya. Bukan pesan galat —
+ * "riwayat belum cukup" itu keadaan wajar, jadi nadanya netral. */
+.lantai .vh-alasan {
+  font-size: 9.5px;
+  color: var(--text3);
+  line-height: 1.55;
+  margin-top: 8px;
+}
+.lantai td.vh-alasan { margin-top: 0; padding-bottom: 4px; }

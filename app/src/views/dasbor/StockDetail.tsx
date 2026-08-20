@@ -11,8 +11,12 @@ import { PanelKuartalan, PanelProfitabilitas, PanelGrowth, PanelDividen, PanelRi
 import { PanelIncome, PanelBalance, PanelCashflow, PanelPerformance, PanelTahunan } from './stock-detail/KolomLaporan'
 import { PanelValuasiInteraktif } from './stock-detail/PanelValuasiInteraktif'
 import { PanelLaporanKeuangan } from './stock-detail/PanelLaporanKeuangan'
+import { PanelValuasiHistoris } from './stock-detail/PanelValuasiHistoris'
 import { PanelAliranAsing } from '../../components/dasbor/PanelAliranAsing'
 import { IkonMenu, IKON_CARI, IKON_PERINGATAN, IKON_JAM } from '../../components/dasbor/IkonMenu'
+import { usePengendali, pengendaliEmiten, labelPengendali } from '../../lib/dasbor/pengendali'
+import { tanggalPendek } from '../../lib/dasbor/statistikBerkala'
+import './StockDetail.css'
 
 type Tab = 'statistik' | 'valuasi'
 
@@ -74,6 +78,10 @@ export function StockDetail() {
   // Klasifikasi IDX-IC resmi (B1) — berkasnya kecil & di-cache modul.
   const daftarSektor = useSektorIdx()
   const idxSektor = sektorEmiten(daftarSektor, activeTicker || '')
+  // Pemegang saham pengendali (B3) — laporan resmi bursa hanya memuat KATEGORI
+  // pengendali, bukan namanya (lihat lib/dasbor/pengendali.ts).
+  const daftarPengendali = usePengendali()
+  const pengendali = pengendaliEmiten(daftarPengendali, activeTicker || '')
   const [sp, setSp] = useSearchParams()
   const tab: Tab = sp.get('tab') === 'valuasi' ? 'valuasi' : 'statistik'
 
@@ -192,6 +200,20 @@ export function StockDetail() {
                   ? <>{idxSektor.sektor}{idxSektor.subsektor ? ' · ' + idxSektor.subsektor : ''}</>
                   : <>{fd.sector || ''}{fd.industry ? ' · ' + fd.industry : ''}</>}
               </div>
+              {/* Pemegang saham pengendali. Yang dilaporkan bursa cuma
+                  KATEGORInya — laporan resmi tak memuat nama, jadi kalimatnya
+                  tak boleh menyiratkan kita tahu siapa. Tanggal laporan ikut
+                  tampil karena kepemilikan berubah: tanpa itu kategori dari
+                  laporan 2019 terbaca sebagai posisi hari ini. */}
+              <div className="sd-pengendali">
+                Pengendali:{' '}
+                {pengendali
+                  ? <>
+                      <b>{labelPengendali(pengendali.jenis)}</b>
+                      {pengendali.tanggal ? ` · per laporan ${tanggalPendek(pengendali.tanggal)}` : ''}
+                    </>
+                  : 'belum tersedia'}
+              </div>
               {/* Papan pencatatan. "Pemantauan Khusus" ditandai dan ditaruh di
                   KEPALA halaman — itu penanda risiko dari bursa (154 dari 962
                   emiten), dan angka fundamental apa pun tentang emiten itu
@@ -298,6 +320,10 @@ export function StockDetail() {
                solvabilitas & efektivitas, profitabilitas/growth/dividen,
                lalu kuartalan + laporan ringkas + skor + performance. */
             <div className="duo">
+              {/* A1 — pembanding historis ditaruh SEBELUM panel Valuasi mentah:
+                  angka telanjang lebih mudah disalahbaca kalau pembandingnya
+                  baru muncul di bawahnya. */}
+              <PanelValuasiHistoris fd={fd} />
               <PanelValuasi fd={fd} />
               <PanelPerSaham fd={fd} />
               <PanelSolvency fd={fd} />

@@ -33,6 +33,8 @@ data baru, dan membaca mtime membuat data basi terlihat segar.
 | **Keuangan yfinance** | Stock Detail | yfinance | 17 Agu 2026 | 646 | ⚙️ ikut `update-fundamental.yml` | — |
 | **Seasonality bulanan** | Seasonality | Yahoo (penutupan bulanan) | 17 Agu 2026 | — | ❌ manual | `panen_seasonality.py` — **"Panen Lagi"** |
 | **Peta investor (KSEI)** | Peta Investor | KSEI | *(tak diperbarui rutin)* | — | ❌ manual | `fetch_investor_map.py` |
+| **Pemegang saham pengendali** | Stock Detail (hero) | turunan lokal dari **arsip mentah** Keuangan XBRL IDX, sheet `1000000` — **nol jaringan** | **20 Agu 2026**; laporan sumber per emiten: 847 dari 2026 TW1/TW2, 63 dari 2025, 21 dari 2022–2024, **18 masih dari laporan 2019** | 949 emiten (1 berkas) | ❌ manual, nol jaringan | `panen_pengendali.py` — **"Panen Lagi"** |
+| **Valuasi historis (P/E & P/B tahunan)** | Stock Detail (panel *Valuasi vs Sejarah*) | turunan lokal: **Keuangan XBRL IDX** (tahunan) × **OHLC** × `daftar_emiten.saham` — **nol jaringan** | **20 Agu 2026**, tahun buku 2019–2025 | 814 emiten (1 berkas); **338 ≥5 tahun P/E**, 574 ≥5 tahun P/B — sisanya tampil tanpa vonis | ❌ manual, nol jaringan | `hitung_valuasi_historis.py` — **"Panen Lagi"**; **wajib diulang sesudah `panen_ohlc.py` / `panen_keuangan_idx.py`** karena berjangkar pada keduanya |
 
 ## Yang perlu diketahui, bukan sekadar dilihat
 

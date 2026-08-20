@@ -521,3 +521,56 @@ C:\Users\Johan\.cache\chrome-devtools-mcp\chrome-profile"*. Prosesnya dimulai
 sekali, jadi ia milik sesi/worktree lain yang sedang berjalan. Sesuai aturan
 global: TIDAK dimatikan diam-diam dan TIDAK diganti alat lain tanpa memberi
 tahu. Menunggu keputusan Johan.
+
+### #204 — Pemegang saham pengendali di Stock Detail (20 Agu 2026)
+
+| # | Tugas | Asal perintah | Halaman | Komponen (`file:baris`) | Sebelumnya | Jadi | Alasan | Status & bukti | Changelog |
+|---|---|---|---|---|---|---|---|---|---|
+| 204 | Tarik informasi pemegang saham pengendali dari arsip XBRL, tampilkan di Stock Detail | *"Buktikan dulu isinya ada sebelum menulis pemanen penuh… Peras ke JSON per emiten… Tampilkan di Stock Detail. Sebut **tanggal laporan** yang jadi sumbernya; kepemilikan berubah, dan angka tanpa tanggal terbaca sebagai posisi hari ini. Emiten tanpa data: 'belum tersedia', **tidak pernah 0 atau 0%**."* (backlog B3) | `/stock-detail` (hero) | `scripts/panen_pengendali.py` (baru), `app/src/lib/dasbor/pengendali.ts` (baru), `app/src/views/dasbor/StockDetail.tsx` (hero `.sd-pengendali`), `StockDetail.css` (baru) | **Nol kata `pengendali`** di `scripts/` maupun `app/src` — fiturnya belum ada sama sekali | 949 emiten di `data-idx/json/pengendali.json`, tampil di hero sebagai `Pengendali: <kategori> · per laporan <tgl>` | Penghalangnya sudah hilang: arsip mentah XBRL (±6.679 XLSX) ada di cakram, jadi ruas ini **nol biaya jaringan** — persis alasan aturan "simpan mentah hasil panen" ditulis | **Selesai** — 949 emiten, 8 kategori (526 National Corporation, 205 Individual WNI, 92 Foreign Corporation, 53 Indonesian Government, 38 National and Foreign, 24 No Controlling Shareholder, 11 Individual Foreign). 949 berkas dibuka (satu per emiten, bukan 6.679) karena arsip ditelusuri dari periode terbaru. 16 dari 965 emiten di index fundamental tak punya data → **"belum tersedia"**, bukan 0. `npm run build` bersih, `npx vitest run` **821/821** | Added |
+
+**Temuan yang membatasi lingkupnya — dilaporkan, bukan dipaksakan.** Ruas
+`Informasi pemegang saham pengendali` (sheet `1000000`) berisi **KATEGORI, bukan
+nama**. Disapu 20 Agu 2026: 120 berkas acak 2025/tw3 → 119 terisi, hanya enam
+nilai berbeda. Seluruh **47 sheet** BBCA & ASII disisir mencari daftar nama
+pemegang saham: tidak ada — yang muncul cuma pos neraca "piutang/utang pemegang
+saham", bukan identitas. Jadi halaman boleh menyebut *"dikendalikan korporasi
+nasional"* tapi **tidak boleh** menyiratkan ia tahu siapa. Nama pengendali tetap
+harus dari sumber lain (KSEI, prospektus) — backlog #158/#155 belum tertutup
+oleh ini.
+
+**18 emiten kategorinya masih dari laporan 2019.** Itu sebabnya tanggal laporan
+wajib ikut tampil, bukan pelengkap opsional.
+
+### #205 — Valuasi vs sejarah: rerata historis + ambang vonis (20 Agu 2026)
+
+| # | Tugas | Asal perintah | Halaman | Komponen (`file:baris`) | Sebelumnya | Jadi | Alasan | Status & bukti | Changelog |
+|---|---|---|---|---|---|---|---|---|---|
+| 205 | Tiap angka valuasi punya pembanding historis + vonis murah/wajar/mahal | *"Maksudnya: tiap angka valuasi punya **pembanding**, sehingga 'PER 12x' bisa dibaca 'murah/wajar/mahal **terhadap sejarahnya sendiri**', bukan cuma angka telanjang… **Ambangnya harus terukur, bukan ditebak.** Turunkan dari sebaran nyata… dan **tulis rumusnya di komentar** supaya bisa dibantah pembaca. **Emiten dengan riwayat terlalu pendek tak boleh diberi verdict.**"* (backlog A1) | `/stock-detail` (tab Statistik, panel *Valuasi vs Sejarah*) | `scripts/hitung_valuasi_historis.py` (baru), `app/src/lib/dasbor/valuasiHistoris.ts` (baru), `valuasiHistoris.test.ts` (baru), `app/src/views/dasbor/stock-detail/PanelValuasiHistoris.tsx` (baru), `StockDetail.tsx`, `StockDetail.css` | Cuma ruas mentah `pe_vs_sector_pct` (`stockDetailData.ts:210`) — **nol rerata historis, nol ambang vonis** | Deret P/E & P/B tahun buku 2019–2025 per emiten (`valuasi_historis.json`, 814 emiten). Ambang = **kuartil 25/75 dari sebaran emiten itu sendiri**; jangkar **median**, bukan rata-rata | Ambang universal ("P/E di bawah 15 itu murah") tak berarti apa-apa lintas sektor. Median dipilih karena sebaran P/E miring kanan dan satu tahun berlaba nyaris nol menarik rata-rata jauh lebih keras | **Selesai** — 15 uji baru, `npx vitest run` **821/821 di 45 berkas**, `npm run build` bersih. Sebaran vonis terukur (bukan kesan): **P/E 169 murah · 97 wajar · 61 mahal · 487 tanpa vonis**; **P/B 287 · 144 · 134 · 249**. Emiten berhak vonis: **338 (P/E)** dan **574 (P/B)** dari 814; 151 dari 965 emiten tak punya deret sama sekali → panel berbunyi "belum tersedia" | Added |
+
+**Jebakan yang ditemukan saat mengerjakan — dan yang membuat versi pertama
+salah total.** Harga di `ohlc/` **sudah disesuaikan pemecahan saham**, sedangkan
+`eps` XBRL adalah angka apa adanya saat laporan terbit. Terukur: penutupan BBCA
+akhir 2019 yang benar-benar diperdagangkan **33.425**, tapi `ohlc/BBCA.json`
+menyimpan **6.685** (= 33.425 ÷ 5, pemecahan 1:5 Okt 2021) sementara `eps` 2019
+tetap **1.159**. Membagi keduanya memberi **P/E 2019 = 5,8×** untuk emiten yang
+nyatanya diperdagangkan ~29× — nol galat, nol tanda, dan dari layar terbaca
+sebagai *"dulu BBCA sangat murah"*. UNVR kena hal yang sama (P/B melompat 12× →
+57× antara 2019 dan 2020 semata karena pemecahan 1:5).
+
+Karena itu **ruas per-saham tak dipakai sama sekali**. Yang dipakai jumlah
+agregat dibagi jumlah saham HARI INI (`ListedShares`), basis yang sama dengan
+deret harga: `P/E_Y = harga_akhir_Y × saham_kini ÷ laba_bersih_Y`. Diperiksa
+ulang: BBCA 2019 = **28,6×**, UNVR 2019 = **43,5×** — cocok dengan kenyataan.
+
+Dua jebakan yang sudah tercatat di `CLAUDE.md` **dihindari, bukan ditemui**:
+(a) hanya periode **tahunan** yang dibaca dan hanya dari `keuangan_idx/` — jadi
+kumulatif-vs-diskret tak pernah bertemu; (b) tak ada rasio yang diturunkan dari
+rasio lain, semuanya dihitung dari jumlah mentah, jadi soal skala `der` persen
+vs `der_q` rasio tak berlaku di sini. 632 periode ber-mata-uang USD **dilewati**
+(bukan dikonversi — kursnya berubah tiap tahun dan menebaknya menambah galat
+diam-diam).
+
+**Catatan alat:** chrome-devtools MCP terkunci sesi/worktree lain
+(`chrome-devtools-mcp\chrome-profile`, PID 30588 mulai 10:02:18) — sesuai aturan
+global **tidak dimatikan** dan dilaporkan lebih dulu, tidak diganti alat
+diam-diam.
