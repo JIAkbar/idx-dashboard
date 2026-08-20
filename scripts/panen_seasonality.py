@@ -127,8 +127,15 @@ def ke_bulanan(data: dict) -> dict[str, float]:
     res = hasil[0]
     stempel = res.get("timestamp") or []
     kutipan = (res.get("indicators", {}).get("quote") or [{}])[0]
-    adj = res.get("indicators", {}).get("adjclose")
-    harga = adj[0]["adjclose"] if adj else kutipan.get("close", [])
+    # Yahoo kadang mengirim blok `adjclose` yang ADA tapi isinya kosong —
+    # `[{}]`, tanpa kunci "adjclose" sama sekali. Versi lama mengindeksnya
+    # langsung dan mati dengan `KeyError: 'adjclose'` di tengah panen,
+    # menjatuhkan SELURUH jalan (terukur 20 Agu 2026: seluruh seasonality
+    # berhenti diperbarui karena satu emiten menjawab begitu). Blok yang ada
+    # bukan jaminan isinya ada; jatuh ke `close` seperti kalau bloknya memang
+    # tak dikirim.
+    adj = res.get("indicators", {}).get("adjclose") or []
+    harga = (adj[0].get("adjclose") if adj else None) or kutipan.get("close", [])
     # Yahoo TIDAK selalu menghormati interval=1mo — untuk emiten yang baru
     # tercatat ia mengirim candle mingguan (ketahuan 15 Agu 2026 pada VKTR &
     # ALII). Pengelompokan ke bulan karena itu dikerjakan di sini, bukan
