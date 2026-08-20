@@ -33,6 +33,7 @@ const Radar = lazy(() => import('./views/dasbor/Radar').then((m) => ({ default: 
 const Seasonality = lazy(() => import('./views/dasbor/Seasonality').then((m) => ({ default: m.Seasonality })))
 const GrafikEmiten = lazy(() => import('./views/dasbor/GrafikEmiten').then((m) => ({ default: m.GrafikEmiten })))
 const KartuAnalisa = lazy(() => import('./views/dasbor/KartuAnalisa').then((m) => ({ default: m.KartuAnalisa })))
+const BedahEmiten = lazy(() => import('./views/dasbor/BedahEmiten').then((m) => ({ default: m.BedahEmiten })))
 const Metodologi = lazy(() => import('./views/dasbor/Metodologi').then((m) => ({ default: m.Metodologi })))
 const StatistikBerkala = lazy(() => import('./views/dasbor/StatistikBerkala').then((m) => ({ default: m.StatistikBerkala })))
 const Watchlist = lazy(() => import('./views/dasbor/Watchlist').then((m) => ({ default: m.Watchlist })))
@@ -95,6 +96,18 @@ function App() {
               <Route path="/statistik" element={<PenjagaHalaman kunci="statistik"><StatistikBerkala /></PenjagaHalaman>} />
               <Route path="/chart" element={<PenjagaHalaman kunci="chart"><ChartIndeks /></PenjagaHalaman>} />
               <Route path="/stock-detail" element={<PenjagaHalaman kunci="detail"><StockDetail /></PenjagaHalaman>} />
+              {/* Bedah Emiten (backlog A2 / #153) — halaman analisa 12 seksi.
+                  JANGAN tertukar dengan tab admin /admin/bedah: itu perakit
+                  EDISI PDF bernama "Bedah" dan kuncinya memang 'bedah'.
+                  Karena itu halaman ini memakai kunci sendiri,
+                  'bedah-emiten' — memakai 'bedah' akan membuat setelan
+                  superadmin tab admin ikut mengunci halaman publik ini, dan
+                  sebaliknya membuka halaman ini berarti membuka perakit
+                  edisi. Barisnya BELUM ada di `akses_halaman` (pola sama
+                  'kta'/'statistik'/'watchlist') -> kunci tak dikenal
+                  fail-open, jadi publik sampai tingkatnya diatur dari tab
+                  Akses tanpa menyentuh kode lagi. */}
+              <Route path="/bedah-emiten" element={<PenjagaHalaman kunci="bedah-emiten"><BedahEmiten /></PenjagaHalaman>} />
               <Route path="/peta-investor" element={<PenjagaHalaman kunci="peta"><PetaInvestor /></PenjagaHalaman>} />
               <Route path="/broker-summary" element={<PenjagaHalaman kunci="broker"><BrokerSummary /></PenjagaHalaman>} />
               <Route path="/kalkulator" element={<PenjagaHalaman kunci="kalkulator"><KalkulatorJia /></PenjagaHalaman>} />

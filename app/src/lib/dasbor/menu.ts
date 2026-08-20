@@ -112,6 +112,17 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M10 4a6 6 0 100 12 6 6 0 000-12zM14.5 14.5L20 20M8 10h4M10 8v4',
   },
   {
+    // Bedah Emiten (backlog A2 / #153, 20 Agu 2026) — 12 seksi analisa satu
+    // emiten. BEDA dari 'stock-detail': Stock Detail memajang ruas, halaman
+    // ini merangkainya (lima langkah uang, dua sumbu valuasi, lima pilar
+    // skor). Beda pula dari tab admin /admin/bedah, yang merakit EDISI PDF
+    // bernama "Bedah" dan tak ada hubungannya dengan halaman ini.
+    // Kode 'BDH' — 'DTL' Stock Detail, 'GRF' Grafik Emiten sudah dipakai.
+    id: 'bedah-emiten', path: '/bedah-emiten', label: 'Bedah Emiten', kode: 'BDH', grup: 'emiten',
+    ringkas: 'Dua belas seksi membedah satu emiten: lima langkah uang berjalan, vonis valuasi dua sumbu, skor lima pilar, sampai Altman Z dan F-Score.',
+    ikon: 'M12 3v18M7.5 6.5l9 11M16.5 6.5l-9 11M4 12h16',
+  },
+  {
     // Chart PAPAN (tahap 3, 17 Agu 2026) — beda dari 'chart' (widget
     // TradingView di bawah): lilin+volume dari OHLC lokal PAPAN sendiri,
     // kanvas milik sendiri supaya overlay khas PAPAN (pita musiman,

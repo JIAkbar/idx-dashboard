@@ -151,4 +151,13 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   // 'kta'/'statistik') -> kunci tak dikenal fail-open, publik sampai
   // tingkatnya diatur dari tab Akses.
   watchlist: 'watchlist',
+  // Bedah Emiten (backlog A2 / #153, 20 Agu 2026). Kuncinya SENGAJA
+  // 'bedah-emiten', bukan 'bedah': kunci 'bedah' sudah menjaga tab admin
+  // /admin/bedah (perakit edisi PDF, superadmin). Memakai ulang nama itu
+  // membuat satu setelan menjaga dua hal yang tak berhubungan — membuka
+  // halaman publik ini berarti membuka perakit edisi, dan menguncinya
+  // berarti mengunci halaman analisa untuk semua orang. Barisnya BELUM ada
+  // di `akses_halaman` (pola sama 'kta'/'statistik'/'watchlist') -> kunci
+  // tak dikenal fail-open, publik sampai tingkatnya diatur dari tab Akses.
+  'bedah-emiten': 'bedah-emiten',
 }
