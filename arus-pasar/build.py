@@ -5,6 +5,9 @@ Baca edisi/<tanggal>.json + cache/ohlc-<tanggal>.json, hitung skor model
 rakit HTML dari template.html, tulis ke keluaran/.
 
 Pakai: python build.py 2026-08-10 [--tanpa-pdf]
+       [--kecuali=TICKER,TICKER]                 emiten yang dikeluarkan (#138)
+       [--disetujui=TICKER:Alias;...]            daftar setoran lolos kurasi (#181)
+       [--tak-terpakai=TICKER:alasan;...]        jalan keluar gerbang #181
 Setelah HTML jadi, render juga ke keluaran/<edisi>.pdf via Playwright
 (chromium headless; menunggu window.__chartsDone dari template).
 --tanpa-pdf melewatkan langkah PDF.
@@ -698,12 +701,115 @@ def halaman_ringkasan(ed, skor_map, prob_map=None):
     return "".join(halaman)
 
 
+def arg_peta(prefix):
+    """`--flag=KUNCI:nilai;KUNCI:nilai` -> {KUNCI: nilai}, KUNCI di-upper.
+
+    Pemisah pasangannya `;` bukan `,` (beda dengan --kecuali=): nilainya
+    kalimat alasan berbahasa Indonesia dan koma di dalamnya wajar."""
+    peta = {}
+    for a in sys.argv[1:]:
+        if not a.startswith(prefix):
+            continue
+        for potong in a[len(prefix):].split(";"):
+            if not potong.strip():
+                continue
+            k, _, v = potong.partition(":")
+            peta[k.strip().upper()] = v.strip()
+    return peta
+
+
+def gerbang_setoran(ed, kredit, disetujui_arg, tak_terpakai):
+    """#181 — cegah kontributor tercantum di kolofon tanpa karyanya masuk.
+
+    18 Agu 2026: Erika Julianti menyetor INET & TINS, keduanya `disetujui`,
+    dan edisi hari itu berisi 8 emiten milik Agitama saja. Kolofonnya tetap
+    mencetak "Erika Julianti - 2 emiten". Alasan teknisnya sah (rentang
+    tanggal screenshotnya bukan satu hari) tapi berhenti di `_catatan`
+    transkrip - berkas yang cuma dibaca mesin. Selama begitu, penyetornya
+    mengulang filter yang sama besok.
+
+    Gerbang ini membandingkan setoran DISETUJUI tanggal itu terhadap emiten
+    yang benar-benar dirakit. Yang disetujui tapi tak jadi emiten edisi
+    MENGHENTIKAN build, menyebut nama penyetor + tickernya - kecuali
+    alasannya disebut eksplisit lewat --tak-terpakai=TICKER:alasan;...
+
+    Daftar disetujui masuk lewat berkas/argumen dan TIDAK dibaca dari
+    Supabase: perakitan harus tetap jalan tanpa kredensial, aturan yang sama
+    yang bikin --kecuali= berbentuk argumen di #138.
+
+    Balikan: [{"alias","ticker","alasan"}] - dipakai kolofon untuk mengakui
+    penyetornya TANPA angka "N emiten", dan sidecar .tak-terpakai.sql untuk
+    mengabarkannya.
+    """
+    disetujui = {t.upper(): a for t, a in
+                 ((kredit or {}).get("disetujui") or {}).items()}
+    disetujui.update(disetujui_arg)
+    dimuat = {em["ticker"].upper() for em in ed["emiten"]}
+    for t in sorted(set(tak_terpakai) & dimuat):
+        print(f"  #181: PERINGATAN --tak-terpakai={t} diabaikan, {t} ADA di edisi.")
+    if not disetujui:
+        print("  #181: daftar setoran disetujui tak diberikan -> GERBANG TIDAK AKTIF."
+              " Isi ruas \"disetujui\" di masuk/kredit-<EDISI>.json atau pakai"
+              " --disetujui=TICKER:Alias;...")
+        return []
+    sisa = sorted((t, a) for t, a in disetujui.items() if t not in dimuat)
+    buta = [(t, a) for t, a in sisa if t not in tak_terpakai]
+    if buta:
+        sys.exit(
+            "\nGERBANG #181 GAGAL - setoran DISETUJUI tapi tak jadi emiten edisi:\n"
+            + "\n".join(f"  - {a or '(alias kosong)'} : {t}" for t, a in buta)
+            + "\n\nKalau edisi ini terbit apa adanya, nama di atas tercantum di"
+              "\nkolofon tanpa satu pun karyanya masuk. Sebutkan alasannya supaya"
+              "\nikut tercetak dan bisa dikabarkan ke penyetornya:\n"
+              '  --tak-terpakai="'
+            + ";".join(f"{t}:alasannya di sini" for t, _ in buta) + '"\n')
+    for t, a in sisa:
+        print(f"  #181: {a or '(alias kosong)'} - {t} tak terpakai ({tak_terpakai[t]})")
+    return [{"alias": a, "ticker": t, "alasan": tak_terpakai[t]} for t, a in sisa]
+
+
+def tulis_kabar_tak_terpakai(ed, tgl, tak_pakai):
+    """Sidecar keluaran/<EDISI>.tak-terpakai.sql - jalur supaya alasannya
+    sampai ke penyetor, tanpa build.py menyentuh Supabase.
+
+    Tidak ada tabel baru: kolomnya sudah ada. `setoran.dimuat` menandai
+    tak-dirakit, `setoran.catatan_kurator` memuat alasannya, dan pemicu
+    `setoran_kabari_dimuat` mengisi tabel `notifikasi` yang sudah dipakai
+    lonceng kontributor. Berkas ini SENGAJA tidak dijalankan sendiri -
+    superadmin yang menempelkannya ke SQL editor."""
+    def q(x):
+        return "'" + str(x).replace("'", "''") + "'"
+    baris = [
+        "-- #181 - setoran disetujui yang tak terpakai di edisi ini.",
+        f"-- Edisi {ed['edisi']} ({tgl}). Jalankan sebagai superadmin.",
+        "-- Pemicu setoran_kabari_dimuat yang mengirim notifikasinya.",
+    ]
+    for r in tak_pakai:
+        baris.append(
+            "update public.setoran set dimuat = false, catatan_kurator = "
+            + q(r["alasan"]) + "\n where tanggal = " + q(tgl)
+            + " and upper(ticker) = " + q(r["ticker"])
+            + " and jenis = 'orderbook' and status = 'disetujui' and dimuat;")
+    p = AKAR / "keluaran" / f"{ed['edisi']}.tak-terpakai.sql"
+    p.write_text("\n".join(baris) + "\n", encoding="utf-8")
+    print(f"  #181: kabar tak-terpakai -> {p}")
+
+
 def muat_kredit(edisi):
-    """Berkas opsional masuk/kredit-<EDISI>.json: {"developer": str,
-    "kontributor": {TICKER: alias}} — alias penyetor orderbook yang setorannya
-    sudah disetujui, per emiten edisi ini. Dipakai kolofon + badge kartu
-    emiten. None kalau berkas tak ada/rusak -> fallback nama hardcode lama,
-    build TIDAK PERNAH gagal gara-gara berkas ini."""
+    """Berkas opsional masuk/kredit-<EDISI>.json:
+
+        {"developer": str,
+         "kontributor": {TICKER: alias},   # per emiten edisi ini
+         "disetujui":   {TICKER: alias}}   # SELURUH setoran lolos kurasi tgl ini
+
+    `kontributor` dipakai kolofon + badge kartu emiten. `disetujui` (#181)
+    dipakai gerbang_setoran(): ia yang membuat "disetujui tapi tak dimuat"
+    kelihatan. Salin daftarnya dari layar Kurasi — build TIDAK membaca
+    Supabase, supaya perakitan tetap jalan tanpa kredensial.
+
+    None kalau berkas tak ada/rusak -> fallback nama hardcode lama; build
+    tidak pernah gagal gara-gara berkas ini (gerbangnya yang mati, dan itu
+    dicetak sebagai peringatan)."""
     p = AKAR / "masuk" / f"kredit-{edisi}.json"
     if not p.exists():
         return None
@@ -713,13 +819,25 @@ def muat_kredit(edisi):
         return None
 
 
-def halaman_kolofon(ed, kredit=None):
+def halaman_kolofon(ed, kredit=None, tak_pakai=None):
     """Halaman penutup terbitan: monogram + wordmark PAPAN, peran Developer
     (utama) & Analisa/Penyusun (kedua) — keduanya Johan Iriawan Akbar — lalu
     kontributor. Nama penyetor diambil dari ruas `kontributor` tiap emiten di
     edisi — berkas kredit terpisah hanya menimpa kalau ada: alias unik +
     jumlah emiten yang disetornya, urut kontribusi terbanyak. Edisi tanpa
-    ruas itu tetap terbit dengan daftar nama lama."""
+    ruas itu tetap terbit dengan daftar nama lama.
+
+    ANGKA DI SEBELAH NAMA = jumlah emiten yang BENAR-BENAR masuk edisi (#181).
+    Kolom itu memang tempat angka — Johan 19 Agu: "seharusnya semua
+    kontributor bukan bilang terimakasih tapi berapa emiten" — jadi apa pun
+    yang mendarat di sana dibaca sebagai hitungan yang dimuat. Sampai 18 Agu
+    ia diisi hitungan setoran yang DISETUJUI, dan kolofon edisi itu mencetak
+    "Erika Julianti — 2 emiten" untuk kontributor yang nol karyanya dimuat.
+
+    Penyetor yang setorannya lolos kurasi tapi tak terpakai TETAP disebut,
+    lewat `tak_pakai` dari gerbang_setoran(): kalimat apresiasi di bawah
+    grid, menyebut tickernya dan alasannya, tanpa angka yang mengklaim
+    sesuatu yang tak ada. Pengakuan di depan, keterangan teknis di belakang."""
     kontrib = (kredit or {}).get("kontributor") or {}
     cnt = {}
     for em in ed["emiten"]:
@@ -732,38 +850,44 @@ def halaman_kolofon(ed, kredit=None):
         sel = "\n".join(
             f'<div class="kf-nama"><span>{alias}</span><span class="kf-jml">{n} emiten</span></div>'
             for alias, n in urut)
-        # Setoran DISETUJUI yang tak jadi dimuat tetap dapat pengakuan: kredit
-        # mengikuti status kurasi, bukan kolom `dimuat` (#138). Tanpa sapuan ini
-        # penyetor yang setorannya lolos kurasi tapi tak masuk edisi hilang sama
-        # sekali dari kolofon — terbaca sebagai penolakan, padahal bukan.
-        #
-        # Kolomnya SELALU jumlah emiten — untuk semua kontributor, tanpa
-        # kecuali. Johan 19 Agu: "seharusnya semua kontributor bukan bilang
-        # terimakasih tapi berapa emiten". Kolom itu memang tempat angka, jadi
-        # kalimat apa pun yang mendarat di sana terbaca sebagai hitungan yang
-        # rusak; dua percobaan sebelumnya ("setoran disetujui", lalu "terima
-        # kasih setorannya") ditolak karena alasan yang sama.
-        #
-        # Angkanya = setoran yang LOLOS KURASI pada tanggal itu, bukan yang
-        # masuk badan edisi. Erika Julianti menyetor INET dan TINS; keduanya
-        # disetujui, cuma tak dimuat karena periodenya salah. Menghitungnya nol
-        # akan menghapus kerjanya, dan itu yang aturan #138 larang.
-        #
-        # `kredit_kontributor` menerima dua bentuk: "Nama" (tanpa angka) atau
-        # {"alias": "Nama", "n": 2}. Bentuk pertama dipertahankan supaya edisi
-        # lama tetap terakit.
-        def _kredit(x):
-            return (x, None) if isinstance(x, str) else (x.get("alias", ""), x.get("n"))
-        sel += "\n" + "\n".join(
-            f'<div class="kf-nama"><span>{a}</span>'
-            + (f'<span class="kf-jml">{n} emiten</span>' if n else '')
-            + '</div>'
-            for a, n in map(_kredit, ed.get("kredit_kontributor") or []) if a and a not in cnt)
     else:
         nama_lama = ["Agitama Wahyu Putra Dita", "Mohamad Miftahul Ulum", "Ali Supian",
                      "Wardani W.", "Dhafina S. F.", "Erika J.", "Difla S.", "Ratu N. A. A."]
         judul_kontrib = "Pengembangan, Ide, Gagasan &amp; Dukungan"
         sel = "\n".join(f'<div class="kf-nama"><span>{n}</span></div>' for n in nama_lama)
+
+    # Disetujui tapi tak terpakai — diakui dengan nama & ticker, tak pernah
+    # dengan angka. Ruas lama `kredit_kontributor` ikut ditampung di sini:
+    # bentuk {"alias": .., "n": 2} masih diterima supaya edisi lama terakit,
+    # tapi `n`-nya SENGAJA diabaikan — angka itulah yang berbohong.
+    lain = {}
+    for r in (tak_pakai or []):
+        a = (r.get("alias") or "").strip()
+        if not a or a in cnt:
+            continue
+        d = lain.setdefault(a, {"tk": [], "alasan": []})
+        d["tk"].append(r["ticker"])
+        if r.get("alasan") and r["alasan"] not in d["alasan"]:
+            d["alasan"].append(r["alasan"])
+    for x in ed.get("kredit_kontributor") or []:
+        a = (x if isinstance(x, str) else (x.get("alias") or "")).strip()
+        if a and a not in cnt:
+            lain.setdefault(a, {"tk": [], "alasan": []})
+    terima = ""
+    if lain:
+        kal = []
+        for a, d in lain.items():
+            tk = f' <b>{", ".join(d["tk"])}</b>' if d["tk"] else ""
+            why = (" Belum kami muat di edisi ini — " + "; ".join(d["alasan"]) + "."
+                   if d["alasan"] else " Belum kami muat di edisi ini.")
+            kal.append(f'Terima kasih kepada {a} atas setoran{tk} yang lolos '
+                       f'kurasi hari ini.{why}')
+        # kelas kf-jml dipakai ulang (template.html milik agen lain); dua
+        # penimpa inline karena kelas itu aslinya span nowrap sebaris.
+        terima = ('\n      <div class="kf-jml" style="white-space:normal;'
+                  'text-align:center;margin-top:6mm;line-height:1.75">'
+                  + "<br>".join(kal) + '</div>')
+
     tahun = ed["tanggal_id"].split()[-1]
     return f'''
 <div class="page">
@@ -782,7 +906,7 @@ def halaman_kolofon(ed, kredit=None):
       <div class="kf-peran">{judul_kontrib}</div>
       <div class="kf-grid">
 {sel}
-      </div>
+      </div>{terima}
     </div>
     <div class="kf-kaki">© {tahun} PAPAN — Pusat Analisa Pasar Nusantara. Hak cipta dilindungi.<br>
     Hak cipta setiap setoran Broker Summary tetap pada kontributor yang menyetorkannya;
@@ -921,6 +1045,12 @@ def main():
     for a in sys.argv[1:]:
         if a.startswith("--kecuali="):
             kecuali = {t.strip().upper() for t in a.split("=", 1)[1].split(",") if t.strip()}
+    # #181 — alasan tiap setoran disetujui yang tak jadi emiten edisi.
+    # Yang dikeluarkan lewat --kecuali= sudah punya alasan dari flagnya
+    # sendiri; setdefault supaya alasan yang ditulis operator tetap menang.
+    tak_terpakai = arg_peta("--tak-terpakai=")
+    for t in kecuali:
+        tak_terpakai.setdefault(t, "dikeluarkan dari edisi ini oleh redaksi")
     if kecuali:
         semula = len(ed["emiten"])
         ed["emiten"] = [em for em in ed["emiten"] if em["ticker"].upper() not in kecuali]
@@ -932,6 +1062,11 @@ def main():
     prob_map = prob.analisa_edisi(ohlc, [em["ticker"] for em in ed["emiten"]])
     kredit = muat_kredit(ed["edisi"])
     kontrib_map = (kredit or {}).get("kontributor") or {}
+
+    # #181 — gerbang kredit. Dijalankan SESUDAH --kecuali= supaya emiten yang
+    # sengaja dikeluarkan juga ikut diperiksa: dikeluarkan pun tetap berarti
+    # setoran disetujui yang tak dimuat, dan penyetornya berhak tahu.
+    tak_pakai = gerbang_setoran(ed, kredit, arg_peta("--disetujui="), tak_terpakai)
 
     skor_map = {}
     for em in ed["emiten"]:
@@ -980,7 +1115,7 @@ def main():
         draw.append(f'gambarChart("ch{idx}","{em["ticker"]}",{em["ema50"]},'
                     f'{json.dumps(em["pivot"])});')
     pages.append(halaman_peringkat(ed, skor_map))
-    pages.append(halaman_kolofon(ed, kredit))
+    pages.append(halaman_kolofon(ed, kredit, tak_pakai))
 
     tpl = (AKAR / "template.html").read_text(encoding="utf-8")
     # 2 thn penuh (pemanasan EMA200 di gambarChart); JKSE dipakai chart IHSG
@@ -994,6 +1129,9 @@ def main():
                .replace("/*DRAWCALLS*/", "\n".join(draw)))
     keluar = AKAR / "keluaran" / f"{ed['edisi']}.html"
     keluar.write_text(html, encoding="utf-8")
+
+    if tak_pakai:
+        tulis_kabar_tak_terpakai(ed, tgl, tak_pakai)
 
     print(f"OK -> {keluar}")
     for tk, s in skor_map.items():
