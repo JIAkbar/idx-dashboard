@@ -36,9 +36,11 @@ name: Panen harian penuh (runner rumahan)
 
 on:
   schedule:
-    # 17:30 WIB / 10:30 UTC — sesudah bursa tutup (16:15 WIB) dan sesudah
-    # `update-rumah.yml` sempat menarik PDF statistiknya.
-    - cron: '30 10 * * 1-5'
+    # 18:30 WIB / 11:30 UTC (Johan 20 Agu 2026: "ganti jam 18.30") — sesudah
+    # bursa tutup (16:15 WIB) dan sesudah `update-rumah.yml` sempat menarik PDF
+    # statistiknya. Jam UTC-nya yang ditulis; WIB tetap UTC+7 sepanjang tahun,
+    # jadi tak ada pergeseran musim yang perlu diurus.
+    - cron: '30 11 * * 1-5'
   workflow_dispatch:
     inputs:
       lewati_ohlc:
