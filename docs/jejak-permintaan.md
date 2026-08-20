@@ -574,3 +574,14 @@ diam-diam).
 (`chrome-devtools-mcp\chrome-profile`, PID 30588 mulai 10:02:18) — sesuai aturan
 global **tidak dimatikan** dan dilaporkan lebih dulu, tidak diganti alat
 diam-diam.
+
+**Koreksi jujur atas commit `4386d74d`.** Commit itu berjudul hanya B10 & B26,
+tapi isinya **10 baris** — tiga baris milik agen lain (B8/D9, B9/D10, B17/D11,
+menandai `e01b7861`/`78c92168`/`06787778` selesai) ikut terbawa karena
+`git commit -- docs/antrean.md` mengambil keadaan berkas di direktori kerja,
+termasuk suntingan agen lain yang belum di-*stage*. Aturan lama ("sebut
+berkasnya di `git commit`, bukan cuma di `git add`") melindungi dari *index*
+yang tercemar, **bukan** dari direktori kerja yang tercemar — dan pada berkas
+yang dipakai bersama dua agen, itu celah yang berbeda. Isinya utuh dan benar;
+yang salah cuma cakupan pesannya. Tidak di-*amend* sesuai aturan: riwayat yang
+ditimpa lebih mahal daripada satu pesan kurang lengkap yang dicatat terbuka.
