@@ -68,7 +68,7 @@
 
 .lantai .kbr-meta {
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  font-family: var(--mono); font-size: 9.5px;
+  font-family: var(--ui); font-size: 9.5px;
 }
 .lantai .kbr-sum {
   letter-spacing: .1em; text-transform: uppercase; color: var(--text3);
@@ -76,7 +76,10 @@
 }
 .lantai .kbr-sum.s-idx { color: var(--amber); border-color: var(--amber); }
 .lantai .kbr-resmi { color: var(--amber); letter-spacing: .08em; text-transform: uppercase; }
-.lantai .kbr-waktu { color: var(--text3); margin-left: auto; flex: none; }
+/* Stempel waktu TETAP mono (§1, keluar dari sapuan): dibaca sebagai angka
+   berjajar, bukan kata — beda dari .kbr-sum/.kbr-resmi/.kbr-kanal saudaranya
+   yang ikut menyerap font-family UI dari .kbr-meta. */
+.lantai .kbr-waktu { font-family: var(--mono); color: var(--text3); margin-left: auto; flex: none; }
 /* Judul dipotong DUA BARIS dengan elipsis, bukan dibiarkan memanjang:
    satu judul 3 baris menaikkan tinggi seluruh barisnya, dan daftar yang
    dipindai cepat lebih butuh tepi yang rata daripada judul utuh. Judul

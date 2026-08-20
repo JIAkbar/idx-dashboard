@@ -341,7 +341,7 @@ export function AkunAdmin() {
                         <td>{a.email}</td>
                         <td>{a.alias || '—'}</td>
                         <td>
-                          <span className={`chip ${a.peran === 'superadmin' ? 'warn' : 'up'}`}>
+                          <span className={`chip aa-peran ${a.peran === 'superadmin' ? 'warn' : 'up'}`}>
                             {a.peran === 'superadmin' ? 'Superadmin' : 'Kontributor'}
                           </span>
                         </td>

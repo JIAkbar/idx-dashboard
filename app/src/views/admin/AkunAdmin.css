@@ -115,6 +115,12 @@
 }
 .lantai .aa-nowrap { white-space: nowrap; }
 
+/* Lencana peran (Superadmin/Kontributor) dibaca sebagai kata, bukan angka —
+   modifier sempit (pola sama dengan .chip.aa-jenjang di AktivitasAdmin.css)
+   karena .chip dasar (lantai.css) dipakai bersama .aa-tbl oleh tabel LAIN
+   (mis. hitungan login gagal di Aktivitas) yang TETAP mono. */
+.lantai .chip.aa-peran { font-family: var(--ui); }
+
 /* Sel nama jenjang di tabel acuan: lencana + teks sejajar tengah. */
 .lantai .pj-nama { display: flex; align-items: center; gap: 9px; }
 .lantai .pj-nama > span { min-width: 0; }

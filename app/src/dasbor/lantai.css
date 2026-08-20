@@ -599,7 +599,7 @@
 .lantai .hero .ident .tk{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.1em}
 .lantai .hero .ident .nm{font-size:16px;font-weight:700;margin:2px 0 3px}
 .lantai .hero .ident .sek{font-size:11px;color:var(--text3)}
-.lantai .badge{display:inline-block;margin-top:8px;font-family:var(--mono);font-size:9.5px;background:var(--amber-dim);color:var(--amber);border-radius:99px;padding:2px 9px}
+.lantai .badge{display:inline-block;margin-top:8px;font-family:var(--ui);font-size:9.5px;background:var(--amber-dim);color:var(--amber);border-radius:99px;padding:2px 9px}
 .lantai .hero .harga{border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:center}
 .lantai .hero .harga .px{font-family:var(--mono);font-size:30px;font-weight:700;line-height:1.1}
 .lantai .hero .harga .rng{margin-top:10px}
@@ -639,7 +639,7 @@
 .lantai .empty svg{width:34px;height:34px;stroke:var(--text3);fill:none;stroke-width:1.5}
 .lantai .empty p{margin:0;color:var(--text2);font-size:13px;max-width:46ch}
 .lantai .empty .chips{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
-.lantai .chip-t{font-family:var(--mono);font-size:11.5px;font-weight:700;background:var(--bg3);border:1px solid var(--line2);border-radius:99px;padding:6px 14px;cursor:pointer;color:var(--text)}
+.lantai .chip-t{font-family:var(--ui);font-size:11.5px;font-weight:700;background:var(--bg3);border:1px solid var(--line2);border-radius:99px;padding:6px 14px;cursor:pointer;color:var(--text)}
 .lantai .chip-t:hover{border-color:var(--amber);color:var(--amber)}
 .lantai .empty .cari{display:flex;gap:8px;width:min(430px,100%)}
 /* Ticker "terakhir dilihat" — tombol teks polos di dalam .lbl */
@@ -789,7 +789,7 @@
 
 .lantai .vhead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .lantai .vhead h1{margin:0;font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.02em}
-.lantai .vhead .sub{font-family:var(--mono);font-size:11px;color:var(--text3)}
+.lantai .vhead .sub{font-family:var(--ui);font-size:11px;color:var(--text3)}
 
 /* panels */
 .lantai .panel{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r)}
@@ -943,7 +943,7 @@
 
 /* dropdown */
 .lantai .dd{position:relative}
-.lantai .dd-btn{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r);padding:6px 11px;font-family:var(--mono);font-size:11.5px;color:var(--text)}
+.lantai .dd-btn{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r);padding:6px 11px;font-family:var(--ui);font-size:11.5px;color:var(--text)}
 .lantai .dd-btn:hover{border-color:var(--amber)}
 .lantai .dd-btn:disabled{opacity:.35;cursor:not-allowed}
 .lantai .dd-btn:disabled:hover{border-color:var(--line2)}
@@ -978,7 +978,7 @@
    karena duduk di kepala chart — menimpanya lewat className sendiri, dan
    itulah satu-satunya yang boleh berbeda antar halaman. */
 .lantai .pilih-rentang{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.lantai .dd-it{display:flex;width:100%;text-align:left;padding:6px 10px;border-radius:4px;font-family:var(--mono);font-size:11.5px;color:var(--text2);white-space:nowrap}
+.lantai .dd-it{display:flex;width:100%;text-align:left;padding:6px 10px;border-radius:4px;font-family:var(--ui);font-size:11.5px;color:var(--text2);white-space:nowrap}
 /* Teks pilihan yang kepanjangan dipotong elipsis — DI DALAM span sendiri,
    bukan dengan mengubah .dd-it jadi block: kelas itu dipakai juga oleh menu
    beraksi (Unggah Harian) yang isinya ikon + teks berdampingan, dan
@@ -994,7 +994,7 @@
    jenjang) tak menyusutkan kotaknya jadi tak terpakai. */
 .lantai .dd-cari{position:sticky;top:-4px;z-index:1;display:block;width:100%;min-width:168px;margin:-4px -4px 4px;padding:7px 10px;box-sizing:content-box;
   background:var(--bg2);border:0;border-bottom:1px solid var(--line);border-radius:var(--r) var(--r) 0 0;
-  font-family:var(--mono);font-size:11.5px;color:var(--text)}
+  font-family:var(--ui);font-size:11.5px;color:var(--text)}
 .lantai .dd-cari:focus{outline:none;background:var(--bg1);border-bottom-color:var(--amber)}
 .lantai .dd-cari::placeholder{color:var(--text3)}
 .lantai .dd-kosong{margin:2px 0;padding:8px 10px;font-size:11px;color:var(--text3)}
@@ -1094,8 +1094,8 @@
 .lantai .cal-d.aktif{border-color:var(--amber);background:var(--amber)}
 .lantai .cal-d.aktif .dw,.lantai .cal-d.aktif .dn2{color:var(--amber-ink)}
 /* #30: status sesi berjalan + jam digital (detik) di atas bar */
-.lantai .sesi-status{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--text2)}
-.lantai .sesi-status .sesi-jam{font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+.lantai .sesi-status{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-family:var(--ui);font-size:11px;color:var(--text2)}
+.lantai .sesi-status .sesi-jam{font-family:var(--mono);font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
 .lantai .sesi{display:flex;align-items:flex-start;gap:8px;margin-top:6px;font-family:var(--mono);font-size:11px;color:var(--text2)}
 /* bar bersegmen (.sesi-bar-wrap, rule bersama di seksi kalender strip)
    menggantikan .seg polos; label jam 08:45/16:15 rata dengan barnya. */
@@ -1154,7 +1154,7 @@
 .lantai .csb-now .ihsg{font-family:var(--mono);font-size:12.5px}
 /* Feedback ronde 2: bar sesi strip melebar mengisi ruang sampai dekat strip
    7 hari (flex:1) supaya segmen jeda waktu kebaca — bukan lagi mini 110px. */
-.lantai .csb-sesi{display:flex;align-items:center;gap:8px;flex:1;min-width:0;font-family:var(--mono);font-size:11px;color:var(--text2);padding-left:14px;border-left:1px solid var(--line)}
+.lantai .csb-sesi{display:flex;align-items:center;gap:8px;flex:1;min-width:0;font-family:var(--ui);font-size:11px;color:var(--text2);padding-left:14px;border-left:1px solid var(--line)}
 .lantai .csb-sesi .sesi-bar-wrap{flex:1;min-width:0}
 .lantai .csb-hari{display:flex;align-items:center;gap:5px;margin-left:auto}
 .lantai .csb-d{min-width:44px;text-align:center;border:1px solid var(--line);border-radius:var(--r);padding:4px 6px;background:var(--bg2);cursor:pointer;font-family:var(--mono)}
@@ -1168,7 +1168,7 @@
 .lantai .csb-d.aktif{background:var(--amber);border-color:var(--amber)}
 .lantai .csb-d.aktif .dw,.lantai .csb-d.aktif .dd,.lantai .csb-d.aktif .dp{color:var(--amber-ink)}
 .lantai .csb-d.off{opacity:.65;cursor:default} /* #77: .45 nyaris hilang di light */
-.lantai .csb-more{font-family:var(--mono);font-size:10.5px;color:var(--text2);background:var(--bg3);border:1px solid var(--line2);border-radius:var(--r);padding:6px 10px;cursor:pointer;white-space:nowrap}
+.lantai .csb-more{font-family:var(--ui);font-size:10.5px;color:var(--text2);background:var(--bg3);border:1px solid var(--line2);border-radius:var(--r);padding:6px 10px;cursor:pointer;white-space:nowrap}
 .lantai .csb-more:hover{border-color:var(--amber);color:var(--text)}
 /* Area expand "Kalender penuh" (#k1full mockup: display toggle + border-top).
    Feedback #1 (dua ronde): dulu satu kolom cap 448px — sisa kanan kosong
@@ -1199,7 +1199,7 @@
 .lantai .sesi-bar-names span{overflow:hidden;white-space:nowrap;text-align:center;flex:none}
 
 /* Kolom kanan expand: legenda sesi + statistik mini tanggal terpilih. */
-.lantai .sesi-legend{display:flex;flex-direction:column;gap:5px;margin-top:12px;font-family:var(--mono);font-size:10.5px;color:var(--text2)}
+.lantai .sesi-legend{display:flex;flex-direction:column;gap:5px;margin-top:12px;font-family:var(--ui);font-size:10.5px;color:var(--text2)}
 .lantai .sesi-legend .sl{display:flex;align-items:center;gap:8px}
 .lantai .sesi-legend .sl i{width:7px;height:7px;border-radius:2px;flex:none}
 .lantai .sesi-legend .sl b{margin-left:auto;font-weight:600;color:var(--text3)}
@@ -1488,7 +1488,7 @@
 .lantai .chip-t:disabled{opacity:.4;cursor:default}
 .lantai .chip-t.on{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
 .lantai .chip-t.on:hover{color:var(--amber-ink)}
-.lantai .crb-hint{font-family:var(--mono);font-size:10.5px;color:var(--text2);margin-left:auto}
+.lantai .crb-hint{font-family:var(--ui);font-size:10.5px;color:var(--text2);margin-left:auto}
 /* #1 (14 Agu): tab "Rentang" ke-5 di .sek-periode-tabs bikin baris 5 tab
    overflow diam-diam di layar sempit (.tabs dasarnya width:max-content +
    overflow-x:auto scrollbar disembunyikan — "Rentang" kegeser keluar tanpa
@@ -1517,7 +1517,7 @@
 .lantai .blt-wrap{overflow-x:auto}
 .lantai .blt-wrap .tbl{width:100%;min-width:760px}
 .lantai .blt-no{font-family:var(--mono);font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums}
-.lantai .blt-dl{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.07em;color:var(--text2);border:1px solid var(--line2);border-radius:99px;padding:4px 12px 4px 10px;text-decoration:none;white-space:nowrap;font-variant-numeric:tabular-nums;transition:color .12s,border-color .12s,background .12s}
+.lantai .blt-dl{display:inline-flex;align-items:center;gap:6px;font-family:var(--ui);font-size:10.5px;font-weight:600;letter-spacing:.07em;color:var(--text2);border:1px solid var(--line2);border-radius:99px;padding:4px 12px 4px 10px;text-decoration:none;white-space:nowrap;font-variant-numeric:tabular-nums;transition:color .12s,border-color .12s,background .12s}
 .lantai .blt-dl:hover{color:var(--amber);border-color:var(--amber);background:var(--amber-dim)}
 /* Keadaan aktif lewat kelas, bukan warna inline di satu pemakaian (#170) —
    semua kendali lain (.tab.on, .chip-t.on, .tile.on) sudah begitu. */
@@ -1770,7 +1770,7 @@
 
 /* #93 keystats — badge skor (Altman Z / Piotroski F) di panel Key Stats.
    Token --*-dim & warna sudah terdefinisi di kedua tema blok .lantai. */
-.lantai .ks-badge{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-radius:99px;padding:1px 7px;margin-left:6px;vertical-align:1px}
+.lantai .ks-badge{display:inline-block;font-family:var(--ui);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-radius:99px;padding:1px 7px;margin-left:6px;vertical-align:1px}
 .lantai .ks-badge.ks-g{background:var(--green-dim);color:var(--green)}
 .lantai .ks-badge.ks-a{background:var(--amber-dim);color:var(--amber)}
 .lantai .ks-badge.ks-r{background:var(--red-dim);color:var(--red)}
@@ -2603,7 +2603,7 @@
 
 .lantai .sea-legenda {
   display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
-  font-family: var(--mono); font-size: 10px; color: var(--text3); border-top: 1px solid var(--line);
+  font-family: var(--ui); font-size: 10px; color: var(--text3); border-top: 1px solid var(--line);
 }
 .lantai .sea-legenda .skala { display: flex; }
 .lantai .sea-legenda .skala i { width: 24px; height: 11px; }
@@ -2663,7 +2663,7 @@
    kalimat abu-abu rata. Pemisah "·" dan "hari bursa" ikut var(--text3) bawaan
    .sea-rentang-note, tak perlu span sendiri. */
 .lantai .sea-rentang-note { color: var(--text3); }
-.lantai .sea-rentang-sumber { color: var(--amber); font-weight: 700; font-family: var(--mono); }
+.lantai .sea-rentang-sumber { color: var(--amber); font-weight: 700; font-family: var(--ui); }
 .lantai .sea-rentang-tanggal { color: var(--text2); font-family: var(--mono); }
 .lantai .sea-rentang-jumlah { color: var(--green); font-weight: 700; font-family: var(--mono); }
 /* Di layar sempit judul dan keterangannya berbagi baris jadi dua kolom
@@ -2705,7 +2705,7 @@
 .lantai .sb-tip-box { fill: var(--bg2); stroke: var(--line2); stroke-width: 1; }
 .lantai .sb-tip-tgl { font-family: var(--mono); font-size: 10.5px; fill: var(--text2); }
 .lantai .sb-tip-pct { font-family: var(--mono); font-size: 14px; font-weight: 700; }
-.lantai .sb-tip-ket { font-family: var(--mono); font-size: 9.5px; fill: var(--text3); }
+.lantai .sb-tip-ket { font-family: var(--ui); font-size: 9.5px; fill: var(--text3); }
 .lantai .sea-hari-tbl { min-width: 640px; }
 .lantai .sea-hari-tbl td.up { color: var(--green); }
 .lantai .sea-hari-tbl td.dn { color: var(--red); }
@@ -2767,13 +2767,16 @@
 }
 .lantai .af-cari:focus-within { border-color: var(--amber); }
 .lantai .af-cari svg { flex: none; color: var(--text3); }
-.lantai .af-cari .inp { border: 0; background: transparent; padding-left: 0; border-radius: 0; }
+/* Kotak cari dibaca sebagai kalimat ("Cari judul / emiten…"), bukan angka
+   yang dibandingkan antarbaris — override font-family: var(--mono) dari
+   .inp dasar (dipakai bersama input numerik kalkulator, yang TETAP mono). */
+.lantai .af-cari .inp { border: 0; background: transparent; padding-left: 0; border-radius: 0; font-family: var(--ui); }
 .lantai .af-cari .inp:focus { border-color: transparent; }
 .lantai .af-paginasi {
   display: flex; align-items: center; justify-content: space-between;
   gap: 12px; flex-wrap: wrap; margin-top: 12px;
 }
-.lantai .af-paginasi > .muted { font-family: var(--mono); font-size: 11px; }
+.lantai .af-paginasi > .muted { font-family: var(--ui); font-size: 11px; }
 .lantai .af-paginasi-tbl { display: flex; gap: 6px; }
 .lantai .af-paginasi-tbl .dd-btn { white-space: nowrap; }
 
@@ -2886,7 +2889,7 @@
    (mis. `.kta-*`) HANYA untuk penempatan & lebar per prinsip 4 (#170). ───── */
 .lantai .blok-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; align-items: start; }
 .lantai .blok { background: var(--bg2); border: 1px solid var(--line); border-radius: var(--r-kecil); padding: 12px 14px; }
-.lantai .blok h4 { margin: 0 0 8px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); font-weight: 700; }
+.lantai .blok h4 { margin: 0 0 8px; font-family: var(--ui); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); font-weight: 700; }
 /* Blok yang kehilangan bahannya (mis. aliran asing belum dipanen emiten ini) —
    dibedakan warnanya, bukan disembunyikan: ketiadaan data adalah informasi. */
 .lantai .blok.blok-kosong { border-color: var(--red-dim); background: rgba(230,99,90,.05); }
@@ -2942,7 +2945,7 @@
    alasan milik emiten di sebelah kirinya. */
 .lantai .sea-saran-belum .ket {
   flex: 1 1 100%; margin-top: 2px; font-size: 11px; line-height: 1.45;
-  color: var(--text3); font-family: var(--mono); white-space: normal;
+  color: var(--text3); font-family: var(--ui); white-space: normal;
 }
 
 /* Pesan gagal di panel lonceng. Kecil tapi wajib terlihat: tombol "Tandai
