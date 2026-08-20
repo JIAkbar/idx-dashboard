@@ -598,10 +598,27 @@ def halaman_sampul(ed, skor_map):
     <div class="cv-tag">Lantai Bursa · Edisi Harian · {n} emiten</div>
     <div class="cv-kode">{ed["edisi"]}</div>'''
     else:
-        kepala = f'''<div class="wm-big">ARUS<br>PASAR</div>
+        kepala = f'''<div class="wm-big">ARUS PASAR</div>
     <div class="cv-tag">Lantai Bursa · Edisi Harian</div>
     <div class="cv-tgl">{ed["tanggal_id"]}</div>
     <div class="cv-kode">{ed["edisi"]} · {n} emiten</div>'''
+
+    # #A6 — hero di ATAS sampul (dulu di kaki, dan dulu sampul cuma daftar isi
+    # rata besar tanpa satu elemen yang menonjol — permintaan user 20 Agu).
+    # IHSG dipilih jadi elemen paling besar/menonjol, bukan emiten skor
+    # tertinggi atau wordmark: ia satu-satunya angka yang mewakili SELURUH
+    # pasar edisi ini (bukan performa satu saham), jadi pas jadi "headline"
+    # sampul — dan user sudah minta blok ini pindah ke atas, jadi menjadikannya
+    # hero sekaligus menuntaskan pemindahan DAN syarat "satu elemen dominan"
+    # dengan satu perubahan. wm-big/senti-sum/daftar di bawahnya diperkecil
+    # relatif supaya hierarkinya jelas: hero > wordmark > ringkasan > daftar.
+    hero = f'''<div class="cv-hero">
+      <div class="cv-hero-l">IHSG</div>
+      <div class="cv-hero-n"><span class="c-{ed["ihsg"]["cls"]}">{ed["ihsg"]["nilai"]}</span>
+        <b class="c-{ed["ihsg"]["cls"]}">{ed["ihsg"]["pct"]}</b></div>
+      <div class="cv-hero-nf"><span class="l">{ed["nf"]["label"]}</span>
+        <b class="c-{ed["nf"]["cls"]}">{ed["nf"]["nilai"]}</b> {ed["nf"]["ket"]}</div>
+    </div>'''
 
     return f'''
 <div class="page cover">
@@ -611,6 +628,7 @@ def halaman_sampul(ed, skor_map):
     <div class="e">{ed["tanggal_id"]}<br><span class="kode">{ed["edisi"]}</span></div>
   </header>
   <div class="inner">
+    {hero}
     {kepala}
     <div class="senti-sum">
       <div class="b sb-bull"><span class="n">{jml["bull"]}</span><span class="l">Bullish</span></div>
@@ -621,10 +639,6 @@ def halaman_sampul(ed, skor_map):
       {chr(10).join(baris)}
     </div>
     <div class="cv-foot">
-      <div class="cv-stats">
-        <span><span class="l">IHSG</span><b>{ed["ihsg"]["nilai"]}</b> <span class="c-{ed["ihsg"]["cls"]}">{ed["ihsg"]["pct"]}</span></span>
-        <span><span class="l">{ed["nf"]["label"]}</span><b class="c-{ed["nf"]["cls"]}">{ed["nf"]["nilai"]}</b> {ed["nf"]["ket"]}</span>
-      </div>
       <div class="cv-legal">© {ed["tanggal_id"].split()[-1]} PAPAN — Pusat Analisa Pasar Nusantara. Hak cipta dilindungi.<br>
       Analisis probabilistik, bukan ajakan transaksi.<br>
       Data: TradingView &amp; Stockbit.</div>

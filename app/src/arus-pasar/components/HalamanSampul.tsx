@@ -9,41 +9,87 @@ export function HalamanSampul({ ed, skorMap }: { ed: Edisi; skorMap: SkorMap }) 
   return (
     <div className="page" style={{ background: 'var(--brand)', color: '#fff' }}>
       <div style={{ padding: '22mm 20mm 0', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* Hero IHSG (#A6, 20 Agu): elemen paling menonjol sampul, dipindah ke
+            atas — dulu kotak IHSG/NF ini nangkring kecil di kaki halaman dan
+            tak ada satupun elemen dominan (semua sama besar = terbaca sebagai
+            daftar isi). IHSG dipilih jadi hero karena mewakili SELURUH pasar
+            edisi ini, bukan performa satu emiten (alasan lengkap di build.py
+            halaman_sampul()). Wordmark di bawah diperkecil relatif. */}
         <div style={{ borderBottom: '1px solid rgba(255,255,255,.35)', paddingBottom: '6mm' }}>
           <div
             style={{
-              fontSize: '8pt',
-              letterSpacing: '.3em',
+              fontSize: '7pt',
+              letterSpacing: '.24em',
               textTransform: 'uppercase',
-              color: 'rgba(255,255,255,.7)',
+              color: 'rgba(255,255,255,.6)',
             }}
           >
-            Tinjauan Teknikal &amp; Arus Dana Harian
+            IHSG
           </div>
           <div
             style={{
-              fontFamily: 'Georgia,Cambria,serif',
-              fontSize: '46pt',
+              fontFamily: 'Consolas,monospace',
               fontWeight: 700,
-              lineHeight: 1.05,
-              marginTop: '4mm',
+              fontSize: '40pt',
+              lineHeight: 1,
+              marginTop: '2mm',
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: '6mm',
             }}
           >
-            ARUS PASAR
+            <span>6.409,65</span>
+            <b style={{ fontSize: '14pt' }}>+1,04%</b>
+          </div>
+          <div style={{ marginTop: '3mm', fontSize: '9pt' }}>
+            <span
+              style={{
+                fontSize: '6.3pt',
+                letterSpacing: '.16em',
+                textTransform: 'uppercase',
+                color: 'rgba(255,255,255,.6)',
+                marginRight: '2.5mm',
+              }}
+            >
+              Net Foreign Buy Reguler
+            </span>
+            <b style={{ fontFamily: 'Consolas,monospace', fontSize: '10pt' }}>Rp917,23 miliar</b> (7 Agu)
           </div>
         </div>
-        <div style={{ marginTop: '8mm', fontSize: '13pt' }}>{ed.tanggal_id}</div>
+        <div
+          style={{
+            fontSize: '7pt',
+            letterSpacing: '.24em',
+            textTransform: 'uppercase',
+            color: 'rgba(255,255,255,.6)',
+            marginTop: '6mm',
+          }}
+        >
+          Tinjauan Teknikal &amp; Arus Dana Harian
+        </div>
+        <div
+          style={{
+            fontFamily: 'Georgia,Cambria,serif',
+            fontSize: '20pt',
+            fontWeight: 700,
+            lineHeight: 1.1,
+            marginTop: '2mm',
+          }}
+        >
+          ARUS PASAR
+        </div>
+        <div style={{ marginTop: '4mm', fontSize: '9.5pt' }}>{ed.tanggal_id}</div>
         <div
           style={{
             fontFamily: 'Consolas,monospace',
-            fontSize: '9pt',
+            fontSize: '8pt',
             color: 'rgba(255,255,255,.75)',
             marginTop: '1.5mm',
           }}
         >
           {ed.edisi}
         </div>
-        <div style={{ marginTop: '14mm' }}>
+        <div style={{ marginTop: '10mm' }}>
           <div
             style={{
               fontSize: '7pt',
@@ -83,46 +129,7 @@ export function HalamanSampul({ ed, skorMap }: { ed: Edisi; skorMap: SkorMap }) 
           </div>
         </div>
         <div style={{ marginTop: 'auto', paddingBottom: '16mm' }}>
-          <div
-            style={{
-              background: 'rgba(255,255,255,.08)',
-              padding: '4mm 5mm',
-              fontSize: '9pt',
-              display: 'flex',
-              gap: '10mm',
-              fontVariantNumeric: 'tabular-nums',
-            }}
-          >
-            <span>
-              <span
-                style={{
-                  display: 'block',
-                  fontSize: '6.3pt',
-                  letterSpacing: '.16em',
-                  textTransform: 'uppercase',
-                  color: 'rgba(255,255,255,.6)',
-                }}
-              >
-                IHSG
-              </span>
-              <b>6.409,65</b> +1,04%
-            </span>
-            <span>
-              <span
-                style={{
-                  display: 'block',
-                  fontSize: '6.3pt',
-                  letterSpacing: '.16em',
-                  textTransform: 'uppercase',
-                  color: 'rgba(255,255,255,.6)',
-                }}
-              >
-                Net Foreign Buy Reguler
-              </span>
-              <b>Rp917,23 miliar</b> (7 Agu)
-            </span>
-          </div>
-          <div style={{ fontSize: '7pt', color: 'rgba(255,255,255,.55)', marginTop: '5mm', lineHeight: 1.7 }}>
+          <div style={{ fontSize: '7pt', color: 'rgba(255,255,255,.55)', lineHeight: 1.7 }}>
             Analisis probabilistik, bukan ajakan transaksi.
             <br />
             Data: TradingView &amp; Stockbit (transkripsi manual terverifikasi), Yahoo Finance.
