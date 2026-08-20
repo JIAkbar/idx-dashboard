@@ -352,6 +352,21 @@ Dua jalan, keputusan Johan:
 Yang belum diputuskan juga: `CHT` sudah dipakai widget TradingView, jadi chart
 PAPAN belum punya singkatan. Tiga huruf berhenti membedakan di jumlah segini.
 
+> **SELESAI — dicoba ulang 20 Agu 2026, ternyata kedua jalan sudah jadi.**
+> Antara update 17 Agu di atas dan sesi ini, rail sudah dilonggarkan
+> (`b41fa755`) dan flyoutnya diperbesar (`06787778`, backlog D11) — dua jalan
+> yang dirumuskan di atas KEDUANYA sudah terpasang: `.dasbor-rail-list{
+> overflow-y:auto}` (`lantai.css:191`, asuransi murah) DAN rail sudah
+> menampilkan **5 kelompok** (Pasar/Emiten/Aliran Dana/Analisa/Baca) dengan
+> flyout per kelompok (`Sidebar.tsx` `RailGrup`, `lib/dasbor/menu.ts`
+> `MENU_GRUP`/`MENU_KELOMPOK`), bukan ikon satuan yang meluber. Diuji ulang
+> di localhost:5175: 1536×700 (layar pendek, kasus yang jadi alasan #175)
+> `.dasbor-rail-list` clientHeight=scrollHeight=**523px** — tak overflow sama
+> sekali, headroom 177px sebelum `overflow-y:auto` perlu bekerja; flyout grup
+> terbawah ("Baca") clamp masih benar (`bottom:600` < `window:700`). Diuji
+> ulang juga di 1536×960, sama tak overflow. **Tak ada kode yang diubah** —
+> cuma dokumen ini + `docs/antrean.md` A2 yang tadinya salah menyalin status
+> "belum" padahal kodenya sudah selesai duluan.
 
 ---
 
