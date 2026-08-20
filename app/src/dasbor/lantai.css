@@ -1172,10 +1172,13 @@
 .lantai .csb-more:hover{border-color:var(--amber);color:var(--text)}
 /* Area expand "Kalender penuh" (#k1full mockup: display toggle + border-top).
    Feedback #1 (dua ronde): dulu satu kolom cap 448px — sisa kanan kosong
-   melompong; sekarang FULL-WIDTH — dua kolom fr fleksibel (kiri grid bulan
-   ikut melebar, sel proporsional; kanan sesi+statistik stretch sisa lebar),
-   tanpa cap px tetap, turun 1 kolom di layar sempit. */
-.lantai .csb-full{border-top:1px solid var(--line);padding:12px 14px;display:grid;grid-template-columns:minmax(380px,1fr) minmax(320px,1.2fr);gap:30px;align-items:start}
+   melompong; jadi FULL-WIDTH — dua kolom fr fleksibel, kanan sesi+statistik
+   stretch sisa lebar. Tapi kiri (fr tanpa cap atas) ikut melebar di monitor
+   lebar — sel kalender jadi raksasa (120×46px di 1536px, keluhan #29 "segede
+   gaban"). Kolom KANAN yang tetap fr (mengisi lebar, bukan "kosong
+   melompong" lagi), kolom KIRI dikunci max 460px (5 sel ~86px, masuk akal
+   dibaca) — dua perbaikan berbeda, tidak saling menghapus. */
+.lantai .csb-full{border-top:1px solid var(--line);padding:12px 14px;display:grid;grid-template-columns:minmax(380px,460px) minmax(320px,1fr);gap:30px;align-items:start}
 .lantai .csb-full .cal-grid{margin-top:0;border-top:none;padding-top:0}
 /* Dua sub-blok kolom kanan (sesi | tanggal terpilih) berdampingan mengisi
    sisa lebar; auto-fit merobohkannya jadi satu kolom saat sempit. */
