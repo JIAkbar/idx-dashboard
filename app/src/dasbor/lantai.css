@@ -839,7 +839,14 @@
 .lantai .flap{position:relative;background:var(--flap);color:#F4F6F9;font-family:var(--mono);font-weight:600;font-size:clamp(26px,4.2vw,40px);line-height:1;padding:10px 7px 12px;border-radius:4px;min-width:.72em;text-align:center}
 .lantai .flap.sym{color:var(--amber);min-width:.5em}
 .lantai .flap::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--flap-line)}
-.dasbor-shell[data-theme="light"] .lantai .flap{color:#F4F6F9}
+.dasbor-shell[data-theme="light"] .lantai .flap{color:#F4F6F9}/* KonteksData (#154) — peringatan konteks + tautan metodologi, satu komponen
+   dipakai ulang di tiap halaman analitik (components/dasbor/KonteksData.tsx).
+   Baris tipis rata kiri-kanan: tanggal data di kiri, tautan metodologi di
+   kanan; turun tumpuk di layar sempit supaya tautan tidak terpotong. */
+.lantai .konteks-data{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:11px}
+.lantai .konteks-data > span{display:inline-flex;align-items:center;gap:5px}
+.lantai .kd-tautan{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--amber);text-decoration:none;white-space:nowrap}
+.lantai .kd-tautan:hover{text-decoration:underline}
 
 
 

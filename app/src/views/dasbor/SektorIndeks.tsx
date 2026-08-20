@@ -2,6 +2,7 @@ import { useMemo, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
 import { Kalender, fmtTanggalPendek } from '../../components/dasbor/Kalender'
+import { KonteksData } from '../../components/dasbor/KonteksData'
 import { useDataHarian, useDataPembanding } from '../../lib/dasbor/dataHarian'
 import { cariTanggalPembanding, hitungPeriodePct, rentangPreset, type RentangTanggal } from '../../lib/dasbor/periode'
 import { fN, fp } from '../../lib/dasbor/format'
@@ -296,6 +297,7 @@ export function SektorIndeks() {
       <div ref={kalenderRef}>
         <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} memuat={loading && !hari} />
       </div>
+      <KonteksData tanggal={tanggalAktif} />
 
       {labelRentang && (
         <div className="lbl" style={{ margin: '2px 2px -8px' }}>

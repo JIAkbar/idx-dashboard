@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { BULAN, ringkasEmiten, vonisUji, type RingkasBulan, type RingkasEmiten, type SeriImbal } from '../../lib/seasonality'
 import { muatIndeks, muatIhsg, muatSeri, muatBelum, type BarisIndeks, type BarisBelum } from '../../lib/seasonalityData'
 import { pesanGalat } from '../../lib/pesanGalat'
@@ -126,6 +127,8 @@ export function Seasonality() {
           {tab === 'bulan'
             ? `pola bulanan ${indeks ? indeks.length.toLocaleString('id-ID') : '—'} emiten, diuji lawan kebetulan`
             : 'pola hari dalam seminggu, diuji lawan kebetulan'}
+          {' · '}
+          <Link to="/metodologi" className="kd-tautan">Metodologi &amp; sumber data →</Link>
         </span>
       </div>
 

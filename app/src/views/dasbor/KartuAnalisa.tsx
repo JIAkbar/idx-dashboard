@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Dropdown, type OpsiDropdown } from '../../components/dasbor/Dropdown'
 import { IkonMenu, IKON_CARI } from '../../components/dasbor/IkonMenu'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
@@ -652,7 +652,10 @@ export function KartuAnalisa() {
     <div className="lantai">
       <div className="vhead">
         <h1>Kartu Analisa Emiten</h1>
-        <span className="sub">struktur harga, level, musiman &amp; fundamental — tiap angka membawa asal-usulnya</span>
+        <span className="sub">
+          struktur harga, level, musiman &amp; fundamental — tiap angka membawa asal-usulnya ·{' '}
+          <Link to="/metodologi" className="kd-tautan">Metodologi &amp; sumber data →</Link>
+        </span>
       </div>
 
       {tab !== 'semua' && (

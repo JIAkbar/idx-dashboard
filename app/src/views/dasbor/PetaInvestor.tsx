@@ -11,6 +11,7 @@ import { DetailPanel } from './peta-investor/DetailPanel'
 import { PetaInvestorSearch, type PetaInvestorSearchHandle } from './peta-investor/PetaInvestorSearch'
 import { exportEmiten, exportInvestor } from '../../lib/dasbor/exportPeta'
 import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_ULANG, IKON_KLIK } from '../../components/dasbor/IkonMenu'
+import { KonteksData } from '../../components/dasbor/KonteksData'
 
 /** Panah unduh ke tray — sama dengan IKON_UNDUH lokal Bulletin.tsx. */
 const IKON_UNDUH = 'M12 4v10M7.5 10.5L12 15l4.5-4.5M5 19h14'
@@ -48,11 +49,15 @@ export function PetaInvestor() {
   // satu pengumuman keterbukaan KSEI (`investor_map.meta.json`), dan tanpa
   // menyebut tanggalnya pembaca menyangka ini posisi kepemilikan SEKARANG.
   const [posisiTanggal, setPosisiTanggal] = useState<string | null>(null)
+  // ISO mentah disimpan terpisah (bukan diparse balik dari posisiTanggal yang
+  // sudah "3 Agustus 2026") — KonteksData butuh yyyy-mm-dd buat formatnya sendiri.
+  const [posisiIso, setPosisiIso] = useState<string | null>(null)
   useEffect(() => {
     fetch('/data-idx/json/investor_map.meta.json')
       .then((r) => (r.ok ? (r.json() as Promise<{ publish_date?: string }>) : null))
       .then((m) => {
         if (m?.publish_date) {
+          setPosisiIso(m.publish_date.slice(0, 10)) // "2026-06-02T11:50:22" → "2026-06-02"
           setPosisiTanggal(
             new Date(m.publish_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
           )
@@ -124,6 +129,7 @@ export function PetaInvestor() {
           jaringan kepemilikan KSEI{posisiTanggal ? ` · posisi ${posisiTanggal}` : ''} · ≥1% · {data?.length ?? 0} emiten
         </span>
       </div>
+      <KonteksData tanggal={posisiIso} />
 
       {loading && (
         <div className="fd-empty">

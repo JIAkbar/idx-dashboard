@@ -1,6 +1,7 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { Kalender, fmtTanggalPendek } from '../../components/dasbor/Kalender'
+import { KonteksData } from '../../components/dasbor/KonteksData'
 import { useDataHarian, useDataRentang } from '../../lib/dasbor/dataHarian'
 import type { RentangTanggal } from '../../lib/dasbor/periode'
 import { useUrut } from '../../lib/dasbor/useUrut'
@@ -148,6 +149,7 @@ export function TopStocks() {
   return (
     <div className="lantai">
       <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
+      <KonteksData tanggal={tanggalAktif} />
 
       {rentang && (
         <div className="panel">

@@ -332,7 +332,8 @@ export function StatistikBerkala() {
 
       <p className="muted stb-sumber">
         Sumber: terbitan statistik berkala resmi Bursa Efek Indonesia, edisi {labelEdisi(edisi)}.
-        Ruas yang tidak tercantum di edisinya ditulis “—”, bukan nol.
+        Ruas yang tidak tercantum di edisinya ditulis “—”, bukan nol.{' '}
+        <Link to="/metodologi" className="kd-tautan">Metodologi &amp; sumber data →</Link>
       </p>
     </div>
   )
