@@ -35,6 +35,28 @@ python build.py 2026-08-14
 `--tanpa-pdf` melewatkan render Playwright — dipakai saat mengecek HTML-nya
 saja, jauh lebih cepat.
 
+### Gerbang kredit (#181) — wajib diisi, kalau tidak ia diam
+
+```bash
+python build.py 2026-08-18 \
+  "--disetujui=ADRO:Agitama;INET:Erika Julianti;TINS:Erika Julianti" \
+  "--tak-terpakai=INET:rentang tanggalnya lebih dari satu hari;TINS:sama"
+```
+
+`--disetujui=` adalah SELURUH setoran yang lolos kurasi tanggal itu (salin dari
+`/admin/kurasi`), bukan cuma yang dirakit. Build **berhenti** kalau ada yang
+disetujui tapi tak jadi emiten edisi, dan menyebut nama penyetor + tickernya —
+itulah gunanya. Alasan di `--tak-terpakai=` ikut tercetak di kolofon dan
+tersalin ke `keluaran/<EDISI>.tak-terpakai.sql`; jalankan berkas itu sebagai
+superadmin supaya pemicu `setoran_kabari_dimuat` mengabari penyetornya.
+
+Pemisah pasangannya `;` (bukan `,` seperti `--kecuali=`) karena alasannya
+kalimat dan koma di dalamnya wajar. Daftarnya boleh juga ditaruh di
+`masuk/kredit-<EDISI>.json` ruas `"disetujui"`. **Tanpa salah satu dari
+keduanya gerbangnya MATI** — ia mencetak peringatan lalu membiarkan build
+jalan, supaya perakitan tetap mungkin tanpa kredensial (aturan yang sama
+dengan `--kecuali=` di #138).
+
 **Syarat sebelum dijalankan:** `edisi/2026-08-14.json` harus sudah ada. Itu
 hasil transkripsi, bukan dibuat skrip.
 
@@ -93,7 +115,8 @@ Keluaran: `BA-<TICKER>-<ddmmyy>-E01`.
    benar, minta revisi yang perlu diperbaiki.
 2. **Transkripsi** — minta Claude membaca screenshot yang disetujui dan
    menuliskan `edisi/<tgl>.json`. Ini langkah yang butuh sesi.
-3. **Rakit** — `python build.py <tgl>`
+3. **Rakit** — `python build.py <tgl> --disetujui=... [--tak-terpakai=...]`
+   (gerbang #181 di atas; tanpa `--disetujui=` ia tak memeriksa apa pun)
 4. **Periksa PDF** — buka `keluaran/AP-<ddmmyy>-E01.pdf`. Yang paling sering
    salah: angka yang tak cocok dengan screenshot-nya.
 5. **Unggah ke rak** lewat `/admin/terbitan`.
