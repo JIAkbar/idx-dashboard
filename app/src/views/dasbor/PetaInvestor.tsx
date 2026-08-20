@@ -44,6 +44,22 @@ const LEGENDA: { warna: string; teks: string }[] = [
  */
 export function PetaInvestor() {
   const { data, loading, error, retry } = usePetaInvestor()
+  // Tanggal POSISI data, bukan tanggal hari ini — jaringan ini dibangun dari
+  // satu pengumuman keterbukaan KSEI (`investor_map.meta.json`), dan tanpa
+  // menyebut tanggalnya pembaca menyangka ini posisi kepemilikan SEKARANG.
+  const [posisiTanggal, setPosisiTanggal] = useState<string | null>(null)
+  useEffect(() => {
+    fetch('/data-idx/json/investor_map.meta.json')
+      .then((r) => (r.ok ? (r.json() as Promise<{ publish_date?: string }>) : null))
+      .then((m) => {
+        if (m?.publish_date) {
+          setPosisiTanggal(
+            new Date(m.publish_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+          )
+        }
+      })
+      .catch(() => {})
+  }, [])
   const [activeView, setActiveView] = useState<ViewTab>('grafik')
   const [searchValue, setSearchValue] = useState('')
   const [focusCode, setFocusCode] = useState<string | null>(null)
@@ -104,7 +120,9 @@ export function PetaInvestor() {
     <div className="lantai">
       <div className="vhead">
         <h1>Peta Investor</h1>
-        <span className="sub">jaringan kepemilikan KSEI · ≥1% · {data?.length ?? 0} emiten</span>
+        <span className="sub">
+          jaringan kepemilikan KSEI{posisiTanggal ? ` · posisi ${posisiTanggal}` : ''} · ≥1% · {data?.length ?? 0} emiten
+        </span>
       </div>
 
       {loading && (
