@@ -176,8 +176,32 @@ def simpan(kode: str, baris: list[list], th_full: int | None = None) -> int:
         # lama) supaya `cukup()` di bawah tahu seberapa dalam emiten ini PERNAH
         # diminta — dipakai --lewati-cukup, lihat penjelasan di sana.
         obj["th_full"] = th_full
-    p.write_text(json.dumps(obj, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    _tulis_ulet(p, json.dumps(obj, ensure_ascii=False, separators=(",", ":")))
     return p.stat().st_size
+
+
+def _tulis_ulet(p: Path, teks: str, coba: int = 4) -> None:
+    """Tulis dengan beberapa kali percobaan.
+
+    Windows sesekali menolak tulis dengan `OSError: [Errno 22]` ketika berkasnya
+    sedang dipegang proses lain sesaat -- pengindeks, pemindai virus, atau
+    pengawas berkas dev server yang memang menyajikan folder ini. Kegagalannya
+    ACAK: 20 Agu 2026 dua jalan berturut-turut mati di emiten yang berbeda
+    (ESTA lalu AGII).
+
+    Yang membuatnya mahal bukan kegagalan tulisnya, melainkan akibatnya: satu
+    berkas gagal menjatuhkan SELURUH sisa panen. Jalan kedua berhenti di AGII
+    dan meninggalkan 400 emiten tertahan di tanggal kemarin -- tanpa satu pun
+    dari mereka bermasalah.
+    """
+    for ke in range(coba):
+        try:
+            p.write_text(teks, encoding="utf-8")
+            return
+        except OSError:
+            if ke == coba - 1:
+                raise
+            time.sleep(0.25 * (ke + 1))
 
 
 def cukup(lama: dict, tahun_target: int) -> bool:
