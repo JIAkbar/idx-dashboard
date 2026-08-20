@@ -64,19 +64,25 @@ KATALOG: dict[str, dict[str, str]] = {
             "(arsip mentah 2022 cocok), jadi cacatnya di laporan itu sendiri, "
             "bukan di pembacaan kita.",
     },
-    "ARGO": {
-        "2020-12-31":
-            "Tersimpan 1.000x terlalu besar: aset USD 80,19 MILIAR untuk Argo "
-            "Pantes. Nilai benarnya USD 80,19 juta — disilangkan ke 2019 "
-            "(USD 85,03 juta, terkonfirmasi arsip) dan 2022 (Rp 1,13 triliun "
-            "= USD ~80 juta). Tak ditambal karena berkas mentah 2020 tak "
-            "terarsip; menebak pembaginya lalu menuliskannya membuat "
-            "kesalahannya permanen.",
-        "2021-12-31":
-            "Sama seperti 2020 — tersimpan 1.000x terlalu besar, dan label "
-            "mata uangnya sendiri ditaksir (IDR) bukan terbaca. Berkas mentah "
-            "2021 tak terarsip.",
-    },
+    # ARGO 2020 & 2021 DICABUT dari katalog ini, 20 Agustus 2026.
+    #
+    # Keduanya dulu tersimpan 1.000x terlalu besar — aset USD 80,19 MILIAR
+    # untuk Argo Pantes — dan ditandai cacat dengan alasan "tak bisa ditambal
+    # karena berkas mentah 2020/2021 tak terarsip". Alasan itu HABIS begitu
+    # panen B24 mengarsipkan 2020-audit (701 berkas) dan 2021-audit (747):
+    # penambal skala langsung berjangkar ke mentahnya dan membetulkannya
+    # sendiri, mis. `6,712e+09 -> 6,712e+06  [arsip]`.
+    #
+    # Terperiksa sesudahnya, deretnya nyambung:
+    #   2019  USD    85.032.904   (terkonfirmasi arsip)
+    #   2020  USD    80.185.206
+    #   2021  USD    78.704.696
+    #   2022  IDR 1.129.483.925.972  (= USD ~80 juta pada kurs saat itu)
+    #
+    # Penandanya WAJIB ikut dicabut, bukan dibiarkan "untuk jaga-jaga": ia
+    # memasang lencana `!` merah di kepala kolom dengan alasan yang sudah tak
+    # benar. Peringatan di atas data yang benar lebih merusak daripada tak ada
+    # peringatan — ia mengajari pembaca mengabaikan peringatan berikutnya.
 }
 
 
