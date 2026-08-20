@@ -1561,3 +1561,56 @@ describe('Bar replay: Wyckoff & Harmonic ikut mundur (tak membaca masa depan)', 
     }
   })
 })
+
+/**
+ * Sapuan seluruh indikator KURASI (Johan 20 Agu 2026: "indikator kita perlu
+ * di sweep dlu ada yang tidak berfungsi juga itu").
+ *
+ * Yang di menu ada dua sumber, dan sampai hari ini cuma satu yang pernah
+ * disapu mekanis: katalog pustaka lewat `scripts/audit-indikator.mjs` (457
+ * entri, 19 dibuang). Sepuluh kurasi PAPAN tak pernah diuji sebagai SATU
+ * daftar — tiap satunya punya ujinya sendiri, jadi jenis yang kelak
+ * ditambahkan tanpa uji akan lolos tanpa ada yang tahu.
+ *
+ * Vonis "tidak berfungsi" di sini sengaja meniru audit pustaka: nol garis,
+ * nol nilai berhingga, atau garis lurus sempurna. Ketiganya menggambar
+ * sesuatu yang tak berarti tanpa melempar galat apa pun.
+ */
+describe('sapuan indikator kurasi', () => {
+  const lilin = lilinUji(300)
+  const volume = lilin.map((_, i) => 1000 + (i % 37) * 13)
+  const tutup = lilin.map((l) => l.close)
+  let katalog: Awaited<ReturnType<typeof muatKatalog>>
+  beforeAll(async () => { katalog = await muatKatalog() })
+
+  const SEMUA = Object.keys(SPEK_INDIKATOR) as Array<keyof typeof SPEK_INDIKATOR>
+
+  it('kesepuluh jenis kurasi ada di daftar — tak ada yang hilang diam-diam', () => {
+    expect(SEMUA).toHaveLength(10)
+  })
+
+  it.each(SEMUA)('%s: menggambar sesuatu yang berarti', (jenis) => {
+    const inst = buatInstans(jenis, SPEK_INDIKATOR[jenis].param, `sapu-${jenis}`, 0)
+    const garis = hitungInstans(inst, tutup, volume, lilin, katalog)
+
+    expect(garis.length, `${jenis}: nol garis`).toBeGreaterThan(0)
+    for (const g of garis) {
+      const isi = g.nilai.filter((v): v is number => v !== null && Number.isFinite(v))
+      expect(isi.length, `${jenis}/${g.nama}: nol nilai berhingga`).toBeGreaterThan(20)
+      // Garis lurus sempurna = tak membawa informasi. Dikecualikan garis
+      // BANTU: ambang tetap seperti 20/80 pada Stochastic memang lurus, dan
+      // itu memang gunanya.
+      if (!g.bantu) {
+        expect(new Set(isi).size, `${jenis}/${g.nama}: konstan sepanjang deret`).toBeGreaterThan(1)
+      }
+      // Panjangnya wajib sejajar lilin — deret yang lebih pendek digambar
+      // bergeser ke kiri tanpa satu pun galat.
+      expect(g.nilai.length, `${jenis}/${g.nama}: panjang tak sejajar lilin`).toBe(lilin.length)
+    }
+  })
+
+  it.each(SEMUA)('%s: tanpa lilin sama sekali tak melempar', (jenis) => {
+    const inst = buatInstans(jenis, SPEK_INDIKATOR[jenis].param, `kosong-${jenis}`, 0)
+    expect(() => hitungInstans(inst, [], [], [], katalog)).not.toThrow()
+  })
+})

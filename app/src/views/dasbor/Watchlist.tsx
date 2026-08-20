@@ -21,6 +21,28 @@ import './Watchlist.css'
 
 type UrutState<T> = { kunci: keyof T; arah: 'naik' | 'turun'; klik: (k: keyof T) => void }
 
+/**
+ * Angka Indonesia -> number. Titik pemisah RIBUAN, koma pemisah DESIMAL
+ * (Johan 20 Agu 2026: "jadi support titik dan koma").
+ *
+ * Urutannya penting dan satu arah saja yang benar: titik dibuang DULU, baru
+ * koma jadi titik. Kebalikannya mengubah "6.000" jadi 6 — harga milik enam
+ * ribu tersimpan sebagai enam rupiah, dan untung-ruginya melonjak 100.000%
+ * tanpa satu pun galat.
+ */
+export function keAngka(teks: string): number | null {
+  const bersih = teks.trim().replace(/\./g, '').replace(',', '.')
+  if (bersih === '') return null
+  const v = Number(bersih)
+  return Number.isFinite(v) && v > 0 ? v : null
+}
+
+/** number -> teks Indonesia berititik ribuan. Desimal dipertahankan apa adanya
+ *  sampai 4 angka; harga saham IDX tak pernah lebih halus dari itu. */
+export function keTeksAngka(n: number): string {
+  return n.toLocaleString('id-ID', { maximumFractionDigits: 4 })
+}
+
 /** Lembar dalam bentuk ringkas — kolom tabel tak muat "1.234.567.890 lembar",
  *  dan angka penuhnya tetap ada di `title`. Ambangnya juta/miliar karena itu
  *  rentang nyata net asing harian di IDX. */
@@ -62,7 +84,6 @@ interface BarisTabel {
   harga: number | null
   chgPersen: number | null
   avg: number | null
-  untungRp: number | null
   untungPersen: number | null
   /** null = deretnya belum termuat. */
   posisi: PosisiEma | null
@@ -167,7 +188,6 @@ export function Watchlist() {
       harga: hargaKini,
       chgPersen: h?.chgPersen ?? null,
       avg,
-      untungRp: ur?.rp ?? null,
       untungPersen: ur?.persen ?? null,
       posisi: isi?.posisi ?? null,
       peluang: isi?.posisi.peluang?.persen ?? null,
@@ -223,8 +243,7 @@ export function Watchlist() {
                   {thSort(s, 'harga', 'Harga', true)}
                   {thSort(s, 'chgPersen', '%chg', true)}
                   <th className="r">Harga Milik</th>
-                  {thSort(s, 'untungRp', 'Untung/Rugi (Rp)', true)}
-                  {thSort(s, 'untungPersen', 'Untung/Rugi (%)', true)}
+                  {thSort(s, 'untungPersen', 'Untung/Rugi', true)}
                   <th className="r" title={`Posisi harga terhadap EMA ${PERIODE.join('/')}`}>EMA {PERIODE.join('/')}</th>
                   {thSort(s, 'peluang', `Peluang ${HORIZON}H`, true)}
                   {thSort(s, 'asingNet', `Asing ${JENDELA}H`, true)}
@@ -275,15 +294,18 @@ function BarisWatchlist({
   onHapus: () => void
   onUbahHarga: (v: number | null) => void
 }) {
-  const [edit, setEdit] = useState(b.avg != null ? String(b.avg) : '')
+  const [edit, setEdit] = useState(b.avg != null ? keTeksAngka(b.avg) : '')
   // Sinkron ulang kalau nilai tersimpan berubah dari luar (mis. dua tab).
-  useEffect(() => { setEdit(b.avg != null ? String(b.avg) : '') }, [b.avg])
+  useEffect(() => { setEdit(b.avg != null ? keTeksAngka(b.avg) : '') }, [b.avg])
 
   function simpan() {
-    const teks = edit.trim()
-    if (teks === '') { onUbahHarga(null); return }
-    const v = Number(teks.replace(/\./g, '').replace(',', '.'))
-    onUbahHarga(isFinite(v) && v > 0 ? v : null)
+    const v = keAngka(edit)
+    onUbahHarga(v)
+    // Ditulis ulang dalam bentuk baku begitu selesai disunting: "6000" yang
+    // diketik jadi "6.000" di layar, sama bentuknya dengan kolom Harga di
+    // sebelahnya. Selagi difokus teksnya dibiarkan apa adanya — memasang titik
+    // sambil orang mengetik memindahkan kursornya sendiri.
+    setEdit(v != null ? keTeksAngka(v) : '')
   }
 
   return (
@@ -311,11 +333,14 @@ function BarisWatchlist({
           aria-label={`Harga milik ${b.kode}`}
         />
       </td>
-      {/* Baris tanpa harga milik TIDAK boleh menampilkan untung-rugi 0 — itu
+      {/* Kolom Untung/Rugi (Rp) DIBUANG 20 Agu 2026 ("rupiah nya tidak perlu,
+          cukup munculkan itu saja harga saat ini dan average harga nya").
+          Nilai rupiahnya cuma benar kalau jumlah lot ikut disimpan, dan itu
+          tak pernah ditanyakan — yang tersimpan cuma harga milik. Persennya
+          tetap, karena persen tak butuh jumlah lot untuk jadi benar.
+
+          Baris tanpa harga milik TIDAK boleh menampilkan untung-rugi 0 — itu
           angka yang berbohong (0 berarti "impas", bukan "tak diketahui"). */}
-      <td className={`r num ${b.untungRp == null ? '' : b.untungRp >= 0 ? 'up' : 'dn'}`}>
-        {b.untungRp == null ? '—' : (b.untungRp >= 0 ? '+' : '') + Math.round(b.untungRp).toLocaleString('id-ID')}
-      </td>
       <td className={`r num ${b.untungPersen == null ? '' : b.untungPersen >= 0 ? 'up' : 'dn'}`}>
         {b.untungPersen == null ? '—' : fp(b.untungPersen)}
       </td>
