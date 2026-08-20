@@ -206,15 +206,30 @@ def idx_pengumuman(batas: int) -> list[dict]:
     return out
 
 
-# Empat kanal IPOT News yang ditunjuk Johan. `newsList.php` yang dipakai
-# sebelumnya adalah daftar campur — di sana berita bursa berdampingan dengan
-# politik Amerika dan pemilu Zambia. Kanal per topik ini yang isinya pasar.
+# Kanal IPOT News yang ditunjuk Johan — TUJUH, bukan empat. `newsList.php`
+# yang dipakai sebelumnya adalah daftar campur: di sana berita bursa
+# berdampingan dengan politik Amerika dan pemilu Zambia. Kanal per topik ini
+# yang isinya pasar.
+#
+# Tiga terakhir ditambahkan 20 Agu 2026 atas kiriman tautan Johan, dan
+# ketiganya diuji lebih dulu sebelum dipasang: `industries`, `bonds`, dan
+# `komoditi` sama-sama menjawab 200 dengan 200 tautan `newsDetail.php` per
+# halaman, jadi tak ada yang perlu diperlakukan khusus.
 IPOT_KANAL = [
     ("stocks", "Saham"),
     ("economy", "Ekonomi"),
     ("ipsnews", "IPS News"),
     ("jci", "Market/JCI"),
+    ("industries", "Industri"),
+    ("bonds", "Obligasi"),
+    ("komoditi", "Komoditas"),
 ]
+
+# Lantai per kanal. Tanpa ini `batas // len(IPOT_KANAL)` menyusut diam-diam
+# tiap kali kanal ditambah — dengan `--batas 30` bawaan alur, tujuh kanal cuma
+# kebagian 4 item masing-masing, jadi menambah kanal justru MENGURANGI kabar
+# yang masuk dari kanal yang sudah ada.
+IPOT_MIN_PER_KANAL = 10
 
 # Halaman kanal itu sendiri cuma kerangka — daftarnya diambil JavaScript dari
 # endpoint di bawah, yang membalas JSON berisi potongan HTML per halaman.
@@ -252,7 +267,7 @@ def ipot(batas: int) -> list[dict]:
     IPOT tak lagi tampil tanpa tanggal dan bisa diurut bersama sumber lain.
     """
     out, terlihat = [], set()
-    per_kanal = max(1, batas // len(IPOT_KANAL))
+    per_kanal = max(IPOT_MIN_PER_KANAL, batas // len(IPOT_KANAL))
     for level4, nama in IPOT_KANAL:
         r = ambil(f"{IPOT_AJAX}?halaman=0&level4={level4}",
                   {**HEADER_UMUM, "Referer": f"https://www.indopremier.com/ipotnews/nw-saham.php?level4={level4}",

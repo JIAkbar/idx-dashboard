@@ -1,0 +1,122 @@
+# Panen kabar dari RUNNER RUMAHAN — khusus sumber yang ditolak IP datacenter.
+#
+# Kenapa berkas ini ada, terukur pada 20 Agustus 2026:
+#
+#   investasi.kontan.co.id/rss                 200 dari rumah · 403 dari runner GitHub
+#   idx.co.id/.../GetNewsSearch                200 dari rumah · 403 dari runner GitHub
+#
+# Dan akibatnya di `kabar.json` pada hari yang sama: IPOT News terbaru 20 Agu
+# 07:17, sementara IDX dan Kontan berhenti di 18 Agu 21:56. Alur awan HIJAU
+# tiap 2 jam sambil tiga dari lima sumber pulang kosong — kegagalan yang tak
+# pernah berbunyi.
+#
+# Yang membedakan bukan bentuk permintaannya. `panen_kabar.py` SUDAH memakai
+# `idx_net` (curl_cffi, sidik jari TLS peramban) dan `curl_cffi` sudah ada di
+# `requirements.txt` maupun di langkah pasang alur awan. Sudah diuji, tetap
+# 403. Yang tersisa cuma alamat IP-nya, dan itu tak bisa ditambal dari kode.
+#
+# HIBRIDA, atas keputusan Johan 20 Agu 2026 — bukan pemindahan:
+#
+#   panen-kabar.yml       (ubuntu-latest) → IPOT + Snips, tiap 2 jam, TETAP
+#   panen-kabar-rumah.yml (self-hosted)   → IDX berita, IDX pengumuman, Kontan
+#
+# Alasan pembagiannya: kalau PC rumah mati, separuh yang memang tembus dari
+# awan tetap jalan. Sebaliknya kalau IDX kelak membuka IP datacenter, alur
+# awan sudah mencobanya tiap 2 jam dan akan mencatatnya sendiri di
+# `kabar-sumber-awan.json` — jadi jalur ini bisa dipensiunkan berdasar bukti,
+# bukan tebakan.
+#
+# Aman berdampingan: `panen_kabar.py` MENGGABUNG dengan isi berkas yang ada dan
+# membuang duplikat lewat tautan + judul + waktu, jadi dua jalur tak saling
+# menimpa. `concurrency` di bawah memakai grup yang SAMA dengan alur awan
+# supaya keduanya tak berebut commit ke berkas yang sama.
+
+name: Panen kabar (runner rumahan)
+
+on:
+  schedule:
+    # Sengaja digeser 1 jam dari alur awan (yang jalan di menit 0 jam genap):
+    # dua alur yang menembak bersamaan akan saling menunggu di `concurrency`
+    # dan satu di antaranya kedaluwarsa tanpa memanen apa pun.
+    - cron: '0 1,3,5,7,9,11,13 * * 1-6'
+  workflow_dispatch:
+    inputs:
+      sumber:
+        description: >-
+          Sumber yang dipanen (pisahkan koma). Kosongkan untuk ketiganya.
+          Pilihan: idx, idx-pengumuman, kontan
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: panen-kabar
+  cancel-in-progress: false
+
+jobs:
+  panen:
+    runs-on: self-hosted
+    # Runner rumahan tak boleh menggantung selamanya kalau jaringannya putus.
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Python DISEBUT eksplisit, tidak lewat PATH. Di mesin ini `python` di
+      # PATH menunjuk venv lain yang tak punya `curl_cffi`, dan gejalanya
+      # menyesatkan: terbaca seperti dependensi proyek yang hilang padahal
+      # `requirements.txt` sudah memuatnya dan lingkungan yang benar sudah
+      # terpasang. Layanan runner juga memakai PATH-nya sendiri, yang belum
+      # tentu sama dengan PATH shell Johan.
+      - name: Tentukan Python
+        id: py
+        run: |
+          for p in "/c/Python314/python.exe" "$(command -v python3)" "$(command -v python)"; do
+            [ -n "$p" ] && [ -x "$p" ] || continue
+            if "$p" -c "import curl_cffi" 2>/dev/null; then
+              echo "exe=$p" >> "$GITHUB_OUTPUT"; echo "Python: $p"; exit 0
+            fi
+          done
+          echo "::error::Tak ada Python yang punya curl_cffi. Pasang: C:\\Python314\\python.exe -m pip install curl_cffi requests"
+          exit 1
+
+      - name: Panen IDX + Kontan
+        continue-on-error: true
+        run: >-
+          "${{ steps.py.outputs.exe }}" scripts/panen_kabar.py --batas 30
+          --status "$RUNNER_TEMP/status-kabar.jsonl"
+          --hanya "${{ github.event.inputs.sumber || 'idx,idx-pengumuman,kontan' }}"
+
+      # Vonis merah/hijau diputuskan SATU tempat, sama seperti alur awan.
+      - name: Periksa hasil & kesegaran
+        continue-on-error: true
+        run: >-
+          "${{ steps.py.outputs.exe }}" scripts/cek_kabar.py
+          --status "$RUNNER_TEMP/status-kabar.jsonl"
+
+      - name: Commit kalau ada perubahan
+        if: always()
+        run: |
+          BERKAS="data-idx/json/kabar.json"
+          if git diff --quiet -- $BERKAS; then
+            echo "Tidak ada perubahan — tidak commit."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add $BERKAS
+          git commit -m "data: panen kabar rumahan $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      # Runner rumahan TIDAK memulai dari mesin bersih seperti runner GitHub:
+      # sisa berkas satu jalan akan terbawa ke jalan berikutnya dan bisa
+      # membuat `git diff` di atas salah baca.
+      - name: Bersihkan sisa
+        if: always()
+        run: git clean -fdq -- data-idx || true
