@@ -82,15 +82,49 @@ def angka(v):
 
 
 def tahunan_terbaru(idx: dict | None, ruas: str):
-    """Nilai `ruas` dari tahun buku TERBARU yang punya angka itu di XBRL."""
+    """Nilai `ruas` dari tahun buku TERBARU yang punya angka itu di XBRL.
+
+    Aman untuk RASIO (`der`, `roe`): pembilang dan penyebutnya berasal dari
+    laporan yang sama, jadi mata uangnya saling menghapus dan hasilnya tak
+    bergantung mata uang pelaporan. Untuk ruas BERSATUAN — `eps` dan semua
+    nilai rupiah lain — pakai `tahunan_terbaru_iso()`: angkanya perlu tahu
+    tanggal periodenya supaya mata uangnya bisa dibaca dan dikonversi.
+    """
+    hasil = tahunan_terbaru_iso(idx, ruas)
+    return None if hasil is None else hasil[0]
+
+
+def tahunan_terbaru_iso(idx: dict | None, ruas: str) -> tuple[float, str] | None:
+    """Sama, tapi mengembalikan `(nilai, iso)`.
+
+    Tanggalnya diperlukan karena mata uang pelaporan disimpan PER PERIODE
+    (`mata_uang[<iso>]`), bukan per berkas: 13 emiten terbukti berganti mata
+    uang pelaporan di tengah jalan, dan CDIA dua kali dalam satu tahun buku.
+    Memakai `currency` tingkat berkas untuk semua periode akan salah persis
+    pada emiten yang paling perlu diperiksa.
+    """
     if not idx:
         return None
     tahunan = idx.get("tahunan") or {}
     for iso in sorted(tahunan, reverse=True):
         v = angka(tahunan[iso].get(ruas))
         if v is not None:
-            return v
+            return v, iso
     return None
+
+
+def ke_rupiah(v: float, iso: str, idx: dict, kurs: float | None) -> float | None:
+    """Nilai laporan -> rupiah, atau None kalau tak bisa dipastikan.
+
+    None BUKAN kegagalan yang perlu ditambal dengan tebakan: menulis angka
+    dolar berlabel rupiah jauh lebih buruk daripada membiarkannya kosong.
+    Layar sudah tahu cara menampilkan "belum tersedia"; ia tak punya cara
+    menampilkan "angka ini mungkin 17.876x meleset".
+    """
+    mu = (idx.get("mata_uang") or {}).get(iso, idx.get("currency") or "IDR")
+    if mu == "IDR":
+        return v
+    return None if not kurs else v * kurs
 
 
 def dps_ttm(fd: dict) -> float | None:
@@ -385,10 +419,26 @@ def lengkapi(fd: dict, idx: dict | None, kurs: float | None = None) -> dict[str,
             fd["eps"] = round(ttm_ni / saham, 2)
             asal["eps"] = TURUNAN
         else:
-            v = tahunan_terbaru(idx, "eps")
-            if v is not None:
-                fd["eps"] = round(v, 2)
-                asal["eps"] = IDX
+            # EPS XBRL disajikan dalam MATA UANG PELAPORAN emiten itu, dan
+            # dulu ditulis apa adanya. Kelasnya sama persis dengan kerusakan
+            # `hist_eps` yang ditambal 20 Agu 2026 (`9d7a556a`), dan sama-sama
+            # merusak dua kali sekaligus: nilainya ~17.876x terlalu kecil, DAN
+            # `round(., 2)` memusnahkannya jadi 0,00 sebelum sempat dikonversi
+            # (`round(0,00058 USD, 2)` = 0,00, lalu 0,00 x kurs tetap 0,00).
+            #
+            # Belum pernah menggigit: 20 Agu 2026 nol emiten memakai jalur ini
+            # karena semua pelapor non-IDR masih punya `ttm_net_income` dari
+            # yfinance. Justru itu bahayanya — ia akan menyala diam-diam pada
+            # emiten pertama yang kehilangan laba TTM-nya, bukan saat ada yang
+            # memperhatikan.
+            #
+            # Dibulatkan SESUDAH dikonversi, sama seperti `hist_eps_baru()`.
+            hasil = tahunan_terbaru_iso(idx, "eps")
+            if hasil is not None:
+                v = ke_rupiah(hasil[0], hasil[1], idx, kurs)
+                if v is not None:
+                    fd["eps"] = round(v, 2)
+                    asal["eps"] = IDX
 
     # ── P/E (TTM) ────────────────────────────────────────────────────────
     # EPS <= 0 SENGAJA dibiarkan tanpa P/E: emiten rugi tak punya rasio itu
@@ -720,6 +770,55 @@ def _uji() -> None:
     sebelum = dict(acro)
     assert lengkapi(acro, idx_acro) == {}
     assert acro == sebelum
+
+    # 6. EPS XBRL berperiode USD TIDAK BOLEH ditulis apa adanya.
+    #
+    # Jebakan laten yang belum menggigit — 20 Agu 2026 nol emiten memakai
+    # jalur ini karena semua pelapor non-IDR masih punya `ttm_net_income`.
+    # Ia akan menyala pada emiten pertama yang kehilangan laba TTM-nya, dan
+    # kerusakannya sama persis dengan `hist_eps`: nilainya ~17.876x terlalu
+    # kecil DAN `round(., 2)` memusnahkannya jadi 0,00 lebih dulu.
+    #
+    # Angkanya sengaja realistis: 0,00058 USD/saham setara Rp 10,37 pada kurs
+    # 17.876. Membulatkan sebelum konversi memberi 0,00 — bukan angka yang
+    # meleset sedikit, melainkan angka yang HILANG.
+    usd = {"ticker": "UJI", "financial_currency": "USD", "shares": 1e10,
+           "last_price": 100, "ttm_net_income": None}
+    idx_usd = {"currency": "USD",
+               "mata_uang": {"2025-12-31": "USD"},
+               "tahunan": {"2025-12-31": {"eps": 0.00058}}, "kuartal": {}}
+    lengkapi(usd, idx_usd, kurs=17876.0)
+    assert usd["eps"] == round(0.00058 * 17876.0, 2) == 10.37, usd["eps"]
+
+    # Tanpa kurs: JANGAN menulis apa pun. EPS dolar berlabel rupiah lebih
+    # buruk daripada tanda hubung — layar tahu cara menampilkan "belum
+    # tersedia", ia tak punya cara menampilkan "mungkin 17.876x meleset".
+    usd2 = {"ticker": "UJI2", "financial_currency": "USD", "shares": 1e10,
+            "last_price": 100, "ttm_net_income": None}
+    lengkapi(usd2, idx_usd, kurs=None)
+    assert usd2.get("eps") is None, usd2.get("eps")
+
+    # Pelapor rupiah lewat jalur yang sama tak boleh ikut dikali kurs.
+    idr = {"ticker": "UJI3", "financial_currency": "IDR", "shares": 1e9,
+           "last_price": 100, "ttm_net_income": None}
+    idx_idr = {"currency": "IDR", "mata_uang": {"2025-12-31": "IDR"},
+               "tahunan": {"2025-12-31": {"eps": 12.5}}, "kuartal": {}}
+    lengkapi(idr, idx_idr, kurs=17876.0)
+    assert idr["eps"] == 12.5, idr["eps"]
+
+    # 7. RASIO tak boleh ikut dikonversi — `der` dan `roe` itu laporan dibagi
+    # laporan dalam mata uang yang sama, jadi mata uangnya saling menghapus.
+    # Mengalikannya dengan kurs akan memberi angka 17.876x meleset dari arah
+    # yang berlawanan dengan bug yang baru ditutup.
+    rasio = {"ticker": "UJI4", "financial_currency": "USD", "shares": 1e10,
+             "last_price": 100, "ttm_net_income": None}
+    idx_rasio = {"currency": "USD", "mata_uang": {"2025-12-31": "USD"},
+                 "tahunan": {"2025-12-31": {"eps": 0.00058, "net_income": 5.8e6,
+                                            "equity": 2.9e7, "total_debt": 1.45e7}},
+                 "kuartal": {}}
+    lengkapi(rasio, idx_rasio, kurs=17876.0)
+    assert abs(rasio["roe"] - 0.2) < 1e-9, rasio["roe"]
+    assert abs(rasio["der"] - 50.0) < 1e-9, rasio["der"]
 
     print("uji lengkapi_fundamental: LOLOS")
 
