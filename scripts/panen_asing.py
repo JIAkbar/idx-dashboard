@@ -155,11 +155,56 @@ def petik(r: dict) -> tuple[str, str] | None:
         tgl, beli, jual, _bil(r.get("Volume")), _bil(r.get("Value")), _bil(r.get("Frequency")))
 
 
-def tulis(per_emiten: dict[str, list[str]]) -> int:
+def gabung(lama_d: list, baris_baru: list[str]) -> list[str]:
+    """Gabung baris lama + baru, berkunci TANGGAL. Yang baru menang.
+
+    Ini yang membuat panen sebagian aman. Sebelum 20 Agustus 2026 `tulis()`
+    menimpa berkasnya bulat-bulat: satu jalan `--mulai 2026-08-18` menulis
+    ulang 963 berkas yang masing-masing memuat riwayat 6,6 tahun menjadi TIGA
+    baris. Tak ada galat, tak ada peringatan — berkasnya sah, isinya tinggal
+    0,2%. Dipulihkan dari arsip mentah, dan itu satu-satunya alasan
+    kerusakannya tak permanen.
+
+    Yang baru menang atas yang lama pada tanggal yang sama: IDX merevisi
+    angka hari berjalan sesudah bursa tutup, dan panen ulang hari itu memang
+    dimaksudkan menggantikannya.
+    """
+    peta: dict[str, str] = {}
+    for x in lama_d:
+        if isinstance(x, list) and x and isinstance(x[0], str):
+            peta[x[0]] = json.dumps(x, separators=(",", ":"), ensure_ascii=False)
+    for b in baris_baru:
+        try:
+            peta[json.loads(b)[0]] = b
+        except Exception:  # noqa: BLE001 — baris rusak dilewati, bukan membunuh panen
+            continue
+    return [peta[k] for k in sorted(peta)]
+
+
+def baris_tersimpan(kode: str) -> list:
+    """Isi ruas `d` berkas yang sudah ada. Kosong kalau belum ada / rusak."""
+    f = KELUARAN / f"{kode}.json"
+    if not f.exists():
+        return []
+    try:
+        return json.loads(f.read_text(encoding="utf-8")).get("d") or []
+    except Exception:  # noqa: BLE001 — berkas rusak diperlakukan seperti belum ada
+        return []
+
+
+def tulis(per_emiten: dict[str, list[str]], *, timpa: bool = False) -> int:
+    """Tulis berkas per emiten. Bawaannya MENGGABUNG dengan yang sudah ada.
+
+    `timpa=True` hanya untuk pembangunan ulang penuh dari arsip, tempat baris
+    yang tak ada lagi di sumber memang harus hilang. Jangan dipakai bersama
+    `--mulai` yang dipersempit — itu persis kombinasi yang menghapus riwayat.
+    """
     KELUARAN.mkdir(parents=True, exist_ok=True)
     n = 0
-    for kode, baris in sorted(per_emiten.items()):
-        baris.sort()  # tanggal ISO -> urut leksikografis = urut kronologis
+    for kode, baris_baru in sorted(per_emiten.items()):
+        baris = sorted(baris_baru) if timpa else gabung(baris_tersimpan(kode), baris_baru)
+        if not baris:
+            continue
         isi = ('{"kode":"%s","satuan":{"beli":"lembar","jual":"lembar",'
                '"volume":"lembar","value":"rupiah","frekuensi":"kali"},'
                '"ruas":["tanggal","beli","jual","volume","value","frekuensi"],'
@@ -174,7 +219,7 @@ def tulis(per_emiten: dict[str, list[str]]) -> int:
     return n
 
 
-def panen(mulai: date, akhir: date, *, jeda: float, dari_arsip: bool) -> None:
+def panen(mulai: date, akhir: date, *, jeda: float, dari_arsip: bool, timpa: bool = False) -> None:
     per_emiten: dict[str, list[str]] = {}
     gagal: list[tuple[str, str]] = []
     kosong = terarsip = terunduh = 0
@@ -205,7 +250,7 @@ def panen(mulai: date, akhir: date, *, jeda: float, dari_arsip: bool) -> None:
         if i % 50 == 0 or i == len(tanggal):
             print(f"[{i}/{len(tanggal)}] {tgl} — {len(per_emiten)} emiten terkumpul")
 
-    n = tulis(per_emiten)
+    n = tulis(per_emiten, timpa=timpa)
     jml = sorted(len(v) for v in per_emiten.values())
     med = jml[len(jml) // 2] if jml else 0
     print(f"\nselesai: {n} berkas di {KELUARAN}")
@@ -254,6 +299,28 @@ def demo() -> None:
         assert j["mulai"] == "2026-08-17" and j["akhir"] == "2026-08-18", j
         assert j["n"] == 2 and j["d"][0][0] == "2026-08-17", "baris wajib urut kronologis"
         assert j["satuan"]["beli"] == "lembar" and j["satuan"]["value"] == "rupiah"
+
+        # Panen SEBAGIAN tak boleh menghapus riwayat. Ini regresi 20 Agu 2026:
+        # `--mulai 2026-08-18` memangkas 963 berkas dari ribuan baris jadi tiga.
+        assert tulis({"ZZZZ": ['["2026-08-19",9,9,9,9,9]']}) == 1
+        j2 = json.loads((tmp / "ZZZZ.json").read_text(encoding="utf-8"))
+        assert j2["n"] == 3, f"baris lama wajib bertahan, dapat {j2['n']}"
+        assert j2["mulai"] == "2026-08-17" and j2["akhir"] == "2026-08-19", j2
+
+        # Tanggal yang sama dipanen ulang: yang BARU menang (IDX merevisi
+        # angka hari berjalan sesudah bursa tutup).
+        assert tulis({"ZZZZ": ['["2026-08-19",7,7,7,7,7]']}) == 1
+        j3 = json.loads((tmp / "ZZZZ.json").read_text(encoding="utf-8"))
+        assert j3["n"] == 3 and j3["d"][-1][1] == 7, j3["d"][-1]
+
+        # --timpa memang menghapus, dan itu satu-satunya jalan yang boleh.
+        assert tulis({"ZZZZ": ['["2026-08-20",1,1,1,1,1]']}, timpa=True) == 1
+        j4 = json.loads((tmp / "ZZZZ.json").read_text(encoding="utf-8"))
+        assert j4["n"] == 1, j4
+
+        # Berkas rusak diperlakukan seperti belum ada, bukan melempar.
+        (tmp / "RUSK.json").write_text("{bukan json", encoding="utf-8")
+        assert tulis({"RUSK": ['["2026-08-20",1,1,1,1,1]']}) == 1
     finally:
         KELUARAN = asli
         shutil.rmtree(tmp, ignore_errors=True)
@@ -266,13 +333,22 @@ def main() -> None:
     p.add_argument("--akhir", default=str(date.today()))
     p.add_argument("--jeda", type=float, default=0.35, help="detik antar unduhan baru")
     p.add_argument("--dari-arsip", action="store_true", help="bangun ulang tanpa jaringan")
+    p.add_argument("--timpa", action="store_true",
+                   help="tulis ulang berkas dari nol, bukan menggabung. HANYA untuk "
+                        "pembangunan ulang penuh; bersama --mulai ia menghapus riwayat")
     p.add_argument("--demo", action="store_true")
     a = p.parse_args()
     if a.demo:
         demo()
         return
     mulai = max(date.fromisoformat(a.mulai), AWAL_SUMBER)
-    panen(mulai, date.fromisoformat(a.akhir), jeda=a.jeda, dari_arsip=a.dari_arsip)
+    if a.timpa and mulai > AWAL_SUMBER:
+        raise SystemExit(
+            "--timpa hanya boleh untuk panen PENUH (mulai dari %s). Dipakai bersama "
+            "--mulai yang dipersempit, ia menulis ulang tiap berkas dengan beberapa "
+            "baris saja dan riwayat lamanya hilang — persis kejadian 20 Agu 2026."
+            % AWAL_SUMBER)
+    panen(mulai, date.fromisoformat(a.akhir), jeda=a.jeda, dari_arsip=a.dari_arsip, timpa=a.timpa)
 
 
 if __name__ == "__main__":
