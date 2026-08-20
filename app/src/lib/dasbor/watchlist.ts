@@ -132,22 +132,33 @@ export function ambilHargaTerakhir(baris: BarisOhlc[]): HargaTerakhir | null {
   }
 }
 
-/** Cache modul per kode — sama pola `ohlcCache` (TanyaPapan.tsx): satu fetch
- *  per kode per sesi, `null` dicache juga (404) supaya tak diulang percuma. */
-const hargaCache = new Map<string, HargaTerakhir | null>()
+/**
+ * Cache modul per kode — sama pola `ohlcCache` (TanyaPapan.tsx): satu fetch
+ * per kode per sesi, `null` dicache juga (404) supaya tak diulang percuma.
+ *
+ * Yang di-cache DERETNYA, bukan harga terakhirnya. Kolom EMA/peluang butuh
+ * seluruh riwayat, dan harga terakhir bisa diturunkan darinya kapan saja —
+ * menyimpan hasil olahan saja akan memaksa unduhan kedua untuk berkas yang
+ * persis sama.
+ */
+const deretCache = new Map<string, BarisOhlc[] | null>()
 
-export function fetchHargaTerakhir(kode: string): Promise<HargaTerakhir | null> {
-  const cached = hargaCache.get(kode)
+export function fetchDeret(kode: string): Promise<BarisOhlc[] | null> {
+  const cached = deretCache.get(kode)
   if (cached !== undefined) return Promise.resolve(cached)
   return fetch(`/data-idx/json/ohlc/${kode}.json`)
     .then((r) => (r.ok ? (r.json() as Promise<{ d: BarisOhlc[] }>) : Promise.reject(new Error('not found'))))
     .then((j) => {
-      const hasil = ambilHargaTerakhir(j.d ?? [])
-      hargaCache.set(kode, hasil)
-      return hasil
+      const d = j.d ?? []
+      deretCache.set(kode, d)
+      return d
     })
     .catch(() => {
-      hargaCache.set(kode, null)
+      deretCache.set(kode, null)
       return null
     })
+}
+
+export function fetchHargaTerakhir(kode: string): Promise<HargaTerakhir | null> {
+  return fetchDeret(kode).then((d) => (d ? ambilHargaTerakhir(d) : null))
 }

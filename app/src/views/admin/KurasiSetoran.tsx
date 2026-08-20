@@ -134,6 +134,26 @@ export function KurasiSetoran() {
     })
   }
 
+  /**
+   * "Pilih semua" mengikuti TAB yang sedang dibuka, bukan seluruh setoran
+   * hari itu. Bedanya bukan kosmetik: di tab Menunggu, "semua" harus berarti
+   * 8 kartu yang terlihat — kalau ia diam-diam ikut menyeret setoran yang
+   * sudah disetujui atau dihapus, satu ketukan "Hapus terpilih" akan membatalkan
+   * kurasi yang sudah selesai tanpa satu pun yang terlihat di layar.
+   */
+  const semuaTerpilih = tampil.length > 0 && tampil.every((s) => pilih.has(s.path))
+
+  function togglePilihSemua() {
+    setPilih((p) => {
+      if (tampil.every((s) => p.has(s.path))) {
+        const q = new Set(p)
+        for (const s of tampil) q.delete(s.path)
+        return q
+      }
+      return new Set([...p, ...tampil.map((s) => s.path)])
+    })
+  }
+
   function tandaiSibuk(paths: string[], v: boolean) {
     setSibuk((s) => {
       const q = new Set(s)
@@ -316,9 +336,30 @@ export function KurasiSetoran() {
             </div>
           )}
 
-          {pilih.size > 0 && (
-            <div className="af-aksibar" style={{ marginTop: 10 }}>
-              <span>{pilih.size} setoran dipilih</span>
+          {/* Bilah pilih. Muncul begitu ada kartu — BUKAN cuma sesudah satu
+              kartu dicentang seperti versi lama: kotak "pilih semua" adalah
+              satu-satunya jalan mencentang 30 kartu sekaligus, jadi ia tak
+              boleh bersembunyi di balik syarat yang mengharuskan mencentang
+              dulu. Tombol tindakannya sendiri tetap hanya muncul kalau ada
+              yang terpilih. */}
+          {tampil.length > 0 && (
+            <div className={`af-aksibar${pilih.size === 0 ? ' sepi' : ''}`} style={{ marginTop: 10 }}>
+              <label className="ks-pilihsemua">
+                <input
+                  type="checkbox"
+                  className="af-cek"
+                  ref={(el) => { if (el) el.indeterminate = pilih.size > 0 && pilih.size < tampil.length }}
+                  checked={semuaTerpilih}
+                  onChange={togglePilihSemua}
+                  aria-label={semuaTerpilih ? 'Lepas semua pilihan' : 'Pilih semua setoran yang tampil'}
+                />
+                <span>
+                  {pilih.size === 0
+                    ? `Pilih semua (${tampil.length})`
+                    : `${pilih.size} dari ${tampil.length} setoran dipilih`}
+                </span>
+              </label>
+              {pilih.size > 0 && (
               <div style={{ display: 'flex', gap: 6 }}>
                 <button type="button" className="dd-btn" onClick={() => setujui([...pilih])}>
                   <IkonMenu d={IKON_CENTANG} size={12} /> Setujui terpilih
@@ -330,6 +371,7 @@ export function KurasiSetoran() {
                   <IkonMenu d={IKON_SILANG} size={12} /> Hapus terpilih
                 </button>
               </div>
+              )}
             </div>
           )}
 

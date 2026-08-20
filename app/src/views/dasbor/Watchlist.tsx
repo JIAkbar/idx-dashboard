@@ -8,9 +8,10 @@ import { fp } from '../../lib/dasbor/format'
 import { keFraksi } from '../../lib/fraksiHarga'
 import {
   muatWatchlist, tambahEmiten, hapusEmiten, simpanHargaMilik,
-  fetchHargaTerakhir, hargaRataRata, untungRugi,
+  fetchDeret, ambilHargaTerakhir, hargaRataRata, untungRugi,
   type WatchlistItem, type HargaTerakhir,
 } from '../../lib/dasbor/watchlist'
+import { posisiEma, labelKeadaan, HORIZON, PERIODE, type PosisiEma } from '../../lib/dasbor/emaWatchlist'
 import './Watchlist.css'
 
 type UrutState<T> = { kunci: keyof T; arah: 'naik' | 'turun'; klik: (k: keyof T) => void }
@@ -35,6 +36,10 @@ interface BarisTabel {
   avg: number | null
   untungRp: number | null
   untungPersen: number | null
+  /** null = deretnya belum termuat. */
+  posisi: PosisiEma | null
+  /** Peluang naik dalam persen — kolom terurut butuh angka datar, bukan objek. */
+  peluang: number | null
 }
 
 /**
@@ -51,18 +56,24 @@ interface BarisTabel {
 export function Watchlist() {
   const kamus = useKamusEmiten()
   const [items, setItems] = useState<WatchlistItem[]>(() => muatWatchlist())
-  const [harga, setHarga] = useState<Record<string, HargaTerakhir | null>>({})
+  const [deret, setDeret] = useState<Record<string, { harga: HargaTerakhir | null; posisi: PosisiEma } | null>>({})
   const [cari, setCari] = useState('')
 
   // Satu fetch per kode (cache modul di watchlist.ts mencegah unduhan ulang).
+  // Harga terakhir DAN posisi EMA lahir dari deret yang sama — satu unduhan,
+  // dua jawaban.
   useEffect(() => {
     let batal = false
     for (const it of items) {
-      if (harga[it.kode] !== undefined) continue
-      fetchHargaTerakhir(it.kode).then((h) => { if (!batal) setHarga((x) => ({ ...x, [it.kode]: h })) })
+      if (deret[it.kode] !== undefined) continue
+      fetchDeret(it.kode).then((d) => {
+        if (batal) return
+        const nilai = d ? { harga: ambilHargaTerakhir(d), posisi: posisiEma(d) } : null
+        setDeret((x) => ({ ...x, [it.kode]: nilai }))
+      })
     }
     return () => { batal = true }
-  }, [items, harga])
+  }, [items, deret])
 
   const namaKode = useMemo(() => {
     const m = new Map<string, string>()
@@ -85,14 +96,15 @@ export function Watchlist() {
   }
   function hapus(kode: string) {
     setItems(hapusEmiten(kode))
-    setHarga((x) => { const n = { ...x }; delete n[kode]; return n })
+    setDeret((x) => { const n = { ...x }; delete n[kode]; return n })
   }
   function ubahHargaMilik(kode: string, nilai: number | null) {
     setItems(simpanHargaMilik(kode, nilai))
   }
 
   const baris: BarisTabel[] = useMemo(() => items.map((it) => {
-    const h = harga[it.kode]
+    const isi = deret[it.kode]
+    const h = isi?.harga ?? null
     const avg = hargaRataRata(it.beli)
     // Harga pasar yang ditampilkan WAJIB lewat keFraksi() — harga milik (avg)
     // tidak, itu hasil hitungan, bukan harga yang dipesan di bursa.
@@ -106,8 +118,10 @@ export function Watchlist() {
       avg,
       untungRp: ur?.rp ?? null,
       untungPersen: ur?.persen ?? null,
+      posisi: isi?.posisi ?? null,
+      peluang: isi?.posisi.peluang?.persen ?? null,
     }
-  }), [items, harga, namaKode])
+  }), [items, deret, namaKode])
 
   const s = useUrut(baris, 'kode', 'naik')
 
@@ -157,6 +171,8 @@ export function Watchlist() {
                   <th className="r">Harga Milik</th>
                   {thSort(s, 'untungRp', 'Untung/Rugi (Rp)', true)}
                   {thSort(s, 'untungPersen', 'Untung/Rugi (%)', true)}
+                  <th className="r" title={`Posisi harga terhadap EMA ${PERIODE.join('/')}`}>EMA {PERIODE.join('/')}</th>
+                  {thSort(s, 'peluang', `Peluang ${HORIZON}H`, true)}
                   <th aria-label="Aksi" />
                 </tr>
               </thead>
@@ -174,6 +190,12 @@ export function Watchlist() {
         )}
       </div>
 
+      <p className="wl-catatan muted">
+        Kolom <b>EMA {PERIODE.join('/')}</b> menandai posisi harga terhadap tiap rata-rata bergerak eksponensial
+        (▲ di atas, ▼ di bawah). <b>Peluang {HORIZON}H</b> bukan ramalan: ia menghitung, dari riwayat emiten itu
+        sendiri, berapa persen kejadian dengan posisi EMA yang sama ditutup lebih tinggi {HORIZON} hari bursa
+        kemudian — angka masa lalu, dan masa lalu tidak mengikat masa depan. Ditampilkan hanya kalau sampelnya cukup.
+      </p>
       <p className="wl-catatan muted">
         Watchlist ini tersimpan di peranti ini saja (browser lokal) — tidak berpindah kalau dibuka dari ponsel atau peramban lain.
       </p>
@@ -198,7 +220,7 @@ function BarisWatchlist({
   function simpan() {
     const teks = edit.trim()
     if (teks === '') { onUbahHarga(null); return }
-    const v = Number(teks)
+    const v = Number(teks.replace(/\./g, '').replace(',', '.'))
     onUbahHarga(isFinite(v) && v > 0 ? v : null)
   }
 
@@ -213,10 +235,15 @@ function BarisWatchlist({
         {b.chgPersen == null ? '—' : fp(b.chgPersen)}
       </td>
       <td className="r">
+        {/* `type="text"` + inputMode, BUKAN type="number": kotak angka native
+            memunculkan tombol naik-turun yang menutupi angkanya sendiri saat
+            disorot (dilaporkan Johan 20 Agu 2026), roda mouse diam-diam
+            mengubah nilainya saat halaman digulir, dan di beberapa locale
+            koma desimal ditolak senyap. Penyaringnya cukup satu regex. */}
         <input
-          className="inp wl-avg" type="number" inputMode="decimal" min="0" step="any"
+          className="inp wl-avg" type="text" inputMode="decimal"
           placeholder="—" value={edit}
-          onChange={(e) => setEdit(e.target.value)}
+          onChange={(e) => setEdit(e.target.value.replace(/[^\d.,]/g, ''))}
           onBlur={simpan}
           onKeyDown={(e) => { if (e.key === 'Enter') (e.currentTarget as HTMLInputElement).blur() }}
           aria-label={`Harga milik ${b.kode}`}
@@ -229,6 +256,32 @@ function BarisWatchlist({
       </td>
       <td className={`r num ${b.untungPersen == null ? '' : b.untungPersen >= 0 ? 'up' : 'dn'}`}>
         {b.untungPersen == null ? '—' : fp(b.untungPersen)}
+      </td>
+      <td className="r">
+        <span className="wl-ema" title={labelKeadaan(b.posisi?.sandi ?? null)}>
+          {PERIODE.map((p, i) => {
+            const d = b.posisi?.sandi?.[i]
+            return (
+              <span key={p} className={`wl-ema-p ${d === '1' ? 'up' : d === '0' ? 'dn' : ''}`}>
+                {d === '1' ? '▲' : d === '0' ? '▼' : '·'}
+              </span>
+            )
+          })}
+        </span>
+      </td>
+      {/* Peluang EMPIRIS, bukan skor: berapa persen dari kejadian historis
+          dengan posisi EMA yang sama pada emiten ini yang 20 hari bursa
+          kemudian ditutup lebih tinggi. Jumlah sampelnya ikut ditampilkan —
+          angka tanpa penyebutnya tak bisa ditolak pembaca. */}
+      <td className="r num">
+        {b.posisi?.peluang == null ? (
+          <span className="muted" title="Sampel historisnya belum cukup untuk dilaporkan">—</span>
+        ) : (
+          <span title={`${b.posisi.peluang.naik} dari ${b.posisi.peluang.n} kejadian serupa di riwayat ${b.kode} ditutup lebih tinggi ${HORIZON} hari bursa kemudian`}>
+            {Math.round(b.posisi.peluang.persen)}%
+            <span className="wl-n">n={b.posisi.peluang.n}</span>
+          </span>
+        )}
       </td>
       <td>
         <TombolIkon

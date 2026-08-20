@@ -557,17 +557,23 @@
    isyarat "bisa digeser" lebih penting). Selector 3-kelas biar menang
    spesifisitas atas `.lantai .tabs{scrollbar-width:none}`. */
 .lantai .tabs.admin-tabbar { margin-top: 10px; }
-/* `scrollbar-width: thin` DIBUANG (18 Agu 2026). Sejak Chrome 121, menyetel
-   scrollbar-width ATAU scrollbar-color membuat SELURUH aturan
-   ::-webkit-scrollbar di bawah ini diabaikan — yang menang "thin" bawaan
-   (~11px), bukan 4px yang diminta. Jebakan ini sudah tercatat di CLAUDE.md
-   dan ternyata hidup di berkas ini sendiri.
+/* Sembilan tab tak akan pernah muat di 412px, jadi menggulir memang jawabannya
+   — yang kurang cuma TANDA bahwa masih ada lanjutannya: pudaran di tepi kanan
+   (mask-image) yang hilang sendiri begitu digulir mentok.
 
-   Sembilan tab tak akan pernah muat di 412px, jadi menggulir memang jawabannya
-   — yang kurang cuma TANDA bahwa masih ada lanjutannya. Itu diurus dua hal:
-   batang gulir tipis yang benar-benar tampil, dan pudaran di tepi kanan
-   (mask-image) yang hilang sendiri begitu digulir mentok. */
-.lantai .tabs.admin-tabbar {
+   Pudaran itu WAJIB bersyarat `.bisa-gulir` (dipasang AdminLayout lewat
+   ResizeObserver). Tanpa syaratnya, bilah yang isinya muat seluruhnya tetap
+   kena pudaran — dan karena tak ada overflow, `animation-timeline` di bawah
+   tak pernah aktif untuk menghapusnya lagi. Yang terlihat: tab TERAKHIR
+   separuh pudar di layar lebar, dilaporkan sebagai "navbar kepotong".
+
+   Blok ::-webkit-scrollbar khusus bilah ini DIBUANG (20 Agu 2026) — ia mati
+   sejak lahir. `.lantai .tabs { scrollbar-width: none }` (lantai.css:1678)
+   menyembunyikan batangnya, dan sejak Chrome 121 menyetel scrollbar-width
+   ATAU scrollbar-color membuat SELURUH aturan ::-webkit-scrollbar diabaikan.
+   Jadi "batang gulir tipis 4px" yang dijanjikan komentar lama tak pernah
+   tampil satu piksel pun. Pudaran tepi sudah jadi tandanya. */
+.lantai .tabs.admin-tabbar.bisa-gulir {
   mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent 100%);
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent 100%);
   /* Pudarannya harus ikut diperhitungkan saat menggulirkan tab aktif ke dalam
@@ -576,18 +582,14 @@
      20px di luar tepi bilah. scroll-padding dihormati scrollIntoView. */
   scroll-padding-inline: 34px;
 }
-/* Kalau isinya muat seluruhnya, tak ada yang perlu dipudarkan. */
+/* Digulir mentok kanan: tak ada lagi yang di balik pudaran, jadi ia hilang. */
 @supports (animation-timeline: scroll()) {
-  .lantai .tabs.admin-tabbar { animation: tabbar-fade linear; animation-timeline: scroll(self inline); }
+  .lantai .tabs.admin-tabbar.bisa-gulir { animation: tabbar-fade linear; animation-timeline: scroll(self inline); }
   @keyframes tabbar-fade {
     to { mask-image: linear-gradient(to right, #000 100%, #000 100%);
          -webkit-mask-image: linear-gradient(to right, #000 100%, #000 100%); }
   }
 }
-.lantai .tabs.admin-tabbar::-webkit-scrollbar { display: block; height: 4px; }
-.lantai .tabs.admin-tabbar::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 99px; }
-.lantai .tabs.admin-tabbar::-webkit-scrollbar-thumb:hover { background: var(--text3); }
-.lantai .tabs.admin-tabbar::-webkit-scrollbar-track { background: transparent; }
 
 /* Badge angka (mis. setoran menunggu) di tab Kurasi — bulat kecil, amber
    solid supaya kontras di tab aktif (amber) maupun tidak aktif (abu). */
@@ -626,11 +628,20 @@
   margin: 10px 0 3px; font-weight: 600;
 }
 .lantai .cl-butir {
-  list-style: none; position: relative; padding-left: 15px; margin: 2px 0;
-  font-size: 12.5px; color: var(--text); line-height: 1.55; max-width: 88ch;
+  list-style: none; position: relative; padding-left: 15px; margin: 3px 0;
+  font-size: 12.5px; color: var(--text); line-height: 1.6; max-width: 88ch;
 }
 .lantai .cl-butir::before { content: '–'; position: absolute; left: 2px; color: var(--text3); }
-.lantai .cl-teks { font-size: 12.5px; color: var(--text2); margin: 4px 0; max-width: 88ch; }
+.lantai .cl-teks { font-size: 12.5px; color: var(--text2); margin: 4px 0; max-width: 88ch; line-height: 1.6; }
+/* Rata kiri-kanan diminta Johan 20 Agu 2026 ("rapikan semua changelog di buat
+   justify"). Wajib berpasangan dengan `hyphens: auto`: tanpa pemenggalan,
+   justify pada kolom 88ch yang memuat kata panjang tak terpecah (nama fitur,
+   "Semantic Versioning") melebarkan spasi antar kata sampai terbaca seperti
+   tabel. Pemenggalannya butuh `lang` yang benar — dipasang di elemen ini
+   sendiri supaya tak bergantung pada <html lang> yang bisa berubah. */
+.lantai .cl-intro, .lantai .cl-butir, .lantai .cl-teks {
+  text-align: justify; text-justify: inter-word; hyphens: auto;
+}
 
 /* ── Panel "Cara screenshot orderbook" (Fase 5) ──────────────────────────
    Header adalah <button> (bukan <div>) supaya bisa dilipat/dibuka — reset

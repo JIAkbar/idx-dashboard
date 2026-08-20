@@ -7,7 +7,36 @@
 
 .wl-tbl { white-space: nowrap; }
 
-.wl-avg { width: 100px; text-align: right; }
+/* Kotak "harga milik".
+   `.lantai` WAJIB ada di depan: `.lantai .inp` (lantai.css:1028) menyetel
+   `width:100%` dengan dua kelas, jadi `.wl-avg { width:100px }` berkelas satu
+   kalah dan kotaknya melar mengisi kolom — itu penyebab kolom ini terlihat
+   seperti kotak raksasa di tengah tabel, bukan pilihan tata letak.
+   Sisanya menurunkan bobotnya jadi sel yang bisa disunting, bukan formulir:
+   latar transparan sampai disorot/difokus, garis hanya di bawah. */
+.lantai .wl-avg {
+  width: 96px; text-align: right; padding: 5px 8px;
+  background: transparent; border-color: transparent;
+  border-bottom: 1px solid var(--line2); border-radius: 0;
+  transition: background .12s, border-color .12s;
+}
+.lantai .wl-avg:hover { background: var(--bg2); border-color: var(--line2); border-radius: var(--r); }
+.lantai .wl-avg:focus { background: var(--bg2); border-color: var(--amber); border-radius: var(--r); }
+/* Tombol naik-turun bawaan sudah tak ada sejak input-nya jadi type="text",
+   tapi aturannya ditahan: sebagian peramban masih menampilkannya untuk
+   inputMode="decimal" di ponsel. */
+.lantai .wl-avg::-webkit-outer-spin-button,
+.lantai .wl-avg::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* Kolom EMA: tiga penanda berjarak tetap supaya sejajar antarbaris walau
+   isinya beda arah. Titik tengah (·) = EMA-nya belum ada, bukan "netral". */
+.lantai .wl-ema { display: inline-flex; gap: 5px; font-size: 10px; letter-spacing: 0; }
+.lantai .wl-ema-p { width: 9px; text-align: center; color: var(--text3); }
+.lantai .wl-ema-p.up { color: var(--green); }
+.lantai .wl-ema-p.dn { color: var(--red); }
+/* Penyebut peluang — angka tanpa jumlah sampelnya tak bisa ditolak pembaca,
+   jadi ia selalu ikut, tapi lebih kecil supaya tak dibaca sebagai persen kedua. */
+.lantai .wl-n { margin-left: 5px; font-size: 9.5px; color: var(--text3); }
 
 .wl-nama {
   display: block;

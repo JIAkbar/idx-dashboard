@@ -239,6 +239,28 @@ export function AdminLayout() {
     // saat bilahnya masih berisi empat tab dan tak menemukan tab aktifnya.
   }, [location.pathname, superadmin])
 
+  /**
+   * Pudaran tepi kanan hanya dipasang kalau bilahnya BENAR-BENAR bisa digulir.
+   *
+   * Versi sebelumnya memasangnya tanpa syarat dan mengandalkan
+   * `animation-timeline: scroll(self inline)` untuk menghapusnya kembali.
+   * Itu tak pernah bekerja pada kasus yang paling sering terlihat: kalau
+   * isinya muat seluruhnya, elemennya tak punya overflow, timeline-nya
+   * *inactive*, animasinya tak berefek — dan mask dasar tetap berlaku. Jadi
+   * di layar lebar tab TERAKHIR selalu terlihat separuh pudar walau tak ada
+   * apa pun di sebelah kanannya untuk digulir; persis yang dilaporkan
+   * ("kepotong ini navbar nya") pada bilah selebar 1130px di jendela 1353px.
+   */
+  useEffect(() => {
+    const bar = tabbarRef.current
+    if (!bar) return
+    const ukur = () => bar.classList.toggle('bisa-gulir', bar.scrollWidth > bar.clientWidth + 1)
+    ukur()
+    const ro = new ResizeObserver(ukur)
+    ro.observe(bar)
+    return () => ro.disconnect()
+  }, [superadmin])
+
   return (
     <div className="lantai admin-view">
       <div className="vhead" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
