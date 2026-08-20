@@ -1,0 +1,122 @@
+# Statistik harian IDX dari RUNNER RUMAHAN — pasangan `update.yml`.
+#
+# Terukur 20 Agustus 2026, dan ini bukan dugaan:
+#
+#   * `update.yml` (ubuntu-latest) MERAH 13, 14, 17, 18, 19, 20 Agu — IDX
+#     menolak IP runner GitHub. Hijau 10–12 Agu, jadi blokirnya kumat-kumatan,
+#     bukan permanen.
+#   * PDF 19 Agustus diunduh dari IP rumahan sekali coba, 1.940 KB, tanpa
+#     akal-akalan. Kalender Bursa yang berbunyi "Tanpa data" langsung terisi.
+#
+# Yang membedakan alamat IP-nya, bukan bentuk permintaannya: `download_idx.py`
+# sudah memakai `idx_net` (curl_cffi, sidik jari TLS peramban) dan tetap 403
+# dari awan. Tak ada perubahan kode yang bisa menambalnya.
+#
+# HIBRIDA, pola yang sama dengan `panen-kabar-rumah.yml`:
+#
+#   update.yml        (ubuntu-latest) → tetap mencoba tiap hari
+#   update-rumah.yml  (self-hosted)   → yang benar-benar memanen
+#
+# Alur awan sengaja TIDAK dimatikan. Ia murah, dan ia satu-satunya cara kita
+# tahu kalau IDX kelak membuka IP datacenter lagi — kalau ia berubah hijau
+# berhari-hari, jalur rumahan boleh dipensiunkan berdasar bukti, bukan tebakan.
+# Merahnya juga tetap berguna sebagai sinyal blokir; jangan diredam.
+
+name: Statistik harian IDX (runner rumahan)
+
+on:
+  schedule:
+    # Digeser 1 jam dari alur awan (14:00/16:00/18:00 UTC). Dua alur yang
+    # menembak bersamaan akan berebut commit ke berkas yang sama.
+    - cron: '0 15 * * 1-5'   # 22:00 WIB
+    - cron: '0 19 * * 1-5'   # 02:00 WIB hari berikutnya
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  # Grup SAMA dengan alur awan — keduanya menulis `data-idx/json/ds_*.json`.
+  group: update-idx
+  cancel-in-progress: false
+
+jobs:
+  panen:
+    runs-on: self-hosted
+    timeout-minutes: 30
+    defaults:
+      run:
+        # PowerShell, BUKAN bash — sesudah dua kegagalan di alur kabar:
+        # `shell: bash` menunjuk bash WSL (ditolak karena layanan runner
+        # berjalan sebagai LocalSystem), dan menyebut Git Bash dengan jalur
+        # penuh ditolak runner karena mengandung spasi ("Program Files").
+        shell: powershell
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Python disebut eksplisit: `python` di PATH mesin ini menunjuk venv lain
+      # yang tak punya `curl_cffi`, dan layanan runner memakai PATH-nya sendiri
+      # yang belum tentu sama dengan PATH shell Johan.
+      - name: Tentukan Python
+        id: py
+        run: |
+          $kandidat = @('C:\Python314\python.exe', 'python3', 'python')
+          foreach ($p in $kandidat) {
+            $exe = (Get-Command $p -ErrorAction SilentlyContinue).Source
+            if (-not $exe) { continue }
+            & $exe -c "import curl_cffi" 2>$null
+            if ($LASTEXITCODE -eq 0) {
+              "exe=$exe" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+              Write-Host "Python: $exe"
+              exit 0
+            }
+          }
+          Write-Host "::error::Tak ada Python yang punya curl_cffi. Pasang: C:\Python314\python.exe -m pip install curl_cffi requests"
+          exit 1
+
+      - name: Unduh PDF statistik IDX
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/download_idx.py --hari-ini --jenis semua
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      # Parse WAJIB memakai jalur MUTLAK. Jalur relatif membuat skripnya
+      # menjawab "SKIP" tanpa satu pun galat — PDF-nya turun, JSON-nya tak
+      # pernah dibuat, dan Kalender Bursa tetap berbunyi "Tanpa data".
+      # Terjadi 20 Agu 2026 saat menambal 19 Agustus dengan tangan.
+      - name: Parse PDF ke JSON
+        run: |
+          $akar = (Get-Location).Path
+          $pdf = Get-ChildItem "$akar\data-idx\daily" -Filter '*.pdf' -ErrorAction SilentlyContinue |
+                 Sort-Object LastWriteTime -Descending | Select-Object -First 5
+          if (-not $pdf) { Write-Host 'Tak ada PDF baru.'; exit 0 }
+          foreach ($f in $pdf) {
+            & "${{ steps.py.outputs.exe }}" scripts/parse_idx_pdf.py $f.FullName
+          }
+          exit 0
+
+      - name: Commit kalau ada perubahan
+        if: always()
+        run: |
+          $berkas = 'data-idx/json'
+          git diff --quiet -- $berkas
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host 'Tidak ada perubahan — tidak commit.'
+            exit 0
+          }
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add $berkas
+          $stempel = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd HH:mm')
+          git commit -m "data: statistik harian rumahan $stempel UTC"
+          git pull --rebase --autostash origin $env:GITHUB_REF_NAME
+          git push origin "HEAD:$env:GITHUB_REF_NAME"
+
+      # Runner rumahan tak memulai dari mesin bersih seperti runner GitHub —
+      # sisa satu jalan terbawa ke jalan berikutnya dan membuat `git diff`
+      # salah baca.
+      - name: Bersihkan sisa
+        if: always()
+        run: |
+          git clean -fdq -- data-idx
+          exit 0
