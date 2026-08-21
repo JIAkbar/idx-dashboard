@@ -69,7 +69,10 @@
    indikator). Pembagian itu yang membuat kaki ini bukan sekadar tempat sisa. */
 .lantai .grf-kaki {
   display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  padding: 8px 0 10px; border-bottom: 1px solid var(--line); margin-bottom: 10px;
+  /* Kanan menyisihkan ruang tombol Tanya PAPAN (`--ruang-fab`). Terukur
+     21 Agu 2026 di 1536x960: tanpa ini tombol `log` dan `auto` duduk PERSIS
+     di bawah FAB — dua kendali yang tak bisa diklik sama sekali. */
+  padding: 8px var(--ruang-fab) 10px 0; border-bottom: 1px solid var(--line); margin-bottom: 10px;
 }
 .lantai .grf-kaki-isi { flex: 1 1 auto; }
 .lantai .grf-kaki-rentang { display: flex; flex-wrap: wrap; gap: 3px; }

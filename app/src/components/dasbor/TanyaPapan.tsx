@@ -12,6 +12,11 @@ import { useAuth } from '../../context/AuthContext'
 import { IkonMenu, IKON_SILANG } from './IkonMenu'
 import './TanyaPapan.css'
 
+/** Kunci localStorage pilihan "tepikan tombol". */
+const KUNCI_TEPI = 'papan:tanya-tepi'
+/** Panah ke kanan — menepikan tombol ke pinggir layar. */
+const IKON_TEPIKAN = 'M9 6l6 6-6 6'
+
 /** Cache modul berkas OHLC per emiten dipakai Tanya PAPAN — sama pola dengan
  *  `fundamentalCache`/`loadInvestorMap`, tapi belum ada pemakai lain yang
  *  butuh cache imperatif untuk berkas ini, jadi ditaruh lokal di sini saja
@@ -93,6 +98,14 @@ export function TanyaPapan() {
   // fungsi itu bisa dipanggil langsung tanpa lewat halaman ini.
   const { session } = useAuth()
   const [buka, setBuka] = useState(false)
+  /** Tombol ditepikan ke pinggir layar — disimpan supaya pilihannya
+   *  bertahan antar halaman dan antar kunjungan. */
+  const [tepi, setTepi] = useState(() => {
+    try { return localStorage.getItem(KUNCI_TEPI) === '1' } catch { return false }
+  })
+  useEffect(() => {
+    try { localStorage.setItem(KUNCI_TEPI, tepi ? '1' : '0') } catch { /* mode privat */ }
+  }, [tepi])
   const [teks, setTeks] = useState('')
   const [riwayat, setRiwayat] = useState<Baris[]>([])
   const [berpikir, setBerpikir] = useState(false)
@@ -198,10 +211,18 @@ Lapis AI-nya khusus yang sudah masuk — tiap pertanyaan ke sana ` +
     <>
       <button
         type="button"
-        className={`tp-tombol${buka ? ' buka' : ''}`}
-        aria-label="Tanya PAPAN"
-        title="Tanya PAPAN — jawaban ditarik dari data"
-        onClick={() => setBuka((v) => !v)}
+        className={`tp-tombol${buka ? ' buka' : ''}${tepi ? ' tepi' : ''}`}
+        aria-label={tepi ? 'Kembalikan tombol Tanya PAPAN' : 'Tanya PAPAN'}
+        title={tepi
+          ? 'Tanya PAPAN — sedang ditepikan, klik untuk mengembalikan'
+          : 'Tanya PAPAN — jawaban ditarik dari data'}
+        onClick={() => {
+          // Saat ditepikan, klik pertama MENGEMBALIKAN tombolnya — bukan
+          // membuka panel. Panel yang terbuka dari sliver 18px akan terasa
+          // seperti salah pencet.
+          if (tepi) { setTepi(false); return }
+          setBuka((v) => !v)
+        }}
       >
         {/* Lambang P + label AI + nama yang memanjang saat disentuh.
             Cincin conic yang berputar SEMPAT dipasang lalu dibuang: begitu
@@ -217,9 +238,20 @@ Lapis AI-nya khusus yang sudah masuk — tiap pertanyaan ke sana ` +
         <div className="lantai tp-panel" role="dialog" aria-label="Tanya PAPAN">
           <div className="tp-kepala">
             <span className="lbl">Tanya PAPAN</span>
-            <button type="button" className="tp-tutup" aria-label="Tutup" onClick={() => setBuka(false)}>
-              <IkonMenu d={IKON_SILANG} size={13} />
-            </button>
+            <span className="ti-grup">
+              {/* Menepikan, bukan mematikan: tombolnya menyusut jadi sliver di
+                  tepi layar dan tetap satu ketukan dari kembali. Johan 21 Agu
+                  2026: *"AI ini menghalangi di bnyk tempat"* — ruang yang
+                  dipesan (`--ruang-fab`) menutup tabrakan yang KITA tahu,
+                  sakelar ini menutup yang belum kita tahu. */}
+              <button type="button" className="tp-tutup" onClick={() => { setTepi(true); setBuka(false) }}
+                aria-label="Tepikan tombol" title="Tepikan tombol ke pinggir layar">
+                <IkonMenu d={IKON_TEPIKAN} size={13} />
+              </button>
+              <button type="button" className="tp-tutup" aria-label="Tutup" onClick={() => setBuka(false)}>
+                <IkonMenu d={IKON_SILANG} size={13} />
+              </button>
+            </span>
           </div>
 
           <p className="tp-catatan">
