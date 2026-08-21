@@ -60,6 +60,10 @@ BSTYLE = f"<style>{palet.blok_css(EDISI_PALET)}</style>" + """
     vertical-align:2px;margin-left:2mm;font-family:var(--disp)}
   .bd-lvl{display:grid;grid-template-columns:1fr 1fr;gap:0 10mm;margin-top:3mm}
   .bd-note{font-size:6.5pt;color:var(--mute);font-family:var(--mono);line-height:1.7;margin-top:2.5mm}
+  .bd-faktor{display:grid;grid-template-columns:1fr auto;gap:.8mm 4mm;font-size:7.4pt;margin-top:2.5mm}
+  .bd-faktor .kl{color:var(--ink2)}
+  .bd-faktor .v{font-weight:700;text-align:right}
+  .bd-faktor .h{grid-column:1/-1;font-family:var(--disp);font-size:6.2pt;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:.5mm}
   /* Pita batas data — angka terbitan ditutup di sesi terakhir SEBELUM tanggal
      rilis; dipasang di sampul supaya pembaca tidak menyangka ini waktu nyata. */
   .bd-cutoff{margin-top:6mm;padding:2.5mm 4mm;border-left:3px solid var(--warn);
@@ -275,7 +279,12 @@ def hal_pcd(bd, r):
 </div>'''
 
 
-def hal_teknikal(bd, em, ohlc, pr):
+def _pp(v):
+    """Titik persentase bertanda: +3,2pp / −1,8pp."""
+    return ("+" if v >= 0 else "−") + B.fmt(abs(v), 1) + "pp"
+
+
+def hal_teknikal(bd, em, ohlc, pr, cutoff):
     o = em["ohlc_hari"]; p = em["pivot"]
     chg_cls = "bull" if o["chg"] >= 0 else "bear"
     tanda = "+" if o["chg"] >= 0 else "−"
@@ -288,10 +297,30 @@ def hal_teknikal(bd, em, ohlc, pr):
     rentang_cap = "1 Tahun" if len(seri) >= 252 else f'Sejak Listing ({seri[0]["d"]})'
     # Nama berkas/istilah dapur tak boleh muncul di produk — sebut pool-nya
     # dengan tanggal edisi yang bermakna bagi pembaca, bukan nama cache.
-    pool_lbl = (f'pool riwayat harga edisi {tanggal_id(bd["edisi_sumber"])}'
-                if "edisi_sumber" in bd
-                else f'pool riwayat harga edisi {tanggal_id(bd["cache"])} '
-                     f'+ seri {bd["ticker"]} sendiri')
+    if pr and pr["p5"] is not None and pr.get("pool_sumber") == "pasar":
+        pool_lbl = (f'pool seluruh pasar: {B.fmt(pr["pool_emiten"])} emiten likuid · '
+                    f'{B.fmt(pr["pool_n"])} observasi hingga {cutoff}')
+    else:
+        pool_lbl = (f'pool riwayat harga edisi {tanggal_id(bd["edisi_sumber"])}'
+                    if "edisi_sumber" in bd
+                    else f'pool riwayat harga edisi {tanggal_id(bd["cache"])} '
+                         f'+ seri {bd["ticker"]} sendiri')
+    if pr and pr["p5"] is not None:
+        catatan = (f'Probabilitas dari 13 faktor teknikal (tumpukan EMA 20/50/200, zona tangga '
+                   f'pivot, volume, rentang &amp; breakout 20 hari, RSI14, MACD, rezim volatilitas, '
+                   f'gap, hari beruntun, net asing 5 hari) atas {pool_lbl}; tetangga = observasi '
+                   f'yang cocok &ge;{pr["cocok"]}/{pr.get("total_fitur", 13)} faktor; n = jumlahnya. '
+                   f'Angka dasar = frekuensi pool tanpa syarat. Frekuensi historis, bukan jaminan.')
+    else:
+        catatan = "Riwayat harga belum cukup untuk backtest 13 faktor teknikal — belum ada angka."
+    faktor6 = (pr.get("faktor") or [])[:6] if pr and pr["p5"] is not None else []
+    faktor_html = ""
+    if faktor6:
+        baris = "".join(
+            f'<span class="kl">{f["nama"]}: {f["nilai"]}</span>'
+            f'<span class="v {"bull" if f["delta_pp"] > 0 else "bear" if f["delta_pp"] < 0 else ""}">'
+            f'{_pp(f["delta_pp"])}</span>' for f in faktor6)
+        faktor_html = f'<div class="bd-faktor"><div class="h">Faktor pendukung / penekan</div>{baris}</div>'
     return f'''
 <div class="page s-{B.sentimen(em)}">
   <span class="senti-edge"></span>
@@ -317,8 +346,8 @@ def hal_teknikal(bd, em, ohlc, pr):
       <div class="k res">Resistance</div><div class="v">{res}</div>
     </div>
     {B.strip_prob(pr)}
-    <div class="bd-note">Probabilitas dari backtest setup serupa (EMA50, pivot, volume 20h, rentang 20h)
-    atas {pool_lbl}; n = jumlah sampel. Bukan jaminan — frekuensi historis.</div>
+    {faktor_html}
+    <div class="bd-note">{catatan}</div>
   </div>
   {B.kaki(bd)}
 </div>'''
@@ -800,7 +829,7 @@ def hal_katalis(bd, tgl_bar, kats, jendela):
                 "".join(kartu(i) for i in tampil[k:]) + blok_tema + batas)]
 
 
-def hal_skenario(bd, em):
+def hal_skenario(bd, em, pr=None):
     p = em["pivot"]
     # Edisi harian menulis skenario `bull`/`bear` saja, sedangkan halaman ini
     # butuh bull/retest/invalid + aturan. Kunci yang tak ditulis dirakit dari
@@ -830,6 +859,9 @@ def hal_skenario(bd, em):
 
     headline = (f'{bd["ticker"]} memerlukan konfirmasi &gt;<b>{B.fmt(p["R1"])}</b> '
                 f'untuk memperluas probabilitas')
+    if pr and pr["p5"] is not None and pr.get("pR1") is not None and pr.get("pS1") is not None:
+        headline += (f' · P(capai R1) <b>{pr["pR1"] * 100:.0f}%</b> vs '
+                     f'P(sentuh S1) <b>{pr["pS1"] * 100:.0f}%</b> (5 hari, historis)')
     return f'''
 <div class="page">
   {B.band(bd, "Scenario Map")}
@@ -971,9 +1003,9 @@ def main():
     cutoff = tanggal_id(tgl_bar)
     kats, jendela = katalis(bd)
     pages = [BSTYLE + hal_sampul(bd, em, r, pr, cutoff), hal_pcd(bd, r),
-             hal_teknikal(bd, em, ohlc, pr), hal4,
+             hal_teknikal(bd, em, ohlc, pr, cutoff), hal4,
              *hal_katalis(bd, tgl_bar, kats, jendela),
-             hal_skenario(bd, em)]
+             hal_skenario(bd, em, pr)]
     draw = [f'gambarChart("chT","{bd["ticker"]}",{em["ema50"]},{json.dumps(em["pivot"])});']
 
     tpl = (AKAR / "template.html").read_text(encoding="utf-8")
@@ -990,7 +1022,11 @@ def main():
     print(f"  PCD {r['pcd']:.0f} | p25/50/75 {r['p25']:.0f}/{r['p50']:.0f}/{r['p75']:.0f} "
           f"| di atas air {r['diatas_air']*100:.1f}% | close {r['close']:.0f}")
     if pr and pr["p5"] is not None:
-        print(f"  Prob: p5 {pr['p5']:.3f} p3 {pr['p3']:.3f} n{pr['n']} cocok {pr['cocok']}/4")
+        total = pr.get("total_fitur", 13)
+        print(f"  Prob: p5 {pr['p5']:.3f} p3 {pr['p3']:.3f} n{pr['n']} cocok {pr['cocok']}/{total}"
+              f" | pR1 {pr.get('pR1')} pR2 {pr.get('pR2')} pS1 {pr.get('pS1')}"
+              f" | lift5 {pr.get('lift5')}"
+              f" | skill {(pr.get('evaluasi') or {}).get('skill')}")
 
     if "--tanpa-pdf" not in sys.argv:
         B.render_pdf(keluar)

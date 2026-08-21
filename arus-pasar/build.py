@@ -46,6 +46,11 @@ def fmt(n, des=0):
     return f"{n:,.{des}f}".replace(",", "_").replace(".", ",").replace("_", ".")
 
 
+def _r3(v):
+    """Bulatkan float ke 3 desimal utk sidecar JSON; lewatkan tipe lain apa adanya."""
+    return round(v, 3) if isinstance(v, float) else v
+
+
 def fmt_rp(juta):
     """Nilai dalam juta Rp -> '8,3B' / '921,7M' gaya Stockbit."""
     if abs(juta) >= 1000:
@@ -391,36 +396,78 @@ def fmt_z(z):
 
 
 def sel_prob(h):
-    """Sel kolom Prob tabel Ringkasan: '62% · n134' font kecil."""
+    """Sel kolom Prob tabel Ringkasan: '62% · n134' + R1 xx% font kecil."""
     if not h or h["p5"] is None:
         return "—"
-    cat = f'n{h["n"]}' + ("" if h["cocok"] == 4 else f' · {h["cocok"]}/4')
-    return f'{h["p5"] * 100:.0f}%<br><small>{cat}</small>'
+    total = h.get("total_fitur", 13)
+    cat = f'n{h["n"]}' + ("" if h["cocok"] == total else f' · {h["cocok"]}/{total}')
+    r1 = (f'<br><small>R1 {h["pR1"] * 100:.0f}%</small>'
+          if h.get("pR1") is not None else "")
+    return f'{h["p5"] * 100:.0f}%<br><small>{cat}</small>{r1}'
+
+
+def _pct(v):
+    return f'{v * 100:.0f}%' if v is not None else "—"
+
+
+def _pct_tanda(v, des=1):
+    """Persen bertanda: +2,1% / −3,4%."""
+    if v is None:
+        return "—"
+    return ("+" if v >= 0 else "−") + fmt(abs(v) * 100, des) + "%"
+
+
+def _pp_tanda(v, des=1):
+    """Titik persentase bertanda: +3,2pp / −1,8pp (v sudah dalam satuan pp)."""
+    if v is None:
+        return "—"
+    return ("+" if v >= 0 else "−") + fmt(abs(v), des) + "pp"
 
 
 def strip_prob(h):
-    """Strip 1 baris PROBABILITAS HISTORIS halaman emiten (dekat skor komposit).
+    """Strip 2 baris PROBABILITAS HISTORIS halaman emiten (dekat skor komposit).
 
-    Semua angka dari backtest pool cache edisi; n SELALU tampil. h None =
-    riwayat ticker terlalu pendek (fallback aman edisi lama / emiten baru)."""
+    Semua angka dari pool seluruh pasar (v2, 13 faktor); n SELALU tampil. h
+    None atau p5 None = riwayat ticker terlalu pendek (fallback aman edisi
+    lama / emiten baru)."""
     if not h or h["p5"] is None:
         isi = "riwayat harga belum cukup untuk backtest setup — belum ada angka"
+        return (f'<div class="probstrip"><span class="pl">Probabilitas Historis</span>'
+                f'{isi}</div>')
+    piv = h.get("pivot") or {}
+    harga = lambda k: fmt(piv[k]) if piv.get(k) is not None else "—"
+    ci = h.get("ci5") or (None, None)
+    ci_txt = f'{ci[0] * 100:.0f}–{ci[1] * 100:.0f}%' if ci[0] is not None else "—"
+    baris1 = (f'P(capai R1 {harga("R1")}) <b>{_pct(h.get("pR1"))}</b> · '
+              f'P(capai R2 {harga("R2")}) <b>{_pct(h.get("pR2"))}</b> · '
+              f'P(sentuh S1 {harga("S1")}) <b>{_pct(h.get("pS1"))}</b> · '
+              f'P(naik 5h) <b>{_pct(h["p5"])}</b> '
+              f'<small>dasar {_pct(h.get("base5"))} · CI {ci_txt}</small> · '
+              f'<small>n{h["n"]} · cocok {h["cocok"]}/{h.get("total_fitur", 13)}</small>')
+
+    rentang = (f'rentang wajar 5h {_pct_tanda(h["ret_p25"])}…{_pct_tanda(h["ret_p75"])}'
+               if h.get("ret_p25") is not None else "")
+    top_faktor = " · ".join(
+        f'{f["nama"]} {f["nilai"]} {_pp_tanda(f["delta_pp"])}'
+        for f in (h.get("faktor") or [])[:4])
+    vv = h["volval"]
+    if vv is None:
+        vv_txt = "VolVal n/a"
+    elif vv["sinyal"]:
+        vv_txt = f'VolVal <span class="vv">AKUM. SENYAP</span> {fmt_z(vv["z"])}'
     else:
-        cocok = "4/4" if h["cocok"] == 4 else f'{h["cocok"]}/4 fitur'
-        vv = h["volval"]
-        if vv is None:
-            vv_txt = "VolVal n/a"
-        elif vv["sinyal"]:
-            vv_txt = f'VolVal <span class="vv">AKUM. SENYAP</span> {fmt_z(vv["z"])}'
-        else:
-            vv_txt = f'VolVal {fmt_z(vv["z"])} normal'
-        hit = (f' <small>· senyap {h["vv_hit"] * 100:.0f}% n{h["vv_n"]}</small>'
-               if h["vv_hit"] is not None else "")
-        isi = (f'P(naik 5h) <b>{h["p5"] * 100:.0f}%</b> · P(>=3%) '
-               f'<b>{h["p3"] * 100:.0f}%</b> <small>n{h["n"]}·{cocok}</small> · '
-               f'{vv_txt}{hit}')
+        vv_txt = f'VolVal {fmt_z(vv["z"])} normal'
+    hit = (f' <small>· senyap {h["vv_hit"] * 100:.0f}% n{h["vv_n"]}</small>'
+           if h["vv_hit"] is not None else "")
+    ev = h.get("evaluasi")
+    uji = ""
+    if ev and ev.get("skill") is not None:
+        uji = (f' · uji luar sampel sejak {ev["mulai_uji"]}: skill Brier '
+               f'{_pct_tanda(ev["skill"])} (n{ev["n_uji"]})')
+    baris2 = " · ".join(x for x in (
+        rentang, f'faktor: {top_faktor}' if top_faktor else "", f'{vv_txt}{hit}') if x) + uji
     return (f'<div class="probstrip"><span class="pl">Probabilitas Historis</span>'
-            f'{isi}</div>')
+            f'{baris1}<br><small>{baris2}</small></div>')
 
 
 def peta_skenario(em):
@@ -679,9 +726,10 @@ def halaman_ringkasan(ed, skor_map, prob_map=None):
     pernah diisi perkiraan — halaman terkait akan menampilkan penanda kesenjangan data dan skor
     diberi penalti. Peringkat bersifat komparatif antar emiten edisi ini, bukan sinyal beli otomatis.</p>
     <p class="metode"><b>Kolom Prob 5h:</b> probabilitas historis close 5 hari ke depan lebih tinggi,
-    dari backtest setup serupa (posisi vs EMA50, pivot harian, rasio volume 20 hari, posisi di
-    rentang 20 hari) atas seluruh seri harga emiten edisi ini; n = jumlah sampel setup serupa.
-    Label "k/4" berarti pencocokan dilonggarkan ke k fitur karena sampel penuh &lt;30.</p>'''
+    dari 13 faktor teknikal (tumpukan EMA 20/50/200, zona tangga pivot, volume, rentang &amp;
+    breakout 20 hari, RSI14, MACD, rezim volatilitas, gap, hari beruntun, net asing 5 hari) atas
+    pool seluruh pasar; n = jumlah tetangga yang cocok. Label "k/13" berarti pencocokan
+    dilonggarkan ke k fitur karena sampel penuh &lt;300. Frekuensi historis, bukan jaminan.</p>'''
     kepala_tabel = ('<tr><th>Ticker</th><th>Emiten</th><th>Close</th><th>±%</th><th>Bias</th>'
                     '<th>Prob 5h</th><th>Skor</th><th>Risiko</th></tr>')
 
@@ -1107,6 +1155,8 @@ def main():
         sk = skor_map[em["ticker"]]
         pr = prob_map.get(em["ticker"])
         vv = pr.get("volval") if pr else None
+        ci5 = pr.get("ci5") if pr else None
+        ev = pr.get("evaluasi") if pr else None
         sidecar.append({
             "ticker": em["ticker"], "label": em["label"], "arah": em["arah"],
             "close": em["ohlc_hari"]["c"], "pct": em["ohlc_hari"]["pct"],
@@ -1115,6 +1165,20 @@ def main():
             "n": pr["n"] if pr else None, "cocok": pr["cocok"] if pr else None,
             "vv_z": round(vv["z"], 2) if vv else None,
             "vv_sinyal": bool(vv and vv["sinyal"]),
+            "pR1": _r3(pr["pR1"]) if pr else None,
+            "pR2": _r3(pr["pR2"]) if pr else None,
+            "pS1": _r3(pr["pS1"]) if pr else None,
+            "base5": _r3(pr["base5"]) if pr else None,
+            "lift5": _r3(pr["lift5"]) if pr else None,
+            "ci5": [_r3(ci5[0]), _r3(ci5[1])] if ci5 else None,
+            "total_fitur": pr.get("total_fitur") if pr else None,
+            "ret_p25": _r3(pr.get("ret_p25")) if pr else None,
+            "ret_p50": _r3(pr.get("ret_p50")) if pr else None,
+            "ret_p75": _r3(pr.get("ret_p75")) if pr else None,
+            "faktor": [{"nama": f["nama"], "nilai": f["nilai"],
+                        "delta_pp": _r3(f["delta_pp"]), "n": f["n"]}
+                       for f in (pr.get("faktor") or [])[:3]] if pr else None,
+            "evaluasi": {k: _r3(v) for k, v in ev.items()} if ev else None,
         })
     (AKAR / "keluaran" / f"{ed['edisi']}.analisa.json").write_text(
         json.dumps(sidecar, ensure_ascii=False), encoding="utf-8")

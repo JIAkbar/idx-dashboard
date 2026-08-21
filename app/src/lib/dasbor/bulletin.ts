@@ -51,10 +51,19 @@ export interface AnalisaEmiten {
   /** P(sempat ≥ +3% dalam 5 hari) 0..1. */
   p3: number | null
   n: number | null
-  /** Berapa dari 4 fitur setup yang cocok (fallback pencocokan longgar). */
+  /** Berapa dari `total_fitur` fitur setup yang cocok (fallback pencocokan
+   *  longgar bila sampel penuh terlalu sedikit). */
   cocok: number | null
   vv_z: number | null
   vv_sinyal: boolean
+  /** v2 (B39) — opsional: edisi lama (build.py sebelum 21 Agu 2026) tidak
+   *  menulis kunci ini. P(capai R1/R2) & P(sentuh S1) dalam 5 hari, angka
+   *  dasar pool, dan total fitur setup (13 di v2, dulu 4). */
+  pR1?: number | null
+  pR2?: number | null
+  pS1?: number | null
+  base5?: number | null
+  total_fitur?: number | null
 }
 
 /** Cache modul — pindah halaman balik lagi langsung tampil, TAPI tetap

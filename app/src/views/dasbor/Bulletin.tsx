@@ -375,11 +375,19 @@ export function Bulletin() {
                                       <td className="r num">{a.close.toLocaleString('id-ID')}</td>
                                       <td className={`r num ${a.pct >= 0 ? 'up' : 'dn'}`}>{fmtPct(a.pct)}</td>
                                       <td className="r num" style={{ fontWeight: 700 }}>{a.skor}</td>
-                                      <td className="r num">{a.p5 == null ? '—' : `${Math.round(a.p5 * 100)}%`}</td>
+                                      <td className="r num">
+                                        {a.p5 == null ? '—' : `${Math.round(a.p5 * 100)}%`}
+                                        {a.pR1 != null && (
+                                          <div style={{ fontSize: 10, fontWeight: 400, color: 'var(--text3)' }}>
+                                            R1 {Math.round(a.pR1 * 100)}%
+                                          </div>
+                                        )}
+                                      </td>
                                       <td className="r num">{a.p3 == null ? '—' : `${Math.round(a.p3 * 100)}%`}</td>
                                       <td className="r num" style={{ color: 'var(--text3)', fontSize: 11 }}>
                                         {a.n == null ? '—' : a.n}
-                                        {a.cocok != null && a.cocok < 4 && ` · ${a.cocok}/4`}
+                                        {a.cocok != null && a.cocok < (a.total_fitur ?? 4) &&
+                                          ` · ${a.cocok}/${a.total_fitur ?? 4}`}
                                       </td>
                                       <td style={{ fontSize: 11 }}>
                                         {a.vv_z == null ? '—' : (
