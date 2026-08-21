@@ -224,6 +224,41 @@ function warnaSamar(hex: string, alfa: number): string {
   return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alfa})`
 }
 
+/**
+ * Salin teks — dan JANGAN gagal diam-diam.
+ *
+ * `navigator.clipboard` cuma ada di konteks aman (https atau localhost).
+ * Dibuka lewat alamat IP di jaringan rumah — persis cara halaman ini dilihat
+ * dari ponsel saat verifikasi — ia `undefined`, dan bentuk `navigator
+ * .clipboard?.writeText(...)` menelan itu tanpa jejak: menunya menutup seperti
+ * berhasil dan papan tempel tetap berisi yang lama.
+ *
+ * Jadi ada dua cadangan, dan yang terakhir tak bisa gagal: `execCommand`
+ * (usang tapi masih bekerja di konteks tak aman), lalu `prompt` yang
+ * memajang teksnya supaya bisa disalin tangan.
+ */
+function salinTeks(teks: string): void {
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(teks).catch(() => cadanganSalin(teks))
+    return
+  }
+  cadanganSalin(teks)
+}
+
+function cadanganSalin(teks: string): void {
+  const ta = document.createElement('textarea')
+  ta.value = teks
+  // Di luar layar, bukan `display:none` — elemen tersembunyi tak bisa dipilih,
+  // dan `execCommand('copy')` menyalin dari PILIHAN.
+  ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0'
+  document.body.appendChild(ta)
+  ta.select()
+  let ok = false
+  try { ok = document.execCommand('copy') } catch { ok = false }
+  ta.remove()
+  if (!ok) window.prompt('Salin manual:', teks)
+}
+
 /** Keterangan status — MENJELASKAN apa yang ditemukan dan apa syaratnya,
  *  bukan apa yang harus dilakukan. Tak ada, dan tak boleh ada, kalimat saran
  *  beli/jual di sini (aturan mengikat CLAUDE.md, berlaku seluruh situs). */
@@ -555,7 +590,21 @@ export function GrafikEmiten() {
   const [putar, setPutar] = useState(false)
   const [kecepatan, setKecepatan] = useState<string>('2')
   /** Panel indikator (pane > 0) yang sedang dilipat — tanda `^` di legendanya. */
-  const [lipat, setLipat] = useState<number[]>([])
+  /**
+   * Panel yang sedang dilipat — berkunci **id instans**, bukan indeks pane.
+   *
+   * Versi pertama menyimpan indeks, dan indeks panel bergeser terus: hapus
+   * satu indikator, sembunyikan lewat ikon mata, gabungkan ke panel harga,
+   * atau kembalikan volume — semuanya menomori ulang panel di bawahnya.
+   * Seorang agen penyanggah menemukan tiga gejalanya, semuanya terlihat di
+   * layar: panel yang MEMBUKA SENDIRI, panel baru yang LAHIR terlipat, dan —
+   * yang terburuk — panel %K pola yang terkunci jadi bilah tipis 18% padahal
+   * panel pola tak punya baris legenda, jadi tombol bukanya tak pernah ada.
+   *
+   * Ironisnya alasan untuk tidak menyimpan nomor panel sudah ditulis panjang
+   * lebar di `DaftarInstans.tsx` — lalu `lipat` menyimpannya.
+   */
+  const [lipat, setLipat] = useState<string[]>([])
   // Bertambah tiap seri harga dibuat ulang. Efek-efek yang MENEMPEL pada seri
   // harga (data, warna, garis leher pola) memakainya sebagai dependensi:
   // tanpa itu mereka tak tahu serinya sudah berganti dan tetap memegang seri
@@ -1554,7 +1603,7 @@ export function GrafikEmiten() {
       swing: inst.jenis === 'struktur' ? cariSwing(lilin, inst.param.n) : ([] as Swing[]),
     })).map((x) => ({
       ...x,
-      patahan: x.inst.jenis === 'struktur' ? cariPatahan(lilin, x.swing) : ([] as Patahan[]),
+      patahan: x.inst.jenis === 'struktur' ? cariPatahan(lilin, x.swing, x.inst.param.n) : ([] as Patahan[]),
     })).map((x) => ({
       ...x,
       divergensi: x.inst.jenis === 'divergensi'
@@ -1575,6 +1624,29 @@ export function GrafikEmiten() {
   // dua tempat (penggambar seri & legenda dalam-kanvas) — dihitung sendiri
   // di masing-masing, legendanya bisa muncul di pane yang bukan miliknya
   // begitu salah satu urutannya berubah.
+  /**
+   * SATU rencana panel untuk seluruh penggambar.
+   *
+   * Sebelum ini tiga tempat menghitung nomornya sendiri-sendiri — indikator di
+   * sini, volume di efeknya, panel %K divergensi dengan `max(...)+1` — dan
+   * ketiganya bisa tak sepakat. Seorang agen penyanggah menelusuri akibatnya
+   * dan menemukan dua tabrakan yang nyata:
+   *
+   *   * Volume dipindah ke panel sendiri SESUDAH ada RSI -> volume mendarat di
+   *     panel RSI. Sebabnya halus: efek indikator membongkar seluruh serinya
+   *     lebih dulu, pane 1 jadi kosong dan lightweight-charts membuangnya,
+   *     lalu `addSeries(..., 2)` DIJEPIT jadi 1 karena pustaka membatasi
+   *     indeks ke `panes.length`.
+   *   * Panel %K divergensi memakai `max(nomor indikator) + 1` yang tak
+   *     melihat volume sama sekali — dengan volume berdiri sendiri dan
+   *     indikator yang semuanya menumpang panel harga, ia menghitung 1 dan
+   *     menindih histogram volume.
+   *
+   * Karena itu nomornya dihitung SEKALI di sini, berurutan tanpa lubang, dan
+   * `pastikanPane()` menciptakan pane yang belum ada sebelum seri dipasang —
+   * penjepitan indeks pustaka cuma menggigit kalau kita meminta pane yang
+   * belum lahir.
+   */
   const panePerInstans = useMemo(() => {
     const peta = new Map<string, number>()
     // Volume mengambil pane 1 kalau ia berdiri sendiri — tepat di bawah harga,
@@ -1606,6 +1678,50 @@ export function GrafikEmiten() {
   // ditebak — tebakan itu meleset beberapa piksel dan legendanya duduk
   // separuh di luar panenya.
   const [posPane, setPosPane] = useState<number[]>([0])
+  /** Buat pane kosong sampai indeks `i` ADA. lightweight-charts menjepit
+   *  `addSeries(..., i)` ke `panes.length`, jadi meminta pane yang belum lahir
+   *  diam-diam menaruh serinya di pane orang lain. */
+  const pastikanPane = useCallback((i: number) => {
+    const chart = chartRef.current
+    if (!chart) return
+    while (chart.panes().length <= i) chart.addPane(true)
+  }, [])
+
+  /** Pane mana yang sedang terlipat, diturunkan dari id yang disimpan.
+   *  Panel milik POLA tak pernah bisa terlipat: ia tak punya baris legenda,
+   *  jadi tak akan pernah ada tombol untuk membukanya lagi. */
+  const paneTerlipat = useMemo(() => {
+    const set = new Set<number>()
+    for (const [id, pane] of panePerInstans) {
+      if (pane > 0 && lipat.includes(id)) set.add(pane)
+    }
+    if (volumePanel === 'sendiri' && lipat.includes('__volume')) set.add(1)
+    return set
+  }, [lipat, panePerInstans, volumePanel])
+
+  // Menu klik kanan: Escape menutupnya, dan begitu juga gulir/ubah ukuran.
+  //
+  // Latar tak-terlihat di bawah menu cuma menutupi KANVAS, jadi menu tetap
+  // menggantung saat orang menekan tombol di bilah atas, membuka panduan, atau
+  // menggulir halaman — dan karena posisinya piksel mutlak terhadap bungkus,
+  // ia lalu melayang di atas isi yang sudah bukan miliknya. Escape juga satu-
+  // satunya jalan keluar bagi yang tak memakai tetikus.
+  useEffect(() => {
+    if (!menuKonteks) return
+    const tutup = () => setMenuKonteks(null)
+    const tombol = (e: KeyboardEvent) => { if (e.key === 'Escape') tutup() }
+    window.addEventListener('keydown', tombol)
+    window.addEventListener('resize', tutup)
+    // `capture` supaya gulir di dalam panel mana pun ikut terbaca, bukan cuma
+    // gulir dokumen — kanvas menahan wheel-nya sendiri.
+    window.addEventListener('wheel', tutup, { capture: true, passive: true })
+    return () => {
+      window.removeEventListener('keydown', tombol)
+      window.removeEventListener('resize', tutup)
+      window.removeEventListener('wheel', tutup, { capture: true })
+    }
+  }, [menuKonteks])
+
   const ukurPane = useCallback(() => {
     const chart = chartRef.current
     const bungkus = bungkusRef.current
@@ -1651,6 +1767,7 @@ export function GrafikEmiten() {
     for (const { inst, garis } of garisPerInstans) {
       const pane = panePerInstans.get(inst.id)
       if (pane === undefined) continue // tak tampil di kerangka ini
+      pastikanPane(pane)
       // Presisi & lencana sumbu datang dari ruas OUTPUTS modal setelan.
       // `undefined` = ikut format bawaan lightweight-charts.
       const format = inst.presisi === undefined
@@ -1700,11 +1817,11 @@ export function GrafikEmiten() {
     // dan bersamanya satu-satunya tombol untuk membukanya lagi.
     const panes = chart.panes()
     panes[0]?.setStretchFactor(3)
-    for (let i = 1; i < panes.length; i++) panes[i]?.setStretchFactor(lipat.includes(i) ? 0.18 : 1.1)
+    for (let i = 1; i < panes.length; i++) panes[i]?.setStretchFactor(paneTerlipat.has(i) ? 0.18 : 1.1)
     // Diukur SESUDAH tata letak dihitung ulang, bukan di baris yang sama —
     // tinggi pane baru belum berlaku pada saat setStretchFactor kembali.
     requestAnimationFrame(ukurPane)
-  }, [garisPerInstans, panePerInstans, theme, ukurPane, keChart, lipat])
+  }, [garisPerInstans, panePerInstans, theme, ukurPane, keChart, paneTerlipat, pastikanPane])
 
   // Volume dipindah, BUKAN dibuat ulang: `moveToPane` memindahkan seri beserta
   // datanya, sementara membuat ulang berarti mengunduh & menyusun 900-an titik
@@ -1713,13 +1830,15 @@ export function GrafikEmiten() {
   useEffect(() => {
     const vol = volRef.current
     if (!vol) return
+    const tujuan = volumePanel === 'sendiri' ? 1 : 0
+    pastikanPane(tujuan)
     try {
-      vol.moveToPane(volumePanel === 'sendiri' ? 1 : 0)
+      vol.moveToPane(tujuan)
     } catch {
       // Pane tujuan belum ada pada render pertama; efek berikutnya menutupnya.
     }
     requestAnimationFrame(ukurPane)
-  }, [volumePanel, versiSeriHarga, ukurPane])
+  }, [volumePanel, versiSeriHarga, ukurPane, pastikanPane])
 
   /**
    * Divergensi digambar, bukan cuma ditandai (Johan 21 Agu 2026: "buktikan
@@ -1753,14 +1872,18 @@ export function GrafikEmiten() {
     for (const s of seriPolaRef.current) chart.removeSeries(s)
     seriPolaRef.current = []
 
-    const paneIndikator = [...panePerInstans.values()]
-    let paneBerikut = paneIndikator.length ? Math.max(...paneIndikator) + 1 : 1
+    // Volume ikut diperhitungkan: `max(nomor indikator)` bernilai 0 kalau
+    // seluruh indikator menumpang panel harga, dan panel %K akan mendarat di
+    // panel volume.
+    const dipakai = [...panePerInstans.values(), volumePanel === 'sendiri' ? 1 : 0]
+    let paneBerikut = Math.max(0, ...dipakai) + 1
     const waktu = lilin.map((l) => l.time)
 
     for (const { inst, divergensi, stoch } of polaPerInstans) {
       if (inst.jenis !== 'divergensi' || !digambar(inst)) continue
       if (divergensi.length === 0 || stoch.length !== lilin.length) continue
       const pane = paneBerikut++
+      pastikanPane(pane)
 
       // Deret %K penuh — konteks untuk garisnya. Tanpa ini panelnya cuma
       // berisi potongan garis melayang tanpa acuan.
@@ -1809,10 +1932,10 @@ export function GrafikEmiten() {
     if (seriPolaRef.current.length) {
       const panes = chart.panes()
       panes[0]?.setStretchFactor(3)
-      for (let i = 1; i < panes.length; i++) panes[i]?.setStretchFactor(lipat.includes(i) ? 0.18 : 1.1)
+      for (let i = 1; i < panes.length; i++) panes[i]?.setStretchFactor(paneTerlipat.has(i) ? 0.18 : 1.1)
       requestAnimationFrame(ukurPane)
     }
-  }, [polaPerInstans, panePerInstans, lilin, theme, digambar, keChart, ukurPane, lipat])
+  }, [polaPerInstans, panePerInstans, lilin, theme, digambar, keChart, ukurPane, paneTerlipat, volumePanel, pastikanPane])
 
   // Indeks waktu -> posisi lilin. Dipakai baris status (OHLC yang mengikuti
   // kursor) dan tooltip pola.
@@ -2571,11 +2694,20 @@ export function GrafikEmiten() {
               // Harga & waktu DI TITIK KLIK, bukan harga terakhir: itu yang
               // membuat menunya menjawab "di sini", bukan "di chart ini".
               const t = chart.timeScale().coordinateToTime(x)
-              const p = harga?.coordinateToPrice(y) ?? null
+              // `coordinateToPrice` seri harga menerima koordinat DALAM PANEL
+              // HARGA. `y` di sini relatif ke seluruh bungkus, jadi klik kanan
+              // di panel volume atau RSI menyerahkan angka yang sudah lewat
+              // ujung bawah skala harga — hasilnya butir "Salin harga 0", yang
+              // bukan cuma salah tapi terlihat seperti data rusak.
+              //
+              // Di luar panel harga butir itu TIDAK ditawarkan sama sekali.
+              // Menu tanpa "salin harga" jujur; menu dengan angka salah tidak.
+              const tinggiPaneHarga = chart.panes()[0]?.getHeight() ?? 0
+              const p = y >= 0 && y <= tinggiPaneHarga ? (harga?.coordinateToPrice(y) ?? null) : null
               setMenuKonteks({
                 x, y,
                 waktu: dariWaktuChart(t),
-                harga: typeof p === 'number' && Number.isFinite(p) ? p : null,
+                harga: typeof p === 'number' && Number.isFinite(p) && p > 0 ? p : null,
               })
             }}
           >
@@ -2619,7 +2751,7 @@ export function GrafikEmiten() {
                           // Dibulatkan ke fraksi bursa: harga di titik kursor
                           // itu bilangan pecahan hasil skala piksel, dan
                           // "1.372,84" bukan harga yang bisa dipesan di papan.
-                          void navigator.clipboard?.writeText(String(keFraksi(menuKonteks.harga as number, 'dekat')))
+                          salinTeks(String(keFraksi(menuKonteks.harga as number, 'dekat')))
                           tutup()
                         }}>
                         Salin harga {fN(keFraksi(menuKonteks.harga, 'dekat'), 0)}
@@ -2627,7 +2759,7 @@ export function GrafikEmiten() {
                     )}
                     {menuKonteks.waktu && (
                       <button type="button" className="dd-it" role="menuitem"
-                        onClick={() => { void navigator.clipboard?.writeText(menuKonteks.waktu as string); tutup() }}>
+                        onClick={() => { salinTeks(menuKonteks.waktu as string); tutup() }}>
                         Salin tanggal {menuKonteks.waktu}
                       </button>
                     )}
@@ -2725,17 +2857,27 @@ export function GrafikEmiten() {
                     </span>
                   </>
                 )}
-                {pane > 0 && (
+                {(() => {
                   // Lipat panel indikator. Cuma pane > 0: melipat panel HARGA
                   // berarti menyembunyikan isi yang justru datang untuk dilihat.
-                  <button type="button" className="grf-lipat"
-                    aria-expanded={!lipat.includes(pane)}
-                    title={lipat.includes(pane) ? 'Buka panel' : 'Lipat panel'}
-                    aria-label={lipat.includes(pane) ? `Buka panel ${pane}` : `Lipat panel ${pane}`}
-                    onClick={() => setLipat((x) => (x.includes(pane) ? x.filter((i) => i !== pane) : [...x, pane]))}>
-                    {lipat.includes(pane) ? 'v' : '^'}
-                  </button>
-                )}
+                  //
+                  // Kuncinya id instans penghuni panel ini — bukan nomor
+                  // panelnya, yang bergeser tiap kali panel lain lahir/mati.
+                  if (pane === 0) return null
+                  const idPanel = [...panePerInstans].find(([, p]) => p === pane)?.[0]
+                    ?? (volumePanel === 'sendiri' && pane === 1 ? '__volume' : null)
+                  if (!idPanel) return null
+                  const terlipat = lipat.includes(idPanel)
+                  return (
+                    <button type="button" className="grf-lipat"
+                      aria-expanded={!terlipat}
+                      title={terlipat ? 'Buka panel' : 'Lipat panel'}
+                      aria-label={terlipat ? `Buka panel ${pane}` : `Lipat panel ${pane}`}
+                      onClick={() => setLipat((x) => (x.includes(idPanel) ? x.filter((i) => i !== idPanel) : [...x, idPanel]))}>
+                      {terlipat ? 'v' : '^'}
+                    </button>
+                  )
+                })()}
                 {baris.map((b) => {
                   // `sakelarTampil`/`hapus` sama bentuknya di kedua daftar, jadi
                   // boleh dipanggil lewat gabungan keduanya.

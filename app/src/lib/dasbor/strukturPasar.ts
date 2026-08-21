@@ -128,7 +128,7 @@ export interface Patahan {
  * atas saat struktur sudah naik itu kelanjutan (BOS); menembus ke atas saat
  * struktur sedang turun itu perubahan watak (CHoCH).
  */
-export function cariPatahan(lilin: LilinData[], swing: Swing[]): Patahan[] {
+export function cariPatahan(lilin: LilinData[], swing: Swing[], n = N_SWING_BAWAAN): Patahan[] {
   const keluar: Patahan[] = []
   let hi: Swing | null = null
   let lo: Swing | null = null
@@ -137,8 +137,33 @@ export function cariPatahan(lilin: LilinData[], swing: Swing[]): Patahan[] {
   let p = 0
 
   for (let i = 0; i < lilin.length; i++) {
-    // Swing baru boleh dipakai hanya SESUDAH lilin konfirmasinya lewat.
-    while (p < urut.length && urut[p].i <= i) {
+    // Swing baru boleh dipakai hanya sesudah `n` lilin KONFIRMASINYA terbentuk,
+    // bukan pada lilin swing-nya sendiri.
+    //
+    // Versi pertama memakai `urut[p].i <= i` dan itu kebocoran masa depan yang
+    // nyata: di hari swing terjadi, tak seorang pun bisa tahu ia swing —
+    // definisinya sendiri mensyaratkan `n` lilin di kanan. Sebuah agen
+    // penyanggah mengukur akibatnya atas 18 emiten harian dan angkanya
+    // menyakitkan: keunggulan 5 lilin jatuh dari +12,7pp jadi kisaran +5pp.
+    // Sinyalnya tetap punya keunggulan, tapi kira-kira sepertiga dari yang
+    // sempat diklaim.
+    //
+    // Angka yang berlaku sekarang, diukur ulang 21 Agu 2026 oleh
+    // `app/scripts/backtest-struktur.ts` — yang sejak perbaikan ini MENGIMPOR
+    // fungsi ini alih-alih menyalinnya, 18 emiten, N=5:
+    //
+    //   harian   BOS +5,2pp (5 lilin) · +4,6pp (10) · +3,5pp (20)
+    //   4 jam    BOS +1,1pp (5 lilin) · +2,1pp (10) · +0,4pp (20)
+    //
+    // Kerangka 4 jam sengaja dicetak berdampingan walau hasilnya lemah:
+    // keunggulan +0,4pp pada 20 lilin praktis nol, dan itu justru keterangan
+    // yang paling berguna dari seluruh tabel — pola ini berarti di harian,
+    // dan nyaris tak berarti di 4 jam.
+    //
+    // Kepala berkas ini memperingatkan persis jebakan itu sejak awal, dan
+    // kodenya tetap melanggarnya — peringatan yang benar tak menolong kalau
+    // tak ada yang menegakkannya.
+    while (p < urut.length && urut[p].i + n <= i) {
       const s = urut[p++]
       if (s.jenis === 'high') hi = s
       else lo = s
@@ -179,6 +204,10 @@ export function cariPatahan(lilin: LilinData[], swing: Swing[]): Patahan[] {
  * `lebarPersen` mengukur seberapa rapat kumpulannya terhadap harga. Kumpulan
  * yang lebar bukan PRZ; ia cuma tiga angka yang kebetulan berdekatan.
  */
+/** Batas lebar zona (persen terhadap harga tengahnya) sebelum ia berhenti
+ *  disebut PRZ. Lihat alasannya di `hitungPrz`. */
+export const LEBAR_PRZ_MAKS = 40
+
 export interface Prz {
   bawah: number
   atas: number
@@ -211,6 +240,19 @@ export function hitungPrz(
   const bawah = Math.min(...nilai)
   const atas = Math.max(...nilai)
   const tengah = (bawah + atas) / 2
-  if (tengah === 0) return null
-  return { bawah, atas, tengah, lebarPersen: ((atas - bawah) / Math.abs(tengah)) * 100, proyeksi }
+  if (tengah <= 0) return null
+  // Zona yang batas bawahnya nol atau negatif bukan zona — ia hasil proyeksi
+  // yang menembus dasar harga. Diukur atas 194.833 kaki XABC dari 964 berkas
+  // OHLC: 1.515 zona (0,8%) berbatas bawah <= 0. Contoh nyata AALI
+  // 10.750/12.225/4.140/6.225 menghasilkan "zona pembalikan" -1.860 s.d.
+  // 11.065 — memuat harga negatif, dan tak ada saham yang diperdagangkan di
+  // situ.
+  if (bawah <= 0) return null
+  const lebarPersen = ((atas - bawah) / tengah) * 100
+  // Tiga proyeksi yang tersebar selebar harganya sendiri bukan KONFLUENSI, dan
+  // konfluensi itulah definisi PRZ. Dari sapuan yang sama: 76 zona berlebar
+  // >1000%. Ambang 40% dipilih supaya zona yang lolos masih bisa dipakai
+  // sebagai rentang harga, bukan sebagai separuh papan.
+  if (lebarPersen > LEBAR_PRZ_MAKS) return null
+  return { bawah, atas, tengah, lebarPersen, proyeksi }
 }

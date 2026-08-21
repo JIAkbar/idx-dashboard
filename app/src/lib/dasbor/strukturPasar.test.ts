@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { LilinData } from './grafikEmiten'
-import { arahStruktur, cariPatahan, cariSwing, hitungPrz } from './strukturPasar'
+import { LEBAR_PRZ_MAKS, arahStruktur, cariPatahan, cariSwing, hitungPrz } from './strukturPasar'
 
 /** Lilin dari deret tinggi/rendah eksplisit — bentuk paling jujur untuk
  *  menguji deteksi swing, karena swing memang dibaca dari high/low. */
@@ -134,7 +134,15 @@ describe('hitungPrz', () => {
 
   it('zona yang lebih rapat memberi lebarPersen lebih kecil — itu yang membedakan PRZ dari tiga angka berdekatan', () => {
     const rapat = hitungPrz(100, 200, 138, 180, 0.786)!
-    const longgar = hitungPrz(100, 200, 105, 195, 0.786)!
-    expect(rapat.lebarPersen).toBeLessThan(longgar.lebarPersen)
+    const agakLonggar = hitungPrz(100, 200, 130, 182, 0.786)!
+    expect(rapat.lebarPersen).toBeLessThan(agakLonggar.lebarPersen)
+  })
+
+  it(`zona selebar >${LEBAR_PRZ_MAKS}% ditolak — tiga angka yang tersebar sejauh itu bukan lagi "zona"`, () => {
+    // XABC ini memberi proyeksi yang tersebar ~90% dari harganya sendiri.
+    // Sebelum ambangnya ada, zona seperti ini tetap digambar dan praktis
+    // MUSTAHIL meleset: apa pun yang terjadi berikutnya jatuh di dalamnya,
+    // jadi angka keberhasilannya benar tapi tak berarti apa-apa.
+    expect(hitungPrz(100, 200, 105, 195, 0.786)).toBeNull()
   })
 })
