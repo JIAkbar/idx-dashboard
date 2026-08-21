@@ -39,6 +39,7 @@ import math
 import os
 import statistics
 import sys
+import time
 from pathlib import Path
 
 AKAR = Path(__file__).resolve().parents[2]
@@ -72,21 +73,52 @@ def ke_fraksi(harga: float, arah: str = "dekat") -> float:
 
 
 # ---------------------------------------------------------------- muat data
-def muat(kode: str) -> dict:
-    d = json.loads((OHLC / f"{kode}.json").read_text(encoding="utf-8"))
-    baris = d["d"]
+def _baca_ohlc(p: Path, sampai: str | None) -> dict | None:
+    """Baca satu berkas ohlc/<KODE>.json, potong deret ke `sampai` (ISO) kalau
+    diisi — 'pakai OHLC hanya s.d. tanggal itu, jangan intip ke depan'. `None`
+    kalau berkasnya rusak atau tak ada lilin sebelum/pada `sampai`."""
+    try:
+        d = json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    baris = d.get("d")
+    if baris is None or "kode" not in d:
+        return None  # bukan berkas ohlc (mis. _gagal.json — manifest kode yang gagal dipanen)
+    if sampai:
+        baris = [r for r in baris if r[0] <= sampai]
+    if not baris:
+        return None
     return {
-        "kode": kode,
+        "kode": d["kode"],
         "tgl": [r[0] for r in baris],
         "o": [float(r[1]) for r in baris],
         "h": [float(r[2]) for r in baris],
         "l": [float(r[3]) for r in baris],
         "c": [float(r[4]) for r in baris],
         "v": [float(r[5]) for r in baris],
-        "mulai": d["mulai"],
-        "akhir": d["akhir"],
-        "n": d["n"],
+        "mulai": baris[0][0],
+        "akhir": baris[-1][0],
+        "n": len(baris),
     }
+
+
+def muat(kode: str, sampai: str | None = None) -> dict:
+    d = _baca_ohlc(OHLC / f"{kode}.json", sampai)
+    if d is None:
+        raise ValueError(f"{kode}: tak ada lilin OHLC{f' sampai {sampai}' if sampai else ''}")
+    return d
+
+
+def muat_semua_ohlc(sampai: str | None = None) -> dict[str, dict]:
+    """Baca SEKALI seluruh data-idx/json/ohlc/*.json (dipotong ke `sampai` kalau
+    diisi) — dipakai bersama oleh semua_kode/kode_populasi/er_populasi/kartu di
+    mode --semua supaya satu run --tanggal tak membaca cakram berkali-kali."""
+    out: dict[str, dict] = {}
+    for p in sorted(OHLC.glob("*.json")):
+        d = _baca_ohlc(p, sampai)
+        if d is not None:
+            out[d["kode"]] = d
+    return out
 
 
 # ---------------------------------------------------------------- indikator
@@ -268,18 +300,15 @@ def er(c: list[float], n: int = 20) -> float | None:
     return statistics.median(nilai) if nilai else None
 
 
-def er_populasi(min_n: int = 250) -> list[tuple[str, float]]:
-    """ER median tiap emiten — dasar persentil. Sekali jalan ±1 menit."""
+def er_populasi(min_n: int = 250, cache: dict[str, dict] | None = None, sampai: str | None = None) -> list[tuple[str, float]]:
+    """ER median tiap emiten — dasar persentil. Sekali jalan ±1 menit dari cakram;
+    kalau `cache` diisi (muat_semua_ohlc()), nol I/O tambahan."""
+    sumber = cache.values() if cache is not None else muat_semua_ohlc(sampai).values()
     out = []
-    for p in sorted(OHLC.glob("*.json")):
-        try:
-            d = json.loads(p.read_text(encoding="utf-8"))
-        except Exception:
+    for d in sumber:
+        if d["n"] < min_n:
             continue
-        if d.get("n", 0) < min_n:
-            continue
-        c = [float(r[4]) for r in d["d"]]
-        e = er(c)
+        e = er(d["c"])
         if e is not None:
             out.append((d["kode"], e))
     return out
@@ -386,14 +415,56 @@ def asing_ringkas(kode: str, hari_list: tuple[int, ...] = (5, 20)) -> dict | Non
 
 
 # ------------------------------------------------------------------ perakit
-def kartu(kode: str, peringkat_er: dict[str, float] | None = None) -> dict:
-    d = muat(kode)
+def kartu(
+    kode: str, peringkat_er: dict[str, float] | None = None,
+    d: dict | None = None, sampai: str | None = None, hemat: bool = False,
+) -> dict:
+    """`d` sudah dimuat (mis. dari muat_semua_ohlc() cache) -> dipakai apa
+    adanya, nol I/O tambahan. `hemat=True` melewati blok yang TIDAK dipakai
+    ringkas_dari_kartu() (musiman/sektor/fundamental/asing/target first-
+    passage) — dipakai backfill arsip kalender supaya --tanggal tidak
+    membayar ongkos first-passage untuk baris yang toh dibuang."""
+    d = d if d is not None else muat(kode, sampai)
     c, h, l, v, t = d["c"], d["h"], d["l"], d["v"], d["tgl"]
+    n = d["n"]
     a = atr(h, l, c)
     sup, res = sr(d)
     harga = c[-1]
+    prev = c[-2] if n >= 2 else None
+    chg = (harga / prev - 1) * 100 if prev else None
     stop = sup[0]["harga"] if sup else ke_fraksi(harga * 0.95, "bawah")
     turun_pct = (harga - stop) / harga * 100
+    e = er(c)
+    jendela = range(max(0, n - 20), n)
+    nilai = sorted(c[i] * v[i] for i in jendela)
+    nilai20 = statistics.median(nilai) if nilai else None
+    hasil = {
+        "kode": kode,
+        "tgl": t[-1],
+        "harga": harga,
+        "prev": prev,
+        "chg": chg,
+        "n": n,
+        "mulai": d["mulai"],
+        "ma20": ma(c, 20), "ma50": ma(c, 50), "ma200": ma(c, 200),
+        "atr": a,
+        "atr_pct": a / harga * 100 if a else None,
+        "support": sup[:3],
+        "resistance": res[:3],
+        "stop": stop,
+        "stop_pct": turun_pct,
+        "er": e,
+        "er_persentil": (
+            sum(1 for x in peringkat_er.values() if x < e) / len(peringkat_er) * 100
+            if peringkat_er and e is not None else None
+        ),
+        "er_n_populasi": len(peringkat_er) if peringkat_er else None,
+        "likuiditas_median20": nilai20,
+        "kualitas": kualitas_dari(n, nilai20),
+        "dihitung": t[-1],
+    }
+    if hemat:
+        return hasil
     target = []
     for r in res[:3]:
         naik_pct = (r["harga"] - harga) / harga * 100
@@ -405,40 +476,16 @@ def kartu(kode: str, peringkat_er: dict[str, float] | None = None) -> dict:
             "fp": first_passage(d, naik_pct, turun_pct, 20),
             "fp60": first_passage(d, naik_pct, turun_pct, 60),
         })
-    e = er(c)
-    sr_now = stoch_rsi(c)
-    nilai = sorted(c[i] * v[i] for i in range(len(c) - 20, len(c)))
-    return {
-        "kode": kode,
-        "tgl": t[-1],
-        "harga": harga,
-        "prev": c[-2],
-        "chg": (c[-1] / c[-2] - 1) * 100,
-        "n": d["n"],
-        "mulai": d["mulai"],
-        "ma20": ma(c, 20), "ma50": ma(c, 50), "ma200": ma(c, 200),
-        "atr": a,
-        "atr_pct": a / harga * 100 if a else None,
+    hasil.update({
         "rsi": rsi(c)[-1],
-        "stochrsi": sr_now,
-        "support": sup[:3],
-        "resistance": res[:3],
-        "stop": stop,
-        "stop_pct": turun_pct,
+        "stochrsi": stoch_rsi(c),
         "target": target,
-        "er": e,
-        "er_persentil": (
-            sum(1 for x in peringkat_er.values() if x < e) / len(peringkat_er) * 100
-            if peringkat_er and e is not None else None
-        ),
-        "er_n_populasi": len(peringkat_er) if peringkat_er else None,
-        "likuiditas_median20": statistics.median(nilai),
         "musiman": musiman_bulan(d, int(t[-1][5:7])),
         "sektor": sektor(kode),
         "fundamental": fundamental(kode),
         "asing": asing_ringkas(kode),
-        "dihitung": t[-1],
-    }
+    })
+    return hasil
 
 
 def cetak(k: dict) -> None:
@@ -511,6 +558,32 @@ def uji() -> None:
     # volume nol -> porsi None, bukan ZeroDivisionError
     r0 = ringkas_asing_dari([["d1", 1, 1, 0, 0, 0]], 1)
     assert r0["porsi_beli_pct"] is None and r0["porsi_jual_pct"] is None
+    # kualitas_dari: klasifikasi relatif MIN_LILIN/MIN_LIKUIDITAS (WBSA/GWSA
+    # 21 Agu 2026 — riwayat pendek 93 lilin tapi likuiditas cukup vs sebaliknya)
+    assert kualitas_dari(93, 9.9e9) == {"riwayat": "pendek", "likuiditas": "cukup", "lilin": 93, "nilai20": 9.9e9}
+    assert kualitas_dari(2471, 2.83e8) == {"riwayat": "cukup", "likuiditas": "tipis", "lilin": 2471, "nilai20": 2.83e8}
+    assert kualitas_dari(300, None) == {"riwayat": "cukup", "likuiditas": "tipis", "lilin": 300, "nilai20": None}
+    # kode_populasi: emiten kualitas tak-lolos (riwayat ATAU likuiditas) tak
+    # masuk populasi statistik (ER persentil/median pasar) — cache in-memory,
+    # nol I/O.
+    cache_uji = {
+        "AA": {"kode": "AA", "n": 300, "c": [100.0] * 300, "v": [1e7] * 300},  # lolos keduanya
+        "BB": {"kode": "BB", "n": 100, "c": [100.0] * 100, "v": [1e7] * 100},  # riwayat pendek
+        "CC": {"kode": "CC", "n": 300, "c": [100.0] * 300, "v": [1.0] * 300},  # likuiditas tipis
+    }
+    lolos_uji, tolak_uji = kode_populasi(cache=cache_uji)
+    assert lolos_uji == ["AA"] and tolak_uji == {"riwayat": 1, "likuiditas": 1}, (lolos_uji, tolak_uji)
+    # hemat=True (dipakai backfill arsip): tanpa musiman/sektor/fundamental/
+    # asing/target, tapi ringkas_dari_kartu() tetap lengkap dari hasilnya.
+    hemat_dummy = {
+        "kode": "AA", "tgl": "2026-08-01", "harga": 100.0, "prev": 99.0, "chg": 1.0, "n": 300,
+        "mulai": "2025-01-01", "ma20": 98.0, "ma50": 97.0, "ma200": None, "atr": 2.0, "atr_pct": 2.0,
+        "support": [], "resistance": [], "stop": 95.0, "stop_pct": 5.0, "er": 0.3, "er_persentil": None,
+        "er_n_populasi": None, "likuiditas_median20": 1e9, "kualitas": kualitas_dari(300, 1e9), "dihitung": "2026-08-01",
+    }
+    assert "target" not in hemat_dummy and "musiman" not in hemat_dummy
+    rk_hemat = ringkas_dari_kartu(hemat_dummy)
+    assert rk_hemat["kualitas"]["riwayat"] == "cukup" and rk_hemat["s1"] is None
     # ringkas: S1/R1 diambil dari klaster TERDEKAT, dan emiten tanpa klaster
     # memberi None — bukan 0 (nol berarti "levelnya di harga nol").
     kp = {"kode": "XX", "tgl": "2026-08-19", "harga": 100.0, "chg": 1.0, "n": 600, "ma20": 98.0,
@@ -523,34 +596,52 @@ def uji() -> None:
     print("kartu_analisa: swauji lolos")
 
 
-# Ambang masuk kartu (docs/riset/keputusan-kartu-ringkas.md, bagian "BANYAK
-# SAHAM"). Yang tak lolos TIDAK dapat kartu, tapi JUMLAHNYA ikut ditulis ke
+# Ambang POPULASI STATISTIK (docs/riset/keputusan-kartu-ringkas.md, bagian
+# "BANYAK SAHAM"; direvisi 21 Agu 2026). SEMUA emiten ber-OHLC dapat kartu —
+# yang tak lolos ambang ini cuma dikeluarkan dari acuan statistik (ER
+# persentil, median pasar) lewat ruas `kualitas`, JUMLAHNYA ikut ditulis ke
 # ringkas.json supaya halaman bisa mencetaknya di kaki tabel — bukan hilang
 # senyap.
 MIN_LILIN = 250
 MIN_LIKUIDITAS = 5e8  # Rp500 juta/hari, median 20 hari
 
 
-def kode_populasi(min_n: int = MIN_LILIN, min_lik: float = MIN_LIKUIDITAS) -> tuple[list[str], dict]:
-    """Kode emiten yang lolos ambang masuk, plus hitungan yang tidak per sebab.
-
-    Likuiditas disaring DI SINI, bukan sesudah kartu dirakit — emiten yang tak
-    akan dipakai tak perlu membayar ongkos first-passage."""
+def kode_populasi(
+    min_n: int = MIN_LILIN, min_lik: float = MIN_LIKUIDITAS,
+    cache: dict[str, dict] | None = None, sampai: str | None = None,
+) -> tuple[list[str], dict]:
+    """Kode emiten yang lolos ambang POPULASI STATISTIK (ER persentil, median
+    pasar) — bukan lagi penyaring "siapa dapat kartu". Sejak keputusan 21 Agu
+    2026 SEMUA emiten ber-OHLC dapat kartu; ambang ini cuma menandai siapa yang
+    ikut dihitung sebagai acuan (`kualitas_dari()`), plus hitungan tak-lolos
+    per sebab untuk kaki tabel."""
+    sumber = cache.values() if cache is not None else muat_semua_ohlc(sampai).values()
     lolos: list[str] = []
     tolak = {"riwayat": 0, "likuiditas": 0}
-    for p in sorted(OHLC.glob("*.json")):
-        try:
-            d = json.loads(p.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-        if d.get("n", 0) < min_n:
+    for d in sumber:
+        if d["n"] < min_n:
             tolak["riwayat"] += 1
             continue
-        if statistics.median(float(r[4]) * float(r[5]) for r in d["d"][-20:]) < min_lik:
+        c, v, n = d["c"], d["v"], d["n"]
+        nilai20 = statistics.median(c[i] * v[i] for i in range(max(0, n - 20), n))
+        if nilai20 < min_lik:
             tolak["likuiditas"] += 1
             continue
         lolos.append(d["kode"])
     return lolos, tolak
+
+
+def kualitas_dari(n: int, nilai20: float | None) -> dict:
+    """Ruas 'kualitas' kartu — riwayat/likuiditas relatif ambang populasi
+    (MIN_LILIN/MIN_LIKUIDITAS). TIDAK menyaring emiten dari kartu, cuma
+    penanda supaya halaman & populasi ER tahu siapa di luar populasi
+    statistik (docs/riset/keputusan-kartu-ringkas.md keputusan 21 Agu 2026)."""
+    return {
+        "riwayat": "cukup" if n >= MIN_LILIN else "pendek",
+        "likuiditas": "cukup" if (nilai20 is not None and nilai20 >= MIN_LIKUIDITAS) else "tipis",
+        "lilin": n,
+        "nilai20": nilai20,
+    }
 
 
 def ringkas_dari_kartu(k: dict) -> dict:
@@ -575,6 +666,7 @@ def ringkas_dari_kartu(k: dict) -> dict:
         "er_persentil": k["er_persentil"],
         "likuiditas": k["likuiditas_median20"],
         "stop_pct": k["stop_pct"],
+        "kualitas": k.get("kualitas"),
     }
 
 
@@ -582,8 +674,9 @@ def tulis_berkas_kartu(hasil: dict[str, dict], tolak: dict | None = None) -> Non
     """Tulis data-idx/json/kartu/<KODE>.json (satu per emiten) + index.json
     (daftar kode + tanggal hitung, supaya halaman tahu apa yang tersedia tanpa
     menebak nama berkas) + ringkas.json (satu berkas untuk tabel screener,
-    supaya halaman tak menembak ratusan permintaan). Dipanggil dari --tulis,
-    bukan otomatis tiap run — menjalankan skrip riset ini tanpa flag itu TIDAK
+    supaya halaman tak menembak ratusan permintaan). Dipanggil dari --tulis
+    TANPA --tanggal (run harian) — juga menulis arsip kalender hari itu lewat
+    tulis_arsip(). Menjalankan skrip riset ini tanpa flag --tulis TIDAK
     mengubah berkas apa pun."""
     KARTU_DIR.mkdir(parents=True, exist_ok=True)
     daftar = []
@@ -594,7 +687,7 @@ def tulis_berkas_kartu(hasil: dict[str, dict], tolak: dict | None = None) -> Non
         baris.append(ringkas_dari_kartu(h))
     waktu = __import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M")
     (KARTU_DIR / "index.json").write_text(
-        json.dumps({"diperbarui": waktu, "emiten": daftar}, indent=1, ensure_ascii=False), encoding="utf-8")
+        json.dumps({"diperbarui": waktu, "emiten": daftar, "arsip": []}, indent=1, ensure_ascii=False), encoding="utf-8")
     ringkas = {
         "diperbarui": waktu,
         "ambang": {"lilin": MIN_LILIN, "likuiditas": MIN_LIKUIDITAS},
@@ -606,6 +699,43 @@ def tulis_berkas_kartu(hasil: dict[str, dict], tolak: dict | None = None) -> Non
     print(f"\ntersimpan: {len(daftar)} berkas kartu + index.json + "
           f"ringkas.json ({p_ringkas.stat().st_size/1024:.0f} KB) -> {KARTU_DIR}")
     periksa_ringkas()
+    if hasil:
+        # 'index.json.arsip' di atas cuma placeholder — tulis_arsip() di bawah
+        # membaca ulang glob kartu/arsip/ dan menimpanya dengan daftar nyata.
+        tulis_arsip(hasil, tolak, max(h["dihitung"] for h in hasil.values()))
+
+
+def tulis_arsip(hasil: dict[str, dict], tolak: dict | None, tanggal: str) -> None:
+    """Tulis data-idx/json/kartu/arsip/<tanggal>.json — ringkasan screener PADA
+    tanggal itu (kompak, dibaca kalender tab Semua). TIDAK menyentuh
+    kartu/<KODE>.json atau ringkas.json 'hari ini' — kartu penuh per emiten
+    tetap hanya untuk tanggal terkini (lihat docstring modul & keputusan
+    kalender 21 Agu 2026)."""
+    arsip_dir = KARTU_DIR / "arsip"
+    arsip_dir.mkdir(parents=True, exist_ok=True)
+    baris = sorted((ringkas_dari_kartu(h) for h in hasil.values()), key=lambda b: b["kode"])
+    isi = {
+        "diperbarui": tanggal,
+        "ambang": {"lilin": MIN_LILIN, "likuiditas": MIN_LIKUIDITAS},
+        "tak_lolos": tolak or {},
+        "emiten": baris,
+    }
+    p = arsip_dir / f"{tanggal}.json"
+    p.write_text(json.dumps(isi, ensure_ascii=False, default=str, separators=(",", ":")), encoding="utf-8")
+    print(f"  arsip {tanggal}: {len(baris)} emiten -> {p} ({p.stat().st_size/1024:.0f} KB)")
+    perbarui_arsip_index()
+
+
+def perbarui_arsip_index() -> None:
+    """index.json.arsip = daftar tanggal yang tersedia di kartu/arsip/, dibaca
+    ulang dari glob (bukan dilacak terpisah) supaya tak pernah basi terhadap
+    berkas yang sungguh ada di cakram."""
+    arsip_dir = KARTU_DIR / "arsip"
+    daftar = sorted(x.stem for x in arsip_dir.glob("*.json")) if arsip_dir.exists() else []
+    p = KARTU_DIR / "index.json"
+    idx = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"diperbarui": None, "emiten": []}
+    idx["arsip"] = daftar
+    p.write_text(json.dumps(idx, indent=1, ensure_ascii=False), encoding="utf-8")
 
 
 def periksa_ringkas(contoh: int = 5) -> None:
@@ -626,6 +756,7 @@ def periksa_ringkas(contoh: int = 5) -> None:
 
 
 if __name__ == "__main__":
+    t_mulai = time.time()
     arg = sys.argv[1:]
     if "--uji" in arg:
         uji()
@@ -633,54 +764,79 @@ if __name__ == "__main__":
     tulis = "--tulis" in arg
     semua = "--semua" in arg
     maks = None
+    i_maks = None
     if "--maks" in arg:
         i_maks = arg.index("--maks")
         maks = int(arg[i_maks + 1])
-    else:
-        i_maks = None
-    positional = [a for i, a in enumerate(arg) if not a.startswith("--") and i - 1 != i_maks]
+    tanggal = None
+    i_tgl = None
+    if "--tanggal" in arg:
+        i_tgl = arg.index("--tanggal")
+        tanggal = arg[i_tgl + 1]
+    skip_val_idx = {i + 1 for i in (i_maks, i_tgl) if i is not None}
+    positional = [a for i, a in enumerate(arg) if not a.startswith("--") and i not in skip_val_idx]
 
-    tolak: dict = {}
+    # SEMUA emiten ber-OHLC dapat kartu (keputusan 21 Agu 2026) — kode_populasi()
+    # cuma menandai siapa yang masuk POPULASI STATISTIK (ER persentil, dsb),
+    # bukan lagi siapa yang dapat kartu.
+    cache: dict[str, dict] | None = None
     if semua:
-        kode, tolak = kode_populasi()
+        cache = muat_semua_ohlc(sampai=tanggal)
+        kode = sorted(cache)
         if maks:
             kode = kode[:maks]
-        print(f"mode --semua: {len(kode)} emiten lolos ambang (riwayat >={MIN_LILIN} lilin & likuiditas "
+        lolos, tolak = kode_populasi(cache=cache)
+        print(f"mode --semua{f' --tanggal {tanggal}' if tanggal else ''}: {len(kode)} emiten ber-OHLC, "
+              f"{len(lolos)} lolos ambang populasi statistik (riwayat >={MIN_LILIN} lilin & likuiditas "
               f">=Rp{MIN_LIKUIDITAS/1e6:.0f} jt/hari); tak lolos: {tolak['riwayat']} riwayat, "
               f"{tolak['likuiditas']} likuiditas{f' — dibatasi --maks {maks}' if maks else ''}")
     else:
         kode = positional or ["ARCI", "WIFI", "BUMI"]
+        lolos, tolak = kode_populasi(sampai=tanggal)
 
-    print("menghitung Efficiency Ratio seluruh emiten (dasar persentil)...", flush=True)
-    pop = dict(er_populasi())
+    print("menghitung Efficiency Ratio populasi statistik...", flush=True)
+    lolos_set = set(lolos)
+    pop_mentah = dict(er_populasi(cache=cache, sampai=tanggal))
+    pop = {kd: e for kd, e in pop_mentah.items() if kd in lolos_set}
     nilai_pop = sorted(pop.values())
-    kuartil = lambda p: nilai_pop[int(p * len(nilai_pop))]
-    print(f"  {len(pop)} emiten ber-riwayat >=250 lilin — ER20 median pasar {statistics.median(nilai_pop):.3f}, "
-          f"P25 {kuartil(0.25):.3f}, P75 {kuartil(0.75):.3f}")
+    if nilai_pop:
+        kuartil = lambda p: nilai_pop[int(p * len(nilai_pop))]
+        print(f"  {len(pop)} emiten dalam populasi statistik — ER20 median pasar "
+              f"{statistics.median(nilai_pop):.3f}, P25 {kuartil(0.25):.3f}, P75 {kuartil(0.75):.3f}")
+    else:
+        print("  populasi statistik kosong (tak ada emiten lolos ambang untuk rentang ini)")
 
+    # --semua --tanggal X (backfill arsip): kartu() melewati blok yang tak
+    # dipakai ringkas_dari_kartu() (musiman/sektor/fundamental/asing/target) —
+    # itulah yang bikin --tanggal terjangkau untuk ratusan hari.
+    hemat = semua and tanggal is not None
     hasil: dict[str, dict] = {}
     gagal: list[str] = []
-    ringkas_saja = len(kode) > 10  # cetak() penuh cuma buat daftar pendek — ratusan emiten bikin log tak terbaca
+    cetak_penuh = len(kode) <= 10 and not hemat  # cetak() penuh cuma buat daftar pendek
     for i, kd in enumerate(kode, 1):
         try:
-            h = kartu(kd, pop)
+            h = kartu(kd, pop, d=(cache.get(kd) if cache is not None else None), sampai=tanggal, hemat=hemat)
         except Exception as e:  # emiten dengan riwayat aneh/pendek tak boleh menghentikan seluruh batch
             gagal.append(kd)
             print(f"  [{i}/{len(kode)}] {kd}: GAGAL — {e}")
             continue
         hasil[kd] = h
-        if ringkas_saja:
-            if i % 50 == 0 or i == len(kode):
-                print(f"  [{i}/{len(kode)}] ...")
-        else:
+        if cetak_penuh:
             cetak(h)
+        elif i % 100 == 0 or i == len(kode):
+            print(f"  [{i}/{len(kode)}] ...")
     if gagal:
         print(f"\n{len(gagal)} emiten gagal dihitung: {', '.join(gagal)}")
 
     if tulis:
-        tulis_berkas_kartu(hasil, tolak)
+        if tanggal:
+            tulis_arsip(hasil, tolak, tanggal)
+        else:
+            tulis_berkas_kartu(hasil, tolak)
 
     tujuan = os.environ.get("KARTU_OUT")
     if tujuan:
         Path(tujuan).write_text(json.dumps(hasil, indent=1, default=str), encoding="utf-8")
         print(f"\ntersimpan: {tujuan}")
+
+    print(f"\nwaktu total: {time.time() - t_mulai:.1f} detik")

@@ -113,6 +113,9 @@
 .kta-screener-cari { margin-left: auto; }
 .kta-screener-tbl { white-space: nowrap; }
 .kta-screener-kaki { margin: 10px 14px 14px; }
+/* Lencana kualitas (riwayat pendek/likuiditas tipis) di sel kode — kecil &
+   redup, keterangan data bukan penilaian, cursor default (tak bisa diklik). */
+.kta-lencana { cursor: default; padding: 1px 6px; margin-left: 6px; font-size: 9.5px; opacity: .72; }
 
 @media (max-width: 480px) {
   .kta-screener-cari { margin-left: 0; width: 100%; }

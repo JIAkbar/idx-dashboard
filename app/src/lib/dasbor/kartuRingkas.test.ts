@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CHIP_BAWAAN, SARINGAN, keBarisTabel, saring, type BarisRingkas, type BarisTabel } from './kartuRingkas'
+import { CHIP_BAWAAN, SARINGAN, keBarisTabel, saring, saringKualitas, type BarisRingkas, type BarisTabel } from './kartuRingkas'
 
 function barisDasar(over: Partial<BarisRingkas> = {}): BarisRingkas {
   return {
@@ -45,5 +45,31 @@ describe('saring', () => {
 
   it('nol chip aktif mengembalikan seluruh baris', () => {
     expect(saring(baris, [], '')).toHaveLength(2)
+  })
+})
+
+describe('saringKualitas', () => {
+  const cukup = barisDasar({ kode: 'AAAA', kualitas: { riwayat: 'cukup', likuiditas: 'cukup', lilin: 600, nilai20: 2e9 } })
+  const pendek = barisDasar({ kode: 'BBBB', kualitas: { riwayat: 'pendek', likuiditas: 'cukup', lilin: 90, nilai20: 2e9 } })
+  const tipis = barisDasar({ kode: 'CCCC', kualitas: { riwayat: 'cukup', likuiditas: 'tipis', lilin: 600, nilai20: 1e8 } })
+  const baris = [cukup, pendek, tipis]
+
+  it('bawaan (kedua flag false) menampilkan SEMUA baris, termasuk kualitas tak-lolos', () => {
+    expect(saringKualitas(baris, false, false)).toHaveLength(3)
+  })
+
+  it('sembunyikan riwayat pendek membuang baris ber-riwayat pendek saja', () => {
+    const hasil = saringKualitas(baris, true, false)
+    expect(hasil.map((b) => b.kode)).toEqual(['AAAA', 'CCCC'])
+  })
+
+  it('sembunyikan likuiditas tipis membuang baris ber-likuiditas tipis saja', () => {
+    const hasil = saringKualitas(baris, false, true)
+    expect(hasil.map((b) => b.kode)).toEqual(['AAAA', 'BBBB'])
+  })
+
+  it('baris tanpa ruas kualitas (data lama) tak pernah disembunyikan', () => {
+    const lama = barisDasar({ kode: 'DDDD' })
+    expect(saringKualitas([lama], true, true)).toEqual([lama])
   })
 })

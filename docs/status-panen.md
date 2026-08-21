@@ -12,8 +12,10 @@ diperbarui lagi **20 Agustus 2026** (Google News RSS ditambah, jalur hibrida
 rumah/awan); baris **OHLC**, **Aliran asing**, **Valuasi historis** diperbarui
 lagi **20 Agustus 2026 malam** (panen 20 Agu dituntaskan lewat Claude Code);
 baris **Statistik harian**, **OHLC harian**, **Aliran asing**, **Daftar emiten
-+ jumlah saham** diperbarui lagi **21 Agustus 2026 sore** ("Panen Lagi") —
-baris lain di tabel ini belum diaudit ulang pada tanggal itu.
++ jumlah saham** diperbarui lagi **21 Agustus 2026 sore** ("Panen Lagi");
+baris **Kartu Analisa** ditambahkan **21 Agustus 2026 malam** (semua emiten
+ber-OHLC dapat kartu + arsip kalender 20 hari bursa) — baris lain di tabel
+ini belum diaudit ulang pada tanggal itu.
 Angka "isi terakhir" dibaca dari DALAM berkas,
 bukan dari waktu berkasnya ditulis — berkas bisa ditulis ulang tanpa membawa
 data baru, dan membaca mtime membuat data basi terlihat segar.
@@ -39,6 +41,7 @@ data baru, dan membaca mtime membuat data basi terlihat segar.
 | **Peta investor (KSEI)** | Peta Investor | KSEI | *(tak diperbarui rutin)* | — | ❌ manual | `fetch_investor_map.py` |
 | **Pemegang saham pengendali** | Stock Detail (hero) | turunan lokal dari **arsip mentah** Keuangan XBRL IDX, sheet `1000000` — **nol jaringan** | **20 Agu 2026**; laporan sumber per emiten: 847 dari 2026 TW1/TW2, 63 dari 2025, 21 dari 2022–2024, **18 masih dari laporan 2019** | 949 emiten (1 berkas) | ❌ manual, nol jaringan | `panen_pengendali.py` — **"Panen Lagi"** |
 | **Valuasi historis (P/E & P/B tahunan)** | Stock Detail (panel *Valuasi vs Sejarah*) | turunan lokal: **Keuangan XBRL IDX** (tahunan) × **OHLC** × `daftar_emiten.saham` — **nol jaringan** | **20 Agu 2026**, tahun buku 2019–2025 | 814 emiten (1 berkas); **338 ≥5 tahun P/E**, 574 ≥5 tahun P/B — sisanya tampil tanpa vonis | ❌ manual, nol jaringan | `hitung_valuasi_historis.py` — **"Panen Lagi"**; **wajib diulang sesudah `panen_ohlc.py` / `panen_keuangan_idx.py`** karena berjangkar pada keduanya |
+| **Kartu Analisa (kartu per emiten + arsip kalender)** | Kartu Analisa (tab Lengkap/Ringkas/Semua) | turunan lokal: **OHLC** × ER-populasi × sektor/fundamental/asing — **nol jaringan** | **21 Agu 2026** — SEMUA 963 emiten ber-OHLC dapat kartu (naik dari 381; ambang 250 lilin/Rp500 jt-hari sekarang cuma menandai `kualitas`, bukan menyaring — 52 riwayat pendek, 530 likuiditas tipis, keduanya tetap tampil). Arsip kalender `kartu/arsip/<tgl>.json` di-backfill 20 hari bursa (24 Jul–21 Agu 2026) | 963 berkas kartu + `index.json` + `ringkas.json` (320 KB) + 20 berkas arsip (~289 KB/berkas) | ❌ manual, nol jaringan (Actions: `panen-harian-rumah.yml` juga menulis arsip hari itu tiap hari) | `kartu_analisa.py --semua --tulis` — **"Panen Lagi"**; run harian tanpa `--tanggal` ≈100 detik (963 emiten, first-passage penuh); `--tanggal YYYY-MM-DD --tulis` (arsip-saja, `hemat=True`, tanpa first-passage) ≈15–20 detik/hari untuk backfill tanggal lampau |
 
 ## Yang perlu diketahui, bukan sekadar dilihat
 

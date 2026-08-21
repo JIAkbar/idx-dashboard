@@ -104,6 +104,20 @@ export interface AsingRingkas {
   periode: Record<string, AsingPeriode>
 }
 
+/**
+ * Riwayat/likuiditas relatif ambang POPULASI STATISTIK (250 lilin / Rp500
+ * jt hari, `MIN_LILIN`/`MIN_LIKUIDITAS` di kartu_analisa.py) — bukan
+ * penyaring kartu. Sejak 21 Agu 2026 SEMUA emiten ber-OHLC dapat kartu;
+ * emiten `kualitas` tak-cukup cuma dikeluarkan dari acuan ER persentil/
+ * median pasar, tetap tampil di tabel dengan lencana kecil.
+ */
+export interface Kualitas {
+  riwayat: 'pendek' | 'cukup'
+  likuiditas: 'tipis' | 'cukup'
+  lilin: number
+  nilai20: number | null
+}
+
 export interface KartuEmiten {
   kode: string
   tgl: string
@@ -135,6 +149,7 @@ export interface KartuEmiten {
   asing: AsingRingkas | null
   /** Tanggal data terakhir yang dipakai menghitung kartu ini. */
   dihitung: string
+  kualitas: Kualitas
 }
 
 export interface IndeksKartuEntry {
@@ -145,6 +160,10 @@ export interface IndeksKartuEntry {
 export interface IndeksKartu {
   diperbarui: string
   emiten: IndeksKartuEntry[]
+  /** Tanggal (ISO) yang punya arsip ringkas di kartu/arsip/<tgl>.json — dasar
+   *  DatePicker kalender tab Semua. Kosong/tak ada = index.json lama sebelum
+   *  fitur kalender (21 Agu 2026), belum menulis ruas ini. */
+  arsip?: string[]
 }
 
 // ── Pemuat — logika murni dipisah dari hook supaya bisa diuji tanpa render

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Dropdown, type OpsiDropdown } from '../../components/dasbor/Dropdown'
+import { DatePicker } from '../../components/dasbor/DatePicker'
 import { IkonMenu, IKON_CARI } from '../../components/dasbor/IkonMenu'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
@@ -12,7 +13,7 @@ import { keFraksi } from '../../lib/fraksiHarga'
 import { useUrut } from '../../lib/dasbor/useUrut'
 import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
 import {
-  useRingkasKartu, keBarisTabel, saring, SARINGAN, CHIP_BAWAAN, type BarisTabel,
+  useRingkasKartu, useArsipKartu, keBarisTabel, saring, saringKualitas, SARINGAN, CHIP_BAWAAN, type BarisTabel,
 } from '../../lib/dasbor/kartuRingkas'
 import {
   useIndeksKartu, useKartu, pembatalDalamAtr, bangunTesis, tingkatBasi, takKeduanya as hitungTakKeduanya,
@@ -481,33 +482,71 @@ function thSortScreener(s: UrutScreener, k: keyof BarisTabel, label: string, kan
  * Saringan berupa kalimat kondisi + jumlah lolos, nol chip aktif bawaan.
  */
 function TabelScreenerKartu() {
-  const data = useRingkasKartu()
+  const indeks = useIndeksKartu()
+  const dataTerkini = useRingkasKartu()
+  const [tanggal, setTanggal] = useState<string | null>(null)
+  const dataArsip = useArsipKartu(tanggal)
+  const data = tanggal ? dataArsip : dataTerkini
   const sempit = useLayarSempit()
   const [aktif, setAktif] = useState<string[]>(CHIP_BAWAAN)
+  const [sembunyikanPendek, setSembunyikanPendek] = useState(false)
+  const [sembunyikanTipis, setSembunyikanTipis] = useState(false)
   const [cari, setCari] = useState('')
+  const [catatanKode, setCatatanKode] = useState<string | null>(null)
   const ukuranHalaman = sempit ? 25 : 100
   const [tampil, setTampil] = useState(ukuranHalaman)
 
   const barisTabel = useMemo(() => (data ? data.emiten.map(keBarisTabel) : []), [data])
-  const hasil = useMemo(() => saring(barisTabel, aktif, cari), [barisTabel, aktif, cari])
+  const barisKualitas = useMemo(
+    () => saringKualitas(barisTabel, sembunyikanPendek, sembunyikanTipis),
+    [barisTabel, sembunyikanPendek, sembunyikanTipis],
+  )
+  const hasil = useMemo(() => saring(barisKualitas, aktif, cari), [barisKualitas, aktif, cari])
   const s = useUrut<BarisTabel>(hasil, 'kode', 'naik')
 
-  // Saringan/cari baru = mulai dari halaman pertama lagi, bukan menyambung
-  // dari batas lama (yang bisa lebih besar dari hasil baru).
-  useEffect(() => { setTampil(ukuranHalaman) }, [aktif, cari, ukuranHalaman])
+  // Saringan/cari/tanggal baru = mulai dari halaman pertama lagi, bukan
+  // menyambung dari batas lama (yang bisa lebih besar dari hasil baru).
+  useEffect(() => { setTampil(ukuranHalaman) }, [aktif, cari, ukuranHalaman, tanggal, sembunyikanPendek, sembunyikanTipis])
+  useEffect(() => { setCatatanKode(null) }, [tanggal])
 
   function toggleChip(id: string) {
     setAktif((a) => (a.includes(id) ? a.filter((x) => x !== id) : [...a, id]))
+  }
+
+  const tersediaArsip = indeks?.arsip?.length ? new Set(indeks.arsip) : undefined
+  const tanggalAktif = tanggal ?? (data?.diperbarui ? data.diperbarui.slice(0, 10) : '')
+
+  // "Semua" tab HANYA menampilkan ringkasan per tanggal — kartu penuh per
+  // emiten (tab Lengkap/Ringkas) cuma untuk tanggal terkini. Klik kode saat
+  // tanggal lampau dipilih menampilkan catatan, bukan pindah halaman.
+  function klikKode(e: React.MouseEvent, kode: string) {
+    if (tanggal) {
+      e.preventDefault()
+      setCatatanKode(kode)
+    }
   }
 
   if (!data) return <p style={{ color: 'var(--text3)', fontSize: 12.5 }}>Memuat daftar emiten…</p>
 
   const tampilBaris = s.urut.slice(0, tampil)
   const sisa = s.urut.length - tampilBaris.length
+  const nRiwayatPendek = barisTabel.filter((b) => b.kualitas?.riwayat === 'pendek').length
+  const nLikuiditasTipis = barisTabel.filter((b) => b.kualitas?.likuiditas === 'tipis').length
 
   return (
     <div className="panel kta-screener">
       <div className="panel-b kta-screener-alat">
+        {tersediaArsip && (
+          <DatePicker
+            value={tanggalAktif}
+            onChange={setTanggal}
+            tersedia={tersediaArsip}
+            ariaLabel="Tanggal data"
+          />
+        )}
+        {tanggal && (
+          <button type="button" className="chip-t" onClick={() => setTanggal(null)}>Tanggal terkini</button>
+        )}
         {SARINGAN.map((sar) => {
           const jumlah = barisTabel.filter(sar.uji).length
           return (
@@ -520,6 +559,22 @@ function TabelScreenerKartu() {
             </button>
           )
         })}
+        <button
+          type="button"
+          className={`chip-t${sembunyikanPendek ? '' : ' on'}`}
+          onClick={() => setSembunyikanPendek((v) => !v)}
+          title="Riwayat < 250 lilin — di luar populasi statistik (ER persentil, median pasar)"
+        >
+          Riwayat pendek · {nRiwayatPendek}
+        </button>
+        <button
+          type="button"
+          className={`chip-t${sembunyikanTipis ? '' : ' on'}`}
+          onClick={() => setSembunyikanTipis((v) => !v)}
+          title="Likuiditas < Rp500 jt/hari (median 20h) — di luar populasi statistik"
+        >
+          Likuiditas tipis · {nLikuiditasTipis}
+        </button>
         <span className="af-cari kta-screener-cari">
           <IkonMenu d={IKON_CARI} size={13} />
           <input
@@ -528,6 +583,13 @@ function TabelScreenerKartu() {
           />
         </span>
       </div>
+
+      {catatanKode && (
+        <p className="asal" role="status" style={{ padding: '0 14px 10px' }}>
+          Kartu lengkap {catatanKode} tersedia untuk tanggal terkini; tabel ini ringkasan per tanggal.{' '}
+          <button type="button" className="btn-p" onClick={() => setCatatanKode(null)}>Tutup</button>
+        </p>
+      )}
 
       <div className="board-tbl-wrap">
         <table className="tbl kta-screener-tbl">
@@ -547,9 +609,17 @@ function TabelScreenerKartu() {
           <tbody>
             {tampilBaris.map((b) => (
               <tr key={b.kode}>
-                <td><a href={`/grafik?kode=${b.kode}`} className="tick">{b.kode}</a></td>
+                <td>
+                  <a href={`/grafik?kode=${b.kode}`} className="tick" onClick={(e) => klikKode(e, b.kode)}>{b.kode}</a>
+                  {b.kualitas?.riwayat === 'pendek' && (
+                    <span className="chip-t kta-lencana" title={`${b.kualitas.lilin.toLocaleString('id-ID')} lilin`}>riwayat &lt; 250 lilin</span>
+                  )}
+                  {b.kualitas?.likuiditas === 'tipis' && (
+                    <span className="chip-t kta-lencana" title="likuiditas median 20 hari di bawah Rp500 jt/hari">likuiditas tipis</span>
+                  )}
+                </td>
                 <td className="r num">{keFraksi(b.harga, 'dekat').toLocaleString('id-ID')}</td>
-                <td className={`r num ${b.chg >= 0 ? 'up' : 'dn'}`}>{fp(b.chg)}</td>
+                <td className={`r num ${b.chg == null ? '' : b.chg >= 0 ? 'up' : 'dn'}`}>{fp(b.chg)}</td>
                 <td className={`r num ${b.ma20_pct == null ? '' : b.ma20_pct >= 0 ? 'up' : 'dn'}`}>
                   {b.ma20_pct == null ? '—' : fp(b.ma20_pct)}
                 </td>
@@ -579,10 +649,11 @@ function TabelScreenerKartu() {
       )}
 
       <div className="asal kta-screener-kaki">
-        <b>{hasil.length}</b> dari {data.emiten.length} emiten lolos ambang · diperbarui {data.diperbarui}.{' '}
-        {data.tak_lolos.riwayat ? `${data.tak_lolos.riwayat} emiten belum sampai ${data.ambang.lilin} lilin riwayat. ` : ''}
-        {data.tak_lolos.likuiditas ? `${data.tak_lolos.likuiditas} emiten di bawah likuiditas Rp${fRingkas(data.ambang.likuiditas)}/hari. ` : ''}
-        Tidak ada kolom peluang tersentuh (p_kena) di tabel ini — itu fungsi jarak, bukan kualitas emiten.
+        <b>{data.emiten.length}</b> emiten · {data.tak_lolos.riwayat ?? 0} riwayat pendek ·{' '}
+        {data.tak_lolos.likuiditas ?? 0} likuiditas tipis (ikut ditampilkan, di luar populasi statistik) ·{' '}
+        menampilkan {hasil.length} sesudah saringan · diperbarui {data.diperbarui}
+        {tanggal ? ` · tanggal ${tanggal}` : ''}. Tidak ada kolom peluang tersentuh (p_kena) di tabel ini — itu
+        fungsi jarak, bukan kualitas emiten.
       </div>
     </div>
   )

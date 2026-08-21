@@ -24,6 +24,12 @@ describe('ambilIndeksKartu', () => {
     const fetch404 = (async () => new Response(null, { status: 404 })) as unknown as typeof fetch
     await expect(ambilIndeksKartu(fetch404)).resolves.toBeNull()
   })
+
+  it('ruas arsip (tanggal ber-kalender) terbaca apa adanya dari index.json', async () => {
+    const isi = { diperbarui: '2026-08-21 10:00', emiten: [], arsip: ['2026-08-14', '2026-08-21'] }
+    const fetchOk = (async () => new Response(JSON.stringify(isi), { status: 200 })) as unknown as typeof fetch
+    await expect(ambilIndeksKartu(fetchOk)).resolves.toEqual(isi)
+  })
 })
 
 describe('pembatalDalamAtr', () => {

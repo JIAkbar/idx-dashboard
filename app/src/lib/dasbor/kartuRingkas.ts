@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { Kualitas } from './kartuAnalisa'
 
 /**
  * Tabel penyaring emiten (`/kartu`) — satu berkas ringkas untuk SELURUH emiten
@@ -26,6 +27,9 @@ export interface BarisRingkas {
   er_persentil: number | null
   likuiditas: number
   stop_pct: number
+  /** Belum ada di ringkas.json/arsip lama (sebelum 21 Agu 2026) — undefined
+   *  diperlakukan sama dengan "cukup" (tak ditandai, tak disembunyikan). */
+  kualitas?: Kualitas | null
 }
 
 export interface DataRingkas {
@@ -121,5 +125,50 @@ export function useRingkasKartu(): DataRingkas | null {
     })
     return () => { batal = true }
   }, [])
+  return data
+}
+
+/** Baris "riwayat pendek" / "likuiditas tipis" TETAP TAMPIL bawaan (lihat
+ *  keputusan kalender 21 Agu 2026) — dua chip toggle di halaman menyembunyikan-
+ *  nya kalau diaktifkan, kebalikan dari SARINGAN di atas (yang bawaannya
+ *  MENYEMBUNYIKAN sampai diaktifkan). Fungsi murni supaya diuji tanpa render. */
+export function saringKualitas<T extends { kualitas?: Kualitas | null }>(
+  baris: T[], sembunyikanRiwayatPendek: boolean, sembunyikanLikuiditasTipis: boolean,
+): T[] {
+  return baris.filter((b) => {
+    if (sembunyikanRiwayatPendek && b.kualitas?.riwayat === 'pendek') return false
+    if (sembunyikanLikuiditasTipis && b.kualitas?.likuiditas === 'tipis') return false
+    return true
+  })
+}
+
+/** Arsip screener per tanggal bursa (`kartu/arsip/<tanggal>.json`, sama bentuk
+ *  `DataRingkas`) — dasar kalender tab Semua. `tanggal` string kosong/`null`
+ *  = tak diambil (pemanggil pakai `useRingkasKartu()` untuk tanggal terkini). */
+export async function ambilArsipKartu(tanggal: string, pengambil: typeof fetch = fetch): Promise<DataRingkas | null> {
+  try {
+    const r = await pengambil(`/data-idx/json/kartu/arsip/${tanggal}.json`)
+    if (!r.ok) return null
+    return (await r.json()) as DataRingkas
+  } catch {
+    return null
+  }
+}
+
+const cacheArsip = new Map<string, DataRingkas | null>()
+
+export function useArsipKartu(tanggal: string | null): DataRingkas | null {
+  const [data, setData] = useState<DataRingkas | null>(tanggal ? (cacheArsip.get(tanggal) ?? null) : null)
+  useEffect(() => {
+    if (!tanggal) { setData(null); return }
+    if (cacheArsip.has(tanggal)) { setData(cacheArsip.get(tanggal) ?? null); return }
+    let batal = false
+    setData(null)
+    void ambilArsipKartu(tanggal).then((d) => {
+      cacheArsip.set(tanggal, d)
+      if (!batal) setData(d)
+    })
+    return () => { batal = true }
+  }, [tanggal])
   return data
 }
