@@ -616,6 +616,15 @@ export function GrafikEmiten() {
    */
   const [menuKonteks, setMenuKonteks] = useState<{ x: number; y: number; waktu: string | null; harga: number | null } | null>(null)
 
+  /**
+   * Volume: menempel di dasar panel harga, atau panel sendiri.
+   *
+   * Johan 21 Agu 2026: "panel 2 sudah ada? volumen sendiri, stochastic juga
+   * sendiri". Bawaannya tetap menempel — itu perilaku yang sudah berjalan,
+   * dan mengubahnya diam-diam akan menggeser tinggi kanvas semua orang.
+   */
+  const [volumePanel, setVolumePanel] = useState<'harga' | 'sendiri'>('harga')
+
   const [grid, setGrid] = useState<SetelanGrid>(GRID_BAWAAN)
   // Template pindah ke dalam modal (Johan 21 Agu 2026: "jadikan icon saja").
   const [templateBuka, setTemplateBuka] = useState(false)
@@ -1560,7 +1569,9 @@ export function GrafikEmiten() {
   // begitu salah satu urutannya berubah.
   const panePerInstans = useMemo(() => {
     const peta = new Map<string, number>()
-    let berikut = 1
+    // Volume mengambil pane 1 kalau ia berdiri sendiri — tepat di bawah harga,
+    // seperti di chart mana pun. Indikator mulai dari 2 supaya tak menabraknya.
+    let berikut = volumePanel === 'sendiri' ? 2 : 1
     for (const inst of ind.daftar) {
       if (!digambar(inst)) continue
       // Jenis pustaka yang katalognya belum tiba dianggap PANEL SENDIRI
@@ -1578,7 +1589,7 @@ export function GrafikEmiten() {
       peta.set(inst.id, diHarga ? 0 : berikut++)
     }
     return peta
-  }, [ind.daftar, katalog, digambar])
+  }, [ind.daftar, katalog, digambar, volumePanel])
 
   // Jarak atas tiap pane dari ujung atas bungkus kanvas, dipakai menempatkan
   // legenda di pojok kiri atas pane MASING-MASING (RSI/MACD punya legendanya
@@ -1686,6 +1697,21 @@ export function GrafikEmiten() {
     // tinggi pane baru belum berlaku pada saat setStretchFactor kembali.
     requestAnimationFrame(ukurPane)
   }, [garisPerInstans, panePerInstans, theme, ukurPane, keChart, lipat])
+
+  // Volume dipindah, BUKAN dibuat ulang: `moveToPane` memindahkan seri beserta
+  // datanya, sementara membuat ulang berarti mengunduh & menyusun 900-an titik
+  // lagi tiap kali sakelarnya disentuh — dan seri baru kehilangan penanda pola
+  // yang menempel padanya (`penandaVolRef`).
+  useEffect(() => {
+    const vol = volRef.current
+    if (!vol) return
+    try {
+      vol.moveToPane(volumePanel === 'sendiri' ? 1 : 0)
+    } catch {
+      // Pane tujuan belum ada pada render pertama; efek berikutnya menutupnya.
+    }
+    requestAnimationFrame(ukurPane)
+  }, [volumePanel, versiSeriHarga, ukurPane])
 
   /**
    * Divergensi digambar, bukan cuma ditandai (Johan 21 Agu 2026: "buktikan
@@ -2777,6 +2803,13 @@ export function GrafikEmiten() {
                 yang mengubah APA YANG TERLIHAT memang tempatnya di sini,
                 sejajar skala dan rentang; yang mengubah APA YANG DIGAMBAR
                 (emiten, kerangka, indikator) tetap di atas kanvas. */}
+            <button type="button"
+              className={`chip-t grf-kaki-chip${volumePanel === 'sendiri' ? ' on' : ''}`}
+              aria-pressed={volumePanel === 'sendiri'}
+              title={volumePanel === 'sendiri'
+                ? 'Kembalikan volume ke dasar panel harga'
+                : 'Pindahkan volume ke panel sendiri'}
+              onClick={() => setVolumePanel((v) => (v === 'sendiri' ? 'harga' : 'sendiri'))}>vol</button>
             <button type="button"
               className={`chip-t grf-kaki-chip${grid.tampil ? ' on' : ''}`}
               aria-pressed={grid.tampil}

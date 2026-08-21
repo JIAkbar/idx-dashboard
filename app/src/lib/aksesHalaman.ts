@@ -167,4 +167,9 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   // halaman publik ini berarti membuka perakit edisi, dan menguncinya
   // berarti mengunci halaman analisa untuk semua orang.
   'bedah-emiten': 'bedah-emiten',
+  // Screener lembar-kerja (B31, 21 Agu 2026). Barisnya di `akses_halaman`
+  // ditambahkan BERSAMAAN dengan baris ini — aturan wajib yang ditetapkan
+  // Johan hari yang sama, sesudah empat halaman hidup berminggu-minggu
+  // sebagai halaman yang tak bisa diatur dari panel.
+  screener: 'screener',
 }

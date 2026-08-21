@@ -187,6 +187,16 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M4 4h16v16H4zM4 9h16M9 9v11M14 13h3M14 16h3',
   },
 
+  {
+    // Screener lembar-kerja (B31, 21 Agu 2026) — 921 emiten dalam satu tabel
+    // 18 kolom, dibaca dari berkas turunan `data-idx/json/screener.json`
+    // supaya halaman tak perlu mengunduh 921 berkas OHLC.
+    // Kode 'SCR' — 'SEK' Sektor & 'SRN' Saran sudah dipakai.
+    id: 'screener', path: '/screener', label: 'Screener', kode: 'SCR', grup: 'analisa',
+    ringkas: 'Sembilan ratus emiten dalam satu tabel: skor teknikal harian/pekanan/bulanan, momentum, volume relatif, aliran asing, dan posisi terhadap rata-rata bergerak.',
+    ikon: 'M4 5h16M4 5l6 7v6l4 2v-8l6-7M4 5v0',
+  },
+
   // ── Baca ───────────────────────────────────────────────────────────────
   {
     id: 'kabar', path: '/kabar', label: 'Kabar Pasar', kode: 'NWS', grup: 'baca',
