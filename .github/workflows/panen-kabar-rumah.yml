@@ -76,7 +76,17 @@ jobs:
         # PowerShell selalu ada di Windows, tak butuh jalur kustom, dan tak
         # bergantung pada WSL maupun Git for Windows. Kelas masalahnya hilang,
         # bukan diakali.
-        shell: powershell
+        # PowerShell + `-ExecutionPolicy Bypass` — bypass-nya WAJIB, bukan
+        # kehati-hatian: sejak 18 Agu 2026 SETIAP langkah di runner rumahan
+        # gagal `PSSecurityException: running scripts is disabled on this
+        # system` (Execution Policy mesin = Restricted/AllSigned). Panennya
+        # sendiri jalan, tapi langkah "Commit kalau ada perubahan" ikut gagal,
+        # jadi hasil panen tak pernah masuk repo dan produksi membeku di 18
+        # Agu tanpa satu pun galat yang terbaca dari halaman (Johan 21 Agu:
+        # "beritanya bnyk yang basi nih, di github pun gak bisa jalan tuh").
+        # Bypass di baris perintah hanya berlaku untuk proses itu — setelan
+        # keamanan mesin TIDAK diubah.
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command ". '{0}'"
 
     steps:
       - uses: actions/checkout@v4

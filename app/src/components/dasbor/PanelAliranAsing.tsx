@@ -6,6 +6,7 @@ import { useChartCanvas } from '../../lib/dasbor/useChartJs'
 import { useTheme } from '../../context/ThemeContext'
 import { IkonMenu, IKON_JAM } from './IkonMenu'
 import { PemilihRentang } from './PemilihRentang'
+import { tanggalPendek } from '../../lib/dasbor/statistikBerkala'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 
 /**
@@ -209,6 +210,16 @@ export function PanelAliranAsing({ ticker }: { ticker: string }) {
 
   const canvasRef = useChartCanvas(chartConfig)
 
+  /** Rentang tanggal yang SEDANG ditampilkan (Johan 21 Agu 2026: "munculkan
+   *  rentang waktu juga bro"). Chip preset menyebut NAMA rentang ("3 Bulan"),
+   *  bukan batasnya — dan batas itulah yang dibutuhkan saat membaca grafik
+   *  kumulatif: "3 Bulan" pada emiten yang riwayatnya baru sebulan bukan tiga
+   *  bulan sungguhan. Dihitung dari titik yang benar-benar tergambar, bukan
+   *  dari preset, supaya angkanya tak pernah menjanjikan lebih dari isinya. */
+  const rentang = titik.length >= 1
+    ? { mulai: titik[0].tanggal, akhir: titik[titik.length - 1].tanggal, hari: titik.length }
+    : null
+
   const recent = data ? data.d.slice(-15).slice().reverse() : []
 
   return (
@@ -216,7 +227,14 @@ export function PanelAliranAsing({ ticker }: { ticker: string }) {
       <div className="panel-h">
         <span className="lbl">Aliran Asing</span>
         {data && (
-          <PemilihRentang className="asg-preset" opsi={PRESET} nilai={preset} onGanti={setPreset} ariaLabel="Rentang Aliran Asing" />
+          <>
+            {rentang && (
+              <span className="sub asg-rentang">
+                {tanggalPendek(rentang.mulai)} – {tanggalPendek(rentang.akhir)} · {rentang.hari} hari bursa
+              </span>
+            )}
+            <PemilihRentang className="asg-preset" opsi={PRESET} nilai={preset} onGanti={setPreset} ariaLabel="Rentang Aliran Asing" />
+          </>
         )}
       </div>
       <div className="panel-b">
