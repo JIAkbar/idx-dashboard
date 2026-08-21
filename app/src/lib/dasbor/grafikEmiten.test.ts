@@ -16,7 +16,10 @@ import {
   type TemplateGrafik, type ParamLonjakanVolume, type ParamDivergensi,
   type BerkasOhlcEmiten, type ParamWyckoff, type ParamHarmonik, type FaseWyckoff,
 } from './grafikEmiten'
-import { muatKatalog, keSpekParam, keMasukanPustaka, ID_SUDAH_ADA, ID_LILIN, ID_PENANDA, ID_PIVOT, KATEGORI } from './katalogIndikator'
+import {
+  muatKatalog, keSpekParam, keMasukanPustaka, ID_SUDAH_ADA, ID_LILIN, ID_PENANDA, ID_PIVOT, KATEGORI,
+  POPULER, ID_RUSAK,
+} from './katalogIndikator'
 import type { BarisOhlc } from './ihsgOhlc'
 
 const baris: BarisOhlc[] = [
@@ -1191,6 +1194,26 @@ describe('katalogIndikator', () => {
     // muatKatalog. Yang penting: id-id ini benar-benar ada, kalau tidak empat
     // indikator kurasi berhenti menggambar tanpa satu pun galat.
     for (const id of ID_SUDAH_ADA) expect(k.has(id)).toBe(true)
+  })
+
+  /** #236 — kelompok "Populer (TradingView)". Tiap id WAJIB benar-benar ada di
+   *  katalog: satu id yang salah ketik berarti baris menu yang dipilih pembaca
+   *  lalu tak menggambar apa pun tanpa satu pun galat. */
+  it('POPULER: tiap id benar-benar ada di katalog dan tak dobel dengan ID_SUDAH_ADA', async () => {
+    const k = await muatKatalog()
+    expect(POPULER.size).toBeGreaterThan(15)
+    for (const id of POPULER) {
+      expect(k.has(id)).toBe(true)
+      expect(ID_SUDAH_ADA.has(id)).toBe(false)
+    }
+  })
+
+  /** ID_RUSAK kosong sekarang (audit 21 Agu 2026, `audit-katalog-terpakai.ts`,
+   *  368 entri katalog nol yang rusak) — ujinya menjaga MEKANISMENYA, bukan
+   *  isinya: id yang ditaruh di situ wajib benar-benar lenyap dari katalog. */
+  it('ID_RUSAK: tiap id (kalau ada) beneran tersaring dari katalog', async () => {
+    const k = await muatKatalog()
+    for (const id of ID_RUSAK) expect(k.has(id)).toBe(false)
   })
 
   it('ruas masukan: angka jadi kolom, daftar pilihan jadi chip, sisanya dilewati', () => {

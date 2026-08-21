@@ -255,12 +255,18 @@ export async function ambilIntraday(
   id: IdKerangka,
   warnaNaik: string,
   warnaTurun: string,
+  /** Sinyal pembatal dari efek pemanggil — audit 21 Agu 2026 (#10): tanpa
+   *  ini, variabel `batal` cuma membuang HASILNYA sementara permintaan ke
+   *  proksi `/api/yahoo` tetap berjalan sampai timeout 15 detik. Menjelajahi
+   *  beberapa kode intraday cepat berarti beberapa permintaan paralel nyata
+   *  ke satu-satunya proksi yang lolos rate-limit Yahoo. */
+  sinyal?: AbortSignal,
 ): Promise<{ lilin: LilinData[]; volume: VolumeData[] }> {
   const k = KERANGKA.find((x) => x.id === id)
   if (!k?.interval || !k.rentang) throw new Error(`Kerangka ${id} bukan intraday.`)
   const r = await fetch(
     `/api/yahoo?simbol=${encodeURIComponent(`${kode}.JK`)}&interval=${k.interval}&rentang=${k.rentang}`,
-    { signal: AbortSignal.timeout(15000) },
+    { signal: sinyal ? AbortSignal.any([sinyal, AbortSignal.timeout(15000)]) : AbortSignal.timeout(15000) },
   )
   if (!r.ok) throw new Error(`Yahoo menolak permintaan intraday ${kode} (HTTP ${r.status}).`)
   const mentah = dariYahoo((await r.json()) as YahooIntradayJson, warnaNaik, warnaTurun)

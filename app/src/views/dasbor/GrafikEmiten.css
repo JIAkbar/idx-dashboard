@@ -169,12 +169,19 @@
   display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text);
   flex: 1 1 130px; min-width: 0;
 }
-.lantai .grf-setel-warna { display: flex; gap: 4px; }
+.lantai .grf-setel-warna { display: flex; align-items: center; gap: 4px; }
 .lantai .grf-swatch {
   width: 20px; height: 20px; border-radius: 4px; cursor: pointer;
   border: 2px solid transparent; padding: 0;
 }
 .lantai .grf-swatch.on { border-color: var(--text); }
+/* Warna bebas (modal setelan gambar, #185 lanjutan) — `<input type=color>`
+   native diseragamkan ke ukuran swatch di sebelahnya (bawaan peramban
+   biasanya lebih besar berpadding), supaya barisnya rata. */
+.lantai .grf-setel-warna input[type='color'] {
+  width: 22px; height: 22px; padding: 0; border: 1px solid var(--line2);
+  border-radius: 4px; background: none; cursor: pointer;
+}
 .lantai .grf-setel-garis { display: flex; flex-wrap: wrap; gap: 3px; }
 .lantai .grf-setel-garis .chip-t { padding: 3px 8px; font-size: 10px; }
 
@@ -431,6 +438,30 @@
    padanan `.grf-pisah` toolbar atas, cuma orientasinya diputar. */
 .lantai .grf-alat-pisah { height: 1px; margin: 2px 3px; background: var(--line2); }
 
+/* Magnet snap (#185 lanjutan) — `.on` amber sudah datang gratis dari aturan
+   `.grf-alat-isi .ti.on` di atas (dipakai bareng alat aktif); titik kecil di
+   sini SATU-SATUNYA pembeda keadaan KUAT dari LEMAH (keduanya sama-sama
+   `.on`). `::after` sudah dipakai `.ti` buat area klik 44px (inset -6px) —
+   titik ini lewat `::before`, slot yang masih kosong di tombol ini. */
+.lantai .grf-alat-magnet.kuat::before {
+  content: ''; position: absolute; top: 3px; right: 3px;
+  width: 5px; height: 5px; border-radius: 50%; background: var(--amber-ink);
+}
+
+/* Sembunyikan SELURUH bilah (#185 lanjutan, Johan: "ada hidden toolbar itu
+   juga") — sliver di tepi kiri, pola SAMA dgn `.tp-tombol.tepi`
+   (TanyaPapan.css): menyusut, bukan lenyap, satu ketukan buat kembali.
+   Duduk di `.grf-kanvas-area` (align-items: stretch) jadi tingginya ikut
+   kanvas di sebelahnya tanpa perlu angka tetap. */
+.lantai .grf-alat-sliver {
+  width: 16px; flex: none; padding: 0; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line); border-radius: var(--r-kecil);
+  background: var(--bg2); color: var(--text3); cursor: pointer;
+}
+.lantai .grf-alat-sliver::after { content: ''; position: absolute; inset: -6px -2px; }
+.lantai .grf-alat-sliver:hover { border-color: var(--amber); color: var(--amber); }
+
 /* Dropdown "Alat lainnya" — flyout dua kolom (Johan 21 Agu 2026: "menu ini
    di buat flyout di rapikan"). Cuma PENEMPATAN & LEBAR di sini (#170) —
    bentuk kolomnya tetap `.dd-it`/`.dd-menu` bawaan Dropdown (prop `flyout`,
@@ -634,3 +665,20 @@
 }
 .lantai .grf-menu-konteks .grf-menu-info:hover { background: none; }
 .lantai .grf-menu-konteks .dd-it.merah { color: var(--red); }
+
+/* Dot tooltip — keterangan penanda mengikuti kursor (21 Agu 2026). */
+.lantai .grf-dot-tip {
+  position: absolute;
+  z-index: 40;
+  max-width: 340px;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--card);
+  box-shadow: 0 6px 18px -8px rgba(0, 0, 0, .5);
+  font-size: 11px;
+  line-height: 1.55;
+  /* Tooltip TIDAK boleh menangkap pointer — ia mengikuti kursor, dan begitu
+     bisa di-hover ia mengejar kursornya sendiri dan berkedip selamanya. */
+  pointer-events: none;
+}

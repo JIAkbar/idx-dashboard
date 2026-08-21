@@ -91,3 +91,28 @@ export const IKON_KUAS = 'M18.4 3c.9 0 1.6.7 1.6 1.6 0 .4-.2.8-.5 1.1L11 14.2l-3
  *  seperti kumpulan tombol yang sama. */
 export const IKON_PANAH_ATAS = 'M12 19V5M6 11l6-6 6 6'
 export const IKON_PANAH_BAWAH = 'M12 5v14M6 13l6 6 6-6'
+
+/* ---------- Kelompok alat gambar & kendali bilah lanjutan (#185 lanjutan) ----------
+ * Satu ikon per KELOMPOK pustaka (bukan 60 ikon unik — lihat komentar
+ * `IKON_ALAT`/`IKON_KATEGORI` di `AlatGambar.tsx` untuk alasannya), dipakai
+ * flyout menu "Alat lainnya" (judul kelompok + tiap baris di dalamnya).
+ * Kelompok yang sudah punya ikon cocok di daftar LEPASAN di atas (Fibonacci,
+ * Pengukuran/penggaris, Anotasi/catatan, Trading/lilin, Garis/tren) dipakai
+ * ULANG lewat map di `AlatGambar.tsx` — cuma LIMA yang butuh bentuk baru. */
+export const IKON_KEL_CHANNEL = 'M4 17L18 5M6 20L20 8' // Channels — dua garis sejajar
+export const IKON_KEL_PITCHFORK = 'M12 3v6M12 9L4 21M12 9L20 21' // Pitchforks — median + dua cabang dari satu titik
+export const IKON_KEL_GANN = 'M3 21L21 3M3 21L21 10M3 21L12 3' // Gann — kipas garis bersudut dari satu titik
+export const IKON_KEL_FORECAST = 'M3 18l6-6 4 4 8-9M16 7h5v5' // Forecasting — garis proyeksi berujung panah
+export const IKON_KEL_BENTUK = 'M3 3h8v8H3zM17 17a4 4 0 108 0 4 4 0 00-8 0z' // Bentuk — kotak + lingkaran generik
+
+/** Magnet snap (#185) — tempel klik ke harga/bar terdekat. Satu ikon untuk
+ *  ketiga keadaan (mati/lemah/kuat); pembeda kuat vs lemah ada di CSS
+ *  (`.grf-alat-magnet.kuat`, titik aksen kecil), bukan di path ini — lihat
+ *  komentar `AlatGambar.tsx` soal kenapa titik kecil dipilih daripada huruf. */
+export const IKON_MAGNET = 'M6 4v6a6 6 0 0012 0V4M6 4h4M14 4h4M6 8h4M14 8h4'
+
+/** Panah kiri — kebalikan `IKON_PANAH_KANAN`, dipakai tombol "sembunyikan
+ *  bilah alat gambar" (bilah duduk di KIRI kanvas; menyembunyikannya berarti
+ *  menyusut lebih jauh ke kiri). Tombol sliver yang MENGEMBALIKANNYA memakai
+ *  `IKON_PANAH_KANAN` yang sudah ada — sepasang, bukan dua ikon baru. */
+export const IKON_PANAH_KIRI = 'M19 12H6M11 6l-6 6 6 6'

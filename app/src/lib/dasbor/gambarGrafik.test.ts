@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   kunciGambar, uraiGambar, bacaGambarTersimpan, tulisGambarTersimpan, VERSI_GAMBAR,
-  type GambarTersimpan,
+  bacaGayaBawaan, tulisGayaBawaan, dashDariGaya, gayaDariDash, GAYA_BAWAAN,
+  type GambarTersimpan, type GayaGambar,
 } from './gambarGrafik'
 
 // Lingkungan uji vitest berkas ini 'node' (bukan jsdom) — tak ada `localStorage`
@@ -93,5 +94,43 @@ describe('baca/tulis gambar tersimpan — bolak-balik & per-emiten', () => {
   it('emiten yang belum pernah disimpan mengembalikan daftar kosong', () => {
     localStorage.clear()
     expect(bacaGambarTersimpan('ASII')).toEqual([])
+  })
+})
+
+describe('gaya gambar bawaan (global, bukan per emiten — #185 lanjutan)', () => {
+  it('belum pernah disetel -> GAYA_BAWAAN', () => {
+    localStorage.clear()
+    expect(bacaGayaBawaan()).toEqual(GAYA_BAWAAN)
+  })
+
+  it('bolak-balik: tulis lalu baca menghasilkan gaya yang sama', () => {
+    localStorage.clear()
+    const g: GayaGambar = { warna: '#38B77E', tebal: 3, gaya: 'dashed' }
+    tulisGayaBawaan(g)
+    expect(bacaGayaBawaan()).toEqual(g)
+  })
+
+  it('bentuk rusak (JSON tak valid, ruas hilang, gaya di luar enum) jatuh ke GAYA_BAWAAN', () => {
+    localStorage.setItem('papan:alat-gambar-gaya', 'bukan json{')
+    expect(bacaGayaBawaan()).toEqual(GAYA_BAWAAN)
+    localStorage.setItem('papan:alat-gambar-gaya', JSON.stringify({ warna: '#000' }))
+    expect(bacaGayaBawaan()).toEqual(GAYA_BAWAAN)
+    localStorage.setItem('papan:alat-gambar-gaya', JSON.stringify({ warna: '#000', tebal: 2, gaya: 'miring' }))
+    expect(bacaGayaBawaan()).toEqual(GAYA_BAWAAN)
+    localStorage.setItem('papan:alat-gambar-gaya', JSON.stringify({ warna: '#000', tebal: 0, gaya: 'solid' }))
+    expect(bacaGayaBawaan()).toEqual(GAYA_BAWAAN)
+  })
+})
+
+describe('dashDariGaya / gayaDariGaya — bolak-balik gaya garis <-> lineDash pustaka', () => {
+  it('solid -> larik kosong, dan sebaliknya', () => {
+    expect(dashDariGaya('solid')).toEqual([])
+    expect(gayaDariDash([])).toBe('solid')
+    expect(gayaDariDash(undefined)).toBe('solid')
+  })
+
+  it('dashed/dotted bolak-balik ke gaya yang sama', () => {
+    expect(gayaDariDash(dashDariGaya('dashed'))).toBe('dashed')
+    expect(gayaDariDash(dashDariGaya('dotted'))).toBe('dotted')
   })
 })

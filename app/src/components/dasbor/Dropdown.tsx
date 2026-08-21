@@ -43,6 +43,13 @@ interface DropdownProps {
    *  hasil pencarian harus rata tanpa kategori supaya tak perlu tebak-tebak
    *  kategori mana yang berisi hasilnya. */
   flyout?: boolean
+  /** Path ikon (IkonMenu) per nilai `grup` — satu ikon mewakili SATU
+   *  kelompok, ditampilkan di kiri tiap baris yang punya `grup` itu, dan di
+   *  judul kelompoknya sendiri (tab kiri flyout / judul sticky daftar
+   *  bertumpuk). Opsional — Dropdown lain (opsi tanpa `grup`, atau `grup`
+   *  yang tak disebut di sini) tampil persis seperti sebelumnya (#185:
+   *  flyout alat gambar, 60 alat 9 kelompok, "munculkan juga icon-icon"). */
+  ikonGrup?: Record<string, string>
 }
 
 /**
@@ -53,7 +60,7 @@ interface DropdownProps {
  * amber (`.sel`). Keyboard: Escape menutup, panah atas/bawah memindah fokus
  * antar item, Enter memilih (klik native tombol terfokus).
  */
-export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disabled, ikon, rata, flyout }: DropdownProps) {
+export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disabled, ikon, rata, flyout, ikonGrup }: DropdownProps) {
   const [open, setOpen] = useState(false)
   // Kategori yang lagi disorot di kolom kiri flyout (null = belum disentuh,
   // jatuh balik ke kategori pertama lewat `kategoriTampil` di bawah — dihitung
@@ -138,6 +145,9 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
   const tampilkanJudulGrup = !modeFlyout || !cariAktif
 
   function renderItem(o: OpsiDropdown) {
+    // Ikon per KELOMPOK, bukan per baris — satu path mewakili seluruh isi
+    // kelompoknya (`ikonGrup`), sama seperti judul kelompok di bawah.
+    const ikonBaris = o.grup ? ikonGrup?.[o.grup] : undefined
     return (
       <button
         key={o.nilai}
@@ -147,6 +157,7 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
         aria-disabled={o.nonaktif || undefined}
         disabled={o.nonaktif}
         className={`dd-it${o.nilai === nilai ? ' sel' : ''}`}
+        style={ikonBaris ? { gap: 6 } : undefined}
         onClick={() => {
           onGanti(o.nilai)
           setOpen(false)
@@ -155,6 +166,7 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
           ref.current?.querySelector<HTMLButtonElement>('.dd-btn')?.focus()
         }}
       >
+        {ikonBaris && <IkonMenu d={ikonBaris} size={13} />}
         {/* `title` menyimpan nama penuhnya: label katalog indikator bisa
             jauh lebih panjang dari menu dan dipotong elipsis. */}
         <span className="dd-it-teks" title={o.label}>{o.label}</span>
@@ -231,10 +243,12 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
                   role="tab"
                   aria-selected={g === kategoriTampil}
                   className={`dd-it${g === kategoriTampil ? ' sel' : ''}`}
+                  style={ikonGrup?.[g] ? { gap: 6 } : undefined}
                   onMouseEnter={() => setKategoriAktif(g)}
                   onFocus={() => setKategoriAktif(g)}
                   onClick={() => setKategoriAktif(g)}
                 >
+                  {ikonGrup?.[g] && <IkonMenu d={ikonGrup[g]} size={13} />}
                   <span className="dd-it-teks">{g}</span>
                 </button>
               ))}
@@ -253,7 +267,11 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
                   kelompok yang seluruh isinya tersaring tak meninggalkan judul
                   yang menggantung tanpa isi. */}
               {tampilkanJudulGrup && o.grup && o.grup !== tampil[i - 1]?.grup && (
-                <p className="dd-grup" role="presentation">{o.grup}</p>
+                <p className="dd-grup" role="presentation"
+                  style={ikonGrup?.[o.grup] ? { display: 'flex', alignItems: 'center', gap: 6 } : undefined}>
+                  {ikonGrup?.[o.grup] && <IkonMenu d={ikonGrup[o.grup]} size={12} />}
+                  {o.grup}
+                </p>
               )}
               {renderItem(o)}
             </Fragment>

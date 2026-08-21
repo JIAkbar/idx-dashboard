@@ -25,9 +25,12 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { IChartApi, ISeriesApi, MouseEventParams, SeriesType, Time } from 'lightweight-charts'
-import type { Anchor, SerializedDrawing } from 'lightweight-charts-drawing'
+import type { Anchor, DrawingStyle, SerializedDrawing } from 'lightweight-charts-drawing'
 import { ALAT_UTAMA, muatPustakaGambar } from './gambarPustaka'
-import { bacaGambarTersimpan, tulisGambarTersimpan, VERSI_GAMBAR, type GambarTersimpan } from './gambarGrafik'
+import {
+  bacaGambarTersimpan, tulisGambarTersimpan, VERSI_GAMBAR,
+  bacaGayaBawaan, tulisGayaBawaan, dashDariGaya, type GambarTersimpan, type GayaGambar,
+} from './gambarGrafik'
 import { keWaktuChart, dariWaktuChart } from './kerangkaWaktu'
 
 type ModulPustaka = Awaited<ReturnType<typeof muatPustakaGambar>>
@@ -48,6 +51,91 @@ const BUTUH_TEKS = new Set(ALAT_UTAMA.filter((a) => a.butuhTeks).map((a) => a.id
  *  terlihat sama sekali. */
 const JARAK_MIN_KUAS = 4
 
+/* ---------------- Magnet snap (#185 lanjutan, Johan 21 Agu: "magnet juga
+   keluarkan ada magnet kuat dan magnet lemah") ----------------
+ *
+ * CATATAN JUJUR soal `SnapConfig`/`InteractionConfig` pustaka (keduanya ADA,
+ * lihat `dist/index.d.ts`): keduanya cuma dipakai `InteractionHandler`
+ * bawaan pustaka, dan komentar di atas berkas ini sudah menjelaskan kenapa
+ * `saatKlik` di bawah SENGAJA menulis FSM sendiri, bukan memakai
+ * `InteractionHandler` itu — jadi tak ada jalan untuk "meneruskan snapConfig
+ * ke InteractionConfig" di sini, sesederhana itu tak ada pemanggilan
+ * `InteractionConfig` sama sekali di seluruh berkas. Yang dilakukan di bawah
+ * ini menuliskan ULANG semantik yang sama (`snapToPrice`+`snapToBar`, dua
+ * ambang piksel PERSIS seperti spek: 8 lemah / 24 kuat) langsung di titik
+ * tempat harga klik dibaca dari koordinat piksel. `snapToBar` sendiri tak
+ * butuh kode tambahan sama sekali: `chart.subscribeClick` SELALU membalas
+ * waktu BAR YANG SUDAH ADA (bukan waktu kontinu di bawah kursor) — tempel-ke-
+ * bar itu bawaan cara alat ini menggambar (klik-klik, bukan seret), bukan
+ * sesuatu yang perlu ditambahkan.
+ */
+export type KeadaanMagnet = '0' | 'lemah' | 'kuat'
+const KUNCI_MAGNET = 'papan:alat-gambar-magnet'
+const AMBANG_MAGNET: Record<'lemah' | 'kuat', number> = { lemah: 8, kuat: 24 }
+
+function bacaMagnetTersimpan(): KeadaanMagnet {
+  try {
+    const v = localStorage.getItem(KUNCI_MAGNET)
+    return v === 'lemah' || v === 'kuat' ? v : '0'
+  } catch { return '0' }
+}
+
+/** Urutan putaran klik: mati -> lemah -> kuat -> mati. Fungsi murni supaya
+ *  bisa diuji tanpa React/localStorage. */
+export function magnetBerikutnya(sekarang: KeadaanMagnet): KeadaanMagnet {
+  if (sekarang === '0') return 'lemah'
+  if (sekarang === 'lemah') return 'kuat'
+  return '0'
+}
+
+/**
+ * Snapkan harga klik ke kandidat OHLC terdekat (bar yang sama, sudah lewat
+ * `snapToBar` bawaan) kalau jaraknya di layar (piksel, lewat
+ * `priceToCoordinate`) di bawah ambang keadaan magnet. `priceToCoordinate`
+ * disuntik sebagai fungsi murni — tak menyentuh `ISeriesApi` sungguhan di
+ * sini — supaya bisa diuji tanpa lightweight-charts.
+ */
+export function snapkanHarga(
+  hargaKlik: number,
+  yKlik: number,
+  kandidat: number[],
+  keadaan: KeadaanMagnet,
+  priceToCoordinate: (harga: number) => number | null,
+): number {
+  if (keadaan === '0' || kandidat.length === 0) return hargaKlik
+  const ambang = AMBANG_MAGNET[keadaan]
+  let terbaik: { harga: number; jarak: number } | null = null
+  for (const h of kandidat) {
+    const y = priceToCoordinate(h)
+    if (y == null) continue
+    const jarak = Math.abs(y - yKlik)
+    if (jarak <= ambang && (!terbaik || jarak < terbaik.jarak)) terbaik = { harga: h, jarak }
+  }
+  return terbaik !== null ? terbaik.harga : hargaKlik
+}
+
+/** Kandidat harga snap dari titik data SERI PADA bar yang diklik
+ *  (`MouseEventParams.seriesData`, bukan `.data()` yang harus dicari manual
+ *  per waktu) — bentuknya union (candle: open/high/low/close, garis: value),
+ *  jadi dibaca longgar lewat ruas yang ADA. */
+function kandidatHargaDariTitik(titik: unknown): number[] {
+  if (!titik || typeof titik !== 'object') return []
+  const o = titik as Record<string, unknown>
+  const angka = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v)
+  return (['open', 'high', 'low', 'close', 'value'] as const)
+    .filter((k) => angka(o[k]))
+    .map((k) => o[k] as number)
+}
+
+/** Style pustaka dari gaya BAWAAN tersimpan (`gambarGrafik.ts`) — dipakai
+ *  tiap gambar BARU dibuat, supaya "bawaan tebal 1, bukan yang tebal" (Johan)
+ *  berlaku sejak klik pertama, bukan cuma sesudah pembaca membuka modal
+ *  setelan sekali. */
+function styleGambarBaru(): Partial<DrawingStyle> {
+  const g = bacaGayaBawaan()
+  return { lineColor: g.warna, lineWidth: g.tebal, lineDash: dashDariGaya(g.gaya) }
+}
+
 export interface UseAlatGambar {
   /** `null` sebelum pembaca menyentuh bilah (impor dinamis belum dipicu). */
   pustaka: ModulPustaka | null
@@ -61,6 +149,19 @@ export interface UseAlatGambar {
   /** Dipanggil dari `onPointerDownCapture`/`onFocusCapture` bilah — memicu
    *  unduhan pustaka SEKALI seumur sesi, sama pola dgn `mintaKatalog`. */
   mintaPustaka: () => void
+  /** Keadaan magnet snap — dipakai `saatKlik` di bawah, bukan diteruskan ke
+   *  pustaka (lihat komentar "Magnet snap" di atas). */
+  magnet: KeadaanMagnet
+  /** Putar mati -> lemah -> kuat -> mati. */
+  sikluskanMagnet: () => void
+  /** Style gambar YANG SEDANG TERPILIH — `null` kalau tak ada yang terpilih.
+   *  Dipakai modal setelan (GrafikEmiten.tsx) mem-prefill warna/tebal/gaya. */
+  gayaTerpilih: DrawingStyle | null
+  /** Terapkan patch warna/tebal/gaya ke gambar terpilih LEWAT API pustaka
+   *  (`IDrawing.updateStyle`, bukan tulis-ulang localStorage — lihat
+   *  komentar di badan fungsi) sekaligus mengingatnya sebagai bawaan gambar
+   *  BERIKUTNYA. Tak berbuat apa-apa kalau tak ada yang terpilih. */
+  terapkanGaya: (patch: Partial<GayaGambar>) => void
 }
 
 export function useAlatGambar(opts: {
@@ -78,6 +179,8 @@ export function useAlatGambar(opts: {
   const [galat, setGalat] = useState<string | null>(null)
   const [alatAktif, setAlatAktifState] = useState<string | null>(null)
   const [adaTerpilih, setAdaTerpilih] = useState(false)
+  const [magnet, setMagnetState] = useState<KeadaanMagnet>(bacaMagnetTersimpan)
+  const [gayaTerpilih, setGayaTerpilih] = useState<DrawingStyle | null>(null)
 
   const managerRef = useRef<Manager | null>(null)
   const alatAktifRef = useRef<string | null>(null)
@@ -85,6 +188,18 @@ export function useAlatGambar(opts: {
   const alatTertundaRef = useRef<string | null>(null)
   const kodeRef = useRef(kode)
   kodeRef.current = kode
+  // Dibaca di `saatKlik` (closure efek, bukan re-subscribe tiap magnet
+  // berganti) — pola sama dengan `alatAktifRef`.
+  const magnetRef = useRef<KeadaanMagnet>(magnet)
+  magnetRef.current = magnet
+
+  const sikluskanMagnet = useCallback(() => {
+    setMagnetState((m) => {
+      const berikut = magnetBerikutnya(m)
+      try { localStorage.setItem(KUNCI_MAGNET, berikut) } catch { /* mode privat */ }
+      return berikut
+    })
+  }, [])
 
   /**
    * Pan/zoom chart (Johan, tangkapan layar 18 Agu: "waktu gambar kenapa
@@ -204,6 +319,35 @@ export function useAlatGambar(opts: {
     }, 250)
   }, [])
 
+  /**
+   * Setelan gambar TERPILIH (#185 lanjutan, Johan 21 Agu: "line gak ada
+   * setup modal warna ketebalan ketipisan"). Jalur API yang dipakai:
+   * `IDrawing.updateStyle` — pustaka MEMANG menyediakannya (public, lihat
+   * `Drawing`/`IDrawing` di `dist/index.d.ts`), jadi dipakai LANGSUNG, bukan
+   * jalan mundur tulis-ulang localStorage lalu muat ulang gambarnya.
+   * `updateStyle` sendiri cuma mengubah objek `Drawing` di memori (tak
+   * memicu event manager `drawing:updated` — event itu cuma ditembak jalur
+   * seret-anchor bawaan manager) jadi persistensinya dipanggil manual lewat
+   * `simpanSekarang` di sini, sama seperti jalur seret.
+   *
+   * Patch juga diingat sebagai bawaan GAMBAR BERIKUTNYA (`tulisGayaBawaan`) —
+   * itu jawaban "selalu berat bawaannya": begitu pembaca menyetel satu garis
+   * jadi tebal 1, garis BARU sesudahnya ikut tebal 1 tanpa perlu disetel lagi.
+   */
+  const terapkanGaya = useCallback((patch: Partial<GayaGambar>) => {
+    const manager = managerRef.current
+    const dipilih = manager?.getSelectedDrawing()
+    if (!dipilih) return
+    tulisGayaBawaan({ ...bacaGayaBawaan(), ...patch })
+    const stylePatch: Partial<DrawingStyle> = {}
+    if (patch.warna !== undefined) stylePatch.lineColor = patch.warna
+    if (patch.tebal !== undefined) stylePatch.lineWidth = patch.tebal
+    if (patch.gaya !== undefined) stylePatch.lineDash = dashDariGaya(patch.gaya)
+    dipilih.updateStyle(stylePatch)
+    setGayaTerpilih(dipilih.style)
+    simpanSekarang()
+  }, [simpanSekarang])
+
   const pilihAlat = useCallback((id: string | null) => {
     if (id && !pustaka) {
       // Pustaka belum diunduh (klik pertama pembaca) — simpan niatnya,
@@ -256,9 +400,12 @@ export function useAlatGambar(opts: {
     if (!manager) {
       manager = new pustaka.DrawingManager()
       managerRef.current = manager
-      manager.on('drawing:selected', () => setAdaTerpilih(true))
-      manager.on('drawing:deselected', () => setAdaTerpilih(false))
-      manager.on('drawing:removed', () => setAdaTerpilih(false))
+      manager.on('drawing:selected', () => {
+        setAdaTerpilih(true)
+        setGayaTerpilih(manager!.getSelectedDrawing()?.style ?? null)
+      })
+      manager.on('drawing:deselected', () => { setAdaTerpilih(false); setGayaTerpilih(null) })
+      manager.on('drawing:removed', () => { setAdaTerpilih(false); setGayaTerpilih(null) })
       manager.on('drawing:added', simpanSekarang)
       manager.on('drawing:removed', simpanSekarang)
       manager.on('drawing:updated', simpanSekarang)
@@ -300,8 +447,16 @@ export function useAlatGambar(opts: {
       const alat = alatAktifRef.current
       if (!alat || alat === 'brush') return
       if (!param.point || param.time == null) return
-      const harga = seriesRef.current?.coordinateToPrice(param.point.y)
-      if (harga == null || !Number.isFinite(harga)) return
+      const series = seriesRef.current
+      const hargaMentah = series?.coordinateToPrice(param.point.y)
+      if (hargaMentah == null || !Number.isFinite(hargaMentah)) return
+      // Magnet (#185 lanjutan): snap ke OHLC bar yang sama — lihat komentar
+      // "Magnet snap" di atas berkas ini soal kenapa ini BUKAN `snapConfig`
+      // pustaka. `snapToBar` sendiri gratis (`param.time` selalu waktu bar
+      // yang sudah ada); yang dihitung di sini cuma `snapToPrice`.
+      const kandidat = series ? kandidatHargaDariTitik(param.seriesData.get(series)) : []
+      const harga = snapkanHarga(hargaMentah, param.point.y, kandidat, magnetRef.current,
+        (h) => series?.priceToCoordinate(h) ?? null)
 
       titikSedangRef.current = [...titikSedangRef.current, { time: param.time, price: harga }]
       const perlu = ANCHOR_ALAT_UTAMA.get(alat) ?? registry.get(alat)?.requiredAnchors ?? 2
@@ -315,7 +470,7 @@ export function useAlatGambar(opts: {
         if (teks === null) { pilihAlat(null); return } // dibatalkan dari kotak prompt
         opsi = { text: teks }
       }
-      const gambar = registry.createDrawing(alat, idBaru(), anchors, undefined, opsi)
+      const gambar = registry.createDrawing(alat, idBaru(), anchors, styleGambarBaru(), opsi)
       if (gambar) managerRef.current?.addDrawing(gambar)
       pilihAlat(null) // sekali gambar selesai, kembali ke mode pilih
     }
@@ -372,7 +527,7 @@ export function useAlatGambar(opts: {
       titikKuasRef.current = []
       pxTerakhir = null
       if (titik.length >= 2) {
-        const gambar = pustaka.getToolRegistry().createDrawing('brush', idBaru(), titik)
+        const gambar = pustaka.getToolRegistry().createDrawing('brush', idBaru(), titik, styleGambarBaru())
         if (gambar) managerRef.current?.addDrawing(gambar)
       }
       pilihAlat(null)
@@ -478,5 +633,8 @@ export function useAlatGambar(opts: {
     return () => container.removeEventListener('contextmenu', saatKlikKanan)
   }, [containerRef, pilihAlat, batalkanSedangDigambar])
 
-  return { pustaka, galat, alatAktif, pilihAlat, adaTerpilih, hapusTerpilih, mintaPustaka }
+  return {
+    pustaka, galat, alatAktif, pilihAlat, adaTerpilih, hapusTerpilih, mintaPustaka,
+    magnet, sikluskanMagnet, gayaTerpilih, terapkanGaya,
+  }
 }

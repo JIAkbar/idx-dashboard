@@ -37,7 +37,7 @@ import {
 } from '../../lib/dasbor/kerangkaWaktu'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import {
-  muatKatalog, KATEGORI, ID_SUDAH_ADA, type Katalog,
+  muatKatalog, KATEGORI, ID_SUDAH_ADA, POPULER, type Katalog,
 } from '../../lib/dasbor/katalogIndikator'
 import { useDaftarInstans } from '../../components/dasbor/DaftarInstans'
 import { ModalSetelanInstans } from '../../components/dasbor/ModalSetelanInstans'
@@ -48,6 +48,7 @@ import { DatePicker } from '../../components/dasbor/DatePicker'
 import { TombolLayarPenuh } from '../../components/dasbor/TombolLayarPenuh'
 import { AlatGambar } from '../../components/dasbor/AlatGambar'
 import { useAlatGambar } from '../../lib/dasbor/useAlatGambar'
+import { gayaDariDash, type GayaGaris } from '../../lib/dasbor/gambarGrafik'
 import { fN } from '../../lib/dasbor/format'
 import { pesanGalat } from '../../lib/pesanGalat'
 import { keFraksi } from '../../lib/fraksiHarga'
@@ -148,6 +149,23 @@ const MAKS_BANDING = 3
  *  `PALET_INDIKATOR`. Garis pembanding dan garis indikator duduk di kanvas
  *  yang sama; dua garis sewarna di situ tak bisa dibedakan sama sekali. */
 const WARNA_BANDING = ['--bnd1', '--bnd2', '--bnd3']
+
+/** Swatch warna modal setelan gambar (#185 lanjutan) — enam token PERSIS
+ *  seperti diminta spek tugas, bukan `PALET_INDIKATOR` (itu delapan warna
+ *  indikator, dua di antaranya nyaris tak kebaca sebagai garis GAMBAR di
+ *  atas lilin). Nilainya nama token CSS — di-resolve ke warna literal lewat
+ *  `getComputedStyle` cuma di titik klik (lihat pemakaiannya di bawah),
+ *  sama pola dengan `WARNA_BANDING`/tema chart: pustaka gambar butuh warna
+ *  sungguhan buat digambar canvas, bukan `var(--x)` mentah. */
+const PALET_GAYA_GAMBAR = ['--green', '--red', '--blue', '--amber', '--text2', '--accent']
+
+/** Gaya garis pilihan modal setelan gambar — domainnya `GayaGaris`
+ *  (`gambarGrafik.ts`, dipetakan ke `lineDash` pustaka gambar), BUKAN
+ *  `LineStyle` numerik lightweight-charts yang dipakai `ModalSetelanInstans`
+ *  (indikator/pola beda pustaka sama sekali dari alat gambar). */
+const GAYA_GARIS_GAMBAR: Array<[GayaGaris, string]> = [
+  ['solid', 'Solid'], ['dashed', 'Dashed'], ['dotted', 'Dotted'],
+]
 
 /** Kode berkas OHLC indeks komposit — sama bentuknya dengan berkas emiten
  *  (`ohlc/IHSG.json`, 8.849 baris sejak 1990), jadi tak perlu jalur muat
@@ -709,6 +727,11 @@ export function GrafikEmiten() {
   const [sorot, setSorot] = useState<{ waktu: string; x: number; y: number } | null>(null)
   /** Instans mana yang MODAL setelannya sedang terbuka (id), null = tak ada. */
   const [setelanTerbuka, setSetelanTerbuka] = useState<string | null>(null)
+  /** Modal setelan gambar (warna/tebal/gaya garis) TERPILIH — #185 lanjutan,
+   *  Johan: "line gak ada setup modal warna ketebalan ketipisan". Terpisah
+   *  dari `setelanTerbuka` (itu punya instans indikator/pola, tipe & sumber
+   *  datanya beda sama sekali). */
+  const [setelanGambarBuka, setSetelanGambarBuka] = useState(false)
 
   /**
    * Katalog indikator pustaka — `null` selagi belum dimuat.
@@ -793,16 +816,19 @@ export function GrafikEmiten() {
   useEffect(() => {
     if (!intraday(kerangka)) { setIntra(null); setGalatIntra(null); setMuatIntra(false); return }
     let batal = false
+    // Audit #10: pembatalnya SUNGGUHAN — permintaan jaringan ikut diputus
+    // saat kode/kerangka berganti, bukan cuma hasilnya yang dibuang.
+    const kontrol = new AbortController()
     setIntra(null)
     setGalatIntra(null)
     setMuatIntra(true)
-    ambilIntraday(kode, kerangka, '#38B77E', '#E6635A')
+    ambilIntraday(kode, kerangka, '#38B77E', '#E6635A', kontrol.signal)
       .then((d) => { if (!batal) setIntra(d) })
       .catch((e: unknown) => {
         if (!batal) setGalatIntra(pesanGalat(e, `Gagal memuat lilin ${kerangka} untuk ${kode}.`))
       })
       .finally(() => { if (!batal) setMuatIntra(false) })
-    return () => { batal = true }
+    return () => { batal = true; kontrol.abort() }
   }, [kode, kerangka])
 
   /**
@@ -814,6 +840,15 @@ export function GrafikEmiten() {
    * sama. Enam emiten dilihat berarti enam kali Kembali sebelum benar-benar
    * keluar.
    */
+  // Audit 21 Agu 2026 (#9): pembanding yang sama dengan emiten UTAMA dibuang
+  // saat `kode` berganti — guard di menu cuma mencegah MENAMBAH, tak menjaga
+  // ulang setelah pindah saham. Tanpa ini, membandingkan BBCA vs TLKM lalu
+  // pindah utama ke TLKM menggambar TLKM dua kali: garis 0% dobel dan
+  // legendanya tampil kembar.
+  useEffect(() => {
+    setBanding((x) => (x.includes(kode) ? x.filter((k) => k !== kode) : x))
+  }, [kode])
+
   useEffect(() => {
     setParam((lama) => {
       const baru = new URLSearchParams(lama)
@@ -1054,6 +1089,14 @@ export function GrafikEmiten() {
   const alatGambar = useAlatGambar({
     chartRef, seriesRef: hargaRef, containerRef, kode, versiSeriHarga,
   })
+  // Modal setelan gambar wajib tertutup begitu tak ada lagi yang terpilih —
+  // gambar bisa lepas terpilih dari luar modal (klik kanvas kosong, Escape,
+  // hapus lewat Delete), dan modal yang tetap terbuka menyetel gambar yang
+  // sudah tak ada akan diam-diam menerapkan patch ke `getSelectedDrawing()`
+  // berikutnya yang kebetulan terpilih — bukan yang pembaca kira sedang diatur.
+  useEffect(() => {
+    if (!alatGambar.adaTerpilih) setSetelanGambarBuka(false)
+  }, [alatGambar.adaTerpilih])
 
   // Sumbu waktu menampilkan JAM hanya pada kerangka intraday. Disetel di efek
   // sendiri (bukan di opsi pembuatan chart) karena kerangkanya bisa ditukar
@@ -1455,17 +1498,28 @@ export function GrafikEmiten() {
       }]
     }
     const urutan = new Map(KATEGORI.map(([ing], i) => [ing, i]))
-    const entri = [...katalog.values()]
-      .filter((e) => !ID_SUDAH_ADA.has(e.id))
-      .sort((a, b) => (urutan.get(a.kategori) ?? 99) - (urutan.get(b.kategori) ?? 99)
-        || a.nama.localeCompare(b.nama))
-    return [...OPSI_KURASI, ...entri.map((e) => ({
-      nilai: `p:${e.id}`,
+    const semua = [...katalog.values()].filter((e) => !ID_SUDAH_ADA.has(e.id))
+    const label = (e: { nama: string; singkat: string }) =>
       // Nama panjang + pendek keduanya ikut supaya kotak cari menemukannya
       // lewat singkatan ("ADX") maupun kata lengkapnya ("Directional").
-      label: e.nama === e.singkat ? e.nama : `${e.nama} · ${e.singkat}`,
-      grup: KATEGORI.find(([ing]) => ing === e.kategori)?.[1] ?? e.kategori,
-    }))]
+      e.nama === e.singkat ? e.nama : `${e.nama} · ${e.singkat}`
+    // Kelompok "Populer (TradingView)" tampil TEPAT sesudah "Pilihan PAPAN" —
+    // entri yang masuk sini DISARING dari kelompok kategorinya di bawah,
+    // supaya tak dobel (Johan 21 Agu 2026: lihat catatan di `POPULER`).
+    const populer = semua.filter((e) => POPULER.has(e.id))
+      .sort((a, b) => a.nama.localeCompare(b.nama))
+    const entri = semua.filter((e) => !POPULER.has(e.id))
+      .sort((a, b) => (urutan.get(a.kategori) ?? 99) - (urutan.get(b.kategori) ?? 99)
+        || a.nama.localeCompare(b.nama))
+    return [
+      ...OPSI_KURASI,
+      ...populer.map((e) => ({ nilai: `p:${e.id}`, label: label(e), grup: 'Populer (TradingView)' })),
+      ...entri.map((e) => ({
+        nilai: `p:${e.id}`,
+        label: label(e),
+        grup: KATEGORI.find(([ing]) => ing === e.kategori)?.[1] ?? e.kategori,
+      })),
+    ]
   }, [katalog])
 
   const opsiPola = useMemo(() => JENIS_POLA.map((jenis) => {
@@ -2892,6 +2946,9 @@ export function GrafikEmiten() {
               adaTerpilih={alatGambar.adaTerpilih}
               onHapusTerpilih={alatGambar.hapusTerpilih}
               onSentuh={alatGambar.mintaPustaka}
+              magnet={alatGambar.magnet}
+              onSiklusMagnet={alatGambar.sikluskanMagnet}
+              onBukaSetelan={() => setSetelanGambarBuka(true)}
             />
           {/* Bungkus TERPISAH dari containerRef — lightweight-charts mengisi
               containerRef dengan kanvasnya sendiri; tanda PAPAN dipasang
@@ -2939,6 +2996,33 @@ export function GrafikEmiten() {
                 GrafikEmiten.css: autoSize butuh lebar sungguhan sejak elemen
                 dibuat, bukan sejak elemen "muncul". */}
             <div ref={containerRef} className={'grf-chart-wrap' + (siap ? '' : ' memuat')} />
+
+            {/* Dot tooltip (Johan 21 Agu 2026: "keterangan di chart nya
+                munculkan dot tooltips") — keterangan penanda MENGIKUTI
+                kursor, bukan menunggu klik kanan. Dibatasi tiga baris: dot
+                yang bertumpuk di satu lilin (swing + pola + patahan) tetap
+                terbaca tanpa menutupi harga di belakangnya. */}
+            {sorot && (() => {
+              const dekat = penandaDiSekitar(penandaPola, indeksWaktu, sorot.waktu, 0)
+              if (dekat.length === 0) return null
+              // Lebar bungkus diukur langsung — tak ada state ukuran yang
+              // disimpan, dan tooltip hanya butuh keputusan kiri/kanan.
+              const lebar = bungkusRef.current?.clientWidth ?? 0
+              const kanan = lebar > 0 && sorot.x > lebar / 2
+              return (
+                <div
+                  className="grf-dot-tip"
+                  style={{
+                    left: kanan ? undefined : sorot.x + 14,
+                    right: kanan ? lebar - sorot.x + 14 : undefined,
+                    top: Math.max(8, sorot.y - 10),
+                  }}
+                >
+                  {dekat.slice(0, 3).map((o, i) => <div key={i}>{o.teks}</div>)}
+                  {dekat.length > 3 && <div className="muted">+{dekat.length - 3} lagi — klik kanan untuk semua</div>}
+                </div>
+              )
+            })()}
 
             {/* Menu klik kanan (B32). Ditutup lewat latar tak terlihat yang
                 menutupi kanvas — bukan `blur`, karena kanvas bukan elemen
@@ -3603,6 +3687,76 @@ export function GrafikEmiten() {
           )}
         </ModalKecil>
       )}
+
+      {/* Modal setelan GAMBAR terpilih (#185 lanjutan, Johan: "line gak ada
+          setup modal warna ketebalan ketipisan ... selalu berat bawaan
+          nya"). Jalur API: `IDrawing.updateStyle` LANGSUNG (pustaka gambar
+          memang menyediakannya, publik — lihat komentar `terapkanGaya` di
+          `useAlatGambar.ts`), bukan tulis-ulang localStorage. Warna disimpan
+          sebagai token (`--green` dst) di sini SAJA — begitu diklik,
+          di-resolve ke warna literal lewat `getComputedStyle(containerRef)`
+          (pola sama dengan efek tema chart di atas) sebelum diteruskan ke
+          hook; `gayaTerpilih.lineColor` yang datang balik dari pustaka
+          karena itu SELALU literal, tak pernah nama token — dibandingkan
+          apa adanya, bukan di-resolve balik. */}
+      {setelanGambarBuka && alatGambar.gayaTerpilih && (() => {
+        const gaya = alatGambar.gayaTerpilih
+        const tebalSekarang = gaya.lineWidth ?? 1
+        const gayaGarisSekarang = gayaDariDash(gaya.lineDash)
+        const resolveToken = (token: string) => {
+          const el = containerRef.current
+          const v = el ? getComputedStyle(el).getPropertyValue(token).trim() : ''
+          return v || token
+        }
+        const warnaBebasSah = /^#[0-9a-f]{6}$/i.test(gaya.lineColor ?? '')
+        return (
+          <ModalKecil label="Setelan gambar" onClose={() => setSetelanGambarBuka(false)}>
+            <div className="grf-setel-baris" role="group" aria-label="Warna gambar">
+              <span className="grf-setel-lbl">Warna</span>
+              <span className="grf-setel-warna">
+                {PALET_GAYA_GAMBAR.map((tok) => {
+                  const terpakai = resolveToken(tok).toLowerCase() === (gaya.lineColor ?? '').toLowerCase()
+                  return (
+                    <button key={tok} type="button"
+                      className={`grf-swatch${terpakai ? ' on' : ''}`}
+                      style={{ background: `var(${tok})` }}
+                      aria-pressed={terpakai}
+                      title={tok.replace('--', '')} aria-label={`Warna ${tok.replace('--', '')}`}
+                      onClick={() => alatGambar.terapkanGaya({ warna: resolveToken(tok) })} />
+                  )
+                })}
+                {/* Warna bebas — <input type=color> native, sudah literal
+                    (tak perlu resolusi token). */}
+                <input type="color" aria-label="Warna gambar bebas"
+                  value={warnaBebasSah ? (gaya.lineColor as string) : '#000000'}
+                  onChange={(e) => alatGambar.terapkanGaya({ warna: e.target.value })} />
+              </span>
+            </div>
+
+            <div className="grf-setel-baris" role="group" aria-label="Ketebalan garis gambar">
+              <span className="grf-setel-lbl">Ketebalan</span>
+              <span className="grf-setel-garis">
+                {[1, 2, 3, 4].map((t) => (
+                  <button key={t} type="button" className={`chip-t${tebalSekarang === t ? ' on' : ''}`}
+                    aria-pressed={tebalSekarang === t} title={`Tebal ${t}px`}
+                    onClick={() => alatGambar.terapkanGaya({ tebal: t })}>{t}px</button>
+                ))}
+              </span>
+            </div>
+
+            <div className="grf-setel-baris" role="group" aria-label="Gaya garis gambar">
+              <span className="grf-setel-lbl">Gaya</span>
+              <span className="grf-setel-garis">
+                {GAYA_GARIS_GAMBAR.map(([nilai, label]) => (
+                  <button key={nilai} type="button" className={`chip-t${gayaGarisSekarang === nilai ? ' on' : ''}`}
+                    aria-pressed={gayaGarisSekarang === nilai}
+                    onClick={() => alatGambar.terapkanGaya({ gaya: nilai })}>{label}</button>
+                ))}
+              </span>
+            </div>
+          </ModalKecil>
+        )
+      })()}
 
       {/* Modal setelan — dua cabang terpisah, bukan satu bercabang tipe:
           `ModalSetelanInstans` ber-generik pada jenisnya, dan gabungan dua

@@ -102,3 +102,76 @@ export function bacaGambarTersimpan(kode: string): GambarTersimpan[] {
 export function tulisGambarTersimpan(kode: string, daftar: GambarTersimpan[]): void {
   try { localStorage.setItem(kunciGambar(kode), JSON.stringify(daftar)) } catch { /* kuota penuh / mode privat */ }
 }
+
+/* ---------------- Gaya gambar BAWAAN (#185 lanjutan, Johan 21 Agu: "selalu
+   berat bawaan nya") ----------------
+   Beda dari GambarTersimpan di atas: ini SATU setelan GLOBAL (bukan per
+   emiten) — gambar baru di emiten mana pun mengikuti warna/tebal/gaya garis
+   TERAKHIR yang dipilih pembaca di modal setelan, di emiten mana pun itu
+   dipilih. `warna` di sini SELALU warna CSS literal yang sudah di-resolve
+   (mis. "#38B77E"), bukan nama token (`--green`) — canvas pustaka gambar
+   butuh warna sungguhan, dan resolusi token->warna terjadi SEKALI di
+   pemanggil (GrafikEmiten.tsx, sudah punya `getComputedStyle` di dalam
+   `.lantai` untuk kebutuhan lain) sebelum sampai ke sini. Berkas ini sengaja
+   tak tahu apa-apa soal CSS custom property. */
+export type GayaGaris = 'solid' | 'dashed' | 'dotted'
+
+export interface GayaGambar {
+  warna: string
+  tebal: number
+  gaya: GayaGaris
+}
+
+/** Sama dengan `DEFAULT_DRAWING_STYLE.lineColor` pustaka (`#2962FF`) — biru
+ *  bawaannya sendiri, cuma tebalnya diturunkan dari 2 ke 1 (itu jawaban
+ *  "selalu berat bawaannya": 2px pustaka + fill lembut membuat garis BARU
+ *  terasa tebal sejak diklik pertama, sebelum sempat disetel). */
+export const GAYA_BAWAAN: GayaGambar = { warna: '#2962FF', tebal: 1, gaya: 'solid' }
+
+const KUNCI_GAYA = 'papan:alat-gambar-gaya'
+
+function gayaSah(g: unknown): g is GayaGambar {
+  if (!g || typeof g !== 'object') return false
+  const o = g as Record<string, unknown>
+  return typeof o.warna === 'string' && o.warna.length > 0
+    && typeof o.tebal === 'number' && Number.isFinite(o.tebal) && o.tebal > 0
+    && (o.gaya === 'solid' || o.gaya === 'dashed' || o.gaya === 'dotted')
+}
+
+/** Dibaca tiap gambar BARU dibuat (`useAlatGambar.ts`) dan tiap modal setelan
+ *  dibuka (prefill chip mana yang "diingat" sebagai bawaan). Bentuk tak
+ *  dikenal (kuota rusak, versi lama, tempelan manual) jatuh ke `GAYA_BAWAAN`
+ *  — pola sama dengan `uraiGambar` di atas: gagal senyap ke nilai aman,
+ *  bukan melempar. */
+export function bacaGayaBawaan(): GayaGambar {
+  try {
+    const raw = localStorage.getItem(KUNCI_GAYA)
+    if (!raw) return GAYA_BAWAAN
+    const parsed: unknown = JSON.parse(raw)
+    return gayaSah(parsed) ? parsed : GAYA_BAWAAN
+  } catch { return GAYA_BAWAAN }
+}
+
+export function tulisGayaBawaan(gaya: GayaGambar): void {
+  try { localStorage.setItem(KUNCI_GAYA, JSON.stringify(gaya)) } catch { /* kuota penuh / mode privat */ }
+}
+
+/** `lineDash` pustaka per gaya garis pilihan pembaca — satu tempat, dipakai
+ *  modal setelan (gambar TERPILIH) dan pembuatan gambar BARU, supaya
+ *  keduanya memakai angka putus-putus yang SAMA persis. */
+export function dashDariGaya(gaya: GayaGaris): number[] {
+  if (gaya === 'dashed') return [8, 4]
+  if (gaya === 'dotted') return [2, 4]
+  return []
+}
+
+/** Kebalikan `dashDariGaya` — dipakai modal setelan menyorot chip yang cocok
+ *  untuk gambar yang SUDAH ADA (dimuat dari localStorage lama, atau gaya
+ *  bawaan pustaka sendiri yang `lineDash`-nya tak persis dua angka di atas).
+ *  Heuristik pendek, bukan identitas presisi: tanpa dash = solid, dash
+ *  pertama pendek (≤3px) = dotted, selebihnya = dashed — cukup untuk
+ *  menyorot chip terdekat. */
+export function gayaDariDash(dash: number[] | undefined): GayaGaris {
+  if (!dash || dash.length === 0) return 'solid'
+  return dash[0] <= 3 ? 'dotted' : 'dashed'
+}

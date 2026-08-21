@@ -170,6 +170,38 @@ export const KATEGORI: Array<[inggris: string, indonesia: string]> = [
 ]
 
 /**
+ * Id pustaka untuk indikator yang di TradingView masuk deretan bawaan/
+ * terpopuler — tampil sebagai kelompok "Populer (TradingView)" TEPAT sesudah
+ * "Pilihan PAPAN" di menu (`GrafikEmiten.tsx`), supaya tak tenggelam di antara
+ * 340-an entri katalog lain. Johan 21 Agu 2026: *"indikator default atau yang
+ * umum di pakai di tradingview munculkan di utama di kelompokkan"*.
+ *
+ * Tiap id di sini DIVERIFIKASI mekanis ada di registry DAN lolos
+ * `keEntriKatalog` (skrip pemeriksa sekali-pakai, bukan tebakan) sebelum
+ * ditulis — bukan disalin dari nama yang "kedengarannya" cocok. Tiga
+ * kandidat yang diminta TIDAK masuk, dan alasannya bukan kelalaian:
+ * - `atr`: entrinya ADA tapi masuk `ID_SUDAH_ADA` (ATR internal PAPAN) —
+ *   menu sudah menyaringnya di tempat lain, dobel di sini tak akan pernah
+ *   tampil.
+ * - "Pivot Points Standard": TIDAK ada di registry pustaka ini (yang ada
+ *   cuma varian turunan — `pivot-point-supertrend`, `pivot-hh-hl-lh-ll` —
+ *   beda indikator, bukan pivot S/R baku).
+ * - `price-volume-profile`: `plotConfig` kosong (bukan deret angka, bentuknya
+ *   profil harga×volume) — tak lolos `keEntriKatalog`, tak pernah ada di
+ *   katalog untuk dirujuk.
+ */
+export const POPULER: ReadonlySet<string> = new Set([
+  'supertrend', 'ichimoku', 'parabolic-sar',
+  'adx', 'dmi', // dua indikator TradingView terpisah (ADX-saja vs +DI/-DI/ADX), bukan duplikat
+  'cci', 'mfi', 'roc', 'momentum',
+  'williams-alligator', 'aroon', 'keltner', 'donchian',
+  'ema-ribbon', 'hma', 'wma', 'dema', 'tema', 'vwma',
+  'chaikin-mf', 'stochastic-momentum-index', 'trix',
+  'ultimate-osc', 'awesome-oscillator', 'bull-bear-power',
+  'elder-force', 'eom',
+])
+
+/**
  * Id pustaka TANPA `plotConfig` yang tetap masuk katalog lewat jalur PENANDA
  * (`createSeriesMarkers`), bukan garis. B30 — Johan menunjuk tiga kandidat
  * (`volume-delta`, `williams-fractals`, `zigzag`), diuji mekanis lewat
@@ -217,6 +249,24 @@ export const ID_SUDAH_ADA = new Set([
   // tetap milik pustaka, jalurnya lewat `hitungInstans`.
   'stoch', 'stoch-rsi', 'williams-r', 'vwap',
 ])
+
+/**
+ * Id yang GALAT atau seluruh nilainya kosong begitu dipanggil lewat jalur
+ * KATALOG sesungguhnya (`buatInstans`+`hitungInstans`, param bawaan
+ * `SpekParam`) atas BBCA nyata — beda dari `ID_DIBUANG` (`indikatorDibuang.ts`),
+ * yang diuji lewat `defaultInputs` MENTAH registry, BBCA+ARCI. Bedanya
+ * berarti: entri bisa lolos audit registry tapi rusak di sini kalau
+ * `calculate()`-nya diam-diam butuh ruas `bool`/`color` yang TAK PERNAH
+ * dikirim `keMasukanPustaka` (lihat audit). Diukur mekanis oleh
+ * `app/scripts/audit-katalog-terpakai.ts`, laporan penuh di
+ * `docs/riset/audit-katalog-terpakai.md`.
+ *
+ * Kosong sekarang: audit 21 Agu 2026 atas 368 entri katalog, nol yang rusak
+ * di jalur ini. Dibiarkan berdiri (bukan dihapus) supaya audit berikutnya —
+ * begitu pustaka naik versi — punya tempat menaruh temuannya tanpa menyentuh
+ * `keEntriKatalog`.
+ */
+export const ID_RUSAK: ReadonlySet<string> = new Set([])
 
 /** Ruas masukan pustaka -> satu kolom di panel setelan. `null` = tak
  *  ditampilkan dan dibiarkan memakai bawaan pustaka:
@@ -297,6 +347,7 @@ export function keMasukanPustaka(
  * tanpa itu entrinya tetap ditolak di sini persis seperti sebelumnya.
  */
 export function keEntriKatalog(e: EntriRegistry): EntriKatalog | null {
+  if (ID_RUSAK.has(e.id)) return null
   const ruas = e.inputConfig ?? []
   const dasar = {
     id: e.id,
