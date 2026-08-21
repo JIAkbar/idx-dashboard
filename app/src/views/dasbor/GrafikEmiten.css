@@ -185,6 +185,13 @@
 .lantai .grf-setel-garis { display: flex; flex-wrap: wrap; gap: 3px; }
 .lantai .grf-setel-garis .chip-t { padding: 3px 8px; font-size: 10px; }
 
+/* Editor level Fibonacci di modal setelan gambar (#239). Input pakai kelas
+   kanonis .inp (aturan #170) — di sini cuma penempatan & lebar. */
+.lantai .grf-fib-level { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; max-width: 260px; }
+.lantai .grf-fib-item { display: inline-flex; gap: 2px; align-items: center; }
+.lantai .grf-fib-item .inp, .lantai .grf-fib-level > .inp { width: 62px; padding: 3px 6px; font-size: 11px; }
+.lantai .grf-fib-item .chip-t { padding: 3px 6px; font-size: 10px; line-height: 1; }
+
 .lantai .grf-setel-kaki {
   display: flex; align-items: center; gap: 8px;
   padding-top: 10px; border-top: 1px solid var(--line);

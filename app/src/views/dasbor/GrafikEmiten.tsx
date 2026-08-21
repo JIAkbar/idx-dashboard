@@ -1913,6 +1913,22 @@ export function GrafikEmiten() {
     return () => window.removeEventListener('keydown', tombol)
   }, [replay])
 
+  /**
+   * Dobel-klik gambar = buka setelannya (Johan 21 Agu 2026: "berikan fungsi
+   * double klik untuk setup modal apapun itu"), meniru TradingView. Klik
+   * pertama dari pasangan dobel sudah MEMILIH gambarnya (manager pustaka),
+   * jadi di sini cukup bertanya "ada yang terpilih?" — lewat
+   * `terpilihSekarang()` yang membaca manager langsung, karena state React
+   * belum tentu menyusul di sela dua klik.
+   */
+  useEffect(() => {
+    const chart = chartRef.current
+    if (!chart) return
+    const dobel = () => { if (alatGambar.terpilihSekarang()) setSetelanGambarBuka(true) }
+    chart.subscribeDblClick(dobel)
+    return () => chart.unsubscribeDblClick(dobel)
+  }, [alatGambar.terpilihSekarang])
+
   // Menu klik kanan: Escape menutupnya, dan begitu juga gulir/ubah ukuran.
   //
   // Latar tak-terlihat di bawah menu cuma menutupi KANVAS, jadi menu tetap
@@ -3331,8 +3347,15 @@ export function GrafikEmiten() {
                           untuk yang tak tahu konvensi itu. Tombol, bukan
                           onClick di span: fokus keyboard & pembaca layar. */}
                       <button type="button" className="grf-legenda-nama"
-                        title={b.tampil ? `Klik untuk menyembunyikan ${b.label}` : `Klik untuk menampilkan ${b.label}`}
-                        onClick={() => kelola.sakelarTampil(b.id)}>
+                        title={b.tampil
+                          ? `Klik: sembunyikan ${b.label} · dobel-klik: setelan`
+                          : `Klik: tampilkan ${b.label} · dobel-klik: setelan`}
+                        onClick={() => kelola.sakelarTampil(b.id)}
+                        /* Dua klik cepat memicu onClick DUA KALI sebelum
+                           onDoubleClick — sakelarnya bolak-balik dan pulih
+                           sendiri, jadi tak perlu debounce; yang tersisa
+                           cuma modalnya terbuka. */
+                        onDoubleClick={() => setSetelanTerbuka(b.id)}>
                         {b.label}
                       </button>
                       <span className="grf-legenda-nilai">{b.nilai}</span>
@@ -3895,6 +3918,85 @@ export function GrafikEmiten() {
                 ))}
               </span>
             </div>
+
+            {/* Keluarga Fibonacci: editor level, meniru dialog TV (dipelajari
+                langsung 21 Agu 2026 lewat remote Chrome) — tiap baris nilai
+                EDITABLE + bisa dihapus, dan level baru bebas ditambah, bukan
+                daftar baku. Beda sadar dari TV: tanpa warna per level
+                (pustaka menerima `levels: number[]` saja) dan tanpa 24 slot
+                tetap — daftarnya tumbuh sesuai isi. */}
+            {alatGambar.opsiFibTerpilih && (() => {
+              const of = alatGambar.opsiFibTerpilih
+              const ubahLevel = (i: number, v: number) => {
+                if (!Number.isFinite(v)) return
+                const levels = of.levels.slice()
+                levels[i] = v
+                alatGambar.terapkanOpsiFib({ levels })
+              }
+              const tambahLevel = (v: number) => {
+                if (!Number.isFinite(v) || of.levels.includes(v)) return
+                alatGambar.terapkanOpsiFib({ levels: [...of.levels, v].sort((a, b) => a - b) })
+              }
+              const CEPAT = [1.272, 1.414, 2, 3.618, 4.236].filter((v) => !of.levels.includes(v))
+              return (
+                <>
+                  <div className="grf-setel-baris" role="group" aria-label="Level Fibonacci">
+                    <span className="grf-setel-lbl">Level</span>
+                    <span className="grf-fib-level">
+                      {of.levels.map((lv, i) => (
+                        /* key ikut NILAI: input uncontrolled (defaultValue)
+                           supaya "1.272" bisa diketik utuh tanpa direbut
+                           render; commit di blur/Enter, dan key baru me-
+                           remount input dengan nilai yang sudah sah. */
+                        <span key={`${i}-${lv}`} className="grf-fib-item">
+                          <input className="inp" type="number" step="0.001" defaultValue={lv}
+                            aria-label={`Level Fibonacci ${lv}`}
+                            onBlur={(e) => { const v = Number(e.target.value); if (v !== lv) ubahLevel(i, v) }}
+                            onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }} />
+                          <button type="button" className="chip-t" title={`Hapus level ${lv}`}
+                            aria-label={`Hapus level ${lv}`}
+                            onClick={() => alatGambar.terapkanOpsiFib({ levels: of.levels.filter((_, j) => j !== i) })}>
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </span>
+                  </div>
+                  <div className="grf-setel-baris" role="group" aria-label="Tambah level Fibonacci">
+                    <span className="grf-setel-lbl">Tambah</span>
+                    <span className="grf-fib-level">
+                      <input className="inp" type="number" step="0.001" placeholder="mis. 1.13"
+                        aria-label="Nilai level Fibonacci baru"
+                        onKeyDown={(e) => {
+                          if (e.key !== 'Enter') return
+                          const el = e.target as HTMLInputElement
+                          tambahLevel(Number(el.value))
+                          el.value = ''
+                        }} />
+                      {CEPAT.map((v) => (
+                        <button key={v} type="button" className="chip-t" title={`Tambah level ${v}`}
+                          onClick={() => tambahLevel(v)}>+{v}</button>
+                      ))}
+                    </span>
+                  </div>
+                  <div className="grf-setel-baris" role="group" aria-label="Opsi Fibonacci">
+                    <span className="grf-setel-lbl">Opsi</span>
+                    <span className="grf-setel-garis">
+                      {([
+                        ['extendLines', 'Perpanjang garis'],
+                        ['reverseDirection', 'Balik arah'],
+                        ['showPrices', 'Harga'],
+                        ['showPercentages', 'Persen'],
+                      ] as const).map(([k, label]) => (
+                        <button key={k} type="button" className={`chip-t${of[k] ? ' on' : ''}`}
+                          aria-pressed={of[k]}
+                          onClick={() => alatGambar.terapkanOpsiFib({ [k]: !of[k] })}>{label}</button>
+                      ))}
+                    </span>
+                  </div>
+                </>
+              )
+            })()}
           </ModalKecil>
         )
       })()}

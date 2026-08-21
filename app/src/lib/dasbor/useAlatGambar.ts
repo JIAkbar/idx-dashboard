@@ -162,6 +162,24 @@ export interface UseAlatGambar {
    *  komentar di badan fungsi) sekaligus mengingatnya sebagai bawaan gambar
    *  BERIKUTNYA. Tak berbuat apa-apa kalau tak ada yang terpilih. */
   terapkanGaya: (patch: Partial<GayaGambar>) => void
+  /** Opsi Fibonacci gambar TERPILIH — `null` kalau yang terpilih bukan
+   *  keluarga Fibonacci ber-level. Level BISA ditambah/diubah bebas (Johan
+   *  21 Agu 2026: "bisa tambahkan sendiri tidak hanya 100% bisa macem2"),
+   *  meniru dialog TV yang tiap barisnya nilai editable. */
+  opsiFibTerpilih: OpsiFib | null
+  terapkanOpsiFib: (patch: Partial<OpsiFib>) => void
+  /** Ada gambar terpilih SAAT INI — dibaca langsung dari manager, bukan dari
+   *  state React: dblclick tiba sebelum state seleksi sempat menyusul render. */
+  terpilihSekarang: () => boolean
+}
+
+/** Sub-set `FibRetracementOptions` pustaka yang dipajang di modal setelan. */
+export interface OpsiFib {
+  levels: number[]
+  showPrices: boolean
+  showPercentages: boolean
+  extendLines: boolean
+  reverseDirection: boolean
 }
 
 export function useAlatGambar(opts: {
@@ -181,6 +199,7 @@ export function useAlatGambar(opts: {
   const [adaTerpilih, setAdaTerpilih] = useState(false)
   const [magnet, setMagnetState] = useState<KeadaanMagnet>(bacaMagnetTersimpan)
   const [gayaTerpilih, setGayaTerpilih] = useState<DrawingStyle | null>(null)
+  const [opsiFibTerpilih, setOpsiFibTerpilih] = useState<OpsiFib | null>(null)
 
   const managerRef = useRef<Manager | null>(null)
   const alatAktifRef = useRef<string | null>(null)
@@ -302,6 +321,20 @@ export function useAlatGambar(opts: {
    *  berhenti, bukan tiap piksel antaranya. Tanpa ini seretan sebentar saja
    *  memicu puluhan `JSON.stringify`+`localStorage.setItem` yang tak berguna. */
   const tundaSimpanRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /** Duck-type keluarga Fibonacci: kelas mana pun yang memajang `fibOptions`
+   *  (FibRetracement/Extension/Channel dst.) ikut dapat editor levelnya. */
+  const bacaOpsiFib = (d: unknown): OpsiFib | null => {
+    if (!d || typeof d !== 'object' || !('fibOptions' in d)) return null
+    const o = (d as { fibOptions: Partial<OpsiFib> }).fibOptions
+    return {
+      levels: [...(o.levels ?? [])],
+      showPrices: o.showPrices ?? true,
+      showPercentages: o.showPercentages ?? true,
+      extendLines: o.extendLines ?? false,
+      reverseDirection: o.reverseDirection ?? false,
+    }
+  }
+
   const simpanSekarang = useCallback(() => {
     if (tundaSimpanRef.current) clearTimeout(tundaSimpanRef.current)
     tundaSimpanRef.current = setTimeout(() => {
@@ -349,6 +382,25 @@ export function useAlatGambar(opts: {
     setGayaTerpilih(dipilih.style)
     simpanSekarang()
   }, [simpanSekarang])
+
+  const terapkanOpsiFib = useCallback((patch: Partial<OpsiFib>) => {
+    const dipilih = managerRef.current?.getSelectedDrawing()
+    if (!dipilih || !('fibOptions' in dipilih)) return
+    type FibDrawing = { setFibOptions: (o: Partial<OpsiFib>) => void; updateOptions: (o: Record<string, unknown>) => void }
+    const fd = dipilih as unknown as FibDrawing
+    // DUA panggilan yang sama-sama wajib: `setFibOptions` yang merender ulang
+    // levelnya, tapi ia menyimpan di `_fibOptions` yang TIDAK ikut `toJSON()`
+    // (terukur di dist pustaka: konstruktor mencabut ruas fib dari `options`).
+    // `updateOptions` menaruh salinannya di `options` — satu-satunya yang
+    // diserialisasi — dan konstruktor memungutnya lagi saat impor. Tanpa yang
+    // kedua, level custom hilang setiap muat ulang halaman, tanpa galat.
+    fd.setFibOptions(patch)
+    fd.updateOptions(patch as Record<string, unknown>)
+    setOpsiFibTerpilih(bacaOpsiFib(dipilih))
+    simpanSekarang()
+  }, [simpanSekarang])
+
+  const terpilihSekarang = useCallback(() => managerRef.current?.getSelectedDrawing() != null, [])
 
   const pilihAlat = useCallback((id: string | null) => {
     if (id && !pustaka) {
@@ -405,9 +457,10 @@ export function useAlatGambar(opts: {
       manager.on('drawing:selected', () => {
         setAdaTerpilih(true)
         setGayaTerpilih(manager!.getSelectedDrawing()?.style ?? null)
+        setOpsiFibTerpilih(bacaOpsiFib(manager!.getSelectedDrawing()))
       })
-      manager.on('drawing:deselected', () => { setAdaTerpilih(false); setGayaTerpilih(null) })
-      manager.on('drawing:removed', () => { setAdaTerpilih(false); setGayaTerpilih(null) })
+      manager.on('drawing:deselected', () => { setAdaTerpilih(false); setGayaTerpilih(null); setOpsiFibTerpilih(null) })
+      manager.on('drawing:removed', () => { setAdaTerpilih(false); setGayaTerpilih(null); setOpsiFibTerpilih(null) })
       manager.on('drawing:added', simpanSekarang)
       manager.on('drawing:removed', simpanSekarang)
       manager.on('drawing:updated', simpanSekarang)
@@ -426,8 +479,25 @@ export function useAlatGambar(opts: {
     if (!manager || !pustaka) return
     manager.clearAll()
     const registry = pustaka.getToolRegistry()
-    const factory = (type: string, data: SerializedDrawing) =>
-      registry.createDrawing(type, data.id, data.anchors, data.style, data.options)
+    const factory = (type: string, data: SerializedDrawing) => {
+      const d = registry.createDrawing(type, data.id, data.anchors, data.style, data.options)
+      // Konstruktor keluarga Fibonacci MENCABUT ruas fib (levels dkk.) dari
+      // options ke _fibOptions internal yang tak ikut toJSON() — tanpa
+      // suntikan balik ini, simpanan berikutnya (drawing:added memicu
+      // simpanSekarang) menimpa localStorage TANPA level custom dan setelan
+      // pembaca lenyap diam-diam di reload kedua. Terukur 21 Agu 2026.
+      if (d && 'fibOptions' in d && data.options) {
+        const o = data.options as Record<string, unknown>
+        const fib: Record<string, unknown> = {}
+        for (const k of ['levels', 'showPrices', 'showPercentages', 'extendLines', 'reverseDirection']) {
+          if (o[k] !== undefined) fib[k] = o[k]
+        }
+        if (Object.keys(fib).length > 0) {
+          (d as unknown as { updateOptions: (x: Record<string, unknown>) => void }).updateOptions(fib)
+        }
+      }
+      return d
+    }
     const serial: SerializedDrawing[] = bacaGambarTersimpan(kode).map((g) => ({
       id: g.id,
       type: g.type,
@@ -690,5 +760,6 @@ export function useAlatGambar(opts: {
   return {
     pustaka, galat, alatAktif, pilihAlat, adaTerpilih, hapusTerpilih, mintaPustaka,
     magnet, sikluskanMagnet, gayaTerpilih, terapkanGaya,
+    opsiFibTerpilih, terapkanOpsiFib, terpilihSekarang,
   }
 }
