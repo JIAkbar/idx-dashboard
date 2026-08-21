@@ -18,6 +18,7 @@ import {
   bacaTemplateTersimpan, tulisTemplateTersimpan, simpanTemplate, hapusTemplate,
   tandaiBawaan, ubahNamaTemplate, tutupSampai, penandaDiSekitar,
   hitungPenandaInstans, type PenandaSiapGambar,
+  hitungSegmenInstans, hitungLilinInstans, type LilinSiapGambar,
   warnaGrid, gridDariTemplate, GRID_BAWAAN, type SetelanGrid,
   type BerkasOhlcEmiten, type DoubleBottom, type JenisAsli, type JenisIndikator, type JenisPola,
   type LilinData, type ParamDoubleBottom, type ParamLonjakanVolume, type StatusPola, type StatusLonjakan,
@@ -1492,10 +1493,9 @@ export function GrafikEmiten() {
    *
    * Entri semacam ini `plotConfig`-nya kosong, jadi jalur garis biasa
    * melewatkannya begitu saja: ia masuk menu, dipilih, lalu tak menggambar
-   * apa pun. Dua entri lain yang senasib — Volume Delta dan Zig Zag —
-   * SENGAJA tak ikut: keluarannya deret LILIN dan segmen garis dua titik,
-   * bukan penanda, dan memaksakannya jadi titik akan membuang justru bagian
-   * yang membuat keduanya berarti.
+   * apa pun. Dua entri lain yang senasib — Volume Delta dan Zig Zag — punya
+   * bentuk keluaran yang BERBEDA (deret lilin dan segmen garis dua titik),
+   * jadi mereka lewat dua memo di bawah, bukan dipaksakan jadi penanda titik.
    */
   const penandaIndikator = useMemo<PenandaSiapGambar[]>(() => {
     const vol = volume.map((v) => v.value)
@@ -1505,6 +1505,32 @@ export function GrafikEmiten() {
       out.push(...hitungPenandaInstans(inst, lilin, vol, katalog))
     }
     return out
+  }, [ind.daftar, lilin, volume, katalog, digambar])
+
+  /**
+   * Zig Zag: segmen pivot dirangkai jadi SATU deret titik berlubang (B30).
+   *
+   * Lubangnya disengaja — `LineSeries` menyambung dua titik berjauhan dengan
+   * garis lurus, dan justru itu bentuk zigzag. Menggambar tiap segmen sebagai
+   * seri sendiri akan benar rupanya dan mahal ongkosnya: 145 seri untuk satu
+   * indikator.
+   */
+  const segmenIndikator = useMemo(() => {
+    const vol = volume.map((v) => v.value)
+    return ind.daftar
+      .filter((inst) => digambar(inst))
+      .map((inst) => ({ inst, titik: hitungSegmenInstans(inst, lilin, vol, katalog) }))
+      .filter((x) => x.titik.length > 0)
+  }, [ind.daftar, lilin, volume, katalog, digambar])
+
+  /** Volume Delta: deret LILIN berskala volume, digambar sebagai seri
+   *  candlestick di panelnya sendiri. */
+  const lilinIndikator = useMemo(() => {
+    const vol = volume.map((v) => v.value)
+    return ind.daftar
+      .filter((inst) => digambar(inst))
+      .map((inst) => ({ inst, data: hitungLilinInstans(inst, lilin, vol, katalog) }))
+      .filter((x): x is { inst: typeof x.inst; data: LilinSiapGambar[] } => x.data.length > 0)
   }, [ind.daftar, lilin, volume, katalog, digambar])
 
   /**
@@ -1810,6 +1836,49 @@ export function GrafikEmiten() {
       }
     }
 
+    // Zig Zag — satu garis per instans, di panel yang sama dengan indikator
+    // lainnya. `lastValueVisible` mati: nilai terakhir zigzag itu pivot, bukan
+    // harga berjalan, dan lencananya akan berdesakan dengan lencana harga.
+    for (const { inst, titik } of segmenIndikator) {
+      const pane = panePerInstans.get(inst.id)
+      if (pane === undefined) continue
+      pastikanPane(pane)
+      const s = chart.addSeries(
+        LineSeries,
+        {
+          color: baca(inst.warna),
+          lineWidth: (inst.gaya?.[0]?.tebal ?? 2) as LineWidth,
+          priceLineVisible: false,
+          lastValueVisible: false,
+          crosshairMarkerVisible: false,
+        },
+        pane,
+      )
+      s.setData(keChart(titik))
+      seriIndRef.current.push(s)
+    }
+
+    // Volume Delta — seri lilin di panelnya sendiri. Warnanya diambil dari
+    // TEMA kita (naik/turun), bukan dari `color` bawaan pustaka: warna pustaka
+    // tetap merah/hijau versinya sendiri dan akan menabrak palet halaman di
+    // tema terang.
+    for (const { inst, data } of lilinIndikator) {
+      const pane = panePerInstans.get(inst.id)
+      if (pane === undefined) continue
+      pastikanPane(pane)
+      const s = chart.addSeries(
+        CandlestickSeries,
+        {
+          upColor: green, downColor: red, borderVisible: false,
+          wickUpColor: green, wickDownColor: red,
+          priceLineVisible: false,
+        },
+        pane,
+      )
+      s.setData(keChart(data))
+      seriIndRef.current.push(s)
+    }
+
     // Panel harga tetap yang paling besar — tanpa ini pane RSI/MACD sama
     // tingginya dengan panel harga (stretch factor bawaan sama-sama 1).
     // Panel yang DILIPAT (`^` di legendanya) dikecilkan jadi bilah tipis,
@@ -1821,7 +1890,8 @@ export function GrafikEmiten() {
     // Diukur SESUDAH tata letak dihitung ulang, bukan di baris yang sama —
     // tinggi pane baru belum berlaku pada saat setStretchFactor kembali.
     requestAnimationFrame(ukurPane)
-  }, [garisPerInstans, panePerInstans, theme, ukurPane, keChart, paneTerlipat, pastikanPane])
+  }, [garisPerInstans, segmenIndikator, lilinIndikator, panePerInstans, theme, ukurPane, keChart,
+      paneTerlipat, pastikanPane])
 
   // Volume dipindah, BUKAN dibuat ulang: `moveToPane` memindahkan seri beserta
   // datanya, sementara membuat ulang berarti mengunduh & menyusun 900-an titik

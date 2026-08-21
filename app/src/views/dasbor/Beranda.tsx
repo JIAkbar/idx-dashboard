@@ -10,6 +10,7 @@ import { useKabar, waktuKabar } from '../../lib/dasbor/kabar'
 import { rangkumHari } from '../../lib/dasbor/ringkasHarian'
 import { useBulletinList, tipeEdisi } from '../../lib/dasbor/bulletin'
 import { PanelBreadth } from '../../components/dasbor/PanelBreadth'
+import { PanelDiary } from '../../components/dasbor/PanelDiary'
 import { PapanIhsg } from './IndeksDunia'
 import { IkonMenu, IKON_KUNCI, IKON_PANAH_KANAN } from '../../components/dasbor/IkonMenu'
 // Gaya baris kabar (.kbr-*) hidup di Kabar.css dan dipakai juga di sini.
@@ -238,6 +239,11 @@ export function Beranda() {
       <RingkasanPasar />
 
       <PanelBreadth />
+
+      {/* Diary Pasar tepat sesudah breadth: keduanya menjawab pertanyaan yang
+          sama dari dua sisi — breadth "hari INI mayoritas saham ke mana",
+          diary "SEBULAN ini pasarnya lebih sering naik atau turun". */}
+      <PanelDiary />
 
       <KartuKabar />
 

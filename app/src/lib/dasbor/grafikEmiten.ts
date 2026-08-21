@@ -5,7 +5,7 @@
  * satu baris = [tanggal, buka, tinggi, rendah, tutup, volume].
  */
 import type { Bar } from 'oakscriptjs'
-import type { Katalog, PenandaMentah } from './katalogIndikator'
+import type { Katalog, LilinMentah, PenandaMentah, SegmenMentah } from './katalogIndikator'
 import type { BarisOhlc } from './ihsgOhlc'
 import { HARI, ringkasHarian, vonisUji, type RingkasHari } from '../seasonality'
 import { keEpoch } from './kerangkaWaktu'
@@ -480,6 +480,101 @@ export function hitungPenandaInstans(
   const e = katalog?.get(idKatalog)
   if (!e?.hitungPenanda || !lilin.length) return []
   return penandaPustaka(lilin, volume, (bars) => e.hitungPenanda!(bars, inst.param))
+}
+
+/** Satu lilin siap gambar — waktunya sudah bentuk internal PAPAN. */
+export interface LilinSiapGambar {
+  time: string
+  open: number
+  high: number
+  low: number
+  close: number
+  color?: string
+}
+
+/**
+ * Segmen zigzag pustaka -> SATU deret titik.
+ *
+ * `lines` datang sebagai 145 segmen dua-titik yang bersambung: akhir segmen
+ * ke-n selalu titik awal segmen ke-n+1. Menggambarnya sebagai 145 seri garis
+ * terpisah akan benar secara rupa dan salah secara ongkos — jadi yang diambil
+ * titik AWAL tiap segmen, ditutup titik akhir segmen terakhir.
+ *
+ * Deret ini punya lubang (cuma pivot yang berisi), dan itu memang yang
+ * diinginkan: `LineSeries` menyambung titik yang berjauhan dengan garis lurus,
+ * persis bentuk zigzag.
+ */
+export function pivotPustaka(
+  lilin: LilinData[],
+  volume: number[],
+  hitung: (bars: Bar[]) => SegmenMentah[],
+): TitikGaris[] {
+  if (!lilin.length) return []
+  const { bars, indeks } = barsPustaka(lilin, volume)
+  const segmen = hitung(bars)
+  if (!segmen.length) return []
+  const keluar: TitikGaris[] = []
+  const tambah = (t: unknown, harga: number) => {
+    const i = indeks.get(Number(t))
+    if (i === undefined || !Number.isFinite(harga)) return
+    // Pustaka bisa mengulang titik yang sama di ujung dua segmen berurutan;
+    // lightweight-charts menolak deret berwaktu kembar.
+    if (keluar.length && keluar[keluar.length - 1].time === lilin[i].time) return
+    keluar.push({ time: lilin[i].time, value: harga })
+  }
+  for (const g of segmen) tambah(g.time1, g.price1)
+  const akhir = segmen[segmen.length - 1]
+  tambah(akhir.time2, akhir.price2)
+  return keluar
+}
+
+/** Deret lilin pustaka -> lilin siap gambar. Sama perannya dengan
+ *  `plotPustaka`/`penandaPustaka`; waktu yang tak cocok satu lilin pun
+ *  dibuang, bukan diteruskan sebagai waktu asing. */
+export function lilinPustaka(
+  lilin: LilinData[],
+  volume: number[],
+  hitung: (bars: Bar[]) => LilinMentah[],
+): LilinSiapGambar[] {
+  if (!lilin.length) return []
+  const { bars, indeks } = barsPustaka(lilin, volume)
+  const keluar: LilinSiapGambar[] = []
+  for (const l of hitung(bars)) {
+    const i = indeks.get(Number(l.time))
+    if (i === undefined) continue
+    if (![l.open, l.high, l.low, l.close].every((v) => typeof v === 'number' && Number.isFinite(v))) continue
+    keluar.push({ time: lilin[i].time, open: l.open, high: l.high, low: l.low, close: l.close, color: l.color })
+  }
+  return keluar
+}
+
+/** Segmen zigzag sebuah instans katalog. Array kosong untuk instans jenis
+ *  lain — pemanggil tak perlu tahu bentuk keluarannya lebih dulu. */
+export function hitungSegmenInstans(
+  inst: InstansIndikator,
+  lilin: LilinData[],
+  volume: number[],
+  katalog?: Katalog | null,
+): TitikGaris[] {
+  const idKatalog = idPustaka(inst.jenis)
+  if (idKatalog === null) return []
+  const e = katalog?.get(idKatalog)
+  if (!e?.hitungSegmen || !lilin.length) return []
+  return pivotPustaka(lilin, volume, (bars) => e.hitungSegmen!(bars, inst.param))
+}
+
+/** Deret lilin sebuah instans katalog (volume-delta). */
+export function hitungLilinInstans(
+  inst: InstansIndikator,
+  lilin: LilinData[],
+  volume: number[],
+  katalog?: Katalog | null,
+): LilinSiapGambar[] {
+  const idKatalog = idPustaka(inst.jenis)
+  if (idKatalog === null) return []
+  const e = katalog?.get(idKatalog)
+  if (!e?.hitungLilin || !lilin.length) return []
+  return lilinPustaka(lilin, volume, (bars) => e.hitungLilin!(bars, inst.param))
 }
 
 export function keSeriGaris(waktu: string[], nilai: Array<number | null>): TitikGaris[] {

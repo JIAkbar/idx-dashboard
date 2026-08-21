@@ -9,13 +9,14 @@ import {
   hitungOBV, cariLonjakanVolume, cariMusiman, SPEK_POLA, labelInstansPola,
   cariDivergensi, stochUntukDivergensi,
   cariWyckoff, faseWyckoffDi, URUT_FASE, cariHarmonik, zigzagPivot, RASIO_HARMONIK,
+  pivotPustaka, lilinPustaka,
   VERSI_TEMPLATE, uraiTemplate, simpanTemplate, hapusTemplate, tandaiBawaan, ubahNamaTemplate,
   penandaDiSekitar, tutupSampai,
   type InstansIndikator, type SpekParam, type LilinData, type ParamDoubleBottom,
   type TemplateGrafik, type ParamLonjakanVolume, type ParamDivergensi,
   type BerkasOhlcEmiten, type ParamWyckoff, type ParamHarmonik, type FaseWyckoff,
 } from './grafikEmiten'
-import { muatKatalog, keSpekParam, keMasukanPustaka, ID_SUDAH_ADA, ID_PENANDA, KATEGORI } from './katalogIndikator'
+import { muatKatalog, keSpekParam, keMasukanPustaka, ID_SUDAH_ADA, ID_LILIN, ID_PENANDA, ID_PIVOT, KATEGORI } from './katalogIndikator'
 import type { BarisOhlc } from './ihsgOhlc'
 
 const baris: BarisOhlc[] = [
@@ -1150,16 +1151,26 @@ describe('katalogIndikator', () => {
       expect(e.kategori).toBeTruthy()
       expect(e.judulPlot).toHaveLength(e.kunciPlot.length)
       expect(typeof e.diPanelHarga).toBe('boolean')
-      // Entri `ID_PENANDA` (B30) sengaja tanpa deret — keluarannya penanda,
-      // bukan garis, jadi `judulPlot`/`kunciPlot` kosong itu BENAR untuknya,
-      // bukan cacat. Seluruh entri lain tetap wajib punya deret seperti
-      // sebelumnya.
+      // Tiga kelompok entri sengaja tanpa deret — keluarannya penanda, segmen
+      // garis, atau lilin, jadi `judulPlot`/`kunciPlot` kosong itu BENAR untuk
+      // mereka, bukan cacat (B30). Seluruh entri lain tetap wajib punya deret.
+      // Yang dijaga uji ini: tiap entri tanpa deret HARUS punya tepat satu
+      // penggantinya — entri tanpa deret DAN tanpa penggambar akan masuk menu,
+      // dipilih, lalu tak menggambar apa pun tanpa satu pun galat.
       if (ID_PENANDA.has(e.id)) {
         expect(e.judulPlot).toHaveLength(0)
         expect(typeof e.hitungPenanda).toBe('function')
+      } else if (ID_PIVOT.has(e.id)) {
+        expect(e.judulPlot).toHaveLength(0)
+        expect(typeof e.hitungSegmen).toBe('function')
+      } else if (ID_LILIN.has(e.id)) {
+        expect(e.judulPlot).toHaveLength(0)
+        expect(typeof e.hitungLilin).toBe('function')
       } else {
         expect(e.judulPlot.length).toBeGreaterThan(0)
         expect(e.hitungPenanda).toBeUndefined()
+        expect(e.hitungSegmen).toBeUndefined()
+        expect(e.hitungLilin).toBeUndefined()
       }
     }
   })
@@ -1234,6 +1245,46 @@ describe('katalogIndikator', () => {
     // Jenis karangan yang BUKAN `p:` tetap ditolak seperti sebelumnya.
     const palsu = JSON.stringify([{ ...t[0], indikator: [{ ...t[0].indikator[0], jenis: 'entahapa' }] }])
     expect(uraiTemplate(palsu)).toEqual([])
+  })
+})
+
+describe('Zig Zag & Volume Delta — dua bentuk keluaran pustaka yang bukan deret (B30)', () => {
+  const lilin = lilinUji(400)
+  const vol = lilin.map((_, i) => 1_000_000 + i * 1000)
+
+  it('zigzag: segmen bersambung jadi SATU deret titik, tanpa waktu kembar', async () => {
+    const e = (await muatKatalog()).get('zigzag')!
+    expect(typeof e.hitungSegmen).toBe('function')
+    const titik = pivotPustaka(lilin, vol, (bars) => e.hitungSegmen!(bars, {}))
+    expect(titik.length).toBeGreaterThan(0)
+    // Tiap titik jatuh di lilin yang ADA — waktu asing dibuang, bukan
+    // diteruskan sebagai waktu yang tak dikenal kanvas.
+    const waktuSah = new Set(lilin.map((l) => l.time))
+    for (const t of titik) expect(waktuSah.has(t.time)).toBe(true)
+    // Waktu kembar akan ditolak lightweight-charts, dan ujung dua segmen
+    // berurutan memang titik yang SAMA — itu yang disaring `pivotPustaka`.
+    expect(new Set(titik.map((t) => t.time)).size).toBe(titik.length)
+    // Berlubang itu benar: kalau tiap lilin terisi, ini bukan zigzag lagi
+    // melainkan garis harga biasa.
+    expect(titik.length).toBeLessThan(lilin.length)
+    // Urut menaik — LineSeries menolak deret yang waktunya mundur.
+    for (let i = 1; i < titik.length; i++) expect(titik[i].time > titik[i - 1].time).toBe(true)
+  })
+
+  it('volume-delta: deret LILIN yang sah, bukan deret angka', async () => {
+    const e = (await muatKatalog()).get('volume-delta')!
+    expect(typeof e.hitungLilin).toBe('function')
+    const data = lilinPustaka(lilin, vol, (bars) => e.hitungLilin!(bars, {}))
+    expect(data.length).toBeGreaterThan(0)
+    for (const d of data) {
+      expect(Number.isFinite(d.open) && Number.isFinite(d.close)).toBe(true)
+      expect(d.high).toBeGreaterThanOrEqual(d.low)
+    }
+  })
+
+  it('deret kosong tak melempar', () => {
+    expect(pivotPustaka([], [], () => [])).toEqual([])
+    expect(lilinPustaka([], [], () => [])).toEqual([])
   })
 })
 

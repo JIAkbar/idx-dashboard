@@ -78,6 +78,11 @@ interface EntriRegistry {
     // mengembalikannya PERSIS bentuk `SeriesMarker` pustaka kanvas. Opsional
     // karena mayoritas entri (deret) tak punya ruas ini sama sekali.
     markers?: PenandaMentah[]
+    /** `zigzag` (B30): segmen garis dua titik yang BERSAMBUNG — akhir segmen
+     *  ke-n selalu sama dengan awal segmen ke-n+1. */
+    lines?: SegmenMentah[]
+    /** `volume-delta` (B30): deret LILIN berskala volume, bukan deret angka. */
+    plotCandles?: Record<string, LilinMentah[]>
   }
 }
 
@@ -91,6 +96,29 @@ export interface PenandaMentah {
   shape: string
   color: string
   size?: number
+}
+
+/** Satu segmen garis mentah dari pustaka (`zigzag.lines`). Waktu masih epoch
+ *  detik pustaka; pemetaan balik ke lilin ada di `pivotPustaka`. */
+export interface SegmenMentah {
+  time1: unknown
+  price1: number
+  time2: unknown
+  price2: number
+  color?: string
+  width?: number
+}
+
+/** Satu lilin mentah dari pustaka (`volume-delta.plotCandles.delta`). */
+export interface LilinMentah {
+  time: unknown
+  open: number
+  high: number
+  low: number
+  close: number
+  color?: string
+  borderColor?: string
+  wickColor?: string
 }
 
 export interface EntriKatalog {
@@ -114,6 +142,11 @@ export interface EntriKatalog {
    *  `PenandaMentah[]`, waktu masih epoch pustaka; `grafikEmiten.ts` yang
    *  memetakannya balik ke lilin lewat `penandaPustaka`. */
   hitungPenanda?: (bars: unknown[], param: Record<string, number>) => PenandaMentah[]
+  /** Cuma terisi untuk `ID_PIVOT` (`zigzag`). Segmen bersambung; penggambar
+   *  merangkainya jadi SATU garis, bukan 145 seri terpisah. */
+  hitungSegmen?: (bars: unknown[], param: Record<string, number>) => SegmenMentah[]
+  /** Cuma terisi untuk `ID_LILIN` (`volume-delta`). */
+  hitungLilin?: (bars: unknown[], param: Record<string, number>) => LilinMentah[]
 }
 
 export type Katalog = Map<string, EntriKatalog>
@@ -146,17 +179,28 @@ export const KATEGORI: Array<[inggris: string, indonesia: string]> = [
  * lewat jalur ini:
  *
  * - `volume-delta` mengembalikan `plotCandles.delta`: deret LILIN (open/high/
- *   low/close/color) berskala volume, bukan penanda titik. Butuh seri
- *   candlestick sendiri di pane sendiri — jenis kendali yang tak ada di
- *   kanvas ini sama sekali, bukan cuma "belum dipasang penandanya".
+ *   low/close/color) berskala volume, bukan penanda titik.
  * - `zigzag` mengembalikan `pivots`/`lines`/`labels`: SEGMEN garis dua titik
  *   + teks. Markernya sendiri (titik pivot) sah, tapi tanpa garis
  *   penghubungnya bukan lagi zigzag — cuma titik-titik lepas yang bentuknya
  *   menyesatkan (terlihat seperti pola acak, bukan tren berbelok).
  *
- * Keduanya tercatat di sini supaya jelas KENAPA absen, bukan lupa disaring.
+ * Dua yang terakhir sempat DITOLAK karena kanvas ini belum punya jalur untuk
+ * bentuknya. Jalur itu sekarang ada — garis pola divergensi membuka jalan seri
+ * garis tambahan, dan panel volume yang berdiri sendiri membuka jalan seri
+ * lilin di pane sendiri — jadi keduanya masuk lewat pintunya masing-masing di
+ * bawah, bukan dipaksakan jadi penanda titik.
  */
 export const ID_PENANDA: ReadonlySet<string> = new Set(['williams-fractals'])
+
+/** Keluarannya SEGMEN garis bersambung (`lines`), dirangkai jadi satu garis
+ *  di panel harga. */
+export const ID_PIVOT: ReadonlySet<string> = new Set(['zigzag'])
+
+/** Keluarannya deret LILIN (`plotCandles`), digambar sebagai seri candlestick
+ *  di panel sendiri. Kunci deretnya diambil apa adanya dari `plotCandles` —
+ *  yang pertama yang dipakai. */
+export const ID_LILIN: ReadonlySet<string> = new Set(['volume-delta'])
 
 /**
  * Id pustaka yang TIDAK dimasukkan ke katalog karena PAPAN sudah punya
@@ -283,6 +327,27 @@ export function keEntriKatalog(e: EntriRegistry): EntriKatalog | null {
       kunciPlot: [],
       hitung: (bars, param) => e.calculate(bars, keMasukanPustaka(ruas, param)),
       hitungPenanda: (bars, param) => e.calculate(bars, keMasukanPustaka(ruas, param)).markers ?? [],
+    }
+  }
+  if (ID_PIVOT.has(e.id)) {
+    return {
+      ...dasar,
+      judulPlot: [],
+      kunciPlot: [],
+      hitung: (bars, param) => e.calculate(bars, keMasukanPustaka(ruas, param)),
+      hitungSegmen: (bars, param) => e.calculate(bars, keMasukanPustaka(ruas, param)).lines ?? [],
+    }
+  }
+  if (ID_LILIN.has(e.id)) {
+    return {
+      ...dasar,
+      judulPlot: [],
+      kunciPlot: [],
+      hitung: (bars, param) => e.calculate(bars, keMasukanPustaka(ruas, param)),
+      hitungLilin: (bars, param) => {
+        const c = e.calculate(bars, keMasukanPustaka(ruas, param)).plotCandles ?? {}
+        return Object.values(c)[0] ?? []
+      },
     }
   }
   return null

@@ -306,3 +306,117 @@
   /* Jarak antar kolom dirapatkan karena isinya kini pendek. */
   .lantai .brd-kabar-kolom { gap: 14px; }
 }
+
+/* ------------------------------------------------------------------ *
+ * Diary Pasar — kalender IHSG berwarna + tally + performa.
+ *
+ * Idenya dari tangkapan layar RTI Business (`data ide/`, 21 Agu 2026).
+ * Dua kolom di layar lebar, bertumpuk di ponsel.
+ * ------------------------------------------------------------------ */
+.lantai .dia-isi {
+  display: grid;
+  /* minmax(0,…) WAJIB di kedua kolom — kolom `auto` melebar mengikuti anak
+     terlebar dan `.dasbor-main` memotong, bukan menggulung (aturan proyek). */
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.lantai .dia-nav {
+  /* Panah dan nama bulan satu kelompok — `panel-h` memakai space-between,
+     jadi tanpa pembungkus ini panahnya terlempar ke dua ujung panel dan
+     tak lagi terbaca sebagai kendali untuk nama di tengahnya. */
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+.lantai .dia-bulan-nama {
+  font-size: 12.5px;
+  color: var(--text2);
+  min-width: 108px;
+  text-align: center;
+}
+
+.lantai .dia-kal {
+  /* Dibatasi, bukan 100%: kolom kiri panel selebar ~700px membuat tiap sel
+     jadi 160px — kalender berubah jadi pita memanjang yang tak lagi terbaca
+     sebagai bulan. 300px memberi sel ~54x34, mendekati persegi. */
+  width: 100%;
+  max-width: 300px;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 3px;
+}
+.lantai .dia-kal th {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--text3);
+  padding-bottom: 2px;
+}
+.lantai .dia-sel {
+  /* Tinggi TETAP, bukan `aspect-ratio`: sel tabel mengabaikan aspect-ratio
+     (tinggi <td> ditentukan barisnya), jadi aturan itu gagal senyap dan
+     selnya memanjang mengikuti lebar panel. 34px sejajar dengan sel kalender
+     kompak yang sudah dipakai halaman lain, dan tetap di atas 24px minimum
+     agar angkanya terbaca di ponsel. */
+  height: 34px;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 4px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text2);
+  background: var(--bg3);
+}
+.lantai .dia-naik { background: var(--green); color: #fff; }
+.lantai .dia-turun { background: var(--red); color: #fff; }
+/* Datar & libur sengaja BEDA: datar itu hari yang diperdagangkan dan
+   berakhir di tempat, libur itu hari yang tak pernah dibuka sama sekali. */
+.lantai .dia-datar { background: var(--text3); color: var(--bg); opacity: 0.75; }
+.lantai .dia-libur { background: var(--bg3); color: var(--text3); opacity: 0.55; }
+.lantai .dia-kosong { background: none; }
+
+.lantai .dia-tally { margin-top: 12px; display: grid; gap: 6px; }
+.lantai .dia-tally-baris {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12.5px;
+}
+.lantai .dia-pil {
+  padding: 3px 9px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #fff;
+}
+.lantai .dia-pil.dia-naik { background: var(--green); }
+.lantai .dia-pil.dia-turun { background: var(--red); }
+.lantai .dia-bersih { border-top: 1px solid var(--line); padding-top: 7px; margin-top: 2px; }
+
+.lantai .dia-kanan { display: grid; gap: 5px; align-content: start; }
+.lantai .dia-perf {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 66px;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.lantai .dia-perf-lbl { color: var(--text2); }
+.lantai .dia-perf-bar {
+  height: 9px;
+  border-radius: 3px;
+  background: var(--bg3);
+  overflow: hidden;
+  display: block;
+}
+.lantai .dia-perf-bar i { display: block; height: 100%; border-radius: 3px; }
+.lantai .dia-perf-bar i.up { background: var(--green); }
+.lantai .dia-perf-bar i.down { background: var(--red); }
+.lantai .dia-perf-nilai { text-align: right; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 760px) {
+  /* Satu kolom: dua kolom di 412px membuat sel kalender menyusut di bawah
+     target sentuh dan angka performanya terpotong. */
+  .lantai .dia-isi { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+}
