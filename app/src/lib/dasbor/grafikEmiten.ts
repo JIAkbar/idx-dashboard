@@ -662,6 +662,19 @@ export interface Instans<J extends string> {
    * berarti "tampil di mana saja", bukan "tak tampil di mana pun".
    */
   sembunyiDi?: string[]
+  /**
+   * Tempat gambarnya: menumpang panel harga, atau panel sendiri (B29).
+   *
+   * `undefined` = ikut bawaan pustaka (`overlay` di registry), yaitu keadaan
+   * sebelum pembaca pernah memutuskan apa pun — jadi instans dan template
+   * lama tetap terbaca persis seperti sebelumnya.
+   *
+   * Disimpan sebagai PILIHAN, bukan nomor panel. Nomor panel basi begitu satu
+   * panel dihapus: `chart.panes()` memakai indeks, jadi membuang panel tengah
+   * menggeser semua indeks di bawahnya. Nomornya diturunkan saat menggambar
+   * dari urutan daftar, dan urutan itulah yang dinaik-turunkan pembaca.
+   */
+  panel?: 'harga' | 'sendiri'
 }
 
 /** Gaya sebuah plot tunggal di dalam satu instans. Semua opsional: yang tak

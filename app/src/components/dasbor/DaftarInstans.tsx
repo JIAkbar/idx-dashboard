@@ -37,6 +37,10 @@ export interface DaftarInstans<J extends string> {
   /** Instans "pabrik" sebuah jenis — isi tombol `Defaults` di modal. */
   bawaan: (jenis: J) => Instans<J>
   paramSpek: (jenis: J) => SpekParam[]
+  /** Tukar posisi dengan tetangga. Urutan daftar = urutan panel (B29). */
+  geser: (id: string, arah: -1 | 1, bolehTukar?: (x: Instans<J>) => boolean) => void
+  /** Menumpang panel harga, atau panel sendiri (B29). */
+  pindahPanel: (id: string, ke: 'harga' | 'sendiri') => void
 }
 
 export function useDaftarInstans<J extends string>(
@@ -81,10 +85,50 @@ export function useDaftarInstans<J extends string>(
     setDaftar((list) => list.map((x) => (x.id === baru.id ? baru : x)))
   }, [])
 
+  /**
+   * Tukar posisi satu instans dengan tetangganya (B29).
+   *
+   * URUTAN DAFTAR INI YANG MENENTUKAN URUTAN PANEL — panel indikator diberi
+   * nomor mengikuti urutan instans yang berpanel sendiri. Jadi "naik-turunkan
+   * panel" tak butuh model data kedua berisi nomor panel: cukup menukar
+   * posisinya di sini, dan penomorannya ikut sendiri.
+   *
+   * Itu bukan kebetulan melainkan sengaja. Menyimpan nomor panel sebagai
+   * angka di tiap instans berarti angka itu basi begitu satu panel dihapus:
+   * `chart.panes()` lightweight-charts memakai INDEKS, jadi membuang panel
+   * tengah menggeser semua indeks di bawahnya, dan daftar panel yang terlipat
+   * ikut menunjuk panel yang salah.
+   */
+  const geser = useCallback((id: string, arah: -1 | 1, bolehTukar?: (x: Instans<J>) => boolean) => {
+    setDaftar((list) => {
+      const i = list.findIndex((x) => x.id === id)
+      if (i < 0) return list
+      // Tetangga LANGSUNG belum tentu tetangga yang berarti. Instans yang
+      // menumpang panel harga tak punya nomor panel sendiri, jadi menukar
+      // posisi dengannya tak memindahkan panel siapa pun — tombolnya terlihat
+      // tak melakukan apa-apa. Ketahuan saat diuji di peramban: "Naikkan
+      // MACD" pada susunan [MA sendiri, RSI di harga, MACD sendiri] menukar
+      // MACD dengan RSI, dan nomor panel keduanya tetap sama persis.
+      let j = i + arah
+      while (j >= 0 && j < list.length && bolehTukar && !bolehTukar(list[j])) j += arah
+      if (j < 0 || j >= list.length) return list
+      const salinan = [...list]
+      ;[salinan[i], salinan[j]] = [salinan[j], salinan[i]]
+      return salinan
+    })
+  }, [])
+
+  /** Pindah antara menumpang panel harga dan panel sendiri (B29). `undefined`
+   *  berarti ikut bawaan pustaka (`overlay`), yaitu keadaan sebelum pembaca
+   *  pernah memutuskan apa pun. */
+  const pindahPanel = useCallback((id: string, ke: 'harga' | 'sendiri') => {
+    setDaftar((list) => list.map((x) => (x.id === id ? { ...x, panel: ke } : x)))
+  }, [])
+
   const bawaan = useCallback(
     (jenis: J) => buatInstans(jenis, paramSpek(jenis), idBaru(), 0),
     [paramSpek],
   )
 
-  return { daftar, gantiSemua, tambah, hapus, sakelarTampil, terapkan, bawaan, paramSpek }
+  return { daftar, gantiSemua, tambah, hapus, sakelarTampil, terapkan, bawaan, paramSpek, geser, pindahPanel }
 }

@@ -1762,3 +1762,81 @@ describe('indikator pustaka pada kerangka intraday', () => {
     expect(b.filter((v) => v !== null).length).toBeGreaterThan(0)
   })
 })
+
+
+/**
+ * B29 — indikator bisa pindah panel, dan urutan panel bisa dinaik-turunkan.
+ *
+ * Yang diuji di sini BUKAN tombolnya melainkan aturan penomorannya, karena di
+ * situ letak jebakannya: nomor panel diturunkan dari URUTAN DAFTAR, tidak
+ * pernah disimpan. Kalau kelak seseorang menyimpannya sebagai angka di tiap
+ * instans, uji ini yang menunjukkan apa yang rusak — membuang panel tengah
+ * menggeser semua indeks di bawahnya karena `chart.panes()` memakai indeks.
+ */
+describe('penomoran panel indikator (B29)', () => {
+  /** Salinan aturan yang dipakai `panePerInstans` di GrafikEmiten.tsx. */
+  const nomorPanel = (
+    daftar: Array<{ id: string; panel?: 'harga' | 'sendiri'; bawaanDiHarga: boolean; tampil?: boolean }>,
+  ): Map<string, number> => {
+    const peta = new Map<string, number>()
+    let berikut = 1
+    for (const i of daftar) {
+      if (i.tampil === false) continue
+      const diHarga = i.panel === 'harga' ? true : i.panel === 'sendiri' ? false : i.bawaanDiHarga
+      peta.set(i.id, diHarga ? 0 : berikut++)
+    }
+    return peta
+  }
+
+  it('tanpa pilihan pembaca, bawaan pustaka yang berlaku', () => {
+    const p = nomorPanel([
+      { id: 'ma', bawaanDiHarga: true },
+      { id: 'rsi', bawaanDiHarga: false },
+    ])
+    expect(p.get('ma')).toBe(0)
+    expect(p.get('rsi')).toBe(1)
+  })
+
+  it('pilihan pembaca MENANG atas bawaan, dua arah', () => {
+    const p = nomorPanel([
+      { id: 'ma', bawaanDiHarga: true, panel: 'sendiri' },
+      { id: 'rsi', bawaanDiHarga: false, panel: 'harga' },
+    ])
+    expect(p.get('ma')).toBe(1)
+    expect(p.get('rsi')).toBe(0)
+  })
+
+  it('urutan daftar menentukan urutan panel — menukar posisi menukar panelnya', () => {
+    const a = [
+      { id: 'rsi', bawaanDiHarga: false },
+      { id: 'macd', bawaanDiHarga: false },
+    ]
+    expect(nomorPanel(a).get('rsi')).toBe(1)
+    expect(nomorPanel(a).get('macd')).toBe(2)
+    const ditukar = [a[1], a[0]]
+    expect(nomorPanel(ditukar).get('macd')).toBe(1)
+    expect(nomorPanel(ditukar).get('rsi')).toBe(2)
+  })
+
+  it('membuang panel tengah TIDAK meninggalkan lubang — inilah alasan nomornya tak disimpan', () => {
+    const tiga = [
+      { id: 'a', bawaanDiHarga: false },
+      { id: 'b', bawaanDiHarga: false },
+      { id: 'c', bawaanDiHarga: false },
+    ]
+    expect([...nomorPanel(tiga).values()]).toEqual([1, 2, 3])
+    const tanpaB = tiga.filter((x) => x.id !== 'b')
+    // `c` NAIK jadi 2. Nomor yang disimpan akan tetap menunjuk 3 — panel yang
+    // sudah tak ada.
+    expect(nomorPanel(tanpaB).get('c')).toBe(2)
+  })
+
+  it('yang seluruhnya menumpang panel harga tak pernah membuat panel baru', () => {
+    const p = nomorPanel([
+      { id: 'ma', bawaanDiHarga: true },
+      { id: 'ema', bawaanDiHarga: true },
+      { id: 'bb', bawaanDiHarga: true },
+    ])
+    expect([...p.values()]).toEqual([0, 0, 0])
+  })
+})

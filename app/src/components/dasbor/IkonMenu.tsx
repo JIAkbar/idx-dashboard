@@ -84,3 +84,10 @@ export const IKON_FIBONACCI = 'M3 5h18M3 9h13M3 13h18M3 17h8M3 21h18' // lima ga
 export const IKON_PERSEGI = 'M4 6h16v12H4z' // rectangle
 export const IKON_TEKS = 'M5 5h14M12 5v14M8 19h8' // huruf T bertumpu
 export const IKON_KUAS = 'M18.4 3c.9 0 1.6.7 1.6 1.6 0 .4-.2.8-.5 1.1L11 14.2l-3.2-3.2 8.5-8.5c.3-.3.7-.5 1.1-.5zM7 12l-3.5 8.5S6 20 8 18l3-3' // kuas — freehand
+
+/** Panah tegak — memindahkan urutan panel indikator (B29). Sengaja panah
+ *  polos, bukan chevron: chevron sudah dipakai Dropdown dan tombol lipat
+ *  panel, dan tiga arti berbeda dengan satu bentuk membuat legenda terbaca
+ *  seperti kumpulan tombol yang sama. */
+export const IKON_PANAH_ATAS = 'M12 19V5M6 11l6-6 6 6'
+export const IKON_PANAH_BAWAH = 'M12 5v14M6 13l6 6 6-6'

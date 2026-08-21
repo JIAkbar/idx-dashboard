@@ -49,7 +49,7 @@ import { keFraksi } from '../../lib/fraksiHarga'
 import {
   IkonMenu, IKON_CARI, IKON_SILANG, IKON_INFO, IKON_TONG, IKON_MATA,
   IKON_MATA_CORET, IKON_GIR, IKON_LILIN, IKON_GRAFIK_NAIK, IKON_KAMERA,
-  IKON_ULANG, IKON_PUTAR, IKON_JEDA, IKON_KOTAK_ARSIP,
+  IKON_ULANG, IKON_PUTAR, IKON_JEDA, IKON_KOTAK_ARSIP, IKON_PANAH_ATAS, IKON_PANAH_BAWAH,
 } from '../../components/dasbor/IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 import './GrafikEmiten.css'
@@ -1567,7 +1567,15 @@ export function GrafikEmiten() {
       // (bukan menumpang di panel harga): salah menaruh osilator 0-100 di
       // skala rupiah membuatnya rata di dasar kanvas dan terlihat seperti
       // indikator rusak; sebaliknya panel kosong sesaat cuma terlihat lengang.
-      peta.set(inst.id, spekJenis(inst.jenis, katalog)?.diPanelHarga ? 0 : berikut++)
+      // Pilihan pembaca menang atas bawaan pustaka (B29). `panel` yang tak
+      // disetel berarti belum pernah diputuskan — di situ `overlay` registry
+      // yang berlaku, persis seperti sebelum fitur ini ada.
+      const diHarga = inst.panel === 'harga'
+        ? true
+        : inst.panel === 'sendiri'
+          ? false
+          : spekJenis(inst.jenis, katalog)?.diPanelHarga === true
+      peta.set(inst.id, diHarga ? 0 : berikut++)
     }
     return peta
   }, [ind.daftar, katalog, digambar])
@@ -2681,6 +2689,28 @@ export function GrafikEmiten() {
                           gambar harga membuat legendanya sendiri jadi hiasan
                           yang menutupi isinya. */}
                       <span className="ti-grup grf-legenda-aksi">
+                        {/* B29 — pindah panel & urutkan. Hanya untuk INDIKATOR:
+                            pola tak punya panel sendiri, penandanya menempel di
+                            seri harga dan volume.
+
+                            Naik/turun menukar posisi di daftar, dan urutan
+                            daftar itulah yang menentukan nomor panel — jadi
+                            tak ada nomor panel yang disimpan dan bisa basi. */}
+                        {b.ranah === 'ind' && (
+                          <>
+                            <TombolIkon d={IKON_LILIN} ukuranIkon={12}
+                              label={panePerInstans.get(b.id) === 0
+                                ? `Pindahkan ${b.label} ke panel sendiri`
+                                : `Gabungkan ${b.label} ke panel harga`}
+                              onClick={() => ind.pindahPanel(b.id, panePerInstans.get(b.id) === 0 ? 'sendiri' : 'harga')} />
+                            <TombolIkon d={IKON_PANAH_ATAS} ukuranIkon={12}
+                              label={`Naikkan ${b.label}`}
+                              onClick={() => ind.geser(b.id, -1, (x) => panePerInstans.get(x.id) !== 0)} />
+                            <TombolIkon d={IKON_PANAH_BAWAH} ukuranIkon={12}
+                              label={`Turunkan ${b.label}`}
+                              onClick={() => ind.geser(b.id, 1, (x) => panePerInstans.get(x.id) !== 0)} />
+                          </>
+                        )}
                         <TombolIkon d={IKON_GIR} ukuranIkon={12}
                           label={`Setelan ${b.label}`}
                           onClick={() => setSetelanTerbuka(b.id)} />
