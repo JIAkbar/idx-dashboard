@@ -261,6 +261,21 @@ salah satu saja:
 Yang masuk kemampuan lintas proyek: pola teknis yang terbukti, jebakan yang gagal senyap,
 metodologi kerja. Yang TIDAK: hal khas proyek ini (itu masuk `docs/`).
 
+### Analisa PAPAN v1 — standar tiap Deep Dive & bagian emiten bulletin (Johan, 21 Agu 2026)
+
+*"simpan analisanya jadi Analisa Papan v1 atau Mesin Papan v1, karena tingkat
+probabilitas nya bagus banget, tapi tetep di pertahankan di buletin berikutnya."*
+
+Rumahnya `docs/analisa-papan-v1.md`. Yang wajib ada di tiap Deep Dive (dulu
+"Bedah Arus Saham", kode baru `DD-`) dan bagian emiten edisi harian: tiga lapis
+(arus broker multi-hari · PCD · tangga pivot + EMA50), **asimetri** dinyatakan
+eksplisit, skenario dalam angka (konfirmasi · rute · invalidasi), probabilitas
+v2 (`arus-pasar/prob.py`: P(capai R1/R2), P(sentuh S1), dasar, CI, faktor,
+uji luar sampel) dicetak apa adanya, dan **tinjauan H+5** ditambahkan ke log
+§5. Mengubah metodenya = versi baru dengan catatan perubahan, bukan sunting
+diam-diam. Angka P(naik 5h) BUKAN sumber kepercayaan — terukur nyaris koin;
+jangan pernah menulisnya seolah sinyal.
+
 ### Nada tulisan
 Pesan ke kontributor berbentuk **apresiasi**, bukan pemberitahuan penolakan.
 Setoran yang disetujui tapi tak dimuat di edisi harus terbaca sebagai terima

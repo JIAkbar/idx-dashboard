@@ -1,4 +1,4 @@
-# Analisa PAPAN v1 — metode bedah yang terbukti (BUMI & DSSA, 14 → 21 Agustus 2026)
+# Analisa PAPAN v1 (Mesin PAPAN v1) — metode Deep Dive yang terbukti (BUMI & DSSA, 14 → 21 Agustus 2026)
 
 Dicatat 21 Agustus 2026 atas permintaan Johan: *"apa yang membuat analisa BUMI
 dan DSSA di bulletin bedah 14 Agustus memiliki probabilitas tinggi dan terbukti
@@ -10,7 +10,7 @@ berikutnya mengulang metodenya, bukan mengulang keberuntungannya.
 
 ## 1. Apa yang tercetak 14 Agustus, dan apa yang terjadi
 
-### BUMI — "Sepuluh Hari Net Beli Berturut" (BA-BUMI-140826-E01, data s.d. 14 Agu)
+### BUMI — "Sepuluh Hari Net Beli Berturut" (BA-BUMI-140826-E01 — kini tipe Deep Dive, data s.d. 14 Agu)
 
 | Yang ditulis 14 Agu | Angka | Kenyataan 18–21 Agu |
 |---|---|---|
@@ -97,3 +97,56 @@ berikutnya mengulang metodenya, bukan mengulang keberuntungannya.
 |---|---|---|---|---|
 | BA-BUMI-140826-E01 | 14 Agu 2026 | Serapan 10 hari, bull > R1 185 | 21 Agu close 196 (+8,3%), R1 & rute 191 tercapai berurutan, S1 176 utuh | **Terbukti** |
 | BA-DSSA-140826-E01 | 13 Agu 2026 | Akumulasi terselubung, bull > 1.025 | 19 Agu close 1.040 (konfirmasi), 21 Agu high 1.080 > R2 1.060, close 1.050 (+6,1%), S1 955 utuh | **Terbukti** |
+
+## 6. Bagaimana BUMI & DSSA sampai jadi objek Deep Dive — jejak dari git
+
+Johan 21 Agu: *"kenapa bedah di 14 agustus terjadi di 21 agustus khusus BUMI dan
+DSSA? penyebab nya apa? analisa pakai data apa dasarnya? kok bisa jadi bedah
+itu"*. Jawabannya dicatat dari commit, bukan dari ingatan:
+
+| Waktu | Kejadian |
+|---|---|
+| 14 Agu 13:25 `05d7bb87` | Terbitan satu-emiten perdana = **EXCL** — prototipe format lima halaman (PCD, teknikal, arus broker, skenario) |
+| 14 Agu 14:01 | Johan menyetor **10 screenshot Broker Summary DSSA** (3–13 Agu) dan CUAN (6 hari) |
+| 14 Agu 14:28 `9b6fc81a` | **EXCL diganti DSSA + CUAN** — DSSA sudah masuk edisi harian 13 Agu berlabel *"Sideways — Akumulasi Terselubung"*, DAN baru ada arus broker 9 hari yang memungkinkan halaman Arus Broker multi-hari |
+| 18 Agu 08:09 `73637a11` | **BUMI & ARCI menyusul** (data s.d. 14 Agu) — BUMI dari setoran kontributor **10 hari berturut** 3–14 Agu, satu screenshot per tanggal |
+
+**Jadi BUMI dan DSSA terpilih karena datanya paling lengkap** — satu-satunya
+emiten dengan arus broker ≥ 9 hari berturut di tangan kita, dan DSSA sudah
+"tertangkap" edisi harian sehari sebelumnya. Bukan hasil screener sistematis.
+Keberuntungan metodologisnya: justru setoran multi-hari itulah yang membuat
+**asimetri** terbaca (serapan Rp1,45 T vs gerak 7,7%; akumulasi saat indeks
+merah) — lapis yang mustahil dilihat dari satu hari.
+
+### Lima sumber data yang dipakai (semuanya tercetak di catatan integritas)
+
+1. **Broker Summary Stockbit** (All Investor · Regular · Net) — screenshot
+   setoran, ditranskripsi ke `flow-<TICKER>.json` (top-10 tiap sisi per hari).
+2. **OHLC harian milik sendiri** (DSSA, dari edisi sumber) / yfinance 2 tahun
+   (BUMI, mode standalone) → pivot klasik, EMA50.
+3. **PCD** (distribusi modal) — dihitung mesin dari OHLCV + intraday 15 menit;
+   bukan done summary per harga, dan itu ditulis.
+4. **Probabilitas v1** (pool cache edisi) — sudah diganti v2 pada 21 Agu.
+5. **Katalis** dari `kabar.json` — untuk keduanya *nihil* ("Tak Ditemukan
+   Katalis Publik"): kenaikan terbaca murni dari arus & struktur.
+
+Narasi ditulis analis (Claude) dari angka-angka itu dan ditandai DRAF ANALIS.
+
+### Implikasi — pemilihan objek harus jadi saringan, bukan kebetulan setoran
+
+Checklist §4 dibalik jadi **screener kandidat Deep Dive** dari data kita
+sendiri (harga datar sementara volume/net asing menyerap berhari-hari;
+akumulasi di hari indeks merah; zona tangga pivot), lalu kandidat itulah yang
+dimintakan setoran broker multi-hari. Dicatat sebagai antrean B41.
+
+## 7. Ketetapan (Johan, 21 Agu 2026)
+
+*"simpan analisanya jadi Analisa Papan v1 atau Mesin Papan v1, karena tingkat
+probabilitas nya bagus banget, tapi tetep di pertahankan di buletin berikutnya."*
+
+Metode ini **dipertahankan sebagai standar** setiap Deep Dive dan bagian
+emiten di bulletin harian berikutnya: tiga lapis (arus broker multi-hari ·
+PCD · tangga pivot + EMA50), asimetri dinyatakan eksplisit, skenario dalam
+angka (konfirmasi · rute · invalidasi), probabilitas v2 dicetak apa adanya,
+dan tinjauan H+5 ditambahkan ke log §5. Perubahan metode = versi baru (v2)
+dengan catatan apa yang berubah dan kenapa — bukan penyuntingan diam-diam v1.
