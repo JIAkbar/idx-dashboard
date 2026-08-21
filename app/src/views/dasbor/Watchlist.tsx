@@ -93,6 +93,10 @@ interface BarisTabel {
   asing: RingkasAsing | null
   /** Net asing dalam lembar, didatarkan supaya kolomnya bisa diurutkan. */
   asingNet: number | null
+  /** true = berkas harganya DIKONFIRMASI tak ada (404) — beda dari "belum
+   *  termuat". Audit 21 Agu (#16): tanpa pembeda ini, emiten delisting
+   *  nangkring selamanya sebagai baris strip tanpa penjelasan. */
+  hilang: boolean
 }
 
 /**
@@ -194,6 +198,9 @@ export function Watchlist() {
       ad: isi?.ad ?? null,
       asing: asing[it.kode] ?? null,
       asingNet: asing[it.kode]?.netLembar ?? null,
+      // `undefined` = fetch belum jalan; `null` = 404 dikonfirmasi. Dua
+      // keadaan yang selama ini dirender sama persis (strip di semua kolom).
+      hilang: deret[it.kode] === null,
     }
   }), [items, deret, asing, namaKode])
 
@@ -313,6 +320,12 @@ function BarisWatchlist({
       <td>
         <Link to={`/grafik?kode=${b.kode}`} className="tick">{b.kode}</Link>
         {b.nama && <span className="wl-nama">{b.nama}</span>}
+        {b.hilang && (
+          <span className="wl-nama" style={{ color: 'var(--red)' }}
+            title="Berkas harganya tidak ditemukan — kemungkinan delisting atau berganti kode. Baris ini tak akan terisi lagi; hapus kalau sudah tak dipantau.">
+            data tak ditemukan — mungkin delisting
+          </span>
+        )}
       </td>
       <td className="r num">{b.harga != null ? b.harga.toLocaleString('id-ID') : '—'}</td>
       <td className={`r num ${b.chgPersen == null ? '' : b.chgPersen >= 0 ? 'up' : 'dn'}`}>

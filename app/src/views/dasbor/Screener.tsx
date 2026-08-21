@@ -247,7 +247,7 @@ export function Screener() {
               </tr>
             </thead>
             <tbody>
-              {tampilBaris.map((b) => <BarisScreenerTbl key={b.kode} b={b} />)}
+              {tampilBaris.map((b) => <BarisScreenerTbl key={b.kode} b={b} tanggalData={data?.tanggal ?? null} />)}
             </tbody>
           </table>
         </div>
@@ -279,22 +279,29 @@ export function Screener() {
 /** Sel kolom Pola — label singkat + panah arah, atau "—" tanpa pola aktif.
  *  `title` bawa keterangan penuh (label lengkap, arah, tanggal sinyal,
  *  target) supaya potongan label singkat tak membuang informasi. */
-function SelPola({ p }: { p: PolaAktifScreener | null }) {
+function SelPola({ p, tanggalData }: { p: PolaAktifScreener | null; tanggalData: string | null }) {
   if (!p) return <span className="muted">—</span>
   const [nama, arah, tanggal, target] = p
+  // Usia sinyal IKUT TAMPAK begitu melewati ±sebulan bursa — audit 21 Agu
+  // (#5): tanpa ini pola dua bulan lalu dan pola kemarin terlihat persis
+  // sama, dan tanggal yang cuma hidup di tooltip tak menolong pembaca cepat.
+  const usiaHari = tanggalData
+    ? Math.round((Date.parse(tanggalData) - Date.parse(tanggal)) / 86_400_000)
+    : null
   return (
     <span
       className={kelasPolaArah(arah)}
       title={`${LABEL_POLA_KLASIK[nama]} (${arah}) — sinyal ${tanggal}, target ${target.toLocaleString('id-ID')}`}
     >
       {labelPolaSingkat(nama)} {arah === 'bullish' ? '▲' : '▼'}
+      {usiaHari !== null && usiaHari > 30 && <span className="muted"> ±{Math.round(usiaHari / 7)}mgg</span>}
     </span>
   )
 }
 
 /** Satu baris tabel — dipisah dari `Screener()` supaya badan fungsi utama
  *  tetap terbaca; tak ada state sendiri di sini (beda dari BarisWatchlist). */
-function BarisScreenerTbl({ b }: { b: BarisGab }) {
+function BarisScreenerTbl({ b, tanggalData }: { b: BarisGab; tanggalData: string | null }) {
   const sss = (v: BarisScreener['sss_d']) => (v == null
     ? <span className="muted">—</span>
     : <LabelBerwarna teks={v} {...kelasSss(v)} />)
@@ -324,7 +331,12 @@ function BarisScreenerTbl({ b }: { b: BarisGab }) {
       <td className={kelasArah(b.ma20_arah)}>
         {b.ma20_arah == null ? <span className="muted">—</span> : b.ma20_arah}
       </td>
-      <td className="r num">{fDec(b.close_gap)}</td>
+      {/* Close Gap = PERSEN, dan bertanda — audit 21 Agu (#3): dirender
+          angka polos ia satu-satunya kolom persen yang tak bisa dibaca
+          arah maupun satuannya sekilas. Format sama dengan %chg di kanan. */}
+      <td className={`r num ${b.close_gap == null ? '' : b.close_gap > 0 ? 'up' : b.close_gap < 0 ? 'dn' : ''}`}>
+        {b.close_gap == null ? '—' : fp(b.close_gap)}
+      </td>
       <td className={`r num ${b.chg_1d == null ? '' : b.chg_1d >= 0 ? 'up' : 'dn'}`}>
         {b.chg_1d == null ? '—' : fp(b.chg_1d)}
       </td>
@@ -343,7 +355,7 @@ function BarisScreenerTbl({ b }: { b: BarisGab }) {
       >
         {ringkasLembarBertanda(b.net_asing_lembar)}
       </td>
-      <td><SelPola p={b.pola} /></td>
+      <td><SelPola p={b.pola} tanggalData={tanggalData} /></td>
     </tr>
   )
 }

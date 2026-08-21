@@ -2535,6 +2535,11 @@ export function uraiTemplate(raw: string | null): TemplateGrafik[] {
       // catatan di TemplateGrafik.
       ...(typeof o.jenisChart === 'string' ? { jenisChart: o.jenisChart } : {}),
       ...(typeof o.rentang === 'string' ? { rentang: o.rentang } : {}),
+      // Audit 21 Agu 2026 (#8): ruas `grid` DITULIS `simpanTemplate` tapi tak
+      // pernah dibaca di sini, jadi sakelar grid + keburamannya (B33) hilang
+      // diam-diam di tiap muat ulang — regresi persis pada fitur yang baru
+      // diminta. `gridDariTemplate` sudah menoleransi bentuk lama/kosong.
+      ...(o.grid !== undefined ? { grid: gridDariTemplate(o.grid) } : {}),
     })
   }
   return hasil

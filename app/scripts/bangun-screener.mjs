@@ -124,8 +124,19 @@ for (const f of fileOhlc) {
   const t3 = skorTigaKerangka(baris)
 
   const asing = bacaJson(join(DIR_ASING, `${kode}.json`))?.d
-  const asingBaris = Array.isArray(asing) ? asing : []
-  const nilai = asingBaris.at(-1)?.[4] ?? null // rupiah — total transaksi hari terakhir, bukan cuma asing
+  const asingMentah = Array.isArray(asing) ? asing : []
+  // Audit 21 Agu 2026 (#1): dua sumber per-kode ini TIDAK dijamin sekalender.
+  // Terukur 128 dari 962 emiten (13%) tanggal terakhir `asing/` ≠ `ohlc/` —
+  // kebanyakan asing sehari lebih baru, kasus ekstrem ARMY selisih sebulan.
+  // Tanpa pemotongan, kolom Nilai/Net Asing sebuah baris melaporkan hari
+  // bursa yang BEDA dari kolom Harga/%chg di baris yang sama, dan kaki
+  // halaman tetap menyebut satu tanggal seolah seragam. Barisnya dipotong
+  // sampai tanggal basis OHLC: kelebihan hari dibuang, bukan dibiarkan.
+  const tglBasis = baris.at(-1)?.[0]
+  const asingBaris = tglBasis ? asingMentah.filter((b) => b[0] <= tglBasis) : asingMentah
+  // Nilai transaksi hanya diisi kalau tanggalnya PERSIS tanggal basis —
+  // nilai kemarin yang mengaku hari ini lebih buruk daripada strip.
+  const nilai = asingBaris.at(-1)?.[0] === tglBasis ? asingBaris.at(-1)?.[4] ?? null : null
   let netAsingLembar = null
   if (asingBaris.length > 0) {
     // Dijumlahkan 20 hari bursa terakhir; kalau riwayatnya belum 20 hari
@@ -140,7 +151,11 @@ for (const f of fileOhlc) {
   emiten.push({
     kode,
     nama: namaByKode.get(kode) ?? null,
-    sektor: fund?.sector ?? null,
+    // '-' saat fundamental tak menyebut sektor — BUKAN null: `sektorUnik()`
+    // memanggil localeCompare pada tiap nilai, dan satu null menjatuhkan
+    // seluruh halaman (audit 21 Agu #2). '-' sudah punya arti di UI:
+    // "Tanpa sektor".
+    sektor: fund?.sector ?? '-',
     harga,
     tdm_persen: momentumPersen(baris),
     volume: vol.at(-1) ?? null,

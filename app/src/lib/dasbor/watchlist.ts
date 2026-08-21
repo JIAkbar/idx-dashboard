@@ -42,12 +42,44 @@ export interface HargaTerakhir {
   tanggal: string
 }
 
+/**
+ * Satu entri mentah dari localStorage -> `WatchlistItem` yang SAH, atau null.
+ *
+ * Audit 21 Agu 2026 (#15): versi lama cuma memeriksa hasil parse itu array,
+ * tidak tiap elemennya — satu entri tanpa `beli` (localStorage separuh
+ * tertulis, disentuh ekstensi lain, atau skema berganti tanpa menaikkan
+ * kunci) membuat `hargaRataRata(it.beli)` membaca `.length` dari `undefined`
+ * dan MENJATUHKAN seluruh halaman, bukan satu baris. Pola validasinya sama
+ * dengan `uraiTemplate` di grafikEmiten.ts: bentuk asing dilewati dengan
+ *  sopan, bukan dilempar.
+ */
+export function uraiWatchlistItem(v: unknown): WatchlistItem | null {
+  if (!v || typeof v !== 'object') return null
+  const o = v as Record<string, unknown>
+  if (typeof o.kode !== 'string' || !o.kode.trim()) return null
+  const beliMentah = Array.isArray(o.beli) ? o.beli : []
+  const beli: EntriBeli[] = []
+  for (const b of beliMentah) {
+    if (!b || typeof b !== 'object') continue
+    const e = b as Record<string, unknown>
+    if (typeof e.harga !== 'number' || !Number.isFinite(e.harga) || e.harga <= 0) continue
+    if (typeof e.tanggal !== 'string') continue
+    beli.push({ harga: e.harga, tanggal: e.tanggal })
+  }
+  return {
+    kode: o.kode.trim().toUpperCase(),
+    ditambahkan: typeof o.ditambahkan === 'string' ? o.ditambahkan : '',
+    beli,
+  }
+}
+
 function bacaSemua(): WatchlistItem[] {
   try {
     const raw = localStorage.getItem(KUNCI)
     if (!raw) return []
     const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : []
+    if (!Array.isArray(parsed)) return []
+    return parsed.map(uraiWatchlistItem).filter((x): x is WatchlistItem => x !== null)
   } catch {
     // localStorage tak tersedia (mode privat/dilarang) atau isinya korup —
     // mulai kosong, jangan lempar galat ke pemanggil.

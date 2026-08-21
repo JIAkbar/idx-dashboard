@@ -136,14 +136,23 @@ export async function ambilScreener(pengambil: typeof fetch = fetch): Promise<Da
 }
 
 let cache: DataScreener | null = null
+let cacheSejak = 0
+
+/** Umur maksimum cache modul — audit 21 Agu 2026 (#4): tab yang dibiarkan
+ *  terbuka melewati pergantian hari bursa terus menyajikan 962 baris data
+ *  kemarin, dan satu-satunya tandanya teks kecil di kaki halaman. 30 menit:
+ *  cukup lama untuk bolak-balik antar halaman tanpa fetch ulang, cukup
+ *  pendek untuk tak pernah melewati satu sesi perdagangan. */
+const UMUR_CACHE_MS = 30 * 60 * 1000
 
 export function useScreener(): DataScreener | null {
-  const [data, setData] = useState<DataScreener | null>(cache)
+  const segar = cache !== null && Date.now() - cacheSejak < UMUR_CACHE_MS
+  const [data, setData] = useState<DataScreener | null>(segar ? cache : null)
   useEffect(() => {
-    if (cache) return
+    if (cache && Date.now() - cacheSejak < UMUR_CACHE_MS) { setData(cache); return }
     let batal = false
     void ambilScreener().then((d) => {
-      if (d) cache = d
+      if (d) { cache = d; cacheSejak = Date.now() }
       if (!batal) setData(d)
     })
     return () => { batal = true }
