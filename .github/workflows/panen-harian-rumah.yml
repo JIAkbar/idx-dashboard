@@ -119,6 +119,20 @@ jobs:
       # keluar dengan kode SUKSES, dan tidak menyimpan apa pun — dari log,
       # jalan yang tak menyimpan terlihat persis seperti jalan yang berhasil.
       # Terjadi 20 Agu 2026.
+      # Harga di `fundamental/*.json` ikut disegarkan TIAP HARI dari OHLC yang
+      # baru saja dipanen — nol jaringan, 961 berkas dalam ~10 detik. Pemanen
+      # penuh (`fetch_fundamental.py`, yfinance) tetap bulanan: ia butuh ~8
+      # permintaan per emiten dan yang benar-benar berubah harian cuma harga.
+      # Tanpa langkah ini, Stock Detail mencetak harga sebulan lalu di sebelah
+      # label "diperbarui" yang terbaca seolah seluruh halaman segar (Johan
+      # 22 Agu 2026: "data daily ini mah, harusnya update yaa setiap setelah
+      # panen"). Wajib SESUDAH langkah 2 (OHLC) — sumbernya dari sana.
+      - name: 3b · Segarkan harga fundamental (dari OHLC, nol jaringan)
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/segarkan_harga_fundamental.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::segarkan_harga_fundamental gagal" }
+
       - name: 4 · Kartu Analisa
         continue-on-error: true
         run: |
