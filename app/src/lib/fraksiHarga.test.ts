@@ -71,3 +71,22 @@ describe('auto rejection', () => {
     expect(hariAraMinimal(100, 0)).toBe(0)
   })
 })
+
+describe('harga hero Stock Detail (52 minggu dari Yahoo)', () => {
+  // Nilai NYATA dari data-idx/json/fundamental/*.json, 21 Agu 2026: low/high
+  // 52 minggu hasil penyesuaian dividen/split Yahoo tidak jatuh di tick BEI,
+  // dan sebelum perbaikan ini tercetak apa adanya di kepala Stock Detail.
+  // `last_price` di sumber yang sama terukur SUDAH sejajar tick (0 pelanggaran
+  // dari 300 berkas) — keFraksi di sana jaring pengaman, bukan koreksi.
+  it('membulatkan harga 52 minggu yang tak jatuh di tick ke tick terdekat', () => {
+    expect(keFraksi(66.553955, 'dekat')).toBe(67)      // < 200 -> fraksi 1
+    expect(keFraksi(619.8107, 'dekat')).toBe(620)      // 500-2.000 -> fraksi 5
+    expect(keFraksi(5312.497, 'dekat')).toBe(5300)     // > 5.000 -> fraksi 25
+  })
+
+  it('harga yang sudah di tick tidak bergeser', () => {
+    for (const h of [1395, 6450, 196, 1050, 2780]) {
+      expect(keFraksi(h, 'dekat')).toBe(h)
+    }
+  })
+})

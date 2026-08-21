@@ -4,6 +4,7 @@ import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { useStockFundamental, useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useSektorIdx, sektorEmiten, papanBerisiko } from '../../lib/dasbor/sektorIdx'
 import { fMC, fv, fvx } from '../../lib/dasbor/stockDetailFormat'
+import { keFraksi } from '../../lib/fraksiHarga'
 import { LencanaTurunan } from '../../components/dasbor/LencanaTurunan'
 import { FdPercent } from '../../components/dasbor/FdPercent'
 import { PanelValuasi, PanelPerSaham, PanelSolvency, PanelEfektivitas, PanelSkor } from './stock-detail/KolomValuasi'
@@ -237,15 +238,23 @@ export function StockDetail() {
               {mataUang && <span className="badge">Laporan: {mataUang}</span>}
             </div>
             <div className="harga">
-              <span className="px num">{px != null ? 'Rp ' + Number(px).toLocaleString('id-ID', { maximumFractionDigits: 0 }) : '—'}</span>
+              {/* Harga tampil WAJIB lewat `keFraksi()` (aturan proyek) — angka
+                  yang tak jatuh di tick BEI adalah harga yang tak pernah bisa
+                  dipesan. Diukur 21 Agu 2026 atas 300 berkas fundamental:
+                  `last_price` memang SUDAH sejajar tick (0 pelanggaran), jadi
+                  di sini keFraksi tak mengubah angka hari ini — ia jaring
+                  pengaman kalau sumbernya berubah. Yang benar-benar melenceng
+                  justru low/high 52 minggu di bawah (harga hasil penyesuaian
+                  dividen/split Yahoo, mis. 66,553955 dan 5.312,497). */}
+              <span className="px num">{px != null ? 'Rp ' + keFraksi(Number(px), 'dekat').toLocaleString('id-ID') : '—'}</span>
               <div className="rng">
                 <span className="lbl">
                   Rentang 52 Minggu{fd.week52_change_pct != null && <> · <FdPercent v={fd.week52_change_pct} d={2} /></>}
                 </span>
                 <div className="rngbar">{pos52 != null && <i style={{ left: `calc(${pos52}% - 5px)` }} />}</div>
                 <div className="mm">
-                  <span>{lo != null ? Number(lo).toLocaleString('id-ID', { maximumFractionDigits: 0 }) : '—'}</span>
-                  <span>{hi != null ? Number(hi).toLocaleString('id-ID', { maximumFractionDigits: 0 }) : '—'}</span>
+                  <span>{lo != null ? keFraksi(Number(lo), 'dekat').toLocaleString('id-ID') : '—'}</span>
+                  <span>{hi != null ? keFraksi(Number(hi), 'dekat').toLocaleString('id-ID') : '—'}</span>
                 </div>
               </div>
             </div>
