@@ -69,6 +69,13 @@ import type { NamaPolaKlasik } from './grafikEmiten'
  *   Ascending Triangle  harian +6,0/+4,9/+3,5pp (n≈670)
  *                       pekanan +5,9/+4,2/+5,3pp (n≈130)
  *
+ * Tiga pola penutup daftar TradingView (B37, spek 43000653216 & 43000732556
+ * dibaca langsung) menyusul 21 Agu — angka sapuan penuh harian:
+ *
+ *   Rectangle             −2,6/−3,3/−2,3pp (n=355)
+ *   Cup & Handle          +3,0/+7,5/+13,1pp (n=33 — kecil, tapi positif)
+ *   Inverted Cup & Handle −14,7/−14,8/−12,5pp (n=68 — BURUK, dicetak jujur)
+ *
  * Sisanya berada di sekitar atau di bawah peluang dasar. Itu TIDAK membuat
  * mereka dibuang: pola tetap deskripsi bentuk yang sah, garisnya berguna
  * untuk melihat struktur, dan pembaca yang tahu angkanya bisa menimbang
@@ -270,6 +277,38 @@ export function cariPolaKlasik(lilin: LilinData[], p: ParamPolaKlasik): PolaKlas
     return a !== null && a > 0 ? a * p.toleransi : null
   }
 
+  /**
+   * Rectangle — dipanggil SEBELUM Triple Top/Bottom di kedua fase, dan itu
+   * bukan selera: kotak (atap datar + lantai datar) memenuhi syarat Triple
+   * juga, jadi diperiksa belakangan ia tak akan pernah terdeteksi — persis
+   * yang terjadi pada uji sintetis pertamanya. Spek TradingView 43000653216:
+   * penutupan di dalam pola tak boleh menembus garis kotak; arah dari
+   * patahan yang datang lebih dulu.
+   */
+  const cobaRectangle = (w: TitikZigzag[], tol: number, dari: number): PolaKlasikMentah | null => {
+    const tinggi = w.filter((x) => x.jenis === 'tinggi')
+    const rendah = w.filter((x) => x.jenis === 'rendah')
+    const atap = Math.max(...tinggi.map((x) => x.harga))
+    const lantai = Math.min(...rendah.map((x) => x.harga))
+    if (atap - Math.min(...tinggi.map((x) => x.harga)) > tol) return null
+    if (Math.max(...rendah.map((x) => x.harga)) - lantai > tol) return null
+    if (Math.min(...tinggi.map((x) => x.harga)) - Math.max(...rendah.map((x) => x.harga)) <= tol) return null
+    for (let i = w[0].i; i <= w[w.length - 1].i; i++) {
+      if (lilin[i].close > atap + tol / 2 || lilin[i].close < lantai - tol / 2) return null
+    }
+    const iBawah = cariTembus(lilin, dari, p.tunggu, () => lantai, 'bawah')
+    const iAtas = cariTembus(lilin, dari, p.tunggu, () => atap, 'atas')
+    const iS = iBawah !== null && (iAtas === null || iBawah <= iAtas) ? iBawah : iAtas
+    if (iS === null) return null
+    return {
+      nama: 'rectangle', arah: iS === iBawah ? 'bearish' : 'bullish',
+      pivot: w, iSinyal: iS, hargaSinyal: lilin[iS].close,
+      garis: [kerangka(w),
+        [{ i: w[0].i, harga: atap }, { i: iS, harga: atap }],
+        [{ i: w[0].i, harga: lantai }, { i: iS, harga: lantai }]],
+    }
+  }
+
   // ---- jendela LIMA pivot --------------------------------------------
   for (let k = 0; k + 5 <= zz.length; k++) {
     const w = zz.slice(k, k + 5)
@@ -300,8 +339,10 @@ export function cariPolaKlasik(lilin: LilinData[], p: ParamPolaKlasik): PolaKlas
       [gR.a, { i: iS, harga: nilaiGaris(gR.a, gR.b, iS) }],
     ]
 
-    let jadi: PolaKlasikMentah | null = null
-    if (w[0].jenis === 'tinggi') {
+    let jadi: PolaKlasikMentah | null = cobaRectangle(w, tol, dari)
+    if (jadi) {
+      // Rectangle menang atas Triple Top/Bottom — lihat komentar helpernya.
+    } else if (w[0].jenis === 'tinggi') {
       // [H1, L1, H2, L2, H3]
       const [H1, L1, H2, L2, H3] = w
       if (H2.harga - Math.max(H1.harga, H3.harga) >= tol
@@ -469,6 +510,65 @@ export function cariPolaKlasik(lilin: LilinData[], p: ParamPolaKlasik): PolaKlas
 
     if (jadi) {
       out.push(jadi)
+      for (const x of w) terpakai.add(x.i)
+    }
+  }
+
+  // ---- jendela EMPAT pivot: Cup & Handle (B37) ------------------------
+  //
+  // Spek TradingView 43000732556/43000732559, dibaca langsung: cangkir =
+  // koreksi berbentuk U yang kedua bibirnya setara, disusul HANDLE — koreksi
+  // kecil yang dasarnya tinggal di paruh ATAS cangkir. Lebar cangkir minimum
+  // 20 bar, handle tak boleh lebih panjang dari cangkirnya. Selesai saat
+  // penutupan menembus bibir; target = kedalaman cangkir (jalur pasca-proses
+  // generik sudah menghitungnya dari rentang pivot).
+  const LEBAR_CANGKIR_MIN = 20
+  for (let k = 0; k + 4 <= zz.length; k++) {
+    const w = zz.slice(k, k + 4)
+    if (w.some((x) => terpakai.has(x.i))) continue
+    const akhir = w[3]
+    const dari = akhir.i + p.jendela
+    if (dari >= lilin.length) continue
+    const tol = tolDi(akhir.i)
+    if (tol === null) continue
+
+    if (w[0].jenis === 'tinggi') {
+      // [Bibir kiri, Dasar, Bibir kanan, Dasar handle] — Cup & Handle bullish.
+      const [H1, L, H2, L2] = w
+      const bibir = Math.max(H1.harga, H2.harga)
+      const dalam = Math.min(H1.harga, H2.harga) - L.harga
+      if (Math.abs(H1.harga - H2.harga) > tol) continue
+      if (dalam < 3 * tol) continue // cangkir dangkal = riak, bukan koreksi U
+      if (H2.i - H1.i < LEBAR_CANGKIR_MIN) continue
+      // Dasar handle di paruh ATAS cangkir — handle yang jatuh sedalam
+      // cangkirnya bukan handle, itu cangkir kedua.
+      if (L2.harga < L.harga + dalam / 2) continue
+      // Handle tak lebih panjang dari cangkir: patahan dicari paling jauh
+      // selebar cangkirnya, bukan `tunggu` penuh.
+      const iS = cariTembus(lilin, dari, Math.min(p.tunggu, H2.i - H1.i), () => bibir, 'atas')
+      if (iS === null) continue
+      out.push({
+        nama: 'cup-handle', arah: 'bullish', pivot: w, iSinyal: iS,
+        hargaSinyal: lilin[iS].close,
+        garis: [kerangka(w), [{ i: H1.i, harga: bibir }, { i: iS, harga: bibir }]],
+      })
+      for (const x of w) terpakai.add(x.i)
+    } else {
+      // Cermin persisnya — Inverted Cup & Handle, bearish.
+      const [L1, H, L2, H2] = w
+      const bibir = Math.min(L1.harga, L2.harga)
+      const dalam = H.harga - Math.max(L1.harga, L2.harga)
+      if (Math.abs(L1.harga - L2.harga) > tol) continue
+      if (dalam < 3 * tol) continue
+      if (L2.i - L1.i < LEBAR_CANGKIR_MIN) continue
+      if (H2.harga > H.harga - dalam / 2) continue
+      const iS = cariTembus(lilin, dari, Math.min(p.tunggu, L2.i - L1.i), () => bibir, 'bawah')
+      if (iS === null) continue
+      out.push({
+        nama: 'inv-cup-handle', arah: 'bearish', pivot: w, iSinyal: iS,
+        hargaSinyal: lilin[iS].close,
+        garis: [kerangka(w), [{ i: L1.i, harga: bibir }, { i: iS, harga: bibir }]],
+      })
       for (const x of w) terpakai.add(x.i)
     }
   }

@@ -26,9 +26,14 @@ import { dirname, join } from 'node:path'
 import { PARAM_POLA_KLASIK_BAWAAN, cariPolaKlasik, LABEL_POLA_KLASIK } from '../src/lib/dasbor/polaKlasik.ts'
 import type { LilinData } from '../src/lib/dasbor/grafikEmiten.ts'
 
-// 60 lilin harian ≈ tiga bulan bursa — pola yang masih "menunggu" lebih lama
+// 10 lilin harian = dua pekan bursa. Semula 60, dan Johan menangkap
+// akibatnya dari layar: 63% papan berlabel "berpola aktif" — chip yang
+// menyala di dua pertiga baris bukan saringan. Terukur atas 915 emiten:
+// jendela 60=63%, 30=43%, 20=34%, 10=22%. Dua pekan dipilih karena label
+// "aktif" harus berarti "baru saja terjadi", bukan "masih belum batal".
+// (catatan lama: 60 lilin ≈ tiga bulan bursa — pola yang masih "menunggu" lebih lama
 // dari itu sudah bukan info yang segar untuk sebuah screener.
-const SEGAR_LILIN = 60
+const SEGAR_LILIN = 10
 
 // Jalur dihitung dari LETAK BERKAS (pola sama `sapu-pola-klasik.ts`), bukan
 // dari direktori kerja — supaya jalan sama dari `cwd` mana pun.

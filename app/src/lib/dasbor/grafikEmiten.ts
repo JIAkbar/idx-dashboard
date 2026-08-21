@@ -1082,6 +1082,7 @@ export type NamaPolaKlasik =
   | 'bullish-flag' | 'bearish-flag'
   | 'bullish-pennant' | 'bearish-pennant'
   | 'ascending-triangle' | 'descending-triangle' | 'symmetrical-triangle'
+  | 'rectangle' | 'cup-handle' | 'inv-cup-handle'
 
 export const LABEL_POLA_KLASIK: Record<NamaPolaKlasik, string> = {
   'double-top': 'Double Top',
@@ -1100,6 +1101,9 @@ export const LABEL_POLA_KLASIK: Record<NamaPolaKlasik, string> = {
   'ascending-triangle': 'Ascending Triangle',
   'descending-triangle': 'Descending Triangle',
   'symmetrical-triangle': 'Symmetrical Triangle',
+  'rectangle': 'Rectangle',
+  'cup-handle': 'Cup & Handle',
+  'inv-cup-handle': 'Inverted Cup & Handle',
 }
 
 /** Jenis pola menu untuk SATU pola klasik — `pk-double-top` dst. */
@@ -1149,7 +1153,7 @@ export const SPEK_POLA: Record<JenisPola, SpekPola> = {
    * di kepala `polaKlasik.ts`; di sini cuma batas kolom setelannya.
    */
   polaKlasik: {
-    label: 'Pola Klasik',
+    label: 'Pola Klasik (semua 19)',
     param: [
       { kunci: 'jendela', label: 'Jendela pivot', bawaan: 5, min: 1, maks: 60, bulat: true },
       { kunci: 'ayunMin', label: 'Ayun zigzag min %', bawaan: 3, min: 0.1, maks: 50, bulat: false },

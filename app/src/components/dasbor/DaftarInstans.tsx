@@ -30,6 +30,8 @@ export interface DaftarInstans<J extends string> {
   tambah: (jenis: string) => void
   hapus: (id: string) => void
   sakelarTampil: (id: string) => void
+  /** Sakelar massal — mata master di kepala legenda (lihat implementasinya). */
+  setSemuaTampil: (tampil: boolean) => void
   /** Timpa satu instans dengan versi barunya — jalur `Ok` modal setelan.
    *  Dicocokkan lewat `id`, jadi posisinya di daftar (dan warna gilirannya)
    *  tak bergeser. */
@@ -81,6 +83,15 @@ export function useDaftarInstans<J extends string>(
     setDaftar((list) => list.map((x) => (x.id === id ? { ...x, tampil: !x.tampil } : x)))
   }, [])
 
+  /** Sakelar MASSAL — tombol mata master di kepala legenda (Johan 21 Agu
+   *  2026: "hide dan unhide indikator supaya tidak memenuhi chart, coba
+   *  belajar dari trading view"; TradingView punya mata yang mematikan
+   *  seluruh study sekali klik). Instansnya TETAP di daftar — cuma
+   *  gambarnya yang padam, jadi satu klik lagi mengembalikan semuanya. */
+  const setSemuaTampil = useCallback((tampil: boolean) => {
+    setDaftar((list) => list.map((x) => (x.tampil === tampil ? x : { ...x, tampil })))
+  }, [])
+
   const terapkan = useCallback((baru: Instans<J>) => {
     setDaftar((list) => list.map((x) => (x.id === baru.id ? baru : x)))
   }, [])
@@ -130,5 +141,5 @@ export function useDaftarInstans<J extends string>(
     [paramSpek],
   )
 
-  return { daftar, gantiSemua, tambah, hapus, sakelarTampil, terapkan, bawaan, paramSpek, geser, pindahPanel }
+  return { daftar, gantiSemua, tambah, hapus, sakelarTampil, setSemuaTampil, terapkan, bawaan, paramSpek, geser, pindahPanel }
 }

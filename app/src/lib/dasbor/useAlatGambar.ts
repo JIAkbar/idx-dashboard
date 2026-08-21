@@ -185,6 +185,8 @@ export function useAlatGambar(opts: {
   const managerRef = useRef<Manager | null>(null)
   const alatAktifRef = useRef<string | null>(null)
   const titikSedangRef = useRef<Anchor[]>([])
+  /** Drawing pratinjau yang mengikuti kursor selagi menempel titik. */
+  const pratinjauRef = useRef<import('lightweight-charts-drawing').IDrawing | null>(null)
   const alatTertundaRef = useRef<string | null>(null)
   const kodeRef = useRef(kode)
   kodeRef.current = kode
@@ -462,6 +464,8 @@ export function useAlatGambar(opts: {
       const perlu = ANCHOR_ALAT_UTAMA.get(alat) ?? registry.get(alat)?.requiredAnchors ?? 2
       if (titikSedangRef.current.length < perlu) return
 
+      // Titik lengkap: pratinjau tak dibutuhkan lagi.
+      buangPratinjau()
       const anchors = titikSedangRef.current
       titikSedangRef.current = []
       let opsi: Record<string, unknown> = {}
@@ -475,8 +479,58 @@ export function useAlatGambar(opts: {
       pilihAlat(null) // sekali gambar selesai, kembali ke mode pilih
     }
 
+    /**
+     * PRATINJAU mengikuti kursor (Johan 21 Agu 2026: "buat garis atau tarik
+     * dari toolbar gak langsung keliatan hasil nya beda sama di tradingview").
+     * Sebelum ini, di antara klik pertama dan kedua TIDAK ADA APA-APA di
+     * layar — garisnya baru muncul saat titik terakhir ditempel, dan menarik
+     * garis terasa seperti menebak. Sekarang: begitu ada >=1 titik tertanam,
+     * drawing SUNGGUHAN bertipe alat itu dibuat dengan kursor sebagai titik
+     * terakhirnya dan diperbarui di tiap crosshair move — lalu dibuang saat
+     * titik final ditempel/dibatalkan. Drawing asli, bukan tiruan garis:
+     * pratinjau Fibonacci harus terlihat sebagai Fibonacci.
+     */
+    const buangPratinjau = () => {
+      if (pratinjauRef.current) {
+        managerRef.current?.removeDrawing(pratinjauRef.current.id)
+        pratinjauRef.current = null
+      }
+    }
+    const saatGeser = (param: MouseEventParams<Time>) => {
+      const alat = alatAktifRef.current
+      if (!alat || alat === 'brush') { buangPratinjau(); return }
+      const tertanam = titikSedangRef.current
+      if (tertanam.length === 0) { buangPratinjau(); return }
+      if (!param.point || param.time == null) return
+      const series = seriesRef.current
+      const hargaMentah = series?.coordinateToPrice(param.point.y)
+      if (hargaMentah == null || !Number.isFinite(hargaMentah)) return
+      const kandidat = series ? kandidatHargaDariTitik(param.seriesData.get(series)) : []
+      const harga = snapkanHarga(hargaMentah, param.point.y, kandidat, magnetRef.current,
+        (h) => series?.priceToCoordinate(h) ?? null)
+      const perlu = ANCHOR_ALAT_UTAMA.get(alat) ?? registry.get(alat)?.requiredAnchors ?? 2
+      // Kursor mengisi SATU titik berikutnya; sisanya (alat >2 titik yang
+      // belum sampai) ditumpuk di posisi kursor juga supaya bentuknya sah.
+      const anchors = [...tertanam]
+      while (anchors.length < perlu) anchors.push({ time: param.time, price: harga })
+      if (pratinjauRef.current) {
+        // Perbarui di tempat — buat-buang tiap mousemove membuat garisnya
+        // berkedip dan menyampah id. `setAnchors` + `requestUpdate` adalah
+        // pasangan resmi IDrawing untuk itu.
+        pratinjauRef.current.setAnchors(anchors)
+        pratinjauRef.current.requestUpdate()
+      } else {
+        const g = registry.createDrawing(alat, `pratinjau-${idBaru()}`, anchors, styleGambarBaru(), {})
+        if (g) { pratinjauRef.current = g; managerRef.current?.addDrawing(g) }
+      }
+    }
     chart.subscribeClick(saatKlik)
-    return () => chart.unsubscribeClick(saatKlik)
+    chart.subscribeCrosshairMove(saatGeser)
+    return () => {
+      chart.unsubscribeClick(saatKlik)
+      chart.unsubscribeCrosshairMove(saatGeser)
+      buangPratinjau()
+    }
   }, [pustaka, chartRef, seriesRef, pilihAlat])
 
   /* ---------------- Kuas: seret mentah ---------------- */

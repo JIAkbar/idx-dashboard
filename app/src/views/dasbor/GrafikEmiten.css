@@ -334,7 +334,11 @@
    mengunci indikatornya. */
 .lantai .grf-legenda-baris.redup { opacity: .45; }
 .lantai .grf-legenda-titik { width: 7px; height: 7px; border-radius: 2px; background: var(--ind-warna); flex: none; }
-.lantai .grf-legenda-nama { color: var(--ind-warna); font-weight: 700; }
+.lantai .grf-legenda-nama { color: var(--ind-warna); font-weight: 700;   /* Kini tombol (B38: klik = sakelar tampil) — rupa teks dipertahankan,
+     pointer menandakan bisa diklik. */
+  background: none; border: none; padding: 0; font: inherit; color: inherit;
+  cursor: pointer; pointer-events: auto; text-align: left;
+}
 .lantai .grf-legenda-nilai { color: var(--text2); font-variant-numeric: tabular-nums; }
 
 /* Tombol gir/mata/hapus per baris legenda — MUNCUL SAAT BARISNYA DISENTUH,
@@ -454,13 +458,22 @@
    Duduk di `.grf-kanvas-area` (align-items: stretch) jadi tingginya ikut
    kanvas di sebelahnya tanpa perlu angka tetap. */
 .lantai .grf-alat-sliver {
-  width: 16px; flex: none; padding: 0; position: relative;
+  /* 28px, bukan 16 — Johan: "collapse nya jgn kecil gini perbaiki". Sliver
+     yang terlalu kurus membuat ikon panahnya tampak seperti noda, dan area
+     kliknya tersamar. Tetap sliver (bukan tombol penuh): tugasnya memberi
+     jalan pulang tanpa memakan lebar kanvas. */
+  width: 28px; flex: none; padding: 0; position: relative;
+  /* Terukur cuma 20px tinggi tanpa ini — tombol di flex row tak selalu ikut
+     `align-items:stretch` begitu punya baseline sendiri. Dipaksa meregang
+     setinggi kanvas di sebelahnya. */
+  align-self: stretch; min-height: 120px;
   display: flex; align-items: center; justify-content: center;
   border: 1px solid var(--line); border-radius: var(--r-kecil);
-  background: var(--bg2); color: var(--text3); cursor: pointer;
+  background: var(--bg2); color: var(--text2); cursor: pointer;
 }
-.lantai .grf-alat-sliver::after { content: ''; position: absolute; inset: -6px -2px; }
-.lantai .grf-alat-sliver:hover { border-color: var(--amber); color: var(--amber); }
+.lantai .grf-alat-sliver::after { content: ''; position: absolute; inset: -6px -8px; }
+.lantai .grf-alat-sliver:hover { border-color: var(--amber); color: var(--amber); background: var(--bg3); }
+.lantai .grf-alat-sliver .dasbor-ikon { width: 18px; height: 18px; }
 
 /* Dropdown "Alat lainnya" — flyout dua kolom (Johan 21 Agu 2026: "menu ini
    di buat flyout di rapikan"). Cuma PENEMPATAN & LEBAR di sini (#170) —
@@ -572,7 +585,15 @@
    738px layar. Disembunyikan, bukan dihapus — keluar dari layar penuh
    mengembalikannya. */
 .lantai .grf-panel:fullscreen .grf-template,
-.lantai .grf-panel:fullscreen .grf-panduan { display: none; }
+.lantai .grf-panel:fullscreen .grf-panduan,
+/* Daftar hasil pola IKUT disembunyikan di layar penuh — Johan 21 Agu 2026:
+   "masih ngebug nih full screen nya". Akarnya terukur: `.grf-pola-hasil`
+   anak `.panel-b`, tingginya bisa ribuan piksel (49 patahan + 37 divergensi
+   = layar-layar teks), dan di rantai flex fullscreen ia mempertahankan
+   tinggi alaminya sehingga kanvas terjepit ke min-height 360px — chart
+   sepertiga layar dengan toolbar absolut menimpa daftar di bawahnya.
+   Layar penuh itu MODE KANVAS: daftarnya tetap ada begitu keluar. */
+.lantai .grf-panel:fullscreen .grf-pola-hasil { display: none; }
 
 /* Bungkus kanvas + tanda PAPAN — lihat komentar di GrafikEmiten.tsx dekat
    attributionLogo:false: ini pengganti logo TradingView yang dimatikan, bukan

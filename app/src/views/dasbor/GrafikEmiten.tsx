@@ -32,7 +32,7 @@ import {
   type Harmonik, type PolaHarmonik, type ParamHarmonik,
 } from '../../lib/dasbor/grafikEmiten'
 import {
-  ambilIntraday, dariEpoch, dariWaktuChart, intraday, keWaktuChart,
+  ambilIntraday, dariEpoch, dariWaktuChart, intraday, keEpoch, keWaktuChart,
   kunciBulan, kunciPekan, rakitBar, KERANGKA, KERANGKA_BAWAAN, type IdKerangka,
 } from '../../lib/dasbor/kerangkaWaktu'
 import { Dropdown } from '../../components/dasbor/Dropdown'
@@ -81,8 +81,11 @@ const OPSI_KURASI = (Object.keys(SPEK_INDIKATOR) as JenisAsli[])
 //     `pk-double-bottom`, dan dua entri "Double Bottom" berdampingan di menu
 //     berarti salah satu akan dipilih orang tanpa tahu bedanya. Yang menang
 //     yang punya target & status.
+// `polaKlasik` (gabungan) KEMBALI tampil — Johan 21 Agu 2026: "jadi ada yang
+// terpisah ada 1 gabungan dari semua nya". Yang tetap disembunyikan cuma
+// `doubleBottom` generasi pertama (kembarannya pk-double-bottom).
 const JENIS_POLA = (Object.keys(SPEK_POLA) as JenisPola[])
-  .filter((j) => j !== 'polaKlasik' && j !== 'doubleBottom')
+  .filter((j) => j !== 'doubleBottom')
 
 const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 
@@ -1299,12 +1302,48 @@ export function GrafikEmiten() {
     [],
   )
 
+  /**
+   * EKOR WHITESPACE — 60 waktu kosong sesudah lilin terakhir (Johan 21 Agu
+   * 2026: "saya seret fibo melebihi candle gak bisa").
+   *
+   * lightweight-charts hanya memberi `time` pada koordinat yang PUNYA bar,
+   * jadi klik di area kosong kanan mengembalikan `time: null` dan alat
+   * gambar menolaknya — Fibonacci tak pernah bisa berlabuh di masa depan.
+   * Cara resminya persis yang dipakai TradingView: deret diberi ekor
+   * whitespace ({time} tanpa harga) supaya area itu ADA di sumbu waktu.
+   * Autoscale mengabaikannya, jadi skala harga tak berubah sedikit pun.
+   *
+   * Harian melompati akhir pekan (waktu bursa, bukan kalender); intraday
+   * melangkah sebesar jarak dua bar terakhirnya.
+   */
+  const ekorWhitespace = useMemo(() => {
+    if (lilin.length < 2) return []
+    const keluar: Array<{ time: string }> = []
+    const akhir = lilin[lilin.length - 1].time
+    if (akhir.length <= 10) {
+      const d = new Date(`${akhir}T00:00:00Z`)
+      while (keluar.length < 60) {
+        d.setUTCDate(d.getUTCDate() + 1)
+        const hari = d.getUTCDay()
+        if (hari === 0 || hari === 6) continue
+        keluar.push({ time: d.toISOString().slice(0, 10) })
+      }
+    } else {
+      const detik = (t: string) => keEpoch(t)
+      const jarak = Math.max(60, detik(akhir) - detik(lilin[lilin.length - 2].time))
+      let t = detik(akhir)
+      for (let i = 0; i < 60; i++) { t += jarak; keluar.push({ time: dariEpoch(t) }) }
+    }
+    return keluar
+  }, [lilin])
+
   useEffect(() => {
     const harga = hargaRef.current
     if (harga?.seriesType() === 'Candlestick') {
-      (harga as ISeriesApi<'Candlestick'>).setData(keChart(lilin))
+      (harga as ISeriesApi<'Candlestick'>).setData([...keChart(lilin), ...keChart(ekorWhitespace)] as never)
     } else if (harga?.seriesType() === 'Line') {
-      (harga as ISeriesApi<'Line'>).setData(keChart(lilin.map((l) => ({ time: l.time, value: l.close }))))
+      (harga as ISeriesApi<'Line'>).setData(
+        [...keChart(lilin.map((l) => ({ time: l.time, value: l.close }))), ...keChart(ekorWhitespace)] as never)
     }
     volRef.current?.setData(keChart(volume))
     // Selama replay BERJALAN, jangan pasang ulang rentang terlihat: satu
@@ -1321,7 +1360,11 @@ export function GrafikEmiten() {
       // dan indeksnya sudah kita punya persis.
       if (awalRentang > 0 && awalRentang < lilin.length) {
         ts?.setVisibleLogicalRange({ from: awalRentang - 0.5, to: lilin.length - 0.5 })
-      } else ts?.fitContent()
+      } else {
+        // BUKAN fitContent(): sejak ada ekor whitespace, fitContent ikut
+        // memuat 60 bar kosong di kanan dan "Semua" terbuka dengan lubang.
+        ts?.setVisibleLogicalRange({ from: -0.5, to: lilin.length - 0.5 })
+      }
     }
     replayAktifRef.current = replayAktif
     // Angka terukur buat verifikasi/QA (bukan data sensitif — cuma jumlah &
@@ -1804,6 +1847,25 @@ export function GrafikEmiten() {
     while (chart.panes().length <= i) chart.addPane(true)
   }, [])
 
+  /**
+   * Bongkar pane KOSONG dari ekor — pasangan wajibnya `pastikanPane`.
+   *
+   * lightweight-charts hanya membuang pane yang kehilangan seri TERAKHIRNYA;
+   * pane yang lahir lewat `addPane(true)` tak pernah punya seri, jadi ia
+   * abadi. Johan menangkap gejalanya di layar (21 Agu 2026): "ada layer
+   * kosong dibawahnya meskipun pola sudah di hapus" — strip kosong bekas
+   * panel %K/volume yang instansnya sudah lama pergi. Dipanggil di ujung
+   * setiap efek yang menggambar panel.
+   */
+  const bersihkanPaneKosong = useCallback(() => {
+    const chart = chartRef.current
+    if (!chart) return
+    const panes = chart.panes()
+    for (let i = panes.length - 1; i >= 1; i--) {
+      if (panes[i].getSeries().length === 0) chart.removePane(i)
+    }
+  }, [])
+
   /** Pane mana yang sedang terlipat, diturunkan dari id yang disimpan.
    *  Panel milik POLA tak pernah bisa terlipat: ia tak punya baris legenda,
    *  jadi tak akan pernah ada tombol untuk membukanya lagi. */
@@ -1815,6 +1877,41 @@ export function GrafikEmiten() {
     if (volumePanel === 'sendiri' && lipat.includes('__volume')) set.add(1)
     return set
   }, [lipat, panePerInstans, volumePanel])
+
+  /**
+   * Shortcut keyboard (B38, gap termurah terhadap TradingView):
+   *   ←/→  geser sumbu waktu   +/-  zoom   Esc  keluar Bar replay
+   * Dipasang di WINDOW tapi hanya berlaku saat fokus TIDAK di kolom isian —
+   * panah di kotak cari harus tetap menggerakkan kursor teks, bukan chart.
+   * Esc untuk layar penuh tak perlu ditangani: peramban sudah melakukannya.
+   */
+  useEffect(() => {
+    const tombol = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
+      const chart = chartRef.current
+      if (!chart) return
+      const ts = chart.timeScale()
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        const arah = e.key === 'ArrowLeft' ? -1 : 1
+        ts.scrollToPosition(ts.scrollPosition() + arah * 10, false)
+        e.preventDefault()
+      } else if (e.key === '+' || e.key === '=' || e.key === '-') {
+        const r = ts.getVisibleLogicalRange()
+        if (!r) return
+        const lebar = r.to - r.from
+        // Zoom berjangkar di UJUNG KANAN — lilin terbaru tetap di tempatnya,
+        // sejarah yang melebar/menyempit. Itu perilaku zoom TradingView.
+        const faktor = e.key === '-' ? 1.25 : 0.8
+        ts.setVisibleLogicalRange({ from: r.to - lebar * faktor, to: r.to })
+        e.preventDefault()
+      } else if (e.key === 'Escape' && replay !== null) {
+        setReplay(null)
+      }
+    }
+    window.addEventListener('keydown', tombol)
+    return () => window.removeEventListener('keydown', tombol)
+  }, [replay])
 
   // Menu klik kanan: Escape menutupnya, dan begitu juga gulir/ubah ukuran.
   //
@@ -1970,6 +2067,7 @@ export function GrafikEmiten() {
       seriIndRef.current.push(s)
     }
 
+    bersihkanPaneKosong()
     // Panel harga tetap yang paling besar — tanpa ini pane RSI/MACD sama
     // tingginya dengan panel harga (stretch factor bawaan sama-sama 1).
     // Panel yang DILIPAT (`^` di legendanya) dikecilkan jadi bilah tipis,
@@ -1982,7 +2080,7 @@ export function GrafikEmiten() {
     // tinggi pane baru belum berlaku pada saat setStretchFactor kembali.
     requestAnimationFrame(ukurPane)
   }, [garisPerInstans, segmenIndikator, lilinIndikator, panePerInstans, theme, ukurPane, keChart,
-      paneTerlipat, pastikanPane])
+      paneTerlipat, pastikanPane, bersihkanPaneKosong])
 
   // Volume dipindah, BUKAN dibuat ulang: `moveToPane` memindahkan seri beserta
   // datanya, sementara membuat ulang berarti mengunduh & menyusun 900-an titik
@@ -1998,8 +2096,9 @@ export function GrafikEmiten() {
     } catch {
       // Pane tujuan belum ada pada render pertama; efek berikutnya menutupnya.
     }
+    bersihkanPaneKosong()
     requestAnimationFrame(ukurPane)
-  }, [volumePanel, versiSeriHarga, ukurPane, pastikanPane])
+  }, [volumePanel, versiSeriHarga, ukurPane, pastikanPane, bersihkanPaneKosong])
 
   /**
    * Divergensi digambar, bukan cuma ditandai (Johan 21 Agu 2026: "buktikan
@@ -2147,6 +2246,23 @@ export function GrafikEmiten() {
         kerangka.setData(keChart(h.indeks.map((iL, t) => ({ time: lilin[iL].time, value: h.harga[t] }))))
         seriPolaRef.current.push(kerangka)
 
+        // Dua TALI BUSUR — X→B dan B→D — pelengkap konvensi TradingView
+        // (Johan 21 Agu 2026: "harmonic pattern nya kurang siip"): zigzag
+        // XABCD saja terbaca seperti garis tren biasa, tali busurnya yang
+        // membentuk dua segitiga khas (XAB & BCD) sehingga polanya terkenali
+        // sekilas. Putus-putus & tipis supaya kerangka utamanya tetap dominan.
+        for (const [i1, i2] of [[0, 2], [2, 4]] as const) {
+          const tali = chart.addSeries(LineSeries, {
+            color: warna, lineWidth: 1, lineStyle: LineStyle.Dashed,
+            priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
+          }, 0)
+          tali.setData(keChart([
+            { time: lilin[h.indeks[i1]].time, value: h.harga[i1] },
+            { time: lilin[h.indeks[i2]].time, value: h.harga[i2] },
+          ]))
+          seriPolaRef.current.push(tali)
+        }
+
         const prz = hitungPrz(h.harga[0], h.harga[1], h.harga[2], h.harga[3], RASIO_HARMONIK[h.pola].ad[0])
         if (prz) {
           // Zona ditarik dari C sampai beberapa lilin melewati D: PRZ adalah
@@ -2154,8 +2270,10 @@ export function GrafikEmiten() {
           const iAkhir = Math.min(h.indeks[4] + 10, lilin.length - 1)
           for (const nilai of [prz.bawah, prz.atas]) {
             const g = chart.addSeries(LineSeries, {
-              color: baca('--amber'), lineWidth: 1, lineStyle: LineStyle.Dashed,
-              priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
+              color: baca('--amber'), lineWidth: 2, lineStyle: LineStyle.Dashed,
+              // Nilai PRZ tercetak di sumbu harga — zona pembalikan yang tak
+              // bisa dibaca angkanya cuma hiasan (upgrade 21 Agu 2026).
+              priceLineVisible: false, lastValueVisible: true, crosshairMarkerVisible: false,
             }, 0)
             g.setData(keChart([
               { time: lilin[h.indeks[3]].time, value: nilai },
@@ -2167,13 +2285,14 @@ export function GrafikEmiten() {
       }
     }
 
+    bersihkanPaneKosong()
     if (seriPolaRef.current.length) {
       const panes = chart.panes()
       panes[0]?.setStretchFactor(3)
       for (let i = 1; i < panes.length; i++) panes[i]?.setStretchFactor(paneTerlipat.has(i) ? 0.18 : 1.1)
       requestAnimationFrame(ukurPane)
     }
-  }, [polaPerInstans, panePerInstans, lilin, theme, digambar, keChart, ukurPane, paneTerlipat, volumePanel, pastikanPane])
+  }, [polaPerInstans, panePerInstans, lilin, theme, digambar, keChart, ukurPane, paneTerlipat, volumePanel, pastikanPane, bersihkanPaneKosong])
 
   // Indeks waktu -> posisi lilin. Dipakai baris status (OHLC yang mengikuti
   // kursor) dan tooltip pola.
@@ -3185,6 +3304,20 @@ export function GrafikEmiten() {
                     </button>
                   )
                 })()}
+                {/* Mata MASTER (ala TradingView): satu klik memadamkan SEMUA
+                    indikator & pola — chart kembali telanjang tanpa harus
+                    mematikan satu-satu; klik lagi menyalakan semuanya.
+                    Hanya di pane 0 dan hanya kalau ada >= 2 baris: satu baris
+                    tak butuh sakelar massal. */}
+                {pane === 0 && baris.length >= 2 && (() => {
+                  const adaTampil = [...ind.daftar, ...pol.daftar].some((x) => x.tampil)
+                  return (
+                    <TombolIkon d={adaTampil ? IKON_MATA : IKON_MATA_CORET} ukuranIkon={12}
+                      className="grf-mata-master"
+                      label={adaTampil ? 'Sembunyikan SEMUA indikator & pola' : 'Tampilkan kembali semua indikator & pola'}
+                      onClick={() => { ind.setSemuaTampil(!adaTampil); pol.setSemuaTampil(!adaTampil) }} />
+                  )
+                })()}
                 {baris.map((b) => {
                   // `sakelarTampil`/`hapus` sama bentuknya di kedua daftar, jadi
                   // boleh dipanggil lewat gabungan keduanya.
@@ -3193,7 +3326,15 @@ export function GrafikEmiten() {
                     <span key={b.id} className={'grf-legenda-baris' + (b.tampil ? '' : ' redup')}
                       style={{ '--ind-warna': `var(${b.warna})` } as React.CSSProperties}>
                       <span className="grf-legenda-titik" aria-hidden="true" />
-                      <span className="grf-legenda-nama">{b.label}</span>
+                      {/* B38: klik NAMANYA = sakelar tampil, seperti klik
+                          label seri di TradingView — ikon mata tetap ada
+                          untuk yang tak tahu konvensi itu. Tombol, bukan
+                          onClick di span: fokus keyboard & pembaca layar. */}
+                      <button type="button" className="grf-legenda-nama"
+                        title={b.tampil ? `Klik untuk menyembunyikan ${b.label}` : `Klik untuk menampilkan ${b.label}`}
+                        onClick={() => kelola.sakelarTampil(b.id)}>
+                        {b.label}
+                      </button>
                       <span className="grf-legenda-nilai">{b.nilai}</span>
                       {/* Kelompok tombol ini satu-satunya yang MENERIMA kursor
                           di legenda (pointer-events:auto di CSS) — sisanya

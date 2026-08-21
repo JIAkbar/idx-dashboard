@@ -65,10 +65,13 @@ describe('cariPolaKlasik — bentuk sintetis yang dirancang', () => {
   })
 
   it('Triple Bottom: tiga lembah setara, selesai menembus puncak antar lembah', () => {
+    // Puncak antarlembah SENGAJA beda jelas (112 vs 104): kalau keduanya
+    // ikut setara, polanya memang Rectangle — dan Rectangle menang atas
+    // Triple (lihat komentar `cobaRectangle`). Uji ini tentang Triple murni.
     const tutup = [150,
       ...jalan(150, 100, 10),
       ...jalan(100, 112, 5), ...jalan(112, 100.5, 5),
-      ...jalan(100.5, 111, 5), ...jalan(111, 99.5, 5),
+      ...jalan(100.5, 104, 5), ...jalan(104, 99.5, 5),
       ...jalan(99.5, 118, 8), ...jalan(118, 120, 6)]
     const tb = cariPolaKlasik(lilinDari(tutup), P).find((q) => q.nama === 'triple-bottom')
     expect(tb).toBeDefined()
@@ -141,6 +144,42 @@ describe('cariPolaKlasik — bentuk sintetis yang dirancang', () => {
     const st = cariPolaKlasik(lilinDari(tutup), P).find((q) => q.nama === 'symmetrical-triangle')
     expect(st).toBeDefined()
     expect(st!.arah).toBe('bearish')
+  })
+})
+
+describe('Rectangle & Cup and Handle — pola penutup daftar TradingView (B37)', () => {
+  it('Rectangle: atap & lantai datar, arah dari patahan yang datang lebih dulu', () => {
+    // Kotak 100/85 (lima pivot berseling setara), lalu jatuh menembus lantai.
+    const tutup = [92,
+      ...jalan(92, 100, 4), ...jalan(100, 85, 5), ...jalan(85, 99.5, 5),
+      ...jalan(99.5, 85.5, 5), ...jalan(85.5, 100.3, 5),
+      ...jalan(100.3, 78, 8), ...jalan(78, 76, 6)]
+    const rk = cariPolaKlasik(lilinDari(tutup), P).find((q) => q.nama === 'rectangle')
+    expect(rk).toBeDefined()
+    expect(rk!.arah).toBe('bearish')
+    // Tiga garis: kerangka + atap + lantai.
+    expect(rk!.garis.length).toBe(3)
+  })
+
+  it('Cup & Handle: cangkir >= 20 bar berbibir setara + handle di paruh atas, tembus bibir', () => {
+    // Bibir kiri 100 -> dasar 80 (turun-naik landai >= 20 bar) -> bibir kanan
+    // 100 -> handle ke 93 (paruh atas) -> tembus 100.
+    const tutup = [70, ...jalan(70, 100, 6),
+      ...jalan(100, 80, 12), ...jalan(80, 99.5, 12),
+      ...jalan(99.5, 93, 4), ...jalan(93, 106, 6), ...jalan(106, 107, 4)]
+    const ch = cariPolaKlasik(lilinDari(tutup), P).find((q) => q.nama === 'cup-handle')
+    expect(ch).toBeDefined()
+    expect(ch!.arah).toBe('bullish')
+    expect(ch!.hargaSinyal).toBeGreaterThan(100)
+    // Target = kedalaman cangkir diproyeksikan dari bibir.
+    expect(ch!.target).toBeGreaterThan(ch!.hargaSinyal)
+  })
+
+  it('cangkir yang lebarnya < 20 bar DITOLAK — spek TradingView', () => {
+    const tutup = [70, ...jalan(70, 100, 4),
+      ...jalan(100, 80, 5), ...jalan(80, 99.5, 5),
+      ...jalan(99.5, 93, 3), ...jalan(93, 106, 5)]
+    expect(cariPolaKlasik(lilinDari(tutup), P).find((q) => q.nama === 'cup-handle')).toBeUndefined()
   })
 })
 
