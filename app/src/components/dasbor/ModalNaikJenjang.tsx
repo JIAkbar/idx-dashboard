@@ -13,7 +13,7 @@ const PESAN: Record<number, string> = {
   1: 'Sepuluh setoran pertama itu bagian yang paling sepi. Kamu melewatinya.',
   2: 'Tiga puluh setoran lolos kurasi — bacaan broker summary-mu sudah bisa diandalkan.',
   3: 'Emas dibuka di 75 setoran dengan akurasi 80%. Angka itu tidak bisa dikejar buru-buru.',
-  4: 'Platinum: kamu sekarang boleh menyetor bahan Bedah Arus Saham, terbitan satu emiten satu edisi.',
+  4: 'Platinum: kamu sekarang boleh menyetor bahan Deep Dive, terbitan satu emiten satu edisi.',
   5: 'Diamond. Namamu masuk bulletin, dan usul emitenmu naik ke antrean prioritas.',
 }
 

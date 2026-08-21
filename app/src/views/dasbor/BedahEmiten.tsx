@@ -69,8 +69,10 @@ import './BedahEmiten.css'
  * asalnya.
  *
  * Bukan halaman terbitan. `arus-pasar/build_bedah.py` dan tab admin `BedahTab`
- * memakai nama "Bedah" juga, tapi itu **edisi PDF** — tak ada hubungannya
- * dengan halaman ini selain namanya.
+ * merakit **edisi PDF** bernama "Deep Dive" (dulu "Bedah Arus Saham", diganti
+ * 21 Agu 2026) — tak ada hubungannya dengan halaman ini selain kunci internal
+ * `bedah` yang dipakai tab admin (bukan kunci akses halaman ini, lihat
+ * aksesHalaman.ts).
  *
  * ## Yang membedakannya dari Stock Detail
  *

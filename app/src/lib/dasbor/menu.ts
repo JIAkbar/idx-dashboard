@@ -116,7 +116,8 @@ export const MENU_ITEMS: MenuItem[] = [
     // emiten. BEDA dari 'stock-detail': Stock Detail memajang ruas, halaman
     // ini merangkainya (lima langkah uang, dua sumbu valuasi, lima pilar
     // skor). Beda pula dari tab admin /admin/bedah, yang merakit EDISI PDF
-    // bernama "Bedah" dan tak ada hubungannya dengan halaman ini.
+    // (dulu "Bedah Arus Saham", tampil sebagai "Deep Dive" sejak 21 Agu 2026)
+    // dan tak ada hubungannya dengan halaman ini.
     // Kode 'BDH' — 'DTL' Stock Detail, 'GRF' Grafik Emiten sudah dipakai.
     id: 'bedah-emiten', path: '/bedah-emiten', label: 'Bedah Emiten', kode: 'BDH', grup: 'emiten',
     ringkas: 'Dua belas seksi membedah satu emiten: lima langkah uang berjalan, vonis valuasi dua sumbu, skor lima pilar, sampai Altman Z dan F-Score.',

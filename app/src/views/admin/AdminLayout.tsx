@@ -201,7 +201,7 @@ export function AdminLayout() {
     { to: '/admin/kurasi', label: 'Kurasi', ikon: IKON_PAPAN_KLIP, tampil: superadmin, badge: menunggu },
     // Radar WDWL — produk kurasi khusus, kontributor tidak menyetor bahannya.
     { to: '/admin/radar', label: 'Radar', ikon: IKON_RADAR, tampil: superadmin },
-    { to: '/admin/bedah', label: 'Bedah', ikon: IKON_GRAFIK_NAIK, tampil: Boolean(profil?.boleh_bedah) },
+    { to: '/admin/bedah', label: 'Deep Dive', ikon: IKON_GRAFIK_NAIK, tampil: Boolean(profil?.boleh_bedah) },
     { to: '/admin/terbitan', label: 'Terbitan', ikon: IKON_KOTAK_ARSIP, tampil: true },
     { to: '/admin/akun', label: 'Akun', ikon: IKON_GIR, tampil: superadmin },
     { to: '/admin/akses', label: 'Akses', ikon: IKON_KUNCI, tampil: superadmin },

@@ -22,8 +22,11 @@ export type TipeEdisi = 'Harian' | 'Mingguan' | 'Bulanan' | 'Bedah'
 /**
  * Tipe edisi dari kodenya (#92) — pola generator arus-pasar: `AP-<ddmmyy>`
  * harian (build.py), `AP-W<ddmmyy>` mingguan (build_weekly.py), `AP-M<mmyy>`
- * bulanan (build_monthly.py), `BA-<...>` Bedah Arus Saham; edisi uji
- * berprefiks `UJI-`.
+ * bulanan (build_monthly.py), `BA-<...>`/`DD-<...>` terbitan satu-emiten
+ * (dulu "Bedah Arus Saham", diganti nama "Deep Dive" 21 Agu 2026 — ambigu
+ * dengan halaman web Bedah Emiten; `BA-` = edisi lama, `DD-` = edisi baru,
+ * dua-duanya masuk tipe internal `'Bedah'`, lihat LABEL_TIPE_EDISI di bawah
+ * untuk teks yang ditampilkan); edisi uji berprefiks `UJI-`.
  *
  * Tinggal di lib, bukan di salah satu halaman: halaman Bulletin publik dan
  * Rak Terbitan admin sama-sama menyaring dengan aturan ini, dan aturan yang
@@ -33,8 +36,20 @@ export function tipeEdisi(kode: string): TipeEdisi {
   const k = kode.replace(/^UJI-/, '')
   if (k.startsWith('AP-W')) return 'Mingguan'
   if (k.startsWith('AP-M')) return 'Bulanan'
-  if (k.startsWith('BA-')) return 'Bedah'
+  if (k.startsWith('BA-') || k.startsWith('DD-')) return 'Bedah'
   return 'Harian'
+}
+
+/** Label tampil per tipe — nilai `TipeEdisi` sendiri TETAP `'Bedah'` (kunci
+ *  internal dipakai jadi kelas CSS `.t-bedah` di lantai.css dan sebagai
+ *  state saringan); cuma teks yang dibaca pengguna yang berganti "Deep
+ *  Dive" (21 Agu 2026, permintaan Johan — "Bedah" ambigu dgn halaman web
+ *  Bedah Emiten). Dieja satu tempat, pola sama dengan LABEL_RENTANG. */
+export const LABEL_TIPE_EDISI: Record<TipeEdisi, string> = {
+  Harian: 'Harian',
+  Mingguan: 'Mingguan',
+  Bulanan: 'Bulanan',
+  Bedah: 'Deep Dive',
 }
 
 /** Satu baris analitik emiten dari keluaran/<kode>.analisa.json. */

@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
-import { tipeEdisi, useBulletinList } from '../../lib/dasbor/bulletin'
+import { tipeEdisi, useBulletinList, LABEL_TIPE_EDISI, type TipeEdisi } from '../../lib/dasbor/bulletin'
 import { useAksesHalaman } from '../../context/AksesHalamanContext'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { IkonMenu, IKON_KUNCI, IKON_SILANG, IKON_MATA, IKON_CARI } from '../../components/dasbor/IkonMenu'
@@ -185,7 +185,7 @@ export function Bulletin() {
                   className={`tab${tipe === t ? ' on' : ''}`}
                   onClick={() => setTipe(t)}
                 >
-                  {t}
+                  {t === 'Semua' ? t : LABEL_TIPE_EDISI[t as TipeEdisi]}
                 </button>
               ))}
             </span>
@@ -220,8 +220,8 @@ export function Bulletin() {
           {daftar && daftar.length > 0 && tampil.length === 0 && (
             <p className="muted">
               {q
-                ? `Tidak ada edisi ${tipe === 'Semua' ? '' : tipe.toLowerCase() + ' '}yang membahas “${cari.trim()}”.`
-                : `Belum ada edisi ${tipe.toLowerCase()}.`}{' '}
+                ? `Tidak ada edisi ${tipe === 'Semua' ? '' : LABEL_TIPE_EDISI[tipe as TipeEdisi].toLowerCase() + ' '}yang membahas “${cari.trim()}”.`
+                : `Belum ada edisi ${LABEL_TIPE_EDISI[tipe as TipeEdisi]?.toLowerCase() ?? tipe.toLowerCase()}.`}{' '}
               <button
                 type="button"
                 className="blt-reset"
@@ -271,7 +271,7 @@ export function Bulletin() {
                             </span>
                           )}
                         </td>
-                        <td><span className={`bchip blt-tipe tipe-edisi t-${tipeEdisi(e.kode).toLowerCase()}`}>{tipeEdisi(e.kode)}</span></td>
+                        <td><span className={`bchip blt-tipe tipe-edisi t-${tipeEdisi(e.kode).toLowerCase()}`}>{LABEL_TIPE_EDISI[tipeEdisi(e.kode)]}</span></td>
                         <td>{e.tanggal_id}</td>
                         <td className="r num blt-ihsg">
                           {h ? (

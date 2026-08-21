@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { tipeEdisi, useBulletinList, type TipeEdisi } from '../../lib/dasbor/bulletin'
+import { tipeEdisi, useBulletinList, LABEL_TIPE_EDISI, type TipeEdisi } from '../../lib/dasbor/bulletin'
 import { IkonMenu, IKON_CARI, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
 import './AdminShared.css'
 
@@ -67,7 +67,7 @@ export function RakTerbitan() {
                 className={`tab${tipe === t ? ' on' : ''}`}
                 onClick={() => setTipe(t)}
               >
-                {t}
+                {t === 'Semua' ? t : LABEL_TIPE_EDISI[t as TipeEdisi]}
               </button>
             ))}
           </span>
@@ -128,7 +128,7 @@ export function RakTerbitan() {
                         Kolom ini ADA supaya empat jenis edisi bisa dibedakan
                         sekilas; kalau lencananya seragam, ia cuma mengulang
                         teks yang sudah terbaca dan tak membantu memindai. */}
-                    <td><span className={`chip tipe-edisi t-${tipeEdisi(r.kode).toLowerCase()}`}>{tipeEdisi(r.kode)}</span></td>
+                    <td><span className={`chip tipe-edisi t-${tipeEdisi(r.kode).toLowerCase()}`}>{LABEL_TIPE_EDISI[tipeEdisi(r.kode)]}</span></td>
                     <td>
                       <span className="tick">{r.kode}</span>
                       {r.update_dari != null && r.emiten.length > r.update_dari && (

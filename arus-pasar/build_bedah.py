@@ -1,4 +1,9 @@
-"""Arus Pasar — perakit BEDAH ARUS SAHAM (BA-*): satu emiten, satu terbitan.
+"""Arus Pasar — perakit DEEP DIVE (dulu "Bedah Arus Saham"): satu emiten, satu
+terbitan. Nama diganti 21 Agu 2026 — "Bedah" ambigu dengan halaman web "Bedah
+Emiten" (fundamental) dan sekarang sejajar Daily/Weekly/Monthly/Special
+Edition. Edisi JSON lama tetap berkode `BA-*` (tidak dirakit ulang, tidak
+diganti nama berkasnya); edisi JSON baru memakai kode `DD-*` — kode ditulis
+di JSON masing-masing (kolom `edisi`), skrip ini hanya membacanya apa adanya.
 
 Baca bedah/<TICKER-tanggal>.json, hitung PCD (pcd.py) dan probabilitas
 historis (prob.py), rakit 5 halaman di atas kulit template.html yang SAMA
@@ -168,7 +173,7 @@ def hal_sampul(bd, em, r, pr, cutoff):
     sel = "".join(f'<span><span class="l">{l}</span><b>{v}</b></span>' for l, v in stats)
     return f'''
 <div class="page">
-  {B.band(bd, "Bedah Arus Saham — Terbitan Perdana")}
+  {B.band(bd, "Deep Dive — Terbitan Perdana")}
   <div class="inner">
     <div class="bd-judul">BEDAH<br>ARUS SAHAM</div>
     <div class="cv-tag" style="margin-top:3mm">Satu Emiten · Modal, Arus &amp; Probabilitas</div>
@@ -545,7 +550,7 @@ def hal_broker_kosong(bd):
     <div class="blok integritas" style="margin-top:4mm">
       <h3 class="rule">Belum Ada Setoran Broker Summary</h3>
       <p style="text-align:justify">Belum ada setoran Broker Summary untuk {bd["ticker"]} — analisa arus broker
-      &amp; PCD per broker akan aktif setelah screenshot disetor (Admin -> Bedah Arus Saham).</p>
+      &amp; PCD per broker akan aktif setelah screenshot disetor (Admin -> Deep Dive).</p>
     </div>
     <div class="blok" style="margin-top:5mm">
       <h3 class="rule">Dua Jenis Setoran yang Diterima</h3>
@@ -1009,7 +1014,7 @@ def main():
     draw = [f'gambarChart("chT","{bd["ticker"]}",{em["ema50"]},{json.dumps(em["pivot"])});']
 
     tpl = (AKAR / "template.html").read_text(encoding="utf-8")
-    html = (tpl.replace("{{JUDUL}}", f"Bedah Arus Saham {bd['edisi']}")
+    html = (tpl.replace("{{JUDUL}}", f"Deep Dive {bd['edisi']}")
                .replace("/*PALET*/", palet.blok_css(EDISI_PALET))
                .replace("/*FONT*/", palet.blok_font())
                .replace("<!--PAGES-->", "\n".join(pages))

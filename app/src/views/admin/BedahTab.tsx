@@ -12,7 +12,7 @@ export function BedahTab() {
   if (profil?.boleh_bedah) return <BedahUnggah />
   return (
     <section className="panel">
-      <div className="panel-h"><span className="lbl">Bedah Arus Saham — unggah sumber</span></div>
+      <div className="panel-h"><span className="lbl">Deep Dive — unggah sumber</span></div>
       <div className="panel-b">
         <p className="muted" style={{ margin: 0, fontSize: 11 }}>
           Hak akses analisa single-saham diberikan superadmin.

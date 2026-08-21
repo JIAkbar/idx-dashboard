@@ -96,16 +96,23 @@ tersedia. Jangan "diperbaiki" dengan menebak.
 
 Keluaran: `AP-M<mmyy>-E01`.
 
-## 4 · Bedah single-saham
+## 4 · Deep Dive single-saham
+
+Diganti nama dari "Bedah Arus Saham" 21 Agu 2026 — "Bedah" ambigu dengan
+halaman web Bedah Emiten (fundamental), dan Deep Dive sekarang sejajar
+Daily/Weekly/Monthly/Special Edition. Perakit, folder data (`bedah/`), kunci
+setoran (`'bedah'`), dan edisi lama (`BA-*`) TIDAK berganti nama — hanya
+labelnya di layar.
 
 ```bash
 python build_bedah.py DSSA-2026-08-14
 ```
 
-Sumbernya beda: bahan bedah disetor lewat tab Bedah (bukan setoran harian),
-dan hanya kontributor Platinum ke atas yang boleh menyetorkannya.
+Sumbernya beda: bahan disetor lewat tab admin Deep Dive (bukan setoran
+harian), dan hanya kontributor Platinum ke atas yang boleh menyetorkannya.
 
-Keluaran: `BA-<TICKER>-<ddmmyy>-E01`.
+Keluaran: edisi lama `BA-<TICKER>-<ddmmyy>-E01`, edisi baru
+`DD-<TICKER>-<ddmmyy>-E01`.
 
 ---
 

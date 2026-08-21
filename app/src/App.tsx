@@ -98,8 +98,9 @@ function App() {
               <Route path="/stock-detail" element={<PenjagaHalaman kunci="detail"><StockDetail /></PenjagaHalaman>} />
               {/* Bedah Emiten (backlog A2 / #153) — halaman analisa 12 seksi.
                   JANGAN tertukar dengan tab admin /admin/bedah: itu perakit
-                  EDISI PDF bernama "Bedah" dan kuncinya memang 'bedah'.
-                  Karena itu halaman ini memakai kunci sendiri,
+                  EDISI PDF, dulu bernama "Bedah Arus Saham" dan sejak 21 Agu
+                  2026 tampil sebagai "Deep Dive" (label saja — kuncinya
+                  memang tetap 'bedah'). Karena itu halaman ini memakai kunci sendiri,
                   'bedah-emiten' — memakai 'bedah' akan membuat setelan
                   superadmin tab admin ikut mengunci halaman publik ini, dan
                   sebaliknya membuka halaman ini berarti membuka perakit

@@ -38,6 +38,21 @@ Naik satu level dari gabungan: **scorecard**. Selain rekap semua pick sebulan
 (dari cache OHLC): capai target? kena invalidation? masih berjalan? Ringkasan bulanan =
 berapa % pick yang tercapai — akuntabilitas analisa, bukan cuma kumpulan ide.
 
+## Deep Dive — satu emiten, satu terbitan (`build_bedah.py`)
+
+Beda jalur dari Harian/Mingguan/Bulanan: satu emiten dibahas mendalam lintas
+waktu (PCD, arus broker per hari, skenario teknikal), bukan banyak emiten
+dalam satu edisi. Kode edisi lama `BA-<TICKER>-<ddmmyy>-E01`, edisi baru
+`DD-<TICKER>-<ddmmyy>-E01`. Rincian: `docs/produksi-edisi.md` §4.
+
+Diganti nama dari "Bedah Arus Saham" jadi **Deep Dive** 21 Agu 2026 (perintah
+Johan) — "Bedah" ambigu dengan halaman web Bedah Emiten (analisa fundamental
+12 seksi, tak ada hubungannya), dan Deep Dive sejajar dengan Daily/Weekly/
+Monthly/Special Edition. Cuma nama tampil yang berganti: edisi lama (berkas
+`keluaran/BA-*`, data `bedah/*.json`) tidak dirakit ulang atau diganti nama;
+kunci internal (`tipe: 'bedah'` di manifest, jenis setoran `'bedah'`, kunci
+akses tab admin `'bedah'`) tetap sama.
+
 ## Kenapa data orderbook tetap lewat screenshot
 
 Rincian per-broker-per-saham TIDAK tersedia via API publik mana pun (endpoint detail

@@ -79,7 +79,9 @@ def main():
             baris["analisa"] = json.loads(sc.read_text(encoding="utf-8"))
         entri.append(baris)
 
-    # Bedah Arus Saham (BA-*): satu emiten satu terbitan, berkas di bedah/.
+    # Deep Dive (dulu "Bedah Arus Saham", BA-*/DD-*): satu emiten satu
+    # terbitan, berkas di bedah/. Nama diganti 21 Agu 2026 (ambigu dgn
+    # halaman web Bedah Emiten) — folder & kunci "bedah" dipertahankan.
     for berkas in sorted((AKAR / "bedah").glob("*.json")):
         bd = json.loads(berkas.read_text(encoding="utf-8"))
         if "edisi" not in bd:
@@ -99,7 +101,7 @@ def main():
             "tipe": "Bedah",
             "tanggal": bd["tanggal"],
             "tanggal_id": bd["tanggal_id"],
-            "judul": f"Bedah Arus Saham {bd['ticker']} — {bd['tanggal_id']}",
+            "judul": f"Deep Dive {bd['ticker']} — {bd['tanggal_id']}",
             "emiten": [bd["ticker"]],
             "pdf": f"{kode}.pdf",
         })

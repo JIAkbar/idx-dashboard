@@ -162,7 +162,9 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   watchlist: 'watchlist',
   // Bedah Emiten (backlog A2 / #153, 20 Agu 2026). Kuncinya SENGAJA
   // 'bedah-emiten', bukan 'bedah': kunci 'bedah' sudah menjaga tab admin
-  // /admin/bedah (perakit edisi PDF, superadmin). Memakai ulang nama itu
+  // /admin/bedah (perakit edisi PDF — dulu "Bedah Arus Saham", sejak 21 Agu
+  // 2026 tampil sebagai "Deep Dive"; label saja, kunci tetap 'bedah',
+  // superadmin). Memakai ulang nama itu
   // membuat satu setelan menjaga dua hal yang tak berhubungan — membuka
   // halaman publik ini berarti membuka perakit edisi, dan menguncinya
   // berarti mengunci halaman analisa untuk semua orang.

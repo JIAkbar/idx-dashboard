@@ -640,7 +640,7 @@ function FormTambahAkun({ onClose, onSukses }: { onClose: () => void; onSukses: 
         </div>
         <label className="aa-cek-baris">
           <input type="checkbox" className="af-cek" checked={bedah} onChange={(e) => setBedah(e.target.checked)} />
-          <span>Izin Bedah Arus Saham</span>
+          <span>Izin Deep Dive</span>
         </label>
         <button type="submit" className="btn-p" disabled={kirim}>{kirim ? 'Membuat…' : 'Buat Akun'}</button>
         {err && <p className="af-err" style={{ margin: 0 }}>{err}</p>}

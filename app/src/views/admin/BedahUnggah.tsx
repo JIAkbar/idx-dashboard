@@ -301,12 +301,12 @@ export function BedahUnggah() {
     <>
       <PanduanScreenshot superadmin={superadmin} defaultBuka={false} bedah />
       <section className="panel">
-        <div className="panel-h"><span className="lbl">Bedah Arus Saham — unggah sumber</span></div>
+        <div className="panel-h"><span className="lbl">Deep Dive — unggah sumber</span></div>
         <div className="panel-b">
         <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
           Studi satu emiten <b>lintas waktu</b> — beda dari setoran harian (satu emiten, satu tanggal),
           di sini satu emiten boleh disetor untuk <b>beberapa tanggal</b>: rentang broker summary + done
-          summary per tanggal jadi bahan produk PDF "Bedah Arus Saham" yang dirakit di luar aplikasi ini.
+          summary per tanggal jadi bahan produk PDF "Deep Dive" yang dirakit di luar aplikasi ini.
         </p>
         <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
           Hasilnya dikreditkan atas nama kontributor yang menyetornya — kredit &amp; jenjang ikut

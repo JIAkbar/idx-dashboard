@@ -27,7 +27,7 @@ export function AturanScreenshot({ bedah = false }: { bedah?: boolean } = {}) {
       {bedah && (
         <>
           <li>
-            <b>Ini broker summary RENTANG, bukan harian.</b> Bedah Arus Saham menelusuri satu
+            <b>Ini broker summary RENTANG, bukan harian.</b> Deep Dive menelusuri satu
             emiten sepanjang beberapa hari — screenshot broker summary <b>rentang tanggal</b> jadi
             bahan wajib (salah satu), dan screenshot <b>Done Summary</b> (rekap transaksi) jadi pelengkap opsional.
           </li>
