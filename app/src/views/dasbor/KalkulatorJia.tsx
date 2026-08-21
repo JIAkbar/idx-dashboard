@@ -52,7 +52,9 @@ export function KalkulatorJia() {
         <ProfitAra feeBeli={feeBeli} feeJual={feeJual} setFeeBeli={setFeeBeli} setFeeJual={setFeeJual} />
       )}
       {tab === 'rr' && <RiskReward />}
-      {tab === 'div' && <Dividen feeBeli={feeBeli} setFeeBeli={setFeeBeli} />}
+      {tab === 'div' && (
+        <Dividen feeBeli={feeBeli} setFeeBeli={setFeeBeli} feeJual={feeJual} setFeeJual={setFeeJual} />
+      )}
       {tab === 'pulih' && <Pemulihan />}
     </div>
   )

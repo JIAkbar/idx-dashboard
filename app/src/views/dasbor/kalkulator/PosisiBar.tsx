@@ -1,4 +1,6 @@
 import { IkonMenu, IKON_PAPAN_KLIP } from '../../../components/dasbor/IkonMenu'
+import { StockAutocomplete } from '../../../components/dasbor/StockAutocomplete'
+import { useStockIndex } from '../../../lib/dasbor/stockDetailData'
 
 interface PosisiBarProps {
   kode: string
@@ -15,14 +17,28 @@ interface PosisiBarProps {
  * 3126-3165) — mini-bar "Isi Kalkulator" dipakai di tab Profit/RR/Dividen.
  * Sync kode lintas-tab (POSISI.syncFrom) sengaja tidak diport — per arahan
  * proyek cukup per-komponen, tombol "Isi Kalkulator" saja yang wajib jalan.
+ *
+ * Kode dulu input teks bebas (kode karangan lolos tanpa ketahuan) — kini
+ * StockAutocomplete yang sama dengan Avg Down & Pemulihan, label seragam
+ * "Emiten" (sweep 21 Agu 2026).
  */
 export function PosisiBar({ kode, onKode, lots, onLots, avg, onAvg, onFill }: PosisiBarProps) {
+  const { index: indexSaham } = useStockIndex()
+  const nama = indexSaham?.stocks.find((s) => s.ticker === kode)?.name
+
   return (
     <div className="vcard" style={{ gap: 8 }}>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <div className="field" style={{ width: 92 }}>
-          <span className="lbl"><IkonMenu d={IKON_PAPAN_KLIP} size={12} /> Kode</span>
-          <input className="inp" type="text" name="kode" placeholder="BBCA" maxLength={6} value={kode} onChange={(e) => onKode(e.target.value.toUpperCase())} />
+        <div className="field" style={{ width: 190 }}>
+          <span className="lbl"><IkonMenu d={IKON_PAPAN_KLIP} size={12} /> Emiten</span>
+          <StockAutocomplete
+            stocks={indexSaham?.stocks ?? []}
+            value={kode}
+            onChange={onKode}
+            onSelect={onKode}
+            placeholder="Cari kode / nama emiten…"
+          />
+          {nama && <div className="v-note" style={{ display: 'block', marginTop: 4 }}>{nama}</div>}
         </div>
         <div className="field" style={{ width: 80 }}>
           <span className="lbl">Lots</span>

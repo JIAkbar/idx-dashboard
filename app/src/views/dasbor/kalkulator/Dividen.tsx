@@ -7,11 +7,13 @@ import { batasArb } from '../../../lib/fraksiHarga'
 interface DividenProps {
   feeBeli: number
   setFeeBeli: (v: number) => void
+  feeJual: number
+  setFeeJual: (v: number) => void
 }
 
 /** Port panel "Dividen" — markup index_live.html baris 1467-1538, objek
  *  DIVCALC baris 3310-3363. */
-export function Dividen({ feeBeli, setFeeBeli }: DividenProps) {
+export function Dividen({ feeBeli, setFeeBeli, feeJual, setFeeJual }: DividenProps) {
   const [posKode, setPosKode] = useState('')
   const [posLots, setPosLots] = useState('')
   const [posAvg, setPosAvg] = useState('')
@@ -34,6 +36,10 @@ export function Dividen({ feeBeli, setFeeBeli }: DividenProps) {
   const dpsN = parseFloat(dps) || 0
   const taxN = parseFloat(tax) || 10
   const fb = incFee ? feeBeli / 100 : 0
+  // Fee jual dulu tak pernah dipakai di tab ini — skenario "jual di harga X"
+  // diam-diam mengasumsikan jual tanpa fee. feeJual=0 (nilai lama, sebelum
+  // tab ini punya kotaknya sendiri) memberi hasil identik dengan sebelumnya.
+  const fs = feeJual / 100
 
   const result = useMemo(() => {
     if (!buyN || !lotsN || !dpsN) return null
@@ -55,39 +61,20 @@ export function Dividen({ feeBeli, setFeeBeli }: DividenProps) {
       { label: `ARB (turun ${batasArb(buyN)}%)`, price: buyN * (1 - batasArb(buyN) / 100) },
       { label: 'Turun 30%', price: buyN * 0.7 },
     ].map((sc) => {
-      const mktVal = sc.price * shares
+      const mktVal = sc.price * shares * (1 - fs)
       const netGL = mktVal + divNet - invest
       const netPct = (netGL / invest) * 100
       return { ...sc, netGL, netPct }
     })
 
     return { invest, divGross, taxAmt, divNet, yieldGross, yieldNet, bep, scenarios }
-  }, [buyN, lotsN, dpsN, taxN, fb])
+  }, [buyN, lotsN, dpsN, taxN, fb, fs])
 
   return (
     <div className="grid2 w-kiri">
       <div>
         <div className="panel">
-          <div className="panel-h" style={{ flexWrap: 'wrap', rowGap: 6 }}>
-            <span className="lbl"><IkonMenu d={IKON_UANG_KERTAS} size={13} /> Dividend Calculator</span>
-            <div
-              style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}
-              title="Default: Beli 0.15% (standard IDX/Stockbit)"
-            >
-              <span className="lbl" style={{ textTransform: 'none', letterSpacing: 0 }}>Fee Beli</span>
-              <input
-                className="inp"
-                style={{ width: 72 }}
-                type="number"
-                min={0}
-                max={5}
-                step={0.01}
-                name="feeBeli" value={feeBeli}
-                aria-label="Fee beli (persen)"
-                onChange={(e) => setFeeBeli(parseFloat(e.target.value) || 0)}
-              />
-            </div>
-          </div>
+          <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_UANG_KERTAS} size={13} /> Dividend Calculator</span></div>
           <div className="panel-b">
             <PosisiBar kode={posKode} onKode={setPosKode} lots={posLots} onLots={setPosLots} avg={posAvg} onAvg={setPosAvg} onFill={handleFill} />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 10, marginBottom: 8 }}>
@@ -107,6 +94,25 @@ export function Dividen({ feeBeli, setFeeBeli }: DividenProps) {
                 <span className="lbl">Pajak Dividen (%)</span>
                 <input className="inp" type="number" name="tax" value={tax} min={0} max={100} step={0.5} onChange={(e) => setTax(e.target.value)} />
                 <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 2 }}>WNI OP: 10% final</div>
+              </div>
+              <div className="field">
+                <span className="lbl">Fee Beli (%)</span>
+                <input
+                  className="inp" type="number" min={0} max={5} step={0.01}
+                  name="feeBeli" value={feeBeli}
+                  aria-label="Fee beli (persen)"
+                  onChange={(e) => setFeeBeli(parseFloat(e.target.value) || 0)}
+                />
+              </div>
+              <div className="field">
+                <span className="lbl">Fee Jual (%)</span>
+                <input
+                  className="inp" type="number" min={0} max={5} step={0.01}
+                  name="feeJual" value={feeJual}
+                  aria-label="Fee jual (persen)"
+                  onChange={(e) => setFeeJual(parseFloat(e.target.value) || 0)}
+                />
+                <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 2 }}>Dipakai di skenario jual di bawah</div>
               </div>
             </div>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--text2)', cursor: 'pointer' }}>

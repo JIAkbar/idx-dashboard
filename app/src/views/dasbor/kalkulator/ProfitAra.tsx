@@ -87,36 +87,7 @@ export function ProfitAra({ feeBeli, feeJual, setFeeBeli, setFeeJual }: ProfitAr
     <div className="grid2 w-kiri">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div className="panel">
-          <div className="panel-h" style={{ flexWrap: 'wrap', rowGap: 6 }}>
-            <span className="lbl"><IkonMenu d={IKON_UANG} size={13} /> Profit Calculator</span>
-            <div
-              style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}
-              title="Default: Beli 0.15% / Jual 0.25% (standard IDX/Stockbit)"
-            >
-              <span className="lbl" style={{ textTransform: 'none', letterSpacing: 0 }}>Fee Beli</span>
-              <input
-                className="inp"
-                style={{ width: 72 }}
-                type="number"
-                min={0}
-                max={5}
-                step={0.01}
-                name="feeBeli" aria-label="Fee beli (persen)" value={feeBeli}
-                onChange={(e) => setFeeBeli(parseFloat(e.target.value) || 0)}
-              />
-              <span className="lbl" style={{ textTransform: 'none', letterSpacing: 0 }}>Fee Jual</span>
-              <input
-                className="inp"
-                style={{ width: 72 }}
-                type="number"
-                min={0}
-                max={5}
-                step={0.01}
-                name="feeJual" aria-label="Fee jual (persen)" value={feeJual}
-                onChange={(e) => setFeeJual(parseFloat(e.target.value) || 0)}
-              />
-            </div>
-          </div>
+          <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_UANG} size={13} /> Profit Calculator</span></div>
           <div className="panel-b">
             <PosisiBar kode={posKode} onKode={setPosKode} lots={posLots} onLots={setPosLots} avg={posAvg} onAvg={setPosAvg} onFill={handleFill} />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 10 }}>
@@ -140,6 +111,27 @@ export function ProfitAra({ feeBeli, feeJual, setFeeBeli, setFeeJual }: ProfitAr
             <div className="field" style={{ marginTop: 10 }}>
               <span className="lbl">Lots (1 lot = 100 saham)</span>
               <input className="inp" type="number" name="lots" placeholder="0" min={0} step={1} value={lots} onChange={(e) => setLots(e.target.value)} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 10 }}>
+              <div className="field">
+                <span className="lbl">Fee Beli (%)</span>
+                <input
+                  className="inp" type="number" min={0} max={5} step={0.01}
+                  name="feeBeli" aria-label="Fee beli (persen)" value={feeBeli}
+                  onChange={(e) => setFeeBeli(parseFloat(e.target.value) || 0)}
+                />
+              </div>
+              <div className="field">
+                <span className="lbl">Fee Jual (%)</span>
+                <input
+                  className="inp" type="number" min={0} max={5} step={0.01}
+                  name="feeJual" aria-label="Fee jual (persen)" value={feeJual}
+                  onChange={(e) => setFeeJual(parseFloat(e.target.value) || 0)}
+                />
+              </div>
+            </div>
+            <div className="v-note" style={{ display: 'block', marginTop: 6, lineHeight: 1.5 }}>
+              Default: Beli 0.15% / Jual 0.25% (standar IDX/Stockbit).
             </div>
           </div>
         </div>

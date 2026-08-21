@@ -2544,6 +2544,15 @@
 .lantai .kalk-tbl-pulih tbody tr.sorot td {
   outline: 1px solid var(--amber); outline-offset: -1px; font-weight: 700;
 }
+/* Pemisah tiap anak tangga 25% — di ATAS pewarnaan bertahap, bukan pengganti. */
+.lantai .kalk-tbl-pulih tbody tr.pisah25 td { border-top: 1px solid var(--line); }
+/* Sweep 21 Agu 2026: `.dasbor-shell table{width:100%}` (global) + satu kolom
+   colgroup dulu tanpa width membuat kolom itu menelan seluruh sisa lebar
+   panel, mendorong "Hari ARA" jauh ke kanan. Semua kolom sekarang punya
+   width eksplisit (lihat colgroup di Pemulihan.tsx) — tabel dikembalikan ke
+   lebar isinya, dikunci tak boleh melebihi kartu di sebelahnya. */
+.lantai .kalk-tbl-pulih { width: auto; max-width: 100%; }
+.lantai .kalk-tbl-pulih th, .lantai .kalk-tbl-pulih td { padding: 5px 8px; white-space: nowrap; }
 @media (max-width: 860px) { .lantai .kalk-pemulihan { grid-template-columns: 1fr; } }
 
 /* ===== Seasonality ======================================================== */

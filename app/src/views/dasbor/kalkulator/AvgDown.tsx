@@ -212,7 +212,7 @@ export function AvgDown() {
           <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_PAPAN_KLIP} size={13} /> Posisi Saham</span></div>
           <div className="panel-b">
             <div className="field" style={{ marginBottom: 10 }}>
-              <span className="lbl">Kode Saham</span>
+              <span className="lbl">Emiten</span>
               {/* Dulu input teks bebas: kode karangan baru ketahuan setelah
                   "Cari Harga" gagal. Kini autocomplete dari daftar emiten
                   resmi (komponen yang sama dengan Stock Detail & Admin);

@@ -138,7 +138,9 @@ export function Pemulihan() {
             <span className="lbl">Jumlah lot</span>
             <input className="inp" inputMode="numeric" value={lot} placeholder="0"
               onChange={(e) => setLot(e.target.value)} />
-            <span className="v-note">1 lot = 100 saham — kosongkan kalau cuma mau lihat persentase.</span>
+            <span className="v-note" style={{ display: 'block', marginTop: 6, lineHeight: 1.5 }}>
+              1 lot = 100 saham — kosongkan kalau cuma mau lihat persentase.
+            </span>
           </div>
           <div className="field">
             <span className="lbl">Harga beli rata-rata (Rp)</span>
@@ -157,7 +159,9 @@ export function Pemulihan() {
             {/* Angka bawaan 7% bukan tebakan asal: kira-kira imbal jangka
                 panjang IHSG. Dibiarkan bisa diubah karena tiap orang punya
                 keyakinan sendiri soal ini. */}
-            <span className="v-note">Dikosongkan berarti kembali ke {CAGR_BAWAAN}% — kira-kira imbal jangka panjang IHSG.</span>
+            <span className="v-note" style={{ display: 'block', marginTop: 6, lineHeight: 1.5 }}>
+              Dikosongkan berarti kembali ke {CAGR_BAWAAN}% — kira-kira imbal jangka panjang IHSG.
+            </span>
           </div>
 
           {posisi && posisi.rugi > 0 && (
@@ -220,10 +224,13 @@ export function Pemulihan() {
         </div>
         <div className="panel-b" style={{ overflowX: 'auto' }}>
           <table className="tbl kalk-tbl-pulih">
+            {/* Lebar kolom eksplisit di semua kolom (tak ada `<col />` kosong
+                yang menyerap sisa lebar tabel width:100% (.dasbor-shell
+                table)) — itu penyebab "HARI ARA" terdorong jauh ke kanan. */}
             <colgroup>
-              <col style={{ width: 74 }} /><col style={{ width: 96 }} />
-              <col style={{ width: 96 }} /><col />
-              <col style={{ width: 90 }} />
+              <col style={{ width: 62 }} /><col style={{ width: 82 }} />
+              <col style={{ width: 78 }} /><col style={{ width: 118 }} />
+              <col style={{ width: 76 }} />
             </colgroup>
             <thead>
               <tr>
@@ -247,8 +254,11 @@ export function Pemulihan() {
                 // tentu bisa dipesan. Sasaran (avg) dibulatkan ke ATAS — alasan
                 // sama seperti di kartu vonis di atas.
                 const acuan = posisi ? keFraksi(posisi.avg * (1 - r / 100), 'bawah') : null
+                // Pemisah tiap 25% (garis tipis) di atas pewarnaan bertahap
+                // yang sudah ada — bukan pengganti.
+                const pisah = r % 25 === 0
                 return (
-                  <tr key={r} className={`t-${tingkat(r)}${dekat ? ' sorot' : ''}`}>
+                  <tr key={r} className={`t-${tingkat(r)}${dekat ? ' sorot' : ''}${pisah ? ' pisah25' : ''}`}>
                     <td><b>{r}%</b></td>
                     <td className="num">{naik.toFixed(2)}%</td>
                     <td className="num">{th === null ? '—' : th < 1 ? `${Math.round(th * 12)} bln` : `${th.toFixed(1)} thn`}</td>
