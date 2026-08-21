@@ -21,6 +21,7 @@ import {
   bacaTemplateTersimpan, tulisTemplateTersimpan, simpanTemplate, hapusTemplate,
   tandaiBawaan, ubahNamaTemplate, tutupSampai, penandaDiSekitar,
   hitungPenandaInstans, type PenandaSiapGambar,
+  jenisKlasik, namaPolaDariJenis, RASIO_HARMONIK,
   hitungSegmenInstans, hitungLilinInstans, type LilinSiapGambar,
   warnaGrid, gridDariTemplate, GRID_BAWAAN, type SetelanGrid,
   type BerkasOhlcEmiten, type DoubleBottom, type JenisAsli, type JenisIndikator, type JenisPola,
@@ -50,7 +51,7 @@ import { useAlatGambar } from '../../lib/dasbor/useAlatGambar'
 import { fN } from '../../lib/dasbor/format'
 import { pesanGalat } from '../../lib/pesanGalat'
 import { keFraksi } from '../../lib/fraksiHarga'
-import { arahStruktur, cariPatahan, cariSwing, type Patahan, type Swing } from '../../lib/dasbor/strukturPasar'
+import { arahStruktur, cariPatahan, cariSwing, hitungPrz, type Patahan, type Swing } from '../../lib/dasbor/strukturPasar'
 import {
   IkonMenu, IKON_CARI, IKON_SILANG, IKON_INFO, IKON_TONG, IKON_MATA,
   IKON_MATA_CORET, IKON_GIR, IKON_LILIN, IKON_GRAFIK_NAIK, IKON_KAMERA,
@@ -72,7 +73,15 @@ const OPSI_KURASI = (Object.keys(SPEK_INDIKATOR) as JenisAsli[])
  *  tampilan: indikator menghitung satu deret sepanjang data, pola menemukan
  *  kejadian yang bisa nol, satu, atau belasan — dua hal yang di satu menu
  *  akan terbaca seolah sejenis. */
-const JENIS_POLA = Object.keys(SPEK_POLA) as JenisPola[]
+// Dua jenis disembunyikan dari menu tapi JENISNYA tetap hidup (template
+// tersimpan wajib tetap tergambar):
+//   - `polaKlasik` — gabungan lama; enam belas polanya kini entri sendiri.
+//   - `doubleBottom` — detektor generasi pertama; namanya PERSIS sama dengan
+//     `pk-double-bottom`, dan dua entri "Double Bottom" berdampingan di menu
+//     berarti salah satu akan dipilih orang tanpa tahu bedanya. Yang menang
+//     yang punya target & status.
+const JENIS_POLA = (Object.keys(SPEK_POLA) as JenisPola[])
+  .filter((j) => j !== 'polaKlasik' && j !== 'doubleBottom')
 
 const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 
@@ -201,6 +210,14 @@ interface PenandaPola {
    *  tertukar dengan "kejadian yang ditemukan" — dua hal yang sangat berbeda
    *  walau sama-sama tergambar di bawah lilin. */
   bentuk?: 'circle' | 'square'
+  /**
+   * Teks PENDEK yang dicetak DI KANVAS di sebelah penandanya — 'HH', 'X',
+   * 'BOS'. Beda peran dengan `teks` (keterangan panjang untuk tooltip/menu
+   * konteks): ini label yang terbaca tanpa disentuh, meniru label swing
+   * berkotak di chart-chart acuan Johan. Kosong = penanda tanpa tulisan,
+   * perilaku lama.
+   */
+  labelKanvas?: string
 }
 
 const spekPola = (jenis: JenisPola) => SPEK_POLA[jenis].param
@@ -1635,8 +1652,13 @@ export function GrafikEmiten() {
       // Pola klasik (B35): enam belas pola (reversal + continuation), mesin
       // & angka backtest-nya di `polaKlasik.ts`. Garisnya digambar efek seri
       // pola di bawah.
-      klasik: inst.jenis === 'polaKlasik'
-        ? cariPolaKlasik(lilin, inst.param as unknown as ParamPolaKlasik)
+      klasik: jenisKlasik(inst.jenis)
+        ? (() => {
+          const semua = cariPolaKlasik(lilin, inst.param as unknown as ParamPolaKlasik)
+          const nama = namaPolaDariJenis(inst.jenis)
+          // `pk-*` = satu pola saja; `polaKlasik` lama = semua enam belas.
+          return nama ? semua.filter((q) => q.nama === nama) : semua
+        })()
         : ([] as PolaKlasik[]),
       // Struktur pasar (21 Agu 2026). Swing dan patahannya dihitung
       // BERSAMAAN karena patahan membaca swing — memisahkannya berarti dua
@@ -2019,7 +2041,7 @@ export function GrafikEmiten() {
     // yang terbaru (MAKS_PENANDA_POLA) sama seperti penandanya: dua belas
     // pola sekaligus cuma menutupi harga yang justru sedang dibaca.
     for (const { inst, klasik } of polaPerInstans) {
-      if (inst.jenis !== 'polaKlasik' || !digambar(inst) || klasik.length === 0) continue
+      if (!jenisKlasik(inst.jenis) || !digambar(inst) || klasik.length === 0) continue
       for (const q of klasik.slice(-MAKS_PENANDA_POLA)) {
         const warna = baca(q.arah === 'bullish' ? '--green' : '--red')
         q.garis.forEach((g, gi) => {
@@ -2050,6 +2072,43 @@ export function GrafikEmiten() {
             { time: lilin[ujung].time, value: q.target },
           ]))
           seriPolaRef.current.push(sT)
+        }
+      }
+    }
+
+    // Harmonic: kerangka XABCD digambar sebagai garis + zona PRZ (Johan
+    // 21 Agu 2026: "coba perbaiki supaya muncul drawing nya"). Konvensinya
+    // dari literatur harmonic (riset web, lihat Papan Pekerjaan): kaki-kaki
+    // zigzag X-A-B-C-D tergambar utuh, dan PRZ — zona tempat beberapa
+    // proyeksi Fibonacci bertumpu — dipetakan sebagai DUA garis putus-putus
+    // di sekitar titik D, ditarik sedikit ke kanan sebagai area, bukan titik.
+    for (const { inst, harmonik } of polaPerInstans) {
+      if (inst.jenis !== 'harmonik' || !digambar(inst) || harmonik.length === 0) continue
+      for (const h of harmonik.slice(-MAKS_PENANDA_POLA)) {
+        const warna = baca(WARNA_HARMONIK[h.pola])
+        const kerangka = chart.addSeries(LineSeries, {
+          color: warna, lineWidth: 2, priceLineVisible: false,
+          lastValueVisible: false, crosshairMarkerVisible: false,
+        }, 0)
+        kerangka.setData(keChart(h.indeks.map((iL, t) => ({ time: lilin[iL].time, value: h.harga[t] }))))
+        seriPolaRef.current.push(kerangka)
+
+        const prz = hitungPrz(h.harga[0], h.harga[1], h.harga[2], h.harga[3], RASIO_HARMONIK[h.pola].ad[0])
+        if (prz) {
+          // Zona ditarik dari C sampai beberapa lilin melewati D: PRZ adalah
+          // AREA tempat D diharapkan berbalik, bukan garis di D-nya sendiri.
+          const iAkhir = Math.min(h.indeks[4] + 10, lilin.length - 1)
+          for (const nilai of [prz.bawah, prz.atas]) {
+            const g = chart.addSeries(LineSeries, {
+              color: baca('--amber'), lineWidth: 1, lineStyle: LineStyle.Dashed,
+              priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
+            }, 0)
+            g.setData(keChart([
+              { time: lilin[h.indeks[3]].time, value: nilai },
+              { time: lilin[iAkhir].time, value: nilai },
+            ]))
+            seriPolaRef.current.push(g)
+          }
         }
       }
     }
@@ -2159,7 +2218,7 @@ export function GrafikEmiten() {
                 ? swing.length === 0
                   ? 'rentangnya terlalu pendek'
                   : `struktur ${arahStruktur(swing)} · ${swing.length} swing · ${patahan.length} patahan`
-                : inst.jenis === 'polaKlasik'
+                : jenisKlasik(inst.jenis)
                   ? klasik.length === 0
                     ? 'tak ada di rentang ini'
                     : `${klasik.length} pola · ${klasikMenunggu} menunggu target`
@@ -2334,6 +2393,12 @@ export function GrafikEmiten() {
           token: sw.label === 'HH' || sw.label === 'HL' ? '--green'
             : sw.label === 'LH' || sw.label === 'LL' ? '--red' : '--text3',
           bentuk: 'circle',
+          // Kodenya DICETAK di kanvas (Johan 21 Agu 2026: "Higher High jadi
+          // HH... kan sudah ada contoh nya") — persis konvensi label swing di
+          // chart acuan. Swing pertama tanpa pembanding diberi SH/SL, bukan
+          // dikosongkan: titik tak berlabel di antara yang berlabel terbaca
+          // sebagai penanda rusak.
+          labelKanvas: sw.label ?? (sw.jenis === 'high' ? 'SH' : 'SL'),
           teks: `${nama} · ${sw.jenis === 'high' ? 'Swing High' : 'Swing Low'} ${fN(sw.harga, 0)}`
             + (sw.label ? ` · ${sw.label}` : ' · swing pertama, belum ada pembanding'),
         })
@@ -2346,6 +2411,10 @@ export function GrafikEmiten() {
           posisi: q.arah === 'bullish' ? 'belowBar' : 'aboveBar',
           token: q.arah === 'bullish' ? '--green' : '--red',
           bentuk: 'square',
+          // Singkatan dari huruf kapital labelnya: Double Top -> DT,
+          // Inverted Head & Shoulders -> IHS — cukup pendek untuk kanvas,
+          // cukup khas untuk dibedakan; kepanjangannya di tooltip.
+          labelKanvas: LABEL_POLA_KLASIK[q.nama].replace(/[^A-Z]/g, ''),
           teks: `${nama} · ${LABEL_POLA_KLASIK[q.nama]} ${q.arah}`
             + ` · patah di ${fN(q.hargaSinyal, 0)} · target ${fN(q.target, 0)}`
             + ` · ${LABEL_STATUS_POLA[q.status]}`,
@@ -2357,6 +2426,7 @@ export function GrafikEmiten() {
           posisi: pt.arah === 'naik' ? 'belowBar' : 'aboveBar',
           token: pt.jenis === 'CHoCH' ? '--amber' : '--blue',
           bentuk: 'square',
+          labelKanvas: pt.jenis,
           teks: `${nama} · ${pt.jenis} ${pt.arah} · menutup melewati ${fN(pt.harga, 0)}`
             + (pt.jenis === 'CHoCH' ? ' — struktur berbalik' : ' — struktur berlanjut'),
         })
@@ -2387,6 +2457,7 @@ export function GrafikEmiten() {
             // posisi, warna bebas dipakai untuk hal lain.
             posisi: h.arah === 'bullish' ? 'belowBar' : 'aboveBar',
             token: WARNA_HARMONIK[h.pola], bentuk: 'circle',
+            labelKanvas: 'XABCD'[t],
             teks: `${nama} · ${NAMA_HARMONIK[h.pola]} ${h.arah} · titik ${'XABCD'[t]} ${fN(h.harga[t], 0)} · ${ekor}`,
           })
         }
@@ -2479,6 +2550,7 @@ export function GrafikEmiten() {
 
     const keMarker = (p: PenandaPola): SeriesMarker<Time> => ({
       time: keWaktuChart(p.time) as Time, position: p.posisi, shape: p.bentuk ?? 'circle', color: baca(p.token),
+      ...(p.labelKanvas ? { text: p.labelKanvas } : {}),
     })
     // Penanda indikator (Williams Fractals) digabung ke seri harga bersama
     // penanda pola. Wajib urut menaik menurut waktu — lightweight-charts
@@ -3294,7 +3366,7 @@ export function GrafikEmiten() {
                         ))}
                       </ul>
                     )}
-                    {inst.jenis === 'polaKlasik' && klasik.length > 0 && (
+                    {jenisKlasik(inst.jenis) && klasik.length > 0 && (
                       <ul className="grf-pola-daftar">
                         {klasik.slice(-MAKS_PENANDA_POLA).reverse().map((q) => (
                           <li key={`k-${q.iSinyal}-${q.nama}`}
@@ -3312,7 +3384,7 @@ export function GrafikEmiten() {
                         ))}
                       </ul>
                     )}
-                    {inst.jenis === 'polaKlasik' && (
+                    {jenisKlasik(inst.jenis) && (
                       // Angka backtest-nya DICETAK, bukan disembunyikan di
                       // balik kata "teruji" — permintaan eksplisit Johan:
                       // "bukan asal tebak berdasarkan hasil benchmark dan

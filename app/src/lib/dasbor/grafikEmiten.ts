@@ -1070,9 +1070,53 @@ function garisPustaka(
  * label yang diturunkan darinya.
  * ------------------------------------------------------------------ */
 
+/** Enam belas pola klasik — nama & label KANONIS. Mesin pencarinya di
+ *  `polaKlasik.ts` (yang mengekspor ulang keduanya); definisinya tinggal di
+ *  sini supaya `SPEK_POLA` bisa membacanya tanpa siklus modul. */
+export type NamaPolaKlasik =
+  | 'double-top' | 'double-bottom'
+  | 'triple-top' | 'triple-bottom'
+  | 'head-shoulders' | 'inv-head-shoulders'
+  | 'rising-wedge' | 'falling-wedge'
+  | 'expanding-triangle'
+  | 'bullish-flag' | 'bearish-flag'
+  | 'bullish-pennant' | 'bearish-pennant'
+  | 'ascending-triangle' | 'descending-triangle' | 'symmetrical-triangle'
+
+export const LABEL_POLA_KLASIK: Record<NamaPolaKlasik, string> = {
+  'double-top': 'Double Top',
+  'double-bottom': 'Double Bottom',
+  'triple-top': 'Triple Top',
+  'triple-bottom': 'Triple Bottom',
+  'head-shoulders': 'Head & Shoulders',
+  'inv-head-shoulders': 'Inverted Head & Shoulders',
+  'rising-wedge': 'Rising Wedge',
+  'falling-wedge': 'Falling Wedge',
+  'expanding-triangle': 'Expanding Triangle',
+  'bullish-flag': 'Bullish Flag',
+  'bearish-flag': 'Bearish Flag',
+  'bullish-pennant': 'Bullish Pennant',
+  'bearish-pennant': 'Bearish Pennant',
+  'ascending-triangle': 'Ascending Triangle',
+  'descending-triangle': 'Descending Triangle',
+  'symmetrical-triangle': 'Symmetrical Triangle',
+}
+
+/** Jenis pola menu untuk SATU pola klasik — `pk-double-top` dst. */
+export type JenisPolaKlasikMenu = `pk-${NamaPolaKlasik}`
+
+/** Nama pola klasik dari sebuah jenis menu; null untuk jenis lain. */
+export function namaPolaDariJenis(jenis: string): NamaPolaKlasik | null {
+  return jenis.startsWith('pk-') ? (jenis.slice(3) as NamaPolaKlasik) : null
+}
+
+/** Instans ini memakai mesin pola klasik? (gabungan lama ATAU satu pola) */
+export const jenisKlasik = (jenis: string): boolean =>
+  jenis === 'polaKlasik' || jenis.startsWith('pk-')
+
 export type JenisPola =
   | 'doubleBottom' | 'lonjakanVolume' | 'musiman' | 'divergensi' | 'wyckoff' | 'harmonik'
-  | 'struktur' | 'polaKlasik'
+  | 'struktur' | 'polaKlasik' | JenisPolaKlasikMenu
 export type InstansPola = Instans<JenisPola>
 
 export interface SpekPola {
@@ -1184,6 +1228,31 @@ export const SPEK_POLA: Record<JenisPola, SpekPola> = {
       { kunci: 'bcMaks', label: 'BC/AB maks', bawaan: 0.886, min: 0.1, maks: 2, bulat: false },
     ],
   },
+  // Enam belas pola klasik sebagai entri menu TERPISAH (Johan 21 Agu 2026:
+  // "di pisah-pisah saja jgn jadi satu biar tidak berat"). Mesin & paramnya
+  // SATU (`polaKlasik.ts`); tiap entri cuma saringan nama di atasnya. Entri
+  // gabungan `polaKlasik` tetap hidup untuk template yang sudah tersimpan,
+  // tapi disembunyikan dari menu (lihat `JENIS_POLA` di komponen).
+  ...(Object.fromEntries(
+    (Object.entries(LABEL_POLA_KLASIK) as Array<[NamaPolaKlasik, string]>).map(([nama, label]) => [
+      `pk-${nama}`,
+      {
+        label,
+        param: [
+          { kunci: 'jendela', label: 'Jendela pivot', bawaan: 5, min: 1, maks: 60, bulat: true },
+          { kunci: 'ayunMin', label: 'Ayun zigzag min %', bawaan: 3, min: 0.1, maks: 50, bulat: false },
+          { kunci: 'atr', label: 'Periode ATR', bawaan: 14, min: 2, maks: 200, bulat: true, bandingLilin: true },
+          { kunci: 'toleransi', label: 'Toleransi ×ATR', bawaan: 1, min: 0.05, maks: 10, bulat: false },
+          { kunci: 'tunggu', label: 'Tunggu patahan', bawaan: 40, min: 3, maks: 500, bulat: true },
+          // Tiang cuma berarti untuk flag/pennant; di pola lain mesin tak
+          // membacanya. Tetap satu daftar param supaya bentuk instansnya
+          // seragam dan template bisa berpindah jenis tanpa migrasi.
+          { kunci: 'tiang', label: 'Panjang tiang (flag)', bawaan: 20, min: 3, maks: 200, bulat: true },
+          { kunci: 'tiangAtr', label: 'Tinggi tiang ×ATR', bawaan: 4, min: 0.5, maks: 50, bulat: false },
+        ],
+      },
+    ]),
+  ) as Record<JenisPolaKlasikMenu, SpekPola>),
   musiman: {
     label: 'Musiman',
     param: [{

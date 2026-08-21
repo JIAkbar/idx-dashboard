@@ -1,5 +1,6 @@
 import type { LilinData, TitikZigzag } from './grafikEmiten'
 import { hitungATR, zigzagPivot } from './grafikEmiten'
+import type { NamaPolaKlasik } from './grafikEmiten'
 
 /**
  * Pola chart klasik — mesin SATU untuk enam belas pola (sembilan reversal +
@@ -116,34 +117,15 @@ export const PARAM_POLA_KLASIK_BAWAAN: ParamPolaKlasik = {
   tiangAtr: 4,
 }
 
-export type NamaPolaKlasik =
-  | 'double-top' | 'double-bottom'
-  | 'triple-top' | 'triple-bottom'
-  | 'head-shoulders' | 'inv-head-shoulders'
-  | 'rising-wedge' | 'falling-wedge'
-  | 'expanding-triangle'
-  | 'bullish-flag' | 'bearish-flag'
-  | 'bullish-pennant' | 'bearish-pennant'
-  | 'ascending-triangle' | 'descending-triangle' | 'symmetrical-triangle'
-
-export const LABEL_POLA_KLASIK: Record<NamaPolaKlasik, string> = {
-  'double-top': 'Double Top',
-  'double-bottom': 'Double Bottom',
-  'triple-top': 'Triple Top',
-  'triple-bottom': 'Triple Bottom',
-  'head-shoulders': 'Head & Shoulders',
-  'inv-head-shoulders': 'Inverted Head & Shoulders',
-  'rising-wedge': 'Rising Wedge',
-  'falling-wedge': 'Falling Wedge',
-  'expanding-triangle': 'Expanding Triangle',
-  'bullish-flag': 'Bullish Flag',
-  'bearish-flag': 'Bearish Flag',
-  'bullish-pennant': 'Bullish Pennant',
-  'bearish-pennant': 'Bearish Pennant',
-  'ascending-triangle': 'Ascending Triangle',
-  'descending-triangle': 'Descending Triangle',
-  'symmetrical-triangle': 'Symmetrical Triangle',
-}
+// Tipe nama & labelnya TINGGAL di `grafikEmiten.ts` dan cuma diekspor ulang
+// dari sini. Bukan selera: sejak tiap pola jadi entri menu sendiri (Johan
+// 21 Agu 2026, "di pisah-pisah saja jgn jadi satu"), `SPEK_POLA` di sana ikut
+// membutuhkan daftarnya — dan modul ini SUDAH mengimpor nilai runtime dari
+// `grafikEmiten` (hitungATR, zigzagPivot). Kalau labelnya tinggal di sini,
+// dua modul saling menunggu saat inisialisasi dan yang kalah mendapat TDZ
+// error yang cuma muncul tergantung siapa yang dimuat duluan.
+export type { NamaPolaKlasik } from './grafikEmiten'
+export { LABEL_POLA_KLASIK } from './grafikEmiten'
 
 /** Satu titik garis — indeks lilin + harga. Pemetaan ke waktu chart terjadi
  *  di penggambar, bukan di sini: mesinnya dipakai juga oleh backtest yang
