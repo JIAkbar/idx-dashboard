@@ -33,6 +33,7 @@ const Radar = lazy(() => import('./views/dasbor/Radar').then((m) => ({ default: 
 const Seasonality = lazy(() => import('./views/dasbor/Seasonality').then((m) => ({ default: m.Seasonality })))
 const GrafikEmiten = lazy(() => import('./views/dasbor/GrafikEmiten').then((m) => ({ default: m.GrafikEmiten })))
 const KartuAnalisa = lazy(() => import('./views/dasbor/KartuAnalisa').then((m) => ({ default: m.KartuAnalisa })))
+const Screener = lazy(() => import('./views/dasbor/Screener').then((m) => ({ default: m.Screener })))
 const BedahEmiten = lazy(() => import('./views/dasbor/BedahEmiten').then((m) => ({ default: m.BedahEmiten })))
 const Metodologi = lazy(() => import('./views/dasbor/Metodologi').then((m) => ({ default: m.Metodologi })))
 const StatistikBerkala = lazy(() => import('./views/dasbor/StatistikBerkala').then((m) => ({ default: m.StatistikBerkala })))
@@ -137,6 +138,11 @@ function App() {
                   (pola sama 'statistik') -> publik sampai Johan mengatur
                   tingkatnya dari tab Akses, tanpa perlu menyentuh kode lagi. */}
               <Route path="/kartu" element={<PenjagaHalaman kunci="kta"><KartuAnalisa /></PenjagaHalaman>} />
+              {/* Screener lembar-kerja (B31). Kunci `screener` sudah terdaftar
+                  di `PETA_MENU_KUNCI` DAN di tabel `akses_halaman` sejak
+                  rutenya dibuat — aturan wajib yang lahir 21 Agu 2026 sesudah
+                  empat halaman hidup berminggu-minggu tanpa bisa diatur. */}
+              <Route path="/screener" element={<PenjagaHalaman kunci="screener"><Screener /></PenjagaHalaman>} />
               <Route path="/feedback" element={<PenjagaHalaman kunci="saran"><Feedback /></PenjagaHalaman>} />
               {/* Backlog C6 — publik SENGAJA tanpa PenjagaHalaman: glosarium &
                   metodologi justru untuk pembaca yang belum percaya sistemnya,

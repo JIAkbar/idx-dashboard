@@ -46,6 +46,7 @@ import { useAlatGambar } from '../../lib/dasbor/useAlatGambar'
 import { fN } from '../../lib/dasbor/format'
 import { pesanGalat } from '../../lib/pesanGalat'
 import { keFraksi } from '../../lib/fraksiHarga'
+import { arahStruktur, cariPatahan, cariSwing, type Patahan, type Swing } from '../../lib/dasbor/strukturPasar'
 import {
   IkonMenu, IKON_CARI, IKON_SILANG, IKON_INFO, IKON_TONG, IKON_MATA,
   IKON_MATA_CORET, IKON_GIR, IKON_LILIN, IKON_GRAFIK_NAIK, IKON_KAMERA,
@@ -1547,6 +1548,13 @@ export function GrafikEmiten() {
       harmonik: inst.jenis === 'harmonik'
         ? cariHarmonik(lilin, inst.param as unknown as ParamHarmonik)
         : ([] as Harmonik[]),
+      // Struktur pasar (21 Agu 2026). Swing dan patahannya dihitung
+      // BERSAMAAN karena patahan membaca swing — memisahkannya berarti dua
+      // memo yang bisa memakai `N` berbeda selama satu render.
+      swing: inst.jenis === 'struktur' ? cariSwing(lilin, inst.param.n) : ([] as Swing[]),
+    })).map((x) => ({
+      ...x,
+      patahan: x.inst.jenis === 'struktur' ? cariPatahan(lilin, x.swing) : ([] as Patahan[]),
     })).map((x) => ({
       ...x,
       divergensi: x.inst.jenis === 'divergensi'
@@ -1865,8 +1873,8 @@ export function GrafikEmiten() {
     }
     // Pola selalu di pane 0: temuannya digambar di panel harga & volume, tak
     // pernah punya pane sendiri.
-    for (const { inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik } of polaPerInstans) {
-      const jumlah = doubleBottom.length + lonjakan.length + divergensi.length + harmonik.length
+    for (const { inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik, swing, patahan } of polaPerInstans) {
+      const jumlah = doubleBottom.length + lonjakan.length + divergensi.length + harmonik.length + patahan.length
       // Wyckoff tak dilaporkan sebagai "sekian temuan": yang ditanyakan orang
       // saat melihat legendanya bukan berapa kali fasenya berganti melainkan
       // fase mana yang sedang berjalan di lilin paling kanan.
@@ -1888,7 +1896,13 @@ export function GrafikEmiten() {
               ? faseKini
                 ? `${NAMA_FASE[faseKini.fase]} sejak ${faseKini.waktuMulai}`
                 : 'rentangnya terlalu pendek untuk MA-nya'
-              : jumlah === 0 ? 'tak ada' : `${jumlah} temuan`,
+              // Struktur pasar juga bukan "sekian temuan": yang dicari orang
+              // adalah ARAH strukturnya sekarang, bukan berapa kali ia patah.
+              : inst.jenis === 'struktur'
+                ? swing.length === 0
+                  ? 'rentangnya terlalu pendek'
+                  : `struktur ${arahStruktur(swing)} · ${swing.length} swing · ${patahan.length} patahan`
+                : jumlah === 0 ? 'tak ada' : `${jumlah} temuan`,
       })
     }
     return { waktu, perPane: [...perPane.entries()].sort((a, b) => a[0] - b[0]) }
@@ -2045,9 +2059,34 @@ export function GrafikEmiten() {
    */
   const penandaPola = useMemo<PenandaPola[]>(() => {
     const out: PenandaPola[] = []
-    for (const { inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik } of polaPerInstans) {
+    for (const { inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik, swing, patahan } of polaPerInstans) {
       if (!digambar(inst)) continue
       const nama = labelInstansPola(inst)
+      // Struktur pasar: label HH/HL/LH/LL di tiap swing, plus penanda di
+      // lilin yang MEMATAHKAN struktur. Yang digambar cuma yang terbaru —
+      // 300 swing di rentang penuh akan menutupi harganya sendiri, dan pada
+      // titik itu labelnya berhenti memberi tahu apa pun.
+      for (const sw of swing.slice(-MAKS_PENANDA_POLA * 2)) {
+        out.push({
+          time: sw.waktu, seri: 'harga',
+          posisi: sw.jenis === 'high' ? 'aboveBar' : 'belowBar',
+          token: sw.label === 'HH' || sw.label === 'HL' ? '--green'
+            : sw.label === 'LH' || sw.label === 'LL' ? '--red' : '--text3',
+          bentuk: 'circle',
+          teks: `${nama} · ${sw.jenis === 'high' ? 'Swing High' : 'Swing Low'} ${fN(sw.harga, 0)}`
+            + (sw.label ? ` · ${sw.label}` : ' · swing pertama, belum ada pembanding'),
+        })
+      }
+      for (const pt of patahan.slice(-MAKS_PENANDA_POLA)) {
+        out.push({
+          time: pt.waktu, seri: 'harga',
+          posisi: pt.arah === 'naik' ? 'belowBar' : 'aboveBar',
+          token: pt.jenis === 'CHoCH' ? '--amber' : '--blue',
+          bentuk: 'square',
+          teks: `${nama} · ${pt.jenis} ${pt.arah} · menutup melewati ${fN(pt.harga, 0)}`
+            + (pt.jenis === 'CHoCH' ? ' — struktur berbalik' : ' — struktur berlanjut'),
+        })
+      }
       // Wyckoff: satu penanda di lilin PERTAMA tiap segmen — hari fasenya
       // berganti. Menandai tiap lilin berarti ribuan penanda yang menutupi
       // harganya sendiri (2.470 lilin untuk BBCA rentang penuh).
@@ -2909,9 +2948,9 @@ export function GrafikEmiten() {
               kanvas — dan angka itulah yang membuat temuannya bisa diperiksa. */}
           {polaPerInstans.some(({ inst }) => digambar(inst)) && (
             <div className="grf-pola-hasil">
-              {polaPerInstans.filter(({ inst }) => digambar(inst)).map(({ inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik }) => {
+              {polaPerInstans.filter(({ inst }) => digambar(inst)).map(({ inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik, swing, patahan }) => {
                 const jumlah = doubleBottom.length + lonjakan.length + divergensi.length
-                  + wyckoff.length + harmonik.length
+                  + wyckoff.length + harmonik.length + patahan.length
                 if (inst.jenis === 'musiman') {
                   return (
                     <div key={inst.id}>
@@ -2957,6 +2996,33 @@ export function GrafikEmiten() {
                               {' · '}{w.fnetDipakai
                                 ? `net asing 5 lilin ${fN(w.fnet ?? 0, 0)} lembar`
                                 : 'tanpa catatan asing — label dari struktur MA'}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {inst.jenis === 'struktur' && swing.length > 0 && (
+                      <ul className="grf-pola-daftar">
+                        {/* Patahan dulu, baru swing. Yang dicari orang lebih
+                            sering "kapan strukturnya berubah" daripada daftar
+                            ayunannya sendiri. */}
+                        {patahan.slice(-MAKS_PENANDA_POLA).reverse().map((pt) => (
+                          <li key={`p-${pt.i}`}
+                            style={{ '--ind-warna': `var(${pt.jenis === 'CHoCH' ? '--amber' : '--blue'})` } as React.CSSProperties}>
+                            <span className="grf-pola-status">{pt.jenis} {pt.arah}</span>
+                            <span>
+                              {pt.waktu} · penutupan melewati {fN(pt.harga, 0)}
+                              {' · '}{pt.jenis === 'CHoCH' ? 'struktur berbalik' : 'struktur berlanjut'}
+                            </span>
+                          </li>
+                        ))}
+                        {swing.slice(-MAKS_PENANDA_POLA).reverse().map((sw) => (
+                          <li key={`s-${sw.i}-${sw.jenis}`}
+                            style={{ '--ind-warna': `var(${sw.label === 'HH' || sw.label === 'HL' ? '--green' : sw.label ? '--red' : '--text3'})` } as React.CSSProperties}>
+                            <span className="grf-pola-status">{sw.label ?? (sw.jenis === 'high' ? 'SH' : 'SL')}</span>
+                            <span>
+                              {sw.waktu} · {sw.jenis === 'high' ? 'swing high' : 'swing low'} {fN(sw.harga, 0)}
+                              {sw.label ? '' : ' · swing pertama, belum ada pembanding'}
                             </span>
                           </li>
                         ))}

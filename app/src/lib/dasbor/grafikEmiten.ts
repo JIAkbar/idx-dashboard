@@ -977,6 +977,7 @@ function garisPustaka(
 
 export type JenisPola =
   | 'doubleBottom' | 'lonjakanVolume' | 'musiman' | 'divergensi' | 'wyckoff' | 'harmonik'
+  | 'struktur'
 export type InstansPola = Instans<JenisPola>
 
 export interface SpekPola {
@@ -985,6 +986,22 @@ export interface SpekPola {
 }
 
 export const SPEK_POLA: Record<JenisPola, SpekPola> = {
+  /**
+   * Struktur pasar — swing high/low berlabel HH/HL/LH/LL, plus patahan
+   * struktur (BOS/CHoCH). Rumusnya di `strukturPasar.ts`; di sini cuma batas
+   * kolom setelannya.
+   *
+   * `N` bawaan 5, bukan 2 (lebar Williams Fractals). Diukur atas 18 emiten
+   * harian: N=5 memberi ±300 swing per 2.470 lilin — cukup jarang untuk
+   * dibaca, cukup sering untuk menandai tiap ayunan yang berarti. N=2
+   * menghasilkan tiga kali lipatnya dan kanvasnya jadi kumpulan titik.
+   */
+  struktur: {
+    label: 'Struktur Pasar',
+    param: [
+      { kunci: 'n', label: 'Lebar swing (N)', bawaan: 5, min: 1, maks: 50, bulat: true },
+    ],
+  },
   doubleBottom: {
     label: 'Double Bottom',
     param: [

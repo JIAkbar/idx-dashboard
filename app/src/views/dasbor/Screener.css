@@ -1,0 +1,27 @@
+/* Screener (/screener, B31) — PENEMPATAN & LEBAR saja (#170). Bentuk kendali
+   (chip, kotak cari, tabel, tombol) datang dari lantai.css; berkas ini cuma
+   mengatur tata letak yang khas halaman ini. */
+
+.lantai .scr-alat {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+
+.lantai .af-cari.scr-cari { flex: 1 1 220px; max-width: 320px; }
+
+.lantai .scr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.lantai .scr-jumlah { margin-left: auto; white-space: nowrap; }
+
+/* Kolom Nama ikut lebar wajar sendiri di tabel 21-kolom — tanpa batas ia
+   menggeser seluruh kolom kanan keluar layar sebelum sempat digulung. */
+.lantai .scr-tbl .scr-nama {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lantai .scr-lebih { padding: 10px 14px; }
