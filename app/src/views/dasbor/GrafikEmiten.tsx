@@ -1475,13 +1475,14 @@ export function GrafikEmiten() {
       // dengan indikator Stoch di menu, jadi katalog ikut jadi dependensi memo
       // ini. Tanpa itu, pola digambar kosong sekali lalu tak pernah dihitung
       // ulang saat katalognya akhirnya tiba, dan tak ada satu pun galat.
-      divergensi: inst.jenis === 'divergensi'
-        ? cariDivergensi(
-          lilin, vol,
-          stochUntukDivergensi(lilin, vol, inst.param as unknown as ParamDivergensi, katalog),
-          inst.param as unknown as ParamDivergensi,
-        )
-        : ([] as Divergensi[]),
+      // Deret %K disimpan, bukan dibuang sesudah dipakai mencari: sejak
+      // 21 Agu 2026 ia ikut DIGAMBAR di panel bawah, dan menghitungnya dua
+      // kali berarti dua jawaban yang bisa menyimpang tanpa ada yang tahu —
+      // penanda bilang %K 25,6 sementara garis di panel menggambar angka lain.
+      stoch: inst.jenis === 'divergensi'
+        ? stochUntukDivergensi(lilin, vol, inst.param as unknown as ParamDivergensi, katalog)
+        : ([] as Array<number | null>),
+      divergensi: [] as Divergensi[],
       // Wyckoff: satu-satunya pola yang butuh sumber di luar berkas OHLC.
       // Peta FNet kosong bukan kegagalan — lihat keterangan di efek fetch-nya.
       wyckoff: inst.jenis === 'wyckoff'
@@ -1494,6 +1495,11 @@ export function GrafikEmiten() {
       harmonik: inst.jenis === 'harmonik'
         ? cariHarmonik(lilin, inst.param as unknown as ParamHarmonik)
         : ([] as Harmonik[]),
+    })).map((x) => ({
+      ...x,
+      divergensi: x.inst.jenis === 'divergensi'
+        ? cariDivergensi(lilin, vol, x.stoch, x.inst.param as unknown as ParamDivergensi)
+        : x.divergensi,
     }))
   }, [pol.daftar, lilin, volume, katalog, fnetPeta])
 
@@ -1629,6 +1635,99 @@ export function GrafikEmiten() {
     // tinggi pane baru belum berlaku pada saat setStretchFactor kembali.
     requestAnimationFrame(ukurPane)
   }, [garisPerInstans, panePerInstans, theme, ukurPane, keChart, lipat])
+
+  /**
+   * Divergensi digambar, bukan cuma ditandai (Johan 21 Agu 2026: "buktikan
+   * divergensi ini berarti muncul stohastic ada line nya juga").
+   *
+   * Dua hal yang tak bisa dibaca dari penanda titik, dan keduanya justru inti
+   * divergensinya:
+   *   1. GARIS penghubung dua pivot di panel harga — mata perlu melihat harga
+   *      membuat lembah lebih rendah / puncak lebih tinggi.
+   *   2. Panel %K di bawahnya dengan garis penghubung yang BERLAWANAN arah.
+   *      Tanpa panel itu, "momentum melawan" cuma klaim di tooltip.
+   *
+   * Panelnya milik instans pola, bukan indikator: pembaca tak perlu menambah
+   * Stochastic sendiri lalu menebak apakah parameternya sama. Deret yang
+   * digambar PERSIS deret yang dipakai mencari (`stoch` di `polaPerInstans`),
+   * jadi angka di penanda dan garis di panel mustahil menyimpang.
+   *
+   * Nomor panenya diambil SESUDAH panel indikator (`panePerInstans`), bukan
+   * angka tetap: RSI/MACD yang sedang hidup sudah memakai 1, 2, dst, dan
+   * menabraknya berarti dua deret berbeda skala di satu panel — garis %K 0-100
+   * rata di dasar panel MACD, atau sebaliknya.
+   */
+  const seriPolaRef = useRef<Array<ISeriesApi<SeriesType>>>([])
+  useEffect(() => {
+    const chart = chartRef.current
+    const el = containerRef.current
+    if (!chart || !el) return
+    const cs = getComputedStyle(el)
+    const baca = (nama: string, fallback = '#888D99') => cs.getPropertyValue(nama).trim() || fallback
+
+    for (const s of seriPolaRef.current) chart.removeSeries(s)
+    seriPolaRef.current = []
+
+    const paneIndikator = [...panePerInstans.values()]
+    let paneBerikut = paneIndikator.length ? Math.max(...paneIndikator) + 1 : 1
+    const waktu = lilin.map((l) => l.time)
+
+    for (const { inst, divergensi, stoch } of polaPerInstans) {
+      if (inst.jenis !== 'divergensi' || !digambar(inst)) continue
+      if (divergensi.length === 0 || stoch.length !== lilin.length) continue
+      const pane = paneBerikut++
+
+      // Deret %K penuh — konteks untuk garisnya. Tanpa ini panelnya cuma
+      // berisi potongan garis melayang tanpa acuan.
+      const sK = chart.addSeries(LineSeries, {
+        color: baca('--text3'), lineWidth: 1, priceLineVisible: false,
+        lastValueVisible: true, crosshairMarkerVisible: false,
+        priceFormat: { type: 'price', precision: 1, minMove: 0.1 },
+      }, pane)
+      sK.setData(keChart(keSeriGaris(waktu, stoch)))
+      seriPolaRef.current.push(sK)
+
+      // Ambang 20/80 sebagai garis putus-putus. Bukan hiasan: derajat
+      // divergensi tak melihat ambang sama sekali, jadi pembaca butuh
+      // patokan sendiri untuk menilai apakah pivotnya di wilayah jenuh.
+      for (const nilai of [20, 80]) {
+        const sA = chart.addSeries(LineSeries, {
+          color: baca('--line2'), lineWidth: 1, lineStyle: LineStyle.Dashed,
+          priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
+        }, pane)
+        sA.setData(keChart(waktu.map((t) => ({ time: t, value: nilai }))))
+        seriPolaRef.current.push(sA)
+      }
+
+      // Garis penghubung — hanya untuk temuan yang penandanya ikut tergambar,
+      // supaya garis dan penanda tak pernah bercerita beda.
+      for (const dv of divergensi.slice(-MAKS_PENANDA_POLA)) {
+        const warna = baca(WARNA_DERAJAT[dv.derajat])
+        const opsi = {
+          color: warna, lineWidth: 2 as LineWidth, priceLineVisible: false,
+          lastValueVisible: false, crosshairMarkerVisible: false,
+        }
+        const gHarga = chart.addSeries(LineSeries, opsi, 0)
+        gHarga.setData(keChart([
+          { time: dv.waktu1, value: dv.harga1 },
+          { time: dv.waktu2, value: dv.harga2 },
+        ]))
+        const gStoch = chart.addSeries(LineSeries, opsi, pane)
+        gStoch.setData(keChart([
+          { time: dv.waktu1, value: dv.stoch1 },
+          { time: dv.waktu2, value: dv.stoch2 },
+        ]))
+        seriPolaRef.current.push(gHarga, gStoch)
+      }
+    }
+
+    if (seriPolaRef.current.length) {
+      const panes = chart.panes()
+      panes[0]?.setStretchFactor(3)
+      for (let i = 1; i < panes.length; i++) panes[i]?.setStretchFactor(lipat.includes(i) ? 0.18 : 1.1)
+      requestAnimationFrame(ukurPane)
+    }
+  }, [polaPerInstans, panePerInstans, lilin, theme, digambar, keChart, ukurPane, lipat])
 
   // Indeks waktu -> posisi lilin. Dipakai baris status (OHLC yang mengikuti
   // kursor) dan tooltip pola.
