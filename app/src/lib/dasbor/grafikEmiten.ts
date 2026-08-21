@@ -8,6 +8,7 @@ import type { Bar } from 'oakscriptjs'
 import type { Katalog } from './katalogIndikator'
 import type { BarisOhlc } from './ihsgOhlc'
 import { HARI, ringkasHarian, vonisUji, type RingkasHari } from '../seasonality'
+import { keEpoch } from './kerangkaWaktu'
 
 export interface BerkasOhlcEmiten {
   kode: string
@@ -366,8 +367,30 @@ function plotPustaka(
   hitung: (bars: Bar[]) => { plots: Record<string, TitikPustaka[]> },
 ): Record<string, Array<number | null>> {
   if (!lilin.length) return {}
+  // Waktu internal punya DUA bentuk: 'YYYY-MM-DD' (harian) dan
+  // 'YYYY-MM-DD HH:mm' (intraday). Versi lama menempelkan 'T00:00:00Z' ke
+  // keduanya — benar untuk harian, dan untuk intraday menghasilkan
+  // "2026-08-20 12:00T00:00:00Z" yang di-parse jadi NaN.
+  //
+  // Akibatnya jauh lebih besar daripada satu indikator meleset, dan sepenuhnya
+  // SENYAP: setiap bar mendapat `time: NaN`, dan karena Map memperlakukan NaN
+  // sebagai kunci yang sama, seluruh 1.400 bar menyusut jadi SATU entri di
+  // peta indeks. Semua deret pustaka lalu terisi paling banyak satu nilai.
+  // Terukur 21 Agu 2026 pada MBMA 4 jam: pustaka menghitung 1.387 nilai
+  // Stochastic dengan benar, yang sampai ke pemanggil cuma 1 — dan pola
+  // Divergensi yang membacanya melaporkan "tak ada yang memenuhi syarat",
+  // kalimat yang terdengar seperti kesimpulan analisa padahal deretnya kosong.
+  // Ini menjelaskan nol temuan di SELURUH kerangka intraday (5m/15m/30m/1h/4h)
+  // untuk 365 indikator katalog sekaligus, bukan cuma divergensi.
+  //
+  // `keEpoch()` menangani bentuk intraday saja — dipakai untuk harian ia
+  // menghasilkan "2026-08-20:00+07:00", NaN yang sama dari arah sebaliknya.
+  // Jadi bentuknya dipilih dari panjang teks, sama seperti `keWaktuChart()`:
+  // 10 huruf = tanggal saja.
+  const epochBar = (t: string): number =>
+    t.length <= 10 ? Math.floor(Date.parse(`${t}T00:00:00Z`) / 1000) : keEpoch(t)
   const bars: Bar[] = lilin.map((l, i) => ({
-    time: Math.floor(Date.parse(`${l.time}T00:00:00Z`) / 1000),
+    time: epochBar(l.time),
     open: l.open, high: l.high, low: l.low, close: l.close, volume: volume[i] ?? 0,
   }))
   const indeks = new Map(bars.map((b, i) => [b.time, i]))

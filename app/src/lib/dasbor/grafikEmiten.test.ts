@@ -1614,3 +1614,81 @@ describe('sapuan indikator kurasi', () => {
     expect(() => hitungInstans(inst, [], [], [], katalog)).not.toThrow()
   })
 })
+
+/**
+ * Regresi 21 Agustus 2026 — waktu INTRADAY merusak seluruh indikator pustaka.
+ *
+ * `plotPustaka()` membangun `time` bar dengan menempelkan 'T00:00:00Z' ke
+ * waktu internal. Benar untuk harian ('2026-08-20'); untuk intraday
+ * ('2026-08-20 12:00') hasilnya "…12:00T00:00:00Z" yang di-parse jadi NaN.
+ *
+ * Yang membuatnya mahal bukan satu indikator meleset, melainkan bentuk
+ * kegagalannya: setiap bar mendapat `time: NaN`, dan karena Map memperlakukan
+ * NaN sebagai kunci yang sama, seluruh bar menyusut jadi SATU entri. Deret
+ * yang kembali terisi paling banyak satu nilai — tanpa galat.
+ *
+ * Terukur di peramban pada MBMA 4 jam: pustaka menghitung 1.387 nilai
+ * Stochastic dengan benar, yang sampai ke pemanggil 1, dan pola Divergensi
+ * melaporkan "tak ada yang memenuhi syarat" — kalimat yang terdengar seperti
+ * kesimpulan analisa padahal deretnya kosong. Sesudah diperbaiki: 1.385 nilai
+ * dan 59 temuan pada emiten & rentang yang sama.
+ */
+describe('indikator pustaka pada kerangka intraday', () => {
+  let katalog: Awaited<ReturnType<typeof muatKatalog>>
+  beforeAll(async () => { katalog = await muatKatalog() })
+
+  /** Lilin ber-waktu 'YYYY-MM-DD HH:mm' — bentuk yang dipakai kerangka 4 jam.
+   *  Tanggalnya dihitung dari epoch, BUKAN dirakit dari nomor hari yang terus
+   *  bertambah: versi pertama uji ini menghasilkan "2026-03-45" begitu n
+   *  melewati 124 lilin, dan tanggal tak sah itu membuat ujinya gagal karena
+   *  datanya sendiri, bukan karena produknya. */
+  const lilinIntraday = (n: number): LilinData[] => {
+    const mulai = Date.UTC(2026, 2, 2, 1, 0) // 2026-03-02 08:00 WIB
+    return Array.from({ length: n }, (_, i) => {
+      // Digeser +7 jam DULU lalu dibaca sebagai UTC, supaya komponen jam &
+      // tanggalnya sudah WIB. Menambah 7 pada `getUTCHours()` sesudahnya
+      // menghasilkan "24:00" dan "28:00" — waktu tak sah yang diam-diam jadi
+      // NaN dan membuat ujinya gagal karena datanya sendiri.
+      const d = new Date(mulai + i * 4 * 3600_000 + 7 * 3600_000)
+      const iso = d.toISOString()
+      const dasar = 100 + Math.round(Math.sin(i / 7) * 20)
+      return {
+        time: `${iso.slice(0, 10)} ${iso.slice(11, 16)}`,
+        open: dasar, high: dasar + 5, low: dasar - 5, close: dasar + (i % 3) - 1,
+      }
+    })
+  }
+
+  it('Stochastic terisi hampir penuh, bukan satu nilai', () => {
+    const lilin = lilinIntraday(200)
+    const volume = lilin.map((_, i) => 1000 + i)
+    const stoch = stochUntukDivergensi(lilin, volume, { periodeK: 14, smoothK: 3 }, katalog)
+    const isi = stoch.filter((v): v is number => v !== null)
+    expect(stoch).toHaveLength(lilin.length)
+    // Warm-up periodeK boleh kosong; sisanya WAJIB terisi. Satu nilai berarti
+    // pemetaan waktunya rusak lagi.
+    expect(isi.length).toBeGreaterThan(lilin.length - 30)
+    expect(Math.min(...isi)).toBeGreaterThanOrEqual(0)
+    expect(Math.max(...isi)).toBeLessThanOrEqual(100)
+  })
+
+  it('harian tetap benar — perbaikannya tak boleh menukar satu bentuk dengan bentuk lain', () => {
+    const lilin = lilinUji(200)
+    const volume = lilin.map((_, i) => 1000 + i)
+    const stoch = stochUntukDivergensi(lilin, volume, { periodeK: 14, smoothK: 3 }, katalog)
+    const isi = stoch.filter((v): v is number => v !== null)
+    expect(isi.length).toBeGreaterThan(lilin.length - 30)
+  })
+
+  it('lilin intraday menghasilkan deret yang BERBEDA dari lilin harian dengan harga sama', () => {
+    // Kalau keduanya identik, kemungkinan besar waktunya diabaikan sama sekali.
+    const n = 120
+    const intra = lilinIntraday(n)
+    const harian = intra.map((l, i) => ({ ...l, time: `2026-03-${String(1 + (i % 28)).padStart(2, '0')}` }))
+    const vol = intra.map(() => 1000)
+    const a = stochUntukDivergensi(intra, vol, { periodeK: 14, smoothK: 3 }, katalog)
+    const b = stochUntukDivergensi(harian, vol, { periodeK: 14, smoothK: 3 }, katalog)
+    expect(a.filter((v) => v !== null).length).toBeGreaterThan(n - 30)
+    expect(b.filter((v) => v !== null).length).toBeGreaterThan(0)
+  })
+})
