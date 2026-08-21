@@ -54,3 +54,7 @@ _arsip-mentah/
 # halaman yang benar-benar mengambilnya -- Vercel merakit produksi dengan
 # menyalin data-idx/json apa adanya, jadi berkas yang tak ikut git = 404.
 data-idx/json/keuangan_idx_diskret/
+
+# prob.py v2: singgahan pool pasar (15 MB, dibangun ulang 35 detik dari data-idx)
+arus-pasar/cache/prob-pool-*.npz
+arus-pasar/cache/prob-eval-*.json
