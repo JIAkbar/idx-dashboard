@@ -53,7 +53,6 @@ export function PanelDiary() {
   const [geser, setGeser] = useState(0)
 
   const sel = useMemo(() => (baris ? selDiary(baris) : []), [baris])
-  const tally = useMemo(() => tallyDiary(sel, 30), [sel])
   const performa = useMemo(() => (baris ? performaIhsg(baris) : []), [baris])
 
   const bulan = useMemo(() => {
@@ -62,6 +61,25 @@ export function PanelDiary() {
     akhir.setUTCMonth(akhir.getUTCMonth() + geser)
     return bulanDiary(sel, akhir.getUTCFullYear(), akhir.getUTCMonth() + 1)
   }, [sel, geser])
+
+  /**
+   * Tally MENGIKUTI bulan yang sedang ditampilkan — jendela 30 harinya
+   * berakhir di hari terakhir bulan itu, bukan selalu di data terbaru.
+   *
+   * Versi pertama menambatkannya ke data terbaru, dan Johan menangkap
+   * salahnya dari layar: kalender digeser ke Juni, angka di bawahnya masih
+   * milik Agustus — panel yang separuh atasnya menjawab "Juni" dan separuh
+   * bawahnya menjawab "Agustus" tanpa memberi tahu. Panel RTI yang jadi
+   * acuan tak pernah kelihatan salah di sini hanya karena ia tak bisa
+   * digeser ke bulan lain.
+   */
+  const tally = useMemo(() => {
+    if (!bulan) return null
+    const p2 = (x: number) => String(x).padStart(2, '0')
+    const ujung = new Date(Date.UTC(bulan.tahun, bulan.bulan, 0)).getUTCDate()
+    const batas = `${bulan.tahun}-${p2(bulan.bulan)}-${p2(ujung)}`
+    return tallyDiary(sel.filter((s) => s.tanggal <= batas), 30)
+  }, [sel, bulan])
 
   if (!baris || !bulan || !tally) return null
 
@@ -123,7 +141,9 @@ export function PanelDiary() {
               <span className="num down">{fpoin(tally.poinTurun)} ({fpersen(tally.persenTurun)})</span>
             </div>
             <div className="dia-tally-baris dia-bersih">
-              <span className="sub">Kumulatif 30 hari ({tally.hari} hari bursa)</span>
+              <span className="sub">
+                Kumulatif 30 hari{geser < 0 ? ` s/d akhir ${NAMA_BULAN[bulan.bulan - 1]}` : ''} ({tally.hari} hari bursa)
+              </span>
               <span className={`num ${tally.poinBersih >= 0 ? 'up' : 'down'}`}>
                 {fpoin(tally.poinBersih)} ({fpersen(tally.persenBersih)})
               </span>
