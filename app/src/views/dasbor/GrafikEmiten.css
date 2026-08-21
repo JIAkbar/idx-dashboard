@@ -614,3 +614,20 @@
   font-family: var(--mono); font-size: 10.5px; color: var(--text3);
   min-width: 30px; text-align: right; font-variant-numeric: tabular-nums;
 }
+
+/* Menu klik kanan kanvas (B32). Bentuknya `.dd-menu` kanonis; yang khas di
+   sini cuma PENEMPATANNYA — ia muncul di titik kursor, bukan di bawah sebuah
+   tombol. */
+.lantai .grf-menu-latar { position: absolute; inset: 0; z-index: 40; }
+.lantai .grf-menu-konteks {
+  position: absolute; z-index: 41; min-width: 210px; max-width: 320px;
+  max-height: 70%; overflow-y: auto;
+}
+/* Baris keterangan (penanda pola di titik klik) — bukan tombol, jadi tak
+   boleh terlihat seperti sesuatu yang bisa diketuk. */
+.lantai .grf-menu-konteks .grf-menu-info {
+  cursor: default; color: var(--text2); font-size: 10.5px; line-height: 1.45;
+  white-space: normal;
+}
+.lantai .grf-menu-konteks .grf-menu-info:hover { background: none; }
+.lantai .grf-menu-konteks .dd-it.merah { color: var(--red); }

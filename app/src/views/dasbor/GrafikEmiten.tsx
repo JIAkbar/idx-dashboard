@@ -16,7 +16,7 @@ import {
   hitungInstans, cariDoubleBottom, cariLonjakanVolume, cariMusiman,
   cariDivergensi, stochUntukDivergensi, cariWyckoff, cariHarmonik,
   bacaTemplateTersimpan, tulisTemplateTersimpan, simpanTemplate, hapusTemplate,
-  tandaiBawaan, ubahNamaTemplate, tutupSampai,
+  tandaiBawaan, ubahNamaTemplate, tutupSampai, penandaDiSekitar,
   warnaGrid, gridDariTemplate, GRID_BAWAAN, type SetelanGrid,
   type BerkasOhlcEmiten, type DoubleBottom, type JenisAsli, type JenisIndikator, type JenisPola,
   type LilinData, type ParamDoubleBottom, type ParamLonjakanVolume, type StatusPola, type StatusLonjakan,
@@ -44,6 +44,7 @@ import { AlatGambar } from '../../components/dasbor/AlatGambar'
 import { useAlatGambar } from '../../lib/dasbor/useAlatGambar'
 import { fN } from '../../lib/dasbor/format'
 import { pesanGalat } from '../../lib/pesanGalat'
+import { keFraksi } from '../../lib/fraksiHarga'
 import {
   IkonMenu, IKON_CARI, IKON_SILANG, IKON_INFO, IKON_TONG, IKON_MATA,
   IKON_MATA_CORET, IKON_GIR, IKON_LILIN, IKON_GRAFIK_NAIK, IKON_KAMERA,
@@ -594,6 +595,26 @@ export function GrafikEmiten() {
   // hilangkan.
   // B33 — garis bantu kanvas. Disimpan sebagai satu objek, bukan dua state
   // terpisah, karena keduanya berjalan bersama ke template dan ke chart.
+  /**
+   * Menu klik kanan di kanvas (B32).
+   *
+   * Sebelum ini, klik kanan di kanvas memunculkan menu bawaan peramban —
+   * "Save image as / Copy image / Inspect" — yaitu menu untuk sebuah GAMBAR,
+   * bukan untuk sebuah chart.
+   *
+   * Isinya diturunkan dari menu TradingView yang dibaca langsung 21 Agu 2026,
+   * tapi hanya butir yang punya arti di sini: reset tampilan, salin harga di
+   * titik klik, hapus objek di titik itu, dan sakelar garis bantu. Butir
+   * TradingView yang lain menuntut akun broker (Buy/Sell/Add order), sistem
+   * peringatan (Add alert), atau fitur yang belum kita punya — memajangnya
+   * sebagai butir mati akan membuat menunya berbohong.
+   *
+   * Yang ditiru bukan daftarnya melainkan SIFATNYA: menu itu tahu apa yang
+   * ada di titik yang diklik dan menyebut jumlahnya ("Remove 2 indicators"),
+   * bukan menu statis yang sama di mana pun diklik.
+   */
+  const [menuKonteks, setMenuKonteks] = useState<{ x: number; y: number; waktu: string | null; harga: number | null } | null>(null)
+
   const [grid, setGrid] = useState<SetelanGrid>(GRID_BAWAAN)
   // Template pindah ke dalam modal (Johan 21 Agu 2026: "jadikan icon saja").
   const [templateBuka, setTemplateBuka] = useState(false)
@@ -2417,12 +2438,109 @@ export function GrafikEmiten() {
               sebagai SAUDARA di bungkus ini (bukan anak containerRef) supaya
               React tak pernah rebutan anak elemen dengan DOM yang dikelola
               lightweight-charts secara imperatif. */}
-          <div className="grf-kanvas-bungkus" ref={bungkusRef}>
+          <div
+            className="grf-kanvas-bungkus"
+            ref={bungkusRef}
+            onContextMenu={(e) => {
+              // Menu peramban dicegah HANYA di dalam kanvas. Di luar itu
+              // (daftar temuan, kaki, panduan) klik kanan tetap milik
+              // peramban — menyalin teks temuan pola adalah hal yang wajar
+              // dilakukan orang di halaman ini.
+              e.preventDefault()
+              const chart = chartRef.current
+              const bungkus = bungkusRef.current
+              const harga = hargaRef.current
+              if (!chart || !bungkus) return
+              const r = bungkus.getBoundingClientRect()
+              const x = e.clientX - r.left
+              const y = e.clientY - r.top
+              // Harga & waktu DI TITIK KLIK, bukan harga terakhir: itu yang
+              // membuat menunya menjawab "di sini", bukan "di chart ini".
+              const t = chart.timeScale().coordinateToTime(x)
+              const p = harga?.coordinateToPrice(y) ?? null
+              setMenuKonteks({
+                x, y,
+                waktu: dariWaktuChart(t),
+                harga: typeof p === 'number' && Number.isFinite(p) ? p : null,
+              })
+            }}
+          >
             {/* Kanvas SELALU dipasang dengan ukuran final sejak awal (opacity,
                 bukan display:none) — lihat komentar .grf-chart-wrap.memuat di
                 GrafikEmiten.css: autoSize butuh lebar sungguhan sejak elemen
                 dibuat, bukan sejak elemen "muncul". */}
             <div ref={containerRef} className={'grf-chart-wrap' + (siap ? '' : ' memuat')} />
+
+            {/* Menu klik kanan (B32). Ditutup lewat latar tak terlihat yang
+                menutupi kanvas — bukan `blur`, karena kanvas bukan elemen
+                yang bisa difokus dan menunya akan menggantung selamanya.
+
+                Butir yang tak punya arti di titik ini TIDAK dipajang mati:
+                menu yang menyebut "Hapus 0 objek" lebih membingungkan
+                daripada menu yang tak menyebutnya sama sekali. */}
+            {menuKonteks && (() => {
+              const objek = penandaDiSekitar(penandaPola, indeksWaktu, menuKonteks.waktu ?? '', 1)
+              const gambar = alatGambar.adaTerpilih
+              // Arah buka dihitung dari ukuran bungkus SAAT ITU, bukan dari
+              // state ukuran yang disimpan: menu yang membuka ke kanan di
+              // separuh kanan kanvas akan keluar layar.
+              const rb = bungkusRef.current?.getBoundingClientRect()
+              const kanan = !!rb && menuKonteks.x > rb.width / 2
+              const bawah = !!rb && menuKonteks.y > rb.height / 2
+              const tutup = () => setMenuKonteks(null)
+              return (
+                <>
+                  <div className="grf-menu-latar" onClick={tutup} onContextMenu={(e) => { e.preventDefault(); tutup() }} />
+                  <div className="dd-menu grf-menu-konteks" role="menu" style={{
+                    left: menuKonteks.x, top: menuKonteks.y,
+                    transform: `translate(${kanan ? '-100%' : '0'}, ${bawah ? '-100%' : '0'})`,
+                  }}>
+                    <button type="button" className="dd-it" role="menuitem"
+                      onClick={() => { chartRef.current?.timeScale().fitContent(); tutup() }}>
+                      Reset tampilan chart
+                    </button>
+                    {menuKonteks.harga !== null && (
+                      <button type="button" className="dd-it" role="menuitem"
+                        onClick={() => {
+                          // Dibulatkan ke fraksi bursa: harga di titik kursor
+                          // itu bilangan pecahan hasil skala piksel, dan
+                          // "1.372,84" bukan harga yang bisa dipesan di papan.
+                          void navigator.clipboard?.writeText(String(keFraksi(menuKonteks.harga as number, 'dekat')))
+                          tutup()
+                        }}>
+                        Salin harga {fN(keFraksi(menuKonteks.harga, 'dekat'), 0)}
+                      </button>
+                    )}
+                    {menuKonteks.waktu && (
+                      <button type="button" className="dd-it" role="menuitem"
+                        onClick={() => { void navigator.clipboard?.writeText(menuKonteks.waktu as string); tutup() }}>
+                        Salin tanggal {menuKonteks.waktu}
+                      </button>
+                    )}
+                    {objek.length > 0 && (
+                      <span className="dd-grup" role="presentation">
+                        {objek.length} penanda pola di titik ini
+                      </span>
+                    )}
+                    {objek.slice(0, 4).map((o, i) => (
+                      <span key={`${o.time}-${i}`} className="dd-it grf-menu-info" role="presentation">
+                        {o.teks}
+                      </span>
+                    ))}
+                    {gambar && (
+                      <button type="button" className="dd-it merah" role="menuitem"
+                        onClick={() => { alatGambar.hapusTerpilih(); tutup() }}>
+                        Hapus gambar terpilih
+                      </button>
+                    )}
+                    <button type="button" className="dd-it" role="menuitem"
+                      onClick={() => { setGrid((g) => ({ ...g, tampil: !g.tampil })); tutup() }}>
+                      {grid.tampil ? 'Sembunyikan garis bantu' : 'Tampilkan garis bantu'}
+                    </button>
+                  </div>
+                </>
+              )
+            })()}
 
             {/* Tombol zoom — pojok kanan bawah kanvas, di atas sumbu waktu.
                 Roda tikus & cubit tetap jalan; ini yang membuatnya terjangkau
