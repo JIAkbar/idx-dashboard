@@ -168,6 +168,12 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   // membuat satu setelan menjaga dua hal yang tak berhubungan — membuka
   // halaman publik ini berarti membuka perakit edisi, dan menguncinya
   // berarti mengunci halaman analisa untuk semua orang.
+  //
+  // 21 Agu 2026: halaman ini PENSIUN — isinya dipindah ke Stock Detail (kunci
+  // 'detail') dan `/bedah-emiten` sekarang cuma redirect ke `/stock-detail`.
+  // Baris ini DIBIARKAN (jangan dihapus): tautan lama masih boleh menembus
+  // guard-nya sebelum redirect, dan baris `akses_halaman` di Supabase masih
+  // ada — itu urusan pemanggil, bukan dihapus dari sini.
   'bedah-emiten': 'bedah-emiten',
   // Screener lembar-kerja (B31, 21 Agu 2026). Barisnya di `akses_halaman`
   // ditambahkan BERSAMAAN dengan baris ini — aturan wajib yang ditetapkan

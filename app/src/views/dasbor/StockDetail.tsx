@@ -13,12 +13,16 @@ import { PanelValuasiInteraktif } from './stock-detail/PanelValuasiInteraktif'
 import { PanelLaporanKeuangan } from './stock-detail/PanelLaporanKeuangan'
 import { PanelValuasiHistoris } from './stock-detail/PanelValuasiHistoris'
 import { PanelAliranAsing } from '../../components/dasbor/PanelAliranAsing'
+import { PanelAktivitasTransaksi } from '../../components/dasbor/PanelAktivitasTransaksi'
+import { PanelLimaLangkahUang } from '../../components/dasbor/PanelLimaLangkahUang'
+import { PanelKhasPapan } from '../../components/dasbor/PanelKhasPapan'
+import { PanelBandingEmiten } from '../../components/dasbor/PanelBandingEmiten'
 import { IkonMenu, IKON_CARI, IKON_PERINGATAN, IKON_JAM } from '../../components/dasbor/IkonMenu'
 import { usePengendali, pengendaliEmiten, labelPengendali } from '../../lib/dasbor/pengendali'
 import { tanggalPendek } from '../../lib/dasbor/statistikBerkala'
 import './StockDetail.css'
 
-type Tab = 'statistik' | 'valuasi'
+type Tab = 'statistik' | 'valuasi' | 'banding'
 
 /** Chip saham populer di empty state — daftar beku dari mockup. */
 const POPULER = ['BBCA', 'BBRI', 'TLKM', 'ASII', 'AMMN', 'TPIA']
@@ -83,7 +87,8 @@ export function StockDetail() {
   const daftarPengendali = usePengendali()
   const pengendali = pengendaliEmiten(daftarPengendali, activeTicker || '')
   const [sp, setSp] = useSearchParams()
-  const tab: Tab = sp.get('tab') === 'valuasi' ? 'valuasi' : 'statistik'
+  const tabUrl = sp.get('tab')
+  const tab: Tab = tabUrl === 'valuasi' ? 'valuasi' : tabUrl === 'banding' ? 'banding' : 'statistik'
 
   const [recent, setRecent] = useState<string[]>(bacaRecent)
   useEffect(() => {
@@ -298,7 +303,21 @@ export function StockDetail() {
             >
               Valuasi
             </button>
+            <button
+              type="button" role="tab" aria-selected={tab === 'banding'}
+              className={'tab' + (tab === 'banding' ? ' on' : '')}
+              onClick={() => setSp((p) => { p.set('tab', 'banding'); return p }, { replace: true })}
+            >
+              Banding
+            </button>
           </div>
+
+          {tab === 'statistik' && (
+            /* Aktivitas Transaksi — dipindah dari Bedah Emiten (pensiun 21
+               Agu 2026, backlog A2 / #153): seberapa ramai emiten ini
+               benar-benar diperdagangkan, sebelum angka valuasi apa pun. */
+            <PanelAktivitasTransaksi ticker={fd.ticker} fd={fd} />
+          )}
 
           {tab === 'statistik' && (
             /* #99: panel Laporan Keuangan (chart + breakdown kuartal/tahunan)
@@ -312,6 +331,12 @@ export function StockDetail() {
                penuh sama seperti Laporan Keuangan (grafik + tabel butuh
                ruang, bukan kolom sempit .duo). */
             <PanelAliranAsing ticker={fd.ticker} />
+          )}
+
+          {tab === 'statistik' && (
+            /* Lima Langkah Uang — dipindah dari Bedah Emiten: penjualan →
+               laba → EPS → kas operasi → dividen, dan rasio antar langkahnya. */
+            <PanelLimaLangkahUang fd={fd} />
           )}
 
           {tab === 'statistik' && (
@@ -342,7 +367,22 @@ export function StockDetail() {
             </div>
           )}
 
+          {tab === 'statistik' && (
+            /* Panel Khas PAPAN — dipindah dari Bedah Emiten: Altman Z-Score,
+               Piotroski F-Score, ROIC, ROCE, siklus konversi kas, tiap angka
+               disertai satu kalimat bacaan (beda dari angka mentah yang sudah
+               ada di panel Solvabilitas/Efektivitas/Skor di atas). */
+            <PanelKhasPapan fd={fd} />
+          )}
+
           {tab === 'valuasi' && <PanelValuasiInteraktif key={fd.ticker} fd={fd} />}
+
+          {tab === 'banding' && (
+            /* Banding Emiten — dipindah dari Bedah Emiten. Tab sendiri
+               (bukan panel di dalam Statistik): berat (sampai 5× fetch
+               fundamental+asing) dan dirender HANYA saat tabnya aktif. */
+            <PanelBandingEmiten key={fd.ticker} awal={fd.ticker} />
+          )}
         </>
       )}
     </div>

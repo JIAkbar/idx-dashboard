@@ -20,11 +20,15 @@ function labelRute(path: string): string {
  * PenjagaHalaman: ini justru untuk pembaca yang belum percaya sistemnya,
  * mengunci di balik login melawan tujuannya sendiri.
  *
- * Glosarium: 75 istilah `glosarium.json` ditambang dari korpus PAPAN sendiri
- * (`scripts/bangun_glosarium.py` — lihat `dibuat`/`sumber` di berkasnya),
- * bukan disalin dari kamus umum — itu yang membuat `frekuensi` per entri
- * berarti sesuatu: seberapa sering istilah itu benar-benar dipakai di
- * terbitan PAPAN, bukan seberapa "penting" ia terdengar.
+ * Glosarium: `glosarium.json` isinya campuran dua asal. Mayoritas ditambang
+ * dari korpus PAPAN sendiri (`scripts/bangun_glosarium.py` — lihat
+ * `dibuat`/`sumber` di berkasnya), bukan disalin dari kamus umum — itu yang
+ * membuat `frekuensi` per entri berarti sesuatu: seberapa sering istilah itu
+ * benar-benar dipakai di terbitan PAPAN, bukan seberapa "penting" ia
+ * terdengar. Sebagian kecil (`frekuensi: 0`) ditambahkan MANUAL — istilah
+ * fundamental Stock Detail yang dulu hidup sebagai seksi Glosarium halaman
+ * Bedah Emiten sendiri, dipindah ke sini saat halaman itu pensiun (21 Agu
+ * 2026) supaya glosariumnya satu sumber, bukan dua.
  *
  * Metodologi: HANYA klaim yang bisa ditunjuk ke sumbernya (kode/dokumen) —
  * lihat rujukan inline tiap bagian. Tak ada yang ditulis dari ingatan.
@@ -114,9 +118,11 @@ export function Metodologi() {
         </div>
         <div className="panel-b">
           <p className="muted mtd-intro">
-            75 istilah ditambang dari korpus terbitan PAPAN sendiri (edisi, bedah, dokumen pedoman, kode
-            radar/skor/fraksi) — <code>frekuensi</code> menunjukkan berapa kali istilah itu benar-benar
-            muncul, bukan hafalan kamus umum.
+            Sebagian besar istilah ditambang dari korpus terbitan PAPAN sendiri (edisi, bedah, dokumen
+            pedoman, kode radar/skor/fraksi) — <code>frekuensi</code> menunjukkan berapa kali istilah itu
+            benar-benar muncul, bukan hafalan kamus umum. Istilah fundamental Stock Detail (TTM, CAGR,
+            DER, Altman Z-Score, dan sejenisnya) ditambahkan manual saat halaman Bedah Emiten pensiun dan
+            digabung ke Stock Detail — <code>frekuensi</code> 0 menandai entri itu, bukan hasil tambang.
           </p>
 
           {tersaring.length === 0 && <p className="muted">Tak ada istilah yang cocok dengan pencarian ini.</p>}

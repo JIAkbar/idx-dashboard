@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { AksesHalamanProvider } from './context/AksesHalamanContext'
@@ -34,7 +34,6 @@ const Seasonality = lazy(() => import('./views/dasbor/Seasonality').then((m) => 
 const GrafikEmiten = lazy(() => import('./views/dasbor/GrafikEmiten').then((m) => ({ default: m.GrafikEmiten })))
 const KartuAnalisa = lazy(() => import('./views/dasbor/KartuAnalisa').then((m) => ({ default: m.KartuAnalisa })))
 const Screener = lazy(() => import('./views/dasbor/Screener').then((m) => ({ default: m.Screener })))
-const BedahEmiten = lazy(() => import('./views/dasbor/BedahEmiten').then((m) => ({ default: m.BedahEmiten })))
 const Metodologi = lazy(() => import('./views/dasbor/Metodologi').then((m) => ({ default: m.Metodologi })))
 const StatistikBerkala = lazy(() => import('./views/dasbor/StatistikBerkala').then((m) => ({ default: m.StatistikBerkala })))
 const Watchlist = lazy(() => import('./views/dasbor/Watchlist').then((m) => ({ default: m.Watchlist })))
@@ -50,6 +49,18 @@ const RakTerbitan = lazy(() => import('./views/admin/RakTerbitan').then((m) => (
 const ChangelogAdmin = lazy(() => import('./views/admin/ChangelogAdmin').then((m) => ({ default: m.ChangelogAdmin })))
 const ChangelogPanel = lazy(() => import('./views/admin/ChangelogAdmin').then((m) => ({ default: m.ChangelogPanel })))
 const EdisiUjicoba = lazy(() => import('./views/EdisiUjicoba').then((m) => ({ default: m.EdisiUjicoba })))
+
+/**
+ * Bedah Emiten pensiun 21 Agu 2026 — isinya digabung ke Stock Detail. Rute
+ * `/bedah-emiten` DIBIARKAN hidup (tautan lama tak boleh mati) tapi cuma
+ * mengalihkan ke `/stock-detail` dengan kode emiten yang sama, dari `?kode=`
+ * ATAU `?sym=` (nama lama halaman ini, dipertahankan).
+ */
+function RedirectBedahEmiten() {
+  const [sp] = useSearchParams()
+  const kode = sp.get('kode') ?? sp.get('sym')
+  return <Navigate to={kode ? `/stock-detail?kode=${encodeURIComponent(kode)}` : '/stock-detail'} replace />
+}
 
 function App() {
   return (
@@ -96,19 +107,15 @@ function App() {
               <Route path="/statistik" element={<PenjagaHalaman kunci="statistik"><StatistikBerkala /></PenjagaHalaman>} />
               <Route path="/chart" element={<PenjagaHalaman kunci="chart"><ChartIndeks /></PenjagaHalaman>} />
               <Route path="/stock-detail" element={<PenjagaHalaman kunci="detail"><StockDetail /></PenjagaHalaman>} />
-              {/* Bedah Emiten (backlog A2 / #153) — halaman analisa 12 seksi.
-                  JANGAN tertukar dengan tab admin /admin/bedah: itu perakit
-                  EDISI PDF, dulu bernama "Bedah Arus Saham" dan sejak 21 Agu
-                  2026 tampil sebagai "Deep Dive" (label saja — kuncinya
-                  memang tetap 'bedah'). Karena itu halaman ini memakai kunci sendiri,
-                  'bedah-emiten' — memakai 'bedah' akan membuat setelan
-                  superadmin tab admin ikut mengunci halaman publik ini, dan
-                  sebaliknya membuka halaman ini berarti membuka perakit
-                  edisi. Barisnya BELUM ada di `akses_halaman` (pola sama
-                  'kta'/'statistik'/'watchlist') -> kunci tak dikenal
-                  fail-open, jadi publik sampai tingkatnya diatur dari tab
-                  Akses tanpa menyentuh kode lagi. */}
-              <Route path="/bedah-emiten" element={<PenjagaHalaman kunci="bedah-emiten"><BedahEmiten /></PenjagaHalaman>} />
+              {/* Bedah Emiten (backlog A2 / #153) PENSIUN 21 Agu 2026 — isinya
+                  digabung ke Stock Detail (Aktivitas Transaksi, Lima Langkah
+                  Uang, Panel Khas PAPAN masuk tab Statistik; Banding Emiten
+                  jadi tab Banding). Rute dibiarkan hidup, cuma mengalihkan —
+                  tautan lama ("Bedah BBCA") tak boleh mendarat di halaman
+                  kosong. Guard-nya dipertahankan (kunci 'bedah-emiten' fail-
+                  open sampai diatur dari tab Akses) supaya perilakunya sama
+                  seperti sebelum dialihkan. */}
+              <Route path="/bedah-emiten" element={<PenjagaHalaman kunci="bedah-emiten"><RedirectBedahEmiten /></PenjagaHalaman>} />
               <Route path="/peta-investor" element={<PenjagaHalaman kunci="peta"><PetaInvestor /></PenjagaHalaman>} />
               <Route path="/broker-summary" element={<PenjagaHalaman kunci="broker"><BrokerSummary /></PenjagaHalaman>} />
               <Route path="/kalkulator" element={<PenjagaHalaman kunci="kalkulator"><KalkulatorJia /></PenjagaHalaman>} />
