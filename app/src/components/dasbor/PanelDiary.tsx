@@ -111,6 +111,18 @@ export function PanelDiary() {
   }, [pilih])
 
   const sel = useMemo(() => (baris ? selDiary(baris) : []), [baris])
+
+  // Bawaannya TANGGAL TERAKHIR sudah terpilih (Johan 21 Agu 2026: "secara
+  // default terbuka tanggal terakhir gini yaa") — panel langsung menjawab
+  // "hari bursa terakhir bagaimana" tanpa perlu satu klik pun. Hanya sekali,
+  // saat data pertama tiba: sesudah itu pilihan (termasuk MENUTUP kartunya
+  // dengan klik kedua) milik pembaca, bukan milik efek ini.
+  const [autoTerpasang, setAutoTerpasang] = useState(false)
+  useEffect(() => {
+    if (autoTerpasang || !sel.length) return
+    setPilih(sel[sel.length - 1].tanggal)
+    setAutoTerpasang(true)
+  }, [sel, autoTerpasang])
   const performa = useMemo(
     () => (baris ? performaIhsg(baris, tutupPanjang) : []),
     [baris, tutupPanjang],

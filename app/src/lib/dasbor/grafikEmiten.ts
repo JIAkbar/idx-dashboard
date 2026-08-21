@@ -1072,7 +1072,7 @@ function garisPustaka(
 
 export type JenisPola =
   | 'doubleBottom' | 'lonjakanVolume' | 'musiman' | 'divergensi' | 'wyckoff' | 'harmonik'
-  | 'struktur'
+  | 'struktur' | 'polaKlasik'
 export type InstansPola = Instans<JenisPola>
 
 export interface SpekPola {
@@ -1095,6 +1095,25 @@ export const SPEK_POLA: Record<JenisPola, SpekPola> = {
     label: 'Struktur Pasar',
     param: [
       { kunci: 'n', label: 'Lebar swing (N)', bawaan: 5, min: 1, maks: 50, bulat: true },
+    ],
+  },
+  /**
+   * Pola chart klasik — enam belas pola (sembilan reversal + tujuh
+   * continuation) dari gambar acuan Johan (`data ide/`, 21 Agu 2026) dalam
+   * SATU mesin di atas pivot zigzag. Rumus, alasan tiap keputusan, dan ANGKA
+   * BACKTEST tiga kerangka (1D/4H/1W, 18 emiten, bebas bocor masa depan) ada
+   * di kepala `polaKlasik.ts`; di sini cuma batas kolom setelannya.
+   */
+  polaKlasik: {
+    label: 'Pola Klasik',
+    param: [
+      { kunci: 'jendela', label: 'Jendela pivot', bawaan: 5, min: 1, maks: 60, bulat: true },
+      { kunci: 'ayunMin', label: 'Ayun zigzag min %', bawaan: 3, min: 0.1, maks: 50, bulat: false },
+      { kunci: 'atr', label: 'Periode ATR', bawaan: 14, min: 2, maks: 200, bulat: true, bandingLilin: true },
+      { kunci: 'toleransi', label: 'Toleransi ×ATR', bawaan: 1, min: 0.05, maks: 10, bulat: false },
+      { kunci: 'tunggu', label: 'Tunggu patahan', bawaan: 40, min: 3, maks: 500, bulat: true },
+      { kunci: 'tiang', label: 'Panjang tiang (flag)', bawaan: 20, min: 3, maks: 200, bulat: true },
+      { kunci: 'tiangAtr', label: 'Tinggi tiang ×ATR', bawaan: 4, min: 0.5, maks: 50, bulat: false },
     ],
   },
   doubleBottom: {

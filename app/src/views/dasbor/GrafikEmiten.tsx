@@ -10,6 +10,9 @@ import {
 } from 'lightweight-charts'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import {
+  LABEL_POLA_KLASIK, LABEL_STATUS_POLA, cariPolaKlasik, type ParamPolaKlasik, type PolaKlasik,
+} from '../../lib/dasbor/polaKlasik'
+import {
   keDataLilinVolume, batasBawahHari, RENTANG_KAKI, RENTANG_KAKI_BAWAAN,
   keSeriGaris, SPEK_INDIKATOR, SPEK_POLA, labelInstansIndikator, labelInstansPola,
   spekJenis, idPustaka,
@@ -414,6 +417,12 @@ const PANDUAN_POLA: Array<{ label: string; teks: string }> = [
     teks: 'RVOL (relative volume) membandingkan volume hari itu dengan rata-rata volume 20 hari sebelumnya. RVOL 2 berarti hari itu diperdagangkan dua kali lebih ramai dari kebiasaannya sendiri. Rata-rata pembaginya sengaja tidak memasukkan hari itu — dimasukkan, lonjakannya ikut mengangkat pembaginya sendiri dan angkanya jadi lebih kecil dari yang sebenarnya.' },
   { label: 'Tiga keadaan Lonjakan Volume',
     teks: `Terkonfirmasi — ${ARTI_LONJAKAN.terkonfirmasi}. Kuat — ${ARTI_LONJAKAN.kuat}. Tak terkonfirmasi — ${ARTI_LONJAKAN.takTerkonfirmasi}. Kenaikan harga tanpa kenaikan volume berarti sedikit pihak yang ikut; keadaan ketiga itu justru yang membuat daftar ini bukan sekadar kumpulan hari yang menyenangkan.` },
+  { label: 'Pola Klasik — enam belas pola, satu mesin',
+    teks: 'Sembilan reversal — Double/Triple Top & Bottom, Head & Shoulders (+inverted), Rising/Falling Wedge, Expanding Triangle — plus tujuh continuation: Bullish/Bearish Flag, Bullish/Bearish Pennant, Ascending/Descending/Symmetrical Triangle. Semuanya dicari di atas pivot zigzag yang sama dengan Harmonic. Flag & Pennant tambahan mensyaratkan TIANG (pole) — gerak kuat searah sebelum kanalnya — supaya beda dari baji/expanding yang bentuknya mirip tapi tanpa tiang. Sebuah pola baru dihitung SELESAI saat lehernya (atau garis trennya) ditembus penutupan, bukan saat bentuknya kelihatan; penanda dan garisnya berdiri di lilin patahan itu.' },
+  { label: 'Pola Klasik — angka backtest-nya, jujur',
+    teks: 'Diukur atas 18 emiten beragam watak, bebas bocor masa depan, dibandingkan peluang dasar arah yang sama: harian −2,4pp pada 5 lilin naik jadi +2,7pp pada 20 lilin, 4 jam mendekati nol di ketiga jendela, pekanan +6,9pp pada 5 lilin (sampel pekanan kecil). Per pola TIDAK sama kuat — Head & Shoulders +18pp dan Double Bottom +12pp di harian tetap paling teruji; dari continuation, Bearish Flag harian +35pp di 20 lilin (n=7) paling menjanjikan tapi sampelnya kecil, sementara Bullish Flag negatif di ketiga jendela harian (n=13). Angka ini dicetak supaya polanya ditimbang, bukan dipercaya buta.' },
+  { label: 'Pola Klasik — target harga & statusnya',
+    teks: 'Mengikuti spek Auto Chart Patterns TradingView (dibaca langsung dari dokumentasinya): sesudah patahan, harga diharapkan berjalan kira-kira SETINGGI POLANYA searah patahan — garis putus-putus mendatar menandai level itu. Status tiap pola dinilai dari lilin yang sudah terjadi: tercapai (ekstrem menyentuh target), gagal (penutupan melewati ekstrem pola di sisi berlawanan sebelum target), atau menunggu. Ini label atas masa lalu, bukan ramalan — dan backtest di atas tidak memakainya.' },
   { label: 'Divergensi — tiga lapis, tiga peran berbeda',
     teks: 'Lapis harga menentukan ADA-tidaknya pola: dua puncak (bearish) atau dua lembah (bullish) yang dicari dengan pivot yang sama seperti Double Bottom. Lapis Stochastic %K dibandingkan di dua pivot yang sama dan itulah yang MENYATAKAN divergensinya — arah harga dan arah momentum harus berlawanan. Lapis volume tidak pernah menolak apa pun; ia cuma mengesahkan derajatnya.' },
   { label: 'Divergensi — dua arah dan artinya',
@@ -1623,6 +1632,12 @@ export function GrafikEmiten() {
       harmonik: inst.jenis === 'harmonik'
         ? cariHarmonik(lilin, inst.param as unknown as ParamHarmonik)
         : ([] as Harmonik[]),
+      // Pola klasik (B35): enam belas pola (reversal + continuation), mesin
+      // & angka backtest-nya di `polaKlasik.ts`. Garisnya digambar efek seri
+      // pola di bawah.
+      klasik: inst.jenis === 'polaKlasik'
+        ? cariPolaKlasik(lilin, inst.param as unknown as ParamPolaKlasik)
+        : ([] as PolaKlasik[]),
       // Struktur pasar (21 Agu 2026). Swing dan patahannya dihitung
       // BERSAMAAN karena patahan membaca swing — memisahkannya berarti dua
       // memo yang bisa memakai `N` berbeda selama satu render.
@@ -1999,6 +2014,46 @@ export function GrafikEmiten() {
       }
     }
 
+    // Pola klasik: SEMUA garisnya di panel harga — kerangka pivot tipis
+    // bertitik, leher/garis tren tebal, warna ikut arah polanya. Dibatasi
+    // yang terbaru (MAKS_PENANDA_POLA) sama seperti penandanya: dua belas
+    // pola sekaligus cuma menutupi harga yang justru sedang dibaca.
+    for (const { inst, klasik } of polaPerInstans) {
+      if (inst.jenis !== 'polaKlasik' || !digambar(inst) || klasik.length === 0) continue
+      for (const q of klasik.slice(-MAKS_PENANDA_POLA)) {
+        const warna = baca(q.arah === 'bullish' ? '--green' : '--red')
+        q.garis.forEach((g, gi) => {
+          const seri = chart.addSeries(LineSeries, {
+            color: warna,
+            lineWidth: (gi === 0 ? 1 : 2) as LineWidth,
+            lineStyle: gi === 0 ? LineStyle.Dotted : LineStyle.Solid,
+            priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
+          }, 0)
+          seri.setData(keChart(g.map((t) => ({ time: lilin[t.i].time, value: t.harga }))))
+          seriPolaRef.current.push(seri)
+        })
+        // Garis TARGET (spek TradingView): putus-putus mendatar dari lilin
+        // sinyal sampai lilin tempat statusnya diputuskan — atau sampai
+        // lilin terakhir selagi masih menunggu. Warnanya bercerita:
+        // menunggu = kuning, tercapai = warna arah, gagal = pudar.
+        const ujung = q.iStatus ?? lilin.length - 1
+        if (ujung > q.iSinyal) {
+          const wTarget = q.status === 'menunggu' ? baca('--amber')
+            : q.status === 'tercapai' ? warna : baca('--text3')
+          const sT = chart.addSeries(LineSeries, {
+            color: wTarget, lineWidth: 1, lineStyle: LineStyle.Dashed,
+            priceLineVisible: false, lastValueVisible: q.status === 'menunggu',
+            crosshairMarkerVisible: false,
+          }, 0)
+          sT.setData(keChart([
+            { time: lilin[q.iSinyal].time, value: q.target },
+            { time: lilin[ujung].time, value: q.target },
+          ]))
+          seriPolaRef.current.push(sT)
+        }
+      }
+    }
+
     if (seriPolaRef.current.length) {
       const panes = chart.panes()
       panes[0]?.setStretchFactor(3)
@@ -2252,7 +2307,7 @@ export function GrafikEmiten() {
    */
   const penandaPola = useMemo<PenandaPola[]>(() => {
     const out: PenandaPola[] = []
-    for (const { inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik, swing, patahan } of polaPerInstans) {
+    for (const { inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik, swing, patahan, klasik } of polaPerInstans) {
       if (!digambar(inst)) continue
       const nama = labelInstansPola(inst)
       // Struktur pasar: label HH/HL/LH/LL di tiap swing, plus penanda di
@@ -2268,6 +2323,19 @@ export function GrafikEmiten() {
           bentuk: 'circle',
           teks: `${nama} · ${sw.jenis === 'high' ? 'Swing High' : 'Swing Low'} ${fN(sw.harga, 0)}`
             + (sw.label ? ` · ${sw.label}` : ' · swing pertama, belum ada pembanding'),
+        })
+      }
+      // Pola klasik: satu penanda di lilin SINYAL — tempat leher/garis
+      // trennya patah, bukan di puncak yang kelihatannya menarik.
+      for (const q of klasik.slice(-MAKS_PENANDA_POLA)) {
+        out.push({
+          time: lilin[q.iSinyal].time, seri: 'harga',
+          posisi: q.arah === 'bullish' ? 'belowBar' : 'aboveBar',
+          token: q.arah === 'bullish' ? '--green' : '--red',
+          bentuk: 'square',
+          teks: `${nama} · ${LABEL_POLA_KLASIK[q.nama]} ${q.arah}`
+            + ` · patah di ${fN(q.hargaSinyal, 0)} · target ${fN(q.target, 0)}`
+            + ` · ${LABEL_STATUS_POLA[q.status]}`,
         })
       }
       for (const pt of patahan.slice(-MAKS_PENANDA_POLA)) {
@@ -2380,7 +2448,7 @@ export function GrafikEmiten() {
       }
     }
     return out.sort((a, b) => a.time.localeCompare(b.time))
-  }, [polaPerInstans, digambar])
+  }, [polaPerInstans, lilin, digambar])
 
   // Gambar pola di kanvas: garis leher mendatar + penanda di lembah, leher,
   // dan lilin penembusnya. Penanda TANPA `text` — keterangannya pindah ke
@@ -3160,9 +3228,9 @@ export function GrafikEmiten() {
               kanvas — dan angka itulah yang membuat temuannya bisa diperiksa. */}
           {polaPerInstans.some(({ inst }) => digambar(inst)) && (
             <div className="grf-pola-hasil">
-              {polaPerInstans.filter(({ inst }) => digambar(inst)).map(({ inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik, swing, patahan }) => {
+              {polaPerInstans.filter(({ inst }) => digambar(inst)).map(({ inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik, swing, patahan, klasik }) => {
                 const jumlah = doubleBottom.length + lonjakan.length + divergensi.length
-                  + wyckoff.length + harmonik.length + patahan.length
+                  + wyckoff.length + harmonik.length + patahan.length + klasik.length
                 if (inst.jenis === 'musiman') {
                   return (
                     <div key={inst.id}>
@@ -3212,6 +3280,38 @@ export function GrafikEmiten() {
                           </li>
                         ))}
                       </ul>
+                    )}
+                    {inst.jenis === 'polaKlasik' && klasik.length > 0 && (
+                      <ul className="grf-pola-daftar">
+                        {klasik.slice(-MAKS_PENANDA_POLA).reverse().map((q) => (
+                          <li key={`k-${q.iSinyal}-${q.nama}`}
+                            style={{ '--ind-warna': `var(${q.arah === 'bullish' ? '--green' : '--red'})` } as React.CSSProperties}>
+                            <span className="grf-pola-status">{q.arah}</span>
+                            <span>
+                              {LABEL_POLA_KLASIK[q.nama]}
+                              {' · '}{lilin[q.pivot[0].i]?.time} &rarr; {lilin[q.iSinyal]?.time}
+                              {' · '}patah di {fN(q.hargaSinyal, 0)}
+                              {' · '}target {fN(q.target, 0)} &middot; batal &gt; {fN(q.batal, 0)}
+                              {' · '}<b>{LABEL_STATUS_POLA[q.status]}</b>
+                              {q.iStatus !== null && ` (${lilin[q.iStatus]?.time})`}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {inst.jenis === 'polaKlasik' && (
+                      // Angka backtest-nya DICETAK, bukan disembunyikan di
+                      // balik kata "teruji" — permintaan eksplisit Johan:
+                      // "bukan asal tebak berdasarkan hasil benchmark dan
+                      // backtesting". Rinciannya di kepala polaKlasik.ts.
+                      <p className="grf-pola-judul">
+                        Backtest 18 emiten, 16 pola (arah benar vs peluang dasar, bebas bocor):
+                        harian +2,7pp @20 lilin · 4 jam ≈0pp · pekanan +6,9pp @5.
+                        Terkuat reversal: Head &amp; Shoulders +18pp &amp; Double Bottom +12pp di harian;
+                        terkuat continuation: Bearish Flag +35pp @20 harian (n kecil).
+                        Rising Wedge justru negatif di harian (−9pp @10) dan positif di 4 jam (+8pp @5) —
+                        timbang kerangkanya, bukan cuma bentuknya.
+                      </p>
                     )}
                     {inst.jenis === 'struktur' && swing.length > 0 && (
                       <ul className="grf-pola-daftar">
