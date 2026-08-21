@@ -188,10 +188,17 @@ function RailGrup({ grup, buka, onToggle, onTutup, pathname, klik, boleh, alasan
     const fly = flyRef.current
     if (!kotak || !fly) return
     const tinggi = fly.offsetHeight
-    setPos({
-      top: Math.max(8, Math.min(kotak.top, window.innerHeight - tinggi - 8)),
-      left: kotak.right + 6,
-    })
+    // Flyout DISEJAJARKAN ke tengah ikonnya, bukan ke tepi atasnya (Johan
+    // 21 Agu 2026: "perlu di rapikan lagi nih di re layouting soal sub
+    // menu nya"). Sebelumnya panel setinggi 250px yang dibuka dari ikon
+    // teratas menjulur jauh ke bawah dan terbaca melayang lepas dari ikon
+    // yang diklik — tak ada garis pandang antara sumber dan isinya.
+    const tengahIkon = kotak.top + kotak.height / 2
+    const top = Math.max(8, Math.min(tengahIkon - tinggi / 2, window.innerHeight - tinggi - 8))
+    setPos({ top, left: kotak.right + 8 })
+    // Panah penunjuk mengikuti ikon, bukan tengah panel: kalau panel kena
+    // jepitan tepi layar, panahnya tetap menunjuk ikon yang benar.
+    fly.style.setProperty('--panah-y', `${Math.max(14, Math.min(tengahIkon - top, tinggi - 14))}px`)
     fly.querySelector('a')?.focus()
   }, [buka])
 
