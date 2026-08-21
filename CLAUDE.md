@@ -104,6 +104,36 @@ berisi sektor IDX-IC resmi dan pemegang saham pengendali. Runbook lengkapnya di
 
 - **Edisi Arus Pasar tinggal di BERKAS, bukan di Supabase — jangan bangun jalur kedua lagi.** Repo sempat punya dua sistem untuk hal yang sama: perakitan `arus-pasar/build*.py` → `keluaran/*.pdf` + `keluaran/index.json` (dibaca `/bulletin` & Rak Terbitan) DAN tabel Supabase `edisi`. Yang kedua tak pernah diisi — 0 baris seumur hidupnya, nol penulis, dan satu-satunya pembacanya (`/admin/edisi/:kode`) karena itu selalu menjawab "tidak ditemukan" tanpa seorang pun sadar. Yang mahal bukan tabel nganggurnya, tapi **batas kepemilikan yang tak pernah ditulis**: 20 Agu satu agen menjalankan `git checkout -- arus-pasar/keluaran/` dan menghapus keluaran agen lain karena tak jelas siapa pemilik apa. Tabelnya sudah DROP (A3, Papan Pekerjaan #221) berikut policy `ALL to authenticated using(true) with check(true)` yang diam-diam memberi hak tulis & hapus ke setiap akun login. Sekarang: manifest HANYA lahir dari `generate_index.py` (yang menghormati `edisi/_tahan.json`), pembacanya `lib/dasbor/bulletin.ts`, dan `lib/supabaseSetoran.ts` (dulu `supabaseEdisi.ts`) mengurus setoran + bucket screenshots saja. Menambah fungsi edisi ke Supabase = menghidupkan lagi ambiguitas yang baru dibayar.
 
+### Halaman baru WAJIB terdaftar di DUA tempat — kode DAN basis data
+
+Johan 21 Agu 2026: *"whatchlist nya kok belum update di halaman ini ya?"* ·
+*"jadi aturan wajib deh, semua page baru wajib di masukkan di akses"*.
+
+Tiap halaman baru butuh dua baris, dan satu saja tak pernah cukup:
+
+1. `PETA_MENU_KUNCI` di `app/src/lib/aksesHalaman.ts` — rute → kunci
+2. Baris di tabel Supabase `akses_halaman` — kunci, label, tingkat, urutan
+
+**Kalau cuma nomor 1**, kuncinya tak dikenal server dan `bolehBukaKunci`
+**fail-open**: halamannya terbuka untuk siapa saja DAN tak muncul di tab
+Akses. Dari panel ia seolah tidak ada, jadi tak seorang pun bisa menguncinya.
+Itu persis yang terjadi pada **Kartu Analisa, Statistik Berkala, Watchlist,
+dan Bedah Emiten** — empat halaman hidup berminggu-minggu sebagai halaman
+yang tak bisa diatur, tanpa satu pun galat yang menyebutnya. Ditutup 21 Agu
+(migrasi `akses_halaman_empat_halaman_yang_tertinggal`).
+
+**Kalau cuma nomor 2**, barisnya tak pernah terpakai — tak ada rute yang
+menunjuk kunci itu.
+
+Fail-open sendiri TETAP dipertahankan dan itu disengaja: halaman yang lupa
+didaftarkan lebih baik terbuka daripada mengunci pembaca dari sesuatu yang
+seharusnya publik. Ia jaring pengaman, **bukan izin melewatkan pendaftaran**.
+
+Tingkat awalnya samakan dengan perilaku yang SEDANG berjalan (halaman yang
+hari ini terbuka didaftarkan sebagai `publik`), lalu biarkan Johan yang
+mengubahnya dari tab Akses. Mendaftarkannya langsung sebagai `login` berarti
+mengunci halaman yang tadinya terbuka — perubahan perilaku yang tak diminta.
+
 ### Papan Pekerjaan — WAJIB tiap balasan
 
 Konvensi lintas proyek `kemampuan-workflow.md` §174 mewajibkan **Papan

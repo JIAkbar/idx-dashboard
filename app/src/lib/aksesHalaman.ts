@@ -109,6 +109,29 @@ export function alasanSingkat(
  * Kalau pemetaan ini meleset dari maksud sesungguhnya, gampang diperbaiki di
  * sini saja (satu sumber).
  */
+/**
+ * Rute halaman -> kunci `akses_halaman`.
+ *
+ * ATURAN WAJIB (Johan 21 Agu 2026: "semua page baru wajib di masukkan di
+ * akses"): halaman baru butuh DUA hal, dan satu saja tak pernah cukup —
+ * barisnya di sini, DAN barisnya di tabel `akses_halaman`.
+ *
+ * Kalau cuma ada di sini, kuncinya tak dikenal server dan `bolehBukaKunci`
+ * FAIL-OPEN: halamannya terbuka untuk siapa saja dan tak muncul sama sekali
+ * di tab Akses — dari panel ia seolah tidak ada, jadi tak ada yang bisa
+ * menguncinya. Itu persis yang terjadi pada Kartu Analisa, Statistik
+ * Berkala, Watchlist, dan Bedah Emiten sampai 21 Agustus 2026; empat-empatnya
+ * hidup berminggu-minggu sebagai halaman yang tak bisa diatur, dan tak ada
+ * satu pun galat yang menyebutnya.
+ *
+ * Kalau cuma ada di tabel, barisnya tak pernah dipakai — tak ada rute yang
+ * menunjuk kunci itu.
+ *
+ * Fail-open sendiri TETAP dipertahankan dan itu disengaja: halaman baru yang
+ * lupa didaftarkan lebih baik terbuka daripada mengunci pembaca dari sesuatu
+ * yang seharusnya publik. Ia jaring pengaman, bukan izin untuk melewatkan
+ * pendaftaran.
+ */
 export const PETA_MENU_KUNCI: Record<string, string> = {
   world: 'dasbor',
   sector: 'sektor',
@@ -132,32 +155,16 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   // Grafik Emiten (tahap 3 chart PAPAN, 17 Agu 2026) — perlu login, baris
   // `akses_halaman` ditambahkan bareng rutenya, bukan menyusul.
   grafik: 'grafik',
-  // Kartu Analisa Emiten (18 Agu 2026). Baris `akses_halaman` BELUM ada di
-  // database sesi ini (pola sama 'statistik' di bawah) -> kunci tak dikenal
-  // fail-open, jadi halamannya publik sampai tingkatnya diatur dari tab
-  // Akses. Yang penting kuncinya sudah terpasang di sini, supaya halaman ini
-  // tak jadi celah yang tak kelihatan dari panel (persis yang dulu terjadi
-  // pada Top Stocks & Top Broker).
   kartu: 'kta',
-  // Statistik Berkala (18 Agu 2026). Barisnya BELUM ada di `akses_halaman` —
-  // sengaja: kunci tak dikenal fail-open, jadi halamannya publik sampai
-  // tingkatnya diatur dari tab Akses. Yang penting kuncinya sudah terpasang,
-  // supaya halaman ini tak jadi celah yang tak kelihatan dari panel (persis
-  // yang dulu terjadi pada Top Stocks & Top Broker).
   statistik: 'statistik',
-  // Watchlist dinamis (backlog C8, 19 Agu 2026) — daftar pantau milik
-  // pembaca sendiri (localStorage), BEDA dari 'radar' (arsip WDWL berbasis
-  // aturan). Baris `akses_halaman` BELUM ada di database sesi ini (pola sama
-  // 'kta'/'statistik') -> kunci tak dikenal fail-open, publik sampai
-  // tingkatnya diatur dari tab Akses.
+  // Daftar pantau milik pembaca sendiri (localStorage), BEDA dari 'radar'
+  // yang berisi arsip WDWL berbasis aturan. Dua produk, dua kunci.
   watchlist: 'watchlist',
   // Bedah Emiten (backlog A2 / #153, 20 Agu 2026). Kuncinya SENGAJA
   // 'bedah-emiten', bukan 'bedah': kunci 'bedah' sudah menjaga tab admin
   // /admin/bedah (perakit edisi PDF, superadmin). Memakai ulang nama itu
   // membuat satu setelan menjaga dua hal yang tak berhubungan — membuka
   // halaman publik ini berarti membuka perakit edisi, dan menguncinya
-  // berarti mengunci halaman analisa untuk semua orang. Barisnya BELUM ada
-  // di `akses_halaman` (pola sama 'kta'/'statistik'/'watchlist') -> kunci
-  // tak dikenal fail-open, publik sampai tingkatnya diatur dari tab Akses.
+  // berarti mengunci halaman analisa untuk semua orang.
   'bedah-emiten': 'bedah-emiten',
 }
