@@ -63,6 +63,11 @@ export interface RentangTanggal {
  * dengan gaya lain (prinsip 4).
  */
 export const LABEL_RENTANG = {
+  // Dua kunci tingkat HARI, ditambah B36 (panel Aliran Investor meniru
+  // pemilih 1D/5D panel RTI). Dieja di sini, bukan di halamannya — itu
+  // seluruh alasan tabel ini ada.
+  h1: '1 Hari',
+  h5: '5 Hari',
   w1: '1 Minggu',
   b1: '1 Bulan',
   b3: '3 Bulan',

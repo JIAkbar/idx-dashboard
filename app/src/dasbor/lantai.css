@@ -2984,3 +2984,63 @@
   color: var(--red); background: rgba(242, 84, 91, .08);
   border-bottom: 1px solid var(--line);
 }
+
+/* ------------------------------------------------------------------ *
+ * Aliran Investor (B36) — asing vs domestik di tingkat pasar.
+ * Empat batang per kelompok: FBuy · FSell · DBuy · DSell.
+ * ------------------------------------------------------------------ */
+.lantai .ai-jendela { margin: 0 0 10px; }
+.lantai .ai-grup { margin-bottom: 16px; }
+.lantai .ai-kepala {
+  display: flex; flex-wrap: wrap; align-items: baseline;
+  justify-content: space-between; gap: 8px; margin-bottom: 8px;
+}
+/* Penanda "taksiran" — sengaja mencolok dan menempel pada judulnya sendiri,
+   bukan catatan kaki: angka taksiran yang berdiri di sebelah angka terukur
+   tanpa penanda adalah cara paling halus untuk berbohong. */
+.lantai .ai-tanda {
+  font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase;
+  padding: 2px 6px; border-radius: 3px; margin-left: 6px;
+  color: var(--amber, #d9a441); border: 1px solid currentColor;
+}
+.lantai .ai-batang {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px;
+  align-items: end;
+}
+.lantai .ai-kolom { display: grid; gap: 4px; justify-items: center; }
+.lantai .ai-persen { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--text2); }
+.lantai .ai-bar {
+  /* Tinggi TETAP supaya keempat batang berdiri di dasar yang sama; batangnya
+     tumbuh dari bawah. Lebarnya DIBATASI: dibiarkan mengisi kolom, di
+     monitor lebar tiap batang jadi balok 400px yang tingginya justru sulit
+     dibandingkan — mata membaca luas, bukan tinggi. */
+  display: flex; align-items: flex-end; justify-content: center;
+  width: 100%; max-width: 116px; height: 104px; margin: 0 auto;
+  /* Tanpa latar: bak abu-abu setinggi penuh terbaca sebagai kotak KOSONG
+     yang menunggu diisi, bukan sebagai skala. Garis dasar tipis sudah cukup
+     memberi tahu di mana nolnya. */
+  border-bottom: 1px solid var(--line);
+}
+.lantai .ai-bar i { display: block; width: 100%; border-radius: 3px 3px 0 0; min-height: 2px; }
+/* Asing hijau/merah (arah uang), domestik biru/ungu — sengaja BUKAN empat
+   nuansa hijau-merah: yang dibandingkan pembaca lebih dulu adalah asing
+   lawan domestik, bukan beli lawan jual. */
+.lantai .ai-f-beli { background: var(--green); }
+.lantai .ai-f-jual { background: var(--red); }
+.lantai .ai-d-beli { background: var(--blue, #4a8ede); }
+.lantai .ai-d-jual { background: var(--amber, #d9a441); }
+.lantai .ai-nama { font-size: 11px; color: var(--text3); }
+.lantai .ai-nilai { font-size: 11px; font-variant-numeric: tabular-nums; text-align: center; }
+.lantai .ai-frek { border-top: 1px solid var(--line); padding-top: 12px; }
+.lantai .ai-frek p { margin: 6px 0 0; }
+.lantai .ai-catatan {
+  margin: 0; padding-top: 10px; border-top: 1px solid var(--line); line-height: 1.65;
+}
+
+@media (max-width: 560px) {
+  /* Dua kolom di ponsel: empat batang di 412px membuat label "FBuy" dan
+     angkanya bertumpuk sampai tak terbaca. */
+  .lantai .ai-batang { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .lantai .ai-bar { height: 78px; max-width: 96px; }
+}
+.lantai .ai-sumber { color: var(--text3); font-size: 11px; }

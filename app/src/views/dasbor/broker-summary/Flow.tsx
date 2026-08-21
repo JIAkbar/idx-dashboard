@@ -8,6 +8,7 @@ import { useFlowNego } from '../../../lib/dasbor/flowNego'
 import type { BrokerRentangAktif } from '../../../lib/dasbor/brokerHarian'
 import { IkonMenu, IKON_OMBAK, IKON_ULANG, IKON_PERINGATAN } from '../../../components/dasbor/IkonMenu'
 import { AsingEmiten } from './AsingEmiten'
+import { InvestorChart } from './InvestorChart'
 
 interface FlowProps {
   tanggalAktif: string | null
@@ -19,10 +20,16 @@ const labelPendek = (iso: string) => labelTanggal(iso).replace(/ \d{4}$/, '')
 
 /**
  * Tab "Flow" (#99) — data NYATA dari ds_YYMMDD.json, mengikuti tanggal/rentang
- * aktif halaman. Sumber hanya menyediakan NET foreign harian (nf_today_idr,
- * miliar Rp) — buy/sell terpisah TIDAK ada, jadi chart jujur: bar Net
- * (hijau=net buy, merah=net sell) + garis kumulatif. Hari tanpa angka nf
- * (7/138 berkas, parser gagal) tampil sebagai celah.
+ * aktif halaman. `ds_YYMMDD.json` hanya menyediakan NET foreign harian
+ * (nf_today_idr, miliar Rp), jadi chart ini jujur: bar Net (hijau=net buy,
+ * merah=net sell) + garis kumulatif. Hari tanpa angka nf (7/138 berkas,
+ * parser gagal) tampil sebagai celah.
+ *
+ * Kalimat "buy/sell terpisah TIDAK ada" yang dulu berdiri di sini sudah
+ * GUGUR (B36, 21 Agu 2026): `ForeignBuy`/`ForeignSell` per emiten memang ada
+ * di `GetStockSummary` — dalam LEMBAR — dan penjumlahannya kini tampil di
+ * panel `InvestorChart` di bawah. Yang tetap tak ada: belahan rupiah dan
+ * belahan frekuensi. Batasnya bergeser, bukan hilang.
  */
 export function Flow({ tanggalAktif, rentang }: FlowProps) {
   const { theme } = useTheme()
@@ -82,6 +89,7 @@ export function Flow({ tanggalAktif, rentang }: FlowProps) {
           <p className="lbl">Memuat data foreign flow…</p>
         </div>
         <AsingEmiten />
+        <InvestorChart />
       </>
     )
   }
@@ -119,6 +127,7 @@ export function Flow({ tanggalAktif, rentang }: FlowProps) {
         {tanpaNf > 0 && ` ${tanpaNf} hari tanpa angka net foreign di sumber (celah pada chart).`}
       </div>
       <AsingEmiten />
+      <InvestorChart />
     </>
   )
 }
