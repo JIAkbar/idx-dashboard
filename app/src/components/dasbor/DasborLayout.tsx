@@ -7,6 +7,7 @@ import { LoginModal } from './LoginModal'
 import { TanyaPapan } from './TanyaPapan'
 import { LoginModalProvider } from '../../context/LoginModalContext'
 import { useTheme } from '../../context/ThemeContext'
+import { TANYA_PAPAN_AKTIF } from '../../lib/fitur'
 import '../../dasbor/lantai.css'
 
 /**
@@ -112,8 +113,9 @@ export function DasborLayout() {
         {loginOpen && <LoginModal onClose={() => setLoginOpen(false)} />}
         {/* Mengambang di pojok kanan bawah, ikut ke SEMUA halaman publik —
             dipasang di shell, bukan per halaman, supaya tak ada halaman yang
-            kehilangan pintu tanyanya. */}
-        <TanyaPapan />
+            kehilangan pintu tanyanya. Ditakdown sementara 21 Agu 2026,
+            lihat lib/fitur.ts — sakelar TANYA_PAPAN_AKTIF. */}
+        {TANYA_PAPAN_AKTIF && <TanyaPapan />}
       </div>
     </LoginModalProvider>
   )
