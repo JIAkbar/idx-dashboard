@@ -17,6 +17,7 @@ import {
   cariDivergensi, stochUntukDivergensi, cariWyckoff, cariHarmonik,
   bacaTemplateTersimpan, tulisTemplateTersimpan, simpanTemplate, hapusTemplate,
   tandaiBawaan, ubahNamaTemplate, tutupSampai,
+  warnaGrid, gridDariTemplate, GRID_BAWAAN, type SetelanGrid,
   type BerkasOhlcEmiten, type DoubleBottom, type JenisAsli, type JenisIndikator, type JenisPola,
   type LilinData, type ParamDoubleBottom, type ParamLonjakanVolume, type StatusPola, type StatusLonjakan,
   type LonjakanVolume, type TemplateGrafik, type TemuanMusiman, type VolumeData,
@@ -590,6 +591,10 @@ export function GrafikEmiten() {
   // penandanya; tooltip yang selalu di pojok memaksa mata bolak-balik antara
   // penanda dan keterangannya, dan itu persis kerja yang tooltipnya harusnya
   // hilangkan.
+  // B33 — garis bantu kanvas. Disimpan sebagai satu objek, bukan dua state
+  // terpisah, karena keduanya berjalan bersama ke template dan ke chart.
+  const [grid, setGrid] = useState<SetelanGrid>(GRID_BAWAAN)
+
   const [sorot, setSorot] = useState<{ waktu: string; x: number; y: number } | null>(null)
   /** Instans mana yang MODAL setelannya sedang terbuka (id), null = tak ada. */
   const [setelanTerbuka, setSetelanTerbuka] = useState<string | null>(null)
@@ -980,7 +985,14 @@ export function GrafikEmiten() {
     const red = baca('--red')
     chart.applyOptions({
       layout: { textColor: text2 },
-      grid: { vertLines: { color: line }, horzLines: { color: line } },
+      // `visible` DAN warna beralfa dipakai bersama, bukan salah satu:
+      // menyembunyikan grid dengan alfa 0 tetap membuat lightweight-charts
+      // menggambar garisnya (kerja sia-sia tiap frame), sementara `visible`
+      // saja tak bisa memberi tingkat transparansi di antaranya.
+      grid: {
+        vertLines: { color: warnaGrid(line, grid.alfa), visible: grid.tampil },
+        horzLines: { color: warnaGrid(line, grid.alfa), visible: grid.tampil },
+      },
       rightPriceScale: { borderColor: line },
       timeScale: { borderColor: line },
     })
@@ -996,7 +1008,7 @@ export function GrafikEmiten() {
       // akan mengaku tahu sesuatu yang tak diketahuinya.
       (harga as ISeriesApi<'Line'>).applyOptions({ color: baca('--amber') })
     }
-  }, [theme, versiSeriHarga])
+  }, [theme, versiSeriHarga, grid])
 
   // Watermark kode emiten — ikut berganti saat emiten diganti, dan warnanya
   // dibaca ulang tiap tema ditukar.
@@ -1823,10 +1835,13 @@ export function GrafikEmiten() {
     // mati. Termasuk label lama berbahasa Indonesia ("1 Tahun") dari template
     // yang disimpan sebelum kaki kanvas memakai label pendek gaya chart.
     if (t.rentang && RENTANG_KAKI.some(([label]) => label === t.rentang)) setRentangLabel(t.rentang)
+    // Template lama tak punya ruas `grid` — `gridDariTemplate` mengembalikan
+    // bawaannya, bukan menolak templatenya.
+    setGrid(gridDariTemplate(t.grid))
     setNamaTemplate(t.nama)
   }
 
-  const isiTemplate = () => ({ indikator: ind.daftar, pola: pol.daftar, jenisChart, rentang: rentangLabel })
+  const isiTemplate = () => ({ indikator: ind.daftar, pola: pol.daftar, jenisChart, rentang: rentangLabel, grid })
 
   // Template bawaan dimuat sendiri saat halaman dibuka (Johan: "sewaktu-waktu
   // di buka bisa load otomatis template tersebut"). Deps sengaja kosong: ini
@@ -2479,6 +2494,25 @@ export function GrafikEmiten() {
             />
             <span className="grf-kaki-isi" />
             <span className="grf-kaki-jam" title="Seluruh waktu di halaman ini WIB (UTC+7), termasuk lilin intraday">UTC+7</span>
+            {/* B33 — garis bantu. Duduk di bilah BAWAH, bukan di bilah atas:
+                yang mengubah APA YANG TERLIHAT memang tempatnya di sini,
+                sejajar skala dan rentang; yang mengubah APA YANG DIGAMBAR
+                (emiten, kerangka, indikator) tetap di atas kanvas. */}
+            <button type="button"
+              className={`chip-t grf-kaki-chip${grid.tampil ? ' on' : ''}`}
+              aria-pressed={grid.tampil}
+              title={grid.tampil ? 'Sembunyikan garis bantu' : 'Tampilkan garis bantu'}
+              onClick={() => setGrid((g) => ({ ...g, tampil: !g.tampil }))}>grid</button>
+            {grid.tampil && (
+              <label className="grf-kaki-alfa" title="Keburaman garis bantu">
+                <input
+                  type="range" min={10} max={100} step={5}
+                  value={Math.round(grid.alfa * 100)}
+                  aria-label="Keburaman garis bantu, persen"
+                  onChange={(e) => setGrid((g) => ({ ...g, alfa: Number(e.target.value) / 100 }))} />
+                <span className="grf-kaki-alfa-nilai">{Math.round(grid.alfa * 100)}%</span>
+              </label>
+            )}
             {MODE_SKALA.map(([id, label, , judul]) => {
               // Selagi ada pembanding, skala DIKUNCI persen. Chip-nya tetap
               // terlihat (bukan hilang) supaya jelas keadaan mana yang sedang

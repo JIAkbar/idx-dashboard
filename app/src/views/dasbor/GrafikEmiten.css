@@ -578,3 +578,12 @@
   .lantai .grf-replay { gap: 8px; padding: 8px; }
   .lantai .grf-replay-posisi { margin-left: 0; flex-basis: 100%; }
 }
+
+/* B33 — penggeser keburaman garis bantu di bilah bawah kanvas. Lebarnya
+   sengaja pendek: ia tetangga chip rentang dan skala, bukan kendali utama. */
+.lantai .grf-kaki-alfa { display: inline-flex; align-items: center; gap: 6px; }
+.lantai .grf-kaki-alfa input[type="range"] { width: 76px; height: 18px; accent-color: var(--amber); cursor: pointer; }
+.lantai .grf-kaki-alfa-nilai {
+  font-family: var(--mono); font-size: 10.5px; color: var(--text3);
+  min-width: 30px; text-align: right; font-variant-numeric: tabular-nums;
+}

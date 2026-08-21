@@ -2120,6 +2120,57 @@ export interface TemplateGrafik {
   pola: InstansPola[]
   jenisChart?: string
   rentang?: string
+  grid?: SetelanGrid
+}
+
+/**
+ * Setelan garis bantu (grid) kanvas — B33, Johan 20 Agu 2026: "grid nya bisa
+ * di on off dan setup transparansi".
+ *
+ * `alfa` adalah keburaman garisnya, 0 sampai 1. Ia ruas TERSENDIRI dan bukan
+ * warna jadi, karena warnanya sendiri wajib ikut tema: token `--line` berbeda
+ * antara tema gelap dan terang, dan menyimpan hasil jadinya akan mengunci
+ * grid ke tema yang kebetulan aktif saat template disimpan.
+ */
+export interface SetelanGrid {
+  tampil: boolean
+  alfa: number
+}
+
+export const GRID_BAWAAN: SetelanGrid = { tampil: true, alfa: 1 }
+
+/**
+ * Warna grid = token tema + alfa.
+ *
+ * Kenapa tidak menggelapkan token `--line` saja: token yang sama dipakai
+ * garis batas sumbu, pemisah pane, dan puluhan tempat lain di CSS. Menyetel
+ * transparansi lewat token akan memudarkan semuanya sekaligus — yang diminta
+ * cuma gridnya.
+ *
+ * Masukan yang tak dikenal dikembalikan APA ADANYA, bukan dipaksa jadi hitam:
+ * token tema kelak bisa saja berisi `oklch()` atau nama warna, dan grid yang
+ * diam-diam berubah hitam jauh lebih buruk daripada grid yang mengabaikan
+ * setelan alfa.
+ */
+export function warnaGrid(token: string, alfa: number): string {
+  const a = Math.min(1, Math.max(0, alfa))
+  const t = token.trim()
+  if (a >= 1) return t
+  const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(t)
+  if (!m) return t
+  const h = m[1].length === 3 ? m[1].split('').map((c) => c + c).join('') : m[1]
+  const n = parseInt(h, 16)
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${Number(a.toFixed(3))})`
+}
+
+/** Baca setelan grid dari template lama yang belum punya ruas ini. */
+export function gridDariTemplate(v: unknown): SetelanGrid {
+  if (!v || typeof v !== 'object') return GRID_BAWAAN
+  const o = v as Record<string, unknown>
+  const alfa = typeof o.alfa === 'number' && Number.isFinite(o.alfa)
+    ? Math.min(1, Math.max(0, o.alfa))
+    : GRID_BAWAAN.alfa
+  return { tampil: o.tampil !== false, alfa }
 }
 
 function instansSah<J extends string>(v: unknown, jenisDikenal: readonly string[]): v is Instans<J> {
@@ -2185,7 +2236,7 @@ export function uraiTemplate(raw: string | null): TemplateGrafik[] {
 export function simpanTemplate(
   daftar: TemplateGrafik[],
   nama: string,
-  isi: Pick<TemplateGrafik, 'indikator' | 'pola' | 'jenisChart' | 'rentang'>,
+  isi: Pick<TemplateGrafik, 'indikator' | 'pola' | 'jenisChart' | 'rentang' | 'grid'>,
 ): TemplateGrafik[] {
   const bersih = nama.trim()
   if (!bersih) return daftar
