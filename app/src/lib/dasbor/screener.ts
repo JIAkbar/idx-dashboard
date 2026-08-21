@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { LabelSkor } from './skorTeknikal'
+import type { NamaPolaKlasik } from './polaKlasik'
+import { LABEL_POLA_KLASIK } from './polaKlasik'
 
 /**
  * Screener (`/screener`, backlog B31) — tabel penyaring SELURUH emiten dalam
@@ -59,9 +61,9 @@ export function sektorUnik(baris: BarisScreener[]): string[] {
  * sana tiap chip itu syarat independen, bukan pilihan label yang saling
  * eksklusif per baris.
  */
-export function saring(
-  baris: BarisScreener[], sssAktif: string[], sektorAktif: string[], cari: string,
-): BarisScreener[] {
+export function saring<T extends BarisScreener>(
+  baris: T[], sssAktif: string[], sektorAktif: string[], cari: string,
+): T[] {
   const q = cari.trim().toUpperCase()
   return baris.filter((b) => {
     if (q && !b.kode.includes(q) && !b.nama.toUpperCase().includes(q)) return false
@@ -94,6 +96,11 @@ export function kelasArah(v: 'naik' | 'datar' | 'turun' | null): 'up' | 'dn' | '
  *  ruas beda karena nilainya "atas"/"bawah", bukan "naik"/"turun". */
 export function kelasPosisi(v: 'atas' | 'bawah' | null): 'up' | 'dn' | '' {
   return v === 'atas' ? 'up' : v === 'bawah' ? 'dn' : ''
+}
+
+/** Warna arah pola klasik (bullish/bearish) — pola sama `kelasArah`. */
+export function kelasPolaArah(v: 'bullish' | 'bearish' | null): 'up' | 'dn' | '' {
+  return v === 'bullish' ? 'up' : v === 'bearish' ? 'dn' : ''
 }
 
 /** Desimal tetap, `—` untuk null — BUKAN `fN()` (format.ts), yang mengubah
@@ -142,4 +149,71 @@ export function useScreener(): DataScreener | null {
     return () => { batal = true }
   }, [])
   return data
+}
+
+/**
+ * Kolom "Pola" (Johan 21 Agu 2026: *"itu juga bisa masuk di screener"*) — pola
+ * klasik AKTIF per emiten, dari `data-idx/json/pola_screener.json`
+ * (`scripts/pola-screener.ts`). Berkas TERPISAH dari `screener.json`: yang
+ * satu keluaran Python, yang ini keluaran mesin pola TypeScript
+ * (`polaKlasik.ts`) — digabung di sisi React lewat kode emiten, bukan
+ * disatukan di sisi build.
+ *
+ * Tuple, bukan objek — kunci `d` berulang untuk ratusan emiten, dan ruas
+ * inilah yang menembus jaringan tiap kunjungan halaman.
+ */
+export type PolaAktifScreener = [
+  nama: NamaPolaKlasik,
+  arah: 'bullish' | 'bearish',
+  tanggal: string,
+  target: number,
+  hargaSinyal: number,
+]
+
+export interface DataPolaScreener {
+  akhir: string
+  n: number
+  d: Record<string, PolaAktifScreener>
+}
+
+export async function ambilPolaScreener(pengambil: typeof fetch = fetch): Promise<DataPolaScreener | null> {
+  try {
+    const r = await pengambil('/data-idx/json/pola_screener.json')
+    if (!r.ok) return null
+    return (await r.json()) as DataPolaScreener
+  } catch {
+    return null
+  }
+}
+
+let cachePola: DataPolaScreener | null = null
+
+export function usePolaScreener(): DataPolaScreener | null {
+  const [data, setData] = useState<DataPolaScreener | null>(cachePola)
+  useEffect(() => {
+    if (cachePola) return
+    let batal = false
+    void ambilPolaScreener().then((d) => {
+      if (d) cachePola = d
+      if (!batal) setData(d)
+    })
+    return () => { batal = true }
+  }, [])
+  return data
+}
+
+/** Singkatan label pola untuk kolom sempit — HANYA yang label penuhnya
+ *  bikin kolom melebar tak wajar; sisanya (≤14 karakter, atau yang tak
+ *  terdaftar di sini) tampil apa adanya. Potongan per KATA yang masih bisa
+ *  dikenali, bukan elipsis buta yang membuang informasi arah/bentuk. */
+const SINGKATAN_POLA: Partial<Record<NamaPolaKlasik, string>> = {
+  'inv-head-shoulders': 'Inv. H&S',
+  'ascending-triangle': 'Asc. Triangle',
+  'descending-triangle': 'Desc. Triangle',
+  'symmetrical-triangle': 'Sym. Triangle',
+}
+
+export function labelPolaSingkat(nama: NamaPolaKlasik): string {
+  const label = LABEL_POLA_KLASIK[nama]
+  return label.length > 14 ? (SINGKATAN_POLA[nama] ?? label) : label
 }

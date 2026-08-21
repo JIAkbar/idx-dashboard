@@ -13,7 +13,21 @@
 
 .lantai .scr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 
-.lantai .scr-jumlah { margin-left: auto; white-space: nowrap; }
+.lantai .scr-jumlah { white-space: nowrap; }
+
+/* Bilah saring berlabel (21 Agu 2026) — tiap deret chip diberi NAMA
+   kelompoknya. Lebar label dikunci supaya ketiga deret rata kiri seperti
+   tabel, bukan zig-zag. */
+.lantai .scr-saring {
+  display: flex; align-items: flex-start; gap: 10px; width: 100%;
+}
+.lantai .scr-saring-lbl {
+  flex: 0 0 52px;
+  font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--text3); line-height: 26px;
+}
+.lantai .scr-saring-kaki { align-items: center; gap: 12px; }
+.lantai .scr-reset { color: var(--red); }
 
 /* Kolom Nama ikut lebar wajar sendiri di tabel 21-kolom — tanpa batas ia
    menggeser seluruh kolom kanan keluar layar sebelum sempat digulung. */

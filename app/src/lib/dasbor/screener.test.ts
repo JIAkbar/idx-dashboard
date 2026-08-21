@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
-  fDec, kelasArah, kelasPosisi, kelasSss, LABEL_SSS, ringkasLembarBertanda, saring, sektorUnik,
-  type BarisScreener,
+  ambilPolaScreener, fDec, kelasArah, kelasPolaArah, kelasPosisi, kelasSss, labelPolaSingkat, LABEL_SSS,
+  ringkasLembarBertanda, saring, sektorUnik, type BarisScreener,
 } from './screener'
 
 function baris(over: Partial<BarisScreener> = {}): BarisScreener {
@@ -99,6 +99,50 @@ describe('fDec', () => {
   it('angka -> id-ID 2 desimal bawaan', () => {
     expect(fDec(1.5)).toBe('1,50')
     expect(fDec(1.234, 1)).toBe('1,2')
+  })
+})
+
+describe('kelasPolaArah', () => {
+  it('bullish = up, bearish = dn, null = kosong', () => {
+    expect(kelasPolaArah('bullish')).toBe('up')
+    expect(kelasPolaArah('bearish')).toBe('dn')
+    expect(kelasPolaArah(null)).toBe('')
+  })
+})
+
+describe('labelPolaSingkat', () => {
+  it('label ≤14 karakter tampil apa adanya', () => {
+    expect(labelPolaSingkat('double-top')).toBe('Double Top')
+    expect(labelPolaSingkat('double-bottom')).toBe('Double Bottom')
+  })
+
+  it('empat label panjang yang terdaftar disingkat per kata, bukan elipsis', () => {
+    expect(labelPolaSingkat('inv-head-shoulders')).toBe('Inv. H&S')
+    expect(labelPolaSingkat('ascending-triangle')).toBe('Asc. Triangle')
+    expect(labelPolaSingkat('descending-triangle')).toBe('Desc. Triangle')
+    expect(labelPolaSingkat('symmetrical-triangle')).toBe('Sym. Triangle')
+  })
+
+  it('label panjang tanpa singkatan terdaftar tetap tampil penuh', () => {
+    expect(labelPolaSingkat('head-shoulders')).toBe('Head & Shoulders')
+  })
+})
+
+describe('ambilPolaScreener', () => {
+  it('berkas tak ada (404) -> null, bukan galat', async () => {
+    const fetch404 = (async () => new Response(null, { status: 404 })) as unknown as typeof fetch
+    await expect(ambilPolaScreener(fetch404)).resolves.toBeNull()
+  })
+
+  it('jaringan gagal -> null, tidak melempar', async () => {
+    const fetchGagal = (async () => { throw new Error('network down') }) as unknown as typeof fetch
+    await expect(ambilPolaScreener(fetchGagal)).resolves.toBeNull()
+  })
+
+  it('200 dengan JSON -> bentuk {akhir,n,d} apa adanya, tuple per kode', async () => {
+    const isi = { akhir: '2026-08-20', n: 1, d: { AAAA: ['double-bottom', 'bullish', '2026-07-01', 1200, 1000] } }
+    const fetchOk = (async () => new Response(JSON.stringify(isi), { status: 200 })) as unknown as typeof fetch
+    await expect(ambilPolaScreener(fetchOk)).resolves.toEqual(isi)
   })
 })
 
