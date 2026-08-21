@@ -2121,8 +2121,17 @@ export function GrafikEmiten() {
     }
     // Pola selalu di pane 0: temuannya digambar di panel harga & volume, tak
     // pernah punya pane sendiri.
-    for (const { inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik, swing, patahan } of polaPerInstans) {
-      const jumlah = doubleBottom.length + lonjakan.length + divergensi.length + harmonik.length + patahan.length
+    for (const { inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik, swing, patahan, klasik } of polaPerInstans) {
+      // `klasik` sempat TIDAK ikut dijumlah di sini, dan akibatnya persis
+      // jenis kegagalan yang paling mahal: legenda menulis "tak ada" untuk
+      // instans yang sedang menggambar 40 pola di kanvas yang sama. Johan
+      // menangkapnya dari layar, bukan dari galat — memang tak ada galat.
+      const jumlah = doubleBottom.length + lonjakan.length + divergensi.length
+        + harmonik.length + patahan.length + klasik.length
+      // Pola klasik dilaporkan seperti struktur pasar, bukan sebagai angka
+      // telanjang: yang dicari orang saat melihat legendanya adalah berapa
+      // yang masih HIDUP (menunggu target), bukan berapa yang pernah ada.
+      const klasikMenunggu = klasik.filter((q) => q.status === 'menunggu').length
       // Wyckoff tak dilaporkan sebagai "sekian temuan": yang ditanyakan orang
       // saat melihat legendanya bukan berapa kali fasenya berganti melainkan
       // fase mana yang sedang berjalan di lilin paling kanan.
@@ -2150,7 +2159,11 @@ export function GrafikEmiten() {
                 ? swing.length === 0
                   ? 'rentangnya terlalu pendek'
                   : `struktur ${arahStruktur(swing)} · ${swing.length} swing · ${patahan.length} patahan`
-                : jumlah === 0 ? 'tak ada' : `${jumlah} temuan`,
+                : inst.jenis === 'polaKlasik'
+                  ? klasik.length === 0
+                    ? 'tak ada di rentang ini'
+                    : `${klasik.length} pola · ${klasikMenunggu} menunggu target`
+                  : jumlah === 0 ? 'tak ada di rentang ini' : `${jumlah} temuan`,
       })
     }
     return { waktu, perPane: [...perPane.entries()].sort((a, b) => a[0] - b[0]) }
@@ -3305,12 +3318,13 @@ export function GrafikEmiten() {
                       // "bukan asal tebak berdasarkan hasil benchmark dan
                       // backtesting". Rinciannya di kepala polaKlasik.ts.
                       <p className="grf-pola-judul">
-                        Backtest 18 emiten, 16 pola (arah benar vs peluang dasar, bebas bocor):
-                        harian +2,7pp @20 lilin · 4 jam ≈0pp · pekanan +6,9pp @5.
-                        Terkuat reversal: Head &amp; Shoulders +18pp &amp; Double Bottom +12pp di harian;
-                        terkuat continuation: Bearish Flag +35pp @20 harian (n kecil).
-                        Rising Wedge justru negatif di harian (−9pp @10) dan positif di 4 jam (+8pp @5) —
-                        timbang kerangkanya, bukan cuma bentuknya.
+                        Backtest <b>seluruh 915 emiten berpola</b> (22.046 pola, arah benar vs peluang
+                        dasar, bebas bocor): harian <b>−2,5pp</b> @20 lilin, pekanan ≈0pp. Sebagian besar
+                        pola berada di sekitar atau di bawah peluang dasar — sampel 18 emiten likuid yang
+                        dipakai lebih dulu memberi +4,2pp, dan ternyata tidak mewakili pasar.
+                        Yang bertahan positif di kedua sapuan cuma dua: <b>Double Bottom</b> (+3,5…+8,6pp)
+                        dan <b>Ascending Triangle</b> (+3,5…+5,9pp). Garisnya tetap berguna membaca
+                        struktur; angkanya dicetak apa adanya supaya ditimbang, bukan dipercaya.
                       </p>
                     )}
                     {inst.jenis === 'struktur' && swing.length > 0 && (

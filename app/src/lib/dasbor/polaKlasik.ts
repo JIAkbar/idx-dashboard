@@ -40,70 +40,45 @@ import { hitungATR, zigzagPivot } from './grafikEmiten'
  *    dengan Double Bottom: toleransi persen memperlakukan saham 50 rupiah
  *    dan 50.000 rupiah dengan dua ukuran yang salah satunya pasti keliru.
  *
- * ## Angka backtest (21 Agu 2026 — 18 emiten, param bawaan, leak-free)
+ * ## Angka backtest — SAPUAN PENUH, dan hasilnya tidak menyenangkan
  *
- * Diukur `backtest-pola-klasik.ts`, arah benar sesudah lilin SINYAL vs
- * peluang dasar arah yang sama di emiten yang sama (pp = poin persentase di
- * atas dasar; dasar sinyal bearish = seberapa sering harga memang turun).
- * Angka gabungan di bawah SUDAH termasuk continuation (n-nya karena itu naik
- * dari angka reversal-saja yang diukur 21 Agu; sebagian pivot yang dulu jatuh
- * ke Double Bottom/Rising Wedge dkk. sekarang lebih dulu diklaim continuation
- * — sama mekanismenya dengan Triple Top mengklaim pivot sebelum Double Top):
+ * Angka pertama di sini datang dari 18 emiten pilihan dan terbaca bagus
+ * (+4,2pp, Head & Shoulders +18pp). Johan menanyakan hal yang tepat —
+ * *"tidak hanya di BBCA saja kan? di semua emiten sudah di backtest?"* — dan
+ * sapuan 915 emiten (`app/scripts/sapu-pola-klasik.ts`, 22.046 pola)
+ * MEMBALIK TANDANYA:
  *
- *   1D (n=491)  5 lilin −2,4pp · 10 lilin −1,2pp · 20 lilin **+2,7pp**
- *   4H (n=365)  5 lilin +0,5pp · 10 lilin +0,0pp · 20 lilin −0,2pp
- *   1W (n=105)  5 lilin **+6,9pp** · 10 lilin +2,8pp · 20 lilin +1,0pp
+ *                          18 emiten      915 emiten (harian)
+ *   gabungan 20 lilin        +4,2pp            −2,5pp
+ *   Head & Shoulders        +18,2pp            −4,5pp
  *
- * Per pola TIDAK sama kuat, dan angkanya sengaja tak diratakan (angka
- * REVERSAL di bawah ini angka 21 Agu, sebelum continuation ditambahkan —
- * dibiarkan apa adanya, bukan diukur ulang, karena penjelasannya sudah
- * ditulis dan tetap sahih sebagai gambaran bentuknya):
+ * Sampel yang seluruhnya likuid dan berkapitalisasi besar bukan sampel
+ * pasar. Yang berlaku sejak sekarang adalah sapuan penuh:
  *
- *   - Paling teruji di harian: **Head & Shoulders** (+18,2/+15,8/+9,0pp,
- *     n=29), **Double Bottom** (+11,8/+11,2/+4,9pp, n=82), Double Top &
- *     Triple Top menguat di 20 lilin (+7,5pp dan +13,3pp).
- *   - Yang LEMAH di harian dan wajib disebut jujur: Rising Wedge
- *     (−4,9/−8,9/−4,2pp, n=93) dan Inverted H&S (−5,6/−11,1/−0,5pp, n=24) —
- *     di 4H keduanya justru positif (+7,6pp dan +18,6pp di jendelanya),
- *     jadi kelemahannya bukan cacat deteksi melainkan sifat kerangkanya.
- *   - Pekanan n-nya kecil (3-20 per pola) — angkanya indikatif, bukan vonis.
+ *   HARIAN  (915 emiten, 22.046 pola)   5L −3,7pp · 10L −3,1pp · 20L −2,5pp
+ *   PEKANAN (dirakit dari harian)       5L +0,4pp · 10L −0,3pp · 20L −1,0pp
+ *   4 JAM   — TIDAK bisa disapu penuh (arsip 60m Yahoo cuma 18 emiten);
+ *             pada 18 emiten itu +4,3pp @5 lilin. Perlakukan sebagai
+ *             indikasi, bukan vonis pasar.
  *
- * ## Angka backtest — CONTINUATION (21 Agu 2026, sama 18 emiten & param)
+ * **Dua pola bertahan positif di KEDUA sapuan penuh**, dan cuma dua:
  *
- * Diukur bersamaan dengan tabel gabungan di atas. Tak ada pola continuation
- * yang konsisten kuat di ketiga kerangka — beda nasib dari kerangka ke
- * kerangka, dan itu dicetak apa adanya, bukan diratakan jadi satu vonis:
+ *   Double Bottom       harian +3,8/+4,3/+3,5pp (n≈2.000)
+ *                       pekanan +8,6/+6,5/+7,6pp (n≈520)
+ *   Ascending Triangle  harian +6,0/+4,9/+3,5pp (n≈670)
+ *                       pekanan +5,9/+4,2/+5,3pp (n≈130)
  *
- *   1D:  ascending-triangle  +18,7/−0,2/−1,7pp (n=17)
- *        bearish-flag        +18,5/+19,4/**+34,7pp** (n=7)
- *        bearish-pennant     −9,5/−4,4/−8,1pp (n=16-17)
- *        bullish-flag        −7,1/−8,9/−18,4pp (n=13)
- *        bullish-pennant     −9,9/−5,0/−1,7pp (n=15)
- *        descending-triangle −6,2/−5,3/−11,2pp (n=26)
- *        symmetrical-triangle −11,6/−6,5/+3,2pp (n=41)
- *   4H:  ascending-triangle  −5,0 · **+20,5** · −2,6pp (n=9-10)
- *        bearish-flag        **−30,3 · −40,8** · −27,4pp (n=8)
- *        bearish-pennant     −9,7/−22,7/−14,5pp (n=14)
- *        bullish-flag        −11,8/+2,4/−15,3pp (n=6)
- *        bullish-pennant     −17,2/−19,7/−2,5pp (n=17)
- *        descending-triangle **+19,8** · −3,4/−11,3pp (n=12)
- *        symmetrical-triangle −4,1/−1,7/+5,4pp (n=48-51)
- *   1W:  n per pola 1-11 — terlalu kecil untuk dibaca sebagai apa pun selain
- *        indikasi kasar; bearish-flag & bullish-pennant malah n=1-2.
+ * Sisanya berada di sekitar atau di bawah peluang dasar. Itu TIDAK membuat
+ * mereka dibuang: pola tetap deskripsi bentuk yang sah, garisnya berguna
+ * untuk melihat struktur, dan pembaca yang tahu angkanya bisa menimbang
+ * sendiri. Yang tak boleh adalah menyebutnya "teruji" — jadi angka per pola
+ * dicetak apa adanya di panduan halaman, termasuk yang negatif.
  *
- * Bacaan jujurnya: **Bearish Flag harian** (n=7, +34,7pp di 20 lilin) dan
- * **Descending Triangle 4H** (n=12, +19,8pp di 5 lilin) yang paling menjanjikan
- * — tapi n-nya kecil di kedua-duanya. Yang paling LEMAH dan n-nya cukup
- * besar untuk dipercaya: **Bullish Flag** negatif di ketiga jendela harian
- * (n=13) dan makin negatif di 4H **Bearish Flag** (n=8, −30,3/−40,8pp) —
- * dua kebalikan arah "flag" ini sama-sama lemah, jadi bukan kebetulan
- * satu kerangka. Symmetrical Triangle paling STABIL (selalu di kisaran
- * ±10pp di ketiga kerangka) meski tak pernah kuat.
- *
- * Kesimpulan mesinnya: pola digambar APA ADANYA (ia deskripsi bentuk, dan
- * garisnya berguna sekalipun keunggulan statistiknya tipis), sedangkan angka
- * per pola dicetak di panduan halaman supaya pembaca menimbangnya sendiri —
- * bukan disembunyikan di balik kata "teruji".
+ * Kenapa hasil kecil-sampel bisa sebaik itu: 18 emiten pilihan semuanya
+ * likuid dan naik jangka panjang, sementara papan IDX penuh emiten yang
+ * meluruh. Pola bullish (Falling Wedge n=5.057, Double Bottom n=2.074)
+ * mendominasi temuan, dan di emiten yang meluruh sinyal bullish memang lebih
+ * sering meleset — itu terbaca sebagai keunggulan negatif.
  */
 
 export interface ParamPolaKlasik {
