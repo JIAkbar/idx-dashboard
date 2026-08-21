@@ -312,7 +312,14 @@
      18 + 56 + 12 = 86px. Bukan adu z-index — toast memang sudah menang
      (95 lawan 60); yang salah bukan urutan tumpukan melainkan keduanya
      berebut sudut yang sama. */
-  position: fixed; right: clamp(14px, 2.5vw, 28px); bottom: clamp(86px, 6vh + 62px, 118px);
+     Batas bawah dinaikkan lagi 86 -> 104px (21 Agu, laporan kedua: "toast juga
+     kurang tinggi masih ketupan icon AI"). Diukur di jendela 822px hasilnya
+     111px dengan jarak 37px ke tepi tombol — sudah cukup di situ. Yang tak
+     cukup adalah ujung bawah rentangnya: pada jendela pendek `6vh + 62px`
+     jatuh ke batas minimum, dan 86px cuma menyisakan 12px dari tepi tombol —
+     jarak yang hilang begitu toast punya bayangan atau tombolnya melebar saat
+     disorot. */
+  position: fixed; right: clamp(14px, 2.5vw, 28px); bottom: clamp(104px, 6vh + 62px, 124px);
   left: auto; transform: none;
   z-index: 95; display: flex; align-items: center; gap: 11px;
   background: linear-gradient(180deg, var(--bg2), var(--bg1));
