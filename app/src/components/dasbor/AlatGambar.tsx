@@ -35,12 +35,17 @@ const IKON_ALAT: Record<string, string> = {
  * pernah terjadi di indikator, #170) menghasilkan bilah yang tak bisa dipakai
  * siapa pun — 68 baris tombol ikon 32px setinggi >2.100px.
  *
- * Sisanya (~61 alat) ada di dropdown "Alat lainnya", dikelompokkan per
- * KATEGORI PUSTAKA (`DrawingCategory`) — pola sama dengan katalog indikator
- * pustaka: kategori milik pustaka, urutan & terjemahan milik kita
- * (`KATEGORI_GAMBAR`). SEMUA 61 di dalamnya benar-benar bisa dipakai (klik
- * sejumlah titik yang diminta jenisnya, sama seperti tujuh tombol utama) —
- * bukan daftar dekoratif yang separuhnya tombol mati.
+ * Sisanya (60 alat, sembilan kategori pustaka — kategori "Trading" di
+ * `KATEGORI_GAMBAR` belum dipakai versi pustaka ini) ada di dropdown "Alat
+ * lainnya": FLYOUT dua kolom (kategori kiri, isi kategori disorot kanan) —
+ * pola sama dengan katalog indikator pustaka soal pembagian kepemilikan:
+ * kategori milik pustaka (`DrawingCategory`), urutan & terjemahan milik kita
+ * (`KATEGORI_GAMBAR`). Di layar sempit atau selagi mengetik di kotak cari,
+ * `Dropdown` (prop `flyout`) jatuh balik ke daftar bertumpuk dengan judul
+ * kategori sticky — lihat komentar `flyout` di `Dropdown.tsx`. SEMUA 60 di
+ * dalamnya benar-benar bisa dipakai (klik sejumlah titik yang diminta
+ * jenisnya, sama seperti tujuh tombol utama) — bukan daftar dekoratif yang
+ * separuhnya tombol mati.
  */
 export function AlatGambar({
   pustaka, galat, alatAktif, onPilihAlat, adaTerpilih, onHapusTerpilih, onSentuh,
@@ -99,7 +104,8 @@ export function AlatGambar({
           opsi={opsiLainnya}
           nilai={alatAktif && !ID_ALAT_UTAMA.has(alatAktif) ? alatAktif : ''}
           placeholder="⋯"
-          ariaLabel="Alat gambar lainnya (61 alat)"
+          ariaLabel="Alat gambar lainnya (60 alat)"
+          flyout
           onGanti={(v) => { if (v !== '__memuat') onPilihAlat(v) }}
         />
         <TombolIkon d={IKON_TONG} label="Hapus gambar terpilih" nada="merah"

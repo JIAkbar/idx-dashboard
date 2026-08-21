@@ -428,6 +428,29 @@
    padanan `.grf-pisah` toolbar atas, cuma orientasinya diputar. */
 .lantai .grf-alat-pisah { height: 1px; margin: 2px 3px; background: var(--line2); }
 
+/* Dropdown "Alat lainnya" — flyout dua kolom (Johan 21 Agu 2026: "menu ini
+   di buat flyout di rapikan"). Cuma PENEMPATAN & LEBAR di sini (#170) —
+   bentuk kolomnya tetap `.dd-it`/`.dd-menu` bawaan Dropdown (prop `flyout`,
+   lihat komentarnya di situ untuk kapan mode ini aktif/jatuh balik). Lebar
+   360px bawaan `.dd-menu` cukup untuk SATU kolom tapi terlalu sempit untuk
+   dua — diperlebar cuma saat dua kolom betulan tampil (kelas ini dipasang
+   Dropdown sendiri, bersyarat). */
+/* `max-height`+`overflow-y` bawaan `.dd-menu` DIMATIKAN di sini — dua kolom
+   di bawah menggulung SENDIRI-SENDIRI (lihat `.grf-alat-menu-flex`); kalau
+   induknya ikut membatasi & menggulung, jadinya gulir bersarang yang saling
+   berebut event roda tetikus. */
+.lantai .grf-alat-menu-2kolom { max-width: min(480px, calc(100vw - 24px)); max-height: none; overflow: visible; }
+/* Tinggi TETAP (bukan max-height + overflow seperti mode daftar bertumpuk)
+   supaya dua kolom bisa MENGGULUNG SENDIRI-SENDIRI — kolom kategori
+   (biasanya 9 baris, muat) tak boleh ikut lenyap saat kolom alat yang lebih
+   panjang (sampai 14 baris) digulir. */
+.lantai .grf-alat-menu-flex { display: flex; gap: 4px; height: 308px; }
+.lantai .grf-alat-menu-kat {
+  flex: none; width: 128px; overflow-y: auto;
+  border-right: 1px solid var(--line2); padding-right: 4px;
+}
+.lantai .grf-alat-menu-alat { flex: 1 1 auto; min-width: 0; overflow-y: auto; padding-left: 4px; }
+
 /* ---------- Telepon: bilah jadi baris mendatar di balik satu tombol ---------- */
 /* Kenapa bukan bilah vertikal permanen: 412px sudah sempit untuk kanvas
    sendiri (lihat blok telepon .grf-chart-wrap di bawah, 340px), dan bilah
@@ -447,6 +470,10 @@
   .lantai .grf-kanvas-area .grf-alat-isi .ti,
   .lantai .grf-kanvas-area .grf-alat-isi .dd-btn { width: 34px; height: 34px; flex: none; }
   .lantai .grf-alat-pisah { width: 1px; height: 20px; margin: 0 4px; }
+  /* Di ponsel, flyout jatuh balik ke daftar bertumpuk biasa (Dropdown,
+     `sempit` dari useLayarSempit) — butir 60 alatnya wajib target sentuh
+     32px, lebih tinggi dari `.dd-it` bawaan (~26px, dipakai desktop mouse). */
+  .lantai .grf-alat-gambar .dd-menu .dd-it { min-height: 32px; align-items: center; }
 }
 
 /* ---------- Kanvas ---------- */

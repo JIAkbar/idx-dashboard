@@ -1,5 +1,6 @@
-import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { IkonMenu } from './IkonMenu'
+import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
 
 export interface OpsiDropdown {
   nilai: string
@@ -32,6 +33,16 @@ interface DropdownProps {
   /** Menu rata kanan tombol — untuk pemicu dekat tepi kanan bilah, supaya
    *  menunya tidak terpotong viewport. */
   rata?: 'kiri' | 'kanan'
+  /** Daftar `grup` panjang (mis. 60 alat gambar dalam 9 kategori) jadi FLYOUT
+   *  dua kolom — kategori kiri, isi kategori yang disorot di kanan — bukan
+   *  satu daftar tersusun ke bawah dengan judul kategori numpuk (Johan 21 Agu
+   *  2026: "menu ini di buat flyout di rapikan"). Nonaktif otomatis (jatuh
+   *  balik ke daftar bertumpuk BIASA, tak berubah dari sebelumnya) saat layar
+   *  sempit (`useLayarSempit`, ambang sama dgn breakpoint bilah alat gambar
+   *  700px) atau selagi kotak cari terisi — dua kolom di 412px tak muat, dan
+   *  hasil pencarian harus rata tanpa kategori supaya tak perlu tebak-tebak
+   *  kategori mana yang berisi hasilnya. */
+  flyout?: boolean
 }
 
 /**
@@ -42,8 +53,17 @@ interface DropdownProps {
  * amber (`.sel`). Keyboard: Escape menutup, panah atas/bawah memindah fokus
  * antar item, Enter memilih (klik native tombol terfokus).
  */
-export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disabled, ikon, rata }: DropdownProps) {
+export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disabled, ikon, rata, flyout }: DropdownProps) {
   const [open, setOpen] = useState(false)
+  // Kategori yang lagi disorot di kolom kiri flyout (null = belum disentuh,
+  // jatuh balik ke kategori pertama lewat `kategoriTampil` di bawah — dihitung
+  // saat render, bukan effect, supaya tak ada kedipan render tanpa isi kolom
+  // kanan sebelum effect sempat jalan).
+  const [kategoriAktif, setKategoriAktif] = useState<string | null>(null)
+  // Ambang & pendengar SAMA dengan bilah alat gambar (GrafikEmiten.css,
+  // 700px) — dua ambang berbeda untuk satu menu yang sama akan membuatnya
+  // berpindah mode tepat di titik yang salah.
+  const sempit = useLayarSempit()
   // Bug modal Tambah Akun (#3, 15 Agu 2026): dd-menu buka ke BAWAH baku dan
   // menutupi kontrol di bawahnya (mis. tombol submit) di modal pendek. Diukur
   // lewat getBoundingClientRect — kalau ruang bawah tak cukup DAN ruang atas
@@ -56,7 +76,7 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
     // Kueri dibuang tiap menu ditutup. Menyimpannya berarti membuka lagi
     // menampilkan daftar yang sudah tersaring oleh ketikan yang sudah dilupakan,
     // dan itu terbaca sebagai pilihan yang hilang.
-    if (!open) { setQ(''); return }
+    if (!open) { setQ(''); setKategoriAktif(null); return }
     function onDocMouseDown(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
@@ -100,6 +120,48 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
   const kata = q.trim().toLowerCase()
   const tampil = kata ? opsi.filter((o) => o.label.toLowerCase().includes(kata)) : opsi
 
+  // Kategori dalam urutan kemunculan pertama di `opsi` — pemanggil (mis.
+  // AlatGambar) sudah mengurutkannya sesuai KATEGORI_GAMBAR, di sini cuma
+  // dibaca ulang, bukan disortir lagi.
+  const grupUrut = useMemo(() => {
+    const list: string[] = []
+    for (const o of opsi) if (o.grup && !list.includes(o.grup)) list.push(o.grup)
+    return list
+  }, [opsi])
+  const modeFlyout = Boolean(flyout) && grupUrut.length > 0
+  const cariAktif = kata.length > 0
+  const duaKolom = modeFlyout && !cariAktif && !sempit
+  const kategoriTampil = kategoriAktif && grupUrut.includes(kategoriAktif) ? kategoriAktif : grupUrut[0]
+  // Daftar bertumpuk (mode lama, dipakai juga sebagai jatuh-balik telepon)
+  // menampilkan judul kategori KECUALI lagi mencari dalam mode flyout — Johan
+  // eksplisit minta hasil pencarian "rata tanpa kategori".
+  const tampilkanJudulGrup = !modeFlyout || !cariAktif
+
+  function renderItem(o: OpsiDropdown) {
+    return (
+      <button
+        key={o.nilai}
+        type="button"
+        role="option"
+        aria-selected={o.nilai === nilai}
+        aria-disabled={o.nonaktif || undefined}
+        disabled={o.nonaktif}
+        className={`dd-it${o.nilai === nilai ? ' sel' : ''}`}
+        onClick={() => {
+          onGanti(o.nilai)
+          setOpen(false)
+          // Item yang barusan diklik ikut tersembunyi (menu display:none) —
+          // tanpa ini fokus jatuh ke <body> dan navigasi keyboard mati.
+          ref.current?.querySelector<HTMLButtonElement>('.dd-btn')?.focus()
+        }}
+      >
+        {/* `title` menyimpan nama penuhnya: label katalog indikator bisa
+            jauh lebih panjang dari menu dan dipotong elipsis. */}
+        <span className="dd-it-teks" title={o.label}>{o.label}</span>
+      </button>
+    )
+  }
+
   function onKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Escape') {
       setOpen(false)
@@ -135,7 +197,7 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
         {label}
         <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
       </button>
-      <div className="dd-menu" role="listbox" aria-label={ariaLabel}>
+      <div className={`dd-menu${duaKolom ? ' grf-alat-menu-2kolom' : ''}`} role="listbox" aria-label={ariaLabel}>
         {pakaiCari && (
           <input
             className="dd-cari"
@@ -155,38 +217,48 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
           />
         )}
         {pakaiCari && tampil.length === 0 && <p className="dd-kosong">Tak ada yang cocok.</p>}
-        {tampil.map((o, i) => (
-          <Fragment key={o.nilai}>
-            {/* Judul kelompok muncul saat grupnya BERGANTI — bukan sekali di
-                atas: dengan menu ratusan baris, judul yang cuma ada di puncak
-                sudah lama tergulung hilang saat pembacanya sampai ke tengah.
-                Dihitung dari daftar yang SUDAH tersaring kotak cari, jadi
-                kelompok yang seluruh isinya tersaring tak meninggalkan judul
-                yang menggantung tanpa isi. */}
-            {o.grup && o.grup !== tampil[i - 1]?.grup && (
-              <p className="dd-grup" role="presentation">{o.grup}</p>
-            )}
-          <button
-            type="button"
-            role="option"
-            aria-selected={o.nilai === nilai}
-            aria-disabled={o.nonaktif || undefined}
-            disabled={o.nonaktif}
-            className={`dd-it${o.nilai === nilai ? ' sel' : ''}`}
-            onClick={() => {
-              onGanti(o.nilai)
-              setOpen(false)
-              // Item yang barusan diklik ikut tersembunyi (menu display:none) —
-              // tanpa ini fokus jatuh ke <body> dan navigasi keyboard mati.
-              ref.current?.querySelector<HTMLButtonElement>('.dd-btn')?.focus()
-            }}
-          >
-            {/* `title` menyimpan nama penuhnya: label katalog indikator bisa
-                jauh lebih panjang dari menu dan dipotong elipsis. */}
-            <span className="dd-it-teks" title={o.label}>{o.label}</span>
-          </button>
-          </Fragment>
-        ))}
+        {duaKolom ? (
+          // Flyout: kategori kiri (klik/hover/fokus menyorot), isi kategori
+          // yang disorot di kanan. `.dd-it`/`.sel` dipakai apa adanya untuk
+          // KEDUA kolom (#170) — kolom kiri bukan "value" yang dipilih, cuma
+          // dipinjam gaya sorotnya supaya tak perlu kelas bentuk baru.
+          <div className="grf-alat-menu-flex">
+            <div className="grf-alat-menu-kat" role="tablist" aria-label="Kategori alat gambar">
+              {grupUrut.map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  role="tab"
+                  aria-selected={g === kategoriTampil}
+                  className={`dd-it${g === kategoriTampil ? ' sel' : ''}`}
+                  onMouseEnter={() => setKategoriAktif(g)}
+                  onFocus={() => setKategoriAktif(g)}
+                  onClick={() => setKategoriAktif(g)}
+                >
+                  <span className="dd-it-teks">{g}</span>
+                </button>
+              ))}
+            </div>
+            <div className="grf-alat-menu-alat" role="group" aria-label={kategoriTampil}>
+              {tampil.filter((o) => o.grup === kategoriTampil).map(renderItem)}
+            </div>
+          </div>
+        ) : (
+          tampil.map((o, i) => (
+            <Fragment key={o.nilai}>
+              {/* Judul kelompok muncul saat grupnya BERGANTI — bukan sekali di
+                  atas: dengan menu ratusan baris, judul yang cuma ada di puncak
+                  sudah lama tergulung hilang saat pembacanya sampai ke tengah.
+                  Dihitung dari daftar yang SUDAH tersaring kotak cari, jadi
+                  kelompok yang seluruh isinya tersaring tak meninggalkan judul
+                  yang menggantung tanpa isi. */}
+              {tampilkanJudulGrup && o.grup && o.grup !== tampil[i - 1]?.grup && (
+                <p className="dd-grup" role="presentation">{o.grup}</p>
+              )}
+              {renderItem(o)}
+            </Fragment>
+          ))
+        )}
       </div>
     </div>
   )
