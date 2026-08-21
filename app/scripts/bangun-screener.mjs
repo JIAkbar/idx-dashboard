@@ -30,6 +30,20 @@ const KELUARAN = join(DIR_JSON, 'screener.json')
 // tak ada alasan ketiganya harus sama.
 const RVOL_N = 10
 const ASING_N = 20
+// Jendela median likuiditas — sama panjang ASING_N, tak ada alasan keduanya
+// harus beda.
+const LIKUIDITAS_N = 20
+
+/** Median, BUKAN rata-rata: satu hari crossing raksasa (mis. DSSA Rp1,42 T
+ *  di pasar negosiasi, 19 Agu 2026) menaikkan rata-rata sebulan tanpa
+ *  membuat sahamnya benar-benar mudah dijual keesokan harinya — lihat
+ *  docs/likuiditas-acuan.md. */
+function median(arr) {
+  if (arr.length === 0) return null
+  const s = [...arr].sort((a, b) => a - b)
+  const mid = Math.floor(s.length / 2)
+  return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2
+}
 
 function bacaJson(path) {
   try {
@@ -118,6 +132,12 @@ for (const f of fileOhlc) {
   const ma20Arah = ma20Kini === null || ma20Lalu === null ? null
     : ma20Kini > ma20Lalu ? 'naik' : ma20Kini < ma20Lalu ? 'turun' : 'datar'
 
+  // Likuiditas: median nilai transaksi (close × volume) 20 hari bursa
+  // terakhir — dari whatever tersedia kalau riwayatnya belum 20 hari (sama
+  // pola partial-window dengan netAsingLembar di bawah).
+  const nilaiHarian = baris.slice(-LIKUIDITAS_N).map((b) => b[4] * b[5])
+  const likuiditas = median(nilaiHarian)
+
   const ema5 = emaAkhir(tutup, 5)
   const ma10 = sma(tutup, 10)
 
@@ -161,6 +181,7 @@ for (const f of fileOhlc) {
     volume: vol.at(-1) ?? null,
     rvol10,
     nilai,
+    likuiditas,
     sss_d: t3.harian?.label ?? null,
     sss_w: t3.pekanan?.label ?? null,
     sss_m: t3.bulanan?.label ?? null,

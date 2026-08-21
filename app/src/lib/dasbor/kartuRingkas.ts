@@ -84,7 +84,6 @@ export interface Saringan {
 }
 
 export const SARINGAN: Saringan[] = [
-  { id: 'likuid', label: 'Likuiditas ≥ Rp1 mrd/hari', uji: (b) => b.likuiditas >= 1e9 },
   { id: 'riwayat', label: 'Riwayat ≥ 500 lilin', uji: (b) => b.n >= 500 },
   { id: 'dekat', label: 'Level terdekat < 1 ATR', uji: (b) => b.dekat_atr != null && b.dekat_atr < 1 },
 ]

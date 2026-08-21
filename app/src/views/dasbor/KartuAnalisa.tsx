@@ -15,6 +15,7 @@ import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
 import {
   useRingkasKartu, useArsipKartu, keBarisTabel, saring, saringKualitas, SARINGAN, CHIP_BAWAAN, type BarisTabel,
 } from '../../lib/dasbor/kartuRingkas'
+import { TINGKAT_LIKUIDITAS, kodePeringkatTeratas, ujiLikuiditas } from '../../lib/dasbor/likuiditas'
 import {
   useIndeksKartu, useKartu, pembatalDalamAtr, bangunTesis, tingkatBasi, takKeduanya as hitungTakKeduanya,
   type KartuEmiten, type LevelSR, type TargetItem, type FirstPassage,
@@ -491,6 +492,7 @@ function TabelScreenerKartu() {
   const [aktif, setAktif] = useState<string[]>(CHIP_BAWAAN)
   const [sembunyikanPendek, setSembunyikanPendek] = useState(false)
   const [sembunyikanTipis, setSembunyikanTipis] = useState(false)
+  const [tingkatLikuiditas, setTingkatLikuiditas] = useState('semua')
   const [cari, setCari] = useState('')
   const [catatanKode, setCatatanKode] = useState<string | null>(null)
   const ukuranHalaman = sempit ? 25 : 100
@@ -501,12 +503,29 @@ function TabelScreenerKartu() {
     () => saringKualitas(barisTabel, sembunyikanPendek, sembunyikanTipis),
     [barisTabel, sembunyikanPendek, sembunyikanTipis],
   )
-  const hasil = useMemo(() => saring(barisKualitas, aktif, cari), [barisKualitas, aktif, cari])
+  // Set 150-teratas dihitung dari SELURUH baris (tak ikut tersaring chip/cari
+  // lain) — "semesta" meniru cara IDX sendiri mengurutkan pasar, bukan
+  // sub-populasi hasil saringan pembaca. Cuma dihitung saat tingkat itu aktif.
+  const teratasLikuiditas = useMemo(
+    () => (tingkatLikuiditas === 'semesta' ? kodePeringkatTeratas(barisTabel, (b) => b.likuiditas, 150, (b) => b.kode) : null),
+    [barisTabel, tingkatLikuiditas],
+  )
+  const hasilChip = useMemo(() => saring(barisKualitas, aktif, cari), [barisKualitas, aktif, cari])
+  const hasil = useMemo(
+    () => hasilChip.filter((b) => ujiLikuiditas(b, tingkatLikuiditas, (x) => x.likuiditas, teratasLikuiditas, (x) => x.kode)),
+    [hasilChip, tingkatLikuiditas, teratasLikuiditas],
+  )
   const s = useUrut<BarisTabel>(hasil, 'kode', 'naik')
+  const nLolosLikuiditas = useMemo(
+    () => barisTabel.filter((b) => ujiLikuiditas(b, tingkatLikuiditas, (x) => x.likuiditas, teratasLikuiditas, (x) => x.kode)).length,
+    [barisTabel, tingkatLikuiditas, teratasLikuiditas],
+  )
 
   // Saringan/cari/tanggal baru = mulai dari halaman pertama lagi, bukan
   // menyambung dari batas lama (yang bisa lebih besar dari hasil baru).
-  useEffect(() => { setTampil(ukuranHalaman) }, [aktif, cari, ukuranHalaman, tanggal, sembunyikanPendek, sembunyikanTipis])
+  useEffect(() => {
+    setTampil(ukuranHalaman)
+  }, [aktif, cari, ukuranHalaman, tanggal, sembunyikanPendek, sembunyikanTipis, tingkatLikuiditas])
   useEffect(() => { setCatatanKode(null) }, [tanggal])
 
   function toggleChip(id: string) {
@@ -575,6 +594,13 @@ function TabelScreenerKartu() {
         >
           Likuiditas tipis · {nLikuiditasTipis}
         </button>
+        <Dropdown
+          opsi={TINGKAT_LIKUIDITAS.map((t) => ({ nilai: t.id, label: t.label }))}
+          nilai={tingkatLikuiditas}
+          onGanti={setTingkatLikuiditas}
+          ariaLabel="Likuiditas"
+          placeholder="Semua likuiditas"
+        />
         <span className="af-cari kta-screener-cari">
           <IkonMenu d={IKON_CARI} size={13} />
           <input
@@ -650,7 +676,8 @@ function TabelScreenerKartu() {
 
       <div className="asal kta-screener-kaki">
         <b>{data.emiten.length}</b> emiten · {data.tak_lolos.riwayat ?? 0} riwayat pendek ·{' '}
-        {data.tak_lolos.likuiditas ?? 0} likuiditas tipis (ikut ditampilkan, di luar populasi statistik) ·{' '}
+        {data.tak_lolos.likuiditas ?? 0} likuiditas tipis (ikut ditampilkan, di luar populasi statistik)
+        {tingkatLikuiditas !== 'semua' && <> · <b>{nLolosLikuiditas}</b> lolos tingkat likuiditas "{TINGKAT_LIKUIDITAS.find((t) => t.id === tingkatLikuiditas)?.label}"</>} ·{' '}
         menampilkan {hasil.length} sesudah saringan · diperbarui {data.diperbarui}
         {tanggal ? ` · tanggal ${tanggal}` : ''}. Tidak ada kolom peluang tersentuh (p_kena) di tabel ini — itu
         fungsi jarak, bukan kualitas emiten.

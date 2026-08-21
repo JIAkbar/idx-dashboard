@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { IkonMenu, IKON_CARI, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { DropdownMulti, type OpsiMulti } from '../../components/dasbor/DropdownMulti'
+import { Dropdown } from '../../components/dasbor/Dropdown'
+import { TINGKAT_LIKUIDITAS, kodePeringkatTeratas, ujiLikuiditas } from '../../lib/dasbor/likuiditas'
 import { useUrut } from '../../lib/dasbor/useUrut'
 import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
 import { fp } from '../../lib/dasbor/format'
@@ -72,6 +74,7 @@ export function Screener() {
   const [sssAktif, setSssAktif] = useState<string[]>([])
   const [sektorAktif, setSektorAktif] = useState<string[]>([])
   const [berpolaAktif, setBerpolaAktif] = useState(false)
+  const [tingkatLikuiditas, setTingkatLikuiditas] = useState('semua')
   const ukuranHalaman = sempit ? 25 : 100
   const [tampil, setTampil] = useState(ukuranHalaman)
 
@@ -118,16 +121,25 @@ export function Screener() {
     })),
     [daftarSektor, jumlahSektor],
   )
-  const hasilSaring = useMemo(() => saring(baris, sssAktif, sektorAktif, cari), [baris, sssAktif, sektorAktif, cari])
-  const hasil = useMemo(
-    () => (berpolaAktif ? hasilSaring.filter((b) => b.pola_arah != null) : hasilSaring),
-    [hasilSaring, berpolaAktif],
+  // Set 150-teratas dihitung dari SELURUH baris (bukan hasil saringan lain)
+  // — "semesta" meniru peringkat pasar IDX sendiri, bukan sub-populasi
+  // pilihan pembaca. Cuma dihitung saat tingkat itu aktif.
+  const teratasLikuiditas = useMemo(
+    () => (tingkatLikuiditas === 'semesta' ? kodePeringkatTeratas(baris, (b) => b.likuiditas, 150, (b) => b.kode) : null),
+    [baris, tingkatLikuiditas],
   )
+  const hasilSaring = useMemo(() => saring(baris, sssAktif, sektorAktif, cari), [baris, sssAktif, sektorAktif, cari])
+  const hasil = useMemo(() => hasilSaring
+    .filter((b) => !berpolaAktif || b.pola_arah != null)
+    .filter((b) => ujiLikuiditas(b, tingkatLikuiditas, (x) => x.likuiditas, teratasLikuiditas, (x) => x.kode)),
+  [hasilSaring, berpolaAktif, tingkatLikuiditas, teratasLikuiditas])
   const s = useUrut<BarisGab>(hasil, 'kode', 'naik')
 
   // Saringan/cari baru = mulai dari halaman pertama lagi, bukan menyambung
   // dari batas lama (bisa lebih besar dari hasil baru).
-  useEffect(() => { setTampil(ukuranHalaman) }, [sssAktif, sektorAktif, cari, berpolaAktif, ukuranHalaman])
+  useEffect(() => {
+    setTampil(ukuranHalaman)
+  }, [sssAktif, sektorAktif, cari, berpolaAktif, tingkatLikuiditas, ukuranHalaman])
 
   function toggleSss(label: string) {
     setSssAktif((a) => (a.includes(label) ? a.filter((x) => x !== label) : [...a, label]))
@@ -135,7 +147,7 @@ export function Screener() {
   function toggleSektor(sek: string) {
     setSektorAktif((a) => (a.includes(sek) ? a.filter((x) => x !== sek) : [...a, sek]))
   }
-  const adaSaringan = sssAktif.length > 0 || sektorAktif.length > 0 || berpolaAktif || cari.trim() !== ''
+  const adaSaringan = sssAktif.length > 0 || sektorAktif.length > 0 || berpolaAktif || tingkatLikuiditas !== 'semua' || cari.trim() !== ''
 
   if (!data) {
     return (
@@ -184,6 +196,13 @@ export function Screener() {
             </span>
             <DropdownMulti label="Rating" ariaLabel="Saring rating" opsi={sssOpsi} nilai={sssAktif} onGanti={setSssAktif} />
             <DropdownMulti label="Sektor" ariaLabel="Saring sektor" opsi={sektorOpsi} nilai={sektorAktif} onGanti={setSektorAktif} />
+            <Dropdown
+              opsi={TINGKAT_LIKUIDITAS.map((t) => ({ nilai: t.id, label: t.label }))}
+              nilai={tingkatLikuiditas}
+              onGanti={setTingkatLikuiditas}
+              ariaLabel="Likuiditas"
+              placeholder="Semua likuiditas"
+            />
             <button
               type="button"
               className={`chip-t${berpolaAktif ? ' on' : ''}`}
@@ -195,14 +214,14 @@ export function Screener() {
             {adaSaringan && (
               <button
                 type="button" className="chip-t scr-reset"
-                onClick={() => { setSssAktif([]); setSektorAktif([]); setBerpolaAktif(false); setCari('') }}
+                onClick={() => { setSssAktif([]); setSektorAktif([]); setBerpolaAktif(false); setTingkatLikuiditas('semua'); setCari('') }}
               >
                 ✕ Hapus semua saringan
               </button>
             )}
             <span className="muted scr-jumlah">{hasil.length} dari {baris.length} emiten lolos</span>
           </div>
-          {(sssAktif.length > 0 || sektorAktif.length > 0) && (
+          {(sssAktif.length > 0 || sektorAktif.length > 0 || tingkatLikuiditas !== 'semua') && (
             <div className="scr-chips-aktif">
               {sssAktif.map((lbl) => (
                 <button key={`s-${lbl}`} type="button" className="chip-t on" onClick={() => toggleSss(lbl)}>
@@ -214,6 +233,11 @@ export function Screener() {
                   Sektor: {sek === '-' ? 'Tanpa sektor' : sek} ✕
                 </button>
               ))}
+              {tingkatLikuiditas !== 'semua' && (
+                <button type="button" className="chip-t on" onClick={() => setTingkatLikuiditas('semua')}>
+                  Likuiditas: {TINGKAT_LIKUIDITAS.find((t) => t.id === tingkatLikuiditas)?.label} ✕
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -230,6 +254,7 @@ export function Screener() {
                 {thSort(s, 'volume', 'Volume', true)}
                 {thSort(s, 'rvol10', 'RVol10', true)}
                 {thSort(s, 'nilai', 'Nilai', true)}
+                {thSort(s, 'likuiditas', 'Likuiditas', true)}
                 {thSort(s, 'sss_d', 'SSS D')}
                 {thSort(s, 'sss_w', 'SSS W')}
                 {thSort(s, 'sss_m', 'SSS M')}
@@ -321,8 +346,11 @@ function BarisScreenerTbl({ b, tanggalData }: { b: BarisGab; tanggalData: string
         {b.volume == null ? '—' : fRingkas(b.volume)}
       </td>
       <td className="r num">{b.rvol10 == null ? '—' : `${fDec(b.rvol10)}×`}</td>
-      <td className="r num" title={b.nilai == null ? undefined : `Rp${b.nilai.toLocaleString('id-ID')}`}>
+      <td className="r num" title={`Nilai transaksi hari terakhir${b.nilai == null ? '' : `: Rp${b.nilai.toLocaleString('id-ID')}`}`}>
         {b.nilai == null ? '—' : `Rp${fRingkas(b.nilai)}`}
+      </td>
+      <td className="r num" title={`Median nilai transaksi 20 hari bursa${b.likuiditas == null ? '' : `: Rp${b.likuiditas.toLocaleString('id-ID')}`}`}>
+        {b.likuiditas == null ? '—' : `Rp${fRingkas(b.likuiditas)}`}
       </td>
       <td>{sss(b.sss_d)}</td>
       <td>{sss(b.sss_w)}</td>

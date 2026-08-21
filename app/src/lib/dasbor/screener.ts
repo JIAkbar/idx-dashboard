@@ -19,6 +19,12 @@ export interface BarisScreener {
   volume: number | null
   rvol10: number | null
   nilai: number | null
+  /** Median nilai transaksi 20 hari bursa (close × volume) — BEDA dari
+   *  `nilai` (nilai transaksi hari TERAKHIR saja). Dipakai filter likuiditas
+   *  bertingkat (lib/dasbor/likuiditas.ts); median dipilih supaya satu hari
+   *  crossing raksasa tak menaikkan angkanya seolah sahamnya selalu seramai
+   *  itu (lihat docs/likuiditas-acuan.md). */
+  likuiditas: number | null
   sss_d: LabelSkor | null
   sss_w: LabelSkor | null
   sss_m: LabelSkor | null

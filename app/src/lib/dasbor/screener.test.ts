@@ -7,7 +7,7 @@ import {
 function baris(over: Partial<BarisScreener> = {}): BarisScreener {
   return {
     kode: 'AAAA', nama: 'Contoh Tbk.', sektor: 'Energy', harga: 1000, tdm_persen: 1,
-    volume: 1000, rvol10: 1, nilai: 1e9, sss_d: 'Buy', sss_w: 'Buy', sss_m: 'Buy',
+    volume: 1000, rvol10: 1, nilai: 1e9, likuiditas: 1e9, sss_d: 'Buy', sss_w: 'Buy', sss_m: 'Buy',
     free_float: 30, ma20_arah: 'naik', close_gap: 0, chg_1d: 1, chg_wtd: 1, chg_mtd: 1,
     posisi_ema5: 'atas', posisi_ma10: 'atas', posisi_ma20: 'atas', net_asing_lembar: 1000,
     ...over,
