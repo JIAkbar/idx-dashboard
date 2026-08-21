@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { IkonMenu, IKON_CARI, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { DropdownMulti, type OpsiMulti } from '../../components/dasbor/DropdownMulti'
 import { useUrut } from '../../lib/dasbor/useUrut'
 import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
 import { fp } from '../../lib/dasbor/format'
@@ -100,6 +101,23 @@ export function Screener() {
     for (const b of baris) m.set(b.sektor, (m.get(b.sektor) ?? 0) + 1)
     return m
   }, [baris])
+  // Opsi DropdownMulti — dihitung dari SELURUH baris (jumlahSss/jumlahSektor
+  // sudah begitu, lihat komentarnya di atas), bukan hasil saringan.
+  const sssOpsi = useMemo<OpsiMulti[]>(
+    () => LABEL_SSS.map((lbl) => ({ nilai: lbl, label: lbl, jumlah: jumlahSss.get(lbl) ?? 0 })),
+    [jumlahSss],
+  )
+  const sektorOpsi = useMemo<OpsiMulti[]>(
+    () => daftarSektor.map((sek) => ({
+      nilai: sek,
+      label: sek === '-' ? 'Tanpa sektor' : sek,
+      jumlah: jumlahSektor.get(sek) ?? 0,
+      keterangan: sek === '-'
+        ? 'Belum terklasifikasi IDX-IC — kebanyakan emiten suspensi/bermasalah yang tak masuk peta sektor resmi'
+        : undefined,
+    })),
+    [daftarSektor, jumlahSektor],
+  )
   const hasilSaring = useMemo(() => saring(baris, sssAktif, sektorAktif, cari), [baris, sssAktif, sektorAktif, cari])
   const hasil = useMemo(
     () => (berpolaAktif ? hasilSaring.filter((b) => b.pola_arah != null) : hasilSaring),
@@ -117,6 +135,7 @@ export function Screener() {
   function toggleSektor(sek: string) {
     setSektorAktif((a) => (a.includes(sek) ? a.filter((x) => x !== sek) : [...a, sek]))
   }
+  const adaSaringan = sssAktif.length > 0 || sektorAktif.length > 0 || berpolaAktif || cari.trim() !== ''
 
   if (!data) {
     return (
@@ -144,70 +163,36 @@ export function Screener() {
 
       <div className="panel">
         <div className="panel-b scr-alat">
-          <span className="af-cari scr-cari">
-            <IkonMenu d={IKON_CARI} size={13} />
-            <input
-              className="inp" type="search" placeholder="Cari kode atau nama…" value={cari}
-              onChange={(e) => setCari(e.target.value)}
-            />
-          </span>
-          {/* Bilah saring dirombak 21 Agu 2026 — Johan menanyakan chip "-"
-              ("fungsi ini apa ya?") lalu "biking bingung... perlu di re
-              imagined". Akar bingungnya dua: deret chip tanpa NAMA KELOMPOK
-              (tak terbaca mana rating mana sektor), dan chip "-" yang tak
-              menjelaskan dirinya. Jawabannya label kelompok + nama yang
-              bicara + tombol hapus — bukan dropdown yang menyembunyikan
-              pilihan. */}
-          <div className="scr-saring">
-            <span className="scr-saring-lbl">Rating</span>
-            <div className="scr-chips">
-              {LABEL_SSS.map((lbl) => (
-                <button
-                  key={lbl} type="button"
-                  className={`chip-t${sssAktif.includes(lbl) ? ' on' : ''}`}
-                  title={`${jumlahSss.get(lbl) ?? 0} emiten`}
-                  onClick={() => toggleSss(lbl)}
-                >
-                  {lbl}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="scr-saring">
-            <span className="scr-saring-lbl">Sektor</span>
-            <div className="scr-chips">
-              {daftarSektor.map((sek) => (
-                <button
-                  key={sek} type="button"
-                  className={`chip-t${sektorAktif.includes(sek) ? ' on' : ''}`}
-                  title={sek === '-'
-                    ? `${jumlahSektor.get(sek) ?? 0} emiten belum terklasifikasi IDX-IC — kebanyakan emiten suspensi/bermasalah yang tak masuk peta sektor resmi`
-                    : `${jumlahSektor.get(sek) ?? 0} emiten`}
-                  onClick={() => toggleSektor(sek)}
-                >
-                  {sek === '-' ? 'Tanpa sektor' : sek}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="scr-saring">
-            <span className="scr-saring-lbl">Pola</span>
-            <div className="scr-chips">
-              <button
-                type="button"
-                className={`chip-t${berpolaAktif ? ' on' : ''}`}
-                title="Hanya emiten dengan pola chart klasik yang sedang menunggu target"
-                onClick={() => setBerpolaAktif((v) => !v)}
-              >
-                Berpola aktif
-              </button>
-            </div>
-          </div>
-          <div className="scr-saring scr-saring-kaki">
-            {/* Hitungan duduk TEPAT di bawah chip-nya: ubah saringan, angkanya
-                berubah di tempat mata sedang berada — bukan di ujung bilah. */}
-            <span className="muted scr-jumlah">{hasil.length} dari {baris.length} emiten lolos</span>
-            {(sssAktif.length > 0 || sektorAktif.length > 0 || berpolaAktif || cari.trim() !== '') && (
+          {/* Bilah saring dirombak KEDUA KALI 21 Agu 2026 — perombakan
+              pertama (label kelompok + deret chip) hari yang sama sudah
+              memecahkan "tak terbaca mana rating mana sektor", tapi Johan
+              lihat hasilnya lalu minta lagi: "tombol-tombol ini perlu di
+              rapikan mgkn bisa di buat dropdown ceklist atau ikut
+              rekomendasimu" — 5 chip Rating + 12 chip Sektor (membungkus 2
+              baris) makan 4 baris tinggi. Dropdown checklist merapikan itu
+              jadi satu baris, tapi dropdown MENYEMBUNYIKAN apa yang aktif —
+              makanya baris "chip aktif" di bawah bilah tetap ada, bukan
+              dihapus: rapi tanpa kehilangan keterlihatan. Pola tetap chip
+              tunggal (satu keadaan on/off, dropdown untuk itu berlebihan). */}
+          <div className="scr-bilah">
+            <span className="af-cari scr-cari">
+              <IkonMenu d={IKON_CARI} size={13} />
+              <input
+                className="inp" type="search" placeholder="Cari kode atau nama…" value={cari}
+                onChange={(e) => setCari(e.target.value)}
+              />
+            </span>
+            <DropdownMulti label="Rating" ariaLabel="Saring rating" opsi={sssOpsi} nilai={sssAktif} onGanti={setSssAktif} />
+            <DropdownMulti label="Sektor" ariaLabel="Saring sektor" opsi={sektorOpsi} nilai={sektorAktif} onGanti={setSektorAktif} />
+            <button
+              type="button"
+              className={`chip-t${berpolaAktif ? ' on' : ''}`}
+              title="Hanya emiten dengan pola chart klasik yang sedang menunggu target"
+              onClick={() => setBerpolaAktif((v) => !v)}
+            >
+              Berpola aktif
+            </button>
+            {adaSaringan && (
               <button
                 type="button" className="chip-t scr-reset"
                 onClick={() => { setSssAktif([]); setSektorAktif([]); setBerpolaAktif(false); setCari('') }}
@@ -215,7 +200,22 @@ export function Screener() {
                 ✕ Hapus semua saringan
               </button>
             )}
+            <span className="muted scr-jumlah">{hasil.length} dari {baris.length} emiten lolos</span>
           </div>
+          {(sssAktif.length > 0 || sektorAktif.length > 0) && (
+            <div className="scr-chips-aktif">
+              {sssAktif.map((lbl) => (
+                <button key={`s-${lbl}`} type="button" className="chip-t on" onClick={() => toggleSss(lbl)}>
+                  Rating: {lbl} ✕
+                </button>
+              ))}
+              {sektorAktif.map((sek) => (
+                <button key={`k-${sek}`} type="button" className="chip-t on" onClick={() => toggleSektor(sek)}>
+                  Sektor: {sek === '-' ? 'Tanpa sektor' : sek} ✕
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="board-tbl-wrap">

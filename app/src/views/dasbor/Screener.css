@@ -4,30 +4,38 @@
 
 .lantai .scr-alat {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 10px;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .lantai .af-cari.scr-cari { flex: 1 1 220px; max-width: 320px; }
 
-.lantai .scr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-
 .lantai .scr-jumlah { white-space: nowrap; }
 
-/* Bilah saring berlabel (21 Agu 2026) — tiap deret chip diberi NAMA
-   kelompoknya. Lebar label dikunci supaya ketiga deret rata kiri seperti
-   tabel, bukan zig-zag. */
-.lantai .scr-saring {
-  display: flex; align-items: flex-start; gap: 10px; width: 100%;
+/* Bilah saring — SATU baris fleksibel (21 Agu 2026, perombakan kedua:
+   dropdown checklist Rating/Sektor menggantikan deret chip yang makan 4
+   baris). `.scr-jumlah` didorong ke ujung lewat margin-left:auto supaya
+   tetap di kanan selama muat; kalau sempit ia ikut wrap ke baris sendiri. */
+.lantai .scr-bilah {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
 }
-.lantai .scr-saring-lbl {
-  flex: 0 0 52px;
-  font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase;
-  color: var(--text3); line-height: 26px;
-}
-.lantai .scr-saring-kaki { align-items: center; gap: 12px; }
+.lantai .scr-bilah .scr-jumlah { margin-left: auto; }
 .lantai .scr-reset { color: var(--red); }
+
+/* Baris chip "sedang aktif" di bawah bilah — dropdown merapikan tapi
+   menyembunyikan pilihan; baris ini mengembalikan keterlihatan itu tanpa
+   memaksa dropdown-nya tetap terbuka. */
+.lantai .scr-chips-aktif { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* Telepon (412px, sama ambang KartuAnalisa/Watchlist): kotak cari penuh
+   lebar di baris sendiri, dua dropdown Rating|Sektor jadi dua kolom penuh
+   lebar di bawahnya — bukan menyusut sampai teksnya terpotong. */
+@media (max-width: 480px) {
+  .lantai .scr-bilah > .af-cari.scr-cari { flex: 1 1 100%; max-width: none; }
+  .lantai .scr-bilah > .dd { flex: 1 1 calc(50% - 5px); }
+  .lantai .scr-bilah > .dd .dd-btn { width: 100%; }
+  .lantai .scr-bilah > .dd .dd-btn svg { margin-left: auto; }
+}
 
 /* Kolom Nama ikut lebar wajar sendiri di tabel 21-kolom — tanpa batas ia
    menggeser seluruh kolom kanan keluar layar sebelum sempat digulung. */

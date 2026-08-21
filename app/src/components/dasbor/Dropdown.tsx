@@ -1,6 +1,7 @@
-import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { IkonMenu } from './IkonMenu'
 import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
+import { useArahBuka } from './useArahBuka'
 
 export interface OpsiDropdown {
   nilai: string
@@ -71,13 +72,13 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
   // 700px) — dua ambang berbeda untuk satu menu yang sama akan membuatnya
   // berpindah mode tepat di titik yang salah.
   const sempit = useLayarSempit()
-  // Bug modal Tambah Akun (#3, 15 Agu 2026): dd-menu buka ke BAWAH baku dan
-  // menutupi kontrol di bawahnya (mis. tombol submit) di modal pendek. Diukur
-  // lewat getBoundingClientRect — kalau ruang bawah tak cukup DAN ruang atas
-  // lebih luas, buka ke atas.
-  const [bukaAtas, setBukaAtas] = useState(false)
   const [q, setQ] = useState('')
   const ref = useRef<HTMLDivElement>(null)
+  // Bug modal Tambah Akun (#3, 15 Agu 2026): dd-menu buka ke BAWAH baku dan
+  // menutupi kontrol di bawahnya (mis. tombol submit) di modal pendek.
+  // Logikanya diputus ke `useArahBuka` (21 Agu 2026) supaya `DropdownMulti`
+  // memakai ulang, bukan menyalin.
+  const bukaAtas = useArahBuka(ref, open)
 
   useEffect(() => {
     // Kueri dibuang tiap menu ditutup. Menyimpannya berarti membuka lagi
@@ -96,34 +97,6 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
     // halaman dimuat dan tak pernah lagi saat menunya benar-benar dibuka.
     ref.current?.querySelector<HTMLInputElement>('.dd-cari')?.focus()
     return () => document.removeEventListener('mousedown', onDocMouseDown)
-  }, [open])
-
-  useLayoutEffect(() => {
-    if (!open) { setBukaAtas(false); return }
-    const wadah = ref.current
-    const menu = wadah?.querySelector<HTMLElement>('.dd-menu')
-    if (!wadah || !menu) return
-    const rWadah = wadah.getBoundingClientRect()
-    // Batas jatuh = kartu `.panel` terdekat (modal ATAU panel biasa) kalau
-    // ada — dropdown dekat ujung modal pendek jangan menutupi kontrol di
-    // bawahnya (submit dsb) walau viewport sendiri masih longgar (bug #3).
-    // Tanpa `.panel` (dropdown lepas) baru pakai batas viewport.
-    const batas = wadah.closest<HTMLElement>('.panel')
-    const rBatas = batas?.getBoundingClientRect()
-    const batasBawah = rBatas ? rBatas.bottom : window.innerHeight
-    const batasAtas = rBatas ? rBatas.top : 0
-    let ruangBawah = batasBawah - rWadah.bottom
-    let ruangAtas = rWadah.top - batasAtas
-    const perlu = menu.offsetHeight + 8
-    if (rBatas && ruangBawah < perlu && ruangAtas < perlu) {
-      // Panel terlalu pendek untuk menampung menu ke arah MANA PUN (bilah
-      // saring satu baris di Kartu Analisa, 21 Agu 2026: "menu nya mengambang
-      // ke atas tidak kebawah") — batas panel tak bermakna; menu toh akan
-      // melampaui panel, jadi arahnya diputuskan dari viewport.
-      ruangBawah = window.innerHeight - rWadah.bottom
-      ruangAtas = rWadah.top
-    }
-    setBukaAtas(ruangBawah < perlu && ruangAtas > ruangBawah)
   }, [open])
 
   const label = opsi.find((o) => o.nilai === nilai)?.label ?? placeholder ?? '—'
