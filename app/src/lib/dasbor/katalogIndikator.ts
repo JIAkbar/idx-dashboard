@@ -1,13 +1,16 @@
 /**
- * Katalog indikator pustaka — 365 rumus TERPAKAI dari 457 di
+ * Katalog indikator pustaka — 366 rumus TERPAKAI dari 457 di
  * `lightweight-charts-indicators` (MIT, di atas `oakscriptjs`), dibaca dari
  * REGISTRY pustaka, bukan dari daftar yang ditulis tangan.
  *
- * Yang 92 sisanya disaring dua kali, keduanya mekanis dan keduanya berjejak di
- * `docs/riset/audit-indikator.tsv`: 73 tanpa `plotConfig` (lihat
- * `keEntriKatalog`) dan 19 yang terbukti tak menggambar apa pun di OHLC kita
- * (lihat `indikatorDibuang.ts`). Johan 19 Agu 2026: *"bnyk indikator yang kmu
- * pasang tidak berfungsi mestinya pasang yang berguna saja"*.
+ * Yang 91 sisanya disaring dua kali, keduanya mekanis dan keduanya berjejak di
+ * `docs/riset/audit-indikator.tsv`: 72 tanpa `plotConfig` DAN tanpa bentuk
+ * `markers` yang bisa dipetakan jujur (lihat `keEntriKatalog`, `ID_PENANDA`)
+ * dan 19 yang terbukti tak menggambar apa pun di OHLC kita (lihat
+ * `indikatorDibuang.ts`). Johan 19 Agu 2026: *"bnyk indikator yang kmu pasang
+ * tidak berfungsi mestinya pasang yang berguna saja"*. Satu dari yang 72 itu
+ * (`williams-fractals`) masuk lewat jalur PENANDA sejak B30 — lihat
+ * `ID_PENANDA` di bawah untuk kenapa cuma satu, bukan tiga.
  *
  * Johan 18 Agu 2026: *"katanya indikator nya banyak? sudah ada repo github
  * untuk menunjang"*.
@@ -69,7 +72,25 @@ interface EntriRegistry {
   defaultInputs: Record<string, unknown>
   calculate: (bars: unknown[], inputs?: Record<string, unknown>) => {
     plots: Record<string, Array<{ time: unknown; value: number | null }>>
+    // Entri TANPA `plotConfig` kadang mengembalikan ini alih-alih (atau
+    // selain) `plots` — dibuktikan mekanis lewat
+    // `app/scripts/periksa-bentuk-marker.mjs` (B30): `williams-fractals`
+    // mengembalikannya PERSIS bentuk `SeriesMarker` pustaka kanvas. Opsional
+    // karena mayoritas entri (deret) tak punya ruas ini sama sekali.
+    markers?: PenandaMentah[]
   }
+}
+
+/** Satu penanda mentah dari `calculate()` pustaka — bentuk PERSIS `markers`
+ *  di atas. Waktu masih EPOCH DETIK pustaka di sini; pemetaan balik ke lilin
+ *  ada di `penandaPustaka` (`grafikEmiten.ts`), sama seperti `plotPustaka`
+ *  memetakan balik deret angka. */
+export interface PenandaMentah {
+  time: unknown
+  position: 'aboveBar' | 'belowBar' | 'inBar'
+  shape: string
+  color: string
+  size?: number
 }
 
 export interface EntriKatalog {
@@ -88,6 +109,11 @@ export interface EntriKatalog {
   hitung: (bars: unknown[], param: Record<string, number>) => {
     plots: Record<string, Array<{ time: unknown; value: number | null }>>
   }
+  /** Cuma terisi untuk entri `ID_PENANDA` (`judulPlot`/`kunciPlot` kosong
+   *  buat entri ini — tak ada deret untuk digambar sebagai garis). Kembalian
+   *  `PenandaMentah[]`, waktu masih epoch pustaka; `grafikEmiten.ts` yang
+   *  memetakannya balik ke lilin lewat `penandaPustaka`. */
+  hitungPenanda?: (bars: unknown[], param: Record<string, number>) => PenandaMentah[]
 }
 
 export type Katalog = Map<string, EntriKatalog>
@@ -109,6 +135,28 @@ export const KATEGORI: Array<[inggris: string, indonesia: string]> = [
   ['Volume', 'Volume'],
   ['Candlestick Patterns', 'Pola lilin'],
 ]
+
+/**
+ * Id pustaka TANPA `plotConfig` yang tetap masuk katalog lewat jalur PENANDA
+ * (`createSeriesMarkers`), bukan garis. B30 — Johan menunjuk tiga kandidat
+ * (`volume-delta`, `williams-fractals`, `zigzag`), diuji mekanis lewat
+ * `app/scripts/periksa-bentuk-marker.mjs` atas OHLC nyata (BBCA) sebelum
+ * satu baris kode ditulis. Cuma satu yang bentuknya PERSIS `SeriesMarker`
+ * (`time`/`position`/`shape`/`color`/`size`) — dua lainnya TIDAK dipaksakan
+ * lewat jalur ini:
+ *
+ * - `volume-delta` mengembalikan `plotCandles.delta`: deret LILIN (open/high/
+ *   low/close/color) berskala volume, bukan penanda titik. Butuh seri
+ *   candlestick sendiri di pane sendiri — jenis kendali yang tak ada di
+ *   kanvas ini sama sekali, bukan cuma "belum dipasang penandanya".
+ * - `zigzag` mengembalikan `pivots`/`lines`/`labels`: SEGMEN garis dua titik
+ *   + teks. Markernya sendiri (titik pivot) sah, tapi tanpa garis
+ *   penghubungnya bukan lagi zigzag — cuma titik-titik lepas yang bentuknya
+ *   menyesatkan (terlihat seperti pola acak, bukan tren berbelok).
+ *
+ * Keduanya tercatat di sini supaya jelas KENAPA absen, bukan lupa disaring.
+ */
+export const ID_PENANDA: ReadonlySet<string> = new Set(['williams-fractals'])
 
 /**
  * Id pustaka yang TIDAK dimasukkan ke katalog karena PAPAN sudah punya
@@ -200,13 +248,13 @@ export function keMasukanPustaka(
  * Ketujuh puluh tiga itu TIDAK hilang tanpa jejak: seluruhnya terdaftar dengan
  * alasannya di `docs/riset/audit-indikator.tsv` bervonis `BUTUH_MASUKAN_LAIN`.
  * Yang mereka butuhkan penanda/label di atas lilin (jalur `markers`), bukan
- * ruas data yang tak kita punya — kalau kelak jalur itu ada, mereka masuk
- * lewat sana, bukan lewat fungsi ini.
+ * ruas data yang tak kita punya. Jalur itu SEKARANG ada (`ID_PENANDA`,
+ * B30) — tapi cuma untuk id yang bentuk keluarannya sudah dibuktikan cocok;
+ * tanpa itu entrinya tetap ditolak di sini persis seperti sebelumnya.
  */
 export function keEntriKatalog(e: EntriRegistry): EntriKatalog | null {
-  if (!e.plotConfig?.length) return null
   const ruas = e.inputConfig ?? []
-  return {
+  const dasar = {
     id: e.id,
     nama: e.name,
     singkat: e.shortName || e.name,
@@ -216,10 +264,28 @@ export function keEntriKatalog(e: EntriRegistry): EntriKatalog | null {
     // di panel bawah — dua-duanya salah dan dua-duanya senyap.
     diPanelHarga: e.overlay === true,
     param: ruas.map(keSpekParam).filter((s): s is SpekParam => s !== null),
-    judulPlot: e.plotConfig.map((p, i) => p.title || `Deret ${i + 1}`),
-    kunciPlot: e.plotConfig.map((p) => p.id),
-    hitung: (bars, param) => e.calculate(bars, keMasukanPustaka(ruas, param)),
   }
+  if (e.plotConfig?.length) {
+    return {
+      ...dasar,
+      judulPlot: e.plotConfig.map((p, i) => p.title || `Deret ${i + 1}`),
+      kunciPlot: e.plotConfig.map((p) => p.id),
+      hitung: (bars, param) => e.calculate(bars, keMasukanPustaka(ruas, param)),
+    }
+  }
+  if (ID_PENANDA.has(e.id)) {
+    // `judulPlot`/`kunciPlot` kosong — tak ada deret, jalur garis biasa
+    // (`garisPustaka` di grafikEmiten.ts) menghasilkan legenda kosong dengan
+    // benar buat entri ini alih-alih melempar galat.
+    return {
+      ...dasar,
+      judulPlot: [],
+      kunciPlot: [],
+      hitung: (bars, param) => e.calculate(bars, keMasukanPustaka(ruas, param)),
+      hitungPenanda: (bars, param) => e.calculate(bars, keMasukanPustaka(ruas, param)).markers ?? [],
+    }
+  }
+  return null
 }
 
 let terpasang: Promise<Katalog> | null = null

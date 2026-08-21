@@ -17,6 +17,7 @@ import {
   cariDivergensi, stochUntukDivergensi, cariWyckoff, cariHarmonik,
   bacaTemplateTersimpan, tulisTemplateTersimpan, simpanTemplate, hapusTemplate,
   tandaiBawaan, ubahNamaTemplate, tutupSampai, penandaDiSekitar,
+  hitungPenandaInstans, type PenandaSiapGambar,
   warnaGrid, gridDariTemplate, GRID_BAWAAN, type SetelanGrid,
   type BerkasOhlcEmiten, type DoubleBottom, type JenisAsli, type JenisIndikator, type JenisPola,
   type LilinData, type ParamDoubleBottom, type ParamLonjakanVolume, type StatusPola, type StatusLonjakan,
@@ -1427,6 +1428,27 @@ export function GrafikEmiten() {
   }, [ind.daftar, lilin, volume, katalog])
 
   /**
+   * Penanda dari indikator PUSTAKA yang keluarannya bukan deret angka
+   * melainkan penanda per lilin — hari ini cuma Williams Fractals (B30).
+   *
+   * Entri semacam ini `plotConfig`-nya kosong, jadi jalur garis biasa
+   * melewatkannya begitu saja: ia masuk menu, dipilih, lalu tak menggambar
+   * apa pun. Dua entri lain yang senasib — Volume Delta dan Zig Zag —
+   * SENGAJA tak ikut: keluarannya deret LILIN dan segmen garis dua titik,
+   * bukan penanda, dan memaksakannya jadi titik akan membuang justru bagian
+   * yang membuat keduanya berarti.
+   */
+  const penandaIndikator = useMemo<PenandaSiapGambar[]>(() => {
+    const vol = volume.map((v) => v.value)
+    const out: PenandaSiapGambar[] = []
+    for (const inst of ind.daftar) {
+      if (!digambar(inst)) continue
+      out.push(...hitungPenandaInstans(inst, lilin, vol, katalog))
+    }
+    return out
+  }, [ind.daftar, lilin, volume, katalog, digambar])
+
+  /**
    * Net asing harian (LEMBAR, bukan rupiah — IDX tak melaporkan aliran asing
    * dalam rupiah) untuk pola Wyckoff, berkunci tanggal.
    *
@@ -2111,7 +2133,26 @@ export function GrafikEmiten() {
     const keMarker = (p: PenandaPola): SeriesMarker<Time> => ({
       time: keWaktuChart(p.time) as Time, position: p.posisi, shape: p.bentuk ?? 'circle', color: baca(p.token),
     })
-    penandaRef.current?.setMarkers(penandaPola.filter((p) => p.seri === 'harga').map(keMarker))
+    // Penanda indikator (Williams Fractals) digabung ke seri harga bersama
+    // penanda pola. Wajib urut menaik menurut waktu — lightweight-charts
+    // mewajibkannya dan diam-diam tak menggambar sebagian kalau dilanggar,
+    // dan dua sumber yang masing-masing sudah urut tak otomatis urut setelah
+    // digabung.
+    const penandaHarga: SeriesMarker<Time>[] = [
+      ...penandaPola.filter((p) => p.seri === 'harga').map(keMarker),
+      ...penandaIndikator.map((p) => ({
+        time: keWaktuChart(p.time) as Time,
+        position: p.position,
+        shape: (p.shape === 'arrowUp' || p.shape === 'arrowDown' || p.shape === 'square'
+          ? p.shape : 'circle') as SeriesMarker<Time>['shape'],
+        color: p.color,
+      })),
+    ].sort((a, b) => {
+      const ta = typeof a.time === 'number' ? a.time : String(a.time)
+      const tb = typeof b.time === 'number' ? b.time : String(b.time)
+      return ta < tb ? -1 : ta > tb ? 1 : 0
+    })
+    penandaRef.current?.setMarkers(penandaHarga)
     // Penanda Lonjakan Volume dipasang di seri VOLUME, bukan seri harga: di
     // seri harga ia berebut tempat dengan penanda Double Bottom, dan di bawah
     // batang volume justru di situ angkanya berarti.
@@ -2151,7 +2192,7 @@ export function GrafikEmiten() {
     if (import.meta.env.DEV) {
       el.dataset.musimanTgl = penandaPola.filter((p) => p.bentuk === 'square').map((p) => p.time).join(',')
     }
-  }, [penandaPola, polaPerInstans, theme, versiSeriHarga, digambar])
+  }, [penandaPola, penandaIndikator, polaPerInstans, theme, versiSeriHarga, digambar])
 
   /* ---------------- Bilah atas ---------------- */
 

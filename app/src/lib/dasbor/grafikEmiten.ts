@@ -5,7 +5,7 @@
  * satu baris = [tanggal, buka, tinggi, rendah, tutup, volume].
  */
 import type { Bar } from 'oakscriptjs'
-import type { Katalog } from './katalogIndikator'
+import type { Katalog, PenandaMentah } from './katalogIndikator'
 import type { BarisOhlc } from './ihsgOhlc'
 import { HARI, ringkasHarian, vonisUji, type RingkasHari } from '../seasonality'
 import { keEpoch } from './kerangkaWaktu'
@@ -361,39 +361,50 @@ interface TitikPustaka { time: unknown; value: number | null }
  * Pemetaan baliknya lewat waktu (bukan urutan) supaya tetap benar seandainya
  * versi pustaka berikutnya memangkas titik warm-up dari keluarannya.
  */
-function plotPustaka(
-  lilin: LilinData[],
-  volume: number[],
-  hitung: (bars: Bar[]) => { plots: Record<string, TitikPustaka[]> },
-): Record<string, Array<number | null>> {
-  if (!lilin.length) return {}
-  // Waktu internal punya DUA bentuk: 'YYYY-MM-DD' (harian) dan
-  // 'YYYY-MM-DD HH:mm' (intraday). Versi lama menempelkan 'T00:00:00Z' ke
-  // keduanya — benar untuk harian, dan untuk intraday menghasilkan
-  // "2026-08-20 12:00T00:00:00Z" yang di-parse jadi NaN.
-  //
-  // Akibatnya jauh lebih besar daripada satu indikator meleset, dan sepenuhnya
-  // SENYAP: setiap bar mendapat `time: NaN`, dan karena Map memperlakukan NaN
-  // sebagai kunci yang sama, seluruh 1.400 bar menyusut jadi SATU entri di
-  // peta indeks. Semua deret pustaka lalu terisi paling banyak satu nilai.
-  // Terukur 21 Agu 2026 pada MBMA 4 jam: pustaka menghitung 1.387 nilai
-  // Stochastic dengan benar, yang sampai ke pemanggil cuma 1 — dan pola
-  // Divergensi yang membacanya melaporkan "tak ada yang memenuhi syarat",
-  // kalimat yang terdengar seperti kesimpulan analisa padahal deretnya kosong.
-  // Ini menjelaskan nol temuan di SELURUH kerangka intraday (5m/15m/30m/1h/4h)
-  // untuk 365 indikator katalog sekaligus, bukan cuma divergensi.
-  //
-  // `keEpoch()` menangani bentuk intraday saja — dipakai untuk harian ia
-  // menghasilkan "2026-08-20:00+07:00", NaN yang sama dari arah sebaliknya.
-  // Jadi bentuknya dipilih dari panjang teks, sama seperti `keWaktuChart()`:
-  // 10 huruf = tanggal saja.
+/**
+ * Bar pustaka + peta detik-epoch -> indeks lilin, dipakai bareng oleh
+ * `plotPustaka` (deret) dan `penandaPustaka` (penanda) — keduanya harus
+ * memetakan waktu balik dengan cara yang SAMA PERSIS, kalau tidak salah satu
+ * diam-diam menyisir indeks yang tak dikenal yang lain.
+ *
+ * Waktu internal punya DUA bentuk: 'YYYY-MM-DD' (harian) dan
+ * 'YYYY-MM-DD HH:mm' (intraday). Versi lama menempelkan 'T00:00:00Z' ke
+ * keduanya — benar untuk harian, dan untuk intraday menghasilkan
+ * "2026-08-20 12:00T00:00:00Z" yang di-parse jadi NaN.
+ *
+ * Akibatnya jauh lebih besar daripada satu indikator meleset, dan sepenuhnya
+ * SENYAP: setiap bar mendapat `time: NaN`, dan karena Map memperlakukan NaN
+ * sebagai kunci yang sama, seluruh 1.400 bar menyusut jadi SATU entri di peta
+ * indeks. Semua deret pustaka lalu terisi paling banyak satu nilai. Terukur
+ * 21 Agu 2026 pada MBMA 4 jam: pustaka menghitung 1.387 nilai Stochastic
+ * dengan benar, yang sampai ke pemanggil cuma 1 — dan pola Divergensi yang
+ * membacanya melaporkan "tak ada yang memenuhi syarat", kalimat yang
+ * terdengar seperti kesimpulan analisa padahal deretnya kosong. Ini
+ * menjelaskan nol temuan di SELURUH kerangka intraday (5m/15m/30m/1h/4h)
+ * untuk 365 indikator katalog sekaligus, bukan cuma divergensi.
+ *
+ * `keEpoch()` menangani bentuk intraday saja — dipakai untuk harian ia
+ * menghasilkan "2026-08-20:00+07:00", NaN yang sama dari arah sebaliknya.
+ * Jadi bentuknya dipilih dari panjang teks, sama seperti `keWaktuChart()`:
+ * 10 huruf = tanggal saja.
+ */
+function barsPustaka(lilin: LilinData[], volume: number[]): { bars: Bar[]; indeks: Map<number, number> } {
   const epochBar = (t: string): number =>
     t.length <= 10 ? Math.floor(Date.parse(`${t}T00:00:00Z`) / 1000) : keEpoch(t)
   const bars: Bar[] = lilin.map((l, i) => ({
     time: epochBar(l.time),
     open: l.open, high: l.high, low: l.low, close: l.close, volume: volume[i] ?? 0,
   }))
-  const indeks = new Map(bars.map((b, i) => [b.time, i]))
+  return { bars, indeks: new Map(bars.map((b, i) => [b.time, i])) }
+}
+
+function plotPustaka(
+  lilin: LilinData[],
+  volume: number[],
+  hitung: (bars: Bar[]) => { plots: Record<string, TitikPustaka[]> },
+): Record<string, Array<number | null>> {
+  if (!lilin.length) return {}
+  const { bars, indeks } = barsPustaka(lilin, volume)
   const keluar: Record<string, Array<number | null>> = {}
   for (const [nama, titik] of Object.entries(hitung(bars).plots)) {
     const deret: Array<number | null> = new Array(lilin.length).fill(null)
@@ -406,6 +417,69 @@ function plotPustaka(
     keluar[nama] = deret
   }
   return keluar
+}
+
+/** Satu penanda siap gambar — waktu sudah dipetakan balik ke `lilin[i].time`
+ *  (bentuk string internal PAPAN, BUKAN epoch pustaka), siap dilempar ke
+ *  `keWaktuChart()` lalu `createSeriesMarkers` seperti penanda pola yang
+ *  sudah ada di `GrafikEmiten.tsx`. */
+export interface PenandaSiapGambar {
+  time: string
+  position: PenandaMentah['position']
+  shape: string
+  color: string
+  size?: number
+}
+
+/**
+ * Sama perannya dengan `plotPustaka`, untuk entri katalog yang keluarannya
+ * PENANDA (`ID_PENANDA` di katalogIndikator.ts — `williams-fractals`, B30),
+ * bukan deret angka. Penanda yang epoch-nya tak cocok satu lilin pun dibuang
+ * di sini (`waktuNyasar` di terminologi audit), bukan diteruskan sebagai
+ * waktu yang tak dikenal kanvas.
+ */
+function penandaPustaka(
+  lilin: LilinData[],
+  volume: number[],
+  hitung: (bars: Bar[]) => PenandaMentah[],
+): PenandaSiapGambar[] {
+  if (!lilin.length) return []
+  const { bars, indeks } = barsPustaka(lilin, volume)
+  const keluar: PenandaSiapGambar[] = []
+  for (const m of hitung(bars)) {
+    const i = indeks.get(Number(m.time))
+    if (i === undefined) continue
+    keluar.push({ time: lilin[i].time, position: m.position, shape: m.shape, color: m.color, size: m.size })
+  }
+  return keluar
+}
+
+/**
+ * Penanda siap gambar sebuah instans katalog bertipe penanda. Array kosong
+ * untuk instans deret biasa, katalog belum termuat, atau id yang tak punya
+ * `hitungPenanda` — pemanggil (komponen) tak perlu tahu jenis instansnya
+ * lebih dulu, sama seperti `hitungInstans` untuk deret.
+ *
+ * BELUM dipanggil dari `GrafikEmiten.tsx` (B30, lihat laporan) — yang ada
+ * baru pintunya, bukan penggambarnya. Yang perlu ditambahkan di sana: sebuah
+ * `useMemo` yang mengumpulkan `hitungPenandaInstans(...)` tiap instans
+ * `indikator` yang `tampil`, memetakan `time` lewat `keWaktuChart()`, lalu
+ * `setMarkers()` ke sebuah `ISeriesMarkersPluginApi` — bisa memakai ulang
+ * `penandaRef` yang sudah ada (digabung dengan `penandaPola`) kalau
+ * bertumpuk di seri harga dianggap cukup terbaca, atau plugin marker baru
+ * kalau tidak.
+ */
+export function hitungPenandaInstans(
+  inst: InstansIndikator,
+  lilin: LilinData[],
+  volume: number[],
+  katalog?: Katalog | null,
+): PenandaSiapGambar[] {
+  const idKatalog = idPustaka(inst.jenis)
+  if (idKatalog === null) return []
+  const e = katalog?.get(idKatalog)
+  if (!e?.hitungPenanda || !lilin.length) return []
+  return penandaPustaka(lilin, volume, (bars) => e.hitungPenanda!(bars, inst.param))
 }
 
 export function keSeriGaris(waktu: string[], nilai: Array<number | null>): TitikGaris[] {

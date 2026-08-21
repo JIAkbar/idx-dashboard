@@ -4,7 +4,7 @@ import {
   salinInstans, terapkanDraf,
   hitungMA, hitungEMA, hitungRSI, hitungMACD, hitungBollinger, keSeriGaris,
   SPEK_INDIKATOR, buatInstans, galatNilaiParam, galatInstans, labelInstansIndikator,
-  hitungInstans, PALET_INDIKATOR,
+  hitungInstans, hitungPenandaInstans, PALET_INDIKATOR,
   hitungATR, cariPivotRendah, cariPivotTinggi, cariDoubleBottom,
   hitungOBV, cariLonjakanVolume, cariMusiman, SPEK_POLA, labelInstansPola,
   cariDivergensi, stochUntukDivergensi,
@@ -15,7 +15,7 @@ import {
   type TemplateGrafik, type ParamLonjakanVolume, type ParamDivergensi,
   type BerkasOhlcEmiten, type ParamWyckoff, type ParamHarmonik, type FaseWyckoff,
 } from './grafikEmiten'
-import { muatKatalog, keSpekParam, keMasukanPustaka, ID_SUDAH_ADA, KATEGORI } from './katalogIndikator'
+import { muatKatalog, keSpekParam, keMasukanPustaka, ID_SUDAH_ADA, ID_PENANDA, KATEGORI } from './katalogIndikator'
 import type { BarisOhlc } from './ihsgOhlc'
 
 const baris: BarisOhlc[] = [
@@ -1143,14 +1143,24 @@ describe('cariMusiman', () => {
  * ------------------------------------------------------------------ */
 
 describe('katalogIndikator', () => {
-  it('memuat ratusan entri, semuanya berkategori & punya deret keluaran', async () => {
+  it('memuat ratusan entri, semuanya berkategori & punya deret ATAU penanda', async () => {
     const k = await muatKatalog()
     expect(k.size).toBeGreaterThan(300)
     for (const e of k.values()) {
       expect(e.kategori).toBeTruthy()
-      expect(e.judulPlot.length).toBeGreaterThan(0)
       expect(e.judulPlot).toHaveLength(e.kunciPlot.length)
       expect(typeof e.diPanelHarga).toBe('boolean')
+      // Entri `ID_PENANDA` (B30) sengaja tanpa deret — keluarannya penanda,
+      // bukan garis, jadi `judulPlot`/`kunciPlot` kosong itu BENAR untuknya,
+      // bukan cacat. Seluruh entri lain tetap wajib punya deret seperti
+      // sebelumnya.
+      if (ID_PENANDA.has(e.id)) {
+        expect(e.judulPlot).toHaveLength(0)
+        expect(typeof e.hitungPenanda).toBe('function')
+      } else {
+        expect(e.judulPlot.length).toBeGreaterThan(0)
+        expect(e.hitungPenanda).toBeUndefined()
+      }
     }
   })
 
@@ -1224,6 +1234,66 @@ describe('katalogIndikator', () => {
     // Jenis karangan yang BUKAN `p:` tetap ditolak seperti sebelumnya.
     const palsu = JSON.stringify([{ ...t[0], indikator: [{ ...t[0].indikator[0], jenis: 'entahapa' }] }])
     expect(uraiTemplate(palsu)).toEqual([])
+  })
+})
+
+/* ------------------------------------------------------------------ *
+ * Indikator PENANDA (B30) — `williams-fractals` lewat `ID_PENANDA`, jalur
+ * `createSeriesMarkers` alih-alih deret. Bentuk keluaran dibuktikan lebih
+ * dulu di `app/scripts/periksa-bentuk-marker.mjs` sebelum jalur ini ditulis
+ * (lihat laporan tugas); ujinya di sini memastikan pintu data-nya benar,
+ * bukan cuma bahwa entrinya ADA di katalog.
+ * ------------------------------------------------------------------ */
+describe('indikator penanda (williams-fractals)', () => {
+  it('williams-fractals: masuk katalog lewat ID_PENANDA, tanpa deret', async () => {
+    const k = await muatKatalog()
+    expect(ID_PENANDA.has('williams-fractals')).toBe(true)
+    const e = k.get('williams-fractals')
+    expect(e).toBeDefined()
+    expect(e?.judulPlot).toEqual([])
+    expect(e?.kunciPlot).toEqual([])
+    expect(typeof e?.hitungPenanda).toBe('function')
+  })
+
+  it('BBCA nyata: hitungPenandaInstans menghasilkan penanda BUKAN kosong, waktunya jatuh di lilin', async () => {
+    // Uji yang GAGAL kalau keluarannya balik kosong — persis syarat tugas
+    // B30. `?raw` (bukan node:fs) mengikuti pola uji Divergensi di atas.
+    const mentah = (await import('../../../../data-idx/json/ohlc/BBCA.json?raw')).default
+    const berkas = JSON.parse(mentah) as BerkasOhlcEmiten
+    const { lilin, volume } = keDataLilinVolume(berkas.d, '#0f0', '#f00')
+    const vol = volume.map((v) => v.value)
+    const k = await muatKatalog()
+    const inst = buatInstans('p:williams-fractals', k.get('williams-fractals')!.param, 'i-wf', 0)
+
+    const penanda = hitungPenandaInstans(inst, lilin, vol, k)
+
+    expect(penanda.length).toBeGreaterThan(100)
+    const waktuLilin = new Set(lilin.map((l) => l.time))
+    for (const m of penanda) {
+      // Waktu sudah dipetakan balik ke bentuk internal PAPAN, bukan epoch
+      // pustaka — kalau pemetaannya salah, ini yang pertama gagal.
+      expect(waktuLilin.has(m.time)).toBe(true)
+      expect(['aboveBar', 'belowBar', 'inBar']).toContain(m.position)
+      expect(typeof m.color).toBe('string')
+      expect(m.color.length).toBeGreaterThan(0)
+    }
+    // Fractal naik (aboveBar) dan turun (belowBar) dua-duanya harus muncul —
+    // kalau cuma satu sisi, pemetaan posisi/bentuknya yang meleset.
+    expect(penanda.some((m) => m.position === 'aboveBar')).toBe(true)
+    expect(penanda.some((m) => m.position === 'belowBar')).toBe(true)
+  })
+
+  it('tanpa lilin atau tanpa katalog: array kosong, bukan galat', () => {
+    const inst = buatInstans('p:williams-fractals', [], 'i-wf', 0)
+    expect(hitungPenandaInstans(inst, [], [], null)).toEqual([])
+    expect(hitungPenandaInstans(inst, [], [], undefined)).toEqual([])
+  })
+
+  it('instans jenis deret biasa (bukan penanda): selalu array kosong', async () => {
+    const k = await muatKatalog()
+    const lilin = lilinUji(60)
+    const inst = buatInstans('p:supertrend', k.get('supertrend')!.param, 'i-st', 0)
+    expect(hitungPenandaInstans(inst, lilin, lilin.map(() => 1000), k)).toEqual([])
   })
 })
 
