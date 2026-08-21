@@ -112,9 +112,18 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
     const rBatas = batas?.getBoundingClientRect()
     const batasBawah = rBatas ? rBatas.bottom : window.innerHeight
     const batasAtas = rBatas ? rBatas.top : 0
-    const ruangBawah = batasBawah - rWadah.bottom
-    const ruangAtas = rWadah.top - batasAtas
-    setBukaAtas(ruangBawah < menu.offsetHeight + 8 && ruangAtas > ruangBawah)
+    let ruangBawah = batasBawah - rWadah.bottom
+    let ruangAtas = rWadah.top - batasAtas
+    const perlu = menu.offsetHeight + 8
+    if (rBatas && ruangBawah < perlu && ruangAtas < perlu) {
+      // Panel terlalu pendek untuk menampung menu ke arah MANA PUN (bilah
+      // saring satu baris di Kartu Analisa, 21 Agu 2026: "menu nya mengambang
+      // ke atas tidak kebawah") — batas panel tak bermakna; menu toh akan
+      // melampaui panel, jadi arahnya diputuskan dari viewport.
+      ruangBawah = window.innerHeight - rWadah.bottom
+      ruangAtas = rWadah.top
+    }
+    setBukaAtas(ruangBawah < perlu && ruangAtas > ruangBawah)
   }, [open])
 
   const label = opsi.find((o) => o.nilai === nilai)?.label ?? placeholder ?? '—'
