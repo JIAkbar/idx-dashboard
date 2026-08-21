@@ -298,6 +298,7 @@ export function PanelDiary() {
                 : 'Dari high/low harian'}>
               <span className="dia-perf-lbl">{r.id}{r.sumber === 'tutup' ? '·t' : ''}</span>
               <span className="dia-rentang-bar">
+                <b style={{ width: `${r.posisi}%` }} />
                 <i style={{ left: `${r.posisi}%` }} />
               </span>
               <span className="num dia-rentang-nilai">

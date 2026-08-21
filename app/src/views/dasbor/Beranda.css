@@ -399,7 +399,12 @@
 .lantai .dia-kanan { display: grid; gap: 5px; align-content: start; }
 .lantai .dia-perf {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) 66px;
+  /* Kolom nilai lebar-konten (bukan px tetap): baris performa cukup pendek
+     ("+12,34%"), tapi baris rentang bisa sepanjang "12.345 – 67.890" — 66px
+     lama membuat teksnya jebol menembus tepi panel di angka 5 digit. 15ch
+     menampung kasus terpanjang itu untuk kedua blok sekaligus, jadi kolomnya
+     otomatis sejajar tanpa aturan terpisah per blok. */
+  grid-template-columns: 34px minmax(0, 1fr) 15ch;
   align-items: center;
   gap: 8px;
   font-size: 12px;
@@ -411,11 +416,12 @@
   background: var(--bg3);
   overflow: hidden;
   display: block;
+  min-width: 0;
 }
 .lantai .dia-perf-bar i { display: block; height: 100%; border-radius: 3px; }
 .lantai .dia-perf-bar i.up { background: var(--green); }
 .lantai .dia-perf-bar i.down { background: var(--red); }
-.lantai .dia-perf-nilai { text-align: right; font-variant-numeric: tabular-nums; }
+.lantai .dia-perf-nilai { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 @media (max-width: 760px) {
   /* Satu kolom: dua kolom di 412px membuat sel kalender menyusut di bawah
@@ -468,6 +474,18 @@
   border-radius: 3px;
   background: var(--bg3);
   display: block;
+  min-width: 0;
+}
+.lantai .dia-rentang-bar b {
+  /* Isi dari low (kiri) sampai posisi harga sekarang — dulu bar cuma
+     menampilkan satu garis penanda dan terlihat kosong. Token amber-dim
+     dipakai apa adanya (sudah dipakai .badge sebagai tint netral), bukan
+     warna baru. overflow TIDAK disetel hidden di induknya — penanda `i` di
+     bawah sengaja lebih tinggi (13px) dan menonjol keluar bar 9px. */
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--amber-dim);
 }
 .lantai .dia-rentang-bar i {
   /* Penanda posisi harga sekarang di dalam rentang — segitiga kecil ala
@@ -480,7 +498,7 @@
   background: var(--text);
   transform: translateX(-50%);
 }
-.lantai .dia-rentang-nilai { text-align: right; font-size: 11px; white-space: nowrap; }
+.lantai .dia-rentang-nilai { text-align: right; font-size: 11px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .lantai .dia-rentang-catatan { font-size: 11px; margin: 4px 0 0; }
 
 @media (max-width: 760px) {
