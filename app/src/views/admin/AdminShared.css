@@ -299,7 +299,20 @@
    `.keluar` (dikendalikan komponen `Toast.tsx` — versi lama unmount instan,
    lenyap tanpa animasi sama sekali). */
 .lantai.af-toast {
-  position: fixed; right: clamp(14px, 2.5vw, 28px); bottom: clamp(24px, 6vh, 56px);
+  /* NAIK di atas tombol Tanya PAPAN, bukan bergeser ke kiri darinya.
+     Tombol itu `position: fixed; right: 18px; bottom: 18px` setinggi 56px
+     (`TanyaPapan.css`), jadi ia menempati 74px terbawah di sudut kanan —
+     persis tempat toast mendarat, dan toast tertutup sebagian
+     (Johan 21 Agu 2026: "sebenarnya icon AI itu menggangu toast nya").
+
+     Digeser ke KIRI tak menyelesaikannya: tombol itu MELEBAR saat disorot
+     (labelnya muncul), jadi jarak aman mendatarnya berubah-ubah. Ke atas,
+     tingginya tetap 56px apa pun keadaannya.
+
+     18 + 56 + 12 = 86px. Bukan adu z-index — toast memang sudah menang
+     (95 lawan 60); yang salah bukan urutan tumpukan melainkan keduanya
+     berebut sudut yang sama. */
+  position: fixed; right: clamp(14px, 2.5vw, 28px); bottom: clamp(86px, 6vh + 62px, 118px);
   left: auto; transform: none;
   z-index: 95; display: flex; align-items: center; gap: 11px;
   background: linear-gradient(180deg, var(--bg2), var(--bg1));

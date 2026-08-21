@@ -35,6 +35,7 @@ import {
 } from '../../lib/dasbor/katalogIndikator'
 import { useDaftarInstans } from '../../components/dasbor/DaftarInstans'
 import { ModalSetelanInstans } from '../../components/dasbor/ModalSetelanInstans'
+import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { LangkahTanggal } from '../../components/dasbor/LangkahTanggal'
 import { DatePicker } from '../../components/dasbor/DatePicker'
@@ -46,7 +47,7 @@ import { pesanGalat } from '../../lib/pesanGalat'
 import {
   IkonMenu, IKON_CARI, IKON_SILANG, IKON_INFO, IKON_TONG, IKON_MATA,
   IKON_MATA_CORET, IKON_GIR, IKON_LILIN, IKON_GRAFIK_NAIK, IKON_KAMERA,
-  IKON_ULANG, IKON_PUTAR, IKON_JEDA,
+  IKON_ULANG, IKON_PUTAR, IKON_JEDA, IKON_KOTAK_ARSIP,
 } from '../../components/dasbor/IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 import './GrafikEmiten.css'
@@ -594,6 +595,8 @@ export function GrafikEmiten() {
   // B33 — garis bantu kanvas. Disimpan sebagai satu objek, bukan dua state
   // terpisah, karena keduanya berjalan bersama ke template dan ke chart.
   const [grid, setGrid] = useState<SetelanGrid>(GRID_BAWAAN)
+  // Template pindah ke dalam modal (Johan 21 Agu 2026: "jadikan icon saja").
+  const [templateBuka, setTemplateBuka] = useState(false)
 
   const [sorot, setSorot] = useState<{ waktu: string; x: number; y: number } | null>(null)
   /** Instans mana yang MODAL setelannya sedang terbuka (id), null = tak ada. */
@@ -2253,30 +2256,18 @@ export function GrafikEmiten() {
 
           <span className="grf-pisah" aria-hidden="true" />
 
-          {/* Simpan template pindah KE SINI dari bawah kanvas (Johan 20 Agu
-              2026: "nama simpan template letakkan di navbar atas"). Yang
-              tinggal di bawah cuma DAFTAR template tersimpan — memuat template
-              itu tindakan sesekali, menyimpannya dilakukan tepat sesudah
-              menyusun indikator di bilah yang sama. Bonusnya langsung terasa
-              di tinggi kanvas: satu blok tetap hilang dari kolom bawah. */}
-          <span className="grf-template-simpan">
-            <input className="inp grf-template-nama" value={namaTemplate}
-              placeholder="Nama template…" aria-label="Nama template"
-              onChange={(e) => setNamaTemplate(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && namaTemplate.trim()) {
-                  simpanDaftarTemplate(simpanTemplate(template, namaTemplate, isiTemplate()))
-                }
-              }} />
-            <button type="button" className="dd-btn"
-              disabled={!namaTemplate.trim()}
-              title={template.some((t) => t.nama === namaTemplate.trim())
-                ? 'Timpa template dengan susunan sekarang'
-                : 'Simpan susunan sekarang sebagai template baru'}
-              onClick={() => simpanDaftarTemplate(simpanTemplate(template, namaTemplate, isiTemplate()))}>
-              {template.some((t) => t.nama === namaTemplate.trim()) ? 'Timpa' : 'Simpan'}
-            </button>
-          </span>
+          {/* Template jadi SATU IKON (Johan 21 Agu 2026: "jadikan icon saja").
+              Kotak nama + tombol Simpan memakan satu baris penuh di ponsel dan
+              mendorong "Layar Penuh" ke baris kedua di laptop — mahal untuk
+              kendali yang dipakai sesekali. Isinya pindah ke modal, berikut
+              DAFTAR template yang tadinya menggantung di bawah kanvas; itu
+              sekaligus mengembalikan ruang tegak ke chart. */}
+          <TombolIkon d={IKON_KOTAK_ARSIP} ukuranIkon={14}
+            className={template.length > 0 ? 'on' : ''}
+            label={template.length > 0
+              ? `Template — ${template.length} tersimpan`
+              : 'Template — simpan susunan indikator & pola'}
+            onClick={() => setTemplateBuka(true)} />
 
           <span className="grf-toolbar-isi" />
 
@@ -2590,53 +2581,6 @@ export function GrafikEmiten() {
             </div>
           )}
 
-          {/* Template: menyimpan susunan indikator + pola dengan nama, dan
-              memuatnya kembali. Disimpan di localStorage — alasannya panjang
-              dan ada di grafikEmiten.ts (ringkasnya: ini preferensi tampilan,
-              bukan data bersama). */}
-          <div className="grf-template">
-            {template.length > 0 && (
-              <ul className="grf-template-daftar">
-                {template.map((t) => (
-                  <li key={t.nama} className="grf-template-baris">
-                    {namaDiubah?.lama === t.nama ? (
-                      <input className="inp grf-template-nama" autoFocus value={namaDiubah.teks}
-                        aria-label={`Nama baru untuk ${t.nama}`}
-                        onChange={(e) => setNamaDiubah({ lama: t.nama, teks: e.target.value })}
-                        onBlur={() => {
-                          simpanDaftarTemplate(ubahNamaTemplate(template, t.nama, namaDiubah.teks))
-                          setNamaDiubah(null)
-                        }}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') e.currentTarget.blur() }} />
-                    ) : (
-                      <button type="button" className="dd-btn grf-template-muat"
-                        title={`Muat ${t.nama}`} onClick={() => muatTemplate(t)}>
-                        {t.bawaan && <span className="grf-template-tanda" title="Dimuat otomatis saat halaman dibuka">•</span>}
-                        {t.nama}
-                      </button>
-                    )}
-                    <span className="grf-template-isi">
-                      {t.indikator.length} indikator · {t.pola.length} pola
-                      {t.jenisChart ? ` · ${t.jenisChart}` : ''}{t.rentang ? ` · ${t.rentang}` : ''}
-                      {' · emiten tak ikut disimpan'}
-                    </span>
-                    <button type="button" className="dd-btn"
-                      aria-pressed={t.bawaan}
-                      title={t.bawaan ? 'Berhenti memuatnya otomatis' : 'Muat otomatis saat halaman dibuka'}
-                      onClick={() => simpanDaftarTemplate(tandaiBawaan(template, t.nama))}>Bawaan</button>
-                    <button type="button" className="dd-btn"
-                      title={`Ganti nama ${t.nama}`}
-                      onClick={() => setNamaDiubah({ lama: t.nama, teks: t.nama })}>Ganti nama</button>
-                    <button type="button" className="dd-btn"
-                      title={`Hapus ${t.nama}`}
-                      onClick={() => simpanDaftarTemplate(hapusTemplate(template, t.nama))}>
-                      <IkonMenu d={IKON_TONG} size={11} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
 
           {/* Hasil pencarian pola: apa yang ditemukan, di tanggal berapa, dan
               atas dasar apa. Berupa daftar teks di samping gambarnya karena
@@ -2794,6 +2738,86 @@ export function GrafikEmiten() {
           </details>
         </div>
       </section>
+
+      {/* Template: menyimpan susunan indikator + pola dengan nama, dan
+          memuatnya kembali. Disimpan di localStorage — alasannya panjang dan
+          ada di grafikEmiten.ts (ringkasnya: ini preferensi tampilan, bukan
+          data bersama).
+
+          Sejak 21 Agu 2026 isinya di dalam modal, bukan menggantung di bawah
+          kanvas: kotak nama + tombol Simpan memakan satu baris penuh di ponsel
+          untuk kendali yang dipakai sesekali, dan daftarnya memakan ruang
+          tegak yang lebih berguna untuk chart. */}
+      {templateBuka && (
+        <ModalKecil label="Template grafik" onClose={() => setTemplateBuka(false)}>
+          <div className="grf-template-simpan">
+            <input className="inp grf-template-nama" value={namaTemplate}
+              placeholder="Nama template…" aria-label="Nama template" autoFocus
+              onChange={(e) => setNamaTemplate(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && namaTemplate.trim()) {
+                  simpanDaftarTemplate(simpanTemplate(template, namaTemplate, isiTemplate()))
+                }
+              }} />
+            <button type="button" className="dd-btn"
+              disabled={!namaTemplate.trim()}
+              title={template.some((t) => t.nama === namaTemplate.trim())
+                ? 'Timpa template dengan susunan sekarang'
+                : 'Simpan susunan sekarang sebagai template baru'}
+              onClick={() => simpanDaftarTemplate(simpanTemplate(template, namaTemplate, isiTemplate()))}>
+              {template.some((t) => t.nama === namaTemplate.trim()) ? 'Timpa' : 'Simpan'}
+            </button>
+          </div>
+
+          {template.length === 0 && (
+            <p className="muted" style={{ margin: 0, fontSize: 11.5 }}>
+              Belum ada template. Susun indikator &amp; pola di kanvas, lalu beri nama di atas —
+              emiten sengaja tidak ikut disimpan, jadi satu template bisa dipakai untuk saham mana pun.
+            </p>
+          )}
+{template.length > 0 && (
+            <ul className="grf-template-daftar">
+              {template.map((t) => (
+                <li key={t.nama} className="grf-template-baris">
+                  {namaDiubah?.lama === t.nama ? (
+                    <input className="inp grf-template-nama" autoFocus value={namaDiubah.teks}
+                      aria-label={`Nama baru untuk ${t.nama}`}
+                      onChange={(e) => setNamaDiubah({ lama: t.nama, teks: e.target.value })}
+                      onBlur={() => {
+                        simpanDaftarTemplate(ubahNamaTemplate(template, t.nama, namaDiubah.teks))
+                        setNamaDiubah(null)
+                      }}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') e.currentTarget.blur() }} />
+                  ) : (
+                    <button type="button" className="dd-btn grf-template-muat"
+                      title={`Muat ${t.nama}`} onClick={() => muatTemplate(t)}>
+                      {t.bawaan && <span className="grf-template-tanda" title="Dimuat otomatis saat halaman dibuka">•</span>}
+                      {t.nama}
+                    </button>
+                  )}
+                  <span className="grf-template-isi">
+                    {t.indikator.length} indikator · {t.pola.length} pola
+                    {t.jenisChart ? ` · ${t.jenisChart}` : ''}{t.rentang ? ` · ${t.rentang}` : ''}
+                    {' · emiten tak ikut disimpan'}
+                  </span>
+                  <button type="button" className="dd-btn"
+                    aria-pressed={t.bawaan}
+                    title={t.bawaan ? 'Berhenti memuatnya otomatis' : 'Muat otomatis saat halaman dibuka'}
+                    onClick={() => simpanDaftarTemplate(tandaiBawaan(template, t.nama))}>Bawaan</button>
+                  <button type="button" className="dd-btn"
+                    title={`Ganti nama ${t.nama}`}
+                    onClick={() => setNamaDiubah({ lama: t.nama, teks: t.nama })}>Ganti nama</button>
+                  <button type="button" className="dd-btn"
+                    title={`Hapus ${t.nama}`}
+                    onClick={() => simpanDaftarTemplate(hapusTemplate(template, t.nama))}>
+                    <IkonMenu d={IKON_TONG} size={11} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </ModalKecil>
+      )}
 
       {/* Modal setelan — dua cabang terpisah, bukan satu bercabang tipe:
           `ModalSetelanInstans` ber-generik pada jenisnya, dan gabungan dua
