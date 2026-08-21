@@ -315,10 +315,12 @@
  * ------------------------------------------------------------------ */
 .lantai .dia-isi {
   display: grid;
-  /* minmax(0,…) WAJIB di kedua kolom — kolom `auto` melebar mengikuti anak
-     terlebar dan `.dasbor-main` memotong, bukan menggulung (aturan proyek). */
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-  gap: 18px;
+  /* Kolom kiri DIKUNCI selebar kalendernya (300px + tally): 1.15fr membuat
+     jurang kosong antara kalender dan blok performa di monitor lebar —
+     persis keluhan tata letak yang pernah dibayar Kalkulator JIA. minmax(0,…)
+     tetap wajib di kolom lentur (aturan proyek). */
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 24px;
   align-items: start;
 }
 .lantai .dia-nav {
@@ -417,6 +419,70 @@
 
 @media (max-width: 760px) {
   /* Satu kolom: dua kolom di 412px membuat sel kalender menyusut di bawah
-     target sentuh dan angka performanya terpotong. */
+     target sentuh dan angka performanya terpotong. Kalender melebar penuh
+     supaya target sentuhnya justru membesar di layar sentuh. */
   .lantai .dia-isi { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .lantai .dia-kal { max-width: none; }
+}
+
+/* Diary Pasar — lapis RTI parity (klik tanggal, rentang low-high). */
+.lantai .dia-sel button {
+  /* Tombol mengisi sel penuh — area kliknya = selnya, dan sel 34px sudah
+     memenuhi batas minimum target sentuh untuk grid rapat. */
+  display: block;
+  width: 100%;
+  height: 100%;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.lantai .dia-pilih { outline: 2px solid var(--amber, #d9a441); outline-offset: 1px; }
+
+.lantai .dia-detail {
+  margin-top: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 9px 11px;
+  background: var(--card2);
+  max-width: 300px;
+}
+.lantai .dia-detail-kepala {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12.5px;
+  margin-bottom: 6px;
+}
+.lantai .dia-detail dl { display: grid; gap: 3px; margin: 0; }
+.lantai .dia-detail dl div { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; }
+.lantai .dia-detail dt { color: var(--text3); }
+.lantai .dia-detail dd { margin: 0; }
+
+.lantai .dia-rentang-judul { margin-top: 12px; }
+.lantai .dia-rentang-bar {
+  position: relative;
+  height: 9px;
+  border-radius: 3px;
+  background: var(--bg3);
+  display: block;
+}
+.lantai .dia-rentang-bar i {
+  /* Penanda posisi harga sekarang di dalam rentang — segitiga kecil ala
+     panel acuan diganti pil tegak: bentuknya tegas di 9px tinggi. */
+  position: absolute;
+  top: -2px;
+  width: 3px;
+  height: 13px;
+  border-radius: 2px;
+  background: var(--text);
+  transform: translateX(-50%);
+}
+.lantai .dia-rentang-nilai { text-align: right; font-size: 11px; white-space: nowrap; }
+.lantai .dia-rentang-catatan { font-size: 11px; margin: 4px 0 0; }
+
+@media (max-width: 760px) {
+  .lantai .dia-detail { max-width: none; }
 }

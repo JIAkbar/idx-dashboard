@@ -1,21 +1,29 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useIhsgOhlc } from '../../lib/dasbor/ihsgOhlc'
+import { fetchHari, type DataHarian } from '../../lib/dasbor/dataHarian'
 import {
-  bulanDiary, performaIhsg, selDiary, tallyDiary, type KotakDiary,
+  bulanDiary, performaIhsg, rentangIhsg, selDiary, tallyDiary, type KotakDiary,
 } from '../../lib/dasbor/diaryPasar'
 import { LangkahTanggal } from './LangkahTanggal'
 
 /**
- * Panel "Diary Pasar" — kalender IHSG berwarna, tally hari naik/turun, dan
- * performa tujuh periode.
+ * Panel "Diary Pasar" — kalender IHSG berwarna, tally hari naik/turun,
+ * performa sembilan periode, rentang Rendah-Tinggi, dan DETAIL per tanggal.
  *
- * Idenya dari tangkapan layar RTI Business yang Johan taruh di `data ide/`
- * (21 Agu 2026). Rumus & kalibrasinya di `lib/dasbor/diaryPasar.ts`; yang di
- * berkas ini murni penyajian.
+ * Acuannya panel "IDX Diary" RTI Business (empat tangkapan layar Johan di
+ * `data ide/`, 21 Agu 2026): sel tanggal bisa DIKLIK dan menjawab dengan
+ * angka hari itu (IHSG, nilai, volume, frekuensi), performa sampai 3Y/5Y,
+ * dan tiap periode punya baris rentang rendah-tinggi berikut posisi harga
+ * sekarang di dalamnya. Rumus & kalibrasinya di `lib/dasbor/diaryPasar.ts`.
  *
- * Datanya `ihsg_ohlc_ringkas.json` lewat `useIhsgOhlc()` — berkas yang SAMA
- * dengan yang sudah ditarik `LilinHarian`, jadi panel ini tak menambah satu
- * pun unduhan di Beranda.
+ * Tiga sumber data, dan cuma satu yang benar-benar unduhan baru:
+ *   - `ihsg_ohlc_ringkas.json` (13 KB) — kalender, tally, performa <= 1Y;
+ *     sudah ditarik halaman ini untuk lilin harian.
+ *   - `ihsg_harian.json` (354 KB, 36 tahun penutupan) — HANYA untuk 3Y/5Y,
+ *     ditarik sekali saat panel tampil; sebelum tiba, baris 3Y/5Y memang
+ *     belum ada (bukan strip kosong yang mengiklankan data yang tak datang).
+ *   - `ds_<tanggal>.json` — detail SATU hari, ditarik saat tanggalnya
+ *     diklik, lewat `fetchHari` yang cache modulnya dibagi panel lain.
  */
 
 const NAMA_BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -25,23 +33,43 @@ const HARI_PENDEK = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum']
 const fpoin = (v: number): string =>
   `${v >= 0 ? '+' : '−'}${Math.abs(v).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 const fpersen = (v: number): string => `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(2).replace('.', ',')}%`
+const fangka = (v: number, des = 0): string =>
+  v.toLocaleString('id-ID', { minimumFractionDigits: des, maximumFractionDigits: des })
 
-function Sel({ k }: { k: KotakDiary | null }) {
+/** Nilai transaksi — masukan MILIAR rupiah, satuan berkas hariannya. */
+const fnilai = (miliar: number): string =>
+  miliar >= 1000 ? `Rp ${fangka(miliar / 1000, 2)} T` : `Rp ${fangka(miliar)} M`
+/** Volume — masukan JUTA lembar. */
+const fvolume = (juta: number): string =>
+  juta >= 1000 ? `${fangka(juta / 1000, 2)} miliar lembar` : `${fangka(juta)} juta lembar`
+
+function Sel({ k, dipilih, onPilih }: {
+  k: KotakDiary | null
+  dipilih: string | null
+  onPilih: (tanggal: string) => void
+}) {
   if (!k) return <td className="dia-sel dia-kosong" />
   const s = k.sel
   if (!s) {
     // Hari kerja tanpa data = bursa libur. Tetap diberi angka, tanpa warna:
-    // menghapusnya dari kalender membuat pekan yang ada liburnya tampak
-    // bergeser, dan mewarnainya abu-abu netral berarti mengaku tahu arah
-    // hari yang tak pernah diperdagangkan.
+    // menghapusnya membuat pekan yang ada liburnya tampak bergeser, dan
+    // mewarnainya netral berarti mengaku tahu arah hari yang tak pernah
+    // diperdagangkan.
     return <td className="dia-sel dia-libur" title="Bursa libur atau belum ada datanya">{k.hari}</td>
   }
   return (
-    <td
-      className={`dia-sel dia-${s.arah}`}
-      title={`${s.tanggal} · ${fpersen(s.persen)} (${fpoin(s.poin)} poin) · tutup ${s.tutup.toLocaleString('id-ID')}`}
-    >
-      {k.hari}
+    <td className={`dia-sel dia-${s.arah}${dipilih === s.tanggal ? ' dia-pilih' : ''}`}>
+      {/* Tombol di DALAM sel, bukan sel yang diubah display-nya —
+          `display:flex` pada <td> membuatnya berhenti berperilaku sel tabel
+          (aturan proyek yang sudah dibayar). */}
+      <button
+        type="button"
+        onClick={() => onPilih(s.tanggal)}
+        title={`${s.tanggal} · ${fpersen(s.persen)} — klik untuk detail hari itu`}
+        aria-label={`Detail ${s.tanggal}`}
+      >
+        {k.hari}
+      </button>
     </td>
   )
 }
@@ -51,9 +79,46 @@ export function PanelDiary() {
   // Geser bulan. 0 = bulan hari bursa terakhir, −1 = bulan sebelumnya. Tak
   // pernah maju melewati 0: bulan depan belum ada datanya sama sekali.
   const [geser, setGeser] = useState(0)
+  // Tanggal yang diklik + isi berkas hariannya ("Tap date for detail" RTI).
+  const [pilih, setPilih] = useState<string | null>(null)
+  const [detail, setDetail] = useState<DataHarian | null>(null)
+  const [detailGagal, setDetailGagal] = useState(false)
+  // Penutupan 36 tahun — HANYA untuk 3Y/5Y & rentang panjangnya.
+  const [tutupPanjang, setTutupPanjang] = useState<Record<string, number> | null>(null)
+
+  useEffect(() => {
+    let batal = false
+    fetch('/data-idx/json/ihsg_harian.json')
+      .then((r) => r.json())
+      .then((j: { tutup?: Record<string, number> }) => {
+        if (!batal && j.tutup) setTutupPanjang(j.tutup)
+      })
+      .catch(() => {}) // gagal = baris 3Y/5Y tak tampil; sisanya tetap utuh
+    return () => { batal = true }
+  }, [])
+
+  useEffect(() => {
+    if (!pilih) return
+    let batal = false
+    setDetail(null)
+    setDetailGagal(false)
+    // Nama berkas harian mengikuti tanggalnya sendiri: ds_yymmdd.
+    const stem = `ds_${pilih.slice(2, 4)}${pilih.slice(5, 7)}${pilih.slice(8, 10)}`
+    fetchHari(stem)
+      .then((d) => { if (!batal) setDetail(d) })
+      .catch(() => { if (!batal) setDetailGagal(true) })
+    return () => { batal = true }
+  }, [pilih])
 
   const sel = useMemo(() => (baris ? selDiary(baris) : []), [baris])
-  const performa = useMemo(() => (baris ? performaIhsg(baris) : []), [baris])
+  const performa = useMemo(
+    () => (baris ? performaIhsg(baris, tutupPanjang) : []),
+    [baris, tutupPanjang],
+  )
+  const rentang = useMemo(
+    () => (baris ? rentangIhsg(baris, tutupPanjang) : []),
+    [baris, tutupPanjang],
+  )
 
   const bulan = useMemo(() => {
     if (!sel.length) return null
@@ -69,9 +134,7 @@ export function PanelDiary() {
    * Versi pertama menambatkannya ke data terbaru, dan Johan menangkap
    * salahnya dari layar: kalender digeser ke Juni, angka di bawahnya masih
    * milik Agustus — panel yang separuh atasnya menjawab "Juni" dan separuh
-   * bawahnya menjawab "Agustus" tanpa memberi tahu. Panel RTI yang jadi
-   * acuan tak pernah kelihatan salah di sini hanya karena ia tak bisa
-   * digeser ke bulan lain.
+   * bawahnya menjawab "Agustus" tanpa memberi tahu.
    */
   const tally = useMemo(() => {
     if (!bulan) return null
@@ -93,6 +156,7 @@ export function PanelDiary() {
     : 0
 
   const maks = Math.max(...performa.map((p) => Math.abs(p.persen ?? 0)), 1)
+  const selPilih = pilih ? sel.find((s) => s.tanggal === pilih) ?? null : null
 
   return (
     <section className="panel dia-panel" style={{ marginBottom: 12 }}>
@@ -125,11 +189,55 @@ export function PanelDiary() {
             <tbody>
               {bulan.minggu.map((m, i) => (
                 <tr key={i}>
-                  {m.map((kotak, k) => <Sel key={k} k={kotak} />)}
+                  {m.map((kotak, k) => (
+                    <Sel key={k} k={kotak} dipilih={pilih}
+                      onPilih={(t) => setPilih((lama) => (lama === t ? null : t))} />
+                  ))}
                 </tr>
               ))}
             </tbody>
           </table>
+
+          {/* Detail hari yang diklik — jawaban "Tap date for detail" RTI.
+              Angka pasarnya datang dari berkas harian; kalau berkasnya tak
+              ada (hari cadangan Yahoo), yang tampil tetap jujur: cuma harga,
+              plus keterangan kenapa. */}
+          {selPilih && (
+            <div className="dia-detail">
+              <div className="dia-detail-kepala">
+                <b>{selPilih.tanggal}</b>
+                <span className={`num ${selPilih.arah === 'turun' ? 'down' : 'up'}`}>
+                  {fangka(selPilih.tutup, 2)} · {fpersen(selPilih.persen)} ({fpoin(selPilih.poin)})
+                </span>
+              </div>
+              {detail ? (
+                <dl>
+                  {detail.ihsg_high !== undefined && detail.ihsg_low !== undefined && (
+                    <div><dt>Rentang hari</dt><dd className="num">{fangka(detail.ihsg_low, 2)} – {fangka(detail.ihsg_high, 2)}</dd></div>
+                  )}
+                  {detail.val_idr_today !== undefined && (
+                    <div><dt>Nilai</dt><dd className="num">{fnilai(detail.val_idr_today)}</dd></div>
+                  )}
+                  {detail.vol_today !== undefined && (
+                    <div><dt>Volume</dt><dd className="num">{fvolume(detail.vol_today)}</dd></div>
+                  )}
+                  {detail.freq_today !== undefined && (
+                    <div><dt>Frekuensi</dt><dd className="num">{fangka(detail.freq_today * 1000)} kali</dd></div>
+                  )}
+                  {detail.nf_today_idr !== undefined && (
+                    <div><dt>Net asing</dt>
+                      <dd className={`num ${detail.nf_today_idr >= 0 ? 'up' : 'down'}`}>
+                        {detail.nf_today_idr >= 0 ? '+' : '−'}{fnilai(Math.abs(detail.nf_today_idr))}
+                      </dd></div>
+                  )}
+                </dl>
+              ) : (
+                <p className="sub">{detailGagal
+                  ? 'Berkas statistik hari itu tidak tersedia — hanya harga yang tercatat.'
+                  : 'Memuat detail…'}</p>
+              )}
+            </div>
+          )}
 
           <div className="dia-tally">
             <div className="dia-tally-baris">
@@ -169,6 +277,28 @@ export function PanelDiary() {
               </span>
             </div>
           ))}
+
+          <span className="sub dia-rentang-judul">Rentang Rendah–Tinggi</span>
+          {rentang.map((r) => (
+            <div className="dia-perf" key={`r-${r.id}`}
+              title={r.sumber === 'tutup'
+                ? 'Dari penutupan harian — ekstrem intraday bisa sedikit di luar angka ini'
+                : 'Dari high/low harian'}>
+              <span className="dia-perf-lbl">{r.id}{r.sumber === 'tutup' ? '·t' : ''}</span>
+              <span className="dia-rentang-bar">
+                <i style={{ left: `${r.posisi}%` }} />
+              </span>
+              <span className="num dia-rentang-nilai">
+                {fangka(r.rendah)} – {fangka(r.tinggi)}
+              </span>
+            </div>
+          ))}
+          {tutupPanjang && (
+            <p className="sub dia-rentang-catatan">
+              ·t = 3Y/5Y dihitung dari <b>penutupan</b> harian — deret panjangnya tak menyimpan
+              high/low, jadi ekstrem intraday bisa sedikit di luar angka itu.
+            </p>
+          )}
         </div>
       </div>
     </section>

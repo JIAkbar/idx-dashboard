@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { BarisOhlc } from './ihsgOhlc'
-import { bulanDiary, performaIhsg, selDiary, tallyDiary } from './diaryPasar'
+import { bulanDiary, performaIhsg, rentangIhsg, selDiary, tallyDiary } from './diaryPasar'
 import ihsg from './__fixtures__/ihsg-250-hari.json'
 
 /**
@@ -140,6 +140,64 @@ describe('performaIhsg', () => {
     const patokan = deret.filter((b) => b[0] <= sebulanLalu.toISOString().slice(0, 10)).at(-1)!
     expect(performaIhsg(deret).find((x) => x.id === '1M')!.persen)
       .toBeCloseTo((akhir[4] / patokan[4] - 1) * 100, 6)
+  })
+})
+
+describe('performaIhsg — 3Y/5Y dari deret panjang', () => {
+  /** Penutupan panjang buatan: 6 tahun, awal tiap bulan. */
+  const panjang: Record<string, number> = {}
+  for (let th = 2020; th <= 2026; th++) {
+    for (let bl = 1; bl <= 12; bl++) {
+      panjang[`${th}-${String(bl).padStart(2, '0')}-01`] = 1000 + (th - 2020) * 100 + bl
+    }
+  }
+
+  it('tanpa deret panjang, baris 3Y/5Y TIDAK ada — bukan ada tapi kosong', () => {
+    const id = performaIhsg(NYATA).map((p) => p.id)
+    expect(id).not.toContain('3Y')
+    expect(id).not.toContain('5Y')
+  })
+
+  it('dengan deret panjang, 3Y berjangkar ke penutupan terakhir <= 36 bulan lalu', () => {
+    const p = performaIhsg(NYATA, panjang)
+    const p3 = p.find((x) => x.id === '3Y')!
+    const kini = NYATA[NYATA.length - 1][4]
+    // Akhir data 2026-08-20 -> 36 bulan mundur = 2023-08-20 -> jangkar 2023-08-01.
+    expect(p3.persen).toBeCloseTo((kini / panjang['2023-08-01'] - 1) * 100, 6)
+    expect(p.find((x) => x.id === '5Y')!.persen)
+      .toBeCloseTo((kini / panjang['2021-08-01'] - 1) * 100, 6)
+  })
+})
+
+describe('rentangIhsg', () => {
+  it('rentang <= 1Y dari HIGH/LOW sungguhan, posisi 0-100', () => {
+    const r = rentangIhsg(NYATA)
+    const r1y = r.find((x) => x.id === '1Y')!
+    expect(r1y.sumber).toBe('ohlc')
+    // High/low sungguhan dari seluruh 250 hari (>= 1 tahun bursa).
+    const hi = Math.max(...NYATA.map((b) => b[2]))
+    expect(r1y.tinggi).toBeCloseTo(hi, 6)
+    for (const x of r) {
+      expect(x.tinggi).toBeGreaterThanOrEqual(x.rendah)
+      expect(x.posisi).toBeGreaterThanOrEqual(0)
+      expect(x.posisi).toBeLessThanOrEqual(100)
+    }
+  })
+
+  it('rentang 1D = high/low hari terakhir persis', () => {
+    const r1d = rentangIhsg(NYATA).find((x) => x.id === '1D')!
+    const akhir = NYATA[NYATA.length - 1]
+    expect(r1d.tinggi).toBeCloseTo(akhir[2], 6)
+    expect(r1d.rendah).toBeCloseTo(akhir[3], 6)
+  })
+
+  it('3Y/5Y bersumber TUTUP dan ditandai — bukan mengaku high/low', () => {
+    const panjang: Record<string, number> = { '2022-01-03': 6000, '2024-06-03': 7500, '2025-01-02': 6600 }
+    const r = rentangIhsg(NYATA, panjang)
+    const r3 = r.find((x) => x.id === '3Y')!
+    expect(r3.sumber).toBe('tutup')
+    expect(r3.rendah).toBe(6600) // 2022 di luar jendela 36 bulan dari 2026-08
+    expect(r3.tinggi).toBe(7500)
   })
 })
 
