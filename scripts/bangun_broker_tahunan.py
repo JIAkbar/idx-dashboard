@@ -55,7 +55,7 @@ def bangun_emiten(kode: str) -> dict[str, int]:
     folder = ph.ARSIP / kode
     per_tahun: dict[str, dict] = defaultdict(dict)
     rusak = 0
-    for p in sorted(folder.glob("*.json")):
+    for p in sorted(folder.glob("????-??-??.json")):
         tgl = p.stem
         mentah = ph.baca(p)
         baris, ringkas = ph.padatkan(mentah) if mentah else ([], {})
@@ -63,10 +63,17 @@ def bangun_emiten(kode: str) -> dict[str, int]:
             rusak += 1
             continue
         ringkas["cocok_volume"] = ph.cocok_volume(ringkas["total_lot"], ph.volume_idx(kode, tgl))
-        per_tahun[tgl[:4]][tgl] = {
-            "ringkas": ringkas,
-            "broker": [[r[0], round(r[1]), round(r[2]), round(r[4]), round(r[5])] for r in baris],
-        }
+        isi = {"ringkas": ringkas, "broker": ph.padat_baris(baris)}
+        # Varian asing/nego: berkas saudara `<tgl>.<varian>.json`. Yang ada saja
+        # yang disertakan — halaman membedakan "nol transaksi" (ada, kosong)
+        # dari "belum dipanen" (kunci tak ada).
+        for varian in ("asing", "nego"):
+            pv = folder / ph.nama_arsip(tgl, varian)
+            if pv.exists():
+                mv = ph.baca(pv)
+                bv, rv = ph.padatkan(mv) if mv else ([], {})
+                isi[varian] = {"ringkas": rv, "broker": ph.padat_baris(bv)}
+        per_tahun[tgl[:4]][tgl] = isi
     hasil = {}
     for tahun, hari in per_tahun.items():
         out = KELUARAN / kode / f"{tahun}.json"
@@ -105,16 +112,19 @@ def swauji() -> int:
             for tgl in ("2025-12-30", "2026-01-02", "2026-01-05"):
                 (f / f"{tgl}.json").write_text(json.dumps(mentah), encoding="utf-8")
             (f / "2026-01-06.json").write_text("{}", encoding="utf-8")  # rusak
+            (f / "2026-01-05.asing.json").write_text(json.dumps(mentah), encoding="utf-8")
             hasil = bangun_emiten("UJI")
             assert hasil == {"2025": 1, "2026": 2}, hasil
             b = json.loads((KELUARAN / "UJI" / "2026.json").read_text(encoding="utf-8"))
             assert list(b["hari"]) == ["2026-01-02", "2026-01-05"] and b["n_hari"] == 2
             assert b["hari"]["2026-01-02"]["broker"][0][:3] == ["AK", 10, 1000]
+            assert "asing" in b["hari"]["2026-01-05"] and "asing" not in b["hari"]["2026-01-02"]
+            assert b["hari"]["2026-01-05"]["asing"]["broker"][0][0] == "AK"
             idx = json.loads((KELUARAN / "UJI" / "index.json").read_text(encoding="utf-8"))
             assert idx["tahun"] == [2025, 2026] and idx["n_hari"] == 3
     finally:
         ph.ARSIP, KELUARAN = asli_arsip, asli_out
-    print("4/4 lulus")
+    print("6/6 lulus")
     return 0
 
 

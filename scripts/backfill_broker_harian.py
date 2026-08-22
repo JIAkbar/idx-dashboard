@@ -46,13 +46,18 @@ def main() -> int:
     ap.add_argument("--dari", default="2017-01-01")
     ap.add_argument("--sampai", default=None, help="bawaan: bar OHLC terakhir")
     ap.add_argument("--jeda", type=float, default=0.8)
+    ap.add_argument("--varian", default="reguler", help="reguler,asing,nego — yang sudah ada di arsip dilewati per varian")
     a = ap.parse_args()
     kode = a.kode.upper()
     sampai = a.sampai or ph.tanggal_bawaan()
     tanggal = hari_bursa(kode, a.dari, sampai)
-    sudah = {p.stem for p in (ph.ARSIP / kode).glob("*.json")} if (ph.ARSIP / kode).exists() else set()
+    varian = [v.strip() for v in a.varian.split(",") if v.strip()]
+    folder = ph.ARSIP / kode
+    def lengkap(t: str) -> bool:
+        return all((folder / ph.nama_arsip(t, v)).exists() for v in varian)
+    sudah = {t for t in tanggal if lengkap(t)}
     sisa = [t for t in tanggal if t not in sudah]
-    print(f"{kode}: {len(tanggal)} hari bursa {a.dari}..{sampai}, {len(sudah)} sudah di arsip, {len(sisa)} akan diambil")
+    print(f"{kode} [{a.varian}]: {len(tanggal)} hari bursa {a.dari}..{sampai}, {len(sudah)} sudah lengkap di arsip, {len(sisa)} akan diambil")
     mulai = time.time()
     ok = 0
     gagal: list[str] = []
@@ -61,7 +66,7 @@ def main() -> int:
         # menghentikan ratusan hari di belakangnya — dicatat, lalu lanjut; jalan
         # ulang akan menambalnya karena arsipnya memang belum ada.
         try:
-            rc = ph.jalankan(SimpleNamespace(tanggal=t, hanya=kode, batas=None, jeda=a.jeda, ulang=False))
+            rc = ph.jalankan(SimpleNamespace(tanggal=t, hanya=kode, batas=None, jeda=a.jeda, ulang=False, varian=a.varian))
         except SystemExit as e:  # token mati/ditolak — ini memang harus berhenti
             print(f"BERHENTI di {t}: {e}")
             return 2
