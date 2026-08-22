@@ -149,6 +149,21 @@ jobs:
           & "${{ steps.py.outputs.exe }}" scripts/fetch_broker_summary.py --hari 5
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::fetch_broker_summary gagal" }
 
+      # Broker summary PER EMITEN (Stockbit, GROSS, reguler) — lapis yang tak
+      # ada di satu pun endpoint IDX. Tokennya hidup di
+      # %USERPROFILE%\.papan\stockbit-token.json (di LUAR checkout; runner dan
+      # sesi Claude memakai berkas yang SAMA supaya refresh token tak diputar
+      # dua pihak lalu saling membatalkan). Access 24 jam, refresh 7 hari;
+      # `stockbit_token.py` memutarnya sendiri. Jalan SESUDAH langkah 2 karena
+      # tanggal bawaannya = bar OHLC terakhir, dan cek silangnya memakai
+      # Volume dari berkas yang sama. ±960 permintaan x 1 detik ≈ 16 menit.
+      - name: 3d · Broker summary per emiten (Stockbit)
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/stockbit_token.py --status
+          & "${{ steps.py.outputs.exe }}" scripts/panen_broker_harian.py --jeda 1.0
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_broker_harian gagal" }
+
       - name: 4 · Kartu Analisa
         continue-on-error: true
         run: |

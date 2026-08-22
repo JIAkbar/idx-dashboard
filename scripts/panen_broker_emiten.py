@@ -530,19 +530,23 @@ def main() -> int:
         ap.error("sebutkan ticker, mis. BUMI (atau pakai --uji / --bantuan-token)")
 
     env = baca_env()
-    sumber = a.sumber or ("stockbit" if env.get("STOCKBIT_TOKEN") else "indexalpha")
-    kunci = "STOCKBIT_TOKEN" if sumber == "stockbit" else "INDEXALPHA_TOKEN"
-    token = env.get(kunci)
-    if not token:
-        print(f"Tak ada {kunci} di app/.env.local maupun lingkungan.", file=sys.stderr)
-        print(BANTUAN_TOKEN, file=sys.stderr)
-        return 2
-
+    sumber = a.sumber or "stockbit"
     if sumber == "stockbit":
-        exp = umur_jwt(token)
-        if exp and exp < datetime.now(WIB):
-            print(f"Token Stockbit sudah kedaluwarsa ({exp:%d %b %H:%M}). "
-                  "Ambil ulang: --bantuan-token", file=sys.stderr)
+        # Token dari berkas bersama %USERPROFILE%\.papan\stockbit-token.json,
+        # diperbarui otomatis lewat refresh token (lihat stockbit_token.py).
+        # .env.local hanya dipakai untuk menyemainya pertama kali.
+        sys.path.insert(0, str(AKAR / "scripts"))
+        from stockbit_token import token_segar
+        try:
+            token = token_segar()
+        except SystemExit as e:
+            print(str(e), file=sys.stderr)
+            print(BANTUAN_TOKEN, file=sys.stderr)
+            return 2
+    else:
+        token = env.get("INDEXALPHA_TOKEN")
+        if not token:
+            print("Tak ada INDEXALPHA_TOKEN di app/.env.local maupun lingkungan.", file=sys.stderr)
             return 2
 
     ticker = a.ticker.upper().strip()
