@@ -208,7 +208,8 @@ def jalankan(a) -> int:
         kode_semua = kode_semua[: a.batas]
 
     token = token_segar()
-    print(f"Panen broker GROSS {tanggal} — {len(kode_semua)} emiten, jeda {a.jeda}s")
+    if len(kode_semua) > 1:
+        print(f"Panen broker GROSS {tanggal} — {len(kode_semua)} emiten, jeda {a.jeda}s")
     n_ok = n_lewat = n_kosong = n_gagal = n_meleset = 0
     mulai = time.time()
 
@@ -269,7 +270,8 @@ def jalankan(a) -> int:
         if i % 100 == 0:
             print(f"  ...{i}/{len(kode_semua)} ({time.time()-mulai:.0f}s)")
 
-    print(f"Selesai {time.time()-mulai:.0f}s: {n_ok} tersimpan ({n_lewat} dari arsip), "
+    if len(kode_semua) > 1 or n_kosong or n_gagal or n_meleset:
+      print(f"Selesai {time.time()-mulai:.0f}s: {n_ok} tersimpan ({n_lewat} dari arsip), "
           f"{n_kosong} kosong, {n_gagal} gagal, {n_meleset} volume meleset >{TOLERANSI_VOLUME:.0%}")
     return 0 if n_ok else 1
 
