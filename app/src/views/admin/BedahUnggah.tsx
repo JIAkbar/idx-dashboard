@@ -21,6 +21,7 @@ import {
 } from '../../lib/supabaseSetoran'
 import { pesanGalat } from '../../lib/pesanGalat'
 import { tanggalBursaTerakhir as tanggalHariIni } from '../../lib/tanggalBursa'
+import { useKandidatDeepDive } from '../../lib/dasbor/kandidatDeepDive'
 import { PanduanScreenshot } from './PanduanScreenshot'
 
 
@@ -129,6 +130,8 @@ export function BedahUnggah() {
   const { session } = useAuth()
   const { index } = useStockIndex()
   const { profil } = useProfilSaya()
+  const kandidatData = useKandidatDeepDive()
+  const kandidatTeratas = [...(kandidatData?.emiten ?? [])].sort((a, b) => b.skor - a.skor).slice(0, 10)
   const superadmin = profil?.peran === 'superadmin'
   const [ticker, setTicker] = useState('')
   const [tanggal, setTanggal] = useState(tanggalHariIni())
@@ -168,6 +171,14 @@ export function BedahUnggah() {
     setTerkunci(kodeBaru)
     setModeTambah(false)
     if (session) localStorage.setItem(kunciEmitenAktif(session.user.id), kodeBaru)
+  }
+
+  /** Klik chip Kandidat Deep Dive → isi kolom Emiten dengan kode itu. Buka
+   *  mode "Tambah Emiten" juga kalau lagi terkunci ke emiten lain — sama
+   *  seperti mengetik manual, cuma jalan pintasnya. */
+  function pilihKandidat(kodeBaru: string) {
+    setModeTambah(true)
+    setTicker(kodeBaru)
   }
 
   // Resolve kunci emiten SEKALI per sesi login: localStorage dulu, kalau
@@ -300,6 +311,31 @@ export function BedahUnggah() {
   return (
     <>
       <PanduanScreenshot superadmin={superadmin} defaultBuka={false} bedah />
+      {kandidatTeratas.length > 0 && (
+        <section className="panel" style={{ marginBottom: 12 }}>
+          <div className="panel-h"><span className="lbl">Kandidat Deep Dive hari ini</span></div>
+          <div className="panel-b">
+            <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
+              Mesin sudah menandai emiten ini dari harga & volume sendiri — arus broker inilah lapis
+              yang tak bisa dilihat mesin, setoranmu yang melengkapinya. Klik kode untuk mengisi
+              kolom Emiten di form bawah.
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {kandidatTeratas.map((k) => (
+                <button
+                  key={k.kode}
+                  type="button"
+                  className="chip-t"
+                  title={k.sinyal.map((s) => `${s.nama} — ${s.bukti}`).join('\n')}
+                  onClick={() => pilihKandidat(k.kode)}
+                >
+                  {k.kode} · {k.skor}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
       <section className="panel">
         <div className="panel-h"><span className="lbl">Deep Dive — unggah sumber</span></div>
         <div className="panel-b">

@@ -15,13 +15,22 @@ import {
   useScreener, usePolaScreener, saring, sektorUnik, kelasSss, kelasArah, kelasPosisi, kelasPolaArah,
   fDec, ringkasLembarBertanda, labelPolaSingkat, LABEL_SSS, type BarisScreener, type PolaAktifScreener,
 } from '../../lib/dasbor/screener'
+import { useKandidatDeepDive, petaKandidat, type KandidatEmiten } from '../../lib/dasbor/kandidatDeepDive'
 import './Screener.css'
 
 /** Baris screener + pola aktif digabung dari `pola_screener.json` (berkas
  *  terpisah, lihat `screener.ts`) — `pola_arah` cuma untuk sort kolom Pola
  *  lewat mekanisme teks yang sudah ada (`bandingkanBaris`), `pola` untuk
- *  tampilan sel. */
-type BarisGab = BarisScreener & { pola: PolaAktifScreener | null; pola_arah: 'bullish' | 'bearish' | null }
+ *  tampilan sel. `dd` = entri Kandidat Deep Dive (kandidat_deepdive.json,
+ *  berkas terpisah lagi) kalau kodenya ada di daftar, `dd_skor` cuma untuk
+ *  sort lewat mekanisme yang sama — null otomatis jatuh ke bawah di kedua
+ *  arah (bandingkanBaris), jadi non-kandidat tak perlu penanganan khusus. */
+type BarisGab = BarisScreener & {
+  pola: PolaAktifScreener | null
+  pola_arah: 'bullish' | 'bearish' | null
+  dd: KandidatEmiten | null
+  dd_skor: number | null
+}
 
 type UrutState = { kunci: keyof BarisGab; arah: 'naik' | 'turun'; klik: (k: keyof BarisGab) => void }
 
@@ -69,11 +78,13 @@ function Panah({ posisi, label }: { posisi: 'atas' | 'bawah' | null; label: stri
 export function Screener() {
   const data = useScreener()
   const polaData = usePolaScreener()
+  const kandidatData = useKandidatDeepDive()
   const sempit = useLayarSempit()
   const [cari, setCari] = useState('')
   const [sssAktif, setSssAktif] = useState<string[]>([])
   const [sektorAktif, setSektorAktif] = useState<string[]>([])
   const [berpolaAktif, setBerpolaAktif] = useState(false)
+  const [kandidatAktif, setKandidatAktif] = useState(false)
   const [tingkatLikuiditas, setTingkatLikuiditas] = useState('semua')
   const ukuranHalaman = sempit ? 25 : 100
   const [tampil, setTampil] = useState(ukuranHalaman)
@@ -82,13 +93,15 @@ export function Screener() {
   // (`screener.json` dari Python, `pola_screener.json` dari mesin pola),
   // digabung di sini supaya `saring`/`useUrut` tak perlu tahu soal pola sama
   // sekali.
+  const petaDd = useMemo(() => petaKandidat(kandidatData), [kandidatData])
   const baris = useMemo<BarisGab[]>(() => {
     const rows = data?.emiten ?? []
     return rows.map((b) => {
       const p = polaData?.d[b.kode] ?? null
-      return { ...b, pola: p, pola_arah: p ? p[1] : null }
+      const dd = petaDd.get(b.kode) ?? null
+      return { ...b, pola: p, pola_arah: p ? p[1] : null, dd, dd_skor: dd?.skor ?? null }
     })
-  }, [data, polaData])
+  }, [data, polaData, petaDd])
   const daftarSektor = useMemo(() => sektorUnik(baris), [baris])
 
   // Jumlah emiten per chip, untuk `title` — menjawab "sektor ini isinya
@@ -131,15 +144,16 @@ export function Screener() {
   const hasilSaring = useMemo(() => saring(baris, sssAktif, sektorAktif, cari), [baris, sssAktif, sektorAktif, cari])
   const hasil = useMemo(() => hasilSaring
     .filter((b) => !berpolaAktif || b.pola_arah != null)
+    .filter((b) => !kandidatAktif || b.dd != null)
     .filter((b) => ujiLikuiditas(b, tingkatLikuiditas, (x) => x.likuiditas, teratasLikuiditas, (x) => x.kode)),
-  [hasilSaring, berpolaAktif, tingkatLikuiditas, teratasLikuiditas])
+  [hasilSaring, berpolaAktif, kandidatAktif, tingkatLikuiditas, teratasLikuiditas])
   const s = useUrut<BarisGab>(hasil, 'kode', 'naik')
 
   // Saringan/cari baru = mulai dari halaman pertama lagi, bukan menyambung
   // dari batas lama (bisa lebih besar dari hasil baru).
   useEffect(() => {
     setTampil(ukuranHalaman)
-  }, [sssAktif, sektorAktif, cari, berpolaAktif, tingkatLikuiditas, ukuranHalaman])
+  }, [sssAktif, sektorAktif, cari, berpolaAktif, kandidatAktif, tingkatLikuiditas, ukuranHalaman])
 
   function toggleSss(label: string) {
     setSssAktif((a) => (a.includes(label) ? a.filter((x) => x !== label) : [...a, label]))
@@ -147,7 +161,7 @@ export function Screener() {
   function toggleSektor(sek: string) {
     setSektorAktif((a) => (a.includes(sek) ? a.filter((x) => x !== sek) : [...a, sek]))
   }
-  const adaSaringan = sssAktif.length > 0 || sektorAktif.length > 0 || berpolaAktif || tingkatLikuiditas !== 'semua' || cari.trim() !== ''
+  const adaSaringan = sssAktif.length > 0 || sektorAktif.length > 0 || berpolaAktif || kandidatAktif || tingkatLikuiditas !== 'semua' || cari.trim() !== ''
 
   if (!data) {
     return (
@@ -211,10 +225,18 @@ export function Screener() {
             >
               Berpola aktif
             </button>
+            <button
+              type="button"
+              className={`chip-t${kandidatAktif ? ' on' : ''}`}
+              title="Emiten yang jejak penyerapannya terbaca dari harga & volume — layak diperiksa dengan Broker Summary, bukan sinyal beli"
+              onClick={() => setKandidatAktif((v) => !v)}
+            >
+              Kandidat Deep Dive{kandidatData ? ` · ${kandidatData.n}` : ''}
+            </button>
             {adaSaringan && (
               <button
                 type="button" className="chip-t scr-reset"
-                onClick={() => { setSssAktif([]); setSektorAktif([]); setBerpolaAktif(false); setTingkatLikuiditas('semua'); setCari('') }}
+                onClick={() => { setSssAktif([]); setSektorAktif([]); setBerpolaAktif(false); setKandidatAktif(false); setTingkatLikuiditas('semua'); setCari('') }}
               >
                 ✕ Hapus semua saringan
               </button>
@@ -269,6 +291,7 @@ export function Screener() {
                 {thSort(s, 'posisi_ma20', 'vs MA20')}
                 {thSort(s, 'net_asing_lembar', 'Net Asing', true)}
                 {thSort(s, 'pola_arah', 'Pola')}
+                {thSort(s, 'dd_skor', 'Deep Dive')}
               </tr>
             </thead>
             <tbody>
@@ -296,6 +319,11 @@ export function Screener() {
         harga {MOMENTUM_HARI} hari bursa terakhir. Skor SSS D/W/M menyajikan keadaan, <b>bukan saran beli atau
         jual</b>. Kolom <b>Pola</b> adalah deskripsi bentuk chart, bukan sinyal beli — backtest sapuan penuh 915
         emiten menunjukkan sebagian besar pola klasik TIDAK mengungguli peluang dasar (rincian di halaman Grafik).
+        {kandidatData && (
+          <> Kandidat Deep Dive = jejak penyerapan dari harga & volume (bukan bukti arus broker, bukan
+          rekomendasi) · data {kandidatData.tanggal} · {kandidatData.n} emiten dari ambang skor ≥{kandidatData.ambang.skor_min} &
+          likuiditas ≥ Rp{fRingkas(kandidatData.ambang.likuiditas_min)}/hari.</>
+        )}
       </div>
     </div>
   )
@@ -322,6 +350,16 @@ function SelPola({ p, tanggalData }: { p: PolaAktifScreener | null; tanggalData:
       {usiaHari !== null && usiaHari > 30 && <span className="muted"> ±{Math.round(usiaHari / 7)}mgg</span>}
     </span>
   )
+}
+
+/** Lencana kolom Deep Dive — `title` memuat seluruh sinyal (satu per baris)
+ *  + tanggal data, supaya kolomnya tetap satu sel kecil tapi buktinya tak
+ *  hilang. Non-kandidat: "—" (dd null, dd_skor null ikut naruh baris ini di
+ *  bawah saat kolom diurut — lihat bandingkanBaris). */
+function SelDeepDive({ dd }: { dd: KandidatEmiten | null }) {
+  if (!dd) return <span className="muted">—</span>
+  const title = `${dd.sinyal.map((s) => `${s.nama} — ${s.bukti}`).join('\n')}\n(data ${dd.tanggal})`
+  return <span className="chip-t on" title={title}>DD · {dd.skor}</span>
 }
 
 /** Satu baris tabel — dipisah dari `Screener()` supaya badan fungsi utama
@@ -384,6 +422,7 @@ function BarisScreenerTbl({ b, tanggalData }: { b: BarisGab; tanggalData: string
         {ringkasLembarBertanda(b.net_asing_lembar)}
       </td>
       <td><SelPola p={b.pola} tanggalData={tanggalData} /></td>
+      <td><SelDeepDive dd={b.dd} /></td>
     </tr>
   )
 }
