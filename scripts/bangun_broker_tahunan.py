@@ -10,8 +10,8 @@ Berkas ringkas `broker_harian/<KODE>.json` sengaja hanya 20 hari (ukuran repo).
 Halaman Broker Summary versi kita butuh rentang sembarang — 6 bulan untuk
 "floor price", setahun untuk kumulatif — dan satu berkas riwayat penuh per
 emiten (±2.350 hari x 5 KB ≈ 12 MB) terlalu berat dimuat sekali klik.
-Per tahun ≈ 1,2–1,5 MB mentah (Pages menggzip jadi ±300 KB), dimuat malas
-hanya untuk tahun yang rentangnya menyentuh.
+Per tahun ≈ 0,75 MB mentah / ±280 KB gzip (terukur BUMI 2017, 237 hari, tanpa kolom
+avg), dimuat malas hanya untuk tahun yang rentangnya menyentuh.
 
 ## Sumber kebenaran tetap arsip mentah
 
@@ -21,7 +21,7 @@ ringkas, jadi keduanya tak mungkin berbeda definisi. Menambah ruas = ubah
 pemadat, jalankan ulang, tanpa jaringan.
 
 Aturan ukuran (belum diputuskan Johan, dicatat di antrean P5): 963 emiten x
-10 tahun x 1,3 MB ≈ 12 GB — MUSTAHIL untuk git. Berkas tahunan hanya untuk
+10 tahun x 0,75 MB ≈ 7 GB — MUSTAHIL untuk git. Berkas tahunan hanya untuk
 emiten yang di-backfill; daftarnya adalah folder yang ada di arsip.
 
 Pakai:
@@ -65,8 +65,7 @@ def bangun_emiten(kode: str) -> dict[str, int]:
         ringkas["cocok_volume"] = ph.cocok_volume(ringkas["total_lot"], ph.volume_idx(kode, tgl))
         per_tahun[tgl[:4]][tgl] = {
             "ringkas": ringkas,
-            "broker": [[r[0], round(r[1]), round(r[2]), round(r[3]), round(r[4]), round(r[5]), round(r[6])]
-                       for r in baris],
+            "broker": [[r[0], round(r[1]), round(r[2]), round(r[4]), round(r[5])] for r in baris],
         }
     hasil = {}
     for tahun, hari in per_tahun.items():

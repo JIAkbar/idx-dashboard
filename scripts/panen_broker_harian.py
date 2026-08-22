@@ -65,7 +65,10 @@ WIB = timezone(timedelta(hours=7))
 
 URL = "https://exodus.stockbit.com/marketdetectors/{kode}"
 JENDELA_HARI = 20
-KOLOM = ["broker", "beli_lot", "beli_nilai", "beli_avg", "jual_lot", "jual_nilai", "jual_avg"]
+# Tanpa kolom avg: terukur 22 Agu 2026 atas 26.172 baris, avg Stockbit = nilai ÷
+# (lot × 100) dengan selisih maks 0,3% (pembulatan ke rupiah bulat). Diturunkan
+# di pembaca lebih teliti DAN memangkas berkas 38%. Mentah di arsip tetap utuh.
+KOLOM = ["broker", "beli_lot", "beli_nilai", "jual_lot", "jual_nilai"]
 TOLERANSI_VOLUME = 0.01
 
 
@@ -147,8 +150,7 @@ def perbarui_ringkas(lama: dict | None, kode: str, tanggal: str, baris: list[lis
     d = lama if isinstance(lama, dict) and lama.get("kode") == kode else {}
     hari = dict(d.get("hari") or {})
     hari[tanggal] = {"ringkas": ringkas, "broker": [
-        [r[0], round(r[1]), round(r[2]), round(r[3]), round(r[4]), round(r[5]), round(r[6])]
-        for r in baris]}
+        [r[0], round(r[1]), round(r[2]), round(r[4]), round(r[5])] for r in baris]}
     tgl = sorted(hari)[-jendela:]
     return {
         "kode": kode,

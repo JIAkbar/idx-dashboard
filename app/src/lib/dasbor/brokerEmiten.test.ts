@@ -9,17 +9,17 @@ const ringkas = (nBeli: number, nJual: number): HariBroker['ringkas'] => ({
   top1_pct: null, top3_pct: null, top5_pct: null, accdist: null, cocok_volume: 1,
 })
 
-// [broker, beli_lot, beli_nilai, beli_avg, jual_lot, jual_nilai, jual_avg]
-const b = (k: string, bl: number, bn: number, ba: number, jl: number, jn: number, ja: number): BarisBroker =>
-  [k, bl, bn, ba, jl, jn, ja]
+// [broker, beli_lot, beli_nilai, jual_lot, jual_nilai] — avg diturunkan nilai÷(lot×100)
+const b = (k: string, bl: number, bn: number, jl: number, jn: number): BarisBroker =>
+  [k, bl, bn, jl, jn]
 
 const hari1: HariBroker = { ringkas: ringkas(2, 2), broker: [
-  b('AK', 100, 10_000, 100, 40, 4_400, 110),   // net +60 lot, +5.600
-  b('CC', 10, 1_200, 120, 90, 9_000, 100),     // net −80 lot, −7.800
+  b('AK', 100, 10_000, 40, 4_400),   // net +60 lot, +5.600
+  b('CC', 10, 1_200, 90, 9_000),     // net −80 lot, −7.800
 ] }
 const hari2: HariBroker = { ringkas: ringkas(1, 1), broker: [
-  b('AK', 50, 6_000, 120, 0, 0, 0),            // net +50 lot, +6.000
-  b('ZP', 0, 0, 0, 20, 2_000, 100),            // net −20 lot, −2.000
+  b('AK', 50, 6_000, 0, 0),            // net +50 lot, +6.000
+  b('ZP', 0, 0, 20, 2_000),            // net −20 lot, −2.000
 ] }
 
 const berkas2026: BerkasTahunan = {
@@ -43,14 +43,14 @@ describe('pemuat', () => {
 })
 
 describe('agregatBroker', () => {
-  it('menjumlah lintas hari dan menghitung avg tertimbang, bukan rata-rata dari rata-rata', () => {
+  it('menjumlah lintas hari; avg tertimbang nilai÷(lot×100), bukan rata-rata dari rata-rata', () => {
     const agg = agregatBroker([['2026-01-05', hari1], ['2026-01-06', hari2]])
     const ak = agg.find((a) => a.broker === 'AK')!
     expect(ak.beliLot).toBe(150)
     expect(ak.beliNilai).toBe(16_000)
     expect(ak.netLot).toBe(110)
     expect(ak.netNilai).toBe(11_600)
-    // 16.000 ÷ (150 lot × 100 lembar) = 1,0667 — BUKAN (100+120)/2 = 110
+    // 16.000 ÷ (150 lot × 100 lembar) = 1,0667 — BUKAN (1,0 + 1,2) / 2 = 1,1
     expect(ak.beliAvg).toBeCloseTo(16_000 / 15_000, 6)
     expect(ak.jualAvg).toBeCloseTo(4_400 / 4_000, 6)
   })
@@ -97,7 +97,8 @@ describe('arusHarian', () => {
 describe('floorPriceBroker', () => {
   it('harga beli rata-rata terendah per broker berikut tanggalnya, urut naik', () => {
     const f = floorPriceBroker([['2026-01-05', hari1], ['2026-01-06', hari2]])
-    expect(f[0]).toEqual({ broker: 'AK', floor: 100, tanggal: '2026-01-05' })
+    // AK: 10.000÷(100×100)=1,0 pada 5 Jan; 6.000÷(50×100)=1,2 pada 6 Jan → floor 1,0
+    expect(f[0]).toEqual({ broker: 'AK', floor: 1, tanggal: '2026-01-05' })
     expect(f.find((x) => x.broker === 'ZP')).toBeUndefined() // tak pernah beli
   })
 })

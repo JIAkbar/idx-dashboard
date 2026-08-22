@@ -15,12 +15,18 @@
  * (lihat docs/desain-broker-summary.md) — jangan menurunkannya dari sini.
  */
 
-/** Kolom larik padat per broker, urutannya dari `panen_broker_harian.KOLOM`. */
-export const KOLOM_BROKER = [
-  'broker', 'beli_lot', 'beli_nilai', 'beli_avg', 'jual_lot', 'jual_nilai', 'jual_avg',
-] as const
+/**
+ * Kolom larik padat per broker, urutannya dari `panen_broker_harian.KOLOM`.
+ * Tanpa avg: terukur 22 Agu 2026 (26.172 baris) avg Stockbit = nilai ÷ (lot×100)
+ * sampai pembulatan rupiah, jadi diturunkan di sini — lebih teliti, berkas −38%.
+ */
+export const KOLOM_BROKER = ['broker', 'beli_lot', 'beli_nilai', 'jual_lot', 'jual_nilai'] as const
 
-export type BarisBroker = [string, number, number, number, number, number, number]
+export type BarisBroker = [string, number, number, number, number]
+
+/** Harga rata-rata rupiah per lembar dari nilai & lot; null kalau lot 0. */
+export const hargaRata = (nilai: number, lot: number): number | null =>
+  lot ? nilai / (lot * 100) : null
 
 export interface RingkasHari {
   n_beli: number
@@ -114,7 +120,7 @@ export function agregatBroker(hari: Array<[string, HariBroker]>): AgregatBroker[
         netLot: 0, netNilai: 0, beliAvg: null, jualAvg: null,
       }
       a.beliLot += r[1]; a.beliNilai += r[2]
-      a.jualLot += r[4]; a.jualNilai += r[5]
+      a.jualLot += r[3]; a.jualNilai += r[4]
       per.set(r[0], a)
     }
   }
@@ -178,7 +184,7 @@ export function kumulatifBroker(
   for (const [tgl, h] of hari) {
     for (const r of h.broker) {
       if (!pilih.has(r[0])) continue
-      akum[r[0]] += ukuran === 'nilai' ? r[2] - r[5] : r[1] - r[4]
+      akum[r[0]] += ukuran === 'nilai' ? r[2] - r[4] : r[1] - r[3]
     }
     keluar.push({ tanggal: tgl, nilai: { ...akum } })
   }
@@ -200,7 +206,7 @@ export function arusHarian(hari: Array<[string, HariBroker]>): ArusHari[] {
   return hari.map(([tgl, h]) => {
     let beliNilai = 0, jualNilai = 0, beliLot = 0, jualLot = 0
     for (const r of h.broker) {
-      beliLot += r[1]; beliNilai += r[2]; jualLot += r[4]; jualNilai += r[5]
+      beliLot += r[1]; beliNilai += r[2]; jualLot += r[3]; jualNilai += r[4]
     }
     return { tanggal: tgl, beliNilai, jualNilai, beliLot, jualLot, nBeli: h.ringkas.n_beli, nJual: h.ringkas.n_jual }
   })
@@ -217,9 +223,11 @@ export function floorPriceBroker(
   const terendah = new Map<string, { floor: number; tanggal: string }>()
   for (const [tgl, h] of hari) {
     for (const r of h.broker) {
-      if (r[1] < minLot || !r[3]) continue
+      if (r[1] < minLot) continue
+      const avg = hargaRata(r[2], r[1])
+      if (avg === null) continue
       const ada = terendah.get(r[0])
-      if (!ada || r[3] < ada.floor) terendah.set(r[0], { floor: r[3], tanggal: tgl })
+      if (!ada || avg < ada.floor) terendah.set(r[0], { floor: avg, tanggal: tgl })
     }
   }
   return [...terendah.entries()]
