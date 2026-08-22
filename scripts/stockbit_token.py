@@ -28,12 +28,20 @@ refresh token dan saling membatalkan. Karena itu tokennya hidup di
 `app/.env.local` (`STOCKBIT_TOKEN`, `STOCKBIT_REFRESH_TOKEN`) dipakai hanya
 untuk MENYEMAI berkas itu pertama kali.
 
-## Yang belum diketahui dan cuma bisa dijawab dengan mencoba
+## Refresh MEMBATALKAN pasangan lama — terbukti 22 Agu 2026 21:58 WIB
 
-Apakah refresh oleh skrip membatalkan sesi peramban Johan. Refresh token yang
-disemai dari cookie peramban adalah token sesi peramban itu; kalau Stockbit
-membatalkan refresh token lama saat memutar, peramban akan minta login ulang.
-Mitigasinya: semai dari sesi login terpisah (profil/incognito khusus skrip).
+Sekali skrip memutar, peramban yang menyemai tokennya terlempar keluar:
+`/login/refresh` dari peramban dijawab 401 dan muncul "Sesi Kamu Sudah
+Habis". Artinya satu rantai token hanya boleh dipegang SATU pemakai, dan
+pemakainya adalah skrip ini. Konsekuensinya:
+
+- Johan login ulang di peramban seperti biasa — itu rantai BARU miliknya,
+  tak perlu disemai ke sini lagi selama rantai skrip masih hidup.
+- Jangan pernah menyemai ulang dari cookie peramban kecuali rantai skrip
+  benar-benar mati (refresh > 7 hari tak dipanggil, atau ditolak server).
+  Menyemai ulang berarti mencuri rantai peramban dan melemparnya keluar lagi.
+- Jangan memanggil `--segarkan` dari dua mesin. Berkas bersama di
+  `%USERPROFILE%\\.papan` memang ada untuk ini.
 
 Skrip TIDAK pernah mencetak token, termasuk saat galat.
 
