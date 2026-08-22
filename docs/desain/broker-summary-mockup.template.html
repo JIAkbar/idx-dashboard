@@ -449,7 +449,7 @@ function renderShareholders(){
   const p=DATA.profil;
   document.getElementById('tbPemegang').innerHTML=p.pemegang_saham.filter(r=>r.persen>0).sort((a,b)=>b.persen-a.persen).map(r=>`<tr><td>${r.nama}${r.pengendali?' <span class="ad a" style="min-width:0">pengendali</span>':''}</td><td style="text-align:left;color:var(--muted)">${r.kategori}</td><td class="num">${r.persen.toFixed(2)}</td><td class="num">${fmtLot(r.lembar)}</td></tr>`).join('');
   document.getElementById('tbAnak').innerHTML=[...p.anak_usaha].sort((a,b)=>(b.aset||0)-(a.aset||0)).map(r=>`<tr><td>${r.nama}</td><td style="text-align:left;color:var(--muted)">${r.bidang||''}</td><td class="num">${r.persen?r.persen.toFixed(2):'—'}</td><td class="num">${r.aset?fmtLot(r.aset)+' '+(r.mata_uang||''):'—'}</td></tr>`).join('');
-  document.getElementById('pengurus').innerHTML=`<b>Direksi:</b> ${p.direksi.map(d=>d.nama+' ('+d.jabatan.toLowerCase()+')').join(' · ')}<br><b>Komisaris:</b> ${p.komisaris.map(d=>d.nama+(d.independen?' <i>(independen)</i>':'')).join(' · ')}`;
+  document.getElementById('pengurus').innerHTML=`<b>Direksi:</b> ${p.direksi.filter(d=>d.nama).map(d=>d.nama+' ('+(d.jabatan||'').toLowerCase()+')').join(' · ')}<br><b>Komisaris:</b> ${p.komisaris.filter(d=>d.nama).map(d=>d.nama+(d.independen?' <i>(independen)</i>':'')).join(' · ')}`;
   const kb=DATA.kepemilikan.bulan, bln=Object.keys(kb).sort(); const J=DATA.kepemilikan.jenis;
   const last=kb[bln[bln.length-1]], y12=kb[bln[Math.max(0,bln.length-13)]]; const tot=last[0];
   document.getElementById('kseiBulan').textContent=`posisi ${fmtTgl(bln[bln.length-1])} ${bln[bln.length-1].slice(0,4)} · ${fmtLot(tot)} lembar tercatat`;
