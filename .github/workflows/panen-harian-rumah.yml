@@ -139,6 +139,16 @@ jobs:
           & "${{ steps.py.outputs.exe }}" scripts/riset/kartu_analisa.py --semua --tulis
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::kartu_analisa gagal" }
 
+      # Kandidat Deep Dive dihitung SESUDAH kartu (butuh OHLC + asing yang
+      # sudah segar). Keluarannya memandu setoran Broker Summary hari
+      # berikutnya — Johan 22 Agu 2026: "sudah tau kandidat nya dulu dari
+      # screener dan di analisa mendalam di buletin deepdive".
+      - name: 4b · Kandidat Deep Dive
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/riset/kandidat_deepdive.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::kandidat_deepdive gagal" }
+
       - name: 5 · Valuasi historis
         continue-on-error: true
         run: |
