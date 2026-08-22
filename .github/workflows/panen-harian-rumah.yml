@@ -25,8 +25,7 @@
 # Yang SENGAJA tidak di sini:
 #   * `panen_keuangan_idx` — kuartalan, bukan harian, dan sekali jalan bisa
 #     ribuan permintaan. Tetap dipicu tangan.
-#   * `fetch_broker_summary` — sumbernya setoran kontributor + kurasi admin,
-#     jadi ia menunggu manusia, bukan jam.
+#   * `panen_kabar` — punya jadwalnya sendiri (`panen-kabar-rumah.yml`).
 #
 # Runner rumahan, bukan awan: IDX menolak IP datacenter GitHub (terukur
 # `update.yml` merah 13, 14, 17, 18, 19, 20 Agu) sementara dari rumah tembus
@@ -132,6 +131,23 @@ jobs:
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/segarkan_harga_fundamental.py
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::segarkan_harga_fundamental gagal" }
+
+      # DUA hal berbeda sama-sama disebut "broker summary", dan mencampurnya
+      # membuat langkah ini absen berbulan-bulan:
+      #   (a) LEVEL PASAR — 88 firm/hari dari `GetBrokerSummary`, otomatis
+      #       penuh, nol manusia. Itu yang dipanen di sini.
+      #   (b) PER EMITEN  — tak ada di endpoint publik mana pun (diuji ulang
+      #       22 Agu 2026: `code`/`stockCode`/`kodeEmiten` DIABAIKAN, jawaban
+      #       identik 88 baris). Itulah yang disetor kontributor lewat
+      #       screenshot, dan itu memang menunggu manusia.
+      # Komentar lama menempelkan sifat (b) ke skrip yang mengerjakan (a),
+      # jadi ia sengaja dikecualikan dari panen harian — hasilnya berhenti di
+      # 18 Agu 2026 tanpa satu pun galat.
+      - name: 3c · Broker summary level pasar
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/fetch_broker_summary.py --hari 5
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::fetch_broker_summary gagal" }
 
       - name: 4 · Kartu Analisa
         continue-on-error: true
