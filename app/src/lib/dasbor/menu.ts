@@ -138,6 +138,17 @@ export const MENU_ITEMS: MenuItem[] = [
     ringkas: 'Rekap transaksi broker per emiten, ditranskripsi dari setoran kontributor.',
     ikon: 'M4 7h16M4 7l2-3h12l2 3M4 7v11a2 2 0 002 2h12a2 2 0 002-2V7M9 12h6',
   },
+  {
+    // Aliran Asing (22 Agu 2026, Johan: "aliran asing ini bisa di adaptasi
+    // di page apa ya enaknya? daripada ada di stock detail yang jarang
+    // dibuka?") — daftar SELURUH emiten diurut net asing, dari
+    // screener.json; PanelAliranAsing per-emiten (dulu cuma di Stock Detail)
+    // dirender di bawah begitu satu baris dipilih. Kode 'ASG' — 'AGT' dsb.
+    // belum dipakai grup ini.
+    id: 'aliran-asing', path: '/aliran-asing', label: 'Aliran Asing', kode: 'ASG', grup: 'aliran',
+    ringkas: 'Emiten diurut net asing, dengan arus harian per emiten begitu dipilih.',
+    ikon: 'M4 12h6M7 9l-3 3 3 3M20 12h-6M17 9l3 3-3 3',
+  },
 
   // ── Analisa ────────────────────────────────────────────────────────────
   {

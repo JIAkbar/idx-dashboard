@@ -180,4 +180,8 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   // Johan hari yang sama, sesudah empat halaman hidup berminggu-minggu
   // sebagai halaman yang tak bisa diatur dari panel.
   screener: 'screener',
+  // Aliran Asing (22 Agu 2026). Baris `akses_halaman` ditambahkan bersamaan
+  // (aturan wajib sejak 21 Agu 2026) — tingkat awal 'publik', sama seperti
+  // Peta Investor/Broker Summary tetangganya di grup Aliran Dana.
+  'aliran-asing': 'aliran-asing',
 }

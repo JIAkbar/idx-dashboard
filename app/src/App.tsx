@@ -37,6 +37,7 @@ const Screener = lazy(() => import('./views/dasbor/Screener').then((m) => ({ def
 const Metodologi = lazy(() => import('./views/dasbor/Metodologi').then((m) => ({ default: m.Metodologi })))
 const StatistikBerkala = lazy(() => import('./views/dasbor/StatistikBerkala').then((m) => ({ default: m.StatistikBerkala })))
 const Watchlist = lazy(() => import('./views/dasbor/Watchlist').then((m) => ({ default: m.Watchlist })))
+const AliranAsing = lazy(() => import('./views/dasbor/AliranAsing').then((m) => ({ default: m.AliranAsing })))
 const AdminLayout = lazy(() => import('./views/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })))
 const UnggahHarian = lazy(() => import('./views/admin/UnggahHarian').then((m) => ({ default: m.UnggahHarian })))
 const AkunAdmin = lazy(() => import('./views/admin/AkunAdmin').then((m) => ({ default: m.AkunAdmin })))
@@ -118,6 +119,10 @@ function App() {
               <Route path="/bedah-emiten" element={<PenjagaHalaman kunci="bedah-emiten"><RedirectBedahEmiten /></PenjagaHalaman>} />
               <Route path="/peta-investor" element={<PenjagaHalaman kunci="peta"><PetaInvestor /></PenjagaHalaman>} />
               <Route path="/broker-summary" element={<PenjagaHalaman kunci="broker"><BrokerSummary /></PenjagaHalaman>} />
+              {/* Aliran Asing (22 Agu 2026) — kunci 'aliran-asing' sudah
+                  terdaftar di PETA_MENU_KUNCI DAN akses_halaman sejak rute
+                  ini dibuat (aturan wajib 21 Agu 2026). */}
+              <Route path="/aliran-asing" element={<PenjagaHalaman kunci="aliran-asing"><AliranAsing /></PenjagaHalaman>} />
               <Route path="/kalkulator" element={<PenjagaHalaman kunci="kalkulator"><KalkulatorJia /></PenjagaHalaman>} />
               <Route path="/kabar" element={<Kabar />} />
               <Route path="/bulletin" element={<PenjagaHalaman kunci="bulletin"><Bulletin /></PenjagaHalaman>} />
