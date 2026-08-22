@@ -215,17 +215,23 @@ function renderKalender(){
   for(let i=1;i<=n;i++){ const t=`${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`; const ada=tgl.includes(t); g.insertAdjacentHTML('beforeend',`<button data-t="${t}" ${ada?'':'disabled'} aria-pressed="${t>=st.dari&&t<=st.sampai}">${i}</button>`); }
   const pr=document.getElementById('preset'); pr.innerHTML=PRESET.map(([nm,f])=>{ const r=f(tgl[tgl.length-1]); const ok=r&&tersedia(r[0],r[1]); const pn=ok&&penuh(r[0]); return `<button data-p="${nm}" ${ok?'':'disabled'} aria-pressed="${st.preset===nm}" class="${pn||!ok?'':'sebagian'}" title="${!ok?'belum ada data di rentang ini':pn?'':'data baru mulai '+fmtTgl(tgl[0])+' — ditampilkan sebagian'}">${nm}${pn||!ok?'':' ·'}</button>`; }).join('');
 }
-function labelAD(p){ const a=Math.abs(p); const k=p>=0?'a':'d', w=p>=0?'Acc':'Dist'; if(a<5) return '<span class="ad n">Neutral</span>'; if(a<12.5) return `<span class="ad ${k}">Small ${w}</span>`; if(a<20) return `<span class="ad ${k}">Normal ${w}</span>`; return `<span class="ad ${k}">Big ${w}</span>`; }
+function labelAD(p){ const a=Math.abs(p); const k=p>=0?'a':'d', w=p>=0?'Acc':'Dist'; if(a<6) return '<span class="ad n">Neutral</span>'; if(a<15) return `<span class="ad ${k}">Small ${w}</span>`; if(a<20) return `<span class="ad ${k}">Normal ${w}</span>`; return `<span class="ad ${k}">Big ${w}</span>`; }
 function renderRingkasSB(agg){
-  const net=[...agg].sort((x,y)=>y.nl-x.nl); const pembeli=net.filter(a=>a.nl>0), penjual=net.filter(a=>a.nl<0);
-  const netVol=pembeli.reduce((s,a)=>s+a.nl,0), netVal=pembeli.reduce((s,a)=>s+a.nn,0);
-  const top=(n)=>{ const t=net.slice(0,n); const lot=t.reduce((s,a)=>s+a.nl,0), val=t.reduce((s,a)=>s+a.nn,0); const pct=netVol?lot/netVol*100:0; return `<tr><td>Top ${n}</td><td class="num">${Math.round(lot).toLocaleString('id-ID')}</td><td class="num">${pct.toFixed(1)}</td><td class="num">${(val/1e9).toFixed(1)}</td><td>${labelAD(pct)}</td></tr>`; };
-  document.getElementById('tbTop').innerHTML=top(1)+top(3)+top(5);
+  // Rumus DIUKUR dari layar Stockbit BUMI 21 Agu 2026 (cocok sampai lot terakhir):
+  // Top N = Σ N pembeli net teratas + Σ N penjual net teratas (negatif);
+  // % = Top N ÷ Net Volume; Net Volume = Σ net pembeli; Average = Net Value ÷ (Net Volume×100);
+  // Rp(B) = Top N lot × 100 × Average — BUKAN nilai net sebenarnya.
+  const net=[...agg].sort((x,y)=>y.nl-x.nl); const pembeli=net.filter(a=>a.nl>0), penjual=[...net.filter(a=>a.nl<0)].sort((x,y)=>x.nl-y.nl);
+  const netVol=pembeli.reduce((s,a)=>s+a.nl,0), netVal=pembeli.reduce((s,a)=>s+a.nn,0); const avg=netVol?netVal/(netVol*100):0;
+  const topLot=(n)=>pembeli.slice(0,n).reduce((s,a)=>s+a.nl,0)+penjual.slice(0,n).reduce((s,a)=>s+a.nl,0);
+  const baris=(label,lot,kira)=>{ const pct=netVol?lot/netVol*100:0; return `<tr><td>${label}</td><td class="num">${kira?'≈ ':''}${Math.round(lot).toLocaleString('id-ID')}</td><td class="num">${pct.toFixed(1)}</td><td class="num">${(lot*100*avg/1e9).toFixed(1)}</td><td>${labelAD(pct)}</td></tr>`; };
+  const rata=[1,2,3,4,5].reduce((s,n)=>s+topLot(n),0)/5;
+  document.getElementById('tbTop').innerHTML=baris('Top 1',topLot(1))+baris('Top 3',topLot(3))+baris('Top 5',topLot(5))+baris('<span title="Stockbit tak mengumumkan rumusnya; ini rata-rata Top 1–5, meleset ±1% dari angka mereka">Average</span>',rata,true);
   const selisih=pembeli.length-penjual.length;
   document.getElementById('tbBrk').innerHTML=`<tr><td>Broker</td><td class="num">${pembeli.length}</td><td class="num">${penjual.length}</td><td class="num">${selisih}</td><td>${selisih<0?'<span class="ad a">Acc</span>':selisih>0?'<span class="ad d">Dist</span>':'<span class="ad n">Neutral</span>'}</td></tr>
   <tr class="kv"><td>Net Volume</td><td class="num" colspan="4" style="text-align:left">${Math.round(netVol).toLocaleString('id-ID')} lot</td></tr>
   <tr class="kv"><td>Net Value</td><td class="num" colspan="4" style="text-align:left">${fmtRp(netVal)}</td></tr>
-  <tr class="kv"><td>Average (Rp)</td><td class="num" colspan="4" style="text-align:left">${netVol?Math.round(netVal/(netVol*100)).toLocaleString('id-ID'):'—'}</td></tr>`;
+  <tr class="kv"><td>Average (Rp)</td><td class="num" colspan="4" style="text-align:left">${netVol?Math.round(avg).toLocaleString('id-ID'):'—'}</td></tr>`;
 }
 function agregat(hs){ const per=new Map(); for(const t of hs){ for(const r of DATA.hari[t].b){ const a=per.get(r[0])||{k:r[0],bl:0,bn:0,jl:0,jn:0}; a.bl+=r[1];a.bn+=r[2];a.jl+=r[3];a.jn+=r[4]; per.set(r[0],a);} }
   const out=[...per.values()]; for(const a of out){a.nl=a.bl-a.jl;a.nn=a.bn-a.jn;a.ba=a.bl?a.bn/(a.bl*100):null;a.ja=a.jl?a.jn/(a.jl*100):null;} return out; }

@@ -112,3 +112,29 @@ disetujui Johan lewat arahan langsung:
   Afiliasi grup/bandar · Lainnya) dengan legenda — bukan hijau/merah per sisi;
 - panel "Asal data" **dibuang** dari tampilan (permintaan Johan) — kejujuran
   datanya pindah ke dokumen, bukan ke layar.
+
+## Rumus blok ringkasan Stockbit — TERUKUR (BUMI 21 Agu 2026, All Investor · Regular · Net)
+
+Diadu ke lima tangkapan layar Stockbit yang dikirim Johan 22 Agu malam, memakai
+data GROSS harian kita untuk tanggal yang sama:
+
+| Ruas | Rumus | Kita | Stockbit |
+|---|---|---|---|
+| Net Volume | Σ net lot semua broker yang net-nya positif | 9.623.643 | 9.616.243 (−0,08%) |
+| Net Value | Σ net nilai broker net-positif | 188,5 M | 188,5 M |
+| Average (Rp) | Net Value ÷ (Net Volume × 100) | 196 | 196 |
+| **Top N** | Σ N pembeli net teratas **+** Σ N penjual net teratas (negatif) | −1.786.740 / −2.231.722 / −2.067.539 | **sama persis** |
+| % | Top N ÷ Net Volume | −18,6 / −23,2 / −21,5 | sama |
+| **Rp(B)** | Top N lot × 100 × Average — **bukan** nilai net sebenarnya | −35,0 / −43,7 / −40,5 | sama |
+| Average (baris) | belum ketemu; rata-rata Top 1–5 meleset 1,2% (−2.109.940 vs −2.136.400) | ≈ | ditandai ≈ di layar |
+| Broker buyer/seller | hitung broker net >0 / <0 | 34/44 | 33/47 (beda cara menghitung net nol) |
+
+Label Acc/Dist dikalibrasi ke 13 label yang terlihat (Neutral 0,2 · 1,1 · 0,3 ·
+−1,9 · −4,7 · −5,6; Small 7,6 · −8,1 · −8,8 · −10,0; Normal −17,9 · −18,6;
+Big −21,5 · −22,2 · −23,2 · 20,3): **|%| < 6 Neutral · < 15 Small · < 20
+Normal · ≥ 20 Big**. Batas persisnya 6–7,6 dan 10–17,9 belum terjepit.
+
+GROSS dua sisi ikut cocok: XL beli 7,07 jt lot / 138,7 M (Stockbit 7,1 jt /
+138,7 M), jual 156,2 M sama. Layar Foreign / Domestic / Nego membuktikan
+parameter `investor_type` dan `market_board` memberi pecahan yang konsisten
+(Foreign net volume 385.273 lot, 5 pembeli / 18 penjual) — belum dipanen.
