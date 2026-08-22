@@ -78,7 +78,12 @@ JAM_BUKA, JAM_TUTUP = 7, 19          # jendela kabar WIB, sama dengan cron panen
 #   Kontan           n=61  jeda maks  5,0           → ambang 18
 #   IDX pengumuman   n=30  jeda maks  6,6           → ambang 18
 #   Stockbit Snips   n=238 jeda maks 13,7 (±1 tulisan/hari, terbit sore) → 30
-#   IDX berita       n=4   jeda maks 15,8 (siaran pers, sampelnya tipis) → 48
+#   IDX berita       n=30  jeda p90 108, maks 189,2 (7,9 hari) → ambang 240
+#                    Diukur ulang 22 Agu 2026 atas 30 item / 39 hari. Sampel
+#                    lama (n=4, "maks 15,8") memberi 48 dan itu SALAH TOTAL:
+#                    siaran pers BEI wajar diam sepekan, jadi ambang 48 jam
+#                    memerahkan sumber sehat >10% waktu. Ambang yang mustahil
+#                    hijau bukan alarm — ia cuma melatih orang mengabaikan merah.
 #
 # Google News belum punya riwayat terukur (baru masuk 20 Agu 2026) — ambang
 # 18 dipasang SAMA dengan sumber bervolume tinggi lain (IPOT/Kontan) sebagai
@@ -88,7 +93,7 @@ JAM_BUKA, JAM_TUTUP = 7, 19          # jendela kabar WIB, sama dengan cron panen
 #
 # kunci → (label, berkas, pencocok item, ambang jam kabar)
 SUMBER: dict[str, tuple[str, Path, "object", float]] = {
-    "idx":            ("IDX berita",     KABAR, lambda i: i.get("sumber") == "IDX" and i.get("jenis") == "berita", 48),
+    "idx":            ("IDX berita",     KABAR, lambda i: i.get("sumber") == "IDX" and i.get("jenis") == "berita", 240),
     "idx-pengumuman": ("IDX pengumuman", KABAR, lambda i: i.get("sumber") == "IDX" and i.get("jenis") == "pengumuman", 18),
     "ipot":           ("IPOT News",      KABAR, lambda i: i.get("sumber") == "IPOT News", 18),
     "kontan":         ("Kontan",         KABAR, lambda i: i.get("sumber") == "Kontan", 18),

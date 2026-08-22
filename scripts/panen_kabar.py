@@ -525,12 +525,31 @@ def main() -> int:
             unik.append(it)
 
     batas_waktu = (datetime.now(WIB) - timedelta(days=args.hari)).isoformat()
+    # Retensi per sumber. Satu angka untuk semua mengandaikan semua sumber
+    # berkadensa sama, dan IDX berita membantahnya: siaran pers BEI terbit
+    # beberapa kali sebulan, jadi 30 item yang baru saja dipanen SELURUHNYA
+    # lewat 7 hari dan dibuang di baris ini. Akibatnya ganda dan dua-duanya
+    # senyap — halaman Kabar tak pernah memuat satu pun siaran pers BEI, dan
+    # `cek_kabar.py` memvonis MERAH "tak ada satu pun item di berkas" pada
+    # sumber yang panennya justru berhasil. Alarm yang mustahil hijau bukan
+    # alarm. Ambangnya diikat ke jeda terbit sumbernya, bukan ke selera.
+    RETENSI_KHUSUS = {("IDX", "berita"): 60}
+    batas_khusus = {
+        k: (datetime.now(WIB) - timedelta(days=h)).isoformat()
+        for k, h in RETENSI_KHUSUS.items()
+    }
+    def masih_berlaku(i: dict) -> bool:
+        w = i.get("waktu")
+        # Sejak IPOT dipanen lewat kanal topiknya, KEEMPAT sumber membawa waktu
+        # terbit. Jadi item tanpa waktu = sisa panen lama sebelum perbaikan itu,
+        # dan justru harus luruh. (Pengecualian lama "tanpa waktu jangan dibuang"
+        # dicabut: sekarang dia cuma membuat sampah menetap selamanya.)
+        if not w:
+            return False
+        return w >= batas_khusus.get((i.get("sumber"), i.get("jenis")), batas_waktu)
+
     sebelum = len(unik)
-    # Sejak IPOT dipanen lewat kanal topiknya, KEEMPAT sumber membawa waktu
-    # terbit. Jadi item tanpa waktu = sisa panen lama sebelum perbaikan itu,
-    # dan justru harus luruh. (Pengecualian lama "tanpa waktu jangan dibuang"
-    # dicabut: sekarang dia cuma membuat sampah menetap selamanya.)
-    unik = [i for i in unik if i.get("waktu") and i["waktu"] >= batas_waktu]
+    unik = [i for i in unik if masih_berlaku(i)]
 
     isi = {
         "dipanen": datetime.now(WIB).isoformat(timespec="seconds"),
