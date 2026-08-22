@@ -4,6 +4,7 @@ import {
   type IdPeriodeAliran, type KelompokAliran,
 } from '../../../lib/dasbor/aliranInvestor'
 import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
+import { teksRentang } from '../../../components/dasbor/LabelRentang'
 import { IkonMenu, IKON_OMBAK } from '../../../components/dasbor/IkonMenu'
 
 /**
@@ -88,9 +89,7 @@ export function InvestorChart() {
 
   if (!data || !ringkas) return null
 
-  const jendela = ringkas.hari === 1
-    ? ringkas.akhir
-    : `${ringkas.mulai} – ${ringkas.akhir} (${ringkas.hari} hari bursa)`
+  const jendela = teksRentang(ringkas.mulai, ringkas.akhir, ringkas.hari)
 
   return (
     <section className="panel ai-panel" style={{ marginTop: 14 }}>

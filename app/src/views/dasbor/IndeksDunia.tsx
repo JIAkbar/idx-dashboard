@@ -15,6 +15,7 @@ import { useIhsgBuka, useIhsgOhlc, type BarisOhlc } from '../../lib/dasbor/ihsgO
 import { useTheme } from '../../context/ThemeContext'
 import { IkonMenu, IKON_PERINGATAN, IKON_GLOBE, IKON_PENGGARIS, IKON_GRAFIK_BATANG } from '../../components/dasbor/IkonMenu'
 import { LilinHarian } from '../../components/dasbor/LilinHarian'
+import { LabelRentang } from '../../components/dasbor/LabelRentang'
 
 /**
  * Grafik mini board-side (Fix #27) — pakai tanggalTersedia (data-idx/json/index.json)
@@ -282,6 +283,9 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
           SEBELUM browser reflow ulang gara-gara canvas inline itu, elemen
           kebaca 300px dan macet di situ (tinggi ikut kanvas resize kanan,
           lebar tidak). Kuncian native CSS ini motong akar masalahnya. */}
+      {seri.length >= 1 && (
+        <LabelRentang mulai={seri[0].date_iso} akhir={seri[seri.length - 1].date_iso} n={seri.length} />
+      )}
       <div className="chart-wrap" style={{ height: 120 }}>
         <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
       </div>

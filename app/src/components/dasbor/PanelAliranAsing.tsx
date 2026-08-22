@@ -6,7 +6,7 @@ import { useChartCanvas } from '../../lib/dasbor/useChartJs'
 import { useTheme } from '../../context/ThemeContext'
 import { IkonMenu, IKON_JAM } from './IkonMenu'
 import { PemilihRentang } from './PemilihRentang'
-import { tanggalPendek } from '../../lib/dasbor/statistikBerkala'
+import { LabelRentang } from './LabelRentang'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 
 /**
@@ -229,9 +229,7 @@ export function PanelAliranAsing({ ticker }: { ticker: string }) {
         {data && (
           <>
             {rentang && (
-              <span className="sub asg-rentang">
-                {tanggalPendek(rentang.mulai)} – {tanggalPendek(rentang.akhir)} · {rentang.hari} hari bursa
-              </span>
+              <LabelRentang className="asg-rentang" mulai={rentang.mulai} akhir={rentang.akhir} n={rentang.hari} />
             )}
             <PemilihRentang className="asg-preset" opsi={PRESET} nilai={preset} onGanti={setPreset} ariaLabel="Rentang Aliran Asing" />
           </>

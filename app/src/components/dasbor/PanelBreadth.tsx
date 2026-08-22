@@ -6,6 +6,7 @@ import { PRESET_RENTANG, rentangPreset, type PresetRentang } from '../../lib/das
 import { useChartCanvas } from '../../lib/dasbor/useChartJs'
 import { useTheme } from '../../context/ThemeContext'
 import { PemilihRentang } from './PemilihRentang'
+import { LabelRentang } from './LabelRentang'
 import { IkonMenu, IKON_JAM } from './IkonMenu'
 
 /**
@@ -118,6 +119,12 @@ export function PanelBreadth() {
 
   const canvasRef = useChartCanvas(chartConfig)
 
+  // Rentang tanggal yang SEDANG tergambar di chart — dihitung dari titik yang
+  // benar-benar ada, bukan dari nama preset (pola PanelAliranAsing.tsx).
+  const rentangChart = titik.length >= 1
+    ? { mulai: titik[0].tanggal, akhir: titik[titik.length - 1].tanggal, hari: titik.length }
+    : null
+
   if (loading && !hari) return null
   if (!hari) return null
 
@@ -168,9 +175,14 @@ export function PanelBreadth() {
           <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 10 }}>{errorRentang}</p>
         )}
         {!errorRentang && chartConfig ? (
-          <div className="chart-wrap" style={{ height: 180, margin: '14px 0' }}>
-            <canvas ref={canvasRef} />
-          </div>
+          <>
+            {rentangChart && (
+              <LabelRentang mulai={rentangChart.mulai} akhir={rentangChart.akhir} n={rentangChart.hari} />
+            )}
+            <div className="chart-wrap" style={{ height: 180, margin: '14px 0' }}>
+              <canvas ref={canvasRef} />
+            </div>
+          </>
         ) : !errorRentang && (
           <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 10 }}>
             Riwayat breadth belum cukup untuk grafik rentang ini.
