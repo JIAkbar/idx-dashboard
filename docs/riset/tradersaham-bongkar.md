@@ -75,3 +75,58 @@ Backlog replikasi: `docs/antrean.md` **P7**.
   Money/Whale/Retail di desain kita.
 - "Static Backend (Read-Only)" = data dipra-hitung, bukan dihitung saat
   diminta — sama dengan pola JSON statis PAPAN.
+
+## Pohon Stock Profiler (sesi login Johan, 23 Agu 2026 — preview AADI)
+
+Semua tab dibuka lewat Chrome Johan; halaman lain masih "top highlights"
+terkunci (Market Overview: 7D–1Y *lock*) sampai langganan Premium aktif.
+
+- **Kepala**: lencana sinyal ("Regime Flip → Jual +3"), "gem breakdown"
+  (💎 18.5), Bantuan, pencarian ticker, saringan **Investor** All/Dom/For,
+  **Market** All/Reg/Nego, **Periode** (rentang tanggal; URL `?start&end&tab`).
+- **Overview** — kartu: Foreign Flow 3M (net 3 bln, net 20D, mini-chart) ·
+  Kepemilikan Ritel (KSEI) % MoM · Jumlah Investor (SID) trend 12 bln ·
+  Perubahan Holder >1% bulan ini (naik/baru/keluar, nama) · Aksi pemegang
+  ≥5% terakhir (tanggal, nama, lembar) · Perubahan Kategori KSEI (Δ porsi per
+  tipe investor, L/A) · **Floor Top Akumulator** (broker, hari akumulasi,
+  floor, % vs harga) · Flow Net vs Gross (3 beli/3 jual, %net) · **Broker
+  terafiliasi** (UW = underwriter, SH = pemegang KSEI) · NEGO terakhir
+  (vol, pola opposite, absorb/distribusi) · Disclosure terakhir · vs IHSG
+  3M (RS, β, α) · lalu Broker Summary + Market Flow + Broker Flow.
+- **Inventory** — grafik kumulatif broker vs harga (pilih buyers/sellers,
+  Val/Vol, garis/lilin) · **6 Month Floor Price by Broker** (tanggal,
+  Category, Statistics, Reg/All, 20/30) · **Group Score** strip harian ·
+  tabel 50 broker: status (ACCUM ACCUMULATING / ACCUM REDUCING / DIST
+  RE-ACCUMULATING / DIST DISTRIBUTING), tanggal mulai & lama akumulasi,
+  Avg/Floor, P&L%, Net Lot, Net Val, strip net harian D-10…D0.
+- **Quadrant** — "Loading quadrant data…" (tak selesai dimuat di preview).
+- **Broker Intel** — klasifikasi: Smart Accumulator · Trapped Buyer · Profit
+  Taker · Panic Seller · Accumulation Flip · Distribution Phase · Market
+  Maker · Large Player/Institution; tabel per broker: mkt share, avg, net,
+  P&L, net 5D, buy%, pola harian 22d, label (AKUMULASI / DISTRIBUSI / AMBIL
+  UNTUNG / BALIK BELI / LARGE_PLAYER), nama sekuritas, bendera Asing.
+- **NEGO** — NEGO Analytics: total broker/vol/value, pola opposite
+  ("Neg Buy → Reg Sell"), per broker: nego vs reguler, hari aktif, rentang.
+- **vs IHSG** — rebased, RS trend, beta/korelasi/R²/alpha, return, vol, win
+  rate (dari tangkapan layar 22 Agu).
+- **Shareholders** — sub-tab: 1% · Komposisi Kepemilikan · Perubahan
+  Kategori · Timeline Foreign · Holders & UBO. Total holder >1%, total
+  kepemilikan 1%+, **FF di luar 1%**, IDX freefloat reported, MSCI; komposisi
+  lokal/asing/unknown; rincian kategori (Corporate-L, Individual-L, Private
+  Bank-L, Financial Institutional-A); tabel holder bulanan (Juli→Feb 2026)
+  dengan scripless/scrip, est value, perubahan (keluar/baru/naik/turun).
+- **Teknikal** — "TradingView powered": R:R setup (target R1, stop S1), pola
+  candlestick, volume surge vs 20 hari, return 1D/1W/1M/3M, jarak ke
+  R1/S1/TC/BC, **TA + Flow Confluence** skor 0–100 (broker flow × momentum),
+  indikator (EMA20/200, RSI, ATR, Stochastic), **Pivot & CPR** (R1–R3,
+  TC/P/BC, S1–S3, lebar band, posisi harga, relasi vs sesi lalu), Daily/
+  Weekly, multi-timeframe (butuh ≥11 minggu data).
+- **More** — tidak membuka apa-apa di preview.
+
+Endpoint yang tertangkap: `apiv2.tradersaham.com/api/market-insight/
+broker-profiler/summary?stock_code=AADI&start_date&end_date&investor_type=all&board=R&limit=20`.
+
+**Lanjutan menunggu langganan Johan** — sesudah itu tiap halaman utama
+(Market Overview, Watchlist, Screener, Broker Profiler, Holder >1%, Foreign
+Flow, IPO, Informasi Harian, Peta Investor, Holder >5%, SID & Scripless,
+Sector Trends, Calculators) diturunkan dengan cara yang sama.

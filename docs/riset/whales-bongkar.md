@@ -90,3 +90,31 @@ Jalur untuk mendekati whales sungguhan: feed intraday. Kandidatnya feed
 broker (Stockbit running trade lewat websocket `ws3.stockbit.com`, terlihat
 di bundle mereka) — belum diuji, dan itu proyek tersendiri dengan risiko
 ToS yang sama seperti token.
+
+## 2b · Pohon kendali (turunan menu, 23 Agu — aturan SOP "sampai habis")
+
+- **Timeframe**: 1m · 5m · 15m → API menjawab `PREMIUM_TIMEFRAME_REQUIRED`
+  ("Only 1H and 4H timeframes are available on guest and regular plans");
+  **1H · 4H gratis**; `1D` ditolak ("Allowed: 1m, 5m, 15m, 1H, 4H").
+- **Indicators** (dialog): Market profile [Mode: Volume · Delta (HAKA−HAKI) ·
+  TPO] [Range: Visible · Daily · Weekly · Monthly] [Advanced tuning] ·
+  Broker volume bubbles · Aggression bubbles · Volume imbalance (stacked,
+  ambang) · Volume · CVD · VWAP (+bands).
+- **Area breakdown**: status "Drag a rectangle on the active chart to inspect
+  broker volume" → hasil ke sidebar.
+- **Replay**: "Start replay from a point" — butuh klik titik di grafik.
+- **Workspace layouts**: Single · Split-V · Split-H · Quad; jumlah pane ±;
+  saved layouts: New · Duplicate · Rename · Delete.
+- **Settings** → *Appearance*: tema Dark/Light, palet heatmap Default/Custom,
+  **liquidity threshold** slider 0–90% (bawaan 5%); *Orderbook*: warna
+  frekuensi, floating order queue Show / **% Top 15** / Hide (hanya saat
+  pasar buka); *Footprint*: Show/Hide, tipe **HAKI|HAKA · Volume · Delta ·
+  Delta|Vol**, angka Show/Hide, advanced tuning; *Tooltip*: detail Price
+  level / Candle summary, broker rows Significant / Full list, bagian
+  GROSS (wajib) + NET.
+- **Sidebar**: "Broker insight, bubble references, and area breakdown
+  results" — kosong sampai ada aksi.
+- **Alat gambar**: Crosshair · Trend line (+varian) · Fib · Long/Short
+  position (+varian risiko) · Rectangle (+varian) · Text · Market Profile ·
+  Measure · Delete (+menu).
+- **Kepala**: cari ticker, favorit, Discord, Sign in with Google.
