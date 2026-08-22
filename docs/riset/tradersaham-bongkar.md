@@ -27,27 +27,39 @@ screener/msci-candidates}` · `/ipo/{listings,stats,underwriters}` ·
 `/user/broker-categories/*` · `/accumulation/:kode` · `/disclosures` ·
 `/stocks/sectors` · `/network/{analyze,details}`.
 
-## Sumber datanya — dan ini intinya
+## KOREKSI (22 Agu malam, dari tangkapan layar Johan yang sudah login)
 
-Kata kunci yang muncul di kode: **KSEI** ("Monthly KSEI Shareholders Data",
-"KSEI/IDX disclosure", "Ultimate Beneficial…"), `balancepos` (posisi saldo
-KSEI), `one-percent` (pemegang ≥1%), `disclosures`. Tak ada RTI, tak ada
-Stockbit, tak ada broker summary per emiten: `BroksumPage` hanya berisi
-`BrokerFlowTeaser` + "Learn More" — **fitur broker summary di situ masih
-teaser**, dan "Broker Flow / kategori broker" adalah klasifikasi yang diatur
-pengguna (`/user/broker-categories/customize-default`).
+Kesimpulan awal "broker summary di situ masih teaser" **SALAH**. Bongkar
+pasif hanya melihat bundle untuk pengguna tanpa login; halaman **Stock
+Profiler** (BETA, Premium) memuat persis tiga layar yang dicatat di
+`docs/desain-broker-summary.md`: tabel Broker Summary Net/Gross, Market Flow
+(Foreign/Regular/Nego/UW/5%), Broker Flow (Smart Money/Whale/Smart
+Retail/Retail), grafik kumulatif per broker vs harga, 6 Month Floor Price, dan
+strip Group Score. Yang terbaca dari luar cuma pintu masuknya.
 
-Jadi produk intinya **kepemilikan** (KSEI bulanan, pemegang ≥1%/≥5%,
-jaringan investor, MSCI candidate), bukan arus broker harian. Tiga tangkapan
-layar di `docs/desain-broker-summary.md` (dengan broker per hari dan Smart
-Money/Whale) **bukan dari situs ini** — sumbernya aplikasi lain.
+Jadi situs ini punya DUA lapis data: **kepemilikan** (KSEI bulanan, pemegang
+≥1%/≥5%, SID & scripless) dan **arus broker harian** — yang kedua tak
+kelihatan dari bundle publik, endpoint-nya baru bisa dipetakan dari sesi
+login (Network tab, seperti yang dilakukan untuk Stockbit).
+
+## Peta fitur dari menu (tangkapan layar, 22 Agu 2026)
+
+| Grup | Fitur |
+|---|---|
+| Special Feature | Market Overview · Watchlist · Stock Screener · **Stock Profiler** · Broker Profiler · Holder > 1% |
+| Insights | Foreign Flow · IPO Analysis · Informasi Harian |
+| Owner | Peta Investor · Holder > 5% · SID & Scripless · Sector Trends |
+| Tools & Help | Calculators · What's New |
+
+**Stock Profiler** (contoh AADI, preview; Premium untuk semua saham):
+lencana sinyal "Regime Flip → Jual +3" dan "18.5 NONE"; tab **Overview ·
+Inventory · Quadrant · Broker Intel · NEGO · vs IHSG · Shareholders ·
+Teknikal (NEW) · More**; saringan **Investor** (All/…) · **Market** (All/…) ·
+**Periode** (rentang tanggal, bawaan ±1 bulan); kanan: Broker Summary,
+Market Flow, Broker Flow (Manage/Details); bawah: 6 Month Floor Price
+(Category/Statistics/Reg-All/20-30) dan strip **Group Score** ("+0 Mixed ·
+daily Net% strip" dengan kotak skor per kategori +1/−1/+4/+3…).
+
+Backlog replikasi: `docs/antrean.md` **P7**.
 
 ## Yang bisa dipetik untuk PAPAN
-
-- Data KSEI bulanan + pemegang ≥1% adalah lapis yang **belum kita punya**
-  dan tak ada di Stockbit `marketdetectors`. Kalau mau ditiru, sumbernya
-  laporan bulanan KSEI/IDX, bukan API mereka.
-- Klasifikasi broker yang bisa diubah pengguna (default + kustom) — pola
-  yang cocok untuk "Smart Money / Whale / Retail" di desain broker kita.
-- "Static Backend (Read-Only)" = data dipra-hitung, bukan dihitung saat
-  diminta — sama dengan pola JSON statis kita.

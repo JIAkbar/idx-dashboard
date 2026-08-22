@@ -5,8 +5,8 @@ stockbit tapi versi kita dan sebelum koding nanti saya berikan referensi lain
 supaya bisa lebih unggul dan sempurna"* · *"ini desain nya tadi soal broker
 summary, catat dulu"*.
 
-Tiga tangkapan layar dikirim 22 Agu malam (tema gelap, aplikasi pihak ketiga,
-bukan Stockbit). Ini pencatatan apa adanya — **keputusan desain belum
+Tiga tangkapan layar dikirim 22 Agu malam — dari **tradersaham.com → Stock
+Profiler** (Premium; bongkarnya di `docs/riset/tradersaham-bongkar.md`). Ini pencatatan apa adanya — **keputusan desain belum
 diambil**, dan Johan masih akan mengirim referensi lain. Jangan mulai koding
 dari berkas ini saja.
 
