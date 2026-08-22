@@ -21,6 +21,12 @@ tak lahir dari "tidak dilihat".
 | 6 | **Keputusan replikasi** — total / sebagian / tidak, dengan alasannya | Johan | baris di `antrean.md` |
 | 7 | **Desain versi kita** — apa yang lebih dari referensi, bukan cuma sama | mockup artifact | template di `docs/desain/` |
 
+Aturan tambahan (Johan 23 Agu 2026): **tiap menu wajib diturunkan sampai
+habis** — submenu, tab, dialog, tombol, sakelar, preset, dan fungsi di
+baliknya; halaman berbayar diaudit SESUDAH berlangganan, bukan ditebak dari
+versi terkunci. Keluaran langkah 2 berbentuk pohon: menu → submenu → fitur →
+kendali, masing-masing dengan bukti (snapshot/teks).
+
 Aturan: **kesimpulan negatif wajib menyebut langkah mana yang menghasilkannya**
 ("tak terlihat di bundle publik" ≠ "tidak ada"). Langkah 2 tanpa login hanya
 memetakan pintu masuk; fitur berbayar baru terlihat sesudah Johan login.
