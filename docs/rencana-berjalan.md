@@ -1175,3 +1175,56 @@ periode, tabel admin di ponsel, rute cadangan, Stock Detail baca `?sym=`.
 menjalankan re-parse `--paksa` atas SELURUH arsip. `2025/audit` tidak ada di
 arsip dan 2020/2021 hanya 2 berkas — menjalankannya menyeluruh akan menghapus
 ~2.330 catatan tahunan tanpa satu pun galat.
+
+---
+
+## Sesi 21–22 Agustus 2026 — Deep Dive, Mesin PAPAN v1, dan lingkaran kandidat
+
+Sesi terpanjang sejauh ini (24 commit, belum di-push atas permintaan Johan).
+Yang berubah secara struktural, bukan sekadar tambalan:
+
+### Terbitan & analisa
+- **`arus-pasar/prob.py` v2** — pool seluruh pasar (881 emiten likuid, 722 ribu
+  observasi, saring nilai ≥Rp500 jt), 13 faktor, `P(capai R1/R2)` &
+  `P(sentuh S1)`, angka dasar + CI Wilson, faktor pendukung/penekan, uji
+  walk-forward. Temuan yang mengubah isi terbitan: arah 5 hari di IDX nyaris
+  acak (lift ≤6pp), sedangkan *mencapai target* bersinyal 13–17pp — maka yang
+  dicetak sekarang P(capai level), bukan P(naik).
+- **"Bedah Arus Saham" → Deep Dive** (kode `DD-`), label dipisah dari kunci
+  internal supaya `.t-bedah` & kunci akses tak rusak.
+- **`docs/analisa-papan-v1.md`** — metode yang terbukti (BUMI +8,3%, DSSA
+  +6,1%), asal-usulnya dari git, dan ketetapan Johan bahwa metode ini
+  dipertahankan di tiap terbitan berikutnya.
+- **`scripts/riset/kandidat_deepdive.py`** — checklist v1 dibalik jadi
+  saringan; UI-nya di Screener (kolom + chip) dan panel pemandu di halaman
+  kontributor. Lingkaran yang diminta Johan: screener → setoran broksum →
+  Deep Dive.
+
+### Halaman
+- **Bedah Emiten dilebur ke Stock Detail** (4 panel pindah, Banding jadi tab
+  ketiga, `/bedah-emiten` redirect); glosarium ke Metodologi.
+- **Kartu Analisa 381 → 963 emiten** + kalender arsip 20 hari bursa.
+- **Halaman Aliran Asing baru** di grup Aliran Dana (977 emiten, panel detail
+  dipakai ulang dari Stock Detail).
+- **Tanya PAPAN di-takedown sementara** lewat sakelar `TANYA_PAPAN_AKTIF`.
+- Filter likuiditas bertingkat (5 tingkat) dipakai bersama Screener & Kartu.
+
+### Infrastruktur & data
+- **Runner rumahan gagal senyap sejak 18 Agu** — tiap langkah PowerShell
+  ditolak Execution Policy, termasuk langkah commit; panen jalan tapi hasilnya
+  tak pernah masuk repo. Diperbaiki lewat `-ExecutionPolicy Bypass` per proses.
+- **Harga fundamental disegarkan harian dari OHLC** (nol jaringan, 961 berkas
+  10 detik) — pemanen penuh tetap bulanan.
+- **Kuota unggah kontributor**: RLS menghitung baris yang barusan dibuat untuk
+  unggahan itu sendiri → kuota efektif selalu kuota−1. Diperbaiki + versi lama
+  fungsi di-drop.
+- **C2 (chart bandarmologi) diuji ulang**: `GetBrokerSummary` mengabaikan
+  `stockCode` bahkan dari IP rumahan. Tapi riset menemukan **Invezgo** punya
+  `get_summary_stock(code, from_date, to_date, investor, market)` — broker
+  summary per emiten multi-hari. C2 berubah dari "terhalang data" jadi
+  "keputusan berlangganan" (menunggu Johan).
+
+### Yang menunggu Johan
+Push live · verifikasi panel kontributor (butuh login) · data konglomerat
+untuk A4 · keputusan berlangganan data broker per emiten.
+

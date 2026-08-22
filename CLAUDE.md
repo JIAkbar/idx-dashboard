@@ -261,6 +261,60 @@ salah satu saja:
 Yang masuk kemampuan lintas proyek: pola teknis yang terbukti, jebakan yang gagal senyap,
 metodologi kerja. Yang TIDAK: hal khas proyek ini (itu masuk `docs/`).
 
+### Ukur definisinya dulu sebelum menurunkan satu ruas dari ruas lain
+
+Berlaku untuk SETIAP ruas turunan, bukan cuma rasio keuangan. Sebelum menulis
+`a = f(b, c)`, hitung dulu rasio "hitung ulang vs nilai tersimpan" atas sampel
+acak dan lihat mediannya. 22 Agu 2026 cara ini dipakai sebelum membuat
+`segarkan_harga_fundamental.py`, dan hasilnya membebaskan enam ruas untuk
+dihitung ulang dengan aman (`market_cap`, `pe`, `pbv`, `earn_yield`, `ps`,
+`price_fcf` — semuanya median 1,0000 atas 150-250 berkas) sekaligus MENOLAK
+satu yang kelihatannya sama: `week52_change_pct` ternyata BUKAN `(harga/low−1)`
+(median 0,0696), melainkan dihitung dari close 252 bar lalu. Tanpa pengukuran
+itu, satu ruas akan diisi angka yang terlihat resmi dan salah tanpa satu pun
+galat. Ruas yang definisinya belum terukur DIBIARKAN apa adanya — menebaknya
+lebih buruk daripada membiarkannya basi, karena basi masih bisa terlihat dari
+stempel waktu sedangkan tebakan tidak.
+
+Ikutannya: **satu stempel waktu per sumber, bukan satu untuk seluruh berkas.**
+`fundamental/*.json` sekarang membawa `updated` (kapan laporan keuangan
+dipanen) DAN `harga_pada` (tanggal bar OHLC). Menimpa yang pertama saat
+menyegarkan yang kedua akan membuat laporan keuangan bulan lalu tampak sesegar
+harga hari ini.
+
+### `create or replace function` dengan argumen BARU tidak mengganti — ia menambah
+
+Postgres membedakan fungsi berdasarkan signature. Menambahkan parameter
+(termasuk yang ber-`default`) menghasilkan fungsi KEDUA yang hidup berdampingan
+dengan versi lama, dan pemanggil lama tetap memakai yang lama. 22 Agu 2026 hal
+ini nyaris meninggalkan dua penghitung kuota unggah dengan aturan berbeda di
+produksi — ketahuan karena `select count(*) from pg_proc` menjawab 4, bukan 2.
+Sesudah mengubah signature: **periksa `pg_get_function_identity_arguments` dan
+DROP versi lamanya** dalam migrasi yang sama.
+
+### Ambang yang dipakai untuk STATISTIK tak boleh dipakai untuk MENYARING TAMPILAN
+
+`kartu_analisa.py` memakai satu fungsi (`kode_populasi`) untuk dua peran: (a)
+populasi statistik penghitung persentil/kalibrasi — yang memang butuh ambang
+supaya emiten tidur tak mencemari, dan (b) siapa yang dapat kartu — yang tak
+butuh ambang sama sekali. Akibatnya 582 emiten hilang dari halaman tanpa ada
+yang menyatakannya (WBSA, GWSA, dst.), dan Johan menemukannya dari luar produk.
+Sekarang dipisah: semua emiten ber-OHLC dapat kartu, dengan penanda kualitas
+(`riwayat pendek`, `likuiditas tipis`) supaya pembaca tahu mana yang perlu
+dibaca hati-hati — bukan disembunyikan. Ambang likuiditas punya dasar tertulis
+di `docs/likuiditas-acuan.md` (IDX sendiri memakai peringkat relatif 150
+teratas, bukan ambang rupiah tetap).
+
+### Screener kandidat: laporkan batasnya, jangan setel ambang sampai kasus favorit muncul
+
+`scripts/riset/kandidat_deepdive.py` menyaring emiten yang layak dimintakan
+Broker Summary. Uji luar sampelnya menempatkan BUMI & DSSA — dua Deep Dive
+yang terbukti — di peringkat 64/69 dan 57/60. Angka itu DICETAK di docstring,
+di JSON keluaran, dan di kaki tabel Screener, karena godaan berikutnya jelas:
+menaikkan ambang sampai keduanya naik ke puncak. Sudah dicoba; pada skor ≥5
+keduanya justru terbuang. Daftar itu **penyaring**, bukan peringkat kelayakan,
+dan tiap teks di layar wajib mengatakannya.
+
 ### Analisa PAPAN v1 — standar tiap Deep Dive & bagian emiten bulletin (Johan, 21 Agu 2026)
 
 *"simpan analisanya jadi Analisa Papan v1 atau Mesin Papan v1, karena tingkat
