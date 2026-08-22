@@ -93,6 +93,67 @@ berikutnya mengulang metodenya, bukan mengulang keberuntungannya.
 
 ## 5. Log tinjauan ulang
 
+**Sejak 22 Agu 2026 log ini diisi mesin**, bukan ingatan:
+`python scripts/riset/tinjau_deepdive.py` membaca skenario & pivot tiap
+terbitan (termasuk yang menumpang edisi harian), mencocokkannya ke OHLC
+sesudah tanggal data, lalu mencetak tabel di bawah + `tinjauan_deepdive.json`.
+Yang GAGAL ikut tercatat, bukan hanya yang berhasil.
+
+**Koreksi atas dua baris pertama tabel ini**: keduanya dinilai pada **H+4**,
+bukan H+5 — 17 Agustus libur HUT RI, jadi hari bursa kelima sesudah 14 Agu
+baru jatuh 24 Agustus. Level-levelnya memang sudah tercapai berurutan dan
+invalidasi utuh, tapi statusnya secara teknis masih **sementara**; hari kelima
+masih bisa mengubahnya. Mesin sekarang menandai keadaan itu apa adanya
+(`terbukti (sementara, 4/5 hari)`) alih-alih membiarkan H+4 terbaca seolah
+H+5.
+
+Keluaran mesin per 22 Agu 2026:
+
+| Terbitan | Data s.d. | Level bull | Tersentuh (urut) | Invalidasi | Gerak | Status |
+|---|---|---|---|---|---|---|
+| BA-ARCI-140826-E01 | 14 Agu | 1.247 · 1.286 | 1.247 → 1.286 (18 Agu) | utuh | +13,9% | terbukti (sementara, 4/5) |
+| BA-BUMI-140826-E01 | 14 Agu | 185 · 191 | 185 (18 Agu) → 191 (20 Agu) | utuh | +8,3% | terbukti (sementara, 4/5) |
+| BA-CUAN-140826-E01 | 14 Agu | 880 · 920 · 955 | — | utuh | +1,2% | belum terjadi (4/5) |
+| BA-DSSA-140826-E01 | 14 Agu | 1.025 · 1.060 · 1.095 | 1.025 (18 Agu) → 1.060 (21 Agu) | utuh | +6,1% | sebagian (4/5) |
+| BA-INET-180826-E01 | 18 Agu | — | — | utuh | +13,0% | belum terjadi (3/5) |
+
+## 7. Apakah metode ini bertahan saat IHSG TURUN?
+
+Johan 22 Agu 2026: *"apalagi saat ini karena IHSG naik saja, nnt kalau turun
+apakah masih bisa di pertahankan analisa itu atau muncul analisa baru lagi"*.
+
+Diuji `scripts/riset/uji_rezim_kandidat.py` atas **7.288 observasi** (seluruh
+emiten ber-riwayat ≥200 bar, 25 titik acak masing-masing, horizon 5 hari
+bursa, kejadian = menyentuh +3%). Rezim ditentukan dari posisi IHSG terhadap
+MA20-nya sendiri.
+
+**Angka dasarnya nyaris tak berubah**: rezim naik 57,6% (n=4.304) · rezim
+turun 59,0% (n=2.984). Peluang menyentuh +3% TIDAK jatuh saat pasar turun —
+volatilitas yang meninggi mengimbangi arah yang memburuk.
+
+**Tapi komposisi sinyalnya berubah** (lift terhadap angka dasar rezimnya):
+
+| Sinyal | Rezim naik | Rezim turun |
+|---|---|---|
+| net asing 20 hari positif | +3,4pp | +1,9pp |
+| struktur menahan | +2,7pp | +1,0pp |
+| volume di atas normal | +2,5pp | +0,2pp |
+| **menyerap saat pasar merah** | +2,2pp | **+1,8pp** ← paling stabil |
+| serapan efisien | −1,6pp | −2,3pp |
+| VolVal senyap | −4,9pp | −0,4pp |
+
+Jadi jawabannya: **metodenya tidak runtuh, tapi tak boleh dibaca sama.** Yang
+bertahan lintas rezim adalah "menyerap saat pasar merah" — dan itu masuk akal,
+karena justru rezim turunlah yang membuat penyerapan kelihatan. Yang melemah:
+"volume di atas normal" dan "net asing".
+
+**Yang TIDAK dilakukan, dan alasannya**: bobot sinyal belum diubah. Uji ini
+mengukur peluang menyentuh +3% — bukan tujuan skripnya, yang mencari emiten
+layak DIMINTAKAN Broker Summary. Mengubah bobot berdasar uji yang mengukur hal
+lain adalah kekeliruan yang sama dengan menyetel ambang sampai kasus favorit
+muncul. Kalibrasi sebenarnya menunggu puluhan Deep Dive dengan tinjauan H+5
+di §5 — ukuran yang memang setujuan.
+
 | Bedah | Data s.d. | Tesis | Hasil H+5 | Status |
 |---|---|---|---|---|
 | BA-BUMI-140826-E01 | 14 Agu 2026 | Serapan 10 hari, bull > R1 185 | 21 Agu close 196 (+8,3%), R1 & rute 191 tercapai berurutan, S1 176 utuh | **Terbukti** |
