@@ -301,9 +301,16 @@ def ambil_stockbit(token: str, ticker: str, dari: str, sampai: str,
             "Referer": "https://stockbit.com/",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         },
+        # `from`/`to`, BUKAN `start_date`/`end_date`. Pulse-CLI memakai yang
+        # kedua dan endpoint MENGABAIKANNYA tanpa galat: balasannya tetap 200
+        # dan tetap 80 broker, cuma isinya hari bursa terakhir. Ketahuan hanya
+        # karena rentang 10 hari dan rentang 1 hari menghasilkan berkas yang
+        # sha-nya identik, dan karena balasannya sendiri menyebut `from`/`to`
+        # yang tak sama dengan yang diminta. Parameter yang diabaikan diam-diam
+        # adalah jebakan yang sama persis dengan `stockCode` di GetBrokerSummary.
         params={
-            "start_date": dari,
-            "end_date": sampai,
+            "from": dari,
+            "to": sampai,
             "transaction_type": "TRANSACTION_TYPE_NET",
             "market_board": pasar,
             "investor_type": "INVESTOR_TYPE_ALL",
@@ -315,7 +322,34 @@ def ambil_stockbit(token: str, ticker: str, dari: str, sampai: str,
         raise SystemExit("Token Stockbit ditolak (401) — ambil ulang, "
                          "lihat: python scripts/panen_broker_emiten.py --bantuan-token")
     r.raise_for_status()
-    return r.json()
+    balasan = r.json()
+
+    salah = rentang_meleset(balasan, dari, sampai)
+    if salah:
+        raise SystemExit(salah + " JANGAN pakai hasilnya.")
+    return balasan
+
+
+def rentang_meleset(balasan: dict, dari: str, sampai: str) -> str | None:
+    """Keterangan galat kalau rentang yang DIJAWAB tak sama dengan yang diminta.
+
+    Ada karena endpoint ini pernah mengabaikan parameter tanggal tanpa satu pun
+    galat: `start_date`/`end_date` (nama dari Pulse-CLI) dijawab 200 berisi 80
+    broker — tapi isinya hari bursa terakhir, bukan rentang yang diminta.
+    Ketahuan hanya karena panen 10 hari dan panen 1 hari menghasilkan berkas
+    yang sha-nya identik. Nama yang benar `from`/`to`, dan balasannya memang
+    menyebutkan rentang yang ia pakai — jadi pemeriksaan ini gratis.
+
+    Kembalikan None kalau balasannya tak menyebut rentang sama sekali: menuduh
+    berdasarkan ruas yang tak ada akan memblokir panen yang sebenarnya sah.
+    """
+    d = (balasan or {}).get("data") or {}
+    if not d.get("from"):
+        return None
+    if d["from"] == dari and d.get("to") == sampai:
+        return None
+    return (f"Endpoint menjawab rentang {d.get('from')}..{d.get('to')} padahal "
+            f"diminta {dari}..{sampai} — parameter tanggalnya diabaikan.")
 
 
 def ambil_indexalpha(token: str, ticker: str, dari: str, sampai: str,
@@ -463,7 +497,15 @@ def swauji() -> int:
     assert _angka(7) == 7 and _angka("7.5") == 7.5
     assert not GAGAL_ANGKA, GAGAL_ANGKA
 
-    print("9/9 lulus")
+    # Rentang yang dijawab beda = tolak; sama = terima; tak disebut = terima.
+    assert rentang_meleset({"data": {"from": "2026-08-21", "to": "2026-08-21"}},
+                           "2026-08-03", "2026-08-03"), "rentang meleset harus ditolak"
+    assert rentang_meleset({"data": {"from": "2026-08-03", "to": "2026-08-03"}},
+                           "2026-08-03", "2026-08-03") is None
+    assert rentang_meleset({"data": {"broker_summary": {}}}, "a", "b") is None, \
+        "balasan tanpa ruas rentang tak boleh dituduh"
+
+    print("12/12 lulus")
     return 0
 
 
