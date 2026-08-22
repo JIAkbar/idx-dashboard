@@ -89,3 +89,26 @@ dulu** sebelum diklaim sama.
 3. Yang membedakan "versi kita": riwayat disimpan sendiri (tak dibatasi 2
    tahun/100 broker seperti API), broker yang sama bisa dilacak lintas
    emiten, dan arus broker bisa dijahit ke pivot/EMA Analisa PAPAN v1.
+
+## Mockup interaktif (22 Agu 2026 malam)
+
+Artifact: https://claude.ai/code/artifact/62ee304d-17f6-4582-a6f1-f141f136cc5f —
+data nyata BUMI 3–21 Agu 2026 (14 hari GROSS), sumbernya
+`docs/desain/broker-summary-mockup.template.html` (placeholder `__DATA__`
+diisi dari `broker_tahunan/BUMI/2026.json`). Yang sudah dicoba di situ dan
+disetujui Johan lewat arahan langsung:
+
+- kendali ala Stockbit: ‹ tanggal › + kalender dengan preset (Latest, Prev Day,
+  Last 7D, This Month, Prev Month, Last 1M/3M/6M, YTD, Last 1Y — yang datanya
+  baru sebagian bergaris putus, yang tak ada tercoret), dropdown Investor /
+  Market / Net-Gross, sakelar Nilai/Lot;
+- blok ringkasan Stockbit: Top 1/3/5 (volume, %, Rp(B), Acc/Dist), Broker
+  buyer/seller/#, Net Volume, Net Value, Average (Rp). **Definisi terukur dari
+  layar BBCA 21 Agu**: % = net lot ÷ Net Volume (Σ net pembeli); Average =
+  Net Value ÷ (Net Volume × 100). Label Acc/Dist pakai ambang sementara
+  <5 Neutral · <12,5 Small · <20 Normal · ≥20 Big — belum diverifikasi;
+- gutter batang gulir tabel **1 px** (permintaan Johan);
+- kode broker **berwarna per kelompok** (Asing · BUMN · Smart Money · Ritel ·
+  Afiliasi grup/bandar · Lainnya) dengan legenda — bukan hijau/merah per sisi;
+- panel "Asal data" **dibuang** dari tampilan (permintaan Johan) — kejujuran
+  datanya pindah ke dokumen, bukan ke layar.

@@ -1,0 +1,323 @@
+<title>Arus Broker BUMI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F3F4F6;--panel:#FFFFFF;--panel2:#F8F9FB;--line:#DCE0E6;--text:#14181F;--muted:#5F6876;--faint:#8C94A1;
+  --beli:#1F9D5A;--jual:#D9434B;--beli-soft:rgba(31,157,90,.14);--jual-soft:rgba(217,67,75,.14);
+  --aksen:#C7841A;--aksen-soft:rgba(199,132,26,.14);--harga:#14181F;--grid:#E6E9EE;
+  --k-asing:#2F6FE0;--k-bumn:#B8860B;--k-smart:#7E4BD0;--k-ritel:#1A9E8F;--k-afiliasi:#D9622B;--k-lain:#7A8290;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1117;--panel:#151B24;--panel2:#1B2230;--line:#262E3A;--text:#E7EAEF;--muted:#9AA3B2;--faint:#6B7482;
+  --beli:#35C279;--jual:#EF5A62;--beli-soft:rgba(53,194,121,.16);--jual-soft:rgba(239,90,98,.16);
+  --aksen:#F2A93B;--aksen-soft:rgba(242,169,59,.16);--harga:#F4F6F8;--grid:#222A36;
+  --k-asing:#5B9BFF;--k-bumn:#E0B341;--k-smart:#B48CF7;--k-ritel:#3CCFBD;--k-afiliasi:#F28A4F;--k-lain:#8F98A6;
+}}
+:root[data-theme="dark"]{
+  --bg:#0D1117;--panel:#151B24;--panel2:#1B2230;--line:#262E3A;--text:#E7EAEF;--muted:#9AA3B2;--faint:#6B7482;
+  --beli:#35C279;--jual:#EF5A62;--beli-soft:rgba(53,194,121,.16);--jual-soft:rgba(239,90,98,.16);
+  --aksen:#F2A93B;--aksen-soft:rgba(242,169,59,.16);--harga:#F4F6F8;--grid:#222A36;
+  --k-asing:#5B9BFF;--k-bumn:#E0B341;--k-smart:#B48CF7;--k-ritel:#3CCFBD;--k-afiliasi:#F28A4F;--k-lain:#8F98A6;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 "IBM Plex Sans",system-ui,sans-serif}
+.wrap{max-width:1360px;margin:0 auto;padding:20px 20px 48px;display:grid;gap:14px}
+h1,h2,h3{margin:0;font-family:"IBM Plex Sans Condensed","IBM Plex Sans",sans-serif;text-wrap:balance}
+.lbl{font-family:"IBM Plex Sans Condensed",sans-serif;font-weight:600;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px 16px;min-width:0}
+.panel-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.panel-h h2{font-size:15px;font-weight:600}
+.kepala{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.kepala h1{font-size:30px;font-weight:600;line-height:1.05}
+.kepala h1 small{font-family:"IBM Plex Sans";font-weight:400;font-size:14px;color:var(--muted);margin-left:10px}
+.harga-kini{display:flex;gap:18px;align-items:baseline}
+.harga-kini .b{font-size:26px;font-weight:500}
+.chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:5px;overflow:hidden;background:var(--panel2)}
+.seg button{appearance:none;border:0;background:transparent;color:var(--muted);padding:5px 11px;font:inherit;font-size:12.5px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--aksen-soft);color:var(--text);font-weight:600}
+.seg button:focus-visible{outline:2px solid var(--aksen);outline-offset:-2px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:980px){.grid2,.grid3{grid-template-columns:minmax(0,1fr)}}
+canvas{display:block;width:100%;height:auto}
+.chipbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.chipbar .lbl{margin-right:4px}
+.bchip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 9px 2px 6px;font-size:12px;border:1px solid var(--line);background:var(--panel2)}
+.bchip i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{text-align:right;font-weight:600;color:var(--muted);padding:4px 6px;border-bottom:1px solid var(--line)}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl td{padding:3px 6px;text-align:right;border-bottom:1px solid var(--grid)}
+.tbl td.kode{font-weight:600}
+.k-asing{color:var(--k-asing)}.k-bumn{color:var(--k-bumn)}.k-smart{color:var(--k-smart)}.k-ritel{color:var(--k-ritel)}.k-afiliasi{color:var(--k-afiliasi)}.k-lain{color:var(--k-lain)}
+.legenda{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin:2px 0 8px}.legenda span::before{content:'';display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;vertical-align:middle;background:currentColor}
+.dua{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dua .sisi{max-height:440px;overflow:auto;scrollbar-gutter:stable}
+.dua .sisi::-webkit-scrollbar{width:1px}.dua .sisi::-webkit-scrollbar-thumb{background:var(--faint)}.dua .sisi::-webkit-scrollbar-track{background:transparent}
+.kendali{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.nav-tgl{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:5px;background:var(--panel2);position:relative}
+.nav-tgl button{appearance:none;border:0;background:transparent;color:var(--text);font:inherit;font-size:12.5px;padding:5px 9px;cursor:pointer}
+.nav-tgl button:disabled{color:var(--faint);cursor:default}.nav-tgl button:focus-visible{outline:2px solid var(--aksen);outline-offset:-2px}
+.nav-tgl .tgl{font-weight:600;min-width:150px;text-align:center}
+.sel{appearance:none;border:1px solid var(--line);border-radius:5px;background:var(--panel2);color:var(--text);font:inherit;font-size:12.5px;padding:5px 26px 5px 10px;cursor:pointer;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 13px) 55%,calc(100% - 9px) 55%;background-size:4px 4px;background-repeat:no-repeat}
+.sel:focus-visible{outline:2px solid var(--aksen);outline-offset:-2px}
+.popup{position:absolute;top:calc(100% + 6px);left:0;z-index:5;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);min-width:300px}
+.popup[hidden]{display:none}
+.preset{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.preset button{appearance:none;border:1px solid var(--line);border-radius:999px;background:var(--panel2);color:var(--text);font:inherit;font-size:12px;padding:3px 10px;cursor:pointer}
+.preset button[aria-pressed="true"]{border-color:var(--aksen);color:var(--aksen);font-weight:600}.preset button:disabled{color:var(--faint);cursor:default;text-decoration:line-through}.preset button.sebagian{border-style:dashed}
+.hari-grid{display:grid;grid-template-columns:repeat(7,30px);gap:2px;font-size:12px}
+.hari-grid span{text-align:center;padding:4px 0;color:var(--faint)}.hari-grid button{appearance:none;border:0;background:transparent;color:var(--text);font:inherit;font-size:12px;padding:4px 0;border-radius:999px;cursor:pointer}
+.hari-grid button:disabled{color:var(--faint);cursor:default}.hari-grid button[aria-pressed="true"]{background:var(--aksen-soft);color:var(--aksen);font-weight:600}
+.ringkas-sb{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:12px}
+.ringkas-sb th{font-weight:600;color:var(--muted);text-align:right;padding:3px 6px;border-bottom:1px solid var(--line)}.ringkas-sb th:first-child,.ringkas-sb td:first-child{text-align:left;font-weight:600}
+.ringkas-sb td{text-align:right;padding:3px 6px;border-bottom:1px solid var(--grid)}
+.ad{display:inline-block;padding:1px 8px;border-radius:3px;font-size:11.5px;font-weight:600;min-width:74px;text-align:center}
+.ad.n{background:var(--panel2);color:var(--muted)}.ad.a{background:var(--beli-soft);color:var(--beli)}.ad.d{background:var(--jual-soft);color:var(--jual)}
+.ringkas-sb .kv td{border-bottom:0;padding:2px 6px}
+.beli{color:var(--beli)}.jual{color:var(--jual)}
+.sisi-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.baris-flow{display:grid;grid-template-columns:128px minmax(0,1fr) 72px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--grid)}
+.baris-flow .nama small{overflow-wrap:anywhere}
+@media (max-width:480px){.dua{grid-template-columns:1fr}.kat-baris{grid-template-columns:110px minmax(0,1fr) 52px 90px}.kepala h1{font-size:24px}}
+.baris-flow:last-child{border-bottom:0}
+.baris-flow .nama{font-weight:600;font-size:13px}
+.baris-flow .nama small{display:block;font-weight:400;color:var(--faint);font-size:11px}
+.baris-flow .tot{text-align:right;font-weight:500}
+.tak-ada{color:var(--faint);font-style:italic;font-size:12px}
+.kat{display:grid;gap:8px}
+.kat-baris{display:grid;grid-template-columns:140px minmax(0,1fr) 70px 120px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--grid)}
+.kat-baris:last-child{border-bottom:0}
+.kat-baris .nama{font-weight:600}
+.kat-baris .nama small{display:block;font-weight:400;color:var(--faint);font-size:11px}
+.kat-baris .n{color:var(--muted);text-align:right;font-size:12px}
+.kat-baris .net{text-align:right;font-weight:600}
+.catatan{font-size:12.5px;color:var(--muted);max-width:70ch}
+.catatan b{color:var(--text)}
+.pill{display:inline-block;border-radius:4px;padding:1px 7px;font-size:11px;font-weight:600;letter-spacing:.02em}
+.pill.ok{background:var(--beli-soft);color:var(--beli)}
+.pill.warn{background:var(--aksen-soft);color:var(--aksen)}
+.pill.na{background:var(--panel2);color:var(--faint);border:1px solid var(--line)}
+.sumber{display:grid;gap:6px;font-size:12.5px;color:var(--muted)}
+.sumber b{color:var(--text)}
+.kurasi{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px 14px;font-size:12px}
+.kurasi span.k{font-weight:600;font-family:"IBM Plex Mono",monospace}
+.kurasi span.t{color:var(--muted)}
+details summary{cursor:pointer;color:var(--muted);font-size:12.5px}
+@media (prefers-reduced-motion:no-preference){.seg button{transition:background .12s}}
+</style>
+
+<div class="wrap">
+  <header class="kepala panel">
+    <div>
+      <div class="lbl">Arus Broker · pasar reguler · semua investor</div>
+      <h1 id="judul">BUMI <small>Bumi Resources Tbk.</small></h1>
+      <div class="harga-kini num"><span class="b" id="hargaKini">—</span><span id="gerakKini" class="lbl"></span><span class="lbl" id="periodeTeks"></span></div>
+    </div>
+    <div class="kendali">
+      <div class="nav-tgl">
+        <button id="tglPrev" aria-label="Hari sebelumnya">&lsaquo;</button>
+        <button id="tglBuka" class="tgl" aria-haspopup="dialog" aria-expanded="false"><span id="tglTeks"></span> &#128197;</button>
+        <button id="tglNext" aria-label="Hari berikutnya">&rsaquo;</button>
+        <div class="popup" id="popupTgl" hidden>
+          <div class="lbl" id="bulanTeks" style="margin-bottom:6px"></div>
+          <div class="hari-grid" id="hariGrid"></div>
+          <div class="preset" id="preset"></div>
+        </div>
+      </div>
+      <select class="sel" id="selInvestor" aria-label="Investor"><option>All Investor</option><option disabled>Foreign &mdash; belum dipanen</option><option disabled>Domestic &mdash; belum dipanen</option></select>
+      <select class="sel" id="selMarket" aria-label="Market"><option>Regular</option><option disabled>Nego &mdash; belum dipanen</option><option disabled>All &mdash; belum dipanen</option></select>
+      <select class="sel" id="selMode" aria-label="Mode"><option value="net">Net</option><option value="gross">Gross</option></select>
+      <div class="seg" role="group" aria-label="Ukuran"><button data-uk="nilai" aria-pressed="true">Nilai</button><button data-uk="lot">Lot</button></div>
+    </div>
+  </header>
+
+  <div class="grid2">
+    <section class="panel">
+      <div class="panel-h"><h2>Kumulatif net per broker vs harga</h2><span class="lbl">4 pembeli & 4 penjual terbesar dalam rentang</span></div>
+      <div class="chipbar" id="chipBroker"></div>
+      <canvas id="cvKumulatif" width="1200" height="520"></canvas>
+      <canvas id="cvHarian" width="1200" height="150"></canvas>
+      <p class="catatan">Garis: net kumulatif tiap broker (sumbu kiri). Putih/gelap: close (sumbu kanan). Batang: net harian gabungan kelompok pembeli (hijau) dan penjual (merah) yang dipilih.</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-h"><h2>Broker Summary</h2><span class="lbl" id="modeTeks">Net · Nilai</span></div>
+      <div class="legenda"><span class="k-asing">Asing</span><span class="k-bumn">BUMN</span><span class="k-smart">Smart Money</span><span class="k-ritel">Ritel</span><span class="k-afiliasi">Afiliasi grup / bandar</span><span class="k-lain">Lainnya</span></div>
+      <table class="ringkas-sb"><thead><tr><th></th><th>Volume</th><th>%</th><th>Rp(B)</th><th>Acc/Dist</th></tr></thead><tbody id="tbTop"></tbody></table>
+      <table class="ringkas-sb"><thead><tr><th></th><th>Buyer</th><th>Seller</th><th>#</th><th>Acc/Dist</th></tr></thead><tbody id="tbBrk"></tbody></table>
+      <div class="dua">
+        <div class="sisi"><div class="sisi-h"><span class="lbl beli">Beli</span><span class="lbl" id="nBeli"></span></div>
+          <table class="tbl"><thead><tr><th>BY</th><th>Val</th><th>Lot</th><th>Avg</th></tr></thead><tbody id="tbBeli"></tbody></table></div>
+        <div class="sisi"><div class="sisi-h"><span class="lbl jual">Jual</span><span class="lbl" id="nJual"></span></div>
+          <table class="tbl"><thead><tr><th>SL</th><th>Val</th><th>Lot</th><th>Avg</th></tr></thead><tbody id="tbJual"></tbody></table></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="grid3">
+    <section class="panel">
+      <div class="panel-h"><h2>Market Flow</h2><span class="lbl">per hari</span></div>
+      <div id="marketFlow"></div>
+    </section>
+    <section class="panel">
+      <div class="panel-h"><h2>Broker Analysis</h2><span class="lbl">net per kelompok</span></div>
+      <div class="kat" id="brokerAnalysis"></div>
+      <p class="catatan" style="margin-top:10px">Pengelompokan <b>kurasi awal 22 Agu 2026</b>, bisa diubah per pengguna (pola <i>Manage</i>). Broker yang belum dikurasi masuk <b>Lainnya</b> — tidak ditebak.</p>
+    </section>
+    <section class="panel">
+      <div class="panel-h"><h2>Floor price per broker</h2><span class="lbl">beli rata-rata terendah, ≥ 1.000 lot/hari</span></div>
+      <table class="tbl"><thead><tr><th>Broker</th><th>Floor</th><th>Tanggal</th><th>Lot hari itu</th></tr></thead><tbody id="tbFloor"></tbody></table>
+      <p class="catatan" style="margin-top:8px">Definisi kita: nilai ÷ (lot × 100) harian terendah per broker dalam rentang. Belum diverifikasi setara "6 Month Floor Price" tradersaham.</p>
+    </section>
+  </div>
+
+</div>
+
+<script>
+const DATA = __DATA__;
+/* Kurasi awal kelompok broker — 22 Agu 2026. Sumber: pengetahuan umum anggota bursa
+   + brokerAfiliasi.ts. Yang tak yakin TIDAK dimasukkan (jatuh ke "Lainnya"). */
+const KURASI = {
+  asing: {label:'Asing', ket:'sekuritas berinduk luar negeri', kode:{AK:'UBS',BK:'J.P. Morgan',KZ:'CLSA',RX:'Macquarie',ZP:'Maybank',YU:'CGS International',TP:'OCBC',AI:'UOB Kay Hian',DR:'RHB',BQ:'Korea Investment',XA:'NH Korindo',AG:'Kiwoom',HD:'KGI',GA:'Yuanta',DP:'DBS Vickers',RB:'Nikko'}},
+  bumn:  {label:'BUMN', ket:'sekuritas bank pelat merah', kode:{CC:'Mandiri Sekuritas',NI:'BNI Sekuritas',OD:'BRI Danareksa',DX:'Bahana'}},
+  smart: {label:'Smart Money', ket:'institusi lokal non-ritel', kode:{LG:'Trimegah',SQ:'BCA Sekuritas',AZ:'Sucor',SS:'Samuel',HP:'Henan Putihrai',MG:'Semesta Indovest',AT:'Phintraco',PO:'Pilarmas',RF:'Buana Capital',YJ:'Lotus Andalan',GR:'Panin',KI:'Ciptadana',DH:'Sinarmas',EP:'MNC',CD:'Mega Capital',LS:'Reliance',ES:'Ekokapital',MU:'Minna Padi',MI:'Victoria',AO:'Erdikha',TF:'Universal Broker',BR:'Trust',FZ:'Waterfront',IT:'Inti Fikasa',SH:'Artha',PC:'FAC',ID:'Anugerah',YB:'Jasa Utama',ZR:'Bumiputera',EL:'Evergreen',RS:'Yulie',PG:'Panca Global',SF:'Surya Fajar',AF:'Harita Kencana',AP:'Pacific'}},
+  ritel: {label:'Ritel', ket:'basis nasabah perorangan besar', kode:{PD:'Indo Premier',YP:'Mirae Asset',XC:'Ajaib',XL:'Stockbit Sekuritas',CP:'Valbury',KK:'Phillip'}},
+  afiliasi: {label:'Afiliasi grup / bandar', ket:'satu grup usaha dengan emiten (brokerAfiliasi.ts) — BUMI: belum ada yang terkurasi', kode:{}},
+};
+const KELAS={asing:'k-asing',bumn:'k-bumn',smart:'k-smart',ritel:'k-ritel',afiliasi:'k-afiliasi',lain:'k-lain'};
+const WARNA = ['#2F80ED','#9B59B6','#16A085','#E67E22','#E84393','#8E44AD','#27AE60','#C0392B'];
+const kelompokDari = (k) => { for (const [id,g] of Object.entries(KURASI)) if (g.kode[k]) return id; return 'lain'; };
+const namaBroker = (k) => { for (const g of Object.values(KURASI)) if (g.kode[k]) return g.kode[k]; return 'belum dikurasi'; };
+const tgl = Object.keys(DATA.hari).sort();
+const st = {dari:tgl[0], sampai:tgl[tgl.length-1], mode:'net', uk:'nilai', preset:'Last 1M'};
+const fmtRp = (v) => { const a=Math.abs(v); const s=v<0?'−':''; if(a>=1e12) return s+(a/1e12).toFixed(2)+'T'; if(a>=1e9) return s+(a/1e9).toFixed(1)+'B'; if(a>=1e6) return s+(a/1e6).toFixed(1)+'M'; return s+Math.round(a).toLocaleString('id-ID'); };
+const fmtLot = (v) => { const a=Math.abs(v); const s=v<0?'−':''; if(a>=1e6) return s+(a/1e6).toFixed(2)+'M'; if(a>=1e3) return s+(a/1e3).toFixed(1)+'K'; return s+Math.round(a); };
+const fmtTgl = (t) => { const [y,m,d]=t.split('-'); return `${Number(d)} ${['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][Number(m)]}`; };
+const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+function hariAktif(){ return tgl.filter(t=>t>=st.dari&&t<=st.sampai); }
+const iso=(d)=>d.toISOString().slice(0,10);
+function geser(t,n){ const d=new Date(t); d.setDate(d.getDate()+n); return iso(d); }
+const PRESET=[['Latest',(L)=>[L,L]],['Prev Day',(L)=>{const i=tgl.indexOf(L);return i>0?[tgl[i-1],tgl[i-1]]:null}],['Last 7D',(L)=>[geser(L,-7),L]],['This Month',(L)=>[L.slice(0,8)+'01',L]],['Prev Month',(L)=>{const d=new Date(L);const a=new Date(d.getFullYear(),d.getMonth()-1,1),b=new Date(d.getFullYear(),d.getMonth(),0);return [iso(a),iso(b)]}],['Last 1M',(L)=>[geser(L,-30),L]],['Last 3M',(L)=>[geser(L,-91),L]],['Last 6M',(L)=>[geser(L,-182),L]],['Year to Date',(L)=>[L.slice(0,4)+'-01-01',L]],['Last 1Y',(L)=>[geser(L,-365),L]]];
+function tersedia(dari,sampai){ return tgl.some(t=>t>=dari&&t<=sampai); }
+function penuh(dari){ return dari>=tgl[0]; }
+function setRentang(dari,sampai,nama){ st.dari=dari<tgl[0]?tgl[0]:dari; st.sampai=sampai; st.preset=nama||null; render(); }
+function renderKalender(){
+  const L=st.sampai; const d=new Date(L); const y=d.getFullYear(), m=d.getMonth();
+  document.getElementById('bulanTeks').textContent=d.toLocaleDateString('id-ID',{month:'long',year:'numeric'});
+  const g=document.getElementById('hariGrid'); g.innerHTML=['Mg','Sn','Sl','Rb','Km','Jm','Sb'].map(x=>`<span>${x}</span>`).join('');
+  const awal=new Date(y,m,1).getDay(); for(let i=0;i<awal;i++) g.insertAdjacentHTML('beforeend','<span></span>');
+  const n=new Date(y,m+1,0).getDate();
+  for(let i=1;i<=n;i++){ const t=`${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`; const ada=tgl.includes(t); g.insertAdjacentHTML('beforeend',`<button data-t="${t}" ${ada?'':'disabled'} aria-pressed="${t>=st.dari&&t<=st.sampai}">${i}</button>`); }
+  const pr=document.getElementById('preset'); pr.innerHTML=PRESET.map(([nm,f])=>{ const r=f(tgl[tgl.length-1]); const ok=r&&tersedia(r[0],r[1]); const pn=ok&&penuh(r[0]); return `<button data-p="${nm}" ${ok?'':'disabled'} aria-pressed="${st.preset===nm}" class="${pn||!ok?'':'sebagian'}" title="${!ok?'belum ada data di rentang ini':pn?'':'data baru mulai '+fmtTgl(tgl[0])+' — ditampilkan sebagian'}">${nm}${pn||!ok?'':' ·'}</button>`; }).join('');
+}
+function labelAD(p){ const a=Math.abs(p); const k=p>=0?'a':'d', w=p>=0?'Acc':'Dist'; if(a<5) return '<span class="ad n">Neutral</span>'; if(a<12.5) return `<span class="ad ${k}">Small ${w}</span>`; if(a<20) return `<span class="ad ${k}">Normal ${w}</span>`; return `<span class="ad ${k}">Big ${w}</span>`; }
+function renderRingkasSB(agg){
+  const net=[...agg].sort((x,y)=>y.nl-x.nl); const pembeli=net.filter(a=>a.nl>0), penjual=net.filter(a=>a.nl<0);
+  const netVol=pembeli.reduce((s,a)=>s+a.nl,0), netVal=pembeli.reduce((s,a)=>s+a.nn,0);
+  const top=(n)=>{ const t=net.slice(0,n); const lot=t.reduce((s,a)=>s+a.nl,0), val=t.reduce((s,a)=>s+a.nn,0); const pct=netVol?lot/netVol*100:0; return `<tr><td>Top ${n}</td><td class="num">${Math.round(lot).toLocaleString('id-ID')}</td><td class="num">${pct.toFixed(1)}</td><td class="num">${(val/1e9).toFixed(1)}</td><td>${labelAD(pct)}</td></tr>`; };
+  document.getElementById('tbTop').innerHTML=top(1)+top(3)+top(5);
+  const selisih=pembeli.length-penjual.length;
+  document.getElementById('tbBrk').innerHTML=`<tr><td>Broker</td><td class="num">${pembeli.length}</td><td class="num">${penjual.length}</td><td class="num">${selisih}</td><td>${selisih<0?'<span class="ad a">Acc</span>':selisih>0?'<span class="ad d">Dist</span>':'<span class="ad n">Neutral</span>'}</td></tr>
+  <tr class="kv"><td>Net Volume</td><td class="num" colspan="4" style="text-align:left">${Math.round(netVol).toLocaleString('id-ID')} lot</td></tr>
+  <tr class="kv"><td>Net Value</td><td class="num" colspan="4" style="text-align:left">${fmtRp(netVal)}</td></tr>
+  <tr class="kv"><td>Average (Rp)</td><td class="num" colspan="4" style="text-align:left">${netVol?Math.round(netVal/(netVol*100)).toLocaleString('id-ID'):'—'}</td></tr>`;
+}
+function agregat(hs){ const per=new Map(); for(const t of hs){ for(const r of DATA.hari[t].b){ const a=per.get(r[0])||{k:r[0],bl:0,bn:0,jl:0,jn:0}; a.bl+=r[1];a.bn+=r[2];a.jl+=r[3];a.jn+=r[4]; per.set(r[0],a);} }
+  const out=[...per.values()]; for(const a of out){a.nl=a.bl-a.jl;a.nn=a.bn-a.jn;a.ba=a.bl?a.bn/(a.bl*100):null;a.ja=a.jl?a.jn/(a.jl*100):null;} return out; }
+
+function render(){
+  const hs=hariAktif(); const agg=agregat(hs);
+  const h0=DATA.hari[hs[0]], hN=DATA.hari[hs[hs.length-1]];
+  document.getElementById('hargaKini').textContent='Rp '+hN.o[3].toLocaleString('id-ID');
+  const g=(hN.o[3]/h0.o[0]-1)*100; const ge=document.getElementById('gerakKini'); ge.textContent=(g>=0?'+':'')+g.toFixed(1)+'% dalam rentang'; ge.style.color=g>=0?css('--beli'):css('--jual');
+  document.getElementById('periodeTeks').textContent=`${fmtTgl(hs[0])} – ${fmtTgl(hs[hs.length-1])} 2026 · ${hs.length} hari bursa`;
+  document.getElementById('modeTeks').textContent=(st.mode==='net'?'Net':'Gross')+' · '+(st.uk==='nilai'?'Nilai':'Lot');
+  document.getElementById('tglTeks').textContent=hs.length===1?fmtTgl(hs[0])+' 2026':fmtTgl(hs[0])+' – '+fmtTgl(hs[hs.length-1])+' 2026'; document.getElementById('tglPrev').disabled=tgl.indexOf(st.sampai)<=0; document.getElementById('tglNext').disabled=st.sampai>=tgl[tgl.length-1]; renderKalender();
+  renderRingkasSB(agg); renderTabel(agg); renderKumulatif(hs,agg); renderFlow(hs); renderAnalisis(hs,agg); renderFloor(hs);
+}
+function renderTabel(agg){
+  const key=st.uk==='nilai'?'n':'l'; const beli=[],jual=[];
+  for(const a of agg){ if(st.mode==='gross'){ if(a.bl) beli.push({k:a.k,v:a.bn,l:a.bl,avg:a.ba}); if(a.jl) jual.push({k:a.k,v:a.jn,l:a.jl,avg:a.ja}); }
+    else { if(a.nn>0) beli.push({k:a.k,v:a.nn,l:a.nl,avg:a.ba}); else if(a.nn<0) jual.push({k:a.k,v:-a.nn,l:-a.nl,avg:a.ja}); } }
+  const urut=(x,y)=> st.uk==='nilai'? y.v-x.v : y.l-x.l; beli.sort(urut); jual.sort(urut);
+  const baris=(r,c)=>`<tr><td class="kode ${KELAS[kelompokDari(r.k)]}" title="${namaBroker(r.k)}">${r.k}</td><td class="num">${fmtRp(r.v)}</td><td class="num">${fmtLot(r.l)}</td><td class="num">${r.avg?Math.round(r.avg):'—'}</td></tr>`;
+  document.getElementById('tbBeli').innerHTML=beli.map(r=>baris(r,'beli')).join('');
+  document.getElementById('tbJual').innerHTML=jual.map(r=>baris(r,'jual')).join('');
+  document.getElementById('nBeli').textContent=beli.length+' broker'; document.getElementById('nJual').textContent=jual.length+' broker';
+}
+function renderKumulatif(hs,agg){
+  const key=st.uk==='nilai'?'nn':'nl'; const urut=[...agg].sort((x,y)=>y[key]-x[key]);
+  const pembeli=urut.slice(0,4).map(a=>a.k), penjual=urut.slice(-4).reverse().map(a=>a.k); const pilih=[...pembeli,...penjual];
+  document.getElementById('chipBroker').innerHTML=`<span class="lbl">Pembeli</span>`+pembeli.map((k,i)=>`<span class="bchip"><i style="background:${WARNA[i]}"></i>${k}</span>`).join('')+`<span class="lbl" style="margin-left:10px">Penjual</span>`+penjual.map((k,i)=>`<span class="bchip"><i style="background:${WARNA[i+4]}"></i>${k}</span>`).join('');
+  const akum=Object.fromEntries(pilih.map(k=>[k,0])); const deret=[], harian=[];
+  for(const t of hs){ let nb=0,nj=0; for(const r of DATA.hari[t].b){ const v=st.uk==='nilai'?r[2]-r[4]:r[1]-r[3]; if(akum[r[0]]!==undefined) akum[r[0]]+=v; if(pembeli.includes(r[0])) nb+=v; if(penjual.includes(r[0])) nj+=v; } deret.push({...akum}); harian.push({nb,nj}); }
+  // kanvas utama
+  const cv=document.getElementById('cvKumulatif'), c=cv.getContext('2d'); const W=cv.width,H=cv.height; const dpr=1; c.clearRect(0,0,W,H);
+  const padL=78,padR=70,padT=16,padB=28; const x=(i)=>padL+(W-padL-padR)*(hs.length===1?0.5:i/(hs.length-1));
+  const vals=deret.flatMap(d=>Object.values(d)); let vmin=Math.min(0,...vals), vmax=Math.max(0,...vals); const span=(vmax-vmin)||1; vmin-=span*.05; vmax+=span*.05;
+  const y=(v)=>padT+(H-padT-padB)*(1-(v-vmin)/(vmax-vmin));
+  const cls=hs.map(t=>DATA.hari[t].o[3]); let pmin=Math.min(...cls),pmax=Math.max(...cls); const ps=(pmax-pmin)||1; pmin-=ps*.15; pmax+=ps*.15; const yp=(p)=>padT+(H-padT-padB)*(1-(p-pmin)/(pmax-pmin));
+  c.font='12px "IBM Plex Mono",monospace'; c.strokeStyle=css('--grid'); c.lineWidth=1; c.fillStyle=css('--faint');
+  for(let i=0;i<=5;i++){ const v=vmin+(vmax-vmin)*i/5; c.beginPath(); c.moveTo(padL,y(v)); c.lineTo(W-padR,y(v)); c.stroke(); c.textAlign='right'; c.fillText(st.uk==='nilai'?fmtRp(v):fmtLot(v),padL-8,y(v)+4); }
+  for(let i=0;i<=4;i++){ const p=pmin+(pmax-pmin)*i/4; c.textAlign='left'; c.fillText(Math.round(p),W-padR+8,yp(p)+4); }
+  c.textAlign='center'; hs.forEach((t,i)=>{ if(hs.length<=14||i%3===0) c.fillText(fmtTgl(t),x(i),H-8); });
+  c.strokeStyle=css('--faint'); c.setLineDash([3,4]); c.beginPath(); c.moveTo(padL,y(0)); c.lineTo(W-padR,y(0)); c.stroke(); c.setLineDash([]);
+  pilih.forEach((k,j)=>{ c.strokeStyle=WARNA[j]; c.lineWidth=2; c.beginPath(); deret.forEach((d,i)=>{ i?c.lineTo(x(i),y(d[k])):c.moveTo(x(i),y(d[k])); }); c.stroke();
+    const last=deret[deret.length-1][k]; c.fillStyle=WARNA[j]; c.beginPath(); c.arc(x(hs.length-1),y(last),3.5,0,7); c.fill(); });
+  c.strokeStyle=css('--harga'); c.lineWidth=2.2; c.beginPath(); cls.forEach((p,i)=>{ i?c.lineTo(x(i),yp(p)):c.moveTo(x(i),yp(p)); }); c.stroke();
+  const lp=cls[cls.length-1]; c.fillStyle=css('--aksen'); c.fillRect(W-padR+2,yp(lp)-9,62,18); c.fillStyle='#111'; c.textAlign='left'; c.font='600 12px "IBM Plex Mono",monospace'; c.fillText(lp.toLocaleString('id-ID'),W-padR+8,yp(lp)+4);
+  // batang harian
+  const cb=document.getElementById('cvHarian'), b=cb.getContext('2d'); const Wb=cb.width,Hb=cb.height; b.clearRect(0,0,Wb,Hb);
+  const mx=Math.max(1,...harian.flatMap(h=>[Math.abs(h.nb),Math.abs(h.nj)])); const mid=Hb/2-6; const bw=Math.max(6,(Wb-padL-padR)/hs.length*0.32);
+  b.strokeStyle=css('--grid'); b.beginPath(); b.moveTo(padL,mid); b.lineTo(Wb-padR,mid); b.stroke();
+  harian.forEach((h,i)=>{ const hb=(h.nb/mx)*(mid-8), hj=(h.nj/mx)*(mid-8); b.fillStyle=css('--beli'); b.fillRect(x(i)-bw-1,mid-Math.max(0,hb),bw,Math.abs(hb)); b.fillStyle=css('--jual'); b.fillRect(x(i)+1,mid-Math.max(0,hj),bw,Math.abs(hj)); });
+  b.fillStyle=css('--faint'); b.font='11px "IBM Plex Mono",monospace'; b.textAlign='right'; b.fillText('+'+(st.uk==='nilai'?fmtRp(mx):fmtLot(mx)),padL-8,14); b.fillText('−'+(st.uk==='nilai'?fmtRp(mx):fmtLot(mx)),padL-8,Hb-10);
+}
+function miniBars(el,vals,mode){ const w=el.clientWidth||300,h=34; el.innerHTML=`<canvas width="${w}" height="${h}"></canvas>`; const c=el.firstChild.getContext('2d'); const mx=Math.max(1,...vals.map(Math.abs)); const bw=Math.max(3,w/vals.length*0.6); const mid=mode==='dua'?h/2:h-2;
+  vals.forEach((v,i)=>{ const x=w*(i+0.5)/vals.length-bw/2; const hh=(Math.abs(v)/mx)*(mode==='dua'?h/2-2:h-4); c.fillStyle=v>=0?css('--beli'):css('--jual'); c.fillRect(x,v>=0?mid-hh:mid,bw,hh); }); }
+function renderFlow(hs){
+  const el=document.getElementById('marketFlow');
+  const reg=hs.map(t=>DATA.hari[t].r.total_nilai); const tot=reg.reduce((a,b)=>a+b,0);
+  el.innerHTML=`<div class="baris-flow"><div class="nama">Reguler<small>nilai transaksi/hari</small></div><div class="mb" id="mbReg"></div><div class="tot num">${fmtRp(tot)}</div></div>
+  <div class="baris-flow"><div class="nama">Asing<small>investor_type=FOREIGN</small></div><div class="tak-ada">belum dipanen — parameter API hidup</div><div class="tot"><span class="pill na">n/a</span></div></div>
+  <div class="baris-flow"><div class="nama">Nego<small>market_board=NEGO</small></div><div class="tak-ada">belum dipanen — parameter API hidup</div><div class="tot"><span class="pill na">n/a</span></div></div>
+  <div class="baris-flow"><div class="nama">Frekuensi beli/jual<small>jumlah broker aktif</small></div><div class="mb" id="mbN"></div><div class="tot num">${DATA.hari[hs[hs.length-1]].r.n_beli}/${DATA.hari[hs[hs.length-1]].r.n_jual}</div></div>`;
+  miniBars(document.getElementById('mbReg'),reg,'satu'); miniBars(document.getElementById('mbN'),hs.map(t=>DATA.hari[t].r.n_beli-DATA.hari[t].r.n_jual),'dua');
+}
+function renderAnalisis(hs,agg){
+  const key=st.uk==='nilai'?'nn':'nl'; const grup={asing:[],bumn:[],smart:[],ritel:[],afiliasi:[],lain:[]};
+  for(const a of agg) grup[kelompokDari(a.k)].push(a);
+  const el=document.getElementById('brokerAnalysis'); el.innerHTML='';
+  for(const [id,arr] of Object.entries(grup)){ const g=KURASI[id]||{label:'Lainnya',ket:'belum dikurasi'}; const net=arr.reduce((s,a)=>s+a[key],0);
+    const harian=hs.map(t=>{ let v=0; for(const r of DATA.hari[t].b) if(kelompokDari(r[0])===id) v+=st.uk==='nilai'?r[2]-r[4]:r[1]-r[3]; return v; });
+    const row=document.createElement('div'); row.className='kat-baris';
+    row.innerHTML=`<div class="nama ${KELAS[id]}">${g.label}<small>${g.ket}</small></div><div class="mb"></div><div class="n num">${arr.length} brk</div><div class="net num ${net>=0?'beli':'jual'}">${net>=0?'+':''}${st.uk==='nilai'?fmtRp(net):fmtLot(net)}</div>`;
+    el.appendChild(row); miniBars(row.querySelector('.mb'),harian,'dua'); }
+  const dk=document.getElementById('daftarKurasi'); if(dk) dk.innerHTML=Object.values(KURASI).flatMap(g=>Object.entries(g.kode).map(([k,n])=>`<div><span class="k">${k}</span> <span class="t">${n} · ${g.label}</span></div>`)).join('');
+}
+function renderFloor(hs){
+  const m=new Map(); for(const t of hs) for(const r of DATA.hari[t].b){ if(r[1]<1000) continue; const avg=r[2]/(r[1]*100); const a=m.get(r[0]); if(!a||avg<a.floor) m.set(r[0],{floor:avg,t,lot:r[1]}); }
+  const rows=[...m.entries()].map(([k,v])=>({k,...v})).sort((a,b)=>a.floor-b.floor).slice(0,12);
+  document.getElementById('tbFloor').innerHTML=rows.map(r=>`<tr><td class="kode ${KELAS[kelompokDari(r.k)]}" title="${namaBroker(r.k)}">${r.k}</td><td class="num">${r.floor.toFixed(1)}</td><td class="num">${fmtTgl(r.t)}</td><td class="num">${fmtLot(r.lot)}</td></tr>`).join('');
+}
+function renderCek(hs){
+  const el=document.getElementById('cekVolume'); if(!el) return; el.innerHTML=hs.map(t=>{ const c=DATA.hari[t].r.cocok_volume; const ok=c!==null&&Math.abs(c-1)<=0.01; return `<span class="pill ${c===null?'na':ok?'ok':'warn'}" title="${t}">${fmtTgl(t)} ${c===null?'—':c.toFixed(3)}</span>`; }).join(' ');
+}
+document.querySelectorAll('.seg').forEach(seg=>seg.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; seg.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed','false')); b.setAttribute('aria-pressed','true');
+  if(b.dataset.uk) st.uk=b.dataset.uk; render(); }));
+document.getElementById('selMode').addEventListener('change',e=>{ st.mode=e.target.value; render(); });
+document.getElementById('tglPrev').addEventListener('click',()=>{ const i=tgl.indexOf(st.sampai); if(i>0){ const span=i-tgl.indexOf(st.dari); const j=i-1; setRentang(tgl[Math.max(0,j-span)],tgl[j],null); } });
+document.getElementById('tglNext').addEventListener('click',()=>{ const i=tgl.indexOf(st.sampai); if(i<tgl.length-1){ const span=i-tgl.indexOf(st.dari); setRentang(tgl[i+1-span],tgl[i+1],null); } });
+const pop=document.getElementById('popupTgl'), bk=document.getElementById('tglBuka');
+bk.addEventListener('click',()=>{ const buka=pop.hidden; pop.hidden=!buka; bk.setAttribute('aria-expanded',String(buka)); });
+document.addEventListener('click',e=>{ if(!e.target.closest('.nav-tgl')){ pop.hidden=true; bk.setAttribute('aria-expanded','false'); } });
+document.getElementById('preset').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.disabled) return; const r=PRESET.find(x=>x[0]===b.dataset.p)[1](tgl[tgl.length-1]); setRentang(r[0],r[1],b.dataset.p); });
+document.getElementById('hariGrid').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.disabled) return; setRentang(b.dataset.t,b.dataset.t,null); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render); new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+document.fonts?.ready.then(render); render(); addEventListener('resize',()=>{ renderFlow(hariAktif()); renderAnalisis(hariAktif(),agregat(hariAktif())); });
+</script>
