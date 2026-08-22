@@ -1,0 +1,1193 @@
+{
+ "baris_diadu": 1063,
+ "baris_tak_ketemu_di_api": 1,
+ "urutan_sama": "69/70",
+ "meleset_di_atas_ambang": [
+  "DSSA 2026-08-10 beli:AT r_lot=1.2748"
+ ],
+ "ambang_meleset": 0.05,
+ "keseluruhan": {
+  "r_lot": {
+   "n": 1062,
+   "median": 1.0,
+   "p05": 0.9903,
+   "p95": 1.0094,
+   "min": 0.9583,
+   "maks": 1.2748
+  },
+  "r_nilai": {
+   "n": 1063,
+   "median": 1.0,
+   "p05": 0.9861,
+   "p95": 1.0138,
+   "min": 0.9555,
+   "maks": 1.0461
+  },
+  "r_avg": {
+   "n": 1063,
+   "median": 1.0,
+   "p05": 0.9985,
+   "p95": 1.0014,
+   "min": 0.9888,
+   "maks": 1.0141
+  }
+ },
+ "per_emiten": {
+  "ARCI": {
+   "r_lot": {
+    "n": 200,
+    "median": 1.0,
+    "p05": 0.9853,
+    "p95": 1.0112,
+    "min": 0.9583,
+    "maks": 1.0235
+   },
+   "r_nilai": {
+    "n": 200,
+    "median": 1.0,
+    "p05": 0.9862,
+    "p95": 1.0175,
+    "min": 0.9584,
+    "maks": 1.0403
+   },
+   "r_avg": {
+    "n": 200,
+    "median": 1.0,
+    "p05": 0.9996,
+    "p95": 1.0004,
+    "min": 0.9996,
+    "maks": 1.0005
+   }
+  },
+  "BUMI": {
+   "r_lot": {
+    "n": 200,
+    "median": 1.0,
+    "p05": 0.9848,
+    "p95": 1.0128,
+    "min": 0.9589,
+    "maks": 1.0402
+   },
+   "r_nilai": {
+    "n": 200,
+    "median": 0.9998,
+    "p05": 0.9904,
+    "p95": 1.0109,
+    "min": 0.9752,
+    "maks": 1.0212
+   },
+   "r_avg": {
+    "n": 200,
+    "median": 1.0,
+    "p05": 0.9974,
+    "p95": 1.0026,
+    "min": 0.9973,
+    "maks": 1.003
+   }
+  },
+  "CUAN": {
+   "r_lot": {
+    "n": 234,
+    "median": 1.0,
+    "p05": 0.9959,
+    "p95": 1.0064,
+    "min": 0.9635,
+    "maks": 1.0216
+   },
+   "r_nilai": {
+    "n": 234,
+    "median": 1.0,
+    "p05": 0.98,
+    "p95": 1.0157,
+    "min": 0.9555,
+    "maks": 1.0338
+   },
+   "r_avg": {
+    "n": 234,
+    "median": 1.0001,
+    "p05": 0.9994,
+    "p95": 1.0006,
+    "min": 0.9986,
+    "maks": 1.0141
+   }
+  },
+  "DSSA": {
+   "r_lot": {
+    "n": 428,
+    "median": 1.0,
+    "p05": 0.9932,
+    "p95": 1.0107,
+    "min": 0.9682,
+    "maks": 1.2748
+   },
+   "r_nilai": {
+    "n": 429,
+    "median": 1.0,
+    "p05": 0.9862,
+    "p95": 1.0131,
+    "min": 0.9644,
+    "maks": 1.0461
+   },
+   "r_avg": {
+    "n": 429,
+    "median": 1.0,
+    "p05": 0.9995,
+    "p95": 1.0005,
+    "min": 0.9888,
+    "maks": 1.0065
+   }
+  }
+ },
+ "ringkasan_vs_bandar_detector": [
+  {
+   "kode": "ARCI",
+   "tanggal": "2026-08-03",
+   "average": 0.9996181902985074,
+   "top1_pct": {
+    "setoran": -7.1,
+    "api": -7.085,
+    "selisih_pp": 0.02
+   },
+   "top3_pct": {
+    "setoran": 5.3,
+    "api": 5.2578,
+    "selisih_pp": -0.04
+   },
+   "top5_pct": {
+    "setoran": 0.1,
+    "api": 0.1419,
+    "selisih_pp": 0.04
+   },
+   "n_buyer": {
+    "setoran": 28,
+    "api": 28,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 17,
+    "api": 17,
+    "sama": true
+   }
+  },
+  {
+   "kode": "ARCI",
+   "tanggal": "2026-08-04",
+   "average": 1.0001278284671533,
+   "top1_pct": {
+    "setoran": 31.1,
+    "api": 31.0845,
+    "selisih_pp": -0.02
+   },
+   "top3_pct": {
+    "setoran": 10.1,
+    "api": 10.1099,
+    "selisih_pp": 0.01
+   },
+   "top5_pct": {
+    "setoran": 3.3,
+    "api": 3.2658,
+    "selisih_pp": -0.03
+   },
+   "n_buyer": {
+    "setoran": 22,
+    "api": 22,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 27,
+    "api": 27,
+    "sama": true
+   }
+  },
+  {
+   "kode": "ARCI",
+   "tanggal": "2026-08-05",
+   "average": 1.0001867595818816,
+   "top1_pct": {
+    "setoran": -5.8,
+    "api": -5.807,
+    "selisih_pp": -0.01
+   },
+   "top3_pct": {
+    "setoran": -24.3,
+    "api": -24.2954,
+    "selisih_pp": 0.0
+   },
+   "top5_pct": {
+    "setoran": -16.2,
+    "api": -16.1715,
+    "selisih_pp": 0.03
+   },
+   "n_buyer": {
+    "setoran": 25,
+    "api": 25,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 31,
+    "api": 31,
+    "sama": true
+   }
+  },
+  {
+   "kode": "ARCI",
+   "tanggal": "2026-08-06",
+   "average": 0.9999857978279031,
+   "top1_pct": {
+    "setoran": -18.5,
+    "api": -18.5135,
+    "selisih_pp": -0.01
+   },
+   "top3_pct": {
+    "setoran": -6.4,
+    "api": -6.3893,
+    "selisih_pp": 0.01
+   },
+   "top5_pct": {
+    "setoran": -4.9,
+    "api": -4.901,
+    "selisih_pp": -0.0
+   },
+   "n_buyer": {
+    "setoran": 28,
+    "api": 28,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 26,
+    "api": 26,
+    "sama": true
+   }
+  },
+  {
+   "kode": "ARCI",
+   "tanggal": "2026-08-07",
+   "average": 1.000030509868421,
+   "top1_pct": {
+    "setoran": 25.3,
+    "api": 25.2783,
+    "selisih_pp": -0.02
+   },
+   "top3_pct": {
+    "setoran": 27.5,
+    "api": 27.533,
+    "selisih_pp": 0.03
+   },
+   "top5_pct": {
+    "setoran": 16.8,
+    "api": 16.7779,
+    "selisih_pp": -0.02
+   },
+   "n_buyer": {
+    "setoran": 15,
+    "api": 15,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 36,
+    "api": 36,
+    "sama": true
+   }
+  },
+  {
+   "kode": "ARCI",
+   "tanggal": "2026-08-10",
+   "average": 0.9999187010954617,
+   "top1_pct": {
+    "setoran": 10.3,
+    "api": 10.2716,
+    "selisih_pp": -0.03
+   },
+   "top3_pct": {
+    "setoran": 40.1,
+    "api": 40.1388,
+    "selisih_pp": 0.04
+   },
+   "top5_pct": {
+    "setoran": 37.1,
+    "api": 37.0756,
+    "selisih_pp": -0.02
+   },
+   "n_buyer": {
+    "setoran": 19,
+    "api": 19,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 37,
+    "api": 37,
+    "sama": true
+   }
+  },
+  {
+   "kode": "ARCI",
+   "tanggal": "2026-08-11",
+   "average": 1.0001663723916534,
+   "top1_pct": {
+    "setoran": 15.4,
+    "api": 15.409,
+    "selisih_pp": 0.01
+   },
+   "top3_pct": {
+    "setoran": 1.2,
+    "api": 1.2457,
+    "selisih_pp": 0.05
+   },
+   "top5_pct": {
+    "setoran": -0.5,
+    "api": -0.4738,
+    "selisih_pp": 0.03
+   },
+   "n_buyer": {
+    "setoran": 31,
+    "api": 31,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 23,
+    "api": 23,
+    "sama": true
+   }
+  },
+  {
+   "kode": "ARCI",
+   "tanggal": "2026-08-12",
+   "average": 0.9998284448025786,
+   "top1_pct": {
+    "setoran": -36.8,
+    "api": -36.8382,
+    "selisih_pp": -0.04
+   },
+   "top3_pct": {
+    "setoran": -49.9,
+    "api": -49.8858,
+    "selisih_pp": 0.01
+   },
+   "top5_pct": {
+    "setoran": -39.1,
+    "api": -39.0916,
+    "selisih_pp": 0.01
+   },
+   "n_buyer": {
+    "setoran": 34,
+    "api": 34,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 14,
+    "api": 14,
+    "sama": true
+   }
+  },
+  {
+   "kode": "ARCI",
+   "tanggal": "2026-08-13",
+   "average": 0.9998200164744646,
+   "top1_pct": {
+    "setoran": -4.2,
+    "api": -4.1523,
+    "selisih_pp": 0.05
+   },
+   "top3_pct": {
+    "setoran": 1.4,
+    "api": 1.4422,
+    "selisih_pp": 0.04
+   },
+   "top5_pct": {
+    "setoran": -8.5,
+    "api": -8.5222,
+    "selisih_pp": -0.02
+   },
+   "n_buyer": {
+    "setoran": 32,
+    "api": 32,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 17,
+    "api": 17,
+    "sama": true
+   }
+  },
+  {
+   "kode": "ARCI",
+   "tanggal": "2026-08-14",
+   "average": 0.9997961983471075,
+   "top1_pct": {
+    "setoran": 30.7,
+    "api": 30.7329,
+    "selisih_pp": 0.03
+   },
+   "top3_pct": {
+    "setoran": 25.4,
+    "api": 25.3757,
+    "selisih_pp": -0.02
+   },
+   "top5_pct": {
+    "setoran": 21.3,
+    "api": 21.3236,
+    "selisih_pp": 0.02
+   },
+   "n_buyer": {
+    "setoran": 21,
+    "api": 21,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 26,
+    "api": 26,
+    "sama": true
+   }
+  },
+  {
+   "kode": "BUMI",
+   "tanggal": "2026-08-03",
+   "average": 0.9998704142011835,
+   "top1_pct": {
+    "setoran": 0.2,
+    "api": 0.213,
+    "selisih_pp": 0.01
+   },
+   "top3_pct": {
+    "setoran": -7.6,
+    "api": -7.5914,
+    "selisih_pp": 0.01
+   },
+   "top5_pct": {
+    "setoran": -17.9,
+    "api": -17.9113,
+    "selisih_pp": -0.01
+   },
+   "n_buyer": {
+    "setoran": 38,
+    "api": 38,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 37,
+    "api": 37,
+    "sama": true
+   }
+  },
+  {
+   "kode": "BUMI",
+   "tanggal": "2026-08-04",
+   "average": 0.9987782142857142,
+   "top1_pct": {
+    "setoran": -1.8,
+    "api": -1.8253,
+    "selisih_pp": -0.03
+   },
+   "top3_pct": {
+    "setoran": -1.8,
+    "api": -1.787,
+    "selisih_pp": 0.01
+   },
+   "top5_pct": {
+    "setoran": -6.6,
+    "api": -6.6429,
+    "selisih_pp": -0.04
+   },
+   "n_buyer": {
+    "setoran": 36,
+    "api": 36,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 32,
+    "api": 32,
+    "sama": true
+   }
+  },
+  {
+   "kode": "BUMI",
+   "tanggal": "2026-08-05",
+   "average": 0.998669090909091,
+   "top1_pct": {
+    "setoran": 15.5,
+    "api": 15.4998,
+    "selisih_pp": -0.0
+   },
+   "top3_pct": {
+    "setoran": 39.5,
+    "api": 39.4742,
+    "selisih_pp": -0.03
+   },
+   "top5_pct": {
+    "setoran": 52.8,
+    "api": 52.8018,
+    "selisih_pp": 0.0
+   },
+   "n_buyer": {
+    "setoran": 17,
+    "api": 17,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 61,
+    "api": 61,
+    "sama": true
+   }
+  },
+  {
+   "kode": "BUMI",
+   "tanggal": "2026-08-06",
+   "average": 1.0001230167597766,
+   "top1_pct": {
+    "setoran": 8.2,
+    "api": 8.1649,
+    "selisih_pp": -0.04
+   },
+   "top3_pct": {
+    "setoran": 11.0,
+    "api": 11.0358,
+    "selisih_pp": 0.04
+   },
+   "top5_pct": {
+    "setoran": 10.7,
+    "api": 10.6519,
+    "selisih_pp": -0.05
+   },
+   "n_buyer": {
+    "setoran": 27,
+    "api": 27,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 46,
+    "api": 46,
+    "sama": true
+   }
+  },
+  {
+   "kode": "BUMI",
+   "tanggal": "2026-08-07",
+   "average": 0.997840376344086,
+   "top1_pct": {
+    "setoran": -3.8,
+    "api": -3.8292,
+    "selisih_pp": -0.03
+   },
+   "top3_pct": {
+    "setoran": -2.7,
+    "api": -2.707,
+    "selisih_pp": -0.01
+   },
+   "top5_pct": {
+    "setoran": -1.8,
+    "api": -1.7951,
+    "selisih_pp": 0.0
+   },
+   "n_buyer": {
+    "setoran": 28,
+    "api": 28,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 50,
+    "api": 50,
+    "sama": true
+   }
+  },
+  {
+   "kode": "BUMI",
+   "tanggal": "2026-08-10",
+   "average": 1.0019991443850267,
+   "top1_pct": {
+    "setoran": 14.3,
+    "api": 14.3187,
+    "selisih_pp": 0.02
+   },
+   "top3_pct": {
+    "setoran": 11.1,
+    "api": 11.1324,
+    "selisih_pp": 0.03
+   },
+   "top5_pct": {
+    "setoran": 7.0,
+    "api": 6.9665,
+    "selisih_pp": -0.03
+   },
+   "n_buyer": {
+    "setoran": 36,
+    "api": 36,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 38,
+    "api": 38,
+    "sama": true
+   }
+  },
+  {
+   "kode": "BUMI",
+   "tanggal": "2026-08-11",
+   "average": 1.0012103314917127,
+   "top1_pct": {
+    "setoran": 15.9,
+    "api": 15.9198,
+    "selisih_pp": 0.02
+   },
+   "top3_pct": {
+    "setoran": 17.4,
+    "api": 17.4353,
+    "selisih_pp": 0.04
+   },
+   "top5_pct": {
+    "setoran": 15.7,
+    "api": 15.7211,
+    "selisih_pp": 0.02
+   },
+   "n_buyer": {
+    "setoran": 40,
+    "api": 40,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 34,
+    "api": 34,
+    "sama": true
+   }
+  },
+  {
+   "kode": "BUMI",
+   "tanggal": "2026-08-12",
+   "average": 1.0021281868131868,
+   "top1_pct": {
+    "setoran": -6.1,
+    "api": -6.0707,
+    "selisih_pp": 0.03
+   },
+   "top3_pct": {
+    "setoran": 1.5,
+    "api": 1.4936,
+    "selisih_pp": -0.01
+   },
+   "top5_pct": {
+    "setoran": 6.8,
+    "api": 6.8212,
+    "selisih_pp": 0.02
+   },
+   "n_buyer": {
+    "setoran": 33,
+    "api": 33,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 38,
+    "api": 38,
+    "sama": true
+   }
+  },
+  {
+   "kode": "BUMI",
+   "tanggal": "2026-08-13",
+   "average": 1.0013818784530388,
+   "top1_pct": {
+    "setoran": -22.2,
+    "api": -22.2412,
+    "selisih_pp": -0.04
+   },
+   "top3_pct": {
+    "setoran": -20.2,
+    "api": -20.1603,
+    "selisih_pp": 0.04
+   },
+   "top5_pct": {
+    "setoran": -23.5,
+    "api": -23.4845,
+    "selisih_pp": 0.02
+   },
+   "n_buyer": {
+    "setoran": 48,
+    "api": 48,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 21,
+    "api": 21,
+    "sama": true
+   }
+  },
+  {
+   "kode": "BUMI",
+   "tanggal": "2026-08-14",
+   "average": 0.9999205,
+   "top1_pct": {
+    "setoran": 3.5,
+    "api": 3.4509,
+    "selisih_pp": -0.05
+   },
+   "top3_pct": {
+    "setoran": 6.9,
+    "api": 6.9228,
+    "selisih_pp": 0.02
+   },
+   "top5_pct": {
+    "setoran": 16.2,
+    "api": 16.1773,
+    "selisih_pp": -0.02
+   },
+   "n_buyer": {
+    "setoran": 24,
+    "api": 24,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 42,
+    "api": 42,
+    "sama": true
+   }
+  },
+  {
+   "kode": "CUAN",
+   "tanggal": "2026-08-06",
+   "average": 0.9996388967468175,
+   "top1_pct": {
+    "setoran": 1.3,
+    "api": 1.3238,
+    "selisih_pp": 0.02
+   },
+   "top3_pct": {
+    "setoran": 3.6,
+    "api": 3.551,
+    "selisih_pp": -0.05
+   },
+   "top5_pct": {
+    "setoran": -1.1,
+    "api": -1.1151,
+    "selisih_pp": -0.02
+   },
+   "n_buyer": {
+    "setoran": 33,
+    "api": 33,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 35,
+    "api": 35,
+    "sama": true
+   }
+  },
+  {
+   "kode": "CUAN",
+   "tanggal": "2026-08-07",
+   "average": 1.0003489100817438,
+   "top1_pct": {
+    "setoran": -2.0,
+    "api": -2.0432,
+    "selisih_pp": -0.04
+   },
+   "top3_pct": {
+    "setoran": 7.7,
+    "api": 7.7231,
+    "selisih_pp": 0.02
+   },
+   "top5_pct": {
+    "setoran": 12.6,
+    "api": 12.6012,
+    "selisih_pp": 0.0
+   },
+   "n_buyer": {
+    "setoran": 24,
+    "api": 24,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 41,
+    "api": 41,
+    "sama": true
+   }
+  },
+  {
+   "kode": "CUAN",
+   "tanggal": "2026-08-10",
+   "average": 1.0001202452316076,
+   "top1_pct": {
+    "setoran": -5.6,
+    "api": -5.6455,
+    "selisih_pp": -0.05
+   },
+   "top3_pct": {
+    "setoran": -17.2,
+    "api": -17.2419,
+    "selisih_pp": -0.04
+   },
+   "top5_pct": {
+    "setoran": -21.8,
+    "api": -21.7733,
+    "selisih_pp": 0.03
+   },
+   "n_buyer": {
+    "setoran": 39,
+    "api": 39,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 26,
+    "api": 26,
+    "sama": true
+   }
+  },
+  {
+   "kode": "CUAN",
+   "tanggal": "2026-08-11",
+   "average": 1.000559971098266,
+   "top1_pct": {
+    "setoran": 32.6,
+    "api": 32.5668,
+    "selisih_pp": -0.03
+   },
+   "top3_pct": {
+    "setoran": 17.9,
+    "api": 17.9207,
+    "selisih_pp": 0.02
+   },
+   "top5_pct": {
+    "setoran": 8.2,
+    "api": 8.2077,
+    "selisih_pp": 0.01
+   },
+   "n_buyer": {
+    "setoran": 26,
+    "api": 26,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 35,
+    "api": 35,
+    "sama": true
+   }
+  },
+  {
+   "kode": "CUAN",
+   "tanggal": "2026-08-12",
+   "average": 0.9993941323345817,
+   "top1_pct": {
+    "setoran": 11.4,
+    "api": 11.4384,
+    "selisih_pp": 0.04
+   },
+   "top3_pct": {
+    "setoran": 43.6,
+    "api": 43.6373,
+    "selisih_pp": 0.04
+   },
+   "top5_pct": {
+    "setoran": 34.5,
+    "api": 34.5067,
+    "selisih_pp": 0.01
+   },
+   "n_buyer": {
+    "setoran": 15,
+    "api": 15,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 58,
+    "api": 58,
+    "sama": true
+   }
+  },
+  {
+   "kode": "CUAN",
+   "tanggal": "2026-08-13",
+   "average": 0.9999706352941177,
+   "top1_pct": {
+    "setoran": -10.3,
+    "api": -10.2922,
+    "selisih_pp": 0.01
+   },
+   "top3_pct": {
+    "setoran": -14.0,
+    "api": -14.047,
+    "selisih_pp": -0.05
+   },
+   "top5_pct": {
+    "setoran": -8.1,
+    "api": -8.093,
+    "selisih_pp": 0.01
+   },
+   "n_buyer": {
+    "setoran": 41,
+    "api": 41,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 33,
+    "api": 33,
+    "sama": true
+   }
+  },
+  {
+   "kode": "DSSA",
+   "tanggal": "2026-08-03",
+   "average": 1.0001301297169811,
+   "top1_pct": {
+    "setoran": 27.7,
+    "api": 27.7036,
+    "selisih_pp": 0.0
+   },
+   "top3_pct": {
+    "setoran": 14.1,
+    "api": 14.0858,
+    "selisih_pp": -0.01
+   },
+   "top5_pct": {
+    "setoran": 4.2,
+    "api": 4.1934,
+    "selisih_pp": -0.01
+   },
+   "n_buyer": {
+    "setoran": 38,
+    "api": 38,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 28,
+    "api": 28,
+    "sama": true
+   }
+  },
+  {
+   "kode": "DSSA",
+   "tanggal": "2026-08-04",
+   "average": 0.9994847437425506,
+   "top1_pct": {
+    "setoran": -23.7,
+    "api": -23.6535,
+    "selisih_pp": 0.05
+   },
+   "top3_pct": {
+    "setoran": -21.2,
+    "api": -21.1787,
+    "selisih_pp": 0.02
+   },
+   "top5_pct": {
+    "setoran": -17.2,
+    "api": -17.1756,
+    "selisih_pp": 0.02
+   },
+   "n_buyer": {
+    "setoran": 31,
+    "api": 31,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 28,
+    "api": 28,
+    "sama": true
+   }
+  },
+  {
+   "kode": "DSSA",
+   "tanggal": "2026-08-05",
+   "average": 0.9997447429906543,
+   "top1_pct": {
+    "setoran": 22.1,
+    "api": 22.0701,
+    "selisih_pp": -0.03
+   },
+   "top3_pct": {
+    "setoran": 29.3,
+    "api": 29.3496,
+    "selisih_pp": 0.05
+   },
+   "top5_pct": {
+    "setoran": 25.0,
+    "api": 25.0497,
+    "selisih_pp": 0.05
+   },
+   "n_buyer": {
+    "setoran": 19,
+    "api": 19,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 40,
+    "api": 40,
+    "sama": true
+   }
+  },
+  {
+   "kode": "DSSA",
+   "tanggal": "2026-08-06",
+   "average": 0.9998349785407725,
+   "top1_pct": {
+    "setoran": 21.2,
+    "api": 21.1833,
+    "selisih_pp": -0.02
+   },
+   "top3_pct": {
+    "setoran": 21.1,
+    "api": 21.1235,
+    "selisih_pp": 0.02
+   },
+   "top5_pct": {
+    "setoran": 22.9,
+    "api": 22.9285,
+    "selisih_pp": 0.03
+   },
+   "n_buyer": {
+    "setoran": 15,
+    "api": 15,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 60,
+    "api": 60,
+    "sama": true
+   }
+  },
+  {
+   "kode": "DSSA",
+   "tanggal": "2026-08-07",
+   "average": 0.999618358509567,
+   "top1_pct": {
+    "setoran": -2.3,
+    "api": -2.3022,
+    "selisih_pp": -0.0
+   },
+   "top3_pct": {
+    "setoran": -1.7,
+    "api": -1.7413,
+    "selisih_pp": -0.04
+   },
+   "top5_pct": {
+    "setoran": -4.8,
+    "api": -4.8068,
+    "selisih_pp": -0.01
+   },
+   "n_buyer": {
+    "setoran": 40,
+    "api": 40,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 31,
+    "api": 31,
+    "sama": true
+   }
+  },
+  {
+   "kode": "DSSA",
+   "tanggal": "2026-08-10",
+   "average": 0.9998903,
+   "top1_pct": {
+    "setoran": 15.0,
+    "api": 15.008,
+    "selisih_pp": 0.01
+   },
+   "top3_pct": {
+    "setoran": 2.6,
+    "api": 2.5505,
+    "selisih_pp": -0.05
+   },
+   "top5_pct": {
+    "setoran": -3.0,
+    "api": -2.9702,
+    "selisih_pp": 0.03
+   },
+   "n_buyer": {
+    "setoran": 36,
+    "api": 36,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 38,
+    "api": 38,
+    "sama": true
+   }
+  },
+  {
+   "kode": "DSSA",
+   "tanggal": "2026-08-11",
+   "average": 0.9999571113445378,
+   "top1_pct": {
+    "setoran": -33.3,
+    "api": -33.342,
+    "selisih_pp": -0.04
+   },
+   "top3_pct": {
+    "setoran": -33.9,
+    "api": -33.9194,
+    "selisih_pp": -0.02
+   },
+   "top5_pct": {
+    "setoran": -29.5,
+    "api": -29.5238,
+    "selisih_pp": -0.02
+   },
+   "n_buyer": {
+    "setoran": 52,
+    "api": 52,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 20,
+    "api": 20,
+    "sama": true
+   }
+  },
+  {
+   "kode": "DSSA",
+   "tanggal": "2026-08-12",
+   "average": 1.0002535634517766,
+   "top1_pct": {
+    "setoran": 1.5,
+    "api": 1.4558,
+    "selisih_pp": -0.04
+   },
+   "top3_pct": {
+    "setoran": 13.2,
+    "api": 13.1616,
+    "selisih_pp": -0.04
+   },
+   "top5_pct": {
+    "setoran": 23.0,
+    "api": 22.9676,
+    "selisih_pp": -0.03
+   },
+   "n_buyer": {
+    "setoran": 25,
+    "api": 25,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 47,
+    "api": 47,
+    "sama": true
+   }
+  },
+  {
+   "kode": "DSSA",
+   "tanggal": "2026-08-13",
+   "average": 1.000116186612576,
+   "top1_pct": {
+    "setoran": 3.8,
+    "api": 3.7877,
+    "selisih_pp": -0.01
+   },
+   "top3_pct": {
+    "setoran": -5.5,
+    "api": -5.484,
+    "selisih_pp": 0.02
+   },
+   "top5_pct": {
+    "setoran": -8.4,
+    "api": -8.4452,
+    "selisih_pp": -0.05
+   },
+   "n_buyer": {
+    "setoran": 32,
+    "api": 32,
+    "sama": true
+   },
+   "n_seller": {
+    "setoran": 40,
+    "api": 40,
+    "sama": true
+   }
+  }
+ ]
+}
