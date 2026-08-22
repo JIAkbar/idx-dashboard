@@ -63,3 +63,15 @@ daily Net% strip" dengan kotak skor per kategori +1/−1/+4/+3…).
 Backlog replikasi: `docs/antrean.md` **P7**.
 
 ## Yang bisa dipetik untuk PAPAN
+
+- Arus broker harian mereka setara dengan yang kini kita panen dari Stockbit
+  (langkah 3d) — bahan bakunya sudah ada; yang perlu dibangun tampilannya
+  dan klasifikasi brokernya.
+- Lapis kepemilikan (KSEI bulanan, pemegang ≥1%/≥5%, SID & scripless) belum
+  kita punya dan tak ada di Stockbit `marketdetectors`; sumbernya laporan
+  bulanan KSEI/IDX.
+- Klasifikasi broker yang bisa diubah pengguna (default + kustom,
+  `/user/broker-categories/customize-default`) — pola yang cocok untuk Smart
+  Money/Whale/Retail di desain kita.
+- "Static Backend (Read-Only)" = data dipra-hitung, bukan dihitung saat
+  diminta — sama dengan pola JSON statis PAPAN.
