@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "app-dev",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--prefix", "app", "--", "--port", "5175", "--strictPort"],
+      "runtimeExecutable": "C:\Windows\System32\cmd.exe",
+      "runtimeArgs": ["/c", "npm run dev --prefix app -- --port 5175 --strictPort"],
       "port": 5175
     }
   ]

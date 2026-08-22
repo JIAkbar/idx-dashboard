@@ -76,6 +76,8 @@ export function AdminLayout() {
    *  tak pernah dicek/dibekukan). */
   const [bekuInfo, setBekuInfo] = useState<StatusBeku | null>(null)
   const [bekuTampil, setBekuTampil] = useState(false)
+  /** Akun yang SUDAH dibekukan (aktif=false) — banner tetap, tak bisa ditutup. */
+  const [statusTerkunci, setStatusTerkunci] = useState<StatusBeku | null>(null)
   /** Jenjang yang baru dicapai — non-null berarti modal perayaan tampil. */
   const [naikJenjang, setNaikJenjang] = useState<JenjangRow | null>(null)
   /** Modal "Lengkapi profil" (#item5, akun lama alias kosong) sudah ditutup
@@ -134,6 +136,22 @@ export function AdminLayout() {
     return () => {
       batal = true
     }
+  }, [session, superadmin])
+
+  // Status "SUDAH beku" dibaca terpisah dari jalur peringatan di atas.
+  // Peringatan menumpang jalur sambutan (sekali per sesi login, `perluSambutan`)
+  // — masuk akal untuk pengingat, tapi salah untuk akun yang TELANJUR beku:
+  // orang itu perlu melihat keterangannya tiap kali membuka halaman, bukan
+  // sekali lalu hilang. Johan 22 Agu 2026: "berikan informasi akun anda
+  // otomatis beku karena tidak aktif selama 5 hari dan tidak setor broker
+  // summary ... hubungi superadmin untuk re-aktivasi akun lagi".
+  useEffect(() => {
+    if (!session || superadmin) return
+    let batal = false
+    statusBekuSaya().then((info) => {
+      if (!batal && info && !info.aktif) setStatusTerkunci(info)
+    })
+    return () => { batal = true }
   }, [session, superadmin])
 
   function tutupBeku() {
@@ -291,6 +309,27 @@ export function AdminLayout() {
         ))}
       </nav>
 
+      {statusTerkunci && (
+        <div className="panel" style={{ marginTop: 14, borderColor: 'var(--amber)' }}>
+          <div className="panel-h">
+            <span className="lbl"><IkonMenu d={IKON_JAM} size={13} /> Akun dibekukan otomatis</span>
+          </div>
+          <div className="panel-b" style={{ display: 'grid', gap: 8 }}>
+            <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.6 }}>
+              Akun ini beku karena <b>{statusTerkunci.hari} hari kerja</b> berlalu tanpa setoran broker
+              summary — ambang jenjangmu <b>{statusTerkunci.ambang} hari kerja</b>. Membuka halaman saja
+              tidak menghentikan hitungan itu; yang menghentikannya adalah setoran.
+            </p>
+            <p className="muted" style={{ margin: 0, fontSize: 11.5, lineHeight: 1.6 }}>
+              Seluruh setoran yang pernah kamu kirim <b>tetap tercatat</b> — jenjang, jumlah setoran
+              disetujui, dan kreditmu di edisi tidak hilang karena pembekuan ini. Hubungi
+              <b> superadmin</b> untuk mengaktifkan kembali; begitu aktif, tiap setoran memperpanjang
+              masa aktif {statusTerkunci.ambang} hari kerja berikutnya.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div style={{ display: 'grid', gap: 14, marginTop: 14 }}>
         <AdminTanggalProvider>
           <Outlet />
@@ -305,12 +344,13 @@ export function AdminLayout() {
         <ModalKecil label="Hampir dibekukan otomatis" onClose={tutupBeku}>
           <p style={{ margin: 0, fontSize: 12.5 }}>
             <IkonMenu d={IKON_JAM} size={13} /> Sudah <b>{bekuInfo.hari} hari kerja</b> tanpa setoran
-            yang disetujui — akun dibekukan otomatis kalau mencapai <b>{bekuInfo.ambang} hari kerja</b>.
+            broker summary — akun dibekukan otomatis kalau mencapai <b>{bekuInfo.ambang} hari kerja</b>.
           </p>
           <p className="muted" style={{ margin: 0, fontSize: 11.5, lineHeight: 1.55 }}>
-            Sisa <b>{Math.max(0, bekuInfo.ambang - bekuInfo.hari)} hari kerja</b> lagi. Setor broker summary
-            hari ini lalu tunggu dikurasi superadmin — status "disetujui" yang mereset hitungan ini,
-            bukan sekadar mengunggah.
+            Sisa <b>{Math.max(0, bekuInfo.ambang - bekuInfo.hari)} hari kerja</b> lagi. Yang menghentikan
+            hitungan ini adalah <b>setoran</b> itu sendiri — bukan menunggu kurasinya, dan bukan sekadar
+            membuka halaman. Tiap setoran memperpanjang masa aktif {bekuInfo.ambang} hari kerja
+            berikutnya, jadi menyetor di hari keempat pun mengulang hitungannya dari nol.
           </p>
           <div style={{ display: 'flex', gap: 8 }}>
             <button type="button" className="btn-p" style={{ flex: 1 }} onClick={setorSekarang}>Setor sekarang</button>
