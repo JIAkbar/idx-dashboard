@@ -118,3 +118,52 @@ ToS yang sama seperti token.
   position (+varian risiko) · Rectangle (+varian) · Text · Market Profile ·
   Measure · Delete (+menu).
 - **Kepala**: cari ticker, favorit, Discord, Sign in with Google.
+
+## 2c · Uji fungsi NON-PREMIUM satu per satu (23 Agu 2026)
+
+Johan: *"tolong demi apapun fungsi-fungsinya yang non premium dicoba semua"*.
+Dijalankan sebagai tamu (tanpa login) di `/app/layout/k6xwggvgr/BUMI`, tiap
+masukan diberi jeda dan hasilnya diverifikasi dari layar/API — bukan ditebak.
+
+| Fungsi | Hasil sebagai tamu | Bukti |
+|---|---|---|
+| Timeframe **1H · 4H** | **BEKERJA** | grafik footprint terisi penuh di kedua TF |
+| Timeframe **1m · 5m · 15m** | **TERKUNCI** — klik langsung melempar ke layar login Google | API menjawab `Only 1H and 4H timeframes are available on guest and regular plans` (jadi akun gratis pun tak dapat) |
+| Rentang tanggal | **3 hari terakhir saja** | `GET /api/market/dates/BUMI` → `["2026-08-21","2026-08-20","2026-08-19"]` |
+| **Area breakdown** (drag persegi) | **BEKERJA PENUH — ini yang paling berharga** | lihat rincian di bawah |
+| **Replay** | **BEKERJA di 1H**, mati di 4H | tombol berlabel `Replay is not supported on 4H timeframe` saat TF 4H, aktif setelah pindah ke 1H |
+| **Workspace layouts** | **BEKERJA** — SINGLE · SPLIT-V · SPLIT-H · QUAD, jumlah pane ±, Saved Layouts (New/duplikat/rename/hapus) | panel terbuka & dapat diubah |
+| **Indicators** (7) | panel terbuka; sebagian tampilan lanjutan memunculkan gembok **UNLOCK PREMIUM** di kanvas | Market profile (Volume/Delta/TPO × Visible/Daily/Weekly/Monthly + Advanced tuning), Broker volume bubbles, Aggression bubbles, Volume imbalance, Volume, CVD, VWAP |
+| **Broker Insight** (MAKER/TAKER) | tampil, tapi kosong sampai bubble aktif — "BUMI · 0 bubble signals" | dengan bubbles aktif terisi (mis. "27 bubble signals", daftar nilai per broker) |
+| Alat gambar (9) | **BEKERJA** | Crosshair · Trend line · Fib · Long/Short Position · Rectangle · Text · Market Profile · Measure · Delete |
+| Cari ticker, favorit, sidebar, Discord | **BEKERJA** | — |
+
+### Area breakdown — isi sebenarnya (BUMI, rentang harga 190–199)
+
+Satu tarikan persegi menghasilkan **empat kuadran maker/taker per broker**,
+lengkap dengan bendera `[D]`omestik / `[F]`oreign:
+
+| Kuadran | Contoh baris |
+|---|---|
+| **AGG BUYERS** +2,99m | `CC [F] +719.401` · `XL [D] +475.110` · `AK [F] +200.000` · `XC [D] +172.363` (+40 broker lain) |
+| **PASSIVE SELLERS** | `XC [D] −409.649` · `YU [D] −311.688` · `XL [D] −264.864` · `GR [D] −253.040` (+41 lain) |
+| **PASSIVE BUYERS** | `MG [D] +262.133` · `XL [D] +210.461` · `CP [D] +184.461` (+33 lain) |
+| **AGG SELLERS** +1,29m | `CC [F] −847.462` · `AZ [D] −172.594` · `ZP [D] −100.650` (+19 lain) |
+| **NET BROKER** | Buy `XL [D] +336.374`, Sell `YU [D] −264.394` |
+
+Inilah pembeda whales dari semua sumber lain yang kita punya: broker summary
+EOD kita hanya tahu **beli** dan **jual** per broker; whales memisahkan
+**siapa yang menyerang (taker)** dari **siapa yang menampung (maker)** di tiap
+sisi. Satu broker bisa muncul di dua kuadran sekaligus — `XL [D]` di atas
+tercatat sebagai agresif-beli, pasif-jual, **dan** pasif-beli dalam rentang
+yang sama, sesuatu yang mustahil terbaca dari data harian.
+
+Dan semuanya **gratis** — batasnya bukan fitur, melainkan **3 hari terakhir**.
+
+### Konsekuensi untuk kita
+
+Kalau data ini ingin dimiliki, satu-satunya jalan adalah **memanennya setiap
+hari** — tidak ada arsip yang bisa ditarik mundur. Tiga hari ke belakang itu
+seluruh sejarah yang tersedia, kapan pun kita mulai. Menunda sebulan berarti
+kehilangan sebulan secara permanen, berbeda dengan broker EOD Stockbit yang
+bisa di-backfill sampai 2017.
