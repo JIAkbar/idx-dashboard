@@ -55,13 +55,27 @@ def main() -> int:
     print(f"{kode}: {len(tanggal)} hari bursa {a.dari}..{sampai}, {len(sudah)} sudah di arsip, {len(sisa)} akan diambil")
     mulai = time.time()
     ok = 0
+    gagal: list[str] = []
     for i, t in enumerate(sisa, 1):
-        rc = ph.jalankan(SimpleNamespace(tanggal=t, hanya=kode, batas=None, jeda=a.jeda, ulang=False))
+        # Satu hari yang gagal (kunci berkas, jaringan putus sesaat) tak boleh
+        # menghentikan ratusan hari di belakangnya — dicatat, lalu lanjut; jalan
+        # ulang akan menambalnya karena arsipnya memang belum ada.
+        try:
+            rc = ph.jalankan(SimpleNamespace(tanggal=t, hanya=kode, batas=None, jeda=a.jeda, ulang=False))
+        except SystemExit as e:  # token mati/ditolak — ini memang harus berhenti
+            print(f"BERHENTI di {t}: {e}")
+            return 2
+        except Exception as e:  # noqa: BLE001
+            gagal.append(t)
+            print(f"  {t}: GAGAL {type(e).__name__}: {str(e)[:120]}")
+            time.sleep(2)
+            continue
         ok += 1 if rc == 0 else 0
         if i % 50 == 0:
             laju = (time.time() - mulai) / i
             print(f"--- {i}/{len(sisa)} · {laju:.2f}s/hari · sisa ±{laju*(len(sisa)-i)/60:.0f} menit", flush=True)
-    print(f"SELESAI {kode}: {ok}/{len(sisa)} hari tersimpan dalam {(time.time()-mulai)/60:.1f} menit")
+    print(f"SELESAI {kode}: {ok}/{len(sisa)} hari tersimpan dalam {(time.time()-mulai)/60:.1f} menit"
+          + (f" — {len(gagal)} hari gagal, jalankan ulang: {', '.join(gagal[:10])}" if gagal else ""))
     return 0
 
 
