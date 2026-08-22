@@ -78,6 +78,10 @@ canvas{display:block;width:100%;height:auto}
 .ad{display:inline-block;padding:1px 8px;border-radius:3px;font-size:11.5px;font-weight:600;min-width:74px;text-align:center}
 .ad.n{background:var(--panel2);color:var(--muted)}.ad.a{background:var(--beli-soft);color:var(--beli)}.ad.d{background:var(--jual-soft);color:var(--jual)}
 .ringkas-sb .kv td{border-bottom:0;padding:2px 6px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:2px 0 12px}
+.stat div{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:7px 10px}
+.stat .lbl{display:block;margin-bottom:2px}.stat b{font-size:15px;font-weight:500}.stat small{display:block;color:var(--faint);font-size:11px}
+.ringkas-sb td.ad-cell{text-align:right}
 .beli{color:var(--beli)}.jual{color:var(--jual)}
 .sisi-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
 .baris-flow{display:grid;grid-template-columns:128px minmax(0,1fr) 72px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--grid)}
@@ -147,8 +151,8 @@ details summary{cursor:pointer;color:var(--muted);font-size:12.5px}
     <section class="panel">
       <div class="panel-h"><h2>Broker Summary</h2><span class="lbl" id="modeTeks">Net · Nilai</span></div>
       <div class="legenda"><span class="k-asing">Asing</span><span class="k-bumn">BUMN</span><span class="k-smart">Smart Money</span><span class="k-ritel">Ritel</span><span class="k-afiliasi">Afiliasi grup / bandar</span><span class="k-lain">Lainnya</span></div>
-      <table class="ringkas-sb"><thead><tr><th></th><th>Volume</th><th>%</th><th>Rp(B)</th><th>Acc/Dist</th></tr></thead><tbody id="tbTop"></tbody></table>
-      <table class="ringkas-sb"><thead><tr><th></th><th>Buyer</th><th>Seller</th><th>#</th><th>Acc/Dist</th></tr></thead><tbody id="tbBrk"></tbody></table>
+      <div class="stat" id="statSB"></div>
+      <table class="ringkas-sb"><thead><tr><th>Pembeli − penjual</th><th>Lot</th><th>%</th><th>Nilai net (B)</th><th title="gaya Stockbit: lot × 100 × Average">Rp@Avg (B)</th><th>Acc/Dist</th></tr></thead><tbody id="tbTop"></tbody></table>
       <div class="dua">
         <div class="sisi"><div class="sisi-h"><span class="lbl beli">Beli</span><span class="lbl" id="nBeli"></span></div>
           <table class="tbl"><thead><tr><th>BY</th><th>Val</th><th>Lot</th><th>Avg</th></tr></thead><tbody id="tbBeli"></tbody></table></div>
@@ -217,21 +221,23 @@ function renderKalender(){
 }
 function labelAD(p){ const a=Math.abs(p); const k=p>=0?'a':'d', w=p>=0?'Acc':'Dist'; if(a<6) return '<span class="ad n">Neutral</span>'; if(a<15) return `<span class="ad ${k}">Small ${w}</span>`; if(a<20) return `<span class="ad ${k}">Normal ${w}</span>`; return `<span class="ad ${k}">Big ${w}</span>`; }
 function renderRingkasSB(agg){
-  // Rumus DIUKUR dari layar Stockbit BUMI 21 Agu 2026 (cocok sampai lot terakhir):
-  // Top N = Σ N pembeli net teratas + Σ N penjual net teratas (negatif);
-  // % = Top N ÷ Net Volume; Net Volume = Σ net pembeli; Average = Net Value ÷ (Net Volume×100);
-  // Rp(B) = Top N lot × 100 × Average — BUKAN nilai net sebenarnya.
+  // Rumus Top N / % / Rp@Avg DIUKUR dari layar Stockbit BUMI 21 Agu 2026 (cocok sampai lot
+  // terakhir). Versi kita menambah yang Stockbit tak tampilkan: Top 2 & 4, nilai net
+  // SUNGGUHAN per Top N, dan ubin statistik dengan jumlah broker & nilai kotor.
   const net=[...agg].sort((x,y)=>y.nl-x.nl); const pembeli=net.filter(a=>a.nl>0), penjual=[...net.filter(a=>a.nl<0)].sort((x,y)=>x.nl-y.nl);
   const netVol=pembeli.reduce((s,a)=>s+a.nl,0), netVal=pembeli.reduce((s,a)=>s+a.nn,0); const avg=netVol?netVal/(netVol*100):0;
+  const kotor=agg.reduce((s,a)=>s+a.bn,0); const selisih=pembeli.length-penjual.length;
   const topLot=(n)=>pembeli.slice(0,n).reduce((s,a)=>s+a.nl,0)+penjual.slice(0,n).reduce((s,a)=>s+a.nl,0);
-  const baris=(label,lot,kira)=>{ const pct=netVol?lot/netVol*100:0; return `<tr><td>${label}</td><td class="num">${kira?'≈ ':''}${Math.round(lot).toLocaleString('id-ID')}</td><td class="num">${pct.toFixed(1)}</td><td class="num">${(lot*100*avg/1e9).toFixed(1)}</td><td>${labelAD(pct)}</td></tr>`; };
-  const rata=[1,2,3,4,5].reduce((s,n)=>s+topLot(n),0)/5;
-  document.getElementById('tbTop').innerHTML=baris('Top 1',topLot(1))+baris('Top 3',topLot(3))+baris('Top 5',topLot(5))+baris('<span title="Stockbit tak mengumumkan rumusnya; ini rata-rata Top 1–5, meleset ±1% dari angka mereka">Average</span>',rata,true);
-  const selisih=pembeli.length-penjual.length;
-  document.getElementById('tbBrk').innerHTML=`<tr><td>Broker</td><td class="num">${pembeli.length}</td><td class="num">${penjual.length}</td><td class="num">${selisih}</td><td>${selisih<0?'<span class="ad a">Acc</span>':selisih>0?'<span class="ad d">Dist</span>':'<span class="ad n">Neutral</span>'}</td></tr>
-  <tr class="kv"><td>Net Volume</td><td class="num" colspan="4" style="text-align:left">${Math.round(netVol).toLocaleString('id-ID')} lot</td></tr>
-  <tr class="kv"><td>Net Value</td><td class="num" colspan="4" style="text-align:left">${fmtRp(netVal)}</td></tr>
-  <tr class="kv"><td>Average (Rp)</td><td class="num" colspan="4" style="text-align:left">${netVol?Math.round(avg).toLocaleString('id-ID'):'—'}</td></tr>`;
+  const topVal=(n)=>pembeli.slice(0,n).reduce((s,a)=>s+a.nn,0)+penjual.slice(0,n).reduce((s,a)=>s+a.nn,0);
+  const baris=(label,lot,val,kira)=>{ const pct=netVol?lot/netVol*100:0; return `<tr><td>${label}</td><td class="num">${kira?'≈ ':''}${Math.round(lot).toLocaleString('id-ID')}</td><td class="num">${pct.toFixed(1)}</td><td class="num">${(val/1e9).toFixed(1)}</td><td class="num">${(lot*100*avg/1e9).toFixed(1)}</td><td class="ad-cell">${labelAD(pct)}</td></tr>`; };
+  const rataLot=[1,2,3,4,5].reduce((s,n)=>s+topLot(n),0)/5, rataVal=[1,2,3,4,5].reduce((s,n)=>s+topVal(n),0)/5;
+  document.getElementById('tbTop').innerHTML=[1,2,3,4,5].map(n=>baris(`Top ${n}`,topLot(n),topVal(n))).join('')+baris('<span title="rata-rata Top 1–5; Stockbit tak mengumumkan rumusnya, meleset ±1%">Average</span>',rataLot,rataVal,true);
+  document.getElementById('statSB').innerHTML=`
+    <div><span class="lbl">Net Volume</span><b class="num">${Math.round(netVol).toLocaleString('id-ID')}</b><small>lot, Σ net pembeli</small></div>
+    <div><span class="lbl">Net Value</span><b class="num">${fmtRp(netVal)}</b><small>Σ nilai net pembeli</small></div>
+    <div><span class="lbl">Average</span><b class="num">Rp ${netVol?Math.round(avg).toLocaleString('id-ID'):'—'}</b><small>net value ÷ net volume</small></div>
+    <div><span class="lbl">Broker</span><b class="num">${pembeli.length} <span class="beli">▲</span> ${penjual.length} <span class="jual">▼</span></b><small>selisih ${selisih>0?'+':''}${selisih} · ${selisih<0?'<span class="beli">Acc</span>':selisih>0?'<span class="jual">Dist</span>':'Neutral'}</small></div>
+    <div><span class="lbl">Nilai kotor</span><b class="num">${fmtRp(kotor)}</b><small>Σ beli semua broker</small></div>`;
 }
 function agregat(hs){ const per=new Map(); for(const t of hs){ for(const r of DATA.hari[t].b){ const a=per.get(r[0])||{k:r[0],bl:0,bn:0,jl:0,jn:0}; a.bl+=r[1];a.bn+=r[2];a.jl+=r[3];a.jn+=r[4]; per.set(r[0],a);} }
   const out=[...per.values()]; for(const a of out){a.nl=a.bl-a.jl;a.nn=a.bn-a.jn;a.ba=a.bl?a.bn/(a.bl*100):null;a.ja=a.jl?a.jn/(a.jl*100):null;} return out; }
