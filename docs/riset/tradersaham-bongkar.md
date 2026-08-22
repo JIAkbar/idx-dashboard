@@ -178,8 +178,8 @@ Count · Avg PnL % · Days Since Trough · Accum Dominance.
 
 Tambahan dari sesi premium: lencana "Regime Flip → Jual **+4**" berubah
 mengikuti rentang; **Quadrant tetap "Loading quadrant data…"** walau premium
-(gagal muat, bukan terkunci). Parameter URL `?code=` **diabaikan** — ticker
-hanya bisa diganti lewat kotak cari (avg harga tetap AADI saat dicoba BUMI).
+(gagal muat, bukan terkunci). Parameter URL untuk ticker adalah **`?stock=`** (bukan `code=`), bersama
+`start`, `end`, `tab` — jadi seluruh keadaan halaman bisa ditautkan.
 
 ## 4 · Broker Profiler (7 tab)
 
@@ -245,3 +245,33 @@ Sisanya dipanggil dari server (RSC) sehingga tak muncul di tab Network klien.
 | Pengumuman + PDF IDX | **ada** (panen kabar IDX pengumuman) | tinggal tautan PDF |
 | IPO & underwriter | **belum** | ada di profil IDX sebagian (obligasi/KAP), IPO belum |
 | Calculators | **ada** (Kalkulator PAPAN) | Position Blender belum |
+
+## VERIFIKASI SILANG — angka tradersaham vs data PAPAN (BUMI, 23 Agu 2026)
+
+Rentang BUMI 3–21 Agu dan 21 Agu kebetulan sudah kita panen sendiri, jadi
+angkanya bisa diadu langsung (bukan sekadar "mirip"):
+
+**3–21 Agu (19 hari bursa), net:** LG 118,1 B / 6,6 jt lot / 182 · PD 98,4 B ·
+RF 93,9 B · SS 92,8 B · AK 70,9 B; jual CC 206,0 B / 11,3 jt · ZP 145,3 B ·
+XL 139,6 B — **identik** dengan mockup `docs/desain/broker-summary-mockup`.
+
+**21 Agu (satu hari), 18 broker teratas dua sisi diukur:**
+
+| Ruas | Median | Min | Maks |
+|---|---|---|---|
+| Nilai net | **1,0010** | 0,9960 | 1,0067 |
+| Lot net | **1,0000** | 0,9859 | 1,0062 |
+
+Selisih yang tersisa murni pembulatan tampilan mereka (TP "1.4M" vs
+1.380.272; CC "3.2M" vs 3.167.012).
+
+Artinya rantai sumbernya kini terverifikasi **empat kali**: setoran
+kontributor (1.063 baris) ↔ API Stockbit ↔ layar Stockbit ↔ tradersaham
+Premium — semuanya bertemu di angka yang sama. Tak ada lagi keraguan soal
+kebenaran lapis broker kita; yang membedakan produk tinggal **tampilan dan
+turunan analisisnya**, bukan datanya.
+
+Catatan tambahan dari rentang 1 hari: lencana kepala berubah jadi
+**"⚡ Block Trade Terdeteksi (3×)"** (di rentang 19 hari: "Regime Flip →
+Jual +3"), dan skor 💎 turun 18.5 → 6 — jadi kedua lencana itu dihitung
+per rentang, bukan per emiten.
