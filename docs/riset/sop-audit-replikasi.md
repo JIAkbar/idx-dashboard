@@ -31,9 +31,28 @@ Aturan: **kesimpulan negatif wajib menyebut langkah mana yang menghasilkannya**
 ("tak terlihat di bundle publik" ≠ "tidak ada"). Langkah 2 tanpa login hanya
 memetakan pintu masuk; fitur berbayar baru terlihat sesudah Johan login.
 
+## Mekanika langkah 2 — dua jebakan yang membatalkan seluruh audit
+
+Keduanya terjadi pada audit premium tradersaham 23 Agu 2026 dan menghasilkan
+kesimpulan "isinya sama semua" untuk enam mode yang sebenarnya berbeda total.
+
+1. **Klik lewat `ref` bisa hanya MENYOROT, bukan memindahkan.** Tab tampak
+   aktif di tangkapan layar sementara URL tak berubah dan isinya tetap tab
+   sebelumnya. **Klik dengan koordinat** dari tangkapan layar, lalu
+   **verifikasi URL berubah** sebelum membaca isi. URL adalah buktinya, bukan
+   sorotan tab.
+2. **Overlay pemuatan menahan isi jauh lebih lama dari yang terlihat.**
+   tradersaham menampilkan "Scanning Stocks / CALCULATING SIGNALS…" 20+ detik;
+   pembacaan cepat menangkap DOM lama dan terbaca sebagai "kontennya identik".
+   Beri **jeda ≥20 detik** sesudah tiap masukan, dan pastikan penanda muatnya
+   hilang sebelum membaca.
+
+Gejala khas dua-duanya sama — "semua tab isinya sama" — dan itu hampir selalu
+kesalahan alat, bukan temuan tentang situsnya.
+
 ## Audit yang sudah dijalankan dengan SOP ini
 
-- tradersaham.com — `docs/riset/tradersaham-bongkar.md` (langkah 1–5; langkah 2
-  sebagian dari tangkapan layar Johan yang login).
+- tradersaham.com — `docs/riset/tradersaham-bongkar.md` (langkah 1–5; audit
+  premium ulang 23 Agu 2026 dengan jeda per klik, 15 menu diturunkan habis).
 - whales.id — `docs/riset/whales-bongkar.md` (langkah 1–5 lengkap; API publik
   terbaca tanpa login).

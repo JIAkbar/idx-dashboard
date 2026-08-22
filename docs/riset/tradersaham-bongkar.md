@@ -131,120 +131,203 @@ broker-profiler/summary?stock_code=AADI&start_date&end_date&investor_type=all&bo
 Flow, IPO, Informasi Harian, Peta Investor, Holder >5%, SID & Scripless,
 Sector Trends, Calculators) diturunkan dengan cara yang sama.
 
-# AUDIT PREMIUM — menu per menu (23 Agu 2026, langganan Johan aktif)
+# AUDIT PREMIUM ULANG — tiap klik diberi jeda (23 Agu 2026)
 
-Dijalankan lewat Chrome Johan (sesi login berbayar), SOP langkah 2 aturan
-"turunkan sampai habis". Semua gembok 7D–1Y hilang; rentang penuh terbuka.
+Johan: *"coba audit lagi karena saya bayar kmu janji harus teliti lagi, coba
+beri waktu jeda untuk setiap inputan dan lihat hasilnya"*. Bagian ini
+**menggantikan** audit premium pertama, yang cacat metode.
 
-## 1 · Market Overview
+## ⚠️ Dua kesalahan metode yang membatalkan audit sebelumnya
 
-- **Market Advance/Decline** — 7D/14D/30D/90D/6M/1Y, vonis (CAUTIOUS),
-  advancing vs declining + rata-rata 30D.
-- **Net Flow Foreign** 7D…1Y, dengan **catatan jujur**: *"Estimasi saja: net
-  flow dihitung dari harga penutupan, bukan transaksi aktual"* — persis
-  keterbatasan yang kita catat sendiri (taksiran lembar × harga).
-- **Composition Total Value** 7D…1Y.
-- **Broker Net Position Heatmap** (pasar reguler) 1D/7D/14D/30D — 20 broker
-  teratas dengan penanda FGN, net value periode.
-- **7-Day Flow Pattern** — batang beli/jual per hari per broker (20 broker).
-- **Relative Strength Trend vs IHSG** — sakelar **Konglo / Sector**,
-  7D/14D/30D/90D. Garis per grup konglomerasi: Anthony Salim, Prajogo
-  Pangestu, Hartono, Thohir, Widjaja, Astra, Dato Sri Tahir, Bakrie,
-  Aguan & Tomy Winata, James Riady. Klik ganda legenda = isolasi vs IHSG.
-- **Sector Performance** — ALL / FOREIGN FLOW, TODAY/1W/1M, 11 sektor.
-- **Top Movers** — GAINERS/LOSERS/FOREIGN BUY/FOREIGN SELL/MOST ACTIVE.
-- **Market Heatmap** + **US Market Heatmap**.
+1. **Klik lewat `ref` hanya menyorot tab, tidak memindahkannya.** Tab tampak
+   aktif di tangkapan layar tapi URL tak berubah dan isinya tetap tab lama —
+   jadi enam mode screener terbaca "isinya sama semua". Yang benar: klik
+   dengan **koordinat**. Buktinya URL: tiap mode punya `?tab=` sendiri.
+2. **Overlay "Scanning Stocks / CALCULATING SIGNALS…" menahan isi 20+ detik.**
+   Pembacaan cepat menangkap DOM lama.
 
-## 2 · Stock Screener (7 mode)
+Tanpa dua koreksi itu lahir kesimpulan negatif yang salah — persis yang
+dilarang SOP ("tidak dilihat" ≠ "tidak ada").
 
-Tab: **Gems** (daily signals) · **Accumulation** (6-month broker
-positioning) · **Smart Money** (nampung retail & P&L) · **Foreign** (flow
-intensity) · **Ownership** (KSEI monthly) · **MSCI** (index candidates) ·
-**vs IHSG** (relative strength). VIEW: Positioning 6mo / Daily Flow 10d.
+## Stock Screener — 7 mode, tiap mode halaman berbeda
 
-Baris hasil (910 saham): harga sekarang, **Floor** + jarak %, Net value,
-rasio broker naik/turun (mis. "38↑ / 12↓ (3.2x)"), penanda **n/5 TRAPPED**,
-lalu 5 broker teratas: FLOOR · PNL · NET LOT · NET VAL · RECENT TREND
-(ACCUMULATING/REDUCING) · DAYS.
-
-Filter: **Quick preset** (Solid Accum · Trapped · Deep Loss · Early Bird ·
-The Wall · Conviction) · Top 3/5/10 · tren 6 bulan Accum/Dist · pasar
-Reg/All · min losing top brokers · min avg loss % · max days since trough ·
-min net val/broker · **rasio accum vs dist** (≥1x…≥5x) · Associate
-Accumulating · **must include brokers**. Sort: Net Value · Net Lot · Losing
-Count · Avg PnL % · Days Since Trough · Accum Dominance.
-
-## 3 · Stock Profiler (9 tab — lihat pohon di bagian sebelumnya)
-
-Tambahan dari sesi premium: lencana "Regime Flip → Jual **+4**" berubah
-mengikuti rentang; **Quadrant tetap "Loading quadrant data…"** walau premium
-(gagal muat, bukan terkunci). Parameter URL untuk ticker adalah **`?stock=`** (bukan `code=`), bersama
-`start`, `end`, `tab` — jadi seluruh keadaan halaman bisa ditautkan.
-
-## 4 · Broker Profiler (7 tab)
-
-**Broker · Broker Intel · Activity · Stats · Pulse · Composition ·
-Compare**. Pilih hingga **5 broker**, saringan Investor (All/Domestic/
-Foreign) × Market (All/Regular/Nego) × Periode. Isi: **Broker Portfolio
-Flow** — Top Buys & Top Sells per emiten (VOL, VAL, AVG, RET %), heatmap,
-tombol sticky, load more. Artinya: melihat dari sisi **broker**, bukan
-emiten — "MG hari ini menampung BUMI 47,8 M dan melepas DSSA 47,4 M".
-
-## 5 · Holder >1%
-
-Cari emiten · filter **tipe** (Individual/Corporate/Investment Bank/
-Securities/Pension Fund/Other) · **asal** (Lokal/Asing) · urut (jumlah
-perubahan, persentase, market value Δ, konsentrasi Δ, FF 1%, jumlah holder)
-· rentang MIN/MAX % (dua pasang) · Refresh Data.
-
-## 6 · Foreign Flow
-
-Tab **Foreign Radar · Foreign Top · Sector Rotation**, sakelar Value/Volume,
-pemilih tanggal, tautan ke Market Overview.
-
-## 7 · Peta Investor
-
-Grafik jaringan: cari **investor, emiten, direksi, anak usaha, UBO**;
-zoom in/out, fit, reset. URL berpusat pada simpul (`?center=co_BUMI`).
-
-## 8 · Holder >5% · 9 · Shareholder Data · 10 · Sector Trends
-
-- **Holder >5%**: cari emiten + cari nama pemegang.
-- **Shareholder Data**: tab **SID Changes · Scripless Changes · Investor
-  Composition · Divergence Analysis**; pilih bulan (Juli/Juni 2026 …),
-  cari saham, configure columns.
-- **Sector Trends**: 3M/6M/1Y × 11 sektor.
-
-## 11 · IPO Analysis · 12 · Pengumuman · 13 · Watchlist · 14 · Calculators
-
-- **IPO**: tab **IPO Stocks · Underwriters**, cari ticker/penjamin.
-- **Pengumuman**: filter **Perubahan Kepemilikan · Dividen · RUPS ·
-  Lainnya**, tiap baris menautkan **PDF asli IDX** (`idx.co.id/StaticData/
-  NewsAndAnnouncement/…`) — sumbernya IDX, bukan olahan.
-- **Watchlist**: tab **Portfolio · Konglo Watchlist**, tambah saham, visible
-  columns, **Titan Matrix Analytics**.
-- **Calculators**: pencarian tools, **Position Blender** & **Target Price**,
-  simpan skenario, salin ringkasan, reset.
-
-## Endpoint tambahan yang tertangkap
-
-`apiv2.tradersaham.com/api/auth/login` (POST) · `/api/market-insight/
-broker-profiler/summary?stock_code&start_date&end_date&investor_type&board&limit`.
-Sisanya dipanggil dari server (RSC) sehingga tak muncul di tab Network klien.
-
-## Peta ke PAPAN — sesudah audit premium
-
-| Fitur mereka | Bahan baku kita | Catatan |
+| Mode | URL | Isi terverifikasi |
 |---|---|---|
-| Heatmap net posisi broker pasar | **ada** (broker harian, tapi baru BUMI; butuh panen semua emiten) | langkah 3d harian menutupnya |
-| RS vs IHSG per **grup konglomerasi** | **belum** — butuh pemetaan emiten→konglomerat | Johan pernah menyebut akan memberi data konglomerat (A4, ditutup sementara) |
-| Screener Accumulation/Trapped/Floor/PnL per broker | **ada** — floor & PnL bisa diturunkan dari broker harian | definisi floor & "trapped" perlu ditetapkan sendiri |
-| Broker Profiler (sisi broker) | **ada** kalau panen harian sudah lintas emiten | belum ada halamannya |
-| Holder >1% & SID & scripless | **belum** — LBRPE & SID | KSEI Balancepos kita menutup komposisi, bukan nama holder |
-| Peta Investor (jaringan) | **sebagian** — profil IDX punya pemegang, anak usaha, direksi | jaringan/UBO perlu dibangun |
-| Pengumuman + PDF IDX | **ada** (panen kabar IDX pengumuman) | tinggal tautan PDF |
-| IPO & underwriter | **belum** | ada di profil IDX sebagian (obligasi/KAP), IPO belum |
-| Calculators | **ada** (Kalkulator PAPAN) | Position Blender belum |
+| **Gems** | `?tab=gems&preset=top` | 963 hasil. Bullish: Top Gems · Silent Accumulation (2) · Associate Broker (55) · Regime Flip (10) · Dual Confirmation (32) · Block Absorption (5) · Oversold Reversal (12). Risiko: Distribution Watch (14) · Overbought + Dist (22). Tier Any/Bronze+(35)/Silver+(50)/Gold+(65)/Diamond(80); Liquidity All/High/Mid/Low/Excl Low; Today/−1D/−2D/−3D. Kolom Gem Score · 3D Trend · Price · RSI-14 · Stoch %K · Regime · Evidence (chip ACC 90% · 5D · FOREIGN BUY · 1 NEW) |
+| **Accumulation** | `?tab=accumulation` | Positioning 6mo: kartu emiten (Current · Floor · Net) + tabel broker (Floor · PnL · Net Lot · Net Val · Recent Trend · Days) + badge "5/5 TRAPPED". Preset Solid Accum · Trapped · Deep Loss · Early Bird · The Wall · Conviction; Top 3/5/10; Accum/Dist; Reg/All; Min losing top brokers; Min avg loss %; Max days since trough; Min net val/broker; Accum vs Dist ratio; Associate Accumulating; Must include brokers |
+| **Daily Flow** | `?tab=flow_score` | Matriks skor D-9…D0 per emiten (207 saham). Chip Accumulating · Distributing · Regime Change · Accum+Vol≥2x · Breakout ≥5%. Slider Score −100…100, Vol ≥0x, Val ≥5B |
+| **Smart Money** | `?tab=smartmoney` | Nampung Retail: 50 saham — Smart Money Net vs Retail Net + Avg & P/L tiap sisi |
+| ↳ P&L | `?tab=smartmoney_pl` | 47 saham: SM Net · Avg · Float P/L% |
+| **Foreign** | `?tab=foreign` | 338 saham. Akumulasi/Distribusi; preset Semua · Senyap (Small/Mid) · **Terkonfirmasi KSEI** · Akselerasi · Big Money · Divergen; 1D/7D/30D/60D. Kolom Skor · Intensitas · Float% · Konsisten ("12 hari beruntun") · Akselerasi · **KSEI** (✓+0,17 / ⚠−0,75 / ≈+0,02) · Net · Harga% |
+| **Ownership** | `?tab=composition` | KSEI bulanan. Dua mode: Klasifikasi Investor (36 type) dan Klasifikasi (8 category + Foreign). Outstanding vs Holdings, sakelar %/# |
+| **MSCI** | `?tab=msci` | Standard (9 kandidat) · Small Cap · Near Standard · Near Small Cap · All. Full MCap · Free Float MCap (1% holders) · Free Float % · ATVR 3M · ATVR 12M · Trading Days · FOT 12M · Score · Potential Upside |
+| **vs IHSG** | `?tab=relative_strength` | 380 hasil. Stock Ret% · IHSG Ret% · Rel Strength% · Beta · Correlation · R² · Alpha% · Days; 1W/1M/3M/6M/YTD/1Y + Sector Distribution |
+
+Kolom **KSEI** di mode Foreign adalah gagasan terkuat mereka: menyilangkan
+aliran asing **harian** dengan perubahan kepemilikan asing **bulanan** KSEI.
+✓ = dua sumber sepakat, ⚠ = bertentangan (ERAA: net asing +163,9 M, KSEI −0,75).
+
+## Stock Profiler — 9 tab (`?tab=`)
+
+`(Overview)` · `inventory` · `quadrant` · `broker-position` · `nego` ·
+vs IHSG · `major-holders` · `technical` · `flow`. Kendali global Investor ·
+Market · Periode; kepala membawa chip sinyal ("Regime Flip → Jual +3") + gem
+score.
+
+- **Overview** — Foreign Flow 3M · Kepemilikan Ritel KSEI · Jumlah Investor
+  (SID) · Perubahan Holder >1% · Aksi Pemegang ≥5% · Perubahan Kategori KSEI;
+  panel kanan Broker Summary (Net/Gross, Val/Lot/Avg) + Market Flow.
+- **Inventory** — kumulatif net per broker (4 beli + 4 jual + Add Broker),
+  overlay harga, Val/Vol, layar penuh, **6 Month Floor Price**.
+- **Quadrant** — X = avg broker vs **VWAP**, Y = Net Value, gelembung = broker;
+  kuadran Smart Accum · Aggressive Buy · Panic Selling · Distribution.
+- **Broker Intel** — **treemap** per klasifikasi perilaku: Smart Accumulator ·
+  Accumulation · Distribution Phase · Large Player/Institution · Profit Taker.
+- **NEGO** — All/Opposite/Same Dir; kartu Total Brokers · NEGO Vol · NEGO Value
+  · **Opp. Patterns**; per broker: nama, Domestic/Foreign, hari aktif, dan
+  **pola silang** `Neg Buy → Reg Sell` + net nego vs net reguler.
+- **Shareholders** — sub-tab **1% · Komposisi Kepemilikan · Perubahan Kategori
+  · Timeline Foreign · Holder…**; kartu Total Holder >1%, Kepemilikan 1%+,
+  FF di luar 1%, IDX Freefloat (Reported) + tautan MSCI; rincian kategori
+  (CORPORATE-L 59,2% · INDIVIDUAL-L 14,9% · PRIVATE BANK-L 4,4% ·
+  FINANCIAL INSTITUTIONAL-A 1,3%).
+- **Teknikal (NEW)** — grafik **TradingView tersemat** + TA + FLOW CONFLUENCE
+  (skor gabungan teknikal × broker flow), Indikator Teknikal, Multi-Timeframe,
+  Pivot/CPR, Bandarmology.
+- **More** → Flow Analysis · Disclosure · MSCI Criteria · Peta Investor ·
+  Tur Interaktif.
+- **Flow Analysis** — Buy Gross/Net/**%Net** vs Sell Gross per broker +
+  "Market Flow Conviction (Daily Trend)". `%Net = Net ÷ Gross` memisahkan
+  broker yang menampung dari yang cuma churn.
+
+## Broker Profiler — 5 mode + tab Broker Intel
+
+- **Activity** — Broker Portfolio Flow: arus broker terpilih (maks 5) ke tiap
+  emiten, kumulatif; "Top Buys & Sells"; Sticky.
+- **Stats** — Total Gross · Total Net · Avg Net Bias · **Directionality
+  (|net|/gross)**; grafik Daily Gross/Net/Net Bias; label broker + kategori.
+- **Pulse** — **Share of IHSG** · Ranking Gross #9 / Net #21 dari 88 · Trading
+  Style · Volume Regime (Z-score harian) · Latest Net Flow; Volume vs IHSG.
+- **Composition** — 88 broker, dua sumbu: **BEHAVIOR** (Accumulating ·
+  Distributing · Flip→Buy · Flip→Sell · Scalper · Mixed + `conv %`) dan
+  **KATEGORI** (Retail · Smart Retail · Whale · Smart Money). Kolom Share IHSG
+  (+Δ) · Rank G/N · Regime · Net Bias · Net Periode · sparkline.
+- **Compare** — metrik berdampingan ≤5 broker + Akumulasi Net
+  kumulatif/harian dengan overlay IHSG.
+- **Broker Intel** — Eksplorasi | Konsensus, Accum | Dist; pasangan
+  broker×emiten: **Daily Heatmap D-4…D0** · Net Value · **CONS. (5/5)** ·
+  Avg Price · Float P/L.
+
+## Insights
+
+- **Foreign Flow** — 3 tab. *Radar*: HEAT (peringkat harian D-4…D0), HARI
+  (4/5), Net Foreign, Avg Rank, Return, kartu Streak Tertinggi. *Top*: Top
+  Akumulasi/Distribusi, mode Value/Volume. *Sector Rotation*:
+  All/Foreign/Local, Net Market Value per sektor. **Ketiganya ditandai "akan
+  dipensiunkan"** — pindah ke Screener Foreign dan Market Overview.
+- **IPO Analysis** — IPO Stocks · Underwriters. 212 IPO, Rp 121,89 T, Avg 1D
+  +17%, Success 1D 80% → 1W 70% → 1M 61% → **Now 49%**.
+- **Informasi Harian** — Lainnya · Perubahan Kepemilikan · Dividen · RUPS.
+  Keterbukaan informasi IDX **diringkas naratif** + tautan PDF + label jenis.
+
+## Owner
+
+- **Peta Investor** — graf kepemilikan, **6.123 investor × 962 emiten**,
+  bulanan. Node: 1% Holders · Emiten · Direksi/Koms · Anak Usaha · **UBO**,
+  warna domestik/asing. Panel emiten: **Associate Broker · 5% Changes · UBO** +
+  pemegang ≥1% berikut label (LOKAL · PRIVATE EQUITY · HONGKONG) dan %
+  scripless. "UBO & Market Insight" = narasi AI.
+- **Holder >5%** — **Perubahan Kepemilikan 5%**, laporan harian IDX. Kolom
+  Saham · Pemegang Saham · **BROKER** · Freq(30H) · Total Saham · Perubahan ·
+  Valuasi · Kepemilikan % (dari→jadi). Inilah asal "Associate Broker" — data
+  resmi, bukan deduksi.
+- **SID & Scripless** — SID Changes (jumlah pemegang per emiten per bulan +
+  tren 6 bulan + CHG/% 1M & 3M, 329 saham) · Scripless Changes · Investor
+  Composition · **Divergence Analysis** (Smart Money vs Retail berlawanan;
+  SMART $ · RETAIL · DIV · SCRIP %; 1M/3M/6M/1Y; BUMI −18.865 M vs +418 M).
+- **Sector Trends** — rotasi sektor SM vs Retail dari KSEI: Sector Net Flow,
+  Cumulative Flow Trend per sektor, dua panel rotasi. 3M/6M/1Y.
+
+## Special Feature & Tools
+
+- **Market Overview** — pita indeks global (TradingView), **Advance/Decline**
+  (332/314, rerata 30D), chart IHSG, Net Flow Foreign, Composition Total Value.
+- **Watchlist** — Portfolio + watchlist bernama, termasuk **berbasis
+  konglomerat** ("Prajogo Pangestu / Barito Pacific Group", label KONGLO).
+  Kolom Trends 14D · %Chg · Price · 1D Volume · Vol Ratio · Foreign Inflow 1D ·
+  Top Brokers. Mode Performance dan **Titan Matrix**.
+- **Titan Matrix (NEW)** — "Quantum Conglomerate Matrix": indeks kinerja grup
+  konglomerat. Template Djoni (Jambi Whale) · Prajogo Pangestu · Hartono
+  Family · Anthony Salim · Astra Group · Thohir Family · Aburizal Bakrie ·
+  Widjaja Family (6–15 sinyal). Lookback 1W/1M/3M/6M; Timeline/Race;
+  Performance/Total Value/Growth; Live Sequence.
+- **Calculators** ("IDX Market Suite") — *Trading Logic*: Average Price
+  (Position Blender + Target Price; WAP, Break Even fee 0,4%, **Cut Loss
+  Presets dibulatkan ke tick IDX**, Simpan/Salin/Skenario & Riwayat), Profit &
+  ARA/ARB, Pyramid Entry. *Risk Management*: Position Sizing, Risk/Reward,
+  Margin & Fees. *Value Analysis*: Dividend Calc, Compounding & Growth.
+  *Corporate Actions*: Rights Issue (Dilution Simulator).
+- **What's New** — catatan rilis.
+
+## Sumber hulu vs bahan kita
+
+| Sumber | Dipakai untuk | Status di kita |
+|---|---|---|
+| Broker summary EOD per emiten | Accumulation/Smart Money/Daily Flow, seluruh Stock Profiler, Broker Profiler | **ADA** — Stockbit, BUMI 2017→ reguler+asing+nego (2.318/2.221/2.221 berkas) |
+| OHLC harian | vs IHSG, Teknikal, IPO return, VWAP Quadrant | **ADA** |
+| KSEI Balancepos bulanan | Ownership, Divergence, Sector Trends, kolom KSEI | **ADA** — 79 bulan, 1.035 emiten |
+| Profil emiten IDX | Peta Investor, Titan Matrix | **ADA** — 962 emiten |
+| **Perubahan kepemilikan ≥5% harian (IDX)** | Holder >5%, Associate Broker | **BELUM** |
+| **Pemegang >1% bulanan (PDF IDX)** | Holder >1%, Free Float, MSCI | **BELUM** |
+| **Jumlah SID per emiten (KSEI)** | SID Changes, Jumlah Investor | **BELUM** |
+| Harga IPO & underwriter | IPO Analysis | **BELUM** (e-IPO/prospektus) |
+| Indeks global | pita Market Overview | bisa lewat yfinance |
+| TradingView | grafik harga | pihak ketiga; kita punya chart sendiri |
+
+Profil IDX yang sudah dipanen membawa lebih dari yang mereka tampilkan:
+
+```
+PemegangSaham : {Nama, Persentase, Jumlah, Kategori, Pengendali: bool}
+AnakPerusahaan: {Nama, BidangUsaha, Lokasi, Persentase, JumlahAset,
+                 MataUang, StatusOperasi, TahunKomersil}
+Direktur      : {Nama, Jabatan, Afiliasi: bool}
+Komisaris, KomiteAudit, Dividen, BondsAndSukuk, IssuedBond
+```
+
+Flag `Pengendali` dan `Afiliasi` adalah inti graf relasi — mereka harus
+menduganya, kita menerimanya langsung dari IDX. Peta Investor **dan** Titan
+Matrix karena itu bisa dibangun tanpa panen baru sama sekali.
+
+## Batas mereka yang bukan batas kita
+
+- **180 hari** — `Range cannot exceed 180 days` di Stock Profiler. Arsip BUMI
+  kita 2017→ tanpa batas kueri.
+- **Indikator terikat jendela tampilan** — muncul "23 sesi belum cukup untuk
+  EMA200, Return 3M, Multi-Timeframe" karena indikator dihitung dari rentang
+  tanggal terpilih. Indikator seharusnya membaca riwayat penuh; hanya
+  tampilannya yang dipotong.
+- **Klasifikasi broker dua sumbu** (BEHAVIOR terhitung + KATEGORI ukuran).
+  Kita bisa menambah sumbu ketiga yang mereka tak punya: **identitas** —
+  lokal · BUMN · asing · afiliasi emiten.
+
+## Kesimpulan replikasi
+
+Tak ada satu pun fitur data tradersaham yang bahannya tidak bisa kita peroleh
+dari sumber gratis dan legal. Yang **sudah ada di cakram** menutup mayoritas:
+seluruh Stock Profiler, Broker Profiler, mode Accumulation / Smart Money /
+Daily Flow / Foreign / Ownership / vs IHSG, Divergence, Sector Trends, Peta
+Investor, Titan Matrix.
+
+Empat panen baru yang sepadan, berurut nilai:
+
+1. **Perubahan kepemilikan ≥5% harian (IDX)** — satu-satunya sumber resmi yang
+   menyambungkan **nama pemilik ke kode broker**; itu yang membuat "Associate
+   Broker" mungkin dan tak ada penggantinya.
+2. **Pemegang >1% bulanan (PDF IDX)** — free float sejati, bahan MSCI.
+3. **Jumlah SID per emiten (KSEI)** — divergensi jumlah pemegang vs harga.
+4. **Harga IPO & underwriter** — melengkapi IPO Analysis.
+
+Yang **tidak** perlu ditiru: grafik TradingView tersemat, dan batas 180 hari.
 
 ## VERIFIKASI SILANG — angka tradersaham vs data PAPAN (BUMI, 23 Agu 2026)
 
