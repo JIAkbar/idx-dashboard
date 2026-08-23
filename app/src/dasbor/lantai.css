@@ -3204,3 +3204,127 @@
 }
 /* Warna kode broker per kelompok identitas (kelompokBroker.ts) lewat inline
    style di atas `.bchip` bawaan (sudah punya border) — tak perlu kelas baru. */
+
+/* ── Kuli Papan ─────────────────────────────────────────────────────────
+   Dua kalkulator dengan bentuk isian yang sama, jadi kelasnya dipakai
+   bersama. Kelas ber-awalan .kp-* hanya menyimpan PENEMPATAN dan LEBAR;
+   bentuk kendalinya tetap dari komponen kanonis (.inp, .tab, .btn). */
+.kuli-papan .kp-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.kuli-papan .kp-bar .inp { width: 220px; max-width: 100%; }
+.kuli-papan .kp-kode { font-weight: 700; letter-spacing: .04em; font-size: 18px; }
+.kuli-papan .kp-muat { color: var(--text2); font-size: 12px; }
+
+.kuli-papan .kp-panel { padding: 16px; }
+.kuli-papan .kp-sub { color: var(--text2); font-size: 12px; margin: 2px 0 12px; }
+
+.kuli-papan .kp-grid {
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+.kuli-papan .kp-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.kuli-papan .kp-field > span { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text2); }
+.kuli-papan .kp-field em { font-style: normal; color: var(--yellow, #e5b53d); text-transform: none; letter-spacing: 0; }
+.kuli-papan .kp-manual > span { color: var(--yellow, #e5b53d); }
+
+.kuli-papan .kp-catatan,
+.kuli-papan .kp-peringatan {
+  font-size: 12px; line-height: 1.5; border-radius: 8px; padding: 9px 11px; margin: 12px 0;
+}
+.kuli-papan .kp-catatan { color: var(--text2); background: color-mix(in srgb, var(--text2) 8%, transparent); }
+.kuli-papan .kp-peringatan { color: var(--text); background: color-mix(in srgb, var(--yellow, #e5b53d) 16%, transparent); }
+
+.kuli-papan .kp-hasil,
+.kuli-papan .kp-mos {
+  display: grid; gap: 8px; margin: 12px 0;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+.kuli-papan .kp-kv {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+  padding: 8px 10px; border-radius: 8px;
+  background: color-mix(in srgb, var(--text2) 7%, transparent);
+}
+.kuli-papan .kp-kv > span { font-size: 11px; color: var(--text2); }
+.kuli-papan .kp-kv > b { font-variant-numeric: tabular-nums; }
+
+.kuli-papan .kp-target { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin: 12px 0; }
+.kuli-papan .kp-t { padding: 12px 14px; border-radius: 10px; background: color-mix(in srgb, var(--text2) 10%, transparent); }
+.kuli-papan .kp-t > span { display: block; font-size: 11px; letter-spacing: .08em; color: var(--text2); }
+.kuli-papan .kp-t > b { font-size: 22px; font-variant-numeric: tabular-nums; }
+.kuli-papan .kp-t-hi > b { color: var(--green, #38b77e); }
+
+.kuli-papan .kp-sumber { font-size: 11px; line-height: 1.6; color: var(--text2); margin: 14px 0 0; }
+.kuli-papan .kp-kosong { font-size: 12px; color: var(--text2); padding: 10px 0; }
+.kuli-papan .kp-hist { margin-top: 10px; font-size: 12px; }
+.kuli-papan .kp-hist > div { display: flex; justify-content: space-between; gap: 10px; padding: 5px 0; border-top: 1px solid color-mix(in srgb, var(--text2) 16%, transparent); }
+.kuli-papan .kp-waktu { color: var(--text2); white-space: nowrap; }
+
+@media (max-width: 560px) {
+  .kuli-papan .kp-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+  .kuli-papan .kp-t > b { font-size: 19px; }
+}
+
+/* Kolom Broker memuat kode + avg + lot sekaligus, jadi ia butuh lebih lebar
+   daripada kolom angka di sebelahnya — tanpa ini jumlah lot terpotong dan
+   pengguna memilih broker tanpa bisa melihat besarannya. */
+.kuli-papan .kp-field-lebar { grid-column: span 2; }
+@media (max-width: 560px) { .kuli-papan .kp-field-lebar { grid-column: span 1; } }
+
+/* ── Neo Papan ──────────────────────────────────────────────────────────
+   Delapan tab, satu bilah ganti emiten (pola sama Kuli Papan). Kelas
+   ber-awalan .np-* di sini hanya penempatan/lebar KECUALI kv/hasil/sumber/
+   kosong/peringatan — itu bentuk yang sama persis dipakai Kuli Papan (.kp-*),
+   diduplikasi sebagai .np-* karena selectornya di-scope ke root halaman
+   masing-masing (.kuli-papan / .neo-papan), bukan bentuk baru. */
+.neo-papan .np-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.neo-papan .np-bar .inp { width: 220px; max-width: 100%; }
+.neo-papan .np-kode { font-weight: 700; letter-spacing: .04em; font-size: 18px; }
+
+.neo-papan .np-sub { color: var(--text2); font-size: 12px; margin: 2px 0 12px; }
+.neo-papan .np-sumber { font-size: 11px; line-height: 1.6; color: var(--text2); margin: 14px 0 0; }
+.neo-papan .np-kosong { font-size: 12px; color: var(--text2); padding: 20px 0; text-align: center; }
+
+.neo-papan .np-catatan,
+.neo-papan .np-peringatan {
+  font-size: 12px; line-height: 1.5; border-radius: 8px; padding: 9px 11px; margin: 12px 0;
+}
+.neo-papan .np-catatan { color: var(--text2); background: color-mix(in srgb, var(--text2) 8%, transparent); }
+.neo-papan .np-peringatan { color: var(--text); background: color-mix(in srgb, var(--yellow, #e5b53d) 16%, transparent); }
+
+.neo-papan .np-hasil {
+  display: grid; gap: 8px; margin: 12px 0;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+.neo-papan .np-kv {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+  padding: 8px 10px; border-radius: 8px;
+  background: color-mix(in srgb, var(--text2) 7%, transparent);
+}
+.neo-papan .np-kv > span { font-size: 11px; color: var(--text2); }
+.neo-papan .np-kv > b { font-variant-numeric: tabular-nums; }
+.neo-papan .np-kv > b.up { color: var(--green); }
+.neo-papan .np-kv > b.dn { color: var(--red); }
+
+/* Baris kendali (Compare kiri/kanan, Stalker chip broker+jendela, Activity
+   sektor/indeks) — flex sederhana, bukan bentuk baru. */
+.neo-papan .np-baris { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+.neo-papan .np-baris .inp { min-width: 130px; }
+.neo-papan .np-lbl { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text2); margin-right: 2px; }
+
+.neo-papan .np-2kol { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); align-items: start; }
+
+.neo-papan .np-parsial { font-size: 10px; color: var(--amber); margin-left: 4px; }
+
+@media (max-width: 560px) {
+  .neo-papan .np-hasil { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+}
+
+/* Margin of safety adalah KELUARAN yang dipakai, bukan lampiran — jadi ia
+   diberi judul sendiri dan kartunya lebih tegas daripada baris ringkasan
+   di atasnya. */
+.kuli-papan .kp-h3 {
+  font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text2); margin: 18px 0 8px; display: flex; gap: 8px; align-items: baseline;
+}
+.kuli-papan .kp-h3 em { font-style: normal; text-transform: none; letter-spacing: 0; opacity: .75; }
+.kuli-papan .kp-mos-kv { background: color-mix(in srgb, var(--amber) 10%, transparent); }
+.kuli-papan .kp-mos-kv > b { color: var(--amber); }

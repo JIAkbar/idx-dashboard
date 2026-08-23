@@ -85,10 +85,19 @@ export function KuliPapan() {
   const [baselinePersen, setBaselinePersen] = useState(5)
   const [histTarget, setHistTarget] = useState<BarisRiwayat[]>(() => bacaRiwayat('kuli_target'))
 
+  // Diurut NET (beli lot - jual lot), bukan lot beli kotor.
+  //
+  // Bedanya bukan kosmetik: pada BUMI 21 Agu 2026 broker dengan lot BELI
+  // terbesar adalah XL (7.065.990 lot) — tapi XL juga menjual 7.933.220 lot,
+  // jadi netnya MINUS 867.230. Ia penjual bersih, bukan bandar yang
+  // mengakumulasi. Mengurutkan secara kotor menyodorkan penjual terbesar
+  // sebagai pilihan bawaan, lalu menghitung target BELI dari situ.
+  // Yang benar TP: net +1.380.272 lot pada avg 200.
   const daftarBroker = useMemo(
     () => (brokerHari?.broker || [])
-      .filter((b) => b[1] > 0)
-      .sort((x, y) => y[1] - x[1]),
+      .map((b) => ({ kode: b[0], beliLot: b[1], beliNilai: b[2], netLot: b[1] - b[3] }))
+      .filter((b) => b.netLot > 0)
+      .sort((x, y) => y.netLot - x.netLot),
     [brokerHari],
   )
 
@@ -96,21 +105,22 @@ export function KuliPapan() {
   // angka broker emiten lain tak berarti apa-apa di sini.
   useEffect(() => {
     const b = daftarBroker[0]
-    setBrokerPilih(b ? b[0] : '')
-    setBuyAvg(b ? Math.round(avgBeli(b[1], b[2])) : 0)
-    setBuyLot(b ? b[1] : 0)
+    setBrokerPilih(b ? b.kode : '')
+    setBuyAvg(b ? Math.round(avgBeli(b.beliLot, b.beliNilai)) : 0)
+    // Rumus aslinya meminta lot bandar NET, bukan lot beli kotor.
+    setBuyLot(b ? b.netLot : 0)
     const a = antrean?.a
     setBid(a?.bid || 0)
     setOffer(a?.offer || 0)
     setTotalBid(a?.bidLot || 0)
     setTotalOffer(a?.offerLot || 0)
-    setTick(fraksi(a?.close || b?.[2] || 0) || 1)
+    setTick(fraksi(a?.close || 0) || 1)
   }, [daftarBroker, antrean])
 
   function gantiBroker(k: string) {
     setBrokerPilih(k)
-    const b = daftarBroker.find((x) => x[0] === k)
-    if (b) { setBuyAvg(Math.round(avgBeli(b[1], b[2]))); setBuyLot(b[1]) }
+    const b = daftarBroker.find((x) => x.kode === k)
+    if (b) { setBuyAvg(Math.round(avgBeli(b.beliLot, b.beliNilai))); setBuyLot(b.netLot) }
   }
 
   const hasilTarget = hitungTarget({
@@ -172,7 +182,7 @@ export function KuliPapan() {
         <section className="panel kp-panel">
           <h2>Target Realistis</h2>
           <p className="kp-sub">
-            Formula adimollogy &amp; buruhIHSG — Target = Buy Avg + Baseline + (Papan Terdorong × Tick)
+            Target = Buy Avg + Baseline + (Papan Terdorong × Tick)
           </p>
 
           {!brokerHari && !muat && (
@@ -186,10 +196,10 @@ export function KuliPapan() {
             <label className="kp-field kp-field-lebar">
               <span>Broker</span>
               <select className="inp" value={brokerPilih} onChange={(e) => gantiBroker(e.target.value)}>
-                {daftarBroker.length === 0 && <option value="">— tak ada data —</option>}
+                {daftarBroker.length === 0 && <option value="">— tak ada broker net beli —</option>}
                 {daftarBroker.map((b) => (
-                  <option key={b[0]} value={b[0]}>
-                    {b[0]} · avg {num(avgBeli(b[1], b[2]), 0)} · {num(b[1])} lot
+                  <option key={b.kode} value={b.kode}>
+                    {b.kode} · avg {num(avgBeli(b.beliLot, b.beliNilai), 0)} · net {num(b.netLot)} lot
                   </option>
                 ))}
               </select>
@@ -200,7 +210,7 @@ export function KuliPapan() {
                 onChange={(e) => setBuyAvg(+e.target.value)} />
             </label>
             <label className="kp-field">
-              <span>Buy Lot</span>
+              <span>Lot bandar (net)</span>
               <input className="inp" type="number" value={buyLot || ''}
                 onChange={(e) => setBuyLot(+e.target.value)} />
             </label>

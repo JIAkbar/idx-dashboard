@@ -139,6 +139,12 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   'stock-detail': 'detail',
   'peta-investor': 'peta',
   'broker-summary': 'broker',
+  'kuli-papan': 'kuli-papan',
+  // Neo Papan (23 Agu 2026) — sibling Kuli Papan. Baris `akses_halaman` di
+  // Supabase BELUM ditambahkan di sini (kerjaan Claude Code CLI); sampai itu
+  // dikerjakan kuncinya fail-open (halaman terbuka untuk siapa saja) — jaring
+  // pengaman yang disengaja, bukan izin melewatkan pendaftaran.
+  'neo-papan': 'neo-papan',
   // Halaman publik Radar Watchlist — PRODUK-nya yang dijaga. Tab admin
   // /admin/radar (tempat sumber WDWL diunggah) punya gerbang superadmin
   // sendiri, jadi keduanya tidak bertabrakan. Sempat salah tafsir sehingga

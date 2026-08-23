@@ -1,0 +1,82 @@
+import { useState } from 'react'
+import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
+import { TransaksiTab } from './neo-papan/TransaksiTab'
+import { InventoryTab } from './neo-papan/InventoryTab'
+import { CompareTab } from './neo-papan/CompareTab'
+import { StalkerTab } from './neo-papan/StalkerTab'
+import { BalanceTab } from './neo-papan/BalanceTab'
+import { SeasonTab } from './neo-papan/SeasonTab'
+import { RotasiTab } from './neo-papan/RotasiTab'
+import { ActivityTab } from './neo-papan/ActivityTab'
+import { OPSI_RENTANG_NP, type RentangNp } from './neo-papan/bersama'
+
+type Tab = 'transaksi' | 'inventory' | 'compare' | 'stalker' | 'balance' | 'season' | 'rotasi' | 'activity'
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'transaksi', label: 'Transaction Chart' },
+  { id: 'inventory', label: 'Inventory Chart' },
+  { id: 'compare', label: 'Compare Inventory' },
+  { id: 'stalker', label: 'Broker Stalker' },
+  { id: 'balance', label: 'Balance Position' },
+  { id: 'season', label: 'Seasonality' },
+  { id: 'rotasi', label: 'Rotation Chart' },
+  { id: 'activity', label: 'Sector/Index Activity' },
+]
+
+/**
+ * Neo Papan — delapan tab analisis di atas arsip PAPAN (candle/broker/KSEI/
+ * sektor), diadaptasi dari prototipe komunitas `dev-kuli-neo-papan`. Lot
+ * Sizing SENGAJA tidak ikut — sudah diwakili halaman Kalkulator (keputusan
+ * Johan). Pola halaman sama dengan Kuli Papan: satu bilah ganti emiten,
+ * kotak "Sumber:" di tiap tab, keadaan kosong yang jujur soal cakupan
+ * (bukan menampilkan nol untuk data yang belum ada).
+ *
+ * Tiap tab memuat datanya SENDIRI saat aktif (bukan semua di top level) —
+ * Broker Stalker & dua tab sektor butuh ratusan berkas, tak boleh ikut
+ * terunduh cuma karena pembaca sedang melihat Transaction Chart.
+ */
+export function NeoPapan() {
+  const [tab, setTab] = useState<Tab>('transaksi')
+  const [kode, setKode] = useState('BUMI')
+  const [ketik, setKetik] = useState('BUMI')
+  const [rentang, setRentang] = useState<RentangNp>('b3')
+
+  return (
+    <div className="lantai neo-papan">
+      <div className="vhead">
+        <h1>Neo Papan</h1>
+        <span className="sub">delapan tab analisis: transaksi, broker, kepemilikan, musiman, dan rotasi sektor</span>
+      </div>
+
+      <div className="np-bar">
+        <form onSubmit={(e) => { e.preventDefault(); setKode(ketik.trim().toUpperCase()) }}>
+          <input
+            className="inp" value={ketik} onChange={(e) => setKetik(e.target.value)}
+            placeholder="Ganti emiten: BUMI, BBCA…" aria-label="Ganti emiten"
+          />
+        </form>
+        <span className="np-kode">{kode}</span>
+        {(tab === 'transaksi') && (
+          <PemilihRentang opsi={OPSI_RENTANG_NP} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang candle" />
+        )}
+      </div>
+
+      <div className="tabs" role="tablist">
+        {TABS.map((t) => (
+          <button key={t.id} role="tab" aria-selected={tab === t.id}
+            className={'tab' + (tab === t.id ? ' on' : '')}
+            onClick={() => setTab(t.id)}>{t.label}</button>
+        ))}
+      </div>
+
+      {tab === 'transaksi' && <TransaksiTab kode={kode} rentang={rentang} />}
+      {tab === 'inventory' && <InventoryTab kode={kode} />}
+      {tab === 'compare' && <CompareTab kode={kode} />}
+      {tab === 'stalker' && <StalkerTab />}
+      {tab === 'balance' && <BalanceTab kode={kode} />}
+      {tab === 'season' && <SeasonTab kode={kode} />}
+      {tab === 'rotasi' && <RotasiTab />}
+      {tab === 'activity' && <ActivityTab />}
+    </div>
+  )
+}

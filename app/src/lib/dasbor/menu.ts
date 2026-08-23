@@ -13,7 +13,7 @@
 /** Kelompok tempat sebuah menu bernaung. Rail desktop menampilkan KELOMPOK,
  *  bukan menu — 16 ikon berderet sudah menghabiskan tinggi rail di laptop dan
  *  ikon ke-18 akan meluber tanpa gulir dan tanpa galat (#175). */
-export type GrupId = 'pasar' | 'emiten' | 'aliran' | 'analisa' | 'baca'
+export type GrupId = 'pasar' | 'emiten' | 'aliran' | 'analisa' | 'baca' | 'dev'
 
 export interface MenuItem {
   id: string
@@ -66,6 +66,13 @@ export const MENU_GRUP: MenuGrup[] = [
   {
     id: 'baca', kode: 'BAC', label: 'Baca',
     ikon: 'M12 6a3 3 0 00-3-3H4v14h5a3 3 0 013 3 3 3 0 013-3h5V3h-5a3 3 0 00-3 3zM12 6v14',
+  },
+  {
+    // Grup alat yang lahir dari prototipe komunitas — rumusnya milik orang
+    // lain (adimollogy & buruhIHSG), jadi dipisahkan dari analisa PAPAN
+    // supaya tak terbaca sebagai metode kita sendiri.
+    id: 'dev', kode: 'DEV', label: 'Dev',
+    ikon: 'M8 6l-5 6 5 6M16 6l5 6-5 6M13 4l-2 16',
   },
 ]
 
@@ -229,6 +236,19 @@ export const MENU_ITEMS: MenuItem[] = [
     id: 'metodologi', path: '/metodologi', label: 'Metodologi & Glosarium', kode: 'MTD', grup: 'baca',
     ringkas: '75 istilah PAPAN dengan definisi dan frekuensi pemakaian, plus penjelasan sumber data & batasnya.',
     ikon: 'M4 19.5A2.5 2.5 0 016.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z',
+  },
+  // ── Dev ────────────────────────────────────────────────────────────────
+  {
+    id: 'kuli-papan', path: '/kuli-papan', label: 'Kuli Papan', kode: 'KUL', grup: 'dev',
+    ringkas: 'Dua kalkulator papan: target realistis dari antrean bid/offer, dan pita PBV terhadap rata-rata P/B tahunan.',
+    ikon: 'M4 19h16M6 15V9M10 15V6M14 15v-4M18 15V8',
+  },
+  {
+    // Neo Papan (23 Agu 2026) — delapan tab analisis, sibling Kuli Papan.
+    // Kode 'NEO' — 'KUL' sudah dipakai Kuli Papan.
+    id: 'neo-papan', path: '/neo-papan', label: 'Neo Papan', kode: 'NEO', grup: 'dev',
+    ringkas: 'Delapan tab analisis: transaksi, inventory broker, broker stalker, kepemilikan KSEI, musiman, dan rotasi sektor.',
+    ikon: 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 3a9 9 0 019 9h-9z M12 12l4-2',
   },
 ]
 

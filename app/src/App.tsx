@@ -28,6 +28,9 @@ const BrokerSummary = lazy(() => import('./views/dasbor/BrokerSummary').then((m)
 // Broker Summary v2 (22 Agu 2026) — arus broker PER EMITEN, berkas terpisah
 // dari BrokerSummary lama (broker level pasar) yang sengaja tidak disentuh.
 const BrokerSummaryV2 = lazy(() => import('./views/dasbor/BrokerSummaryV2').then((m) => ({ default: m.BrokerSummaryV2 })))
+const KuliPapan = lazy(() => import('./views/dasbor/KuliPapan').then((m) => ({ default: m.KuliPapan })))
+// Neo Papan (23 Agu 2026) — delapan tab analisis, sibling Kuli Papan di grup Dev.
+const NeoPapan = lazy(() => import('./views/dasbor/NeoPapan').then((m) => ({ default: m.NeoPapan })))
 const StockDetail = lazy(() => import('./views/dasbor/StockDetail').then((m) => ({ default: m.StockDetail })))
 const PetaInvestor = lazy(() => import('./views/dasbor/PetaInvestor').then((m) => ({ default: m.PetaInvestor })))
 const Kabar = lazy(() => import('./views/dasbor/Kabar').then((m) => ({ default: m.Kabar })))
@@ -127,6 +130,11 @@ function App() {
                   disentuh). Kunci 'broker-v2' terdaftar di PETA_MENU_KUNCI
                   DAN akses_halaman sejak rute ini dibuat (aturan wajib). */}
               <Route path="/broker-summary-v2" element={<PenjagaHalaman kunci="broker-v2"><BrokerSummaryV2 /></PenjagaHalaman>} />
+              <Route path="/kuli-papan" element={<PenjagaHalaman kunci="kuli-papan"><KuliPapan /></PenjagaHalaman>} />
+              {/* Neo Papan (23 Agu 2026) — kunci 'neo-papan' terdaftar di
+                  PETA_MENU_KUNCI di sini; baris `akses_halaman` di Supabase
+                  MENYUSUL (aturan wajib #170, dikerjakan Johan). */}
+              <Route path="/neo-papan" element={<PenjagaHalaman kunci="neo-papan"><NeoPapan /></PenjagaHalaman>} />
               {/* Aliran Asing (22 Agu 2026) — kunci 'aliran-asing' sudah
                   terdaftar di PETA_MENU_KUNCI DAN akses_halaman sejak rute
                   ini dibuat (aturan wajib 21 Agu 2026). */}
