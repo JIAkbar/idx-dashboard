@@ -2004,6 +2004,22 @@
   .lantai .bs2-ctl{gap:8px}
   .lantai .bs2-ctl .bs-preset{flex:1 1 100%}
 }
+/* Deretan tab halaman v2 di layar sempit. Aturan bersama
+   `.lantai .bs-h>.tabs .tab` memakai `flex:1 1 0; min-width:0`, yang memaksa
+   SEPULUH tab berbagi lebar rata — masing-masing jadi ~34px sementara
+   `.tab` ber-`white-space:nowrap`, sehingga label panjang meluber dan saling
+   tindih (terbaca sebagai teks bertumpuk). Kliknya tetap jalan; yang rusak
+   keterbacaannya.
+
+   Halaman lain memakai aturan itu dengan jumlah tab jauh lebih sedikit dan
+   tidak bermasalah, jadi aturannya TIDAK disunting — ditimpa di sini saja:
+   tab memakai lebar isinya sendiri dan deretannya digulung mendatar.
+   Panjang selector disamakan (3 level, sama dengan aturan asal) dan blok ini
+   ada SESUDAHnya; media query tidak menambah spesifisitas. */
+@media (max-width:900px){
+  .lantai .bs2-h>.tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-gutter:stable}
+  .lantai .bs2-h>.tabs .tab{flex:0 0 auto;min-width:max-content;padding:0 10px}
+}
 .lantai .bs2-legenda{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--text3);margin:2px 0 10px}
 .lantai .bs2-legenda span{display:inline-flex;align-items:center;gap:5px}
 .lantai .bs2-legenda i{width:8px;height:8px;border-radius:2px;display:inline-block}

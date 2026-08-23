@@ -125,7 +125,7 @@ export function Pemulihan() {
                 value={kode}
                 onChange={setKode}
                 onSelect={(t) => { setKode(t); void ambilHarga(t) }}
-                placeholder="Cari kode / nama emiten…"
+                placeholder="Cari emiten…"
               />
               <button type="button" className="btn-p" style={{ whiteSpace: 'nowrap' }}
                 onClick={() => void ambilHarga()} disabled={mengambil || !kode.trim()}>

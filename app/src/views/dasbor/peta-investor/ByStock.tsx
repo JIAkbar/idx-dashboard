@@ -62,7 +62,7 @@ export function ByStock({ data, onSelect }: ByStockProps) {
         <input
           className="inp"
           style={{ width: 200 }}
-          placeholder="Cari kode/nama emiten…"
+          placeholder="Cari emiten…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />

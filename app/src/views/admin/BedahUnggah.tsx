@@ -368,7 +368,7 @@ export function BedahUnggah() {
                   value={ticker}
                   onChange={setTicker}
                   onSelect={setTicker}
-                  placeholder="Ketik kode / nama emiten…"
+                  placeholder="Ketik emiten…"
                 />
                 {terkunci && (
                   <button

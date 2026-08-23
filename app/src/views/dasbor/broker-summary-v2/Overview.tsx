@@ -44,6 +44,18 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
   const rataLot = [1, 2, 3, 4, 5].reduce((s, n) => s + ringkas.topLot(n), 0) / 5
   const rataVal = [1, 2, 3, 4, 5].reduce((s, n) => s + ringkas.topVal(n), 0) / 5
   const selisih = ringkas.pembeli.length - ringkas.penjual.length
+  // Acc/Dist DIAMBIL dari sumber (`ringkas.accdist` per hari), bukan dihitung
+  // ulang dari selisih jumlah broker. Terukur 23 Agu 2026 atas 2.318 hari
+  // BUMI: rumus `n_beli - n_jual` memberi Dist 64,5% / Acc 31,6% /
+  // Neutral 4,0%, sementara sumbernya memberi Dist 1.586 / Acc 732 tanpa
+  // Neutral sama sekali — dua definisi untuk satu hal, dan yang di layar
+  // bukan yang dipakai penyedia datanya.
+  //
+  // Kartu ini menggambarkan RENTANG sementara sumber hanya punya label per
+  // hari, jadi yang dilaporkan jumlah harinya — bukan satu label agregat yang
+  // seolah-olah datang dari sumber padahal karangan sendiri.
+  const nAcc = hari.filter(([, h]) => h.ringkas?.accdist === 'Acc').length
+  const nDist = hari.filter(([, h]) => h.ringkas?.accdist === 'Dist').length
 
   const arus = arusHarian(hari)
   const asingAda = hari.filter(([, h]) => h.asing)
@@ -88,7 +100,7 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
                 <div className="vcard">
                   <span className="lbl">Broker</span>
                   <span className="v-num num">{ringkas.pembeli.length} <span className="chip up" style={{ padding: '0 6px' }}>▲</span> {ringkas.penjual.length} <span className="chip dn" style={{ padding: '0 6px' }}>▼</span></span>
-                  <span className="v-note">selisih {selisih > 0 ? '+' : ''}{selisih} · {selisih < 0 ? 'Acc' : selisih > 0 ? 'Dist' : 'Neutral'}</span>
+                  <span className="v-note">selisih {selisih > 0 ? '+' : ''}{selisih} · <b className="bs2-badge-sedang chip" style={{ background: nAcc >= nDist ? 'var(--green)' : 'var(--red)' }}>{nAcc >= nDist ? 'Acc' : 'Dist'} {Math.max(nAcc, nDist)}/{hari.length} hari</b></span>
                 </div>
                 <div className="vcard">
                   <span className="lbl">Nilai kotor</span>

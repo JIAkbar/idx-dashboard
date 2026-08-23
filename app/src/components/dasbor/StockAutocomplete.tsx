@@ -77,7 +77,7 @@ export function StockAutocomplete({ stocks, value, onChange, onSelect, placehold
       {value !== '' && (
         <button
           type="button"
-          aria-label="Bersihkan kode saham"
+          aria-label="Bersihkan emiten"
           title="Bersihkan"
           onMouseDown={(e) => { e.preventDefault(); onChange(''); setActiveIndex(-1); setOpen(true) }}
           style={{

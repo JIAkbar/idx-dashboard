@@ -223,7 +223,7 @@ export function AvgDown() {
                   value={kode}
                   onChange={setKode}
                   onSelect={(t) => { setKode(t); void fetchPrice(t) }}
-                  placeholder="Cari kode / nama emiten…"
+                  placeholder="Cari emiten…"
                 />
                 <button className="btn-p" style={{ whiteSpace: 'nowrap' }} onClick={() => void fetchPrice()} disabled={fetching}>
                   {fetching ? <IkonMenu d={IKON_JAM} size={13} /> : <><IkonMenu d={IKON_CARI} size={13} /> Cari Harga</>}

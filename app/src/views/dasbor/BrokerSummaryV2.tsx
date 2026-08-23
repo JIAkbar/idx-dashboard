@@ -173,7 +173,7 @@ export function BrokerSummaryV2() {
                 value={cari}
                 onChange={setCari}
                 onSelect={(t) => { if (t) { setKode(t.toUpperCase()); setCari('') } }}
-                placeholder="Ganti kode: BUMI, BBCA…"
+                placeholder="Ganti emiten: BUMI, BBCA…"
               />
             </span>
             <h1 style={{ margin: 0, fontSize: 26 }}>{kode} <small className="lbl" style={{ marginLeft: 8, textTransform: 'none', letterSpacing: 0 }}>{namaEmiten}</small></h1>
@@ -219,7 +219,7 @@ export function BrokerSummaryV2() {
 
       {!loading && !error && semuaHari.length > 0 && (
         <div className="panel">
-          <div className="panel-h bs-h">
+          <div className="panel-h bs-h bs2-h">
             <div className="tabs" role="tablist" aria-label="Analisa Broker Summary v2">
               {TABS.map((t) => (
                 <button

@@ -220,7 +220,7 @@ export function Watchlist() {
           <span className="af-cari wl-cari">
             <IkonMenu d={IKON_CARI} size={13} />
             <input
-              className="inp" type="search" placeholder="Tambah kode emiten…" value={cari}
+              className="inp" type="search" placeholder="Tambah emiten…" value={cari}
               onChange={(e) => setCari(e.target.value.toUpperCase())}
               onKeyDown={(e) => { if (e.key === 'Enter' && saran[0]) tambah(saran[0].kode) }}
             />
@@ -322,7 +322,7 @@ function BarisWatchlist({
         {b.nama && <span className="wl-nama">{b.nama}</span>}
         {b.hilang && (
           <span className="wl-nama" style={{ color: 'var(--red)' }}
-            title="Berkas harganya tidak ditemukan — kemungkinan delisting atau berganti kode. Baris ini tak akan terisi lagi; hapus kalau sudah tak dipantau.">
+            title="Berkas harganya tidak ditemukan — kemungkinan delisting atau berganti nama. Baris ini tak akan terisi lagi; hapus kalau sudah tak dipantau.">
             data tak ditemukan — mungkin delisting
           </span>
         )}

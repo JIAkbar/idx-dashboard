@@ -2921,7 +2921,7 @@ export function GrafikEmiten() {
             <IkonMenu d={IKON_CARI} size={13} />
             <span className="grf-kode-aktif">{kode}</span>
             <input className="inp" value={cari} placeholder="Cari emiten…"
-              aria-label="Cari kode atau nama emiten"
+              aria-label="Cari emiten"
               onChange={(e) => setCari(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && saran[0]) pilihEmiten(saran[0].kode) }} />
             {cari && (

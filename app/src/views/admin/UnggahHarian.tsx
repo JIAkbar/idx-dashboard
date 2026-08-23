@@ -1376,7 +1376,7 @@ export function UnggahHarian() {
                   value={ticker}
                   onChange={setTicker}
                   onSelect={setTicker}
-                  placeholder="Ketik kode / nama emiten…"
+                  placeholder="Ketik emiten…"
                   tandai={new Set(sudah.map((b) => b.ticker))}
                   labelTanda="sudah ada"
                 />

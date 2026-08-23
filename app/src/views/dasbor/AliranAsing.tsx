@@ -79,7 +79,7 @@ export function AliranAsing() {
           <span className="af-cari ala-cari">
             <IkonMenu d={IKON_CARI} size={13} />
             <input
-              className="inp" type="search" placeholder="Cari kode atau nama…" value={cari}
+              className="inp" type="search" placeholder="Cari emiten…" value={cari}
               onChange={(e) => setCari(e.target.value)}
             />
           </span>
