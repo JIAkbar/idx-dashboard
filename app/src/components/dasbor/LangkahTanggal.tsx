@@ -29,6 +29,7 @@ export function LangkahTanggal({
   label,
   disabled = false,
   ukuran = 'penuh',
+  ganda = false,
   className = '',
 }: {
   arah: 'mundur' | 'maju'
@@ -39,6 +40,12 @@ export function LangkahTanggal({
   label: string
   disabled?: boolean
   ukuran?: 'penuh' | 'sebaris'
+  /** Panah GANDA (mis. «/») untuk langkah yang lebih besar — dipakai saat dua
+   *  langkah berbeda skala berdiri bersebelahan dan harus bisa dibedakan tanpa
+   *  membaca tooltip. Kalender DatePicker memakainya untuk tahun di samping
+   *  bulan: sebelum ini keempat panah identik dan satu-satunya pembeda cuma
+   *  judulnya, yang tak terlihat sampai kursor berhenti di atasnya. */
+  ganda?: boolean
   className?: string
 }) {
   const cls = ['lt', ukuran === 'sebaris' ? 'lt-sebaris' : '', className]
@@ -54,7 +61,14 @@ export function LangkahTanggal({
       onClick={onClick}
     >
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d={arah === 'mundur' ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6'} />
+        {ganda ? (
+          <>
+            <path d={arah === 'mundur' ? 'M18 6l-6 6 6 6' : 'M6 6l6 6-6 6'} />
+            <path d={arah === 'mundur' ? 'M12 6l-6 6 6 6' : 'M12 6l6 6-6 6'} />
+          </>
+        ) : (
+          <path d={arah === 'mundur' ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6'} />
+        )}
       </svg>
     </button>
   )

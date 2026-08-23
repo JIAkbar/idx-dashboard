@@ -163,13 +163,13 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
               >=12px; tanpa itu area klik yang dilebarkan `::after{inset:-6px}`
               saling tindih dan klik di celah jatuh ke tombol yang salah. */}
           <span className="ti-grup">
-            <LangkahTanggal arah="mundur" ukuran="sebaris" label="Tahun sebelumnya" onClick={() => geserTahun(-1)} />
+            <LangkahTanggal arah="mundur" ukuran="sebaris" ganda label="Tahun sebelumnya" onClick={() => geserTahun(-1)} />
             <LangkahTanggal arah="mundur" ukuran="sebaris" label="Bulan sebelumnya" onClick={() => geser(-1)} />
           </span>
           <span className="dpk-bulan">{NAMA_BULAN[bulan]} {tahun}</span>
           <span className="ti-grup">
             <LangkahTanggal arah="maju" ukuran="sebaris" label="Bulan berikutnya" onClick={() => geser(1)} />
-            <LangkahTanggal arah="maju" ukuran="sebaris" label="Tahun berikutnya" onClick={() => geserTahun(1)} />
+            <LangkahTanggal arah="maju" ukuran="sebaris" ganda label="Tahun berikutnya" onClick={() => geserTahun(1)} />
           </span>
         </div>
         <div className="dpk-grid">
