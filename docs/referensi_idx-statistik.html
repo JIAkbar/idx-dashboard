@@ -1,0 +1,3852 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Referensi Sumber — IDX Statistik (PAPAN)</title>
+<style>
+:root {
+  --canvas: #f5f5f7;
+  --surface-card: #ffffff;
+  --surface-recessed: #f5f5f7;
+  --sidebar-bg: #f6f6f8;
+  --titlebar-bg: #ececee;
+  --pathbar-bg: #ececee;
+  --hairline: #e2e2e5;
+  --hairline-strong: #d2d2d7;
+  --ink: #1d1d1f;
+  --ink-muted: #474747;
+  --ink-subtle: #707070;
+  --accent: #0071e3;
+  --accent-hover: #0066cc;
+  --accent-soft: #e8f2fe;
+  --selection-bg: #0a7cff;
+  --selection-text: #ffffff;
+  --traffic-red: #ff5f57;
+  --traffic-yellow: #febc2e;
+  --traffic-green: #28c840;
+  --font-display: 'SF Pro Display', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-text: 'SF Pro Text', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
+  --radius-pill: 999px;
+  --mark-bg: #ffe58a;
+  --window-shadow: 0 30px 70px -20px rgba(0,0,0,0.35), 0 2px 10px rgba(0,0,0,0.12);
+  --ease-lazy: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+html[data-theme="dark"] {
+  --canvas: #1e1e1e;
+  --surface-card: #262628;
+  --surface-recessed: #2c2c2e;
+  --sidebar-bg: #252527;
+  --titlebar-bg: #323234;
+  --pathbar-bg: #2a2a2c;
+  --hairline: #3a3a3c;
+  --hairline-strong: #48484a;
+  --ink: #f5f5f7;
+  --ink-muted: #c7c7cc;
+  --ink-subtle: #98989d;
+  --accent: #409cff;
+  --accent-hover: #64b1ff;
+  --accent-soft: #16283d;
+  --selection-bg: #0a7cff;
+  --selection-text: #ffffff;
+  --mark-bg: #7a5b00;
+  --window-shadow: 0 30px 70px -20px rgba(0,0,0,0.6), 0 2px 10px rgba(0,0,0,0.3);
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font-text);
+  color: var(--ink);
+  line-height: 1.55;
+  background:
+    radial-gradient(circle at 15% 10%, #a7c7f2 0%, transparent 45%),
+    radial-gradient(circle at 85% 15%, #f2c7e0 0%, transparent 45%),
+    radial-gradient(circle at 50% 90%, #bfe3c9 0%, transparent 50%),
+    linear-gradient(160deg, #dfe7f3 0%, #eef1f6 100%);
+  min-height: 100vh;
+  padding: 26px;
+  transition: background 0.4s var(--ease-lazy);
+}
+html[data-theme="dark"] body {
+  background:
+    radial-gradient(circle at 15% 10%, #1c3252 0%, transparent 45%),
+    radial-gradient(circle at 85% 15%, #3a1f30 0%, transparent 45%),
+    radial-gradient(circle at 50% 90%, #16301f 0%, transparent 50%),
+    linear-gradient(160deg, #101012 0%, #0a0a0b 100%);
+}
+
+@keyframes window-in {
+  from { opacity: 0; transform: scale(0.96) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.macwindow {
+  max-width: 1560px;
+  margin: 0 auto;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--window-shadow);
+  border: 1px solid rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 52px);
+  background: var(--surface-card);
+  animation: window-in 0.55s var(--ease-spring) both;
+  transition: background 0.4s var(--ease-lazy), border-color 0.4s var(--ease-lazy);
+}
+
+.titlebar {
+  height: 44px;
+  flex-shrink: 0;
+  background: var(--titlebar-bg);
+  border-bottom: 1px solid var(--hairline);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 14px;
+  -webkit-app-region: drag;
+  transition: background 0.4s var(--ease-lazy), border-color 0.4s var(--ease-lazy);
+}
+.traffic-lights { display: flex; gap: 8px; }
+.traffic-light { width: 12px; height: 12px; border-radius: 50%; display: inline-block; transition: transform 0.25s var(--ease-spring), filter 0.25s ease; }
+.traffic-light.red { background: var(--traffic-red); }
+.traffic-light.yellow { background: var(--traffic-yellow); }
+.traffic-light.green { background: var(--traffic-green); }
+.traffic-lights:hover .traffic-light { transform: scale(1.15); filter: brightness(1.1); }
+.titlebar-title {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-muted);
+  margin-right: 76px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.4s var(--ease-lazy);
+}
+.titlebar-nav {
+  display: flex;
+  gap: 6px;
+  margin-right: 8px;
+}
+.titlebar-nav a {
+  font-family: var(--font-display);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-muted);
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--hairline-strong);
+  background: var(--surface-card);
+  transition: color 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+}
+.titlebar-nav a:hover { color: var(--accent); border-color: var(--accent); }
+#theme-toggle {
+  border: 1px solid var(--hairline-strong);
+  background: var(--surface-card);
+  color: var(--ink);
+  border-radius: var(--radius-pill);
+  width: 28px; height: 28px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.25s ease, transform 0.4s var(--ease-spring), background 0.4s var(--ease-lazy);
+}
+#theme-toggle:hover { border-color: var(--accent); transform: scale(1.08) rotate(-12deg); }
+#theme-toggle:active { transform: scale(0.92); }
+
+.window-body { flex: 1; display: flex; min-height: 0; }
+
+.sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--hairline);
+  padding: 14px 10px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  transition: background 0.4s var(--ease-lazy), border-color 0.4s var(--ease-lazy);
+}
+.toolbar-search-wrap { padding: 4px 6px 12px; }
+#search {
+  width: 100%;
+  padding: 6px 10px 6px 28px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--hairline-strong);
+  background: var(--surface-card);
+  color: var(--ink);
+  font-size: 13px;
+  font-family: var(--font-text);
+  background-image: none;
+  position: relative;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.4s var(--ease-lazy);
+}
+.search-field { position: relative; }
+.search-field::before {
+  content: "🔍";
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+#search:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.controls { display: flex; gap: 0; margin: 10px 6px 6px; border: 1px solid var(--hairline-strong); border-radius: var(--radius-md); overflow: hidden; transition: border-color 0.4s var(--ease-lazy); }
+.controls button {
+  flex: 1;
+  padding: 5px 6px;
+  border: none;
+  border-right: 1px solid var(--hairline-strong);
+  background: var(--surface-card);
+  color: var(--ink-muted);
+  cursor: pointer;
+  font-size: 11px;
+  font-family: var(--font-text);
+  transition: background 0.2s var(--ease-lazy), color 0.2s var(--ease-lazy);
+}
+.controls button:last-child { border-right: none; }
+.controls button:hover { background: var(--accent-soft); color: var(--accent); }
+.controls button:active { transform: scale(0.97); }
+
+.sidebar-group { margin-bottom: 14px; }
+.sidebar-group-label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--ink-subtle);
+  padding: 4px 10px 4px;
+  transition: color 0.4s var(--ease-lazy);
+}
+.sidebar ul { list-style: none; padding: 0; margin: 0; }
+.sidebar li { margin-bottom: 1px; }
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border-radius: var(--radius-md);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 13px;
+  transition: background 0.25s var(--ease-lazy), color 0.25s var(--ease-lazy), transform 0.25s var(--ease-spring);
+}
+.nav-icon { font-size: 13px; flex-shrink: 0; transition: transform 0.3s var(--ease-spring); }
+.nav-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-link:hover { background: var(--surface-recessed); transform: translateX(2px); }
+.nav-link:hover .nav-icon { transform: scale(1.15); }
+.nav-link.active { background: var(--selection-bg); color: var(--selection-text); }
+.nav-link.archive { opacity: 0.55; font-style: italic; }
+.nav-link.archive.active { opacity: 1; }
+
+.content-scroll { flex: 1; overflow-y: auto; background: var(--surface-card); scroll-behavior: smooth; transition: background 0.4s var(--ease-lazy); }
+.main { padding: 30px 46px 60px; max-width: 1160px; }
+.intro { margin-bottom: 26px; }
+.intro blockquote { font-size: 13.5px; }
+h1 { font-family: var(--font-display); font-size: 26px; font-weight: 600; letter-spacing: -0.4px; }
+h2 { font-family: var(--font-display); font-size: 19px; font-weight: 600; margin: 0; display: inline; letter-spacing: -0.2px; }
+h3 { font-family: var(--font-display); font-size: 15px; font-weight: 600; margin-top: 20px; }
+section { margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid var(--hairline); scroll-margin-top: 16px; transition: border-color 0.4s var(--ease-lazy); }
+
+.section-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 6px 0;
+  margin: 0;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+.chevron {
+  color: var(--accent);
+  font-size: 12px;
+  display: inline-block;
+  transition: transform 0.35s var(--ease-spring);
+  transform: rotate(-90deg);
+  flex-shrink: 0;
+}
+.section-toggle.is-open > .section-summary .chevron { transform: rotate(0deg); }
+.section-summary:hover h2 { color: var(--accent); }
+h2 { transition: color 0.2s ease; }
+
+.section-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.45s var(--ease-lazy);
+}
+.section-toggle.is-open > .section-panel { grid-template-rows: 1fr; }
+.section-panel-inner { overflow: hidden; min-height: 0; }
+.section-body {
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.35s var(--ease-lazy) 0.05s, transform 0.35s var(--ease-lazy) 0.05s;
+}
+.section-toggle.is-open .section-body { opacity: 1; transform: translateY(0); }
+
+.archive-section { background: var(--surface-recessed); border-radius: var(--radius-lg); padding: 8px 16px; opacity: 0.85; transition: background 0.4s var(--ease-lazy); }
+.archive-section h2 { font-style: italic; color: var(--ink-subtle); }
+table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 12.5px; background: var(--surface-card); border-radius: var(--radius-md); overflow: hidden; transition: background 0.4s var(--ease-lazy); }
+th, td { border: 1px solid var(--hairline); padding: 8px 10px; text-align: left; vertical-align: top; transition: background 0.15s ease, border-color 0.4s var(--ease-lazy), color 0.4s var(--ease-lazy); }
+th { background: var(--surface-recessed); color: var(--accent); cursor: pointer; user-select: none; font-family: var(--font-display); font-weight: 600; }
+th:hover { color: var(--accent-hover); }
+th .sort-arrow { opacity: 0.5; font-size: 10px; margin-left: 4px; display: inline-block; transition: transform 0.3s var(--ease-spring), opacity 0.2s ease; }
+th:hover .sort-arrow { opacity: 0.9; }
+th[data-dir="asc"] .sort-arrow { transform: rotate(0deg); opacity: 1; }
+th[data-dir="desc"] .sort-arrow { transform: rotate(180deg); opacity: 1; }
+tr:nth-child(even) td { background: var(--surface-recessed); }
+tr.row-hidden { display: none; }
+tbody tr td { transition: background 0.15s ease; }
+tbody tr:hover td { background: var(--accent-soft); }
+code { background: var(--accent-soft); color: var(--ink); padding: 1px 6px; border-radius: 5px; font-size: 0.9em; font-family: ui-monospace, SF Mono, Menlo, monospace; transition: background 0.4s var(--ease-lazy); }
+blockquote { border-left: 3px solid var(--accent); margin: 12px 0; padding: 6px 14px; background: var(--surface-recessed); color: var(--ink-muted); border-radius: 0 var(--radius-md) var(--radius-md) 0; transition: background 0.4s var(--ease-lazy); }
+a { color: var(--accent); transition: color 0.2s ease; }
+@keyframes mark-in {
+  from { background-color: transparent; }
+  to { background-color: var(--mark-bg); }
+}
+mark { background: var(--mark-bg); color: var(--ink); border-radius: 3px; padding: 0 2px; animation: mark-in 0.4s var(--ease-lazy); }
+hr { border: none; border-top: 1px solid var(--hairline); margin: 24px 0; }
+.table-filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; }
+.table-filters button {
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--hairline-strong);
+  background: var(--surface-card);
+  color: var(--ink-muted);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: var(--font-text);
+  transition: background 0.25s var(--ease-lazy), color 0.25s var(--ease-lazy), border-color 0.25s var(--ease-lazy), transform 0.2s var(--ease-spring);
+}
+.table-filters button:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+.table-filters button:active { transform: scale(0.95); }
+.table-filters button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.table-wrap { overflow-x: auto; }
+
+.pathbar {
+  flex-shrink: 0;
+  height: 26px;
+  background: var(--pathbar-bg);
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  font-size: 11.5px;
+  color: var(--ink-subtle);
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: background 0.4s var(--ease-lazy), border-color 0.4s var(--ease-lazy);
+}
+.pathbar-crumb { color: var(--ink-subtle); }
+.pathbar-crumb.current { color: var(--ink); font-weight: 500; transition: opacity 0.2s ease; }
+.pathbar-crumb.current.fading { opacity: 0; }
+.pathbar-sep { opacity: 0.5; }
+</style>
+</head>
+<body>
+<div class="macwindow">
+  <div class="titlebar">
+    <div class="traffic-lights">
+      <span class="traffic-light red"></span>
+      <span class="traffic-light yellow"></span>
+      <span class="traffic-light green"></span>
+    </div>
+    <div class="titlebar-title">Referensi Sumber — IDX Statistik (PAPAN)</div>
+    <div class="titlebar-nav"></div>
+    <button id="theme-toggle" title="Ganti tema terang/gelap">🌙</button>
+  </div>
+  <div class="window-body">
+    <nav class="sidebar">
+      <div class="toolbar-search-wrap">
+        <div class="search-field">
+          <input type="text" id="search" placeholder="Cari...">
+        </div>
+        <div class="controls">
+          <button id="expand-all">Buka semua</button>
+          <button id="collapse-all">Tutup semua</button>
+        </div>
+      </div>
+      
+<div class="sidebar-group">
+<div class="sidebar-group-label">Isi</div>
+<ul>
+<li><a href="#ringkasan" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Ringkasan</span></a></li>
+<li><a href="#peta-halaman-sumber" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Peta halaman → sumber</span></a></li>
+<li><a href="#jahitan-yang-ada-sekarang-semuanya-perlu-keputusan-ulang-johan" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Jahitan yang ada sekarang — semuanya perlu keputusan ulang Johan</span></a></li>
+<li><a href="#idx-tradingsummary-getstocksummary" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">IDX — TradingSummary/GetStockSummary</span></a></li>
+<li><a href="#idx-statistik-pdf-harian-mingguan-bulanan" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">IDX — statistik PDF harian, mingguan, bulanan</span></a></li>
+<li><a href="#idx-tradingsummary-getbrokersummary" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">IDX — TradingSummary/GetBrokerSummary</span></a></li>
+<li><a href="#idx-listedcompany-getfinancialreport-xlsx-ber-xbrl" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">IDX — ListedCompany/GetFinancialReport + XLSX ber-XBRL</span></a></li>
+<li><a href="#idx-profil-sektor-saham-tercatat-berita-pengumuman" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">IDX — profil, sektor, saham tercatat, berita &amp; pengumuman</span></a></li>
+<li><a href="#stockbit-chartbit-kode-ohlcv-aliran-asing-rupiah" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Stockbit — chartbit/&lt;KODE&gt; (OHLCV + aliran asing rupiah)</span></a></li>
+<li><a href="#stockbit-marketdetectors-kode-broker-per-emiten-12-varian" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Stockbit — marketdetectors/&lt;KODE&gt; (broker per emiten, 12 varian)</span></a></li>
+<li><a href="#stockbit-keystats-emitten-profil-info-snips-dan-endpoint-yang-belum-terpecahkan" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Stockbit — keystats, emitten (profil &amp; info), Snips, dan endpoint yang belum terpecahkan</span></a></li>
+<li><a href="#yahoo-finance-v8-finance-chart-dan-pustaka-yfinance" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Yahoo Finance — v8/finance/chart dan pustaka yfinance</span></a></li>
+<li><a href="#ksei-balancepos-bulanan-dan-holding-composition" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">KSEI — Balancepos bulanan dan holding composition</span></a></li>
+<li><a href="#kabar-ipot-kontan-google-news" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Kabar — IPOT, Kontan, Google News</span></a></li>
+<li><a href="#indexalpha-api-indexalpha-id-belum-dipastikan" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">indexalpha (api.indexalpha.id) — ❓ belum dipastikan</span></a></li>
+<li><a href="#setoran-kontributor-supabase-dan-unggahan-admin" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Setoran kontributor, Supabase, dan unggahan admin</span></a></li>
+<li><a href="#keputusan-tidak-diambil-ganti-sumber-jahit" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Keputusan &quot;tidak diambil&quot; / ganti sumber / jahit</span></a></li>
+<li><a href="#j12-dua-konvensi-harga-volume-tersesuaikan-vs-apa-adanya-ketetapan-johan-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J12 · Dua konvensi harga &amp; volume — tersesuaikan vs apa adanya (ketetapan Johan, 23 Agu 2026)</span></a></li>
+<li><a href="#inventaris-ruas-per-berkas-jawaban-untuk-johan-23-agu-2026-stock-detail-ohlc-ohlcv-broker-summary-metode-panen" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Inventaris ruas per berkas — jawaban untuk Johan 23 Agu 2026 (Stock Detail, OHLC/OHLCV, Broker Summary, metode panen)</span></a></li>
+<li><a href="#matriks-sumber-stockbit-menang-di-mana-duplikasi-per-halaman-dan-usulan-kanonik-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Matriks sumber — Stockbit menang di mana, duplikasi per halaman, dan usulan kanonik (23 Agu 2026)</span></a></li>
+<li><a href="#kamus-ruas-arti-tiap-ruas-dan-data-apa-yang-dihasilkannya-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Kamus ruas — arti tiap ruas dan data apa yang dihasilkannya (23 Agu 2026)</span></a></li>
+<li><a href="#riwayat" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Riwayat</span></a></li>
+</ul>
+</div>
+
+    </nav>
+    <div class="content-scroll" id="content-scroll">
+      <main class="main">
+        <div class="intro"><h1>Referensi Sumber — IDX Statistik (PAPAN)</h1>
+<p>Dibuat: 23 Agustus 2026 · sesi: AI Skill (Fable, atas perintah Johan — <em>"perlu fable coba kerjakan soal sesi Papan Trading bentuk referensi nya mengingat akan berkembang besar luas dan yang dikhawatirkan semkian tidak terstruktur datanya"</em>) · aturan: <code>~/.claude/CLAUDE.md</code> section "Papan Pekerjaan, Referensi Sumber, Kejujuran Inventaris" · alasan &amp; cara kerja: <code>kemampuan-workflow.md</code> §WF-206<br />
+Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan\AI Skill\00 - Dokumentasi\build_html.py" --proyek "C:\1-Johan\10. Pengembangan\IDX Statistik\docs\referensi_idx-statistik.md"</code></p>
+<p>Berkas ini menjawab tiga pertanyaan yang selama ini tidak punya satu rumah: <strong>dari sumber mana saja data PAPAN berasal, apa yang tersedia di tiap sumber versus yang benar-benar diambil, dan halaman mana memakai apa — termasuk mana yang hasil jahitan</strong>. Rincian teknis per sumber tetap di dokumen lamanya (<code>sumber-data-harga.md</code>, <code>sumber-fundamental-idx.md</code>, <code>panen-kabar.md</code>, <code>panen-seasonality.md</code>, <code>workflow-panen-rombak.md</code>); status "isi terakhir sampai kapan" tetap di <code>status-panen.md</code>. Berkas ini peta dan keputusannya.</p>
+<p>Semua bukti <code>file:baris</code> dibaca langsung dari kode pada 23 Agustus 2026 (<code>scripts/*.py</code>, <code>app/src/**</code>), bukan dari ingatan. Berkas ini tidak ikut terbit: <code>vercel.json</code> hanya menyalin <code>app/dist</code>, <code>data-idx/json</code>, <code>data-idx/radar</code>, <code>arus-pasar/keluaran</code> — folder <code>docs/</code> tidak pernah sampai ke pengguna, jadi nama endpoint boleh ditulis di sini (aturan "endpoint tidak boleh tayang" berlaku untuk antarmuka, bukan dokumen internal).</p>
+<p>Tanda di kolom "Diambil?": ✅ diambil · ❌ tidak diambil · ⚙️ turunan (dihitung dari yang diambil, dengan bukti angka) · ❓ belum diuji/belum dipastikan.</p>
+</div>
+        
+<section id="ringkasan" data-title="Ringkasan">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Ringkasan</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<table>
+<thead>
+<tr>
+<th>Sumber</th>
+<th>Jenis</th>
+<th>Akses</th>
+<th>Diambil / tersedia</th>
+<th>Berkas lokal</th>
+<th>Dipakai untuk</th>
+<th>Diverifikasi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IDX <code>TradingSummary/GetStockSummary</code></td>
+<td>API tidak resmi (JSON situs idx.co.id)</td>
+<td>User-Agent peramban + sesi; <strong>IP datacenter diblokir</strong> (Actions/Netlify 403), IP rumahan 200</td>
+<td>6 ruas dari ±32 (aliran asing) + <code>ListedShares</code> (daftar emiten)</td>
+<td><code>data-idx/json/asing/&lt;KODE&gt;.json</code> (989), <code>daftar_emiten.json</code>, mentah <code>_arsip-mentah/asing/</code> (1.729 gz)</td>
+<td>Stock Detail, Aliran Asing, Broker Summary (Flow/Nego/AsingEmiten), Grafik Emiten, <code>aliran_investor.json</code></td>
+<td>panen 18–21 Agu 2026; batas riwayat 2020-01-02 diuji 18 Agu</td>
+</tr>
+<tr>
+<td>IDX statistik PDF harian / mingguan / bulanan (<code>Statistic/GetStatistic</code> + unduhan PDF)</td>
+<td>dataset unduhan (PDF resmi)</td>
+<td>rumahan; mingguan ikut <code>update.yml</code></td>
+<td>ruas yang diparse <code>parse_idx_pdf.py</code> / <code>parse_idx_weekly.py</code> / <code>parse_idx_monthly.py</code></td>
+<td><code>index.json</code>, <code>ds_*.json</code> (146), <code>index_weekly.json</code>/<code>ws_*</code> (33), <code>index_monthly.json</code>/<code>ms_*</code> (11)</td>
+<td>Beranda, Indeks Dunia, Top Stocks, Top Broker, Sektor &amp; Indeks, Statistik Berkala, Radar, Bulletin</td>
+<td>21 Agu 2026 (harian), 14 Agu (mingguan), Jul 2026 (bulanan)</td>
+</tr>
+<tr>
+<td>IDX <code>TradingSummary/GetBrokerSummary</code></td>
+<td>API tidak resmi</td>
+<td>rumahan 200; parameter <code>code</code>/<code>stockCode</code> <strong>diabaikan</strong> → selalu level pasar</td>
+<td>88 broker/hari × 5 ruas</td>
+<td><code>data-idx/json/broker/</code> (756)</td>
+<td>Broker Summary (brokerHarian), Top Broker</td>
+<td>22 Agu 2026</td>
+</tr>
+<tr>
+<td>IDX <code>ListedCompany/GetFinancialReport</code> + XLSX ber-XBRL</td>
+<td>API + unduhan XLSX (~300 KB/emiten)</td>
+<td>rumahan; UA peramban; tidak terenkripsi</td>
+<td>47 sheet tersedia; diambil ruas utama neraca/laba-rugi/arus kas + kolom pembanding + pengendali (sheet <code>1000000</code>); kuartal diskret diturunkan</td>
+<td><code>keuangan_idx/</code> (949), <code>pengendali.json</code>, mentah <code>_arsip-mentah/</code></td>
+<td>Stock Detail (PanelLaporanKeuangan, fundamentalGabungan), <code>valuasi_historis.json</code>, <code>lengkapi_fundamental.py</code></td>
+<td>19 Agu 2026 (interim 2024 TW1/TW2), 2019–2025</td>
+</tr>
+<tr>
+<td>IDX <code>ListedCompany/GetCompanyProfiles</code> / <code>GetCompanyProfilesDetail</code></td>
+<td>API tidak resmi</td>
+<td>rumahan; jeda 1,5 dtk (<code>idx_net.get</code>)</td>
+<td>962 emiten: alamat, BAE, industri, subindustri, email, situs, jenis efek</td>
+<td><code>profil/</code> (962), <code>emiten_sektor.json</code></td>
+<td>sektorIdx → Stock Detail, Kartu Analisa; <strong><code>profil/</code> belum dipakai halaman mana pun</strong></td>
+<td>22 Agu 2026</td>
+</tr>
+<tr>
+<td>IDX <code>StockData/GetSecuritiesStock</code></td>
+<td>API tidak resmi</td>
+<td>rumahan 200 (132 KB)</td>
+<td>dipakai <code>fetch_fundamental.py</code> untuk daftar saham — ruas lain ❓ belum diinventaris</td>
+<td>via <code>daftar_emiten.json</code></td>
+<td>kamusEmiten</td>
+<td>❓ isi ruas belum dicatat</td>
+</tr>
+<tr>
+<td>IDX berita &amp; pengumuman (<code>NewsAnnouncement/GetNewsSearch</code>, <code>ListedCompany/GetAnnouncement</code>, <code>NewsAnnouncement/GetAllAnnouncement</code>)</td>
+<td>API tidak resmi</td>
+<td>rumahan (datacenter 403 → <code>panen-kabar-rumah.yml</code>)</td>
+<td>judul, tautan, waktu</td>
+<td><code>kabar.json</code> (bagian IDX)</td>
+<td>Beranda, Kabar Pasar; <code>GetAllAnnouncement</code> dipakai <code>fetch_investor_map.py</code></td>
+<td>18 Agu 2026 21:56 WIB</td>
+</tr>
+<tr>
+<td>Stockbit <code>exodus.stockbit.com/chartbit/&lt;KODE&gt;</code></td>
+<td>API tidak resmi, <strong>token login akun</strong> (<code>stockbit_token.py</code>)</td>
+<td>token + refresh; 963/963 emiten</td>
+<td>o/h/l/c/v sejak 2004 + <code>foreignbuy</code>/<code>foreignsell</code> (rupiah); <strong>foreignbuy/sell belum dipakai halaman mana pun</strong></td>
+<td><code>ohlcv_stockbit/</code> (963) → digabung ke <code>ohlc/</code></td>
+<td>Broker Summary v2 (langsung); Grafik Emiten, Tanya PAPAN, Kartu Analisa, Screener, Watchlist, Seasonality Harian (lewat <code>ohlc/</code>)</td>
+<td>bar terakhir 21 Agu 2026; panen penuh 23 Agu</td>
+</tr>
+<tr>
+<td>Stockbit <code>exodus.stockbit.com/marketdetectors/&lt;KODE&gt;</code></td>
+<td>API tidak resmi, token</td>
+<td>token; beban 12 varian × 1.309 hari × 961 emiten ≈ 31 hari paralel 12</td>
+<td>12 varian (3 papan × ALL/FOREIGN × GROSS/NET); DOMESTIC ⚙️ turunan</td>
+<td><code>broker_harian/</code> (145.834 berkas, 22 emiten gelombang 1), <code>broker_tahunan/</code></td>
+<td>Broker Summary v2</td>
+<td>23 Agu 2026 siang</td>
+</tr>
+<tr>
+<td>Stockbit <code>exodus.stockbit.com/keystats/&lt;KODE&gt;</code></td>
+<td>API tidak resmi, token</td>
+<td>token; 963/963</td>
+<td>±94 rasio — dipanen semua, <strong>belum dibaca halaman mana pun</strong> (grep <code>app/src</code> nol)</td>
+<td><code>keystats_stockbit/</code></td>
+<td>belum dipakai</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Stockbit <code>exodus.stockbit.com/emitten/&lt;KODE&gt;</code> (profil &amp; info)</td>
+<td>API tidak resmi, token</td>
+<td>token; 963/963</td>
+<td>profil: pemegang saham, anak usaha; info: keanggotaan indeks, notasi khusus, UMA</td>
+<td><code>profil_stockbit/</code>, <code>info_stockbit/</code></td>
+<td>Shareholders (Broker Summary v2) memakai <code>profil_stockbit/</code>; <strong><code>info_stockbit/</code> belum dipakai</strong></td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Stockbit Snips (<code>snips.stockbit.com</code> sitemap + <code>?format=json</code>)</td>
+<td>situs (scrape)</td>
+<td>bebas</td>
+<td>judul, tautan, waktu</td>
+<td><code>snips.json</code> (238)</td>
+<td>Beranda, Kabar Pasar</td>
+<td>14 Agu 2026 — langkah CI ditambahkan 18 Agu, <strong>belum pernah jalan</strong></td>
+</tr>
+<tr>
+<td>Stockbit endpoint lain (Top Broker pasar, laporan keuangan per periode, aksi korporasi, intraday, orderbook — paywall Pro, fundachart)</td>
+<td>❓</td>
+<td>❓ parameter belum terpecahkan</td>
+<td>❓ belum diuji</td>
+<td>—</td>
+<td>—</td>
+<td>catatan 23 Agu (<code>workflow-panen-rombak.md</code> §4)</td>
+</tr>
+<tr>
+<td>Yahoo Finance <code>query1.finance.yahoo.com/v8/finance/chart/</code></td>
+<td>API tidak resmi</td>
+<td>bebas, jeda sopan; <strong><code>range=max</code>+<code>interval=1d</code> diturunkan diam-diam ke bulanan</strong> → wajib <code>period1</code>/<code>period2</code></td>
+<td>OHLC harian (pengisi <code>ohlc/</code> untuk tanggal tanpa Stockbit), IHSG 1990–1999, <code>^JKSE</code> cadangan statistik harian, penutupan bulanan seasonality</td>
+<td><code>ohlc/</code> (bagian Yahoo), <code>_arsip-mentah/ohlc-yahoo-sebelum-ganti-volume/</code>, <code>ihsg_harian.json</code> (cadangan), <code>seasonality/harga_bulanan.json</code></td>
+<td>Indeks Dunia, Seasonality, dan semua pemakai <code>ohlc/</code></td>
+<td>20–21 Agu 2026</td>
+</tr>
+<tr>
+<td>Yahoo Finance lewat pustaka <code>yfinance</code> (<code>info</code> + laporan)</td>
+<td>pustaka → API Yahoo</td>
+<td>bebas; 646 emiten punya laporan</td>
+<td>15 ruas fundamental + rasio turunan (PER, PBV, ROE, Altman Z, F-Score, beta, target analis, median sektor); laporan tahunan/kuartalan</td>
+<td><code>fundamental/</code> (965), <code>keuangan/</code> (646)</td>
+<td>Stock Detail, Sektor &amp; Indeks, Aliran Asing, Watchlist, Kalkulator, Screener, PanelLaporanKeuangan</td>
+<td>17–18 Agu 2026; <code>update-fundamental.yml</code> akhir bulan</td>
+</tr>
+<tr>
+<td>KSEI Balancepos (<code>web.ksei.co.id/Download/BalanceposEfek&lt;YYYYMMDD&gt;.zip</code>)</td>
+<td>dataset unduhan bulanan, pipe-delimited</td>
+<td>bebas (diuji rumahan)</td>
+<td>lokal &amp; asing × 9 tipe investor, Jan 2020 → Jul 2026 (79 bulan)</td>
+<td><code>kepemilikan/</code> (1.035 emiten)</td>
+<td>Shareholders (Broker Summary v2) via <code>brokerProfilKsei.ts:27</code> — <strong><code>status-panen.md</code> masih menulis "belum dipakai halaman mana pun": basi</strong></td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>KSEI holding composition (<code>web.ksei.co.id/archive_download/holding_composition/</code>)</td>
+<td>dataset unduhan</td>
+<td>bebas</td>
+<td>komposisi kepemilikan per emiten</td>
+<td><code>investor_map.json</code>, <code>investor_map.meta.json</code></td>
+<td>Peta Investor, graphRender, seasonality_bakrie</td>
+<td>tak diperbarui rutin</td>
+</tr>
+<tr>
+<td>IPOT News (<code>indopremier.com/ipotnews/…</code>, ajax <code>ajax_generalNewsPagesMore.php</code>)</td>
+<td>situs (scrape)</td>
+<td>bebas; endpoint mengabaikan parameter <code>halaman</code> (berhenti kalau halaman kembar persis)</td>
+<td>berita saham + arsip</td>
+<td><code>kabar.json</code> (bagian IPOT), <code>ipot_arsip.json</code></td>
+<td>Kabar Pasar, Beranda</td>
+<td>20 Agu 2026 08:26 WIB</td>
+</tr>
+<tr>
+<td>Kontan RSS (<code>investasi.kontan.co.id/rss</code>)</td>
+<td>RSS</td>
+<td>lewat runner rumahan</td>
+<td>judul, tautan</td>
+<td><code>kabar.json</code></td>
+<td>Kabar Pasar</td>
+<td>18 Agu 2026</td>
+</tr>
+<tr>
+<td>Google News RSS (<code>news.google.com/rss/search</code>, 3 kueri)</td>
+<td>RSS publik tanpa kunci</td>
+<td><strong>belum terbukti tembus dari IP datacenter GitHub</strong></td>
+<td>judul, tautan, waktu</td>
+<td><code>kabar.json</code></td>
+<td>Kabar Pasar</td>
+<td>20 Agu 2026 08:41 WIB</td>
+</tr>
+<tr>
+<td>indexalpha (<code>api.indexalpha.id</code>, <code>INDEXALPHA_TOKEN</code>)</td>
+<td>API pihak ketiga, token dari dasbor</td>
+<td>❓</td>
+<td>opsi <code>--sumber indexalpha</code> di <code>panen_broker_emiten.py</code> — ❓ apakah pernah dipakai nyata</td>
+<td>—</td>
+<td>❓</td>
+<td>❓ belum dipastikan</td>
+</tr>
+<tr>
+<td>Setoran kontributor (tangkapan layar broker per emiten) + Supabase</td>
+<td>unggahan manusia + basis data eksternal</td>
+<td>akun admin</td>
+<td>gambar + hasil kurasi admin</td>
+<td>Supabase (<code>supabaseSetoran.ts</code>), <code>arus-pasar/keluaran/</code></td>
+<td>Deep Dive, Bulletin, Kartu Analisa (broker per emiten setoran), Admin Kurasi</td>
+<td>berjalan</td>
+</tr>
+<tr>
+<td>Radar (unggahan admin <code>r_YYMMDD.json</code>)</td>
+<td>unggahan manusia</td>
+<td>admin</td>
+<td>—</td>
+<td><code>data-idx/radar/</code></td>
+<td>Radar Watchlist</td>
+<td>berjalan</td>
+</tr>
+</tbody>
+</table>
+<p>Referensi desain (DESIGN.md, situs acuan) tidak ditelusuri dalam audit ini — fokusnya data. Kalau ada, tambahkan sebagai section sendiri.</p>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="peta-halaman-sumber" data-title="Peta halaman → sumber">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Peta halaman → sumber</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<p>Satu baris per halaman di <code>app/src/lib/dasbor/menu.ts</code> + komponen data di Beranda. "Berkas" = yang benar-benar dibaca kode (<code>app/src/views/**</code>, <code>app/src/lib/**</code>, grep <code>data-idx/</code> 23 Agu 2026). <strong>Jahitan</strong> = deret yang digabung dari lebih dari satu sumber, atau ruas yang ditimpa dari sumber lain — status keputusannya ada di bagian "Jahitan".</p>
+<table>
+<thead>
+<tr>
+<th>Halaman / fitur</th>
+<th>Berkas data yang dibaca</th>
+<th>Sumber asal</th>
+<th>Jahitan?</th>
+<th>Diverifikasi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Beranda <code>/</code></td>
+<td><code>index.json</code> + <code>ds_*</code> (dataHarian), <code>ihsg_ohlc_ringkas.json</code> (ihsgOhlc), <code>kabar.json</code>, <code>snips.json</code>, <code>arus-pasar/keluaran/index.json</code> (bulletin)</td>
+<td>IDX PDF harian; <strong>IHSG jahitan Yahoo+Stockbit</strong>; IDX berita/pengumuman + IPOT + Kontan + Google News; Stockbit Snips; setoran kontributor</td>
+<td><strong>ya</strong> (grafik IHSG)</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Tanya PAPAN (komponen Beranda, <code>TanyaPapan.tsx</code>, <code>tanyaPapan.ts:35</code>)</td>
+<td><code>ohlc/&lt;KODE&gt;.json</code></td>
+<td><strong>jahitan Stockbit chartbit + Yahoo</strong></td>
+<td><strong>ya</strong></td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Panel Aliran Asing (Beranda, <code>PanelAliranAsing.tsx:13</code>)</td>
+<td><code>asing/&lt;KODE&gt;.json</code></td>
+<td>IDX GetStockSummary</td>
+<td>tidak</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Panel Diary (Beranda, <code>PanelDiary.tsx:91</code>)</td>
+<td><code>ihsg_harian.json</code></td>
+<td>IDX PDF harian, <strong>cadangan sementara Yahoo <code>^JKSE</code></strong> bila PDF belum terbit (ditimpa PDF saat terbit)</td>
+<td>sementara</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Grup Konglomerat (Beranda, <code>GrupKonglomerat.tsx:42</code>)</td>
+<td><code>grup_konglomerat.json</code></td>
+<td>⚙️ turunan <code>petakan_grup.py</code> dari profil/pengendali IDX + KSEI</td>
+<td>turunan</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Indeks Dunia <code>/indeks</code></td>
+<td><code>index.json</code> (dataHarian), <code>ihsg_harian.json</code>, <code>ihsg_ohlc_ringkas.json</code></td>
+<td>IDX PDF harian; <strong>IHSG jahitan Yahoo 1990–1999 + Stockbit 2000→</strong></td>
+<td><strong>ya</strong></td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Sektor &amp; Indeks <code>/sector</code></td>
+<td><code>index.json</code>/<code>ds_*</code>, <code>fundamental/</code> (stockDetailData), <code>emiten_sektor.json</code></td>
+<td>IDX PDF; <strong>fundamental campuran yfinance + IDX</strong> (lihat Jahitan); IDX profil</td>
+<td><strong>ya</strong> (fundamental)</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Top Stocks <code>/stocks</code></td>
+<td><code>index.json</code>/<code>ds_*</code></td>
+<td>IDX PDF harian</td>
+<td>tidak</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Statistik Berkala <code>/statistik</code></td>
+<td><code>index_weekly.json</code>, <code>index_monthly.json</code>, <code>ws_*</code>, <code>ms_*</code></td>
+<td>IDX PDF mingguan/bulanan</td>
+<td>tidak</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Top Broker <code>/broker</code></td>
+<td><code>index.json</code>/<code>ds_*</code> (dataHarian)</td>
+<td>IDX PDF harian (broker level pasar dari PDF)</td>
+<td>tidak</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Stock Detail <code>/stock-detail</code></td>
+<td><code>fundamental/&lt;KODE&gt;.json</code> + <code>fundamental/index.json</code>, <code>keuangan/&lt;KODE&gt;.json</code>, <code>keuangan_idx/&lt;KODE&gt;.json</code>, <code>asing/&lt;KODE&gt;.json</code>, <code>pengendali.json</code>, <code>emiten_sektor.json</code>, <code>valuasi_historis.json</code></td>
+<td><strong>fundamental: yfinance + <code>ListedShares</code> IDX + tambalan dari XBRL IDX</strong>; <code>keuangan</code>: yfinance; <code>keuangan_idx</code>: IDX XBRL; asing: IDX; pengendali: IDX XBRL sheet 1000000; valuasi: ⚙️ turunan keuangan_idx + <code>ohlc/</code></td>
+<td><strong>ya</strong> — <code>fundamentalGabungan.ts:198-199</code> menggabung <code>keuangan_idx</code> + <code>keuangan</code> saat dibaca; <code>fundamental/</code> campuran 3 sumber per ruas</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Grafik Emiten <code>/grafik</code> (<code>GrafikEmiten.tsx:774,794,1693</code>)</td>
+<td><code>ohlc/&lt;KODE&gt;.json</code>, <code>asing/&lt;KODE&gt;.json</code></td>
+<td><strong>jahitan Stockbit + Yahoo</strong>; IDX</td>
+<td><strong>ya</strong></td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Chart <code>/chart</code> (<code>ChartIndeks.tsx</code>)</td>
+<td>❓ tidak ada jalur <code>data-idx/</code> langsung di berkasnya</td>
+<td>❓ belum ditelusuri (kemungkinan widget/komponen lain)</td>
+<td>❓</td>
+<td>belum</td>
+</tr>
+<tr>
+<td>Peta Investor <code>/peta-investor</code></td>
+<td><code>investor_map.json</code>, <code>investor_map.meta.json</code></td>
+<td>KSEI holding composition</td>
+<td>tidak</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Broker Summary <code>/broker-summary</code></td>
+<td><code>broker/index.json</code> + <code>broker/&lt;tgl&gt;.json</code> (brokerHarian), <code>asing/&lt;KODE&gt;.json</code> (flowNego, AsingEmiten), <code>aliran_investor.json</code></td>
+<td>IDX GetBrokerSummary (+PDF); IDX GetStockSummary; ⚙️ turunan <code>bangun_aliran_investor.py</code> dari asing</td>
+<td>tidak (turunan ditandai)</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Aliran Asing <code>/aliran-asing</code></td>
+<td><code>asing/&lt;KODE&gt;.json</code>, <code>fundamental/</code>, <code>screener.json</code></td>
+<td>IDX GetStockSummary; fundamental campuran; ⚙️ screener turunan</td>
+<td><strong>ya</strong> (lewat fundamental)</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Broker Summary v2 <code>/broker-summary-v2</code> (Overview, Inventory, FlowNetGross, Nego, TimelineForeign, VsIhsg, Shareholders)</td>
+<td><code>ohlcv_stockbit/&lt;KODE&gt;.json</code> (<code>brokerEmitenV2.ts:6,50</code>), <code>broker_tahunan/</code> (<code>:147</code>), <code>broker/</code>, <code>kepemilikan/&lt;KODE&gt;.json</code> (<code>brokerProfilKsei.ts:27</code>), <code>profil_stockbit/&lt;KODE&gt;.json</code> (<code>:136</code>)</td>
+<td>Stockbit chartbit <strong>murni</strong> (bukan <code>ohlc/</code>); ⚙️ <code>bangun_broker_tahunan.py</code> dari Stockbit marketdetectors; IDX GetBrokerSummary; KSEI Balancepos; Stockbit profil</td>
+<td>tidak — satu-satunya halaman harga yang memakai Stockbit tanpa jahitan Yahoo</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Seasonality <code>/seasonality</code> (+ Harian, Komparasi)</td>
+<td><code>seasonality/harga_bulanan.json</code>, <code>ihsg_harian.json</code>, <code>ohlc/&lt;KODE&gt;.json</code> (SeasonalityHarian)</td>
+<td>Yahoo bulanan (<strong>bukan sejak IPO</strong> — titik tertua Agu 2000); IDX PDF; <strong><code>ohlc/</code> jahitan</strong></td>
+<td><strong>ya</strong> (Harian)</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Radar Watchlist <code>/radar</code></td>
+<td><code>data-idx/radar/*.json</code>, <code>index.json</code></td>
+<td>unggahan admin; IDX PDF</td>
+<td>tidak</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Watchlist <code>/watchlist</code></td>
+<td><code>ohlc/&lt;KODE&gt;.json</code>, <code>fundamental/</code>, <code>harga_terakhir.json</code>, <code>daftar_emiten.json</code></td>
+<td><strong><code>ohlc/</code> jahitan</strong>; fundamental campuran; <code>harga_terakhir</code> ⚙️ (produsen: dirujuk <code>petakan_grup.py</code> — ❓ penulis aslinya belum ditelusuri)</td>
+<td><strong>ya</strong></td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Kalkulator <code>/kalkulator</code> (AvgDown, Pemulihan, PosisiBar, …)</td>
+<td><code>harga_terakhir.json</code>, <code>fundamental/</code></td>
+<td>⚙️ turunan; fundamental campuran</td>
+<td><strong>ya</strong> (lewat fundamental)</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Kartu Analisa <code>/kartu</code></td>
+<td><code>kartu/&lt;KODE&gt;.json</code>, <code>kartu/index.json</code>, <code>kartu/ringkas.json</code>, <code>kartu/arsip/</code>, <code>seasonality/</code>, <code>emiten_sektor.json</code>, <code>ihsg_harian.json</code></td>
+<td>⚙️ <code>scripts/riset/kartu_analisa.py</code> dari <code>ohlc/</code> (<strong>jahitan</strong>) + asing + seasonality; IDX profil; IDX PDF</td>
+<td><strong>ya</strong> (lewat <code>ohlc/</code>)</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Screener <code>/screener</code></td>
+<td><code>screener.json</code>, <code>pola_screener.json</code>, <code>kandidat_deepdive.json</code></td>
+<td>⚙️ <code>app/scripts/bangun-screener.mjs</code> &amp; <code>pola-screener.ts</code> dari <code>ohlc/</code> (<strong>jahitan</strong>) + fundamental; <code>kandidat_deepdive.json</code> ❓ produsen belum ditemukan di <code>scripts/</code> maupun <code>app/scripts/</code></td>
+<td><strong>ya</strong></td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Kabar Pasar <code>/kabar</code></td>
+<td><code>kabar.json</code>, <code>snips.json</code>, <code>ipot_arsip.json</code></td>
+<td>IDX berita/pengumuman + IPOT + Kontan + Google News (dedup 2 lapis); Stockbit Snips; IPOT arsip</td>
+<td>tidak (sumber berdampingan, tidak ditimpa)</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Bulletin Arus Pasar <code>/bulletin</code></td>
+<td><code>arus-pasar/keluaran/index.json</code> + edisi, <code>index.json</code></td>
+<td>setoran kontributor + <code>arus-pasar/build.py</code>; IDX PDF</td>
+<td>tidak</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Deep Dive (bagian Bulletin/Kartu)</td>
+<td>setoran broker per emiten (Supabase), <code>kartu/</code></td>
+<td>kontributor + kurasi admin; ⚙️ kartu</td>
+<td>lewat kartu</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Metodologi <code>/metodologi</code>, Kritik &amp; Saran <code>/feedback</code>, Forum</td>
+<td>tidak membaca <code>data-idx/</code> (Forum/Feedback → Supabase)</td>
+<td>Supabase (konten pengguna)</td>
+<td>tidak</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Admin: Unggah Harian, Radar Unggah, Kurasi Setoran, Bedah Unggah, Rak Terbitan</td>
+<td>unggahan manusia → <code>data-idx/radar/</code>, Supabase, <code>arus-pasar/keluaran/</code></td>
+<td>manusia</td>
+<td>tidak</td>
+<td>23 Agu 2026</td>
+</tr>
+</tbody>
+</table>
+<p>Tiga hal yang terlihat dari peta ini dan belum pernah tertulis di satu tempat: (1) <strong>hampir semua halaman harga emiten memakai <code>ohlc/</code> yang adalah jahitan</strong>, kecuali Broker Summary v2 yang membaca Stockbit murni; (2) <strong><code>fundamental/</code> adalah campuran tiga sumber per ruas</strong> dan halaman Stock Detail menggabungkannya lagi dengan <code>keuangan</code> yfinance saat dibaca; (3) tiga dataset dipanen penuh tapi tidak dibaca halaman mana pun — <code>keystats_stockbit/</code>, <code>info_stockbit/</code>, <code>profil/</code> IDX — plus <code>foreignbuy</code>/<code>foreignsell</code> rupiah chartbit yang sudah ada di berkas tapi belum dipakai, sementara halaman masih menampilkan taksiran rupiah yang meleset 1,33×.</p>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="jahitan-yang-ada-sekarang-semuanya-perlu-keputusan-ulang-johan" data-title="Jahitan yang ada sekarang — semuanya perlu keputusan ulang Johan">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Jahitan yang ada sekarang — semuanya perlu keputusan ulang Johan</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<p>Johan 23 Agu 2026: <em>"data yang sempurna pasti itu yang digunakan bukan data jahit menjahit yang belum tentu uji nya betul"</em>. Aturan lama proyek (<code>sumber-data-harga.md</code>): <em>"mencampur dua sumber tanpa memberitahu adalah cara paling halus kehilangan kepercayaan"</em>. Daftar ini tidak menyatakan jahitan mana yang salah — ia menyatakan <strong>siapa yang memutuskan dan apa buktinya</strong>, supaya Johan bisa memutuskan ulang dengan dasar yang sama.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Jahitan</th>
+<th>Cara</th>
+<th>Bukti/uji yang ada</th>
+<th>Siapa memutuskan</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>J1</td>
+<td><code>ohlc/&lt;KODE&gt;.json</code> = Stockbit chartbit ∪ Yahoo per tanggal</td>
+<td><code>gabung_ohlc_stockbit.py</code>: tanggal ada di Stockbit → Stockbit (o/h/l/c/v); tanggal hanya di Yahoo → Yahoo apa adanya</td>
+<td>harga Yahoo vs Stockbit terukur 0,00% beda; volume Yahoo 2,66% bar salah vs Stockbit = IDX 100,00%; 30.245 bar hanya-Yahoo "diselamatkan"; satuan volume emiten sama (rasio median 1,0000 atas 345.454 bar)</td>
+<td><strong>tafsir agen</strong> atas kutipan Johan di docstring skrip — <em>"kalau mau saya yang lengkap saja dari sumber yang lengkap juga"</em> — yang bisa dibaca sebagai "pakai satu sumber yang lengkap", bukan "gabungkan"</td>
+<td><strong>perlu keputusan ulang</strong>: (a) tetap union tapi tiap bar diberi penanda sumber di berkas dan disebut di antarmuka, atau (b) Stockbit saja (kehilangan bar hanya-Yahoo: pra-2004 dan 38 hari IHSG)</td>
+</tr>
+<tr>
+<td>J2</td>
+<td>IHSG <code>ihsg_ohlc_ringkas.json</code> / <code>ihsg_harian</code> = Yahoo 1990–1999 + Stockbit 2000→</td>
+<td><code>jahit_ihsg.py</code> (commit <code>d217d247</code>); Yahoo melapor volume dalam <strong>lot</strong>, Stockbit <strong>lembar</strong> (rasio median tepat 100,00) → disamakan</td>
+<td>8.861 bar; volume 0 tinggal 1.261 (semua pra-2000)</td>
+<td>agen, dilaporkan ke Johan</td>
+<td><strong>perlu konfirmasi</strong>: Stockbit tidak punya pra-2000, jadi pra-2000 hanya bisa Yahoo — keputusannya "tampilkan dengan penanda sumber per periode" atau "potong di 2000"</td>
+</tr>
+<tr>
+<td>J3</td>
+<td>Volume <code>ohlc/</code> Yahoo ditimpa Stockbit (langkah sebelum J1)</td>
+<td><code>ganti_volume_ohlc.py</code></td>
+<td>Yahoo 2,66% bar bervolume salah; cadangan asli di <code>_arsip-mentah/ohlc-yahoo-sebelum-ganti-volume/</code></td>
+<td>agen (23 Agu)</td>
+<td>sudah tercakup J1</td>
+</tr>
+<tr>
+<td>J4</td>
+<td><code>fundamental/&lt;KODE&gt;.json</code> = yfinance <code>info</code> + <code>ListedShares</code> IDX + tambalan ruas kosong dari <code>keuangan_idx</code> (mis. <code>eps</code> = net income ÷ shares)</td>
+<td><code>fetch_fundamental.py</code> → <code>sinkron_emiten.py</code> → <code>lengkapi_fundamental.py</code> → <code>segarkan_harga_fundamental.py</code> (urutan wajib: penambal SESUDAH pemanen, karena pemanen menulis ulang dari nol)</td>
+<td>154 emiten <code>eps</code> kosong ditambal dari pembilang/penyebut yang ada</td>
+<td>agen (17–18 Agu)</td>
+<td><strong>perlu keputusan</strong>: sumber fundamental resmi PAPAN = yfinance / IDX XBRL / Stockbit keystats (±94 rasio, sudah dipanen, belum dipakai)? Johan: <em>"dulu dapat data fundamental dari yahoo finance, sekarang pakai API Stockbit, tapi dia bingung dan diam2 memutuskan sendiri, jahit sendiri"</em> — tabel pembanding tiga sumber (sampel emiten × rasio × nilai) belum pernah dibuat</td>
+</tr>
+<tr>
+<td>J5</td>
+<td>Stock Detail menggabung <code>keuangan_idx</code> (IDX XBRL) + <code>keuangan</code> (yfinance) saat dibaca</td>
+<td><code>app/src/lib/dasbor/fundamentalGabungan.ts:198-199</code></td>
+<td>tidak ada tabel pembanding yang tercatat</td>
+<td>agen</td>
+<td><strong>perlu keputusan</strong> — bagian dari J4</td>
+</tr>
+<tr>
+<td>J6</td>
+<td><code>ihsg_harian.json</code>: cadangan Yahoo <code>^JKSE</code> sementara bila PDF IDX belum terbit, ditimpa saat PDF terbit</td>
+<td><code>panen_ihsg.py</code></td>
+<td>tercatat di <code>status-panen.md</code> 21 Agu</td>
+<td>tercatat, Johan tahu</td>
+<td>sah sebagai cadangan sementara <strong>asalkan</strong> antarmuka menandai "sementara (Yahoo)" sampai PDF masuk — belum dicek apakah ditandai</td>
+</tr>
+<tr>
+<td>J7</td>
+<td>Open riwayat: IDX <code>GetStockSummary</code> Open bolong (5–8% terisi pra-2025) → Open dari Yahoo, High/Low/Close/Volume dari IDX</td>
+<td>aturan lama <code>sumber-data-harga.md</code> "Aturan pakai"</td>
+<td>terukur Jan 2020–Agu 2026</td>
+<td>agen (15 Agu), aturannya "wajib disebut di antarmuka"</td>
+<td>❓ apakah masih berlaku setelah <code>ohlc/</code> beralih ke Stockbit (Stockbit punya Open penuh sejak 2004) — perlu ditelusuri di <code>panen_ohlc.py</code></td>
+</tr>
+<tr>
+<td>J8</td>
+<td>Aliran asing rupiah di halaman = <strong>taksiran</strong> lembar × (value ÷ volume), meleset 1,33× kumulatif</td>
+<td><code>panen_asing.py</code> sengaja tidak menyimpan rupiah; halaman menaksir</td>
+<td>angka resmi rupiah sudah ada di <code>ohlcv_stockbit/</code> (<code>foreignbuy</code>/<code>foreignsell</code> chartbit) tapi belum dipakai</td>
+<td>agen</td>
+<td><strong>perlu keputusan</strong>: ganti taksiran dengan angka chartbit (butuh tabel pembanding lembar-IDX vs rupiah-Stockbit per emiten × tanggal dulu)</td>
+</tr>
+</tbody>
+</table>
+<h3>Keputusan arah — Johan, 23 Agu 2026 (sesi AI Skill)</h3>
+<p>Kutipan: <em>"kalau ada yang lengkap kenapa tidak di pakai dan harus seperti ini tidak buang saja tapi di update ke lebih baru lagi dan ditulis di referensi html juga"</em> · <em>"Fundamental … harus nya juga berpikir untuk di ganti ke data stockbit atau gabungan atau jahit itu yang lengkap pasang, sisanya dari cadangan misal dari yahoo finance atau IDX"</em> · <em>"jika data lebih lengkap dari API Stockbit kenapa gak diubah dari sumber API saja, yahoo jadi cadangan atau cuman jahitan jika memang data lampau tidak ada"</em>.</p>
+<p>Prinsip yang mengikat ke depan (Johan 23 Agu, menyetujui matriks kanonik): <em>"namanya pengembangan terus menerus dan dapat data lebih baru artinya merotasi data yang lebih fresh, lengkap, update dijadikan utama kemudian data yahoo misal jadi cadangan dengan jelas diuji terlebih dahulu"</em> — rotasi sumber adalah proses berulang, bukan sekali. Arah sudah diputuskan; angkanya belum — aturan 3b tetap berlaku: sebelum data/halaman diubah, sesi Papan Trading membuat tabel pembanding dan menunggu "ya" Johan di sesi itu.</p>
+<table>
+<thead>
+<tr>
+<th>Jahitan</th>
+<th>Arah yang diputuskan</th>
+<th>Yang harus ada sebelum diubah</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>J1 <code>ohlc/</code> emiten</td>
+<td>Stockbit chartbit = sumber utama harga &amp; volume; Yahoo hanya cadangan/jahitan untuk tanggal yang memang tidak ada di Stockbit (pra-2004, hari yang hilang) — bukan union setara; bar dari cadangan ditandai di berkas dan disebut di antarmuka; Yahoo asli tetap disimpan di <code>_arsip-mentah/ohlc-yahoo-sebelum-ganti-volume/</code></td>
+<td>tabel per emiten: jumlah &amp; rentang bar hanya-Yahoo; cara menandai sumber per bar; dampak ke Kartu/Screener/Watchlist</td>
+<td>arah diputuskan 23 Agu; eksekusi sesi Papan Trading</td>
+</tr>
+<tr>
+<td>J2 <code>ohlc/IHSG</code></td>
+<td>Stockbit 2000→ utama; Yahoo hanya 1990–1999 (riwayat yang tidak dimiliki Stockbit), ditandai per periode</td>
+<td>verifikasi sambungan lot→lembar ×100; penandaan periode di Indeks Dunia/Beranda</td>
+<td>arah diputuskan</td>
+</tr>
+<tr>
+<td>J4/J5 fundamental Stock Detail</td>
+<td>keystats Stockbit (94 rasio, per kuartal Q1–Q4 + TTM) = utama rasio/valuasi; IDX XBRL = utama angka laporan resmi; yfinance = cadangan untuk ruas yang kosong di keduanya; tidak ada yang dibuang</td>
+<td>tabel pembanding 3 sumber (sampel emiten × rasio × nilai × tanggal); pemetaan 94 rasio → 25 ruas yang dipakai halaman; satuan (B = miliar, %, ×100)</td>
+<td>arah diputuskan</td>
+</tr>
+<tr>
+<td>J8 aliran asing rupiah</td>
+<td><code>foreignbuy/foreignsell</code> chartbit (resmi, rupiah) menggantikan taksiran lembar × harga; lembar IDX tetap cadangan/pembanding</td>
+<td>tabel taksiran vs chartbit per emiten × tanggal</td>
+<td>arah diputuskan</td>
+</tr>
+<tr>
+<td>keystats / <code>info_stockbit</code> / <code>profil</code> IDX menganggur</td>
+<td>dipakai atau diusulkan pemakaiannya — tidak dibiarkan</td>
+<td>rencana halaman pemakai</td>
+<td>diputuskan: tidak boleh menganggur</td>
+</tr>
+<tr>
+<td>J9 laporan keuangan per periode</td>
+<td>IDX XBRL (parsing resmi) = utama; Stockbit = tambalan periode/ruas kosong; yfinance terakhir. Johan: <em>"seperti ini baru di jahit kan data dari XBRL resmi di parsing, lalu di tambal dari Stockbit itu pun jika stockbit menyediakan 2 tahun saja, belum di uji jika ternyata menyediakan sejak 2019 juga"</em></td>
+<td>uji kedalaman: keystats terbukti 3 ruas × 2024–2026 (5 emiten); pecahkan parameter <code>/findata-view/company/financial</code> (<code>report_type</code>/<code>period_type</code>/<code>data_type</code> dari Network DevTools) — kalau 2019→ tersedia, tabel pembanding XBRL vs Stockbit per periode</td>
+<td>arah diputuskan 23 Agu; uji endpoint belum</td>
+</tr>
+<tr>
+<td>J10 statistik pasar</td>
+<td>IDX PDF resmi = utama; dilengkapi turunan chartbit se-pasar (breadth, Σ nilai/volume/frekuensi, top stocks) untuk riwayat pra-2026-01-07 dan ruas yang PDF tak punya. Johan: <em>"ini wajar memang hasil dari parsing data tapi bisa di lengkapi datanya dengan OHLC dari Stockbit"</em></td>
+<td>cocokkan definisi tiap statistik PDF vs turunan chartbit pada hari yang sama (selisih harus 0 untuk nilai/volume/frekuensi pasar)</td>
+<td>arah diputuskan</td>
+</tr>
+<tr>
+<td>J11 seasonality</td>
+<td>Stockbit penuh — <code>/seasonality/{kode}?year=N</code> atau turunan chartbit 2000→; Yahoo bulanan jadi cadangan. Johan: <em>"seasonality jika melihat ruas-ruas itu mestinya lengkap dari stockbit jadi data nya"</em></td>
+<td>bandingkan tabel musiman Stockbit vs hitungan sendiri dari chartbit vs Yahoo (sampel emiten × tahun); catat <code>year≤3</code> kosong</td>
+<td>arah diputuskan</td>
+</tr>
+<tr>
+<td>Broker level pasar</td>
+<td>IDX hanya daftar broker + agregat vol/val/frek (tanpa isi per emiten); isi broker = Stockbit marketdetectors. Johan: <em>"broker level pasar memang tidak ada tapi IDX menyediakan data broker SAJA tanpa isi"</em></td>
+<td>—</td>
+<td>dicatat</td>
+</tr>
+</tbody>
+</table>
+<p>Aturan umumnya masuk ke <code>~/.claude/CLAUDE.md</code> klausul 3c dan <code>kemampuan-workflow.md</code> §WF-206 (cara kerja 3b, kasus 7): sumber terlengkap jadi utama, sumber lama jadi cadangan, tidak dibuang, ditulis di referensi.</p>
+<h3>Estimasi panen penuh dari Stockbit — terukur 23 Agu 2026 (bukan taksiran)</h3>
+<p>Asal: Johan — <em>"cek API Stockbit, jika semua emiten di tarik datanya dalam tahun 2026 estimasi berapa lama? … untuk membuktikan percakapan kita di atas di inject ke PAPAN … hingga semua emiten sejak IPO dapat datanya dari stockbit"</em>.</p>
+<p>Ukuran yang dipakai (diukur langsung): latensi chartbit riwayat penuh <strong>0,82 s</strong>/panggilan (1,5–1,9 MB, 4.383–5.606 bar); latensi marketdetectors 1 hari 1 varian <strong>0,27 s</strong>; throughput nyata runner <code>backfill_broker_massal.py --paralel 12</code> hari ini <strong>23.179 berkas/jam rata-rata (6,44 panggilan/detik), puncak 44.363/jam</strong> — dari mtime 255.163 berkas arsip yang ditulis 23 Agu; berkas marketdetectors rata-rata 4,7 KB; hari bursa 2026 s/d 21 Agu = <strong>149</strong>; emiten = <strong>962</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Lapis</th>
+<th>Panggilan</th>
+<th>Waktu pada throughput terukur</th>
+<th>Disk (arsip mentah)</th>
+<th>Catatan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OHLCV chartbit, riwayat penuh semua emiten + IHSG</td>
+<td>963 (sekali)</td>
+<td><strong>sudah selesai 23 Agu</strong> (963/963); ulang penuh ≈ 37 menit berurutan dengan jeda 1,5 s</td>
+<td>1,3 GB di <code>ohlcv_stockbit/</code></td>
+<td>"sejak IPO" = sejauh server Stockbit punya: 2000–2004 untuk emiten (diuji <code>to=1980</code>), 1997-07 untuk IHSG; lebih tua dari itu hanya Yahoo (ABDA 2001, IHSG 1990) → jahitan cadangan yang ditandai</td>
+</tr>
+<tr>
+<td>OHLCV penyegaran harian (<code>from=hari ini</code>)</td>
+<td>962/hari</td>
+<td>≈ 13 menit tanpa jeda, ≈ 37 menit dengan jeda 1,5 s</td>
+<td>kecil</td>
+<td>cukup sekali sehari sesudah tutup bursa</td>
+</tr>
+<tr>
+<td>Broker 12 varian, <strong>2026 saja</strong> (149 hari × 962 emiten)</td>
+<td>1.720.056 (27 emiten sudah: 48.276) → ≈ 1,67 jt</td>
+<td><strong>≈ 72 jam rata-rata (3 hari) · ≈ 38 jam pada puncak</strong></td>
+<td>≈ 7,9 GB</td>
+<td>di luar git (<code>_arsip-mentah/</code> di <code>.gitignore</code>); gz akan memangkas ±10×</td>
+</tr>
+<tr>
+<td>Broker 12 varian, <strong>2017–2025</strong> (±1.160 hari × 962)</td>
+<td>≈ 13,4 jt</td>
+<td><strong>≈ 24 hari</strong> rata-rata (<code>workflow-panen-rombak.md</code> menaksir 31 hari untuk 1.309 hari — konsisten)</td>
+<td>≈ 63 GB mentah → ±6 GB gz</td>
+<td>gelombang 300-300-sisanya urut likuiditas (keputusan Johan); server mulai 2017 — "sejak IPO" tidak mungkin untuk broker</td>
+</tr>
+<tr>
+<td>Broker 12 varian, harian ke depan</td>
+<td>11.544/hari</td>
+<td>≈ 30 menit</td>
+<td>≈ 54 MB/hari</td>
+<td>langkah 3d <code>panen-harian-rumah.yml</code> (masih 3 varian — naikkan ke 12)</td>
+</tr>
+<tr>
+<td>keystats + profil + info, semua emiten</td>
+<td>2.886</td>
+<td>≈ 1,8 jam berurutan dengan jeda; mingguan/bulanan cukup</td>
+<td>±120 MB</td>
+<td>snapshot, jarang berubah</td>
+</tr>
+</tbody>
+</table>
+<p>Yang belum diketahui dan harus dicatat saat runner jalan: batas laju resmi Stockbit tidak terdokumentasi (puncak 12,3 panggilan/detik hari ini tanpa penolakan yang tercatat di arsip — perlu dicek log 429/403); token akses 24 jam + refresh 7 hari berputar (hanya satu runner yang boleh me-refresh); ToS Stockbit untuk penarikan massal lewat token akun.</p>
+<h4>Skala paralel untuk broker 12 varian 2026 (≈ 1,67 jt panggilan) — Johan: <em>"saat ini kan pakai 12 paralel ya? jika 24 jika 36 estimasi waktunya berapa?"</em></h4>
+<p>Siklus per pekerja di <code>backfill_broker_massal.py</code> = <code>--jeda</code> 0,8 s (bawaan) + latensi 0,27 s ≈ <strong>1,07 s</strong> → batas teori 12 pekerja ≈ 11,2 panggilan/detik ≈ 40 rb/jam — cocok dengan puncak terukur 44 rb/jam; rata-rata terukur 23 rb/jam lebih rendah karena backoff (<code>jeda × 2^beruntun</code>, maks 60 s), jeda 30 s saat 429, dan penulisan berkas. Jadi yang membatasi adalah jeda runner sendiri, bukan server — menambah pekerja (atau memangkas <code>--jeda</code>) menaikkan laju <strong>linear sampai Stockbit mulai membatasi</strong> (429) — batas itu belum diketahui; puncak 12,3 panggilan/detik hari ini lolos.</p>
+<table>
+<thead>
+<tr>
+<th>Paralel</th>
+<th>Batas teori (1,07 s/siklus)</th>
+<th>Pada rata-rata terukur 23 rb/jam × (n/12)</th>
+<th>Pada puncak terukur 44 rb/jam × (n/12)</th>
+<th>Catatan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>12 (sekarang)</td>
+<td>40 rb/jam → <strong>41 jam</strong></td>
+<td><strong>72 jam</strong> (3,0 hari)</td>
+<td><strong>38 jam</strong></td>
+<td>terbukti berjalan tanpa 429 yang tercatat</td>
+</tr>
+<tr>
+<td>24</td>
+<td>81 rb/jam → 21 jam</td>
+<td>36 jam</td>
+<td>19 jam</td>
+<td>❓ belum diuji: pantau 429 &amp; latensi 1 jam pertama; tabrakan refresh token makin mungkin (catatan <code>:62</code>)</td>
+</tr>
+<tr>
+<td>36</td>
+<td>121 rb/jam → 14 jam</td>
+<td>24 jam</td>
+<td>13 jam</td>
+<td>❓ risiko 429 naik; kalau dibatasi, waktu kembali ke angka 12 paralel + jeda 30 s per 429</td>
+</tr>
+<tr>
+<td>12 dengan <code>--jeda 0,3</code></td>
+<td>0,57 s/siklus → 76 rb/jam → 22 jam</td>
+<td>—</td>
+<td>—</td>
+<td>alternatif tanpa menambah koneksi serentak</td>
+</tr>
+</tbody>
+</table>
+<p>Angka 24/36 adalah batas atas asumsi linear; yang sah adalah mengukur 1 jam pada 24 lebih dulu (hitung berkas/jam dari mtime seperti hari ini) sebelum 36.</p>
+<p><strong>Urutan pembuktian konkret yang diusulkan</strong> (masing-masing menghasilkan angka yang bisa dicek Johan): (1) <code>ohlc/</code> kanonik dari <code>ohlcv_stockbit</code> + tanda sumber per bar — bukti: jumlah bar bertanda Yahoo per emiten (seharusnya hanya pra-Stockbit + hari hilang) dan halaman menampilkan "Sumber: Stockbit" — nol jaringan, bisa selesai hari ini; (2) broker 12 varian 2026 semua emiten ≈ 3 hari — bukti: <code>status-panen.md</code> baris broker per emiten 962/962 untuk 2026 + 11 varian terolah ke JSON halaman; (3) keystats → <code>fundamental/</code> kanonik dengan pemetaan 94 → 25 ruas — bukti: tabel pembanding 3 sumber per emiten sampel; (4) backfill 2017–2025 bergelombang ≈ 24 hari — bukti: <code>status-panen.md</code> naik per gelombang. Tiap langkah: tabel pembanding dulu, "ya" Johan di sesi Papan Trading, baru ubah (aturan 3b).</p>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="idx-tradingsummary-getstocksummary" data-title="IDX — TradingSummary/GetStockSummary">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>IDX — TradingSummary/GetStockSummary</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<ul>
+<li><strong>URL / endpoint:</strong> <code>https://www.idx.co.id/primary/TradingSummary/GetStockSummary?date=YYYYMMDD&amp;length=9999&amp;start=0</code> (parameter dari <code>panen_asing.py:87</code>, <code>sinkron_emiten.py:38</code>, <code>idx_net.py:126</code>)</li>
+<li><strong>Jenis:</strong> API tidak resmi (JSON yang dipakai halaman idx.co.id sendiri)</li>
+<li><strong>Akses &amp; batasan:</strong> wajib User-Agent peramban; <strong>IP datacenter ditolak</strong> (GitHub Actions, Netlify → 403; diuji 16 Agu 2026), IP rumahan 200. Satu permintaan = seluruh pasar (963 emiten) untuk satu tanggal. <strong>Arsip mulai 2020-01-02</strong> — tanggal sebelum itu membalas 200 dengan <code>data: []</code> (diuji 18 Agu 2026: 2019-12-30, 2019-12-27, 2019-12-02, 2019-09-02, 2018, 2015, 2010 semua 0 baris). Hari libur juga 0 baris, bukan galat.</li>
+<li><strong>Berkas lokal:</strong> <code>data-idx/json/asing/&lt;KODE&gt;.json</code> — 989 emiten, 2020-01-02 → 21 Agu 2026, ruas <code>tanggal, beli, jual, volume, value, frekuensi</code>, satuan lembar/lembar/lembar/rupiah/kali (diukur, bukan ditebak: se-pasar 18 Agu ForeignBuy 5,03e9 vs Volume 2,88e10 — sebagai lembar 17% volume, wajar; sebagai rupiah 0,04% nilai, mustahil). Mentah ter-gzip di <code>_arsip-mentah/asing/&lt;tahun&gt;/&lt;YYYYMMDD&gt;.json.gz</code> (1.729 berkas, 140 MB) — menambah ruas = <code>panen_asing.py --dari-arsip</code>, 29 detik, nol permintaan. <code>daftar_emiten.json</code> dari <code>ListedShares</code> (<code>sinkron_emiten.py</code>).</li>
+<li><strong>Dipakai untuk:</strong> Stock Detail, Aliran Asing, Broker Summary (Flow, Nego, AsingEmiten), Grafik Emiten (<code>GrafikEmiten.tsx:1693</code>), Panel Aliran Asing Beranda, turunan <code>aliran_investor.json</code></li>
+<li><strong>Bukti di kode:</strong> <code>scripts/panen_asing.py:87</code>, <code>scripts/sinkron_emiten.py:38</code>, <code>scripts/idx_net.py:126</code>, <code>scripts/cek_broker_summary.py:10</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Tersedia (inventaris lengkap)</th>
+<th>Diambil?</th>
+<th>Alasan / bukti</th>
+<th>Keputusan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ForeignBuy</code>, <code>ForeignSell</code> (lembar)</td>
+<td>✅</td>
+<td>inti aliran asing</td>
+<td>Johan (panen 18 Agu)</td>
+</tr>
+<tr>
+<td><code>Volume</code>, <code>Value</code>, <code>Frequency</code></td>
+<td>✅</td>
+<td>penyerta di <code>asing/</code>; <code>Frequency</code> tidak ada di Yahoo</td>
+<td>Johan (panen 18 Agu)</td>
+</tr>
+<tr>
+<td><code>ListedShares</code></td>
+<td>✅</td>
+<td>daftar emiten + jumlah saham (<code>sinkron_emiten.py</code>)</td>
+<td>Johan (21 Agu, "Panen Lagi")</td>
+</tr>
+<tr>
+<td><code>OpenPrice</code>, <code>High</code>, <code>Low</code>, <code>Close</code>, <code>Previous</code>, <code>Change</code></td>
+<td>❌ di <code>asing/</code></td>
+<td>Open bolong parah pra-2025 (5–8% terisi); High/Low/Close/Volume sejak 2020 pernah jadi aturan sumber riwayat (<code>sumber-data-harga.md</code>), sekarang <code>ohlc/</code> berbasis Stockbit</td>
+<td><strong>belum diputuskan</strong> — apakah IDX masih dipakai sebagai pembanding harga atau dilepas</td>
+</tr>
+<tr>
+<td><code>Bid</code>, <code>Offer</code> + volume antrean penutupan</td>
+<td>❌</td>
+<td>tidak ada di Yahoo maupun Stockbit chartbit; belum ada halaman yang butuh</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td><code>TradebleShares</code></td>
+<td>❌</td>
+<td>bahan turnover = Volume ÷ TradebleShares (<code>sumber-data-harga.md</code> "Apa yang bisa dibangun")</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td><code>NonRegularVolume</code>/<code>Value</code>/<code>Frequency</code> (pasar nego/tunai)</td>
+<td>❌</td>
+<td>pembanding untuk varian NEGO/TUNAI Stockbit</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td><code>Remarks</code> (kode papan &amp; notasi khusus)</td>
+<td>❌</td>
+<td>overlap dengan <code>info_stockbit/</code> (notasi, UMA)</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td><code>IndexIndividual</code>, <code>ListedValue</code>, <code>WeightForIndex</code> dan ±16 ruas lain</td>
+<td>❌</td>
+<td>belum pernah diinventaris satu per satu — total ±32 ruas ada di mentah <code>_arsip-mentah/asing/</code></td>
+<td>❓ inventaris ruas demi ruas belum dibuat; bisa dibuat dari satu berkas gz tanpa jaringan</td>
+</tr>
+<tr>
+<td>Tanggal &lt; 2020-01-02</td>
+<td>❌</td>
+<td>sumbernya memang tidak menyajikan (uji 18 Agu)</td>
+<td>terbukti — bukan keputusan</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="idx-statistik-pdf-harian-mingguan-bulanan" data-title="IDX — statistik PDF harian, mingguan, bulanan">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>IDX — statistik PDF harian, mingguan, bulanan</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<ul>
+<li><strong>URL / endpoint:</strong> <code>https://www.idx.co.id/primary/Statistic/GetStatistic</code> (<code>download_idx.py:62</code>) untuk daftar + unduhan PDF dari <code>idx.co.id/id/data-pasar/...</code>; parser <code>parse_idx_pdf.py</code> (harian), <code>parse_idx_weekly.py</code>, <code>parse_idx_monthly.py</code> (<code>MS&lt;YYMM&gt;-E</code>)</li>
+<li><strong>Jenis:</strong> dataset unduhan (PDF resmi IDX)</li>
+<li><strong>Akses &amp; batasan:</strong> rumahan (<code>JALANKAN_OTOMATIS.bat</code>, <code>download_idx.py --hari-ini --jenis semua</code>); PDF harian kadang terbit sore → cadangan Yahoo <code>^JKSE</code> sementara (J6). Mingguan ikut <code>update.yml</code> (Actions).</li>
+<li><strong>Berkas lokal:</strong> <code>data-idx/json/index.json</code> + <code>ds_&lt;YYYYMMDD&gt;.json</code> (146 hari, isi terakhir 21 Agu 2026), <code>index_weekly.json</code> + <code>ws_*</code> (33 pekan, 14 Agu), <code>index_monthly.json</code> + <code>ms_*</code> (11 bulan, Sep 2025–Jul 2026)</li>
+<li><strong>Dipakai untuk:</strong> Beranda, Indeks Dunia, Top Stocks, Top Broker (broker level pasar dari PDF), Sektor &amp; Indeks, Statistik Berkala (chip Bulanan #203), Radar, Bulletin, <code>tanggalBursa.ts</code></li>
+<li><strong>Bukti di kode:</strong> <code>scripts/download_idx.py:62</code>, <code>app/src/lib/dasbor/dataHarian.ts:4,184</code>, <code>statistikBerkala.ts:296-297</code>, <code>views/dasbor/TopBroker.tsx</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Tersedia (inventaris lengkap)</th>
+<th>Diambil?</th>
+<th>Alasan / bukti</th>
+<th>Keputusan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PDF harian: ringkasan indeks, top broker, top stocks, breadth, nilai/volume/frekuensi pasar</td>
+<td>✅ ruas yang diparse <code>parse_idx_pdf.py</code></td>
+<td>halaman pasar</td>
+<td>Johan (18 Agu, tabel status-panen)</td>
+</tr>
+<tr>
+<td>PDF mingguan / bulanan</td>
+<td>✅</td>
+<td>Statistik Berkala</td>
+<td>Johan (20 Agu #203)</td>
+</tr>
+<tr>
+<td>Tabel lain di dalam PDF yang TIDAK diparse (daftar lengkap tabel per PDF belum dicatat)</td>
+<td>❓</td>
+<td>parser hanya mengambil tabel yang dipakai halaman; tabel sisanya belum diinventaris</td>
+<td>❓ inventaris tabel per jenis PDF belum dibuat — bisa dibuat dari satu PDF tanpa jaringan</td>
+</tr>
+<tr>
+<td>Jenis statistik lain di <code>GetStatistic</code> (tahunan, fact book, dsb.)</td>
+<td>❓</td>
+<td>belum diuji</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="idx-tradingsummary-getbrokersummary" data-title="IDX — TradingSummary/GetBrokerSummary">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>IDX — TradingSummary/GetBrokerSummary</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<ul>
+<li><strong>URL / endpoint:</strong> <code>https://www.idx.co.id/primary/TradingSummary/GetBrokerSummary?date=YYYYMMDD</code> (<code>fetch_broker_summary.py:33</code>, <code>cek_broker_summary.py:9</code>)</li>
+<li><strong>Jenis:</strong> API tidak resmi</li>
+<li><strong>Akses &amp; batasan:</strong> rumahan 200 (16 Agu 2026); <strong>parameter <code>code</code>/<code>stockCode</code>/<code>kodeEmiten</code> DIABAIKAN</strong> — selalu 88 broker level pasar (diuji ulang 22 Agu 2026: jawaban identik). Broker per emiten tidak tersedia dari IDX — itu yang membuat Stockbit <code>marketdetectors</code> dan setoran kontributor dibutuhkan.</li>
+<li><strong>Berkas lokal:</strong> <code>data-idx/json/broker/&lt;tgl&gt;.json</code> + <code>broker/index.json</code> (756 berkas, 21 Agu 2026); CI <code>panen-harian-rumah.yml</code> langkah 3c sejak 22 Agu</li>
+<li><strong>Dipakai untuk:</strong> Broker Summary (<code>brokerHarian.ts:84,104,194</code>), Broker Summary v2 (Nego, Overview), Top Broker (versi PDF)</li>
+<li><strong>Bukti di kode:</strong> <code>scripts/fetch_broker_summary.py:33</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Tersedia (inventaris lengkap)</th>
+<th>Diambil?</th>
+<th>Alasan / bukti</th>
+<th>Keputusan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IDFirm</code>, <code>FirmName</code>, <code>Volume</code>, <code>Value</code>, <code>Frequency</code> × 88 broker/hari</td>
+<td>✅</td>
+<td>satu-satunya isi endpoint</td>
+<td>Johan (#159)</td>
+</tr>
+<tr>
+<td>Broker per emiten</td>
+<td>❌</td>
+<td>endpoint tidak menyediakan (parameter diabaikan, diuji 16 &amp; 22 Agu)</td>
+<td>terbukti — bukan keputusan; dijawab Stockbit marketdetectors</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="idx-listedcompany-getfinancialreport-xlsx-ber-xbrl" data-title="IDX — ListedCompany/GetFinancialReport + XLSX ber-XBRL">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>IDX — ListedCompany/GetFinancialReport + XLSX ber-XBRL</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<ul>
+<li><strong>URL / endpoint:</strong> <code>https://www.idx.co.id/primary/ListedCompany/GetFinancialReport?indexFrom=1&amp;pageSize=1000&amp;year=YYYY&amp;reportType=rdf&amp;EmitenType=s&amp;periode=tw1|tw2|tw3|audit&amp;kodeEmiten=&amp;SortColumn=KodeEmiten&amp;SortOrder=asc</code> (<code>panen_keuangan_idx.py:192</code>); lampiran <code>Attachments[].File_Path</code> (spasi → <code>%20</code>)</li>
+<li><strong>Jenis:</strong> API + unduhan XLSX (~300 KB/emiten, 47 sheet, dwibahasa, tidak terenkripsi)</li>
+<li><strong>Akses &amp; batasan:</strong> rumahan, UA peramban; 777 dari 778 emiten TW2 2026 punya <code>.xlsx</code>; panen penuh ≈ 230 MB, hanya perlu saat rilis kuartalan. <strong>Mentah TIDAK dibuang</strong> (Johan 17 Agu: <em>"jangan asal maen buang data yang sudah di panen"</em>) — diarsipkan di <code>_arsip-mentah/</code>, pemanen membaca arsip lebih dulu. <strong>Penambal wajib jalan SESUDAH pemanen</strong> (pemanen menulis ulang dari nol).</li>
+<li><strong>Berkas lokal:</strong> <code>data-idx/json/keuangan_idx/&lt;KODE&gt;.json</code> (949; 2019–2025 + interim 2024 TW1/TW2 dari kolom pembanding XLSX 2025, 827/949 tanpa jaringan), <code>pengendali.json</code> (<code>panen_pengendali.py</code>), kuartal diskret ⚙️ (<code>turunkan_kuartal_diskret.py</code>: 10.800 periode; pengurangan DITOLAK bila mata uang dua periode beda)</li>
+<li><strong>Dipakai untuk:</strong> Stock Detail (PanelLaporanKeuangan, KolomLaporan, fundamentalGabungan), <code>valuasi_historis.json</code>, <code>lengkapi_fundamental.py</code> (J4), <code>panen_sektor_idx.py</code></li>
+<li><strong>Bukti di kode:</strong> <code>scripts/panen_keuangan_idx.py:192</code>, <code>scripts/panen_pembanding.py</code>, <code>scripts/panen_pengendali.py</code>, <code>scripts/turunkan_kuartal_diskret.py</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Tersedia (inventaris lengkap)</th>
+<th>Diambil?</th>
+<th>Alasan / bukti</th>
+<th>Keputusan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sheet <code>1000000</code> informasi umum (sektor/subsektor/industri IDX-IC resmi, standar akuntansi, <strong>pemegang saham pengendali</strong>)</td>
+<td>✅ pengendali (<code>pengendali.json</code>); sektor via <code>emiten_sektor.json</code></td>
+<td>#157, #158</td>
+<td>Johan (backlog 16 Agu)</td>
+</tr>
+<tr>
+<td>Sheet <code>4220000</code> neraca (238 baris), <code>4312000</code>/<code>4322000</code> laba rugi, <code>4410000</code> ekuitas, <code>4510000</code>/<code>4520000</code> arus kas</td>
+<td>✅ ruas utama diperas ke <code>keuangan_idx/</code></td>
+<td>pos inti + kolom pembanding</td>
+<td>Johan (#156)</td>
+</tr>
+<tr>
+<td>Sheet <code>4611000</code>–<code>4695000</code> catatan atas laporan keuangan per pos</td>
+<td>❌</td>
+<td>tidak diperas; mentahnya ada di <code>_arsip-mentah/</code> jadi menambah ruas tanpa jaringan</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td><code>instance.zip</code> / <code>inlineXBRL.zip</code> (XBRL mentah)</td>
+<td>❌</td>
+<td>XLSX sudah ber-tag; parsing XBRL mentah belum dibutuhkan</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td>PDF laporan resmi emiten</td>
+<td>❌</td>
+<td>versi cetak dari data yang sama</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td>Kuartal diskret Q1–Q4</td>
+<td>⚙️ turunan</td>
+<td>Q2 = TW2 − TW1, dst.; neraca tidak dikurangi; mata uang beda → null; 10.800 periode</td>
+<td>terbukti turunan (aturan tercatat di status-panen)</td>
+</tr>
+<tr>
+<td>Tahun buku 2016–2019</td>
+<td>❌</td>
+<td>IDX tidak menyajikan — panen 2016–2019 habis satu siklus penuh sebelum ketahuan (18 Agu)</td>
+<td>terbukti — bukan keputusan</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="idx-profil-sektor-saham-tercatat-berita-pengumuman" data-title="IDX — profil, sektor, saham tercatat, berita &amp; pengumuman">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>IDX — profil, sektor, saham tercatat, berita &amp; pengumuman</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<ul>
+<li><strong>URL / endpoint:</strong> <code>ListedCompany/GetCompanyProfilesDetail</code> (<code>panen_profil_idx.py:10,49</code>), <code>ListedCompany/GetCompanyProfiles?start=0&amp;length=1000&amp;emitenType=s</code> (<code>panen_sektor_idx.py:45</code>, <code>fetch_fundamental.py:150</code>), <code>StockData/GetSecuritiesStock</code> (<code>fetch_fundamental.py:146</code>), <code>NewsAnnouncement/GetNewsSearch</code> (<code>panen_kabar.py:164</code>), <code>ListedCompany/GetAnnouncement</code> (<code>panen_kabar.py:184</code>), <code>NewsAnnouncement/GetAllAnnouncement</code> (<code>fetch_investor_map.py:41</code>)</li>
+<li><strong>Jenis:</strong> API tidak resmi</li>
+<li><strong>Akses &amp; batasan:</strong> rumahan; <code>idx_net.get()</code> jeda 1,5 dtk (requests polos kena Cloudflare); berita/pengumuman dari datacenter 403 → <code>panen-kabar-rumah.yml</code> (PC harus menyala)</li>
+<li><strong>Berkas lokal:</strong> <code>profil/</code> (962 emiten, 22 Agu), <code>emiten_sektor.json</code>, <code>daftar_emiten.json</code>, <code>kabar.json</code> (bagian IDX, 18 Agu 21:56 WIB)</li>
+<li><strong>Dipakai untuk:</strong> <code>emiten_sektor.json</code> → Stock Detail, Kartu Analisa (<code>sektorIdx.ts:56</code>); <code>kabar.json</code> → Beranda, Kabar Pasar; <strong><code>profil/</code> belum dipakai halaman mana pun</strong> (<code>status-panen.md</code>, dikonfirmasi grep <code>app/src</code> nol)</li>
+<li><strong>Bukti di kode:</strong> lihat baris endpoint di atas</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Tersedia (inventaris lengkap)</th>
+<th>Diambil?</th>
+<th>Alasan / bukti</th>
+<th>Keputusan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Profil detail 962 emiten (alamat, BAE, industri, subindustri, email, situs, jenis efek)</td>
+<td>✅ dipanen, ❌ belum dipakai</td>
+<td>pelengkap metadata Yahoo</td>
+<td><strong>belum diputuskan</strong> halaman pemakainya</td>
+</tr>
+<tr>
+<td>Sektor/subsektor IDX-IC</td>
+<td>✅</td>
+<td>menggantikan klasifikasi Yahoo (#157)</td>
+<td>Johan</td>
+</tr>
+<tr>
+<td><code>GetSecuritiesStock</code> — ruas selain daftar saham</td>
+<td>❓</td>
+<td>dipakai <code>fetch_fundamental.py:146</code> untuk daftar; isi lain belum dicatat</td>
+<td>❓ inventaris ruas belum dibuat</td>
+</tr>
+<tr>
+<td>Berita IDX, pengumuman IDX (judul, tautan, waktu)</td>
+<td>✅</td>
+<td>Kabar Pasar</td>
+<td>Johan (18 Agu)</td>
+</tr>
+<tr>
+<td>Isi pengumuman (lampiran PDF keterbukaan informasi, aksi korporasi)</td>
+<td>❌</td>
+<td>hanya judul/tautan yang disimpan</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="stockbit-chartbit-kode-ohlcv-aliran-asing-rupiah" data-title="Stockbit — chartbit/&lt;KODE&gt; (OHLCV + aliran asing rupiah)">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Stockbit — chartbit/&lt;KODE&gt; (OHLCV + aliran asing rupiah)</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<ul>
+<li><strong>URL / endpoint:</strong> <code>https://exodus.stockbit.com/chartbit/&lt;KODE&gt;?…</code> (<code>panen_ohlcv_stockbit.py:49</code>); token dari <code>https://exodus.stockbit.com/login/refresh</code> (<code>stockbit_token.py:8,71</code>)</li>
+<li><strong>Jenis:</strong> API tidak resmi, memakai token login akun Stockbit</li>
+<li><strong>Akses &amp; batasan:</strong> butuh akun + refresh token; 963/963 emiten berhasil 23 Agu 2026. Riwayat sejak 2004 (BBCA 5.537 bar). Volume terbukti = IDX 100,00%. <strong>Churn git</strong>: berkas ditulis ulang utuh → ±101 MB/hari kalau disegarkan harian → <code>ohlcv_stockbit/</code> berkala saja, harian tetap lewat <code>ohlc/</code>.</li>
+<li><strong>Berkas lokal:</strong> <code>data-idx/json/ohlcv_stockbit/&lt;KODE&gt;.json</code> (963; bar terakhir 21 Agu 2026) — digabung ke <code>ohlc/</code> oleh <code>gabung_ohlc_stockbit.py</code> (J1)</li>
+<li><strong>Dipakai untuk:</strong> Broker Summary v2 langsung (<code>brokerEmitenV2.ts:6,50</code>); lewat <code>ohlc/</code> → Grafik Emiten, Tanya PAPAN, Watchlist, Kartu Analisa, Screener, Seasonality Harian</li>
+<li><strong>Bukti di kode:</strong> <code>scripts/panen_ohlcv_stockbit.py:49</code>, <code>scripts/gabung_ohlc_stockbit.py</code>, <code>scripts/ganti_volume_ohlc.py</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Tersedia (inventaris lengkap)</th>
+<th>Diambil?</th>
+<th>Alasan / bukti</th>
+<th>Keputusan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>o h l c v</code> harian sejak 2004</td>
+<td>✅</td>
+<td>sumber harga utama sejak 23 Agu</td>
+<td>Johan (<em>"ayolah ambil semua data itu"</em>) — cara penggabungannya (J1) belum</td>
+</tr>
+<tr>
+<td><code>foreignbuy</code>, <code>foreignsell</code> (rupiah, resmi)</td>
+<td>✅ dipanen, ❌ belum dipakai halaman</td>
+<td>menggantikan taksiran 1,33× (J8)</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td>Resolusi selain harian (intraday, mingguan)</td>
+<td>❓</td>
+<td>parameter belum terpecahkan (<code>workflow-panen-rombak.md</code> §4)</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td>Ruas lain di balasan chartbit (kalau ada)</td>
+<td>❓</td>
+<td>belum diinventaris ruas demi ruas dari satu balasan mentah</td>
+<td>❓</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="stockbit-marketdetectors-kode-broker-per-emiten-12-varian" data-title="Stockbit — marketdetectors/&lt;KODE&gt; (broker per emiten, 12 varian)">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Stockbit — marketdetectors/&lt;KODE&gt; (broker per emiten, 12 varian)</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<ul>
+<li><strong>URL / endpoint:</strong> <code>https://exodus.stockbit.com/marketdetectors/&lt;KODE&gt;</code> dengan parameter papan (<code>REGULER</code>/<code>NEGO</code>/<code>TUNAI</code>), tipe investor (<code>ALL</code>/<code>FOREIGN</code>/<code>DOMESTIC</code>), transaksi (<code>GROSS</code>/<code>NET</code>), rentang tanggal (<code>panen_broker_harian.py:66</code>)</li>
+<li><strong>Jenis:</strong> API tidak resmi, token akun</li>
+<li><strong>Akses &amp; batasan:</strong> beban 12 varian × 1.309 hari × 961 emiten ≈ 31 hari paralel 12 → <strong>keputusan Johan: 300 — 300 — sisanya</strong> urut likuiditas (<code>backfill_broker_massal.py --paralel 12</code>, resume otomatis dari arsip). CI harian masih 3 varian — belum dinaikkan ke 12.</li>
+<li><strong>Berkas lokal:</strong> <code>data-idx/json/broker_harian/</code> (145.834 berkas, 22 emiten per 23 Agu siang), <code>broker_tahunan/</code> (⚙️ <code>bangun_broker_tahunan.py</code>)</li>
+<li><strong>Dipakai untuk:</strong> Broker Summary v2 (Overview, Inventory, FlowNetGross, Nego, TimelineForeign, VsIhsg)</li>
+<li><strong>Bukti di kode:</strong> <code>scripts/panen_broker_harian.py:66</code>, <code>scripts/backfill_broker_massal.py</code>, <code>scripts/bangun_broker_tahunan.py</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Tersedia (inventaris lengkap)</th>
+<th>Diambil?</th>
+<th>Alasan / bukti</th>
+<th>Keputusan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>REGULER × ALL × GROSS/NET, REGULER × FOREIGN × GROSS/NET</td>
+<td>✅</td>
+<td>inti</td>
+<td>Johan (23 Agu)</td>
+</tr>
+<tr>
+<td>NEGO × (ALL/FOREIGN) × (GROSS/NET)</td>
+<td>✅</td>
+<td>transaksi nego nyata</td>
+<td>Johan (23 Agu)</td>
+</tr>
+<tr>
+<td>TUNAI × (ALL/FOREIGN) × (GROSS/NET)</td>
+<td>✅</td>
+<td><strong>hampir dilewatkan</strong> — "kelihatan kosong"; uji 4 emiten × 3 tanggal: 3 dari 12 berisi (BUMI 15 Jul 2 broker, TPIA 21 Agu 3, TPIA 15 Jul 2)</td>
+<td>Johan (23 Agu)</td>
+</tr>
+<tr>
+<td>DOMESTIC (× papan × transaksi)</td>
+<td>⚙️ turunan</td>
+<td>BUMI 21 Agu 2026: ALL − FOREIGN = DOMESTIC cocok persis, beli (997.576.688.400) dan jual (48.185.368); diulang lewat API langsung 23 Agu 2026: ANTM &amp; TLKM pada 21 Agu dan 14 Agu 2026 — 406 baris broker (beli + jual), <strong>0 beda</strong>, Σ lot dan Σ rupiah ALL − FOREIGN = DOMESTIC persis di keempat kasus</td>
+<td>terbukti turunan (3 emiten × 2 tanggal) — hemat sepertiga beban</td>
+</tr>
+<tr>
+<td>NET diturunkan dari GROSS</td>
+<td>❌ (NET dipanen)</td>
+<td>dua percobaan gagal: <code>padatkan()</code> khusus GROSS; memakai <code>bvalv</code>/<code>svalv</code> cocok sebagian (BUMI 9/80, BBCA 19/69, TPIA 19/74)</td>
+<td>dipanen sampai aturannya terbaca — bukan ditebak</td>
+</tr>
+<tr>
+<td>Emiten 301–963</td>
+<td>❌ sementara</td>
+<td>gelombang 2–3</td>
+<td>Johan (300-300-sisanya)</td>
+</tr>
+<tr>
+<td>Riwayat sebelum 2017</td>
+<td>❓</td>
+<td>endpoint mulai 2017 menurut <code>workflow-panen-rombak.md</code> — batas sumber, belum diuji ulang</td>
+<td>❓</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="stockbit-keystats-emitten-profil-info-snips-dan-endpoint-yang-belum-terpecahkan" data-title="Stockbit — keystats, emitten (profil &amp; info), Snips, dan endpoint yang belum terpecahkan">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Stockbit — keystats, emitten (profil &amp; info), Snips, dan endpoint yang belum terpecahkan</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<ul>
+<li><strong>URL / endpoint:</strong> <code>https://exodus.stockbit.com/keystats/&lt;KODE&gt;</code> (<code>panen_keystats_stockbit.py:49</code>); <code>https://exodus.stockbit.com/emitten/&lt;KODE&gt;</code> (<code>panen_profil_stockbit.py:45</code>, <code>panen_info_stockbit.py:52</code>); <code>https://snips.stockbit.com/sitemap.xml</code>, <code>/snips-terbaru</code>, <code>?format=json</code> (<code>panen_snips.py:13,44,116</code>)</li>
+<li><strong>Jenis:</strong> API tidak resmi (token) · Snips: situs publik (Squarespace JSON)</li>
+<li><strong>Akses &amp; batasan:</strong> token akun; keystats/profil/info snapshot → cukup mingguan/bulanan. Snips ikut <code>panen-kabar.yml</code> yang <strong>belum pernah jalan sekalipun</strong> sejak langkahnya ditambahkan 18 Agu.</li>
+<li><strong>Berkas lokal:</strong> <code>keystats_stockbit/</code> (963), <code>profil_stockbit/</code> (963), <code>info_stockbit/</code> (963), <code>snips.json</code> (238, 14 Agu)</li>
+<li><strong>Dipakai untuk:</strong> <code>profil_stockbit/</code> → Shareholders v2 (<code>brokerProfilKsei.ts:5,136</code>); <code>snips.json</code> → Beranda, Kabar Pasar; <strong><code>keystats_stockbit/</code> dan <code>info_stockbit/</code> belum dibaca halaman mana pun</strong> (grep <code>app/src</code> 23 Agu nol)</li>
+<li><strong>Bukti di kode:</strong> baris di atas; inventaris endpoint lengkap + jebakan parameter: <code>docs/riset/stockbit-inventaris-endpoint.md</code> (22 Agu) dan <code>docs/riset/stockbit-chartbit-ohlcv.md</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Tersedia (inventaris lengkap)</th>
+<th>Diambil?</th>
+<th>Alasan / bukti</th>
+<th>Keputusan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>keystats ±94 rasio (valuasi, profitabilitas, solvabilitas, per-saham, dividen)</td>
+<td>✅ dipanen, ❌ belum dipakai</td>
+<td>kandidat pengganti/pembanding rasio yfinance (J4)</td>
+<td><strong>belum diputuskan</strong> — siapa sumber rasio resmi</td>
+</tr>
+<tr>
+<td>profil: pemegang saham, anak usaha</td>
+<td>✅</td>
+<td>Shareholders v2</td>
+<td>Johan (23 Agu)</td>
+</tr>
+<tr>
+<td>info: keanggotaan indeks, notasi khusus, UMA</td>
+<td>✅ dipanen, ❌ belum dipakai</td>
+<td>overlap <code>Remarks</code> IDX</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td>Snips: judul, tautan, waktu</td>
+<td>✅</td>
+<td>Kabar Pasar</td>
+<td>Johan (14 Agu)</td>
+</tr>
+<tr>
+<td>Top Broker level pasar (Stockbit)</td>
+<td>❓</td>
+<td>parameter belum terpecahkan</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td>Laporan keuangan per periode (Stockbit)</td>
+<td>❓</td>
+<td>parameter belum terpecahkan; tumpang tindih XBRL IDX</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td>Aksi korporasi</td>
+<td>❓</td>
+<td>parameter belum terpecahkan</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td>Intraday</td>
+<td>❓</td>
+<td>parameter belum terpecahkan</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td>Orderbook</td>
+<td>❌</td>
+<td>paywall Stockbit Pro</td>
+<td><strong>belum diputuskan</strong> (berbayar)</td>
+</tr>
+<tr>
+<td>Fundachart</td>
+<td>❓</td>
+<td>parameter belum terpecahkan</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td><code>GET /seasonality/{kode}?year=N</code> — tabel musiman per bulan per tahun (up/down, rata-rata, probabilitas)</td>
+<td>❌ tidak diambil</td>
+<td>terbukti hidup (<code>docs/riset/stockbit-inventaris-endpoint.md</code> 22 Agu); <code>year≤3</code> kosong</td>
+<td><strong>belum diputuskan</strong> — kandidat pengganti Yahoo bulanan di Seasonality</td>
+</tr>
+<tr>
+<td><code>GET /chartbit/initial/{kode}</code> (nama, bursa, zona waktu), <code>GET /search?keyword=&amp;type=company</code></td>
+<td>❌</td>
+<td>terbukti hidup, belum dibutuhkan</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td>Endpoint yang 404 "Unrecognized Command"</td>
+<td>—</td>
+<td>daftar di <code>docs/riset/stockbit-inventaris-endpoint.md</code></td>
+<td>terbukti tidak ada</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="yahoo-finance-v8-finance-chart-dan-pustaka-yfinance" data-title="Yahoo Finance — v8/finance/chart dan pustaka yfinance">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Yahoo Finance — v8/finance/chart dan pustaka yfinance</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<ul>
+<li><strong>URL / endpoint:</strong> <code>https://query1.finance.yahoo.com/v8/finance/chart/&lt;KODE&gt;.JK</code> (<code>panen_ohlc.py:99</code>, <code>panen_seasonality.py:83</code>, <code>seasonality_bakrie.py:74</code>, <code>lonjakan_bakrie.py:77</code>); <code>yfinance</code> (<code>fetch_fundamental.py</code>, <code>fetch_keuangan.py</code>)</li>
+<li><strong>Jenis:</strong> API tidak resmi (chart) · pustaka pihak ketiga (yfinance) ke API yang sama</li>
+<li><strong>Akses &amp; batasan:</strong> bebas, jeda sopan, satu emiten = satu permintaan (962 permintaan untuk satu hari, vs IDX satu permintaan untuk semua). <strong><code>range=max</code> dengan <code>interval=1d</code> diturunkan diam-diam ke bulanan</strong> → selalu <code>period1</code>/<code>period2</code>. Riwayat IDX di Yahoo praktis mulai ±2000, awal seri tiap emiten berbeda tanpa pola (ASII Okt 2000 padahal IPO 1990; ANTM kehilangan 8 tahun) — <strong>kalimat "sejak IPO" dilarang di antarmuka</strong>. Volume emiten 2,66% bar salah (terukur vs IDX); volume indeks dilaporkan dalam <strong>lot</strong>.</li>
+<li><strong>Berkas lokal:</strong> <code>ohlc/</code> bagian Yahoo (tanggal tanpa Stockbit; cadangan asli <code>_arsip-mentah/ohlc-yahoo-sebelum-ganti-volume/</code>), <code>ihsg_harian.json</code> cadangan <code>^JKSE</code>, <code>seasonality/harga_bulanan.json</code> (titik tertua Agu 2000), <code>fundamental/</code> (965), <code>keuangan/</code> (646)</li>
+<li><strong>Dipakai untuk:</strong> Seasonality (bulanan), Indeks Dunia (IHSG pra-2000 lewat J2), dan semua pemakai <code>ohlc/</code> (J1), Stock Detail/Sektor/Watchlist/Kalkulator/Aliran Asing lewat <code>fundamental/</code> (J4), PanelLaporanKeuangan lewat <code>keuangan/</code> (J5)</li>
+<li><strong>Bukti di kode:</strong> baris di atas; <code>app/src/lib/seasonalityData.ts:26</code>, <code>stockDetailData.ts:7,217-239</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Tersedia (inventaris lengkap)</th>
+<th>Diambil?</th>
+<th>Alasan / bukti</th>
+<th>Keputusan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OHLCV harian (chart)</td>
+<td>✅ sebagai pengisi <code>ohlc/</code></td>
+<td>dulu utama; sekarang hanya tanggal tanpa Stockbit (J1)</td>
+<td><strong>perlu keputusan ulang</strong> (J1)</td>
+</tr>
+<tr>
+<td>IHSG 1990–1999</td>
+<td>✅</td>
+<td>Stockbit tidak punya pra-2000 (J2)</td>
+<td><strong>perlu konfirmasi</strong> (J2)</td>
+</tr>
+<tr>
+<td>Penutupan bulanan (seasonality)</td>
+<td>✅</td>
+<td><code>panen_seasonality.py</code></td>
+<td>Johan (15 Agu) — dengan catatan "bukan sejak IPO"</td>
+</tr>
+<tr>
+<td><code>info</code>: 15 ruas fundamental + rasio turunan (PER, PBV, ROE, Altman Z, F-Score, beta, target analis, median sektor)</td>
+<td>✅</td>
+<td><code>fetch_fundamental.py</code>; rasio turunan inilah keunggulan Yahoo vs XBRL mentah</td>
+<td>Johan (rencana 16 Agu: IDX untuk angka mentah, Yahoo untuk turunan) — <strong>tapi sekarang tersaingi keystats Stockbit (J4)</strong></td>
+</tr>
+<tr>
+<td>Laporan keuangan yfinance (646 emiten; <code>operating_cf</code> 80% kosong, <code>eps</code> 71% kosong)</td>
+<td>✅</td>
+<td><code>fetch_keuangan.py</code></td>
+<td><strong>perlu keputusan</strong>: masih dipakai atau diganti XBRL IDX sepenuhnya (J5)</td>
+</tr>
+<tr>
+<td><code>range=max</code> harian</td>
+<td>❌</td>
+<td>diturunkan ke bulanan diam-diam</td>
+<td>terbukti — bukan keputusan</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="ksei-balancepos-bulanan-dan-holding-composition" data-title="KSEI — Balancepos bulanan dan holding composition">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>KSEI — Balancepos bulanan dan holding composition</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<ul>
+<li><strong>URL / endpoint:</strong> <code>https://web.ksei.co.id/Download/BalanceposEfek&lt;YYYYMMDD&gt;.zip</code> (<code>panen_ksei_balancepos.py:10</code>); <code>https://web.ksei.co.id/archive_download/holding_composition/</code> (<code>panen_ksei_balancepos.py:9</code>, <code>fetch_investor_map.py</code>)</li>
+<li><strong>Jenis:</strong> dataset unduhan resmi (ZIP pipe-delimited bulanan; arsip komposisi)</li>
+<li><strong>Akses &amp; batasan:</strong> bebas (diuji rumahan); bulanan, bukan harian</li>
+<li><strong>Berkas lokal:</strong> <code>kepemilikan/</code> (1.035 emiten, Jan 2020 → Jul 2026, 79 bulan, lokal &amp; asing × 9 tipe investor), <code>investor_map.json</code> + <code>.meta.json</code></li>
+<li><strong>Dipakai untuk:</strong> Shareholders v2 (<code>brokerProfilKsei.ts:3,27</code>), Peta Investor (<code>petaInvestorData.ts:7,11,63</code>, <code>PetaInvestor.tsx:56</code>), <code>graphRender.ts:669</code>, <code>seasonality_bakrie.py</code>, <code>petakan_grup.py</code></li>
+<li><strong>Bukti di kode:</strong> baris di atas</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Tersedia (inventaris lengkap)</th>
+<th>Diambil?</th>
+<th>Alasan / bukti</th>
+<th>Keputusan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Balancepos: lokal &amp; asing × 9 tipe investor per emiten per bulan</td>
+<td>✅</td>
+<td>Shareholders v2</td>
+<td>Johan (21 Agu "Panen Lagi") — <strong><code>status-panen.md</code> perlu dikoreksi</strong>: menulis "belum dipakai halaman mana pun" padahal dibaca <code>brokerProfilKsei.ts:27</code></td>
+</tr>
+<tr>
+<td>Holding composition</td>
+<td>✅</td>
+<td>Peta Investor</td>
+<td>Johan</td>
+</tr>
+<tr>
+<td>Arsip KSEI sebelum Jan 2020</td>
+<td>❓</td>
+<td>belum diuji apakah tersedia</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td>Berkas KSEI lain di halaman unduhan (mis. daftar efek, statistik investor)</td>
+<td>❓</td>
+<td>belum diinventaris</td>
+<td>❓</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="kabar-ipot-kontan-google-news" data-title="Kabar — IPOT, Kontan, Google News">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Kabar — IPOT, Kontan, Google News</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<ul>
+<li><strong>URL / endpoint:</strong> IPOT <code>https://www.indopremier.com/ipotnews/nw-saham.php?level4=…</code> (<code>panen_kabar.py:281</code>, <code>panen_ipot_arsip.py:84</code>), <code>https://www.indopremier.com/module/newsresearch/ajax/ajax_generalNewsPagesMore.php</code> (<code>panen_kabar.py:245</code>); Kontan <code>https://investasi.kontan.co.id/rss</code> (<code>panen_kabar.py:452</code>); Google News <code>https://news.google.com/rss/search?q=…</code> dengan 3 kueri <code>saham IHSG when:1d</code>, <code>"Bursa Efek Indonesia" when:1d</code>, <code>emiten saham when:1d</code> (<code>panen_kabar.py:414</code>)</li>
+<li><strong>Jenis:</strong> situs (scrape) · RSS · RSS publik</li>
+<li><strong>Akses &amp; batasan:</strong> IPOT mengabaikan parameter <code>halaman</code> (halaman 0/1/5/50 membalas 200 item yang sama) → pemanen berhenti kalau halaman <strong>kembar persis</strong>, bukan kalau "tak ada item baru" (tanpa ini: 1.000 permintaan 20 menit untuk nol hasil). Google News: kueri longgar (<code>bursa when:1d</code>, <code>saham</code>) sengaja TIDAK dipakai — menyeret bursa kerja/kripto/saham AS; <strong>belum terbukti tembus dari IP datacenter GitHub</strong>. Dedup dua lapis (dalam-sumber tautan+judul+waktu; lintas-sumber judul).</li>
+<li><strong>Berkas lokal:</strong> <code>kabar.json</code> (331 item; IPOT 20 Agu 08:26, Google News 20 Agu 08:41, IDX &amp; Kontan 18 Agu 21:56 WIB), <code>ipot_arsip.json</code></li>
+<li><strong>Dipakai untuk:</strong> Kabar Pasar (<code>kabar.ts:94-100</code>), Beranda</li>
+<li><strong>Bukti di kode:</strong> baris di atas</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Tersedia (inventaris lengkap)</th>
+<th>Diambil?</th>
+<th>Alasan / bukti</th>
+<th>Keputusan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IPOT: judul, tautan, waktu, arsip lama</td>
+<td>✅</td>
+<td>Kabar Pasar</td>
+<td>Johan</td>
+</tr>
+<tr>
+<td>IPOT: isi artikel penuh</td>
+<td>❌</td>
+<td>hanya judul/tautan</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td>Kontan RSS</td>
+<td>✅</td>
+<td>—</td>
+<td>Johan</td>
+</tr>
+<tr>
+<td>Google News 3 kueri</td>
+<td>✅</td>
+<td>45 mentah → 40 unik (20 Agu)</td>
+<td>Johan (20 Agu)</td>
+</tr>
+<tr>
+<td>Google News per emiten (960 kueri)</td>
+<td>❌</td>
+<td>960 permintaan/hari tak masuk akal</td>
+<td>Johan (20 Agu, tercatat <code>panen-kabar.md</code>)</td>
+</tr>
+<tr>
+<td>Sumber kabar lain (CNBC Indonesia, Bisnis, Investor Daily, emitennews)</td>
+<td>❓</td>
+<td>belum diuji</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="indexalpha-api-indexalpha-id-belum-dipastikan" data-title="indexalpha (api.indexalpha.id) — ❓ belum dipastikan">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>indexalpha (api.indexalpha.id) — ❓ belum dipastikan</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<ul>
+<li><strong>URL / endpoint:</strong> <code>https://api.indexalpha.id</code> (<code>panen_broker_emiten.py:86</code>), token <code>INDEXALPHA_TOKEN=ia_live_…</code> dari dasbor indexalpha.id (<code>panen_broker_emiten.py:50</code>), dipilih lewat <code>--sumber indexalpha</code> (<code>:63</code>)</li>
+<li><strong>Jenis:</strong> API pihak ketiga (kemungkinan berbayar — belum dipastikan)</li>
+<li><strong>Akses &amp; batasan:</strong> ❓ — skripnya menyediakan jalur ini sebagai alternatif <code>stockbit</code> untuk broker per emiten; tidak ada berkas keluaran yang bisa dilacak ke sumber ini</li>
+<li><strong>Berkas lokal:</strong> tidak ditemukan</li>
+<li><strong>Dipakai untuk:</strong> ❓ tidak ada halaman yang terlacak memakainya</li>
+<li><strong>Bukti di kode:</strong> <code>scripts/panen_broker_emiten.py:22,50,63,86</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Tersedia (inventaris lengkap)</th>
+<th>Diambil?</th>
+<th>Alasan / bukti</th>
+<th>Keputusan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Broker per emiten (menurut tabel di kepala skrip)</td>
+<td>❓</td>
+<td>jalur ada di kode, pemakaian nyata tidak terlacak</td>
+<td><strong>belum diputuskan</strong> — perlu Johan konfirmasi apakah akun/token pernah ada</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="setoran-kontributor-supabase-dan-unggahan-admin" data-title="Setoran kontributor, Supabase, dan unggahan admin">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Setoran kontributor, Supabase, dan unggahan admin</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<ul>
+<li><strong>URL / endpoint:</strong> Supabase (<code>app/src/lib/supabaseSetoran.ts</code>; URL/kunci lewat env, tidak ditulis di sini); unggahan lewat halaman <code>/admin</code></li>
+<li><strong>Jenis:</strong> unggahan manusia (tangkapan layar broker summary per emiten dari aplikasi sekuritas) + basis data eksternal + kurasi admin</li>
+<li><strong>Akses &amp; batasan:</strong> akun admin; kualitas bergantung kontributor; IDX <code>GetBrokerSummary</code> tidak bisa menggantikannya (parameter emiten diabaikan) — sejak 23 Agu sebagian tergantikan Stockbit marketdetectors untuk 22 emiten gelombang 1</li>
+<li><strong>Berkas lokal:</strong> Supabase (tabel setoran), <code>arus-pasar/keluaran/</code> (hasil <code>arus-pasar/build.py</code>), <code>data-idx/radar/r_YYMMDD.json</code> (Radar Unggah), <code>data-idx/radar/rbu/</code></li>
+<li><strong>Dipakai untuk:</strong> Deep Dive, Bulletin Arus Pasar, Kartu Analisa, Radar Watchlist, Forum/Feedback (konten pengguna)</li>
+<li><strong>Bukti di kode:</strong> <code>app/src/lib/supabaseSetoran.ts:9</code>, <code>views/admin/KurasiSetoran.tsx:202,621</code>, <code>views/admin/RadarUnggah.tsx:83</code>, <code>views/dasbor/Bulletin.tsx:112-115</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Tersedia (inventaris lengkap)</th>
+<th>Diambil?</th>
+<th>Alasan / bukti</th>
+<th>Keputusan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tangkapan layar broker per emiten + hasil kurasi</td>
+<td>✅</td>
+<td>satu-satunya sumber broker per emiten sebelum 23 Agu</td>
+<td>Johan</td>
+</tr>
+<tr>
+<td>Radar harian (unggahan admin)</td>
+<td>✅</td>
+<td>—</td>
+<td>Johan</td>
+</tr>
+<tr>
+<td>Penggantian setoran oleh Stockbit marketdetectors untuk emiten yang sudah dipanen</td>
+<td>❓</td>
+<td>belum diputuskan apakah setoran masih diperlukan untuk 22 emiten gelombang 1</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="keputusan-tidak-diambil-ganti-sumber-jahit" data-title="Keputusan &quot;tidak diambil&quot; / ganti sumber / jahit">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Keputusan &quot;tidak diambil&quot; / ganti sumber / jahit</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<table>
+<thead>
+<tr>
+<th>Sumber · ruas</th>
+<th>Jenis keputusan</th>
+<th>Alasan</th>
+<th>Bukti (tabel pembanding / angka)</th>
+<th>Diputuskan oleh</th>
+<th>Tanggal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stockbit marketdetectors · DOMESTIC</td>
+<td>tidak diambil (turunan)</td>
+<td>ALL − FOREIGN</td>
+<td>BUMI 21 Agu 2026: beli 1.227.466.284.000 − 229.889.595.600 = 997.576.688.400 = DOMESTIC; jual 62.432.794 − 14.247.426 = 48.185.368 = DOMESTIC; diulang lewat API langsung 23 Agu 2026: ANTM &amp; TLKM pada 21 Agu dan 14 Agu 2026 — 406 baris broker (beli + jual), <strong>0 beda</strong>, Σ lot dan Σ rupiah ALL − FOREIGN = DOMESTIC persis di keempat kasus (Johan: <em>"tidak hanya di BUMI coba test 2 emiten lagi"</em>)</td>
+<td>terbukti turunan</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Stockbit marketdetectors · NET</td>
+<td>diambil (bukan diturunkan)</td>
+<td>dua percobaan turunan gagal</td>
+<td>BUMI 9/80, BBCA 19/69, TPIA 19/74 broker cocok</td>
+<td>agen, dicatat</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>Stockbit marketdetectors · emiten 301–963</td>
+<td>ditunda</td>
+<td>beban ≈ 31 hari</td>
+<td>12 × 1.309 × 961</td>
+<td>Johan</td>
+<td>23 Agu 2026</td>
+</tr>
+<tr>
+<td>IDX GetStockSummary · rupiah aliran asing</td>
+<td>tidak disimpan</td>
+<td>IDX tidak melaporkan rupiah; taksiran bukan data</td>
+<td>—</td>
+<td>agen, dicatat <code>sumber-data-harga.md</code></td>
+<td>18 Agu 2026</td>
+</tr>
+<tr>
+<td>IDX GetStockSummary · <code>net</code></td>
+<td>tidak disimpan (turunan)</td>
+<td><code>beli − jual</code>, +15% berat tanpa informasi baru</td>
+<td>—</td>
+<td>terbukti turunan</td>
+<td>18 Agu 2026</td>
+</tr>
+<tr>
+<td><code>ohlc/</code> · gabung Stockbit ∪ Yahoo (J1)</td>
+<td>jahit</td>
+<td>"lengkap"</td>
+<td>harga 0,00% beda; volume Yahoo 2,66% salah; 30.245 bar hanya-Yahoo</td>
+<td><strong>tafsir agen</strong> atas kutipan Johan</td>
+<td>23 Agu 2026 — <strong>perlu keputusan ulang Johan</strong></td>
+</tr>
+<tr>
+<td>IHSG · Yahoo 1990–1999 + Stockbit 2000→ (J2)</td>
+<td>jahit</td>
+<td>Stockbit tidak punya pra-2000</td>
+<td>lot vs lembar rasio 100,00; 8.861 bar</td>
+<td>agen, dilaporkan</td>
+<td>23 Agu 2026 — <strong>perlu konfirmasi Johan</strong></td>
+</tr>
+<tr>
+<td><code>ohlc/</code> · volume Yahoo → Stockbit (J3)</td>
+<td>timpa</td>
+<td>volume Yahoo salah 2,66%</td>
+<td>= IDX 100,00%</td>
+<td>agen</td>
+<td>23 Agu 2026 — tercakup J1</td>
+</tr>
+<tr>
+<td><code>fundamental/</code> · yfinance + IDX ListedShares + tambalan XBRL (J4)</td>
+<td>jahit per ruas</td>
+<td>ruas kosong ditambal</td>
+<td>154 emiten <code>eps</code></td>
+<td>agen</td>
+<td>17–18 Agu 2026 — <strong>perlu keputusan Johan: sumber rasio resmi</strong></td>
+</tr>
+<tr>
+<td>Stock Detail · gabung <code>keuangan_idx</code> + <code>keuangan</code> (J5)</td>
+<td>jahit saat baca</td>
+<td>—</td>
+<td>tidak ada tabel pembanding</td>
+<td>agen</td>
+<td>— <strong>perlu keputusan Johan</strong></td>
+</tr>
+<tr>
+<td><code>ihsg_harian</code> · cadangan Yahoo sementara (J6)</td>
+<td>timpa sementara</td>
+<td>PDF terbit sore</td>
+<td>—</td>
+<td>tercatat status-panen</td>
+<td>21 Agu 2026 — sah kalau ditandai di antarmuka</td>
+</tr>
+<tr>
+<td>Aliran asing rupiah · taksiran vs chartbit (J8)</td>
+<td>belum diganti</td>
+<td>angka resmi sudah ada di <code>ohlcv_stockbit/</code></td>
+<td>taksiran meleset 1,33×</td>
+<td>—</td>
+<td><strong>belum diputuskan</strong></td>
+</tr>
+<tr>
+<td>Konvensi harga &amp; volume · tersesuaikan vs apa adanya (J12)</td>
+<td><strong>batas ditetapkan</strong></td>
+<td>dua konvensi, dua-duanya benar; yang salah menyilangkannya</td>
+<td>936 emiten: 129.723/1.173.805 bar beda (11,05%), 167 emiten &gt;5%; rasio pembeda BULAT (250·25·5·4·2); DSSA volume ×25 &amp; harga ÷25 sampai Mar 2026 lalu 1,00 (pecah saham 1:25)</td>
+<td><strong>Johan</strong> (<em>"ok tulis"</em>)</td>
+<td>23 Agu 2026</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="j12-dua-konvensi-harga-volume-tersesuaikan-vs-apa-adanya-ketetapan-johan-23-agu-2026" data-title="J12 · Dua konvensi harga &amp; volume — tersesuaikan vs apa adanya (ketetapan Johan, 23 Agu 2026)">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>J12 · Dua konvensi harga &amp; volume — tersesuaikan vs apa adanya (ketetapan Johan, 23 Agu 2026)</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<p>Asal: Johan <em>"artinya data yang valid pakai data marketdetector yaa ?"</em> → <em>"ok tulis"</em> → <em>"masukkan di referensi proyek juga"</em>.</p>
+<p>Jawabannya <strong>bukan</strong> "marketdetectors yang valid". Dua endpoint memakai konvensi berbeda dan <strong>dua-duanya benar</strong>; yang salah adalah memakai satu untuk pertanyaan milik yang lain.</p>
+<table>
+<thead>
+<tr>
+<th>Endpoint / berkas</th>
+<th>Konvensi</th>
+<th>Cocok dengan bursa?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stockbit chartbit → <code>ohlcv_stockbit/</code>, <code>ohlc/</code></td>
+<td><strong>tersesuaikan</strong> ke aksi korporasi (harga dibagi, volume dikali faktor)</td>
+<td>tidak, di emiten ber-aksi-korporasi</td>
+</tr>
+<tr>
+<td>Stockbit marketdetectors → <code>_arsip-mentah/broker-harian/</code></td>
+<td><strong>apa adanya</strong> saat itu</td>
+<td>ya, 1,0000 persis</td>
+</tr>
+<tr>
+<td>IDX <code>GetStockSummary</code> → <code>asing/</code></td>
+<td><strong>apa adanya</strong> saat itu</td>
+<td>ya (ia sendiri sumbernya)</td>
+</tr>
+</tbody>
+</table>
+<h3>Terukur 23 Agu 2026</h3>
+<p>Sapuan 936 emiten, chartbit vs angka bursa: <strong>129.723 dari 1.173.805 bar berbeda &gt;1% (11,05%)</strong>, <strong>167 emiten</strong> dengan &gt;5% barnya berbeda. Rasio pembedanya BULAT — 250,00 · 25,00 · 5,00 · 4,00 · 2,00 — karena itu faktor pemecahan saham, bukan sebaran galat.</p>
+<p>Bukti telak pada DSSA (rasio per bulan, chartbit ÷ bursa):</p>
+<table>
+<thead>
+<tr>
+<th>Bulan</th>
+<th>Volume</th>
+<th>Harga</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2025-05 … 2026-03</td>
+<td>×25,00</td>
+<td>÷25,00 (0,0400)</td>
+</tr>
+<tr>
+<td>2026-04 … 2026-08</td>
+<td>1,00</td>
+<td>1,00</td>
+</tr>
+</tbody>
+</table>
+<p>Pecah saham 1:25 efektif April 2026. Chartbit menyesuaikan <strong>keduanya</strong>, jadi deretnya konsisten di dalam dirinya sendiri.</p>
+<h3>Batas yang ditetapkan</h3>
+<ul>
+<li><strong><code>ohlc/</code> tetap tersesuaikan.</strong> Memaksanya jadi angka apa adanya membuat DSSA terbaca <strong>jatuh 96% dalam sehari</strong> padahal cuma pecah saham — dan merusak tiap hitungan return lintas tahun di 167 emiten.</li>
+<li><strong>Perhitungan broker seluruhnya dari arsip broker.</strong> Pembilang dan penyebut satu rumah, tak pernah bersilang.</li>
+<li><strong><code>asing/</code> tetap angka bursa, dan JANGAN dibagi dengan volume <code>ohlc/</code>.</strong></li>
+</ul>
+<h3>Gejala kalau dilanggar</h3>
+<p>Rasio yang <strong>seragam</strong>, bukan sebaran acak. BNBR terbaca 0,8511 selama 1.554 hari — di sisi beli DAN jual, pada hari dengan 65 broker maupun 2 broker. Daftar broker yang terpotong akan memberi gejala berbeda: kedua sisi tak sama, dan rasionya ikut jumlah broker.</p>
+<h3>Tiga dugaan yang sudah gugur — jangan diulang dari nol</h3>
+<ol>
+<li><strong>Reguler vs nego</strong> — gugur: reguler saja sudah cocok persis di 6 emiten pada 21 Agu 2026; menambah nego malah membuat BNBR 3,03×.</li>
+<li><strong>Volume berasal dari Yahoo</strong> — gugur: 6.333 dari 6.389 bar BNBR sama persis dengan Stockbit, hanya 30 dengan Yahoo.</li>
+<li><strong>Aksi korporasi di jumlah saham</strong> — gugur: <code>shareoutstanding</code> tetap 173.416.832.509 di kedua sisi tanggal patah.</li>
+</ol>
+<p>Yang akhirnya memutuskan: wasit independen. Angka bursa di <code>asing/</code> cocok <strong>1,0000</strong> dengan endpoint broker, tidak dengan endpoint harga.</p>
+<h3>Belum dikerjakan</h3>
+<p>Berkas faktor penyesuaian per emiten per tanggal (bisa dihitung dari rasio chartbit ÷ bursa, <strong>nol jaringan</strong>) supaya kedua konvensi bisa disandingkan kalau suatu saat perlu. Belum ada keputusan Johan untuk membuatnya.</p>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="inventaris-ruas-per-berkas-jawaban-untuk-johan-23-agu-2026-stock-detail-ohlc-ohlcv-broker-summary-metode-panen" data-title="Inventaris ruas per berkas — jawaban untuk Johan 23 Agu 2026 (Stock Detail, OHLC/OHLCV, Broker Summary, metode panen)">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Inventaris ruas per berkas — jawaban untuk Johan 23 Agu 2026 (Stock Detail, OHLC/OHLCV, Broker Summary, metode panen)</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<p>Asal: Johan, 23 Agu 2026 — <em>"Data Fundamental yang ada di page stock detail dapat darimana mana saja? … Data OHLC … OHLCV … Broker Summary dapat darimana dan isinya apa saja? … metode panen apa saja darimana mana saja"</em>. Dibaca langsung dari berkas (<code>data-idx/json/*</code>, <code>_arsip-mentah/*</code>) dan kode (<code>app/src/**</code>) pada 23 Agu 2026 — bukan dari dokumen. "17 ruas reguler" = 17 kolom chartbit Stockbit; "12" = 12 kelompok keystats Stockbit (atau 12 varian broker).</p>
+<h3>Fundamental di Stock Detail — berkas yang dibaca halaman</h3>
+<table>
+<thead>
+<tr>
+<th>Berkas</th>
+<th>Sumber asal</th>
+<th>Isi (ruas)</th>
+<th>Rentang waktu</th>
+<th>Dipakai Stock Detail untuk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fundamental/&lt;KODE&gt;.json</code> (967)</td>
+<td><strong>Yahoo <code>yfinance.info</code></strong> + turunan lokal + <strong>IDX <code>ListedShares</code></strong> (<code>sinkron_emiten.py</code>) + tambalan dari <code>keuangan_idx</code> (<code>lengkapi_fundamental.py</code>, ruas turunan dicatat di <code>asal_turunan</code>, mis. <code>der</code>) + harga disegarkan dari <code>ohlc/</code></td>
+<td>151 ruas: identitas, harga/52w/MA, valuasi (<code>pe pb ps peg ev_ebitda…</code>), per-saham (<code>eps bv fcf_ps</code>), solvabilitas, margin, growth, dividen (<code>div_history</code>), TTM (<code>ttm_*</code>), neraca terakhir (<code>lq_*</code>), kuartal <code>q_*</code>, tahunan <code>hist_*</code>, <code>price_perf</code> 28, turunan (<code>altman_z f_score roic roce</code>), median sektor</td>
+<td>snapshot <code>updated</code> 2026-08-17; <code>hist_*</code> 2022–2025; <code>q_*</code> 2025–2026; <code>div_history</code> 2021–2026; harga 2026-08-21</td>
+<td>header, KolomValuasi, PanelValuasiInteraktif — 25 ruas dipakai: <code>shares pe eps roe pb payout_ratio npm dividend_yield bv roic roa ps opm market_cap gpm ev_ebitda sector_pe_median peg interest_coverage free_float_pct f_score der current_ratio beta altman_z</code></td>
+</tr>
+<tr>
+<td><code>keuangan/&lt;KODE&gt;.json</code> (646)</td>
+<td><strong>Yahoo <code>yfinance</code></strong> laporan keuangan</td>
+<td>15 ruas: <code>revenue cogs gross_profit operating_income net_income eps operating_cf investing_cf financing_cf free_cf total_assets total_liabilities equity total_debt cash</code></td>
+<td>kuartal 2024-12-31 → 2026-06-30 (6, diskret); tahunan 2021–2025 (5); <code>diperbarui</code> 2026-08-16</td>
+<td>PanelLaporanKeuangan (lewat <code>fundamentalGabungan.ts</code>)</td>
+</tr>
+<tr>
+<td><code>keuangan_idx/&lt;KODE&gt;.json</code> (949)</td>
+<td><strong>IDX <code>GetFinancialReport</code> XLSX-XBRL</strong> (<code>sumber: idx-xbrl</code>)</td>
+<td>15 ruas yang sama + <code>mata_uang</code>/<code>kurs_laporan</code> per periode</td>
+<td>tahunan 2019–2025 (7); kuartal interim 2024-03-31 → 2026-06-30 (7, <strong>kumulatif YTD</strong>, didiskretkan saat dibaca); <code>diperbarui</code> 2026-08-20</td>
+<td>PanelLaporanKeuangan, <code>valuasi_historis</code></td>
+</tr>
+<tr>
+<td><code>pengendali.json</code></td>
+<td>IDX XBRL sheet <code>1000000</code></td>
+<td>pemegang saham pengendali per emiten</td>
+<td>panen 19–22 Agu</td>
+<td>blok pengendali</td>
+</tr>
+<tr>
+<td><code>valuasi_historis.json</code></td>
+<td>⚙️ turunan <code>keuangan_idx</code> + <code>ohlc/</code></td>
+<td>P/E &amp; P/B per tahun buku, basis jumlah saham hari ini</td>
+<td>2019 →</td>
+<td>PanelValuasiHistoris</td>
+</tr>
+<tr>
+<td><code>asing/&lt;KODE&gt;.json</code> (989)</td>
+<td><strong>IDX <code>GetStockSummary</code></strong></td>
+<td><code>tanggal beli jual volume value frekuensi</code> (lembar/rupiah)</td>
+<td>2020-01-02 → 2026-08-21</td>
+<td>panel asing</td>
+</tr>
+<tr>
+<td><code>emiten_sektor.json</code></td>
+<td>IDX <code>GetCompanyProfiles</code></td>
+<td>sektor/subsektor IDX-IC</td>
+<td>22 Agu</td>
+<td>label sektor</td>
+</tr>
+</tbody>
+</table>
+<p>Stock Detail = <strong>Yahoo + IDX</strong>. KSEI tidak dipakai di halaman ini. <strong>Stockbit belum dipakai</strong> — padahal sudah dipanen dan lebih lengkap:</p>
+<table>
+<thead>
+<tr>
+<th>Berkas Stockbit (dipanen, belum dibaca halaman mana pun)</th>
+<th>Isi</th>
+<th>Rentang</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>keystats_stockbit/&lt;KODE&gt;.json</code> (963)</td>
+<td><strong>94 rasio</strong> dalam 12 kelompok: Current Valuation, Per Share, Solvency, Management Effectiveness, Profitability, Growth, Dividend, Market Rank, Income Statement, Balance Sheet, Cash Flow Statement, Price Performance; <code>financial_year_groups</code> per tahun Q1–Q4 + annualised + TTM; <code>most_recent_quarter</code></td>
+<td>snapshot 23 Agu 2026, Q2 2026 (30 Jun); riwayat per tahun di <code>financial_year_groups</code></td>
+</tr>
+<tr>
+<td><code>profil_stockbit/&lt;KODE&gt;.json</code> (963)</td>
+<td><code>shareholder</code> (13 ruas: percentage name value type nationality scripless scrip classification…), <code>subsidiary</code>, <code>key_executive</code>, <code>shareholder_one_percent</code>, <code>beneficiary</code>, <code>listing_information</code>, <code>history</code>, <code>background</code></td>
+<td>23 Agu (dipakai hanya Shareholders v2)</td>
+</tr>
+<tr>
+<td><code>info_stockbit/&lt;KODE&gt;.json</code> (964)</td>
+<td><code>indexes</code> (keanggotaan indeks), <code>notation</code>, <code>uma</code>, <code>corp_action</code>, <code>sector/sub_sector/industry</code>, <code>trading_limit_info</code>, <code>margin_info</code>, <code>day_trade_info</code></td>
+<td>23 Agu</td>
+</tr>
+<tr>
+<td><code>profil/&lt;KODE&gt;.json</code> IDX (963)</td>
+<td><code>pemegang_saham</code> (+ flag <code>pengendali</code>), <code>anak_usaha</code>, <code>direksi</code>, <code>komisaris</code>, <code>komite_audit</code>, <code>kap</code>, <code>dividen</code>, <code>obligasi</code>, <code>papan</code>, <code>tanggal_tercatat</code></td>
+<td>22 Agu</td>
+</tr>
+</tbody>
+</table>
+<p>Cara halaman menggabung (<code>fundamentalGabungan.ts</code>, aturan tertulis di kode): <code>keuangan</code> (Yahoo) menang kalau ada → padanan periode sama dari <code>fundamental</code> → TTM hanya di periode terbaru → IDX XBRL didiskretkan dulu (interim kumulatif: TLKM 1,96×, ASII 1,99× kalau tidak) → tiap angka bertanda asal (<code>keuangan / fundamental-kuartal / -tahunan / -ttm / -kini / idx / idx-kumulatif / yahoo</code>) dengan superscript + tooltip di <code>KolomLaporan.tsx</code>. Jahitan fundamental <strong>ditandai per angka di antarmuka</strong> — beda dari <code>ohlc/</code> yang tidak (J1).</p>
+<h3>OHLC dan OHLCV — emiten + IHSG dua-duanya</h3>
+<table>
+<thead>
+<tr>
+<th>Berkas</th>
+<th>Sumber</th>
+<th>Kolom</th>
+<th>Cakupan</th>
+<th>Rentang</th>
+<th>Pemakai</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ohlc/&lt;KODE&gt;.json</code> (963 emiten)</td>
+<td><strong>Stockbit chartbit utama ∪ Yahoo</strong> untuk tanggal tanpa Stockbit (<code>gabung_ohlc_stockbit.py</code>; volume Stockbit)</td>
+<td>6: <code>tanggal o h l c v</code></td>
+<td>emiten</td>
+<td>BBCA 2004-01-02 → 2026-08-21: 5.537 bar = 5.483 Stockbit + 54 hanya-Yahoo</td>
+<td>Grafik Emiten, Tanya PAPAN, Watchlist, Kartu, Screener, Seasonality Harian</td>
+</tr>
+<tr>
+<td><code>ohlc/IHSG.json</code></td>
+<td><strong>Yahoo 1990–1999 + Stockbit 2000→</strong> (<code>jahit_ihsg.py</code>)</td>
+<td>6</td>
+<td>IHSG</td>
+<td>1990-04-06 → 2026-08-21, 8.861 bar</td>
+<td>lewat <code>ihsg_ohlc_ringkas</code></td>
+</tr>
+<tr>
+<td><code>ihsg_ohlc_ringkas.json</code></td>
+<td>potongan 250 hari terakhir dari <code>ohlc/IHSG</code></td>
+<td>6</td>
+<td>IHSG</td>
+<td>2025-08-06 → 2026-08-21</td>
+<td>Beranda, Indeks Dunia</td>
+</tr>
+<tr>
+<td><code>ihsg_harian.json</code></td>
+<td><strong>Yahoo <code>^JKSE</code> saja</strong> (potongan 5 tahun, <code>period1/2</code>)</td>
+<td><code>tutup</code>, <code>buka</code> per tanggal</td>
+<td>IHSG</td>
+<td>1990-04-06 → 2026-08-21, 8.853</td>
+<td>Diary, Indeks Dunia, Seasonality Harian, <code>tanggalBursa</code>, Kartu</td>
+</tr>
+<tr>
+<td><code>ohlcv_stockbit/&lt;KODE&gt;.json</code> (963) + <code>ohlcv_stockbit/IHSG.json</code></td>
+<td><strong>Stockbit chartbit murni</strong></td>
+<td><strong>17</strong>: <code>tanggal unixdate open high low close volume value frequency foreignbuy foreignsell foreignflow dividend shareoutstanding soxclose freq_analyzer lot</code></td>
+<td>emiten + IHSG</td>
+<td>2004-01-02 → 2026-08-21 (BBCA 5.483 bar), dipanen 23 Agu</td>
+<td>hanya Broker Summary v2; bahan <code>ohlc/</code></td>
+</tr>
+<tr>
+<td><code>_arsip-mentah/ohlc-yahoo-sebelum-ganti-volume/</code> (964)</td>
+<td>Yahoo asli sebelum ditimpa</td>
+<td>6</td>
+<td>emiten + IHSG</td>
+<td>cadangan untuk membatalkan jahitan</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><code>foreignbuy/foreignsell/foreignflow</code> rupiah di 17 kolom itu ada tetapi belum dibaca halaman — halaman masih menaksir rupiah asing dari lembar IDX (meleset 1,33×, J8).</p>
+<h3>Broker Summary — dari mana, isinya apa</h3>
+<table>
+<thead>
+<tr>
+<th>Berkas</th>
+<th>Sumber</th>
+<th>Isi</th>
+<th>Cakupan &amp; rentang</th>
+<th>Pemakai</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>broker/bs_YYMMDD.json</code> (757)</td>
+<td><strong>IDX <code>GetBrokerSummary</code></strong></td>
+<td>88 broker × 5 ruas <code>kode nama vol val frek</code> — <strong>level pasar</strong> (parameter emiten diabaikan)</td>
+<td>2023-06-15 → 2026-08-21</td>
+<td>Broker Summary v1, Top Broker, v2 Nego/Overview</td>
+</tr>
+<tr>
+<td><code>_arsip-mentah/broker-harian/&lt;KODE&gt;/&lt;tgl&gt;.&lt;varian&gt;.json</code></td>
+<td><strong>Stockbit <code>marketdetectors</code></strong>, mentah</td>
+<td>per berkas: <code>broker_summary.brokers_buy/brokers_sell</code> <strong>10 ruas</strong> (<code>blot blotv bval bvalv netbs_broker_code netbs_buy_avg_price netbs_date netbs_stock_code type freq</code>) + <code>bandar_detector</code> <strong>13 ruas</strong> (<code>average avg avg5 broker_accdist number_broker_buysell top1 top3 top5 top10 total_buyer total_seller value volume</code>)</td>
+<td><strong>27 emiten, 220.923 berkas, 12 varian/hari</strong> — akhiran: <code>.json</code> (REGULER·ALL·GROSS), <code>.asing</code>, <code>.nego</code>, <code>.nego-asing</code>, <code>.tunai</code>, <code>.tunai-asing</code>, <code>.net</code>, <code>.net-asing</code>, <code>.net-nego</code>, <code>.net-nego-asing</code>, <code>.net-tunai</code>, <code>.net-tunai-asing</code>; AMMN 2023-07-07 →, BBCA ±1.026 hari</td>
+<td><strong>belum ada halaman</strong> — baru arsip</td>
+</tr>
+<tr>
+<td><code>broker_harian/&lt;KODE&gt;.json</code> (27)</td>
+<td>olahan Stockbit, <strong>hanya varian GROSS·reguler·ALL</strong></td>
+<td>5 kolom <code>broker beli_lot beli_nilai jual_lot jual_nilai</code> + <code>ringkas</code> 10 metrik (<code>n_beli n_jual total_lot total_nilai avg top1_pct top3_pct top5_pct accdist cocok_volume</code>)</td>
+<td>jendela 20 hari: 2026-07-24 → 08-21</td>
+<td>bahan <code>broker_tahunan</code></td>
+</tr>
+<tr>
+<td><code>broker_tahunan/&lt;KODE&gt;/&lt;tahun&gt;.json</code></td>
+<td>olahan Stockbit (<code>bangun_broker_tahunan.py</code>)</td>
+<td>5 kolom yang sama per hari + <code>ringkas</code></td>
+<td><strong>hanya BUMI</strong>, 2017 → (11 berkas)</td>
+<td>Broker Summary v2 (<code>brokerEmitenV2.ts:147</code>)</td>
+</tr>
+<tr>
+<td><code>kepemilikan/&lt;KODE&gt;.json</code> (1.036)</td>
+<td><strong>KSEI Balancepos</strong> bulanan</td>
+<td>22 kolom: <code>lembar_tercatat harga</code> + lokal × 9 tipe (IS CP PF IB ID MF SC FD OT) + total + asing × 9 + total</td>
+<td>2020-01-31 → 2026-07-31 (79 bulan; emiten baru lebih pendek)</td>
+<td>Shareholders v2</td>
+</tr>
+<tr>
+<td><code>profil_stockbit</code> → <code>shareholder</code></td>
+<td>Stockbit</td>
+<td>13 ruas per pemegang</td>
+<td>23 Agu</td>
+<td>Shareholders v2</td>
+</tr>
+<tr>
+<td>setoran kontributor (Supabase)</td>
+<td>tangkapan layar aplikasi sekuritas</td>
+<td>broker per emiten hasil kurasi</td>
+<td>berjalan</td>
+<td>Deep Dive, Kartu</td>
+</tr>
+<tr>
+<td><code>_arsip-mentah/broker-emiten/stockbit/</code> (38)</td>
+<td><code>panen_broker_emiten.py</code> per rentang tanggal</td>
+<td>mentah <code>bandar_detector</code> + <code>broker_summary</code></td>
+<td>ARCI dkk, Agu 2026</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Temuan: 11 dari 12 varian (NEGO, TUNAI, FOREIGN, NET) <strong>baru di arsip mentah</strong>, belum diolah ke JSON yang dibaca halaman; <code>broker_tahunan</code> baru BUMI, jadi riwayat v2 efektif satu emiten; <code>broker_harian</code> jendela 20 hari, bukan riwayat.</p>
+<h3>Metode panen</h3>
+<table>
+<thead>
+<tr>
+<th>Metode</th>
+<th>Sumber</th>
+<th>Skrip</th>
+<th>Pemicu / jadwal</th>
+<th>Jalan di</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API JSON situs dengan User-Agent peramban + jeda (<code>idx_net.get</code>)</td>
+<td>IDX <code>GetStockSummary</code>, <code>GetBrokerSummary</code>, <code>GetFinancialReport</code>+XLSX, <code>GetCompanyProfiles(Detail)</code>, berita/pengumuman</td>
+<td><code>panen_asing.py</code>, <code>sinkron_emiten.py</code>, <code>fetch_broker_summary.py</code>, <code>panen_keuangan_idx.py</code>, <code>panen_profil_idx.py</code>, <code>panen_sektor_idx.py</code>, <code>panen_kabar.py</code></td>
+<td><code>panen-harian-rumah.yml</code> (self-hosted, Sen–Jum 18:30 WIB: daftar emiten → OHLC → asing → segarkan harga → broker pasar → broker per emiten 12 varian → kartu → kandidat deep dive → valuasi → seasonality); <code>panen-kabar-rumah.yml</code> tiap 2 jam; <code>JALANKAN_OTOMATIS.bat</code> [1–8]; manual "Panen Lagi"</td>
+<td>IP rumahan wajib — datacenter 403</td>
+</tr>
+<tr>
+<td>Unduh PDF resmi + parse</td>
+<td>IDX statistik harian/mingguan/bulanan</td>
+<td><code>download_idx.py</code>, <code>parse_idx_pdf.py</code>, <code>parse_idx_weekly.py</code>, <code>parse_idx_monthly.py</code></td>
+<td><code>update.yml</code> (ubuntu, 21:00/23:00/01:00 WIB, + cadangan IHSG Yahoo), <code>update-rumah.yml</code> (22:00/02:00), bat [1–3]</td>
+<td>awan + rumahan</td>
+</tr>
+<tr>
+<td>API dengan token login akun (<code>stockbit_token.py</code> refresh)</td>
+<td>Stockbit <code>chartbit</code>, <code>marketdetectors</code>, <code>keystats</code>, <code>emitten</code></td>
+<td><code>panen_ohlcv_stockbit.py</code>, <code>panen_broker_harian.py</code> / <code>backfill_broker_massal.py --paralel 12</code>, <code>panen_keystats_stockbit.py</code>, <code>panen_profil_stockbit.py</code>, <code>panen_info_stockbit.py</code></td>
+<td>"Panen Lagi"; langkah 3d CI rumahan (harian); ohlcv/keystats/profil/info berkala, bukan harian (churn git ±101 MB/hari)</td>
+<td>rumahan</td>
+</tr>
+<tr>
+<td>Scrape HTML / JSON situs</td>
+<td>IPOT (HTML + ajax), Stockbit Snips (Squarespace <code>?format=json</code>, sitemap)</td>
+<td><code>panen_kabar.py</code>, <code>panen_ipot_arsip.py</code>, <code>panen_snips.py</code></td>
+<td><code>panen-kabar.yml</code> (ubuntu, tiap 2 jam) — Snips belum pernah jalan</td>
+<td>awan</td>
+</tr>
+<tr>
+<td>RSS</td>
+<td>Kontan, Google News (3 kueri, dedup 2 lapis)</td>
+<td><code>panen_kabar.py</code></td>
+<td>tiap 2 jam</td>
+<td>awan/rumahan</td>
+</tr>
+<tr>
+<td>API Yahoo chart (<code>period1/period2</code>, potongan 5 tahun)</td>
+<td>OHLC emiten (pengisi), IHSG 1990–1999, <code>^JKSE</code>, bulanan</td>
+<td><code>panen_ohlc.py</code>, <code>panen_ihsg.py</code>, <code>panen_seasonality.py</code></td>
+<td>bat [5/8], <code>update.yml</code> cadangan</td>
+<td>bebas</td>
+</tr>
+<tr>
+<td>Pustaka <code>yfinance</code></td>
+<td><code>info</code> + laporan keuangan</td>
+<td><code>fetch_fundamental.py</code>, <code>fetch_keuangan.py</code>, lalu <code>lengkapi_fundamental.py</code></td>
+<td><code>update-fundamental.yml</code> (ubuntu, akhir bulan)</td>
+<td>awan</td>
+</tr>
+<tr>
+<td>Unduh ZIP bulanan</td>
+<td>KSEI Balancepos, holding composition</td>
+<td><code>panen_ksei_balancepos.py</code>, <code>fetch_investor_map.py</code></td>
+<td>manual</td>
+<td>bebas</td>
+</tr>
+<tr>
+<td>Turunan lokal, nol jaringan</td>
+<td>gabung/jahit/diskret/valuasi/kartu/screener</td>
+<td><code>gabung_ohlc_stockbit.py</code>, <code>ganti_volume_ohlc.py</code>, <code>jahit_ihsg.py</code>, <code>turunkan_kuartal_diskret.py</code>, <code>panen_pembanding.py --semua-arsip</code>, <code>bangun_broker_tahunan.py</code>, <code>bangun_aliran_investor.py</code>, <code>hitung_valuasi_historis.py</code>, <code>kartu_analisa.py</code>, <code>bangun-screener.mjs</code>, <code>pola-screener.ts</code>, <code>petakan_grup.py</code></td>
+<td>sesudah pemanen</td>
+<td>lokal</td>
+</tr>
+<tr>
+<td>Unggahan manusia</td>
+<td>setoran tangkapan layar, Radar <code>r_YYMMDD.json</code>, unggah PDF harian</td>
+<td>halaman <code>/admin</code> → Supabase / <code>data-idx/radar/</code></td>
+<td>kapan pun</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Arsip mentah dibaca dulu</td>
+<td><code>_arsip-mentah/</code> 20 folder (±240 rb berkas: asing 1.732 gz, broker-harian 220.923, keuangan_idx 9.786, ksei 79 zip, ohlc-yahoo 964, …)</td>
+<td>semua pemanen (<code>--dari-arsip</code>)</td>
+<td>menambah ruas tanpa jaringan</td>
+<td>lokal</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="matriks-sumber-stockbit-menang-di-mana-duplikasi-per-halaman-dan-usulan-kanonik-23-agu-2026" data-title="Matriks sumber — Stockbit menang di mana, duplikasi per halaman, dan usulan kanonik (23 Agu 2026)">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Matriks sumber — Stockbit menang di mana, duplikasi per halaman, dan usulan kanonik (23 Agu 2026)</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<p>Asal: Johan, 23 Agu 2026 — <em>"menurut kmu data stockbit menang dimana saja? dibanding Yahoo Finance, IDX, dan KSEI — supaya proyek PAPAN ini jelas data-datanya tidak setiap page inject dari data yang berbeda padahal itu 1 data jadi 2 sumber"</em> · <em>"bisa jadi campur aduk yang nanti nya cuman panen data lengkap tapi tidak di inject ke halaman yang tepat"</em>.</p>
+<p>Verifikasi riwayat (bar pertama, dibaca dari berkas): ASII Stockbit 2000-10-17 = Yahoo Okt 2000; AALI 2001-04-05 = Yahoo Apr 2001; ANTM Stockbit 2004-01-02 vs Yahoo Sep 2005; BBCA 2004-01-02 vs Jun 2004; <strong>ABDA Yahoo Okt 2001 lebih tua dari Stockbit 2003-01-01</strong>; IHSG Stockbit 1997-07-01 (7.050 bar) vs Yahoo 1990-04-06 (8.853). Arsip Yahoo harian lokal hanya 2016-08-10→ (2.471 bar). <strong>Diuji langsung ke API Stockbit 23 Agu 2026</strong> (token akun, <code>to=1980-01-01</code>, <code>limit=0</code>, dari sesi AI Skill): ABDA 5.744 bar pertama 2003-01-01, IHSG 7.050 bar pertama 1997-07-01, ASII 6.320 bar pertama 2000-10-17 — <strong>identik dengan arsip</strong>, jadi kedalaman itu batas server Stockbit, bukan sisa panen. Jebakan lama sudah ditutup: lantai <code>to=2000-01-01</code> pernah memotong IHSG 7.050 → 6.426 bar (624 bar hilang karena parameter sendiri), lantai sekarang 1980-01-01 (<code>panen_ohlcv_stockbit.py:50-56</code>). Kesimpulan: Stockbit menang karena ISI (17 kolom, volume = IDX 100,00%, rupiah asing, saham beredar per hari), bukan karena selalu lebih panjang — Yahoo tetap sah sebagai jahitan pra-Stockbit per emiten yang memang butuh.</p>
+<h3>A. Pemenang per jenis data</h3>
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Stockbit</th>
+<th>Yahoo Finance</th>
+<th>IDX</th>
+<th>KSEI</th>
+<th>Pemenang → cadangan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OHLCV emiten harian</td>
+<td>chartbit <strong>17 kolom</strong> (o h l c v, value, frequency, foreignbuy/sell/flow rupiah, dividend, shareoutstanding, soxclose, lot); riwayat 2000–2004→; volume = IDX 100,00%</td>
+<td>6 kolom; arsip kita 2016→; volume 2,66% bar salah; sebagian emiten lebih tua (ABDA 2001)</td>
+<td><code>GetStockSummary</code> ±32 ruas resmi, tapi 2020→, Open bolong, satu permintaan = seluruh pasar</td>
+<td>—</td>
+<td><strong>Stockbit</strong> → Yahoo hanya hari/periode yang tidak ada di Stockbit (ditandai); IDX untuk ruas yang Stockbit tak punya (bid/offer, nonregular, tradeable shares) + pembanding resmi</td>
+</tr>
+<tr>
+<td>IHSG harian</td>
+<td>1997-07-01→, 7.050 bar, volume lembar</td>
+<td>1990-04-06→, 8.853 bar, volume lot, 0 pra-1997</td>
+<td>PDF harian: penutupan resmi, arsip 2026-01-07→ (146 hari)</td>
+<td>—</td>
+<td><strong>Stockbit 1997→</strong> → Yahoo hanya 1990–Jun 1997; IDX PDF angka resmi penutupan. ⚠️ jahitan sekarang memakai Yahoo sampai 1999 padahal Stockbit mulai 1997 — alasannya perlu dicek</td>
+</tr>
+<tr>
+<td>Aliran asing</td>
+<td><code>foreignbuy/foreignsell/foreignflow</code> <strong>rupiah</strong> per bar, 2004→</td>
+<td>—</td>
+<td>lembar, 2020→, resmi</td>
+<td>—</td>
+<td><strong>Stockbit</strong> → IDX lembar pembanding/porsi volume</td>
+</tr>
+<tr>
+<td>Broker per emiten</td>
+<td><code>marketdetectors</code> <strong>12 varian</strong>, 10 ruas broker + 13 ruas bandar_detector, 2017→</td>
+<td>—</td>
+<td>tidak ada (parameter emiten diabaikan)</td>
+<td>—</td>
+<td><strong>Stockbit satu-satunya</strong> → setoran kontributor</td>
+</tr>
+<tr>
+<td>Broker level pasar</td>
+<td>Top Broker belum terpecahkan</td>
+<td>—</td>
+<td><code>GetBrokerSummary</code>: <strong>daftar broker + agregat saja</strong> (88 broker × vol/val/frek, 2023-06→) — tanpa isi per emiten</td>
+<td>—</td>
+<td><strong>IDX</strong> untuk agregat pasar; <strong>isi broker = Stockbit</strong> (Johan 23 Agu: <em>"IDX menyediakan data broker SAJA tanpa isi"</em>)</td>
+</tr>
+<tr>
+<td>Rasio fundamental siap pakai</td>
+<td>keystats <strong>94 rasio</strong> per kuartal + TTM + annualised: valuasi, per-saham, solvabilitas, <strong>bank (NPL, CAR, LDR, CASA, NIM, cost of credit)</strong>, efektivitas, growth, dividen, <strong>rank pasar &amp; median IHSG</strong>, price returns 1W–10Y</td>
+<td>±60 ruas (sebagian dihitung lokal), berlubang; unik: target analis, rekomendasi, beta, insider/institusi</td>
+<td>bukan rasio — angka mentah</td>
+<td>—</td>
+<td><strong>Stockbit</strong> → Yahoo hanya ruas yang Stockbit tak punya</td>
+</tr>
+<tr>
+<td>Laporan keuangan per periode</td>
+<td>Income/Balance/Cash Flow per kuartal <strong>diskret</strong> + TTM</td>
+<td>2021→ tahunan, 6 kuartal, 646 emiten, berlubang</td>
+<td>XBRL <strong>resmi</strong>, 2019→, 777 emiten, ratusan pos, mata uang per periode, interim kumulatif</td>
+<td>—</td>
+<td><strong>IDX XBRL</strong> (parsing resmi) = utama → <strong>ditambal Stockbit</strong> untuk periode/ruas yang kosong; kedalaman Stockbit lewat keystats <strong>hanya 3 ruas (Net Income, EPS, Revenue) × 2024–2026</strong> (diuji 5 emiten) — 2019→ hanya mungkin lewat <code>/findata-view/company/financial</code> yang parameternya belum terpecahkan; Yahoo terakhir (Johan 23 Agu)</td>
+</tr>
+<tr>
+<td>Pemegang saham &amp; anak usaha</td>
+<td>profil: shareholder 13 ruas, &gt;1%, beneficiary, subsidiary, key_executive</td>
+<td>—</td>
+<td>profil: pengendali resmi, direksi, komisaris, komite audit, KAP, dividen, obligasi, papan, tanggal tercatat; XBRL sheet 1000000</td>
+<td>—</td>
+<td><strong>Stockbit</strong> detail → <strong>IDX</strong> status resmi &amp; tata kelola</td>
+</tr>
+<tr>
+<td>Kepemilikan per tipe investor</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>Balancepos 22 kolom, 9 tipe × lokal/asing, bulanan 2020→</td>
+<td><strong>KSEI satu-satunya</strong></td>
+</tr>
+<tr>
+<td>Indeks, notasi, UMA, aksi korporasi</td>
+<td>info: <code>indexes</code>, <code>notation</code>, <code>uma</code>, <code>corp_action</code>, margin/day-trade</td>
+<td>—</td>
+<td><code>Remarks</code> (tidak diambil)</td>
+<td>—</td>
+<td><strong>Stockbit</strong> → IDX Remarks</td>
+</tr>
+<tr>
+<td>Saham beredar</td>
+<td>per hari (<code>shareoutstanding</code>) 2004→</td>
+<td>snapshot</td>
+<td><code>ListedShares</code> resmi harian 2020→</td>
+<td>—</td>
+<td><strong>IDX</strong> hari ini → <strong>Stockbit</strong> riwayat harian</td>
+</tr>
+<tr>
+<td>Statistik pasar (breadth, nilai/frekuensi, top stocks, mingguan/bulanan)</td>
+<td>chartbit se-pasar bisa diturunkan: breadth (naik/turun), Σ value/volume/frequency, top stocks by value — sejak 2004</td>
+<td>—</td>
+<td>PDF resmi, arsip 2026-01-07→</td>
+<td>—</td>
+<td><strong>IDX PDF resmi</strong> = utama → <strong>dilengkapi turunan Stockbit</strong> untuk riwayat pra-2026 dan ruas yang PDF tak punya (Johan 23 Agu: <em>"bisa di lengkapi datanya dengan OHLC dari Stockbit"</em>)</td>
+</tr>
+<tr>
+<td>Seasonality</td>
+<td>endpoint <code>/seasonality/{kode}?year=N</code> (tabel musiman per bulan per tahun, up/down, rata-rata, probabilitas) <strong>atau</strong> turunan chartbit harian 2000→</td>
+<td>bulanan <code>range=max</code> (mulai ±2000, jebakan resolusi)</td>
+<td>—</td>
+<td>—</td>
+<td><strong>Stockbit penuh</strong> (Johan 23 Agu: <em>"mestinya lengkap dari stockbit jadi data nya"</em>); Yahoo bulanan dilepas jadi cadangan</td>
+</tr>
+<tr>
+<td>Dividen</td>
+<td><code>dividend</code> per bar + grup Dividend keystats</td>
+<td><code>div_history</code> 2021→</td>
+<td>profil <code>dividen</code></td>
+<td>—</td>
+<td>❓ belum diuji — IDX resmi, Stockbit/Yahoo pembanding</td>
+</tr>
+<tr>
+<td>Kabar</td>
+<td>Snips saja</td>
+<td>—</td>
+<td>berita + pengumuman resmi</td>
+<td>—</td>
+<td>IDX + IPOT/Kontan/Google — bukan ranah Stockbit</td>
+</tr>
+</tbody>
+</table>
+<h3>B. "Satu data, dua sumber" yang sekarang terjadi di halaman</h3>
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Rumah sekarang (sumber)</th>
+<th>Halaman yang membacanya</th>
+<th>Akibat</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Harga terakhir</td>
+<td><code>fundamental.last_price</code> (Yahoo, disegarkan dari ohlc) · <code>harga_terakhir.json</code> · bar terakhir <code>ohlc/</code> · <code>ohlcv_stockbit</code> · <code>info_stockbit.price</code> · <code>kartu.harga</code></td>
+<td>Stock Detail · Watchlist/Kalkulator · Grafik · v2 · — · Kartu</td>
+<td>6 rumah untuk satu angka</td>
+</tr>
+<tr>
+<td>IHSG</td>
+<td><code>ihsg_harian.json</code> (Yahoo murni) · <code>ohlc/IHSG</code> → <code>ihsg_ohlc_ringkas</code> (jahitan) · <code>index.json</code> (IDX PDF)</td>
+<td>Diary, Seasonality Harian, <code>tanggalBursa</code>, Kartu · Beranda, Indeks Dunia · Statistik, Radar, Bulletin</td>
+<td>tiga IHSG berbeda di tiga halaman</td>
+</tr>
+<tr>
+<td>Saham beredar</td>
+<td><code>fundamental.shares</code> · <code>daftar_emiten</code> (IDX) · <code>ohlcv.shareoutstanding</code> · keystats</td>
+<td>Stock Detail · kamusEmiten · v2 · —</td>
+<td>market cap bisa beda antar halaman</td>
+</tr>
+<tr>
+<td>Sektor</td>
+<td><code>fundamental.sector</code> (Yahoo) · <code>emiten_sektor</code> (IDX-IC) · <code>info_stockbit.sector</code></td>
+<td>Stock Detail header · Stock Detail/Kartu label · —</td>
+<td>dua taksonomi di satu halaman</td>
+</tr>
+<tr>
+<td>Pemegang saham</td>
+<td><code>pengendali.json</code> (XBRL) · <code>profil_stockbit</code> · <code>profil</code> IDX · <code>kepemilikan</code> KSEI</td>
+<td>Stock Detail · Shareholders v2 · — · Shareholders v2</td>
+<td>Stock Detail dan v2 memakai sumber berbeda</td>
+</tr>
+<tr>
+<td>Aliran asing</td>
+<td><code>asing/</code> lembar IDX (taksiran rupiah meleset 1,33×) · chartbit rupiah</td>
+<td>Stock Detail, Aliran Asing, Broker Summary, Grafik · —</td>
+<td>angka resmi ada, yang tampil taksiran</td>
+</tr>
+<tr>
+<td>Laporan keuangan</td>
+<td><code>keuangan</code> Yahoo + <code>keuangan_idx</code> XBRL digabung · keystats</td>
+<td>Stock Detail · —</td>
+<td>gabungan ditandai per angka (baik), sumber ketiga menganggur</td>
+</tr>
+<tr>
+<td>Broker per emiten</td>
+<td>setoran kontributor · <code>broker_tahunan</code> Stockbit (BUMI) · arsip 12 varian 27 emiten</td>
+<td>Deep Dive/Kartu · v2 · —</td>
+<td>v2 hanya BUMI; arsip 220.923 berkas belum diolah</td>
+</tr>
+</tbody>
+</table>
+<h3>C. Usulan matriks kanonik — satu data, satu berkas, satu sumber utama, semua halaman membaca itu</h3>
+<table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>Berkas kanonik (usulan)</th>
+<th>Sumber utama</th>
+<th>Cadangan (ditandai)</th>
+<th>Halaman yang dialihkan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OHLCV emiten</td>
+<td><code>ohlc/&lt;KODE&gt;.json</code> dibangun dari <code>ohlcv_stockbit</code> (6 kolom + tanda sumber per bar; ruas tambahan tetap di <code>ohlcv_stockbit</code>)</td>
+<td>Stockbit</td>
+<td>Yahoo hanya tanggal tanpa Stockbit</td>
+<td>semua pemakai <code>ohlc/</code>; v2 tetap baca ohlcv</td>
+</tr>
+<tr>
+<td>IHSG</td>
+<td><code>ohlc/IHSG.json</code> (Stockbit 1997→ + Yahoo 1990–1997) → <code>ihsg_harian.json</code> diturunkan dari sini</td>
+<td>Stockbit</td>
+<td>Yahoo pra-1997; IDX PDF penutupan resmi</td>
+<td>Diary, Seasonality Harian, tanggalBursa, Kartu</td>
+</tr>
+<tr>
+<td>Harga terakhir</td>
+<td><code>harga_terakhir.json</code> diturunkan dari bar terakhir kanonik</td>
+<td>Stockbit (lewat ohlc)</td>
+<td>—</td>
+<td>Stock Detail header, Watchlist, Kalkulator, Kartu</td>
+</tr>
+<tr>
+<td>Aliran asing</td>
+<td><code>asing/&lt;KODE&gt;.json</code> ditambah rupiah dari chartbit</td>
+<td>Stockbit rupiah</td>
+<td>IDX lembar (tetap disimpan)</td>
+<td>Stock Detail, Aliran Asing, Broker Summary, Grafik</td>
+</tr>
+<tr>
+<td>Rasio fundamental</td>
+<td><code>fundamental/&lt;KODE&gt;.json</code> dipetakan dari keystats (94 → ruas halaman)</td>
+<td>Stockbit</td>
+<td>Yahoo untuk target/rekomendasi/beta/insider; IDX ListedShares</td>
+<td>Stock Detail, Sektor, Aliran Asing, Watchlist, Kalkulator, Screener, Kartu</td>
+</tr>
+<tr>
+<td>Laporan keuangan</td>
+<td><code>keuangan_idx/</code> (XBRL resmi diparsing)</td>
+<td>IDX</td>
+<td><strong>Stockbit</strong> menambal periode/ruas kosong (keystats: 3 ruas × 2024–2026; lebih dalam hanya kalau <code>/findata-view</code> terpecahkan); Yahoo terakhir</td>
+<td>Stock Detail PanelLaporanKeuangan</td>
+</tr>
+<tr>
+<td>Saham beredar &amp; sektor</td>
+<td><code>daftar_emiten.json</code> (IDX ListedShares + sektor IDX-IC)</td>
+<td>IDX</td>
+<td>Stockbit riwayat harian</td>
+<td>Stock Detail header</td>
+</tr>
+<tr>
+<td>Pemegang saham</td>
+<td>satu berkas gabungan per emiten: pengendali (IDX resmi) + daftar Stockbit + KSEI per tipe</td>
+<td>IDX resmi + Stockbit detail</td>
+<td>—</td>
+<td>Stock Detail, Shareholders v2</td>
+</tr>
+<tr>
+<td>Broker per emiten</td>
+<td><code>broker_harian/&lt;KODE&gt;.json</code> diolah dari arsip <strong>12 varian</strong>, semua emiten yang sudah dipanen</td>
+<td>Stockbit</td>
+<td>setoran kontributor</td>
+<td>Broker Summary v2, Deep Dive, Kartu</td>
+</tr>
+<tr>
+<td>Broker pasar</td>
+<td><code>broker/</code></td>
+<td>IDX</td>
+<td>PDF</td>
+<td>Broker Summary, Top Broker</td>
+</tr>
+<tr>
+<td>Statistik pasar</td>
+<td><code>index.json</code>, <code>ds_*</code>, <code>ws_*</code>, <code>ms_*</code></td>
+<td>IDX PDF</td>
+<td>turunan Stockbit chartbit se-pasar (breadth, Σ nilai/volume/frekuensi, top stocks) untuk riwayat pra-2026 &amp; ruas tambahan</td>
+<td>tetap</td>
+</tr>
+<tr>
+<td>Seasonality</td>
+<td><code>seasonality/</code> dibangun dari Stockbit (<code>/seasonality</code> atau turunan chartbit 2000→)</td>
+<td>Stockbit</td>
+<td>Yahoo bulanan</td>
+<td>Seasonality, Seasonality Harian, Komparasi</td>
+</tr>
+<tr>
+<td>Kepemilikan tipe investor</td>
+<td><code>kepemilikan/</code></td>
+<td>KSEI</td>
+<td>—</td>
+<td>Shareholders v2 (+ Stock Detail kalau diputuskan)</td>
+</tr>
+<tr>
+<td>Info/notasi/UMA/indeks</td>
+<td><code>info_stockbit/</code> → dipakai halaman</td>
+<td>Stockbit</td>
+<td>IDX Remarks</td>
+<td>Stock Detail, Screener (belum ada)</td>
+</tr>
+</tbody>
+</table>
+<p>Prinsip: satu berkas kanonik per dataset, semua halaman membaca itu; sumber utama = yang terlengkap; cadangan hanya mengisi lubang dan selalu ditandai di berkas dan di antarmuka. Ini analisa dan usulan dari sesi AI Skill — eksekusinya (tabel pembanding angka, pemetaan 94 rasio → ruas halaman, pengalihan halaman) milik sesi Papan Trading setelah Johan menyetujui di sesi itu.</p>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="kamus-ruas-arti-tiap-ruas-dan-data-apa-yang-dihasilkannya-23-agu-2026" data-title="Kamus ruas — arti tiap ruas dan data apa yang dihasilkannya (23 Agu 2026)">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Kamus ruas — arti tiap ruas dan data apa yang dihasilkannya (23 Agu 2026)</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<p>Asal: Johan, 23 Agu 2026 — <em>"saya gak dapat detail nya 12 varian itu apa saja, 10 ruas apa saja, 13 ruas apa, ada yang 17 ruas apa saja? dari ruas-ruas itu menghasilkan data apa saja itu yang belum terjelaskan detil"</em>. Semua arti di bawah dibuktikan dari nilai di berkas mentah (<code>_arsip-mentah/broker-harian/BBCA/2024-08-27*.json</code>, <code>2026-08-21*.json</code>; <code>ohlcv_stockbit/BBCA.json</code> bar 21 Agu 2026; <code>keystats_stockbit/BBCA.json</code>; <code>_arsip-mentah/asing/2026/20260821.json.gz</code>) — yang belum terbaca ditandai ❓, bukan ditebak.</p>
+<h3>12 varian broker per emiten — Stockbit <code>marketdetectors</code></h3>
+<p>Tiga parameter permintaan: papan <code>market_board</code> (REGULER / NEGO / TUNAI) × investor <code>investor_type</code> (ALL / FOREIGN; DOMESTIC tidak dipanen karena = ALL − FOREIGN, terbukti) × transaksi <code>transaction_type</code> (GROSS / NET). Tiap hari-emiten = 12 berkas di <code>_arsip-mentah/broker-harian/&lt;KODE&gt;/&lt;tanggal&gt;&lt;akhiran&gt;.json</code>.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Papan</th>
+<th>Investor</th>
+<th>Transaksi</th>
+<th>Akhiran arsip</th>
+<th>Artinya &amp; yang dihasilkan (contoh BBCA 27 Agu 2024)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>REGULER</td>
+<td>ALL</td>
+<td>GROSS</td>
+<td><code>.json</code></td>
+<td>pasar reguler, semua investor, beli &amp; jual dihitung terpisah — broker bisa di dua sisi (62 beli / 40 jual, 39 di keduanya). Σ beli_lot × 100 = Volume IDX tepat (<code>cocok_volume</code> 1,0000). Satu-satunya varian yang sudah diolah ke <code>broker_harian/</code> dan halaman</td>
+</tr>
+<tr>
+<td>2</td>
+<td>REGULER</td>
+<td>FOREIGN</td>
+<td>GROSS</td>
+<td><code>.asing.json</code></td>
+<td>transaksi investor asing saja → aliran asing per broker</td>
+</tr>
+<tr>
+<td>3</td>
+<td>NEGO</td>
+<td>ALL</td>
+<td>GROSS</td>
+<td><code>.nego.json</code></td>
+<td>pasar negosiasi (blok/crossing; 7 beli / 7 jual, <code>freq</code> 1) → transaksi besar di luar antrean</td>
+</tr>
+<tr>
+<td>4</td>
+<td>NEGO</td>
+<td>FOREIGN</td>
+<td>GROSS</td>
+<td><code>.nego-asing.json</code></td>
+<td>negosiasi oleh asing</td>
+</tr>
+<tr>
+<td>5</td>
+<td>TUNAI</td>
+<td>ALL</td>
+<td>GROSS</td>
+<td><code>.tunai.json</code></td>
+<td>pasar tunai (T+0); sering kosong (BBCA 27 Agu 2024: 0 baris) tapi TPIA/BUMI kadang berisi — alasan tetap dipanen</td>
+</tr>
+<tr>
+<td>6</td>
+<td>TUNAI</td>
+<td>FOREIGN</td>
+<td>GROSS</td>
+<td><code>.tunai-asing.json</code></td>
+<td>tunai oleh asing</td>
+</tr>
+<tr>
+<td>7</td>
+<td>REGULER</td>
+<td>ALL</td>
+<td>NET</td>
+<td><code>.net.json</code></td>
+<td>beli dikurangi jual per broker; broker hanya di satu sisi (55 net buyer / 8 net seller, 0 di keduanya) → daftar akumulator/distributor</td>
+</tr>
+<tr>
+<td>8</td>
+<td>REGULER</td>
+<td>FOREIGN</td>
+<td>NET</td>
+<td><code>.net-asing.json</code></td>
+<td>net asing per broker</td>
+</tr>
+<tr>
+<td>9</td>
+<td>NEGO</td>
+<td>ALL</td>
+<td>NET</td>
+<td><code>.net-nego.json</code></td>
+<td>net di pasar negosiasi</td>
+</tr>
+<tr>
+<td>10</td>
+<td>NEGO</td>
+<td>FOREIGN</td>
+<td>NET</td>
+<td><code>.net-nego-asing.json</code></td>
+<td>net asing di negosiasi</td>
+</tr>
+<tr>
+<td>11</td>
+<td>TUNAI</td>
+<td>ALL</td>
+<td>NET</td>
+<td><code>.net-tunai.json</code></td>
+<td>net di pasar tunai</td>
+</tr>
+<tr>
+<td>12</td>
+<td>TUNAI</td>
+<td>FOREIGN</td>
+<td>NET</td>
+<td><code>.net-tunai-asing.json</code></td>
+<td>net asing di tunai</td>
+</tr>
+<tr>
+<td>⚙️</td>
+<td>semua</td>
+<td>DOMESTIC</td>
+<td>semua</td>
+<td>tidak dipanen</td>
+<td>= ALL − FOREIGN, cocok persis — BUMI 21 Agu 2026, diulang lewat API langsung 23 Agu 2026: ANTM &amp; TLKM pada 21 Agu dan 14 Agu 2026 — 406 baris broker (beli + jual), <strong>0 beda</strong>, Σ lot dan Σ rupiah ALL − FOREIGN = DOMESTIC persis di keempat kasus</td>
+</tr>
+</tbody>
+</table>
+<p>NET belum bisa diturunkan dari GROSS (dua percobaan gagal: BUMI 9/80, BBCA 19/69, TPIA 19/74 broker cocok) — karena itu NET dipanen sendiri.</p>
+<h3>10 ruas per broker — <code>broker_summary.brokers_buy</code> (sisi jual <code>brokers_sell</code> cermin: <code>slot slotv sval svalv netbs_sell_avg_price</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Ruas</th>
+<th>Arti (terbukti dari nilai)</th>
+<th>Data yang dihasilkan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>netbs_broker_code</code></td>
+<td>kode broker 2 huruf (CC, RX, KZ, BB, …)</td>
+<td>identitas broker</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>golongan broker: <strong>Lokal / Asing / Pemerintah</strong> (BBCA 21 Agu 2026: 58 / 36 / 8 entri)</td>
+<td>komposisi lokal vs asing vs BUMN per hari</td>
+</tr>
+<tr>
+<td><code>blot</code></td>
+<td>beli dalam <strong>lot</strong></td>
+<td>kolom <code>beli_lot</code></td>
+</tr>
+<tr>
+<td><code>blotv</code></td>
+<td>= <code>blot</code> × 100 → <strong>lembar</strong> (213.569 → 21.356.900)</td>
+<td>volume lembar, cek silang ke Volume IDX</td>
+</tr>
+<tr>
+<td><code>bval</code></td>
+<td>nilai beli <strong>rupiah</strong></td>
+<td>kolom <code>beli_nilai</code></td>
+</tr>
+<tr>
+<td><code>bvalv</code></td>
+<td>= <code>bval</code> di GROSS; <strong>berbeda di NET</strong> — definisi belum terbaca ❓ (<code>workflow-panen-rombak.md</code> §2)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>netbs_buy_avg_price</code></td>
+<td>harga rata-rata beli broker itu</td>
+<td>avg beli per broker vs harga pasar</td>
+</tr>
+<tr>
+<td><code>freq</code></td>
+<td>jumlah transaksi broker itu</td>
+<td>ukuran order rata-rata = lot ÷ freq</td>
+</tr>
+<tr>
+<td><code>netbs_date</code></td>
+<td>tanggal <code>YYYYMMDD</code></td>
+<td>kunci</td>
+</tr>
+<tr>
+<td><code>netbs_stock_code</code></td>
+<td>kode emiten</td>
+<td>kunci</td>
+</tr>
+</tbody>
+</table>
+<p>Olahan lokal (<code>panen_broker_harian.py</code>): satu baris per broker 7 kolom (<code>broker beli_lot beli_nilai avg_beli jual_lot jual_nilai avg_jual</code>; tanda negatif sisi jual dibuang), disimpan 5 kolom <code>broker beli_lot beli_nilai jual_lot jual_nilai</code>, diurutkan net nilai (<code>bval − sval</code>). Dari sini: net per broker, peringkat, top-N, "bandar" (broker dominan), komposisi Lokal/Asing/Pemerintah, avg broker vs rata-rata pasar.</p>
+<h3>13 ruas <code>bandar_detector</code></h3>
+<table>
+<thead>
+<tr>
+<th>Ruas</th>
+<th>Arti (uji silang)</th>
+<th>Data yang dihasilkan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>average</code></td>
+<td>harga rata-rata hari itu = value ÷ volume (6.444,61 — sama persis dengan chartbit)</td>
+<td><code>avg</code> di ringkas</td>
+</tr>
+<tr>
+<td><code>avg</code></td>
+<td>{<code>accdist</code>, <code>amount</code> rupiah net, <code>percent</code>, <code>vol</code> lot} — versi harian</td>
+<td>label <strong>Big Acc / Acc / Normal / Dist / Big Dist</strong></td>
+</tr>
+<tr>
+<td><code>avg5</code></td>
+<td>sama, versi 5 hari</td>
+<td>label 5 hari</td>
+</tr>
+<tr>
+<td><code>broker_accdist</code></td>
+<td>label akumulasi/distribusi keseluruhan (Acc / Dist)</td>
+<td><code>accdist</code> di ringkas</td>
+</tr>
+<tr>
+<td><code>number_broker_buysell</code></td>
+<td>= <code>total_buyer</code> − <code>total_seller</code> (56 − 63 = −7 ✓)</td>
+<td>lebar partisipasi</td>
+</tr>
+<tr>
+<td><code>top1</code>, <code>top3</code>, <code>top5</code>, <code>top10</code></td>
+<td>{<code>accdist</code>, <code>amount</code>, <code>percent</code>, <code>vol</code>} net beli broker teratas N; <code>percent</code> top1 = 414.372 ÷ 1.006.843 = 41,16% ✓ terhadap volume hari itu — tapi top5 132,7% (&gt;100%), jadi pembagi pastinya belum terbaca ❓</td>
+<td>konsentrasi <code>top1_pct top3_pct top5_pct</code></td>
+</tr>
+<tr>
+<td><code>total_buyer</code></td>
+<td>jumlah broker sisi beli</td>
+<td><code>n_beli</code></td>
+</tr>
+<tr>
+<td><code>total_seller</code></td>
+<td>jumlah broker sisi jual</td>
+<td><code>n_jual</code></td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td>nilai transaksi rupiah hari itu</td>
+<td>cek silang ke chartbit <code>value</code></td>
+</tr>
+<tr>
+<td><code>volume</code></td>
+<td>volume lot hari itu (1.006.843 = chartbit <code>lot</code> ✓)</td>
+<td><code>cocok_volume</code></td>
+</tr>
+</tbody>
+</table>
+<p>Ringkas turunan lokal (10): <code>n_beli n_jual total_lot total_nilai avg top1_pct top3_pct top5_pct accdist cocok_volume</code> — <code>cocok_volume</code> = Σ beli_lot × 100 ÷ Volume OHLC tanggal itu, wajib 1,0000 ± 1%.</p>
+<h3>17 kolom chartbit — OHLCV Stockbit (<code>ohlcv_stockbit/&lt;KODE&gt;.json</code> → <code>kolom</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Kolom</th>
+<th>Arti</th>
+<th>Bukti (BBCA 21 Agu 2026)</th>
+<th>Data yang dihasilkan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tanggal</code></td>
+<td>tanggal bursa</td>
+<td>—</td>
+<td>kunci</td>
+</tr>
+<tr>
+<td><code>unixdate</code></td>
+<td>epoch detik</td>
+<td>1787245200</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>open</code>, <code>high</code>, <code>low</code>, <code>close</code></td>
+<td>harga; deret sudah disesuaikan pemecahan saham (catatan <code>valuasi_historis.json</code>)</td>
+<td>6.400 / 6.475 / 6.400 / 6.450</td>
+<td>candle, MA20/50/200, RSI, ATR, support/resistance (Kartu Analisa), pola chart</td>
+</tr>
+<tr>
+<td><code>volume</code></td>
+<td>lembar</td>
+<td>100.684.300; <code>lot</code> = volume ÷ 100 ✓</td>
+<td>turnover, lonjakan volume</td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td>rupiah</td>
+<td>value ÷ volume = 6.444,61 = <code>average</code> bandar ✓</td>
+<td>harga rata-rata; nilai per transaksi = value ÷ frequency (27,8 jt)</td>
+</tr>
+<tr>
+<td><code>frequency</code></td>
+<td>jumlah transaksi</td>
+<td>23.357</td>
+<td>ukuran order rata-rata = lot ÷ frequency (43,1 lot)</td>
+</tr>
+<tr>
+<td><code>foreignbuy</code>, <code>foreignsell</code></td>
+<td>rupiah asing beli / jual</td>
+<td>515,0 M / 246,0 M</td>
+<td>net asing rupiah harian; porsi asing = (fb + fs) ÷ value</td>
+</tr>
+<tr>
+<td><code>foreignflow</code></td>
+<td><strong>kumulatif</strong> (fb − fs) sejak awal deret</td>
+<td>selisih harian = fb − fs = 269.093.402.500 ✓</td>
+<td>akumulasi asing n-hari tanpa menjumlah ulang</td>
+</tr>
+<tr>
+<td><code>dividend</code></td>
+<td>rupiah per saham pada tanggal ex-date; 0 di hari lain</td>
+<td>38 bar ≠ 0 di BBCA; 30 Mar 2026 = 281, 17 Jun 2026 = 20</td>
+<td>dividend yield historis, penyesuaian return</td>
+</tr>
+<tr>
+<td><code>shareoutstanding</code></td>
+<td>saham beredar <strong>per hari</strong> (lembar)</td>
+<td>123.275.050.000</td>
+<td>turnover = volume ÷ SO; PE/PB historis pada saham hari itu</td>
+</tr>
+<tr>
+<td><code>soxclose</code></td>
+<td>= <code>shareoutstanding</code> × <code>close</code> = <strong>kapitalisasi pasar</strong> ✓</td>
+<td>795.124.072.500.000</td>
+<td>market cap harian</td>
+</tr>
+<tr>
+<td><code>freq_analyzer</code></td>
+<td>❓ 7,90 — bukan value ÷ freq (27,8 jt), bukan lot ÷ freq (43,1); definisi belum terbaca</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>lot</code></td>
+<td>volume ÷ 100</td>
+<td>1.006.843 ✓</td>
+<td>tampilan lot</td>
+</tr>
+</tbody>
+</table>
+<h3>94 rasio keystats Stockbit — 12 kelompok (<code>closure_fin_items_results</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Kelompok</th>
+<th>Jumlah</th>
+<th>Isi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Current Valuation</td>
+<td>14</td>
+<td>PE (annualised, TTM, forward), IHSG PE TTM median, earnings yield, P/S, P/BV, P/Cashflow, P/FCF, EV/EBIT, EV/EBITDA, PEG, PEG 3yr, PEG forward</td>
+</tr>
+<tr>
+<td>Per Share</td>
+<td>6</td>
+<td>EPS TTM &amp; annualised, revenue/share, cash/share (kuartal), book value/share, FCF/share</td>
+</tr>
+<tr>
+<td>Solvency</td>
+<td>14</td>
+<td><strong>NPL gross, NPL coverage, CAR, LDR</strong> (bank), current &amp; quick ratio, DER, LT debt/equity, liabilities/equity, debt/assets, financial leverage, interest coverage, FCF kuartal, Altman Z (modified)</td>
+</tr>
+<tr>
+<td>Management Effectiveness</td>
+<td>13</td>
+<td>ROA, ROE, ROCE, ROIC, <strong>CASA, cost of credit</strong>, DSO, days inventory, DPO, cash conversion cycle, receivables/asset/inventory turnover</td>
+</tr>
+<tr>
+<td>Profitability</td>
+<td>4</td>
+<td><strong>NIM</strong>, GPM, OPM, NPM (kuartal)</td>
+</tr>
+<tr>
+<td>Growth</td>
+<td>3</td>
+<td>revenue / gross profit / net income YoY kuartal</td>
+</tr>
+<tr>
+<td>Dividend</td>
+<td>5</td>
+<td>dividen, dividen TTM, payout ratio, yield, ex-date terakhir</td>
+</tr>
+<tr>
+<td>Market Rank</td>
+<td>9</td>
+<td>Piotroski F-Score, EPS rating, relative strength rating, rank market cap / PE TTM / earnings yield / P/S / P/B / dekat 52w high</td>
+</tr>
+<tr>
+<td>Income Statement</td>
+<td>4</td>
+<td>revenue, gross profit, EBITDA, net income (TTM)</td>
+</tr>
+<tr>
+<td>Balance Sheet</td>
+<td>6</td>
+<td>cash, total assets, total liabilities, working capital (kuartal), common equity, total equity</td>
+</tr>
+<tr>
+<td>Cash Flow Statement</td>
+<td>5</td>
+<td>CFO, CFI, CFF, capex, FCF (TTM)</td>
+</tr>
+<tr>
+<td>Price Performance</td>
+<td>11</td>
+<td>return 1W, 1M, 3M, 6M, 1Y, 3Y, 5Y, 10Y, YTD; 52w high/low</td>
+</tr>
+</tbody>
+</table>
+<p>Ditambah <code>financial_year_groups</code> (revenue dkk per tahun, Q1–Q4 <strong>diskret</strong> + annualised + TTM) dan <code>most_recent_quarter</code> (tanggal kuartal, saham beredar, market cap, EV, free float). Dihasilkan: Stock Detail bagian valuasi/solvabilitas/efektivitas tanpa menghitung sendiri; rasio khusus bank yang tidak ada di yfinance; peringkat relatif terhadap pasar.</p>
+<h3>32 ruas IDX <code>GetStockSummary</code> (diambil 6 + <code>ListedShares</code>)</h3>
+<p><code>No IDStockSummary Date StockCode StockName Remarks Previous OpenPrice FirstTrade High Low Close Change Volume Value Frequency IndexIndividual Offer OfferVolume Bid BidVolume ListedShares TradebleShares WeightForIndex ForeignSell ForeignBuy DelistingDate NonRegularVolume NonRegularValue NonRegularFrequency persen percentage</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Ruas / kelompok</th>
+<th>Arti</th>
+<th>Dipakai?</th>
+<th>Data yang bisa dihasilkan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Date</code>, <code>ForeignBuy</code>, <code>ForeignSell</code>, <code>Volume</code>, <code>Value</code>, <code>Frequency</code></td>
+<td>aliran asing (lembar), volume, nilai, frekuensi</td>
+<td>✅ <code>asing/</code></td>
+<td>net asing lembar, porsi asing, nilai per transaksi</td>
+</tr>
+<tr>
+<td><code>ListedShares</code></td>
+<td>saham tercatat</td>
+<td>✅ <code>daftar_emiten</code></td>
+<td>market cap, sinkron emiten baru</td>
+</tr>
+<tr>
+<td><code>Remarks</code></td>
+<td>kode papan + notasi khusus (mis. <code>CDMO1UQNCNU600G111</code>)</td>
+<td>❌</td>
+<td>notasi khusus IDX resmi (pembanding <code>info_stockbit.notation</code>)</td>
+</tr>
+<tr>
+<td><code>Bid</code>, <code>BidVolume</code>, <code>Offer</code>, <code>OfferVolume</code></td>
+<td>antrean penutupan</td>
+<td>❌</td>
+<td>tekanan beli/jual penutupan</td>
+</tr>
+<tr>
+<td><code>NonRegularVolume</code>, <code>NonRegularValue</code>, <code>NonRegularFrequency</code></td>
+<td>pasar nego + tunai agregat resmi</td>
+<td>❌</td>
+<td>pembanding varian NEGO/TUNAI Stockbit</td>
+</tr>
+<tr>
+<td><code>TradebleShares</code>, <code>WeightForIndex</code>, <code>IndexIndividual</code></td>
+<td>free float, bobot indeks, indeks individual</td>
+<td>❌</td>
+<td>turnover free float, bobot IHSG</td>
+</tr>
+<tr>
+<td><code>Previous</code>, <code>OpenPrice</code>, <code>FirstTrade</code>, <code>High</code>, <code>Low</code>, <code>Close</code>, <code>Change</code></td>
+<td>harga resmi hari itu (Open bolong pra-2025)</td>
+<td>❌ (ohlc dari Stockbit)</td>
+<td>pembanding resmi harga</td>
+</tr>
+<tr>
+<td><code>No</code>, <code>IDStockSummary</code>, <code>StockName</code>, <code>DelistingDate</code>, <code>persen</code>, <code>percentage</code></td>
+<td>administratif / kosong</td>
+<td>❌</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3>5 ruas IDX <code>GetBrokerSummary</code> (level pasar) — <code>broker/bs_YYMMDD.json</code></h3>
+<table>
+<thead>
+<tr>
+<th>Ruas</th>
+<th>Arti</th>
+<th>Bukti (21 Agu 2026)</th>
+<th>Data yang dihasilkan</th>
+<th>Dipakai di halaman</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kode</code> (<code>IDFirm</code>)</td>
+<td>kode broker 2 huruf</td>
+<td>88 broker</td>
+<td>identitas; sama dengan <code>netbs_broker_code</code> Stockbit → bisa digabung</td>
+<td>Broker Summary, Top Broker</td>
+</tr>
+<tr>
+<td><code>nama</code> (<code>FirmName</code>)</td>
+<td>nama sekuritas</td>
+<td>—</td>
+<td>label</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><code>vol</code></td>
+<td>volume transaksi broker se-pasar</td>
+<td>Σ 88 broker = 118.240.721.142 lembar; Σ 88 broker ÷ (volume reguler + non-reguler pasar 21 Agu, dari GetStockSummary) = 2,046; nilai = 2,003; frekuensi = 2,019 → <strong>lembar/rupiah/kali, beli + jual dihitung dua kali, mencakup semua papan (reguler + nego + tunai)</strong> ✓ — bandingkan ke setengahnya</td>
+<td>peringkat volume, pangsa pasar broker</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><code>val</code></td>
+<td>nilai transaksi rupiah (dua sisi, semua papan)</td>
+<td>Σ = 34.941.563.959.134 = 2,003 × nilai pasar (reguler + non-reguler) ✓</td>
+<td>peringkat nilai, pangsa nilai = val ÷ Σ val</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><code>frek</code></td>
+<td>jumlah transaksi (dua sisi)</td>
+<td>Σ = 4.513.420 = 2,019 × frekuensi pasar reguler ✓</td>
+<td>ukuran order rata-rata per broker = vol ÷ frek</td>
+<td>idem</td>
+</tr>
+</tbody>
+</table>
+<p>Tidak ada ruas emiten — parameter <code>code</code>/<code>stockCode</code> diabaikan server (diuji 16 &amp; 22 Agu 2026).</p>
+<h3>22 kolom KSEI Balancepos (<code>kepemilikan/&lt;KODE&gt;.json</code>, bulanan, satuan lembar)</h3>
+<table>
+<thead>
+<tr>
+<th>Kolom</th>
+<th>Arti</th>
+<th>Bukti (BBCA 2026-07-31)</th>
+<th>Data yang dihasilkan</th>
+<th>Dipakai di halaman</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lembar_tercatat</code></td>
+<td>saham tercatat di KSEI akhir bulan</td>
+<td>(lokal + asing) ÷ tercatat = 0.4255</td>
+<td>pembagi % kepemilikan</td>
+<td>Shareholders v2</td>
+</tr>
+<tr>
+<td><code>harga</code></td>
+<td>harga penutupan akhir bulan</td>
+<td>—</td>
+<td>nilai kepemilikan = lembar × harga</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><code>lokal_IS</code></td>
+<td>lokal — asuransi</td>
+<td>—</td>
+<td>% per tipe, perubahan bulanan</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><code>lokal_CP</code></td>
+<td>lokal — korporasi</td>
+<td>—</td>
+<td>idem</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><code>lokal_PF</code></td>
+<td>lokal — dana pensiun</td>
+<td>—</td>
+<td>idem</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><code>lokal_IB</code></td>
+<td>lokal — bank</td>
+<td>—</td>
+<td>idem</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><code>lokal_ID</code></td>
+<td>lokal — perorangan (ritel)</td>
+<td>—</td>
+<td>ritel vs institusi</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><code>lokal_MF</code></td>
+<td>lokal — reksa dana</td>
+<td>—</td>
+<td>siapa akumulasi: reksa dana vs perorangan</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><code>lokal_SC</code></td>
+<td>lokal — sekuritas</td>
+<td>—</td>
+<td>idem</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><code>lokal_FD</code></td>
+<td>lokal — yayasan</td>
+<td>—</td>
+<td>idem</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><code>lokal_OT</code></td>
+<td>lokal — lainnya</td>
+<td>—</td>
+<td>idem</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><code>lokal_total</code></td>
+<td>Σ 9 tipe lokal</td>
+<td>= Σ lokal_* ✓</td>
+<td>porsi lokal</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><code>asing_IS</code> … <code>asing_OT</code> (9 kolom)</td>
+<td>investor asing per tipe yang sama</td>
+<td>—</td>
+<td>tipe asing mana yang masuk/keluar</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><code>asing_total</code></td>
+<td>Σ 9 tipe asing</td>
+<td>= Σ asing_* ✓; porsi asing BBCA = 68.88%</td>
+<td>porsi asing bulanan, pembanding aliran asing harian</td>
+<td>idem</td>
+</tr>
+</tbody>
+</table>
+<p>Dari kolom-kolom ini: komposisi pemegang per tipe (deret 79 bulan), porsi asing vs lokal, perubahan bulanan per tipe (siapa yang akumulasi/distribusi), nilai kepemilikan rupiah.</p>
+<blockquote>
+<p>⚠️ <strong>Cakupan Balancepos ≠ seluruh saham tercatat.</strong> BBCA Jul 2026: lokal + asing = 42,55% dari <code>lembar_tercatat</code> — Balancepos hanya memuat saham scripless di C-BEST; sisanya (kemungkinan pemegang pengendali 54,9% Dwimuria dalam bentuk lain) tidak tercakup. Jadi "porsi asing 68,88%" adalah porsi dari saham yang tercatat di KSEI, bukan dari seluruh saham beredar — wajib disebut di antarmuka; ❓ konfirmasi definisi cakupan ke dokumentasi KSEI belum dilakukan.</p>
+</blockquote>
+<h3>Yahoo chart (6 kolom) — cadangan <code>ohlc/</code></h3>
+<table>
+<thead>
+<tr>
+<th>Kolom</th>
+<th>Arti</th>
+<th>Catatan uji</th>
+<th>Data yang dihasilkan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tanggal</code></td>
+<td>tanggal bursa</td>
+<td>Yahoo memuat hari yang tidak ada di Stockbit (IHSG 38 hari)</td>
+<td>jahitan hari hilang</td>
+</tr>
+<tr>
+<td><code>open high low close</code></td>
+<td>harga</td>
+<td>harga vs Stockbit terukur 0,00% beda</td>
+<td>candle (hanya bila Stockbit kosong)</td>
+</tr>
+<tr>
+<td><code>volume</code></td>
+<td>lembar (emiten); <strong>lot</strong> untuk indeks</td>
+<td>2,66% bar emiten salah vs IDX; indeks harus × 100</td>
+<td>cadangan saja, ditandai</td>
+</tr>
+</tbody>
+</table>
+<h3>yfinance laporan keuangan (15 ruas) — <code>keuangan/&lt;KODE&gt;.json</code>, nama ruas identik dengan <code>keuangan_idx/</code> (XBRL) sehingga sebanding per periode</h3>
+<table>
+<thead>
+<tr>
+<th>Ruas</th>
+<th>Arti</th>
+<th>Data yang dihasilkan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>revenue</code></td>
+<td>pendapatan</td>
+<td>pertumbuhan, margin, P/S</td>
+</tr>
+<tr>
+<td><code>cogs</code></td>
+<td>beban pokok</td>
+<td><code>gross_profit</code> = revenue − cogs, GPM</td>
+</tr>
+<tr>
+<td><code>gross_profit</code></td>
+<td>laba kotor</td>
+<td>GPM</td>
+</tr>
+<tr>
+<td><code>operating_income</code></td>
+<td>laba usaha</td>
+<td>OPM, EV/EBIT</td>
+</tr>
+<tr>
+<td><code>net_income</code></td>
+<td>laba bersih</td>
+<td>NPM, ROE, ROA, EPS</td>
+</tr>
+<tr>
+<td><code>eps</code></td>
+<td>laba per saham</td>
+<td>PE, PEG (71% kosong di yfinance → ditambal dari net_income ÷ shares)</td>
+</tr>
+<tr>
+<td><code>operating_cf</code></td>
+<td>arus kas operasi</td>
+<td>P/CF, kualitas laba (80–91% kosong di yfinance)</td>
+</tr>
+<tr>
+<td><code>investing_cf</code></td>
+<td>arus kas investasi</td>
+<td>capex, FCF</td>
+</tr>
+<tr>
+<td><code>financing_cf</code></td>
+<td>arus kas pendanaan</td>
+<td>dividen + utang</td>
+</tr>
+<tr>
+<td><code>free_cf</code></td>
+<td>arus kas bebas</td>
+<td>P/FCF, FCF/share</td>
+</tr>
+<tr>
+<td><code>total_assets</code></td>
+<td>total aset</td>
+<td>ROA, asset turnover, debt/assets</td>
+</tr>
+<tr>
+<td><code>total_liabilities</code></td>
+<td>total liabilitas</td>
+<td>liabilities/equity</td>
+</tr>
+<tr>
+<td><code>equity</code></td>
+<td>ekuitas</td>
+<td>ROE, PBV, DER</td>
+</tr>
+<tr>
+<td><code>total_debt</code></td>
+<td>utang berbunga</td>
+<td>DER, net debt, interest coverage</td>
+</tr>
+<tr>
+<td><code>cash</code></td>
+<td>kas</td>
+<td>net debt, cash/share, quick ratio</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="riwayat" data-title="Riwayat">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Riwayat</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<ul>
+<li>23 Agustus 2026 — dibuat (Fable, sesi AI Skill) dari kode dan dokumen yang ada; sumber dicatat: 23 (4 di antaranya ❓ belum dipastikan: GetSecuritiesStock, Stockbit endpoint belum terpecahkan, indexalpha, halaman Chart); halaman dipetakan: 28; baris inventaris "belum diputuskan": 31; jahitan ditandai: 8 (semua perlu keputusan Johan). Koreksi yang ditemukan untuk dokumen lain: <code>status-panen.md</code> baris Kepemilikan KSEI ("belum dipakai") basi — dibaca <code>brokerProfilKsei.ts:27</code>. Produsen <code>kandidat_deepdive.json</code> dan penulis asli <code>harga_terakhir.json</code> belum ditemukan. Tabel pembanding angka untuk J1/J2/J4/J5/J8 belum pernah dibuat — itu prasyarat sebelum Johan memutuskan, dan pekerjaan pertama yang disarankan untuk sesi Papan Trading.</li>
+<li>23 Agustus 2026 (sore) — section "Inventaris ruas per berkas" ditambahkan dari pertanyaan Johan (Stock Detail, OHLC/OHLCV, Broker Summary, metode panen); temuan baru: 11 dari 12 varian broker Stockbit baru ada di <code>_arsip-mentah/broker-harian/</code> (27 emiten, 220.923 berkas), belum diolah ke JSON halaman; <code>broker_tahunan/</code> baru BUMI; <code>broker_harian/</code> jendela 20 hari; <code>ihsg_harian.json</code> murni Yahoo; keystats Stockbit 94 rasio/12 kelompok dipanen 963/963 tapi nol pemakai; jahitan fundamental ditandai per angka di <code>KolomLaporan.tsx</code> (superscript+tooltip), jahitan <code>ohlc/</code> tidak.</li>
+<li>23 Agustus 2026 (sore) — "Keputusan arah" Johan untuk J1/J2/J4/J5/J8 dan dataset menganggur dicatat (kutipan verbatim); eksekusi diserahkan ke sesi Papan Trading lewat pesan dari sesi AI Skill, dengan syarat tabel pembanding dulu.</li>
+<li>23 Agustus 2026 (sore) — section "Matriks sumber" ditambahkan: pemenang per jenis data (Stockbit menang karena isi, bukan selalu riwayat — ABDA &amp; IHSG Yahoo lebih tua), 8 duplikasi "satu data dua sumber" antar halaman, usulan 13 berkas kanonik. Eksekusi milik sesi Papan Trading.</li>
+<li>23 Agustus 2026 (sore) — uji API Stockbit langsung (ABDA/IHSG/ASII, <code>to=1980</code>) mengonfirmasi arsip = kedalaman server; baris endpoint <code>/seasonality</code>, <code>/chartbit/initial</code>, <code>/search</code> ditambahkan dari <code>docs/riset/stockbit-inventaris-endpoint.md</code>.</li>
+<li>23 Agustus 2026 (sore) — section "Kamus ruas" ditambahkan: 12 varian marketdetectors (akhiran arsip + arti + contoh angka), 10 ruas broker, 13 ruas bandar_detector, 10 metrik ringkas, 17 kolom chartbit dengan uji silang (lot = volume/100, soxclose = SO × close, foreignflow kumulatif, average = value/volume), 94 keystats per 12 kelompok, 32 ruas GetStockSummary, 22 kolom KSEI; 3 ruas ditandai ❓ (<code>bvalv</code> di NET, <code>freq_analyzer</code>, pembagi <code>percent</code> top-N &gt;100%).</li>
+<li>23 Agustus 2026 (sore) — empat koreksi Johan atas matriks: broker level pasar (IDX = daftar + agregat saja), laporan keuangan (XBRL utama, Stockbit tambalan — keystats terbukti 3 ruas × 2024–2026, 2019→ butuh <code>/findata-view</code>), statistik pasar (PDF + turunan chartbit), seasonality (Stockbit penuh). Masuk ke Matriks A/C dan Keputusan arah J9–J11.</li>
+<li>23 Agustus 2026 (sore) — atas permintaan Johan, DOMESTIC = ALL − FOREIGN diuji ulang lewat API untuk ANTM dan TLKM (21 &amp; 14 Agu): 406 baris broker, 0 beda. Bukti diperbarui di 3 tempat.</li>
+<li>23 Agustus 2026 (malam) — tiga sub-bagian Kamus ruas yang masih prosa (GetBrokerSummary, KSEI 22 kolom, Yahoo/yfinance) dijadikan tabel ruas · arti · bukti · dihasilkan · halaman; KSEI total diuji silang; kamus ruas kini wajib di template dan klausul 2 global.</li>
+<li>23 Agustus 2026 (malam) — satuan <code>GetBrokerSummary</code> terpecahkan dengan uji silang ke total pasar GetStockSummary 21 Agu: vol/val/frek = lembar/rupiah/kali, dua sisi (beli + jual), semua papan — rasio 2,046 / 2,003 / 2,019.</li>
+<li>23 Agustus 2026 (malam) — "Estimasi panen penuh dari Stockbit" ditambahkan dari pengukuran langsung (latensi API, throughput runner dari mtime arsip, 149 hari bursa 2026, 962 emiten): broker 12 varian 2026 ≈ 3 hari, 2017–2025 ≈ 24 hari; OHLCV riwayat penuh sudah selesai.</li>
+<li>23 Agustus 2026 (malam) — tabel skala paralel 12/24/36 untuk broker 2026 ditambahkan (siklus pekerja ≈ 1,07 s; linear sampai 429; 24/36 belum diuji).</li>
+</ul>
+</div>
+</div></div>
+</div>
+</section>
+
+      </main>
+    </div>
+  </div>
+  <div class="pathbar" id="pathbar">
+    <span class="pathbar-crumb">📁 IDX Statistik</span><span class="pathbar-sep">▸</span><span class="pathbar-crumb">docs</span>
+    <span class="pathbar-sep">▸</span>
+    <span class="pathbar-crumb current" id="pathbar-current">Referensi Sumber — IDX Statistik (PAPAN)</span>
+  </div>
+</div>
+<script>
+const root = document.documentElement;
+const themeBtn = document.getElementById('theme-toggle');
+function applyTheme(t) {
+  if (t === 'dark') { root.setAttribute('data-theme', 'dark'); themeBtn.textContent = '☀️'; }
+  else { root.removeAttribute('data-theme'); themeBtn.textContent = '🌙'; }
+}
+applyTheme(localStorage.getItem('aicc-theme') || 'light');
+themeBtn.addEventListener('click', () => {
+  const isDark = root.getAttribute('data-theme') === 'dark';
+  const next = isDark ? 'light' : 'dark';
+  applyTheme(next);
+  localStorage.setItem('aicc-theme', next);
+});
+
+const links = document.querySelectorAll('.nav-link');
+const sections = document.querySelectorAll('main section');
+const scrollContainer = document.getElementById('content-scroll');
+const pathbarCurrent = document.getElementById('pathbar-current');
+
+let lastPathTitle = null;
+function updateActiveSection() {
+  let current = null;
+  const scrollTop = scrollContainer.scrollTop;
+  sections.forEach(sec => {
+    if (scrollTop >= sec.offsetTop - scrollContainer.offsetTop - 80) current = sec;
+  });
+  if (!current) current = sections[0];
+  links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + current.id));
+  if (current && current.dataset.title !== lastPathTitle) {
+    lastPathTitle = current.dataset.title;
+    pathbarCurrent.classList.add('fading');
+    setTimeout(() => {
+      pathbarCurrent.textContent = current.dataset.title;
+      pathbarCurrent.classList.remove('fading');
+    }, 150);
+  }
+}
+scrollContainer.addEventListener('scroll', updateActiveSection);
+updateActiveSection();
+
+function bindToggle(toggle) {
+  const btn = toggle.querySelector('.section-summary');
+  if (btn.dataset.bound) return;
+  btn.dataset.bound = '1';
+  btn.addEventListener('click', () => toggle.classList.toggle('is-open'));
+}
+document.querySelectorAll('.section-toggle').forEach(bindToggle);
+
+document.getElementById('expand-all').onclick = () => {
+  document.querySelectorAll('main .section-toggle').forEach(t => t.classList.add('is-open'));
+};
+document.getElementById('collapse-all').onclick = () => {
+  document.querySelectorAll('main .section-toggle').forEach(t => t.classList.remove('is-open'));
+};
+
+const searchBox = document.getElementById('search');
+let originalHTML = null;
+
+function clearHighlights() {
+  if (originalHTML) {
+    document.querySelector('main').innerHTML = originalHTML;
+    enhanceTables();
+    document.querySelectorAll('.section-toggle').forEach(bindToggle);
+  }
+}
+
+function highlight(root, regex) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+  const nodes = [];
+  let n;
+  while (n = walker.nextNode()) {
+    if (n.parentElement.tagName !== 'SCRIPT' && n.parentElement.tagName !== 'STYLE') nodes.push(n);
+  }
+  nodes.forEach(node => {
+    const text = node.nodeValue;
+    if (!regex.test(text)) return;
+    regex.lastIndex = 0;
+    const frag = document.createDocumentFragment();
+    let lastIdx = 0;
+    let m;
+    while (m = regex.exec(text)) {
+      frag.appendChild(document.createTextNode(text.slice(lastIdx, m.index)));
+      const mark = document.createElement('mark');
+      mark.textContent = m[0];
+      frag.appendChild(mark);
+      lastIdx = m.index + m[0].length;
+    }
+    frag.appendChild(document.createTextNode(text.slice(lastIdx)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+searchBox.addEventListener('input', () => {
+  const main = document.querySelector('main');
+  if (originalHTML === null) originalHTML = main.innerHTML;
+  const q = searchBox.value.trim();
+  clearHighlights();
+  if (!q) return;
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(escaped, 'gi');
+  document.querySelectorAll('main .section-toggle').forEach(d => {
+    const text = d.textContent.toLowerCase();
+    if (text.includes(q.toLowerCase())) {
+      d.classList.add('is-open');
+      highlight(d, regex);
+    }
+  });
+});
+
+function enhanceTables() {
+  document.querySelectorAll('main table').forEach(table => {
+    if (table.dataset.enhanced) return;
+    table.dataset.enhanced = '1';
+    const headerRow = table.querySelector('thead tr') || table.querySelector('tr');
+    if (!headerRow) return;
+    const headers = Array.from(headerRow.children);
+    const headerTexts = headers.map(h => h.textContent.trim());
+
+    const wrap = document.createElement('div');
+    wrap.className = 'table-wrap';
+    table.parentNode.insertBefore(wrap, table);
+    wrap.appendChild(table);
+
+    headers.forEach((th, idx) => {
+      const arrow = document.createElement('span');
+      arrow.className = 'sort-arrow';
+      arrow.textContent = '⇅';
+      th.appendChild(arrow);
+      th.addEventListener('click', () => {
+        const tbody = table.querySelector('tbody') || table;
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const dir = th.dataset.dir === 'asc' ? 'desc' : 'asc';
+        headers.forEach(h => h.dataset.dir = '');
+        th.dataset.dir = dir;
+        rows.sort((a, b) => {
+          const av = (a.children[idx] || {}).textContent || '';
+          const bv = (b.children[idx] || {}).textContent || '';
+          return dir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+        });
+        rows.forEach(r => tbody.appendChild(r));
+      });
+    });
+
+    const coworkIdx = headerTexts.findIndex(t => t.startsWith('Cowork'));
+    const bahayaIdx = headerTexts.findIndex(t => t.startsWith('Bahaya'));
+    if (coworkIdx === -1 && bahayaIdx === -1) return;
+
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    const toolbar = document.createElement('div');
+    toolbar.className = 'table-filters';
+    const filters = [
+      { label: 'Semua', test: () => true },
+      { label: '✅ Cowork Ya', test: r => coworkIdx > -1 && r.children[coworkIdx].textContent.includes('✅') },
+      { label: '⚠️ Cowork Sebagian', test: r => coworkIdx > -1 && r.children[coworkIdx].textContent.includes('⚠️') },
+      { label: '🚫 Bahaya', test: r => bahayaIdx > -1 && (r.children[bahayaIdx].textContent.includes('🚫') || r.children[bahayaIdx].textContent.includes('⚠️')) },
+    ];
+    filters.forEach((f, i) => {
+      const btn = document.createElement('button');
+      btn.textContent = f.label;
+      if (i === 0) btn.classList.add('active');
+      btn.addEventListener('click', () => {
+        toolbar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        rows.forEach(r => {
+          r.classList.toggle('row-hidden', !f.test(r));
+        });
+      });
+      toolbar.appendChild(btn);
+    });
+    wrap.parentNode.insertBefore(toolbar, wrap);
+  });
+}
+enhanceTables();
+</script>
+</body>
+</html>
