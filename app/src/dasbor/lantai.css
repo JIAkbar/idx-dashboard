@@ -2031,6 +2031,21 @@
 .lantai .bs2-pct-bar i{display:block;height:100%}
 .lantai .bs2-na{display:inline-block;border-radius:4px;padding:1px 7px;font-size:11px;font-weight:600;background:var(--bg2);color:var(--text3);border:1px solid var(--line)}
 .lantai .bs2-spark{width:100%;height:28px;display:block}
+/* Badge Acc/Dist berlatar penuh, tiga tingkat intensitas — warnanya TETAP
+   --green/--red (bukan hex baru); Sedang/Besar beda lewat OPACITY elemen
+   (bg+teks pudar bersama, jadi rasio kontras teks-ke-latarnya sendiri nyaris
+   tak berubah — beda dari mengencerkan cuma latarnya). --amber-ink dipakai
+   sebagai tinta kontras generik di atas latar solid (bukan cuma milik amber
+   — sudah dipakai begitu di seluruh lantai.css, dan nilainya dikalibrasi per
+   tema PERSIS untuk kasus ini: --green/--red kedua tema juga didesain
+   terang-di-gelap/gelap-di-terang seperti --amber, jadi tinta yang sama
+   lolos kontras AA di keduanya — dihitung: ≥5,5:1 gelap, ≥5,7:1 terang). */
+.lantai .chip.bs2-badge-kecil{background:var(--green-dim);color:var(--green)}
+.lantai .chip.dn.bs2-badge-kecil{background:var(--red-dim);color:var(--red)}
+.lantai .chip.bs2-badge-sedang{background:var(--green);color:var(--amber-ink);font-weight:700;opacity:.8}
+.lantai .chip.dn.bs2-badge-sedang{background:var(--red)}
+.lantai .chip.bs2-badge-besar{background:var(--green);color:var(--amber-ink);font-weight:700}
+.lantai .chip.dn.bs2-badge-besar{background:var(--red)}
 @media (max-width:720px){
   .lantai .bs2-kat-baris{grid-template-columns:110px minmax(0,1fr) 44px 84px}
   .lantai .bs2-flow-row{grid-template-columns:96px minmax(0,1fr) 80px}

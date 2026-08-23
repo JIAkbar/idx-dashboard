@@ -48,17 +48,18 @@ const UKURAN_OPSI: { id: 'nilai' | 'lot'; label: string }[] = [
 // belum diagregasi jadi sumbu kendali ini (lihat CLAUDE.md tugas #187).
 const INVESTOR_OPSI: OpsiDropdown[] = [
   { nilai: 'semua', label: 'All Investor' },
-  { nilai: 'asing', label: 'Foreign — backfill berjalan', nonaktif: true },
-  { nilai: 'domestik', label: 'Domestic — backfill berjalan', nonaktif: true },
+  { nilai: 'asing', label: 'Foreign — belum tersedia', nonaktif: true },
+  { nilai: 'domestik', label: 'Domestic — belum tersedia', nonaktif: true },
 ]
 const MARKET_OPSI: OpsiDropdown[] = [
   { nilai: 'reguler', label: 'Regular' },
-  { nilai: 'nego', label: 'Nego — backfill berjalan', nonaktif: true },
-  { nilai: 'semua', label: 'All — backfill berjalan', nonaktif: true },
+  { nilai: 'nego', label: 'Nego — belum tersedia', nonaktif: true },
+  { nilai: 'semua', label: 'All — belum tersedia', nonaktif: true },
 ]
 
-type PresetId = 'w1' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1'
+type PresetId = 'hariini' | 'w1' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1'
 const PRESET: { id: PresetId; label: string; hari: number }[] = [
+  { id: 'hariini', label: LABEL_RENTANG.hariIni, hari: 0 },
   { id: 'w1', label: LABEL_RENTANG.w1, hari: 7 },
   { id: 'b1', label: LABEL_RENTANG.b1, hari: 30 },
   { id: 'b3', label: LABEL_RENTANG.b3, hari: 91 },
@@ -74,6 +75,7 @@ function mundurIso(iso: string, hari: number): string {
 }
 function mulaiPreset(id: PresetId, akhir: string): string {
   if (id === 'ytd') return `${akhir.slice(0, 4)}-01-01`
+  if (id === 'hariini') return akhir
   return mundurIso(akhir, PRESET.find((x) => x.id === id)!.hari)
 }
 
@@ -211,7 +213,7 @@ export function BrokerSummaryV2() {
       {!loading && error && (
         <div className="panel"><div className="panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
-          <p className="lbl">{error} — coba BUMI (pilot yang sudah lengkap).</p>
+          <p className="lbl">{error} — coba BUMI, datanya paling lengkap.</p>
         </div></div>
       )}
 

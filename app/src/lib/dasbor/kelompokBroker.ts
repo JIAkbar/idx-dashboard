@@ -12,6 +12,8 @@
  * `lantai.css` (light & dark), sama seperti mockup.
  */
 
+import { bacaTokenTema } from './useChartJs'
+
 export type KelompokBroker = 'asing' | 'bumn' | 'smart' | 'ritel' | 'afiliasi' | 'lain'
 
 export const LABEL_KELOMPOK: Record<KelompokBroker, string> = {
@@ -91,4 +93,18 @@ export function warnaKelompok(kelompok: KelompokBroker): string {
 /** Kelas CSS `k-<kelompok>` — dipakai mewarnai teks kode broker di tabel (pola mockup). */
 export function kelasBroker(kode: string): string {
   return `k-${kelompokBroker(kode)}`
+}
+
+/**
+ * Warna NYATA (hex, bukan `var(...)`) — dipakai borderColor/backgroundColor
+ * Chart.js, yang menggambar ke `<canvas>` dan tak bisa mengurai `var(...)`
+ * (lihat `bacaTokenTema`). `warnaKelompok()`/`warnaBroker()` di atas TETAP
+ * ada apa adanya untuk pemakai DOM/CSS (legenda, teks kode broker).
+ */
+export function warnaKelompokCanvas(kelompok: KelompokBroker): string {
+  return bacaTokenTema(TOKEN_KELOMPOK[kelompok])
+}
+
+export function warnaBrokerCanvas(kode: string): string {
+  return warnaKelompokCanvas(kelompokBroker(kode))
 }

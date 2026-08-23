@@ -10,13 +10,16 @@ import { Sparkline } from './Sparkline'
 
 const URUTAN_LEGENDA = ['asing', 'bumn', 'smart', 'ritel', 'afiliasi', 'lain'] as const
 
-/** Port `labelAD()` mockup — badge Acc/Dist bertingkat dari besar-kecilnya % top-N. */
+/** Port `labelAD()` mockup — badge Acc/Dist bertingkat dari besar-kecilnya % top-N.
+ * Latar penuh (bukan dim) supaya lebih menonjol — permintaan Johan 23 Agu 2026;
+ * `.bs2-badge-*` cuma penampilan (intensitas), warnanya tetap --green/--red. */
 function LabelAD({ pct }: { pct: number }) {
   const a = Math.abs(pct)
   if (a < 6) return <span className="chip" style={{ background: 'var(--bg3)', color: 'var(--text3)' }}>Neutral</span>
   const arah = pct >= 0 ? 'Acc' : 'Dist'
   const besar = a < 15 ? 'Small' : a < 20 ? 'Normal' : 'Big'
-  return <span className={`chip ${pct >= 0 ? 'up' : 'dn'}`}>{besar} {arah}</span>
+  const tingkat = besar === 'Small' ? 'kecil' : besar === 'Normal' ? 'sedang' : 'besar'
+  return <span className={`chip ${pct >= 0 ? 'up' : 'dn'} bs2-badge-${tingkat}`}>{besar} {arah}</span>
 }
 
 function KodeBroker({ kode }: { kode: string }) {
@@ -95,7 +98,7 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
               </div>
               <div className="board-tbl-wrap">
                 <table className="tbl">
-                  <thead><tr><th>Pembeli − penjual</th><th className="r">Lot</th><th className="r">%</th><th className="r">Nilai net (B)</th><th className="r" title="gaya Stockbit: lot × 100 × Average">Rp@Avg (B)</th><th className="r">Acc/Dist</th></tr></thead>
+                  <thead><tr><th>Pembeli − penjual</th><th className="r">Lot</th><th className="r">%</th><th className="r">Nilai net (B)</th><th className="r" title="lot × 100 × Average">Rp@Avg (B)</th><th className="r">Acc/Dist</th></tr></thead>
                   <tbody>
                     {[1, 2, 3, 4, 5].map((n) => {
                       const lot = ringkas.topLot(n), val = ringkas.topVal(n)
@@ -112,7 +115,7 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
                       )
                     })}
                     <tr>
-                      <td title="rata-rata Top 1–5; Stockbit tak mengumumkan rumusnya, meleset ±1%">Average</td>
+                      <td title="rata-rata Top 1–5, perkiraan — bisa berbeda tipis dari sumber aslinya">Average</td>
                       <td className="r num">≈ {Math.round(rataLot).toLocaleString('id-ID')}</td>
                       <td className="r num">{ringkas.netVol ? ((rataLot / ringkas.netVol) * 100).toFixed(1) : '0.0'}</td>
                       <td className="r num">{(rataVal / 1e9).toFixed(1)}</td>
@@ -169,12 +172,12 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
             </div>
             <div className="bs2-flow-row">
               <div className="nama">Asing<small>net nilai, {asingAda.length}/{hari.length} hari terpanen</small></div>
-              {asingAda.length ? <Sparkline nilai={hari.map(([, h]) => h.asing ? h.asing.broker.reduce((s, r) => s + r[2] - r[4], 0) : 0)} /> : <span className="lbl" style={{ fontStyle: 'italic' }}>backfill berjalan</span>}
+              {asingAda.length ? <Sparkline nilai={hari.map(([, h]) => h.asing ? h.asing.broker.reduce((s, r) => s + r[2] - r[4], 0) : 0)} /> : <span className="lbl" style={{ fontStyle: 'italic' }}>belum tersedia</span>}
               <div className="tot num">{asingAda.length ? `Rp ${fmtB(asingAda.reduce((s, [, h]) => s + h.asing!.broker.reduce((a, r) => a + r[2] - r[4], 0), 0))}` : <span className="bs2-na">n/a</span>}</div>
             </div>
             <div className="bs2-flow-row">
               <div className="nama">Nego<small>nilai, {negoAda.length}/{hari.length} hari terpanen</small></div>
-              {negoAda.length ? <Sparkline nilai={hari.map(([, h]) => h.nego ? h.nego.broker.reduce((s, r) => s + r[2], 0) : 0)} /> : <span className="lbl" style={{ fontStyle: 'italic' }}>backfill berjalan</span>}
+              {negoAda.length ? <Sparkline nilai={hari.map(([, h]) => h.nego ? h.nego.broker.reduce((s, r) => s + r[2], 0) : 0)} /> : <span className="lbl" style={{ fontStyle: 'italic' }}>belum tersedia</span>}
               <div className="tot num">{negoAda.length ? `Rp ${fmtB(negoAda.reduce((s, [, h]) => s + h.nego!.broker.reduce((a, r) => a + r[2], 0), 0))}` : <span className="bs2-na">n/a</span>}</div>
             </div>
             <div className="bs2-flow-row">

@@ -93,7 +93,7 @@ export function Shareholders({ kode }: ShareholdersProps) {
       <section className="panel">
         <div className="panel-h"><h2>Komposisi kepemilikan KSEI</h2><span className="lbl">{ksei ? `posisi ${labelTanggal(ksei.bulanTerakhir)} · ${fmtRingkas(ksei.lembarTercatat)} lembar tercatat` : ''}</span></div>
         <div className="panel-b">
-          {!kepemilikan ? <EmptyState>Memuat…</EmptyState> : !ksei || !config ? <EmptyState>Belum ada data KSEI Balancepos untuk emiten ini.</EmptyState> : (
+          {!kepemilikan ? <EmptyState>Memuat…</EmptyState> : !ksei || !config ? <EmptyState>Belum ada data kepemilikan KSEI untuk emiten ini.</EmptyState> : (
             <>
               <div className="chart-wrap" style={{ height: 260 }}><canvas ref={canvasRef} /></div>
               <div className="board-tbl-wrap" style={{ marginTop: 10 }}>

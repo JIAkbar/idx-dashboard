@@ -63,6 +63,9 @@ export interface RentangTanggal {
  * dengan gaya lain (prinsip 4).
  */
 export const LABEL_RENTANG = {
+  // hariIni: preset SATU hari bursa terakhir yang berdata (bukan "1 Hari"
+  // duration — h1 di bawah punya makna beda, dipakai pemilih 1D/5D ala RTI).
+  hariIni: 'Hari Ini',
   // Dua kunci tingkat HARI, ditambah B36 (panel Aliran Investor meniru
   // pemilih 1D/5D panel RTI). Dieja di sini, bukan di halamannya — itu
   // seluruh alasan tabel ini ada.

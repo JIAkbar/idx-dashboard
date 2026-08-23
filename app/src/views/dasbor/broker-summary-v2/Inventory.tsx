@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
-import type { ChartConfiguration } from 'chart.js/auto'
+import type { ChartConfiguration, Plugin } from 'chart.js/auto'
 import { useChartCanvas } from '../../../lib/dasbor/useChartJs'
 import { useTheme } from '../../../context/ThemeContext'
 import { kumulatifBroker, type AgregatBroker, type HariBroker } from '../../../lib/dasbor/brokerEmiten'
 import { pilihTopInventaris, type BarisOhlcv } from '../../../lib/dasbor/brokerEmitenV2'
-import { warnaBroker } from '../../../lib/dasbor/kelompokBroker'
+import { warnaBrokerCanvas } from '../../../lib/dasbor/kelompokBroker'
 import { fmtB } from '../../../lib/dasbor/brokerSummaryFormat'
 
 interface InventoryProps {
@@ -38,8 +38,8 @@ export function Inventory({ hari, agg, ohlcv }: InventoryProps) {
     const datasetsBroker = brokers.map((k) => ({
       label: k,
       data: deret.map((d) => d.nilai[k] ?? 0),
-      borderColor: warnaBroker(k),
-      backgroundColor: warnaBroker(k),
+      borderColor: warnaBrokerCanvas(k),
+      backgroundColor: warnaBrokerCanvas(k),
       borderWidth: pembeli.includes(k) ? 2 : 1.5,
       borderDash: penjual.includes(k) ? [4, 3] : [],
       pointRadius: 0,
@@ -57,9 +57,65 @@ export function Inventory({ hari, agg, ohlcv }: InventoryProps) {
       spanGaps: true,
     }
 
+    // Badge kode broker (+ "Harga tutup") di ujung kanan tiap garis, di titik
+    // data TERAKHIR — supaya identitas garis tak cuma terbaca lewat tooltip
+    // (Johan, 23 Agu 2026). Plugin Chart.js kecil sendiri, bukan dependensi
+    // baru (proyek belum punya chartjs-plugin-datalabels): canvas fillText
+    // juga tak bisa mengurai var(...), jadi warnanya diambil langsung dari
+    // borderColor dataset (sudah hex nyata lewat warnaBrokerCanvas di atas).
+    const labelUjungPlugin: Plugin<'line'> = {
+      id: 'labelUjung',
+      afterDatasetsDraw(chart) {
+        const { ctx, chartArea } = chart
+        if (!chartArea) return
+        const kecil = chart.width < 480
+        const ukuranFont = kecil ? 8 : 9.5
+        const tinggiBaris = kecil ? 11 : 13
+
+        const entri: { y: number; label: string; color: string }[] = []
+        chart.data.datasets.forEach((ds, i) => {
+          const meta = chart.getDatasetMeta(i)
+          if (meta.hidden) return
+          const data = ds.data as Array<number | null>
+          let idx = data.length - 1
+          while (idx >= 0 && (data[idx] === null || data[idx] === undefined)) idx--
+          if (idx < 0) return
+          const titik = meta.data[idx] as unknown as { y: number } | undefined
+          if (!titik) return
+          entri.push({ y: titik.y, label: String(ds.label ?? ''), color: String(ds.borderColor ?? '#8F98A6') })
+        })
+        if (entri.length === 0) return
+
+        // Sisir tumpang tindih: urutkan dari atas, jaga jarak minimum, lalu
+        // geser semuanya balik ke dalam area kalau yang terbawah kelebihan.
+        entri.sort((a, b) => a.y - b.y)
+        for (let i = 1; i < entri.length; i++) {
+          if (entri[i].y - entri[i - 1].y < tinggiBaris) entri[i].y = entri[i - 1].y + tinggiBaris
+        }
+        const kelebihan = entri[entri.length - 1].y - chartArea.bottom
+        if (kelebihan > 0) entri.forEach((e) => { e.y -= kelebihan })
+
+        ctx.save()
+        ctx.font = `700 ${ukuranFont}px "IBM Plex Mono", Consolas, monospace`
+        ctx.textAlign = 'right'
+        ctx.textBaseline = 'middle'
+        const latar = isDark ? 'rgba(10,11,14,.72)' : 'rgba(255,255,255,.82)'
+        const x = chartArea.right - 3
+        entri.forEach(({ y, label, color }) => {
+          const lebar = ctx.measureText(label).width
+          ctx.fillStyle = latar
+          ctx.fillRect(x - lebar - 6, y - tinggiBaris / 2, lebar + 8, tinggiBaris)
+          ctx.fillStyle = color
+          ctx.fillText(label, x, y + 0.5)
+        })
+        ctx.restore()
+      },
+    }
+
     return {
       type: 'line',
       data: { labels, datasets: [...datasetsBroker, datasetHarga] },
+      plugins: [labelUjungPlugin],
       options: {
         responsive: true,
         maintainAspectRatio: false,

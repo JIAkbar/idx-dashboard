@@ -306,8 +306,11 @@ export interface TimelineForeign {
   tgl: string[]
   kumulatifRp: number[]
   tutup: number[]
-  net6Bulan: number
-  net20Hari: number
+  /** Net asing kumulatif SELURUH rentang terpilih — akhir `kumulatifRp`,
+   * jadi otomatis ikut tombol 3 Bulan/6 Bulan/YTD (dulu dua chip terpisah
+   * berjendela TETAP 126/20 hari, tak berubah walau tombol rentang ditekan —
+   * label bilang "ikut rentang", angkanya tidak. Lihat CLAUDE.md #187 TUGAS 2). */
+  netRentang: number
 }
 
 /**
@@ -321,7 +324,5 @@ export function timelineForeign(bars: BarisOhlcv[], n: number): TimelineForeign 
   const sel = bars.slice(-n)
   let akum = 0
   const kumulatifRp = sel.map((b) => { akum += b.foreignBeli - b.foreignJual; return akum })
-  const net6Bulan = bars.slice(-126).reduce((s, b) => s + b.foreignBeli - b.foreignJual, 0)
-  const net20Hari = bars.slice(-20).reduce((s, b) => s + b.foreignBeli - b.foreignJual, 0)
-  return { tgl: sel.map((b) => b.tanggal), kumulatifRp, tutup: sel.map((b) => b.tutup), net6Bulan, net20Hari }
+  return { tgl: sel.map((b) => b.tanggal), kumulatifRp, tutup: sel.map((b) => b.tutup), netRentang: akum }
 }

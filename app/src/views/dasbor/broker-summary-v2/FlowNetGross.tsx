@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { ChartConfiguration } from 'chart.js/auto'
-import { useChartCanvas } from '../../../lib/dasbor/useChartJs'
+import { useChartCanvas, bacaTokenTema } from '../../../lib/dasbor/useChartJs'
 import { useTheme } from '../../../context/ThemeContext'
 import type { AgregatBroker, HariBroker } from '../../../lib/dasbor/brokerEmiten'
 import { convictionHarian } from '../../../lib/dasbor/brokerEmitenV2'
@@ -54,7 +54,7 @@ export function FlowNetGross({ hari, agg }: FlowNetGrossProps) {
         labels,
         datasets: [
           { type: 'bar', label: 'Nilai kotor', data: konviksi.map((k) => k.kotor), backgroundColor: 'rgba(128,128,128,.25)', yAxisID: 'y' },
-          { type: 'bar', label: 'Net handover', data: konviksi.map((k) => k.net), backgroundColor: 'var(--blue, #5B94E8)', yAxisID: 'y' },
+          { type: 'bar', label: 'Net handover', data: konviksi.map((k) => k.net), backgroundColor: bacaTokenTema('--blue', '#5B94E8'), yAxisID: 'y' },
           { type: 'line', label: 'Conviction %', data: konviksi.map((k) => k.konviksi), borderColor: '#38B77E', yAxisID: 'y1', pointRadius: 0, borderWidth: 2 },
         ],
       },

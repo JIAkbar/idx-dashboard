@@ -76,20 +76,17 @@ export function TimelineForeign({ bars }: TimelineForeignProps) {
       <div className="kendali" style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
         <PemilihRentang opsi={OPSI_RENTANG} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang asing" />
         {f && (
-          <>
-            <span className="bs2-chipstat">Net 6 Bulan <b className="num" style={{ color: f.net6Bulan >= 0 ? 'var(--green)' : 'var(--red)' }}>Rp {fmtB(f.net6Bulan)}</b></span>
-            <span className="bs2-chipstat">Net 20 Hari <b className="num" style={{ color: f.net20Hari >= 0 ? 'var(--green)' : 'var(--red)' }}>Rp {fmtB(f.net20Hari)}</b></span>
-          </>
+          <span className="bs2-chipstat">Net {LABEL_RENTANG[rentang]} <b className="num" style={{ color: f.netRentang >= 0 ? 'var(--green)' : 'var(--red)' }}>Rp {fmtB(f.netRentang)}</b></span>
         )}
       </div>
       <section className="panel">
-        <div className="panel-h"><h2>Kumulatif net foreign flow vs harga</h2><span className="lbl">sumber: IDX GetStockSummary (foreignbuy/foreignsell)</span></div>
+        <div className="panel-h"><h2>Kumulatif net foreign flow vs harga</h2><span className="lbl">sumber: bursa, nilai resmi</span></div>
         <div className="panel-b">
           {!f ? <EmptyState>Belum ada data OHLCV untuk emiten ini.</EmptyState> : (
             <>
               <div className="chart-wrap" style={{ height: 340 }}><canvas ref={canvasRef} /></div>
               <p className="lbl" style={{ marginTop: 10, textTransform: 'none', letterSpacing: 0 }}>
-                Kumulatif net asing dalam <b>rupiah</b> — sumbernya `foreignbuy`/`foreignsell` langsung dari sumber (bukan taksiran lembar×harga rata-rata, itu yang di riset lain terukur miring +33% kumulatif). Penanda holder 1% belum ada.
+                Kumulatif net asing dalam <b>rupiah</b> — nilai resmi dari bursa, bukan taksiran lembar×harga rata-rata (taksiran seperti itu terbukti bisa meleset cukup jauh secara kumulatif). Penanda holder 1% belum ada.
               </p>
             </>
           )}
