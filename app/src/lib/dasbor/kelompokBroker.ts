@@ -68,6 +68,31 @@ const KURASI: Record<string, [KelompokBroker, string]> = {
   PD: ['ritel', 'Indo Premier'], YP: ['ritel', 'Mirae Asset'], XC: ['ritel', 'Ajaib'],
   XL: ['ritel', 'Stockbit Sekuritas'], CP: ['ritel', 'Valbury'], KK: ['ritel', 'Phillip'],
   // afiliasi — kosong untuk BUMI di kurasi awal
+  // ── Dua belas kode yang sebelumnya tampil tanpa nama (23 Agu 2026) ────────
+  //
+  // Namanya diambil dari data broker level pasar BURSA yang sudah kita panen
+  // sendiri, bukan dari daftar pihak ketiga — sebelas dari dua belas ada di
+  // sana lengkap dengan nama resminya. Golongannya diambil dari ruas `type`
+  // pada rincian broker (Lokal/Asing/Pemerintah), diukur atas 62 berkas.
+  //
+  // Yang Lokal DIBIARKAN 'lain', bukan ditebak jadi 'smart' atau 'ritel':
+  // sumbernya tak membedakan keduanya, dan menebaknya berarti mengarang
+  // identitas yang lalu tampil sebagai fakta di layar.
+  AR: ['lain', 'Binaartha Sekuritas'],
+  BB: ['lain', 'Verdhana Sekuritas Indonesia'],
+  BS: ['lain', 'Equity Sekuritas Indonesia'],
+  FS: ['asing', 'Yuanta Sekuritas Indonesia'],
+  IF: ['lain', 'Samuel Sekuritas Indonesia'],
+  IU: ['lain', 'Indo Capital Sekuritas'],
+  // JB tak pernah muncul di satu pun berkas broker bursa yang kita punya;
+  // namanya dari penelusuran web, jadi keyakinannya lebih rendah daripada
+  // sebelas lainnya. Ganti kalau ketemu di sumber resmi.
+  JB: ['lain', 'BJB Sekuritas'],
+  PI: ['lain', 'Magenta Kapital Sekuritas Indonesia'],
+  QA: ['lain', 'Tuntun Sekuritas Indonesia'],
+  RG: ['lain', 'Profindo Sekuritas Indonesia'],
+  RO: ['lain', 'Pluang Maju Sekuritas'],
+  TS: ['lain', 'Dwidana Sakti Sekuritas'],
 }
 
 /** Kelompok identitas kode broker; belum dikurasi → `lain`. */
