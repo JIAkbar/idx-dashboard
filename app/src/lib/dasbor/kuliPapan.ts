@@ -22,14 +22,29 @@ export interface AntreanPenutupan {
 
 export interface MasukanTarget {
   buyAvg: number
+  /** Lot bandar NET (beli - jual), bukan lot beli kotor. */
   buyLot: number
   bid: number
   offer: number
   totalBidLot: number
   totalOfferLot: number
   tick: number
-  /** Baseline dalam persen; rumus aslinya 5. */
+  /** Baseline dalam persen. Diabaikan pada mode agresif. */
   baselinePersen: number
+  /**
+   * Mode agresif = varian yang menyebut dirinya "Adimology asli":
+   *   TR = AB + (1/2 x p x TS)   TM = AB + (1 x p x TS)
+   * Tanpa suku baseline, dan jumlah barisnya DIISI pengguna alih-alih
+   * diturunkan dari rentang Bid-Offer.
+   *
+   * Dua varian ini beredar bersamaan dan bedanya besar: pada BUMI 21 Agu
+   * 2026 baseline menyumbang 10 dari 15,7 poin kenaikan — dua pertiga
+   * targetnya. Karena itu keduanya disediakan dan mana yang dipakai
+   * ditulis di layar, bukan dipilih diam-diam.
+   */
+  agresif?: boolean
+  /** Jumlah baris papan saat mode agresif; diabaikan pada mode biasa. */
+  barisManual?: number
 }
 
 export interface HasilTarget {
@@ -52,12 +67,14 @@ export function hitungTarget(m: MasukanTarget): HasilTarget | null {
   const { buyAvg, buyLot, bid, offer, totalBidLot, totalOfferLot, tick } = m
   if (!buyAvg || !bid || !offer || !tick) return null
 
-  const papan = Math.round((offer - bid) / tick) + 1
+  const papan = m.agresif
+    ? Math.max(0, Math.round(m.barisManual || 0))
+    : Math.round((offer - bid) / tick) + 1
   const rataPerPapan = papan ? (totalBidLot + totalOfferLot) / papan : 0
   // Pembagi nol nyata terjadi: emiten tanpa antrean pada level terbaik.
   const dorongHigh = rataPerPapan ? buyLot / rataPerPapan : 0
   const dorongLow = dorongHigh / 2
-  const baselinePoin = buyAvg * (m.baselinePersen / 100)
+  const baselinePoin = m.agresif ? 0 : buyAvg * (m.baselinePersen / 100)
 
   return {
     papan,

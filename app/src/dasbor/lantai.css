@@ -872,6 +872,11 @@
 .lantai .kd-tautan{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--amber);text-decoration:none;white-space:nowrap}
 .lantai .kd-tautan:hover{text-decoration:underline}
 
+/* CatatanCakupan — keterangan cakupan data (2026 tervalidasi, sebelumnya
+   masih penyesuaian), satu komponen dipakai ulang (components/dasbor/
+   CatatanCakupan.tsx). Baris tipis, ikon + teks, gaya sama dgn .konteks-data. */
+.lantai .catatan-cakupan{display:flex;align-items:center;gap:6px;font-size:11px;margin:0 0 10px;line-height:1.4}
+
 
 
 /* Riak — gelombang naik-turun halus yang menjalar antar digit, dipakai untuk
@@ -3328,3 +3333,10 @@
 .kuli-papan .kp-h3 em { font-style: normal; text-transform: none; letter-spacing: 0; opacity: .75; }
 .kuli-papan .kp-mos-kv { background: color-mix(in srgb, var(--amber) 10%, transparent); }
 .kuli-papan .kp-mos-kv > b { color: var(--amber); }
+
+/* Saklar mode perhitungan. Dua varian rumus beredar bersamaan dan bedanya
+   besar (baseline menyumbang dua pertiga kenaikan pada contoh BUMI), jadi
+   mode yang sedang dipakai ditulis di sebelah saklarnya — bukan hanya
+   tersirat dari tombol mana yang menyala. */
+.kuli-papan .kp-mode { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 12px; }
+.kuli-papan .kp-mode-ket { font-size: 11px; color: var(--text2); }

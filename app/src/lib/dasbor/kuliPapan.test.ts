@@ -75,3 +75,46 @@ describe('avgBeli', () => {
     expect(avgBeli(0, 12345)).toBe(0)
   })
 })
+
+describe('Mode agresif — varian "Adimology asli"', () => {
+  const dasar = {
+    buyAvg: 200,
+    buyLot: 1380272,
+    bid: 195,
+    offer: 196,
+    totalBidLot: 950732,
+    totalOfferLot: 662057,
+    tick: 1,
+    baselinePersen: 5,
+  }
+
+  it('membuang suku baseline sepenuhnya', () => {
+    const biasa = hitungTarget(dasar)!
+    const agresif = hitungTarget({ ...dasar, agresif: true, barisManual: 2 })!
+    expect(biasa.baselinePoin).toBeCloseTo(10, 6)
+    expect(agresif.baselinePoin).toBe(0)
+    // Selisih keduanya persis sebesar baseline — bukan sekadar "lebih kecil".
+    expect(biasa.targetHigh - agresif.targetHigh).toBeCloseTo(10, 6)
+  })
+
+  it('memakai jumlah baris yang diisi pengguna, bukan rentang bid-offer', () => {
+    const dariRentang = hitungTarget(dasar)!
+    expect(dariRentang.papan).toBe(2)
+    const manual = hitungTarget({ ...dasar, agresif: true, barisManual: 70 })!
+    expect(manual.papan).toBe(70)
+    // Baris lebih banyak -> rata per baris lebih kecil -> dorongan lebih besar.
+    expect(manual.dorongHigh).toBeGreaterThan(dariRentang.dorongHigh)
+  })
+
+  it('baris nol tidak memberi Infinity', () => {
+    const h = hitungTarget({ ...dasar, agresif: true, barisManual: 0 })!
+    expect(h.dorongHigh).toBe(0)
+    expect(h.targetHigh).toBeCloseTo(200, 6)
+  })
+
+  it('mode biasa tak berubah saat properti agresif tidak diisi', () => {
+    const a = hitungTarget(dasar)!
+    const b = hitungTarget({ ...dasar, agresif: false })!
+    expect(a).toEqual(b)
+  })
+})

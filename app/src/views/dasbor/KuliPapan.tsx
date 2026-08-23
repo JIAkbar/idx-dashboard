@@ -83,6 +83,8 @@ export function KuliPapan() {
   const [totalOffer, setTotalOffer] = useState(0)
   const [tick, setTick] = useState(1)
   const [baselinePersen, setBaselinePersen] = useState(5)
+  const [agresif, setAgresif] = useState(false)
+  const [barisManual, setBarisManual] = useState(70)
   const [histTarget, setHistTarget] = useState<BarisRiwayat[]>(() => bacaRiwayat('kuli_target'))
 
   // Diurut NET (beli lot - jual lot), bukan lot beli kotor.
@@ -126,7 +128,7 @@ export function KuliPapan() {
   const hasilTarget = hitungTarget({
     buyAvg, buyLot, bid, offer,
     totalBidLot: totalBid, totalOfferLot: totalOffer,
-    tick, baselinePersen,
+    tick, baselinePersen, agresif, barisManual,
   })
 
   // ── PBV Band ────────────────────────────────────────────────────────────
@@ -182,8 +184,24 @@ export function KuliPapan() {
         <section className="panel kp-panel">
           <h2>Target Realistis</h2>
           <p className="kp-sub">
-            Target = Buy Avg + Baseline + (Papan Terdorong × Tick)
+            {agresif
+              ? 'Mode agresif — Target = Buy Avg + (Papan Terdorong × Tick), tanpa baseline'
+              : 'Target = Buy Avg + Baseline + (Papan Terdorong × Tick)'}
           </p>
+
+          <div className="kp-mode" role="group" aria-label="Mode perhitungan">
+            <button className={'tab' + (agresif ? '' : ' on')} onClick={() => setAgresif(false)}>
+              Standar
+            </button>
+            <button className={'tab' + (agresif ? ' on' : '')} onClick={() => setAgresif(true)}>
+              Agresif
+            </button>
+            <span className="kp-mode-ket">
+              {agresif
+                ? 'Tanpa baseline; jumlah baris papan diisi sendiri dari orderbook.'
+                : 'Baseline 5% ditambahkan; jumlah baris dihitung dari rentang Bid–Offer.'}
+            </span>
+          </div>
 
           {!brokerHari && !muat && (
             <div className="kp-peringatan">
@@ -239,11 +257,19 @@ export function KuliPapan() {
               <input className="inp" type="number" value={totalOffer || ''}
                 onChange={(e) => setTotalOffer(+e.target.value)} />
             </label>
-            <label className="kp-field">
-              <span>Baseline (%)</span>
-              <input className="inp" type="number" step="0.5" value={baselinePersen}
-                onChange={(e) => setBaselinePersen(+e.target.value)} />
-            </label>
+            {agresif ? (
+              <label className="kp-field kp-manual">
+                <span>Jumlah baris <em>isi sendiri</em></span>
+                <input className="inp" type="number" value={barisManual || ''}
+                  onChange={(e) => setBarisManual(+e.target.value)} />
+              </label>
+            ) : (
+              <label className="kp-field">
+                <span>Baseline (%)</span>
+                <input className="inp" type="number" step="0.5" value={baselinePersen}
+                  onChange={(e) => setBaselinePersen(+e.target.value)} />
+              </label>
+            )}
           </div>
 
           <div className="kp-catatan">
