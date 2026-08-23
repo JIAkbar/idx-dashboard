@@ -430,7 +430,8 @@ def main() -> int:
     ap.add_argument("--batas", type=int, help="maksimum emiten (untuk uji)")
     ap.add_argument("--jeda", type=float, default=1.0, help="detik antar permintaan")
     ap.add_argument("--ulang", action="store_true", help="ambil ulang walau arsip ada")
-    ap.add_argument("--varian", default="reguler", help="dipisah koma: reguler,asing,nego (bawaan reguler)")
+    ap.add_argument("--varian", default="reguler",
+                    help=f"dipisah koma; pilihan: {', '.join(VARIAN)} (bawaan reguler saja)")
     ap.add_argument("--uji", action="store_true")
     a = ap.parse_args()
     if a.uji:
