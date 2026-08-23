@@ -101,10 +101,16 @@ melanjutkan tidak membuang pekerjaan. Gelombang berikutnya dijalankan dengan
 
 ## 4 · Yang masih harus dirombak (belum dikerjakan)
 
-- [ ] **CI harian** — `.github/workflows/panen-harian-rumah.yml` masih memanen
-      3 varian broker; harus naik ke 12, dan menambahkan langkah OHLCV/keystats
-      Stockbit. Keystats/profil/info cukup **mingguan atau bulanan** (snapshot,
-      jarang berubah), bukan harian.
+- [x] **CI harian broker naik ke 12 varian** — SELESAI 23 Agu 2026
+      (commit `72432b3a`). Yang ditemukan saat mengerjakannya: langkah 3d
+      memanggil `panen_broker_harian.py` **tanpa** `--varian`, jadi bawaannya
+      `reguler` SAJA — bukan 3 seperti yang tertulis di catatan ini
+      sebelumnya. Sekarang 12 varian dieja lengkap, jeda 0,4 detik
+      (±1,3 jam; pada jeda 1,0 detik akan jadi 3,2 jam).
+- [ ] **Langkah OHLCV/keystats Stockbit di CI** — belum ada. Keystats/profil/
+      info cukup **mingguan atau bulanan** (snapshot, jarang berubah);
+      `ohlcv_stockbit/` juga **tak boleh harian** — lihat catatan churn di
+      bawah.
 - [ ] **`panen_ohlc.py`** — masih Yahoo sebagai sumber utama. Perlu diputuskan:
       Stockbit jadi sumber utama dengan Yahoo cadangan, atau tetap dua jalur
       dengan penggantian volume sebagai langkah pasca-panen
@@ -121,9 +127,22 @@ melanjutkan tidak membuang pekerjaan. Gelombang berikutnya dijalankan dengan
       sampai mirror disinkronkan.
 - [ ] **Aliran asing rupiah** — `foreignbuy`/`foreignsell` chartbit belum
       dipakai halaman mana pun; taksiran lama masih yang tampil.
-- [ ] **Keputusan ukuran git** — `ohlcv_stockbit/` dan `keystats_stockbit/`
-      sementara di `.gitignore`. Kalau `ohlc/` diperpanjang ke riwayat penuh
-      Stockbit: +1.310.952 bar, 64,1 MB → **112,8 MB**.
+- [x] **Keputusan ukuran git** — SELESAI 23 Agu 2026, Johan: *"harus masuk
+      lah kan ada aturan di github maks 10GB kan?"*. `ohlcv_stockbit/`,
+      `keystats_stockbit/`, `profil_stockbit/`, `info_stockbit/` dilepas dari
+      `.gitignore` (commit `72432b3a`). Terukur: 363 MB mentah → `.git`
+      naik 289 MB ke 414 MB.
+
+      Yang membatasi bukan ukuran sekali unggah melainkan **churn**: berkas
+      ditulis ulang UTUH tiap disegarkan dan git menyimpan blob baru, bukan
+      selisih baris. Menyegarkan `ohlcv_stockbit/` harian = ±101 MB/hari,
+      menembus 10 GB dalam ±3 bulan. Karena itu penyegaran harian tetap
+      jatuh ke `ohlc/`; `ohlcv_stockbit/` berkala.
+- [ ] **Batas sisi Vercel belum diuji** — `vercel.json` menyalin
+      `data-idx/json` apa adanya, dan direktori itu kini **670 MB / 13.378
+      berkas** (dari 273 MB). Build pertama sesudah ini yang akan
+      membuktikan apakah lolos; kalau ditolak, jalan keluarnya menyaring
+      salinan di `buildCommand`, bukan mengeluarkannya dari git.
 - [ ] **Endpoint yang parameternya belum terpecahkan**: Top Broker level pasar,
       laporan keuangan per periode, aksi korporasi, **intraday**, orderbook
       (paywall Pro), fundachart.
