@@ -89,7 +89,14 @@ def bangun_emiten(kode: str) -> dict[str, int]:
     if rusak:
         print(f"  {kode}: {rusak} berkas arsip kosong/rusak dilewati")
     # Indeks kecil supaya halaman tahu tahun mana yang tersedia tanpa menebak.
+    # mkdir di sini juga, BUKAN cuma di perulangan tahun di atas: emiten yang
+    # seluruh harinya kosong (GAMA — 385 hari, semuanya HTTP 200 berisi nol
+    # karena memang tak bertransaksi) tak pernah masuk perulangan itu, jadi
+    # foldernya tak pernah lahir dan penulisan indeks jatuh FileNotFoundError.
+    # Indeks bertahun kosong itu justru yang benar: ia membedakan "sudah
+    # dibangun, memang tak ada isinya" dari "belum pernah dibangun".
     idx = KELUARAN / kode / "index.json"
+    idx.parent.mkdir(parents=True, exist_ok=True)
     idx.write_text(json.dumps({"kode": kode, "tahun": sorted(int(t) for t in hasil),
                                "n_hari": sum(hasil.values()),
                                "dibangun": datetime.now(ph.WIB).isoformat(timespec="seconds")}),
