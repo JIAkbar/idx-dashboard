@@ -4,6 +4,7 @@ import { useSwipe } from './useSwipe'
 import { LangkahTanggal } from './LangkahTanggal'
 import { alasanBukanHariBursa } from '../../lib/tanggalBursa'
 import './DatePicker.css'
+import { geserPeriode } from './geserPeriode'
 
 const NAMA_BULAN = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -86,9 +87,18 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
   }
 
   function geser(arah: -1 | 1) {
-    const d = new Date(tahun, bulan + arah, 1)
-    setTahun(d.getFullYear())
-    setBulan(d.getMonth())
+    const { t, b } = geserPeriode(tahun, bulan, arah, 0)
+    setTahun(t)
+    setBulan(b)
+  }
+
+  /** Lompat 12 bulan sekaligus — tanpa ini, pindah dari 2021 ke 2026 butuh
+   *  60 kali klik panah bulan. Jadi perlu sejak arsip OHLC memanjang ke 2004
+   *  (23 Agu 2026), bukan lagi 2016. */
+  function geserTahun(arah: -1 | 1) {
+    const { t, b } = geserPeriode(tahun, bulan, 0, arah)
+    setTahun(t)
+    setBulan(b)
   }
 
   // ─── Stepper hari ber-data ‹ › (#97) — cuma saat `tersedia` ada. ────────
@@ -148,9 +158,19 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
       </button>
       <div className="dd-menu dpk-pop" role="dialog" aria-label="Pilih tanggal" {...swipeBulan}>
         <div className="dpk-head">
-          <LangkahTanggal arah="mundur" ukuran="sebaris" label="Bulan sebelumnya" onClick={() => geser(-1)} />
+          {/* Panah tahun di sisi TERLUAR, bulan di dalam — urutannya menirukan
+              arah lompatan: makin ke luar makin jauh. `.ti-grup` memberi jarak
+              >=12px; tanpa itu area klik yang dilebarkan `::after{inset:-6px}`
+              saling tindih dan klik di celah jatuh ke tombol yang salah. */}
+          <span className="ti-grup">
+            <LangkahTanggal arah="mundur" ukuran="sebaris" label="Tahun sebelumnya" onClick={() => geserTahun(-1)} />
+            <LangkahTanggal arah="mundur" ukuran="sebaris" label="Bulan sebelumnya" onClick={() => geser(-1)} />
+          </span>
           <span className="dpk-bulan">{NAMA_BULAN[bulan]} {tahun}</span>
-          <LangkahTanggal arah="maju" ukuran="sebaris" label="Bulan berikutnya" onClick={() => geser(1)} />
+          <span className="ti-grup">
+            <LangkahTanggal arah="maju" ukuran="sebaris" label="Bulan berikutnya" onClick={() => geser(1)} />
+            <LangkahTanggal arah="maju" ukuran="sebaris" label="Tahun berikutnya" onClick={() => geserTahun(1)} />
+          </span>
         </div>
         <div className="dpk-grid">
           {NAMA_HARI.map((h) => <span key={h} className="dpk-dow">{h}</span>)}
