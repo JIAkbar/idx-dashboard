@@ -109,9 +109,13 @@ melanjutkan tidak membuang pekerjaan. Gelombang berikutnya dijalankan dengan
       Stockbit jadi sumber utama dengan Yahoo cadangan, atau tetap dua jalur
       dengan penggantian volume sebagai langkah pasca-panen
       (`scripts/ganti_volume_ohlc.py`).
-- [ ] **IHSG dijahit** — kerangka Yahoo 1990–1999 + volume Stockbit 2000→.
-      Belum dikerjakan; sekarang IHSG masih Yahoo apa adanya (volume 0 di
-      1.268 bar).
+- [x] **IHSG dijahit** — SELESAI 23 Agu 2026 (`scripts/jahit_ihsg.py`,
+      commit `d217d247`). 8.858 bar 1990-04-06→2026-08-21; volume 0 tinggal
+      1.261 yang semuanya pra-2000, di luar jangkauan Stockbit. Dua jebakan
+      yang ditemukan sebelum menulis: potong-tempel akan menghilangkan 38 hari
+      yang hanya ada di Yahoo, dan Yahoo melapor volume indeks dalam **lot**
+      sementara Stockbit dalam **lembar** (rasio median tepat 100,00) sehingga
+      grafik akan melompat 100× tepat di sambungan.
 - [ ] **Mirror produksi** — frontend membaca `app/public/data-idx/json/ohlc/`,
       BUKAN `data-idx/json/ohlc/`. Perubahan volume belum sampai ke layar
       sampai mirror disinkronkan.
