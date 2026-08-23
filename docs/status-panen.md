@@ -16,6 +16,21 @@ baris **Statistik harian**, **OHLC harian**, **Aliran asing**, **Daftar emiten
 baris **Kartu Analisa** ditambahkan **21 Agustus 2026 malam** (semua emiten
 ber-OHLC dapat kartu + arsip kalender 20 hari bursa) — baris lain di tabel
 ini belum diaudit ulang pada tanggal itu.
+**23 Agustus 2026** — perombakan terbesar sejauh ini, rinciannya di
+`docs/workflow-panen-rombak.md`:
+
+- **OHLC harian** berganti sumber utama ke Stockbit; riwayat 1,71 → **3,02 juta
+  bar**, volume diganti dari sumber yang terbukti = IDX 100,00%.
+- **IHSG dijahit** (Yahoo 1990–1997 + Stockbit 1997→), 8.861 bar.
+- **Broker per emiten** naik dari 3 ke **12 varian**; gelombang 1 (300 emiten
+  teratas urut likuiditas) sedang berjalan.
+- Empat lapis Stockbit baru selesai dipanen penuh 963/963: **OHLCV**,
+  **keystats**, **profil**, **info**.
+
+Yang BELUM: CI harian masih memanen 3 varian broker, mirror produksi
+(`app/public/data-idx/json/ohlc/`) belum disinkronkan sehingga perbaikan volume
+belum terlihat pengguna, dan aliran asing rupiah belum dipakai halaman mana pun.
+
 Angka "isi terakhir" dibaca dari DALAM berkas,
 bukan dari waktu berkasnya ditulis — berkas bisa ditulis ulang tanpa membawa
 data baru, dan membaca mtime membuat data basi terlihat segar.
@@ -24,7 +39,7 @@ data baru, dan membaca mtime membuat data basi terlihat segar.
 
 | Sumber | Halaman PAPAN | Asal data | Isi terakhir | Berkas | Otomatis? | Pemicu |
 |---|---|---|---|---|---|---|
-| **OHLC harian** | Grafik Emiten, Tanya PAPAN, Kartu Analisa, Screener, Pola Chart | Yahoo Finance | **21 Agu 2026** pada 833/964 emiten. 89 masih 20 Agu (fetch sukses, Yahoo belum publish bar 21 Agu untuk nama kurang likuid — bukan galat kita). 42 gagal "seri kosong" (ARMY, BTEL, SRIL, WSKT, dst — semuanya suspend/delisted lama, konsisten dgn riwayat sebelumnya). 40 dari 42 itu sudah mentok 17 Jul jauh sebelum hari ini; 1 (GOTOM, ticker baru) belum dikenal Yahoo | 964 | ❌ manual | `panen_ohlc.py` — **"Panen Lagi"**; turunannya (`kartu_analisa.py --semua --tulis`, `bangun-screener.mjs`, `pola-screener.ts`) disegarkan berurutan sesudahnya 21 Agu, gerbang `cek_kesegaran.py` LOLOS |
+| **OHLC harian** | Grafik Emiten, Tanya PAPAN, Kartu Analisa, Screener, Pola Chart | **Stockbit chartbit (utama) + Yahoo (pengisi)** — berganti 23 Agu 2026 | **21 Agu 2026**. Riwayat memanjang: 1.711.178 → **3.022.130 bar** (BBCA 2.472 → 5.537 bar, kini sejak 2004-01-02). Volume diganti dari sumber yang terbukti = IDX 100,00% (Yahoo terukur 2,66% bar bervolume salah); harga TIDAK disentuh karena terukur 0,00% beda. 130 emiten justru dapat data lebih baru — Yahoo tertinggal di 20 Agu. 30.245 bar yang HANYA ada di Yahoo diselamatkan lewat penggabungan per tanggal. **IHSG dijahit terpisah** (`jahit_ihsg.py`): 8.861 bar 1990-04-06→2026-08-21, volume 0 tinggal 1.261 yang semuanya pra-1997 di luar jangkauan Stockbit | 964 | ❌ manual | `panen_ohlcv_stockbit.py --semua` lalu `gabung_ohlc_stockbit.py` (+ `jahit_ihsg.py` untuk indeks) — **"Panen Lagi"**; turunannya (`kartu_analisa.py --semua --tulis`, `bangun-screener.mjs`, `pola-screener.ts`) disegarkan berurutan sesudahnya |
 | **Aliran asing** | Stock Detail, Kartu Analisa *(UI sedang dikerjakan)*, Aliran Investor | IDX `GetStockSummary` | **2 Jan 2020 → 21 Agu 2026** (989/989 emiten, median 1.596 hari bursa) | 989 | ❌ manual | `panen_asing.py` — **"Panen Lagi"** (dijalankan default/gabung, BUKAN `--timpa`); ⚠️ **`--mulai` MENIMPA berkas per-emiten, bukan menggabung** — dipakai sekali 20 Agu untuk menarik 1 tanggal saja dan sempat mereduksi riwayat 6,6 tahun jadi 3 baris; pulih via `--dari-arsip` penuh (arsip mentah gz tetap utuh). Jangan pakai `--mulai` lagi sampai `tulis()` digabung dgn berkas lama. Turunan `bangun_aliran_investor.py` disegarkan sesudahnya 21 Agu |
 | **Statistik harian** | Kalender Bursa, Beranda | IDX PDF harian (+ cadangan Yahoo `^JKSE` kalau PDF belum terbit, lihat `panen_ihsg.py`) | **21 Agu 2026** (PDF resmi — sempat tertunda ke sore hari; jam 21 Agu sebelum PDF terbit sudah ditambal cadangan Yahoo lebih dulu, lalu ditimpa PDF asli begitu terbit) | 146 | ❌ manual (dicoba lewat "Panen Lagi" 21 Agu; run Actions terakhir belum diperiksa ulang sesi ini) | `download_idx.py --hari-ini --jenis semua` + `parse_idx_pdf.py --semua` — **"Panen Lagi"** |
 | **Statistik mingguan** | Statistik Berkala | IDX PDF mingguan | 14 Agu 2026 | 33 | ⚙️ Actions (ikut `update.yml`) | `update.yml` |
@@ -32,7 +47,7 @@ data baru, dan membaca mtime membuat data basi terlihat segar.
 | **Kabar** | Beranda, Kabar Pasar | IPOT · IDX berita · IDX pengumuman · Kontan · **Google News RSS** (baru, 20 Agu) | Terukur lokal 20 Agu 2026: IPOT 20 Agu 08:26 WIB, Google News 20 Agu 08:41 WIB, IDX & Kontan 18 Agu 21:56 WIB (dua ini kini lewat runner rumahan) | 331 | ⚠️ hibrida sejak commit `998698f7` — IDX+Kontan di `panen-kabar-rumah.yml` (self-hosted, PC harus menyala), IPOT+Snips+**Google News** di `panen-kabar.yml` (`ubuntu-latest`). **Google News belum terbukti tembus dari IP datacenter GitHub** — 200 dari mesin ini bukan bukti; tunggu run awan hijau yang mengisi `kabar-sumber-awan.json` | `panen-kabar.yml` + `panen-kabar-rumah.yml` |
 | **Stockbit Snips** | Kabar Pasar (tab STOCKBIT SNIPS) | `snips.stockbit.com` (Squarespace `?format=json`) | 14 Agu 2026 | 238 | ⚠️ ikut mati bersama `panen-kabar.yml` — langkahnya ditambahkan 18 Agu tapi **belum pernah dijalankan sekalipun** | `panen-kabar.yml` |
 | **Broker summary — LEVEL PASAR** | Broker Summary | IDX `GetBrokerSummary` (88 firm/hari) | **21 Agu 2026** | 756 | ⚙️ Actions langkah 3c `panen-harian-rumah.yml` (sejak 22 Agu 2026) | otomatis harian |
-| **Broker summary — PER EMITEN (GROSS)** | *(halaman Broker Summary belum dibangun)* — Deep Dive, Kartu Analisa | **Stockbit `marketdetectors`** (token pribadi, `scripts/stockbit_token.py`). Tiga varian per hari: reguler · asing · nego | **BUMI 2017-01-02 → 2026-08-21** — satu-satunya emiten yang sudah dipanen penuh | 2.318 reguler + 2.221 asing + 2.221 nego | ⚙️ hari berjalan ikut langkah 3d `panen-harian-rumah.yml`; riwayat ❌ manual | `backfill_broker_harian.py <KODE>` — **"Panen Lagi"** |
+| **Broker summary — PER EMITEN** | *(halaman `/broker-summary-v2`)* | **Stockbit `marketdetectors`**, **12 varian** = 3 papan (REGULER/NEGO/TUNAI) × 2 tipe investor (ALL/FOREIGN) × 2 transaksi (GROSS/NET). `DOMESTIC` TIDAK dipanen — terbukti = ALL − FOREIGN, cocok persis | **22 emiten** per 23 Agu 2026 siang (145.834 berkas), gelombang 1 menargetkan 300 teratas urut likuiditas | 145.834 | ⚙️ hari berjalan ikut `panen-harian-rumah.yml` (masih 3 varian — **belum dinaikkan ke 12**); riwayat ❌ manual | `backfill_broker_massal.py --paralel 12` — **"Panen Lagi"** |
 | **Broker summary — PER EMITEN (setoran)** | Deep Dive, Kartu Analisa | Setoran kontributor (screenshot). IDX `GetBrokerSummary` **mengabaikan** `code`/`stockCode`/`kodeEmiten` (diuji ulang 22 Agu 2026: jawaban identik 88 baris level pasar) | ikut setoran | — | 👤 kontributor + kurasi admin | halaman `/admin` |
 | **Kepemilikan KSEI (Balancepos)** | **belum dipakai halaman mana pun** | KSEI `BalanceposEfek<YYYYMMDD>.zip` bulanan, pipe-delimited; lokal & asing × 9 tipe investor | **Jan 2020 → Jul 2026** (79 bulan) | 1.035 emiten | ❌ manual | `panen_ksei_balancepos.py` — **"Panen Lagi"** |
 | **Profil emiten IDX** | **belum dipakai halaman mana pun** | IDX `GetCompanyProfilesDetail` lewat `idx_net.get()` (jeda 1,5 dtk; `requests` polos kena Cloudflare) | **22 Agu 2026** | 962 emiten | ❌ manual | `panen_profil_idx.py` — **"Panen Lagi"** |
