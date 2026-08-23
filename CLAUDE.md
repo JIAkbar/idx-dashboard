@@ -191,6 +191,30 @@ yang sebenarnya) sebelum dilaporkan ke Johan — jangan disalin dari ingatan
 atau dari catatan lama. Sapuan 20 Agu menemukan sembilan baris "belum" yang
 ternyata sudah jadi karena tak pernah dicoba ulang.
 
+### Tiap laporan panen WAJIB menyebut LAPIS · CAKUPAN · RUAS
+
+Johan 23 Agu 2026, dua kali dalam satu sesi: *"perlu di perjelas ini kedepannya
+jadikan kewajiban, broker itu data emiten apa saja yang di fetch transaksi
+Regular/Tunai/Nego dan ikut foreign juga kah?"* · *"ini juga OHLCV yakan?
+beserta volume yakan? data dari emiten apa IHSG wajib di perjelas pekerjaan
+kedepannya"*.
+
+Kalimat seperti "panen broker jalan" atau "OHLCV selesai" **tidak sah** sebagai
+laporan. Tiga hal wajib disebut, selalu, karena ketiganya pernah salah dipahami:
+
+| Wajib disebut | Contoh benar |
+|---|---|
+| **Lapis** — papan & tipe investor yang BENAR-BENAR diambil, bukan nama pendeknya | "reguler = REGULER×ALL, asing = REGULER×**FOREIGN**, nego = NEGO×ALL. **Tunai tidak diambil**; nego-asing, tunai-asing, dan DOMESTIC juga belum" |
+| **Cakupan** — berapa emiten, dan **apakah IHSG termasuk** | "962 emiten, **IHSG tidak termasuk** (Stockbit tak menyediakannya; IHSG tetap dari Yahoo lewat `panen_ihsg.py`)" |
+| **Ruas** — ruas mana yang tersentuh, mana yang dibiarkan | "hanya `volume` yang diganti; `open/high/low/close` dibiarkan karena terukur 0,00% beda" |
+
+Yang membuat ini mahal: nama pendek menyembunyikan isi. "asing" terdengar
+seperti seluruh transaksi asing, padahal hanya papan reguler. "OHLCV" terdengar
+seperti mencakup indeks, padahal `ohlcv_stockbit/` berisi 962 emiten tanpa
+IHSG sementara `ohlc/` berisi 964 berkas **termasuk** IHSG — dan IHSG di sana
+volumenya selalu 0 karena Yahoo tak melaporkan volume indeks. Dua berkas
+bernama mirip, dua cakupan berbeda, dan keduanya dibaca halaman yang sama.
+
 ### Status panen WAJIB berupa tabel — `docs/status-panen.md`
 
 Johan 18 Agu 2026: *"aturan WAJIB buat tabel seperti ini dan perlu di lengkapi

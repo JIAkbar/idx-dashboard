@@ -68,10 +68,30 @@ URL = "https://exodus.stockbit.com/marketdetectors/{kode}"
 # satu-satunya yang masuk cek silang volume. `asing` & `nego` diminta Johan
 # 22 Agu 2026 ("panen juga asing dan nego") sesudah layar Stockbit membuktikan
 # pecahannya konsisten. Domestik TIDAK dipanen — itu reguler dikurangi asing.
+#
+# 23 Agu 2026 — Johan: "ayolah ambil semua data itu". Diperluas jadi 12 varian:
+# 3 papan x {ALL, FOREIGN} x {GROSS, NET}. Yang SENGAJA tidak dipanen:
+#   * DOMESTIC — terukur = ALL - FOREIGN, cocok persis (BUMI 21 Agu: beli
+#     997.576.688.400 dan jual 48.185.368 dua-duanya sama). Diturunkan gratis.
+#   * TUNAI ternyata TIDAK selalu kosong (3 dari 12 sampel ada isi: BUMI 15 Jul
+#     2 broker, TPIA 21 Agu 3 broker) — karena itu ikut dipanen, bukan dilewat.
+# NET dipanen TERPISAH karena definisinya belum terpecahkan: dua percobaan
+# menurunkannya dari GROSS gagal untuk mayoritas broker (BUMI 9/80 cocok,
+# BBCA 19/69, TPIA 19/74) walau sebagian cocok persis. Aman dipanen, bukan
+# terbukti mustahil diturunkan.
 VARIAN = {
-    "reguler": ("MARKET_BOARD_REGULER", "INVESTOR_TYPE_ALL"),
-    "asing":   ("MARKET_BOARD_REGULER", "INVESTOR_TYPE_FOREIGN"),
-    "nego":    ("MARKET_BOARD_NEGO",    "INVESTOR_TYPE_ALL"),
+    "reguler":      ("MARKET_BOARD_REGULER", "INVESTOR_TYPE_ALL",     "TRANSACTION_TYPE_GROSS"),
+    "asing":        ("MARKET_BOARD_REGULER", "INVESTOR_TYPE_FOREIGN", "TRANSACTION_TYPE_GROSS"),
+    "nego":         ("MARKET_BOARD_NEGO",    "INVESTOR_TYPE_ALL",     "TRANSACTION_TYPE_GROSS"),
+    "nego-asing":   ("MARKET_BOARD_NEGO",    "INVESTOR_TYPE_FOREIGN", "TRANSACTION_TYPE_GROSS"),
+    "tunai":        ("MARKET_BOARD_TUNAI",   "INVESTOR_TYPE_ALL",     "TRANSACTION_TYPE_GROSS"),
+    "tunai-asing":  ("MARKET_BOARD_TUNAI",   "INVESTOR_TYPE_FOREIGN", "TRANSACTION_TYPE_GROSS"),
+    "net":          ("MARKET_BOARD_REGULER", "INVESTOR_TYPE_ALL",     "TRANSACTION_TYPE_NET"),
+    "net-asing":    ("MARKET_BOARD_REGULER", "INVESTOR_TYPE_FOREIGN", "TRANSACTION_TYPE_NET"),
+    "net-nego":     ("MARKET_BOARD_NEGO",    "INVESTOR_TYPE_ALL",     "TRANSACTION_TYPE_NET"),
+    "net-nego-asing": ("MARKET_BOARD_NEGO",  "INVESTOR_TYPE_FOREIGN", "TRANSACTION_TYPE_NET"),
+    "net-tunai":    ("MARKET_BOARD_TUNAI",   "INVESTOR_TYPE_ALL",     "TRANSACTION_TYPE_NET"),
+    "net-tunai-asing": ("MARKET_BOARD_TUNAI","INVESTOR_TYPE_FOREIGN", "TRANSACTION_TYPE_NET"),
 }
 
 
@@ -189,7 +209,8 @@ def perbarui_ringkas(lama: dict | None, kode: str, tanggal: str, baris: list[lis
 
 # ── Jaringan ────────────────────────────────────────────────────────────────
 def ambil(token: str, kode: str, tanggal: str, pasar: str = "MARKET_BOARD_REGULER",
-          investor: str = "INVESTOR_TYPE_ALL"):
+          investor: str = "INVESTOR_TYPE_ALL",
+          transaksi: str = "TRANSACTION_TYPE_GROSS"):
     import requests
 
     r = requests.get(URL.format(kode=kode), headers={
@@ -198,7 +219,7 @@ def ambil(token: str, kode: str, tanggal: str, pasar: str = "MARKET_BOARD_REGULE
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
     }, params={
         "from": tanggal, "to": tanggal,
-        "transaction_type": "TRANSACTION_TYPE_GROSS",
+        "transaction_type": transaksi,
         "market_board": pasar,
         "investor_type": investor,
         "limit": 100,
@@ -264,20 +285,20 @@ def jalankan(a) -> int:
 
     for i, kode in enumerate(kode_semua, 1):
       for varian in varian_semua:
-        pasar, investor = VARIAN[varian]
+        pasar, investor, transaksi = VARIAN[varian]
         ark = ARSIP / kode / nama_arsip(tanggal, varian)
         if ark.exists() and not a.ulang:
             n_lewat += 1
             mentah = baca(ark)
         else:
-            st, isi = ambil(token, kode, tanggal, pasar, investor)
+            st, isi = ambil(token, kode, tanggal, pasar, investor, transaksi)
             if st == 401:
                 token = token_segar(margin=10**9)  # paksa refresh
-                st, isi = ambil(token, kode, tanggal, pasar, investor)
+                st, isi = ambil(token, kode, tanggal, pasar, investor, transaksi)
             if st == 429:
                 print(f"  {kode}: 429 — jeda 30 detik")
                 time.sleep(30)
-                st, isi = ambil(token, kode, tanggal, pasar, investor)
+                st, isi = ambil(token, kode, tanggal, pasar, investor, transaksi)
             if st != 200:
                 n_gagal += 1
                 print(f"  {kode} {varian}: HTTP {st} {str(isi)[:80]}")
