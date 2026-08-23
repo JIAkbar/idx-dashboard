@@ -47,7 +47,13 @@ ARSIP = AKAR / "_arsip-mentah" / "ohlcv-stockbit"
 WIB = timezone(timedelta(hours=7))
 
 URL = "https://exodus.stockbit.com/chartbit/{kode}/price/daily"
-TO_TERLAMA = "2000-01-01"  # lantai aman — riwayat Stockbit terukur mulai 2003-2004
+# Lantai permintaan. JANGAN dinaikkan ke tanggal yang lebih muda: "2000-01-01"
+# yang dipakai sampai 23 Agu 2026 memotong IHSG dari 7.050 bar jadi 6.426 —
+# 624 bar hilang karena parameter kita sendiri, bukan karena Stockbit tak
+# punya. Emiten tak terdampak (BBCA/ASII/UNTR jumlahnya sama di to=2000,
+# 1990, dan 1980), tapi indeks jelas terdampak. Server berhenti sendiri di
+# bar terlama yang dimilikinya, jadi lantai yang terlalu tua tidak merugikan.
+TO_TERLAMA = "1980-01-01"
 
 # Urutan sama dengan ruas yang didokumentasikan `stockbit-chartbit-ohlcv.md`
 # (date · unixdate · open · high · low · close · volume · value · frequency ·
