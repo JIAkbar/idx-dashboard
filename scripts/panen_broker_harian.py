@@ -339,8 +339,37 @@ def jalankan(a) -> int:
             # supaya tak diminta ulang tiap jalan.
             if varian == "reguler":
                 n_kosong += 1
+                # Nol broker di reguler punya DUA sebab yang beda nasibnya, dan
+                # membedakannya memakai volume IDX hari itu:
+                #
+                #   volume 0   -> hari itu memang tak diperdagangkan (suspensi
+                #                 atau tak ada order bertemu; bar OHLC-nya
+                #                 berharga rata keempatnya). Balasan nol itu
+                #                 BENAR dan tak akan pernah berubah, jadi
+                #                 diarsipkan supaya tak diminta ulang selamanya.
+                #   volume > 0 -> ada transaksi tapi sumber tak punya
+                #                 rinciannya. Bisa jadi menyusul, jadi TIDAK
+                #                 diarsipkan — tetap diminta ulang jalan
+                #                 berikutnya.
+                #   None       -> tak ada bar OHLC untuk menilai. Diperlakukan
+                #                 seperti volume > 0 (tak diarsipkan) karena
+                #                 tak tahu bukan alasan untuk berhenti bertanya.
+                #
+                # Sebelum ini semua kasus sama-sama tak diarsipkan, dan
+                # akibatnya terukur: DSSA punya 542 hari mati 2020-2023 yang
+                # diminta ulang ke jaringan TIAP jalan dan gagal tiap kali —
+                # tercatat sebagai "540 hari gagal" padahal datanya memang tak
+                # pernah ada. (Terverifikasi 23 Agu 2026: DSSA 2021-01-15 dan
+                # BUMI 2017-08-30 dua-duanya dijawab 200 dengan nol broker,
+                # bukan galat jaringan.)
                 if vol:
                     print(f"  {kode}: API nol broker padahal IDX volume {vol:,} — belum siap, tak disimpan")
+                    continue
+                if vol is None:
+                    continue
+                if not ark.exists():
+                    ark.parent.mkdir(parents=True, exist_ok=True)
+                    tulis_ulet(ark, json.dumps(mentah, ensure_ascii=False))
                 continue
             if not ark.exists():
                 ark.parent.mkdir(parents=True, exist_ok=True)
