@@ -23,13 +23,32 @@ ini belum diaudit ulang pada tanggal itu.
   bar**, volume diganti dari sumber yang terbukti = IDX 100,00%.
 - **IHSG dijahit** (Yahoo 1990–1997 + Stockbit 1997→), 8.861 bar.
 - **Broker per emiten** naik dari 3 ke **12 varian**; gelombang 1 (300 emiten
-  teratas urut likuiditas) sedang berjalan.
+  teratas urut likuiditas) sedang berjalan — 27 emiten tersentuh per 23 Agu
+  siang. Lubang datanya sudah dipetakan dan sebabnya terukur, bukan ditebak:
+  **nol** karena hari libur (hari libur tak punya bar harga sama sekali, jadi
+  tak pernah diminta), **99,7%** karena hari itu memang tak diperdagangkan
+  (bar ada, volume 0, keempat harga sama), sisanya hari bertransaksi yang
+  sumbernya sendiri tak punya rinciannya. Sejak commit `a547b2f4` hari yang
+  tak diperdagangkan diarsipkan supaya berhenti diminta ulang tiap jalan —
+  sebelumnya 542 hari mati DSSA menembak jaringan di setiap jalan.
 - Empat lapis Stockbit baru selesai dipanen penuh 963/963: **OHLCV**,
   **keystats**, **profil**, **info**.
 
-Yang BELUM: CI harian masih memanen 3 varian broker, mirror produksi
-(`app/public/data-idx/json/ohlc/`) belum disinkronkan sehingga perbaikan volume
-belum terlihat pengguna, dan aliran asing rupiah belum dipakai halaman mana pun.
+Diperbarui **23 Agustus 2026 siang** — dua keputusan Johan dijalankan:
+
+- **CI harian broker naik ke 12 varian** (commit `72432b3a`). Koreksi yang ikut
+  terbawa: catatan di atas menulis CI memanen "3 varian" — yang benar **satu**.
+  Langkah 3d memanggil skripnya tanpa `--varian` dan bawaannya `reguler` saja.
+- **Panen Stockbit masuk git**: `ohlcv_stockbit/`, `keystats_stockbit/`,
+  `profil_stockbit/`, `info_stockbit/` (3.855 berkas). `.git` 289 MB → 414 MB.
+  Batasnya bukan ukuran sekali unggah melainkan **churn** — penyegaran harian
+  akan menambah ±101 MB/hari, jadi direktori ini disegarkan **berkala**,
+  sementara penyegaran harian tetap lewat `ohlc/`.
+
+Yang BELUM: mirror produksi (`app/public/data-idx/json/ohlc/`) belum
+disinkronkan sehingga perbaikan volume belum terlihat pengguna, aliran asing
+rupiah belum dipakai halaman mana pun, dan build Vercel dengan `data-idx/json`
+yang kini **670 MB / 13.378 berkas** belum pernah diuji.
 
 Angka "isi terakhir" dibaca dari DALAM berkas,
 bukan dari waktu berkasnya ditulis — berkas bisa ditulis ulang tanpa membawa
