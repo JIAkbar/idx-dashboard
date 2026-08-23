@@ -102,6 +102,24 @@ JENDELA_HARI = 20
 # Tanpa kolom avg: terukur 22 Agu 2026 atas 26.172 baris, avg Stockbit = nilai ÷
 # (lot × 100) dengan selisih maks 0,3% (pembulatan ke rupiah bulat). Diturunkan
 # di pembaca lebih teliti DAN memangkas berkas 38%. Mentah di arsip tetap utuh.
+# `avg` per broker (netbs_buy_avg_price / netbs_sell_avg_price) TIDAK disimpan
+# — bisa diturunkan, dan itu sekarang TERUKUR, bukan diasumsikan:
+#
+#     avg = nilai / (lot * 100)
+#
+# Diuji 23 Agu 2026 atas 120 hari BUMI: 8.384 baris beli dan 7.995 baris jual,
+# median rasio hitung-ulang/tersimpan tepat 1,000000 dengan p1 dan p99 juga
+# 1,0000 — cocok 100,00%, dan nol baris ber-lot nol yang membuat pembagian tak
+# terdefinisi.
+#
+# JEBAKANNYA `* 100`: lot harus dikonversi ke lembar dulu. Yang memakai
+# `nilai / lot` mentah meleset tepat 100x — dan 100x itu besaran yang mudah
+# disangka "satuan lain" alih-alih dikenali sebagai salah rumus.
+#
+# Catatan proses: penghapusan ruas ini dilakukan LEBIH DULU dan baru diuji
+# sesudah Johan bertanya "sudah di uji dulu? sebelum dibuang?". Urutan yang
+# benar kebalikannya (aturan proyek: ukur definisinya dulu sebelum menurunkan
+# satu ruas dari ruas lain). Hasilnya kebetulan membenarkan keputusannya.
 KOLOM = ["broker", "beli_lot", "beli_nilai", "jual_lot", "jual_nilai"]
 TOLERANSI_VOLUME = 0.01
 
