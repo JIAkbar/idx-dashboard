@@ -102,7 +102,7 @@ export function BrokerSummaryV2() {
   const [mode, setMode] = useState<ModeTransaksi>('net')
   const [ukuran, setUkuran] = useState<'nilai' | 'lot'>('nilai')
   const [tab, setTab] = useState<Tab>('overview')
-  const [preset, setPreset] = useState<PresetId | null>('b1')
+  const [preset, setPreset] = useState<PresetId | null>('hariini')
   const [dari, setDari] = useState('')
   const [akhir, setAkhir] = useState('')
 
@@ -117,7 +117,7 @@ export function BrokerSummaryV2() {
   useEffect(() => {
     if (tanggalTersedia.length === 0 || dari) return
     const akhirData = tanggalTersedia[tanggalTersedia.length - 1]
-    setDari(mulaiPreset(preset ?? 'b1', akhirData))
+    setDari(mulaiPreset(preset ?? 'hariini', akhirData))
     setAkhir(akhirData)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tanggalTersedia, dari])
