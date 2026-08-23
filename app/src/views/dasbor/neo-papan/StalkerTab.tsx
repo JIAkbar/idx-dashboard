@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { muatBrokerSemua, type BrokerHarianEmiten } from '../../../lib/dasbor/neoPapanData'
+import { muatBrokerSemua, muatDaftarKode, type BrokerHarianEmiten } from '../../../lib/dasbor/neoPapanData'
 import { stalkerAgregasi, kodeBrokerUnik } from '../../../lib/dasbor/neoPapan'
+import { DropdownMulti, type OpsiMulti } from '../../../components/dasbor/DropdownMulti'
+import { namaBroker, warnaBroker } from '../../../lib/dasbor/kelompokBroker'
 import { fmtB, num, Kosong, Sumber } from './bersama'
 
 const PERIODE = [1, 2, 3, 5, 10, 20, 60]
@@ -13,16 +15,22 @@ const PERIODE = [1, 2, 3, 5, 10, 20, 60]
  */
 export function StalkerTab() {
   const [peta, setPeta] = useState<Map<string, BrokerHarianEmiten> | null>(null)
+  const [totalEmiten, setTotalEmiten] = useState<number | null>(null)
   const [dipilih, setDipilih] = useState<string[]>([])
   const [n, setN] = useState(5)
 
   useEffect(() => {
     let batal = false
     muatBrokerSemua().then((m) => { if (!batal) setPeta(m) })
+    muatDaftarKode().then((k) => { if (!batal) setTotalEmiten(k.length) })
     return () => { batal = true }
   }, [])
 
   const kodeBroker = useMemo(() => (peta ? kodeBrokerUnik(peta) : []), [peta])
+  const opsiBroker = useMemo<OpsiMulti[]>(() => kodeBroker.map((k) => {
+    const nama = namaBroker(k)
+    return { nilai: k, label: nama === 'belum dikurasi' ? k : `${k} — ${nama}` }
+  }), [kodeBroker])
   useEffect(() => {
     if (kodeBroker.length && dipilih.length === 0) setDipilih(kodeBroker.slice(0, 2))
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -50,6 +58,13 @@ export function StalkerTab() {
                   {hasil && r.cakupanHari < hasil.jendela.length && (
                     <span className="np-parsial" title="Arsip broker emiten ini belum menutupi seluruh jendela"> {r.cakupanHari}/{hasil.jendela.length}h</span>
                   )}
+                  {dipilih.length > 1 && r.brokerAktif.length > 0 && (
+                    <span className="np-broker-badges">
+                      {r.brokerAktif.map((k) => (
+                        <span key={k} style={{ color: warnaBroker(k) }} title={namaBroker(k) !== 'belum dikurasi' ? namaBroker(k) : undefined}>{k}</span>
+                      ))}
+                    </span>
+                  )}
                 </td>
                 <td className={'r' + (r.net >= 0 ? ' up' : ' dn')}>{fmtB(r.net)}</td>
                 <td className="r">{fmtB(r.beli)}</td>
@@ -70,16 +85,22 @@ export function StalkerTab() {
         <h2>Broker Stalker</h2>
         <p className="np-sub">
           Net beli/jual broker terpilih di seluruh emiten yang sudah dipanen, pada N hari bursa terakhir.
-          Cakupan: {peta.size} dari 963 emiten punya arsip broker.
+          Cakupan: {peta.size} dari {totalEmiten ?? '…'} emiten terdaftar sudah punya arsip broker —
+          panen berjalan bertahap, jumlahnya terus bertambah.
         </p>
         <div className="np-baris">
           <span className="np-lbl">Broker</span>
-          <div className="chips">
-            {kodeBroker.map((k) => (
-              <button key={k} type="button" className={'chip-t' + (dipilih.includes(k) ? ' on' : '')} onClick={() => toggle(k)}>{k}</button>
+          <DropdownMulti label="Broker" ariaLabel="Pilih broker" opsi={opsiBroker} nilai={dipilih} onGanti={setDipilih} ringkasKosong="Belum ada" />
+        </div>
+        {dipilih.length > 0 && (
+          <div className="np-baris np-chips-aktif">
+            {dipilih.map((k) => (
+              <button key={k} type="button" className="chip-t on" style={{ color: warnaBroker(k) }} onClick={() => toggle(k)}>
+                {k} ✕
+              </button>
             ))}
           </div>
-        </div>
+        )}
         <div className="np-baris" style={{ marginTop: 8 }}>
           <span className="np-lbl">Jendela</span>
           {PERIODE.map((p) => (

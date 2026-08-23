@@ -98,6 +98,12 @@ describe('stalkerAgregasi', () => {
   it('kodeBrokerUnik mengumpulkan seluruh kode broker yang muncul', () => {
     expect(kodeBrokerUnik(peta)).toEqual(['AK', 'BK'])
   })
+
+  it('brokerAktif mencatat broker terpilih yang benar-benar transaksi di baris itu', () => {
+    const r = stalkerAgregasi(peta, ['AK', 'BK'], 2)
+    expect(r.netBuy.find((x) => x.emiten === 'BUMI')?.brokerAktif).toEqual(['AK'])
+    expect(r.netBuy.find((x) => x.emiten === 'ANTM')?.brokerAktif).toEqual(['BK'])
+  })
 })
 
 describe('zScoreBergerak & rsRatioMomentum', () => {

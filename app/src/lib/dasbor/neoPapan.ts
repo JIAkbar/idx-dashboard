@@ -65,6 +65,9 @@ export interface BarisStalker {
   bavg: number | null; savg: number | null
   /** Berapa dari hari jendela yang benar-benar ada arsipnya untuk emiten ini. */
   cakupanHari: number
+  /** Kode broker terpilih yang benar-benar transaksi di emiten ini pada jendela — dipakai
+   *  menandai kontribusi tiap broker saat lebih dari satu dipilih sekaligus. */
+  brokerAktif: string[]
 }
 
 /** Kalender gabungan tanggal broker dari SELURUH emiten yang dipunya (union, terurut naik). */
@@ -95,18 +98,23 @@ export function stalkerAgregasi(
   const rows: BarisStalker[] = []
   for (const [emiten, data] of perEmiten) {
     let beli = 0, jual = 0, beliLot = 0, jualLot = 0, cakupan = 0
+    const aktif = new Set<string>()
     for (const t of jendela) {
       const h = data.hari[t]
       if (!h) continue
       cakupan++
       for (const b of h.broker) {
         if (!pilih.has(b.kode)) continue
+        if (b.beliNilai || b.jualNilai) aktif.add(b.kode)
         beli += b.beliNilai; jual += b.jualNilai
         beliLot += b.beliLot; jualLot += b.jualLot
       }
     }
     if (beli || jual) {
-      rows.push({ emiten, net: beli - jual, beli, jual, bavg: avgHarga(beli, beliLot), savg: avgHarga(jual, jualLot), cakupanHari: cakupan })
+      rows.push({
+        emiten, net: beli - jual, beli, jual, bavg: avgHarga(beli, beliLot), savg: avgHarga(jual, jualLot),
+        cakupanHari: cakupan, brokerAktif: [...aktif].sort(),
+      })
     }
   }
   return {

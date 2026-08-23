@@ -3319,6 +3319,12 @@
 
 .neo-papan .np-parsial { font-size: 10px; color: var(--amber); margin-left: 4px; }
 
+/* Chip broker terpilih (di bawah DropdownMulti Stalker) & badge kontribusi
+   per baris tabel — placement/ukuran saja, bentuk chip tetap .chip-t. */
+.neo-papan .np-chips-aktif { margin-top: -2px; }
+.neo-papan .np-broker-badges { margin-left: 6px; font-size: 10px; }
+.neo-papan .np-broker-badges span { margin-left: 4px; font-weight: 700; }
+
 @media (max-width: 560px) {
   .neo-papan .np-hasil { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
 }
