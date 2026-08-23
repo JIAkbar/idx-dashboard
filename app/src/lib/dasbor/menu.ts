@@ -149,6 +149,15 @@ export const MENU_ITEMS: MenuItem[] = [
     ringkas: 'Emiten diurut net asing, dengan arus harian per emiten begitu dipilih.',
     ikon: 'M4 12h6M7 9l-3 3 3 3M20 12h-6M17 9l3 3-3 3',
   },
+  {
+    // Broker Summary v2 (22 Agu 2026) — arus broker PER EMITEN dari arsip
+    // harian Stockbit (broker_tahunan/), berdampingan dengan 'broker-summary'
+    // (broker level PASAR, dari IDX) yang SENGAJA tidak disentuh — dua sumber
+    // beda, Johan ingin membandingkan sebelum memutuskan mana yang bertahan.
+    id: 'broker-summary-v2', path: '/broker-summary-v2', label: 'Broker Summary v2', kode: 'BS2', grup: 'aliran',
+    ringkas: 'Arus broker per emiten dari arsip harian Stockbit — pilot BUMI, tab Inventory/Kuadran/Floor Price.',
+    ikon: 'M4 7h16M4 7l2-3h12l2 3M4 7v11a2 2 0 002 2h12a2 2 0 002-2V7M9 12h6',
+  },
 
   // ── Analisa ────────────────────────────────────────────────────────────
   {

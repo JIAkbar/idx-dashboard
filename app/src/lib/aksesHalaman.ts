@@ -184,4 +184,9 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   // (aturan wajib sejak 21 Agu 2026) — tingkat awal 'publik', sama seperti
   // Peta Investor/Broker Summary tetangganya di grup Aliran Dana.
   'aliran-asing': 'aliran-asing',
+  // Broker Summary v2 (22 Agu 2026) — arus broker PER EMITEN, berdampingan
+  // dengan /broker-summary lama (kunci 'broker', tidak disentuh). Baris
+  // `akses_halaman` ditambahkan BERSAMAAN, kunci 'broker-v2', tingkat awal
+  // 'publik' (permintaan Johan hari ini).
+  'broker-summary-v2': 'broker-v2',
 }

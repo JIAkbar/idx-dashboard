@@ -25,6 +25,9 @@ import './App.css'
 // area /admin/* dipindah ke sini.
 const ChartIndeks = lazy(() => import('./views/dasbor/ChartIndeks').then((m) => ({ default: m.ChartIndeks })))
 const BrokerSummary = lazy(() => import('./views/dasbor/BrokerSummary').then((m) => ({ default: m.BrokerSummary })))
+// Broker Summary v2 (22 Agu 2026) — arus broker PER EMITEN, berkas terpisah
+// dari BrokerSummary lama (broker level pasar) yang sengaja tidak disentuh.
+const BrokerSummaryV2 = lazy(() => import('./views/dasbor/BrokerSummaryV2').then((m) => ({ default: m.BrokerSummaryV2 })))
 const StockDetail = lazy(() => import('./views/dasbor/StockDetail').then((m) => ({ default: m.StockDetail })))
 const PetaInvestor = lazy(() => import('./views/dasbor/PetaInvestor').then((m) => ({ default: m.PetaInvestor })))
 const Kabar = lazy(() => import('./views/dasbor/Kabar').then((m) => ({ default: m.Kabar })))
@@ -119,6 +122,11 @@ function App() {
               <Route path="/bedah-emiten" element={<PenjagaHalaman kunci="bedah-emiten"><RedirectBedahEmiten /></PenjagaHalaman>} />
               <Route path="/peta-investor" element={<PenjagaHalaman kunci="peta"><PetaInvestor /></PenjagaHalaman>} />
               <Route path="/broker-summary" element={<PenjagaHalaman kunci="broker"><BrokerSummary /></PenjagaHalaman>} />
+              {/* Broker Summary v2 (22 Agu 2026) — arus broker PER EMITEN,
+                  berdampingan dengan /broker-summary di atas (tidak
+                  disentuh). Kunci 'broker-v2' terdaftar di PETA_MENU_KUNCI
+                  DAN akses_halaman sejak rute ini dibuat (aturan wajib). */}
+              <Route path="/broker-summary-v2" element={<PenjagaHalaman kunci="broker-v2"><BrokerSummaryV2 /></PenjagaHalaman>} />
               {/* Aliran Asing (22 Agu 2026) — kunci 'aliran-asing' sudah
                   terdaftar di PETA_MENU_KUNCI DAN akses_halaman sejak rute
                   ini dibuat (aturan wajib 21 Agu 2026). */}

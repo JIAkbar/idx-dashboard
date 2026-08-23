@@ -3084,3 +3084,18 @@
   .lantai .ai-bar { height: 78px; max-width: 96px; }
 }
 .lantai .ai-sumber { color: var(--text3); font-size: 11px; }
+
+/* ===== Broker Summary v2 (.bsv-*) — arus broker per emiten, halaman baru
+   berdampingan dgn /broker-summary lama (jangan disentuh). Kendali baris atas
+   (search kode, Net/Gross, Reguler/Asing/Nego, preset+tanggal) memakai ULANG
+   `.bs-ctl`/`.bs-h`/`.bs-preset`/`.bs-tgl`/`.grid3.bs-stat` yang sudah ada —
+   itu murni layout (flex/wrap), bukan "bentuk" milik satu halaman, jadi tidak
+   perlu diduplikasi jadi kelas baru cuma karena dipakai halaman kedua.
+   `.bsv-*` di sini HANYA hal yang benar-benar khas halaman ini: lebar kotak
+   cari kode & warna bchip per kelompok broker. */
+.lantai .af-cari.bsv-cari { flex: 0 1 260px; }
+@media (max-width: 560px) {
+  .lantai .af-cari.bsv-cari { flex: 1 1 100%; }
+}
+/* Warna kode broker per kelompok identitas (kelompokBroker.ts) lewat inline
+   style di atas `.bchip` bawaan (sudah punya border) — tak perlu kelas baru. */
