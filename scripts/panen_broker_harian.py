@@ -226,12 +226,46 @@ def perbarui_ringkas(lama: dict | None, kode: str, tanggal: str, baris: list[lis
 
 
 # ── Jaringan ────────────────────────────────────────────────────────────────
+#
+# SATU Session dipakai bersama semua thread, dengan kolam koneksi selebar
+# jumlah thread. Sebelum ini tiap panggilan memakai `requests.get()` telanjang
+# yang membuka koneksi TCP+TLS BARU lalu membuangnya — pada 3.700 permintaan
+# per menit itu berarti 3.700 jabat-tangan TLS, dan sistem kehabisan port
+# sementara. Terukur 23 Agu 2026: 44 thread bersih (0,03% gagal), 50 thread
+# patah dengan 389 `ConnectionError: Max retries exceeded` — bukan ditolak
+# server (nol 429/403), melainkan koneksi tak terbentuk.
+#
+# requests.Session memakai ulang koneksi (keep-alive), jadi jabat tangan cuma
+# terjadi sekali per koneksi alih-alih sekali per permintaan. `pool_maxsize`
+# WAJIB >= jumlah thread; bawaannya 10, dan kolam yang lebih sempit dari
+# jumlah thread justru membuat thread saling menunggu tanpa galat yang
+# terlihat — lambat tanpa sebab yang kelihatan.
+_sesi = None
+_kunci_sesi = None
+
+
+def sesi(maks: int = 128):
+    """Session bersama, dibuat sekali. Aman dipanggil dari banyak thread."""
+    global _sesi, _kunci_sesi
+    import threading
+    if _kunci_sesi is None:
+        _kunci_sesi = threading.Lock()
+    with _kunci_sesi:
+        if _sesi is None:
+            import requests
+            from requests.adapters import HTTPAdapter
+            s = requests.Session()
+            ad = HTTPAdapter(pool_connections=maks, pool_maxsize=maks, max_retries=0)
+            s.mount("https://", ad)
+            s.mount("http://", ad)
+            _sesi = s
+    return _sesi
+
+
 def ambil(token: str, kode: str, tanggal: str, pasar: str = "MARKET_BOARD_REGULER",
           investor: str = "INVESTOR_TYPE_ALL",
           transaksi: str = "TRANSACTION_TYPE_GROSS"):
-    import requests
-
-    r = requests.get(URL.format(kode=kode), headers={
+    r = sesi().get(URL.format(kode=kode), headers={
         "Authorization": f"Bearer {token}", "Origin": "https://stockbit.com",
         "Referer": "https://stockbit.com/",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",

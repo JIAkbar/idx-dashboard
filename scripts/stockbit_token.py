@@ -56,6 +56,7 @@ Dari skrip lain:
 from __future__ import annotations
 
 import base64
+import threading as _threading
 import json
 import os
 import sys
@@ -177,12 +178,34 @@ def refresh_sekarang(simpanan: dict) -> dict:
     return baru
 
 
+# Kunci global pemutaran token. Refresh token Stockbit BERPUTAR: tiap
+# pemakaian menghasilkan pasangan baru dan membatalkan yang lama. Kalau dua
+# thread memutarnya bersamaan, satu menang dan yang lain memegang token mati —
+# lalu SEMUA permintaan berikutnya dijawab 401.
+#
+# Terjadi 23 Agu 2026 malam: seluruh 963 emiten gagal berturut-turut dalam 72
+# menit, dan tokennya harus disemai ulang dari sesi peramban (pekerjaan yang
+# tak bisa dikerjakan agen karena menyentuh kredensial). Peluangnya naik
+# seiring jumlah thread, jadi ini WAJIB sebelum menaikkan paralel.
+#
+# Kunci ini hanya melindungi antar-thread dalam SATU proses. Dua PROSES yang
+# sama-sama memanen tetap saling membunuh — itu urusan yang lain, dan sudah
+# ditulis sebagai larangan di CLAUDE.md.
+_KUNCI_PUTAR = _threading.Lock()
+
+
 def token_segar(margin: int = MARGIN_DETIK) -> str:
     """Access token yang masih hidup ≥ `margin` detik — refresh kalau perlu."""
     simpanan = baca_simpanan()
     if not perlu_refresh(simpanan.get("access"), margin=margin):
         return simpanan["access"]
-    return refresh_sekarang(simpanan)["access"]
+    with _KUNCI_PUTAR:
+        # Baca ULANG di dalam kunci: thread lain mungkin sudah memutar selagi
+        # kita menunggu, dan memutar lagi akan membatalkan hasil kerjanya.
+        simpanan = baca_simpanan()
+        if not perlu_refresh(simpanan.get("access"), margin=margin):
+            return simpanan["access"]
+        return refresh_sekarang(simpanan)["access"]
 
 
 def status() -> int:
