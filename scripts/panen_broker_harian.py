@@ -401,7 +401,19 @@ def jalankan(a) -> int:
 
     print(f"Selesai {time.time()-mulai:.0f}s: {n_ok} tersimpan ({n_lewat} dari arsip), "
           f"{n_kosong} kosong, {n_gagal} gagal, {n_meleset} volume meleset >{TOLERANSI_VOLUME:.0%}")
-    return 0 if n_ok else 1
+    # Sukses = tak ada permintaan yang GAGAL, bukan "ada baris yang tersimpan".
+    #
+    # Bedanya lahir dari perubahan 23 Agu 2026 yang mengarsipkan hari tak
+    # diperdagangkan supaya berhenti diminta ulang: hari begitu mengarsipkan
+    # kedua belas variannya lalu `continue` tanpa menambah n_ok. Dengan syarat
+    # lama, hari yang SEPENUHNYA beres dilaporkan gagal — dan pemanggilnya
+    # (`backfill_broker_massal`) menandai emitennya "sebagian" selamanya.
+    #
+    # Gejalanya menipu: angka gagal naik terus sementara log tak memuat satu
+    # pun galat jaringan, dan naiknya paling deras di emiten tidak likuid yang
+    # justru paling banyak hari tak diperdagangkannya. Datanya tak pernah
+    # hilang — hanya labelnya yang salah.
+    return 1 if n_gagal else 0
 
 
 def swauji() -> int:
