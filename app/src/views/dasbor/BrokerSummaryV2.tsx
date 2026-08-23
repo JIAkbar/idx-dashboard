@@ -188,7 +188,7 @@ export function BrokerSummaryV2() {
             <PemilihRentang opsi={UKURAN_OPSI} nilai={ukuran} onGanti={setUkuran} ariaLabel="Ukuran" />
           </div>
         </div>
-        <div className="panel-b bs-ctl" style={{ borderTop: '1px solid var(--line)' }}>
+        <div className="panel-b bs-ctl bs2-ctl" style={{ borderTop: '1px solid var(--line)' }}>
           <div className="bs-preset"><PemilihRentang opsi={PRESET} nilai={preset ?? 'b1'} onGanti={keRentang} /></div>
           <div className="bs-tgl">
             <LangkahTanggal arah="mundur" ukuran="sebaris" label="Rentang satu hari bursa sebelumnya" disabled={!tanggalTersedia.length} onClick={() => langkahHari(-1)} />

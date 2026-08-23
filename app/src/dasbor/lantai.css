@@ -1985,6 +1985,25 @@
    pakai PemilihRentang/DatePicker/Dropdown/LangkahTanggal/.chip-t/.tab/.dd-*
    apa adanya). Kalau pola ini kepakai di halaman lain, pindah ke atas tanpa
    prefiks — sampai saat itu, sengaja tetap di sini. ===== */
+/* Penempatan khas Broker Summary v2 — HANYA posisi & lebar, tak ada bentuk
+   baru (aturan komponen kanonis #170). `.bs-ctl` bawaan memakai
+   `justify-content:space-between` dan `.bs-preset` memakai `justify-content:
+   center; flex:1 1 auto`; di layar lebar itu melempar preset ke tengah dan
+   navigasi tanggal ke ujung kanan, menyisakan lubang menganga di antaranya.
+   Halaman lama tetap memakai perilaku itu — karena itu ditimpa lewat kelas
+   ber-awalan halaman, bukan dengan menyunting `.bs-ctl`.
+
+   Panjang selector sengaja disamakan (`.lantai .bs2-ctl` = 2 level, sama
+   dengan `.lantai .bs-ctl`) dan blok ini diletakkan SESUDAHnya: media query
+   tidak menambah spesifisitas, yang menentukan urutan berkas. */
+.lantai .bs2-ctl{justify-content:flex-start;gap:12px}
+.lantai .bs2-ctl .bs-preset{flex:0 0 auto;justify-content:flex-start}
+.lantai .bs2-ctl .bs-tgl{flex:0 1 auto}
+@media (max-width:900px){
+  /* Selector disamakan panjangnya dengan aturan dasar di atas. */
+  .lantai .bs2-ctl{gap:8px}
+  .lantai .bs2-ctl .bs-preset{flex:1 1 100%}
+}
 .lantai .bs2-legenda{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--text3);margin:2px 0 10px}
 .lantai .bs2-legenda span{display:inline-flex;align-items:center;gap:5px}
 .lantai .bs2-legenda i{width:8px;height:8px;border-radius:2px;display:inline-block}
