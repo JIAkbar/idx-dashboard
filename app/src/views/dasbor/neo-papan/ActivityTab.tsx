@@ -91,7 +91,7 @@ export function ActivityTab() {
       </div>
       <div className="chart-wrap" style={{ height: 420, marginTop: 10 }}><canvas ref={ref} /></div>
       <div className="np-peringatan">
-        Definisi PAPAN sendiri, bukan metode NeoBDM: porsi dihitung terhadap SAMPEL emiten paling likuid
+        Definisi PAPAN sendiri: porsi dihitung terhadap SAMPEL emiten paling likuid
         (yang sama dipakai Rotation Chart, {uni.perSektorJumlah} per sektor) — bukan terhadap seluruh nilai
         transaksi pasar, karena itu butuh riwayat harga seluruh emiten yang tidak diunduh di peramban.
       </div>
