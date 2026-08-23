@@ -116,8 +116,11 @@ melanjutkan tidak membuang pekerjaan. Gelombang berikutnya dijalankan dengan
       dengan penggantian volume sebagai langkah pasca-panen
       (`scripts/ganti_volume_ohlc.py`).
 - [x] **IHSG dijahit** — SELESAI 23 Agu 2026 (`scripts/jahit_ihsg.py`,
-      commit `d217d247`). 8.858 bar 1990-04-06→2026-08-21; volume 0 tinggal
-      1.261 yang semuanya pra-2000, di luar jangkauan Stockbit. Dua jebakan
+      commit `d217d247`). 8.861 bar 1990-04-06→2026-08-21; volume 0 tinggal
+      1.261 yang semuanya **pra-1997-07-01**, di luar jangkauan Stockbit.
+      (Angka "pra-2000" di versi pertama catatan ini salah — ikut terbawa dari
+      docstring `jahit_ihsg.py` yang belum disegarkan sesudah TO_TERLAMA
+      diturunkan ke 1980; Stockbit IHSG sebenarnya mulai 1997-07-01.) Dua jebakan
       yang ditemukan sebelum menulis: potong-tempel akan menghilangkan 38 hari
       yang hanya ada di Yahoo, dan Yahoo melapor volume indeks dalam **lot**
       sementara Stockbit dalam **lembar** (rasio median tepat 100,00) sehingga

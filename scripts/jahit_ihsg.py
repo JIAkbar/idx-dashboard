@@ -5,7 +5,16 @@ yang lain, terukur 23 Agu 2026:
 
     Yahoo    : 8.853 bar sejak 1990-04-06, tapi 1.268 bar volumenya 0
                (termasuk hari-hari terbaru — Yahoo tak melaporkan volume indeks)
-    Stockbit : 6.426 bar sejak 2000-01-04, hanya 1 bar volume 0
+    Stockbit : 7.050 bar sejak 1997-07-01, hanya 1 bar volume 0
+
+ANGKA STOCKBIT DI ATAS SUDAH DIKOREKSI (23 Agu 2026). Versi pertama catatan ini
+menulis "6.426 bar sejak 2000-01-04" — itu hasil tarikan saat TO_TERLAMA masih
+"2000-01-01", batas yang kita pasang sendiri dan tak pernah diuji. Sesudah
+diturunkan ke 1980, Stockbit menjawab sampai 1997-07-01. Catatan yang basi
+sempat membuat sesi lain mengira jahitan ini memakai Yahoo sampai 1999 padahal
+tidak: terukur atas berkas yang sekarang, dari 1.811 bar milik Yahoo saja,
+1.773 ada SEBELUM 1997-07-01 dan hanya 38 sesudahnya (semuanya Juli 2001, hari
+bursa yang Stockbit memang tak punya).
 
 Volume Stockbit terbukti sahih lewat wasit independen: jumlah volume 962 emiten
 pada 21 Agu 2026 = 37.826.904.800 sementara IHSG Stockbit = 39.161.460.400,
