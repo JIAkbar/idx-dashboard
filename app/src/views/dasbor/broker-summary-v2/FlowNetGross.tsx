@@ -42,7 +42,12 @@ export function FlowNetGross({ hari, agg }: FlowNetGrossProps) {
   const jual = [...agg].filter((a) => a.netNilai < 0).sort((x, y) => x.netNilai - y.netNilai)
   const konviksi = useMemo(() => convictionHarian(hari), [hari])
 
-  const config = useMemo<ChartConfiguration<'bar'> | null>(() => {
+  // Grafik CAMPURAN: dua deret batang + satu deret garis. Tipenya wajib
+  // ditulis sebagai union `'bar' | 'line'` — memberi `<'bar'>` saja membuat
+  // deret garisnya ditolak (`Type '"line"' is not assignable to type
+  // '"bar"'`), dan galat itu memutus `npm run build` yang menjalankan
+  // `tsc -b`, jadi deploy gagal walau halamannya jalan di dev server.
+  const config = useMemo<ChartConfiguration<'bar' | 'line'> | null>(() => {
     if (konviksi.length === 0) return null
     const isDark = theme === 'dark'
     const textColor = isDark ? '#cfd8e3' : '#1a2733'

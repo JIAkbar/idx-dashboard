@@ -16,11 +16,11 @@ export function Nego({ hari }: NegoProps) {
     <section className="panel">
       <div className="panel-h">
         <h2>Pasar negosiasi</h2>
-        <span className="lbl">{hariNego.length ? `${hariNego.length} hari terpanen dalam rentang` : 'belum ada hari nego dalam rentang'}</span>
+        <span className="lbl">{hariNego.length ? `${hariNego.length} hari ber-data dalam rentang` : 'belum ada hari nego dalam rentang'}</span>
       </div>
       <div className="panel-b">
         {hariNego.length === 0 ? (
-          <EmptyState>Tidak ada hari dengan data pasar negosiasi pada rentang ini — backfill sedang berjalan.</EmptyState>
+          <EmptyState>Tidak ada hari dengan data pasar negosiasi pada rentang ini.</EmptyState>
         ) : (
           <div className="board-tbl-wrap">
             <table className="tbl">
@@ -45,7 +45,7 @@ export function Nego({ hari }: NegoProps) {
           </div>
         )}
         <p className="lbl" style={{ marginTop: 8, textTransform: 'none', letterSpacing: 0 }}>
-          Baris nego cuma ada untuk hari yang varian pasar NEGO-nya sudah dipanen — backfill asing+nego BUMI 2017→2026 sedang berjalan.
+          Pasar negosiasi tidak aktif tiap hari, jadi rentang tanpa baris di sini wajar. Riwayatnya juga masih dilengkapi mundur, sehingga tanggal lama bisa belum tampil.
         </p>
       </div>
     </section>

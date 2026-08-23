@@ -186,12 +186,12 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
               <div className="tot num">Rp {fmtB(arus.reduce((s, a) => s + a.beliNilai + a.jualNilai, 0))}</div>
             </div>
             <div className="bs2-flow-row">
-              <div className="nama">Asing<small>net nilai, {asingAda.length}/{hari.length} hari terpanen</small></div>
+              <div className="nama">Asing<small>net nilai, {asingAda.length}/{hari.length} hari ber-data</small></div>
               {asingAda.length ? <Sparkline nilai={hari.map(([, h]) => h.asing ? h.asing.broker.reduce((s, r) => s + r[2] - r[4], 0) : 0)} /> : <span className="lbl" style={{ fontStyle: 'italic' }}>belum tersedia</span>}
               <div className="tot num">{asingAda.length ? `Rp ${fmtB(asingAda.reduce((s, [, h]) => s + h.asing!.broker.reduce((a, r) => a + r[2] - r[4], 0), 0))}` : <span className="bs2-na">n/a</span>}</div>
             </div>
             <div className="bs2-flow-row">
-              <div className="nama">Nego<small>nilai, {negoAda.length}/{hari.length} hari terpanen</small></div>
+              <div className="nama">Nego<small>nilai, {negoAda.length}/{hari.length} hari ber-data</small></div>
               {negoAda.length ? <Sparkline nilai={hari.map(([, h]) => h.nego ? h.nego.broker.reduce((s, r) => s + r[2], 0) : 0)} /> : <span className="lbl" style={{ fontStyle: 'italic' }}>belum tersedia</span>}
               <div className="tot num">{negoAda.length ? `Rp ${fmtB(negoAda.reduce((s, [, h]) => s + h.nego!.broker.reduce((a, r) => a + r[2], 0), 0))}` : <span className="bs2-na">n/a</span>}</div>
             </div>
