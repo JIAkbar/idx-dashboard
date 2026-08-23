@@ -191,6 +191,51 @@ yang sebenarnya) sebelum dilaporkan ke Johan — jangan disalin dari ingatan
 atau dari catatan lama. Sapuan 20 Agu menemukan sembilan baris "belum" yang
 ternyata sudah jadi karena tak pernah dicoba ulang.
 
+### ⛔ Nama endpoint & jalur internal TIDAK BOLEH TAYANG — ceklist wajib
+
+Johan 23 Agu 2026: *"info seperti ini coba di sweep tidak perlu di tampilkan"*
+(menunjuk teks layar `SUMBER: IDX GETSTOCKSUMMARY (FOREIGNBUY/FOREIGNSELL)`) ·
+*"jadikan catatan penting, yang berkaitan dengan endpoint tidak boleh di
+publikasi, kewajiban dan jadikan task penting setiap update data"*.
+
+Ini **memperkuat** aturan pass kebocoran 18 Agu (#4) jadi ceklist yang harus
+dijalankan, bukan kesadaran yang diandalkan. Halaman Metodologi pernah terbit
+dengan `Rujukan: lib/dasbor/fundamentalGabungan.ts` tercetak di layar publik —
+lolos karena reviewnya cuma memeriksa apakah isinya BENAR.
+
+**Kapan wajib dijalankan:** setiap kali menambah/mengubah halaman, DAN setiap
+kali menambah sumber data baru. Sumber baru hampir selalu membawa istilah
+mesinnya ikut ke layar lewat label "sumber: …".
+
+**Yang DILARANG muncul di teks yang dibaca pengguna:**
+
+| Jenis | Contoh yang pernah/hampir tayang |
+|---|---|
+| Nama endpoint/API | `GetStockSummary`, `chartbit`, `marketdetectors`, `keystats`, `Balancepos`, `GetFinancialReport` |
+| Nama ruas mentah | `foreignbuy`/`foreignsell`, `ListedShares`, `NonRegularVolume` |
+| Jalur berkas internal | `data-idx/json/…`, `_arsip-mentah/…`, nama berkas `.json` |
+| Nama fungsi/modul | `fundamentalGabungan.ts`, `padatkan()`, `keFraksi()` |
+| Angka kalibrasi internal | "terukur miring +33% kumulatif", ambang skor, aturan penggabungan |
+
+**Yang BOLEH:** nama penyedia data sebagai atribusi (IDX, KSEI, Yahoo, Stockbit,
+TradingView) — itu kredit, bukan bocoran. Bedanya: "dilaporkan bursa" boleh,
+"IDX GetStockSummary" tidak.
+
+**Cara menggantinya**, bukan sekadar menghapus: tulis apa artinya bagi pembaca.
+`sumber: IDX GetStockSummary (foreignbuy/foreignsell)` → `net asing dalam
+rupiah, nilai resmi bursa`. Pembaca butuh tahu angkanya bisa dipercaya, bukan
+tahu pintu mana yang kita ketuk.
+
+**Sapuan minimum sebelum melapor selesai** (jalankan atas berkas tampilan yang
+disentuh):
+
+```bash
+grep -rniE 'getstocksummary|chartbit|marketdetector|keystats|balancepos|foreignbuy|foreignsell|listedshares|data-idx/json|_arsip-mentah|[.]json' app/src/views app/src/components
+```
+
+Yang tersisa harus **hanya** pemanggilan kode (fetch/import), bukan string yang
+dirender. Kalau ragu apakah sesuatu bocor: **hilangkan**, jangan dipertahankan.
+
 ### Tiap laporan panen WAJIB menyebut LAPIS · CAKUPAN · RUAS
 
 Johan 23 Agu 2026, dua kali dalam satu sesi: *"perlu di perjelas ini kedepannya
