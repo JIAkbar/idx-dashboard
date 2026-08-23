@@ -6,6 +6,7 @@ import type { ChartConfiguration } from 'chart.js/auto'
 import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
 import { Kalender } from '../../components/dasbor/Kalender'
 import { KonteksData } from '../../components/dasbor/KonteksData'
+import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { Papan } from '../../components/dasbor/Papan'
 import { useDataHarian, type DataHarian, type TanggalIndex } from '../../lib/dasbor/dataHarian'
 import { hitungYtdPct } from '../../lib/dasbor/ytd'
@@ -610,6 +611,7 @@ export function IndeksDunia() {
     <div className="lantai">
       <PapanIhsg hari={hari} tanggalTersedia={tanggalTersedia} buka={buka} />
       <KonteksData tanggal={tanggalAktif} />
+      <CatatanCakupan />
 
       <div className="grid2 w-kiri">
         <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} memuat={loading && !hari} />

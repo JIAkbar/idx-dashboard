@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { IkonMenu, IKON_CARI, IKON_TONG } from '../../components/dasbor/IkonMenu'
+import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import { useUrut } from '../../lib/dasbor/useUrut'
@@ -214,6 +215,7 @@ export function Watchlist() {
           <span className="sub">Daftar pantau yang bergerak mengikuti harga harian — isi harga milik untuk melihat untung-rugi.</span>
         </div>
       </div>
+      <CatatanCakupan />
 
       <div className="panel">
         <div className="panel-b wl-alat">

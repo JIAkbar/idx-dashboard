@@ -46,6 +46,7 @@ import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { LangkahTanggal } from '../../components/dasbor/LangkahTanggal'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { TombolLayarPenuh } from '../../components/dasbor/TombolLayarPenuh'
+import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { AlatGambar } from '../../components/dasbor/AlatGambar'
 import { useAlatGambar } from '../../lib/dasbor/useAlatGambar'
 import { gayaDariDash, type GayaGaris } from '../../lib/dasbor/gambarGrafik'
@@ -2911,6 +2912,7 @@ export function GrafikEmiten() {
 
   return (
     <div className="lantai">
+      <CatatanCakupan />
       <section className="panel grf-panel" ref={panelRef}>
         {/* Bilah atas — susunan acuan Stockbit/TradingView: cari · kerangka
             waktu · jenis chart · ƒx Indikator · (kanan) layar penuh & kamera.

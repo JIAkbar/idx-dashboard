@@ -13,6 +13,7 @@ import { PanelBreadth } from '../../components/dasbor/PanelBreadth'
 import { PanelDiary } from '../../components/dasbor/PanelDiary'
 import { PapanIhsg } from './IndeksDunia'
 import { IkonMenu, IKON_KUNCI, IKON_PANAH_KANAN } from '../../components/dasbor/IkonMenu'
+import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 // Gaya baris kabar (.kbr-*) hidup di Kabar.css dan dipakai juga di sini.
 // WAJIB diimpor: halaman Kabar dimuat malas (lazy), jadi tanpa impor ini
 // jalur kabar Beranda tampil sebagai tautan biru tanpa gaya sampai
@@ -233,6 +234,7 @@ export function Beranda() {
   return (
     <div className="lantai">
       <PapanBeranda />
+      <CatatanCakupan />
 
       {/* Edisi PAPAN lebih dulu, kabar pihak ketiga menyusul: yang kita
           kerjakan sendiri harus berdiri di depan yang kita tautkan. */}

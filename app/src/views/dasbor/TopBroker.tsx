@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Kalender } from '../../components/dasbor/Kalender'
 import { KonteksData } from '../../components/dasbor/KonteksData'
+import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { useDataHarian } from '../../lib/dasbor/dataHarian'
 import { useUrut } from '../../lib/dasbor/useUrut'
 import { fN } from '../../lib/dasbor/format'
@@ -95,6 +96,7 @@ export function TopBroker() {
     <div className="lantai">
       <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
       <KonteksData tanggal={tanggalAktif} />
+      <CatatanCakupan />
 
       <div className="panel">
         <div className="panel-h"><span className="lbl">Top Stock Trading — By Volume · Value · Frequency</span></div>

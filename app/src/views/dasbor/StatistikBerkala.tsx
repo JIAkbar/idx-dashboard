@@ -4,6 +4,7 @@ import { Dropdown } from '../../components/dasbor/Dropdown'
 import { LangkahTanggal } from '../../components/dasbor/LangkahTanggal'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import {
   angka,
@@ -232,6 +233,7 @@ export function StatistikBerkala() {
   const labelIni = jenis === 'minggu' ? 'Pekan ini' : 'Bulan ini'
 
   const kepala = (
+    <>
     <div className="vhead stb-head">
       <div>
         <h1>Statistik {jenis === 'minggu' ? 'Mingguan' : 'Bulanan'}</h1>
@@ -268,6 +270,8 @@ export function StatistikBerkala() {
         )}
       </div>
     </div>
+    <CatatanCakupan />
+    </>
   )
 
   if (galat) {

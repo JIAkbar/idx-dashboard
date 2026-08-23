@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { Dropdown, type OpsiDropdown } from '../../components/dasbor/Dropdown'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { IkonMenu, IKON_CARI } from '../../components/dasbor/IkonMenu'
@@ -755,6 +756,7 @@ export function KartuAnalisa() {
           <Link to="/metodologi" className="kd-tautan">Metodologi &amp; sumber data →</Link>
         </span>
       </div>
+      <CatatanCakupan />
 
       {tab !== 'semua' && (
         <div className="panel kta-pilih">

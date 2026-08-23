@@ -12,6 +12,7 @@ import { rollupBulanan, rollupMingguan } from '../../lib/radar/rollup'
 import { LangkahTanggal } from '../../components/dasbor/LangkahTanggal'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
 import { KonteksData } from '../../components/dasbor/KonteksData'
+import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 // Gaya lightbox (.af-lb-*) hidup di AdminShared.css (dulu AdminHome.css,
 // pindah folder saat rombak shell tab #shell-tab), ter-scope .lantai —
 // diimpor di sini juga supaya pratinjau RBU jalan tanpa mampir halaman admin.
@@ -300,6 +301,7 @@ export function Radar() {
         </div>
       </div>
       <KonteksData tanggal={edisi.date_iso} />
+      <CatatanCakupan />
 
       <div className="tabs" role="tablist" aria-label="Bagian radar">
         {TABS.map((t) => (

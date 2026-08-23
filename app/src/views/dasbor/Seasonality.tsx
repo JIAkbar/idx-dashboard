@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { BULAN, ringkasEmiten, vonisUji, type RingkasBulan, type RingkasEmiten, type SeriImbal } from '../../lib/seasonality'
 import { muatIndeks, muatIhsg, muatSeri, muatBelum, type BarisIndeks, type BarisBelum } from '../../lib/seasonalityData'
 import { pesanGalat } from '../../lib/pesanGalat'
@@ -131,6 +132,7 @@ export function Seasonality() {
           <Link to="/metodologi" className="kd-tautan">Metodologi &amp; sumber data →</Link>
         </span>
       </div>
+      <CatatanCakupan />
 
       {/* Dua sudut waktu dari satu pertanyaan yang sama — "kapan cenderung
           naik?" — jadi satu halaman, bukan dua. Memecahnya berarti orang

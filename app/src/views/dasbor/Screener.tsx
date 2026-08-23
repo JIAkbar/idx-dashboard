@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { IkonMenu, IKON_CARI, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { DropdownMulti, type OpsiMulti } from '../../components/dasbor/DropdownMulti'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { TINGKAT_LIKUIDITAS, kodePeringkatTeratas, ujiLikuiditas } from '../../lib/dasbor/likuiditas'
@@ -186,6 +187,7 @@ export function Screener() {
           <span className="sub">{data.n} emiten, satu baris per emiten — saring, urutkan, cari.</span>
         </div>
       </div>
+      <CatatanCakupan />
 
       <div className="panel">
         <div className="panel-b scr-alat">

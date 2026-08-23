@@ -11,6 +11,7 @@ import { Flow } from './broker-summary/Flow'
 import { IkonMenu, IKON_GRAFIK_BATANG, IKON_ULANG, IKON_OMBAK, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { KonteksData } from '../../components/dasbor/KonteksData'
+import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 
 type Tab = 'inventory' | 'quadrant' | 'nego' | 'flow'
 
@@ -123,6 +124,7 @@ export function BrokerSummary() {
         <span className="sub">akumulasi vs distribusi · sumber idx.co.id, harian otomatis</span>
       </div>
       <KonteksData tanggal={tanggalAktif} />
+      <CatatanCakupan />
 
       <div className="grid3 bs-stat">
         <div className="vcard">

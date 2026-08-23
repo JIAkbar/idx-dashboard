@@ -19,6 +19,7 @@ import { PanelLimaLangkahUang } from '../../components/dasbor/PanelLimaLangkahUa
 import { PanelKhasPapan } from '../../components/dasbor/PanelKhasPapan'
 import { PanelBandingEmiten } from '../../components/dasbor/PanelBandingEmiten'
 import { IkonMenu, IKON_CARI, IKON_PERINGATAN, IKON_JAM } from '../../components/dasbor/IkonMenu'
+import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { usePengendali, pengendaliEmiten, labelPengendali } from '../../lib/dasbor/pengendali'
 import { tanggalPendek } from '../../lib/dasbor/statistikBerkala'
 import './StockDetail.css'
@@ -143,6 +144,7 @@ export function StockDetail() {
           <p style={{ fontSize: 10, color: 'var(--text3)', lineHeight: 1.6 }}>
             Data delay, bukan harga real-time.{fd?.updated ? ` Terakhir diperbarui ${fd.updated}.` : ''}
           </p>
+          <CatatanCakupan />
         </div>
       )}
 
