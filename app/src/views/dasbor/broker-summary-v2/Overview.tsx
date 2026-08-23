@@ -100,7 +100,10 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
                 <div className="vcard">
                   <span className="lbl">Broker</span>
                   <span className="v-num num">{ringkas.pembeli.length} <span className="chip up" style={{ padding: '0 6px' }}>▲</span> {ringkas.penjual.length} <span className="chip dn" style={{ padding: '0 6px' }}>▼</span></span>
-                  <span className="v-note">selisih {selisih > 0 ? '+' : ''}{selisih} · <b className="bs2-badge-sedang chip" style={{ background: nAcc >= nDist ? 'var(--green)' : 'var(--red)' }}>{nAcc >= nDist ? 'Acc' : 'Dist'} {Math.max(nAcc, nDist)}/{hari.length} hari</b></span>
+                  <span className="v-note bs2-note-badge">
+                    <b className="chip bs2-badge-mini">selisih {selisih > 0 ? '+' : ''}{selisih}</b>
+                    <b className="chip bs2-badge-mini" style={{ background: nAcc >= nDist ? 'var(--green)' : 'var(--red)', color: 'var(--amber-ink)' }}>{nAcc >= nDist ? 'Acc' : 'Dist'} {Math.max(nAcc, nDist)}/{hari.length}h</b>
+                  </span>
                 </div>
                 <div className="vcard">
                   <span className="lbl">Nilai kotor</span>

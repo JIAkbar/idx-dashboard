@@ -2020,6 +2020,16 @@
   .lantai .bs2-h>.tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-gutter:stable}
   .lantai .bs2-h>.tabs .tab{flex:0 0 auto;min-width:max-content;padding:0 10px}
 }
+/* Badge mini di kaki kartu statistik. Dibuat kecil dengan sengaja: kartunya
+   sempit dan isinya dua badge berdampingan, jadi ukuran `.chip` biasa membuat
+   barisnya melebihi lebar kartu. `hari` disingkat `h` di teksnya untuk alasan
+   yang sama. Wadahnya membungkus supaya di kartu tersempit badge kedua turun
+   ke baris berikut alih-alih memotong isinya. */
+.lantai .bs2-note-badge{display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-width:0}
+.lantai .chip.bs2-badge-mini{
+  font-size:10px;line-height:1.5;padding:0 6px;font-weight:600;
+  white-space:nowrap;border-radius:4px;
+}
 .lantai .bs2-legenda{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--text3);margin:2px 0 10px}
 .lantai .bs2-legenda span{display:inline-flex;align-items:center;gap:5px}
 .lantai .bs2-legenda i{width:8px;height:8px;border-radius:2px;display:inline-block}
