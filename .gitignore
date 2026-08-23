@@ -59,6 +59,13 @@ data-idx/json/keuangan_idx_diskret/
 arus-pasar/cache/prob-pool-*.npz
 arus-pasar/cache/prob-eval-*.json
 
-# Panen Stockbit — ukuran besar, keputusan git menyusul (23 Agu 2026)
-data-idx/json/ohlcv_stockbit/
-data-idx/json/keystats_stockbit/
+# Panen Stockbit — MASUK git (Johan 23 Agu 2026: "harus masuk lah kan ada
+# aturan di github maks 10GB kan?"). Ukurannya: 363 MB mentah, +/-101 MB
+# sesudah kompresi git (terukur atas sampel 40 berkas, rasio 0,279).
+#
+# Yang perlu dijaga bukan ukuran sekali unggah, tapi CHURN: tiap berkas
+# ditulis ulang utuh saat disegarkan, dan git menyimpan blob baru — bukan
+# selisih baris. Menyegarkannya HARIAN berarti +/-101 MB per hari (+/-3 GB
+# per bulan) dan batas 10 GB tercapai dalam +/-3 bulan. Karena itu
+# penyegaran harian tetap jatuh ke `ohlc/` (yang memang sudah harian),
+# sementara `ohlcv_stockbit/` disegarkan berkala — bukan tiap hari.
