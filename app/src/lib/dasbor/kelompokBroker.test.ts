@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { kelompokBroker, warnaBroker, WARNA_KELOMPOK, LABEL_KELOMPOK } from './kelompokBroker'
+import { kelompokBroker, namaBroker, warnaBroker, kelasBroker, LABEL_KELOMPOK } from './kelompokBroker'
 
 describe('kelompokBroker', () => {
-  it('mengenali kode terkurasi tiap kelompok', () => {
-    expect(kelompokBroker('BK')).toBe('asing')
-    expect(kelompokBroker('NI')).toBe('institusi')
-    expect(kelompokBroker('YP')).toBe('ritel')
-    expect(kelompokBroker('MG')).toBe('mix')
+  it('mengenali kode terkurasi tiap kelompok (kurasi mockup 22 Agu 2026)', () => {
+    expect(kelompokBroker('AK')).toBe('asing')
+    expect(kelompokBroker('NI')).toBe('bumn')
+    expect(kelompokBroker('LG')).toBe('smart')
+    expect(kelompokBroker('PD')).toBe('ritel')
   })
 
   it('kode tak dikurasi jatuh ke lain', () => {
@@ -14,16 +14,24 @@ describe('kelompokBroker', () => {
     expect(kelompokBroker('')).toBe('lain')
   })
 
-  it('tiap kelompok punya warna & label, dan warnanya bukan hijau/merah beli-jual', () => {
-    for (const k of Object.keys(LABEL_KELOMPOK) as (keyof typeof LABEL_KELOMPOK)[]) {
-      expect(WARNA_KELOMPOK[k]).toMatch(/^#[0-9A-Fa-f]{6}$/)
-    }
-    expect(WARNA_KELOMPOK.asing).not.toBe('#22C55E')
-    expect(WARNA_KELOMPOK.asing).not.toBe('#EF4444')
+  it('afiliasi ada sebagai kelompok walau kosong untuk BUMI', () => {
+    expect(LABEL_KELOMPOK.afiliasi).toBe('Afiliasi grup / bandar')
   })
 
-  it('warnaBroker = jalan pintas warna kelompok dari kode', () => {
-    expect(warnaBroker('BK')).toBe(WARNA_KELOMPOK.asing)
-    expect(warnaBroker('ZZZ')).toBe(WARNA_KELOMPOK.lain)
+  it('enam kelompok semuanya punya label', () => {
+    expect(Object.keys(LABEL_KELOMPOK).sort()).toEqual(
+      ['afiliasi', 'asing', 'bumn', 'lain', 'ritel', 'smart'],
+    )
+  })
+
+  it('namaBroker mengembalikan nama sekuritas, atau "belum dikurasi"', () => {
+    expect(namaBroker('AK')).toBe('UBS')
+    expect(namaBroker('ZZZ')).toBe('belum dikurasi')
+  })
+
+  it('warnaBroker & kelasBroker jalan pintas dari kelompok', () => {
+    expect(warnaBroker('AK')).toBe('var(--k-asing)')
+    expect(warnaBroker('ZZZ')).toBe('var(--k-lain)')
+    expect(kelasBroker('NI')).toBe('k-bumn')
   })
 })

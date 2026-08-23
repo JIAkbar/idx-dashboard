@@ -1,42 +1,60 @@
 import { useEffect, useMemo, useState } from 'react'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { DatePicker } from '../../components/dasbor/DatePicker'
+import { Dropdown, type OpsiDropdown } from '../../components/dasbor/Dropdown'
+import { LangkahTanggal } from '../../components/dasbor/LangkahTanggal'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { IkonMenu, IKON_CARI, IKON_ULANG, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
-import { agregatBroker, tabelDuaSisi, type ModeTransaksi, type SisiTabel } from '../../lib/dasbor/brokerEmiten'
-import {
-  useArusBrokerEmiten, useOhlcvEmiten, irisOhlcv, vwapRentang, ringkasSB,
-} from '../../lib/dasbor/brokerEmitenV2'
-import { kelompokBroker, warnaBroker, LABEL_KELOMPOK } from '../../lib/dasbor/kelompokBroker'
-import { fmtB, fmtLot } from '../../lib/dasbor/brokerSummaryFormat'
+import { agregatBroker, type ModeTransaksi } from '../../lib/dasbor/brokerEmiten'
+import { useArusBrokerEmiten, useOhlcvEmiten, irisOhlcv } from '../../lib/dasbor/brokerEmitenV2'
 import { keFraksi } from '../../lib/fraksiHarga'
+import { Overview } from './broker-summary-v2/Overview'
 import { Inventory } from './broker-summary-v2/Inventory'
-import { Kuadran } from './broker-summary-v2/Kuadran'
-import { FloorPrice } from './broker-summary-v2/FloorPrice'
+import { FlowNetGross } from './broker-summary-v2/FlowNetGross'
+import { VsIhsg } from './broker-summary-v2/VsIhsg'
+import { TimelineForeign } from './broker-summary-v2/TimelineForeign'
+import { Shareholders } from './broker-summary-v2/Shareholders'
+import { Nego } from './broker-summary-v2/Nego'
 
-type Tab = 'inventory' | 'kuadran' | 'floor'
+type Tab = 'overview' | 'inventory' | 'flow' | 'vsihsg' | 'foreign' | 'shareholders' | 'nego'
 const TABS: { id: Tab; label: string }[] = [
+  { id: 'overview', label: 'Overview' },
   { id: 'inventory', label: 'Inventory' },
-  { id: 'kuadran', label: '⊞ Kuadran' },
-  { id: 'floor', label: 'Floor Price' },
+  { id: 'flow', label: 'Flow Net vs Gross' },
+  { id: 'vsihsg', label: 'vs IHSG' },
+  { id: 'foreign', label: 'Timeline Foreign' },
+  { id: 'shareholders', label: 'Shareholders' },
+  { id: 'nego', label: 'NEGO' },
+]
+// Tab nonaktif mockup — apa adanya (nama + alasan "menyusul"), bukan dihilangkan.
+const TABS_NONAKTIF = [
+  { label: 'Quadrant', judul: 'menyusul — butuh definisi kuadran' },
+  { label: 'Broker Intel', judul: 'menyusul' },
+  { label: 'Teknikal', judul: 'menyusul — gabung dengan /grafik' },
 ]
 
 const MODE_OPSI: { id: ModeTransaksi; label: string }[] = [
   { id: 'net', label: 'Net' },
   { id: 'gross', label: 'Gross' },
 ]
-
-// Data asing/nego BUMI ADA di arsip mentah (_arsip-mentah/broker-harian/…
-// .asing.json/.nego.json) tapi belum diagregasi ke broker_tahunan/ (lihat
-// brokerEmiten.ts) — pilihan tetap tampil (bukan disembunyikan) tapi
-// dikunci, sama seperti mockup rancangan (<option disabled>).
-type Pasar = 'reguler' | 'asing' | 'nego'
-const PASAR_OPSI: { id: Pasar; label: string; nonaktif?: boolean; judul?: string }[] = [
-  { id: 'reguler', label: 'Reguler' },
-  { id: 'asing', label: 'Asing', nonaktif: true, judul: 'Backfill berjalan — belum diagregasi' },
-  { id: 'nego', label: 'Nego', nonaktif: true, judul: 'Backfill berjalan — belum diagregasi' },
+const UKURAN_OPSI: { id: 'nilai' | 'lot'; label: string }[] = [
+  { id: 'nilai', label: 'Nilai' },
+  { id: 'lot', label: 'Lot' },
+]
+// Investor & Market: satu pilihan aktif, sisanya TAMPIL tapi terkunci — persis
+// mockup (<option disabled>) — datanya ADA di arsip mentah asing/nego tapi
+// belum diagregasi jadi sumbu kendali ini (lihat CLAUDE.md tugas #187).
+const INVESTOR_OPSI: OpsiDropdown[] = [
+  { nilai: 'semua', label: 'All Investor' },
+  { nilai: 'asing', label: 'Foreign — backfill berjalan', nonaktif: true },
+  { nilai: 'domestik', label: 'Domestic — backfill berjalan', nonaktif: true },
+]
+const MARKET_OPSI: OpsiDropdown[] = [
+  { nilai: 'reguler', label: 'Regular' },
+  { nilai: 'nego', label: 'Nego — backfill berjalan', nonaktif: true },
+  { nilai: 'semua', label: 'All — backfill berjalan', nonaktif: true },
 ]
 
 type PresetId = 'w1' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1'
@@ -59,52 +77,40 @@ function mulaiPreset(id: PresetId, akhir: string): string {
   return mundurIso(akhir, PRESET.find((x) => x.id === id)!.hari)
 }
 
-function BarisSisi({ r }: { r: SisiTabel }) {
-  const warna = warnaBroker(r.broker)
-  return (
-    <tr>
-      <td>
-        <span className="bchip" style={{ borderColor: warna, color: warna }} title={LABEL_KELOMPOK[kelompokBroker(r.broker)]}>
-          {r.broker}
-        </span>
-      </td>
-      <td className="r num">{fmtB(r.nilai)}</td>
-      <td className="r num">{fmtLot(r.lot)}</td>
-      <td className="r num">{r.avg ? Math.round(r.avg).toLocaleString('id-ID') : '—'}</td>
-    </tr>
-  )
-}
-
 /**
- * Broker Summary v2 (#187) — arus broker PER EMITEN dari arsip harian
- * Stockbit (`broker_tahunan/`, lihat brokerEmiten.ts), berdampingan dengan
- * /broker-summary lama (broker level PASAR, dari IDX) yang SENGAJA tidak
- * disentuh — Johan ingin membandingkan keduanya sebelum memutuskan mana yang
- * dipertahankan. Baru BUMI yang lengkap (pilot); kode lain otomatis
- * menampilkan pesan "belum ada arsip" begitu backfill emiten lain jalan,
- * tanpa perlu ubah kode di sini.
+ * Broker Summary v2 (#187) — REBUILD supaya PERSIS mengikuti struktur artifact
+ * "Arus Broker BUMI" yang sudah disetujui Johan (bukan versi pilot sebelumnya
+ * yang "ngarang" — cuma 3 tab & kelompok broker keliru). Sepuluh tab mockup,
+ * tujuh di antaranya sudah bisa diisi data nyata (Overview, Inventory, Flow
+ * Net vs Gross, vs IHSG, Timeline Foreign, Shareholders, NEGO); tiga sisanya
+ * (Quadrant, Broker Intel, Teknikal) TETAP nonaktif seperti mockup — itu
+ * memang belum ada definisinya, bukan lupa dikerjakan.
+ *
+ * vs IHSG & Timeline Foreign SENGAJA memakai OHLCV UTUH (bukan `hariAktif`
+ * hasil kendali tanggal header) — port persis mockup, yang rentang 3M/6M/YTD
+ * di kedua tab itu independen dari kendali tanggal atas (`st.vs`/`st.fr`
+ * terpisah dari `st.dari/st.sampai`).
  */
 export function BrokerSummaryV2() {
   const { index } = useStockIndex()
   const [kode, setKode] = useState('BUMI')
   const [cari, setCari] = useState('')
+  const [investor, setInvestor] = useState('semua')
+  const [pasar, setPasar] = useState('reguler')
   const [mode, setMode] = useState<ModeTransaksi>('net')
-  const [pasar, setPasar] = useState<Pasar>('reguler')
-  const [tab, setTab] = useState<Tab>('inventory')
+  const [ukuran, setUkuran] = useState<'nilai' | 'lot'>('nilai')
+  const [tab, setTab] = useState<Tab>('overview')
   const [preset, setPreset] = useState<PresetId | null>('b1')
   const [dari, setDari] = useState('')
   const [akhir, setAkhir] = useState('')
 
   const { hari: semuaHari, loading, error } = useArusBrokerEmiten(kode)
   const ohlcv = useOhlcvEmiten(kode)
+  const ihsg = useOhlcvEmiten('IHSG')
 
   const tanggalTersedia = useMemo(() => semuaHari.map(([t]) => t), [semuaHari])
   const setTersedia = useMemo(() => new Set(tanggalTersedia), [tanggalTersedia])
 
-  // Begitu arsip kode aktif datang (atau kode berganti): pasang rentang
-  // preset bawaan di ujung data terbarunya. `dari`/`akhir` direset ke ''
-  // oleh efek di bawah setiap `kode` berubah, jadi guard `!dari` di sini
-  // cukup — tak menimpa rentang yang sudah dipilih user di kode yang sama.
   useEffect(() => { setDari(''); setAkhir('') }, [kode])
   useEffect(() => {
     if (tanggalTersedia.length === 0 || dari) return
@@ -126,152 +132,91 @@ export function BrokerSummaryV2() {
     setDari(d)
     setAkhir(a)
   }
+  // Port tglPrev/tglNext mockup — geser SELURUH jendela [dari,akhir] satu hari
+  // bursa (bukan menggeser salah satu ujung), tetap dalam hari BERDATA.
+  function langkahHari(arah: -1 | 1) {
+    const iAkhir = tanggalTersedia.indexOf(akhir)
+    const iDari = tanggalTersedia.indexOf(dari)
+    if (iAkhir < 0 || iDari < 0) return
+    const span = iAkhir - iDari
+    const j = iAkhir + arah
+    if (j < 0 || j >= tanggalTersedia.length) return
+    setPreset(null)
+    setDari(tanggalTersedia[Math.max(0, j - span)])
+    setAkhir(tanggalTersedia[j])
+  }
 
   const hariAktif = useMemo(() => semuaHari.filter(([t]) => t >= dari && t <= akhir), [semuaHari, dari, akhir])
   const agg = useMemo(() => agregatBroker(hariAktif), [hariAktif])
-  const { beli, jual } = useMemo(() => tabelDuaSisi(agg, mode), [agg, mode])
-  const ringkas = useMemo(() => ringkasSB(agg), [agg])
   const ohlcvAktif = useMemo(() => (ohlcv ? irisOhlcv(ohlcv, dari, akhir) : []), [ohlcv, dari, akhir])
-  const vwap = useMemo(() => vwapRentang(ohlcvAktif), [ohlcvAktif])
-  const hargaTerakhir = ohlcvAktif.length ? ohlcvAktif[ohlcvAktif.length - 1].tutup : null
 
-  const rataLot = [1, 2, 3, 4, 5].reduce((s, n) => s + ringkas.topLot(n), 0) / 5
-  const rataVal = [1, 2, 3, 4, 5].reduce((s, n) => s + ringkas.topVal(n), 0) / 5
+  const namaEmiten = index?.stocks.find((s) => s.ticker === kode)?.name ?? ''
+  const hargaKini = ohlcvAktif.length ? ohlcvAktif[ohlcvAktif.length - 1].tutup : null
+  const gerak = ohlcvAktif.length && ohlcvAktif[0].buka ? (hargaKini! / ohlcvAktif[0].buka - 1) * 100 : null
 
   return (
     <div className="lantai">
       <div className="vhead">
-        <h1>Broker Summary v2 · {kode}</h1>
-        <span className="sub">arus broker per emiten · arsip harian Stockbit · pilot BUMI, emiten lain menyusul</span>
+        <h1>Arus Broker</h1>
+        <span className="sub">pasar reguler · semua investor · arsip harian Stockbit</span>
       </div>
 
-      <div className="panel">
-        <div className="panel-h bs-h">
-          <span className="af-cari bsv-cari">
-            <IkonMenu d={IKON_CARI} size={13} />
-            <StockAutocomplete
-              stocks={index?.stocks ?? []}
-              value={cari}
-              onChange={setCari}
-              onSelect={(t) => { if (t) { setKode(t.toUpperCase()); setCari('') } }}
-              placeholder="Ganti kode: BUMI, BBCA…"
-            />
-          </span>
-          <div className="bs-ctl">
-            <PemilihRentang opsi={MODE_OPSI} nilai={mode} onGanti={setMode} ariaLabel="Net atau Gross" />
-            <PemilihRentang opsi={PASAR_OPSI} nilai={pasar} onGanti={setPasar} ariaLabel="Pasar" />
-            <div className="bs-tgl">
-              <PemilihRentang className="bs-preset" opsi={PRESET} nilai={preset ?? 'b1'} onGanti={keRentang} />
-              <div className="bilah-rentang">
-                <DatePicker value={dari} onChange={(iso) => keRentangBebas(iso, akhir)} tersedia={setTersedia} ariaLabel="Tanggal mulai rentang" rata="kanan" />
-                <span className="bilah-rentang-pisah" aria-hidden="true">s.d.</span>
-                <DatePicker value={akhir} onChange={(iso) => keRentangBebas(dari, iso)} tersedia={setTersedia} ariaLabel="Tanggal akhir rentang" rata="kanan" />
-              </div>
+      <header className="panel" style={{ marginBottom: 14 }}>
+        <div className="panel-b" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+          <div>
+            <span className="af-cari bsv-cari" style={{ marginBottom: 6, display: 'inline-flex' }}>
+              <IkonMenu d={IKON_CARI} size={13} />
+              <StockAutocomplete
+                stocks={index?.stocks ?? []}
+                value={cari}
+                onChange={setCari}
+                onSelect={(t) => { if (t) { setKode(t.toUpperCase()); setCari('') } }}
+                placeholder="Ganti kode: BUMI, BBCA…"
+              />
+            </span>
+            <h1 style={{ margin: 0, fontSize: 26 }}>{kode} <small className="lbl" style={{ marginLeft: 8, textTransform: 'none', letterSpacing: 0 }}>{namaEmiten}</small></h1>
+            <div className="num" style={{ display: 'flex', gap: 16, alignItems: 'baseline', flexWrap: 'wrap', marginTop: 4 }}>
+              <span style={{ fontSize: 22, fontWeight: 500 }}>{hargaKini !== null ? `Rp ${keFraksi(hargaKini).toLocaleString('id-ID')}` : '—'}</span>
+              {gerak !== null && <span className="lbl" style={{ color: gerak >= 0 ? 'var(--green)' : 'var(--red)' }}>{gerak >= 0 ? '+' : ''}{gerak.toFixed(2)}% dalam rentang</span>}
+              <span className="lbl">{dari && akhir ? `${dari} – ${akhir} · ${hariAktif.length} hari bursa` : 'memuat rentang…'}</span>
             </div>
           </div>
+          <div className="kendali" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <Dropdown opsi={INVESTOR_OPSI} nilai={investor} onGanti={setInvestor} ariaLabel="Investor" />
+            <Dropdown opsi={MARKET_OPSI} nilai={pasar} onGanti={setPasar} ariaLabel="Market" />
+            <PemilihRentang opsi={MODE_OPSI} nilai={mode} onGanti={setMode} ariaLabel="Net atau Gross" />
+            <PemilihRentang opsi={UKURAN_OPSI} nilai={ukuran} onGanti={setUkuran} ariaLabel="Ukuran" />
+          </div>
         </div>
-
-        <div className="panel-b">
-          {loading && (
-            <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-              <p><IkonMenu d={IKON_ULANG} size={26} /></p>
-              <p className="lbl">Memuat arus broker {kode}…</p>
+        <div className="panel-b bs-ctl" style={{ borderTop: '1px solid var(--line)' }}>
+          <div className="bs-preset"><PemilihRentang opsi={PRESET} nilai={preset ?? 'b1'} onGanti={keRentang} /></div>
+          <div className="bs-tgl">
+            <LangkahTanggal arah="mundur" ukuran="sebaris" label="Rentang satu hari bursa sebelumnya" disabled={!tanggalTersedia.length} onClick={() => langkahHari(-1)} />
+            <div className="bilah-rentang">
+              <DatePicker value={dari} onChange={(iso) => keRentangBebas(iso, akhir)} tersedia={setTersedia} ariaLabel="Tanggal mulai rentang" rata="kanan" />
+              <span className="bilah-rentang-pisah" aria-hidden="true">s.d.</span>
+              <DatePicker value={akhir} onChange={(iso) => keRentangBebas(dari, iso)} tersedia={setTersedia} ariaLabel="Tanggal akhir rentang" rata="kanan" />
             </div>
-          )}
-          {!loading && error && (
-            <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-              <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
-              <p className="lbl">{error} — coba BUMI (pilot yang sudah lengkap).</p>
-            </div>
-          )}
-          {!loading && !error && semuaHari.length > 0 && (
-            <>
-              <div className="chip warn" style={{ marginBottom: 12 }}>
-                {dari && akhir ? `${dari} – ${akhir} (${hariAktif.length} hari bursa)` : 'memuat rentang…'}
-                {hargaTerakhir ? ` · harga tutup terakhir Rp ${keFraksi(hargaTerakhir).toLocaleString('id-ID')}` : ''}
-                {vwap ? ` · VWAP periode Rp ${Math.round(vwap).toLocaleString('id-ID')}` : ''}
-              </div>
-
-              <div className="grid3" style={{ marginBottom: 14 }}>
-                <div className="vcard">
-                  <span className="lbl">Net Volume</span>
-                  <span className="v-num num">{fmtLot(ringkas.netVol)}</span>
-                  <span className="v-note">Σ net pembeli</span>
-                </div>
-                <div className="vcard">
-                  <span className="lbl">Net Value</span>
-                  <span className="v-num num">Rp {fmtB(ringkas.netVal)}</span>
-                  <span className="v-note">Σ nilai net pembeli</span>
-                </div>
-                <div className="vcard">
-                  <span className="lbl">Average</span>
-                  <span className="v-num num">{ringkas.netVol ? `Rp ${Math.round(ringkas.avg).toLocaleString('id-ID')}` : '—'}</span>
-                  <span className="v-note">net value ÷ net volume</span>
-                </div>
-              </div>
-
-              <div className="board-tbl-wrap" style={{ marginBottom: 16 }}>
-                <table className="tbl">
-                  <thead>
-                    <tr><th>Pembeli − penjual</th><th className="r">Lot</th><th className="r">%</th><th className="r">Nilai net</th></tr>
-                  </thead>
-                  <tbody>
-                    {[1, 2, 3, 4, 5].map((n) => {
-                      const lot = ringkas.topLot(n)
-                      const val = ringkas.topVal(n)
-                      const pct = ringkas.netVol ? (lot / ringkas.netVol) * 100 : 0
-                      return (
-                        <tr key={n}>
-                          <td>Top {n}</td>
-                          <td className="r num">{fmtLot(lot)}</td>
-                          <td className="r num">{pct.toFixed(1)}%</td>
-                          <td className="r num">Rp {fmtB(val)}</td>
-                        </tr>
-                      )
-                    })}
-                    <tr>
-                      <td title="rata-rata Top 1–5">Average</td>
-                      <td className="r num">{fmtLot(rataLot)}</td>
-                      <td className="r num">{ringkas.netVol ? ((rataLot / ringkas.netVol) * 100).toFixed(1) : '0.0'}%</td>
-                      <td className="r num">Rp {fmtB(rataVal)}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="grid2">
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span className="lbl green">Beli</span>
-                    <span className="lbl">{beli.length} broker</span>
-                  </div>
-                  <div className="board-tbl-wrap">
-                    <table className="tbl">
-                      <thead><tr><th>BY</th><th className="r">Nilai</th><th className="r">Lot</th><th className="r">Avg</th></tr></thead>
-                      <tbody>{beli.map((r) => <BarisSisi key={r.broker} r={r} />)}</tbody>
-                    </table>
-                  </div>
-                </div>
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span className="lbl red">Jual</span>
-                    <span className="lbl">{jual.length} broker</span>
-                  </div>
-                  <div className="board-tbl-wrap">
-                    <table className="tbl">
-                      <thead><tr><th>SL</th><th className="r">Nilai</th><th className="r">Lot</th><th className="r">Avg</th></tr></thead>
-                      <tbody>{jual.map((r) => <BarisSisi key={r.broker} r={r} />)}</tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
+            <LangkahTanggal arah="maju" ukuran="sebaris" label="Rentang satu hari bursa berikutnya" disabled={!tanggalTersedia.length} onClick={() => langkahHari(1)} />
+          </div>
         </div>
-      </div>
+      </header>
+
+      {loading && (
+        <div className="panel"><div className="panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
+          <p><IkonMenu d={IKON_ULANG} size={26} /></p>
+          <p className="lbl">Memuat arus broker {kode}…</p>
+        </div></div>
+      )}
+      {!loading && error && (
+        <div className="panel"><div className="panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
+          <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
+          <p className="lbl">{error} — coba BUMI (pilot yang sudah lengkap).</p>
+        </div></div>
+      )}
 
       {!loading && !error && semuaHari.length > 0 && (
-        <div className="panel" style={{ marginTop: 14 }}>
+        <div className="panel">
           <div className="panel-h bs-h">
             <div className="tabs" role="tablist" aria-label="Analisa Broker Summary v2">
               {TABS.map((t) => (
@@ -282,12 +227,21 @@ export function BrokerSummaryV2() {
                   {t.label}
                 </button>
               ))}
+              {TABS_NONAKTIF.map((t) => (
+                <button key={t.label} type="button" role="tab" className="tab" disabled title={t.judul} style={{ opacity: .5 }}>
+                  {t.label} <small style={{ fontSize: 9 }}>menyusul</small>
+                </button>
+              ))}
             </div>
           </div>
           <div className="panel-b">
+            {tab === 'overview' && <Overview hari={hariAktif} agg={agg} mode={mode} ukuran={ukuran} />}
             {tab === 'inventory' && <Inventory hari={hariAktif} agg={agg} ohlcv={ohlcvAktif} />}
-            {tab === 'kuadran' && <Kuadran agg={agg} vwap={vwap} />}
-            {tab === 'floor' && <FloorPrice hari={hariAktif} />}
+            {tab === 'flow' && <FlowNetGross hari={hariAktif} agg={agg} />}
+            {tab === 'vsihsg' && <VsIhsg saham={ohlcv ?? []} ihsg={ihsg ?? []} />}
+            {tab === 'foreign' && <TimelineForeign bars={ohlcv ?? []} />}
+            {tab === 'shareholders' && <Shareholders kode={kode} />}
+            {tab === 'nego' && <Nego hari={hariAktif} />}
           </div>
         </div>
       )}

@@ -45,6 +45,11 @@ export interface RingkasHari {
 export interface HariBroker {
   ringkas: RingkasHari
   broker: BarisBroker[]
+  /** Varian pasar ASING (net asing per broker) — cuma ada di hari yang sudah
+   *  kena backfill (149/2318 hari BUMI per 22 Agu 2026). undefined = belum. */
+  asing?: HariBroker
+  /** Varian pasar NEGO — sama, backfill sedang berjalan. */
+  nego?: HariBroker
 }
 
 export interface BerkasTahunan {
@@ -219,15 +224,15 @@ export function arusHarian(hari: Array<[string, HariBroker]>): ArusHari[] {
  */
 export function floorPriceBroker(
   hari: Array<[string, HariBroker]>, minLot = 1,
-): Array<{ broker: string; floor: number; tanggal: string }> {
-  const terendah = new Map<string, { floor: number; tanggal: string }>()
+): Array<{ broker: string; floor: number; tanggal: string; lot: number }> {
+  const terendah = new Map<string, { floor: number; tanggal: string; lot: number }>()
   for (const [tgl, h] of hari) {
     for (const r of h.broker) {
       if (r[1] < minLot) continue
       const avg = hargaRata(r[2], r[1])
       if (avg === null) continue
       const ada = terendah.get(r[0])
-      if (!ada || avg < ada.floor) terendah.set(r[0], { floor: avg, tanggal: tgl })
+      if (!ada || avg < ada.floor) terendah.set(r[0], { floor: avg, tanggal: tgl, lot: r[1] })
     }
   }
   return [...terendah.entries()]

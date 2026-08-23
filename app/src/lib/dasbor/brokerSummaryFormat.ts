@@ -22,3 +22,18 @@ export function fmtLot(n: number): string {
   if (a >= 1e3) return s + (a / 1e3).toFixed(1) + 'K lot'
   return n + ' lot'
 }
+
+/**
+ * Sama seperti `fmtLot` tapi TANPA sufiks " lot" — buat besaran yang bukan
+ * lot bursa (lembar saham tercatat, jumlah pemegang saham, dst). `fmtLot`
+ * sengaja tidak dipakai ulang di sini: menempelkan " lot" ke lembar/jumlah
+ * pemegang salah label, bukan cuma salah kosmetik (Shareholders tab #187).
+ */
+export function fmtRingkas(n: number): string {
+  const a = Math.abs(n)
+  const s = n < 0 ? '-' : ''
+  if (a >= 1e9) return s + (a / 1e9).toFixed(1) + 'G'
+  if (a >= 1e6) return s + (a / 1e6).toFixed(1) + 'M'
+  if (a >= 1e3) return s + (a / 1e3).toFixed(1) + 'K'
+  return n.toLocaleString('id-ID')
+}

@@ -12,12 +12,18 @@ import { useEffect, useState } from 'react'
 import type { AgregatBroker, HariBroker } from './brokerEmiten'
 import { muatRentang } from './brokerEmiten'
 import { pesanGalat } from '../pesanGalat'
+import { kelompokBroker, LABEL_KELOMPOK, KETERANGAN_KELOMPOK, type KelompokBroker } from './kelompokBroker'
 
 export interface BarisOhlcv {
   tanggal: string
+  buka: number
   tutup: number
   volume: number
   nilai: number
+  /** Rupiah — LANGSUNG dari sumber (Stockbit/IDX), bukan taksiran lembar×avg
+   *  (itu yang terukur miring +33% kumulatif, lihat CLAUDE.md). Aman dijumlah. */
+  foreignBeli: number
+  foreignJual: number
 }
 
 interface BerkasOhlcvMentah {
@@ -26,9 +32,13 @@ interface BerkasOhlcvMentah {
   bar: (string | number)[][]
 }
 
-/** Indeks kolom tetap (lihat `kolom` di berkas) — tanggal, close, volume, value. */
+/** Indeks kolom tetap (lihat `kolom` di berkas): tanggal,unixdate,o,h,l,c,volume,value,freq,foreignbuy,foreignsell,… */
 function keBaris(bar: (string | number)[]): BarisOhlcv {
-  return { tanggal: bar[0] as string, tutup: bar[5] as number, volume: bar[6] as number, nilai: bar[7] as number }
+  return {
+    tanggal: bar[0] as string, buka: bar[2] as number, tutup: bar[5] as number,
+    volume: bar[6] as number, nilai: bar[7] as number,
+    foreignBeli: bar[9] as number, foreignJual: bar[10] as number,
+  }
 }
 
 const cacheOhlcv = new Map<string, Promise<BarisOhlcv[] | null>>()
@@ -173,4 +183,145 @@ export function useArusBrokerEmiten(kode: string) {
   }, [kode])
 
   return { hari: hari ?? [], loading, error }
+}
+
+// ── Tab "Overview" — Broker Analysis per kelompok ───────────────────────────
+
+const URUTAN_KELOMPOK: KelompokBroker[] = ['asing', 'bumn', 'smart', 'ritel', 'afiliasi', 'lain']
+
+export interface BarisAnalisaKelompok {
+  id: KelompokBroker
+  label: string
+  ket: string
+  net: number
+  jumlahBroker: number
+  /** Deret net harian (searah `hari`) — bahan sparkline. */
+  harian: number[]
+}
+
+/**
+ * Port `renderAnalisis()` mockup — net PER KELOMPOK (selalu net, tak terikat
+ * toggle Mode Net/Gross — sama seperti mockup, yang membaca `agg[key]`
+ * langsung, bukan `tabelDuaSisi`), ukuran ikut toggle Nilai/Lot.
+ */
+export function analisaKelompok(
+  hari: Array<[string, HariBroker]>, agg: AgregatBroker[], ukuran: 'nilai' | 'lot',
+): BarisAnalisaKelompok[] {
+  const grup: Record<KelompokBroker, AgregatBroker[]> = { asing: [], bumn: [], smart: [], ritel: [], afiliasi: [], lain: [] }
+  for (const a of agg) grup[kelompokBroker(a.broker)].push(a)
+  return URUTAN_KELOMPOK.map((id) => {
+    const net = grup[id].reduce((s, a) => s + (ukuran === 'nilai' ? a.netNilai : a.netLot), 0)
+    const harian = hari.map(([, h]) => {
+      let v = 0
+      for (const r of h.broker) {
+        if (kelompokBroker(r[0]) !== id) continue
+        v += ukuran === 'nilai' ? r[2] - r[4] : r[1] - r[3]
+      }
+      return v
+    })
+    return { id, label: LABEL_KELOMPOK[id], ket: KETERANGAN_KELOMPOK[id], net, jumlahBroker: grup[id].length, harian }
+  })
+}
+
+// ── Tab "Flow Net vs Gross" — Market Flow Conviction ────────────────────────
+
+export interface TitikKonviksi {
+  tanggal: string
+  kotor: number
+  net: number
+  /** net ÷ kotor × 100 — tinggi = arus searah, rendah = bolak-balik intraday. */
+  konviksi: number
+}
+
+/** Port `renderConviction()` mockup — net handover = Σ net POSITIF per broker sehari. */
+export function convictionHarian(hari: Array<[string, HariBroker]>): TitikKonviksi[] {
+  return hari.map(([tanggal, h]) => {
+    const kotor = h.broker.reduce((s, r) => s + r[2], 0)
+    const net = h.broker.reduce((s, r) => s + Math.max(0, r[2] - r[4]), 0)
+    return { tanggal, kotor, net, konviksi: kotor ? (net / kotor) * 100 : 0 }
+  })
+}
+
+// ── Tab "vs IHSG" ────────────────────────────────────────────────────────────
+
+function statistik(xs: number[]): { mu: number; sd: number } {
+  const n = xs.length
+  const mu = xs.reduce((a, b) => a + b, 0) / n
+  const v = xs.reduce((a, b) => a + (b - mu) ** 2, 0) / (n - 1)
+  return { mu, sd: Math.sqrt(v) }
+}
+const returnHarian = (xs: number[]) => xs.slice(1).map((v, i) => v / xs[i] - 1)
+
+export interface RegresiVsIhsg {
+  tgl: string[]
+  rebasedSaham: number[]
+  rebasedIhsg: number[]
+  n: number
+  beta: number
+  korelasi: number
+  rSquared: number
+  alpha: number
+  returnSaham: number
+  returnIhsg: number
+  winRateHarian: number
+  volatilitasSaham: number
+  volatilitasIhsg: number
+}
+
+/**
+ * Port `deretVs()` + `renderVsIHSG()` mockup — regresi return harian saham vs
+ * IHSG atas `n` hari bursa TERAKHIR yang beririsan di kedua deret (irisan
+ * tanggal, bukan asumsi kalender sama). null kalau irisannya < 3 hari.
+ */
+export function regresiVsIhsg(saham: BarisOhlcv[], ihsg: BarisOhlcv[], n: number): RegresiVsIhsg | null {
+  const petaIhsg = new Map(ihsg.map((b) => [b.tanggal, b.tutup]))
+  const pasangan = saham.filter((b) => petaIhsg.has(b.tanggal)).slice(-n)
+  const m = pasangan.length
+  if (m < 3) return null
+  const s = pasangan.map((b) => b.tutup)
+  const im = pasangan.map((b) => petaIhsg.get(b.tanggal)!)
+  const rebasedSaham = s.map((v) => (v / s[0]) * 100)
+  const rebasedIhsg = im.map((v) => (v / im[0]) * 100)
+  const r1 = returnHarian(s), r2 = returnHarian(im)
+  const st1 = statistik(r1), st2 = statistik(r2)
+  let cov = 0
+  for (let i = 0; i < r1.length; i++) cov += (r1[i] - st1.mu) * (r2[i] - st2.mu)
+  cov /= r1.length - 1
+  const beta = cov / st2.sd ** 2
+  const korelasi = cov / (st1.sd * st2.sd)
+  const returnSaham = (s[m - 1] / s[0] - 1) * 100
+  const returnIhsg = (im[m - 1] / im[0] - 1) * 100
+  const winRateHarian = (r1.filter((v, i) => v > r2[i]).length / r1.length) * 100
+  return {
+    tgl: pasangan.map((b) => b.tanggal), rebasedSaham, rebasedIhsg, n: m,
+    beta, korelasi, rSquared: korelasi * korelasi, alpha: returnSaham - beta * returnIhsg,
+    returnSaham, returnIhsg, winRateHarian,
+    volatilitasSaham: st1.sd * Math.sqrt(252) * 100, volatilitasIhsg: st2.sd * Math.sqrt(252) * 100,
+  }
+}
+
+// ── Tab "Timeline Foreign" ───────────────────────────────────────────────────
+
+export interface TimelineForeign {
+  tgl: string[]
+  kumulatifRp: number[]
+  tutup: number[]
+  net6Bulan: number
+  net20Hari: number
+}
+
+/**
+ * Net asing RUPIAH LANGSUNG dari `foreignbuy`/`foreignsell` OHLCV (bukan
+ * taksiran lembar×harga — itu yang di mockup ditulis "miring +33%
+ * kumulatif" makanya sumbunya lembar; sumber ini beda, rupiahnya asli dari
+ * Stockbit/IDX, jadi aman dipakai apa adanya).
+ */
+export function timelineForeign(bars: BarisOhlcv[], n: number): TimelineForeign | null {
+  if (bars.length === 0) return null
+  const sel = bars.slice(-n)
+  let akum = 0
+  const kumulatifRp = sel.map((b) => { akum += b.foreignBeli - b.foreignJual; return akum })
+  const net6Bulan = bars.slice(-126).reduce((s, b) => s + b.foreignBeli - b.foreignJual, 0)
+  const net20Hari = bars.slice(-20).reduce((s, b) => s + b.foreignBeli - b.foreignJual, 0)
+  return { tgl: sel.map((b) => b.tanggal), kumulatifRp, tutup: sel.map((b) => b.tutup), net6Bulan, net20Hari }
 }

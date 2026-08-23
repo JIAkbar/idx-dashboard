@@ -98,7 +98,7 @@ describe('floorPriceBroker', () => {
   it('harga beli rata-rata terendah per broker berikut tanggalnya, urut naik', () => {
     const f = floorPriceBroker([['2026-01-05', hari1], ['2026-01-06', hari2]])
     // AK: 10.000÷(100×100)=1,0 pada 5 Jan; 6.000÷(50×100)=1,2 pada 6 Jan → floor 1,0
-    expect(f[0]).toEqual({ broker: 'AK', floor: 1, tanggal: '2026-01-05' })
+    expect(f[0]).toEqual({ broker: 'AK', floor: 1, tanggal: '2026-01-05', lot: 100 })
     expect(f.find((x) => x.broker === 'ZP')).toBeUndefined() // tak pernah beli
   })
 })

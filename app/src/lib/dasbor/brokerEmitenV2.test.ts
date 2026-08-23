@@ -3,7 +3,7 @@ import { irisOhlcv, vwapRentang, titikKuadran, pilihTopInventaris, ringkasSB, ty
 import type { AgregatBroker } from './brokerEmiten'
 
 const bar = (tanggal: string, tutup: number, volume: number, nilai: number): BarisOhlcv =>
-  ({ tanggal, tutup, volume, nilai })
+  ({ tanggal, buka: tutup, tutup, volume, nilai, foreignBeli: 0, foreignJual: 0 })
 
 const bars: BarisOhlcv[] = [
   bar('2026-01-05', 100, 1000, 100_000),

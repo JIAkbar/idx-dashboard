@@ -710,6 +710,10 @@
   /* #79: kategori simpul Grafik Jaringan /peta-investor (graphRender.ts WARNA)
      — beda hue per tipe holder, bukan tiga abu mirip. */
   --node-corp:#5B94E8; --node-ind:#38B77E; --node-oth:#767C8C;
+  /* #187 Broker Summary v2 — enam kelompok identitas broker (kelompokBroker.ts),
+     nilai LANGSUNG dari mockup artifact rancangan (bukan hijau/merah beli/jual). */
+  --k-asing:#5B9BFF; --k-bumn:#E0B341; --k-smart:#B48CF7;
+  --k-ritel:#3CCFBD; --k-afiliasi:#F28A4F; --k-lain:#8F98A6;
   --flap:#08090C; --flap-line:rgba(255,255,255,.07);
   --mono:"IBM Plex Mono","Cascadia Mono",Consolas,"SF Mono",monospace;
   --disp:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif;
@@ -735,6 +739,8 @@
      --bg1 DAN --bg3 (garis pembanding juga dipakai sebagai teks legenda). */
   --bnd1:#6B3FA0; --bnd2:#0F6572; --bnd3:#A33B84;
   --node-corp:#2C63C4; --node-ind:#197047; --node-oth:#767C74;
+  --k-asing:#2F6FE0; --k-bumn:#B8860B; --k-smart:#7E4BD0;
+  --k-ritel:#1A9E8F; --k-afiliasi:#D9622B; --k-lain:#7A8290;
   --flap:#16181A; --flap-line:rgba(255,255,255,.10);
 }
 /* Alias kompatibilitas utk .pi-* (Peta Investor) yang dipindah dari dasbor.css
@@ -1971,6 +1977,44 @@
      dasar itu menang dan kedua pemilih menyusut sampai lebar nol. */
   .lantai .bs-tgl .bilah-rentang .dpk-wrap{flex:1 1 100%;min-width:0}
   .lantai .bs-tgl .bilah-rentang-pisah{flex:1 1 100%;justify-content:center;border-left:0;border-right:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:3px 0}
+}
+/* ===== Broker Summary v2 (#187 rebuild) — pola BARU khusus halaman ini
+   (legenda kelompok, baris analisa+sparkline, metrik regresi) yang belum ada
+   padanan kanonisnya di tempat lain. Prefiks `bs2-` (bukan bentuk baru untuk
+   kendali yang sudah ada #170 — semua kendali interaktif di halaman ini tetap
+   pakai PemilihRentang/DatePicker/Dropdown/LangkahTanggal/.chip-t/.tab/.dd-*
+   apa adanya). Kalau pola ini kepakai di halaman lain, pindah ke atas tanpa
+   prefiks — sampai saat itu, sengaja tetap di sini. ===== */
+.lantai .bs2-legenda{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--text3);margin:2px 0 10px}
+.lantai .bs2-legenda span{display:inline-flex;align-items:center;gap:5px}
+.lantai .bs2-legenda i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.lantai .bs2-chipstat{display:inline-flex;gap:6px;align-items:baseline;border:1px solid var(--line);border-radius:5px;padding:4px 10px;background:var(--bg2);font-size:12.5px}
+.lantai .bs2-chipstat b{font-weight:600}
+.lantai .bs2-metrik{display:grid;gap:0}
+.lantai .bs2-metrik>div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.lantai .bs2-metrik>div:last-child{border-bottom:0}
+.lantai .bs2-metrik .k{font-weight:600}
+.lantai .bs2-metrik .k small{display:block;font-weight:400;color:var(--text3);font-size:11px}
+.lantai .bs2-metrik .v{font-size:16px;font-weight:500;font-family:var(--mono)}
+.lantai .bs2-kat{display:grid;gap:8px}
+.lantai .bs2-kat-baris{display:grid;grid-template-columns:150px minmax(0,1fr) 56px 110px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}
+.lantai .bs2-kat-baris:last-child{border-bottom:0}
+.lantai .bs2-kat-baris .nama{font-weight:600}
+.lantai .bs2-kat-baris .nama small{display:block;font-weight:400;color:var(--text3);font-size:11px}
+.lantai .bs2-kat-baris .n{color:var(--text2);text-align:right;font-size:12px}
+.lantai .bs2-kat-baris .net{text-align:right;font-weight:600}
+.lantai .bs2-flow-row{display:grid;grid-template-columns:128px minmax(0,1fr) 96px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.lantai .bs2-flow-row:last-child{border-bottom:0}
+.lantai .bs2-flow-row .nama{font-weight:600;font-size:13px}
+.lantai .bs2-flow-row .nama small{display:block;font-weight:400;color:var(--text3);font-size:11px;overflow-wrap:anywhere}
+.lantai .bs2-flow-row .tot{text-align:right;font-weight:500;font-family:var(--mono)}
+.lantai .bs2-pct-bar{display:inline-block;width:56px;height:5px;background:var(--bg3);border-radius:3px;vertical-align:middle;margin-left:6px;overflow:hidden}
+.lantai .bs2-pct-bar i{display:block;height:100%}
+.lantai .bs2-na{display:inline-block;border-radius:4px;padding:1px 7px;font-size:11px;font-weight:600;background:var(--bg2);color:var(--text3);border:1px solid var(--line)}
+.lantai .bs2-spark{width:100%;height:28px;display:block}
+@media (max-width:720px){
+  .lantai .bs2-kat-baris{grid-template-columns:110px minmax(0,1fr) 44px 84px}
+  .lantai .bs2-flow-row{grid-template-columns:96px minmax(0,1fr) 80px}
 }
 .lantai .vcard .v-tgl{font-size:20px}
 .lantai .vcard .v-tgl.rentang{font-size:15px}
