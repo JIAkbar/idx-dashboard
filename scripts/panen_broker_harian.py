@@ -244,7 +244,11 @@ _sesi = None
 _kunci_sesi = None
 
 
-def sesi(maks: int = 128):
+# Bawaan 512, bukan 128: kolam yang lebih SEMPIT dari jumlah thread membuat
+# thread saling menunggu giliran koneksi — lambat tanpa satu pun galat yang
+# menyebutnya. Kolam yang lebih lebar dari yang terpakai tak merugikan
+# (koneksi menganggur ditutup sendiri), jadi batas atasnya dibuat longgar.
+def sesi(maks: int = 512):
     """Session bersama, dibuat sekali. Aman dipanggil dari banyak thread."""
     global _sesi, _kunci_sesi
     import threading

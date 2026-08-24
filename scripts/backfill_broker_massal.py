@@ -199,7 +199,7 @@ def main() -> int:
         progres_data["emiten"] = {
             k: v for k, v in (lama.get("emiten") or {}).items()
             if v.get("status") == "selesai"
-            and v.get("dari") == dari and v.get("sampai") == sampai
+            and v.get("dari") == a.dari and v.get("sampai") == sampai
             and v.get("varian") == a.varian
         }
 

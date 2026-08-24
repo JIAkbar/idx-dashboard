@@ -45,18 +45,35 @@ import panen_broker_harian as ph  # noqa: E402
 
 KELUARAN = AKAR / "data-idx" / "json" / "broker_tahunan"
 
+# Hanya tahun yang panennya SELESAI untuk seluruh bursa yang dibangun.
+# Ketetapan Johan 24 Agu 2026: *"kita anggap saja masih ambil data penuh
+# 2 tahun di 2025 dan 2026 tahun yang lain masih proses, maka dari itu
+# kerjakan dengan 2 tahun itu saja dulu tahun sebelumnya d tutup saja"*.
+#
+# Alasannya terukur, bukan selera: 2025 dan 2026 punya 955 dan 962 emiten
+# dengan enam varian GROSS penuh, sementara 2020-2024 cuma 18-20 emiten
+# sisa gelombang backfill lama yang kedalaman variannya belum tentu sama.
+# Membangunnya berarti memajang tahun yang isinya 2% bursa seolah setara
+# dengan tahun yang isinya penuh — dan pembaca tak punya cara membedakannya
+# dari layar. Menambah tahun = panen tahun itu sampai penuh dulu, lalu
+# tambahkan di sini.
+TAHUN_PENUH = ("2025", "2026")
 
-def bangun_emiten(kode: str) -> dict[str, int]:
-    """Tulis <KODE>/<tahun>.json untuk tiap tahun yang ada di arsip.
+
+def bangun_emiten(kode: str, tahun_boleh: tuple[str, ...] = TAHUN_PENUH) -> dict[str, int]:
+    """Tulis <KODE>/<tahun>.json untuk tiap tahun panen-penuh yang ada di arsip.
 
     Kembalikan {tahun: jumlah hari}. Hari yang arsipnya rusak/kosong dilewati
-    dan dihitung — bukan dibuang diam-diam.
+    dan dihitung — bukan dibuang diam-diam. Tahun di luar `tahun_boleh`
+    dilewati tanpa dibaca sama sekali (hemat: arsipnya tak disentuh).
     """
     folder = ph.ARSIP / kode
     per_tahun: dict[str, dict] = defaultdict(dict)
     rusak = 0
     for p in sorted(folder.glob("????-??-??.json")):
         tgl = p.stem
+        if tgl[:4] not in tahun_boleh:
+            continue
         mentah = ph.baca(p)
         baris, ringkas = ph.padatkan(mentah) if mentah else ([], {})
         if not baris:
