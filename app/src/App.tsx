@@ -31,6 +31,7 @@ const BrokerSummaryV2 = lazy(() => import('./views/dasbor/BrokerSummaryV2').then
 const KuliPapan = lazy(() => import('./views/dasbor/KuliPapan').then((m) => ({ default: m.KuliPapan })))
 // Neo Papan (23 Agu 2026) — delapan tab analisis, sibling Kuli Papan di grup Dev.
 const NeoPapan = lazy(() => import('./views/dasbor/NeoPapan').then((m) => ({ default: m.NeoPapan })))
+const WhalesPapan = lazy(() => import('./views/dasbor/WhalesPapan'))
 const StockDetail = lazy(() => import('./views/dasbor/StockDetail').then((m) => ({ default: m.StockDetail })))
 const PetaInvestor = lazy(() => import('./views/dasbor/PetaInvestor').then((m) => ({ default: m.PetaInvestor })))
 const Kabar = lazy(() => import('./views/dasbor/Kabar').then((m) => ({ default: m.Kabar })))
@@ -135,6 +136,11 @@ function App() {
                   PETA_MENU_KUNCI di sini; baris `akses_halaman` di Supabase
                   MENYUSUL (aturan wajib #170, dikerjakan Johan). */}
               <Route path="/neo-papan" element={<PenjagaHalaman kunci="neo-papan"><NeoPapan /></PenjagaHalaman>} />
+              {/* Whales Papan (25 Agu 2026) — kanvas jejak bandar harian,
+                  bentuknya dipetik dari whales.id. Kunci 'whales-papan'
+                  terdaftar di PETA_MENU_KUNCI; baris `akses_halaman` di
+                  Supabase menyusul (aturan dua tempat). */}
+              <Route path="/whales-papan" element={<PenjagaHalaman kunci="whales-papan"><WhalesPapan /></PenjagaHalaman>} />
               {/* Aliran Asing (22 Agu 2026) — kunci 'aliran-asing' sudah
                   terdaftar di PETA_MENU_KUNCI DAN akses_halaman sejak rute
                   ini dibuat (aturan wajib 21 Agu 2026). */}

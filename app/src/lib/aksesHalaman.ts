@@ -145,6 +145,12 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   // dikerjakan kuncinya fail-open (halaman terbuka untuk siapa saja) — jaring
   // pengaman yang disengaja, bukan izin melewatkan pendaftaran.
   'neo-papan': 'neo-papan',
+  // Whales Papan (25 Agu 2026) — sibling Kuli/Neo Papan di grup Dev. Sama
+  // seperti keduanya, baris `akses_halaman` di Supabase menyusul; sampai itu
+  // ada, kuncinya fail-open. Didaftarkan SEKARANG supaya halaman ini muncul
+  // di tab Akses begitu barisnya dibuat — bukan jadi halaman tak teratur
+  // seperti empat halaman yang tertinggal 21 Agu.
+  'whales-papan': 'whales-papan',
   // Halaman publik Radar Watchlist — PRODUK-nya yang dijaga. Tab admin
   // /admin/radar (tempat sumber WDWL diunggah) punya gerbang superadmin
   // sendiri, jadi keduanya tidak bertabrakan. Sempat salah tafsir sehingga

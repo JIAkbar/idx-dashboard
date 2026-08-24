@@ -1,0 +1,119 @@
+/* Whales Papan — kanvas jejak bandar.
+ *
+ * Kelas ber-awalan `.wp-` HANYA menyimpan penempatan & lebar, tak pernah
+ * bentuk kendali (aturan komponen kanonis #170). Tombol memakai `.btn-p`,
+ * pil rentang memakai `.chip-t`, kotak isian `.inp` — semuanya sudah ada.
+ */
+
+.wp-atur {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-bottom: 12px;
+}
+.wp-atur .wp-emiten { width: 190px; }
+.wp-atur .wp-sisa { margin-left: auto; }
+
+/* Grid pembungkus WAJIB minmax(0,1fr), bukan auto — kolom auto melebar
+ * mengikuti anak terlebar dan `.dasbor-main` MEMOTONG kelebihannya, jadi
+ * panel kanan jadi tak terjangkau di layar sempit. */
+.wp-panggung {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 12px;
+  align-items: start;
+}
+
+.wp-kanvas-bungkus {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--line);
+  background: var(--bg1);
+}
+.wp-kanvas-bungkus canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.wp-hasil {
+  border: 1px solid var(--line);
+  background: var(--bg1);
+  padding: 12px 13px;
+  min-width: 0;
+}
+.wp-hasil h3 {
+  margin: 0 0 2px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text3);
+  font-weight: 600;
+}
+.wp-hasil .wp-sub { font-size: 12px; color: var(--text3); margin: 0 0 10px; }
+
+.wp-sisi { margin-bottom: 14px; }
+.wp-sisi-judul {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 6px;
+}
+.wp-beli .wp-sisi-judul { color: var(--green); }
+.wp-jual .wp-sisi-judul { color: var(--red); }
+
+.wp-baris {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  padding: 2px 0;
+}
+.wp-baris .wp-kode { color: var(--text2); font-weight: 600; }
+.wp-baris .wp-nilai { color: var(--text3); white-space: nowrap; }
+.wp-bar { height: 8px; min-width: 2px; }
+.wp-beli .wp-bar { background: var(--green); }
+.wp-jual .wp-bar { background: var(--red); }
+
+.wp-lagi {
+  background: none;
+  border: 0;
+  padding: 3px 0;
+  font: inherit;
+  font-size: 11.5px;
+  color: var(--text3);
+  cursor: pointer;
+  text-align: left;
+}
+.wp-lagi:hover { color: var(--text); }
+
+/* Keterangan batas data — sengaja di dalam panel, bukan di kaki halaman.
+ * Pengguna yang pernah memakai whales akan mencari empat kuadran; kalau
+ * keterangan ini jauh dari hasilnya, ketiadaan kuadran terbaca sebagai bug. */
+.wp-batas {
+  border-top: 1px solid var(--line);
+  margin-top: 12px;
+  padding-top: 10px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text3);
+}
+
+.wp-kosong {
+  padding: 26px 12px;
+  text-align: center;
+  color: var(--text3);
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .wp-panggung { grid-template-columns: minmax(0, 1fr); }
+  .wp-atur .wp-sisa { margin-left: 0; }
+}

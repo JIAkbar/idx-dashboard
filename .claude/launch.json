@@ -3,8 +3,14 @@
   "configurations": [
     {
       "name": "app-dev",
-      "runtimeExecutable": "C:\Windows\System32\cmd.exe",
-      "runtimeArgs": ["/c", "npm run dev --prefix app -- --port 5175 --strictPort"],
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "app/node_modules/vite/bin/vite.js",
+        "app",
+        "--port",
+        "5175",
+        "--strictPort"
+      ],
       "port": 5175
     }
   ]
