@@ -104,6 +104,23 @@ berisi sektor IDX-IC resmi dan pemegang saham pengendali. Runbook lengkapnya di
 - **"Tak ada yang menyanggah" bukan "sepakat", dan jangkar yang berbeda sifat tak boleh bersuara sama rata.** `len(set(suara)) == 1` lolos walau `suara` cuma berisi SATU elemen — satu jangkar menuduh, satu diam, dan kodenya membaca itu sebagai kesepakatan. Tapi memaksa semua jangkar ikut bersuara juga salah: `equity` berayun jauh lebih liar daripada `total_assets` (dividen, restatement, melintasi nol), jadi mewajibkannya menuduh membuang koreksi yang benar (LPPF/PKPK/PURE). Yang benar: satu jangkar MEMUTUSKAN, yang lain MENYANGGAH — dan pilih perannya dari sifat ruasnya, terukur, bukan dari kelihatannya setara.
 - **JANGAN memanggil `token_segar()` selagi panen berjalan — token Stockbit itu SATU rantai, dan memutarnya dari dua proses membunuh keduanya.** 23 Agu 2026 malam: saya menguji beberapa endpoint dari proses terpisah sementara runner backfill sedang jalan. Panggilan itu memutar refresh token; salinan yang dipegang runner jadi tak sah, dan sejak titik itu **seluruh 963 emiten gagal berturut-turut dalam 72 menit** (`Refresh ditolak HTTP 401`), 708 tercatat bermasalah, hari gagal melompat 474 → 89.580. Menghidupkannya lagi butuh Johan menyemai ulang dari sesi peramban — pekerjaan yang tak bisa dikerjakan agen karena menyentuh kredensial.
 
+  **Tambahan 24 Agu 2026 — matinya bisa TANPA proses kedua.** Aturan di atas
+  lahir dari dua proses yang saling memutar token. Kali ini tak ada: panen 2025
+  selesai pukul 04.00 dengan nol 401, lalu pukul 06.00 tanggal yang SAMA
+  (2026-08-21, berhasil dua jam sebelumnya) menjawab 401, dan penyegaran paksa
+  dijawab `Refresh ditolak HTTP 401`. Jadi rantai bisa diputus dari sisi server
+  — jangan otomatis menyalahkan proses sendiri.
+
+  **Cara memisahkan "aku yang merusak" dari "ia mati sendiri"**, dua langkah,
+  keduanya murah dan keduanya perlu:
+  1. `mtime` berkas token — kalau tak berubah, tak ada penyegaran yang berhasil
+     dari sisi kita. Di insiden ini mtime tetap `2026-08-23 21:17:40`.
+  2. Coba tanggal yang TERBUKTI berhasil beberapa jam lalu. Kalau ia ikut 401,
+     yang mati tokennya; kalau ia jalan, masalahnya di parameter/rentang.
+  Tanpa langkah 2, kegagalan token gampang tersalah-baca sebagai "sumbernya tak
+  punya data setua itu" — persis pertanyaan yang sedang diuji saat ini terjadi,
+  dan jawabannya jadi salah total.
+
   Yang menipu: `stockbit_token.py --status` **tetap melaporkan refresh sah** sampai 6 hari ke depan, karena umur itu dibaca dari isi token, bukan dari jawaban server. Satu-satunya cara tahu ia mati adalah mencobanya.
 
   Aturan lama hanya melarang `--segarkan` dari dua MESIN; ternyata dua **proses** di satu mesin sama mematikannya. Cara aman menguji endpoint saat panen berjalan: baca access token yang sudah ada di berkas dan pakai apa adanya — **jangan pernah memicu refresh**. Kalau access-nya sudah kedaluwarsa, tunggu panennya selesai.
