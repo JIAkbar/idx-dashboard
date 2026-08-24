@@ -410,6 +410,8 @@ hr { border: none; border-top: 1px solid var(--hairline); margin: 24px 0; }
 <li><a href="#inventaris-ruas-per-berkas-jawaban-untuk-johan-23-agu-2026-stock-detail-ohlc-ohlcv-broker-summary-metode-panen" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Inventaris ruas per berkas — jawaban untuk Johan 23 Agu 2026 (Stock Detail, OHLC/OHLCV, Broker Summary, metode panen)</span></a></li>
 <li><a href="#matriks-sumber-stockbit-menang-di-mana-duplikasi-per-halaman-dan-usulan-kanonik-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Matriks sumber — Stockbit menang di mana, duplikasi per halaman, dan usulan kanonik (23 Agu 2026)</span></a></li>
 <li><a href="#kamus-ruas-arti-tiap-ruas-dan-data-apa-yang-dihasilkannya-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Kamus ruas — arti tiap ruas dan data apa yang dihasilkannya (23 Agu 2026)</span></a></li>
+<li><a href="#prototipe-dev-kuli-papan-neo-papan-artifact-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Prototipe Dev — Kuli Papan &amp; Neo Papan (artifact, 23 Agu 2026)</span></a></li>
+<li><a href="#batas-repo-hosting-github-dan-vercel-diukur-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Batas repo &amp; hosting — GitHub dan Vercel (diukur 23 Agu 2026)</span></a></li>
 <li><a href="#riwayat" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Riwayat</span></a></li>
 </ul>
 </div>
@@ -447,7 +449,7 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <tr>
 <td>IDX <code>TradingSummary/GetStockSummary</code></td>
 <td>API tidak resmi (JSON situs idx.co.id)</td>
-<td>User-Agent peramban + sesi; <strong>IP datacenter diblokir</strong> (Actions/Netlify 403), IP rumahan 200</td>
+<td>User-Agent peramban + sesi; <strong>IP datacenter diblokir</strong> (GitHub Actions 403; dasbor SPLE pihak lain lewat Netlify Function juga 403 — PAPAN sendiri dihosting di <strong>Vercel</strong>, bukan Netlify), IP rumahan 200</td>
 <td>6 ruas dari ±32 (aliran asing) + <code>ListedShares</code> (daftar emiten)</td>
 <td><code>data-idx/json/asing/&lt;KODE&gt;.json</code> (989), <code>daftar_emiten.json</code>, mentah <code>_arsip-mentah/asing/</code> (1.729 gz)</td>
 <td>Stock Detail, Aliran Asing, Broker Summary (Flow/Nego/AsingEmiten), Grafik Emiten, <code>aliran_investor.json</code></td>
@@ -750,10 +752,10 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 <tr>
 <td>Stock Detail <code>/stock-detail</code></td>
-<td><code>fundamental/&lt;KODE&gt;.json</code> + <code>fundamental/index.json</code>, <code>keuangan/&lt;KODE&gt;.json</code>, <code>keuangan_idx/&lt;KODE&gt;.json</code>, <code>asing/&lt;KODE&gt;.json</code>, <code>pengendali.json</code>, <code>emiten_sektor.json</code>, <code>valuasi_historis.json</code></td>
-<td><strong>fundamental: yfinance + <code>ListedShares</code> IDX + tambalan dari XBRL IDX</strong>; <code>keuangan</code>: yfinance; <code>keuangan_idx</code>: IDX XBRL; asing: IDX; pengendali: IDX XBRL sheet 1000000; valuasi: ⚙️ turunan keuangan_idx + <code>ohlc/</code></td>
-<td><strong>ya</strong> — <code>fundamentalGabungan.ts:198-199</code> menggabung <code>keuangan_idx</code> + <code>keuangan</code> saat dibaca; <code>fundamental/</code> campuran 3 sumber per ruas</td>
-<td>23 Agu 2026</td>
+<td><code>fundamental/&lt;KODE&gt;.json</code> + <code>fundamental/index.json</code>, <code>keuangan/&lt;KODE&gt;.json</code>, <code>keuangan_idx/&lt;KODE&gt;.json</code>, <code>asing/&lt;KODE&gt;.json</code>, <code>pengendali.json</code>, <code>emiten_sektor.json</code>, <code>valuasi_historis.json</code>, <strong>+ 24 Agu 2026: <code>keystats_stockbit/&lt;KODE&gt;.json</code>, <code>profil_stockbit/&lt;KODE&gt;.json</code></strong> (<code>rasioTambahanKeystats.ts</code>)</td>
+<td><strong>fundamental: yfinance + <code>ListedShares</code> IDX + tambalan dari XBRL IDX</strong>; <code>keuangan</code>: yfinance; <code>keuangan_idx</code>: IDX XBRL; asing: IDX; pengendali: IDX XBRL sheet 1000000; valuasi: ⚙️ turunan keuangan_idx + <code>ohlc/</code>; <strong>keystats/profil: Stockbit, murni TAMBAHAN — rasio bank/multifinance + peringkat peer + profil naratif, tak menimpa ruas fundamental lama mana pun</strong></td>
+<td><strong>ya</strong> (fundamental lama, lihat Jahitan) — <code>fundamentalGabungan.ts:198-199</code> menggabung <code>keuangan_idx</code> + <code>keuangan</code> saat dibaca; <code>fundamental/</code> campuran 3 sumber per ruas. <strong>Tidak</strong> untuk tambahan keystats/profil — berdiri sendiri, tak dijahit ke ruas lain</td>
+<td>24 Agu 2026</td>
 </tr>
 <tr>
 <td>Grafik Emiten <code>/grafik</code> (<code>GrafikEmiten.tsx:774,794,1693</code>)</td>
@@ -876,7 +878,7 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 </tbody>
 </table>
-<p>Tiga hal yang terlihat dari peta ini dan belum pernah tertulis di satu tempat: (1) <strong>hampir semua halaman harga emiten memakai <code>ohlc/</code> yang adalah jahitan</strong>, kecuali Broker Summary v2 yang membaca Stockbit murni; (2) <strong><code>fundamental/</code> adalah campuran tiga sumber per ruas</strong> dan halaman Stock Detail menggabungkannya lagi dengan <code>keuangan</code> yfinance saat dibaca; (3) tiga dataset dipanen penuh tapi tidak dibaca halaman mana pun — <code>keystats_stockbit/</code>, <code>info_stockbit/</code>, <code>profil/</code> IDX — plus <code>foreignbuy</code>/<code>foreignsell</code> rupiah chartbit yang sudah ada di berkas tapi belum dipakai, sementara halaman masih menampilkan taksiran rupiah yang meleset 1,33×.</p>
+<p>Tiga hal yang terlihat dari peta ini dan belum pernah tertulis di satu tempat: (1) <strong>hampir semua halaman harga emiten memakai <code>ohlc/</code> yang adalah jahitan</strong>, kecuali Broker Summary v2 yang membaca Stockbit murni; (2) <strong><code>fundamental/</code> adalah campuran tiga sumber per ruas</strong> dan halaman Stock Detail menggabungkannya lagi dengan <code>keuangan</code> yfinance saat dibaca; (3) dua dataset dipanen penuh dan sejak 24 Agu 2026 SUDAH dibaca (<code>keystats_stockbit/</code> → Stock Detail via <code>rasioTambahanKeystats.ts</code>, dan bagian shareholder/subsidiary/direksi <code>profil_stockbit/</code> → Broker Summary v2 Shareholders via <code>brokerProfilKsei.ts</code>; bagian alamat/latar belakang/sekretaris/IPO <code>profil_stockbit/</code> → Stock Detail juga via <code>rasioTambahanKeystats.ts</code>); <code>info_stockbit/</code> dan <code>profil/</code> IDX masih menganggur; <code>foreignbuy</code>/<code>foreignsell</code> rupiah chartbit yang sudah ada di berkas tapi belum dipakai, sementara halaman masih menampilkan taksiran rupiah yang meleset 1,33×.</p>
 
 </div>
 </div></div>
@@ -1035,6 +1037,18 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <td>—</td>
 <td>dicatat</td>
 </tr>
+<tr>
+<td>J13 valuasi pelapor USD</td>
+<td>100 emiten pelapor USD (BUMI, TPIA, …) yang dilewati <code>hitung_valuasi_historis.py</code> <strong>dikonversi ke rupiah</strong>, bukan dilewati. Johan 23 Agu (malam): <em>"Konversi kurs dong"</em>. Kurs: ruas <code>kurs_laporan</code> XBRL tidak bisa dipakai (kosong untuk pelapor USD; untuk pelapor IDR skalanya tidak konsisten — 13.882,5 di 2019 vs 0,016095 di 2024), jadi perlu sumber kurs per tanggal. Inventaris kandidat: (a) BI JISDOR harian (resmi, 2013→, bi.go.id); (b) Yahoo <code>IDR=X</code> harian (gratis, infra panen Yahoo sudah ada); (c) <code>KURS_USD_IDR</code> tunggal di <code>fetch_fundamental.py</code> (hanya kurs terkini — tidak sah untuk tahun buku lampau). Usulan: ekuitas (BV) × kurs penutupan tanggal neraca; laba bersih (EPS) × kurs rata-rata tahun buku (PSAK 10/IAS 21); baris hasil konversi ditandai <code>mata_uang: USD</code> + <code>kurs</code> + <code>sumber_kurs</code> dan disebut "dikonversi" di antarmuka</td>
+<td>tabel pembanding BUMI &amp; TPIA per tahun buku: P/B &amp; P/E hasil konversi (JISDOR vs Yahoo) vs PBV/PE keystats Stockbit kini sebagai uji silang — ditunjukkan ke Johan sebelum <code>valuasi_historis.json</code> ditulis ulang; sumber kurs yang dipilih dicatat di referensi</td>
+<td>arah diputuskan, eksekusi sesi Papan Trading</td>
+</tr>
+<tr>
+<td>J14 panen varian NET</td>
+<td>NET terbukti turunan eksak GROSS (uji 4 emiten × 4 tanggal + FOREIGN, 0 beda — lihat Kamus ruas 12 varian). Usulan agen: hentikan panen 6 varian NET untuk run berikutnya (2017–2025), panggilan API turun 50%, halaman menghitung NET dari GROSS</td>
+<td>backtest 10 emiten × 10 hari × 6 pasangan (5.756 baris, 0 beda) — selesai 22:05; pembaca halaman selalu menghitung NET dari GROSS (berkas NET yang terlanjur ada — 563.591 berkas, 1,40 GB — tidak dibaca; dihapus saat konsolidasi setelah backtest penuh)</td>
+<td><strong>diputuskan Johan 23 Agu 22:25</strong> (<em>"ok send message ke sesi papan"</em> atas tabel hemat 2 jam 2026 / 2,5 hari 2017–2025); eksekusi sesi Papan Trading: runner beralih ke 6 varian GROSS dengan <code>--lanjut</code></td>
+</tr>
 </tbody>
 </table>
 <p>Aturan umumnya masuk ke <code>~/.claude/CLAUDE.md</code> klausul 3c dan <code>kemampuan-workflow.md</code> §WF-206 (cara kerja 3b, kasus 7): sumber terlengkap jadi utama, sumber lama jadi cadangan, tidak dibuang, ditulis di referensi.</p>
@@ -1157,7 +1171,7 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <ul>
 <li><strong>URL / endpoint:</strong> <code>https://www.idx.co.id/primary/TradingSummary/GetStockSummary?date=YYYYMMDD&amp;length=9999&amp;start=0</code> (parameter dari <code>panen_asing.py:87</code>, <code>sinkron_emiten.py:38</code>, <code>idx_net.py:126</code>)</li>
 <li><strong>Jenis:</strong> API tidak resmi (JSON yang dipakai halaman idx.co.id sendiri)</li>
-<li><strong>Akses &amp; batasan:</strong> wajib User-Agent peramban; <strong>IP datacenter ditolak</strong> (GitHub Actions, Netlify → 403; diuji 16 Agu 2026), IP rumahan 200. Satu permintaan = seluruh pasar (963 emiten) untuk satu tanggal. <strong>Arsip mulai 2020-01-02</strong> — tanggal sebelum itu membalas 200 dengan <code>data: []</code> (diuji 18 Agu 2026: 2019-12-30, 2019-12-27, 2019-12-02, 2019-09-02, 2018, 2015, 2010 semua 0 baris). Hari libur juga 0 baris, bukan galat.</li>
+<li><strong>Akses &amp; batasan:</strong> wajib User-Agent peramban; <strong>IP datacenter ditolak</strong> (GitHub Actions → 403; dasbor SPLE pihak lain lewat Netlify Function → 403; diuji 16 Agu 2026 — catatan: hosting PAPAN adalah Vercel, <code>vercel.json</code> di akar repo, bukan Netlify), IP rumahan 200. Satu permintaan = seluruh pasar (963 emiten) untuk satu tanggal. <strong>Arsip mulai 2020-01-02</strong> — tanggal sebelum itu membalas 200 dengan <code>data: []</code> (diuji 18 Agu 2026: 2019-12-30, 2019-12-27, 2019-12-02, 2019-09-02, 2018, 2015, 2010 semua 0 baris). Hari libur juga 0 baris, bukan galat.</li>
 <li><strong>Berkas lokal:</strong> <code>data-idx/json/asing/&lt;KODE&gt;.json</code> — 989 emiten, 2020-01-02 → 21 Agu 2026, ruas <code>tanggal, beli, jual, volume, value, frekuensi</code>, satuan lembar/lembar/lembar/rupiah/kali (diukur, bukan ditebak: se-pasar 18 Agu ForeignBuy 5,03e9 vs Volume 2,88e10 — sebagai lembar 17% volume, wajar; sebagai rupiah 0,04% nilai, mustahil). Mentah ter-gzip di <code>_arsip-mentah/asing/&lt;tahun&gt;/&lt;YYYYMMDD&gt;.json.gz</code> (1.729 berkas, 140 MB) — menambah ruas = <code>panen_asing.py --dari-arsip</code>, 29 detik, nol permintaan. <code>daftar_emiten.json</code> dari <code>ListedShares</code> (<code>sinkron_emiten.py</code>).</li>
 <li><strong>Dipakai untuk:</strong> Stock Detail, Aliran Asing, Broker Summary (Flow, Nego, AsingEmiten), Grafik Emiten (<code>GrafikEmiten.tsx:1693</code>), Panel Aliran Asing Beranda, turunan <code>aliran_investor.json</code></li>
 <li><strong>Bukti di kode:</strong> <code>scripts/panen_asing.py:87</code>, <code>scripts/sinkron_emiten.py:38</code>, <code>scripts/idx_net.py:126</code>, <code>scripts/cek_broker_summary.py:10</code></li>
@@ -2994,6 +3008,61 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tbody>
 </table>
 <p>NET belum bisa diturunkan dari GROSS (dua percobaan gagal: BUMI 9/80, BBCA 19/69, TPIA 19/74 broker cocok) — karena itu NET dipanen sendiri.</p>
+<p><strong>Uji isi berkas (23 Agu 2026 21:00, sesi AI Skill, dari arsip 2026):</strong> tiap berkas varian = respons API mentah (<code>data.broker_summary.brokers_buy/sell</code>, <code>data.bandar_detector</code>, <code>from</code>, <code>to</code>); <strong>10 ruas per broker dan 13 ruas bandar_detector ada di semua 12 varian</strong>, daftar broker penuh (BBCA REGULER 56 beli / 63 jual per hari, bukan top-N). Varian yang kosong pada hari tertentu itu kosong di sumbernya, bukan salah panen: TUNAI BBCA terisi 24/153 hari, TUNAI-asing 1/153; <strong>NET-NEGO kosong walau NEGO terisi</strong> (BBCA 15/153 vs 149/153) karena di papan nego tiap broker membeli dan menjual jumlah yang sama persis (crossing sendiri — BBCA 21 Agu: AK, BB, BK, CD, HP, RX, SQ, XL, ZP semua bval = sval) sehingga NET = 0 dan broker dibuang. Lot di NEGO bisa pecahan (<code>blot</code> 2,47) — odd lot, satuan tetap lot. 153 berkas/tahun memuat 4 hari libur (respons kosong), hari bursa nyata 149.</p>
+<p><strong>Uji turunan NET dari GROSS — backtest 10 emiten × 10 hari bursa (23 Agu 2026 22:05, sesi AI Skill; permintaan Johan <em>"coba backtesting 10 emiten di 10 hari bursa supaya yakin"</em>):</strong> BBCA, BUMI, ANTM, TLKM, GOTO, PEGE, TOOL, NANO, RMKO, TMAS × 2026-08-07→08-21 × 6 pasangan (REGULER/NEGO/TUNAI × ALL/FOREIGN) = <strong>5.756 baris broker dicek, 0 beda, 0 broker ekstra, 0 kasus NET kosong padahal turunan berisi</strong> (<code>.net</code> 4.522, <code>.net-asing</code> 956, <code>.net-nego</code> 179, <code>.net-nego-asing</code> 86, <code>.net-tunai</code> 13, <code>.net-tunai-asing</code> 0 — asing di papan tunai memang tidak ada transaksi). Uji awal 4 emiten × 4 tanggal (1.277 baris) juga 0 beda.</p>
+<p><strong>Kamus ruas varian NET (dibuktikan 3.133 baris beli + 2.623 baris jual, semua 100% cocok):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Ruas NET</th>
+<th>Arti</th>
+<th>Bukti</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>brokers_buy[].bval</code>, <code>.blot</code></td>
+<td><strong>net beli</strong> broker = GROSS <code>bval − sval</code>, <code>blot − slot</code> (hanya broker yang net-nya positif)</td>
+<td>0 beda 10×10</td>
+</tr>
+<tr>
+<td><code>brokers_sell[].sval</code>, <code>.slot</code></td>
+<td><strong>net jual</strong> broker (ditulis negatif) = GROSS <code>bval − sval</code> yang negatif</td>
+<td>0 beda 10×10</td>
+</tr>
+<tr>
+<td><code>bvalv</code> / <code>svalv</code></td>
+<td>nilai <strong>GROSS</strong> broker itu di sisi yang sama (beli untuk net buyer, jual untuk net seller) — bukan ruas misterius</td>
+<td>3.133/3.133 · 2.623/2.623</td>
+</tr>
+<tr>
+<td><code>blotv</code> / <code>slotv</code></td>
+<td>lembar GROSS sisi itu (= lot GROSS × 100), sama dengan <code>blotv/slotv</code> di berkas GROSS</td>
+<td>100%</td>
+</tr>
+<tr>
+<td><code>netbs_buy_avg_price</code> / <code>netbs_sell_avg_price</code></td>
+<td>harga rata-rata GROSS sisi itu (bukan rata-rata net)</td>
+<td>100%</td>
+</tr>
+<tr>
+<td><code>freq</code></td>
+<td>frekuensi GROSS sisi itu</td>
+<td>100%</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>tipe broker (Asing/Lokal/Pemerintah), sama dengan GROSS</td>
+<td>100%</td>
+</tr>
+<tr>
+<td><code>bandar_detector</code> (13 ruas) versi NET</td>
+<td><strong>bukan</strong> salinan GROSS — dihitung dari tabel net: <code>volume</code> = Σ net <code>blot</code> pembeli, <code>value</code> = Σ net <code>bval</code>, <code>average</code> = value ÷ (volume × 100), <code>total_buyer/seller</code>, <code>number_broker_buysell</code>, <code>top-N</code> = Σ N net buyer terbesar + Σ N net seller paling negatif, <code>percent</code> = vol ÷ volume, <code>amount</code> = vol × 100 × average</td>
+<td>rekonstruksi 10 emiten × 12 hari: volume/value/total/number 360/360, average 237/237, top-N vol 347–355/360, percent 358–360/360; label <code>accdist</code> belum (ambang ❓)</td>
+</tr>
+</tbody>
+</table>
+<p>Kesimpulan: berkas NET <strong>tidak memuat satu angka pun yang tidak bisa dihitung dari GROSS</strong> — ia hanya tabel GROSS yang dipisah menjadi net buyer/net seller dengan selisihnya. Varian yang kosong pada hari tertentu kosong di sumbernya (TUNAI BBCA 24/153 hari; NET-NEGO kosong bila tiap broker beli = jual persis, crossing sendiri — BBCA 21 Agu: AK, BB, BK, CD, HP, RX, SQ, XL, ZP semua <code>bval = sval</code>). Lot di NEGO bisa pecahan (<code>blot</code> 2,47). 153 berkas/tahun memuat 4 hari libur (respons kosong), hari bursa nyata 149.</p>
 <h3>10 ruas per broker — <code>broker_summary.brokers_buy</code> (sisi jual <code>brokers_sell</code> cermin: <code>slot slotv sval svalv netbs_sell_avg_price</code>)</h3>
 <table>
 <thead>
@@ -3058,67 +3127,20 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </table>
 <p>Olahan lokal (<code>panen_broker_harian.py</code>): satu baris per broker 7 kolom (<code>broker beli_lot beli_nilai avg_beli jual_lot jual_nilai avg_jual</code>; tanda negatif sisi jual dibuang), disimpan 5 kolom <code>broker beli_lot beli_nilai jual_lot jual_nilai</code>, diurutkan net nilai (<code>bval − sval</code>). Dari sini: net per broker, peringkat, top-N, "bandar" (broker dominan), komposisi Lokal/Asing/Pemerintah, avg broker vs rata-rata pasar.</p>
 <h3>13 ruas <code>bandar_detector</code></h3>
-<table>
-<thead>
-<tr>
-<th>Ruas</th>
-<th>Arti (uji silang)</th>
-<th>Data yang dihasilkan</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>average</code></td>
-<td>harga rata-rata hari itu = value ÷ volume (6.444,61 — sama persis dengan chartbit)</td>
-<td><code>avg</code> di ringkas</td>
-</tr>
-<tr>
-<td><code>avg</code></td>
-<td>{<code>accdist</code>, <code>amount</code> rupiah net, <code>percent</code>, <code>vol</code> lot} — versi harian</td>
-<td>label <strong>Big Acc / Acc / Normal / Dist / Big Dist</strong></td>
-</tr>
-<tr>
-<td><code>avg5</code></td>
-<td>sama, versi 5 hari</td>
-<td>label 5 hari</td>
-</tr>
-<tr>
-<td><code>broker_accdist</code></td>
-<td>label akumulasi/distribusi keseluruhan (Acc / Dist)</td>
-<td><code>accdist</code> di ringkas</td>
-</tr>
-<tr>
-<td><code>number_broker_buysell</code></td>
-<td>= <code>total_buyer</code> − <code>total_seller</code> (56 − 63 = −7 ✓)</td>
-<td>lebar partisipasi</td>
-</tr>
-<tr>
-<td><code>top1</code>, <code>top3</code>, <code>top5</code>, <code>top10</code></td>
-<td>{<code>accdist</code>, <code>amount</code>, <code>percent</code>, <code>vol</code>} net beli broker teratas N; <code>percent</code> top1 = 414.372 ÷ 1.006.843 = 41,16% ✓ terhadap volume hari itu — tapi top5 132,7% (&gt;100%), jadi pembagi pastinya belum terbaca ❓</td>
-<td>konsentrasi <code>top1_pct top3_pct top5_pct</code></td>
-</tr>
-<tr>
-<td><code>total_buyer</code></td>
-<td>jumlah broker sisi beli</td>
-<td><code>n_beli</code></td>
-</tr>
-<tr>
-<td><code>total_seller</code></td>
-<td>jumlah broker sisi jual</td>
-<td><code>n_jual</code></td>
-</tr>
-<tr>
-<td><code>value</code></td>
-<td>nilai transaksi rupiah hari itu</td>
-<td>cek silang ke chartbit <code>value</code></td>
-</tr>
-<tr>
-<td><code>volume</code></td>
-<td>volume lot hari itu (1.006.843 = chartbit <code>lot</code> ✓)</td>
-<td><code>cocok_volume</code></td>
-</tr>
-</tbody>
-</table>
+<p><strong>Per varian, bukan satu per hari:</strong> tiap berkas varian membawa <code>bandar_detector</code>-nya sendiri, dihitung dari tabel broker varian itu (BBCA 21 Agu — REGULER volume 1.006.843, FOREIGN 799.208, NEGO 21.246, NET 544.153 = Σ net beli). Dengan J14, enam <code>bandar_detector</code> GROSS tetap dipanen; enam versi NET tidak dipanen lagi — angkanya dapat dihitung ulang dengan rumus di bawah (<code>volume</code> = Σ lot beli, <code>top-N</code> = Σ N terbesar dua sisi, <code>percent</code>, <code>amount</code>), kecuali <strong>label <code>accdist</code></strong> yang ambang batasnya belum terbaca ❓ (berkas NET 2026 yang terlanjur ada untuk 517 emiten menjadi himpunan uji untuk menebaknya).<br />
+| Ruas | Arti (uji silang) | Data yang dihasilkan |<br />
+|---|---|---|<br />
+| <code>average</code> | harga rata-rata hari itu = value ÷ volume (6.444,61 — sama persis dengan chartbit) | <code>avg</code> di ringkas |<br />
+| <code>avg</code> | {<code>accdist</code>, <code>amount</code>, <code>percent</code>, <code>vol</code>} — <code>vol</code> adalah rata-rata jendela N hari dari metrik yang sama (BBCA 21 Agu: 1.093.153,2; <code>percent</code> = <code>vol</code> ÷ volume hari itu = 108,57% ✓; <code>amount</code> = <code>vol</code> × 100 × <code>average</code> ✓); <strong>N belum terbaca ❓</strong> — bukan rata-rata 5/10/20/30 hari <code>lot</code> chartbit (diuji, tidak cocok) | label <strong>Big Acc / Acc / Normal / Dist / Big Dist</strong> |<br />
+| <code>avg5</code> | sama, angka lain (941.082,8) — <strong>masih ❓</strong>. Yang sudah dicoba dan TIDAK cocok (jangan diulang): rata-rata 2–60 hari bursa maupun 2–60 hari kalender (÷W atau ÷hari bursa) dari <code>volume</code>, <code>value</code>, <code>top1/3/5/10.vol</code>, termasuk/tanpa hari ini; statistik satu hari (Σmax(beli,jual), Σ|beli−jual|, rata-rata top-k dua sisi). Bukan penghalang: halaman PAPAN tidak memakai <code>avg</code>/<code>avg5</code> | — |<br />
+| <code>broker_accdist</code> | label akumulasi/distribusi keseluruhan | <code>accdist</code> di ringkas |<br />
+| label <code>accdist</code> (di <code>avg</code>, <code>avg5</code>, <code>top1..top10</code>) | <strong>terpecahkan 23 Agu 22:55</strong> (15 emiten × 40 hari, 2.230 blok): fungsi murni dari <code>percent</code> bertanda — <strong>Big Acc</strong> ≥ 20 · <strong>Normal Acc</strong> 12,5–20 · <strong>Small Acc</strong> 6–12,5 · <strong>Neutral</strong> −6…6 · <strong>Small Dist</strong> −12,5…−6 · <strong>Normal Dist</strong> −20…−12,5 · <strong>Big Dist</strong> ≤ −20 (tujuh tingkat, bukan lima). Karena <code>percent</code> di berkas GROSS selalu positif dan ≥ 20 (dua sisi dijumlah), label di GROSS <strong>selalu "Big Acc"</strong> (1.115/1.115) — tidak bermakna; label hanya bermakna di varian NET, dan <code>percent</code> NET dapat dihitung dari GROSS (≥96%), jadi labelnya ikut terhitung | label Acc/Dist 7 tingkat |<br />
+| <code>number_broker_buysell</code> | = <code>total_buyer</code> − <code>total_seller</code> (56 − 63 = −7 ✓) | lebar partisipasi |<br />
+| <code>top1</code>, <code>top3</code>, <code>top5</code>, <code>top10</code> | {<code>accdist</code>, <code>amount</code>, <code>percent</code>, <code>vol</code>} — <strong>terpecahkan 23 Agu 22:40</strong> (uji 10 emiten × 12 hari): <code>vol</code> = Σ lot beli N pembeli terbesar <strong>+</strong> Σ lot jual N penjual terbesar (BBCA 21 Agu: CC 213.569 + RX 200.803 = 414.372 ✓; top3 = 599.012 + 402.925 = 1.001.937 ✓), cocok 110/120 REGULER, 116/118 FOREIGN (sisanya peringkat menurut nilai, bukan lot); <code>percent</code> = <code>vol</code> ÷ <code>volume</code> hari itu (120/120) — <strong>dua sisi dijumlahkan, jadi maksimum 200%, &gt;100% bukan galat</strong>; <code>amount</code> = <code>vol</code> × 100 × <code>average</code> (120/120) — bukan nilai transaksi nyata broker itu. Di berkas varian NET rumus yang sama dipakai pada tabel net (beli = net buyer terbesar, jual = net seller paling negatif; 98/120 dan 111/117 cocok) | konsentrasi <code>top1_pct top3_pct top5_pct</code> (skala 0–200%) |<br />
+| <code>total_buyer</code> | jumlah broker sisi beli | <code>n_beli</code> |<br />
+| <code>total_seller</code> | jumlah broker sisi jual | <code>n_jual</code> |<br />
+| <code>value</code> | nilai transaksi rupiah hari itu | cek silang ke chartbit <code>value</code> |<br />
+| <code>volume</code> | volume lot hari itu (1.006.843 = chartbit <code>lot</code> ✓) | <code>cocok_volume</code> |</p>
 <p>Ringkas turunan lokal (10): <code>n_beli n_jual total_lot total_nilai avg top1_pct top3_pct top5_pct accdist cocok_volume</code> — <code>cocok_volume</code> = Σ beli_lot × 100 ÷ Volume OHLC tanggal itu, wajib 1,0000 ± 1%.</p>
 <h3>17 kolom chartbit — OHLCV Stockbit (<code>ohlcv_stockbit/&lt;KODE&gt;.json</code> → <code>kolom</code>)</h3>
 <table>
@@ -3284,6 +3306,838 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tbody>
 </table>
 <p>Ditambah <code>financial_year_groups</code> (revenue dkk per tahun, Q1–Q4 <strong>diskret</strong> + annualised + TTM) dan <code>most_recent_quarter</code> (tanggal kuartal, saham beredar, market cap, EV, free float). Dihasilkan: Stock Detail bagian valuasi/solvabilitas/efektivitas tanpa menghitung sendiri; rasio khusus bank yang tidak ada di yfinance; peringkat relatif terhadap pasar.</p>
+<h3>Kamus per-ruas 94 rasio keystats — satuan, fill rate, tabrakan dgn fundamental lama (24 Agu 2026)</h3>
+<p>Perintah Johan 24 Agu 2026, verbatim: <em>"sekalian pasang OHLCV di emiten, IHSG, serta Keystat dan Profile, kirim agent-agent"</em>. Sub-bagian ini kamus per-ruas yang diminta eksplisit — tiap ruas: satuan (dibuktikan dari NILAI, bukan ditebak dari nama — aturan proyek), berapa dari 963 berkas terisi, dan apakah ruas itu SUDAH tayang dari fundamental lama (kolom "Tabrakan?"). Kalau tabrakan = ya, ruas itu <strong>tidak</strong> diganti — lihat tabel pembanding di bawah. Kalau tabrakan = tidak, ruas itu murni tambahan.</p>
+<p>Satuan <code>%</code> berarti nilainya sudah datang dengan tanda <code>%</code> dari sumber (string, langsung dipakai apa adanya, tak perlu dikali/dibagi 100). Satuan <code>x</code> = rasio kali. Satuan <code>Rp</code> = rupiah per lembar. Satuan <code>Rp (agregat)</code> = rupiah total (ditulis dengan sufiks <code>B</code>=miliar).</p>
+<p><strong>Current Valuation (14 ruas)</strong></p>
+<table>
+<thead>
+<tr>
+<th>Ruas</th>
+<th>Satuan</th>
+<th>Terisi/963</th>
+<th>Tabrakan?</th>
+<th>Padanan lama</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Current PE Ratio (Annualised)</td>
+<td>x</td>
+<td>961 (100%)</td>
+<td>ya</td>
+<td><code>pe_annualised</code></td>
+</tr>
+<tr>
+<td>Current PE Ratio (TTM)</td>
+<td>x</td>
+<td>914 (95%)</td>
+<td>ya</td>
+<td><code>pe</code></td>
+</tr>
+<tr>
+<td>Forward PE Ratio</td>
+<td>x</td>
+<td>109 (11%, jarang terisi)</td>
+<td>ya (definisi beda — lihat pembanding)</td>
+<td><code>forward_pe</code></td>
+</tr>
+<tr>
+<td>IHSG PE Ratio TTM (Median)</td>
+<td>x</td>
+<td>963 (100%, sama di semua emiten — statistik pasar, bukan per-emiten)</td>
+<td>tidak</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Earnings Yield (TTM)</td>
+<td>%</td>
+<td>911 (95%)</td>
+<td>ya</td>
+<td><code>earn_yield</code></td>
+</tr>
+<tr>
+<td>Current Price to Sales (TTM)</td>
+<td>x</td>
+<td>910 (94%)</td>
+<td>ya</td>
+<td><code>ps</code></td>
+</tr>
+<tr>
+<td>Current Price to Book Value</td>
+<td>x</td>
+<td>960 (100%)</td>
+<td>ya</td>
+<td><code>pbv</code>/<code>pb</code></td>
+</tr>
+<tr>
+<td>Current Price To Cashflow (TTM)</td>
+<td>x</td>
+<td>915 (95%)</td>
+<td>ya</td>
+<td><code>price_cf</code></td>
+</tr>
+<tr>
+<td>Current Price To Free Cashflow (TTM)</td>
+<td>x</td>
+<td>916 (95%)</td>
+<td>ya</td>
+<td><code>price_fcf</code></td>
+</tr>
+<tr>
+<td>EV to EBIT (TTM)</td>
+<td>x</td>
+<td>883 (92%)</td>
+<td>ya (lama terisi ~58% sampel)</td>
+<td><code>ev_ebit</code></td>
+</tr>
+<tr>
+<td>EV to EBITDA (TTM)</td>
+<td>x</td>
+<td>916 (95%)</td>
+<td>ya (lama terisi ~87% sampel)</td>
+<td><code>ev_ebitda</code></td>
+</tr>
+<tr>
+<td>PEG Ratio</td>
+<td>x</td>
+<td>705 (73%)</td>
+<td>ya — <strong>nilainya menyimpang jauh (lihat pembanding), tidak dipasang</strong></td>
+<td><code>peg</code></td>
+</tr>
+<tr>
+<td>PEG Ratio (3yr)</td>
+<td>x</td>
+<td>754 (78%)</td>
+<td>tidak (varian baru, lama cuma 1 PEG)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>PEG (Forward)</td>
+<td>x</td>
+<td>108 (11%, jarang terisi)</td>
+<td>tidak</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Per Share (6 ruas)</strong></p>
+<table>
+<thead>
+<tr>
+<th>Ruas</th>
+<th>Satuan</th>
+<th>Terisi/963</th>
+<th>Tabrakan?</th>
+<th>Padanan lama</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Current EPS (TTM)</td>
+<td>Rp</td>
+<td>912 (95%)</td>
+<td>ya</td>
+<td><code>eps</code></td>
+</tr>
+<tr>
+<td>Current EPS (Annualised)</td>
+<td>Rp</td>
+<td>961 (100%)</td>
+<td>tidak (lama cuma EPS TTM + forward, bukan annualised)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Revenue Per Share (TTM)</td>
+<td>Rp</td>
+<td>910 (94%)</td>
+<td>ya</td>
+<td><code>rev_ps</code></td>
+</tr>
+<tr>
+<td>Cash Per Share (Quarter)</td>
+<td>Rp</td>
+<td>957 (99%)</td>
+<td>ya (definisi beda — lihat pembanding)</td>
+<td><code>cash_ps</code></td>
+</tr>
+<tr>
+<td>Current Book Value Per Share</td>
+<td>Rp</td>
+<td>960 (100%)</td>
+<td>ya</td>
+<td><code>bv</code></td>
+</tr>
+<tr>
+<td>Free Cashflow Per Share (TTM)</td>
+<td>Rp</td>
+<td>914 (95%)</td>
+<td>ya</td>
+<td><code>fcf_ps</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Solvency (14 ruas)</strong></p>
+<table>
+<thead>
+<tr>
+<th>Ruas</th>
+<th>Satuan</th>
+<th>Terisi/963</th>
+<th>Tabrakan?</th>
+<th>Padanan lama</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NPL - Gross</td>
+<td>%</td>
+<td>44 (5%, bank saja)</td>
+<td>tidak</td>
+<td>— <strong>DIPASANG (Rasio Perbankan)</strong></td>
+</tr>
+<tr>
+<td>NPL - Coverage</td>
+<td>%</td>
+<td>44 (5%, bank)</td>
+<td>tidak</td>
+<td>— <strong>DIPASANG</strong></td>
+</tr>
+<tr>
+<td>Capital Adequacy Ratio</td>
+<td>%</td>
+<td>48 (5%, bank)</td>
+<td>tidak</td>
+<td>— <strong>DIPASANG</strong></td>
+</tr>
+<tr>
+<td>Loan to Deposit Ratio</td>
+<td>%</td>
+<td>44 (5%, bank)</td>
+<td>tidak</td>
+<td>— <strong>DIPASANG</strong></td>
+</tr>
+<tr>
+<td>Current Ratio (Quarter)</td>
+<td>x</td>
+<td>860 (89%)</td>
+<td>ya</td>
+<td><code>current_ratio</code></td>
+</tr>
+<tr>
+<td>Quick Ratio (Quarter)</td>
+<td>x</td>
+<td>861 (89%)</td>
+<td>ya</td>
+<td><code>quick_ratio</code></td>
+</tr>
+<tr>
+<td>Debt to Equity Ratio (Quarter)</td>
+<td>x (RASIO, bukan %)</td>
+<td>738 (77%)</td>
+<td>ya — cocok dengan <code>der_q</code>, <strong>bukan</strong> <code>der</code> (yang skalanya beda 100×)</td>
+<td><code>der_q</code></td>
+</tr>
+<tr>
+<td>LT Debt/Equity (Quarter)</td>
+<td>x</td>
+<td>584 (61%)</td>
+<td>ya</td>
+<td><code>lt_der_q</code></td>
+</tr>
+<tr>
+<td>Total Liabilities/Equity (Quarter)</td>
+<td>x</td>
+<td>959 (100%)</td>
+<td>ya</td>
+<td><code>tl_eq_q</code></td>
+</tr>
+<tr>
+<td>Total Debt/Total Assets (Quarter)</td>
+<td>x</td>
+<td>726 (75%)</td>
+<td>ya</td>
+<td><code>td_ta_q</code></td>
+</tr>
+<tr>
+<td>Financial Leverage (Quarter)</td>
+<td>x</td>
+<td>961 (100%)</td>
+<td>ya</td>
+<td><code>lev_q</code></td>
+</tr>
+<tr>
+<td>Interest Coverage (TTM)</td>
+<td>x</td>
+<td>732 (76%)</td>
+<td>ya (lama terisi ~53% sampel)</td>
+<td><code>interest_coverage</code></td>
+</tr>
+<tr>
+<td>Free cash flow (Quarter)</td>
+<td>Rp (agregat)</td>
+<td>959 (100%)</td>
+<td>tidak (lama cuma FCF TTM)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Altman Z-Score (Modified)</td>
+<td>angka mentah (bukan %)</td>
+<td>961 (100%)</td>
+<td>ya (lama terisi ~57% sampel, median rasio baru/lama = 0,9993 — cocok erat)</td>
+<td><code>altman_z</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Management Effectiveness (13 ruas)</strong></p>
+<table>
+<thead>
+<tr>
+<th>Ruas</th>
+<th>Satuan</th>
+<th>Terisi/963</th>
+<th>Tabrakan?</th>
+<th>Padanan lama</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Return on Assets (TTM)</td>
+<td>%</td>
+<td>962 (100%)</td>
+<td>ya — lama <code>roa</code> RASIO (0,035), baru PERSEN (3,50): beda skala 100×, bukan beda definisi</td>
+<td><code>roa</code></td>
+</tr>
+<tr>
+<td>Return on Equity (TTM)</td>
+<td>%</td>
+<td>962 (100%)</td>
+<td>ya — sama, lama <code>roe</code> RASIO</td>
+<td><code>roe</code></td>
+</tr>
+<tr>
+<td>Return on Capital Employed (TTM)</td>
+<td>%</td>
+<td>962 (100%)</td>
+<td>ya (lama terisi ~57% sampel)</td>
+<td><code>roce</code></td>
+</tr>
+<tr>
+<td>Return On Invested Capital (TTM)</td>
+<td>%</td>
+<td>910 (94%)</td>
+<td>ya (lama terisi ~53% sampel)</td>
+<td><code>roic</code></td>
+</tr>
+<tr>
+<td>CASA Ratio</td>
+<td>%</td>
+<td>48 (5%, bank)</td>
+<td>tidak</td>
+<td>— <strong>DIPASANG</strong></td>
+</tr>
+<tr>
+<td>Cost of Credit</td>
+<td>%</td>
+<td>48 (5%, bank)</td>
+<td>tidak</td>
+<td>— <strong>DIPASANG</strong></td>
+</tr>
+<tr>
+<td>Days Sales Outstanding (Quarter)</td>
+<td>hari</td>
+<td>834 (87%)</td>
+<td>ya</td>
+<td><code>days_sales_outstanding</code></td>
+</tr>
+<tr>
+<td>Days Inventory (Quarter)</td>
+<td>hari</td>
+<td>753 (78%)</td>
+<td>ya</td>
+<td><code>days_inventory</code></td>
+</tr>
+<tr>
+<td>Days Payables Outstanding (Quarter)</td>
+<td>hari</td>
+<td>797 (83%)</td>
+<td>ya</td>
+<td><code>days_payables</code></td>
+</tr>
+<tr>
+<td>Cash Conversion Cycle (Quarter)</td>
+<td>hari</td>
+<td>785 (82%)</td>
+<td>ya</td>
+<td><code>cash_conversion_cycle</code></td>
+</tr>
+<tr>
+<td>Receivables Turnover (Quarter)</td>
+<td>x</td>
+<td>828 (86%)</td>
+<td>ya</td>
+<td><code>receivables_turnover</code></td>
+</tr>
+<tr>
+<td>Inventory Turnover (TTM)</td>
+<td>x</td>
+<td>716 (74%)</td>
+<td>ya</td>
+<td><code>inventory_turnover</code></td>
+</tr>
+<tr>
+<td>Asset Turnover (TTM)</td>
+<td>x</td>
+<td>897 (93%)</td>
+<td>ya</td>
+<td><code>asset_turnover</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Profitability (4 ruas)</strong> — semua % kuartal, terisi 93–99%. GPM/OPM/NPM tabrakan dgn <code>gpm</code>/<code>opm</code>/<code>npm</code> lama (persen); NIM (Net Interest Margin, 48/963 bank saja) tidak tabrakan — <strong>DIPASANG</strong>.</p>
+<p><strong>Growth (3 ruas)</strong> — Revenue/Gross Profit/Net Income QoQ-YoY, % kuartal, terisi 93–99%. Tabrakan dgn <code>rev_yoy</code>/<code>gp_yoy</code>/<code>ni_yoy</code> lama (median rasio baru/lama 0,99–1,00 — cocok erat, dua per tiga sampel identik persis).</p>
+<p><strong>Dividend (5 ruas)</strong> — Dividend, Dividend TTM, Payout Ratio, Dividend Yield, Latest Ex-Date; terisi 43–63% (banyak emiten tak pernah bagi dividen). Semua tabrakan dgn <code>dividend</code>/<code>dividend_ttm</code>/<code>payout_ratio</code>/<code>dividend_yield</code>/<code>ex_dividend_date</code> lama. Dividend, Dividend TTM &amp; Dividend Yield cocok erat (median rasio 1,0000); <strong>Payout Ratio menyimpang di ~30% sampel</strong> (lihat pembanding) — tidak dipasang.</p>
+<p><strong>Market Rank (9 ruas)</strong></p>
+<table>
+<thead>
+<tr>
+<th>Ruas</th>
+<th>Satuan</th>
+<th>Terisi/963</th>
+<th>Tabrakan?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Piotroski F-Score</td>
+<td>0–9</td>
+<td>962 (100%)</td>
+<td>ya — <strong>nilainya beda sistematis ×1,4 dari <code>f_score</code> lama (skema skor tampak berbeda), tidak dipasang</strong></td>
+</tr>
+<tr>
+<td>EPS Rating</td>
+<td>% (0–100, gaya IBD)</td>
+<td>24 (2%, hampir selalu kosong)</td>
+<td>tidak, tapi terlalu jarang untuk dipasang</td>
+</tr>
+<tr>
+<td>Relative Strength Rating</td>
+<td>% (0–100)</td>
+<td>962 (100%)</td>
+<td>tidak — di luar cakupan tugas ini, diserahkan Johan</td>
+</tr>
+<tr>
+<td>Rank (Market Cap)</td>
+<td>% (persentil)</td>
+<td>960 (100%)</td>
+<td>tidak — <strong>DIPASANG (Peringkat Antar Emiten)</strong></td>
+</tr>
+<tr>
+<td>Rank (Current PE Ratio TTM)</td>
+<td>% (persentil)</td>
+<td>785 (82%)</td>
+<td>tidak — <strong>DIPASANG</strong></td>
+</tr>
+<tr>
+<td>Rank (Earnings Yield)</td>
+<td>% (persentil)</td>
+<td>868 (90%)</td>
+<td>tidak — <strong>DIPASANG</strong></td>
+</tr>
+<tr>
+<td>Rank (P/S)</td>
+<td>% (persentil)</td>
+<td>950 (99%)</td>
+<td>tidak — <strong>DIPASANG</strong></td>
+</tr>
+<tr>
+<td>Rank (P/B)</td>
+<td>% (persentil)</td>
+<td>962 (100%)</td>
+<td>tidak — <strong>DIPASANG</strong></td>
+</tr>
+<tr>
+<td>Rank (Near 52 Weeks High)</td>
+<td>% (persentil)</td>
+<td>962 (100%)</td>
+<td>tidak — <strong>DIPASANG</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Income Statement, Balance Sheet, Cash Flow Statement (15 ruas gabungan)</strong> — Revenue/Gross Profit/EBITDA/Net Income TTM, Cash/Total Assets/Total Liabilities/Working Capital/Common Equity/Total Equity kuartal, CFO/CFI/CFF/Capex/FCF TTM — semua Rp agregat, terisi 89–100%, SEMUA tabrakan dengan ruas <code>ttm_*</code>/<code>lq_*</code>/<code>cashflow_ttm.*</code> lama yang sudah tayang di panel Laporan Keuangan. Tidak disentuh.</p>
+<p><strong>Price Performance (11 ruas)</strong> — 1W/1M/3M/6M/1Y/3Y/5Y/10Y/YTD return + 52w High/Low, % dan Rp, terisi 51–90% (kian panjang jangka waktu kian sering kosong — emiten baru listing). Tabrakan dgn <code>price_perf.*</code> lama untuk 1W–1Y+YTD (median rasio ~1,00 pada sampel yang cocok); <strong>10 Year Price Returns murni tambahan</strong> (lama mentok 5Y). Tidak dipasang — marjinal, di luar cakupan sesi ini.</p>
+<h3>Kunci profil_stockbit — fill rate &amp; apa isinya (24 Agu 2026)</h3>
+<p>963/963 emiten dipanen. Kolom "Dipasang?" — ya = dibaca <code>rasioTambahanKeystats.ts</code> (Stock Detail, 24 Agu 2026); sudah lain = dibaca <code>brokerProfilKsei.ts</code> (Broker Summary v2 Shareholders, agen lain, tanggal tak diketahui sesi ini).</p>
+<table>
+<thead>
+<tr>
+<th>Kunci</th>
+<th>Isinya</th>
+<th>Terisi/963</th>
+<th>Dipasang?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>address</code></td>
+<td>alamat kantor pusat, telepon, fax, NPWP, email, situs</td>
+<td>945 (98%)</td>
+<td>ya (Stock Detail)</td>
+</tr>
+<tr>
+<td><code>background</code></td>
+<td>deskripsi bisnis Bahasa Indonesia (naratif, bisa &gt;1.500 karakter)</td>
+<td>962 (100%)</td>
+<td>ya (Stock Detail)</td>
+</tr>
+<tr>
+<td><code>history</code></td>
+<td>tanggal pencatatan awal, harga perdana, jumlah saham awal, penjamin emisi, biro administrasi</td>
+<td>963 (100%)</td>
+<td>ya (Stock Detail, sub "Pencatatan Awal")</td>
+</tr>
+<tr>
+<td><code>secretary</code></td>
+<td>nama + telepon + email sekretaris perusahaan (JSON bersarang dalam string)</td>
+<td>769 (80%)</td>
+<td>ya (Stock Detail)</td>
+</tr>
+<tr>
+<td><code>key_executive</code></td>
+<td>komisaris/direksi/komisaris independen dengan nama lengkap</td>
+<td>963 (100%)</td>
+<td>sudah lain (Broker Summary v2)</td>
+</tr>
+<tr>
+<td><code>shareholder</code></td>
+<td>pemegang saham ≥5% + label pengendali</td>
+<td>957 (99%)</td>
+<td>sudah lain (Broker Summary v2)</td>
+</tr>
+<tr>
+<td><code>shareholder_one_percent</code></td>
+<td>pemegang saham ≥1% rinci (jenis lokal/asing, korporasi/individu)</td>
+<td>963 (100%)</td>
+<td>sudah lain (Broker Summary v2)</td>
+</tr>
+<tr>
+<td><code>shareholder_director_commissioner</code></td>
+<td>kepemilikan saham oleh direksi/komisaris sendiri</td>
+<td>624 (65%)</td>
+<td>sudah lain (Broker Summary v2)</td>
+</tr>
+<tr>
+<td><code>shareholder_numbers</code></td>
+<td>jumlah pemegang saham bulanan (deret waktu KSEI)</td>
+<td>957 (99%)</td>
+<td>tidak dipasang (di luar cakupan)</td>
+</tr>
+<tr>
+<td><code>subsidiary</code></td>
+<td>anak usaha: nama, persentase kepemilikan, bidang usaha</td>
+<td>736 (76%)</td>
+<td>sudah lain (Broker Summary v2)</td>
+</tr>
+<tr>
+<td><code>beneficiary</code></td>
+<td>pemilik manfaat akhir (ultimate beneficial owner)</td>
+<td>937 (97%)</td>
+<td>tidak dipasang (di luar cakupan — data sensitif kepemilikan, biarkan agen Broker Summary yang putuskan tempatnya)</td>
+</tr>
+<tr>
+<td><code>listing_information</code></td>
+<td>info exercise/expire untuk instrumen turunan (opsi/waran) — kosong untuk saham biasa</td>
+<td>963 (100%, tapi isi per-ruas nyaris selalu 0/kosong untuk saham biasa)</td>
+<td>tidak dipasang (nyaris tak berisi apa-apa untuk saham biasa)</td>
+</tr>
+<tr>
+<td><code>ringkasan</code></td>
+<td>hitungan jumlah pemegang saham/anak usaha/eksekutif</td>
+<td>963 (100%)</td>
+<td>tidak dipasang (turunan dari kunci lain, redundan)</td>
+</tr>
+<tr>
+<td><code>asset_allocation</code>, <code>classification</code>, <code>fee</code>, <code>pdf</code>, <code>shareholder_reksa</code>, <code>top_holdings</code></td>
+<td>kosong 0/963 di seluruh populasi — kemungkinan khusus reksa dana/ETF, bukan saham</td>
+<td>0 (0%)</td>
+<td>tidak — kosong total, tak ada yang bisa dipasang</td>
+</tr>
+</tbody>
+</table>
+<h3>Tabel pembanding — fundamental lama vs keystats, ruas yang ADA di kedua sumber (24 Agu 2026)</h3>
+<p>Sampel acak (<code>random.seed(42)</code>) 40–60 emiten dari 963, dibandingkan berpasangan (hanya emiten yang kedua sisinya terisi). Median = median rasio nilai_baru ÷ nilai_lama. <strong>Kolom terakhir = rekomendasi</strong> — bukan keputusan, Johan yang memutuskan.</p>
+<table>
+<thead>
+<tr>
+<th>Ruas</th>
+<th>n pasangan</th>
+<th>Median rasio baru/lama</th>
+<th>Baca</th>
+<th>Rekomendasi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PE (TTM)</td>
+<td>26</td>
+<td>1,0011</td>
+<td>cocok erat</td>
+<td>aman kalau suatu saat mau dirotasi — TAPI di luar cakupan sesi ini (sudah tayang, tak disentuh)</td>
+</tr>
+<tr>
+<td>PE (Annualised)</td>
+<td>22</td>
+<td>0,7778*</td>
+<td>*median tertarik 1 outlier (COCO, PE negatif kecil) — tanpa itu kisaran 0,94–1,04</td>
+<td>cocok cukup erat</td>
+</tr>
+<tr>
+<td>Earnings Yield</td>
+<td>26</td>
+<td>0,9975</td>
+<td>cocok erat</td>
+<td>—</td>
+</tr>
+<tr>
+<td>PBV</td>
+<td>36</td>
+<td>1,0033</td>
+<td>cocok erat</td>
+<td>—</td>
+</tr>
+<tr>
+<td>P/S</td>
+<td>36</td>
+<td>1,0005</td>
+<td>cocok erat</td>
+<td>—</td>
+</tr>
+<tr>
+<td>P/Cashflow</td>
+<td>35</td>
+<td>1,0132</td>
+<td>cocok cukup erat</td>
+<td>—</td>
+</tr>
+<tr>
+<td>P/FCF</td>
+<td>35</td>
+<td>0,9749</td>
+<td>cocok, noise besar di penyebut dekat nol</td>
+<td>—</td>
+</tr>
+<tr>
+<td>EPS (TTM)</td>
+<td>37</td>
+<td>0,9982</td>
+<td>cocok erat</td>
+<td>—</td>
+</tr>
+<tr>
+<td>BV/Share</td>
+<td>39</td>
+<td>1,0000</td>
+<td>cocok persis</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Revenue/Share</td>
+<td>36</td>
+<td>1,0000</td>
+<td>cocok persis</td>
+<td>—</td>
+</tr>
+<tr>
+<td>FCF/Share</td>
+<td>35</td>
+<td>0,9977</td>
+<td>cocok, noise di penyebut dekat nol</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Cash/Share</td>
+<td>—</td>
+<td>—</td>
+<td><strong>definisi beda</strong> — BBCA lama 779 vs baru 171 (4,6×), bukan sekadar noise</td>
+<td><strong>jangan disamakan</strong> — kemungkinan lama termasuk setara kas, baru cuma kas murni</td>
+</tr>
+<tr>
+<td>DER (rasio <code>der_q</code>)</td>
+<td>15</td>
+<td>0,9973</td>
+<td>cocok erat — konfirmasi <code>der_q</code> (rasio) yang cocok, BUKAN <code>der</code> (skala beda 100×)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Liabilities/Equity</td>
+<td>24</td>
+<td>1,0004</td>
+<td>cocok erat</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Financial Leverage</td>
+<td>24</td>
+<td>0,9998</td>
+<td>cocok erat</td>
+<td>—</td>
+</tr>
+<tr>
+<td>ROE</td>
+<td>39</td>
+<td>98,39×</td>
+<td>cocok — beda murni skala (lama rasio 0,16, baru persen 15,29 → ×100 pas)</td>
+<td>tampilkan baru sebagai PERSEN kalau dipasang</td>
+</tr>
+<tr>
+<td>ROA</td>
+<td>35</td>
+<td>110,6×</td>
+<td>beda skala TAPI tak rapi ×100 (kisaran ×104–138×) — indikasi definisi TTM sedikit beda, bukan cuma skala</td>
+<td>hati-hati kalau mau dipasang berdampingan</td>
+</tr>
+<tr>
+<td>Dividend Yield</td>
+<td>14</td>
+<td>1,0000</td>
+<td>cocok erat</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Payout Ratio</td>
+<td>8</td>
+<td>83,07×</td>
+<td>beda skala TAPI kisaran ×53–102× (OMED 25,15 vs 47,78 kalau dikali 100) — <strong>nilai kadang beda ~2×</strong>, bukan cuma noise</td>
+<td><strong>jangan disamakan tanpa keputusan Johan</strong></td>
+</tr>
+<tr>
+<td>Market Cap</td>
+<td>40</td>
+<td>1,0000</td>
+<td>cocok erat</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Shares Outstanding</td>
+<td>40</td>
+<td>1,0000</td>
+<td>cocok erat</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Free Float %</td>
+<td>36</td>
+<td>0,9505</td>
+<td>kisaran lebar (BEBS 0,36×, DUTI 1,50×) — definisi kemungkinan beda (mis. treasury shares diperlakukan beda)</td>
+<td><strong>jangan disamakan tanpa keputusan Johan</strong></td>
+</tr>
+<tr>
+<td>Asset Turnover</td>
+<td>23</td>
+<td>0,9972</td>
+<td>cocok erat</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Revenue YoY</td>
+<td>22</td>
+<td>1,0000</td>
+<td>cocok erat (mayoritas identik persis)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Net Income YoY</td>
+<td>23</td>
+<td>0,9856</td>
+<td>cocok erat</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Piotroski F-Score</td>
+<td>59</td>
+<td>1,4000</td>
+<td><strong>beda sistematis</strong> — OMED 5→7, AKRA 4→6, DUTI 4→6, semua naik ~1,4× rapi, bukan noise</td>
+<td><strong>jangan disamakan</strong> — kemungkinan skema skor 9-komponen berbeda; F-Score lama (<code>f_score</code>/<code>f_score_n</code>) SUDAH tayang di Panel Skor &amp; Struktur</td>
+</tr>
+<tr>
+<td>PEG Ratio</td>
+<td>3 (sangat jarang keduanya terisi)</td>
+<td>0,05×</td>
+<td>sampel terlalu kecil + rentang liar (0,02×–2,3×)</td>
+<td><strong>jangan disamakan</strong> — data terlalu jarang untuk dipercaya</td>
+</tr>
+<tr>
+<td>Dividend TTM</td>
+<td>28</td>
+<td>1,0000</td>
+<td>cocok persis</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Altman Z-Score</td>
+<td>34</td>
+<td>0,9993</td>
+<td>cocok erat</td>
+<td>sudah tayang (<code>altman_z</code>), tak disentuh</td>
+</tr>
+<tr>
+<td>ROIC</td>
+<td>32</td>
+<td>88,31×</td>
+<td>beda skala tak rapi (×42×–102×) — mirip ROA, TTM window kemungkinan beda</td>
+<td>sudah tayang (<code>roic</code>), tak disentuh</td>
+</tr>
+<tr>
+<td>ROCE</td>
+<td>34</td>
+<td>101,0×</td>
+<td>beda skala rapi ~×100, cocok cukup erat</td>
+<td>sudah tayang (<code>roce</code>), tak disentuh</td>
+</tr>
+<tr>
+<td>EV/EBIT</td>
+<td>33</td>
+<td>0,9557</td>
+<td>cocok cukup erat (1 outlier tanda beda)</td>
+<td>sudah tayang (<code>ev_ebit</code>), tak disentuh</td>
+</tr>
+<tr>
+<td>EV/EBITDA</td>
+<td>49</td>
+<td>0,9785</td>
+<td>cocok cukup erat</td>
+<td>sudah tayang (<code>ev_ebitda</code>), tak disentuh</td>
+</tr>
+<tr>
+<td>Interest Coverage</td>
+<td>32</td>
+<td>0,9986</td>
+<td>cocok erat</td>
+<td>sudah tayang (<code>interest_coverage</code>), tak disentuh</td>
+</tr>
+<tr>
+<td>Current Ratio</td>
+<td>50</td>
+<td>1,0000</td>
+<td>cocok persis</td>
+<td>sudah tayang (<code>current_ratio</code>), tak disentuh</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Catatan penting:</strong> baris "sudah tayang … tak disentuh" berarti Stock Detail SUDAH menampilkan ruas ini dari fundamental lama (<code>PanelSolvency</code>/<code>PanelEfektivitas</code>/<code>PanelValuasi</code>/<code>PanelSkor</code> di <code>stock-detail/KolomValuasi.tsx</code>) — jauh lebih lengkap dari yang diduga sebelum sesi ini dimulai (memori lama menyebut <code>altman_z</code>/<code>roic</code>/<code>roce</code> "sengaja kosong"; ternyata sudah terisi 53–58% sampel dan sudah dirender). Sesi ini <strong>tidak menimpa satu pun</strong> dari ruas-ruas itu — hanya menambah kelompok yang benar-benar tak dimiliki sumber lama (bank/multifinance, peringkat peer, profil naratif).</p>
+<h3>Yang dipasang ke Stock Detail (24 Agu 2026) — murni tambahan</h3>
+<p><code>app/src/lib/dasbor/rasioTambahanKeystats.ts</code> (baru) dibaca <code>StockDetail.tsx</code>, tiga panel baru di tab Statistik:<br />
+1. <strong>Rasio Perbankan/Multifinance</strong> — 10 ruas (NPL Gross/Coverage, NPF Gross/Coverage Syariah, CASA, CAR, LDR, Financing-to-Deposit, NIM, Cost of Credit). Panel disembunyikan total untuk emiten non-keuangan (~915 dari 963) — bukan baris kosong berbaris-baris.<br />
+2. <strong>Peringkat Antar Emiten IDX</strong> — 6 persentil (Kapitalisasi Pasar, P/E TTM, Earnings Yield, P/S, P/BV, Kedekatan ke Tertinggi 52 Minggu).<br />
+3. <strong>Profil Perusahaan</strong> — latar belakang bisnis (naratif Bahasa Indonesia), kantor pusat (alamat/telepon/email/situs), sekretaris perusahaan, ringkasan pencatatan awal (IPO).</p>
+<p>Diverifikasi laptop 1536×960×1,25 dan telepon 412×915×2,625 untuk BBCA (bank, ketiga panel tampil) dan ASII (non-bank, panel bank tersembunyi, dua panel lain tampil).</p>
+<p><strong>Keputusan yang diserahkan ke Johan</strong> (bukan dipasang, karena berpotensi membingungkan pembaca kalau ditaruh berdampingan dengan angka yang sudah dipercaya):<br />
+- Piotroski F-Score baru (beda sistematis ×1,4 dari yang tayang)<br />
+- PEG Ratio baru (sampel silang terlalu jarang, rentang liar)<br />
+- Payout Ratio baru (menyimpang ~2× di sebagian sampel)<br />
+- Free Float % baru (definisi kemungkinan beda treasury shares)<br />
+- Cash Per Share baru (4,6× beda di BBCA — definisi "cash" kemungkinan beda cakupan)<br />
+- 10 Year Price Returns, EPS/Relative Strength Rating — di luar cakupan sesi ini, fill rate rendah atau nilainya marjinal untuk keputusan investasi</p>
 <h3>32 ruas IDX <code>GetStockSummary</code> (diambil 6 + <code>ListedShares</code>)</h3>
 <p><code>No IDStockSummary Date StockCode StockName Remarks Previous OpenPrice FirstTrade High Low Close Change Volume Value Frequency IndexIndividual Offer OfferVolume Bid BidVolume ListedShares TradebleShares WeightForIndex ForeignSell ForeignBuy DelistingDate NonRegularVolume NonRegularValue NonRegularFrequency persen percentage</code>.</p>
 <table>
@@ -3636,6 +4490,256 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </div>
 </section>
 
+<section id="prototipe-dev-kuli-papan-neo-papan-artifact-23-agu-2026" data-title="Prototipe Dev — Kuli Papan &amp; Neo Papan (artifact, 23 Agu 2026)">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Prototipe Dev — Kuli Papan &amp; Neo Papan (artifact, 23 Agu 2026)</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<p>Asal: Johan 23 Agu 2026 — <em>"bantu saya buatan artifact dari 2 page baru untuk Papan Trading, dimana buat menu Baru dengan nama Dev dimana 2 ada page baru, pertama Kuli Papan, kedua Neo Papan, bahan nya ada di … data ide, coba pelajari buat artifactnya, analisa kebutuhan data nya baru bangun dari data stockbit"</em>. Bahan: <code>data ide/Kuli Papan.pdf</code> (kalkulator Target Realistis — formula adimollogy &amp; buruhIHSG — dan PBV Band), <code>data ide/Neo Papan.pdf</code> (12 halaman referensi NeoBDM). Hasil: <code>data ide/dev-kuli-neo-papan.html</code> (mandiri, 7,2 MB, data tertanam; dibuka langsung di browser) + artifact privat <code>https://claude.ai/code/artifact/b5234bdd-0a64-459f-b024-d5015258d20c</code>. Pemadat data: <code>data ide/bangun_data_dev.py</code> (membaca arsip proyek, ±195 detik, 962 berkas OHLCV) + <code>data ide/dev-kuli-neo-papan.template.html</code> (placeholder <code>__DATA_JSON__</code>). Cakupan prototipe (keputusan Johan): 8 emiten likuid (BBCA, BBRI, BMRI, TLKM, ASII, ANTM, BUMI, TPIA), OHLCV sejak Okt 2025, broker 2026 YTD; Broker Stalker memakai semua emiten yang arsip 2026-nya sudah ada saat dibuat (155; arsip terus bertambah). Uji tampilan: desktop 1920×1080 (terang &amp; gelap) dan ponsel 412×915 — dua viewport, sesuai arahan Johan untuk proyek ini (aturan global menyebut tiga; konflik dilaporkan, keputusan di Johan).</p>
+<h3>Peta halaman prototipe → sumber</h3>
+<table>
+<thead>
+<tr>
+<th>Halaman / tab</th>
+<th>Data tertanam yang dibaca</th>
+<th>Sumber asal</th>
+<th>Jahitan?</th>
+<th>Catatan kejujuran</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kuli Papan · Target Realistis</td>
+<td><code>broker[K][tgl].a.b</code> (buy avg &amp; lot per broker, hari terakhir), <code>bidoffer[K]</code> (Bid/Offer/volume penutupan), tick dari close</td>
+<td>Stockbit marketdetectors REGULER·ALL·GROSS; IDX GetStockSummary arsip 21 Agu</td>
+<td>tidak</td>
+<td>Total Bid/Offer lot = input manual (orderbook penuh hanya di Stockbit Pro, paywall); nilai awal = antrean penutupan level terbaik IDX. Rumus direkonstruksi penuh dan mereproduksi contoh DEWA di PDF (41 papan · 133.024,37 · 7/3,5 · 26,35 · Rp 570,86 / 588,37)</td>
+</tr>
+<tr>
+<td>Kuli Papan · PBV Band</td>
+<td><code>fund[K]</code> (BVPS, PBV, PE keystats; P/B tahunan 2019→ dari <code>valuasi_historis.json</code>; close)</td>
+<td>Stockbit keystats + IDX XBRL (valuasi_historis) + chartbit</td>
+<td>tidak</td>
+<td><code>valuasi_historis.json</code> berisi <strong>814 emiten</strong> (P/E &amp; P/B tahunan 2019→ dari XBRL × ohlc × ListedShares); <strong>100 emiten pelapor USD dilewati</strong> (<code>hitung_valuasi_historis.py</code> baris 49–50), termasuk BUMI dan TPIA dari 8 emiten prototipe — PBV band keduanya kosong sampai ada keputusan konversi kurs (keputusan Johan)</td>
+</tr>
+<tr>
+<td>Neo · Transaction Chart</td>
+<td><code>ohlcv[K]</code> (12 kolom), <code>ohlcv[IHSG]</code>, <code>broker[K].a.p</code> (partisipasi tipe), <code>broker[K].a.d</code> (bandar_detector ringkas)</td>
+<td>Stockbit chartbit + marketdetectors</td>
+<td>tidak</td>
+<td>money flow asing = <code>foreignbuy − foreignsell</code> chartbit (rupiah). Kartu TOP1/3/5 memakai <code>percent</code> top-N Stockbit yang bisa &gt;100% (ruas ❓ di Kamus ruas)</td>
+</tr>
+<tr>
+<td>Neo · Inventory Chart &amp; Compare Inventory</td>
+<td><code>broker[K]</code> harian (25 broker teratas per sisi)</td>
+<td>Stockbit marketdetectors</td>
+<td>tidak</td>
+<td>broker di luar 25 besar per hari dihitung 0 — versi produksi membaca daftar penuh</td>
+</tr>
+<tr>
+<td>Neo · Broker Stalker</td>
+<td><code>stalker.all/foreign[N][K][broker]</code> = Σ bval/sval/lot per jendela N hari bursa (kalender global 1/2/3/5/10/20/60); <code>cakupan</code> per emiten</td>
+<td>Stockbit marketdetectors GROSS ALL &amp; FOREIGN</td>
+<td>tidak</td>
+<td>emiten dengan arsip &lt; N hari ditandai. Angka AK+BK 5 hari mereproduksi tangkapan layar NeoBDM 14–21 Agu (BBRI 495,5 B, AMMN 286,7 B, TPIA −210,8 B, BMRI −166,2 B)</td>
+</tr>
+<tr>
+<td>Neo · Balance Position</td>
+<td><code>ksei[K]</code> 22 kolom × 79 bulan</td>
+<td>KSEI Balancepos</td>
+<td>tidak</td>
+<td>cakupan scripless saja (BBCA 42,55% dari tercatat) ditulis di layar; lonjakan Okt 2021 BBCA = pemecahan saham 1:5</td>
+</tr>
+<tr>
+<td>Neo · Seasonality</td>
+<td><code>seasonality[K]</code> (hari kerja &amp; bulan, 12 tahun)</td>
+<td>dihitung dari chartbit riwayat penuh</td>
+<td>tidak</td>
+<td>IHSG Stockbit mulai 1997-07</td>
+</tr>
+<tr>
+<td>Neo · Rotation Chart</td>
+<td><code>rotation.periode[N][sektor]</code> (RS-Ratio, RS-Momentum z-score, mingguan)</td>
+<td>indeks sektor rata-rata setara dari 962 emiten chartbit + <code>emiten_sektor.json</code> vs IHSG</td>
+<td>⚙️ turunan</td>
+<td>pendekatan RRG (normalisasi z), bukan rumus JdK — ditulis di layar</td>
+</tr>
+<tr>
+<td>Neo · Sector / Index Activity</td>
+<td><code>activity.sektor/indeks</code> (porsi nilai transaksi, MA-20)</td>
+<td>chartbit value 962 emiten + <code>emiten_sektor.json</code> + <code>info_stockbit.indexes</code></td>
+<td>⚙️ turunan</td>
+<td>definisi "Activity" milik PAPAN, bukan NeoBDM — ditulis di layar</td>
+</tr>
+<tr>
+<td>Neo · Lot Sizing</td>
+<td>close terakhir <code>ohlcv[K]</code></td>
+<td>chartbit</td>
+<td>tidak</td>
+<td>kalkulator murni</td>
+</tr>
+</tbody>
+</table>
+<p>Yang sengaja tidak ada: login/subscription/streaming NeoBDM, intraday, orderbook, Done Detail (butuh done-trade per transaksi yang tidak dipanen), Market Summary/Home (sudah ada di PAPAN).</p>
+<h3>Kalau direalisasikan di PAPAN — data emiten yang sudah siap dipakai (diukur 23 Agu 2026 19:19)</h3>
+<table>
+<thead>
+<tr>
+<th>Kebutuhan halaman</th>
+<th>Dataset yang sudah ada</th>
+<th>Cakupan terukur</th>
+<th>Cukup untuk semua emiten?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Candle/volume/asing (Transaction, Seasonality, Lot Sizing, Rotation, Activity)</td>
+<td><code>data-idx/json/ohlcv_stockbit/&lt;K&gt;.json</code> (17 kolom chartbit, riwayat penuh)</td>
+<td><strong>963/963</strong> emiten + IHSG</td>
+<td>✅ ya</td>
+</tr>
+<tr>
+<td>Broker harian 12 varian (Inventory, Compare, Stalker, Kuli Papan buy-avg)</td>
+<td><code>_arsip-mentah/broker-harian/&lt;K&gt;/2026-*.json</code> + 11 akhiran varian</td>
+<td><strong>268/962</strong> emiten punya 2026 (217 ≥140 hari bursa, 24 sebagian, 27 baru mulai); 448.927 berkas 2026; runner 36-paralel masih menulis ±3.100 berkas/menit (93.372 berkas dalam 30 menit terakhir)</td>
+<td>⏳ sisa ±694 emiten ≈ 6–7 jam lagi pada laju ini; 2017–2025 belum</td>
+</tr>
+<tr>
+<td>Tipe broker (Asing/Lokal/Pemerintah) untuk partisipasi &amp; net per tipe</td>
+<td>ruas <code>type</code> di marketdetectors (per baris broker)</td>
+<td>ikut berkas broker di atas</td>
+<td>✅ (ikut cakupan broker)</td>
+</tr>
+<tr>
+<td>Kepemilikan bulanan (Balance Position)</td>
+<td><code>data-idx/json/kepemilikan/&lt;K&gt;.json</code> dari KSEI Balancepos (79 bulan)</td>
+<td><strong>1.036</strong> berkas (termasuk non-saham)</td>
+<td>✅ ya</td>
+</tr>
+<tr>
+<td>Fundamental ringkas (PBV Band: BVPS, PBV, PE)</td>
+<td><code>data-idx/json/keystats_stockbit/&lt;K&gt;.json</code> (94 rasio)</td>
+<td><strong>963/963</strong></td>
+<td>✅ nilai kini; riwayat tahunan tidak</td>
+</tr>
+<tr>
+<td>P/B tahunan 2019→ (PBV band rata-rata)</td>
+<td><code>data-idx/json/valuasi_historis.json</code> (dari <code>hitung_valuasi_historis.py</code>: XBRL audit × ohlc × ListedShares, basis saham hari ini)</td>
+<td><strong>814 emiten</strong>; 100 pelapor USD dilewati (BUMI, TPIA, …)</td>
+<td>⚠️ ya untuk pelapor IDR; pelapor USD butuh keputusan konversi kurs (tahun buku × kurs akhir tahun?) — keputusan Johan, bukan agen</td>
+</tr>
+<tr>
+<td>Sektor &amp; keanggotaan indeks (Rotation, Activity)</td>
+<td><code>emiten_sektor.json</code> (IDX-IC) + <code>info_stockbit/&lt;K&gt;.json</code> (<code>indexes</code>)</td>
+<td>964</td>
+<td>✅ ya</td>
+</tr>
+<tr>
+<td>Bid/Offer penutupan (Kuli Papan nilai awal)</td>
+<td>IDX GetStockSummary arsip harian</td>
+<td>semua emiten, 1 hari per berkas</td>
+<td>✅ level terbaik saja; orderbook penuh tidak ada sumber gratis</td>
+</tr>
+<tr>
+<td>Done Detail (NeoBDM)</td>
+<td>tidak ada</td>
+<td>—</td>
+<td>❌ butuh done-trade per transaksi (tidak dipanen, tidak ada di inventaris)</td>
+</tr>
+</tbody>
+</table>
+<p>Inti: semua tab Neo Papan dan Kuli Papan bisa dijalankan untuk <strong>seluruh emiten</strong> dari sumber yang sudah dipanen, dengan dua pengecualian yang bergantung waktu/keputusan — broker 2026 menunggu runner selesai (lalu 2017–2025 menyusul sesuai estimasi section "Estimasi panen penuh"), dan PBV band untuk 100 emiten pelapor USD menunggu keputusan konversi kurs. Pemadat <code>bangun_data_dev.py</code> tinggal diberi daftar emiten penuh; untuk produksi data tidak ditanam ke HTML melainkan dibaca per halaman seperti halaman PAPAN lain.</p>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="batas-repo-hosting-github-dan-vercel-diukur-23-agu-2026" data-title="Batas repo &amp; hosting — GitHub dan Vercel (diukur 23 Agu 2026)">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Batas repo &amp; hosting — GitHub dan Vercel (diukur 23 Agu 2026)</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<p>Asal: Johan 23 Agu 2026 — <em>"berapa estimasi size jika semua data itu ter unduh? dan bagaimana terhadap github karena kita ada data broker summary, bnyk ruas itu dan ada bulletin?"</em> · <em>"kepikiran untuk memangkas data bnyk ruas itu rentang misal 10 tahun, tapi juga butuh sebagai koleksi atau backup semua data itu untuk di jalankan misal di localhost atau bisa jadi hosting yang lebih besar"</em> · koreksi: <em>"saya pakai vercel bukan netlify"</em> (rujukan "Netlify" di dokumen lama = dasbor SPLE/gedanggoreng milik pihak lain, bukan PAPAN).</p>
+<p><strong>Hosting PAPAN = Vercel</strong> (<code>vercel.json</code>: <code>cd app &amp;&amp; npm install &amp;&amp; npm run build</code>, output <code>app/dist</code>; build menyalin <code>../data-idx/json</code> apa adanya — lihat komentar <code>.gitignore</code>). Halaman membaca <code>/data-idx/json/&lt;berkas&gt;</code> relatif ke situs, jadi <strong>apa pun yang dibaca halaman harus ada di repo dan ikut build</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Batas</th>
+<th>GitHub</th>
+<th>Vercel (docs <code>/docs/limits</code>, diperbarui 3 Agu 2026)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ukuran</td>
+<td>berkas &gt;100 MB ditolak, peringatan &gt;50 MB; repo disarankan &lt;1 GB, &lt;5 GB sangat disarankan; LFS gratis 1 GB simpan + 1 GB/bulan</td>
+<td>unggah sumber lewat CLI 100 MB (Hobby) / 1 GB (Pro); <strong>tidak ada batas ukuran berkas keluaran build</strong>, tetapi build wajib selesai 45 menit; disk build 32 GB</td>
+</tr>
+<tr>
+<td>Jumlah berkas</td>
+<td>tidak dibatasi, tetapi <code>status</code>/<code>checkout</code>/Actions melambat di ratusan ribu berkas</td>
+<td>15.000 berkas sumber untuk deploy CLI; keluaran build tak dibatasi, "100.000+ berkas keluaran = build lama"</td>
+</tr>
+<tr>
+<td>Lalu lintas</td>
+<td>—</td>
+<td>Fast Data Transfer 100 GB/bulan (Hobby), 1 TB (Pro)</td>
+</tr>
+<tr>
+<td>Deploy</td>
+<td>—</td>
+<td>100 deploy/hari (Hobby)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ukuran sekarang (disk, 23 Agu 2026):</strong> repo tracked 13.538 berkas / 743 MB (693 MB = <code>data-idx/json</code>), pack <code>.git</code> 302 MB; arsip mentah di luar git 1,09 jt berkas / 9,2 GB (<code>broker-harian</code> 3,56 GB · XBRL xlsx 4,13 GB · chartbit mentah 1,02 GB · PDF IDX 437 MB + bulletin <code>arus-pasar</code> 114 MB, 39 MB di antaranya ter-track).</p>
+<p><strong>Proyeksi broker summary penuh</strong> (962 emiten × ±241 hari bursa/tahun; sampel 40 emiten × 24 hari 2026: 12 varian = 33,7 KB/emiten-hari mentah, 7,5 KB gz; 6 varian GROSS = 20,0 KB / 4,1 KB gz):</p>
+<table>
+<thead>
+<tr>
+<th>Rentang</th>
+<th>12 varian mentah / gz</th>
+<th>6 varian (NET dihitung) mentah / gz</th>
+<th>Berkas (12 / 6 varian)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 tahun</td>
+<td>7,8 GB / 1,7 GB</td>
+<td>4,6 GB / 0,95 GB</td>
+<td>2,8 jt / 1,4 jt</td>
+</tr>
+<tr>
+<td>2017–2026 (batas atas, semua emiten semua hari)</td>
+<td>78 GB / 17 GB</td>
+<td>46 GB / 9,5 GB</td>
+<td>28 jt / 14 jt</td>
+</tr>
+<tr>
+<td>realistis (emiten pra-IPO balas kosong ±0,7 KB, saham tipis kecil)</td>
+<td>±50 GB / ±11 GB</td>
+<td>±30 GB / ±6 GB</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Riwayat broker Stockbit mulai 2017, jadi "10 tahun" = seluruh riwayat, bukan pemangkasan.</p>
+<p><strong>Konsekuensi:</strong> arsip broker <strong>tidak pernah masuk git maupun build Vercel</strong> — satu tahun saja 2,8 jt berkas / 7,8 GB (build 45 menit tidak akan cukup, repo melewati batas nyaman). Pola yang sudah benar dipertahankan: mentah di luar git, <strong>turunan ringkas</strong> yang dibaca halaman di <code>data-idx/json/</code> (contoh <code>broker_harian/&lt;K&gt;.json</code> jendela 20 hari, 472 emiten = 39,7 MB). PDF sumber IDX tumbuh ±2 MB/hari ≈ 700 MB/tahun — 1–2 tahun lagi harus keluar dari disk repo juga.</p>
+<p><strong>Usulan tiga lapis (menunggu keputusan Johan):</strong><br />
+1. Koleksi penuh di luar git, dipadatkan per emiten-tahun (<code>&lt;K&gt;/&lt;tahun&gt;.json.gz</code> berisi semua hari × varian): 962 × 10 ≈ 9.600 berkas, 6–17 GB — satu juta berkas kecil adalah beban NTFS/backup (menyalin 1 jt berkas berjam-jam, 9.600 berkas menit). Backup: disk eksternal + penyimpanan objek gratis 10 GB (Cloudflare R2 / Backblaze B2) untuk versi gz; GitHub Releases (aset ≤2 GB) hanya untuk bundel berversi, bukan backup rutin.<br />
+2. Turunan halaman di repo dipangkas sesuai kebutuhan halaman: harian penuh 1–2 tahun terakhir; 2017→ cukup agregat per emiten-bulan (net per broker, Σ nilai).<br />
+3. Satu setelan <code>VITE_DATA_BASE</code>: localhost → arsip penuh; Vercel → turunan di repo; hosting besar kelak (VPS / R2+CDN) → data penuh. Satu kode, tiga sumber.</p>
+<p>Keputusan yang diminta dari Johan: (a) J14 NET dihitung dari GROSS, tidak dipanen; (b) konsolidasi per emiten-tahun gz; (c) tempat backup.</p>
+
+</div>
+</div></div>
+</div>
+</section>
+
 <section id="riwayat" data-title="Riwayat">
 <div class="section-toggle is-open">
 <button type="button" class="section-summary"><span class="chevron">▾</span><h2>Riwayat</h2></button>
@@ -3655,6 +4759,21 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <li>23 Agustus 2026 (malam) — satuan <code>GetBrokerSummary</code> terpecahkan dengan uji silang ke total pasar GetStockSummary 21 Agu: vol/val/frek = lembar/rupiah/kali, dua sisi (beli + jual), semua papan — rasio 2,046 / 2,003 / 2,019.</li>
 <li>23 Agustus 2026 (malam) — "Estimasi panen penuh dari Stockbit" ditambahkan dari pengukuran langsung (latensi API, throughput runner dari mtime arsip, 149 hari bursa 2026, 962 emiten): broker 12 varian 2026 ≈ 3 hari, 2017–2025 ≈ 24 hari; OHLCV riwayat penuh sudah selesai.</li>
 <li>23 Agustus 2026 (malam) — tabel skala paralel 12/24/36 untuk broker 2026 ditambahkan (siklus pekerja ≈ 1,07 s; linear sampai 429; 24/36 belum diuji).</li>
+<li>23 Agustus 2026 (malam) — section "Prototipe Dev — Kuli Papan &amp; Neo Papan" ditambahkan: peta 10 tab → sumber, batas kejujuran per tab, tabel "kalau direalisasikan" dengan cakupan terukur (OHLCV 963/963, broker 2026 268/962 dan masih berjalan, KSEI 1.036, keystats 963, valuasi_historis 814 emiten, 100 pelapor USD dilewati). Berkas di <code>data ide/</code>.</li>
+<li>23 Agustus 2026 (malam) — KOREKSI: angka "valuasi_historis hanya 5 emiten" yang sempat ditulis salah (menghitung kunci tingkat atas, bukan isi <code>emiten</code>); yang benar 814 emiten, BUMI &amp; TPIA tidak ada karena melapor USD.</li>
+<li>23 Agustus 2026 (malam) — J13: Johan memutuskan pelapor USD dikonversi ke rupiah ("Konversi kurs dong"); inventaris kandidat kurs + usulan cara + prasyarat tabel pembanding dicatat; spek realisasi Dev (Kuli Papan + Neo 8 tab, tanpa Lot Sizing) dikirim ke sesi Papan Trading.</li>
+<li>23 Agustus 2026 (malam) — runner broker 2026 (run ke-6, paralel 44, jeda 0,4) <strong>berhenti 21:01 karena token Stockbit kedaluwarsa — refresh ditolak HTTP 401 UNAUTHORIZED</strong> (mulai di FUJI 2026-06-10); 254 emiten selesai penuh di run itu, 144 [SEBAGIAN], 564 gagal 0 hari; arsip 944.004 berkas / 398 emiten. Uji isi 12 varian dicatat di Kamus ruas (10 + 13 ruas lengkap; NET-NEGO kosong = crossing sendiri).</li>
+<li>23 Agustus 2026 (malam) — uji NET = GROSS(bval−sval, blot−slot) per broker: cocok persis 4 emiten × 4 tanggal + FOREIGN (1.277 baris, 0 beda); ruas <code>bvalv/svalv</code> di NET = nilai GROSS sisi itu. J14 (hentikan panen NET) diusulkan, menunggu keputusan Johan.</li>
+<li>23 Agustus 2026 (malam) — koreksi Johan: hosting PAPAN <strong>Vercel</strong> (bukan Netlify; rujukan Netlify di dokumen = dasbor SPLE/gedanggoreng pihak lain) — dua kalimat di section GetStockSummary diperjelas. Section baru "Batas repo &amp; hosting — GitHub dan Vercel": batas terbaca dari docs Vercel 3 Agu 2026 (15.000 berkas sumber CLI, 45 menit build, 100 GB transfer/bulan Hobby), ukuran disk terukur, proyeksi broker penuh (78 GB / 17 GB gz batas atas; 46 / 9,5 GB bila NET dihitung), usulan tiga lapis.</li>
+<li>23 Agustus 2026 (malam) — backtest NET = GROSS diperluas atas permintaan Johan: 10 emiten × 10 hari bursa × 6 pasangan = 5.756 baris, 0 beda; kamus ruas NET lengkap (bvalv/svalv/blotv/slotv/avg/freq = sisi GROSS).</li>
+<li>23 Agustus 2026 (malam) — J14 diputuskan: NET tidak dipanen lagi, dihitung dari GROSS; berkas NET yang terlanjur (563.591, 1,40 GB) tidak dibaca halaman, dihapus saat konsolidasi. Pesan eksekusi (alih runner ke 6 varian, lock <code>token_segar</code>, <code>requests.Session</code>, lewati tanggal pra-IPO) dikirim ke sesi Papan Trading.</li>
+<li>23 Agustus 2026 (malam) — <code>bandar_detector</code> dibedah: top-N = Σ N pembeli terbesar + Σ N penjual terbesar (dua sisi → percent maks 200%), amount = vol × 100 × average, per varian berbeda; ❓ tersisa: jendela <code>avg</code>/<code>avg5</code>, ambang label <code>accdist</code>, <code>freq_analyzer</code>.</li>
+<li>23 Agustus 2026 (malam) — uji "6 varian cukup?": seluruh berkas NET direkonstruksi dari GROSS — 10 ruas per broker 6.854/6.854 baris 100%; bandar_detector NET numerik ≥96% (average = Σnet bval ÷ Σnet blot×100, 237/237); yang tidak bisa: label accdist (ambang ❓) dan jendela avg/avg5 ❓.</li>
+<li>23 Agustus 2026 (malam) — label <code>accdist</code> terpecahkan: 7 tingkat dari <code>percent</code> bertanda dengan ambang ±6 / ±12,5 / ±20; di GROSS selalu "Big Acc". <code>avg</code>/<code>avg5</code> tetap ❓ setelah brute force jendela bursa &amp; kalender 2–60 hari.</li>
+<li>23 Agustus 2026 (malam) — <strong>uji lapangan Broker Summary v2 di localhost (BUMI, sesi AI Skill, Vite 5174)</strong>: Overview (33/47 broker, net 9,6 jt lot / Rp 188,50 M, kotor 1,23 T, daftar broker, Top1–5 lot/%/nilai, label), Inventory 1 bulan (LG/SS/PD/RF vs CC/ZP/XL/XC), Flow Net vs Gross (LG 373,89 M/134,27 M/35,9%, CC 1,41 T/365,46 M/26,0%), VS IHSG 126 hari (−18,33%/−19,47%, β 1,89, r 0,71, α +18,40%, vol 77,4%/29,3%, win 43,2%), Timeline Foreign 6 bln (−4,52 T = Σ foreignbuy−foreignsell chartbit), Shareholders KSEI 31 Jul (asing 69,1%, Δ12 bln −11,0 pp; cakupan KSEI BUMI 100% tercatat) — <strong>semua cocok persis dengan arsip mentah</strong>. Dua cacat kecil: (1) tab Nego menulis "22 hari ber-data" padahal 20 — <code>broker_tahunan</code> menyimpan kunci <code>nego</code> untuk hari yang berkas nego-nya kosong (07 &amp; 11 Agu); (2) lot pecahan di nego dibulatkan ke bilangan bulat di <code>broker_tahunan</code> (YP 0,65 lot → 1; DH 0,05 → 0) sehingga harga rata-rata dihitung ulang salah (YP 107, seharusnya 164 = <code>netbs_buy_avg_price</code>; DH "—"). Ponsel 412: tidak ada overflow; tombol ‹ › rentang tanggal terpisah sendirian dari kotak tanggal (rapian kecil).</li>
+<li>24 Agustus 2026 (00:12) — <strong>panen broker 2026 selesai</strong>: 955/962 emiten lengkap (≥149 hari), 7 sisanya emiten IPO 2026 dengan ±30 hari (RANS, PRDL, BACH, EMMI, JECX, JELI, …) — bukan kekurangan; GROSS 2026 879.066 berkas (6 varian, J14). Paralel dinaikkan sesi Papan Trading bertahap 44 → 88 → 128 → 256 tanpa 429/GAGAL sejak run ke-9 (batas "50 putus koneksi" siang hari tidak berlaku lagi — patut dicatat penyebabnya di sesi itu, diduga keep-alive). Run 2025 (6 varian, paralel 256, <code>logs/backfill_2025_6varian.log</code>) mulai 00:20.</li>
+<li>24 Agustus 2026 (03:58) — <strong>panen broker 2025 selesai</strong>: run utama 217,5 menit (paralel 256, 6 varian, GROSS 1.339.524 berkas, 955/962 emiten tersentuh — 7 sisanya IPO 2026; 929 lengkap ≥236 hari, sisanya IPO/suspensi 2025) + <strong>run tambal</strong> 0,7 menit (paralel 96) menutup 35 emiten bermasalah (36 GAGAL reset koneksi 10054, 0 429/403). Arsip broker-harian total 2.916.649 berkas. 2017–2024 belum; harian ke depan 6 varian ≈ 5.772 panggilan ≈ 2 menit.</li>
+<li>24 Agustus 2026 (07:45) — kamus per-ruas lengkap 94 rasio keystats + 9 kunci profil_stockbit ditambahkan (fill rate per ruas dari sapuan 963/963 berkas, satuan dibuktikan dari nilai, bukan ditebak); tabel pembanding 34 ruas fundamental-lama-vs-keystats (median rasio hitung-ulang, sampel acak 40-60 emiten) — temuan penting: PanelSolvency/PanelEfektivitas/PanelSkor SUDAH menayangkan altman_z/roic/roce/f_score/ev_ebit/ev_ebitda dari fundamental lama (bukan selalu kosong seperti tercatat di memori lama), jadi sesi ini MURNI menambah kelompok yang tak dimiliki sumber lama sama sekali: rasio bank/multifinance (10 ruas, ~48/963 emiten), peringkat persentil peer (6 ruas), dan profil naratif (alamat/latar belakang/sekretaris/IPO) di app/src/lib/dasbor/rasioTambahanKeystats.ts (baru) + StockDetail.tsx. Piotroski F-Score baru, PEG Ratio baru, Payout Ratio baru, Free Float % baru, Cash Per Share baru diukur MENYIMPANG dari versi lama yang sudah tayang (bukan cuma beda skala) - diserahkan ke Johan, tidak dipasang.</li>
 </ul>
 </div>
 </div></div>

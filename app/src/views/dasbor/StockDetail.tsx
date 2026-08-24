@@ -22,6 +22,7 @@ import { IkonMenu, IKON_CARI, IKON_PERINGATAN, IKON_JAM } from '../../components
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { usePengendali, pengendaliEmiten, labelPengendali } from '../../lib/dasbor/pengendali'
 import { tanggalPendek } from '../../lib/dasbor/statistikBerkala'
+import { muatTambahanKeystats, type TambahanKeystats } from '../../lib/dasbor/rasioTambahanKeystats'
 import './StockDetail.css'
 
 type Tab = 'statistik' | 'valuasi' | 'banding'
@@ -48,6 +49,142 @@ function RasioCell({ lbl, v, cls, sub }: { lbl: string; v: ReactNode; cls?: stri
       <span className="lbl">{lbl}</span>
       <div className={`v num${cls ? ' ' + cls : ''}`}>{v}</div>
       <span className="sub">{sub ?? ' '}</span>
+    </div>
+  )
+}
+
+function persen(v: number | null): string {
+  return v != null ? Number(v).toFixed(2) + '%' : '—'
+}
+
+/** Baris label + nilai rata-kanan — sama pola dengan TR() di KolomValuasi.tsx. */
+function BarisTambahan({ lbl, val }: { lbl: string; val: ReactNode }) {
+  return (
+    <tr>
+      <td>{lbl}</td>
+      <td className="r num">{val}</td>
+    </tr>
+  )
+}
+
+/**
+ * Rasio bank/multifinance — ruas yang TAK DIPUNYAI fundamental lama sama
+ * sekali (yfinance tak punya rasio industri spesifik ini). Kosong total
+ * untuk ~915 emiten non-keuangan; panel tak dirender kalau begitu, bukan
+ * menampilkan baris "—" berbaris-baris.
+ */
+function PanelRasioBank({ bank }: { bank: TambahanKeystats['bank'] }) {
+  if (!bank) return null
+  return (
+    <div className="panel">
+      <div className="panel-h"><span className="lbl">Rasio Perbankan/Multifinance</span></div>
+      <div className="panel-b">
+        <table>
+          <tbody>
+            <BarisTambahan lbl="NPL Gross" val={persen(bank.nplGross)} />
+            <BarisTambahan lbl="NPL Coverage" val={persen(bank.nplCoverage)} />
+            <BarisTambahan lbl="NPF Gross (Syariah)" val={persen(bank.npfGross)} />
+            <BarisTambahan lbl="NPF Coverage (Syariah)" val={persen(bank.npfCoverage)} />
+            <BarisTambahan lbl="CASA Ratio" val={persen(bank.casaRatio)} />
+            <BarisTambahan lbl="Capital Adequacy Ratio" val={persen(bank.capitalAdequacyRatio)} />
+            <BarisTambahan lbl="Loan to Deposit Ratio" val={persen(bank.loanToDepositRatio)} />
+            <BarisTambahan lbl="Financing to Deposit Ratio" val={persen(bank.financingToDepositRatio)} />
+            <BarisTambahan lbl="Net Interest Margin" val={persen(bank.netInterestMargin)} />
+            <BarisTambahan lbl="Cost of Credit" val={persen(bank.costOfCredit)} />
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Posisi persentil emiten di antara seluruh emiten IDX — bukan rasio itu
+ * sendiri, tapi rangkingnya. Tak ada padanan di fundamental lama.
+ */
+function PanelPeringkatPeer({ rank }: { rank: TambahanKeystats['rank'] }) {
+  if (!rank) return null
+  return (
+    <div className="panel">
+      <div className="panel-h"><span className="lbl">Peringkat Antar Emiten IDX</span></div>
+      <div className="panel-b">
+        <p style={{ fontSize: 10.5, color: 'var(--text3)', marginBottom: 8, lineHeight: 1.55 }}>
+          Persentil dibanding seluruh emiten tercatat — 100% berarti paling tinggi di deretnya.
+        </p>
+        <table>
+          <tbody>
+            <BarisTambahan lbl="Kapitalisasi Pasar" val={persen(rank.marketCap)} />
+            <BarisTambahan lbl="P/E (TTM)" val={persen(rank.peTtm)} />
+            <BarisTambahan lbl="Earnings Yield" val={persen(rank.earningsYield)} />
+            <BarisTambahan lbl="P/S" val={persen(rank.ps)} />
+            <BarisTambahan lbl="P/BV" val={persen(rank.pb)} />
+            <BarisTambahan lbl="Kedekatan ke Tertinggi 52 Minggu" val={persen(rank.near52wHigh)} />
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Profil naratif — alamat/kontak resmi, sekretaris perusahaan, ringkasan
+ * pencatatan awal. Fundamental lama cuma punya `summary` Inggris dari
+ * penyedia lama; ini pelengkap, bukan pengganti.
+ */
+function PanelProfilPerusahaan({ profil }: { profil: TambahanKeystats['profil'] }) {
+  if (!profil) return null
+  const { alamat, telepon, email, website, latarBelakang, sekretaris, pencatatanAwal } = profil
+  if (!alamat && !latarBelakang && !sekretaris && !pencatatanAwal) return null
+  return (
+    <div className="panel" style={{ marginBottom: 12 }}>
+      <div className="panel-h"><span className="lbl">Profil Perusahaan</span></div>
+      <div className="panel-b">
+        {latarBelakang && (
+          <p style={{ fontSize: 11, color: 'var(--text2)', marginBottom: 10, lineHeight: 1.6, whiteSpace: 'pre-line' }}>
+            {latarBelakang}
+          </p>
+        )}
+        <div className="duo">
+          {(alamat || telepon || email || website) && (
+            <div className="panel">
+              <div className="panel-h"><span className="lbl">Kantor Pusat</span></div>
+              <div className="panel-b" style={{ fontSize: 11, color: 'var(--text2)', lineHeight: 1.7 }}>
+                {alamat && <div style={{ whiteSpace: 'pre-line' }}>{alamat}</div>}
+                {telepon && <div>Telepon: {telepon}</div>}
+                {email && <div>Email: {email}</div>}
+                {website && <div>Situs: {website}</div>}
+              </div>
+            </div>
+          )}
+          {sekretaris && (
+            <div className="panel">
+              <div className="panel-h"><span className="lbl">Sekretaris Perusahaan</span></div>
+              <div className="panel-b" style={{ fontSize: 11, color: 'var(--text2)', lineHeight: 1.7 }}>
+                <div>{sekretaris.nama}</div>
+                {sekretaris.telepon && <div>Telepon: {sekretaris.telepon}</div>}
+                {sekretaris.email && <div>Email: {sekretaris.email}</div>}
+              </div>
+            </div>
+          )}
+          {pencatatanAwal && (
+            <div className="panel">
+              <div className="panel-h"><span className="lbl">Pencatatan Awal (IPO)</span></div>
+              <div className="panel-b">
+                <table>
+                  <tbody>
+                    {pencatatanAwal.tanggal && <BarisTambahan lbl="Tanggal" val={pencatatanAwal.tanggal} />}
+                    {pencatatanAwal.harga && <BarisTambahan lbl="Harga Perdana" val={'Rp ' + pencatatanAwal.harga} />}
+                    {pencatatanAwal.jumlahSaham && <BarisTambahan lbl="Jumlah Saham" val={pencatatanAwal.jumlahSaham} />}
+                    {pencatatanAwal.underwriters.length > 0 && (
+                      <BarisTambahan lbl="Penjamin Emisi" val={pencatatanAwal.underwriters.join(', ')} />
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
@@ -91,6 +228,17 @@ export function StockDetail() {
   const [sp, setSp] = useSearchParams()
   const tabUrl = sp.get('tab')
   const tab: Tab = tabUrl === 'valuasi' ? 'valuasi' : tabUrl === 'banding' ? 'banding' : 'statistik'
+
+  // Ruas tambahan Stockbit (rasio bank/multifinance, peringkat peer, profil
+  // naratif) — hanya yang belum tayang dari fundamental lama, lihat
+  // `lib/dasbor/rasioTambahanKeystats.ts`.
+  const [tambahan, setTambahan] = useState<TambahanKeystats | null>(null)
+  useEffect(() => {
+    let batal = false
+    setTambahan(null)
+    if (activeTicker) muatTambahanKeystats(activeTicker).then((d) => { if (!batal) setTambahan(d) })
+    return () => { batal = true }
+  }, [activeTicker])
 
   const [recent, setRecent] = useState<string[]>(bacaRecent)
   useEffect(() => {
@@ -385,6 +533,19 @@ export function StockDetail() {
                ada di panel Solvabilitas/Efektivitas/Skor di atas). */
             <PanelKhasPapan fd={fd} />
           )}
+
+          {tab === 'statistik' && (
+            /* Tambahan Stockbit 24 Agu 2026 (Papan Pekerjaan #313): rasio
+               perbankan/multifinance + peringkat peer, dua-duanya pure
+               tambahan (tak dipunyai fundamental lama). Panel bank tak
+               dirender sama sekali untuk emiten non-keuangan. */
+            <div className="duo">
+              <PanelRasioBank bank={tambahan?.bank ?? null} />
+              <PanelPeringkatPeer rank={tambahan?.rank ?? null} />
+            </div>
+          )}
+
+          {tab === 'statistik' && <PanelProfilPerusahaan profil={tambahan?.profil ?? null} />}
 
           {tab === 'valuasi' && <PanelValuasiInteraktif key={fd.ticker} fd={fd} />}
 

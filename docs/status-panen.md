@@ -54,6 +54,14 @@ Angka "isi terakhir" dibaca dari DALAM berkas,
 bukan dari waktu berkasnya ditulis — berkas bisa ditulis ulang tanpa membawa
 data baru, dan membaca mtime membuat data basi terlihat segar.
 
+**24 Agustus 2026** — baris **Keystats Stockbit** dan **Profil Stockbit**
+ditambahkan (sebelumnya cuma disebut di catatan "panen masuk git", tanpa
+baris tabel sendiri — pelanggaran aturan "halaman pemakai wajib jujur").
+Keystats sekarang dibaca Stock Detail (rasio bank/multifinance + peringkat
+peer, murni tambahan). Profil Stockbit dibaca dua tempat: Broker Summary v2
+(shareholder/anak usaha/direksi, agen lain) dan Stock Detail (alamat/latar
+belakang/sekretaris/IPO, sesi ini). Papan Pekerjaan #315.
+
 ## Tabel utama
 
 | Sumber | Halaman PAPAN | Asal data | Isi terakhir | Berkas | Otomatis? | Pemicu |
@@ -74,6 +82,8 @@ data baru, dan membaca mtime membuat data basi terlihat segar.
 | **Daftar emiten + jumlah saham** | (dipakai `fetch_fundamental.py`, bukan halaman) | IDX `GetStockSummary` (`ListedShares`) | **21 Agu 2026** — 963 emiten resmi; 1 ticker baru (GOTOM) terdeteksi tapi belum dikenal yfinance, dicatat bukan disembunyikan | 963 emiten | ❌ manual | `sinkron_emiten.py` — **"Panen Lagi"** |
 | **Keuangan XBRL IDX** | Stock Detail | IDX `GetFinancialReport` | **2019–2025** (7 thn buku) + **interim 2024 TW1/TW2 sejak 19 Agu sore** (827 dari 949 berkas, diperah dari kolom pembanding XLSX 2025 yang sudah di cakram — nol jaringan); mata uang per periode (`mata_uang` · `mata_uang_laporan` · `kurs_laporan`) | 949 | ❌ manual | `panen_keuangan_idx.py` — **"Panen Lagi"**; peras ulang tanpa jaringan: `--dari-arsip`; kolom pembanding: `panen_pembanding.py --semua-arsip --tulis` |
 | **Keuangan XBRL IDX — kuartal diskret** | **belum dipakai halaman mana pun** — Q4 di layar dihitung langsung dari sumbernya, bukan dari berkas ini | turunan lokal dari **Keuangan XBRL IDX** (Q1=TW1, Q2=TW2−TW1, Q3=TW3−TW2, Q4=audit−TW3; ruas neraca tak pernah dikurangi; **pengurangan DITOLAK kalau mata uang dua periodenya beda** — asal `beda-mata-uang`, nilainya null) | **2019 → 2026 TW2**, **10.800 periode** (naik dari 9.665; 2024 sendiri 1.982). Mayoritas Q4 masih cuma berisi neraca karena TW3 pembandingnya tak ada | 949 | ❌ manual, nol jaringan | `turunkan_kuartal_diskret.py` — **"Panen Lagi"** |
+| **Keystats Stockbit (94 rasio)** | Stock Detail — "belum dipakai halaman mana pun" sampai 24 Agu 2026, sekarang panel Rasio Perbankan/Multifinance + Peringkat Antar Emiten IDX (murni tambahan, tak menimpa fundamental lama) | Stockbit key statistics, 12 kelompok rasio | **23 Agu 2026** | 963 | ❌ manual | **"Panen Lagi"** |
+| **Profil Stockbit** | Broker Summary v2 → tab Shareholders (pemegang saham/anak usaha/direksi, agen lain); Stock Detail sejak 24 Agu 2026 (alamat, latar belakang, sekretaris, ringkasan IPO) | Stockbit company profile | **23 Agu 2026** | 963 | ❌ manual | **"Panen Lagi"** |
 | **Keuangan yfinance** | Stock Detail | yfinance | 17 Agu 2026 | 646 | ⚙️ ikut `update-fundamental.yml` | — |
 | **Seasonality bulanan** | Seasonality | Yahoo (penutupan bulanan) | 17 Agu 2026 | — | ❌ manual | `panen_seasonality.py` — **"Panen Lagi"** |
 | **Peta investor (KSEI)** | Peta Investor | KSEI | *(tak diperbarui rutin)* | — | ❌ manual | `fetch_investor_map.py` |
