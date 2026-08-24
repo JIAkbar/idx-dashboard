@@ -1,16 +1,16 @@
 {
  "kode": "IDEA",
- "tgl": "2026-08-21",
+ "tgl": "2026-08-24",
  "harga": 62.0,
  "prev": 62.0,
  "chg": 0.0,
- "n": 1191,
+ "n": 1192,
  "mulai": "2021-09-09",
  "ma20": 63.45,
- "ma50": 62.04,
- "ma200": 86.11,
- "atr": 4.114952444375543,
- "atr_pct": 6.637020071573457,
+ "ma50": 62.08,
+ "ma200": 86.065,
+ "atr": 3.892455841205862,
+ "atr_pct": 6.2781545825900995,
  "support": [
   {
    "level": 55.0,
@@ -27,8 +27,8 @@
    "harga": 46
   },
   {
-   "level": 34.06976744186046,
-   "sentuhan": 43,
+   "level": 34.6,
+   "sentuhan": 40,
    "terakhir": "2025-07-15",
    "dalam_atr": false,
    "harga": 34
@@ -36,140 +36,140 @@
  ],
  "resistance": [
   {
-   "level": 69.33333333333333,
-   "sentuhan": 6,
+   "level": 65.0,
+   "sentuhan": 1,
+   "terakhir": "2026-07-23",
+   "dalam_atr": true,
+   "harga": 65
+  },
+  {
+   "level": 70.2,
+   "sentuhan": 5,
    "terakhir": "2026-08-05",
    "dalam_atr": false,
-   "harga": 70
+   "harga": 71
   },
   {
-   "level": 81.5,
-   "sentuhan": 4,
-   "terakhir": "2026-05-07",
+   "level": 80.66666666666667,
+   "sentuhan": 3,
+   "terakhir": "2025-11-06",
    "dalam_atr": false,
-   "harga": 82
-  },
-  {
-   "level": 103.5,
-   "sentuhan": 2,
-   "terakhir": "2026-04-20",
-   "dalam_atr": false,
-   "harga": 104
+   "harga": 81
   }
  ],
  "stop": 55,
  "stop_pct": 11.29032258064516,
- "er": 0.21052631578947367,
- "er_persentil": 57.74278215223097,
- "er_n_populasi": 381,
+ "er": 0.20991432068543453,
+ "er_persentil": 53.76623376623376,
+ "er_n_populasi": 385,
  "likuiditas_median20": 158196150.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "tipis",
-  "lilin": 1191,
+  "lilin": 1192,
   "nilai20": 158196150.0
  },
- "dihitung": "2026-08-21",
+ "dihitung": "2026-08-24",
  "rsi": 47.14523222565653,
  "stochrsi": [
-  16.546582109540505,
-  15.266330812328965
+  24.819873164310753,
+  18.16265158885291
  ],
  "target": [
   {
-   "harga": 70,
-   "pct": 12.903225806451612,
-   "sentuhan": 6,
+   "harga": 65,
+   "pct": 4.838709677419355,
+   "sentuhan": 1,
+   "terakhir": "2026-07-23",
+   "fp": {
+    "n": 1171,
+    "n_efektif": 59,
+    "kena": 817,
+    "stop": 314,
+    "lewat": 40,
+    "p_kena": 69.76942783945346,
+    "p_stop": 26.814688300597776,
+    "median_hari": 2,
+    "q1": 1,
+    "q3": 4,
+    "harapan": 0.3484752486157414
+   },
+   "fp60": {
+    "n": 1131,
+    "n_efektif": 19,
+    "kena": 824,
+    "stop": 302,
+    "lewat": 5,
+    "p_kena": 72.85587975243148,
+    "p_stop": 26.702033598585324,
+    "median_hari": 2.0,
+    "q1": 1,
+    "q3": 5,
+    "harapan": 0.5105387752773742
+   }
+  },
+  {
+   "harga": 71,
+   "pct": 14.516129032258066,
+   "sentuhan": 5,
    "terakhir": "2026-08-05",
    "fp": {
-    "n": 1170,
-    "n_efektif": 58,
-    "kena": 533,
-    "stop": 508,
-    "lewat": 129,
-    "p_kena": 45.55555555555556,
-    "p_stop": 43.41880341880342,
+    "n": 1171,
+    "n_efektif": 59,
+    "kena": 519,
+    "stop": 516,
+    "lewat": 136,
+    "p_kena": 44.32109308283518,
+    "p_stop": 44.064901793339025,
     "median_hari": 5,
-    "q1": 2,
-    "q3": 9,
-    "harapan": 0.9760132340777501
-   },
-   "fp60": {
-    "n": 1130,
-    "n_efektif": 19,
-    "kena": 592,
-    "stop": 521,
-    "lewat": 17,
-    "p_kena": 52.38938053097345,
-    "p_stop": 46.10619469026548,
-    "median_hari": 6.0,
     "q1": 3,
-    "q3": 12,
-    "harapan": 1.5543819583214393
+    "q3": 10,
+    "harapan": 1.458637503099089
+   },
+   "fp60": {
+    "n": 1131,
+    "n_efektif": 19,
+    "kena": 582,
+    "stop": 531,
+    "lewat": 18,
+    "p_kena": 51.45888594164456,
+    "p_stop": 46.94960212201592,
+    "median_hari": 7.0,
+    "q1": 3,
+    "q3": 14,
+    "harapan": 2.1690767519466077
    }
   },
   {
-   "harga": 82,
-   "pct": 32.25806451612903,
-   "sentuhan": 4,
-   "terakhir": "2026-05-07",
+   "harga": 81,
+   "pct": 30.64516129032258,
+   "sentuhan": 3,
+   "terakhir": "2025-11-06",
    "fp": {
-    "n": 1170,
-    "n_efektif": 58,
-    "kena": 230,
-    "stop": 600,
-    "lewat": 340,
-    "p_kena": 19.65811965811966,
-    "p_stop": 51.28205128205128,
-    "median_hari": 8.5,
+    "n": 1171,
+    "n_efektif": 59,
+    "kena": 249,
+    "stop": 594,
+    "lewat": 328,
+    "p_kena": 21.263877028181042,
+    "p_stop": 50.72587532023911,
+    "median_hari": 8,
     "q1": 5,
-    "q3": 13,
-    "harapan": 0.5514199062586167
+    "q3": 12,
+    "harapan": 0.7892344563510649
    },
    "fp60": {
-    "n": 1130,
+    "n": 1131,
     "n_efektif": 19,
-    "kena": 374,
-    "stop": 681,
-    "lewat": 75,
-    "p_kena": 33.097345132743364,
-    "p_stop": 60.26548672566372,
-    "median_hari": 14.0,
+    "kena": 399,
+    "stop": 664,
+    "lewat": 68,
+    "p_kena": 35.278514588859416,
+    "p_stop": 58.709106984969054,
+    "median_hari": 13,
     "q1": 7,
-    "q3": 33,
-    "harapan": 3.8723950899229225
-   }
-  },
-  {
-   "harga": 104,
-   "pct": 67.74193548387096,
-   "sentuhan": 2,
-   "terakhir": "2026-04-20",
-   "fp": {
-    "n": 1170,
-    "n_efektif": 58,
-    "kena": 90,
-    "stop": 627,
-    "lewat": 453,
-    "p_kena": 7.6923076923076925,
-    "p_stop": 53.58974358974359,
-    "median_hari": 13.0,
-    "q1": 9,
-    "q3": 17,
-    "harapan": -0.8395368072787424
-   },
-   "fp60": {
-    "n": 1130,
-    "n_efektif": 19,
-    "kena": 218,
-    "stop": 746,
-    "lewat": 166,
-    "p_kena": 19.29203539823009,
-    "p_stop": 66.01769911504425,
-    "median_hari": 23.0,
-    "q1": 15,
     "q3": 32,
-    "harapan": 5.615186982586355
+    "harapan": 4.1827101337668635
    }
   }
  ],
@@ -195,7 +195,7 @@
  "fundamental": {
   "name": "PT Idea Indonesia Akademi Tbk",
   "updated": "2026-08-13 21:33",
-  "pe": 28.767122,
+  "pe": 28.310502283105023,
   "pb": 1.0657,
   "eps": 2.19,
   "roe": 0.0446,
@@ -207,8 +207,8 @@
   "beta": 0.45,
   "shares": 1062437500,
   "float_pct": 33.42,
-  "week52_high": 180.0,
-  "week52_low": 46.0
+  "week52_high": 180,
+  "week52_low": 46
  },
  "asing": {
   "satuan": {
@@ -219,8 +219,8 @@
    "frekuensi": "kali"
   },
   "mulai": "2021-09-09",
-  "akhir": "2026-08-21",
-  "n_total": 1187,
+  "akhir": "2026-08-24",
+  "n_total": 1188,
   "periode": {
    "5": {
     "n": 5,
@@ -236,7 +236,7 @@
     "jual": 398200,
     "net": -398200,
     "porsi_beli_pct": 0.0,
-    "porsi_jual_pct": 0.5471238214579159
+    "porsi_jual_pct": 0.543818199199705
    }
   }
  }
