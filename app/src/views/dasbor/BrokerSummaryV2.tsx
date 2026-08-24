@@ -113,6 +113,11 @@ export function BrokerSummaryV2() {
 
   const tanggalTersedia = useMemo(() => semuaHari.map(([t]) => t), [semuaHari])
   const setTersedia = useMemo(() => new Set(tanggalTersedia), [tanggalTersedia])
+  // Ketetapan Johan 24 Agu 2026: rentang yang bisa dipilih ditutup ke
+  // 2025–2026 dulu. Kalau hari ber-data yang termuat memang berawal di 2025+,
+  // beri tahu pembaca kenapa pemilih tanggal tak bisa mundur lebih jauh —
+  // supaya tak terbaca sebagai "tanggal lama sengaja disembunyikan/rusak".
+  const cakupanDitutup = tanggalTersedia.length > 0 && tanggalTersedia[0] >= '2025-01-01'
 
   useEffect(() => { setDari(''); setAkhir('') }, [kode])
   useEffect(() => {
@@ -204,6 +209,13 @@ export function BrokerSummaryV2() {
             <LangkahTanggal arah="maju" ukuran="sebaris" label="Rentang satu hari bursa berikutnya" disabled={!tanggalTersedia.length} onClick={() => langkahHari(1)} />
           </div>
         </div>
+        {cakupanDitutup && (
+          <div className="panel-b" style={{ borderTop: '1px solid var(--line)' }}>
+            <div className="chip dn" style={{ display: 'flex', whiteSpace: 'normal', height: 'auto', lineHeight: 1.5 }}>
+              <span><IkonMenu d={IKON_PERINGATAN} size={14} /> Rentang tanggal dibatasi ke 2025–2026 — tahun sebelumnya masih dalam proses pengumpulan ulang, jadi belum bisa dipilih di sini.</span>
+            </div>
+          </div>
+        )}
       </header>
 
       {loading && (

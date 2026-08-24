@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { irisOhlcv, vwapRentang, titikKuadran, pilihTopInventaris, ringkasSB, type BarisOhlcv } from './brokerEmitenV2'
+import { irisOhlcv, vwapRentang, titikKuadran, pilihTopInventaris, ringkasSB, saringTahunAwal, type BarisOhlcv } from './brokerEmitenV2'
 import type { AgregatBroker } from './brokerEmiten'
 
 const bar = (tanggal: string, tutup: number, volume: number, nilai: number): BarisOhlcv =>
@@ -68,6 +68,18 @@ describe('pilihTopInventaris', () => {
       agg('B1', 10, 30, 0, 0), agg('B2', 10, 20, 0, 0), agg('B3', 10, 10, 0, 0),
     ]
     expect(pilihTopInventaris(list, 2).pembeli).toEqual(['B1', 'B2'])
+  })
+})
+
+describe('saringTahunAwal', () => {
+  it('membuang tahun < 2025, sisanya lolos', () => {
+    expect(saringTahunAwal([2020, 2021, 2025, 2026])).toEqual({ tahun: [2025, 2026], tutup: false })
+  })
+  it('seluruhnya tahun lama -> tahun null, tutup true', () => {
+    expect(saringTahunAwal([2019, 2020])).toEqual({ tahun: null, tutup: true })
+  })
+  it('larik kosong (belum dipanen sama sekali) -> tutup false', () => {
+    expect(saringTahunAwal([])).toEqual({ tahun: null, tutup: false })
   })
 })
 

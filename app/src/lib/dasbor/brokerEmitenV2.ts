@@ -142,17 +142,34 @@ export function pilihTopInventaris(agg: AgregatBroker[], n = 4): { pembeli: stri
   return { pembeli, penjual }
 }
 
-/** Tahun-tahun yang punya berkas broker_tahunan untuk `kode` (dari index.json), atau `null` kalau belum dipanen. */
-async function tahunTersedia(kode: string): Promise<number[] | null> {
+/** Cakupan yang tervalidasi (ketetapan Johan 24 Agu 2026): tahun sebelum ini
+ *  ditutup dari halaman ini walau masih tersisa di berkas — panen ulangnya
+ *  belum tuntas untuk tahun-tahun lama, jadi jangan dicampur ke tampilan. */
+const TAHUN_AWAL = 2025
+
+/** Bagian murni (testable) dari `tahunTersedia` — pisah dari fetch supaya diuji tanpa mock jaringan. */
+export function saringTahunAwal(semua: number[]): { tahun: number[] | null; tutup: boolean } {
+  const dipakai = semua.filter((t) => t >= TAHUN_AWAL)
+  return { tahun: dipakai.length ? dipakai : null, tutup: semua.length > 0 && dipakai.length === 0 }
+}
+
+/**
+ * Tahun-tahun (>= TAHUN_AWAL) yang punya berkas broker per emiten untuk
+ * `kode`, atau `null` kalau tak ada satu pun tahun terpakai. `tutup` menandai
+ * kasus KHUSUS: berkasnya ADA tapi seluruh isinya tahun lama yang sedang
+ * ditutup (bukan "belum pernah dipanen sama sekali") — dipakai untuk pesan
+ * yang lebih tepat ke pembaca.
+ */
+async function tahunTersedia(kode: string): Promise<{ tahun: number[] | null; tutup: boolean }> {
   const r = await fetch(`/data-idx/json/broker_tahunan/${kode}/index.json`)
   // Server dev/statis di sini membalas 200 + index.html (fallback SPA) untuk
   // berkas yang TIDAK ada, bukan 404 — `r.ok` saja lolos untuk kode yang
   // belum dipanen, lalu `r.json()` gagal parse `<!DOCTYPE …` dengan pesan
   // teknis yang bocor ke layar. Content-type asli JSON `application/json`,
   // fallback-nya `text/html` — itu pembeda yang benar, bukan status code.
-  if (!r.ok || !r.headers.get('content-type')?.includes('json')) return null
+  if (!r.ok || !r.headers.get('content-type')?.includes('json')) return { tahun: null, tutup: false }
   const j = (await r.json()) as { tahun: number[] }
-  return j.tahun?.length ? j.tahun : null
+  return saringTahunAwal(j.tahun ?? [])
 }
 
 /**
@@ -172,8 +189,14 @@ export function useArusBrokerEmiten(kode: string) {
     setError(null)
     setHari(null)
     tahunTersedia(kode)
-      .then((tahun) => {
-        if (!tahun) throw new Error(`${kode} belum punya arsip broker per emiten`)
+      .then(({ tahun, tutup }) => {
+        if (!tahun) {
+          throw new Error(
+            tutup
+              ? `Data ${kode} tahun 2025–2026 belum lengkap — tahun sebelumnya masih dalam proses pengumpulan ulang.`
+              : `${kode} belum punya arsip broker per emiten`,
+          )
+        }
         return muatRentang(kode, `${Math.min(...tahun)}-01-01`, `${Math.max(...tahun)}-12-31`)
       })
       .then((h) => { if (!batal) setHari(h) })
