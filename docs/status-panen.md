@@ -46,9 +46,10 @@ Diperbarui **23 Agustus 2026 siang** — dua keputusan Johan dijalankan:
   sementara penyegaran harian tetap lewat `ohlc/`.
 
 Yang BELUM: mirror produksi (`app/public/data-idx/json/ohlc/`) belum
-disinkronkan sehingga perbaikan volume belum terlihat pengguna, aliran asing
-rupiah belum dipakai halaman mana pun, dan build Vercel dengan `data-idx/json`
-yang kini **670 MB / 13.378 berkas** belum pernah diuji.
+disinkronkan sehingga perbaikan volume belum terlihat pengguna, dan build
+Vercel dengan `data-idx/json` yang kini **670 MB / 13.378 berkas** belum
+pernah diuji. (Aliran asing rupiah **sudah** dipakai sejak 24 Agu 2026 — lihat
+baris **Aliran asing — rupiah** di atas.)
 
 Angka "isi terakhir" dibaca dari DALAM berkas,
 bukan dari waktu berkasnya ditulis — berkas bisa ditulis ulang tanpa membawa
@@ -62,12 +63,23 @@ peer, murni tambahan). Profil Stockbit dibaca dua tempat: Broker Summary v2
 (shareholder/anak usaha/direksi, agen lain) dan Stock Detail (alamat/latar
 belakang/sekretaris/IPO, sesi ini). Papan Pekerjaan #315.
 
+**24 Agustus 2026** — baris **Aliran asing** dipecah jadi **lembar** (IDX,
+tidak berubah) dan **rupiah** (Stockbit, baru): taksiran rupiah lama
+(`net lembar × harga rata-rata`, miring +33% kumulatif) dihapus dari
+`flowNego.ts`, diganti angka `foreignbuy`/`foreignsell` sebenarnya dari
+`ohlcv_stockbit/` yang sudah dipanen tapi belum dibaca halaman mana pun.
+Dipakai Panel Aliran Asing (Stock Detail) dan AsingEmiten (Broker Summary tab
+Flow & Nego). Riwayat rupiah diperpanjang ke cakupan Stockbit (2004→,
+tergantung emiten); bagian sebelum cakupan lembar IDX (2020-01-02) ditandai
+jahitan di antarmuka. Detail: `docs/referensi_idx-statistik.md` §J8.
+
 ## Tabel utama
 
 | Sumber | Halaman PAPAN | Asal data | Isi terakhir | Berkas | Otomatis? | Pemicu |
 |---|---|---|---|---|---|---|
 | **OHLC harian** | Grafik Emiten, Tanya PAPAN, Kartu Analisa, Screener, Pola Chart | **Stockbit chartbit (utama) + Yahoo (pengisi)** — berganti 23 Agu 2026 | **21 Agu 2026**. Riwayat memanjang: 1.711.178 → **3.022.130 bar** (BBCA 2.472 → 5.537 bar, kini sejak 2004-01-02). Volume diganti dari sumber yang terbukti = IDX 100,00% (Yahoo terukur 2,66% bar bervolume salah); harga TIDAK disentuh karena terukur 0,00% beda. 130 emiten justru dapat data lebih baru — Yahoo tertinggal di 20 Agu. 30.245 bar yang HANYA ada di Yahoo diselamatkan lewat penggabungan per tanggal. **IHSG dijahit terpisah** (`jahit_ihsg.py`): 8.861 bar 1990-04-06→2026-08-21, volume 0 tinggal 1.261 yang semuanya pra-1997 di luar jangkauan Stockbit. **24 Agu 2026**: Grafik Emiten ikut membaca `ohlcv_stockbit/<KODE>.json` LANGSUNG (bukan lewat `ohlc/`) untuk empat ruas yang tak ada di gudang 6-ruas — nilai transaksi, frekuensi, aliran asing rupiah, saham beredar — ditampilkan sebagai baris kedua yang mengikuti tanggal disorot/lilin terakhir, dengan jatuh balik jujur ("tersedia sejak …") kalau tanggalnya lebih tua dari cakupan Stockbit (±2004 emiten, 1997-07-01 IHSG) | 964 | ❌ manual | `panen_ohlcv_stockbit.py --semua` lalu `gabung_ohlc_stockbit.py` (+ `jahit_ihsg.py` untuk indeks) — **"Panen Lagi"**; turunannya (`kartu_analisa.py --semua --tulis`, `bangun-screener.mjs`, `pola-screener.ts`) disegarkan berurutan sesudahnya |
-| **Aliran asing** | Stock Detail, Kartu Analisa *(UI sedang dikerjakan)*, Aliran Investor | IDX `GetStockSummary` | **2 Jan 2020 → 21 Agu 2026** (989/989 emiten, median 1.596 hari bursa) | 989 | ❌ manual | `panen_asing.py` — **"Panen Lagi"** (dijalankan default/gabung, BUKAN `--timpa`); ⚠️ **`--mulai` MENIMPA berkas per-emiten, bukan menggabung** — dipakai sekali 20 Agu untuk menarik 1 tanggal saja dan sempat mereduksi riwayat 6,6 tahun jadi 3 baris; pulih via `--dari-arsip` penuh (arsip mentah gz tetap utuh). Jangan pakai `--mulai` lagi sampai `tulis()` digabung dgn berkas lama. Turunan `bangun_aliran_investor.py` disegarkan sesudahnya 21 Agu |
+| **Aliran asing — lembar** | Stock Detail (Panel Aliran Asing), Broker Summary (tab Flow & Nego → AsingEmiten), Kartu Analisa *(UI sedang dikerjakan)*, Aliran Investor | IDX `GetStockSummary` | **2 Jan 2020 → 21 Agu 2026** (989/989 emiten, median 1.596 hari bursa) | 989 | ❌ manual | `panen_asing.py` — **"Panen Lagi"** (dijalankan default/gabung, BUKAN `--timpa`); ⚠️ **`--mulai` MENIMPA berkas per-emiten, bukan menggabung** — dipakai sekali 20 Agu untuk menarik 1 tanggal saja dan sempat mereduksi riwayat 6,6 tahun jadi 3 baris; pulih via `--dari-arsip` penuh (arsip mentah gz tetap utuh). Jangan pakai `--mulai` lagi sampai `tulis()` digabung dgn berkas lama. Turunan `bangun_aliran_investor.py` disegarkan sesudahnya 21 Agu |
+| **Aliran asing — rupiah** *(baru 24 Agu 2026)* | Stock Detail (Panel Aliran Asing), Broker Summary (AsingEmiten) — dibaca bareng baris lembar di atas, satu panel | Stockbit chartbit (`ohlcv_stockbit/<KODE>.json`, angka rupiah langsung dari sumber, bukan taksiran) | **2004-01-02 → 21 Agu 2026** (963 emiten; sama dengan gudang OHLC harian di atas) | 963 | ❌ manual (ikut panen OHLC harian) | ikut `panen_ohlcv_stockbit.py --semua` (baris **OHLC harian** di atas) — tak ada panen terpisah. Taksiran lama (`net lembar × harga rata-rata`, miring +33% kumulatif) **dihapus** dari `flowNego.ts`; riwayat sebelum 2020-01-02 ditandai jahitan (garis putus-putus + teks) karena tak punya pembanding lembar bursa |
 | **Statistik harian** | Kalender Bursa, Beranda | IDX PDF harian (+ cadangan Yahoo `^JKSE` kalau PDF belum terbit, lihat `panen_ihsg.py`) | **21 Agu 2026** (PDF resmi — sempat tertunda ke sore hari; jam 21 Agu sebelum PDF terbit sudah ditambal cadangan Yahoo lebih dulu, lalu ditimpa PDF asli begitu terbit) | 146 | ❌ manual (dicoba lewat "Panen Lagi" 21 Agu; run Actions terakhir belum diperiksa ulang sesi ini) | `download_idx.py --hari-ini --jenis semua` + `parse_idx_pdf.py --semua` — **"Panen Lagi"** |
 | **Statistik mingguan** | Statistik Berkala | IDX PDF mingguan | 14 Agu 2026 | 33 | ⚙️ Actions (ikut `update.yml`) | `update.yml` |
 | **Statistik bulanan** | Statistik Berkala (chip **Bulanan** — nyala sejak 20 Agu 2026, #203) | IDX PDF bulanan `MS<YYMM>-E` | Sep 2025 – Jul 2026 | 11 | ❌ manual | **"Panen Lagi"** |
@@ -148,13 +160,20 @@ menjawab **HTTP 200 dengan `data` kosong**, bukan 403. Bedanya menentukan — 40
 berarti bentuk permintaan salah dan bisa diakali; 200-kosong berarti IDX memang
 tak menyimpannya, jadi jangan dijadwalkan ulang.
 
-**Satuan aliran asing LEMBAR, bukan rupiah — dan itu diukur, bukan diasumsikan.**
+**Satuan aliran asing di gudang IDX LEMBAR, bukan rupiah — dan itu diukur, bukan diasumsikan.**
 Se-pasar 18 Agu: ForeignBuy 5,03e9 terhadap Volume 2,88e10 dan Value 1,37e13.
 Sebagai rupiah itu 0,04% nilai transaksi pasar (mustahil); sebagai lembar 17%
-volume (wajar). Nol emiten punya ForeignBuy melebihi Volume-nya. Rupiah hanya
-bisa **ditaksir** lewat lembar × (value ÷ volume) dan wajib berlabel taksiran.
-Satuannya ditulis di dalam tiap berkas (ruas `satuan`) supaya pembaca berikutnya
-tak perlu menebak.
+volume (wajar). Nol emiten punya ForeignBuy melebihi Volume-nya. Satuannya
+ditulis di dalam tiap berkas (ruas `satuan`) supaya pembaca berikutnya tak
+perlu menebak.
+
+**24 Agu 2026 — rupiah tak lagi ditaksir.** Kalimat di atas masih berlaku untuk
+gudang IDX itu sendiri (tetap lembar), tapi halaman tidak lagi menaksir rupiah
+dari situ (`lembar × value ÷ volume`, terukur miring +33% kumulatif atas 138
+hari). Rupiah sekarang angka sebenarnya dari Stockbit (`ohlcv_stockbit/`,
+baris **Aliran asing — rupiah** di atas) — lembar IDX tetap dipertahankan
+sebagai sumber lembar resmi dan pembanding silang, tidak dibuang. Detail
+lengkap (bukti uji silang, batas jahitan pra-2020): `docs/referensi_idx-statistik.md` §J8.
 
 **Menambah ruas dari `GetStockSummary` kelak GRATIS.** Mentahnya diarsipkan
 ter-gzip (1.729 berkas, 140 MB); `--dari-arsip` membangun ulang seluruh

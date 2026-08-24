@@ -406,6 +406,7 @@ hr { border: none; border-top: 1px solid var(--hairline); margin: 24px 0; }
 <li><a href="#indexalpha-api-indexalpha-id-belum-dipastikan" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">indexalpha (api.indexalpha.id) — ❓ belum dipastikan</span></a></li>
 <li><a href="#setoran-kontributor-supabase-dan-unggahan-admin" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Setoran kontributor, Supabase, dan unggahan admin</span></a></li>
 <li><a href="#keputusan-tidak-diambil-ganti-sumber-jahit" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Keputusan &quot;tidak diambil&quot; / ganti sumber / jahit</span></a></li>
+<li><a href="#j8-aliran-asing-rupiah-stockbit-utama-idx-lembar-dipertahankan-eksekusi-24-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J8 · Aliran asing rupiah — Stockbit utama, IDX lembar dipertahankan (eksekusi 24 Agu 2026)</span></a></li>
 <li><a href="#j12-dua-konvensi-harga-volume-tersesuaikan-vs-apa-adanya-ketetapan-johan-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J12 · Dua konvensi harga &amp; volume — tersesuaikan vs apa adanya (ketetapan Johan, 23 Agu 2026)</span></a></li>
 <li><a href="#inventaris-ruas-per-berkas-jawaban-untuk-johan-23-agu-2026-stock-detail-ohlc-ohlcv-broker-summary-metode-panen" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Inventaris ruas per berkas — jawaban untuk Johan 23 Agu 2026 (Stock Detail, OHLC/OHLCV, Broker Summary, metode panen)</span></a></li>
 <li><a href="#matriks-sumber-stockbit-menang-di-mana-duplikasi-per-halaman-dan-usulan-kanonik-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Matriks sumber — Stockbit menang di mana, duplikasi per halaman, dan usulan kanonik (23 Agu 2026)</span></a></li>
@@ -695,11 +696,11 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <td>23 Agu 2026</td>
 </tr>
 <tr>
-<td>Panel Aliran Asing (Beranda, <code>PanelAliranAsing.tsx:13</code>)</td>
-<td><code>asing/&lt;KODE&gt;.json</code></td>
-<td>IDX GetStockSummary</td>
-<td>tidak</td>
-<td>23 Agu 2026</td>
+<td>Panel Aliran Asing (Beranda/Stock Detail, <code>PanelAliranAsing.tsx:13</code>)</td>
+<td><code>asing/&lt;KODE&gt;.json</code> (lembar) + <code>ohlcv_stockbit/&lt;KODE&gt;.json</code> (rupiah, lewat <code>ohlcvKaya.ts</code>/<code>aliranAsingRupiah.ts</code>)</td>
+<td>lembar: IDX GetStockSummary (2020→); rupiah: Stockbit chartbit (2004→)</td>
+<td><strong>ya</strong> (rupiah pra-2020, cuma Stockbit — ditandai jahitan di grafik &amp; teks)</td>
+<td>24 Agu 2026</td>
 </tr>
 <tr>
 <td>Panel Diary (Beranda, <code>PanelDiary.tsx:91</code>)</td>
@@ -780,10 +781,10 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 <tr>
 <td>Broker Summary <code>/broker-summary</code></td>
-<td><code>broker/index.json</code> + <code>broker/&lt;tgl&gt;.json</code> (brokerHarian), <code>asing/&lt;KODE&gt;.json</code> (flowNego, AsingEmiten), <code>aliran_investor.json</code></td>
-<td>IDX GetBrokerSummary (+PDF); IDX GetStockSummary; ⚙️ turunan <code>bangun_aliran_investor.py</code> dari asing</td>
-<td>tidak (turunan ditandai)</td>
-<td>23 Agu 2026</td>
+<td><code>broker/index.json</code> + <code>broker/&lt;tgl&gt;.json</code> (brokerHarian), <code>asing/&lt;KODE&gt;.json</code> + <code>ohlcv_stockbit/&lt;KODE&gt;.json</code> (AsingEmiten tab Flow &amp; Nego, lembar + rupiah), <code>aliran_investor.json</code></td>
+<td>IDX GetBrokerSummary (+PDF); IDX GetStockSummary; Stockbit chartbit (rupiah); ⚙️ turunan <code>bangun_aliran_investor.py</code> dari asing</td>
+<td><strong>ya</strong> (rupiah AsingEmiten, pra-2020)</td>
+<td>24 Agu 2026</td>
 </tr>
 <tr>
 <td>Aliran Asing <code>/aliran-asing</code></td>
@@ -962,11 +963,11 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 <tr>
 <td>J8</td>
-<td>Aliran asing rupiah di halaman = <strong>taksiran</strong> lembar × (value ÷ volume), meleset 1,33× kumulatif</td>
-<td><code>panen_asing.py</code> sengaja tidak menyimpan rupiah; halaman menaksir</td>
-<td>angka resmi rupiah sudah ada di <code>ohlcv_stockbit/</code> (<code>foreignbuy</code>/<code>foreignsell</code> chartbit) tapi belum dipakai</td>
-<td>agen</td>
-<td><strong>perlu keputusan</strong>: ganti taksiran dengan angka chartbit (butuh tabel pembanding lembar-IDX vs rupiah-Stockbit per emiten × tanggal dulu)</td>
+<td>~~Aliran asing rupiah di halaman = <strong>taksiran</strong> lembar × (value ÷ volume), meleset 1,33× kumulatif~~ — <strong>dieksekusi 24 Agu 2026</strong>, lihat §J8 di bawah</td>
+<td><code>panen_asing.py</code> sengaja tidak menyimpan rupiah; taksiran diganti rupiah sebenarnya dari Stockbit</td>
+<td><code>netRupiahPeriode</code>/<code>kumulatifRupiah</code> (<code>aliranAsingRupiah.ts</code>) baca <code>foreignbuy</code>/<code>foreignsell</code> chartbit langsung, taksiran lama dihapus dari <code>flowNego.ts</code></td>
+<td>Johan ("apakah data asing yang sudah terpasang bisa pakai data dari stockbit ?" → "ok setuju"), eksekusi agen</td>
+<td><strong>selesai</strong> — riwayat rupiah diperpanjang ke 2004, bagian pra-2020 ditandai jahitan di antarmuka</td>
 </tr>
 </tbody>
 </table>
@@ -1003,9 +1004,9 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 <tr>
 <td>J8 aliran asing rupiah</td>
-<td><code>foreignbuy/foreignsell</code> chartbit (resmi, rupiah) menggantikan taksiran lembar × harga; lembar IDX tetap cadangan/pembanding</td>
-<td>tabel taksiran vs chartbit per emiten × tanggal</td>
-<td>arah diputuskan</td>
+<td><code>foreignbuy/foreignsell</code> chartbit (resmi, rupiah) menggantikan taksiran lembar × harga; lembar IDX tetap sumber lembar resmi/pembanding</td>
+<td>tabel taksiran vs chartbit per emiten × tanggal (miring +33% kumulatif, lihat §J8)</td>
+<td><strong>dieksekusi 24 Agu 2026</strong></td>
 </tr>
 <tr>
 <td>keystats / <code>info_stockbit</code> / <code>profil</code> IDX menganggur</td>
@@ -2118,11 +2119,11 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 <tr>
 <td>Aliran asing rupiah · taksiran vs chartbit (J8)</td>
-<td>belum diganti</td>
+<td><strong>diganti 24 Agu 2026</strong></td>
 <td>angka resmi sudah ada di <code>ohlcv_stockbit/</code></td>
-<td>taksiran meleset 1,33×</td>
-<td>—</td>
-<td><strong>belum diputuskan</strong></td>
+<td>taksiran meleset 1,33× kumulatif</td>
+<td>Johan ("ok setuju")</td>
+<td>selesai</td>
 </tr>
 <tr>
 <td>Konvensi harga &amp; volume · tersesuaikan vs apa adanya (J12)</td>
@@ -2134,6 +2135,94 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 </tbody>
 </table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="j8-aliran-asing-rupiah-stockbit-utama-idx-lembar-dipertahankan-eksekusi-24-agu-2026" data-title="J8 · Aliran asing rupiah — Stockbit utama, IDX lembar dipertahankan (eksekusi 24 Agu 2026)">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>J8 · Aliran asing rupiah — Stockbit utama, IDX lembar dipertahankan (eksekusi 24 Agu 2026)</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<p>Asal: Johan 24 Agu 2026 — <em>"apakah data asing yang sudah terpasang bisa pakai data dari stockbit ? atau lebih lengkap dari IDX ?"</em> → <em>"ok setuju"</em>.</p>
+<h3>Tiga sumber, tiga peran — jangan tertukar</h3>
+<table>
+<thead>
+<tr>
+<th>Sumber</th>
+<th>Satuan</th>
+<th>Cakupan waktu</th>
+<th>Peran</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IDX <code>GetStockSummary</code> → <code>asing/&lt;KODE&gt;.json</code></td>
+<td><strong>lembar</strong> (<code>beli</code>/<code>jual</code>/<code>volume</code>), rupiah <code>value</code> = nilai transaksi pasar hari itu (BUKAN aliran asing)</td>
+<td>2020-01-02 → kini, 989 emiten</td>
+<td>sumber LEMBAR resmi + pembanding silang — dipertahankan, tidak dibuang</td>
+</tr>
+<tr>
+<td>Stockbit chartbit → <code>ohlcv_stockbit/&lt;KODE&gt;.json</code> (<code>foreignbuy</code>/<code>foreignsell</code>)</td>
+<td><strong>rupiah</strong>, langsung (bukan taksiran)</td>
+<td>2004-01-02 → kini, 963 emiten</td>
+<td>sumber RUPIAH utama + riwayat sebelum 2020</td>
+</tr>
+<tr>
+<td>~~taksiran lama (<code>flowNego.ts</code> <code>taksiranNetAsing</code>)~~</td>
+<td>rupiah, dihitung <code>net lembar × (value ÷ volume)</code></td>
+<td>—</td>
+<td><strong>dihapus 24 Agu 2026</strong> — miring +33% kumulatif atas 138 hari (galat searah, menumpuk), diganti angka Stockbit sebenarnya</td>
+</tr>
+</tbody>
+</table>
+<p><code>foreignflow</code> (kolom ke-12 chartbit) itu <strong>kumulatif</strong> sejak awal deret, bukan net harian — selisih hariannya sama persis dengan <code>foreignbuy − foreignsell</code> (diverifikasi 621/621 hari BBCA 2024–2026 sebelum eksekusi ini). Dipakai: <code>foreignbuy − foreignsell</code> langsung; <code>foreignflow</code> tidak dibaca sama sekali.</p>
+<h3>Bukti uji silang (sebelum eksekusi, dicatat sesi lain)</h3>
+<p>Cocok dengan bursa: uji silang 778 pasangan dari 30 emiten acak, median rasio Stockbit rupiah ÷ (lembar bursa × harga penutupan) = <strong>0,9999</strong>. Cakupan papan sama: median 1,0000 pada hari nego &lt;10% (1.349 pasangan), 0,9996 pada hari nego &gt;10% (105 pasangan) — kalau Stockbit reguler-saja, hari nego besar akan jatuh sistematis; tidak terjadi.</p>
+<h3>Yang berubah di kode (24 Agu 2026)</h3>
+<ul>
+<li><code>app/src/lib/dasbor/aliranAsingRupiah.ts</code> (baru) — <code>netRupiahPeriode()</code> (net rupiah jendela N-hari) dan <code>kumulatifRupiah()</code> (running sum + penanda <code>jahitan</code>), murni dari <code>OhlcvKaya</code> (<code>ohlcvKaya.ts</code>, sudah ada, dipakai bareng Grafik Emiten — tidak diduplikasi).</li>
+<li><code>app/src/lib/dasbor/flowNego.ts</code> — <code>taksiranNetAsing()</code>/<code>TaksiranAsing</code> <strong>dihapus</strong>.</li>
+<li><code>app/src/components/dasbor/PanelAliranAsing.tsx</code> (Stock Detail) — kartu ringkas Rupiah 1/5/20 hari (baru, real), toggle grafik kumulatif Lembar/Rupiah, kolom "Net Rp" di tabel 15 hari, riwayat rupiah diperpanjang ke cakupan Stockbit (±2004 tergantung emiten) untuk preset "Semua".</li>
+<li><code>app/src/views/dasbor/broker-summary/AsingEmiten.tsx</code> (Broker Summary tab Flow &amp; Nego) — kartu Rupiah 5/10 hari real menggantikan taksiran; kosong (bukan taksiran) kalau harinya belum terpanen Stockbit.</li>
+</ul>
+<h3>Penandaan jahitan di antarmuka</h3>
+<p>Bagian rupiah <strong>sebelum tanggal awal cakupan bursa emiten itu</strong> (<code>asing/&lt;KODE&gt;.json</code>, per-ticker — bukan tanggal global) tidak punya pembanding sumber kedua. Ditandai dua cara sekaligus di Panel Aliran Asing: garis kumulatif digambar <strong>putus-putus</strong> untuk titik di rentang itu (Chart.js <code>segment.borderDash</code>), dan teks di bawah grafik: <em>"Garis putus-putus (sebelum {tanggal} cuma dari satu sumber — belum ada pembanding resmi bursa untuk periode itu."</em> Kartu ringkas 5/10 hari (AsingEmiten) dan 1/5/20 hari (PanelAliranAsing) nyaris selalu berada di rentang terverifikasi (hari-hari terbaru), jadi jahitan praktis hanya relevan di grafik riwayat panjang.</p>
+<h3>Kamus ruas baru</h3>
+<table>
+<thead>
+<tr>
+<th>Ruas kode</th>
+<th>Sumber</th>
+<th>Arti</th>
+<th>Dibaca oleh</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NetRupiahPeriode.net/beli/jual</code></td>
+<td><code>ohlcv_stockbit/&lt;KODE&gt;.json</code> kolom 9/10 (<code>foreignbuy</code>/<code>foreignsell</code>)</td>
+<td>net/beli/jual asing rupiah jendela N hari TERSEDIA Stockbit s.d. tanggal tertentu</td>
+<td><code>AsingEmiten.tsx</code>, <code>PanelAliranAsing.tsx</code></td>
+</tr>
+<tr>
+<td><code>TitikRupiah.kumulatif</code></td>
+<td>idem, running sum</td>
+<td>net rupiah kumulatif dalam rentang preset grafik</td>
+<td><code>PanelAliranAsing.tsx</code> (chart)</td>
+</tr>
+<tr>
+<td><code>TitikRupiah.jahitan</code></td>
+<td><code>bursaMulai</code> (<code>AsingData.mulai</code>, dari <code>asing/&lt;KODE&gt;.json</code>) dibandingkan tanggal titik</td>
+<td><code>true</code> = hari ini sebelum cakupan bursa emiten ybs → cuma satu sumber</td>
+<td>dipakai untuk garis putus-putus + catatan teks</td>
+</tr>
+</tbody>
+</table>
+<p>Sapuan kebocoran (<code>grep -rniE 'getstocksummary|chartbit|foreignbuy|foreignsell|foreignflow|ohlcv_stockbit|data-idx/json'</code> atas berkas yang disentuh) — nol string endpoint/ruas mentah/jalur berkas di teks yang dirender; istilah di atas cuma di komentar kode dan dokumen ini (<code>docs/</code> tidak ikut terbit).</p>
 
 </div>
 </div></div>
@@ -2388,7 +2477,7 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 </tbody>
 </table>
-<p><code>foreignbuy/foreignsell/foreignflow</code> rupiah di 17 kolom itu ada tetapi belum dibaca halaman — halaman masih menaksir rupiah asing dari lembar IDX (meleset 1,33×, J8).</p>
+<p><code>foreignbuy/foreignsell</code> rupiah di 17 kolom itu <strong>dibaca sejak 24 Agu 2026</strong> (<code>ohlcvKaya.ts</code> → <code>aliranAsingRupiah.ts</code>) oleh Panel Aliran Asing Stock Detail dan tab Flow &amp; Nego Broker Summary — taksiran lembar×harga (J8) dihapus. <code>foreignflow</code> (kumulatif) tetap tidak dipakai langsung — turunannya (<code>foreignbuy − foreignsell</code>) sudah identik dengan selisih harian <code>foreignflow</code>, jadi tak perlu dua sumber.</p>
 <h3>Broker Summary — dari mana, isinya apa</h3>
 <table>
 <thead>
@@ -2743,9 +2832,9 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 <tr>
 <td>Aliran asing</td>
-<td><code>asing/</code> lembar IDX (taksiran rupiah meleset 1,33×) · chartbit rupiah</td>
-<td>Stock Detail, Aliran Asing, Broker Summary, Grafik · —</td>
-<td>angka resmi ada, yang tampil taksiran</td>
+<td>~~<code>asing/</code> lembar IDX (taksiran rupiah meleset 1,33×)~~ <strong>selesai 24 Agu 2026</strong> — lembar <code>asing/</code> + rupiah <code>ohlcv_stockbit</code> dibaca bareng, lihat §J8</td>
+<td>Stock Detail (Panel Aliran Asing), Broker Summary (AsingEmiten) — sudah pakai angka resmi; Aliran Asing <code>/aliran-asing</code> &amp; Grafik belum disentuh (di luar lingkup eksekusi ini)</td>
+<td>—</td>
 </tr>
 <tr>
 <td>Laporan keuangan</td>
@@ -2796,10 +2885,10 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 <tr>
 <td>Aliran asing</td>
-<td><code>asing/&lt;KODE&gt;.json</code> ditambah rupiah dari chartbit</td>
+<td><strong>sebagian selesai 24 Agu 2026</strong> (Stock Detail + AsingEmiten, lihat §J8) — dibaca bareng saat render (<code>asing/</code> + <code>ohlcv_stockbit/</code>), bukan digabung jadi satu berkas fisik; <code>/aliran-asing</code> &amp; Grafik Emiten belum dialihkan</td>
 <td>Stockbit rupiah</td>
 <td>IDX lembar (tetap disimpan)</td>
-<td>Stock Detail, Aliran Asing, Broker Summary, Grafik</td>
+<td>Stock Detail, Broker Summary — Aliran Asing &amp; Grafik masih lama</td>
 </tr>
 <tr>
 <td>Rasio fundamental</td>

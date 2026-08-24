@@ -102,7 +102,17 @@ export function angka(v: unknown): number | null {
   return neg ? -n : n
 }
 
-function semuaKosong(o: Record<string, number | null>): boolean {
+// Parameternya `object`, BUKAN `Record<string, number | null>`. Antarmuka
+// (`interface`) di TypeScript tak punya index signature implisit, jadi
+// `RasioBank` dan `PeringkatPeer` tak bisa diberikan ke Record — `tsc -b`
+// menolaknya dengan TS2345.
+//
+// Yang bikin ini lolos ke produksi: `tsc --noEmit` MELEWATKANNYA, sementara
+// `tsc -b` (yang dipakai `npm run build`) menangkapnya. Tiga pemeriksaan
+// berturut-turut memakai `--noEmit` dan semuanya melapor bersih, lalu setiap
+// deployment gagal di langkah pertama. Periksa dengan perintah yang sama
+// dengan yang dipakai build, bukan yang mirip.
+function semuaKosong(o: object): boolean {
   return Object.values(o).every((v) => v == null)
 }
 

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { ekstrakHariFlow, pilihJendela, JENDELA_HARIAN, taksiranNetAsing } from './flowNego'
+import { ekstrakHariFlow, pilihJendela, JENDELA_HARIAN } from './flowNego'
 import type { DataHarian } from './dataHarian'
-import type { AsingHarian } from './stockDetailData'
 
 const dsDasar = { date_id: 'x', trading_day: 1, ihsg_value: 0, ihsg_pct: 0 }
 
@@ -29,37 +28,6 @@ describe('ekstrakHariFlow', () => {
     expect(h.nf).toBeNull()
     expect(h.ngVal).toBe(0)
     expect(h.ngFrek).toBe(0)
-  })
-})
-
-describe('taksiranNetAsing', () => {
-  const baris = (tanggal: string, beli: number, jual: number, volume: number, value: number): AsingHarian => (
-    { tanggal, beli, jual, volume, value, frekuensi: 1 }
-  )
-
-  it('net lembar + taksiran rupiah dari harga rata-rata tertimbang jendela', () => {
-    const d: AsingHarian[] = [
-      baris('2026-08-10', 100, 40, 1000, 5000), // harga 5/lembar
-      baris('2026-08-11', 50, 30, 500, 2500), // harga 5/lembar
-    ]
-    const r = taksiranNetAsing(d, 5)
-    expect(r).toEqual({ netLembar: (100 - 40) + (50 - 30), rupiah: 80 * 5, hariTersedia: 2 })
-  })
-
-  it('jendela lebih pendek dari histori tersedia → potong ke histori, hariTersedia < hari', () => {
-    const d: AsingHarian[] = [baris('2026-08-10', 10, 4, 100, 500)]
-    const r = taksiranNetAsing(d, 10)
-    expect(r?.hariTersedia).toBe(1)
-    expect(r?.netLembar).toBe(6)
-  })
-
-  it('volume 0 di jendela → rupiah null (bukan Infinity/NaN)', () => {
-    const d: AsingHarian[] = [baris('2026-08-10', 10, 4, 0, 0)]
-    expect(taksiranNetAsing(d, 5)?.rupiah).toBeNull()
-  })
-
-  it('riwayat kosong → null', () => {
-    expect(taksiranNetAsing([], 5)).toBeNull()
   })
 })
 

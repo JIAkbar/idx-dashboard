@@ -47,7 +47,7 @@ Satu baris per halaman di `app/src/lib/dasbor/menu.ts` + komponen data di Berand
 |---|---|---|---|---|
 | Beranda `/` | `index.json` + `ds_*` (dataHarian), `ihsg_ohlc_ringkas.json` (ihsgOhlc), `kabar.json`, `snips.json`, `arus-pasar/keluaran/index.json` (bulletin) | IDX PDF harian; **IHSG jahitan Yahoo+Stockbit**; IDX berita/pengumuman + IPOT + Kontan + Google News; Stockbit Snips; setoran kontributor | **ya** (grafik IHSG) | 23 Agu 2026 |
 | Tanya PAPAN (komponen Beranda, `TanyaPapan.tsx`, `tanyaPapan.ts:35`) | `ohlc/<KODE>.json` | **jahitan Stockbit chartbit + Yahoo** | **ya** | 23 Agu 2026 |
-| Panel Aliran Asing (Beranda, `PanelAliranAsing.tsx:13`) | `asing/<KODE>.json` | IDX GetStockSummary | tidak | 23 Agu 2026 |
+| Panel Aliran Asing (Beranda/Stock Detail, `PanelAliranAsing.tsx:13`) | `asing/<KODE>.json` (lembar) + `ohlcv_stockbit/<KODE>.json` (rupiah, lewat `ohlcvKaya.ts`/`aliranAsingRupiah.ts`) | lembar: IDX GetStockSummary (2020→); rupiah: Stockbit chartbit (2004→) | **ya** (rupiah pra-2020, cuma Stockbit — ditandai jahitan di grafik & teks) | 24 Agu 2026 |
 | Panel Diary (Beranda, `PanelDiary.tsx:91`) | `ihsg_harian.json` | IDX PDF harian, **cadangan sementara Yahoo `^JKSE`** bila PDF belum terbit (ditimpa PDF saat terbit) | sementara | 23 Agu 2026 |
 | Grup Konglomerat (Beranda, `GrupKonglomerat.tsx:42`) | `grup_konglomerat.json` | ⚙️ turunan `petakan_grup.py` dari profil/pengendali IDX + KSEI | turunan | 23 Agu 2026 |
 | Indeks Dunia `/indeks` | `index.json` (dataHarian), `ihsg_harian.json`, `ihsg_ohlc_ringkas.json` | IDX PDF harian; **IHSG jahitan Yahoo 1990–1999 + Stockbit 2000→** | **ya** | 23 Agu 2026 |
@@ -59,7 +59,7 @@ Satu baris per halaman di `app/src/lib/dasbor/menu.ts` + komponen data di Berand
 | Grafik Emiten `/grafik` (`GrafikEmiten.tsx:774,794,1693`) | `ohlc/<KODE>.json`, `asing/<KODE>.json` | **jahitan Stockbit + Yahoo**; IDX | **ya** | 23 Agu 2026 |
 | Chart `/chart` (`ChartIndeks.tsx`) | ❓ tidak ada jalur `data-idx/` langsung di berkasnya | ❓ belum ditelusuri (kemungkinan widget/komponen lain) | ❓ | belum |
 | Peta Investor `/peta-investor` | `investor_map.json`, `investor_map.meta.json` | KSEI holding composition | tidak | 23 Agu 2026 |
-| Broker Summary `/broker-summary` | `broker/index.json` + `broker/<tgl>.json` (brokerHarian), `asing/<KODE>.json` (flowNego, AsingEmiten), `aliran_investor.json` | IDX GetBrokerSummary (+PDF); IDX GetStockSummary; ⚙️ turunan `bangun_aliran_investor.py` dari asing | tidak (turunan ditandai) | 23 Agu 2026 |
+| Broker Summary `/broker-summary` | `broker/index.json` + `broker/<tgl>.json` (brokerHarian), `asing/<KODE>.json` + `ohlcv_stockbit/<KODE>.json` (AsingEmiten tab Flow & Nego, lembar + rupiah), `aliran_investor.json` | IDX GetBrokerSummary (+PDF); IDX GetStockSummary; Stockbit chartbit (rupiah); ⚙️ turunan `bangun_aliran_investor.py` dari asing | **ya** (rupiah AsingEmiten, pra-2020) | 24 Agu 2026 |
 | Aliran Asing `/aliran-asing` | `asing/<KODE>.json`, `fundamental/`, `screener.json` | IDX GetStockSummary; fundamental campuran; ⚙️ screener turunan | **ya** (lewat fundamental) | 23 Agu 2026 |
 | Broker Summary v2 `/broker-summary-v2` (Overview, Inventory, FlowNetGross, Nego, TimelineForeign, VsIhsg, Shareholders) | `ohlcv_stockbit/<KODE>.json` (`brokerEmitenV2.ts:6,50`), `broker_tahunan/` (`:147`), `broker/`, `kepemilikan/<KODE>.json` (`brokerProfilKsei.ts:27`), `profil_stockbit/<KODE>.json` (`:136`) | Stockbit chartbit **murni** (bukan `ohlc/`); ⚙️ `bangun_broker_tahunan.py` dari Stockbit marketdetectors; IDX GetBrokerSummary; KSEI Balancepos; Stockbit profil | tidak — satu-satunya halaman harga yang memakai Stockbit tanpa jahitan Yahoo | 23 Agu 2026 |
 | Seasonality `/seasonality` (+ Harian, Komparasi) | `seasonality/harga_bulanan.json`, `ihsg_harian.json`, `ohlc/<KODE>.json` (SeasonalityHarian) | Yahoo bulanan (**bukan sejak IPO** — titik tertua Agu 2000); IDX PDF; **`ohlc/` jahitan** | **ya** (Harian) | 23 Agu 2026 |
@@ -89,7 +89,7 @@ Johan 23 Agu 2026: *"data yang sempurna pasti itu yang digunakan bukan data jahi
 | J5 | Stock Detail menggabung `keuangan_idx` (IDX XBRL) + `keuangan` (yfinance) saat dibaca | `app/src/lib/dasbor/fundamentalGabungan.ts:198-199` | tidak ada tabel pembanding yang tercatat | agen | **perlu keputusan** — bagian dari J4 |
 | J6 | `ihsg_harian.json`: cadangan Yahoo `^JKSE` sementara bila PDF IDX belum terbit, ditimpa saat PDF terbit | `panen_ihsg.py` | tercatat di `status-panen.md` 21 Agu | tercatat, Johan tahu | sah sebagai cadangan sementara **asalkan** antarmuka menandai "sementara (Yahoo)" sampai PDF masuk — belum dicek apakah ditandai |
 | J7 | Open riwayat: IDX `GetStockSummary` Open bolong (5–8% terisi pra-2025) → Open dari Yahoo, High/Low/Close/Volume dari IDX | aturan lama `sumber-data-harga.md` "Aturan pakai" | terukur Jan 2020–Agu 2026 | agen (15 Agu), aturannya "wajib disebut di antarmuka" | ❓ apakah masih berlaku setelah `ohlc/` beralih ke Stockbit (Stockbit punya Open penuh sejak 2004) — perlu ditelusuri di `panen_ohlc.py` |
-| J8 | Aliran asing rupiah di halaman = **taksiran** lembar × (value ÷ volume), meleset 1,33× kumulatif | `panen_asing.py` sengaja tidak menyimpan rupiah; halaman menaksir | angka resmi rupiah sudah ada di `ohlcv_stockbit/` (`foreignbuy`/`foreignsell` chartbit) tapi belum dipakai | agen | **perlu keputusan**: ganti taksiran dengan angka chartbit (butuh tabel pembanding lembar-IDX vs rupiah-Stockbit per emiten × tanggal dulu) |
+| J8 | ~~Aliran asing rupiah di halaman = **taksiran** lembar × (value ÷ volume), meleset 1,33× kumulatif~~ — **dieksekusi 24 Agu 2026**, lihat §J8 di bawah | `panen_asing.py` sengaja tidak menyimpan rupiah; taksiran diganti rupiah sebenarnya dari Stockbit | `netRupiahPeriode`/`kumulatifRupiah` (`aliranAsingRupiah.ts`) baca `foreignbuy`/`foreignsell` chartbit langsung, taksiran lama dihapus dari `flowNego.ts` | Johan ("apakah data asing yang sudah terpasang bisa pakai data dari stockbit ?" → "ok setuju"), eksekusi agen | **selesai** — riwayat rupiah diperpanjang ke 2004, bagian pra-2020 ditandai jahitan di antarmuka |
 
 ### Keputusan arah — Johan, 23 Agu 2026 (sesi AI Skill)
 
@@ -102,7 +102,7 @@ Prinsip yang mengikat ke depan (Johan 23 Agu, menyetujui matriks kanonik): *"nam
 | J1 `ohlc/` emiten | Stockbit chartbit = sumber utama harga & volume; Yahoo hanya cadangan/jahitan untuk tanggal yang memang tidak ada di Stockbit (pra-2004, hari yang hilang) — bukan union setara; bar dari cadangan ditandai di berkas dan disebut di antarmuka; Yahoo asli tetap disimpan di `_arsip-mentah/ohlc-yahoo-sebelum-ganti-volume/` | tabel per emiten: jumlah & rentang bar hanya-Yahoo; cara menandai sumber per bar; dampak ke Kartu/Screener/Watchlist | arah diputuskan 23 Agu; eksekusi sesi Papan Trading |
 | J2 `ohlc/IHSG` | Stockbit 2000→ utama; Yahoo hanya 1990–1999 (riwayat yang tidak dimiliki Stockbit), ditandai per periode | verifikasi sambungan lot→lembar ×100; penandaan periode di Indeks Dunia/Beranda | arah diputuskan |
 | J4/J5 fundamental Stock Detail | keystats Stockbit (94 rasio, per kuartal Q1–Q4 + TTM) = utama rasio/valuasi; IDX XBRL = utama angka laporan resmi; yfinance = cadangan untuk ruas yang kosong di keduanya; tidak ada yang dibuang | tabel pembanding 3 sumber (sampel emiten × rasio × nilai × tanggal); pemetaan 94 rasio → 25 ruas yang dipakai halaman; satuan (B = miliar, %, ×100) | arah diputuskan |
-| J8 aliran asing rupiah | `foreignbuy/foreignsell` chartbit (resmi, rupiah) menggantikan taksiran lembar × harga; lembar IDX tetap cadangan/pembanding | tabel taksiran vs chartbit per emiten × tanggal | arah diputuskan |
+| J8 aliran asing rupiah | `foreignbuy/foreignsell` chartbit (resmi, rupiah) menggantikan taksiran lembar × harga; lembar IDX tetap sumber lembar resmi/pembanding | tabel taksiran vs chartbit per emiten × tanggal (miring +33% kumulatif, lihat §J8) | **dieksekusi 24 Agu 2026** |
 | keystats / `info_stockbit` / `profil` IDX menganggur | dipakai atau diusulkan pemakaiannya — tidak dibiarkan | rencana halaman pemakai | diputuskan: tidak boleh menganggur |
 | J9 laporan keuangan per periode | IDX XBRL (parsing resmi) = utama; Stockbit = tambalan periode/ruas kosong; yfinance terakhir. Johan: *"seperti ini baru di jahit kan data dari XBRL resmi di parsing, lalu di tambal dari Stockbit itu pun jika stockbit menyediakan 2 tahun saja, belum di uji jika ternyata menyediakan sejak 2019 juga"* | uji kedalaman: keystats terbukti 3 ruas × 2024–2026 (5 emiten); pecahkan parameter `/findata-view/company/financial` (`report_type`/`period_type`/`data_type` dari Network DevTools) — kalau 2019→ tersedia, tabel pembanding XBRL vs Stockbit per periode | arah diputuskan 23 Agu; uji endpoint belum |
 | J10 statistik pasar | IDX PDF resmi = utama; dilengkapi turunan chartbit se-pasar (breadth, Σ nilai/volume/frekuensi, top stocks) untuk riwayat pra-2026-01-07 dan ruas yang PDF tak punya. Johan: *"ini wajar memang hasil dari parsing data tapi bisa di lengkapi datanya dengan OHLC dari Stockbit"* | cocokkan definisi tiap statistik PDF vs turunan chartbit pada hari yang sama (selisih harus 0 untuk nilai/volume/frekuensi pasar) | arah diputuskan |
@@ -388,9 +388,48 @@ Angka 24/36 adalah batas atas asumsi linear; yang sah adalah mengukur 1 jam pada
 | `fundamental/` · yfinance + IDX ListedShares + tambalan XBRL (J4) | jahit per ruas | ruas kosong ditambal | 154 emiten `eps` | agen | 17–18 Agu 2026 — **perlu keputusan Johan: sumber rasio resmi** |
 | Stock Detail · gabung `keuangan_idx` + `keuangan` (J5) | jahit saat baca | — | tidak ada tabel pembanding | agen | — **perlu keputusan Johan** |
 | `ihsg_harian` · cadangan Yahoo sementara (J6) | timpa sementara | PDF terbit sore | — | tercatat status-panen | 21 Agu 2026 — sah kalau ditandai di antarmuka |
-| Aliran asing rupiah · taksiran vs chartbit (J8) | belum diganti | angka resmi sudah ada di `ohlcv_stockbit/` | taksiran meleset 1,33× | — | **belum diputuskan** |
+| Aliran asing rupiah · taksiran vs chartbit (J8) | **diganti 24 Agu 2026** | angka resmi sudah ada di `ohlcv_stockbit/` | taksiran meleset 1,33× kumulatif | Johan ("ok setuju") | selesai |
 | Konvensi harga & volume · tersesuaikan vs apa adanya (J12) | **batas ditetapkan** | dua konvensi, dua-duanya benar; yang salah menyilangkannya | 936 emiten: 129.723/1.173.805 bar beda (11,05%), 167 emiten >5%; rasio pembeda BULAT (250·25·5·4·2); DSSA volume ×25 & harga ÷25 sampai Mar 2026 lalu 1,00 (pecah saham 1:25) | **Johan** (*"ok tulis"*) | 23 Agu 2026 |
 
+
+## J8 · Aliran asing rupiah — Stockbit utama, IDX lembar dipertahankan (eksekusi 24 Agu 2026)
+
+Asal: Johan 24 Agu 2026 — *"apakah data asing yang sudah terpasang bisa pakai data dari stockbit ? atau lebih lengkap dari IDX ?"* → *"ok setuju"*.
+
+### Tiga sumber, tiga peran — jangan tertukar
+
+| Sumber | Satuan | Cakupan waktu | Peran |
+|---|---|---|---|
+| IDX `GetStockSummary` → `asing/<KODE>.json` | **lembar** (`beli`/`jual`/`volume`), rupiah `value` = nilai transaksi pasar hari itu (BUKAN aliran asing) | 2020-01-02 → kini, 989 emiten | sumber LEMBAR resmi + pembanding silang — dipertahankan, tidak dibuang |
+| Stockbit chartbit → `ohlcv_stockbit/<KODE>.json` (`foreignbuy`/`foreignsell`) | **rupiah**, langsung (bukan taksiran) | 2004-01-02 → kini, 963 emiten | sumber RUPIAH utama + riwayat sebelum 2020 |
+| ~~taksiran lama (`flowNego.ts` `taksiranNetAsing`)~~ | rupiah, dihitung `net lembar × (value ÷ volume)` | — | **dihapus 24 Agu 2026** — miring +33% kumulatif atas 138 hari (galat searah, menumpuk), diganti angka Stockbit sebenarnya |
+
+`foreignflow` (kolom ke-12 chartbit) itu **kumulatif** sejak awal deret, bukan net harian — selisih hariannya sama persis dengan `foreignbuy − foreignsell` (diverifikasi 621/621 hari BBCA 2024–2026 sebelum eksekusi ini). Dipakai: `foreignbuy − foreignsell` langsung; `foreignflow` tidak dibaca sama sekali.
+
+### Bukti uji silang (sebelum eksekusi, dicatat sesi lain)
+
+Cocok dengan bursa: uji silang 778 pasangan dari 30 emiten acak, median rasio Stockbit rupiah ÷ (lembar bursa × harga penutupan) = **0,9999**. Cakupan papan sama: median 1,0000 pada hari nego <10% (1.349 pasangan), 0,9996 pada hari nego >10% (105 pasangan) — kalau Stockbit reguler-saja, hari nego besar akan jatuh sistematis; tidak terjadi.
+
+### Yang berubah di kode (24 Agu 2026)
+
+- `app/src/lib/dasbor/aliranAsingRupiah.ts` (baru) — `netRupiahPeriode()` (net rupiah jendela N-hari) dan `kumulatifRupiah()` (running sum + penanda `jahitan`), murni dari `OhlcvKaya` (`ohlcvKaya.ts`, sudah ada, dipakai bareng Grafik Emiten — tidak diduplikasi).
+- `app/src/lib/dasbor/flowNego.ts` — `taksiranNetAsing()`/`TaksiranAsing` **dihapus**.
+- `app/src/components/dasbor/PanelAliranAsing.tsx` (Stock Detail) — kartu ringkas Rupiah 1/5/20 hari (baru, real), toggle grafik kumulatif Lembar/Rupiah, kolom "Net Rp" di tabel 15 hari, riwayat rupiah diperpanjang ke cakupan Stockbit (±2004 tergantung emiten) untuk preset "Semua".
+- `app/src/views/dasbor/broker-summary/AsingEmiten.tsx` (Broker Summary tab Flow & Nego) — kartu Rupiah 5/10 hari real menggantikan taksiran; kosong (bukan taksiran) kalau harinya belum terpanen Stockbit.
+
+### Penandaan jahitan di antarmuka
+
+Bagian rupiah **sebelum tanggal awal cakupan bursa emiten itu** (`asing/<KODE>.json`, per-ticker — bukan tanggal global) tidak punya pembanding sumber kedua. Ditandai dua cara sekaligus di Panel Aliran Asing: garis kumulatif digambar **putus-putus** untuk titik di rentang itu (Chart.js `segment.borderDash`), dan teks di bawah grafik: *"Garis putus-putus (sebelum {tanggal} cuma dari satu sumber — belum ada pembanding resmi bursa untuk periode itu."* Kartu ringkas 5/10 hari (AsingEmiten) dan 1/5/20 hari (PanelAliranAsing) nyaris selalu berada di rentang terverifikasi (hari-hari terbaru), jadi jahitan praktis hanya relevan di grafik riwayat panjang.
+
+### Kamus ruas baru
+
+| Ruas kode | Sumber | Arti | Dibaca oleh |
+|---|---|---|---|
+| `NetRupiahPeriode.net/beli/jual` | `ohlcv_stockbit/<KODE>.json` kolom 9/10 (`foreignbuy`/`foreignsell`) | net/beli/jual asing rupiah jendela N hari TERSEDIA Stockbit s.d. tanggal tertentu | `AsingEmiten.tsx`, `PanelAliranAsing.tsx` |
+| `TitikRupiah.kumulatif` | idem, running sum | net rupiah kumulatif dalam rentang preset grafik | `PanelAliranAsing.tsx` (chart) |
+| `TitikRupiah.jahitan` | `bursaMulai` (`AsingData.mulai`, dari `asing/<KODE>.json`) dibandingkan tanggal titik | `true` = hari ini sebelum cakupan bursa emiten ybs → cuma satu sumber | dipakai untuk garis putus-putus + catatan teks |
+
+Sapuan kebocoran (`grep -rniE 'getstocksummary|chartbit|foreignbuy|foreignsell|foreignflow|ohlcv_stockbit|data-idx/json'` atas berkas yang disentuh) — nol string endpoint/ruas mentah/jalur berkas di teks yang dirender; istilah di atas cuma di komentar kode dan dokumen ini (`docs/` tidak ikut terbit).
 
 ## J12 · Dua konvensi harga & volume — tersesuaikan vs apa adanya (ketetapan Johan, 23 Agu 2026)
 
@@ -477,7 +516,7 @@ Cara halaman menggabung (`fundamentalGabungan.ts`, aturan tertulis di kode): `ke
 | `ohlcv_stockbit/<KODE>.json` (963) + `ohlcv_stockbit/IHSG.json` | **Stockbit chartbit murni** | **17**: `tanggal unixdate open high low close volume value frequency foreignbuy foreignsell foreignflow dividend shareoutstanding soxclose freq_analyzer lot` | emiten + IHSG | 2004-01-02 → 2026-08-21 (BBCA 5.483 bar), dipanen 23 Agu | hanya Broker Summary v2; bahan `ohlc/` |
 | `_arsip-mentah/ohlc-yahoo-sebelum-ganti-volume/` (964) | Yahoo asli sebelum ditimpa | 6 | emiten + IHSG | cadangan untuk membatalkan jahitan | — |
 
-`foreignbuy/foreignsell/foreignflow` rupiah di 17 kolom itu ada tetapi belum dibaca halaman — halaman masih menaksir rupiah asing dari lembar IDX (meleset 1,33×, J8).
+`foreignbuy/foreignsell` rupiah di 17 kolom itu **dibaca sejak 24 Agu 2026** (`ohlcvKaya.ts` → `aliranAsingRupiah.ts`) oleh Panel Aliran Asing Stock Detail dan tab Flow & Nego Broker Summary — taksiran lembar×harga (J8) dihapus. `foreignflow` (kumulatif) tetap tidak dipakai langsung — turunannya (`foreignbuy − foreignsell`) sudah identik dengan selisih harian `foreignflow`, jadi tak perlu dua sumber.
 
 ### Broker Summary — dari mana, isinya apa
 
@@ -546,7 +585,7 @@ Verifikasi riwayat (bar pertama, dibaca dari berkas): ASII Stockbit 2000-10-17 =
 | Saham beredar | `fundamental.shares` · `daftar_emiten` (IDX) · `ohlcv.shareoutstanding` · keystats | Stock Detail · kamusEmiten · v2 · — | market cap bisa beda antar halaman |
 | Sektor | `fundamental.sector` (Yahoo) · `emiten_sektor` (IDX-IC) · `info_stockbit.sector` | Stock Detail header · Stock Detail/Kartu label · — | dua taksonomi di satu halaman |
 | Pemegang saham | `pengendali.json` (XBRL) · `profil_stockbit` · `profil` IDX · `kepemilikan` KSEI | Stock Detail · Shareholders v2 · — · Shareholders v2 | Stock Detail dan v2 memakai sumber berbeda |
-| Aliran asing | `asing/` lembar IDX (taksiran rupiah meleset 1,33×) · chartbit rupiah | Stock Detail, Aliran Asing, Broker Summary, Grafik · — | angka resmi ada, yang tampil taksiran |
+| Aliran asing | ~~`asing/` lembar IDX (taksiran rupiah meleset 1,33×)~~ **selesai 24 Agu 2026** — lembar `asing/` + rupiah `ohlcv_stockbit` dibaca bareng, lihat §J8 | Stock Detail (Panel Aliran Asing), Broker Summary (AsingEmiten) — sudah pakai angka resmi; Aliran Asing `/aliran-asing` & Grafik belum disentuh (di luar lingkup eksekusi ini) | — |
 | Laporan keuangan | `keuangan` Yahoo + `keuangan_idx` XBRL digabung · keystats | Stock Detail · — | gabungan ditandai per angka (baik), sumber ketiga menganggur |
 | Broker per emiten | setoran kontributor · `broker_tahunan` Stockbit (BUMI) · arsip 12 varian 27 emiten | Deep Dive/Kartu · v2 · — | v2 hanya BUMI; arsip 220.923 berkas belum diolah |
 
@@ -557,7 +596,7 @@ Verifikasi riwayat (bar pertama, dibaca dari berkas): ASII Stockbit 2000-10-17 =
 | OHLCV emiten | `ohlc/<KODE>.json` dibangun dari `ohlcv_stockbit` (6 kolom + tanda sumber per bar; ruas tambahan tetap di `ohlcv_stockbit`) | Stockbit | Yahoo hanya tanggal tanpa Stockbit | semua pemakai `ohlc/`; v2 tetap baca ohlcv |
 | IHSG | `ohlc/IHSG.json` (Stockbit 1997→ + Yahoo 1990–1997) → `ihsg_harian.json` diturunkan dari sini | Stockbit | Yahoo pra-1997; IDX PDF penutupan resmi | Diary, Seasonality Harian, tanggalBursa, Kartu |
 | Harga terakhir | `harga_terakhir.json` diturunkan dari bar terakhir kanonik | Stockbit (lewat ohlc) | — | Stock Detail header, Watchlist, Kalkulator, Kartu |
-| Aliran asing | `asing/<KODE>.json` ditambah rupiah dari chartbit | Stockbit rupiah | IDX lembar (tetap disimpan) | Stock Detail, Aliran Asing, Broker Summary, Grafik |
+| Aliran asing | **sebagian selesai 24 Agu 2026** (Stock Detail + AsingEmiten, lihat §J8) — dibaca bareng saat render (`asing/` + `ohlcv_stockbit/`), bukan digabung jadi satu berkas fisik; `/aliran-asing` & Grafik Emiten belum dialihkan | Stockbit rupiah | IDX lembar (tetap disimpan) | Stock Detail, Broker Summary — Aliran Asing & Grafik masih lama |
 | Rasio fundamental | `fundamental/<KODE>.json` dipetakan dari keystats (94 → ruas halaman) | Stockbit | Yahoo untuk target/rekomendasi/beta/insider; IDX ListedShares | Stock Detail, Sektor, Aliran Asing, Watchlist, Kalkulator, Screener, Kartu |
 | Laporan keuangan | `keuangan_idx/` (XBRL resmi diparsing) | IDX | **Stockbit** menambal periode/ruas kosong (keystats: 3 ruas × 2024–2026; lebih dalam hanya kalau `/findata-view` terpecahkan); Yahoo terakhir | Stock Detail PanelLaporanKeuangan |
 | Saham beredar & sektor | `daftar_emiten.json` (IDX ListedShares + sektor IDX-IC) | IDX | Stockbit riwayat harian | Stock Detail header |
