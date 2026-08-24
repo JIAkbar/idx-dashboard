@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "app-dev",
-      "//": "JANGAN habiskan waktu menyetel ulang berkas ini kalau preview gagal dengan \"'C:\\Program' is not recognized\". Sudah diuji 25 Agu 2026: runtimeExecutable DIABAIKAN runner — nilai 'npm', 'node', jalur 8.3 'C:\\PROGRA~1\nodejs\node.exe', bahkan jalur yang sengaja TIDAK ADA ('C:\nope\tidak-ada.exe') semuanya menghasilkan galat yang sama persis. Executable yang tak ada mestinya memberi galat berbeda; karena tidak, nilai ini tak pernah dipakai. Yang gagal jalur spawn runner sendiri (memanggil program ber-Program Files tanpa tanda kutip), di luar jangkauan config. Jalankan manual: npm run dev di dalam app/, lalu verifikasi lewat chrome-devtools.",
+      "//": "JANGAN habiskan waktu menyetel ulang berkas ini kalau preview gagal dengan \"'C:\\Program' is not recognized\". Sudah diuji 25 Agu 2026: runtimeExecutable DIABAIKAN runner - nilai 'npm', 'node', jalur 8.3 'C:\\PROGRA~1\\nodejs\\node.exe', bahkan jalur yang sengaja TIDAK ADA ('C:\\nope\\tidak-ada.exe') semuanya menghasilkan galat yang sama persis. Executable yang tak ada mestinya memberi galat berbeda; karena tidak, nilai ini tak pernah dipakai runner. Yang gagal jalur spawn runner sendiri (memanggil program ber-Program Files tanpa tanda kutip), di luar jangkauan config mana pun. Jalankan manual: npm run dev di dalam app/, lalu verifikasi lewat chrome-devtools.",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
