@@ -303,6 +303,12 @@
 .lantai .grf-naik { color: var(--green); }
 .lantai .grf-turun { color: var(--red); }
 
+/* Baris kedua: ruas kaya (nilai transaksi, frekuensi, asing, saham
+   beredar) — sumber terpisah dari OHLC (`ohlcvKaya.ts`), jadi barisnya
+   sendiri, bukan disisipkan ke `.grf-status` yang sudah padat. */
+.lantai .grf-status-kaya { margin-top: 0; margin-bottom: 2px; font-size: 11px; color: var(--text3); }
+.lantai .grf-status-kaya.muted { font-style: italic; }
+
 /* Tombol lipat panel indikator (`^`). Cuma pane > 0 — melipat panel HARGA
    berarti menyembunyikan isi yang justru datang untuk dilihat. */
 .lantai .grf-lipat {
@@ -655,6 +661,9 @@
      menutupi tiga baris lilin teratas. Volume & tanggal sudah terbaca dari
      batang volume dan sumbu waktunya sendiri. */
   .lantai .grf-status-vol, .lantai .grf-status .grf-legenda-tgl { display: none; }
+  /* Baris kedua (nilai/frekuensi/asing/saham beredar) tak muat di kanvas
+     340px — sudah terbaca lebih detail di Broker Summary v2. */
+  .lantai .grf-status-kaya { display: none; }
   /* Tooltip pola menyempit: 250px di kanvas selebar ~380px menutupi dua
      pertiga lebarnya. */
   .lantai .grf-pola-tip { max-width: 200px; }

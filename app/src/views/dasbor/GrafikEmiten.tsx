@@ -60,6 +60,8 @@ import {
   IKON_ULANG, IKON_PUTAR, IKON_JEDA, IKON_KOTAK_ARSIP, IKON_PANAH_ATAS, IKON_PANAH_BAWAH,
 } from '../../components/dasbor/IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
+import { useOhlcvKaya } from '../../lib/dasbor/ohlcvKaya'
+import { fmtB, fmtRingkas } from '../../lib/dasbor/brokerSummaryFormat'
 import './GrafikEmiten.css'
 
 const DEFAULT_KODE = 'BBCA'
@@ -765,6 +767,12 @@ export function GrafikEmiten() {
     // indikator apa gak muncul".
     void muatKatalog().then((k) => { if (k.size > 0) setKatalog((lama) => lama ?? k) })
   }, [])
+
+  // Ruas kaya (nilai transaksi, frekuensi, aliran asing, saham beredar) —
+  // fetch TERPISAH dari `ohlc/` (lihat `ohlcvKaya.ts`). Cakupannya lebih
+  // pendek (sejak ±2004, IHSG sejak 1997-07-01); baris status di bawah
+  // menjatuhkan balik dengan jujur kalau tanggal yang disorot lebih tua.
+  const kaya = useOhlcvKaya(kode)
 
   // Satu emiten, satu fetch — sama seperti SeasonalityHarian, BUKAN memuat
   // seluruh 963 berkas OHLC sekaligus.
@@ -3272,6 +3280,40 @@ export function GrafikEmiten() {
                     <span className="grf-legenda-tgl">{legenda.waktu}</span>
                   </span>
                 )}
+                {/* Ruas kaya (nilai transaksi, frekuensi, asing, saham
+                    beredar) — baris KEDUA, dari `ohlcv_stockbit/` (bukan
+                    `ohlc/`). Ditampilkan hanya kalau bar tanggal yang sedang
+                    disorot benar-benar punya datanya; kalau tidak (lilin
+                    dari jahitan Yahoo pra-2004), baris caption di bawahnya
+                    mengatakan sejak kapan datanya ada — bukan diam-diam
+                    menampilkan nol. */}
+                {pane === 0 && status && (() => {
+                  const k = kaya.byDate.get(status.l.time)
+                  if (k) {
+                    const netAsing = k.foreignBeli - k.foreignJual
+                    return (
+                      <span className="grf-status grf-status-kaya">
+                        <span>Nilai {fmtB(k.nilai)}</span>
+                        <span>Frek {fmtRingkas(k.frekuensi)}</span>
+                        <span className={netAsing >= 0 ? 'grf-naik' : 'grf-turun'}>
+                          Asing {netAsing >= 0 ? '+' : ''}{fmtB(netAsing)}
+                        </span>
+                        <span>Saham beredar {fmtRingkas(k.sahamBeredar)}</span>
+                      </span>
+                    )
+                  }
+                  // Tak ada bar — cuma disebut kalau memang tanggal yang
+                  // disorot lebih tua dari cakupan ruas kaya (bukan sekadar
+                  // belum termuat).
+                  if (kaya.mulai && status.l.time < kaya.mulai) {
+                    return (
+                      <span className="grf-status grf-status-kaya muted">
+                        Nilai transaksi, frekuensi, dan aliran asing tersedia sejak {tglPendek(kaya.mulai)}.
+                      </span>
+                    )
+                  }
+                  return null
+                })()}
                 {/* Legenda pembanding (#187) — persen SEMUA baris diukur dari
                     satu tanggal yang sama, dan tanggal itu disebut di baris
                     terakhir. Tanpa penyebutan itu "+18%" adalah angka yang
