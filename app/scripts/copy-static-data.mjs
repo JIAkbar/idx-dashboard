@@ -50,19 +50,29 @@ for (const usang of ['data-idx', 'arus-pasar']) {
 
 // Folder yang TIDAK ikut ke `dist/`, walau ada di repo.
 //
-// Vercel membatasi JUMLAH BERKAS per deployment di 15.000 — bukan ukurannya.
-// Terukur 24 Agustus 2026: data statis kita 14.363 berkas (lolos), lalu
-// `broker_tahunan/` menambah 2.740 jadi 17.103 dan SETIAP deployment sesudah
-// itu gagal. Yang menipu: 446 MB terdengar seperti masalah ukuran, padahal
-// batasnya jumlah — 2.740 berkas mungil @0,23 MB yang menjatuhkannya.
+// KEHATI-HATIAN, BUKAN BATAS TERBUKTI. Deployment 24 Agustus 2026 gagal
+// berturut-turut selama 13 jam, dan penyebabnya ternyata galat TypeScript
+// (TS2345 di rasioTambahanKeystats.ts) — `tsc -b` adalah langkah pertama
+// build, jadi penyalinan ini TAK PERNAH sempat berjalan. Artinya kita belum
+// punya satu pun bukti bahwa jumlah berkasnya bermasalah.
 //
-// Gejalanya juga tak terlihat dari sini: build lokal tetap sukses, `tsc`
-// bersih, uji lulus. Kegagalannya hanya muncul di Vercel, dan produksi diam
-// di versi lama selama 13 jam tanpa satu pun galat di repo.
+// Yang diketahui, terukur:
+//   - deployment terakhir yang sukses membawa 13.513 berkas
+//   - tanpa broker_tahunan sekarang 14.444
+//   - dengan broker_tahunan 17.103
+// Yang TIDAK diketahui: berapa batas jumlah berkas Vercel sebenarnya.
+// Dokumentasinya menyebut adanya "file limit" (lihat `vercel deploy
+// --archive=tgz`) tanpa angka yang bisa dikutip. Jangan mengarang angkanya
+// — versi pertama komentar ini menulis "15.000" seolah terverifikasi,
+// padahal itu tebakan.
 //
-// Ini TAMBALAN, bukan jawaban. Menyajikan ribuan JSON mungil lewat Vercel
-// memang salah bentuk; jawabannya memindahkan data statis ke luar (atau
-// menggabungkannya jadi jauh lebih sedikit berkas) — belum diputuskan.
+// Jadi pengecualian ini ditahan sebagai jaga-jaga sampai ada yang menguji:
+// hapus baris di bawah, deploy sekali, lihat hasilnya. Kalau hijau,
+// pengecualian ini memang tak perlu dan boleh dibuang.
+//
+// Terlepas dari batas itu, bentuknya tetap salah: ~14 folder x ~963 berkas
+// per emiten berarti tiap dataset baru menambah seribuan berkas. Jawaban
+// sebenarnya memindahkan data statis ke luar Vercel — belum diputuskan.
 const JANGAN_SALIN = [path.join('data-idx', 'json', 'broker_tahunan')]
 
 const targets = [
@@ -85,5 +95,5 @@ for (const { src, dest } of targets) {
 }
 
 for (const rel of JANGAN_SALIN) {
-  console.log(`[copy-static-data] TIDAK disalin (batas 15.000 berkas Vercel): ${rel}`)
+  console.log(`[copy-static-data] TIDAK disalin (jaga-jaga batas jumlah berkas Vercel — belum terbukti perlu): ${rel}`)
 }
