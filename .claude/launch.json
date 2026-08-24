@@ -3,16 +3,15 @@
   "configurations": [
     {
       "name": "app-dev",
-      "//": "Jalur 8.3 (PROGRA~1), BUKAN 'node' atau 'npm'. Runner meresolusi nama itu ke C:\\Program Files\\nodejs dan memanggilnya tanpa tanda kutip, jadi cmd memotong di spasi dan gagal dengan \"'C:\\Program' is not recognized\". Argumennya relatif terhadap akar proyek sehingga tak ikut membawa spasi dari '10. Pengembangan'.",
-      "runtimeExecutable": "C:\\PROGRA~1\\nodejs\\node.exe",
+      "//": "JANGAN habiskan waktu menyetel ulang berkas ini kalau preview gagal dengan \"'C:\\Program' is not recognized\". Sudah diuji 25 Agu 2026: runtimeExecutable DIABAIKAN runner — nilai 'npm', 'node', jalur 8.3 'C:\\PROGRA~1\nodejs\node.exe', bahkan jalur yang sengaja TIDAK ADA ('C:\nope\tidak-ada.exe') semuanya menghasilkan galat yang sama persis. Executable yang tak ada mestinya memberi galat berbeda; karena tidak, nilai ini tak pernah dipakai. Yang gagal jalur spawn runner sendiri (memanggil program ber-Program Files tanpa tanda kutip), di luar jangkauan config. Jalankan manual: npm run dev di dalam app/, lalu verifikasi lewat chrome-devtools.",
+      "runtimeExecutable": "npm",
       "runtimeArgs": [
-        "app/node_modules/vite/bin/vite.js",
-        "app",
-        "--port",
-        "5175",
-        "--strictPort"
+        "run",
+        "dev",
+        "--prefix",
+        "app"
       ],
-      "port": 5175
+      "port": 5173
     }
   ]
 }
