@@ -48,32 +48,31 @@ for (const usang of ['data-idx', 'arus-pasar']) {
   }
 }
 
-// Folder yang TIDAK ikut ke `dist/`, walau ada di repo.
+// Semua yang ada di repo ikut ke `dist/`. Tak ada pengecualian — dan itu
+// hasil keputusan, bukan kelalaian.
 //
-// KEHATI-HATIAN, BUKAN BATAS TERBUKTI. Deployment 24 Agustus 2026 gagal
-// berturut-turut selama 13 jam, dan penyebabnya ternyata galat TypeScript
-// (TS2345 di rasioTambahanKeystats.ts) — `tsc -b` adalah langkah pertama
-// build, jadi penyalinan ini TAK PERNAH sempat berjalan. Artinya kita belum
-// punya satu pun bukti bahwa jumlah berkasnya bermasalah.
+// Riwayatnya: 24 Agu 2026 `data-idx/json/broker_tahunan` dikecualikan sebagai
+// kehati-hatian saat deployment gagal berturut selama 13 jam. Penyebab
+// sebenarnya ternyata galat TypeScript (TS2345 di rasioTambahanKeystats.ts);
+// `tsc -b` langkah pertama build, jadi penyalinan ini tak pernah sempat
+// berjalan sama sekali dan jumlah berkas tak pernah jadi tersangka yang sah.
+// Pengecualian itu berdiri di atas diagnosis yang belakangan terbukti salah.
 //
-// Yang diketahui, terukur:
-//   - deployment terakhir yang sukses membawa 13.513 berkas
-//   - tanpa broker_tahunan sekarang 14.444
-//   - dengan broker_tahunan 17.103
-// Yang TIDAK diketahui: berapa batas jumlah berkas Vercel sebenarnya.
-// Dokumentasinya menyebut adanya "file limit" (lihat `vercel deploy
-// --archive=tgz`) tanpa angka yang bisa dikutip. Jangan mengarang angkanya
-// — versi pertama komentar ini menulis "15.000" seolah terverifikasi,
-// padahal itu tebakan.
+// Yang terukur: deployment sukses terakhir membawa 13.513 berkas; tanpa
+// broker_tahunan 14.444; dengan broker_tahunan 17.184 (2.740 berkas, seluruhnya
+// terlacak git). Batas jumlah berkas Vercel TIDAK diketahui angkanya —
+// dokumentasinya menyebut adanya "file limit" tanpa angka yang bisa dikutip.
+// Versi pertama komentar ini menulis "15.000" seolah terverifikasi; itu
+// karangan dan sudah dicabut.
 //
-// Jadi pengecualian ini ditahan sebagai jaga-jaga sampai ada yang menguji:
-// hapus baris di bawah, deploy sekali, lihat hasilnya. Kalau hijau,
-// pengecualian ini memang tak perlu dan boleh dibuang.
+// Pengecualiannya dibuang 25 Agu 2026 atas keputusan Johan: deploy sekali,
+// lihat hasilnya. Kalau hijau, batas itu memang tak pernah mengikat kita.
+// Kalau merah dengan galat yang MENYEBUT jumlah berkas (bukan galat lain),
+// barulah kita punya bukti pertama bahwa bentuk penyimpanan ini perlu diubah.
 //
-// Terlepas dari batas itu, bentuknya tetap salah: ~14 folder x ~963 berkas
+// Terlepas dari hasil uji itu, bentuknya tetap rapuh: ~14 folder x ~963 berkas
 // per emiten berarti tiap dataset baru menambah seribuan berkas. Jawaban
 // sebenarnya memindahkan data statis ke luar Vercel — belum diputuskan.
-const JANGAN_SALIN = [path.join('data-idx', 'json', 'broker_tahunan')]
 
 const targets = [
   { src: path.join(repoRoot, 'data-idx', 'json'), dest: path.join(distDir, 'data-idx', 'json') },
@@ -81,8 +80,6 @@ const targets = [
   { src: path.join(repoRoot, 'arus-pasar', 'keluaran'), dest: path.join(distDir, 'arus-pasar', 'keluaran') },
 ]
 
-const dilewati = JANGAN_SALIN.map((rel) => path.join(repoRoot, rel))
-const bolehSalin = (p) => !dilewati.some((d) => p === d || p.startsWith(d + path.sep))
 
 for (const { src, dest } of targets) {
   if (!existsSync(src)) {
@@ -90,10 +87,7 @@ for (const { src, dest } of targets) {
     continue
   }
   rmSync(dest, { recursive: true, force: true })
-  cpSync(src, dest, { recursive: true, filter: bolehSalin })
+  cpSync(src, dest, { recursive: true })
   console.log(`[copy-static-data] ${path.relative(repoRoot, src)} -> dist/${path.relative(distDir, dest)}`)
 }
 
-for (const rel of JANGAN_SALIN) {
-  console.log(`[copy-static-data] TIDAK disalin (jaga-jaga batas jumlah berkas Vercel — belum terbukti perlu): ${rel}`)
-}
