@@ -271,14 +271,25 @@ laporan. Tiga hal wajib disebut, selalu, karena ketiganya pernah salah dipahami:
 | Wajib disebut | Contoh benar |
 |---|---|
 | **Lapis** — papan & tipe investor yang BENAR-BENAR diambil, bukan nama pendeknya | "reguler = REGULER×ALL, asing = REGULER×**FOREIGN**, nego = NEGO×ALL. **Tunai tidak diambil**; nego-asing, tunai-asing, dan DOMESTIC juga belum" |
-| **Cakupan** — berapa emiten, dan **apakah IHSG termasuk** | "962 emiten, **IHSG tidak termasuk** (Stockbit tak menyediakannya; IHSG tetap dari Yahoo lewat `panen_ihsg.py`)" |
+| **Cakupan** — berapa emiten, dan **apakah IHSG termasuk** | "962 emiten, **IHSG tidak termasuk** — indeks tak punya rincian broker, jadi ini batas kenyataan, bukan kekurangan sumber" |
 | **Ruas** — ruas mana yang tersentuh, mana yang dibiarkan | "hanya `volume` yang diganti; `open/high/low/close` dibiarkan karena terukur 0,00% beda" |
 
 Yang membuat ini mahal: nama pendek menyembunyikan isi. "asing" terdengar
-seperti seluruh transaksi asing, padahal hanya papan reguler. "OHLCV" terdengar
-seperti mencakup indeks, padahal `ohlcv_stockbit/` berisi 962 emiten tanpa
-IHSG sementara `ohlc/` berisi 964 berkas **termasuk** IHSG — dan IHSG di sana
-volumenya selalu 0 karena Yahoo tak melaporkan volume indeks. Dua berkas
+seperti seluruh transaksi asing, padahal hanya papan reguler.
+
+**Koreksi 24 Agu 2026 — kalimat lama di sini SALAH dan sempat dipercaya dua
+sesi.** Tertulis "`ohlcv_stockbit/` berisi 962 emiten tanpa IHSG" dan "IHSG
+tetap dari Yahoo". Diperiksa: `ohlcv_stockbit/IHSG.json` ADA, **7.050 bar
+sejak 1997-07-01, 17 ruas** — Stockbit menyediakan IHSG dengan volume, nilai,
+frekuensi, dan aliran asing. `ohlc/IHSG.json` memang lebih panjang (8.861 bar
+sejak 1990-04-06) tapi hanya 6 ruas. Jadi keduanya punya IHSG dan yang berbeda
+bukan ada/tidaknya melainkan **panjang riwayat vs kekayaan ruas** — 1990-1997
+hanya ada di yang lama, dan jahitan di rentang itu wajib ditandai di layar.
+
+Pelajarannya bukan soal IHSG: kalimat itu lahir dari satu panen broker yang
+memang tak mencakup indeks, lalu **digeneralkan** ke seluruh sumber Stockbit
+tanpa diperiksa ulang. Yang benar dipisah per gudang — broker memang tak punya
+IHSG (indeks tak punya rincian broker), harga punya. Dua berkas
 bernama mirip, dua cakupan berbeda, dan keduanya dibaca halaman yang sama.
 
 ### Status panen WAJIB berupa tabel — `docs/status-panen.md`
