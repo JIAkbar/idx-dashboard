@@ -1,0 +1,127 @@
+/* Trader Papan — posisi broker per emiten.
+ *
+ * Kelas ber-awalan `.tp-` HANYA menyimpan penempatan & lebar, tak pernah
+ * bentuk kendali (aturan komponen kanonis #170). Pil rentang memakai
+ * `.chip-t` lewat PemilihRentang, tombol memakai `.btn-p`.
+ */
+
+.tp-intro { margin: 0 0 10px; max-width: 62ch; }
+
+.tp-atur {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-bottom: 10px;
+}
+.tp-atur .tp-emiten { width: 190px; }
+.tp-kecil { font-size: 12px; }
+
+.tp-sub {
+  font-size: 12px;
+  color: var(--text3);
+  margin: 0 0 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tabel lebar wajib menggulung di wadahnya sendiri — `.dasbor-main` MEMOTONG
+ * (bukan menggulung) kelebihan, jadi tanpa ini kolom kanan tak terjangkau
+ * di ponsel dan halamannya sendiri tak ikut menggulung ke samping. */
+.tp-gulung {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  background: var(--bg1);
+}
+
+.tp-tabel {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.tp-tabel th,
+.tp-tabel td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+.tp-tabel thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg2);
+  color: var(--text3);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+  z-index: 1;
+}
+.tp-tabel tbody tr:hover { background: var(--bg2); }
+.tp-tabel .tp-n { text-align: right; }
+.tp-plus { color: var(--green); }
+.tp-minus { color: var(--red); }
+
+/* Titik warna dipasang di dalam sel, bukan sel-nya dijadikan flex — `<td>`
+ * ber-`display:flex` berhenti berperilaku sebagai sel tabel dan garis
+ * bawahnya jadi tak sejajar dengan kolom lain. */
+.tp-titik {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: baseline;
+}
+.tp-kode { font-weight: 600; color: var(--text); }
+
+.tp-status {
+  display: inline-block;
+  padding: 1px 7px;
+  font-size: 11px;
+  border: 1px solid var(--line);
+  color: var(--text2);
+}
+.tp-s-akum { color: var(--green); border-color: var(--green); }
+.tp-s-akum-reda { color: var(--green); }
+.tp-s-dist { color: var(--red); border-color: var(--red); }
+.tp-s-dist-balik { color: var(--red); }
+.tp-s-datar { color: var(--text3); }
+
+.tp-strip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 18px;
+  min-width: 84px;
+}
+.tp-strip > span { width: 5px; min-height: 2px; }
+.tp-b-beli { background: var(--green); align-self: flex-end; }
+.tp-b-jual { background: var(--red); align-self: flex-start; }
+
+.tp-lagi { margin-top: 10px; }
+
+.tp-batas {
+  margin-top: 14px;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  background: var(--bg1);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text3);
+  max-width: 78ch;
+}
+.tp-batas strong { color: var(--text2); }
+
+.tp-kosong {
+  padding: 26px 12px;
+  text-align: center;
+  color: var(--text3);
+  font-size: 13px;
+  border: 1px solid var(--line);
+  background: var(--bg1);
+}
+
+@media (max-width: 900px) {
+  .tp-atur .tp-emiten { width: 100%; }
+}

@@ -2,10 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
+import { useBrokerTahunan } from '../../lib/dasbor/brokerTahunanData'
 import { warnaBrokerCanvas } from '../../lib/dasbor/kelompokBroker'
 import {
-  agregatArea, batasKanvas, dariBerkasTahunan, profilHarga, tahunDibutuhkan,
-  type HariBroker, type RingkasBroker, type SeleksiArea,
+  agregatArea, batasKanvas, profilHarga,
+  type RingkasBroker, type SeleksiArea,
 } from '../../lib/dasbor/whalesPapan'
 import './WhalesPapan.css'
 
@@ -45,10 +46,7 @@ export default function WhalesPapan() {
   const { index: indeks } = useStockIndex()
   const [ketik, setKetik] = useState('BUMI')
   const [kode, setKode] = useState('BUMI')
-  const [hari, setHari] = useState<HariBroker[]>([])
-  const [muat, setMuat] = useState(false)
-  const [galat, setGalat] = useState<string | null>(null)
-  const [tahunAda, setTahunAda] = useState<number[]>([])
+  const { hari, tahunAda, muat, galat } = useBrokerTahunan(kode)
 
   const [sel, setSel] = useState<SeleksiArea | null>(null)
   const [seret, setSeret] = useState<Kotak | null>(null)
@@ -58,40 +56,13 @@ export default function WhalesPapan() {
   const kanvasRef = useRef<HTMLCanvasElement | null>(null)
   const bungkusRef = useRef<HTMLDivElement | null>(null)
 
-  // ── muat data ────────────────────────────────────────────────────────────
+  // Ganti emiten = buang seleksi lama. Tanpa ini, kotak yang diseret di
+  // emiten sebelumnya tetap hidup dan panelnya memecah broker pada rentang
+  // harga milik saham LAIN — angkanya sah, kepalanya berbohong.
   useEffect(() => {
-    let batal = false
-    setMuat(true); setGalat(null); setSel(null)
-    setBatasBeli(PANEL_AWAL); setBatasJual(PANEL_AWAL)
-    ;(async () => {
-      try {
-        const ri = await fetch(`/data-idx/json/broker_tahunan/${kode}/index.json`)
-        if (!ri.ok) throw new Error('belum-ada')
-        const idx = (await ri.json()) as { tahun?: number[] }
-        const tahun = (idx.tahun ?? []).slice().sort((a, b) => a - b)
-        if (batal) return
-        setTahunAda(tahun)
-        if (tahun.length === 0) { setHari([]); setGalat('kosong'); return }
-
-        const perlu = tahunDibutuhkan(`${tahun[0]}-01-01`, `${tahun[tahun.length - 1]}-12-31`)
-          .filter((t) => tahun.includes(t))
-        const bagian = await Promise.all(
-          perlu.map(async (t) => {
-            const r = await fetch(`/data-idx/json/broker_tahunan/${kode}/${t}.json`)
-            return r.ok ? dariBerkasTahunan(await r.json()) : []
-          }),
-        )
-        if (batal) return
-        const semua = bagian.flat().sort((a, b) => (a.tanggal < b.tanggal ? -1 : 1))
-        setHari(semua)
-        if (semua.length === 0) setGalat('kosong')
-      } catch {
-        if (!batal) { setHari([]); setTahunAda([]); setGalat('belum-ada') }
-      } finally {
-        if (!batal) setMuat(false)
-      }
-    })()
-    return () => { batal = true }
+    setSel(null)
+    setBatasBeli(PANEL_AWAL)
+    setBatasJual(PANEL_AWAL)
   }, [kode])
 
   const batas = useMemo(() => batasKanvas(hari), [hari])

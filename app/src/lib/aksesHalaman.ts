@@ -151,6 +151,9 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   // di tab Akses begitu barisnya dibuat — bukan jadi halaman tak teratur
   // seperti empat halaman yang tertinggal 21 Agu.
   'whales-papan': 'whales-papan',
+  // Trader Papan (25 Agu 2026) — pasangan Whales Papan, keadaan pendaftaran
+  // sama persis: kunci di sini sekarang, baris Supabase menyusul.
+  'trader-papan': 'trader-papan',
   // Halaman publik Radar Watchlist — PRODUK-nya yang dijaga. Tab admin
   // /admin/radar (tempat sumber WDWL diunggah) punya gerbang superadmin
   // sendiri, jadi keduanya tidak bertabrakan. Sempat salah tafsir sehingga

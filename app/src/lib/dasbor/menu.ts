@@ -257,6 +257,13 @@ export const MENU_ITEMS: MenuItem[] = [
     ringkas: 'Kanvas jejak bandar: seret rentang harga x waktu, lihat broker mana yang menampung dan mana yang melepas.',
     ikon: 'M3 17l5-5 4 3 5-7 4 4M3 21h18',
   },
+  {
+    // Trader Papan (25 Agu 2026) — posisi broker per emiten. Kode 'TRP';
+    // 'TRD' terlalu dekat dengan menu Trading yang sudah ada.
+    id: 'trader-papan', path: '/trader-papan', label: 'Trader Papan', kode: 'TRP', grup: 'dev',
+    ringkas: 'Posisi tiap broker pada satu emiten: rata-rata harga beli, harga termurah tempat ia menampung, dan arah terakhirnya.',
+    ikon: 'M4 19h16M6 16V9m5 7V5m5 11v-6',
+  },
 ]
 
 /** Kelompok beserta isinya — satu sumber untuk rail desktop (flyout) DAN laci

@@ -3,7 +3,8 @@
   "configurations": [
     {
       "name": "app-dev",
-      "runtimeExecutable": "node",
+      "//": "Jalur 8.3 (PROGRA~1), BUKAN 'node' atau 'npm'. Runner meresolusi nama itu ke C:\\Program Files\\nodejs dan memanggilnya tanpa tanda kutip, jadi cmd memotong di spasi dan gagal dengan \"'C:\\Program' is not recognized\". Argumennya relatif terhadap akar proyek sehingga tak ikut membawa spasi dari '10. Pengembangan'.",
+      "runtimeExecutable": "C:\\PROGRA~1\\nodejs\\node.exe",
       "runtimeArgs": [
         "app/node_modules/vite/bin/vite.js",
         "app",
