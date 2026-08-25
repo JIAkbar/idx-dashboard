@@ -1,0 +1,70 @@
+/* Pita pengumuman sistem.
+ *
+ * Kelas `.pp-*` hanya penempatan dan warna nada — tak ada bentuk kendali
+ * baru (aturan komponen kanonis #170). Tombol tutupnya kecil dan khas pita
+ * ini, jadi ia penimpa lokal, bukan definisi kendali baru.
+ */
+
+.pp-pita {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 9px;
+  padding: 9px 11px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  background: var(--bg1);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text2);
+}
+
+.pp-peringatan {
+  border-color: var(--accent);
+  /* Sengaja TIDAK memakai latar penuh warna aksen: pita ini menetap sampai
+   * ditutup, dan blok berwarna terang yang menetap di atas tiap halaman
+   * melelahkan dibaca. Garis tepi sudah cukup menandai nadanya. */
+}
+.pp-peringatan .pp-ikon { color: var(--accent); }
+.pp-info .pp-ikon { color: var(--text3); }
+
+.pp-ikon {
+  display: flex;
+  align-items: center;
+  height: 19px; /* sejajar dengan baris pertama teks, bukan dengan kotaknya */
+}
+
+.pp-teks {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.pp-teks strong { color: var(--text); font-weight: 600; }
+
+/* Target sentuh 44px lewat ::after, ikon tetap kecil — pola yang sama dengan
+ * TombolIkon. Tak ada tombol lain di sebelahnya, jadi area yang melebar itu
+ * tak bisa saling tindih dengan apa pun. */
+.pp-tutup {
+  position: relative;
+  background: none;
+  border: 0;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--text3);
+  cursor: pointer;
+}
+.pp-tutup::after {
+  content: '';
+  position: absolute;
+  inset: -12px;
+}
+.pp-tutup:hover { color: var(--text); }
+
+@media (max-width: 640px) {
+  .pp-pita { font-size: 12px; padding: 8px 10px; }
+}

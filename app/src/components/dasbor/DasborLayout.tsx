@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { PitaPengumuman } from './PitaPengumuman'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { LaciMobile } from './LaciMobile'
@@ -76,6 +77,12 @@ export function DasborLayout() {
             </header>
 
             <main className="dasbor-main">
+              {/* Pengumuman sistem — DI DALAM `dasbor-main`, bukan di atas
+                  `<header>`. Di luar sini ia akan menggeser seluruh kerangka
+                  termasuk bilah sisi, dan pada ponsel mendorong menu keluar
+                  layar. Di dalam, ia menempati aliran isi seperti halaman
+                  biasa dan ikut aturan gulir yang sudah ada. */}
+              <PitaPengumuman />
               <Outlet />
             </main>
 
