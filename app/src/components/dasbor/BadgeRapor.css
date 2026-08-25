@@ -1,0 +1,49 @@
+/* BadgeRapor + KolomForm — kelas `.br-*` hanya bentuk komponen ini (#170). */
+
+.br-badge {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1.6;
+  text-decoration: none;
+  color: var(--text2);
+}
+
+a.br-badge:hover { border-color: var(--text2); }
+
+.br-win { font-weight: 700; }
+.br-hijau { color: var(--green); }
+.br-abu { color: var(--text3); }
+.br-merah { color: var(--red); }
+
+.br-badge.br-hijau { border-color: var(--green); }
+.br-badge.br-abu { border-color: var(--border); }
+.br-badge.br-merah { border-color: var(--red); }
+.br-badge.br-basi { border-style: dashed; }
+
+.br-meta, .br-live { color: var(--text3); }
+
+.br-kunci {
+  color: var(--text3);
+  border-style: dashed;
+}
+
+/* Kolom form — deret naik/turun harian saham (rapor emiten, BUKAN badge fitur). */
+.br-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.br-form-panah { width: 1em; text-align: center; }
+.br-form-naik { color: var(--green); }
+.br-form-turun { color: var(--red); }
+.br-form-datar { color: var(--text3); }
+.br-form-label { margin-left: 4px; color: var(--text2); }
