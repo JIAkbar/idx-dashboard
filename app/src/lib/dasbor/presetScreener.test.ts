@@ -21,6 +21,14 @@ const KOSONG: BarisPreset = {
   peringkat_value: null,
   net_asing_rp: null,
   label_accdist: null,
+  tiket_lonjakan: null,
+  tiket_broker_maks: null,
+  bval_maks: null,
+  nego_blok_rp: null,
+  asing_net_5h: null,
+  asing_streak: null,
+  top3_pct: null,
+  number_broker_buysell: null,
 }
 
 function baris(o: Partial<BarisPreset>): BarisPreset {
@@ -140,5 +148,56 @@ describe('jalankanPreset', () => {
       baris({ kode: 'AAA', harga: 200, peringkat_value: 1 }),
     ]
     expect(jalankanPreset(kembar, scalping).map((x) => x.kode)).toEqual(['AAA', 'ZZZ'])
+  })
+})
+
+describe('preset Whale (adendum — tambahan, bukan pengganti)', () => {
+  const K = { ukuranOrderP25: null }
+  const tiket = PRESET.find((p) => p.id === 'whale-tiket')!
+  const akdis = PRESET.find((p) => p.id === 'whale-akdis')!
+  const asing = PRESET.find((p) => p.id === 'whale-asing')!
+
+  it('Scalping & Swing tetap utuh — Whale menambah, tidak menimpa', () => {
+    expect(PRESET.map((p) => p.id)).toEqual([
+      'scalping', 'swing', 'whale-tiket', 'whale-akdis', 'whale-asing',
+    ])
+  })
+
+  it('jejak tiket: empat pintu ATAU — satu pintu lolos sudah cukup', () => {
+    const k = tiket.kriteria.find((x) => x.id === 'jejak-tiket')!
+    expect(k.uji(baris({ nego_blok_rp: 5_000_000_000 }), K)).toBe('lolos')
+    expect(k.uji(baris({ tiket_lonjakan: 2 }), K)).toBe('lolos')
+    expect(k.uji(baris({ tiket_broker_maks: 249_999_999, bval_maks: 4_999_999_999 }), K)).toBe('gagal')
+    // keempat ruas kosong = tak terukur, BUKAN gagal
+    expect(k.uji(KOSONG, K)).toBe('tak-terukur')
+  })
+
+  it('nego_blok_rp 0 itu TERUKUR (hari tanpa blok), bukan tak-terukur', () => {
+    const k = tiket.kriteria.find((x) => x.id === 'jejak-tiket')!
+    expect(k.uji(baris({ nego_blok_rp: 0 }), K)).toBe('gagal')
+  })
+
+  it('akumulasi: label biner sumber — Acc lolos, Dist gagal, string kosong tak terukur', () => {
+    const k = akdis.kriteria.find((x) => x.id === 'arus-akumulasi')!
+    expect(k.uji(baris({ label_accdist: 'Acc' }), K)).toBe('lolos')
+    expect(k.uji(baris({ label_accdist: 'Dist' }), K)).toBe('gagal')
+    expect(k.uji(baris({ label_accdist: '' }), K)).toBe('tak-terukur')
+  })
+
+  it('konsentrasi top3 inklusif di 60; pembeli-sedikit inklusif di 0', () => {
+    expect(akdis.kriteria.find((x) => x.id === 'terkonsentrasi')!.uji(baris({ top3_pct: 60 }), K)).toBe('lolos')
+    expect(akdis.kriteria.find((x) => x.id === 'pembeli-sedikit')!.uji(baris({ number_broker_buysell: 0 }), K)).toBe('lolos')
+    expect(akdis.kriteria.find((x) => x.id === 'pembeli-sedikit')!.uji(baris({ number_broker_buysell: 1 }), K)).toBe('gagal')
+  })
+
+  it('asing: streak bertanda — keluar beruntun (−3) GAGAL, bukan lolos', () => {
+    const k = asing.kriteria.find((x) => x.id === 'asing-konsisten')!
+    expect(k.uji(baris({ asing_streak: 3 }), K)).toBe('lolos')
+    expect(k.uji(baris({ asing_streak: -3 }), K)).toBe('gagal')
+  })
+
+  it('asing: porsi tepat 20% lolos; net 5h nol gagal', () => {
+    expect(asing.kriteria.find((x) => x.id === 'asing-berarti')!.uji(baris({ porsi_asing: 0.2 }), K)).toBe('lolos')
+    expect(asing.kriteria.find((x) => x.id === 'asing-5h')!.uji(baris({ asing_net_5h: 0 }), K)).toBe('gagal')
   })
 })

@@ -144,14 +144,138 @@ def _baca_stockbit(p: Path, sampai: str | None) -> dict | None:
     if not bar:
         return None
     r = bar[-1]
-    return {ruas: r[idx[ruas]] for ruas in (
+    out = {ruas: r[idx[ruas]] for ruas in (
         "tanggal", "value", "volume", "frequency", "foreignbuy", "foreignsell", "lot",
     )}
+    # Ekor 60 bar untuk ruas whale (tiket median 60 hari, asing 5/20 hari,
+    # streak). Disimpan ramping — empat ruas saja — supaya muat_semua tidak
+    # membengkak; 60 dipilih karena itu jendela terpanjang yang dibutuhkan.
+    out["ekor60"] = [
+        {
+            "value": q[idx["value"]], "frequency": q[idx["frequency"]],
+            "foreignbuy": q[idx["foreignbuy"]], "foreignsell": q[idx["foreignsell"]],
+        }
+        for q in bar[-60:]
+    ]
+    return out
 
 
 def stockbit_terakhir(kode: str, sampai: str | None = None) -> dict | None:
     p = STOCKBIT / f"{kode}.json"
     return _baca_stockbit(p, sampai) if p.exists() else None
+
+
+ARSIP_BROKER = AKAR / "_arsip-mentah" / "broker-harian"
+
+
+def _f(x) -> float | None:
+    """Angka arsip broker tersimpan sebagai STRING (kadang notasi ilmiah,
+    '1.376821725e+11') — float() menanganinya; kosong/None jadi None."""
+    try:
+        v = float(x)
+        return v if v == v else None  # buang NaN
+    except (TypeError, ValueError):
+        return None
+
+
+def ruas_whale(kode: str, sb: dict | None, tgl: str | None) -> dict:
+    """Ruas preset Whale (adendum_preset_whale.md) — dua sisi sumber.
+
+    Sisi HARGA dari ekor 60 bar ohlcv_stockbit (tiket = value/frequency; asing
+    = foreignbuy−foreignsell rupiah RESMI, bukan taksiran lembar×harga —
+    koreksi konsep #3 adendum). Sisi BROKER dari arsip GROSS reguler hari itu
+    (`_arsip-mentah/broker-harian/<K>/<tgl>.json`) + varian NEGO — per-broker
+    `freq` ADA di arsip (diverifikasi 26 Agu 2026), jadi tiket per broker
+    dihitung persis, bukan proksi.
+
+    Label accdist & konsentrasi diambil dari blok bandar_detector arsip —
+    `broker_accdist` (label hari) dan `top3.percent`; keduanya SALINAN dari
+    sumber, bukan hitungan kita (aturan: catat siapa pengisi ruas).
+
+    Semua ruas None-safe: arsip hari itu tak ada -> ruas broker None, bukan 0
+    — nol berarti "diukur dan nol", None berarti "tak terukur".
+    """
+    out = {
+        "tiket_avg": None, "tiket_avg_med60": None, "tiket_lonjakan": None,
+        "asing_net_5h": None, "asing_net_20h": None, "asing_streak": None,
+        "tiket_broker_maks": None, "broker_tiket_maks_kode": None,
+        "bval_maks": None, "nego_blok_rp": None, "nego_broker_maks_kode": None,
+        "top3_pct": None, "number_broker_buysell": None, "label_accdist": None,
+    }
+    if sb and sb.get("ekor60"):
+        ekor = sb["ekor60"]
+        tiket = [b["value"] / b["frequency"] for b in ekor if b.get("frequency")]
+        if tiket:
+            out["tiket_avg"] = round(tiket[-1], 2)
+            med = sorted(tiket)[len(tiket) // 2]
+            out["tiket_avg_med60"] = round(med, 2)
+            if med:
+                out["tiket_lonjakan"] = round(tiket[-1] / med, 4)
+        net = [(b.get("foreignbuy") or 0) - (b.get("foreignsell") or 0) for b in ekor]
+        if net:
+            out["asing_net_5h"] = int(sum(net[-5:]))
+            out["asing_net_20h"] = int(sum(net[-20:]))
+            arah = 1 if net[-1] > 0 else (-1 if net[-1] < 0 else 0)
+            n = 0
+            if arah:
+                for x in reversed(net):
+                    if (x > 0) == (arah > 0) and x != 0:
+                        n += 1
+                    else:
+                        break
+            out["asing_streak"] = n * arah  # bertanda: +3 masuk beruntun, -3 keluar
+    if not tgl:
+        return out
+    reg = ARSIP_BROKER / kode / f"{tgl}.json"
+    if reg.exists():
+        try:
+            d = json.loads(reg.read_text(encoding="utf-8"))["data"]
+            beli = (d.get("broker_summary") or {}).get("brokers_buy") or []
+            tmaks = bmaks = None
+            tkode = None
+            for b in beli:
+                bval, fr = _f(b.get("bval")), _f(b.get("freq"))
+                if bval is None:
+                    continue
+                if bmaks is None or bval > bmaks:
+                    bmaks = bval
+                if fr:
+                    t = bval / fr
+                    if tmaks is None or t > tmaks:
+                        tmaks, tkode = t, b.get("netbs_broker_code")
+            out["bval_maks"] = round(bmaks, 0) if bmaks is not None else None
+            out["tiket_broker_maks"] = round(tmaks, 0) if tmaks is not None else None
+            out["broker_tiket_maks_kode"] = tkode
+            bd = d.get("bandar_detector") or {}
+            out["number_broker_buysell"] = bd.get("number_broker_buysell")
+            out["label_accdist"] = bd.get("broker_accdist")
+            t3 = bd.get("top3") or {}
+            out["top3_pct"] = round(t3["percent"], 2) if isinstance(t3.get("percent"), (int, float)) else None
+        except Exception:
+            pass  # arsip korup -> biarkan None; jangan menjatuhkan kartu
+    nego = ARSIP_BROKER / kode / f"{tgl}.nego.json"
+    if nego.exists():
+        try:
+            d = json.loads(nego.read_text(encoding="utf-8"))["data"]
+            beli = (d.get("broker_summary") or {}).get("brokers_buy") or []
+            tot = 0.0
+            nmaks = None
+            nkode = None
+            for b in beli:
+                bval = _f(b.get("bval"))
+                if bval is None:
+                    continue
+                tot += bval
+                if nmaks is None or bval > nmaks:
+                    nmaks, nkode = bval, b.get("netbs_broker_code")
+            out["nego_blok_rp"] = round(tot, 0)
+            out["nego_broker_maks_kode"] = nkode
+        except Exception:
+            pass
+    elif reg.exists():
+        # Reguler ada tapi nego tak ada = hari itu memang nol blok nego.
+        out["nego_blok_rp"] = 0.0
+    return out
 
 
 def muat_semua_stockbit_terakhir(sampai: str | None = None) -> dict[str, dict]:
@@ -633,6 +757,9 @@ def kartu(
         "net_asing_rp": net_asing_rp,
         "label_fd": label_fd,
     })
+    # Ruas preset Whale (adendum_preset_whale.md) — tanggal broker = tanggal
+    # bar terakhir kartu, supaya sisi harga dan sisi broker satu hari.
+    hasil.update(ruas_whale(kode, row, t[-1]))
     return hasil
 
 
@@ -892,6 +1019,19 @@ def ringkas_dari_kartu(k: dict) -> dict:
         # tak diperdagangkan, bukan diam-diam menyaringnya keluar.
         "beku": k.get("beku"),
         "beku_sejak": k.get("beku_sejak"),
+        # Ruas preset Whale — dibaca mode Preset di Screener.
+        "tiket_lonjakan": k.get("tiket_lonjakan"),
+        "tiket_broker_maks": k.get("tiket_broker_maks"),
+        "broker_tiket_maks_kode": k.get("broker_tiket_maks_kode"),
+        "bval_maks": k.get("bval_maks"),
+        "nego_blok_rp": k.get("nego_blok_rp"),
+        "nego_broker_maks_kode": k.get("nego_broker_maks_kode"),
+        "asing_net_5h": k.get("asing_net_5h"),
+        "asing_net_20h": k.get("asing_net_20h"),
+        "asing_streak": k.get("asing_streak"),
+        "top3_pct": k.get("top3_pct"),
+        "number_broker_buysell": k.get("number_broker_buysell"),
+        "label_accdist": k.get("label_accdist"),
     }
 
 
