@@ -287,7 +287,7 @@ def regresi60(c: list[float], n: int = 60) -> dict | None:
     fitted = [intersep + kemiringan * x for x in range(n)]
     tengah = fitted[-1]
     sigma_r = math.sqrt(sum((yi - fi) ** 2 for yi, fi in zip(y, fitted)) / n)
-    posisi = (y[-1] - tengah) / sigma_r if sigma_r else None
+    posisi = round((y[-1] - tengah) / sigma_r, 4) if sigma_r else None
     return {"kemiringan": kemiringan, "tengah": tengah, "posisi": posisi}
 
 
@@ -603,7 +603,7 @@ def kartu(
     pv = pvol = pf = None
     if row is not None:
         freq = row["frequency"]
-        ukuran_order = (row["lot"] / freq) if freq else None
+        ukuran_order = round(row["lot"] / freq, 4) if freq else None
         porsi_asing = ((row["foreignbuy"] + row["foreignsell"]) / (2 * row["value"])) if row["value"] else None
         net_asing_rp = row["foreignbuy"] - row["foreignsell"]
         if porsi_asing is not None:
@@ -738,6 +738,19 @@ def uji() -> None:
     rk = ringkas_dari_kartu(kp)
     assert rk["s1"] == 95.0 and rk["r1"] == 110.0 and rk["likuiditas"] == 1e9
     assert ringkas_dari_kartu({**kp, "support": [], "resistance": []})["s1"] is None
+    # ruas screener baru 25 Agu 2026: diambil apa adanya dari kartu, dan None
+    # (bukan KeyError) kalau ichimoku/regresi60 kartu itu sendiri None.
+    kp2 = {**kp, "ma5": 99.0, "posisi_bb": 0.5, "freq": 100, "ukuran_order": 2.0,
+           "peringkat_value": 3, "peringkat_volume": 4, "peringkat_freq": 5,
+           "porsi_asing": 0.1, "net_asing_rp": -500, "label_fd": "F 10% : D 90%",
+           "ichimoku": {"tenkan": 1, "kijun": 1, "senkou_a": 1, "senkou_b": 1, "di_atas_kumo": True},
+           "regresi60": {"kemiringan": 1.0, "tengah": 1.0, "posisi": 0.42}}
+    rk2 = ringkas_dari_kartu(kp2)
+    assert rk2["ma5"] == 99.0 and rk2["posisi_bb"] == 0.5 and rk2["freq"] == 100
+    assert rk2["di_atas_kumo"] is True and rk2["posisi_regresi"] == 0.42
+    assert rk2["peringkat_value"] == 3 and rk2["label_fd"] == "F 10% : D 90%"
+    rk3 = ringkas_dari_kartu({**kp, "ichimoku": None, "regresi60": None})
+    assert rk3["di_atas_kumo"] is None and rk3["posisi_regresi"] is None
     periksa_ringkas()
     print("kartu_analisa: swauji lolos")
 
@@ -799,6 +812,8 @@ def ringkas_dari_kartu(k: dict) -> dict:
     turunan aritmetika dari harga/s1/r1/atr_pct yang sudah ada di sini."""
     sup = k.get("support") or []
     res = k.get("resistance") or []
+    ichi = k.get("ichimoku")
+    reg = k.get("regresi60")
     return {
         "kode": k["kode"],
         "tgl": k["tgl"],
@@ -813,6 +828,21 @@ def ringkas_dari_kartu(k: dict) -> dict:
         "likuiditas": k["likuiditas_median20"],
         "stop_pct": k["stop_pct"],
         "kualitas": k.get("kualitas"),
+        # ruas baru 25 Agu 2026 — dipakai Screener yg cuma memuat ringkas.json,
+        # bukan 963 kartu penuh. Diambil apa adanya dari kartu, tak dihitung
+        # ulang (lihat docstring di atas).
+        "ma5": k.get("ma5"),
+        "posisi_bb": k.get("posisi_bb"),
+        "di_atas_kumo": ichi["di_atas_kumo"] if ichi else None,
+        "posisi_regresi": reg["posisi"] if reg else None,
+        "freq": k.get("freq"),
+        "ukuran_order": k.get("ukuran_order"),
+        "peringkat_value": k.get("peringkat_value"),
+        "peringkat_volume": k.get("peringkat_volume"),
+        "peringkat_freq": k.get("peringkat_freq"),
+        "porsi_asing": k.get("porsi_asing"),
+        "net_asing_rp": k.get("net_asing_rp"),
+        "label_fd": k.get("label_fd"),
     }
 
 
