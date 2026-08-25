@@ -1,0 +1,67 @@
+/* PanelAnalitikChart — kelas `.pac-*` hanya PENEMPATAN (#170). Bentuk visual
+   (kartu/label/angka) datang dari kelas kanonis `.panel`/`.panel-h`/`.panel-b`/
+   `.lbl`/`.v`/`.num`/`.up`/`.dn` di lantai.css — jangan didefinisikan ulang di sini. */
+
+.pac-grup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pac-panel { margin-bottom: 0; }
+
+.pac-banner {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--amber);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--amber) 12%, transparent);
+  color: var(--text2);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.pac-baris {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.pac-sub { color: var(--text3); font-size: 11px; }
+
+.pac-kosong {
+  margin: 4px 0 0;
+  color: var(--text3);
+  font-size: 11.5px;
+}
+
+.pac-badge-slot { display: inline-block; margin-left: 8px; }
+
+/* Ladder pivot R3..S3 — grid minmax(0,1fr) supaya tak melebar ikut anak
+   terlebar di layar sempit (jebakan `auto` yang sudah tercatat proyek). */
+.pac-grid-pivot {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  text-align: center;
+}
+.pac-grid-pivot > div { display: flex; flex-direction: column; gap: 2px; }
+.pac-grid-pivot .lbl { font-size: 10px; }
+.pac-grid-pivot .v.num { font-size: 12px; }
+
+.pac-grid-return {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  text-align: center;
+}
+.pac-grid-return > div { display: flex; flex-direction: column; gap: 2px; }
+.pac-grid-return .v.num { font-size: 13px; font-variant-numeric: tabular-nums; }
+
+.pac-baris .num { font-variant-numeric: tabular-nums; }
+
+@media (max-width: 480px) {
+  .pac-grid-pivot { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .pac-grid-return { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

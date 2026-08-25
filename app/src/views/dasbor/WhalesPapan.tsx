@@ -75,7 +75,10 @@ export default function WhalesPapan() {
     const bungkus = bungkusRef.current
     if (!cv || !bungkus || !batas) return
 
-    const dpr = window.devicePixelRatio || 1
+    // Clamp + round, pola acuan `bandingEmiten.ts` — dpr mentah tanpa clamp
+    // berisiko kanvas raksasa di layar DPR tinggi (temuan audit chart 26 Agu;
+    // versi pertama berkas ini memakai dpr mentah).
+    const dpr = Math.min(3, Math.max(1, Math.round(window.devicePixelRatio || 1)))
     const lebarCss = bungkus.clientWidth
     const tinggiCss = Math.max(320, Math.min(560, Math.round(lebarCss * 0.52)))
     if (cv.width !== Math.round(lebarCss * dpr) || cv.height !== Math.round(tinggiCss * dpr)) {
@@ -317,8 +320,8 @@ export default function WhalesPapan() {
         <div className="wp-kosong">
           Riwayat broker bertahun untuk <strong>{kode}</strong> belum tersedia.
           <br />
-          Data yang sudah tervalidasi baru 2025–2026, dan tahun sebelumnya masih dalam
-          proses pengumpulan ulang.
+          Data yang sudah tervalidasi baru sejak 2020, dan emiten ini belum masuk
+          gelombang pengumpulannya.
         </div>
       ) : (
         <div className="wp-panggung">
