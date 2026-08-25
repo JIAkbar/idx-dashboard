@@ -1,0 +1,19 @@
+/* Lencana "tidak diperdagangkan".
+ * Kelas `.lb-*` hanya bentuk lencana ini — tak ada kendali baru (#170). */
+
+.lb-lencana {
+  display: inline-block;
+  padding: 1px 7px;
+  border: 1px solid var(--red);
+  color: var(--red);
+  font-size: 11px;
+  line-height: 1.5;
+  font-weight: 600;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Nilai indikator yang sengaja tak dihitung untuk emiten beku. Diredupkan,
+ * BUKAN dihapus barisnya — baris yang hilang membuat tata letak kartu
+ * berbeda antar emiten dan pembaca mengira ruasnya memang tak ada. */
+.lb-mati { color: var(--text3); }

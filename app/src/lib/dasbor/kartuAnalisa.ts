@@ -150,6 +150,17 @@ export interface KartuEmiten {
   /** Tanggal data terakhir yang dipakai menghitung kartu ini. */
   dihitung: string
   kualitas: Kualitas
+  /** Berapa hari bursa TERAKHIR berturut-turut yang volumenya nol.
+   *
+   *  Emiten yang berhenti diperdagangkan tidak hilang dari deret harga — ia
+   *  tetap punya bar tiap hari bursa, dengan harga terakhirnya dibekukan dan
+   *  volume nol. `kualitas.likuiditas` tak bisa membedakannya: 'tipis'
+   *  berarti SEDIKIT diperdagangkan, ini berarti TIDAK SAMA SEKALI.
+   *
+   *  `undefined` di kartu lama (sebelum 25 Agu 2026) — perlakukan seperti 0. */
+  beku?: number
+  /** Tanggal transaksi terakhir sebelum deret beku. `null` kalau tak beku. */
+  beku_sejak?: string | null
 }
 
 export interface IndeksKartuEntry {

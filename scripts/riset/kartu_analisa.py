@@ -582,6 +582,7 @@ def kartu(
         "likuiditas_median20": nilai20,
         "kualitas": kualitas_dari(n, nilai20),
         "beku": hari_beku(d["v"]),
+        "beku_sejak": beku_sejak(d["tgl"], d["v"]),
         "dihitung": t[-1],
     }
     if hemat:
@@ -819,6 +820,21 @@ def hari_beku(v: list[float]) -> int:
     return n
 
 
+def beku_sejak(tgl: list[str], v: list[float]) -> str | None:
+    """Tanggal transaksi TERAKHIR sebelum deret beku — `None` kalau tak beku.
+
+    Dipisah dari `hari_beku()` karena yang dibutuhkan layar berbeda dari yang
+    dibutuhkan penyaring: penyaring memakai jumlah hari, pembaca butuh tanggal
+    ("tidak diperdagangkan sejak 18 Feb 2025" jauh lebih berarti daripada
+    "beku 363 hari"). Menghitungnya di layar dari jumlah hari akan salah —
+    hari bursa tidak sama dengan hari kalender.
+    """
+    n = hari_beku(v)
+    if n == 0 or n >= len(tgl):
+        return None
+    return tgl[-(n + 1)]
+
+
 def kualitas_dari(n: int, nilai20: float | None) -> dict:
     """Ruas 'kualitas' kartu — riwayat/likuiditas relatif ambang populasi
     (MIN_LILIN/MIN_LIKUIDITAS). TIDAK menyaring emiten dari kartu, cuma
@@ -875,6 +891,7 @@ def ringkas_dari_kartu(k: dict) -> dict:
         # Ikut ke ringkas supaya Screener & preset bisa MENANDAI emiten yang
         # tak diperdagangkan, bukan diam-diam menyaringnya keluar.
         "beku": k.get("beku"),
+        "beku_sejak": k.get("beku_sejak"),
     }
 
 

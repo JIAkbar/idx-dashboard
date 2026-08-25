@@ -17,6 +17,7 @@ import {
   useRingkasKartu, useArsipKartu, keBarisTabel, saring, saringKualitas, SARINGAN, CHIP_BAWAAN, type BarisTabel,
 } from '../../lib/dasbor/kartuRingkas'
 import { TINGKAT_LIKUIDITAS, kodePeringkatTeratas, ujiLikuiditas } from '../../lib/dasbor/likuiditas'
+import { LencanaBeku, tidakDiperdagangkan } from '../../components/dasbor/LencanaBeku'
 import {
   useIndeksKartu, useKartu, pembatalDalamAtr, bangunTesis, tingkatBasi, takKeduanya as hitungTakKeduanya,
   type KartuEmiten, type LevelSR, type TargetItem, type FirstPassage,
@@ -175,6 +176,7 @@ function KartuSatuEmiten({ kode }: { kode: string }) {
   const f = k.fundamental
   const namaBulan = BULAN[Number(k.tgl.slice(5, 7)) - 1]
   const resAsc = k.resistance.slice().reverse() // R3,R2,R1 (jauh -> dekat), sesuai urutan tampil acuan
+  const beku = tidakDiperdagangkan(k)
 
   return (
     <article className="panel kta-kartu">
@@ -187,9 +189,11 @@ function KartuSatuEmiten({ kode }: { kode: string }) {
             {s.tercatat ? ` · tercatat ${s.tercatat}` : ''}
           </span>
         </div>
-        <div className={`kta-harga ${naikTurun(k.chg)}`}>
+        <div className={`kta-harga ${beku ? '' : naikTurun(k.chg)}`}>
           {fmtHarga(k.harga)}
-          <small>{fmtPct(k.chg)} · {k.tgl}</small>
+          {/* Lencana menempel pada HARGA, bukan di kaki kartu: angka itu
+              yang paling gampang disalahbaca sebagai harga hari ini. */}
+          <small>{beku ? <LencanaBeku beku={k.beku} sejak={k.beku_sejak} /> : <>{fmtPct(k.chg)} · {k.tgl}</>}</small>
         </div>
       </div>
 
@@ -198,13 +202,41 @@ function KartuSatuEmiten({ kode }: { kode: string }) {
 
           <div className="blok">
             <h4>Struktur Harga</h4>
-            <div className="baris"><span>MA20</span><span className={naikTurun(k.harga - (k.ma20 ?? k.harga))}>{fmtDes(k.ma20)}</span></div>
-            <div className="baris"><span>MA50</span><span className={naikTurun(k.harga - (k.ma50 ?? k.harga))}>{fmtDes(k.ma50)}</span></div>
-            <div className="baris"><span>MA200</span><span className={naikTurun(k.harga - (k.ma200 ?? k.harga))}>{fmtDes(k.ma200)}</span></div>
-            <div className="baris"><span>ATR 14 hari</span><span>{fmtDes(k.atr)} ({fmtPct0(k.atr_pct)})</span></div>
-            <div className="baris"><span>RSI 14</span><span>{fmtDes(k.rsi)}</span></div>
-            <div className="baris"><span>StochRSI</span><span>{k.stochrsi ? `K ${Math.round(k.stochrsi[0])} / D ${Math.round(k.stochrsi[1])}` : '—'}</span></div>
-            <div className="asal"><b>Asal:</b> {k.n.toLocaleString('id-ID')} lilin harian sejak {k.mulai}. MA/ATR/RSI/StochRSI dihitung dari deret penutupan &amp; ATR Wilder 14 hari.</div>
+            {/* Emiten yang berhenti diperdagangkan tetap punya bar tiap hari
+                bursa — harga dibekukan, volume nol. Indikatornya jadi terhitung
+                di atas deret datar dan tampil seolah pembacaan sah: RSI WIKA
+                39,98, SCPI 10,67 (tak berpindah tangan sejak 2013). Angka yang
+                terbaca "jenuh jual" padahal lahir dari harga yang tak bergerak.
+                Barisnya TETAP ada supaya tata letak kartu seragam; nilainya
+                yang diganti, berikut sebabnya. */}
+            {beku ? (
+              <>
+                <div className="baris"><span>MA20</span><span className="lb-mati">—</span></div>
+                <div className="baris"><span>MA50</span><span className="lb-mati">—</span></div>
+                <div className="baris"><span>MA200</span><span className="lb-mati">—</span></div>
+                <div className="baris"><span>ATR 14 hari</span><span className="lb-mati">—</span></div>
+                <div className="baris"><span>RSI 14</span><span className="lb-mati">—</span></div>
+                <div className="baris"><span>StochRSI</span><span className="lb-mati">—</span></div>
+                <div className="asal">
+                  <b>Tidak dihitung:</b> emiten ini tidak diperdagangkan
+                  {k.beku_sejak ? ` sejak ${k.beku_sejak}` : ''} — {(k.beku ?? 0).toLocaleString('id-ID')} hari
+                  bursa berturut tanpa transaksi. Harga {fmtHarga(k.harga)} yang tampil adalah harga
+                  transaksi terakhir, bukan harga hari ini. Rata-rata bergerak, ATR, dan RSI di atas
+                  deret yang tak bergerak akan menghasilkan angka yang terlihat sah tapi tak berarti
+                  apa-apa, jadi sengaja dikosongkan.
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="baris"><span>MA20</span><span className={naikTurun(k.harga - (k.ma20 ?? k.harga))}>{fmtDes(k.ma20)}</span></div>
+                <div className="baris"><span>MA50</span><span className={naikTurun(k.harga - (k.ma50 ?? k.harga))}>{fmtDes(k.ma50)}</span></div>
+                <div className="baris"><span>MA200</span><span className={naikTurun(k.harga - (k.ma200 ?? k.harga))}>{fmtDes(k.ma200)}</span></div>
+                <div className="baris"><span>ATR 14 hari</span><span>{fmtDes(k.atr)} ({fmtPct0(k.atr_pct)})</span></div>
+                <div className="baris"><span>RSI 14</span><span>{fmtDes(k.rsi)}</span></div>
+                <div className="baris"><span>StochRSI</span><span>{k.stochrsi ? `K ${Math.round(k.stochrsi[0])} / D ${Math.round(k.stochrsi[1])}` : '—'}</span></div>
+                <div className="asal"><b>Asal:</b> {k.n.toLocaleString('id-ID')} lilin harian sejak {k.mulai}. MA/ATR/RSI/StochRSI dihitung dari deret penutupan &amp; ATR Wilder 14 hari.</div>
+              </>
+            )}
           </div>
 
           <div className="blok">
