@@ -26,6 +26,14 @@ import { supabase } from './supabase'
 /** Status kurasi & jenis baris tabel `setoran` (backend Fase 3, sudah jadi —
  *  lihat trigger & policy storage yang menegakkan aturan ini di server). */
 export type StatusSetoran = 'menunggu' | 'revisi' | 'disetujui' | 'dihapus'
+/** Jenis setoran kontributor.
+ *
+ * `'orderbook'` SALAH SEBUT: nilainya berarti **broker summary** (rekap
+ * transaksi per kode broker), bukan antrean bid/offer. Nama itu menempel
+ * sejak awal dan sengaja TIDAK diganti — berkas di bucket bernama
+ * `{tanggal}/{TICKER}-orderbook.ext` dan di-parse regex di
+ * `screenshotBaris.ts`, jadi mengganti salah satunya saja memutus
+ * keduanya. Baca sebagai "broksum". */
 export type JenisSetoran = 'orderbook' | 'chart' | 'bedah'
 
 /** Satu baris `setoran`, dengan embed profil penyetor (email/alias) — dasar

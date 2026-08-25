@@ -1,3 +1,15 @@
+/**
+ * Contoh benar/salah untuk kurasi setoran BROKER SUMMARY.
+ *
+ * Tabelnya dulu bernama `contoh_orderbook` — salah sebut yang menempel
+ * sejak awal; isinya tak pernah orderbook. Seluruh barisnya berjudul
+ * "Broker Summary Versi Mobile" / "Versi Web Desktop". Diganti jadi
+ * `contoh_broksum` 25 Agu 2026.
+ *
+ * Nilai `setoran.jenis` masih 'orderbook' dan SENGAJA dibiarkan: nama
+ * berkas di bucket ikut memuat "-orderbook" dan di-parse regex oleh
+ * `screenshotBaris.ts`. Mengganti salah satunya saja memutus keduanya.
+ */
 import { supabase } from './supabase'
 
 /**
@@ -17,7 +29,7 @@ export interface ContohOrderbook {
 }
 
 export async function daftarContohOrderbook(): Promise<ContohOrderbook[]> {
-  const { data, error } = await supabase.from('contoh_orderbook').select('*').order('urutan', { ascending: true })
+  const { data, error } = await supabase.from('contoh_broksum').select('*').order('urutan', { ascending: true })
   if (error) throw error
   return (data ?? []) as ContohOrderbook[]
 }
@@ -36,7 +48,7 @@ export async function unggahContoh(file: File): Promise<string> {
 }
 
 export async function tambahContohOrderbook(data: ContohOrderbook): Promise<void> {
-  const { error } = await supabase.from('contoh_orderbook').insert(data)
+  const { error } = await supabase.from('contoh_broksum').insert(data)
   if (error) throw error
 }
 
@@ -44,7 +56,7 @@ export async function ubahContohOrderbook(
   path: string,
   patch: Partial<Pick<ContohOrderbook, 'judul' | 'keterangan' | 'benar' | 'urutan'>>
 ): Promise<void> {
-  const { error } = await supabase.from('contoh_orderbook').update(patch).eq('path', path)
+  const { error } = await supabase.from('contoh_broksum').update(patch).eq('path', path)
   if (error) throw error
 }
 
@@ -52,7 +64,7 @@ export async function ubahContohOrderbook(
  *  RLS), berkas TIDAK ikut disentuh (baris jadi wasit, hindari baris yatim
  *  tanpa berkas kalau urutan dibalik). */
 export async function hapusContohOrderbook(path: string): Promise<void> {
-  const { error } = await supabase.from('contoh_orderbook').delete().eq('path', path)
+  const { error } = await supabase.from('contoh_broksum').delete().eq('path', path)
   if (error) throw error
   await supabase.storage.from('screenshots').remove([path])
 }
