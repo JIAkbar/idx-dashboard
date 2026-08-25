@@ -21,6 +21,8 @@ Yang dihitung, dan dari mana:
 | Sektor / papan        | data-idx/json/emiten_sektor.json | apa adanya                            |
 | Fundamental ringkas   | data-idx/json/fundamental/<KODE>.json | apa adanya                      |
 | Aliran asing (ringkas)| data-idx/json/asing/<KODE>.json | net beli/jual LEMBAR + porsi thd volume pasar, 5h & 20h |
+| MA5/100/150, Bollinger20, Ichimoku, regresi60 | data-idx/json/ohlc/<KODE>.json | ditambahkan 25 Agu 2026, close-based |
+| Frekuensi/ukuran order/peringkat/porsi asing harian | data-idx/json/ohlcv_stockbit/<KODE>.json | baris TERAKHIR saja, ruas yang tak ada di ohlc/ |
 
 Aliran asing per emiten dipanen sejak 18 Agu 2026 (989 emiten, commit
 5793317d) — beli/jual dalam LEMBAR, bukan rupiah (IDX tidak melaporkan aliran
@@ -45,6 +47,7 @@ from pathlib import Path
 AKAR = Path(__file__).resolve().parents[2]
 OHLC = AKAR / "data-idx" / "json" / "ohlc"
 ASING = AKAR / "data-idx" / "json" / "asing"
+STOCKBIT = AKAR / "data-idx" / "json" / "ohlcv_stockbit"
 KARTU_DIR = AKAR / "data-idx" / "json" / "kartu"
 
 # ---------------------------------------------------------------- fraksi BEI
@@ -121,6 +124,63 @@ def muat_semua_ohlc(sampai: str | None = None) -> dict[str, dict]:
     return out
 
 
+# ------------------------------------------------------ ohlcv_stockbit (baris terakhir)
+def _baca_stockbit(p: Path, sampai: str | None) -> dict | None:
+    """Baris TERAKHIR dari ohlcv_stockbit/<KODE>.json (dipotong ke `sampai`
+    kalau diisi) — sumber frekuensi/lot/foreignbuy-sell yang tak ada di
+    ohlc/<KODE>.json. Close/volume sudah terukur median 1,000000 sama dengan
+    ohlc/ (25 Agu 2026), jadi MA/BB/Ichimoku/regresi tetap dari ohlc/ apa
+    adanya — cuma ruas yang MEMANG cuma ada di sini yang dibaca dari sini."""
+    try:
+        d = json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    kolom, bar = d.get("kolom"), d.get("bar")
+    if not kolom or not bar:
+        return None
+    idx = {k: i for i, k in enumerate(kolom)}
+    if sampai:
+        bar = [r for r in bar if r[idx["tanggal"]] <= sampai]
+    if not bar:
+        return None
+    r = bar[-1]
+    return {ruas: r[idx[ruas]] for ruas in (
+        "tanggal", "value", "volume", "frequency", "foreignbuy", "foreignsell", "lot",
+    )}
+
+
+def stockbit_terakhir(kode: str, sampai: str | None = None) -> dict | None:
+    p = STOCKBIT / f"{kode}.json"
+    return _baca_stockbit(p, sampai) if p.exists() else None
+
+
+def muat_semua_stockbit_terakhir(sampai: str | None = None) -> dict[str, dict]:
+    """Baca SEKALI baris terakhir tiap ohlcv_stockbit/*.json — dipakai bersama
+    oleh peringkat_populasi() dan kartu() di mode --semua."""
+    out: dict[str, dict] = {}
+    for p in sorted(STOCKBIT.glob("*.json")):
+        r = _baca_stockbit(p, sampai)
+        if r is not None:
+            out[p.stem] = r
+    return out
+
+
+def peringkat_populasi(pop: dict[str, dict]) -> dict[str, dict[str, int]]:
+    """kode -> {'value','volume','freq': peringkat 1=terbesar}, dihitung
+    dalam grup emiten yang berbagi tanggal baris terakhir yang SAMA (bukan
+    lintas tanggal berbeda — lihat docstring modul)."""
+    grup: dict[str, list[tuple[str, dict]]] = {}
+    for kode, r in pop.items():
+        grup.setdefault(r["tanggal"], []).append((kode, r))
+    hasil: dict[str, dict[str, int]] = {}
+    for anggota in grup.values():
+        for label, ruas in (("value", "value"), ("volume", "volume"), ("freq", "frequency")):
+            urut = sorted(anggota, key=lambda kv: -(kv[1][ruas] or 0))
+            for i, (kode, _) in enumerate(urut):
+                hasil.setdefault(kode, {})[label] = i + 1
+    return hasil
+
+
 # ---------------------------------------------------------------- indikator
 def ma(x: list[float], n: int) -> float | None:
     return sum(x[-n:]) / n if len(x) >= n else None
@@ -170,6 +230,65 @@ def stoch_rsi(c: list[float], n: int = 14, m: int = 14, k: int = 3) -> tuple[flo
     kk = sum(mentah[-k:]) / k
     dd = sum(mentah[-k - 2:-2]) / k if len(mentah) >= k + 2 else kk
     return kk, (kk + dd + sum(mentah[-k - 1:-1]) / k) / 3 if len(mentah) >= k + 2 else kk
+
+
+def bollinger(c: list[float], n: int = 20) -> dict | None:
+    """Bollinger 20/2: mid = SMA20, pita = mid ± 2σ (populasi, bukan sampel —
+    seluruh 20 titik jendela ITU populasinya, bukan sampel dari yang lebih
+    besar). `sigma` disisipkan untuk posisi_bb pemanggil, dibuang sebelum
+    ditulis ke kartu."""
+    if len(c) < n:
+        return None
+    jendela = c[-n:]
+    mid = sum(jendela) / n
+    sigma = math.sqrt(sum((x - mid) ** 2 for x in jendela) / n)
+    return {"mid": mid, "atas": mid + 2 * sigma, "bawah": mid - 2 * sigma, "sigma": sigma}
+
+
+def ichimoku(h: list[float], l: list[float], c: list[float]) -> dict | None:
+    """tenkan/kijun/senkou HARI INI (dipakai kalau mau memplot awan ke depan),
+    plus `di_atas_kumo` yang membandingkan close HARI INI dengan awan yang
+    AKTIF hari ini — yaitu senkou yang dihitung 26 hari bursa lalu, karena
+    awan Ichimoku digeser maju 26 hari saat diplot. Butuh >=78 lilin
+    (52 utk senkou_b + 26 pergeseran); kurang dari itu seluruh objek None."""
+    n = len(c)
+    if n < 78:
+        return None
+
+    def titik(i: int, w: int) -> float:
+        return (max(h[i - w + 1: i + 1]) + min(l[i - w + 1: i + 1])) / 2
+
+    i = n - 1
+    tenkan, kijun = titik(i, 9), titik(i, 26)
+    j = i - 26  # awan yang aktif hari ini dihitung dari data 26 hari lalu
+    senkou_a_aktif, senkou_b_aktif = (titik(j, 9) + titik(j, 26)) / 2, titik(j, 52)
+    return {
+        "tenkan": tenkan,
+        "kijun": kijun,
+        "senkou_a": (tenkan + kijun) / 2,
+        "senkou_b": titik(i, 52),
+        "di_atas_kumo": c[i] > max(senkou_a_aktif, senkou_b_aktif),
+    }
+
+
+def regresi60(c: list[float], n: int = 60) -> dict | None:
+    """Regresi linear kuadrat-terkecil atas `n` close terakhir (x=0..n-1).
+    `posisi` = jarak close ke garis, dalam satuan sigma residu (None kalau
+    residunya rata sempurna — c konstan)."""
+    if len(c) < n:
+        return None
+    y = c[-n:]
+    xbar = (n - 1) / 2
+    ybar = sum(y) / n
+    sxy = sum((x - xbar) * (yi - ybar) for x, yi in enumerate(y))
+    sxx = sum((x - xbar) ** 2 for x in range(n))
+    kemiringan = sxy / sxx if sxx else 0.0
+    intersep = ybar - kemiringan * xbar
+    fitted = [intersep + kemiringan * x for x in range(n)]
+    tengah = fitted[-1]
+    sigma_r = math.sqrt(sum((yi - fi) ** 2 for yi, fi in zip(y, fitted)) / n)
+    posisi = (y[-1] - tengah) / sigma_r if sigma_r else None
+    return {"kemiringan": kemiringan, "tengah": tengah, "posisi": posisi}
 
 
 # ------------------------------------------------------- support/resistance
@@ -418,6 +537,7 @@ def asing_ringkas(kode: str, hari_list: tuple[int, ...] = (5, 20)) -> dict | Non
 def kartu(
     kode: str, peringkat_er: dict[str, float] | None = None,
     d: dict | None = None, sampai: str | None = None, hemat: bool = False,
+    stockbit_pop: dict[str, dict] | None = None, stockbit_rank: dict[str, dict] | None = None,
 ) -> dict:
     """`d` sudah dimuat (mis. dari muat_semua_ohlc() cache) -> dipakai apa
     adanya, nol I/O tambahan. `hemat=True` melewati blok yang TIDAK dipakai
@@ -476,6 +596,21 @@ def kartu(
             "fp": first_passage(d, naik_pct, turun_pct, 20),
             "fp60": first_passage(d, naik_pct, turun_pct, 60),
         })
+    bb = bollinger(c)
+    posisi_bb = round((harga - bb["mid"]) / (2 * bb["sigma"]), 4) if bb and bb["sigma"] else None
+    row = stockbit_pop.get(kode) if stockbit_pop is not None else stockbit_terakhir(kode, sampai)
+    freq = ukuran_order = porsi_asing = net_asing_rp = label_fd = None
+    pv = pvol = pf = None
+    if row is not None:
+        freq = row["frequency"]
+        ukuran_order = (row["lot"] / freq) if freq else None
+        porsi_asing = ((row["foreignbuy"] + row["foreignsell"]) / (2 * row["value"])) if row["value"] else None
+        net_asing_rp = row["foreignbuy"] - row["foreignsell"]
+        if porsi_asing is not None:
+            x = round(porsi_asing * 100)
+            label_fd = f"F {x}% : D {100 - x}%"
+        rank = (stockbit_rank or {}).get(kode, {})
+        pv, pvol, pf = rank.get("value"), rank.get("volume"), rank.get("freq")
     hasil.update({
         "rsi": rsi(c)[-1],
         "stochrsi": stoch_rsi(c),
@@ -484,6 +619,17 @@ def kartu(
         "sektor": sektor(kode),
         "fundamental": fundamental(kode),
         "asing": asing_ringkas(kode),
+        "ma5": ma(c, 5), "ma100": ma(c, 100), "ma150": ma(c, 150),
+        "bb20": {"mid": bb["mid"], "atas": bb["atas"], "bawah": bb["bawah"]} if bb else None,
+        "posisi_bb": posisi_bb,
+        "ichimoku": ichimoku(h, l, c),
+        "regresi60": regresi60(c),
+        "freq": freq,
+        "ukuran_order": ukuran_order,
+        "peringkat_value": pv, "peringkat_volume": pvol, "peringkat_freq": pf,
+        "porsi_asing": round(porsi_asing, 4) if porsi_asing is not None else None,
+        "net_asing_rp": net_asing_rp,
+        "label_fd": label_fd,
     })
     return hasil
 
@@ -810,12 +956,18 @@ if __name__ == "__main__":
     # dipakai ringkas_dari_kartu() (musiman/sektor/fundamental/asing/target) —
     # itulah yang bikin --tanggal terjangkau untuk ratusan hari.
     hemat = semua and tanggal is not None
+    # ruas berbasis ohlcv_stockbit (freq/porsi_asing/peringkat_*) juga
+    # dilewati saat hemat — sama seperti musiman/asing, ringkas_dari_kartu()
+    # tak memakainya, jadi backfill --tanggal tak perlu membayarnya.
+    stockbit_pop = muat_semua_stockbit_terakhir(sampai=tanggal) if not hemat else {}
+    stockbit_rank = peringkat_populasi(stockbit_pop) if stockbit_pop else {}
     hasil: dict[str, dict] = {}
     gagal: list[str] = []
     cetak_penuh = len(kode) <= 10 and not hemat  # cetak() penuh cuma buat daftar pendek
     for i, kd in enumerate(kode, 1):
         try:
-            h = kartu(kd, pop, d=(cache.get(kd) if cache is not None else None), sampai=tanggal, hemat=hemat)
+            h = kartu(kd, pop, d=(cache.get(kd) if cache is not None else None), sampai=tanggal, hemat=hemat,
+                      stockbit_pop=stockbit_pop, stockbit_rank=stockbit_rank)
         except Exception as e:  # emiten dengan riwayat aneh/pendek tak boleh menghentikan seluruh batch
             gagal.append(kd)
             print(f"  [{i}/{len(kode)}] {kd}: GAGAL — {e}")
