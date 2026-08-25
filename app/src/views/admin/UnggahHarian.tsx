@@ -731,7 +731,7 @@ export function UnggahHarian() {
     const byPath = new Map(setoranTanggal.map((s) => [s.path, s]))
     return sudah.map((b) => ({
       ...b,
-      setoranOb: b.orderbook ? byPath.get(b.orderbook) : undefined,
+      setoranOb: b.broksum ? byPath.get(b.broksum) : undefined,
       setoranCh: b.chart ? byPath.get(b.chart) : undefined,
     }))
   }, [sudah, setoranTanggal])
@@ -868,7 +868,7 @@ export function UnggahHarian() {
       if (editBaris) {
         await simpanPerubahan(editBaris, kode, alasanKirim)
       } else {
-        await unggahScreenshot(orderbook as File, tanggal, kode, 'orderbook', alasanKirim)
+        await unggahScreenshot(orderbook as File, tanggal, kode, 'broksum', alasanKirim)
         setToast({ ok: true, pesan: adaSebelum ? `${kode} diperbarui.` : `${kode} tersimpan.` })
       }
       tutupForm()
@@ -902,8 +902,8 @@ export function UnggahHarian() {
       setToast({ ok: true, pesan: `Alasan ${kode} diperbarui.` })
       return
     }
-    if (baris.orderbook) await hapusScreenshot([baris.orderbook])
-    await unggahScreenshot(orderbook, tanggal, kode, 'orderbook', alasanKirim)
+    if (baris.broksum) await hapusScreenshot([baris.broksum])
+    await unggahScreenshot(orderbook, tanggal, kode, 'broksum', alasanKirim)
     setToast({ ok: true, pesan: `${kode} diganti dengan screenshot baru.` })
   }
 
@@ -921,7 +921,7 @@ export function UnggahHarian() {
   async function jalankanHapus(target: Baris[]) {
     setMenghapus(true)
     try {
-      await hapusScreenshot(target.flatMap((b) => [b.orderbook, b.chart].filter((p): p is string => Boolean(p))))
+      await hapusScreenshot(target.flatMap((b) => [b.broksum, b.chart].filter((p): p is string => Boolean(p))))
       setToast({
         ok: true,
         pesan: target.length === 1
@@ -1021,7 +1021,7 @@ export function UnggahHarian() {
   async function bukaPratinjau(path: string) {
     const tglPendek = tanggalManusiawi(tanggal).replace(/^[^,]+, /, '')
     const entri = sudah.flatMap((b) =>
-      b.orderbook ? [{ path: b.orderbook, ket: `${b.ticker} · Broker Summary · ${tglPendek}` }] : []
+      b.broksum ? [{ path: b.broksum, ket: `${b.ticker} · Broker Summary · ${tglPendek}` }] : []
     )
     try {
       const urls = await urlScreenshots(entri.map((e) => e.path))
@@ -1158,7 +1158,7 @@ export function UnggahHarian() {
                       // memang cuma memberi baris miliknya sendiri. Tanpa
                       // dibedakan, tiga kolom "—" berturut-turut terbaca
                       // sebagai data rusak, bukan sebagai batas kewenangan.
-                      const milikOrangLain = !superadmin && !b.setoranOb && !b.setoranCh && !!b.orderbook
+                      const milikOrangLain = !superadmin && !b.setoranOb && !b.setoranCh && !!b.broksum
                       return (
                         <tr key={b.ticker}>
                           <td className="af-kolcek">
@@ -1200,7 +1200,7 @@ export function UnggahHarian() {
                            </div>
                           </td>
                           <td className="af-c">
-                            <SelBerkas path={b.orderbook} url={b.orderbook ? thumb[b.orderbook] : undefined}
+                            <SelBerkas path={b.broksum} url={b.broksum ? thumb[b.broksum] : undefined}
                               judul={`broker summary ${b.ticker}`} onBuka={bukaPratinjau} onTampak={mintaThumb} />
                           </td>
                           <td className="af-c">

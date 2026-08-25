@@ -9,8 +9,8 @@ import { jalurDiTanggal } from './supabaseSetoran'
  */
 describe('jalurDiTanggal', () => {
   it('setoran harian: segmen pertama diganti, nama berkas utuh', () => {
-    expect(jalurDiTanggal('2026-08-17/GIAA-orderbook.png', '2026-08-14'))
-      .toBe('2026-08-14/GIAA-orderbook.png')
+    expect(jalurDiTanggal('2026-08-17/GIAA-broksum.png', '2026-08-14'))
+      .toBe('2026-08-14/GIAA-broksum.png')
   })
 
   it('setoran bedah: tanggal ada di segmen KETIGA, bukan pertama', () => {
@@ -27,7 +27,7 @@ describe('jalurDiTanggal', () => {
   })
 
   it('jalur tanpa pola tanggal dilempar, bukan ditebak', () => {
-    expect(() => jalurDiTanggal('contoh/orderbook.png', '2026-08-14')).toThrow()
+    expect(() => jalurDiTanggal('contoh/broksum.png', '2026-08-14')).toThrow()
     expect(() => jalurDiTanggal('radar/2026-08-17/wdwl.png', '2026-08-14')).toThrow()
   })
 })

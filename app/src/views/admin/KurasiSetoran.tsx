@@ -33,7 +33,7 @@ function waktuManusiawi(iso: string): string {
   return `${d.getDate()} ${bulan} ${d.getFullYear()}, ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-const LABEL_JENIS: Record<SetoranRow['jenis'], string> = { orderbook: 'Broker Summary', chart: 'Chart', bedah: 'Deep Dive' }
+const LABEL_JENIS: Record<SetoranRow['jenis'], string> = { broksum: 'Broker Summary', chart: 'Chart', bedah: 'Deep Dive' }
 const LABEL_STATUS: Record<StatusSetoran, string> = { menunggu: 'Menunggu', revisi: 'Perlu revisi', disetujui: 'Disetujui', dihapus: 'Dihapus' }
 // 'revisi' pakai kelas 'warn' yang sama dengan 'menunggu' — sama-sama keadaan
 // menunggu tindakan (dari penyetor), bukan akhir seperti 'dihapus'.

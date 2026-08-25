@@ -28,13 +28,17 @@ import { supabase } from './supabase'
 export type StatusSetoran = 'menunggu' | 'revisi' | 'disetujui' | 'dihapus'
 /** Jenis setoran kontributor.
  *
- * `'orderbook'` SALAH SEBUT: nilainya berarti **broker summary** (rekap
- * transaksi per kode broker), bukan antrean bid/offer. Nama itu menempel
- * sejak awal dan sengaja TIDAK diganti — berkas di bucket bernama
- * `{tanggal}/{TICKER}-orderbook.ext` dan di-parse regex di
- * `screenshotBaris.ts`, jadi mengganti salah satunya saja memutus
- * keduanya. Baca sebagai "broksum". */
-export type JenisSetoran = 'orderbook' | 'chart' | 'bedah'
+ * `'broksum'` = BROKER SUMMARY (rekap transaksi per kode broker). Sampai
+ * 25 Agu 2026 nilainya bernama `'orderbook'` — salah sebut sejak awal;
+ * isinya tak pernah antrean bid/offer, dan layar kurasi pun sudah lama
+ * melabelinya "Broker Summary".
+ *
+ * Nama BERKAS di bucket tidak ikut dipindah: unggahan lama tetap bernama
+ * `{tanggal}/{TICKER}-orderbook.ext`, unggahan baru `-broksum`, dan
+ * `rangkumBerkas()` menerima keduanya. Memindahkan 106 objek storage demi
+ * keseragaman nama berarti menukar risiko kehilangan gambar dengan
+ * kerapian. */
+export type JenisSetoran = 'broksum' | 'chart' | 'bedah'
 
 /** Satu baris `setoran`, dengan embed profil penyetor (email/alias) — dasar
  *  kartu halaman Kurasi & badge status di AdminHome. */
@@ -132,7 +136,7 @@ export async function unggahScreenshot(
   file: File,
   tanggal: string,
   ticker: string,
-  jenis: 'orderbook' | 'chart',
+  jenis: 'broksum' | 'chart',
   alasan: string
 ): Promise<string> {
   const ext = file.name.split('.').pop() || 'png'
@@ -362,7 +366,7 @@ export async function hitungSetoranSaya(tanggal: string): Promise<number> {
     .select('*', { count: 'exact', head: true })
     .eq('penyetor', user.id)
     .eq('tanggal', tanggal)
-    .eq('jenis', 'orderbook')
+    .eq('jenis', 'broksum')
   if (error) throw error
   return count ?? 0
 }

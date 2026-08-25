@@ -6,9 +6,9 @@
  * "Broker Summary Versi Mobile" / "Versi Web Desktop". Diganti jadi
  * `contoh_broksum` 25 Agu 2026.
  *
- * Nilai `setoran.jenis` masih 'orderbook' dan SENGAJA dibiarkan: nama
- * berkas di bucket ikut memuat "-orderbook" dan di-parse regex oleh
- * `screenshotBaris.ts`. Mengganti salah satunya saja memutus keduanya.
+ * Nilai `setoran.jenis` untuk setoran ini sekarang `'broksum'` (dulu
+ * `'orderbook'`, diganti 25 Agu 2026 berikut constraint dan tiga fungsi
+ * SQL yang menyaringnya).
  */
 import { supabase } from './supabase'
 
