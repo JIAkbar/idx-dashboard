@@ -274,6 +274,32 @@ grep -rniE 'getstocksummary|chartbit|marketdetector|keystats|balancepos|foreignb
 Yang tersisa harus **hanya** pemanggilan kode (fetch/import), bukan string yang
 dirender. Kalau ragu apakah sesuatu bocor: **hilangkan**, jangan dipertahankan.
 
+### ⛔ Panen broker WAJIB 6 varian — sebut eksplisit, JANGAN pakai bawaan
+
+Johan 25 Agu 2026: *"jangan lupa selalu pakai 6 varian yaa"*.
+
+`backfill_broker_massal.py` bawaannya **`--varian reguler,asing,nego`** — TIGA,
+bukan enam. Menjalankannya tanpa `--varian` menghasilkan panen yang berjalan
+mulus, melaporkan sukses, dan diam-diam kehilangan `nego-asing`, `tunai`, dan
+`tunai-asing`. Berkasnya ada, jumlah harinya benar, tak ada satu pun galat —
+persis bentuk kegagalan yang dulu berujung panen ulang 145.834 berkas karena
+varian broker dipanen 3 dari 12.
+
+Bentuk yang benar, di SETIAP pemanggilan tanpa kecuali:
+
+```
+--varian reguler,asing,nego,nego-asing,tunai,tunai-asing
+```
+
+Berlaku juga untuk tambalan dan panen ulang sebagian: tambalan yang cakupannya
+lebih sempit daripada jalan pertama meninggalkan emiten yang **sebagian
+lengkap dan sebagian tidak** di dalam satu tahun yang sama — lubang yang jauh
+lebih sulit dilihat daripada emiten yang kosong sama sekali.
+
+Sebelum melapor selesai, buktikan dari log bahwa keenamnya terpakai: baris
+kepala pemanen mencetak daftar variannya. Enam nama, bukan angka "6 varian"
+yang dikutip dari ingatan.
+
 ### Tiap laporan panen WAJIB menyebut LAPIS · CAKUPAN · RUAS
 
 Johan 23 Agu 2026, dua kali dalam satu sesi: *"perlu di perjelas ini kedepannya
