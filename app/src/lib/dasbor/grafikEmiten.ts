@@ -16,6 +16,24 @@ export interface BerkasOhlcEmiten {
   akhir: string
   n: number
   d: BarisOhlc[]
+  /** Ada HANYA kalau riwayat awal berkas ini disambung dari sumber lain.
+   *
+   *  49 emiten dijahit 25 Agu 2026: sumber utama tak menyimpan bar sebelum
+   *  lantai arsipnya, sumber pembanding punya. Bar lama tak tersentuh — yang
+   *  ditambahkan hanya yang lebih awal daripada bar pertama sumber utama.
+   *
+   *  WAJIB ditandai di layar. Pembaca yang menghitung return jangka panjang
+   *  berhak tahu bahwa potongan paling awal grafiknya berasal dari sumber
+   *  berbeda, karena konvensi penyesuaian aksi korporasi antar sumber tidak
+   *  selalu sama — itu pula sebabnya 117 emiten lain DITOLAK dari penjahitan. */
+  jahitan?: {
+    sumber: string
+    /** Tanggal terakhir yang berasal dari sumber sambungan. */
+    sampai: string
+    bar: number
+    median_rasio: number
+    dijahit: string
+  } | null
 }
 
 /** Satu lilin siap pakai `CandlestickSeries.setData()`. Waktu tetap string

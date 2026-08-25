@@ -2921,6 +2921,21 @@ export function GrafikEmiten() {
   return (
     <div className="lantai">
       <CatatanCakupan />
+      {/* Penanda jahitan riwayat. Muncul HANYA untuk 49 emiten yang bar
+          paling awalnya berasal dari sumber pembanding — sumber utama tak
+          menyimpan periode itu. Wajib ada: pembaca yang menghitung return
+          jangka panjang berhak tahu potongan awal grafiknya bukan dari sumber
+          yang sama, karena konvensi penyesuaian aksi korporasi antar sumber
+          tidak selalu cocok. Justru itu sebabnya 117 emiten lain DITOLAK dari
+          penjahitan — yang lolos pun tetap dinyatakan, bukan disembunyikan. */}
+      {berkas?.jahitan && (
+        <p className="grf-jahitan" role="note">
+          Riwayat sebelum <strong>{berkas.jahitan.sampai}</strong> (
+          {berkas.jahitan.bar.toLocaleString('id-ID')} hari) berasal dari sumber pembanding —
+          bagian itu disambungkan karena sumber utama tak menyimpan periode tersebut.
+          Harga di rentang tumpang tindih keduanya sudah diadu dan cocok.
+        </p>
+      )}
       <section className="panel grf-panel" ref={panelRef}>
         {/* Bilah atas — susunan acuan Stockbit/TradingView: cari · kerangka
             waktu · jenis chart · ƒx Indikator · (kanan) layar penuh & kamera.
