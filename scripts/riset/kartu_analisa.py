@@ -581,6 +581,7 @@ def kartu(
         "er_n_populasi": len(peringkat_er) if peringkat_er else None,
         "likuiditas_median20": nilai20,
         "kualitas": kualitas_dari(n, nilai20),
+        "beku": hari_beku(d["v"]),
         "dihitung": t[-1],
     }
     if hemat:
@@ -790,6 +791,34 @@ def kode_populasi(
     return lolos, tolak
 
 
+def hari_beku(v: list[float]) -> int:
+    """Berapa hari bursa TERAKHIR berturut-turut yang volumenya nol.
+
+    Emiten yang disuspensi tidak hilang dari deret harga — ia tetap punya bar
+    tiap hari bursa, dengan harga terakhirnya dibekukan dan volume nol.
+    Terukur 25 Agu 2026: WIKA 363 hari berturut sejak 2025-02-18 (harga beku
+    204), SCPI 3.291 hari (29.000), dan 119 emiten total ber-deret >= 20 hari.
+
+    Kenapa ruas ini perlu padahal sudah ada `kualitas.likuiditas`: 'tipis'
+    berarti SEDIKIT diperdagangkan, sedangkan ini berarti TIDAK SAMA SEKALI —
+    dua keadaan yang sangat berbeda dan selama ini tertulis sama. Akibatnya
+    indikator tetap terhitung di atas deret datar dan tampil seolah pembacaan
+    sah: RSI WIKA 39,98, SCPI 10,67. Angka yang terlihat 'jenuh jual' padahal
+    lahir dari harga yang tak bergerak, bukan dari tekanan jual.
+
+    Ruas ini TIDAK menyaring emiten dari kartu maupun dari daftar — sama
+    seperti `kualitas`, ia penanda supaya halaman bisa menyatakannya apa
+    adanya. Menyembunyikannya akan mengulang kesalahan 582 emiten yang dulu
+    lenyap dari halaman tanpa satu pun keterangan.
+    """
+    n = 0
+    for x in reversed(v):
+        if x:
+            break
+        n += 1
+    return n
+
+
 def kualitas_dari(n: int, nilai20: float | None) -> dict:
     """Ruas 'kualitas' kartu — riwayat/likuiditas relatif ambang populasi
     (MIN_LILIN/MIN_LIKUIDITAS). TIDAK menyaring emiten dari kartu, cuma
@@ -843,6 +872,9 @@ def ringkas_dari_kartu(k: dict) -> dict:
         "porsi_asing": k.get("porsi_asing"),
         "net_asing_rp": k.get("net_asing_rp"),
         "label_fd": k.get("label_fd"),
+        # Ikut ke ringkas supaya Screener & preset bisa MENANDAI emiten yang
+        # tak diperdagangkan, bukan diam-diam menyaringnya keluar.
+        "beku": k.get("beku"),
     }
 
 
