@@ -3318,6 +3318,18 @@
    proporsional lewat aspect-ratio (selisih presisinya ≤ beberapa px). */
 .neo-papan .np-rrg-panggung { display: flex; gap: 14px; align-items: flex-start; margin-top: 10px; flex-wrap: wrap; }
 .neo-papan .np-rrg-wrap { width: min(100%, 540px); aspect-ratio: 540 / 532; height: auto; }
+.neo-papan .np-rrg-kepala { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+/* Layar penuh (Johan: "harusnya bisa di full screen atau lebih dibuat lebar
+   lagi"): panel jadi kanvas gelap penuh, plot membesar mengikuti TINGGI layar
+   supaya tetap bujursangkar presisi. */
+.neo-papan .np-rrg-panel:fullscreen {
+  overflow: auto;
+  background: var(--bg0, #101114);
+  padding: 18px 22px;
+}
+.neo-papan .np-rrg-panel:fullscreen .np-rrg-wrap {
+  width: min(100%, calc((100vh - 250px) * 1.015 + 60px));
+}
 .neo-papan .np-rrg-legenda { display: flex; flex-direction: column; gap: 3px; min-width: 170px; font-size: 11px; }
 .neo-papan .np-rrg-item { display: flex; align-items: center; gap: 7px; }
 .neo-papan .np-rrg-item.mati { opacity: 0.38; }

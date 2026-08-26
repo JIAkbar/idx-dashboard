@@ -42,7 +42,7 @@ export function ActivityTab() {
 
   const seri = useMemo(() => {
     if (!uni || !kalender.length) return null
-    const nama = Object.keys(grup).sort()
+    const nama = Object.keys(grup).filter((g) => g && g !== '-').sort()
     const semuaMap = [...uni.bars.values()].map((b) => new Map(b.map((x) => [x.t, x.val])))
     const totalPerHari = kalender.map((t) => semuaMap.reduce((a, m) => a + (m.get(t) ?? 0), 0))
     return nama.map((g) => {
@@ -55,6 +55,12 @@ export function ActivityTab() {
   const config = useMemo<ChartConfiguration<'line'> | null>(() => {
     if (!seri) return null
     const abu = bacaTokenTema('--text2')
+    // Mode Indeks punya 40-an seri — digambar semua = benang kusut (Johan
+    // 26 Agu). Bawaan: hanya 8 berporsi-terakhir terbesar yang tampil;
+    // sisanya tersembunyi dan bisa dinyalakan dari legenda.
+    const akhir = (s: { share: number[] }) => s.share[s.share.length - 1] ?? 0
+    const peringkat = [...seri].sort((a, b) => akhir(b) - akhir(a)).map((s) => s.nama)
+    const tampilkan = new Set(peringkat.slice(0, 8))
     return {
       type: 'line',
       data: {
@@ -63,6 +69,7 @@ export function ActivityTab() {
           label: s.nama, data: s.share.map((v) => v * 100),
           borderColor: bacaTokenTema(TOKEN_SERI[i % TOKEN_SERI.length]),
           borderWidth: 1.5, pointRadius: 0, tension: 0.15,
+          hidden: jenis === 'indeks' && !tampilkan.has(s.nama),
         })),
       },
       options: {
@@ -75,7 +82,7 @@ export function ActivityTab() {
         },
       },
     }
-  }, [seri, kalender, theme])
+  }, [seri, kalender, theme, jenis])
   const ref = useChartCanvas(config)
 
   if (uni === undefined) return <Kosong>Memuat sampel…</Kosong>
@@ -88,6 +95,11 @@ export function ActivityTab() {
       <div className="np-baris">
         <button type="button" className={'chip-t' + (jenis === 'sektor' ? ' on' : '')} onClick={() => setJenis('sektor')}>Sektor IDX-IC</button>
         <button type="button" className={'chip-t' + (jenis === 'indeks' ? ' on' : '')} onClick={() => setJenis('indeks')}>Indeks</button>
+        {jenis === 'indeks' && (
+          <span className="muted" style={{ fontSize: 11 }}>
+            8 indeks berporsi terbesar yang tampil — klik legenda untuk menambah/mengurangi
+          </span>
+        )}
       </div>
       <div className="chart-wrap" style={{ height: 420, marginTop: 10 }}><canvas ref={ref} /></div>
       <div className="np-peringatan">

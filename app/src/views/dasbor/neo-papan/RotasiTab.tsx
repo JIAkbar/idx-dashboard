@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { TombolLayarPenuh } from '../../../components/dasbor/TombolLayarPenuh'
 import type { ChartConfiguration, Plugin, ScriptableLineSegmentContext } from 'chart.js/auto'
 import { useChartCanvas, bacaTokenTema } from '../../../lib/dasbor/useChartJs'
 import { useTheme } from '../../../context/ThemeContext'
@@ -84,6 +85,13 @@ export function RotasiTab() {
   const [sektorMati, setSektorMati] = useState<ReadonlySet<string>>(new Set())
   /** Sektor yang daftar emitennya sedang dibuka (klik nama di legenda). */
   const [sektorPilih, setSektorPilih] = useState<string | null>(null)
+  const panelRef = useRef<HTMLElement | null>(null)
+  const [layarPenuh, setLayarPenuh] = useState(false)
+  useEffect(() => {
+    const h = () => setLayarPenuh(document.fullscreenElement === panelRef.current)
+    document.addEventListener('fullscreenchange', h)
+    return () => document.removeEventListener('fullscreenchange', h)
+  }, [])
 
   const muat = useCallback((segar: boolean) => {
     let batal = false
@@ -317,8 +325,11 @@ export function RotasiTab() {
   const barTerakhir = ihsg?.length ? ihsg[ihsg.length - 1].t : '—'
 
   return (
-    <section className="panel panel-b">
-      <h2>Rotation Chart — sektor IDX-IC vs IHSG</h2>
+    <section className="panel panel-b np-rrg-panel" ref={panelRef}>
+      <div className="np-rrg-kepala">
+        <h2>Rotation Chart — sektor IDX-IC vs IHSG</h2>
+        <TombolLayarPenuh target={panelRef} aktif={layarPenuh} />
+      </div>
       <p className="np-sub">
         X: RS-Ratio (kekuatan relatif) · Y: RS-Momentum (laju perubahannya). Jejak {TRAIL} pekan,
         titik besar + panah = pekan terbaru. Acuan: IHSG · data s.d. {barTerakhir}.

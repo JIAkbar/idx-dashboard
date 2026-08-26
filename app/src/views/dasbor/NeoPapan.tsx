@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
+import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
+import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { TransaksiTab } from './neo-papan/TransaksiTab'
 import { InventoryTab } from './neo-papan/InventoryTab'
 import { CompareTab } from './neo-papan/CompareTab'
@@ -36,6 +38,7 @@ const TABS: { id: Tab; label: string }[] = [
  * terunduh cuma karena pembaca sedang melihat Transaction Chart.
  */
 export function NeoPapan() {
+  const { index: indeks } = useStockIndex()
   const [tab, setTab] = useState<Tab>('transaksi')
   const [kode, setKode] = useState('BUMI')
   const [ketik, setKetik] = useState('BUMI')
@@ -49,12 +52,17 @@ export function NeoPapan() {
       </div>
 
       <div className="np-bar">
-        <form onSubmit={(e) => { e.preventDefault(); setKode(ketik.trim().toUpperCase()) }}>
-          <input
-            className="inp" value={ketik} onChange={(e) => setKetik(e.target.value)}
-            placeholder="Ganti emiten: BUMI, BBCA…" aria-label="Ganti emiten"
+        {/* Autocomplete kanonis, bukan input polos — Johan 26 Agu: "buat
+            semua kolom emiten seperti ini ada list emiten nya". */}
+        <div className="np-emiten">
+          <StockAutocomplete
+            stocks={indeks?.stocks || []}
+            value={ketik}
+            onChange={setKetik}
+            onSelect={(v) => { setKetik(v); setKode(v.toUpperCase()) }}
+            placeholder="Ganti emiten: BUMI, BBCA…"
           />
-        </form>
+        </div>
         <span className="np-kode">{kode}</span>
         {(tab === 'transaksi') && (
           <PemilihRentang opsi={OPSI_RENTANG_NP} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang candle" />
