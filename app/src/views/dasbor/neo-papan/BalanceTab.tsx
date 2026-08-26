@@ -22,14 +22,19 @@ export function BalanceTab({ kode }: { kode: string }) {
   const configLembar = useMemo<ChartConfiguration<'bar'> | null>(() => {
     if (!ks || !bulan.length) return null
     const abu = bacaTokenTema('--text2')
+    // DUA tumpuk berdampingan per bulan (Lokal | Asing), warna per TIPE
+    // investor — 18 lapis dalam SATU tumpuk tak terbaca (spek §6, diverifikasi
+    // visual di 412px). Warna tipe sama di kedua sisi; sisi dibedakan posisi
+    // batang + label tooltip, legenda cukup 9 entri tipe.
+    const warnaTipe = (i: number) => bacaTokenTema(TOKEN_SERI[i % TOKEN_SERI.length])
     const datasets = [
       ...jenisKode.map((t, i) => ({
-        label: 'Lokal ' + ks.jenis[t], backgroundColor: bacaTokenTema(TOKEN_SERI[i % TOKEN_SERI.length]),
-        data: bulan.map((b) => ks.bulan[b][ki['lokal_' + t]] ?? 0), stack: 'x',
+        label: ks.jenis[t], backgroundColor: warnaTipe(i),
+        data: bulan.map((b) => ks.bulan[b][ki['lokal_' + t]] ?? 0), stack: 'lokal',
       })),
       ...jenisKode.map((t, i) => ({
-        label: 'Asing ' + ks.jenis[t], backgroundColor: bacaTokenTema(TOKEN_SERI[(i + 4) % TOKEN_SERI.length]),
-        data: bulan.map((b) => ks.bulan[b][ki['asing_' + t]] ?? 0), stack: 'x',
+        label: 'Asing · ' + ks.jenis[t], backgroundColor: warnaTipe(i),
+        data: bulan.map((b) => ks.bulan[b][ki['asing_' + t]] ?? 0), stack: 'asing',
       })),
     ]
     return {
@@ -37,7 +42,25 @@ export function BalanceTab({ kode }: { kode: string }) {
       data: { labels: bulan, datasets },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom', labels: { color: abu, boxWidth: 10, font: { size: 9 } } } },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: abu, boxWidth: 10, font: { size: 9 },
+              // satu entri per TIPE (set lokal); set asing warnanya sama
+              filter: (item) => !String(item.text).startsWith('Asing · '),
+            },
+          },
+          tooltip: {
+            callbacks: {
+              title: (items) => {
+                const it = items[0]
+                const sisi = String(it.dataset.label).startsWith('Asing · ') ? 'Asing' : 'Lokal'
+                return `${it.label} — ${sisi}`
+              },
+            },
+          },
+        },
         scales: {
           x: { stacked: true, ticks: { color: abu, maxTicksLimit: 10 }, grid: { display: false } },
           y: { stacked: true, ticks: { color: abu, callback: (v) => fmtB(Number(v)) }, grid: { color: 'rgba(128,128,128,.1)' } },
@@ -79,9 +102,13 @@ export function BalanceTab({ kode }: { kode: string }) {
   const last = ks.bulan[bulan[bulan.length - 1]]
   const lok = last[ki.lokal_total], asg = last[ki.asing_total], tercatat = last[ki.lembar_tercatat]
 
+  const persenScripless = tercatat ? num((lok + asg) / tercatat * 100, 1) : null
+
   return (
     <section className="panel panel-b">
-      <h2>{kode} — Balance Position</h2>
+      {/* Format judul NeoBDM (spek §6): % scripless langsung di judul supaya
+          cakupan datanya terbaca sebelum angka apa pun di bawahnya. */}
+      <h2>{kode} | Balance Position Analysis{persenScripless != null ? ` [${persenScripless}% scripless]` : ''}</h2>
       <p className="np-sub">Kepemilikan per tipe investor dari KSEI, bulanan {bulan[0]} → {bulan[bulan.length - 1]}.</p>
 
       <KvGrid>
