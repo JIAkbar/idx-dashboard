@@ -5,6 +5,7 @@ import {
   type SeriesType, type Time,
 } from 'lightweight-charts'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
+import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { LencanaBeku, tidakDiperdagangkan } from '../../components/dasbor/LencanaBeku'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
@@ -131,6 +132,8 @@ export default function WhalesPapan() {
 
   const [sel, setSel] = useState<SeleksiArea | null>(null)
   const [selIntra, setSelIntra] = useState<SelIntra | null>(null)
+  /** Broker yang pill AVG-nya diklik — kartu rinciannya tampil di panel. */
+  const [brokerPilih, setBrokerPilih] = useState<string | null>(null)
   const [modeSeleksi, setModeSeleksi] = useState(false)
   const [tf, setTf] = useState<Tf>('harian')
   const [candle, setCandle] = useState<DataCandle>({ lilin: [], volume: [] })
@@ -178,6 +181,25 @@ export default function WhalesPapan() {
   }, [kode, tf])
 
   const hasil = useMemo(() => (sel ? agregatArea(hari, sel) : null), [hari, sel])
+
+  // Buang kartu broker saat konteksnya berganti — angka lamanya milik
+  // emiten/seleksi lain.
+  useEffect(() => { setBrokerPilih(null) }, [kode, tf, sel])
+
+  /** Rincian broker yang pill-nya diklik, pada cakupan garis AVG (seleksi
+   *  bila ada, seluruh riwayat bila tidak). */
+  const rinciBroker = useMemo(() => {
+    if (!brokerPilih || hari.length === 0) return null
+    const agg = agregatArea(hari, sel ?? SEMUA)
+    const r = [...agg.grossBeli, ...agg.grossJual, ...agg.netBeli, ...agg.netJual]
+      .find((x) => x.kode === brokerPilih)
+    if (!r) return null
+    const hariAktif = hari.filter((h) =>
+      (!sel || (h.tanggal >= sel.tglMulai && h.tanggal <= sel.tglAkhir
+        && h.avg != null && h.avg >= sel.hargaMin && h.avg <= sel.hargaMax))
+      && h.broker.some((b) => b[0] === brokerPilih && (b[1] || b[3]))).length
+    return { r, hariAktif }
+  }, [brokerPilih, hari, sel])
 
   /** Bar intraday untuk TF terpilih — 4H diagregasi dari 1H saat baca. */
   const barIntra = useMemo(
@@ -246,7 +268,16 @@ export default function WhalesPapan() {
       bubbleRef.current = bubble
     }
     if (import.meta.env.DEV) (el as HTMLDivElement & { __papanChart?: unknown }).__papanChart = chart
+    // Pill AVG clickable (Johan 26 Agu: "mgkn clickable"): hitTest primitive
+    // menyetorkan `avg:<broker>` ke hoveredObjectId; klik membuka kartu
+    // rincian broker itu di panel.
+    const saatKlik = (p: { hoveredObjectId?: unknown }) => {
+      const id = typeof p.hoveredObjectId === 'string' ? p.hoveredObjectId : ''
+      if (id.startsWith('avg:')) setBrokerPilih(id.slice(4))
+    }
+    chart.subscribeClick(saatKlik)
     return () => {
+      chart.unsubscribeClick(saatKlik)
       chart.remove()
       chartRef.current = null
       lilinRef.current = null
@@ -623,6 +654,38 @@ export default function WhalesPapan() {
             )}
           </div>
 
+          {/* Rincian broker dari klik pill AVG — modal kanonis, bukan kartu
+              menyisip (Johan: "di jadikan modal ... biar rapi"). Hanya mode
+              Harian, karena data broker bursa memang terbit harian. */}
+          {rinciBroker && brokerPilih && (
+            <ModalKecil label={`Broker ${brokerPilih}`} onClose={() => setBrokerPilih(null)} className="wp-modal-broker">
+              <div className="wp-kartu-judul">
+                <span className="wp-titik-broker" style={{ background: warnaBrokerCanvas(brokerPilih) }} />
+                <strong>{brokerPilih}</strong>
+                <span className="muted">
+                  {sel ? 'area seleksi' : 'seluruh riwayat'} · aktif {rinciBroker.hariAktif.toLocaleString('id-ID')} hari
+                </span>
+              </div>
+              <div className="wp-kartu-isi">
+                <span>Rata beli</span>
+                <span>{rinciBroker.r.beliLot ? Math.round(rinciBroker.r.beliNilai / (rinciBroker.r.beliLot * 100)).toLocaleString('id-ID') : '—'}</span>
+                <span>Rata jual</span>
+                <span>{rinciBroker.r.jualLot ? Math.round(rinciBroker.r.jualNilai / (rinciBroker.r.jualLot * 100)).toLocaleString('id-ID') : '—'}</span>
+                <span>Gross beli</span>
+                <span>{lotRingkas(rinciBroker.r.beliLot)} lot · Rp {rupiahRingkas(rinciBroker.r.beliNilai)}</span>
+                <span>Gross jual</span>
+                <span>{lotRingkas(rinciBroker.r.jualLot)} lot · Rp {rupiahRingkas(rinciBroker.r.jualNilai)}</span>
+                <span>Net</span>
+                <span className={rinciBroker.r.netNilai >= 0 ? 'wp-plus' : 'wp-minus'}>
+                  {lotRingkas(rinciBroker.r.netLot)} lot · Rp {rupiahRingkas(rinciBroker.r.netNilai)}
+                </span>
+              </div>
+              <p className="wp-sub" style={{ marginTop: 8 }}>
+                Rata-rata tertimbang seluruh transaksi broker ini di cakupan terpilih —
+                bukan modal posisi yang masih dipegang.
+              </p>
+            </ModalKecil>
+          )}
           <div className="wp-hasil">
             <h3>Hasil seleksi</h3>
             {tf !== 'harian' && intra.galat ? (

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { muatBrokerSemua, muatDaftarKode, type BrokerHarianEmiten } from '../../../lib/dasbor/neoPapanData'
 import { stalkerAgregasi, kodeBrokerUnik } from '../../../lib/dasbor/neoPapan'
 import { DropdownMulti, type OpsiMulti } from '../../../components/dasbor/DropdownMulti'
+import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
 import { namaBroker, warnaBroker } from '../../../lib/dasbor/kelompokBroker'
 import { fmtB, num, Kosong, Sumber } from './bersama'
 
@@ -94,8 +95,12 @@ export function StalkerTab() {
         </div>
         {dipilih.length > 0 && (
           <div className="np-baris np-chips-aktif">
+            {/* Identitas warna broker lewat TITIK, bukan mewarnai teksnya —
+                teks berwarna broker di atas latar chip aktif (aksen) tak
+                terbaca (Johan 26 Agu: "warna kuning gak support dark mode"). */}
             {dipilih.map((k) => (
-              <button key={k} type="button" className="chip-t on" style={{ color: warnaBroker(k) }} onClick={() => toggle(k)}>
+              <button key={k} type="button" className="chip-t on np-chip-broker" onClick={() => toggle(k)}>
+                <span className="np-chip-titik" style={{ background: warnaBroker(k) }} aria-hidden="true" />
                 {k} ✕
               </button>
             ))}
@@ -103,9 +108,13 @@ export function StalkerTab() {
         )}
         <div className="np-baris" style={{ marginTop: 8 }}>
           <span className="np-lbl">Jendela</span>
-          {PERIODE.map((p) => (
-            <button key={p} type="button" className={'chip-t' + (n === p ? ' on' : '')} onClick={() => setN(p)}>{p === 1 ? 'Hari ini' : `${p} hari`}</button>
-          ))}
+          {/* Kendali rentang kanonis #170 (Johan: "sudah ada aturan nih
+              pakai rentang waktu kan"). */}
+          <PemilihRentang
+            opsi={PERIODE.map((p) => ({ id: String(p), label: p === 1 ? 'Hari ini' : `${p} hari` }))}
+            nilai={String(n)}
+            onGanti={(id) => setN(Number(id))}
+          />
         </div>
       </div>
 

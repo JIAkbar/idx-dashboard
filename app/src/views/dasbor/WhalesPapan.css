@@ -45,6 +45,28 @@
   height: clamp(320px, 42vw, 560px);
 }
 
+/* Rincian broker (klik pill AVG) — isi ModalKecil. */
+.wp-modal-broker { max-width: 340px; }
+.wp-kartu-judul {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.wp-kartu-judul .muted { font-size: 11px; }
+.wp-titik-broker { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.wp-kartu-isi {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  font-size: 12px;
+}
+.wp-kartu-isi > span:nth-child(odd) { color: var(--text3); }
+.wp-kartu-isi > span:nth-child(even) { text-align: right; font-variant-numeric: tabular-nums; }
+.wp-plus { color: var(--naik, #30a46c); }
+.wp-minus { color: var(--turun, #e5484d); }
+
 /* Kotak "Metodologi & batas" (§7 spek) — tertutup bawaan, tipografi kecil. */
 .wp-metodologi {
   margin-top: 10px;

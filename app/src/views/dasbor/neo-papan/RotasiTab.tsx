@@ -8,6 +8,7 @@ import {
 } from '../../../lib/dasbor/neoPapan'
 import { muatUniverseSektor, type UniverseSektor } from './kandidat'
 import { TOKEN_SERI, Kosong, Sumber } from './bersama'
+import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
 
 /**
  * Rotation Chart (RRG) — revisi total `spek_neo_papan_revisi.md` §1.
@@ -79,6 +80,10 @@ export function RotasiTab() {
   const [likuidSaja, setLikuidSaja] = useState(false)
   const [sembunyiLemah, setSembunyiLemah] = useState(false)
   const [sembunyiAbnormal, setSembunyiAbnormal] = useState(true)
+  /** Legenda HTML (bukan legenda Chart.js) — sektor yang dimatikan klik. */
+  const [sektorMati, setSektorMati] = useState<ReadonlySet<string>>(new Set())
+  /** Sektor yang daftar emitennya sedang dibuka (klik nama di legenda). */
+  const [sektorPilih, setSektorPilih] = useState<string | null>(null)
 
   const muat = useCallback((segar: boolean) => {
     let batal = false
@@ -142,8 +147,8 @@ export function RotasiTab() {
         return e[e.length - 1].x >= 97
       })
     }
-    return daftar
-  }, [trail, sektorList, likuidSaja, sembunyiLemah])
+    return daftar.filter((s) => !sektorMati.has(s))
+  }, [trail, sektorList, likuidSaja, sembunyiLemah, sektorMati])
 
   const config = useMemo<ChartConfiguration<'line'> | null>(() => {
     if (!trail) return null
@@ -268,10 +273,11 @@ export function RotasiTab() {
         maintainAspectRatio: false,
         aspectRatio: 1,
         plugins: {
-          legend: {
-            position: 'right',
-            labels: { color: abu, boxWidth: 10, font: { size: 10 } },
-          },
+          // Legenda pindah ke HTML di samping kanvas (ala panel Bloomberg) —
+          // sekaligus membuat ukuran plot bisa PRESISI: plot = kanvas −
+          // sumbu yang lebarnya DIKUNCI afterFit, tanpa legenda yang lebarnya
+          // berubah-ubah ikut panjang teks.
+          legend: { display: false },
           tooltip: {
             callbacks: {
               label: (c) => {
@@ -288,12 +294,16 @@ export function RotasiTab() {
             title: { display: true, text: 'RS-Ratio →', color: abu },
             ticks: { color: abu, stepSize: 3 },
             grid: { color: garis },
+            // Tinggi sumbu DIKUNCI supaya plot = kanvas − angka tetap —
+            // syarat lebar==tinggi plot yang presisi ("kotak", Johan 26 Agu).
+            afterFit: (s) => { s.height = 52 },
           },
           y: {
             type: 'linear', min: dom.min, max: dom.max,
             title: { display: true, text: 'RS-Momentum →', color: abu },
             ticks: { color: abu, stepSize: 3 },
             grid: { color: garis },
+            afterFit: (s) => { s.width = 60 },
           },
         },
       },
@@ -316,9 +326,13 @@ export function RotasiTab() {
       </p>
       <div className="np-baris">
         <span className="np-lbl">Periode (pekan)</span>
-        {OPSI_N.map((p) => (
-          <button key={p} type="button" className={'chip-t' + (n === p ? ' on' : '')} onClick={() => setN(p)}>{p}</button>
-        ))}
+        {/* Kendali rentang kanonis #170 — bukan chip lepas (Johan: "kan sudah
+            ada SOP nya"). */}
+        <PemilihRentang
+          opsi={OPSI_N.map((p) => ({ id: String(p), label: `${p} pekan` }))}
+          nilai={String(n)}
+          onGanti={(id) => setN(Number(id))}
+        />
         <button type="button" className={'chip-t' + (likuidSaja ? ' on' : '')}
           title="Sembunyikan sektor dengan median nilai transaksi sampel 20 hari di kuartil bawah"
           onClick={() => setLikuidSaja((v) => !v)}>Liquid Only</button>
@@ -331,9 +345,44 @@ export function RotasiTab() {
         <button type="button" className="chip-t" title="Muat ulang data terbaru"
           onClick={() => { setUni(undefined); muat(true) }}>↻</button>
       </div>
-      {/* Kontainer rasio 1:1 (lebar = tinggi) menjaga kuadran bujursangkar —
-          domain X=Y saja belum cukup kalau kanvasnya lonjong. */}
-      <div className="chart-wrap np-rrg-wrap" style={{ height: 540, marginTop: 10 }}><canvas ref={ref} /></div>
+      {/* Plot PRESISI bujursangkar (Johan: "lebar tinggi besar nya presisi"):
+          sumbu dikunci afterFit (y=60, x=52) dan legenda di luar kanvas,
+          jadi plot = (540−60) × (532−52) = 480 × 480 persis. */}
+      <div className="np-rrg-panggung">
+        <div className="chart-wrap np-rrg-wrap"><canvas ref={ref} /></div>
+        <div className="np-rrg-legenda">
+          {sektorList.map((s) => {
+            const warna = bacaTokenTema(TOKEN_SERI[sektorList.indexOf(s) % TOKEN_SERI.length])
+            const mati = sektorMati.has(s)
+            return (
+              <div key={s} className={'np-rrg-item' + (mati ? ' mati' : '') + (sektorPilih === s ? ' pilih' : '')}>
+                <button type="button" className="np-rrg-swatch" style={{ background: warna }}
+                  title={mati ? 'Tampilkan jejaknya lagi' : 'Sembunyikan jejaknya'}
+                  aria-label={`${mati ? 'Tampilkan' : 'Sembunyikan'} ${s}`}
+                  onClick={() => setSektorMati((m) => {
+                    const b = new Set(m)
+                    if (b.has(s)) b.delete(s)
+                    else b.add(s)
+                    return b
+                  })} />
+                <button type="button" className="np-rrg-nama"
+                  title="Lihat emiten sampel sektor ini"
+                  onClick={() => setSektorPilih((v) => (v === s ? null : s))}>
+                  {s}
+                </button>
+              </div>
+            )
+          })}
+          {sektorPilih && uni.perSektor[sektorPilih] && (
+            <div className="np-rrg-emiten">
+              <div className="np-rrg-emiten-judul">{sektorPilih} — emiten sampel</div>
+              {uni.perSektor[sektorPilih].map((k) => (
+                <a key={k} className="np-rrg-kode" href={`/grafik?kode=${k}`}>{k}</a>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
       <div className="np-peringatan">
         Sektor dihitung dari agregat sampel {uni.perSektorJumlah} emiten paling likuid per sektor
         (tertimbang kapitalisasi), bukan indeks resmi IDX. RS-Ratio/RS-Momentum memakai normalisasi

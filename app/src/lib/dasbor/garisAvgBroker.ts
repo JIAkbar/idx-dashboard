@@ -14,7 +14,7 @@
 import type { CanvasRenderingTarget2D } from 'fancy-canvas'
 import type {
   IPanePrimitive, IPanePrimitivePaneView, IPrimitivePaneRenderer,
-  ISeriesApi, PaneAttachedParameter, SeriesType, Time,
+  ISeriesApi, PaneAttachedParameter, PrimitiveHoveredItem, SeriesType, Time,
 } from 'lightweight-charts'
 
 export interface GarisBroker {
@@ -38,6 +38,10 @@ export class GarisAvgBroker implements IPanePrimitive<Time> {
   private ambilSeri: () => ISeriesApi<SeriesType> | null
   private garis: GarisBroker[] = []
   private mintaGambar: (() => void) | null = null
+  /** Kotak pill terakhir yang digambar, RUANG MEDIA — bahan hitTest supaya
+   *  pill bisa diklik (id `avg:<broker>` muncul di `hoveredObjectId` event
+   *  chart; pemakai yang memutuskan mau diapakan). */
+  private pillRect: Array<{ x0: number; y0: number; x1: number; y1: number; broker: string }> = []
   // Satu larik view yang stabil — lightweight-charts meng-cache berdasarkan
   // referensi larik, jadi larik baru tiap panggilan membatalkan cache-nya.
   private views: IPanePrimitivePaneView[] = [{ renderer: () => this.renderer() }]
@@ -63,6 +67,15 @@ export class GarisAvgBroker implements IPanePrimitive<Time> {
     return this.views
   }
 
+  hitTest(x: number, y: number): PrimitiveHoveredItem | null {
+    for (const r of this.pillRect) {
+      if (x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1) {
+        return { externalId: `avg:${r.broker}`, zOrder: 'top', cursorStyle: 'pointer' }
+      }
+    }
+    return null
+  }
+
   private renderer(): IPrimitivePaneRenderer | null {
     const seri = this.ambilSeri()
     if (!seri || this.garis.length === 0) return null
@@ -77,6 +90,7 @@ export class GarisAvgBroker implements IPanePrimitive<Time> {
     return {
       draw: (target: CanvasRenderingTarget2D) => {
         target.useBitmapCoordinateSpace(({ context: ctx, bitmapSize, horizontalPixelRatio: hp, verticalPixelRatio: vp }) => {
+          this.pillRect = []
           ctx.save()
           ctx.font = `${Math.round(FONT_PX * vp)}px system-ui, sans-serif`
           ctx.textBaseline = 'middle'
@@ -111,6 +125,11 @@ export class GarisAvgBroker implements IPanePrimitive<Time> {
             ctx.fill()
             ctx.fillStyle = '#fff'
             ctx.fillText(teks, x + PAD_X * hp, yPill + tinggiPill / 2)
+            this.pillRect.push({
+              x0: x / hp, x1: (x + lebarPill) / hp,
+              y0: yPill / vp, y1: (yPill + tinggiPill) / vp,
+              broker: g.broker,
+            })
           }
           ctx.restore()
         })

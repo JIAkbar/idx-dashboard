@@ -3312,15 +3312,29 @@
 /* Baris kendali (Compare kiri/kanan, Stalker chip broker+jendela, Activity
    sektor/indeks) — flex sederhana, bukan bentuk baru. */
 .neo-papan .np-baris { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
-/* RRG wajib BUJURSANGKAR (Johan 26 Agu: "dibuat kotak yaa gak gepeng gini").
-   Domain X=Y saja tidak cukup kalau kanvasnya melebar penuh panel — lebar
-   dikunci ≈ tinggi + legenda kanan (~150px) + sumbu kiri (~55px) sehingga
-   AREA PLOT-nya persegi. Di layar sempit ia menyusut mengikuti lebar. */
-.neo-papan .np-rrg-wrap { max-width: 700px; margin-inline: auto; }
+/* RRG PRESISI bujursangkar (Johan 26 Agu: "lebar tinggi besar nya presisi").
+   Sumbu dikunci afterFit (y=60px, x=52px) dan legenda hidup di HTML — plot =
+   (540−60) × (532−52) = 480×480 persis. Di layar sempit kanvas menyusut
+   proporsional lewat aspect-ratio (selisih presisinya ≤ beberapa px). */
+.neo-papan .np-rrg-panggung { display: flex; gap: 14px; align-items: flex-start; margin-top: 10px; flex-wrap: wrap; }
+.neo-papan .np-rrg-wrap { width: min(100%, 540px); aspect-ratio: 540 / 532; height: auto; }
+.neo-papan .np-rrg-legenda { display: flex; flex-direction: column; gap: 3px; min-width: 170px; font-size: 11px; }
+.neo-papan .np-rrg-item { display: flex; align-items: center; gap: 7px; }
+.neo-papan .np-rrg-item.mati { opacity: 0.38; }
+.neo-papan .np-rrg-item.pilih .np-rrg-nama { color: var(--text); font-weight: 600; }
+.neo-papan .np-rrg-swatch { width: 12px; height: 12px; border: 0; border-radius: 3px; cursor: pointer; padding: 0; }
+.neo-papan .np-rrg-nama { background: none; border: 0; color: var(--text2); cursor: pointer; padding: 2px 0; font-size: 11px; text-align: left; }
+.neo-papan .np-rrg-nama:hover { color: var(--text); }
+.neo-papan .np-rrg-emiten { margin-top: 8px; border-top: 1px solid var(--line); padding-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; max-width: 200px; }
+.neo-papan .np-rrg-emiten-judul { width: 100%; color: var(--text3); font-size: 10px; letter-spacing: 0.4px; text-transform: uppercase; }
+.neo-papan .np-rrg-kode { color: var(--accent); text-decoration: none; font-family: ui-monospace, monospace; font-size: 11px; border: 1px solid var(--line); border-radius: 4px; padding: 2px 6px; }
+.neo-papan .np-rrg-kode:hover { border-color: var(--accent); }
 .neo-papan .np-baris .inp { min-width: 130px; }
 .neo-papan .np-lbl { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text2); margin-right: 2px; }
 
-.neo-papan .np-2kol { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); align-items: start; }
+.neo-papan .np-2kol { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); align-items: start; }
+.neo-papan .np-chip-broker { display: inline-flex; align-items: center; gap: 6px; }
+.neo-papan .np-chip-titik { width: 8px; height: 8px; border-radius: 50%; flex: none; }
 
 .neo-papan .np-parsial { font-size: 10px; color: var(--amber); margin-left: 4px; }
 
