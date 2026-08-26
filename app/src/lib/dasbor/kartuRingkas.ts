@@ -30,6 +30,10 @@ export interface BarisRingkas {
   /** Belum ada di ringkas.json/arsip lama (sebelum 21 Agu 2026) — undefined
    *  diperlakukan sama dengan "cukup" (tak ditandai, tak disembunyikan). */
   kualitas?: Kualitas | null
+  /** Hari bursa berturut tanpa transaksi. Sama arti & ambang dengan ruas
+   *  kembar di `kartuAnalisa.ts` (`LencanaBeku`/`tidakDiperdagangkan`). */
+  beku?: number
+  beku_sejak?: string | null
 }
 
 export interface DataRingkas {

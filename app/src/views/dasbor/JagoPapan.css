@@ -1,0 +1,24 @@
+/* Jago Papan (/jago-papan) — PENEMPATAN & LEBAR saja (#170). Bentuk kendali
+   (tab, tabel, tombol) datang dari lantai.css; berkas ini cuma mengatur tata
+   letak yang khas halaman ini. */
+
+.lantai .jgp-kepala {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lantai .jgp-aturan { margin: 0; }
+
+.lantai .jgp-alat {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.lantai .jgp-alat .muted { margin-right: auto; }
+
+@media (max-width: 480px) {
+  .lantai .jgp-alat { flex-direction: column; align-items: stretch; }
+  .lantai .jgp-alat .muted { margin-right: 0; }
+}

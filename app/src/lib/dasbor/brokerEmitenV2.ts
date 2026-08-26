@@ -142,10 +142,11 @@ export function pilihTopInventaris(agg: AgregatBroker[], n = 4): { pembeli: stri
   return { pembeli, penjual }
 }
 
-/** Cakupan yang tervalidasi (ketetapan Johan 24 Agu 2026): tahun sebelum ini
- *  ditutup dari halaman ini walau masih tersisa di berkas — panen ulangnya
- *  belum tuntas untuk tahun-tahun lama, jadi jangan dicampur ke tampilan. */
-const TAHUN_AWAL = 2025
+/** Cakupan yang tervalidasi (ketetapan Johan 26 Agu 2026: "sejak tahun
+ *  2020"). Dibuka dari 2025 -> 2020 setelah arsip mentah 2020-2026 terukur
+ *  99,75-100% hari per tahun. 2016-2019 juga ada di arsip tapi TIDAK dibuka
+ *  di sini — batas eksplisit Johan, menunggu keputusan terpisah. */
+const TAHUN_AWAL = 2020
 
 /** Bagian murni (testable) dari `tahunTersedia` — pisah dari fetch supaya diuji tanpa mock jaringan. */
 export function saringTahunAwal(semua: number[]): { tahun: number[] | null; tutup: boolean } {
@@ -193,7 +194,7 @@ export function useArusBrokerEmiten(kode: string) {
         if (!tahun) {
           throw new Error(
             tutup
-              ? `Data ${kode} tahun 2025–2026 belum lengkap — tahun sebelumnya masih dalam proses pengumpulan ulang.`
+              ? `Data ${kode} sejak 2020 belum lengkap — arsipnya masih dalam proses pengumpulan.`
               : `${kode} belum punya arsip broker per emiten`,
           )
         }

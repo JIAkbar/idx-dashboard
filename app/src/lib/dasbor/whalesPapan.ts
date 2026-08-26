@@ -27,13 +27,16 @@
  * yang harga rata-ratanya jatuh di 190-200", BUKAN "lot yang tereksekusi di
  * 190-200". Untuk yang kedua butuh data per-tingkat-harga, dan itu intraday.
  *
- * ## Net, bukan empat kuadran
+ * ## GROSS/NET, bukan agresor/pasif
  *
  * Whales memecah hasil jadi agresor-beli, agresor-jual, pasif-beli,
- * pasif-jual karena mereka tahu sisi mana yang menyerang harga. Data harian
- * tak menyimpan itu. Jadi di sini cuma NET BELI dan NET JUAL — dan komponen
- * WAJIB mencetak keterangan itu, bukan menyembunyikannya, supaya pengguna
- * yang pernah memakai whales tak mengira kuadrannya hilang karena bug.
+ * pasif-jual karena mereka tahu sisi mana yang menyerang harga (data tick +
+ * orderbook). Data harian tak menyimpan itu — jadi empat kuadran di sini
+ * BUKAN agresif/pasif, melainkan GROSS BELI · GROSS JUAL · NET BELI · NET
+ * JUAL: gross = total transaksi tiap sisi tanpa saling kurang, net = gross
+ * beli dikurangi gross jual. Komponen WAJIB mencetak keterangan itu, bukan
+ * menyembunyikannya, supaya pengguna yang pernah memakai whales tak mengira
+ * kuadrannya salah nama karena bug.
  */
 
 /** Satu baris broker apa adanya dari berkas tahunan: urutannya mengikuti
@@ -61,17 +64,52 @@ export interface RingkasBroker {
   kode: string
   netLot: number
   netNilai: number
+  /** Total GROSS — lot/rupiah sisi beli & jual TANPA saling dikurangi. */
   beliLot: number
+  beliNilai: number
   jualLot: number
+  jualNilai: number
 }
 
 export interface HasilArea {
   netBeli: RingkasBroker[]
   netJual: RingkasBroker[]
+  /** Sisi GROSS — total beli/jual per broker TANPA dikurangi lawannya. Angka
+   *  ini sudah dijumlahkan di `agregatArea` (kolom `beliLot`/`jualLot` pada
+   *  tiap `RingkasBroker`); di sini cuma disaring & diurutkan jadi peringkat
+   *  sendiri, terpisah dari NET — broker bisa gross besar tapi net kecil
+   *  (banyak transaksi, posisi nyaris tak berubah) dan sebaliknya. */
+  grossBeli: RingkasBroker[]
+  grossJual: RingkasBroker[]
   nHari: number
   nBroker: number
   totalNetBeliLot: number
   totalNetJualLot: number
+  totalGrossBeliLot: number
+  totalGrossJualLot: number
+}
+
+/** Ambang "Significant" ala whales.id (toggle Significant/Full baris broker):
+ *  satu baris disembunyikan di mode ringkas kalau porsinya terhadap total
+ *  sisi ini < 1%. whales.id tak mempublikasikan angka aslinya — 1% dipilih
+ *  supaya broker recehan tak membanjiri daftar sementara kontributor nyata
+ *  tetap kelihatan. */
+export const AMBANG_SIGNIFIKAN = 0.01
+
+/**
+ * Saring baris broker yang porsinya (nilai mutlak) di bawah ambang dari total
+ * sisi ini. `nilai` memilih ruas yang relevan — beda tiap kuadran: `netLot`
+ * untuk NET BELI/JUAL, `beliLot`/`jualLot` untuk GROSS BELI/JUAL — karena
+ * "porsi terhadap total" berarti hal berbeda di tiap kuadran.
+ */
+export function saringSignifikan(
+  baris: RingkasBroker[],
+  nilai: (r: RingkasBroker) => number,
+  ambang: number = AMBANG_SIGNIFIKAN,
+): RingkasBroker[] {
+  const total = baris.reduce((s, r) => s + Math.abs(nilai(r)), 0)
+  if (total <= 0) return baris
+  return baris.filter((r) => Math.abs(nilai(r)) / total >= ambang)
 }
 
 /** Hari mana saja yang masuk seleksi. Dipisah supaya bisa diuji sendiri —
@@ -101,11 +139,13 @@ export function agregatArea(hari: HariBroker[], sel: SeleksiArea): HasilArea {
     for (const [kode, beliLot, beliNilai, jualLot, jualNilai] of h.broker) {
       let r = peta.get(kode)
       if (!r) {
-        r = { kode, netLot: 0, netNilai: 0, beliLot: 0, jualLot: 0 }
+        r = { kode, netLot: 0, netNilai: 0, beliLot: 0, beliNilai: 0, jualLot: 0, jualNilai: 0 }
         peta.set(kode, r)
       }
       r.beliLot += beliLot
+      r.beliNilai += beliNilai
       r.jualLot += jualLot
+      r.jualNilai += jualNilai
       r.netLot += beliLot - jualLot
       r.netNilai += beliNilai - jualNilai
     }
@@ -114,14 +154,20 @@ export function agregatArea(hari: HariBroker[], sel: SeleksiArea): HasilArea {
   const semua = [...peta.values()]
   const netBeli = semua.filter((r) => r.netLot > 0).sort((a, b) => b.netLot - a.netLot)
   const netJual = semua.filter((r) => r.netLot < 0).sort((a, b) => a.netLot - b.netLot)
+  const grossBeli = semua.filter((r) => r.beliLot > 0).sort((a, b) => b.beliLot - a.beliLot)
+  const grossJual = semua.filter((r) => r.jualLot > 0).sort((a, b) => b.jualLot - a.jualLot)
 
   return {
     netBeli,
     netJual,
+    grossBeli,
+    grossJual,
     nHari: pilih.length,
     nBroker: semua.length,
     totalNetBeliLot: netBeli.reduce((s, r) => s + r.netLot, 0),
     totalNetJualLot: netJual.reduce((s, r) => s + r.netLot, 0),
+    totalGrossBeliLot: grossBeli.reduce((s, r) => s + r.beliLot, 0),
+    totalGrossJualLot: grossJual.reduce((s, r) => s + r.jualLot, 0),
   }
 }
 

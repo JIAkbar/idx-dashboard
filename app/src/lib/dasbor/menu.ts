@@ -264,6 +264,18 @@ export const MENU_ITEMS: MenuItem[] = [
     ringkas: 'Posisi tiap broker pada satu emiten: rata-rata harga beli, harga termurah tempat ia menampung, dan arah terakhirnya.',
     ikon: 'M4 19h16M6 16V9m5 7V5m5 11v-6',
   },
+  {
+    // Harian Papan (26 Agu 2026) — kode 'HRP'.
+    id: 'harian-papan', path: '/harian-papan', label: 'Harian Papan', kode: 'HRP', grup: 'dev',
+    ringkas: 'Rekap harian tiga tab: gainer, net beli asing, net jual asing — plus Skor Papan.',
+    ikon: 'M4 6h16M4 12h10M4 18h7',
+  },
+  {
+    // Jago Papan (26 Agu 2026) — kode 'JGO'.
+    id: 'jago-papan', path: '/jago-papan', label: 'Jago Papan', kode: 'JGO', grup: 'dev',
+    ringkas: 'Empat saringan momentum siap pakai: Strong Uptrend, Breakout, Early Breakout, Foreign Flow Uptrend.',
+    ikon: 'M3 17l6-6 4 4 8-8M14 4h7v7',
+  },
 ]
 
 /** Kelompok beserta isinya — satu sumber untuk rail desktop (flyout) DAN laci

@@ -44,6 +44,8 @@ export interface BarisPreset {
   ukuran_order: number | null
   peringkat_value: number | null
   net_asing_rp: number | null
+  /** Porsi transaksi asing terhadap total (0..1) — dipakai Whale-Asing. */
+  porsi_asing: number | null
   /** Label arus broker dari sumber (biner 'Acc'/'Dist'/'' — gradasi
    *  Big/Normal butuh hitungan NET-percent sendiri, belum dibangun). */
   label_accdist: string | null

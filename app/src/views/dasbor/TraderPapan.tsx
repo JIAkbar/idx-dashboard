@@ -144,8 +144,8 @@ export default function TraderPapan() {
         <div className="tp-kosong">
           Riwayat broker bertahun untuk <strong>{kode}</strong> belum tersedia.
           <br />
-          Data yang sudah tervalidasi baru 2025–2026, dan tahun sebelumnya masih dalam
-          proses pengumpulan ulang.
+          Data yang sudah tervalidasi baru sejak 2020, dan emiten ini belum masuk
+          gelombang pengumpulannya.
         </div>
       ) : !hasil || hasil.baris.length === 0 ? (
         <div className="tp-kosong">

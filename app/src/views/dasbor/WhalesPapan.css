@@ -55,6 +55,20 @@
 }
 .wp-hasil .wp-sub { font-size: 12px; color: var(--text3); margin: 0 0 10px; }
 
+.wp-toggle { display: flex; gap: 6px; margin-bottom: 12px; }
+
+/* Judul seksi GROSS/NET — bukan kendali, cuma pemisah antar pasangan
+ * kuadran, jadi bukan `.wp-sisi-judul` (itu per-kuadran, warnanya beli/jual). */
+.wp-kuadran {
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text3);
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+  margin-bottom: 6px;
+}
+
 .wp-sisi { margin-bottom: 14px; }
 .wp-sisi-judul {
   display: flex;

@@ -154,6 +154,10 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   // Trader Papan (25 Agu 2026) — pasangan Whales Papan, keadaan pendaftaran
   // sama persis: kunci di sini sekarang, baris Supabase menyusul.
   'trader-papan': 'trader-papan',
+  // Harian & Jago Papan (26 Agu 2026) — keadaan pendaftaran sama: kunci di
+  // sini sekarang, baris Supabase menyusul.
+  'harian-papan': 'harian-papan',
+  'jago-papan': 'jago-papan',
   // Halaman publik Radar Watchlist — PRODUK-nya yang dijaga. Tab admin
   // /admin/radar (tempat sumber WDWL diunggah) punya gerbang superadmin
   // sendiri, jadi keduanya tidak bertabrakan. Sempat salah tafsir sehingga

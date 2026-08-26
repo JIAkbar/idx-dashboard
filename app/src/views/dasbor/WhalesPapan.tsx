@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
+import { LencanaBeku, tidakDiperdagangkan } from '../../components/dasbor/LencanaBeku'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useBrokerTahunan } from '../../lib/dasbor/brokerTahunanData'
+import { useRingkasKartu } from '../../lib/dasbor/kartuRingkas'
 import { warnaBrokerCanvas } from '../../lib/dasbor/kelompokBroker'
 import {
-  agregatArea, batasKanvas, profilHarga,
+  agregatArea, batasKanvas, profilHarga, saringSignifikan,
   type RingkasBroker, type SeleksiArea,
 } from '../../lib/dasbor/whalesPapan'
 import './WhalesPapan.css'
@@ -48,21 +50,40 @@ export default function WhalesPapan() {
   const [kode, setKode] = useState('BUMI')
   const { hari, tahunAda, muat, galat } = useBrokerTahunan(kode)
 
+  const ringkasKartu = useRingkasKartu()
+  const barisKartu = useMemo(
+    () => ringkasKartu?.emiten.find((b) => b.kode === kode) ?? null,
+    [ringkasKartu, kode],
+  )
+
   const [sel, setSel] = useState<SeleksiArea | null>(null)
   const [seret, setSeret] = useState<Kotak | null>(null)
-  const [batasBeli, setBatasBeli] = useState(PANEL_AWAL)
-  const [batasJual, setBatasJual] = useState(PANEL_AWAL)
+  // Empat kuadran, empat batas "tampilkan lagi" — memperluas satu tak boleh
+  // ikut memperluas yang lain, keduanya baris broker tapi peringkat berbeda.
+  const [batasGrossBeli, setBatasGrossBeli] = useState(PANEL_AWAL)
+  const [batasGrossJual, setBatasGrossJual] = useState(PANEL_AWAL)
+  const [batasNetBeli, setBatasNetBeli] = useState(PANEL_AWAL)
+  const [batasNetJual, setBatasNetJual] = useState(PANEL_AWAL)
+  // Significant (default, pola whales.id) menyembunyikan broker recehan lewat
+  // AMBANG_SIGNIFIKAN; Full menampilkan semua yang pernah bertransaksi.
+  const [modeBaris, setModeBaris] = useState<'signifikan' | 'penuh'>('signifikan')
 
   const kanvasRef = useRef<HTMLCanvasElement | null>(null)
   const bungkusRef = useRef<HTMLDivElement | null>(null)
+
+  const resetBatas = () => {
+    setBatasGrossBeli(PANEL_AWAL)
+    setBatasGrossJual(PANEL_AWAL)
+    setBatasNetBeli(PANEL_AWAL)
+    setBatasNetJual(PANEL_AWAL)
+  }
 
   // Ganti emiten = buang seleksi lama. Tanpa ini, kotak yang diseret di
   // emiten sebelumnya tetap hidup dan panelnya memecah broker pada rentang
   // harga milik saham LAIN — angkanya sah, kepalanya berbohong.
   useEffect(() => {
     setSel(null)
-    setBatasBeli(PANEL_AWAL)
-    setBatasJual(PANEL_AWAL)
+    resetBatas()
   }, [kode])
 
   const batas = useMemo(() => batasKanvas(hari), [hari])
@@ -252,36 +273,46 @@ export default function WhalesPapan() {
     const cukup = Math.abs(seret.x1 - seret.x0) > 6 && Math.abs(seret.y1 - seret.y0) > 6
     if (cukup) {
       const s = keSeleksi(seret)
-      if (s) { setSel(s); setBatasBeli(PANEL_AWAL); setBatasJual(PANEL_AWAL) }
+      if (s) { setSel(s); resetBatas() }
     }
     setSeret(null)
   }
 
-  const daftar = (baris: RingkasBroker[], batasTampil: number, sisi: 'beli' | 'jual') => {
-    const maks = Math.max(1, ...baris.map((r) => Math.abs(r.netLot)))
+  // `nilai` memilih ruas dipakai untuk lebar bar & urutan; `nilaiRp` ruas Rp
+  // dicetak di sebelahnya — beda per kuadran (gross pakai beliNilai/jualNilai
+  // sisi itu sendiri, net pakai netNilai).
+  const daftar = (
+    baris: RingkasBroker[],
+    batasTampil: number,
+    setBatas: (n: number) => void,
+    nilai: (r: RingkasBroker) => number,
+    nilaiRp: (r: RingkasBroker) => number,
+  ) => {
+    const maks = Math.max(1, ...baris.map((r) => Math.abs(nilai(r))))
     return baris.slice(0, batasTampil).map((r) => (
       <div className="wp-baris" key={r.kode}>
         <span className="wp-kode">{r.kode}</span>
-        <span className="wp-bar" style={{ width: `${Math.max(4, (Math.abs(r.netLot) / maks) * 100)}%` }} />
+        <span className="wp-bar" style={{ width: `${Math.max(4, (Math.abs(nilai(r)) / maks) * 100)}%` }} />
         <span className="wp-nilai">
-          {lotRingkas(Math.abs(r.netLot))} · Rp {rupiahRingkas(Math.abs(r.netNilai))}
+          {lotRingkas(Math.abs(nilai(r)))} · Rp {rupiahRingkas(Math.abs(nilaiRp(r)))}
         </span>
       </div>
     )).concat(
       baris.length > batasTampil
         ? [
-            <button
-              key="lagi"
-              type="button"
-              className="wp-lagi"
-              onClick={() => (sisi === 'beli' ? setBatasBeli(baris.length) : setBatasJual(baris.length))}
-            >
+            <button key="lagi" type="button" className="wp-lagi" onClick={() => setBatas(baris.length)}>
               +{baris.length - batasTampil} broker lain
             </button>,
           ]
         : [],
     )
   }
+
+  // Toggle Significant/Full: baris broker recehan disaring di mode Significant
+  // (bawaan), ditampilkan semua di Full. Ambang & fungsinya di whalesPapan.ts
+  // supaya bisa diuji tanpa render.
+  const saring = (baris: RingkasBroker[], nilai: (r: RingkasBroker) => number) =>
+    modeBaris === 'signifikan' ? saringSignifikan(baris, nilai) : baris
 
   return (
     <div className="lantai">
@@ -303,6 +334,9 @@ export default function WhalesPapan() {
           />
         </div>
         <strong>{kode}</strong>
+        {tidakDiperdagangkan(barisKartu) && (
+          <LencanaBeku beku={barisKartu?.beku} sejak={barisKartu?.beku_sejak} />
+        )}
         {tahunAda.length > 0 && (
           <span className="muted" style={{ fontSize: 12 }}>
             {tahunAda[0]}–{tahunAda[tahunAda.length - 1]} · {hari.length.toLocaleString('id-ID')} hari
@@ -345,22 +379,67 @@ export default function WhalesPapan() {
                   {Math.round(sel!.hargaMax).toLocaleString('id-ID')}
                 </p>
 
-                <div className="wp-sisi wp-beli">
-                  <div className="wp-sisi-judul">
-                    <span>NET BELI</span>
-                    <span>+{lotRingkas(hasil.totalNetBeliLot)} lot</span>
-                  </div>
-                  {hasil.netBeli.length ? daftar(hasil.netBeli, batasBeli, 'beli')
-                    : <p className="wp-sub">tak ada</p>}
+                <div className="wp-toggle" role="group" aria-label="Baris broker">
+                  <button type="button" className={`chip-t${modeBaris === 'signifikan' ? ' on' : ''}`}
+                    aria-pressed={modeBaris === 'signifikan'}
+                    title="Sembunyikan broker yang porsinya di bawah 1% dari sisi ini"
+                    onClick={() => setModeBaris('signifikan')}>Significant</button>
+                  <button type="button" className={`chip-t${modeBaris === 'penuh' ? ' on' : ''}`}
+                    aria-pressed={modeBaris === 'penuh'}
+                    title="Tampilkan semua broker yang bertransaksi"
+                    onClick={() => setModeBaris('penuh')}>Full</button>
                 </div>
 
+                <div className="wp-kuadran">GROSS — tanpa dikurangi lawannya</div>
+                <div className="wp-sisi wp-beli">
+                  <div className="wp-sisi-judul">
+                    <span>Gross Beli</span>
+                    <span>+{lotRingkas(hasil.totalGrossBeliLot)} lot</span>
+                  </div>
+                  {(() => {
+                    const b = saring(hasil.grossBeli, (r) => r.beliLot)
+                    return b.length
+                      ? daftar(b, batasGrossBeli, setBatasGrossBeli, (r) => r.beliLot, (r) => r.beliNilai)
+                      : <p className="wp-sub">tak ada</p>
+                  })()}
+                </div>
                 <div className="wp-sisi wp-jual">
                   <div className="wp-sisi-judul">
-                    <span>NET JUAL</span>
+                    <span>Gross Jual</span>
+                    <span>{lotRingkas(hasil.totalGrossJualLot)} lot</span>
+                  </div>
+                  {(() => {
+                    const b = saring(hasil.grossJual, (r) => r.jualLot)
+                    return b.length
+                      ? daftar(b, batasGrossJual, setBatasGrossJual, (r) => r.jualLot, (r) => r.jualNilai)
+                      : <p className="wp-sub">tak ada</p>
+                  })()}
+                </div>
+
+                <div className="wp-kuadran">NET — beli dikurangi jual</div>
+                <div className="wp-sisi wp-beli">
+                  <div className="wp-sisi-judul">
+                    <span>Net Beli</span>
+                    <span>+{lotRingkas(hasil.totalNetBeliLot)} lot</span>
+                  </div>
+                  {(() => {
+                    const b = saring(hasil.netBeli, (r) => r.netLot)
+                    return b.length
+                      ? daftar(b, batasNetBeli, setBatasNetBeli, (r) => r.netLot, (r) => r.netNilai)
+                      : <p className="wp-sub">tak ada</p>
+                  })()}
+                </div>
+                <div className="wp-sisi wp-jual">
+                  <div className="wp-sisi-judul">
+                    <span>Net Jual</span>
                     <span>{lotRingkas(hasil.totalNetJualLot)} lot</span>
                   </div>
-                  {hasil.netJual.length ? daftar(hasil.netJual, batasJual, 'jual')
-                    : <p className="wp-sub">tak ada</p>}
+                  {(() => {
+                    const b = saring(hasil.netJual, (r) => r.netLot)
+                    return b.length
+                      ? daftar(b, batasNetJual, setBatasNetJual, (r) => r.netLot, (r) => r.netNilai)
+                      : <p className="wp-sub">tak ada</p>
+                  })()}
                 </div>
               </>
             ) : (
@@ -368,8 +447,9 @@ export default function WhalesPapan() {
             )}
 
             <div className="wp-batas">
-              Yang tampil <strong>net</strong> (beli dikurangi jual), bukan pasif versus menyerang —
-              sisi agresor tak tersedia pada data harian.
+              Empat kuadran di sini <strong>GROSS/NET</strong> (total transaksi vs. beli dikurangi
+              jual), <strong>bukan</strong> agresif/pasif — sisi mana yang menyerang harga tak
+              tersedia pada data harian.
               <br />
               Rentang harga menyaring <strong>hari yang harga rata-ratanya</strong> jatuh di situ,
               bukan lot yang tereksekusi persis di harga itu.

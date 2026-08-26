@@ -33,6 +33,8 @@ const KuliPapan = lazy(() => import('./views/dasbor/KuliPapan').then((m) => ({ d
 const NeoPapan = lazy(() => import('./views/dasbor/NeoPapan').then((m) => ({ default: m.NeoPapan })))
 const WhalesPapan = lazy(() => import('./views/dasbor/WhalesPapan'))
 const TraderPapan = lazy(() => import('./views/dasbor/TraderPapan'))
+const HarianPapan = lazy(() => import('./views/dasbor/HarianPapan').then((m) => ({ default: m.HarianPapan })))
+const JagoPapan = lazy(() => import('./views/dasbor/JagoPapan').then((m) => ({ default: m.JagoPapan })))
 const StockDetail = lazy(() => import('./views/dasbor/StockDetail').then((m) => ({ default: m.StockDetail })))
 const PetaInvestor = lazy(() => import('./views/dasbor/PetaInvestor').then((m) => ({ default: m.PetaInvestor })))
 const Kabar = lazy(() => import('./views/dasbor/Kabar').then((m) => ({ default: m.Kabar })))
@@ -147,6 +149,11 @@ function App() {
                   Papan (sumbu masuk pelaku, bukan harga) dan membaca berkas yang
                   sama. Baris `akses_halaman` di Supabase menyusul. */}
               <Route path="/trader-papan" element={<PenjagaHalaman kunci="trader-papan"><TraderPapan /></PenjagaHalaman>} />
+              {/* Harian & Jago Papan (26 Agu 2026, dispatch Dev PAPAN) — kunci
+                  terdaftar di PETA_MENU_KUNCI; baris akses_halaman Supabase
+                  menyusul (aturan dua tempat). */}
+              <Route path="/harian-papan" element={<PenjagaHalaman kunci="harian-papan"><HarianPapan /></PenjagaHalaman>} />
+              <Route path="/jago-papan" element={<PenjagaHalaman kunci="jago-papan"><JagoPapan /></PenjagaHalaman>} />
               {/* Aliran Asing (22 Agu 2026) — kunci 'aliran-asing' sudah
                   terdaftar di PETA_MENU_KUNCI DAN akses_halaman sejak rute
                   ini dibuat (aturan wajib 21 Agu 2026). */}

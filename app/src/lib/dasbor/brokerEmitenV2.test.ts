@@ -72,11 +72,11 @@ describe('pilihTopInventaris', () => {
 })
 
 describe('saringTahunAwal', () => {
-  it('membuang tahun < 2025, sisanya lolos', () => {
-    expect(saringTahunAwal([2020, 2021, 2025, 2026])).toEqual({ tahun: [2025, 2026], tutup: false })
+  it('membuang tahun < 2020, sisanya lolos', () => {
+    expect(saringTahunAwal([2018, 2019, 2020, 2026])).toEqual({ tahun: [2020, 2026], tutup: false })
   })
   it('seluruhnya tahun lama -> tahun null, tutup true', () => {
-    expect(saringTahunAwal([2019, 2020])).toEqual({ tahun: null, tutup: true })
+    expect(saringTahunAwal([2017, 2018])).toEqual({ tahun: null, tutup: true })
   })
   it('larik kosong (belum dipanen sama sekali) -> tutup false', () => {
     expect(saringTahunAwal([])).toEqual({ tahun: null, tutup: false })

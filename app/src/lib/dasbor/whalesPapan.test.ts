@@ -5,6 +5,7 @@ import {
   dariBerkasTahunan,
   hariTerpilih,
   profilHarga,
+  saringSignifikan,
   tahunDibutuhkan,
   type HariBroker,
 } from './whalesPapan'
@@ -79,6 +80,53 @@ describe('agregatArea', () => {
     const h = agregatArea(HARI, { hargaMin: 1, hargaMax: 2, tglMulai: '2026-01-01', tglAkhir: '2026-12-31' })
     expect(h.nHari).toBe(0)
     expect(h.netBeli).toEqual([])
+  })
+
+  it('gross beli/jual selalu >= net-nya — gross tak pernah dikurangi lawannya', () => {
+    const h = agregatArea(HARI, sel)
+    expect(h.totalGrossBeliLot).toBeGreaterThanOrEqual(h.totalNetBeliLot)
+    expect(h.totalGrossJualLot).toBeGreaterThanOrEqual(Math.abs(h.totalNetJualLot))
+  })
+
+  it('gross beli diurutkan turun berdasar beliLot, bukan netLot', () => {
+    const h = agregatArea(HARI, sel)
+    for (let i = 1; i < h.grossBeli.length; i++) {
+      expect(h.grossBeli[i - 1].beliLot).toBeGreaterThanOrEqual(h.grossBeli[i].beliLot)
+    }
+    // CC gross beli (600+500+300=1400) > XL (900+400=1300) walau net XL > net CC
+    expect(h.grossBeli[0].kode).toBe('CC')
+  })
+
+  it('broker yang net-nya nol tetap muncul di gross — ia tetap bertransaksi', () => {
+    const rata: HariBroker[] = [
+      { tanggal: '2026-02-02', avg: 100, totalLot: 10, broker: [['AA', 500, 50, 500, 50]] },
+    ]
+    const h = agregatArea(rata, { hargaMin: 0, hargaMax: 999, tglMulai: '2026-01-01', tglAkhir: '2026-12-31' })
+    expect(h.grossBeli.map((r) => r.kode)).toEqual(['AA'])
+    expect(h.grossJual.map((r) => r.kode)).toEqual(['AA'])
+  })
+})
+
+describe('saringSignifikan', () => {
+  const baris = [
+    { kode: 'BESAR', netLot: 9700, netNilai: 0, beliLot: 9700, beliNilai: 0, jualLot: 0, jualNilai: 0 },
+    { kode: 'RECEH', netLot: 300, netNilai: 0, beliLot: 300, beliNilai: 0, jualLot: 0, jualNilai: 0 }, // 3% — di atas ambang 1%
+    { kode: 'DEBU', netLot: 5, netNilai: 0, beliLot: 5, beliNilai: 0, jualLot: 0, jualNilai: 0 }, // <0.1% — di bawah ambang
+  ]
+
+  it('membuang baris di bawah 1% dari total, menyisakan yang signifikan', () => {
+    const s = saringSignifikan(baris, (r) => r.netLot)
+    expect(s.map((r) => r.kode)).toEqual(['BESAR', 'RECEH'])
+  })
+
+  it('total nol/negatif tak menyaring apa pun', () => {
+    expect(saringSignifikan([], (r) => r.netLot)).toEqual([])
+  })
+
+  it('accessor berbeda menghasilkan ambang berbeda (gross vs net)', () => {
+    const s = saringSignifikan(baris, (r) => r.beliLot, 0.5)
+    // BESAR sendiri 96,95% dari total beliLot -> lolos ambang 50%; dua lainnya tidak
+    expect(s.map((r) => r.kode)).toEqual(['BESAR'])
   })
 })
 

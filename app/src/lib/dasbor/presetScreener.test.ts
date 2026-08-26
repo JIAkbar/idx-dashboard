@@ -20,6 +20,7 @@ const KOSONG: BarisPreset = {
   ukuran_order: null,
   peringkat_value: null,
   net_asing_rp: null,
+  porsi_asing: null,
   label_accdist: null,
   tiket_lonjakan: null,
   tiket_broker_maks: null,
