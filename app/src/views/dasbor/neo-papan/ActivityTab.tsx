@@ -103,10 +103,13 @@ export function ActivityTab() {
         labels: kalender,
         datasets: seri.map((s, i) => {
           const st = statGrup[s.nama]
-          // Legenda jujur (PENAJAMAN3): n AKTIF (bukan terdaftar) + ⚠ bila
-          // satu emiten menyumbang >30% nilai kelompok.
+          // Legenda jujur (PENAJAMAN3 B1): SAMPEL-AKTIF / ANGGOTA-ASLI + ⚠
+          // bila satu emiten menyumbang >30% nilai kelompok — "Utama (10/271)"
+          // supaya garisnya tak mengaku seluruh papan/sektor.
+          const total = (jenis === 'papan' ? uni?.papanJumlah[s.nama] : uni?.sektorJumlah[s.nama])
+            ?? (grup[s.nama]?.length ?? 0)
           const label = st
-            ? `${s.nama} (n=${st.aktif}${st.top1 > 0.3 ? ' ⚠' : ''})`
+            ? `${s.nama} (${st.aktif}/${total}${st.top1 > 0.3 ? ' ⚠' : ''})`
             : s.nama
           return {
             label, data: s.share.map((v) => v * 100),
@@ -148,7 +151,7 @@ export function ActivityTab() {
         },
       },
     }
-  }, [seri, kalender, theme])
+  }, [seri, kalender, theme, jenis, uni, grup, statGrup])
   const ref = useChartCanvas(config)
 
   if (uni === undefined) return <Kosong>Memuat sampel…</Kosong>

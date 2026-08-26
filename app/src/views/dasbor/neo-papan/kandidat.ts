@@ -27,6 +27,8 @@ export interface UniverseSektor {
   /** Jumlah anggota SEBENARNYA tiap papan (bukan sampel) — wajib tampil
    *  supaya "sampel 10 dari 154" terbaca, bukan mengaku seluruh papan. */
   papanJumlah: Record<string, number>
+  /** Jumlah anggota SEBENARNYA tiap sektor — alasan yang sama. */
+  sektorJumlah: Record<string, number>
   perPapanJumlah: number
 }
 
@@ -49,10 +51,14 @@ export function muatUniverseSektor(segar = false): Promise<UniverseSektor | null
       // aslinya ikut disimpan untuk kejujuran cakupan.
       const perPapan: Record<string, string[]> = {}
       const papanJumlah: Record<string, number> = {}
+      // Jumlah anggota sektor dihitung dari SCREENER (bukan emiten_sektor) —
+      // penamaan sektornya yang dipakai perSektor, jadi kuncinya pasti cocok.
+      const sektorJumlah: Record<string, number> = {}
+      for (const b of baris) if (b.sektor) sektorJumlah[b.sektor] = (sektorJumlah[b.sektor] ?? 0) + 1
       try {
         const r = await fetch('/data-idx/json/emiten_sektor.json')
         if (r.ok) {
-          const js = (await r.json()) as { emiten?: Record<string, { papan?: string }> }
+          const js = (await r.json()) as { emiten?: Record<string, { papan?: string; sektor?: string }> }
           const papanDari = new Map(Object.entries(js.emiten ?? {}).map(([k, v]) => [k, v?.papan ?? '']))
           for (const p of papanDari.values()) if (p) papanJumlah[p] = (papanJumlah[p] ?? 0) + 1
           const urut = [...baris].filter((b) => b.nilai != null).sort((a, b) => (b.nilai ?? 0) - (a.nilai ?? 0))
@@ -70,7 +76,7 @@ export function muatUniverseSektor(segar = false): Promise<UniverseSektor | null
       for (const [k, b] of barsArr) if (b) bars.set(k, b)
       const idxArr = await Promise.all(semua.map(async (k) => [k, await muatIndeksEmiten(k)] as const))
       const indeks = new Map(idxArr)
-      return { perSektor, bars, indeks, perSektorJumlah: PER_SEKTOR, perPapan, papanJumlah, perPapanJumlah: PER_PAPAN }
+      return { perSektor, bars, indeks, perSektorJumlah: PER_SEKTOR, perPapan, papanJumlah, sektorJumlah, perPapanJumlah: PER_PAPAN }
     })()
   }
   return cache

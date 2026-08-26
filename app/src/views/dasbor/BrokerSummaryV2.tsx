@@ -54,6 +54,12 @@ const INVESTOR_OPSI: OpsiDropdown[] = [
 ]
 const MARKET_OPSI: OpsiDropdown[] = [
   { nilai: 'reguler', label: 'Regular' },
+  // ⚠ JANGAN dinyalakan sebelum `pasar` benar-benar DIPAKAI agregasi
+  // (state-nya sekarang tak dibaca siapa pun — menyalakan opsi ini berarti
+  // kendali yang mengaku mengganti pasar tapi tak mengubah apa pun, gagal
+  // senyap). Datanya SUDAH ada (nego 100% hari 2020–2026, ukur 26 Agu);
+  // yang kurang wiring sumbunya. Tab NEGO di halaman ini sudah hidup dan
+  // itu jalur baca nego yang benar hari ini.
   { nilai: 'nego', label: 'Nego — belum tersedia', nonaktif: true },
   { nilai: 'semua', label: 'All — belum tersedia', nonaktif: true },
 ]
