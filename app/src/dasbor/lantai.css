@@ -3312,6 +3312,11 @@
 /* Baris kendali (Compare kiri/kanan, Stalker chip broker+jendela, Activity
    sektor/indeks) — flex sederhana, bukan bentuk baru. */
 .neo-papan .np-baris { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+/* RRG wajib BUJURSANGKAR (Johan 26 Agu: "dibuat kotak yaa gak gepeng gini").
+   Domain X=Y saja tidak cukup kalau kanvasnya melebar penuh panel — lebar
+   dikunci ≈ tinggi + legenda kanan (~150px) + sumbu kiri (~55px) sehingga
+   AREA PLOT-nya persegi. Di layar sempit ia menyusut mengikuti lebar. */
+.neo-papan .np-rrg-wrap { max-width: 700px; margin-inline: auto; }
 .neo-papan .np-baris .inp { min-width: 130px; }
 .neo-papan .np-lbl { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text2); margin-right: 2px; }
 

@@ -3,6 +3,7 @@
  * supaya bisa diuji lepas dari komponen. Pola sama dengan kuliPapan.ts.
  */
 import type { BarHarga, BrokerHarianEmiten, HariBroker } from './neoPapanData'
+import { hitungEMA } from './grafikEmiten'
 
 // ── Broker: agregasi satu emiten pada satu rentang tanggal ─────────────────
 
@@ -134,6 +135,12 @@ export function kodeBrokerUnik(perEmiten: Map<string, BrokerHarianEmiten>): stri
 // ── Rotation Chart: RS-Ratio / RS-Momentum (z-score bergerak) ──────────────
 
 /**
+ * @deprecated Cacat struktural (spek_neo_papan_revisi.md §1.1): dipakai
+ * membangun momentum dari LEVEL rsRatio sehingga titik jatuh di diagonal dan
+ * rotasi tak pernah terbentuk; skala 100+z mentah; SD populasi; warm-up jatuh
+ * diam-diam ke 100. Pakai `rsRatioMomentumV2`. Dibiarkan ada supaya riwayat
+ * angka lama bisa direproduksi.
+ *
  * Z-score bergerak jendela N — pendekatan RRG, BUKAN rumus JdK resmi.
  * `pstdev` (populasi, bukan sampel): dibagi n, bukan n-1 — sama seperti
  * `statistics.pstdev` Python yang dipakai prototipe.
@@ -150,11 +157,97 @@ export function zScoreBergerak(xs: number[], n: number): number[] {
   return out
 }
 
-/** RS-Ratio = z-score(RS), RS-Momentum = z-score(RS-Ratio). `rs` = 100 × harga grup ÷ harga acuan. */
+/** @deprecated Lihat `zScoreBergerak` — pakai `rsRatioMomentumV2`. */
 export function rsRatioMomentum(rs: number[], n: number): { rsRatio: number[]; rsMomentum: number[] } {
   const rsRatio = zScoreBergerak(rs, n)
   const rsMomentum = zScoreBergerak(rsRatio, n)
   return { rsRatio, rsMomentum }
+}
+
+// ── Rotation Chart V2 — RRG kanonik (spek_neo_papan_revisi.md §1.2) ─────────
+
+export interface RrgParam {
+  /** PERIODE (pekan) — satu kontrol untuk windowRatio, rocPeriod, dan
+   *  windowMomentum sekaligus. Konsekuensinya titik valid pertama jatuh di
+   *  index `3n-2` (warm-up kompoun §1.3), bukan `n-1`. */
+  n: number
+  /** Haluskan RS mentah (EMA) sebelum dinormalisasi. */
+  smoothLen: number
+  /** Pelebar sebaran z-score — 100 ± skala·z. */
+  skala: number
+}
+
+export const RRG_DEFAULT: RrgParam = { n: 8, smoothLen: 3, skala: 1.5 }
+
+/**
+ * Z-score bergerak, SD SAMPEL (`/(n-1)`). Window WAJIB penuh & tanpa null di
+ * dalamnya — ada null (warm-up ATAU gap/suspend di tengah) → hasil null.
+ * TIDAK menjembatani gap, TIDAK memaksa ke 0: dua-duanya menggumpalkan titik
+ * palsu di (100,100), persis cacat #4 formula lama.
+ */
+export function zScoreBergerakN(xs: (number | null)[], n: number, epsilon = 1e-6): (number | null)[] {
+  const out: (number | null)[] = []
+  for (let i = 0; i < xs.length; i++) {
+    if (i < n - 1) { out.push(null); continue }
+    const w = xs.slice(i - n + 1, i + 1)
+    if (w.some((v) => v == null)) { out.push(null); continue }
+    const ww = w as number[]
+    const m = ww.reduce((a, b) => a + b, 0) / ww.length
+    const sd = Math.sqrt(ww.reduce((a, b) => a + (b - m) ** 2, 0) / (n - 1))
+    out.push(sd < epsilon ? null : ((xs[i] as number) - m) / sd)
+  }
+  return out
+}
+
+export interface TitikRrg { rsRatio: number | null; rsMomentum: number | null }
+
+/**
+ * RRG kanonik: RS-Momentum = z-score dari LAJU PERUBAHAN RS-Ratio (bukan
+ * levelnya) — mekanisme yang membuat entitas baru-membaik masuk kuadran
+ * Improving dulu (ratio <100, momentum >100) sebelum menyeberang ke
+ * Outperform: melengkung searah jarum jam, bukan lompat diagonal.
+ * `rsMentah` = 100 × harga grup ÷ harga acuan (dihitung pemanggil).
+ */
+export function rsRatioMomentumV2(rsMentah: number[], p: RrgParam = RRG_DEFAULT): TitikRrg[] {
+  const rs = hitungEMA(rsMentah, p.smoothLen)
+  const zRatio = zScoreBergerakN(rs, p.n)
+  const rsRatio = zRatio.map((z) => (z == null ? null : 100 + p.skala * z))
+
+  const rocRatio: (number | null)[] = rsRatio.map((v, i) =>
+    v == null || i < p.n || rsRatio[i - p.n] == null ? null : v - (rsRatio[i - p.n] as number))
+  const zMomentum = zScoreBergerakN(rocRatio, p.n)
+  const rsMomentum = zMomentum.map((z) => (z == null ? null : 100 + p.skala * z))
+
+  return rsRatio.map((r, i) => ({ rsRatio: r, rsMomentum: rsMomentum[i] }))
+}
+
+/**
+ * Index titik valid pertama — dipakai menghitung lebar fetch minimal, bukan
+ * hardcode. KOREKSI atas spek §1.3 (yang menulis `3n-2`): spek melupakan
+ * warm-up EMA `smoothLen`. Rantainya: EMA valid dari `s-1` → z-ratio dari
+ * `s+n-2` → ROC dari `s+2n-2` → z-momentum dari `s+3n-3`. Terverifikasi
+ * empiris (n=4, s=3 → 12) di neoPapan.test.ts.
+ */
+export function warmUpRrg(n: number, smoothLen = RRG_DEFAULT.smoothLen): number {
+  return 3 * n + smoothLen - 3
+}
+
+/**
+ * Domain sumbu RRG: simetris di 100 dan SAMA LEBAR di X dan Y — kuadran
+ * selalu bujursangkar visual, sudut rotasi tak terdistorsi (§1.4.4).
+ */
+export function domainSimetris(nilai: Array<number | null>, margin = 1.1, minDev = 3): { min: number; max: number } {
+  let dev = 0
+  for (const v of nilai) if (v != null) dev = Math.max(dev, Math.abs(v - 100))
+  const d = Math.max(minDev, dev * margin)
+  return { min: 100 - d, max: 100 + d }
+}
+
+export type Kuadran = 'Improving' | 'Outperform' | 'Weakening' | 'Underperform'
+
+export function kuadranRrg(rsRatio: number, rsMomentum: number): Kuadran {
+  if (rsRatio >= 100) return rsMomentum >= 100 ? 'Outperform' : 'Weakening'
+  return rsMomentum >= 100 ? 'Improving' : 'Underperform'
 }
 
 // ── Sector/Index Activity: porsi nilai transaksi bergerak ─────────────────

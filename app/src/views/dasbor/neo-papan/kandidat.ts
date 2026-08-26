@@ -27,7 +27,9 @@ const PER_SEKTOR = 8
 
 let cache: Promise<UniverseSektor | null> | null = null
 
-export function muatUniverseSektor(): Promise<UniverseSektor | null> {
+/** `segar` membuang singgahan — tombol refresh RotasiTab (spek §1.5). */
+export function muatUniverseSektor(segar = false): Promise<UniverseSektor | null> {
+  if (segar) cache = null
   if (!cache) {
     cache = (async () => {
       const scr = await ambilScreener()

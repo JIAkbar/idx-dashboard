@@ -196,3 +196,109 @@ describe('moneyFlowAsing', () => {
     expect(moneyFlowAsing({ t: '', o: 0, h: 0, l: 0, c: 0, v: 0, val: 0, freq: 0, fb: 300, fs: 120, so: 0 })).toBe(180)
   })
 })
+
+// ── RRG V2 (spek_neo_papan_revisi.md §1.8) ──────────────────────────────────
+import {
+  domainSimetris, kuadranRrg, rsRatioMomentumV2, warmUpRrg,
+  zScoreBergerakN, type RrgParam,
+} from './neoPapan'
+
+const P4: RrgParam = { n: 4, smoothLen: 3, skala: 1.5 }
+
+describe('zScoreBergerakN', () => {
+  it('warm-up = null (bukan 100 palsu), dan deret flat = null (sd 0)', () => {
+    const flat = zScoreBergerakN(new Array(12).fill(5), 4)
+    expect(flat.slice(0, 3).every((v) => v === null)).toBe(true)
+    // §1.8.3: flat sempurna → sd 0 → null, bukan titik menggumpal di pusat
+    expect(flat.every((v) => v === null)).toBe(true)
+  })
+
+  it('gap di tengah membuat window yang menyentuhnya null — TIDAK dijahit', () => {
+    const xs: (number | null)[] = [1, 2, 3, 4, null, 6, 7, 8, 9, 10]
+    const z = zScoreBergerakN(xs, 3)
+    // window [3,4,null], [4,null,6], [null,6,7] semuanya null
+    expect(z[4]).toBeNull()
+    expect(z[5]).toBeNull()
+    expect(z[6]).toBeNull()
+    // window [6,7,8] bersih lagi
+    expect(z[7]).not.toBeNull()
+  })
+
+  it('SD sampel, bukan populasi: z ujung [1,2,3] = (3-2)/1 = 1', () => {
+    const z = zScoreBergerakN([1, 2, 3], 3)
+    expect(z[2]).toBeCloseTo(1, 10) // sd sampel = 1; sd populasi 0.816 akan memberi 1.2247
+  })
+})
+
+describe('rsRatioMomentumV2 — uji rotasi (§1.8.1)', () => {
+  // Catatan atas spek: fixture "linier mulus" DEGENERATE — tren tetap membuat
+  // z-ratio konstan, ROC-nya nol konstan, sd nol → momentum null (bukan >100).
+  // Yang membuktikan mekanismenya adalah AKSELERASI lalu melandai; diukur
+  // empiris sebelum angka di bawah dibekukan.
+  it('akselerasi: momentum > 100 konsisten; melandai: momentum jatuh ≤100 SAAT ratio masih ≥100 (de-coupling)', () => {
+    const n = P4.n
+    const naik = 40
+    const rs: number[] = []
+    for (let i = 0; i < naik; i++) rs.push(100 + 0.05 * i * i) // naik berakselerasi
+    for (let i = 0; i < 4 * n; i++) rs.push(rs[naik - 1]) // melandai (flat)
+    const t = rsRatioMomentumV2(rs, P4)
+    for (let i = warmUpRrg(n, P4.smoothLen); i < naik; i++) {
+      expect(t[i].rsMomentum, `i=${i}`).not.toBeNull()
+      expect(t[i].rsMomentum as number, `i=${i}`).toBeGreaterThan(100)
+    }
+    const jatuh = t.findIndex((p, i) => i >= naik && p.rsMomentum != null && (p.rsMomentum as number) <= 100)
+    expect(jatuh).toBeGreaterThan(-1)
+    expect(t[jatuh].rsRatio as number).toBeGreaterThanOrEqual(100) // momentum memimpin
+  })
+
+  it('warm-up kompoun TERMASUK EMA: titik valid pertama di 3n+smoothLen-3 (koreksi atas 3n-2 spek)', () => {
+    const rs = Array.from({ length: 40 }, (_, i) => 100 + Math.sin(i) * 5 + i * 0.3)
+    const t = rsRatioMomentumV2(rs, P4)
+    const pertama = t.findIndex((p) => p.rsRatio != null && p.rsMomentum != null)
+    expect(pertama).toBe(warmUpRrg(P4.n, P4.smoothLen))
+    expect(pertama).toBe(12) // n=4, smoothLen=3
+  })
+
+  it('kasus tetap 15 bar hitung-tangan (§1.8.4) — beku, toleransi 1e-6', () => {
+    const rs = [100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114]
+    const p: RrgParam = { n: 3, smoothLen: 3, skala: 1.5 }
+    const t = rsRatioMomentumV2(rs, p)
+    // EMA(3) deret aritmetik +1/bar konvergen ke x[i]-1 → z-window aritmetik
+    // sempurna: z = (x-mean)/sd_sampel = 1 → ratio = 101.5 konstan → ROC(3)=0
+    // konstan → sd 0 → momentum null. Terhitung tangan, bukan disalin dari
+    // keluaran; membekukan perilaku sd<epsilon → null sekaligus.
+    expect(t[7].rsRatio).not.toBeNull()
+    expect(t[7].rsRatio as number).toBeCloseTo(101.5, 6)
+    expect(t[14].rsRatio as number).toBeCloseTo(101.5, 6)
+    expect(t[14].rsMomentum).toBeNull()
+  })
+
+  it('jumlah titik valid n=12 dalam window fetch dinamis ≥ TRAIL 6 (§1.8.5)', () => {
+    const TRAIL = 6
+    const maxN = 12
+    const lebar = warmUpRrg(maxN, 3) + TRAIL + 5 // rumus fetch window (koreksi §1.3)
+    const rs = Array.from({ length: lebar }, (_, i) => 100 + Math.sin(i / 3) * 4 + i * 0.2)
+    const t = rsRatioMomentumV2(rs, { n: maxN, smoothLen: 3, skala: 1.5 })
+    const valid = t.filter((p) => p.rsRatio != null && p.rsMomentum != null).length
+    expect(valid).toBeGreaterThanOrEqual(TRAIL)
+  })
+})
+
+describe('domainSimetris + kuadranRrg', () => {
+  it('X=Y sama lebar, pusat 100 (§1.8.2)', () => {
+    const d = domainSimetris([96, 103.5, null, 100.2])
+    expect(d.max - 100).toBeCloseTo(100 - d.min, 10)
+    expect((d.max + d.min) / 2).toBeCloseTo(100, 10)
+    expect(d.max).toBeCloseTo(100 + 4 * 1.1, 10) // deviasi terbesar |96-100|=4
+  })
+  it('deviasi kecil dijaga minimum supaya chart tak zoom ekstrem', () => {
+    const d = domainSimetris([100.1, 99.9])
+    expect(d.max).toBe(103)
+  })
+  it('nama kuadran per definisi RRG', () => {
+    expect(kuadranRrg(99, 101)).toBe('Improving')
+    expect(kuadranRrg(101, 101)).toBe('Outperform')
+    expect(kuadranRrg(101, 99)).toBe('Weakening')
+    expect(kuadranRrg(99, 99)).toBe('Underperform')
+  })
+})
