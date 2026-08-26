@@ -8,6 +8,8 @@ import {
   type BarisStalkerV2, type HariStalkerV2, type InvestorStalker,
 } from '../../../lib/dasbor/neoPapan'
 import { DropdownMulti, type OpsiMulti } from '../../../components/dasbor/DropdownMulti'
+import { LABEL_RENTANG } from '../../../lib/dasbor/periode'
+import { HARI_BURSA } from '../../../lib/dasbor/rentang'
 import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
 import { namaBroker, warnaBroker } from '../../../lib/dasbor/kelompokBroker'
 import { useRingkasKartu } from '../../../lib/dasbor/kartuRingkas'
@@ -26,6 +28,10 @@ import { fmtB, num, Kosong, Sumber } from './bersama'
  *   otomatis, dan judul tabel selalu menampilkan rentang SEBENARNYA.
  */
 
+/** Keluarga hari-granular (1-20 hari, khas stalking harian) + kosakata baku
+ *  modul rentang (spek konsistensi §2): '60 hari'→b3, '1 tahun'→y1, dan
+ *  preset panjang y3/y5/y10 menyusul arsip broker 2016-2026. Label rentang
+ *  baku dieja LABEL_RENTANG (#170), bukan di sini. */
 const PRESET_JENDELA = [
   { id: '1', label: 'Hari ini' },
   { id: '2', label: '2 hari' },
@@ -33,11 +39,16 @@ const PRESET_JENDELA = [
   { id: '5', label: '5 hari' },
   { id: '10', label: '10 hari' },
   { id: '20', label: '20 hari' },
-  { id: '60', label: '60 hari' },
-  { id: 'ytd', label: 'YTD' },
-  { id: '1y', label: '1 tahun' },
+  { id: 'b3', label: LABEL_RENTANG.b3 },
+  { id: 'ytd', label: LABEL_RENTANG.ytd },
+  { id: 'y1', label: LABEL_RENTANG.y1 },
+  { id: 'y3', label: LABEL_RENTANG.y3 },
+  { id: 'y5', label: LABEL_RENTANG.y5 },
+  { id: 'y10', label: LABEL_RENTANG.y10 },
 ] as const
 type IdJendela = (typeof PRESET_JENDELA)[number]['id']
+/** Preset kosakata baku yang jendelanya dihitung hari BURSA via HARI_BURSA. */
+const JENDELA_BAKU = new Set(['b3', 'y1', 'y3', 'y5', 'y10'])
 
 const BARIS_PER_HAL = 25
 const SPARK_N = 12
@@ -115,13 +126,16 @@ export function StalkerTab() {
   }, [peta20])
   const hariAkhir = kalender20[kalender20.length - 1] ?? ''
 
-  const butuhTahunan = investor !== 'all' || jendelaId === '60' || jendelaId === 'ytd' || jendelaId === '1y'
+  const butuhTahunan = investor !== 'all' || JENDELA_BAKU.has(jendelaId) || jendelaId === 'ytd'
 
   /** Rentang tanggal jalur tahunan (kalender, sebelum diiris jadi hari bursa). */
   const rentangTahunan = useMemo(() => {
     if (!hariAkhir) return null
     if (jendelaId === 'ytd') return { dari: `${hariAkhir.slice(0, 4)}-01-01`, sampai: hariAkhir }
-    const nHari = jendelaId === '1y' ? 366 : Math.ceil(Number(jendelaId) * 1.7) + 4
+    // Hari bursa → hari kalender: ×1.45 + slack (akhir pekan + libur bursa).
+    const nHari = JENDELA_BAKU.has(jendelaId)
+      ? Math.ceil(HARI_BURSA[jendelaId as 'b3' | 'y1' | 'y3' | 'y5' | 'y10'] * 1.45) + 8
+      : Math.ceil(Number(jendelaId) * 1.7) + 4
     const d = new Date(`${hariAkhir}T00:00:00Z`)
     d.setUTCDate(d.getUTCDate() - nHari)
     return { dari: d.toISOString().slice(0, 10), sampai: hariAkhir }
@@ -158,7 +172,8 @@ export function StalkerTab() {
     const set = new Set<string>()
     for (const e of tahunan.peta.values()) for (const t of Object.keys(e.hari)) set.add(t)
     let jendela = [...set].sort()
-    if (jendelaId !== 'ytd' && jendelaId !== '1y') jendela = jendela.slice(-Number(jendelaId))
+    if (JENDELA_BAKU.has(jendelaId)) jendela = jendela.slice(-HARI_BURSA[jendelaId as 'b3' | 'y1' | 'y3' | 'y5' | 'y10'])
+    else if (jendelaId !== 'ytd') jendela = jendela.slice(-Number(jendelaId))
     return stalkerAgregasiV2(tahunan.peta, dipilih, jendela, investor)
   }, [peta20, tahunan, kunciTahunan, dipilih, jendelaId, investor, butuhTahunan, kalender20])
 
@@ -357,7 +372,7 @@ export function StalkerTab() {
               untuk {totalEmiten ?? '…'} emiten, sekali per rentang per sesi.
               <br />
               <button type="button" className="btn-p" style={{ marginTop: 10 }} onClick={muatTahunan}>
-                Muat data {jendelaId === 'ytd' ? 'YTD' : jendelaId === '1y' ? '1 tahun' : `${jendelaId} hari`}
+                Muat data {jendelaId === 'ytd' ? 'YTD' : JENDELA_BAKU.has(jendelaId) ? PRESET_JENDELA.find((o) => o.id === jendelaId)?.label : `${jendelaId} hari`}
                 {investor !== 'all' ? ` · investor ${investor}` : ''}
               </button>
             </>

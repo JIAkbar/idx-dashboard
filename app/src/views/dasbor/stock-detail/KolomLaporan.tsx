@@ -1,3 +1,4 @@
+import { LABEL_RENTANG } from '../../../lib/dasbor/periode'
 import type { ReactNode } from 'react'
 import type { PricePerf, StockFundamental } from '../../../lib/dasbor/stockDetailData'
 import { fB } from '../../../lib/dasbor/stockDetailFormat'
@@ -11,8 +12,14 @@ function TR(lbl: string, val: ReactNode) {
   )
 }
 
-/* #93: horizon panjang 1Y/3Y/5Y ikut tampil — datanya sudah ada di price_perf. */
-const PERF_KEYS: [string, string][] = [['1D', '1d'], ['1W', '1w'], ['1M', '1m'], ['3M', '3m'], ['6M', '6m'], ['YTD', 'ytd'], ['1Y', '1y'], ['3Y', '3y'], ['5Y', '5y']]
+/* #93: horizon panjang 1Y/3Y/5Y ikut tampil — datanya sudah ada di price_perf.
+ * Label kata penuh dari LABEL_RENTANG (spek konsistensi §2) — dulu singkatan
+ * '1D/1W/3M' sendiri, kosakata keempat di aplikasi. Kunci kedua = ruas feed. */
+const PERF_KEYS: [string, string][] = [
+  [LABEL_RENTANG.h1, '1d'], [LABEL_RENTANG.w1, '1w'], [LABEL_RENTANG.b1, '1m'],
+  [LABEL_RENTANG.b3, '3m'], [LABEL_RENTANG.b6, '6m'], [LABEL_RENTANG.ytd, 'ytd'],
+  [LABEL_RENTANG.y1, '1y'], [LABEL_RENTANG.y3, '3y'], [LABEL_RENTANG.y5, '5y'],
+]
 
 /** Satu baris price performance — port fdPerfRow() index_live.html baris 3996-4016. */
 function PerfRow({ label, pct, low, high, cur }: { label: string; pct?: number; low?: number; high?: number; cur?: number }) {

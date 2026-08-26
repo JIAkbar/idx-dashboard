@@ -1,3 +1,4 @@
+import { LABEL_RENTANG } from './periode'
 import type { BarisOhlc } from './ihsgOhlc'
 
 /**
@@ -135,16 +136,18 @@ export interface PerformaPeriode {
 
 /** Urutan tampil, sama dengan panel RTI yang jadi acuan. 3Y/5Y hanya tampil
  *  kalau deret panjangnya (36 tahun) sudah dimuat — lihat `performaIhsg`. */
+// Label dieja LABEL_RENTANG (#170 + spek konsistensi §2) — id internal tetap
+// gaya feed ('1D'/'5D') karena memetakan ruas sumber, bukan kosakata layar.
 export const PERIODE_PERFORMA: Array<{ id: PerformaPeriode['id']; label: string }> = [
-  { id: '1D', label: '1 Hari' },
-  { id: '5D', label: '5 Hari' },
-  { id: '1M', label: '1 Bulan' },
-  { id: '3M', label: '3 Bulan' },
-  { id: '6M', label: '6 Bulan' },
-  { id: 'YTD', label: 'Tahun berjalan' },
-  { id: '1Y', label: '1 Tahun' },
-  { id: '3Y', label: '3 Tahun' },
-  { id: '5Y', label: '5 Tahun' },
+  { id: '1D', label: LABEL_RENTANG.h1 },
+  { id: '5D', label: LABEL_RENTANG.h5 },
+  { id: '1M', label: LABEL_RENTANG.b1 },
+  { id: '3M', label: LABEL_RENTANG.b3 },
+  { id: '6M', label: LABEL_RENTANG.b6 },
+  { id: 'YTD', label: LABEL_RENTANG.ytd },
+  { id: '1Y', label: LABEL_RENTANG.y1 },
+  { id: '3Y', label: LABEL_RENTANG.y3 },
+  { id: '5Y', label: LABEL_RENTANG.y5 },
 ]
 
 /** Hari bursa terakhir yang tanggalnya ≤ `batas`. `-1` kalau tak ada — deret
