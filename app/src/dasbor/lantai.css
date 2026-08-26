@@ -3347,6 +3347,13 @@
 .neo-papan .np-2kol { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); align-items: start; }
 .neo-papan .np-chip-broker { display: inline-flex; align-items: center; gap: 6px; }
 .neo-papan .np-chip-titik { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+/* Stalker V2: sparkline net harian + saringan + paginasi. */
+.neo-papan .np-spark { display: inline-flex; align-items: flex-end; gap: 1px; height: 16px; width: 60px; }
+.neo-papan .np-spark span { flex: 1; border-radius: 1px; min-height: 2px; }
+.neo-papan .np-spark .up { background: var(--green, #30a46c); }
+.neo-papan .np-spark .dn { background: var(--red, #e5484d); }
+.neo-papan .np-f { min-width: 110px; max-width: 160px; font-size: 12px; }
+.neo-papan .np-hal { display: flex; align-items: center; gap: 10px; justify-content: center; margin-top: 8px; }
 
 .neo-papan .np-parsial { font-size: 10px; color: var(--amber); margin-left: 4px; }
 

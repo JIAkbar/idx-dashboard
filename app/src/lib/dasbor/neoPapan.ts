@@ -125,6 +125,138 @@ export function stalkerAgregasi(
   }
 }
 
+// ── Broker Stalker V2 (spek_neo_papan_revisi.md §2 + PENAJAMAN #1) ──────────
+
+export type InvestorStalker = 'all' | 'asing' | 'domestik'
+
+/** Satu hari input V2 — dipenuhi broker_harian MAUPUN adaptasi broker_tahunan
+ *  (loader yang menyeragamkan; V2 tak peduli asalnya). `asing` = investor-type
+ *  ASING dari varian panen (klien luar negeri), hanya ada di jalur tahunan. */
+export interface HariStalkerV2 {
+  ringkas?: { totalLot?: number | null } | null
+  broker: Array<{ kode: string; beliLot: number; beliNilai: number; jualLot: number; jualNilai: number }>
+  asing?: HariStalkerV2 | null
+}
+
+export interface BarisStalkerV2 {
+  emiten: string
+  net: number
+  beli: number
+  jual: number
+  bavg: number | null
+  savg: number | null
+  /** Hari dalam jendela yang arsip emiten ini punyai. */
+  cakupanHari: number
+  /** Hari (dari cakupan) yang punya data investor terpilih — untuk
+   *  asing/domestik bisa lebih kecil dari cakupanHari (varian asing belum
+   *  ter-backfill di semua hari); layar wajib menandainya, bukan diam. */
+  cakupanInvestor: number
+  brokerAktif: string[]
+  /** Net nilai harian broker terpilih — bahan sparkline & konsistensi. */
+  seriHarian: Array<{ t: string; net: number }>
+  /** Rata porsi Σ beliLot broker terpilih ÷ totalLot hari itu (0..1);
+   *  null kalau tak satu pun hari punya `ringkas.totalLot`. */
+  porsiVol: number | null
+}
+
+export interface HasilStalkerV2 {
+  jendela: string[]
+  netBuy: BarisStalkerV2[]
+  netSell: BarisStalkerV2[]
+}
+
+/** Hari beruntun ber-net>0 dihitung dari TERKINI mundur. */
+export function konsistensiNet(seri: Array<{ net: number }>): number {
+  let n = 0
+  for (let i = seri.length - 1; i >= 0; i--) {
+    if (seri[i].net > 0) n++
+    else break
+  }
+  return n
+}
+
+function sisiInvestor(h: HariStalkerV2, investor: InvestorStalker): HariStalkerV2 | null {
+  if (investor === 'all') return h
+  const asing = h.asing ?? null
+  if (investor === 'asing') return asing
+  // domestik = ALL − ASING per broker (pola teruji proyek: selisihnya nol
+  // persis). Hari tanpa varian asing tak bisa dihitung — null, bukan
+  // pura-pura sama dengan ALL.
+  if (!asing) return null
+  const perAsing = new Map(asing.broker.map((b) => [b.kode, b]))
+  return {
+    ringkas: h.ringkas,
+    broker: h.broker.map((b) => {
+      const a = perAsing.get(b.kode)
+      return {
+        kode: b.kode,
+        beliLot: b.beliLot - (a?.beliLot ?? 0),
+        beliNilai: b.beliNilai - (a?.beliNilai ?? 0),
+        jualLot: b.jualLot - (a?.jualLot ?? 0),
+        jualNilai: b.jualNilai - (a?.jualNilai ?? 0),
+      }
+    }),
+  }
+}
+
+/**
+ * Agregasi Stalker V2: jendela = daftar tanggal EKSPLISIT (pemanggil yang
+ * menghitung dari rentang — sumber ≤20 hari dari broker_harian, lebih dari
+ * itu dari broker_tahunan; V2 tak tahu-menahu), plus tipe investor.
+ * `stalkerAgregasi` lama tetap ada untuk pemanggil lain.
+ */
+export function stalkerAgregasiV2(
+  perEmiten: Map<string, { hari: Record<string, HariStalkerV2> }>,
+  brokerTerpilih: string[],
+  jendela: string[],
+  investor: InvestorStalker = 'all',
+): HasilStalkerV2 {
+  const pilih = new Set(brokerTerpilih)
+  const rows: BarisStalkerV2[] = []
+  for (const [emiten, data] of perEmiten) {
+    let beli = 0, jual = 0, beliLot = 0, jualLot = 0, cakupan = 0, cakupanInv = 0
+    let porsiJml = 0, porsiN = 0
+    const aktif = new Set<string>()
+    const seri: Array<{ t: string; net: number }> = []
+    for (const t of jendela) {
+      const hAll = data.hari[t]
+      if (!hAll) continue
+      cakupan++
+      const h = sisiInvestor(hAll, investor)
+      if (!h) continue
+      cakupanInv++
+      let netHari = 0
+      let beliLotHari = 0
+      for (const b of h.broker) {
+        if (!pilih.has(b.kode)) continue
+        if (b.beliNilai || b.jualNilai) aktif.add(b.kode)
+        beli += b.beliNilai; jual += b.jualNilai
+        beliLot += b.beliLot; jualLot += b.jualLot
+        netHari += b.beliNilai - b.jualNilai
+        beliLotHari += b.beliLot
+      }
+      seri.push({ t, net: netHari })
+      const totalLot = hAll.ringkas?.totalLot
+      if (totalLot) { porsiJml += beliLotHari / totalLot; porsiN++ }
+    }
+    if (beli || jual) {
+      rows.push({
+        emiten, net: beli - jual, beli, jual,
+        bavg: avgHarga(beli, beliLot), savg: avgHarga(jual, jualLot),
+        cakupanHari: cakupan, cakupanInvestor: cakupanInv,
+        brokerAktif: [...aktif].sort(),
+        seriHarian: seri,
+        porsiVol: porsiN ? porsiJml / porsiN : null,
+      })
+    }
+  }
+  return {
+    jendela,
+    netBuy: rows.filter((r) => r.net > 0).sort((a, b) => b.net - a.net),
+    netSell: rows.filter((r) => r.net < 0).sort((a, b) => a.net - b.net),
+  }
+}
+
 /** Kode broker unik yang muncul di broker_harian satu emiten — dipakai isi chip pemilih. */
 export function kodeBrokerUnik(perEmiten: Map<string, BrokerHarianEmiten>): string[] {
   const set = new Set<string>()

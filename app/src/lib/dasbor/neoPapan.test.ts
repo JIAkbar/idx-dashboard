@@ -302,3 +302,62 @@ describe('domainSimetris + kuadranRrg', () => {
     expect(kuadranRrg(99, 99)).toBe('Underperform')
   })
 })
+
+// ── Broker Stalker V2 (spek §2 + penajaman #1) ──────────────────────────────
+import { konsistensiNet, stalkerAgregasiV2, type HariStalkerV2 } from './neoPapan'
+
+function hV2(broker: Array<[string, number, number, number, number]>, asing?: HariStalkerV2, totalLot?: number): HariStalkerV2 {
+  return {
+    ringkas: totalLot != null ? { totalLot } : null,
+    broker: broker.map(([kode, beliLot, beliNilai, jualLot, jualNilai]) => ({ kode, beliLot, beliNilai, jualLot, jualNilai })),
+    asing,
+  }
+}
+
+describe('stalkerAgregasiV2', () => {
+  const peta = new Map([
+    ['BUMI', { hari: {
+      '2026-01-01': hV2([['AK', 100, 10_000, 0, 0]], hV2([['AK', 40, 4_000, 0, 0]]), 1_000),
+      '2026-01-02': hV2([['AK', 50, 5_000, 20, 2_000]], undefined, 500),
+    } }],
+  ])
+
+  it('jendela eksplisit: tanggal di luar jendela tak dihitung', () => {
+    const r = stalkerAgregasiV2(peta, ['AK'], ['2026-01-01'], 'all')
+    expect(r.netBuy[0].beli).toBe(10_000)
+    expect(r.netBuy[0].seriHarian).toEqual([{ t: '2026-01-01', net: 10_000 }])
+  })
+
+  it('all: dua hari terjumlah + seriHarian + porsiVol dirata', () => {
+    const r = stalkerAgregasiV2(peta, ['AK'], ['2026-01-01', '2026-01-02'], 'all')
+    const b = r.netBuy[0]
+    expect(b.net).toBe(13_000)
+    expect(b.seriHarian.map((s) => s.net)).toEqual([10_000, 3_000])
+    // porsi: (100/1000 + 50/500)/2 = 0.1
+    expect(b.porsiVol).toBeCloseTo(0.1, 10)
+    expect(b.cakupanInvestor).toBe(2)
+  })
+
+  it('asing: hanya hari ber-varian asing yang terhitung, cakupanInvestor jujur', () => {
+    const r = stalkerAgregasiV2(peta, ['AK'], ['2026-01-01', '2026-01-02'], 'asing')
+    const b = r.netBuy[0]
+    expect(b.beli).toBe(4_000)
+    expect(b.cakupanHari).toBe(2)
+    expect(b.cakupanInvestor).toBe(1)
+  })
+
+  it('domestik = ALL − ASING per broker; hari tanpa asing dilewati (bukan disamakan ALL)', () => {
+    const r = stalkerAgregasiV2(peta, ['AK'], ['2026-01-01', '2026-01-02'], 'domestik')
+    const b = r.netBuy[0]
+    expect(b.beli).toBe(6_000) // 10.000 − 4.000; hari kedua dilewati
+    expect(b.cakupanInvestor).toBe(1)
+  })
+})
+
+describe('konsistensiNet', () => {
+  it('beruntun dari terkini mundur, putus di net ≤ 0', () => {
+    expect(konsistensiNet([{ net: 5 }, { net: -1 }, { net: 2 }, { net: 3 }])).toBe(2)
+    expect(konsistensiNet([{ net: -1 }])).toBe(0)
+    expect(konsistensiNet([])).toBe(0)
+  })
+})

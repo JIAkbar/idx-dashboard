@@ -115,6 +115,65 @@ export function muatBrokerSemua(): Promise<Map<string, BrokerHarianEmiten>> {
   return cacheSemua
 }
 
+// ── Broker TAHUNAN lintas emiten (Broker Stalker >20 hari — penajaman #1) ──
+
+import { muatRentang } from './brokerEmiten'
+import type { HariStalkerV2 } from './neoPapan'
+
+/**
+ * Muat rentang broker_tahunan untuk BANYAK emiten sekaligus — jalur Stalker
+ * saat jendela melebihi 20 hari broker_harian. Pemuat per-emiten memakai
+ * ulang `muatRentang` (brokerEmiten.ts) — JANGAN tulis pemuat kedua.
+ *
+ * BIAYA NYATA: 1 berkas {kode}/{tahun}.json ≈ 0,75 MB; 962 emiten × tahun ≈
+ * ratusan MB per query. Karena itu: (a) hanya dipanggil saat preset >20d /
+ * asing / domestik benar-benar dipilih, (b) cache per (kode,tahun) sudah di
+ * jalur fetch peramban, (c) `onProgress` supaya layar bisa jujur menghitung.
+ * Konkurenси dibatasi — 962 fetch serentak mencekik peramban.
+ */
+export async function muatBrokerTahunanBanyak(
+  kodes: string[],
+  dari: string,
+  sampai: string,
+  onProgress?: (selesai: number, total: number) => void,
+): Promise<Map<string, { hari: Record<string, HariStalkerV2> }>> {
+  const hasil = new Map<string, { hari: Record<string, HariStalkerV2> }>()
+  const BATCH = 24
+  let selesai = 0
+  const keV2 = (h: {
+    ringkas?: { total_lot?: number | null } | null
+    broker: Array<readonly [string, number, number, number, number]>
+    asing?: { ringkas?: { total_lot?: number | null } | null; broker: Array<readonly [string, number, number, number, number]> }
+  }): HariStalkerV2 => ({
+    ringkas: h.ringkas ? { totalLot: h.ringkas.total_lot ?? null } : null,
+    broker: h.broker.map(([kode, beliLot, beliNilai, jualLot, jualNilai]) => ({ kode, beliLot, beliNilai, jualLot, jualNilai })),
+    asing: h.asing
+      ? {
+          ringkas: h.asing.ringkas ? { totalLot: h.asing.ringkas.total_lot ?? null } : null,
+          broker: h.asing.broker.map(([kode, beliLot, beliNilai, jualLot, jualNilai]) => ({ kode, beliLot, beliNilai, jualLot, jualNilai })),
+        }
+      : null,
+  })
+  for (let i = 0; i < kodes.length; i += BATCH) {
+    const irisan = kodes.slice(i, i + BATCH)
+    await Promise.all(irisan.map(async (k) => {
+      try {
+        const hariArr = await muatRentang(k, dari, sampai)
+        if (hariArr.length) {
+          const hari: Record<string, HariStalkerV2> = {}
+          for (const [tgl, h] of hariArr) hari[tgl] = keV2(h)
+          hasil.set(k, { hari })
+        }
+      } catch {
+        // satu emiten gagal ≠ query gagal — cakupan dilaporkan pemanggil
+      }
+      selesai++
+    }))
+    onProgress?.(Math.min(selesai, kodes.length), kodes.length)
+  }
+  return hasil
+}
+
 // ── Kepemilikan KSEI (Balance Position) ────────────────────────────────────
 
 export interface Kepemilikan {
