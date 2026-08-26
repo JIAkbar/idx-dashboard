@@ -43,21 +43,35 @@ sys.path.insert(0, str(AKAR / "scripts"))
 
 import panen_broker_harian as ph  # noqa: E402
 
+
+def tulis_retry(path, teks: str) -> None:
+    """Windows: berkas yang sedang dibaca proses lain (Vite dev server
+    mengawasi data-idx) sesekali menolak tulis dengan EINVAL/EACCES transien
+    — terjadi nyata di BBKP/index.json saat backfill paralel 27 Agu. Coba
+    ulang singkat sebelum menyerah."""
+    import time
+    for percobaan in range(5):
+        try:
+            path.write_text(teks, encoding="utf-8")
+            return
+        except OSError:
+            if percobaan == 4:
+                raise
+            time.sleep(0.3 * (percobaan + 1))
+
 KELUARAN = AKAR / "data-idx" / "json" / "broker_tahunan"
 
-# Hanya tahun yang panennya SELESAI untuk seluruh bursa yang dibangun.
-# Ketetapan Johan 24 Agu 2026: *"kita anggap saja masih ambil data penuh
-# 2 tahun di 2025 dan 2026 tahun yang lain masih proses, maka dari itu
-# kerjakan dengan 2 tahun itu saja dulu tahun sebelumnya d tutup saja"*.
-#
-# Alasannya terukur, bukan selera: 2025 dan 2026 punya 955 dan 962 emiten
-# dengan enam varian GROSS penuh, sementara 2020-2024 cuma 18-20 emiten
-# sisa gelombang backfill lama yang kedalaman variannya belum tentu sama.
-# Membangunnya berarti memajang tahun yang isinya 2% bursa seolah setara
-# dengan tahun yang isinya penuh — dan pembaca tak punya cara membedakannya
-# dari layar. Menambah tahun = panen tahun itu sampai penuh dulu, lalu
-# tambahkan di sini.
-TAHUN_PENUH = ("2025", "2026")
+# Ketetapan Johan 27 Agu 2026: BANGUN SAMPAI 2016 ("kalau tidak jadi beban
+# besar yaa gpp sampai 2016 untuk data broker"). Ketetapan lama "sejak 2020"
+# dibuat SAAT 2016-2019 belum dipanen — alasan itu gugur begitu panen mundur
+# tuntas ke lantai sumber 2016-01-04 (26 Agu; 2016 = 100,00% hari). Dampak
+# terukur pengawas: berkas broker_tahunan 6.651 -> ±10.499, data-idx ±25.900
+# berkas / ±2,5 GB; batas 15.000 Vercel TIDAK berlaku (itu batas unggah CLI,
+# deploy PAPAN berbasis git). Jangan panen ulang — mentahnya sudah lengkap.
+TAHUN_PENUH = (
+    "2016", "2017", "2018", "2019",
+    "2020", "2021", "2022", "2023", "2024", "2025", "2026",
+)
 
 
 def bangun_emiten(kode: str, tahun_boleh: tuple[str, ...] = TAHUN_PENUH) -> dict[str, int]:
@@ -95,13 +109,13 @@ def bangun_emiten(kode: str, tahun_boleh: tuple[str, ...] = TAHUN_PENUH) -> dict
     for tahun, hari in per_tahun.items():
         out = KELUARAN / kode / f"{tahun}.json"
         out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(json.dumps({
+        tulis_retry(out, json.dumps({
             "kode": kode, "tahun": int(tahun), "kolom": ph.KOLOM,
             "sumber": "Stockbit marketdetectors — GROSS, reguler, semua investor",
             "dibangun": datetime.now(ph.WIB).isoformat(timespec="seconds"),
             "n_hari": len(hari),
             "hari": {t: hari[t] for t in sorted(hari)},
-        }, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        }, ensure_ascii=False, separators=(",", ":")))
         hasil[tahun] = len(hari)
     if rusak:
         print(f"  {kode}: {rusak} berkas arsip kosong/rusak dilewati")
@@ -114,10 +128,18 @@ def bangun_emiten(kode: str, tahun_boleh: tuple[str, ...] = TAHUN_PENUH) -> dict
     # dibangun, memang tak ada isinya" dari "belum pernah dibangun".
     idx = KELUARAN / kode / "index.json"
     idx.parent.mkdir(parents=True, exist_ok=True)
-    idx.write_text(json.dumps({"kode": kode, "tahun": sorted(int(t) for t in hasil),
-                               "n_hari": sum(hasil.values()),
-                               "dibangun": datetime.now(ph.WIB).isoformat(timespec="seconds")}),
-                   encoding="utf-8")
+    # Daftar tahun dari DISK, bukan dari run ini — run ber-`--tahun` subset
+    # (backfill 2016-2019) tak boleh menghapus 2020-2026 dari indeks.
+    tahun_disk = sorted(int(q.stem) for q in (KELUARAN / kode).glob("????.json"))
+    n_hari_disk = 0
+    for th in tahun_disk:
+        try:
+            n_hari_disk += json.loads((KELUARAN / kode / f"{th}.json").read_text(encoding="utf-8")).get("n_hari", 0)
+        except Exception:
+            pass
+    tulis_retry(idx, json.dumps({"kode": kode, "tahun": tahun_disk,
+                                 "n_hari": n_hari_disk,
+                                 "dibangun": datetime.now(ph.WIB).isoformat(timespec="seconds")}))
     return hasil
 
 
@@ -152,14 +174,59 @@ def swauji() -> int:
     return 0
 
 
+def _kerja(pasang: tuple[str, tuple[str, ...]]) -> str:
+    kode, tahun = pasang
+    try:
+        hasil = bangun_emiten(kode, tahun)
+    except Exception as exc:  # satu emiten gagal jangan mematikan seluruh pool
+        return f"{kode}: GAGAL {type(exc).__name__}: {exc}"
+    return f"{kode}: " + ", ".join(f"{t}:{n}" for t, n in sorted(hasil.items())) if hasil else f"{kode}: arsip kosong"
+
+
 def main() -> int:
-    arg = [a for a in sys.argv[1:] if not a.startswith("-")]
+    """Tanpa flag = seluruh TAHUN_PENUH. `--tahun 2016,2017` membatasi tahun
+    yang DITULIS (tahun lain tak disentuh — dipakai backfill 2016-2019 supaya
+    tak menulis ulang 2020-2026 yang sudah benar). `--paralel N` menyebar
+    emiten ke N proses (IO-bound baca ribuan JSON arsip; serial terukur
+    ±2 menit/8 emiten = ±30 jam untuk 962)."""
     if "--uji" in sys.argv:
         return swauji()
+    argv = sys.argv[1:]
+    tahun: tuple[str, ...] = TAHUN_PENUH
+    paralel = 1
+    arg: list[str] = []
+    i = 0
+    while i < len(argv):
+        a = argv[i]
+        if a == "--tahun":
+            i += 1
+            tahun = tuple(t for t in argv[i].split(",") if t in TAHUN_PENUH)
+        elif a == "--paralel":
+            i += 1
+            paralel = max(1, int(argv[i]))
+        elif a == "--lanjut":
+            pass  # ditangani setelah daftar kode tersusun
+        elif not a.startswith("-"):
+            arg.append(a)
+        i += 1
     kode_semua = [a.upper() for a in arg] or sorted(p.name for p in ph.ARSIP.iterdir() if p.is_dir())
-    for kode in kode_semua:
-        hasil = bangun_emiten(kode)
-        print(f"{kode}: " + ", ".join(f"{t}:{n}" for t, n in sorted(hasil.items())) if hasil else f"{kode}: arsip kosong")
+    if "--lanjut" in argv:
+        # Lewati emiten yang SUDAH punya salah satu berkas tahun yang diminta
+        # (resume backfill). Emiten yang mentahnya memang kosong akan discan
+        # ulang murah (glob saja).
+        sisa = [k for k in kode_semua
+                if not any((KELUARAN / k / f"{t}.json").exists() for t in tahun)]
+        print(f"--lanjut: {len(kode_semua) - len(sisa)} dilewati, {len(sisa)} tersisa", flush=True)
+        kode_semua = sisa
+    tugas = [(k, tahun) for k in kode_semua]
+    if paralel == 1:
+        for t in tugas:
+            print(_kerja(t), flush=True)
+    else:
+        from concurrent.futures import ProcessPoolExecutor
+        with ProcessPoolExecutor(max_workers=paralel) as ex:
+            for baris in ex.map(_kerja, tugas, chunksize=8):
+                print(baris, flush=True)
     return 0
 
 

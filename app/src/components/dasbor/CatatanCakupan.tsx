@@ -1,7 +1,8 @@
 import { IkonMenu, IKON_INFO } from './IkonMenu'
 
 /**
- * Keterangan cakupan data (26 Agu 2026 — dibuka ke 2020, ketetapan Johan)
+ * Keterangan cakupan data (27 Agu 2026 — broker dibuka ke 2016, ketetapan
+ * Johan "gpp sampai 2016"; sebelumnya 2020)
  * — satu kalimat dipakai ulang di tiap halaman yang membaca harga
  * harian (OHLC/OHLCV) dan/atau rincian broker, supaya pembaca tahu batas
  * kepercayaan angkanya tanpa perlu menebak. Sengaja TIDAK menyebut
@@ -12,7 +13,7 @@ export function CatatanCakupan() {
   return (
     <p className="catatan-cakupan muted">
       <IkonMenu d={IKON_INFO} size={12} />
-      Data sejak 2020 sudah tervalidasi. Angka sebelum 2020 masih dalam tahap penyesuaian dan bisa berubah.
+      Rincian broker tersedia dan tervalidasi sejak 2016. Riwayat harga tersedia sejak emiten tercatat di bursa.
     </p>
   )
 }
