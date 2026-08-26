@@ -839,47 +839,19 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <tr>
 <td>Screener <code>/screener</code></td>
 <td><code>screener.json</code>, <code>pola_screener.json</code>, <code>kandidat_deepdive.json</code></td>
-<td>⚙️ <code>app/scripts/bangun-screener.mjs</code> &amp; <code>pola-screener.ts</code> dari <code>ohlc/</code> (<strong>jahitan</strong>) + fundamental; <code>kandidat_deepdive.json</code> ❓ produsen belum ditemukan di <code>scripts/</code> maupun <code>app/scripts/</code></td>
+<td>⚙️ <code>app/scripts/bangun-screener.mjs</code> &amp; <code>pola-screener.ts</code> dari <code>ohlc/</code> (<strong>jahitan</strong>) + fundamental; <strong>ruas <code>sektor</code> sejak 27 Agu 2026 dari <code>emiten_sektor.json</code> (IDX-IC resmi, 962/962, keputusan Johan)</strong> — GICS Yahoo di fundamental jadi cadangan, tak dipakai kolom ini; <code>kandidat_deepdive.json</code> ❓ produsen belum ditemukan di <code>scripts/</code> maupun <code>app/scripts/</code></td>
 <td><strong>ya</strong></td>
-<td>23 Agu 2026</td>
-</tr>
-<tr>
-<td>Kabar Pasar <code>/kabar</code></td>
-<td><code>kabar.json</code>, <code>snips.json</code>, <code>ipot_arsip.json</code></td>
-<td>IDX berita/pengumuman + IPOT + Kontan + Google News (dedup 2 lapis); Stockbit Snips; IPOT arsip</td>
-<td>tidak (sumber berdampingan, tidak ditimpa)</td>
-<td>23 Agu 2026</td>
-</tr>
-<tr>
-<td>Bulletin Arus Pasar <code>/bulletin</code></td>
-<td><code>arus-pasar/keluaran/index.json</code> + edisi, <code>index.json</code></td>
-<td>setoran kontributor + <code>arus-pasar/build.py</code>; IDX PDF</td>
-<td>tidak</td>
-<td>23 Agu 2026</td>
-</tr>
-<tr>
-<td>Deep Dive (bagian Bulletin/Kartu)</td>
-<td>setoran broker per emiten (Supabase), <code>kartu/</code></td>
-<td>kontributor + kurasi admin; ⚙️ kartu</td>
-<td>lewat kartu</td>
-<td>23 Agu 2026</td>
-</tr>
-<tr>
-<td>Metodologi <code>/metodologi</code>, Kritik &amp; Saran <code>/feedback</code>, Forum</td>
-<td>tidak membaca <code>data-idx/</code> (Forum/Feedback → Supabase)</td>
-<td>Supabase (konten pengguna)</td>
-<td>tidak</td>
-<td>23 Agu 2026</td>
-</tr>
-<tr>
-<td>Admin: Unggah Harian, Radar Unggah, Kurasi Setoran, Bedah Unggah, Rak Terbitan</td>
-<td>unggahan manusia → <code>data-idx/radar/</code>, Supabase, <code>arus-pasar/keluaran/</code></td>
-<td>manusia</td>
-<td>tidak</td>
-<td>23 Agu 2026</td>
+<td>27 Agu 2026</td>
 </tr>
 </tbody>
 </table>
+<h3>Divergensi klasifikasi — 8 emiten yang DUA sumber resmi IDX-nya bertentangan (27 Agu 2026)</h3>
+<p>Uji silang API profil (<code>GetCompanyProfiles</code>, <strong>sumber yang PAPAN pakai</strong>) lawan XBRL laporan emiten sendiri (sheet 1000000, 867 berkas TW3-2025): 3.440/3.468 pasang nilai identik; <strong>8 emiten berbeda nyata</strong> — GIAA (XBRL: Mutual Fund ?! vs API: Airlines), TIRT (Logistics vs Timber), CDIA (Construction Machinery vs Electric Utilities), MGNA (Investment Companies vs Hotels), HERO (Specialty Stores vs Supermarkets — HERO mungkin justru XBRL-nya yang lebih mutakhir, Guardian/IKEA), COCO/LMPI/PBRX (beda tingkat sektor saja). <strong>Keputusan: API profil tetap sumber produksi; XBRL = alat uji silang</strong> (aturan 3b — tidak menjahit/memilih per-emiten tanpa Johan). Kedelapannya dilaporkan ke Johan lewat pengawas. Ejaan kanonis EN dikunci uji <code>sektorIdx.test.ts</code> (Properties JAMAK, Logistic TUNGGAL).</p>
+<p>| Kabar Pasar <code>/kabar</code> | <code>kabar.json</code>, <code>snips.json</code>, <code>ipot_arsip.json</code> | IDX berita/pengumuman + IPOT + Kontan + Google News (dedup 2 lapis); Stockbit Snips; IPOT arsip | tidak (sumber berdampingan, tidak ditimpa) | 23 Agu 2026 |<br />
+| Bulletin Arus Pasar <code>/bulletin</code> | <code>arus-pasar/keluaran/index.json</code> + edisi, <code>index.json</code> | setoran kontributor + <code>arus-pasar/build.py</code>; IDX PDF | tidak | 23 Agu 2026 |<br />
+| Deep Dive (bagian Bulletin/Kartu) | setoran broker per emiten (Supabase), <code>kartu/</code> | kontributor + kurasi admin; ⚙️ kartu | lewat kartu | 23 Agu 2026 |<br />
+| Metodologi <code>/metodologi</code>, Kritik &amp; Saran <code>/feedback</code>, Forum | tidak membaca <code>data-idx/</code> (Forum/Feedback → Supabase) | Supabase (konten pengguna) | tidak | 23 Agu 2026 |<br />
+| Admin: Unggah Harian, Radar Unggah, Kurasi Setoran, Bedah Unggah, Rak Terbitan | unggahan manusia → <code>data-idx/radar/</code>, Supabase, <code>arus-pasar/keluaran/</code> | manusia | tidak | 23 Agu 2026 |</p>
 <p>Tiga hal yang terlihat dari peta ini dan belum pernah tertulis di satu tempat: (1) <strong>hampir semua halaman harga emiten memakai <code>ohlc/</code> yang adalah jahitan</strong>, kecuali Broker Summary v2 yang membaca Stockbit murni; (2) <strong><code>fundamental/</code> adalah campuran tiga sumber per ruas</strong> dan halaman Stock Detail menggabungkannya lagi dengan <code>keuangan</code> yfinance saat dibaca; (3) dua dataset dipanen penuh dan sejak 24 Agu 2026 SUDAH dibaca (<code>keystats_stockbit/</code> → Stock Detail via <code>rasioTambahanKeystats.ts</code>, dan bagian shareholder/subsidiary/direksi <code>profil_stockbit/</code> → Broker Summary v2 Shareholders via <code>brokerProfilKsei.ts</code>; bagian alamat/latar belakang/sekretaris/IPO <code>profil_stockbit/</code> → Stock Detail juga via <code>rasioTambahanKeystats.ts</code>); <code>info_stockbit/</code> dan <code>profil/</code> IDX masih menganggur; <code>foreignbuy</code>/<code>foreignsell</code> rupiah chartbit yang sudah ada di berkas tapi belum dipakai, sementara halaman masih menampilkan taksiran rupiah yang meleset 1,33×.</p>
 
 </div>

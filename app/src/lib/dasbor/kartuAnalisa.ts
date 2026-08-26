@@ -66,6 +66,11 @@ export interface SektorRingkas {
   subindustri: string | null
   papan: string | null
   tercatat: string | null
+  /** Nama RESMI Inggris IDX (lang=en) — nilai yang DITAMPILKAN (Johan 27
+   *  Agu); opsional: kartu lama belum membawanya. */
+  sektor_en?: string | null
+  subsektor_en?: string | null
+  subindustri_en?: string | null
 }
 
 export interface FundamentalRingkas {

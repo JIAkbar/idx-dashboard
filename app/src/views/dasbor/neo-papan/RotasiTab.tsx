@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { TombolLayarPenuh } from '../../../components/dasbor/TombolLayarPenuh'
 import { Chart as ChartJS } from 'chart.js/auto'
+import { KODE_SEKTOR_EN } from '../../../lib/dasbor/sektorIdx'
 import type { ChartConfiguration, Plugin, ScriptableLineSegmentContext } from 'chart.js/auto'
 import { useChartCanvas, bacaTokenTema } from '../../../lib/dasbor/useChartJs'
 import { useTheme } from '../../../context/ThemeContext'
@@ -27,15 +28,7 @@ const OPSI_N = [4, 8, 12]
  *  dst - daftar terverifikasi di ChartIndeks TV_GROUPS.sektoral). Nama penuh
  *  Bahasa Indonesia terlalu panjang untuk pill di plot ("Barang Konsumen
  *  Non-Primer") dan itulah sebagian "benang kusut" yang Johan lihat. */
-const KODE_SEKTOR: Record<string, string> = {
-  // Kunci = nama Inggris resmi IDX (screener memakai sektor_en sejak
-  // keputusan Johan 27 Agu). Nilai = akhiran indeks sektoral IDX resmi.
-  'Energy': 'ENERGY', 'Basic Materials': 'BASIC', 'Industrials': 'INDUST',
-  'Consumer Non-Cyclicals': 'NONCYC', 'Consumer Cyclicals': 'CYCLIC',
-  'Healthcare': 'HEALTH', 'Financials': 'FINANCE',
-  'Properties & Real Estate': 'PROPERT', 'Infrastructures': 'INFRA',
-  'Transportation & Logistic': 'TRANS', 'Technology': 'TECHNO',
-}
+const KODE_SEKTOR = KODE_SEKTOR_EN
 const OPSI_JEJAK = [4, 6, 8] as const
 const TRAIL_MAKS = 8
 const MAX_N = Math.max(...OPSI_N)

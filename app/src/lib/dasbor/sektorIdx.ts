@@ -47,6 +47,25 @@ export interface DaftarSektor {
  */
 export const PAPAN_BERISIKO = new Set(['Pemantauan Khusus'])
 
+/** 11 nama sektor IDX-IC resmi berbahasa Inggris — EJAAN DIKUNCI UJI
+ *  (sektorIdx.test.ts): `Properties` JAMAK, `Logistic` TUNGGAL. Salah satu
+ *  huruf memutus tiga join sekaligus (kunci RRG, SYM_SEKTOR, pencocokan
+ *  `hari.sectors`). Sumber: GetCompanyProfiles lang=en, bijeksi 962×962. */
+export const SEKTOR_IDX_EN = [
+  'Basic Materials', 'Consumer Cyclicals', 'Consumer Non-Cyclicals',
+  'Energy', 'Financials', 'Healthcare', 'Industrials', 'Infrastructures',
+  'Properties & Real Estate', 'Technology', 'Transportation & Logistic',
+] as const
+
+/** Kode pill/akhiran indeks sektoral IDX resmi per sektor (RRG dkk). */
+export const KODE_SEKTOR_EN: Record<string, string> = {
+  'Energy': 'ENERGY', 'Basic Materials': 'BASIC', 'Industrials': 'INDUST',
+  'Consumer Non-Cyclicals': 'NONCYC', 'Consumer Cyclicals': 'CYCLIC',
+  'Healthcare': 'HEALTH', 'Financials': 'FINANCE',
+  'Properties & Real Estate': 'PROPERT', 'Infrastructures': 'INFRA',
+  'Transportation & Logistic': 'TRANS', 'Technology': 'TECHNO',
+}
+
 export function papanBerisiko(papan: string | null | undefined): boolean {
   return !!papan && PAPAN_BERISIKO.has(papan)
 }

@@ -1,17 +1,24 @@
 {
  "kode": "BFIN",
- "tgl": "2026-08-24",
- "harga": 860.0,
- "prev": 880.0,
- "chg": -2.2727272727272707,
- "n": 6225,
+ "tgl": "2026-08-26",
+ "harga": 880.0,
+ "prev": 860.0,
+ "chg": 2.3255813953488413,
+ "n": 6226,
  "mulai": "2001-05-15",
- "ma20": 893.5,
- "ma50": 806.0,
- "ma200": 756.325,
- "atr": 34.645482984638946,
- "atr_pct": 4.028544533097552,
+ "ma20": 898.5,
+ "ma50": 810.2,
+ "ma200": 756.85,
+ "atr": 35.742234200021876,
+ "atr_pct": 4.061617522729759,
  "support": [
+  {
+   "level": 843.75,
+   "sentuhan": 12,
+   "terakhir": "2026-08-11",
+   "dalam_atr": false,
+   "harga": 840
+  },
   {
    "level": 731.3333333333334,
    "sentuhan": 30,
@@ -25,23 +32,9 @@
    "terakhir": "2026-04-07",
    "dalam_atr": false,
    "harga": 650
-  },
-  {
-   "level": 610.0,
-   "sentuhan": 1,
-   "terakhir": "2026-01-29",
-   "dalam_atr": false,
-   "harga": 610
   }
  ],
  "resistance": [
-  {
-   "level": 958.125,
-   "sentuhan": 8,
-   "terakhir": "2026-08-05",
-   "dalam_atr": false,
-   "harga": 960
-  },
   {
    "level": 1040.0,
    "sentuhan": 3,
@@ -50,90 +43,58 @@
    "harga": 1040
   }
  ],
- "stop": 730,
+ "stop": 840,
  "stop_asal": "klaster",
- "stop_pct": 15.11627906976744,
+ "stop_pct": 4.545454545454546,
  "er": 0.23076923076923078,
- "er_persentil": 73.24675324675324,
- "er_n_populasi": 385,
+ "er_persentil": 73.52185089974293,
+ "er_n_populasi": 389,
  "likuiditas_median20": 26209351500.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "cukup",
-  "lilin": 6225,
+  "lilin": 6226,
   "nilai20": 26209351500.0
  },
  "beku": 0,
  "beku_sejak": null,
- "dihitung": "2026-08-24",
- "rsi": 48.947064639406854,
+ "dihitung": "2026-08-26",
+ "rsi": 53.11730868480361,
  "stochrsi": [
-  0.0,
-  7.866905599079004
+  5.454311841922066,
+  3.344840125382665
  ],
  "target": [
   {
-   "harga": 960,
-   "pct": 11.627906976744185,
-   "sentuhan": 8,
-   "terakhir": "2026-08-05",
-   "fp": {
-    "n": 6204,
-    "n_efektif": 310,
-    "kena": 1954,
-    "stop": 703,
-    "lewat": 3547,
-    "p_kena": 31.495809155383625,
-    "p_stop": 11.331399097356543,
-    "median_hari": 8.0,
-    "q1": 4,
-    "q3": 13,
-    "harapan": 1.9494174800953625
-   },
-   "fp60": {
-    "n": 6164,
-    "n_efektif": 103,
-    "kena": 3112,
-    "stop": 1664,
-    "lewat": 1388,
-    "p_kena": 50.48669695003245,
-    "p_stop": 26.995457495133028,
-    "median_hari": 15.0,
-    "q1": 6,
-    "q3": 29,
-    "harapan": 1.7898374658557579
-   }
-  },
-  {
    "harga": 1040,
-   "pct": 20.930232558139537,
+   "pct": 18.181818181818183,
    "sentuhan": 3,
    "terakhir": "2024-10-29",
    "fp": {
-    "n": 6204,
+    "n": 6205,
     "n_efektif": 310,
-    "kena": 900,
-    "stop": 730,
-    "lewat": 4574,
-    "p_kena": 14.506769825918761,
-    "p_stop": 11.766602192134107,
-    "median_hari": 10.0,
-    "q1": 5,
-    "q3": 15,
-    "harapan": 1.2576282368464458
+    "kena": 879,
+    "stop": 3431,
+    "lewat": 1895,
+    "p_kena": 14.165995165189363,
+    "p_stop": 55.294117647058826,
+    "median_hari": 8,
+    "q1": 4,
+    "q3": 14,
+    "harapan": 0.06226650062266481
    },
    "fp60": {
-    "n": 6164,
+    "n": 6165,
     "n_efektif": 103,
-    "kena": 2026,
-    "stop": 1852,
-    "lewat": 2286,
-    "p_kena": 32.868267358857885,
-    "p_stop": 30.045425048669692,
-    "median_hari": 24.0,
-    "q1": 11,
-    "q3": 39,
-    "harapan": 2.3376544979853016
+    "kena": 1407,
+    "stop": 4270,
+    "lewat": 488,
+    "p_kena": 22.822384428223845,
+    "p_stop": 69.26196269261963,
+    "median_hari": 15,
+    "q1": 7,
+    "q3": 30,
+    "harapan": 1.0012534100125339
    }
   }
  ],
@@ -154,7 +115,10 @@
   "subsektor": "Jasa Pembiayaan",
   "subindustri": "Pembiayaan Konsumen",
   "papan": "Utama",
-  "tercatat": "1990-05-16"
+  "tercatat": "1990-05-16",
+  "sektor_en": "Financials",
+  "subsektor_en": "Financing Service",
+  "subindustri_en": "Consumer Financing"
  },
  "fundamental": {
   "name": "PT BFI Finance Indonesia Tbk",
@@ -183,68 +147,68 @@
    "frekuensi": "kali"
   },
   "mulai": "2020-01-02",
-  "akhir": "2026-08-24",
-  "n_total": 1597,
+  "akhir": "2026-08-26",
+  "n_total": 1598,
   "periode": {
    "5": {
     "n": 5,
-    "beli": 26328900,
-    "jual": 28608100,
-    "net": -2279200,
-    "porsi_beli_pct": 20.69446060106833,
-    "porsi_jual_pct": 22.485907057318112
+    "beli": 29554500,
+    "jual": 26457300,
+    "net": 3097200,
+    "porsi_beli_pct": 21.674148181665508,
+    "porsi_jual_pct": 19.402779295429763
    },
    "20": {
     "n": 20,
-    "beli": 215524600,
-    "jual": 237671200,
-    "net": -22146600,
-    "porsi_beli_pct": 33.21636240817803,
-    "porsi_jual_pct": 36.629566709259926
+    "beli": 220560800,
+    "jual": 235473900,
+    "net": -14913100,
+    "porsi_beli_pct": 33.51026840782894,
+    "porsi_jual_pct": 35.77604720348435
    }
   }
  },
- "ma5": 894.0,
- "ma100": 773.9,
- "ma150": 758.3,
+ "ma5": 884.0,
+ "ma100": 775.6,
+ "ma150": 759.4666666666667,
  "bb20": {
-  "mid": 893.5,
-  "atas": 966.1704891960967,
-  "bawah": 820.8295108039033
+  "mid": 898.5,
+  "atas": 949.8906606301184,
+  "bawah": 847.1093393698816
  },
- "posisi_bb": -0.461,
+ "posisi_bb": -0.36,
  "ichimoku": {
-  "tenkan": 892.5,
+  "tenkan": 885.0,
   "kijun": 855.0,
-  "senkou_a": 873.75,
-  "senkou_b": 792.5,
+  "senkou_a": 870.0,
+  "senkou_b": 805.0,
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 4.935676576826896,
-  "tengah": 927.3524590163934,
-  "posisi": -1.9196
+  "kemiringan": 4.9666574048346765,
+  "tengah": 931.1830601092895,
+  "posisi": -1.4817
  },
- "freq": 4255,
- "ukuran_order": 49.9763,
- "peringkat_value": 110,
- "peringkat_volume": 174,
- "peringkat_freq": 115,
- "porsi_asing": 0.2294,
- "net_asing_rp": -2980384000,
- "label_fd": "F 23% : D 77%",
- "tiket_avg": 4384235.14,
- "tiket_avg_med60": 6952781.92,
- "tiket_lonjakan": 0.6306,
- "asing_net_5h": -1546617500,
- "asing_net_20h": -23444151500,
- "asing_streak": -1,
- "tiket_broker_maks": 177000000.0,
- "broker_tiket_maks_kode": "SH",
- "bval_maks": 10947371000.0,
- "nego_blok_rp": 0.0,
+ "freq": 3513,
+ "ukuran_order": 71.3555,
+ "peringkat_value": 112,
+ "peringkat_volume": 182,
+ "peringkat_freq": 155,
+ "porsi_asing": 0.2795,
+ "net_asing_rp": 3761716000,
+ "label_fd": "F 28% : D 72%",
+ "tiket_avg": 6183085.97,
+ "tiket_avg_med60": 6889808.4,
+ "tiket_lonjakan": 0.8974,
+ "asing_net_5h": 2725857500,
+ "asing_net_20h": -14397312500,
+ "asing_streak": 2,
+ "tiket_broker_maks": null,
+ "broker_tiket_maks_kode": null,
+ "bval_maks": null,
+ "nego_blok_rp": null,
  "nego_broker_maks_kode": null,
- "top3_pct": 123.93,
- "number_broker_buysell": 8,
- "label_accdist": "Dist"
+ "top3_pct": null,
+ "number_broker_buysell": null,
+ "label_accdist": null
 }

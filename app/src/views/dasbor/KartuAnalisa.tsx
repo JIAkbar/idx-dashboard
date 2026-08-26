@@ -184,7 +184,7 @@ function KartuSatuEmiten({ kode }: { kode: string }) {
         <div>
           <a className="tick kta-tik" href={`/grafik?kode=${kode}`}>{kode}</a>
           <span className="kta-nama">
-            {nama ?? s.nama ?? kode} · {[s.sektor, s.subindustri].filter(Boolean).join(' / ')}
+            {nama ?? s.nama ?? kode} · {[s.sektor_en ?? s.sektor, s.subindustri_en ?? s.subindustri].filter(Boolean).join(' / ')}
             {' · Papan '}{s.papan ?? '—'}{s.papan === 'Pemantauan Khusus' ? ' ⚠' : ''}
             {s.tercatat ? ` · tercatat ${s.tercatat}` : ''}
           </span>
@@ -452,7 +452,7 @@ function KartuRingkasSatuEmiten({ kode }: { kode: string }) {
         )}
 
         <div className="kta-chip-baris">
-          {s.sektor && <span className="chip-t">{s.sektor}</span>}
+          {s.sektor && <span className="chip-t">{s.sektor_en ?? s.sektor}</span>}
           {k.er_persentil != null && k.er_n_populasi != null && (
             <span className="chip-t" style={redupStyle}>Karakter: persentil {Math.round(k.er_persentil)} dari {k.er_n_populasi}</span>
           )}

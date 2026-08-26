@@ -683,7 +683,10 @@ def setema(tk, tgl, disebut, ambang=3.0):
     sek = json.loads(p.read_text(encoding="utf-8"))["emiten"] if p.exists() else {}
     info = sek.get(tk) or {}
     kand = {k: "disebut bersama pada katalis di halaman ini" for k in disebut if k != tk}
-    sub = info.get("subindustri")
+    # Nilai klasifikasi memakai nama RESMI Inggris IDX (keputusan Johan
+    # 27 Agu — berlaku untuk NILAI di seluruh produk, termasuk terbitan PDF;
+    # kalimatnya sendiri tetap Bahasa Indonesia). _en kosong -> jatuh ke ID.
+    sub = info.get("subindustri_en") or info.get("subindustri")
     if sub:
         for k, v in sek.items():
             if k != tk and v.get("subindustri") == sub:
