@@ -17,7 +17,11 @@ function nilaiPerTanggal(kand: string[], bars: Map<string, BarHarga[]>): Map<str
 export function ActivityTab() {
   const { theme } = useTheme()
   const [uni, setUni] = useState<UniverseSektor | null | undefined>(undefined)
-  const [jenis, setJenis] = useState<'sektor' | 'indeks'>('sektor')
+  // Mode Index DIHILANGKAN (PENAJAMAN2 §5): nol deret indeks & nol daftar
+  // konstituen di arsip. Penggantinya mode PAPAN pencatatan — lonjakan
+  // aktivitas papan Pemantauan Khusus adalah sinyal risiko yang tak
+  // ditampilkan pesaing mana pun.
+  const [jenis, setJenis] = useState<'sektor' | 'papan'>('sektor')
 
   useEffect(() => {
     let batal = false
@@ -34,10 +38,7 @@ export function ActivityTab() {
 
   const grup = useMemo(() => {
     if (!uni) return {} as Record<string, string[]>
-    if (jenis === 'sektor') return uni.perSektor
-    const g: Record<string, string[]> = {}
-    for (const [kode, idxs] of uni.indeks) for (const ix of idxs) (g[ix] ??= []).push(kode)
-    return g
+    return jenis === 'sektor' ? uni.perSektor : uni.perPapan
   }, [uni, jenis])
 
   const seri = useMemo(() => {
@@ -52,15 +53,21 @@ export function ActivityTab() {
     })
   }, [uni, grup, kalender])
 
+  // Hook QA dev-only (pola __papanChart): uji terima PENAJAMAN2 §Kriteria-2
+  // menghitung ulang nilai Activity dari berkas mentah — butuh daftar anggota
+  // grup & sampel penyebutnya.
+  useEffect(() => {
+    if (import.meta.env.DEV && uni) {
+      ;(window as Window & { __papanActivity?: unknown }).__papanActivity = {
+        grup, kalender, sampel: [...uni.bars.keys()],
+        seri: seri?.map((s) => ({ nama: s.nama, akhir: s.share[s.share.length - 1] })),
+      }
+    }
+  }, [uni, grup, kalender, seri])
+
   const config = useMemo<ChartConfiguration<'line'> | null>(() => {
     if (!seri) return null
     const abu = bacaTokenTema('--text2')
-    // Mode Indeks punya 40-an seri — digambar semua = benang kusut (Johan
-    // 26 Agu). Bawaan: hanya 8 berporsi-terakhir terbesar yang tampil;
-    // sisanya tersembunyi dan bisa dinyalakan dari legenda.
-    const akhir = (s: { share: number[] }) => s.share[s.share.length - 1] ?? 0
-    const peringkat = [...seri].sort((a, b) => akhir(b) - akhir(a)).map((s) => s.nama)
-    const tampilkan = new Set(peringkat.slice(0, 8))
     return {
       type: 'line',
       data: {
@@ -69,7 +76,6 @@ export function ActivityTab() {
           label: s.nama, data: s.share.map((v) => v * 100),
           borderColor: bacaTokenTema(TOKEN_SERI[i % TOKEN_SERI.length]),
           borderWidth: 1.5, pointRadius: 0, tension: 0.15,
-          hidden: jenis === 'indeks' && !tampilkan.has(s.nama),
         })),
       },
       options: {
@@ -82,7 +88,7 @@ export function ActivityTab() {
         },
       },
     }
-  }, [seri, kalender, theme, jenis])
+  }, [seri, kalender, theme])
   const ref = useChartCanvas(config)
 
   if (uni === undefined) return <Kosong>Memuat sampel…</Kosong>
@@ -90,14 +96,15 @@ export function ActivityTab() {
 
   return (
     <section className="panel panel-b">
-      <h2>{jenis === 'sektor' ? 'Sector' : 'Index'} Activity</h2>
+      <h2>{jenis === 'sektor' ? 'Sector' : 'Papan'} Activity</h2>
       <p className="np-sub">Porsi nilai transaksi kelompok terhadap sampel, rata-rata bergerak 20 hari bursa.</p>
       <div className="np-baris">
         <button type="button" className={'chip-t' + (jenis === 'sektor' ? ' on' : '')} onClick={() => setJenis('sektor')}>Sektor IDX-IC</button>
-        <button type="button" className={'chip-t' + (jenis === 'indeks' ? ' on' : '')} onClick={() => setJenis('indeks')}>Indeks</button>
-        {jenis === 'indeks' && (
+        <button type="button" className={'chip-t' + (jenis === 'papan' ? ' on' : '')} onClick={() => setJenis('papan')}>Papan pencatatan</button>
+        {jenis === 'papan' && uni && (
           <span className="muted" style={{ fontSize: 11 }}>
-            8 indeks berporsi terbesar yang tampil — klik legenda untuk menambah/mengurangi
+            sampel {uni.perPapanJumlah} emiten terlikuid per papan · anggota sebenarnya:{' '}
+            {Object.entries(uni.papanJumlah).sort((a, b) => b[1] - a[1]).map(([p, n]) => `${p} ${n}`).join(' · ')}
           </span>
         )}
       </div>
@@ -107,7 +114,7 @@ export function ActivityTab() {
         (yang sama dipakai Rotation Chart, {uni.perSektorJumlah} per sektor) — bukan terhadap seluruh nilai
         transaksi pasar, karena itu butuh riwayat harga seluruh emiten yang tidak diunduh di peramban.
       </div>
-      <Sumber>Nilai transaksi harian sampel emiten dari arsip harga Stockbit, dikelompokkan per sektor IDX-IC atau keanggotaan indeks.</Sumber>
+      <Sumber>Nilai transaksi harian sampel emiten dari arsip harga Stockbit, dikelompokkan per sektor IDX-IC atau papan pencatatan. Mode Indeks tidak disediakan: deret indeks dan daftar konstituennya tidak ada di arsip — menebak keanggotaan menghasilkan angka salah diam-diam.</Sumber>
     </section>
   )
 }

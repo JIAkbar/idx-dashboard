@@ -21,9 +21,17 @@ export interface UniverseSektor {
   bars: Map<string, BarHarga[]>
   indeks: Map<string, string[]>
   perSektorJumlah: number
+  /** Sampel emiten per PAPAN pencatatan (PENAJAMAN2 §5 — mode Papan
+   *  menggantikan mode Index yang datanya tak dimiliki). */
+  perPapan: Record<string, string[]>
+  /** Jumlah anggota SEBENARNYA tiap papan (bukan sampel) — wajib tampil
+   *  supaya "sampel 10 dari 154" terbaca, bukan mengaku seluruh papan. */
+  papanJumlah: Record<string, number>
+  perPapanJumlah: number
 }
 
 const PER_SEKTOR = 8
+const PER_PAPAN = 10
 
 let cache: Promise<UniverseSektor | null> | null = null
 
@@ -36,13 +44,33 @@ export function muatUniverseSektor(segar = false): Promise<UniverseSektor | null
       if (!scr) return null
       const baris = scr.emiten.map((e) => ({ kode: e.kode, sektor: e.sektor, nilai: e.nilai }))
       const perSektor = pilihKandidatSektor(baris, PER_SEKTOR)
-      const semua = [...new Set(Object.values(perSektor).flat())]
+      // Papan pencatatan dari emiten_sektor.json (IDX resmi) — screener tak
+      // membawanya. Sampel per papan = PER_PAPAN terlikuid; jumlah anggota
+      // aslinya ikut disimpan untuk kejujuran cakupan.
+      const perPapan: Record<string, string[]> = {}
+      const papanJumlah: Record<string, number> = {}
+      try {
+        const r = await fetch('/data-idx/json/emiten_sektor.json')
+        if (r.ok) {
+          const js = (await r.json()) as { emiten?: Record<string, { papan?: string }> }
+          const papanDari = new Map(Object.entries(js.emiten ?? {}).map(([k, v]) => [k, v?.papan ?? '']))
+          for (const p of papanDari.values()) if (p) papanJumlah[p] = (papanJumlah[p] ?? 0) + 1
+          const urut = [...baris].filter((b) => b.nilai != null).sort((a, b) => (b.nilai ?? 0) - (a.nilai ?? 0))
+          for (const b of urut) {
+            const p = papanDari.get(b.kode)
+            if (!p) continue
+            const isi = (perPapan[p] ??= [])
+            if (isi.length < PER_PAPAN) isi.push(b.kode)
+          }
+        }
+      } catch { /* tanpa papan — mode Papan tak tampil, bukan gagal total */ }
+      const semua = [...new Set([...Object.values(perSektor).flat(), ...Object.values(perPapan).flat()])]
       const barsArr = await Promise.all(semua.map(async (k) => [k, await muatOhlcv(k)] as const))
       const bars = new Map<string, BarHarga[]>()
       for (const [k, b] of barsArr) if (b) bars.set(k, b)
       const idxArr = await Promise.all(semua.map(async (k) => [k, await muatIndeksEmiten(k)] as const))
       const indeks = new Map(idxArr)
-      return { perSektor, bars, indeks, perSektorJumlah: PER_SEKTOR }
+      return { perSektor, bars, indeks, perSektorJumlah: PER_SEKTOR, perPapan, papanJumlah, perPapanJumlah: PER_PAPAN }
     })()
   }
   return cache
