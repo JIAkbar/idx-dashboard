@@ -62,9 +62,9 @@ import {
 } from '../../components/dasbor/IkonMenu'
 import { GarisAvgBroker } from '../../lib/dasbor/garisAvgBroker'
 import { PitaCpr } from '../../lib/dasbor/pitaCprChart'
-import { BubbleBroker, type BubbleHari } from '../../lib/dasbor/bubbleBroker'
+import { BubbleBroker, bubbleOutlierHarian } from '../../lib/dasbor/bubbleBroker'
 import { hitungCpr, hitungPivot } from '../../lib/dasbor/chartAnalitik'
-import { agregatBroker, hargaRata, muatRentang } from '../../lib/dasbor/brokerEmiten'
+import { agregatBroker, muatRentang } from '../../lib/dasbor/brokerEmiten'
 import { warnaBrokerCanvas } from '../../lib/dasbor/kelompokBroker'
 import { useTheme } from '../../context/ThemeContext'
 import { useOhlcvKaya } from '../../lib/dasbor/ohlcvKaya'
@@ -1384,31 +1384,7 @@ export function GrafikEmiten() {
     muatRentang(kode, dari, sampai)
       .then((hari) => {
         if (batal) return
-        const kandidat: BubbleHari[] = []
-        for (const [tgl, h] of hari) {
-          const net = h.broker.map((r) => r[2] - r[4])
-          if (net.length < 5) continue
-          const abs = net.map(Math.abs)
-          const rata = abs.reduce((s, v) => s + v, 0) / abs.length
-          const ragam = abs.reduce((s, v) => s + (v - rata) ** 2, 0) / abs.length
-          const dev = Math.sqrt(ragam)
-          if (!dev) continue
-          const outlier = h.broker
-            .map((r, i) => ({ r, net: net[i], z: (abs[i] - rata) / dev }))
-            .filter((o) => o.z >= 2)
-            .sort((a, b) => Math.abs(b.net) - Math.abs(a.net))
-            .slice(0, 3)
-          for (const o of outlier) {
-            const harga = o.net >= 0 ? hargaRata(o.r[2], o.r[1]) : hargaRata(o.r[4], o.r[3])
-            if (harga === null) continue
-            kandidat.push({ waktu: tgl, harga, broker: o.r[0], netNilai: o.net, radius: 0 })
-          }
-        }
-        const maks = Math.max(1, ...kandidat.map((k) => Math.abs(k.netNilai)))
-        for (const k of kandidat) {
-          k.radius = Math.min(14, Math.max(3, 14 * Math.sqrt(Math.abs(k.netNilai) / maks)))
-        }
-        prim.setData(kandidat)
+        prim.setData(bubbleOutlierHarian(hari.map(([tanggal, h]) => ({ tanggal, broker: h.broker }))))
       })
       .catch(() => { if (!batal) prim.setData([]) })
     return () => { batal = true }

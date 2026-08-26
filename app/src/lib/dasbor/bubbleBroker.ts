@@ -33,6 +33,59 @@ const WARNA_BELI = 'rgba(48, 164, 108, 0.72)'
 const WARNA_JUAL = 'rgba(229, 72, 77, 0.72)'
 const FONT_PX = 9
 
+/** Bentuk hari yang dibutuhkan penghitung outlier — dipenuhi `HariBroker`
+ *  milik `brokerEmiten.ts` maupun `whalesPapan.ts` (baris broker keduanya
+ *  `[kode, beli_lot, beli_nilai, jual_lot, jual_nilai]`). */
+export interface HariBrokerRingan {
+  tanggal: string
+  broker: ReadonlyArray<readonly [string, number, number, number, number]>
+}
+
+/**
+ * Outlier HARIAN: per hari, |net nilai| tiap broker dibanding sebaran seluruh
+ * broker hari itu — |z| ≥ `ambang` masuk, maksimal `maksPerHari` bubble per
+ * hari (yang terbesar) supaya hari ramai tak jadi kabut lingkaran. Radius ∝
+ * √|net| relatif ke outlier terbesar rentang, clamp `rMin`..`rMax` px media.
+ * Harga bubble = rata-rata tertimbang sisi DOMINAN broker itu hari itu.
+ *
+ * SATU sumber untuk GrafikEmiten (P2) dan Whales Papan (W3) — ambangnya saja
+ * yang beda (P2 tetap 2; W3 slider 1–4, bawaan 2,5 ala whales.id).
+ */
+export function bubbleOutlierHarian(
+  hari: HariBrokerRingan[],
+  ambang = 2,
+  maksPerHari = 3,
+  rMin = 3,
+  rMax = 14,
+): BubbleHari[] {
+  const kandidat: BubbleHari[] = []
+  for (const h of hari) {
+    const net = h.broker.map((r) => r[2] - r[4])
+    if (net.length < 5) continue
+    const abs = net.map(Math.abs)
+    const rata = abs.reduce((s, v) => s + v, 0) / abs.length
+    const ragam = abs.reduce((s, v) => s + (v - rata) ** 2, 0) / abs.length
+    const dev = Math.sqrt(ragam)
+    if (!dev) continue
+    const outlier = h.broker
+      .map((r, i) => ({ r, net: net[i], z: (abs[i] - rata) / dev }))
+      .filter((o) => o.z >= ambang)
+      .sort((a, b) => Math.abs(b.net) - Math.abs(a.net))
+      .slice(0, maksPerHari)
+    for (const o of outlier) {
+      const lot = o.net >= 0 ? o.r[1] : o.r[3]
+      const nilai = o.net >= 0 ? o.r[2] : o.r[4]
+      if (!lot) continue
+      kandidat.push({ waktu: h.tanggal, harga: nilai / (lot * 100), broker: o.r[0], netNilai: o.net, radius: 0 })
+    }
+  }
+  const maks = Math.max(1, ...kandidat.map((k) => Math.abs(k.netNilai)))
+  for (const k of kandidat) {
+    k.radius = Math.min(rMax, Math.max(rMin, rMax * Math.sqrt(Math.abs(k.netNilai) / maks)))
+  }
+  return kandidat
+}
+
 export class BubbleBroker implements IPanePrimitive<Time> {
   private ambilSeri: () => ISeriesApi<SeriesType> | null
   private chart: IChartApiBase<Time> | null = null

@@ -45,6 +45,19 @@
   height: clamp(320px, 42vw, 560px);
 }
 
+/* Slider ambang z bubble — muncul hanya saat toggle Bubble nyala. */
+.wp-z {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.wp-z input[type='range'] {
+  width: 90px;
+  accent-color: var(--accent);
+}
+
 /* Lapisan penangkap seret saat mode "Pilih area" — menutup chart supaya
    seretnya jadi seleksi, bukan pan. Muncul hanya selama modenya aktif. */
 .wp-overlay {

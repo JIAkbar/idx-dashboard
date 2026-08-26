@@ -14,8 +14,10 @@ import { warnaBrokerCanvas } from '../../lib/dasbor/kelompokBroker'
 import { useTheme } from '../../context/ThemeContext'
 import { SeleksiAreaChart } from '../../lib/dasbor/seleksiAreaChart'
 import { GarisAvgBroker } from '../../lib/dasbor/garisAvgBroker'
+import { BubbleBroker, bubbleOutlierHarian } from '../../lib/dasbor/bubbleBroker'
+import { ProfilHargaChart } from '../../lib/dasbor/profilHargaChart'
 import {
-  agregatArea, saringSignifikan,
+  agregatArea, profilHarga, saringSignifikan,
   type RingkasBroker, type SeleksiArea,
 } from '../../lib/dasbor/whalesPapan'
 import './WhalesPapan.css'
@@ -109,6 +111,10 @@ export default function WhalesPapan() {
   const [modeSeleksi, setModeSeleksi] = useState(false)
   const [candle, setCandle] = useState<DataCandle>({ lilin: [], volume: [] })
   const [avgAktif, setAvgAktif] = useState(true)
+  const [profilAktif, setProfilAktif] = useState(true)
+  const [bubbleAktif, setBubbleAktif] = useState(false)
+  /** Ambang z-score bubble outlier — slider 1–4, bawaan 2,5 (ala whales.id). */
+  const [ambangZ, setAmbangZ] = useState(2.5)
   // Empat kuadran, empat batas "tampilkan lagi" — memperluas satu tak boleh
   // ikut memperluas yang lain, keduanya baris broker tapi peringkat berbeda.
   const [batasGrossBeli, setBatasGrossBeli] = useState(PANEL_AWAL)
@@ -125,6 +131,8 @@ export default function WhalesPapan() {
   const volRef = useRef<ISeriesApi<SeriesType> | null>(null)
   const seleksiRef = useRef<SeleksiAreaChart | null>(null)
   const avgRef = useRef<GarisAvgBroker | null>(null)
+  const profilRef = useRef<ProfilHargaChart | null>(null)
+  const bubbleRef = useRef<BubbleBroker | null>(null)
   const seretRef = useRef<{ x0: number; y0: number } | null>(null)
 
   const resetBatas = () => {
@@ -192,6 +200,12 @@ export default function WhalesPapan() {
       const avg = new GarisAvgBroker(() => lilinRef.current)
       pane0.attachPrimitive(avg)
       avgRef.current = avg
+      const profil = new ProfilHargaChart(() => lilinRef.current)
+      pane0.attachPrimitive(profil)
+      profilRef.current = profil
+      const bubble = new BubbleBroker(() => lilinRef.current)
+      pane0.attachPrimitive(bubble)
+      bubbleRef.current = bubble
     }
     if (import.meta.env.DEV) (el as HTMLDivElement & { __papanChart?: unknown }).__papanChart = chart
     return () => {
@@ -201,6 +215,8 @@ export default function WhalesPapan() {
       volRef.current = null
       seleksiRef.current = null
       avgRef.current = null
+      profilRef.current = null
+      bubbleRef.current = null
     }
   }, [])
 
@@ -269,6 +285,18 @@ export default function WhalesPapan() {
         })),
     )
   }, [avgAktif, hari, sel])
+
+  // W4 — profil harga (lot per pita dari broker harian), lapisan bawah candle.
+  useEffect(() => {
+    profilRef.current?.setData(profilAktif ? profilHarga(hari, 28) : [])
+  }, [profilAktif, hari])
+
+  // W3 — bubble broker outlier harian, ambang z dari slider.
+  useEffect(() => {
+    const prim = bubbleRef.current
+    if (!prim) return
+    prim.setData(bubbleAktif ? bubbleOutlierHarian(hari, ambangZ) : [])
+  }, [bubbleAktif, ambangZ, hari])
 
   // ── seret memilih (hanya saat mode seleksi aktif) ────────────────────────
   const keNilai = (x: number, y: number): { t: string; harga: number } | null => {
@@ -421,6 +449,38 @@ export default function WhalesPapan() {
         >
           Garis AVG
         </button>
+        <button
+          type="button"
+          className={`chip-t${profilAktif ? ' on' : ''}`}
+          aria-pressed={profilAktif}
+          title="Bar lot per pita harga di tepi kanan plot — dari broker harian"
+          onClick={() => setProfilAktif((v) => !v)}
+        >
+          Profil
+        </button>
+        <button
+          type="button"
+          className={`chip-t${bubbleAktif ? ' on' : ''}`}
+          aria-pressed={bubbleAktif}
+          title="Lingkaran broker yang net-nya menyimpang dari pasar hari itu; ambangnya disetel slider z"
+          onClick={() => setBubbleAktif((v) => !v)}
+        >
+          Bubble
+        </button>
+        {bubbleAktif && (
+          <label className="wp-z muted">
+            z ≥ {ambangZ.toFixed(1)}
+            <input
+              type="range"
+              min={1}
+              max={4}
+              step={0.5}
+              value={ambangZ}
+              onChange={(e) => setAmbangZ(Number(e.target.value))}
+              aria-label="Ambang z-score bubble outlier"
+            />
+          </label>
+        )}
         {sel && (
           <button type="button" className="btn-p wp-sisa" onClick={() => setSel(null)}>
             Hapus seleksi
