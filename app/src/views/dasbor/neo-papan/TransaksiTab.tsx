@@ -64,7 +64,7 @@ export function TransaksiTab({ kode, rentang }: { kode: string; rentang: Rentang
     s.lilin = chart.addSeries(CandlestickSeries)
     s.lilin.priceScale().applyOptions({ scaleMargins: { top: 0.05, bottom: 0.3 } })
     s.ihsg = chart.addSeries(LineSeries, {
-      priceScaleId: 'left', color: '#5B94E8', lineWidth: 1, priceLineVisible: false, title: 'IHSG=100',
+      priceScaleId: 'left', color: '#5B94E8', lineWidth: 1, priceLineVisible: false, title: 'IHSG (basis 100)',
     })
     s.vol = chart.addSeries(HistogramSeries, { priceFormat: { type: 'volume' }, priceScaleId: 'vol' })
     s.vol.priceScale().applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } })

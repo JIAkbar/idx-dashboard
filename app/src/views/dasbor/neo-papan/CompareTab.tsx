@@ -251,6 +251,17 @@ export function CompareTab({ kode }: { kode: string }) {
     if (Math.abs(x.netA) < AMBANG_BASIS) {
       return <span title={`Basis kiri terlalu kecil (|Net A| < Rp ${(AMBANG_BASIS / 1e6).toFixed(0)} jt) — persentasenya benar aritmetika tapi tak bermakna`}>≫</span>
     }
+    // A dan B BERLAWANAN TANDA → persentase tak bermakna meski basisnya besar
+    // (PENAJAMAN3): broker berbalik dari melepas jadi menampung (atau
+    // sebaliknya) — itu justru informasi terpentingnya, bukan "−250%".
+    if (x.netA * x.netB < 0) {
+      return (
+        <span className={x.netB >= 0 ? 'up' : 'dn'}
+          title="Berlawanan tanda antara periode A dan B — persentase perubahan tak bermakna; baca nilai absolutnya">
+          {x.netB >= 0 ? '↺ balik akumulasi' : '↺ balik distribusi'}
+        </span>
+      )
+    }
     const p = ((x.netB - x.netA) / Math.abs(x.netA)) * 100
     return <span className={p >= 0 ? 'up' : 'dn'}>{p >= 0 ? '+' : ''}{num(p, 1)}%</span>
   }

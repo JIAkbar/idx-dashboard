@@ -8,7 +8,9 @@ import { num, pct, Kosong, Sumber } from './bersama'
 
 const HARI = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']
 const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
-const OPSI_TAHUN = [3, 5, 9, 12]
+/** Arsip harga nyatanya 20-30 tahun untuk emiten lama (koreksi pengawas 26
+ *  Agu: IHSG 1997, BBCA/TLKM 2004) — 15/20 bukan angan-angan. */
+const OPSI_TAHUN = [3, 5, 9, 12, 15, 20]
 /** Di bawah ini sel dianggap sampel kecil (spek §7) — ditandai, bukan diwarnai pekat. */
 const N_KECIL = 20
 

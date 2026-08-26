@@ -38,8 +38,37 @@ export function ActivityTab() {
 
   const grup = useMemo(() => {
     if (!uni) return {} as Record<string, string[]>
-    return jenis === 'sektor' ? uni.perSektor : uni.perPapan
+    if (jenis === 'sektor') return uni.perSektor
+    // "Ekonomi Baru" = SATU emiten berjubah nama papan (PENAJAMAN3) — garis
+    // kelompok dari satu saham menyesatkan; dibuang dari mode Papan.
+    const g: Record<string, string[]> = {}
+    for (const [p, isi] of Object.entries(uni.perPapan)) {
+      if ((uni.papanJumlah[p] ?? isi.length) > 1) g[p] = isi
+    }
+    return g
   }, [uni, jenis])
+
+  /** Statistik kejujuran per grup di jendela tampil: n AKTIF (anggota sampel
+   *  yang benar-benar bertransaksi) + porsi top-1 (konsentrasi). */
+  const statGrup = useMemo(() => {
+    if (!uni || !kalender.length) return {} as Record<string, { aktif: number; top1: number; top1Kode: string }>
+    const keluar: Record<string, { aktif: number; top1: number; top1Kode: string }> = {}
+    const kalSet = new Set(kalender)
+    for (const [g, anggota] of Object.entries(grup)) {
+      let total = 0
+      let maks = 0
+      let maksKode = ''
+      let aktif = 0
+      for (const k of anggota) {
+        const jml = (uni.bars.get(k) ?? []).reduce((a, b) => (kalSet.has(b.t) ? a + b.val : a), 0)
+        if (jml > 0) aktif++
+        total += jml
+        if (jml > maks) { maks = jml; maksKode = k }
+      }
+      keluar[g] = { aktif, top1: total ? maks / total : 0, top1Kode: maksKode }
+    }
+    return keluar
+  }, [uni, grup, kalender])
 
   const seri = useMemo(() => {
     if (!uni || !kalender.length) return null
@@ -72,16 +101,47 @@ export function ActivityTab() {
       type: 'line',
       data: {
         labels: kalender,
-        datasets: seri.map((s, i) => ({
-          label: s.nama, data: s.share.map((v) => v * 100),
-          borderColor: bacaTokenTema(TOKEN_SERI[i % TOKEN_SERI.length]),
-          borderWidth: 1.5, pointRadius: 0, tension: 0.15,
-        })),
+        datasets: seri.map((s, i) => {
+          const st = statGrup[s.nama]
+          // Legenda jujur (PENAJAMAN3): n AKTIF (bukan terdaftar) + ⚠ bila
+          // satu emiten menyumbang >30% nilai kelompok.
+          const label = st
+            ? `${s.nama} (n=${st.aktif}${st.top1 > 0.3 ? ' ⚠' : ''})`
+            : s.nama
+          return {
+            label, data: s.share.map((v) => v * 100),
+            borderColor: bacaTokenTema(TOKEN_SERI[i % TOKEN_SERI.length]),
+            borderWidth: 1.5, pointRadius: 0, tension: 0.15,
+          }
+        }),
       },
       options: {
         responsive: true, maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { position: 'bottom', labels: { color: abu, boxWidth: 10, font: { size: 9 } } } },
+        plugins: {
+          legend: { position: 'bottom', labels: { color: abu, boxWidth: 10, font: { size: 9 } } },
+          tooltip: {
+            callbacks: {
+              // Konsentrasi dibuka, bukan disembunyikan (PENAJAMAN3): garis
+              // "Keuangan" praktis tiga bank besar — top-3 kontributor +
+              // porsinya tampil di tooltip tanggal yang di-hover.
+              afterLabel: (c) => {
+                if (!uni) return ''
+                const nama = Object.keys(grup).filter((g) => g && g !== '-').sort()[c.datasetIndex]
+                const anggota = grup[nama] ?? []
+                const t = kalender[c.dataIndex]
+                const nilai = anggota
+                  .map((k) => ({ k, v: (uni.bars.get(k) ?? []).find((b) => b.t === t)?.val ?? 0 }))
+                  .sort((a, b) => b.v - a.v)
+                const total = nilai.reduce((a, x) => a + x.v, 0)
+                if (!total) return ''
+                return 'top-3: ' + nilai.slice(0, 3)
+                  .map((x) => `${x.k} ${((x.v / total) * 100).toFixed(0)}%`)
+                  .join(' · ')
+              },
+            },
+          },
+        },
         scales: {
           x: { ticks: { color: abu, maxTicksLimit: 10 }, grid: { display: false } },
           y: { min: 0, ticks: { color: abu, callback: (v) => v + '%' }, grid: { color: 'rgba(128,128,128,.1)' } },
