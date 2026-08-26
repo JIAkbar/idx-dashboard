@@ -58,10 +58,13 @@ import {
   IkonMenu, IKON_CARI, IKON_SILANG, IKON_INFO, IKON_TONG, IKON_MATA,
   IKON_MATA_CORET, IKON_GIR, IKON_LILIN, IKON_GRAFIK_NAIK, IKON_KAMERA,
   IKON_ULANG, IKON_PUTAR, IKON_JEDA, IKON_KOTAK_ARSIP, IKON_PANAH_ATAS, IKON_PANAH_BAWAH,
-  IKON_GARIS_AVG,
+  IKON_GARIS_AVG, IKON_PITA_CPR, IKON_BUBBLE,
 } from '../../components/dasbor/IkonMenu'
 import { GarisAvgBroker } from '../../lib/dasbor/garisAvgBroker'
-import { agregatBroker, muatRentang } from '../../lib/dasbor/brokerEmiten'
+import { PitaCpr } from '../../lib/dasbor/pitaCprChart'
+import { BubbleBroker, type BubbleHari } from '../../lib/dasbor/bubbleBroker'
+import { hitungCpr, hitungPivot } from '../../lib/dasbor/chartAnalitik'
+import { agregatBroker, hargaRata, muatRentang } from '../../lib/dasbor/brokerEmiten'
 import { warnaBrokerCanvas } from '../../lib/dasbor/kelompokBroker'
 import { useTheme } from '../../context/ThemeContext'
 import { useOhlcvKaya } from '../../lib/dasbor/ohlcvKaya'
@@ -609,6 +612,12 @@ export function GrafikEmiten() {
    *  mati bawaan: memuat berkas broker tahunan hanya saat diminta. */
   const [avgBroker, setAvgBroker] = useState(false)
   const avgBrokerRef = useRef<GarisAvgBroker | null>(null)
+  /** Overlay pita CPR + level Pivot (primitive P3) — hanya kerangka harian. */
+  const [cprAktif, setCprAktif] = useState(false)
+  const pitaCprRef = useRef<PitaCpr | null>(null)
+  /** Overlay bubble broker outlier harian (primitive P2). */
+  const [bubbleAktif, setBubbleAktif] = useState(false)
+  const bubbleRef = useRef<BubbleBroker | null>(null)
 
   /* ---------------- Compare symbols (#187) ---------------- */
 
@@ -1043,6 +1052,12 @@ export function GrafikEmiten() {
       const prim = new GarisAvgBroker(() => hargaRef.current)
       pane0.attachPrimitive(prim)
       avgBrokerRef.current = prim
+      const pita = new PitaCpr(() => hargaRef.current)
+      pane0.attachPrimitive(pita)
+      pitaCprRef.current = pita
+      const bubble = new BubbleBroker(() => hargaRef.current)
+      pane0.attachPrimitive(bubble)
+      bubbleRef.current = bubble
     }
     // Hook QA dev-only — verifikasi zoom/geser butuh rentang waktu yang
     // TERLIHAT (bukan cuma data yang di-setData), dan lightweight-charts
@@ -1095,6 +1110,8 @@ export function GrafikEmiten() {
       chart.remove()
       chartRef.current = null
       avgBrokerRef.current = null
+      pitaCprRef.current = null
+      bubbleRef.current = null
       hargaRef.current = null
       volRef.current = null
       penandaRef.current = null
@@ -1332,6 +1349,70 @@ export function GrafikEmiten() {
       .catch(() => { if (!batal) prim.setGaris([]) })
     return () => { batal = true }
   }, [avgBroker, kode, penuh.lilin, awalRentang])
+
+  /**
+   * Data primitive pita CPR + Pivot: dihitung dari bar HARIAN terakhir yang
+   * tutup (konvensi chartAnalitik §4.1–4.2), jadi level untuk sesi
+   * berikutnya. Hanya kerangka harian — di W/M rumus hariannya menyesatkan,
+   * di intraday butuh bar harian yang tak sedang dirender.
+   */
+  useEffect(() => {
+    const prim = pitaCprRef.current
+    if (!prim) return
+    if (!cprAktif || kerangka !== 'D' || penuh.lilin.length === 0) { prim.setData(null); return }
+    const t = penuh.lilin[penuh.lilin.length - 1]
+    prim.setData({
+      pivot: hitungPivot(t.high, t.low, t.close),
+      cpr: hitungCpr(t.high, t.low, t.close),
+    })
+  }, [cprAktif, kerangka, penuh.lilin])
+
+  /**
+   * Data primitive bubble outlier: per HARI, net nilai tiap broker dibanding
+   * sebaran seluruh broker hari itu — |z| ≥ 2 masuk, maksimal 3 bubble per
+   * hari (yang terbesar), supaya hari ramai tak jadi kabut lingkaran.
+   * Radius ∝ √|net| relatif ke outlier terbesar rentang, clamp 3–14 px.
+   * Harga bubble = rata-rata tertimbang sisi DOMINAN broker itu hari itu.
+   */
+  useEffect(() => {
+    const prim = bubbleRef.current
+    if (!prim) return
+    if (!bubbleAktif || kerangka !== 'D' || penuh.lilin.length === 0) { prim.setData([]); return }
+    const dari = (penuh.lilin[awalRentang] ?? penuh.lilin[0]).time.slice(0, 10)
+    const sampai = penuh.lilin[penuh.lilin.length - 1].time.slice(0, 10)
+    let batal = false
+    muatRentang(kode, dari, sampai)
+      .then((hari) => {
+        if (batal) return
+        const kandidat: BubbleHari[] = []
+        for (const [tgl, h] of hari) {
+          const net = h.broker.map((r) => r[2] - r[4])
+          if (net.length < 5) continue
+          const abs = net.map(Math.abs)
+          const rata = abs.reduce((s, v) => s + v, 0) / abs.length
+          const ragam = abs.reduce((s, v) => s + (v - rata) ** 2, 0) / abs.length
+          const dev = Math.sqrt(ragam)
+          if (!dev) continue
+          const outlier = h.broker
+            .map((r, i) => ({ r, net: net[i], z: (abs[i] - rata) / dev }))
+            .filter((o) => o.z >= 2)
+            .sort((a, b) => Math.abs(b.net) - Math.abs(a.net))
+            .slice(0, 3)
+          for (const o of outlier) {
+            const harga = o.net >= 0 ? hargaRata(o.r[2], o.r[1]) : hargaRata(o.r[4], o.r[3])
+            if (harga === null) continue
+            kandidat.push({ waktu: tgl, harga, broker: o.r[0], netNilai: o.net, radius: 0 })
+          }
+        }
+        const maks = Math.max(1, ...kandidat.map((k) => Math.abs(k.netNilai)))
+        for (const k of kandidat) {
+          k.radius = Math.min(14, Math.max(3, 14 * Math.sqrt(Math.abs(k.netNilai) / maks)))
+        }
+        prim.setData(kandidat)
+      })
+      .catch(() => { if (!batal) prim.setData([]) })
+    return () => { batal = true }
+  }, [bubbleAktif, kerangka, kode, penuh.lilin, awalRentang])
 
   /**
    * Chip rentang yang tak punya riwayat untuk ditampilkan — DINONAKTIFKAN,
@@ -3149,6 +3230,24 @@ export function GrafikEmiten() {
               ? 'Sembunyikan garis rata-rata beli broker'
               : 'Garis rata-rata beli broker — 5 pembeli bersih terbesar rentang ini'}
             onClick={() => setAvgBroker((v) => !v)} />
+
+          {/* P3: pita CPR + Pivot. P2: bubble outlier. Keduanya harian —
+              di kerangka lain tombolnya dimatikan dengan alasan di title,
+              bukan disembunyikan (pola chip rentang yang tak cukup data). */}
+          <TombolIkon d={IKON_PITA_CPR} ukuranIkon={14}
+            className={cprAktif ? 'on' : ''}
+            disabled={kerangka !== 'D'}
+            label={kerangka !== 'D'
+              ? 'Pita CPR + Pivot hanya untuk kerangka harian'
+              : cprAktif ? 'Sembunyikan pita CPR + Pivot' : 'Pita CPR + level Pivot dari sesi tutup terakhir'}
+            onClick={() => setCprAktif((v) => !v)} />
+          <TombolIkon d={IKON_BUBBLE} ukuranIkon={14}
+            className={bubbleAktif ? 'on' : ''}
+            disabled={kerangka !== 'D'}
+            label={kerangka !== 'D'
+              ? 'Bubble broker outlier hanya untuk kerangka harian'
+              : bubbleAktif ? 'Sembunyikan bubble broker outlier' : 'Bubble broker outlier harian — net menyimpang ≥2σ dari pasar hari itu'}
+            onClick={() => setBubbleAktif((v) => !v)} />
 
           <span className="grf-toolbar-isi" />
 

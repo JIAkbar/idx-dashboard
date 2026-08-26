@@ -120,3 +120,9 @@ export const IKON_PANAH_KIRI = 'M19 12H6M11 6l-6 6 6 6'
 /** Garis putus-putus mendatar + titik — overlay garis rata-rata beli broker
  *  di chart (primitive P1 spek hybrid). */
 export const IKON_GARIS_AVG = 'M3 12h4M10 12h4M17 12h4M12 12m-1.5 0a1.5 1.5 0 103 0 1.5 1.5 0 10-3 0'
+
+/** Pita di tengah dua garis — overlay CPR + level Pivot (primitive P3). */
+export const IKON_PITA_CPR = 'M3 5h18M3 19h18M3 10h18v4H3z'
+
+/** Dua lingkaran beda besar — bubble broker outlier harian (primitive P2). */
+export const IKON_BUBBLE = 'M9 9m-4.5 0a4.5 4.5 0 109 0 4.5 4.5 0 10-9 0M17 16m-2.5 0a2.5 2.5 0 105 0 2.5 2.5 0 10-5 0'
