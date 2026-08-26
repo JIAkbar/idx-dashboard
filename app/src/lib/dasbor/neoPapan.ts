@@ -411,9 +411,9 @@ function statMusiman(xs: number[]): StatMusiman {
 }
 
 /** Hari kalender -> return harian, dibucket ke 5 hari kerja (Senin..Jumat), 12 tahun terakhir. */
-export function musimanHari(bars: BarHarga[]): StatMusiman[] {
+export function musimanHari(bars: BarHarga[], tahunN = 12): StatMusiman[] {
   if (bars.length < 2) return Array.from({ length: 5 }, () => statMusiman([]))
-  const batas = tahunSebelum(bars[bars.length - 1].t, 12)
+  const batas = tahunSebelum(bars[bars.length - 1].t, tahunN)
   const per: number[][] = [[], [], [], [], []]
   for (let i = 1; i < bars.length; i++) {
     const prev = bars[i - 1], cur = bars[i]
@@ -425,12 +425,12 @@ export function musimanHari(bars: BarHarga[]): StatMusiman[] {
 }
 
 /** Return penutupan akhir bulan, dibucket per bulan kalender (Jan..Des), 12 tahun terakhir. */
-export function musimanBulan(bars: BarHarga[]): StatMusiman[] {
+export function musimanBulan(bars: BarHarga[], tahunN = 12): StatMusiman[] {
   if (bars.length < 2) return Array.from({ length: 12 }, () => statMusiman([]))
   const akBulan = new Map<string, number>()
   for (const b of bars) akBulan.set(b.t.slice(0, 7), b.c)
   const kunci = [...akBulan.keys()].sort()
-  const batas = tahunSebelum(bars[bars.length - 1].t, 12).slice(0, 7)
+  const batas = tahunSebelum(bars[bars.length - 1].t, tahunN).slice(0, 7)
   const per: number[][] = Array.from({ length: 12 }, () => [])
   for (let i = 1; i < kunci.length; i++) {
     const ym = kunci[i]

@@ -361,3 +361,20 @@ describe('konsistensiNet', () => {
     expect(konsistensiNet([])).toBe(0)
   })
 })
+
+describe('musiman tahunN (spek §7)', () => {
+  function barT(t: string, c: number) {
+    return { t, o: c, h: c, l: c, c, v: 0, val: 0, freq: 0, fb: 0, fs: 0, so: 0 }
+  }
+  it('tahunN=1 membuang bar yang lebih tua dari setahun', () => {
+    const bars = [
+      barT('2020-01-06', 100), barT('2020-01-07', 200), // Selasa lama: +100%
+      barT('2026-01-05', 100), barT('2026-01-06', 110), // Selasa baru: +10%
+    ]
+    const semua = musimanHari(bars, 12)
+    const setahun = musimanHari(bars, 1)
+    expect(semua[1].n).toBe(2)
+    expect(setahun[1].n).toBe(1)
+    expect(setahun[1].naikPersen).toBe(100)
+  })
+})
