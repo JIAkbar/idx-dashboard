@@ -113,7 +113,7 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
               </div>
               <div className="board-tbl-wrap">
                 <table className="tbl">
-                  <thead><tr><th>Pembeli − penjual</th><th className="r">Lot</th><th className="r">%</th><th className="r">Nilai net (B)</th><th className="r" title="lot × 100 × Average">Rp@Avg (B)</th><th className="r">Acc/Dist</th></tr></thead>
+                  <thead><tr><th>Pembeli − penjual</th><th className="r">Lot</th><th className="r" title="Σ net lot Top-n dua sisi ÷ Σ net lot seluruh pembeli — konsentrasi net, bukan porsi volume">%</th><th className="r">Nilai net (B)</th><th className="r" title="lot × 100 × Average">Rp@Avg (B)</th><th className="r">Acc/Dist</th></tr></thead>
                   <tbody>
                     {[1, 2, 3, 4, 5].map((n) => {
                       const lot = ringkas.topLot(n), val = ringkas.topVal(n)

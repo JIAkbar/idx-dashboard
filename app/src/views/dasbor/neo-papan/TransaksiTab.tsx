@@ -160,7 +160,9 @@ export function TransaksiTab({ kode, rentang }: { kode: string; rentang: Rentang
           {broker === undefined ? null : hariTerakhirBroker?.ringkas ? (
             <>
               <Kv label="Kecenderungan broker" value={hariTerakhirBroker.ringkas.accdist} warna={/Acc/i.test(hariTerakhirBroker.ringkas.accdist) ? 'up' : 'dn'} />
-              <Kv label="Top1 / Top3 / Top5" value={`${num2(hariTerakhirBroker.ringkas.top1Pct)}% / ${num2(hariTerakhirBroker.ringkas.top3Pct)}% / ${num2(hariTerakhirBroker.ringkas.top5Pct)}%`} />
+              {/* Skala ruas arsip 0-200%: dua sisi (lot beli topN + lot jual topN) ÷
+                  volume — tanpa keterangan, "Top5 180%" terbaca mustahil (kelas 4). */}
+              <Kv label="Top1 / Top3 / Top5 · dua sisi, maks 200%" value={`${num2(hariTerakhirBroker.ringkas.top1Pct)}% / ${num2(hariTerakhirBroker.ringkas.top3Pct)}% / ${num2(hariTerakhirBroker.ringkas.top5Pct)}%`} />
               <Kv label="Broker beli / jual" value={`${hariTerakhirBroker.ringkas.nBeli} / ${hariTerakhirBroker.ringkas.nJual}`} />
             </>
           ) : (
