@@ -39,6 +39,22 @@
   touch-action: none;
 }
 
+/* Rumah chart hybrid: tinggi eksplisit (autoSize lightweight-charts mengikuti
+   kotak ini), lebar dari grid. */
+.wp-chart {
+  height: clamp(320px, 42vw, 560px);
+}
+
+/* Lapisan penangkap seret saat mode "Pilih area" — menutup chart supaya
+   seretnya jadi seleksi, bukan pan. Muncul hanya selama modenya aktif. */
+.wp-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  cursor: crosshair;
+  touch-action: none;
+}
+
 .wp-hasil {
   border: 1px solid var(--line);
   background: var(--bg1);

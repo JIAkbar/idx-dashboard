@@ -1,4 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  CandlestickSeries, CrosshairMode, HistogramSeries, createChart,
+  type CandlestickData, type HistogramData, type IChartApi, type ISeriesApi,
+  type SeriesType, type Time,
+} from 'lightweight-charts'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { LencanaBeku, tidakDiperdagangkan } from '../../components/dasbor/LencanaBeku'
@@ -6,27 +11,36 @@ import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useBrokerTahunan } from '../../lib/dasbor/brokerTahunanData'
 import { useRingkasKartu } from '../../lib/dasbor/kartuRingkas'
 import { warnaBrokerCanvas } from '../../lib/dasbor/kelompokBroker'
+import { useTheme } from '../../context/ThemeContext'
+import { SeleksiAreaChart } from '../../lib/dasbor/seleksiAreaChart'
+import { GarisAvgBroker } from '../../lib/dasbor/garisAvgBroker'
 import {
-  agregatArea, batasKanvas, profilHarga, saringSignifikan,
+  agregatArea, saringSignifikan,
   type RingkasBroker, type SeleksiArea,
 } from '../../lib/dasbor/whalesPapan'
 import './WhalesPapan.css'
 
 /**
- * Whales Papan — kanvas jejak bandar harian.
+ * Whales Papan — papan bandarmologi harian (spek: `spek_whales_papan.md`).
  *
- * Bentuknya dipetik dari whales.id (audit `docs/riset/whales-bongkar.md`),
- * datanya milik kita sendiri. Seret persegi di kanvas → panel kanan memecah
- * siapa menampung dan siapa melepas di rentang harga × waktu itu.
+ * Arsitektur HYBRID (keputusan Johan 26 Agu 2026): candle asli dari
+ * `lightweight-charts` + primitive khas halaman ini (kotak seleksi W1, garis
+ * rata-rata broker W2) yang digambar DI DALAM render-loop chart yang sama —
+ * kotak seleksi disimpan sebagai nilai (tanggal × harga), jadi zoom/pan
+ * membuatnya tetap menempel. Komentar versi lama yang menolak
+ * lightweight-charts ("butuh seret-pilih 2D, bukan deret lilin") gugur oleh
+ * Plugin API — dan "titik harian" yang dulu terbaca sebagai butiran debu
+ * diganti candle sungguhan.
  *
- * Kanvas 2D mentah, BUKAN `lightweight-charts` seperti Grafik Emiten. Alasan:
- * yang dibutuhkan di sini seret-pilih dua dimensi di atas sebaran titik,
- * bukan deret lilin dengan sumbu waktu yang dikelola pustaka. Memaksakan
- * pustaka itu berarti melawan model interaksinya untuk hal yang di kanvas
- * mentah cuma ±40 baris.
+ * Seret persegi (tombol "Pilih area") → panel kanan memecah siapa menampung
+ * dan siapa melepas di rentang harga × waktu itu. Logika agregasinya TIDAK
+ * berubah dari versi lama (`whalesPapan.ts`) — yang diganti hanya lapisan
+ * penggambaran.
  */
 
 const PANEL_AWAL = 8
+/** Bar terakhir yang dipandang saat halaman dibuka — ±1 tahun bursa. */
+const JENDELA_AWAL = 250
 
 function rupiahRingkas(n: number): string {
   const a = Math.abs(n)
@@ -42,10 +56,45 @@ function lotRingkas(n: number): string {
   return String(Math.round(n))
 }
 
-interface Kotak { x0: number; y0: number; x1: number; y1: number }
+interface DataCandle {
+  lilin: CandlestickData[]
+  volume: HistogramData[]
+}
+
+/** Kolom `ohlcv_stockbit`: tanggal,unixdate,o,h,l,c,volume,… (lihat
+ *  `ohlcvKaya.ts`). Harian tersesuaikan aksi korporasi — konvensi yang benar
+ *  untuk BENTUK grafik (aturan dua-konvensi di CLAUDE.md). */
+async function muatCandle(kode: string): Promise<DataCandle> {
+  const r = await fetch(`/data-idx/json/ohlcv_stockbit/${kode}.json`)
+  if (!r.ok) return { lilin: [], volume: [] }
+  try {
+    const j = (await r.json()) as { bar?: (string | number)[][] }
+    const lilin: CandlestickData[] = []
+    const volume: HistogramData[] = []
+    for (const b of j.bar ?? []) {
+      const time = b[0] as Time
+      const open = Number(b[2]); const high = Number(b[3])
+      const low = Number(b[4]); const close = Number(b[5])
+      if (!Number.isFinite(open) || !Number.isFinite(close)) continue
+      lilin.push({ time, open, high, low, close })
+      volume.push({
+        time,
+        value: Number(b[6]) || 0,
+        color: close >= open ? 'rgba(48, 164, 108, 0.5)' : 'rgba(229, 72, 77, 0.5)',
+      })
+    }
+    return { lilin, volume }
+  } catch {
+    return { lilin: [], volume: [] }
+  }
+}
+
+/** Seleksi "seluruh riwayat" — dipakai garis avg broker saat belum ada kotak. */
+const SEMUA: SeleksiArea = { tglMulai: '0000-01-01', tglAkhir: '9999-12-31', hargaMin: -Infinity, hargaMax: Infinity }
 
 export default function WhalesPapan() {
   const { index: indeks } = useStockIndex()
+  const { theme } = useTheme()
   const [ketik, setKetik] = useState('BUMI')
   const [kode, setKode] = useState('BUMI')
   const { hari, tahunAda, muat, galat } = useBrokerTahunan(kode)
@@ -57,7 +106,9 @@ export default function WhalesPapan() {
   )
 
   const [sel, setSel] = useState<SeleksiArea | null>(null)
-  const [seret, setSeret] = useState<Kotak | null>(null)
+  const [modeSeleksi, setModeSeleksi] = useState(false)
+  const [candle, setCandle] = useState<DataCandle>({ lilin: [], volume: [] })
+  const [avgAktif, setAvgAktif] = useState(true)
   // Empat kuadran, empat batas "tampilkan lagi" — memperluas satu tak boleh
   // ikut memperluas yang lain, keduanya baris broker tapi peringkat berbeda.
   const [batasGrossBeli, setBatasGrossBeli] = useState(PANEL_AWAL)
@@ -68,8 +119,13 @@ export default function WhalesPapan() {
   // AMBANG_SIGNIFIKAN; Full menampilkan semua yang pernah bertransaksi.
   const [modeBaris, setModeBaris] = useState<'signifikan' | 'penuh'>('signifikan')
 
-  const kanvasRef = useRef<HTMLCanvasElement | null>(null)
   const bungkusRef = useRef<HTMLDivElement | null>(null)
+  const chartRef = useRef<IChartApi | null>(null)
+  const lilinRef = useRef<ISeriesApi<SeriesType> | null>(null)
+  const volRef = useRef<ISeriesApi<SeriesType> | null>(null)
+  const seleksiRef = useRef<SeleksiAreaChart | null>(null)
+  const avgRef = useRef<GarisAvgBroker | null>(null)
+  const seretRef = useRef<{ x0: number; y0: number } | null>(null)
 
   const resetBatas = () => {
     setBatasGrossBeli(PANEL_AWAL)
@@ -83,199 +139,203 @@ export default function WhalesPapan() {
   // harga milik saham LAIN — angkanya sah, kepalanya berbohong.
   useEffect(() => {
     setSel(null)
+    setModeSeleksi(false)
     resetBatas()
   }, [kode])
 
-  const batas = useMemo(() => batasKanvas(hari), [hari])
-  const profil = useMemo(() => profilHarga(hari, 28), [hari])
   const hasil = useMemo(() => (sel ? agregatArea(hari, sel) : null), [hari, sel])
 
-  // ── menggambar ───────────────────────────────────────────────────────────
-  const gambar = useCallback(() => {
-    const cv = kanvasRef.current
-    const bungkus = bungkusRef.current
-    if (!cv || !bungkus || !batas) return
-
-    // Clamp + round, pola acuan `bandingEmiten.ts` — dpr mentah tanpa clamp
-    // berisiko kanvas raksasa di layar DPR tinggi (temuan audit chart 26 Agu;
-    // versi pertama berkas ini memakai dpr mentah).
-    const dpr = Math.min(3, Math.max(1, Math.round(window.devicePixelRatio || 1)))
-    const lebarCss = bungkus.clientWidth
-    const tinggiCss = Math.max(320, Math.min(560, Math.round(lebarCss * 0.52)))
-    if (cv.width !== Math.round(lebarCss * dpr) || cv.height !== Math.round(tinggiCss * dpr)) {
-      cv.width = Math.round(lebarCss * dpr)
-      cv.height = Math.round(tinggiCss * dpr)
-      cv.style.height = `${tinggiCss}px`
-    }
-    const ctx = cv.getContext('2d')
-    if (!ctx) return
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    ctx.clearRect(0, 0, lebarCss, tinggiCss)
-
-    const gaya = getComputedStyle(cv)
-    const c = (v: string, cad: string) => (gaya.getPropertyValue(v) || '').trim() || cad
-    const warnaGaris = c('--line', '#24262E')
-    const warnaTeks3 = c('--text3', '#888D99')
-    const warnaTeks2 = c('--text2', '#9CA0AC')
-    const warnaAksen = c('--accent', '#F2C230')
-
-    const padKiri = 52, padKanan = 78, padAtas = 12, padBawah = 26
-    const plotW = lebarCss - padKiri - padKanan
-    const plotH = tinggiCss - padAtas - padBawah
-    if (plotW <= 10 || plotH <= 10) return
-
-    const berharga = hari.filter((h) => h.avg != null)
-    const t0 = new Date(batas.tglMulai).getTime()
-    const t1 = new Date(batas.tglAkhir).getTime()
-    const rentangT = Math.max(1, t1 - t0)
-    const xDari = (tgl: string) => padKiri + ((new Date(tgl).getTime() - t0) / rentangT) * plotW
-    const yDari = (h: number) =>
-      padAtas + plotH - ((h - batas.hargaMin) / (batas.hargaMax - batas.hargaMin)) * plotH
-
-    // kisi + sumbu harga
-    ctx.font = '10px ui-monospace, monospace'
-    ctx.textBaseline = 'middle'
-    ctx.textAlign = 'right'
-    for (let i = 0; i <= 5; i++) {
-      const harga = batas.hargaMin + ((batas.hargaMax - batas.hargaMin) * i) / 5
-      const y = yDari(harga)
-      ctx.strokeStyle = warnaGaris
-      ctx.lineWidth = 1
-      ctx.beginPath(); ctx.moveTo(padKiri, y + 0.5); ctx.lineTo(padKiri + plotW, y + 0.5); ctx.stroke()
-      ctx.fillStyle = warnaTeks3
-      ctx.fillText(Math.round(harga).toLocaleString('id-ID'), padKiri - 7, y)
-    }
-
-    // sumbu tanggal
-    ctx.textAlign = 'center'
-    const nLabel = Math.max(2, Math.min(6, Math.floor(plotW / 110)))
-    for (let i = 0; i <= nLabel; i++) {
-      const ts = t0 + (rentangT * i) / nLabel
-      const d = new Date(ts)
-      const x = padKiri + (plotW * i) / nLabel
-      ctx.fillStyle = warnaTeks3
-      ctx.fillText(
-        d.toLocaleDateString('id-ID', { month: 'short', year: '2-digit' }),
-        Math.min(padKiri + plotW - 18, Math.max(padKiri + 18, x)),
-        tinggiCss - padBawah / 2,
-      )
-    }
-
-    // profil harga di kanan — padanan harian "market profile"
-    const lotMaks = Math.max(1, ...profil.map((p) => p.lot))
-    for (const p of profil) {
-      const yA = yDari(p.hargaAtas)
-      const yB = yDari(p.hargaBawah)
-      const w = (p.lot / lotMaks) * (padKanan - 16)
-      if (w < 0.5) continue
-      ctx.fillStyle = warnaGaris
-      ctx.fillRect(padKiri + plotW + 6, yA, w, Math.max(1, yB - yA - 1))
-    }
-    ctx.textAlign = 'left'
-    ctx.fillStyle = warnaTeks3
-    ctx.fillText('lot', padKiri + plotW + 6, padAtas + 6)
-
-    // titik harian — jari-jari mengikuti lot, warna kelompok broker terbesar
-    for (const h of berharga) {
-      const x = xDari(h.tanggal)
-      const y = yDari(h.avg as number)
-      const terbesar = h.broker.reduce<[string, number]>(
-        (m, b) => (Math.abs(b[1] - b[3]) > m[1] ? [b[0], Math.abs(b[1] - b[3])] : m),
-        ['', 0],
-      )[0]
-      const r = Math.max(1.4, Math.min(4.5, Math.sqrt(h.totalLot) / 60))
-      ctx.fillStyle = terbesar ? warnaBrokerCanvas(terbesar) : warnaTeks3
-      ctx.globalAlpha = 0.75
-      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill()
-      ctx.globalAlpha = 1
-    }
-
-    // kotak seleksi
-    const kotak = seret ?? (sel && batas ? {
-      x0: xDari(sel.tglMulai), y0: yDari(sel.hargaMax),
-      x1: xDari(sel.tglAkhir), y1: yDari(sel.hargaMin),
-    } : null)
-    if (kotak) {
-      const x = Math.min(kotak.x0, kotak.x1), y = Math.min(kotak.y0, kotak.y1)
-      const w = Math.abs(kotak.x1 - kotak.x0), h = Math.abs(kotak.y1 - kotak.y0)
-      ctx.fillStyle = warnaAksen
-      ctx.globalAlpha = 0.14
-      ctx.fillRect(x, y, w, h)
-      ctx.globalAlpha = 1
-      ctx.strokeStyle = warnaAksen
-      ctx.lineWidth = 1.5
-      ctx.setLineDash([5, 3])
-      ctx.strokeRect(x + 0.5, y + 0.5, w, h)
-      ctx.setLineDash([])
-    }
-
-    if (!sel && !seret) {
-      ctx.textAlign = 'center'
-      ctx.fillStyle = warnaTeks2
-      ctx.font = '11px ui-monospace, monospace'
-      ctx.fillText('seret persegi untuk memilih rentang harga × waktu', padKiri + plotW / 2, padAtas + 16)
-    }
-  }, [batas, hari, profil, sel, seret])
-
-  useEffect(() => { gambar() }, [gambar])
+  // Hook QA dev-only (pola `__papanChart`): verifikasi angka panel butuh tahu
+  // rentang seleksi persisnya, dan kotak digambar di canvas — tak ada teks DOM
+  // yang memuat tanggalnya.
   useEffect(() => {
-    const r = () => gambar()
-    window.addEventListener('resize', r)
-    return () => window.removeEventListener('resize', r)
-  }, [gambar])
+    if (import.meta.env.DEV && bungkusRef.current) {
+      (bungkusRef.current as HTMLDivElement & { __papanSel?: unknown }).__papanSel = sel
+    }
+  }, [sel])
 
-  // ── seret memilih ────────────────────────────────────────────────────────
-  const posisi = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  // ── chart ────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const el = bungkusRef.current
+    if (!el) return
+    const chart = createChart(el, {
+      autoSize: true,
+      localization: { locale: 'id-ID', dateFormat: 'dd MMM yyyy' },
+      // Atribusi lightweight-charts dipenuhi lewat kaki situs global
+      // (DasborLayout.tsx) — sama dengan GrafikEmiten; jangan hapus baris itu.
+      layout: { background: { color: 'transparent' }, attributionLogo: false },
+      rightPriceScale: { borderVisible: false },
+      timeScale: { borderVisible: false },
+      // Magnet melekatkan garis ke close — Normal membebaskannya (spek §2,
+      // konsisten dengan GrafikEmiten).
+      crosshair: {
+        mode: CrosshairMode.Normal,
+        vertLine: { labelVisible: true },
+        horzLine: { labelVisible: true },
+      },
+    })
+    const lilin = chart.addSeries(CandlestickSeries)
+    lilin.priceScale().applyOptions({ scaleMargins: { top: 0.06, bottom: 0.24 } })
+    const vol = chart.addSeries(HistogramSeries, { priceFormat: { type: 'volume' }, priceScaleId: 'vol' })
+    vol.priceScale().applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } })
+    chartRef.current = chart
+    lilinRef.current = lilin
+    volRef.current = vol
+    const pane0 = chart.panes()[0]
+    if (pane0) {
+      const seleksi = new SeleksiAreaChart(
+        () => lilinRef.current,
+        () => (getComputedStyle(el).getPropertyValue('--accent') || '').trim() || '#F2C230',
+      )
+      pane0.attachPrimitive(seleksi)
+      seleksiRef.current = seleksi
+      const avg = new GarisAvgBroker(() => lilinRef.current)
+      pane0.attachPrimitive(avg)
+      avgRef.current = avg
+    }
+    if (import.meta.env.DEV) (el as HTMLDivElement & { __papanChart?: unknown }).__papanChart = chart
+    return () => {
+      chart.remove()
+      chartRef.current = null
+      lilinRef.current = null
+      volRef.current = null
+      seleksiRef.current = null
+      avgRef.current = null
+    }
+  }, [])
+
+  // Warna teks & kisi ikut tema — dibaca dari CSS var yang sama dengan
+  // seluruh lantai, disetel ulang tiap tema berganti.
+  useEffect(() => {
+    const el = bungkusRef.current
+    const chart = chartRef.current
+    if (!el || !chart) return
+    const gaya = getComputedStyle(el)
+    const c = (v: string, cad: string) => (gaya.getPropertyValue(v) || '').trim() || cad
+    chart.applyOptions({
+      layout: { textColor: c('--text2', '#9CA0AC') },
+      grid: {
+        vertLines: { color: c('--line', '#24262E') },
+        horzLines: { color: c('--line', '#24262E') },
+      },
+    })
+  }, [theme])
+
+  // Data candle per emiten.
+  useEffect(() => {
+    let batal = false
+    setCandle({ lilin: [], volume: [] })
+    muatCandle(kode).then((d) => { if (!batal) setCandle(d) })
+    return () => { batal = true }
+  }, [kode])
+
+  useEffect(() => {
+    const lilin = lilinRef.current
+    const vol = volRef.current
+    const chart = chartRef.current
+    if (!lilin || !vol || !chart) return
+    lilin.setData(candle.lilin)
+    vol.setData(candle.volume)
+    const n = candle.lilin.length
+    if (n > 0) {
+      chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - JENDELA_AWAL), to: n + 2 })
+    }
+  }, [candle])
+
+  // Kotak terkunci digambar primitive dari NILAI — ikut zoom/pan.
+  useEffect(() => {
+    seleksiRef.current?.setKotak(
+      sel ? { t0: sel.tglMulai, t1: sel.tglAkhir, harga0: sel.hargaMin, harga1: sel.hargaMax } : null,
+    )
+  }, [sel])
+
+  // W2 — garis rata-rata beli broker: 5 penampung (net beli) terbesar; dari
+  // area seleksi bila ada, dari seluruh riwayat bila belum.
+  useEffect(() => {
+    const prim = avgRef.current
+    if (!prim) return
+    if (!avgAktif || hari.length === 0) { prim.setGaris([]); return }
+    const agg = agregatArea(hari, sel ?? SEMUA)
+    const totalBeli = agg.grossBeli.reduce((s, r) => s + r.beliNilai, 0)
+    prim.setGaris(
+      agg.netBeli
+        .filter((r) => r.beliLot > 0)
+        .slice(0, 5)
+        .map((r) => ({
+          broker: r.kode,
+          harga: r.beliNilai / (r.beliLot * 100),
+          pct: totalBeli ? r.beliNilai / totalBeli : 0,
+          warna: warnaBrokerCanvas(r.kode),
+        })),
+    )
+  }, [avgAktif, hari, sel])
+
+  // ── seret memilih (hanya saat mode seleksi aktif) ────────────────────────
+  const keNilai = (x: number, y: number): { t: string; harga: number } | null => {
+    const chart = chartRef.current
+    const lilin = lilinRef.current
+    if (!chart || !lilin || candle.lilin.length === 0) return null
+    const harga = lilin.coordinateToPrice(y)
+    if (harga === null) return null
+    // Di luar bar pertama/terakhir chart menjawab null — dijatuhkan ke ujung
+    // riwayat sesuai sisinya supaya seret sampai tepi tetap sah.
+    let t = chart.timeScale().coordinateToTime(x) as string | null
+    if (t === null) {
+      const el = bungkusRef.current
+      const tengah = el ? el.clientWidth / 2 : 0
+      t = x < tengah
+        ? (candle.lilin[0].time as string)
+        : (candle.lilin[candle.lilin.length - 1].time as string)
+    }
+    return { t, harga: harga as number }
+  }
+
+  const posisi = (e: React.PointerEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
     return { x: e.clientX - r.left, y: e.clientY - r.top }
   }
-  const keSeleksi = (k: Kotak): SeleksiArea | null => {
-    const cv = kanvasRef.current
-    if (!cv || !batas) return null
-    const lebarCss = cv.clientWidth
-    const tinggiCss = cv.clientHeight
-    const padKiri = 52, padKanan = 78, padAtas = 12, padBawah = 26
-    const plotW = lebarCss - padKiri - padKanan
-    const plotH = tinggiCss - padAtas - padBawah
-    const t0 = new Date(batas.tglMulai).getTime()
-    const t1 = new Date(batas.tglAkhir).getTime()
-    const iso = (x: number) => {
-      const f = Math.min(1, Math.max(0, (x - padKiri) / plotW))
-      return new Date(t0 + (t1 - t0) * f).toISOString().slice(0, 10)
-    }
-    const harga = (y: number) => {
-      const f = Math.min(1, Math.max(0, (padAtas + plotH - y) / plotH))
-      return batas.hargaMin + (batas.hargaMax - batas.hargaMin) * f
-    }
-    return {
-      tglMulai: iso(Math.min(k.x0, k.x1)),
-      tglAkhir: iso(Math.max(k.x0, k.x1)),
-      hargaMin: harga(Math.max(k.y0, k.y1)),
-      hargaMax: harga(Math.min(k.y0, k.y1)),
-    }
-  }
-
-  const onDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!batas) return
+  const onDown = (e: React.PointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId)
     const p = posisi(e)
-    setSeret({ x0: p.x, y0: p.y, x1: p.x, y1: p.y })
+    seretRef.current = { x0: p.x, y0: p.y }
   }
-  const onMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!seret) return
+  const onMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const s = seretRef.current
+    if (!s) return
     const p = posisi(e)
-    setSeret((s) => (s ? { ...s, x1: p.x, y1: p.y } : s))
+    const a = keNilai(s.x0, s.y0)
+    const b = keNilai(p.x, p.y)
+    // Kotak live disetor ke primitive langsung (requestUpdate), BUKAN setState
+    // per gerakan — spek §3 W1.
+    if (a && b) seleksiRef.current?.setKotak({ t0: a.t, t1: b.t, harga0: a.harga, harga1: b.harga })
   }
-  const onUp = () => {
-    if (!seret) return
+  const onUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const s = seretRef.current
+    if (!s) return
+    seretRef.current = null
+    const p = posisi(e)
     // Seret sangat kecil dianggap klik, bukan seleksi — kalau tidak, satu
     // ketukan tak sengaja akan mengosongkan panel tanpa sebab yang terlihat.
-    const cukup = Math.abs(seret.x1 - seret.x0) > 6 && Math.abs(seret.y1 - seret.y0) > 6
+    const cukup = Math.abs(p.x - s.x0) > 6 && Math.abs(p.y - s.y0) > 6
     if (cukup) {
-      const s = keSeleksi(seret)
-      if (s) { setSel(s); resetBatas() }
+      const a = keNilai(s.x0, s.y0)
+      const b = keNilai(p.x, p.y)
+      if (a && b) {
+        setSel({
+          tglMulai: a.t <= b.t ? a.t : b.t,
+          tglAkhir: a.t <= b.t ? b.t : a.t,
+          hargaMin: Math.min(a.harga, b.harga),
+          hargaMax: Math.max(a.harga, b.harga),
+        })
+        resetBatas()
+      }
+    } else {
+      // batal — kembalikan kotak terkunci sebelumnya (kalau ada)
+      seleksiRef.current?.setKotak(
+        sel ? { t0: sel.tglMulai, t1: sel.tglAkhir, harga0: sel.hargaMin, harga1: sel.hargaMax } : null,
+      )
     }
-    setSeret(null)
+    setModeSeleksi(false)
   }
 
   // `nilai` memilih ruas dipakai untuk lebar bar & urutan; `nilaiRp` ruas Rp
@@ -339,10 +399,28 @@ export default function WhalesPapan() {
         )}
         {tahunAda.length > 0 && (
           <span className="muted" style={{ fontSize: 12 }}>
-            {tahunAda[0]}–{tahunAda[tahunAda.length - 1]} · {hari.length.toLocaleString('id-ID')} hari
+            broker {tahunAda[0]}–{tahunAda[tahunAda.length - 1]} · {hari.length.toLocaleString('id-ID')} hari
           </span>
         )}
         {muat && <span className="muted" style={{ fontSize: 12 }}>memuat…</span>}
+        <button
+          type="button"
+          className={`chip-t${modeSeleksi ? ' on' : ''}`}
+          aria-pressed={modeSeleksi}
+          title="Seret persegi di chart untuk memilih rentang harga × waktu"
+          onClick={() => setModeSeleksi((v) => !v)}
+        >
+          Pilih area
+        </button>
+        <button
+          type="button"
+          className={`chip-t${avgAktif ? ' on' : ''}`}
+          aria-pressed={avgAktif}
+          title="Garis harga beli rata-rata 5 penampung terbesar (seluruh riwayat, atau area seleksi bila ada)"
+          onClick={() => setAvgAktif((v) => !v)}
+        >
+          Garis AVG
+        </button>
         {sel && (
           <button type="button" className="btn-p wp-sisa" onClick={() => setSel(null)}>
             Hapus seleksi
@@ -359,14 +437,16 @@ export default function WhalesPapan() {
         </div>
       ) : (
         <div className="wp-panggung">
-          <div className="wp-kanvas-bungkus" ref={bungkusRef}>
-            <canvas
-              ref={kanvasRef}
-              onPointerDown={onDown}
-              onPointerMove={onMove}
-              onPointerUp={onUp}
-              onPointerCancel={onUp}
-            />
+          <div className="wp-kanvas-bungkus wp-chart" ref={bungkusRef}>
+            {modeSeleksi && (
+              <div
+                className="wp-overlay"
+                onPointerDown={onDown}
+                onPointerMove={onMove}
+                onPointerUp={onUp}
+                onPointerCancel={onUp}
+              />
+            )}
           </div>
 
           <div className="wp-hasil">
@@ -443,7 +523,9 @@ export default function WhalesPapan() {
                 </div>
               </>
             ) : (
-              <p className="wp-sub">Seret persegi di kanvas untuk memilih rentang.</p>
+              <p className="wp-sub">
+                Tekan <strong>Pilih area</strong> lalu seret persegi di chart untuk memilih rentang.
+              </p>
             )}
 
             <div className="wp-batas">
