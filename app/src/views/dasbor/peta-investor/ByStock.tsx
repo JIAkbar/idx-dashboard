@@ -59,6 +59,7 @@ export function ByStock({ data, onSelect }: ByStockProps) {
     <div className="panel">
       <div className="panel-h" style={{ flexWrap: 'wrap' }}>
         <span className="lbl">Emiten &amp; Pemegang Saham ≥1%</span>
+        {/* Kotak CARI CAMPURAN (bukan picker emiten) — sengaja BUKAN StockAutocomplete: menyaring lebih dari satu ruas sekaligus. Jangan "diperbaiki" jadi picker; riwayat: sweep Papan Pekerjaan #355. */}
         <input
           className="inp"
           style={{ width: 200 }}

@@ -73,6 +73,7 @@ export function RakTerbitan() {
           </span>
           <span className="af-cari">
             <IkonMenu d={IKON_CARI} size={13} />
+            {/* Kotak CARI CAMPURAN (bukan picker emiten) — sengaja BUKAN StockAutocomplete: menyaring lebih dari satu ruas sekaligus. Jangan "diperbaiki" jadi picker; riwayat: sweep Papan Pekerjaan #355. */}
             <input
               className="inp"
               type="search"

@@ -205,6 +205,7 @@ export function Screener() {
           <div className="scr-bilah">
             <span className="af-cari scr-cari">
               <IkonMenu d={IKON_CARI} size={13} />
+              {/* Kotak CARI CAMPURAN (bukan picker emiten) — sengaja BUKAN StockAutocomplete: menyaring lebih dari satu ruas sekaligus. Jangan "diperbaiki" jadi picker; riwayat: sweep Papan Pekerjaan #355. */}
               <input
                 className="inp" type="search" placeholder="Cari emiten…" value={cari}
                 onChange={(e) => setCari(e.target.value)}

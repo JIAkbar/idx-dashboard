@@ -77,6 +77,7 @@ export const PetaInvestorSearch = forwardRef<PetaInvestorSearchHandle, PetaInves
     <div className="pi-head-actions">
       <div className="af-cari pi-srch-container">
         <IkonMenu d={IKON_CARI} size={13} />
+        {/* Kotak CARI CAMPURAN (bukan picker emiten) — sengaja BUKAN StockAutocomplete: menyaring lebih dari satu ruas sekaligus. Jangan "diperbaiki" jadi picker; riwayat: sweep Papan Pekerjaan #355. */}
         <input
           className="inp pi-search"
           type="search"
