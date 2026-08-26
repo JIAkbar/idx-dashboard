@@ -83,9 +83,18 @@ export class PitaCpr implements IPanePrimitive<Time> {
         target.useBitmapCoordinateSpace(({ context: ctx, bitmapSize, horizontalPixelRatio: hp, verticalPixelRatio: vp }) => {
           ctx.save()
           ctx.font = `${Math.round(FONT_PX * vp)}px system-ui, sans-serif`
-          ctx.textBaseline = 'bottom'
+          ctx.textBaseline = 'middle'
           ctx.textAlign = 'right'
           const tebal = Math.max(1, Math.round(vp))
+          const tinggiTeks = Math.round((FONT_PX + 3) * vp)
+          const xTeks = bitmapSize.width - TEPI_KANAN * hp
+          // Label ditampung dulu, digambar belakangan dengan dodge anti-tumpuk.
+          // CPR SEMPIT justru sinyal utama fitur ini (TC/P/BC berdekatan =
+          // potensi hari trending), jadi label bertindih bukan kasus tepi —
+          // ia kasus yang fiturnya ada untuk menangkap. Tanpa dodge, label
+          // tak terbaca persis di saat paling dibutuhkan.
+          const labelAntri: Array<{ y: number; teks: string; warna: string }> = []
+
           // Pita TC..BC — isi tipis + garis batas, supaya candle di dalamnya
           // tetap terbaca.
           if (yTc !== null && yBc !== null) {
@@ -98,12 +107,23 @@ export class PitaCpr implements IPanePrimitive<Time> {
             for (const y of [atas, bawah]) {
               ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(bitmapSize.width, y); ctx.stroke()
             }
-            ctx.fillStyle = GARIS_PITA
-            ctx.fillText(`TC ${Math.round(d.cpr.tc).toLocaleString('id-ID')}`, bitmapSize.width - TEPI_KANAN * hp, atas - 2 * vp)
-            ctx.textBaseline = 'top'
-            ctx.fillText(`BC ${Math.round(d.cpr.bc).toLocaleString('id-ID')}`, bitmapSize.width - TEPI_KANAN * hp, bawah + 2 * vp)
-            ctx.textBaseline = 'bottom'
+            const f = (n: number) => Math.round(n).toLocaleString('id-ID')
+            if (bawah - atas < tinggiTeks * 2) {
+              // Pita lebih tipis dari dua baris teks → tiga label CPR (TC, P,
+              // BC) digabung satu blok, lengkap dengan lebarnya — bentuk yang
+              // justru informatif saat sempit.
+              labelAntri.push({
+                y: atas,
+                teks: `TC ${f(d.cpr.tc)} · P ${f(d.pivot.P)} · BC ${f(d.cpr.bc)} (${d.cpr.lebarPct.toFixed(2)}%)`,
+                warna: GARIS_PITA,
+              })
+            } else {
+              labelAntri.push({ y: atas, teks: `TC ${f(d.cpr.tc)}`, warna: GARIS_PITA })
+              labelAntri.push({ y: bawah, teks: `BC ${f(d.cpr.bc)}`, warna: GARIS_PITA })
+            }
           }
+          const cprTipis = yTc !== null && yBc !== null
+            && Math.abs(yBc - yTc) * vp < tinggiTeks * 2
           ctx.setLineDash([6 * hp, 4 * hp])
           for (const l of level) {
             if (l.y === null) continue
@@ -111,10 +131,23 @@ export class PitaCpr implements IPanePrimitive<Time> {
             ctx.strokeStyle = l.warna
             ctx.lineWidth = tebal
             ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(bitmapSize.width, y); ctx.stroke()
-            ctx.fillStyle = l.warna
-            ctx.fillText(l.label, bitmapSize.width - TEPI_KANAN * hp, y - 2 * vp)
+            // P sudah terwakili di blok gabungan saat pita tipis.
+            if (cprTipis && l.label.startsWith('P ')) continue
+            labelAntri.push({ y, teks: l.label, warna: l.warna })
           }
           ctx.setLineDash([])
+
+          // Dodge: urut dari atas, tiap label minimal setinggi-teks di bawah
+          // label sebelumnya. Garisnya tetap di harga aslinya — hanya teksnya
+          // yang bergeser supaya semua terbaca.
+          labelAntri.sort((a, b) => a.y - b.y)
+          let batasBawah = -Infinity
+          for (const l of labelAntri) {
+            const y = Math.max(l.y, batasBawah + tinggiTeks)
+            batasBawah = y
+            ctx.fillStyle = l.warna
+            ctx.fillText(l.teks, xTeks, y)
+          }
           ctx.restore()
         })
       },
