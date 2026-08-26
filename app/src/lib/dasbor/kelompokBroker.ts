@@ -98,6 +98,12 @@ const KURASI: Record<string, [KelompokBroker, string]> = {
 }
 
 /** Kelompok identitas kode broker; belum dikurasi → `lain`. */
+/** Jumlah anggota TERKURASI per kelompok — penyebut jujur "(aktif/anggota)"
+ *  di preset broker (spek 27 Agu §3). */
+export function anggotaKelompok(kelompok: KelompokBroker): number {
+  return Object.values(KURASI).filter(([k]) => k === kelompok).length
+}
+
 export function kelompokBroker(kode: string): KelompokBroker {
   return KURASI[kode]?.[0] ?? 'lain'
 }

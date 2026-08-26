@@ -13,7 +13,7 @@ import {
 import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
 import { DropdownMulti, type OpsiMulti } from '../../../components/dasbor/DropdownMulti'
 import { useTheme } from '../../../context/ThemeContext'
-import { namaBroker } from '../../../lib/dasbor/kelompokBroker'
+import { anggotaKelompok, kelompokBroker, namaBroker } from '../../../lib/dasbor/kelompokBroker'
 import { bacaTokenTema } from '../../../lib/dasbor/useChartJs'
 import { fmtB, num, TOKEN_SERI, OPSI_RENTANG_NP, potongRentang, Kosong, Sumber, type RentangNp } from './bersama'
 
@@ -31,6 +31,10 @@ import { fmtB, num, TOKEN_SERI, OPSI_RENTANG_NP, potongRentang, Kosong, Sumber, 
  */
 
 const TOP_N = 5
+type PresetBroker = 'akbk' | 'nb' | 'ns' | 'asing' | 'smart' | 'institusi' | 'lokal' | 'manual'
+/** Batas garis di chart untuk preset kelompok — 35 anggota smart sekaligus
+ *  = benang kusut; ambil N teratas menurut gross nilai pada rentang. */
+const GARIS_MAKS = 8
 
 type Ukuran = 'nilai' | 'lot'
 
@@ -42,7 +46,9 @@ export function InventoryTab({ kode }: { kode: string }) {
   const [rentang, setRentang] = useState<RentangNp>('b1')
   const [ukuran, setUkuran] = useState<Ukuran>('nilai')
   const [investor, setInvestor] = useState<InvestorStalker>('all')
-  const [preset, setPreset] = useState<'nb' | 'ns' | 'manual'>('nb')
+  // Default AK BK (permintaan Johan 27 Agu, spek preset broker §3) — dua
+  // broker asing acuan; preset kelompok lain dari kurasi kelompokBroker.
+  const [preset, setPreset] = useState<PresetBroker>('akbk')
   const [manual, setManual] = useState<string[]>([])
   /** Broker yang dipilih untuk tabel per-tanggal (klik baris ringkasan). */
   const [brokerRinci, setBrokerRinci] = useState<string | null>(null)
@@ -132,11 +138,32 @@ export function InventoryTab({ kode }: { kode: string }) {
     return { nilai: k, label: nama === 'belum dikurasi' ? k : `${k} — ${nama}` }
   }), [kodeSemua])
 
+  /** Anggota kelompok yang AKTIF di rentang, urut gross nilai — "aktif
+   *  besar" itu relatif terhadap rentang terpilih, bukan daftar tetap. */
+  const aktifKelompok = useMemo(() => {
+    const urut = [...agg].sort((a, b) => (b.beliNilai + b.jualNilai) - (a.beliNilai + a.jualNilai))
+    const per: Record<string, string[]> = { asing: [], smart: [], institusi: [], lokal: [], lain: [] }
+    for (const a of urut) {
+      const k = kelompokBroker(a.kode)
+      if (k === 'asing') per.asing.push(a.kode)
+      else per.lokal.push(a.kode)
+      if (k === 'smart') per.smart.push(a.kode)
+      if (k === 'smart' || k === 'bumn') per.institusi.push(a.kode)
+      if (k === 'lain') per.lain.push(a.kode)
+    }
+    return per
+  }, [agg])
+
   const terpilih = useMemo(() => {
+    if (preset === 'akbk') return ['AK', 'BK'].filter((k) => agg.some((a) => a.kode === k))
     if (preset === 'nb') return pembeli.map((a) => a.kode)
     if (preset === 'ns') return penjual.map((a) => a.kode)
+    if (preset === 'asing') return aktifKelompok.asing.slice(0, GARIS_MAKS)
+    if (preset === 'smart') return aktifKelompok.smart.slice(0, GARIS_MAKS)
+    if (preset === 'institusi') return aktifKelompok.institusi.slice(0, GARIS_MAKS)
+    if (preset === 'lokal') return aktifKelompok.lokal.slice(0, GARIS_MAKS)
     return manual
-  }, [preset, pembeli, penjual, manual])
+  }, [preset, pembeli, penjual, manual, aktifKelompok, agg])
 
   const kum = useMemo(
     () => (hariEfektif && terpilih.length ? kumulatifBroker(tanggal, hariEfektif, terpilih, ukuran) : null),
@@ -160,7 +187,12 @@ export function InventoryTab({ kode }: { kode: string }) {
     })
     const lilin = chart.addSeries(CandlestickSeries)
     lilin.priceScale().applyOptions({ scaleMargins: { top: 0.06, bottom: 0.28 } })
-    const vol = chart.addSeries(HistogramSeries, { priceFormat: { type: 'volume' }, priceScaleId: 'vol' })
+    const vol = chart.addSeries(HistogramSeries, {
+      priceFormat: { type: 'volume' }, priceScaleId: 'vol',
+      // Label "137.59M" menempel tepi kanan-bawah (keluhan Johan 27 Agu) —
+      // nilainya tetap terbaca lewat crosshair.
+      lastValueVisible: false, priceLineVisible: false,
+    })
     vol.priceScale().applyOptions({ scaleMargins: { top: 0.84, bottom: 0 } })
     chartRef.current = chart
     lilinRef.current = lilin
@@ -190,7 +222,16 @@ export function InventoryTab({ kode }: { kode: string }) {
     const chart = chartRef.current
     const lilin = lilinRef.current
     const vol = volRef.current
-    if (!chart || !lilin || !vol || !candle) return
+    if (!chart || !lilin || !vol) return
+    // Guard lama `|| !candle` KELUAR TANPA MENGOSONGKAN seri — ganti emiten
+    // men-set candle null, dan sampai data baru tiba chart masih menggambar
+    // candle emiten LAMA di bawah judul emiten baru (bug sumbu/candle basi,
+    // spek bug 27 Agu §1). Keadaan kosong kini dieksplisitkan.
+    if (!candle) {
+      lilin.setData([])
+      vol.setData([])
+      return
+    }
     lilin.setData(lilinRentang.map(({ t: _t, ...b }) => b))
     const dalam = new Set(lilinRentang.map((b) => b.t))
     vol.setData(candle.volume.filter((v) => dalam.has(String(v.time))))
@@ -212,6 +253,11 @@ export function InventoryTab({ kode }: { kode: string }) {
         color: bacaTokenTema(TOKEN_SERI[i % TOKEN_SERI.length]),
         title: s.broker,
         priceLineVisible: false,
+        // Label nilai di sumbu kiri DIMATIKAN (spek 27 Agu §2 tata letak):
+        // 5 garis kumulatif konvergen membuat pill nilai LWC bertumpukan
+        // menempel sumbu — LWC tak punya dodge. Identitas & angka tetap ada
+        // di tabel broker (pill warna) dan crosshair.
+        lastValueVisible: false,
         // Sumbu kiri = rupiah/lot kumulatif — tanpa ini label mentah
         // "2250000000000.00" memakan separuh lebar chart.
         priceFormat: { type: 'custom', formatter: (v: number) => fmtB(v), minMove: 1 },
@@ -258,11 +304,47 @@ export function InventoryTab({ kode }: { kode: string }) {
       </div>
       <div className="np-baris">
         <span className="np-lbl">Broker</span>
+        <button type="button" className={'chip-t' + (preset === 'akbk' ? ' on' : '')}
+          title="UBS (AK) & J.P. Morgan (BK) — dua broker asing acuan; bawaan halaman"
+          onClick={() => setPreset('akbk')}>AK BK</button>
         <button type="button" className={'chip-t' + (preset === 'nb' ? ' on' : '')}
           title={`Top ${TOP_N} net buyer (${ukuran}) pada rentang terpilih — definisi PAPAN, bukan kutipan NeoBDM`}
           onClick={() => setPreset('nb')}>Top {TOP_N} NB</button>
         <button type="button" className={'chip-t' + (preset === 'ns' ? ' on' : '')}
           onClick={() => setPreset('ns')}>Top {TOP_N} NS</button>
+        {/* Preset kelompok dari kurasi PAPAN (kelompokBroker.ts) — bukan
+            penggolongan resmi bursa; (aktif/anggota) jujur, nol aktif =
+            nonaktif dengan alasan, bukan grafik kosong (spek 27 Agu §3). */}
+        {([
+          ['asing', 'Asing aktif besar', 'asing' as const],
+          ['smart', 'Smart Money', 'smart' as const],
+          ['institusi', 'Institusi', null],
+          ['lokal', 'Lokal', null],
+        ] as const).map(([id, label, kel]) => {
+          const aktif = aktifKelompok[id].length
+          const anggota = id === 'institusi'
+            ? anggotaKelompok('smart') + anggotaKelompok('bumn')
+            : id === 'lokal'
+              ? null // "semua kecuali asing" — penyebut kurasi tak bermakna
+              : anggotaKelompok(kel!)
+          const porsiLain = id === 'lokal' && aktifKelompok.lokal.length
+            ? Math.round((aktifKelompok.lain.length / aktifKelompok.lokal.length) * 100)
+            : 0
+          const judul = `Kurasi PAPAN, bukan penggolongan resmi bursa. ${
+            id === 'asing' ? `Anggota kelompok asing yang aktif di rentang ini, ${GARIS_MAKS} terbesar menurut nilai.`
+            : id === 'smart' ? `Broker kurasi "smart money" yang aktif di rentang ini (maks ${GARIS_MAKS} garis).`
+            : id === 'institusi' ? `Smart money + sekuritas BUMN yang aktif (maks ${GARIS_MAKS} garis).`
+            : `Semua broker non-asing yang aktif (maks ${GARIS_MAKS} garis)${porsiLain > 30 ? ` — ${porsiLain}% di antaranya belum terkurasi kelompoknya` : ''}.`
+          }${aktif === 0 ? ' TIDAK ADA yang aktif di rentang ini.' : ''}`
+          return (
+            <button key={id} type="button" disabled={aktif === 0}
+              className={'chip-t' + (preset === id ? ' on' : '')}
+              title={judul}
+              onClick={() => setPreset(id)}>
+              {label}{anggota != null ? ` (${Math.min(aktif, GARIS_MAKS)}/${anggota})` : ` (${Math.min(aktif, GARIS_MAKS)})`}
+            </button>
+          )
+        })}
         <button type="button" className={'chip-t' + (preset === 'manual' ? ' on' : '')}
           onClick={() => setPreset('manual')}>Pilih sendiri</button>
         {preset === 'manual' && (

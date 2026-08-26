@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { TombolLayarPenuh } from '../../../components/dasbor/TombolLayarPenuh'
+import { Chart as ChartJS } from 'chart.js/auto'
 import type { ChartConfiguration, Plugin, ScriptableLineSegmentContext } from 'chart.js/auto'
 import { useChartCanvas, bacaTokenTema } from '../../../lib/dasbor/useChartJs'
 import { useTheme } from '../../../context/ThemeContext'
@@ -22,12 +23,23 @@ import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
  */
 
 const OPSI_N = [4, 8, 12]
-const TRAIL = 6
+/** Kode PILL per sektor = akhiran indeks sektoral IDX-IC RESMI (IDXFINANCE
+ *  dst - daftar terverifikasi di ChartIndeks TV_GROUPS.sektoral). Nama penuh
+ *  Bahasa Indonesia terlalu panjang untuk pill di plot ("Barang Konsumen
+ *  Non-Primer") dan itulah sebagian "benang kusut" yang Johan lihat. */
+const KODE_SEKTOR: Record<string, string> = {
+  'Energi': 'ENERGY', 'Barang Baku': 'BASIC', 'Perindustrian': 'INDUST',
+  'Barang Konsumen Primer': 'NONCYC', 'Barang Konsumen Non-Primer': 'CYCLIC',
+  'Kesehatan': 'HEALTH', 'Keuangan': 'FINANCE', 'Properti & Real Estat': 'PROPERT',
+  'Infrastruktur': 'INFRA', 'Transportasi & Logistik': 'TRANS', 'Teknologi': 'TECHNO',
+}
+const OPSI_JEJAK = [4, 6, 8] as const
+const TRAIL_MAKS = 8
 const MAX_N = Math.max(...OPSI_N)
 /** Lebar fetch pekan: warm-up kompoun (TERMASUK EMA — koreksi atas §1.3
  *  spek yang menulis 3n-2) + ekor + penyangga. Hardcode -40 lama membuat
  *  n=12 nyaris kosong. */
-const LEBAR_PEKAN = warmUpRrg(MAX_N, RRG_DEFAULT.smoothLen) + TRAIL + 5
+const LEBAR_PEKAN = warmUpRrg(MAX_N, RRG_DEFAULT.smoothLen) + TRAIL_MAKS + 5
 
 /**
  * Level sektor TERTIMBANG KAPITALISASI (harga × saham beredar, dirantai per
@@ -80,6 +92,12 @@ export function RotasiTab() {
   const [n, setN] = useState(RRG_DEFAULT.n)
   const [likuidSaja, setLikuidSaja] = useState(false)
   const [sembunyiLemah, setSembunyiLemah] = useState(false)
+  /** Panjang jejak (pekan). Bawaan 4 - 6 terukur jadi benang kusut di 11
+   *  sektor (Johan 27 Agu); yang butuh riwayat lebih tinggal menaikkan. */
+  const [jejak, setJejak] = useState<number>(4)
+  /** Sektor yang sedang di-hover (kanvas ATAU legenda) - jejak lain redup.
+   *  Ref, bukan state: hover cuma memicu update('none') chart. */
+  const sorotRef = useRef<string | null>(null)
   const [sembunyiAbnormal, setSembunyiAbnormal] = useState(true)
   /** Legenda HTML (bukan legenda Chart.js) — sektor yang dimatikan klik. */
   const [sektorMati, setSektorMati] = useState<ReadonlySet<string>>(new Set())
@@ -127,7 +145,7 @@ export function RotasiTab() {
         if (sembunyiAbnormal && Math.abs(p.rsRatio - 100) > 15) return
         valid.push({ x: p.rsRatio, y: p.rsMomentum, t: kalender[pekanIdx[i]] })
       })
-      hasil[s] = valid.slice(-TRAIL)
+      hasil[s] = valid.slice(-jejak)
       // Likuiditas sektor: median nilai transaksi harian sampel 20 hari terakhir.
       const nilaiHarian = new Map<string, number>()
       for (const k of kand) {
@@ -139,7 +157,7 @@ export function RotasiTab() {
       likuiditas[s] = urut.length ? urut[Math.floor(urut.length / 2)] : 0
     }
     return { hasil, likuiditas }
-  }, [uni, ihsg, sektorList, n, sembunyiAbnormal])
+  }, [uni, ihsg, sektorList, n, sembunyiAbnormal, jejak])
 
   const tampilList = useMemo(() => {
     if (!trail) return []
@@ -211,18 +229,27 @@ export function RotasiTab() {
       },
       afterDatasetsDraw(chart) {
         // 6-7. label pill + panah arah di titik terkini tiap sektor tampil.
-        const { ctx } = chart
+        const { ctx, chartArea } = chart
+        const sorot = sorotRef.current
         ctx.save()
         ctx.font = '600 10px system-ui, sans-serif'
+        // Kumpulkan pill dulu, DODGE anti-tumpuk (pola pitaCprChart: titik
+        // data tetap di tempatnya, hanya label yang digeser vertikal), baru
+        // gambar - 11 pill saling tindih = keluhan "gak rapi" Johan.
+        const TINGGI = 15
+        interface Pill { teks: string; x: number; y: number; lebar: number; warna: string; redup: boolean }
+        const pills: Pill[] = []
         chart.data.datasets.forEach((ds, di) => {
           const meta = chart.getDatasetMeta(di)
           if (meta.hidden || !meta.data.length) return
           const akhir = meta.data[meta.data.length - 1]
           const sebelum = meta.data.length > 1 ? meta.data[meta.data.length - 2] : null
+          const namaSektor = String(ds.label ?? '')
+          const redup = sorot !== null && sorot !== namaSektor
           const warna = String(ds.borderColor)
-          // panah arah dari vektor (terkini − sebelumnya) — enhancement
           if (sebelum) {
             const sudut = Math.atan2(akhir.y - sebelum.y, akhir.x - sebelum.x)
+            ctx.globalAlpha = redup ? 0.18 : 1
             ctx.fillStyle = warna
             ctx.translate(akhir.x, akhir.y)
             ctx.rotate(sudut)
@@ -230,21 +257,43 @@ export function RotasiTab() {
             ctx.moveTo(10, 0); ctx.lineTo(3, -3.6); ctx.lineTo(3, 3.6)
             ctx.closePath(); ctx.fill()
             ctx.setTransform(1, 0, 0, 1, 0, 0)
+            ctx.globalAlpha = 1
           }
-          // pill kode di samping titik terkini
-          const teks = String(ds.label ?? '')
+          const teks = KODE_SEKTOR[namaSektor] ?? namaSektor
           const lebar = ctx.measureText(teks).width + 10
-          const px = akhir.x + 12
-          const py = akhir.y - 8
-          ctx.fillStyle = warna
+          // Pill selalu menghadap KE DALAM plot: titik di paruh kanan diberi
+          // pill di KIRI titiknya (gaya RRG standar) — titik dekat tepi tak
+          // pernah mendorong labelnya keluar area gambar.
+          const tengah = chartArea ? (chartArea.left + chartArea.right) / 2 : 0
+          let x = akhir.x > tengah ? akhir.x - 12 - lebar : akhir.x + 12
+          if (chartArea) x = Math.max(chartArea.left + 2, Math.min(x, chartArea.right - lebar - 4))
+          pills.push({ teks, x, y: akhir.y - TINGGI / 2, lebar, warna, redup })
+        })
+        // dodge vertikal: urut y, geser turun bila menimpa pill di atasnya
+        pills.sort((a, b) => a.y - b.y)
+        for (let i = 1; i < pills.length; i++) {
+          const atas = pills[i - 1]
+          const ini = pills[i]
+          const tumpuk = ini.y < atas.y + TINGGI + 2 &&
+            ini.x < atas.x + atas.lebar + 4 && atas.x < ini.x + ini.lebar + 4
+          if (tumpuk) ini.y = atas.y + TINGGI + 2
+        }
+        if (import.meta.env.DEV) {
+          ;(window as Window & { __rrgPills?: unknown }).__rrgPills =
+            pills.map((q) => ({ t: q.teks, x: Math.round(q.x), u: Math.round(q.x + q.lebar) }))
+        }
+        for (const pl of pills) {
+          ctx.globalAlpha = pl.redup ? 0.18 : 1
+          ctx.fillStyle = pl.warna
           ctx.beginPath()
-          ctx.roundRect(px, py, lebar, 15, 7.5)
+          ctx.roundRect(pl.x, pl.y, pl.lebar, TINGGI, TINGGI / 2)
           ctx.fill()
           ctx.fillStyle = '#fff'
           ctx.textAlign = 'left'
           ctx.textBaseline = 'middle'
-          ctx.fillText(teks, px + 5, py + 7.5)
-        })
+          ctx.fillText(pl.teks, pl.x + 5, pl.y + TINGGI / 2)
+          ctx.globalAlpha = 1
+        }
         ctx.restore()
       },
     }
@@ -265,7 +314,11 @@ export function RotasiTab() {
             // 5. ekor gradasi: segmen tertua pudar → terkini pekat
             segment: {
               borderColor: (c: ScriptableLineSegmentContext) => {
-                const f = 0.15 + 0.85 * (c.p1DataIndex / Math.max(1, ekor.length - 1))
+                let f = 0.15 + 0.85 * (c.p1DataIndex / Math.max(1, ekor.length - 1))
+                // Hover meredupkan jejak LAIN (spek 27 Agu) - data tak
+                // dibuang, cuma diberi panggung.
+                const sorot = sorotRef.current
+                if (sorot !== null && sorot !== s) f *= 0.14
                 const alpha = Math.round(f * 255).toString(16).padStart(2, '0')
                 return warna.length === 7 ? `${warna}${alpha}` : warna
               },
@@ -280,6 +333,16 @@ export function RotasiTab() {
         responsive: true,
         maintainAspectRatio: false,
         aspectRatio: 1,
+        onHover: (e, _el, chart) => {
+          // Sorot sektor terdekat kursor; jejak lain diredupkan lewat
+          // sorotRef (update 'none' - tanpa animasi, tanpa render React).
+          const el = chart.getElementsAtEventForMode(e as unknown as Event, 'nearest', { intersect: false }, true)
+          const baru = el.length ? tampilList[el[0].datasetIndex] ?? null : null
+          if (sorotRef.current !== baru) {
+            sorotRef.current = baru
+            chart.update('none')
+          }
+        },
         plugins: {
           // Legenda pindah ke HTML di samping kanvas (ala panel Bloomberg) —
           // sekaligus membuat ukuran plot bisa PRESISI: plot = kanvas −
@@ -318,6 +381,15 @@ export function RotasiTab() {
     }
   }, [trail, tampilList, sektorList, theme])
   const ref = useChartCanvas(config)
+  // Instance chart via registry resmi Chart.js (hook tak mengeksposnya) —
+  // dipakai hover legenda untuk memicu redraw redup/pekat.
+  const chartAktif = () => (ref.current ? ChartJS.getChart(ref.current) : undefined)
+  useEffect(() => {
+    // Hook QA dev-only (pola __papanChart TransaksiTab) — uji pill/dodge.
+    if (import.meta.env.DEV && ref.current) {
+      (ref.current as HTMLCanvasElement & { __papanChart?: unknown }).__papanChart = chartAktif()
+    }
+  })
 
   if (uni === undefined) return <Kosong>Memuat sampel sektor…</Kosong>
   if (!uni) return <Kosong>Data screener untuk membangun sampel sektor belum tersedia.</Kosong>
@@ -331,7 +403,7 @@ export function RotasiTab() {
         <TombolLayarPenuh target={panelRef} aktif={layarPenuh} />
       </div>
       <p className="np-sub">
-        X: RS-Ratio (kekuatan relatif) · Y: RS-Momentum (laju perubahannya). Jejak {TRAIL} pekan,
+        X: RS-Ratio (kekuatan relatif) · Y: RS-Momentum (laju perubahannya). Jejak {jejak} pekan,
         titik besar + panah = pekan terbaru. Acuan: IHSG · data s.d. {barTerakhir}.
         {' '}Posisi rotasi historis, bukan rekomendasi beli/jual.
       </p>
@@ -343,6 +415,13 @@ export function RotasiTab() {
           opsi={OPSI_N.map((p) => ({ id: String(p), label: `${p} pekan` }))}
           nilai={String(n)}
           onGanti={(id) => setN(Number(id))}
+        />
+        <span className="np-lbl" style={{ marginLeft: 8 }}>Jejak</span>
+        <PemilihRentang
+          opsi={OPSI_JEJAK.map((j) => ({ id: String(j), label: `${j} pekan` }))}
+          nilai={String(jejak)}
+          onGanti={(id) => setJejak(Number(id))}
+          ariaLabel="Panjang jejak"
         />
         <button type="button" className={'chip-t' + (likuidSaja ? ' on' : '')}
           title="Sembunyikan sektor dengan median nilai transaksi sampel 20 hari di kuartil bawah"
@@ -366,7 +445,9 @@ export function RotasiTab() {
             const warna = bacaTokenTema(TOKEN_SERI[sektorList.indexOf(s) % TOKEN_SERI.length])
             const mati = sektorMati.has(s)
             return (
-              <div key={s} className={'np-rrg-item' + (mati ? ' mati' : '') + (sektorPilih === s ? ' pilih' : '')}>
+              <div key={s} className={'np-rrg-item' + (mati ? ' mati' : '') + (sektorPilih === s ? ' pilih' : '')}
+                onMouseEnter={() => { sorotRef.current = s; chartAktif()?.update('none') }}
+                onMouseLeave={() => { sorotRef.current = null; chartAktif()?.update('none') }}>
                 <button type="button" className="np-rrg-swatch" style={{ background: warna }}
                   title={mati ? 'Tampilkan jejaknya lagi' : 'Sembunyikan jejaknya'}
                   aria-label={`${mati ? 'Tampilkan' : 'Sembunyikan'} ${s}`}

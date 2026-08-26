@@ -3311,7 +3311,10 @@
 
 /* Baris kendali (Compare kiri/kanan, Stalker chip broker+jendela, Activity
    sektor/indeks) — flex sederhana, bukan bentuk baru. */
-.neo-papan .np-baris { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+/* SATU variabel jarak baris kendali (spek konsistensi 27 Agu §2) — "baris
+   kendali rapat" adalah keluhan berulang justru karena tiap halaman menyetel
+   gap sendiri. Timpa lewat --jarak-kendali, jangan tulis gap baru. */
+.neo-papan .np-baris { display: flex; align-items: center; gap: var(--jarak-kendali, 10px); flex-wrap: wrap; margin: 10px 0; }
 /* RRG PRESISI bujursangkar (Johan 26 Agu: "lebar tinggi besar nya presisi").
    Sumbu dikunci afterFit (y=60px, x=52px) dan legenda hidup di HTML — plot =
    (540−60) × (532−52) = 480×480 persis. Di layar sempit kanvas menyusut
@@ -3327,8 +3330,22 @@
   background: var(--bg0, #101114);
   padding: 18px 22px;
 }
+/* Cadangan tinggi 250px KURANG — terukur 27 Agu di 1080p: isi 1292 vs layar
+ * 1198, panel menggulir dan judul + tombol "Keluar Layar Penuh" tersembunyi
+ * di atas (bug layar penuh Johan). 460px = kepala+sub+kendali+chips nyata
+ * (340 pun masih kurang 106px — diukur ulang). */
 .neo-papan .np-rrg-panel:fullscreen .np-rrg-wrap {
-  width: min(100%, calc((100vh - 250px) * 1.015 + 60px));
+  width: min(100%, calc((100vh - 460px) * 1.015 + 60px));
+}
+/* Jaring kedua: kalaupun isi tetap lebih tinggi (kendali membungkus dua
+ * baris di layar sempit), judul & baris kendali menempel di atas — tombol
+ * keluar tak pernah ikut tergulir hilang. */
+.neo-papan .np-rrg-panel:fullscreen .np-rrg-kepala {
+  position: sticky;
+  top: -18px;
+  z-index: 6;
+  background: var(--bg0, #101114);
+  padding: 6px 0;
 }
 .neo-papan .np-rrg-legenda { display: flex; flex-direction: column; gap: 3px; min-width: 170px; font-size: 11px; }
 .neo-papan .np-rrg-item { display: flex; align-items: center; gap: 7px; }
