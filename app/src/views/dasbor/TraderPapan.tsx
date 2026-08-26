@@ -91,8 +91,8 @@ function Strip({ net }: { net: number[] }) {
 
 export default function TraderPapan() {
   const { index: indeks } = useStockIndex()
-  const [ketik, setKetik] = useState('BUMI')
-  const [kode, setKode] = useState('BUMI')
+  const [ketik, setKetik] = useState('BBCA')
+  const [kode, setKode] = useState('BBCA')
   const [rentang, setRentang] = useState<IdRentang>('b3')
   const [batasBaris, setBatasBaris] = useState(BARIS_AWAL)
 

@@ -36,12 +36,15 @@ function Metrik({ k, ket, v, warna }: { k: string; ket?: string; v: string; warn
 }
 
 interface VsIhsgProps {
+  /** Kode emiten yang sedang dilihat — label seri chart. Dulu hardcode
+   *  'BUMI', jadi semua emiten berlabel BUMI di legenda (temuan sweep #355). */
+  kode: string
   saham: BarisOhlcv[]
   ihsg: BarisOhlcv[]
 }
 
 /** Tab "vs IHSG" — port `deretVs()`+`renderVsIHSG()` mockup: rebased, RS trend, 3 panel metrik. */
-export function VsIhsg({ saham, ihsg }: VsIhsgProps) {
+export function VsIhsg({ kode, saham, ihsg }: VsIhsgProps) {
   const { theme } = useTheme()
   const [rentang, setRentang] = useState<RentangVs>('b6')
   const n = hariUntukRentang(rentang, saham)
@@ -57,7 +60,7 @@ export function VsIhsg({ saham, ihsg }: VsIhsgProps) {
       data: {
         labels: r.tgl,
         datasets: [
-          { label: 'BUMI', data: r.rebasedSaham, borderColor: '#38B77E', borderWidth: 2.2, pointRadius: 0 },
+          { label: kode, data: r.rebasedSaham, borderColor: '#38B77E', borderWidth: 2.2, pointRadius: 0 },
           { label: 'IHSG', data: r.rebasedIhsg, borderColor: '#5B94E8', borderWidth: 2, pointRadius: 0 },
         ],
       },

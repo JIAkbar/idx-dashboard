@@ -120,8 +120,8 @@ interface SelIntra {
 export default function WhalesPapan() {
   const { index: indeks } = useStockIndex()
   const { theme } = useTheme()
-  const [ketik, setKetik] = useState('BUMI')
-  const [kode, setKode] = useState('BUMI')
+  const [ketik, setKetik] = useState('BBCA')
+  const [kode, setKode] = useState('BBCA')
   const { hari, tahunAda, muat, galat } = useBrokerTahunan(kode)
 
   const ringkasKartu = useRingkasKartu()

@@ -96,7 +96,7 @@ function mulaiPreset(id: PresetId, akhir: string): string {
  */
 export function BrokerSummaryV2() {
   const { index } = useStockIndex()
-  const [kode, setKode] = useState('BUMI')
+  const [kode, setKode] = useState('BBCA')
   const [cari, setCari] = useState('')
   const [investor, setInvestor] = useState('semua')
   const [pasar, setPasar] = useState('reguler')
@@ -254,7 +254,7 @@ export function BrokerSummaryV2() {
             {tab === 'overview' && <Overview hari={hariAktif} agg={agg} mode={mode} ukuran={ukuran} />}
             {tab === 'inventory' && <Inventory hari={hariAktif} agg={agg} ohlcv={ohlcvAktif} />}
             {tab === 'flow' && <FlowNetGross hari={hariAktif} agg={agg} />}
-            {tab === 'vsihsg' && <VsIhsg saham={ohlcv ?? []} ihsg={ihsg ?? []} />}
+            {tab === 'vsihsg' && <VsIhsg kode={kode} saham={ohlcv ?? []} ihsg={ihsg ?? []} />}
             {tab === 'foreign' && <TimelineForeign bars={ohlcv ?? []} />}
             {tab === 'shareholders' && <Shareholders kode={kode} />}
             {tab === 'nego' && <Nego hari={hariAktif} />}

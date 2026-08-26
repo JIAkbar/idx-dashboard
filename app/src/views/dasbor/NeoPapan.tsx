@@ -40,8 +40,8 @@ const TABS: { id: Tab; label: string }[] = [
 export function NeoPapan() {
   const { index: indeks } = useStockIndex()
   const [tab, setTab] = useState<Tab>('transaksi')
-  const [kode, setKode] = useState('BUMI')
-  const [ketik, setKetik] = useState('BUMI')
+  const [kode, setKode] = useState('BBCA')
+  const [ketik, setKetik] = useState('BBCA')
   const [rentang, setRentang] = useState<RentangNp>('b3')
 
   return (

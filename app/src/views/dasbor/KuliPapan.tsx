@@ -51,8 +51,8 @@ function Riwayat({ baris }: { baris: BarisRiwayat[] }) {
 
 export function KuliPapan() {
   const [tab, setTab] = useState<Tab>('target')
-  const [kode, setKode] = useState('BUMI')
-  const [ketik, setKetik] = useState('BUMI')
+  const [kode, setKode] = useState('BBCA')
+  const [ketik, setKetik] = useState('BBCA')
   // Daftar emiten yang sama dipakai Stock Detail — kotak teks polos tanpa
   // saran memaksa pengguna hafal kodenya, dan itu bukan alat bantu.
   const { index: indeks } = useStockIndex()
