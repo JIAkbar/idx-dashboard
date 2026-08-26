@@ -388,14 +388,18 @@ export async function ambilHarianPapan(tanggal: string, pengambil: typeof fetch 
 }
 
 let cacheTanggal: DataTanggalHarianPapan | null = null
+let cacheTanggalSejak = 0
+// TTL 30 menit (audit kesegaran 27 Agu §2) — pola screener.ts; tanpa ini data halaman membeku sampai muat-ulang penuh.
+const UMUR_CACHE_MS = 30 * 60 * 1000
 
 export function useTanggalHarianPapan(): DataTanggalHarianPapan | null {
-  const [data, setData] = useState<DataTanggalHarianPapan | null>(cacheTanggal)
+  const segar = cacheTanggal !== null && Date.now() - cacheTanggalSejak < UMUR_CACHE_MS
+  const [data, setData] = useState<DataTanggalHarianPapan | null>(segar ? cacheTanggal : null)
   useEffect(() => {
-    if (cacheTanggal) return
+    if (cacheTanggal && Date.now() - cacheTanggalSejak < UMUR_CACHE_MS) { setData(cacheTanggal); return }
     let batal = false
     void ambilTanggalHarianPapan().then((d) => {
-      if (d) cacheTanggal = d
+      if (d) { cacheTanggal = d; cacheTanggalSejak = Date.now() }
       if (!batal) setData(d)
     })
     return () => { batal = true }

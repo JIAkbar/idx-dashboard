@@ -72,11 +72,13 @@ describe('pilihTopInventaris', () => {
 })
 
 describe('saringTahunAwal', () => {
-  it('membuang tahun < 2020, sisanya lolos', () => {
-    expect(saringTahunAwal([2018, 2019, 2020, 2026])).toEqual({ tahun: [2020, 2026], tutup: false })
+  // TAHUN_AWAL 2020 -> 2016 (keputusan Johan 27 Agu, backfill 2016-2019
+  // selesai) — kasus uji ikut bergeser ke lantai sumber 2016.
+  it('membuang tahun < 2016, sisanya lolos', () => {
+    expect(saringTahunAwal([2014, 2015, 2016, 2026])).toEqual({ tahun: [2016, 2026], tutup: false })
   })
   it('seluruhnya tahun lama -> tahun null, tutup true', () => {
-    expect(saringTahunAwal([2017, 2018])).toEqual({ tahun: null, tutup: true })
+    expect(saringTahunAwal([2014, 2015])).toEqual({ tahun: null, tutup: true })
   })
   it('larik kosong (belum dipanen sama sekali) -> tutup false', () => {
     expect(saringTahunAwal([])).toEqual({ tahun: null, tutup: false })

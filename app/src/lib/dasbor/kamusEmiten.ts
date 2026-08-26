@@ -39,12 +39,16 @@ export interface KamusEmiten {
 
 /** Cache modul — pola sama `useKabar`/`useBulletinList`: sekali per sesi. */
 let cache: KamusEmiten | null = null
+let cacheSejak = 0
+// TTL 30 menit (audit kesegaran 27 Agu §2) — pola screener.ts; tanpa ini data halaman membeku sampai muat-ulang penuh.
+const UMUR_CACHE_MS = 30 * 60 * 1000
 
 export function useKamusEmiten() {
-  const [kamus, setKamus] = useState<KamusEmiten | null>(cache)
+  const segar = cache !== null && Date.now() - cacheSejak < UMUR_CACHE_MS
+  const [kamus, setKamus] = useState<KamusEmiten | null>(segar ? cache : null)
 
   useEffect(() => {
-    if (cache) return
+    if (cache && Date.now() - cacheSejak < UMUR_CACHE_MS) return
     let batal = false
     Promise.all([
       fetch('/data-idx/json/harga_terakhir.json').then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status))))),
@@ -63,6 +67,7 @@ export function useKamusEmiten() {
           grup: g.grup ?? {},
         }
         cache = k
+        cacheSejak = Date.now()
         if (!batal) setKamus(k)
       })
       .catch(() => { /* Tanya PAPAN tetap jalan tanpa kamus — cuma pencarian nama & harga cadangan yang hilang. */ })

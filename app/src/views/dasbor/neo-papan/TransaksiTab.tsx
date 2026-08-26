@@ -8,6 +8,7 @@ import { moneyFlowAsing } from '../../../lib/dasbor/neoPapan'
 import { useTheme } from '../../../context/ThemeContext'
 import { fmtB, Kosong, Kv, KvGrid, Sumber, potongRentang, type RentangNp } from './bersama'
 import { captionRentang } from '../../../lib/dasbor/rentang'
+import { PERINGATAN_PRA_BROKER, praBroker } from '../../../lib/dasbor/brokerEmitenV2'
 
 /**
  * Transaction Chart V2 (spek §8 + PENAJAMAN2 §6) — lightweight-charts:
@@ -145,7 +146,12 @@ export function TransaksiTab({ kode, rentang }: { kode: string; rentang: Rentang
       <h2>{kode} — Transaction Chart</h2>
       {/* Rentang SEBENARNYA (modul rentang §2) — preset y5 di emiten muda
           harus terbaca "cuma segini datanya", bukan diam-diam lebih pendek. */}
-      {rows.length > 0 && <p className="np-sub">{captionRentang(rows, (b) => b.t)}</p>}
+      {rows.length > 0 && (
+        <p className="np-sub">
+          {captionRentang(rows, (b) => b.t)}
+          {praBroker(rows[0].t) && <span className="np-parsial"> · {PERINGATAN_PRA_BROKER}</span>}
+        </p>
+      )}
       <p className="np-sub">
         Candle + IHSG basis-100 (kiri) + volume; di bawahnya net asing harian, nilai Asing vs Total,
         dan Participation per sisi (beli/jual asing ÷ total nilai — dua rasio TERPISAH, masing-masing

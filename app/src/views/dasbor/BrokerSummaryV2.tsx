@@ -9,7 +9,7 @@ import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { agregatBroker, type ModeTransaksi } from '../../lib/dasbor/brokerEmiten'
-import { useArusBrokerEmiten, useOhlcvEmiten, irisOhlcv } from '../../lib/dasbor/brokerEmitenV2'
+import { TAHUN_AWAL, useArusBrokerEmiten, useOhlcvEmiten, irisOhlcv } from '../../lib/dasbor/brokerEmitenV2'
 import { keFraksi } from '../../lib/fraksiHarga'
 import { Overview } from './broker-summary-v2/Overview'
 import { Inventory } from './broker-summary-v2/Inventory'
@@ -123,7 +123,7 @@ export function BrokerSummaryV2() {
   // termuat memang berawal di 2020+, beri tahu pembaca kenapa pemilih tanggal
   // tak bisa mundur lebih jauh — supaya tak terbaca sebagai "tanggal lama
   // sengaja disembunyikan/rusak".
-  const cakupanDitutup = tanggalTersedia.length > 0 && tanggalTersedia[0] >= '2020-01-01'
+  const cakupanDitutup = tanggalTersedia.length > 0 && tanggalTersedia[0] >= `${TAHUN_AWAL}-01-01`
 
   useEffect(() => { setDari(''); setAkhir('') }, [kode])
   useEffect(() => {
@@ -218,7 +218,7 @@ export function BrokerSummaryV2() {
         {cakupanDitutup && (
           <div className="panel-b" style={{ borderTop: '1px solid var(--line)' }}>
             <div className="chip dn" style={{ display: 'flex', whiteSpace: 'normal', height: 'auto', lineHeight: 1.5 }}>
-              <span><IkonMenu d={IKON_PERINGATAN} size={14} /> Rentang tanggal dibatasi sejak 2020 — tahun sebelumnya belum masuk gelombang pengumpulan, jadi belum bisa dipilih di sini.</span>
+              <span><IkonMenu d={IKON_PERINGATAN} size={14} /> Rentang tanggal dibatasi sejak {TAHUN_AWAL} — tahun sebelumnya belum masuk gelombang pengumpulan, jadi belum bisa dipilih di sini.</span>
             </div>
           </div>
         )}

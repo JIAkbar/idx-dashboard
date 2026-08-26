@@ -31,6 +31,10 @@ export interface Kabar {
  *  berat begitu `/kabar` pernah dibuka. */
 let cache: Kabar | null = null
 let cacheArsip: Kabar | null = null
+let cacheSejak = 0
+let cacheArsipSejak = 0
+// TTL 30 menit (audit kesegaran 27 Agu §2) — pola screener.ts; tanpa ini data halaman membeku sampai muat-ulang penuh.
+const UMUR_CACHE_MS = 30 * 60 * 1000
 
 /**
  * Gabung tiga berkas jadi satu daftar, buang yang benar-benar kembar.
@@ -70,12 +74,18 @@ export function gabungKabar(utama: Kabar, snips: KabarItem[], arsip: KabarItem[]
  * ke server orang untuk data yang sama. Panen dijalankan di mesin rumahan
  * (`scripts/panen_kabar.py`), hasilnya berkas JSON yang ikut ter-deploy.
  */
+function segarKabar(denganArsip: boolean): boolean {
+  return denganArsip
+    ? cacheArsip !== null && Date.now() - cacheArsipSejak < UMUR_CACHE_MS
+    : cache !== null && Date.now() - cacheSejak < UMUR_CACHE_MS
+}
+
 export function useKabar(denganArsip = false) {
-  const [kabar, setKabar] = useState<Kabar | null>(denganArsip ? cacheArsip : cache)
+  const [kabar, setKabar] = useState<Kabar | null>(segarKabar(denganArsip) ? (denganArsip ? cacheArsip : cache) : null)
   const [galat, setGalat] = useState(false)
 
   useEffect(() => {
-    if (denganArsip ? cacheArsip : cache) return
+    if (segarKabar(denganArsip)) return
     let batal = false
     // DUA berkas, satu aliran. `kabar.json` berumur pendek (retensi 7 hari,
     // dipanen tiap jam); `snips.json` arsip panjang Stockbit Snips setahun
@@ -104,8 +114,8 @@ export function useKabar(denganArsip = false) {
     ])
       .then(([utama, snips, arsip]: [Kabar, { item?: KabarItem[] }, { item?: KabarItem[] }]) => {
         const gabung = gabungKabar(utama, snips.item ?? [], arsip.item ?? [])
-        if (denganArsip) cacheArsip = gabung
-        else cache = gabung
+        if (denganArsip) { cacheArsip = gabung; cacheArsipSejak = Date.now() }
+        else { cache = gabung; cacheSejak = Date.now() }
         if (!batal) setKabar(gabung)
       })
       .catch(() => !batal && setGalat(true))

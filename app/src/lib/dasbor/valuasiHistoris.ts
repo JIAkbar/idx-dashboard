@@ -162,15 +162,24 @@ export function rasioKini(harga: number | null | undefined, perSaham: number | n
 /* ── Pemuat berkas (cache modul, pola sama sektorIdx.ts) ── */
 
 let cache: DaftarValuasi | null = null
+let cacheSejak = 0
 let sedangAmbil: Promise<DaftarValuasi> | null = null
+// TTL 30 menit (audit kesegaran 27 Agu §2) — pola screener.ts; tanpa ini data halaman membeku sampai muat-ulang penuh.
+const UMUR_CACHE_MS = 30 * 60 * 1000
+
+function segar(): boolean {
+  return cache !== null && Date.now() - cacheSejak < UMUR_CACHE_MS
+}
 
 export function muatValuasi(): Promise<DaftarValuasi> {
-  if (cache) return Promise.resolve(cache)
+  if (segar()) return Promise.resolve(cache!)
+  cache = null
   if (!sedangAmbil) {
     sedangAmbil = fetch('/data-idx/json/valuasi_historis.json')
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((d: DaftarValuasi) => {
         cache = d
+        cacheSejak = Date.now()
         return d
       })
       .finally(() => {
@@ -181,9 +190,9 @@ export function muatValuasi(): Promise<DaftarValuasi> {
 }
 
 export function useValuasiHistoris() {
-  const [daftar, setDaftar] = useState<DaftarValuasi | null>(cache)
+  const [daftar, setDaftar] = useState<DaftarValuasi | null>(segar() ? cache : null)
   useEffect(() => {
-    if (cache) return
+    if (segar()) return
     let batal = false
     muatValuasi()
       .then((d) => !batal && setDaftar(d))

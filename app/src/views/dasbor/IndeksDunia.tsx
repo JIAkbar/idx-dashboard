@@ -610,7 +610,7 @@ export function IndeksDunia() {
   return (
     <div className="lantai">
       <PapanIhsg hari={hari} tanggalTersedia={tanggalTersedia} buka={buka} />
-      <KonteksData tanggal={tanggalAktif} />
+      <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
       <CatatanCakupan />
 
       <div className="grid2 w-kiri">

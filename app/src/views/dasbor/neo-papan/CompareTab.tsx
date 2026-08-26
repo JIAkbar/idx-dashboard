@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { TAHUN_AWAL } from '../../../lib/dasbor/brokerEmitenV2'
 import {
   CandlestickSeries, CrosshairMode, createChart,
   type IChartApi, type ISeriesApi, type SeriesType,
@@ -344,7 +345,7 @@ export function CompareTab({ kode }: { kode: string }) {
         </div>
       )}
 
-      <Sumber>Rincian broker dari arsip tahunan (2020–2026), pasar reguler seluruh investor.</Sumber>
+      <Sumber>Rincian broker dari arsip tahunan (sejak {TAHUN_AWAL}), pasar reguler seluruh investor.</Sumber>
     </section>
   )
 }

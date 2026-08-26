@@ -1,4 +1,5 @@
 import { IkonMenu, IKON_INFO } from './IkonMenu'
+import { TAHUN_AWAL } from '../../lib/dasbor/brokerEmitenV2'
 
 /**
  * Keterangan cakupan data (27 Agu 2026 — broker dibuka ke 2016, ketetapan
@@ -13,7 +14,7 @@ export function CatatanCakupan() {
   return (
     <p className="catatan-cakupan muted">
       <IkonMenu d={IKON_INFO} size={12} />
-      Rincian broker tersedia dan tervalidasi sejak 2016. Riwayat harga tersedia sejak emiten tercatat di bursa.
+      Rincian broker tersedia dan tervalidasi sejak {TAHUN_AWAL}. Riwayat harga tersedia sejak emiten tercatat di bursa.
     </p>
   )
 }

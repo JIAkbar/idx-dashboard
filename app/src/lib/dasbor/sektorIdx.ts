@@ -48,15 +48,24 @@ export function papanBerisiko(papan: string | null | undefined): boolean {
 /** Cache modul — pola sama `useKabar`/`useBulletinList`. Berkasnya ±200 KB dan
  *  tak berubah dalam satu sesi. */
 let cache: DaftarSektor | null = null
+let cacheSejak = 0
 let sedangAmbil: Promise<DaftarSektor> | null = null
+// TTL 30 menit (audit kesegaran 27 Agu §2) — pola screener.ts; tanpa ini data halaman membeku sampai muat-ulang penuh.
+const UMUR_CACHE_MS = 30 * 60 * 1000
+
+function segar(): boolean {
+  return cache !== null && Date.now() - cacheSejak < UMUR_CACHE_MS
+}
 
 export function muatSektor(): Promise<DaftarSektor> {
-  if (cache) return Promise.resolve(cache)
+  if (segar()) return Promise.resolve(cache!)
+  cache = null
   if (!sedangAmbil) {
     sedangAmbil = fetch('/data-idx/json/emiten_sektor.json')
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((d: DaftarSektor) => {
         cache = d
+        cacheSejak = Date.now()
         return d
       })
       .finally(() => {
@@ -67,9 +76,9 @@ export function muatSektor(): Promise<DaftarSektor> {
 }
 
 export function useSektorIdx() {
-  const [daftar, setDaftar] = useState<DaftarSektor | null>(cache)
+  const [daftar, setDaftar] = useState<DaftarSektor | null>(segar() ? cache : null)
   useEffect(() => {
-    if (cache) return
+    if (segar()) return
     let batal = false
     muatSektor()
       .then((d) => !batal && setDaftar(d))

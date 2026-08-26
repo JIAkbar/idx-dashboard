@@ -12,6 +12,10 @@ interface KonteksDataProps {
    * daripada disembunyikan (konsisten dgn pola `memuat` Kalender.tsx).
    */
   tanggal: string | null
+  /** true = angka hari itu masih PLACEHOLDER (hari.sementara, dataHarian.ts)
+   *  — 7 halaman pernah menulis "Data per …" bernada final di atasnya
+   *  (audit kesegaran 27 Agu §1). Kalimatnya SATU dengan Kalender.tsx. */
+  sementara?: boolean
 }
 
 /**
@@ -25,13 +29,23 @@ interface KonteksDataProps {
  * publik; menyebut dapur di layar pernah dinilai fatal (lihat komentar di
  * Metodologi.tsx).
  */
-export function KonteksData({ tanggal }: KonteksDataProps) {
+export function KonteksData({ tanggal, sementara }: KonteksDataProps) {
   const label = tanggal
     ? new Date(`${tanggal}T12:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
     : '—'
   return (
     <div className="konteks-data muted">
-      <span><IkonMenu d={IKON_JAM} size={12} /> Data per {label}</span>
+      <span>
+        <IkonMenu d={IKON_JAM} size={12} /> Data per {label}
+        {sementara && (
+          <em
+            style={{ color: 'var(--amber)', fontStyle: 'normal', marginLeft: 6 }}
+            title="Angka sementara dari Yahoo Finance — bursa mungkin masih buka, jadi ini belum penutupan resmi. Akan tergantikan begitu IDX merilis statistik harinya."
+          >
+            · angka sementara
+          </em>
+        )}
+      </span>
       <Link to="/metodologi" className="kd-tautan">
         Metodologi &amp; sumber data <IkonMenu d={IKON_PANAH_KANAN} size={11} />
       </Link>

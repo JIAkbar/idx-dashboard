@@ -14,6 +14,7 @@ import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
 import { DropdownMulti, type OpsiMulti } from '../../../components/dasbor/DropdownMulti'
 import { useTheme } from '../../../context/ThemeContext'
 import { anggotaKelompok, kelompokBroker, namaBroker } from '../../../lib/dasbor/kelompokBroker'
+import { PERINGATAN_PRA_BROKER, praBroker } from '../../../lib/dasbor/brokerEmitenV2'
 import { bacaTokenTema } from '../../../lib/dasbor/useChartJs'
 import { fmtB, num, TOKEN_SERI, OPSI_RENTANG_NP, potongRentang, Kosong, Sumber, type RentangNp } from './bersama'
 
@@ -285,6 +286,7 @@ export function InventoryTab({ kode }: { kode: string }) {
       <p className="np-sub">
         Candle harga (kanan) + kumulatif net {ukuran === 'lot' ? 'lot' : 'nilai'} per broker (kiri),{' '}
         {dari} → {sampai} ({tanggal.length} hari bursa berarsip broker)
+        {praBroker(dari) && <span className="np-parsial"> · {PERINGATAN_PRA_BROKER}</span>}
         {investor !== 'all' && ` · investor ${investor}`}.
       </p>
       <div className="np-baris">

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { TAHUN_AWAL } from '../../lib/dasbor/brokerEmitenV2'
 import {
   CandlestickSeries, CrosshairMode, HistogramSeries, createChart,
   type IChartApi, type ISeriesApi, type SeriesType, type Time,
@@ -610,8 +611,8 @@ export default function WhalesPapan() {
         <div className="wp-kosong">
           Riwayat broker bertahun untuk <strong>{kode}</strong> belum tersedia.
           <br />
-          Data yang sudah tervalidasi baru sejak 2020, dan emiten ini belum masuk
-          gelombang pengumpulannya.
+          Arsip broker mencakup {TAHUN_AWAL} sampai sekarang; emiten ini belum punya
+          rincian broker di dalamnya.
         </div>
       ) : (
         <div className="wp-panggung">

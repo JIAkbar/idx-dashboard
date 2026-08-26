@@ -9,10 +9,16 @@ on:
   # Tiga percobaan, semuanya SESUDAH jendela rilis: 21:00, 23:00, dan 01:00 WIB
   # (hari berikutnya). Percobaan kedua & ketiga murah — kalau tanggalnya sudah
   # masuk, pemanen melewatinya. Yang mahal justru satu percobaan yang meleset.
-  schedule:
-    - cron: '0 14 * * 1-5'   # 21:00 WIB
-    - cron: '0 16 * * 1-5'   # 23:00 WIB
-    - cron: '0 18 * * 1-5'   # 01:00 WIB hari berikutnya
+  # JADWAL DIMATIKAN 27 Agu 2026 (Johan: "kenapa sering gagal workflow nya")
+  # — runner awan GitHub SELALU ditolak idx.co.id dengan HTTP 403 (blokir
+  # per-IP datacenter; terbukti di run 33006963545 dkk, sementara seluruh
+  # workflow *-rumah.yml sukses). Jalur resmi: runner rumahan + Task
+  # Scheduler "PAPAN-BukaLaptop" (JALANKAN_BUKA_LAPTOP.bat). Workflow ini
+  # disisakan untuk pemicu manual saja, kalau suatu saat IP awan lolos.
+  # schedule:
+  #   - cron: '0 14 * * 1-5'   # 21:00 WIB
+  #   - cron: '0 16 * * 1-5'   # 23:00 WIB
+  #   - cron: '0 18 * * 1-5'   # 01:00 WIB hari berikutnya
   # Bisa dijalankan manual dari tab Actions di GitHub
   workflow_dispatch:
 

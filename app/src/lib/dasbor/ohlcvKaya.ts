@@ -41,6 +41,9 @@ interface BerkasMentah {
 
 const KOSONG: OhlcvKaya = { mulai: null, byDate: new Map() }
 const cache = new Map<string, Promise<OhlcvKaya>>()
+const cacheSejak = new Map<string, number>()
+// TTL 30 menit (audit kesegaran 27 Agu §2) — pola screener.ts; tanpa ini data halaman membeku sampai muat-ulang penuh.
+const UMUR_CACHE_MS = 30 * 60 * 1000
 
 /** Indeks kolom tetap (`kolom` di berkas): tanggal,unixdate,o,h,l,c,volume,value,
  *  frequency,foreignbuy,foreignsell,foreignflow,dividend,shareoutstanding,…
@@ -56,6 +59,11 @@ export function keBarisKaya(b: (string | number)[]): [string, BarisKaya] {
 }
 
 function muat(kode: string): Promise<OhlcvKaya> {
+  const sejak = cacheSejak.get(kode)
+  if (sejak !== undefined && Date.now() - sejak >= UMUR_CACHE_MS) {
+    cache.delete(kode)
+    cacheSejak.delete(kode)
+  }
   let p = cache.get(kode)
   if (!p) {
     p = fetch(`/data-idx/json/ohlcv_stockbit/${kode}.json`)
@@ -67,6 +75,7 @@ function muat(kode: string): Promise<OhlcvKaya> {
       })
       .catch(() => KOSONG)
     cache.set(kode, p)
+    cacheSejak.set(kode, Date.now())
   }
   return p
 }

@@ -142,11 +142,23 @@ export function pilihTopInventaris(agg: AgregatBroker[], n = 4): { pembeli: stri
   return { pembeli, penjual }
 }
 
-/** Cakupan yang tervalidasi (ketetapan Johan 26 Agu 2026: "sejak tahun
- *  2020"). Dibuka dari 2025 -> 2020 setelah arsip mentah 2020-2026 terukur
- *  99,75-100% hari per tahun. 2016-2019 juga ada di arsip tapi TIDAK dibuka
- *  di sini — batas eksplisit Johan, menunggu keputusan terpisah. */
-const TAHUN_AWAL = 2020
+/** Cakupan yang tervalidasi — DIEKSPOR sebagai SATU-SATUNYA rumah angka
+ *  tahun awal broker (audit kesegaran 27 Agu: "sejak 2020" pernah disalin
+ *  manual di 7 tempat). Riwayat: 2025 -> 2020 (26 Agu), lalu -> 2016
+ *  (ketetapan Johan 27 Agu "gpp sampai 2016"; backfill 2016-2019 selesai,
+ *  2016 terukur 100,00% hari, uji manual cocok arsip mentah). */
+export const TAHUN_AWAL = 2016
+
+/** true bila tanggal ISO berada SEBELUM cakupan broker — dipakai halaman
+ *  chart panjang (candle sejak IPO) untuk peringatan Johan 27 Agu: "kurang
+ *  dari tahun itu diberi peringatan jika data broker tidak tersedia". */
+export function praBroker(tanggalIso: string | null | undefined): boolean {
+  return !!tanggalIso && tanggalIso < `${TAHUN_AWAL}-01-01`
+}
+
+/** Kalimat peringatan SERAGAM — satu ejaan untuk semua halaman. */
+export const PERINGATAN_PRA_BROKER =
+  `Rincian broker belum tersedia sebelum ${TAHUN_AWAL} — grafik harga tetap lengkap, lapisan/panel broker hanya mencakup ${TAHUN_AWAL} ke sini.`
 
 /** Bagian murni (testable) dari `tahunTersedia` — pisah dari fetch supaya diuji tanpa mock jaringan. */
 export function saringTahunAwal(semua: number[]): { tahun: number[] | null; tutup: boolean } {
@@ -194,7 +206,7 @@ export function useArusBrokerEmiten(kode: string) {
         if (!tahun) {
           throw new Error(
             tutup
-              ? `Data ${kode} sejak 2020 belum lengkap — arsipnya masih dalam proses pengumpulan.`
+              ? `Data ${kode} sejak ${TAHUN_AWAL} belum lengkap — arsipnya masih dalam proses pengumpulan.`
               : `${kode} belum punya arsip broker per emiten`,
           )
         }

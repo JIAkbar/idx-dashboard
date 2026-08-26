@@ -307,7 +307,7 @@ export function SektorIndeks() {
       <div ref={kalenderRef}>
         <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} memuat={loading && !hari} />
       </div>
-      <KonteksData tanggal={tanggalAktif} />
+      <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
       <CatatanCakupan />
 
       {labelRentang && (

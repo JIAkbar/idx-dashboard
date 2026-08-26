@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { TAHUN_AWAL } from '../../lib/dasbor/brokerEmitenV2'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
@@ -144,7 +145,7 @@ export default function TraderPapan() {
         <div className="tp-kosong">
           Riwayat broker bertahun untuk <strong>{kode}</strong> belum tersedia.
           <br />
-          Arsip broker mencakup 2016 sampai sekarang, dan emiten ini belum punya
+          Arsip broker mencakup {TAHUN_AWAL} sampai sekarang, dan emiten ini belum punya
           rincian broker di dalamnya — umumnya karena baru tercatat atau
           perdagangannya sangat tipis.
         </div>

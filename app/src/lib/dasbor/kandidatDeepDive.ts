@@ -50,14 +50,18 @@ export async function ambilKandidat(pengambil: typeof fetch = fetch): Promise<Da
 }
 
 let cache: DataKandidatDeepDive | null = null
+let cacheSejak = 0
+// TTL 30 menit (audit kesegaran 27 Agu §2) — pola screener.ts; tanpa ini data halaman membeku sampai muat-ulang penuh.
+const UMUR_CACHE_MS = 30 * 60 * 1000
 
 export function useKandidatDeepDive(): DataKandidatDeepDive | null {
-  const [data, setData] = useState<DataKandidatDeepDive | null>(cache)
+  const segar = cache !== null && Date.now() - cacheSejak < UMUR_CACHE_MS
+  const [data, setData] = useState<DataKandidatDeepDive | null>(segar ? cache : null)
   useEffect(() => {
-    if (cache) return
+    if (cache && Date.now() - cacheSejak < UMUR_CACHE_MS) { setData(cache); return }
     let batal = false
     void ambilKandidat().then((d) => {
-      if (d) cache = d
+      if (d) { cache = d; cacheSejak = Date.now() }
       if (!batal) setData(d)
     })
     return () => { batal = true }

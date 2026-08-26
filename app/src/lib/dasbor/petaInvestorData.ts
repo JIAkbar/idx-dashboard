@@ -46,7 +46,14 @@ export type GraphSelection =
   | { type: 'investor'; name: string; cls: string; lf: string }
 
 let cache: InvestorMapEntry[] | null = null
+let cacheSejak = 0
 let inflight: Promise<InvestorMapEntry[]> | null = null
+// TTL 30 menit (audit kesegaran 27 Agu §2) — pola screener.ts; tanpa ini data halaman membeku sampai muat-ulang penuh.
+const UMUR_CACHE_MS = 30 * 60 * 1000
+
+function segar(): boolean {
+  return cache !== null && Date.now() - cacheSejak < UMUR_CACHE_MS
+}
 
 /** Fetch imperatif (bukan hook) — dipakai Tanya PAPAN lewat mekanisme `butuh`
  *  dua-langkah: jawab() minta jenis 'investor', TanyaPapan.tsx memanggil ini,
@@ -58,7 +65,8 @@ export function loadInvestorMap(): Promise<InvestorMapEntry[]> {
 }
 
 function load(): Promise<InvestorMapEntry[]> {
-  if (cache) return Promise.resolve(cache)
+  if (segar()) return Promise.resolve(cache!)
+  cache = null
   if (!inflight) {
     inflight = fetch('/data-idx/json/investor_map.json')
       .then((r) => {
@@ -67,6 +75,7 @@ function load(): Promise<InvestorMapEntry[]> {
       })
       .then((data) => {
         cache = data
+        cacheSejak = Date.now()
         return data
       })
       .catch((e: unknown) => {
@@ -79,13 +88,13 @@ function load(): Promise<InvestorMapEntry[]> {
 
 /** Fetch-sekali-cache 590KB investor_map.json, dipakai bersama Grafik/By Stock/By Investor supaya ganti sub-view tidak fetch ulang. */
 export function usePetaInvestor() {
-  const [data, setData] = useState<InvestorMapEntry[] | null>(cache)
-  const [loading, setLoading] = useState(!cache)
+  const [data, setData] = useState<InvestorMapEntry[] | null>(segar() ? cache : null)
+  const [loading, setLoading] = useState(!segar())
   const [error, setError] = useState<string | null>(null)
   const [tick, setTick] = useState(0)
 
   useEffect(() => {
-    if (cache) {
+    if (segar()) {
       setData(cache)
       setLoading(false)
       return

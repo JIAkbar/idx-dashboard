@@ -62,15 +62,24 @@ export function labelPengendali(jenis: string): string {
 }
 
 let cache: DaftarPengendali | null = null
+let cacheSejak = 0
 let sedangAmbil: Promise<DaftarPengendali> | null = null
+// TTL 30 menit (audit kesegaran 27 Agu §2) — pola screener.ts; tanpa ini data halaman membeku sampai muat-ulang penuh.
+const UMUR_CACHE_MS = 30 * 60 * 1000
+
+function segar(): boolean {
+  return cache !== null && Date.now() - cacheSejak < UMUR_CACHE_MS
+}
 
 export function muatPengendali(): Promise<DaftarPengendali> {
-  if (cache) return Promise.resolve(cache)
+  if (segar()) return Promise.resolve(cache!)
+  cache = null
   if (!sedangAmbil) {
     sedangAmbil = fetch('/data-idx/json/pengendali.json')
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((d: DaftarPengendali) => {
         cache = d
+        cacheSejak = Date.now()
         return d
       })
       .finally(() => {
@@ -81,9 +90,9 @@ export function muatPengendali(): Promise<DaftarPengendali> {
 }
 
 export function usePengendali() {
-  const [daftar, setDaftar] = useState<DaftarPengendali | null>(cache)
+  const [daftar, setDaftar] = useState<DaftarPengendali | null>(segar() ? cache : null)
   useEffect(() => {
-    if (cache) return
+    if (segar()) return
     let batal = false
     muatPengendali()
       .then((d) => !batal && setDaftar(d))

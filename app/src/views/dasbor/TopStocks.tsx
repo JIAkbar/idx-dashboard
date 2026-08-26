@@ -150,7 +150,7 @@ export function TopStocks() {
   return (
     <div className="lantai">
       <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
-      <KonteksData tanggal={tanggalAktif} />
+      <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
       <CatatanCakupan />
 
       {rentang && (

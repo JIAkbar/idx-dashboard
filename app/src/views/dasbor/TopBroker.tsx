@@ -95,7 +95,7 @@ export function TopBroker() {
   return (
     <div className="lantai">
       <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
-      <KonteksData tanggal={tanggalAktif} />
+      <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
       <CatatanCakupan />
 
       <div className="panel">

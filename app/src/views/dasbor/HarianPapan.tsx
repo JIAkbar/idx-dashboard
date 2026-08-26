@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
-import { Dropdown } from '../../components/dasbor/Dropdown'
+import { DatePicker } from '../../components/dasbor/DatePicker'
+import { DropdownMulti, type OpsiMulti } from '../../components/dasbor/DropdownMulti'
 import { KolomForm } from '../../components/dasbor/BadgeRapor'
 import { bandingkanBaris } from '../../lib/dasbor/useUrut'
 import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
@@ -92,7 +93,11 @@ export function HarianPapan() {
 
   const { data, muat } = useHarianPapan(tanggal)
   const [tab, setTab] = useState<TabHarianPapan>('gainer')
-  const [sektorAktif, setSektorAktif] = useState('')
+  const [sektorAktif, setSektorAktif] = useState<string[]>([])
+  const tanggalTersedia = useMemo(
+    () => (tanggalData ? new Set(tanggalData.tanggal_tersedia) : undefined),
+    [tanggalData],
+  )
   const [urutKunci, setUrutKunci] = useState<keyof BarisHarianPapan>(URUT_BAWAAN.gainer.kunci)
   const [urutArah, setUrutArah] = useState<'naik' | 'turun'>(URUT_BAWAAN.gainer.arah)
 
@@ -110,9 +115,13 @@ export function HarianPapan() {
 
   const emiten = data?.emiten ?? []
   const daftarSektor = useMemo(() => sektorUnikHarianPapan(emiten), [emiten])
+  const sektorOpsi = useMemo<OpsiMulti[]>(
+    () => daftarSektor.map((s) => ({ nilai: s, label: s === '-' ? 'Tanpa sektor' : s })),
+    [daftarSektor],
+  )
   const barisTab = useMemo(() => barisUntukTab(emiten, tab), [emiten, tab])
   const barisSektor = useMemo(
-    () => (sektorAktif ? barisTab.filter((b) => b.sektor === sektorAktif) : barisTab),
+    () => (sektorAktif.length ? barisTab.filter((b) => sektorAktif.includes(b.sektor)) : barisTab),
     [barisTab, sektorAktif],
   )
   const urut = useMemo(
@@ -160,18 +169,19 @@ export function HarianPapan() {
             ))}
           </div>
           <div className="hp-bilah">
-            <Dropdown
+            <DatePicker
+              value={tanggal ?? ''}
+              onChange={setTanggal}
+              tersedia={tanggalTersedia}
               ariaLabel="Tanggal"
-              opsi={tanggalData.tanggal_tersedia.map((t) => ({ nilai: t, label: t }))}
-              nilai={tanggal ?? ''}
-              onGanti={setTanggal}
             />
-            <Dropdown
-              ariaLabel="Sektor"
-              placeholder="Semua sektor"
-              opsi={[{ nilai: '', label: 'Semua sektor' }, ...daftarSektor.map((s) => ({ nilai: s, label: s === '-' ? 'Tanpa sektor' : s }))]}
+            <DropdownMulti
+              label="Sektor"
+              ariaLabel="Saring sektor"
+              opsi={sektorOpsi}
               nilai={sektorAktif}
               onGanti={setSektorAktif}
+              ringkasKosong="Semua sektor"
             />
             <button type="button" className="btn-p" disabled={urut.length === 0}
               onClick={() => tanggal && unduhCsv(urut, tanggal, tab)}>
