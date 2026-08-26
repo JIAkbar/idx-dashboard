@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { LABEL_RENTANG } from '../../../lib/dasbor/periode'
+import { potongRentang as potongRentangBaku, type IdRentang } from '../../../lib/dasbor/rentang'
 
 /**
  * Neo Papan — bagian yang dipakai bersama seluruh 8 tab: format angka,
@@ -53,30 +54,17 @@ export const TOKEN_SERI = [
 ] as const
 
 // ── Rentang tanggal (candle/volume/asing) ───────────────────────────────────
+// Definisi pindah ke modul BERSAMA `lib/dasbor/rentang.ts` (spek konsistensi
+// §2) — empat kosakata rentang lahir justru dari tiap halaman mengeja
+// presetnya sendiri. Yang di sini tinggal pembungkus: subset id Neo + adaptor
+// ruas `t`. Migrasi 27 Agu: '2w'→'w2' (masuk LABEL_RENTANG), +y1/y3/y5.
 
-export type RentangNp = '2w' | 'b1' | 'b3' | 'b6' | 'ytd' | 'semua'
-/** 2W & 6M ditambah untuk Inventory (spek §3.1) — aditif, id lama tak berubah. */
-export const OPSI_RENTANG_NP: { id: RentangNp; label: string }[] = [
-  { id: '2w', label: '2 Pekan' },
-  { id: 'b1', label: LABEL_RENTANG.b1 },
-  { id: 'b3', label: LABEL_RENTANG.b3 },
-  { id: 'b6', label: LABEL_RENTANG.b6 },
-  { id: 'ytd', label: LABEL_RENTANG.ytd },
-  { id: 'semua', label: LABEL_RENTANG.semua },
-]
+export type RentangNp = Extract<IdRentang, 'w2' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1' | 'y3' | 'y5' | 'semua'>
+export const OPSI_RENTANG_NP: { id: RentangNp; label: string }[] =
+  (['w2', 'b1', 'b3', 'b6', 'ytd', 'y1', 'y3', 'y5', 'semua'] as const)
+    .map((id) => ({ id, label: LABEL_RENTANG[id] }))
 
-/** Potong deret ke rentang, mundur dari tanggal bar TERAKHIR (bukan hari ini —
- *  data historis, bukan live). UTC murni supaya tak bergeser sehari. */
+/** Potong deret ke rentang, mundur dari bar TERAKHIR — delegasi modul bersama. */
 export function potongRentang<T extends { t: string }>(bars: T[], rentang: RentangNp): T[] {
-  if (!bars.length || rentang === 'semua') return bars
-  const akhir = bars[bars.length - 1].t
-  if (rentang === 'ytd') {
-    const mulai = akhir.slice(0, 4) + '-01-01'
-    return bars.filter((b) => b.t >= mulai)
-  }
-  const [y, m, d] = akhir.split('-').map(Number)
-  const mulai = rentang === '2w'
-    ? new Date(Date.UTC(y, m - 1, d - 14)).toISOString().slice(0, 10)
-    : new Date(Date.UTC(y, m - 1 - (rentang === 'b1' ? 1 : rentang === 'b3' ? 3 : 6), d)).toISOString().slice(0, 10)
-  return bars.filter((b) => b.t >= mulai)
+  return potongRentangBaku(bars, rentang, (b) => b.t)
 }

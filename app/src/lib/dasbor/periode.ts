@@ -72,6 +72,9 @@ export const LABEL_RENTANG = {
   h1: '1 Hari',
   h5: '5 Hari',
   w1: '1 Minggu',
+  // w2 lahir di Inventory Neo (#359, disetujui Johan) — dieja di sini sejak
+  // migrasi modul rentang bersama, bukan lagi hardcode '2 Pekan' di halaman.
+  w2: '2 Pekan',
   b1: '1 Bulan',
   b3: '3 Bulan',
   b6: '6 Bulan',
