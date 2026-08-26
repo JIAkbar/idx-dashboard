@@ -107,7 +107,12 @@ export async function muatRentang(
   const berkas = await Promise.all(
     tahunDalamRentang(dari, sampai).map(async (t) => {
       const r = await fetch(`/data-idx/json/broker_tahunan/${kode}/${t}.json`)
-      return r.ok ? ((await r.json()) as BerkasTahunan) : null
+      if (!r.ok) return null
+      // Server SPA (Vite dev & rewrite produksi) membalas berkas yang TAK ADA
+      // dengan index.html berstatus 200 — r.ok saja tidak cukup, dan satu
+      // tahun "HTML" membatalkan seluruh Promise.all. Parse yang gagal
+      // diperlakukan sama dengan 404: tahun itu dilewati.
+      try { return (await r.json()) as BerkasTahunan } catch { return null }
     }),
   )
   return irisHari(berkas.filter((b): b is BerkasTahunan => b !== null), dari, sampai)
