@@ -14,7 +14,7 @@ export interface AgregatBroker {
 }
 
 /** Jumlahkan baris broker satu emiten pada daftar tanggal terpilih. */
-export function agregasiBroker(hari: Record<string, HariBroker>, tanggal: string[]): AgregatBroker[] {
+export function agregasiBroker(hari: Record<string, { broker: HariBroker['broker'] }>, tanggal: string[]): AgregatBroker[] {
   const acc = new Map<string, { beliLot: number; beliNilai: number; jualLot: number; jualNilai: number }>()
   for (const t of tanggal) {
     const h = hari[t]
@@ -34,16 +34,18 @@ export function avgHarga(nilai: number, lot: number): number | null {
   return lot ? nilai / (lot * 100) : null
 }
 
-/** Kumulatif net nilai per broker terpilih, satu titik per hari (Inventory Chart). */
+/** Kumulatif net per broker terpilih, satu titik per hari (Inventory Chart).
+ *  `ukuran` 'nilai' (Rp, bawaan) atau 'lot' — aditif spek §3.1. */
 export function kumulatifBroker(
-  hariUrut: string[], hari: Record<string, HariBroker>, kodeBroker: string[],
+  hariUrut: string[], hari: Record<string, { broker: HariBroker['broker'] }>, kodeBroker: string[],
+  ukuran: 'nilai' | 'lot' = 'nilai',
 ): { tanggal: string[]; seri: Array<{ broker: string; nilai: number[] }> } {
   const run = new Map(kodeBroker.map((k) => [k, 0]))
   const seri = new Map<string, number[]>(kodeBroker.map((k) => [k, []]))
   for (const t of hariUrut) {
     const h = hari[t]
     const byKode = new Map<string, number>()
-    if (h) for (const b of h.broker) byKode.set(b.kode, b.beliNilai - b.jualNilai)
+    if (h) for (const b of h.broker) byKode.set(b.kode, ukuran === 'lot' ? b.beliLot - b.jualLot : b.beliNilai - b.jualNilai)
     for (const k of kodeBroker) {
       run.set(k, (run.get(k) ?? 0) + (byKode.get(k) ?? 0))
       seri.get(k)!.push(run.get(k)!)
@@ -52,9 +54,13 @@ export function kumulatifBroker(
   return { tanggal: hariUrut, seri: kodeBroker.map((k) => ({ broker: k, nilai: seri.get(k)! })) }
 }
 
-/** N net buyer & N net seller terbesar dari daftar agregat. */
-export function topNet(agg: AgregatBroker[], n: number): { pembeli: AgregatBroker[]; penjual: AgregatBroker[] } {
-  const urut = [...agg].sort((a, b) => b.net - a.net)
+/** N net buyer & N net seller terbesar. `ukuran` 'lot' mengurutkan net LOT
+ *  (preset TOP_5_NB_LOT ala spek §3.3) — aditif, bawaan tetap nilai. */
+export function topNet(
+  agg: AgregatBroker[], n: number, ukuran: 'nilai' | 'lot' = 'nilai',
+): { pembeli: AgregatBroker[]; penjual: AgregatBroker[] } {
+  const kunci = (a: AgregatBroker) => (ukuran === 'lot' ? a.beliLot - a.jualLot : a.net)
+  const urut = [...agg].sort((a, b) => kunci(b) - kunci(a))
   return { pembeli: urut.slice(0, n), penjual: urut.slice(-n).reverse() }
 }
 
@@ -173,6 +179,10 @@ export function konsistensiNet(seri: Array<{ net: number }>): number {
     else break
   }
   return n
+}
+
+export function pilihInvestorHari(h: HariStalkerV2, investor: InvestorStalker): HariStalkerV2 | null {
+  return sisiInvestor(h, investor)
 }
 
 function sisiInvestor(h: HariStalkerV2, investor: InvestorStalker): HariStalkerV2 | null {

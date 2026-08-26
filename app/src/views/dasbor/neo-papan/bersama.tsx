@@ -54,10 +54,13 @@ export const TOKEN_SERI = [
 
 // ── Rentang tanggal (candle/volume/asing) ───────────────────────────────────
 
-export type RentangNp = 'b1' | 'b3' | 'ytd' | 'semua'
+export type RentangNp = '2w' | 'b1' | 'b3' | 'b6' | 'ytd' | 'semua'
+/** 2W & 6M ditambah untuk Inventory (spek §3.1) — aditif, id lama tak berubah. */
 export const OPSI_RENTANG_NP: { id: RentangNp; label: string }[] = [
+  { id: '2w', label: '2 Pekan' },
   { id: 'b1', label: LABEL_RENTANG.b1 },
   { id: 'b3', label: LABEL_RENTANG.b3 },
+  { id: 'b6', label: LABEL_RENTANG.b6 },
   { id: 'ytd', label: LABEL_RENTANG.ytd },
   { id: 'semua', label: LABEL_RENTANG.semua },
 ]
@@ -71,8 +74,9 @@ export function potongRentang<T extends { t: string }>(bars: T[], rentang: Renta
     const mulai = akhir.slice(0, 4) + '-01-01'
     return bars.filter((b) => b.t >= mulai)
   }
-  const bulan = rentang === 'b1' ? 1 : 3
   const [y, m, d] = akhir.split('-').map(Number)
-  const mulai = new Date(Date.UTC(y, m - 1 - bulan, d)).toISOString().slice(0, 10)
+  const mulai = rentang === '2w'
+    ? new Date(Date.UTC(y, m - 1, d - 14)).toISOString().slice(0, 10)
+    : new Date(Date.UTC(y, m - 1 - (rentang === 'b1' ? 1 : rentang === 'b3' ? 3 : 6), d)).toISOString().slice(0, 10)
   return bars.filter((b) => b.t >= mulai)
 }

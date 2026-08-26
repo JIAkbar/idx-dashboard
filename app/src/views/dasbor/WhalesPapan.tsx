@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   CandlestickSeries, CrosshairMode, HistogramSeries, createChart,
-  type CandlestickData, type HistogramData, type IChartApi, type ISeriesApi,
-  type SeriesType, type Time,
+  type IChartApi, type ISeriesApi, type SeriesType, type Time,
 } from 'lightweight-charts'
+import { muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
@@ -63,38 +63,8 @@ function lotRingkas(n: number): string {
   return String(Math.round(n))
 }
 
-interface DataCandle {
-  lilin: CandlestickData[]
-  volume: HistogramData[]
-}
-
-/** Kolom `ohlcv_stockbit`: tanggal,unixdate,o,h,l,c,volume,… (lihat
- *  `ohlcvKaya.ts`). Harian tersesuaikan aksi korporasi — konvensi yang benar
- *  untuk BENTUK grafik (aturan dua-konvensi di CLAUDE.md). */
-async function muatCandle(kode: string): Promise<DataCandle> {
-  const r = await fetch(`/data-idx/json/ohlcv_stockbit/${kode}.json`)
-  if (!r.ok) return { lilin: [], volume: [] }
-  try {
-    const j = (await r.json()) as { bar?: (string | number)[][] }
-    const lilin: CandlestickData[] = []
-    const volume: HistogramData[] = []
-    for (const b of j.bar ?? []) {
-      const time = b[0] as Time
-      const open = Number(b[2]); const high = Number(b[3])
-      const low = Number(b[4]); const close = Number(b[5])
-      if (!Number.isFinite(open) || !Number.isFinite(close)) continue
-      lilin.push({ time, open, high, low, close })
-      volume.push({
-        time,
-        value: Number(b[6]) || 0,
-        color: close >= open ? 'rgba(48, 164, 108, 0.5)' : 'rgba(229, 72, 77, 0.5)',
-      })
-    }
-    return { lilin, volume }
-  } catch {
-    return { lilin: [], volume: [] }
-  }
-}
+// Pemuat candle pindah ke lib bersama `candleStockbit.ts` — dipakai juga
+// Inventory Neo Papan; satu sumber, bukan dua salinan.
 
 /** Seleksi "seluruh riwayat" — dipakai garis avg broker saat belum ada kotak. */
 const SEMUA: SeleksiArea = { tglMulai: '0000-01-01', tglAkhir: '9999-12-31', hargaMin: -Infinity, hargaMax: Infinity }
