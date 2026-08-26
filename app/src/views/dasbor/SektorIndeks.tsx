@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
 import { Kalender, fmtTanggalPendek } from '../../components/dasbor/Kalender'
@@ -23,34 +23,30 @@ const PERIODE: { id: PeriodeId; label: string }[] = [
 const HARI_MUNDUR: Record<'m1' | 'm3', number> = { m1: 30, m3: 91 }
 
 /**
- * Peta sektor IDX-IC (nama tile heatmap, dari `D.sectors`) → sektor pada
- * fundamental/index.json (klasifikasi Yahoo). Dua taksonomi ini BEDA — ini
- * pemetaan terdekat yang jujur, bukan 1:1: Consumer Non-Cyclicals≈Consumer
- * Defensive, Financials≈Financial Services, Infrastructures mencakup
- * Communication Services + Utilities, dan Transportation & Logistic TIDAK
- * punya padanan (Yahoo menggolongkannya ke Industrials) — jadi tile [C] dan
- * [K] menampilkan daftar yang sama, diberi catatan di panel.
+ * Peta nama tile heatmap (IDX-IC berbahasa Inggris, dari `D.sectors`) →
+ * nama sektor IDX-IC resmi berbahasa Indonesia di `emiten_sektor.json`.
+ * SATU-SATU PERSIS — keduanya taksonomi IDX-IC yang sama, cuma beda bahasa.
+ * Dulu keanggotaan dipetakan KIRA-KIRA ke klasifikasi Yahoo (Transportation
+ * digabung Industrials, Infrastructures ≈ Communication+Utilities) — audit
+ * kedalaman 27 Agu (situs kedua temuan sektor §3): diganti peta resmi,
+ * pemetaan-kira-kira dibuang berikut catatan permintaan maafnya.
  */
-const PETA_SEKTOR_FUNDAMENTAL: Record<string, string[]> = {
-  Energy: ['Energy'],
-  'Basic Materials': ['Basic Materials'],
-  Industrials: ['Industrials'],
-  'Consumer Non-Cyclicals': ['Consumer Defensive'],
-  'Consumer Cyclicals': ['Consumer Cyclical'],
-  Healthcare: ['Healthcare'],
-  Financials: ['Financial Services'],
-  'Properties & Real Estate': ['Real Estate'],
-  Technology: ['Technology'],
-  Infrastructures: ['Communication Services', 'Utilities'],
-  'Transportation & Logistic': ['Industrials'],
+const PETA_IDX_IC: Record<string, string> = {
+  Energy: 'Energi',
+  'Basic Materials': 'Barang Baku',
+  Industrials: 'Perindustrian',
+  'Consumer Non-Cyclicals': 'Barang Konsumen Primer',
+  'Consumer Cyclicals': 'Barang Konsumen Non-Primer',
+  Healthcare: 'Kesehatan',
+  Financials: 'Keuangan',
+  'Properties & Real Estate': 'Properti & Real Estat',
+  Technology: 'Teknologi',
+  Infrastructures: 'Infrastruktur',
+  'Transportation & Logistic': 'Transportasi & Logistik',
 }
 
-const CATATAN_UMUM = 'Keanggotaan sektor dari klasifikasi data fundamental (pemetaan terdekat sektor IDX-IC).'
-const CATATAN_SEKTOR: Record<string, string> = {
-  Industrials: 'Klasifikasi data fundamental menggabungkan Transportation & Logistic ke Industrials — daftar tile [C] dan [K] sama.',
-  'Transportation & Logistic': 'Klasifikasi data fundamental menggabungkan Transportation & Logistic ke Industrials — daftar tile [C] dan [K] sama.',
-  Infrastructures: 'Mencakup Communication Services + Utilities pada klasifikasi data fundamental.',
-}
+const CATATAN_UMUM = 'Keanggotaan sektor dari peta IDX-IC resmi (962/962 emiten terklasifikasi).'
+
 
 /**
  * Panel "Sektor & Indeks" — port buildSectorPanel() index_live.html baris
@@ -163,6 +159,19 @@ export function SektorIndeks() {
   // Daftar {ticker, name, sector} 965 saham — reuse index autocomplete Stock
   // Detail (fetch sekali, cache modul); di-load saat halaman dibuka.
   const { index: indexSaham } = useStockIndex()
+  /** kode → sektor IDX-IC resmi (Indonesia) dari emiten_sektor.json. */
+  const [petaSektorKode, setPetaSektorKode] = useState<Map<string, string> | null>(null)
+  useEffect(() => {
+    let batal = false
+    fetch('/data-idx/json/emiten_sektor.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((js: { emiten?: Record<string, { sektor?: string }> } | null) => {
+        if (batal || !js?.emiten) return
+        setPetaSektorKode(new Map(Object.entries(js.emiten).map(([k, v]) => [k, v?.sektor ?? ''])))
+      })
+      .catch(() => { /* panel daftar tampil kosong dengan catatan, bukan crash */ })
+    return () => { batal = true }
+  }, [])
   // Strip Kalender — target scroll halus saat tab "Rentang" panel Performa
   // Sektor diklik (#1 revisi user 14 Agu).
   const kalenderRef = useRef<HTMLDivElement>(null)
@@ -336,9 +345,9 @@ export function SektorIndeks() {
       </div>
 
       {sektorTerpilih && (() => {
-        const target = PETA_SEKTOR_FUNDAMENTAL[sektorTerpilih] ?? []
+        const target = PETA_IDX_IC[sektorTerpilih]
         const daftar = (indexSaham?.stocks ?? [])
-          .filter((e) => target.includes(e.sector))
+          .filter((e) => target != null && petaSektorKode?.get(e.ticker) === target)
           .sort((a, b) => a.ticker.localeCompare(b.ticker))
         return (
           <div className="panel">
@@ -364,7 +373,7 @@ export function SektorIndeks() {
                     )
                   })}
                 </div>
-                <div className="sek-cat">{CATATAN_SEKTOR[sektorTerpilih] ?? CATATAN_UMUM}</div>
+                <div className="sek-cat">{CATATAN_UMUM}</div>
               </>
             )}
           </div>
