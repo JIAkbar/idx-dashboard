@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   createChart, createSeriesMarkers, createTextWatermark,
-  CandlestickSeries, HistogramSeries, LineSeries, LineStyle,
+  CandlestickSeries, CrosshairMode, HistogramSeries, LineSeries, LineStyle,
   type IChartApi, type IPriceLine, type ISeriesApi, type ISeriesMarkersPluginApi,
   type ITextWatermarkPluginApi, type LineWidth,
   type MouseEventParams, type SeriesMarker, type SeriesType, type Time,
@@ -976,6 +976,15 @@ export function GrafikEmiten() {
       // = melanggar lisensi. Gantinya: baris atribusi di kaki situs global
       // (DasborLayout.tsx) — jangan hapus baris itu juga.
       layout: { background: { color: 'transparent' }, attributionLogo: false },
+      // Bawaan crosshair = Magnet: garis horizontal MELEKAT ke close bar
+      // terdekat, bukan mengikuti kursor. Normal membebaskan garisnya;
+      // pembacaan O/H/L/C/V di header tetap snap ke bar karena datang dari
+      // subscribeCrosshairMove, jadi hasilnya garis-bebas + data-snap.
+      crosshair: {
+        mode: CrosshairMode.Normal,
+        vertLine: { labelVisible: true },
+        horzLine: { labelVisible: true },
+      },
       rightPriceScale: { borderVisible: false },
       timeScale: {
         borderVisible: false,
@@ -1027,20 +1036,34 @@ export function GrafikEmiten() {
     // tiap indikator aktif (lihat `legenda` di bawah). `param.time` kosong
     // saat kursor keluar dari kanvas — dibiarkan `null` supaya legenda jatuh
     // balik ke titik TERAKHIR, bukan hilang.
+    // crosshairMove menembak per gerakan pointer (bisa >100 Hz di mouse
+    // gaming), dan setState langsung di situ me-render ulang seluruh komponen
+    // per gerakan. Ditampung dulu, ditulis sekali per frame lewat rAF —
+    // gerakan di dalam satu frame yang sama digabung jadi satu render.
+    let sorotTunda: { waktu: string; x: number; y: number } | null = null
+    let sorotRaf = 0
     const saatGeserKursor = (param: MouseEventParams<Time>) => {
       // `dariWaktuChart` mengembalikan waktu INTERNAL — untuk intraday, epoch
       // yang dilaporkan chart dikembalikan ke bentuk 'yyyy-mm-dd HH:mm' yang
       // dipakai seluruh peta legenda & pencarian penanda.
       const w = dariWaktuChart(param.time)
       if (w && param.point) {
-        setSorot({ waktu: w, x: param.point.x, y: param.point.y })
+        sorotTunda = { waktu: w, x: param.point.x, y: param.point.y }
+      } else if (window.matchMedia('(hover: hover)').matches) {
+        // Sorotan DIBUANG hanya di perangkat ber-hover. Di telepon, crosshair
+        // ikut hilang begitu jari diangkat — membuang sorotan di situ berarti
+        // tooltip lenyap sepersekian detik sesudah diketuk, tanpa pernah
+        // sempat dibaca. Di sana ia bertahan sampai ketukan berikutnya.
+        sorotTunda = null
+      } else {
         return
       }
-      // Sorotan DIBUANG hanya di perangkat ber-hover. Di telepon, crosshair
-      // ikut hilang begitu jari diangkat — membuang sorotan di situ berarti
-      // tooltip lenyap sepersekian detik sesudah diketuk, tanpa pernah sempat
-      // dibaca. Di sana ia bertahan sampai ketukan berikutnya.
-      if (window.matchMedia('(hover: hover)').matches) setSorot(null)
+      if (!sorotRaf) {
+        sorotRaf = requestAnimationFrame(() => {
+          sorotRaf = 0
+          setSorot(sorotTunda)
+        })
+      }
     }
     chart.subscribeCrosshairMove(saatGeserKursor)
     // Klik/ketuk ikut dilanggan supaya tooltip pola punya jalur SENTUH: di
@@ -1049,6 +1072,7 @@ export function GrafikEmiten() {
     // dibaca. Ketukan menahannya sampai ketukan berikutnya.
     chart.subscribeClick(saatGeserKursor)
     return () => {
+      if (sorotRaf) cancelAnimationFrame(sorotRaf)
       chart.unsubscribeCrosshairMove(saatGeserKursor)
       chart.unsubscribeClick(saatGeserKursor)
       chart.remove()
