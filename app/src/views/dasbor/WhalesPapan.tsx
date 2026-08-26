@@ -596,6 +596,36 @@ export default function WhalesPapan() {
               Rentang harga menyaring <strong>hari yang harga rata-ratanya</strong> jatuh di situ,
               bukan lot yang tereksekusi persis di harga itu.
             </div>
+
+            {/* §7 spek: batas jujur halaman ini, apa adanya — supaya tak ada
+                yang menebak fitur yang datanya memang tidak kita miliki. */}
+            <details className="wp-metodologi">
+              <summary>Metodologi &amp; batas</summary>
+              <ul>
+                <li>
+                  Rincian per broker hanya tersedia <strong>harian</strong> — dilaporkan
+                  setelah pasar tutup. Tidak ada pecahan broker per jam.
+                </li>
+                <li>
+                  Profil harga adalah <strong>hampiran</strong> dari data harian (lot
+                  dibagi ke pita harga rata-rata hari itu), bukan catatan per transaksi.
+                </li>
+                <li>
+                  Tidak ada antrean order, replay transaksi, maupun arah agresor —
+                  datanya tidak tersedia untuk publik, jadi tidak kami tampilkan
+                  tiruannya.
+                </li>
+                <li>
+                  Bubble menandai broker yang net hariannya menyimpang jauh dari
+                  sebaran seluruh broker hari itu; ambangnya kendali di tanganmu,
+                  bukan penilaian kami.
+                </li>
+                <li>
+                  Halaman ini <strong>deskriptif</strong> — memetakan siapa bertransaksi
+                  di mana, bukan rekomendasi beli/jual.
+                </li>
+              </ul>
+            </details>
           </div>
         </div>
       )}

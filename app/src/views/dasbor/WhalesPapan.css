@@ -45,6 +45,24 @@
   height: clamp(320px, 42vw, 560px);
 }
 
+/* Kotak "Metodologi & batas" (§7 spek) — tertutup bawaan, tipografi kecil. */
+.wp-metodologi {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text3);
+}
+.wp-metodologi summary {
+  cursor: pointer;
+  color: var(--text2);
+  font-weight: 600;
+}
+.wp-metodologi ul {
+  margin: 6px 0 0;
+  padding-left: 16px;
+  display: grid;
+  gap: 4px;
+}
+
 /* Slider ambang z bubble — muncul hanya saat toggle Bubble nyala. */
 .wp-z {
   display: inline-flex;
