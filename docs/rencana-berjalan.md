@@ -1228,3 +1228,32 @@ Yang berubah secara struktural, bukan sekadar tambalan:
 Push live · verifikasi panel kontributor (butuh login) · data konglomerat
 untuk A4 · keputusan berlangganan data broker per emiten.
 
+
+## 26 Agu 2026 (malam) — gelombang besar satu hari
+
+**Data**: panen mundur broker SELESAI FINAL 2016–2026 (2016 = 100,00%; uji 2015 = NIHIL,
+lantai sumber 2016-01-04). Panen intraday 1 menit PERDANA: 962/962 emiten, 6,39 jt bar,
+jendela 90 hari terselamatkan (KETETAPAN Johan: wajib rutin tiap sore ≥16:30 —
+`panen_intraday_stockbit.py`, resumable, tanpa refresh token). Olahan `intraday_1h/`
+874 emiten (4H diagregasi saat baca). Temuan terukur: `foreign_*` bar 1 menit KOSONG
+874/874 → pita asing intraday DIBATALKAN, tertulis di referensi + metodologi.
+
+**Chart hybrid (keputusan Johan)**: CrosshairMode.Normal + rAF sorot; primitive P1 garis
+avg broker (clickable → ModalKecil), P2 bubble outlier (satu sumber `bubbleOutlierHarian`),
+P3 pita CPR+Pivot (dodge anti-tumpuk); 120 fps terukur. `muatRentang` kebal SPA-200-HTML.
+
+**Whales Papan**: spek pertama dieksekusi penuh — candle asli, seleksi area menempel
+zoom/pan (angka panel = arsip mentah persis), profil harga, bubble+slider z, mode
+intraday 4H/1H bergating jujur, metodologi.
+
+**Neo Papan**: 8 tab tuntas + penajaman jilid 1–3 (RRG V2 kanonik presisi 480×480;
+Stalker V2 routing 60d sungguhan + investor; Balance [x% scripless]; Seasonality n-jujur;
+Inventory candle+palet tegas; Compare brush beda-tahun + balik-arah; Activity mode Papan
++ label sampel/anggota + ⚠ konsentrasi; Transaction candle 4-pane Participation 0–100/sisi).
+Sweep: semua kolom emiten ber-list, default BBCA, bug label VsIhsg 'BUMI' mati.
+Tab NEGO Broker Summary v2 ternyata SUDAH hidup (239 hari, 1.867 baris @BBCA 1thn).
+
+**Menunggu Johan**: konfirmasi klik pill AVG Whales · visitor (Vercel vs endpoint Live) ·
+PUSH (antrean sangat panjang, satu disk tanpa cadangan luar — risiko sudah disampaikan).
+**Menunggu pengawas**: audit 22 halaman lama tanpa spek — halaman lama JANGAN disentuh
+sampai auditnya tiba. Jejak lengkap: `docs/jejak-permintaan.md` #339–#364.
