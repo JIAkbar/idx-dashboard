@@ -44,6 +44,13 @@ HEADER = {"User-Agent": UA, "Referer": "https://www.idx.co.id/id", "Accept": "ap
 PEMANASAN = "https://www.idx.co.id/id"
 SUMBER = ("https://www.idx.co.id/primary/ListedCompany/GetCompanyProfiles"
           "?start=0&length=1200&emitenType=s")
+# DUA BAHASA (keputusan Johan 27 Agu: nilai klasifikasi tampil Inggris, empat
+# tingkat; Indonesia tetap dipanen sebagai cadangan — aturan 3c). Pembeda
+# HANYA `lang=en` (+Referer /en): diuji `language=en-us`/`locale=en`/Referer
+# saja — semuanya tetap Indonesia. Bukti bijeksi 962x962 keempat tingkat:
+# docs/spek-dev-papan/bukti_peta_sektor_idx_en.md
+SUMBER_EN = SUMBER + "&lang=en"
+HEADER_EN = {**HEADER, "Referer": "https://www.idx.co.id/en"}
 
 
 def main() -> int:
@@ -52,6 +59,8 @@ def main() -> int:
         sesi.get(PEMANASAN, headers={"User-Agent": UA}, timeout=30)
         r = sesi.get(SUMBER, headers=HEADER, timeout=60)
         r.raise_for_status()
+        r_en = sesi.get(SUMBER_EN, headers=HEADER_EN, timeout=60)
+        r_en.raise_for_status()
     except Exception as e:  # noqa: BLE001
         print(f"Gagal mengambil profil emiten: {e}", file=sys.stderr)
         # Pesan ini dulu berbunyi "endpoint IDX hanya terbuka dari IP rumahan,
@@ -72,27 +81,43 @@ def main() -> int:
         return 1
 
     hasil = r.json()
+    hasil_en = r_en.json()
     # Arsip respons MENTAH sebelum diparse — pembeda tanggal panen karena
     # klasifikasi sektor bisa direvisi IDX dari waktu ke waktu.
     tanggal = datetime.now(WIB).strftime("%Y-%m-%d")
     arsip_mentah.simpan("sektor-idx", f"{tanggal}.json", data=hasil)
+    arsip_mentah.simpan("sektor-idx", f"{tanggal}.en.json", data=hasil_en)
 
     baris = hasil.get("data") or []
     if not baris:
         print("Balasan kosong — berkas lama TIDAK ditimpa.", file=sys.stderr)
         return 1
 
+    baris_en = hasil_en.get("data") or []
+    en_by_kode: dict[str, dict] = {}
+    for b in baris_en:
+        k = (b.get("KodeEmiten") or "").strip().upper()
+        if k:
+            en_by_kode[k] = b
+
     emiten: dict[str, dict] = {}
     for b in baris:
         kode = (b.get("KodeEmiten") or "").strip().upper()
         if not kode:
             continue
+        en = en_by_kode.get(kode, {})
         emiten[kode] = {
             "nama": (b.get("NamaEmiten") or "").strip(),
             "sektor": (b.get("Sektor") or "").strip() or None,
             "subsektor": (b.get("SubSektor") or "").strip() or None,
             "industri": (b.get("Industri") or "").strip() or None,
             "subindustri": (b.get("SubIndustri") or "").strip() or None,
+            # Nama RESMI Inggris IDX (lang=en) — yang DITAMPILKAN sejak
+            # keputusan Johan 27 Agu; Indonesia di atas jadi cadangan.
+            "sektor_en": (en.get("Sektor") or "").strip() or None,
+            "subsektor_en": (en.get("SubSektor") or "").strip() or None,
+            "industri_en": (en.get("Industri") or "").strip() or None,
+            "subindustri_en": (en.get("SubIndustri") or "").strip() or None,
             "papan": (b.get("PapanPencatatan") or "").strip() or None,
             # Tanggal pencatatan dipotong ke tanggal saja — jamnya selalu 00:00
             # dan menyimpannya utuh cuma menambah ukuran tanpa arti.
@@ -100,11 +125,13 @@ def main() -> int:
         }
 
     berisi = sum(1 for v in emiten.values() if v["sektor"])
+    berisi_en = sum(1 for v in emiten.values() if v["sektor_en"])
     isi = {
         "diperbarui": datetime.now(WIB).isoformat(timespec="seconds"),
         "sumber": "IDX GetCompanyProfiles (klasifikasi IDX-IC resmi)",
         "n": len(emiten),
         "n_bersektor": berisi,
+        "n_bersektor_en": berisi_en,
         "emiten": dict(sorted(emiten.items())),
     }
     KELUARAN.parent.mkdir(parents=True, exist_ok=True)
@@ -118,7 +145,7 @@ def main() -> int:
         if v["papan"]:
             papan[v["papan"]] = papan.get(v["papan"], 0) + 1
 
-    print(f"OK -> {KELUARAN} ({len(emiten)} emiten, {berisi} bersektor)")
+    print(f"OK -> {KELUARAN} ({len(emiten)} emiten, {berisi} bersektor ID, {berisi_en} bersektor EN)")
     print("Sektor IDX-IC:")
     for nama, n in sorted(sektor.items(), key=lambda x: -x[1]):
         print(f"  {n:4d}  {nama}")

@@ -262,7 +262,8 @@ for (const [kode, bar] of berkasByKode) {
   const idxByTanggal = new Map(bar.map((b, i) => [b[0], i]))
   const profil = bacaJson(join(DIR_PROFIL, `${kode}.json`))
   const freeFloat = hitungFreeFloat(profil?.pemegang_saham)
-  const sektor = sektorByKode[kode]?.sektor ?? '-'
+  // Nilai klasifikasi Inggris resmi (Johan 27 Agu); ID = cadangan.
+  const sektor = sektorByKode[kode]?.sektor_en ?? sektorByKode[kode]?.sektor ?? '-'
   const nama = namaByKode.get(kode) ?? null
 
   for (const t of tanggalTarget) {

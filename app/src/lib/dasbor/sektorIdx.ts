@@ -14,6 +14,12 @@ export interface SektorEmiten {
   nama: string
   sektor: string | null
   subsektor: string | null
+  /** Nama RESMI Inggris IDX (lang=en) — yang DITAMPILKAN sejak keputusan
+   *  Johan 27 Agu; ruas tanpa _en adalah cadangan Indonesia. */
+  sektor_en?: string | null
+  subsektor_en?: string | null
+  industri_en?: string | null
+  subindustri_en?: string | null
   industri: string | null
   subindustri: string | null
   /** Utama · Pengembangan · Akselerasi · Pemantauan Khusus · Ekonomi Baru */

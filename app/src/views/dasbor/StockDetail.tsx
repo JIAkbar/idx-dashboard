@@ -352,8 +352,10 @@ export function StockDetail() {
                   bukan IDX-IC — dipakai sebagai cadangan supaya emiten yang
                   belum terpanen tak jadi kosong. */}
               <div className="sek">
+                {/* Nilai klasifikasi = nama RESMI Inggris IDX (Johan 27 Agu);
+                    _en kosong -> jatuh ke Indonesia, jangan kosong. */}
                 {idxSektor?.sektor
-                  ? <>{idxSektor.sektor}{idxSektor.subsektor ? ' · ' + idxSektor.subsektor : ''}</>
+                  ? <>{idxSektor.sektor_en ?? idxSektor.sektor}{(idxSektor.subsektor_en ?? idxSektor.subsektor) ? ' · ' + (idxSektor.subsektor_en ?? idxSektor.subsektor) : ''}</>
                   : <>{fd.sector || ''}{fd.industry ? ' · ' + fd.industry : ''}</>}
               </div>
               {/* Pemegang saham pengendali. Yang dilaporkan bursa cuma

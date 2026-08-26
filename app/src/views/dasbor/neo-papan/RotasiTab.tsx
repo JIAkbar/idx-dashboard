@@ -28,10 +28,13 @@ const OPSI_N = [4, 8, 12]
  *  Bahasa Indonesia terlalu panjang untuk pill di plot ("Barang Konsumen
  *  Non-Primer") dan itulah sebagian "benang kusut" yang Johan lihat. */
 const KODE_SEKTOR: Record<string, string> = {
-  'Energi': 'ENERGY', 'Barang Baku': 'BASIC', 'Perindustrian': 'INDUST',
-  'Barang Konsumen Primer': 'NONCYC', 'Barang Konsumen Non-Primer': 'CYCLIC',
-  'Kesehatan': 'HEALTH', 'Keuangan': 'FINANCE', 'Properti & Real Estat': 'PROPERT',
-  'Infrastruktur': 'INFRA', 'Transportasi & Logistik': 'TRANS', 'Teknologi': 'TECHNO',
+  // Kunci = nama Inggris resmi IDX (screener memakai sektor_en sejak
+  // keputusan Johan 27 Agu). Nilai = akhiran indeks sektoral IDX resmi.
+  'Energy': 'ENERGY', 'Basic Materials': 'BASIC', 'Industrials': 'INDUST',
+  'Consumer Non-Cyclicals': 'NONCYC', 'Consumer Cyclicals': 'CYCLIC',
+  'Healthcare': 'HEALTH', 'Financials': 'FINANCE',
+  'Properties & Real Estate': 'PROPERT', 'Infrastructures': 'INFRA',
+  'Transportation & Logistic': 'TRANS', 'Technology': 'TECHNO',
 }
 const OPSI_JEJAK = [4, 6, 8] as const
 const TRAIL_MAKS = 8

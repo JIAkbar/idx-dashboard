@@ -602,7 +602,12 @@ def musiman_bulan(d: dict, bulan: int) -> dict:
 def sektor(kode: str) -> dict:
     p = AKAR / "data-idx" / "json" / "emiten_sektor.json"
     e = json.loads(p.read_text(encoding="utf-8"))["emiten"].get(kode, {})
-    return {k: e.get(k) for k in ("nama", "sektor", "subsektor", "subindustri", "papan", "tercatat")}
+    # _en = nama resmi Inggris IDX (keputusan Johan 27 Agu — nilai
+    # klasifikasi tampil Inggris; Indonesia tetap ikut sebagai cadangan).
+    return {k: e.get(k) for k in (
+        "nama", "sektor", "subsektor", "subindustri", "papan", "tercatat",
+        "sektor_en", "subsektor_en", "subindustri_en",
+    )}
 
 
 def fundamental(kode: str) -> dict:

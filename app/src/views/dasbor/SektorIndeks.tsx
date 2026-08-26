@@ -22,29 +22,11 @@ const PERIODE: { id: PeriodeId; label: string }[] = [
 
 const HARI_MUNDUR: Record<'m1' | 'm3', number> = { m1: 30, m3: 91 }
 
-/**
- * Peta nama tile heatmap (IDX-IC berbahasa Inggris, dari `D.sectors`) →
- * nama sektor IDX-IC resmi berbahasa Indonesia di `emiten_sektor.json`.
- * SATU-SATU PERSIS — keduanya taksonomi IDX-IC yang sama, cuma beda bahasa.
- * Dulu keanggotaan dipetakan KIRA-KIRA ke klasifikasi Yahoo (Transportation
- * digabung Industrials, Infrastructures ≈ Communication+Utilities) — audit
- * kedalaman 27 Agu (situs kedua temuan sektor §3): diganti peta resmi,
- * pemetaan-kira-kira dibuang berikut catatan permintaan maafnya.
- */
-const PETA_IDX_IC: Record<string, string> = {
-  Energy: 'Energi',
-  'Basic Materials': 'Barang Baku',
-  Industrials: 'Perindustrian',
-  'Consumer Non-Cyclicals': 'Barang Konsumen Primer',
-  'Consumer Cyclicals': 'Barang Konsumen Non-Primer',
-  Healthcare: 'Kesehatan',
-  Financials: 'Keuangan',
-  'Properties & Real Estate': 'Properti & Real Estat',
-  Technology: 'Teknologi',
-  Infrastructures: 'Infrastruktur',
-  'Transportation & Logistic': 'Transportasi & Logistik',
-}
-
+// Keputusan Johan 27 Agu: nilai klasifikasi tampil INGGRIS RESMI IDX.
+// Nama tile `hari.sectors` sudah Inggris resmi dan PERSIS sama dengan
+// `sektor_en` di emiten_sektor.json (bijeksi 11:11, bukti:
+// docs/spek-dev-papan/bukti_peta_sektor_idx_en.md) — jadi keanggotaan
+// dicocokkan LANGSUNG tanpa tabel terjemahan; peta EN→ID lama dibuang.
 const CATATAN_UMUM = 'Keanggotaan sektor dari peta IDX-IC resmi (962/962 emiten terklasifikasi).'
 
 
@@ -165,9 +147,9 @@ export function SektorIndeks() {
     let batal = false
     fetch('/data-idx/json/emiten_sektor.json')
       .then((r) => (r.ok ? r.json() : null))
-      .then((js: { emiten?: Record<string, { sektor?: string }> } | null) => {
+      .then((js: { emiten?: Record<string, { sektor?: string; sektor_en?: string }> } | null) => {
         if (batal || !js?.emiten) return
-        setPetaSektorKode(new Map(Object.entries(js.emiten).map(([k, v]) => [k, v?.sektor ?? ''])))
+        setPetaSektorKode(new Map(Object.entries(js.emiten).map(([k, v]) => [k, v?.sektor_en ?? v?.sektor ?? ''])))
       })
       .catch(() => { /* panel daftar tampil kosong dengan catatan, bukan crash */ })
     return () => { batal = true }
@@ -315,6 +297,19 @@ export function SektorIndeks() {
           Heatmap Sektor — {labelRentang} ({nHariRentang} hari pergerakan)
         </div>
       )}
+      {/* Keadaan kosong BERSUARA (audit kesegaran §3): hari placeholder
+          (ds sementara) tak membawa sectors/featured/sharia/board — dulu
+          halaman menampilkan tabel berjudul tanpa satu pun baris, tanpa
+          sebab. Kalimatnya satu dengan Kalender/KonteksData. */}
+      {hari && sectors.length === 0 && (
+        <div className="panel panel-b muted" style={{ padding: '14px 16px' }}>
+          Rincian sektor & indeks untuk tanggal ini belum tersedia
+          {hari.sementara === true
+            ? ' — angka hari ini masih sementara dari cadangan; akan terisi begitu statistik resmi harinya terbit.'
+            : ' pada berkas statistik harinya.'}
+          {' '}Pilih tanggal lain di kalender.
+        </div>
+      )}
       <div className="tiles">
         {sectors.map((s) => {
           const kode = s.n.match(/^\[(.)\]/)?.[1] ?? ''
@@ -345,9 +340,8 @@ export function SektorIndeks() {
       </div>
 
       {sektorTerpilih && (() => {
-        const target = PETA_IDX_IC[sektorTerpilih]
         const daftar = (indexSaham?.stocks ?? [])
-          .filter((e) => target != null && petaSektorKode?.get(e.ticker) === target)
+          .filter((e) => petaSektorKode?.get(e.ticker) === sektorTerpilih)
           .sort((a, b) => a.ticker.localeCompare(b.ticker))
         return (
           <div className="panel">
@@ -474,10 +468,10 @@ export function SektorIndeks() {
             </div>
           </div>
           <div className="panel">
-            <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_KOTAK_ARSIP} size={13} /> Board Indices</span></div>
+            <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_KOTAK_ARSIP} size={13} /> Indeks Papan</span></div>
             <div className="board-tbl-wrap">
               <table className="tbl">
-                <thead><tr><th>Board</th><th className="r">Nilai</th><th className="r">{labelPeriode}</th><th className="r">YTD</th></tr></thead>
+                <thead><tr><th>Papan</th><th className="r">Nilai</th><th className="r">{labelPeriode}</th><th className="r">YTD</th></tr></thead>
                 <tbody>
                   {board.map((x) => perfRowFull({
                     ...x,

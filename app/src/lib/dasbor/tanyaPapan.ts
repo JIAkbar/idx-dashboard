@@ -1,4 +1,5 @@
 import type { DataHarian, TanggalIndex } from './dataHarian'
+import { muatSektor, sektorEmiten, type DaftarSektor } from './sektorIdx'
 import type { EdisiBulletin } from './bulletin'
 import type { KabarItem } from './kabar'
 import { rangkumHari, ASAL_AMBANG } from './ringkasHarian'
@@ -277,9 +278,22 @@ function jawabValuasi(kode: string, fd: StockFundamental | null): Jawaban {
   }
 }
 
+// Peta sektor IDX-IC dimuat sekali saat modul hidup (berkas kecil, ~250 KB)
+// — jawabSektor sinkron, jadi daftar disiapkan lebih dulu; sebelum tiba,
+// fallback fd.sector (Yahoo) berlaku sesaat dan tergantikan di tanya
+// berikutnya.
+let daftarSektorIdx: DaftarSektor | null = null
+void muatSektor().then((d) => { daftarSektorIdx = d }).catch(() => { /* fallback Yahoo tetap jalan */ })
+
 function jawabSektor(kode: string, fd: StockFundamental | null): Jawaban {
-  if (!fd || !fd.sector) return { teks: `Data sektor ${kode} belum ada.`, takPaham: true, topik: 'sektorEmiten', ...linkEmiten(kode) }
-  return { teks: `${kode} — sektor ${fd.sector}${fd.industry ? `, industri ${fd.industry}` : ''}.`, topik: 'sektorEmiten', ...linkEmiten(kode) }
+  // IDX-IC resmi (_en), BUKAN Yahoo — dua-duanya Inggris jadi cacatnya tak
+  // terlihat mata, tapi taksonominya beda (BBCA Yahoo: 'Financial Services /
+  // Banks - Regional'; IDX-IC: 'Financials / Bank'). Spek sektor EN 27 Agu.
+  const se = sektorEmiten(daftarSektorIdx, kode)
+  const sek = se?.sektor_en ?? se?.sektor ?? fd?.sector
+  const ind = se?.industri_en ?? fd?.industry
+  if (!sek) return { teks: `Data sektor ${kode} belum ada.`, takPaham: true, topik: 'sektorEmiten', ...linkEmiten(kode) }
+  return { teks: `${kode} — sektor ${sek}${ind ? `, industri ${ind}` : ''}.`, topik: 'sektorEmiten', ...linkEmiten(kode) }
 }
 
 function jawabKinerja(kode: string, od: OhlcRingkas | null): Jawaban {

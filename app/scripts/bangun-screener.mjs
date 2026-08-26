@@ -63,7 +63,10 @@ const namaByKode = new Map((daftar?.emiten ?? []).map((e) => [e.kode, e.nama]))
 // fundamental/*.json sebagai cadangan.
 const petaSektor = bacaJson(join(DIR_JSON, 'emiten_sektor.json'))
 const sektorByKode = new Map(
-  Object.entries(petaSektor?.emiten ?? {}).map(([k, v]) => [k, v?.sektor ?? null]),
+  // Keputusan Johan 27 Agu: NILAI klasifikasi tampil Inggris resmi IDX
+  // (lang=en); ruas Indonesia tetap tersimpan di emiten_sektor.json sebagai
+  // cadangan. Penjaga: _en kosong -> jatuh ke Indonesia, jangan kosong.
+  Object.entries(petaSektor?.emiten ?? {}).map(([k, v]) => [k, v?.sektor_en ?? v?.sektor ?? null]),
 )
 
 const fileOhlc = readdirSync(DIR_OHLC)
