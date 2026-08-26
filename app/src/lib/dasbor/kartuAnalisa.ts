@@ -137,6 +137,10 @@ export interface KartuEmiten {
   resistance: LevelSR[]
   stop: number
   stop_pct: number
+  /** 'klaster' = level dari klaster support historis; 'fallback5pct' = harga
+   *  ×0,95 karena deteksi klaster kosong — arbitrer, wajib ditandai ke
+   *  pembaca (audit 26 Agu 2.2). Opsional: kartu lama belum membawanya. */
+  stop_asal?: 'klaster' | 'fallback5pct'
   target: TargetItem[]
   er: number | null
   er_persentil: number | null

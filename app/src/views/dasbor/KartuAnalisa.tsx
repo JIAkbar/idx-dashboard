@@ -311,6 +311,12 @@ function KartuSatuEmiten({ kode }: { kode: string }) {
           </div>
           <div className="asal">
             <b>Pembatal tesis:</b> tersentuh intraday di bawah {fmtHarga(k.stop)} ({fmtPct(-k.stop_pct, 2)}).
+            {k.stop_asal === 'fallback5pct' && <>
+              {' '}<b>Catatan:</b> level ini BUKAN dari klaster support historis — deteksi klaster
+              tak menemukan level yang cukup teruji, jadi dipakai patokan seragam −5% dari harga.
+              Seluruh tabel skenario di atas berdiri di atas patokan itu; perlakukan sebagai
+              batas disiplin, bukan level teknikal.
+            </>}
             <br /><b>Asal:</b> first-passage empiris, horizon 20 hari bursa — dari tiap hari historis, target atau pembatal mana yang tersentuh lebih dulu (low/high intraday, bukan penutupan). Kalau keduanya tersentuh hari yang sama, dihitung sebagai pembatal (konservatif, urutan intraday tak diketahui dari lilin harian).
             <br /><b>n</b> = jumlah hari mulai; jendela {'>'}1 hari saling beririsan, jadi n bukan bukti bebas sebanyak itu — ≈n/20 jendela bebas ({'"'}jendela bebas{'"'} di atas) adalah perkiraan yang lebih jujur.
           </div>

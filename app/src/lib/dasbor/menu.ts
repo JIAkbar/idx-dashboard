@@ -162,7 +162,7 @@ export const MENU_ITEMS: MenuItem[] = [
     // (broker level PASAR, dari IDX) yang SENGAJA tidak disentuh — dua sumber
     // beda, Johan ingin membandingkan sebelum memutuskan mana yang bertahan.
     id: 'broker-summary-v2', path: '/broker-summary-v2', label: 'Broker Summary v2', kode: 'BS2', grup: 'aliran',
-    ringkas: 'Arus broker per emiten dari arsip harian Stockbit — pilot BUMI, tab Inventory/Kuadran/Floor Price.',
+    ringkas: 'Arus broker per emiten dari arsip harian — tab Inventory/Kuadran/Floor Price.',
     ikon: 'M4 7h16M4 7l2-3h12l2 3M4 7v11a2 2 0 002 2h12a2 2 0 002-2V7M9 12h6',
   },
 

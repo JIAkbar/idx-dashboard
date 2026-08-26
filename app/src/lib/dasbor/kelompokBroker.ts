@@ -30,7 +30,9 @@ export const KETERANGAN_KELOMPOK: Record<KelompokBroker, string> = {
   bumn: 'sekuritas bank pelat merah',
   smart: 'institusi lokal non-ritel',
   ritel: 'basis nasabah perorangan besar',
-  afiliasi: 'satu grup usaha dengan emiten — BUMI: belum ada yang terkurasi',
+  // Tanpa nama emiten: teks ini tampil untuk emiten APA PUN (audit 26 Agu 1.3
+  // — dulu menyebut BUMI dan ikut tampil di BBCA).
+  afiliasi: 'satu grup usaha dengan emiten — belum ada yang terkurasi',
   lain: 'belum dikurasi',
 }
 

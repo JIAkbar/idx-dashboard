@@ -677,6 +677,10 @@ def kartu(
     prev = c[-2] if n >= 2 else None
     chg = (harga / prev - 1) * 100 if prev else None
     stop = sup[0]["harga"] if sup else ke_fraksi(harga * 0.95, "bawah")
+    # Asal stop ikut ditulis (audit 26 Agu 2.2): fallback -5% itu angka
+    # arbitrer, bukan level historis — seluruh tabel first-passage berdiri
+    # di atasnya, jadi pembaca wajib tahu bedanya dari klaster support nyata.
+    stop_asal = "klaster" if sup else "fallback5pct"
     turun_pct = (harga - stop) / harga * 100
     e = er(c)
     jendela = range(max(0, n - 20), n)
@@ -696,6 +700,7 @@ def kartu(
         "support": sup[:3],
         "resistance": res[:3],
         "stop": stop,
+        "stop_asal": stop_asal,
         "stop_pct": turun_pct,
         "er": e,
         "er_persentil": (

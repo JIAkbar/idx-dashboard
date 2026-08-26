@@ -77,6 +77,21 @@ interface BerkasKeystats {
 }
 interface BerkasValuasi {
   emiten?: Record<string, { pb?: Record<string, number> }>
+  /** Alasan per-kode kenapa deret P/B kosong — DITULIS skrip valuasi, bukan
+   *  ditebak di sini. Dulu satu teks generik menyalahkan mata uang untuk
+   *  semua yang kosong, padahal terukur 10/14 sampel tak punya laporan sama
+   *  sekali dan 5 lainnya rugi/ekuitas negatif (audit 26 Agu 1.5). */
+  alasan_pb?: Record<string, string>
+}
+
+const TEKS_ALASAN_PB: Record<string, string> = {
+  tak_ada_laporan: 'laporan keuangan tahunannya belum ada di arsip PAPAN.',
+  tanpa_saham: 'jumlah saham tercatatnya belum ada di arsip.',
+  tanpa_harga: 'riwayat harganya belum ada di arsip.',
+  non_idr: 'laporan keuangannya dalam mata uang selain rupiah, dan konversinya belum diputuskan.',
+  ekuitas_negatif: 'ekuitasnya negatif di semua tahun yang tersedia — P/B tak bermakna.',
+  rasio_ekstrem: 'rasionya di luar batas wajar di semua tahun yang tersedia (harga sangat jauh dari nilai buku).',
+  tak_ada_periode: 'berkas laporannya ada tapi tak berisi satu pun periode tahunan.',
 }
 
 /** Angka rasio keystats bisa datang sebagai teks; kembalikan null bukan NaN. */
@@ -99,7 +114,7 @@ export async function muatFundamental(kode: string): Promise<Fundamental> {
     alasanPbKosong: Object.keys(pbTahunan).length
       ? null
       : val
-        ? 'P/B tahunan belum tersedia untuk emiten ini — laporan keuangannya dalam mata uang selain rupiah, dan konversinya belum diputuskan. Isi band-nya manual.'
+        ? `P/B tahunan belum tersedia untuk emiten ini — ${TEKS_ALASAN_PB[val.alasan_pb?.[kode] ?? ''] ?? 'penyebabnya belum tercatat di arsip.'} Isi band-nya manual.`
         : 'Data valuasi tahunan gagal dimuat.',
   }
 }

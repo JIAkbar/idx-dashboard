@@ -621,21 +621,25 @@ export function IndeksDunia() {
             <div className="panel-h">
               <span className="lbl"><IkonMenu d={IKON_GLOBE} size={13} /> Net Foreign</span>
             </div>
+            {/* Ruas hilang tampil "—" TANPA warna — `?? 0` mencetak "+0,00"
+                hijau untuk 8 hari yang ruas net-foreign-nya memang bolong,
+                terbaca "asing netral" padahal artinya "tak ada data"
+                (audit 26 Agu 1.1; standar `meta` di PapanIhsg atas). */}
             <div className="nf-grid">
               <div className="nf-cell">
                 <span className="lbl">Today</span>
-                <div className={`nf-sec ${(hari.nf_today_idr ?? 0) < 0 ? 'dn' : 'up'}`}>{hari.nf_today_status ?? '-'}</div>
-                <div className={`num nf-big ${(hari.nf_today_idr ?? 0) < 0 ? 'dn' : 'up'}`}>{fmtNF(hari.nf_today_idr ?? 0)}</div>
+                <div className={`nf-sec ${hari.nf_today_idr == null ? '' : hari.nf_today_idr < 0 ? 'dn' : 'up'}`}>{hari.nf_today_status ?? '-'}</div>
+                <div className={`num nf-big ${hari.nf_today_idr == null ? '' : hari.nf_today_idr < 0 ? 'dn' : 'up'}`}>{hari.nf_today_idr == null ? '—' : fmtNF(hari.nf_today_idr)}</div>
                 <div className="nf-unit">(billion IDR)</div>
-                <div className={`num nf-sec ${(hari.nf_today_usd ?? 0) < 0 ? 'dn' : 'up'}`}>{fmtNF(hari.nf_today_usd ?? 0)}</div>
+                <div className={`num nf-sec ${hari.nf_today_usd == null ? '' : hari.nf_today_usd < 0 ? 'dn' : 'up'}`}>{hari.nf_today_usd == null ? '—' : fmtNF(hari.nf_today_usd)}</div>
                 <div className="nf-unit">(million USD~)</div>
               </div>
               <div className="nf-cell">
                 <span className="lbl">YTD</span>
-                <div className={`nf-sec ${(hari.nf_ytd_idr ?? 0) < 0 ? 'dn' : 'up'}`}>{hari.nf_ytd_status ?? '-'}</div>
-                <div className={`num nf-big ${(hari.nf_ytd_idr ?? 0) < 0 ? 'dn' : 'up'}`}>{fmtNF(hari.nf_ytd_idr ?? 0)}</div>
+                <div className={`nf-sec ${hari.nf_ytd_idr == null ? '' : hari.nf_ytd_idr < 0 ? 'dn' : 'up'}`}>{hari.nf_ytd_status ?? '-'}</div>
+                <div className={`num nf-big ${hari.nf_ytd_idr == null ? '' : hari.nf_ytd_idr < 0 ? 'dn' : 'up'}`}>{hari.nf_ytd_idr == null ? '—' : fmtNF(hari.nf_ytd_idr)}</div>
                 <div className="nf-unit">(billion IDR)</div>
-                <div className={`num nf-sec ${(hari.nf_ytd_usd ?? 0) < 0 ? 'dn' : 'up'}`}>{fmtNF(hari.nf_ytd_usd ?? 0)}</div>
+                <div className={`num nf-sec ${hari.nf_ytd_usd == null ? '' : hari.nf_ytd_usd < 0 ? 'dn' : 'up'}`}>{hari.nf_ytd_usd == null ? '—' : fmtNF(hari.nf_ytd_usd)}</div>
                 <div className="nf-unit">(million USD)</div>
               </div>
             </div>
@@ -655,11 +659,11 @@ export function IndeksDunia() {
             <div className="nf-grid" style={{ flex: 1, alignItems: 'center' }}>
               <div className="nf-cell" style={{ textAlign: 'center' }}>
                 <span className="lbl">Market PER (x)</span>
-                <div className="num mf-big">{(hari.mkt_per ?? 0).toFixed(2)}</div>
+                <div className="num mf-big">{hari.mkt_per == null ? '—' : hari.mkt_per.toFixed(2)}</div>
               </div>
               <div className="nf-cell" style={{ textAlign: 'center' }}>
                 <span className="lbl">Market PBV (x)</span>
-                <div className="num mf-big">{(hari.mkt_pbv ?? 0).toFixed(2)}</div>
+                <div className="num mf-big">{hari.mkt_pbv == null ? '—' : hari.mkt_pbv.toFixed(2)}</div>
               </div>
             </div>
           </div>

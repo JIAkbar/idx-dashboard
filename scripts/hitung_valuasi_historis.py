@@ -110,26 +110,38 @@ def main() -> int:
     }
 
     hasil: dict[str, dict] = {}
+    # Alasan per-kode kenapa deret P/B-nya kosong (audit 26 Agu 1.5) — UI dulu
+    # menyalahkan "mata uang" untuk SEMUA yang kosong, padahal terukur 10/14
+    # sampel tak punya berkas laporan sama sekali dan 5 lainnya murni IDR tapi
+    # ekuitasnya negatif. Kunci: kode; nilai salah satu dari
+    # tak_ada_laporan | tanpa_saham | tanpa_harga | non_idr |
+    # ekuitas_negatif | rasio_ekstrem | tak_ada_periode.
+    alasan_pb: dict[str, str] = {}
     lewat_mata_uang = 0
     tanpa_saham: list[str] = []
     tanpa_ohlc = 0
 
+    punya_laporan: set[str] = set()
     for path in sorted((JSON / "keuangan_idx").glob("*.json")):
         kode = path.stem.upper()
         ki = muat(path)
         if not ki:
             continue
+        punya_laporan.add(kode)
         saham = saham_idx.get(kode)
         if not saham:
             tanpa_saham.append(kode)
+            alasan_pb[kode] = "tanpa_saham"
             continue
         ohlc = muat(JSON / "ohlc" / f"{kode}.json")
         if not ohlc:
             tanpa_ohlc += 1
+            alasan_pb[kode] = "tanpa_harga"
             continue
         tgl, tutup = deret_tutup(ohlc)
         if not tgl:
             tanpa_ohlc += 1
+            alasan_pb[kode] = "tanpa_harga"
             continue
 
         mata_uang = ki.get("mata_uang") or {}
@@ -138,11 +150,14 @@ def main() -> int:
         pb: dict[str, float] = {}
         ni_akhir = eq_akhir = None
         tahun_akhir = None
+        n_tahunan = n_idr = n_eq_pos = 0
 
         for kunci in sorted(ki.get("tahunan") or {}):
+            n_tahunan += 1
             if (mata_uang.get(kunci) or bawaan) != "IDR":
                 lewat_mata_uang += 1
                 continue
+            n_idr += 1
             p = ki["tahunan"][kunci]
             tahun = kunci[:4]
             harga = tutup_akhir_tahun(tgl, tutup, tahun)
@@ -156,6 +171,7 @@ def main() -> int:
                 if v <= BATAS_PE:
                     pe[tahun] = round(v, 3)
             if eq and eq > 0:
+                n_eq_pos += 1
                 v = kap / eq
                 if v <= BATAS_PB:
                     pb[tahun] = round(v, 3)
@@ -167,6 +183,16 @@ def main() -> int:
                 ni_akhir = ni
                 eq_akhir = eq
 
+        if not pb:
+            # Urutan diagnosa dari hulu ke hilir — alasan pertama yang gugur.
+            if n_tahunan == 0:
+                alasan_pb[kode] = "tak_ada_periode"
+            elif n_idr == 0:
+                alasan_pb[kode] = "non_idr"
+            elif n_eq_pos == 0:
+                alasan_pb[kode] = "ekuitas_negatif"
+            else:
+                alasan_pb[kode] = "rasio_ekstrem"
         if not pe and not pb:
             continue
         hasil[kode] = {
@@ -181,6 +207,11 @@ def main() -> int:
             "pb": pb,
         }
 
+    for e in daftar.get("emiten", []):
+        k = (e.get("kode") or "").upper()
+        if k and k not in punya_laporan and k not in alasan_pb:
+            alasan_pb[k] = "tak_ada_laporan"
+
     isi = {
         "diperbarui": datetime.now(WIB).isoformat(timespec="seconds"),
         "sumber": "keuangan_idx (XBRL tahunan) x ohlc x daftar_emiten.saham (ListedShares)",
@@ -191,6 +222,9 @@ def main() -> int:
         ),
         "n": len(hasil),
         "emiten": dict(sorted(hasil.items())),
+        # Emiten TANPA berkas keuangan_idx sama sekali tak pernah masuk loop —
+        # dilengkapi dari daftar_emiten di bawah sebagai "tak_ada_laporan".
+        "alasan_pb": dict(sorted(alasan_pb.items())),
     }
     KELUARAN.write_text(json.dumps(isi, ensure_ascii=False, indent=1), encoding="utf-8")
 
@@ -203,6 +237,8 @@ def main() -> int:
     print(f"  periode dilewati non-IDR   : {lewat_mata_uang}")
     print(f"  tanpa jumlah saham IDX     : {len(tanpa_saham)}")
     print(f"  tanpa berkas OHLC          : {tanpa_ohlc}")
+    from collections import Counter
+    print(f"  alasan_pb                  : {dict(Counter(alasan_pb.values()))}")
     return 0
 
 

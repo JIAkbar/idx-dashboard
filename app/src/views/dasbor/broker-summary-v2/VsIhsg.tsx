@@ -37,7 +37,10 @@ function Metrik({ k, ket, v, warna }: { k: string; ket?: string; v: string; warn
 
 interface VsIhsgProps {
   /** Kode emiten yang sedang dilihat — label seri chart. Dulu hardcode
-   *  'BUMI', jadi semua emiten berlabel BUMI di legenda (temuan sweep #355). */
+   *  'BUMI', jadi semua emiten berlabel BUMI di legenda (temuan sweep #355).
+   *  Audit 26 Agu menemukan EMPAT teks lain yang tertinggal (empty-state,
+   *  caption legenda, dua kartu metrik) — pelajaran fix-instance-bukan-sistemik;
+   *  semuanya kini memakai prop ini. */
   kode: string
   saham: BarisOhlcv[]
   ihsg: BarisOhlcv[]
@@ -106,12 +109,12 @@ export function VsIhsg({ kode, saham, ihsg }: VsIhsgProps) {
         {r && <span className="lbl">{labelTanggal(r.tgl[0])} – {labelTanggal(r.tgl[r.tgl.length - 1])} · {r.n} hari bursa</span>}
       </div>
       {!r ? (
-        <section className="panel"><div className="panel-b"><EmptyState>Tak cukup irisan tanggal BUMI vs IHSG pada rentang ini.</EmptyState></div></section>
+        <section className="panel"><div className="panel-b"><EmptyState>Tak cukup irisan tanggal {kode} vs IHSG pada rentang ini.</EmptyState></div></section>
       ) : (
         <div className="grid-vs" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.3fr) minmax(0,1fr)', gap: 14 }}>
           <div style={{ display: 'grid', gap: 14 }}>
             <section className="panel">
-              <div className="panel-h"><h2>Rebased performance</h2><span className="lbl">titik pertama = 100 · <span style={{ color: '#38B77E' }}>■</span> BUMI <span style={{ color: '#5B94E8' }}>■</span> IHSG</span></div>
+              <div className="panel-h"><h2>Rebased performance</h2><span className="lbl">titik pertama = 100 · <span style={{ color: '#38B77E' }}>■</span> {kode} <span style={{ color: '#5B94E8' }}>■</span> IHSG</span></div>
               <div className="panel-b"><div className="chart-wrap" style={{ height: 320 }}><canvas ref={canvasRef} /></div></div>
             </section>
             <section className="panel">
@@ -133,7 +136,7 @@ export function VsIhsg({ kode, saham, ihsg }: VsIhsgProps) {
             <section className="panel">
               <div className="panel-h"><h2>Returns summary</h2></div>
               <div className="panel-b bs2-metrik">
-                <Metrik k="Return BUMI" v={`${r.returnSaham >= 0 ? '+' : ''}${r.returnSaham.toFixed(2)}%`} warna={tone(r.returnSaham)} />
+                <Metrik k={`Return ${kode}`} v={`${r.returnSaham >= 0 ? '+' : ''}${r.returnSaham.toFixed(2)}%`} warna={tone(r.returnSaham)} />
                 <Metrik k="Return IHSG" v={`${r.returnIhsg >= 0 ? '+' : ''}${r.returnIhsg.toFixed(2)}%`} warna={tone(r.returnIhsg)} />
                 <Metrik k="Relative strength" ket="return saham − return IHSG" v={`${(r.returnSaham - r.returnIhsg) >= 0 ? '+' : ''}${(r.returnSaham - r.returnIhsg).toFixed(2)}%`} warna={tone(r.returnSaham - r.returnIhsg)} />
               </div>
@@ -141,7 +144,7 @@ export function VsIhsg({ kode, saham, ihsg }: VsIhsgProps) {
             <section className="panel">
               <div className="panel-h"><h2>Risk &amp; consistency</h2></div>
               <div className="panel-b bs2-metrik">
-                <Metrik k="Volatilitas BUMI" ket="annualized (σ harian × √252)" v={`${r.volatilitasSaham.toFixed(1)}%`} />
+                <Metrik k={`Volatilitas ${kode}`} ket="annualized (σ harian × √252)" v={`${r.volatilitasSaham.toFixed(1)}%`} />
                 <Metrik k="Volatilitas IHSG" ket="annualized" v={`${r.volatilitasIhsg.toFixed(1)}%`} />
                 <Metrik k="Win rate harian" ket="% hari saham > IHSG" v={`${r.winRateHarian.toFixed(1)}%`} />
               </div>

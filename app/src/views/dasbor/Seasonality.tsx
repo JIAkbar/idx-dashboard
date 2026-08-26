@@ -169,7 +169,10 @@ export function Seasonality() {
               <p style={{ marginBottom: 10 }}><IkonMenu d={IKON_KUNCI} size={26} /></p>
               <p style={{ fontSize: 14 }}>{alasanHari.judul}</p>
               <p style={{ fontSize: 11.5, marginTop: 8, maxWidth: '52ch', margin: '8px auto 0', lineHeight: 1.7 }}>
-                {alasanHari.kalimat} Tab ini membedah 8.848 hari bursa IHSG sejak 1990 dan
+                {/* Tanpa angka presisi (audit 26 Agu 2.1): "8.848" membeku sejak
+                    ditulis dan basi tiap hari bursa; angka pastinya dihitung
+                    SeasonalityHarian dari datanya sendiri saat tab terbuka. */}
+                {alasanHari.kalimat} Tab ini membedah ribuan hari bursa IHSG sejak 1990 dan
                 menguji polanya lawan 2.000 pengacakan — bahan yang paling mahal disiapkan
                 di halaman ini.
               </p>
