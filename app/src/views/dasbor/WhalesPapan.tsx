@@ -17,6 +17,10 @@ import { GarisAvgBroker } from '../../lib/dasbor/garisAvgBroker'
 import { BubbleBroker, bubbleOutlierHarian } from '../../lib/dasbor/bubbleBroker'
 import { ProfilHargaChart } from '../../lib/dasbor/profilHargaChart'
 import {
+  agregasi4h, agregatSeleksiIntraday, jamWib, muatIntraday1h, tanggalWib,
+  type Bar1H, type GalatIntraday, type RingkasIntraday,
+} from '../../lib/dasbor/intradayWhales'
+import {
   agregatArea, profilHarga, saringSignifikan,
   type RingkasBroker, type SeleksiArea,
 } from '../../lib/dasbor/whalesPapan'
@@ -94,6 +98,24 @@ async function muatCandle(kode: string): Promise<DataCandle> {
 /** Seleksi "seluruh riwayat" — dipakai garis avg broker saat belum ada kotak. */
 const SEMUA: SeleksiArea = { tglMulai: '0000-01-01', tglAkhir: '9999-12-31', hargaMin: -Infinity, hargaMax: Infinity }
 
+type Tf = 'harian' | '4h' | '1h'
+
+/**
+ * lightweight-charts menampilkan epoch numerik sebagai UTC — bar 09:00 WIB
+ * akan tercetak 02:00 tanpa ini. Epoch DIGESER +7 jam saat masuk chart dan
+ * dikembalikan saat keluar (seleksi), supaya sumbu terbaca WIB sementara
+ * seluruh lib intraday tetap epoch sungguhan.
+ */
+const GESER_WIB = 7 * 3600
+
+/** Seleksi mode intraday — epoch sungguhan (bukan yang tergeser). */
+interface SelIntra {
+  dariEpoch: number
+  sampaiEpoch: number
+  hargaMin: number
+  hargaMax: number
+}
+
 export default function WhalesPapan() {
   const { index: indeks } = useStockIndex()
   const { theme } = useTheme()
@@ -108,8 +130,11 @@ export default function WhalesPapan() {
   )
 
   const [sel, setSel] = useState<SeleksiArea | null>(null)
+  const [selIntra, setSelIntra] = useState<SelIntra | null>(null)
   const [modeSeleksi, setModeSeleksi] = useState(false)
+  const [tf, setTf] = useState<Tf>('harian')
   const [candle, setCandle] = useState<DataCandle>({ lilin: [], volume: [] })
+  const [intra, setIntra] = useState<{ bar: Bar1H[]; galat: GalatIntraday }>({ bar: [], galat: null })
   const [avgAktif, setAvgAktif] = useState(true)
   const [profilAktif, setProfilAktif] = useState(true)
   const [bubbleAktif, setBubbleAktif] = useState(false)
@@ -142,16 +167,29 @@ export default function WhalesPapan() {
     setBatasNetJual(PANEL_AWAL)
   }
 
-  // Ganti emiten = buang seleksi lama. Tanpa ini, kotak yang diseret di
-  // emiten sebelumnya tetap hidup dan panelnya memecah broker pada rentang
-  // harga milik saham LAIN — angkanya sah, kepalanya berbohong.
+  // Ganti emiten ATAU mode = buang seleksi lama. Tanpa ini, kotak yang
+  // diseret di emiten/mode sebelumnya tetap hidup dan panelnya memecah angka
+  // pada rentang milik konteks LAIN — angkanya sah, kepalanya berbohong.
   useEffect(() => {
     setSel(null)
+    setSelIntra(null)
     setModeSeleksi(false)
     resetBatas()
-  }, [kode])
+  }, [kode, tf])
 
   const hasil = useMemo(() => (sel ? agregatArea(hari, sel) : null), [hari, sel])
+
+  /** Bar intraday untuk TF terpilih — 4H diagregasi dari 1H saat baca. */
+  const barIntra = useMemo(
+    () => (tf === '4h' ? agregasi4h(intra.bar) : intra.bar),
+    [tf, intra.bar],
+  )
+  const hasilIntra: RingkasIntraday | null = useMemo(
+    () => (tf !== 'harian' && selIntra
+      ? agregatSeleksiIntraday(barIntra, selIntra.dariEpoch, selIntra.sampaiEpoch, selIntra.hargaMin, selIntra.hargaMax)
+      : null),
+    [tf, selIntra, barIntra],
+  )
 
   // Hook QA dev-only (pola `__papanChart`): verifikasi angka panel butuh tahu
   // rentang seleksi persisnya, dan kotak digambar di canvas — tak ada teks DOM
@@ -237,7 +275,7 @@ export default function WhalesPapan() {
     })
   }, [theme])
 
-  // Data candle per emiten.
+  // Data candle harian per emiten.
   useEffect(() => {
     let batal = false
     setCandle({ lilin: [], volume: [] })
@@ -245,32 +283,66 @@ export default function WhalesPapan() {
     return () => { batal = true }
   }, [kode])
 
+  // Data intraday 1H (olahan `bangun_intraday_1h.py`) — dimuat saat masuk
+  // mode intraday saja; 4H diagregasi klien, tak ada berkas kedua.
+  useEffect(() => {
+    if (tf === 'harian') return
+    let batal = false
+    setIntra({ bar: [], galat: null })
+    muatIntraday1h(kode).then((d) => { if (!batal) setIntra(d) })
+    return () => { batal = true }
+  }, [kode, tf])
+
   useEffect(() => {
     const lilin = lilinRef.current
     const vol = volRef.current
     const chart = chartRef.current
     if (!lilin || !vol || !chart) return
-    lilin.setData(candle.lilin)
-    vol.setData(candle.volume)
-    const n = candle.lilin.length
-    if (n > 0) {
-      chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - JENDELA_AWAL), to: n + 2 })
+    if (tf === 'harian') {
+      lilin.setData(candle.lilin)
+      vol.setData(candle.volume)
+      const n = candle.lilin.length
+      if (n > 0) {
+        chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - JENDELA_AWAL), to: n + 2 })
+      }
+      return
     }
-  }, [candle])
+    lilin.setData(barIntra.map((b) => ({
+      time: (b.epoch + GESER_WIB) as Time,
+      open: b.open, high: b.high, low: b.low, close: b.close,
+    })))
+    vol.setData(barIntra.map((b) => ({
+      time: (b.epoch + GESER_WIB) as Time,
+      value: b.volume,
+      color: b.close >= b.open ? 'rgba(48, 164, 108, 0.5)' : 'rgba(229, 72, 77, 0.5)',
+    })))
+    if (barIntra.length > 0) chart.timeScale().fitContent()
+  }, [tf, candle, barIntra])
 
   // Kotak terkunci digambar primitive dari NILAI — ikut zoom/pan.
   useEffect(() => {
-    seleksiRef.current?.setKotak(
-      sel ? { t0: sel.tglMulai, t1: sel.tglAkhir, harga0: sel.hargaMin, harga1: sel.hargaMax } : null,
-    )
-  }, [sel])
+    if (tf === 'harian') {
+      seleksiRef.current?.setKotak(
+        sel ? { t0: sel.tglMulai, t1: sel.tglAkhir, harga0: sel.hargaMin, harga1: sel.hargaMax } : null,
+      )
+    } else {
+      seleksiRef.current?.setKotak(
+        selIntra
+          ? {
+              t0: selIntra.dariEpoch + GESER_WIB, t1: selIntra.sampaiEpoch + GESER_WIB,
+              harga0: selIntra.hargaMin, harga1: selIntra.hargaMax,
+            }
+          : null,
+      )
+    }
+  }, [tf, sel, selIntra])
 
   // W2 — garis rata-rata beli broker: 5 penampung (net beli) terbesar; dari
   // area seleksi bila ada, dari seluruh riwayat bila belum.
   useEffect(() => {
     const prim = avgRef.current
     if (!prim) return
-    if (!avgAktif || hari.length === 0) { prim.setGaris([]); return }
+    if (tf !== 'harian' || !avgAktif || hari.length === 0) { prim.setGaris([]); return }
     const agg = agregatArea(hari, sel ?? SEMUA)
     const totalBeli = agg.grossBeli.reduce((s, r) => s + r.beliNilai, 0)
     prim.setGaris(
@@ -284,36 +356,38 @@ export default function WhalesPapan() {
           warna: warnaBrokerCanvas(r.kode),
         })),
     )
-  }, [avgAktif, hari, sel])
+  }, [tf, avgAktif, hari, sel])
 
   // W4 — profil harga (lot per pita dari broker harian), lapisan bawah candle.
+  // Hanya mode Harian: sumbernya broker harian, tak punya pecahan intraday.
   useEffect(() => {
-    profilRef.current?.setData(profilAktif ? profilHarga(hari, 28) : [])
-  }, [profilAktif, hari])
+    profilRef.current?.setData(tf === 'harian' && profilAktif ? profilHarga(hari, 28) : [])
+  }, [tf, profilAktif, hari])
 
-  // W3 — bubble broker outlier harian, ambang z dari slider.
+  // W3 — bubble broker outlier harian, ambang z dari slider. Hanya Harian.
   useEffect(() => {
     const prim = bubbleRef.current
     if (!prim) return
-    prim.setData(bubbleAktif ? bubbleOutlierHarian(hari, ambangZ) : [])
-  }, [bubbleAktif, ambangZ, hari])
+    prim.setData(tf === 'harian' && bubbleAktif ? bubbleOutlierHarian(hari, ambangZ) : [])
+  }, [tf, bubbleAktif, ambangZ, hari])
 
   // ── seret memilih (hanya saat mode seleksi aktif) ────────────────────────
-  const keNilai = (x: number, y: number): { t: string; harga: number } | null => {
+  const keNilai = (x: number, y: number): { t: string | number; harga: number } | null => {
     const chart = chartRef.current
     const lilin = lilinRef.current
-    if (!chart || !lilin || candle.lilin.length === 0) return null
+    const deret: Array<string | number> = tf === 'harian'
+      ? candle.lilin.map((b) => b.time as string)
+      : barIntra.map((b) => b.epoch + GESER_WIB)
+    if (!chart || !lilin || deret.length === 0) return null
     const harga = lilin.coordinateToPrice(y)
     if (harga === null) return null
     // Di luar bar pertama/terakhir chart menjawab null — dijatuhkan ke ujung
     // riwayat sesuai sisinya supaya seret sampai tepi tetap sah.
-    let t = chart.timeScale().coordinateToTime(x) as string | null
+    let t = chart.timeScale().coordinateToTime(x) as string | number | null
     if (t === null) {
       const el = bungkusRef.current
       const tengah = el ? el.clientWidth / 2 : 0
-      t = x < tengah
-        ? (candle.lilin[0].time as string)
-        : (candle.lilin[candle.lilin.length - 1].time as string)
+      t = x < tengah ? deret[0] : deret[deret.length - 1]
     }
     return { t, harga: harga as number }
   }
@@ -349,19 +423,34 @@ export default function WhalesPapan() {
       const a = keNilai(s.x0, s.y0)
       const b = keNilai(p.x, p.y)
       if (a && b) {
-        setSel({
-          tglMulai: a.t <= b.t ? a.t : b.t,
-          tglAkhir: a.t <= b.t ? b.t : a.t,
-          hargaMin: Math.min(a.harga, b.harga),
-          hargaMax: Math.max(a.harga, b.harga),
-        })
+        if (tf === 'harian') {
+          const t0 = String(a.t), t1 = String(b.t)
+          setSel({
+            tglMulai: t0 <= t1 ? t0 : t1,
+            tglAkhir: t0 <= t1 ? t1 : t0,
+            hargaMin: Math.min(a.harga, b.harga),
+            hargaMax: Math.max(a.harga, b.harga),
+          })
+        } else {
+          const e0 = Number(a.t) - GESER_WIB, e1 = Number(b.t) - GESER_WIB
+          setSelIntra({
+            dariEpoch: Math.min(e0, e1),
+            sampaiEpoch: Math.max(e0, e1),
+            hargaMin: Math.min(a.harga, b.harga),
+            hargaMax: Math.max(a.harga, b.harga),
+          })
+        }
         resetBatas()
       }
     } else {
       // batal — kembalikan kotak terkunci sebelumnya (kalau ada)
-      seleksiRef.current?.setKotak(
-        sel ? { t0: sel.tglMulai, t1: sel.tglAkhir, harga0: sel.hargaMin, harga1: sel.hargaMax } : null,
-      )
+      const k = tf === 'harian'
+        ? (sel ? { t0: sel.tglMulai, t1: sel.tglAkhir, harga0: sel.hargaMin, harga1: sel.hargaMax } : null)
+        : (selIntra ? {
+            t0: selIntra.dariEpoch + GESER_WIB, t1: selIntra.sampaiEpoch + GESER_WIB,
+            harga0: selIntra.hargaMin, harga1: selIntra.hargaMax,
+          } : null)
+      seleksiRef.current?.setKotak(k)
     }
     setModeSeleksi(false)
   }
@@ -431,6 +520,21 @@ export default function WhalesPapan() {
           </span>
         )}
         {muat && <span className="muted" style={{ fontSize: 12 }}>memuat…</span>}
+        {/* Dua mode (spek §1): Harian = pecahan broker penuh (unggulan);
+            Intraday 4H/1H = harga+volume ±90 hari, TANPA broker. */}
+        <span className="wp-toggle" role="group" aria-label="Kerangka waktu">
+          {(['harian', '4h', '1h'] as const).map((t) => (
+            <button key={t} type="button"
+              className={`chip-t${tf === t ? ' on' : ''}`}
+              aria-pressed={tf === t}
+              title={t === 'harian'
+                ? 'Candle harian + pecahan broker (riwayat penuh)'
+                : 'Candle intraday ±90 hari terakhir — tanpa pecahan broker (data broker hanya terbit harian)'}
+              onClick={() => setTf(t)}>
+              {t === 'harian' ? 'Harian' : t.toUpperCase()}
+            </button>
+          ))}
+        </span>
         <button
           type="button"
           className={`chip-t${modeSeleksi ? ' on' : ''}`}
@@ -442,32 +546,41 @@ export default function WhalesPapan() {
         </button>
         <button
           type="button"
-          className={`chip-t${avgAktif ? ' on' : ''}`}
-          aria-pressed={avgAktif}
-          title="Garis harga beli rata-rata 5 penampung terbesar (seluruh riwayat, atau area seleksi bila ada)"
+          className={`chip-t${avgAktif && tf === 'harian' ? ' on' : ''}`}
+          aria-pressed={avgAktif && tf === 'harian'}
+          disabled={tf !== 'harian'}
+          title={tf !== 'harian'
+            ? 'Hanya mode Harian — datanya dari broker harian'
+            : 'Garis harga beli rata-rata 5 penampung terbesar (seluruh riwayat, atau area seleksi bila ada)'}
           onClick={() => setAvgAktif((v) => !v)}
         >
           Garis AVG
         </button>
         <button
           type="button"
-          className={`chip-t${profilAktif ? ' on' : ''}`}
-          aria-pressed={profilAktif}
-          title="Bar lot per pita harga di tepi kanan plot — dari broker harian"
+          className={`chip-t${profilAktif && tf === 'harian' ? ' on' : ''}`}
+          aria-pressed={profilAktif && tf === 'harian'}
+          disabled={tf !== 'harian'}
+          title={tf !== 'harian'
+            ? 'Hanya mode Harian — datanya dari broker harian'
+            : 'Bar lot per pita harga di tepi kanan plot — dari broker harian'}
           onClick={() => setProfilAktif((v) => !v)}
         >
           Profil
         </button>
         <button
           type="button"
-          className={`chip-t${bubbleAktif ? ' on' : ''}`}
-          aria-pressed={bubbleAktif}
-          title="Lingkaran broker yang net-nya menyimpang dari pasar hari itu; ambangnya disetel slider z"
+          className={`chip-t${bubbleAktif && tf === 'harian' ? ' on' : ''}`}
+          aria-pressed={bubbleAktif && tf === 'harian'}
+          disabled={tf !== 'harian'}
+          title={tf !== 'harian'
+            ? 'Hanya mode Harian — datanya dari broker harian'
+            : 'Lingkaran broker yang net-nya menyimpang dari pasar hari itu; ambangnya disetel slider z'}
           onClick={() => setBubbleAktif((v) => !v)}
         >
           Bubble
         </button>
-        {bubbleAktif && (
+        {bubbleAktif && tf === 'harian' && (
           <label className="wp-z muted">
             z ≥ {ambangZ.toFixed(1)}
             <input
@@ -481,8 +594,9 @@ export default function WhalesPapan() {
             />
           </label>
         )}
-        {sel && (
-          <button type="button" className="btn-p wp-sisa" onClick={() => setSel(null)}>
+        {(tf === 'harian' ? sel : selIntra) && (
+          <button type="button" className="btn-p wp-sisa"
+            onClick={() => { setSel(null); setSelIntra(null) }}>
             Hapus seleksi
           </button>
         )}
@@ -511,7 +625,43 @@ export default function WhalesPapan() {
 
           <div className="wp-hasil">
             <h3>Hasil seleksi</h3>
-            {hasil ? (
+            {tf !== 'harian' && intra.galat ? (
+              // Gating jujur (spek §1B): mode dikunci dengan sebabnya, bukan
+              // dibiarkan kosong tanpa keterangan.
+              <p className="wp-sub">
+                Data intraday <strong>{kode}</strong> belum tersedia. Sumbernya hanya
+                menyimpan ±90 hari terakhir, dan emiten ini tak punya transaksi di
+                jendela olahan terakhir. Pakai mode <strong>Harian</strong> untuk
+                riwayat penuh.
+              </p>
+            ) : tf !== 'harian' && hasilIntra && selIntra ? (
+              <>
+                <p className="wp-sub">
+                  {tanggalWib(selIntra.dariEpoch)} {String(jamWib(selIntra.dariEpoch)).padStart(2, '0')}:00
+                  {' – '}
+                  {tanggalWib(selIntra.sampaiEpoch)} {String(jamWib(selIntra.sampaiEpoch)).padStart(2, '0')}:00
+                  {' · '}{hasilIntra.nBar} bar {tf.toUpperCase()} · {hasilIntra.nHari} hari bursa
+                </p>
+                <div className="wp-sisi">
+                  <div className="wp-sisi-judul"><span>Volume</span><span>{lotRingkas(hasilIntra.volume / 100)} lot</span></div>
+                  <div className="wp-sisi-judul"><span>Nilai</span><span>Rp {rupiahRingkas(hasilIntra.value)}</span></div>
+                  <div className="wp-sisi-judul"><span>Frekuensi</span><span>{hasilIntra.frequency.toLocaleString('id-ID')}×</span></div>
+                  <div className="wp-sisi-judul"><span>Rentang harga</span>
+                    <span>{Math.round(hasilIntra.hargaMin).toLocaleString('id-ID')}–{Math.round(hasilIntra.hargaMax).toLocaleString('id-ID')}</span></div>
+                </div>
+                <div className="wp-batas">
+                  Pecahan per broker <strong>tidak tersedia</strong> di timeframe
+                  intraday — data broker IDX hanya terbit harian setelah pasar
+                  tutup. Pindah ke mode Harian untuk melihat siapa menampung.
+                </div>
+              </>
+            ) : tf !== 'harian' ? (
+              <p className="wp-sub">
+                Tekan <strong>Pilih area</strong> lalu seret persegi di chart —
+                panelnya berisi volume, nilai, dan frekuensi rentang itu
+                (tanpa pecahan broker; data broker hanya harian).
+              </p>
+            ) : hasil ? (
               <>
                 <p className="wp-sub">
                   {hasil.nHari.toLocaleString('id-ID')} hari bursa · {hasil.nBroker} broker ·{' '}
@@ -619,6 +769,17 @@ export default function WhalesPapan() {
                   Bubble menandai broker yang net hariannya menyimpang jauh dari
                   sebaran seluruh broker hari itu; ambangnya kendali di tanganmu,
                   bukan penilaian kami.
+                </li>
+                <li>
+                  Mode <strong>4H/1H</strong> hanya mencakup ±90 hari terakhir —
+                  batas penyimpanan sumbernya; arsip kami mulai 29 Mei 2026 dan
+                  bertambah tiap hari sejak itu. Candle-nya agregasi bar 1 menit
+                  (lelang pembuka/penutup digabung ke jam sesi terdekat).
+                </li>
+                <li>
+                  Aliran asing per jam <strong>tidak ditampilkan</strong> — kami
+                  mengukurnya di seluruh arsip dan sumbernya memang tak mengisi
+                  angka itu di tingkat menit. Aliran asing tetap tersedia harian.
                 </li>
                 <li>
                   Halaman ini <strong>deskriptif</strong> — memetakan siapa bertransaksi

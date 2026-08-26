@@ -18,10 +18,12 @@ import type {
 } from 'lightweight-charts'
 
 /** Kotak dalam NILAI. `t0 <= t1` dan `hargaMin <= hargaMax` tak diwajibkan —
- *  penggambar menormalkannya sendiri supaya seret ke segala arah sah. */
+ *  penggambar menormalkannya sendiri supaya seret ke segala arah sah.
+ *  Waktu string ('yyyy-mm-dd', mode harian) ATAU epoch numerik (intraday) —
+ *  keduanya Time yang sah bagi chart dan keduanya terurut dengan `<`. */
 export interface KotakNilai {
-  t0: string
-  t1: string
+  t0: string | number
+  t1: string | number
   harga0: number
   harga1: number
 }
@@ -68,12 +70,12 @@ export class SeleksiAreaChart implements IPanePrimitive<Time> {
     // dijatuhkan ke tepi pane sesuai sisinya supaya kotak tergambar terpotong,
     // bukan lenyap.
     const jangkau = skala.getVisibleRange()
-    const keX = (t: string): number | null => {
+    const keX = (t: string | number): number | null => {
       const x = skala.timeToCoordinate(t as Time)
       if (x !== null) return x as number
       if (!jangkau) return null
-      if (t < (jangkau.from as string)) return 0
-      if (t > (jangkau.to as string)) return Number.POSITIVE_INFINITY
+      if (t < (jangkau.from as string | number)) return 0
+      if (t > (jangkau.to as string | number)) return Number.POSITIVE_INFINITY
       return null
     }
     const x0 = keX(k.t0 <= k.t1 ? k.t0 : k.t1)

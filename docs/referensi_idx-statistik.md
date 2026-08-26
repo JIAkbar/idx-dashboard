@@ -272,7 +272,7 @@ Kamus ruas (12 ruas per bar, semuanya diarsipkan mentah):
 | `lot` | lot | = volume ÷ 100 |
 | `value` | rupiah | — |
 | `frequency` | jumlah transaksi (STRING) | — |
-| `foreign_buy` / `foreign_sell` | rupiah asing | ⚠️ pada bar HARI BERJALAN basi (salinan kemarin, temuan 24 Agu) — sebab lain hari berjalan tak diarsipkan; pada hari yang sudah tutup masih perlu diuji terisi atau 0 di tingkat menit |
+| `foreign_buy` / `foreign_sell` | rupiah asing | ❌ **TERUKUR KOSONG di tingkat menit** (26 Agu 2026, builder 1H atas SELURUH arsip: nol di 874/874 emiten termasuk hari yang sudah tutup) — ruasnya ada, isinya tak pernah diisi server. Aliran asing intraday **TIDAK BISA** dari sumber ini; klaim "asing per 1H/4H bisa" di spek Whales §0 GUGUR. Asing tetap tersedia HARIAN (chartbit daily / bursa) |
 
 | Tersedia | Diambil? | Alasan | Keputusan |
 |---|---|---|---|
