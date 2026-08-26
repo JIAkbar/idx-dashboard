@@ -116,3 +116,7 @@ export const IKON_MAGNET = 'M6 4v6a6 6 0 0012 0V4M6 4h4M14 4h4M6 8h4M14 8h4'
  *  menyusut lebih jauh ke kiri). Tombol sliver yang MENGEMBALIKANNYA memakai
  *  `IKON_PANAH_KANAN` yang sudah ada — sepasang, bukan dua ikon baru. */
 export const IKON_PANAH_KIRI = 'M19 12H6M11 6l-6 6 6 6'
+
+/** Garis putus-putus mendatar + titik — overlay garis rata-rata beli broker
+ *  di chart (primitive P1 spek hybrid). */
+export const IKON_GARIS_AVG = 'M3 12h4M10 12h4M17 12h4M12 12m-1.5 0a1.5 1.5 0 103 0 1.5 1.5 0 10-3 0'

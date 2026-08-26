@@ -58,7 +58,11 @@ import {
   IkonMenu, IKON_CARI, IKON_SILANG, IKON_INFO, IKON_TONG, IKON_MATA,
   IKON_MATA_CORET, IKON_GIR, IKON_LILIN, IKON_GRAFIK_NAIK, IKON_KAMERA,
   IKON_ULANG, IKON_PUTAR, IKON_JEDA, IKON_KOTAK_ARSIP, IKON_PANAH_ATAS, IKON_PANAH_BAWAH,
+  IKON_GARIS_AVG,
 } from '../../components/dasbor/IkonMenu'
+import { GarisAvgBroker } from '../../lib/dasbor/garisAvgBroker'
+import { agregatBroker, muatRentang } from '../../lib/dasbor/brokerEmiten'
+import { warnaBrokerCanvas } from '../../lib/dasbor/kelompokBroker'
 import { useTheme } from '../../context/ThemeContext'
 import { useOhlcvKaya } from '../../lib/dasbor/ohlcvKaya'
 import { fmtB, fmtRingkas } from '../../lib/dasbor/brokerSummaryFormat'
@@ -601,6 +605,10 @@ export function GrafikEmiten() {
    *  yang mustahil. */
   const [modeSkala, setModeSkala] = useState('')
   const [autoSkala, setAutoSkala] = useState(true)
+  /** Overlay garis rata-rata beli broker (primitive P1 spek hybrid) —
+   *  mati bawaan: memuat berkas broker tahunan hanya saat diminta. */
+  const [avgBroker, setAvgBroker] = useState(false)
+  const avgBrokerRef = useRef<GarisAvgBroker | null>(null)
 
   /* ---------------- Compare symbols (#187) ---------------- */
 
@@ -1027,6 +1035,15 @@ export function GrafikEmiten() {
     penandaVolRef.current = createSeriesMarkers(vol, [])
     const pane0 = chart.panes()[0]
     if (pane0) watermarkRef.current = createTextWatermark(pane0, { horzAlign: 'center', vertAlign: 'center', lines: [] })
+    // Primitive P1 (spek hybrid): digambar di render-loop chart yang sama,
+    // jadi zoom/pan/resize tak pernah menggeser garisnya dari candle.
+    // Seri harga diambil lewat getter karena ia dibuat ulang tiap ganti
+    // jenis chart — referensi beku akan menunjuk seri yang sudah dibongkar.
+    if (pane0) {
+      const prim = new GarisAvgBroker(() => hargaRef.current)
+      pane0.attachPrimitive(prim)
+      avgBrokerRef.current = prim
+    }
     // Hook QA dev-only — verifikasi zoom/geser butuh rentang waktu yang
     // TERLIHAT (bukan cuma data yang di-setData), dan lightweight-charts
     // menggambar lewat canvas (tak ada teks DOM buat dibaca devtools).
@@ -1077,6 +1094,7 @@ export function GrafikEmiten() {
       chart.unsubscribeClick(saatGeserKursor)
       chart.remove()
       chartRef.current = null
+      avgBrokerRef.current = null
       hargaRef.current = null
       volRef.current = null
       penandaRef.current = null
@@ -1278,6 +1296,42 @@ export function GrafikEmiten() {
     const i = penuh.lilin.findIndex((b) => b.time >= batas)
     return i === -1 ? 0 : i
   }, [penuh.lilin, rentangLabel])
+
+  /**
+   * Data primitive garis rata-rata broker: 5 pembeli bersih terbesar di
+   * rentang chip yang dipandang, garis di harga beli rata-rata TERTIMBANG
+   * (nilai ÷ lot ÷ 100 — bukan rata-rata dari rata-rata). Persennya porsi
+   * nilai beli broker itu terhadap total beli seluruh broker di rentang.
+   * Emiten tanpa arsip broker (atau rentang sebelum 2016) menggambar nol
+   * garis tanpa galat — muatRentang melewati tahun yang berkasnya tak ada.
+   */
+  useEffect(() => {
+    const prim = avgBrokerRef.current
+    if (!prim) return
+    if (!avgBroker || penuh.lilin.length === 0) { prim.setGaris([]); return }
+    const dari = (penuh.lilin[awalRentang] ?? penuh.lilin[0]).time.slice(0, 10)
+    const sampai = penuh.lilin[penuh.lilin.length - 1].time.slice(0, 10)
+    let batal = false
+    muatRentang(kode, dari, sampai)
+      .then((hari) => {
+        if (batal) return
+        const agg = agregatBroker(hari)
+        const totalBeli = agg.reduce((s, a) => s + a.beliNilai, 0)
+        prim.setGaris(
+          agg
+            .filter((a) => a.netNilai > 0 && a.beliAvg !== null)
+            .slice(0, 5)
+            .map((a) => ({
+              broker: a.broker,
+              harga: a.beliAvg as number,
+              pct: totalBeli ? a.beliNilai / totalBeli : 0,
+              warna: warnaBrokerCanvas(a.broker),
+            })),
+        )
+      })
+      .catch(() => { if (!batal) prim.setGaris([]) })
+    return () => { batal = true }
+  }, [avgBroker, kode, penuh.lilin, awalRentang])
 
   /**
    * Chip rentang yang tak punya riwayat untuk ditampilkan — DINONAKTIFKAN,
@@ -3086,6 +3140,15 @@ export function GrafikEmiten() {
               ? `Template — ${template.length} tersimpan`
               : 'Template — simpan susunan indikator & pola'}
             onClick={() => setTemplateBuka(true)} />
+
+          {/* P1 spek hybrid: garis rata-rata beli broker sebagai primitive di
+              render-loop chart. Lima pembeli bersih terbesar rentang aktif. */}
+          <TombolIkon d={IKON_GARIS_AVG} ukuranIkon={14}
+            className={avgBroker ? 'on' : ''}
+            label={avgBroker
+              ? 'Sembunyikan garis rata-rata beli broker'
+              : 'Garis rata-rata beli broker — 5 pembeli bersih terbesar rentang ini'}
+            onClick={() => setAvgBroker((v) => !v)} />
 
           <span className="grf-toolbar-isi" />
 
