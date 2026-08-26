@@ -249,6 +249,36 @@ Angka 24/36 adalah batas atas asumsi linear; yang sah adalah mengukur 1 jam pada
 | Resolusi selain harian (intraday, mingguan) | ❓ | parameter belum terpecahkan (`workflow-panen-rombak.md` §4) | **belum diputuskan** |
 | Ruas lain di balasan chartbit (kalau ada) | ❓ | belum diinventaris ruas demi ruas dari satu balasan mentah | ❓ |
 
+## Stockbit — `chartbit/<KODE>/price/intraday` (bar 1 MENIT) — sumber resmi baru 26 Agu 2026
+
+- **URL / endpoint:** `https://exodus.stockbit.com/chartbit/<KODE>/price/intraday?from=<epoch TERBARU>&to=<epoch TERLAMA>&limit=0` — konvensi `from`/`to` TERBALIK seperti daily (teruji 25 Agu, sesi AI Skill)
+- **Jenis:** API tidak resmi, token akun Stockbit (access dibaca apa adanya — runner DILARANG memicu refresh)
+- **Asal perintah:** Johan 26 Agu 2026 (verbatim): *"jadikan kewajib panen endpoint dari 1 menit sampai 4H ini meskipun maksimal 90 hari gak masalah berharga sekali ini"* — **WAJIB rutin**, bukan opsional
+- **Akses & batasan:** server hanya menyimpan **±90 hari** (−14/−30/−90 → 200; −180/−365 → HTTP 400). Hari yang tidak dipanen di jendela itu **hilang permanen** — karena itu panen rutin. Jam bar 08:58–16:14 WIB (08:58 & pasca-15:50 = lelang pembuka/penutup)
+- **Tanggal mulai panen:** **26 Agu 2026** (run perdana, jendela penuh 90 hari): 962/962 emiten, **6.386.455 bar**, 111 MB gz, rentang **2026-05-29 → 2026-08-24** (BBCA 18.974 bar = persis angka acuan inventaris); 874 emiten berisi, sisanya nol transaksi di jendela (emiten tidur/suspensi)
+- **Berkas lokal:** `_arsip-mentah/intraday/<KODE>/<YYYY-MM>.json.gz` — bar 1 menit MENTAH = kanon, satu berkas per emiten-bulan, di luar git. 5m/15m/30m/1H/2H/4H **diagregasi saat baca**, tidak pernah disimpan berlipat. Penanda resume: `_arsip-mentah/intraday/_beres/<KODE>.json`
+- **Pemanen:** `scripts/panen_intraday_stockbit.py` — resumable per emiten; 401 = berhenti bersih (TANPA refresh); rutin `--hari 7` (tumpang-tindih menutup hari terlewat, dedup per `unix_timestamp`); **bar hari berjalan TIDAK PERNAH ditulis ke arsip** (parsial selamanya + ruas asing basi)
+- **Dipakai untuk:** mode Intraday 4H/1H Whales Papan (spek `spek_whales_papan.md` §1B), pola RBS/Gap intraday (spek `spek_rbs_gap_intraday.md`), statistik intraday BT Papan (setelah arsip ≥60 hari)
+
+Kamus ruas (12 ruas per bar, semuanya diarsipkan mentah):
+
+| Ruas | Arti (dibuktikan dari nilai) | Catatan |
+|---|---|---|
+| `datetime` | 'yyyy-mm-dd HH:MM:SS' WIB | jangan dipakai sendirian — pemilah hari memakai `unix_timestamp` |
+| `unix_timestamp` | epoch detik (STRING di balasan) | kunci dedup; di-int-kan saat olah |
+| `symbol` | kode emiten | — |
+| `open/high/low/close` | harga bar 1 menit | konvensi tersesuaikan (sama dengan chartbit daily) |
+| `volume` | lembar (STRING) | Σ volume menit = volume harian chartbit (uji agregasi wajib saat lib agregasi dibangun) |
+| `lot` | lot | = volume ÷ 100 |
+| `value` | rupiah | — |
+| `frequency` | jumlah transaksi (STRING) | — |
+| `foreign_buy` / `foreign_sell` | rupiah asing | ⚠️ pada bar HARI BERJALAN basi (salinan kemarin, temuan 24 Agu) — sebab lain hari berjalan tak diarsipkan; pada hari yang sudah tutup masih perlu diuji terisi atau 0 di tingkat menit |
+
+| Tersedia | Diambil? | Alasan | Keputusan |
+|---|---|---|---|
+| Seluruh 12 ruas bar 1 menit | ✅ mentah utuh | butir terkecil — semua kerangka waktu bisa dibentuk darinya, sebaliknya tidak | Johan 26 Agu (verbatim di atas) |
+| Bar hari berjalan | ❌ sengaja | parsial + `foreign_*` basi; dipungut run besok lewat tumpang-tindih 7 hari | aturan integritas arsip |
+
 ## Stockbit — `marketdetectors/<KODE>` (broker per emiten, 12 varian)
 
 - **URL / endpoint:** `https://exodus.stockbit.com/marketdetectors/<KODE>` dengan parameter papan (`REGULER`/`NEGO`/`TUNAI`), tipe investor (`ALL`/`FOREIGN`/`DOMESTIC`), transaksi (`GROSS`/`NET`), rentang tanggal (`panen_broker_harian.py:66`)
@@ -1087,3 +1117,6 @@ Keputusan yang diminta dari Johan: (a) J14 NET dihitung dari GROSS, tidak dipane
 - 24 Agustus 2026 (00:12) — **panen broker 2026 selesai**: 955/962 emiten lengkap (≥149 hari), 7 sisanya emiten IPO 2026 dengan ±30 hari (RANS, PRDL, BACH, EMMI, JECX, JELI, …) — bukan kekurangan; GROSS 2026 879.066 berkas (6 varian, J14). Paralel dinaikkan sesi Papan Trading bertahap 44 → 88 → 128 → 256 tanpa 429/GAGAL sejak run ke-9 (batas "50 putus koneksi" siang hari tidak berlaku lagi — patut dicatat penyebabnya di sesi itu, diduga keep-alive). Run 2025 (6 varian, paralel 256, `logs/backfill_2025_6varian.log`) mulai 00:20.
 - 24 Agustus 2026 (03:58) — **panen broker 2025 selesai**: run utama 217,5 menit (paralel 256, 6 varian, GROSS 1.339.524 berkas, 955/962 emiten tersentuh — 7 sisanya IPO 2026; 929 lengkap ≥236 hari, sisanya IPO/suspensi 2025) + **run tambal** 0,7 menit (paralel 96) menutup 35 emiten bermasalah (36 GAGAL reset koneksi 10054, 0 429/403). Arsip broker-harian total 2.916.649 berkas. 2017–2024 belum; harian ke depan 6 varian ≈ 5.772 panggilan ≈ 2 menit.
 - 24 Agustus 2026 (07:45) — kamus per-ruas lengkap 94 rasio keystats + 9 kunci profil_stockbit ditambahkan (fill rate per ruas dari sapuan 963/963 berkas, satuan dibuktikan dari nilai, bukan ditebak); tabel pembanding 34 ruas fundamental-lama-vs-keystats (median rasio hitung-ulang, sampel acak 40-60 emiten) — temuan penting: PanelSolvency/PanelEfektivitas/PanelSkor SUDAH menayangkan altman_z/roic/roce/f_score/ev_ebit/ev_ebitda dari fundamental lama (bukan selalu kosong seperti tercatat di memori lama), jadi sesi ini MURNI menambah kelompok yang tak dimiliki sumber lama sama sekali: rasio bank/multifinance (10 ruas, ~48/963 emiten), peringkat persentil peer (6 ruas), dan profil naratif (alamat/latar belakang/sekretaris/IPO) di app/src/lib/dasbor/rasioTambahanKeystats.ts (baru) + StockDetail.tsx. Piotroski F-Score baru, PEG Ratio baru, Payout Ratio baru, Free Float % baru, Cash Per Share baru diukur MENYIMPANG dari versi lama yang sudah tayang (bukan cuma beda skala) - diserahkan ke Johan, tidak dipasang.
+- 24 Agustus 2026 (14:33, saat sesi 2 bursa berjalan) — **uji "fetch pertengahan sesi"** (permintaan Johan): (1) `chartbit price/daily` MEMBERIKAN bar hari berjalan sebagai bar berjalan — BBCA 24 Agu o6450/h6450/l6350/c6375 (harga terakhir), volume 47,4 jt (parsial), freq 14.949 — **tapi `foreignbuy/foreignsell` bar berjalan BASI: nilainya salinan hari sebelumnya** (identik dengan 21 Agu), jadi hanya harga/volume/value/freq yang boleh dipakai intraday; (2) `marketdetectors` hari berjalan menjawab 200 dengan tabel **kosong** (0 broker, volume 0) — broker summary baru terisi setelah tutup pasar. Konsekuensi integritas arsip: **jangan pernah menulis data hari berjalan ke `_arsip-mentah`** — berkas parsial akan dilewati runner malam ("sudah ada") dan tinggal parsial selamanya; snapshot intraday kalau dibuat harus di jalur terpisah (mis. `snapshot/`) atau selalu ditimpa ulang setelah tutup.
+- 25 Agustus 2026 — **endpoint intraday Stockbit terpecahkan** (pertanyaan Johan soal timeframe RBS/Gap): `chartbit/{kode}/price/intraday` dengan `from`=epoch terbaru, `to`=epoch terlama → **bar 1 menit** (o/h/l/c, volume, lot, value, frequency, foreign_buy/sell; 08:58–16:14), server menyimpan **±90 hari** saja (−180 hari → HTTP 400). Konsekuensi: timeframe 5m/15m/30m/1H/2H/4H bisa diagregasi dari 1 menit untuk 90 hari terakhir; riwayat panjang butuh panen rutin (±13 menit/putaran untuk 962 emiten). `docs/riset/stockbit-inventaris-endpoint.md` diperbarui. Pola RBS/Gap sendiri bebas timeframe (fungsi murni atas OHLC); backtest yang sudah ada = timeframe harian.
+
