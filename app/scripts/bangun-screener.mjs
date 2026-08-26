@@ -55,6 +55,16 @@ function bacaJson(path) {
 
 const daftar = bacaJson(join(DIR_JSON, 'daftar_emiten.json'))
 const namaByKode = new Map((daftar?.emiten ?? []).map((e) => [e.kode, e.nama]))
+// Sektor dari peta IDX-IC RESMI (emiten_sektor.json, 962/962) — keputusan
+// Johan 26 Agu (spek kedalaman §3). Dulu dari data fundamental = taksonomi
+// GICS/Yahoo: 46 emiten '-' padahal sektornya ada, dan tooltip yang
+// mengklaim "IDX-IC" bohong untuk SELURUH kolom (TLKM "Communication
+// Services" vs resmi "Infrastruktur"). GICS tak dibuang — tetap di
+// fundamental/*.json sebagai cadangan.
+const petaSektor = bacaJson(join(DIR_JSON, 'emiten_sektor.json'))
+const sektorByKode = new Map(
+  Object.entries(petaSektor?.emiten ?? {}).map(([k, v]) => [k, v?.sektor ?? null]),
+)
 
 const fileOhlc = readdirSync(DIR_OHLC)
   .filter((f) => f.endsWith('.json') && !f.startsWith('_') && f !== 'IHSG.json') // IHSG = indeks komposit, bukan emiten
@@ -171,11 +181,11 @@ for (const f of fileOhlc) {
   emiten.push({
     kode,
     nama: namaByKode.get(kode) ?? null,
-    // '-' saat fundamental tak menyebut sektor — BUKAN null: `sektorUnik()`
+    // '-' saat peta resmi tak memuat kodenya — BUKAN null: `sektorUnik()`
     // memanggil localeCompare pada tiap nilai, dan satu null menjatuhkan
     // seluruh halaman (audit 21 Agu #2). '-' sudah punya arti di UI:
     // "Tanpa sektor".
-    sektor: fund?.sector ?? '-',
+    sektor: sektorByKode.get(kode) ?? '-',
     harga,
     tdm_persen: momentumPersen(baris),
     volume: vol.at(-1) ?? null,

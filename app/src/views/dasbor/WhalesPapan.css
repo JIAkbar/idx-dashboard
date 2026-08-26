@@ -23,6 +23,11 @@
   grid-template-columns: minmax(0, 1fr) 300px;
   gap: 12px;
   align-items: start;
+  /* SATU variabel tinggi untuk chart & panel (spek konsistensi §1) — dua
+   * angka terpisah pernah membuat panel memanjang 700-900px sementara chart
+   * berhenti di 560px: ruang mati besar + toolbar melompat tiap ganti
+   * emiten karena tinggi halaman ikut berubah. */
+  --wp-tinggi: clamp(320px, 42vw, 560px);
 }
 
 .wp-kanvas-bungkus {
@@ -42,7 +47,7 @@
 /* Rumah chart hybrid: tinggi eksplisit (autoSize lightweight-charts mengikuti
    kotak ini), lebar dari grid. */
 .wp-chart {
-  height: clamp(320px, 42vw, 560px);
+  height: var(--wp-tinggi);
 }
 
 /* Rincian broker (klik pill AVG) — isi ModalKecil. */
@@ -113,6 +118,10 @@
   background: var(--bg1);
   padding: 12px 13px;
   min-width: 0;
+  /* Isi panjang menggulir DI DALAM panel, bukan memanjangkan halaman. */
+  height: var(--wp-tinggi);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .wp-hasil h3 {
   margin: 0 0 2px;
@@ -199,4 +208,7 @@
 @media (max-width: 900px) {
   .wp-panggung { grid-template-columns: minmax(0, 1fr); }
   .wp-atur .wp-sisa { margin-left: 0; }
+  /* Menumpuk satu kolom: tinggi panel dilepas — gulir bersarang di ponsel
+   * lebih buruk daripada halaman panjang. */
+  .wp-hasil { height: auto; overflow-y: visible; }
 }

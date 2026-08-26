@@ -398,7 +398,10 @@ export default function WhalesPapan() {
     return { x: e.clientX - r.left, y: e.clientY - r.top }
   }
   const onDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    e.currentTarget.setPointerCapture(e.pointerId)
+    // try/catch pola CompareTab: pointerId yang sudah lepas (sentuhan sangat
+    // singkat) atau event uji membuat setPointerCapture melempar — seleksinya
+    // sendiri tetap sah tanpa capture.
+    try { e.currentTarget.setPointerCapture(e.pointerId) } catch { /* lanjut */ }
     const p = posisi(e)
     seretRef.current = { x0: p.x, y0: p.y }
   }

@@ -130,7 +130,7 @@ export function Screener() {
       label: sek === '-' ? 'Tanpa sektor' : sek,
       jumlah: jumlahSektor.get(sek) ?? 0,
       keterangan: sek === '-'
-        ? 'Belum terklasifikasi IDX-IC — kebanyakan emiten suspensi/bermasalah yang tak masuk peta sektor resmi'
+        ? 'Tidak ditemukan di peta sektor resmi IDX-IC'
         : undefined,
     })),
     [daftarSektor, jumlahSektor],
