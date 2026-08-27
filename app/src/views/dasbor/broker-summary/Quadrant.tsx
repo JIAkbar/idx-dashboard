@@ -195,7 +195,7 @@ export function Quadrant({ brokers }: QuadrantProps) {
   return (
     <div ref={wrapRef} className="quad-fs">
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-        <div className="lbl" style={{ flex: 1, minWidth: 0 }}>⊞ Kuadran Broker — X: Frekuensi (log), Y: Nilai (log), Ukuran: Nilai · garis putus = median</div>
+        <div className="lbl" style={{ flex: 1, minWidth: 0 }}>Kuadran Broker — X: Frekuensi (log), Y: Nilai (log), Ukuran: Nilai · garis putus = median</div>
         {typeof document !== 'undefined' && document.fullscreenEnabled && (
           <TombolLayarPenuh target={wrapRef} aktif={fs} labelKeluar="Keluar" />
         )}

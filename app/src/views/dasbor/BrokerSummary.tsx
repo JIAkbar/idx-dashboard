@@ -8,7 +8,7 @@ import { Inventory } from './broker-summary/Inventory'
 import { Quadrant } from './broker-summary/Quadrant'
 import { Nego } from './broker-summary/Nego'
 import { Flow } from './broker-summary/Flow'
-import { IkonMenu, IKON_GRAFIK_BATANG, IKON_ULANG, IKON_OMBAK, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_GRAFIK_BATANG, IKON_KUADRAN, IKON_ULANG, IKON_OMBAK, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
@@ -17,7 +17,7 @@ type Tab = 'inventory' | 'quadrant' | 'nego' | 'flow'
 
 const TABS: { id: Tab; label: ReactNode }[] = [
   { id: 'inventory', label: <><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Inventory</> },
-  { id: 'quadrant', label: '⊞ Kuadran' },
+  { id: 'quadrant', label: <><IkonMenu d={IKON_KUADRAN} size={13} /> Kuadran</> },
   { id: 'nego', label: <><IkonMenu d={IKON_ULANG} size={13} /> NEGO</> },
   { id: 'flow', label: <><IkonMenu d={IKON_OMBAK} size={13} /> Flow</> },
 ]

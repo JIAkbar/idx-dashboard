@@ -78,6 +78,7 @@ export const LABEL_RENTANG = {
   b1: '1 Bulan',
   b3: '3 Bulan',
   b6: '6 Bulan',
+  wtd: 'WTD',
   mtd: 'MTD',
   ytd: 'YTD',
   y1: '1 Tahun',
