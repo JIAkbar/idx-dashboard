@@ -463,6 +463,13 @@
    benefit pecah 2–3 baris, dan tombol "Benefit kontributor" nyaris menyentuh
    "Tutup" di kepala. Tetap 100% di layar sempit, jadi telepon tidak berubah. */
 .dasbor-modal { width: 100%; max-width: 420px; animation: dasbor-modal-naik .22s cubic-bezier(.2,.7,.3,1); }
+/* Modal berisi daftar panjang (info-indikator 19 item = 1.934px di layar
+   1.066px, temuan 28 Agu): tanpa batas tinggi, latar align center membuat
+   kepala DAN ekornya terpotong tak terjangkau. Badan modal yang menggulung,
+   kepala panel tetap terlihat. Lebar juga dilonggarkan — 420px memaksa teks
+   penjelasan jadi kolom sempit yang tinggi. */
+.dasbor-modal.info-indikator { max-width: 560px; }
+.dasbor-modal.info-indikator .panel-b { max-height: min(68vh, 640px); max-height: min(68dvh, 640px); overflow-y: auto; }
 @keyframes dasbor-modal-pudar { from { opacity: 0; } to { opacity: 1; } }
 @keyframes dasbor-modal-naik { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
