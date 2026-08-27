@@ -794,6 +794,38 @@
    supaya tidak ada gerak yang lolos dari blok prefers-reduced-motion. */
 .lantai{display:flex;flex-direction:column;gap:16px}
 
+/* ============ SISTEM TATA C+A (keputusan Johan 28 Agu 2026, artifact
+   "Re-Layout PAPAN": "rekomendasiku C+A — grid 12 kolom bertoken sebagai
+   fondasi ... berlaku di semua page") ============
+   Tiga token jarak — SATU-SATUNYA sumber jarak tata letak halaman:
+   --j1 di dalam kelompok, --j2 antar blok, --j3 antar seksi. Angka baru
+   di luar tiga ini = pelanggaran, bukan kreasi. */
+.lantai{--j1:8px;--j2:16px;--j3:24px}
+
+/* Bilah kendali berkelompok (cangkokan Arah A): satu baris flex berisi
+   kelompok-kelompok beranak label mikro + pemisah vertikal. Membungkus per
+   KELOMPOK di layar sempit — bukan per chip — sehingga pasangan label-chip
+   tak pernah terpisah baris. */
+.lantai .bilah-kendali{display:flex;align-items:center;gap:var(--j1) var(--j1);flex-wrap:wrap;border:1px solid var(--line);border-radius:9px;padding:7px 10px}
+.lantai .bilah-kendali .grup-k{display:flex;align-items:center;gap:var(--j1);flex-wrap:wrap}
+.lantai .bilah-kendali .grup-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);font-weight:700;user-select:none}
+.lantai .bilah-kendali .pemisah-v{width:1px;align-self:stretch;background:var(--line);margin:0 2px}
+.lantai .bilah-kendali .grup-kanan{margin-left:auto}
+@media (max-width:700px){.lantai .bilah-kendali .grup-kanan{margin-left:0}}
+
+/* Tata dua kolom 12-grid (9:3) dengan panel kanan KONTEKSTUAL: ada isi =
+   kolom penuh, kosong = kolaps jadi strip petunjuk tipis dan kolom kiri
+   (chart/tabel) memakai seluruh lebar. minmax(0,…) wajib — kolom auto
+   melebar mengikuti anak terlebar dan terpotong di ponsel (jebakan lama). */
+.lantai .tata-2{display:grid;grid-template-columns:minmax(0,9fr) minmax(240px,3fr);gap:var(--j2);align-items:start}
+.lantai .tata-2.ctx-kosong{grid-template-columns:minmax(0,1fr) 44px}
+.lantai .tata-2 .ctx-strip{writing-mode:vertical-rl;display:flex;align-items:center;justify-content:center;gap:6px;border:1px dashed var(--line);border-radius:9px;padding:10px 4px;font-size:10.5px;color:var(--text3);min-height:220px;user-select:none;background:transparent;cursor:pointer;font-family:inherit;letter-spacing:.04em}
+.lantai .tata-2 .ctx-strip:hover{color:var(--text2);border-color:var(--line2)}
+@media (max-width:900px){
+  .lantai .tata-2,.lantai .tata-2.ctx-kosong{grid-template-columns:minmax(0,1fr)}
+  .lantai .tata-2 .ctx-strip{writing-mode:horizontal-tb;min-height:0;padding:8px 12px}
+}
+
 /* ============ BASE (sisa; *, html/body, main, table, canvas sudah
    ditangani di luar .lantai) ============ */
 /* button tak pernah mewarisi color/font peramban — tanpa ini, <button

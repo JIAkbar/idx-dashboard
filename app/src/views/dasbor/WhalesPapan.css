@@ -19,11 +19,9 @@
  * mengikuti anak terlebar dan `.dasbor-main` MEMOTONG kelebihannya, jadi
  * panel kanan jadi tak terjangkau di layar sempit. */
 .wp-panggung {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 12px;
-  align-items: start;
-  /* SATU variabel tinggi untuk chart & panel (spek konsistensi §1) — dua
+  /* Grid-nya kini milik `.tata-2` kanonis (sistem tata C+A, lantai.css) —
+   * kelas ini tinggal menyimpan variabel tinggi bersama.
+   * SATU variabel tinggi untuk chart & panel (spek konsistensi §1) — dua
    * angka terpisah pernah membuat panel memanjang 700-900px sementara chart
    * berhenti di 560px: ruang mati besar + toolbar melompat tiap ganti
    * emiten karena tinggi halaman ikut berubah. */
@@ -229,7 +227,9 @@
 }
 
 @media (max-width: 900px) {
-  .wp-panggung { grid-template-columns: minmax(0, 1fr); }
+  /* Tumpukan satu kolom kini urusan `.tata-2` (lantai.css) — jangan tulis
+   * ulang grid di sini: aturan mobile yang lebih pendek selectornya kalah
+   * dari aturan dasar (jebakan lama .dpk-wrap). */
   .wp-atur .wp-sisa { margin-left: 0; }
   /* Menumpuk satu kolom: tinggi panel dilepas — gulir bersarang di ponsel
    * lebih buruk daripada halaman panjang. */

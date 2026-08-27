@@ -197,6 +197,10 @@ export default function WhalesPapan() {
     }
   }
 
+  /** Panel kanan kontekstual (tata C+A): berisi saat ada seleksi, atau saat
+   *  ada pesan gating intraday yang wajib dibaca. */
+  const panelBerisi = tf === 'harian' ? sel !== null : (selIntra !== null || intra.galat !== null)
+
   const resetBatas = () => {
     setBatasGrossBeli(PANEL_AWAL)
     setBatasGrossJual(PANEL_AWAL)
@@ -639,29 +643,38 @@ export default function WhalesPapan() {
 
       <CatatanCakupan />
 
-      <div className="wp-atur">
-        <div className="wp-emiten">
-          <StockAutocomplete
-            stocks={indeks?.stocks || []}
-            value={ketik}
-            onChange={setKetik}
-            onSelect={(v) => { setKetik(v); setKode(v.toUpperCase()) }}
-            placeholder="Cari emiten: BUMI, BBCA…"
-          />
+      {/* Bilah kendali berkelompok — sistem tata C+A (keputusan Johan 28 Agu,
+          artifact "Re-Layout PAPAN"; Whales = halaman percontohan chart).
+          Kelompok EMITEN · LAPISAN · TAMPILAN, membungkus per kelompok. */}
+      <div className="bilah-kendali wp-atur">
+        <div className="grup-k">
+          <span className="grup-lbl">Emiten</span>
+          <div className="wp-emiten">
+            <StockAutocomplete
+              stocks={indeks?.stocks || []}
+              value={ketik}
+              onChange={setKetik}
+              onSelect={(v) => { setKetik(v); setKode(v.toUpperCase()) }}
+              placeholder="Cari emiten: BUMI, BBCA…"
+            />
+          </div>
+          <strong>{kode}</strong>
+          {tidakDiperdagangkan(barisKartu) && (
+            <LencanaBeku beku={barisKartu?.beku} sejak={barisKartu?.beku_sejak} />
+          )}
+          {tahunAda.length > 0 && (
+            <span className="muted" style={{ fontSize: 12 }}>
+              broker {tahunAda[0]}–{tahunAda[tahunAda.length - 1]} · {hari.length.toLocaleString('id-ID')} hari
+            </span>
+          )}
+          {muat && <span className="muted" style={{ fontSize: 12 }}>memuat…</span>}
         </div>
-        <strong>{kode}</strong>
-        {tidakDiperdagangkan(barisKartu) && (
-          <LencanaBeku beku={barisKartu?.beku} sejak={barisKartu?.beku_sejak} />
-        )}
-        {tahunAda.length > 0 && (
-          <span className="muted" style={{ fontSize: 12 }}>
-            broker {tahunAda[0]}–{tahunAda[tahunAda.length - 1]} · {hari.length.toLocaleString('id-ID')} hari
-          </span>
-        )}
-        {muat && <span className="muted" style={{ fontSize: 12 }}>memuat…</span>}
+        <span className="pemisah-v" aria-hidden="true" />
         {/* Pemilih TF Harian/4H/1H DICABUT (Johan 27 Agu: "di hapus saja ini
             ... cukup pakai harian dlu") — mode intraday tetap di kode (tf
             selalu 'harian'), tinggal mengembalikan tombol ini bila diminta. */}
+        <div className="grup-k">
+        <span className="grup-lbl">Lapisan</span>
         <button
           type="button"
           className={`chip-t${modeSeleksi ? ' on' : ''}`}
@@ -743,6 +756,10 @@ export default function WhalesPapan() {
             />
           </label>
         )}
+        </div>
+        <span className="pemisah-v" aria-hidden="true" />
+        <div className="grup-k grup-kanan">
+        <span className="grup-lbl">Tampilan</span>
         <button
           type="button"
           className={`chip-t${grid.tampil ? ' on' : ''}`}
@@ -778,11 +795,12 @@ export default function WhalesPapan() {
         </button>
         <InfoIndikator judul="Indikator Whales Papan" item={INFO_WHALES} />
         {(tf === 'harian' ? sel : selIntra) && (
-          <button type="button" className="btn-p wp-sisa"
+          <button type="button" className="btn-p"
             onClick={() => { setSel(null); setSelIntra(null) }}>
             Hapus seleksi
           </button>
         )}
+        </div>
       </div>
 
       {galat === 'belum-ada' || galat === 'kosong' ? (
@@ -793,7 +811,10 @@ export default function WhalesPapan() {
           rincian broker di dalamnya.
         </div>
       ) : (
-        <div className="wp-panggung">
+        /* Panel kanan KONTEKSTUAL (sistem tata C+A): tanpa seleksi ia kolaps
+           jadi strip tipis yang bisa ditekan (chart memakai seluruh lebar);
+           ada seleksi/pesan → kolom penuh. */
+        <div className={`wp-panggung tata-2${panelBerisi ? '' : ' ctx-kosong'}`}>
           <div className="wp-kanvas-bungkus wp-chart" ref={bungkusRef}>
             {modeSeleksi && (
               <div
@@ -874,6 +895,16 @@ export default function WhalesPapan() {
               </p>
             </ModalKecil>
           )}
+          {!panelBerisi ? (
+            <button
+              type="button"
+              className="ctx-strip"
+              title="Aktifkan mode pilih area"
+              onClick={() => setModeSeleksi(true)}
+            >
+              Hasil Seleksi — tekan lalu seret area di chart
+            </button>
+          ) : (
           <div className="wp-hasil">
             <h3>Hasil seleksi</h3>
             {tf !== 'harian' && intra.galat ? (
@@ -1045,6 +1076,7 @@ export default function WhalesPapan() {
               </ul>
             </details>
           </div>
+          )}
         </div>
       )}
     </div>
