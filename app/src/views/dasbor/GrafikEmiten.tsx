@@ -58,8 +58,9 @@ import {
   IkonMenu, IKON_CARI, IKON_SILANG, IKON_INFO, IKON_TONG, IKON_MATA,
   IKON_MATA_CORET, IKON_GIR, IKON_LILIN, IKON_GRAFIK_NAIK, IKON_KAMERA,
   IKON_ULANG, IKON_PUTAR, IKON_JEDA, IKON_KOTAK_ARSIP, IKON_PANAH_ATAS, IKON_PANAH_BAWAH,
-  IKON_GARIS_AVG, IKON_PITA_CPR, IKON_BUBBLE,
+  IKON_GARIS_AVG, IKON_PITA_CPR, IKON_BUBBLE, IKON_GRAFIK_BATANG,
 } from '../../components/dasbor/IkonMenu'
+import { PanelAnalitikChart, type BarAnalitik } from '../../components/dasbor/PanelAnalitikChart'
 import { GarisAvgBroker } from '../../lib/dasbor/garisAvgBroker'
 import { PitaCpr } from '../../lib/dasbor/pitaCprChart'
 import { BubbleBroker, bubbleOutlierHarian } from '../../lib/dasbor/bubbleBroker'
@@ -618,6 +619,12 @@ export function GrafikEmiten() {
   /** Overlay bubble broker outlier harian (primitive P2). */
   const [bubbleAktif, setBubbleAktif] = useState(false)
   const bubbleRef = useRef<BubbleBroker | null>(null)
+  /** Panel Pivot/CPR/RR/Return/Volume Surge (PanelAnalitikChart) — mati
+   *  bawaan (Johan #Paket-I). Datanya BUKAN seluruh riwayat, tapi bar yang
+   *  sedang terlihat di jendela pandang (zoom/pan), supaya banner gating
+   *  "N sesi belum cukup" bereaksi wajar saat pembaca mempersempit rentang. */
+  const [analitikAktif, setAnalitikAktif] = useState(false)
+  const [rentangTampilAnalitik, setRentangTampilAnalitik] = useState<{ from: number; to: number } | null>(null)
 
   /* ---------------- Compare symbols (#187) ---------------- */
 
@@ -1438,6 +1445,39 @@ export function GrafikEmiten() {
       ? penuh
       : { lilin: penuh.lilin.slice(0, replay), volume: penuh.volume.slice(0, replay) }
   ), [penuh, replay])
+
+  /** Jendela pandang aktual (indeks logis, pecahan di ujung) — dilanggan
+   *  HANYA selagi panel Analitik menyala, sama seperti basisPersen di atas.
+   *  Ini beda dari `awalRentang`: itu batas kiri BAWAAN chip rentang, ini
+   *  hasil zoom/pan nyata pembaca di kanvas. */
+  useEffect(() => {
+    const chart = chartRef.current
+    if (!chart || !analitikAktif) { setRentangTampilAnalitik(null); return }
+    const skala = chart.timeScale()
+    const perbarui = () => {
+      const r = skala.getVisibleLogicalRange()
+      setRentangTampilAnalitik(r ? { from: r.from, to: r.to } : null)
+    }
+    skala.subscribeVisibleLogicalRangeChange(perbarui)
+    perbarui()
+    return () => skala.unsubscribeVisibleLogicalRangeChange(perbarui)
+  }, [analitikAktif, lilin])
+
+  /** Bar untuk PanelAnalitikChart — potongan `lilin`/`volume` yang benar-benar
+   *  terlihat di jendela pandang, bukan seluruh riwayat. Indeks logis
+   *  dibulatkan & dijepit ke batas array (ujung layar bisa jatuh di ruang
+   *  kosong sebelum/sesudah data). */
+  const barsAnalitik = useMemo<BarAnalitik[]>(() => {
+    const n = lilin.length
+    if (!analitikAktif || n === 0) return []
+    const dari = rentangTampilAnalitik ? Math.max(0, Math.round(rentangTampilAnalitik.from)) : 0
+    const sampai = rentangTampilAnalitik ? Math.min(n - 1, Math.round(rentangTampilAnalitik.to)) : n - 1
+    if (sampai < dari) return []
+    return lilin.slice(dari, sampai + 1).map((bar, i) => ({
+      tanggal: bar.time, o: bar.open, h: bar.high, l: bar.low, c: bar.close,
+      v: volume[dari + i]?.value ?? 0,
+    }))
+  }, [analitikAktif, lilin, volume, rentangTampilAnalitik])
 
   /** Waktu internal -> tipe `Time` lightweight-charts. Dipakai di SETIAP
    *  `setData`/penanda: satu-satunya tempat bentuk waktu berpindah dunia. */
@@ -3225,6 +3265,13 @@ export function GrafikEmiten() {
               : bubbleAktif ? 'Sembunyikan bubble broker outlier' : 'Bubble broker outlier harian — net menyimpang ≥2σ dari pasar hari itu'}
             onClick={() => setBubbleAktif((v) => !v)} />
 
+          {/* Panel Analitik (Pivot/CPR, RR, return multi-horizon, volume
+              surge) — dari bar yang sedang tampil di jendela pandang. */}
+          <TombolIkon d={IKON_GRAFIK_BATANG} ukuranIkon={14}
+            className={analitikAktif ? 'on' : ''}
+            label={analitikAktif ? 'Sembunyikan panel Analitik' : 'Analitik — Pivot/CPR, Risk:Reward, return, volume surge dari rentang tampil'}
+            onClick={() => setAnalitikAktif((v) => !v)} />
+
           <span className="grf-toolbar-isi" />
 
           <TombolIkon d={IKON_KAMERA} ukuranIkon={14} label="Simpan gambar kanvas (PNG)"
@@ -3659,6 +3706,8 @@ export function GrafikEmiten() {
             </svg>
           </div>
           </div>
+
+          {analitikAktif && <PanelAnalitikChart bars={barsAnalitik} />}
 
           {/* Bilah bawah — rentang tampil, zona waktu, mode skala. Sama seperti
               kaki chart acuan: yang mengubah APA yang terlihat ada di bawah

@@ -53,6 +53,7 @@
 @media (max-width: 480px) {
   .wl-cari { max-width: 100%; }
   .wl-nama { max-width: 100px; }
+  .lantai .wl-broker { max-width: 140px; }
 }
 
 /* Vonis akumulasi/distribusi — teks berwarna, bukan lencana berlatar: kolom
@@ -61,3 +62,9 @@
 .lantai .wl-ad { font-size: 11.5px; font-weight: 600; }
 .lantai .wl-ad.up { color: var(--green); }
 .lantai .wl-ad.dn { color: var(--red); }
+
+/* Top Broker (§E.5): sampai 6 chip (3 beli + 3 jual) per baris — boleh
+   membungkus dua baris di kolom sempit, bukan meluber horizontal. Bentuk
+   chip tetap `.chip` kanonis; di sini cuma tata letak & ukuran. */
+.lantai .wl-broker { display: inline-flex; flex-wrap: wrap; gap: 3px; max-width: 220px; }
+.lantai .wl-broker .chip { padding: 2px 7px; font-size: 10px; }

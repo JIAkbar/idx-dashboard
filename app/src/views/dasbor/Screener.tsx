@@ -14,10 +14,21 @@ import { MOMENTUM_HARI } from '../../lib/dasbor/skorTeknikal'
 import { LABEL_POLA_KLASIK } from '../../lib/dasbor/polaKlasik'
 import {
   useScreener, usePolaScreener, saring, sektorUnik, kelasSss, kelasArah, kelasPosisi, kelasPolaArah,
-  fDec, ringkasLembarBertanda, labelPolaSingkat, LABEL_SSS, type BarisScreener, type PolaAktifScreener,
+  fDec, ringkasLembarBertanda, labelPolaSingkat, LABEL_SSS, keBarisPreset,
+  type BarisScreener, type PolaAktifScreener,
 } from '../../lib/dasbor/screener'
 import { useKandidatDeepDive, petaKandidat, type KandidatEmiten } from '../../lib/dasbor/kandidatDeepDive'
+import { useRingkasKartu } from '../../lib/dasbor/kartuRingkas'
+import {
+  PRESET, jalankanPreset, deltaAsingKsei, badgeKsei,
+  type HasilKriteria, type HasilPreset, type Preset, type BarisPreset,
+} from '../../lib/dasbor/presetScreener'
+import { muatKepemilikan } from '../../lib/dasbor/brokerProfilKsei'
 import './Screener.css'
+
+/** Tiga preset Whale saja (adendum_preset_whale.md) — Scalping/Swing di luar
+ *  cakupan Paket D, biar tak diam-diam ikut tampil sebelum datanya diperiksa. */
+const PRESET_WHALE = PRESET.filter((p) => p.id.startsWith('whale-'))
 
 /** Baris screener + pola aktif digabung dari `pola_screener.json` (berkas
  *  terpisah, lihat `screener.ts`) — `pola_arah` cuma untuk sort kolom Pola
@@ -80,7 +91,10 @@ export function Screener() {
   const data = useScreener()
   const polaData = usePolaScreener()
   const kandidatData = useKandidatDeepDive()
+  const ringkasKartu = useRingkasKartu()
   const sempit = useLayarSempit()
+  const [mode, setMode] = useState<'tabel' | 'whale'>('tabel')
+  const [presetId, setPresetId] = useState(PRESET_WHALE[0].id)
   const [cari, setCari] = useState('')
   const [sssAktif, setSssAktif] = useState<string[]>([])
   const [sektorAktif, setSektorAktif] = useState<string[]>([])
@@ -89,6 +103,18 @@ export function Screener() {
   const [tingkatLikuiditas, setTingkatLikuiditas] = useState('semua')
   const ukuranHalaman = sempit ? 25 : 100
   const [tampil, setTampil] = useState(ukuranHalaman)
+  const [tampilWhale, setTampilWhale] = useState(ukuranHalaman)
+
+  // Baris Preset Whale — jembatan dari kartu/ringkas.json (kaya ruas broker/
+  // asing) lewat keBarisPreset(), TERPISAH dari `baris` tabel utama (screener.json,
+  // ruas beda). Preset aktif jatuh ke preset whale pertama kalau id-nya
+  // (mustahil) tak ditemukan, biar tak pernah render kosong tanpa sebab.
+  const barisPreset = useMemo(() => (ringkasKartu?.emiten ?? []).map(keBarisPreset), [ringkasKartu])
+  const presetAktif: Preset = PRESET_WHALE.find((p) => p.id === presetId) ?? PRESET_WHALE[0]
+  const hasilPreset = useMemo(
+    () => jalankanPreset(barisPreset, presetAktif, { minLolos: 1 }),
+    [barisPreset, presetAktif],
+  )
 
   // Gabung baris screener + pola aktif per kode — dua berkas terpisah
   // (`screener.json` dari Python, `pola_screener.json` dari mesin pola),
@@ -155,6 +181,13 @@ export function Screener() {
   useEffect(() => {
     setTampil(ukuranHalaman)
   }, [sssAktif, sektorAktif, cari, berpolaAktif, kandidatAktif, tingkatLikuiditas, ukuranHalaman])
+  useEffect(() => {
+    setTampilWhale(ukuranHalaman)
+  }, [presetId, ukuranHalaman])
+
+  // kode -> BarisPreset, untuk sel Harga + badge KSEI (arah harian dipakai
+  // di sana = tanda asing_streak, bukan dihitung ulang) di tabel hasil preset.
+  const petaBarisPreset = useMemo(() => new Map(barisPreset.map((b) => [b.kode, b])), [barisPreset])
 
   function toggleSss(label: string) {
     setSssAktif((a) => (a.includes(label) ? a.filter((x) => x !== label) : [...a, label]))
@@ -189,6 +222,16 @@ export function Screener() {
       </div>
       <CatatanCakupan />
 
+      <div className="tabs" role="tablist">
+        <button type="button" role="tab" aria-selected={mode === 'tabel'} className={'tab' + (mode === 'tabel' ? ' on' : '')} onClick={() => setMode('tabel')}>
+          Tabel
+        </button>
+        <button type="button" role="tab" aria-selected={mode === 'whale'} className={'tab' + (mode === 'whale' ? ' on' : '')} onClick={() => setMode('whale')}>
+          Preset Whale
+        </button>
+      </div>
+
+      {mode === 'tabel' && (<>
       <div className="panel">
         <div className="panel-b scr-alat">
           {/* Bilah saring dirombak KEDUA KALI 21 Agu 2026 — perombakan
@@ -293,6 +336,7 @@ export function Screener() {
                 {thSort(s, 'posisi_ma10', 'vs MA10')}
                 {thSort(s, 'posisi_ma20', 'vs MA20')}
                 {thSort(s, 'net_asing_lembar', 'Net Asing', true)}
+                {thSort(s, 'asing_streak', 'Streak Asing', true)}
                 {thSort(s, 'pola_arah', 'Pola')}
                 {thSort(s, 'dd_skor', 'Deep Dive')}
               </tr>
@@ -318,7 +362,8 @@ export function Screener() {
 
       <div className="asal">
         Data <b>{data.tanggal}</b> · <b>{data.n}</b> emiten · diperbarui {data.diperbarui}. <b>Net Asing</b> dalam{' '}
-        <b>lembar</b>, bukan rupiah — IDX tidak melaporkan aliran asing dalam rupiah. <b>TDM%</b> adalah perubahan
+        <b>lembar</b>, bukan rupiah — IDX tidak melaporkan aliran asing dalam rupiah. <b>Streak Asing</b> = hari
+        bursa beruntun net asing resmi searah (+ beruntun masuk, − beruntun keluar). <b>TDM%</b> adalah perubahan
         harga {MOMENTUM_HARI} hari bursa terakhir. Skor SSS D/W/M menyajikan keadaan, <b>bukan saran beli atau
         jual</b>. Kolom <b>Pola</b> adalah deskripsi bentuk chart, bukan sinyal beli — backtest sapuan penuh 915
         emiten menunjukkan sebagian besar pola klasik TIDAK mengungguli peluang dasar (rincian di halaman Grafik).
@@ -328,7 +373,171 @@ export function Screener() {
           likuiditas ≥ Rp{fRingkas(kandidatData.ambang.likuiditas_min)}/hari.</>
         )}
       </div>
+      </>)}
+
+      {mode === 'whale' && (
+        <PanelPresetWhale
+          presetAktif={presetAktif}
+          presetId={presetId}
+          setPresetId={setPresetId}
+          hasil={hasilPreset}
+          petaBaris={petaBarisPreset}
+          tampil={tampilWhale}
+          ukuranHalaman={ukuranHalaman}
+          setTampil={setTampilWhale}
+          tanggal={ringkasKartu?.diperbarui ?? null}
+        />
+      )}
     </div>
+  )
+}
+
+/**
+ * Preset Whale (Paket D) — jalankanPreset() atas `barisPreset` (jembatan dari
+ * kartu/ringkas.json, lihat keBarisPreset di screener.ts), satu tabel per
+ * preset aktif: satu kolom per kriteria (✓ lolos/✗ gagal/– tak-terukur, lihat
+ * doc presetScreener.ts), plus badge Konfirmasi KSEI khusus Whale · Asing.
+ * PENYARING, bukan peringkat kelayakan beli — kalimat itu wajib tercetak,
+ * sama seperti kandidat Deep Dive & Jago Papan.
+ */
+function PanelPresetWhale({ presetAktif, presetId, setPresetId, hasil, petaBaris, tampil, ukuranHalaman, setTampil, tanggal }: {
+  presetAktif: Preset
+  presetId: string
+  setPresetId: (id: string) => void
+  hasil: HasilPreset[]
+  petaBaris: Map<string, BarisPreset>
+  tampil: number
+  ukuranHalaman: number
+  setTampil: (fn: (t: number) => number) => void
+  tanggal: string | null
+}) {
+  const tampilBaris = hasil.slice(0, tampil)
+  const sisa = hasil.length - tampilBaris.length
+  return (
+    <div className="panel">
+      <div className="panel-b scr-alat">
+        <div className="tabs" role="tablist">
+          {PRESET_WHALE.map((p) => (
+            <button
+              key={p.id} type="button" role="tab" aria-selected={presetId === p.id}
+              className={'tab' + (presetId === p.id ? ' on' : '')}
+              onClick={() => setPresetId(p.id)}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <p className="muted" style={{ margin: 0 }}>{presetAktif.ringkas}</p>
+        <span className="muted scr-jumlah">{hasil.length} emiten dengan ≥1 kriteria terpenuhi{tanggal ? ` · data ${tanggal}` : ''}</span>
+      </div>
+
+      <div className="board-tbl-wrap">
+        <table className="tbl scr-tbl">
+          <thead>
+            <tr>
+              <th>Kode</th>
+              <th className="r">Harga</th>
+              <th className="r">Skor</th>
+              {presetAktif.kriteria.map((kr) => (
+                <th key={kr.id} title={kr.label}>{labelKriteriaSingkat(kr.id)}</th>
+              ))}
+              {presetAktif.id === 'whale-asing' && <th title="Δ kepemilikan asing bulanan (KSEI) vs net asing harian">KSEI</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {tampilBaris.map((h) => {
+              const harga = petaBaris.get(h.kode)?.harga ?? null
+              return (
+                <tr key={h.kode}>
+                  <td><Link to={`/grafik?kode=${h.kode}`} className="tick">{h.kode}</Link></td>
+                  <td className="r num">{harga == null ? '—' : keFraksi(harga, 'dekat').toLocaleString('id-ID')}</td>
+                  <td className="r num" title={`${h.lolos} dari ${h.terukur} kriteria terukur lolos${h.takTerukur ? ` (${h.takTerukur} kriteria lain belum ada datanya)` : ''}`}>
+                    {h.lolos}/{h.terukur}
+                  </td>
+                  {h.rinci.map((r) => <td key={r.id}><GlyphKriteria h={r.hasil} /></td>)}
+                  {presetAktif.id === 'whale-asing' && (
+                    <td><SelBadgeKsei kode={h.kode} asingStreak={petaBaris.get(h.kode)?.asing_streak ?? null} /></td>
+                  )}
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {tampilBaris.length === 0 && (
+        <p className="muted" style={{ padding: '10px 14px' }}>
+          Tak ada emiten dengan kriteria yang terukur untuk preset ini hari ini — sebagian ruas preset Whale
+          (arus broker per-emiten) baru terisi dari setoran Broker Summary kontributor, cakupannya belum penuh.
+        </p>
+      )}
+
+      {sisa > 0 && (
+        <div className="scr-lebih">
+          <button type="button" className="btn-p" onClick={() => setTampil((t) => t + ukuranHalaman)}>
+            Tampilkan {Math.min(sisa, ukuranHalaman)} lagi
+          </button>
+        </div>
+      )}
+
+      <div className="asal">
+        Preset Whale adalah <b>penyaring</b>, bukan peringkat kelayakan beli — uji luar sampel dua Deep Dive
+        terbukti (BUMI, DSSA) menaruh keduanya di paruh bawah daftar hari itu. Ambang v1, belum diuji luar sampel
+        sendiri. Kriteria bertanda "–" berarti datanya belum tersedia untuk emiten itu — <b>bukan</b> gagal.
+        {presetAktif.id === 'whale-asing' && (
+          <> Kolom <b>KSEI</b> membandingkan DUA SUMBER berbeda frekuensi: net asing <b>harian</b> (transaksi
+          bursa resmi, tiap hari bursa) vs Δ kepemilikan asing <b>bulanan</b> (KSEI, akhir bulan) — ✓ searah,
+          ⚠ berlawanan, ≈ Δ bulanan nyaris nol (kurang dari 0,05 poin persen), — belum bisa disimpulkan.</>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/** Header kolom kriteria — kebab-case id jadi "Kata kata", judul penuh
+ *  (kalimat kriteria) tetap di `title` supaya potongannya tak buang arti. */
+function labelKriteriaSingkat(id: string): string {
+  const kata = id.replace(/-/g, ' ')
+  return kata.charAt(0).toUpperCase() + kata.slice(1)
+}
+
+/** ✓/✗/– untuk satu kriteria preset — warna sama konvensi tabel (up/dn),
+ *  "tak-terukur" TIDAK sama dengan "gagal" (lihat presetScreener.ts). */
+function GlyphKriteria({ h }: { h: HasilKriteria }) {
+  if (h === 'lolos') return <span className="up">✓</span>
+  if (h === 'gagal') return <span className="dn">✗</span>
+  return <span className="muted" title="Datanya belum tersedia untuk emiten ini">–</span>
+}
+
+/** Badge Konfirmasi KSEI (whale-asing) — fetch lazy per baris tampil lewat
+ *  cache `muatKepemilikan` (brokerProfilKsei.ts, sudah dipakai StockDetail),
+ *  bukan dibundel ke screener.json (962 berkas kepemilikan terlalu berat
+ *  dimuat semua sementara hasil preset biasanya cuma puluhan baris). */
+function SelBadgeKsei({ kode, asingStreak }: { kode: string; asingStreak: number | null }) {
+  const [delta, setDelta] = useState<number | null | undefined>(undefined)
+  useEffect(() => {
+    let batal = false
+    setDelta(undefined)
+    void muatKepemilikan(kode).then((d) => {
+      if (!batal) setDelta(d ? deltaAsingKsei(d.kolom, d.bulan) : null)
+    })
+    return () => { batal = true }
+  }, [kode])
+  if (delta === undefined) return <span className="muted">…</span>
+  const arah: 1 | -1 | 0 | null = !asingStreak ? null : asingStreak > 0 ? 1 : -1
+  const b = badgeKsei(delta, arah)
+  if (b === null) {
+    return <span className="muted" title="Δ kepemilikan asing bulanan atau arah net asing harian belum terukur">—</span>
+  }
+  const arahTeks = arah === 1 ? 'masuk' : arah === -1 ? 'keluar' : 'belum terukur'
+  const deltaTeks = delta == null ? '—' : `${delta > 0 ? '+' : ''}${delta.toLocaleString('id-ID', { maximumFractionDigits: 2 })}pp`
+  return (
+    <span
+      className={b === '✓' ? 'up' : b === '⚠' ? 'dn' : 'muted'}
+      title={`Net asing harian (transaksi bursa resmi, tiap hari bursa): ${arahTeks}. Δ kepemilikan asing bulanan (KSEI, akhir bulan): ${deltaTeks}.`}
+    >
+      {b}
+    </span>
   )
 }
 
@@ -423,6 +632,9 @@ function BarisScreenerTbl({ b, tanggalData }: { b: BarisGab; tanggalData: string
         title={b.net_asing_lembar == null ? undefined : `${b.net_asing_lembar.toLocaleString('id-ID')} lembar`}
       >
         {ringkasLembarBertanda(b.net_asing_lembar)}
+      </td>
+      <td className={`r num ${!b.asing_streak ? '' : b.asing_streak > 0 ? 'up' : 'dn'}`}>
+        {b.asing_streak == null ? '—' : b.asing_streak}
       </td>
       <td><SelPola p={b.pola} tanggalData={tanggalData} /></td>
       <td><SelDeepDive dd={b.dd} /></td>

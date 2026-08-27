@@ -4,6 +4,8 @@ import {
   hitungUkuranOrderP25,
   jalankanPreset,
   nilaiPreset,
+  deltaAsingKsei,
+  badgeKsei,
   type BarisPreset,
 } from './presetScreener'
 
@@ -200,5 +202,53 @@ describe('preset Whale (adendum — tambahan, bukan pengganti)', () => {
   it('asing: porsi tepat 20% lolos; net 5h nol gagal', () => {
     expect(asing.kriteria.find((x) => x.id === 'asing-berarti')!.uji(baris({ porsi_asing: 0.2 }), K)).toBe('lolos')
     expect(asing.kriteria.find((x) => x.id === 'asing-5h')!.uji(baris({ asing_net_5h: 0 }), K)).toBe('gagal')
+  })
+})
+
+describe('deltaAsingKsei', () => {
+  const KOLOM = ['lembar_tercatat', 'harga', 'asing_total']
+
+  it('selisih poin persen dua bulan TERAKHIR (bukan year-over-year)', () => {
+    const bulan = {
+      '2026-06-30': [1000, 100, 100], // 10%
+      '2026-07-31': [1000, 100, 150], // 15%
+      '2026-08-31': [1000, 100, 200], // 20% -> +5pp dari bulan sebelumnya
+    }
+    expect(deltaAsingKsei(KOLOM, bulan)).toBeCloseTo(5, 6)
+  })
+
+  it('null kalau riwayat kurang dari 2 bulan', () => {
+    expect(deltaAsingKsei(KOLOM, { '2026-08-31': [1000, 100, 200] })).toBeNull()
+  })
+
+  it('null kalau kolom asing_total tak ditemukan', () => {
+    expect(deltaAsingKsei(['lembar_tercatat'], { a: [1000], b: [1000] })).toBeNull()
+  })
+
+  it('null kalau lembar_tercatat nol (pembagi nol)', () => {
+    expect(deltaAsingKsei(KOLOM, { a: [0, 0, 0], b: [1000, 100, 200] })).toBeNull()
+  })
+})
+
+describe('badgeKsei', () => {
+  it('✓ searah net asing harian', () => {
+    expect(badgeKsei(2, 1)).toBe('✓')
+    expect(badgeKsei(-2, -1)).toBe('✓')
+  })
+
+  it('⚠ berlawanan arah', () => {
+    expect(badgeKsei(2, -1)).toBe('⚠')
+    expect(badgeKsei(-2, 1)).toBe('⚠')
+  })
+
+  it('≈ Δ nyaris nol (ambang 0,05pp), TERLEPAS arah harian', () => {
+    expect(badgeKsei(0.04, 1)).toBe('≈')
+    expect(badgeKsei(-0.04, null)).toBe('≈')
+  })
+
+  it('null kalau Δ tak terukur, atau Δ berarti tapi arah harian belum diketahui', () => {
+    expect(badgeKsei(null, 1)).toBeNull()
+    expect(badgeKsei(2, null)).toBeNull()
+    expect(badgeKsei(2, 0)).toBeNull()
   })
 })

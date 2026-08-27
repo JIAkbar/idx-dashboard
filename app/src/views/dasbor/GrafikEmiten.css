@@ -436,6 +436,9 @@
    bilah alat keluar viewport di layar sempit (aturan grid/flex minmax(0,1fr)
    yang sama, CLAUDE.md). */
 .lantai .grf-kanvas-area { display: flex; align-items: stretch; gap: 8px; }
+/* Panel Analitik (#Paket-I) — duduk sendiri antara kanvas dan bilah bawah,
+   sama seperti .pac-grup di GrafikEmiten sendiri tak punya margin. */
+.lantai .pac-grup { margin-top: 10px; }
 .lantai .grf-kanvas-area .grf-kanvas-bungkus { flex: 1 1 auto; min-width: 0; }
 
 .lantai .grf-alat-gambar { flex: none; }

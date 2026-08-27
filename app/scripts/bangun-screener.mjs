@@ -23,6 +23,7 @@ const DIR_JSON = join(AKAR, 'data-idx', 'json')
 const DIR_OHLC = join(DIR_JSON, 'ohlc')
 const DIR_ASING = join(DIR_JSON, 'asing')
 const DIR_FUND = join(DIR_JSON, 'fundamental')
+const DIR_KARTU = join(DIR_JSON, 'kartu')
 const KELUARAN = join(DIR_JSON, 'screener.json')
 
 // Berapa hari bursa untuk rata-rata volume pembagi rvol10, dan berapa hari
@@ -67,6 +68,21 @@ const sektorByKode = new Map(
   // (lang=en); ruas Indonesia tetap tersimpan di emiten_sektor.json sebagai
   // cadangan. Penjaga: _en kosong -> jatuh ke Indonesia, jangan kosong.
   Object.entries(petaSektor?.emiten ?? {}).map(([k, v]) => [k, v?.sektor_en ?? v?.sektor ?? null]),
+)
+
+// Streak asing (Paket D, Papan Pekerjaan) — n hari bursa beruntun net asing
+// resmi rupiah searah, bertanda (+masuk/−keluar). SUDAH dihitung
+// `kartu_analisa.py` dari deret foreignbuy/foreignsell resmi (bukan taksiran
+// lembar×harga) — dibaca dari sana, BUKAN dihitung ulang dari data-idx/json/
+// asing/ (itu sumber lembar konvensi bursa apa-adanya, beda dari rupiah
+// resmi chartbit yang dipakai kartu_analisa.py DAN jago-papan.ts; mencampur
+// dua sumber untuk definisi yang sama = dua angka "streak" yang diam-diam
+// beda, persis jebakan "dua konvensi" yang sudah pernah kejadian di sini).
+// kartu_analisa.py --semua --tulis WAJIB jalan sebelum skrip ini — sudah
+// begitu di pipeline harian (docs/status-panen.md baris OHLC harian).
+const kartuRingkas = bacaJson(join(DIR_KARTU, 'ringkas.json'))
+const streakByKode = new Map(
+  (kartuRingkas?.emiten ?? []).map((e) => [e.kode, e.asing_streak ?? null]),
 )
 
 const fileOhlc = readdirSync(DIR_OHLC)
@@ -208,6 +224,7 @@ for (const f of fileOhlc) {
     posisi_ma10: posisiHarga(harga, ma10),
     posisi_ma20: posisiHarga(harga, ma20Kini),
     net_asing_lembar: netAsingLembar,
+    asing_streak: streakByKode.get(kode) ?? null,
   })
 }
 
@@ -220,3 +237,4 @@ writeFileSync(KELUARAN, JSON.stringify({
 
 console.log(`screener.json: ${emiten.length} emiten masuk, ${dilewati.ohlcKosong} dilewati (ohlc kosong)`)
 console.log(`tanggal hari bursa terakhir (modus): ${tanggalTerakhir}`)
+console.log(`asing_streak: ${emiten.filter((e) => e.asing_streak !== null).length}/${emiten.length} emiten dari kartu/ringkas.json`)

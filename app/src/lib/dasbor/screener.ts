@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import type { LabelSkor } from './skorTeknikal'
 import type { NamaPolaKlasik } from './polaKlasik'
 import { LABEL_POLA_KLASIK } from './polaKlasik'
+import type { BarisRingkas } from './kartuRingkas'
+import type { BarisPreset } from './presetScreener'
 
 /**
  * Screener (`/screener`, backlog B31) — tabel penyaring SELURUH emiten dalam
@@ -38,6 +40,11 @@ export interface BarisScreener {
   posisi_ma10: 'atas' | 'bawah' | null
   posisi_ma20: 'atas' | 'bawah' | null
   net_asing_lembar: number | null
+  /** Hari bursa beruntun net asing (resmi, rupiah) searah — +masuk/−keluar,
+   *  sama definisi & sumber dengan `asing_streak` di `BarisPreset`
+   *  (presetScreener.ts, dari kartu/ringkas.json). Opsional supaya baris uji
+   *  lama yang belum menyebutkannya tetap sah. */
+  asing_streak?: number | null
 }
 
 export interface DataScreener {
@@ -231,4 +238,51 @@ const SINGKATAN_POLA: Partial<Record<NamaPolaKlasik, string>> = {
 export function labelPolaSingkat(nama: NamaPolaKlasik): string {
   const label = LABEL_POLA_KLASIK[nama]
   return label.length > 14 ? (SINGKATAN_POLA[nama] ?? label) : label
+}
+
+// ── Jembatan ke Preset Whale (presetScreener.ts) ───────────────────────────
+
+/** Ruas preset Whale (adendum_preset_whale.md) — SUDAH ditulis
+ *  `kartu_analisa.py` ke tiap baris `kartu/ringkas.json`, tapi belum
+ *  dideklarasikan di `BarisRingkas` (kartuRingkas.ts hanya menyorot ruas
+ *  S/R, di luar daftar berkas paket ini). Ditambal lewat cast di sini,
+ *  bukan menyentuh berkas itu. */
+type RuasWhale = Pick<
+  BarisPreset,
+  | 'ma5' | 'ma20' | 'posisi_bb' | 'di_atas_kumo' | 'posisi_regresi' | 'freq' | 'ukuran_order'
+  | 'peringkat_value' | 'net_asing_rp' | 'porsi_asing' | 'label_accdist' | 'tiket_lonjakan'
+  | 'tiket_broker_maks' | 'bval_maks' | 'nego_blok_rp' | 'asing_net_5h' | 'asing_streak'
+  | 'top3_pct' | 'number_broker_buysell'
+>
+
+/** `BarisRingkas` (kartu/ringkas.json, lewat `useRingkasKartu()`) → `BarisPreset`
+ *  (presetScreener.ts) — satu emiten. `ma50` selalu `null`: sumbernya tak
+ *  menyimpan MA50, dan preset Swing (satu-satunya pemakainya) di luar
+ *  cakupan paket ini; kriterianya jatuh 'tak-terukur', bukan gagal. */
+export function keBarisPreset(b: BarisRingkas): BarisPreset {
+  const w = b as BarisRingkas & Partial<RuasWhale>
+  return {
+    kode: b.kode,
+    harga: b.harga,
+    ma5: w.ma5 ?? null,
+    ma20: w.ma20 ?? b.ma20 ?? null,
+    ma50: null,
+    posisi_bb: w.posisi_bb ?? null,
+    di_atas_kumo: w.di_atas_kumo ?? null,
+    posisi_regresi: w.posisi_regresi ?? null,
+    freq: w.freq ?? null,
+    ukuran_order: w.ukuran_order ?? null,
+    peringkat_value: w.peringkat_value ?? null,
+    net_asing_rp: w.net_asing_rp ?? null,
+    porsi_asing: w.porsi_asing ?? null,
+    label_accdist: w.label_accdist ?? null,
+    tiket_lonjakan: w.tiket_lonjakan ?? null,
+    tiket_broker_maks: w.tiket_broker_maks ?? null,
+    bval_maks: w.bval_maks ?? null,
+    nego_blok_rp: w.nego_blok_rp ?? null,
+    asing_net_5h: w.asing_net_5h ?? null,
+    asing_streak: w.asing_streak ?? null,
+    top3_pct: w.top3_pct ?? null,
+    number_broker_buysell: w.number_broker_buysell ?? null,
+  }
 }

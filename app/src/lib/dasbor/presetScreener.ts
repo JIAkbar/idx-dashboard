@@ -340,3 +340,48 @@ export function jalankanPreset(
     .filter((h) => h.terukur > 0 && h.lolos >= min)
     .sort((a, b) => (b.skor ?? 0) - (a.skor ?? 0) || b.lolos - a.lolos || a.kode.localeCompare(b.kode))
 }
+
+/**
+ * Konfirmasi KSEI (Paket D, hasil Whale · Asing) — DUA SUMBER independen,
+ * dua frekuensi: net asing HARIAN (transaksi bursa resmi, tiap hari bursa,
+ * tanda `asing_streak`) vs Δ kepemilikan asing BULANAN (KSEI, akhir bulan).
+ * Sengaja tak digabung jadi satu angka — bedanya frekuensi itu sendiri yang
+ * ingin diperlihatkan, bukan disamarkan.
+ *
+ * `kolom`/`bulan` persis bentuk `data-idx/json/kepemilikan/<KODE>.json`
+ * (lib/dasbor/brokerProfilKsei.ts:`BerkasKepemilikan`) — diterima sebagai
+ * primitif, bukan tipe itu, supaya berkas ini tak perlu mengimpornya.
+ */
+
+/** Δ kepemilikan asing (poin persen) antara DUA BULAN TERAKHIR yang ada di
+ *  berkas — bukan year-over-year (itu `asingDeltaSetahunPp` di
+ *  brokerProfilKsei.ts, tujuan beda). `null` kalau riwayatnya < 2 bulan atau
+ *  ruasnya tak ditemukan. */
+export function deltaAsingKsei(kolom: readonly string[], bulan: Record<string, number[]>): number | null {
+  const bulanList = Object.keys(bulan).sort()
+  if (bulanList.length < 2) return null
+  const idxAsing = kolom.indexOf('asing_total')
+  if (idxAsing < 0) return null
+  const pct = (b: string): number | null => {
+    const r = bulan[b]
+    return r && r[0] ? (r[idxAsing] / r[0]) * 100 : null
+  }
+  const now = pct(bulanList[bulanList.length - 1])
+  const prev = pct(bulanList[bulanList.length - 2])
+  return now == null || prev == null ? null : now - prev
+}
+
+/** Ambang "Δ nyaris nol" (poin persen) — ketetapan spek Paket D. */
+export const AMBANG_KSEI_NOL_PP = 0.05
+
+export type BadgeKsei = '✓' | '⚠' | '≈'
+
+/** ✓ searah net asing harian · ⚠ berlawanan · ≈ Δ bulanan nyaris nol.
+ *  `null` = belum bisa disimpulkan (salah satu sisi tak terukur) — BUKAN
+ *  salah satu dari tiga badge, jangan dipaksa jadi salah satunya. */
+export function badgeKsei(deltaPoinPersen: number | null, arahHarian: 1 | -1 | 0 | null): BadgeKsei | null {
+  if (deltaPoinPersen == null) return null
+  if (Math.abs(deltaPoinPersen) < AMBANG_KSEI_NOL_PP) return '≈'
+  if (!arahHarian) return null
+  return (deltaPoinPersen > 0 ? 1 : -1) === arahHarian ? '✓' : '⚠'
+}

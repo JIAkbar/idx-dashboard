@@ -1,9 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import type { ChartConfiguration } from 'chart.js/auto'
 import { fN, fp } from '../../lib/dasbor/format'
 import { PemilihRentang } from './PemilihRentang'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import { ambilScreener } from '../../lib/dasbor/screener'
+import { fetchDeret } from '../../lib/dasbor/watchlist'
+import { batasBawahHari } from '../../lib/dasbor/grafikEmiten'
+import type { BarisOhlc } from '../../lib/dasbor/ihsgOhlc'
+import { deretIndeksGrup } from '../../lib/dasbor/grupKinerja'
+import { useChartCanvas } from '../../lib/dasbor/useChartJs'
+import { useTheme } from '../../context/ThemeContext'
 
 interface Anggota {
   kode: string
@@ -53,13 +60,119 @@ const OPSI_RENTANG_GRUP: { id: RentangGrup; label: string }[] = [
   { id: 'mtd', label: LABEL_RENTANG.mtd },
 ]
 
+/** K4 lanjutan (Paket J, 27 Agu): mode Deret — grafik garis kumulatif per
+ *  grup vs IHSG, melengkapi chip snapshot yang cuma satu titik waktu. */
+type Mode = 'tabel' | 'deret'
+const OPSI_MODE: { id: Mode; label: string }[] = [
+  { id: 'tabel', label: 'Tabel' },
+  { id: 'deret', label: 'Deret' },
+]
+
+type RentangDeret = 'b1' | 'b3' | 'ytd'
+const OPSI_RENTANG_DERET: { id: RentangDeret; label: string }[] = [
+  { id: 'b1', label: LABEL_RENTANG.b1 },
+  { id: 'b3', label: LABEL_RENTANG.b3 },
+  { id: 'ytd', label: LABEL_RENTANG.ytd },
+]
+
+function tanggalMulaiDeret(rentang: RentangDeret, akhir: string): string {
+  if (rentang === 'ytd') return `${akhir.slice(0, 4)}-01-01`
+  return batasBawahHari(akhir, rentang === 'b1' ? 30 : 91)
+}
+
+/** Satu grafik garis grup vs IHSG. Komponen terpisah (bukan di-map dalam
+ *  loop) supaya `useChartCanvas` tak dipanggil jumlah kali yang berubah-ubah
+ *  dalam satu komponen — tiap grup instance hook-nya sendiri. */
+function GrupDeretChart({ kodeAnggota, ihsg, rentang }: {
+  kodeAnggota: string[]
+  ihsg: BarisOhlc[] | null
+  rentang: RentangDeret
+}) {
+  const { theme } = useTheme()
+  const [sorot, setSorot] = useState<'grup' | 'ihsg' | null>(null)
+  const [seri, setSeri] = useState<ReturnType<typeof deretIndeksGrup>>(null)
+
+  useEffect(() => {
+    let batal = false
+    setSeri(null)
+    if (!ihsg || !ihsg.length) return
+    const akhir = ihsg[ihsg.length - 1][0]
+    const mulai = tanggalMulaiDeret(rentang, akhir)
+    Promise.all(kodeAnggota.map((k) => fetchDeret(k))).then((hasil) => {
+      if (batal) return
+      setSeri(deretIndeksGrup(hasil, ihsg, mulai, akhir))
+    })
+    return () => { batal = true }
+  }, [kodeAnggota, ihsg, rentang])
+
+  const config = useMemo<ChartConfiguration<'line'> | null>(() => {
+    if (!seri) return null
+    const isDark = theme === 'dark'
+    const text2Color = isDark ? '#8494a8' : '#4b6070'
+    const redup = isDark ? 'rgba(255,255,255,.28)' : 'rgba(0,0,0,.28)'
+    return {
+      type: 'line',
+      data: {
+        labels: seri.tgl,
+        datasets: [
+          {
+            label: 'Grup', data: seri.grup, pointRadius: 0, borderWidth: 2.2,
+            borderColor: sorot === 'ihsg' ? redup : '#38B77E',
+          },
+          {
+            label: 'IHSG', data: seri.ihsg, pointRadius: 0, borderWidth: 1.6, borderDash: [4, 3],
+            borderColor: sorot === 'grup' ? redup : '#5B94E8',
+          },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: text2Color, boxWidth: 10, font: { size: 9.5 } },
+            // Klik legenda = SOROT (redupkan garis lain), bukan sembunyikan
+            // dataset bawaan Chart.js — grup cuma dua garis, menyembunyikan
+            // salah satunya membuang perbandingan yang jadi inti panel ini.
+            onClick: (_e, item) => {
+              const id = item.datasetIndex === 0 ? 'grup' : 'ihsg'
+              setSorot((s) => (s === id ? null : id))
+            },
+          },
+        },
+        scales: {
+          x: { ticks: { display: false }, grid: { display: false } },
+          y: { ticks: { color: text2Color, font: { size: 9 }, callback: (v) => Number(v).toFixed(0) }, grid: { color: 'rgba(128,128,128,.08)' } },
+        },
+      },
+    }
+  }, [seri, theme, sorot])
+  const canvasRef = useChartCanvas(config)
+
+  if (seri === null) {
+    return <p className="muted gk-deret-kosong">Memuat / tak cukup irisan tanggal anggota vs IHSG pada rentang ini.</p>
+  }
+  return <div className="gk-deret-chart"><canvas ref={canvasRef} /></div>
+}
+
 export function GrupKonglomerat() {
   const [data, setData] = useState<BerkasGrup | null>(null)
   const [galat, setGalat] = useState(false)
   const [rentang, setRentang] = useState<RentangGrup>('h1')
+  const [mode, setMode] = useState<Mode>('tabel')
+  const [rentangDeret, setRentangDeret] = useState<RentangDeret>('b3')
+  const [ihsg, setIhsg] = useState<BarisOhlc[] | null>(null)
   /** kode -> {h1,wtd,mtd} dari screener; null = belum termuat (chip pakai
    *  pct1d bawaan berkas grup, perilaku lama). */
   const [chg, setChg] = useState<Map<string, { h1: number | null; wtd: number | null; mtd: number | null }> | null>(null)
+
+  useEffect(() => {
+    if (mode !== 'deret' || ihsg) return
+    let batal = false
+    fetchDeret('IHSG').then((d) => { if (!batal) setIhsg(d) })
+    return () => { batal = true }
+  }, [mode, ihsg])
 
   useEffect(() => {
     let batal = false
@@ -92,7 +205,10 @@ export function GrupKonglomerat() {
     <section className="panel">
       <div className="panel-h">
         <span className="lbl">Grup Konglomerat</span>
-        <PemilihRentang opsi={OPSI_RENTANG_GRUP} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang kinerja harga anggota grup" />
+        <PemilihRentang opsi={OPSI_MODE} nilai={mode} onGanti={setMode} ariaLabel="Mode tampilan grup" />
+        {mode === 'tabel'
+          ? <PemilihRentang opsi={OPSI_RENTANG_GRUP} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang kinerja harga anggota grup" />
+          : <PemilihRentang opsi={OPSI_RENTANG_DERET} nilai={rentangDeret} onGanti={setRentangDeret} ariaLabel="Rentang deret kinerja grup" />}
         <span className="v-note">{urut.length} grup · diturunkan dari kepemilikan KSEI ≥{data.ambang_pct}%</span>
       </div>
       <div className="panel-b gk-isi">
@@ -103,6 +219,9 @@ export function GrupKonglomerat() {
               <span className="gk-kode">{g.kode}</span>
               <span className="gk-jml">{g.anggota.length} emiten</span>
             </div>
+            {mode === 'deret' ? (
+              <GrupDeretChart kodeAnggota={g.anggota.map((a) => a.kode)} ihsg={ihsg} rentang={rentangDeret} />
+            ) : (
             <div className="gk-chip-baris">
               {g.anggota.map((a) => {
                 const nilai = chg
@@ -125,6 +244,7 @@ export function GrupKonglomerat() {
                 )
               })}
             </div>
+            )}
           </div>
         ))}
         {/* Batas metode ditulis di panelnya sendiri, bukan disembunyikan di
@@ -137,6 +257,7 @@ export function GrupKonglomerat() {
           lebih. Persen pada chip adalah <b>perubahan harga pada rentang terpilih</b> ({OPSI_RENTANG_GRUP.find((o) => o.id === rentang)?.label}), bukan porsi
           kepemilikan — deret kepemilikan KSEI antar-waktu belum tersedia, jadi rentang di sini
           mengukur kinerja harga anggota, bukan pergeseran porsi grup.
+          {mode === 'deret' && ' Mode Deret: indeks kumulatif bobot setara anggota grup dibanding IHSG, rebased 100 di awal rentang — klik legenda untuk menyorot satu garis.'}
         </p>
       </div>
     </section>
