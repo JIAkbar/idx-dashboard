@@ -9,10 +9,11 @@
  * dipegang pekerjaan lain (jangan disatukan/disentuh).
  */
 import { useEffect, useState } from 'react'
-import type { AgregatBroker, HariBroker } from './brokerEmiten'
+import type { AgregatBroker, BarisBroker, HariBroker } from './brokerEmiten'
 import { muatRentang } from './brokerEmiten'
 import { pesanGalat } from '../pesanGalat'
 import { kelompokBroker, LABEL_KELOMPOK, KETERANGAN_KELOMPOK, type KelompokBroker } from './kelompokBroker'
+import { LABEL_KATEGORI, type DaftarKategoriBroker, type KategoriBroker } from './kategoriBroker'
 
 export interface BarisOhlcv {
   tanggal: string
@@ -85,6 +86,8 @@ export interface TitikKuadran {
   deltaVwapPct: number
   netNilai: number
   grossNilai: number
+  netLot: number
+  grossLot: number
 }
 
 /**
@@ -101,9 +104,25 @@ export function titikKuadran(agg: AgregatBroker[], vwap: number | null): TitikKu
     const grossNilai = a.beliNilai + a.jualNilai
     if (!grossLot) continue
     const hargaBroker = grossNilai / (grossLot * 100)
-    keluar.push({ broker: a.broker, deltaVwapPct: (hargaBroker / vwap - 1) * 100, netNilai: a.netNilai, grossNilai })
+    keluar.push({
+      broker: a.broker, deltaVwapPct: (hargaBroker / vwap - 1) * 100,
+      netNilai: a.netNilai, grossNilai, netLot: a.netLot, grossLot,
+    })
   }
   return keluar
+}
+
+export type LabelKuadran = 'Akumulasi Cerdas' | 'Beli Agresif' | 'Jual Panik' | 'Distribusi'
+
+/**
+ * Label kuadran (§B.1 spek C2) dari tanda X (harga broker vs VWAP) & Y (net
+ * value): beli di bawah VWAP = cerdas, beli di atas VWAP = agresif (mengejar
+ * harga); jual di bawah VWAP = panik, jual di atas VWAP = distribusi (lego di
+ * harga bagus). Net 0 dihitung sisi beli (tak ada arus, bukan tanda negatif).
+ */
+export function labelKuadran(t: { deltaVwapPct: number; netNilai: number }): LabelKuadran {
+  if (t.netNilai >= 0) return t.deltaVwapPct < 0 ? 'Akumulasi Cerdas' : 'Beli Agresif'
+  return t.deltaVwapPct < 0 ? 'Jual Panik' : 'Distribusi'
 }
 
 export interface RingkasSB {
@@ -134,11 +153,16 @@ export function ringkasSB(agg: AgregatBroker[]): RingkasSB {
   return { pembeli, penjual, netVol, netVal, avg, topLot, topVal }
 }
 
-/** N pembeli & penjual bersih terbesar (by |net value|) — bahan chip warna tab Inventory. */
-export function pilihTopInventaris(agg: AgregatBroker[], n = 4): { pembeli: string[]; penjual: string[] } {
-  const terurut = [...agg].sort((x, y) => y.netNilai - x.netNilai)
-  const pembeli = terurut.filter((a) => a.netNilai > 0).slice(0, n).map((a) => a.broker)
-  const penjual = terurut.filter((a) => a.netNilai < 0).slice(-n).map((a) => a.broker).reverse()
+/** N pembeli & penjual bersih terbesar (by |net|) — bahan chip warna tab
+ *  Inventory. `ukuran` (§B.6 wiring) memilih rank by net value atau net lot —
+ *  bawaan 'nilai' supaya pemanggil lama (tanpa argumen ketiga) tak berubah. */
+export function pilihTopInventaris(
+  agg: AgregatBroker[], n = 4, ukuran: 'nilai' | 'lot' = 'nilai',
+): { pembeli: string[]; penjual: string[] } {
+  const netOf = (a: AgregatBroker) => (ukuran === 'nilai' ? a.netNilai : a.netLot)
+  const terurut = [...agg].sort((x, y) => netOf(y) - netOf(x))
+  const pembeli = terurut.filter((a) => netOf(a) > 0).slice(0, n).map((a) => a.broker)
+  const penjual = terurut.filter((a) => netOf(a) < 0).slice(-n).map((a) => a.broker).reverse()
   return { pembeli, penjual }
 }
 
@@ -269,11 +293,15 @@ export interface TitikKonviksi {
   konviksi: number
 }
 
-/** Port `renderConviction()` mockup — net handover = Σ net POSITIF per broker sehari. */
-export function convictionHarian(hari: Array<[string, HariBroker]>): TitikKonviksi[] {
+/** Port `renderConviction()` mockup — net handover = Σ net POSITIF per broker
+ *  sehari. `ukuran` (§B.6 wiring) pilih kolom nilai (idx 2/4) atau lot (idx
+ *  1/3) — bawaan 'nilai' supaya pemanggil lama tak berubah. */
+export function convictionHarian(hari: Array<[string, HariBroker]>, ukuran: 'nilai' | 'lot' = 'nilai'): TitikKonviksi[] {
+  const ambilBeli = (r: BarisBroker) => (ukuran === 'nilai' ? r[2] : r[1])
+  const ambilJual = (r: BarisBroker) => (ukuran === 'nilai' ? r[4] : r[3])
   return hari.map(([tanggal, h]) => {
-    const kotor = h.broker.reduce((s, r) => s + r[2], 0)
-    const net = h.broker.reduce((s, r) => s + Math.max(0, r[2] - r[4]), 0)
+    const kotor = h.broker.reduce((s, r) => s + ambilBeli(r), 0)
+    const net = h.broker.reduce((s, r) => s + Math.max(0, ambilBeli(r) - ambilJual(r)), 0)
     return { tanggal, kotor, net, konviksi: kotor ? (net / kotor) * 100 : 0 }
   })
 }
@@ -361,4 +389,97 @@ export function timelineForeign(bars: BarisOhlcv[], n: number): TimelineForeign 
   let akum = 0
   const kumulatifRp = sel.map((b) => { akum += b.foreignBeli - b.foreignJual; return akum })
   return { tgl: sel.map((b) => b.tanggal), kumulatifRp, tutup: sel.map((b) => b.tutup), netRentang: akum }
+}
+
+// ── Tab "NEGO" — pola berlawanan vs reguler (§B.2) ──────────────────────────
+
+export type KelasPolaNego = 'berlawanan' | 'searah'
+
+export interface PolaNegoBaris {
+  tanggal: string
+  broker: string
+  negoBeliLot: number
+  negoBeliNilai: number
+  negoJualLot: number
+  negoJualNilai: number
+  /** Net reguler broker itu, hari yang sama — acuan silang. */
+  regNetNilai: number
+  kelas: KelasPolaNego
+  /** Label Indonesia siap-tayang. */
+  pola: string
+}
+
+/**
+ * Silangkan nego vs reguler PER BROKER PER HARI (§B.2 spek C2): broker yang
+ * BELI di nego sementara net JUAL di reguler (atau sebaliknya) = pola
+ * berlawanan — kandidat distribusi/akumulasi terselubung lewat pasar
+ * negosiasi. Hanya hari yang punya varian nego (`h.nego`) yang diproses;
+ * broker nego tanpa padanan baris reguler hari itu dianggap net reguler 0.
+ */
+export function polaNegoBroker(hari: Array<[string, HariBroker]>): PolaNegoBaris[] {
+  const keluar: PolaNegoBaris[] = []
+  for (const [tanggal, h] of hari) {
+    if (!h.nego) continue
+    const regNet = new Map(h.broker.map((r) => [r[0], r[2] - r[4]]))
+    for (const r of h.nego.broker) {
+      const [broker, negoBeliLot, negoBeliNilai, negoJualLot, negoJualNilai] = r
+      const regNetNilai = regNet.get(broker) ?? 0
+      let kelas: KelasPolaNego = 'searah'
+      let pola = 'Searah'
+      if (negoBeliNilai > 0 && regNetNilai < 0) { kelas = 'berlawanan'; pola = 'Nego Beli → Reg Jual' }
+      else if (negoJualNilai > 0 && regNetNilai > 0) { kelas = 'berlawanan'; pola = 'Nego Jual → Reg Beli' }
+      keluar.push({ tanggal, broker, negoBeliLot, negoBeliNilai, negoJualLot, negoJualNilai, regNetNilai, kelas, pola })
+    }
+  }
+  return keluar
+}
+
+// ── Overview — Konsensus per kategori perilaku (§B.3) ───────────────────────
+
+export interface KonsensusKategori {
+  id: KategoriBroker
+  label: string
+  nBeli: number
+  nJual: number
+  netGabungan: number
+  /** Berapa dari `dariHari` hari terakhir net kategori ini searah tanda
+   *  `netGabungan` seluruh rentang — bukan berjendela sendiri. */
+  konsistensi: number
+  dariHari: number
+}
+
+const URUTAN_KATEGORI: KategoriBroker[] = ['whale', 'smart', 'smart_ritel', 'ritel']
+
+/**
+ * Konsensus 4 kategori perilaku (whale/smart/smart_ritel/ritel,
+ * `kategoriBroker.ts`) atas rentang aktif — n broker net-beli vs net-jual,
+ * net gabungan, dan konsistensi n/5 hari terakhir. `daftar` null (kategori
+ * belum termuat) → tiap kategori kosong (n 0, bukan galat).
+ */
+export function konsensusKategori(
+  hari: Array<[string, HariBroker]>, agg: AgregatBroker[], daftar: DaftarKategoriBroker | null,
+): KonsensusKategori[] {
+  return URUTAN_KATEGORI.map((id) => {
+    const anggota = new Set(
+      daftar ? Object.entries(daftar.broker).filter(([, p]) => p.kategori === id).map(([kode]) => kode) : [],
+    )
+    let nBeli = 0, nJual = 0, netGabungan = 0
+    for (const a of agg) {
+      if (!anggota.has(a.broker)) continue
+      netGabungan += a.netNilai
+      if (a.netNilai > 0) nBeli++
+      else if (a.netNilai < 0) nJual++
+    }
+    const tanda = Math.sign(netGabungan)
+    const terakhir = hari.slice(-5)
+    let konsistensi = 0
+    if (tanda !== 0) {
+      for (const [, h] of terakhir) {
+        let netHari = 0
+        for (const r of h.broker) { if (anggota.has(r[0])) netHari += r[2] - r[4] }
+        if (Math.sign(netHari) === tanda) konsistensi++
+      }
+    }
+    return { id, label: LABEL_KATEGORI[id], nBeli, nJual, netGabungan, konsistensi, dariHari: terakhir.length }
+  })
 }

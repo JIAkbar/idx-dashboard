@@ -4,6 +4,7 @@
  */
 import type { BarHarga, BrokerHarianEmiten, HariBroker } from './neoPapanData'
 import { hitungEMA } from './grafikEmiten'
+import type { KategoriBroker } from './kategoriBroker'
 
 // ── Broker: agregasi satu emiten pada satu rentang tanggal ─────────────────
 
@@ -468,6 +469,43 @@ function tahunSebelum(iso: string, n: number): string {
 function weekdayUtc(iso: string): number {
   const [y, m, d] = iso.split('-').map(Number)
   return new Date(Date.UTC(y, m - 1, d)).getUTCDay()
+}
+
+// ── Group Score per kategori broker (spek_bandarmologi_c2.md §B.4) ─────────
+
+export interface SkorKategoriHari { t: string; skor: Partial<Record<KategoriBroker, number>> }
+
+/**
+ * Skor harian per kategori: tanda net kategori (+1/−1/0) × jumlah broker
+ * kategori itu yang net SEARAH hari itu. PENJUMLAHAN TANDA, bukan skor
+ * komposit — layar wajib menyatakan ini (spek §B.4/§C), jangan dibaca
+ * seolah magnitudonya berarti "seberapa kuat".
+ */
+export function groupScoreHarian(
+  tanggal: string[],
+  hari: Record<string, { broker: Array<{ kode: string; beliNilai: number; jualNilai: number }> }>,
+  kategoriPerBroker: Record<string, KategoriBroker>,
+): SkorKategoriHari[] {
+  return tanggal.map((t) => {
+    const netKat: Partial<Record<KategoriBroker, number>> = {}
+    const netBroker: Array<{ kat: KategoriBroker; net: number }> = []
+    for (const b of hari[t]?.broker ?? []) {
+      const kat = kategoriPerBroker[b.kode]
+      if (!kat) continue
+      const net = b.beliNilai - b.jualNilai
+      netKat[kat] = (netKat[kat] ?? 0) + net
+      netBroker.push({ kat, net })
+    }
+    const searahKat: Partial<Record<KategoriBroker, number>> = {}
+    for (const { kat, net } of netBroker) {
+      if (net === 0) continue
+      const tandaKat = Math.sign(netKat[kat] ?? 0)
+      if (tandaKat !== 0 && Math.sign(net) === tandaKat) searahKat[kat] = (searahKat[kat] ?? 0) + 1
+    }
+    const skor: Partial<Record<KategoriBroker, number>> = {}
+    for (const kat of Object.keys(netKat) as KategoriBroker[]) skor[kat] = Math.sign(netKat[kat] ?? 0) * (searahKat[kat] ?? 0)
+    return { t, skor }
+  })
 }
 
 // ── util kecil dipakai lintas tab ──────────────────────────────────────────

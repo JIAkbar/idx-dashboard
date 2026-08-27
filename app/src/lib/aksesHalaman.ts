@@ -208,4 +208,9 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   // `akses_halaman` ditambahkan BERSAMAAN, kunci 'broker-v2', tingkat awal
   // 'publik' (permintaan Johan hari ini).
   'broker-summary-v2': 'broker-v2',
+  // IPO Papan (spek §G, 27 Agu 2026) — kunci di sini SEKARANG, baris
+  // `akses_halaman` Supabase dikerjakan pengawas (bukan agen replikasi ini),
+  // tingkat awal 'publik'. Sampai baris itu ada, fail-open (jaring pengaman
+  // yang disengaja, bukan izin melewatkan pendaftaran).
+  ipo: 'ipo',
 }

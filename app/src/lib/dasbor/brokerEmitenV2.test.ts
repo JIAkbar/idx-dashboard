@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { irisOhlcv, vwapRentang, titikKuadran, pilihTopInventaris, ringkasSB, saringTahunAwal, type BarisOhlcv } from './brokerEmitenV2'
-import type { AgregatBroker } from './brokerEmiten'
+import {
+  irisOhlcv, vwapRentang, titikKuadran, labelKuadran, pilihTopInventaris, ringkasSB, saringTahunAwal,
+  polaNegoBroker, konsensusKategori, type BarisOhlcv,
+} from './brokerEmitenV2'
+import type { AgregatBroker, BarisBroker, HariBroker } from './brokerEmiten'
+import type { DaftarKategoriBroker } from './kategoriBroker'
 
 const bar = (tanggal: string, tutup: number, volume: number, nilai: number): BarisOhlcv =>
   ({ tanggal, buka: tutup, tutup, volume, nilai, foreignBeli: 0, foreignJual: 0 })
@@ -48,6 +52,24 @@ describe('titikKuadran', () => {
   it('vwap null -> larik kosong; broker tanpa lot disaring', () => {
     expect(titikKuadran([agg('AK', 10, 1000, 0, 0)], null)).toEqual([])
     expect(titikKuadran([agg('ZZ', 0, 0, 0, 0)], 100)).toEqual([])
+  })
+})
+
+describe('labelKuadran', () => {
+  it('beli di bawah VWAP -> Akumulasi Cerdas', () => {
+    expect(labelKuadran({ deltaVwapPct: -3, netNilai: 100 })).toBe('Akumulasi Cerdas')
+  })
+  it('beli di atas VWAP -> Beli Agresif', () => {
+    expect(labelKuadran({ deltaVwapPct: 2, netNilai: 100 })).toBe('Beli Agresif')
+  })
+  it('jual di bawah VWAP -> Jual Panik', () => {
+    expect(labelKuadran({ deltaVwapPct: -2, netNilai: -100 })).toBe('Jual Panik')
+  })
+  it('jual di atas VWAP -> Distribusi', () => {
+    expect(labelKuadran({ deltaVwapPct: 5, netNilai: -100 })).toBe('Distribusi')
+  })
+  it('net nol dihitung sisi beli', () => {
+    expect(labelKuadran({ deltaVwapPct: -1, netNilai: 0 })).toBe('Akumulasi Cerdas')
   })
 })
 
@@ -113,5 +135,97 @@ describe('ringkasSB', () => {
     const r = ringkasSB([])
     expect(r.netVol).toBe(0)
     expect(r.avg).toBe(0)
+  })
+})
+
+const ringkas = (nBeli: number, nJual: number): HariBroker['ringkas'] => ({
+  n_beli: nBeli, n_jual: nJual, total_lot: 0, total_nilai: 0, avg: null,
+  top1_pct: null, top3_pct: null, top5_pct: null, accdist: null, cocok_volume: 1,
+})
+const b = (k: string, bl: number, bn: number, jl: number, jn: number): BarisBroker => [k, bl, bn, jl, jn]
+
+describe('polaNegoBroker', () => {
+  it('nego beli + reg net jual -> berlawanan, "Nego Beli → Reg Jual"', () => {
+    const hari: HariBroker = {
+      ringkas: ringkas(1, 1),
+      broker: [b('AK', 0, 0, 100, 10_000)], // reg: net jual -10.000
+      nego: { ringkas: ringkas(1, 0), broker: [b('AK', 50, 5_000, 0, 0)] }, // nego: beli 5.000
+    }
+    const r = polaNegoBroker([['2026-01-05', hari]])
+    expect(r).toHaveLength(1)
+    expect(r[0]).toMatchObject({ broker: 'AK', kelas: 'berlawanan', pola: 'Nego Beli → Reg Jual', regNetNilai: -10_000 })
+  })
+  it('nego jual + reg net beli -> berlawanan, "Nego Jual → Reg Beli"', () => {
+    const hari: HariBroker = {
+      ringkas: ringkas(1, 1),
+      broker: [b('CC', 100, 10_000, 0, 0)], // reg: net beli +10.000
+      nego: { ringkas: ringkas(0, 1), broker: [b('CC', 0, 0, 50, 5_000)] }, // nego: jual 5.000
+    }
+    const r = polaNegoBroker([['2026-01-05', hari]])
+    expect(r[0]).toMatchObject({ broker: 'CC', kelas: 'berlawanan', pola: 'Nego Jual → Reg Beli' })
+  })
+  it('nego beli + reg net beli juga -> searah', () => {
+    const hari: HariBroker = {
+      ringkas: ringkas(1, 0),
+      broker: [b('ZP', 100, 10_000, 0, 0)],
+      nego: { ringkas: ringkas(1, 0), broker: [b('ZP', 50, 5_000, 0, 0)] },
+    }
+    expect(polaNegoBroker([['2026-01-05', hari]])[0]).toMatchObject({ kelas: 'searah', pola: 'Searah' })
+  })
+  it('broker nego tanpa padanan reguler hari itu -> regNetNilai 0, searah', () => {
+    const hari: HariBroker = {
+      ringkas: ringkas(0, 0), broker: [],
+      nego: { ringkas: ringkas(1, 0), broker: [b('XX', 10, 1_000, 0, 0)] },
+    }
+    expect(polaNegoBroker([['2026-01-05', hari]])[0]).toMatchObject({ regNetNilai: 0, kelas: 'searah' })
+  })
+  it('hari tanpa varian nego dilewati', () => {
+    const hari: HariBroker = { ringkas: ringkas(1, 0), broker: [b('AK', 10, 1_000, 0, 0)] }
+    expect(polaNegoBroker([['2026-01-05', hari]])).toEqual([])
+  })
+})
+
+describe('konsensusKategori', () => {
+  const daftar: DaftarKategoriBroker = {
+    dibangun: '2026-08-27T11:49:19+07:00',
+    jendela: { mulai: '2026-02-18', akhir: '2026-08-24', n_hari: 120 },
+    kalibrasi: {
+      q3_share: 0, median_directionality: 0, median_konsistensi: 0,
+      per_kategori: {} as unknown as DaftarKategoriBroker['kalibrasi']['per_kategori'],
+      per_gaya: {} as unknown as DaftarKategoriBroker['kalibrasi']['per_gaya'],
+    },
+    broker: {
+      AK: { kategori: 'whale', gaya: 'akumulasi', share: 0, directionality: 0, konsistensi: 0, net_nilai: 0, gross_nilai: 0, z_vol_terakhir: 0 },
+      BK: { kategori: 'whale', gaya: 'akumulasi', share: 0, directionality: 0, konsistensi: 0, net_nilai: 0, gross_nilai: 0, z_vol_terakhir: 0 },
+      CC: { kategori: 'ritel', gaya: 'campuran', share: 0, directionality: 0, konsistensi: 0, net_nilai: 0, gross_nilai: 0, z_vol_terakhir: 0 },
+    },
+  }
+  it('n beli/jual & net gabungan per kategori dari agg', () => {
+    const aggList: AgregatBroker[] = [agg('AK', 100, 10_000, 0, 0), agg('BK', 0, 0, 50, 4_000), agg('CC', 10, 1_000, 0, 0)]
+    const hasil = konsensusKategori([], aggList, daftar)
+    const whale = hasil.find((k) => k.id === 'whale')!
+    expect(whale.nBeli).toBe(1)
+    expect(whale.nJual).toBe(1)
+    expect(whale.netGabungan).toBe(10_000 - 4_000)
+    const ritel = hasil.find((k) => k.id === 'ritel')!
+    expect(ritel.nBeli).toBe(1)
+    expect(ritel.netGabungan).toBe(1_000)
+    // smart/smart_ritel tak punya anggota di fixture -> 0, bukan galat
+    expect(hasil.find((k) => k.id === 'smart')!.nBeli).toBe(0)
+  })
+  it('konsistensi n/5: hari yang net kategorinya searah tanda netGabungan', () => {
+    // whale netGabungan keseluruhan +6.000 (dari agg) -> tanda +1
+    const aggList: AgregatBroker[] = [agg('AK', 100, 10_000, 0, 4_000)] // net +6.000
+    const hariList: Array<[string, HariBroker]> = [
+      ['2026-01-05', { ringkas: ringkas(1, 0), broker: [b('AK', 10, 1_000, 0, 0)] }],   // net +1.000 -> searah
+      ['2026-01-06', { ringkas: ringkas(0, 1), broker: [b('AK', 0, 0, 10, 500)] }],     // net -500 -> tak searah
+    ]
+    const whale = konsensusKategori(hariList, aggList, daftar).find((k) => k.id === 'whale')!
+    expect(whale.dariHari).toBe(2)
+    expect(whale.konsistensi).toBe(1)
+  })
+  it('daftar null -> semua kategori kosong, bukan galat', () => {
+    const hasil = konsensusKategori([], [agg('AK', 10, 1_000, 0, 0)], null)
+    expect(hasil.every((k) => k.nBeli === 0 && k.nJual === 0 && k.netGabungan === 0)).toBe(true)
   })
 })

@@ -4,9 +4,12 @@ import { ProfitAra } from './kalkulator/ProfitAra'
 import { RiskReward } from './kalkulator/RiskReward'
 import { Dividen } from './kalkulator/Dividen'
 import { Pemulihan } from './kalkulator/Pemulihan'
-import { IkonMenu, IKON_GRAFIK_TURUN, IKON_UANG, IKON_TIMBANGAN, IKON_UANG_KERTAS, IKON_ULANG } from '../../components/dasbor/IkonMenu'
+import { Piramida } from './kalkulator/Piramida'
+import { Blender } from './kalkulator/Blender'
+import { Bunga } from './kalkulator/Bunga'
+import { IkonMenu, IKON_GRAFIK_TURUN, IKON_UANG, IKON_TIMBANGAN, IKON_UANG_KERTAS, IKON_ULANG, IKON_KUADRAN, IKON_TONG, IKON_GRAFIK_NAIK } from '../../components/dasbor/IkonMenu'
 
-type Tab = 'avgdown' | 'profit' | 'rr' | 'div' | 'pulih'
+type Tab = 'avgdown' | 'profit' | 'rr' | 'div' | 'pulih' | 'piramida' | 'blender' | 'bunga'
 
 const TABS: { id: Tab; label: ReactNode }[] = [
   { id: 'avgdown', label: <><IkonMenu d={IKON_GRAFIK_TURUN} size={13} /> Avg Down</> },
@@ -14,6 +17,9 @@ const TABS: { id: Tab; label: ReactNode }[] = [
   { id: 'rr', label: <><IkonMenu d={IKON_TIMBANGAN} size={13} /> Risk/Reward</> },
   { id: 'div', label: <><IkonMenu d={IKON_UANG_KERTAS} size={13} /> Dividen</> },
   { id: 'pulih', label: <><IkonMenu d={IKON_ULANG} size={13} /> Pemulihan</> },
+  { id: 'piramida', label: <><IkonMenu d={IKON_KUADRAN} size={13} /> Piramida</> },
+  { id: 'blender', label: <><IkonMenu d={IKON_TONG} size={13} /> Blender Posisi</> },
+  { id: 'bunga', label: <><IkonMenu d={IKON_GRAFIK_NAIK} size={13} /> Bunga-Berbunga</> },
 ]
 
 /**
@@ -56,6 +62,9 @@ export function KalkulatorJia() {
         <Dividen feeBeli={feeBeli} setFeeBeli={setFeeBeli} feeJual={feeJual} setFeeJual={setFeeJual} />
       )}
       {tab === 'pulih' && <Pemulihan />}
+      {tab === 'piramida' && <Piramida />}
+      {tab === 'blender' && <Blender />}
+      {tab === 'bunga' && <Bunga />}
     </div>
   )
 }

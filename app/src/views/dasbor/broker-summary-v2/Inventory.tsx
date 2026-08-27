@@ -5,12 +5,14 @@ import { useTheme } from '../../../context/ThemeContext'
 import { kumulatifBroker, type AgregatBroker, type HariBroker } from '../../../lib/dasbor/brokerEmiten'
 import { pilihTopInventaris, type BarisOhlcv } from '../../../lib/dasbor/brokerEmitenV2'
 import { warnaBrokerCanvas } from '../../../lib/dasbor/kelompokBroker'
-import { fmtB } from '../../../lib/dasbor/brokerSummaryFormat'
+import { fmtB, fmtLot } from '../../../lib/dasbor/brokerSummaryFormat'
 
 interface InventoryProps {
   hari: Array<[string, HariBroker]>
   agg: AgregatBroker[]
   ohlcv: BarisOhlcv[]
+  /** Nilai (Rp) atau lot — prop header BSv2 diteruskan (§B.6 wiring). */
+  ukuran: 'nilai' | 'lot'
 }
 
 /**
@@ -20,10 +22,11 @@ interface InventoryProps {
  * ikut kelompok identitas broker (`kelompokBroker.ts`, #170 aturan warna) —
  * garis putus-putus menandai sisi penjual supaya tak perlu warna kedua.
  */
-export function Inventory({ hari, agg, ohlcv }: InventoryProps) {
+export function Inventory({ hari, agg, ohlcv, ukuran }: InventoryProps) {
   const { theme } = useTheme()
-  const { pembeli, penjual } = useMemo(() => pilihTopInventaris(agg, 4), [agg])
+  const { pembeli, penjual } = useMemo(() => pilihTopInventaris(agg, 4, ukuran), [agg, ukuran])
   const brokers = useMemo(() => [...pembeli, ...penjual], [pembeli, penjual])
+  const fmt = ukuran === 'nilai' ? fmtB : fmtLot
 
   const config = useMemo<ChartConfiguration<'line'> | null>(() => {
     if (hari.length === 0 || brokers.length === 0) return null
@@ -31,7 +34,7 @@ export function Inventory({ hari, agg, ohlcv }: InventoryProps) {
     const textColor = isDark ? '#cfd8e3' : '#1a2733'
     const text2Color = isDark ? '#8494a8' : '#4b6070'
     const gridColor = 'rgba(128,128,128,.1)'
-    const deret = kumulatifBroker(hari, brokers, 'nilai')
+    const deret = kumulatifBroker(hari, brokers, ukuran)
     const labels = deret.map((d) => d.tanggal)
     const hargaPerTanggal = new Map(ohlcv.map((o) => [o.tanggal, o.tutup]))
 
@@ -126,7 +129,7 @@ export function Inventory({ hari, agg, ohlcv }: InventoryProps) {
             callbacks: {
               label: (ctx) => ctx.dataset.yAxisID === 'y1'
                 ? `Harga tutup: Rp ${Math.round(Number(ctx.raw)).toLocaleString('id-ID')}`
-                : `${ctx.dataset.label}: ${fmtB(Number(ctx.raw))}`,
+                : `${ctx.dataset.label}: ${fmt(Number(ctx.raw))}`,
             },
           },
         },
@@ -134,8 +137,8 @@ export function Inventory({ hari, agg, ohlcv }: InventoryProps) {
           x: { ticks: { color: text2Color, maxTicksLimit: 10 }, grid: { color: gridColor } },
           y: {
             position: 'left', grid: { color: gridColor },
-            title: { display: true, text: 'Net kumulatif (Rp)', color: text2Color, font: { size: 11 } },
-            ticks: { color: text2Color, callback: (v) => fmtB(Number(v)) },
+            title: { display: true, text: `Net kumulatif (${ukuran === 'nilai' ? 'Rp' : 'lot'})`, color: text2Color, font: { size: 11 } },
+            ticks: { color: text2Color, callback: (v) => fmt(Number(v)) },
           },
           y1: {
             position: 'right', grid: { display: false },
@@ -145,7 +148,7 @@ export function Inventory({ hari, agg, ohlcv }: InventoryProps) {
         },
       },
     }
-  }, [hari, brokers, pembeli, penjual, ohlcv, theme])
+  }, [hari, brokers, pembeli, penjual, ohlcv, theme, ukuran, fmt])
 
   const canvasRef = useChartCanvas(config)
 

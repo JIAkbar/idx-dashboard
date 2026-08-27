@@ -212,6 +212,14 @@ export const MENU_ITEMS: MenuItem[] = [
     ringkas: 'Sembilan ratus emiten dalam satu tabel: skor teknikal harian/pekanan/bulanan, momentum, volume relatif, aliran asing, dan posisi terhadap rata-rata bergerak.',
     ikon: 'M4 5h16M4 5l6 7v6l4 2v-8l6-7M4 5v0',
   },
+  {
+    // IPO Papan (spek §G, 27 Agu 2026) — kartu ringkas per tahun listing +
+    // tabel IPO + rapor penjamin emisi, dari profil publik emiten.
+    // Kode 'IPO' — belum dipakai menu lain.
+    id: 'ipo', path: '/ipo', label: 'IPO Papan', kode: 'IPO', grup: 'analisa',
+    ringkas: 'Return sejak listing per horizon (1D/1W/1M/Kini) dan rapor penjamin emisi — n IPO, win rate, median return.',
+    ikon: 'M4 20V10h4v10zM10 20V4h4v16zM16 20v-7h4v7z',
+  },
 
   // ── Baca ───────────────────────────────────────────────────────────────
   {

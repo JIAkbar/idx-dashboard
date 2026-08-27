@@ -48,6 +48,7 @@ const Metodologi = lazy(() => import('./views/dasbor/Metodologi').then((m) => ({
 const StatistikBerkala = lazy(() => import('./views/dasbor/StatistikBerkala').then((m) => ({ default: m.StatistikBerkala })))
 const Watchlist = lazy(() => import('./views/dasbor/Watchlist').then((m) => ({ default: m.Watchlist })))
 const AliranAsing = lazy(() => import('./views/dasbor/AliranAsing').then((m) => ({ default: m.AliranAsing })))
+const IpoAnalysis = lazy(() => import('./views/dasbor/IpoAnalysis').then((m) => ({ default: m.IpoAnalysis })))
 const AdminLayout = lazy(() => import('./views/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })))
 const UnggahHarian = lazy(() => import('./views/admin/UnggahHarian').then((m) => ({ default: m.UnggahHarian })))
 const AkunAdmin = lazy(() => import('./views/admin/AkunAdmin').then((m) => ({ default: m.AkunAdmin })))
@@ -191,6 +192,11 @@ function App() {
                   rutenya dibuat — aturan wajib yang lahir 21 Agu 2026 sesudah
                   empat halaman hidup berminggu-minggu tanpa bisa diatur. */}
               <Route path="/screener" element={<PenjagaHalaman kunci="screener"><Screener /></PenjagaHalaman>} />
+              {/* IPO Papan (spek §G, 27 Agu 2026) — kunci 'ipo' terdaftar
+                  BERSAMAAN di PETA_MENU_KUNCI (aksesHalaman.ts); baris
+                  `akses_halaman` Supabase dikerjakan pengawas, bukan agen ini
+                  (aturan spek). Sampai baris itu ada, kuncinya fail-open. */}
+              <Route path="/ipo" element={<PenjagaHalaman kunci="ipo"><IpoAnalysis /></PenjagaHalaman>} />
               <Route path="/feedback" element={<PenjagaHalaman kunci="saran"><Feedback /></PenjagaHalaman>} />
               {/* Backlog C6 — publik SENGAJA tanpa PenjagaHalaman: glosarium &
                   metodologi justru untuk pembaca yang belum percaya sistemnya,

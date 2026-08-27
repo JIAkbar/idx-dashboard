@@ -4,8 +4,10 @@ import {
   kalenderBrokerHarian, stalkerAgregasi, kodeBrokerUnik,
   zScoreBergerak, rsRatioMomentum, porsiBergerak,
   musimanHari, musimanBulan, moneyFlowAsing, pilihKandidatSektor,
+  groupScoreHarian,
 } from './neoPapan'
 import type { BarHarga, BrokerHarianEmiten, HariBroker } from './neoPapanData'
+import type { KategoriBroker } from './kategoriBroker'
 
 function hari(broker: Array<[string, number, number, number, number]>): HariBroker {
   return {
@@ -376,5 +378,52 @@ describe('musiman tahunN (spek §7)', () => {
     expect(semua[1].n).toBe(2)
     expect(setahun[1].n).toBe(1)
     expect(setahun[1].naikPersen).toBe(100)
+  })
+})
+
+describe('groupScoreHarian (spek_bandarmologi_c2.md §B.4)', () => {
+  const kategori: Record<string, KategoriBroker> = { AK: 'whale', BK: 'whale', XL: 'ritel', YP: 'ritel' }
+
+  it('skor = tanda net kategori × jumlah broker searah', () => {
+    const hariData = {
+      '2026-01-01': {
+        broker: [
+          { kode: 'AK', beliNilai: 100, jualNilai: 0 }, // whale net +100
+          { kode: 'BK', beliNilai: 50, jualNilai: 0 },  // whale net +50, searah AK
+          { kode: 'XL', beliNilai: 0, jualNilai: 30 },  // ritel net -30
+        ],
+      },
+    }
+    const [h] = groupScoreHarian(['2026-01-01'], hariData, kategori)
+    // whale: net kategori = +150 (tanda +1), 2 broker searah (AK & BK sama-sama net>0) → skor 2
+    expect(h.skor.whale).toBe(2)
+    // ritel: hanya XL aktif, net kategori -30 (tanda -1), 1 broker searah → skor -1
+    expect(h.skor.ritel).toBe(-1)
+  })
+
+  it('broker berlawanan arah dari kategorinya tidak ikut dihitung "searah"', () => {
+    const hariData = {
+      '2026-01-01': {
+        broker: [
+          { kode: 'AK', beliNilai: 100, jualNilai: 0 },  // whale net +100
+          { kode: 'BK', beliNilai: 0, jualNilai: 20 },   // whale net -20 (berlawanan)
+        ],
+      },
+    }
+    const [h] = groupScoreHarian(['2026-01-01'], hariData, kategori)
+    // net kategori whale = 80 (tanda +1), hanya AK yang searah → skor 1 (BK tak dihitung)
+    expect(h.skor.whale).toBe(1)
+  })
+
+  it('kode broker yang belum terkategori diabaikan, bukan galat', () => {
+    const hariData = { '2026-01-01': { broker: [{ kode: 'ZZZ', beliNilai: 10, jualNilai: 0 }] } }
+    const [h] = groupScoreHarian(['2026-01-01'], hariData, kategori)
+    expect(h.skor).toEqual({})
+  })
+
+  it('tanggal tanpa data → skor kosong, bukan galat', () => {
+    const [h] = groupScoreHarian(['2026-02-01'], {}, kategori)
+    expect(h.t).toBe('2026-02-01')
+    expect(h.skor).toEqual({})
   })
 })

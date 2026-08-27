@@ -7,16 +7,40 @@ import { muatCandle, type DataCandle } from '../../../lib/dasbor/candleStockbit'
 import { muatBrokerHarian, type BrokerHarianEmiten } from '../../../lib/dasbor/neoPapanData'
 import { muatRentang } from '../../../lib/dasbor/brokerEmiten'
 import {
-  agregasiBroker, avgHarga, kumulatifBroker, pilihInvestorHari, topNet,
+  agregasiBroker, avgHarga, groupScoreHarian, kumulatifBroker, pilihInvestorHari, topNet,
   type HariStalkerV2, type InvestorStalker,
 } from '../../../lib/dasbor/neoPapan'
+import { hitungPosisiBroker, trappedTopN, type BarisPosisiHari } from '../../../lib/dasbor/posisiBroker'
 import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
 import { DropdownMulti, type OpsiMulti } from '../../../components/dasbor/DropdownMulti'
 import { useTheme } from '../../../context/ThemeContext'
 import { anggotaKelompok, kelompokBroker, namaBroker } from '../../../lib/dasbor/kelompokBroker'
 import { PERINGATAN_PRA_BROKER, praBroker } from '../../../lib/dasbor/brokerEmitenV2'
+import { LABEL_KATEGORI, useKategoriBroker, type KategoriBroker } from '../../../lib/dasbor/kategoriBroker'
 import { bacaTokenTema } from '../../../lib/dasbor/useChartJs'
-import { fmtB, num, TOKEN_SERI, OPSI_RENTANG_NP, potongRentang, Kosong, Sumber, type RentangNp } from './bersama'
+import { fmtB, num, pct, TOKEN_SERI, OPSI_RENTANG_NP, potongRentang, Kosong, Sumber, type RentangNp } from './bersama'
+
+/** Sparkline net harian — batang mini (pola sama `Spark` di StalkerTab.tsx;
+ *  didefinisikan ulang di sini karena berkas itu di luar lingkup sentuh tugas
+ *  ini — lihat catatan Papan Pekerjaan). Kelas CSS `.np-spark` sudah bersama. */
+function Spark({ seri, n = 10 }: { seri: Array<{ net: number }>; n?: number }) {
+  const ekor = seri.slice(-n)
+  const puncak = Math.max(1, ...ekor.map((s) => Math.abs(s.net)))
+  return (
+    <span className="np-spark" aria-hidden="true">
+      {ekor.map((s, i) => (
+        <span key={i} className={s.net >= 0 ? 'up' : 'dn'}
+          style={{ height: `${Math.max(8, (Math.abs(s.net) / puncak) * 100)}%` }} />
+      ))}
+    </span>
+  )
+}
+
+const KATEGORI_URUT: KategoriBroker[] = ['whale', 'smart', 'smart_ritel', 'ritel']
+/** Jendela "Posisi 6 Bulan" §B.5 — 126 hari bursa, TETAP (tak ikut chip
+ *  Rentang chart di atas: itu punya konsep "6 Bulan" sendiri (id 'b6'), tapi
+ *  tabel posisi wajib konsisten walau chart di-zoom ke rentang lain). */
+const JENDELA_POSISI = 126
 
 /**
  * Inventory Chart V2 (spek_neo_papan_revisi.md §3): migrasi ke
@@ -53,6 +77,10 @@ export function InventoryTab({ kode }: { kode: string }) {
   const [manual, setManual] = useState<string[]>([])
   /** Broker yang dipilih untuk tabel per-tanggal (klik baris ringkasan). */
   const [brokerRinci, setBrokerRinci] = useState<string | null>(null)
+  /** Data mentah "Posisi 6 Bulan" §B.5 — jendela TETAP 126 hari bursa, beda
+   *  dari `tahunan` (yang jendelanya ikut chip Rentang chart). */
+  const [posisiData, setPosisiData] = useState<{ kunci: string; tanggal: string[]; hari: Record<string, { broker: BarisPosisiHari[] }> } | null>(null)
+  const daftarKategori = useKategoriBroker()
 
   const bungkusRef = useRef<HTMLDivElement | null>(null)
   const chartRef = useRef<IChartApi | null>(null)
@@ -65,6 +93,7 @@ export function InventoryTab({ kode }: { kode: string }) {
     setCandle(null)
     setHarian(undefined)
     setTahunan(null)
+    setPosisiData(null)
     setBrokerRinci(null)
     muatCandle(kode).then((d) => { if (!batal) setCandle(d) })
     muatBrokerHarian(kode).then((d) => { if (!batal) setHarian(d) })
@@ -108,6 +137,55 @@ export function InventoryTab({ kode }: { kode: string }) {
     })
     return () => { batal = true }
   }, [butuhTahunan, kunciTahunan, kode, dari, sampai, tahunan?.kunci])
+
+  // "Posisi 6 Bulan" §B.5 — jendela TETAP 126 hari bursa dari kalender candle
+  // (bukan chip Rentang chart), lewat loader yang sama (`muatRentang`).
+  const rentangPosisi = useMemo(() => {
+    const n = candle?.lilin.length ?? 0
+    if (!n) return null
+    return { dari: String(candle!.lilin[Math.max(0, n - JENDELA_POSISI)].time), sampai: String(candle!.lilin[n - 1].time) }
+  }, [candle])
+  const kunciPosisi = rentangPosisi ? `${kode}~${rentangPosisi.dari}~${rentangPosisi.sampai}` : ''
+
+  useEffect(() => {
+    if (!rentangPosisi) return
+    if (posisiData?.kunci === kunciPosisi) return
+    let batal = false
+    muatRentang(kode, rentangPosisi.dari, rentangPosisi.sampai).then((arr) => {
+      if (batal) return
+      const hari: Record<string, { broker: BarisPosisiHari[] }> = {}
+      const tanggal: string[] = []
+      for (const [t, h] of arr) {
+        tanggal.push(t)
+        hari[t] = { broker: h.broker.map(([kd, beliLot, beliNilai, jualLot, jualNilai]) => ({ kode: kd, beliLot, beliNilai, jualLot, jualNilai })) }
+      }
+      tanggal.sort()
+      setPosisiData({ kunci: kunciPosisi, tanggal, hari })
+    })
+    return () => { batal = true }
+  }, [kode, rentangPosisi, kunciPosisi, posisiData?.kunci])
+
+  const hargaKini = candle && candle.lilin.length ? candle.lilin[candle.lilin.length - 1].close : null
+  const posisiBroker = useMemo(
+    () => (posisiData ? hitungPosisiBroker(posisiData.tanggal, posisiData.hari, hargaKini) : []),
+    [posisiData, hargaKini],
+  )
+  const trapped = useMemo(() => trappedTopN(posisiBroker, 5), [posisiBroker])
+  const posisiUrut = useMemo(() => [...posisiBroker].sort((a, b) => b.net - a.net), [posisiBroker])
+
+  // Group Score strip §B.4 — D-10..D0 dari `harian` (jendela geser yang tab
+  // ini SUDAH muat saat mount, terpisah dari chip Rentang chart & dari jendela
+  // "Posisi 6 Bulan" di atas).
+  const kategoriPerBroker = useMemo(() => {
+    const m: Record<string, KategoriBroker> = {}
+    if (daftarKategori) for (const [kd, p] of Object.entries(daftarKategori.broker)) m[kd] = p.kategori
+    return m
+  }, [daftarKategori])
+  const tanggalSkor = useMemo(() => (harian ? Object.keys(harian.hari).sort().slice(-11) : []), [harian])
+  const skorHarian = useMemo(
+    () => (harian ? groupScoreHarian(tanggalSkor, harian.hari, kategoriPerBroker) : []),
+    [harian, tanggalSkor, kategoriPerBroker],
+  )
 
   /** Hari broker efektif pada jendela + investor terpilih. */
   const hariEfektif = useMemo((): Record<string, { broker: HariStalkerV2['broker'] }> | null => {
@@ -407,6 +485,86 @@ export function InventoryTab({ kode }: { kode: string }) {
           </table>
         </div>
       )}
+
+      <div className="tbl" style={{ marginTop: 20 }}>
+        <h3 style={{ margin: '0 0 6px' }}>Group Score — 10 hari terakhir</h3>
+        <p className="np-sub">
+          Skor harian per kategori perilaku broker: tanda net kategori (naik/turun) × jumlah broker kategori itu yang net searah hari itu —
+          penjumlahan tanda, BUKAN skor komposit.
+          {daftarKategori && ` Kategori dihitung dari perilaku 120 hari bursa terakhir per ${daftarKategori.dibangun.slice(0, 10)}, bukan daftar tetap.`}
+        </p>
+        {!daftarKategori && <Kosong>Memuat kategori broker…</Kosong>}
+        {daftarKategori && tanggalSkor.length === 0 && <Kosong>Belum ada data broker harian untuk strip ini.</Kosong>}
+        {daftarKategori && tanggalSkor.length > 0 && (
+          <table>
+            <thead>
+              <tr>
+                <th>Kategori</th>
+                {tanggalSkor.map((t) => <th key={t} className="r" title={t}>{t.slice(5)}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {KATEGORI_URUT.map((kat) => (
+                <tr key={kat}>
+                  <td><b>{LABEL_KATEGORI[kat]}</b></td>
+                  {skorHarian.map((h) => {
+                    const s = h.skor[kat] ?? 0
+                    return (
+                      <td key={h.t} className={'r' + (s > 0 ? ' up' : s < 0 ? ' dn' : '')}>
+                        {s === 0 ? '·' : (s > 0 ? '+' : '') + s}
+                      </td>
+                    )
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <div className="tbl" style={{ marginTop: 20 }}>
+        <h3 style={{ margin: '0 0 6px' }}>Posisi 6 Bulan per Broker</h3>
+        <p className="np-sub">
+          Posisi dihitung dari {posisiData ? posisiData.tanggal.length : JENDELA_POSISI} hari bursa terakhir yang tersedia di arsip
+          {rentangPosisi ? ` (${rentangPosisi.dari} → ${rentangPosisi.sampai})` : ''}. Floor = rata-rata tertimbang harga beli seluruh
+          jendela; PnL% hanya dihitung untuk broker net-beli.
+          {rentangPosisi && praBroker(rentangPosisi.dari) && <span className="np-parsial"> · {PERINGATAN_PRA_BROKER}</span>}
+        </p>
+        {trapped.total > 0 && (
+          <p className="np-sub">
+            <span className="badge">TRAPPED {trapped.trapped}/{trapped.total}</span>{' '}
+            dari {trapped.total} net-buyer terbesar jendela ini posisinya di bawah floor pada harga sekarang.
+          </p>
+        )}
+        {!posisiData && <Kosong>Memuat arsip broker {kode}…</Kosong>}
+        {posisiData && posisiUrut.length === 0 && <Kosong>Tak ada rincian broker pada jendela ini.</Kosong>}
+        {posisiData && posisiUrut.length > 0 && (
+          <table>
+            <thead>
+              <tr>
+                <th>Broker</th><th className="r">Net</th><th className="r">Floor</th><th className="r">PnL%</th>
+                <th className="r">Hari</th><th>Status</th><th>Tren 10H</th><th>10 Hari</th>
+              </tr>
+            </thead>
+            <tbody>
+              {posisiUrut.map((p) => (
+                <tr key={p.kode}>
+                  <td><b>{p.kode}</b></td>
+                  <td className={'r' + (p.net >= 0 ? ' up' : ' dn')}>{fmtB(p.net)}</td>
+                  <td className="r">{p.floor != null ? num(p.floor) : '—'}</td>
+                  <td className={'r' + (p.pnlPersen != null ? (p.pnlPersen >= 0 ? ' up' : ' dn') : '')}>
+                    {p.pnlPersen != null ? pct(p.pnlPersen * 100) : '—'}
+                  </td>
+                  <td className="r">{p.hariSejakFlip}</td>
+                  <td className={p.status === 'AKUM' ? 'up' : p.status === 'DIST' ? 'dn' : ''}>{p.status}</td>
+                  <td>{p.tren ?? '—'}</td>
+                  <td><Spark seri={p.seriHarian} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
 
       <Sumber>
         Rincian broker harian dari arsip, pasar reguler{investor !== 'all' ? ` — investor ${investor} (label "Asing" = klien luar negeri, bukan identitas sekuritas)` : ''}.

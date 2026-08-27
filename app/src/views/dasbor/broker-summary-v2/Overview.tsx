@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import type { AgregatBroker, HariBroker, ModeTransaksi } from '../../../lib/dasbor/brokerEmiten'
 import { arusHarian, floorPriceBroker, tabelDuaSisi } from '../../../lib/dasbor/brokerEmiten'
-import { ringkasSB, analisaKelompok } from '../../../lib/dasbor/brokerEmitenV2'
+import { ringkasSB, analisaKelompok, konsensusKategori } from '../../../lib/dasbor/brokerEmitenV2'
+import { useKategoriBroker } from '../../../lib/dasbor/kategoriBroker'
 import { warnaBroker, warnaKelompok, namaBroker, LABEL_KELOMPOK } from '../../../lib/dasbor/kelompokBroker'
 import { fmtB, fmtLot } from '../../../lib/dasbor/brokerSummaryFormat'
 import { labelTanggal } from '../../../lib/dasbor/brokerHarian'
@@ -64,6 +65,9 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
 
   const kelompok = analisaKelompok(hari, agg, ukuran)
   const floor = floorPriceBroker(hari, 1000).slice(0, 12)
+
+  const daftarKategori = useKategoriBroker()
+  const konsensus = konsensusKategori(hari, agg, daftarKategori)
 
   return (
     <>
@@ -245,6 +249,38 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
           </div>
         </section>
       </div>
+
+      <section className="panel" style={{ marginTop: 14 }}>
+        <div className="panel-h">
+          <h2>Konsensus Kategori Broker</h2>
+          <span className="lbl">net-beli vs net-jual per kategori, rentang aktif</span>
+        </div>
+        <div className="panel-b">
+          {!daftarKategori ? (
+            <EmptyState>Memuat kategori perilaku broker…</EmptyState>
+          ) : (
+            <div className="grid3">
+              {konsensus.map((k) => (
+                <div className="vcard" key={k.id}>
+                  <span className="lbl">{k.label}</span>
+                  <span className="v-num num">
+                    {k.nBeli} <span className="chip up" style={{ padding: '0 6px' }}>▲</span>{' '}
+                    {k.nJual} <span className="chip dn" style={{ padding: '0 6px' }}>▼</span>
+                  </span>
+                  <span className="v-note num" style={{ color: k.netGabungan >= 0 ? 'var(--green)' : 'var(--red)' }}>
+                    {k.netGabungan >= 0 ? '+' : ''}Rp {fmtB(k.netGabungan)} net gabungan
+                  </span>
+                  <span className="v-note">konsistensi {k.konsistensi}/{k.dariHari} hari terakhir searah</span>
+                </div>
+              ))}
+            </div>
+          )}
+          <p className="lbl" style={{ marginTop: 10, textTransform: 'none', letterSpacing: 0 }}>
+            Kategori dihitung dari perilaku 120 hari bursa terakhir (porsi nilai pasar, arah net, konsistensi), bukan daftar tetap — satu broker bisa pindah kategori seiring waktu.
+            {daftarKategori && ` Dibangun ${labelTanggal(daftarKategori.dibangun.slice(0, 10))}.`}
+          </p>
+        </div>
+      </section>
     </>
   )
 }

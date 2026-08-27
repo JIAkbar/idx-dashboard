@@ -1,0 +1,22 @@
+/* IPO Papan (/ipo) — layout khas halaman ini saja (penempatan/lebar), bentuk
+   kendali (tabs/dd/chip/tabel) tetap primitif kanonis lantai.css (#170). */
+
+/* Kartu tahun lebih ramping dari grid3 baku (240px) — cukup untuk kode 4
+   baris horizon, tak perlu selebar kartu ringkasan lain. */
+.lantai .ipo-tahun-grid { margin-top: 4px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+
+.lantai .ipo-hlist { display: flex; flex-direction: column; gap: 3px; margin-top: 4px; }
+.lantai .ipo-hrow { display: flex; align-items: baseline; gap: 6px; font-size: 11.5px; }
+.lantai .ipo-hrow > span:first-child { width: 26px; flex-shrink: 0; }
+.lantai .ipo-hrow-n { margin-left: auto; font-size: 10px; }
+
+.lantai .ipo-tabs-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+
+.lantai .ipo-uw-cell { display: flex; flex-wrap: wrap; gap: 4px; max-width: 320px; }
+.lantai .ipo-uw-cell .chip-t { padding: 3px 9px; font-size: 10.5px; cursor: default; }
+.lantai .ipo-uw-cell .chip-t:hover { border-color: var(--line2); color: var(--text); }
+
+@media (max-width: 560px) {
+  .lantai .ipo-tahun-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+  .lantai .ipo-uw-cell { max-width: 200px; }
+}

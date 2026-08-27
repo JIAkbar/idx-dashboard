@@ -9,7 +9,7 @@ import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { agregatBroker, type ModeTransaksi } from '../../lib/dasbor/brokerEmiten'
-import { TAHUN_AWAL, useArusBrokerEmiten, useOhlcvEmiten, irisOhlcv } from '../../lib/dasbor/brokerEmitenV2'
+import { TAHUN_AWAL, useArusBrokerEmiten, useOhlcvEmiten, irisOhlcv, vwapRentang } from '../../lib/dasbor/brokerEmitenV2'
 import { keFraksi } from '../../lib/fraksiHarga'
 import { Overview } from './broker-summary-v2/Overview'
 import { Inventory } from './broker-summary-v2/Inventory'
@@ -18,10 +18,12 @@ import { VsIhsg } from './broker-summary-v2/VsIhsg'
 import { TimelineForeign } from './broker-summary-v2/TimelineForeign'
 import { Shareholders } from './broker-summary-v2/Shareholders'
 import { Nego } from './broker-summary-v2/Nego'
+import { Quadrant } from './broker-summary-v2/Quadrant'
 
-type Tab = 'overview' | 'inventory' | 'flow' | 'vsihsg' | 'foreign' | 'shareholders' | 'nego'
+type Tab = 'overview' | 'quadrant' | 'inventory' | 'flow' | 'vsihsg' | 'foreign' | 'shareholders' | 'nego'
 const TABS: { id: Tab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
+  { id: 'quadrant', label: 'Quadrant' },
   { id: 'inventory', label: 'Inventory' },
   { id: 'flow', label: 'Flow Net vs Gross' },
   { id: 'vsihsg', label: 'vs IHSG' },
@@ -31,7 +33,6 @@ const TABS: { id: Tab; label: string }[] = [
 ]
 // Tab nonaktif mockup — apa adanya (nama + alasan "menyusul"), bukan dihilangkan.
 const TABS_NONAKTIF = [
-  { label: 'Quadrant', judul: 'menyusul — butuh definisi kuadran' },
   { label: 'Broker Intel', judul: 'menyusul' },
   { label: 'Teknikal', judul: 'menyusul — gabung dengan /grafik' },
 ]
@@ -59,9 +60,11 @@ const MARKET_OPSI: OpsiDropdown[] = [
   // kendali yang mengaku mengganti pasar tapi tak mengubah apa pun, gagal
   // senyap). Datanya SUDAH ada (nego 100% hari 2020–2026, ukur 26 Agu);
   // yang kurang wiring sumbunya. Tab NEGO di halaman ini sudah hidup dan
-  // itu jalur baca nego yang benar hari ini.
-  { nilai: 'nego', label: 'Nego — belum tersedia', nonaktif: true },
-  { nilai: 'semua', label: 'All — belum tersedia', nonaktif: true },
+  // itu jalur baca nego yang benar hari ini — labelnya bilang itu (§B.6
+  // "beri keterangan title kenapa terkunci ATAU singkirkan", Dropdown di
+  // luar cakupan berkas ini jadi keterangannya ditulis di label sendiri).
+  { nilai: 'nego', label: 'Nego — lihat tab NEGO', nonaktif: true },
+  { nilai: 'semua', label: 'All — gabungan pasar belum dihitung', nonaktif: true },
 ]
 
 type PresetId = 'hariini' | 'w1' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1'
@@ -163,6 +166,7 @@ export function BrokerSummaryV2() {
   const hariAktif = useMemo(() => semuaHari.filter(([t]) => t >= dari && t <= akhir), [semuaHari, dari, akhir])
   const agg = useMemo(() => agregatBroker(hariAktif), [hariAktif])
   const ohlcvAktif = useMemo(() => (ohlcv ? irisOhlcv(ohlcv, dari, akhir) : []), [ohlcv, dari, akhir])
+  const vwap = useMemo(() => vwapRentang(ohlcvAktif), [ohlcvAktif])
 
   const namaEmiten = index?.stocks.find((s) => s.ticker === kode)?.name ?? ''
   const hargaKini = ohlcvAktif.length ? ohlcvAktif[ohlcvAktif.length - 1].tutup : null
@@ -258,8 +262,9 @@ export function BrokerSummaryV2() {
           </div>
           <div className="panel-b">
             {tab === 'overview' && <Overview hari={hariAktif} agg={agg} mode={mode} ukuran={ukuran} />}
-            {tab === 'inventory' && <Inventory hari={hariAktif} agg={agg} ohlcv={ohlcvAktif} />}
-            {tab === 'flow' && <FlowNetGross hari={hariAktif} agg={agg} />}
+            {tab === 'quadrant' && <Quadrant agg={agg} vwap={vwap} ukuran={ukuran} />}
+            {tab === 'inventory' && <Inventory hari={hariAktif} agg={agg} ohlcv={ohlcvAktif} ukuran={ukuran} />}
+            {tab === 'flow' && <FlowNetGross hari={hariAktif} agg={agg} mode={mode} ukuran={ukuran} />}
             {tab === 'vsihsg' && <VsIhsg kode={kode} saham={ohlcv ?? []} ihsg={ihsg ?? []} />}
             {tab === 'foreign' && <TimelineForeign bars={ohlcv ?? []} />}
             {tab === 'shareholders' && <Shareholders kode={kode} />}
