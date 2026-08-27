@@ -19,6 +19,10 @@ import { GarisAvgBroker } from '../../lib/dasbor/garisAvgBroker'
 import { BubbleBroker, bubbleOutlierHarian } from '../../lib/dasbor/bubbleBroker'
 import { ProfilHargaChart } from '../../lib/dasbor/profilHargaChart'
 import {
+  BAR_SPACING_MIN, binFootprint, FootprintHarian,
+  type BrokerSel, type KolomFootprint, type SelFootprintWarna,
+} from '../../lib/dasbor/footprintHarian'
+import {
   agregasi4h, agregatSeleksiIntraday, jamWib, muatIntraday1h, tanggalWib,
   type Bar1H, type GalatIntraday, type RingkasIntraday,
 } from '../../lib/dasbor/intradayWhales'
@@ -114,6 +118,10 @@ export default function WhalesPapan() {
   const [bubbleAktif, setBubbleAktif] = useState(false)
   /** Ambang z-score bubble outlier — slider 1–4, bawaan 2,5 (ala whales.id). */
   const [ambangZ, setAmbangZ] = useState(2.5)
+  // W7 footprint — default MATI, hanya mode Harian (spek §1).
+  const [footprintAktif, setFootprintAktif] = useState(false)
+  /** Sel footprint yang sedang di-hover/tap — isi tooltip (spek §1). */
+  const [fpHover, setFpHover] = useState<{ tanggal: string; sel: SelFootprintWarna; x: number; y: number } | null>(null)
   // Empat kuadran, empat batas "tampilkan lagi" — memperluas satu tak boleh
   // ikut memperluas yang lain, keduanya baris broker tapi peringkat berbeda.
   const [batasGrossBeli, setBatasGrossBeli] = useState(PANEL_AWAL)
@@ -132,6 +140,7 @@ export default function WhalesPapan() {
   const avgRef = useRef<GarisAvgBroker | null>(null)
   const profilRef = useRef<ProfilHargaChart | null>(null)
   const bubbleRef = useRef<BubbleBroker | null>(null)
+  const footprintRef = useRef<FootprintHarian | null>(null)
   const seretRef = useRef<{ x0: number; y0: number } | null>(null)
 
   const resetBatas = () => {
@@ -148,6 +157,7 @@ export default function WhalesPapan() {
     setSel(null)
     setSelIntra(null)
     setModeSeleksi(false)
+    setFpHover(null)
     resetBatas()
   }, [kode, tf])
 
@@ -237,17 +247,35 @@ export default function WhalesPapan() {
       const bubble = new BubbleBroker(() => lilinRef.current)
       pane0.attachPrimitive(bubble)
       bubbleRef.current = bubble
+      const footprint = new FootprintHarian(() => lilinRef.current)
+      pane0.attachPrimitive(footprint)
+      footprintRef.current = footprint
     }
     if (import.meta.env.DEV) (el as HTMLDivElement & { __papanChart?: unknown }).__papanChart = chart
     // Pill AVG clickable (Johan 26 Agu: "mgkn clickable"): hitTest primitive
     // menyetorkan `avg:<broker>` ke hoveredObjectId; klik membuka kartu
-    // rincian broker itu di panel.
-    const saatKlik = (p: { hoveredObjectId?: unknown }) => {
-      const id = typeof p.hoveredObjectId === 'string' ? p.hoveredObjectId : ''
-      if (id.startsWith('avg:')) setBrokerPilih(id.slice(4))
+    // rincian broker itu di panel. Sel footprint (`fp:<tanggal>:<i>`) memakai
+    // ID yang sama lewat crosshair-move (hover desktop) DAN klik (tap ponsel).
+    const bacaFp = (id: string) => {
+      const m = id.startsWith('fp:') ? footprintRef.current?.getSel(id) : null
+      return m ?? null
     }
+    const saatGeser = (p: { hoveredObjectId?: unknown; point?: { x: number; y: number } }) => {
+      const id = typeof p.hoveredObjectId === 'string' ? p.hoveredObjectId : ''
+      const m = bacaFp(id)
+      if (m && p.point) setFpHover({ ...m, x: p.point.x, y: p.point.y })
+      else setFpHover((cur) => (cur ? null : cur))
+    }
+    const saatKlik = (p: { hoveredObjectId?: unknown; point?: { x: number; y: number } }) => {
+      const id = typeof p.hoveredObjectId === 'string' ? p.hoveredObjectId : ''
+      if (id.startsWith('avg:')) { setBrokerPilih(id.slice(4)); return }
+      const m = bacaFp(id)
+      if (m && p.point) setFpHover({ ...m, x: p.point.x, y: p.point.y })
+    }
+    chart.subscribeCrosshairMove(saatGeser)
     chart.subscribeClick(saatKlik)
     return () => {
+      chart.unsubscribeCrosshairMove(saatGeser)
       chart.unsubscribeClick(saatKlik)
       chart.remove()
       chartRef.current = null
@@ -257,6 +285,7 @@ export default function WhalesPapan() {
       avgRef.current = null
       profilRef.current = null
       bubbleRef.current = null
+      footprintRef.current = null
     }
   }, [])
 
@@ -372,6 +401,37 @@ export default function WhalesPapan() {
     if (!prim) return
     prim.setData(tf === 'harian' && bubbleAktif ? bubbleOutlierHarian(hari, ambangZ) : [])
   }, [tf, bubbleAktif, ambangZ, hari])
+
+  // W7 — footprint harian: satu kolom per hari, low–high DARI CANDLE (spek
+  // §1) dipecah `binFootprint` per hari broker. Hanya Harian; digambar sekali
+  // per perubahan data, bukan tiap frame (frame hanya memetakan koordinat).
+  useEffect(() => {
+    const prim = footprintRef.current
+    if (!prim) return
+    if (tf !== 'harian' || !footprintAktif || hari.length === 0 || candle.lilin.length === 0) {
+      prim.setData([])
+      return
+    }
+    const petaCandle = new Map(candle.lilin.map((c) => [c.time as string, c]))
+    const data: KolomFootprint[] = []
+    for (const h of hari) {
+      const c = petaCandle.get(h.tanggal)
+      if (!c || h.broker.length === 0) continue
+      const sel = binFootprint(h.broker, c.low, c.high).map((s) => {
+        const dominanBeli = s.broker.reduce<BrokerSel | null>(
+          (m, b) => (b.beliLot > (m?.beliLot ?? 0) ? b : m), null)
+        const dominanJual = s.broker.reduce<BrokerSel | null>(
+          (m, b) => (b.jualLot > (m?.jualLot ?? 0) ? b : m), null)
+        return {
+          ...s,
+          warnaBeli: dominanBeli ? warnaBrokerCanvas(dominanBeli.kode) : 'rgba(48,164,108,0.7)',
+          warnaJual: dominanJual ? warnaBrokerCanvas(dominanJual.kode) : 'rgba(229,72,77,0.7)',
+        }
+      })
+      data.push({ tanggal: h.tanggal, sel })
+    }
+    prim.setData(data)
+  }, [tf, footprintAktif, hari, candle])
 
   // ── seret memilih (hanya saat mode seleksi aktif) ────────────────────────
   const keNilai = (x: number, y: number): { t: string | number; harga: number } | null => {
@@ -585,6 +645,39 @@ export default function WhalesPapan() {
         >
           Bubble
         </button>
+        {/* W7 footprint — HANYA mode Harian, disembunyikan (bukan disabled)
+            di intraday karena datanya memang tak ada di sana (spek §1). */}
+        {tf === 'harian' && (
+          <button
+            type="button"
+            className={`chip-t${footprintAktif ? ' on' : ''}`}
+            aria-pressed={footprintAktif}
+            title="Sel per level harga: broker ditempatkan di harga rata-rata beli/jualnya hari itu — hampiran, bukan rincian transaksi per level"
+            onClick={() => setFootprintAktif((v) => {
+              const nyala = !v
+              // Sel footprint baru terbaca saat kolom cukup lebar; pada zoom
+              // setahun tingginya < 1px (primitive memang menolak menggambar
+              // di bawah BAR_SPACING_MIN). Saat dinyalakan dari zoom jauh,
+              // sempitkan pandangan ke ±45 bar terakhir supaya yang menyala
+              // langsung TERLIHAT — bukan toggle yang tampak mati.
+              const chart = chartRef.current
+              if (nyala && chart) {
+                const skala = chart.timeScale()
+                const n = candle.lilin.length
+                // Jumlah bar target DIHITUNG dari lebar nyata pane — konstanta
+                // (45 bar) gagal di ponsel: 330px ÷ 46 bar ≈ 7px < ambang,
+                // toggle menyala tapi primitive tetap menolak menggambar.
+                const muat = Math.max(10, Math.floor(skala.width() / (BAR_SPACING_MIN * 1.3)) - 2)
+                if (skala.options().barSpacing < BAR_SPACING_MIN && n > 0) {
+                  skala.setVisibleLogicalRange({ from: Math.max(0, n - muat), to: n + 2 })
+                }
+              }
+              return nyala
+            })}
+          >
+            Footprint
+          </button>
+        )}
         {bubbleAktif && tf === 'harian' && (
           <label className="wp-z muted">
             z ≥ {ambangZ.toFixed(1)}
@@ -626,6 +719,42 @@ export default function WhalesPapan() {
                 onPointerCancel={onUp}
               />
             )}
+            {/* Tooltip sel footprint (spek §1: hover desktop, tap ponsel —
+                dua-duanya menyetor lewat hoveredObjectId chart). */}
+            {footprintAktif && fpHover && (() => {
+              const lebar = bungkusRef.current?.clientWidth ?? 0
+              const kanan = lebar > 0 && fpHover.x > lebar / 2
+              const s = fpHover.sel
+              return (
+                <div
+                  className="wp-fp-tip"
+                  style={{
+                    left: kanan ? undefined : fpHover.x + 14,
+                    right: kanan ? lebar - fpHover.x + 14 : undefined,
+                    top: Math.max(8, fpHover.y - 10),
+                  }}
+                >
+                  <div className="wp-fp-tip-judul">
+                    {fpHover.tanggal} · {Math.round(s.hargaBawah).toLocaleString('id-ID')}–{Math.round(s.hargaAtas).toLocaleString('id-ID')}
+                  </div>
+                  <div className="wp-fp-tip-total">
+                    <span className="wp-plus">+{lotRingkas(s.beliLot)} lot</span>
+                    {' · '}
+                    <span className="wp-minus">{lotRingkas(s.jualLot)} lot</span>
+                  </div>
+                  {s.broker.slice(0, 8).map((b) => (
+                    <div className="wp-fp-tip-baris" key={b.kode}>
+                      <span style={{ color: warnaBrokerCanvas(b.kode) }}>{b.kode}</span>
+                      <span>{b.beliLot ? `+${lotRingkas(b.beliLot)}` : '—'}</span>
+                      <span>{b.jualLot ? `-${lotRingkas(b.jualLot)}` : '—'}</span>
+                    </div>
+                  ))}
+                  {s.broker.length > 8 && (
+                    <div className="muted">+{s.broker.length - 8} broker lain</div>
+                  )}
+                </div>
+              )
+            })()}
           </div>
 
           {/* Rincian broker dari klik pill AVG — modal kanonis, bukan kartu
@@ -806,6 +935,12 @@ export default function WhalesPapan() {
                   Bubble menandai broker yang net hariannya menyimpang jauh dari
                   sebaran seluruh broker hari itu; ambangnya kendali di tanganmu,
                   bukan penilaian kami.
+                </li>
+                <li>
+                  Footprint harian menempatkan tiap broker di harga rata-rata
+                  belinya/jualnya hari itu — bukan rincian transaksi per level
+                  harga. Hanya papan reguler; tidak ada sisi agresor (bukan
+                  HAKA/HAKI).
                 </li>
                 <li>
                   Mode <strong>4H/1H</strong> hanya mencakup ±90 hari terakhir —

@@ -198,6 +198,30 @@
   color: var(--text3);
 }
 
+/* Tooltip sel footprint (W7) — pola sama dengan `.grf-dot-tip` di
+   GrafikEmiten.css: mengikuti kursor, tak menangkap pointer. */
+.wp-fp-tip {
+  position: absolute;
+  z-index: 40;
+  max-width: 260px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--card);
+  box-shadow: 0 6px 18px -8px rgba(0, 0, 0, .5);
+  font-size: 11px;
+  line-height: 1.5;
+  pointer-events: none;
+}
+.wp-fp-tip-judul { font-weight: 600; margin-bottom: 2px; }
+.wp-fp-tip-total { color: var(--text3); margin-bottom: 4px; }
+.wp-fp-tip-baris {
+  display: grid;
+  grid-template-columns: 34px 1fr 1fr;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
 .wp-kosong {
   padding: 26px 12px;
   text-align: center;
