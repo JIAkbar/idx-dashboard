@@ -275,7 +275,7 @@ export function Radar() {
   return (
     <div className="lantai">
       <div className="vhead" style={{ justifyContent: 'space-between' }}>
-        <div>
+        <div className="vhead-kiri">
           <h1>Radar Watchlist</h1>
           <span className="sub">arsip WD Watch List — satu edisi per tanggal, skor dari arsip sendiri</span>
         </div>

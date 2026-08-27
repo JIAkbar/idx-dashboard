@@ -235,7 +235,7 @@ export function StatistikBerkala() {
   const kepala = (
     <>
     <div className="vhead stb-head">
-      <div>
+      <div className="vhead-kiri">
         <h1>Statistik {jenis === 'minggu' ? 'Mingguan' : 'Bulanan'}</h1>
         <span className="sub">
           rekap satu {kataPeriode} bursa — tiap angka berpasangan dengan {kataPeriode} sebelumnya

@@ -215,10 +215,8 @@ export function Screener() {
   return (
     <div className="lantai">
       <div className="vhead">
-        <div>
-          <h1>Screener</h1>
-          <span className="sub">{data.n} emiten, satu baris per emiten — saring, urutkan, cari.</span>
-        </div>
+        <h1>Screener</h1>
+        <span className="sub">{data.n} emiten, satu baris per emiten — saring, urutkan, cari.</span>
       </div>
       <CatatanCakupan />
 

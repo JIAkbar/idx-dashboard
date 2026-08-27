@@ -276,10 +276,8 @@ export function Watchlist() {
   return (
     <div className="lantai">
       <div className="vhead">
-        <div>
-          <h1>Watchlist</h1>
-          <span className="sub">Daftar pantau yang bergerak mengikuti harga harian — isi harga milik untuk melihat untung-rugi.</span>
-        </div>
+        <h1>Watchlist</h1>
+        <span className="sub">Daftar pantau yang bergerak mengikuti harga harian — isi harga milik untuk melihat untung-rugi.</span>
       </div>
       <CatatanCakupan />
 

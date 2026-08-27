@@ -151,10 +151,8 @@ export function HarianPapan() {
   return (
     <div className="lantai">
       <div className="vhead">
-        <div>
-          <h1>Harian Papan</h1>
-          <span className="sub">Peringkat harian satu bursa — Stock Gainer, Net Buy/Sell Foreign.</span>
-        </div>
+        <h1>Harian Papan</h1>
+        <span className="sub">Peringkat harian satu bursa — Stock Gainer, Net Buy/Sell Foreign.</span>
       </div>
       <CatatanCakupan />
 

@@ -814,6 +814,11 @@
 .lantai .vhead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .lantai .vhead h1{margin:0;font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.02em}
 .lantai .vhead .sub{font-family:var(--ui);font-size:11px;color:var(--text3)}
+/* Sisi kiri vhead dua-sisi (Radar, Statistik Berkala): judul + sub tetap
+   SEBARIS seperti vhead biasa — pembungkus polos menjatuhkan sub ke baris
+   kedua dan menambah ±19px tinggi header (sweep 27 Agu, permintaan Johan
+   "header nya seperti buang bnyk space"). */
+.lantai .vhead-kiri{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 
 /* panels */
 .lantai .panel{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r)}
@@ -875,7 +880,14 @@
 /* CatatanCakupan — keterangan cakupan data (2026 tervalidasi, sebelumnya
    masih penyesuaian), satu komponen dipakai ulang (components/dasbor/
    CatatanCakupan.tsx). Baris tipis, ikon + teks, gaya sama dgn .konteks-data. */
-.lantai .catatan-cakupan{display:flex;align-items:center;gap:6px;font-size:11px;margin:0 0 10px;line-height:1.4}
+.lantai .catatan-cakupan{display:flex;align-items:center;gap:6px;font-size:11px;margin:0;line-height:1.4}
+/* Rapatkan baris keterangan ke elemen header di atasnya — gap flex .lantai
+   16px lega untuk konten, kebesaran untuk keterangan header (sweep 27 Agu,
+   Johan: "header nya seperti buang bnyk space"). HANYA lewat adjacency:
+   margin negatif global memotong halaman yang catatannya anak pertama. */
+.lantai .vhead+.catatan-cakupan,
+.lantai .konteks-data+.catatan-cakupan,
+.lantai .vhead+.konteks-data{margin-top:-8px}
 
 
 

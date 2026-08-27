@@ -79,10 +79,8 @@ export function IpoAnalysis() {
   return (
     <div className="lantai">
       <div className="vhead">
-        <div>
-          <h1>IPO Papan</h1>
-          <span className="sub">{data.n} emiten tercatat sejak listing perdana, dengan rapor penjamin emisi.</span>
-        </div>
+        <h1>IPO Papan</h1>
+        <span className="sub">{data.n} emiten tercatat sejak listing perdana, dengan rapor penjamin emisi.</span>
       </div>
       <KonteksData tanggal={data.tanggal} />
 

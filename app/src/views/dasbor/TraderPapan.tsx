@@ -166,11 +166,10 @@ export default function TraderPapan() {
 
   return (
     <div className="lantai">
-      <h2>Trader Papan</h2>
-      <p className="muted tp-intro">
-        Posisi tiap broker pada satu emiten: berapa rata-rata harga belinya, seberapa
-        murah ia pernah menampung, dan bagaimana arahnya belakangan.
-      </p>
+      <div className="vhead">
+        <h1>Trader Papan</h1>
+        <span className="sub">posisi tiap broker pada satu emiten — rata-rata harga beli, seberapa murah pernah menampung, arahnya belakangan</span>
+      </div>
 
       <CatatanCakupan />
 

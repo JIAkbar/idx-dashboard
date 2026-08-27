@@ -69,10 +69,8 @@ export function AliranAsing() {
   return (
     <div className="lantai">
       <div className="vhead">
-        <div>
-          <h1>Aliran Asing</h1>
-          <span className="sub">Emiten diurut net asing — pilih baris untuk arus harian, grafik kumulatif, dan persentilnya.</span>
-        </div>
+        <h1>Aliran Asing</h1>
+        <span className="sub">Emiten diurut net asing — pilih baris untuk arus harian, grafik kumulatif, dan persentilnya.</span>
       </div>
       <CatatanCakupan />
 
