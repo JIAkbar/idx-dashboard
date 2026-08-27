@@ -16,7 +16,7 @@ import { DropdownMulti, type OpsiMulti } from '../../../components/dasbor/Dropdo
 import { useTheme } from '../../../context/ThemeContext'
 import { anggotaKelompok, kelompokBroker, namaBroker } from '../../../lib/dasbor/kelompokBroker'
 import { PERINGATAN_PRA_BROKER, praBroker } from '../../../lib/dasbor/brokerEmitenV2'
-import { LABEL_KATEGORI, useKategoriBroker, type KategoriBroker } from '../../../lib/dasbor/kategoriBroker'
+import { KETERANGAN_KATEGORI, LABEL_KATEGORI, useKategoriBroker, type KategoriBroker } from '../../../lib/dasbor/kategoriBroker'
 import { bacaTokenTema } from '../../../lib/dasbor/useChartJs'
 import { fmtB, num, pct, TOKEN_SERI, OPSI_RENTANG_NP, potongRentang, Kosong, Sumber, type RentangNp } from './bersama'
 
@@ -491,7 +491,7 @@ export function InventoryTab({ kode }: { kode: string }) {
         <p className="np-sub">
           Skor harian per kategori perilaku broker: tanda net kategori (naik/turun) × jumlah broker kategori itu yang net searah hari itu —
           penjumlahan tanda, BUKAN skor komposit.
-          {daftarKategori && ` Kategori = kurasi PAPAN dari perilaku terukur 120 hari bursa per ${daftarKategori.dibangun.slice(0, 10)} (porsi nilai pasar × keteguhan arah net) — bukan penggolongan resmi bursa, bukan klaim kepintaran.`}
+          {daftarKategori && ` ${KETERANGAN_KATEGORI} Dibangun per ${daftarKategori.dibangun.slice(0, 10)}.`}
         </p>
         {!daftarKategori && <Kosong>Memuat kategori broker…</Kosong>}
         {daftarKategori && tanggalSkor.length === 0 && <Kosong>Belum ada data broker harian untuk strip ini.</Kosong>}

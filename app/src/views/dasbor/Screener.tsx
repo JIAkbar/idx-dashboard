@@ -428,6 +428,13 @@ function PanelPresetWhale({ presetAktif, presetId, setPresetId, hasil, petaBaris
           ))}
         </div>
         <p className="muted" style={{ margin: 0 }}>{presetAktif.ringkas}</p>
+        {/* Satu kata dua sistem (temuan pengawas 27 Agu): "Whale" preset ini
+            = ukuran transaksi; kategori perilaku broker di Broker Summary
+            ("Porsi x Arah") dasarnya berbeda. Sebut sekali di panel. */}
+        <p className="muted" style={{ margin: '4px 0 0', fontSize: 12 }}>
+          Kata "Whale" di sini menunjuk ukuran transaksi (tiket besar / porsi asing) - bukan kategori
+          perilaku broker "Porsi x Arah" di Broker Summary; dua saringan dengan dasar berbeda.
+        </p>
         <span className="muted scr-jumlah">{hasil.length} emiten dengan ≥1 kriteria terpenuhi{tanggal ? ` · data ${tanggal}` : ''}</span>
       </div>
 

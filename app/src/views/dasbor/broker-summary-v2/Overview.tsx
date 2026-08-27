@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import type { AgregatBroker, HariBroker, ModeTransaksi } from '../../../lib/dasbor/brokerEmiten'
 import { arusHarian, floorPriceBroker, tabelDuaSisi } from '../../../lib/dasbor/brokerEmiten'
 import { ringkasSB, analisaKelompok, konsensusKategori } from '../../../lib/dasbor/brokerEmitenV2'
-import { useKategoriBroker } from '../../../lib/dasbor/kategoriBroker'
+import { KETERANGAN_KATEGORI, useKategoriBroker } from '../../../lib/dasbor/kategoriBroker'
 import { warnaBroker, warnaKelompok, namaBroker, LABEL_KELOMPOK } from '../../../lib/dasbor/kelompokBroker'
 import { fmtB, fmtLot } from '../../../lib/dasbor/brokerSummaryFormat'
 import { labelTanggal } from '../../../lib/dasbor/brokerHarian'
@@ -276,7 +276,7 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
             </div>
           )}
           <p className="lbl" style={{ marginTop: 10, textTransform: 'none', letterSpacing: 0 }}>
-            Kategori = kurasi PAPAN dari perilaku terukur 120 hari bursa (porsi nilai pasar × keteguhan arah net) — bukan penggolongan resmi bursa, bukan klaim kepintaran; satu broker bisa pindah kategori seiring waktu.
+            {KETERANGAN_KATEGORI} Satu broker bisa pindah kategori seiring waktu.
             {daftarKategori && ` Dibangun ${labelTanggal(daftarKategori.dibangun.slice(0, 10))}.`}
           </p>
         </div>
