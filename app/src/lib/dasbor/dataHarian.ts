@@ -167,6 +167,20 @@ export interface DataHarian {
   [key: string]: unknown
 }
 
+/**
+ * Hari RESMI terakhir pada atau sebelum `iso` — dipakai fallback panel Top
+ * Stocks (P1, 27 Agu) saat hari aktif masih sementara supaya panel peringkat
+ * tidak membisu. Disaring pakai `sumber` (bukan `sementara`): index-level
+ * `sementara` cuma ikut ditulis untuk hari BERJALAN, sementara hari cadangan
+ * LAMPAU yang belum tertimpa PDF resmi tetap membawa `sumber:'yahoo'` tanpa
+ * `sementara` — dan hari begitu juga cuma punya ruas IHSG (panel kosong).
+ * `null` kalau tak ada.
+ */
+export function cariHariResmiTerakhir(tanggalTersedia: TanggalIndex[], iso: string): TanggalIndex | null {
+  const resmi = tanggalTersedia.filter((t) => !t.sumber && t.date_iso <= iso)
+  return resmi.length ? resmi[resmi.length - 1] : null
+}
+
 /** Cache di memori per-stem — pindah tanggal balik lagi tidak fetch ulang. */
 const cache = new Map<string, DataHarian>()
 

@@ -300,6 +300,32 @@ export function KuliPapan() {
             <div className="kp-kosong">Isi Buy Avg, Bid, Offer, dan Tick untuk menghitung.</div>
           )}
 
+          <details className="kp-tutor">
+            <summary>Cara pakai</summary>
+            <ol>
+              <li>
+                <b>Broker, Buy Avg, Lot bandar, Bid, Offer, Tick</b> terisi otomatis dari rincian
+                broker harian dan antrean penutupan bursa begitu emiten dipilih — ganti broker di
+                dropdown kalau mau lihat bandar lain.
+              </li>
+              <li>
+                <b>Total Bid (lot) dan Total Offer (lot) wajib diisi tangan</b> dari orderbook
+                aplikasi sekuritasmu. Yang terisi otomatis hanya antrean di level harga terbaik
+                saat tutup — bukan seluruh antrean, karena itu tidak tersedia publik di sumber
+                mana pun.
+              </li>
+              <li>
+                <b>Target Low/High</b> itu hasil rumus di atas (Buy Avg + Baseline + dorongan
+                papan × tick) — hitungan mekanis, bukan rekomendasi beli/jual.
+              </li>
+              <li>
+                Hati-hati kalau: <b>Baseline (%)</b> disetel terlalu besar (target ikut melar),
+                atau rincian broker yang dipakai masih <b>data kemarin (D-1)</b> — cek tanggal di
+                keterangan Sumber di bawah sebelum dipakai.
+              </li>
+            </ol>
+          </details>
+
           <Sumber>
             Buy Avg &amp; Buy Lot dari rincian broker harian
             {brokerHari ? ` (${brokerHari.tanggal})` : ''}, pasar reguler seluruh investor.
@@ -380,6 +406,26 @@ export function KuliPapan() {
           ) : (
             <div className="kp-kosong">Isi harga, BVPS, dan P/B band untuk menghitung.</div>
           )}
+
+          <details className="kp-tutor">
+            <summary>Cara pakai</summary>
+            <ol>
+              <li>
+                <b>Harga pasar, BVPS, P/B band</b> terisi otomatis dari harga penutupan dan
+                ringkasan rasio keuangan emiten begitu dipilih — boleh diubah tangan untuk
+                simulasi skenario lain.
+              </li>
+              <li>
+                <b>Harga wajar</b> = BVPS × P/B band. <b>MOS (margin of safety)</b> menandai
+                beberapa harga di bawah harga wajar sebagai area beli bertahap — bukan sinyal beli.
+              </li>
+              <li>
+                Hati-hati kalau: P/B band dipakai apa adanya tanpa cek keterangan P/B tahunan di
+                bawah — kalau tahunnya cuma sedikit atau menyimpang jauh dari PBV kini, rata-ratanya
+                gampang menyesatkan.
+              </li>
+            </ol>
+          </details>
 
           <Sumber>
             BVPS dan PBV berjalan dari ringkasan rasio keuangan emiten. P/B tahunan dari

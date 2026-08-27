@@ -84,4 +84,18 @@ describe('posisiBroker', () => {
   it('net seluruh broker saling meniadakan — pembilang dan penyebut satu rumah', () => {
     expect(r.baris.reduce((s, b) => s + b.netLot, 0)).toBe(0)
   })
+
+  it('nilaiTotal = beli + jual (bukan net) — dasar Porsi', () => {
+    // CC hanya beli sepanjang H: 7.200.000+5.700.000+4.000.000+2.100.000 = 19.000.000
+    expect(cari('CC').nilaiTotal).toBeCloseTo(19_000_000, 6)
+    // XL hanya jual: sama nilainya karena tiap hari CC beli persis sebesar XL jual
+    expect(cari('XL').nilaiTotal).toBeCloseTo(19_000_000, 6)
+  })
+
+  it('totalNilaiPasar = jumlah nilaiTotal seluruh broker — penyebut Porsi', () => {
+    const jumlah = r.baris.reduce((s, b) => s + b.nilaiTotal, 0)
+    expect(r.totalNilaiPasar).toBeCloseTo(jumlah, 6)
+    // Porsi CC pada rentang ini: 19.000.000 / totalNilaiPasar
+    expect(cari('CC').nilaiTotal / r.totalNilaiPasar).toBeCloseTo(19_000_000 / jumlah, 6)
+  })
 })

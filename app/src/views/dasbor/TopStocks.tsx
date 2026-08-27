@@ -1,9 +1,9 @@
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { Kalender, fmtTanggalPendek } from '../../components/dasbor/Kalender'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
-import { useDataHarian, useDataRentang } from '../../lib/dasbor/dataHarian'
+import { useDataHarian, useDataRentang, fetchHari, cariHariResmiTerakhir, type DataHarian } from '../../lib/dasbor/dataHarian'
 import type { RentangTanggal } from '../../lib/dasbor/periode'
 import { useUrut } from '../../lib/dasbor/useUrut'
 import { fN, fp } from '../../lib/dasbor/format'
@@ -90,25 +90,49 @@ export function TopStocks() {
     }
     return { vol, val, frek, n }
   }, [days])
-  /** Tanggal yang benar-benar sedang ditampilkan. Judul panel dulu tertulis
-   *  "Hari Ini", padahal strip kalender membiarkan pembaca menggeser ke
-   *  tanggal mana pun — dan begitu digeser, judulnya berbohong. Menyebut
-   *  tanggalnya juga menjawab pertanyaan yang wajar muncul pada data delay:
-   *  ini angka kapan? */
-  const labelTanggal = tanggalAktif ? fmtTanggalPendek(tanggalAktif) : ''
-
   const ihsgMulai = rentang ? tanggalTersedia.find((t) => t.date_iso === rentang.mulai)?.ihsg : undefined
   const ihsgAkhir = rentang ? tanggalTersedia.find((t) => t.date_iso === rentang.akhir)?.ihsg : undefined
   const ihsgPctRentang = ihsgMulai && ihsgAkhir ? (ihsgAkhir / ihsgMulai - 1) * 100 : null
 
+  // Fallback P1 (27 Agu): hari.sementara = ruas peringkat cuma berisi IHSG
+  // (cadangan Yahoo minimal) — panel-panel di bawah pakai hari RESMI terakhir
+  // sebelum tanggalAktif, bukan array kosong yang membisu.
+  const tglResmiTerakhir = useMemo(() => {
+    if (!hari?.sementara || !tanggalAktif) return null
+    return cariHariResmiTerakhir(tanggalTersedia, tanggalAktif)
+  }, [hari?.sementara, tanggalAktif, tanggalTersedia])
+  const [hariResmi, setHariResmi] = useState<DataHarian | null>(null)
+  useEffect(() => {
+    if (!tglResmiTerakhir) {
+      setHariResmi(null)
+      return
+    }
+    let batal = false
+    fetchHari(tglResmiTerakhir.stem).then((d) => { if (!batal) setHariResmi(d) })
+    return () => { batal = true }
+  }, [tglResmiTerakhir])
+  // Selama hari.sementara, panelHari = hari resmi terakhir (kalau sudah
+  // termuat); sebelum termuat pakai `hari` apa adanya (array kosong) supaya
+  // tidak flash-error — banner di bawah tetap menjelaskan keadaannya.
+  const panelHari = hari?.sementara ? (hariResmi ?? hari) : hari
+  /** Tanggal yang benar-benar sedang ditampilkan di panel. Judul panel dulu
+   *  tertulis "Hari Ini", padahal strip kalender membiarkan pembaca menggeser
+   *  ke tanggal mana pun — dan begitu digeser, judulnya berbohong. Saat
+   *  fallback P1 aktif, ini WAJIB tanggal panel yang benar-benar dirender
+   *  (hari resmi terakhir), bukan tanggalAktif — banner sudah bilang
+   *  keduanya beda, label di bawahnya jangan menyangkalnya. */
+  const labelTanggal = hari?.sementara
+    ? (tglResmiTerakhir ? fmtTanggalPendek(tglResmiTerakhir.date_iso) : '')
+    : (tanggalAktif ? fmtTanggalPendek(tanggalAktif) : '')
+
   // Hooks dipanggil tanpa syarat sebelum return dini loading/error (Rules of
   // Hooks) — pola sama dengan SektorIndeks.tsx.
-  const gainersS = useUrut<StockMoveRow>(hari?.gainers ?? [], 'p')
-  const losersS = useUrut<StockMoveRow>(hari?.losers ?? [], 'p')
-  const leadersTodayS = useUrut<StockContribRow>(hari?.leaders_today ?? [], 'ih')
-  const leadersYtdS = useUrut<StockContribRow>(hari?.leaders_ytd ?? [], 'ih')
-  const laggardsTodayS = useUrut<StockContribRow>(hari?.laggards_today ?? [], 'ih')
-  const laggardsYtdS = useUrut<StockContribRow>(hari?.laggards_ytd ?? [], 'ih')
+  const gainersS = useUrut<StockMoveRow>(panelHari?.gainers ?? [], 'p')
+  const losersS = useUrut<StockMoveRow>(panelHari?.losers ?? [], 'p')
+  const leadersTodayS = useUrut<StockContribRow>(panelHari?.leaders_today ?? [], 'ih')
+  const leadersYtdS = useUrut<StockContribRow>(panelHari?.leaders_ytd ?? [], 'ih')
+  const laggardsTodayS = useUrut<StockContribRow>(panelHari?.laggards_today ?? [], 'ih')
+  const laggardsYtdS = useUrut<StockContribRow>(panelHari?.laggards_ytd ?? [], 'ih')
 
   if (loading && !hari) {
     return (
@@ -134,7 +158,7 @@ export function TopStocks() {
     )
   }
 
-  const mcap = hari.mcap ?? []
+  const mcap = panelHari?.mcap ?? []
   const mx = mcap[0]?.v || 1
 
   const contribRow = (x: StockContribRow, dir: 'up' | 'dn') => (
@@ -152,6 +176,19 @@ export function TopStocks() {
       <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
       <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
       <CatatanCakupan />
+
+      {hari.sementara && (
+        <div className="chip warn" style={{ display: 'flex', whiteSpace: 'normal', height: 'auto', lineHeight: 1.5 }}>
+          <span>
+            <IkonMenu d={IKON_PERINGATAN} size={14} />{' '}
+            {tglResmiTerakhir ? (
+              <>Statistik resmi bursa untuk <strong>{hari.date_id}</strong> belum terbit — panel di bawah menampilkan data resmi terakhir (<strong>{fmtTanggalPendek(tglResmiTerakhir.date_iso)}</strong>).</>
+            ) : (
+              <>Statistik resmi bursa untuk <strong>{hari.date_id}</strong> belum terbit, dan belum ada hari resmi sebelumnya untuk ditampilkan.</>
+            )}
+          </span>
+        </div>
+      )}
 
       {rentang && (
         <div className="panel">

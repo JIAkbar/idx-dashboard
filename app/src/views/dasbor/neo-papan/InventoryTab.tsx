@@ -18,6 +18,7 @@ import { anggotaKelompok, kelompokBroker, namaBroker } from '../../../lib/dasbor
 import { PERINGATAN_PRA_BROKER, praBroker } from '../../../lib/dasbor/brokerEmitenV2'
 import { KETERANGAN_KATEGORI, LABEL_KATEGORI, useKategoriBroker, type KategoriBroker } from '../../../lib/dasbor/kategoriBroker'
 import { bacaTokenTema } from '../../../lib/dasbor/useChartJs'
+import { warnaGrid, gridDariTemplate, GRID_BAWAAN, type SetelanGrid } from '../../../lib/dasbor/grafikEmiten'
 import { fmtB, num, pct, TOKEN_SERI, OPSI_RENTANG_NP, potongRentang, Kosong, Sumber, type RentangNp } from './bersama'
 
 /** Sparkline net harian — batang mini (pola sama `Spark` di StalkerTab.tsx;
@@ -81,6 +82,17 @@ export function InventoryTab({ kode }: { kode: string }) {
    *  dari `tahunan` (yang jendelanya ikut chip Rentang chart). */
   const [posisiData, setPosisiData] = useState<{ kunci: string; tanggal: string[]; hari: Record<string, { broker: BarisPosisiHari[] }> } | null>(null)
   const daftarKategori = useKategoriBroker()
+  // Grid chart — pola sama GrafikEmiten (B33): sakelar + keburaman, bawaan
+  // redup 30% (chart ini padat: candle + volume + hingga 8 garis kumulatif).
+  const [grid, setGrid] = useState<SetelanGrid>(() => {
+    try {
+      const v = localStorage.getItem('papan-grid-inventory')
+      return v ? gridDariTemplate(JSON.parse(v)) : { ...GRID_BAWAAN, alfa: 0.3 }
+    } catch { return { ...GRID_BAWAAN, alfa: 0.3 } }
+  })
+  useEffect(() => {
+    try { localStorage.setItem('papan-grid-inventory', JSON.stringify(grid)) } catch { /* storage penuh/privat */ }
+  }, [grid])
 
   const bungkusRef = useRef<HTMLDivElement | null>(null)
   const chartRef = useRef<IChartApi | null>(null)
@@ -291,11 +303,15 @@ export function InventoryTab({ kode }: { kode: string }) {
     if (!el || !chart) return
     const gaya = getComputedStyle(el)
     const c = (v: string, cad: string) => (gaya.getPropertyValue(v) || '').trim() || cad
+    const line = c('--line', '#24262E')
     chart.applyOptions({
       layout: { textColor: c('--text2', '#9CA0AC') },
-      grid: { vertLines: { color: c('--line', '#24262E') }, horzLines: { color: c('--line', '#24262E') } },
+      grid: {
+        vertLines: { color: warnaGrid(line, grid.alfa), visible: grid.tampil },
+        horzLines: { color: warnaGrid(line, grid.alfa), visible: grid.tampil },
+      },
     })
-  }, [theme])
+  }, [theme, grid])
 
   useEffect(() => {
     const chart = chartRef.current
@@ -381,6 +397,30 @@ export function InventoryTab({ kode }: { kode: string }) {
             title={id === 'asing' ? 'Investor-type klien luar negeri — bukan identitas kepemilikan sekuritas' : undefined}
             onClick={() => setInvestor(id)}>{label}</button>
         ))}
+        <button
+          type="button"
+          className={'chip-t' + (grid.tampil ? ' on' : '')}
+          aria-pressed={grid.tampil}
+          title={grid.tampil ? 'Sembunyikan garis bantu' : 'Tampilkan garis bantu'}
+          onClick={() => setGrid((g) => ({ ...g, tampil: !g.tampil }))}
+        >
+          Grid
+        </button>
+        {grid.tampil && (
+          <label className="np-lbl" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, textTransform: 'none' }} title="Keburaman garis bantu">
+            {Math.round(grid.alfa * 100)}%
+            <input
+              type="range"
+              min={10}
+              max={100}
+              step={5}
+              value={Math.round(grid.alfa * 100)}
+              onChange={(e) => setGrid((g) => ({ ...g, alfa: Number(e.target.value) / 100 }))}
+              aria-label="Keburaman garis bantu, persen"
+              style={{ accentColor: 'var(--accent)', cursor: 'pointer' }}
+            />
+          </label>
+        )}
       </div>
       <div className="np-baris">
         <span className="np-lbl">Broker</span>

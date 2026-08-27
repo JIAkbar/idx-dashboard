@@ -5,8 +5,9 @@ import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useBrokerTahunan } from '../../lib/dasbor/brokerTahunanData'
-import { warnaBrokerCanvas } from '../../lib/dasbor/kelompokBroker'
+import { warnaBrokerCanvas, kelompokBroker } from '../../lib/dasbor/kelompokBroker'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
+import { useUrut } from '../../lib/dasbor/useUrut'
 import {
   hariRentang, posisiBroker, TEKS_STATUS,
   type PosisiBroker, type StatusBroker,
@@ -35,6 +36,16 @@ const RENTANG = [
 ] as const
 type IdRentang = (typeof RENTANG)[number]['id']
 
+/** Saring identitas broker — 'asing' persis kelompok `kelompokBroker.ts`,
+ *  'domestik' semua kelompok lain (bumn/smart/ritel/afiliasi/lain digabung —
+ *  penguji minta "asing vs domestik", bukan enam kelompok sekaligus). */
+const FILTER_KELOMPOK = [
+  { id: 'semua', label: 'Semua' },
+  { id: 'asing', label: 'Asing' },
+  { id: 'domestik', label: 'Domestik' },
+] as const
+type IdFilterKelompok = (typeof FILTER_KELOMPOK)[number]['id']
+
 const HARI_MUNDUR: Record<Exclude<IdRentang, 'semua'>, number> = {
   b1: 30, b3: 91, b6: 182, y1: 365,
 }
@@ -60,6 +71,24 @@ function lotRingkas(n: number): string {
 }
 function harga(n: number | null): string {
   return n == null ? '—' : Math.round(n).toLocaleString('id-ID')
+}
+
+/** Kepala kolom yang bisa diurut dua arah — pola sama Screener.tsx `thSort`,
+ *  disalin bukan diimpor karena `keyof`-nya beda (PosisiBroker vs BarisGab). */
+type UrutStateBroker = {
+  kunci: keyof PosisiBroker
+  arah: 'naik' | 'turun'
+  klik: (k: keyof PosisiBroker) => void
+}
+function thSort(s: UrutStateBroker, k: keyof PosisiBroker, label: string) {
+  const aktif = s.kunci === k
+  return (
+    <th className="tp-n">
+      <button type="button" className="th-sort" onClick={() => s.klik(k)}>
+        {label}{aktif ? (s.arah === 'naik' ? ' ▲' : ' ▼') : ''}
+      </button>
+    </th>
+  )
 }
 
 const KELAS_STATUS: Record<StatusBroker, string> = {
@@ -95,10 +124,11 @@ export default function TraderPapan() {
   const [ketik, setKetik] = useState('BBCA')
   const [kode, setKode] = useState('BBCA')
   const [rentang, setRentang] = useState<IdRentang>('b3')
+  const [filterKelompok, setFilterKelompok] = useState<IdFilterKelompok>('semua')
   const [batasBaris, setBatasBaris] = useState(BARIS_AWAL)
 
   const { hari, tahunAda, muat, galat } = useBrokerTahunan(kode)
-  useEffect(() => { setBatasBaris(BARIS_AWAL) }, [kode, rentang])
+  useEffect(() => { setBatasBaris(BARIS_AWAL) }, [kode, rentang, filterKelompok])
 
   const hasil = useMemo(() => {
     if (hari.length === 0) return null
@@ -109,7 +139,30 @@ export default function TraderPapan() {
     return posisiBroker(hariRentang(hari, d.toISOString().slice(0, 10), akhir))
   }, [hari, rentang])
 
-  const tampil = hasil?.baris.slice(0, batasBaris) ?? []
+  const barisSaring = useMemo(() => {
+    if (!hasil) return []
+    if (filterKelompok === 'semua') return hasil.baris
+    return hasil.baris.filter(
+      (b) => (kelompokBroker(b.kode) === 'asing') === (filterKelompok === 'asing'),
+    )
+  }, [hasil, filterKelompok])
+
+  const s = useUrut(barisSaring, 'netNilai', 'turun')
+  const tampil = s.urut.slice(0, batasBaris)
+
+  // Broker berporsi terbesar per sisi (net beli / net jual) — dihitung dari
+  // SELURUH broker emiten (bukan hasil saring "Asing/Domestik"), supaya
+  // badge-nya tetap menjawab "siapa terbesar di pasar ini", bukan berubah
+  // makna tiap kali chip identitas diganti.
+  const porsiTerbesar = useMemo(() => {
+    let beli: PosisiBroker | null = null
+    let jual: PosisiBroker | null = null
+    for (const b of hasil?.baris ?? []) {
+      if (b.netLot >= 0) { if (!beli || b.nilaiTotal > beli.nilaiTotal) beli = b }
+      else if (!jual || b.nilaiTotal > jual.nilaiTotal) jual = b
+    }
+    return { beli: beli?.kode ?? null, jual: jual?.kode ?? null }
+  }, [hasil])
 
   return (
     <div className="lantai">
@@ -133,6 +186,18 @@ export default function TraderPapan() {
         </div>
         <strong>{kode}</strong>
         <PemilihRentang opsi={RENTANG} nilai={rentang} onGanti={setRentang} />
+        <span className="muted tp-kecil">Broker</span>
+        {FILTER_KELOMPOK.map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            className={'chip-t' + (filterKelompok === f.id ? ' on' : '')}
+            title={f.id === 'asing' ? 'Kelompok identitas broker asing (kelompokBroker.ts), bukan kolom investor-type harian' : undefined}
+            onClick={() => setFilterKelompok(f.id)}
+          >
+            {f.label}
+          </button>
+        ))}
         {tahunAda.length > 0 && (
           <span className="muted tp-kecil">
             arsip {tahunAda[0]}–{tahunAda[tahunAda.length - 1]}
@@ -153,11 +218,15 @@ export default function TraderPapan() {
         <div className="tp-kosong">
           {muat ? 'Memuat…' : 'Tak ada transaksi broker di rentang ini.'}
         </div>
+      ) : barisSaring.length === 0 ? (
+        <div className="tp-kosong">Tak ada broker {filterKelompok} di rentang ini.</div>
       ) : (
         <>
           <p className="tp-sub">
             {hasil.tglMulai} – {hasil.tglAkhir} · {hasil.nHari.toLocaleString('id-ID')} hari bursa ·{' '}
-            {hasil.baris.length} broker · harga terakhir {harga(hasil.hargaAkhir)}
+            {barisSaring.length}
+            {filterKelompok !== 'semua' ? ` dari ${hasil.baris.length}` : ''} broker · harga terakhir{' '}
+            {harga(hasil.hargaAkhir)}
           </p>
 
           <div className="tp-gulung">
@@ -166,12 +235,13 @@ export default function TraderPapan() {
                 <tr>
                   <th>Broker</th>
                   <th>Arah</th>
-                  <th className="tp-n">Net lot</th>
-                  <th className="tp-n">Net nilai</th>
+                  {thSort(s, 'netLot', 'Net lot')}
+                  {thSort(s, 'netNilai', 'Net nilai')}
                   <th className="tp-n">Rata beli</th>
                   <th className="tp-n">Termurah</th>
                   <th className="tp-n">Untung/rugi</th>
                   <th className="tp-n">Hari</th>
+                  <th className="tp-n">Porsi</th>
                   <th>{STRIP} hari terakhir</th>
                 </tr>
               </thead>
@@ -203,6 +273,21 @@ export default function TraderPapan() {
                     <td className="tp-n">
                       {b.hariNetBeli}/{b.hariAktif}
                     </td>
+                    <td className="tp-n">
+                      {hasil.totalNilaiPasar > 0
+                        ? `${((b.nilaiTotal / hasil.totalNilaiPasar) * 100).toFixed(1)}%`
+                        : '—'}
+                      {porsiTerbesar.beli === b.kode && (
+                        <span className="badge" title="Nilai transaksi (beli+jual) terbesar di antara broker net-beli pada rentang ini — bukan bukti menggerakkan harga">
+                          porsi beli terbesar
+                        </span>
+                      )}
+                      {porsiTerbesar.jual === b.kode && (
+                        <span className="badge" title="Nilai transaksi (beli+jual) terbesar di antara broker net-jual pada rentang ini — bukan bukti menggerakkan harga">
+                          porsi jual terbesar
+                        </span>
+                      )}
+                    </td>
                     <td>
                       <Strip net={b.netHarian} />
                     </td>
@@ -212,9 +297,9 @@ export default function TraderPapan() {
             </table>
           </div>
 
-          {hasil.baris.length > tampil.length && (
+          {barisSaring.length > tampil.length && (
             <button type="button" className="btn-p tp-lagi" onClick={() => setBatasBaris((n) => n + 30)}>
-              Tampilkan {Math.min(30, hasil.baris.length - tampil.length)} broker lagi
+              Tampilkan {Math.min(30, barisSaring.length - tampil.length)} broker lagi
             </button>
           )}
 
@@ -229,7 +314,10 @@ export default function TraderPapan() {
             yang net-nya masih positif; untuk yang sudah melepas lebih banyak daripada yang
             dibeli, angkanya tak punya arti dan sengaja dikosongkan. Posisi yang dibawa dari
             sebelum rentang tak terbaca sama sekali dari data harian — perlebar rentangnya
-            kalau ingin melihat lebih jauh ke belakang.
+            kalau ingin melihat lebih jauh ke belakang. Kolom <strong>Porsi</strong> menyatakan
+            seberapa besar peran broker itu pada perdagangan emiten ini — nilai transaksinya
+            dibagi total nilai transaksi seluruh broker di rentang yang sama — bukan bukti ia
+            menggerakkan harga.
           </div>
         </>
       )}

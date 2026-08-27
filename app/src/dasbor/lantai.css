@@ -3412,3 +3412,10 @@
    tersirat dari tombol mana yang menyala. */
 .kuli-papan .kp-mode { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 12px; }
 .kuli-papan .kp-mode-ket { font-size: 11px; color: var(--text2); }
+
+/* "Cara pakai" tertutup bawaan — pola sama dengan Metodologi & batas
+   Whales (.wp-metodologi), disalin di sini karena kelasnya per-halaman. */
+.kuli-papan .kp-tutor { margin-top: 12px; font-size: 12px; color: var(--text3, var(--text2)); }
+.kuli-papan .kp-tutor summary { cursor: pointer; color: var(--text2); font-weight: 600; }
+.kuli-papan .kp-tutor ol { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 6px; }
+.kuli-papan .kp-tutor li { line-height: 1.5; }

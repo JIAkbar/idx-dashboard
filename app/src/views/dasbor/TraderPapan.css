@@ -99,6 +99,12 @@
 .tp-b-beli { background: var(--green); align-self: flex-end; }
 .tp-b-jual { background: var(--red); align-self: flex-start; }
 
+/* Badge "porsi beli/jual terbesar" duduk di kolom numerik (.tp-n) sebaris
+ * dengan angka %; `.badge` bawaan (lantai.css) punya margin-top 8px untuk
+ * konteks di bawah judul, bukan sebaris — ditimpa di sini saja (#170: bentuk
+ * tetap `.badge`, cuma penempatan yang khas tabel ini). */
+.tp-tabel .tp-n .badge { margin-top: 0; margin-left: 6px; white-space: nowrap; }
+
 .tp-lagi { margin-top: 10px; }
 
 .tp-batas {

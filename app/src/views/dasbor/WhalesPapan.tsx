@@ -13,6 +13,7 @@ import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useBrokerTahunan } from '../../lib/dasbor/brokerTahunanData'
 import { useRingkasKartu } from '../../lib/dasbor/kartuRingkas'
 import { warnaBrokerCanvas } from '../../lib/dasbor/kelompokBroker'
+import { warnaGrid, gridDariTemplate, GRID_BAWAAN, type SetelanGrid } from '../../lib/dasbor/grafikEmiten'
 import { useTheme } from '../../context/ThemeContext'
 import { SeleksiAreaChart } from '../../lib/dasbor/seleksiAreaChart'
 import { GarisAvgBroker } from '../../lib/dasbor/garisAvgBroker'
@@ -131,6 +132,19 @@ export default function WhalesPapan() {
   // Significant (default, pola whales.id) menyembunyikan broker recehan lewat
   // AMBANG_SIGNIFIKAN; Full menampilkan semua yang pernah bertransaksi.
   const [modeBaris, setModeBaris] = useState<'signifikan' | 'penuh'>('signifikan')
+  // Grid chart — pola sama dengan GrafikEmiten (B33): sakelar + keburaman,
+  // bawaan lebih redup (30%) dari acuannya (100%) karena chart di sini sudah
+  // padat lapisan lain (AVG, profil, bubble, footprint). Preferensi per
+  // halaman, disimpan localStorage.
+  const [grid, setGrid] = useState<SetelanGrid>(() => {
+    try {
+      const v = localStorage.getItem('papan-grid-whales')
+      return v ? gridDariTemplate(JSON.parse(v)) : { ...GRID_BAWAAN, alfa: 0.3 }
+    } catch { return { ...GRID_BAWAAN, alfa: 0.3 } }
+  })
+  useEffect(() => {
+    try { localStorage.setItem('papan-grid-whales', JSON.stringify(grid)) } catch { /* storage penuh/privat */ }
+  }, [grid])
 
   const bungkusRef = useRef<HTMLDivElement | null>(null)
   const chartRef = useRef<IChartApi | null>(null)
@@ -297,14 +311,17 @@ export default function WhalesPapan() {
     if (!el || !chart) return
     const gaya = getComputedStyle(el)
     const c = (v: string, cad: string) => (gaya.getPropertyValue(v) || '').trim() || cad
+    const line = c('--line', '#24262E')
     chart.applyOptions({
       layout: { textColor: c('--text2', '#9CA0AC') },
+      // `visible` DAN warna beralfa dipakai bersama (pola GrafikEmiten) —
+      // alfa 0 saja tetap membuat lightweight-charts menggambar garisnya.
       grid: {
-        vertLines: { color: c('--line', '#24262E') },
-        horzLines: { color: c('--line', '#24262E') },
+        vertLines: { color: warnaGrid(line, grid.alfa), visible: grid.tampil },
+        horzLines: { color: warnaGrid(line, grid.alfa), visible: grid.tampil },
       },
     })
-  }, [theme])
+  }, [theme, grid])
 
   // Data candle harian per emiten.
   useEffect(() => {
@@ -677,6 +694,29 @@ export default function WhalesPapan() {
               value={ambangZ}
               onChange={(e) => setAmbangZ(Number(e.target.value))}
               aria-label="Ambang z-score bubble outlier"
+            />
+          </label>
+        )}
+        <button
+          type="button"
+          className={`chip-t${grid.tampil ? ' on' : ''}`}
+          aria-pressed={grid.tampil}
+          title={grid.tampil ? 'Sembunyikan garis bantu' : 'Tampilkan garis bantu'}
+          onClick={() => setGrid((g) => ({ ...g, tampil: !g.tampil }))}
+        >
+          Grid
+        </button>
+        {grid.tampil && (
+          <label className="wp-z muted" title="Keburaman garis bantu">
+            {Math.round(grid.alfa * 100)}%
+            <input
+              type="range"
+              min={10}
+              max={100}
+              step={5}
+              value={Math.round(grid.alfa * 100)}
+              onChange={(e) => setGrid((g) => ({ ...g, alfa: Number(e.target.value) / 100 }))}
+              aria-label="Keburaman garis bantu, persen"
             />
           </label>
         )}

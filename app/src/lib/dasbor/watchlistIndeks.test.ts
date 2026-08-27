@@ -126,10 +126,14 @@ describe('hitungIndeksWatchlist — data NYATA BBCA/BBRI/TLKM vs IHSG (b3, 63 ha
       { kode: 'TLKM', bars: tlkm, saham: null },
     ]
     const tglUmum = tanggalUmumWatchlist(anggota, ihsg)
-    expect(tglUmum.length).toBe(5486)
+    // >= bukan ==: data hidup — panen harian menambah bar (gagal pertama
+    // 27 Agu malam: 5486 -> 5487 tepat setelah panen bar hari itu).
+    expect(tglUmum.length).toBeGreaterThanOrEqual(5486)
     expect(tglUmum[0]).toBe('2004-01-02')
 
-    const windowB3 = tglUmum.slice(-63)
+    // Jangkar RENTANG TANGGAL TETAP, bukan ekor hidup — slice(-63) bergeser
+    // tiap panen harian dan menggeser SEMUA metrik di bawahnya.
+    const windowB3 = tglUmum.filter((t) => t >= '2026-05-22' && t <= '2026-08-26')
     expect(windowB3[0]).toBe('2026-05-22')
     expect(windowB3.length).toBe(63)
 

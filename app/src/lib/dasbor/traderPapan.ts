@@ -55,6 +55,9 @@ export interface PosisiBroker {
   jualLot: number
   netLot: number
   netNilai: number
+  /** Nilai transaksi TOTAL broker ini (beli + jual, bukan net) — dasar
+   *  "Porsi" (`nilaiTotal / HasilPosisi.totalNilaiPasar`), bukan sinyal arah. */
+  nilaiTotal: number
   /** Harga rata-rata beli & jual per LEMBAR. `null` kalau sisi itu nol. */
   avgBeli: number | null
   avgJual: number | null
@@ -78,6 +81,8 @@ export interface HasilPosisi {
   hargaAkhir: number | null
   tglMulai: string | null
   tglAkhir: string | null
+  /** Jumlah `nilaiTotal` seluruh broker di `baris` — penyebut "Porsi". */
+  totalNilaiPasar: number
 }
 
 /**
@@ -189,6 +194,7 @@ export function posisiBroker(hariTerpilih: HariBroker[]): HasilPosisi {
       jualLot: a.jualLot,
       netLot,
       netNilai: a.beliNilai - a.jualNilai,
+      nilaiTotal: a.beliNilai + a.jualNilai,
       avgBeli,
       avgJual: a.jualLot > 0 ? a.jualNilai / a.jualLot / 100 : null,
       floor: a.floor,
@@ -211,6 +217,7 @@ export function posisiBroker(hariTerpilih: HariBroker[]): HasilPosisi {
     hargaAkhir,
     tglMulai: hari.length ? hari[0].tanggal : null,
     tglAkhir: hari.length ? hari[hari.length - 1].tanggal : null,
+    totalNilaiPasar: baris.reduce((s, b) => s + b.nilaiTotal, 0),
   }
 }
 
