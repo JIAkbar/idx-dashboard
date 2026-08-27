@@ -668,7 +668,7 @@ export default function WhalesPapan() {
           disabled={tf !== 'harian'}
           title={tf !== 'harian'
             ? 'Hanya mode Harian — datanya dari broker harian'
-            : 'Bar lot per pita harga di tepi kanan plot — dari broker harian'}
+            : 'Total lot per pita harga (hari dikelompokkan menurut harga rata-ratanya). Emas = pita teramai (POC), terang = area nilai 70% lot, redup = sisanya'}
           onClick={() => setProfilAktif((v) => !v)}
         >
           Profil
