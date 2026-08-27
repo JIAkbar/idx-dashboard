@@ -162,12 +162,15 @@ def main() -> int:
         print("\n(kering — tidak menulis)")
         return 0
 
-    # PENJAGA RESMI (27 Agu 2026, temuan Johan "IHSG nya gak salah update?"):
-    # chartbit malam itu memberi bar hari berjalan dengan high=close=6521,75
-    # padahal statistik resmi IDX 6432,32/6428,11 (selisih 1,46%) — low & open
-    # cocok, jadi barnya rusak parsial dan TAK terlihat galat apa pun. Sebelum
-    # menulis, close bar terakhir diadu ke `ds_<stem>.json` resmi; menyimpang
-    # >0,5% -> high/low/close bar itu diganti angka resmi + tercetak keras.
+    # PENJAGA RESMI — DIREVISI TOTAL 27 Agu 2026 malam setelah SALAH ARAH:
+    # versi pertama mengadu bar chartbit ke ds_<stem> TANPA memeriksa ruas
+    # `sumber` — padahal ds hari berjalan bisa CADANGAN YAHOO (`sumber:
+    # "yahoo", sementara: true`), dan malam itu Yahoo-lah yang basi: PDF
+    # resmi IDX menegaskan close=high=6521,75 (+1,81%, tutup di puncak — sah),
+    # persis chartbit, sementara pagar sempat MENIMPA angka benar dengan
+    # 6428,11 milik Yahoo. Johan yang menangkap dua-duanya. Aturan sekarang:
+    # penjaga hanya berlaku bila ds-nya statistik RESMI (bukan cadangan) —
+    # cadangan Yahoo tak pernah boleh menimpa angka sumber harga.
     tgl_akhir = baris[-1][0]
     p_ds = P_OHLC.parent.parent / f"ds_{tgl_akhir[2:4]}{tgl_akhir[5:7]}{tgl_akhir[8:10]}.json"
     if p_ds.exists():
@@ -181,6 +184,8 @@ def main() -> int:
                         if r: return r
                 return None
             resmi = _cari_ihsg(ds)
+            if isinstance(ds, dict) and (ds.get("sementara") or ds.get("sumber") == "yahoo"):
+                resmi = None  # cadangan, bukan wasit
             if resmi and resmi.get("ihsg_value"):
                 c_resmi = float(resmi["ihsg_value"])
                 c_jahit = float(baris[-1][4])
