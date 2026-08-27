@@ -32,6 +32,7 @@ Pakai:
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import os
 import sys
@@ -89,10 +90,23 @@ def lengkap_hari(folder: Path, tanggal: str, varian: list[str]) -> bool:
 
 
 def tulis_progres_atomik(path: Path, data: dict) -> None:
-    """Tulis-lalu-ganti-nama supaya pembaca luar tak pernah lihat JSON separuh."""
+    """Tulis-lalu-ganti-nama supaya pembaca luar tak pernah lihat JSON separuh.
+
+    `os.replace` di Windows menolak WinError 5 saat tujuannya sedang dipegang
+    proses lain SESAAT (paralel 192, 27 Agu 2026: crash di menit pertama
+    padahal panennya sendiri sehat — 5.777 arsip tanggal 26 selamat). Progres
+    itu catatan bantu, bukan data: coba ulang sebentar, dan kalau tetap
+    ditolak LEWATI — jangan matikan panen demi berkas progres."""
     tmp = path.with_name(path.name + ".tmp")
     tmp.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
-    os.replace(tmp, path)
+    for percobaan in range(6):
+        try:
+            os.replace(tmp, path)
+            return
+        except PermissionError:
+            time.sleep(0.05 * (percobaan + 1))
+    with contextlib.suppress(OSError):
+        tmp.unlink()
 
 
 def proses_emiten(kode: str, dari: str, sampai: str, varian_list: list[str],
