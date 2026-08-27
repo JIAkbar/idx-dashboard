@@ -31,7 +31,20 @@ import {
   agregatArea, profilHarga, saringSignifikan,
   type RingkasBroker, type SeleksiArea,
 } from '../../lib/dasbor/whalesPapan'
+import { InfoIndikator, type ItemInfoIndikator } from '../../components/dasbor/InfoIndikator'
 import './WhalesPapan.css'
+
+/** Modal "i" — penjelasan tiap kendali di baris alat (permintaan Johan
+ *  27 Agu). Bahasa pembaca, tanpa nama sumber/jalur internal. */
+const INFO_WHALES: ItemInfoIndikator[] = [
+  { nama: 'Pilih area', isi: 'Seret persegi di chart untuk memilih rentang harga & waktu. Panel Hasil Seleksi lalu memecah broker yang bertransaksi pada rentang itu — siapa menampung, siapa melepas.' },
+  { nama: 'Garis AVG', isi: 'Garis putus-putus harga rata-rata tiap broker besar sepanjang rentang, dengan kode broker dan porsinya. Harga rata-rata yang jauh di bawah harga kini = broker itu menampung murah.' },
+  { nama: 'Profil', isi: 'Tumpukan lot per pita harga di tepi kanan: tiap hari dikelompokkan menurut harga rata-ratanya, lalu total lot hari itu dijumlahkan ke pitanya. Emas = pita teramai (POC), terang = area nilai yang menampung 70% lot, redup = sisanya. POC dan tepi area nilai lazim berperilaku seperti magnet/support-resistance.' },
+  { nama: 'Bubble', isi: 'Lingkaran pada broker yang net beli/jualnya MENYIMPANG jauh dari kebiasaan pasar hari itu (outlier; ambang diatur slider z). Hijau = net beli, merah = net jual; makin besar lingkaran makin besar uangnya. Pada zoom bertahun-tahun hanya outlier terbesar yang digambar supaya tidak jadi kabut.' },
+  { nama: 'Footprint', isi: 'Sel per level harga per hari — tiap broker ditempatkan di harga rata-rata beli/jualnya hari itu. Ini hampiran dari data harian, bukan rincian transaksi per level. Hanya tersedia di mode Harian.' },
+  { nama: 'Grid', isi: 'Garis bantu chart. Slider persen di sampingnya mengatur keburamannya; matikan bila terasa ramai.' },
+  { nama: 'Auto', isi: 'Satu klik kembali ke pandangan pas: saat Footprint aktif menyempit ke jendela yang selnya terbaca, selain itu menampilkan seluruh riwayat. Skala harga ikut dikembalikan ke otomatis.' },
+]
 
 /**
  * Whales Papan — papan bandarmologi harian (spek: `spek_whales_papan.md`).
@@ -168,6 +181,9 @@ export default function WhalesPapan() {
   const zoomOtomatis = (fp: boolean, hanyaBilaSempit = false) => {
     const chart = chartRef.current
     if (!chart) return
+    // Auto juga mengembalikan SKALA HARGA, bukan cuma jendela waktu (Johan:
+    // "fungsi auto hanya ke candle tapi tidak di chart").
+    lilinRef.current?.priceScale().applyOptions({ autoScale: true })
     const skala = chart.timeScale()
     const n = candle.lilin.length
     if (fp && n > 0) {
@@ -370,6 +386,12 @@ export default function WhalesPapan() {
     const vol = volRef.current
     const chart = chartRef.current
     if (!lilin || !vol || !chart) return
+    // Skala harga WAJIB dinyalakan ulang tiap data berganti (temuan Johan
+    // 27 Agu "setelah ganti emiten tidak reset ke harga nya"): pinch/drag di
+    // sumbu harga mematikan autoScale PERMANEN di lightweight-charts, dan
+    // tanpa baris ini kisaran emiten lama menetap — candle emiten baru jatuh
+    // di luar jendela (volume tetap tampak karena skalanya terpisah).
+    lilin.priceScale().applyOptions({ autoScale: true })
     if (tf === 'harian') {
       lilin.setData(candle.lilin)
       vol.setData(candle.volume)
@@ -754,6 +776,7 @@ export default function WhalesPapan() {
         >
           Auto
         </button>
+        <InfoIndikator judul="Indikator Whales Papan" item={INFO_WHALES} />
         {(tf === 'harian' ? sel : selIntra) && (
           <button type="button" className="btn-p wp-sisa"
             onClick={() => { setSel(null); setSelIntra(null) }}>

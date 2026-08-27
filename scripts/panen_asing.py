@@ -112,14 +112,31 @@ def _unduh(tgl: date) -> bytes:
 
 
 def baris_pasar(tgl: date, *, dari_arsip: bool) -> list[dict]:
-    """Seluruh baris satu tanggal. Arsip lebih dulu; jaringan hanya kalau perlu."""
+    """Seluruh baris satu tanggal. Arsip lebih dulu; jaringan hanya kalau perlu.
+
+    RACUN ARSIP KOSONG (insiden 27 Agu 2026): panen sore mengunduh tanggal
+    berjalan SEBELUM IDX menerbitkan datanya, mengarsipkan balasan 0 baris,
+    dan sejak itu tanggal tersebut selamanya terbaca "libur" dari arsip —
+    `asing/` macet di hari sebelumnya, ruas `nilai` screener null semua, dan
+    Rotation Chart tampil tanpa satu titik pun. Karena itu arsip 0 baris pada
+    tanggal yang masih MUDA (≤7 hari) tidak dipercaya: diunduh ulang, dan
+    arsipnya ditimpa hanya bila hasil barunya berisi. Libur sungguhan yang
+    lebih tua dari seminggu tetap dibaca dari arsip tanpa jaringan.
+    """
     bagian = (str(tgl.year), f"{tgl:%Y%m%d}.json.gz")
     isi = arsip_mentah.baca(SUMBER_ARSIP, *bagian)
+    if isi is not None and not dari_arsip and (date.today() - tgl).days <= 7:
+        if not (json.loads(gzip.decompress(isi)).get("data") or []):
+            isi = None  # arsip kosong umur muda -> coba jaringan lagi
     if isi is None:
         if dari_arsip:
             return []
         isi = _unduh(tgl)
-        arsip_mentah.simpan(SUMBER_ARSIP, *bagian, data=isi)
+        baru = json.loads(gzip.decompress(isi)).get("data") or []
+        lama = arsip_mentah.baca(SUMBER_ARSIP, *bagian)
+        if baru or lama is None:
+            arsip_mentah.simpan(SUMBER_ARSIP, *bagian, data=isi)
+        return baru
     return json.loads(gzip.decompress(isi)).get("data") or []
 
 
