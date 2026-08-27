@@ -35,7 +35,11 @@ export interface Pengumuman {
 }
 
 export const PENGUMUMAN: Pengumuman = {
-  aktif: true,
+  // DICABUT 27 Agu 2026 malam (perintah Johan "cabut peringatan ini jika
+  // datanya sudah ada") SETELAH diverifikasi isi per gudang: ohlc & screener
+  // & kartu & broker jendela 26-27 & tahunan & kategori semua 2026-08-27;
+  // hanya aliran asing (lembar IDX) D-1 menunggu arsip sumber jalur CI.
+  aktif: false,
   id: 'upgrade-2026-08',
   nada: 'peringatan',
   judul: 'Sebagian data belum diperbarui',
