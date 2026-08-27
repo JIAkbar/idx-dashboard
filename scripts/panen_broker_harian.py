@@ -283,12 +283,14 @@ def ambil(token: str, kode: str, tanggal: str, pasar: str = "MARKET_BOARD_REGULE
     return r.status_code, (r.json() if r.status_code == 200 else r.text[:200])
 
 
-def tulis_ulet(p: Path, teks: str, coba: int = 5) -> None:
+def tulis_ulet(p: Path, teks: str, coba: int = 10) -> None:
     """Tulis berkas dengan coba ulang — Windows kadang menolak sesaat (Errno 22/13)
     saat berkas yang sama sedang dibaca/ditulis proses lain (pemindai, sinkron,
     atau panen lain yang menyentuh emiten yang sama). 22 Agu 2026 satu penolakan
     sesaat pada `broker_harian/BUMI.json` mematikan backfill 40 menit di hari
-    ke-1.900 dari 2.352. Pola sama dengan `_tulis_ulet` di panen_ohlc.py."""
+    ke-1.900 dari 2.352. Pola sama dengan `_tulis_ulet` di panen_ohlc.py.
+    27 Agu 2026: coba 5→10 — ISSP gagal 5 percobaan saat dua rantai panen
+    sempat menulis bersamaan; backoff 0,5s×i total ±27 detik kini."""
     for i in range(coba):
         try:
             p.write_text(teks, encoding="utf-8")
