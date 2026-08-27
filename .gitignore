@@ -69,3 +69,9 @@ arus-pasar/cache/prob-eval-*.json
 # per bulan) dan batas 10 GB tercapai dalam +/-3 bulan. Karena itu
 # penyegaran harian tetap jatuh ke `ohlc/` (yang memang sudah harian),
 # sementara `ohlcv_stockbit/` disegarkan berkala — bukan tiap hari.
+
+# Radar masuk — singgahan lampiran mentah edisi radar (wdwl.png + rbu.pdf per
+# tanggal, ±1,2 MB/edisi). Sengaja tak masuk git, sama seperti _arsip-mentah/:
+# WAJIB tetap di cakram (yang mahal mengambilnya), tapi turunannya yang dibaca
+# halaman -- r_*.json + rbu/*.png -- justru MASUK git. Lihat scripts/tarik_radar_masuk.py.
+data-idx/radar/masuk/
