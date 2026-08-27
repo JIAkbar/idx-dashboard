@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { IkonMenu, IKON_KALENDER } from './IkonMenu'
 import { useSwipe } from './useSwipe'
 import { LangkahTanggal } from './LangkahTanggal'
+import { useArahBuka } from './useArahBuka'
 import { alasanBukanHariBursa } from '../../lib/tanggalBursa'
 import './DatePicker.css'
 import { geserPeriode } from './geserPeriode'
@@ -129,6 +130,10 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
   const offset = hariKerja.length ? (new Date(tahun, bulan, hariKerja[0]).getDay() + 6) % 7 : 0
   const isoIni = keIso(kini.getFullYear(), kini.getMonth(), kini.getDate())
 
+  // Clamp arah popover ke viewport (sweep 27 Agu: keluar kiri 18px di
+  // Broker Summary ponsel saat dipaksa rata kanan dekat tepi kiri).
+  const { rataKanan } = useArahBuka(ref, open, rata === 'kanan' ? 'kanan' : 'kiri')
+
   const v = urai(value)
   const labelNilai = v ? `${v.d} ${NAMA_BULAN[v.b].slice(0, 3)} ${v.t}` : 'Pilih tanggal'
 
@@ -151,7 +156,7 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
   return (
     <div className="dpk-wrap" ref={ref}>
       {daftar && stepper(-1)}
-      <div className={`dd dpk${open ? ' open' : ''}${rata === 'kanan' ? ' dpk-kanan' : ''}`}>
+      <div className={`dd dpk${open ? ' open' : ''}${rataKanan ? ' dpk-kanan' : ''}`}>
       <button type="button" className="inp dpk-btn" aria-haspopup="dialog" aria-expanded={open} aria-label={ariaLabel} onClick={buka} onKeyDown={onKeyTrigger}>
         <IkonMenu d={IKON_KALENDER} size={14} />
         <span>{labelNilai}</span>

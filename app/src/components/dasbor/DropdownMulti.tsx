@@ -46,7 +46,7 @@ export function ringkasPilihan(nilai: string[], opsi: OpsiMulti[], ringkasKosong
 export function DropdownMulti({ label, opsi, nilai, onGanti, ariaLabel, ringkasKosong }: DropdownMultiProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const bukaAtas = useArahBuka(ref, open)
+  const { bukaAtas, rataKanan } = useArahBuka(ref, open)
   const [q, setQ] = useState('')
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export function DropdownMulti({ label, opsi, nilai, onGanti, ariaLabel, ringkasK
   const tampil = kata ? opsi.filter((o) => o.label.toLowerCase().includes(kata)) : opsi
 
   return (
-    <div className={`dd${open ? ' open' : ''}${bukaAtas ? ' dd-atas' : ''}`} ref={ref} onKeyDown={onKeyDown}>
+    <div className={`dd${open ? ' open' : ''}${bukaAtas ? ' dd-atas' : ''}${rataKanan ? ' dd-kanan' : ''}`} ref={ref} onKeyDown={onKeyDown}>
       <button
         type="button"
         className="dd-btn"

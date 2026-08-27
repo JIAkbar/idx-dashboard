@@ -20,6 +20,11 @@
    bentuknya mirip terbaca sebagai satu deretan pilihan yang panjang. */
 .lantai .grf-pisah { width: 1px; height: 18px; background: var(--line2); flex: none; }
 
+/* Keterangan wajib pola RBS/Gap (spek §1/§2) — angka backtest, tampil
+   selagi toggle-nya aktif. Font kecil & redup: ini catatan kaki metodologi,
+   bukan isi utama panel. */
+.lantai .grf-pola-keterangan { margin: 0 0 4px; font-size: 11px; line-height: 1.5; }
+
 /* `position: relative` WAJIB — daftar saran (`.sea-saran`) dipasang
    `position: absolute` dan berjangkar ke ancestor berposisi TERDEKAT. Kotak
    cari halaman lain memakai `.af-cari`, yang sudah relative; kotak ini punya

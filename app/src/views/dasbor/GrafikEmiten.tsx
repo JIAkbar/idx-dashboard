@@ -64,6 +64,10 @@ import { PanelAnalitikChart, type BarAnalitik } from '../../components/dasbor/Pa
 import { GarisAvgBroker } from '../../lib/dasbor/garisAvgBroker'
 import { PitaCpr } from '../../lib/dasbor/pitaCprChart'
 import { BubbleBroker, bubbleOutlierHarian } from '../../lib/dasbor/bubbleBroker'
+import { cariRbs, RINGKAS_BACKTEST_RBS } from '../../lib/dasbor/polaRbs'
+import { PolaRbsChart } from '../../lib/dasbor/polaRbsChart'
+import { cariGap, RINGKAS_BACKTEST_GAP } from '../../lib/dasbor/polaGap'
+import { PolaGapChart } from '../../lib/dasbor/polaGapChart'
 import { hitungCpr, hitungPivot } from '../../lib/dasbor/chartAnalitik'
 import { agregatBroker, muatRentang } from '../../lib/dasbor/brokerEmiten'
 import { warnaBrokerCanvas } from '../../lib/dasbor/kelompokBroker'
@@ -73,6 +77,13 @@ import { fmtB, fmtRingkas } from '../../lib/dasbor/brokerSummaryFormat'
 import './GrafikEmiten.css'
 
 const DEFAULT_KODE = 'BBCA'
+
+/** Ikon toggle RBS/Gap — lokal di berkas ini (bukan `IkonMenu.tsx`, di luar
+ *  daftar berkas yang boleh disentuh tugas ini). Sama format dengan ikon di
+ *  sana: satu path stroke di atas viewBox 24×24. RBS = garis harga menembus
+ *  dua level mendatar; Gap = tangga naik (celah harga). */
+const IKON_RBS = 'M12 3v18M7 9h10M7 15h10'
+const IKON_GAP = 'M4 18h6v-6h6v-6h6'
 
 /** Pilihan dropdown "Indikator" bagian ATAS — sepuluh kurasi PAPAN,
  *  diturunkan dari SPEK_INDIKATOR (bukan daftar kedua yang ditulis tangan).
@@ -619,6 +630,14 @@ export function GrafikEmiten() {
   /** Overlay bubble broker outlier harian (primitive P2). */
   const [bubbleAktif, setBubbleAktif] = useState(false)
   const bubbleRef = useRef<BubbleBroker | null>(null)
+  /** Overlay pola RBS (spek §1) — TOGGLE SENDIRI, tak boleh dicampur dengan
+   *  Gap (ketetapan Johan). Hanya kerangka harian — algoritmenya diuji &
+   *  dikalibrasi di bar harian (spek §3 intraday di luar lingkup). */
+  const [rbsAktif, setRbsAktif] = useState(false)
+  const polaRbsRef = useRef<PolaRbsChart | null>(null)
+  /** Overlay pola Gap (spek §2) — TOGGLE SENDIRI, berdiri sendiri dari RBS. */
+  const [gapAktif, setGapAktif] = useState(false)
+  const polaGapRef = useRef<PolaGapChart | null>(null)
   /** Panel Pivot/CPR/RR/Return/Volume Surge (PanelAnalitikChart) — mati
    *  bawaan (Johan #Paket-I). Datanya BUKAN seluruh riwayat, tapi bar yang
    *  sedang terlihat di jendela pandang (zoom/pan), supaya banner gating
@@ -1065,6 +1084,12 @@ export function GrafikEmiten() {
       const bubble = new BubbleBroker(() => hargaRef.current)
       pane0.attachPrimitive(bubble)
       bubbleRef.current = bubble
+      const rbs = new PolaRbsChart(() => hargaRef.current)
+      pane0.attachPrimitive(rbs)
+      polaRbsRef.current = rbs
+      const gapChart = new PolaGapChart(() => hargaRef.current)
+      pane0.attachPrimitive(gapChart)
+      polaGapRef.current = gapChart
     }
     // Hook QA dev-only — verifikasi zoom/geser butuh rentang waktu yang
     // TERLIHAT (bukan cuma data yang di-setData), dan lightweight-charts
@@ -1119,6 +1144,8 @@ export function GrafikEmiten() {
       avgBrokerRef.current = null
       pitaCprRef.current = null
       bubbleRef.current = null
+      polaRbsRef.current = null
+      polaGapRef.current = null
       hargaRef.current = null
       volRef.current = null
       penandaRef.current = null
@@ -1396,6 +1423,39 @@ export function GrafikEmiten() {
       .catch(() => { if (!batal) prim.setData([]) })
     return () => { batal = true }
   }, [bubbleAktif, kerangka, kode, penuh.lilin, awalRentang])
+
+  /**
+   * Data primitive Pola RBS (spek §1) — dihitung dari SELURUH riwayat harian
+   * yang tersedia (`penuh.lilin`, bukan rentang chip yang sedang dipilih):
+   * klaster level butuh jendela 120 bar ke belakang dan level lama tetap
+   * relevan walau rentang chip sedang dipersempit ke "1M". Hanya kerangka
+   * harian — algoritmenya belum diuji/dikalibrasi di intraday (spek §3, di
+   * luar lingkup tugas ini).
+   */
+  useEffect(() => {
+    const prim = polaRbsRef.current
+    if (!prim) return
+    if (!rbsAktif || kerangka !== 'D' || penuh.lilin.length === 0) { prim.setData({ level: [], hargaTerakhir: null }); return }
+    prim.setData({
+      level: cariRbs(penuh.lilin),
+      hargaTerakhir: penuh.lilin[penuh.lilin.length - 1]?.close ?? null,
+    })
+  }, [rbsAktif, kerangka, penuh.lilin])
+
+  /**
+   * Data primitive Pola Gap (spek §2) — sama alasannya dengan RBS: seluruh
+   * riwayat harian, bukan rentang chip. Berdiri sendiri dari RBS (ketetapan
+   * Johan 25 Agu 2026: "jangan dicampur").
+   */
+  useEffect(() => {
+    const prim = polaGapRef.current
+    if (!prim) return
+    if (!gapAktif || kerangka !== 'D' || penuh.lilin.length === 0) { prim.setData({ gap: [], waktuTerakhir: null }); return }
+    prim.setData({
+      gap: cariGap(penuh.lilin),
+      waktuTerakhir: penuh.lilin[penuh.lilin.length - 1]?.time ?? null,
+    })
+  }, [gapAktif, kerangka, penuh.lilin])
 
   /**
    * Chip rentang yang tak punya riwayat untuk ditampilkan — DINONAKTIFKAN,
@@ -3265,6 +3325,25 @@ export function GrafikEmiten() {
               : bubbleAktif ? 'Sembunyikan bubble broker outlier' : 'Bubble broker outlier harian — net menyimpang ≥2σ dari pasar hari itu'}
             onClick={() => setBubbleAktif((v) => !v)} />
 
+          {/* Pola RBS & Gap (spek §1/§2) — DUA TOGGLE TERPISAH, ketetapan
+              Johan 25 Agu 2026: "jadi RBS pola sendiri, Gap itu juga pola
+              sendiri ya jangan di campur". Keduanya harian saja, sama
+              seperti CPR/Bubble di atas. */}
+          <TombolIkon d={IKON_RBS} ukuranIkon={14}
+            className={rbsAktif ? 'on' : ''}
+            disabled={kerangka !== 'D'}
+            label={kerangka !== 'D'
+              ? 'Pola RBS hanya untuk kerangka harian'
+              : rbsAktif ? 'Sembunyikan pola RBS' : 'Pola RBS — level resistance/breakout/support dari histori harian; deskriptif, bukan sinyal beli'}
+            onClick={() => setRbsAktif((v) => !v)} />
+          <TombolIkon d={IKON_GAP} ukuranIkon={14}
+            className={gapAktif ? 'on' : ''}
+            disabled={kerangka !== 'D'}
+            label={kerangka !== 'D'
+              ? 'Pola Gap hanya untuk kerangka harian'
+              : gapAktif ? 'Sembunyikan pola Gap' : 'Pola Gap — zona celah harga & target gap-fill; deskriptif, bukan sinyal beli'}
+            onClick={() => setGapAktif((v) => !v)} />
+
           {/* Panel Analitik (Pivot/CPR, RR, return multi-horizon, volume
               surge) — dari bar yang sedang tampil di jendela pandang. */}
           <TombolIkon d={IKON_GRAFIK_BATANG} ukuranIkon={14}
@@ -3280,6 +3359,12 @@ export function GrafikEmiten() {
         </div>
 
         <div className="panel-b">
+          {/* Keterangan wajib RBS/Gap (spek §1/§2) — angka backtest v1 persis
+              dari spek, satu rumah dengan badge kanvas (`RINGKAS_BACKTEST_*`
+              di polaRbs.ts/polaGap.ts) supaya tak ada dua salinan yang bisa
+              diam-diam berbeda. */}
+          {kerangka === 'D' && rbsAktif && <p className="muted grf-pola-keterangan">RBS: {RINGKAS_BACKTEST_RBS}</p>}
+          {kerangka === 'D' && gapAktif && <p className="muted grf-pola-keterangan">Gap: {RINGKAS_BACKTEST_GAP}</p>}
           {kodeAsing && (
             <p className="muted">
               Kode <strong>{kodeAsing}</strong> tidak ada di daftar emiten — yang

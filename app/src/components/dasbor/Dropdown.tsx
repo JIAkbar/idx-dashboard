@@ -78,7 +78,7 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
   // menutupi kontrol di bawahnya (mis. tombol submit) di modal pendek.
   // Logikanya diputus ke `useArahBuka` (21 Agu 2026) supaya `DropdownMulti`
   // memakai ulang, bukan menyalin.
-  const bukaAtas = useArahBuka(ref, open)
+  const { bukaAtas, rataKanan } = useArahBuka(ref, open, rata ?? 'kiri')
 
   useEffect(() => {
     // Kueri dibuang tiap menu ditutup. Menyimpannya berarti membuka lagi
@@ -177,7 +177,7 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
   }
 
   return (
-    <div className={`dd${open ? ' open' : ''}${bukaAtas ? ' dd-atas' : ''}${rata === 'kanan' ? ' dd-kanan' : ''}`} ref={ref} onKeyDown={onKeyDown}>
+    <div className={`dd${open ? ' open' : ''}${bukaAtas ? ' dd-atas' : ''}${rataKanan ? ' dd-kanan' : ''}`} ref={ref} onKeyDown={onKeyDown}>
       <button
         type="button"
         className="dd-btn"
