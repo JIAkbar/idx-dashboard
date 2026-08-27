@@ -162,6 +162,37 @@ def main() -> int:
         print("\n(kering — tidak menulis)")
         return 0
 
+    # PENJAGA RESMI (27 Agu 2026, temuan Johan "IHSG nya gak salah update?"):
+    # chartbit malam itu memberi bar hari berjalan dengan high=close=6521,75
+    # padahal statistik resmi IDX 6432,32/6428,11 (selisih 1,46%) — low & open
+    # cocok, jadi barnya rusak parsial dan TAK terlihat galat apa pun. Sebelum
+    # menulis, close bar terakhir diadu ke `ds_<stem>.json` resmi; menyimpang
+    # >0,5% -> high/low/close bar itu diganti angka resmi + tercetak keras.
+    tgl_akhir = baris[-1][0]
+    p_ds = P_OHLC.parent.parent / f"ds_{tgl_akhir[2:4]}{tgl_akhir[5:7]}{tgl_akhir[8:10]}.json"
+    if p_ds.exists():
+        try:
+            ds = json.loads(p_ds.read_text(encoding="utf-8"))
+            def _cari_ihsg(d):
+                if isinstance(d, dict):
+                    if "ihsg_value" in d: return d
+                    for v in d.values():
+                        r = _cari_ihsg(v)
+                        if r: return r
+                return None
+            resmi = _cari_ihsg(ds)
+            if resmi and resmi.get("ihsg_value"):
+                c_resmi = float(resmi["ihsg_value"])
+                c_jahit = float(baris[-1][4])
+                if abs(c_jahit - c_resmi) / c_resmi > 0.005:
+                    print(f"!! Bar {tgl_akhir} menyimpang dari resmi IDX: "
+                          f"jahit {c_jahit} vs resmi {c_resmi} — H/L/C diganti resmi")
+                    if resmi.get("ihsg_high"): baris[-1][2] = float(resmi["ihsg_high"])
+                    if resmi.get("ihsg_low"): baris[-1][3] = float(resmi["ihsg_low"])
+                    baris[-1][4] = c_resmi
+        except (ValueError, KeyError) as e:
+            print(f"(penjaga resmi dilewati: {e})")
+
     DIR_CADANGAN.mkdir(parents=True, exist_ok=True)
     shutil.copy2(P_OHLC, DIR_CADANGAN / "IHSG.json")
     oh["d"] = baris
