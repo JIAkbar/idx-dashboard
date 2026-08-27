@@ -171,7 +171,19 @@ def main() -> int:
     oh["sumber"] = "Yahoo (kerangka 1990-1999) + Stockbit chartbit (harga & volume 2000->)"
     P_OHLC.write_text(json.dumps(oh, ensure_ascii=False, separators=(",", ":")),
                       encoding="utf-8")
+    # Ringkas 250 bar ikut ditulis DI SINI (temuan Johan 27 Agu: caption chart
+    # YTD Beranda macet di tanggal Yahoo) — sebelum ini ihsg_ohlc_ringkas.json
+    # hanya lahir dari panen_ihsg (gudang Yahoo), jadi SELALU ikut telatnya
+    # Yahoo walau hasil jahitan sudah lebih baru. Penulis TERAKHIR gabunganlah
+    # yang berhak menulis ringkasnya.
+    p_ringkas = P_OHLC.parent.parent / "ihsg_ohlc_ringkas.json"
+    ekor = [b[:6] for b in baris[-250:]]
+    p_ringkas.write_text(json.dumps({
+        "kode": "IHSG", "mulai": ekor[0][0], "akhir": ekor[-1][0],
+        "n": len(ekor), "d": ekor,
+    }, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"\nDitulis: {P_OHLC}")
+    print(f"Ringkas: {p_ringkas} ({ekor[0][0]} .. {ekor[-1][0]})")
     print(f"Cadangan: {DIR_CADANGAN / 'IHSG.json'}")
     return 0
 
