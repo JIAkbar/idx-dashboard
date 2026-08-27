@@ -59,11 +59,15 @@ export function Quadrant({ brokers }: QuadrantProps) {
     const points: QuadPoint[] = aktif.map((b) => {
       const highNilai = b.nilai >= medNilai
       const highFreq = b.freq >= medFreq
+      // Label MENYEBUT YANG DIUKUR (revisi 27 Agu, pola sama #409 kategori
+      // perilaku): versi lama 'Smart Accumulation'/'Distribusi Ritel' adalah
+      // klaim niat & identitas dari data yang cuma tahu nilai+frekuensi, dan
+      // ambang median menurut konstruksi meloloskan ~separuh populasi.
       const kategori =
-        highNilai && !highFreq ? 'Smart Accumulation'
-        : highNilai && highFreq ? 'Agresif'
-        : !highNilai && highFreq ? 'Distribusi Ritel'
-        : 'Pasif'
+        highNilai && !highFreq ? 'Nilai Besar · Frekuensi Rendah'
+        : highNilai && highFreq ? 'Nilai Besar · Frekuensi Tinggi'
+        : !highNilai && highFreq ? 'Nilai Kecil · Frekuensi Tinggi'
+        : 'Nilai Kecil · Frekuensi Rendah'
       return {
         x: b.freq,
         y: b.nilai,
@@ -75,10 +79,10 @@ export function Quadrant({ brokers }: QuadrantProps) {
       }
     })
     const warnaKategori: Record<string, string> = {
-      'Smart Accumulation': 'rgba(59,130,246,.75)',
-      Agresif: 'rgba(34,197,94,.75)',
-      'Distribusi Ritel': 'rgba(239,68,68,.75)',
-      Pasif: 'rgba(156,163,175,.5)',
+      'Nilai Besar · Frekuensi Rendah': 'rgba(59,130,246,.75)',
+      'Nilai Besar · Frekuensi Tinggi': 'rgba(34,197,94,.75)',
+      'Nilai Kecil · Frekuensi Tinggi': 'rgba(239,68,68,.75)',
+      'Nilai Kecil · Frekuensi Rendah': 'rgba(156,163,175,.5)',
     }
     const colors = points.map((p) => warnaKategori[p.kategori])
 
@@ -107,13 +111,13 @@ export function Quadrant({ brokers }: QuadrantProps) {
         ctx.fillStyle = text2Color
         ctx.textBaseline = 'top'
         ctx.textAlign = 'left'
-        ctx.fillText('SMART ACCUMULATION', a.left + 6, a.top + 6)
+        ctx.fillText('NILAI BESAR · FREK RENDAH', a.left + 6, a.top + 6)
         ctx.textAlign = 'right'
-        ctx.fillText('AGRESIF', a.right - 6, a.top + 6)
+        ctx.fillText('NILAI BESAR · FREK TINGGI', a.right - 6, a.top + 6)
         ctx.textBaseline = 'bottom'
-        ctx.fillText('DISTRIBUSI RITEL', a.right - 6, a.bottom - 6)
+        ctx.fillText('NILAI KECIL · FREK TINGGI', a.right - 6, a.bottom - 6)
         ctx.textAlign = 'left'
-        ctx.fillText('PASIF', a.left + 6, a.bottom - 6)
+        ctx.fillText('NILAI KECIL · FREK RENDAH', a.left + 6, a.bottom - 6)
         // kode broker untuk N bubble terbesar
         ctx.font = 'bold 9px sans-serif'
         ctx.fillStyle = textColor
@@ -206,11 +210,16 @@ export function Quadrant({ brokers }: QuadrantProps) {
       {/* #77 kontras: warna domain cuma di titik ●, teks legenda ikut warna
           teks tema (hex mentah 2.3–3.8:1 di light, tak terbaca). */}
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8, fontSize: 11, color: 'var(--text2)' }}>
-        <span><span style={{ color: '#3b82f6' }}>●</span> Smart Accumulation (nilai besar, frekuensi rendah)</span>
-        <span><span style={{ color: '#22c55e' }}>●</span> Agresif (nilai besar, frekuensi tinggi)</span>
-        <span><span style={{ color: '#ef4444' }}>●</span> Distribusi Ritel (nilai kecil, frekuensi tinggi)</span>
-        <span><span style={{ color: '#9ca3af' }}>●</span> Pasif</span>
+        <span><span style={{ color: '#3b82f6' }}>●</span> Nilai Besar · Frekuensi Rendah (tiket per transaksi besar)</span>
+        <span><span style={{ color: '#22c55e' }}>●</span> Nilai Besar · Frekuensi Tinggi</span>
+        <span><span style={{ color: '#ef4444' }}>●</span> Nilai Kecil · Frekuensi Tinggi</span>
+        <span><span style={{ color: '#9ca3af' }}>●</span> Nilai Kecil · Frekuensi Rendah</span>
       </div>
+      <p className="muted" style={{ margin: '6px 0 0', fontSize: 11 }}>
+        Pembagian kuadran = median nilai × median frekuensi hari itu — menurut konstruksi ±separuh broker
+        selalu ada di tiap sisi, jadi ini deskripsi posisi relatif, bukan saringan dan bukan penggolongan
+        resmi bursa. Data level pasar tidak menyebut identitas maupun niat broker.
+      </p>
     </div>
   )
 }
