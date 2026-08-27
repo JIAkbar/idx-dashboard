@@ -20,3 +20,8 @@
   .lantai .ipo-tahun-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
   .lantai .ipo-uw-cell { max-width: 200px; }
 }
+
+/* Menu tahun: 25 opsi (2003-2026) vs max-height kanonis 320px — cuma ~9
+   terlihat dan terasa terpotong (temuan Johan 27 Agu). Penimpa tinggi saja;
+   bentuk tetap kanonis. */
+.lantai .ipo-tabs-bar .dd-menu { max-height: min(64vh, 560px); }

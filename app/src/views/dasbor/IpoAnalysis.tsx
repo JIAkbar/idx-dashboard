@@ -219,10 +219,15 @@ function TabelIpo({ s }: { s: ReturnType<typeof useUrut<BarisIpo>> }) {
               <td className={`r num ${kelasSign(e.return_1w)}`}>{fp(e.return_1w)}</td>
               <td className={`r num ${kelasSign(e.return_1m)}`}>{fp(e.return_1m)}</td>
               <td className={`r num ${kelasSign(e.return_kini)}`}>{fp(e.return_kini)}</td>
-              <td className="ipo-uw-cell">
-                {e.underwriters.length === 0
-                  ? <span className="muted">—</span>
-                  : e.underwriters.map((u) => <span key={u} className="chip-t">{u}</span>)}
+              {/* flex TIDAK boleh di <td> (jebakan CLAUDE.md — sel berhenti
+                  berperilaku sel tabel; terlihat live 27 Agu: chip meluber
+                  antar baris). Bungkus div; td tetap sel biasa. */}
+              <td>
+                <div className="ipo-uw-cell">
+                  {e.underwriters.length === 0
+                    ? <span className="muted">—</span>
+                    : e.underwriters.map((u) => <span key={u} className="chip-t">{u}</span>)}
+                </div>
               </td>
             </tr>
           ))}
