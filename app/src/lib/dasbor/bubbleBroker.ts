@@ -55,7 +55,7 @@ export function bubbleOutlierHarian(
   hari: HariBrokerRingan[],
   ambang = 2,
   maksPerHari = 3,
-  rMin = 3,
+  rMin = 5,
   rMax = 14,
 ): BubbleHari[] {
   const kandidat: BubbleHari[] = []
@@ -121,9 +121,15 @@ export class BubbleBroker implements IPanePrimitive<Time> {
     const chart = this.chart
     if (!seri || !chart || this.data.length === 0) return null
     const skalaWaktu = chart.timeScale()
+    // Gerbang keterbacaan (pola sama dengan polaGap/footprint): pada zoom
+    // bertahun-tahun bubble tiap hari jadi kabut yang menutup harga — halo
+    // 27 Agu justru membuatnya makin pekat. Zoom jauh = hanya outlier BESAR.
+    const barSpacing = skalaWaktu.options().barSpacing
+    const rMinTampil = barSpacing >= 5 ? 0 : 10
     // Koordinat dihitung per frame (ruang media) — ikut zoom/pan/auto-scale.
     const titik: Array<{ x: number; y: number; r: number; beli: boolean; broker: string }> = []
     for (const b of this.data) {
+      if (b.radius < rMinTampil) continue
       const x = skalaWaktu.timeToCoordinate(b.waktu as Time)
       const y = seri.priceToCoordinate(b.harga)
       if (x === null || y === null) continue
@@ -145,6 +151,18 @@ export class BubbleBroker implements IPanePrimitive<Time> {
             ctx.beginPath()
             ctx.arc(x, y, r, 0, Math.PI * 2)
             ctx.fill()
+            // Halo ganda (temuan Johan 27 Agu "bubble hampir tidak terlihat"):
+            // warna isi = warna candle dan posisinya tepat di badan candle,
+            // jadi tanpa cincin pemisah ia tersamar total. Putih di dalam,
+            // gelap tipis di luar — terlihat di tema gelap maupun terang.
+            ctx.lineWidth = Math.max(1.5, 1.5 * vp)
+            ctx.strokeStyle = 'rgba(255,255,255,0.95)'
+            ctx.stroke()
+            ctx.beginPath()
+            ctx.arc(x, y, r + Math.max(1.5, 1.5 * vp), 0, Math.PI * 2)
+            ctx.lineWidth = Math.max(1, vp)
+            ctx.strokeStyle = 'rgba(0,0,0,0.35)'
+            ctx.stroke()
             // Kode broker hanya kalau lingkarannya cukup besar untuk memuatnya
             // — teks di bubble 4 px cuma jadi noda.
             if (t.r >= 7) {

@@ -160,6 +160,27 @@ export default function WhalesPapan() {
   const footprintRef = useRef<FootprintHarian | null>(null)
   const seretRef = useRef<{ x0: number; y0: number } | null>(null)
 
+  // Zoom pas satu klik (masukan Johan 27 Agu: "berikan tombol auto ... gak
+  // zoom in zoom out manual"). Footprint aktif → sempitkan ke jendela yang
+  // selnya terbaca (jumlah bar DIHITUNG dari lebar nyata pane — konstanta
+  // 45 bar gagal di ponsel: 330px ÷ 46 ≈ 7px < ambang). Selain itu → fit
+  // seluruh riwayat.
+  const zoomOtomatis = (fp: boolean, hanyaBilaSempit = false) => {
+    const chart = chartRef.current
+    if (!chart) return
+    const skala = chart.timeScale()
+    const n = candle.lilin.length
+    if (fp && n > 0) {
+      // `hanyaBilaSempit`: jalur toggle Footprint — jangan sentuh pandangan
+      // yang sudah cukup dekat. Tombol Auto memaksa, apa pun zoom-nya.
+      if (hanyaBilaSempit && skala.options().barSpacing >= BAR_SPACING_MIN) return
+      const muat = Math.max(10, Math.floor(skala.width() / (BAR_SPACING_MIN * 1.3)) - 2)
+      skala.setVisibleLogicalRange({ from: Math.max(0, n - muat), to: n + 2 })
+    } else {
+      skala.fitContent()
+    }
+  }
+
   const resetBatas = () => {
     setBatasGrossBeli(PANEL_AWAL)
     setBatasGrossJual(PANEL_AWAL)
@@ -679,18 +700,7 @@ export default function WhalesPapan() {
               // di bawah BAR_SPACING_MIN). Saat dinyalakan dari zoom jauh,
               // sempitkan pandangan ke ±45 bar terakhir supaya yang menyala
               // langsung TERLIHAT — bukan toggle yang tampak mati.
-              const chart = chartRef.current
-              if (nyala && chart) {
-                const skala = chart.timeScale()
-                const n = candle.lilin.length
-                // Jumlah bar target DIHITUNG dari lebar nyata pane — konstanta
-                // (45 bar) gagal di ponsel: 330px ÷ 46 bar ≈ 7px < ambang,
-                // toggle menyala tapi primitive tetap menolak menggambar.
-                const muat = Math.max(10, Math.floor(skala.width() / (BAR_SPACING_MIN * 1.3)) - 2)
-                if (skala.options().barSpacing < BAR_SPACING_MIN && n > 0) {
-                  skala.setVisibleLogicalRange({ from: Math.max(0, n - muat), to: n + 2 })
-                }
-              }
+              if (nyala) zoomOtomatis(true, true)
               return nyala
             })}
           >
@@ -734,6 +744,16 @@ export default function WhalesPapan() {
             />
           </label>
         )}
+        <button
+          type="button"
+          className="chip-t"
+          title={footprintAktif
+            ? 'Zoom otomatis ke jendela terakhir yang sel footprint-nya terbaca'
+            : 'Zoom otomatis: tampilkan seluruh riwayat'}
+          onClick={() => zoomOtomatis(footprintAktif)}
+        >
+          Auto
+        </button>
         {(tf === 'harian' ? sel : selIntra) && (
           <button type="button" className="btn-p wp-sisa"
             onClick={() => { setSel(null); setSelIntra(null) }}>
