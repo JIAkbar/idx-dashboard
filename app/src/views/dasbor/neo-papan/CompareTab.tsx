@@ -12,6 +12,15 @@ import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
 import { DatePicker } from '../../../components/dasbor/DatePicker'
 import { useTheme } from '../../../context/ThemeContext'
 import { fmtB, num, Kosong, Sumber } from './bersama'
+import { InfoIndikator, type ItemInfoIndikator } from '../../../components/dasbor/InfoIndikator'
+
+/** Modal "i" — penjelasan kendali & kolom pembanding (sweep Johan 27 Agu). */
+const INFO_COMPARE: ItemInfoIndikator[] = [
+  { nama: 'Seret pita', isi: 'Seret pada chart kiri/kanan untuk memilih sub-rentang tanggal; klik singkat mengembalikan ke seluruh jendela (tanggal akhir dikurangi lebar preset).' },
+  { nama: '1 Bulan / 3 Bulan / 6 Bulan / 1 Tahun', isi: 'Tanggal akhir dan lebar jendela tiap sisi — kiri dan kanan bebas beda periode, termasuk beda tahun.' },
+  { nama: 'Clear', isi: 'Menghapus pilihan sub-rentang (pita) di kedua sisi, kembali ke seluruh jendela.' },
+  { nama: 'Change from A', isi: 'Perubahan net broker dari periode A ke B. "≫" berarti |Net A| terlalu kecil sebagai basis — persentasenya benar aritmetika tapi tak bermakna. "↺ balik akumulasi/distribusi" berarti A dan B berlawanan tanda — broker berbalik dari melepas jadi menampung (atau sebaliknya), persentase perubahan tak bermakna meski basisnya besar.' },
+]
 
 /**
  * Compare Inventory V2 (spek §4 + PENAJAMAN2): dua chart candle LEFT/RIGHT
@@ -117,6 +126,9 @@ function ChartSisi({ candle, sisi, warna, onBrush }: {
     const chart = chartRef.current
     const lilin = lilinRef.current
     if (!chart || !lilin) return
+    // Nyalakan ulang autoScale tiap data berganti — pinch/drag di sumbu harga
+    // mematikannya permanen dan kisaran emiten lama menetap (bug 27 Agu).
+    lilin.priceScale().applyOptions({ autoScale: true })
     lilin.setData(lilinJendela)
     chart.timeScale().fitContent()
   }, [lilinJendela])
@@ -287,13 +299,14 @@ export function CompareTab({ kode }: { kode: string }) {
         Seret pita di chart untuk memilih sub-rentang (klik = seluruh jendela). Periode kiri dan
         kanan bebas — termasuk beda tahun.
       </p>
-      <p className="np-sub">
+      <div className="np-sub">
         <b>Left:</b> {reA?.dari} → {reA?.sampai} ({nA} hari bursa) · <b>Right:</b> {reB?.dari} → {reB?.sampai} ({nB} hari)
         {(a.brush || b.brush) && (
           <button type="button" className="chip-t" style={{ marginLeft: 8 }}
             onClick={() => { setA({ ...a, brush: null }); setB({ ...b, brush: null }) }}>Clear</button>
         )}
-      </p>
+        {' '}<InfoIndikator judul="Indikator Compare Inventory" item={INFO_COMPARE} />
+      </div>
 
       <div className="np-2kol">
         <div>

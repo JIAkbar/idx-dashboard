@@ -19,6 +19,7 @@ import { TimelineForeign } from './broker-summary-v2/TimelineForeign'
 import { Shareholders } from './broker-summary-v2/Shareholders'
 import { Nego } from './broker-summary-v2/Nego'
 import { Quadrant } from './broker-summary-v2/Quadrant'
+import { InfoIndikator, type ItemInfoIndikator } from '../../components/dasbor/InfoIndikator'
 
 type Tab = 'overview' | 'quadrant' | 'inventory' | 'flow' | 'vsihsg' | 'foreign' | 'shareholders' | 'nego'
 const TABS: { id: Tab; label: string }[] = [
@@ -76,6 +77,26 @@ const PRESET: { id: PresetId; label: string; hari: number }[] = [
   { id: 'b6', label: LABEL_RENTANG.b6, hari: 182 },
   { id: 'ytd', label: LABEL_RENTANG.ytd, hari: 0 },
   { id: 'y1', label: LABEL_RENTANG.y1, hari: 365 },
+]
+
+/** Modal "i" — penjelasan kendali & tab halaman ini (permintaan Johan 27 Agu
+ *  2026: "sweep semua page setiap ada indikator seperti ini berikan modal
+ *  informasi terkait fungsi nya"). Bahasa pembaca, tanpa nama sumber/jalur
+ *  internal — diambil dari komentar di atas tiap kendali & tab. */
+const INFO_BSV2: ItemInfoIndikator[] = [
+  { nama: 'All Investor', isi: 'Menyaring transaksi menurut tipe investor. Baru "All Investor" (seluruh investor) yang tersedia di sini — pemecahan asing/domestik menyusul.' },
+  { nama: 'Regular', isi: 'Menyaring menurut jenis pasar transaksi. Baru pasar reguler yang tersedia di sini; transaksi pasar negosiasi punya tab tersendiri (NEGO).' },
+  { nama: 'Net / Gross', isi: 'Net menjumlahkan beli dikurangi jual tiap broker (bisa positif/negatif); Gross menampilkan total transaksi (beli+jual) tanpa saling meniadakan.' },
+  { nama: 'Nilai / Lot', isi: 'Satuan seluruh tabel dan chart di halaman ini: Nilai dalam rupiah, Lot dalam lembar saham (1 lot = 100 lembar).' },
+  { nama: 'Rentang tanggal', isi: 'Pintasan cepat (Hari Ini, 1 Minggu, 1/3/6 Bulan, YTD, 1 Tahun), panah kiri/kanan yang menggeser seluruh rentang satu hari bursa, atau dua kolom tanggal untuk rentang bebas.' },
+  { nama: 'Overview', isi: 'Peringkat broker net beli dan net jual terbesar pada rentang terpilih, plus jumlah hari akumulasi vs distribusi emiten ini — dihitung dari label per hari, bukan sekadar selisih jumlah broker beli/jual.' },
+  { nama: 'Quadrant', isi: 'Posisi tiap broker: sumbu mendatar seberapa jauh harga rata-ratanya dari harga acuan rentang (rata-rata tertimbang volume), sumbu tegak besar net beli/jualnya. Ukuran gelembung mengikuti besar net, warna mengikuti kelompok identitas broker.' },
+  { nama: 'Inventory', isi: 'Akumulasi net (menumpuk dari hari ke hari) empat pembeli bersih dan empat penjual bersih terbesar sepanjang rentang, dengan garis harga tutup sebagai pembanding.' },
+  { nama: 'Flow Net vs Gross', isi: 'Tabel dua sisi per broker: total transaksi kotor, net-nya, dan persentase net terhadap kotor — makin tinggi persentasenya, makin satu arah transaksi broker itu.' },
+  { nama: 'vs IHSG', isi: 'Membandingkan pergerakan harga emiten ini terhadap IHSG pada rentang yang sama, titik awalnya disamakan (rebased) supaya bentuk pergerakannya bisa dibandingkan langsung.' },
+  { nama: 'Timeline Foreign', isi: 'Aliran dana asing harian dalam rupiah, dilaporkan bursa, sepanjang rentang yang dipilih.' },
+  { nama: 'Shareholders', isi: 'Pemegang saham ≥5% dan pengendali, anak usaha, jajaran pengurus, serta komposisi kepemilikan bulanan — dari data resmi emiten dan KSEI.' },
+  { nama: 'NEGO', isi: 'Transaksi pasar negosiasi per broker, dengan penanda broker yang arahnya berlawanan dengan transaksi reguler-nya hari itu (kandidat akumulasi/distribusi tersembunyi) versus yang searah.' },
 ]
 
 function mundurIso(iso: string, hari: number): string {
@@ -205,6 +226,7 @@ export function BrokerSummaryV2() {
             <Dropdown opsi={MARKET_OPSI} nilai={pasar} onGanti={setPasar} ariaLabel="Market" />
             <PemilihRentang opsi={MODE_OPSI} nilai={mode} onGanti={setMode} ariaLabel="Net atau Gross" />
             <PemilihRentang opsi={UKURAN_OPSI} nilai={ukuran} onGanti={setUkuran} ariaLabel="Ukuran" />
+            <InfoIndikator judul="Indikator Arus Broker" item={INFO_BSV2} />
           </div>
         </div>
         <div className="panel-b bs-ctl bs2-ctl" style={{ borderTop: '1px solid var(--line)' }}>

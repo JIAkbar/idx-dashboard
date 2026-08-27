@@ -5,6 +5,15 @@ import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
 import { BadgeRapor } from '../../../components/dasbor/BadgeRapor'
 import { ambilIndexBt, type RunBt } from '../../../lib/dasbor/raporBadge'
 import { num, pct, Kosong, Sumber } from './bersama'
+import { InfoIndikator, type ItemInfoIndikator } from '../../../components/dasbor/InfoIndikator'
+
+/** Modal "i" — penjelasan kendali & sel tabel musiman (sweep Johan 27 Agu). */
+const INFO_SEASON: ItemInfoIndikator[] = [
+  { nama: 'Periode (tahun)', isi: 'Berapa tahun kalender arsip harga yang dipakai menghitung pola musiman. Kalau arsip emiten ini lebih pendek dari pilihan, jumlah tahun yang benar-benar terpakai jujur dikurangi (tertulis di bawah judul).' },
+  { nama: 'naik / turun', isi: 'Persentase periode (hari kerja atau bulan) dengan return positif (naik) atau negatif (turun) pada sel tanggal itu.' },
+  { nama: 'ekspektasi', isi: 'Rata-rata return pada sel tanggal itu — bukan jaminan, hanya rata-rata historis.' },
+  { nama: 'n= dan ⚠', isi: 'Jumlah sampel di sel/kolom itu. Sel dengan sampel di bawah 20 ditandai pudar dan ⚠ — frekuensinya bukan pola yang bisa diandalkan.' },
+]
 
 const HARI = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']
 const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
@@ -132,6 +141,7 @@ export function SeasonTab({ kode }: { kode: string }) {
               badge win-rate menyusul lewat BT Papan.
             </span>
           )}
+          <InfoIndikator judul="Indikator Seasonality" item={INFO_SEASON} />
         </div>
       </div>
       <div className="np-2kol">

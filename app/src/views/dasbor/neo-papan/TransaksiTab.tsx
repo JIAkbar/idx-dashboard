@@ -9,6 +9,18 @@ import { useTheme } from '../../../context/ThemeContext'
 import { fmtB, Kosong, Kv, KvGrid, Sumber, potongRentang, type RentangNp } from './bersama'
 import { captionRentang } from '../../../lib/dasbor/rentang'
 import { PERINGATAN_PRA_BROKER, praBroker } from '../../../lib/dasbor/brokerEmitenV2'
+import { InfoIndikator, type ItemInfoIndikator } from '../../../components/dasbor/InfoIndikator'
+
+/** Modal "i" — penjelasan tiap panel chart & ringkasan broker (sweep Johan
+ *  27 Agu, lihat pola sama di WhalesPapan.tsx). */
+const INFO_TRANSAKSI: ItemInfoIndikator[] = [
+  { nama: 'IHSG (basis 100)', isi: 'Garis biru di sumbu kiri: performa IHSG diskalakan mulai dari 100 pada awal rentang, supaya bisa dibandingkan langsung dengan pergerakan candle emiten di sumbu kanan.' },
+  { nama: 'Volume', isi: 'Batang di bawah candle: jumlah lembar yang diperdagangkan tiap hari.' },
+  { nama: 'Foreign Net Flow', isi: 'Panel net asing harian: nilai beli dikurangi jual asing tiap hari — hijau net masuk, merah net keluar.' },
+  { nama: 'Asing vs Total', isi: 'Panel nilai transaksi: batang redup = total nilai transaksi hari itu, batang biru pekat = porsi asing (beli+jual) di dalamnya. Sisanya domestik adalah ASUMSI (total dikurangi asing), bukan hasil ukur langsung.' },
+  { nama: 'Participation', isi: 'Panel dua garis terpisah: persen beli asing dan persen jual asing masing-masing dibagi total nilai transaksi hari itu. Karena dihitung sendiri-sendiri per sisi, jumlah keduanya bisa melebihi 100%.' },
+  { nama: 'Kecenderungan broker', isi: 'Ringkasan dari rincian broker hari terakhir yang berarsip: status akumulasi/distribusi, porsi Top1/3/5 broker terbesar (dihitung dari dua sisi beli & jual sehingga bisa >100%), dan jumlah broker net beli vs net jual.' },
+]
 
 /**
  * Transaction Chart V2 (spek §8 + PENAJAMAN2 §6) — lightweight-charts:
@@ -114,6 +126,9 @@ export function TransaksiTab({ kode, rentang }: { kode: string; rentang: Rentang
     const chart = chartRef.current
     const s = seriRef.current
     if (!chart || !s.lilin) return
+    // Nyalakan ulang autoScale tiap data berganti — pinch/drag di sumbu harga
+    // mematikannya permanen dan kisaran emiten lama menetap (bug 27 Agu).
+    s.lilin.priceScale().applyOptions({ autoScale: true })
     const t = (r: BarHarga) => r.t as Time
     s.lilin.setData(rows.map((r) => ({ time: t(r), open: r.o, high: r.h, low: r.l, close: r.c })))
     const ihsgAwal = ihsgMap.get(rows.find((r) => ihsgMap.has(r.t))?.t ?? '') || null
@@ -143,7 +158,10 @@ export function TransaksiTab({ kode, rentang }: { kode: string; rentang: Rentang
 
   return (
     <section className="panel panel-b">
-      <h2>{kode} — Transaction Chart</h2>
+      <div className="np-baris" style={{ margin: '0 0 4px' }}>
+        <h2 style={{ margin: 0 }}>{kode} — Transaction Chart</h2>
+        <InfoIndikator judul="Indikator Transaction Chart" item={INFO_TRANSAKSI} />
+      </div>
       {/* Rentang SEBENARNYA (modul rentang §2) — preset y5 di emiten muda
           harus terbaca "cuma segini datanya", bukan diam-diam lebih pendek. */}
       {rows.length > 0 && (

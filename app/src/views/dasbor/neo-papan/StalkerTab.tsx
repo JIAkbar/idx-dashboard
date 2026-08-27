@@ -14,6 +14,18 @@ import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
 import { namaBroker, warnaBroker } from '../../../lib/dasbor/kelompokBroker'
 import { useRingkasKartu } from '../../../lib/dasbor/kartuRingkas'
 import { fmtB, num, Kosong, Sumber } from './bersama'
+import { InfoIndikator, type ItemInfoIndikator } from '../../../components/dasbor/InfoIndikator'
+
+/** Modal "i" — penjelasan kendali & kolom tabel (sweep Johan 27 Agu). */
+const INFO_STALKER: ItemInfoIndikator[] = [
+  { nama: 'Broker', isi: 'Pilih satu atau lebih broker; net beli/jual dijumlah lintas seluruh emiten yang sudah berarsip broker, bukan satu emiten saja.' },
+  { nama: 'Jendela', isi: 'Rentang hari yang dihitung. Preset hari (1-20 hari) memakai arsip harian yang sudah termuat; preset lebih panjang (60 hari ke atas, termasuk YTD) butuh arsip tahunan yang diunduh lewat tombol terpisah karena ukurannya jauh lebih besar.' },
+  { nama: 'Investor', isi: 'Semua = seluruh investor; Asing (klien) = investor-type klien luar negeri lintas broker, bukan identitas kepemilikan sekuritas; Domestik = Semua dikurangi Asing per broker per hari.' },
+  { nama: 'Saring', isi: 'Ketik kode emiten untuk menyaring baris, atau angka pada kolom Net/Beli/Jual dengan awalan > atau < (tanpa awalan berarti ≥).' },
+  { nama: 'Konsist', isi: 'Jumlah hari beruntun net beli positif, dihitung mundur dari hari terakhir di jendela, dari total hari jendela.' },
+  { nama: 'vs B.Avg', isi: 'Selisih harga kini terhadap harga rata-rata beli broker itu (B.Avg), dalam persen.' },
+  { nama: 'Porsi Vol', isi: 'Rata-rata harian porsi lot beli broker terpilih dibanding total lot pasar emiten itu.' },
+]
 
 /**
  * Broker Stalker V2 — Σ net beli/jual broker terpilih lintas seluruh emiten
@@ -359,6 +371,7 @@ export function StalkerTab() {
           <input className="inp np-f" value={fNet} onChange={(e) => setFNet(e.target.value)} placeholder="Net: >1000000000" aria-label="Saring net" />
           <input className="inp np-f" value={fBeli} onChange={(e) => setFBeli(e.target.value)} placeholder="Beli: >…" aria-label="Saring beli" />
           <input className="inp np-f" value={fJual} onChange={(e) => setFJual(e.target.value)} placeholder="Jual: <…" aria-label="Saring jual" />
+          <InfoIndikator judul="Indikator Broker Stalker" item={INFO_STALKER} />
         </div>
       </div>
 

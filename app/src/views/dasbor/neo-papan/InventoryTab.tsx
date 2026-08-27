@@ -20,6 +20,18 @@ import { KETERANGAN_KATEGORI, LABEL_KATEGORI, useKategoriBroker, type KategoriBr
 import { bacaTokenTema } from '../../../lib/dasbor/useChartJs'
 import { warnaGrid, gridDariTemplate, GRID_BAWAAN, type SetelanGrid } from '../../../lib/dasbor/grafikEmiten'
 import { fmtB, num, pct, TOKEN_SERI, OPSI_RENTANG_NP, potongRentang, Kosong, Sumber, type RentangNp } from './bersama'
+import { InfoIndikator, type ItemInfoIndikator } from '../../../components/dasbor/InfoIndikator'
+
+/** Modal "i" — penjelasan baris kendali & panel bawah (sweep Johan 27 Agu). */
+const INFO_INVENTORY: ItemInfoIndikator[] = [
+  { nama: 'Rentang', isi: 'Jendela tanggal untuk candle harga dan garis kumulatif broker di chart.' },
+  { nama: 'Ukuran', isi: 'Satuan garis kumulatif & tabel B.Avg/S.Avg: Value = kumulatif nilai transaksi (Rupiah), Lot = kumulatif jumlah lot.' },
+  { nama: 'Investor', isi: 'Semua = seluruh investor; Asing (klien) = investor-type klien luar negeri lintas broker, bukan identitas kepemilikan sekuritas; Domestik = Semua dikurangi Asing.' },
+  { nama: 'Grid', isi: 'Garis bantu chart, dengan slider keburaman di sampingnya.' },
+  { nama: 'Broker', isi: 'Preset garis kumulatif: AK BK (dua broker asing acuan), Top 5 NB/NS (net beli/jual terbesar pada rentang ini — definisi PAPAN sendiri), kelompok Asing aktif besar/Smart Money/Institusi/Lokal (kurasi PAPAN, bukan penggolongan resmi bursa, diambil dari anggota yang aktif di rentang ini, maksimal 8 garis), atau Pilih sendiri secara manual.' },
+  { nama: 'Group Score', isi: 'Skor harian 10 hari terakhir per kategori perilaku broker: tanda net kategori (naik/turun) dikalikan jumlah broker kategori itu yang net searah hari itu — penjumlahan tanda, bukan skor komposit.' },
+  { nama: 'Posisi 6 Bulan per Broker', isi: 'Posisi tiap broker dari 126 hari bursa terakhir yang tersedia di arsip: Floor = rata-rata tertimbang harga beli sepanjang jendela, PnL% hanya dihitung untuk broker net-beli, dan badge TRAPPED menghitung berapa dari net-buyer terbesar yang posisinya kini di bawah floor.' },
+]
 
 /** Sparkline net harian — batang mini (pola sama `Spark` di StalkerTab.tsx;
  *  didefinisikan ulang di sini karena berkas itu di luar lingkup sentuh tugas
@@ -327,6 +339,9 @@ export function InventoryTab({ kode }: { kode: string }) {
       vol.setData([])
       return
     }
+    // Nyalakan ulang autoScale tiap data berganti — pinch/drag di sumbu harga
+    // mematikannya permanen dan kisaran emiten lama menetap (bug 27 Agu).
+    lilin.priceScale().applyOptions({ autoScale: true })
     lilin.setData(lilinRentang.map(({ t: _t, ...b }) => b))
     const dalam = new Set(lilinRentang.map((b) => b.t))
     vol.setData(candle.volume.filter((v) => dalam.has(String(v.time))))
@@ -421,6 +436,7 @@ export function InventoryTab({ kode }: { kode: string }) {
             />
           </label>
         )}
+        <InfoIndikator judul="Indikator Inventory Chart" item={INFO_INVENTORY} />
       </div>
       <div className="np-baris">
         <span className="np-lbl">Broker</span>

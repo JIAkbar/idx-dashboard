@@ -12,6 +12,18 @@ import {
 import { muatUniverseSektor, type UniverseSektor } from './kandidat'
 import { TOKEN_SERI, Kosong, Sumber } from './bersama'
 import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
+import { InfoIndikator, type ItemInfoIndikator } from '../../../components/dasbor/InfoIndikator'
+
+/** Modal "i" — penjelasan kendali & pembacaan kuadran/sumbu (sweep Johan 27 Agu). */
+const INFO_ROTASI: ItemInfoIndikator[] = [
+  { nama: 'Periode (pekan)', isi: 'Jumlah pekan yang dipakai menghitung RS-Ratio dan RS-Momentum — semakin panjang, semakin halus tapi semakin lambat bereaksi.' },
+  { nama: 'Jejak', isi: 'Jumlah titik pekan terakhir yang digambar sebagai ekor tiap sektor di plot.' },
+  { nama: 'Liquid Only', isi: 'Sembunyikan sektor dengan median nilai transaksi sampel 20 hari di kuartil bawah.' },
+  { nama: 'Hide Weak', isi: 'Sembunyikan sektor dengan RS-Ratio terkini di bawah 97.' },
+  { nama: 'Hide Abnormal', isi: 'Buang titik belum valid (masa pemanasan hitungan/celah data) dan titik dengan RS-Ratio menyimpang >15 dari 100.' },
+  { nama: 'Kuadran (IMPROVING/OUTPERFORM/WEAKENING/UNDERPERFORM)', isi: 'IMPROVING: masih di bawah IHSG tapi mulai menguat. OUTPERFORM: sudah di atas IHSG dan makin kuat. WEAKENING: masih di atas IHSG tapi mulai melemah. UNDERPERFORM: di bawah IHSG dan makin lemah.' },
+  { nama: 'RS-Ratio / RS-Momentum', isi: 'Sumbu X (RS-Ratio) = kekuatan relatif sektor terhadap IHSG, 100 berarti setara IHSG. Sumbu Y (RS-Momentum) = laju perubahan RS-Ratio itu sendiri. Titik & panah besar menandai pekan terbaru.' },
+]
 
 /**
  * Rotation Chart (RRG) — revisi total `spek_neo_papan_revisi.md` §1.
@@ -430,6 +442,7 @@ export function RotasiTab() {
           onClick={() => setSembunyiAbnormal((v) => !v)}>Hide Abnormal</button>
         <button type="button" className="chip-t" title="Muat ulang data terbaru"
           onClick={() => { setUni(undefined); muat(true) }}>↻</button>
+        <InfoIndikator judul="Indikator Rotation Chart" item={INFO_ROTASI} />
       </div>
       {/* Plot PRESISI bujursangkar (Johan: "lebar tinggi besar nya presisi"):
           sumbu dikunci afterFit (y=60, x=52) dan legenda di luar kanvas,

@@ -6,6 +6,15 @@ import type { BarHarga } from '../../../lib/dasbor/neoPapanData'
 import { porsiBergerak } from '../../../lib/dasbor/neoPapan'
 import { muatUniverseSektor, type UniverseSektor } from './kandidat'
 import { TOKEN_SERI, Kosong, Sumber } from './bersama'
+import { InfoIndikator, type ItemInfoIndikator } from '../../../components/dasbor/InfoIndikator'
+
+/** Modal "i" — penjelasan kendali & legenda chart (sweep Johan 27 Agu). */
+const INFO_ACTIVITY: ItemInfoIndikator[] = [
+  { nama: 'Sektor IDX-IC', isi: 'Kelompokkan garis menurut sektor resmi IDX-IC.' },
+  { nama: 'Papan pencatatan', isi: 'Kelompokkan garis menurut papan pencatatan bursa; kelompok yang isinya cuma satu emiten dibuang supaya garisnya tak mewakili satu saham saja.' },
+  { nama: '(sampel-aktif/anggota) dan ⚠', isi: 'Legenda tiap garis memuat jumlah anggota sampel yang benar-benar bertransaksi dibanding anggota aslinya. Tanda ⚠ berarti satu emiten menyumbang lebih dari 30% nilai kelompok itu hari itu — garisnya condong ke satu saham, bukan mewakili kelompok merata.' },
+  { nama: 'Porsi nilai transaksi', isi: 'Porsi nilai transaksi kelompok terhadap total sampel, dihitung sebagai rata-rata bergerak 20 hari bursa — bukan terhadap seluruh nilai transaksi pasar (lihat catatan cakupan di bawah chart).' },
+]
 
 const HARI_TAMPIL = 180
 
@@ -164,6 +173,7 @@ export function ActivityTab() {
       <div className="np-baris">
         <button type="button" className={'chip-t' + (jenis === 'sektor' ? ' on' : '')} onClick={() => setJenis('sektor')}>Sektor IDX-IC</button>
         <button type="button" className={'chip-t' + (jenis === 'papan' ? ' on' : '')} onClick={() => setJenis('papan')}>Papan pencatatan</button>
+        <InfoIndikator judul="Indikator Sector/Papan Activity" item={INFO_ACTIVITY} />
         {jenis === 'papan' && uni && (
           <span className="muted" style={{ fontSize: 11 }}>
             sampel {uni.perPapanJumlah} emiten terlikuid per papan · anggota sebenarnya:{' '}

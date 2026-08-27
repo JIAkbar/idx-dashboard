@@ -12,6 +12,7 @@ import {
   hariRentang, posisiBroker, TEKS_STATUS,
   type PosisiBroker, type StatusBroker,
 } from '../../lib/dasbor/traderPapan'
+import { InfoIndikator, type ItemInfoIndikator } from '../../components/dasbor/InfoIndikator'
 import './TraderPapan.css'
 
 /**
@@ -49,6 +50,23 @@ type IdFilterKelompok = (typeof FILTER_KELOMPOK)[number]['id']
 const HARI_MUNDUR: Record<Exclude<IdRentang, 'semua'>, number> = {
   b1: 30, b3: 91, b6: 182, y1: 365,
 }
+
+/** Modal "i" — penjelasan kendali & kolom tabel halaman ini (permintaan Johan
+ *  27 Agu 2026: "sweep semua page setiap ada indikator seperti ini berikan
+ *  modal informasi terkait fungsi nya"). Bahasa pembaca, tanpa nama sumber/
+ *  jalur internal — diambil dari komentar & catatan "Cara membacanya" yang
+ *  sudah ada di halaman ini. */
+const INFO_TRADER: ItemInfoIndikator[] = [
+  { nama: 'Rentang waktu', isi: 'Memilih seberapa jauh ke belakang posisi broker dihitung — 1/3/6 Bulan, 1 Tahun, atau seluruh arsip yang tersedia. Seluruh angka di tabel (net, rata-rata, hari aktif) mengikuti rentang yang dipilih.' },
+  { nama: 'Broker', isi: 'Menyaring baris tabel menurut kelompok identitas broker: Asing atau Domestik. "Semua" menampilkan seluruh broker tanpa disaring.' },
+  { nama: 'Arah', isi: 'Ringkasan arah broker pada rentang ini: Menampung (net beli) atau Melepas (net jual), dengan keterangan "mereda" kalau ia mulai mengerem, atau "berbalik" kalau arahnya baru saja membalik dari hari-hari sebelumnya.' },
+  { nama: 'Net lot', isi: 'Selisih lembar yang dibeli dikurangi yang dijual broker itu sepanjang rentang.' },
+  { nama: 'Net nilai', isi: 'Net lot dikalikan harga transaksi, dalam rupiah — porsi uang yang mengalir masuk atau keluar lewat broker itu.' },
+  { nama: 'Rata beli', isi: 'Harga rata-rata SELURUH pembelian broker itu di rentang ini — harga rata-rata transaksi, bukan modal posisi yang masih dipegang.' },
+  { nama: 'Termurah', isi: 'Harga rata-rata hari termurah tempat broker ini net membeli — seberapa murah ia pernah menampung di rentang ini.' },
+  { nama: 'Untung/rugi', isi: 'Selisih harga terakhir terhadap rata-rata beli, dalam persen. Hanya diisi untuk broker yang net-nya masih positif; untuk yang sudah melepas lebih banyak daripada yang dibeli, angkanya tak punya arti dan sengaja dikosongkan. Posisi yang dibawa dari sebelum rentang tak ikut terhitung.' },
+  { nama: 'Porsi', isi: 'Seberapa besar peran broker itu pada perdagangan emiten ini — nilai transaksinya (beli+jual) dibagi total nilai transaksi seluruh broker di rentang yang sama. Bukan bukti ia menggerakkan harga.' },
+]
 
 /** Berapa hari terakhir yang tergambar sebagai strip net harian. */
 const STRIP = 12
@@ -197,6 +215,7 @@ export default function TraderPapan() {
             {f.label}
           </button>
         ))}
+        <InfoIndikator judul="Indikator Trader Papan" item={INFO_TRADER} />
         {tahunAda.length > 0 && (
           <span className="muted tp-kecil">
             arsip {tahunAda[0]}–{tahunAda[tahunAda.length - 1]}

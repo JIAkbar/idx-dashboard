@@ -47,6 +47,7 @@ import { LangkahTanggal } from '../../components/dasbor/LangkahTanggal'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { TombolLayarPenuh } from '../../components/dasbor/TombolLayarPenuh'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
+import { InfoIndikator, type ItemInfoIndikator } from '../../components/dasbor/InfoIndikator'
 import { AlatGambar } from '../../components/dasbor/AlatGambar'
 import { useAlatGambar } from '../../lib/dasbor/useAlatGambar'
 import { gayaDariDash, type GayaGaris } from '../../lib/dasbor/gambarGrafik'
@@ -84,6 +85,32 @@ const DEFAULT_KODE = 'BBCA'
  *  dua level mendatar; Gap = tangga naik (celah harga). */
 const IKON_RBS = 'M12 3v18M7 9h10M7 15h10'
 const IKON_GAP = 'M4 18h6v-6h6v-6h6'
+
+/** Modal "i" — penjelasan tiap kendali di bilah alat & kaki chart (permintaan
+ *  Johan 27 Agu 2026: "sweep semua page setiap ada indikator seperti ini
+ *  berikan modal informasi terkait fungsi nya"). Bahasa pembaca, dari `title`/
+ *  komentar kendali masing-masing — tanpa nama sumber/jalur internal. */
+const INFO_GRAFIK: ItemInfoIndikator[] = [
+  { nama: 'Kerangka waktu', isi: 'Interval tiap lilin. 5 menit sampai 1 jam riwayatnya sekitar sebulan, 4 jam sekitar dua tahun, sedangkan Harian/Pekanan/Bulanan memakai arsip sendiri dengan riwayat penuh 10 tahun.' },
+  { nama: 'Lilin / Garis', isi: 'Bentuk gambar harga: Lilin menampilkan buka-tinggi-rendah-tutup tiap periode, Garis hanya menyambungkan harga tutup. Menukarnya tidak menyentuh indikator atau pola yang sudah dipasang.' },
+  { nama: 'ƒx Indikator', isi: 'Menambahkan indikator teknikal (rata-rata bergerak, osilator momentum, dan sejenisnya) ke kanvas — kelompok "Pilihan" berisi yang sering dipakai, disusul indikator populer dan katalog lengkap per kategori. Tiap pilihan menambah satu instans baru dan bisa ditumpuk.' },
+  { nama: '+ Pola', isi: 'Menambahkan pendeteksi pola grafik otomatis: pola klasik (double/triple top-bottom, dan sejenisnya), struktur pasar (swing high/low & patahan tren), musiman, serta divergensi indikator momentum terhadap harga.' },
+  { nama: '+ Banding', isi: 'Menumpuk harga emiten lain (maksimal tiga sekaligus, termasuk IHSG) sebagai garis pembanding di kanvas yang sama. Menambahkan pembanding otomatis mengunci skala ke persentase supaya emiten berharga jauh berbeda tetap bisa dibandingkan bentuknya.' },
+  { nama: 'Bar replay', isi: 'Memundurkan chart ke suatu titik lalu memutarnya maju satu lilin per klik atau otomatis — untuk melatih membaca pergerakan harga tanpa tahu kelanjutannya lebih dulu.' },
+  { nama: 'Template', isi: 'Menyimpan dan memuat kembali susunan indikator & pola yang sedang terpasang, supaya tak perlu menyusunnya ulang tiap kali membuka emiten lain.' },
+  { nama: 'Garis rata-rata beli broker', isi: 'Garis putus-putus harga rata-rata beli lima broker net-pembeli terbesar pada rentang yang sedang tampil — seberapa murah atau mahal mereka menampung.' },
+  { nama: 'Pita CPR + Pivot', isi: 'Pita rentang harga tengah dan level pivot harian dari sesi tutup terakhir, dipakai sebagai acuan support/resistance. Hanya tersedia di kerangka Harian.' },
+  { nama: 'Bubble broker outlier', isi: 'Lingkaran pada broker yang net beli/jual hariannya menyimpang jauh dari kebiasaan pasar hari itu. Hanya tersedia di kerangka Harian.' },
+  { nama: 'Pola RBS', isi: 'Menandai level resistance/breakout/support dari histori harga harian. Deskriptif — menggambarkan apa yang sudah terjadi, bukan sinyal beli/jual. Hanya tersedia di kerangka Harian.' },
+  { nama: 'Pola Gap', isi: 'Menandai zona celah harga (gap) dan target penutupan celahnya dari histori harga harian. Deskriptif, bukan sinyal beli/jual. Hanya tersedia di kerangka Harian.' },
+  { nama: 'Analitik', isi: 'Panel tambahan berisi Pivot/CPR, rasio Risk:Reward, return multi-horizon, dan lonjakan volume — dihitung dari lilin yang sedang tampil di jendela pandang.' },
+  { nama: 'Alat gambar', isi: 'Bilah alat menggambar di kanvas — garis tren, level harga, bentuk geometris, dan sejenisnya — untuk menandai sendiri area yang menarik perhatian. Terpisah dari indikator otomatis di atas.' },
+  { nama: 'Rentang tampil', isi: 'Pintasan memperbesar/mempersempit jendela pandang kanvas: 1 hari, 5 hari, 1/3/6 bulan, 1/5 tahun, atau seluruh riwayat. Pilihan yang riwayatnya tak cukup pada kerangka waktu aktif ditampilkan redup.' },
+  { nama: 'vol', isi: 'Memindahkan panel volume transaksi ke bawah kanvas harga sendiri, terpisah dari dasar panel harga.' },
+  { nama: 'grid', isi: 'Menyalakan/mematikan garis bantu pada kanvas, lengkap dengan pengatur keburamannya.' },
+  { nama: '% / log', isi: 'Skala sumbu harga di kanan kanvas: % mengukur semua dari titik pertama yang terlihat, log membuat jarak yang sama berarti persentase perubahan yang sama sepanjang sumbu. Terkunci ke % otomatis selagi ada emiten pembanding.' },
+  { nama: 'auto', isi: 'Skala harga menyesuaikan sendiri ke rentang lilin yang sedang terlihat di kanvas.' },
+]
 
 /** Pilihan dropdown "Indikator" bagian ATAS — sepuluh kurasi PAPAN,
  *  diturunkan dari SPEK_INDIKATOR (bukan daftar kedua yang ditulis tangan).
@@ -1226,6 +1253,18 @@ export function GrafikEmiten() {
     const mode = banding.length > 0 ? 2 : (MODE_SKALA.find(([id]) => id === modeSkala)?.[2] ?? 0)
     chartRef.current?.priceScale('right').applyOptions({ mode, autoScale: autoSkala })
   }, [modeSkala, autoSkala, versiSeriHarga, banding.length])
+
+  // Emiten baru = skala harga menyala lagi (temuan Johan 27 Agu "setelah
+  // ganti emiten tidak reset ke harga nya"). Pinch/drag di sumbu harga
+  // mematikan autoScale INTERNAL lightweight-charts tanpa menyentuh state
+  // chip — chip "Auto" tetap menyala sementara skala beku di kisaran emiten
+  // lama dan candle emiten baru jatuh di luar jendela. applyOptions langsung
+  // ikut dipanggil karena setAutoSkala(true) saat state sudah true tidak
+  // memicu efek di atas.
+  useEffect(() => {
+    setAutoSkala(true)
+    chartRef.current?.priceScale('right').applyOptions({ autoScale: true })
+  }, [kode])
 
   // Warna dibaca dari getComputedStyle DI DALAM .lantai (containerRef ada di
   // bawah wrapper .lantai) — token --green/--red/--line/--text2 didefinisikan
@@ -3356,6 +3395,7 @@ export function GrafikEmiten() {
           <TombolIkon d={IKON_KAMERA} ukuranIkon={14} label="Simpan gambar kanvas (PNG)"
             onClick={simpanGambar} />
           <TombolLayarPenuh target={panelRef} aktif={layarPenuh} labelKeluar="Keluar" />
+          <InfoIndikator judul="Indikator Grafik Emiten" item={INFO_GRAFIK} />
         </div>
 
         <div className="panel-b">

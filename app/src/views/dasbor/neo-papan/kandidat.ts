@@ -44,7 +44,13 @@ export function muatUniverseSektor(segar = false): Promise<UniverseSektor | null
     cache = (async () => {
       const scr = await ambilScreener()
       if (!scr) return null
-      const baris = scr.emiten.map((e) => ({ kode: e.kode, sektor: e.sektor, nilai: e.nilai }))
+      // Ukuran likuiditas = `likuiditas` (median 20 hari), BUKAN `nilai`
+      // (transaksi hari terakhir): `nilai` sengaja di-strip null saat arsip
+      // asing tertinggal sehari dari OHLC (kejujuran tanggal), dan 27 Agu
+      // 2026 hal itu mengosongkan SELURUH sampel — Rotation Chart tampil
+      // kuadran tanpa satu titik pun. Median 20 hari selalu terisi dan
+      // memang ukuran likuiditas yang lebih benar untuk memilih sampel.
+      const baris = scr.emiten.map((e) => ({ kode: e.kode, sektor: e.sektor, nilai: e.likuiditas ?? e.nilai }))
       const perSektor = pilihKandidatSektor(baris, PER_SEKTOR)
       // Papan pencatatan dari emiten_sektor.json (IDX resmi) — screener tak
       // membawanya. Sampel per papan = PER_PAPAN terlikuid; jumlah anggota
