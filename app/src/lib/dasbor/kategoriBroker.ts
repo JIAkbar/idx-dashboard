@@ -46,12 +46,29 @@ export interface DaftarKategoriBroker {
   broker: Record<string, BrokerPerilaku>
 }
 
+/**
+ * PENAMAAN DIREVISI 27 Agu 2026 atas keberatan pengawas (dikirim atas
+ * perintah Johan). Versi pertama memakai "Smart Money"/"Smart Ritel" —
+ * tiga cacat yang membatalkannya: (1) ambang median menurut konstruksi
+ * meloloskan ~50% populasi, jadi 67/90 broker berlabel "Smart" — kategori
+ * yang tak menyaring; (2) directionality 0,032 berarti beli 51,6%/jual
+ * 48,4% sudah "tegas" — klaim "pintar" tak didukung; (3) "Smart Money" itu
+ * klaim prediktif yang seharusnya dikunci BadgeRapor. Uji korelasi yang
+ * diminta pengawas: Spearman share vs directionality = −0,21 (lemah, arah
+ * sesuai dugaan "broker tipis lebih gampang searah" tapi bukan bukti keras).
+ * Nama sekarang MENYEBUT APA YANG DIUKUR — dua sumbu porsi × arah; kunci
+ * internal (whale/smart/…) sengaja TIDAK diubah supaya data & kode stabil.
+ */
 export const LABEL_KATEGORI: Record<KategoriBroker, string> = {
-  whale: 'Whale',
-  smart: 'Smart Money',
-  smart_ritel: 'Smart Ritel',
-  ritel: 'Ritel',
+  whale: 'Porsi Besar · Arah Tegas',
+  ritel: 'Porsi Besar · Arah Lemah',
+  smart: 'Porsi Kecil · Arah Tegas',
+  smart_ritel: 'Porsi Kecil · Arah Lemah',
 }
+
+/** Tooltip/keterangan wajib tampil di dekat label (aturan kejujuran). */
+export const KETERANGAN_KATEGORI =
+  'Kurasi PAPAN dari perilaku terukur 120 hari bursa (porsi nilai pasar × keteguhan arah net) — bukan penggolongan resmi bursa, bukan klaim kepintaran.'
 
 export const LABEL_GAYA: Record<GayaBroker, string> = {
   akumulasi: 'Akumulasi',

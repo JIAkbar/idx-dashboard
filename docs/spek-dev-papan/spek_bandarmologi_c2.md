@@ -41,3 +41,7 @@
 - Leak pass: nol nama endpoint/berkas/skrip di layar.
 - Kriteria Terima 6 butir `pengantar_pembagian_kerja.md` per halaman + khusus: (a) angka kategori satu broker diverifikasi manual dari arsip (lampirkan hitungan); (b) TRAPPED badge dicek 1 emiten: hitung ulang floor top-5 tangan; (c) tab Quadrant aktif & terklik nyata; (d) 2 viewport × 2 tema.
 - Halaman TIDAK bertambah — semua turunannya menempel di halaman yang sudah terdaftar aksesnya. (Kecuali IPO — spek terpisah.)
+
+---
+
+> **⚠️ REVISI PENAMAAN 27 Agu 2026 (keberatan pengawas, dikirim atas perintah Johan).** Label §A.4 versi pertama ("Smart Money"/"Smart Ritel") DIBATALKAN: ambang median menurut konstruksi meloloskan ~50% populasi (67/90 broker berlabel "Smart" — tak menyaring), directionality 0,032 berarti beli 51,6%/jual 48,4% sudah "tegas", dan "Smart Money" adalah klaim prediktif yang seharusnya dikunci BadgeRapor. Uji korelasi yang diminta: Spearman share×directionality = −0,21 (arah sesuai dugaan "broker tipis lebih mudah searah", tapi lemah). Label kini menyebut yang diukur: **Porsi Besar/Kecil · Arah Tegas/Lemah**, plus keterangan wajib `KETERANGAN_KATEGORI` ("kurasi PAPAN … bukan penggolongan resmi bursa, bukan klaim kepintaran"). Kunci internal JSON/kode tidak berubah. Nama "Smart Money" hanya boleh hidup lagi dengan ambang selektif (mis. desil teratas directionality + lantai share) DAN BadgeRapor.

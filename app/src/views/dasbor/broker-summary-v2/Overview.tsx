@@ -276,7 +276,7 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
             </div>
           )}
           <p className="lbl" style={{ marginTop: 10, textTransform: 'none', letterSpacing: 0 }}>
-            Kategori dihitung dari perilaku 120 hari bursa terakhir (porsi nilai pasar, arah net, konsistensi), bukan daftar tetap — satu broker bisa pindah kategori seiring waktu.
+            Kategori = kurasi PAPAN dari perilaku terukur 120 hari bursa (porsi nilai pasar × keteguhan arah net) — bukan penggolongan resmi bursa, bukan klaim kepintaran; satu broker bisa pindah kategori seiring waktu.
             {daftarKategori && ` Dibangun ${labelTanggal(daftarKategori.dibangun.slice(0, 10))}.`}
           </p>
         </div>

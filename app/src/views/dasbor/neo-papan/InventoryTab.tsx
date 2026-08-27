@@ -491,7 +491,7 @@ export function InventoryTab({ kode }: { kode: string }) {
         <p className="np-sub">
           Skor harian per kategori perilaku broker: tanda net kategori (naik/turun) × jumlah broker kategori itu yang net searah hari itu —
           penjumlahan tanda, BUKAN skor komposit.
-          {daftarKategori && ` Kategori dihitung dari perilaku 120 hari bursa terakhir per ${daftarKategori.dibangun.slice(0, 10)}, bukan daftar tetap.`}
+          {daftarKategori && ` Kategori = kurasi PAPAN dari perilaku terukur 120 hari bursa per ${daftarKategori.dibangun.slice(0, 10)} (porsi nilai pasar × keteguhan arah net) — bukan penggolongan resmi bursa, bukan klaim kepintaran.`}
         </p>
         {!daftarKategori && <Kosong>Memuat kategori broker…</Kosong>}
         {daftarKategori && tanggalSkor.length === 0 && <Kosong>Belum ada data broker harian untuk strip ini.</Kosong>}
