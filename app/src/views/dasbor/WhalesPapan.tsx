@@ -585,21 +585,9 @@ export default function WhalesPapan() {
           </span>
         )}
         {muat && <span className="muted" style={{ fontSize: 12 }}>memuat…</span>}
-        {/* Dua mode (spek §1): Harian = pecahan broker penuh (unggulan);
-            Intraday 4H/1H = harga+volume ±90 hari, TANPA broker. */}
-        <span className="wp-toggle" role="group" aria-label="Kerangka waktu">
-          {(['harian', '4h', '1h'] as const).map((t) => (
-            <button key={t} type="button"
-              className={`chip-t${tf === t ? ' on' : ''}`}
-              aria-pressed={tf === t}
-              title={t === 'harian'
-                ? 'Candle harian + pecahan broker (riwayat penuh)'
-                : 'Candle intraday ±90 hari terakhir — tanpa pecahan broker (data broker hanya terbit harian)'}
-              onClick={() => setTf(t)}>
-              {t === 'harian' ? 'Harian' : t.toUpperCase()}
-            </button>
-          ))}
-        </span>
+        {/* Pemilih TF Harian/4H/1H DICABUT (Johan 27 Agu: "di hapus saja ini
+            ... cukup pakai harian dlu") — mode intraday tetap di kode (tf
+            selalu 'harian'), tinggal mengembalikan tombol ini bila diminta. */}
         <button
           type="button"
           className={`chip-t${modeSeleksi ? ' on' : ''}`}
