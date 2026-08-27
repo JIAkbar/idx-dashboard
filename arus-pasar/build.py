@@ -121,6 +121,35 @@ def skor_ihsg(tk, ohlc):
     return max(0.0, 5 - 4 * abs(korr - 0.3)), korr
 
 
+# SATU RUMAH ambang risiko (temuan pengawas 27 Agu: teks Metodologi PDF masih
+# mencetak ambang LAMA yang sudah dibatalkan — ">=80 Menengah · 55-79 Tinggi ·
+# <55 Ekstrem" — sehingga pembaca menafsir setiap badge risiko dengan rumus
+# salah). tingkat_risiko() DAN kalimat metodologi sama-sama dibangkitkan dari
+# daftar ini; mengubah ambang di sini otomatis mengubah teks terbitan.
+AMBANG_RISIKO = [
+    (70, "RENDAH"),
+    (63, "MENENGAH"),
+    (56, "TINGGI"),
+    (49, "SANGAT TINGGI"),
+    (None, "EKSTREM"),
+]
+
+
+def teks_pemetaan_risiko():
+    """Kalimat metodologi, diturunkan dari AMBANG_RISIKO — jangan tulis tangan."""
+    potong = []
+    for i, (batas, label) in enumerate(AMBANG_RISIKO):
+        if batas is None:
+            atas = AMBANG_RISIKO[i - 1][0]
+            potong.append(f"&lt;{atas} {label.title()}")
+        elif i == 0:
+            potong.append(f">={batas} {label.title()}")
+        else:
+            atas = AMBANG_RISIKO[i - 1][0] - 1
+            potong.append(f"{batas}–{atas} {label.title()}")
+    return " · ".join(potong)
+
+
 def tingkat_risiko(total):
     """Lima tingkat, ambangnya mengikuti sebaran skor yang benar-benar terjadi.
 
@@ -128,13 +157,12 @@ def tingkat_risiko(total):
     skor nyata edisi harian bergerak 46-71 dengan median 63, sehingga tak ada
     satu pun emiten yang pernah keluar dari TINGGI/EKSTREM dan labelnya
     berhenti membedakan apa pun. Johan 18 Agu: "saya tidak semua itu resiko
-    tinggi tapi ada klasifikasi nya". Ambang di bawah membelah sebaran itu
-    jadi lima pita yang benar-benar terisi."""
-    if total >= 70: return "RENDAH"
-    if total >= 63: return "MENENGAH"
-    if total >= 56: return "TINGGI"
-    if total >= 49: return "SANGAT TINGGI"
-    return "EKSTREM"
+    tinggi tapi ada klasifikasi nya". Ambang membelah sebaran itu jadi lima
+    pita yang benar-benar terisi — nilainya HANYA di AMBANG_RISIKO."""
+    for batas, label in AMBANG_RISIKO:
+        if batas is None or total >= batas:
+            return label
+    return AMBANG_RISIKO[-1][1]
 
 
 def sentimen(em):
@@ -720,7 +748,7 @@ def halaman_ringkasan(ed, skor_map, prob_map=None):
     </div>
     <h3 class="rule">Metodologi</h3>
     <p class="metode"><b>Skor komposit 0–100:</b> Technical 35% · Big Money Flow 30% · Risk/reward 20% ·
-    Liquidity 10% · IHSG sensitivity 5%. Pemetaan risiko: >=80 Menengah · 55–79 Tinggi · &lt;55 Ekstrem.</p>
+    Liquidity 10% · IHSG sensitivity 5%. Pemetaan risiko: {teks_pemetaan_risiko()}.</p>
     <p class="metode"><b>Sumber data:</b> statistik resmi IDX; pivot &amp; EMA dihitung dari data
     harga; arus broker dari Broker Summary Stockbit. Komponen data yang tidak tersedia tidak
     pernah diisi perkiraan — halaman terkait akan menampilkan penanda kesenjangan data dan skor

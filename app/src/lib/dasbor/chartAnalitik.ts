@@ -99,13 +99,18 @@ export interface HasilRelasiCpr {
   bias: string
 }
 
+// REVISI 27 Agu 2026 (sapuan pengawas #5): versi lama memvonis arah —
+// "Bullish kuat"/"Bearish kuat"/"potensi reversal" — klaim prediktif telanjang
+// tanpa BadgeRapor. Aturan proyek: klaim prediktif dikunci di belakang bukti
+// win-rate. Sampai BT Papan mengukurnya, teksnya DESKRIPSI STRUKTURAL murni:
+// menyebut apa yang terjadi pada rentang nilai CPR, bukan apa artinya besok.
 const BIAS_RELASI: Record<KelasRelasiCpr, string> = {
-  'Higher Value': 'Bullish kuat',
-  'Lower Value': 'Bearish kuat',
-  'Outside Value': 'Volatilitas naik, potensi reversal',
-  'Inside Value': 'Volatilitas turun, konsolidasi',
-  'Overlapping Higher': 'Bullish ringan',
-  'Overlapping Lower': 'Bearish ringan',
+  'Higher Value': 'Rentang CPR bergeser naik penuh dari sesi lalu',
+  'Lower Value': 'Rentang CPR bergeser turun penuh dari sesi lalu',
+  'Outside Value': 'Rentang CPR melebar melampaui sesi lalu',
+  'Inside Value': 'Rentang CPR menyempit di dalam sesi lalu',
+  'Overlapping Higher': 'Rentang CPR tumpang tindih, pivot lebih tinggi',
+  'Overlapping Lower': 'Rentang CPR tumpang tindih, pivot lebih rendah',
 }
 
 /** Urutan pengecekan PERSIS tabel spek — Higher/Lower diputuskan duluan,

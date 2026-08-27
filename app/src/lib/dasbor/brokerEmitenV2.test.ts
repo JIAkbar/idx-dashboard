@@ -56,20 +56,20 @@ describe('titikKuadran', () => {
 })
 
 describe('labelKuadran', () => {
-  it('beli di bawah VWAP -> Akumulasi Cerdas', () => {
-    expect(labelKuadran({ deltaVwapPct: -3, netNilai: 100 })).toBe('Akumulasi Cerdas')
+  it('beli di bawah VWAP -> Beli di Bawah VWAP', () => {
+    expect(labelKuadran({ deltaVwapPct: -3, netNilai: 100 })).toBe('Beli di Bawah VWAP')
   })
-  it('beli di atas VWAP -> Beli Agresif', () => {
-    expect(labelKuadran({ deltaVwapPct: 2, netNilai: 100 })).toBe('Beli Agresif')
+  it('beli di atas VWAP -> Beli di Atas VWAP', () => {
+    expect(labelKuadran({ deltaVwapPct: 2, netNilai: 100 })).toBe('Beli di Atas VWAP')
   })
-  it('jual di bawah VWAP -> Jual Panik', () => {
-    expect(labelKuadran({ deltaVwapPct: -2, netNilai: -100 })).toBe('Jual Panik')
+  it('jual di bawah VWAP -> Jual di Bawah VWAP', () => {
+    expect(labelKuadran({ deltaVwapPct: -2, netNilai: -100 })).toBe('Jual di Bawah VWAP')
   })
-  it('jual di atas VWAP -> Distribusi', () => {
-    expect(labelKuadran({ deltaVwapPct: 5, netNilai: -100 })).toBe('Distribusi')
+  it('jual di atas VWAP -> Jual di Atas VWAP', () => {
+    expect(labelKuadran({ deltaVwapPct: 5, netNilai: -100 })).toBe('Jual di Atas VWAP')
   })
   it('net nol dihitung sisi beli', () => {
-    expect(labelKuadran({ deltaVwapPct: -1, netNilai: 0 })).toBe('Akumulasi Cerdas')
+    expect(labelKuadran({ deltaVwapPct: -1, netNilai: 0 })).toBe('Beli di Bawah VWAP')
   })
 })
 

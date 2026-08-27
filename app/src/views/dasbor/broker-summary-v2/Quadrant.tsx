@@ -27,10 +27,10 @@ interface Titik {
 }
 
 const WARNA_KUADRAN: Record<LabelKuadran, string> = {
-  'Akumulasi Cerdas': 'var(--green)',
-  'Beli Agresif': 'var(--green)',
-  'Jual Panik': 'var(--red)',
-  Distribusi: 'var(--red)',
+  'Beli di Bawah VWAP': 'var(--green)',
+  'Beli di Atas VWAP': 'var(--green)',
+  'Jual di Bawah VWAP': 'var(--red)',
+  'Jual di Atas VWAP': 'var(--red)',
 }
 
 /**
@@ -181,10 +181,10 @@ export function Quadrant({ agg, vwap, ukuran }: QuadrantProps) {
         <canvas ref={canvasRef} />
       </div>
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8, fontSize: 11, color: 'var(--text2)' }}>
-        <span><span style={{ color: WARNA_KUADRAN['Akumulasi Cerdas'] }}>●</span> Akumulasi Cerdas (beli di bawah VWAP)</span>
-        <span><span style={{ color: WARNA_KUADRAN['Beli Agresif'] }}>●</span> Beli Agresif (beli di atas VWAP)</span>
-        <span><span style={{ color: WARNA_KUADRAN.Distribusi }}>●</span> Distribusi (jual di atas VWAP)</span>
-        <span><span style={{ color: WARNA_KUADRAN['Jual Panik'] }}>●</span> Jual Panik (jual di bawah VWAP)</span>
+        <span><span style={{ color: WARNA_KUADRAN['Beli di Bawah VWAP'] }}>●</span> Beli di Bawah VWAP</span>
+        <span><span style={{ color: WARNA_KUADRAN['Beli di Atas VWAP'] }}>●</span> Beli di Atas VWAP (mengejar harga)</span>
+        <span><span style={{ color: WARNA_KUADRAN['Jual di Atas VWAP'] }}>●</span> Jual di Atas VWAP (melepas di harga baik)</span>
+        <span><span style={{ color: WARNA_KUADRAN['Jual di Bawah VWAP'] }}>●</span> Jual di Bawah VWAP</span>
       </div>
       <p className="lbl" style={{ marginTop: 8, textTransform: 'none', letterSpacing: 0 }}>
         Warna titik mengikuti kelompok identitas broker (legenda Overview), bukan warna kuadran — kuadrannya dibaca dari posisi (kiri/kanan garis nol = harga vs VWAP, atas/bawah = net beli/jual).

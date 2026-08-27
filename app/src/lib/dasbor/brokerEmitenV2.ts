@@ -112,17 +112,23 @@ export function titikKuadran(agg: AgregatBroker[], vwap: number | null): TitikKu
   return keluar
 }
 
-export type LabelKuadran = 'Akumulasi Cerdas' | 'Beli Agresif' | 'Jual Panik' | 'Distribusi'
+export type LabelKuadran =
+  | 'Beli di Bawah VWAP' | 'Beli di Atas VWAP' | 'Jual di Bawah VWAP' | 'Jual di Atas VWAP'
 
 /**
- * Label kuadran (§B.1 spek C2) dari tanda X (harga broker vs VWAP) & Y (net
- * value): beli di bawah VWAP = cerdas, beli di atas VWAP = agresif (mengejar
- * harga); jual di bawah VWAP = panik, jual di atas VWAP = distribusi (lego di
- * harga bagus). Net 0 dihitung sisi beli (tak ada arus, bukan tanda negatif).
+ * Label kuadran dari tanda X (harga broker vs VWAP) & Y (net value). Net 0
+ * dihitung sisi beli (tak ada arus, bukan tanda negatif).
+ *
+ * REVISI 27 Agu 2026 (sapuan pengawas, sumbu ke-4): label lama spek §B.1
+ * ('Akumulasi Cerdas'/'Jual Panik') mengklaim KEPINTARAN dan EMOSI dari data
+ * yang cuma tahu beli/jual × posisi vs VWAP — klaim prediktif tanpa
+ * BadgeRapor. Label sekarang menyebut sumbunya sendiri; tafsir (mengejar
+ * harga, lego di harga bagus, dst.) pindah ke keterangan legenda, ditandai
+ * sebagai tafsir umum bukan vonis.
  */
 export function labelKuadran(t: { deltaVwapPct: number; netNilai: number }): LabelKuadran {
-  if (t.netNilai >= 0) return t.deltaVwapPct < 0 ? 'Akumulasi Cerdas' : 'Beli Agresif'
-  return t.deltaVwapPct < 0 ? 'Jual Panik' : 'Distribusi'
+  if (t.netNilai >= 0) return t.deltaVwapPct < 0 ? 'Beli di Bawah VWAP' : 'Beli di Atas VWAP'
+  return t.deltaVwapPct < 0 ? 'Jual di Bawah VWAP' : 'Jual di Atas VWAP'
 }
 
 export interface RingkasSB {

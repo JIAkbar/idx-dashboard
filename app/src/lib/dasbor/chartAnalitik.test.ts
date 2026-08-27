@@ -61,32 +61,32 @@ describe('relasiCpr', () => {
 
   it('Higher Value: BC >= TC_prev', () => {
     const r = relasiCpr({ tc: 130, bc: 115, p: 120 }, prev)
-    expect(r).toEqual({ kelas: 'Higher Value', bias: 'Bullish kuat' })
+    expect(r).toEqual({ kelas: 'Higher Value', bias: 'Rentang CPR bergeser naik penuh dari sesi lalu' })
   })
 
   it('Lower Value: TC <= BC_prev', () => {
     const r = relasiCpr({ tc: 95, bc: 80, p: 88 }, prev)
-    expect(r).toEqual({ kelas: 'Lower Value', bias: 'Bearish kuat' })
+    expect(r).toEqual({ kelas: 'Lower Value', bias: 'Rentang CPR bergeser turun penuh dari sesi lalu' })
   })
 
   it('Outside Value: TC>TC_prev dan BC<BC_prev', () => {
     const r = relasiCpr({ tc: 120, bc: 90, p: 105 }, prev)
-    expect(r).toEqual({ kelas: 'Outside Value', bias: 'Volatilitas naik, potensi reversal' })
+    expect(r).toEqual({ kelas: 'Outside Value', bias: 'Rentang CPR melebar melampaui sesi lalu' })
   })
 
   it('Inside Value: TC<TC_prev dan BC>BC_prev', () => {
     const r = relasiCpr({ tc: 108, bc: 102, p: 105 }, prev)
-    expect(r).toEqual({ kelas: 'Inside Value', bias: 'Volatilitas turun, konsolidasi' })
+    expect(r).toEqual({ kelas: 'Inside Value', bias: 'Rentang CPR menyempit di dalam sesi lalu' })
   })
 
   it('Overlapping Higher: overlap, P>P_prev', () => {
     const r = relasiCpr({ tc: 115, bc: 105, p: 110 }, prev)
-    expect(r).toEqual({ kelas: 'Overlapping Higher', bias: 'Bullish ringan' })
+    expect(r).toEqual({ kelas: 'Overlapping Higher', bias: 'Rentang CPR tumpang tindih, pivot lebih tinggi' })
   })
 
   it('Overlapping Lower: overlap, P<=P_prev', () => {
     const r = relasiCpr({ tc: 115, bc: 105, p: 100 }, prev)
-    expect(r).toEqual({ kelas: 'Overlapping Lower', bias: 'Bearish ringan' })
+    expect(r).toEqual({ kelas: 'Overlapping Lower', bias: 'Rentang CPR tumpang tindih, pivot lebih rendah' })
   })
 })
 
