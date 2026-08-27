@@ -114,7 +114,7 @@ describe('cariGap', () => {
   })
 
   it('data nyata BBCA — bentuk keluaran valid & konsisten', () => {
-    const baris = (bbcaRaw as { d: [string, number, number, number, number, number][] }).d
+    const baris = (bbcaRaw as unknown as { d: [string, number, number, number, number, number][] }).d
     const bars: LilinData[] = baris.map(([time, open, high, low, close]) => (
       { time, open, high, low, close }
     ))

@@ -177,14 +177,14 @@ export function TopStocks() {
       <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
       <CatatanCakupan />
 
-      {hari.sementara && (
+      {hari.sementara === true && (
         <div className="chip warn" style={{ display: 'flex', whiteSpace: 'normal', height: 'auto', lineHeight: 1.5 }}>
           <span>
             <IkonMenu d={IKON_PERINGATAN} size={14} />{' '}
             {tglResmiTerakhir ? (
-              <>Statistik resmi bursa untuk <strong>{hari.date_id}</strong> belum terbit — panel di bawah menampilkan data resmi terakhir (<strong>{fmtTanggalPendek(tglResmiTerakhir.date_iso)}</strong>).</>
+              <>Statistik resmi bursa untuk <strong>{String(hari.date_id)}</strong> belum terbit — panel di bawah menampilkan data resmi terakhir (<strong>{fmtTanggalPendek(tglResmiTerakhir.date_iso)}</strong>).</>
             ) : (
-              <>Statistik resmi bursa untuk <strong>{hari.date_id}</strong> belum terbit, dan belum ada hari resmi sebelumnya untuk ditampilkan.</>
+              <>Statistik resmi bursa untuk <strong>{String(hari.date_id)}</strong> belum terbit, dan belum ada hari resmi sebelumnya untuk ditampilkan.</>
             )}
           </span>
         </div>
@@ -236,7 +236,7 @@ export function TopStocks() {
         <div className="chip warn" style={{ display: 'flex', whiteSpace: 'normal', height: 'auto', lineHeight: 1.5 }}>
           <span>
             Daftar Top di bawah adalah <strong>snapshot per-hari</strong> (tidak bisa diagregat lintas hari) —
-            menampilkan tanggal akhir rentang, <strong>{hari.date_id}</strong>. Pilih mode Hari untuk menelusuri harian.
+            menampilkan tanggal akhir rentang, <strong>{String(hari.date_id)}</strong>. Pilih mode Hari untuk menelusuri harian.
           </span>
         </div>
       )}

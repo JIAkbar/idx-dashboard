@@ -111,7 +111,10 @@ export default function WhalesPapan() {
   /** Broker yang pill AVG-nya diklik — kartu rinciannya tampil di panel. */
   const [brokerPilih, setBrokerPilih] = useState<string | null>(null)
   const [modeSeleksi, setModeSeleksi] = useState(false)
-  const [tf, setTf] = useState<Tf>('harian')
+  // setTf ikut dicabut bersama tombol TF (#413) — build produksi (tsc -b,
+  // noUnusedLocals) MENOLAK variabel yatim; dev tsc --noEmit meloloskannya,
+  // dan itulah akar 10 deploy Vercel gagal beruntun 27 Agu.
+  const [tf] = useState<Tf>('harian')
   const [candle, setCandle] = useState<DataCandle>({ lilin: [], volume: [] })
   const [intra, setIntra] = useState<{ bar: Bar1H[]; galat: GalatIntraday }>({ bar: [], galat: null })
   const [avgAktif, setAvgAktif] = useState(true)
@@ -548,15 +551,26 @@ export default function WhalesPapan() {
     nilaiRp: (r: RingkasBroker) => number,
   ) => {
     const maks = Math.max(1, ...baris.map((r) => Math.abs(nilai(r))))
-    return baris.slice(0, batasTampil).map((r) => (
-      <div className="wp-baris" key={r.kode}>
-        <span className="wp-kode">{r.kode}</span>
-        <span className="wp-bar" style={{ width: `${Math.max(4, (Math.abs(nilai(r)) / maks) * 100)}%` }} />
-        <span className="wp-nilai">
-          {lotRingkas(Math.abs(nilai(r)))} · Rp {rupiahRingkas(Math.abs(nilaiRp(r)))}
-        </span>
-      </div>
-    )).concat(
+    // Avg per baris (masukan Johan 27 Agu: "bisa ditambahi avg broker juga
+    // sih harusnya, kan data juga udh ada") — harga rata-rata dari sisi yang
+    // sedang ditampilkan barisnya: nilaiRp ÷ (lot × 100). Lot 0 → tanpa avg.
+    const avgBaris = (r: RingkasBroker) => {
+      const lot = Math.abs(nilai(r))
+      return lot > 0 ? Math.abs(nilaiRp(r)) / (lot * 100) : null
+    }
+    return baris.slice(0, batasTampil).map((r) => {
+      const avg = avgBaris(r)
+      return (
+        <div className="wp-baris" key={r.kode}>
+          <span className="wp-kode">{r.kode}</span>
+          <span className="wp-bar" style={{ width: `${Math.max(4, (Math.abs(nilai(r)) / maks) * 100)}%` }} />
+          <span className="wp-nilai">
+            {lotRingkas(Math.abs(nilai(r)))} · Rp {rupiahRingkas(Math.abs(nilaiRp(r)))}
+            {avg !== null && <> · avg {Math.round(avg).toLocaleString('id-ID')}</>}
+          </span>
+        </div>
+      )
+    }).concat(
       baris.length > batasTampil
         ? [
             <button key="lagi" type="button" className="wp-lagi" onClick={() => setBatas(baris.length)}>
