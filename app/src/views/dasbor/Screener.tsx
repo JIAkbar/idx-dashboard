@@ -4,6 +4,8 @@ import { IkonMenu, IKON_CARI, IKON_PERINGATAN } from '../../components/dasbor/Ik
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { DropdownMulti, type OpsiMulti } from '../../components/dasbor/DropdownMulti'
 import { Dropdown } from '../../components/dasbor/Dropdown'
+import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
+import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import { TINGKAT_LIKUIDITAS, kodePeringkatTeratas, ujiLikuiditas } from '../../lib/dasbor/likuiditas'
 import { useUrut } from '../../lib/dasbor/useUrut'
 import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
@@ -24,6 +26,10 @@ import {
   type HasilKriteria, type HasilPreset, type Preset, type BarisPreset,
 } from '../../lib/dasbor/presetScreener'
 import { muatKepemilikan } from '../../lib/dasbor/brokerProfilKsei'
+import {
+  useJendelaRekomendasi, usePetaBarsPreset, hasilSahamPreset, type HasilSahamRekomendasi,
+} from '../../lib/dasbor/rekomendasi'
+import { agregatWinRate, rataPersen, type HasilMenang, type AgregatWinRate } from '../../lib/dasbor/winRate'
 import './Screener.css'
 
 /** Tiga preset Whale saja (adendum_preset_whale.md) — Scalping/Swing di luar
@@ -93,8 +99,11 @@ export function Screener() {
   const kandidatData = useKandidatDeepDive()
   const ringkasKartu = useRingkasKartu()
   const sempit = useLayarSempit()
-  const [mode, setMode] = useState<'tabel' | 'whale'>('tabel')
+  const [mode, setMode] = useState<'tabel' | 'whale' | 'riwayat'>('tabel')
   const [presetId, setPresetId] = useState(PRESET_WHALE[0].id)
+  const [presetRiwayat, setPresetRiwayat] = useState(PRESET[0].id)
+  const [jendelaRiwayat, setJendelaRiwayat] = useState<JendelaId>('b1')
+  const [definisiRiwayat, setDefinisiRiwayat] = useState<DefinisiId>('tpSl')
   const [cari, setCari] = useState('')
   const [sssAktif, setSssAktif] = useState<string[]>([])
   const [sektorAktif, setSektorAktif] = useState<string[]>([])
@@ -226,6 +235,9 @@ export function Screener() {
         </button>
         <button type="button" role="tab" aria-selected={mode === 'whale'} className={'tab' + (mode === 'whale' ? ' on' : '')} onClick={() => setMode('whale')}>
           Preset Whale
+        </button>
+        <button type="button" role="tab" aria-selected={mode === 'riwayat'} className={'tab' + (mode === 'riwayat' ? ' on' : '')} onClick={() => setMode('riwayat')}>
+          Riwayat & Win Rate
         </button>
       </div>
 
@@ -399,6 +411,17 @@ export function Screener() {
           tanggal={ringkasKartu?.diperbarui ?? null}
         />
       )}
+
+      {mode === 'riwayat' && (
+        <PanelRiwayatWinRate
+          presetId={presetRiwayat}
+          setPresetId={setPresetRiwayat}
+          jendela={jendelaRiwayat}
+          setJendela={setJendelaRiwayat}
+          definisi={definisiRiwayat}
+          setDefinisi={setDefinisiRiwayat}
+        />
+      )}
     </div>
   )
 }
@@ -529,6 +552,306 @@ function PanelPresetWhale({ presetAktif, presetId, setPresetId, hasil, petaBaris
           bursa resmi, tiap hari bursa) vs Δ kepemilikan asing <b>bulanan</b> (KSEI, akhir bulan) — ✓ searah,
           ⚠ berlawanan, ≈ Δ bulanan nyaris nol (kurang dari 0,05 poin persen), — belum bisa disimpulkan.</>
         )}
+      </div>
+    </div>
+  )
+}
+
+// ── Tab "Riwayat & Win Rate" (Tugas C, spek_preset_winrate_rekap.md) ───────
+
+type JendelaId = 'w1' | 'b1' | 'b3'
+/** w1/b1/b3 dipilih APA ADANYA dari `rentangPreset`/`PemilihRentang` (7/30/91
+ *  hari) — bukan kosakata baru, cuma dibaca sebagai "berapa hari TERAKHIR
+ *  dari daftar tanggal rekomendasi" (bukan snap kalender ke tanggal bursa,
+ *  beda pemakaian dari `rentangPreset`, jadi dipetakan manual di sini). */
+const JENDELA_OPSI: { id: JendelaId; label: string }[] = (['w1', 'b1', 'b3'] as const)
+  .map((id) => ({ id, label: LABEL_RENTANG[id] }))
+const JENDELA_HARI: Record<JendelaId, number> = { w1: 7, b1: 30, b3: 90 }
+
+type DefinisiId = 'openHigh' | 'closeClose' | 'tpSl'
+const DEFINISI_OPSI: { id: DefinisiId; label: string; kalimat: string }[] = [
+  {
+    id: 'openHigh', label: 'Open-Tinggi H+1',
+    kalimat: 'Longgar, persis definisi ringkas SPLE: menang kalau harga TERTINGGI keesokan hari bursa lebih tinggi dari harga PEMBUKAANNYA sendiri hari itu — tak peduli entry beneran kena atau tidak.',
+  },
+  {
+    id: 'closeClose', label: 'Tutup-ke-Tutup H+1',
+    kalimat: 'Ketat: menang kalau harga PENUTUPAN keesokan hari bursa lebih tinggi dari penutupan hari rekomendasi. Rata-rata % perubahan dihitung dari definisi ini.',
+  },
+  {
+    id: 'tpSl', label: 'TP/SL H+5',
+    kalimat: 'Realistis — pakai target & batas rugi preset sendiri: dalam 5 hari bursa berikutnya, target (TP1) harus tersentuh SEBELUM batas rugi (SL). Kalau KEDUANYA tersentuh di hari yang sama, hasilnya "tak tentu" — data harian tak bisa membuktikan mana yang lebih dulu, jadi TIDAK diklaim menang.',
+  },
+]
+
+function ambilHasil(b: HasilSahamRekomendasi, definisi: DefinisiId): HasilMenang {
+  return definisi === 'openHigh' ? b.openHigh : definisi === 'closeClose' ? b.closeClose : b.tpSl
+}
+
+/** Baris hasil dua Rp+preset digabung { HariRekomendasi × HasilSahamRekomendasi[] }. */
+interface BarisHari { tanggal: string; backtest: boolean; baris: HasilSahamRekomendasi[] }
+
+function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, definisi, setDefinisi }: {
+  presetId: string
+  setPresetId: (id: string) => void
+  jendela: JendelaId
+  setJendela: (j: JendelaId) => void
+  definisi: DefinisiId
+  setDefinisi: (d: DefinisiId) => void
+}) {
+  const presetAktif = PRESET.find((p) => p.id === presetId) ?? PRESET[0]
+  const hariDimuat = useJendelaRekomendasi(JENDELA_HARI[jendela])
+  const hari = hariDimuat ?? []
+  const petaBars = usePetaBarsPreset(hari, presetId)
+  const perHari = useMemo<BarisHari[]>(
+    () => hari
+      .map((h) => ({ tanggal: h.tanggal, backtest: h.backtest, baris: hasilSahamPreset(h, presetId, petaBars) }))
+      .sort((a, b) => b.tanggal.localeCompare(a.tanggal)),
+    [hari, presetId, petaBars],
+  )
+  const live = perHari.filter((h) => !h.backtest)
+  const backtest = perHari.filter((h) => h.backtest)
+  const barisLive = live.flatMap((h) => h.baris)
+
+  if (hariDimuat === null) {
+    return (
+      <div className="panel">
+        <div className="panel-b" style={{ textAlign: 'center', padding: '30px 20px' }}>
+          <p className="lbl">Memuat jejak rekomendasi…</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="panel">
+      <div className="panel-b scr-alat">
+        <div className="bilah-kendali">
+          <div className="grup-k">
+            <span className="grup-lbl">Preset</span>
+            <div className="tabs" role="tablist">
+              {PRESET.map((p) => (
+                <button
+                  key={p.id} type="button" role="tab" aria-selected={presetId === p.id}
+                  className={'tab' + (presetId === p.id ? ' on' : '')}
+                  onClick={() => setPresetId(p.id)}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <span className="pemisah-v" aria-hidden="true" />
+          <div className="grup-k">
+            <span className="grup-lbl">Jendela</span>
+            <PemilihRentang opsi={JENDELA_OPSI} nilai={jendela} onGanti={setJendela} ariaLabel="Jendela hari rekomendasi" />
+          </div>
+          <span className="pemisah-v" aria-hidden="true" />
+          <div className="grup-k grup-kanan">
+            <span className="grup-lbl">Hasil</span>
+            <span className="muted scr-jumlah">
+              {live.length} tanggal rekomendasi{backtest.length ? ` + ${backtest.length} backtest` : ''}
+            </span>
+          </div>
+        </div>
+        <p className="muted" style={{ margin: '8px 0 0' }}>{presetAktif.ringkas}</p>
+      </div>
+
+      {live.length === 0 && backtest.length === 0 && (
+        <p className="muted" style={{ padding: '10px 14px' }}>
+          Belum ada jejak rekomendasi tersimpan untuk preset ini di jendela waktu ini — jejak ditulis sekali
+          tiap sore lewat generator rekap; baru mulai terkumpul sejak fitur ini aktif.
+        </p>
+      )}
+
+      {(live.length > 0 || backtest.length > 0) && (<>
+        {/* Definisi menang — tercetak di layar, bukan cuma title (spek §Tugas C.3). */}
+        <div className="panel-b" style={{ paddingTop: 0 }}>
+          <table className="tbl scr-tbl">
+            <thead>
+              <tr>
+                <th>Definisi menang</th>
+                <th className="r">Menang</th>
+                <th className="r">Kalah</th>
+                <th className="r">Tak tentu</th>
+                <th className="r">Tak terukur</th>
+                <th className="r">Win rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {DEFINISI_OPSI.map((d) => {
+                const ag = agregatWinRate(barisLive.map((b) => ambilHasil(b, d.id)))
+                return (
+                  <tr key={d.id}>
+                    <td>
+                      <button
+                        type="button" className={`chip-t${definisi === d.id ? ' on' : ''}`}
+                        style={{ marginRight: 8 }} onClick={() => setDefinisi(d.id)}
+                      >
+                        {d.label}
+                      </button>
+                    </td>
+                    <RingkasAngka ag={ag} />
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+          <ul className="muted" style={{ margin: '8px 0 0', paddingLeft: 18, fontSize: 12, lineHeight: 1.6 }}>
+            {DEFINISI_OPSI.map((d) => <li key={d.id}><b>{d.label}</b> — {d.kalimat}</li>)}
+          </ul>
+          {(() => {
+            const rata = rataPersen(barisLive.map((b) => b.closeClosePersen))
+            return rata != null && (
+              <p className="muted" style={{ margin: '6px 0 0', fontSize: 12 }}>
+                Rata-rata perubahan Tutup-ke-Tutup H+1 (yang terukur): <b className={rata >= 0 ? 'up' : 'dn'}>{rata >= 0 ? '+' : ''}{rata.toFixed(2)}%</b>
+              </p>
+            )
+          })()}
+        </div>
+
+        {/* Tabel per tanggal — definisi aktif saja (dipilih dari tabel di atas). */}
+        <div className="board-tbl-wrap">
+          <table className="tbl scr-tbl">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th className="r">Saham</th>
+                <th className="r">Menang</th>
+                <th className="r">Kalah</th>
+                <th className="r">Tak tentu</th>
+                <th className="r">Tak terukur</th>
+                <th className="r">Win rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {live.map((h) => {
+                const ag = agregatWinRate(h.baris.map((b) => ambilHasil(b, definisi)))
+                return (
+                  <tr key={h.tanggal}>
+                    <td>{h.tanggal}</td>
+                    <td className="r num">{h.baris.length}</td>
+                    <RingkasAngka ag={ag} />
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+        {live.length === 0 && (
+          <p className="muted" style={{ padding: '10px 14px' }}>Belum ada rekomendasi LIVE (non-backtest) di jendela ini.</p>
+        )}
+
+        {/* Menang/Kalah — sama besar, dua tabel identik berdampingan (spek §Tugas C.2). */}
+        <div className="panel-b" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
+          <DaftarSaham judul="Menang" baris={barisLive.filter((b) => ambilHasil(b, definisi) === 'menang')} definisi={definisi} />
+          <DaftarSaham judul="Kalah" baris={barisLive.filter((b) => ambilHasil(b, definisi) === 'kalah')} definisi={definisi} />
+        </div>
+
+        {/* Backtest — dipisah visual + peringatan survivorship (spek §Tugas C.3). */}
+        {backtest.length > 0 && (
+          <div className="panel-b" style={{ borderTop: '2px dashed var(--line)', marginTop: 8, paddingTop: 12 }}>
+            <p className="muted" style={{ fontSize: 12, margin: '0 0 8px' }}>
+              <b>Backtest ({backtest.length} tanggal)</b> — dihitung mundur dari riwayat, TERPISAH dari
+              rekomendasi live di atas. Bisa bias survivorship: daftar emiten yang dipakai adalah daftar HARI
+              INI, bukan daftar yang benar-benar tersedia pada tanggal itu (emiten yang sudah delisting/
+              disuspensi sejak itu tak ikut terhitung) — jangan baca angkanya sebagai jaminan hasil di masa lalu.
+            </p>
+            <table className="tbl scr-tbl">
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th className="r">Saham</th>
+                  <th className="r">Menang</th>
+                  <th className="r">Kalah</th>
+                  <th className="r">Tak tentu</th>
+                  <th className="r">Tak terukur</th>
+                  <th className="r">Win rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {backtest.map((h) => {
+                  const ag = agregatWinRate(h.baris.map((b) => ambilHasil(b, definisi)))
+                  return (
+                    <tr key={h.tanggal}>
+                      <td>{h.tanggal}</td>
+                      <td className="r num">{h.baris.length}</td>
+                      <RingkasAngka ag={ag} />
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </>)}
+
+      <div className="asal">
+        Sumber: jejak rekomendasi ditulis sekali tiap sore dari skor preset hari itu (harga penutupan, target,
+        batas rugi) — berkas yang sudah ditulis TIDAK diedit lagi, supaya rapor menang/kalahnya jujur terhadap
+        apa yang sungguh direkomendasikan saat itu. Preset adalah <b>penyaring</b>, bukan peringkat kelayakan
+        beli. Win rate dihitung hanya dari hasil yang <b>terukur</b> (menang+kalah) — "tak tentu"/"tak terukur"
+        dikeluarkan dari pembagi, bukan dihitung sebagai kalah. Tab ini alat bantu edukasi, bukan rekomendasi
+        investasi.
+      </div>
+    </div>
+  )
+}
+
+/** Sel Menang/Kalah/TakTentu/TakTerukur/WinRate — dipakai tabel ringkasan
+ *  definisi & tabel per-tanggal, biar warnanya konsisten (up/dn/muted). */
+function RingkasAngka({ ag }: { ag: AgregatWinRate }) {
+  return (
+    <>
+      <td className="r num up">{ag.menang}</td>
+      <td className="r num dn">{ag.kalah}</td>
+      <td className="r num muted">{ag.takTentu}</td>
+      <td className="r num muted">{ag.takTerukur}</td>
+      <td className="r num">
+        {ag.winRatePct == null ? <span className="muted">—</span> : `${ag.winRatePct.toFixed(1)}%`}
+      </td>
+    </>
+  )
+}
+
+/** Satu daftar (Menang ATAU Kalah) — SAMA bentuk tabel untuk keduanya supaya
+ *  "kalah" tak pernah terlihat lebih kecil/dikubur (spek §Tugas C.3). */
+function DaftarSaham({ judul, baris, definisi }: { judul: string; baris: HasilSahamRekomendasi[]; definisi: DefinisiId }) {
+  return (
+    <div>
+      <p className="muted" style={{ margin: '0 0 4px', fontWeight: 600 }}>{judul} ({baris.length})</p>
+      <div className="board-tbl-wrap">
+        <table className="tbl scr-tbl">
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Kode</th>
+              <th className="r">Skor</th>
+              {definisi === 'closeClose' && <th className="r">%</th>}
+              {definisi === 'tpSl' && <th className="r">TP1</th>}
+              {definisi === 'tpSl' && <th className="r">SL</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {baris.length === 0 && (
+              <tr><td colSpan={5} className="muted" style={{ padding: '8px 10px' }}>Tak ada baris.</td></tr>
+            )}
+            {baris.map((b) => (
+              <tr key={`${b.tanggal}-${b.kode}`}>
+                <td>{b.tanggal}</td>
+                <td><Link to={`/grafik?kode=${b.kode}`} className="tick">{b.kode}</Link></td>
+                <td className="r num">{b.skor == null ? '—' : b.skor.toFixed(2)}</td>
+                {definisi === 'closeClose' && (
+                  <td className={`r num ${b.closeClosePersen == null ? '' : b.closeClosePersen >= 0 ? 'up' : 'dn'}`}>
+                    {b.closeClosePersen == null ? '—' : `${b.closeClosePersen >= 0 ? '+' : ''}${b.closeClosePersen.toFixed(2)}%`}
+                  </td>
+                )}
+                {definisi === 'tpSl' && <td className="r num">{b.tp1 == null ? '—' : b.tp1.toLocaleString('id-ID')}</td>}
+                {definisi === 'tpSl' && <td className="r num">{b.sl == null ? '—' : b.sl.toLocaleString('id-ID')}</td>}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )

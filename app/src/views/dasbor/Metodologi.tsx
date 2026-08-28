@@ -101,6 +101,26 @@ export function Metodologi() {
               supaya sinyal langka tak dibaca lebih pasti daripada datanya sendiri.
             </p>
           </div>
+
+          <div className="mtd-kartu">
+            <h3>Riwayat &amp; Win Rate preset: tiga definisi menang, dicetak apa adanya</h3>
+            <p>
+              Jejak rekomendasi preset (tab Riwayat &amp; Win Rate di halaman Screener) ditulis SEKALI tiap
+              sore dan tidak pernah diedit ulang — supaya rapor menang/kalahnya jujur terhadap apa yang
+              sungguh direkomendasikan saat itu. Tiga definisi menang dihitung berdampingan: <b>Open-Tinggi
+              H+1</b> (longgar — harga tertinggi keesokan hari lebih tinggi dari pembukaannya sendiri),
+              <b> Tutup-ke-Tutup H+1</b> (ketat — penutupan keesokan hari lebih tinggi dari penutupan hari
+              rekomendasi), dan <b>TP/SL H+5</b> (realistis — dalam 5 hari bursa, target tersentuh sebelum
+              batas rugi; kalau keduanya tersentuh di hari yang SAMA, hasilnya "tak tentu", tidak diklaim
+              menang, karena data harian tak bisa membuktikan urutannya). Win rate dibagi hanya atas hasil
+              yang terukur (menang+kalah) — "tak tentu"/"tak terukur" dikeluarkan dari pembagi, bukan
+              dihitung sebagai kalah. Target &amp; batas rugi memakai rentang harga rata-rata sejati (ATR)
+              14 hari, dibulatkan ke fraksi harga BEI. Preset tetap <b>penyaring</b>, bukan peringkat
+              kelayakan beli — dan berkas backtest (kalau ada) ditandai terpisah karena bisa bias
+              survivorship: daftar emiten yang dipakai adalah daftar hari ini, bukan daftar yang benar-benar
+              tersedia pada tanggal itu.
+            </p>
+          </div>
         </div>
       </section>
 

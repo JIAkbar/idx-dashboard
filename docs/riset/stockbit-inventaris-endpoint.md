@@ -28,7 +28,7 @@ Semua lewat `https://exodus.stockbit.com`, header `Authorization: Bearer <access
 | `GET /order-trade/broker/top?sort=TB_SORT_BY_TOTAL_VA…&period=TB_PERIOD_LAST_1_DAY&market…` | Terlihat di DevTools Johan (401 saat sesi habis) — **Top Broker** level pasar, ada juga tab Top Stock | Salin parameter lengkapnya dari tab Network saat halaman Top Broker terbuka |
 | `GET /findata-view/company/financial?symbol=&report_type=` | 200 tapi `data_tables` kosong — **laporan keuangan** per periode | Nilai `report_type`/`period_type`/`data_type` yang benar (salin dari Network saat tab Financials dibuka) |
 | `GET /chartbit/chart/corpaction?symbol=&from=&to=` | 400 `ErrInvalidParameter` — aksi korporasi untuk grafik | Format tanggal/urutan yang benar |
-| `GET /chartbit/{kode}/price/intraday` | 400 | Format `from/to` (mungkin epoch) |
+| `GET /chartbit/{kode}/price/intraday` | **TERPECAHKAN 25 Agu 2026 (sesi AI Skill)**: `from`=epoch TERBARU, `to`=epoch TERLAMA (terbalik seperti daily) → **bar 1 MENIT** {datetime, o,h,l,c, volume, lot, value, frequency, foreign_buy, foreign_sell} 08:58–16:14 | Server hanya menyimpan **±90 hari** (lebih tua → HTTP 400; diuji −14/−30/−90 OK, −180/−365 400). BBCA 90 hari = 18.974 bar. Riwayat panjang = wajib panen rutin |
 | `GET /orderbook/{orderbookid}` | Butuh id numerik (ada di `/emitten/{kode}/info` → `id`=104 untuk BUMI); **di balik paywall Pro** (`/paywall/eligibility/check?features=PAYWALL_FEATURE_ORDERBOOK`) | Uji dengan id numerik; kalau paywall, lewati |
 | `/fundachart/{kode}` | 405 (bukan GET) | Metode/param dari Network |
 
