@@ -62,7 +62,10 @@ const MAKS_BIN = 12
 /** Di atas lebar bar ini, footprint pindah ke SAMPING candle (kolom kedua di
  *  slot waktu yang sama) alih-alih menumpuk di atasnya — pola whales.id yang
  *  membuat candle dan sel sama-sama terbaca. Di bawahnya, menumpuk. */
-export const BAR_SPACING_SAMPING = 26
+// Johan 28 Agu: "mestinya view seperti ini di candle sudah muncul footprint,
+// tidak harus dekat sekali juga" — ambang 26 memaksa zoom sangat rapat.
+// 15px: candle masih ramping tapi kolom sel di sampingnya sudah punya ±6px.
+export const BAR_SPACING_SAMPING = 15
 /** Porsi lebar slot yang dipakai kolom footprint saat berdampingan. */
 const PORSI_SAMPING = 0.42
 
@@ -136,7 +139,10 @@ const LEBAR_MIN_TEKS = 48
 const FONT_PX = 9
 /** Jarak antar bar minimum (px) supaya sel masih terbaca — diekspor karena
  *  halaman memakainya untuk auto-zoom saat toggle dinyalakan. */
-export const BAR_SPACING_MIN = 14
+// Turun 14 -> 8 (Johan 28 Agu, keluhan yang sama): di 8px sel setinggi
+// beberapa piksel masih terbaca sebagai blok warna walau angkanya tak muat
+// (teks memang sudah punya ambangnya sendiri, LEBAR_MIN_TEKS).
+export const BAR_SPACING_MIN = 8
 
 export class FootprintHarian implements IPanePrimitive<Time> {
   private ambilSeri: () => ISeriesApi<SeriesType> | null

@@ -26,10 +26,31 @@ export interface GarisBroker {
   warna: string
 }
 
-const FONT_PX = 11
-const PAD_X = 6
-const PAD_Y = 3
+const FONT_PX = 12
+const PAD_X = 7
+const PAD_Y = 3.5
 const TEPI_KANAN = 8
+
+/** Warna teks yang terbaca DI ATAS `warna` — Johan 28 Agu: "average ini gmn
+ *  caranya terlihat yaaa, dan teksnya jelas". Sebelumnya teks selalu putih,
+ *  jadi pill kuning/hijau-muda (warna identitas broker yang terang) menelan
+ *  tulisannya. Ambang dari luminance relatif, bukan tebakan per warna. */
+function teksKontras(warna: string): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(warna.trim())
+    ?? /rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/i.exec(warna)
+  let r = 0, g = 0, b = 0
+  if (m && m[1] && m[1].length === 6) {
+    const n = parseInt(m[1], 16)
+    r = (n >> 16) & 255; g = (n >> 8) & 255; b = n & 255
+  } else if (m && m[3] != null) {
+    r = +m[1]; g = +m[2]; b = +m[3]
+  } else {
+    return '#fff'
+  }
+  const lin = (v: number) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4 }
+  const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+  return L > 0.42 ? '#0b1220' : '#fff'
+}
 
 export class GarisAvgBroker implements IPanePrimitive<Time> {
   /** Getter, bukan referensi langsung: seri harga dibuat ulang tiap ganti
@@ -92,7 +113,7 @@ export class GarisAvgBroker implements IPanePrimitive<Time> {
         target.useBitmapCoordinateSpace(({ context: ctx, bitmapSize, horizontalPixelRatio: hp, verticalPixelRatio: vp }) => {
           this.pillRect = []
           ctx.save()
-          ctx.font = `${Math.round(FONT_PX * vp)}px system-ui, sans-serif`
+          ctx.font = `600 ${Math.round(FONT_PX * vp)}px system-ui, sans-serif`
           ctx.textBaseline = 'middle'
           const tebal = Math.max(1, Math.round(vp))
           // Label didorong turun kalau bertindih dengan label sebelumnya —
@@ -123,7 +144,12 @@ export class GarisAvgBroker implements IPanePrimitive<Time> {
             ctx.beginPath()
             ctx.roundRect(x, yPill, lebarPill, tinggiPill, r)
             ctx.fill()
-            ctx.fillStyle = '#fff'
+            // Tepi gelap tipis: memisahkan pill dari lilin/heatmap di
+            // belakangnya, terutama saat warnanya mirip latar.
+            ctx.strokeStyle = 'rgba(0,0,0,.55)'
+            ctx.lineWidth = Math.max(1, Math.round(vp))
+            ctx.stroke()
+            ctx.fillStyle = teksKontras(g.warna)
             ctx.fillText(teks, x + PAD_X * hp, yPill + tinggiPill / 2)
             this.pillRect.push({
               x0: x / hp, x1: (x + lebarPill) / hp,
