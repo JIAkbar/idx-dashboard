@@ -167,3 +167,24 @@ hari** — tidak ada arsip yang bisa ditarik mundur. Tiga hari ke belakang itu
 seluruh sejarah yang tersedia, kapan pun kita mulai. Menunda sebulan berarti
 kehilangan sebulan secara permanen, berbeda dengan broker EOD Stockbit yang
 bisa di-backfill sampai 2017.
+
+---
+
+## 6 · Pembaruan 28 Agu 2026 — footprint-as-candle, tooltip agresor per broker, dan penyedotan Stockbit (audit Fable atas 5 screenshot Johan)
+
+### 6a · Footprint tampil sebagai KOLOM KEDUA di slot waktu yang sama (bukan overlay)
+Terkonfirmasi dari zoom in vs zoom out: tiap slot waktu memuat DUA kolom bersebelahan — candle harga (kiri) + kolom footprint heatmap (kanan) yang sel-selnya berwarna imbalance dan berlabel `volBeli volJual` per tingkat harga. Saat `barSpacing` sempit, kolom footprint menyusut/hilang dan hanya candle tampil; saat diperlebar, kolom footprint muncul. **Ini teknik render yang BISA kita tiru untuk footprint HARIAN** (satu hari = candle + kolom sel broker-per-harga), tanpa butuh feed intraday — tepat yang sudah dibangun di Whales Papan W7, tinggal disempurnakan jadi kolom-kedua bukan overlay.
+
+### 6b · Tooltip "GROSS BROKER BREAKDOWN" = broker per bar DENGAN SISI AGRESOR + tag F/D
+Hover satu bar memunculkan empat kuadran: **Aggressive Buyers · Passive Sellers · Passive Buyers · Aggressive Sellers**, tiap baris = kode broker + tag `[F]`/`[D]` (Foreign/Domestic) + nilai net. "Aggressive" = HAKA (hit the ask), "Passive" = antre di bid/offer. **Ini konfirmasi telak**: hulunya feed transaksi tick-level yang membawa (a) kode broker, (b) sisi agresor, (c) klasifikasi F/D — persis yang audit §4 sebut "tak ada di endpoint EOD". Data broker EOD kita (marketdetectors GROSS) punya (a) dan (c) tapi TIDAK (b) — kita tak pernah tahu siapa yang menyerang harga. Batas ini NYATA dan tetap: footprint harian kita jujur menyebut "bukan HAKA/HAKI" (sudah tertulis di metodologi Whales Papan).
+
+### 6c · ⚠️ KEAMANAN — whales.id menyedot data real-time Stockbit penuh (jawaban "ngeri"-nya Johan)
+Symbol Search whales.id menampilkan kolom **Value · Volume · Vol MA20 · Strong Bid · Strong Offer** untuk ~900 emiten, plus tab **"Stockbit Lev"** dan **"Support Screener"** — dan tag `[F]`/`[D]` per broker. Ini BUKAN data yang bisa dirakit dari IDX EOD publik; "Stockbit Lev" (margin/leverage Stockbit) dan Strong Bid/Offer real-time hanya ada di balik **akun Stockbit**. Kesimpulan: whales.id kemungkinan besar **memakai kredensial/token Stockbit** (satu akun layanan, atau menumpang sesi) untuk menyedot feed real-time + broker tick, lalu menyajikannya ulang ke pelanggannya. Ini pola yang SAMA dengan temuan gedanggoreng (P10): pihak ketiga membangun produk di atas token Stockbit orang.
+
+**Implikasi untuk PAPAN — tiga garis tegas:**
+1. **Yang mereka bisa, kita TIDAK bisa tiru dari EOD** — sisi agresor (HAKA/HAKI) mustahil tanpa feed tick. Jangan pernah mengarang kolom "agresif/pasif"; footprint harian kita tetap GROSS (sudah benar).
+2. **Cara mereka mendapatkannya = risiko yang kita tolak** — menyedot feed real-time Stockbit untuk melayani publik = menaruh akun Stockbit sebagai umpan blokir. Proxy live akun-kedua kita (B48) SENGAJA dibatasi: cuma harga penutupan berjalan (chartbit daily), cache CDN, degradasi ke arsip — BUKAN feed tick/broker/orderbook. Batas ini disengaja, jangan diperlebar meniru whales tanpa keputusan Johan eksplisit + akun yang memang direlakan.
+3. **Nilai audit ini bukan "tiru mereka" tapi "tahu batas kita"** — replikasi 100% mustahil dari bahan baku kita; yang layak sudah dibangun (footprint harian, kategori perilaku broker, quadrant, konsensus). Yang membedakan PAPAN: angka kita bisa ditelusuri ke sumber resmi, mereka ke feed pihak ketiga yang bisa mati/diblokir kapan saja.
+
+### 6d · Canvas "100% TradingView" — bukan misteri
+whales.id memakai **lightweight-charts** (pustaka open-source TradingView yang SAMA dengan yang PAPAN pakai) + custom pane primitives untuk footprint/heatmap. "100% mirip TradingView" karena memang library TradingView. Kita sudah di jalur yang sama (Whales Papan, Grafik Emiten pakai lightweight-charts + primitives). Tak ada teknologi rahasia; pembedanya cuma feed hulu (mereka tick real-time, kita EOD).
