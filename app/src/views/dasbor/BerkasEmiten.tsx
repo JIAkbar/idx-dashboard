@@ -17,6 +17,9 @@ import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { InfoIndikator, type ItemInfoIndikator } from '../../components/dasbor/InfoIndikator'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
+import { useBrokerTahunan } from '../../lib/dasbor/brokerTahunanData'
+import { ringkasPemegang, bacaKonsentrasi } from '../../lib/dasbor/berkasPemegang'
+import { LABEL_KELOMPOK, KETERANGAN_KELOMPOK, warnaBrokerCanvas, namaBroker } from '../../lib/dasbor/kelompokBroker'
 import {
   ARTI_WATAK, bacaHariMerah, muatRezim, tahunTerbaru,
   type BerkasRezim, type RezimEmiten,
@@ -85,6 +88,11 @@ export default function BerkasEmiten() {
       .map((v) => ({ x: posisi(v.tangkap_turun), y: posisi(v.tangkap_naik) }))
       .filter((p): p is { x: number; y: number } => p.x != null && p.y != null)
   }, [berkas])
+
+  // Blok B — arsip broker emiten ini (hook yang sama dipakai Whales Papan,
+  // jadi berkasnya tersinggah bersama, bukan diunduh dua kali).
+  const { hari: hariBroker, muat: muatBroker } = useBrokerTahunan(kode)
+  const pemegang = useMemo(() => ringkasPemegang(hariBroker, 20), [hariBroker])
 
   const tahun = r ? tahunTerbaru(r) : []
   const maksTahun = Math.max(1, ...tahun.map((t) => Math.abs(t[1].tangkap_naik)))
@@ -283,9 +291,92 @@ export default function BerkasEmiten() {
         </section>
       )}
 
-      {/* Blok B–G menyusul — rancangannya sudah tetap, datanya sudah dipanen. */}
+      {/* ── BLOK B · SIAPA MEMEGANG ────────────────────────────────────── */}
+      <section className="be-kartu" style={{ marginTop: 14 }}>
+        <div className="be-kartu-kepala">
+          <span className="be-blok">B</span>
+          <div>
+            <h2>Siapa memegang — broker penampung &amp; pelepas</h2>
+            <p className="be-ket">
+              {pemegang.nHari > 0
+                ? <>Dijumlahkan dari {pemegang.nHari} hari bursa terakhir yang arsipnya ada
+                    ({pemegang.tglMulai} – {pemegang.tglAkhir}). Urutan menurut <b>net</b> (beli
+                    dikurangi jual), bukan sibuknya.</>
+                : muatBroker ? 'Memuat arsip broker…' : 'Arsip broker untuk emiten ini belum tersedia.'}
+            </p>
+          </div>
+        </div>
+
+        {pemegang.nHari > 0 && (
+          <>
+            <div className="be-ringkas-b">
+              {bacaKonsentrasi(pemegang.konsentrasi3) && (
+                <span className="be-pil">{bacaKonsentrasi(pemegang.konsentrasi3)}</span>
+              )}
+              {/* Porsi asing = porsi TRANSAKSI, bukan kebangsaan brokernya.
+                  Kalimatnya dicetak di layar, bukan disembunyikan di tooltip. */}
+              <span className="be-pil">
+                {pemegang.porsiAsingTotal == null
+                  ? 'Porsi asing: belum ada di arsip periode ini'
+                  : `Porsi asing ${Math.round(pemegang.porsiAsingTotal * 100)}% dari lot beli`}
+              </span>
+            </div>
+
+            <div className="be-duo-b">
+              {([['Menampung', pemegang.penampung, 'plus'], ['Melepas', pemegang.pelepas, 'minus']] as const)
+                .map(([judul, daftar, nada]) => (
+                  <div key={judul}>
+                    <h3>{judul}</h3>
+                    {daftar.length === 0 && <p className="be-ket">tak ada</p>}
+                    {daftar.slice(0, 8).map((b) => (
+                      <div className="be-brow" key={b.kode}>
+                        <span className="be-bk" style={{ color: warnaBrokerCanvas(b.kode) }}
+                          title={`${namaBroker(b.kode)} · ${LABEL_KELOMPOK[b.kelompok]}`}>{b.kode}</span>
+                        <span className={`be-bn wp-${nada}`}>
+                          {Math.abs(b.netLot).toLocaleString('id-ID')} lot
+                        </span>
+                        <span className="be-ba">
+                          {b.avgBeli ? `avg ${Math.round(b.avgBeli).toLocaleString('id-ID')}` : '—'}
+                        </span>
+                        <span className="be-bf">
+                          {b.porsiAsing == null ? '' : `a ${Math.round(b.porsiAsing * 100)}%`}
+                        </span>
+                      </div>
+                    ))}
+                    {daftar.length > 8 && (
+                      <div className="be-ket" style={{ marginTop: 4 }}>+{daftar.length - 8} broker lain</div>
+                    )}
+                  </div>
+                ))}
+            </div>
+
+            <h3>Net per kelompok broker</h3>
+            <p className="be-ket">Kelompok menjawab "broker ini jenis apa", bukan seberapa pintar.</p>
+            <div className="be-kel">
+              {pemegang.perKelompok.map((k) => (
+                <div className="be-krow" key={k.kelompok} title={KETERANGAN_KELOMPOK[k.kelompok]}>
+                  <span>{LABEL_KELOMPOK[k.kelompok]}</span>
+                  <span className={k.netLot >= 0 ? 'wp-plus' : 'wp-minus'}>
+                    {k.netLot >= 0 ? '+' : ''}{k.netLot.toLocaleString('id-ID')} lot
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="be-batas">
+              <b>Batas blok ini</b>
+              <ul>
+                <li>Angka ini <b>GROSS harian</b> — data harian tak menyimpan sisi agresor, jadi tak ada "agresif" atau "pasif" di sini.</li>
+                <li>Porsi asing mengukur <b>transaksinya</b>, bukan kebangsaan brokernya: satu broker melayani asing dan domestik sekaligus.</li>
+                <li>Harga rata-rata adalah <b>jangkar</b>, bukan target — ia tak menjanjikan broker itu akan mempertahankannya.</li>
+              </ul>
+            </div>
+          </>
+        )}
+      </section>
+
+      {/* Blok C–G menyusul — rancangannya sudah tetap, datanya sudah dipanen. */}
       <div className="be-nanti">
-        <div><b>B · Siapa memegang</b>broker penampung, kubu perilaku, porsi asing</div>
         <div><b>C · Aliran asing</b>net, streak, dibagi free float</div>
         <div><b>D · Likuiditas</b>volume, hari sepi, porsi negosiasi</div>
         <div><b>E · Probabilitas</b>P(R1/R2/S1), win rate, riwayat rekomendasi</div>

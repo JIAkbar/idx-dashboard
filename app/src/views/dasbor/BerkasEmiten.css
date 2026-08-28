@@ -248,3 +248,49 @@
 
 /* Peringatan likuiditas di kartu angka — audit 28 Agu #6. */
 .be-exp.be-peringat { color: var(--red); margin-top: 6px; }
+
+/* ── BLOK B · siapa memegang ─────────────────────────────────────────── */
+.be-ringkas-b { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.be-pil {
+  border: 1px solid var(--line2);
+  background: var(--bg2);
+  padding: 4px 10px;
+  font-size: 11.5px;
+  color: var(--text2);
+}
+.be-duo-b { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 700px) { .be-duo-b { grid-template-columns: 1fr; } }
+/* Kolom: kode · net · avg · porsi asing. `auto` di kolom terakhir supaya
+ * baris tanpa varian asing tak menyisakan lubang selebar kolom. */
+.be-brow {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: baseline;
+  padding: 3px 0;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+.be-bk { font-family: var(--mono, ui-monospace, monospace); font-weight: 600; }
+.be-bn { font-family: var(--mono, ui-monospace, monospace); }
+.be-ba, .be-bf {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 11px;
+  color: var(--text3);
+  white-space: nowrap;
+}
+.be-kel {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+.be-krow {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--line);
+  padding: 6px 10px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
