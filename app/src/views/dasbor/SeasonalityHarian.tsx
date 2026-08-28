@@ -247,14 +247,20 @@ export function SeasonalityHarian() {
               <button key={label} type="button" className={`chip-t${pilih === label ? ' on' : ''}`}
                 onClick={() => setPilih(label)}>{label}</button>
             ))}
+            {/* Satu kalender mode rentang (bukan dua DatePicker berdampingan) —
+                dua klik di popover yang sama, bukan dua popover yang harus
+                dibuka bergantian untuk memilih dua ujung rentang. */}
             {modeBebas && (
-              <div className="bilah-rentang">
-                <DatePicker value={dariBebas} onChange={(iso) => ubahBebas(iso, sampaiBebas)}
-                  tersedia={tersediaSet} ariaLabel="Tanggal mulai rentang bebas" />
-                <span className="bilah-rentang-pisah" aria-hidden="true">→</span>
-                <DatePicker value={sampaiBebas} onChange={(iso) => ubahBebas(dariBebas, iso)}
-                  tersedia={tersediaSet} ariaLabel="Tanggal akhir rentang bebas" rata="kanan" />
-              </div>
+              <DatePicker value={dariBebas}
+                // `onChange` di kalender RENTANG berarti "pilih satu hari",
+                // bukan "ganti ujung awal": komponen memanggilnya saat orang
+                // mengklik tanggal yang sama dua kali, dan saat stepper ‹ ›
+                // dipakai. Memetakannya ke (iso, akhirLama) membuat klik-ganda
+                // menghasilkan rentang panjang yang tak diminta siapa pun.
+                onChange={(iso) => ubahBebas(iso, iso)}
+                tersedia={tersediaSet} ariaLabel="Rentang bebas: mulai dan akhir"
+                rentang={{ dari: dariBebas, sampai: sampaiBebas }}
+                onGantiRentang={ubahBebas} />
             )}
           </div>
           <span className="v-note sea-rentang-note">

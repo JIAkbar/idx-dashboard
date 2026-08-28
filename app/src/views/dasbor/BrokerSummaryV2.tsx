@@ -246,11 +246,24 @@ export function BrokerSummaryV2() {
               <div className="bs-preset"><PemilihRentang opsi={PRESET} nilai={preset ?? 'b1'} onGanti={keRentang} /></div>
               <div className="bs-tgl">
                 <LangkahTanggal arah="mundur" ukuran="sebaris" label="Rentang satu hari bursa sebelumnya" disabled={!tanggalTersedia.length} onClick={() => langkahHari(-1)} />
-                <div className="bilah-rentang">
-                  <DatePicker value={dari} onChange={(iso) => keRentangBebas(iso, akhir)} tersedia={setTersedia} ariaLabel="Tanggal mulai rentang" rata="kanan" />
-                  <span className="bilah-rentang-pisah" aria-hidden="true">s.d.</span>
-                  <DatePicker value={akhir} onChange={(iso) => keRentangBebas(dari, iso)} tersedia={setTersedia} ariaLabel="Tanggal akhir rentang" rata="kanan" />
-                </div>
+                {/* Satu kalender mode rentang (klik awal lalu akhir) menggantikan
+                    dua DatePicker terpisah — dulu dua popover harus dibuka
+                    bergantian untuk satu rentang, sekarang cukup dua klik di
+                    kalender yang sama. */}
+                <DatePicker
+                  value={dari}
+                  // `onChange` di kalender RENTANG berarti "pilih satu hari",
+                  // bukan "ganti ujung awal": komponen memanggilnya saat orang
+                  // mengklik tanggal yang sama dua kali, dan saat stepper ‹ ›
+                  // dipakai. Memetakannya ke (iso, akhirLama) membuat klik-ganda
+                  // menghasilkan rentang panjang yang tak diminta siapa pun.
+                  onChange={(iso) => keRentangBebas(iso, iso)}
+                  tersedia={setTersedia}
+                  ariaLabel="Rentang tanggal"
+                  rata="kanan"
+                  rentang={{ dari, sampai: akhir }}
+                  onGantiRentang={keRentangBebas}
+                />
                 <LangkahTanggal arah="maju" ukuran="sebaris" label="Rentang satu hari bursa berikutnya" disabled={!tanggalTersedia.length} onClick={() => langkahHari(1)} />
               </div>
             </div>

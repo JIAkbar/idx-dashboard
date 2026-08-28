@@ -204,21 +204,25 @@ export function BrokerSummary() {
               )}
               <div className="bs-tgl">
                 {modeRentang ? (
-                  <>
-                    {/* Rentang bebas — dua DatePicker mulai/akhir, hanya hari
-                        ber-data yang bisa dipilih; urutan terbalik otomatis
-                        ditukar di pilihRentang. */}
-                    {/* K5: dua pemilih tanggal dalam SATU bingkai (.bilah-rentang,
-                        pola yang sama dengan Seasonality Harian). Sebelumnya
-                        keduanya kotak lepas yang kebetulan bersebelahan, dan
-                        "s.d." di antaranya satu-satunya petunjuk bahwa mereka
-                        satu rentang. */}
-                    <div className="bilah-rentang">
-                      <DatePicker value={mulaiIso} onChange={(iso) => keRentangBebas(iso, akhirIso)} tersedia={tersedia} ariaLabel="Tanggal mulai rentang" rata="kanan" />
-                      <span className="bilah-rentang-pisah" aria-hidden="true">s.d.</span>
-                      <DatePicker value={akhirIso} onChange={(iso) => keRentangBebas(mulaiIso, iso)} tersedia={tersedia} ariaLabel="Tanggal akhir rentang" rata="kanan" />
-                    </div>
-                  </>
+                  // Rentang bebas — SATU DatePicker mode rentang (29 Agu):
+                  // satu kalender dua klik, bukan dua popover mulai/akhir yang
+                  // harus dibuka bergantian. keRentangBebas tetap yang
+                  // memvalidasi & memuat, jadi urutan terbalik tetap otomatis
+                  // ditukar di sana.
+                  <DatePicker
+                    value={mulaiIso}
+                    // `onChange` di kalender RENTANG berarti "pilih satu hari",
+                    // bukan "ganti ujung awal": komponen memanggilnya saat orang
+                    // mengklik tanggal yang sama dua kali, dan saat stepper ‹ ›
+                    // dipakai. Memetakannya ke (iso, akhirLama) membuat klik-ganda
+                    // menghasilkan rentang panjang yang tak diminta siapa pun.
+                    onChange={(iso) => keRentangBebas(iso, iso)}
+                    tersedia={tersedia}
+                    ariaLabel="Rentang tanggal data broker"
+                    rata="kanan"
+                    rentang={mulaiIso && akhirIso ? { dari: mulaiIso, sampai: akhirIso } : null}
+                    onGantiRentang={keRentangBebas}
+                  />
                 ) : (
                   <DatePicker
                     value={tanggalAktif ?? ''}

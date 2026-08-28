@@ -123,8 +123,18 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
 
   // Panah kiri/kanan saat fokus di trigger juga menggeser (#97).
   function onKeyTrigger(e: React.KeyboardEvent) {
-    if (e.key === 'ArrowLeft' && isoPrev) { e.preventDefault(); onChange(isoPrev) }
-    else if (e.key === 'ArrowRight' && isoNext) { e.preventDefault(); onChange(isoNext) }
+    // Panah kiri/kanan menirukan stepper — termasuk di mode rentang, supaya
+    // papan ketik dan tetikus tak punya dua perilaku berbeda.
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      const arah = e.key === 'ArrowLeft' ? -1 : 1
+      if (modeRentang) {
+        const g = geserRentang(arah)
+        if (g) { e.preventDefault(); onGantiRentang?.(g.dari, g.sampai) }
+        return
+      }
+      const iso = arah === -1 ? isoPrev : isoNext
+      if (iso) { e.preventDefault(); onChange(iso) }
+    }
   }
 
   // Swipe horizontal di popover = ganti bulan tampil (#97, mobile).
@@ -162,16 +172,40 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
 
   // Stepper dirender mengapit field, di luar .dd supaya popover tetap
   // menempel pas di bawah field (bukan di bawah stepper).
+  /** Geser SELURUH rentang satu hari-berdata, panjangnya dipertahankan.
+   *  Tanpa ini stepper di mode rentang cuma menggeser ujung awal — rentang
+   *  memanjang/memendek tiap klik, dan ujung akhir tak bisa digeser sama
+   *  sekali (temuan pemeriksa sapuan 29 Agu 2026). */
+  const geserRentang = (arah: -1 | 1): { dari: string; sampai: string } | null => {
+    if (!rentang || !daftar) return null
+    const iDari = daftar.indexOf(rentang.dari)
+    const iSampai = daftar.indexOf(rentang.sampai)
+    if (iDari < 0 || iSampai < 0) return null
+    const jDari = iDari + arah
+    const jSampai = iSampai + arah
+    // Berhenti di tepi daftar, bukan menjepit satu ujung saja — menjepit akan
+    // diam-diam mengubah panjang rentang.
+    if (jDari < 0 || jSampai >= daftar.length) return null
+    return { dari: daftar[jDari], sampai: daftar[jSampai] }
+  }
+
   const stepper = (arah: -1 | 1) => {
+    const geser = modeRentang ? geserRentang(arah) : null
     const iso = arah === -1 ? isoPrev : isoNext
-    const label = arah === -1 ? 'Tanggal ber-data sebelumnya' : 'Tanggal ber-data berikutnya'
+    const aktif = modeRentang ? !!geser : !!iso
+    const label = modeRentang
+      ? (arah === -1 ? 'Geser rentang mundur satu hari' : 'Geser rentang maju satu hari')
+      : (arah === -1 ? 'Tanggal ber-data sebelumnya' : 'Tanggal ber-data berikutnya')
     return (
       <LangkahTanggal
         arah={arah === -1 ? 'mundur' : 'maju'}
         ukuran="sebaris"
-        disabled={!iso}
+        disabled={!aktif}
         label={label}
-        onClick={() => iso && onChange(iso)}
+        onClick={() => {
+          if (modeRentang) { if (geser) onGantiRentang?.(geser.dari, geser.sampai); return }
+          if (iso) onChange(iso)
+        }}
       />
     )
   }

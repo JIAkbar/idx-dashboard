@@ -250,6 +250,12 @@ export interface BarisHarianPapan {
    *  sisi komponen — dihitung ulang di sana (bukan di sini) supaya rumus
    *  form tetap SATU sumber (raporBadge.ts), bukan disalin ke pemuat ini. */
   bar5: { open: number; close: number }[]
+  /** Selisih menang−kalah kolom Form (mis. 4-1 → +3, 1-4 → −3).
+   *  Dihitung di sini SUPAYA KOLOMNYA BISA DIURUT (Johan 29 Agu: "form ini
+   *  berdasarkan apa? seharusnya bisa di sorting juga"). Panah & label tetap
+   *  dirender `hitungForm` dari `bar5` — angka ini cuma kunci urut, bukan
+   *  sumber tampilan kedua yang bisa menyimpang darinya. */
+  form_skor: number | null
 }
 
 /**
@@ -311,6 +317,17 @@ export function bangunBarisHarianPapan(
     skor_m: skor.bulanan?.label ?? null,
     tidak_diperdagangkan: tidakDiperdagangkanHariIni(volumeIni),
     bar5: barSampaiTanggal.slice(-5).map((b) => ({ open: b[2], close: b[5] })),
+    form_skor: (() => {
+      const lima = barSampaiTanggal.slice(-5)
+      if (lima.length === 0) return null
+      let n = 0
+      for (const b of lima) {
+        const d = Number(b[5]) - Number(b[2])
+        if (d > 0) n += 1
+        else if (d < 0) n -= 1
+      }
+      return n
+    })(),
   }
 }
 

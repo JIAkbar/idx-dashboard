@@ -334,7 +334,7 @@ export function HarianPapan() {
                     {thSort(urutState, 'skor_d', 'Skor Papan D')}
                     {thSort(urutState, 'skor_w', 'Skor Papan W')}
                     {thSort(urutState, 'skor_m', 'Skor Papan M')}
-                    <th>Form</th>
+                    {thSort(urutState, 'form_skor', 'Form')}
                   </tr>
                 </thead>
                 <tbody>

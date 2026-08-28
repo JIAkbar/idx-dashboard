@@ -138,7 +138,7 @@ describe('fungsi murni — unit', () => {
       kode: 'BBCA', nama: 'Bank BCA', sektor: 'Keuangan', harga: 10000, tdm_persen: 1, volume: 100,
       rvol10: 1, nilai: 1000000, nbsf_000: 5, free_float: 50, ma20_arah: 'naik', close_gap: 0.5,
       chg_1d: 1, chg_wtd: 2, chg_mtd: 3, posisi_ema5: 'atas', posisi_ma10: 'atas', posisi_ma20: 'atas',
-      skor_d: 'Buy', skor_w: 'Buy', skor_m: 'Neutral', tidak_diperdagangkan: false, bar5: [],
+      skor_d: 'Buy', skor_w: 'Buy', skor_m: 'Neutral', tidak_diperdagangkan: false, bar5: [], form_skor: 3,
     }]
     const csv = keCsvHarianPapan(contoh)
     const baris = csv.split('\n')
