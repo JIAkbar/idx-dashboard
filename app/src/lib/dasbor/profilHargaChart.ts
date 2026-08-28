@@ -27,13 +27,17 @@ const PORSI_MAKS = 0.16
  *  yang bergradasi: abu-biru redup (sepi) → emas (ramai), interpolasi RGB
  *  mengikuti lot relatif; POC = ujung gradasi, emas penuh. Area nilai 70%
  *  lebih pekat daripada luar area pada tingkat keramaian yang sama. */
-const SEPI = [100, 116, 139] as const
-const RAMAI = [234, 179, 8] as const
-const WARNA_POC = 'rgba(234, 179, 8, 0.72)'
+/* Revisi 28 Agu (Johan: "profil ini dibuat warna hijau yang tebal,
+ * disesuaikan rekomendasimu dan buat gradient dong"): gradasi HIJAU —
+ * hijau gelap redup (sepi) → hijau terang pekat (ramai); POC tetap EMAS
+ * (rekomendasi yang disetujui) supaya pita teramai menonjol di atas hijau. */
+const SEPI = [30, 96, 66] as const
+const RAMAI = [74, 222, 128] as const
+const WARNA_POC = 'rgba(234, 179, 8, 0.75)'
 function warnaGradasi(f: number, va: boolean): string {
   const t = Math.max(0, Math.min(1, f))
   const c = SEPI.map((s, i) => Math.round(s + (RAMAI[i] - s) * t))
-  const alfa = (va ? 0.24 : 0.14) + (va ? 0.38 : 0.22) * t
+  const alfa = (va ? 0.30 : 0.16) + (va ? 0.42 : 0.26) * t
   return `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${alfa.toFixed(3)})`
 }
 
