@@ -15,3 +15,29 @@
    tak melompat saat teksnya berubah. */
 .lantai .hp-cari { width: 150px; }
 @media (max-width: 700px) { .lantai .hp-cari { width: 100%; } }
+
+/* ── Tabel mode RENTANG ──────────────────────────────────────────────────
+   Tabel harian punya 20 kolom dan wajar melebar penuh; tabel rentang cuma
+   7, dan lebar penuh membuat tiap kolom melar sampai angkanya terlempar
+   jauh dari kepalanya (temuan Johan 29 Agu: "tabel nya berantakan nih
+   ketika pilih rentang waktu"). Lebar kolom karena itu ditetapkan, dan
+   tabelnya berhenti di lebar isi — bukan diregangkan ke tepi layar. */
+.lantai .hp-tbl-rentang { width: auto; min-width: min(100%, 980px); }
+.lantai .hp-tbl-rentang th,
+.lantai .hp-tbl-rentang td { white-space: nowrap; }
+.lantai .hp-tbl-rentang th:nth-child(1),
+.lantai .hp-tbl-rentang td:nth-child(1) { width: 90px; }
+.lantai .hp-tbl-rentang th:nth-child(2),
+.lantai .hp-tbl-rentang td:nth-child(2) { width: 190px; }
+/* Tiga kolom angka besar — lebarnya disamakan supaya digit-digitnya
+   berbaris rapi antar kolom, bukan tiap kolom melar sendiri. */
+.lantai .hp-tbl-rentang th:nth-child(3),
+.lantai .hp-tbl-rentang td:nth-child(3),
+.lantai .hp-tbl-rentang th:nth-child(4),
+.lantai .hp-tbl-rentang td:nth-child(4),
+.lantai .hp-tbl-rentang th:nth-child(5),
+.lantai .hp-tbl-rentang td:nth-child(5) { width: 190px; }
+.lantai .hp-tbl-rentang th:nth-child(6),
+.lantai .hp-tbl-rentang td:nth-child(6) { width: 70px; }
+.lantai .hp-tbl-rentang th:nth-child(7),
+.lantai .hp-tbl-rentang td:nth-child(7) { width: 110px; }

@@ -217,7 +217,6 @@ export function HarianPapan() {
             </div>
             <span className="pemisah-v" aria-hidden="true" />
             <div className="grup-k">
-              <span className="grup-lbl">Tanggal</span>
               <DatePicker
                 value={tanggal ?? ''}
                 onChange={(iso) => { setRentang(null); setTanggal(iso) }}
@@ -226,11 +225,6 @@ export function HarianPapan() {
                 rentang={rentang}
                 onGantiRentang={(dari, sampai) => setRentang({ dari, sampai })}
               />
-              {rentang && (
-                <button type="button" className="chip-t" onClick={() => setRentang(null)}>
-                  Kembali ke satu hari
-                </button>
-              )}
             </div>
             <span className="pemisah-v" aria-hidden="true" />
             <div className="grup-k">
@@ -267,7 +261,7 @@ export function HarianPapan() {
           ) : (
             <>
               <div className="board-tbl-wrap">
-                <table className="tbl hp-tbl">
+                <table className="tbl hp-tbl hp-tbl-rentang">
                   <thead>
                     <tr>
                       <th>Kode</th><th>Sektor</th>

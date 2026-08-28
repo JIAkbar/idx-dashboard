@@ -81,3 +81,9 @@
 }
 .lantai .dpk-hari.r-dalam:hover { background: var(--amber-dim); }
 .lantai .dpk-hari.r-ujung { position: relative; z-index: 1; }
+
+/* Tombol "Hari ini" — muncul hanya saat ia benar-benar mengubah sesuatu
+   (tanggal bukan yang terbaru, atau sedang melihat rentang). Ia memakai
+   `.chip-t` kanonis; kelas ini cuma mengecilkan tingginya supaya sebaris
+   rapi dengan field dan stepper di sebelahnya. */
+.lantai .dpk-kini { padding: 5px 10px; font-size: 11px; white-space: nowrap; }

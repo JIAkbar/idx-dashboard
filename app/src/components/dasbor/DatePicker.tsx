@@ -127,7 +127,7 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
     // papan ketik dan tetikus tak punya dua perilaku berbeda.
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       const arah = e.key === 'ArrowLeft' ? -1 : 1
-      if (modeRentang) {
+      if (rentang) {
         const g = geserRentang(arah)
         if (g) { e.preventDefault(); onGantiRentang?.(g.dari, g.sampai) }
         return
@@ -190,10 +190,15 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
   }
 
   const stepper = (arah: -1 | 1) => {
-    const geser = modeRentang ? geserRentang(arah) : null
+    // Yang menentukan perilaku stepper adalah ada-tidaknya rentang AKTIF,
+    // bukan `modeRentang` (yang cuma berarti "halaman ini mendukung rentang"
+    // dan selalu true di sana). Versi pertama memakai `modeRentang`, dan
+    // akibatnya stepper MATI di mode satu-tanggal — geserRentang() selalu
+    // mengembalikan null karena rentangnya memang belum ada.
+    const geser = rentang ? geserRentang(arah) : null
     const iso = arah === -1 ? isoPrev : isoNext
-    const aktif = modeRentang ? !!geser : !!iso
-    const label = modeRentang
+    const aktif = rentang ? !!geser : !!iso
+    const label = rentang
       ? (arah === -1 ? 'Geser rentang mundur satu hari' : 'Geser rentang maju satu hari')
       : (arah === -1 ? 'Tanggal ber-data sebelumnya' : 'Tanggal ber-data berikutnya')
     return (
@@ -203,12 +208,24 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
         disabled={!aktif}
         label={label}
         onClick={() => {
-          if (modeRentang) { if (geser) onGantiRentang?.(geser.dari, geser.sampai); return }
+          if (rentang) { if (geser) onGantiRentang?.(geser.dari, geser.sampai); return }
           if (iso) onChange(iso)
         }}
       />
     )
   }
+
+  /** Tanggal ber-data TERBARU — "hari ini" versi bursa, bukan jam dinding:
+   *  hari libur dan hari yang datanya belum terbit tak punya baris, dan
+   *  melompat ke sana cuma menghasilkan halaman kosong. Pola yang sama sudah
+   *  dipakai `Kalender.tsx` (#90). */
+  const isoTerkini = daftar && daftar.length ? daftar[daftar.length - 1] : null
+  // Disembunyikan saat sudah di sana DAN tak sedang melihat rentang — tombol
+  // yang tak mengubah apa pun cuma menambah benda di bilah.
+  // Dipakai `rentang` (SEDANG melihat rentang), bukan `modeRentang` (komponen
+  // MENDUKUNG rentang) — yang kedua selalu true di halaman yang memberi prop
+  // rentang, jadi tombolnya tak pernah hilang meski sudah di hari terbaru.
+  const perluHariIni = !!isoTerkini && (!!rentang || value !== isoTerkini)
 
   return (
     <div className="dpk-wrap" ref={ref}>
@@ -313,6 +330,16 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
       </div>
       </div>
       {daftar && stepper(1)}
+      {perluHariIni && (
+        <button
+          type="button"
+          className="chip-t dpk-kini"
+          title="Lompat ke hari bursa terakhir yang sudah berdata"
+          onClick={() => isoTerkini && onChange(isoTerkini)}
+        >
+          Hari ini
+        </button>
+      )}
     </div>
   )
 }
