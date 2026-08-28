@@ -93,13 +93,42 @@ def unduh_satu(url_dasar: str, key: str, path: str, dest: Path) -> int:
     return len(r.content)
 
 
+def manifest_dari_rpc(url: str, key: str) -> list[dict] | None:
+    """Manifest langsung dari RPC `path_backup_screenshots` — terpasang
+    28 Agu 2026 (Johan menjalankan SQL-nya dari SQL Editor; lihat docstring).
+    Sejak itu backup 100% tanpa sesi Claude Code. None = RPC gagal
+    (jaringan/belum terpasang) → pemanggil jatuh ke manifest lokal."""
+    try:
+        r = requests.post(
+            f"{url}/rest/v1/rpc/path_backup_screenshots",
+            headers={"apikey": key, "Authorization": f"Bearer {key}"},
+            json={}, timeout=30,
+        )
+        if r.status_code != 200:
+            print(f"RPC manifest HTTP {r.status_code} — jatuh ke manifest lokal.")
+            return None
+        daftar = r.json()
+        if not isinstance(daftar, list) or not daftar:
+            print("RPC manifest kosong — jatuh ke manifest lokal.")
+            return None
+        # Segarkan manifest lokal sebagai jejak/cadangan offline.
+        MANIFEST.parent.mkdir(parents=True, exist_ok=True)
+        MANIFEST.write_text(json.dumps(daftar, ensure_ascii=False), encoding="utf-8")
+        return daftar
+    except requests.RequestException as e:
+        print(f"RPC manifest gagal ({type(e).__name__}) — jatuh ke manifest lokal.")
+        return None
+
+
 def jalankan(manifest_path: Path = MANIFEST) -> None:
-    if not manifest_path.exists():
-        print(f"Manifest {manifest_path} tak ada — perbarui dulu lewat Supabase MCP (lihat docstring modul).")
-        sys.exit(1)
-    daftar = json.loads(manifest_path.read_text(encoding="utf-8"))
     env = baca_env()
     url, key = env["VITE_SUPABASE_URL"], env["VITE_SUPABASE_ANON_KEY"]
+    daftar = manifest_dari_rpc(url, key)
+    if daftar is None:
+        if not manifest_path.exists():
+            print(f"Manifest {manifest_path} tak ada dan RPC gagal — tak ada sumber daftar.")
+            sys.exit(1)
+        daftar = json.loads(manifest_path.read_text(encoding="utf-8"))
 
     mulai = time.time()
     byte_baru = 0
