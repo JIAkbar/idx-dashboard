@@ -294,3 +294,20 @@
   font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
+
+/* Sparkline net asing harian — batang tumbuh dari garis tengah: net beli ke
+ * atas, net jual ke bawah. `align-items: center` pada wadah + `align-self`
+ * per batang; tanpa itu semua batang menempel di dasar dan arahnya hilang. */
+.be-spark {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 56px;
+  margin-top: 6px;
+  border-top: 1px dashed var(--line2);
+  border-bottom: 1px dashed var(--line2);
+  padding: 2px 0;
+}
+.be-spark i { flex: 1; min-width: 2px; display: block; }
+.be-spark i.plus { background: var(--green); }
+.be-spark i.minus { background: var(--red); }

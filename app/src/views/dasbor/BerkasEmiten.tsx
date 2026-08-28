@@ -19,6 +19,8 @@ import { InfoIndikator, type ItemInfoIndikator } from '../../components/dasbor/I
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useBrokerTahunan } from '../../lib/dasbor/brokerTahunanData'
 import { ringkasPemegang, bacaKonsentrasi } from '../../lib/dasbor/berkasPemegang'
+import { ringkasAsing, bacaAliran, bacaPorsi } from '../../lib/dasbor/berkasAsing'
+import { fetchAsing, type AsingData } from '../../lib/dasbor/stockDetailData'
 import { LABEL_KELOMPOK, KETERANGAN_KELOMPOK, warnaBrokerCanvas, namaBroker } from '../../lib/dasbor/kelompokBroker'
 import {
   ARTI_WATAK, bacaHariMerah, muatRezim, tahunTerbaru,
@@ -93,6 +95,18 @@ export default function BerkasEmiten() {
   // jadi berkasnya tersinggah bersama, bukan diunduh dua kali).
   const { hari: hariBroker, muat: muatBroker } = useBrokerTahunan(kode)
   const pemegang = useMemo(() => ringkasPemegang(hariBroker, 20), [hariBroker])
+
+  // Blok C — aliran asing. `fetchAsing` memakai cache modul yang sama dengan
+  // halaman Bedah, jadi emiten yang sudah dibuka di sana tak diambil dua kali.
+  const [asing, setAsing] = useState<AsingData | null>(null)
+  const [muatAsing, setMuatAsing] = useState(true)
+  useEffect(() => {
+    let batal = false
+    setMuatAsing(true)
+    fetchAsing(kode).then((d) => { if (!batal) { setAsing(d); setMuatAsing(false) } })
+    return () => { batal = true }
+  }, [kode])
+  const aliran = useMemo(() => ringkasAsing(asing?.d ?? [], 20), [asing])
 
   const tahun = r ? tahunTerbaru(r) : []
   const maksTahun = Math.max(1, ...tahun.map((t) => Math.abs(t[1].tangkap_naik)))
@@ -375,9 +389,82 @@ export default function BerkasEmiten() {
         )}
       </section>
 
-      {/* Blok C–G menyusul — rancangannya sudah tetap, datanya sudah dipanen. */}
+      {/* ── BLOK C · ALIRAN ASING ──────────────────────────────────────── */}
+      <section className="be-kartu" style={{ marginTop: 14 }}>
+        <div className="be-kartu-kepala">
+          <span className="be-blok">C</span>
+          <div>
+            <h2>Aliran asing — menumpuk atau melepas</h2>
+            <p className="be-ket">
+              {aliran.nHari > 0
+                ? <>{aliran.nHari} hari terakhir ({aliran.tglMulai} – {aliran.tglAkhir}).
+                    Dihitung dalam <b>lembar</b> — bursa tidak melaporkan aliran asing dalam rupiah.</>
+                : muatAsing ? 'Memuat aliran asing…' : 'Belum ada data aliran asing untuk emiten ini.'}
+            </p>
+          </div>
+        </div>
+
+        {aliran.nHari > 0 && (
+          <>
+            <div className="be-duo">
+              <div className={`be-sisi ${aliran.netLembar >= 0 ? 'naik' : 'turun'}`}>
+                <div className="be-lbl">
+                  <span>Net {aliran.netLembar >= 0 ? 'masuk' : 'keluar'}</span>
+                  <span className="be-n">{aliran.hariNetBeli}/{aliran.nHari} hari net beli</span>
+                </div>
+                <div className="be-ang">
+                  {Math.abs(aliran.netLembar) >= 1e9
+                    ? `${(Math.abs(aliran.netLembar) / 1e9).toFixed(2).replace('.', ',')} M`
+                    : Math.abs(aliran.netLembar) >= 1e6
+                      ? `${(Math.abs(aliran.netLembar) / 1e6).toFixed(1).replace('.', ',')} jt`
+                      : Math.abs(aliran.netLembar).toLocaleString('id-ID')}
+                </div>
+                <p className="be-exp">lembar. {bacaPorsi(aliran) ?? 'Porsi terhadap volume tak terhitung.'}</p>
+              </div>
+
+              <div className={`be-sisi ${aliran.streak >= 0 ? 'naik' : 'turun'}`}>
+                <div className="be-lbl"><span>Beruntun</span><span className="be-n">hari berturut</span></div>
+                <div className="be-ang">{aliran.streak === 0 ? '—' : Math.abs(aliran.streak)}</div>
+                <p className="be-exp">
+                  {aliran.streak === 0
+                    ? 'Hari terakhir netral — tak ada rangkaian berjalan.'
+                    : `berturut-turut net ${aliran.streak > 0 ? 'beli' : 'jual'}. Rangkaian putus begitu arahnya berbalik atau netral.`}
+                </p>
+              </div>
+            </div>
+
+            {/* Sparkline net harian — tinggi batang relatif terhadap hari
+                terbesar di jendela ini, jadi bentuknya terbaca walau skalanya
+                beda jauh antar emiten. */}
+            <h3>Net harian</h3>
+            <div className="be-spark">
+              {aliran.deret.map((v, i) => {
+                const maks = Math.max(1, ...aliran.deret.map(Math.abs))
+                const tinggi = Math.max(2, (Math.abs(v) / maks) * 100)
+                return (
+                  <i key={i}
+                    className={v >= 0 ? 'plus' : 'minus'}
+                    style={{ height: `${tinggi}%`, alignSelf: v >= 0 ? 'flex-end' : 'flex-start' }}
+                    title={`${aliran.deret.length === 0 ? '' : ''}${v >= 0 ? '+' : ''}${v.toLocaleString('id-ID')} lembar`} />
+                )
+              })}
+            </div>
+            <p className="be-ket" style={{ marginTop: 6 }}>{bacaAliran(aliran)}</p>
+
+            <div className="be-batas">
+              <b>Batas blok ini</b>
+              <ul>
+                <li>Bursa <b>tidak melaporkan</b> aliran asing dalam rupiah — semua angka di sini <b>lembar</b>.</li>
+                <li>Net lembar <b>tak boleh dikalikan harga rata-rata</b> jadi rupiah: galat taksiran begitu terukur miring dan menumpuk, bukan saling meniadakan.</li>
+                <li>"Asing" di sini adalah <b>jenis investor pada transaksinya</b>, bukan kebangsaan pemilik saham.</li>
+              </ul>
+            </div>
+          </>
+        )}
+      </section>
+
+      {/* Blok D–G menyusul — rancangannya sudah tetap, datanya sudah dipanen. */}
       <div className="be-nanti">
-        <div><b>C · Aliran asing</b>net, streak, dibagi free float</div>
         <div><b>D · Likuiditas</b>volume, hari sepi, porsi negosiasi</div>
         <div><b>E · Probabilitas</b>P(R1/R2/S1), win rate, riwayat rekomendasi</div>
         <div><b>F · Teknikal &amp; fundamental</b>pivot, pola, rasio</div>
