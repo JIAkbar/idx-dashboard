@@ -20,6 +20,8 @@ import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useBrokerTahunan } from '../../lib/dasbor/brokerTahunanData'
 import { ringkasPemegang, bacaKonsentrasi } from '../../lib/dasbor/berkasPemegang'
 import { ringkasAsing, bacaAliran, bacaPorsi } from '../../lib/dasbor/berkasAsing'
+import { ringkasLikuid, labelLikuiditas } from '../../lib/dasbor/berkasLikuiditas'
+import { muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
 import { fetchAsing, type AsingData } from '../../lib/dasbor/stockDetailData'
 import { LABEL_KELOMPOK, KETERANGAN_KELOMPOK, warnaBrokerCanvas, namaBroker } from '../../lib/dasbor/kelompokBroker'
 import {
@@ -107,6 +109,32 @@ export default function BerkasEmiten() {
     return () => { batal = true }
   }, [kode])
   const aliran = useMemo(() => ringkasAsing(asing?.d ?? [], 20), [asing])
+
+  // Blok D — likuiditas. Candle dipakai untuk volume & harga beku; lot nego
+  // dari arsip broker yang SUDAH dimuat blok B (nol fetch tambahan).
+  const [candle, setCandle] = useState<DataCandle>({ lilin: [], volume: [] })
+  useEffect(() => {
+    let batal = false
+    muatCandle(kode).then((d) => { if (!batal) setCandle(d) })
+    return () => { batal = true }
+  }, [kode])
+
+  const likuid = useMemo(() => {
+    const negoPer = new Map(hariBroker.map((h) => [h.tanggal, h]))
+    const baris = candle.lilin.map((c, i) => {
+      const tgl = String(c.time)
+      const hb = negoPer.get(tgl)
+      return {
+        tanggal: tgl,
+        volume: Number(candle.volume[i]?.value ?? 0),
+        close: c.close,
+        regulerLot: hb?.totalLot,
+        negoLot: hb?.negoLot,
+      }
+    })
+    return ringkasLikuid(baris, 60)
+  }, [candle, hariBroker])
+  const labelLik = labelLikuiditas(likuid)
 
   const tahun = r ? tahunTerbaru(r) : []
   const maksTahun = Math.max(1, ...tahun.map((t) => Math.abs(t[1].tangkap_naik)))
@@ -463,9 +491,76 @@ export default function BerkasEmiten() {
         )}
       </section>
 
-      {/* Blok D–G menyusul — rancangannya sudah tetap, datanya sudah dipanen. */}
+      {/* ── BLOK D · LIKUIDITAS ────────────────────────────────────────── */}
+      <section className="be-kartu" style={{ marginTop: 14 }}>
+        <div className="be-kartu-kepala">
+          <span className="be-blok">D</span>
+          <div>
+            <h2>Likuiditas — boleh dipercaya sejauh mana</h2>
+            <p className="be-ket">
+              {likuid.nHari > 0
+                ? <>{likuid.nHari} hari bursa terakhir. Blok ini menilai <b>angka blok lain</b>:
+                    emiten yang jarang bertransaksi menghasilkan statistik yang terlihat rapi
+                    tapi berdiri di atas sedikit sekali hari.</>
+                : 'Memuat riwayat harga…'}
+            </p>
+          </div>
+        </div>
+
+        {likuid.nHari > 0 && (
+          <>
+            {labelLik && (
+              <div className={`be-vonis w-${labelLik === 'likuid' ? 'ideal' : labelLik === 'tipis' ? 'defensif' : 'perangkap'}`}>
+                <span className="be-cap">{labelLik === 'likuid' ? 'Likuid' : labelLik === 'tipis' ? 'Tipis' : 'Tidur'}</span>
+                <p>
+                  {labelLik === 'likuid'
+                    ? 'Bertransaksi hampir tiap hari dan harganya bergerak — statistik di blok lain berdiri di atas sampel yang sehat.'
+                    : labelLik === 'tipis'
+                      ? 'Cukup sering sepi atau harganya tak bergerak. Baca angka blok lain dengan hati-hati.'
+                      : 'Sebagian besar hari tanpa transaksi sama sekali. Statistik apa pun tentang emiten ini rapuh.'}
+                </p>
+              </div>
+            )}
+
+            <div className="be-tiga">
+              <div className="be-sisi">
+                <div className="be-lbl"><span>Hari sepi</span><span className="be-n">dari {likuid.nHari}</span></div>
+                <div className="be-ang" style={{ fontSize: 26 }}>{likuid.hariSepi}</div>
+                <p className="be-exp">tanpa transaksi sama sekali.</p>
+              </div>
+              <div className="be-sisi">
+                <div className="be-lbl"><span>Harga beku</span><span className="be-n">dari {likuid.nHari}</span></div>
+                <div className="be-ang" style={{ fontSize: 26 }}>{likuid.hariBeku}</div>
+                <p className="be-exp">ada transaksi, harga tak bergerak.</p>
+              </div>
+              <div className="be-sisi">
+                <div className="be-lbl"><span>Volume median</span><span className="be-n">hari bertransaksi</span></div>
+                <div className="be-ang" style={{ fontSize: 26 }}>
+                  {likuid.medianVolume == null ? '—'
+                    : likuid.medianVolume >= 1e6
+                      ? `${(likuid.medianVolume / 1e6).toFixed(1).replace('.', ',')} jt`
+                      : likuid.medianVolume.toLocaleString('id-ID')}
+                </div>
+                <p className="be-exp">
+                  lembar. {likuid.porsiNego == null
+                    ? 'Porsi negosiasi belum ada di arsip.'
+                    : `Papan negosiasi ${Math.round(likuid.porsiNego * 100)}% dari lot.`}
+                </p>
+              </div>
+            </div>
+
+            {likuid.peringatan.length > 0 && (
+              <div className="be-batas" style={{ marginTop: 14 }}>
+                <b>Yang harus dibaca sebelum mempercayai blok lain</b>
+                <ul>{likuid.peringatan.map((x) => <li key={x}>{x}</li>)}</ul>
+              </div>
+            )}
+          </>
+        )}
+      </section>
+
+      {/* Blok E–G menyusul — rancangannya sudah tetap, datanya sudah dipanen. */}
       <div className="be-nanti">
-        <div><b>D · Likuiditas</b>volume, hari sepi, porsi negosiasi</div>
         <div><b>E · Probabilitas</b>P(R1/R2/S1), win rate, riwayat rekomendasi</div>
         <div><b>F · Teknikal &amp; fundamental</b>pivot, pola, rasio</div>
         <div><b>G · Bendera risiko</b>notasi khusus, konsentrasi broker</div>

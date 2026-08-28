@@ -56,6 +56,10 @@ export interface HariBroker {
    *  hari itu belum punya varian asing di arsip; JANGAN dibaca sebagai nol
    *  (audit whales 28 Agu §7d). */
   brokerAsing?: BarisBroker[]
+  /** Total lot papan NEGOSIASI hari itu — dipakai blok D Berkas Emiten untuk
+   *  porsi nego. undefined = varian nego belum ada di arsip hari itu, dan itu
+   *  BUKAN berarti nol (arsip lama belum tentu memuatnya). */
+  negoLot?: number
 }
 
 export interface SeleksiArea {
@@ -262,6 +266,8 @@ interface BerkasTahunan {
     broker?: BarisBroker[]
     /** Varian asing — bentuk sama, dipakai porsi asing footprint. */
     asing?: { broker?: BarisBroker[] }
+    /** Varian papan negosiasi — hanya ringkasnya yang dipakai (porsi nego). */
+    nego?: { ringkas?: { total_lot?: number } }
   }>
 }
 
@@ -282,6 +288,7 @@ export function dariBerkasTahunan(j: BerkasTahunan | null): HariBroker[] {
       totalLot: isi?.ringkas?.total_lot ?? 0,
       broker: Array.isArray(isi?.broker) ? isi.broker : [],
       brokerAsing: Array.isArray(isi?.asing?.broker) ? isi.asing.broker : undefined,
+      negoLot: typeof isi?.nego?.ringkas?.total_lot === 'number' ? isi.nego.ringkas.total_lot : undefined,
     })
   }
   return out.sort((a, b) => (a.tanggal < b.tanggal ? -1 : 1))
