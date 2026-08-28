@@ -186,11 +186,64 @@ def endus_bimodal(baris: list[list]) -> int:
     return sum(1 for h in harga if h > med * 100)
 
 
-def gabung(bar_yahoo: list[list], peta_sb: dict[str, list]) -> tuple[list[list], dict]:
+# Hari bursa dianggap sah bila SEKIAN emiten Stockbit punya bar di tanggal itu.
+# 30 dari ~960: cukup rendah untuk memasukkan hari sepi, cukup tinggi untuk
+# menolak tanggal yang cuma dimiliki segelintir berkas.
+MIN_EMITEN_HARI_BURSA = 30
+
+
+def kalender_bursa(dir_sb: Path) -> tuple[set[str], str]:
+    """Himpunan hari bursa + tanggal termuda, dibangun dari arsip Stockbit.
+
+    KENAPA ADA: Yahoo menciptakan bar di HARI LIBUR BURSA dengan harga
+    carry-forward, dan penggabungan ini menyisipkannya ke `ohlc/` karena
+    "Stockbit tak punya hari itu". Terukur 28 Agu 2026: 29.970 bar hantu di
+    914 emiten — 385 emiten sekaligus punya bar 2026-05-14, dan tanggal
+    lain yang menumpuk semuanya libur nasional (2019-04-17 Pemilu,
+    2019-05-01 Hari Buruh, 2019-05-30 Kenaikan Isa).
+
+    Bar hantu itu bukan cuma mubazir: harganya berskala Yahoo sementara
+    tetangganya berskala Stockbit, jadi ia melahirkan PATAHAN PALSU yang
+    terbaca seperti aksi korporasi. FISH 2017-01-02 tercatat 4.000 di antara
+    360 dan 480 — dan sempat kudiagnosis sebagai "bar rusak dari hulu"
+    padahal Stockbit tak pernah punya tanggal itu sama sekali.
+
+    Kalendernya dibangun dari data, bukan daftar libur yang harus dirawat
+    tangan: hari yang dimiliki >=MIN_EMITEN_HARI_BURSA emiten adalah hari
+    bursa. Libur nasional otomatis absen karena tak seorang pun berdagang.
+    """
+    hitung: dict[str, int] = {}
+    termuda = "9999-99-99"
+    for p_sb in dir_sb.glob("*.json"):
+        if p_sb.stem.startswith("_"):
+            continue
+        try:
+            bar = json.loads(p_sb.read_text(encoding="utf-8")).get("bar") or []
+        except (json.JSONDecodeError, OSError):
+            continue
+        for b in bar:
+            hitung[b[0]] = hitung.get(b[0], 0) + 1
+        if bar and bar[0][0] < termuda:
+            termuda = bar[0][0]
+    return {t for t, n in hitung.items() if n >= MIN_EMITEN_HARI_BURSA}, termuda
+
+
+def gabung(bar_yahoo: list[list], peta_sb: dict[str, list],
+           hari_bursa: set[str] | None = None, sejak: str | None = None) -> tuple[list[list], dict]:
     hasil: dict[str, list] = {r[0]: list(r) for r in bar_yahoo}
     lama = set(hasil)
     for tgl, b in peta_sb.items():
         hasil[tgl] = list(b)
+    # Bar Yahoo yang jatuh DI DALAM jangkauan Stockbit tapi bukan hari
+    # bursa = bar hantu hari libur. Di luar jangkauan Stockbit (riwayat
+    # tua) Yahoo satu-satunya sumber, jadi tak disaring di sana.
+    hantu = 0
+    if hari_bursa and sejak:
+        buang = [t for t in hasil
+                 if t >= sejak and t not in peta_sb and t not in hari_bursa]
+        for t in buang:
+            del hasil[t]
+        hantu = len(buang)
     baris = [hasil[t] for t in sorted(hasil)]
     baris, dibuang = buang_lompatan_mustahil(baris)
     return baris, {
@@ -201,6 +254,7 @@ def gabung(bar_yahoo: list[list], peta_sb: dict[str, list]) -> tuple[list[list],
         "bar_mustahil": len(dibuang),
         "tgl_mustahil": dibuang[:5],
         "bar_bimodal": endus_bimodal(baris),
+        "bar_hantu": hantu,
     }
 
 
@@ -242,10 +296,14 @@ def main() -> int:
     if not DIR_YAHOO.exists():
         raise SystemExit(f"cadangan Yahoo tak ada: {DIR_YAHOO}")
 
+    hari_bursa, _termuda = kalender_bursa(DIR_SB)
+    print(f"kalender bursa       : {len(hari_bursa):,} hari (>= {MIN_EMITEN_HARI_BURSA} emiten/hari)")
+
     n_tulis = n_lewat = 0
     tot_sebelum = tot_sesudah = tot_hanya_yahoo = 0
     terpanjang: list[tuple[int, str]] = []
     tot_mustahil = 0
+    tot_hantu = 0
     rusak_berat: list[tuple[str, int, int]] = []
     for p_sb in sorted(DIR_SB.glob("*.json")):
         kode = p_sb.stem
@@ -262,13 +320,15 @@ def main() -> int:
         if not peta:
             n_lewat += 1
             continue
-        baris, st = gabung(oh["d"], peta)
+        sejak = min(peta) if peta else None
+        baris, st = gabung(oh["d"], peta, hari_bursa, sejak)
         tot_sebelum += st["sebelum"]
         tot_sesudah += st["sesudah"]
         tot_hanya_yahoo += st["hanya_yahoo"]
         if st["tambahan"]:
             terpanjang.append((st["tambahan"], kode))
         tot_mustahil += st["bar_mustahil"]
+        tot_hantu += st["bar_hantu"]
         if st["bar_bimodal"]:
             rusak_berat.append((kode, st["bar_bimodal"], st["sesudah"]))
         if not a.kering:
@@ -287,6 +347,8 @@ def main() -> int:
     print(f"bar sesudah          : {tot_sesudah:,}  (+{tot_sesudah - tot_sebelum:,})")
     print(f"bar hanya ada di Yahoo (diselamatkan): {tot_hanya_yahoo:,}")
     print("tambahan terbanyak   : " + ", ".join(f"{k} +{n:,}" for n, k in terpanjang[:8]))
+    if tot_hantu:
+        print(f"bar hantu Yahoo dibuang: {tot_hantu:,} (tanggalnya bukan hari bursa)")
     if tot_mustahil:
         print(f"bar rusak dibuang    : {tot_mustahil:,} (lonjakan yang kembali ke level semula)")
     if rusak_berat:
