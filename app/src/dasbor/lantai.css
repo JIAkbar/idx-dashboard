@@ -1118,8 +1118,14 @@
    yang sama, tiga tambahan kanonis di bawah ini. */
 .lantai .dd-badge{display:inline-flex;align-items:center;justify-content:center;min-width:15px;height:15px;padding:0 4px;
   border-radius:99px;background:var(--amber);color:var(--amber-ink);font-size:9.5px;font-weight:700;line-height:1}
-.lantai .dd-multi-hdr{display:flex;gap:6px;padding:2px 2px 6px;margin-bottom:2px;border-bottom:1px solid var(--line)}
-.lantai .dd-multi-hdr .chip-t{min-height:44px;display:inline-flex;align-items:center;font-size:10.5px;padding:4px 10px}
+/* Dua tombol aksi dropdown: MELEBAR PENUH separuh-separuh, bukan mengambang
+   di kiri dengan lebar masing-masing (Johan 29 Agu: "2 tombol di dalam
+   dropdown ini jadikan lebih ringkas dan stretch biar rapi"). Tingginya
+   turun 44 -> 32px: keduanya duduk di dalam menu yang sudah terbuka, bukan
+   kendali utama di bilah, jadi aturan target-sentuh 44px tak berlaku di sini
+   dan 44px membuat kepala menu setinggi tiga baris pilihan. */
+.lantai .dd-multi-hdr{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:2px 2px 6px;margin-bottom:2px;border-bottom:1px solid var(--line)}
+.lantai .dd-multi-hdr .chip-t{min-height:32px;display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;padding:4px 8px;width:100%}
 /* Baris checklist — target sentuh ≥36px (checkbox kecil sendirian di baris
    setinggi teks jauh di bawah ambang sentuh nyaman). */
 .lantai .dd-it-multi{align-items:center;gap:8px;min-height:36px;cursor:pointer}

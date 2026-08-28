@@ -33,6 +33,8 @@ import idx_net  # noqa: E402 — satu pintu jaringan IDX (curl_cffi)
 
 ROOT = Path(__file__).parent.parent
 FUND_DIR = ROOT / "data-idx" / "json" / "fundamental"
+from emiten_lewati import dilewati
+
 OUT_FILE = ROOT / "data-idx" / "json" / "daftar_emiten.json"
 HALAMAN = "https://www.idx.co.id/id/data-pasar/ringkasan-perdagangan"
 ENDPOINT = ("https://www.idx.co.id/primary/TradingSummary/GetStockSummary"
@@ -70,7 +72,11 @@ def ambil_daftar_resmi():
                         "nama": r["StockName"],
                         "saham": int(s) if isinstance(s, (int, float)) and s > 0 else None,
                     }
-                return d.isoformat(), [emiten[k] for k in sorted(emiten)]
+                # Kode yang sengaja dilewati dibuang DI HULU (emiten_lewati.py),
+            # bukan di tiap pembangun turunan: GOTOM sempat lolos ke Harian
+            # Papan & Jago Papan sebagai baris kosong karena pengecualiannya
+            # cuma ada di satu pemanen.
+            return d.isoformat(), [emiten[k] for k in sorted(emiten) if not dilewati(k)]
             print(f"  [--] {tgl_ymd}: kosong (libur bursa?)")
         d -= timedelta(days=1)
     return None, []

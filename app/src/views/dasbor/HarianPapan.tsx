@@ -98,6 +98,7 @@ export function HarianPapan() {
     () => (tanggalData ? new Set(tanggalData.tanggal_tersedia) : undefined),
     [tanggalData],
   )
+  const [cari, setCari] = useState('')
   const [urutKunci, setUrutKunci] = useState<keyof BarisHarianPapan>(URUT_BAWAAN.gainer.kunci)
   const [urutArah, setUrutArah] = useState<'naik' | 'turun'>(URUT_BAWAAN.gainer.arah)
 
@@ -124,13 +125,26 @@ export function HarianPapan() {
     () => (sektorAktif.length ? barisTab.filter((b) => sektorAktif.includes(b.sektor)) : barisTab),
     [barisTab, sektorAktif],
   )
+  // Pencarian dicocokkan ke KODE dan NAMA: orang mengetik "BBCA" maupun
+  // "bank central". Disaring SESUDAH sektor supaya kedua saringan menumpuk,
+  // bukan saling membatalkan.
+  const barisCari = useMemo(() => {
+    const q = cari.trim().toLowerCase()
+    if (!q) return barisSektor
+    return barisSektor.filter(
+      (b) => b.kode.toLowerCase().includes(q) || (b.nama ?? '').toLowerCase().includes(q),
+    )
+  }, [barisSektor, cari])
   const urut = useMemo(
-    () => [...barisSektor].sort((a, b) => bandingkanBaris(a, b, urutKunci, urutArah)),
-    [barisSektor, urutKunci, urutArah],
+    () => [...barisCari].sort((a, b) => bandingkanBaris(a, b, urutKunci, urutArah)),
+    [barisCari, urutKunci, urutArah],
   )
-  const ukuranHalaman = sempit ? 25 : 100
+  // 50 baris sekali muat (Johan 29 Agu: "data tampilkan 50 saja sisanya
+  // lazyload di klik"). Ponsel tetap lebih sedikit — 50 baris di layar sempit
+  // sudah beberapa layar gulir sebelum tombolnya terlihat.
+  const ukuranHalaman = sempit ? 25 : 50
   const [tampil, setTampil] = useState(ukuranHalaman)
-  useEffect(() => setTampil(ukuranHalaman), [tab, sektorAktif, tanggal, ukuranHalaman])
+  useEffect(() => setTampil(ukuranHalaman), [tab, sektorAktif, tanggal, cari, ukuranHalaman])
 
   if (!tanggalData) {
     return (
@@ -161,8 +175,19 @@ export function HarianPapan() {
           {/* Bilah kendali berkelompok — sistem tata C+A (lantai.css). Tab ·
               Tanggal · Saring; Unduh CSV + jumlah emiten di grup-kanan. */}
           <div className="bilah-kendali hp-alat">
+            {/* Pencarian emiten di paling kiri — sebelum tab, karena "cari
+                satu kode" adalah niat yang mendahului "lihat papan mana".
+                Label "Tab" dihapus (Johan 29 Agu): ketiga tombolnya sudah
+                menyebut dirinya sendiri, labelnya cuma memakan lebar. */}
             <div className="grup-k">
-              <span className="grup-lbl">Tab</span>
+              <input
+                className="inp hp-cari"
+                type="search"
+                value={cari}
+                onChange={(e) => setCari(e.target.value)}
+                placeholder="Cari emiten…"
+                aria-label="Cari emiten"
+              />
               <div className="tabs" role="tablist">
                 {(Object.keys(TAB_LABEL) as TabHarianPapan[]).map((t) => (
                   <button key={t} role="tab" aria-selected={tab === t}

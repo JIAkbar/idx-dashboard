@@ -126,6 +126,12 @@ const namaByKode = new Map((daftar?.emiten ?? []).map((e) => [e.kode, e.nama]))
 
 const fileOhlcv = readdirSync(DIR_OHLCV)
   .filter((f) => f.endsWith('.json') && !f.startsWith('_') && f !== 'IHSG.json') // IHSG = indeks, bukan barang dagangan broker
+  // Emiten yang TIDAK ada di daftar resmi bursa dibuang: arsip harga bisa
+  // memuat kode yang sudah delisting atau yang sengaja dilewati
+  // (`scripts/emiten_lewati.py` — GOTOM, saham multi-voting GoTo, muncul
+  // sebagai baris kosong di layar sampai 29 Agu 2026). Daftar resmi jadi
+  // wasitnya, jadi pengecualian cukup ditulis SEKALI di hulu.
+  .filter((f) => namaByKode.has(f.replace(/\.json$/, '')))
   .sort()
 
 // Tanggal bursa terakhir = MODUS tanggal bar terakhir tiap emiten (sama

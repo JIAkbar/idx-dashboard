@@ -10,3 +10,8 @@
    kolom (lencana penuh sudah dipakai di kartu, di sini cukup tanda ringkas
    karena kolomnya sudah padat 20-an kolom). */
 .lantai .hp-beku { margin-left: 4px; cursor: help; }
+
+/* Kolom cari emiten di bilah kendali — lebar tetap supaya tab di sebelahnya
+   tak melompat saat teksnya berubah. */
+.lantai .hp-cari { width: 150px; }
+@media (max-width: 700px) { .lantai .hp-cari { width: 100%; } }
