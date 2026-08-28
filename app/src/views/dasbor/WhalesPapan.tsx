@@ -1021,28 +1021,32 @@ export default function WhalesPapan() {
                   {Math.round(sel!.hargaMax).toLocaleString('id-ID')}
                 </p>
 
-                <div className="wp-toggle" role="group" aria-label="Baris broker">
-                  <button type="button" className={`chip-t${modeBaris === 'signifikan' ? ' on' : ''}`}
-                    aria-pressed={modeBaris === 'signifikan'}
-                    title="Sembunyikan broker yang porsinya di bawah 1% dari sisi ini"
-                    onClick={() => setModeBaris('signifikan')}>Significant</button>
-                  <button type="button" className={`chip-t${modeBaris === 'penuh' ? ' on' : ''}`}
-                    aria-pressed={modeBaris === 'penuh'}
-                    title="Tampilkan semua broker yang bertransaksi"
-                    onClick={() => setModeBaris('penuh')}>Full</button>
-                </div>
-                {/* Pilih kuadran (Johan 28 Agu: "munculkan juga aksi untuk
-                    memilih gross atau net") — dua-duanya sekaligus membuat
-                    panel panjang menggulung. */}
-                <div className="wp-toggle" role="group" aria-label="Kuadran">
-                  <button type="button" className={`chip-t${kuadran === 'gross' ? ' on' : ''}`}
-                    aria-pressed={kuadran === 'gross'}
-                    title="Total transaksi per broker, tanpa dikurangi lawannya"
-                    onClick={() => setKuadran('gross')}>Gross</button>
-                  <button type="button" className={`chip-t${kuadran === 'net' ? ' on' : ''}`}
-                    aria-pressed={kuadran === 'net'}
-                    title="Beli dikurangi jual per broker"
-                    onClick={() => setKuadran('net')}>Net</button>
+                {/* Grid 2×2 rapi (Johan 28 Agu: "4 tombol ... di rapikan grd
+                    nya gak asal") — dua pasang toggle, semua chip selebar
+                    kolomnya sehingga sejajar atas-bawah. */}
+                <div className="wp-toggle-duo">
+                  <div className="wp-toggle" role="group" aria-label="Baris broker">
+                    <button type="button" className={`chip-t${modeBaris === 'signifikan' ? ' on' : ''}`}
+                      aria-pressed={modeBaris === 'signifikan'}
+                      title="Sembunyikan broker yang porsinya di bawah 1% dari sisi ini"
+                      onClick={() => setModeBaris('signifikan')}>Significant</button>
+                    <button type="button" className={`chip-t${modeBaris === 'penuh' ? ' on' : ''}`}
+                      aria-pressed={modeBaris === 'penuh'}
+                      title="Tampilkan semua broker yang bertransaksi"
+                      onClick={() => setModeBaris('penuh')}>Full</button>
+                  </div>
+                  {/* Pilih kuadran — dua-duanya sekaligus membuat panel
+                      panjang menggulung. */}
+                  <div className="wp-toggle" role="group" aria-label="Kuadran">
+                    <button type="button" className={`chip-t${kuadran === 'gross' ? ' on' : ''}`}
+                      aria-pressed={kuadran === 'gross'}
+                      title="Total transaksi per broker, tanpa dikurangi lawannya"
+                      onClick={() => setKuadran('gross')}>Gross</button>
+                    <button type="button" className={`chip-t${kuadran === 'net' ? ' on' : ''}`}
+                      aria-pressed={kuadran === 'net'}
+                      title="Beli dikurangi jual per broker"
+                      onClick={() => setKuadran('net')}>Net</button>
+                  </div>
                 </div>
 
                 {kuadran === 'gross' && (<>

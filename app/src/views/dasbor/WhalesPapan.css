@@ -120,6 +120,15 @@
   touch-action: none;
 }
 
+/* Toggle panel 2×2 (Johan 28 Agu: "4 tombol ... di rapikan grd nya gak
+ * asal") — `.wp-toggle` sebelumnya kelas TANPA aturan sehingga chip mengalir
+ * seadanya dengan lebar masing-masing. Kini: tiap pasangan satu baris grid
+ * dua kolom sama lebar, kedua baris sejajar kolomnya. Bentuk chip tetap
+ * milik .chip-t (#170) — di sini hanya penempatan & lebar. */
+.wp-toggle-duo { display: grid; gap: 6px; }
+.wp-toggle-duo .wp-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.wp-toggle-duo .chip-t { width: 100%; justify-content: center; }
+
 .wp-hasil {
   border: 1px solid var(--line);
   background: var(--bg1);
