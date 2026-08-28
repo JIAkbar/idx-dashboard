@@ -33,6 +33,7 @@ import {
   type RingkasBroker, type SeleksiArea,
 } from '../../lib/dasbor/whalesPapan'
 import { InfoIndikator, type ItemInfoIndikator } from '../../components/dasbor/InfoIndikator'
+import { keFraksi } from '../../lib/fraksiHarga'
 import './WhalesPapan.css'
 
 /** Modal "i" — penjelasan tiap kendali di baris alat (permintaan Johan
@@ -154,6 +155,10 @@ export default function WhalesPapan() {
   /** Bubble yang di-hover/tap — tooltip penjelas (Johan 28 Agu: "bubble ini
    *  fungsi nya kurang jelas ... tooltips nya lebih di yakinkan lagi"). */
   const [bubHover, setBubHover] = useState<{ b: BubbleHari; x: number; y: number } | null>(null)
+  /** Menu klik-kanan kanvas (Johan 28 Agu: "kenapa masih ada klik kanan
+   *  seperti ini" — menu peramban Save image/Inspect muncul di atas chart,
+   *  terbaca seperti halaman yang belum jadi). Pola sama Grafik Emiten. */
+  const [menuKanan, setMenuKanan] = useState<{ x: number; y: number; harga: number | null; tanggal: string | null } | null>(null)
   // Empat kuadran, empat batas "tampilkan lagi" — memperluas satu tak boleh
   // ikut memperluas yang lain, keduanya baris broker tapi peringkat berbeda.
   const [batasGrossBeli, setBatasGrossBeli] = useState(PANEL_AWAL)
@@ -871,7 +876,29 @@ export default function WhalesPapan() {
            jadi strip tipis yang bisa ditekan (chart memakai seluruh lebar);
            ada seleksi/pesan → kolom penuh. */
         <div className={`wp-panggung tata-2${panelBerisi ? '' : ' ctx-kosong'}`}>
-          <div className="wp-kanvas-bungkus wp-chart" ref={bungkusRef}>
+          <div
+            className="wp-kanvas-bungkus wp-chart"
+            ref={bungkusRef}
+            onContextMenu={(e) => {
+              // Dicegah HANYA di kanvas; di panel hasil & metodologi klik
+              // kanan tetap milik peramban (menyalin angka itu wajar).
+              e.preventDefault()
+              const bungkus = bungkusRef.current
+              const chart = chartRef.current
+              const seri = lilinRef.current
+              if (!bungkus || !chart || !seri) return
+              const r = bungkus.getBoundingClientRect()
+              const x = e.clientX - r.left
+              const y = e.clientY - r.top
+              const hargaMentah = seri.coordinateToPrice(y)
+              const waktu = chart.timeScale().coordinateToTime(x)
+              setMenuKanan({
+                x, y,
+                harga: hargaMentah == null ? null : keFraksi(Number(hargaMentah)),
+                tanggal: typeof waktu === 'string' ? waktu : null,
+              })
+            }}
+          >
             {modeSeleksi && (
               <div
                 className="wp-overlay"
@@ -899,37 +926,46 @@ export default function WhalesPapan() {
                   <div className="wp-fp-tip-judul">
                     {fpHover.tanggal} · {Math.round(s.hargaBawah).toLocaleString('id-ID')}–{Math.round(s.hargaAtas).toLocaleString('id-ID')}
                   </div>
-                  <div className="wp-fp-tip-total">
-                    <span className="wp-plus">+{lotRingkas(s.beliLot)} lot</span>
-                    {' · '}
-                    <span className="wp-minus">{lotRingkas(s.jualLot)} lot</span>
+                  {/* DUA KOLOM beli|jual (Johan 28 Agu, menunjuk "Gross Broker
+                      Breakdown" whales.id). Kolom kita GROSS BELI|GROSS JUAL —
+                      BUKAN agresif/pasif: data harian tak menyimpan sisi
+                      agresor, dan mengarang kolomnya berarti berbohong.
+                      Tag (a) = porsi lot broker itu yang datang dari investor
+                      asing di sel ini; absen kalau varian asing belum ada. */}
+                  <div className="wp-fp-duo">
+                    {([
+                      ['Beli', 'beliLot', 'wp-plus', s.beliLot, s.beliLotAsing],
+                      ['Jual', 'jualLot', 'wp-minus', s.jualLot, s.jualLotAsing],
+                    ] as const).map(([judul, ruas, nada, total, totalAsing]) => {
+                      const baris = s.broker
+                        .filter((b) => (b[ruas as 'beliLot' | 'jualLot'] ?? 0) > 0)
+                        .sort((a, b) => (b[ruas as 'beliLot' | 'jualLot'] ?? 0) - (a[ruas as 'beliLot' | 'jualLot'] ?? 0))
+                      const tampil = baris.slice(0, 10)
+                      return (
+                        <div key={judul}>
+                          <div className="wp-fp-kol-h">
+                            <span className={nada}>{judul}</span>
+                            <b className={nada}>
+                              {lotRingkas(total)} lot
+                              {totalAsing != null && total > 0
+                                ? ` · a ${Math.round((totalAsing / total) * 100)}%`
+                                : ''}
+                            </b>
+                          </div>
+                          {tampil.map((b) => (
+                            <div className="wp-fp-b" key={b.kode}>
+                              <span className="kd" style={{ color: warnaBrokerCanvas(b.kode) }}>{b.kode}</span>
+                              <span className={`nl ${nada}`}>{lotRingkas(b[ruas as 'beliLot' | 'jualLot'])}</span>
+                            </div>
+                          ))}
+                          {baris.length > tampil.length && (
+                            <div className="wp-fp-sisa">+{baris.length - tampil.length} broker lain</div>
+                          )}
+                          {baris.length === 0 && <div className="wp-fp-sisa">tak ada</div>}
+                        </div>
+                      )
+                    })}
                   </div>
-                  {/* Porsi investor asing di sel ini — dari varian asing hari
-                      yang sama, bukan tag identitas broker (audit whales §7d:
-                      tag [F]/[D] mereka per transaksi, kita cuma punya
-                      agregat harian). Hari tanpa varian: baris ini absen. */}
-                  {(s.beliLotAsing != null || s.jualLotAsing != null) && (
-                    <div className="muted" style={{ fontSize: 10 }}>
-                      asing{' '}
-                      {s.beliLot > 0 && s.beliLotAsing != null
-                        ? `beli ${Math.round((s.beliLotAsing / s.beliLot) * 100)}%`
-                        : 'beli —'}
-                      {' · '}
-                      {s.jualLot > 0 && s.jualLotAsing != null
-                        ? `jual ${Math.round((s.jualLotAsing / s.jualLot) * 100)}%`
-                        : 'jual —'}
-                    </div>
-                  )}
-                  {s.broker.slice(0, 8).map((b) => (
-                    <div className="wp-fp-tip-baris" key={b.kode}>
-                      <span style={{ color: warnaBrokerCanvas(b.kode) }}>{b.kode}</span>
-                      <span>{b.beliLot ? `+${lotRingkas(b.beliLot)}` : '—'}</span>
-                      <span>{b.jualLot ? `-${lotRingkas(b.jualLot)}` : '—'}</span>
-                    </div>
-                  ))}
-                  {s.broker.length > 8 && (
-                    <div className="muted">+{s.broker.length - 8} broker lain</div>
-                  )}
                 </div>
               )
             })()}
@@ -965,6 +1001,34 @@ export default function WhalesPapan() {
                 </div>
               )
             })()}
+            {menuKanan && (
+              <>
+                <div className="wp-menu-latar" onClick={() => setMenuKanan(null)}
+                  onContextMenu={(ev) => { ev.preventDefault(); setMenuKanan(null) }} />
+                <div className="wp-menu" style={{ left: menuKanan.x, top: menuKanan.y }} role="menu">
+                  <button type="button" onClick={() => { zoomOtomatis(footprintAktif); setMenuKanan(null) }}>
+                    Kembali ke pandangan 1 tahun
+                  </button>
+                  {menuKanan.harga != null && (
+                    <button type="button" onClick={() => {
+                      void navigator.clipboard?.writeText(String(menuKanan.harga)); setMenuKanan(null)
+                    }}>
+                      Salin harga {menuKanan.harga.toLocaleString('id-ID')}
+                    </button>
+                  )}
+                  {menuKanan.tanggal && (
+                    <button type="button" onClick={() => {
+                      void navigator.clipboard?.writeText(menuKanan.tanggal!); setMenuKanan(null)
+                    }}>
+                      Salin tanggal {tglPendek(menuKanan.tanggal)}
+                    </button>
+                  )}
+                  <button type="button" onClick={() => { setGrid((g) => ({ ...g, tampil: !g.tampil })); setMenuKanan(null) }}>
+                    {grid.tampil ? 'Sembunyikan garis bantu' : 'Tampilkan garis bantu'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Rincian broker dari klik pill AVG — modal kanonis, bukan kartu

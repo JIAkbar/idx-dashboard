@@ -218,7 +218,7 @@
 .wp-fp-tip {
   position: absolute;
   z-index: 40;
-  max-width: 260px;
+  max-width: 400px;
   padding: 7px 10px;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -253,3 +253,40 @@
    * lebih buruk daripada halaman panjang. */
   .wp-hasil { height: auto; overflow-y: visible; }
 }
+
+
+/* Tooltip footprint DUA KOLOM (Johan 28 Agu: "mustinya juga bisa buat
+ * tooltips seperti ini kan?" — menunjuk Gross Broker Breakdown whales.id).
+ * Bedanya kolom kita BELI|JUAL (gross), bukan agresif|pasif: data harian tak
+ * menyimpan sisi agresor, dan mengarang kolomnya = berbohong. */
+.wp-fp-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.wp-fp-kol-h {
+  display: flex; justify-content: space-between; gap: 8px;
+  font-size: 9px; letter-spacing: .1em; text-transform: uppercase;
+  padding-bottom: 3px; margin-bottom: 3px; border-bottom: 1px solid var(--line);
+}
+.wp-fp-kol-h b { font-variant-numeric: tabular-nums; }
+.wp-fp-b {
+  display: grid; grid-template-columns: auto 1fr; gap: 6px;
+  font-variant-numeric: tabular-nums; padding: 1px 0;
+}
+.wp-fp-b .kd { font-weight: 600; }
+.wp-fp-b .kd small { font-weight: 400; opacity: .75; margin-left: 2px; }
+.wp-fp-b .nl { text-align: right; }
+.wp-fp-sisa { color: var(--text3); font-size: 10px; margin-top: 3px; }
+/* Menu klik-kanan kanvas (Johan 28 Agu: menu peramban "Save image/Inspect"
+ * muncul di atas chart dan terbaca seperti halaman belum jadi). Pola sama
+ * dengan `.grf-menu-konteks` Grafik Emiten — bukan kelas bentuk baru. */
+.wp-menu-latar { position: absolute; inset: 0; z-index: 40; }
+.wp-menu {
+  position: absolute; z-index: 41; min-width: 190px;
+  display: flex; flex-direction: column;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--card); box-shadow: 0 8px 22px -10px rgba(0, 0, 0, .55);
+  padding: 4px; font-size: 12px;
+}
+.wp-menu button {
+  text-align: left; padding: 6px 9px; border: 0; border-radius: 5px;
+  background: none; color: var(--text2); font: inherit; cursor: pointer;
+}
+.wp-menu button:hover { background: var(--bg2); color: var(--text); }
