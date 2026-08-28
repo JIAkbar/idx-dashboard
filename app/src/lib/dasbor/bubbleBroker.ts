@@ -14,7 +14,7 @@
 import type { CanvasRenderingTarget2D } from 'fancy-canvas'
 import type {
   IChartApiBase, IPanePrimitive, IPanePrimitivePaneView, IPrimitivePaneRenderer,
-  ISeriesApi, PaneAttachedParameter, SeriesType, Time,
+  ISeriesApi, PaneAttachedParameter, PrimitiveHoveredItem, SeriesType, Time,
 } from 'lightweight-charts'
 
 export interface BubbleHari {
@@ -116,6 +116,27 @@ export class BubbleBroker implements IPanePrimitive<Time> {
     return this.views
   }
 
+  /** Titik yang tergambar frame terakhir — bahan hitTest tooltip (temuan
+   *  Johan 28 Agu "bubble ini fungsi nya kurang jelas ... tooltips nya lebih
+   *  di yakinkan lagi"). */
+  private titikTerakhir: Array<{ x: number; y: number; r: number; i: number }> = []
+
+  getBubble(id: string): BubbleHari | null {
+    if (!id.startsWith('bub:')) return null
+    return this.data[Number(id.slice(4))] ?? null
+  }
+
+  hitTest(x: number, y: number): PrimitiveHoveredItem | null {
+    for (const t of this.titikTerakhir) {
+      const dx = x - t.x
+      const dy = y - t.y
+      if (dx * dx + dy * dy <= (t.r + 3) * (t.r + 3)) {
+        return { externalId: `bub:${t.i}`, zOrder: 'top', cursorStyle: 'pointer' }
+      }
+    }
+    return null
+  }
+
   private renderer(): IPrimitivePaneRenderer | null {
     const seri = this.ambilSeri()
     const chart = this.chart
@@ -127,14 +148,16 @@ export class BubbleBroker implements IPanePrimitive<Time> {
     const barSpacing = skalaWaktu.options().barSpacing
     const rMinTampil = barSpacing >= 5 ? 0 : 10
     // Koordinat dihitung per frame (ruang media) — ikut zoom/pan/auto-scale.
-    const titik: Array<{ x: number; y: number; r: number; beli: boolean; broker: string }> = []
-    for (const b of this.data) {
+    const titik: Array<{ x: number; y: number; r: number; beli: boolean; broker: string; i: number }> = []
+    for (let i = 0; i < this.data.length; i++) {
+      const b = this.data[i]
       if (b.radius < rMinTampil) continue
       const x = skalaWaktu.timeToCoordinate(b.waktu as Time)
       const y = seri.priceToCoordinate(b.harga)
       if (x === null || y === null) continue
-      titik.push({ x: x as number, y: y as number, r: b.radius, beli: b.netNilai >= 0, broker: b.broker })
+      titik.push({ x: x as number, y: y as number, r: b.radius, beli: b.netNilai >= 0, broker: b.broker, i })
     }
+    this.titikTerakhir = titik
     if (titik.length === 0) return null
     return {
       draw: (target: CanvasRenderingTarget2D) => {

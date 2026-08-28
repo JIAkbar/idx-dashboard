@@ -17,7 +17,7 @@ import { warnaGrid, gridDariTemplate, GRID_BAWAAN, type SetelanGrid } from '../.
 import { useTheme } from '../../context/ThemeContext'
 import { SeleksiAreaChart } from '../../lib/dasbor/seleksiAreaChart'
 import { GarisAvgBroker } from '../../lib/dasbor/garisAvgBroker'
-import { BubbleBroker, bubbleOutlierHarian } from '../../lib/dasbor/bubbleBroker'
+import { BubbleBroker, bubbleOutlierHarian, type BubbleHari } from '../../lib/dasbor/bubbleBroker'
 import { ProfilHargaChart } from '../../lib/dasbor/profilHargaChart'
 import {
   BAR_SPACING_MIN, binFootprint, FootprintHarian,
@@ -139,6 +139,9 @@ export default function WhalesPapan() {
   const [footprintAktif, setFootprintAktif] = useState(false)
   /** Sel footprint yang sedang di-hover/tap — isi tooltip (spek §1). */
   const [fpHover, setFpHover] = useState<{ tanggal: string; sel: SelFootprintWarna; x: number; y: number } | null>(null)
+  /** Bubble yang di-hover/tap — tooltip penjelas (Johan 28 Agu: "bubble ini
+   *  fungsi nya kurang jelas ... tooltips nya lebih di yakinkan lagi"). */
+  const [bubHover, setBubHover] = useState<{ b: BubbleHari; x: number; y: number } | null>(null)
   // Empat kuadran, empat batas "tampilkan lagi" — memperluas satu tak boleh
   // ikut memperluas yang lain, keduanya baris broker tapi peringkat berbeda.
   const [batasGrossBeli, setBatasGrossBeli] = useState(PANEL_AWAL)
@@ -216,6 +219,7 @@ export default function WhalesPapan() {
     setSelIntra(null)
     setModeSeleksi(false)
     setFpHover(null)
+    setBubHover(null)
     resetBatas()
   }, [kode, tf])
 
@@ -323,12 +327,17 @@ export default function WhalesPapan() {
       const m = bacaFp(id)
       if (m && p.point) setFpHover({ ...m, x: p.point.x, y: p.point.y })
       else setFpHover((cur) => (cur ? null : cur))
+      const bub = id.startsWith('bub:') ? bubbleRef.current?.getBubble(id) : null
+      if (bub && p.point) setBubHover({ b: bub, x: p.point.x, y: p.point.y })
+      else setBubHover((cur) => (cur ? null : cur))
     }
     const saatKlik = (p: { hoveredObjectId?: unknown; point?: { x: number; y: number } }) => {
       const id = typeof p.hoveredObjectId === 'string' ? p.hoveredObjectId : ''
       if (id.startsWith('avg:')) { setBrokerPilih(id.slice(4)); return }
       const m = bacaFp(id)
       if (m && p.point) setFpHover({ ...m, x: p.point.x, y: p.point.y })
+      const bub = id.startsWith('bub:') ? bubbleRef.current?.getBubble(id) : null
+      if (bub && p.point) setBubHover({ b: bub, x: p.point.x, y: p.point.y })
     }
     chart.subscribeCrosshairMove(saatGeser)
     chart.subscribeClick(saatKlik)
@@ -401,7 +410,17 @@ export default function WhalesPapan() {
       vol.setData(candle.volume)
       const n = candle.lilin.length
       if (n > 0) {
-        chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - JENDELA_AWAL), to: n + 2 })
+        // Footprint yang SUDAH menyala harus tetap terlihat di emiten baru
+        // (temuan Johan 28 Agu "jika ganti emiten dia tidak aktif langsung
+        // meskipun sebelumnya sudah di aktifkan"): jendela awal 250 bar
+        // lebih lebar dari ambang keterbacaan sel. JANGAN cek barSpacing
+        // pasca-set (nilainya masih milik emiten lama saat efek ini jalan —
+        // race yang membuat perbaikan pertama tak bekerja); hitung jendela
+        // langsung dari lebar pane.
+        const skala = chart.timeScale()
+        const muatFp = Math.max(10, Math.floor(skala.width() / (BAR_SPACING_MIN * 1.3)) - 2)
+        const jendela = footprintAktif ? Math.min(JENDELA_AWAL, muatFp) : JENDELA_AWAL
+        skala.setVisibleLogicalRange({ from: Math.max(0, n - jendela), to: n + 2 })
       }
       return
     }
@@ -639,9 +658,9 @@ export default function WhalesPapan() {
       <div className="vhead">
         <h1>Whales Papan</h1>
         <span className="sub">jejak bandar harian — pilih rentang harga &amp; waktu, lihat siapa menampung</span>
+        <CatatanCakupan inline />
       </div>
 
-      <CatatanCakupan />
 
       {/* Bilah kendali berkelompok — sistem tata C+A (keputusan Johan 28 Agu,
           artifact "Re-Layout PAPAN"; Whales = halaman percontohan chart).
@@ -715,7 +734,7 @@ export default function WhalesPapan() {
           disabled={tf !== 'harian'}
           title={tf !== 'harian'
             ? 'Hanya mode Harian — datanya dari broker harian'
-            : 'Lingkaran broker yang net-nya menyimpang dari pasar hari itu; ambangnya disetel slider z'}
+            : 'Lingkaran = broker yang net beli/jualnya MENYIMPANG jauh dari kebiasaan pasar hari itu (ambang slider z). Duduk di harga rata-rata transaksinya — bisa di luar badan candle. Arahkan kursor/ketuk lingkarannya untuk rincian'}
           onClick={() => setBubbleAktif((v) => !v)}
         >
           Bubble
@@ -858,6 +877,38 @@ export default function WhalesPapan() {
                   {s.broker.length > 8 && (
                     <div className="muted">+{s.broker.length - 8} broker lain</div>
                   )}
+                </div>
+              )
+            })()}
+            {/* Tooltip bubble — menjelaskan APA yang ditandai lingkaran itu
+                (Johan 28 Agu: fungsinya kurang jelas, posisinya bisa di luar
+                badan candle karena duduk di harga rata-rata transaksi). */}
+            {bubbleAktif && bubHover && (() => {
+              const lebar = bungkusRef.current?.clientWidth ?? 0
+              const kanan = lebar > 0 && bubHover.x > lebar / 2
+              const b = bubHover.b
+              return (
+                <div
+                  className="wp-fp-tip"
+                  style={{
+                    left: kanan ? undefined : bubHover.x + 14,
+                    right: kanan ? lebar - bubHover.x + 14 : undefined,
+                    top: Math.max(8, bubHover.y - 10),
+                  }}
+                >
+                  <div className="wp-fp-tip-judul">
+                    <span style={{ color: warnaBrokerCanvas(b.broker) }}>{b.broker}</span> · {b.waktu}
+                  </div>
+                  <div className="wp-fp-tip-total">
+                    <span className={b.netNilai >= 0 ? 'wp-plus' : 'wp-minus'}>
+                      net {b.netNilai >= 0 ? 'beli' : 'jual'} Rp {rupiahRingkas(Math.abs(b.netNilai))}
+                    </span>
+                  </div>
+                  <div className="muted">
+                    Menyimpang jauh dari kebiasaan pasar hari itu (outlier, ambang slider z).
+                    Lingkaran duduk di harga rata-rata transaksinya ±{Math.round(b.harga).toLocaleString('id-ID')} —
+                    bisa di luar badan candle.
+                  </div>
                 </div>
               )
             })()}

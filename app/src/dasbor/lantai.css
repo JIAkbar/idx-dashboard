@@ -810,8 +810,13 @@
 .lantai .bilah-kendali .grup-k{display:flex;align-items:center;gap:var(--j1);flex-wrap:wrap}
 .lantai .bilah-kendali .grup-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);font-weight:700;user-select:none}
 .lantai .bilah-kendali .pemisah-v{width:1px;align-self:stretch;background:var(--line);margin:0 2px}
+.lantai .bilah-kendali{container-type:inline-size}
 .lantai .bilah-kendali .grup-kanan{margin-left:auto}
-@media (max-width:700px){.lantai .bilah-kendali .grup-kanan{margin-left:0}}
+/* Saat bilah tak cukup lebar untuk satu baris, `margin-left:auto` membuat
+   kelompok kanan turun ke baris kedua RATA KANAN dengan lubang besar di
+   kirinya (temuan Johan 28 Agu "grid di laptop masih berantakan") — di bawah
+   ambang ini kelompok kanan mengalir biasa, rata kiri seperti yang lain. */
+@container (max-width:1460px){.lantai .bilah-kendali .grup-kanan{margin-left:0}}
 
 /* Tata dua kolom 12-grid (9:3) dengan panel kanan KONTEKSTUAL: ada isi =
    kolom penuh, kosong = kolaps jadi strip petunjuk tipis dan kolom kiri
@@ -927,6 +932,10 @@
 .lantai .vhead+.catatan-cakupan,
 .lantai .konteks-data+.catatan-cakupan,
 .lantai .vhead+.konteks-data{margin-top:-8px}
+/* Varian SEBARIS judul (Johan 28 Agu "di jadikan 1 baris saja ... (Rincian
+   broker ...)") — anak .vhead, tanpa ikon, dalam kurung; membungkus wajar
+   di layar sempit karena .vhead sudah flex-wrap. */
+.lantai .vhead .catatan-inline{font-size:11px;margin:0}
 
 
 

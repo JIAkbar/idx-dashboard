@@ -91,8 +91,8 @@ export function JagoPapan() {
       <div className="vhead">
         <h1>Jago Papan</h1>
         <span className="sub">Empat screener siap-pakai bertema momentum — bukan rekomendasi beli.</span>
+        <CatatanCakupan inline />
       </div>
-      <CatatanCakupan />
 
       <div className="panel">
         <div className="panel-b jgp-kepala">
