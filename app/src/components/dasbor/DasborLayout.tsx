@@ -86,26 +86,11 @@ export function DasborLayout() {
               <Outlet />
             </main>
 
-            <footer className="dasbor-kaki">
-              <span>
-                Sumber data: <b>Statistik Ringkas IDX</b> (idx.co.id), Yahoo Finance, dan KSEI.
-                {/* Klausa atribusi WAJIB lisensi Apache 2.0 lightweight-charts
-                    (dipakai /grafik) — README-nya mensyaratkan tautan nyata ke
-                    tradingview.com di halaman situs yang terlihat pengguna.
-                    Sengaja di KAKI GLOBAL (bukan di halaman /grafik sendiri,
-                    lihat riwayat commit) supaya halaman chart-nya tetap terbaca
-                    sebagai produk PAPAN. Jangan hapus tautan ini. */}
-                {' '}Grafik memakai Lightweight Charts™ (
-                <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer"
-                  style={{ color: 'var(--text2)' }}>TradingView</a>
-                ). PAPAN (Pusat Analisa Pasar Nusantara) bukan produk resmi Bursa Efek Indonesia.
-              </span>
-              {/* "Buletin analisa: Arus Pasar" DIBUANG (16 Agu): tempatnya di
-                  pojok kanan bawah kini ditempati tombol Tanya PAPAN yang
-                  mengambang, jadi teksnya tertimpa di tiap halaman. Isinya pun
-                  tak hilang — Bulletin punya menu sendiri (BLT) dan kartu di
-                  Beranda. */}
-            </footer>
+            {/* Kaki global DIBUANG (Johan 28 Agu: "footer nya di hapus saja
+                itu") — ruangnya jatuh ke halaman; chart Whales kini mentok
+                bawah. Klausa atribusi lightweight-charts yang WAJIB lisensi
+                pindah ke halaman Metodologi (lihat komentar di sana) —
+                menghapus kaki TIDAK boleh menghapus klausanya. */}
           </div>
         </div>
         {/* Membuka modal masuk dari laci telepon HARUS menutup lacinya: kalau

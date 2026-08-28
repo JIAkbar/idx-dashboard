@@ -76,7 +76,7 @@ DEFAULT_TICKERS = sorted(set([
     "EXCL", "FAPA", "FAST", "FASW", "FILM", "FIMP", "FIRE", "FISH", "FITT", "FLMC", "FMII", "FOLK",
     "FOOD", "FORE", "FORU", "FPNI", "FUJI", "FUTR", "FWCT", "GAMA", "GDST", "GDYR", "GEMA", "GEMS",
     "GGRM", "GGRP", "GHON", "GIAA", "GJTL", "GLOB", "GLVA", "GMFI", "GMTD", "GOLD", "GOLF", "GOLL",
-    "GOOD", "GOTO", "GOTOM", "GPRA", "GPSO", "GRIA", "GRPH", "GRPM", "GSMF", "GTBO", "GTRA", "GTSI",
+    "GOOD", "GOTO", "GPRA", "GPSO", "GRIA", "GRPH", "GRPM", "GSMF", "GTBO", "GTRA", "GTSI",
     "GULA", "GUNA", "GWSA", "GZCO", "HADE", "HAIS", "HAJJ", "HALO", "HATM", "HBAT", "HDFA", "HDIT",
     "HEAL", "HELI", "HERO", "HEXA", "HGII", "HILL", "HITS", "HKMU", "HMSP", "HOKI", "HOME", "HOMI",
     "HOPE", "HOTL", "HRME", "HRTA", "HRUM", "HUMI", "HYGN", "IATA", "IBFN", "IBOS", "IBST", "ICBP",
@@ -1162,6 +1162,17 @@ def main():
     else:
         tickers = [a.upper().replace('.JK', '') for a in args if not a.startswith('--')]
         mode_label = f"spesifik: {', '.join(tickers)}"
+
+    # Ticker resmi IDX yang TIDAK dikenal Yahoo — jangan dicoba tiap panen
+    # (keputusan Johan 28 Agu 2026: "untuk GOTOM itu di hapus saja").
+    # GOTOM = saham multi-voting (MVS) GoTo: tercatat di bursa sehingga
+    # sinkron harian selalu memasukkannya lagi ke daftar; menghapusnya dari
+    # daftar saja akan kembali besok, jadi disaring di sini, permanen.
+    LEWATI_YAHOO = {"GOTOM"}
+    dilewati = [t for t in tickers if t in LEWATI_YAHOO]
+    if dilewati:
+        tickers = [t for t in tickers if t not in LEWATI_YAHOO]
+        print(f"   Dilewati (tak dikenal Yahoo, permanen): {', '.join(dilewati)}")
 
     print(f"\n🔍 Mode  : {mode_label}")
     print(f"   Output: {OUT_DIR}\n")

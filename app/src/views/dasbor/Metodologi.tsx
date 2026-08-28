@@ -147,6 +147,19 @@ export function Metodologi() {
           </div>
         </div>
       </section>
+
+      {/* Pindahan dari kaki global (Johan 28 Agu: "footer nya di hapus saja").
+          Klausa atribusi WAJIB lisensi Apache 2.0 lightweight-charts — README
+          mensyaratkan tautan nyata ke tradingview.com di halaman yang terlihat
+          pengguna. Kaki globalnya hilang, klausanya TIDAK BOLEH ikut hilang:
+          rumah barunya di sini. Jangan hapus tautan ini. */}
+      <p className="muted" style={{ fontSize: 12 }}>
+        Sumber data: <b>Statistik Ringkas IDX</b> (idx.co.id), Yahoo Finance, dan KSEI.
+        {' '}Grafik memakai Lightweight Charts&trade; (
+        <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer"
+          style={{ color: 'var(--text2)' }}>TradingView</a>
+        ). PAPAN (Pusat Analisa Pasar Nusantara) bukan produk resmi Bursa Efek Indonesia.
+      </p>
     </div>
   )
 }

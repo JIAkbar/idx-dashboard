@@ -24,8 +24,17 @@
    * SATU variabel tinggi untuk chart & panel (spek konsistensi §1) — dua
    * angka terpisah pernah membuat panel memanjang 700-900px sementara chart
    * berhenti di 560px: ruang mati besar + toolbar melompat tiap ganti
-   * emiten karena tinggi halaman ikut berubah. */
-  --wp-tinggi: clamp(320px, 42vw, 560px);
+   * emiten karena tinggi halaman ikut berubah.
+   *
+   * Tinggi = SISA VIEWPORT (Johan 28 Agu: "chartnya mentok full page") —
+   * 100dvh dikurangi ticker+header+bilah kendali+jarak (±248px, kaki global
+   * sudah dihapus). dvh, bukan vh: bilah alamat ponsel (aturan lipatan 810). */
+  --wp-tinggi: max(340px, calc(100dvh - 248px));
+}
+@media (max-width: 900px) {
+  /* Ponsel menumpuk satu kolom — chart setinggi sisa layar mengubur panel
+   * di bawahnya; kembali ke tinggi konten. */
+  .wp-panggung { --wp-tinggi: clamp(320px, 110vw, 560px); }
 }
 
 .wp-kanvas-bungkus {
