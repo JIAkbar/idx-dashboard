@@ -51,6 +51,11 @@ export interface HariBroker {
   avg: number | null
   totalLot: number
   broker: BarisBroker[]
+  /** Baris broker varian ASING (papan reguler × investor asing) hari itu —
+   *  dipakai footprint untuk menghitung PORSI asing per sel. Kosong kalau
+   *  hari itu belum punya varian asing di arsip; JANGAN dibaca sebagai nol
+   *  (audit whales 28 Agu §7d). */
+  brokerAsing?: BarisBroker[]
 }
 
 export interface SeleksiArea {
@@ -252,7 +257,12 @@ export function tahunDibutuhkan(dari: string, sampai: string): number[] {
 
 /** Bentuk mentah satu berkas tahunan — cukup ruas yang kita pakai. */
 interface BerkasTahunan {
-  hari?: Record<string, { ringkas?: { avg?: number; total_lot?: number }; broker?: BarisBroker[] }>
+  hari?: Record<string, {
+    ringkas?: { avg?: number; total_lot?: number }
+    broker?: BarisBroker[]
+    /** Varian asing — bentuk sama, dipakai porsi asing footprint. */
+    asing?: { broker?: BarisBroker[] }
+  }>
 }
 
 /**
@@ -271,6 +281,7 @@ export function dariBerkasTahunan(j: BerkasTahunan | null): HariBroker[] {
       avg: typeof avg === 'number' && Number.isFinite(avg) && avg > 0 ? avg : null,
       totalLot: isi?.ringkas?.total_lot ?? 0,
       broker: Array.isArray(isi?.broker) ? isi.broker : [],
+      brokerAsing: Array.isArray(isi?.asing?.broker) ? isi.asing.broker : undefined,
     })
   }
   return out.sort((a, b) => (a.tanggal < b.tanggal ? -1 : 1))

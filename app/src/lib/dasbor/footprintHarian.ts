@@ -47,6 +47,14 @@ export interface SelFootprint {
   jualLot: number
   /** Urut desc (beliLot+jualLot) — tooltip memotong 8 teratas. */
   broker: BrokerSel[]
+  /** Lot yang berasal dari investor ASING di sel ini (papan reguler), diisi
+   *  pemanggil dengan mem-bin varian asing hari yang sama ke tepi yang sama.
+   *  Sengaja OPSIONAL: hari yang variannya belum dipanen tak boleh terbaca
+   *  sebagai "asing nol" (audit whales 28 Agu — mereka menandai [F]/[D] per
+   *  transaksi; kita hanya punya agregat harian per broker, jadi yang jujur
+   *  adalah PORSI, bukan tag identitas broker). */
+  beliLotAsing?: number
+  jualLotAsing?: number
 }
 
 const MAKS_BIN = 12

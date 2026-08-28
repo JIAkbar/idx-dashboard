@@ -528,13 +528,24 @@ export default function WhalesPapan() {
     for (const h of hari) {
       const c = petaCandle.get(h.tanggal)
       if (!c || h.broker.length === 0) continue
-      const sel = binFootprint(h.broker, c.low, c.high).map((s) => {
+      // Varian ASING hari yang sama di-bin dengan tepi harga yang SAMA
+      // (low/high candle) supaya indeks selnya sejajar — hasilnya porsi
+      // asing per sel. Hari tanpa varian asing dibiarkan undefined, bukan 0
+      // (temuan audit whales 28 Agu §7d: yang jujur untuk data agregat
+      // harian adalah PORSI, bukan tag [F]/[D] per broker).
+      const selAsing = h.brokerAsing?.length
+        ? binFootprint(h.brokerAsing, c.low, c.high)
+        : null
+      const sel = binFootprint(h.broker, c.low, c.high).map((s, iSel) => {
         const dominanBeli = s.broker.reduce<BrokerSel | null>(
           (m, b) => (b.beliLot > (m?.beliLot ?? 0) ? b : m), null)
         const dominanJual = s.broker.reduce<BrokerSel | null>(
           (m, b) => (b.jualLot > (m?.jualLot ?? 0) ? b : m), null)
+        const a = selAsing?.[iSel]
         return {
           ...s,
+          beliLotAsing: a?.beliLot,
+          jualLotAsing: a?.jualLot,
           warnaBeli: dominanBeli ? warnaBrokerCanvas(dominanBeli.kode) : 'rgba(48,164,108,0.7)',
           warnaJual: dominanJual ? warnaBrokerCanvas(dominanJual.kode) : 'rgba(229,72,77,0.7)',
         }
@@ -893,6 +904,22 @@ export default function WhalesPapan() {
                     {' · '}
                     <span className="wp-minus">{lotRingkas(s.jualLot)} lot</span>
                   </div>
+                  {/* Porsi investor asing di sel ini — dari varian asing hari
+                      yang sama, bukan tag identitas broker (audit whales §7d:
+                      tag [F]/[D] mereka per transaksi, kita cuma punya
+                      agregat harian). Hari tanpa varian: baris ini absen. */}
+                  {(s.beliLotAsing != null || s.jualLotAsing != null) && (
+                    <div className="muted" style={{ fontSize: 10 }}>
+                      asing{' '}
+                      {s.beliLot > 0 && s.beliLotAsing != null
+                        ? `beli ${Math.round((s.beliLotAsing / s.beliLot) * 100)}%`
+                        : 'beli —'}
+                      {' · '}
+                      {s.jualLot > 0 && s.jualLotAsing != null
+                        ? `jual ${Math.round((s.jualLotAsing / s.jualLot) * 100)}%`
+                        : 'jual —'}
+                    </div>
+                  )}
                   {s.broker.slice(0, 8).map((b) => (
                     <div className="wp-fp-tip-baris" key={b.kode}>
                       <span style={{ color: warnaBrokerCanvas(b.kode) }}>{b.kode}</span>
