@@ -2,7 +2,7 @@
  * Kelompok identitas broker — dasar pewarnaan Broker Summary v2. Port
  * LANGSUNG dari `KURASI`/`KELAS` di artifact rancangan "Arus Broker BUMI"
  * (mockup yang disetujui Johan, 22 Agu 2026) — enam kelompok, bukan lima:
- * `asing`, `bumn`, `smart` (Smart Money), `ritel`, `afiliasi` (grup/bandar),
+ * `asing`, `bumn`, `smart` (Institusi Lokal), `ritel`, `afiliasi`,
  * `lain`. Kode di luar daftar jatuh ke `lain`, bukan galat.
  *
  * Warna sengaja BUKAN hijau/merah — dua warna itu sudah dipakai arti
@@ -19,7 +19,12 @@ export type KelompokBroker = 'asing' | 'bumn' | 'smart' | 'ritel' | 'afiliasi' |
 export const LABEL_KELOMPOK: Record<KelompokBroker, string> = {
   asing: 'Asing',
   bumn: 'BUMN',
-  smart: 'Smart Money',
+  // 'Smart Money' -> 'Institusi Lokal' (keputusan Johan 28 Agu 2026 malam,
+  // via sesi AI Skill: "kirim usul institusi lokal dan afiliasi grup emiten
+  // ke papan"). Keterangannya memang sudah berbunyi "institusi lokal
+  // non-ritel" — label tinggal menyusul; kini kelima label menjawab satu
+  // pertanyaan yang sama: "broker ini jenis apa".
+  smart: 'Institusi Lokal',
   ritel: 'Ritel',
   afiliasi: 'Afiliasi Grup Emiten',
   lain: 'Lainnya',

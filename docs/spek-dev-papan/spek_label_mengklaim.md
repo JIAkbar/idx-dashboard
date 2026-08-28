@@ -231,3 +231,38 @@ memuat badge kategori wajib mencetak keterangannya di footer — bukan hanya di
 ## §7 — Baris #3 "Smart Money" DITUTUP oleh keputusan Johan, 28 Agu 2026
 
 Verbatim: *"Smart Money - tetep smart money saja."* Label sumbu IDENTITAS kelompok broker di legenda Overview (dan semua pemakainya) **tetap "Smart Money"** — usulan ganti "Institusi Lokal" DITOLAK. Kriteria terima §5 yang menuntut grep "Smart Money" = 0 baris dinyatakan GUGUR untuk sumbu identitas ini; keterangan kurasi (bukan penggolongan resmi bursa) tetap wajib menyertainya di modal ⓘ/keterangan yang sudah terpasang. Sumbu PERILAKU tetap memakai nama terukur (keputusan 27 Agu, kategoriBroker.ts) — dua sumbu, dua aturan, keduanya kini sama-sama diputuskan.
+
+
+## §8 · Baris #3 DITUTUP — 28 Agu 2026 malam
+
+Keputusan Johan (via sesi AI Skill, verbatim): *"kirim usul institusi lokal dan
+afiliasi grup emiten ke papan"*.
+
+`LABEL_KELOMPOK.smart`: **"Smart Money" -> "Institusi Lokal"**. Dasarnya bukan
+selera: `KETERANGAN_KELOMPOK.smart` sudah berbunyi "institusi lokal non-ritel"
+sejak awal — labelnya yang tertinggal.
+
+Sesudah ini kelima label menjawab satu pertanyaan yang sama ("broker ini JENIS
+apa"), bukan empat menjawab jenis dan satu menjawab "sepintar apa":
+
+| Label | Keterangan |
+|---|---|
+| Asing | sekuritas berinduk luar negeri |
+| BUMN | sekuritas bank pelat merah |
+| **Institusi Lokal** | institusi lokal non-ritel |
+| Ritel | basis nasabah perorangan besar |
+| Afiliasi Grup Emiten | satu grup usaha dengan emiten |
+
+Catatan §7 (keputusan 27 Agu "Smart Money TETAP untuk sumbu identitas")
+**digantikan** keputusan ini — arahnya berbalik setelah usulan diajukan ulang
+dengan tabel di atas. Yang tidak berubah: `kategoriBroker.ts` (sumbu PERILAKU)
+tetap tanpa kata "smart", dan `afiliasi` sudah berbunyi "Afiliasi Grup Emiten"
+sejak B44.
+
+Ikutan yang ikut ditutup: legenda `Overview.tsx:84` kini merender
+`title={KETERANGAN_KELOMPOK[k]}` — celah "label tanpa keterangan" yang jadi
+cacat kedua baris #3 hilang di tempat yang sama.
+
+Uji terima terpenuhi: `grep "Smart Money" app/src` = nol pada string yang
+dirender (sisa satu baris di komentar riwayat `kelompokBroker.ts:22`, sengaja);
+pengelompokan tak berubah — ini rename label, bukan penggolongan ulang.

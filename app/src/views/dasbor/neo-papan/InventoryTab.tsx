@@ -28,7 +28,7 @@ const INFO_INVENTORY: ItemInfoIndikator[] = [
   { nama: 'Ukuran', isi: 'Satuan garis kumulatif & tabel B.Avg/S.Avg: Value = kumulatif nilai transaksi (Rupiah), Lot = kumulatif jumlah lot.' },
   { nama: 'Investor', isi: 'Semua = seluruh investor; Asing (klien) = investor-type klien luar negeri lintas broker, bukan identitas kepemilikan sekuritas; Domestik = Semua dikurangi Asing.' },
   { nama: 'Grid', isi: 'Garis bantu chart, dengan slider keburaman di sampingnya.' },
-  { nama: 'Broker', isi: 'Preset garis kumulatif: AK BK (dua broker asing acuan), Top 5 NB/NS (net beli/jual terbesar pada rentang ini — definisi PAPAN sendiri), kelompok Asing aktif besar/Smart Money/Institusi/Lokal (kurasi PAPAN, bukan penggolongan resmi bursa, diambil dari anggota yang aktif di rentang ini, maksimal 8 garis), atau Pilih sendiri secara manual.' },
+  { nama: 'Broker', isi: 'Preset garis kumulatif: AK BK (dua broker asing acuan), Top 5 NB/NS (net beli/jual terbesar pada rentang ini — definisi PAPAN sendiri), kelompok Asing aktif besar/Institusi Lokal/Ritel (kurasi PAPAN, bukan penggolongan resmi bursa, diambil dari anggota yang aktif di rentang ini, maksimal 8 garis), atau Pilih sendiri secara manual.' },
   { nama: 'Group Score', isi: 'Skor harian 10 hari terakhir per kategori perilaku broker: tanda net kategori (naik/turun) dikalikan jumlah broker kategori itu yang net searah hari itu — penjumlahan tanda, bukan skor komposit.' },
   { nama: 'Posisi 6 Bulan per Broker', isi: 'Posisi tiap broker dari 126 hari bursa terakhir yang tersedia di arsip: Floor = rata-rata tertimbang harga beli sepanjang jendela, PnL% hanya dihitung untuk broker net-beli, dan badge TRAPPED menghitung berapa dari net-buyer terbesar yang posisinya kini di bawah floor.' },
 ]
@@ -453,7 +453,7 @@ export function InventoryTab({ kode }: { kode: string }) {
             nonaktif dengan alasan, bukan grafik kosong (spek 27 Agu §3). */}
         {([
           ['asing', 'Asing aktif besar', 'asing' as const],
-          ['smart', 'Smart Money', 'smart' as const],
+          ['smart', 'Institusi Lokal', 'smart' as const],
           ['institusi', 'Institusi', null],
           ['lokal', 'Lokal', null],
         ] as const).map(([id, label, kel]) => {

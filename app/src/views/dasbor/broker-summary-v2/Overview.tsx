@@ -3,7 +3,7 @@ import type { AgregatBroker, HariBroker, ModeTransaksi } from '../../../lib/dasb
 import { arusHarian, floorPriceBroker, tabelDuaSisi } from '../../../lib/dasbor/brokerEmiten'
 import { ringkasSB, analisaKelompok, konsensusKategori } from '../../../lib/dasbor/brokerEmitenV2'
 import { KETERANGAN_KATEGORI, useKategoriBroker } from '../../../lib/dasbor/kategoriBroker'
-import { warnaBroker, warnaKelompok, namaBroker, LABEL_KELOMPOK } from '../../../lib/dasbor/kelompokBroker'
+import { warnaBroker, warnaKelompok, namaBroker, LABEL_KELOMPOK, KETERANGAN_KELOMPOK } from '../../../lib/dasbor/kelompokBroker'
 import { fmtB, fmtLot } from '../../../lib/dasbor/brokerSummaryFormat'
 import { labelTanggal } from '../../../lib/dasbor/brokerHarian'
 import { keFraksi } from '../../../lib/fraksiHarga'
@@ -81,7 +81,7 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
         <div className="panel-b">
           <div className="bs2-legenda">
             {URUTAN_LEGENDA.map((k) => (
-              <span key={k}><i style={{ background: warnaKelompok(k) }} />{LABEL_KELOMPOK[k]}</span>
+              <span key={k} title={KETERANGAN_KELOMPOK[k]}><i style={{ background: warnaKelompok(k) }} />{LABEL_KELOMPOK[k]}</span>
             ))}
           </div>
 
