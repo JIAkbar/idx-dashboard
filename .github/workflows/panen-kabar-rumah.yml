@@ -35,10 +35,18 @@ name: Panen kabar (runner rumahan)
 
 on:
   schedule:
-    # Sengaja digeser 1 jam dari alur awan (yang jalan di menit 0 jam genap):
-    # dua alur yang menembak bersamaan akan saling menunggu di `concurrency`
-    # dan satu di antaranya kedaluwarsa tanpa memanen apa pun.
-    - cron: '0 1,3,5,7,9,11,13 * * 1-6'
+    # HANYA jendela laptop Johan menyala: 18:00–20:00 WIB (11–13 UTC).
+    # Johan 29 Agu 2026: "saya buka laptop di antara pukul 18.00-20.00".
+    #
+    # Dulu tujuh slot 08:00–20:00 WIB, dan LIMA di antaranya hilang tiap hari
+    # karena runner offline. Tiga slot yang benar-benar jalan menaikkan
+    # cakupan nyata dibanding tujuh slot yang lima-nya lenyap diam-diam.
+    #
+    # MENIT 15, bukan menit 0: alur awan kini jalan tiap 2 jam di MENIT 0
+    # (termasuk 12 UTC yang jatuh di dalam jendela ini), dan `panen-harian-rumah`
+    # memakai menit 30. Tiga alur, tiga menit berbeda — tak ada yang saling
+    # menunggu di `concurrency` lalu kedaluwarsa tanpa memanen apa pun.
+    - cron: '15 11,12,13 * * 1-6'   # 18:15 · 19:15 · 20:15 WIB
   workflow_dispatch:
     inputs:
       sumber:

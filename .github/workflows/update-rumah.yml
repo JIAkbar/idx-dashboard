@@ -26,10 +26,21 @@ name: Statistik harian IDX (runner rumahan)
 
 on:
   schedule:
-    # Digeser 1 jam dari alur awan (14:00/16:00/18:00 UTC). Dua alur yang
-    # menembak bersamaan akan berebut commit ke berkas yang sama.
-    - cron: '0 15 * * 1-5'   # 22:00 WIB
-    - cron: '0 19 * * 1-5'   # 02:00 WIB hari berikutnya
+    # Dipindah ke jendela laptop Johan (18:00–20:00 WIB) — 29 Agu 2026.
+    # Sebelumnya 22:00 dan 02:00 WIB: DUA-DUANYA di luar jendela, jadi alur
+    # ini praktis tak pernah jalan terjadwal. Statistik harian IDX cuma masuk
+    # lewat tugas login `PAPAN-BukaLaptop`, dan itu kebetulan, bukan jadwal.
+    #
+    # Ditaruh di UJUNG AKHIR jendela, bukan awal: IDX merilis statistiknya
+    # 18:00–20:00 WIB, jadi memanen pukul 18:00 berisiko menembak berkas yang
+    # belum terbit. Percobaan kedua 30 menit kemudian murah — tanggal yang
+    # sudah ada dilewati tanpa mengunduh apa pun.
+    #
+    # Menit dipilih supaya tak bertabrakan: awan di menit 0 jam genap,
+    # `panen-kabar-rumah` di menit 15. 12:30 UTC jam genap tapi menit 30 (aman),
+    # 13:00 UTC jam ganjil (aman).
+    - cron: '30 12 * * 1-5'   # 19:30 WIB — sesudah sebagian besar rilis
+    - cron: '0 13 * * 1-5'    # 20:00 WIB — percobaan kedua
   workflow_dispatch:
 
 permissions:

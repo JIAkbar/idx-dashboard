@@ -44,10 +44,26 @@ name: Panen kabar (semua sumber)
 
 on:
   schedule:
-    # Tiap 2 jam pada jendela kabar WIB (00:00–12:00 UTC = 07:00–19:00 WIB).
-    # Di luar itu sumbernya praktis diam; ambang basi di `cek_kabar.py`
-    # memakai jendela yang sama.
-    - cron: '0 0,2,4,6,8,10,12 * * 1-6'
+    # Tiap 2 jam, SEPANJANG HARI, tiap hari (permintaan Johan 29 Agu 2026).
+    #
+    # Dulu dibatasi jendela 07:00–19:00 WIB Sen–Sab. Yang mengubahnya: runner
+    # RUMAHAN ternyata kehilangan 5–6 panen terjadwal tiap hari laptop tutup
+    # (26 Agu laptop menyala: 7 run; 27 Agu: 1 run) — jadwal yang dilewati
+    # runner offline hilang DIAM-DIAM, tanpa jejak merah. Jalur awan yang
+    # jalan 24 jam menutup lubang itu.
+    #
+    # Dua hal yang membuat ini aman, keduanya diperiksa sebelum diubah:
+    # 1. TIDAK memicu alarm palsu. `cek_kabar.py` menghitung umur hanya dari
+    #    jam yang jatuh di jendela 07:00–19:00 HARI BURSA (kalender dari
+    #    `ds_*.json`), jadi run tengah malam atau Minggu yang tak membawa
+    #    kabar baru tak menambah umur — vonis kesegarannya tak berubah.
+    # 2. NOL ongkos. Repo ini publik, jadi menit Actions gratis tanpa batas.
+    #
+    # Sumber yang memang tembus dari awan (Google News, IPOT, snips) hidup di
+    # luar jam bursa juga, jadi cakupan 24 jam masuk akal untuk mereka. Yang
+    # tak tembus dari awan (IDX, Kontan) tetap tak tembus — itu blokir per-IP
+    # yang sudah divonis permanen di komentar kepala berkas ini.
+    - cron: '0 */2 * * *'
   workflow_dispatch:
     inputs:
       sumber:
