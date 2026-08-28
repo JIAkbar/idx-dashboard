@@ -189,7 +189,25 @@ def main() -> int:
             if resmi and resmi.get("ihsg_value"):
                 c_resmi = float(resmi["ihsg_value"])
                 c_jahit = float(baris[-1][4])
-                if abs(c_jahit - c_resmi) / c_resmi > 0.005:
+                # BAR HANTU (temuan Johan 28 Agu "panen kok gak langsung jadi
+                # yaa? ini data masih 27 agustus"): sumber harga memberi bar
+                # HARI BERJALAN dengan volume 0 dan OHLC identik = salinan
+                # penutupan kemarin, bukan data. Selisihnya ke angka resmi
+                # bisa kecil (28 Agu: 6521,75 vs 6518,121 = 0,06%) sehingga
+                # ambang 0,5% tak memicu — barnya lolos sebagai "hari baru"
+                # yang isinya bohong. Bar begini SELALU diganti angka resmi,
+                # tanpa memandang ambang.
+                hantu = (
+                    float(baris[-1][5] or 0) == 0
+                    and baris[-1][1] == baris[-1][2] == baris[-1][3] == baris[-1][4]
+                )
+                if hantu:
+                    print(f"!! Bar {tgl_akhir} HANTU (volume 0, OHLC identik) — diganti angka resmi IDX")
+                    for i, k in ((1, "ihsg_open"), (2, "ihsg_high"), (3, "ihsg_low")):
+                        if resmi.get(k):
+                            baris[-1][i] = float(resmi[k])
+                    baris[-1][4] = c_resmi
+                elif abs(c_jahit - c_resmi) / c_resmi > 0.005:
                     print(f"!! Bar {tgl_akhir} menyimpang dari resmi IDX: "
                           f"jahit {c_jahit} vs resmi {c_resmi} — H/L/C diganti resmi")
                     if resmi.get("ihsg_high"): baris[-1][2] = float(resmi["ihsg_high"])

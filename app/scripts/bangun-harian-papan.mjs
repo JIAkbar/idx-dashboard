@@ -231,7 +231,21 @@ for (const f of fileOhlcv) {
   if (!Array.isArray(bar) || bar.length === 0) continue
   berkasByKode.set(kode, bar)
   const last = bar.at(-1)?.[0]
-  if (last) hitungTanggal.set(last, (hitungTanggal.get(last) ?? 0) + 1)
+  // Bar HARI BERJALAN yang belum berdata (volume 0) TIDAK ikut memilih
+  // tanggal — temuan Johan 28 Agu ("panen kok gak langsung jadi yaa? ini
+  // data masih 27 agustus"): sumber harga memberi bar bertanggal hari ini
+  // dengan volume/value/frekuensi nol, dan modus memenangkannya karena
+  // SEMUA emiten punya bar hantu itu. Akibatnya halaman menawarkan tanggal
+  // baru yang isinya nol di seluruh kolom. Kelas bug yang sama dengan
+  // arsip-kosong (§WF-207): yang kosong tak boleh mengalahkan yang berisi.
+  // Suara emiten ini = bar TERAKHIR YANG BERISI. Kalau bar paling ujung
+  // hantu (volume 0), mundur satu — jangan diam, karena kalau semua emiten
+  // diam tak ada tanggal terpilih sama sekali (dicoba: pembangun berhenti
+  // "Tak ada satu pun tanggal bar ditemukan").
+  let iSuara = bar.length - 1
+  while (iSuara > 0 && Number(bar[iSuara]?.[6] ?? 0) === 0) iSuara -= 1
+  const tglSuara = bar[iSuara]?.[0]
+  if (tglSuara) hitungTanggal.set(tglSuara, (hitungTanggal.get(tglSuara) ?? 0) + 1)
 }
 const tanggalTerakhir = [...hitungTanggal.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
 if (!tanggalTerakhir) {
@@ -244,10 +258,14 @@ if (!tanggalTerakhir) {
 // ke belakang aman tercakup).
 let kalender = null
 for (const [kode, bar] of berkasByKode) {
-  if (bar.at(-1)?.[0] !== tanggalTerakhir) continue
+  // Bar ujung boleh HANTU (volume 0 hari berjalan) — yang penting emiten ini
+  // MEMUAT tanggalTerakhir; kalendernya lalu dipotong sampai tanggal itu
+  // supaya tanggal hantu tak ikut jadi target.
+  if (!bar.some((b) => b[0] === tanggalTerakhir)) continue
   if (!kalender || bar.length > kalender.length) kalender = bar.map((b) => b[0])
 }
-const tanggalTarget = (kalender ?? []).slice(-N_HARI) // lama -> baru
+const iAkhir = kalender ? kalender.lastIndexOf(tanggalTerakhir) : -1
+const tanggalTarget = (iAkhir >= 0 ? kalender.slice(0, iAkhir + 1) : (kalender ?? [])).slice(-N_HARI) // lama -> baru
 
 console.log(`tanggal bursa terakhir (modus): ${tanggalTerakhir}`)
 console.log(`membangun ${tanggalTarget.length} tanggal: ${tanggalTarget[0]} .. ${tanggalTarget.at(-1)}`)
