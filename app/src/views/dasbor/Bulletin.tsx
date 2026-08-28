@@ -365,7 +365,7 @@ export function Bulletin() {
                                     <th className="r" title="Peluang close lebih tinggi dalam 5 hari bursa — dihitung dari seluruh kejadian historis yang setup teknikalnya serupa (posisi vs EMA50, pivot, rasio volume, posisi rentang 20 hari)">Prob 5h ⓘ</th>
                                     <th className="r" title="Peluang harga SEMPAT naik ≥3% dalam 5 hari bursa pada setup serupa">P ≥3% ⓘ</th>
                                     <th className="r" title="Jumlah sampel historis di balik angka probabilitas — makin besar makin bisa dipercaya. 'k/4' berarti pencocokan setup diperlonggar karena sampel persis terlalu sedikit">n ⓘ</th>
-                                    <th title="z-score nilai transaksi (harga×volume) vs 60 hari. Badge 'senyap' = value melonjak (z≥2) tapi harga nyaris diam — pola akumulasi terselubung">VolVal ⓘ</th>
+                                    <th title="z-score nilai transaksi (harga×volume) vs 60 hari. Badge menyala kalau nilai melonjak (z≥2,0) tapi harga nyaris datar (|Δharga|≤1%)">VolVal ⓘ</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -397,10 +397,10 @@ export function Bulletin() {
                                             {a.vv_sinyal && (
                                               <span
                                                 className="bchip"
-                                                title="Sinyal akumulasi senyap: value melonjak (z ≥ 2) tapi harga nyaris diam"
+                                                title="Nilai transaksi melonjak (z≥2,0) tapi harga nyaris datar (|Δharga|≤1%)"
                                                 style={{ marginLeft: 6, background: 'var(--amber-dim)', color: 'var(--amber)', borderColor: 'var(--amber)', fontWeight: 700 }}
                                               >
-                                                senyap
+                                                nilai tinggi, datar
                                               </span>
                                             )}
                                           </>
@@ -423,7 +423,8 @@ export function Bulletin() {
                                 di rentang 20 hari), lalu menghitung berapa persen yang lanjut naik. <b>Prob 5h</b> =
                                 close lebih tinggi dalam 5 hari; <b>P ≥3%</b> = sempat naik ≥3%; <b>n</b> = jumlah
                                 sampel di baliknya (angka tanpa n besar = lemah); <b>VolVal</b> = lonjakan nilai
-                                transaksi — badge "senyap" menandai value besar saat harga diam (akumulasi terselubung).
+                                transaksi — badge "nilai tinggi, datar" menandai value besar (z≥2,0) saat harga nyaris
+                                tak bergerak (|Δharga|≤1%).
                                 Arahkan kursor / tahan di judul kolom ⓘ untuk detail. Probabilistik, bukan kepastian —
                                 bukan ajakan transaksi.
                               </div>

@@ -9,12 +9,15 @@ function rp(v: number | null): string {
   return v != null ? 'Rp ' + Math.round(v).toLocaleString('id-ID') : '—'
 }
 
+/** Ambang ±20% memisahkan Undervalued/Overvalued/Wajar — sama dengan sumber. */
+const AMBANG_MOS = 20
+
 /** Port mosBadge() index_live.html baris 4398-4404. */
 function MosBadge({ val, price }: { val: number | null; price: number }) {
   if (!val || !price || price <= 0) return <>—</>
   const mos = (val / price - 1) * 100
   const color = mos > 0 ? 'var(--green)' : 'var(--red)'
-  const label = mos > 20 ? 'Undervalued' : mos < -20 ? 'Overvalued' : 'Wajar'
+  const label = mos > AMBANG_MOS ? `Undervalued (>${AMBANG_MOS}%)` : mos < -AMBANG_MOS ? `Overvalued (<-${AMBANG_MOS}%)` : `Wajar (±${AMBANG_MOS}%)`
   return (
     <>
       <span style={{ color, fontWeight: 700 }}>{mos >= 0 ? '+' : ''}{mos.toFixed(1)}%</span>{' '}
@@ -27,6 +30,9 @@ function pctPlain(v: number | null, d = 1): string {
   return v != null ? v.toFixed(d) + '%' : '—'
 }
 
+/** Ambang ±5% memisahkan Murah/Mahal/Wajar vs median sektor — sama dengan sumber. */
+const AMBANG_REL = 5
+
 /** Satu baris tabel Relative Valuation — port relRow() index_live.html baris 4254-4265. */
 function RelRow({ label, val, secMed, fmt, invert }: {
   label: string; val: number | null; secMed: number | null; fmt: (v: number | null) => string; invert: boolean
@@ -35,8 +41,8 @@ function RelRow({ label, val, secMed, fmt, invert }: {
     return <tr><td>{label}</td><td className="r">{fmt(val)}</td><td className="r muted">—</td><td className="r muted">—</td></tr>
   }
   const diff = (val / secMed - 1) * 100
-  const isCheap = invert ? diff > 5 : diff < -5
-  const isPricey = invert ? diff < -5 : diff > 5
+  const isCheap = invert ? diff > AMBANG_REL : diff < -AMBANG_REL
+  const isPricey = invert ? diff < -AMBANG_REL : diff > AMBANG_REL
   const badge = isCheap
     ? <span style={{ color: 'var(--green)', fontSize: 9, fontWeight: 700 }}>▼ Murah</span>
     : isPricey
@@ -212,6 +218,9 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
                   <RelRow label="ROE" val={fd.roe != null ? fd.roe * 100 : null} secMed={secROE != null ? secROE * 100 : null} fmt={(v) => pctPlain(v)} invert={true} />
                 </tbody>
               </table>
+              <p style={{ fontSize: 9, color: 'var(--text3)', marginTop: 6 }}>
+                Murah/Mahal/Wajar dari selisih terhadap median sektor, ambang ±{AMBANG_REL}%.
+              </p>
             </div>
           </div>
         )}

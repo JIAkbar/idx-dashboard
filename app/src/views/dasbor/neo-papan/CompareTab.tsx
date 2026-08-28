@@ -262,7 +262,11 @@ export function CompareTab({ kode }: { kode: string }) {
 
   const ubah = (x: { netA: number; netB: number }) => {
     if (Math.abs(x.netA) < AMBANG_BASIS) {
-      return <span title={`Basis kiri terlalu kecil (|Net A| < Rp ${(AMBANG_BASIS / 1e6).toFixed(0)} jt) — persentasenya benar aritmetika tapi tak bermakna`}>≫</span>
+      return (
+        <span className="muted" title={`Basis kiri terlalu kecil (|Net A| < Rp ${(AMBANG_BASIS / 1e6).toFixed(0)} jt) — persentasenya benar aritmetika tapi tak bermakna`}>
+          ≫ basis kecil
+        </span>
+      )
     }
     // A dan B BERLAWANAN TANDA → persentase tak bermakna meski basisnya besar
     // (PENAJAMAN3): broker berbalik dari melepas jadi menampung (atau

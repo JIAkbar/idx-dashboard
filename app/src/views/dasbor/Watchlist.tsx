@@ -358,6 +358,15 @@ export function Watchlist() {
                     ))}
                   </tbody>
                 </table>
+                {/* Keterangan Akum/Dist dulu hanya di title (mati di layar sentuh,
+                    temuan sapuan pengawas 27 Agu #12) — dicetak juga di sini supaya
+                    terbaca tanpa hover. */}
+                <p className="muted" style={{ margin: '6px 0 0', fontSize: 11 }}>
+                  Akum/Dist: <b>Akumulasi</b> harga &amp; AD naik bersama ·{' '}
+                  <b>Distribusi</b> harga &amp; AD turun bersama ·{' '}
+                  <b>Akumulasi diam</b> AD naik walau harga turun ·{' '}
+                  <b>Distribusi diam</b> AD turun walau harga naik.
+                </p>
               </div>
             ) : (
               <div className="panel-b">

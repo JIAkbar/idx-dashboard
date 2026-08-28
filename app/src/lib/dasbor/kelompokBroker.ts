@@ -21,7 +21,7 @@ export const LABEL_KELOMPOK: Record<KelompokBroker, string> = {
   bumn: 'BUMN',
   smart: 'Smart Money',
   ritel: 'Ritel',
-  afiliasi: 'Afiliasi grup / bandar',
+  afiliasi: 'Afiliasi Grup Emiten',
   lain: 'Lainnya',
 }
 

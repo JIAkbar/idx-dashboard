@@ -51,9 +51,21 @@ export function TopBroker() {
   const valB = useUrut<BrokerRankRow>(hari?.broker_val ?? [], 'v')
   const freqB = useUrut<BrokerRankRow>(hari?.broker_freq ?? [], 'v')
 
+  // Judul = label menu resmi rute /broker (lib/dasbor/menu.ts) — dipakai
+  // ulang di ketiga cabang return (loading/error/utama) supaya header tak
+  // melompat, pola sama StatistikBerkala.tsx.
+  const vhead = (
+    <div className="vhead">
+      <h1>Top Broker</h1>
+      <span className="sub">Saham dan broker paling aktif per hari — volume, nilai, dan frekuensi transaksi.</span>
+      <CatatanCakupan inline />
+    </div>
+  )
+
   if (loading && !hari) {
     return (
       <div className="lantai">
+        {vhead}
         <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p style={{ fontSize: 28 }}>⏳</p>
@@ -66,6 +78,7 @@ export function TopBroker() {
   if (error || !hari) {
     return (
       <div className="lantai">
+        {vhead}
         <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
@@ -94,9 +107,9 @@ export function TopBroker() {
 
   return (
     <div className="lantai">
+      {vhead}
       <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
       <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
-      <CatatanCakupan />
 
       <div className="panel">
         <div className="panel-h"><span className="lbl">Top Stock Trading — By Volume · Value · Frequency</span></div>

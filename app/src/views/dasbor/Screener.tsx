@@ -484,7 +484,15 @@ function PanelPresetWhale({ presetAktif, presetId, setPresetId, hasil, petaBaris
                   <td className="r num" title={`${h.lolos} dari ${h.terukur} kriteria terukur lolos${h.takTerukur ? ` (${h.takTerukur} kriteria lain belum ada datanya)` : ''}`}>
                     {h.lolos}/{h.terukur}
                   </td>
-                  {h.rinci.map((r) => <td key={r.id}><GlyphKriteria h={r.hasil} /></td>)}
+                  {h.rinci.map((r) => {
+                    const top3 = r.id === 'terkonsentrasi' ? petaBaris.get(h.kode)?.top3_pct : null
+                    return (
+                      <td key={r.id}>
+                        <GlyphKriteria h={r.hasil} />
+                        {top3 != null && <span className="muted" style={{ marginLeft: 4, fontSize: 11 }}>{Math.round(top3)}%</span>}
+                      </td>
+                    )
+                  })}
                   {presetAktif.id === 'whale-asing' && (
                     <td><SelBadgeKsei kode={h.kode} asingStreak={petaBaris.get(h.kode)?.asing_streak ?? null} /></td>
                   )}
@@ -514,6 +522,8 @@ function PanelPresetWhale({ presetAktif, presetId, setPresetId, hasil, petaBaris
         Preset Whale adalah <b>penyaring</b>, bukan peringkat kelayakan beli — uji luar sampel dua Deep Dive
         terbukti (BUMI, DSSA) menaruh keduanya di paruh bawah daftar hari itu. Ambang v1, belum diuji luar sampel
         sendiri. Kriteria bertanda "–" berarti datanya belum tersedia untuk emiten itu — <b>bukan</b> gagal.
+        Angka % di sebelah kriteria "Terkonsentrasi" itu konsentrasi top-3 broker dari sumbernya — basis
+        pembilang/penyebutnya milik sumber, bukan persen 0-100 murni, jadi kadang bisa lewat 100%.
         {presetAktif.id === 'whale-asing' && (
           <> Kolom <b>KSEI</b> membandingkan DUA SUMBER berbeda frekuensi: net asing <b>harian</b> (transaksi
           bursa resmi, tiap hari bursa) vs Δ kepemilikan asing <b>bulanan</b> (KSEI, akhir bulan) — ✓ searah,

@@ -482,10 +482,15 @@ def strip_prob(h):
     if vv is None:
         vv_txt = "VolVal n/a"
     elif vv["sinyal"]:
-        vv_txt = f'VolVal <span class="vv">AKUM. SENYAP</span> {fmt_z(vv["z"])}'
+        # REVISI 27 Agu 2026 (sapuan pengawas #6): "AKUM. SENYAP" mengklaim niat
+        # (akumulasi diam-diam) dari sinyal yang cuma mengukur nilai transaksi
+        # tinggi + harga nyaris datar. Nama sekarang menyebut yang diukur;
+        # ambangnya (z & pct) ikut tercetak, bersumber dari prob.VV_Z/VV_PCT.
+        vv_txt = (f'VolVal <span class="vv">NILAI TINGGI, HARGA DATAR</span> {fmt_z(vv["z"])} '
+                  f'<small>(z≥{prob.VV_Z:.1f}, |Δharga|≤{prob.VV_PCT:.0f}%)</small>')
     else:
         vv_txt = f'VolVal {fmt_z(vv["z"])} normal'
-    hit = (f' <small>· senyap {h["vv_hit"] * 100:.0f}% n{h["vv_n"]}</small>'
+    hit = (f' <small>· sinyal serupa naik {h["vv_hit"] * 100:.0f}% n{h["vv_n"]}</small>'
            if h["vv_hit"] is not None else "")
     ev = h.get("evaluasi")
     uji = ""

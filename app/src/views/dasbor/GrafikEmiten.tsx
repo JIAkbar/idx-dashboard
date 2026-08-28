@@ -3194,7 +3194,10 @@ export function GrafikEmiten() {
 
   return (
     <div className="lantai">
-      <CatatanCakupan />
+      {/* Tanpa judul by design (langsung chart) — C+A gelombang 3, 28 Agu:
+          CatatanCakupan dibungkus satu baris kecil (bukan .vhead) supaya
+          tak menambah tinggi header. */}
+      <p className="muted" style={{ margin: 0, fontSize: 11 }}><CatatanCakupan inline /></p>
       {/* Penanda jahitan riwayat. Muncul HANYA untuk 49 emiten yang bar
           paling awalnya berasal dari sumber pembanding — sumber utama tak
           menyimpan periode itu. Wajib ada: pembaca yang menghitung return

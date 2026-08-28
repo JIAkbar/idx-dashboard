@@ -599,7 +599,9 @@ export function InventoryTab({ kode }: { kode: string }) {
             <thead>
               <tr>
                 <th>Broker</th><th className="r">Net</th><th className="r">Floor</th><th className="r">PnL%</th>
-                <th className="r">Hari</th><th>Status</th><th>Tren 10H</th><th>10 Hari</th>
+                <th className="r">Hari</th><th>Status</th>
+                <th title="RE-AKUM = status Distribusi tapi 10 hari terakhir net positif · MELEPAS = status Akumulasi tapi 10 hari terakhir net negatif">Tren 10H</th>
+                <th>10 Hari</th>
               </tr>
             </thead>
             <tbody>
@@ -619,6 +621,12 @@ export function InventoryTab({ kode }: { kode: string }) {
               ))}
             </tbody>
           </table>
+        )}
+        {posisiData && posisiUrut.length > 0 && (
+          <p className="np-sub">
+            Tren 10H: <b>RE-AKUM</b> = status Distribusi tapi 10 hari terakhir net positif ·{' '}
+            <b>MELEPAS</b> = status Akumulasi tapi 10 hari terakhir net negatif.
+          </p>
         )}
       </div>
 

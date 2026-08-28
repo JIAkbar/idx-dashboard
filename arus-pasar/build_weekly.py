@@ -28,7 +28,8 @@ from pathlib import Path
 import palet
 from build import (AKAR, fmt, fmt_rp, halaman_emiten, halaman_peringkat, band, kaki,
                    render_pdf, skor_teknikal, skor_flow, skor_rr,
-                   skor_likuiditas, skor_ihsg, tingkat_risiko, tulis_meta)
+                   skor_likuiditas, skor_ihsg, tingkat_risiko, tulis_meta,
+                   teks_pemetaan_risiko)
 
 EDISI_PALET = "weekly"  # Opsi A · Permukaan & Suhu — lihat palet.py
 HARI = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"]
@@ -165,6 +166,7 @@ def halaman_ringkasan_mingguan(ed, potongan, skor_map, riwayat, hal, n_hal, n_un
       <tr><th>Ticker</th><th>Emiten</th><th>Close</th><th>±%</th><th>Bias</th><th>Progresi Skor</th><th>Skor</th><th>Risiko</th></tr>
       {baris}
     </table>
+    {'' if hal < n_hal - 1 else f'<p class="metode" style="font-size:7pt;margin-top:3mm">Pemetaan risiko: {teks_pemetaan_risiko()}.</p>'}
   </div>
   {kaki(ed)}
 </div>'''

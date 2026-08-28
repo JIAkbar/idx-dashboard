@@ -15,7 +15,7 @@ describe('kelompokBroker', () => {
   })
 
   it('afiliasi ada sebagai kelompok walau kosong untuk BUMI', () => {
-    expect(LABEL_KELOMPOK.afiliasi).toBe('Afiliasi grup / bandar')
+    expect(LABEL_KELOMPOK.afiliasi).toBe('Afiliasi Grup Emiten')
   })
 
   it('enam kelompok semuanya punya label', () => {

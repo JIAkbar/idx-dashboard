@@ -134,9 +134,21 @@ export function TopStocks() {
   const laggardsTodayS = useUrut<StockContribRow>(panelHari?.laggards_today ?? [], 'ih')
   const laggardsYtdS = useUrut<StockContribRow>(panelHari?.laggards_ytd ?? [], 'ih')
 
+  // Judul = label menu resmi rute /stocks (lib/dasbor/menu.ts) — dipakai
+  // ulang di ketiga cabang return (loading/error/utama) supaya header tak
+  // melompat, pola sama StatistikBerkala.tsx.
+  const vhead = (
+    <div className="vhead">
+      <h1>Top Stocks</h1>
+      <span className="sub">Top gainer, loser, kapitalisasi, dan kontribusi saham ke IHSG — satu hari bursa.</span>
+      <CatatanCakupan inline />
+    </div>
+  )
+
   if (loading && !hari) {
     return (
       <div className="lantai">
+        {vhead}
         <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p style={{ fontSize: 28 }}>⏳</p>
@@ -149,6 +161,7 @@ export function TopStocks() {
   if (error || !hari) {
     return (
       <div className="lantai">
+        {vhead}
         <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
@@ -173,9 +186,9 @@ export function TopStocks() {
 
   return (
     <div className="lantai">
+      {vhead}
       <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
       <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
-      <CatatanCakupan />
 
       {hari.sementara === true && (
         <div className="chip warn" style={{ display: 'flex', whiteSpace: 'normal', height: 'auto', lineHeight: 1.5 }}>

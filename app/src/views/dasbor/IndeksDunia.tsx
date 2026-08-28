@@ -583,9 +583,21 @@ export function IndeksDunia() {
 
   const world = hari?.world ?? []
 
+  // Judul = label menu resmi rute /indeks (lib/dasbor/menu.ts) — dipakai
+  // ulang di ketiga cabang return (loading/error/utama) supaya header tak
+  // melompat, pola sama StatistikBerkala.tsx.
+  const vhead = (
+    <div className="vhead">
+      <h1>Indeks Dunia</h1>
+      <span className="sub">Indeks utama dunia dan IHSG dalam satu layar — penutupan, perubahan, dan kalender bursa.</span>
+      <CatatanCakupan inline />
+    </div>
+  )
+
   if (loading && !hari) {
     return (
       <div className="lantai">
+        {vhead}
         <PanelSkeleton tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} pilihTanggal={pilihTanggal} loading={loading} />
       </div>
     )
@@ -594,6 +606,7 @@ export function IndeksDunia() {
   if (error || !hari) {
     return (
       <div className="lantai">
+        {vhead}
         <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} memuat={loading && !hari} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
@@ -609,9 +622,9 @@ export function IndeksDunia() {
 
   return (
     <div className="lantai">
+      {vhead}
       <PapanIhsg hari={hari} tanggalTersedia={tanggalTersedia} buka={buka} />
       <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
-      <CatatanCakupan />
 
       <div className="grid2 w-kiri">
         <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} memuat={loading && !hari} />

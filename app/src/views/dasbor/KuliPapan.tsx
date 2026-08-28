@@ -383,7 +383,10 @@ export function KuliPapan() {
                     {hasilPbv.upsidePersen >= 0 ? '+' : ''}{num(hasilPbv.upsidePersen, 2)}%
                   </b>
                 </div>
-                <div className="kp-kv"><span>Status</span><b>{hasilPbv.status}</b></div>
+                <div className="kp-kv">
+                  <span>Status</span>
+                  <b>{hasilPbv.status} <small className="muted">(±10% dari harga wajar)</small></b>
+                </div>
               </div>
               <h3 className="kp-h3">
                 Margin of safety <em>area beli bertahap</em>

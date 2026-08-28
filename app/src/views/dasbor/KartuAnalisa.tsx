@@ -697,7 +697,7 @@ function TabelScreenerKartu() {
                     <span className="chip-t kta-lencana" title={`${b.kualitas.lilin.toLocaleString('id-ID')} lilin`}>riwayat &lt; 250 lilin</span>
                   )}
                   {b.kualitas?.likuiditas === 'tipis' && (
-                    <span className="chip-t kta-lencana" title="likuiditas median 20 hari di bawah Rp500 jt/hari">likuiditas tipis</span>
+                    <span className="chip-t kta-lencana" title="likuiditas median 20 hari di bawah Rp500 jt/hari">likuiditas &lt; Rp500jt/hari</span>
                   )}
                 </td>
                 <td className="r num">{keFraksi(b.harga, 'dekat').toLocaleString('id-ID')}</td>

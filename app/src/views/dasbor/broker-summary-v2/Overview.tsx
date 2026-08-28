@@ -14,13 +14,15 @@ const URUTAN_LEGENDA = ['asing', 'bumn', 'smart', 'ritel', 'afiliasi', 'lain'] a
 /** Port `labelAD()` mockup — badge Acc/Dist bertingkat dari besar-kecilnya % top-N.
  * Latar penuh (bukan dim) supaya lebih menonjol — permintaan Johan 23 Agu 2026;
  * `.bs2-badge-*` cuma penampilan (intensitas), warnanya tetap --green/--red. */
+const KET_AD = 'Neutral <6% · Small 6-15% · Normal 15-20% · Big ≥20% (konsentrasi net lot terhadap Top-n)'
+
 function LabelAD({ pct }: { pct: number }) {
   const a = Math.abs(pct)
-  if (a < 6) return <span className="chip" style={{ background: 'var(--bg3)', color: 'var(--text3)' }}>Neutral</span>
+  if (a < 6) return <span className="chip" title={KET_AD} style={{ background: 'var(--bg3)', color: 'var(--text3)' }}>Neutral</span>
   const arah = pct >= 0 ? 'Acc' : 'Dist'
   const besar = a < 15 ? 'Small' : a < 20 ? 'Normal' : 'Big'
   const tingkat = besar === 'Small' ? 'kecil' : besar === 'Normal' ? 'sedang' : 'besar'
-  return <span className={`chip ${pct >= 0 ? 'up' : 'dn'} bs2-badge-${tingkat}`}>{besar} {arah}</span>
+  return <span className={`chip ${pct >= 0 ? 'up' : 'dn'} bs2-badge-${tingkat}`} title={KET_AD}>{besar} {arah}</span>
 }
 
 function KodeBroker({ kode }: { kode: string }) {
@@ -143,6 +145,7 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
                     </tr>
                   </tbody>
                 </table>
+                <p className="lbl" style={{ marginTop: 6, textTransform: 'none', letterSpacing: 0 }}>{KET_AD}</p>
               </div>
             </div>
 

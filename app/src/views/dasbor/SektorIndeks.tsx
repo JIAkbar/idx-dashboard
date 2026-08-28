@@ -186,9 +186,21 @@ export function SektorIndeks() {
   // Hooks) — pola sama dengan TopStocks.tsx.
   const { data: pembanding } = useDataPembanding(tanggalPembanding?.stem ?? null)
 
+  // Judul = label menu resmi rute /sector (lib/dasbor/menu.ts) — dipakai
+  // ulang di ketiga cabang return (loading/error/utama) supaya header tak
+  // melompat, pola sama StatistikBerkala.tsx.
+  const vhead = (
+    <div className="vhead">
+      <h1>Sektor & Indeks</h1>
+      <span className="sub">Sebelas sektor IDX dan indeks tematik, diurut kinerja.</span>
+      <CatatanCakupan inline />
+    </div>
+  )
+
   if (loading && !hari) {
     return (
       <div className="lantai">
+        {vhead}
         <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} memuat={loading && !hari} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_JAM} size={28} /></p>
@@ -201,6 +213,7 @@ export function SektorIndeks() {
   if (error || !hari) {
     return (
       <div className="lantai">
+        {vhead}
         <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} memuat={loading && !hari} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
@@ -286,11 +299,11 @@ export function SektorIndeks() {
 
   return (
     <div className="lantai">
+      {vhead}
       <div ref={kalenderRef}>
         <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} memuat={loading && !hari} />
       </div>
       <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
-      <CatatanCakupan />
 
       {labelRentang && (
         <div className="lbl" style={{ margin: '2px 2px -8px' }}>

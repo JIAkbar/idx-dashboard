@@ -352,7 +352,8 @@ export function bangunTesis(k: KartuEmiten): Tesis {
   if (k.er_persentil != null && k.er_n_populasi) {
     terbaca.push(
       `Efficiency Ratio berada di persentil ${Math.round(k.er_persentil)} dari ${k.er_n_populasi} emiten ber-riwayat cukup — `
-      + `${k.er_persentil >= 50 ? 'lebih trending' : 'lebih sideways'} daripada mayoritas pasar.`,
+      + `${k.er_persentil >= 50 ? 'lebih trending' : 'lebih sideways'} daripada mayoritas pasar `
+      + `(median populasi ini = persentil 50).`,
     )
   }
 
