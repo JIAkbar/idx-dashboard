@@ -30,15 +30,25 @@ KELUAR = AKAR / "data-idx" / "json" / "bidoffer.json"
 
 
 def baris_terakhir() -> tuple[str, list]:
-    """(tanggal YYYY-MM-DD, baris) dari arsip harian IDX termuda."""
+    """(tanggal YYYY-MM-DD, baris) dari arsip harian IDX termuda YANG BERISI.
+
+    Termuda saja tidak cukup (insiden 28 Agu 2026): panen pagi mengarsipkan
+    tanggal berjalan yang balasannya masih 0 baris (IDX belum terbit), dan
+    skrip ini lalu menulis bidoffer.json kosong — Kuli Papan kehilangan
+    seluruh bid/offer tanpa satu pun galat. Mundur maksimal 10 arsip sampai
+    ketemu yang berisi (libur/akhir pekan juga 0 baris, jadi batasnya wajar).
+    """
     fs = sorted(glob.glob(str(ARSIP / "*" / "*.json.gz")))
     if not fs:
         raise SystemExit(f"arsip harian tak ada di {ARSIP}")
-    with gzip.open(fs[-1], "rt", encoding="utf-8") as fh:
-        g = json.load(fh)
-    rows = g.get("data") if isinstance(g, dict) else g
-    nama = Path(fs[-1]).name[:8]
-    return f"{nama[:4]}-{nama[4:6]}-{nama[6:8]}", (rows or [])
+    for f in reversed(fs[-10:]):
+        with gzip.open(f, "rt", encoding="utf-8") as fh:
+            g = json.load(fh)
+        rows = g.get("data") if isinstance(g, dict) else g
+        if rows:
+            nama = Path(f).name[:8]
+            return f"{nama[:4]}-{nama[4:6]}-{nama[6:8]}", rows
+    raise SystemExit("10 arsip termuda semuanya kosong — periksa pemanen asing")
 
 
 def padatkan(rows: list) -> dict[str, list]:
