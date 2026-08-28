@@ -49,7 +49,13 @@
    material tabel nya goyang"). Lebar dua kolom kiri ditetapkan; sisanya
    dibagi rata oleh algoritma fixed, dan `min-width` di `.board-tbl-wrap`
    yang menjaga tabel tetap terbaca lewat gulir mendatar. */
-.lantai .hp-tbl { table-layout: fixed; }
+/* min-width WAJIB menyertai table-layout:fixed. Tanpa itu 19 kolom angka
+   dibagi rata dari lebar wadah — di 1707px tiap kolom cuma 61px dan isinya
+   terpotong jadi "−12.1…", "Rp108…" (terlihat di screenshot verifikasi
+   29 Agu, regresi dari perbaikan tabel-goyang). Dengan min-width, kolom
+   dapat lebar cukup dan sisanya diurus gulir mendatar `.board-tbl-wrap`
+   yang memang sudah ada. */
+.lantai .hp-tbl { table-layout: fixed; min-width: 2040px; }
 .lantai .hp-tbl th:nth-child(1),
 .lantai .hp-tbl td:nth-child(1) { width: 78px; }
 .lantai .hp-tbl th:nth-child(2),
@@ -59,3 +65,10 @@
 /* Tabel rentang punya lebarnya sendiri (7 kolom), jadi ia keluar dari
    aturan fixed di atas. */
 .lantai .hp-tbl-rentang { table-layout: auto; }
+
+/* Jarak kotak cari ke tombol tab — `gap` bawaan `.grup-k` (8px) terlalu
+   rapat di sini karena keduanya benda BERBEDA JENIS (isian vs kelompok
+   tombol), bukan dua kendali sejenis yang memang duduk berdempetan
+   (Johan 29 Agu: "berikan jarak ini kolom emiten sama tombol stock gainer"). */
+.lantai .hp-cari { margin-right: 10px; }
+@media (max-width: 700px) { .lantai .hp-cari { margin-right: 0; } }

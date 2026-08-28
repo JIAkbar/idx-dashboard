@@ -183,7 +183,7 @@ export function HarianPapan() {
       <div className="panel">
         <div className="panel-b">
           {/* Bilah kendali berkelompok — sistem tata C+A (lantai.css). Tab ·
-              Tanggal · Saring; Unduh CSV + jumlah emiten di grup-kanan. */}
+              Tanggal · Saring; jumlah emiten + Unduh CSV di grup-kanan. */}
           <div className="bilah-kendali hp-alat">
             {/* Pencarian emiten di paling kiri — sebelum tab, karena "cari
                 satu kode" adalah niat yang mendahului "lihat papan mana".
@@ -238,13 +238,15 @@ export function HarianPapan() {
               />
             </div>
             <span className="pemisah-v" aria-hidden="true" />
+            {/* Jumlah emiten dulu, tombol PALING KANAN (Johan 29 Agu: "tombol
+                unduh letakkan di kanan sendiri"). Label "Aksi" dibuang —
+                tombolnya sudah menulis apa yang ia lakukan. */}
             <div className="grup-k grup-kanan">
-              <span className="grup-lbl">Aksi</span>
+              <span className="muted hp-jumlah">{urut.length} emiten</span>
               <button type="button" className="btn-p" disabled={urut.length === 0}
                 onClick={() => tanggal && unduhCsv(urut, tanggal, tab)}>
                 Unduh CSV
               </button>
-              <span className="muted hp-jumlah">{urut.length} emiten</span>
             </div>
           </div>
         </div>
