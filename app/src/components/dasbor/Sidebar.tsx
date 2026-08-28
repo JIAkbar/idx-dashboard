@@ -1,4 +1,5 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import { MarkPapan } from './MarkPapan'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { MENU_KELOMPOK, type GrupId, type MenuGrup, type MenuItem } from '../../lib/dasbor/menu'
 import { IkonMenu, IKON_KUNCI } from './IkonMenu'
@@ -49,8 +50,12 @@ export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
   return (
     <nav className="dasbor-rail" aria-label="Menu utama">
       <Link to="/" className="dasbor-rail-merek" title="PAPAN — Pusat Analisa Pasar Nusantara" onClick={(e) => klik(e, '/')}>
-        <b>P</b>
-        <span>PAPAN</span>
+        {/* Kata "PAPAN" DIHAPUS (keputusan Johan 29 Agu 2026): di lebar rail
+            ia tercetak 7,5px — itu kabut, bukan kata. Ubinnya DIPERTAHANKAN
+            justru karena katanya hilang: tanpa ubin, lambang merek jatuh jadi
+            ikon menu biasa di antara 16 ikon lain dan kehilangan perannya
+            sebagai titik pulang. */}
+        <MarkPapan size={28} />
       </Link>
 
       <div className="dasbor-rail-list">

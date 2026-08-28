@@ -1,10 +1,15 @@
+<!-- PAPAN — "Kurung Ukur". Empat siku pengukur mengepung bilah nilai; siku
+     keempat sengaja pudar: bingkainya belum penuh, dan PAPAN mengatakannya.
+     Varian TEBAL (garis 10, siku pudar utuh tanpa dash) dipakai di semua
+     ukuran favicon — dash di 16px jatuh di bawah setengah piksel dan jadi
+     garis kotor berkedip, bukan "putus".
+     Warna ini juga dipakai di kepala PDF edisi (kertas terang). -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Tanda Papan: satu bilah papan bolak-balik (split-flap), mesin yang sama
-       dengan papan IHSG di halaman Ringkasan. Garis jahitan mendatar di tengah
-       itu ciri khasnya — tanpa garis itu ia cuma kotak berhuruf. -->
-  <rect x="4" y="4" width="56" height="56" rx="10" fill="#F0A62B"/>
-  <text x="32" y="33" text-anchor="middle" dominant-baseline="central"
-        font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace"
-        font-size="38" font-weight="700" fill="#131008">P</text>
-  <rect x="4" y="31" width="56" height="2" fill="#131008" opacity="0.32"/>
+  <g fill="none" stroke="#16181a" stroke-width="10">
+    <path d="M11 22V11H22"/>
+    <path d="M42 11H53V22"/>
+    <path d="M11 42V53H22"/>
+  </g>
+  <path d="M42 53H53V42" fill="none" stroke="#16181a" stroke-width="10" opacity=".4"/>
+  <rect x="20" y="28" width="24" height="8" fill="#7a5e00"/>
 </svg>

@@ -163,29 +163,26 @@
 /* Tanda merek di puncak rail: bilah papan bolak-balik berhuruf P. Garis
    jahitan mendatar itu ciri khasnya — mesin yang sama dengan papan IHSG di
    halaman Ringkasan, dikecilkan jadi lambang. */
+/* Ubin merek — lambang "Kurung Ukur" (29 Agu 2026, menggantikan ubin kuning
+   penuh berhuruf "P" yang sudah dipakai pihak lain). Latar panel + garis tepi
+   aksen tipis, jauh lebih tenang dari blok kuning penuh, tapi masih terbaca
+   sebagai "ini bukan menu". Kata "PAPAN" di bawahnya dihapus — di lebar ini
+   ia 7,5px, kabut bukan kata.
+   Aturan `::after` garis jahitan mendatar SENGAJA DIBUANG: itu ciri logo
+   lama, dan menyisakannya akan memotong lambang baru di tengah. */
 .dasbor-rail-merek {
   flex: none;
   margin: 12px 12px 8px;
   height: 46px;
   border-radius: var(--r-kecil, 8px);
-  background: var(--accent);
-  color: var(--cal-active-txt);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--bg2);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--text);
+  display: flex; align-items: center; justify-content: center;
   text-decoration: none;
-  position: relative;
-  overflow: hidden;
 }
-.dasbor-rail-merek b {
-  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
-  font-size: 19px; font-weight: 700; line-height: 1;
-}
-.dasbor-rail-merek span {
-  font-size: 7.5px; font-weight: 700; letter-spacing: .2em;
-  text-transform: uppercase; margin-top: 3px; opacity: .85;
-}
-.dasbor-rail-merek::after {
-  content: ""; position: absolute; left: 0; right: 0; top: 50%;
-  height: 1px; background: rgba(0,0,0,.26);
+.dasbor-rail-merek:hover {
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
 }
 
 .dasbor-rail-list { flex: 1; overflow-y: auto; padding: 5px 0; scrollbar-width: none; }

@@ -8,6 +8,7 @@ import { LoginModal } from './LoginModal'
 import { TanyaPapan } from './TanyaPapan'
 import { LoginModalProvider } from '../../context/LoginModalContext'
 import { useTheme } from '../../context/ThemeContext'
+import { MarkPapan } from './MarkPapan'
 import { TANYA_PAPAN_AKTIF } from '../../lib/fitur'
 import '../../dasbor/lantai.css'
 
@@ -70,7 +71,7 @@ export function DasborLayout() {
                   title="PAPAN — Pusat Analisa Pasar Nusantara"
                   aria-label="Buka menu navigasi"
                 >
-                  P
+                  <MarkPapan size={24} />
                 </button>
               </div>
               <PitaKurs />

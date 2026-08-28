@@ -2,8 +2,31 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
+    <!-- Dua ikon, dipilih peramban menurut tema bilah tabnya. URUTAN WAJIB:
+         bawaan dulu, yang bermedia SESUDAHNYA — peramban memakai deklarasi
+         terakhir yang cocok, jadi membaliknya membuat versi gelap tak pernah
+         menang. Geometri keduanya identik; cuma dua nilai warna yang beda,
+         supaya ikonnya tak terlihat "pindah" saat tema berganti.
+         `favicon.svg` (badan gelap) juga dipakai di kepala PDF edisi harian —
+         satu artwork untuk tab terang dan kertas. -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon-gelap.svg" media="(prefers-color-scheme: dark)" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Preview tautan saat PAPAN dibagikan (channel WhatsApp rilis, X,
+         LinkedIn, atau di-paste ke chat mana pun). `og:image` WAJIB URL
+         absolut — jalur relatif diabaikan DIAM-DIAM oleh ketiganya, dan
+         gagalnya tak terlihat dari sini: tautannya cuma muncul sebagai kotak
+         abu tanpa gambar di ponsel orang lain. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://papan-idx.vercel.app/" />
+    <meta property="og:title" content="PAPAN — Pusat Analisa Pasar Nusantara" />
+    <meta property="og:description" content="Angka Bursa Efek Indonesia yang bisa ditelusuri ke sumbernya." />
+    <meta property="og:image" content="https://papan-idx.vercel.app/og-papan.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PAPAN — Pusat Analisa Pasar Nusantara" />
+    <meta name="twitter:description" content="Angka Bursa Efek Indonesia yang bisa ditelusuri ke sumbernya." />
+    <meta name="twitter:image" content="https://papan-idx.vercel.app/og-papan.png" />
     <title>PAPAN — Pusat Analisa Pasar Nusantara</title>
     <!-- Data hari-tersedia dipakai HAMPIR SEMUA halaman (useDataHarian) — mulai
          unduh sejak HTML dibaca, paralel dengan bundle JS, bukan menunggu JS
