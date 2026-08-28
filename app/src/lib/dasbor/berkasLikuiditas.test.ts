@@ -42,13 +42,13 @@ describe('ringkasLikuid', () => {
 
   it('peringatan hari sepi muncul di >= 25%', () => {
     const hari = [h('a', 0, 10), h('b', 0, 10), h('c', 100, 10), h('d', 100, 10)]
-    expect(ringkasLikuid(hari).peringatan.some((p) => p.includes('tanpa transaksi'))).toBe(true)
+    expect(ringkasLikuid(hari).peringatan.some((p) => p.includes('berpindah tangan'))).toBe(true)
   })
 
   it('peringatan harga beku menyebut sebabnya, bukan cuma angkanya', () => {
     const hari = Array.from({ length: 8 }, (_, i) => h(`d${i}`, 100, 50))
-    const p = ringkasLikuid(hari).peringatan.find((x) => x.includes('tak bergerak'))
-    expect(p).toContain('tidak responsif')
+    const p = ringkasLikuid(hari).peringatan.find((x) => x.includes('jalan di tempat'))
+    expect(p).toContain('cuma tidak bergerak')
   })
 
   it('peringatan nego muncul di >= 30% lot', () => {

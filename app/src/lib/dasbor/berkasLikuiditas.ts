@@ -95,13 +95,13 @@ export function ringkasLikuid(hari: HariLikuid[], n = 60): RingkasLikuid {
   const porsiSepi = hariSepi / pilih.length
   const porsiBeku = hariBeku / pilih.length
   if (porsiSepi >= 0.25) {
-    peringatan.push(`${Math.round(porsiSepi * 100)}% hari tanpa transaksi sama sekali — angka di blok lain berdiri di atas sedikit sekali hari perdagangan.`)
+    peringatan.push(`${Math.round(porsiSepi * 100)}% hari tak ada satu lot pun berpindah tangan. Angka di blok lain berdiri di atas segelintir hari saja.`)
   }
   if (porsiBeku >= 0.25) {
-    peringatan.push(`${Math.round(porsiBeku * 100)}% hari harganya tak bergerak meski ada transaksi — emiten begini terbaca "tahan banting" padahal sebenarnya tidak responsif.`)
+    peringatan.push(`${Math.round(porsiBeku * 100)}% hari harganya jalan di tempat meski ada transaksi. Saham begini terbaca "tahan banting" padahal sebenarnya cuma tidak bergerak.`)
   }
   if (porsiNego != null && porsiNego >= 0.3) {
-    peringatan.push(`${Math.round(porsiNego * 100)}% lot berpindah lewat papan negosiasi — harga di sana bisa jauh di luar pasar, jadi volume besar belum tentu minat pasar.`)
+    peringatan.push(`${Math.round(porsiNego * 100)}% lot berpindah lewat papan negosiasi. Harga di sana bisa jauh dari pasar, jadi volume besar belum tentu berarti banyak yang berminat.`)
   }
 
   return { nHari: pilih.length, hariSepi, hariBeku, medianVolume, porsiNego, peringatan }

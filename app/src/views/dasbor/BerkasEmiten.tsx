@@ -496,12 +496,12 @@ export default function BerkasEmiten() {
         <div className="be-kartu-kepala">
           <span className="be-blok">D</span>
           <div>
-            <h2>Likuiditas — boleh dipercaya sejauh mana</h2>
+            <h2>Likuiditas — seberapa ramai emiten ini</h2>
             <p className="be-ket">
               {likuid.nHari > 0
-                ? <>{likuid.nHari} hari bursa terakhir. Blok ini menilai <b>angka blok lain</b>:
-                    emiten yang jarang bertransaksi menghasilkan statistik yang terlihat rapi
-                    tapi berdiri di atas sedikit sekali hari.</>
+                ? <>{likuid.nHari} hari bursa terakhir. Baca ini dulu sebelum blok lain:
+                    saham yang jarang ditransaksikan tetap menghasilkan angka yang kelihatan rapi,
+                    padahal cuma dari segelintir hari.</>
                 : 'Memuat riwayat harga…'}
             </p>
           </div>
@@ -514,27 +514,27 @@ export default function BerkasEmiten() {
                 <span className="be-cap">{labelLik === 'likuid' ? 'Likuid' : labelLik === 'tipis' ? 'Tipis' : 'Tidur'}</span>
                 <p>
                   {labelLik === 'likuid'
-                    ? 'Bertransaksi hampir tiap hari dan harganya bergerak — statistik di blok lain berdiri di atas sampel yang sehat.'
+                    ? 'Ramai hampir tiap hari dan harganya bergerak. Angka di blok lain berdiri di atas dasar yang sehat.'
                     : labelLik === 'tipis'
-                      ? 'Cukup sering sepi atau harganya tak bergerak. Baca angka blok lain dengan hati-hati.'
-                      : 'Sebagian besar hari tanpa transaksi sama sekali. Statistik apa pun tentang emiten ini rapuh.'}
+                      ? 'Sering sepi atau harganya jalan di tempat. Baca angka blok lain dengan hati-hati.'
+                      : 'Saham tidur — sebagian besar hari tak ada transaksi sama sekali. Angka apa pun tentang emiten ini rapuh.'}
                 </p>
               </div>
             )}
 
             <div className="be-tiga">
               <div className="be-sisi">
-                <div className="be-lbl"><span>Hari sepi</span><span className="be-n">dari {likuid.nHari}</span></div>
+                <div className="be-lbl"><span>Nihil transaksi</span><span className="be-n">dari {likuid.nHari}</span></div>
                 <div className="be-ang" style={{ fontSize: 26 }}>{likuid.hariSepi}</div>
-                <p className="be-exp">tanpa transaksi sama sekali.</p>
+                <p className="be-exp">hari tanpa satu lot pun berpindah tangan.</p>
               </div>
               <div className="be-sisi">
-                <div className="be-lbl"><span>Harga beku</span><span className="be-n">dari {likuid.nHari}</span></div>
+                <div className="be-lbl"><span>Harga flat</span><span className="be-n">dari {likuid.nHari}</span></div>
                 <div className="be-ang" style={{ fontSize: 26 }}>{likuid.hariBeku}</div>
-                <p className="be-exp">ada transaksi, harga tak bergerak.</p>
+                <p className="be-exp">ada transaksi, tapi harganya tak bergerak sepeser pun.</p>
               </div>
               <div className="be-sisi">
-                <div className="be-lbl"><span>Volume median</span><span className="be-n">hari bertransaksi</span></div>
+                <div className="be-lbl"><span>Volume harian</span><span className="be-n">median, hari ramai saja</span></div>
                 <div className="be-ang" style={{ fontSize: 26 }}>
                   {likuid.medianVolume == null ? '—'
                     : likuid.medianVolume >= 1e6
@@ -551,7 +551,7 @@ export default function BerkasEmiten() {
 
             {likuid.peringatan.length > 0 && (
               <div className="be-batas" style={{ marginTop: 14 }}>
-                <b>Yang harus dibaca sebelum mempercayai blok lain</b>
+                <b>Baca ini sebelum memakai angka di blok lain</b>
                 <ul>{likuid.peringatan.map((x) => <li key={x}>{x}</li>)}</ul>
               </div>
             )}
