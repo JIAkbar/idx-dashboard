@@ -84,10 +84,17 @@
    satu judul 3 baris menaikkan tinggi seluruh barisnya, dan daftar yang
    dipindai cepat lebih butuh tepi yang rata daripada judul utuh. Judul
    penuh tetap terbaca lewat tooltip `title` dan di halaman sumbernya. */
+/* Judul dipotong DAN dikunci ke dua baris. `line-clamp` sendiri cuma
+   memotong yang panjang; judul satu baris tetap pendek, dan karena tiap
+   kolom di Beranda punya grid sendiri, kartunya jadi tak sejajar antar
+   kolom (temuan Johan 29 Agu 2026: "grid nya gak seragam").
+   min-height dua baris membuat semua kartu setinggi sama tanpa perlu
+   subgrid — barisnya sejajar sendiri di kolom mana pun. */
 .lantai .kbr-judul {
   font-size: 13px; line-height: 1.55; color: var(--text);
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
   overflow: hidden;
+  min-height: calc(2 * 1.55em);
 }
 .lantai .kbr-emiten { display: flex; gap: 4px; flex-wrap: wrap; }
 
