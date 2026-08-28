@@ -230,10 +230,21 @@
   border-left-color: var(--accent);
   background: linear-gradient(90deg, var(--accent-soft), transparent 72%);
 }
+/* Kode tiga huruf (HOME, PSR, EMT…) memang mono — ia identitas ringkas,
+   bukan kata.
+   NAMA FONT ditulis penuh di sini, BUKAN `var(--mono)`, dan itu disengaja:
+   token font hidup di `.lantai` sementara rail berada DI LUAR pembungkus
+   itu. Dicoba 29 Agu 2026 memakai token — hasilnya tokennya tak terdefinisi,
+   jatuh ke font induk, dan seluruh kode rail diam-diam berubah jadi Plus
+   Jakarta Sans tanpa satu pun galat. Ketahuan cuma karena fontnya diperiksa
+   lewat getComputedStyle. */
 .dasbor-rail-kode {
   font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   font-size: 11px; letter-spacing: .1em;
 }
+/* "Admin" dan "Masuk" adalah KATA, bukan kode — huruf kecilnya membuat mono
+   terbaca janggal di antara kode kapital tiga huruf di atasnya. */
+.dasbor-rail-tombol .dasbor-rail-kode { font-family: "Plus Jakarta Sans", system-ui, sans-serif; letter-spacing: .04em; }
 
 /* Flyout kelompok — `position: fixed` karena .dasbor-rail-list menggulung dan
    panel absolut di dalamnya akan terpotong tepat saat kelompok terbawah
@@ -1133,7 +1144,13 @@
 .lantai .dd-it-jumlah{margin-left:auto;flex:none;font-size:10px}
 
 /* inputs */
-.lantai .inp{background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:12.5px;padding:7px 11px;width:100%}
+/* Isian memakai font TEKS, bukan mono (Johan 29 Agu: "teks di dalam kolom
+   itu jelek ganti seperti yang digunakan di Papan"). Mono bagus untuk
+   MENAMPILKAN angka berkolom, buruk untuk kata yang diketik orang — "bum"
+   di kolom cari emiten terbaca seperti keluaran terminal.
+   `tabular-nums` menjaga angka tetap sejajar: ia bekerja di Plus Jakarta Sans
+   juga, jadi input angka tak kehilangan apa pun dari pergantian ini. */
+.lantai .inp{background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r);color:var(--text);font-family:var(--ui);font-variant-numeric:tabular-nums;font-size:12.5px;padding:7px 11px;width:100%}
 .lantai .inp::placeholder{color:var(--text3)}
 .lantai .inp:focus{outline:none;border-color:var(--amber)}
 .lantai .btn-p{background:var(--amber);color:var(--amber-ink);font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding:9px 18px;border-radius:var(--r)}

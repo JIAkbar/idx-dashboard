@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { DatePicker } from '../../components/dasbor/DatePicker'
+import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
+import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { DropdownMulti, type OpsiMulti } from '../../components/dasbor/DropdownMulti'
 import { KolomForm } from '../../components/dasbor/BadgeRapor'
 import { bandingkanBaris } from '../../lib/dasbor/useUrut'
@@ -106,6 +108,7 @@ export function HarianPapan() {
     [tanggalData],
   )
   const [cari, setCari] = useState('')
+  const { index: indeksEmiten } = useStockIndex()
   const [urutKunci, setUrutKunci] = useState<keyof BarisHarianPapan>(URUT_BAWAAN.gainer.kunci)
   const [urutArah, setUrutArah] = useState<'naik' | 'turun'>(URUT_BAWAAN.gainer.arah)
 
@@ -187,14 +190,22 @@ export function HarianPapan() {
                 Label "Tab" dihapus (Johan 29 Agu): ketiga tombolnya sudah
                 menyebut dirinya sendiri, labelnya cuma memakan lebar. */}
             <div className="grup-k">
-              <input
-                className="inp hp-cari"
-                type="search"
-                value={cari}
-                onChange={(e) => setCari(e.target.value)}
-                placeholder="Cari emiten…"
-                aria-label="Cari emiten"
-              />
+              {/* Pencari emiten KANONIS — `StockAutocomplete`, komponen yang
+                  sama dengan Stock Detail, Whales Papan, dan Berkas Emiten.
+                  Sempat dibuat sebagai <input> polos di sini; itu salah:
+                  hasilnya tak bisa dipilih dari saran, dan halaman ini jadi
+                  satu-satunya yang punya cara mencari emiten sendiri.
+                  Mengetik menyaring tabel; memilih saran menyaring ke satu
+                  kode itu saja. */}
+              <div className="hp-cari">
+                <StockAutocomplete
+                  stocks={indeksEmiten?.stocks ?? []}
+                  value={cari}
+                  onChange={setCari}
+                  onSelect={(kode) => setCari(kode)}
+                  placeholder="Cari emiten…"
+                />
+              </div>
               <div className="tabs" role="tablist">
                 {(Object.keys(TAB_LABEL) as TabHarianPapan[]).map((t) => (
                   <button key={t} role="tab" aria-selected={tab === t}
