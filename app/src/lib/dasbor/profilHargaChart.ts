@@ -27,18 +27,19 @@ const PORSI_MAKS = 0.16
  *  yang bergradasi: abu-biru redup (sepi) → emas (ramai), interpolasi RGB
  *  mengikuti lot relatif; POC = ujung gradasi, emas penuh. Area nilai 70%
  *  lebih pekat daripada luar area pada tingkat keramaian yang sama. */
-/* Revisi 28 Agu (Johan: "profil ini dibuat warna hijau yang tebal,
- * disesuaikan rekomendasimu dan buat gradient dong"): gradasi HIJAU —
- * hijau gelap redup (sepi) → hijau terang pekat (ramai); POC tetap EMAS
- * (rekomendasi yang disetujui) supaya pita teramai menonjol di atas hijau. */
-const SEPI = [30, 96, 66] as const
-const RAMAI = [74, 222, 128] as const
-const WARNA_POC = 'rgba(234, 179, 8, 0.75)'
-function warnaGradasi(f: number, va: boolean): string {
+/* Revisi FINAL 28 Agu (Johan menolak hijau: "bukan hijau gitu saja, dan
+ * mengganggu ke harga rata-ratanya, apa kembali saja ke abu-abu lagi ?"):
+ * kembali ABU netral — hijau menenggelamkan pill label harga rata-rata
+ * broker di tepi kanan. "Gradient"-nya kini per-BAR sungguhan: tiap batang
+ * memudar dari pekat di pangkal (tepi kanan) ke nyaris transparan di
+ * ujungnya, dan batang yang lebih ramai lebih pekat keseluruhannya.
+ * POC tetap emas, dengan gradient yang sama. */
+const ABU = [148, 163, 184] as const
+const EMAS = [234, 179, 8] as const
+function alfaPuncak(f: number, kelas: KelasPita): number {
+  if (kelas === 'poc') return 0.8
   const t = Math.max(0, Math.min(1, f))
-  const c = SEPI.map((s, i) => Math.round(s + (RAMAI[i] - s) * t))
-  const alfa = (va ? 0.30 : 0.16) + (va ? 0.42 : 0.26) * t
-  return `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${alfa.toFixed(3)})`
+  return (kelas === 'va' ? 0.30 : 0.18) + (kelas === 'va' ? 0.35 : 0.20) * t
 }
 
 export type KelasPita = 'poc' | 'va' | 'luar'
@@ -126,9 +127,15 @@ export class ProfilHargaChart implements IPanePrimitive<Time> {
             const bawah = Math.round(b.yB * vp)
             const w = Math.max(1, b.f * lebarMaks)
             const h = Math.max(1, bawah - atas - Math.round(vp))
-            // Gradient warna: abu-biru (sepi) → emas (ramai); POC emas penuh.
-            ctx.fillStyle = b.kelas === 'poc' ? WARNA_POC : warnaGradasi(b.f, b.kelas === 'va')
-            ctx.fillRect(bitmapSize.width - w, atas, w, h)
+            // Gradient per-bar: pangkal (kanan) pekat → ujung (kiri) pudar.
+            const [r, g2, bl] = b.kelas === 'poc' ? EMAS : ABU
+            const puncak = alfaPuncak(b.f, b.kelas)
+            const x0 = bitmapSize.width - w
+            const grad = ctx.createLinearGradient(x0, 0, bitmapSize.width, 0)
+            grad.addColorStop(0, `rgba(${r}, ${g2}, ${bl}, ${(puncak * 0.12).toFixed(3)})`)
+            grad.addColorStop(1, `rgba(${r}, ${g2}, ${bl}, ${puncak.toFixed(3)})`)
+            ctx.fillStyle = grad
+            ctx.fillRect(x0, atas, w, h)
           }
           ctx.restore()
         })
