@@ -8,7 +8,7 @@ import { useDataHarian } from '../../lib/dasbor/dataHarian'
 import { useIhsgBuka } from '../../lib/dasbor/ihsgOhlc'
 import { useKabar, waktuKabar } from '../../lib/dasbor/kabar'
 import { rangkumHari } from '../../lib/dasbor/ringkasHarian'
-import { useBulletinList, tipeEdisi } from '../../lib/dasbor/bulletin'
+import { useBulletinList, tipeEdisi, LABEL_TIPE_EDISI } from '../../lib/dasbor/bulletin'
 import { PanelBreadth } from '../../components/dasbor/PanelBreadth'
 import { PanelDiary } from '../../components/dasbor/PanelDiary'
 import { PapanIhsg } from './IndeksDunia'
@@ -129,6 +129,41 @@ function RingkasanPasar() {
   )
 }
 
+/**
+ * Empat pintu kerja (Arah A "Meja Kerja", keputusan Johan 28 Agu dari artifact
+ * Beranda PAPAN Baru: "Kerjakan Arah A") — bukan sekadar tautan: tiap kartu
+ * membawa satu angka hidup dari data yang SUDAH dimuat halaman ini
+ * (rangkumHari + daftar edisi), nol fetch tambahan, nol klaim baru.
+ */
+function PintuKerja() {
+  const { hari } = useDataHarian()
+  const { daftar } = useBulletinList()
+  const r = hari ? rangkumHari(hari) : null
+  const cariChip = (pola: RegExp) => r?.chips.find((c) => pola.test(c.label))?.label ?? null
+  const chipAsing = cariChip(/asing/i)
+  const chipGerak = cariChip(/naik|turun|menguat|melemah/i)
+  // Kunci internal tipe Deep Dive tetap 'Bedah' (LABEL_TIPE_EDISI yang
+  // menampilkannya sebagai "Deep Dive" — lihat bulletin.ts).
+  const dd = (daftar ?? []).find((e) => tipeEdisi(e.kode) === 'Bedah') ?? (daftar ?? [])[0]
+
+  const pintu = [
+    { ke: '/whales-papan', judul: 'Whales Papan', isi: chipAsing ?? 'jejak bandar harian — siapa menampung' },
+    { ke: '/screener', judul: 'Screener', isi: 'saring seluruh papan — preset Whale & momentum' },
+    { ke: '/harian-papan', judul: 'Harian Papan', isi: chipGerak ?? 'peringkat harian satu bursa' },
+    { ke: '/bulletin', judul: 'Terbitan', isi: dd ? `${LABEL_TIPE_EDISI[tipeEdisi(dd.kode)]} · ${dd.tanggal_id}` : 'Arus Pasar & Deep Dive' },
+  ]
+  return (
+    <section className="brd-pintu" aria-label="Pintu kerja">
+      {pintu.map((p, i) => (
+        <Link key={p.ke} to={p.ke} className="brd-pintu-it" style={{ '--i': String(i) } as Record<string, string>}>
+          <span className="brd-pintu-jdl">{p.judul}<IkonMenu d={IKON_PANAH_KANAN} size={12} /></span>
+          <span className="brd-pintu-isi">{p.isi}</span>
+        </Link>
+      ))}
+    </section>
+  )
+}
+
 /** Jalur kabar di Beranda — satu kolom per sumber, lengkap di halaman Kabar Pasar. */
 function JalurKabar() {
   const { kabar } = useKabar()
@@ -234,18 +269,25 @@ export function Beranda() {
   return (
     <div className="lantai">
       <PapanBeranda />
-      <CatatanCakupan />
+
+      {/* Arah A (keputusan Johan 28 Agu): sesudah "pasar hari ini kenapa",
+          langsung "ke mana bekerja" — empat pintu berangka hidup. */}
+      <PintuKerja />
 
       {/* Edisi PAPAN lebih dulu, kabar pihak ketiga menyusul: yang kita
           kerjakan sendiri harus berdiri di depan yang kita tautkan. */}
       <RingkasanPasar />
 
-      <PanelBreadth />
-
-      {/* Diary Pasar tepat sesudah breadth: keduanya menjawab pertanyaan yang
-          sama dari dua sisi — breadth "hari INI mayoritas saham ke mana",
-          diary "SEBULAN ini pasarnya lebih sering naik atau turun". */}
-      <PanelDiary />
+      {/* Breadth + Diary menyusut jadi lipatan (Arah A) — keduanya rincian
+          yang bagus tapi memanjangkan pintu masuk; sekali klik terbuka. */}
+      <details className="brd-lipat">
+        <summary>
+          <span className="lbl">Market Breadth &amp; Diary Pasar</span>
+          <span className="muted brd-lipat-isyarat">hari ini mayoritas saham ke mana · sebulan ini lebih sering naik atau turun — buka rincian</span>
+        </summary>
+        <PanelBreadth />
+        <PanelDiary />
+      </details>
 
       <KartuKabar />
 
@@ -313,6 +355,9 @@ export function Beranda() {
         </div>
       </section>
 
+      {/* Catatan cakupan turun jadi kaki halaman (Arah A) — informasinya
+          tetap, tapi tak lagi memakan baris di ambang pintu. */}
+      <CatatanCakupan />
     </div>
   )
 }

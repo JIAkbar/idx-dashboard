@@ -504,3 +504,34 @@
 @media (max-width: 760px) {
   .lantai .dia-detail { max-width: none; }
 }
+
+/* ===== Arah A "Meja Kerja" (keputusan Johan 28 Agu, artifact Beranda) ===== */
+/* Empat pintu kerja berangka hidup — grid 4 kolom, 2 di ponsel. */
+.lantai .brd-pintu { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 860px) { .lantai .brd-pintu { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.lantai .brd-pintu-it {
+  display: flex; flex-direction: column; gap: 4px; min-width: 0;
+  border: 1px solid var(--line); border-radius: var(--r); background: var(--bg1);
+  padding: 11px 13px; text-decoration: none; color: inherit;
+  transition: border-color .15s, transform .15s;
+}
+.lantai .brd-pintu-it:hover { border-color: var(--amber); transform: translateY(-1px); }
+.lantai .brd-pintu-jdl {
+  display: flex; justify-content: space-between; align-items: center; gap: 6px;
+  font-family: var(--disp); font-weight: 700; font-size: 13.5px;
+}
+.lantai .brd-pintu-jdl .dasbor-ikon { color: var(--amber); flex-shrink: 0; }
+.lantai .brd-pintu-isi { font-size: 11.5px; color: var(--text3); overflow: hidden; text-overflow: ellipsis; }
+
+/* Lipatan Breadth+Diary — ringkas sampai dibuka. */
+.lantai .brd-lipat { border: 1px dashed var(--line); border-radius: var(--r); padding: 0; }
+.lantai .brd-lipat > summary {
+  cursor: pointer; list-style: none; display: flex; align-items: baseline; gap: 10px;
+  flex-wrap: wrap; padding: 10px 14px;
+}
+.lantai .brd-lipat > summary::-webkit-details-marker { display: none; }
+.lantai .brd-lipat > summary::after { content: '▸'; margin-left: auto; color: var(--text3); transition: transform .15s; }
+.lantai .brd-lipat[open] > summary::after { transform: rotate(90deg); }
+.lantai .brd-lipat-isyarat { font-size: 11px; }
+.lantai .brd-lipat[open] { border-style: solid; }
+.lantai .brd-lipat > :not(summary) { margin: 0 14px 14px; }
