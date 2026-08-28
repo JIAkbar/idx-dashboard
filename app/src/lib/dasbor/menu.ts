@@ -259,6 +259,14 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 3a9 9 0 019 9h-9z M12 12l4-2',
   },
   {
+    // Berkas Emiten (28 Agu 2026) — satu kode, semua yang PAPAN tahu tentang
+    // emiten itu. Kode 'BRK'. Tingkat superadmin (permintaan Johan), jadi
+    // tak muncul di rail untuk pembaca biasa.
+    id: 'berkas-emiten', path: '/berkas-emiten', label: 'Berkas Emiten', kode: 'BRK', grup: 'dev',
+    ringkas: 'Satu emiten, semua yang PAPAN tahu: perilakunya saat pasar naik vs turun, broker penampung, aliran asing, probabilitas, dan bendera risikonya.',
+    ikon: 'M4 4h11l5 5v11H4zM15 4v5h5M8 13h8M8 17h5',
+  },
+  {
     // Whales Papan (25 Agu 2026) — kanvas jejak bandar harian. Kode 'WHL';
     // 'KUL' dan 'NEO' sudah dipakai sibling-nya.
     id: 'whales-papan', path: '/whales-papan', label: 'Whales Papan', kode: 'WHL', grup: 'dev',

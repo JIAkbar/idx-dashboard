@@ -150,6 +150,10 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   // ada, kuncinya fail-open. Didaftarkan SEKARANG supaya halaman ini muncul
   // di tab Akses begitu barisnya dibuat — bukan jadi halaman tak teratur
   // seperti empat halaman yang tertinggal 21 Agu.
+  // Berkas Emiten (28 Agu 2026) — baris `akses_halaman` DITAMBAHKAN BERSAMAAN
+  // (migrasi akses_halaman_berkas_emiten), tingkat 'superadmin' sesuai
+  // permintaan. Aturan dua tempat terpenuhi sejak hari pertama.
+  'berkas-emiten': 'berkas-emiten',
   'whales-papan': 'whales-papan',
   // Trader Papan (25 Agu 2026) — pasangan Whales Papan, keadaan pendaftaran
   // sama persis: kunci di sini sekarang, baris Supabase menyusul.

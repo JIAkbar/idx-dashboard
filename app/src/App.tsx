@@ -31,6 +31,7 @@ const BrokerSummaryV2 = lazy(() => import('./views/dasbor/BrokerSummaryV2').then
 const KuliPapan = lazy(() => import('./views/dasbor/KuliPapan').then((m) => ({ default: m.KuliPapan })))
 // Neo Papan (23 Agu 2026) — delapan tab analisis, sibling Kuli Papan di grup Dev.
 const NeoPapan = lazy(() => import('./views/dasbor/NeoPapan').then((m) => ({ default: m.NeoPapan })))
+const BerkasEmiten = lazy(() => import('./views/dasbor/BerkasEmiten'))
 const WhalesPapan = lazy(() => import('./views/dasbor/WhalesPapan'))
 const TraderPapan = lazy(() => import('./views/dasbor/TraderPapan'))
 const HarianPapan = lazy(() => import('./views/dasbor/HarianPapan').then((m) => ({ default: m.HarianPapan })))
@@ -144,6 +145,10 @@ function App() {
                   bentuknya dipetik dari whales.id. Kunci 'whales-papan'
                   terdaftar di PETA_MENU_KUNCI; baris `akses_halaman` di
                   Supabase menyusul (aturan dua tempat). */}
+              {/* Berkas Emiten (28 Agu 2026) — satu kode, semua gudang. Kunci
+                  'berkas-emiten' terdaftar di PETA_MENU_KUNCI DAN di tabel
+                  akses_halaman (tingkat superadmin) pada hari yang sama. */}
+              <Route path="/berkas-emiten" element={<PenjagaHalaman kunci="berkas-emiten"><BerkasEmiten /></PenjagaHalaman>} />
               <Route path="/whales-papan" element={<PenjagaHalaman kunci="whales-papan"><WhalesPapan /></PenjagaHalaman>} />
               {/* Trader Papan (25 Agu 2026) — posisi broker per emiten, bentuknya
                   dipetik dari tab Inventory tradersaham.com. Pasangan Whales
