@@ -535,3 +535,17 @@
 .lantai .brd-lipat-isyarat { font-size: 11px; }
 .lantai .brd-lipat[open] { border-style: solid; }
 .lantai .brd-lipat > :not(summary) { margin: 0 14px 14px; }
+
+/* ── Arah 1: papan IHSG menyusut di Beranda ──────────────────────────────
+   Komponen `PapanIhsg` dipakai di DUA tempat: di halaman Indeks angka itu
+   tokoh utamanya dan tetap besar; di Beranda ia cuma salah satu dari empat
+   blok yang harus muat di layar pertama. Pengecilan karena itu hidup di
+   pembungkus beranda, bukan di komponennya. */
+.lantai .brd-papan-ringkas .flap {
+  font-size: clamp(20px, 2.6vw, 29px);
+  padding: 7px 5px 8px;
+}
+.lantai .brd-papan-ringkas .flap-row { gap: 4px; margin-top: 6px; }
+.lantai .brd-papan-ringkas .board { padding: 14px 16px; gap: 20px; }
+.lantai .brd-papan-ringkas .brd-nama { font-size: clamp(26px, 3.4vw, 38px); }
+.lantai .brd-papan-ringkas .brd-tagline { font-size: 12.5px; }

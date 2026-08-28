@@ -43,6 +43,11 @@ function PapanBeranda() {
   if (!hari) return null
 
   return (
+    // Pembungkus `.brd-papan-ringkas` mengecilkan papan DI BERANDA SAJA —
+    // komponen yang sama tetap megah di halaman Indeks, tempat angka itu
+    // memang jadi tokoh utamanya. Arah 1 (Johan 29 Agu): papan menyusut
+    // supaya ringkasan pasar dan panel Breadth/Diary muat di layar pertama.
+    <div className="brd-papan-ringkas">
     <PapanIhsg
       hari={hari}
       tanggalTersedia={tanggalTersedia}
@@ -58,6 +63,7 @@ function PapanBeranda() {
         </div>
       }
     />
+    </div>
   )
 }
 
@@ -268,26 +274,28 @@ export function Beranda() {
   // peramban. Tiap view dasbor membungkus dirinya sendiri (lihat IndeksDunia).
   return (
     <div className="lantai">
-      <PapanBeranda />
+      {/* ARAH 1 (keputusan Johan 29 Agu, artifact "Tiga Arah Beranda PAPAN"):
+          yang menjawab "hari ini kenapa" naik ke atas; papan angka menyusut.
 
-      {/* Arah A (keputusan Johan 28 Agu): sesudah "pasar hari ini kenapa",
-          langsung "ke mana bekerja" — empat pintu berangka hidup. */}
-      <PintuKerja />
-
-      {/* Edisi PAPAN lebih dulu, kabar pihak ketiga menyusul: yang kita
-          kerjakan sendiri harus berdiri di depan yang kita tautkan. */}
+          Urutan ini menggantikan Arah A, dan satu hal di Arah A memang SALAH:
+          ia melipat Breadth & Diary ke dalam <details> tertutup. Johan 29 Agu:
+          "untuk tampilan yang seperti RTI kemana yaa? malah itu yang ingin
+          saya pertahankan menggantikan itu" — dua panel itu justru yang paling
+          dicari, jadi lipatannya DIBUANG dan keduanya berdiri di layar
+          pertama, tepat sesudah kalimat ringkasan. */}
       <RingkasanPasar />
 
-      {/* Breadth + Diary menyusut jadi lipatan (Arah A) — keduanya rincian
-          yang bagus tapi memanjangkan pintu masuk; sekali klik terbuka. */}
-      <details className="brd-lipat">
-        <summary>
-          <span className="lbl">Market Breadth &amp; Diary Pasar</span>
-          <span className="muted brd-lipat-isyarat">hari ini mayoritas saham ke mana · sebulan ini lebih sering naik atau turun — buka rincian</span>
-        </summary>
-        <PanelBreadth />
-        <PanelDiary />
-      </details>
+      <PapanBeranda />
+
+      <PintuKerja />
+
+      {/* Breadth & Diary — panel bergaya RTI Business (acuan aslinya memang
+          tangkapan layar RTI milik Johan, lihat diaryPasar.ts). TIDAK dilipat:
+          keduanya menjawab "mayoritas saham ke mana" dan "sebulan ini lebih
+          sering naik atau turun", dua pertanyaan yang orang buka dasbor untuk
+          menjawabnya. */}
+      <PanelBreadth />
+      <PanelDiary />
 
       <KartuKabar />
 
