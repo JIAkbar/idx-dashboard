@@ -226,3 +226,8 @@ bukan komponennya, tapi **kedisiplinan memakai pola yang sudah ada**: tiap
 Langkah 3 §4, uji satu-kunci-satu-pasangan), dan tiap render tabel/legenda yang
 memuat badge kategori wajib mencetak keterangannya di footer — bukan hanya di
 `title` — sesuai pola 6a di atas.
+---
+
+## §7 — Baris #3 "Smart Money" DITUTUP oleh keputusan Johan, 28 Agu 2026
+
+Verbatim: *"Smart Money - tetep smart money saja."* Label sumbu IDENTITAS kelompok broker di legenda Overview (dan semua pemakainya) **tetap "Smart Money"** — usulan ganti "Institusi Lokal" DITOLAK. Kriteria terima §5 yang menuntut grep "Smart Money" = 0 baris dinyatakan GUGUR untuk sumbu identitas ini; keterangan kurasi (bukan penggolongan resmi bursa) tetap wajib menyertainya di modal ⓘ/keterangan yang sudah terpasang. Sumbu PERILAKU tetap memakai nama terukur (keputusan 27 Agu, kategoriBroker.ts) — dua sumbu, dua aturan, keduanya kini sama-sama diputuskan.
