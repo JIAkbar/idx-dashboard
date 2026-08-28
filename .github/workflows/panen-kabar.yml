@@ -2,11 +2,33 @@
 # per sumber.
 #
 # Sampai 18 Agu 2026 berkas ini cuma memanen sebagian sumber karena "IDX 403
-# dari IP datacenter". Alasannya dibuat SEBELUM `scripts/idx_net.py` ada
-# (curl_cffi, sidik jari TLS) dan tak pernah diuji ulang sesudahnya. Yang
-# terbukti dari log run 32139468436: job HIJAU, commit terkirim, padahal
-# `IDX berita: 0 item` dan `IDX pengumuman: 0 item` — keduanya 403 lewat
-# `requests`. Satu sumber yang masih hidup cukup membuat panen terlihat sehat.
+# dari IP datacenter". Alasan itu dibuat SEBELUM `scripts/idx_net.py` ada
+# (curl_cffi, sidik jari TLS) dan menggantung tak teruji — sampai 28 Agu 2026.
+#
+# ## SUDAH DIUJI 28 Agu 2026 — asumsinya BENAR, dan ini vonis akhirnya
+#
+# Uji terkontrol: runner memang memasang curl_cffi (langkah `pip install`
+# di bawah) dan `panen_kabar.py` memang merutekan URL IDX lewat `idx_net.get()`
+# (impersonate chrome124) — jadi sidik jari TLS benar-benar terpakai di awan,
+# bukan jatuh balik ke `requests`. Hasilnya, endpoint yang sama persis:
+#
+#   run awan  33155254283 (08:27 UTC) : IDX berita 0 [403] · pengumuman 0 [403] · Kontan 0 [403]
+#   run rumah 33170740132 (12:22 UTC) : IDX berita 30 [ok] · pengumuman 30 [ok] · Kontan 25 [ok]
+#   uji langsung dari mesin rumah, hari yang sama: HTTP 200
+#
+# **Blokirnya berbasis IP, bukan bentuk permintaan.** Permintaan identik
+# ditolak dari runner GitHub dan diterima dari rumah, dan Kontan menunjukkan
+# pola yang sama di host berbeda. Tak ada akal-akalan sisi klien yang akan
+# mengubah itu.
+#
+# Konsekuensinya: pembagian awan/rumah di sini PERMANEN DAN DISENGAJA, bukan
+# kekurangan yang menunggu diperbaiki. Jangan habiskan waktu mencoba menembus
+# 403 dari awan lagi — pertanyaannya sudah dijawab dengan angka.
+#
+# Catatan sejarah yang tetap berlaku: log run 32139468436 menunjukkan job
+# HIJAU dan commit terkirim padahal `IDX berita: 0 item` — satu sumber yang
+# masih hidup cukup membuat panen terlihat sehat. Itu sebabnya berkas ini
+# melapor PER SUMBER.
 #
 # Jadi sekarang: coba semuanya, laporkan apa adanya, dan biarkan hasilnya yang
 # menjawab sumber mana yang tembus dari sini — pertanyaan yang mustahil dijawab
