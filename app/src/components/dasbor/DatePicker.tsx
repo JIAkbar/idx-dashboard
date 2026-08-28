@@ -251,12 +251,23 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
                 onClick={() => {
                   if (!modeRentang) { onChange(iso); setOpen(false); return }
                   if (!awalSementara) { setAwalSementara(iso); return }
+                  setAwalSementara(null)
+                  setOpen(false)
+                  // Klik DUA KALI di tanggal yang sama = memilih satu hari,
+                  // bukan rentang nol-panjang. Ditangani DI SINI, bukan
+                  // diserahkan ke tiap halaman: versi pertama meneruskannya
+                  // sebagai rentang dari==sampai, dan HarianPapan menutupnya
+                  // jadi `null` tanpa memindahkan tanggalnya — akibatnya
+                  // memilih satu tanggal lewat kalender rentang TIDAK
+                  // BERPENGARUH sama sekali (Johan 29 Agu: "tidak bisa pilih
+                  // tanggal current ya? harusnya bisa juga"). Memanggil
+                  // `onChange` membuat semua pemakai benar tanpa masing-masing
+                  // harus memikirkannya.
+                  if (awalSementara === iso) { onChange(iso); return }
                   // Urutan klik tak dipaksakan: klik mundur tetap menghasilkan
                   // rentang yang sah, cuma dibalik di sini.
                   const [a, b] = awalSementara <= iso ? [awalSementara, iso] : [iso, awalSementara]
                   onGantiRentang?.(a, b)
-                  setAwalSementara(null)
-                  setOpen(false)
                 }}
               >
                 {d}

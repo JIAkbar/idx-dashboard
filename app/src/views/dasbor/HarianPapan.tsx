@@ -224,7 +224,7 @@ export function HarianPapan() {
                 tersedia={tanggalTersedia}
                 ariaLabel="Tanggal"
                 rentang={rentang}
-                onGantiRentang={(dari, sampai) => setRentang(dari === sampai ? null : { dari, sampai })}
+                onGantiRentang={(dari, sampai) => setRentang({ dari, sampai })}
               />
               {rentang && (
                 <button type="button" className="chip-t" onClick={() => setRentang(null)}>
