@@ -593,60 +593,77 @@ function TabelScreenerKartu() {
 
   return (
     <div className="panel kta-screener">
-      <div className="panel-b kta-screener-alat">
-        {tersediaArsip && (
-          <DatePicker
-            value={tanggalAktif}
-            onChange={setTanggal}
-            tersedia={tersediaArsip}
-            ariaLabel="Tanggal data"
-          />
-        )}
-        {tanggal && (
-          <button type="button" className="chip-t" onClick={() => setTanggal(null)}>Tanggal terkini</button>
-        )}
-        {SARINGAN.map((sar) => {
-          const jumlah = barisTabel.filter(sar.uji).length
-          return (
+      <div className="panel-b">
+        {/* Bilah kendali berkelompok — sistem tata C+A (lantai.css). Tanggal
+            · Saring; Cari di grup-kanan. */}
+        <div className="bilah-kendali kta-screener-alat">
+          {tersediaArsip && (
+            <>
+              <div className="grup-k">
+                <span className="grup-lbl">Tanggal</span>
+                <DatePicker
+                  value={tanggalAktif}
+                  onChange={setTanggal}
+                  tersedia={tersediaArsip}
+                  ariaLabel="Tanggal data"
+                />
+                {tanggal && (
+                  <button type="button" className="chip-t" onClick={() => setTanggal(null)}>Tanggal terkini</button>
+                )}
+              </div>
+              <span className="pemisah-v" aria-hidden="true" />
+            </>
+          )}
+          <div className="grup-k">
+            <span className="grup-lbl">Saring</span>
+            {SARINGAN.map((sar) => {
+              const jumlah = barisTabel.filter(sar.uji).length
+              return (
+                <button
+                  key={sar.id} type="button"
+                  className={`chip-t${aktif.includes(sar.id) ? ' on' : ''}`}
+                  onClick={() => toggleChip(sar.id)}
+                >
+                  {sar.label} · {jumlah}
+                </button>
+              )
+            })}
             <button
-              key={sar.id} type="button"
-              className={`chip-t${aktif.includes(sar.id) ? ' on' : ''}`}
-              onClick={() => toggleChip(sar.id)}
+              type="button"
+              className={`chip-t${sembunyikanPendek ? '' : ' on'}`}
+              onClick={() => setSembunyikanPendek((v) => !v)}
+              title="Riwayat < 250 lilin — di luar populasi statistik (ER persentil, median pasar)"
             >
-              {sar.label} · {jumlah}
+              Riwayat pendek · {nRiwayatPendek}
             </button>
-          )
-        })}
-        <button
-          type="button"
-          className={`chip-t${sembunyikanPendek ? '' : ' on'}`}
-          onClick={() => setSembunyikanPendek((v) => !v)}
-          title="Riwayat < 250 lilin — di luar populasi statistik (ER persentil, median pasar)"
-        >
-          Riwayat pendek · {nRiwayatPendek}
-        </button>
-        <button
-          type="button"
-          className={`chip-t${sembunyikanTipis ? '' : ' on'}`}
-          onClick={() => setSembunyikanTipis((v) => !v)}
-          title="Likuiditas < Rp500 jt/hari (median 20h) — di luar populasi statistik"
-        >
-          Likuiditas tipis · {nLikuiditasTipis}
-        </button>
-        <Dropdown
-          opsi={TINGKAT_LIKUIDITAS.map((t) => ({ nilai: t.id, label: t.label }))}
-          nilai={tingkatLikuiditas}
-          onGanti={setTingkatLikuiditas}
-          ariaLabel="Likuiditas"
-          placeholder="Semua likuiditas"
-        />
-        <span className="af-cari kta-screener-cari">
-          <IkonMenu d={IKON_CARI} size={13} />
-          <input
-            className="inp" type="search" placeholder="Cari emiten…" value={cari}
-            onChange={(e) => setCari(e.target.value.toUpperCase())}
-          />
-        </span>
+            <button
+              type="button"
+              className={`chip-t${sembunyikanTipis ? '' : ' on'}`}
+              onClick={() => setSembunyikanTipis((v) => !v)}
+              title="Likuiditas < Rp500 jt/hari (median 20h) — di luar populasi statistik"
+            >
+              Likuiditas tipis · {nLikuiditasTipis}
+            </button>
+            <Dropdown
+              opsi={TINGKAT_LIKUIDITAS.map((t) => ({ nilai: t.id, label: t.label }))}
+              nilai={tingkatLikuiditas}
+              onGanti={setTingkatLikuiditas}
+              ariaLabel="Likuiditas"
+              placeholder="Semua likuiditas"
+            />
+          </div>
+          <span className="pemisah-v" aria-hidden="true" />
+          <div className="grup-k grup-kanan">
+            <span className="grup-lbl">Cari</span>
+            <span className="af-cari kta-screener-cari">
+              <IkonMenu d={IKON_CARI} size={13} />
+              <input
+                className="inp" type="search" placeholder="Cari emiten…" value={cari}
+                onChange={(e) => setCari(e.target.value.toUpperCase())}
+              />
+            </span>
+          </div>
+        </div>
       </div>
 
       {catatanKode && (
@@ -793,14 +810,29 @@ export function KartuAnalisa() {
           struktur harga, level, musiman &amp; fundamental — tiap angka membawa asal-usulnya ·{' '}
           <Link to="/metodologi" className="kd-tautan">Metodologi &amp; sumber data →</Link>
         </span>
+        <CatatanCakupan inline />
       </div>
-      <CatatanCakupan />
 
       {tab !== 'semua' && (
         <div className="panel kta-pilih">
-          <div className="panel-b" style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-            <Dropdown opsi={opsi} nilai={filter} onGanti={pilih} ariaLabel="Pilih emiten" placeholder="Semua emiten" />
-            {indeks && <span style={{ fontSize: 11, color: 'var(--text3)' }}>{indeks.emiten.length} emiten tersedia · diperbarui {indeks.diperbarui}</span>}
+          <div className="panel-b">
+            {/* Bilah kendali — sistem tata C+A (lantai.css). Satu kelompok:
+                pilih emiten; jumlah tersedia di grup-kanan. */}
+            <div className="bilah-kendali">
+              <div className="grup-k">
+                <span className="grup-lbl">Emiten</span>
+                <Dropdown opsi={opsi} nilai={filter} onGanti={pilih} ariaLabel="Pilih emiten" placeholder="Semua emiten" />
+              </div>
+              {indeks && (
+                <>
+                  <span className="pemisah-v" aria-hidden="true" />
+                  <div className="grup-k grup-kanan">
+                    <span className="grup-lbl">Info</span>
+                    <span style={{ fontSize: 11, color: 'var(--text3)' }}>{indeks.emiten.length} emiten tersedia · diperbarui {indeks.diperbarui}</span>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}

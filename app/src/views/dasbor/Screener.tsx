@@ -217,8 +217,8 @@ export function Screener() {
       <div className="vhead">
         <h1>Screener</h1>
         <span className="sub">{data.n} emiten, satu baris per emiten — saring, urutkan, cari.</span>
+        <CatatanCakupan inline />
       </div>
-      <CatatanCakupan />
 
       <div className="tabs" role="tablist">
         <button type="button" role="tab" aria-selected={mode === 'tabel'} className={'tab' + (mode === 'tabel' ? ' on' : '')} onClick={() => setMode('tabel')}>
@@ -243,49 +243,62 @@ export function Screener() {
               makanya baris "chip aktif" di bawah bilah tetap ada, bukan
               dihapus: rapi tanpa kehilangan keterlihatan. Pola tetap chip
               tunggal (satu keadaan on/off, dropdown untuk itu berlebihan). */}
-          <div className="scr-bilah">
-            <span className="af-cari scr-cari">
-              <IkonMenu d={IKON_CARI} size={13} />
-              {/* Kotak CARI CAMPURAN (bukan picker emiten) — sengaja BUKAN StockAutocomplete: menyaring lebih dari satu ruas sekaligus. Jangan "diperbaiki" jadi picker; riwayat: sweep Papan Pekerjaan #355. */}
-              <input
-                className="inp" type="search" placeholder="Cari emiten…" value={cari}
-                onChange={(e) => setCari(e.target.value)}
+          {/* Bilah kendali berkelompok — sistem tata C+A (lantai.css). Cari ·
+              Saring; hasil + reset saringan di grup-kanan. */}
+          <div className="bilah-kendali scr-bilah">
+            <div className="grup-k">
+              <span className="grup-lbl">Cari</span>
+              <span className="af-cari scr-cari">
+                <IkonMenu d={IKON_CARI} size={13} />
+                {/* Kotak CARI CAMPURAN (bukan picker emiten) — sengaja BUKAN StockAutocomplete: menyaring lebih dari satu ruas sekaligus. Jangan "diperbaiki" jadi picker; riwayat: sweep Papan Pekerjaan #355. */}
+                <input
+                  className="inp" type="search" placeholder="Cari emiten…" value={cari}
+                  onChange={(e) => setCari(e.target.value)}
+                />
+              </span>
+            </div>
+            <span className="pemisah-v" aria-hidden="true" />
+            <div className="grup-k">
+              <span className="grup-lbl">Saring</span>
+              <DropdownMulti label="Rating" ariaLabel="Saring rating" opsi={sssOpsi} nilai={sssAktif} onGanti={setSssAktif} />
+              <DropdownMulti label="Sektor" ariaLabel="Saring sektor" opsi={sektorOpsi} nilai={sektorAktif} onGanti={setSektorAktif} />
+              <Dropdown
+                opsi={TINGKAT_LIKUIDITAS.map((t) => ({ nilai: t.id, label: t.label }))}
+                nilai={tingkatLikuiditas}
+                onGanti={setTingkatLikuiditas}
+                ariaLabel="Likuiditas"
+                placeholder="Semua likuiditas"
               />
-            </span>
-            <DropdownMulti label="Rating" ariaLabel="Saring rating" opsi={sssOpsi} nilai={sssAktif} onGanti={setSssAktif} />
-            <DropdownMulti label="Sektor" ariaLabel="Saring sektor" opsi={sektorOpsi} nilai={sektorAktif} onGanti={setSektorAktif} />
-            <Dropdown
-              opsi={TINGKAT_LIKUIDITAS.map((t) => ({ nilai: t.id, label: t.label }))}
-              nilai={tingkatLikuiditas}
-              onGanti={setTingkatLikuiditas}
-              ariaLabel="Likuiditas"
-              placeholder="Semua likuiditas"
-            />
-            <button
-              type="button"
-              className={`chip-t${berpolaAktif ? ' on' : ''}`}
-              title="Hanya emiten dengan pola chart klasik yang sedang menunggu target"
-              onClick={() => setBerpolaAktif((v) => !v)}
-            >
-              Berpola aktif
-            </button>
-            <button
-              type="button"
-              className={`chip-t${kandidatAktif ? ' on' : ''}`}
-              title="Emiten yang jejak penyerapannya terbaca dari harga & volume — layak diperiksa dengan Broker Summary, bukan sinyal beli"
-              onClick={() => setKandidatAktif((v) => !v)}
-            >
-              Kandidat Deep Dive{kandidatData ? ` · ${kandidatData.n}` : ''}
-            </button>
-            {adaSaringan && (
               <button
-                type="button" className="chip-t scr-reset"
-                onClick={() => { setSssAktif([]); setSektorAktif([]); setBerpolaAktif(false); setKandidatAktif(false); setTingkatLikuiditas('semua'); setCari('') }}
+                type="button"
+                className={`chip-t${berpolaAktif ? ' on' : ''}`}
+                title="Hanya emiten dengan pola chart klasik yang sedang menunggu target"
+                onClick={() => setBerpolaAktif((v) => !v)}
               >
-                ✕ Hapus semua saringan
+                Berpola aktif
               </button>
-            )}
-            <span className="muted scr-jumlah">{hasil.length} dari {baris.length} emiten lolos</span>
+              <button
+                type="button"
+                className={`chip-t${kandidatAktif ? ' on' : ''}`}
+                title="Emiten yang jejak penyerapannya terbaca dari harga & volume — layak diperiksa dengan Broker Summary, bukan sinyal beli"
+                onClick={() => setKandidatAktif((v) => !v)}
+              >
+                Kandidat Deep Dive{kandidatData ? ` · ${kandidatData.n}` : ''}
+              </button>
+            </div>
+            <span className="pemisah-v" aria-hidden="true" />
+            <div className="grup-k grup-kanan">
+              <span className="grup-lbl">Aksi</span>
+              {adaSaringan && (
+                <button
+                  type="button" className="chip-t scr-reset"
+                  onClick={() => { setSssAktif([]); setSektorAktif([]); setBerpolaAktif(false); setKandidatAktif(false); setTingkatLikuiditas('semua'); setCari('') }}
+                >
+                  ✕ Hapus semua saringan
+                </button>
+              )}
+              <span className="muted scr-jumlah">{hasil.length} dari {baris.length} emiten lolos</span>
+            </div>
           </div>
           {(sssAktif.length > 0 || sektorAktif.length > 0 || tingkatLikuiditas !== 'semua') && (
             <div className="scr-chips-aktif">
@@ -414,18 +427,31 @@ function PanelPresetWhale({ presetAktif, presetId, setPresetId, hasil, petaBaris
   return (
     <div className="panel">
       <div className="panel-b scr-alat">
-        <div className="tabs" role="tablist">
-          {PRESET_WHALE.map((p) => (
-            <button
-              key={p.id} type="button" role="tab" aria-selected={presetId === p.id}
-              className={'tab' + (presetId === p.id ? ' on' : '')}
-              onClick={() => setPresetId(p.id)}
-            >
-              {p.label}
-            </button>
-          ))}
+        {/* Bilah kendali berkelompok — sistem tata C+A (lantai.css). Preset;
+            jumlah hasil di grup-kanan. Teks keterangan tetap di luar bilah,
+            bukan kendali. */}
+        <div className="bilah-kendali">
+          <div className="grup-k">
+            <span className="grup-lbl">Preset</span>
+            <div className="tabs" role="tablist">
+              {PRESET_WHALE.map((p) => (
+                <button
+                  key={p.id} type="button" role="tab" aria-selected={presetId === p.id}
+                  className={'tab' + (presetId === p.id ? ' on' : '')}
+                  onClick={() => setPresetId(p.id)}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <span className="pemisah-v" aria-hidden="true" />
+          <div className="grup-k grup-kanan">
+            <span className="grup-lbl">Hasil</span>
+            <span className="muted scr-jumlah">{hasil.length} emiten dengan ≥1 kriteria terpenuhi{tanggal ? ` · data ${tanggal}` : ''}</span>
+          </div>
         </div>
-        <p className="muted" style={{ margin: 0 }}>{presetAktif.ringkas}</p>
+        <p className="muted" style={{ margin: '8px 0 0' }}>{presetAktif.ringkas}</p>
         {/* Satu kata dua sistem (temuan pengawas 27 Agu): "Whale" preset ini
             = ukuran transaksi; kategori perilaku broker di Broker Summary
             ("Porsi x Arah") dasarnya berbeda. Sebut sekali di panel. */}
@@ -433,7 +459,6 @@ function PanelPresetWhale({ presetAktif, presetId, setPresetId, hasil, petaBaris
           Kata "Whale" di sini menunjuk ukuran transaksi (tiket besar / porsi asing) - bukan kategori
           perilaku broker "Porsi x Arah" di Broker Summary; dua saringan dengan dasar berbeda.
         </p>
-        <span className="muted scr-jumlah">{hasil.length} emiten dengan ≥1 kriteria terpenuhi{tanggal ? ` · data ${tanggal}` : ''}</span>
       </div>
 
       <div className="board-tbl-wrap">

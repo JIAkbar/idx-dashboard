@@ -278,31 +278,38 @@ export function Watchlist() {
       <div className="vhead">
         <h1>Watchlist</h1>
         <span className="sub">Daftar pantau yang bergerak mengikuti harga harian — isi harga milik untuk melihat untung-rugi.</span>
+        <CatatanCakupan inline />
       </div>
-      <CatatanCakupan />
 
       <div className="panel">
-        <div className="panel-b wl-alat">
-          <span className="af-cari wl-cari">
-            <IkonMenu d={IKON_CARI} size={13} />
-            <input
-              className="inp" type="search" placeholder="Tambah emiten…" value={cari}
-              onChange={(e) => setCari(e.target.value.toUpperCase())}
-              onKeyDown={(e) => { if (e.key === 'Enter' && saran[0]) tambah(saran[0].kode) }}
-            />
-            {saran.length > 0 && (
-              <ul className="sea-saran" role="listbox">
-                {saran.map((e) => (
-                  <li key={e.kode}>
-                    <button type="button" className="sea-saran-it" onClick={() => tambah(e.kode)}>
-                      <span className="kd">{e.kode}</span>
-                      <span className="nm">{e.nama}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </span>
+        <div className="panel-b">
+          {/* Bilah kendali — sistem tata C+A (lantai.css). Satu kelompok:
+              cari lalu tambah emiten ke watchlist. */}
+          <div className="bilah-kendali wl-alat">
+            <div className="grup-k">
+              <span className="grup-lbl">Tambah</span>
+              <span className="af-cari wl-cari">
+                <IkonMenu d={IKON_CARI} size={13} />
+                <input
+                  className="inp" type="search" placeholder="Tambah emiten…" value={cari}
+                  onChange={(e) => setCari(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && saran[0]) tambah(saran[0].kode) }}
+                />
+                {saran.length > 0 && (
+                  <ul className="sea-saran" role="listbox">
+                    {saran.map((e) => (
+                      <li key={e.kode}>
+                        <button type="button" className="sea-saran-it" onClick={() => tambah(e.kode)}>
+                          <span className="kd">{e.kode}</span>
+                          <span className="nm">{e.nama}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </span>
+            </div>
+          </div>
         </div>
 
         {baris.length === 0 ? (
@@ -677,19 +684,32 @@ function TabKinerja({ items }: { items: WatchlistItem[] }) {
 
   return (
     <>
-      <div className="kendali" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
-        <div className="tabs" role="tablist" aria-label="Bobot indeks watchlist">
-          <button type="button" role="tab" aria-selected={bobot === 'setara'}
-            className={'tab' + (bobot === 'setara' ? ' on' : '')} onClick={() => setBobot('setara')}>
-            Setara
-          </button>
-          <button type="button" role="tab" aria-selected={bobot === 'kap'}
-            className={'tab' + (bobot === 'kap' ? ' on' : '')} onClick={() => setBobot('kap')}>
-            Kap. pasar
-          </button>
+      {/* Bilah kendali berkelompok — sistem tata C+A (lantai.css). Bobot ·
+          Rentang; caption rentang di grup-kanan. */}
+      <div className="bilah-kendali" style={{ marginBottom: 12 }}>
+        <div className="grup-k">
+          <span className="grup-lbl">Bobot</span>
+          <div className="tabs" role="tablist" aria-label="Bobot indeks watchlist">
+            <button type="button" role="tab" aria-selected={bobot === 'setara'}
+              className={'tab' + (bobot === 'setara' ? ' on' : '')} onClick={() => setBobot('setara')}>
+              Setara
+            </button>
+            <button type="button" role="tab" aria-selected={bobot === 'kap'}
+              className={'tab' + (bobot === 'kap' ? ' on' : '')} onClick={() => setBobot('kap')}>
+              Kap. pasar
+            </button>
+          </div>
         </div>
-        <PemilihRentang opsi={opsi} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang indeks watchlist" />
-        <span className="lbl">{captionRentang(hasil.tgl, (t) => t)}</span>
+        <span className="pemisah-v" aria-hidden="true" />
+        <div className="grup-k">
+          <span className="grup-lbl">Rentang</span>
+          <PemilihRentang opsi={opsi} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang indeks watchlist" />
+        </div>
+        <span className="pemisah-v" aria-hidden="true" />
+        <div className="grup-k grup-kanan">
+          <span className="grup-lbl">Info</span>
+          <span className="lbl">{captionRentang(hasil.tgl, (t) => t)}</span>
+        </div>
       </div>
 
       {bobot === 'kap' && hasil.tanpaKap.length > 0 && (

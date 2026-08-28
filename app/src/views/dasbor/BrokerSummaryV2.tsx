@@ -198,47 +198,65 @@ export function BrokerSummaryV2() {
       <div className="vhead">
         <h1>Arus Broker</h1>
         <span className="sub">pasar reguler · semua investor · arsip harian Stockbit</span>
+        <CatatanCakupan inline />
       </div>
-      <CatatanCakupan />
 
       <header className="panel" style={{ marginBottom: 14 }}>
-        <div className="panel-b" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          <div>
-            <span className="af-cari bsv-cari" style={{ marginBottom: 6, display: 'inline-flex' }}>
-              <IkonMenu d={IKON_CARI} size={13} />
-              <StockAutocomplete
-                stocks={index?.stocks ?? []}
-                value={cari}
-                onChange={setCari}
-                onSelect={(t) => { if (t) { setKode(t.toUpperCase()); setCari('') } }}
-                placeholder="Ganti emiten: BUMI, BBCA…"
-              />
-            </span>
-            <h1 style={{ margin: 0, fontSize: 26 }}>{kode} <small className="lbl" style={{ marginLeft: 8, textTransform: 'none', letterSpacing: 0 }}>{namaEmiten}</small></h1>
-            <div className="num" style={{ display: 'flex', gap: 16, alignItems: 'baseline', flexWrap: 'wrap', marginTop: 4 }}>
-              <span style={{ fontSize: 22, fontWeight: 500 }}>{hargaKini !== null ? `Rp ${keFraksi(hargaKini).toLocaleString('id-ID')}` : '—'}</span>
-              {gerak !== null && <span className="lbl" style={{ color: gerak >= 0 ? 'var(--green)' : 'var(--red)' }}>{gerak >= 0 ? '+' : ''}{gerak.toFixed(2)}% dalam rentang</span>}
-              <span className="lbl">{dari && akhir ? `${dari} – ${akhir} · ${hariAktif.length} hari bursa` : 'memuat rentang…'}</span>
-            </div>
-          </div>
-          <div className="kendali" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-            <Dropdown opsi={INVESTOR_OPSI} nilai={investor} onGanti={setInvestor} ariaLabel="Investor" />
-            <Dropdown opsi={MARKET_OPSI} nilai={pasar} onGanti={setPasar} ariaLabel="Market" />
-            <PemilihRentang opsi={MODE_OPSI} nilai={mode} onGanti={setMode} ariaLabel="Net atau Gross" />
-            <PemilihRentang opsi={UKURAN_OPSI} nilai={ukuran} onGanti={setUkuran} ariaLabel="Ukuran" />
-            <InfoIndikator judul="Indikator Arus Broker" item={INFO_BSV2} />
+        <div className="panel-b">
+          <h1 style={{ margin: 0, fontSize: 26 }}>{kode} <small className="lbl" style={{ marginLeft: 8, textTransform: 'none', letterSpacing: 0 }}>{namaEmiten}</small></h1>
+          <div className="num" style={{ display: 'flex', gap: 16, alignItems: 'baseline', flexWrap: 'wrap', marginTop: 4 }}>
+            <span style={{ fontSize: 22, fontWeight: 500 }}>{hargaKini !== null ? `Rp ${keFraksi(hargaKini).toLocaleString('id-ID')}` : '—'}</span>
+            {gerak !== null && <span className="lbl" style={{ color: gerak >= 0 ? 'var(--green)' : 'var(--red)' }}>{gerak >= 0 ? '+' : ''}{gerak.toFixed(2)}% dalam rentang</span>}
+            <span className="lbl">{dari && akhir ? `${dari} – ${akhir} · ${hariAktif.length} hari bursa` : 'memuat rentang…'}</span>
           </div>
         </div>
-        <div className="panel-b bs-ctl bs2-ctl" style={{ borderTop: '1px solid var(--line)' }}>
-          <div className="bs-preset"><PemilihRentang opsi={PRESET} nilai={preset ?? 'b1'} onGanti={keRentang} /></div>
-          <div className="bs-tgl">
-            <LangkahTanggal arah="mundur" ukuran="sebaris" label="Rentang satu hari bursa sebelumnya" disabled={!tanggalTersedia.length} onClick={() => langkahHari(-1)} />
-            <div className="bilah-rentang">
-              <DatePicker value={dari} onChange={(iso) => keRentangBebas(iso, akhir)} tersedia={setTersedia} ariaLabel="Tanggal mulai rentang" rata="kanan" />
-              <span className="bilah-rentang-pisah" aria-hidden="true">s.d.</span>
-              <DatePicker value={akhir} onChange={(iso) => keRentangBebas(dari, iso)} tersedia={setTersedia} ariaLabel="Tanggal akhir rentang" rata="kanan" />
+        {/* Bilah kendali berkelompok — sistem tata C+A (lantai.css), pola sama
+            Whales/Harian Papan: EMITEN · CAKUPAN (investor/market) · UKURAN
+            (Net-Gross/Nilai-Lot) · TANGGAL (preset+navigasi); i ke grup-kanan. */}
+        <div className="panel-b" style={{ borderTop: '1px solid var(--line)' }}>
+          <div className="bilah-kendali bsv-atur">
+            <div className="grup-k">
+              <span className="grup-lbl">Emiten</span>
+              <span className="af-cari bsv-cari">
+                <IkonMenu d={IKON_CARI} size={13} />
+                <StockAutocomplete
+                  stocks={index?.stocks ?? []}
+                  value={cari}
+                  onChange={setCari}
+                  onSelect={(t) => { if (t) { setKode(t.toUpperCase()); setCari('') } }}
+                  placeholder="Ganti emiten: BUMI, BBCA…"
+                />
+              </span>
             </div>
-            <LangkahTanggal arah="maju" ukuran="sebaris" label="Rentang satu hari bursa berikutnya" disabled={!tanggalTersedia.length} onClick={() => langkahHari(1)} />
+            <span className="pemisah-v" aria-hidden="true" />
+            <div className="grup-k">
+              <span className="grup-lbl">Cakupan</span>
+              <Dropdown opsi={INVESTOR_OPSI} nilai={investor} onGanti={setInvestor} ariaLabel="Investor" />
+              <Dropdown opsi={MARKET_OPSI} nilai={pasar} onGanti={setPasar} ariaLabel="Market" />
+            </div>
+            <span className="pemisah-v" aria-hidden="true" />
+            <div className="grup-k">
+              <span className="grup-lbl">Ukuran</span>
+              <PemilihRentang opsi={MODE_OPSI} nilai={mode} onGanti={setMode} ariaLabel="Net atau Gross" />
+              <PemilihRentang opsi={UKURAN_OPSI} nilai={ukuran} onGanti={setUkuran} ariaLabel="Ukuran" />
+            </div>
+            <span className="pemisah-v" aria-hidden="true" />
+            <div className="grup-k">
+              <span className="grup-lbl">Tanggal</span>
+              <div className="bs-preset"><PemilihRentang opsi={PRESET} nilai={preset ?? 'b1'} onGanti={keRentang} /></div>
+              <div className="bs-tgl">
+                <LangkahTanggal arah="mundur" ukuran="sebaris" label="Rentang satu hari bursa sebelumnya" disabled={!tanggalTersedia.length} onClick={() => langkahHari(-1)} />
+                <div className="bilah-rentang">
+                  <DatePicker value={dari} onChange={(iso) => keRentangBebas(iso, akhir)} tersedia={setTersedia} ariaLabel="Tanggal mulai rentang" rata="kanan" />
+                  <span className="bilah-rentang-pisah" aria-hidden="true">s.d.</span>
+                  <DatePicker value={akhir} onChange={(iso) => keRentangBebas(dari, iso)} tersedia={setTersedia} ariaLabel="Tanggal akhir rentang" rata="kanan" />
+                </div>
+                <LangkahTanggal arah="maju" ukuran="sebaris" label="Rentang satu hari bursa berikutnya" disabled={!tanggalTersedia.length} onClick={() => langkahHari(1)} />
+              </div>
+            </div>
+            <div className="grup-k grup-kanan">
+              <InfoIndikator judul="Indikator Arus Broker" item={INFO_BSV2} />
+            </div>
           </div>
         </div>
         {cakupanDitutup && (

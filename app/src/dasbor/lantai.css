@@ -1508,7 +1508,9 @@
 
 /* Baris tab + kontrol pencarian Peta Investor (#83) — search pindah dari .vhead
    ke sebaris tab; tinggi kontrol diseragamkan 32px (≈ tinggi .tabs), lebar ikut isi. */
-.lantai .pi-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+/* .pi-toolbar sendiri dibuang (28 Agu, sapuan C+A) — wrapper sekarang
+   .bilah-kendali (lihat blok SISTEM TATA C+A), sudah menyediakan
+   display:flex/gap/wrap yang sebelumnya ditulis di sini. */
 /* #77b: margin-left:auto dihapus — pencarian kini blok KIRI toolbar, tab view
    duduk di kanannya (urutan elemen dibalik di PetaInvestor.tsx).
    #109: flex-basis 100% — kotak cari SELALU baris sendiri (bukan cuma ≤768px)
@@ -1926,7 +1928,7 @@
        Clamp viewport lama .pil-wrap tidak berlaku lagi di dalam tabel ini.
    (c) Scrollbar tipis (4px) + gutter stabil + padding kanan kecil supaya
        thumb tidak menutupi kolom terakhir (keluhan mobile), light + dark. */
-.lantai .pi-toolbar .tabs .tab { padding: 0 16px; line-height: 1; }
+.lantai .pi-atur .tabs .tab { padding: 0 16px; line-height: 1; }
 .lantai .pi-tbl { table-layout: fixed; }
 .lantai .pi-tbl th.pi-c-em { width: 110px; }
 .lantai .pi-tbl th.pi-c-n { width: 68px; }
@@ -2772,9 +2774,10 @@
 .lantai.seasonality { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 .lantai.seasonality > .panel { min-width: 0; }
 .lantai .sea-cari-blok { display: grid; gap: 12px; }
-/* Wadahnya kini .af-cari (#170) — duplikat ketiga dari kotak cari yang sama.
-   Sisanya cuma daftar saran yang menggantung di bawahnya. */
-.lantai .af-cari.sea-cari { max-width: none; }
+/* Wadahnya kini .af-cari (#170), lebar bawaannya (210-320px) — sejak sistem
+   C+A (28 Agu) kotak ini duduk dalam grup-k bilah-kendali bersama grup
+   "Mulai dari", jadi tak lagi perlu melebar penuh baris sendiri. Sisanya
+   cuma daftar saran yang menggantung di bawahnya. */
 .lantai .sea-cari .inp { flex: 1; }
 .lantai .sea-saran {
   position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 4px);
@@ -2989,16 +2992,15 @@
    lebar, dua tombol sependek isinya. Tanpa flex:1 di kotaknya, ketiganya
    dibagi rata dan kotak cari — satu-satunya yang isinya panjang — jadi
    sesempit tombol di sebelahnya. */
-.lantai .pi-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.lantai .pi-toolbar .tabs { flex: none; }
+.lantai .pi-atur .tabs { flex: none; }
 /* Lebar secukupnya, TIDAK menyerap sisa baris. Kotak yang membentang
    sampai tombol cuma memperbesar jarak tempuh mata dari yang diketik ke
    tombol yang menindaklanjutinya — kode emiten paling panjang empat huruf,
    dan nama investor yang panjang toh dipotong ellipsis. Boleh menyusut di
    layar sempit (flex-shrink 1), tak boleh melar. */
-.lantai .pi-toolbar .pi-head-actions { flex: 0 1 300px; min-width: 180px; display: block; }
-.lantai .pi-toolbar .pi-srch-container { position: relative; }
-.lantai .pi-toolbar .pi-search-go, .lantai .pi-toolbar .dd-btn { flex: none; white-space: nowrap; }
+.lantai .pi-atur .pi-head-actions { flex: 0 1 300px; min-width: 180px; display: block; }
+.lantai .pi-atur .pi-srch-container { position: relative; }
+.lantai .pi-atur .pi-search-go, .lantai .pi-atur .dd-btn { flex: none; white-space: nowrap; }
 
 /* ── Kotak cari & paginasi (dipakai bersama admin + halaman publik) ─────
    Dulu tinggal di AdminShared.css; begitu halaman Kabar Pasar memakainya,
@@ -3267,15 +3269,20 @@
 
 /* ===== Broker Summary v2 (.bsv-*) — arus broker per emiten, halaman baru
    berdampingan dgn /broker-summary lama (jangan disentuh). Kendali baris atas
-   (search kode, Net/Gross, Reguler/Asing/Nego, preset+tanggal) memakai ULANG
-   `.bs-ctl`/`.bs-h`/`.bs-preset`/`.bs-tgl`/`.grid3.bs-stat` yang sudah ada —
-   itu murni layout (flex/wrap), bukan "bentuk" milik satu halaman, jadi tidak
-   perlu diduplikasi jadi kelas baru cuma karena dipakai halaman kedua.
-   `.bsv-*` di sini HANYA hal yang benar-benar khas halaman ini: lebar kotak
-   cari kode & warna bchip per kelompok broker. */
+   dipindah ke sistem tata C+A (`.bilah-kendali`, grup EMITEN·Cakupan·Ukuran·
+   Tanggal) — grup Tanggal masih numpang `.bs-preset`/`.bs-tgl` bawaan (murni
+   layout flex/wrap, bukan "bentuk" khas satu halaman). `.bsv-atur` di sini
+   menimpa dua rambatan bawaan `.bs-preset`/`.bs-tgl` (grow & center penuh
+   lebar bilah, cocok untuk `.bs-ctl` lama) supaya keduanya duduk sewajarnya
+   di dalam `.grup-k` sesempit kontennya — pola sama `.bs2-ctl` sebelumnya,
+   diarahkan ulang ke wrapper baru. `.bsv-cari` (lebar kotak cari kode) & warna
+   bchip per kelompok broker tetap khas halaman ini. */
+.lantai .bsv-atur .bs-preset { flex: 0 0 auto; justify-content: flex-start; }
+.lantai .bsv-atur .bs-tgl { flex: 0 1 auto; }
 .lantai .af-cari.bsv-cari { flex: 0 1 260px; }
 @media (max-width: 560px) {
   .lantai .af-cari.bsv-cari { flex: 1 1 100%; }
+  .lantai .bsv-atur .bs-preset { flex: 1 1 100%; }
 }
 /* Warna kode broker per kelompok identitas (kelompokBroker.ts) lewat inline
    style di atas `.bchip` bawaan (sudah punya border) — tak perlu kelas baru. */
@@ -3350,9 +3357,12 @@
    kosong/peringatan — itu bentuk yang sama persis dipakai Kuli Papan (.kp-*),
    diduplikasi sebagai .np-* karena selectornya di-scope ke root halaman
    masing-masing (.kuli-papan / .neo-papan), bukan bentuk baru. */
-.neo-papan .np-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
-.neo-papan .np-bar .inp { width: 220px; max-width: 100%; }
-.neo-papan .np-kode { font-weight: 700; letter-spacing: .04em; font-size: 18px; }
+/* .np-bar → .np-atur (sistem tata C+A, dipasangkan dengan .bilah-kendali di
+   NeoPapan.tsx, pola sama .wp-atur/WhalesPapan.css): masih hanya penempatan/
+   lebar, gap & margin menimpa punya .bilah-kendali. .np-kode dicabut bersama
+   span duplikatnya (Johan 28 Agu: "kode Emiten cukup 1 saja"). */
+.neo-papan .np-atur { gap: 10px; margin-bottom: 12px; }
+.neo-papan .np-atur .inp { width: 220px; max-width: 100%; }
 
 .neo-papan .np-sub { color: var(--text2); font-size: 12px; margin: 2px 0 12px; }
 .neo-papan .np-sumber { font-size: 11px; line-height: 1.6; color: var(--text2); margin: 14px 0 0; }

@@ -51,22 +51,28 @@ export function NeoPapan() {
         <span className="sub">delapan tab analisis: transaksi, broker, kepemilikan, musiman, dan rotasi sektor</span>
       </div>
 
-      <div className="np-bar">
-        {/* Autocomplete kanonis, bukan input polos — Johan 26 Agu: "buat
-            semua kolom emiten seperti ini ada list emiten nya". */}
-        <div className="np-emiten">
-          <StockAutocomplete
-            stocks={indeks?.stocks || []}
-            value={ketik}
-            onChange={setKetik}
-            onSelect={(v) => { setKetik(v); setKode(v.toUpperCase()) }}
-            placeholder="Ganti emiten: BUMI, BBCA…"
-          />
+      {/* Bilah kendali berkelompok — sistem tata C+A (keputusan Johan 28
+          Agu). Satu kelompok EMITEN: autocomplete kanonis (Johan 26 Agu:
+          "buat semua kolom emiten seperti ini ada list emiten nya") + rentang
+          candle saat tab Transaction Chart aktif. Kode TIDAK diulang di
+          samping input (Johan 28 Agu, Whales Papan: "kode Emiten cukup 1
+          saja yang di kolom yang di tampilkan"). */}
+      <div className="bilah-kendali np-atur">
+        <div className="grup-k">
+          <span className="grup-lbl">Emiten</span>
+          <div className="np-emiten">
+            <StockAutocomplete
+              stocks={indeks?.stocks || []}
+              value={ketik}
+              onChange={setKetik}
+              onSelect={(v) => { setKetik(v); setKode(v.toUpperCase()) }}
+              placeholder="Ganti emiten: BUMI, BBCA…"
+            />
+          </div>
+          {(tab === 'transaksi') && (
+            <PemilihRentang opsi={OPSI_RENTANG_NP} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang candle" />
+          )}
         </div>
-        <span className="np-kode">{kode}</span>
-        {(tab === 'transaksi') && (
-          <PemilihRentang opsi={OPSI_RENTANG_NP} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang candle" />
-        )}
       </div>
 
       <div className="tabs" role="tablist">

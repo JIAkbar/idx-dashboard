@@ -240,6 +240,7 @@ export function StatistikBerkala() {
         <span className="sub">
           rekap satu {kataPeriode} bursa — tiap angka berpasangan dengan {kataPeriode} sebelumnya
         </span>
+        <CatatanCakupan inline />
       </div>
       <div className="stb-nav">
         <PemilihRentang opsi={opsiJenis} nilai={jenis} onGanti={setJenis} ariaLabel="Panjang periode" />
@@ -270,7 +271,6 @@ export function StatistikBerkala() {
         )}
       </div>
     </div>
-    <CatatanCakupan />
     </>
   )
 

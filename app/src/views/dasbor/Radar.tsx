@@ -278,6 +278,7 @@ export function Radar() {
         <div className="vhead-kiri">
           <h1>Radar Watchlist</h1>
           <span className="sub">arsip WD Watch List — satu edisi per tanggal, skor dari arsip sendiri</span>
+          <CatatanCakupan inline />
         </div>
         <div className="rdr-nav">
           <div className="rdr-arsip" aria-label="Arsip edisi">
@@ -301,7 +302,6 @@ export function Radar() {
         </div>
       </div>
       <KonteksData tanggal={edisi.date_iso} />
-      <CatatanCakupan />
 
       <div className="tabs" role="tablist" aria-label="Bagian radar">
         {TABS.map((t) => (

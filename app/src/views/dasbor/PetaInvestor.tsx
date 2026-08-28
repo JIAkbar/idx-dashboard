@@ -161,59 +161,73 @@ export function PetaInvestor() {
               Tombol "Reset" dibuang: tombol X di dalam kotak cari sudah
               mengosongkannya, dan dua kontrol untuk satu tindakan cuma
               menimbulkan ragu mana yang benar. */}
-          <div className="pi-toolbar">
-            <div className="tabs" role="tablist" aria-label="Tampilan Peta Investor">
-              {TABS.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={activeView === t.id}
-                  className={'tab' + (activeView === t.id ? ' on' : '')}
-                  onClick={() => setActiveView(t.id)}
-                >
-                  {t.label}
-                </button>
-              ))}
+          {/* Bilah kendali berkelompok — sistem tata C+A (keputusan Johan 28
+              Agu, artifact "Re-Layout PAPAN"). Kelompok Tampilan · Cari ·
+              Export dari fungsi nyata toolbar lama (dulu .pi-toolbar polos). */}
+          <div className="bilah-kendali pi-atur">
+            <div className="grup-k">
+              <span className="grup-lbl">Tampilan</span>
+              <div className="tabs" role="tablist" aria-label="Tampilan Peta Investor">
+                {TABS.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeView === t.id}
+                    className={'tab' + (activeView === t.id ? ' on' : '')}
+                    onClick={() => setActiveView(t.id)}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <PetaInvestorSearch ref={searchRef} data={data} value={searchValue} onChange={setSearchValue} onSelect={handleSelect} onClear={handleClear} />
-            <button type="button" className="pi-search-go" onClick={() => searchRef.current?.tampilkan()}>Tampilkan</button>
-            {/* K3: dulu .dd/.dd-btn/.dd-menu/.dd-it ditulis ulang di sini lengkap
-                dengan posisi inline, onBlur bertimer, dan opacity nonaktif per
-                item — padahal Dropdown.tsx sudah menangani semuanya dan dipakai
-                dengan benar oleh ByStock/ByInvestor di halaman anak yang sama.
-                Yang ikut didapat: Escape menutup, panah atas/bawah berpindah
-                item, dan menu yang tak lagi kabur saat fokus berpindah. */}
-            <Dropdown
-              opsi={[
-                {
-                  nilai: 'emiten',
-                  nonaktif: selectedDetail?.type !== 'emiten',
-                  label: selectedDetail?.type === 'emiten'
-                    ? `Emiten ${selectedDetail.code} + cabang`
-                    : 'Emiten + cabang (pilih emiten dulu)',
-                },
-                {
-                  nilai: 'investor',
-                  nonaktif: selectedDetail?.type !== 'investor',
-                  label: selectedDetail?.type === 'investor'
-                    ? `Portofolio ${selectedDetail.name.slice(0, 24)}`
-                    : 'Portofolio investor (pilih investor dulu)',
-                },
-              ]}
-              // Menu AKSI, bukan pemilih nilai: nilai sengaja dikosongkan supaya
-              // tombolnya selalu berbunyi "Export XLS" dan tak ada item yang
-              // tertandai terpilih setelah diklik.
-              nilai=""
-              placeholder="Export XLS"
-              ikon={IKON_UNDUH}
-              rata="kanan"
-              ariaLabel="Unduh data Peta Investor sebagai berkas Excel"
-              onGanti={(v) => {
-                if (v === 'emiten' && selectedDetail?.type === 'emiten') exportEmiten(data, selectedDetail.code)
-                if (v === 'investor' && selectedDetail?.type === 'investor') exportInvestor(data, selectedDetail.name)
-              }}
-            />
+            <span className="pemisah-v" aria-hidden="true" />
+            <div className="grup-k">
+              <span className="grup-lbl">Cari</span>
+              <PetaInvestorSearch ref={searchRef} data={data} value={searchValue} onChange={setSearchValue} onSelect={handleSelect} onClear={handleClear} />
+              <button type="button" className="pi-search-go" onClick={() => searchRef.current?.tampilkan()}>Tampilkan</button>
+            </div>
+            <span className="pemisah-v" aria-hidden="true" />
+            <div className="grup-k grup-kanan">
+              <span className="grup-lbl">Export</span>
+              {/* K3: dulu .dd/.dd-btn/.dd-menu/.dd-it ditulis ulang di sini lengkap
+                  dengan posisi inline, onBlur bertimer, dan opacity nonaktif per
+                  item — padahal Dropdown.tsx sudah menangani semuanya dan dipakai
+                  dengan benar oleh ByStock/ByInvestor di halaman anak yang sama.
+                  Yang ikut didapat: Escape menutup, panah atas/bawah berpindah
+                  item, dan menu yang tak lagi kabur saat fokus berpindah. */}
+              <Dropdown
+                opsi={[
+                  {
+                    nilai: 'emiten',
+                    nonaktif: selectedDetail?.type !== 'emiten',
+                    label: selectedDetail?.type === 'emiten'
+                      ? `Emiten ${selectedDetail.code} + cabang`
+                      : 'Emiten + cabang (pilih emiten dulu)',
+                  },
+                  {
+                    nilai: 'investor',
+                    nonaktif: selectedDetail?.type !== 'investor',
+                    label: selectedDetail?.type === 'investor'
+                      ? `Portofolio ${selectedDetail.name.slice(0, 24)}`
+                      : 'Portofolio investor (pilih investor dulu)',
+                  },
+                ]}
+                // Menu AKSI, bukan pemilih nilai: nilai sengaja dikosongkan supaya
+                // tombolnya selalu berbunyi "Export XLS" dan tak ada item yang
+                // tertandai terpilih setelah diklik.
+                nilai=""
+                placeholder="Export XLS"
+                ikon={IKON_UNDUH}
+                rata="kanan"
+                ariaLabel="Unduh data Peta Investor sebagai berkas Excel"
+                onGanti={(v) => {
+                  if (v === 'emiten' && selectedDetail?.type === 'emiten') exportEmiten(data, selectedDetail.code)
+                  if (v === 'investor' && selectedDetail?.type === 'investor') exportInvestor(data, selectedDetail.name)
+                }}
+              />
+            </div>
           </div>
 
           {activeView === 'grup' && <GrupKonglomerat />}

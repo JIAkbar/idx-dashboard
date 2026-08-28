@@ -131,8 +131,8 @@ export function Seasonality() {
           {' · '}
           <Link to="/metodologi" className="kd-tautan">Metodologi &amp; sumber data →</Link>
         </span>
+        <CatatanCakupan inline />
       </div>
-      <CatatanCakupan />
 
       {/* Dua sudut waktu dari satu pertanyaan yang sama — "kapan cenderung
           naik?" — jadi satu halaman, bukan dua. Memecahnya berarti orang
@@ -187,41 +187,58 @@ export function Seasonality() {
 
       <section className="panel">
         <div className="panel-b sea-cari-blok">
-          <div className="af-cari sea-cari">
-            <IkonMenu d={IKON_CARI} size={14} />
-            <input
-              ref={kotak} className="inp" value={cari} disabled={!indeks || dipilih.length >= MAKS}
-              placeholder={dipilih.length >= MAKS ? `Maksimum ${MAKS} emiten — buang satu dulu` : 'Cari kode atau nama emiten…'}
-              onChange={(e) => setCari(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' && saran[0]) void tambah(saran[0].k) }}
-            />
-            {(saran.length > 0 || saranBelum.length > 0) && (
-              <ul className="sea-saran" role="listbox">
-                {saran.map((b) => (
-                  <li key={b.k}>
-                    <button type="button" className="sea-saran-it" onClick={() => void tambah(b.k)}>
-                      <span className="kd">{b.k}</span>
-                      <span className="nm">{b.n}</span>
-                      <span className="rg">{b.m} → {b.a}</span>
-                    </button>
-                  </li>
-                ))}
-                {saranBelum.map((b) => (
-                  <li key={`belum-${b.k}`}>
-                    {/* Bukan tombol — tak ada yang bisa dibuka. Kotak yang bisa
-                        ditekan lalu diam lebih membingungkan daripada baris
-                        yang jelas cuma keterangan. */}
-                    <div className="sea-saran-it sea-saran-belum">
-                      <span className="kd">{b.k}</span>
-                      <span className="nm">{b.n}</span>
-                      <span className="ket">
-                        belum bisa dihitung — baru {b.j} bulan{b.t ? `, tercatat ${b.t}` : ''}; pola musiman butuh 12
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+          {/* Bilah kendali berkelompok — sistem tata C+A (lantai.css). Cari ·
+              Mulai dari (rentang tahun). Emiten yang sudah dipilih tetap di
+              baris tersendiri di bawah bilah — sama pola dengan chip aktif
+              di Screener, keterlihatan tanpa memaksa dropdown tetap terbuka. */}
+          <div className="bilah-kendali">
+            <div className="grup-k">
+              <span className="grup-lbl">Cari</span>
+              <div className="af-cari sea-cari">
+                <IkonMenu d={IKON_CARI} size={14} />
+                <input
+                  ref={kotak} className="inp" value={cari} disabled={!indeks || dipilih.length >= MAKS}
+                  placeholder={dipilih.length >= MAKS ? `Maksimum ${MAKS} emiten — buang satu dulu` : 'Cari kode atau nama emiten…'}
+                  onChange={(e) => setCari(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && saran[0]) void tambah(saran[0].k) }}
+                />
+                {(saran.length > 0 || saranBelum.length > 0) && (
+                  <ul className="sea-saran" role="listbox">
+                    {saran.map((b) => (
+                      <li key={b.k}>
+                        <button type="button" className="sea-saran-it" onClick={() => void tambah(b.k)}>
+                          <span className="kd">{b.k}</span>
+                          <span className="nm">{b.n}</span>
+                          <span className="rg">{b.m} → {b.a}</span>
+                        </button>
+                      </li>
+                    ))}
+                    {saranBelum.map((b) => (
+                      <li key={`belum-${b.k}`}>
+                        {/* Bukan tombol — tak ada yang bisa dibuka. Kotak yang bisa
+                            ditekan lalu diam lebih membingungkan daripada baris
+                            yang jelas cuma keterangan. */}
+                        <div className="sea-saran-it sea-saran-belum">
+                          <span className="kd">{b.k}</span>
+                          <span className="nm">{b.n}</span>
+                          <span className="ket">
+                            belum bisa dihitung — baru {b.j} bulan{b.t ? `, tercatat ${b.t}` : ''}; pola musiman butuh 12
+                          </span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+            <span className="pemisah-v" aria-hidden="true" />
+            <div className="grup-k grup-kanan sea-tahun">
+              <span className="grup-lbl">Mulai dari</span>
+              {[0, 2010, 2015, 2020].map((t) => (
+                <button key={t} type="button" className={`chip-t${sejak === t ? ' on' : ''}`}
+                  onClick={() => setSejak(t)}>{t === 0 ? 'Semua' : t}</button>
+              ))}
+            </div>
           </div>
 
           <div className="sea-chip-baris">
@@ -231,14 +248,6 @@ export function Seasonality() {
               </button>
             ))}
             {dipilih.length === 0 && <span className="muted" style={{ fontSize: 11.5 }}>Belum ada emiten dipilih.</span>}
-          </div>
-
-          <div className="sea-tahun">
-            <span className="lbl">Mulai dari</span>
-            {[0, 2010, 2015, 2020].map((t) => (
-              <button key={t} type="button" className={`chip-t${sejak === t ? ' on' : ''}`}
-                onClick={() => setSejak(t)}>{t === 0 ? 'Semua' : t}</button>
-            ))}
           </div>
         </div>
       </section>

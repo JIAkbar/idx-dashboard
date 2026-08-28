@@ -187,41 +187,56 @@ export default function TraderPapan() {
       <div className="vhead">
         <h1>Trader Papan</h1>
         <span className="sub">posisi tiap broker pada satu emiten — rata-rata harga beli, seberapa murah pernah menampung, arahnya belakangan</span>
+        <CatatanCakupan inline />
       </div>
 
-      <CatatanCakupan />
-
-      <div className="tp-atur">
-        <div className="tp-emiten">
-          <StockAutocomplete
-            stocks={indeks?.stocks || []}
-            value={ketik}
-            onChange={setKetik}
-            onSelect={(v) => { setKetik(v); setKode(v.toUpperCase()) }}
-            placeholder="Cari emiten: BUMI, BBCA…"
-          />
+      {/* Bilah kendali berkelompok — sistem tata C+A (lantai.css). Emiten ·
+          Rentang · Broker; info indikator di grup-kanan. */}
+      <div className="bilah-kendali tp-atur">
+        <div className="grup-k">
+          <span className="grup-lbl">Emiten</span>
+          <div className="tp-emiten">
+            <StockAutocomplete
+              stocks={indeks?.stocks || []}
+              value={ketik}
+              onChange={setKetik}
+              onSelect={(v) => { setKetik(v); setKode(v.toUpperCase()) }}
+              placeholder="Cari emiten: BUMI, BBCA…"
+            />
+          </div>
+          <strong>{kode}</strong>
+          {tahunAda.length > 0 && (
+            <span className="muted tp-kecil">
+              arsip {tahunAda[0]}–{tahunAda[tahunAda.length - 1]}
+            </span>
+          )}
+          {muat && <span className="muted tp-kecil">memuat…</span>}
         </div>
-        <strong>{kode}</strong>
-        <PemilihRentang opsi={RENTANG} nilai={rentang} onGanti={setRentang} />
-        <span className="muted tp-kecil">Broker</span>
-        {FILTER_KELOMPOK.map((f) => (
-          <button
-            key={f.id}
-            type="button"
-            className={'chip-t' + (filterKelompok === f.id ? ' on' : '')}
-            title={f.id === 'asing' ? 'Kelompok identitas broker asing (kelompokBroker.ts), bukan kolom investor-type harian' : undefined}
-            onClick={() => setFilterKelompok(f.id)}
-          >
-            {f.label}
-          </button>
-        ))}
-        <InfoIndikator judul="Indikator Trader Papan" item={INFO_TRADER} />
-        {tahunAda.length > 0 && (
-          <span className="muted tp-kecil">
-            arsip {tahunAda[0]}–{tahunAda[tahunAda.length - 1]}
-          </span>
-        )}
-        {muat && <span className="muted tp-kecil">memuat…</span>}
+        <span className="pemisah-v" aria-hidden="true" />
+        <div className="grup-k">
+          <span className="grup-lbl">Rentang</span>
+          <PemilihRentang opsi={RENTANG} nilai={rentang} onGanti={setRentang} />
+        </div>
+        <span className="pemisah-v" aria-hidden="true" />
+        <div className="grup-k">
+          <span className="grup-lbl">Broker</span>
+          {FILTER_KELOMPOK.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              className={'chip-t' + (filterKelompok === f.id ? ' on' : '')}
+              title={f.id === 'asing' ? 'Kelompok identitas broker asing (kelompokBroker.ts), bukan kolom investor-type harian' : undefined}
+              onClick={() => setFilterKelompok(f.id)}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <span className="pemisah-v" aria-hidden="true" />
+        <div className="grup-k grup-kanan">
+          <span className="grup-lbl">Info</span>
+          <InfoIndikator judul="Indikator Trader Papan" item={INFO_TRADER} />
+        </div>
       </div>
 
       {galat === 'belum-ada' || galat === 'kosong' ? (
