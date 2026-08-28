@@ -59,6 +59,13 @@ export interface SelFootprint {
 
 const MAKS_BIN = 12
 
+/** Di atas lebar bar ini, footprint pindah ke SAMPING candle (kolom kedua di
+ *  slot waktu yang sama) alih-alih menumpuk di atasnya — pola whales.id yang
+ *  membuat candle dan sel sama-sama terbaca. Di bawahnya, menumpuk. */
+export const BAR_SPACING_SAMPING = 26
+/** Porsi lebar slot yang dipakai kolom footprint saat berdampingan. */
+const PORSI_SAMPING = 0.42
+
 /** Tepi bin: ≤12 tick → tick asli; lebih lebar → 12 bin sama rata. */
 function tepiBin(low: number, high: number, tickFn: (harga: number) => number): number[] {
   const tick = tickFn((low + high) / 2) || 1
@@ -193,7 +200,15 @@ export class FootprintHarian implements IPanePrimitive<Time> {
     // menyala, layar tampak kosong). Lebih jujur tidak menggambar sama
     // sekali; halaman menampilkan keterangan + auto-zoom saat toggle nyala.
     if (barSpacing < BAR_SPACING_MIN) { this.rects = []; this.selById = new Map(); return null }
-    const lebarKolom = barSpacing * PORSI_KOLOM
+    // MODE BERDAMPINGAN (audit whales 28 Agu §7d/§7e — di sana tiap slot
+    // waktu memuat DUA kolom: candle di kiri, footprint di kanan). Di bawah
+    // ambang ini ruang tak cukup untuk dua benda, jadi footprint kembali
+    // menumpuk di tengah candle seperti sebelumnya — bukan mode kedua yang
+    // dipilih pengguna, melainkan yang muat di lebar yang ada.
+    const berdampingan = barSpacing >= BAR_SPACING_SAMPING
+    const lebarKolom = berdampingan ? barSpacing * PORSI_SAMPING : barSpacing * PORSI_KOLOM
+    // Pusat kolom footprint: di kanan candle saat berdampingan.
+    const geser = berdampingan ? barSpacing * 0.30 : 0
 
     // Hanya kolom yang x-nya terpetakan (di dalam jendela pandang) yang
     // masuk daftar gambar — ini yang membuat "hanya rentang terlihat" (spek
@@ -210,7 +225,7 @@ export class FootprintHarian implements IPanePrimitive<Time> {
     for (const kolom of this.data) {
       const x = skalaWaktu.timeToCoordinate(kolom.tanggal as Time)
       if (x === null) continue
-      const xc = x as number
+      const xc = (x as number) + geser
       if (xc < -barSpacing || xc > lebarPane + barSpacing) continue
       const halfW = lebarKolom / 2
       // Penyebut lebar = lot terbesar DI KOLOM INI, bukan global: dengan
