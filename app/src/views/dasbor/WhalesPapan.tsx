@@ -13,6 +13,7 @@ import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useBrokerTahunan } from '../../lib/dasbor/brokerTahunanData'
 import { useRingkasKartu } from '../../lib/dasbor/kartuRingkas'
 import { warnaBrokerCanvas } from '../../lib/dasbor/kelompokBroker'
+import { bacaTokenTema } from '../../lib/dasbor/useChartJs'
 import { warnaGrid, gridDariTemplate, GRID_BAWAAN, type SetelanGrid } from '../../lib/dasbor/grafikEmiten'
 import { useTheme } from '../../context/ThemeContext'
 import { SeleksiAreaChart } from '../../lib/dasbor/seleksiAreaChart'
@@ -91,6 +92,10 @@ function lotRingkas(n: number): string {
 
 // Pemuat candle pindah ke lib bersama `candleStockbit.ts` — dipakai juga
 // Inventory Neo Papan; satu sumber, bukan dua salinan.
+
+/** Palet garis AVG — LIMA token seri paling kontras satu sama lain (subset
+ *  TOKEN_SERI Neo), satu warna per GARIS. */
+const WARNA_GARIS_AVG = ['--blue', '--amber', '--k-smart', '--red', '--green'] as const
 
 /** Seleksi "seluruh riwayat" — dipakai garis avg broker saat belum ada kotak. */
 const SEMUA: SeleksiArea = { tglMulai: '0000-01-01', tglAkhir: '9999-12-31', hargaMin: -Infinity, hargaMax: Infinity }
@@ -481,14 +486,19 @@ export default function WhalesPapan() {
       agg.netBeli
         .filter((r) => r.beliLot > 0)
         .slice(0, 5)
-        .map((r) => ({
+        // Warna per GARIS dari palet seri DISTINCT, bukan warna kelompok
+        // broker (Johan 28 Agu: "warna pada average tolong di bedakan biar
+        // jelas" — tiga dari lima garis kebetulan sekelompok = tiga teal
+        // kembar). Preseden sama: Inventory Neo 26 Agu "warna nya masak
+        // mirip-mirip". Identitas kelompok tetap terbaca di panel/tooltip.
+        .map((r, i) => ({
           broker: r.kode,
           harga: r.beliNilai / (r.beliLot * 100),
           pct: totalBeli ? r.beliNilai / totalBeli : 0,
-          warna: warnaBrokerCanvas(r.kode),
+          warna: bacaTokenTema(WARNA_GARIS_AVG[i % WARNA_GARIS_AVG.length]),
         })),
     )
-  }, [tf, avgAktif, hari, sel])
+  }, [tf, avgAktif, hari, sel, theme])
 
   // W4 — profil harga (lot per pita dari broker harian), lapisan bawah candle.
   // Hanya mode Harian: sumbernya broker harian, tak punya pecahan intraday.
