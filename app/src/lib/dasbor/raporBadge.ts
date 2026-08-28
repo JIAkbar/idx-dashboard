@@ -143,13 +143,17 @@ export function dariBarOhlcvStockbit(bar: (readonly (string | number)[])[]): Bar
 export const TIER_DIAMOND = 5
 
 export interface KonfigRapor {
-  /** Bawaan true. Sakelar developer — belum ada keputusan Johan soal bentuk
-   *  gerbang final, adendum eksplisit minta flag ini sampai itu diputuskan. */
+  /** Bawaan FALSE sejak 28 Agu 2026 — keputusan final Johan yang memang
+   *  ditunggu adendum lewat flag ini: *"dibuka saja gpp, lah saya akun
+   *  superadmin malah tidak bisa lihat kan aneh"*. Gerbang lama memeriksa
+   *  tier JENJANG kontributor saja, jadi akun admin (perannya admin, tapi
+   *  jenjangnya bukan Diamond) ikut terkunci — bukti gerbangnya salah ukur.
+   *  Nilai true dipertahankan untuk uji/rollback, bukan untuk dipakai diam-diam. */
   raporDiamondOnly?: boolean
 }
 
 export function bolehLihatRapor(tier: number | null | undefined, config: KonfigRapor = {}): boolean {
-  const { raporDiamondOnly = true } = config
+  const { raporDiamondOnly = false } = config
   if (!raporDiamondOnly) return true
   return (tier ?? 0) >= TIER_DIAMOND
 }

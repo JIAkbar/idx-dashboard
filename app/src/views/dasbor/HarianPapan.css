@@ -1,20 +1,8 @@
 /* Harian Papan (/harian-papan) — PENEMPATAN & LEBAR saja (#170). Bentuk
-   kendali (tab, dropdown, tabel, tombol) datang dari lantai.css. */
+   kendali (tab, dropdown, tabel, tombol, bilah-kendali berkelompok) datang
+   dari lantai.css. */
 
-.lantai .hp-alat {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.lantai .hp-bilah {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 10px;
-}
-
-.lantai .hp-jumlah { margin-left: auto; white-space: nowrap; }
+.lantai .hp-jumlah { white-space: nowrap; }
 
 .lantai .hp-lebih { padding: 10px 14px; }
 
@@ -22,10 +10,3 @@
    kolom (lencana penuh sudah dipakai di kartu, di sini cukup tanda ringkas
    karena kolomnya sudah padat 20-an kolom). */
 .lantai .hp-beku { margin-left: 4px; cursor: help; }
-
-@media (max-width: 480px) {
-  .lantai .hp-bilah > .dd { flex: 1 1 calc(50% - 5px); }
-  .lantai .hp-bilah > .dd .dd-btn { width: 100%; }
-  .lantai .hp-bilah > .btn-p { flex: 1 1 100%; }
-  .lantai .hp-jumlah { margin-left: 0; flex: 1 1 100%; text-align: right; }
-}

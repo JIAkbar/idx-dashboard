@@ -1,13 +1,10 @@
 /* Aliran Asing (/aliran-asing) — PENEMPATAN & LEBAR saja (#170). Bentuk
-   kendali (chip, kotak cari, tabel, tombol) datang dari lantai.css. */
-
-.lantai .ala-alat {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
-}
+   kendali (chip, kotak cari, tabel, tombol, bilah-kendali berkelompok)
+   datang dari lantai.css. */
 
 .lantai .af-cari.ala-cari { flex: 1 1 220px; max-width: 320px; }
 
-.lantai .ala-jumlah { margin-left: auto; white-space: nowrap; }
+.lantai .ala-jumlah { white-space: nowrap; }
 
 .lantai .ala-tbl .ala-nama {
   max-width: 260px;
@@ -27,5 +24,5 @@
 }
 
 @media (max-width: 480px) {
-  .lantai .ala-alat > .af-cari.ala-cari { flex: 1 1 100%; max-width: none; }
+  .lantai .ala-alat .af-cari.ala-cari { flex: 1 1 100%; max-width: none; }
 }

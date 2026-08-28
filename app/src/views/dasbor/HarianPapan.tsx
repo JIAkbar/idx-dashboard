@@ -157,35 +157,52 @@ export function HarianPapan() {
       <CatatanCakupan />
 
       <div className="panel">
-        <div className="panel-b hp-alat">
-          <div className="tabs" role="tablist">
-            {(Object.keys(TAB_LABEL) as TabHarianPapan[]).map((t) => (
-              <button key={t} role="tab" aria-selected={tab === t}
-                className={'tab' + (tab === t ? ' on' : '')} onClick={() => setTab(t)}>
-                {TAB_LABEL[t]}
+        <div className="panel-b">
+          {/* Bilah kendali berkelompok — sistem tata C+A (lantai.css). Tab ·
+              Tanggal · Saring; Unduh CSV + jumlah emiten di grup-kanan. */}
+          <div className="bilah-kendali hp-alat">
+            <div className="grup-k">
+              <span className="grup-lbl">Tab</span>
+              <div className="tabs" role="tablist">
+                {(Object.keys(TAB_LABEL) as TabHarianPapan[]).map((t) => (
+                  <button key={t} role="tab" aria-selected={tab === t}
+                    className={'tab' + (tab === t ? ' on' : '')} onClick={() => setTab(t)}>
+                    {TAB_LABEL[t]}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <span className="pemisah-v" aria-hidden="true" />
+            <div className="grup-k">
+              <span className="grup-lbl">Tanggal</span>
+              <DatePicker
+                value={tanggal ?? ''}
+                onChange={setTanggal}
+                tersedia={tanggalTersedia}
+                ariaLabel="Tanggal"
+              />
+            </div>
+            <span className="pemisah-v" aria-hidden="true" />
+            <div className="grup-k">
+              <span className="grup-lbl">Saring</span>
+              <DropdownMulti
+                label="Sektor"
+                ariaLabel="Saring sektor"
+                opsi={sektorOpsi}
+                nilai={sektorAktif}
+                onGanti={setSektorAktif}
+                ringkasKosong="Semua sektor"
+              />
+            </div>
+            <span className="pemisah-v" aria-hidden="true" />
+            <div className="grup-k grup-kanan">
+              <span className="grup-lbl">Aksi</span>
+              <button type="button" className="btn-p" disabled={urut.length === 0}
+                onClick={() => tanggal && unduhCsv(urut, tanggal, tab)}>
+                Unduh CSV
               </button>
-            ))}
-          </div>
-          <div className="hp-bilah">
-            <DatePicker
-              value={tanggal ?? ''}
-              onChange={setTanggal}
-              tersedia={tanggalTersedia}
-              ariaLabel="Tanggal"
-            />
-            <DropdownMulti
-              label="Sektor"
-              ariaLabel="Saring sektor"
-              opsi={sektorOpsi}
-              nilai={sektorAktif}
-              onGanti={setSektorAktif}
-              ringkasKosong="Semua sektor"
-            />
-            <button type="button" className="btn-p" disabled={urut.length === 0}
-              onClick={() => tanggal && unduhCsv(urut, tanggal, tab)}>
-              Unduh CSV
-            </button>
-            <span className="muted hp-jumlah">{urut.length} emiten</span>
+              <span className="muted hp-jumlah">{urut.length} emiten</span>
+            </div>
           </div>
         </div>
 

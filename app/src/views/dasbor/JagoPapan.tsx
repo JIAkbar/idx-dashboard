@@ -94,30 +94,38 @@ export function JagoPapan() {
       </div>
       <CatatanCakupan />
 
-      <div className="tabs" role="tablist">
-        {TAB_JAGO_PAPAN.map((t) => (
-          <button
-            key={t.id} role="tab" aria-selected={tab === t.id}
-            className={'tab' + (tab === t.id ? ' on' : '')}
-            onClick={() => setTab(t.id)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
       <div className="panel">
         <div className="panel-b jgp-kepala">
-          <p className="jgp-aturan"><b>Aturan:</b> {cfg.aturan}</p>
-          <div className="jgp-alat">
-            <span className="muted">Data penutupan <b>{data.tanggal}</b> · {urut.length} dari {data.n} emiten lolos</span>
-            <button
-              type="button" className="btn-p"
-              onClick={() => unduhCsv(`jago-papan-${cfg.id}-${data.tanggal}.csv`, keCsvJagoPapan(urut))}
-            >
-              Unduh CSV
-            </button>
+          {/* Bilah kendali berkelompok — sistem tata C+A (lantai.css). Tab;
+              info hasil + Unduh CSV di grup-kanan. */}
+          <div className="bilah-kendali jgp-alat">
+            <div className="grup-k">
+              <span className="grup-lbl">Tab</span>
+              <div className="tabs" role="tablist">
+                {TAB_JAGO_PAPAN.map((t) => (
+                  <button
+                    key={t.id} role="tab" aria-selected={tab === t.id}
+                    className={'tab' + (tab === t.id ? ' on' : '')}
+                    onClick={() => setTab(t.id)}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <span className="pemisah-v" aria-hidden="true" />
+            <div className="grup-k grup-kanan">
+              <span className="grup-lbl">Aksi</span>
+              <span className="muted">Data penutupan <b>{data.tanggal}</b> · {urut.length} dari {data.n} emiten lolos</span>
+              <button
+                type="button" className="btn-p"
+                onClick={() => unduhCsv(`jago-papan-${cfg.id}-${data.tanggal}.csv`, keCsvJagoPapan(urut))}
+              >
+                Unduh CSV
+              </button>
+            </div>
           </div>
+          <p className="jgp-aturan"><b>Aturan:</b> {cfg.aturan}</p>
         </div>
 
         <div className="board-tbl-wrap">

@@ -75,22 +75,37 @@ export function AliranAsing() {
       <CatatanCakupan />
 
       <div className="panel">
-        <div className="panel-b ala-alat">
-          <span className="af-cari ala-cari">
-            <IkonMenu d={IKON_CARI} size={13} />
-            <input
-              className="inp" type="search" placeholder="Cari emiten…" value={cari}
-              onChange={(e) => setCari(e.target.value)}
-            />
-          </span>
-          <Dropdown
-            opsi={TINGKAT_LIKUIDITAS.map((t) => ({ nilai: t.id, label: t.label }))}
-            nilai={tingkatLikuiditas}
-            onGanti={setTingkatLikuiditas}
-            ariaLabel="Likuiditas"
-            placeholder="Semua likuiditas"
-          />
-          <span className="muted ala-jumlah">{hasil.length} dari {baris.length} emiten</span>
+        <div className="panel-b">
+          {/* Bilah kendali berkelompok — sistem tata C+A (lantai.css). Cari ·
+              Saring (likuiditas); jumlah hasil di grup-kanan. */}
+          <div className="bilah-kendali ala-alat">
+            <div className="grup-k">
+              <span className="grup-lbl">Cari</span>
+              <span className="af-cari ala-cari">
+                <IkonMenu d={IKON_CARI} size={13} />
+                <input
+                  className="inp" type="search" placeholder="Cari emiten…" value={cari}
+                  onChange={(e) => setCari(e.target.value)}
+                />
+              </span>
+            </div>
+            <span className="pemisah-v" aria-hidden="true" />
+            <div className="grup-k">
+              <span className="grup-lbl">Saring</span>
+              <Dropdown
+                opsi={TINGKAT_LIKUIDITAS.map((t) => ({ nilai: t.id, label: t.label }))}
+                nilai={tingkatLikuiditas}
+                onGanti={setTingkatLikuiditas}
+                ariaLabel="Likuiditas"
+                placeholder="Semua likuiditas"
+              />
+            </div>
+            <span className="pemisah-v" aria-hidden="true" />
+            <div className="grup-k grup-kanan">
+              <span className="grup-lbl">Hasil</span>
+              <span className="muted ala-jumlah">{hasil.length} dari {baris.length} emiten</span>
+            </div>
+          </div>
         </div>
 
         <div className="board-tbl-wrap">

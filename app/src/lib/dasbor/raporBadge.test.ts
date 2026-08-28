@@ -95,18 +95,18 @@ describe('perluPeringatanBasi', () => {
 })
 
 describe('bolehLihatRapor', () => {
-  it('tier 4 (Platinum) ditolak', () => {
-    expect(bolehLihatRapor(4)).toBe(false)
+  // Keputusan Johan 28 Agu 2026 ("dibuka saja gpp"): bawaan TERBUKA untuk
+  // semua — termasuk tanpa login. Mode Diamond-only tinggal sebagai opsi
+  // eksplisit untuk rollback.
+  it('bawaan terbuka: semua tier & tanpa login lolos', () => {
+    expect(bolehLihatRapor(0)).toBe(true)
+    expect(bolehLihatRapor(4)).toBe(true)
+    expect(bolehLihatRapor(null)).toBe(true)
+    expect(bolehLihatRapor(undefined)).toBe(true)
   })
-  it('tier 5 (Diamond) lolos', () => {
-    expect(bolehLihatRapor(5)).toBe(true)
-  })
-  it('tier null/undefined ditolak (bawaan raporDiamondOnly=true)', () => {
-    expect(bolehLihatRapor(null)).toBe(false)
-    expect(bolehLihatRapor(undefined)).toBe(false)
-  })
-  it('flag raporDiamondOnly=false meloloskan semua tier', () => {
-    expect(bolehLihatRapor(0, { raporDiamondOnly: false })).toBe(true)
-    expect(bolehLihatRapor(null, { raporDiamondOnly: false })).toBe(true)
+  it('opsi raporDiamondOnly=true masih menggerbang di tier 5', () => {
+    expect(bolehLihatRapor(4, { raporDiamondOnly: true })).toBe(false)
+    expect(bolehLihatRapor(null, { raporDiamondOnly: true })).toBe(false)
+    expect(bolehLihatRapor(5, { raporDiamondOnly: true })).toBe(true)
   })
 })
