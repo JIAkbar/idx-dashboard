@@ -41,3 +41,21 @@
 .lantai .hp-tbl-rentang td:nth-child(6) { width: 70px; }
 .lantai .hp-tbl-rentang th:nth-child(7),
 .lantai .hp-tbl-rentang td:nth-child(7) { width: 110px; }
+
+/* Lebar kolom DIKUNCI supaya tabel tak "goyang" saat saringan berubah.
+   Tanpa `table-layout: fixed`, peramban menghitung ulang lebar tiap kolom
+   dari isinya — jadi memilih satu sektor membuat kolom Sektor menyempit dan
+   SELURUH kolom di kanannya bergeser (Johan 29 Agu: "ketika pilih basic
+   material tabel nya goyang"). Lebar dua kolom kiri ditetapkan; sisanya
+   dibagi rata oleh algoritma fixed, dan `min-width` di `.board-tbl-wrap`
+   yang menjaga tabel tetap terbaca lewat gulir mendatar. */
+.lantai .hp-tbl { table-layout: fixed; }
+.lantai .hp-tbl th:nth-child(1),
+.lantai .hp-tbl td:nth-child(1) { width: 78px; }
+.lantai .hp-tbl th:nth-child(2),
+.lantai .hp-tbl td:nth-child(2) { width: 168px; }
+.lantai .hp-tbl th,
+.lantai .hp-tbl td { overflow: hidden; text-overflow: ellipsis; }
+/* Tabel rentang punya lebarnya sendiri (7 kolom), jadi ia keluar dari
+   aturan fixed di atas. */
+.lantai .hp-tbl-rentang { table-layout: auto; }

@@ -228,7 +228,6 @@ export function HarianPapan() {
             </div>
             <span className="pemisah-v" aria-hidden="true" />
             <div className="grup-k">
-              <span className="grup-lbl">Saring</span>
               <DropdownMulti
                 label="Sektor"
                 ariaLabel="Saring sektor"

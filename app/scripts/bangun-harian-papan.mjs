@@ -206,6 +206,24 @@ function bangunBarisHarianPapan(kode, nama, sektor, freeFloat, barSampaiTanggal)
     // Bahan mentah kolom Form (adendum Rapor & Badge) — dihitung ulang di
     // komponen lewat hitungForm() (raporBadge.ts), bukan di sini.
     bar5: barSampaiTanggal.slice(-5).map((b) => ({ open: b[2], close: b[5] })),
+    // Selisih menang-kalah kolom Form (4-1 -> +3, 1-4 -> -3) — kunci urut
+    // kolom itu. HARUS dihitung DI SINI: berkas JSON dibangun skrip ini,
+    // sementara padanannya di `lib/dasbor/harianPapan.ts` cuma dipakai tipe
+    // & uji. Menambahkannya di sana saja membuat kolomnya tetap tak bisa
+    // diurut, dan gejalanya menipu — klik kepala kolom "berhasil" tapi
+    // urutannya tak berubah sama sekali (Johan 29 Agu: "sorting form itu
+    // tidak ngefek apapun").
+    form_skor: (() => {
+      const lima = barSampaiTanggal.slice(-5)
+      if (lima.length === 0) return null
+      let n = 0
+      for (const b of lima) {
+        const d = Number(b[5]) - Number(b[2])
+        if (d > 0) n += 1
+        else if (d < 0) n -= 1
+      }
+      return n
+    })(),
   }
 }
 
