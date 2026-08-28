@@ -69,3 +69,15 @@
    admin field tetap full-width, di header flex-wrap tetap seukuran konten. */
 .lantai .dpk-wrap { display: flex; align-items: center; gap: 4px; }
 .lantai .dpk-wrap .dd { flex: 1; min-width: 0; }
+
+/* ── Mode rentang (29 Agu 2026) ──────────────────────────────────────────
+   Ujung rentang memakai `.sel` yang sudah ada — pekat, sama persis dengan
+   tanggal terpilih di mode satu-tanggal, jadi tak ada bahasa visual baru
+   yang harus dipelajari. Isi rentang jauh lebih tipis; tanpa pembedaan itu
+   rentang 20 hari terbaca seperti 20 tanggal terpilih sekaligus. */
+.lantai .dpk-hari.r-dalam {
+  background: color-mix(in srgb, var(--amber) 16%, transparent);
+  border-radius: 0;
+}
+.lantai .dpk-hari.r-dalam:hover { background: var(--amber-dim); }
+.lantai .dpk-hari.r-ujung { position: relative; z-index: 1; }

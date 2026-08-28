@@ -30,7 +30,7 @@ function urai(iso: string): { t: number; b: number; d: number } | null {
  * Nilai masuk/keluar tetap string ISO `YYYY-MM-DD` — kompatibel penuh dengan
  * pemakaian input date sebelumnya.
  */
-export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 'kiri', tanda }: {
+export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 'kiri', tanda, rentang, onGantiRentang }: {
   value: string
   onChange: (iso: string) => void
   /** Kalau diisi: hanya tanggal di set ini yang bisa dipilih (hari ber-data),
@@ -48,8 +48,20 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
    *  (mis. setoran menunggu kurasi). Tak diisi = tak ada perubahan tampilan
    *  sama sekali dari perilaku sebelumnya (dipakai banyak halaman lain). */
   tanda?: ReadonlyMap<string, number>
+  /** MODE RENTANG (Johan 29 Agu 2026: "jadikan ini bisa select range waktu").
+   *  Kalau diisi, kalender memilih DUA tanggal: klik pertama menandai awal,
+   *  klik kedua menutup rentang dan menutup popover. Klik ketiga memulai
+   *  rentang baru — bukan memperlebar yang lama, karena "klik lagi berarti
+   *  mulai dari sini" jauh lebih mudah ditebak daripada aturan perluasan.
+   *  `value` tetap dipakai sebagai tanggal AWAL, jadi pemakai lama tak
+   *  berubah perilakunya sama sekali. */
+  rentang?: { dari: string; sampai: string } | null
+  onGantiRentang?: (dari: string, sampai: string) => void
 }) {
   const [open, setOpen] = useState(false)
+  /** Ujung awal yang sudah diklik tapi belum ditutup. null = belum mulai. */
+  const [awalSementara, setAwalSementara] = useState<string | null>(null)
+  const modeRentang = typeof onGantiRentang === 'function'
   const kini = new Date()
   const vAwal = urai(value)
   const [tahun, setTahun] = useState(vAwal ? vAwal.t : kini.getFullYear())
@@ -135,7 +147,18 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
   const { rataKanan } = useArahBuka(ref, open, rata === 'kanan' ? 'kanan' : 'kiri')
 
   const v = urai(value)
-  const labelNilai = v ? `${v.d} ${NAMA_BULAN[v.b].slice(0, 3)} ${v.t}` : 'Pilih tanggal'
+  const pendek = (iso: string) => {
+    const u = urai(iso)
+    return u ? `${u.d} ${NAMA_BULAN[u.b].slice(0, 3)}` : iso
+  }
+  // Label tombol menyebut apa yang SEDANG dipilih, termasuk saat rentang baru
+  // separuh jadi — supaya orang tahu kalender menunggu klik kedua, bukan
+  // mengira kliknya tak terdaftar.
+  const labelNilai = awalSementara
+    ? `${pendek(awalSementara)} → pilih akhir`
+    : modeRentang && rentang
+      ? `${pendek(rentang.dari)} – ${pendek(rentang.sampai)}`
+      : v ? `${v.d} ${NAMA_BULAN[v.b].slice(0, 3)} ${v.t}` : 'Pilih tanggal'
 
   // Stepper dirender mengapit field, di luar .dd supaya popover tetap
   // menempel pas di bawah field (bukan di bawah stepper).
@@ -190,10 +213,19 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
             // aplikasi ini memilih tanggal bursa, jadi tandanya benar di semua
             // pemakaian dan tak perlu prop baru untuk menyalakannya.
             const alasanLibur = alasanBukanHariBursa(iso)
+            // Ujung & isi rentang ditandai terpisah: ujungnya pekat, isinya
+            // tipis. Tanpa pembedaan itu, rentang 20 hari terbaca seperti 20
+            // tanggal terpilih sekaligus.
+            const rDari = awalSementara ?? rentang?.dari ?? ''
+            const rSampai = awalSementara ? '' : (rentang?.sampai ?? '')
+            const diUjung = modeRentang && (iso === rDari || iso === rSampai)
+            const diDalam = modeRentang && !!rDari && !!rSampai && iso > rDari && iso < rSampai
             const cls = [
               'dpk-hari',
               iso === isoIni ? ' now' : '',
-              iso === value ? ' sel' : '',
+              !modeRentang && iso === value ? ' sel' : '',
+              diUjung ? ' sel r-ujung' : '',
+              diDalam ? ' r-dalam' : '',
               jmlTanda > 0 ? ' bertanda' : '',
               alasanLibur ? ' libur' : '',
             ].join('')
@@ -216,7 +248,16 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
                 disabled={nonaktif}
                 title={judul}
                 aria-label={judul ? `${d} — ${judul}` : undefined}
-                onClick={() => { onChange(iso); setOpen(false) }}
+                onClick={() => {
+                  if (!modeRentang) { onChange(iso); setOpen(false); return }
+                  if (!awalSementara) { setAwalSementara(iso); return }
+                  // Urutan klik tak dipaksakan: klik mundur tetap menghasilkan
+                  // rentang yang sah, cuma dibalik di sini.
+                  const [a, b] = awalSementara <= iso ? [awalSementara, iso] : [iso, awalSementara]
+                  onGantiRentang?.(a, b)
+                  setAwalSementara(null)
+                  setOpen(false)
+                }}
               >
                 {d}
                 {jmlTanda > 0 && <span className="dpk-tanda" aria-hidden="true">{jmlTanda > 9 ? '9+' : jmlTanda}</span>}

@@ -429,3 +429,62 @@ export function useHarianPapan(tanggal: string | null): { data: DataHarianPapan 
   }, [tanggal])
   return { data, muat }
 }
+
+/**
+ * Muat BEBERAPA tanggal sekaligus untuk mode rentang (29 Agu 2026).
+ *
+ * Memakai cache modul yang sama dengan `useHarianPapan`, jadi tanggal yang
+ * sudah pernah dibuka satu-satu tak diambil ulang. Tanggal yang tak punya
+ * berkas (akhir pekan, libur, hari yang belum dibangun) dilewati diam-diam —
+ * itu keadaan normal, bukan galat; jumlah hari yang benar-benar terpakai
+ * dilaporkan pemanggil lewat `tanggalDipakai`.
+ */
+export function useHarianPapanRentang(dari: string | null, sampai: string | null): {
+  perTanggal: Map<string, BarisHarianPapan[]>
+  muat: boolean
+} {
+  const [perTanggal, setPerTanggal] = useState<Map<string, BarisHarianPapan[]>>(new Map())
+  const [muat, setMuat] = useState(false)
+
+  useEffect(() => {
+    if (!dari || !sampai) { setPerTanggal(new Map()); setMuat(false); return }
+    let batal = false
+    setMuat(true)
+
+    // Daftar tanggal kalender di rentang; yang tak berdata gugur saat fetch.
+    const daftar: string[] = []
+    const d = new Date(`${dari}T00:00:00`)
+    const akhir = new Date(`${sampai}T00:00:00`)
+    // Pagar 400 hari: rentang yang keliru lebar (mis. salah klik tahun) akan
+    // menembak ratusan permintaan sebelum ada yang sadar.
+    // ISO dirakit dari ruas LOKAL, bukan lewat toISOString(): tanggal
+    // dibangun dengan `new Date("...T00:00:00")` yang berarti tengah malam
+    // WAKTU SETEMPAT, dan toISOString() mengubahnya ke UTC — di WIB itu
+    // mundur 7 jam alias SATU HARI PENUH. Terlihat saat verifikasi 29 Agu:
+    // rentang berlabel "14 – 27 Agu" mengambil berkas 13–26 Agu.
+    const isoLokal = (x: Date) =>
+      `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}`
+    while (d <= akhir && daftar.length < 400) {
+      daftar.push(isoLokal(d))
+      d.setDate(d.getDate() + 1)
+    }
+
+    void Promise.all(daftar.map((t) => {
+      const ada = cacheHarian.get(t)
+      if (ada) return Promise.resolve<[string, DataHarianPapan | null]>([t, ada])
+      return ambilHarianPapan(t).then((r) => {
+        if (r) cacheHarian.set(t, r)
+        return [t, r] as [string, DataHarianPapan | null]
+      })
+    })).then((hasil) => {
+      if (batal) return
+      const peta = new Map<string, BarisHarianPapan[]>()
+      for (const [t, r] of hasil) if (r?.emiten?.length) peta.set(t, r.emiten)
+      setPerTanggal(peta)
+      setMuat(false)
+    })
+    return () => { batal = true }
+  }, [dari, sampai])
+
+  return { perTanggal, muat }
+}

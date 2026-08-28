@@ -6,6 +6,7 @@ import { DatePicker } from '../../components/dasbor/DatePicker'
 import { DropdownMulti, type OpsiMulti } from '../../components/dasbor/DropdownMulti'
 import { KolomForm } from '../../components/dasbor/BadgeRapor'
 import { bandingkanBaris } from '../../lib/dasbor/useUrut'
+import { akumulasiRentang, catatanRentang } from '../../lib/dasbor/harianPapanRentang'
 import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
 import { useProfilSaya } from '../../lib/profilSaya'
 import { bolehLihatRapor, hitungForm } from '../../lib/dasbor/raporBadge'
@@ -14,7 +15,7 @@ import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
 import { keFraksi } from '../../lib/fraksiHarga'
 import {
   barisUntukTab, keCsvHarianPapan, sektorUnikHarianPapan,
-  useHarianPapan, useTanggalHarianPapan,
+  useHarianPapan, useHarianPapanRentang, useTanggalHarianPapan,
   type BarisHarianPapan, type TabHarianPapan,
 } from '../../lib/dasbor/harianPapan'
 import './HarianPapan.css'
@@ -91,7 +92,13 @@ export function HarianPapan() {
     if (tanggal === null && tanggalData?.tanggal_tersedia.length) setTanggal(tanggalData.tanggal_tersedia[0])
   }, [tanggal, tanggalData])
 
+  // Mode rentang (Johan 29 Agu). null = mode satu tanggal, yang tetap bawaan:
+  // Harian Papan pada dasarnya papan HARIAN, dan rentang itu pertanyaan lain
+  // ("siapa mengumpulkan selama seminggu"), bukan pengganti.
+  const [rentang, setRentang] = useState<{ dari: string; sampai: string } | null>(null)
   const { data, muat } = useHarianPapan(tanggal)
+  const { perTanggal, muat: muatRentang } = useHarianPapanRentang(rentang?.dari ?? null, rentang?.sampai ?? null)
+  const akum = useMemo(() => akumulasiRentang(perTanggal), [perTanggal])
   const [tab, setTab] = useState<TabHarianPapan>('gainer')
   const [sektorAktif, setSektorAktif] = useState<string[]>([])
   const tanggalTersedia = useMemo(
@@ -202,10 +209,17 @@ export function HarianPapan() {
               <span className="grup-lbl">Tanggal</span>
               <DatePicker
                 value={tanggal ?? ''}
-                onChange={setTanggal}
+                onChange={(iso) => { setRentang(null); setTanggal(iso) }}
                 tersedia={tanggalTersedia}
                 ariaLabel="Tanggal"
+                rentang={rentang}
+                onGantiRentang={(dari, sampai) => setRentang(dari === sampai ? null : { dari, sampai })}
               />
+              {rentang && (
+                <button type="button" className="chip-t" onClick={() => setRentang(null)}>
+                  Kembali ke satu hari
+                </button>
+              )}
             </div>
             <span className="pemisah-v" aria-hidden="true" />
             <div className="grup-k">
@@ -231,7 +245,57 @@ export function HarianPapan() {
           </div>
         </div>
 
-        {muat ? (
+        {/* MODE RENTANG — tabel BERBEDA, bukan tabel harian dengan angka
+            dijumlahkan diam-diam. Hanya tiga kolom yang memang aditif yang
+            ditampilkan; alasannya dicetak di bawah tabel, bukan disembunyikan.
+            Lihat `harianPapanRentang.ts` untuk daftar kolom yang TAK boleh
+            dijumlahkan dan kenapa. */}
+        {rentang ? (
+          muatRentang ? (
+            <p className="muted" style={{ padding: '10px 14px' }}>Memuat {akum.tanggalDipakai.length || ''} hari…</p>
+          ) : (
+            <>
+              <div className="board-tbl-wrap">
+                <table className="tbl hp-tbl">
+                  <thead>
+                    <tr>
+                      <th>Kode</th><th>Sektor</th>
+                      <th style={{ textAlign: 'right' }}>Volume total</th>
+                      <th style={{ textAlign: 'right' }}>Nilai total</th>
+                      <th style={{ textAlign: 'right' }}>Net asing (000)</th>
+                      <th style={{ textAlign: 'right' }}>Hari</th>
+                      <th style={{ textAlign: 'right' }}>Harga akhir</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...akum.baris]
+                      .filter((b) => {
+                        const q = cari.trim().toLowerCase()
+                        if (q && !b.kode.toLowerCase().includes(q) && !(b.nama ?? '').toLowerCase().includes(q)) return false
+                        return sektorAktif.length === 0 || sektorAktif.includes(b.sektor)
+                      })
+                      .sort((a, b) => b.nilai - a.nilai)
+                      .slice(0, tampil)
+                      .map((b) => (
+                        <tr key={b.kode}>
+                          <td className="hp-kode">{b.kode}</td>
+                          <td>{b.sektor}</td>
+                          <td className="num">{b.volume.toLocaleString('id-ID')}</td>
+                          <td className="num">{b.nilai.toLocaleString('id-ID')}</td>
+                          <td className={`num ${b.nbsf_000 >= 0 ? 'up' : 'dn'}`}>
+                            {b.nbsf_000 >= 0 ? '+' : ''}{b.nbsf_000.toLocaleString('id-ID')}
+                          </td>
+                          <td className="num">{b.nHari}</td>
+                          <td className="num">{b.harga_akhir?.toLocaleString('id-ID') ?? '—'}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="muted" style={{ padding: '10px 14px' }}>{catatanRentang(akum)}</p>
+            </>
+          )
+        ) : muat ? (
           <p className="muted" style={{ padding: '10px 14px' }}>Memuat…</p>
         ) : (
           <>
