@@ -312,7 +312,6 @@ export function HarianPapan() {
                     {thSort(urutState, 'kode', 'Kode')}
                     {thSort(urutState, 'sektor', 'Sektor')}
                     {thSort(urutState, 'harga', 'Price', true)}
-                    {thSort(urutState, 'tdm_persen', 'TDM%', true)}
                     {thSort(urutState, 'volume', 'Volume', true)}
                     {thSort(urutState, 'rvol10', 'RVol(10)', true)}
                     {thSort(urutState, 'nilai', 'Value', true)}
@@ -360,6 +359,8 @@ export function HarianPapan() {
         <b>Stock Gainer</b> mengeluarkan emiten yang tak ada transaksi pada tanggal terpilih — harga yang
         tercatat tak berubah bukan berarti sedang menguat. <b>Skor Papan</b> menyajikan keadaan teknikal
         gabungan, <b>bukan saran beli atau jual</b>; metodenya ada di halaman Metodologi.
+        {' '}Kolom TDM% dibuang 29 Agu 2026: isinya IDENTIK dengan 1MTD di 961 dari 961 emiten
+        (ruasnya memang diisi nilai yang sama), jadi ia dua kolom untuk satu angka.
         {!bolehForm && ' Kolom Form (rekam jejak harian) khusus pengguna jenjang Diamond.'}
       </div>
     </div>
@@ -378,9 +379,6 @@ function BarisHp({ b, bolehForm }: { b: BarisHarianPapan; bolehForm: boolean }) 
       </td>
       <td>{b.sektor}</td>
       <td className="r num">{b.harga == null ? '—' : keFraksi(b.harga, 'dekat').toLocaleString('id-ID')}</td>
-      <td className={`r num ${b.tdm_persen == null ? '' : b.tdm_persen >= 0 ? 'up' : 'dn'}`}>
-        {b.tdm_persen == null ? '—' : fp(b.tdm_persen)}
-      </td>
       <td className="r num" title={b.volume == null ? undefined : `${b.volume.toLocaleString('id-ID')} lembar`}>
         {b.volume == null ? '—' : fRingkas(b.volume)}
       </td>

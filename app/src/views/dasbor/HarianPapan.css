@@ -72,3 +72,13 @@
    (Johan 29 Agu: "berikan jarak ini kolom emiten sama tombol stock gainer"). */
 .lantai .hp-cari { margin-right: 10px; }
 @media (max-width: 700px) { .lantai .hp-cari { margin-right: 0; } }
+
+/* Tiga kolom "vs EMA5 / vs MA10 / vs MA20" isinya CUMA panah — 94px per
+   kolom membuang ~150px lebar tanpa menambah apa pun yang bisa dibaca.
+   Nomor kolomnya dihitung SESUDAH kolom TDM% dibuang (kembar 1MTD):
+   1 Kode · 2 Sektor · 3 Price · 4 Volume · 5 RVol · 6 Value · 7 NBSF ·
+   8 Free Float · 9 MA20 Head · 10 Close Gap · 11 1D · 12 1WTD · 13 1MTD ·
+   14-16 vs EMA5/MA10/MA20 · 17-19 Skor · 20 Form. */
+.lantai .hp-tbl th:nth-child(14), .lantai .hp-tbl td:nth-child(14),
+.lantai .hp-tbl th:nth-child(15), .lantai .hp-tbl td:nth-child(15),
+.lantai .hp-tbl th:nth-child(16), .lantai .hp-tbl td:nth-child(16) { width: 58px; }
