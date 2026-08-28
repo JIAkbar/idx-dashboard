@@ -220,3 +220,15 @@ Artinya feed hulu mereka **tick-by-tick dengan kode broker + sisi agresor + orde
 2. **Kejujuran tag [F]/[D] per broker** — kita punya bahannya (arsip broker 12 varian termasuk asing), belum dipajang sebagai tag di footprint. Ini bisa.
 3. **Yang TIDAK bisa & tak boleh dikarang**: kolom agresif/pasif. Data EOD kita tak punya sisi agresor. Footprint PAPAN wajib tetap menyebut GROSS.
 4. **Pelajaran metode**: audit dari screenshot menghasilkan dua klaim salah (library & tuduhan kredensial). Situs yang bisa dibuka **harus dibuka** sebelum kesimpulannya ditulis.
+
+### 7e · Sisa yang dibongkar setelah Johan bertanya "yakin sudah bongkar semua?" (28 Agu, lanjutan)
+
+Jawaban jujur saat itu: belum. Tiga hal tersisa, kini tuntas:
+
+1. **`obData` DIDEKOMPRES** (bukan lagi "terkompres, tak tahu isinya"): payload base64 → **deflate/zlib** → teks `harga;frekuensi;lot|…` per level, plus `{ts, s, sts}` (s = sisi). Contoh nyata BUMI: `190;411;43834300|189;2069;226651600|…` — **antrean order per harga**: berapa order dan berapa lot menunggu. Ini kedalaman orderbook, bukan hasil transaksi.
+2. **WebSocket ada, tapi bukan di halaman anonim.** Bundle `TradingTerminalPage` memuat `new WebSocket(V.WORKER_WS_URL)` (URL dari config runtime, bukan hardcode). Protokolnya: kirim `{type:"subscribe", tickers:[…]}`; tipe pesan yang ditangani **`rt` · `orderbook` · `auth`**. Karena butuh `auth` dan `/api/auth/token` menjawab **401** tanpa login, jalur real-time hanya hidup untuk pengguna terdaftar — yang anonim (seperti audit ini) dilayani REST historis saja.
+3. **Peta endpoint final** (semua terlihat tanpa login): `/api/market/history/<KODE>` (candles+cells+obData, UDF-style) · `/api/market/market-screener` · `/api/market/tickers` · `/api/market/stockbit-leveraged-stocks` · `/api/market/public/system-announcement` · `/api/market/public/server-outages` · `/api/me` · `/api/auth/token` (401 anon).
+
+**Arsitektur mereka, ringkas:** TradingView Charting Library (iframe) + datafeed REST milik sendiri untuk riwayat + WebSocket worker untuk real-time bergerbang auth. Hulu datanya tetap tak terlihat dari luar — yang pasti: tick dengan broker + sisi agresor + kedalaman orderbook, kelas data yang di IDX hanya keluar lewat feed vendor berbayar. **Tak ada bukti kredensial Stockbit** (lihat 7b); dugaan itu sudah kutarik.
+
+**Yang mustahil bagi PAPAN tetap dua**: sisi agresor (agresif/pasif) dan antrean orderbook. Sisanya — tata letak, warna imbalance, tooltip berkuadran, porsi asing — bisa dan sebagian sudah dikerjakan.
