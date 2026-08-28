@@ -75,6 +75,13 @@ function rupiahRingkas(n: number): string {
   if (a >= 1e6) return `${(n / 1e6).toFixed(1)} jt`
   return n.toLocaleString('id-ID')
 }
+const BULAN_PENDEK = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+/** '2026-05-12' → '12 Mei 2026' — tanpa Date() (zona waktu tak ikut campur). */
+function tglPendek(iso: string): string {
+  const [y, m, d] = iso.split('-')
+  return `${Number(d)} ${BULAN_PENDEK[Number(m) - 1] ?? m} ${y}`
+}
+
 function lotRingkas(n: number): string {
   const a = Math.abs(n)
   if (a >= 1e6) return `${(n / 1e6).toFixed(2)} jt`
@@ -151,6 +158,10 @@ export default function WhalesPapan() {
   // Significant (default, pola whales.id) menyembunyikan broker recehan lewat
   // AMBANG_SIGNIFIKAN; Full menampilkan semua yang pernah bertransaksi.
   const [modeBaris, setModeBaris] = useState<'signifikan' | 'penuh'>('signifikan')
+  /** Kuadran yang ditampilkan panel — Gross atau Net, bukan dua-duanya
+   *  sekaligus (Johan 28 Agu: "munculkan juga aksi untuk memilih gross atau
+   *  net"). */
+  const [kuadran, setKuadran] = useState<'gross' | 'net'>('gross')
   // Grid chart — pola sama dengan GrafikEmiten (B33): sakelar + keburaman,
   // bawaan lebih redup (30%) dari acuannya (100%) karena chart di sini sudah
   // padat lapisan lain (AVG, profil, bubble, footprint). Preferensi per
@@ -997,6 +1008,9 @@ export default function WhalesPapan() {
             ) : hasil ? (
               <>
                 <p className="wp-sub">
+                  {hasil.tglPertama && hasil.tglTerakhir && (
+                    <>{tglPendek(hasil.tglPertama)} – {tglPendek(hasil.tglTerakhir)} · </>
+                  )}
                   {hasil.nHari.toLocaleString('id-ID')} hari bursa · {hasil.nBroker} broker ·{' '}
                   {Math.round(sel!.hargaMin).toLocaleString('id-ID')}–
                   {Math.round(sel!.hargaMax).toLocaleString('id-ID')}
@@ -1012,7 +1026,21 @@ export default function WhalesPapan() {
                     title="Tampilkan semua broker yang bertransaksi"
                     onClick={() => setModeBaris('penuh')}>Full</button>
                 </div>
+                {/* Pilih kuadran (Johan 28 Agu: "munculkan juga aksi untuk
+                    memilih gross atau net") — dua-duanya sekaligus membuat
+                    panel panjang menggulung. */}
+                <div className="wp-toggle" role="group" aria-label="Kuadran">
+                  <button type="button" className={`chip-t${kuadran === 'gross' ? ' on' : ''}`}
+                    aria-pressed={kuadran === 'gross'}
+                    title="Total transaksi per broker, tanpa dikurangi lawannya"
+                    onClick={() => setKuadran('gross')}>Gross</button>
+                  <button type="button" className={`chip-t${kuadran === 'net' ? ' on' : ''}`}
+                    aria-pressed={kuadran === 'net'}
+                    title="Beli dikurangi jual per broker"
+                    onClick={() => setKuadran('net')}>Net</button>
+                </div>
 
+                {kuadran === 'gross' && (<>
                 <div className="wp-kuadran">GROSS — tanpa dikurangi lawannya</div>
                 <div className="wp-sisi wp-beli">
                   <div className="wp-sisi-judul">
@@ -1038,7 +1066,9 @@ export default function WhalesPapan() {
                       : <p className="wp-sub">tak ada</p>
                   })()}
                 </div>
+                </>)}
 
+                {kuadran === 'net' && (<>
                 <div className="wp-kuadran">NET — beli dikurangi jual</div>
                 <div className="wp-sisi wp-beli">
                   <div className="wp-sisi-judul">
@@ -1064,6 +1094,7 @@ export default function WhalesPapan() {
                       : <p className="wp-sub">tak ada</p>
                   })()}
                 </div>
+                </>)}
               </>
             ) : (
               <p className="wp-sub">

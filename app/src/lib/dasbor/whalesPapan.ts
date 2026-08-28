@@ -83,6 +83,12 @@ export interface HasilArea {
   grossJual: RingkasBroker[]
   nHari: number
   nBroker: number
+  /** Tanggal hari bursa PERTAMA/TERAKHIR yang benar-benar masuk seleksi —
+   *  dari datanya, bukan tepi kotak seret (kotak bisa mulai di akhir pekan).
+   *  null saat tak ada hari yang lolos. Permintaan Johan 28 Agu: "17 hari
+   *  bursa ini munculkan rentang waktu nya kapan". */
+  tglPertama: string | null
+  tglTerakhir: string | null
   totalNetBeliLot: number
   totalNetJualLot: number
   totalGrossBeliLot: number
@@ -164,6 +170,8 @@ export function agregatArea(hari: HariBroker[], sel: SeleksiArea): HasilArea {
     grossJual,
     nHari: pilih.length,
     nBroker: semua.length,
+    tglPertama: pilih[0]?.tanggal ?? null,
+    tglTerakhir: pilih[pilih.length - 1]?.tanggal ?? null,
     totalNetBeliLot: netBeli.reduce((s, r) => s + r.netLot, 0),
     totalNetJualLot: netJual.reduce((s, r) => s + r.netLot, 0),
     totalGrossBeliLot: grossBeli.reduce((s, r) => s + r.beliLot, 0),

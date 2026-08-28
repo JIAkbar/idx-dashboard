@@ -25,7 +25,9 @@ export function InfoIndikator({ judul, item }: { judul: string; item: ItemInfoIn
   const [buka, setBuka] = useState(false)
   return (
     <>
-      <TombolIkon d={IKON_INFO} label="Penjelasan indikator halaman ini" onClick={() => setBuka(true)} />
+      {/* className berbingkai (Johan 28 Agu: "tombol info ini berikan border
+          juga dong biar keliatan jelas") — bentuknya tetap TombolIkon #170. */}
+      <TombolIkon d={IKON_INFO} label="Penjelasan indikator halaman ini" className="ti-berbingkai" onClick={() => setBuka(true)} />
       {buka && (
         <ModalKecil label={judul} onClose={() => setBuka(false)} className="info-indikator">
           {item.map((x) => (

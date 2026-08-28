@@ -21,11 +21,16 @@ export interface PitaProfil {
 
 /** Porsi lebar pane maksimum yang boleh dipakai bar terpanjang. */
 const PORSI_MAKS = 0.16
-/** Tiga kelas warna (permintaan Johan 27 Agu "berikan warna"): emas = POC
- *  (pita teramai), terang = area nilai 70% lot, redup = sisanya. */
-const WARNA_LUAR = 'rgba(148, 163, 184, 0.20)'
-const WARNA_VA = 'rgba(148, 163, 184, 0.44)'
-const WARNA_POC = 'rgba(234, 179, 8, 0.60)'
+/** GRADIENT intensitas (permintaan Johan 28 Agu "untuk profil berikan warna
+ *  gradient saja"): keburaman bar mengikuti besar lot-nya — makin ramai makin
+ *  pekat — sehingga profil terbaca sebagai gradasi, bukan tiga blok datar.
+ *  POC tetap emas (paling ramai), area nilai 70% memakai gradasi biru-abu
+ *  yang lebih kuat daripada luar area. */
+const ALFA_MIN = 0.10
+const ALFA_MAKS_VA = 0.55
+const ALFA_MAKS_LUAR = 0.30
+const WARNA_POC = 'rgba(234, 179, 8, 0.62)'
+const rgbaBar = (alfa: number) => `rgba(148, 163, 184, ${alfa.toFixed(3)})`
 
 export type KelasPita = 'poc' | 'va' | 'luar'
 
@@ -112,7 +117,9 @@ export class ProfilHargaChart implements IPanePrimitive<Time> {
             const bawah = Math.round(b.yB * vp)
             const w = Math.max(1, b.f * lebarMaks)
             const h = Math.max(1, bawah - atas - Math.round(vp))
-            ctx.fillStyle = b.kelas === 'poc' ? WARNA_POC : b.kelas === 'va' ? WARNA_VA : WARNA_LUAR
+            // Gradient intensitas: alfa ∝ lot relatif; VA lebih pekat dari luar.
+            const alfaMaks = b.kelas === 'va' ? ALFA_MAKS_VA : ALFA_MAKS_LUAR
+            ctx.fillStyle = b.kelas === 'poc' ? WARNA_POC : rgbaBar(ALFA_MIN + (alfaMaks - ALFA_MIN) * b.f)
             ctx.fillRect(bitmapSize.width - w, atas, w, h)
           }
           ctx.restore()

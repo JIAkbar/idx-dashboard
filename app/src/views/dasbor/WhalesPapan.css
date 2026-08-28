@@ -29,7 +29,7 @@
    * Tinggi = SISA VIEWPORT (Johan 28 Agu: "chartnya mentok full page") —
    * 100dvh dikurangi ticker+header+bilah kendali+jarak (±248px, kaki global
    * sudah dihapus). dvh, bukan vh: bilah alamat ponsel (aturan lipatan 810). */
-  --wp-tinggi: max(340px, calc(100dvh - 248px));
+  --wp-tinggi: max(340px, calc(100dvh - 206px));
 }
 @media (max-width: 900px) {
   /* Ponsel menumpuk satu kolom — chart setinggi sisa layar mengubur panel

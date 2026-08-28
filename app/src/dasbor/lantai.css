@@ -3091,6 +3091,10 @@
 .lantai .ti::after { content: ''; position: absolute; inset: -6px; }
 .lantai .ti .dasbor-ikon { stroke: currentColor; }
 .lantai .ti:hover:not(:disabled) { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
+/* Varian BERBINGKAI (Johan 28 Agu, tombol "i": "berikan border juga dong
+   biar keliatan jelas") — bentuk & area klik tetap .ti, cuma batasnya
+   terlihat sejak diam, senada chip di sebelahnya. */
+.lantai .ti.ti-berbingkai { border-color: var(--line2); color: var(--text2); }
 .lantai .ti:active:not(:disabled) { transform: translateY(1px); }
 .lantai .ti:disabled { opacity: .4; cursor: default; }
 
