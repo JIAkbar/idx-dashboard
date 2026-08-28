@@ -188,3 +188,35 @@ Symbol Search whales.id menampilkan kolom **Value · Volume · Vol MA20 · Stron
 
 ### 6d · Canvas "100% TradingView" — bukan misteri
 whales.id memakai **lightweight-charts** (pustaka open-source TradingView yang SAMA dengan yang PAPAN pakai) + custom pane primitives untuk footprint/heatmap. "100% mirip TradingView" karena memang library TradingView. Kita sudah di jalur yang sama (Whales Papan, Grafik Emiten pakai lightweight-charts + primitives). Tak ada teknologi rahasia; pembedanya cuma feed hulu (mereka tick real-time, kita EOD).
+
+---
+
+## 7 · Audit LANGSUNG 28 Agu 2026 (buka situsnya, baca jaringannya) — MENGOREKSI §6
+
+§6 ditulis dari screenshot = inferensi. Johan menyuruh "audit beneran". Situsnya dibuka, tab Network dibaca, endpoint dipanggil sendiri **tanpa login**. Dua klaim §6 GUGUR, dan struktur datanya terbongkar penuh.
+
+### 7a · KOREKSI §6d — mereka pakai TradingView Charting Library ASLI, bukan lightweight-charts
+Bukti: `<script src=".../charting_library.standalone.js">`, `window.TradingView` + `window.tradingview_e904a` ada, chart dirender **di dalam iframe**, dan **nol elemen `<canvas>` di dokumen induk**. Endpoint datanya pun berbentuk **UDF datafeed TradingView**: `GET /api/market/history/<KODE>?resolution=60&from=…&to=…&countBack=301`.
+
+Artinya "100% mirip TradingView" bukan karena mereka pintar meniru — **itu memang produk TradingView** (Charting Library, gratis dengan perjanjian lisensi + atribusi). PAPAN memakai **lightweight-charts** (adik kecilnya): lebih ringan, tanpa perjanjian, tapi memang tak punya toolbar/indikator bawaan sebanyak itu. Kalau suatu hari PAPAN mau "rasa TradingView penuh", jalannya adalah mendaftar Charting Library — keputusan produk, bukan pekerjaan meniru piksel.
+
+### 7b · KOREKSI §6c — tuduhan "menyedot feed real-time Stockbit" TIDAK TERBUKTI
+Yang nyata: `GET /api/market/stockbit-leveraged-stocks` → ~120 emiten `{t, tv, v, p, m}` dengan `m` = **multiplier margin 2x–5x**. Itu **daftar saham margin Stockbit** — informasi yang Stockbit terbitkan sendiri dan bisa disalin harian; bukan feed harga real-time, bukan orderbook, bukan data akun. Badge "4x/3x" di Symbol Search itu isinya.
+
+Kolom Value/Volume/VolMA20 di Symbol Search datang dari endpoint mereka sendiri `GET /api/market/market-screener` (`{t,v,vm,rvm,rv,p,d,w}`) — agregat harian yang setara dengan yang PAPAN hitung dari arsip sendiri. **Jadi §6c kutarik**: tak ada bukti penyedotan kredensial Stockbit. Yang tersisa hanyalah pertanyaan sah "dari mana feed tick-nya" (7c) — dan itu tak menuduh siapa pun.
+
+### 7c · Struktur data footprint — terbongkar penuh (ini yang berharga)
+`/api/market/history/<KODE>` mengembalikan `{rtData:{candles[], brokerCodes[]}, obData[]}`:
+- `candles[i]` = `{ts, o, h, l, c, v, cells[]}`
+- `cells[j]` = `[harga, ringkasA, ringkasB, [[idxBroker, 8 angka], …]]` — sel per TINGKAT HARGA
+- `brokerCodes` = **73 entri berformat `"AK [F]"`, `"AG [D]"`** — kode broker + tag Foreign/Domestic
+- **8 angka per broker terpecahkan lewat penjumlahan kolom** (uji nyata BUMI, sel harga 191): kolom 0 dan 3 sama-sama 167.808, kolom 4 dan 7 sama-sama 769 → bentuknya `[volAgresifBeli, volPasifBeli, volAgresifJual, volPasifJual, freq×4]`. Pasangan kolom 0↔3 identik karena **tiap transaksi punya dua sisi**: yang menyerang membeli, lawannya pasif menjual.
+- `obData[]` = snapshot orderbook, **payload terkompres zlib** (`"eJw…"` base64).
+
+Artinya feed hulu mereka **tick-by-tick dengan kode broker + sisi agresor + orderbook**. Kesimpulan §4/§5 audit lama BERTAHAN: mustahil dirakit dari EOD kita. Bedanya, sekarang kita tahu persis bentuknya, bukan menduga.
+
+### 7d · Yang layak diambil untuk PAPAN (dari audit langsung, bukan tebakan)
+1. **Bentuk penyajian footprint** (kolom sel per tingkat harga di samping candle) — sudah ada di Whales Papan W7; yang bisa ditiru tinggal tata letaknya (kolom kedua saat lebar cukup).
+2. **Kejujuran tag [F]/[D] per broker** — kita punya bahannya (arsip broker 12 varian termasuk asing), belum dipajang sebagai tag di footprint. Ini bisa.
+3. **Yang TIDAK bisa & tak boleh dikarang**: kolom agresif/pasif. Data EOD kita tak punya sisi agresor. Footprint PAPAN wajib tetap menyebut GROSS.
+4. **Pelajaran metode**: audit dari screenshot menghasilkan dua klaim salah (library & tuduhan kredensial). Situs yang bisa dibuka **harus dibuka** sebelum kesimpulannya ditulis.
