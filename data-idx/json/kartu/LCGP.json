@@ -1,50 +1,152 @@
 {
  "kode": "LCGP",
- "tgl": "2026-08-28",
+ "tgl": "2019-04-30",
  "harga": 114.0,
- "prev": 114.0,
- "chg": 0.0,
- "n": 4631,
+ "prev": 115.0,
+ "chg": -0.8695652173912993,
+ "n": 2866,
  "mulai": "2007-07-13",
- "ma20": 114.0,
- "ma50": 114.0,
- "ma200": 114.0,
- "atr": 7.799212044691404e-57,
- "atr_pct": 6.841414074290705e-57,
- "support": [],
- "resistance": [],
- "stop": 108,
- "stop_asal": "fallback5pct",
- "stop_pct": 5.263157894736842,
+ "ma20": 114.55,
+ "ma50": 118.86,
+ "ma200": 121.1,
+ "atr": 4.989038766980271,
+ "atr_pct": 4.376349795596729,
+ "support": [
+  {
+   "level": 104.86363636363636,
+   "sentuhan": 22,
+   "terakhir": "2017-10-10",
+   "dalam_atr": false,
+   "harga": 104
+  },
+  {
+   "level": 93.80952380952381,
+   "sentuhan": 21,
+   "terakhir": "2019-04-01",
+   "dalam_atr": false,
+   "harga": 93
+  },
+  {
+   "level": 73.0,
+   "sentuhan": 2,
+   "terakhir": "2018-01-22",
+   "dalam_atr": false,
+   "harga": 73
+  }
+ ],
+ "resistance": [
+  {
+   "level": 121.2,
+   "sentuhan": 5,
+   "terakhir": "2019-04-12",
+   "dalam_atr": false,
+   "harga": 122
+  },
+  {
+   "level": 135.93333333333334,
+   "sentuhan": 15,
+   "terakhir": "2019-03-19",
+   "dalam_atr": false,
+   "harga": 136
+  }
+ ],
+ "stop": 104,
+ "stop_asal": "klaster",
+ "stop_pct": 8.771929824561402,
  "er": 0.2,
- "er_persentil": 31.088082901554404,
- "er_n_populasi": 386,
- "likuiditas_median20": 0.0,
+ "er_persentil": 30.198019801980198,
+ "er_n_populasi": 404,
+ "likuiditas_median20": 316232600.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "tipis",
-  "lilin": 4631,
-  "nilai20": 0.0
+  "lilin": 2866,
+  "nilai20": 316232600.0
  },
  "beku": 1765,
  "beku_sejak": "2019-04-30",
- "dihitung": "2026-08-28",
- "rsi": 44.88275043239838,
+ "dihitung": "2019-04-30",
+ "rsi": 44.88275043239832,
  "stochrsi": [
-  100.0,
-  100.0
+  31.735366228795144,
+  50.086758948196014
  ],
- "target": [],
+ "target": [
+  {
+   "harga": 122,
+   "pct": 7.017543859649122,
+   "sentuhan": 5,
+   "terakhir": "2019-04-12",
+   "fp": {
+    "n": 2845,
+    "n_efektif": 142,
+    "kena": 1013,
+    "stop": 756,
+    "lewat": 1076,
+    "p_kena": 35.60632688927944,
+    "p_stop": 26.572934973637963,
+    "median_hari": 4,
+    "q1": 2,
+    "q3": 9,
+    "harapan": 0.16773039805136758
+   },
+   "fp60": {
+    "n": 2805,
+    "n_efektif": 47,
+    "kena": 1188,
+    "stop": 984,
+    "lewat": 633,
+    "p_kena": 42.35294117647059,
+    "p_stop": 35.08021390374332,
+    "median_hari": 5.0,
+    "q1": 2,
+    "q3": 14,
+    "harapan": -0.1050755230321796
+   }
+  },
+  {
+   "harga": 136,
+   "pct": 19.298245614035086,
+   "sentuhan": 15,
+   "terakhir": "2019-03-19",
+   "fp": {
+    "n": 2845,
+    "n_efektif": 142,
+    "kena": 475,
+    "stop": 935,
+    "lewat": 1435,
+    "p_kena": 16.695957820738137,
+    "p_stop": 32.86467486818981,
+    "median_hari": 9,
+    "q1": 4,
+    "q3": 14,
+    "harapan": 0.3391607313538678
+   },
+   "fp60": {
+    "n": 2805,
+    "n_efektif": 47,
+    "kena": 746,
+    "stop": 1293,
+    "lewat": 766,
+    "p_kena": 26.59536541889483,
+    "p_stop": 46.096256684491976,
+    "median_hari": 14.0,
+    "q1": 7,
+    "q3": 29,
+    "harapan": 1.0889076523751449
+   }
+  }
+ ],
  "musiman": {
-  "n": 20,
-  "naik": 2,
-  "mentah": 10.0,
-  "tersusut": 12.22707423580786,
-  "bawah": 2.7865893984153196,
-  "atas": 30.103820641179336,
+  "n": 12,
+  "naik": 4,
+  "mentah": 33.33333333333333,
+  "tersusut": 32.86052009456265,
+  "bawah": 13.811783989736135,
+  "atas": 60.9382412602386,
   "median": 0.0,
-  "dasar": 19.65065502183406,
-  "total_bulan": 229
+  "dasar": 31.914893617021278,
+  "total_bulan": 141
  },
  "sektor": {
   "nama": "PT Eureka Prima Jakarta Tbk.",
@@ -105,47 +207,47 @@
    }
   }
  },
- "ma5": 114.0,
- "ma100": 114.0,
- "ma150": 114.0,
+ "ma5": 114.8,
+ "ma100": 123.82,
+ "ma150": 125.30666666666667,
  "bb20": {
-  "mid": 114.0,
-  "atas": 114.0,
-  "bawah": 114.0
+  "mid": 114.55,
+  "atas": 119.93423625038872,
+  "bawah": 109.16576374961127
  },
- "posisi_bb": null,
+ "posisi_bb": -0.1022,
  "ichimoku": {
-  "tenkan": 114.0,
-  "kijun": 114.0,
-  "senkou_a": 114.0,
-  "senkou_b": 114.0,
+  "tenkan": 115.0,
+  "kijun": 108.5,
+  "senkou_a": 111.75,
+  "senkou_b": 116.0,
   "di_atas_kumo": false
  },
  "regresi60": {
-  "kemiringan": 0.0,
-  "tengah": 114.0,
-  "posisi": null
+  "kemiringan": -0.34715198666296193,
+  "tengah": 110.45901639344262,
+  "posisi": 1.0677
  },
- "freq": 0,
- "ukuran_order": null,
- "peringkat_value": 513,
- "peringkat_volume": 513,
- "peringkat_freq": 513,
- "porsi_asing": null,
+ "freq": 38,
+ "ukuran_order": 383.0263,
+ "peringkat_value": 1,
+ "peringkat_volume": 2,
+ "peringkat_freq": 2,
+ "porsi_asing": 0.0,
  "net_asing_rp": 0,
- "label_fd": null,
- "tiket_avg": null,
- "tiket_avg_med60": null,
- "tiket_lonjakan": null,
+ "label_fd": "F 0% : D 100%",
+ "tiket_avg": 4397050.0,
+ "tiket_avg_med60": 2411176.6,
+ "tiket_lonjakan": 1.8236,
  "asing_net_5h": 0,
- "asing_net_20h": 0,
+ "asing_net_20h": -91200,
  "asing_streak": 0,
- "tiket_broker_maks": null,
- "broker_tiket_maks_kode": null,
- "bval_maks": null,
- "nego_blok_rp": null,
+ "tiket_broker_maks": 10455147.0,
+ "broker_tiket_maks_kode": "KK",
+ "bval_maks": 156827200.0,
+ "nego_blok_rp": 0.0,
  "nego_broker_maks_kode": null,
- "top3_pct": null,
- "number_broker_buysell": null,
- "label_accdist": null
+ "top3_pct": 193.21,
+ "number_broker_buysell": -4,
+ "label_accdist": "Acc"
 }

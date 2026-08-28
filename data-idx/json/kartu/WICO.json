@@ -1,50 +1,191 @@
 {
  "kode": "WICO",
- "tgl": "2026-08-28",
+ "tgl": "2025-01-23",
  "harga": 123.0,
  "prev": 123.0,
  "chg": 0.0,
- "n": 6260,
+ "n": 5829,
  "mulai": "2001-04-05",
  "ma20": 123.0,
  "ma50": 123.0,
- "ma200": 123.0,
- "atr": 2.9661525561953183e-18,
- "atr_pct": 2.4115061432482264e-18,
- "support": [],
- "resistance": [],
- "stop": 116,
- "stop_asal": "fallback5pct",
- "stop_pct": 5.691056910569105,
- "er": 0.1627906518534813,
- "er_persentil": 6.476683937823833,
- "er_n_populasi": 386,
+ "ma200": 123.32,
+ "atr": 5.426975344903448e-06,
+ "atr_pct": 4.412175077157275e-06,
+ "support": [
+  {
+   "level": 121.0,
+   "sentuhan": 28,
+   "terakhir": "2024-03-20",
+   "dalam_atr": false,
+   "harga": 121
+  },
+  {
+   "level": 120.0,
+   "sentuhan": 35,
+   "terakhir": "2024-05-02",
+   "dalam_atr": false,
+   "harga": 120
+  },
+  {
+   "level": 119.0,
+   "sentuhan": 5,
+   "terakhir": "2024-02-05",
+   "dalam_atr": false,
+   "harga": 119
+  }
+ ],
+ "resistance": [
+  {
+   "level": 132.0,
+   "sentuhan": 14,
+   "terakhir": "2024-05-28",
+   "dalam_atr": false,
+   "harga": 132
+  },
+  {
+   "level": 250.5296,
+   "sentuhan": 2,
+   "terakhir": "2023-07-10",
+   "dalam_atr": false,
+   "harga": 252
+  },
+  {
+   "level": 251.77602,
+   "sentuhan": 9,
+   "terakhir": "2023-03-28",
+   "dalam_atr": false,
+   "harga": 252
+  }
+ ],
+ "stop": 121,
+ "stop_asal": "klaster",
+ "stop_pct": 1.6260162601626018,
+ "er": 0.1632134813259129,
+ "er_persentil": 6.9306930693069315,
+ "er_n_populasi": 404,
  "likuiditas_median20": 0.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "tipis",
-  "lilin": 6260,
+  "lilin": 5829,
   "nilai20": 0.0
  },
- "beku": 381,
+ "beku": 373,
  "beku_sejak": "2025-01-23",
- "dihitung": "2026-08-28",
- "rsi": 31.90246993683988,
+ "dihitung": "2025-01-23",
+ "rsi": 31.902469936839836,
  "stochrsi": [
   0.0,
-  0.0
+  33.333333333333336
  ],
- "target": [],
+ "target": [
+  {
+   "harga": 132,
+   "pct": 7.317073170731707,
+   "sentuhan": 14,
+   "terakhir": "2024-05-28",
+   "fp": {
+    "n": 5808,
+    "n_efektif": 290,
+    "kena": 1135,
+    "stop": 3836,
+    "lewat": 837,
+    "p_kena": 19.54201101928375,
+    "p_stop": 66.04683195592287,
+    "median_hari": 2,
+    "q1": 1,
+    "q3": 4,
+    "harapan": 0.3559710183878695
+   },
+   "fp60": {
+    "n": 5768,
+    "n_efektif": 96,
+    "kena": 1363,
+    "stop": 3922,
+    "lewat": 483,
+    "p_kena": 23.630374479889042,
+    "p_stop": 67.99583911234397,
+    "median_hari": 2,
+    "q1": 1,
+    "q3": 10,
+    "harapan": 0.6234283910106782
+   }
+  },
+  {
+   "harga": 252,
+   "pct": 104.8780487804878,
+   "sentuhan": 2,
+   "terakhir": "2023-07-10",
+   "fp": {
+    "n": 5808,
+    "n_efektif": 290,
+    "kena": 143,
+    "stop": 4371,
+    "lewat": 1294,
+    "p_kena": 2.462121212121212,
+    "p_stop": 75.25826446280992,
+    "median_hari": 8,
+    "q1": 3,
+    "q3": 14,
+    "harapan": 1.3585130686017601
+   },
+   "fp60": {
+    "n": 5768,
+    "n_efektif": 96,
+    "kena": 285,
+    "stop": 4654,
+    "lewat": 829,
+    "p_kena": 4.941054091539528,
+    "p_stop": 80.68654646324549,
+    "median_hari": 20,
+    "q1": 8,
+    "q3": 34,
+    "harapan": 3.8701047551390912
+   }
+  },
+  {
+   "harga": 252,
+   "pct": 104.8780487804878,
+   "sentuhan": 9,
+   "terakhir": "2023-03-28",
+   "fp": {
+    "n": 5808,
+    "n_efektif": 290,
+    "kena": 143,
+    "stop": 4371,
+    "lewat": 1294,
+    "p_kena": 2.462121212121212,
+    "p_stop": 75.25826446280992,
+    "median_hari": 8,
+    "q1": 3,
+    "q3": 14,
+    "harapan": 1.3585130686017601
+   },
+   "fp60": {
+    "n": 5768,
+    "n_efektif": 96,
+    "kena": 285,
+    "stop": 4654,
+    "lewat": 829,
+    "p_kena": 4.941054091539528,
+    "p_stop": 80.68654646324549,
+    "median_hari": 20,
+    "q1": 8,
+    "q3": 34,
+    "harapan": 3.8701047551390912
+   }
+  }
+ ],
  "musiman": {
-  "n": 26,
-  "naik": 6,
-  "mentah": 23.076923076923077,
-  "tersusut": 24.979440789473685,
-  "bawah": 11.033699683676689,
-  "atas": 42.05192575195679,
-  "median": -1.9607844371088645,
-  "dasar": 33.223684210526315,
-  "total_bulan": 304
+  "n": 24,
+  "naik": 8,
+  "mentah": 33.33333333333333,
+  "tersusut": 33.82456140350877,
+  "bawah": 17.971978688379643,
+  "atas": 53.29404050591954,
+  "median": 0.0,
+  "dasar": 35.78947368421053,
+  "total_bulan": 285
  },
  "sektor": {
   "nama": "Wicaksana Overseas International Tbk",
@@ -126,26 +267,26 @@
   "tengah": 123.0,
   "posisi": null
  },
- "freq": 0,
- "ukuran_order": null,
- "peringkat_value": 937,
- "peringkat_volume": 937,
- "peringkat_freq": 937,
- "porsi_asing": null,
+ "freq": 2,
+ "ukuran_order": 1.0,
+ "peringkat_value": 1,
+ "peringkat_volume": 1,
+ "peringkat_freq": 1,
+ "porsi_asing": 0.0,
  "net_asing_rp": 0,
- "label_fd": null,
- "tiket_avg": null,
- "tiket_avg_med60": null,
- "tiket_lonjakan": null,
+ "label_fd": "F 0% : D 100%",
+ "tiket_avg": 12300.0,
+ "tiket_avg_med60": 41000.0,
+ "tiket_lonjakan": 0.3,
  "asing_net_5h": 0,
  "asing_net_20h": 0,
  "asing_streak": 0,
- "tiket_broker_maks": null,
- "broker_tiket_maks_kode": null,
- "bval_maks": null,
- "nego_blok_rp": null,
+ "tiket_broker_maks": 12300.0,
+ "broker_tiket_maks_kode": "DX",
+ "bval_maks": 12300.0,
+ "nego_blok_rp": 0.0,
  "nego_broker_maks_kode": null,
- "top3_pct": null,
- "number_broker_buysell": null,
- "label_accdist": null
+ "top3_pct": 200,
+ "number_broker_buysell": 1,
+ "label_accdist": "Dist"
 }

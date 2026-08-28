@@ -1,50 +1,191 @@
 {
  "kode": "BIKA",
- "tgl": "2026-08-28",
+ "tgl": "2024-07-01",
  "harga": 55.0,
  "prev": 55.0,
  "chg": 0.0,
- "n": 2739,
+ "n": 2166,
  "mulai": "2015-07-14",
- "ma20": 55.0,
- "ma50": 55.0,
- "ma200": 55.0,
- "atr": 5.1872512424068244e-18,
- "atr_pct": 9.431365895285135e-18,
- "support": [],
- "resistance": [],
- "stop": 52,
- "stop_asal": "fallback5pct",
- "stop_pct": 5.454545454545454,
+ "ma20": 55.7,
+ "ma50": 52.78,
+ "ma200": 57.525,
+ "atr": 0.35279846479035515,
+ "atr_pct": 0.641451754164282,
+ "support": [
+  {
+   "level": 54.0,
+   "sentuhan": 6,
+   "terakhir": "2024-05-28",
+   "dalam_atr": false,
+   "harga": 54
+  },
+  {
+   "level": 51.0,
+   "sentuhan": 2,
+   "terakhir": "2024-03-05",
+   "dalam_atr": false,
+   "harga": 51
+  },
+  {
+   "level": 50.0,
+   "sentuhan": 21,
+   "terakhir": "2024-05-13",
+   "dalam_atr": false,
+   "harga": 50
+  }
+ ],
+ "resistance": [
+  {
+   "level": 56.0,
+   "sentuhan": 27,
+   "terakhir": "2024-06-24",
+   "dalam_atr": false,
+   "harga": 56
+  },
+  {
+   "level": 57.0,
+   "sentuhan": 3,
+   "terakhir": "2024-02-12",
+   "dalam_atr": false,
+   "harga": 57
+  },
+  {
+   "level": 60.0,
+   "sentuhan": 4,
+   "terakhir": "2024-04-24",
+   "dalam_atr": false,
+   "harga": 60
+  }
+ ],
+ "stop": 54,
+ "stop_asal": "klaster",
+ "stop_pct": 1.8181818181818181,
  "er": 0.14285714285714285,
- "er_persentil": 1.5544041450777202,
- "er_n_populasi": 386,
- "likuiditas_median20": 0.0,
+ "er_persentil": 1.4851485148514851,
+ "er_n_populasi": 404,
+ "likuiditas_median20": 5500.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "tipis",
-  "lilin": 2739,
-  "nilai20": 0.0
+  "lilin": 2166,
+  "nilai20": 5500.0
  },
- "beku": 523,
+ "beku": 515,
  "beku_sejak": "2024-07-01",
- "dihitung": "2026-08-28",
- "rsi": 50.963256725330794,
+ "dihitung": "2024-07-01",
+ "rsi": 50.96325672533085,
  "stochrsi": [
-  0.0,
-  0.0
+  1.4691462974008433e-13,
+  9.794308649338955e-14
  ],
- "target": [],
+ "target": [
+  {
+   "harga": 56,
+   "pct": 1.8181818181818181,
+   "sentuhan": 27,
+   "terakhir": "2024-06-24",
+   "fp": {
+    "n": 2145,
+    "n_efektif": 107,
+    "kena": 632,
+    "stop": 1505,
+    "lewat": 8,
+    "p_kena": 29.463869463869464,
+    "p_stop": 70.16317016317016,
+    "median_hari": 1.0,
+    "q1": 1,
+    "q3": 1,
+    "harapan": -0.739987285441831
+   },
+   "fp60": {
+    "n": 2105,
+    "n_efektif": 35,
+    "kena": 615,
+    "stop": 1490,
+    "lewat": 0,
+    "p_kena": 29.216152019002372,
+    "p_stop": 70.78384798099762,
+    "median_hari": 1,
+    "q1": 1,
+    "q3": 1,
+    "harapan": -0.7557762902180956
+   }
+  },
+  {
+   "harga": 57,
+   "pct": 3.6363636363636362,
+   "sentuhan": 3,
+   "terakhir": "2024-02-12",
+   "fp": {
+    "n": 2145,
+    "n_efektif": 107,
+    "kena": 482,
+    "stop": 1644,
+    "lewat": 19,
+    "p_kena": 22.47086247086247,
+    "p_stop": 76.64335664335664,
+    "median_hari": 1.0,
+    "q1": 1,
+    "q3": 2,
+    "harapan": -0.5763933036660309
+   },
+   "fp60": {
+    "n": 2105,
+    "n_efektif": 35,
+    "kena": 465,
+    "stop": 1640,
+    "lewat": 0,
+    "p_kena": 22.090261282660332,
+    "p_stop": 77.90973871733968,
+    "median_hari": 1,
+    "q1": 1,
+    "q3": 2,
+    "harapan": -0.6132584754912548
+   }
+  },
+  {
+   "harga": 60,
+   "pct": 9.090909090909092,
+   "sentuhan": 4,
+   "terakhir": "2024-04-24",
+   "fp": {
+    "n": 2145,
+    "n_efektif": 107,
+    "kena": 238,
+    "stop": 1856,
+    "lewat": 51,
+    "p_kena": 11.095571095571096,
+    "p_stop": 86.52680652680654,
+    "median_hari": 2.0,
+    "q1": 1,
+    "q3": 3,
+    "harapan": -0.5645263827082008
+   },
+   "fp60": {
+    "n": 2105,
+    "n_efektif": 35,
+    "kena": 243,
+    "stop": 1862,
+    "lewat": 0,
+    "p_kena": 11.54394299287411,
+    "p_stop": 88.45605700712589,
+    "median_hari": 2,
+    "q1": 1,
+    "q3": 4,
+    "harapan": -0.5588425825955514
+   }
+  }
+ ],
  "musiman": {
-  "n": 12,
-  "naik": 3,
-  "mentah": 25.0,
-  "tersusut": 25.93984962406015,
-  "bawah": 8.894003962896138,
-  "atas": 53.231033912065996,
-  "median": -1.250000000000001,
-  "dasar": 27.819548872180448,
-  "total_bulan": 133
+  "n": 9,
+  "naik": 5,
+  "mentah": 55.55555555555556,
+  "tersusut": 47.03703703703704,
+  "bawah": 26.664734574402964,
+  "atas": 81.1224570528086,
+  "median": 0.8403361344537785,
+  "dasar": 34.25925925925926,
+  "total_bulan": 108
  },
  "sektor": {
   "nama": "PT Binakarya Jaya Abadi Tbk.",
@@ -106,46 +247,46 @@
   }
  },
  "ma5": 55.0,
- "ma100": 55.0,
- "ma150": 55.0,
+ "ma100": 52.47,
+ "ma150": 53.20666666666666,
  "bb20": {
-  "mid": 55.0,
-  "atas": 55.0,
-  "bawah": 55.0
+  "mid": 55.7,
+  "atas": 56.61651513899117,
+  "bawah": 54.78348486100884
  },
- "posisi_bb": null,
+ "posisi_bb": -0.7638,
  "ichimoku": {
-  "tenkan": 55.0,
+  "tenkan": 55.5,
   "kijun": 55.0,
-  "senkou_a": 55.0,
-  "senkou_b": 55.0,
-  "di_atas_kumo": false
+  "senkou_a": 55.25,
+  "senkou_b": 43.5,
+  "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 0.0,
-  "tengah": 55.0,
-  "posisi": null
+  "kemiringan": 0.20236176715754375,
+  "tengah": 57.953005464480874,
+  "posisi": -0.5025
  },
- "freq": 0,
- "ukuran_order": null,
- "peringkat_value": 127,
- "peringkat_volume": 127,
- "peringkat_freq": 127,
- "porsi_asing": null,
+ "freq": 1,
+ "ukuran_order": 5.0,
+ "peringkat_value": 8,
+ "peringkat_volume": 8,
+ "peringkat_freq": 8,
+ "porsi_asing": 0.0,
  "net_asing_rp": 0,
- "label_fd": null,
- "tiket_avg": null,
- "tiket_avg_med60": null,
- "tiket_lonjakan": null,
+ "label_fd": "F 0% : D 100%",
+ "tiket_avg": 27500.0,
+ "tiket_avg_med60": 110000.0,
+ "tiket_lonjakan": 0.25,
  "asing_net_5h": 0,
  "asing_net_20h": 0,
  "asing_streak": 0,
- "tiket_broker_maks": null,
- "broker_tiket_maks_kode": null,
- "bval_maks": null,
- "nego_blok_rp": null,
+ "tiket_broker_maks": 27500.0,
+ "broker_tiket_maks_kode": "XC",
+ "bval_maks": 27500.0,
+ "nego_blok_rp": 0.0,
  "nego_broker_maks_kode": null,
- "top3_pct": null,
- "number_broker_buysell": null,
- "label_accdist": null
+ "top3_pct": 200,
+ "number_broker_buysell": 0,
+ "label_accdist": "Dist"
 }

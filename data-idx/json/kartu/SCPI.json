@@ -1,50 +1,191 @@
 {
  "kode": "SCPI",
- "tgl": "2026-08-28",
+ "tgl": "2013-01-07",
  "harga": 29000.0,
- "prev": 29000.0,
- "chg": 0.0,
- "n": 5890,
+ "prev": 31250.0,
+ "chg": -7.199999999999996,
+ "n": 2595,
  "mulai": "2002-06-13",
- "ma20": 29000.0,
- "ma50": 29000.0,
- "ma200": 29000.0,
- "atr": 2.0648312961256564e-104,
- "atr_pct": 7.120107917674676e-107,
- "support": [],
- "resistance": [],
- "stop": 27550,
- "stop_asal": "fallback5pct",
- "stop_pct": 5.0,
+ "ma20": 31137.5,
+ "ma50": 32095.0,
+ "ma200": 39403.75,
+ "atr": 230.89593274538382,
+ "atr_pct": 0.7961928715358063,
+ "support": [
+  {
+   "level": 28000.0,
+   "sentuhan": 79,
+   "terakhir": "2011-07-08",
+   "dalam_atr": false,
+   "harga": 28000
+  },
+  {
+   "level": 26050.0,
+   "sentuhan": 24,
+   "terakhir": "2011-09-16",
+   "dalam_atr": false,
+   "harga": 26050
+  },
+  {
+   "level": 25000.0,
+   "sentuhan": 88,
+   "terakhir": "2012-01-12",
+   "dalam_atr": false,
+   "harga": 25000
+  }
+ ],
+ "resistance": [
+  {
+   "level": 31250.0,
+   "sentuhan": 21,
+   "terakhir": "2012-12-27",
+   "dalam_atr": false,
+   "harga": 31250
+  },
+  {
+   "level": 32000.0,
+   "sentuhan": 32,
+   "terakhir": "2011-03-15",
+   "dalam_atr": false,
+   "harga": 32000
+  },
+  {
+   "level": 34000.0,
+   "sentuhan": 2,
+   "terakhir": "2011-01-19",
+   "dalam_atr": false,
+   "harga": 34000
+  }
+ ],
+ "stop": 28000,
+ "stop_asal": "klaster",
+ "stop_pct": 3.4482758620689653,
  "er": 1.0,
  "er_persentil": 100.0,
- "er_n_populasi": 386,
+ "er_n_populasi": 404,
  "likuiditas_median20": 0.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "tipis",
-  "lilin": 5890,
+  "lilin": 2595,
   "nilai20": 0.0
  },
  "beku": 3295,
  "beku_sejak": "2013-01-07",
- "dihitung": "2026-08-28",
+ "dihitung": "2013-01-07",
  "rsi": 10.672390731864027,
  "stochrsi": [
   0.0,
   0.0
  ],
- "target": [],
+ "target": [
+  {
+   "harga": 31250,
+   "pct": 7.758620689655173,
+   "sentuhan": 21,
+   "terakhir": "2012-12-27",
+   "fp": {
+    "n": 2574,
+    "n_efektif": 129,
+    "kena": 530,
+    "stop": 689,
+    "lewat": 1355,
+    "p_kena": 20.59052059052059,
+    "p_stop": 26.767676767676768,
+    "median_hari": 6.0,
+    "q1": 2,
+    "q3": 12,
+    "harapan": 0.6745170538273988
+   },
+   "fp60": {
+    "n": 2534,
+    "n_efektif": 42,
+    "kena": 791,
+    "stop": 1138,
+    "lewat": 605,
+    "p_kena": 31.215469613259668,
+    "p_stop": 44.90923441199685,
+    "median_hari": 12,
+    "q1": 3,
+    "q3": 26,
+    "harapan": 0.8732955937185312
+   }
+  },
+  {
+   "harga": 32000,
+   "pct": 10.344827586206897,
+   "sentuhan": 32,
+   "terakhir": "2011-03-15",
+   "fp": {
+    "n": 2574,
+    "n_efektif": 129,
+    "kena": 442,
+    "stop": 690,
+    "lewat": 1442,
+    "p_kena": 17.17171717171717,
+    "p_stop": 26.806526806526808,
+    "median_hari": 5.0,
+    "q1": 2,
+    "q3": 11,
+    "harapan": 0.8520215416767142
+   },
+   "fp60": {
+    "n": 2534,
+    "n_efektif": 42,
+    "kena": 701,
+    "stop": 1165,
+    "lewat": 668,
+    "p_kena": 27.663772691397,
+    "p_stop": 45.97474348855564,
+    "median_hari": 13,
+    "q1": 3,
+    "q3": 31,
+    "harapan": 1.276433606401219
+   }
+  },
+  {
+   "harga": 34000,
+   "pct": 17.24137931034483,
+   "sentuhan": 2,
+   "terakhir": "2011-01-19",
+   "fp": {
+    "n": 2574,
+    "n_efektif": 129,
+    "kena": 309,
+    "stop": 754,
+    "lewat": 1511,
+    "p_kena": 12.004662004662006,
+    "p_stop": 29.292929292929294,
+    "median_hari": 6,
+    "q1": 2,
+    "q3": 12,
+    "harapan": 1.0596683010476116
+   },
+   "fp60": {
+    "n": 2534,
+    "n_efektif": 42,
+    "kena": 535,
+    "stop": 1262,
+    "lewat": 737,
+    "p_kena": 21.11286503551697,
+    "p_stop": 49.80268350434096,
+    "median_hari": 16,
+    "q1": 5,
+    "q3": 33,
+    "harapan": 1.9228152301118588
+   }
+  }
+ ],
  "musiman": {
-  "n": 25,
-  "naik": 5,
-  "mentah": 20.0,
-  "tersusut": 17.93103448275862,
-  "bawah": 8.860454100652486,
-  "atas": 39.131335536538245,
+  "n": 11,
+  "naik": 2,
+  "mentah": 18.181818181818183,
+  "tersusut": 19.268179712830015,
+  "bawah": 5.136660067100062,
+  "atas": 47.69861375782449,
   "median": 0.0,
-  "dasar": 9.310344827586208,
-  "total_bulan": 290
+  "dasar": 21.25984251968504,
+  "total_bulan": 127
  },
  "sektor": {
   "nama": "PT Organon Pharma Indonesia Tbk",
@@ -105,38 +246,38 @@
    }
   }
  },
- "ma5": 29000.0,
- "ma100": 29000.0,
- "ma150": 29000.0,
+ "ma5": 30800.0,
+ "ma100": 36807.5,
+ "ma150": 38538.333333333336,
  "bb20": {
-  "mid": 29000.0,
-  "atas": 29000.0,
-  "bawah": 29000.0
+  "mid": 31137.5,
+  "atas": 32118.25226229665,
+  "bawah": 30156.74773770335
  },
- "posisi_bb": null,
+ "posisi_bb": -2.1794,
  "ichimoku": {
-  "tenkan": 29000.0,
-  "kijun": 29000.0,
-  "senkou_a": 29000.0,
-  "senkou_b": 29000.0,
+  "tenkan": 30125.0,
+  "kijun": 30125.0,
+  "senkou_a": 30125.0,
+  "senkou_b": 32500.0,
   "di_atas_kumo": false
  },
  "regresi60": {
-  "kemiringan": 0.0,
-  "tengah": 29000.0,
-  "posisi": null
+  "kemiringan": -170.51264240066686,
+  "tengah": 28315.710382513662,
+  "posisi": 0.277
  },
- "freq": 0,
- "ukuran_order": null,
- "peringkat_value": 779,
- "peringkat_volume": 779,
- "peringkat_freq": 779,
- "porsi_asing": null,
+ "freq": 1,
+ "ukuran_order": 5.0,
+ "peringkat_value": 1,
+ "peringkat_volume": 1,
+ "peringkat_freq": 1,
+ "porsi_asing": 0.0,
  "net_asing_rp": 0,
- "label_fd": null,
- "tiket_avg": null,
- "tiket_avg_med60": null,
- "tiket_lonjakan": null,
+ "label_fd": "F 0% : D 100%",
+ "tiket_avg": 14500000.0,
+ "tiket_avg_med60": 15625000.0,
+ "tiket_lonjakan": 0.928,
  "asing_net_5h": 0,
  "asing_net_20h": 0,
  "asing_streak": 0,

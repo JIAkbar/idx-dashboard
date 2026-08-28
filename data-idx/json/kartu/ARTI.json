@@ -1,50 +1,169 @@
 {
  "kode": "ARTI",
- "tgl": "2026-08-28",
+ "tgl": "2024-07-01",
  "harga": 2.0,
  "prev": 2.0,
  "chg": 0.0,
- "n": 5719,
+ "n": 5146,
  "mulai": "2003-05-02",
- "ma20": 2.0,
- "ma50": 2.0,
- "ma200": 2.0,
- "atr": 5.324347215643569e-18,
- "atr_pct": 2.6621736078217846e-16,
+ "ma20": 2.5,
+ "ma50": 2.78,
+ "ma200": 20.4,
+ "atr": 0.3621227189331751,
+ "atr_pct": 18.106135946658757,
  "support": [],
- "resistance": [],
+ "resistance": [
+  {
+   "level": 3.0,
+   "sentuhan": 31,
+   "terakhir": "2024-06-19",
+   "dalam_atr": false,
+   "harga": 3
+  },
+  {
+   "level": 4.0,
+   "sentuhan": 10,
+   "terakhir": "2024-04-19",
+   "dalam_atr": false,
+   "harga": 4
+  },
+  {
+   "level": 5.0,
+   "sentuhan": 19,
+   "terakhir": "2024-03-04",
+   "dalam_atr": false,
+   "harga": 5
+  }
+ ],
  "stop": 1,
  "stop_asal": "fallback5pct",
  "stop_pct": 50.0,
- "er": 0.2653061224489796,
- "er_persentil": 91.19170984455958,
- "er_n_populasi": 386,
- "likuiditas_median20": 0.0,
+ "er": 0.2631578947368421,
+ "er_persentil": 90.34653465346535,
+ "er_n_populasi": 404,
+ "likuiditas_median20": 4380000.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "tipis",
-  "lilin": 5719,
-  "nilai20": 0.0
+  "lilin": 5146,
+  "nilai20": 4380000.0
  },
- "beku": 523,
+ "beku": 515,
  "beku_sejak": "2024-07-01",
- "dihitung": "2026-08-28",
- "rsi": 39.64972452780613,
+ "dihitung": "2024-07-01",
+ "rsi": 39.64972452780619,
  "stochrsi": [
-  50.0,
-  33.333333333333336
+  83.97669118660284,
+  55.98446079106856
  ],
- "target": [],
+ "target": [
+  {
+   "harga": 3,
+   "pct": 50.0,
+   "sentuhan": 31,
+   "terakhir": "2024-06-19",
+   "fp": {
+    "n": 5125,
+    "n_efektif": 256,
+    "kena": 160,
+    "stop": 100,
+    "lewat": 4865,
+    "p_kena": 3.1219512195121952,
+    "p_stop": 1.951219512195122,
+    "median_hari": 10.0,
+    "q1": 6,
+    "q3": 15,
+    "harapan": 0.5853658536585367
+   },
+   "fp60": {
+    "n": 5085,
+    "n_efektif": 85,
+    "kena": 422,
+    "stop": 372,
+    "lewat": 4291,
+    "p_kena": 8.298918387413963,
+    "p_stop": 7.315634218289086,
+    "median_hari": 26.0,
+    "q1": 14,
+    "q3": 40,
+    "harapan": 0.4916420845624385
+   }
+  },
+  {
+   "harga": 4,
+   "pct": 100.0,
+   "sentuhan": 10,
+   "terakhir": "2024-04-19",
+   "fp": {
+    "n": 5125,
+    "n_efektif": 256,
+    "kena": 63,
+    "stop": 100,
+    "lewat": 4962,
+    "p_kena": 1.2292682926829268,
+    "p_stop": 1.951219512195122,
+    "median_hari": 12,
+    "q1": 8,
+    "q3": 17,
+    "harapan": 0.25365853658536586
+   },
+   "fp60": {
+    "n": 5085,
+    "n_efektif": 85,
+    "kena": 224,
+    "stop": 377,
+    "lewat": 4484,
+    "p_kena": 4.405113077679449,
+    "p_stop": 7.413962635201574,
+    "median_hari": 33.5,
+    "q1": 19,
+    "q3": 48,
+    "harapan": 0.6981317600786618
+   }
+  },
+  {
+   "harga": 5,
+   "pct": 150.0,
+   "sentuhan": 19,
+   "terakhir": "2024-03-04",
+   "fp": {
+    "n": 5125,
+    "n_efektif": 256,
+    "kena": 33,
+    "stop": 100,
+    "lewat": 4992,
+    "p_kena": 0.6439024390243903,
+    "p_stop": 1.951219512195122,
+    "median_hari": 14,
+    "q1": 10,
+    "q3": 17,
+    "harapan": -0.009756097560975618
+   },
+   "fp60": {
+    "n": 5085,
+    "n_efektif": 85,
+    "kena": 121,
+    "stop": 377,
+    "lewat": 4587,
+    "p_kena": 2.3795476892822025,
+    "p_stop": 7.413962635201574,
+    "median_hari": 34,
+    "q1": 20,
+    "q3": 49,
+    "harapan": -0.1376597836774831
+   }
+  }
+ ],
  "musiman": {
-  "n": 24,
-  "naik": 4,
-  "mentah": 16.666666666666664,
-  "tersusut": 17.275985663082434,
-  "bawah": 6.678568000728924,
-  "atas": 35.85347038786943,
+  "n": 22,
+  "naik": 5,
+  "mentah": 22.727272727272727,
+  "tersusut": 22.49718785151856,
+  "bawah": 10.122890794820355,
+  "atas": 43.44035606295935,
   "median": 0.0,
-  "dasar": 19.71326164874552,
-  "total_bulan": 279
+  "dasar": 21.653543307086615,
+  "total_bulan": 254
  },
  "sektor": {
   "nama": "Ratu Prabu Energi Tbk",
@@ -105,47 +224,47 @@
    }
   }
  },
- "ma5": 2.0,
- "ma100": 2.0,
- "ma150": 2.0,
+ "ma5": 1.8,
+ "ma100": 3.56,
+ "ma150": 10.533333333333333,
  "bb20": {
-  "mid": 2.0,
-  "atas": 2.0,
-  "bawah": 2.0
+  "mid": 2.5,
+  "atas": 3.6832159566199234,
+  "bawah": 1.3167840433800768
  },
- "posisi_bb": null,
+ "posisi_bb": -0.4226,
  "ichimoku": {
   "tenkan": 2.0,
   "kijun": 2.0,
   "senkou_a": 2.0,
-  "senkou_b": 2.0,
+  "senkou_b": 2.5,
   "di_atas_kumo": false
  },
  "regresi60": {
-  "kemiringan": 0.0,
-  "tengah": 2.0,
-  "posisi": null
+  "kemiringan": -0.01772714642956377,
+  "tengah": 2.3437158469945354,
+  "posisi": -0.7928
  },
- "freq": 0,
- "ukuran_order": null,
- "peringkat_value": 59,
- "peringkat_volume": 59,
- "peringkat_freq": 59,
- "porsi_asing": null,
+ "freq": 3164,
+ "ukuran_order": 6.243,
+ "peringkat_value": 5,
+ "peringkat_volume": 5,
+ "peringkat_freq": 4,
+ "porsi_asing": 0.0,
  "net_asing_rp": 0,
- "label_fd": null,
- "tiket_avg": null,
- "tiket_avg_med60": null,
- "tiket_lonjakan": null,
+ "label_fd": "F 0% : D 100%",
+ "tiket_avg": 1248.61,
+ "tiket_avg_med60": 5463.19,
+ "tiket_lonjakan": 0.2285,
  "asing_net_5h": 0,
  "asing_net_20h": 0,
  "asing_streak": 0,
- "tiket_broker_maks": null,
- "broker_tiket_maks_kode": null,
- "bval_maks": null,
- "nego_blok_rp": null,
+ "tiket_broker_maks": 68600.0,
+ "broker_tiket_maks_kode": "CC",
+ "bval_maks": 2775800.0,
+ "nego_blok_rp": 0.0,
  "nego_broker_maks_kode": null,
- "top3_pct": null,
- "number_broker_buysell": null,
- "label_accdist": null
+ "top3_pct": 184.59,
+ "number_broker_buysell": 3,
+ "label_accdist": "Dist"
 }
