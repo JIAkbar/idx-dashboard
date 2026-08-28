@@ -200,3 +200,25 @@ proyek ini, dan tabel di atas ikut menipu selama beberapa hari.
 Pelajarannya untuk kolom "Otomatis?": **status di kolom itu wajib berasal dari
 run terakhir yang benar-benar diperiksa, bukan dari niat workflow-nya.**
 "⚙️ Actions" tanpa memeriksa run terakhir adalah klaim, bukan fakta.
+
+---
+
+## Diperbarui 28 Agustus 2026 — rantai panen → halaman DISAMBUNG PENUH (audit atas keluhan Johan *"bnyk yang setelah panen data, page-page itu tidak saling terhubung"*)
+
+Dua bat lokal (`JALANKAN_PANEN_SORE.bat` 18:00 & `JALANKAN_BUKA_LAPTOP.bat` ONLOGON) kini menjalankan SEMUA turunan halaman — sekali panen, semua halaman segar. Blok [E] pembangun (28 Agu pagi) + blok [E2] hasil audit (28 Agu siang):
+
+| Sumber/turunan | Halaman pemakai | Asal data | Isi terakhir | Berkas | Otomatis? | Pemicu |
+|---|---|---|---|---|---|---|
+| `harian_papan/<tgl>.json` | Harian Papan | ohlcv_stockbit + profil (nol jaringan) | **2026-08-27**, 962 emiten, 30 tanggal | 31 | ⚙️ kedua bat | `node app/scripts/bangun-harian-papan.mjs` |
+| `jago_papan/terbaru.json` | Jago Papan | idem | **2026-08-27**, 962 emiten | 1 | ⚙️ kedua bat | `node app/scripts/bangun-jago-papan.mjs` |
+| `ipo.json` | IPO Papan | profil_stockbit + ohlcv | 28 Agu | 1 | ⚙️ kedua bat | `node app/scripts/bangun-ipo.mjs` |
+| `pola_screener.json` | Screener (kolom Pola) | ohlc penuh | 28 Agu | 1 | ⚙️ kedua bat | `npx vite-node scripts/pola-screener.ts` (dari app/) |
+| `aliran_investor.json` | Broker Summary tab Flow (Aliran Investor) | arsip mentah asing (nol jaringan) | **2026-08-27** (reguler+non-reguler) | 1 | ⚙️ kedua bat [E2] | `python scripts/bangun_aliran_investor.py` |
+| `bidoffer.json` | Kuli Papan | arsip mentah asing termuda BERISI | **2026-08-27**, 833 emiten | 1 | ⚙️ kedua bat [E2] | `python scripts/bangun_bidoffer.py` |
+| `harga_terakhir.json` | Kalkulator (cadangan harga) | ohlc close terakhir (nol jaringan) | 28 Agu, 962 emiten | 1 | ⚙️ kedua bat [E2] | `python scripts/bangun_harga_terakhir.py` (BARU — dulu tanpa penulis) |
+| `grup_konglomerat.json` | Deret Konglomerat | kurasi + ohlc (nol jaringan) | 28 Agu | 1 | ⚙️ kedua bat [E2] | `python scripts/petakan_grup.py` |
+| `keystats_stockbit/` | Kuli Papan, rasio tambahan | Stockbit (token) | **23 Agu — TERTAHAN token mati 28 Agu**, panen susulan begitu token disemai | 963 | ⚙️ kedua bat [E2] (guard arsip-hari-ini) | `python scripts/panen_keystats_stockbit.py --semua --jeda 0.4` |
+| `info_stockbit/` | Neo Papan (profil) | Stockbit (token) | **21 Agu — TERTAHAN token** idem | 963 | ⚙️ kedua bat [E2] (guard) | `python scripts/panen_info_stockbit.py --semua --jeda 0.4` |
+| `rekomendasi/<tgl>.json` | Screener tab Riwayat & Win Rate | screener+kartu+ohlc (nol jaringan), SEKALI-TULIS anti-edit | **2026-08-27**, 80 baris / 5 preset | 2 | ⚙️ kedua bat [E] | `python scripts/riset/rekap_preset.py` |
+
+Tetap manual sesuai sifatnya (bukan putus): kepemilikan KSEI (bulanan), pengendali (per laporan kuartalan), bt/ win-rate fitur (beku by design), ipot_arsip (parkir C3). Sapuan OHLC-Yahoo 963 kini DILEWATI dari jalur Buka Laptop (`LEWATI_OHLC_YAHOO=1` — Stockbit utama, Yahoo cadangan); jalur mandiri `JALANKAN_OTOMATIS.bat` tetap utuh sebagai cadangan.
