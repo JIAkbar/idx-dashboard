@@ -15,7 +15,7 @@ Yang dilakukan (tanpa refresh, tanpa mencetak isi token):
 Pakai:
     python scripts/cek_token.py              # sekali
     python scripts/cek_token.py --tunggu 60  # ulangi tiap 60 detik sampai token baru HIDUP
-    python scripts/cek_token.py --semai      # ambil pasangan baru dari app/.env.local (hasil
+    python scripts/cek_token.py --semai      # SYARAT: TUTUP semua tab Stockbit dulu (reuse rotasi = keluarga sesi dicabut)      # ambil pasangan baru dari app/.env.local (hasil
                                              # cek_token_console.js), cadangkan berkas lama,
                                              # tulis ke ~/.papan, lalu uji hidup
 Kode keluar: 0 token hidup · 1 token mati/kedaluwarsa · 2 berkas tidak ada/rusak

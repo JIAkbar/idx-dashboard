@@ -13,6 +13,7 @@ import { hitungYtdPct } from '../../lib/dasbor/ytd'
 import { fN, fp, fmtNF } from '../../lib/dasbor/format'
 import { useChartCanvas } from '../../lib/dasbor/useChartJs'
 import { useIhsgBuka, useIhsgOhlc, type BarisOhlc } from '../../lib/dasbor/ihsgOhlc'
+import { useHargaLive } from '../../lib/dasbor/hargaLive'
 import { useTheme } from '../../context/ThemeContext'
 import { IkonMenu, IKON_PERINGATAN, IKON_GLOBE, IKON_PENGGARIS, IKON_GRAFIK_BATANG } from '../../components/dasbor/IkonMenu'
 import { LilinHarian } from '../../components/dasbor/LilinHarian'
@@ -495,6 +496,11 @@ export function PapanIhsg({ hari, tanggalTersedia, buka, kepala, tanpaMeta }: {
 }) {
   const naik = hari.ihsg_pct >= 0
   const ytdPct = hitungYtdPct(hari.ihsg_value, tanggalTersedia)
+  /* Harga berjalan dari proxy server PAPAN (akun kedua, keputusan Johan
+   * 28 Agu). null saat gagal/dev lokal — chip LIVE hanya tampil bila hidup
+   * dan nilainya beda dari penutupan resmi yang sedang dipajang. */
+  const live = useHargaLive('IHSG', 60)
+  const liveBeda = live !== null && Math.round(live.close * 100) !== Math.round(hari.ihsg_value * 100)
   // Perubahan poin dihitung dari ihsg_prev, bukan dibaca dari ihsg_change:
   // ruas itu bolong di 38 dari 93 berkas harian (lihat dataHarian.ts).
   const delta = hari.ihsg_prev == null ? null : hari.ihsg_value - hari.ihsg_prev
@@ -525,6 +531,14 @@ export function PapanIhsg({ hari, tanggalTersedia, buka, kepala, tanpaMeta }: {
           <span className={`chip${ytdPct === null ? '' : ytdPct >= 0 ? ' up' : ' dn'}`}>
             YTD {ytdPct === null ? '—' : fp(ytdPct)}
           </span>
+          {liveBeda && (
+            <span
+              className={`chip ${live.pct != null && live.pct >= 0 ? 'up' : 'dn'}`}
+              title="Harga berjalan lewat proxy PAPAN — tertunda ±1 menit, bukan angka penutupan resmi"
+            >
+              LIVE {fN(live.close)}{live.pct != null ? ` (${fp(live.pct)})` : ''}
+            </span>
+          )}
           {hari.ihsg_high != null && hari.ihsg_low != null && (
             <span className="chip warn">
               Tertinggi {fN(hari.ihsg_high)} · Terendah {fN(hari.ihsg_low)}

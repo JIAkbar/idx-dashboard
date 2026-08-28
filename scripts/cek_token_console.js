@@ -36,7 +36,7 @@
   else if (ka.iat && (kini - ka.iat) < 3600) console.log("%cTOKEN BARU (terbit < 1 jam lalu)", "color:#2a9d5c;font-weight:bold");
 
   const env = `STOCKBIT_TOKEN=${access}\nSTOCKBIT_REFRESH_TOKEN=${refresh}\n`;
-  const selesai = () => console.log("%cDua baris .env.local sudah di clipboard → tempel ke app/.env.local (ganti baris lama), lalu: python scripts/cek_token.py --semai", "color:#2a9d5c");
+  const selesai = () => console.log("%cDua baris .env.local sudah di clipboard → TUTUP SEMUA TAB STOCKBIT dulu (refresh token sekali-pakai — tab yang masih hidup memutar rantai yang sama dan server MENCABUT SATU KELUARGA sesi; insiden 24 & 28 Agu), tempel ke app/.env.local (ganti baris lama), lalu: python scripts/cek_token.py --semai", "color:#2a9d5c");
   if (typeof copy === "function") { copy(env); selesai(); }
   else if (navigator.clipboard) navigator.clipboard.writeText(env).then(selesai, () => console.warn("clipboard ditolak — klik halaman dulu lalu ulangi"));
 })();

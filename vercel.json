@@ -1,6 +1,9 @@
 {
   "buildCommand": "cd app && npm install && npm run build",
   "outputDirectory": "app/dist",
+  "crons": [
+    { "path": "/api/live-refresh", "schedule": "0 */12 * * *" }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",
