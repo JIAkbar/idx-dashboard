@@ -43,7 +43,7 @@ const INFO_WHALES: ItemInfoIndikator[] = [
   { nama: 'Bubble', isi: 'Lingkaran pada broker yang net beli/jualnya MENYIMPANG jauh dari kebiasaan pasar hari itu (outlier; ambang diatur slider z). Hijau = net beli, merah = net jual; makin besar lingkaran makin besar uangnya. Pada zoom bertahun-tahun hanya outlier terbesar yang digambar supaya tidak jadi kabut.' },
   { nama: 'Footprint', isi: 'Sel per level harga per hari — tiap broker ditempatkan di harga rata-rata beli/jualnya hari itu. Ini hampiran dari data harian, bukan rincian transaksi per level. Hanya tersedia di mode Harian.' },
   { nama: 'Grid', isi: 'Garis bantu chart. Slider persen di sampingnya mengatur keburamannya; matikan bila terasa ramai.' },
-  { nama: 'Auto', isi: 'Satu klik kembali ke pandangan pas: saat Footprint aktif menyempit ke jendela yang selnya terbaca, selain itu menampilkan seluruh riwayat. Skala harga ikut dikembalikan ke otomatis.' },
+  { nama: 'Auto', isi: 'Satu klik kembali ke pandangan bawaan ±1 tahun terakhir (saat Footprint aktif: menyempit ke jendela yang selnya terbaca). Riwayat lama tetap termuat — geser chart ke kiri untuk melihatnya. Skala harga ikut dikembalikan ke otomatis.' },
 ]
 
 /**
@@ -206,8 +206,12 @@ export default function WhalesPapan() {
       if (hanyaBilaSempit && skala.options().barSpacing >= BAR_SPACING_MIN) return
       const muat = Math.max(10, Math.floor(skala.width() / (BAR_SPACING_MIN * 1.3)) - 2)
       skala.setVisibleLogicalRange({ from: Math.max(0, n - muat), to: n + 2 })
-    } else {
-      skala.fitContent()
+    } else if (n > 0) {
+      // BUKAN fitContent (Johan 28 Agu: "buat default view nya 1Y supaya
+      // tidak memanjang, tapi bisa user geser untuk lihat tahun-tahun
+      // sebelumnya") — Auto kembali ke jendela default ±1 tahun bursa;
+      // riwayat penuh tetap termuat, tinggal digeser ke kiri.
+      skala.setVisibleLogicalRange({ from: Math.max(0, n - JENDELA_AWAL), to: n + 2 })
     }
   }
 
@@ -688,7 +692,8 @@ export default function WhalesPapan() {
               placeholder="Cari emiten: BUMI, BBCA…"
             />
           </div>
-          <strong>{kode}</strong>
+          {/* Kode TIDAK diulang di samping input (Johan 28 Agu: "kode Emiten
+              cukup 1 saja yang di kolom yang di tampilkan"). */}
           {tidakDiperdagangkan(barisKartu) && (
             <LencanaBeku beku={barisKartu?.beku} sejak={barisKartu?.beku_sejak} />
           )}
@@ -818,7 +823,7 @@ export default function WhalesPapan() {
           className="chip-t"
           title={footprintAktif
             ? 'Zoom otomatis ke jendela terakhir yang sel footprint-nya terbaca'
-            : 'Zoom otomatis: tampilkan seluruh riwayat'}
+            : 'Kembali ke pandangan 1 tahun terakhir — geser kiri untuk riwayat lama'}
           onClick={() => zoomOtomatis(footprintAktif)}
         >
           Auto
