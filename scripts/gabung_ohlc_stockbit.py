@@ -67,17 +67,140 @@ def peta_stockbit(sb: dict) -> dict[str, list]:
     }
 
 
+# Lompatan harga sehari yang MUSTAHIL menurut aturan bursa. Batas ARA/ARB
+# harian IDX paling longgar pun jauh di bawah 100%, jadi >300% cuma punya dua
+# sebab — dan MEMBEDAKANNYA adalah seluruh inti fungsi di bawah:
+#
+#   (a) BAR RUSAK dari hulu — harga melonjak lalu KEMBALI ke level semula.
+#       BCIC 2006-07-11: close 560 -> 5.500.000 (volume 26 lot) selama
+#       beberapa hari, lalu balik 560. Terbukti ada di `ohlcv_stockbit/`
+#       sendiri, bukan lahir dari penggabungan ini.
+#   (b) REVERSE SPLIT yang tak tersesuaikan — harga melonjak lalu MENETAP.
+#       BNLI 2004-06-08: 24 -> 518 dan tak pernah kembali. Ini angka SAH.
+#
+# Versi pertama pagar ini cuma mengukur besar lompatan, dan itu SALAH TOTAL:
+# diukur sebelum dijalankan, ia akan membuang 93-98% riwayat BNGA, BNLI,
+# SIPD, APIC — seluruh bar sesudah titik reverse split, karena tiap bar
+# dibandingkan dengan bar sah terakhir yang tertinggal di level lama.
+# 28.588 bar dari 33 emiten akan lenyap tanpa satu pun galat. Pengukuran
+# sebelum-jalan itu yang menyelamatkannya, bukan review kode.
+MAKS_LOMPATAN = 3.0
+# Berapa bar sesudah lompatan yang dipakai memutuskan (a) atau (b).
+JENDELA_PERIKSA = 20
+# Level dianggap "kembali" bila median jendela itu lebih dekat ke level LAMA
+# daripada ke level baru, dengan margin ini.
+AMBANG_KEMBALI = 0.5
+
+
+def _median(v: list[float]) -> float:
+    s = sorted(v)
+    n = len(s)
+    return s[n // 2] if n % 2 else (s[n // 2 - 1] + s[n // 2]) / 2
+
+
+def buang_lompatan_mustahil(baris: list[list]) -> tuple[list[list], list[str]]:
+    """Buang bar RUSAK (lonjakan yang kembali), pertahankan reverse split.
+
+    Untuk tiap lompatan >MAKS_LOMPATAN pada bar i, lihat ke mana level
+    menetap sesudahnya: kalau median JENDELA_PERIKSA bar berikutnya lebih
+    dekat ke level SEBELUM lompatan, seluruh sisipan itu bar rusak dan
+    dibuang; kalau menetap di level baru, itu aksi korporasi dan
+    DIPERTAHANKAN apa adanya.
+    """
+    if len(baris) < 3:
+        return baris, []
+    keluar: list[list] = [baris[0]]
+    dibuang: list[str] = []
+    i = 1
+    while i < len(baris):
+        b = baris[i]
+        c0, c1 = keluar[-1][4], b[4]
+        try:
+            lompat = c0 and c1 and abs(float(c1) / float(c0) - 1) > MAKS_LOMPATAN
+        except (TypeError, ValueError, ZeroDivisionError):
+            lompat = False
+        if not lompat:
+            keluar.append(b)
+            i += 1
+            continue
+
+        # Ke mana level menetap? Median bar-bar sesudah titik lompatan.
+        # Jendela dimulai dari i+1: bar yang sedang DIADILI tak boleh ikut
+        # menentukan vonisnya sendiri. Versi pertama memasukkannya, dan
+        # median jadi tertarik ke nilai rusak sehingga spike terbaca sebagai
+        # "level baru" dan lolos — swauji yang menangkapnya.
+        depan = [float(x[4]) for x in baris[i + 1:i + 1 + JENDELA_PERIKSA] if x[4]]
+        if not depan:
+            keluar.append(b)
+            i += 1
+            continue
+        med = _median(depan)
+        lama, baru_ = float(c0), float(c1)
+        jarak_lama = abs(med / lama - 1) if lama else 9e9
+        jarak_baru = abs(med / baru_ - 1) if baru_ else 9e9
+
+        if jarak_baru <= jarak_lama + AMBANG_KEMBALI:
+            # Menetap di level baru -> aksi korporasi. Pertahankan, dan
+            # jadikan bar ini acuan berikutnya supaya sisa riwayat aman.
+            keluar.append(b)
+            i += 1
+            continue
+
+        # Kembali ke level lama -> rusak. Buang bar ini dan lanjutannya
+        # selama masih jauh dari level lama.
+        while i < len(baris):
+            cx = baris[i][4]
+            try:
+                masih = cx and abs(float(cx) / lama - 1) > MAKS_LOMPATAN
+            except (TypeError, ValueError, ZeroDivisionError):
+                masih = False
+            if not masih:
+                break
+            dibuang.append(baris[i][0])
+            i += 1
+    return keluar, dibuang
+
+
+def endus_bimodal(baris: list[list]) -> int:
+    """Berapa bar yang harganya >100x MEDIAN riwayat emiten ini.
+
+    Pagar spike di atas menangani lonjakan yang KEMBALI. Ada kerusakan lain
+    yang tak tertangani olehnya dan sengaja TIDAK ditambal di sini: harga
+    yang BOLAK-BALIK antara dua level ratusan kali lipat selama bertahun-
+    tahun. BCIC: 2.065 dari 6.406 bar berselang-seling 560 <-> 5.500.000
+    sepanjang 2006-2010 -- median jendela jadi campuran, jadi pagar spike tak
+    bisa memutuskan mana yang sah.
+
+    Membuang 32% riwayat satu emiten adalah keputusan pemilik data, bukan
+    keputusan skrip. Fungsi ini hanya MENGHITUNG dan pemanggilnya MELAPOR,
+    supaya kerusakan yang tak bisa ditambal otomatis tetap terlihat tiap
+    panen alih-alih tenggelam.
+    """
+    harga = [float(b[4]) for b in baris if b[4]]
+    if len(harga) < 50:
+        return 0
+    s = sorted(harga)
+    med = s[len(s) // 2]
+    if med <= 0:
+        return 0
+    return sum(1 for h in harga if h > med * 100)
+
+
 def gabung(bar_yahoo: list[list], peta_sb: dict[str, list]) -> tuple[list[list], dict]:
     hasil: dict[str, list] = {r[0]: list(r) for r in bar_yahoo}
     lama = set(hasil)
     for tgl, b in peta_sb.items():
         hasil[tgl] = list(b)
     baris = [hasil[t] for t in sorted(hasil)]
+    baris, dibuang = buang_lompatan_mustahil(baris)
     return baris, {
         "sebelum": len(bar_yahoo),
         "sesudah": len(baris),
         "tambahan": len(baris) - len(bar_yahoo),
         "hanya_yahoo": len(lama - set(peta_sb)),
+        "bar_mustahil": len(dibuang),
+        "tgl_mustahil": dibuang[:5],
+        "bar_bimodal": endus_bimodal(baris),
     }
 
 
@@ -92,7 +215,20 @@ def swauji() -> int:
     assert st["tambahan"] == 1 and st["hanya_yahoo"] == 1
     ulang, _ = gabung(y, sb)
     assert ulang == baris, "gabung dari sumber sama harus idempoten"
-    print("swauji OK — 5/5 assert lulus")
+
+    # Pagar bar mustahil (28 Agu 2026): bar 5.500.000 di tengah deret 560
+    # WAJIB terbuang, dan bar sehat sesudahnya WAJIB bertahan — pembanding
+    # memakai bar sah terakhir, bukan bar rusak.
+    rusak = [["2006-07-10", 560, 560, 560, 560, 181],
+             ["2006-07-11", 5500000, 5500000, 5000000, 5500000, 26],
+             ["2006-07-12", 560, 560, 560, 560, 13]]
+    bersih, dibuang = buang_lompatan_mustahil(rusak)
+    assert [r[0] for r in bersih] == ["2006-07-10", "2006-07-12"], bersih
+    assert dibuang == ["2006-07-11"], dibuang
+    # Gerak besar yang MASIH mungkin (ARA beruntun, +250%) tak boleh terbuang.
+    wajar = [["2020-01-02", 100, 100, 100, 100, 1], ["2020-01-03", 350, 350, 350, 350, 1]]
+    assert buang_lompatan_mustahil(wajar)[1] == [], "gerak 250% bukan bar rusak"
+    print("swauji OK — 8/8 assert lulus")
     return 0
 
 
@@ -109,6 +245,8 @@ def main() -> int:
     n_tulis = n_lewat = 0
     tot_sebelum = tot_sesudah = tot_hanya_yahoo = 0
     terpanjang: list[tuple[int, str]] = []
+    tot_mustahil = 0
+    rusak_berat: list[tuple[str, int, int]] = []
     for p_sb in sorted(DIR_SB.glob("*.json")):
         kode = p_sb.stem
         if kode in LEWATI:
@@ -130,6 +268,9 @@ def main() -> int:
         tot_hanya_yahoo += st["hanya_yahoo"]
         if st["tambahan"]:
             terpanjang.append((st["tambahan"], kode))
+        tot_mustahil += st["bar_mustahil"]
+        if st["bar_bimodal"]:
+            rusak_berat.append((kode, st["bar_bimodal"], st["sesudah"]))
         if not a.kering:
             oh["d"] = baris
             oh["n"] = len(baris)
@@ -146,6 +287,14 @@ def main() -> int:
     print(f"bar sesudah          : {tot_sesudah:,}  (+{tot_sesudah - tot_sebelum:,})")
     print(f"bar hanya ada di Yahoo (diselamatkan): {tot_hanya_yahoo:,}")
     print("tambahan terbanyak   : " + ", ".join(f"{k} +{n:,}" for n, k in terpanjang[:8]))
+    if tot_mustahil:
+        print(f"bar rusak dibuang    : {tot_mustahil:,} (lonjakan yang kembali ke level semula)")
+    if rusak_berat:
+        # Dilaporkan, TIDAK ditambal — lihat docstring endus_bimodal().
+        print()
+        print("!! KERUSAKAN SISTEMIK yang TIDAK ditambal (keputusan pemilik data):")
+        for k, n, m in sorted(rusak_berat, key=lambda x: -x[1])[:10]:
+            print(f"   {k}: {n:,} dari {m:,} bar berharga >100x median riwayatnya")
     if a.kering:
         print("\n(kering — tidak menulis)")
     return 0
