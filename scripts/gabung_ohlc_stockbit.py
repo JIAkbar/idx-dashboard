@@ -90,6 +90,19 @@ JENDELA_PERIKSA = 20
 # Level dianggap "kembali" bila median jendela itu lebih dekat ke level LAMA
 # daripada ke level baru, dengan margin ini.
 AMBANG_KEMBALI = 0.5
+# Hari bursa dianggap sah bila SEKIAN emiten Stockbit punya bar di tanggal itu.
+# 30 dari ~960: cukup rendah untuk memasukkan hari sepi, cukup tinggi untuk
+# menolak tanggal yang cuma dimiliki segelintir berkas (bar hantu hari libur).
+MIN_EMITEN_HARI_BURSA = 30
+# Di atas harga ini, satu lembar saham praktis mustahil di IDX — hampir pasti
+# nominal lama yang tak tersesuaikan. DILAPORKAN, tidak ditambal.
+HARGA_MUSTAHIL = 1_000_000
+# Beku selama ini (hari bursa berturut, close tak bergerak) baru layak
+# dilaporkan. Ambang 200 dicoba lebih dulu dan MEMBANJIR — belasan emiten
+# muncul cuma karena suspensi 1-2 tahun, yang di IDX biasa saja; laporan yang
+# membanjir sama saja dengan laporan yang diabaikan. 1.500 hari bursa ~ enam
+# tahun: cukup luar biasa untuk pantas dilihat manusia.
+BEKU_LAYAK_LAPOR = 1500
 
 
 def _median(v: list[float]) -> float:
@@ -161,37 +174,6 @@ def buang_lompatan_mustahil(baris: list[list]) -> tuple[list[list], list[str]]:
     return keluar, dibuang
 
 
-def endus_bimodal(baris: list[list]) -> int:
-    """Berapa bar yang harganya >100x MEDIAN riwayat emiten ini.
-
-    Pagar spike di atas menangani lonjakan yang KEMBALI. Ada kerusakan lain
-    yang tak tertangani olehnya dan sengaja TIDAK ditambal di sini: harga
-    yang BOLAK-BALIK antara dua level ratusan kali lipat selama bertahun-
-    tahun. BCIC: 2.065 dari 6.406 bar berselang-seling 560 <-> 5.500.000
-    sepanjang 2006-2010 -- median jendela jadi campuran, jadi pagar spike tak
-    bisa memutuskan mana yang sah.
-
-    Membuang 32% riwayat satu emiten adalah keputusan pemilik data, bukan
-    keputusan skrip. Fungsi ini hanya MENGHITUNG dan pemanggilnya MELAPOR,
-    supaya kerusakan yang tak bisa ditambal otomatis tetap terlihat tiap
-    panen alih-alih tenggelam.
-    """
-    harga = [float(b[4]) for b in baris if b[4]]
-    if len(harga) < 50:
-        return 0
-    s = sorted(harga)
-    med = s[len(s) // 2]
-    if med <= 0:
-        return 0
-    return sum(1 for h in harga if h > med * 100)
-
-
-# Hari bursa dianggap sah bila SEKIAN emiten Stockbit punya bar di tanggal itu.
-# 30 dari ~960: cukup rendah untuk memasukkan hari sepi, cukup tinggi untuk
-# menolak tanggal yang cuma dimiliki segelintir berkas.
-MIN_EMITEN_HARI_BURSA = 30
-
-
 def kalender_bursa(dir_sb: Path) -> tuple[set[str], str]:
     """Himpunan hari bursa + tanggal termuda, dibangun dari arsip Stockbit.
 
@@ -228,6 +210,50 @@ def kalender_bursa(dir_sb: Path) -> tuple[set[str], str]:
     return {t for t, n in hitung.items() if n >= MIN_EMITEN_HARI_BURSA}, termuda
 
 
+
+def endus_anomali(baris: list[list]) -> dict:
+    """Laporkan ANOMALI riwayat harga — dan sebutkan JENISnya, jangan memvonis.
+
+    Versi pertama fungsi ini (`endus_bimodal`) menghitung bar yang harganya
+    >100x median seumur hidup dan melaporkannya sebagai "kerusakan sistemik".
+    Itu SALAH, dan hampir berujung menimpa data yang benar:
+
+    - MLPT tertandai 23 bar "rusak"; dibandingkan ke cadangan Yahoo, arsip
+      kita 5.250 dan Yahoo 5.241 — arsipnya BENAR. Yang salah pengendusnya:
+      emiten yang harganya memang melonjak ratusan kali (median seumur hidup
+      45, harga kini 5.250) selalu tertandai.
+    - BCIC tertandai 2.065 bar. Diperiksa per tahun: 2000-2008 berharga 6-35
+      JUTA per lembar, 2009-2020 tepat 560 selama 12 tahun, 2021+ normal
+      78-965. Itu bukan bar acak melainkan riwayat emiten yang kolaps lalu
+      disuspensi bertahun-tahun lalu relisting — pola yang butuh mata manusia,
+      bukan ambang.
+
+    Jadi fungsi ini sekarang MELAPORKAN dua jenis anomali apa adanya dan tak
+    menyebut satu pun "rusak":
+
+    - `harga_ekstrem`: bar di atas HARGA_MUSTAHIL. Batas atas fraksi IDX jauh
+      di bawah ini; harga sebesar itu hampir pasti nominal lama yang tak
+      tersesuaikan, tapi keputusannya tetap milik pemilik data.
+    - `beku_terpanjang`: berapa hari BERTURUT closenya tak bergerak sama
+      sekali. Suspensi panjang sah dan sering; angkanya dilaporkan supaya
+      terlihat, bukan supaya dibuang.
+    """
+    harga = [(b[0], float(b[4])) for b in baris if b[4]]
+    if len(harga) < 50:
+        return {"harga_ekstrem": 0, "beku_terpanjang": 0}
+
+    ekstrem = sum(1 for _, h in harga if h > HARGA_MUSTAHIL)
+
+    beku = terpanjang = 1
+    for i in range(1, len(harga)):
+        if harga[i][1] == harga[i - 1][1]:
+            beku += 1
+            terpanjang = max(terpanjang, beku)
+        else:
+            beku = 1
+    return {"harga_ekstrem": ekstrem, "beku_terpanjang": terpanjang if terpanjang > 1 else 0}
+
+
 def gabung(bar_yahoo: list[list], peta_sb: dict[str, list],
            hari_bursa: set[str] | None = None, sejak: str | None = None) -> tuple[list[list], dict]:
     hasil: dict[str, list] = {r[0]: list(r) for r in bar_yahoo}
@@ -253,7 +279,7 @@ def gabung(bar_yahoo: list[list], peta_sb: dict[str, list],
         "hanya_yahoo": len(lama - set(peta_sb)),
         "bar_mustahil": len(dibuang),
         "tgl_mustahil": dibuang[:5],
-        "bar_bimodal": endus_bimodal(baris),
+        "anomali": endus_anomali(baris),
         "bar_hantu": hantu,
     }
 
@@ -329,8 +355,9 @@ def main() -> int:
             terpanjang.append((st["tambahan"], kode))
         tot_mustahil += st["bar_mustahil"]
         tot_hantu += st["bar_hantu"]
-        if st["bar_bimodal"]:
-            rusak_berat.append((kode, st["bar_bimodal"], st["sesudah"]))
+        an = st["anomali"]
+        if an["harga_ekstrem"] or an["beku_terpanjang"] >= BEKU_LAYAK_LAPOR:
+            rusak_berat.append((kode, an, st["sesudah"]))
         if not a.kering:
             oh["d"] = baris
             oh["n"] = len(baris)
@@ -354,9 +381,14 @@ def main() -> int:
     if rusak_berat:
         # Dilaporkan, TIDAK ditambal — lihat docstring endus_bimodal().
         print()
-        print("!! KERUSAKAN SISTEMIK yang TIDAK ditambal (keputusan pemilik data):")
-        for k, n, m in sorted(rusak_berat, key=lambda x: -x[1])[:10]:
-            print(f"   {k}: {n:,} dari {m:,} bar berharga >100x median riwayatnya")
+        print("ANOMALI riwayat harga — DILAPORKAN, tidak ditambal (butuh mata manusia):")
+        for k, an, m in sorted(rusak_berat, key=lambda x: -x[1]["harga_ekstrem"])[:12]:
+            bag = []
+            if an["harga_ekstrem"]:
+                bag.append(f"{an['harga_ekstrem']:,} bar di atas Rp {HARGA_MUSTAHIL:,}/lembar")
+            if an["beku_terpanjang"] >= BEKU_LAYAK_LAPOR:
+                bag.append(f"beku {an['beku_terpanjang']:,} hari berturut")
+            print(f"   {k} (dari {m:,} bar): " + "; ".join(bag))
     if a.kering:
         print("\n(kering — tidak menulis)")
     return 0
