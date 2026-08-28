@@ -94,7 +94,22 @@ const fileOhlc = readdirSync(DIR_OHLC)
 // dari satu emiten acak (bisa telat kalau emiten itu disuspensi hari ini).
 const hitungTanggal = new Map()
 for (const f of fileOhlc) {
-  const last = bacaJson(join(DIR_OHLC, f))?.d?.at(-1)?.[0]
+  const d = bacaJson(join(DIR_OHLC, f))?.d
+  if (!Array.isArray(d) || d.length === 0) continue
+  // Bar HANTU hari berjalan TIDAK boleh ikut memilih tanggal — temuan 28 Agu
+  // 2026: sumber harga menulis bar bertanggal hari ini dengan volume/value
+  // NOL dan OHLC identik penutupan kemarin SEBELUM data hari itu terbit
+  // (AADI 2026-08-28: 10125/10125/10125/10125, volume 0). Karena SEMUA emiten
+  // punya bar hantu itu, modusnya jatuh ke tanggal hantu dan screener.json
+  // terbit bertanggal 2026-08-28 dengan 961 dari 962 emiten bervolume nol —
+  // tanpa satu pun galat. Kelas bug yang sama dengan arsip-kosong (§WF-207):
+  // yang kosong tak boleh mengalahkan yang berisi.
+  // Suara emiten ini = bar TERAKHIR YANG BERISI (volume > 0). Kalau seluruh
+  // riwayatnya nol, jangan diam di indeks negatif — pakai bar pertama, sama
+  // pola bangun-harian-papan.mjs.
+  let i = d.length - 1
+  while (i > 0 && Number(d[i]?.[5] ?? 0) === 0) i -= 1
+  const last = d[i]?.[0]
   if (last) hitungTanggal.set(last, (hitungTanggal.get(last) ?? 0) + 1)
 }
 const tanggalTerakhir = [...hitungTanggal.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
@@ -113,7 +128,16 @@ const dilewati = { ohlcKosong: 0 }
 for (const f of fileOhlc) {
   const kode = f.replace(/\.json$/, '')
   const ohlc = bacaJson(join(DIR_OHLC, f))
-  const baris = ohlc?.d
+  // Dipotong sampai tanggal bursa terpilih di Pass 1: bar hantu hari berjalan
+  // (bertanggal SESUDAH tanggalTerakhir, volume nol) dibuang sebelum apa pun
+  // dihitung. Tanpa ini `harga`/`volume`/`rvol10`/`close_gap`/`chg_1d`/posisi
+  // MA-EMA semuanya dibaca dari bar hantu itu dan terbit sebagai nol — angka
+  // menyesatkan, lebih buruk daripada angka absen. Emiten yang bar terakhirnya
+  // memang lebih tua (suspensi/baru listing) tak tersentuh: filternya `<=`,
+  // bukan pemotongan paksa ke satu tanggal.
+  const baris = Array.isArray(ohlc?.d) && tanggalTerakhir
+    ? ohlc.d.filter((b) => b[0] <= tanggalTerakhir)
+    : ohlc?.d
   if (!Array.isArray(baris) || baris.length === 0) {
     dilewati.ohlcKosong++ // "seri kosong" — emiten tanpa satu pun baris harga terpanen
     continue

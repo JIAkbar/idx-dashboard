@@ -253,23 +253,26 @@ def muat_arsip(tanggal: str) -> dict | None:
     return json.loads(p.read_text(encoding='utf-8'))
 
 
+def emiten_berfrekuensi(arsip: dict) -> int:
+    """Berapa emiten di arsip itu yang sungguh bertransaksi hari itu."""
+    return sum(1 for r in arsip.get('emiten') or [] if (r.get('freq') or 0) > 0)
+
+
 def pilih_tanggal_otomatis() -> str | None:
     tanggal_tersedia = sorted(p.stem for p in ARSIP_DIR.glob('*.json'))
     for tgl in reversed(tanggal_tersedia):
         arsip = muat_arsip(tgl)
         if arsip is None:
             continue
-        terisi = sum(1 for r in arsip['emiten'] if (r.get('freq') or 0) > 0)
+        terisi = emiten_berfrekuensi(arsip)
         if terisi >= AMBANG_HARI_TERISI:
             return tgl
         print(f"  {tgl}: cuma {terisi} emiten berfrekuensi (< {AMBANG_HARI_TERISI}) — kemungkinan snapshot "
               f"belum settle, coba tanggal sebelumnya")
-    # Tak satu pun lolos ambang — pakai yang terbaru saja (lebih baik jujur
-    # basi daripada tak menulis apa-apa), dengan peringatan tercetak.
-    if tanggal_tersedia:
-        print(f"  PERINGATAN: tak ada tanggal yang lolos ambang {AMBANG_HARI_TERISI} — memakai "
-              f"{tanggal_tersedia[-1]} apa adanya")
-        return tanggal_tersedia[-1]
+    # Dulu di sini ada fallback "pakai yang terbaru apa adanya". Dibuang 28
+    # Agu 2026: sejak tulis_untuk_tanggal() memagari arsip bar hantu, tanggal
+    # itu pasti ditolak juga di hilir — fallbacknya cuma menghasilkan pesan
+    # ganda yang membingungkan. Tak ada tanggal layak = tak menulis apa-apa.
     return None
 
 
@@ -281,7 +284,8 @@ def perbarui_index() -> None:
         encoding='utf-8')
 
 
-def tulis_untuk_tanggal(tanggal: str, backtest: bool, top_n: int = TOP_N, rekomendasi_dir: Path | None = None) -> bool:
+def tulis_untuk_tanggal(tanggal: str, backtest: bool, top_n: int = TOP_N, rekomendasi_dir: Path | None = None,
+                        ambang: int = AMBANG_HARI_TERISI) -> bool:
     """`True` kalau berkas baru ditulis, `False` kalau dilewati (sudah ada /
     arsipnya tak ketemu). `rekomendasi_dir` dioper eksplisit di uji supaya
     swauji tak pernah menyentuh `data-idx/json/rekomendasi/` sungguhan."""
@@ -294,6 +298,25 @@ def tulis_untuk_tanggal(tanggal: str, backtest: bool, top_n: int = TOP_N, rekome
     if arsip is None:
         print(f"  {tanggal}: tak ada kartu/arsip/{tanggal}.json — dilewati (backfill ke tanggal itu "
               f"di luar cakupan generator ini, lihat docstring)")
+        return False
+
+    # PAGAR BAR HANTU — temuan 28 Agu 2026. SEBABNYA: sumber harga menulis bar
+    # bertanggal HARI BERJALAN dengan volume/nilai/frekuensi NOL dan OHLC rata
+    # sama penutupan kemarin, sebelum data hari itu terbit; kartu_analisa.py
+    # ikut mengarsipkannya, jadi kartu/arsip/2026-08-28.json ADA dan berisi 963
+    # emiten — nol di antaranya berfrekuensi. Pagar ambang ini dulu cuma
+    # dipasang di pilih_tanggal_otomatis(), sehingga jalur --tanggal dan
+    # --backtest menembusnya: terbukti menulis 81 baris saham lintas 5 preset
+    # dari harga hantu (AADI skor 1,0, entry [10125, 10125] karena low = close
+    # pada bar rata), dan preset-preset itu tak menguji freq jadi nol pun lolos.
+    # Karena rekomendasi/<tgl>.json SEKALI TULIS TAK DIEDIT, satu jalan salah
+    # menanam berkas cacat permanen. Angka menyesatkan lebih buruk daripada
+    # angka absen — pagarnya pindah ke sini supaya ketiga jalur lewat satu
+    # pintu yang sama.
+    terisi = emiten_berfrekuensi(arsip)
+    if terisi < ambang:
+        print(f"  {tanggal}: cuma {terisi} emiten berfrekuensi (< {ambang}) — arsip bar hantu / snapshot "
+              f"belum settle, TIDAK ditulis (berkas rekomendasi sekali tulis tak diedit)")
         return False
 
     rows = arsip['emiten']
@@ -395,14 +418,30 @@ def uji() -> None:
         try:
             arsip_asli.parent.mkdir(parents=True, exist_ok=True)
             arsip_asli.write_text(json.dumps({'emiten': [row_lolos, row_sebagian]}), encoding='utf-8')
-            ok1 = tulis_untuk_tanggal('__uji_tmp__', backtest=False, rekomendasi_dir=tmp_dir)
-            ok2 = tulis_untuk_tanggal('__uji_tmp__', backtest=False, rekomendasi_dir=tmp_dir)
+            # ambang=1 karena arsip uji cuma 2 baris; pagar bar hantu diuji terpisah di (10)
+            ok1 = tulis_untuk_tanggal('__uji_tmp__', backtest=False, rekomendasi_dir=tmp_dir, ambang=1)
+            ok2 = tulis_untuk_tanggal('__uji_tmp__', backtest=False, rekomendasi_dir=tmp_dir, ambang=1)
             assert ok1 is True and ok2 is False
             isi = json.loads((tmp_dir / '__uji_tmp__.json').read_text(encoding='utf-8'))
             assert isi['tanggal'] == '__uji_tmp__' and isi['backtest'] is False
             assert any(p['preset'] == 'scalping' and len(p['saham']) == 2 for p in isi['presets']), isi
         finally:
             arsip_asli.unlink(missing_ok=True)
+
+    # 10) pagar bar hantu — arsip yang SEMUA emitennya freq 0 (bar hari
+    # berjalan yang belum terbit) tak boleh menghasilkan berkas apa pun,
+    # lewat jalur mana pun (--tanggal/--backtest ikut lewat fungsi ini).
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_dir = Path(tmp) / 'rekomendasi'
+        arsip_hantu = ARSIP_DIR / '__uji_hantu__.json'
+        try:
+            arsip_hantu.parent.mkdir(parents=True, exist_ok=True)
+            hantu = [dict(row_lolos, kode=f'H{i:03d}', freq=0) for i in range(300)]
+            arsip_hantu.write_text(json.dumps({'emiten': hantu}), encoding='utf-8')
+            assert tulis_untuk_tanggal('__uji_hantu__', backtest=False, rekomendasi_dir=tmp_dir) is False
+            assert not (tmp_dir / '__uji_hantu__.json').exists()
+        finally:
+            arsip_hantu.unlink(missing_ok=True)
 
     print("swauji rekap_preset.py: SEMUA LOLOS")
 
@@ -434,6 +473,7 @@ if __name__ == '__main__':
     else:
         tgl = pilih_tanggal_otomatis()
         if tgl is None:
-            print("tak ada kartu/arsip/*.json sama sekali — jalankan kartu_analisa.py --semua --tulis dulu")
+            print("tak ada tanggal arsip yang layak (kosong sama sekali, atau semuanya bar hantu "
+                  "berfrekuensi nol) — jalankan kartu_analisa.py --semua --tulis dulu sesudah bursa tutup")
             raise SystemExit(1)
         tulis_untuk_tanggal(tgl, backtest=False, top_n=top_n)

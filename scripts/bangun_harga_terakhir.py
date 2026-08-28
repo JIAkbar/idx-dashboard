@@ -30,9 +30,25 @@ def main() -> int:
             continue
         try:
             d = json.load(open(f, encoding="utf-8"))
-            bar = d["d"][-1]
+            baris = d["d"]
+            baris[-1]  # berkas kosong/rusak -> lewati emiten ini
         except Exception:
             continue
+        # BAR HANTU (ditemukan 28 Agu 2026): sumber harga menulis bar
+        # bertanggal HARI BERJALAN dengan volume 0 dan OHLC disalin dari
+        # penutupan kemarin, sebelum data hari itu terbit — 961 dari 962
+        # berkas ohlc/ punya bar 2026-08-28 bervolume nol. Mengambil bar
+        # paling ujung apa adanya membuat `tgl_terakhir` (ruas `bulan`)
+        # melaporkan hari yang belum punya data sama sekali. Nilai `harga`
+        # kebetulan selamat karena bar hantu menyalin close kemarin, tapi itu
+        # numpang pada perilaku hulu, bukan pertahanan skrip ini — kalau
+        # pemanen suatu saat mengisi OHLC hantu dengan nilai lain, harganya
+        # ikut rusak tanpa satu pun galat. Jadi: mundur ke bar terakhir yang
+        # BERISI (volume > 0), pola sama seperti app/scripts/bangun-harian-papan.mjs.
+        i = len(baris) - 1
+        while i > 0 and float(baris[i][5] or 0) == 0:
+            i -= 1
+        bar = baris[i]
         harga[kode] = float(bar[4])
         if str(bar[0]) > tgl_terakhir:
             tgl_terakhir = str(bar[0])

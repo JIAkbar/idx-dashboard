@@ -118,21 +118,38 @@ for (const f of fileProfil) {
   function padaOffset(offset) {
     if (idx0 < 0) return { close: null, ret: null }
     const i = idx0 + offset
-    if (i >= baris.length) return { close: null, ret: null }
+    // i < idx0 = bar sebelum listing (bisa terjadi kalau bar terakhir yang
+    // BERISI ternyata lebih tua dari tanggal listing, mis. IPO yang listing
+    // persis di hari bar hantu) — harganya bukan milik emiten ini, jadi kosong.
+    if (i < idx0 || i >= baris.length) return { close: null, ret: null }
     const close = baris[i][4]
     const ret = hargaIpo > 0 ? (close / hargaIpo - 1) * 100 : null
     return { close, ret }
   }
 
+  // Bar HARI BERJALAN yang belum berdata (volume 0) TIDAK boleh dipakai sebagai
+  // "kini" maupun ikut memilih tanggal — temuan 28 Agu 2026: sumber harga
+  // menulis bar bertanggal hari ini dengan volume/nilai/frekuensi nol dan OHLC
+  // menyalin penutupan kemarin, sebelum data hari itu terbit. 962 dari 963
+  // berkas `ohlc/` berakhir dengan bar hantu 2026-08-28, jadi modus tanggal
+  // otomatis memenangkannya dan `ipo.json` menyebut hari yang belum punya data
+  // sebagai hari bursa terakhir. Angkanya kebetulan tak berubah HARI INI karena
+  // bar hantu menyalin close kemarin persis, tapi itu kebetulan konstruksi —
+  // bukan alasan mempercayainya. Pola mundur-ke-bar-BERISI ini sama dengan
+  // `bangun-harian-papan.mjs`; berhenti di indeks 0 supaya emiten yang seluruh
+  // barnya bervolume nol tetap bersuara (bukan diam sama sekali).
+  let iBerisi = baris.length - 1
+  while (iBerisi > 0 && Number(baris[iBerisi]?.[5] ?? 0) === 0) iBerisi -= 1
+
   const d1 = padaOffset(OFFSET_1D)
   const w1 = padaOffset(OFFSET_1W)
   const m1 = padaOffset(OFFSET_1M)
   const kini = baris.length > 0
-    ? padaOffset(baris.length - 1 - idx0)
+    ? padaOffset(iBerisi - idx0)
     : { close: null, ret: null }
 
   if (baris.length > 0) {
-    const tglTerakhir = baris.at(-1)[0]
+    const tglTerakhir = baris[iBerisi][0]
     hitungTanggal.set(tglTerakhir, (hitungTanggal.get(tglTerakhir) ?? 0) + 1)
   }
 

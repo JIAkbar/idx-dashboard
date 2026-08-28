@@ -91,6 +91,36 @@ def _baca_ohlc(p: Path, sampai: str | None) -> dict | None:
         baris = [r for r in baris if r[0] <= sampai]
     if not baris:
         return None
+    # ── BAR HANTU hari berjalan (temuan 28 Agu 2026) ──────────────────────
+    # Sumber harga menulis bar bertanggal HARI INI dengan volume 0 dan OHLC
+    # datar (keempatnya = penutupan kemarin) SEBELUM data hari itu terbit.
+    # Bar itu bukan hari bursa, ia cuma tempat kosong yang sudah dipesan.
+    # Sebabnya harus ditutup DI SINI, di hulu: seluruh pemakai deret ini
+    # (kartu/er/sr/first_passage/musiman/kode_populasi) mengambil elemen
+    # PALING UJUNG sebagai "hari ini", jadi satu bar palsu membuat harga =
+    # prev, chg = 0,00%, dan RSI/MA/Bollinger/Ichimoku/regresi60 semuanya
+    # dihitung di atas deret yang diakhiri titik yang tak pernah terjadi.
+    # Terukur sebelum tambalan ini: 962 dari 963 kartu bertanggal 2026-08-28
+    # dengan chg 0,00% — sementara hari bursa nyata terakhir 27 Agu.
+    # Deret karena itu dimundurkan ke bar TERAKHIR YANG BERISI (volume > 0),
+    # pola yang sama dengan app/scripts/bangun-harian-papan.mjs.
+    #
+    # Dua hal yang sengaja TIDAK ikut dipotong:
+    # 1. `beku`/`beku_sejak` dihitung dari deret ASLI — ekor volume nol itu
+    #    justru datanya (suspensi WIKA 363 hari, SCPI 3.291 hari). Kalau
+    #    dihitung sesudah dipotong, ekornya lenyap dan tiap emiten selalu
+    #    terbaca "tidak beku".
+    # 2. Emiten yang volumenya nol SEUMUR deret tidak dipotong sama sekali —
+    #    membuangnya akan mengulang kasus 582 emiten yang dulu lenyap dari
+    #    halaman tanpa satu pun keterangan. Angka absen lebih baik daripada
+    #    angka menyesatkan, tapi emiten absen bukan salah satunya.
+    v_asli = [float(r[5]) for r in baris]
+    tgl_asli = [r[0] for r in baris]
+    i = len(baris) - 1
+    while i > 0 and v_asli[i] == 0:
+        i -= 1
+    if v_asli[i]:
+        baris = baris[: i + 1]
     return {
         "kode": d["kode"],
         "tgl": [r[0] for r in baris],
@@ -102,6 +132,9 @@ def _baca_ohlc(p: Path, sampai: str | None) -> dict | None:
         "mulai": baris[0][0],
         "akhir": baris[-1][0],
         "n": len(baris),
+        # dihitung dari deret asli, lihat catatan (1) di atas
+        "beku": hari_beku(v_asli),
+        "beku_sejak": beku_sejak(tgl_asli, v_asli),
     }
 
 
@@ -143,6 +176,17 @@ def _baca_stockbit(p: Path, sampai: str | None) -> dict | None:
         bar = [r for r in bar if r[idx["tanggal"]] <= sampai]
     if not bar:
         return None
+    # Bar hantu hari berjalan ada juga di sini (sumber yang sama) — lihat
+    # catatan panjang di _baca_ohlc(). Kalau tak dipotong, `frequency` dan
+    # `value` bar terakhir nol, dan seluruh ruas turunannya (ukuran order,
+    # porsi asing, net asing rupiah, peringkat) jatuh jadi None/0 untuk
+    # SEMUA emiten — hilang senyap, tanpa satu pun galat. ekor60 ikut
+    # dipotong supaya jendela whale tidak digeser satu hari kosong.
+    j = len(bar) - 1
+    while j > 0 and not bar[j][idx["volume"]]:
+        j -= 1
+    if bar[j][idx["volume"]]:
+        bar = bar[: j + 1]
     r = bar[-1]
     out = {ruas: r[idx[ruas]] for ruas in (
         "tanggal", "value", "volume", "frequency", "foreignbuy", "foreignsell", "lot",
@@ -715,8 +759,11 @@ def kartu(
         "er_n_populasi": len(peringkat_er) if peringkat_er else None,
         "likuiditas_median20": nilai20,
         "kualitas": kualitas_dari(n, nilai20),
-        "beku": hari_beku(d["v"]),
-        "beku_sejak": beku_sejak(d["tgl"], d["v"]),
+        # dari _baca_ohlc() atas deret ASLI — d["v"]/d["tgl"] di sini sudah
+        # dipotong dari bar hantu, jadi menghitungnya lagi di sini akan
+        # selalu menjawab "tidak beku" (28 Agu 2026)
+        "beku": d["beku"],
+        "beku_sejak": d["beku_sejak"],
         "dihitung": t[-1],
     }
     if hemat:
@@ -813,7 +860,41 @@ def cetak(k: dict) -> None:
               f"jual {pr['jual']:,.0f} lbr ({pr['porsi_jual_pct']:.1f}%) · net {pr['net']:+,.0f} lbr (n={pr['n']})")
 
 
+def uji_bar_hantu() -> None:
+    """_baca_ohlc() mundur dari bar hantu hari berjalan (28 Agu 2026), tapi
+    tetap melaporkan beku dari deret ASLI dan tak membuang emiten nol-total."""
+    import tempfile
+    def tulis(dirp, kode, d):
+        p = Path(dirp) / f"{kode}.json"
+        p.write_text(json.dumps({"kode": kode, "d": d}), encoding="utf-8")
+        return p
+    with tempfile.TemporaryDirectory() as t:
+        # ekor hantu 1 hari: harga & tanggal mundur ke bar berisi, beku=1
+        h = _baca_ohlc(tulis(t, "HANTU", [
+            ["2026-08-26", 100, 110, 90, 105, 500],
+            ["2026-08-27", 105, 115, 100, 110, 700],
+            ["2026-08-28", 110, 110, 110, 110, 0],
+        ]), None)
+        assert h["akhir"] == "2026-08-27" and h["c"][-1] == 110 and h["n"] == 2, h
+        assert h["beku"] == 1 and h["beku_sejak"] == "2026-08-27", h
+        # suspensi panjang: dipotong juga, tapi beku menghitung SELURUH ekor
+        s = _baca_ohlc(tulis(t, "SUSPEN", [
+            ["2026-08-24", 100, 100, 100, 100, 900],
+            ["2026-08-26", 100, 100, 100, 100, 0],
+            ["2026-08-27", 100, 100, 100, 100, 0],
+            ["2026-08-28", 100, 100, 100, 100, 0],
+        ]), None)
+        assert s["akhir"] == "2026-08-24" and s["beku"] == 3 and s["beku_sejak"] == "2026-08-24", s
+        # nol seumur deret: JANGAN dipotong, emiten tak boleh lenyap
+        z = _baca_ohlc(tulis(t, "NOL", [
+            ["2026-08-27", 50, 50, 50, 50, 0],
+            ["2026-08-28", 50, 50, 50, 50, 0],
+        ]), None)
+        assert z is not None and z["n"] == 2 and z["beku"] == 2 and z["beku_sejak"] is None, z
+
+
 def uji() -> None:
+    uji_bar_hantu()
     assert ke_fraksi(1237, "atas") == 1240 and ke_fraksi(1237, "bawah") == 1235
     assert ke_fraksi(2000, "dekat") == 2000 and fraksi(2001) == 10
     # pivot fraktal: puncak tunggal di tengah

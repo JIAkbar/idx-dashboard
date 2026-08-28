@@ -139,8 +139,22 @@ for (const f of fileOhlcv) {
   const bar = d?.bar
   if (!Array.isArray(bar) || bar.length === 0) continue
   berkasByKode.set(kode, bar)
-  const last = bar.at(-1)?.[0]
-  if (last) hitungTanggal.set(last, (hitungTanggal.get(last) ?? 0) + 1)
+  // Bar HARI BERJALAN yang belum berdata (volume 0) TIDAK ikut memilih
+  // tanggal — temuan 28 Agu 2026: sumber harga menulis bar bertanggal hari
+  // ini dengan volume/value/frekuensi nol dan OHLC = penutupan kemarin,
+  // sebelum data hari itu terbit. Modus memenangkannya karena SEMUA emiten
+  // punya bar hantu itu (terukur: 962/962), sehingga `terbaru.json` terbit
+  // bertanggal hari ini dengan 962 baris `beku: true` — angka menyesatkan,
+  // bukan sekadar angka absen. Kelas bug yang sama dengan arsip-kosong
+  // (§WF-207): yang kosong tak boleh mengalahkan yang berisi. Suara emiten
+  // ini = bar TERAKHIR YANG BERISI; kalau ujungnya hantu, mundur — tapi
+  // jangan sampai diam, karena kalau semua emiten diam tak ada tanggal
+  // terpilih sama sekali dan pembangun berhenti. Pola ini disalin dari
+  // `bangun-harian-papan.mjs` supaya kedua pembangun sepakat tanggalnya.
+  let iSuara = bar.length - 1
+  while (iSuara > 0 && Number(bar[iSuara]?.[6] ?? 0) === 0) iSuara -= 1
+  const tglSuara = bar[iSuara]?.[0]
+  if (tglSuara) hitungTanggal.set(tglSuara, (hitungTanggal.get(tglSuara) ?? 0) + 1)
 }
 const tanggalTerakhir = [...hitungTanggal.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
 if (!tanggalTerakhir) {
@@ -150,11 +164,16 @@ if (!tanggalTerakhir) {
 
 const emiten = []
 for (const [kode, bar] of berkasByKode) {
-  // Emiten yang bar terakhirnya BUKAN tanggalTerakhir dilewati (suspensi/
-  // baru delisting) — sama syarat bangun-harian-papan.mjs per tanggal.
-  if (bar.at(-1)?.[0] !== tanggalTerakhir) continue
+  // Emiten yang tak MEMUAT tanggalTerakhir dilewati (suspensi/baru
+  // delisting) — sama syarat bangun-harian-papan.mjs per tanggal. Yang
+  // memuatnya dipotong SAMPAI tanggal itu: `hitungBarisJagoPapan()` selalu
+  // membaca bar paling ujung sebagai "hari ini", jadi tanpa potongan ini
+  // bar hantu hari berjalan tetap yang dihitung walau tanggal keluarannya
+  // sudah benar — harga jadi penutupan kemarin dan seluruh ruas arus nol.
+  const iAkhir = bar.findLastIndex((b) => b[0] === tanggalTerakhir)
+  if (iAkhir < 0) continue
   const nama = namaByKode.get(kode) ?? null
-  const row = hitungBarisJagoPapan(kode, nama, bar)
+  const row = hitungBarisJagoPapan(kode, nama, bar.slice(0, iAkhir + 1))
   if (row) emiten.push(row)
 }
 
