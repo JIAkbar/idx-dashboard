@@ -356,7 +356,18 @@ const KOLOM_CSV: (keyof BarisHarianPapan)[] = [
 
 /** CSV mentah (koma, header ruas apa adanya) — tombol unduh murni memicu
  *  Blob di komponen, string-nya sendiri diuji tanpa DOM. */
-export function keCsvHarianPapan(baris: BarisHarianPapan[]): string {
+export function keCsvHarianPapan(
+  baris: BarisHarianPapan[],
+  /** Hari ini dirakit dari data bursa, jadi `nbsf_000`-nya taksiran. Penanda
+   *  visual di tabel (miring + ≈) TIDAK ikut ke berkas, dan CSV justru yang
+   *  paling mungkin dijumlahkan di tempat lain berbulan-bulan kemudian —
+   *  jadi penandanya harus ada di NAMA KOLOM, satu-satunya bagian yang pasti
+   *  ikut terbawa ke mana pun berkas itu dibuka. */
+  nbsfTaksiran = false,
+): string {
+  const kepala = KOLOM_CSV.map((k) =>
+    nbsfTaksiran && k === 'nbsf_000' ? 'nbsf_000_taksiran' : k,
+  )
   const baris_ = baris.map((b) =>
     KOLOM_CSV.map((k) => {
       const v = b[k]
@@ -365,7 +376,7 @@ export function keCsvHarianPapan(baris: BarisHarianPapan[]): string {
       return s.includes(',') ? `"${s}"` : s
     }).join(','),
   )
-  return [KOLOM_CSV.join(','), ...baris_].join('\n')
+  return [kepala.join(','), ...baris_].join('\n')
 }
 
 // ── Pemuat ──────────────────────────────────────────────────────────────

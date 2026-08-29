@@ -188,3 +188,14 @@ describe('skorPapan — mekanisme rumus (bukan reproduksi 45/83 benchmark, lihat
     expect(skorPapan(pendek)).toBeNull()
   })
 })
+
+describe('keCsvHarianPapan — penanda taksiran', () => {
+  it('mengganti nama kolom nbsf saat isinya taksiran', () => {
+    const csv = keCsvHarianPapan([], true)
+    expect(csv.split('\n')[0]).toContain('nbsf_000_taksiran')
+    expect(csv.split('\n')[0]).not.toContain(',nbsf_000,')
+  })
+  it('memakai nama biasa saat angkanya dilaporkan bursa', () => {
+    expect(keCsvHarianPapan([]).split('\n')[0]).toContain('nbsf_000')
+  })
+})

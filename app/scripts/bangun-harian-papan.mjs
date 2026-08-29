@@ -280,6 +280,15 @@ function tanggalBerisiTerakhir(bar) {
   return bar[i]?.[0] ?? null
 }
 
+/** Lembar -> rupiah pakai harga rata-rata hari itu. null kalau tak ada
+ *  transaksi sama sekali (harga rata-ratanya tak terdefinisi). */
+function taksirRupiah(lembar, volume, nilai) {
+  const v = Number(volume)
+  const n = Number(nilai)
+  if (!(v > 0) || !(n > 0)) return null
+  return (Number(lembar) || 0) * (n / v)
+}
+
 function barDariBursa(r, iso) {
   const angka = (x) => {
     const v = Number(x)
@@ -303,18 +312,28 @@ function barDariBursa(r, iso) {
     Number(r.Volume) || 0,
     Number(r.Value) || 0,
     Number(r.Frequency) || 0,
-    // Aliran asing SENGAJA null, bukan angka bursa.
+    // Aliran asing DITAKSIR ke rupiah, bukan diisi apa adanya.
     //
-    // Slot ini berisi RUPIAH di arsip harga (BBCA 27 Agu: beli 228.367.645.000
-    // = Rp 228 miliar). Bursa melaporkan aliran asing dalam LEMBAR saja dan
-    // mengatakannya sendiri di arsipnya. Mengisi lembar ke slot rupiah
-    // memberi angka yang berselisih ribuan kali di kolom yang sama --
-    // BBCA 27 Agu -34.107.640 lalu 28 Agu 49.682, dua satuan berbeda, nol
-    // galat. Taksiran rupiah (lembar x harga rata-rata) TIDAK dipakai tanpa
-    // keputusan pemilik data: galatnya miring searah, jadi menumpuk kalau
-    // dijumlahkan (terukur +33% kumulatif setahun).
-    null,
-    null,
+    // Slot ini berisi RUPIAH di arsip harga (BBCA 27 Agu: beli Rp 228 miliar);
+    // bursa melaporkan aliran asing dalam LEMBAR saja. Mengisi lembar ke slot
+    // rupiah memberi angka berselisih ribuan kali di kolom yang sama -- BBCA
+    // 27 Agu -34.107.640 lalu 28 Agu 49.682, dua satuan, nol galat.
+    //
+    // Taksirannya lembar x harga rata-rata emiten itu sendiri (nilai / volume,
+    // dua-duanya dari baris yang sama supaya pembilang dan penyebut satu
+    // rumah). Diukur atas 5.590 pasang emiten-hari terhadap angka rupiah
+    // sungguhan: arah cocok 98,6%, median rasio 0,9995, kumulatif 1,0023,
+    // 93% dalam +-10%.
+    //
+    // Ini BUKAN taksiran yang dulu dibuang karena miring +33% -- yang itu
+    // level PASAR, dan harga rata-rata pasar didominasi emiten bervolume
+    // besar berharga rendah sementara transaksi asing terkonsentrasi di
+    // emiten berharga tinggi. Bias komposisi; per emiten tak punya itu.
+    //
+    // Dipakai atas keputusan Johan 29 Agu 2026 ("Pakai, tandai sebagai
+    // taksiran"), dan halaman WAJIB menandainya -- lihat `dari_bursa`.
+    taksirRupiah(r.ForeignBuy, r.Volume, r.Value),
+    taksirRupiah(r.ForeignSell, r.Volume, r.Value),
     0,
     0,
     Number(r.ListedShares) || 0,

@@ -127,3 +127,9 @@
 }
 .lantai .hp-sumber-bursa b { color: var(--text2); font-weight: 600; }
 .lantai .hp-sumber-bursa svg { flex: none; opacity: .7; }
+
+/* Angka TAKSIRAN — dihitung dari lembar × harga rata-rata, bukan dilaporkan
+   bursa. Dibedakan miring + sedikit diredam, DAN diberi awalan ≈ di teksnya:
+   penanda yang cuma gaya (miring/pudar) hilang begitu angkanya disalin ke
+   tempat lain — CSV, tangkapan layar, catatan — sementara ≈ ikut terbawa. */
+.lantai .hp-tbl td.hp-taksiran { font-style: italic; opacity: .88; }

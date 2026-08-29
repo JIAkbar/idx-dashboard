@@ -318,14 +318,15 @@ export function HarianPapan() {
             title={
               'Arsip harga belum memuat tanggal ini, jadi harga, volume, dan nilai diambil ' +
               'langsung dari angka resmi bursa. Dua kolom belum tersedia untuk hari ini: ' +
-              'Net Asing (bursa melaporkannya dalam lembar sementara kolom ini rupiah — ' +
-              'angkanya tak setara, jadi dikosongkan daripada salah satuan) dan Close Gap ' +
-              'di emiten yang harga pembukaannya tidak dilaporkan.'
+              'Net Asing dilaporkan bursa dalam lembar, sementara kolom ini rupiah — ' +
+              'angkanya karena itu dihitung dari lembar × harga rata-rata emiten dan ' +
+              'diberi tanda ≈. Close Gap kosong di emiten yang harga pembukaannya tidak ' +
+              'dilaporkan. Keduanya tergantikan angka sungguhan begitu data harian lengkap masuk.'
             }
           >
             <IkonMenu d={IKON_INFO} size={12} />
-            Hari ini dirakit dari <b>data bursa</b> — Net Asing dan sebagian Close Gap belum
-            tersedia.
+            Hari ini dirakit dari <b>data bursa</b> — Net Asing bertanda ≈ adalah taksiran,
+            sebagian Close Gap belum tersedia.
           </p>
         )}
 
@@ -420,7 +421,7 @@ export function HarianPapan() {
                 </thead>
                 <tbody>
                   {tampilBaris.map((b) => (
-                    <BarisHp key={b.kode} b={b} bolehForm={bolehForm} />
+                    <BarisHp key={b.kode} b={b} bolehForm={bolehForm} nbsfTaksiran={!!data?.dari_bursa} />
                   ))}
                 </tbody>
               </table>
@@ -454,7 +455,19 @@ export function HarianPapan() {
   )
 }
 
-function BarisHp({ b, bolehForm }: { b: BarisHarianPapan; bolehForm: boolean }) {
+function BarisHp({
+  b,
+  bolehForm,
+  nbsfTaksiran = false,
+}: {
+  b: BarisHarianPapan
+  bolehForm: boolean
+  /** Hari ini dirakit dari data bursa, jadi Net Asing-nya HITUNGAN kita
+   *  (lembar x harga rata-rata), bukan angka yang dilaporkan. Wajib terlihat
+   *  berbeda — angka taksiran yang tampil identik dengan angka resmi adalah
+   *  persis jenis kesalahan yang tak bisa ditemukan pembaca. */
+  nbsfTaksiran?: boolean
+}) {
   const hasilForm = useMemo(() => hitungForm(b.bar5), [b.bar5])
   return (
     <tr>
@@ -478,13 +491,20 @@ function BarisHp({ b, bolehForm }: { b: BarisHarianPapan; bolehForm: boolean }) 
           Johan menanyakannya lagi sambil menunjuk satu sel — jadi catatan
           setinggi halaman jelas tak terbaca saat mata sedang di baris DSSA.
           Keterangan harus ada di tempat yang ditunjuk. */}
-      <td className={`r num ${b.nbsf_000 == null ? '' : b.nbsf_000 >= 0 ? 'up' : 'dn'}`}
+      <td
+        className={`r num ${b.nbsf_000 == null ? '' : b.nbsf_000 >= 0 ? 'up' : 'dn'}${
+          nbsfTaksiran && b.nbsf_000 != null ? ' hp-taksiran' : ''
+        }`}
         title={
           b.nbsf_000 == null
-            ? 'Belum tersedia untuk tanggal ini — angka bursa untuk hari ini dilaporkan dalam lembar, sementara kolom ini rupiah. Terisi setelah data harian lengkap masuk.'
-            : `Rp${Math.round(b.nbsf_000 * 1000).toLocaleString('id-ID')}`
+            ? 'Belum tersedia untuk tanggal ini.'
+            : nbsfTaksiran
+              ? `≈ Rp${Math.round(b.nbsf_000 * 1000).toLocaleString('id-ID')} — TAKSIRAN. Bursa melaporkan aliran asing hari ini dalam lembar; angka rupiah ini dihitung dari lembar × harga rata-rata emiten hari itu. Diuji terhadap angka sungguhan: 99% tepat di tengah sebaran, 93% meleset kurang dari 10%. Tergantikan angka sungguhan begitu data harian lengkap masuk.`
+              : `Rp${Math.round(b.nbsf_000 * 1000).toLocaleString('id-ID')}`
         }>
-        {b.nbsf_000 == null ? '—' : `${b.nbsf_000 >= 0 ? '+' : ''}${fRingkas(b.nbsf_000)}`}
+        {b.nbsf_000 == null
+          ? '—'
+          : `${nbsfTaksiran ? '≈' : ''}${b.nbsf_000 >= 0 ? '+' : ''}${fRingkas(b.nbsf_000)}`}
       </td>
       <td className="r num">{b.free_float == null ? '—' : `${b.free_float.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`}</td>
       <td className={b.ma20_arah === 'naik' ? 'up' : b.ma20_arah === 'turun' ? 'dn' : undefined}>
