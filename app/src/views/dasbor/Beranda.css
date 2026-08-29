@@ -350,6 +350,11 @@
   border-spacing: 3px;
 }
 .lantai .dia-kal th {
+  /* Rata TENGAH mengikuti angkanya. Sebelumnya kepala hari mewarisi rata kiri
+     sementara `.dia-sel` memusatkan tanggalnya, jadi "Sen" duduk di tepi kiri
+     kolom yang angkanya di tengah — tak satu pun kolom berbaris. Ditemukan
+     alat ukur perataan, bukan mata. */
+  text-align: center;
   font-size: 10.5px;
   font-weight: 500;
   color: var(--text3);

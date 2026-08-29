@@ -376,7 +376,7 @@ export default function BerkasEmiten() {
                   <p className="be-ket">Rata-rata menyembunyikan hari panik. Ini apa adanya.</p>
                   <div className="be-gulir">
                     <table className="be-tabel">
-                      <thead><tr><th>Tanggal</th><th>IHSG</th><th>{kode}</th><th>Selisih</th><th>Bacaan</th></tr></thead>
+                      <thead><tr><th>Tanggal</th><th>IHSG</th><th>{kode}</th><th>Selisih</th><th className="be-kiri">Bacaan</th></tr></thead>
                       <tbody>
                         {r.hari_terburuk.map((h) => {
                           const selisih = h.emiten - h.ihsg
