@@ -113,3 +113,22 @@ describe('label sumber tak boleh bohong', () => {
     expect(b.sumber).not.toContain('Yahoo')
   })
 })
+
+describe('kasus nyata dari arsip — jalur turunan bukan teori', () => {
+  // META, PLIN, dan SMCB benar-benar mencatat dividend_ttm sebagai turunan
+  // (diukur 29 Agu 2026 atas 966 berkas). Bentuk datanya diuji di sini supaya
+  // labelnya tak diam-diam berubah jadi nama penyedia.
+  it.each([
+    ['META', 5.25],
+    ['PLIN', 155.0],
+    ['SMCB', 36.52],
+  ])('%s: dividend_ttm turunan → label bukan nama penyedia', (_kode, nilai) => {
+    const { kelompok } = susunRasio(
+      { 'Dividend (TTM)': '-' },
+      { dividend_ttm: nilai, asal_turunan: { dividend_ttm: 'turunan' } },
+    )
+    const b = kelompok.find((k) => k.kunci === 'dividen')!.baris[0]
+    expect(b.nilai).toBe(String(nilai))
+    expect(b.sumber).toBe(NAMA_CADANGAN_TURUNAN)
+  })
+})

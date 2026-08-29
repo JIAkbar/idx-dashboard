@@ -200,10 +200,22 @@ export const TAMBALAN: Record<string, string> = {
 /** Nama sumber cadangan sebagaimana dicetak ke pembaca — nama penyedia,
  *  bukan nama berkas atau ruas internal.
  *
- *  Diverifikasi 29 Agu 2026 atas 966 berkas: ketiga ruas di `TAMBALAN` tak
- *  satu pun tercatat sebagai turunan, jadi semuanya memang datang dari
- *  penyedia ini. Yang turunan di sumber cadangan itu ruas lain (eps, der,
- *  pe, roe, hist_eps) dan tak satu pun dipakai menambal. */
+ *  Diukur 29 Agu 2026 atas 966 berkas cadangan (index.json tak dihitung):
+ *
+ *      bv            0 berkas tercatat turunan
+ *      dividend      0
+ *      dividend_ttm  3  — META, PLIN, SMCB
+ *
+ *  Jadi label ini benar untuk hampir semua emiten, TAPI bukan untuk semua —
+ *  dan tiga emiten itulah alasan `NAMA_CADANGAN_TURUNAN` di bawah bukan
+ *  jaga-jaga teoretis melainkan jalur yang benar-benar dipakai.
+ *
+ *  Versi pertama komentar ini menulis "tak satu pun", karena pengukurannya
+ *  memotong daftar di 12 teratas dan `dividend_ttm` terdorong keluar potongan
+ *  (ruas yang sama terpecah dua baris: dari-laporan-keuangan dan dihitung).
+ *  Kelas cacat yang sama dengan komentar yang menyatakan sesuatu tentang data
+ *  lalu datanya bergerak — di sini bahkan datanya tak bergerak, hitungannya
+ *  yang terpotong. */
 export const NAMA_CADANGAN = 'Yahoo Finance'
 
 /** Dipakai saat ruas cadangan ternyata BUKAN angka penyedianya, melainkan
