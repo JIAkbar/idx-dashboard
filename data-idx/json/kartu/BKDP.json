@@ -1,17 +1,24 @@
 {
  "kode": "BKDP",
- "tgl": "2026-07-28",
- "harga": 169.0,
- "prev": 146.0,
- "chg": 15.753424657534243,
- "n": 4630,
+ "tgl": "2026-08-28",
+ "harga": 153.0,
+ "prev": 169.0,
+ "chg": -9.467455621301779,
+ "n": 4651,
  "mulai": "2007-06-15",
- "ma20": 126.75,
- "ma50": 122.3,
- "ma200": 70.185,
- "atr": 13.791101776416715,
- "atr_pct": 8.160415252317584,
+ "ma20": 168.2,
+ "ma50": 143.62,
+ "ma200": 83.175,
+ "atr": 4.051702360945101,
+ "atr_pct": 2.6481714777418963,
  "support": [
+  {
+   "level": 141.0,
+   "sentuhan": 1,
+   "terakhir": "2026-07-28",
+   "dalam_atr": false,
+   "harga": 141
+  },
   {
    "level": 125.0,
    "sentuhan": 10,
@@ -25,48 +32,121 @@
    "terakhir": "2026-05-22",
    "dalam_atr": false,
    "harga": 87
-  },
-  {
-   "level": 76.0,
-   "sentuhan": 1,
-   "terakhir": "2026-07-06",
-   "dalam_atr": false,
-   "harga": 76
   }
  ],
- "resistance": [],
- "stop": 125,
+ "resistance": [
+  {
+   "level": 169.25,
+   "sentuhan": 12,
+   "terakhir": "2026-08-20",
+   "dalam_atr": false,
+   "harga": 170
+  },
+  {
+   "level": 180.0,
+   "sentuhan": 1,
+   "terakhir": "2026-07-28",
+   "dalam_atr": false,
+   "harga": 180
+  }
+ ],
+ "stop": 141,
  "stop_asal": "klaster",
- "stop_pct": 26.035502958579883,
- "er": 0.16279069767441862,
- "er_persentil": 6.683168316831684,
- "er_n_populasi": 404,
- "likuiditas_median20": 1688280900.0,
+ "stop_pct": 7.8431372549019605,
+ "er": 0.16515151515151516,
+ "er_persentil": 7.107843137254902,
+ "er_n_populasi": 408,
+ "likuiditas_median20": 0.0,
  "kualitas": {
   "riwayat": "cukup",
-  "likuiditas": "cukup",
-  "lilin": 4630,
-  "nilai20": 1688280900.0
+  "likuiditas": "tipis",
+  "lilin": 4651,
+  "nilai20": 0.0
  },
- "beku": 21,
- "beku_sejak": "2026-07-28",
- "dihitung": "2026-07-28",
- "rsi": 67.8158147266904,
+ "beku": 0,
+ "beku_sejak": null,
+ "dihitung": "2026-08-28",
+ "rsi": 40.122648125509144,
  "stochrsi": [
-  85.2592298993349,
-  84.98744325306807
+  66.66666666666667,
+  88.8888888888889
  ],
- "target": [],
+ "target": [
+  {
+   "harga": 170,
+   "pct": 11.11111111111111,
+   "sentuhan": 12,
+   "terakhir": "2026-08-20",
+   "fp": {
+    "n": 4630,
+    "n_efektif": 232,
+    "kena": 1622,
+    "stop": 1721,
+    "lewat": 1287,
+    "p_kena": 35.032397408207345,
+    "p_stop": 37.17062634989201,
+    "median_hari": 6.0,
+    "q1": 3,
+    "q3": 11,
+    "harapan": 0.9771453577831419
+   },
+   "fp60": {
+    "n": 4590,
+    "n_efektif": 76,
+    "kena": 2166,
+    "stop": 2142,
+    "lewat": 282,
+    "p_kena": 47.18954248366013,
+    "p_stop": 46.666666666666664,
+    "median_hari": 9.0,
+    "q1": 4,
+    "q3": 21,
+    "harapan": 1.5831517792302106
+   }
+  },
+  {
+   "harga": 180,
+   "pct": 17.647058823529413,
+   "sentuhan": 1,
+   "terakhir": "2026-07-28",
+   "fp": {
+    "n": 4630,
+    "n_efektif": 232,
+    "kena": 978,
+    "stop": 1852,
+    "lewat": 1800,
+    "p_kena": 21.123110151187905,
+    "p_stop": 40.0,
+    "median_hari": 7.0,
+    "q1": 4,
+    "q3": 12,
+    "harapan": 0.590352771778258
+   },
+   "fp60": {
+    "n": 4590,
+    "n_efektif": 76,
+    "kena": 1520,
+    "stop": 2502,
+    "lewat": 568,
+    "p_kena": 33.11546840958606,
+    "p_stop": 54.509803921568626,
+    "median_hari": 13.0,
+    "q1": 6,
+    "q3": 29,
+    "harapan": 1.5686274509803937
+   }
+  }
+ ],
  "musiman": {
   "n": 20,
-  "naik": 8,
-  "mentah": 40.0,
-  "tersusut": 39.93953644608666,
-  "bawah": 21.880396741419272,
-  "atas": 61.342205768479396,
-  "median": -0.8620689655172431,
-  "dasar": 39.737991266375545,
-  "total_bulan": 229
+  "naik": 5,
+  "mentah": 25.0,
+  "tersusut": 28.36120401337793,
+  "bawah": 11.186005278940305,
+  "atas": 46.87050099580635,
+  "median": -2.361111111111114,
+  "dasar": 39.565217391304344,
+  "total_bulan": 230
  },
  "sektor": {
   "nama": "Bukit Darmo Property Tbk",
@@ -127,26 +207,26 @@
    }
   }
  },
- "ma5": 154.8,
- "ma100": 93.42,
- "ma150": 79.70666666666666,
+ "ma5": 165.8,
+ "ma100": 115.77,
+ "ma150": 97.21333333333334,
  "bb20": {
-  "mid": 126.75,
-  "atas": 187.5476150848041,
-  "bawah": 65.95238491519589
+  "mid": 168.2,
+  "atas": 175.17423830966507,
+  "bawah": 161.2257616903349
  },
- "posisi_bb": 0.6949,
+ "posisi_bb": -2.1794,
  "ichimoku": {
-  "tenkan": 159.0,
-  "kijun": 128.0,
-  "senkou_a": 143.5,
+  "tenkan": 161.0,
+  "kijun": 160.5,
+  "senkou_a": 160.75,
   "senkou_b": 128.0,
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 0.9719366490691859,
-  "tengah": 144.03879781420764,
-  "posisi": 1.3745
+  "kemiringan": 1.1501250347318699,
+  "tengah": 174.44535519125685,
+  "posisi": -1.1763
  },
  "freq": 7476,
  "ukuran_order": 96.9373,
@@ -162,12 +242,12 @@
  "asing_net_5h": 117157000,
  "asing_net_20h": 1252778300,
  "asing_streak": 2,
- "tiket_broker_maks": 16900000.0,
- "broker_tiket_maks_kode": "YU",
- "bval_maks": 5115576700.0,
- "nego_blok_rp": 0.0,
+ "tiket_broker_maks": null,
+ "broker_tiket_maks_kode": null,
+ "bval_maks": null,
+ "nego_blok_rp": null,
  "nego_broker_maks_kode": null,
- "top3_pct": 118.16,
- "number_broker_buysell": -5,
- "label_accdist": "Acc"
+ "top3_pct": null,
+ "number_broker_buysell": null,
+ "label_accdist": null
 }

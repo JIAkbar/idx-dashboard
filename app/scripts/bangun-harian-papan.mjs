@@ -28,8 +28,8 @@
  * jendela ini belum tersedia di pemilih tanggal Harian Papan; memperluasnya
  * tinggal menaikkan N dan menjalankan ulang skrip ini (nol risiko, idempoten).
  */
-import { readFileSync, readdirSync, writeFileSync, mkdirSync, statSync, existsSync } from 'node:fs'
-import { gunzipSync } from 'node:zlib'
+import { readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs'
+import { tambalDariArsipBursa, barTujuhBelasKolom } from './lib/tambalBursa.mjs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { sma, emaAkhir, rsi, stochK, cci, macd, rakitPeriode, labelSkor } from './lib/skor.mjs'
@@ -44,10 +44,6 @@ const DIR_KELUARAN = join(DIR_JSON, 'harian_papan')
 // dan jumlah saham. Tidak memakai kredensial apa pun, jadi ia tetap terisi
 // saat sumber harga utama berhenti.
 const DIR_BURSA = join(AKAR, '_arsip-mentah', 'asing')
-// Tambalan HANYA untuk ujung. Kalau arsip harga tertinggal lebih jauh dari
-// ini, yang benar memanen ulang sumbernya — bukan menjahit berhari-hari dari
-// sumber kedua dan membiarkan selisih konvensi menumpuk tanpa terlihat.
-const MAKS_HARI_TAMBAL = 5
 
 const argHari = process.argv.indexOf('--hari')
 const N_HARI = argHari >= 0 ? Number(process.argv[argHari + 1]) : 30
@@ -253,168 +249,6 @@ function bangunBarisHarianPapan(kode, nama, sektor, freeFloat, barSampaiTanggal)
   }
 }
 
-// ── Tambalan ujung dari arsip bursa ────────────────────────────────────────
-/**
- * Kenapa ada, dan kenapa CUMA di ujung.
- *
- * Johan 29 Agu 2026: *"berita juga gak ada update nih"* lalu *"kita punya data
- * 6 Varian kenapa tidak dipakai dipage itu?"*. Akarnya: rantai kredensial
- * sumber harga mati 28 Agu sore, jadi arsip harga berhenti di 27 Agu dan
- * halaman ini ikut berhenti — padahal arsip bursa untuk 28 Agu sudah ada di
- * cakram sejak sore itu juga, 963 emiten, tanpa perlu kredensial apa pun.
- *
- * Keduanya boleh disambung karena terukur SAMA, bukan karena kelihatan mirip:
- * 8.976 pasang emiten-hari (150 emiten x 60 hari), median rasio tutup
- * 1,000000, dan satu-satunya 96 selisih >0,5% semuanya jatuh di hari yang
- * arsip harganya masih bar hantu. 59 hari lain: nol selisih.
- *
- * Batasnya tetap ketat. Konvensi kedua sumber BERBEDA di masa lalu (arsip
- * harga menyesuaikan riwayat ke aksi korporasi, bursa melaporkan apa adanya),
- * jadi menjahit berhari-hari akan menumpuk selisih yang tak terlihat. Yang
- * disambung hanya hari yang arsip harga belum punya sama sekali, maksimal
- * MAKS_HARI_TAMBAL. Lebih dari itu = panen ulang, bukan tambal.
- */
-function tanggalBerisiTerakhir(bar) {
-  let i = bar.length - 1
-  while (i > 0 && Number(bar[i]?.[6] ?? 0) === 0) i -= 1
-  return bar[i]?.[0] ?? null
-}
-
-/** Lembar -> rupiah pakai harga rata-rata hari itu. null kalau tak ada
- *  transaksi sama sekali (harga rata-ratanya tak terdefinisi). */
-function taksirRupiah(lembar, volume, nilai) {
-  const v = Number(volume)
-  const n = Number(nilai)
-  if (!(v > 0) || !(n > 0)) return null
-  return (Number(lembar) || 0) * (n / v)
-}
-
-function barDariBursa(r, iso) {
-  const angka = (x) => {
-    const v = Number(x)
-    return Number.isFinite(v) && v !== 0 ? v : null
-  }
-  const tutup = angka(r.Close)
-  // Tinggi/rendah kosong = hari tanpa transaksi. Bar datar setinggi harga
-  // tutup itu perilaku yang benar untuk hari begitu, dan menjaga indikator
-  // yang membaca tinggi/rendah (Stochastic, CCI) tak menerima null.
-  const tinggi = angka(r.High) ?? tutup
-  const rendah = angka(r.Low) ?? tutup
-  // Pembukaan DIBIARKAN null kalau bursa tak melaporkannya — lihat catatan
-  // di hitungCloseGap(). Satu-satunya pembacanya kolom itu.
-  return [
-    iso,
-    Math.floor(Date.parse(`${iso}T00:00:00+07:00`) / 1000),
-    angka(r.OpenPrice),
-    tinggi,
-    rendah,
-    tutup,
-    Number(r.Volume) || 0,
-    Number(r.Value) || 0,
-    Number(r.Frequency) || 0,
-    // Aliran asing DITAKSIR ke rupiah, bukan diisi apa adanya.
-    //
-    // Slot ini berisi RUPIAH di arsip harga (BBCA 27 Agu: beli Rp 228 miliar);
-    // bursa melaporkan aliran asing dalam LEMBAR saja. Mengisi lembar ke slot
-    // rupiah memberi angka berselisih ribuan kali di kolom yang sama -- BBCA
-    // 27 Agu -34.107.640 lalu 28 Agu 49.682, dua satuan, nol galat.
-    //
-    // Taksirannya lembar x harga rata-rata emiten itu sendiri (nilai / volume,
-    // dua-duanya dari baris yang sama supaya pembilang dan penyebut satu
-    // rumah). Diukur atas 5.590 pasang emiten-hari terhadap angka rupiah
-    // sungguhan: arah cocok 98,6%, median rasio 0,9995, kumulatif 1,0023,
-    // 93% dalam +-10%.
-    //
-    // Ini BUKAN taksiran yang dulu dibuang karena miring +33% -- yang itu
-    // level PASAR, dan harga rata-rata pasar didominasi emiten bervolume
-    // besar berharga rendah sementara transaksi asing terkonsentrasi di
-    // emiten berharga tinggi. Bias komposisi; per emiten tak punya itu.
-    //
-    // Dipakai atas keputusan Johan 29 Agu 2026 ("Pakai, tandai sebagai
-    // taksiran"), dan halaman WAJIB menandainya -- lihat `dari_bursa`.
-    taksirRupiah(r.ForeignBuy, r.Volume, r.Value),
-    taksirRupiah(r.ForeignSell, r.Volume, r.Value),
-    0,
-    0,
-    Number(r.ListedShares) || 0,
-    0,
-    0,
-    0,
-  ]
-}
-
-function tambalDariArsipBursa(berkasByKode) {
-  if (!existsSync(DIR_BURSA)) return []
-
-  // Sampai tanggal berapa arsip harga BENAR-BENAR berisi (modus, bukan satu
-  // emiten acak yang bisa disuspensi).
-  const suara = new Map()
-  for (const bar of berkasByKode.values()) {
-    const t = tanggalBerisiTerakhir(bar)
-    if (t) suara.set(t, (suara.get(t) ?? 0) + 1)
-  }
-  const punyaSampai = [...suara.entries()].sort((a, b) => b[1] - a[1])[0]?.[0]
-  if (!punyaSampai) return []
-
-  const kandidat = []
-  for (const th of readdirSync(DIR_BURSA)) {
-    if (!/^\d{4}$/.test(th)) continue
-    for (const f of readdirSync(join(DIR_BURSA, th))) {
-      const m = f.match(/^(\d{4})(\d{2})(\d{2})\.json\.gz$/)
-      if (!m) continue
-      const iso = `${m[1]}-${m[2]}-${m[3]}`
-      if (iso <= punyaSampai) continue
-      const jalur = join(DIR_BURSA, th, f)
-      // Arsip 0-baris bertanggal muda = "belum terbit", bukan hari libur
-      // (§WF-207). Yang kosong tak boleh dianggap sebagai hari bursa.
-      if (statSync(jalur).size < 1000) continue
-      kandidat.push([iso, jalur])
-    }
-  }
-  if (kandidat.length === 0) return []
-  kandidat.sort((a, b) => (a[0] < b[0] ? -1 : 1))
-
-  if (kandidat.length > MAKS_HARI_TAMBAL) {
-    console.warn(
-      `arsip harga tertinggal ${kandidat.length} hari dari arsip bursa ` +
-        `(${punyaSampai} -> ${kandidat.at(-1)[0]}). Melewati batas tambal ` +
-        `${MAKS_HARI_TAMBAL} hari; sumbernya perlu dipanen ulang, bukan dijahit.`,
-    )
-    return []
-  }
-
-  const ditambal = []
-  for (const [iso, jalur] of kandidat) {
-    let rows
-    try {
-      rows = JSON.parse(gunzipSync(readFileSync(jalur)).toString('utf8'))?.data
-    } catch (e) {
-      console.warn(`arsip bursa ${iso} tak terbaca: ${e.message}`)
-      continue
-    }
-    if (!Array.isArray(rows) || rows.length === 0) continue
-
-    let n = 0
-    for (const r of rows) {
-      const bar = berkasByKode.get(r.StockCode)
-      if (!bar) continue
-      const baru = barDariBursa(r, iso)
-      if (baru[5] === null) continue // tanpa harga tutup tak ada yang bisa dihitung
-      const i = bar.findIndex((b) => b[0] === iso)
-      // Bar hantu (ada tapi volume nol) DITIMPA; bar berisi tak disentuh.
-      if (i === -1) bar.push(baru)
-      else if (Number(bar[i][6] ?? 0) === 0) bar[i] = baru
-      else continue
-      n += 1
-    }
-    if (n > 0) {
-      ditambal.push(iso)
-      console.log(`tambal ${iso} dari arsip bursa: ${n} emiten`)
-    }
-  }
-  return ditambal
-}
-
 // ── Main ────────────────────────────────────────────────────────────────
 const daftar = bacaJson(join(DIR_JSON, 'daftar_emiten.json'))
 const namaByKode = new Map((daftar?.emiten ?? []).map((e) => [e.kode, e.nama]))
@@ -447,7 +281,11 @@ for (const f of fileOhlcv) {
 // saja. Berkas arsip harga tidak pernah ditulis ulang: penambal yang menimpa
 // sumbernya sendiri tak bisa dibatalkan, dan begitu sumber utamanya dipanen
 // ulang, bar aslinya yang menang tanpa perlu membatalkan apa pun.
-const tanggalDariBursa = tambalDariArsipBursa(berkasByKode)
+const tanggalDariBursa = tambalDariArsipBursa(berkasByKode, {
+  dirBursa: DIR_BURSA,
+  iVolume: 6,
+  keBar: barTujuhBelasKolom,
+})
 
 const hitungTanggal = new Map()
 for (const bar of berkasByKode.values()) {

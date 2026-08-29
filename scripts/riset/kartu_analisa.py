@@ -44,6 +44,13 @@ import sys
 import time
 from pathlib import Path
 
+# Tambalan ujung dari arsip bursa — dipakai saat arsip harga belum memuat hari
+# bursa terakhir (sumbernya memakai kredensial dan bisa berhenti tanpa galat).
+# Modulnya di scripts/, kartu di scripts/riset/, jadi akarnya ditambahkan ke
+# jalur pencarian — pola yang sama dipakai skrip riset lain di sini.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import tambal_bursa  # noqa: E402
+
 AKAR = Path(__file__).resolve().parents[2]
 OHLC = AKAR / "data-idx" / "json" / "ohlc"
 ASING = AKAR / "data-idx" / "json" / "asing"
@@ -87,6 +94,11 @@ def _baca_ohlc(p: Path, sampai: str | None) -> dict | None:
     baris = d.get("d")
     if baris is None or "kode" not in d:
         return None  # bukan berkas ohlc (mis. _gagal.json — manifest kode yang gagal dipanen)
+    # Hari yang arsip harga belum punya disambung dari arsip bursa (di memori;
+    # berkasnya tak ditulis ulang). `_TAMBALAN` diisi sekali di muat_semua_ohlc;
+    # kosong berarti tak ada yang perlu disambung — jalur biasa, nol biaya.
+    if _TAMBALAN:
+        tambal_bursa.sisipkan(baris, _TAMBALAN.get(d.get("kode")))
     if sampai:
         baris = [r for r in baris if r[0] <= sampai]
     if not baris:
@@ -124,7 +136,19 @@ def _baca_ohlc(p: Path, sampai: str | None) -> dict | None:
     return {
         "kode": d["kode"],
         "tgl": [r[0] for r in baris],
-        "o": [float(r[1]) for r in baris],
+        # Pembukaan bisa TIDAK ADA di hari yang disambung dari arsip bursa —
+        # bursa tak selalu melaporkannya (terukur 28 Agu 2026: kosong di 220
+        # dari 833 emiten aktif). Modul tambalan sengaja mengembalikan None di
+        # situ, bukan nol, supaya konsumen yang bisa jujur (Harian Papan
+        # mengosongkan kolom Close Gap-nya) tetap bisa jujur.
+        #
+        # Di sini pilihannya berbeda dan disengaja: `o` dipakai backtest
+        # sebagai harga masuk posisi, dan None akan menghentikannya. Jatuh ke
+        # harga tutup hari itu = mengasumsikan bar datar, asumsi paling netral
+        # yang bisa dibuat tanpa data. Itu MENGABURKAN "tak diketahui" jadi
+        # angka, jadi batasnya penting: hanya menyentuh hari terakhir yang
+        # disambung, dan panen ulang sumbernya mengembalikan angka asli.
+        "o": [float(r[1] if r[1] is not None else r[4]) for r in baris],
         "h": [float(r[2]) for r in baris],
         "l": [float(r[3]) for r in baris],
         "c": [float(r[4]) for r in baris],
@@ -145,10 +169,23 @@ def muat(kode: str, sampai: str | None = None) -> dict:
     return d
 
 
+#: kode -> bar tambahan dari arsip bursa. Diisi sekali oleh muat_semua_ohlc();
+#: dibiarkan kosong di jalur lain supaya perilaku lama tak berubah diam-diam.
+_TAMBALAN: dict[str, list] = {}
+
+
 def muat_semua_ohlc(sampai: str | None = None) -> dict[str, dict]:
     """Baca SEKALI seluruh data-idx/json/ohlc/*.json (dipotong ke `sampai` kalau
     diisi) — dipakai bersama oleh semua_kode/kode_populasi/er_populasi/kartu di
     mode --semua supaya satu run --tanggal tak membaca cakram berkali-kali."""
+    global _TAMBALAN
+    if not sampai:
+        # Hanya di mode "hari terakhir". Kalau `sampai` diisi, pemanggilnya
+        # sedang membangun ulang tanggal lampau dan tambalan hari ini justru
+        # yang tak boleh ikut.
+        _, _TAMBALAN = tambal_bursa.muat_tambalan(
+            tambal_bursa.tanggal_berisi_di_dir(OHLC)
+        )
     out: dict[str, dict] = {}
     for p in sorted(OHLC.glob("*.json")):
         d = _baca_ohlc(p, sampai)

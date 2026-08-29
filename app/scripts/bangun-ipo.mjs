@@ -8,6 +8,12 @@
  *   node app/scripts/bangun-ipo.mjs
  */
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import {
+  muatTambalanBursa,
+  sisipkanTambalan,
+  tanggalBerisiDiDir,
+  barEnamKolom,
+} from './lib/tambalBursa.mjs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
@@ -15,6 +21,17 @@ const AKAR = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const DIR_JSON = join(AKAR, 'data-idx', 'json')
 const DIR_PROFIL = join(DIR_JSON, 'profil_stockbit')
 const DIR_OHLC = join(DIR_JSON, 'ohlc')
+const DIR_BURSA = join(AKAR, '_arsip-mentah', 'asing')
+
+// Hari yang arsip harga belum punya diambil dari arsip bursa. Pembangun ini
+// tak menyapu seluruh arsip lebih dulu (ia cuma membaca emiten yang pernah
+// IPO), jadi batas "sampai mana arsip berisi" dihitung dari sampel — lihat
+// tanggalBerisiDiDir() di lib/tambalBursa.mjs.
+const tambalan = muatTambalanBursa({
+  dirBursa: DIR_BURSA,
+  punyaSampai: tanggalBerisiDiDir(DIR_OHLC),
+  keBar: barEnamKolom,
+})
 const KELUARAN = join(DIR_JSON, 'ipo.json')
 
 // "bar ke-N" dari bar listing (bar ke-1 = bar pertama yang tanggalnya >=
@@ -112,6 +129,7 @@ for (const f of fileProfil) {
   const underwriters = normalisasiUnderwriters(h?.underwriters)
 
   const ohlc = bacaJson(join(DIR_OHLC, `${kode}.json`))
+  if (Array.isArray(ohlc?.d)) sisipkanTambalan(ohlc.d, tambalan.perKode.get(kode), 5)
   const baris = Array.isArray(ohlc?.d) ? ohlc.d : []
   const idx0 = baris.findIndex((b) => b[0] >= tanggalListing)
 

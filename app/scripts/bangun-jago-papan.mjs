@@ -20,12 +20,14 @@
  *   node app/scripts/bangun-jago-papan.mjs
  */
 import { readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs'
+import { tambalDariArsipBursa, barTujuhBelasKolom } from './lib/tambalBursa.mjs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
 const AKAR = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const DIR_JSON = join(AKAR, 'data-idx', 'json')
 const DIR_OHLCV = join(DIR_JSON, 'ohlcv_stockbit')
+const DIR_BURSA = join(AKAR, '_arsip-mentah', 'asing')
 const DIR_KELUARAN = join(DIR_JSON, 'jago_papan')
 
 function bacaJson(path) {
@@ -162,6 +164,16 @@ for (const f of fileOhlcv) {
   const tglSuara = bar[iSuara]?.[0]
   if (tglSuara) hitungTanggal.set(tglSuara, (hitungTanggal.get(tglSuara) ?? 0) + 1)
 }
+// Hari yang arsip harga belum punya diambil dari arsip bursa (tak memakai
+// kredensial, jadi tetap terbit saat arsip harga berhenti). Batas & alasannya
+// di lib/tambalBursa.mjs; tambalannya di MEMORI, arsip tak ditulis ulang.
+const dariBursa = tambalDariArsipBursa(berkasByKode, {
+  dirBursa: DIR_BURSA,
+  iVolume: 6,
+  keBar: barTujuhBelasKolom,
+})
+for (const iso of dariBursa) hitungTanggal.set(iso, (hitungTanggal.get(iso) ?? 0) + 962)
+
 const tanggalTerakhir = [...hitungTanggal.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
 if (!tanggalTerakhir) {
   console.error('Tak ada satu pun tanggal bar ditemukan di ohlcv_stockbit/.')

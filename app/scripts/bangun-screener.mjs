@@ -14,6 +14,11 @@
  *   node app/scripts/bangun-screener.mjs
  */
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import {
+  muatTambalanBursa,
+  sisipkanTambalan,
+  barEnamKolom,
+} from './lib/tambalBursa.mjs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { rakitPeriode, sma, emaAkhir, skorTigaKerangka, momentumPersen } from './lib/skor.mjs'
@@ -25,6 +30,7 @@ const DIR_ASING = join(DIR_JSON, 'asing')
 const DIR_FUND = join(DIR_JSON, 'fundamental')
 const DIR_KARTU = join(DIR_JSON, 'kartu')
 const KELUARAN = join(DIR_JSON, 'screener.json')
+const DIR_BURSA = join(AKAR, '_arsip-mentah', 'asing')
 
 // Berapa hari bursa untuk rata-rata volume pembagi rvol10, dan berapa hari
 // untuk jumlah net asing — dipisah dari MOMENTUM_HARI (skor.mjs) karena
@@ -112,7 +118,22 @@ for (const f of fileOhlc) {
   const last = d[i]?.[0]
   if (last) hitungTanggal.set(last, (hitungTanggal.get(last) ?? 0) + 1)
 }
-const tanggalTerakhir = [...hitungTanggal.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
+const tanggalTerakhir0 = [...hitungTanggal.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
+
+// Hari yang arsip harga belum punya diambil dari arsip bursa — sumber yang
+// tak memakai kredensial, jadi ia tetap terbit saat arsip harga berhenti.
+// Terukur identik pada hari-hari yang dua-duanya punya (median rasio tutup
+// 1,000000 atas 8.976 pasang emiten-hari); batas & alasannya di
+// lib/tambalBursa.mjs. Tambalannya di MEMORI — berkas arsip tak ditulis ulang.
+const tambalan = muatTambalanBursa({
+  dirBursa: DIR_BURSA,
+  punyaSampai: tanggalTerakhir0,
+  keBar: barEnamKolom,
+})
+const tanggalTerakhir = tambalan.tanggal.at(-1) ?? tanggalTerakhir0
+if (tambalan.tanggal.length) {
+  console.log(`tanggal bursa terakhir: ${tanggalTerakhir} (dari arsip bursa)`)
+}
 
 /** 'atas' | 'bawah' — null kalau v tak terhitung ATAU harga persis di v. */
 function posisiHarga(harga, v) {
@@ -135,6 +156,7 @@ for (const f of fileOhlc) {
   // menyesatkan, lebih buruk daripada angka absen. Emiten yang bar terakhirnya
   // memang lebih tua (suspensi/baru listing) tak tersentuh: filternya `<=`,
   // bukan pemotongan paksa ke satu tanggal.
+  if (Array.isArray(ohlc?.d)) sisipkanTambalan(ohlc.d, tambalan.perKode.get(kode), 5)
   const baris = Array.isArray(ohlc?.d) && tanggalTerakhir
     ? ohlc.d.filter((b) => b[0] <= tanggalTerakhir)
     : ohlc?.d
