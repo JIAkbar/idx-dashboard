@@ -110,3 +110,17 @@ describe('bolehLihatRapor', () => {
     expect(bolehLihatRapor(5, { raporDiamondOnly: true })).toBe(true)
   })
 })
+
+describe('hitungForm — bar tanpa harga pembukaan', () => {
+  it('tidak menghitung bar berpembukaan nol sebagai kemenangan', () => {
+    // Arsip bursa tak selalu melaporkan pembukaan; tanpa penjagaan,
+    // `close - 0` selalu positif dan bar itu terbaca "naik" tanpa dasar.
+    const h = hitungForm([
+      { open: 100, close: 110 },
+      { open: 0, close: 105 },
+      { open: 100, close: 90 },
+    ])
+    expect(h.seri).toEqual(['naik', 'datar', 'turun'])
+    expect(h.label).toBe('1-1')
+  })
+})

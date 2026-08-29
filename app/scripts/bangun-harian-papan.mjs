@@ -235,7 +235,13 @@ function bangunBarisHarianPapan(kode, nama, sektor, freeFloat, barSampaiTanggal)
       if (lima.length === 0) return null
       let n = 0
       for (const b of lima) {
-        const d = Number(b[5]) - Number(b[2])
+        // Bar tanpa harga pembukaan dilewati — WAJIB sama persis dengan
+        // hitungForm() di raporBadge.ts, karena angka ini kunci urut untuk
+        // panah yang dirender fungsi itu. Kalau keduanya beda aturan,
+        // urutannya tak cocok dengan yang terlihat di layar.
+        const buka = Number(b[2])
+        if (!(buka > 0)) continue
+        const d = Number(b[5]) - buka
         if (d > 0) n += 1
         else if (d < 0) n -= 1
       }

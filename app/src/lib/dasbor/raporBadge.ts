@@ -122,7 +122,13 @@ export function hitungForm(bars: BarForm[], jendela = 5, mode: ModeForm = 'close
   const dipakai = bars.slice(-jendela - (mode === 'close-close' ? 1 : 0))
   const seri: ArahHari[] =
     mode === 'close-open'
-      ? dipakai.map((b) => arah(b.close - b.open))
+      ? // Bar tanpa harga PEMBUKAAN tak bisa dinilai — bursa tak selalu
+        // melaporkannya (terukur 28 Agu 2026: kosong di 220 dari 833 emiten
+        // aktif). `b.close - 0` akan selalu positif dan bar itu menghitung
+        // dirinya "naik" tanpa dasar, memiringkan rapor ke arah hijau di
+        // seperempat emiten. 'datar' berarti tak menang dan tak kalah —
+        // yang memang keadaannya: tidak diketahui.
+        dipakai.map((b) => (b.open > 0 ? arah(b.close - b.open) : 'datar'))
       : dipakai.slice(1).map((b, i) => arah(b.close - dipakai[i].close))
   const menang = seri.filter((s) => s === 'naik').length
   const kalah = seri.filter((s) => s === 'turun').length
