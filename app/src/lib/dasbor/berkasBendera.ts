@@ -50,8 +50,14 @@ export interface BahanBendera {
   konsentrasi3?: number | null
   /** Porsi lot negosiasi terhadap total (0–1). */
   porsiNego?: number | null
-  /** Notasi khusus bursa, apa adanya dari sumber. */
-  notasi?: string[] | null
+  /** Notasi khusus bursa. Sumbernya memberi OBJEK per notasi
+   *  (`{ notation_code, notation_desc }`), bukan string — versi pertama modul
+   *  ini menyaring `typeof x === 'string'` sehingga membuang semuanya, dan
+   *  bendera terpenting (penilaian bursa, bukan hitungan kita) tak pernah
+   *  menyala di 66 dari 400 emiten yang punya notasi. Kedua bentuk kini
+   *  diterima supaya sumber yang berubah bentuk tak membungkam benderanya
+   *  lagi. */
+  notasi?: Array<string | { notation_code?: string; notation_desc?: string }> | null
   /** Sedang dalam Unusual Market Activity. */
   uma?: boolean | null
   /** Aksi korporasi yang terdeteksi di riwayat, mis. pecah saham. */
@@ -89,7 +95,17 @@ export function susunBendera(b: BahanBendera): Bendera[] {
   // Notasi khusus & UMA lebih dulu: keduanya penilaian BURSA atas emiten itu,
   // bukan pembacaan kita. Yang datang dari otoritas berdiri di depan yang
   // datang dari hitungan sendiri.
-  const notasi = (b.notasi ?? []).filter((x) => typeof x === 'string' && x.trim())
+  const notasi = (b.notasi ?? [])
+    .map((x) => {
+      if (typeof x === 'string') return x.trim()
+      // Keterangannya yang dipakai, bukan kodenya: "E" tak berarti apa-apa
+      // bagi pembaca, "Laporan keuangan terakhir menunjukkan ekuitas negatif"
+      // berarti segalanya.
+      const d = (x?.notation_desc ?? '').trim()
+      const k = (x?.notation_code ?? '').trim()
+      return d || k
+    })
+    .filter((x) => x.length > 0)
   if (notasi.length > 0) {
     out.push({
       kode: 'notasi',

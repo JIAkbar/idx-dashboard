@@ -21,7 +21,7 @@ import { useBrokerTahunan } from '../../lib/dasbor/brokerTahunanData'
 import { ringkasPemegang, bacaKonsentrasi } from '../../lib/dasbor/berkasPemegang'
 import { ringkasAsing, bacaAliran, bacaPorsi } from '../../lib/dasbor/berkasAsing'
 import { ringkasLikuid, labelLikuiditas } from '../../lib/dasbor/berkasLikuiditas'
-import { susunBendera, TANPA_BENDERA, type Bendera } from '../../lib/dasbor/berkasBendera'
+import { susunBendera, TANPA_BENDERA, type Bendera, type BahanBendera } from '../../lib/dasbor/berkasBendera'
 import { useKartu } from '../../lib/dasbor/kartuAnalisa'
 import { susunRasio, muatRasio, NAMA_CADANGAN } from '../../lib/dasbor/berkasRasio'
 import {
@@ -133,6 +133,22 @@ export default function BerkasEmiten() {
   // boleh jadi blok yang paling lambat muncul.
   const { data: kartu } = useKartu(kode)
 
+  // Notasi khusus bursa & status aktivitas tidak wajar — bendera paling
+  // berbobot di blok G karena datang dari OTORITAS, bukan dari hitungan kita.
+  // Sempat tak tersambung sama sekali: modulnya siap sejak awal, sumbernya
+  // tak pernah dimuat, jadi dua dari tujuh bendera diam selamanya tanpa satu
+  // pun galat.
+  const [infoBursa, setInfoBursa] = useState<{ notation?: unknown[]; uma?: boolean } | null>(null)
+  useEffect(() => {
+    let batal = false
+    setInfoBursa(null)
+    fetch(`/data-idx/json/info_stockbit/${kode.toUpperCase()}.json`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (!batal) setInfoBursa(d) })
+      .catch(() => {})
+    return () => { batal = true }
+  }, [kode])
+
   const likuid = useMemo(() => {
     const negoPer = new Map(hariBroker.map((h) => [h.tanggal, h]))
     const baris = candle.lilin.map((c, i) => {
@@ -211,7 +227,9 @@ export default function BerkasEmiten() {
     bekuHari: likuid.hariSepi || null,
     konsentrasi3: pemegang.konsentrasi3,
     porsiNego: likuid.porsiNego,
-  }), [kartu, labelLik, likuid, pemegang])
+    notasi: (infoBursa?.notation ?? []) as BahanBendera['notasi'],
+    uma: infoBursa?.uma ?? null,
+  }), [kartu, labelLik, likuid, pemegang, infoBursa])
 
   const tahun = r ? tahunTerbaru(r) : []
   const maksTahun = Math.max(1, ...tahun.map((t) => Math.abs(t[1].tangkap_naik)))
