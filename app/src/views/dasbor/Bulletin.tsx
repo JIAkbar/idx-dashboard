@@ -199,7 +199,7 @@ export function Bulletin() {
                 type="search"
                 value={cari}
                 onChange={(ev) => setCari(ev.target.value)}
-                placeholder="Cari emiten…"
+                placeholder="Cari emiten: BUMI, BBCA…"
                 aria-label="Cari emiten atau kode edisi"
               />
               {cari !== '' && (

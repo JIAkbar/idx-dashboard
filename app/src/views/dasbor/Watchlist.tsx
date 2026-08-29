@@ -290,7 +290,7 @@ export function Watchlist() {
               <span className="af-cari wl-cari">
                 <IkonMenu d={IKON_CARI} size={13} />
                 <input
-                  className="inp" type="search" placeholder="Tambah emiten…" value={cari}
+                  className="inp" type="search" placeholder="Tambah emiten: BUMI, BBCA…" value={cari}
                   onChange={(e) => setCari(e.target.value.toUpperCase())}
                   onKeyDown={(e) => { if (e.key === 'Enter' && saran[0]) tambah(saran[0].kode) }}
                 />

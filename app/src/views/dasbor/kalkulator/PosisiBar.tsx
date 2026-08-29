@@ -36,7 +36,7 @@ export function PosisiBar({ kode, onKode, lots, onLots, avg, onAvg, onFill }: Po
             value={kode}
             onChange={onKode}
             onSelect={onKode}
-            placeholder="Cari emiten…"
+            placeholder="Cari emiten: BUMI, BBCA…"
           />
           {nama && <div className="v-note" style={{ display: 'block', marginTop: 4 }}>{nama}</div>}
         </div>

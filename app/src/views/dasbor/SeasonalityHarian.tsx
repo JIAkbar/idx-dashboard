@@ -179,7 +179,7 @@ export function SeasonalityHarian() {
         )}
         <div className="af-cari sea-cari sea-cari-hari">
           <IkonMenu d={IKON_CARI} size={14} />
-          <input className="inp" value={cari} placeholder="…atau satu emiten"
+          <input className="inp" value={cari} placeholder="…atau satu emiten: BUMI, BBCA"
             onChange={(e) => setCari(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && saran[0]) { setKode(saran[0].k); setCari('') } }} />
           {/* SATU daftar untuk keduanya. Dua <ul> terpisah saling menimpa —

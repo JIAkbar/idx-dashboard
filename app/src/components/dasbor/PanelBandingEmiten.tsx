@@ -134,7 +134,7 @@ export function PanelBandingEmiten({ awal }: { awal: string }) {
               value={input}
               onChange={setInput}
               onSelect={tambah}
-              placeholder="Tambah emiten pembanding…"
+              placeholder="Tambah pembanding: BUMI, BBCA…"
             />
           </span>
           <button

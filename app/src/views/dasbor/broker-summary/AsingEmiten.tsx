@@ -69,7 +69,7 @@ export function AsingEmiten() {
           nilai={kode}
           onGanti={setKode}
           ariaLabel="Pilih emiten"
-          placeholder="Pilih emiten…"
+          placeholder="Pilih emiten: BUMI, BBCA…"
         />
 
         {!kode && (

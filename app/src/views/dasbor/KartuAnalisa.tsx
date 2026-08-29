@@ -656,7 +656,7 @@ function TabelScreenerKartu() {
             <span className="af-cari kta-screener-cari">
               <IkonMenu d={IKON_CARI} size={13} />
               <input
-                className="inp" type="search" placeholder="Cari emiten…" value={cari}
+                className="inp" type="search" placeholder="Cari emiten: BUMI, BBCA…" value={cari}
                 onChange={(e) => setCari(e.target.value.toUpperCase())}
               />
             </span>

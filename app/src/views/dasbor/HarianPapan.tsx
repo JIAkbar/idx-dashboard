@@ -269,7 +269,7 @@ export function HarianPapan() {
                   value={cari}
                   onChange={setCari}
                   onSelect={(kode) => setCari(kode)}
-                  placeholder="Cari emiten…"
+                  placeholder="Cari emiten: BUMI, BBCA…"
                 />
               </div>
               <div className="tabs" role="tablist">
@@ -375,20 +375,20 @@ export function HarianPapan() {
                         <tr key={b.kode}>
                           <td className="hp-kode">{b.kode}</td>
                           <td>{b.sektor}</td>
-                          <td className="num">{b.volume.toLocaleString('id-ID')}</td>
-                          <td className="num">{b.nilai.toLocaleString('id-ID')}</td>
+                          <td className="r num">{b.volume.toLocaleString('id-ID')}</td>
+                          <td className="r num">{b.nilai.toLocaleString('id-ID')}</td>
                           {/* Dibulatkan. Sejak Net Asing hari tambalan jadi
                               taksiran (lembar × harga rata-rata), angkanya
                               pecahan — dan penjumlahan lintas hari mencetak
                               "−1.419.632.903,5". Satu digit desimal pada
                               angka ribuan rupiah tak menambah satu pun
                               informasi, cuma memanjangkan kolom. */}
-                          <td className={`num ${b.nbsf_000 >= 0 ? 'up' : 'dn'}`}>
+                          <td className={`r num ${b.nbsf_000 >= 0 ? 'up' : 'dn'}`}>
                             {b.nbsf_000 >= 0 ? '+' : ''}
                             {Math.round(b.nbsf_000).toLocaleString('id-ID')}
                           </td>
-                          <td className="num">{b.nHari}</td>
-                          <td className="num">{b.harga_akhir?.toLocaleString('id-ID') ?? '—'}</td>
+                          <td className="r num">{b.nHari}</td>
+                          <td className="r num">{b.harga_akhir?.toLocaleString('id-ID') ?? '—'}</td>
                         </tr>
                       ))}
                   </tbody>

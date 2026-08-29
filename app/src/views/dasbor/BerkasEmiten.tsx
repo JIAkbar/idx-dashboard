@@ -244,7 +244,7 @@ export default function BerkasEmiten() {
               value={ketik}
               onChange={setKetik}
               onSelect={(v) => { setKetik(v); setParams({ kode: v.toUpperCase() }) }}
-              placeholder="Cari emiten: BBRI, BBCA…"
+              placeholder="Cari emiten: BUMI, BBCA…"
             />
           </div>
         </div>
