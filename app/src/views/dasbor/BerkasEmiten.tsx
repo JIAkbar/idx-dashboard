@@ -24,6 +24,10 @@ import { ringkasLikuid, labelLikuiditas } from '../../lib/dasbor/berkasLikuidita
 import { susunBendera, TANPA_BENDERA, type Bendera } from '../../lib/dasbor/berkasBendera'
 import { useKartu } from '../../lib/dasbor/kartuAnalisa'
 import { susunRasio, muatRasio } from '../../lib/dasbor/berkasRasio'
+import {
+  muatRekam, muatRekomendasi, MIN_SAMPEL_PERSEN,
+  type RekamStrategi, type RekomendasiEmiten,
+} from '../../lib/dasbor/berkasRekam'
 import { muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
 import { fetchAsing, type AsingData } from '../../lib/dasbor/stockDetailData'
 import { LABEL_KELOMPOK, KETERANGAN_KELOMPOK, warnaBrokerCanvas, namaBroker } from '../../lib/dasbor/kelompokBroker'
@@ -156,6 +160,19 @@ export default function BerkasEmiten() {
     return () => { batal = true }
   }, [kode])
   const rasio = useMemo(() => susunRasio(rasioMentah), [rasioMentah])
+
+  // Blok E — rekam jejak. Bukan ramalan: frekuensi historis strategi PAPAN
+  // pada emiten INI, lengkap dengan kalahnya.
+  const [rekam, setRekam] = useState<RekamStrategi[]>([])
+  const [rekomendasi, setRekomendasi] = useState<RekomendasiEmiten[]>([])
+  useEffect(() => {
+    let batal = false
+    setRekam([]); setRekomendasi([])
+    muatRekam(kode).then((d) => { if (!batal) setRekam(d) })
+    muatRekomendasi(kode).then((d) => { if (!batal) setRekomendasi(d) })
+    return () => { batal = true }
+  }, [kode])
+  const rekamAda = useMemo(() => rekam.filter((x) => x.n > 0), [rekam])
 
   const labelLik = labelLikuiditas(likuid)
 
@@ -623,6 +640,85 @@ export default function BerkasEmiten() {
         )}
       </section>
 
+      {/* BLOK E — rekam jejak, bukan ramalan. Aturan yang ditegakkan modulnya
+          dan bukan di sini: persentase cuma dicetak kalau sampelnya cukup.
+          Rancangan menyebutnya sebagai satu kalimat — "3 dari 4 bukan 75%" —
+          dan itulah seluruh isi keputusan desain blok ini. */}
+      <section className="be-kartu">
+        <div className="be-kartu-kepala">
+          <span className="be-blok">E</span>
+          <div>
+            <h2>Rekam jejak — dengan angka kejujurannya</h2>
+            <p className="be-ket">
+              Bukan ramalan. Seberapa sering strategi PAPAN benar di emiten ini menurut ujinya
+              sendiri, lengkap dengan seberapa sering ia meleset.
+            </p>
+          </div>
+        </div>
+
+        {rekamAda.length === 0 ? (
+          <p className="be-bendera-kosong">
+            <b>{kode}</b> belum pernah muncul di satu pun uji strategi yang tersimpan. Itu bukan
+            penilaian atas emitennya — hanya berarti strategi yang diuji tak pernah memberi sinyal
+            di sini.
+          </p>
+        ) : (
+          <div className="be-rekam">
+            {rekamAda.map((r) => (
+              <div key={r.strategi} className="be-rekam-grup">
+                <div className="be-rekam-kepala">
+                  <b>{r.strategi}</b>
+                  <span className={r.layakPersen ? '' : 'be-rekam-tipis'}>{r.label}</span>
+                </div>
+                <div className="be-rekam-angka">
+                  <span className="be-pil">
+                    median
+                    <b className={(r.median ?? 0) >= 0 ? 'up' : 'dn'}>
+                      {r.median == null ? '—' : `${(r.median * 100).toFixed(1)}%`}
+                    </b>
+                  </span>
+                  <span className="be-pil">
+                    terbaik
+                    <b className="up">
+                      {r.terbaik == null ? '—' : `${(r.terbaik * 100).toFixed(1)}%`}
+                    </b>
+                  </span>
+                  {/* Terburuk SELALU dipajang sebesar terbaik. Rekam jejak yang
+                      cuma menyebut kemenangan bukan rekam jejak, itu iklan. */}
+                  <span className="be-pil">
+                    terburuk
+                    <b className="dn">
+                      {r.terburuk == null ? '—' : `${(r.terburuk * 100).toFixed(1)}%`}
+                    </b>
+                  </span>
+                </div>
+              </div>
+            ))}
+            <p className="be-rasio-kosong">
+              Tingkat menang hanya dinyatakan dalam persen bila ada minimal {MIN_SAMPEL_PERSEN} kali
+              — di bawah itu satu kejadian menggeser angkanya lebih dari lima poin, dan persentase
+              dari sampel sekecil itu terbaca setara dengan persentase dari dua ratus kejadian.
+            </p>
+          </div>
+        )}
+
+        {rekomendasi.length > 0 && (
+          <div className="be-rekom">
+            <span className="be-lbl">Pernah masuk daftar PAPAN</span>
+            <ul className="be-rekom-daftar">
+              {rekomendasi.slice(0, 6).map((r, i) => (
+                <li key={i}>
+                  <b>{r.preset}</b> · {r.tanggal}
+                  {r.close != null && <> · harga saat itu {r.close.toLocaleString('id-ID')}</>}
+                  {r.tp1 != null && <> · target {r.tp1.toLocaleString('id-ID')}</>}
+                  {r.sl != null && <> · batas rugi {r.sl.toLocaleString('id-ID')}</>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+
       {/* BLOK F — yang sudah dihitung halaman lain, dikumpulkan jadi satu
           layar. Tangga harga datang dari kartu yang SUDAH dimuat blok G;
           94 rasio dari berkas yang cache peramannya dibagi dengan Stock
@@ -712,7 +808,7 @@ export default function BerkasEmiten() {
         )}
       </section>
 
-      {/* Blok E menyusul — rancangannya sudah tetap, datanya sudah dipanen. */}
+
       <div className="be-nanti">
         <div><b>E · Probabilitas</b>P(R1/R2/S1), win rate, riwayat rekomendasi</div>
         <div><b>F · Teknikal &amp; fundamental</b>pivot, pola, rasio</div>
