@@ -46,13 +46,32 @@ describe('bangunBarisHarianPapan — acuan regresi arsip 18 Agu 2026', () => {
     expect(baris!.nbsf_000!).toBeGreaterThan(0)
   })
 
-  it('harga, chg_1d, close_gap, RVol(10), TDM%(=MTD) — dihitung ulang independen dari arsip', () => {
+  it('harga, chg_1d, close_gap, RVol(10) — dihitung ulang independen dari arsip', () => {
     expect(baris?.harga).toBe(3100)
     expect(baris?.chg_1d).toBeCloseTo(0.9771986970684043, 6)
     expect(baris?.close_gap).toBeCloseTo(2.6058631921824116, 6)
     expect(baris?.rvol10).toBeCloseTo(0.8772697457394932, 6)
-    expect(baris?.tdm_persen).toBeCloseTo(7.638888888888884, 6)
     expect(baris?.chg_wtd).toBeCloseTo(0.9771986970684043, 6) // 14 Agu = hari bursa terakhir pekan lalu SEKALIGUS kemarin (17 Agu libur)
+  })
+
+  it('return bulanan ROLLING, bukan month-to-date (ketetapan Johan 29 Agu 2026)', () => {
+    // Dihitung ulang dari arsip, bukan disalin dari keluaran:
+    //   21 hari bursa lalu = 2026-07-17, tutup 3.070 → 3.100/3.070 − 1
+    //   42 hari bursa lalu = 2026-06-18, tutup 3.170
+    //   63 hari bursa lalu = 2026-05-12, tutup 3.570
+    //
+    // Sebelum perubahan ini `tdm_persen` berarti month-to-date dan bernilai
+    // 7,64% (sejak penutupan Juli). Angkanya beda karena pertanyaannya beda,
+    // bukan karena ada yang rusak.
+    expect(baris?.chg_mtd).toBeCloseTo(0.9771986970684, 6)
+    expect(baris?.chg_2m).toBeCloseTo(-2.2082018927445, 6)
+    expect(baris?.chg_3m).toBeCloseTo(-13.1652661064426, 6)
+
+    // Kebetulan yang layak disebut supaya angka kembar di bawah tak dikira
+    // salah salin: 21 hari bursa lalu jatuh di 17 Juli yang tutupnya 3.070 —
+    // sama persis dengan tutup kemarin dan tutup akhir pekan lalu. Tiga
+    // kolom berbeda karena itu menunjukkan angka yang sama pada hari ini saja.
+    expect(baris?.chg_mtd).toBeCloseTo(baris!.chg_1d!, 9)
   })
 
   it('free float diteruskan apa adanya dari pemanggil (100 − 65% pengendali PT MIND)', () => {
@@ -138,7 +157,7 @@ describe('fungsi murni — unit', () => {
       kode: 'BBCA', nama: 'Bank BCA', sektor: 'Keuangan', harga: 10000, tdm_persen: 1, volume: 100,
       rvol10: 1, nilai: 1000000, nbsf_000: 5, free_float: 50, ma20_arah: 'naik', close_gap: 0.5,
       chg_1d: 1, chg_wtd: 2, chg_mtd: 3, posisi_ema5: 'atas', posisi_ma10: 'atas', posisi_ma20: 'atas',
-      skor_d: 'Buy', skor_w: 'Buy', skor_m: 'Neutral', tidak_diperdagangkan: false, bar5: [], form_skor: 3,
+      chg_2m: 1, chg_3m: 2, skor_d: 'Buy', skor_w: 'Buy', skor_m: 'Neutral', tidak_diperdagangkan: false, bar5: [], form_skor: 3,
     }]
     const csv = keCsvHarianPapan(contoh)
     const baris = csv.split('\n')

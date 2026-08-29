@@ -135,6 +135,15 @@ function hitungCloseGap(buka, kemarin) {
 function hitungChg1d(kini, kemarin) {
   return kemarin > 0 ? (kini / kemarin - 1) * 100 : null
 }
+/** Return terhadap penutupan N hari bursa yang lalu. `null` kalau deretnya
+ *  belum sepanjang itu — bukan diisi angka dari bar terlama yang ada, karena
+ *  itu akan mengaku "3 bulan" untuk emiten yang baru listing sebulan. */
+function hitungChgMundur(tutup, n) {
+  if (tutup.length < n + 1) return null
+  const dasar = tutup[tutup.length - 1 - n]
+  return dasar > 0 ? (tutup[tutup.length - 1] / dasar - 1) * 100 : null
+}
+
 function hitungChgPeriode(kini, rakit) {
   if (rakit.length < 2) return null
   const dasar = rakit[rakit.length - 2][4]
@@ -182,7 +191,19 @@ function bangunBarisHarianPapan(kode, nama, sektor, freeFloat, barSampaiTanggal)
   const mingguan = rakitPeriode(ohlc, 'pekan')
   const bulanan = rakitPeriode(ohlc, 'bulan')
   const chgWtd = hitungChgPeriode(hargaTerakhir, mingguan)
-  const chgMtd = hitungChgPeriode(hargaTerakhir, bulanan)
+
+  // Return BULANAN dihitung ROLLING, bukan "to date" (keputusan Johan 29 Agu
+  // 2026 sesudah diberi angkanya).
+  //
+  // Kenapa penting: "to date" panjang periodenya berubah tiap hari — 28
+  // Agustus mengukur 28 hari, 2 September mengukur 2 hari. Tabel ini
+  // diperingkat antar emiten, jadi di awal bulan pembaca akan mengurutkan
+  // 832 emiten berdasarkan return dua hari sambil membaca judul "1 bulan".
+  // Rolling selalu 21 hari bursa, tanggal berapa pun, jadi peringkatnya
+  // selalu membandingkan periode yang sama.
+  const chg1m = hitungChgMundur(tutup, 21)
+  const chg2m = hitungChgMundur(tutup, 42)
+  const chg3m = hitungChgMundur(tutup, 63)
 
   const ema5 = emaAkhir(tutup, 5)
   const ma10 = sma(tutup, 10)
@@ -201,7 +222,7 @@ function bangunBarisHarianPapan(kode, nama, sektor, freeFloat, barSampaiTanggal)
     nama,
     sektor,
     harga: hargaTerakhir,
-    tdm_persen: chgMtd,
+    tdm_persen: chg1m,
     volume: volumeIni,
     rvol10: hitungRvol10(volume),
     nilai: barIni[7] ?? null,
@@ -211,7 +232,9 @@ function bangunBarisHarianPapan(kode, nama, sektor, freeFloat, barSampaiTanggal)
     close_gap: kemarin ? hitungCloseGap(ohlc[ohlc.length - 1][1], kemarin[4]) : null,
     chg_1d: kemarin ? hitungChg1d(hargaTerakhir, kemarin[4]) : null,
     chg_wtd: chgWtd,
-    chg_mtd: chgMtd,
+    chg_mtd: chg1m,
+    chg_2m: chg2m,
+    chg_3m: chg3m,
     posisi_ema5: posisiHarga(hargaTerakhir, ema5),
     posisi_ma10: posisiHarga(hargaTerakhir, ma10),
     posisi_ma20: posisiHarga(hargaTerakhir, ma20),

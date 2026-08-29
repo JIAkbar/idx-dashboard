@@ -1,4 +1,4 @@
-import { useMemo, useState, type KeyboardEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import type { StockIndexEntry } from '../../lib/dasbor/stockDetailData'
 
 interface StockAutocompleteProps {
@@ -25,6 +25,29 @@ interface StockAutocompleteProps {
 export function StockAutocomplete({ stocks, value, onChange, onSelect, placeholder = 'Kode saham: BBCA, ASII, TLKM…', tandai, labelTanda = 'terunggah' }: StockAutocompleteProps) {
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
+  const wadah = useRef<HTMLDivElement>(null)
+
+  // Menu ditutup saat menekan DI LUAR komponen.
+  //
+  // `onBlur` di input tidak cukup, dan alasannya halus: klik pada elemen yang
+  // tak bisa menerima fokus — badan tabel, latar panel, judul — TIDAK
+  // memindahkan fokus, jadi blur tak pernah terpicu dan menunya menggantung
+  // di atas isi halaman (temuan Johan 29 Agu 2026: "kolom emiten juga gak
+  // bisa hilang sendiri jika sudah klik bagian lain").
+  //
+  // `pointerdown`, bukan `click`: menutup pada saat tombol ditekan membuat
+  // menu hilang sebelum halaman di bawahnya bereaksi, sehingga klik pertama
+  // di luar langsung mengenai sasarannya alih-alih terbuang menutup menu.
+  // Dipasang HANYA saat menu terbuka — pendengar global yang selalu hidup di
+  // komponen yang dipakai belasan halaman itu ongkos yang tak perlu.
+  useEffect(() => {
+    if (!open) return
+    const tutup = (e: PointerEvent) => {
+      if (!wadah.current?.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('pointerdown', tutup)
+    return () => document.removeEventListener('pointerdown', tutup)
+  }, [open])
 
   const matches = useMemo(() => {
     const q = value.trim().toUpperCase()
@@ -61,7 +84,7 @@ export function StockAutocomplete({ stocks, value, onChange, onSelect, placehold
   const showMenu = open && matches.length > 0
 
   return (
-    <div className={`dd${showMenu ? ' open' : ''}`} style={{ flex: 1, minWidth: 160, position: 'relative' }}>
+    <div ref={wadah} className={`dd${showMenu ? ' open' : ''}`} style={{ flex: 1, minWidth: 160, position: 'relative' }}>
       <input
         className="inp"
         type="text"

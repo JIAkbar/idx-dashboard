@@ -89,15 +89,32 @@
 .lantai .hp-cari { margin-right: 10px; }
 @media (max-width: 700px) { .lantai .hp-cari { margin-right: 0; } }
 
+/* Kolom yang isinya jauh lebih pendek daripada kepalanya (Johan 29 Agu:
+   "kolom sektor, NBSF, Close gap, 1 D, 1WTD itu bisa di rapatkan lagi").
+   Nomor kolom SESUDAH 2M & 3M ditambahkan:
+   1 Kode · 2 Sektor · 3 Price · 4 Volume · 5 RVol · 6 Value · 7 NBSF ·
+   8 Free Float · 9 MA20 Head · 10 Close Gap · 11 1D · 12 1WTD · 13 1M ·
+   14 2M · 15 3M · 16-18 vs EMA5/MA10/MA20 · 19-21 Skor · 22 Form. */
+.lantai .hp-tbl th:nth-child(7), .lantai .hp-tbl td:nth-child(7) { width: 96px; }
+.lantai .hp-tbl th:nth-child(10), .lantai .hp-tbl td:nth-child(10) { width: 84px; }
+.lantai .hp-tbl th:nth-child(11), .lantai .hp-tbl td:nth-child(11),
+.lantai .hp-tbl th:nth-child(12), .lantai .hp-tbl td:nth-child(12) { width: 76px; }
+/* Kepala kolom NBSF & Close Gap dibungkus dua baris — keduanya dua kata dan
+   itulah yang menahan lebarnya, bukan angkanya. */
+.lantai .hp-tbl thead th:nth-child(7),
+.lantai .hp-tbl thead th:nth-child(10) { white-space: normal; line-height: 1.25; vertical-align: bottom; }
+.lantai .hp-tbl thead th:nth-child(7) .th-sort,
+.lantai .hp-tbl thead th:nth-child(10) .th-sort { white-space: normal; text-align: inherit; line-height: 1.25; }
+
 /* Tiga kolom "vs EMA5 / vs MA10 / vs MA20" isinya CUMA panah — 94px per
    kolom membuang ~150px lebar tanpa menambah apa pun yang bisa dibaca.
    Nomor kolomnya dihitung SESUDAH kolom TDM% dibuang (kembar 1MTD):
    1 Kode · 2 Sektor · 3 Price · 4 Volume · 5 RVol · 6 Value · 7 NBSF ·
    8 Free Float · 9 MA20 Head · 10 Close Gap · 11 1D · 12 1WTD · 13 1MTD ·
    14-16 vs EMA5/MA10/MA20 · 17-19 Skor · 20 Form. */
-.lantai .hp-tbl th:nth-child(14), .lantai .hp-tbl td:nth-child(14),
-.lantai .hp-tbl th:nth-child(15), .lantai .hp-tbl td:nth-child(15),
-.lantai .hp-tbl th:nth-child(16), .lantai .hp-tbl td:nth-child(16) { width: 44px; }
+.lantai .hp-tbl th:nth-child(16), .lantai .hp-tbl td:nth-child(16),
+.lantai .hp-tbl th:nth-child(17), .lantai .hp-tbl td:nth-child(17),
+.lantai .hp-tbl th:nth-child(18), .lantai .hp-tbl td:nth-child(18) { width: 44px; }
 
 /* Empat kolom paling boros ruang, dipadatkan lagi 29 Agu 2026 (Johan: "kolom
    MA head, vs Ema 5, Ema 10, ema 20 bisa di buat lagi lebih compact, jika
@@ -109,9 +126,9 @@
    kepala tabel bertambah sekali, lebar tiap kolom berkurang di seluruh 832
    baris. Isinya tetap satu baris; yang dibungkus hanya kepala. */
 .lantai .hp-tbl thead th:nth-child(9),
-.lantai .hp-tbl thead th:nth-child(14),
-.lantai .hp-tbl thead th:nth-child(15),
-.lantai .hp-tbl thead th:nth-child(16) {
+.lantai .hp-tbl thead th:nth-child(16),
+.lantai .hp-tbl thead th:nth-child(17),
+.lantai .hp-tbl thead th:nth-child(18) {
   white-space: normal;
   line-height: 1.25;
   vertical-align: bottom;
@@ -120,9 +137,9 @@
    baris dan kolomnya tak menyempit sama sekali (tombolnya yang mendorong
    lebar, bukan sel-nya). */
 .lantai .hp-tbl thead th:nth-child(9) .th-sort,
-.lantai .hp-tbl thead th:nth-child(14) .th-sort,
-.lantai .hp-tbl thead th:nth-child(15) .th-sort,
-.lantai .hp-tbl thead th:nth-child(16) .th-sort {
+.lantai .hp-tbl thead th:nth-child(16) .th-sort,
+.lantai .hp-tbl thead th:nth-child(17) .th-sort,
+.lantai .hp-tbl thead th:nth-child(18) .th-sort {
   white-space: normal;
   text-align: inherit;
   line-height: 1.25;
@@ -136,8 +153,8 @@
      padding kanan.
    - MA20 Head: teks "naik/turun/datar" duduk di antara dua kolom angka
      rata-kanan, jadi ia terlihat menempel ke tetangganya. */
-.lantai .hp-tbl th:nth-child(20),
-.lantai .hp-tbl td:nth-child(20) { width: 150px; padding-right: 18px; }
+.lantai .hp-tbl th:nth-child(22),
+.lantai .hp-tbl td:nth-child(22) { width: 150px; padding-right: 18px; }
 .lantai .hp-tbl th:nth-child(9),
 .lantai .hp-tbl td:nth-child(9) { width: 62px; padding-left: 10px; padding-right: 10px; }
 

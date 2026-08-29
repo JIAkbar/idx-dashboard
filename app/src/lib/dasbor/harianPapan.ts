@@ -144,6 +144,15 @@ export function hitungChgPeriode(hargaKini: number, rakit: BarisOhlc[]): number 
 
 /** RVol(10) — volume hari ini dibagi rata-rata volume 10 hari bursa
  *  SEBELUMNYA (tidak termasuk hari ini). Butuh 11 titik penuh. */
+/** Return terhadap penutupan N hari bursa lalu. `null` kalau deretnya belum
+ *  sepanjang itu — bukan diisi bar terlama yang ada, karena itu akan mengaku
+ *  "3 bulan" untuk emiten yang baru listing sebulan. */
+export function hitungChgMundur(tutup: number[], n: number): number | null {
+  if (tutup.length < n + 1) return null
+  const dasar = tutup[tutup.length - 1 - n]
+  return dasar > 0 ? (tutup[tutup.length - 1] / dasar - 1) * 100 : null
+}
+
 export function hitungRvol10(volume: (number | null | undefined)[], n = 10): number | null {
   if (volume.length < n + 1) return null
   const dasar = volume.slice(-(n + 1), -1)
@@ -236,7 +245,14 @@ export interface BarisHarianPapan {
   close_gap: number | null
   chg_1d: number | null
   chg_wtd: number | null
+  /** Return terhadap penutupan 21 hari bursa lalu — ROLLING, bukan
+   *  month-to-date. Namanya dipertahankan supaya pembaca lama tak putus;
+   *  artinya berubah 29 Agu 2026 atas keputusan Johan. */
   chg_mtd: number | null
+  /** Rolling 42 hari bursa. */
+  chg_2m: number | null
+  /** Rolling 63 hari bursa. */
+  chg_3m: number | null
   posisi_ema5: 'atas' | 'bawah' | null
   posisi_ma10: 'atas' | 'bawah' | null
   posisi_ma20: 'atas' | 'bawah' | null
@@ -280,9 +296,7 @@ export function bangunBarisHarianPapan(
   const kemarin = ohlc.length >= 2 ? ohlc[ohlc.length - 2] : null
 
   const mingguan = rakitPeriode(ohlc, 'pekan')
-  const bulanan = rakitPeriode(ohlc, 'bulan')
   const chgWtd = hitungChgPeriode(hargaTerakhir, mingguan)
-  const chgMtd = hitungChgPeriode(hargaTerakhir, bulanan)
 
   const ema5 = emaAkhir(tutup, 5)
   const ma10 = sma(tutup, 10)
@@ -298,7 +312,7 @@ export function bangunBarisHarianPapan(
     nama,
     sektor,
     harga: hargaTerakhir,
-    tdm_persen: chgMtd,
+    tdm_persen: hitungChgMundur(tutup, 21),
     volume: volumeIni,
     rvol10: hitungRvol10(volume),
     nilai: barIni[7] ?? null,
@@ -308,7 +322,13 @@ export function bangunBarisHarianPapan(
     close_gap: kemarin ? hitungCloseGap(ohlc[ohlc.length - 1][1], kemarin[4]) : null,
     chg_1d: kemarin ? hitungChg1d(hargaTerakhir, kemarin[4]) : null,
     chg_wtd: chgWtd,
-    chg_mtd: chgMtd,
+    // Rolling, bukan month-to-date — WAJIB sama dengan hitungan di
+    // `bangun-harian-papan.mjs`. Berkas ini types & uji; JSON-nya dibangun
+    // di sana, dan dua rumus yang berbeda untuk satu nama kolom adalah cara
+    // paling rapi melahirkan angka yang tak bisa dicocokkan.
+    chg_mtd: hitungChgMundur(tutup, 21),
+    chg_2m: hitungChgMundur(tutup, 42),
+    chg_3m: hitungChgMundur(tutup, 63),
     posisi_ema5: posisiHarga(hargaTerakhir, ema5),
     posisi_ma10: posisiHarga(hargaTerakhir, ma10),
     posisi_ma20: posisiHarga(hargaTerakhir, ma20),
@@ -350,6 +370,7 @@ export function sektorUnikHarianPapan(baris: BarisHarianPapan[]): string[] {
 const KOLOM_CSV: (keyof BarisHarianPapan)[] = [
   'kode', 'nama', 'sektor', 'harga', 'tdm_persen', 'volume', 'rvol10', 'nilai',
   'nbsf_000', 'free_float', 'ma20_arah', 'close_gap', 'chg_1d', 'chg_wtd', 'chg_mtd',
+  'chg_2m', 'chg_3m',
   'posisi_ema5', 'posisi_ma10', 'posisi_ma20', 'skor_d', 'skor_w', 'skor_m',
   'tidak_diperdagangkan',
 ]
