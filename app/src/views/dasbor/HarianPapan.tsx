@@ -41,10 +41,42 @@ const URUT_BAWAAN: Record<TabHarianPapan, { kunci: keyof BarisHarianPapan; arah:
 
 type UrutState = { kunci: keyof BarisHarianPapan; arah: 'naik' | 'turun'; klik: (k: keyof BarisHarianPapan) => void }
 
+/** Arti tiap kolom, dalam kalimat yang bisa dibaca orang yang baru buka
+ *  halaman ini (Johan 29 Agu: "jika nama kolom itu sulit kita pahami lebih
+ *  baik berikan tooltips setiap kolom supaya paham maksudnya apa").
+ *
+ *  Aturannya: sebut APA yang diukur dan TERHADAP APA, bukan rumusnya. Nama
+ *  ruas mentah, nama berkas, dan nama sumber teknis TIDAK boleh muncul di
+ *  sini — ini teks yang dibaca pengguna. */
+const ARTI_KOLOM: Partial<Record<keyof BarisHarianPapan, string>> = {
+  kode: 'Kode emiten di bursa. Klik untuk membuka grafiknya.',
+  sektor: 'Klasifikasi sektor resmi bursa.',
+  harga: 'Harga penutupan hari ini.',
+  volume: 'Jumlah lembar yang diperdagangkan hari ini di pasar reguler.',
+  rvol10: 'Volume hari ini dibanding rata-rata 10 hari bursa sebelumnya. 1× = seramai biasanya, 3× = tiga kali lebih ramai.',
+  nilai: 'Total nilai transaksi hari ini dalam rupiah.',
+  nbsf_000: 'Net beli/jual investor asing hari ini, dalam ribu rupiah. Positif = asing membeli lebih banyak daripada menjual.',
+  free_float: 'Porsi saham yang beredar bebas — 100% dikurangi kepemilikan pemegang saham pengendali. Makin kecil, makin sedikit saham yang benar-benar bisa diperdagangkan.',
+  ma20_arah: 'Arah rata-rata harga 20 hari: sedang naik, turun, atau mendatar.',
+  close_gap: 'Selisih harga pembukaan hari ini terhadap penutupan kemarin. Positif = dibuka melompat ke atas.',
+  chg_1d: 'Perubahan harga hari ini terhadap penutupan kemarin.',
+  chg_wtd: 'Perubahan harga sejak penutupan pekan lalu.',
+  chg_mtd: 'Perubahan harga sejak penutupan bulan lalu.',
+  posisi_ema5: 'Harga sekarang di atas atau di bawah rata-rata bergeraknya 5 hari.',
+  posisi_ma10: 'Harga sekarang di atas atau di bawah rata-rata 10 hari.',
+  posisi_ma20: 'Harga sekarang di atas atau di bawah rata-rata 20 hari.',
+  skor_d: 'Ringkasan sinyal teknikal harian — gabungan beberapa rata-rata bergerak dan indikator momentum, diringkas jadi satu kata.',
+  skor_w: 'Ringkasan sinyal teknikal mingguan, dihitung dari bar mingguan.',
+  skor_m: 'Ringkasan sinyal teknikal bulanan, dihitung dari bar bulanan.',
+  form_skor:
+    'Rapor lima hari bursa terakhir (kiri paling lama). Tiap hari dinilai terhadap harga pembukaannya sendiri: ▲ tutup di atas buka, ▼ di bawah, ▬ sama persis, ▫ tak bisa dinilai karena pembukaannya tak dilaporkan. Angka "4-1" = 4 hari naik, 1 turun. Ini mengukur konsistensi arah, bukan besar untungnya.',
+}
+
 function thSort(s: UrutState, k: keyof BarisHarianPapan, label: string, kanan = false) {
   const aktif = s.kunci === k
+  const arti = ARTI_KOLOM[k]
   return (
-    <th className={kanan ? 'r' : undefined}>
+    <th className={kanan ? 'r' : undefined} title={arti}>
       <button type="button" className="th-sort" onClick={() => s.klik(k)}>
         {label}{aktif ? (s.arah === 'naik' ? ' ▲' : ' ▼') : ''}
       </button>
@@ -427,8 +459,17 @@ function BarisHp({ b, bolehForm }: { b: BarisHarianPapan; bolehForm: boolean }) 
       <td className="r num" title={b.nilai == null ? undefined : `Rp${b.nilai.toLocaleString('id-ID')}`}>
         {b.nilai == null ? '—' : `Rp${fRingkas(b.nilai)}`}
       </td>
+      {/* Sel kosong menerangkan DIRINYA SENDIRI. Catatan di kepala halaman
+          sudah menjelaskan kenapa seluruh kolom ini kosong hari itu, tapi
+          Johan menanyakannya lagi sambil menunjuk satu sel — jadi catatan
+          setinggi halaman jelas tak terbaca saat mata sedang di baris DSSA.
+          Keterangan harus ada di tempat yang ditunjuk. */}
       <td className={`r num ${b.nbsf_000 == null ? '' : b.nbsf_000 >= 0 ? 'up' : 'dn'}`}
-        title={b.nbsf_000 == null ? undefined : `Rp${Math.round(b.nbsf_000 * 1000).toLocaleString('id-ID')}`}>
+        title={
+          b.nbsf_000 == null
+            ? 'Belum tersedia untuk tanggal ini — angka bursa untuk hari ini dilaporkan dalam lembar, sementara kolom ini rupiah. Terisi setelah data harian lengkap masuk.'
+            : `Rp${Math.round(b.nbsf_000 * 1000).toLocaleString('id-ID')}`
+        }>
         {b.nbsf_000 == null ? '—' : `${b.nbsf_000 >= 0 ? '+' : ''}${fRingkas(b.nbsf_000)}`}
       </td>
       <td className="r num">{b.free_float == null ? '—' : `${b.free_float.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`}</td>

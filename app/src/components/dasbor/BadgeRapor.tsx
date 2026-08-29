@@ -76,10 +76,22 @@ export function BadgeRapor({
  *  lihat komentar "dua ukuran" di raporBadge.ts). Sel tabel siap pakai. */
 export function KolomForm({ hasil }: { hasil: HasilForm }) {
   return (
-    <span className="br-form" title={`Form: ${hasil.menang} naik, ${hasil.kalah} turun`}>
+    <span
+      className="br-form"
+      title={
+        `Form ${hasil.seri.length} hari bursa terakhir (lama → baru): ` +
+        `${hasil.menang} tutup di atas buka, ${hasil.kalah} di bawah` +
+        (hasil.takTahu > 0
+          ? `, ${hasil.takTahu} tak bisa dinilai (harga pembukaan tak dilaporkan)`
+          : '')
+      }
+    >
       {hasil.seri.map((s, i) => (
         <span key={i} className={`br-form-panah br-form-${s}`}>
-          {s === 'naik' ? '▲' : s === 'turun' ? '▼' : '▬'}
+          {/* ▫ (kotak KOSONG) khusus 'tak-tahu' — sengaja beda bentuk dari ▬,
+              bukan cuma beda warna: kolom ini dibaca sekilas dan warna pudar
+              saja terbaca sebagai "datar yang redup". */}
+          {s === 'naik' ? '▲' : s === 'turun' ? '▼' : s === 'tak-tahu' ? '▫' : '▬'}
         </span>
       ))}
       <b className="br-form-label">{hasil.label}</b>

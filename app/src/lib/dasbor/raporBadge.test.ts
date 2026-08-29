@@ -120,7 +120,19 @@ describe('hitungForm — bar tanpa harga pembukaan', () => {
       { open: 0, close: 105 },
       { open: 100, close: 90 },
     ])
-    expect(h.seri).toEqual(['naik', 'datar', 'turun'])
+    expect(h.seri).toEqual(['naik', 'tak-tahu', 'turun'])
     expect(h.label).toBe('1-1')
+    expect(h.takTahu).toBe(1)
+  })
+
+  it('membedakan rata dari tak-terukur', () => {
+    // Dua keadaan yang dulu satu lambang: buka = tutup (penilaian sungguhan)
+    // vs pembukaan tak dilaporkan (tak bisa dinilai).
+    const h = hitungForm([
+      { open: 100, close: 100 },
+      { open: 0, close: 100 },
+    ])
+    expect(h.seri).toEqual(['datar', 'tak-tahu'])
+    expect(h.takTahu).toBe(1)
   })
 })

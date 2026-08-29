@@ -88,7 +88,12 @@ export function labelHorizon(modelKeluar: string | undefined): string {
 
 // ── Rapor emiten (kolom form) ──────────────────────────────────────────────
 
-export type ArahHari = 'naik' | 'turun' | 'datar'
+/** `tak-tahu` = harga pembukaan hari itu tidak dilaporkan, jadi hari itu tak
+ *  bisa dinilai. DIBEDAKAN dari `datar` (buka = tutup, yang itu penilaian
+ *  sungguhan). Sebelum 29 Agu 2026 keduanya satu lambang, dan pembaca tak
+ *  punya cara membedakan "rata" dari "tidak diketahui" — Johan menemukannya
+ *  saat menanyakan arti "▲▲▲▬▲ 4-0". */
+export type ArahHari = 'naik' | 'turun' | 'datar' | 'tak-tahu'
 export type ModeForm = 'close-open' | 'close-close'
 
 /** Adaptor kecil — bebas sumber selama ada {open, close}. */
@@ -101,8 +106,12 @@ export interface HasilForm {
   seri: ArahHari[]
   menang: number
   kalah: number
-  /** "4-1" — menang-kalah, 'datar' tak dihitung di kedua sisi. */
+  /** "4-1" — menang-kalah, 'datar' dan 'tak-tahu' tak dihitung di kedua sisi. */
   label: string
+  /** Berapa hari di jendela ini yang tak bisa dinilai karena harga
+   *  pembukaannya tak dilaporkan. Dipakai untuk menerangkan lambangnya di
+   *  tooltip — angka `label` sendiri tak terpengaruh. */
+  takTahu: number
 }
 
 function arah(selisih: number): ArahHari {
@@ -126,13 +135,14 @@ export function hitungForm(bars: BarForm[], jendela = 5, mode: ModeForm = 'close
         // melaporkannya (terukur 28 Agu 2026: kosong di 220 dari 833 emiten
         // aktif). `b.close - 0` akan selalu positif dan bar itu menghitung
         // dirinya "naik" tanpa dasar, memiringkan rapor ke arah hijau di
-        // seperempat emiten. 'datar' berarti tak menang dan tak kalah —
-        // yang memang keadaannya: tidak diketahui.
-        dipakai.map((b) => (b.open > 0 ? arah(b.close - b.open) : 'datar'))
+        // seperempat emiten. 'tak-tahu' tak menang dan tak kalah, sama
+        // seperti 'datar' — bedanya cuma di layar, dan bedanya penting.
+        dipakai.map((b) => (b.open > 0 ? arah(b.close - b.open) : 'tak-tahu'))
       : dipakai.slice(1).map((b, i) => arah(b.close - dipakai[i].close))
   const menang = seri.filter((s) => s === 'naik').length
   const kalah = seri.filter((s) => s === 'turun').length
-  return { seri, menang, kalah, label: `${menang}-${kalah}` }
+  const takTahu = seri.filter((s) => s === 'tak-tahu').length
+  return { seri, menang, kalah, label: `${menang}-${kalah}`, takTahu }
 }
 
 /** Adaptor dari larik posisi `ohlcv_stockbit` (tanggal idx0, open idx2, close

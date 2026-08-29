@@ -968,8 +968,22 @@
    dipakai IndeksDunia, tetap. */
 
 /* tables */
-.lantai .tbl th{font-family:var(--disp);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
-.lantai .tbl td{padding:7px 10px;border-bottom:1px solid var(--line);font-size:12.5px}
+/* Kerapatan baris — dipadatkan 29 Agu 2026 mengikuti pola yang sudah terbukti
+   di proyek SAKTI (Johan: "tabel di laptop itu cek bisa itu di padatkan lagi,
+   karena sudah ada contoh konkrit di proyek sakti"): padding 5x8, isi 12px,
+   kepala 10px. Terukur di Harian Papan 1536x960: tinggi baris 34,2px -> 28px,
+   baris terlihat 22 -> 26 (+18%) tanpa satu pun angka mengecil sampai sulit
+   dibaca. Berlaku untuk 88 tabel di 41 berkas — sengaja di kelas dasar, bukan
+   per halaman, karena kerapatan yang berbeda-beda antar halaman justru yang
+   dulu membuat tabel PAPAN terasa tak seragam. */
+.lantai .tbl th{font-family:var(--disp);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);text-align:left;padding:5px 8px;border-bottom:1px solid var(--line)}
+.lantai .tbl td{padding:5px 8px;border-bottom:1px solid var(--line);font-size:12px}
+/* Zebra sangat halus. Baris yang lebih rapat lebih mudah salah-baca saat mata
+   melintasi 20 kolom sambil menggulir mendatar; 3% putih cukup menuntun mata
+   tanpa terbaca sebagai garis. Tak dipasang di tabel < 4 baris (kalkulator)
+   karena di sana ia cuma jadi noda. */
+.lantai .tbl tbody tr:nth-child(even){background:rgba(255,255,255,.022)}
+.lantai .tbl tbody tr:nth-child(even):hover{background:var(--amber-dim)}
 .lantai .tbl tr:last-child td{border-bottom:none}
 .lantai .tbl .r{text-align:right}
 .lantai .tbl tbody tr{transition:background .12s;border-left:2px solid transparent}

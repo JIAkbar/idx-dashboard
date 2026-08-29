@@ -47,3 +47,11 @@ a.br-badge:hover { border-color: var(--text2); }
 .br-form-turun { color: var(--red); }
 .br-form-datar { color: var(--text3); }
 .br-form-label { margin-left: 4px; color: var(--text2); }
+
+/* Hari yang tak bisa dinilai — harga pembukaannya tak dilaporkan bursa.
+   Yang membedakannya dari `datar` adalah BENTUKNYA (▫ vs ▬), bukan warnanya.
+   Versi pertama memakai `--line2` supaya "lebih redup", dan itu keliru arah:
+   terukur rgb(54,57,69) di latar gelap — nyaris tak terlihat, jadi lambang
+   yang justru perlu diperhatikan malah paling sulit dilihat. Warnanya kini
+   sama dengan `datar`, sedikit diredam saja. */
+.br-form-tak-tahu { color: var(--text3); opacity: .75; cursor: help; }
