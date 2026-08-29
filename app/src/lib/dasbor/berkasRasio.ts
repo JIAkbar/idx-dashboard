@@ -1,5 +1,11 @@
 /**
- * Blok F — pengelompokan 94 rasio fundamental jadi layar yang bisa dibaca.
+ * Blok F — pengelompokan rasio fundamental jadi layar yang bisa dibaca.
+ *
+ * JUMLAHNYA BERBEDA ANTAR EMITEN. Peta di bawah memuat 94 nama (semua yang
+ * pernah muncul), tapi satu emiten belum tentu punya semuanya — META, PLIN,
+ * dan SMCB masing-masing 91. Karena itu layar memakai `totalTerisi` yang
+ * dihitung per emiten, bukan angka tetap; menulis "94 rasio" di teks mana pun
+ * akan salah untuk sebagian emiten.
  *
  * Rancangan (artifact "Berkas Emiten", blok F): *"94 rasio fundamental,
  * dikelompokkan: valuasi · profitabilitas · utang · pertumbuhan"*.

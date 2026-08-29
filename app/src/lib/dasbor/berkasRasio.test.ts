@@ -114,15 +114,23 @@ describe('label sumber tak boleh bohong', () => {
   })
 })
 
-describe('kasus nyata dari arsip — jalur turunan bukan teori', () => {
-  // META, PLIN, dan SMCB benar-benar mencatat dividend_ttm sebagai turunan
-  // (diukur 29 Agu 2026 atas 966 berkas). Bentuk datanya diuji di sini supaya
-  // labelnya tak diam-diam berubah jadi nama penyedia.
+describe('bentuk data yang tercatat turunan di arsip', () => {
+  // META, PLIN, dan SMCB mencatat dividend_ttm sebagai turunan di sumber
+  // CADANGAN (diukur 29 Agu 2026 atas 966 berkas). Tapi tambalannya TIDAK
+  // pernah menyala untuk ketiganya: sumber utama sudah punya Dividend (TTM)
+  // sendiri — 2,62 · 155,00 · 36,52 — jadi utama menang dan cadangan tak
+  // pernah dibaca. Ditemukan sesi AI Skill sesudah komentar ini pertama kali
+  // ditulis; versi pertamanya menyebut ini "jalur nyata, bukan teori" dan itu
+  // klaim yang lebih besar daripada buktinya.
+  //
+  // Ujinya tetap berguna dan tetap dipertahankan: ia menguji ATURANNYA
+  // (label mengikuti catatan asal), memakai bentuk data yang benar-benar ada
+  // di arsip. Yang tak boleh diklaim cuma bahwa jalur ini sudah terpakai.
   it.each([
     ['META', 5.25],
     ['PLIN', 155.0],
     ['SMCB', 36.52],
-  ])('%s: dividend_ttm turunan → label bukan nama penyedia', (_kode, nilai) => {
+  ])('%s: bila utama kosong, label bukan nama penyedia', (_kode, nilai) => {
     const { kelompok } = susunRasio(
       { 'Dividend (TTM)': '-' },
       { dividend_ttm: nilai, asal_turunan: { dividend_ttm: 'turunan' } },
