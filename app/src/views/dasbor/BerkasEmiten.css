@@ -316,3 +316,48 @@
  * kolomnya saja (bukan kelas bentuk baru). */
 .be-tiga { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 700px) { .be-tiga { grid-template-columns: 1fr; } }
+
+/* ── Blok G — bendera risiko ─────────────────────────────────────────────
+   Merah, dan di atas. Keduanya diminta rancangan, dan keduanya soal urutan
+   baca: blok ini mengubah cara membaca semua angka di bawahnya, jadi ia tak
+   boleh jadi catatan kaki seperti di halaman lain.
+
+   Saat tak ada bendera, kartunya TIDAK hilang — ia berubah jadi tenang.
+   Blok yang lenyap saat bersih membuat pembaca tak bisa membedakan "sudah
+   diperiksa, tak ada apa-apa" dari "belum diperiksa sama sekali". */
+.lantai .be-bendera { border-left: 3px solid var(--red); }
+.lantai .be-bendera-sepi { border-left-color: var(--line2); }
+.lantai .be-blok-g { background: var(--red); color: #fff; }
+.lantai .be-bendera-sepi .be-blok-g { background: var(--line2); color: var(--text2); }
+
+.lantai .be-bendera-daftar {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.lantai .be-bendera-item {
+  display: grid;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--line2);
+  border-radius: var(--r);
+  background: var(--bg2);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+/* Bobot dibedakan tepi kiri, bukan latar penuh: tujuh kotak berlatar merah
+   sekaligus terbaca sebagai satu blok panik dan justru berhenti dibaca. */
+.lantai .be-bendera-item.bb-tinggi { border-left-color: var(--red); }
+.lantai .be-bendera-item.bb-sedang { border-left-color: var(--amber); }
+.lantai .be-bendera-item.bb-rendah { border-left-color: var(--line2); }
+.lantai .be-bendera-item b { color: var(--text); }
+.lantai .be-bendera-item span { color: var(--text2); }
+.lantai .be-bendera-kosong {
+  margin: 12px 0 0;
+  color: var(--text3);
+  font-size: 12.5px;
+  line-height: 1.6;
+}

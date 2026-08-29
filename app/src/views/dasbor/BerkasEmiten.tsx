@@ -21,6 +21,8 @@ import { useBrokerTahunan } from '../../lib/dasbor/brokerTahunanData'
 import { ringkasPemegang, bacaKonsentrasi } from '../../lib/dasbor/berkasPemegang'
 import { ringkasAsing, bacaAliran, bacaPorsi } from '../../lib/dasbor/berkasAsing'
 import { ringkasLikuid, labelLikuiditas } from '../../lib/dasbor/berkasLikuiditas'
+import { susunBendera, TANPA_BENDERA, type Bendera } from '../../lib/dasbor/berkasBendera'
+import { useKartu } from '../../lib/dasbor/kartuAnalisa'
 import { muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
 import { fetchAsing, type AsingData } from '../../lib/dasbor/stockDetailData'
 import { LABEL_KELOMPOK, KETERANGAN_KELOMPOK, warnaBrokerCanvas, namaBroker } from '../../lib/dasbor/kelompokBroker'
@@ -119,6 +121,13 @@ export default function BerkasEmiten() {
     return () => { batal = true }
   }, [kode])
 
+  // Blok G — bendera risiko. Enam dari tujuh bendera dirakit dari yang SUDAH
+  // dimuat blok A–D; yang benar-benar baru cuma kartu analisa (penanda
+  // kualitas) — dan hook-nya sama dengan yang dipakai halaman Kartu, jadi
+  // berkasnya tersinggah bersama. Blok yang paling berhak tampil duluan tak
+  // boleh jadi blok yang paling lambat muncul.
+  const { data: kartu } = useKartu(kode)
+
   const likuid = useMemo(() => {
     const negoPer = new Map(hariBroker.map((h) => [h.tanggal, h]))
     const baris = candle.lilin.map((c, i) => {
@@ -135,6 +144,18 @@ export default function BerkasEmiten() {
     return ringkasLikuid(baris, 60)
   }, [candle, hariBroker])
   const labelLik = labelLikuiditas(likuid)
+
+  const bendera: Bendera[] = useMemo(() => susunBendera({
+    riwayat: kartu?.kualitas?.riwayat ?? null,
+    likuiditas: labelLik === 'tidur' ? 'tidur' : kartu?.kualitas?.likuiditas ?? null,
+    nLilin: kartu?.n ?? null,
+    // `hariBeku` di blok D menghitung hari yang BERTRANSAKSI tapi harganya
+    // tak bergerak; yang dicari bendera ini hari TANPA transaksi sama sekali.
+    // Dua hal berbeda yang gampang tertukar karena namanya mirip.
+    bekuHari: likuid.hariSepi || null,
+    konsentrasi3: pemegang.konsentrasi3,
+    porsiNego: likuid.porsiNego,
+  }), [kartu, labelLik, likuid, pemegang])
 
   const tahun = r ? tahunTerbaru(r) : []
   const maksTahun = Math.max(1, ...tahun.map((t) => Math.abs(t[1].tangkap_naik)))
@@ -168,6 +189,35 @@ export default function BerkasEmiten() {
         <span className="sub">{kode} — semua yang PAPAN tahu tentang satu emiten</span>
         <CatatanCakupan inline />
       </div>
+
+      {/* BLOK G — di ATAS, bukan di urutan hurufnya. Letak itu bagian dari
+          isinya: penanda kualitas yang sama sudah ada di Kartu Analisa, tapi
+          di sana ia catatan kaki — pembaca sudah selesai menyimpulkan sebelum
+          sampai ke situ. Di sini ia mengubah cara membaca yang di bawahnya,
+          jadi ia harus dibaca lebih dulu. */}
+      <section className={`be-kartu be-bendera${bendera.length === 0 ? ' be-bendera-sepi' : ''}`}>
+        <div className="be-kartu-kepala">
+          <span className="be-blok be-blok-g">G</span>
+          <div>
+            <h2>Bendera risiko</h2>
+            <p className="be-ket">
+              Hal yang membuat angka di bawah patut diragukan — dibaca lebih dulu, bukan sesudahnya.
+            </p>
+          </div>
+        </div>
+        {bendera.length === 0 ? (
+          <p className="be-bendera-kosong">{TANPA_BENDERA}</p>
+        ) : (
+          <ul className="be-bendera-daftar">
+            {bendera.map((b) => (
+              <li key={b.kode} className={`be-bendera-item bb-${b.bobot}`}>
+                <b>{b.judul}</b>
+                <span>{b.isi}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {muat && <div className="be-kosong">Memuat berkas…</div>}
 
