@@ -13,7 +13,7 @@
  *   adalah keadaan **pada satu hari**. Menjumlahkannya tak punya arti;
  *   merata-ratakannya menghasilkan angka yang terlihat masuk akal dan
  *   menyesatkan (rata-rata "Strong Buy" itu apa?).
- * - `tdm_persen`, `chg_1d`, `chg_wtd`, `chg_mtd` adalah persentase
+ * - `tdm_persen`, `chg_1d`, `chg_wtd`, `chg_b1` adalah persentase
  *   berjenjang. Menjumlahkan persen harian BUKAN return periode —
  *   +10% lalu −10% menghasilkan −1%, bukan 0%.
  *

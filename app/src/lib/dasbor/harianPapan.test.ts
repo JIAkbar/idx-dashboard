@@ -63,7 +63,7 @@ describe('bangunBarisHarianPapan — acuan regresi arsip 18 Agu 2026', () => {
     // Sebelum perubahan ini `tdm_persen` berarti month-to-date dan bernilai
     // 7,64% (sejak penutupan Juli). Angkanya beda karena pertanyaannya beda,
     // bukan karena ada yang rusak.
-    expect(baris?.chg_mtd).toBeCloseTo(0.9771986970684, 6)
+    expect(baris?.chg_b1).toBeCloseTo(0.9771986970684, 6)
     expect(baris?.chg_2m).toBeCloseTo(-2.2082018927445, 6)
     expect(baris?.chg_3m).toBeCloseTo(-13.1652661064426, 6)
 
@@ -71,7 +71,7 @@ describe('bangunBarisHarianPapan — acuan regresi arsip 18 Agu 2026', () => {
     // salah salin: 21 hari bursa lalu jatuh di 17 Juli yang tutupnya 3.070 —
     // sama persis dengan tutup kemarin dan tutup akhir pekan lalu. Tiga
     // kolom berbeda karena itu menunjukkan angka yang sama pada hari ini saja.
-    expect(baris?.chg_mtd).toBeCloseTo(baris!.chg_1d!, 9)
+    expect(baris?.chg_b1).toBeCloseTo(baris!.chg_1d!, 9)
   })
 
   it('free float diteruskan apa adanya dari pemanggil (100 − 65% pengendali PT MIND)', () => {
@@ -156,7 +156,7 @@ describe('fungsi murni — unit', () => {
     const contoh: BarisHarianPapan[] = [{
       kode: 'BBCA', nama: 'Bank BCA', sektor: 'Keuangan', harga: 10000, tdm_persen: 1, volume: 100,
       rvol10: 1, nilai: 1000000, nbsf_000: 5, free_float: 50, ma20_arah: 'naik', close_gap: 0.5,
-      chg_1d: 1, chg_wtd: 2, chg_mtd: 3, posisi_ema5: 'atas', posisi_ma10: 'atas', posisi_ma20: 'atas',
+      chg_1d: 1, chg_wtd: 2, chg_b1: 3, posisi_ema5: 'atas', posisi_ma10: 'atas', posisi_ma20: 'atas',
       chg_2m: 1, chg_3m: 2, skor_d: 'Buy', skor_w: 'Buy', skor_m: 'Neutral', tidak_diperdagangkan: false, bar5: [], form_skor: 3,
     }]
     const csv = keCsvHarianPapan(contoh)

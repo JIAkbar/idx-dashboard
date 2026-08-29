@@ -66,7 +66,7 @@ const ARTI_KOLOM: Partial<Record<keyof BarisHarianPapan, string>> = {
   close_gap: 'Selisih harga pembukaan hari ini terhadap penutupan kemarin. Positif = dibuka melompat ke atas.',
   chg_1d: 'Perubahan harga hari ini terhadap penutupan kemarin.',
   chg_wtd: 'Perubahan harga sejak penutupan pekan lalu — sejak awal pekan berjalan, bukan tujuh hari ke belakang. Di hari Senin ia mengukur satu hari.',
-  chg_mtd: 'Perubahan harga dibanding 21 hari bursa lalu (sekitar satu bulan). Panjang periodenya selalu sama, jadi peringkat antar emiten membandingkan rentang yang sama tanggal berapa pun.',
+  chg_b1: 'Perubahan harga dibanding 21 hari bursa lalu (sekitar satu bulan). Panjang periodenya selalu sama, jadi peringkat antar emiten membandingkan rentang yang sama tanggal berapa pun.',
   chg_2m: 'Perubahan harga dibanding 42 hari bursa lalu (sekitar dua bulan).',
   chg_3m: 'Perubahan harga dibanding 63 hari bursa lalu (sekitar tiga bulan).',
   posisi_ema5: 'Harga sekarang di atas atau di bawah rata-rata bergeraknya 5 hari.',
@@ -417,7 +417,7 @@ export function HarianPapan() {
                     {thSort(urutState, 'close_gap', 'Close Gap', true)}
                     {thSort(urutState, 'chg_1d', LABEL_RENTANG_RINGKAS.h1!, true)}
                     {thSort(urutState, 'chg_wtd', LABEL_RENTANG_RINGKAS.wtd!, true)}
-                    {thSort(urutState, 'chg_mtd', LABEL_RENTANG_RINGKAS.b1!, true)}
+                    {thSort(urutState, 'chg_b1', LABEL_RENTANG_RINGKAS.b1!, true)}
                     {thSort(urutState, 'chg_2m', LABEL_RENTANG_RINGKAS.b2!, true)}
                     {thSort(urutState, 'chg_3m', LABEL_RENTANG_RINGKAS.b3!, true)}
                     {thSort(urutState, 'posisi_ema5', 'vs EMA5')}
@@ -525,7 +525,7 @@ function BarisHp({
       </td>
       <td className={`r num ${b.chg_1d == null ? '' : b.chg_1d >= 0 ? 'up' : 'dn'}`}>{b.chg_1d == null ? '—' : fp(b.chg_1d)}</td>
       <td className={`r num ${b.chg_wtd == null ? '' : b.chg_wtd >= 0 ? 'up' : 'dn'}`}>{b.chg_wtd == null ? '—' : fp(b.chg_wtd)}</td>
-      <td className={`r num ${b.chg_mtd == null ? '' : b.chg_mtd >= 0 ? 'up' : 'dn'}`}>{b.chg_mtd == null ? '—' : fp(b.chg_mtd)}</td>
+      <td className={`r num ${b.chg_b1 == null ? '' : b.chg_b1 >= 0 ? 'up' : 'dn'}`}>{b.chg_b1 == null ? '—' : fp(b.chg_b1)}</td>
       <td className={`r num ${b.chg_2m == null ? '' : b.chg_2m >= 0 ? 'up' : 'dn'}`}>{b.chg_2m == null ? '—' : fp(b.chg_2m)}</td>
       <td className={`r num ${b.chg_3m == null ? '' : b.chg_3m >= 0 ? 'up' : 'dn'}`}>{b.chg_3m == null ? '—' : fp(b.chg_3m)}</td>
       <td className="r">{panah(b.posisi_ema5)}</td>

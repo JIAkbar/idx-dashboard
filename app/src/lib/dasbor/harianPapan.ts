@@ -245,10 +245,14 @@ export interface BarisHarianPapan {
   close_gap: number | null
   chg_1d: number | null
   chg_wtd: number | null
-  /** Return terhadap penutupan 21 hari bursa lalu — ROLLING, bukan
-   *  month-to-date. Namanya dipertahankan supaya pembaca lama tak putus;
-   *  artinya berubah 29 Agu 2026 atas keputusan Johan. */
-  chg_mtd: number | null
+  /** Return terhadap penutupan 21 hari bursa lalu — ROLLING.
+   *
+   *  Bernama `chg_b1`, bukan `chg_mtd`: Screener memakai nama itu untuk rumus
+   *  BERBEDA (sejak penutupan bulan sebelumnya). Satu nama untuk dua rumus
+   *  memberi dua angka untuk emiten yang sama di hari yang sama — BBCA 28 Agu
+   *  2,37% di Screener vs 4,02% di sini. Diganti 29 Agu 2026 atas keputusan
+   *  Johan; nol angka berubah di layar, cuma namanya berhenti bohong. */
+  chg_b1: number | null
   /** Rolling 42 hari bursa. */
   chg_2m: number | null
   /** Rolling 63 hari bursa. */
@@ -326,7 +330,7 @@ export function bangunBarisHarianPapan(
     // `bangun-harian-papan.mjs`. Berkas ini types & uji; JSON-nya dibangun
     // di sana, dan dua rumus yang berbeda untuk satu nama kolom adalah cara
     // paling rapi melahirkan angka yang tak bisa dicocokkan.
-    chg_mtd: hitungChgMundur(tutup, 21),
+    chg_b1: hitungChgMundur(tutup, 21),
     chg_2m: hitungChgMundur(tutup, 42),
     chg_3m: hitungChgMundur(tutup, 63),
     posisi_ema5: posisiHarga(hargaTerakhir, ema5),
@@ -369,7 +373,7 @@ export function sektorUnikHarianPapan(baris: BarisHarianPapan[]): string[] {
 
 const KOLOM_CSV: (keyof BarisHarianPapan)[] = [
   'kode', 'nama', 'sektor', 'harga', 'tdm_persen', 'volume', 'rvol10', 'nilai',
-  'nbsf_000', 'free_float', 'ma20_arah', 'close_gap', 'chg_1d', 'chg_wtd', 'chg_mtd',
+  'nbsf_000', 'free_float', 'ma20_arah', 'close_gap', 'chg_1d', 'chg_wtd', 'chg_b1',
   'chg_2m', 'chg_3m',
   'posisi_ema5', 'posisi_ma10', 'posisi_ma20', 'skor_d', 'skor_w', 'skor_m',
   'tidak_diperdagangkan',

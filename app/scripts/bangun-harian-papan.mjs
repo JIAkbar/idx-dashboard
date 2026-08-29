@@ -232,7 +232,12 @@ function bangunBarisHarianPapan(kode, nama, sektor, freeFloat, barSampaiTanggal)
     close_gap: kemarin ? hitungCloseGap(ohlc[ohlc.length - 1][1], kemarin[4]) : null,
     chg_1d: kemarin ? hitungChg1d(hargaTerakhir, kemarin[4]) : null,
     chg_wtd: chgWtd,
-    chg_mtd: chg1m,
+    // `chg_b1`, BUKAN `chg_mtd`. Screener memakai nama itu untuk rumus yang
+    // BERBEDA (sejak penutupan bulan sebelumnya), dan satu nama untuk dua
+    // rumus memberi dua angka untuk emiten yang sama di hari yang sama —
+    // terukur BBCA 28 Agu: 2,37% di sana, 4,02% di sini. Angkanya dua-duanya
+    // benar; namanya yang bohong.
+    chg_b1: chg1m,
     chg_2m: chg2m,
     chg_3m: chg3m,
     posisi_ema5: posisiHarga(hargaTerakhir, ema5),
