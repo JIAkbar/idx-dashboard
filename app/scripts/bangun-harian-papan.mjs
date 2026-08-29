@@ -193,6 +193,9 @@ function bangunBarisHarianPapan(kode, nama, sektor, freeFloat, barSampaiTanggal)
   const ma20 = sma(tutup, 20)
   const skor = skorPapanTigaKerangka(ohlc)
 
+  // null = aliran asing tak tersedia untuk bar ini (lihat barDariBursa).
+  // Dibedakan dari 0 yang berarti "tak ada asing bertransaksi".
+  const adaAsing = barIni[9] != null && barIni[10] != null
   const foreignBuy = Number(barIni[9] ?? 0)
   const foreignSell = Number(barIni[10] ?? 0)
   const volumeIni = volume[volume.length - 1] ?? null
@@ -206,7 +209,7 @@ function bangunBarisHarianPapan(kode, nama, sektor, freeFloat, barSampaiTanggal)
     volume: volumeIni,
     rvol10: hitungRvol10(volume),
     nilai: barIni[7] ?? null,
-    nbsf_000: hitungNbsf000(foreignBuy, foreignSell),
+    nbsf_000: adaAsing ? hitungNbsf000(foreignBuy, foreignSell) : null,
     free_float: freeFloat,
     ma20_arah: hitungMa20Arah(tutup),
     close_gap: kemarin ? hitungCloseGap(ohlc[ohlc.length - 1][1], kemarin[4]) : null,
@@ -300,8 +303,18 @@ function barDariBursa(r, iso) {
     Number(r.Volume) || 0,
     Number(r.Value) || 0,
     Number(r.Frequency) || 0,
-    Number(r.ForeignBuy) || 0,
-    Number(r.ForeignSell) || 0,
+    // Aliran asing SENGAJA null, bukan angka bursa.
+    //
+    // Slot ini berisi RUPIAH di arsip harga (BBCA 27 Agu: beli 228.367.645.000
+    // = Rp 228 miliar). Bursa melaporkan aliran asing dalam LEMBAR saja dan
+    // mengatakannya sendiri di arsipnya. Mengisi lembar ke slot rupiah
+    // memberi angka yang berselisih ribuan kali di kolom yang sama --
+    // BBCA 27 Agu -34.107.640 lalu 28 Agu 49.682, dua satuan berbeda, nol
+    // galat. Taksiran rupiah (lembar x harga rata-rata) TIDAK dipakai tanpa
+    // keputusan pemilik data: galatnya miring searah, jadi menumpuk kalau
+    // dijumlahkan (terukur +33% kumulatif setahun).
+    null,
+    null,
     0,
     0,
     Number(r.ListedShares) || 0,
