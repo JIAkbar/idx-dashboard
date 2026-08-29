@@ -61,6 +61,31 @@ export function Metodologi() {
             </p>
           </div>
 
+          {/* Ditambahkan 29 Agu 2026. Rincian angka perkiraan Net Asing tinggal
+              DI SINI, bukan di halaman yang memakainya: di sana ia cuma
+              ditandai ≈, karena cara angka dirakit bukan urusan pembaca yang
+              sedang memindai tabel. Halaman ini justru dibuat untuk itu. */}
+          <div className="mtd-kartu">
+            <h3>Net Asing bertanda ≈ — angka perkiraan, dan seberapa dekat</h3>
+            <p>
+              Aliran asing dilaporkan bursa dalam <b>lembar saham</b>, sementara kolom Net Asing di
+              Harian Papan menyatakan <b>rupiah</b>. Untuk hari yang nilai rupiahnya belum tersedia,
+              angkanya dihitung dari lembar dikalikan harga rata-rata emiten itu pada hari yang sama
+              (nilai transaksi dibagi volumenya). Angka hasil hitungan itu diberi tanda{' '}
+              <b>≈</b>; angka tanpa tanda adalah nilai yang dilaporkan apa adanya.
+            </p>
+            <p>
+              Seberapa dekat perkiraannya, diuji atas <b>5.590 pasang emiten-hari</b> terhadap nilai
+              rupiah sungguhan: arahnya cocok 98,6%, nilai tengahnya 0,9995 (praktis pas), dan 93%
+              meleset kurang dari 10%. Dijumlahkan seluruh sampel, selisihnya 0,23%.
+            </p>
+            <p>
+              Batasnya jujur disebut: 7% emiten meleset lebih dari 10%, dan perkiraan ini hanya
+              dipakai untuk hari terakhir yang nilai resminya belum masuk — begitu masuk, angka
+              resmi menggantikannya dan tanda ≈ hilang dengan sendirinya.
+            </p>
+          </div>
+
           <div className="mtd-kartu">
             <h3>Fraksi harga &amp; auto rejection — aturan resmi BEI</h3>
             <p>
