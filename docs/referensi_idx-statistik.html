@@ -415,6 +415,7 @@ hr { border: none; border-top: 1px solid var(--hairline); margin: 24px 0; }
 <li><a href="#prototipe-dev-kuli-papan-neo-papan-artifact-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Prototipe Dev — Kuli Papan &amp; Neo Papan (artifact, 23 Agu 2026)</span></a></li>
 <li><a href="#batas-repo-hosting-github-dan-vercel-diukur-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Batas repo &amp; hosting — GitHub dan Vercel (diukur 23 Agu 2026)</span></a></li>
 <li><a href="#riwayat" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Riwayat</span></a></li>
+<li><a href="#harian-papan-harian-papan-masukan-tiap-kolom" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Harian Papan /harian-papan — masukan &amp; tiap kolom</span></a></li>
 </ul>
 </div>
 
@@ -786,6 +787,13 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <td>IDX GetBrokerSummary (+PDF); IDX GetStockSummary; Stockbit chartbit (rupiah); ⚙️ turunan <code>bangun_aliran_investor.py</code> dari asing</td>
 <td><strong>ya</strong> (rupiah AsingEmiten, pra-2020)</td>
 <td>24 Agu 2026</td>
+</tr>
+<tr>
+<td>Harian Papan <code>/harian-papan</code></td>
+<td><code>harian_papan/index.json</code> + <code>harian_papan/&lt;tgl&gt;.json</code> (turunan) · penanda kebasian membaca <code>index.json</code> (statistik harian)</td>
+<td>⚙️ turunan <code>bangun-harian-papan.mjs</code> dari <code>ohlcv_stockbit/</code> (Stockbit chartbit) + <code>profil/</code> (IDX) + <code>daftar_emiten.json</code> (IDX) + <code>emiten_sektor.json</code> (IDX); <strong>tambalan hari terakhir dari <code>_arsip-mentah/asing/</code> (IDX GetStockSummary)</strong></td>
+<td><strong>ya</strong> — tambalan ujung, ditandai di layar; rincian di bagian "Harian Papan"</td>
+<td>29 Agu 2026</td>
 </tr>
 <tr>
 <td>Aliran Asing <code>/aliran-asing</code></td>
@@ -5002,6 +5010,198 @@ TP/SL H+5 (dua-duanya tersentuh hari sama = "tak tentu", tidak diklaim menang).<
 <li>25 Agustus 2026 — <strong>endpoint intraday Stockbit terpecahkan</strong> (pertanyaan Johan soal timeframe RBS/Gap): <code>chartbit/{kode}/price/intraday</code> dengan <code>from</code>=epoch terbaru, <code>to</code>=epoch terlama → <strong>bar 1 menit</strong> (o/h/l/c, volume, lot, value, frequency, foreign_buy/sell; 08:58–16:14), server menyimpan <strong>±90 hari</strong> saja (−180 hari → HTTP 400). Konsekuensi: timeframe 5m/15m/30m/1H/2H/4H bisa diagregasi dari 1 menit untuk 90 hari terakhir; riwayat panjang butuh panen rutin (±13 menit/putaran untuk 962 emiten). <code>docs/riset/stockbit-inventaris-endpoint.md</code> diperbarui. Pola RBS/Gap sendiri bebas timeframe (fungsi murni atas OHLC); backtest yang sudah ada = timeframe harian.</li>
 <li>28 Agustus 2026 — <strong>B45 Jejak Rekomendasi + tab "Riwayat &amp; Win Rate"</strong> (Screener) selesai — Tugas C penuh + generator C.1, spek <code>docs/spek-dev-papan/spek_preset_winrate_rekap.md</code>. <code>scripts/riset/rekap_preset.py</code> (port <code>PRESET_DEFS</code> dari <code>presetScreener.ts</code>, swauji <code>--uji</code> 9 kasus tangan-hitung lolos) dijalankan sekali untuk tanggal data terakhir yang BENAR-BENAR terisi (2026-08-27 — auto-deteksi via ambang <code>freq&gt;0</code> melewati 2026-08-28 yang masih 0/962 baris berfrekuensi, konfirmasi lapangan atas temuan 24 Agu 14:33 "fetch pertengahan sesi"): 80 baris saham lintas 5 preset (<code>whale-akdis</code> 0 — <code>label_accdist</code> kosong seluruhnya di arsip 27 Agu, jujur ditulis apa adanya, bukan dipaksa terisi). <code>app/src/lib/dasbor/winRate.ts</code> (3 definisi menang, 19 uji vitest termasuk kasus "tak tentu" TP&amp;SL sehari) + <code>rekomendasi.ts</code> (fetch/gabung, 6 uji) + tab ke-4 Screener.tsx. Sumber TP/SL: fallback ATR14 SELALU dipakai (bukan Target Realistis papan-terdorong <code>kuliPapan.ts</code> — itu butuh antrean penutupan yang cuma ada dari setoran kontributor, bukan data cakram 962 emiten). <code>npm run build</code> + <code>npx vitest run</code> (1597 lolos) + <code>tsc --noEmit</code> hijau; leak-sweep bersih (grep endpoint/<code>.json</code> di string ter-render). Verifikasi visual SELESAI dua viewport (laptop 1536×960×1.25, mobile 412×915×2.625) lewat tab chrome-devtools yang sudah login admin dari sesi sebelumnya (Screener tier <code>login</code> di <code>akses_halaman</code>, dicek Supabase — sesi ini sendiri tak pernah isi sandi); tabel Menang/Kalah "Tak ada baris" jujur untuk 2026-08-27 karena H+1-nya (28 Agu) belum berdata nyata, difilter <code>volume=0</code>.</li>
 </ul>
+<hr />
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="harian-papan-harian-papan-masukan-tiap-kolom" data-title="Harian Papan /harian-papan — masukan &amp; tiap kolom">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Harian Papan /harian-papan — masukan &amp; tiap kolom</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<p>Dibuat 29 Agu 2026 atas permintaan Johan: <em>"untuk page papan harian itu butuh<br />
+data apa saja dan sumber dari mana saja? buatkan tabel nya"</em>. Halaman ini<br />
+sebelumnya tak ada di peta di atas.</p>
+<p>Pembangunnya <code>app/scripts/bangun-harian-papan.mjs</code>; keluarannya<br />
+<code>data-idx/json/harian_papan/&lt;tgl&gt;.json</code> + <code>index.json</code>. Halaman TIDAK membaca<br />
+satu pun sumber mentah langsung — semua lewat turunan itu.</p>
+<h3>Lima masukan</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Butuh apa</th>
+<th>Berkas</th>
+<th>Sumber asal</th>
+<th>Penulisnya</th>
+<th>Isi terakhir (29 Agu 2026)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Bar harian: buka/tinggi/rendah/tutup, volume, nilai, aliran asing <strong>dalam rupiah</strong></td>
+<td><code>ohlcv_stockbit/&lt;KODE&gt;.json</code> (17 kolom)</td>
+<td>Stockbit, harga harian</td>
+<td><code>scripts/panen_ohlcv_stockbit.py</code></td>
+<td>27 Agu berisi; 28 Agu masih bar hantu (volume 0) — rantai token mati</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Tambalan hari terakhir saat (1) belum terisi</td>
+<td><code>_arsip-mentah/asing/&lt;tahun&gt;/&lt;YYYYMMDD&gt;.json.gz</code> (963 emiten/hari, 32 ruas)</td>
+<td>IDX, ringkasan saham harian</td>
+<td><code>scripts/panen_asing.py</code></td>
+<td>28 Agu, 963 emiten — <strong>tanpa kredensial apa pun</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td>Free float</td>
+<td><code>profil/&lt;KODE&gt;.json</code> → daftar pemegang saham + penanda pengendali</td>
+<td>IDX, profil perusahaan</td>
+<td><code>scripts/panen_profil_idx.py</code></td>
+<td>22 Agu, 963 berkas</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Nama emiten + <strong>wasit siapa yang boleh tayang</strong></td>
+<td><code>daftar_emiten.json</code></td>
+<td>IDX, ringkasan saham harian</td>
+<td><code>scripts/sinkron_emiten.py</code></td>
+<td>28 Agu, 962 emiten</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Sektor (klasifikasi IDX-IC) + saringan sektor</td>
+<td><code>emiten_sektor.json</code></td>
+<td>IDX, profil perusahaan</td>
+<td><code>scripts/panen_sektor_idx.py</code></td>
+<td>27 Agu, 962 emiten</td>
+</tr>
+</tbody>
+</table>
+<p>Yang <strong>tidak</strong> dipakai halaman ini: arsip broker 6 varian. Bukan kelalaian —<br />
+rincian per broker tak bisa menghasilkan harga buka/tinggi/rendah, dan<br />
+pertanyaan halaman ini "bagaimana emitennya hari ini", bukan "siapa yang<br />
+menggerakkan". Enam varian itu dipakai Whales Papan, Kuli Papan, Neo Papan,<br />
+Berkas Emiten, dan Watchlist.</p>
+<h3>Tiap kolom dari mana</h3>
+<table>
+<thead>
+<tr>
+<th>Kolom</th>
+<th>Masukan</th>
+<th>Cara dihitung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kode · Sektor</td>
+<td>4 · 5</td>
+<td>langsung</td>
+</tr>
+<tr>
+<td>Price</td>
+<td>1 (tutup)</td>
+<td>langsung</td>
+</tr>
+<tr>
+<td>Volume</td>
+<td>1</td>
+<td>langsung</td>
+</tr>
+<tr>
+<td>RVol(10)</td>
+<td>1</td>
+<td>volume hari ini ÷ rata-rata 10 hari <strong>sebelumnya</strong></td>
+</tr>
+<tr>
+<td>Value</td>
+<td>1</td>
+<td>langsung (rupiah)</td>
+</tr>
+<tr>
+<td>NBSF (000)</td>
+<td>1 (asing beli − jual)</td>
+<td>÷ 1000, satuan <strong>ribu rupiah</strong></td>
+</tr>
+<tr>
+<td>Free Float</td>
+<td>3</td>
+<td>100 − Σ persen pemegang saham ber-penanda pengendali</td>
+</tr>
+<tr>
+<td>MA20 Head</td>
+<td>1</td>
+<td>arah MA20 (naik/turun/datar)</td>
+</tr>
+<tr>
+<td>Close Gap</td>
+<td>1 (<strong>buka</strong> vs tutup kemarin)</td>
+<td>(buka − tutup kemarin) ÷ tutup kemarin</td>
+</tr>
+<tr>
+<td>1D</td>
+<td>1</td>
+<td>tutup vs tutup kemarin</td>
+</tr>
+<tr>
+<td>1WTD · 1MTD</td>
+<td>1</td>
+<td>tutup vs tutup akhir pekan/bulan sebelumnya</td>
+</tr>
+<tr>
+<td>vs EMA5 · MA10 · MA20</td>
+<td>1</td>
+<td>posisi tutup terhadap tiap garis</td>
+</tr>
+<tr>
+<td>Skor Papan D · W · M</td>
+<td>1</td>
+<td>6 periode MA/EMA + RSI, Stochastic, CCI, MACD; harian/pekanan/bulanan</td>
+</tr>
+<tr>
+<td><strong>Form</strong></td>
+<td>1 (<strong>buka</strong> &amp; tutup)</td>
+<td>lima hari bursa terakhir: berapa hari <strong>tutup di atas buka</strong>. Label <code>menang-kalah</code> ("3-1"). BUKAN besarnya kenaikan — naik 0,1% lima kali dapat 5-0 sama dengan naik 8% lima kali. Kunci urutnya menang − kalah (−5..+5)</td>
+</tr>
+</tbody>
+</table>
+<h3>Batas tambalan (keputusan Johan 29 Agu 2026: "Tambal ujung saja")</h3>
+<p>Masukan 2 dipakai hanya untuk hari yang masukan 1 belum punya, maksimal 5<br />
+hari, <strong>di memori saja</strong> — berkas arsip tak pernah ditulis ulang, jadi panen<br />
+ulang berikutnya menang tanpa perlu membatalkan apa pun. Lebih dari 5 hari:<br />
+pembangun menolak menambal dan mencetak peringatan.</p>
+<p>Dasar angkanya: 8.976 pasang emiten-hari (150 emiten × 60 hari), median rasio<br />
+tutup 1,000000; 96 selisih &gt;0,5% seluruhnya jatuh di hari yang masukan 1-nya<br />
+masih bar hantu. 59 hari lain nol selisih.</p>
+<p><strong>Dua kolom kosong di hari tambalan</strong>, dan keduanya disebut di layar:</p>
+<table>
+<thead>
+<tr>
+<th>Kolom</th>
+<th>Kenapa kosong</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NBSF</td>
+<td>Bursa melaporkan aliran asing dalam <strong>lembar</strong>; kolom ini <strong>rupiah</strong>. Terukur: BBCA 27 Agu −34.107.640 (ribu rupiah) vs lembar 28 Agu 49.682 — selisih ribuan kali di kolom yang sama. Taksiran rupiah (lembar × harga rata-rata) tidak dipakai tanpa keputusan pemilik data: galatnya miring searah, +33% kumulatif setahun</td>
+</tr>
+<tr>
+<td>Close Gap</td>
+<td>Bursa tak selalu melaporkan harga pembukaan — 220 dari 833 emiten aktif pada 28 Agu, dan ruas pengganti kosong di emiten yang sama</td>
+</tr>
+</tbody>
+</table>
+<p>Kolom <strong>Form</strong> juga membaca harga pembukaan; bar tanpa pembukaan dihitung<br />
+'datar' (tak menang, tak kalah), bukan 'naik'. Tanpa penjagaan itu seperempat<br />
+emiten rapornya miring ke hijau — terukur sebelum/sesudah: +1 158→130,<br />
++2 63→58, +3 53→35, +4 15→7.</p>
 </div>
 </div></div>
 </div>
