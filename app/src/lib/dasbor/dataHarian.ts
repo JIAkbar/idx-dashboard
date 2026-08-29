@@ -403,3 +403,30 @@ export function useDataPembanding(stem: string | null) {
 
   return { data, loading }
 }
+
+/**
+ * Daftar tanggal bursa menurut statistik harian IDX — DAFTARNYA SAJA.
+ *
+ * `useDataHarian` juga menyediakan daftar ini, tapi ia ikut menarik berkas
+ * hari aktif (ratusan KB) karena memang dipakai halaman yang menampilkan isi
+ * hari itu. Halaman lain cuma perlu tahu "hari bursa terakhir menurut sumber
+ * LAIN" untuk membandingkannya dengan data yang sedang ia tampilkan sendiri,
+ * dan menarik seluruh berkas untuk satu perbandingan tanggal itu pemborosan.
+ */
+export function useIndexTanggalIdx(): TanggalIndex[] {
+  const [tanggal, setTanggal] = useState<TanggalIndex[]>([])
+  useEffect(() => {
+    let batal = false
+    fetch('/data-idx/json/index.json')
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((j: { dates?: TanggalIndex[] }) => {
+        if (!batal) setTanggal(j.dates ?? [])
+      })
+      .catch(() => {
+        // Diamkan: ini penanda tambahan, bukan isi halaman. Gagal memuatnya
+        // berarti penandanya tak muncul — bukan halamannya yang rusak.
+      })
+    return () => { batal = true }
+  }, [])
+  return tanggal
+}

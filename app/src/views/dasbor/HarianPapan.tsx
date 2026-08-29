@@ -5,6 +5,8 @@ import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
+import { useIndexTanggalIdx } from '../../lib/dasbor/dataHarian'
+import { tanggalPanjang } from '../../lib/radar/arsip'
 import { DropdownMulti, type OpsiMulti } from '../../components/dasbor/DropdownMulti'
 import { KolomForm } from '../../components/dasbor/BadgeRapor'
 import { bandingkanBaris } from '../../lib/dasbor/useUrut'
@@ -109,6 +111,7 @@ export function HarianPapan() {
   )
   const [cari, setCari] = useState('')
   const { index: indeksEmiten } = useStockIndex()
+  const tglIdx = useIndexTanggalIdx()
   const [urutKunci, setUrutKunci] = useState<keyof BarisHarianPapan>(URUT_BAWAAN.gainer.kunci)
   const [urutArah, setUrutArah] = useState<'naik' | 'turun'>(URUT_BAWAAN.gainer.arah)
 
@@ -155,6 +158,25 @@ export function HarianPapan() {
   const ukuranHalaman = sempit ? 25 : 50
   const [tampil, setTampil] = useState(ukuranHalaman)
   useEffect(() => setTampil(ukuranHalaman), [tab, sektorAktif, tanggal, cari, ukuranHalaman])
+
+  /** Hari bursa yang SUDAH ada di statistik IDX tapi BELUM di halaman ini.
+   *
+   *  Kenapa ada: 29 Agu 2026 Johan menemukan (dan bilang "kesekian kali")
+   *  bahwa 28 Agustus tak pernah masuk. Akarnya rantai token sumber harga
+   *  mati, jadi arsipnya berhenti diperbarui — sementara statistik IDX dan
+   *  arsip aliran asing sudah punya hari itu. Halaman lalu menolak bar
+   *  bervolume nol (itu BENAR), dan hasil akhirnya: hari itu hilang tanpa
+   *  satu pun galat. Kegagalan senyap seperti ini selalu ditemukan Johan
+   *  lebih dulu, jadi halaman sekarang mengatakannya sendiri. */
+  const hariTertinggal = useMemo(() => {
+    const punya = new Set(tanggalData?.tanggal_tersedia ?? [])
+    const terakhirPunya = (tanggalData?.tanggal_tersedia ?? [])[0]
+    if (!terakhirPunya) return []
+    return (tglIdx ?? [])
+      .map((x) => x.date_iso)
+      .filter((iso) => iso > terakhirPunya && !punya.has(iso))
+      .sort()
+  }, [tanggalData, tglIdx])
 
   if (!tanggalData) {
     return (
@@ -250,6 +272,15 @@ export function HarianPapan() {
             </div>
           </div>
         </div>
+
+        {hariTertinggal.length > 0 && (
+          <p className="hp-tertinggal">
+            <b>Data tertinggal.</b> Bursa sudah menerbitkan{' '}
+            {hariTertinggal.length === 1 ? '1 hari' : `${hariTertinggal.length} hari`} yang belum
+            masuk halaman ini: {hariTertinggal.map(tanggalPanjang).join(', ')}. Angka di bawah adalah hari terakhir
+            yang lengkap, bukan hari bursa terakhir.
+          </p>
+        )}
 
         {/* MODE RENTANG — tabel BERBEDA, bukan tabel harian dengan angka
             dijumlahkan diam-diam. Hanya tiga kolom yang memang aditif yang
