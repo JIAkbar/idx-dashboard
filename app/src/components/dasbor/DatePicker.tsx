@@ -165,7 +165,10 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
   // separuh jadi — supaya orang tahu kalender menunggu klik kedua, bukan
   // mengira kliknya tak terdaftar.
   const labelNilai = awalSementara
-    ? `${pendek(awalSementara)} → pilih akhir`
+    // Tanggal itu SUDAH berlaku; klik kedua menaikkannya jadi rentang. Kata
+    // "bisa" penting — "pilih akhir" terbaca sebagai perintah dan membuat
+    // orang mengira kliknya belum jadi.
+    ? `${pendek(awalSementara)} · klik lagi bisa jadi rentang`
     : modeRentang && rentang
       ? `${pendek(rentang.dari)} – ${pendek(rentang.sampai)}`
       : v ? `${v.d} ${NAMA_BULAN[v.b].slice(0, 3)} ${v.t}` : 'Pilih tanggal'
@@ -301,7 +304,19 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
                 aria-label={judul ? `${d} — ${judul}` : undefined}
                 onClick={() => {
                   if (!modeRentang) { onChange(iso); setOpen(false); return }
-                  if (!awalSementara) { setAwalSementara(iso); return }
+                  // Klik PERTAMA langsung memilih hari itu — rentang adalah
+                  // TAMBAHAN, bukan syarat.
+                  //
+                  // Versi sebelumnya hanya menyimpan ujung awal dan menunggu
+                  // klik kedua, jadi memilih satu tanggal menuntut mengklik
+                  // tanggal yang sama DUA KALI sementara labelnya berbunyi
+                  // "pilih akhir" — terbaca sebagai perintah, bukan tawaran.
+                  // Johan 29 Agu 2026: "bisa range dan single waktu".
+                  //
+                  // Ongkosnya satu pemuatan data yang terbuang bila pengguna
+                  // ternyata mau rentang; itu jauh lebih murah daripada mode
+                  // tunggal yang tak bisa dicapai tanpa menebak caranya.
+                  if (!awalSementara) { onChange(iso); setAwalSementara(iso); return }
                   setAwalSementara(null)
                   setOpen(false)
                   // Klik DUA KALI di tanggal yang sama = memilih satu hari,
@@ -314,7 +329,9 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
                   // tanggal current ya? harusnya bisa juga"). Memanggil
                   // `onChange` membuat semua pemakai benar tanpa masing-masing
                   // harus memikirkannya.
-                  if (awalSementara === iso) { onChange(iso); return }
+                  // Tanggal yang sama diklik lagi: sudah terpilih sejak klik
+                  // pertama, jadi cukup tutup — tanpa memanggil onChange lagi.
+                  if (awalSementara === iso) return
                   // Urutan klik tak dipaksakan: klik mundur tetap menghasilkan
                   // rentang yang sah, cuma dibalik di sini.
                   const [a, b] = awalSementara <= iso ? [awalSementara, iso] : [iso, awalSementara]

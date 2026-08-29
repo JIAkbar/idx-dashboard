@@ -1,35 +1,50 @@
-/* DatePicker (.dpk-*) — popover kalender bulan gaya Lantai. Sengaja file
+/* DatePicker (.dpk-*) — popover kalender bulan gaya Lantai.
+ *
+ * DIPADATKAN 29 Agu 2026 (Johan: "komponen kalender lebih compact tapi bisa
+ * range dan single waktu"). Acuan tatanya kini Harian Papan, bukan Whales
+ * Papan — dan karena kesebelas halaman memakai komponen yang SAMA, satu
+ * perapian di sini berlaku ke semuanya sekaligus. Itu sebabnya kalender tak
+ * pernah perlu disapu per halaman.
+ *
+ * Kemampuan rentang & tanggal tunggal ada di komponennya, bukan di
+ * halamannya: `onGantiRentang` diberikan → mode rentang menyala, tidak
+ * diberikan → tetap pemilih satu hari. Halaman memilih dengan memberi atau
+ * tak memberi prop, bukan dengan menulis kalender sendiri.
+ *
+ * Sengaja file
    terpisah (bukan nambah lantai.css) supaya tidak bentrok dengan pekerjaan
    paralel di file itu; semua warna dari token .lantai jadi tema terang/gelap
    otomatis ikut. */
 
 .lantai .dpk-btn {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 6px;
   text-align: left; cursor: pointer;
+  padding: 5px 9px;
+  font-size: 12px;
 }
 .lantai .dpk-btn .dasbor-ikon { stroke: var(--text3); flex-shrink: 0; }
 .lantai .dpk-btn:hover { border-color: var(--amber); }
 
 /* Lebar tetap — .dd-menu bawaannya min-width:100% (ngikut lebar input),
    di-reset di sini supaya popover kompak rata kiri di bawah field. */
-.lantai .dpk-pop { width: 288px; min-width: 0; max-width: calc(100vw - 48px); padding: 10px; }
+.lantai .dpk-pop { width: 250px; min-width: 0; max-width: calc(100vw - 48px); padding: 8px; }
 /* Pemicu dekat tepi kanan layar (header /broker-summary): popover rata kanan
    supaya tidak terpotong viewport. */
 .lantai .dpk-kanan .dpk-pop { left: auto; right: 0; }
 
-.lantai .dpk-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.lantai .dpk-bulan { font-family: var(--disp); font-weight: 700; font-size: 12px; letter-spacing: .05em; }
+.lantai .dpk-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.lantai .dpk-bulan { font-family: var(--disp); font-weight: 700; font-size: 11px; letter-spacing: .05em; }
 
 .lantai .dpk-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
 .lantai .dpk-dow {
   font-family: var(--disp); font-size: 8.5px; font-weight: 600;
   letter-spacing: .08em; text-transform: uppercase;
-  color: var(--text3); text-align: center; padding: 3px 0;
+  color: var(--text3); text-align: center; padding: 2px 0;
 }
 .lantai .dpk-hari {
   position: relative;
-  font-family: var(--mono); font-size: 11px; color: var(--text2);
-  text-align: center; padding: 5px 0; border-radius: 4px;
+  font-family: var(--mono); font-size: 10.5px; color: var(--text2);
+  text-align: center; padding: 4px 0; border-radius: 4px;
   background: none; border: none; cursor: pointer;
 }
 .lantai .dpk-hari:hover { background: var(--amber-dim); color: var(--text); }
