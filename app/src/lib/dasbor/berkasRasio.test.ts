@@ -60,3 +60,38 @@ describe('susunRasio', () => {
     }
   })
 })
+
+describe('tambalan dari sumber cadangan', () => {
+  it('menambal hanya ruas yang terukur setara, dan menandai sumbernya', () => {
+    const { kelompok, totalTambalan } = susunRasio(
+      { 'Current Book Value Per Share': '-', 'Current PE Ratio (TTM)': 10 },
+      { bv: 2201.5, pe: 6.47 },
+    )
+    const ps = kelompok.find((k) => k.kunci === 'persaham')!
+    const bv = ps.baris.find((b) => b.nama === 'Current Book Value Per Share')
+    expect(bv?.nilai).toBe('2201.5')
+    expect(bv?.sumber).toBe('Yahoo Finance')
+    expect(totalTambalan).toBe(1)
+
+    // PE TIDAK ditambal walau cadangan punya nilainya — ia tak lolos ukur.
+    const v = kelompok.find((k) => k.kunci === 'valuasi')!
+    expect(v.baris.find((b) => b.nama === 'Forward PE Ratio')).toBeUndefined()
+  })
+
+  it('sumber utama selalu menang, cadangan tak pernah menimpanya', () => {
+    const { kelompok, totalTambalan } = susunRasio(
+      { 'Current Book Value Per Share': 2193.77 },
+      { bv: 9999 },
+    )
+    const bv = kelompok.find((k) => k.kunci === 'persaham')!.baris[0]
+    expect(bv.nilai).toBe('2193.77')
+    expect(bv.sumber).toBeUndefined()
+    expect(totalTambalan).toBe(0)
+  })
+
+  it('tanpa cadangan, perilakunya persis seperti sebelumnya', () => {
+    const { totalTambalan, totalKosong } = susunRasio({ 'Dividend (TTM)': '-' })
+    expect(totalTambalan).toBe(0)
+    expect(totalKosong).toBeGreaterThan(0)
+  })
+})

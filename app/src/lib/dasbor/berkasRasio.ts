@@ -20,13 +20,31 @@
  * setiap emiten manufaktur memajang enam baris kosong. Dikelompokkan sendiri,
  * kelompoknya cukup disembunyikan.
  *
- * ## Yang TIDAK dilakukan di sini
+ * ## Tambalan dari sumber cadangan — tiga ruas, dan cuma tiga
  *
- * Rasio yang kosong DIBIARKAN kosong. Rancangan menyebut kemungkinan menambal
- * dari sumber cadangan, tapi menjahit dua sumber angka keuangan menuntut
- * keputusan pemilik data lebih dulu — lengkap dengan tabel pembanding — dan
- * itu belum diambil. Kosong yang terlihat lebih murah daripada angka dari
- * sumber lain yang menyamar jadi angka sumber utama.
+ * Johan 29 Agu 2026: *"rasio kosong di tambal data dari mana perlu di sebutkan
+ * itu penting sumber nya"*. Izin menambal diberikan dengan satu syarat yang
+ * dipenuhi di sini: angka tambalan SELALU membawa nama sumbernya.
+ *
+ * Yang boleh ditambal ditentukan pengukuran, bukan ketersediaan. Dibandingkan
+ * pada emiten yang KEDUA sumbernya punya nilainya:
+ *
+ *     rasio                          n     median   dalam ±5%
+ *     Dividend (TTM)               410     1,0000     88%   → ditambal
+ *     Current Book Value Per Share 954     1,0000     83%   → ditambal
+ *     Dividend                     406     1,0000     78%   → ditambal
+ *     Return on Equity ×100        957     0,979      42%   → DITOLAK
+ *     Payout Ratio ×100            287     0,962      15%   → DITOLAK
+ *     Return on Assets ×100        888     1,010       7%   → DITOLAK
+ *
+ * Tiga yang ditolak bukan soal satuan — sesudah dikali 100 pun sebarannya
+ * tetap lebar, karena keduanya menghitung periode yang berbeda (TTM vs
+ * kuartal, tanggal laporan tak sama). Angka yang median-nya mendekati satu
+ * tapi meleset di enam dari sepuluh emiten bukan pengganti; ia tebakan yang
+ * kebetulan benar separuh waktu.
+ *
+ * Sisanya tetap DIBIARKAN kosong. Kosong yang terlihat lebih murah daripada
+ * angka sumber lain yang menyamar jadi angka sumber utama.
  */
 
 export interface KelompokRasio {
@@ -152,6 +170,10 @@ export const KELOMPOK_RASIO: KelompokRasio[] = [
 export interface BarisRasio {
   nama: string
   nilai: string
+  /** Diisi HANYA bila nilainya datang dari sumber cadangan. Kosong berarti
+   *  angka sumber utama — dan penyaji wajib menampilkan ruas ini saat ada,
+   *  bukan memilih menampilkannya. */
+  sumber?: string
 }
 
 export interface KelompokTerisi {
@@ -161,6 +183,23 @@ export interface KelompokTerisi {
   /** Berapa rasio di kelompok ini yang sumbernya tak punya nilainya. */
   kosong: number
 }
+
+/**
+ * Rasio yang boleh ditambal → nama ruas di sumber cadangan.
+ *
+ * Daftar ini SENGAJA pendek. Menambahkannya menuntut pengukuran yang sama
+ * dengan tiga yang sudah ada: median rasio hitung-ulang harus 1,0000 dan
+ * setidaknya tiga dari empat emiten meleset kurang dari 5%.
+ */
+export const TAMBALAN: Record<string, string> = {
+  'Dividend (TTM)': 'dividend_ttm',
+  'Dividend': 'dividend',
+  'Current Book Value Per Share': 'bv',
+}
+
+/** Nama sumber cadangan sebagaimana dicetak ke pembaca — nama penyedia,
+ *  bukan nama berkas atau ruas internal. */
+export const NAMA_CADANGAN = 'Yahoo Finance'
 
 /** Nilai yang berarti "tak ada", bukan nol. Sumbernya memakai beberapa bentuk
  *  untuk hal yang sama, dan membacanya sebagai teks apa adanya akan memajang
@@ -179,12 +218,22 @@ function adaNilai(v: unknown): boolean {
  * tanpa jejak. Peta yang diam-diam membuang ruas asing adalah cara paling
  * rapi kehilangan data baru.
  */
-export function susunRasio(rasio: Record<string, unknown> | null | undefined): {
+export function susunRasio(
+  rasio: Record<string, unknown> | null | undefined,
+  /** Sumber cadangan; dipakai HANYA untuk ruas di `TAMBALAN` yang sumber
+   *  utamanya kosong, dan hasilnya selalu ditandai. */
+  cadangan?: Record<string, unknown> | null,
+): {
   kelompok: KelompokTerisi[]
   totalTerisi: number
   totalKosong: number
+  /** Berapa nilai yang datang dari cadangan — dipakai penyaji untuk menyebut
+   *  sumbernya sekali di kepala blok, bukan mengulanginya di tiap baris. */
+  totalTambalan: number
 } {
   const r = rasio ?? {}
+  const cad = cadangan ?? {}
+  let totalTambalan = 0
   const sudah = new Set<string>()
   const kelompok: KelompokTerisi[] = []
   let totalTerisi = 0
@@ -196,8 +245,18 @@ export function susunRasio(rasio: Record<string, unknown> | null | undefined): {
     for (const nama of k.isi) {
       sudah.add(nama)
       const v = r[nama]
-      if (adaNilai(v)) baris.push({ nama, nilai: String(v) })
-      else kosong += 1
+      if (adaNilai(v)) {
+        baris.push({ nama, nilai: String(v) })
+        continue
+      }
+      const ruasCad = TAMBALAN[nama]
+      const vc = ruasCad ? cad[ruasCad] : undefined
+      if (adaNilai(vc)) {
+        baris.push({ nama, nilai: String(vc), sumber: NAMA_CADANGAN })
+        totalTambalan += 1
+      } else {
+        kosong += 1
+      }
     }
     totalTerisi += baris.length
     totalKosong += kosong
@@ -218,7 +277,7 @@ export function susunRasio(rasio: Record<string, unknown> | null | undefined): {
     totalTerisi += sisa.length
   }
 
-  return { kelompok, totalTerisi, totalKosong }
+  return { kelompok, totalTerisi, totalKosong, totalTambalan }
 }
 
 /**

@@ -191,3 +191,79 @@ export async function muatRekomendasi(kode: string): Promise<RekomendasiEmiten[]
     return []
   }
 }
+
+// ── Probabilitas historis ──────────────────────────────────────────────────
+
+/**
+ * Hasil mesin probabilitas untuk satu emiten.
+ *
+ * Berdiri sendiri, tak lagi menumpang Deep Dive (Johan 29 Agu 2026: *"P di
+ * isi kan datanya sudah ada tidak selalu pakai deep dive biarkan dia berdiri
+ * disana sendiri"*). Dibangun `scripts/bangun_prob.py` untuk seluruh emiten.
+ */
+export interface ProbEmiten {
+  kode: string
+  /** P(harga 5 hari lagi di atas hari ini). */
+  p5: number | null
+  /** Angka DASAR pool — berapa persen kejadian itu terjadi tanpa syarat apa
+   *  pun. Tanpa ini, p5 tak bisa dinilai: 62% berarti lain kalau dasarnya
+   *  60% dibanding kalau dasarnya 30%. */
+  base5: number | null
+  /** p5 − base5, dalam poin persen. */
+  lift5: number | null
+  ci5: [number, number] | null
+  n: number | null
+  cocok: number | null
+  total_fitur: number | null
+  /** Peluang menyentuh level pivot esok. */
+  pR1: number | null
+  pR2: number | null
+  pS1: number | null
+  /** Jarak level itu dari harga sekarang (0,01 = 1%) — tanpa ini, "80% capai
+   *  R1" tak bisa dibaca: R1 yang cuma +0,9% memang hampir selalu tersentuh. */
+  jarak: { R1?: number; R2?: number; S1?: number } | null
+  ret_p25: number | null
+  ret_p50: number | null
+  ret_p75: number | null
+  faktor: Array<{ nama: string; nilai: string; delta_pp: number; n: number }> | null
+  pool_n: number | null
+  pool_emiten: number | null
+}
+
+export interface EvaluasiProb {
+  n_uji: number
+  mulai_uji: string
+  brier: number
+  brier_dasar: number
+  /** >0 berarti penaksir mengalahkan angka dasar; ≤0 berarti tidak. */
+  skill: number | null
+  presisi_naik: number | null
+  n_yakin: number
+}
+
+export async function muatProb(
+  kode: string,
+): Promise<{ prob: ProbEmiten | null; evaluasi: EvaluasiProb | null }> {
+  try {
+    const [a, b] = await Promise.all([
+      fetch(`/data-idx/json/prob/${kode.toUpperCase()}.json`),
+      fetch('/data-idx/json/prob/index.json'),
+    ])
+    const prob = a.ok ? ((await a.json()) as ProbEmiten) : null
+    const idx = b.ok ? ((await b.json()) as { evaluasi?: EvaluasiProb }) : null
+    return { prob, evaluasi: idx?.evaluasi ?? null }
+  } catch {
+    return { prob: null, evaluasi: null }
+  }
+}
+
+/**
+ * Apakah penaksir layak dibaca sebagai sinyal, menurut ujinya sendiri.
+ *
+ * Dijawab dari `skill`, bukan dari kesan. Uji 29 Agu 2026 menjawab TIDAK
+ * (skill −0,023), dan halaman wajib mengatakannya — bukan menampilkan angka
+ * yang terlihat meyakinkan sambil menyimpan hasil ujinya.
+ */
+export function layakSinyal(ev: EvaluasiProb | null): boolean {
+  return !!ev && typeof ev.skill === 'number' && ev.skill > 0
+}

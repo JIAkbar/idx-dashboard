@@ -456,3 +456,42 @@
 .lantai .be-rekom { margin-top: 14px; display: grid; gap: 5px; }
 .lantai .be-rekom-daftar { margin: 0; padding-left: 18px; display: grid; gap: 3px; font-size: 12px; color: var(--text2); }
 .lantai .be-rekom-daftar b { color: var(--text); text-transform: uppercase; font-size: 11px; letter-spacing: .05em; }
+
+/* Angka dari sumber cadangan — dibedakan, tak disamarkan. Sumbernya ditulis
+   pada barisnya sendiri karena pembaca yang memindai satu rasio tak pernah
+   membaca kepala bloknya. */
+.lantai .be-rasio-sumber { color: var(--amber); font-style: normal; font-size: 10.5px; }
+.lantai .be-rasio-baris dd.be-rasio-tambal { color: var(--text2); }
+
+/* Probabilitas — jarak level dicetak menempel pada persennya, karena "80%
+   capai R1" tak bisa dibaca tanpa tahu R1 cuma +0,9% dari harga sekarang. */
+.lantai .be-prob { display: grid; gap: 12px; margin-top: 12px; }
+.lantai .be-prob-jarak { color: var(--text3); font-size: 10.5px; font-family: var(--mono); }
+.lantai .be-prob-naik { display: grid; gap: 5px; }
+.lantai .be-prob-uji {
+  margin: 0;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--line2);
+  border-radius: var(--r);
+  background: var(--bg2);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text2);
+}
+/* Penaksir yang kalah dari tebakan dasar diberi tepi peringatan — hasil uji
+   yang buruk adalah bagian terpenting dari blok ini, bukan catatan kecil. */
+.lantai .be-prob-gagal { border-left-color: var(--amber); }
+.lantai .be-prob-uji b { color: var(--text); }
+.lantai .be-prob-faktor { display: grid; gap: 5px; }
+.lantai .be-prob-faktor ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; }
+.lantai .be-prob-faktor li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 12px;
+  color: var(--text3);
+}
+.lantai .be-prob-faktor em { font-style: normal; color: var(--text2); }
+.lantai .be-prob-faktor b { font-family: var(--mono); font-variant-numeric: tabular-nums; }

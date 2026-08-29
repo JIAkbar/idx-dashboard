@@ -23,10 +23,10 @@ import { ringkasAsing, bacaAliran, bacaPorsi } from '../../lib/dasbor/berkasAsin
 import { ringkasLikuid, labelLikuiditas } from '../../lib/dasbor/berkasLikuiditas'
 import { susunBendera, TANPA_BENDERA, type Bendera } from '../../lib/dasbor/berkasBendera'
 import { useKartu } from '../../lib/dasbor/kartuAnalisa'
-import { susunRasio, muatRasio } from '../../lib/dasbor/berkasRasio'
+import { susunRasio, muatRasio, NAMA_CADANGAN } from '../../lib/dasbor/berkasRasio'
 import {
-  muatRekam, muatRekomendasi, MIN_SAMPEL_PERSEN,
-  type RekamStrategi, type RekomendasiEmiten,
+  muatRekam, muatRekomendasi, muatProb, layakSinyal, MIN_SAMPEL_PERSEN,
+  type RekamStrategi, type RekomendasiEmiten, type ProbEmiten, type EvaluasiProb,
 } from '../../lib/dasbor/berkasRekam'
 import { muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
 import { fetchAsing, type AsingData } from '../../lib/dasbor/stockDetailData'
@@ -153,13 +153,23 @@ export default function BerkasEmiten() {
   // dua kali. Tangga harga (MA/support/resistance) datang dari kartu yang
   // SUDAH dimuat blok G — nol fetch tambahan.
   const [rasioMentah, setRasioMentah] = useState<Record<string, unknown> | null>(null)
+  const [rasioCadangan, setRasioCadangan] = useState<Record<string, unknown> | null>(null)
   useEffect(() => {
     let batal = false
-    setRasioMentah(null)
+    setRasioMentah(null); setRasioCadangan(null)
     muatRasio(kode).then((d) => { if (!batal) setRasioMentah(d) })
+    // Sumber cadangan — dipakai HANYA untuk tiga ruas yang terukur setara
+    // (lihat TAMBALAN di berkasRasio.ts), dan hasilnya selalu ditandai.
+    fetch(`/data-idx/json/fundamental/${kode.toUpperCase()}.json`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (!batal) setRasioCadangan(d) })
+      .catch(() => {})
     return () => { batal = true }
   }, [kode])
-  const rasio = useMemo(() => susunRasio(rasioMentah), [rasioMentah])
+  const rasio = useMemo(
+    () => susunRasio(rasioMentah, rasioCadangan),
+    [rasioMentah, rasioCadangan],
+  )
 
   // Blok E — rekam jejak. Bukan ramalan: frekuensi historis strategi PAPAN
   // pada emiten INI, lengkap dengan kalahnya.
@@ -173,6 +183,21 @@ export default function BerkasEmiten() {
     return () => { batal = true }
   }, [kode])
   const rekamAda = useMemo(() => rekam.filter((x) => x.n > 0), [rekam])
+
+  // Probabilitas berdiri sendiri untuk SETIAP emiten, tak lagi menumpang
+  // Deep Dive (Johan 29 Agu: "biarkan dia berdiri disana sendiri").
+  const [prob, setProb] = useState<ProbEmiten | null>(null)
+  const [evaluasiProb, setEvaluasiProb] = useState<EvaluasiProb | null>(null)
+  useEffect(() => {
+    let batal = false
+    setProb(null)
+    muatProb(kode).then((d) => {
+      if (batal) return
+      setProb(d.prob)
+      setEvaluasiProb(d.evaluasi)
+    })
+    return () => { batal = true }
+  }, [kode])
 
   const labelLik = labelLikuiditas(likuid)
 
@@ -648,13 +673,104 @@ export default function BerkasEmiten() {
         <div className="be-kartu-kepala">
           <span className="be-blok">E</span>
           <div>
-            <h2>Rekam jejak — dengan angka kejujurannya</h2>
+            <h2>Probabilitas &amp; rekam jejak — dengan angka kejujurannya</h2>
             <p className="be-ket">
               Bukan ramalan. Seberapa sering strategi PAPAN benar di emiten ini menurut ujinya
               sendiri, lengkap dengan seberapa sering ia meleset.
             </p>
           </div>
         </div>
+
+        {prob && (
+          <div className="be-prob">
+            <span className="be-lbl">Peluang menyentuh level esok</span>
+            <div className="be-tangga-baris">
+              {([['R1', prob.pR1, prob.jarak?.R1], ['R2', prob.pR2, prob.jarak?.R2],
+                 ['S1', prob.pS1, prob.jarak?.S1]] as const).map(([nama, p, jarak]) => (
+                <span key={nama} className="be-pil">
+                  {nama}
+                  <b className={nama === 'S1' ? 'dn' : 'up'}>
+                    {p == null ? '—' : `${(p * 100).toFixed(0)}%`}
+                  </b>
+                  {/* Jaraknya WAJIB ikut. "80% capai R1" tak bisa dibaca tanpa
+                      tahu R1 cuma +0,9% dari harga sekarang — angka tinggi di
+                      level dekat bukan kabar baik, itu aritmetika. */}
+                  {jarak != null && (
+                    <span className="be-prob-jarak">
+                      {nama === 'S1' ? '−' : '+'}{(Math.abs(jarak) * 100).toFixed(1)}%
+                    </span>
+                  )}
+                </span>
+              ))}
+            </div>
+
+            <div className="be-prob-naik">
+              <span className="be-lbl">Peluang naik dalam 5 hari</span>
+              <div className="be-tangga-baris">
+                <span className="be-pil">
+                  emiten ini<b>{prob.p5 == null ? '—' : `${(prob.p5 * 100).toFixed(1)}%`}</b>
+                </span>
+                {/* Angka dasar berdiri SEJAJAR, bukan di catatan kaki: itu
+                    satu-satunya cara pembaca melihat bahwa selisihnya nyaris
+                    nol tanpa harus menghitung sendiri. */}
+                <span className="be-pil">
+                  rata-rata pasar<b>{prob.base5 == null ? '—' : `${(prob.base5 * 100).toFixed(1)}%`}</b>
+                </span>
+                <span className="be-pil">
+                  selisih
+                  <b className={(prob.lift5 ?? 0) > 0 ? 'up' : (prob.lift5 ?? 0) < 0 ? 'dn' : ''}>
+                    {prob.lift5 == null ? '—' : `${prob.lift5 > 0 ? '+' : ''}${prob.lift5.toFixed(2)} pp`}
+                  </b>
+                </span>
+                {prob.n != null && (
+                  <span className="be-pil">
+                    dari<b>{prob.n.toLocaleString('id-ID')} hari serupa</b>
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Hasil uji penaksirnya SENDIRI, dicetak apa adanya. Kalau ia
+                tak mengalahkan tebakan dasar, halaman mengatakannya — bukan
+                memajang angka meyakinkan sambil menyimpan hasil ujinya. */}
+            {evaluasiProb && (
+              <p className={`be-prob-uji${layakSinyal(evaluasiProb) ? '' : ' be-prob-gagal'}`}>
+                {layakSinyal(evaluasiProb) ? (
+                  <>
+                    Diuji pada {evaluasiProb.n_uji} titik di luar sampel sejak{' '}
+                    {evaluasiProb.mulai_uji}: penaksir ini <b>lebih baik</b> daripada sekadar
+                    memakai rata-rata pasar.
+                  </>
+                ) : (
+                  <>
+                    <b>Baca peluang 5 hari itu sebagai konteks, bukan sinyal.</b> Diuji pada{' '}
+                    {evaluasiProb.n_uji} titik di luar sampel sejak {evaluasiProb.mulai_uji},
+                    penaksir ini <b>tidak</b> lebih baik daripada sekadar memakai rata-rata pasar.
+                    Peluang menyentuh level di atas berdiri terpisah — ia menghitung jarak, bukan
+                    menebak arah.
+                  </>
+                )}
+              </p>
+            )}
+
+            {prob.faktor && prob.faktor.length > 0 && (
+              <div className="be-prob-faktor">
+                <span className="be-lbl">Yang mendorong &amp; menekan hari ini</span>
+                <ul>
+                  {prob.faktor.slice(0, 5).map((f, i) => (
+                    <li key={i}>
+                      <span>{f.nama}</span>
+                      <em>{f.nilai}</em>
+                      <b className={f.delta_pp >= 0 ? 'up' : 'dn'}>
+                        {f.delta_pp >= 0 ? '+' : ''}{f.delta_pp.toFixed(1)} pp
+                      </b>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
 
         {rekamAda.length === 0 ? (
           <p className="be-bendera-kosong">
@@ -731,6 +847,10 @@ export default function BerkasEmiten() {
             <p className="be-ket">
               Tangga harga dan {rasio.totalTerisi} rasio keuangan, dikelompokkan menurut
               pertanyaan yang dijawabnya.
+              {rasio.totalTambalan > 0 && (
+                <> {rasio.totalTambalan} di antaranya tak ada di sumber utama dan diambil dari{' '}
+                <b>{NAMA_CADANGAN}</b> — ditandai pada barisnya masing-masing.</>
+              )}
             </p>
           </div>
         </div>
@@ -791,8 +911,14 @@ export default function BerkasEmiten() {
                 <dl>
                   {k.baris.map((b) => (
                     <div key={b.nama} className="be-rasio-baris">
-                      <dt>{b.nama}</dt>
-                      <dd>{b.nilai}</dd>
+                      <dt>
+                        {b.nama}
+                        {/* Sumber ditempel pada ANGKANYA, bukan disebut sekali
+                            di kepala blok: pembaca yang memindai satu rasio
+                            tak pernah membaca kepala bloknya. */}
+                        {b.sumber && <em className="be-rasio-sumber"> · {b.sumber}</em>}
+                      </dt>
+                      <dd className={b.sumber ? 'be-rasio-tambal' : undefined}>{b.nilai}</dd>
                     </div>
                   ))}
                 </dl>
