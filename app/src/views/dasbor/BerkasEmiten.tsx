@@ -23,6 +23,7 @@ import { ringkasAsing, bacaAliran, bacaPorsi } from '../../lib/dasbor/berkasAsin
 import { ringkasLikuid, labelLikuiditas } from '../../lib/dasbor/berkasLikuiditas'
 import { susunBendera, TANPA_BENDERA, type Bendera } from '../../lib/dasbor/berkasBendera'
 import { useKartu } from '../../lib/dasbor/kartuAnalisa'
+import { susunRasio, muatRasio } from '../../lib/dasbor/berkasRasio'
 import { muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
 import { fetchAsing, type AsingData } from '../../lib/dasbor/stockDetailData'
 import { LABEL_KELOMPOK, KETERANGAN_KELOMPOK, warnaBrokerCanvas, namaBroker } from '../../lib/dasbor/kelompokBroker'
@@ -143,6 +144,19 @@ export default function BerkasEmiten() {
     })
     return ringkasLikuid(baris, 60)
   }, [candle, hariBroker])
+  // Blok F — 94 rasio fundamental + tangga harga. Pemuat keystats yang sama
+  // dipakai Stock Detail, jadi emiten yang sudah dibuka di sana tak diambil
+  // dua kali. Tangga harga (MA/support/resistance) datang dari kartu yang
+  // SUDAH dimuat blok G — nol fetch tambahan.
+  const [rasioMentah, setRasioMentah] = useState<Record<string, unknown> | null>(null)
+  useEffect(() => {
+    let batal = false
+    setRasioMentah(null)
+    muatRasio(kode).then((d) => { if (!batal) setRasioMentah(d) })
+    return () => { batal = true }
+  }, [kode])
+  const rasio = useMemo(() => susunRasio(rasioMentah), [rasioMentah])
+
   const labelLik = labelLikuiditas(likuid)
 
   const bendera: Bendera[] = useMemo(() => susunBendera({
@@ -609,7 +623,96 @@ export default function BerkasEmiten() {
         )}
       </section>
 
-      {/* Blok E–G menyusul — rancangannya sudah tetap, datanya sudah dipanen. */}
+      {/* BLOK F — yang sudah dihitung halaman lain, dikumpulkan jadi satu
+          layar. Tangga harga datang dari kartu yang SUDAH dimuat blok G;
+          94 rasio dari berkas yang cache peramannya dibagi dengan Stock
+          Detail. Halaman ini mengumpulkan, bukan menghitung ulang. */}
+      <section className="be-kartu">
+        <div className="be-kartu-kepala">
+          <span className="be-blok">F</span>
+          <div>
+            <h2>Teknikal &amp; fundamental</h2>
+            <p className="be-ket">
+              Tangga harga dan {rasio.totalTerisi} rasio keuangan, dikelompokkan menurut
+              pertanyaan yang dijawabnya.
+            </p>
+          </div>
+        </div>
+
+        {kartu && (
+          <div className="be-tangga">
+            <div className="be-tangga-grup">
+              <span className="be-lbl">Rata-rata bergerak</span>
+              <div className="be-tangga-baris">
+                {([['MA20', kartu.ma20], ['MA50', kartu.ma50], ['MA200', kartu.ma200]] as const).map(
+                  ([nama, v]) => (
+                    <span key={nama} className="be-pil">
+                      {nama}
+                      <b className={v == null ? 'muted' : kartu.harga > v ? 'up' : 'dn'}>
+                        {v == null ? '—' : v.toLocaleString('id-ID')}
+                      </b>
+                    </span>
+                  ),
+                )}
+              </div>
+            </div>
+            {kartu.support.length > 0 && (
+              <div className="be-tangga-grup">
+                <span className="be-lbl">Support</span>
+                <div className="be-tangga-baris">
+                  {kartu.support.slice(0, 4).map((s, i) => (
+                    <span key={i} className="be-pil">
+                      <b className="dn">{s.harga.toLocaleString('id-ID')}</b>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {kartu.resistance.length > 0 && (
+              <div className="be-tangga-grup">
+                <span className="be-lbl">Resistance</span>
+                <div className="be-tangga-baris">
+                  {kartu.resistance.slice(0, 4).map((s, i) => (
+                    <span key={i} className="be-pil">
+                      <b className="up">{s.harga.toLocaleString('id-ID')}</b>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {rasio.totalTerisi === 0 ? (
+          <p className="be-bendera-kosong">
+            Rasio keuangan untuk <b>{kode}</b> belum tersedia di arsip.
+          </p>
+        ) : (
+          <div className="be-rasio">
+            {rasio.kelompok.filter((k) => k.baris.length > 0).map((k) => (
+              <div key={k.kunci} className="be-rasio-grup">
+                <h3>{k.judul}</h3>
+                <dl>
+                  {k.baris.map((b) => (
+                    <div key={b.nama} className="be-rasio-baris">
+                      <dt>{b.nama}</dt>
+                      <dd>{b.nilai}</dd>
+                    </div>
+                  ))}
+                </dl>
+                {/* Berapa yang sumbernya tak punya — disebut, bukan
+                    disembunyikan. Kelompok yang terlihat penuh padahal
+                    separuh ruasnya hilang memberi rasa lengkap yang keliru. */}
+                {k.kosong > 0 && (
+                  <p className="be-rasio-kosong">{k.kosong} ruas tak tersedia di sumber</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Blok E menyusul — rancangannya sudah tetap, datanya sudah dipanen. */}
       <div className="be-nanti">
         <div><b>E · Probabilitas</b>P(R1/R2/S1), win rate, riwayat rekomendasi</div>
         <div><b>F · Teknikal &amp; fundamental</b>pivot, pola, rasio</div>
