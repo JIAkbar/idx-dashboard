@@ -7,6 +7,11 @@ import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useIndexTanggalIdx } from '../../lib/dasbor/dataHarian'
 import { tanggalPanjang } from '../../lib/radar/arsip'
+// Kata rentang waktu TIDAK dieja di halaman — aturan proyek, dan halaman ini
+// satu-satunya dari 22 pemakai yang melanggarnya sampai 29 Agu 2026. Itu juga
+// yang melahirkan label "1MTD" (kamus mengeja `MTD` tanpa awalan angka), dan
+// awalan itulah yang membuatnya terbaca "1 bulan ke belakang".
+import { LABEL_RENTANG_RINGKAS } from '../../lib/dasbor/periode'
 import { DropdownMulti, type OpsiMulti } from '../../components/dasbor/DropdownMulti'
 import { KolomForm } from '../../components/dasbor/BadgeRapor'
 import { bandingkanBaris } from '../../lib/dasbor/useUrut'
@@ -60,7 +65,7 @@ const ARTI_KOLOM: Partial<Record<keyof BarisHarianPapan, string>> = {
   ma20_arah: 'Arah rata-rata harga 20 hari: sedang naik, turun, atau mendatar.',
   close_gap: 'Selisih harga pembukaan hari ini terhadap penutupan kemarin. Positif = dibuka melompat ke atas.',
   chg_1d: 'Perubahan harga hari ini terhadap penutupan kemarin.',
-  chg_wtd: 'Perubahan harga sejak penutupan pekan lalu.',
+  chg_wtd: 'Perubahan harga sejak penutupan pekan lalu — sejak awal pekan berjalan, bukan tujuh hari ke belakang. Di hari Senin ia mengukur satu hari.',
   chg_mtd: 'Perubahan harga dibanding 21 hari bursa lalu (sekitar satu bulan). Panjang periodenya selalu sama, jadi peringkat antar emiten membandingkan rentang yang sama tanggal berapa pun.',
   chg_2m: 'Perubahan harga dibanding 42 hari bursa lalu (sekitar dua bulan).',
   chg_3m: 'Perubahan harga dibanding 63 hari bursa lalu (sekitar tiga bulan).',
@@ -410,11 +415,11 @@ export function HarianPapan() {
                     {thSort(urutState, 'free_float', 'Free Float', true)}
                     {thSort(urutState, 'ma20_arah', 'MA20 Head')}
                     {thSort(urutState, 'close_gap', 'Close Gap', true)}
-                    {thSort(urutState, 'chg_1d', '1D', true)}
-                    {thSort(urutState, 'chg_wtd', '1WTD', true)}
-                    {thSort(urutState, 'chg_mtd', '1M', true)}
-                    {thSort(urutState, 'chg_2m', '2M', true)}
-                    {thSort(urutState, 'chg_3m', '3M', true)}
+                    {thSort(urutState, 'chg_1d', LABEL_RENTANG_RINGKAS.h1!, true)}
+                    {thSort(urutState, 'chg_wtd', LABEL_RENTANG_RINGKAS.wtd!, true)}
+                    {thSort(urutState, 'chg_mtd', LABEL_RENTANG_RINGKAS.b1!, true)}
+                    {thSort(urutState, 'chg_2m', LABEL_RENTANG_RINGKAS.b2!, true)}
+                    {thSort(urutState, 'chg_3m', LABEL_RENTANG_RINGKAS.b3!, true)}
                     {thSort(urutState, 'posisi_ema5', 'vs EMA5')}
                     {thSort(urutState, 'posisi_ma10', 'vs MA10')}
                     {thSort(urutState, 'posisi_ma20', 'vs MA20')}

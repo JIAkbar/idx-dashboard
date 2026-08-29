@@ -76,6 +76,9 @@ export const LABEL_RENTANG = {
   // migrasi modul rentang bersama, bukan lagi hardcode '2 Pekan' di halaman.
   w2: '2 Pekan',
   b1: '1 Bulan',
+  // b2 lahir di Harian Papan (Johan 29 Agu 2026, "berarti ada 2 month dan
+  // 3 month yaa") — dieja di sini sejak awal, bukan ditulis di halamannya.
+  b2: '2 Bulan',
   b3: '3 Bulan',
   b6: '6 Bulan',
   wtd: 'WTD',
@@ -91,6 +94,36 @@ export const LABEL_RENTANG = {
 } as const
 
 export type KunciRentang = keyof typeof LABEL_RENTANG
+
+/**
+ * Bentuk RINGKAS untuk tempat yang tak muat label penuh — kepala kolom tabel
+ * lebar, lencana, chip sempit.
+ *
+ * Ada karena ketegangan yang nyata: kepala kolom yang baru dirapatkan tak
+ * muat "1 Bulan", tapi halaman juga tak boleh mengeja sendiri (aturan proyek:
+ * kata rentang waktu cuma dieja di berkas ini). Jadi bentuk pendeknya ikut
+ * tinggal di sini — satu tempat, dua bentuk, bukan dua tempat.
+ *
+ * Hanya kunci yang benar-benar dipakai di ruang sempit yang punya bentuk ini;
+ * sisanya memakai LABEL_RENTANG apa adanya.
+ *
+ * Perhatikan `wtd` dan `mtd` TANPA awalan angka, sama seperti label penuhnya.
+ * Awalan itu yang membuat "1MTD" terbaca sebagai "1 bulan ke belakang"
+ * padahal artinya "sejak awal bulan berjalan" — kesalahpahaman yang
+ * benar-benar terjadi (Johan 29 Agu 2026: "kalau 1mtd itu (1 bulan
+ * kebelakang ya)"), dan berujung pada perubahan definisi kolomnya.
+ */
+export const LABEL_RENTANG_RINGKAS: Partial<Record<KunciRentang, string>> = {
+  h1: '1D',
+  w1: '1M',
+  b1: '1B',
+  b2: '2B',
+  b3: '3B',
+  wtd: 'WTD',
+  mtd: 'MTD',
+  ytd: 'YTD',
+  y1: '1T',
+}
 
 export type PresetRentang = 'w1' | 'b1' | 'b3' | 'ytd'
 
