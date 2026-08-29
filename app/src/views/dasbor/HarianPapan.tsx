@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { IkonMenu, IKON_PERINGATAN, IKON_INFO } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
@@ -133,7 +133,11 @@ export function HarianPapan() {
   // ("siapa mengumpulkan selama seminggu"), bukan pengganti.
   const [rentang, setRentang] = useState<{ dari: string; sampai: string } | null>(null)
   const { data, muat } = useHarianPapan(tanggal)
-  const { perTanggal, muat: muatRentang, dariBursa: rentangDariBursa } =
+  // `dariBursa` dari hook sengaja TIDAK dipakai di layar (baris keterangannya
+  // dihapus atas permintaan Johan). Hook tetap menyediakannya karena ia yang
+  // tahu tanggal mana yang dirakit dari sumber pengganti — dan itu informasi
+  // yang mahal dihitung ulang kalau nanti dibutuhkan lagi.
+  const { perTanggal, muat: muatRentang } =
     useHarianPapanRentang(rentang?.dari ?? null, rentang?.sampai ?? null)
   const akum = useMemo(() => akumulasiRentang(perTanggal), [perTanggal])
   const [tab, setTab] = useState<TabHarianPapan>('gainer')
@@ -313,39 +317,13 @@ export function HarianPapan() {
             tengah tabel. Keterangan rincinya kini hidup di dua tempat yang
             lebih tepat: tooltip di sini, dan tooltip di sel yang kosong itu
             sendiri. */}
-        {/* Catatan ini SADAR MODE. Sebelumnya ia membaca `data` — hari aktif
-            di mode harian — jadi ia tetap tampil saat pengguna memilih rentang
-            3–27 Agu yang sama sekali tak memuat hari tambalan (temuan Johan
-            29 Agu, tabel rentang). Di mode rentang yang menentukan adalah
-            apakah rentangNYA memuat hari itu. */}
-        {(rentang ? rentangDariBursa.length > 0 : !!data?.dari_bursa) && (
-          <p
-            className="hp-sumber-bursa"
-            title={
-              'Arsip harga belum memuat tanggal ini, jadi harga, volume, dan nilai diambil ' +
-              'langsung dari angka resmi bursa. Dua kolom belum tersedia untuk hari ini: ' +
-              'Net Asing dilaporkan bursa dalam lembar, sementara kolom ini rupiah — ' +
-              'angkanya karena itu dihitung dari lembar × harga rata-rata emiten dan ' +
-              'diberi tanda ≈. Close Gap kosong di emiten yang harga pembukaannya tidak ' +
-              'dilaporkan. Keduanya tergantikan angka sungguhan begitu data harian lengkap masuk.'
-            }
-          >
-            <IkonMenu d={IKON_INFO} size={12} />
-            {rentang ? (
-              <>
-                {rentangDariBursa.length === 1 ? '1 hari' : `${rentangDariBursa.length} hari`} di
-                rentang ini dirakit dari <b>data bursa</b> ({rentangDariBursa.map(tanggalPanjang).join(', ')}) —
-                Net Asing hari itu taksiran, jadi jumlahnya ikut taksiran.
-              </>
-            ) : (
-              <>
-                Hari ini dirakit dari <b>data bursa</b> — Net Asing bertanda ≈ adalah taksiran,
-                sebagian Close Gap belum tersedia.
-              </>
-            )}
-          </p>
-        )}
-
+        {/* Baris "dirakit dari data bursa" DIHAPUS 29 Agu 2026 atas permintaan
+            Johan: "teks ini di hapus bisa kan? rahasia dapur kita ini". Cara
+            angka dirakit memang bukan urusan pembaca.
+            Yang TIDAK ikut hilang: tanda ≈ di sel Net Asing dan keterangannya
+            saat ditunjuk. Aturan proyek mewajibkan angka jahitan dikenali dari
+            antarmuka, dan itu dipenuhi di tempat angkanya berada — pembaca
+            tahu angka mana yang taksiran tanpa diberi tahu dapurnya. */}
         {hariTertinggal.length > 0 && (
           <p className="hp-tertinggal">
             <b>Data tertinggal.</b> Bursa sudah menerbitkan{' '}
@@ -522,7 +500,7 @@ function BarisHp({
           b.nbsf_000 == null
             ? 'Belum tersedia untuk tanggal ini.'
             : nbsfTaksiran
-              ? `≈ Rp${Math.round(b.nbsf_000 * 1000).toLocaleString('id-ID')} — TAKSIRAN. Bursa melaporkan aliran asing hari ini dalam lembar; angka rupiah ini dihitung dari lembar × harga rata-rata emiten hari itu. Diuji terhadap angka sungguhan: 99% tepat di tengah sebaran, 93% meleset kurang dari 10%. Tergantikan angka sungguhan begitu data harian lengkap masuk.`
+              ? `≈ Rp${Math.round(b.nbsf_000 * 1000).toLocaleString('id-ID')} — angka perkiraan untuk tanggal ini; nilai resminya menyusul.`
               : `Rp${Math.round(b.nbsf_000 * 1000).toLocaleString('id-ID')}`
         }>
         {b.nbsf_000 == null

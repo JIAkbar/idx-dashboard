@@ -29,7 +29,7 @@
    29 Agu, regresi dari perbaikan tabel-goyang). Dengan min-width, kolom
    dapat lebar cukup dan sisanya diurus gulir mendatar `.board-tbl-wrap`
    yang memang sudah ada. */
-.lantai .hp-tbl { table-layout: fixed; min-width: 2090px; }
+.lantai .hp-tbl { table-layout: fixed; min-width: 2028px; }
 .lantai .hp-tbl th:nth-child(1),
 .lantai .hp-tbl td:nth-child(1) { width: 78px; }
 .lantai .hp-tbl th:nth-child(2),
@@ -97,7 +97,36 @@
    14-16 vs EMA5/MA10/MA20 · 17-19 Skor · 20 Form. */
 .lantai .hp-tbl th:nth-child(14), .lantai .hp-tbl td:nth-child(14),
 .lantai .hp-tbl th:nth-child(15), .lantai .hp-tbl td:nth-child(15),
-.lantai .hp-tbl th:nth-child(16), .lantai .hp-tbl td:nth-child(16) { width: 58px; }
+.lantai .hp-tbl th:nth-child(16), .lantai .hp-tbl td:nth-child(16) { width: 44px; }
+
+/* Empat kolom paling boros ruang, dipadatkan lagi 29 Agu 2026 (Johan: "kolom
+   MA head, vs Ema 5, Ema 10, ema 20 bisa di buat lagi lebih compact, jika
+   perlu warp gak masalah karena biar lebih rapi").
+
+   Yang menentukan lebar di sini KEPALANYA, bukan isinya: "vs EMA5" tiga kali
+   lebih panjang daripada satu panah, dan "MA20 Head" tiga kali lebih panjang
+   daripada kata "naik". Jadi kepalanya yang dibungkus dua baris — tinggi
+   kepala tabel bertambah sekali, lebar tiap kolom berkurang di seluruh 832
+   baris. Isinya tetap satu baris; yang dibungkus hanya kepala. */
+.lantai .hp-tbl thead th:nth-child(9),
+.lantai .hp-tbl thead th:nth-child(14),
+.lantai .hp-tbl thead th:nth-child(15),
+.lantai .hp-tbl thead th:nth-child(16) {
+  white-space: normal;
+  line-height: 1.25;
+  vertical-align: bottom;
+}
+/* Tombol urut di dalam kepala ikut membungkus — tanpa ini teksnya tetap satu
+   baris dan kolomnya tak menyempit sama sekali (tombolnya yang mendorong
+   lebar, bukan sel-nya). */
+.lantai .hp-tbl thead th:nth-child(9) .th-sort,
+.lantai .hp-tbl thead th:nth-child(14) .th-sort,
+.lantai .hp-tbl thead th:nth-child(15) .th-sort,
+.lantai .hp-tbl thead th:nth-child(16) .th-sort {
+  white-space: normal;
+  text-align: inherit;
+  line-height: 1.25;
+}
 
 /* Ruas napas di kolom yang isinya "menempel" tepi (Johan 29 Agu: "berikan
    ruas lagi di kanan nya supaya tidak seperti menyatu dengan tabel, lalu
@@ -110,7 +139,7 @@
 .lantai .hp-tbl th:nth-child(20),
 .lantai .hp-tbl td:nth-child(20) { width: 150px; padding-right: 18px; }
 .lantai .hp-tbl th:nth-child(9),
-.lantai .hp-tbl td:nth-child(9) { padding-left: 14px; padding-right: 16px; }
+.lantai .hp-tbl td:nth-child(9) { width: 62px; padding-left: 10px; padding-right: 10px; }
 
 /* Penanda "data tertinggal" — dicetak DI ATAS tabel, bukan di kaki: kalau
    halaman menampilkan hari yang bukan hari bursa terakhir, itu hal pertama
