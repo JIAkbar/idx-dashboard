@@ -56,11 +56,11 @@ DAFTAR = DIR_JSON / "daftar_emiten.json"
 PROGRES = DIR_JSON / "_progres_backfill_broker.json"
 WIB = timezone(timedelta(hours=7))
 
-# ponytail: refresh token Stockbit lintas thread belum dikunci (margin 1 jam
-# di stockbit_token.py membuat tabrakan jarang). Kalau kena, emiten itu
-# tercatat 'gagal'/'sebagian' dan aman diulang jalan berikutnya (arsip yang
-# sudah ada dilewati). Upgrade: threading.Lock global di sekeliling
-# token_segar() kalau tabrakan ternyata sering di paralel tinggi.
+# Refresh token lintas thread SUDAH dikunci di `stockbit_token.py`
+# (`_KUNCI_PUTAR`, 23 Agu) — persis upgrade yang catatan lama di sini usulkan.
+# Kuncinya hanya melindungi antar-thread dalam SATU proses; dua PROSES yang
+# sama-sama memanen tetap saling membunuh, dan itu larangan di CLAUDE.md,
+# bukan sesuatu yang bisa ditambal dari sini.
 
 
 def nilai_transaksi_20hari(kode: str) -> float | None:
