@@ -342,8 +342,14 @@ export default function BerkasEmiten() {
             </div>
           )}
 
+          {/* ALIRAN KOLOM, bukan dua kolom kaku.
+              Dua pembungkus kolom membuat isi terkunci di sisinya: kiri
+              berisi 403px sementara kanan 793px, jadi 389px di bawah kiri
+              menganga (temuan Johan 29 Agu, dengan tangkapan layar). Empat
+              blok yang mengalir mengisi rapat sendiri — sama seperti kartu
+              rasio di blok F. */}
           <div className="be-utama">
-            <div>
+            <div className="be-sub">
               <div className="be-duo">
                 <div className="be-sisi naik">
                   <div className="be-lbl"><span>Saat IHSG naik</span><span className="be-n">{r.n_naik.toLocaleString('id-ID')} hari</span></div>
@@ -362,8 +368,10 @@ export default function BerkasEmiten() {
                 </div>
               </div>
 
-              {r.hari_terburuk.length > 0 && (
-                <>
+            </div>
+
+            {r.hari_terburuk.length > 0 && (
+              <div className="be-sub">
                   <h3>Hari paling merah dalam sejarah IHSG</h3>
                   <p className="be-ket">Rata-rata menyembunyikan hari panik. Ini apa adanya.</p>
                   <div className="be-gulir">
@@ -385,34 +393,11 @@ export default function BerkasEmiten() {
                       </tbody>
                     </table>
                   </div>
-                </>
-              )}
-            </div>
-
-            <div>
-              <h3>Posisi di antara empat watak</h3>
-              <p className="be-ket">Titik terang = {kode}. Titik redup = {awan.length} emiten lain.</p>
-              <div className="be-kuad-bung">
-                <div className="be-kuad">
-                  <div className="be-zona z1"><span>Naik kencang</span><small>turun tertahan</small></div>
-                  <div className="be-zona z2"><span>Naik kencang</span><small>turun kencang</small></div>
-                  <div className="be-zona z3"><span>Naik pelan</span><small>turun tertahan</small></div>
-                  <div className="be-zona z4"><span>Naik pelan</span><small>turun kencang</small></div>
-                  <div className="be-salib h" /><div className="be-salib v" />
-                  {awan.map((p, i) => (
-                    <span className="be-jejak" key={i} style={{ left: `${p.x}%`, top: `${100 - p.y}%` }} />
-                  ))}
-                  {posisi(r.tangkap_turun) != null && posisi(r.tangkap_naik) != null && (
-                    <span className="be-titik" data-kode={kode}
-                      style={{ left: `${posisi(r.tangkap_turun)}%`, top: `${100 - (posisi(r.tangkap_naik) ?? 0)}%` }} />
-                  )}
-                  <span className="be-sumbu x">tangkap saat turun →</span>
-                  <span className="be-sumbu y">tangkap saat naik →</span>
-                </div>
               </div>
+            )}
 
-              {tahun.length > 0 && (
-                <>
+            {tahun.length > 0 && (
+              <div className="be-sub">
                   <h3>Berubah menurut tahun</h3>
                   <p className="be-ket">Watak tidak tetap. Batang = tangkap saat naik; merah = tahun yang jatuhnya lebih kencang daripada naiknya.</p>
                   <div className="be-thn">
@@ -438,8 +423,31 @@ export default function BerkasEmiten() {
                       </tbody>
                     </table>
                   </div>
-                </>
-              )}
+              </div>
+            )}
+
+            <div className="be-sub">
+              <h3>Posisi di antara empat watak</h3>
+              <p className="be-ket">Titik terang = {kode}. Titik redup = {awan.length} emiten lain.</p>
+              <div className="be-kuad-bung">
+                <div className="be-kuad">
+                  <div className="be-zona z1"><span>Naik kencang</span><small>turun tertahan</small></div>
+                  <div className="be-zona z2"><span>Naik kencang</span><small>turun kencang</small></div>
+                  <div className="be-zona z3"><span>Naik pelan</span><small>turun tertahan</small></div>
+                  <div className="be-zona z4"><span>Naik pelan</span><small>turun kencang</small></div>
+                  <div className="be-salib h" /><div className="be-salib v" />
+                  {awan.map((p, i) => (
+                    <span className="be-jejak" key={i} style={{ left: `${p.x}%`, top: `${100 - p.y}%` }} />
+                  ))}
+                  {posisi(r.tangkap_turun) != null && posisi(r.tangkap_naik) != null && (
+                    <span className="be-titik" data-kode={kode}
+                      style={{ left: `${posisi(r.tangkap_turun)}%`, top: `${100 - (posisi(r.tangkap_naik) ?? 0)}%` }} />
+                  )}
+                  <span className="be-sumbu x">tangkap saat turun →</span>
+                  <span className="be-sumbu y">tangkap saat naik →</span>
+                </div>
+              </div>
+
             </div>
           </div>
 

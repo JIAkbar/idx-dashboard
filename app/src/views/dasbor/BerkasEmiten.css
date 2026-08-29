@@ -75,12 +75,14 @@
 .be-vonis.w-perangkap .be-cap,
 .be-vonis.w-null .be-cap { color: var(--red); }
 
-.be-utama {
-  display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
-  gap: 16px;
-}
-@media (max-width: 900px) { .be-utama { grid-template-columns: minmax(0, 1fr); } }
+/* ALIRAN KOLOM. Grid dua kolom mengunci isi di sisinya masing-masing: di
+   ALTO kolom kiri berisi 403px sementara kanan 793px, jadi 389px menganga di
+   bawah kiri — hampir separuh tinggi bloknya. Multi-kolom membiarkan keempat
+   blok mengalir dan mengisi rapat, persis obat yang sama dengan kartu rasio
+   blok F. `break-inside: avoid` menjaga satu blok tak terbelah dua kolom. */
+.be-utama { columns: 2; column-gap: 16px; }
+.be-sub { break-inside: avoid; margin: 0 0 16px; }
+@media (max-width: 900px) { .be-utama { columns: 1; } }
 
 /* Dua angka besar */
 .be-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -123,14 +125,19 @@
 .be-kuad {
   position: relative;
   aspect-ratio: 1 / .86;
-  max-height: 380px;
+  /* Tingginya ditentukan RASIO dari lebarnya, jadi `max-height` saja tak
+     pernah membuatnya tumbuh — kunci lebar 442px yang menahannya di 380px
+     sementara kolom sebelah berakhir di 726px. Dilonggarkan 29 Agu 2026
+     supaya kuadran mengisi kolomnya dan kedua kolom berakhir hampir
+     bersamaan. */
+  max-height: 700px;
   margin-inline: auto;
   aspect-ratio: 1 / .86;
   border: 1px solid var(--line);
   background: var(--bg2);
 }
 @supports (aspect-ratio: 1) {
-  .be-kuad { width: min(100%, 442px); }
+  .be-kuad { width: min(100%, 760px); }
 }
 .be-zona { position: absolute; width: 50%; height: 50%; padding: 7px 8px; display: flex; flex-direction: column; gap: 1px; }
 .be-zona span { font-size: 9.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
