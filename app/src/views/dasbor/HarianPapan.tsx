@@ -273,6 +273,14 @@ export function HarianPapan() {
           </div>
         </div>
 
+        {data?.dari_bursa && (
+          <p className="hp-sumber-bursa">
+            Hari ini dirakit dari <b>data bursa</b> — arsip harga belum memuat tanggal ini.
+            Harga, volume, nilai, dan net asing adalah angka resmi bursa; kolom{' '}
+            <b>Close Gap</b> kosong di emiten yang harga pembukaannya tidak dilaporkan.
+          </p>
+        )}
+
         {hariTertinggal.length > 0 && (
           <p className="hp-tertinggal">
             <b>Data tertinggal.</b> Bursa sudah menerbitkan{' '}

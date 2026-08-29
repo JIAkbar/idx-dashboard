@@ -374,6 +374,12 @@ export interface DataHarianPapan {
   tanggal: string
   diperbarui: string
   n: number
+  /** Hari ini dirakit dari data bursa, bukan dari arsip harga biasa — dipakai
+   *  saat arsip harga belum memuat hari itu. Angkanya terukur sama (median
+   *  rasio 1,000000 atas 8.976 pasang emiten-hari), tapi bursa tak selalu
+   *  melaporkan harga pembukaan, jadi kolom Close Gap bisa kosong. Halaman
+   *  WAJIB menyebutkan ini — pembaca berhak tahu angkanya dari mana. */
+  dari_bursa?: boolean
   emiten: BarisHarianPapan[]
 }
 

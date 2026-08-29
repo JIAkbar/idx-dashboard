@@ -109,3 +109,16 @@
   font-size: 12.5px;
 }
 .lantai .hp-tertinggal b { color: var(--amber); }
+
+/* Catatan "hari ini dari data bursa". Nadanya BEDA dari .hp-tertinggal:
+   yang itu peringatan (ada yang hilang), yang ini keterangan (angkanya ada,
+   asalnya lain). Karena itu birunya netral, bukan amber. */
+.lantai .hp-sumber-bursa {
+  margin: 0;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg3);
+  color: var(--text2);
+  font-size: 12.5px;
+}
+.lantai .hp-sumber-bursa b { color: var(--text); }
