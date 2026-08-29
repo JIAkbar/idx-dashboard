@@ -100,6 +100,36 @@
     })
   }
 
+  // ── Perataan tabel ────────────────────────────────────────────────────
+  // Ditambahkan 30 Agu 2026 sesudah Johan berkata "masih loncat tuh kolom
+  // header volume total". Perbaikan pertama atas tabel yang sama (29 Agu)
+  // memeriksa LEBAR saja — kolom melar, kolom terpotong, badan menggulir —
+  // dan sel rata-kiri di kolom berjudul rata-kanan lolos ketiganya. Ia tidak
+  // melar, tidak terpotong, tidak menggulir; ia cuma tak berbaris.
+  //
+  // Diukur dari tepi kanan KOTAKNYA, bukan dari nilai `text-align`: dua
+  // aturan bisa sama-sama berbunyi "right" sementara salah satunya kalah oleh
+  // aturan lain yang lebih spesifik.
+  const perataan = []
+  for (const tabel of document.querySelectorAll('table')) {
+    const th = [...tabel.querySelectorAll('thead th')]
+    const baris1 = tabel.querySelector('tbody tr')
+    if (!th.length || !baris1) continue
+    const td = [...baris1.querySelectorAll('td')]
+    th.forEach((h, i) => {
+      if (!td[i]) return
+      const ah = getComputedStyle(h).textAlign
+      const at = getComputedStyle(td[i]).textAlign
+      const sama = (x) => (x === 'start' || x === 'left' ? 'kiri' : x === 'end' || x === 'right' ? 'kanan' : x)
+      if (sama(ah) !== sama(at)) {
+        perataan.push({
+          tabel: nama(tabel), kolom: i + 1, judul: h.textContent.trim().slice(0, 24),
+          kepala: sama(ah), sel: sama(at),
+        })
+      }
+    })
+  }
+
   temuan.sort((a, b) => b.kosongPx - a.kosongPx)
   const total = temuan.reduce((a, t) => a + t.kosongPx, 0)
   console.log(
@@ -109,5 +139,12 @@
   )
   if (temuan.length) console.table(temuan)
   else console.log('bersih: tak ada wadah dengan ruang menganggur di atas ambang')
-  return temuan
+
+  if (perataan.length) {
+    console.log(`%c${perataan.length} kolom yang kepala & selnya tak sejajar`, 'font-weight:bold;color:#e0a')
+    console.table(perataan)
+  } else {
+    console.log('perataan tabel: kepala dan sel sejajar di semua kolom')
+  }
+  return { ruangKosong: temuan, perataan }
 })()

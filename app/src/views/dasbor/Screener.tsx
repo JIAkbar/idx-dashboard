@@ -352,9 +352,9 @@ export function Screener() {
                 {thSort(s, 'chg_1d', '%chg 1D', true)}
                 {thSort(s, 'chg_wtd', '%chg WTD', true)}
                 {thSort(s, 'chg_mtd', '%chg MTD', true)}
-                {thSort(s, 'posisi_ema5', 'vs EMA5')}
-                {thSort(s, 'posisi_ma10', 'vs MA10')}
-                {thSort(s, 'posisi_ma20', 'vs MA20')}
+                {thSort(s, 'posisi_ema5', 'vs EMA5', true)}
+                {thSort(s, 'posisi_ma10', 'vs MA10', true)}
+                {thSort(s, 'posisi_ma20', 'vs MA20', true)}
                 {thSort(s, 'net_asing_lembar', 'Net Asing', true)}
                 {thSort(s, 'asing_streak', 'Streak Asing', true)}
                 {thSort(s, 'pola_arah', 'Pola')}
