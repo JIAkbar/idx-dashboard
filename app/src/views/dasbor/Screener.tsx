@@ -259,7 +259,6 @@ export function Screener() {
               Saring; hasil + reset saringan di grup-kanan. */}
           <div className="bilah-kendali scr-bilah">
             <div className="grup-k">
-              <span className="grup-lbl">Cari</span>
               <span className="af-cari scr-cari">
                 <IkonMenu d={IKON_CARI} size={13} />
                 {/* Kotak CARI CAMPURAN (bukan picker emiten) — sengaja BUKAN StockAutocomplete: menyaring lebih dari satu ruas sekaligus. Jangan "diperbaiki" jadi picker; riwayat: sweep Papan Pekerjaan #355. */}
@@ -271,7 +270,6 @@ export function Screener() {
             </div>
             <span className="pemisah-v" aria-hidden="true" />
             <div className="grup-k">
-              <span className="grup-lbl">Saring</span>
               <DropdownMulti label="Rating" ariaLabel="Saring rating" opsi={sssOpsi} nilai={sssAktif} onGanti={setSssAktif} />
               <DropdownMulti label="Sektor" ariaLabel="Saring sektor" opsi={sektorOpsi} nilai={sektorAktif} onGanti={setSektorAktif} />
               <Dropdown
@@ -300,7 +298,6 @@ export function Screener() {
             </div>
             <span className="pemisah-v" aria-hidden="true" />
             <div className="grup-k grup-kanan">
-              <span className="grup-lbl">Aksi</span>
               {adaSaringan && (
                 <button
                   type="button" className="chip-t scr-reset"
@@ -470,7 +467,6 @@ function PanelPresetWhale({ presetAktif, presetId, setPresetId, hasil, petaBaris
           </div>
           <span className="pemisah-v" aria-hidden="true" />
           <div className="grup-k grup-kanan">
-            <span className="grup-lbl">Hasil</span>
             <span className="muted scr-jumlah">{hasil.length} emiten dengan ≥1 kriteria terpenuhi{tanggal ? ` · data ${tanggal}` : ''}</span>
           </div>
         </div>
@@ -648,7 +644,6 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
           </div>
           <span className="pemisah-v" aria-hidden="true" />
           <div className="grup-k grup-kanan">
-            <span className="grup-lbl">Hasil</span>
             <span className="muted scr-jumlah">
               {live.length} tanggal rekomendasi{backtest.length ? ` + ${backtest.length} backtest` : ''}
             </span>

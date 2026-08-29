@@ -600,7 +600,6 @@ function TabelScreenerKartu() {
           {tersediaArsip && (
             <>
               <div className="grup-k">
-                <span className="grup-lbl">Tanggal</span>
                 <DatePicker
                   value={tanggalAktif}
                   onChange={setTanggal}
@@ -654,7 +653,6 @@ function TabelScreenerKartu() {
           </div>
           <span className="pemisah-v" aria-hidden="true" />
           <div className="grup-k grup-kanan">
-            <span className="grup-lbl">Cari</span>
             <span className="af-cari kta-screener-cari">
               <IkonMenu d={IKON_CARI} size={13} />
               <input
@@ -820,14 +818,12 @@ export function KartuAnalisa() {
                 pilih emiten; jumlah tersedia di grup-kanan. */}
             <div className="bilah-kendali">
               <div className="grup-k">
-                <span className="grup-lbl">Emiten</span>
                 <Dropdown opsi={opsi} nilai={filter} onGanti={pilih} ariaLabel="Pilih emiten" placeholder="Semua emiten" />
               </div>
               {indeks && (
                 <>
                   <span className="pemisah-v" aria-hidden="true" />
                   <div className="grup-k grup-kanan">
-                    <span className="grup-lbl">Info</span>
                     <span style={{ fontSize: 11, color: 'var(--text3)' }}>{indeks.emiten.length} emiten tersedia · diperbarui {indeks.diperbarui}</span>
                   </div>
                 </>

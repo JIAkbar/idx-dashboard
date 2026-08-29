@@ -216,7 +216,6 @@ export function BrokerSummaryV2() {
         <div className="panel-b" style={{ borderTop: '1px solid var(--line)' }}>
           <div className="bilah-kendali bsv-atur">
             <div className="grup-k">
-              <span className="grup-lbl">Emiten</span>
               <span className="af-cari bsv-cari">
                 <IkonMenu d={IKON_CARI} size={13} />
                 <StockAutocomplete
@@ -242,7 +241,6 @@ export function BrokerSummaryV2() {
             </div>
             <span className="pemisah-v" aria-hidden="true" />
             <div className="grup-k">
-              <span className="grup-lbl">Tanggal</span>
               <div className="bs-preset"><PemilihRentang opsi={PRESET} nilai={preset ?? 'b1'} onGanti={keRentang} /></div>
               <div className="bs-tgl">
                 <LangkahTanggal arah="mundur" ukuran="sebaris" label="Rentang satu hari bursa sebelumnya" disabled={!tanggalTersedia.length} onClick={() => langkahHari(-1)} />

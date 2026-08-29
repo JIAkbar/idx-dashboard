@@ -59,7 +59,6 @@ export function NeoPapan() {
           saja yang di kolom yang di tampilkan"). */}
       <div className="bilah-kendali np-atur">
         <div className="grup-k">
-          <span className="grup-lbl">Emiten</span>
           <div className="np-emiten">
             <StockAutocomplete
               stocks={indeks?.stocks || []}

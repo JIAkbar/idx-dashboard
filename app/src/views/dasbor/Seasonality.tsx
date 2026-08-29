@@ -193,7 +193,6 @@ export function Seasonality() {
               di Screener, keterlihatan tanpa memaksa dropdown tetap terbuka. */}
           <div className="bilah-kendali">
             <div className="grup-k">
-              <span className="grup-lbl">Cari</span>
               <div className="af-cari sea-cari">
                 <IkonMenu d={IKON_CARI} size={14} />
                 <input

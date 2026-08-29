@@ -100,7 +100,6 @@ export function JagoPapan() {
               info hasil + Unduh CSV di grup-kanan. */}
           <div className="bilah-kendali jgp-alat">
             <div className="grup-k">
-              <span className="grup-lbl">Tab</span>
               <div className="tabs" role="tablist">
                 {TAB_JAGO_PAPAN.map((t) => (
                   <button
@@ -115,7 +114,6 @@ export function JagoPapan() {
             </div>
             <span className="pemisah-v" aria-hidden="true" />
             <div className="grup-k grup-kanan">
-              <span className="grup-lbl">Aksi</span>
               <span className="muted">Data penutupan <b>{data.tanggal}</b> · {urut.length} dari {data.n} emiten lolos</span>
               <button
                 type="button" className="btn-p"

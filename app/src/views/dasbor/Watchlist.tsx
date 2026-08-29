@@ -287,7 +287,6 @@ export function Watchlist() {
               cari lalu tambah emiten ke watchlist. */}
           <div className="bilah-kendali wl-alat">
             <div className="grup-k">
-              <span className="grup-lbl">Tambah</span>
               <span className="af-cari wl-cari">
                 <IkonMenu d={IKON_CARI} size={13} />
                 <input
@@ -711,12 +710,10 @@ function TabKinerja({ items }: { items: WatchlistItem[] }) {
         </div>
         <span className="pemisah-v" aria-hidden="true" />
         <div className="grup-k">
-          <span className="grup-lbl">Rentang</span>
           <PemilihRentang opsi={opsi} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang indeks watchlist" />
         </div>
         <span className="pemisah-v" aria-hidden="true" />
         <div className="grup-k grup-kanan">
-          <span className="grup-lbl">Info</span>
           <span className="lbl">{captionRentang(hasil.tgl, (t) => t)}</span>
         </div>
       </div>

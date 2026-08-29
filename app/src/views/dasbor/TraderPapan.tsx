@@ -194,7 +194,6 @@ export default function TraderPapan() {
           Rentang · Broker; info indikator di grup-kanan. */}
       <div className="bilah-kendali tp-atur">
         <div className="grup-k">
-          <span className="grup-lbl">Emiten</span>
           <div className="tp-emiten">
             <StockAutocomplete
               stocks={indeks?.stocks || []}
@@ -214,7 +213,6 @@ export default function TraderPapan() {
         </div>
         <span className="pemisah-v" aria-hidden="true" />
         <div className="grup-k">
-          <span className="grup-lbl">Rentang</span>
           <PemilihRentang opsi={RENTANG} nilai={rentang} onGanti={setRentang} />
         </div>
         <span className="pemisah-v" aria-hidden="true" />
@@ -234,7 +232,6 @@ export default function TraderPapan() {
         </div>
         <span className="pemisah-v" aria-hidden="true" />
         <div className="grup-k grup-kanan">
-          <span className="grup-lbl">Info</span>
           <InfoIndikator judul="Indikator Trader Papan" item={INFO_TRADER} />
         </div>
       </div>

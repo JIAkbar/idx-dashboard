@@ -80,7 +80,6 @@ export function AliranAsing() {
               Saring (likuiditas); jumlah hasil di grup-kanan. */}
           <div className="bilah-kendali ala-alat">
             <div className="grup-k">
-              <span className="grup-lbl">Cari</span>
               <span className="af-cari ala-cari">
                 <IkonMenu d={IKON_CARI} size={13} />
                 <input
@@ -91,7 +90,6 @@ export function AliranAsing() {
             </div>
             <span className="pemisah-v" aria-hidden="true" />
             <div className="grup-k">
-              <span className="grup-lbl">Saring</span>
               <Dropdown
                 opsi={TINGKAT_LIKUIDITAS.map((t) => ({ nilai: t.id, label: t.label }))}
                 nilai={tingkatLikuiditas}
@@ -102,7 +100,6 @@ export function AliranAsing() {
             </div>
             <span className="pemisah-v" aria-hidden="true" />
             <div className="grup-k grup-kanan">
-              <span className="grup-lbl">Hasil</span>
               <span className="muted ala-jumlah">{hasil.length} dari {baris.length} emiten</span>
             </div>
           </div>

@@ -220,7 +220,6 @@ export default function BerkasEmiten() {
     <div className="lantai be">
       <div className="bilah-kendali">
         <div className="grup-k">
-          <span className="grup-lbl">Emiten</span>
           <div className="be-cari">
             <StockAutocomplete
               stocks={indeks?.stocks || []}

@@ -708,7 +708,6 @@ export default function WhalesPapan() {
           Kelompok EMITEN · LAPISAN · TAMPILAN, membungkus per kelompok. */}
       <div className="bilah-kendali wp-atur">
         <div className="grup-k">
-          <span className="grup-lbl">Emiten</span>
           <div className="wp-emiten">
             <StockAutocomplete
               stocks={indeks?.stocks || []}
