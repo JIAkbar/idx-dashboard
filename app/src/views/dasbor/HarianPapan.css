@@ -44,7 +44,7 @@
 
    Versi pertama menaruhnya di ATAS, dan `.lantai .hp-tbl-rentang` punya
    spesifisitas yang PERSIS SAMA dengan `.lantai .hp-tbl` (0-2-0) — jadi yang
-   menang urutan berkas, dan `min-width: 2090px` milik tabel harian menimpa
+   menang urutan berkas, dan `min-width` milik tabel harian menimpa
    `min-width: min(100%, 980px)` milik tabel rentang. Akibatnya tabel 7 kolom
    direntangkan ke 2.090px: kolomnya berjauhan, angkanya terlempar jauh dari
    kepalanya, dan kolom terakhir (Harga akhir) terdorong ke luar layar
