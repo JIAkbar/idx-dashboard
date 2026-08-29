@@ -330,8 +330,11 @@
 .lantai .be-blok-g { background: var(--red); color: #fff; }
 .lantai .be-bendera-sepi .be-blok-g { background: var(--line2); color: var(--text2); }
 
+/* Dua kolom begitu ruangnya cukup. Satu bendera selebar 1.750px untuk dua
+   kalimat membuat blok terpenting halaman ini justru terbaca paling longgar. */
 .lantai .be-bendera-daftar {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
   gap: 10px;
   margin: 12px 0 0;
   padding: 0;
@@ -366,13 +369,21 @@
    94 rasio itu banyak, dan daftar panjang tanpa struktur sama tak terbacanya
    dengan tak ada daftar sama sekali. Kolom otomatis: layar lebar memakai
    ruangnya, layar sempit turun sendiri tanpa media query. */
+/* ALIRAN KOLOM, bukan grid baris.
+   Grid menyamakan tinggi seluruh kartu dalam satu baris, jadi kartu berisi 1
+   rasio ("Efisiensi modal kerja" untuk bank) diregangkan setinggi kartu
+   berisi 14 rasio di sebelahnya — terukur di BBCA: lebih dari separuh tinggi
+   blok F ruang kosong. Multi-kolom membuat kartu MENGALIR: yang pendek
+   langsung disusul yang berikutnya, dan tak ada lubang yang tersisa.
+   `break-inside: avoid` menjaga satu kartu tak terbelah dua kolom. */
 .lantai .be-rasio {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
-  gap: 14px;
+  columns: 272px 5;
+  column-gap: 14px;
   margin-top: 14px;
 }
 .lantai .be-rasio-grup {
+  break-inside: avoid;
+  margin: 0 0 14px;
   border: 1px solid var(--line);
   border-radius: var(--r);
   background: var(--bg2);
@@ -413,7 +424,16 @@
 
 /* Tangga harga — pil, bukan tabel: isinya cuma tiga sampai empat angka per
    baris dan tabel akan memberinya struktur yang tak dibutuhkannya. */
-.lantai .be-tangga { display: grid; gap: 10px; margin-top: 12px; }
+/* Tiga grup (rata-rata bergerak · support · resistance) berdampingan, bukan
+   bertumpuk: masing-masing cuma 3-4 pil, dan tiga baris terpisah memakan
+   tinggi tiga kali lipat untuk isi yang muat dalam satu. Turun sendiri jadi
+   satu kolom di layar sempit. */
+.lantai .be-tangga {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 26px;
+  margin-top: 12px;
+}
 .lantai .be-tangga-grup { display: grid; gap: 5px; }
 .lantai .be-tangga-baris { display: flex; flex-wrap: wrap; gap: 7px; }
 .lantai .be-pil {

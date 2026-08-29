@@ -935,11 +935,6 @@ export default function BerkasEmiten() {
       </section>
 
 
-      <div className="be-nanti">
-        <div><b>E · Probabilitas</b>P(R1/R2/S1), win rate, riwayat rekomendasi</div>
-        <div><b>F · Teknikal &amp; fundamental</b>pivot, pola, rasio</div>
-        <div><b>G · Bendera risiko</b>notasi khusus, konsentrasi broker</div>
-      </div>
     </div>
   )
 }
