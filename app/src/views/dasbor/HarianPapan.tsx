@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_PERINGATAN, IKON_INFO } from '../../components/dasbor/IkonMenu'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
@@ -305,13 +305,27 @@ export function HarianPapan() {
           </div>
         </div>
 
+        {/* Satu baris, bukan paragraf (Johan 29 Agu: "teks ini jadikan info
+            saja"). Versi pertama memakan empat baris di atas tabel untuk
+            keterangan yang hanya perlu dibaca sekali — dan tetap terlewat,
+            karena Johan menanyakan NBSF kosong sambil menunjuk satu sel di
+            tengah tabel. Keterangan rincinya kini hidup di dua tempat yang
+            lebih tepat: tooltip di sini, dan tooltip di sel yang kosong itu
+            sendiri. */}
         {data?.dari_bursa && (
-          <p className="hp-sumber-bursa">
-            Hari ini dirakit dari <b>data bursa</b> — arsip harga belum memuat tanggal ini.
-            Harga, volume, dan nilai adalah angka resmi bursa. Dua kolom kosong:{' '}
-            <b>Net Asing</b> (bursa melaporkannya dalam lembar, kolom ini rupiah — angkanya
-            tak setara, jadi tidak ditampilkan daripada salah satuan) dan <b>Close Gap</b>{' '}
-            di emiten yang harga pembukaannya tidak dilaporkan.
+          <p
+            className="hp-sumber-bursa"
+            title={
+              'Arsip harga belum memuat tanggal ini, jadi harga, volume, dan nilai diambil ' +
+              'langsung dari angka resmi bursa. Dua kolom belum tersedia untuk hari ini: ' +
+              'Net Asing (bursa melaporkannya dalam lembar sementara kolom ini rupiah — ' +
+              'angkanya tak setara, jadi dikosongkan daripada salah satuan) dan Close Gap ' +
+              'di emiten yang harga pembukaannya tidak dilaporkan.'
+            }
+          >
+            <IkonMenu d={IKON_INFO} size={12} />
+            Hari ini dirakit dari <b>data bursa</b> — Net Asing dan sebagian Close Gap belum
+            tersedia.
           </p>
         )}
 
