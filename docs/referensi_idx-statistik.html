@@ -534,10 +534,10 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <td>Stockbit <code>exodus.stockbit.com/keystats/&lt;KODE&gt;</code></td>
 <td>API tidak resmi, token</td>
 <td>token; 963/963</td>
-<td>±94 rasio — dipanen semua, <strong>belum dibaca halaman mana pun</strong> (grep <code>app/src</code> nol)</td>
+<td>±94 rasio — dipanen semua</td>
 <td><code>keystats_stockbit/</code></td>
-<td>belum dipakai</td>
-<td>23 Agu 2026</td>
+<td><strong>Kuli Papan</strong> (PBV Band, <code>kuliPapanData.ts:105</code>, sejak 23 Agu), <strong>Stock Detail</strong> (rasio tambahan, <code>rasioTambahanKeystats.ts:134</code>, sejak 24 Agu), <strong>Berkas Emiten blok F</strong> (94 rasio, <code>berkasRasio.ts:331</code>, sejak 29 Agu)</td>
+<td>pembaca diverifikasi 30 Agu 2026</td>
 </tr>
 <tr>
 <td>Stockbit <code>exodus.stockbit.com/emitten/&lt;KODE&gt;</code> (profil &amp; info)</td>
@@ -545,8 +545,8 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <td>token; 963/963</td>
 <td>profil: pemegang saham, anak usaha; info: keanggotaan indeks, notasi khusus, UMA</td>
 <td><code>profil_stockbit/</code>, <code>info_stockbit/</code></td>
-<td>Shareholders (Broker Summary v2) memakai <code>profil_stockbit/</code>; <strong><code>info_stockbit/</code> belum dipakai</strong></td>
-<td>23 Agu 2026</td>
+<td>Shareholders (Broker Summary v2) memakai <code>profil_stockbit/</code>; <code>info_stockbit/</code> dibaca <strong>Neo Papan</strong> (keanggotaan indeks, <code>neoPapanData.ts:194</code>, sejak 23 Agu) dan <strong>Berkas Emiten blok G</strong> (notasi khusus &amp; UMA, <code>BerkasEmiten.tsx:145</code>, sejak 29 Agu)</td>
+<td>pembaca diverifikasi 30 Agu 2026</td>
 </tr>
 <tr>
 <td>Stockbit Snips (<code>snips.stockbit.com</code> sitemap + <code>?format=json</code>)</td>
@@ -855,7 +855,14 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </table>
 <h3>Divergensi klasifikasi — 8 emiten yang DUA sumber resmi IDX-nya bertentangan (27 Agu 2026)</h3>
 <p>Uji silang API profil (<code>GetCompanyProfiles</code>, <strong>sumber yang PAPAN pakai</strong>) lawan XBRL laporan emiten sendiri (sheet 1000000, 867 berkas TW3-2025): 3.440/3.468 pasang nilai identik; <strong>8 emiten berbeda nyata</strong> — GIAA (XBRL: Mutual Fund ?! vs API: Airlines), TIRT (Logistics vs Timber), CDIA (Construction Machinery vs Electric Utilities), MGNA (Investment Companies vs Hotels), HERO (Specialty Stores vs Supermarkets — HERO mungkin justru XBRL-nya yang lebih mutakhir, Guardian/IKEA), COCO/LMPI/PBRX (beda tingkat sektor saja). <strong>Keputusan: API profil tetap sumber produksi; XBRL = alat uji silang</strong> (aturan 3b — tidak menjahit/memilih per-emiten tanpa Johan). Kedelapannya dilaporkan ke Johan lewat pengawas. Ejaan kanonis EN dikunci uji <code>sektorIdx.test.ts</code> (Properties JAMAK, Logistic TUNGGAL).</p>
-<p>| Kabar Pasar <code>/kabar</code> | <code>kabar.json</code>, <code>snips.json</code>, <code>ipot_arsip.json</code> | IDX berita/pengumuman + IPOT + Kontan + Google News (dedup 2 lapis); Stockbit Snips; IPOT arsip | tidak (sumber berdampingan, tidak ditimpa) | 23 Agu 2026 |<br />
+<p>| Berkas Emiten <code>/berkas-emiten</code> (blok A–G; <code>/bedah-emiten</code> ⟶ redirect ke sini) | blok A–D: <code>ohlcv_stockbit/&lt;KODE&gt;.json</code> (<code>candleStockbit.ts:18</code>), <code>broker_tahunan/</code> (<code>brokerTahunanData.ts:38,55</code>), <code>kartu/</code>, <code>asing/&lt;KODE&gt;.json</code>; <strong>blok E</strong>: <code>bt/</code>, <code>rekomendasi/</code>, <code>prob/&lt;KODE&gt;.json</code> + <code>prob/index.json</code> (<code>berkasRekam.ts:125,163,249</code>); <strong>blok F</strong>: <code>keystats_stockbit/&lt;KODE&gt;.json</code> (<code>berkasRasio.ts:331</code>) + <code>fundamental/&lt;KODE&gt;.json</code> sebagai <strong>cadangan tiga ruas</strong> (<code>BerkasEmiten.tsx:179</code>); <strong>blok G</strong>: <code>info_stockbit/&lt;KODE&gt;.json</code> (<code>BerkasEmiten.tsx:145</code>) | Stockbit chartbit (harga apa adanya, bukan <code>ohlc/</code>); ⚙️ <code>bangun_broker_tahunan.py</code> dari Stockbit marketdetectors; ⚙️ <code>kartu_analisa.py</code>; IDX GetStockSummary (asing); ⚙️ <code>bangun_prob.py</code> (mesin <code>arus-pasar/prob.py</code>); Stockbit keystats &amp; info; Yahoo lewat <code>fundamental/</code> | <strong>ya, tapi hanya blok F dan ditandai per angka</strong> — tiga ruas rasio boleh diisi dari cadangan Yahoo bila keystats kosong (J15). Blok A–D, E, G <strong>tidak</strong> dijahit | 30 Agu 2026 |<br />
+| Whales Papan <code>/whales-papan</code> | <code>broker_tahunan/</code> (<code>brokerTahunanData.ts</code>), <code>ohlcv_stockbit/</code> (<code>candleStockbit.ts</code>), <code>kartu/ringkas.json</code> (<code>kartuRingkas.ts</code>), <code>intraday_1h/</code> (<code>intradayWhales.ts:6,127</code>) | ⚙️ <code>bangun_broker_tahunan.py</code> dari Stockbit marketdetectors <strong>6 varian</strong>; Stockbit chartbit; ⚙️ kartu; Stockbit intraday 1 jam | tidak — harga &amp; volume dua-duanya dari Stockbit, satu konvensi | 30 Agu 2026 |<br />
+| Trader Papan <code>/trader-papan</code> | <code>broker_tahunan/</code>, <code>ohlcv_stockbit/</code> lewat <code>stockDetailData</code>/<code>brokerTahunanData</code> | ⚙️ <code>bangun_broker_tahunan.py</code> (Stockbit marketdetectors); Stockbit chartbit | tidak | 30 Agu 2026 |<br />
+| Jago Papan <code>/jago-papan</code> | <code>jago_papan/terbaru.json</code> (<code>jagoPapan.ts:14,304</code>) | ⚙️ turunan pembangun Jago Papan dari arsip broker + OHLCV Stockbit | tidak (turunan satu sumber) | 30 Agu 2026 |<br />
+| Kuli Papan <code>/kuli-papan</code> (Dev) | <code>bidoffer/</code> (<code>kuliPapanData.ts:52</code>), <code>broker_harian/</code> (<code>:67</code>), <code>keystats_stockbit/</code> (<code>:105</code>), <code>valuasi_historis.json</code> (<code>:106</code>) | IDX GetStockSummary (bid/offer penutupan); Stockbit marketdetectors; Stockbit keystats; ⚙️ <code>hitung_valuasi_historis.py</code> dari XBRL IDX × <code>ohlc/</code> × <code>ListedShares</code> | <strong>ya</strong> (lewat <code>valuasi_historis</code> yang berjangkar <code>ohlc/</code>) | 30 Agu 2026 |<br />
+| Neo Papan <code>/neo-papan</code> (Dev) | <code>ohlcv_stockbit/</code> (<code>neoPapanData.ts:38</code>), <code>broker_harian/</code> (<code>:72</code>), <code>daftar_emiten.json</code> (<code>:94</code>), <code>kepemilikan/&lt;KODE&gt;.json</code> (<code>:188</code>), <code>info_stockbit/</code> (<code>:194</code>) | Stockbit chartbit; Stockbit marketdetectors; IDX; KSEI Balancepos; Stockbit info (keanggotaan indeks) | tidak | 30 Agu 2026 |<br />
+| Analisa IPO <code>/ipo</code> | <code>ipo.json</code> (<code>IpoAnalysis.tsx:40</code>) | ⚙️ pemanen IPO dari IDX | tidak | 30 Agu 2026 |<br />
+| Kabar Pasar <code>/kabar</code> | <code>kabar.json</code>, <code>snips.json</code>, <code>ipot_arsip.json</code> | IDX berita/pengumuman + IPOT + Kontan + Google News (dedup 2 lapis); Stockbit Snips; IPOT arsip | tidak (sumber berdampingan, tidak ditimpa) | 23 Agu 2026 |<br />
 | Bulletin Arus Pasar <code>/bulletin</code> | <code>arus-pasar/keluaran/index.json</code> + edisi, <code>index.json</code> | setoran kontributor + <code>arus-pasar/build.py</code>; IDX PDF | tidak | 23 Agu 2026 |<br />
 | Deep Dive (bagian Bulletin/Kartu) | setoran broker per emiten (Supabase), <code>kartu/</code> | kontributor + kurasi admin; ⚙️ kartu | lewat kartu | 23 Agu 2026 |<br />
 | Metodologi <code>/metodologi</code>, Kritik &amp; Saran <code>/feedback</code>, Forum | tidak membaca <code>data-idx/</code> (Forum/Feedback → Supabase) | Supabase (konten pengguna) | tidak | 23 Agu 2026 |<br />
@@ -917,6 +924,14 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <td>154 emiten <code>eps</code> kosong ditambal dari pembilang/penyebut yang ada</td>
 <td>agen (17–18 Agu)</td>
 <td><strong>perlu keputusan</strong>: sumber fundamental resmi PAPAN = yfinance / IDX XBRL / Stockbit keystats (±94 rasio, sudah dipanen, belum dipakai)? Johan: <em>"dulu dapat data fundamental dari yahoo finance, sekarang pakai API Stockbit, tapi dia bingung dan diam2 memutuskan sendiri, jahit sendiri"</em> — tabel pembanding tiga sumber (sampel emiten × rasio × nilai) belum pernah dibuat</td>
+</tr>
+<tr>
+<td>J15 (pasangan J4 — sengaja bersebelahan)</td>
+<td>Rasio kosong di <strong>Berkas Emiten blok F</strong> ditambal dari <code>fundamental/</code> (Yahoo) untuk <strong>tiga</strong> ruas saja: <code>Current Book Value Per Share</code> ← <code>bv</code>, <code>Dividend (TTM)</code> ← <code>dividend_ttm</code>, <code>Dividend</code> ← <code>dividend</code> (<code>app/src/lib/dasbor/berkasRasio.ts</code>, konstanta <code>TAMBALAN</code>)</td>
+<td>tambalan terjadi <strong>saat dibaca</strong>, bukan di berkas — sumber utama (keystats) selalu menang, cadangan hanya mengisi yang kosong dan <strong>tak pernah menimpa</strong></td>
+<td>tabel pembanding ada di §"Tabel pembanding — fundamental lama vs keystats"; hanya ruas yang terukur setara yang masuk daftar. Angka bertanda sumbernya di layar (<code>NAMA_CADANGAN</code> = "Yahoo Finance"; berganti jadi <code>NAMA_CADANGAN_TURUNAN</code> = "dihitung dari laporan keuangan" bila arsip menandai ruas itu <code>asal_turunan</code>)</td>
+<td>agen (29 Agu), tabel pembanding sudah ada sebelum dipasang</td>
+<td><strong>beda sifat dari J4 dan itu yang penting</strong>: J4 <strong>menghitung</strong> ruas kosong dari pembilang &amp; penyebut di berkas yang sama (bukti angka, bukan jahitan); J15 <strong>menyalin</strong> dari sumber lain (jahitan sungguhan, karena itu ditandai per angka di antarmuka). Dua penambal fundamental yang mudah tertukar kalau hanya namanya yang dibaca</td>
 </tr>
 <tr>
 <td>J5</td>
@@ -1716,7 +1731,8 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <li><strong>Jenis:</strong> API tidak resmi (token) · Snips: situs publik (Squarespace JSON)</li>
 <li><strong>Akses &amp; batasan:</strong> token akun; keystats/profil/info snapshot → cukup mingguan/bulanan. Snips ikut <code>panen-kabar.yml</code> yang <strong>belum pernah jalan sekalipun</strong> sejak langkahnya ditambahkan 18 Agu.</li>
 <li><strong>Berkas lokal:</strong> <code>keystats_stockbit/</code> (963), <code>profil_stockbit/</code> (963), <code>info_stockbit/</code> (963), <code>snips.json</code> (238, 14 Agu)</li>
-<li><strong>Dipakai untuk:</strong> <code>profil_stockbit/</code> → Shareholders v2 (<code>brokerProfilKsei.ts:5,136</code>); <code>snips.json</code> → Beranda, Kabar Pasar; <strong><code>keystats_stockbit/</code> dan <code>info_stockbit/</code> belum dibaca halaman mana pun</strong> (grep <code>app/src</code> 23 Agu nol)</li>
+<li><strong>Dipakai untuk:</strong> <code>profil_stockbit/</code> → Shareholders v2 (<code>brokerProfilKsei.ts:5,136</code>); <code>snips.json</code> → Beranda, Kabar Pasar; <code>keystats_stockbit/</code> → <strong>tiga</strong> halaman (Kuli Papan <code>kuliPapanData.ts:105</code> · Stock Detail <code>rasioTambahanKeystats.ts:134</code> · Berkas Emiten blok F <code>berkasRasio.ts:331</code>); <code>info_stockbit/</code> → <strong>dua</strong> halaman (Neo Papan <code>neoPapanData.ts:194</code> · Berkas Emiten blok G <code>BerkasEmiten.tsx:145</code>)</li>
+<li><strong>Catatan atas klaim lama bahwa keystats &amp; info belum dibaca satu halaman pun.</strong> Kalimat itu benar <strong>saat ditulis</strong> (commit <code>1baa42477</code>, 23 Agu <strong>16:28</strong>) dan berhenti benar <strong>empat jam kemudian</strong>: <code>kuliPapanData.ts</code> masuk 20:44 dan <code>neoPapanData.ts</code> 20:58 hari yang sama. Yang membuatnya bertahan sepekan bukan grep yang salah, melainkan <strong>hasil grep yang dibekukan jadi fakta</strong> — bukti "(grep <code>app/src</code> 23 Agu nol)" ikut tercetak di sebelahnya dan justru membuat kalimatnya terbaca sudah terverifikasi. Klaim "belum dipakai" berumur pendek di repo yang aktif; tulis tanggal pemeriksaannya, dan periksa ulang sebelum mengutipnya.</li>
 <li><strong>Bukti di kode:</strong> baris di atas; inventaris endpoint lengkap + jebakan parameter: <code>docs/riset/stockbit-inventaris-endpoint.md</code> (22 Agu) dan <code>docs/riset/stockbit-chartbit-ohlcv.md</code></li>
 </ul>
 <table>
@@ -1731,9 +1747,9 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <tbody>
 <tr>
 <td>keystats ±94 rasio (valuasi, profitabilitas, solvabilitas, per-saham, dividen)</td>
-<td>✅ dipanen, ❌ belum dipakai</td>
-<td>kandidat pengganti/pembanding rasio yfinance (J4)</td>
-<td><strong>belum diputuskan</strong> — siapa sumber rasio resmi</td>
+<td>✅ dipanen, ✅ dipakai 3 halaman</td>
+<td>Berkas Emiten blok F memajang keseluruhan 94-nya; Stock Detail &amp; Kuli Papan mengambil sebagian</td>
+<td><strong>masih belum diputuskan</strong> — siapa sumber rasio <em>resmi</em>. Yang sudah jalan itu pemakaian <strong>berdampingan</strong>, bukan penggantian: yfinance tetap mengisi ruas ringkas <code>fundamental/</code>, keystats berdiri sendiri di halamannya</td>
 </tr>
 <tr>
 <td>profil: pemegang saham, anak usaha</td>
@@ -1743,9 +1759,9 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 <tr>
 <td>info: keanggotaan indeks, notasi khusus, UMA</td>
-<td>✅ dipanen, ❌ belum dipakai</td>
-<td>overlap <code>Remarks</code> IDX</td>
-<td><strong>belum diputuskan</strong></td>
+<td>✅ dipanen, ✅ dipakai 2 halaman</td>
+<td>Neo Papan (indeks), Berkas Emiten blok G (notasi &amp; UMA — dua bendera paling berbobot karena datang dari otoritas, bukan hitungan kita)</td>
+<td>overlap <code>Remarks</code> IDX <strong>masih belum diputuskan</strong></td>
 </tr>
 <tr>
 <td>Snips: judul, tautan, waktu</td>
@@ -2465,11 +2481,11 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 </tbody>
 </table>
-<p>Stock Detail = <strong>Yahoo + IDX</strong>. KSEI tidak dipakai di halaman ini. <strong>Stockbit belum dipakai</strong> — padahal sudah dipanen dan lebih lengkap:</p>
+<p>Stock Detail = <strong>Yahoo + IDX</strong>, dengan tambahan Stockbit sejak 24 Agu (<code>rasioTambahanKeystats.ts</code>). KSEI tidak dipakai di halaman ini. Isi tiap berkas Stockbit:</p>
 <table>
 <thead>
 <tr>
-<th>Berkas Stockbit (dipanen, belum dibaca halaman mana pun)</th>
+<th>Berkas Stockbit</th>
 <th>Isi</th>
 <th>Rentang</th>
 </tr>
@@ -2481,12 +2497,12 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <td>snapshot 23 Agu 2026, Q2 2026 (30 Jun); riwayat per tahun di <code>financial_year_groups</code></td>
 </tr>
 <tr>
-<td><code>profil_stockbit/&lt;KODE&gt;.json</code> (963)</td>
+<td><code>profil_stockbit/&lt;KODE&gt;.json</code> (963) — Shareholders v2</td>
 <td><code>shareholder</code> (13 ruas: percentage name value type nationality scripless scrip classification…), <code>subsidiary</code>, <code>key_executive</code>, <code>shareholder_one_percent</code>, <code>beneficiary</code>, <code>listing_information</code>, <code>history</code>, <code>background</code></td>
 <td>23 Agu (dipakai hanya Shareholders v2)</td>
 </tr>
 <tr>
-<td><code>info_stockbit/&lt;KODE&gt;.json</code> (964)</td>
+<td><code>info_stockbit/&lt;KODE&gt;.json</code> (964) — Neo Papan, Berkas Emiten blok G</td>
 <td><code>indexes</code> (keanggotaan indeks), <code>notation</code>, <code>uma</code>, <code>corp_action</code>, <code>sector/sub_sector/industry</code>, <code>trading_limit_info</code>, <code>margin_info</code>, <code>day_trade_info</code></td>
 <td>23 Agu</td>
 </tr>

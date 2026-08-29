@@ -187,6 +187,29 @@ def dari_kunci_peta(ruas: str, n_sampel: int = 60):
     return baca_dir
 
 
+def dari_ruas_direktori(ruas: str, n_sampel: int = 60):
+    """Modus sebuah ruas tanggal atas sampel berkas dalam direktori.
+
+    Untuk gudang SNAPSHOT — satu berkas per emiten, isinya potret terkini,
+    bukan deret harian. Yang diukur di sini kapan potret itu diambil
+    (`dipanen_pada`), karena isinya sendiri tak punya tanggal harian yang bisa
+    dibandingkan ke hari bursa: kuartal keuangan berganti tiap tiga bulan, dan
+    membandingkannya ke hari bursa terakhir akan melaporkan merah selamanya.
+
+    Tetap dibaca dari DALAM berkas, bukan mtime — berkas bisa ditulis ulang
+    tanpa membawa potret baru.
+    """
+    def baca_dir(d: Path) -> str | None:
+        c: collections.Counter = collections.Counter()
+        for p in sorted(d.glob("*.json"))[:n_sampel]:
+            j = _muat(p)
+            v = j.get(ruas) if isinstance(j, dict) else None
+            if isinstance(v, str) and len(v) >= 10:
+                c[v[:10]] += 1
+        return c.most_common(1)[0][0] if c else None
+    return baca_dir
+
+
 def dari_bar_dict(ruas: str = "d", i_volume: int = 5, n_sampel: int = 60):
     """Bar terakhir BERISI di berkas yang menyimpan barnya di ruas `d`."""
     def baca_dir(d: Path) -> str | None:
@@ -277,6 +300,24 @@ MANIFEST: list[Turunan] = [
             pembangun="panen_sektor_idx.py"),
     Turunan("Daftar emiten", "daftar_emiten.json", dari_ruas("date_iso"),
             "wasit daftar emiten seluruh halaman", pembangun="sinkron_emiten.py"),
+    # Dua gudang snapshot Stockbit. Ditambahkan 30 Agu 2026 sesudah ketahuan
+    # gerbang ini buta pada keduanya sementara LIMA halaman membacanya —
+    # "basi 0" yang tak melihat dataset yang dipakai lima halaman adalah hijau
+    # yang menyesatkan, persis kegagalan yang gerbang ini dibuat untuk mencegah.
+    #
+    # Toleransinya bukan harian karena iramanya bukan harian: keystats bergerak
+    # per kuartal (angka rasio hanya berubah saat laporan baru terbit), info
+    # membawa keanggotaan indeks & notasi yang berubah mingguan-bulanan. Angka
+    # di bawah dipilih dari irama sumbernya — bukan dari seberapa basi ia
+    # kebetulan hari ini.
+    Turunan("Rasio Stockbit (snapshot)", "keystats_stockbit",
+            dari_ruas_direktori("dipanen_pada"),
+            "Berkas Emiten blok F · Stock Detail · Kuli Papan", toleransi=30,
+            pembangun="panen_keystats_stockbit.py"),
+    Turunan("Info emiten Stockbit (snapshot)", "info_stockbit",
+            dari_ruas_direktori("dipanen_pada"),
+            "Berkas Emiten blok G (notasi & UMA) · Neo Papan (indeks)", toleransi=7,
+            pembangun="panen_info_stockbit.py"),
 ]
 
 
@@ -392,6 +433,19 @@ def _uji() -> None:
     # dan snips dipanen hari ini juga, jadi mereka bisa lebih baru daripada
     # hari bursa terakhir. Yang tak boleh negatif cuma turunan berbasis bar.
     assert selisih_hari("2026-08-28", "2026-08-27") == -1
+
+    # Gudang yang DIBACA halaman wajib ada di manifest. Tanpa uji ini, satu
+    # entri terhapus (atau tak pernah ditambahkan) membuat gerbang melapor
+    # "basi 0" sambil buta pada dataset yang dipakai halaman — bentuk kegagalan
+    # yang persis pernah terjadi: keystats & info_stockbit dibaca lima halaman
+    # selama sepekan tanpa satu pun baris di sini.
+    wajib = {
+        "ohlc", "ohlcv_stockbit", "harian_papan/index.json", "kartu/ringkas.json",
+        "screener.json", "jago_papan/terbaru.json", "broker_harian", "index.json",
+        "keystats_stockbit", "info_stockbit", "daftar_emiten.json",
+    }
+    kurang = wajib - {t.jalur for t in MANIFEST}
+    assert not kurang, f"gudang dibaca halaman tapi tak diperiksa gerbang: {sorted(kurang)}"
 
     print(f"uji cek_kesegaran: LOLOS ({len(MANIFEST)} turunan di manifest)")
 
