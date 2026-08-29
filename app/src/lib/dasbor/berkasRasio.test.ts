@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { susunRasio, KELOMPOK_RASIO } from './berkasRasio'
+import { susunRasio, KELOMPOK_RASIO, NAMA_CADANGAN, NAMA_CADANGAN_TURUNAN } from './berkasRasio'
 
 describe('susunRasio', () => {
   it('menempatkan rasio pada kelompoknya', () => {
@@ -93,5 +93,23 @@ describe('tambalan dari sumber cadangan', () => {
     const { totalTambalan, totalKosong } = susunRasio({ 'Dividend (TTM)': '-' })
     expect(totalTambalan).toBe(0)
     expect(totalKosong).toBeGreaterThan(0)
+  })
+})
+
+describe('label sumber tak boleh bohong', () => {
+  it('menyebut penyedia saat angkanya memang dari penyedia itu', () => {
+    const { kelompok } = susunRasio({ 'Dividend (TTM)': '-' }, { dividend_ttm: 250 })
+    const b = kelompok.find((k) => k.kunci === 'dividen')!.baris[0]
+    expect(b.sumber).toBe(NAMA_CADANGAN)
+  })
+
+  it('BERGANTI label saat ruasnya ternyata hasil hitungan, bukan angka penyedia', () => {
+    const { kelompok } = susunRasio(
+      { 'Dividend (TTM)': '-' },
+      { dividend_ttm: 250, asal_turunan: { dividend_ttm: 'turunan' } },
+    )
+    const b = kelompok.find((k) => k.kunci === 'dividen')!.baris[0]
+    expect(b.sumber).toBe(NAMA_CADANGAN_TURUNAN)
+    expect(b.sumber).not.toContain('Yahoo')
   })
 })

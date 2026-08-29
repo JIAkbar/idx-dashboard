@@ -198,8 +198,19 @@ export const TAMBALAN: Record<string, string> = {
 }
 
 /** Nama sumber cadangan sebagaimana dicetak ke pembaca — nama penyedia,
- *  bukan nama berkas atau ruas internal. */
+ *  bukan nama berkas atau ruas internal.
+ *
+ *  Diverifikasi 29 Agu 2026 atas 966 berkas: ketiga ruas di `TAMBALAN` tak
+ *  satu pun tercatat sebagai turunan, jadi semuanya memang datang dari
+ *  penyedia ini. Yang turunan di sumber cadangan itu ruas lain (eps, der,
+ *  pe, roe, hist_eps) dan tak satu pun dipakai menambal. */
 export const NAMA_CADANGAN = 'Yahoo Finance'
+
+/** Dipakai saat ruas cadangan ternyata BUKAN angka penyedianya, melainkan
+ *  hasil hitungan dari laporan keuangan. Menyebut nama penyedia untuk angka
+ *  semacam itu adalah label yang bohong — dan label sumber yang salah lebih
+ *  buruk daripada tak menyebut sumber sama sekali. */
+export const NAMA_CADANGAN_TURUNAN = 'dihitung dari laporan keuangan'
 
 /** Nilai yang berarti "tak ada", bukan nol. Sumbernya memakai beberapa bentuk
  *  untuk hal yang sama, dan membacanya sebagai teks apa adanya akan memajang
@@ -252,7 +263,16 @@ export function susunRasio(
       const ruasCad = TAMBALAN[nama]
       const vc = ruasCad ? cad[ruasCad] : undefined
       if (adaNilai(vc)) {
-        baris.push({ nama, nilai: String(vc), sumber: NAMA_CADANGAN })
+        // Sumber cadangan mencatat sendiri ruas mana yang bukan angka
+        // penyedianya. Labelnya mengikuti catatan itu, bukan asumsi — kalau
+        // suatu saat ruas ini jadi turunan, namanya ikut berubah sendiri.
+        const asal = (cad.asal_turunan ?? {}) as Record<string, unknown>
+        const turunan = ruasCad != null && asal[ruasCad] != null
+        baris.push({
+          nama,
+          nilai: String(vc),
+          sumber: turunan ? NAMA_CADANGAN_TURUNAN : NAMA_CADANGAN,
+        })
         totalTambalan += 1
       } else {
         kosong += 1
