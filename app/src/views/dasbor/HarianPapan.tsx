@@ -133,7 +133,8 @@ export function HarianPapan() {
   // ("siapa mengumpulkan selama seminggu"), bukan pengganti.
   const [rentang, setRentang] = useState<{ dari: string; sampai: string } | null>(null)
   const { data, muat } = useHarianPapan(tanggal)
-  const { perTanggal, muat: muatRentang } = useHarianPapanRentang(rentang?.dari ?? null, rentang?.sampai ?? null)
+  const { perTanggal, muat: muatRentang, dariBursa: rentangDariBursa } =
+    useHarianPapanRentang(rentang?.dari ?? null, rentang?.sampai ?? null)
   const akum = useMemo(() => akumulasiRentang(perTanggal), [perTanggal])
   const [tab, setTab] = useState<TabHarianPapan>('gainer')
   const [sektorAktif, setSektorAktif] = useState<string[]>([])
@@ -312,7 +313,12 @@ export function HarianPapan() {
             tengah tabel. Keterangan rincinya kini hidup di dua tempat yang
             lebih tepat: tooltip di sini, dan tooltip di sel yang kosong itu
             sendiri. */}
-        {data?.dari_bursa && (
+        {/* Catatan ini SADAR MODE. Sebelumnya ia membaca `data` — hari aktif
+            di mode harian — jadi ia tetap tampil saat pengguna memilih rentang
+            3–27 Agu yang sama sekali tak memuat hari tambalan (temuan Johan
+            29 Agu, tabel rentang). Di mode rentang yang menentukan adalah
+            apakah rentangNYA memuat hari itu. */}
+        {(rentang ? rentangDariBursa.length > 0 : !!data?.dari_bursa) && (
           <p
             className="hp-sumber-bursa"
             title={
@@ -325,8 +331,18 @@ export function HarianPapan() {
             }
           >
             <IkonMenu d={IKON_INFO} size={12} />
-            Hari ini dirakit dari <b>data bursa</b> — Net Asing bertanda ≈ adalah taksiran,
-            sebagian Close Gap belum tersedia.
+            {rentang ? (
+              <>
+                {rentangDariBursa.length === 1 ? '1 hari' : `${rentangDariBursa.length} hari`} di
+                rentang ini dirakit dari <b>data bursa</b> ({rentangDariBursa.map(tanggalPanjang).join(', ')}) —
+                Net Asing hari itu taksiran, jadi jumlahnya ikut taksiran.
+              </>
+            ) : (
+              <>
+                Hari ini dirakit dari <b>data bursa</b> — Net Asing bertanda ≈ adalah taksiran,
+                sebagian Close Gap belum tersedia.
+              </>
+            )}
           </p>
         )}
 
@@ -376,8 +392,15 @@ export function HarianPapan() {
                           <td>{b.sektor}</td>
                           <td className="num">{b.volume.toLocaleString('id-ID')}</td>
                           <td className="num">{b.nilai.toLocaleString('id-ID')}</td>
+                          {/* Dibulatkan. Sejak Net Asing hari tambalan jadi
+                              taksiran (lembar × harga rata-rata), angkanya
+                              pecahan — dan penjumlahan lintas hari mencetak
+                              "−1.419.632.903,5". Satu digit desimal pada
+                              angka ribuan rupiah tak menambah satu pun
+                              informasi, cuma memanjangkan kolom. */}
                           <td className={`num ${b.nbsf_000 >= 0 ? 'up' : 'dn'}`}>
-                            {b.nbsf_000 >= 0 ? '+' : ''}{b.nbsf_000.toLocaleString('id-ID')}
+                            {b.nbsf_000 >= 0 ? '+' : ''}
+                            {Math.round(b.nbsf_000).toLocaleString('id-ID')}
                           </td>
                           <td className="num">{b.nHari}</td>
                           <td className="num">{b.harga_akhir?.toLocaleString('id-ID') ?? '—'}</td>

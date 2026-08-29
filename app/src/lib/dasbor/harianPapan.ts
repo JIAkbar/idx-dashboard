@@ -476,12 +476,19 @@ export function useHarianPapan(tanggal: string | null): { data: DataHarianPapan 
 export function useHarianPapanRentang(dari: string | null, sampai: string | null): {
   perTanggal: Map<string, BarisHarianPapan[]>
   muat: boolean
+  /** Tanggal DI DALAM rentang ini yang dirakit dari data bursa. Kosong berarti
+   *  seluruh angkanya dilaporkan bursa apa adanya. Dipakai supaya catatan
+   *  "ada taksiran di sini" muncul tepat saat rentangnya memang memuat hari
+   *  itu — bukan tiap kali halaman kebetulan sedang menampilkan hari tambalan
+   *  di mode harian. */
+  dariBursa: string[]
 } {
   const [perTanggal, setPerTanggal] = useState<Map<string, BarisHarianPapan[]>>(new Map())
+  const [dariBursa, setDariBursa] = useState<string[]>([])
   const [muat, setMuat] = useState(false)
 
   useEffect(() => {
-    if (!dari || !sampai) { setPerTanggal(new Map()); setMuat(false); return }
+    if (!dari || !sampai) { setPerTanggal(new Map()); setDariBursa([]); setMuat(false); return }
     let batal = false
     setMuat(true)
 
@@ -513,12 +520,18 @@ export function useHarianPapanRentang(dari: string | null, sampai: string | null
     })).then((hasil) => {
       if (batal) return
       const peta = new Map<string, BarisHarianPapan[]>()
-      for (const [t, r] of hasil) if (r?.emiten?.length) peta.set(t, r.emiten)
+      const bursa: string[] = []
+      for (const [t, r] of hasil) {
+        if (!r?.emiten?.length) continue
+        peta.set(t, r.emiten)
+        if (r.dari_bursa) bursa.push(t)
+      }
       setPerTanggal(peta)
+      setDariBursa(bursa.sort())
       setMuat(false)
     })
     return () => { batal = true }
   }, [dari, sampai])
 
-  return { perTanggal, muat }
+  return { perTanggal, muat, dariBursa }
 }

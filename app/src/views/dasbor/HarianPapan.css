@@ -16,32 +16,6 @@
 .lantai .hp-cari { width: 150px; }
 @media (max-width: 700px) { .lantai .hp-cari { width: 100%; } }
 
-/* ── Tabel mode RENTANG ──────────────────────────────────────────────────
-   Tabel harian punya 20 kolom dan wajar melebar penuh; tabel rentang cuma
-   7, dan lebar penuh membuat tiap kolom melar sampai angkanya terlempar
-   jauh dari kepalanya (temuan Johan 29 Agu: "tabel nya berantakan nih
-   ketika pilih rentang waktu"). Lebar kolom karena itu ditetapkan, dan
-   tabelnya berhenti di lebar isi — bukan diregangkan ke tepi layar. */
-.lantai .hp-tbl-rentang { width: auto; min-width: min(100%, 980px); }
-.lantai .hp-tbl-rentang th,
-.lantai .hp-tbl-rentang td { white-space: nowrap; }
-.lantai .hp-tbl-rentang th:nth-child(1),
-.lantai .hp-tbl-rentang td:nth-child(1) { width: 90px; }
-.lantai .hp-tbl-rentang th:nth-child(2),
-.lantai .hp-tbl-rentang td:nth-child(2) { width: 190px; }
-/* Tiga kolom angka besar — lebarnya disamakan supaya digit-digitnya
-   berbaris rapi antar kolom, bukan tiap kolom melar sendiri. */
-.lantai .hp-tbl-rentang th:nth-child(3),
-.lantai .hp-tbl-rentang td:nth-child(3),
-.lantai .hp-tbl-rentang th:nth-child(4),
-.lantai .hp-tbl-rentang td:nth-child(4),
-.lantai .hp-tbl-rentang th:nth-child(5),
-.lantai .hp-tbl-rentang td:nth-child(5) { width: 190px; }
-.lantai .hp-tbl-rentang th:nth-child(6),
-.lantai .hp-tbl-rentang td:nth-child(6) { width: 70px; }
-.lantai .hp-tbl-rentang th:nth-child(7),
-.lantai .hp-tbl-rentang td:nth-child(7) { width: 110px; }
-
 /* Lebar kolom DIKUNCI supaya tabel tak "goyang" saat saringan berubah.
    Tanpa `table-layout: fixed`, peramban menghitung ulang lebar tiap kolom
    dari isinya — jadi memilih satu sektor membuat kolom Sektor menyempit dan
@@ -62,9 +36,51 @@
 .lantai .hp-tbl td:nth-child(2) { width: 168px; }
 .lantai .hp-tbl th,
 .lantai .hp-tbl td { overflow: hidden; text-overflow: ellipsis; }
-/* Tabel rentang punya lebarnya sendiri (7 kolom), jadi ia keluar dari
-   aturan fixed di atas. */
-.lantai .hp-tbl-rentang { table-layout: auto; }
+
+/* ── Tabel mode RENTANG ──────────────────────────────────────────────────
+   DILETAKKAN SESUDAH blok `.hp-tbl` di atas, dan letaknya itu yang penting.
+
+   Versi pertama menaruhnya di ATAS, dan `.lantai .hp-tbl-rentang` punya
+   spesifisitas yang PERSIS SAMA dengan `.lantai .hp-tbl` (0-2-0) — jadi yang
+   menang urutan berkas, dan `min-width: 2090px` milik tabel harian menimpa
+   `min-width: min(100%, 980px)` milik tabel rentang. Akibatnya tabel 7 kolom
+   direntangkan ke 2.090px: kolomnya berjauhan, angkanya terlempar jauh dari
+   kepalanya, dan kolom terakhir (Harga akhir) terdorong ke luar layar
+   sehingga terlihat seperti kolom tanpa judul. Ketiganya satu sebab, dan
+   Johan menemukan ketiganya sekaligus (29 Agu, "tabel rentang perbaiki nih").
+
+   Ini jebakan yang sudah tercatat di CLAUDE.md untuk media query, dan
+   berlaku sama persis di sini: media query dan urutan blok TIDAK menambah
+   spesifisitas — yang menentukan tetap siapa yang ditulis belakangan.
+
+   Tabel harian 20 kolom memang wajar melebar penuh; tabel rentang cuma 7,
+   dan lebar penuh membuat tiap kolom melar (temuan Johan 29 Agu: "tabel nya
+   berantakan nih ketika pilih rentang waktu"). Lebar kolomnya karena itu
+   ditetapkan, dan tabelnya berhenti di lebar isi. */
+.lantai .hp-tbl-rentang {
+  table-layout: auto;
+  width: auto;
+  min-width: min(100%, 980px);
+}
+.lantai .hp-tbl-rentang th,
+.lantai .hp-tbl-rentang td { white-space: nowrap; }
+.lantai .hp-tbl-rentang th:nth-child(1),
+.lantai .hp-tbl-rentang td:nth-child(1) { width: 78px; }
+.lantai .hp-tbl-rentang th:nth-child(2),
+.lantai .hp-tbl-rentang td:nth-child(2) { width: 168px; }
+/* Tiga kolom angka besar — lebarnya disamakan supaya digitnya berbaris rapi
+   antar kolom, bukan tiap kolom melar sendiri mengikuti isinya. */
+.lantai .hp-tbl-rentang th:nth-child(3),
+.lantai .hp-tbl-rentang td:nth-child(3),
+.lantai .hp-tbl-rentang th:nth-child(4),
+.lantai .hp-tbl-rentang td:nth-child(4),
+.lantai .hp-tbl-rentang th:nth-child(5),
+.lantai .hp-tbl-rentang td:nth-child(5) { width: 175px; }
+.lantai .hp-tbl-rentang th:nth-child(6),
+.lantai .hp-tbl-rentang td:nth-child(6) { width: 64px; }
+.lantai .hp-tbl-rentang th:nth-child(7),
+.lantai .hp-tbl-rentang td:nth-child(7) { width: 110px; }
+
 
 /* Jarak kotak cari ke tombol tab — `gap` bawaan `.grup-k` (8px) terlalu
    rapat di sini karena keduanya benda BERBEDA JENIS (isian vs kelompok
