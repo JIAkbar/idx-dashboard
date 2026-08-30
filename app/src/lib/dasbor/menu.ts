@@ -32,6 +32,23 @@ export interface MenuItem {
   /** Kelompok pemiliknya. Ditulis di data, bukan dihitung di komponen: rail
    *  dan laci telepon wajib membaca pengelompokan yang sama persis. */
   grup: GrupId
+  /**
+   * Peleburan menu (Johan 30 Agu 2026: *"memang kita sudah over menu, pengen
+   * saya pangkas umum nya 10 maksimal sudahan"*).
+   *
+   * Halaman ber-`induk` TIDAK muncul lagi di rail; ia jadi TAB di halaman
+   * induknya. Rutenya tetap hidup — tautan lama, bookmark, dan tautan dari
+   * halaman lain tak ada yang patah.
+   *
+   * Sengaja BUKAN menggabung kodenya jadi satu berkas: menggabung 4 halaman
+   * @ ±900 baris berarti satu berkas 3.500 baris yang harus diuji ulang
+   * seluruhnya, dan yang diminta cuma pintunya yang terlalu banyak. Ini
+   * mengurangi 30 pintu jadi 9 tanpa menyentuh satu pun isi halaman.
+   */
+  induk?: string
+  /** Label pendek di baris tab — jatuh ke `label` kalau kosong. Dipakai saat
+   *  nama panjangnya cuma berguna di menu ("Broker Summary v2" → "Ringkas"). */
+  tabLabel?: string
 }
 
 export interface MenuGrup {
@@ -82,17 +99,17 @@ export const MENU_ITEMS: MenuItem[] = [
     // Halaman utama '/' kini Beranda (kartu-kartu + kabar); Indeks Dunia
     // pindah ke rutenya sendiri. Kunci akses 'dasbor' tetap menempel pada
     // halaman ini, bukan pada Beranda — Beranda terbuka untuk siapa pun.
-    id: 'world', path: '/indeks', label: 'Indeks Dunia', kode: 'IND', grup: 'pasar',
-    ringkas: 'Indeks utama dunia dan IHSG dalam satu layar — penutupan, perubahan, dan kalender bursa.',
+    id: 'world', path: '/indeks', label: 'Pasar', kode: 'IND', grup: 'pasar',
+    ringkas: 'Indeks dunia & IHSG, sektor, peringkat harian, dan rekap berkala — seluruh bursa dalam satu pintu.',
     ikon: 'M12 3a9 9 0 100 18 9 9 0 000-18zM3 12h18M12 3c2.5 2.4 3.8 5.6 3.8 9s-1.3 6.6-3.8 9c-2.5-2.4-3.8-5.6-3.8-9s1.3-6.6 3.8-9z',
   },
   {
-    id: 'sector', path: '/sector', label: 'Sektor & Indeks', kode: 'SEK', grup: 'pasar',
+    id: 'sector', path: '/sector', label: 'Sektor & Indeks', kode: 'SEK', induk: '/indeks', tabLabel: 'Sektor', grup: 'pasar',
     ringkas: 'Sebelas sektor IDX dan indeks tematik, diurut kinerja.',
     ikon: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z',
   },
   {
-    id: 'stocks', path: '/stocks', label: 'Top Stocks', kode: 'STK', grup: 'pasar',
+    id: 'stocks', path: '/stocks', label: 'Top Stocks', kode: 'STK', induk: '/indeks', tabLabel: 'Top Stocks', grup: 'pasar',
     ringkas: 'Papan peringkat harian: penggerak indeks, volume terbesar, dan kapitalisasi pasar.',
     ikon: 'M4 19h16M4 15l4-5 4 3 5-7 3 4',
   },
@@ -102,20 +119,20 @@ export const MENU_ITEMS: MenuItem[] = [
     // emiten, bukan aliran dana): nilai transaksi, IHSG, indeks dunia,
     // peringkat saham & broker sepekan. Kode 'STA' — 'STK' sudah dipakai Top
     // Stocks dan 'SEK' Sektor & Indeks.
-    id: 'statistik', path: '/statistik', label: 'Statistik Berkala', kode: 'STA', grup: 'pasar',
+    id: 'statistik', path: '/statistik', label: 'Statistik Berkala', kode: 'STA', induk: '/indeks', tabLabel: 'Berkala', grup: 'pasar',
     ringkas: 'Rekap satu pekan bursa dari terbitan resmi IDX — tiap angka berpasangan dengan pekan sebelumnya.',
     ikon: 'M4 20h16M7 20V10M12 20V4M17 20v-7M4 7h6M4 13h3',
   },
   {
-    id: 'broker', path: '/broker', label: 'Top Broker', kode: 'BRK', grup: 'pasar',
+    id: 'broker', path: '/broker', label: 'Top Broker', kode: 'BRK', induk: '/indeks', tabLabel: 'Top Broker', grup: 'pasar',
     ringkas: 'Broker paling aktif per hari — nilai, lot, dan arah bersihnya.',
     ikon: 'M4 20V9m5.4 11V4m5.2 16v-8m5.4 8V7',
   },
 
   // ── Emiten ─────────────────────────────────────────────────────────────
   {
-    id: 'stock-detail', path: '/stock-detail', label: 'Stock Detail', kode: 'DTL', grup: 'emiten',
-    ringkas: 'Satu emiten dibedah: harga, laporan keuangan, valuasi, dan arus asing.',
+    id: 'stock-detail', path: '/stock-detail', label: 'Emiten', kode: 'DTL', grup: 'emiten',
+    ringkas: 'Satu emiten dari tiga sisi: laporan keuangan & valuasi, grafik harga, dan berkas perilaku pasarnya.',
     ikon: 'M10 4a6 6 0 100 12 6 6 0 000-12zM14.5 14.5L20 20M8 10h4M10 8v4',
   },
   {
@@ -124,24 +141,24 @@ export const MENU_ITEMS: MenuItem[] = [
     // kanvas milik sendiri supaya overlay khas PAPAN (pita musiman,
     // akumulasi broker, penanda Radar) bisa dipasang di tahap berikutnya.
     // Kode 'CHT' sudah dipakai TradingView, jadi 'GRF'.
-    id: 'grafik', path: '/grafik', label: 'Grafik Emiten', kode: 'GRF', grup: 'emiten',
+    id: 'grafik', path: '/grafik', label: 'Grafik Emiten', kode: 'GRF', induk: '/stock-detail', tabLabel: 'Grafik', grup: 'emiten',
     ringkas: 'Lilin dan volume satu emiten dari data OHLC PAPAN sendiri — bisa di-zoom dan digeser.',
     ikon: 'M4 3v18M2 8h4v6H2zM11 2v20M9 6h4v10H9zM18 5v16M16 9h4v8h-4z',
   },
   {
-    id: 'chart', path: '/chart', label: 'Chart', kode: 'CHT', grup: 'emiten',
+    id: 'chart', path: '/chart', label: 'Chart', kode: 'CHT', induk: '/indeks', tabLabel: 'Chart', grup: 'emiten',
     ringkas: 'Grafik lilin IHSG dengan rentang 10 tahun dan penanda level kunci.',
     ikon: 'M7 5v14M5 8h4v8H5zM15 3v18M13 7h4v9h-4z',
   },
 
   // ── Aliran Dana ────────────────────────────────────────────────────────
   {
-    id: 'peta-investor', path: '/peta-investor', label: 'Peta Investor', kode: 'MAP', grup: 'aliran',
+    id: 'peta-investor', path: '/peta-investor', label: 'Peta Investor', kode: 'MAP', induk: '/broker-summary-v2', tabLabel: 'Kepemilikan', grup: 'aliran',
     ringkas: 'Kepemilikan saham dari data KSEI — asing vs domestik, ritel vs institusi, dan grup konglomerat.',
     ikon: 'M12 5a2 2 0 100 4 2 2 0 000-4zM5 15a2 2 0 100 4 2 2 0 000-4zM19 15a2 2 0 100 4 2 2 0 000-4zM11 8.5L6.3 14.6M13 8.5l4.7 6.1M7 17h10',
   },
   {
-    id: 'broker-summary', path: '/broker-summary', label: 'Broker Summary', kode: 'BSM', grup: 'aliran',
+    id: 'broker-summary', path: '/broker-summary', label: 'Broker Summary', kode: 'BSM', induk: '/broker-summary-v2', tabLabel: 'Pasar', grup: 'aliran',
     ringkas: 'Rekap transaksi broker per emiten, ditranskripsi dari setoran kontributor.',
     ikon: 'M4 7h16M4 7l2-3h12l2 3M4 7v11a2 2 0 002 2h12a2 2 0 002-2V7M9 12h6',
   },
@@ -152,7 +169,7 @@ export const MENU_ITEMS: MenuItem[] = [
     // screener.json; PanelAliranAsing per-emiten (dulu cuma di Stock Detail)
     // dirender di bawah begitu satu baris dipilih. Kode 'ASG' — 'AGT' dsb.
     // belum dipakai grup ini.
-    id: 'aliran-asing', path: '/aliran-asing', label: 'Aliran Asing', kode: 'ASG', grup: 'aliran',
+    id: 'aliran-asing', path: '/aliran-asing', label: 'Aliran Asing', kode: 'ASG', induk: '/broker-summary-v2', tabLabel: 'Asing', grup: 'aliran',
     ringkas: 'Emiten diurut net asing, dengan arus harian per emiten begitu dipilih.',
     ikon: 'M4 12h6M7 9l-3 3 3 3M20 12h-6M17 9l3 3-3 3',
   },
@@ -161,19 +178,19 @@ export const MENU_ITEMS: MenuItem[] = [
     // harian Stockbit (broker_tahunan/), berdampingan dengan 'broker-summary'
     // (broker level PASAR, dari IDX) yang SENGAJA tidak disentuh — dua sumber
     // beda, Johan ingin membandingkan sebelum memutuskan mana yang bertahan.
-    id: 'broker-summary-v2', path: '/broker-summary-v2', label: 'Broker Summary v2', kode: 'BS2', grup: 'aliran',
-    ringkas: 'Arus broker per emiten dari arsip harian — tab Inventory/Kuadran/Floor Price.',
+    id: 'broker-summary-v2', path: '/broker-summary-v2', label: 'Aliran Dana', kode: 'BS2', grup: 'aliran',
+    ringkas: 'Siapa menggerakkan harga: broker per emiten & level pasar, aliran asing, jejak whale, dan kepemilikan KSEI.',
     ikon: 'M4 7h16M4 7l2-3h12l2 3M4 7v11a2 2 0 002 2h12a2 2 0 002-2V7M9 12h6',
   },
 
   // ── Analisa ────────────────────────────────────────────────────────────
   {
-    id: 'seasonality', path: '/seasonality', label: 'Seasonality', kode: 'SSN', grup: 'analisa',
-    ringkas: 'Pola musiman: bulan, hari dalam pekan, dan rentang tahun yang bisa dipilih.',
+    id: 'seasonality', path: '/seasonality', label: 'Musiman', kode: 'SSN', grup: 'analisa',
+    ringkas: 'Pola bulanan berulang tiap emiten, dan rapor IPO sejak listing.',
     ikon: 'M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1zM4 9.5h16M8 3v4M16 3v4M8 13h2M12 13h2M8 16.5h2M12 16.5h2',
   },
   {
-    id: 'radar', path: '/radar', label: 'Radar Watchlist', kode: 'RDR', grup: 'analisa',
+    id: 'radar', path: '/radar', label: 'Radar Watchlist', kode: 'RDR', induk: '/watchlist', tabLabel: 'Radar', grup: 'analisa',
     ringkas: 'Daftar pantau berbasis aturan — emiten yang memenuhi syarat, bukan tebakan.',
     ikon: 'M12 3a9 9 0 109 9M12 7a5 5 0 105 5M12 12l5.5-5.5M12 12h.01',
   },
@@ -184,12 +201,12 @@ export const MENU_ITEMS: MenuItem[] = [
     // mengikuti OHLCV harian + harga milik utk untung-rugi. Ikon dipakai
     // ulang dari IKON_MATA ("mata" = memantau, sudah dipakai makna sama di
     // toggle tampil/sembunyi Grafik Emiten) — bukan ikon baru.
-    id: 'watchlist', path: '/watchlist', label: 'Watchlist', kode: 'WCH', grup: 'analisa',
-    ringkas: 'Daftar pantau milik Anda sendiri — harga bergerak tiap hari, isi harga beli untuk melihat untung-rugi.',
+    id: 'watchlist', path: '/watchlist', label: 'Pantau', kode: 'WCH', grup: 'analisa',
+    ringkas: 'Daftar pantau sendiri, arsip Radar, dan kalkulator posisi.',
     ikon: 'M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12zM12 12m-2.6 0a2.6 2.6 0 1 0 5.2 0 2.6 2.6 0 1 0-5.2 0',
   },
   {
-    id: 'kalkulator', path: '/kalkulator', label: 'Kalkulator', kode: 'KAL', grup: 'analisa',
+    id: 'kalkulator', path: '/kalkulator', label: 'Kalkulator', kode: 'KAL', induk: '/watchlist', tabLabel: 'Kalkulator', grup: 'analisa',
     ringkas: 'Hitung average down, target ARA, risk-reward, dividen, dan titik pulih.',
     ikon: 'M6 3h12a1 1 0 011 1v16a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1zM8 7h8M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01',
   },
@@ -198,7 +215,7 @@ export const MENU_ITEMS: MenuItem[] = [
     // turunan scripts/riset/kartu_analisa.py: struktur harga, level S/R
     // dengan n sentuhan, ekspektasi waktu first-passage, musiman, fundamental.
     // Kode 'KTA' — 'KAL' Kalkulator, 'RDR' Radar sudah dipakai.
-    id: 'kartu', path: '/kartu', label: 'Kartu Analisa', kode: 'KTA', grup: 'analisa',
+    id: 'kartu', path: '/kartu', label: 'Kartu Analisa', kode: 'KTA', induk: '/screener', tabLabel: 'Kartu Analisa', grup: 'analisa',
     ringkas: 'Kartu per emiten: struktur harga, level dengan n sentuhan, ekspektasi waktu, musiman, dan fundamental — tiap angka membawa asal-usulnya.',
     ikon: 'M4 4h16v16H4zM4 9h16M9 9v11M14 13h3M14 16h3',
   },
@@ -208,15 +225,15 @@ export const MENU_ITEMS: MenuItem[] = [
     // 18 kolom, dibaca dari berkas turunan `data-idx/json/screener.json`
     // supaya halaman tak perlu mengunduh 921 berkas OHLC.
     // Kode 'SCR' — 'SEK' Sektor & 'SRN' Saran sudah dipakai.
-    id: 'screener', path: '/screener', label: 'Screener', kode: 'SCR', grup: 'analisa',
-    ringkas: 'Sembilan ratus emiten dalam satu tabel: skor teknikal harian/pekanan/bulanan, momentum, volume relatif, aliran asing, dan posisi terhadap rata-rata bergerak.',
+    id: 'screener', path: '/screener', label: 'Sinyal', kode: 'SCR', grup: 'analisa',
+    ringkas: 'Saringan seluruh papan, kartu analisa per emiten, rekap harian, dan preset momentum — berikut win rate-nya.',
     ikon: 'M4 5h16M4 5l6 7v6l4 2v-8l6-7M4 5v0',
   },
   {
     // IPO Papan (spek §G, 27 Agu 2026) — kartu ringkas per tahun listing +
     // tabel IPO + rapor penjamin emisi, dari profil publik emiten.
     // Kode 'IPO' — belum dipakai menu lain.
-    id: 'ipo', path: '/ipo', label: 'IPO Papan', kode: 'IPO', grup: 'analisa',
+    id: 'ipo', path: '/ipo', label: 'IPO Papan', kode: 'IPO', induk: '/seasonality', tabLabel: 'IPO', grup: 'analisa',
     ringkas: 'Return sejak listing per horizon (1D/1W/1M/Kini) dan rapor penjamin emisi — n IPO, win rate, median return.',
     ikon: 'M4 20V10h4v10zM10 20V4h4v16zM16 20v-7h4v7z',
   },
@@ -233,7 +250,7 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M5 4h11l3 3v13a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1zM16 4v4h3M8 10h7M8 13h7M8 16h4',
   },
   {
-    id: 'feedback', path: '/feedback', label: 'Kritik & Saran', kode: 'SRN', grup: 'baca',
+    id: 'feedback', path: '/feedback', label: 'Kritik & Saran', kode: 'SRN', induk: '/metodologi', tabLabel: 'Kritik & Saran', grup: 'baca',
     ringkas: 'Sampaikan koreksi data atau usulan fitur langsung ke redaksi.',
     ikon: 'M21 12a8 8 0 01-8 8H4l2.4-2.9A8 8 0 1121 12zM9 11h6M9 14h4',
   },
@@ -241,20 +258,20 @@ export const MENU_ITEMS: MenuItem[] = [
     // Backlog C6 — glosarium (75 istilah ditambang dari korpus PAPAN sendiri)
     // + metodologi sumber data. Ikon buku terbuka, beda bentuk dari IKON_CATATAN
     // (notepad, dipakai tab Changelog) supaya tak tertukar di flyout yang sama.
-    id: 'metodologi', path: '/metodologi', label: 'Metodologi & Glosarium', kode: 'MTD', grup: 'baca',
-    ringkas: '75 istilah PAPAN dengan definisi dan frekuensi pemakaian, plus penjelasan sumber data & batasnya.',
+    id: 'metodologi', path: '/metodologi', label: 'Metodologi', kode: 'MTD', grup: 'baca',
+    ringkas: 'Istilah PAPAN, asal tiap angka dan batasnya, plus pintu kritik & saran.',
     ikon: 'M4 19.5A2.5 2.5 0 016.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z',
   },
   // ── Dev ────────────────────────────────────────────────────────────────
   {
-    id: 'kuli-papan', path: '/kuli-papan', label: 'Kuli Papan', kode: 'KUL', grup: 'dev',
+    id: 'kuli-papan', path: '/kuli-papan', label: 'Kuli Papan', kode: 'KUL', induk: '/watchlist', tabLabel: 'Kuli Papan', grup: 'dev',
     ringkas: 'Dua kalkulator papan: target realistis dari antrean bid/offer, dan pita PBV terhadap rata-rata P/B tahunan.',
     ikon: 'M4 19h16M6 15V9M10 15V6M14 15v-4M18 15V8',
   },
   {
     // Neo Papan (23 Agu 2026) — delapan tab analisis, sibling Kuli Papan.
     // Kode 'NEO' — 'KUL' sudah dipakai Kuli Papan.
-    id: 'neo-papan', path: '/neo-papan', label: 'Neo Papan', kode: 'NEO', grup: 'dev',
+    id: 'neo-papan', path: '/neo-papan', label: 'Neo Papan', kode: 'NEO', induk: '/broker-summary-v2', tabLabel: 'Neo', grup: 'dev',
     ringkas: 'Delapan tab analisis: transaksi, inventory broker, broker stalker, kepemilikan KSEI, musiman, dan rotasi sektor.',
     ikon: 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 3a9 9 0 019 9h-9z M12 12l4-2',
   },
@@ -262,42 +279,68 @@ export const MENU_ITEMS: MenuItem[] = [
     // Berkas Emiten (28 Agu 2026) — satu kode, semua yang PAPAN tahu tentang
     // emiten itu. Kode 'BRK'. Tingkat superadmin (permintaan Johan), jadi
     // tak muncul di rail untuk pembaca biasa.
-    id: 'berkas-emiten', path: '/berkas-emiten', label: 'Berkas Emiten', kode: 'BRK', grup: 'dev',
+    id: 'berkas-emiten', path: '/berkas-emiten', label: 'Berkas Emiten', kode: 'BKE', induk: '/stock-detail', tabLabel: 'Berkas', grup: 'dev',
     ringkas: 'Satu emiten, semua yang PAPAN tahu: perilakunya saat pasar naik vs turun, broker penampung, aliran asing, probabilitas, dan bendera risikonya.',
     ikon: 'M4 4h11l5 5v11H4zM15 4v5h5M8 13h8M8 17h5',
   },
   {
     // Whales Papan (25 Agu 2026) — kanvas jejak bandar harian. Kode 'WHL';
     // 'KUL' dan 'NEO' sudah dipakai sibling-nya.
-    id: 'whales-papan', path: '/whales-papan', label: 'Whales Papan', kode: 'WHL', grup: 'dev',
+    id: 'whales-papan', path: '/whales-papan', label: 'Whales Papan', kode: 'WHL', induk: '/broker-summary-v2', tabLabel: 'Whales', grup: 'dev',
     ringkas: 'Kanvas jejak bandar: seret rentang harga x waktu, lihat broker mana yang menampung dan mana yang melepas.',
     ikon: 'M3 17l5-5 4 3 5-7 4 4M3 21h18',
   },
   {
     // Trader Papan (25 Agu 2026) — posisi broker per emiten. Kode 'TRP';
     // 'TRD' terlalu dekat dengan menu Trading yang sudah ada.
-    id: 'trader-papan', path: '/trader-papan', label: 'Trader Papan', kode: 'TRP', grup: 'dev',
+    id: 'trader-papan', path: '/trader-papan', label: 'Trader Papan', kode: 'TRP', induk: '/broker-summary-v2', tabLabel: 'Trader', grup: 'dev',
     ringkas: 'Posisi tiap broker pada satu emiten: rata-rata harga beli, harga termurah tempat ia menampung, dan arah terakhirnya.',
     ikon: 'M4 19h16M6 16V9m5 7V5m5 11v-6',
   },
   {
     // Harian Papan (26 Agu 2026) — kode 'HRP'.
-    id: 'harian-papan', path: '/harian-papan', label: 'Harian Papan', kode: 'HRP', grup: 'dev',
+    id: 'harian-papan', path: '/harian-papan', label: 'Harian Papan', kode: 'HRP', induk: '/screener', tabLabel: 'Harian', grup: 'dev',
     ringkas: 'Rekap harian tiga tab: gainer, net beli asing, net jual asing — plus Skor Papan.',
     ikon: 'M4 6h16M4 12h10M4 18h7',
   },
   {
     // Jago Papan (26 Agu 2026) — kode 'JGO'.
-    id: 'jago-papan', path: '/jago-papan', label: 'Jago Papan', kode: 'JGO', grup: 'dev',
+    id: 'jago-papan', path: '/jago-papan', label: 'Jago Papan', kode: 'JGO', induk: '/screener', tabLabel: 'Momentum', grup: 'dev',
     ringkas: 'Empat saringan momentum siap pakai: Strong Uptrend, Breakout, Early Breakout, Foreign Flow Uptrend.',
     ikon: 'M3 17l6-6 4 4 8-8M14 4h7v7',
   },
 ]
 
+/** Menu yang benar-benar tampil di rail & laci — yang ber-`induk` sudah jadi
+ *  tab di halaman induknya, jadi tak boleh muncul dua kali. */
+export const MENU_UTAMA: MenuItem[] = MENU_ITEMS.filter((m) => !m.induk)
+
+/** Tab satu halaman induk: induknya sendiri lebih dulu, lalu anak-anaknya
+ *  menurut urutan `MENU_ITEMS`. Kosong kalau `path` bukan induk siapa pun —
+ *  itulah cara komponen tab tahu ia tak perlu menggambar apa-apa. */
+export function tabHalaman(path: string): { path: string; label: string }[] {
+  const anak = MENU_ITEMS.filter((m) => m.induk === path)
+  if (anak.length === 0) return []
+  const induk = MENU_ITEMS.find((m) => m.path === path)
+  return [
+    ...(induk ? [{ path: induk.path, label: induk.tabLabel ?? induk.label }] : []),
+    ...anak.map((m) => ({ path: m.path, label: m.tabLabel ?? m.label })),
+  ]
+}
+
+/** Rute induk dari sebuah halaman — dipakai halaman anak untuk menggambar
+ *  baris tab yang SAMA dengan induknya. */
+export function indukDari(path: string): string | null {
+  return MENU_ITEMS.find((m) => m.path === path)?.induk ?? null
+}
+
 /** Kelompok beserta isinya — satu sumber untuk rail desktop (flyout) DAN laci
  *  telepon (daftar bertajuk). Diturunkan dari dua daftar di atas, bukan
- *  ditulis ulang, supaya menu baru cukup diberi ruas `grup`. */
-export const MENU_KELOMPOK: (MenuGrup & { items: MenuItem[] })[] = MENU_GRUP.map((g) => ({
-  ...g,
-  items: MENU_ITEMS.filter((m) => m.grup === g.id),
-}))
+ *  ditulis ulang, supaya menu baru cukup diberi ruas `grup`.
+ *
+ *  Memakai `MENU_UTAMA`: halaman yang sudah jadi tab tak lagi muncul sebagai
+ *  pintu tersendiri (peleburan 30 → 9, lihat `induk` di atas). Kelompok yang
+ *  jadi kosong dibuang, bukan dipajang sebagai judul tanpa isi. */
+export const MENU_KELOMPOK: (MenuGrup & { items: MenuItem[] })[] = MENU_GRUP
+  .map((g) => ({ ...g, items: MENU_UTAMA.filter((m) => m.grup === g.id) }))
+  .filter((g) => g.items.length > 0)

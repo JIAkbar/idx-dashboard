@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { TabHalaman } from './TabHalaman'
 import { PitaPengumuman } from './PitaPengumuman'
 import { Renovasi } from './Renovasi'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
@@ -88,6 +89,12 @@ export function DasborLayout() {
                   DATA seluruh situs, jadi ia membingkai apa pun di bawahnya. */}
               <Renovasi />
               <PitaPengumuman />
+              {/* Baris tab halaman yang sudah dilebur jadi satu pintu
+                  (peleburan 30 → 9 menu, 31 Agu 2026). Dipasang SEKALI di sini,
+                  bukan di 27 halaman: komponennya mengembalikan null pada
+                  halaman yang bukan bagian dari tab mana pun, jadi memasangnya
+                  satu per satu cuma menambah 27 tempat yang bisa lupa. */}
+              <TabHalaman />
               <Outlet />
             </main>
 

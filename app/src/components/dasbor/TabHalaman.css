@@ -1,0 +1,58 @@
+/* Baris tab antar-halaman
+
+   TANPA prefiks `.lantai`: komponen ini dirender di `dasbor-main` (layout),
+   SATU tingkat di atas `.lantai` yang dipasang tiap halaman. Versi pertama
+   memakai prefiks itu dan seluruh aturannya tak pernah berlaku — tabnya
+   tampil sebagai empat tautan biru bersambung tanpa jarak, terlihat di layar
+   31 Agu 2026 dan tanpa satu pun galat. — lihat catatan rancangan di TabHalaman.tsx.
+   Bentuknya sengaja SAMA dengan `.chip-t` (komponen kanonis #170) supaya tab
+   ini tidak terbaca sebagai jenis kendali baru: yang berbeda cuma perannya
+   (pindah halaman), bukan tampilannya. */
+
+.tab-halaman {
+  display: flex;
+  gap: 6px;
+  /* Menggulir mendatar di layar sempit, bukan membungkus: enam tab yang
+     terlipat jadi dua baris menggeser seluruh isi halaman ke bawah, dan di
+     ponsel itu memakan layar pertama yang justru paling berharga. */
+  overflow-x: auto;
+  margin: 0 0 var(--j2, 14px);
+  padding-bottom: 2px;
+  scroll-snap-type: x proximity;
+}
+
+.tab-halaman-it {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel, var(--bg2));
+  color: var(--text2);
+  font-size: 12.5px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  /* Target sentuh 44px lewat ::after, pola sama TombolIkon (#170) — tinggi
+     visualnya tetap 30px supaya barisnya tidak menghabiskan tinggi layar. */
+  position: relative;
+}
+.tab-halaman-it::after {
+  content: '';
+  position: absolute;
+  inset: -7px -2px;
+}
+
+.tab-halaman-it:hover { color: var(--text); border-color: var(--line2); }
+
+.tab-halaman-it.on {
+  background: var(--emas, #d9a441);
+  border-color: var(--emas, #d9a441);
+  color: #1a1408;
+  font-weight: 600;
+}
+
+@media (max-width: 560px) {
+  .tab-halaman { margin-bottom: 10px; }
+  .tab-halaman-it { font-size: 12px; padding: 5px 10px; }
+}
