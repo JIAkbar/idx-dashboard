@@ -262,7 +262,7 @@ export const MENU_ITEMS: MenuItem[] = [
     // Berkas Emiten (28 Agu 2026) — satu kode, semua yang PAPAN tahu tentang
     // emiten itu. Kode 'BRK'. Tingkat superadmin (permintaan Johan), jadi
     // tak muncul di rail untuk pembaca biasa.
-    id: 'berkas-emiten', path: '/berkas-emiten', label: 'Berkas Emiten', kode: 'BRK', grup: 'dev',
+    id: 'berkas-emiten', path: '/berkas-emiten', label: 'Berkas Emiten', kode: 'BKE', grup: 'dev',
     ringkas: 'Satu emiten, semua yang PAPAN tahu: perilakunya saat pasar naik vs turun, broker penampung, aliran asing, probabilitas, dan bendera risikonya.',
     ikon: 'M4 4h11l5 5v11H4zM15 4v5h5M8 13h8M8 17h5',
   },

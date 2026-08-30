@@ -30,9 +30,10 @@
  */
 import { readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs'
 import { tambalDariArsipBursa, barTujuhBelasKolom } from './lib/tambalBursa.mjs'
+import { skorPapanTigaKerangka } from './lib/skorPapan.mjs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { sma, emaAkhir, rsi, stochK, cci, macd, rakitPeriode, labelSkor } from './lib/skor.mjs'
+import { sma, emaAkhir, macd, rakitPeriode } from './lib/skor.mjs'
 
 const AKAR = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const DIR_JSON = join(AKAR, 'data-idx', 'json')
@@ -69,54 +70,10 @@ function bacaJson(path) {
   }
 }
 
-// ── Skor Papan (JS) — WAJIB sama persis dgn skorPapan() di harianPapan.ts ──
-const PERIODE_SKOR_PAPAN = [5, 10, 20, 50, 100, 200]
-
-function biasMomentum(v, ambangBawah, ambangAtas) {
-  if (v === null) return 0
-  if (v >= ambangAtas) return 1
-  if (v <= ambangBawah) return -1
-  return 0
-}
-
-function skorPapan(baris) {
-  if (baris.length < 30) return null
-  const tutup = baris.map((b) => b[4])
-  const harga = tutup[tutup.length - 1]
-
-  const ma = []
-  const arahHarga = (v, nama) => {
-    if (v === null) return
-    ma.push({ nama, bias: harga > v ? 1 : harga < v ? -1 : 0 })
-  }
-  for (const n of PERIODE_SKOR_PAPAN) arahHarga(sma(tutup, n), `SMA ${n}`)
-  for (const n of PERIODE_SKOR_PAPAN) arahHarga(emaAkhir(tutup, n), `EMA ${n}`)
-
-  const osc = []
-  const r = rsi(tutup, 14)
-  if (r !== null) osc.push({ nama: 'RSI 14', bias: biasMomentum(r, 40, 60) })
-  const k = stochK(baris, 14)
-  if (k !== null) osc.push({ nama: 'Stoch 14', bias: biasMomentum(k, 20, 80) })
-  const c = cci(baris, 20)
-  if (c !== null) osc.push({ nama: 'CCI 20', bias: biasMomentum(c, -100, 100) })
-  const m = macd(tutup, 12, 26, 9)
-  if (m) osc.push({ nama: 'MACD 12-26', bias: m[0] > 0 ? 1 : m[0] < 0 ? -1 : 0 })
-
-  if (ma.length === 0 && osc.length === 0) return null
-  const rata = (arr) => (arr.length ? arr.reduce((a, b) => a + b.bias, 0) / arr.length : 0)
-  const maSkor = rata(ma)
-  const oscSkor = rata(osc)
-  const skor = (maSkor + oscSkor) / 2
-  return { skor, label: labelSkor(skor), ma: maSkor, osilator: oscSkor }
-}
-
-function skorPapanTigaKerangka(baris) {
-  return {
-    harian: skorPapan(baris),
-    pekanan: skorPapan(rakitPeriode(baris, 'pekan')),
-    bulanan: skorPapan(rakitPeriode(baris, 'bulan')),
-  }
-}
+// Skor Papan pindah ke `lib/skorPapan.mjs` (30 Agu 2026) — modul TANPA efek
+// samping, supaya bisa diuji silang terhadap `harianPapan.ts`. Selama rumusnya
+// tinggal di dalam skrip ini, tak ada uji yang bisa memanggilnya: mengimpor
+// berkas ini menjalankan pembangunan penuh dan menulis ke cakram.
 
 // ── Kolom lain — WAJIB sama persis dgn harianPapan.ts ──────────────────────
 function hitungNbsf000(fb, fs) {
@@ -168,8 +125,13 @@ function posisiHarga(harga, v) {
   return null
 }
 function hitungFreeFloat(pemegang) {
+  // WAJIB sama dgn hitungFreeFloat() di harianPapan.ts — termasuk `null` saat
+  // daftar berisi tapi nol pengendali (42 emiten, mis. BBRI; lihat catatan di
+  // sana).
   if (!pemegang || pemegang.length === 0) return null
-  const dikuasai = pemegang.filter((p) => p.pengendali).reduce((a, p) => a + (p.persen ?? 0), 0)
+  const berpengendali = pemegang.filter((p) => p.pengendali)
+  if (berpengendali.length === 0) return null
+  const dikuasai = berpengendali.reduce((a, p) => a + (p.persen ?? 0), 0)
   return Math.max(0, Math.min(100, 100 - dikuasai))
 }
 function tidakDiperdagangkanHariIni(vol) {
@@ -191,6 +153,7 @@ function bangunBarisHarianPapan(kode, nama, sektor, freeFloat, barSampaiTanggal)
   const mingguan = rakitPeriode(ohlc, 'pekan')
   const bulanan = rakitPeriode(ohlc, 'bulan')
   const chgWtd = hitungChgPeriode(hargaTerakhir, mingguan)
+  const chgMtd = hitungChgPeriode(hargaTerakhir, bulanan)
 
   // Return BULANAN dihitung ROLLING, bukan "to date" (keputusan Johan 29 Agu
   // 2026 sesudah diberi angkanya).
@@ -222,7 +185,17 @@ function bangunBarisHarianPapan(kode, nama, sektor, freeFloat, barSampaiTanggal)
     nama,
     sektor,
     harga: hargaTerakhir,
-    tdm_persen: chg1m,
+  // TDM% = month-to-date, sesuai `spek_harian_papan.md:20` ("close ÷ close hari
+  // bursa terakhir bulan sebelumnya − 1", terverifikasi 10/10 emiten 18 Agu).
+  // SENGAJA berbeda dari `chg_b1` yang rolling 21 hari: keduanya menjawab
+  // pertanyaan berbeda, dan ruas ini dibaca Screener.
+  //
+  // Dikembalikan 30 Agu 2026 sesudah regresi 29 Agu (commit 6ed9d3580): ruas
+  // ini dulu MENUMPANG variabel `chgMtd`, jadi ketika `chg_mtd` diubah jadi
+  // rolling atas permintaan Johan, TDM% ikut berubah tanpa diminta — dan
+  // speknya tetap menyebut month-to-date. Sekarang keduanya punya variabel
+  // sendiri supaya tak bisa saling menyeret lagi.
+    tdm_persen: chgMtd,
     volume: volumeIni,
     rvol10: hitungRvol10(volume),
     nilai: barIni[7] ?? null,

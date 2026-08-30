@@ -187,10 +187,23 @@ export interface PemegangSahamRingkas {
  *  tak punya ruas "free float" langsung — ini pemakaian pertama ruas
  *  `pemegang_saham` untuk itu (spek: "ada, perlu dipetakan"). `null` kalau
  *  berkas profil tak ada/kosong — dibiarkan basi, bukan ditebak (0% berarti
- *  klaim "seluruhnya dikuasai", beda dari "tak diketahui"). */
+ *  klaim "seluruhnya dikuasai", beda dari "tak diketahui").
+ *
+ *  Prinsip yang sama berlaku di UJUNG SEBALIKNYA, dan itu terlewat sampai
+ *  30 Agu 2026: daftar pemegang saham yang ADA tapi tak satu pun berflag
+ *  pengendali menghasilkan 100% — klaim "tak ada pengendali", bukan
+ *  "pengendali tak tercatat". Terukur 42 dari 960 emiten, dan justru yang
+ *  pengendaliannya paling jelas: BBRI mencatat `PT Danantara Asset Management
+ *  52,656%` dengan `pengendali=false`, sehingga free float-nya terbaca 100%.
+ *  Ikut kena BBNI, BMRI, BBTN, ADHI. Sekarang `null` — tak diketahui, dan
+ *  layar boleh mengatakannya. */
 export function hitungFreeFloat(pemegang: PemegangSahamRingkas[] | null | undefined): number | null {
   if (!pemegang || pemegang.length === 0) return null
-  const dikuasai = pemegang.filter((p) => p.pengendali).reduce((a, p) => a + p.persen, 0)
+  const berpengendali = pemegang.filter((p) => p.pengendali)
+  // Nol pengendali di daftar yang berisi = penandaan sumbernya tak lengkap,
+  // bukan bukti bahwa seluruh saham beredar bebas.
+  if (berpengendali.length === 0) return null
+  const dikuasai = berpengendali.reduce((a, p) => a + p.persen, 0)
   return Math.max(0, Math.min(100, 100 - dikuasai))
 }
 
@@ -301,6 +314,8 @@ export function bangunBarisHarianPapan(
 
   const mingguan = rakitPeriode(ohlc, 'pekan')
   const chgWtd = hitungChgPeriode(hargaTerakhir, mingguan)
+  const bulanan = rakitPeriode(ohlc, 'bulan')
+  const chgMtd = hitungChgPeriode(hargaTerakhir, bulanan)
 
   const ema5 = emaAkhir(tutup, 5)
   const ma10 = sma(tutup, 10)
@@ -316,7 +331,17 @@ export function bangunBarisHarianPapan(
     nama,
     sektor,
     harga: hargaTerakhir,
-    tdm_persen: hitungChgMundur(tutup, 21),
+  // TDM% = month-to-date, sesuai `spek_harian_papan.md:20` ("close ÷ close hari
+  // bursa terakhir bulan sebelumnya − 1", terverifikasi 10/10 emiten 18 Agu).
+  // SENGAJA berbeda dari `chg_b1` yang rolling 21 hari: keduanya menjawab
+  // pertanyaan berbeda, dan ruas ini dibaca Screener.
+  //
+  // Dikembalikan 30 Agu 2026 sesudah regresi 29 Agu (commit 6ed9d3580): ruas
+  // ini dulu MENUMPANG variabel `chgMtd`, jadi ketika `chg_mtd` diubah jadi
+  // rolling atas permintaan Johan, TDM% ikut berubah tanpa diminta — dan
+  // speknya tetap menyebut month-to-date. Sekarang keduanya punya variabel
+  // sendiri supaya tak bisa saling menyeret lagi.
+    tdm_persen: chgMtd,
     volume: volumeIni,
     rvol10: hitungRvol10(volume),
     nilai: barIni[7] ?? null,

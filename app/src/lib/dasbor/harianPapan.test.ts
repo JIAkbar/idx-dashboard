@@ -54,6 +54,22 @@ describe('bangunBarisHarianPapan — acuan regresi arsip 18 Agu 2026', () => {
     expect(baris?.chg_wtd).toBeCloseTo(0.9771986970684043, 6) // 14 Agu = hari bursa terakhir pekan lalu SEKALIGUS kemarin (17 Agu libur)
   })
 
+  it('TDM% tetap month-to-date walau chg_b1 rolling — dua ruas, dua arti', () => {
+    // Regresi 29 Agu 2026 (commit 6ed9d3580): `tdm_persen` menumpang variabel
+    // `chgMtd`, jadi saat return bulanan diubah jadi rolling atas keputusan
+    // Johan, TDM% ikut berubah tanpa diminta — sementara speknya
+    // (`spek_harian_papan.md:20`) tetap mendefinisikannya month-to-date.
+    // Kolomnya sudah tak tampil di layar, tapi ruasnya ikut ke CSV dan dibaca
+    // Screener, jadi tak ada yang menyadarinya.
+    //
+    // Uji ini mengunci keduanya BERBEDA. Kalau nanti sama lagi, salah satunya
+    // sedang menumpang yang lain.
+    expect(baris).not.toBeNull()
+    expect(baris!.tdm_persen).not.toBeNull()
+    expect(baris!.chg_b1).not.toBeNull()
+    expect(baris!.tdm_persen).not.toBeCloseTo(baris!.chg_b1!, 6)
+  })
+
   it('return bulanan ROLLING, bukan month-to-date (ketetapan Johan 29 Agu 2026)', () => {
     // Dihitung ulang dari arsip, bukan disalin dari keluaran:
     //   21 hari bursa lalu = 2026-07-17, tutup 3.070 → 3.100/3.070 − 1
@@ -143,6 +159,19 @@ describe('fungsi murni — unit', () => {
     expect(posisiHarga(100, 110)).toBe('bawah')
     expect(posisiHarga(100, 100)).toBeNull()
     expect(posisiHarga(100, null)).toBeNull()
+  })
+
+  it('hitungFreeFloat: daftar berisi tapi NOL pengendali → null, bukan 100%', () => {
+    // Bentuk data BBRI 28 Agu 2026: pemegang mayoritas ada, flag pengendali
+    // kosong. Versi pertama mengembalikan 100% — klaim bahwa seluruh saham
+    // beredar bebas, untuk emiten yang 52,656%-nya dipegang satu pihak.
+    // Terukur 42 dari 960 emiten, termasuk BBNI, BMRI, BBTN, ADHI.
+    expect(
+      hitungFreeFloat([
+        { persen: 52.656, pengendali: false },  // PT Danantara Asset Management
+        { persen: 46.2231, pengendali: false }, // Masyarakat Non Warkat
+      ]),
+    ).toBeNull()
   })
 
   it('hitungFreeFloat: 100 − jumlah persen pengendali, diklip [0,100], null kalau kosong', () => {

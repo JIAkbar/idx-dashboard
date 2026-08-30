@@ -50,10 +50,12 @@
  *
  * ## Yang dijaga di sini
  *
- * 1. Salinan Harian Papan (TS ↔ mjs) wajib sepakat — lubang yang tadinya
- *    terbuka. Dibaca sebagai TEKS, bukan lewat impor: mengimpor
- *    `bangun-harian-papan.mjs` menjalankan pembangunan penuh dan menulis ke
- *    cakram, jadi impor bukan pilihan.
+ * 1. (pindah) Salinan Harian Papan TS ↔ mjs kini dijaga uji silang sungguhan
+ *    di `app/scripts/lib/skorPapan.crossCheck.test.mjs` — membandingkan
+ *    KELUARANNYA pada data nyata, bukan teks konstantanya. Itu bisa ditulis
+ *    setelah rumusnya dipindah ke `lib/skorPapan.mjs`, modul tanpa efek
+ *    samping; selama ia tinggal di dalam skrip pembangun, mengimpornya berarti
+ *    menjalankan pembangunan penuh dan menulis ke cakram.
  * 2. Perbedaan ANTAR-HALAMAN dikunci sebagai keputusan, bukan sebagai cacat.
  *    Uji ini hijau justru karena keduanya berbeda, dan merah kalau ada yang
  *    "merapikannya" jadi satu — termasuk aku, tiga jam sebelum komentar ini
@@ -77,37 +79,26 @@
  */
 import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync } from 'node:fs'
-import { join } from 'node:path'
-import { skorTigaKerangka, skorTeknikal } from './skorTeknikal'
-import { PERIODE_SKOR_PAPAN, skorPapan, skorPapanTigaKerangka } from './harianPapan'
-import type { BarisOhlc } from './skorTeknikal'
+import { join, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { skorTigaKerangka, skorTeknikal } from '../../src/lib/dasbor/skorTeknikal.ts'
+import { skorPapan, skorPapanTigaKerangka } from '../../src/lib/dasbor/harianPapan.ts'
 
-const AKAR = join(__dirname, '..', '..', '..', '..')
+const AKAR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 const DIR_OHLC = join(AKAR, 'data-idx', 'json', 'ohlc')
-const PEMBANGUN = join(AKAR, 'app', 'scripts', 'bangun-harian-papan.mjs')
 
 /** Sampel deterministik, pola sama dengan crossCheck: tiap emiten ke-23. */
-function sampelEmiten(): string[] {
+function sampelEmiten() {
   const semua = readdirSync(DIR_OHLC)
     .filter((f) => f.endsWith('.json') && !f.startsWith('_') && f !== 'IHSG.json')
     .sort()
   return semua.filter((_, i) => i % 23 === 0)
 }
 
-function bacaBaris(file: string): BarisOhlc[] {
+function bacaBaris(file) {
   const d = JSON.parse(readFileSync(join(DIR_OHLC, file), 'utf8'))
-  return Array.isArray(d.d) ? (d.d as BarisOhlc[]) : []
+  return Array.isArray(d.d) ? d.d : []
 }
-
-describe('salinan periode Harian Papan — TS vs skrip pembangun', () => {
-  it('kedua salinan menyebut daftar periode yang sama persis', () => {
-    const sumber = readFileSync(PEMBANGUN, 'utf8')
-    const cocok = sumber.match(/PERIODE_SKOR_PAPAN\s*=\s*\[([^\]]+)\]/)
-    expect(cocok, 'PERIODE_SKOR_PAPAN tak ditemukan di bangun-harian-papan.mjs').toBeTruthy()
-    const dariSkrip = cocok![1].split(',').map((x) => Number(x.trim()))
-    expect(dariSkrip).toEqual([...PERIODE_SKOR_PAPAN])
-  })
-})
 
 describe('skor yang dilihat pembaca — Screener vs Harian Papan', () => {
   const sampel = sampelEmiten()
@@ -119,7 +110,7 @@ describe('skor yang dilihat pembaca — Screener vs Harian Papan', () => {
   it('KEADAAN SEKARANG: dua halaman memberi label berbeda untuk sebagian emiten', () => {
     let diperiksa = 0
     let berbeda = 0
-    const contoh: string[] = []
+    const contoh = []
 
     for (const file of sampel) {
       const baris = bacaBaris(file)
@@ -127,12 +118,12 @@ describe('skor yang dilihat pembaca — Screener vs Harian Papan', () => {
       const sc = skorTigaKerangka(baris)
       const hp = skorPapanTigaKerangka(baris)
       diperiksa++
-      const label = (x: { label?: string } | null | undefined) => x?.label ?? null
+      const label = (x) => x?.label ?? null
       // Kerangka yang BENAR-BENAR berbeda ikut dicetak. Versi pertama selalu
       // mencetak kerangka harian, jadi emiten yang bedanya di pekanan tampil
       // sebagai "Strong Buy / Strong Buy" — penanda yang menyanggah dirinya
       // sendiri, persis cacat yang uji ini dibuat untuk mengejar.
-      const kerangka = (['harian', 'pekanan', 'bulanan'] as const).filter(
+      const kerangka = ['harian', 'pekanan', 'bulanan'].filter(
         (k) => label(sc[k]) !== label(hp[k]),
       )
       if (kerangka.length > 0) {
@@ -168,7 +159,7 @@ describe('skor yang dilihat pembaca — Screener vs Harian Papan', () => {
   })
 
   it('bedanya bukan karena salah satu sisi kosong — keduanya menghasilkan label', () => {
-    const baris = bacaBaris(sampel.find((f) => bacaBaris(f).length >= 250)!)
+    const baris = bacaBaris(sampel.find((f) => bacaBaris(f).length >= 250))
     const sc = skorTigaKerangka(baris)
     const hp = skorPapanTigaKerangka(baris)
     expect(sc.harian?.label).toBeTruthy()
@@ -182,10 +173,10 @@ describe('skor yang dilihat pembaca — Screener vs Harian Papan', () => {
     // bobot 50/50 — dikalibrasi ke 83 label penyedia lain (96% dalam ±1
     // tingkat, spek §Skor Papan). Menyamakan keduanya membuang kalibrasi itu
     // tanpa jejak di layar.
-    const baris = bacaBaris(sampel.find((f) => bacaBaris(f).length >= 250)!)
-    const sc = skorTeknikal(baris)!
-    const hp = skorPapan(baris)!
-    const nama = (x: { komponen: { nama: string }[] }) => x.komponen.map((k) => k.nama)
+    const baris = bacaBaris(sampel.find((f) => bacaBaris(f).length >= 250))
+    const sc = skorTeknikal(baris)
+    const hp = skorPapan(baris)
+    const nama = (x) => x.komponen.map((k) => k.nama)
 
     // Screener menimbang enam osilator, Harian Papan empat.
     expect(nama(sc)).toContain('Williams %R')
