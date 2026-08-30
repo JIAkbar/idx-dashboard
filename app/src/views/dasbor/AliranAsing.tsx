@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { IkonMenu, IKON_CARI, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { PanelAliranAsing } from '../../components/dasbor/PanelAliranAsing'
@@ -81,7 +81,6 @@ export function AliranAsing() {
           <div className="bilah-kendali ala-alat">
             <div className="grup-k">
               <span className="af-cari ala-cari">
-                <IkonMenu d={IKON_CARI} size={13} />
                 <input
                   className="inp" type="search" placeholder="Cari emiten: BUMI, BBCA…" value={cari}
                   onChange={(e) => setCari(e.target.value)}

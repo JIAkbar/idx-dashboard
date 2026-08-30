@@ -56,7 +56,7 @@ import { pesanGalat } from '../../lib/pesanGalat'
 import { keFraksi } from '../../lib/fraksiHarga'
 import { arahStruktur, cariPatahan, cariSwing, hitungPrz, type Patahan, type Swing } from '../../lib/dasbor/strukturPasar'
 import {
-  IkonMenu, IKON_CARI, IKON_SILANG, IKON_INFO, IKON_TONG, IKON_MATA,
+  IkonMenu, IKON_SILANG, IKON_INFO, IKON_TONG, IKON_MATA,
   IKON_MATA_CORET, IKON_GIR, IKON_LILIN, IKON_GRAFIK_NAIK, IKON_KAMERA,
   IKON_ULANG, IKON_PUTAR, IKON_JEDA, IKON_KOTAK_ARSIP, IKON_PANAH_ATAS, IKON_PANAH_BAWAH,
   IKON_GARIS_AVG, IKON_PITA_CPR, IKON_BUBBLE, IKON_GRAFIK_BATANG,
@@ -3220,7 +3220,6 @@ export function GrafikEmiten() {
             sendiri ke dalam pandangan (lihat efek di atas). */}
         <div className="grf-toolbar">
           <div className="grf-cari sea-cari">
-            <IkonMenu d={IKON_CARI} size={13} />
             <span className="grf-kode-aktif">{kode}</span>
             <input className="inp" value={cari} placeholder="Cari emiten: BUMI, BBCA…"
               aria-label="Cari emiten"

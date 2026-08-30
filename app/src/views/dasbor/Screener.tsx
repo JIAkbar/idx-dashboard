@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { IkonMenu, IKON_CARI, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { DropdownMulti, type OpsiMulti } from '../../components/dasbor/DropdownMulti'
 import { Dropdown } from '../../components/dasbor/Dropdown'
@@ -17,18 +17,15 @@ import { LABEL_POLA_KLASIK } from '../../lib/dasbor/polaKlasik'
 import {
   useScreener, usePolaScreener, saring, sektorUnik, kelasSss, kelasArah, kelasPosisi, kelasPolaArah,
   fDec, ringkasLembarBertanda, labelPolaSingkat, LABEL_SSS, keBarisPreset,
-  type BarisScreener, type PolaAktifScreener,
-} from '../../lib/dasbor/screener'
+  type BarisScreener, type PolaAktifScreener } from '../../lib/dasbor/screener'
 import { useKandidatDeepDive, petaKandidat, type KandidatEmiten } from '../../lib/dasbor/kandidatDeepDive'
 import { useRingkasKartu } from '../../lib/dasbor/kartuRingkas'
 import {
   PRESET, jalankanPreset, deltaAsingKsei, badgeKsei,
-  type HasilKriteria, type HasilPreset, type Preset, type BarisPreset,
-} from '../../lib/dasbor/presetScreener'
+  type HasilKriteria, type HasilPreset, type Preset, type BarisPreset } from '../../lib/dasbor/presetScreener'
 import { muatKepemilikan } from '../../lib/dasbor/brokerProfilKsei'
 import {
-  useJendelaRekomendasi, usePetaBarsPreset, hasilSahamPreset, type HasilSahamRekomendasi,
-} from '../../lib/dasbor/rekomendasi'
+  useJendelaRekomendasi, usePetaBarsPreset, hasilSahamPreset, type HasilSahamRekomendasi } from '../../lib/dasbor/rekomendasi'
 import { agregatWinRate, rataPersen, type HasilMenang, type AgregatWinRate } from '../../lib/dasbor/winRate'
 import './Screener.css'
 
@@ -166,8 +163,7 @@ export function Screener() {
       jumlah: jumlahSektor.get(sek) ?? 0,
       keterangan: sek === '-'
         ? 'Tidak ditemukan di peta sektor resmi IDX-IC'
-        : undefined,
-    })),
+        : undefined })),
     [daftarSektor, jumlahSektor],
   )
   // Set 150-teratas dihitung dari SELURUH baris (bukan hasil saringan lain)
@@ -260,7 +256,6 @@ export function Screener() {
           <div className="bilah-kendali scr-bilah">
             <div className="grup-k">
               <span className="af-cari scr-cari">
-                <IkonMenu d={IKON_CARI} size={13} />
                 {/* Kotak CARI CAMPURAN (bukan picker emiten) — sengaja BUKAN StockAutocomplete: menyaring lebih dari satu ruas sekaligus. Jangan "diperbaiki" jadi picker; riwayat: sweep Papan Pekerjaan #355. */}
                 <input
                   className="inp" type="search" placeholder="Cari emiten: BUMI, BBCA…" value={cari}
@@ -568,16 +563,13 @@ type DefinisiId = 'openHigh' | 'closeClose' | 'tpSl'
 const DEFINISI_OPSI: { id: DefinisiId; label: string; kalimat: string }[] = [
   {
     id: 'openHigh', label: 'Open-Tinggi H+1',
-    kalimat: 'Longgar, persis definisi ringkas SPLE: menang kalau harga TERTINGGI keesokan hari bursa lebih tinggi dari harga PEMBUKAANNYA sendiri hari itu — tak peduli entry beneran kena atau tidak.',
-  },
+    kalimat: 'Longgar, persis definisi ringkas SPLE: menang kalau harga TERTINGGI keesokan hari bursa lebih tinggi dari harga PEMBUKAANNYA sendiri hari itu — tak peduli entry beneran kena atau tidak.' },
   {
     id: 'closeClose', label: 'Tutup-ke-Tutup H+1',
-    kalimat: 'Ketat: menang kalau harga PENUTUPAN keesokan hari bursa lebih tinggi dari penutupan hari rekomendasi. Rata-rata % perubahan dihitung dari definisi ini.',
-  },
+    kalimat: 'Ketat: menang kalau harga PENUTUPAN keesokan hari bursa lebih tinggi dari penutupan hari rekomendasi. Rata-rata % perubahan dihitung dari definisi ini.' },
   {
     id: 'tpSl', label: 'TP/SL H+5',
-    kalimat: 'Realistis — pakai target & batas rugi preset sendiri: dalam 5 hari bursa berikutnya, target (TP1) harus tersentuh SEBELUM batas rugi (SL). Kalau KEDUANYA tersentuh di hari yang sama, hasilnya "tak tentu" — data harian tak bisa membuktikan mana yang lebih dulu, jadi TIDAK diklaim menang.',
-  },
+    kalimat: 'Realistis — pakai target & batas rugi preset sendiri: dalam 5 hari bursa berikutnya, target (TP1) harus tersentuh SEBELUM batas rugi (SL). Kalau KEDUANYA tersentuh di hari yang sama, hasilnya "tak tentu" — data harian tak bisa membuktikan mana yang lebih dulu, jadi TIDAK diklaim menang.' },
 ]
 
 function ambilHasil(b: HasilSahamRekomendasi, definisi: DefinisiId): HasilMenang {

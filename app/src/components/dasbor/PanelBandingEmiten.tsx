@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { StockAutocomplete } from './StockAutocomplete'
 import { TombolIkon } from './TombolIkon'
-import { IkonMenu, IKON_CARI, IKON_KAMERA, IKON_SILANG } from './IkonMenu'
+import { IKON_KAMERA, IKON_SILANG } from './IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 import {
   fetchAsing,
@@ -128,7 +128,6 @@ export function PanelBandingEmiten({ awal }: { awal: string }) {
 
         <div className="bdh-cmp-bilah">
           <span className="af-cari bdh-cmp-cari">
-            <IkonMenu d={IKON_CARI} size={13} />
             <StockAutocomplete
               stocks={index?.stocks ?? []}
               value={input}

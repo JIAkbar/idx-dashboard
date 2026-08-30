@@ -3,7 +3,6 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { Dropdown, type OpsiDropdown } from '../../components/dasbor/Dropdown'
 import { DatePicker } from '../../components/dasbor/DatePicker'
-import { IkonMenu, IKON_CARI } from '../../components/dasbor/IkonMenu'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
 import { fN, fp } from '../../lib/dasbor/format'
@@ -654,7 +653,6 @@ function TabelScreenerKartu() {
           <span className="pemisah-v" aria-hidden="true" />
           <div className="grup-k grup-kanan">
             <span className="af-cari kta-screener-cari">
-              <IkonMenu d={IKON_CARI} size={13} />
               <input
                 className="inp" type="search" placeholder="Cari emiten: BUMI, BBCA…" value={cari}
                 onChange={(e) => setCari(e.target.value.toUpperCase())}

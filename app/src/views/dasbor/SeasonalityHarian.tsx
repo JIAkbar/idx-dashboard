@@ -2,7 +2,7 @@ import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import { useEffect, useMemo, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { HARI, ringkasHarian, hariBursaDiRentang, vonisUji, rentangSumbuBalapan, type RingkasHarian } from '../../lib/seasonality'
 import { pesanGalat } from '../../lib/pesanGalat'
-import { IkonMenu, IKON_PERINGATAN, IKON_CARI, IKON_SILANG } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_PERINGATAN, IKON_SILANG } from '../../components/dasbor/IkonMenu'
 import { muatIndeks, type BarisIndeks, muatBelum} from '../../lib/seasonalityData'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
@@ -178,7 +178,6 @@ export function SeasonalityHarian() {
           </button>
         )}
         <div className="af-cari sea-cari sea-cari-hari">
-          <IkonMenu d={IKON_CARI} size={14} />
           <input className="inp" value={cari} placeholder="…atau satu emiten: BUMI, BBCA"
             onChange={(e) => setCari(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && saran[0]) { setKode(saran[0].k); setCari('') } }} />
@@ -511,8 +510,7 @@ function Balapan({ r, kunci, tutup }: { r: RingkasHarian; kunci: string; tutup: 
       terakhir = kunci
       hasil.push({
         i, tgl: j.tgl,
-        label: perTahun ? kunci : BLN_PENDEK[Number(j.tgl.slice(5, 7)) - 1] + (j.tgl.slice(5, 7) === '01' ? ` '${j.tgl.slice(2, 4)}` : ''),
-      })
+        label: perTahun ? kunci : BLN_PENDEK[Number(j.tgl.slice(5, 7)) - 1] + (j.tgl.slice(5, 7) === '01' ? ` '${j.tgl.slice(2, 4)}` : '') })
     })
     // Kalau masih terlalu rapat, ambil selang seling sampai muat. Label yang
     // saling menimpa lebih buruk daripada label yang lebih jarang.

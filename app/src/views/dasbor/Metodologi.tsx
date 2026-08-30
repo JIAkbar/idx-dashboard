@@ -4,7 +4,7 @@ import { GLOSARIUM } from '../../lib/dasbor/glosarium'
 import { saringGlosarium, urutkanGlosarium, OPSI_URUTAN, type UrutanGlosarium } from '../../lib/dasbor/metodologi'
 import { MENU_ITEMS } from '../../lib/dasbor/menu'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
-import { IkonMenu, IKON_CARI, IKON_PANAH_KANAN } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_PANAH_KANAN } from '../../components/dasbor/IkonMenu'
 import './Metodologi.css'
 
 /** Label halaman tujuan dari sebuah rute `ke` — dibaca dari `MENU_ITEMS`
@@ -155,7 +155,6 @@ export function Metodologi() {
           <span className="mtd-alat">
             <PemilihRentang opsi={OPSI_URUTAN} nilai={urutan} onGanti={setUrutan} ariaLabel="Urutkan glosarium" className="mtd-urutan" />
             <span className="af-cari">
-              <IkonMenu d={IKON_CARI} size={13} />
               <input className="inp" type="search" value={cari} onChange={(e) => setCari(e.target.value)}
                 placeholder="Cari istilah…" aria-label="Cari glosarium" />
             </span>

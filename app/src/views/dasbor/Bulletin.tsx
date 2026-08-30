@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { tipeEdisi, useBulletinList, LABEL_TIPE_EDISI, type TipeEdisi } from '../../lib/dasbor/bulletin'
 import { useAksesHalaman } from '../../context/AksesHalamanContext'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
-import { IkonMenu, IKON_KUNCI, IKON_SILANG, IKON_MATA, IKON_CARI } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_KUNCI, IKON_SILANG, IKON_MATA } from '../../components/dasbor/IkonMenu'
 
 /** Panah unduh ke tray — lokal view ini, belum ada padanannya di IkonMenu.tsx. */
 const IKON_UNDUH = 'M12 4v10M7.5 10.5L12 15l4.5-4.5M5 19h14'
@@ -192,7 +192,6 @@ export function Bulletin() {
           )}
           {daftar && daftar.length > 0 && (
             <span className="af-cari blt-cari">
-              <IkonMenu d={IKON_CARI} size={13} />
               {/* Kotak CARI CAMPURAN (bukan picker emiten) — sengaja BUKAN StockAutocomplete: menyaring lebih dari satu ruas sekaligus. Jangan "diperbaiki" jadi picker; riwayat: sweep Papan Pekerjaan #355. */}
               <input
                 className="inp"
@@ -265,8 +264,7 @@ export function Bulletin() {
                               title={`Edisi dirilis ulang: cakupan diperluas dari ${e.update_dari} menjadi ${e.emiten.length} emiten`}
                               style={{
                                 marginLeft: 6, fontFamily: 'var(--mono)', fontWeight: 700,
-                                background: 'var(--amber-dim)', color: 'var(--amber)', borderColor: 'var(--amber)',
-                              }}
+                                background: 'var(--amber-dim)', color: 'var(--amber)', borderColor: 'var(--amber)' }}
                             >
                               Update {e.update_dari}→{e.emiten.length}
                             </span>
@@ -414,8 +412,7 @@ export function Bulletin() {
                                 style={{
                                   margin: '10px 2px 0', padding: '8px 12px', fontSize: 10.5, lineHeight: 1.6,
                                   color: 'var(--text2)', background: 'var(--bg3)',
-                                  borderLeft: '3px solid var(--amber)', borderRadius: 4,
-                                }}
+                                  borderLeft: '3px solid var(--amber)', borderRadius: 4 }}
                               >
                                 <b style={{ color: 'var(--text)', letterSpacing: '.06em' }}>CARA BACA</b> — angka
                                 probabilitas BUKAN ramalan hari ini: mesin mencari seluruh kejadian di riwayat harga

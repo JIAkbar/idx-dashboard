@@ -18,7 +18,7 @@ import { PanelAktivitasTransaksi } from '../../components/dasbor/PanelAktivitasT
 import { PanelLimaLangkahUang } from '../../components/dasbor/PanelLimaLangkahUang'
 import { PanelKhasPapan } from '../../components/dasbor/PanelKhasPapan'
 import { PanelBandingEmiten } from '../../components/dasbor/PanelBandingEmiten'
-import { IkonMenu, IKON_CARI, IKON_PERINGATAN, IKON_JAM } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_PERINGATAN, IKON_JAM } from '../../components/dasbor/IkonMenu'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { usePengendali, pengendaliEmiten, labelPengendali } from '../../lib/dasbor/pengendali'
 import { tanggalPendek } from '../../lib/dasbor/statistikBerkala'
@@ -282,7 +282,6 @@ export function StockDetail() {
               style={{ padding: '7px 12px', flexShrink: 0 }}
               onClick={() => handleSubmit(inputVal)}
             >
-              <IkonMenu d={IKON_CARI} size={14} />
             </button>
           </div>
           {/* "Data delay" saja menyisakan pertanyaan yang justru menentukan:

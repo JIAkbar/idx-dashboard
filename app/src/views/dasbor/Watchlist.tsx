@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { ChartConfiguration } from 'chart.js/auto'
-import { IkonMenu, IKON_CARI, IKON_TONG } from '../../components/dasbor/IkonMenu'
+import { IKON_TONG } from '../../components/dasbor/IkonMenu'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
@@ -288,7 +288,6 @@ export function Watchlist() {
           <div className="bilah-kendali wl-alat">
             <div className="grup-k">
               <span className="af-cari wl-cari">
-                <IkonMenu d={IKON_CARI} size={13} />
                 <input
                   className="inp" type="search" placeholder="Tambah emiten: BUMI, BBCA…" value={cari}
                   onChange={(e) => setCari(e.target.value.toUpperCase())}

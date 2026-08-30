@@ -6,7 +6,7 @@ import { muatIndeks, muatIhsg, muatSeri, muatBelum, type BarisIndeks, type Baris
 import { pesanGalat } from '../../lib/pesanGalat'
 import { SeasonalityHarian } from './SeasonalityHarian'
 import { SeasonalityKomparasi } from './SeasonalityKomparasi'
-import { IkonMenu, IKON_CARI, IKON_SILANG, IKON_PERINGATAN, IKON_KUNCI } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_SILANG, IKON_PERINGATAN, IKON_KUNCI } from '../../components/dasbor/IkonMenu'
 import { useAksesHalaman } from '../../context/AksesHalamanContext'
 import { useJarakJenjang } from '../../lib/jarakJenjang'
 import { PenunjukJarak } from '../../components/dasbor/PenunjukJarak'
@@ -194,7 +194,6 @@ export function Seasonality() {
           <div className="bilah-kendali">
             <div className="grup-k">
               <div className="af-cari sea-cari">
-                <IkonMenu d={IKON_CARI} size={14} />
                 <input
                   ref={kotak} className="inp" value={cari} disabled={!indeks || dipilih.length >= MAKS}
                   placeholder={dipilih.length >= MAKS ? `Maksimum ${MAKS} emiten — buang satu dulu` : 'Cari kode atau nama emiten…'}

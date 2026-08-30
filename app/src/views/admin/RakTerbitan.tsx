@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { tipeEdisi, useBulletinList, LABEL_TIPE_EDISI, type TipeEdisi } from '../../lib/dasbor/bulletin'
-import { IkonMenu, IKON_CARI, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
 import './AdminShared.css'
 
 const TIPE_TAB = ['Semua', 'Harian', 'Mingguan', 'Bulanan', 'Bedah'] as const
@@ -72,7 +72,6 @@ export function RakTerbitan() {
             ))}
           </span>
           <span className="af-cari">
-            <IkonMenu d={IKON_CARI} size={13} />
             {/* Kotak CARI CAMPURAN (bukan picker emiten) — sengaja BUKAN StockAutocomplete: menyaring lebih dari satu ruas sekaligus. Jangan "diperbaiki" jadi picker; riwayat: sweep Papan Pekerjaan #355. */}
             <input
               className="inp"
@@ -138,8 +137,7 @@ export function RakTerbitan() {
                           title={`Dirilis ulang: ${r.update_dari} menjadi ${r.emiten.length} emiten`}
                           style={{
                             marginLeft: 6, fontFamily: 'var(--mono)', fontWeight: 700,
-                            background: 'var(--amber-dim)', color: 'var(--amber)', borderColor: 'var(--amber)',
-                          }}
+                            background: 'var(--amber-dim)', color: 'var(--amber)', borderColor: 'var(--amber)' }}
                         >
                           Update {r.update_dari}→{r.emiten.length}
                         </span>

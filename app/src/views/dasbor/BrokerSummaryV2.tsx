@@ -4,7 +4,7 @@ import { DatePicker } from '../../components/dasbor/DatePicker'
 import { Dropdown, type OpsiDropdown } from '../../components/dasbor/Dropdown'
 import { LangkahTanggal } from '../../components/dasbor/LangkahTanggal'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
-import { IkonMenu, IKON_CARI, IKON_ULANG, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_ULANG, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
@@ -217,7 +217,6 @@ export function BrokerSummaryV2() {
           <div className="bilah-kendali bsv-atur">
             <div className="grup-k">
               <span className="af-cari bsv-cari">
-                <IkonMenu d={IKON_CARI} size={13} />
                 <StockAutocomplete
                   stocks={index?.stocks ?? []}
                   value={cari}

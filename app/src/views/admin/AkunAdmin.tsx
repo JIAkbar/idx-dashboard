@@ -3,7 +3,7 @@ import { useProfilSaya } from '../../lib/profilSaya'
 import { daftarAkun, buatAkun, hapusAkun, butuhPaksa, hitungSetoranAkun, resetSandi, setProfil, ubahEmail, type AkunRow } from '../../lib/adminAkun'
 import { daftarJenjang, type JenjangRow } from '../../lib/jenjang'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
-import { IkonMenu, IKON_CARI, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_SALIN, IKON_SURAT, IKON_TAMBAH, IKON_TONG, IKON_ULANG } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_SALIN, IKON_SURAT, IKON_TAMBAH, IKON_TONG, IKON_ULANG } from '../../components/dasbor/IkonMenu'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { Toast } from '../../components/dasbor/Toast'
 import { Dropdown } from '../../components/dasbor/Dropdown'
@@ -54,8 +54,7 @@ export function saringUrutAkun(daftar: AkunRow[], cari: string, urut: KunciUrut)
     alias: (a, b) => (a.alias || '￿').localeCompare(b.alias || '￿', 'id'),
     jenjang: (a, b) => (b.tier ?? 0) - (a.tier ?? 0),
     kuota: (a, b) => (b.kuota_manual ?? b.kuota_harian) - (a.kuota_manual ?? a.kuota_harian),
-    nonaktif: (a, b) => Number(a.aktif) - Number(b.aktif),
-  }
+    nonaktif: (a, b) => Number(a.aktif) - Number(b.aktif) }
   return hasil.sort(banding[urut])
 }
 
@@ -284,7 +283,6 @@ export function AkunAdmin() {
           {akun && akun.length > 0 && (
             <div className="aa-kontrol">
               <div className="af-cari aa-cari">
-                <IkonMenu d={IKON_CARI} size={13} />
                 <input
                   className="inp" value={cari} type="search" autoComplete="off"
                   placeholder="Cari email atau alias…" aria-label="Cari akun"
@@ -588,8 +586,7 @@ function FormTambahAkun({ onClose, onSukses }: { onClose: () => void; onSukses: 
         sandi,
         alias: alias.trim(),
         kuota_harian: kuota,
-        boleh_bedah: bedah,
-      })
+        boleh_bedah: bedah })
       onSukses(`Akun ${hasil.email} dibuat.`)
     } catch (e) {
       setErr(pesanGalat(e, 'Gagal membuat akun.'))

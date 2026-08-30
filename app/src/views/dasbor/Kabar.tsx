@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { kabarTerbaru, useKabar, waktuKabar, type KabarItem } from '../../lib/dasbor/kabar'
-import { IkonMenu, IKON_CARI, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import './Kabar.css'
 
@@ -124,7 +124,6 @@ export function Kabar() {
               </span>
             )}
             <span className="af-cari">
-              <IkonMenu d={IKON_CARI} size={13} />
               {/* Kotak CARI CAMPURAN (bukan picker emiten) — sengaja BUKAN StockAutocomplete: menyaring lebih dari satu ruas sekaligus. Jangan "diperbaiki" jadi picker; riwayat: sweep Papan Pekerjaan #355. */}
               <input className="inp" type="search" value={cari} onChange={(e) => setCari(e.target.value)}
                 placeholder="Cari judul / emiten…" aria-label="Cari kabar" />

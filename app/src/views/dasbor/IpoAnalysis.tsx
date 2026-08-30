@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { IkonMenu, IKON_CARI, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { useUrut } from '../../lib/dasbor/useUrut'
@@ -7,8 +7,7 @@ import { fp } from '../../lib/dasbor/format'
 import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
 import {
   useIpo, agregatPerTahun, agregatKeseluruhan, tahunUnik,
-  type BarisIpo, type HorizonAgregat, type UnderwriterRapor,
-} from '../../lib/dasbor/ipo'
+  type BarisIpo, type HorizonAgregat, type UnderwriterRapor } from '../../lib/dasbor/ipo'
 import './IpoAnalysis.css'
 
 /** Fraksi (0..1) → persen TANPA tanda plus — win rate itu proporsi, bukan
@@ -156,7 +155,6 @@ export function IpoAnalysis() {
           )}
           {tab === 'penjamin' && (
             <span className="af-cari">
-              <IkonMenu d={IKON_CARI} size={13} />
               <input className="inp" type="search" placeholder="Cari penjamin emisi…" value={cariPenjamin} onChange={(e) => setCariPenjamin(e.target.value)} />
             </span>
           )}

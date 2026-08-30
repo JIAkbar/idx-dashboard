@@ -10,11 +10,10 @@ import {
   type RingkasanKeaktifan,
   type SinyalBruteforce,
   type JejakAkses,
-  type JenisJejak,
-} from '../../lib/aktivitas'
+  type JenisJejak } from '../../lib/aktivitas'
 import { namaTampil } from '../../lib/namaTampil'
 import { Dropdown } from '../../components/dasbor/Dropdown'
-import { IkonMenu, IKON_CARI, IKON_PERINGATAN, IKON_KUNCI } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_PERINGATAN, IKON_KUNCI } from '../../components/dasbor/IkonMenu'
 import { IkonJenjang } from '../../components/dasbor/IkonJenjang'
 import { AksesDitolak } from './AdminLayout'
 import './AdminShared.css'
@@ -180,7 +179,6 @@ export function AktivitasAdmin() {
             {cariKeaktifan.trim() && keaktifan ? ` · ${keaktifanTersaring.length} cocok` : ''}
           </span>
           <span className="af-cari">
-            <IkonMenu d={IKON_CARI} size={13} />
             <input
               className="inp"
               type="search"
