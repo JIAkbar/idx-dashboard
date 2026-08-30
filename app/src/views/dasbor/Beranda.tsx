@@ -9,7 +9,6 @@ import { useKabar, waktuKabar } from '../../lib/dasbor/kabar'
 import { rangkumHari } from '../../lib/dasbor/ringkasHarian'
 import { useBulletinList, tipeEdisi, LABEL_TIPE_EDISI } from '../../lib/dasbor/bulletin'
 import { PapanRti } from '../../components/dasbor/PapanRti'
-import { PanelBreadth } from '../../components/dasbor/PanelBreadth'
 import { PanelDiary } from '../../components/dasbor/PanelDiary'
 import { IkonMenu, IKON_KUNCI, IKON_PANAH_KANAN } from '../../components/dasbor/IkonMenu'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
@@ -269,11 +268,12 @@ export function Beranda() {
 
       <PintuKerja />
 
-      {/* Breadth — panel bergaya RTI Business (acuan aslinya memang tangkapan
-          layar RTI milik Johan, lihat diaryPasar.ts). TIDAK dilipat: ia
-          menjawab "mayoritas saham ke mana", dan lipatan membuat pertanyaan
-          itu hilang dari pandangan. */}
-      <PanelBreadth />
+      {/* Panel Market Breadth DICABUT dari beranda 30 Agu 2026 (Johan: "Hero
+          ini hapus gak guna"). Komponennya tidak dihapus dari repo — angka
+          naik/turun/tak-berubah tetap dipakai Ringkasan Pasar lewat
+          `hitungBreadth`, dan panelnya bisa dipanggil lagi kalau suatu saat
+          diperlukan di halaman lain. Yang dibuang panjangnya di beranda, bukan
+          hitungannya. */}
 
       <KartuKabar />
 
