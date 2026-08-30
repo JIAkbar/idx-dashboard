@@ -885,6 +885,11 @@
 .lantai .panel{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r)}
 .lantai .panel-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)}
 .lantai .panel-b{padding:12px 14px}
+/* Baris keterangan rentang di atas grafik. `display:block` WAJIB: `.sub`
+   itu inline, dan margin vertikal pada elemen inline diabaikan tanpa satu
+   pun peringatan — itu sebabnya teksnya menempel ke elemen di atasnya
+   (1px) sementara jaraknya ke grafik di bawah 16px. */
+.lantai .lbl-rentang{display:block;margin:10px 0 0}
 /* Proporsi kolom di kelas, BUKAN inline style — inline menang atas media query
    sehingga tata letak dua kolom bertahan di telepon dan kontennya terpotong
    (kemampuan-web-dev §178). */

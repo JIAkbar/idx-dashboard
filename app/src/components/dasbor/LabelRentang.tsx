@@ -36,5 +36,12 @@ export function LabelRentang({ mulai, akhir, n, satuan, className }: {
 }) {
   const teks = teksRentang(mulai, akhir, n, satuan)
   if (!teks) return null
-  return <span className={className ? `sub ${className}` : 'sub'}>{teks}</span>
+  // `.lbl-rentang` memberinya `display:block` + jarak atas. Tanpa itu ia
+  // mewarisi `display:inline` dari `.sub`, dan margin vertikal pada elemen
+  // inline DIABAIKAN diam-diam — terukur 30 Agu 2026 di panel Market Breadth:
+  // jarak 1px ke elemen di atasnya sementara 16px ke grafik di bawahnya, jadi
+  // teksnya menempel ke bar sebaran (Johan: "terlalu mepet ini teks nya").
+  // Ditaruh di komponennya, bukan di satu halaman, karena ketiga pemakainya
+  // menempatkannya di posisi yang sama: satu baris keterangan di atas grafik.
+  return <span className={className ? `sub lbl-rentang ${className}` : 'sub lbl-rentang'}>{teks}</span>
 }

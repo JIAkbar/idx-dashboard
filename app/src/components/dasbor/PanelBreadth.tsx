@@ -6,6 +6,7 @@ import { PRESET_RENTANG, rentangPreset, type PresetRentang } from '../../lib/das
 import { useChartCanvas } from '../../lib/dasbor/useChartJs'
 import { useTheme } from '../../context/ThemeContext'
 import { PemilihRentang } from './PemilihRentang'
+import { DatePicker } from './DatePicker'
 import { LabelRentang } from './LabelRentang'
 import { IkonMenu, IKON_JAM } from './IkonMenu'
 
@@ -49,17 +50,38 @@ function BarSebaran({ b }: { b: Breadth }) {
 export function PanelBreadth() {
   const { hari, tanggalTersedia, tanggalAktif, loading } = useDataHarian()
   const [preset, setPreset] = useState<PresetRentang>('b1')
+  // Rentang BEBAS dari kalender, di samping preset (Johan 30 Agu 2026:
+  // "sediakan komponen kalender rentang seperti di harian Papan"). Bukan
+  // pengganti preset: pintasan tetap yang paling sering dipakai, kalender
+  // menjawab pertanyaan yang tak ada pintasannya — "dua pekan sekitar rilis
+  // laporan itu". Pola sama Broker Summary v2 (pintasan + rentang bebas).
+  //
+  // Kalender MENANG kalau terisi; memilih preset mengosongkannya kembali,
+  // supaya tak pernah ada dua sumber rentang yang aktif bersamaan.
+  const [rentangBebas, setRentangBebas] = useState<{ dari: string; sampai: string } | null>(null)
+
+  // DatePicker menerima himpunan ISO, sementara `useDataHarian` memberi larik
+  // objek — dikonversi sekali di sini, bukan di dalam render kalender.
+  const isoTersedia = useMemo(
+    () => new Set(tanggalTersedia.map((t) => t.date_iso)),
+    [tanggalTersedia],
+  )
   const { theme } = useTheme()
   const wrapRef = useRef<HTMLDivElement>(null)
 
   // PRESET_RENTANG (w1/b1/b3/ytd) snap ke hari BERDATA lewat rentangPreset —
   // pola sama Kalender.tsx/SektorIndeks.tsx, bukan preset ketikan sendiri.
   const rentangTanggal = useMemo(() => {
+    if (rentangBebas) {
+      return tanggalTersedia.filter(
+        (t) => t.date_iso >= rentangBebas.dari && t.date_iso <= rentangBebas.sampai,
+      )
+    }
     if (!tanggalAktif) return []
     const r = rentangPreset(tanggalTersedia, tanggalAktif, preset)
     if (!r) return []
     return tanggalTersedia.filter((t) => t.date_iso >= r.mulai && t.date_iso <= r.akhir)
-  }, [tanggalTersedia, tanggalAktif, preset])
+  }, [tanggalTersedia, tanggalAktif, preset, rentangBebas])
 
   const { days, error: errorRentang } = useDataRentang(rentangTanggal)
 
@@ -134,7 +156,30 @@ export function PanelBreadth() {
     <section className="panel" ref={wrapRef} style={{ marginBottom: 12 }}>
       <div className="panel-h">
         <span className="lbl">Market Breadth (Advance/Decline) · {hari.date_id}</span>
-        <PemilihRentang opsi={PRESET_RENTANG} nilai={preset} onGanti={setPreset} ariaLabel="Rentang Market Breadth" />
+        <div className="grup-k">
+          <DatePicker
+            value={rentangBebas?.sampai ?? tanggalAktif ?? ''}
+            onChange={(iso) => {
+              // Klik SATU tanggal memindahkan jendela, bukan menyempitkannya
+              // jadi satu hari: panel ini menggambar grafik, dan satu titik
+              // membuat seluruh panel kosong tanpa penjelasan. Lebar jendela
+              // diambil dari preset yang sedang aktif, jadi kalender menjawab
+              // "geser periode ini ke sana" — pola sama Broker Summary v2.
+              const r = rentangPreset(tanggalTersedia, iso, preset)
+              setRentangBebas(r ? { dari: r.mulai, sampai: r.akhir } : { dari: iso, sampai: iso })
+            }}
+            tersedia={isoTersedia}
+            ariaLabel="Rentang tanggal Market Breadth"
+            rentang={rentangBebas}
+            onGantiRentang={(dari, sampai) => setRentangBebas({ dari, sampai })}
+          />
+          <PemilihRentang
+            opsi={PRESET_RENTANG}
+            nilai={rentangBebas ? ('' as PresetRentang) : preset}
+            onGanti={(p) => { setRentangBebas(null); setPreset(p) }}
+            ariaLabel="Rentang Market Breadth"
+          />
+        </div>
       </div>
       <div className="panel-b">
         {b ? (
