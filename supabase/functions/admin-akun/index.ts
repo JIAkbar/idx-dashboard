@@ -215,18 +215,37 @@ Deno.serve(async (req) => {
           return jawab({ galat: 'Turunkan dulu perannya jadi kontributor sebelum dihapus.' }, 400)
         }
 
+        // Pagar KETIGA: setoran yang sudah disetujui. Berbeda sifat dari dua
+        // pagar di atas — dua itu melindungi SISTEM (jangan sampai admin
+        // menghapus dirinya sendiri atau superadmin lain), yang ini melindungi
+        // CATATAN. Karena itu ia bisa dilewati dengan sadar, sementara dua
+        // yang di atas tetap mutlak.
+        //
+        // Johan 30 Agu 2026: "seharusnya saya tetap bisa hapus ini akun sudah
+        // lama gak aktif". Menolak mutlak berarti akun terlantar tak pernah
+        // bisa dibersihkan hanya karena ia pernah menyetor sekali — keputusan
+        // yang seharusnya di tangan admin, bukan di kode ini.
+        //
+        // `paksa` WAJIB dikirim eksplisit. Tanpa itu perilakunya sama persis
+        // seperti sebelumnya, jadi tak ada penghapusan yang jadi lebih mudah
+        // tanpa seseorang memilihnya lebih dulu.
         const { count } = await sbAdmin.from('setoran')
           .select('id', { count: 'exact', head: true })
           .eq('penyetor', id).eq('status', 'disetujui')
-        if ((count ?? 0) > 0) {
+        const nSetoran = count ?? 0
+        if (nSetoran > 0 && badan.paksa !== true) {
           return jawab({
-            galat: `Akun ini punya ${count} setoran yang sudah disetujui dan dipakai edisi — nonaktifkan saja, jangan dihapus.`,
-          }, 400)
+            galat: `Akun ini punya ${nSetoran} setoran yang sudah disetujui dan dipakai edisi — nonaktifkan saja, atau hapus paksa kalau memang mau dibuang.`,
+            butuh_paksa: true,
+            setoran_disetujui: nSetoran,
+          }, 409)
         }
 
         const { error } = await sbAdmin.auth.admin.deleteUser(id)
         if (error) return jawab({ galat: error.message }, 400)
-        return jawab({ ok: true, email: sasaran.email })
+        // `setoran_terhapus` dikembalikan supaya layar bisa mengatakan berapa
+        // yang ikut terbawa — angka itu tak bisa ditanyakan lagi sesudahnya.
+        return jawab({ ok: true, email: sasaran.email, setoran_terhapus: nSetoran })
       }
 
       case 'daftar': {

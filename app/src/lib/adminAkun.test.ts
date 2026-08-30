@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { perluUlangSesi } from './adminAkun'
+import { perluUlangSesi, butuhPaksa } from './adminAkun'
 
 describe('perluUlangSesi', () => {
   it('401 + sesi_kedaluwarsa true → perlu ulang', () => {
@@ -20,5 +20,35 @@ describe('perluUlangSesi', () => {
 
   it('200 OK → jangan ulang', () => {
     expect(perluUlangSesi(200, {})).toBe(false)
+  })
+})
+
+/**
+ * `butuhPaksa` — penanda "penolakan ini boleh dilanjutkan".
+ *
+ * Yang dijaga di sini bukan kasus positifnya, melainkan yang NEGATIF: server
+ * punya tiga pagar hapus akun, dan hanya SATU yang boleh dilewati. Dua lainnya
+ * (menghapus diri sendiri, menghapus superadmin lain) melindungi sistem, bukan
+ * catatan — kalau tombol "hapus paksa" sampai muncul di sana, pagar yang tak
+ * pernah dimaksudkan bisa ditembus lewat layar.
+ */
+describe('butuhPaksa', () => {
+  it('penolakan karena setoran disetujui → boleh dilanjutkan, bawa angkanya', () => {
+    const e = Object.assign(new Error('punya 2 setoran yang sudah disetujui'), {
+      butuhPaksa: true,
+      setoranDisetujui: 2,
+    })
+    expect(butuhPaksa(e)).toEqual({ setoran: 2 })
+  })
+
+  it('pagar yang MUTLAK tidak pernah memunculkan tombol paksa', () => {
+    expect(butuhPaksa(new Error('Tidak bisa menghapus akun sendiri.'))).toBeNull()
+    expect(butuhPaksa(new Error('Turunkan dulu perannya jadi kontributor sebelum dihapus.'))).toBeNull()
+  })
+
+  it('bukan galat, atau galat tanpa penanda → null', () => {
+    expect(butuhPaksa(null)).toBeNull()
+    expect(butuhPaksa(undefined)).toBeNull()
+    expect(butuhPaksa(new Error('Gagal memanggil admin-akun (500).'))).toBeNull()
   })
 })

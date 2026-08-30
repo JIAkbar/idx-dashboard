@@ -107,9 +107,23 @@ export async function panggilAdminAkun<T>(aksi: Aksi, muatan: Record<string, unk
   }
 
   if (!res.ok || body.galat) {
-    throw new Error((body.galat as string | undefined) || `Gagal memanggil admin-akun (${res.status}).`)
+    const e = new Error((body.galat as string | undefined) || `Gagal memanggil admin-akun (${res.status}).`)
+    // Penolakan yang BISA dilanjutkan membawa penandanya sampai ke layar.
+    // Tanpa ini pesan servernya sampai tapi tanda "boleh dipaksa"-nya hilang,
+    // dan layar cuma bisa menebak dari isi kalimat — cara termudah membuat
+    // tombol paksa muncul di penolakan yang bukan urusannya.
+    if (body.butuh_paksa === true) {
+      Object.assign(e, { butuhPaksa: true, setoranDisetujui: Number(body.setoran_disetujui ?? 0) })
+    }
+    throw e
   }
   return body as T
+}
+
+/** Penolakan server yang boleh dilanjutkan dengan `paksa`. */
+export function butuhPaksa(e: unknown): { setoran: number } | null {
+  const x = e as { butuhPaksa?: boolean; setoranDisetujui?: number }
+  return x?.butuhPaksa ? { setoran: x.setoranDisetujui ?? 0 } : null
 }
 
 export async function daftarAkun(): Promise<AkunRow[]> {
@@ -160,6 +174,13 @@ export function ubahEmail(id: string, email: string) {
  *  di admin-akun) — server menolak kalau menghapus diri sendiri, akun
  *  superadmin (turunkan dulu perannya), atau akun yang punya setoran
  *  `disetujui` (saran server: nonaktifkan saja). */
-export function hapusAkun(id: string) {
-  return panggilAdminAkun<{ ok: true; email: string }>('hapus', { id })
+/** `paksa` hanya dipakai sesudah server menolak dengan `butuhPaksa` — lihat
+ *  catatan di edge function: pagar setoran melindungi CATATAN, jadi ia boleh
+ *  dilewati dengan sadar. Dua pagar lain (diri sendiri, superadmin) tak punya
+ *  jalan pintas sama sekali. */
+export function hapusAkun(id: string, paksa = false) {
+  return panggilAdminAkun<{ ok: true; email: string; setoran_terhapus?: number }>(
+    'hapus',
+    paksa ? { id, paksa: true } : { id },
+  )
 }

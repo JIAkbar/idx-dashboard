@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useProfilSaya } from '../../lib/profilSaya'
-import { daftarAkun, buatAkun, hapusAkun, hitungSetoranAkun, resetSandi, setProfil, ubahEmail, type AkunRow } from '../../lib/adminAkun'
+import { daftarAkun, buatAkun, hapusAkun, butuhPaksa, hitungSetoranAkun, resetSandi, setProfil, ubahEmail, type AkunRow } from '../../lib/adminAkun'
 import { daftarJenjang, type JenjangRow } from '../../lib/jenjang'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { IkonMenu, IKON_CARI, IKON_CENTANG, IKON_KUNCI, IKON_PERINGATAN, IKON_SALIN, IKON_SURAT, IKON_TAMBAH, IKON_TONG, IKON_ULANG } from '../../components/dasbor/IkonMenu'
@@ -671,13 +671,25 @@ function FormHapusAkun({ akun, onClose, onSukses }: { akun: AkunRow; onClose: ()
     }
   }, [akun.id])
 
-  async function hapus() {
+  /** Terisi saat server menolak karena setoran disetujui — dan HANYA saat itu.
+   *  Tombol paksa lahir dari penolakan yang sesungguhnya, bukan dari tebakan
+   *  layar atas isi `dampak`: kalau suatu saat aturan servernya berubah, layar
+   *  ikut berubah sendiri tanpa disentuh. */
+  const [perluPaksa, setPerluPaksa] = useState<{ setoran: number } | null>(null)
+
+  async function hapus(paksa = false) {
     setKirim(true)
     setErr('')
     try {
-      const hasil = await hapusAkun(akun.id)
-      onSukses(`Akun ${hasil.email} dihapus.`)
+      const hasil = await hapusAkun(akun.id, paksa)
+      const ikut = hasil.setoran_terhapus
+      onSukses(
+        ikut ? `Akun ${hasil.email} dihapus — ${ikut} setoran disetujui ikut terhapus.`
+             : `Akun ${hasil.email} dihapus.`,
+      )
     } catch (e) {
+      const paksaBisa = butuhPaksa(e)
+      if (paksaBisa) setPerluPaksa(paksaBisa)
       setErr(pesanGalat(e, 'Gagal menghapus akun.'))
     } finally {
       setKirim(false)
@@ -716,13 +728,36 @@ function FormHapusAkun({ akun, onClose, onSukses }: { akun: AkunRow; onClose: ()
           Kalau tujuannya cuma menghentikan akses, <b>nonaktifkan</b> saja — semua di atas tetap utuh.
         </p>
       </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button type="button" className="btn-p af-btn-keluar" disabled={kirim || dampak === null} onClick={hapus}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <button type="button" className="btn-p af-btn-keluar" disabled={kirim || dampak === null} onClick={() => hapus(false)}>
           {kirim ? 'Menghapus…' : 'Ya, Hapus Permanen'}
         </button>
         <button type="button" className="dd-btn" disabled={kirim} onClick={onClose}>Batal</button>
       </div>
       {err && <p className="af-err" style={{ margin: 0 }}>{err}</p>}
+      {/* Jalan kedua, muncul HANYA sesudah server menolak karena setoran.
+          Johan 30 Agu 2026: "seharusnya saya tetap bisa hapus ini akun sudah
+          lama gak aktif" — akun terlantar tak boleh terkunci selamanya hanya
+          karena pernah menyetor sekali. Tombolnya sengaja tidak ada sebelum
+          penolakan: yang memaksa harus tahu dulu apa yang ia paksa. */}
+      {perluPaksa && (
+        <div className="aa-dampak" style={{ borderColor: 'var(--red)' }}>
+          <span className="lbl">Hapus paksa</span>
+          <p style={{ margin: '4px 0 0', fontSize: 12 }}>
+            {perluPaksa.setoran} setoran yang sudah disetujui akan <b>ikut terhapus</b>, berikut kreditnya
+            di edisi yang sudah terbit. PDF edisinya tetap utuh — yang hilang catatan siapa yang menyetor.
+          </p>
+          <button
+            type="button"
+            className="btn-p af-btn-keluar"
+            style={{ marginTop: 8 }}
+            disabled={kirim}
+            onClick={() => hapus(true)}
+          >
+            {kirim ? 'Menghapus…' : `Tetap hapus — buang ${perluPaksa.setoran} setoran`}
+          </button>
+        </div>
+      )}
     </ModalKecil>
   )
 }
