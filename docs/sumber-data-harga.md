@@ -191,7 +191,13 @@ Mentahnya diarsipkan ter-gzip di `_arsip-mentah/asing/<tahun>/<YYYYMMDD>.json.gz
 menembak jaringan. Menambah ruas dari 32 ruas `GetStockSummary` yang belum
 dipakai cukup:
 
-    py -3.14 scripts/panen_asing.py --dari-arsip     # 29 detik, 0 permintaan
+    py -3.14 scripts/panen_asing.py --penuh --dari-arsip   # 29 detik, 0 permintaan
+
+`--penuh` WAJIB di sini. Sejak 30 Agu 2026 bawaan skrip itu **inkremental** —
+mulai dari tanggal terakhir yang sudah ada di berkas, mundur 7 hari — supaya
+panen harian berhenti menyusuri 1.737 hari tiap kali dijalankan. Membangun
+ulang seluruh riwayat (yang persis dibutuhkan saat menambah ruas) menuntut
+`--penuh`; tanpa itu ruas barunya cuma terisi di beberapa hari terakhir.
 
 Arsip itu sekaligus penanda kemajuan — putus di tengah lalu dijalankan ulang
 akan melewati tanggal yang sudah terarsip. Tak ada berkas kemajuan terpisah
