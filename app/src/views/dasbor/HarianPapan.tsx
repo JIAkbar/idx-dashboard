@@ -457,8 +457,10 @@ export function HarianPapan() {
         <b>Stock Gainer</b> mengeluarkan emiten yang tak ada transaksi pada tanggal terpilih — harga yang
         tercatat tak berubah bukan berarti sedang menguat. <b>Skor Papan</b> menyajikan keadaan teknikal
         gabungan, <b>bukan saran beli atau jual</b>; metodenya ada di halaman Metodologi.
-        {' '}Kolom TDM% dibuang 29 Agu 2026: isinya IDENTIK dengan 1MTD di 961 dari 961 emiten
-        (ruasnya memang diisi nilai yang sama), jadi ia dua kolom untuk satu angka.
+        {' '}Kolom TDM% dibuang dari layar 29 Agu 2026 karena saat itu isinya identik dengan 1MTD —
+        ruasnya memang diisi nilai yang sama. Sejak 30 Agu keduanya kembali berbeda arti (TDM%
+        month-to-date, 1MTD rolling 21 hari bursa; berbeda di 720 dari 961 emiten), dan TDM% tetap
+        tersedia di unduhan CSV.
         {!bolehForm && ' Kolom Form (rekam jejak harian) khusus pengguna jenjang Diamond.'}
       </div>
     </div>
