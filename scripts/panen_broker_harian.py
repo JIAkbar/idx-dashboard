@@ -49,6 +49,8 @@ import argparse
 import json
 import sys
 import time
+
+import requests
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -266,9 +268,41 @@ def sesi(maks: int = 512):
     return _sesi
 
 
+# Berapa kali satu permintaan dicoba ulang saat KONEKSINYA yang gagal — bukan
+# saat server menolak. Ditambahkan 30 Agu 2026 sesudah satu
+# `ConnectionResetError(10054)` menjatuhkan seluruh langkah broker di
+# JALANKAN_BUKA_LAPTOP.bat: traceback penuh tercetak ke layar, `.bat` menelannya
+# dengan "(broker gagal - lanjut)", dan hari itu tak terpanen tanpa ada yang
+# mencatat apa pun. Reset koneksi hampir selalu sesaat — sisi server menutup
+# koneksi keep-alive yang dikira masih hidup — jadi mencoba lagi biasanya
+# cukup, dan tanpa retry satu paket yang hilang berharga satu hari data.
+#
+# Yang TIDAK di-retry: balasan HTTP apa pun, termasuk 401/403/429. Itu jawaban
+# server, bukan kegagalan jaringan, dan mengulangnya hanya memperburuk
+# (khususnya 401 — lihat larangan memutar token di CLAUDE.md).
+COBA_KONEKSI = 3
+
+
 def ambil(token: str, kode: str, tanggal: str, pasar: str = "MARKET_BOARD_REGULER",
           investor: str = "INVESTOR_TYPE_ALL",
           transaksi: str = "TRANSACTION_TYPE_GROSS"):
+    for i in range(COBA_KONEKSI):
+        try:
+            return _ambil_sekali(token, kode, tanggal, pasar, investor, transaksi)
+        except requests.exceptions.RequestException as e:
+            if i == COBA_KONEKSI - 1:
+                # Pesan SATU BARIS, bukan traceback bertingkat: yang berguna
+                # bagi pembaca layar cuma emiten, tanggal, dan sebabnya.
+                raise RuntimeError(
+                    f"koneksi gagal {COBA_KONEKSI}x untuk {kode} {tanggal} "
+                    f"({pasar}/{investor}): {type(e).__name__}"
+                ) from None
+            time.sleep(0.8 * (i + 1))
+    raise AssertionError("tak tercapai")
+
+
+def _ambil_sekali(token: str, kode: str, tanggal: str, pasar: str,
+                  investor: str, transaksi: str):
     r = sesi().get(URL.format(kode=kode), headers={
         "Authorization": f"Bearer {token}", "Origin": "https://stockbit.com",
         "Referer": "https://stockbit.com/",

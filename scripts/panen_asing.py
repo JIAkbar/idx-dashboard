@@ -61,7 +61,8 @@ jari TLS (bentuk permintaan), bukan jumlahnya — lihat `scripts/idx_net.py`.
 
 PAKAI
 -----
-  py -3.14 scripts/panen_asing.py                      # 2020-01-02 s/d hari ini
+  py -3.14 scripts/panen_asing.py                      # inkremental: lanjut dari data yang ada
+  py -3.14 scripts/panen_asing.py --penuh              # bangun ulang sejak 2020-01-02
   py -3.14 scripts/panen_asing.py --mulai 2026-01-01
   py -3.14 scripts/panen_asing.py --dari-arsip         # tanpa jaringan sama sekali
   py -3.14 scripts/panen_asing.py --demo               # swauji, tanpa jaringan
@@ -207,6 +208,50 @@ def baris_tersimpan(kode: str) -> list:
         return json.loads(f.read_text(encoding="utf-8")).get("d") or []
     except Exception:  # noqa: BLE001 — berkas rusak diperlakukan seperti belum ada
         return []
+
+
+# Berapa hari KALENDER mundur dari data terakhir yang sudah dimiliki. Bukan
+# nol: bursa merevisi ringkasan hari-hari terakhir, dan hari yang gagal diunduh
+# pada jalan sebelumnya harus punya kesempatan kedua. Tujuh hari menutup satu
+# pekan bursa penuh dan tetap murah (±5 hari kerja, bukan 1.737).
+JEDA_AMAN_HARI = 7
+
+
+def mulai_inkremental(*, n_sampel: int = 60) -> date:
+    """Titik mulai panen bawaan: dari data yang SUDAH ada, bukan dari 2020.
+
+    Sampai 30 Agu 2026 bawaannya `AWAL_SUMBER` (2020-01-02), sehingga tiap kali
+    Johan membuka laptop skrip ini menyusuri **1.737 hari bursa** — membaca dan
+    memparse ulang seluruh arsip mentah lalu menulis ulang 989 berkas, untuk
+    menambahkan satu-dua hari baru. Tidak ada unduhan sia-sia (arsipnya dipakai
+    kembali), tapi kerja cakram dan waktunya nyata, dan itu terlihat di layar
+    sebagai "panen asing: 2020-01-02 s/d ... — 1737 hari kerja".
+
+    Aman karena `tulis()` MENGGABUNG dengan berkas yang ada dan menolak menulis
+    kalau hasilnya menyusut. Yang tak aman cuma `--timpa` bersama rentang
+    sempit, dan itu sudah dilarang di `main()`.
+
+    Dibaca dari ISI berkas (`akhir`), bukan mtime — berkas bisa ditulis ulang
+    tanpa membawa hari baru. Modus atas sampel, bukan maksimum: satu emiten
+    yang kebetulan lebih baru tak boleh menggeser titik mulai seluruh panen.
+    """
+    if not KELUARAN.exists():
+        return AWAL_SUMBER
+    hitung: dict[str, int] = {}
+    for f in sorted(KELUARAN.glob("*.json"))[:n_sampel]:
+        try:
+            akhir = json.loads(f.read_text(encoding="utf-8")).get("akhir")
+        except Exception:  # noqa: BLE001 — berkas rusak tak boleh membatalkan panen
+            continue
+        if isinstance(akhir, str) and len(akhir) == 10:
+            hitung[akhir] = hitung.get(akhir, 0) + 1
+    if not hitung:
+        return AWAL_SUMBER
+    terbanyak = max(hitung.items(), key=lambda x: x[1])[0]
+    try:
+        return max(AWAL_SUMBER, date.fromisoformat(terbanyak) - timedelta(days=JEDA_AMAN_HARI))
+    except ValueError:
+        return AWAL_SUMBER
 
 
 def tulis(per_emiten: dict[str, list[str]], *, timpa: bool = False) -> int:
@@ -385,7 +430,12 @@ def demo() -> None:
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--mulai", default=str(AWAL_SUMBER))
+    p.add_argument("--mulai", default=None,
+                   help="bawaan: dari data yang sudah ada mundur %d hari, BUKAN 2020"
+                        % JEDA_AMAN_HARI)
+    p.add_argument("--penuh", action="store_true",
+                   help="paksa dari %s — untuk pembangunan ulang, bukan panen harian"
+                        % AWAL_SUMBER)
     p.add_argument("--akhir", default=str(date.today()))
     p.add_argument("--jeda", type=float, default=0.35, help="detik antar unduhan baru")
     p.add_argument("--dari-arsip", action="store_true", help="bangun ulang tanpa jaringan")
@@ -397,7 +447,15 @@ def main() -> None:
     if a.demo:
         demo()
         return
-    mulai = max(date.fromisoformat(a.mulai), AWAL_SUMBER)
+    if a.mulai:
+        mulai = max(date.fromisoformat(a.mulai), AWAL_SUMBER)
+    elif a.penuh or a.timpa:
+        mulai = AWAL_SUMBER
+    else:
+        mulai = mulai_inkremental()
+        if mulai > AWAL_SUMBER:
+            print(f"mulai inkremental dari {mulai} (data terakhir − {JEDA_AMAN_HARI} hari). "
+                  f"Pakai --penuh untuk membangun ulang sejak {AWAL_SUMBER}.")
     if a.timpa and mulai > AWAL_SUMBER:
         raise SystemExit(
             "--timpa hanya boleh untuk panen PENUH (mulai dari %s). Dipakai bersama "
