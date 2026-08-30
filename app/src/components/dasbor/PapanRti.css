@@ -1,10 +1,12 @@
 /* Papan RTI — lihat catatan rancangan di PapanRti.tsx.
    Token warna & jarak mengikuti lantai.css; berkas ini hanya menata. */
 
+/* Tanpa `margin-bottom`: jarak ke section berikutnya diurus gap `.lantai`
+   (16px), sama seperti section lain. Margin di sini pernah menambah lapis
+   ketiga di atas gap itu — lihat catatan di `.brd-ringkas`, Beranda.css. */
 .rti {
   display: grid;
   gap: var(--j2, 14px);
-  margin-bottom: var(--j3, 20px);
 }
 .rti-memuat { min-height: 320px; }
 

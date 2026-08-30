@@ -258,17 +258,22 @@ export function Beranda() {
           RTI" — jadi angka mentah dulu, kalimatnya menyusul. */}
       <PapanRti />
 
+      {/* Diary Pasar naik ke atas 30 Agu 2026 (Johan: "pindahkan hero ini ke
+          atas"). Ia memang pasangan alami papan RTI: papan menjawab "hari ini
+          apa", Diary menjawab "sebulan ini bagaimana" — dua pertanyaan yang
+          orang buka dasbor untuk menjawabnya, dan keduanya kini di layar
+          pertama tanpa menggulir. */}
+      <PanelDiary />
+
       <RingkasanPasar />
 
       <PintuKerja />
 
-      {/* Breadth & Diary — panel bergaya RTI Business (acuan aslinya memang
-          tangkapan layar RTI milik Johan, lihat diaryPasar.ts). TIDAK dilipat:
-          keduanya menjawab "mayoritas saham ke mana" dan "sebulan ini lebih
-          sering naik atau turun", dua pertanyaan yang orang buka dasbor untuk
-          menjawabnya. */}
+      {/* Breadth — panel bergaya RTI Business (acuan aslinya memang tangkapan
+          layar RTI milik Johan, lihat diaryPasar.ts). TIDAK dilipat: ia
+          menjawab "mayoritas saham ke mana", dan lipatan membuat pertanyaan
+          itu hilang dari pandangan. */}
       <PanelBreadth />
-      <PanelDiary />
 
       <KartuKabar />
 

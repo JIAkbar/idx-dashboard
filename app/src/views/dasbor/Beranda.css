@@ -234,8 +234,14 @@
 .lantai .brd-kabar-list .kbr-waktu { margin-left: auto; }
 
 /* ── Ringkasan pasar (padanan "Coffee Morning") ─────────────────────────── */
+/* `margin-top` dibuang 30 Agu 2026 (Johan: "ada area kosong di hapus saja").
+   Ia ditulis waktu Ringkasan berdiri tepat di bawah hero IHSG dan butuh jeda
+   dari kop halaman. Sesudah hero diganti papan RTI, jaraknya jadi bertumpuk
+   TIGA lapis — gap flex `.lantai` 16px + margin-bawah papan 24px + 26px ini =
+   66px, sementara semua section lain berjarak 16px. Jarak antar-section
+   sekarang diurus satu tempat saja: gap `.lantai`. */
 .lantai .brd-ringkas {
-  margin-top: 26px; border: 1px solid var(--line); border-left: 3px solid var(--amber);
+  border: 1px solid var(--line); border-left: 3px solid var(--amber);
   border-radius: var(--r); background: var(--bg2); padding: 16px 18px;
 }
 .lantai .brd-ringkas-kepala {

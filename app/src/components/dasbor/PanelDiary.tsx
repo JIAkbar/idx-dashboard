@@ -171,7 +171,9 @@ export function PanelDiary() {
   const selPilih = pilih ? sel.find((s) => s.tanggal === pilih) ?? null : null
 
   return (
-    <section className="panel dia-panel" style={{ marginBottom: 12 }}>
+    // marginBottom dibuang — lihat catatan sama di PanelBreadth: jarak
+    // antar-section diurus gap `.lantai`, satu tempat saja.
+    <section className="panel dia-panel">
       <div className="panel-h">
         <span className="lbl">Diary Pasar · IHSG</span>
         <span className="dia-nav">

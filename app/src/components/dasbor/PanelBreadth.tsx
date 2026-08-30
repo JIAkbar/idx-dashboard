@@ -153,7 +153,11 @@ export function PanelBreadth() {
   const b = hitungBreadth(hari)
 
   return (
-    <section className="panel" ref={wrapRef} style={{ marginBottom: 12 }}>
+    // Tanpa marginBottom: jarak antar-section diurus gap `.lantai` (16px)
+    // saja. Margin sendiri di sini menambahnya jadi 28px, dan celah yang
+    // berbeda-beda antar section terbaca sebagai "ada yang kosong di sini"
+    // (Johan 30 Agu 2026).
+    <section className="panel" ref={wrapRef}>
       <div className="panel-h">
         <span className="lbl">Market Breadth (Advance/Decline) · {hari.date_id}</span>
         <div className="grup-k">
