@@ -1306,6 +1306,23 @@ if __name__ == "__main__":
     # ruas berbasis ohlcv_stockbit (freq/porsi_asing/peringkat_*) juga
     # dilewati saat hemat — sama seperti musiman/asing, ringkas_dari_kartu()
     # tak memakainya, jadi backfill --tanggal tak perlu membayarnya.
+    #
+    # ⚠️ ALASAN DI ATAS SUDAH TIDAK UTUH, dan konsekuensinya besar (diukur
+    # 31 Agu 2026): jejak rekomendasi (B45) menyaring `freq >= 100`, jadi
+    # arsip yang dibangun lewat jalur hemat menghasilkan "cuma 0 emiten
+    # berfrekuensi" dan tanggal itu TAK BISA di-backtest sama sekali. Win rate
+    # karena itu mentok di 4 hari (24–28 Agu), bukan 24 hari.
+    #
+    # Percobaan menambalnya dengan memuat stockbit di sini GAGAL dan mahal:
+    # 23,6 menit untuk satu tanggal (963 berkas ohlcv_stockbit dibaca ulang),
+    # dan hasilnya tetap `freq: null` — karena `kartu()` keluar lewat
+    # `if hemat: return hasil` (baris ~806) SEBELUM blok yang mengisi ruas itu.
+    #
+    # Perbaikan yang benar butuh dua langkah, dan sengaja belum dikerjakan di
+    # sini supaya tak setengah jalan:
+    #   1. pindahkan blok freq/ukuran_order/peringkat ke ATAS `if hemat`
+    #   2. muat ohlcv_stockbit SEKALI untuk seluruh rentang backfill, bukan
+    #      sekali per tanggal — kalau tidak, 24 tanggal = ±9,5 jam
     stockbit_pop = muat_semua_stockbit_terakhir(sampai=tanggal) if not hemat else {}
     stockbit_rank = peringkat_populasi(stockbit_pop) if stockbit_pop else {}
     hasil: dict[str, dict] = {}
