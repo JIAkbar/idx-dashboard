@@ -5,13 +5,12 @@ import { useAksesHalaman } from '../../context/AksesHalamanContext'
 import { MENU_ITEMS } from '../../lib/dasbor/menu'
 import { PETA_MENU_KUNCI } from '../../lib/aksesHalaman'
 import { useDataHarian } from '../../lib/dasbor/dataHarian'
-import { useIhsgBuka } from '../../lib/dasbor/ihsgOhlc'
 import { useKabar, waktuKabar } from '../../lib/dasbor/kabar'
 import { rangkumHari } from '../../lib/dasbor/ringkasHarian'
 import { useBulletinList, tipeEdisi, LABEL_TIPE_EDISI } from '../../lib/dasbor/bulletin'
+import { PapanRti } from '../../components/dasbor/PapanRti'
 import { PanelBreadth } from '../../components/dasbor/PanelBreadth'
 import { PanelDiary } from '../../components/dasbor/PanelDiary'
-import { PapanIhsg } from './IndeksDunia'
 import { IkonMenu, IKON_KUNCI, IKON_PANAH_KANAN } from '../../components/dasbor/IkonMenu'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 // Gaya baris kabar (.kbr-*) hidup di Kabar.css dan dipakai juga di sini.
@@ -25,47 +24,17 @@ import './Beranda.css'
  *  dua kolom, dan angka ganjil menyisakan satu petak kosong di sudut. */
 const KABAR_TAMPIL = 6
 
-/**
- * Kepala Beranda: papan IHSG yang SAMA dengan halaman Indeks Dunia —
- * desainnya memang sudah pas dan tak ada alasan menggambar papan kedua.
- *
- * Bedanya dengan /indeks bukan pada papannya, melainkan pada apa yang
- * DITARUH DI DALAMNYA dan apa yang menyusul di bawahnya: di sini papan
- * membawa nama PAPAN + kalimat identitas, lalu disusul kabar pasar, edisi
- * terbaru, dan kartu ke seluruh halaman. Indeks Dunia menyusulnya dengan
- * kalender bursa, net foreign, dan peringkat dunia.
- */
-function PapanBeranda() {
-  const { tanggalTersedia, hari, tanggalAktif, loading } = useDataHarian()
-  const buka = useIhsgBuka(tanggalAktif ?? undefined)
+/* Hero IHSG (`PapanBeranda`) DICABUT 30 Agu 2026 atas permintaan Johan:
+   "landing page ubah total, ganti section itu dengan mode RTI". Grafik IHSG
+   berikut pemilih rentangnya TIDAK hilang — komponen `PapanIhsg` yang sama
+   tetap berdiri megah di /indeks, tempat angka itu memang tokoh utamanya.
+   Identitas PAPAN (judul + tagline) ikut dicabut atas permintaan yang sama.
 
-  if (loading && !hari) return <div className="brd-papan-memuat" aria-hidden="true" />
-  if (!hari) return null
+   Catatan jujur yang perlu dibaca sebelum ada yang mencarinya: kalimat
+   "Pusat Analisa Pasar Nusantara" ternyata TIDAK ada di /indeks — ia hanya
+   tersisa sebagai `title` tooltip di rail/layout dan satu kalimat di
+   Metodologi. Dilaporkan ke Johan pada hari yang sama. */
 
-  return (
-    // Pembungkus `.brd-papan-ringkas` mengecilkan papan DI BERANDA SAJA —
-    // komponen yang sama tetap megah di halaman Indeks, tempat angka itu
-    // memang jadi tokoh utamanya. Arah 1 (Johan 29 Agu): papan menyusut
-    // supaya ringkasan pasar dan panel Breadth/Diary muat di layar pertama.
-    <div className="brd-papan-ringkas">
-    <PapanIhsg
-      hari={hari}
-      tanggalTersedia={tanggalTersedia}
-      buka={buka}
-      tanpaMeta
-      kepala={
-        <div className="brd-identitas">
-          <h1 className="brd-nama">PAPAN</h1>
-          <p className="brd-tagline">
-            Pusat Analisa Pasar Nusantara — <b>data</b> dan <b>informasi</b> Bursa Efek Indonesia.
-            Angkanya bisa ditelusuri, metodenya terbuka, dan yang belum kami punya kami sebut belum punya.
-          </p>
-        </div>
-      }
-    />
-    </div>
-  )
-}
 
 /**
  * Sumber yang tampil di Beranda — EMPAT inti, ditulis eksplisit (bukan
@@ -283,9 +252,13 @@ export function Beranda() {
           saya pertahankan menggantikan itu" — dua panel itu justru yang paling
           dicari, jadi lipatannya DIBUANG dan keduanya berdiri di layar
           pertama, tepat sesudah kalimat ringkasan. */}
-      <RingkasanPasar />
+      {/* Papan RTI menggantikan hero IHSG (Johan 30 Agu: "landing page ubah
+          total, ganti section itu dengan mode RTI"). Ringkasan Pasar turun ke
+          BAWAHNYA atas permintaan yang sama — "pindah section ini dibawah
+          RTI" — jadi angka mentah dulu, kalimatnya menyusul. */}
+      <PapanRti />
 
-      <PapanBeranda />
+      <RingkasanPasar />
 
       <PintuKerja />
 

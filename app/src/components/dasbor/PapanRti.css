@@ -1,0 +1,162 @@
+/* Papan RTI — lihat catatan rancangan di PapanRti.tsx.
+   Token warna & jarak mengikuti lantai.css; berkas ini hanya menata. */
+
+.rti {
+  display: grid;
+  gap: var(--j2, 14px);
+  margin-bottom: var(--j3, 20px);
+}
+.rti-memuat { min-height: 320px; }
+
+/* ── Kepala: IHSG + tanggal ─────────────────────────────────────── */
+.rti-kepala {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.rti-ihsg { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.rti-ihsg-n {
+  font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--text3);
+}
+.rti-ihsg-v {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: clamp(26px, 4.2vw, 38px);
+  font-weight: 700; letter-spacing: -.02em; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.rti-ihsg-d {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 14px; font-variant-numeric: tabular-nums;
+}
+.rti-tgl { font-size: 12px; color: var(--text3); min-width: 0; }
+
+/* ── Pita indeks ────────────────────────────────────────────────── */
+/* Menggulir mendatar DENGAN SENGAJA di layar sempit: 12 indeks tak muat di
+   412px, dan membungkusnya jadi empat baris memakan tinggi yang justru
+   ingin dihemat papan ini. */
+.rti-pita {
+  display: flex;
+  gap: 1px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--line);
+}
+.rti-pita-it {
+  flex: 1 0 auto;
+  min-width: 118px;
+  display: grid;
+  gap: 1px;
+  padding: 7px 11px;
+  background: var(--panel, var(--bg2));
+  text-decoration: none;
+  color: inherit;
+}
+.rti-pita-it:hover { background: var(--bg3, var(--line2)); }
+.rti-pita-n {
+  font-size: 10.5px; color: var(--text3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rti-pita-v {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 13px; font-variant-numeric: tabular-nums;
+}
+.rti-pita-d {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 11.5px; font-variant-numeric: tabular-nums;
+}
+
+/* ── Ringkasan angka ────────────────────────────────────────────── */
+.rti-angka {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(148px, 100%), 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.rti-ang {
+  background: var(--panel, var(--bg2));
+  padding: 9px 12px;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+}
+a.rti-ang:hover { background: var(--bg3, var(--line2)); }
+.rti-ang-l {
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rti-ang-v {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+.rti-ang-k { font-size: 10.5px; color: var(--text3); }
+
+/* ── Lima papan peringkat ───────────────────────────────────────── */
+/* `minmax(min(200px,100%), 1fr)` — bukan `minmax(200px, 1fr)`: bentuk kedua
+   menolak menyusut di bawah 200px dan mendorong grid keluar layar di ponsel.
+   Jebakan yang sama dengan `min-width:auto` pada flex item. */
+.rti-papan {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  gap: var(--j1, 10px);
+}
+.rti-tabel {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel, var(--bg2));
+  padding: 10px 12px 6px;
+  min-width: 0;
+}
+.rti-tabel-kop {
+  display: flex; align-items: baseline; gap: 8px; justify-content: space-between;
+}
+.rti-tabel-kop h3 {
+  margin: 0; font-size: 12px; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase;
+}
+.rti-tabel-semua { font-size: 10.5px; color: var(--text3); text-decoration: none; }
+.rti-tabel-semua:hover { color: var(--emas, var(--text)); }
+.rti-tabel-ket { font-size: 10px; color: var(--text3); margin: 2px 0 6px; }
+
+.rti-tabel table { width: 100%; border-collapse: collapse; }
+.rti-tabel td {
+  padding: 3px 0;
+  font-size: 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+  vertical-align: baseline;
+}
+.rti-tabel tr:last-child td { border-bottom: 0; }
+.rti-no {
+  width: 1.4em; color: var(--text3); font-size: 10.5px;
+  font-family: var(--mono, ui-monospace, monospace);
+}
+.rti-kode a {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-weight: 600; text-decoration: none; color: inherit;
+}
+.rti-kode a:hover { color: var(--emas, var(--text)); text-decoration: underline; }
+.rti-nilai, .rti-delta {
+  text-align: right;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+}
+.rti-nilai { color: var(--text2); }
+.rti-delta { font-size: 11.5px; width: 4.6em; }
+
+.rti-kaki { margin: 0; font-size: 11px; color: var(--text3); }
+
+/* Ponsel: papan tetap padat, tapi peringkat turun jadi satu kolom supaya
+   kode emiten dan angkanya tak berdesakan di 412px. */
+@media (max-width: 560px) {
+  .rti-papan { grid-template-columns: 1fr; }
+  .rti-tabel { padding: 9px 11px 5px; }
+}
