@@ -957,6 +957,13 @@ export function GrafikEmiten() {
    */
   useEffect(() => {
     if (!kamus || kamus.emiten.length === 0) return
+    // IHSG lolos penjaga ini dengan sengaja: ia BUKAN emiten (tak ada di
+    // `daftar_emiten.json` yang berisi 962 emiten) tapi arsip harganya ada dan
+    // halaman ini sudah bisa menggambarnya. Tanpa pengecualian ini, memilih
+    // IHSG dari kotak cari terlihat seperti klik yang tak melakukan apa-apa —
+    // state-nya berganti sesaat lalu efek ini menariknya kembali ke BBCA,
+    // tanpa galat apa pun (terukur 30 Agu 2026).
+    if (kode === KODE_IHSG) return
     if (kamus.emiten.some((e) => e.kode === kode)) return
     setKodeAsing(kode)
     setKode(DEFAULT_KODE)
@@ -979,7 +986,18 @@ export function GrafikEmiten() {
   const saran = useMemo(() => {
     const q = cari.trim().toUpperCase()
     if (!kamus || q.length < 1) return []
-    return kamus.emiten.filter((e) => e.kode.startsWith(q) || e.nama.toUpperCase().includes(q)).slice(0, 8)
+    // IHSG disisipkan di depan daftar emiten. `daftar_emiten.json` memuat 962
+    // EMITEN dan indeks komposit memang bukan salah satunya — tapi arsip
+    // harganya ada (`ohlc/IHSG.json`, 8.865 bar sejak 1990) dan halaman ini
+    // sudah bisa menggambarnya: menu "+ Banding" menawarkannya sejak awal.
+    // Yang tak bisa cuma MEMBUKANYA sebagai chart utama, karena pencarian
+    // membaca daftar emiten dan tak pernah menemukannya (Johan 30 Agu 2026:
+    // "IDX atau IHSG sendiri gak ada di chart").
+    const daftar = [
+      { kode: KODE_IHSG, nama: 'Indeks Harga Saham Gabungan' },
+      ...kamus.emiten,
+    ]
+    return daftar.filter((e) => e.kode.startsWith(q) || e.nama.toUpperCase().includes(q)).slice(0, 8)
   }, [kamus, cari])
 
   // Seri harga: lilin ATAU garis, ditukar lewat `jenisChart`. Disimpan

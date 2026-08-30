@@ -62,6 +62,27 @@ export interface VolumeData {
  *  dilempar dari luar (dibaca dari token CSS --green/--red saat panggil,
  *  bukan ditulis di sini) supaya fungsi ini tetap murni tak tahu apa-apa
  *  soal tema. */
+/**
+ * Batas atas volume yang masih mungkin nyata, per hari, satu emiten atau
+ * indeks. Volume harian TERBESAR yang pernah tercatat di arsip kita 94 miliar
+ * lembar (IHSG); satu triliun memberi ruang sepuluh kali lipat di atas itu dan
+ * tetap jauh di bawah angka yang jelas rusak.
+ *
+ * Ada 551 bar `ohlc/IHSG.json` (6,2% dari 8.865) yang volumenya antara 10¹²
+ * dan 10⁴² — seluruhnya 1995–2006, yaitu bagian Yahoo dari jahitan IHSG.
+ * Sebelum penyaring ini, satu di antaranya (7,85e+39) membuat pustaka grafik
+ * melempar `Assertion failed: Histogram series item data value must be
+ * between …` dan SELURUH halaman /grafik berhenti merender — layar putih,
+ * bukan grafik tanpa volume (terukur 30 Agu 2026 saat IHSG akhirnya bisa
+ * dibuka dari kotak cari).
+ *
+ * Yang disaring HANYA batang volumenya; lilin harganya tetap digambar, karena
+ * harga di bar-bar itu wajar dan memang riwayat IHSG yang sesungguhnya.
+ * Arsipnya sendiri TIDAK disentuh — angka rusak di sumber tetap terlihat rusak
+ * saat diperiksa, dan itu memang yang diinginkan.
+ */
+export const VOLUME_MUSTAHIL = 1e12
+
 export function keDataLilinVolume(
   baris: BarisOhlc[],
   warnaNaik: string,
@@ -72,7 +93,9 @@ export function keDataLilinVolume(
   for (const [tanggal, buka, tinggi, rendah, tutup, vol] of baris) {
     if (hariTanpaPerdagangan(buka, tinggi, rendah, tutup, vol)) continue
     lilin.push({ time: tanggal, open: buka, high: tinggi, low: rendah, close: tutup })
-    volume.push({ time: tanggal, value: vol, color: tutup >= buka ? warnaNaik : warnaTurun })
+    if (Number.isFinite(vol) && vol >= 0 && vol < VOLUME_MUSTAHIL) {
+      volume.push({ time: tanggal, value: vol, color: tutup >= buka ? warnaNaik : warnaTurun })
+    }
   }
   return { lilin, volume }
 }

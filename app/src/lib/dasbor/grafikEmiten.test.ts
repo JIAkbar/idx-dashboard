@@ -1914,3 +1914,39 @@ describe('penomoran panel indikator (B29)', () => {
     expect([...p.values()]).toEqual([0, 0, 0])
   })
 })
+
+describe('volume mustahil tak digambar', () => {
+  const N = '#0a0', T = '#a00'
+
+  it('bar bervolume 10^39 dibuang dari histogram, lilinnya TETAP digambar', () => {
+    // Bentuk nyata dari ohlc/IHSG.json 2004-08-17: harga wajar, volume 1,26e42.
+    // Sebelum penyaring ini, pustaka grafik melempar assertion dan SELURUH
+    // halaman /grafik berhenti merender.
+    const { lilin, volume } = keDataLilinVolume(
+      [
+        ['2004-08-16', 750, 755, 745, 752, 3_600_000_000],
+        ['2004-08-17', 752, 760, 750, 758, 1.255342e42],
+        ['2004-08-18', 758, 762, 754, 760, 4_100_000_000],
+      ],
+      N, T,
+    )
+    expect(lilin.map((l) => l.time)).toEqual(['2004-08-16', '2004-08-17', '2004-08-18'])
+    expect(volume.map((v) => v.time)).toEqual(['2004-08-16', '2004-08-18'])
+  })
+
+  it('volume besar TAPI mungkin tetap digambar — 94 miliar itu rekor nyata IHSG', () => {
+    const { volume } = keDataLilinVolume([['2020-03-13', 4600, 4700, 4500, 4650, 94_021_311_300]], N, T)
+    expect(volume).toHaveLength(1)
+  })
+
+  it('volume tak terhingga / NaN dibuang, bukan digambar sebagai nol', () => {
+    const { volume } = keDataLilinVolume(
+      [
+        ['2020-01-02', 100, 110, 95, 105, Number.POSITIVE_INFINITY],
+        ['2020-01-03', 105, 112, 100, 108, Number.NaN],
+      ],
+      N, T,
+    )
+    expect(volume).toHaveLength(0)
+  })
+})
