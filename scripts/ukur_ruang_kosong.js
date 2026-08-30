@@ -147,6 +147,47 @@
   // yang memang bergulir mendatar DIKECUALIKAN — kepala tabel lebar yang
   // menggulir itu rancangan, bukan cacat, dan tanpa pengecualian ini alatnya
   // melaporkan puluhan positif palsu (terukur: 21 dari 23 temuan pertama).
+  //
+  // (Kodenya ada di bawah blok "celah antar-section" — lihat `const KENDALI`.)
+
+  // ── Celah antar-section yang tak seragam ─────────────────────────────
+  // Ditambahkan 30 Agu 2026, dan sebabnya patut dicatat: alat ini dijalankan
+  // ke beranda SESUDAH Johan mengeluh "ada area kosong di hapus saja", dan ia
+  // melaporkan NOL — padahal keluhannya benar. Yang diukur dua pemeriksa di
+  // atas adalah ruang DI DALAM sebuah wadah; yang Johan lihat adalah jarak
+  // ANTAR section, dan tak ada satu pun wadah yang memuatnya.
+  //
+  // Bentuknya waktu itu: gap flex 16px + margin-bawah 24px + margin-atas 26px
+  // = 66px di satu sambungan, 28px di dua sambungan, 16px di sisanya. Tak ada
+  // satu pun yang "besar" secara mutlak — yang membuatnya terlihat kosong
+  // justru KETIDAKSERAGAMANNYA.
+  //
+  // Karena itu yang diukur di sini bukan besar celahnya, melainkan sebarannya:
+  // sambungan yang menyimpang dari celah yang paling sering dipakai halaman.
+  const celah = []
+  for (const wadah of document.querySelectorAll('.lantai, .dasbor-main')) {
+    const anak = [...wadah.children].filter((c) => c.getBoundingClientRect().height > 0)
+    if (anak.length < 3) continue
+    const jarak = []
+    for (let i = 0; i < anak.length - 1; i++) {
+      const a = anak[i].getBoundingClientRect()
+      const b = anak[i + 1].getBoundingClientRect()
+      jarak.push({ i, px: Math.round(b.top - a.bottom), dari: nama(anak[i]), ke: nama(anak[i + 1]) })
+    }
+    if (jarak.length < 2) continue
+    // Modus, bukan rata-rata: satu sambungan yang jauh melenceng menggeser
+    // rata-rata dan membuat dirinya sendiri terlihat wajar.
+    const hitung = new Map()
+    for (const j of jarak) hitung.set(j.px, (hitung.get(j.px) ?? 0) + 1)
+    const lazim = [...hitung.entries()].sort((x, y) => y[1] - x[1])[0][0]
+    for (const j of jarak) {
+      if (Math.abs(j.px - lazim) >= 8) {
+        celah.push({ wadah: nama(wadah), sambungan: `${j.dari} → ${j.ke}`, celahPx: j.px, lazimPx: lazim, selisih: j.px - lazim })
+      }
+    }
+  }
+  celah.sort((a, b) => Math.abs(b.selisih) - Math.abs(a.selisih))
+
   const KENDALI = 'input, button, select, textarea, .chip-t, .dd-btn, .inp'
   const dalamWadahBergulir = (el) => {
     for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
@@ -183,6 +224,16 @@
   if (temuan.length) console.table(temuan)
   else console.log('bersih: tak ada wadah dengan ruang menganggur di atas ambang')
 
+  if (celah.length) {
+    console.log(
+      `%c${celah.length} sambungan antar-section yang celahnya menyimpang`,
+      'font-weight:bold;color:#e0a',
+    )
+    console.table(celah)
+  } else {
+    console.log('celah antar-section: seragam')
+  }
+
   if (keluar.length) {
     console.log(
       `%c${keluar.length} kendali keluar dari layar ${window.innerWidth}px`,
@@ -199,5 +250,5 @@
   } else {
     console.log('perataan tabel: kepala dan sel sejajar di semua kolom')
   }
-  return { ruangKosong: temuan, perataan, kendaliKeluar: keluar }
+  return { ruangKosong: temuan, perataan, kendaliKeluar: keluar, celahAntarSection: celah }
 })()
