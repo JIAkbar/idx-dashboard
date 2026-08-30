@@ -21,7 +21,9 @@
  * akan pernah menemukannya betapapun rapi dijalankan.
  *
  * Alat ini mengukur GEJALANYA, bukan sebabnya: berapa banyak tinggi sebuah
- * wadah yang tidak terpakai isinya. Satu ukuran menangkap keempat sebab tanpa
+ * wadah yang tidak terpakai isinya. Sejak 30 Agu 2026 ia juga memeriksa dua
+ * hal lain yang sama-sama tak pernah tertangkap sampai Johan menunjuknya:
+ * perataan kepala-vs-sel tabel, dan kendali yang keluar dari layar ponsel. Satu ukuran menangkap keempat sebab tanpa
  * perlu tahu sebabnya lebih dulu — dan menangkap sebab kelima yang belum
  * kita temukan.
  *
@@ -130,6 +132,47 @@
     })
   }
 
+  // ── Kendali yang keluar dari layar ───────────────────────────────────
+  // Ditambahkan 30 Agu 2026 sesudah Johan mengirim tangkapan layar ponsel:
+  // "tombol gini di mobile gak rapi kok gak terdeteksi ya? harus ada masukkan
+  // dari saya ya?"
+  //
+  // Jawabannya: tidak terdeteksi karena tak ada yang menanyakannya. Verifikasi
+  // ponsel yang berjalan beberapa menit sebelumnya cuma bertanya "apakah
+  // paragraf meluber" dan "apakah BADAN menggulir mendatar" — dan badan memang
+  // tidak, karena tabelnya menggulir di dalam wadahnya sendiri. Kotak cari yang
+  // menonjol 7px dan tab yang terpotong 3px lolos keduanya.
+  //
+  // Yang diukur: tepi kendali terhadap lebar viewport. Elemen di dalam wadah
+  // yang memang bergulir mendatar DIKECUALIKAN — kepala tabel lebar yang
+  // menggulir itu rancangan, bukan cacat, dan tanpa pengecualian ini alatnya
+  // melaporkan puluhan positif palsu (terukur: 21 dari 23 temuan pertama).
+  const KENDALI = 'input, button, select, textarea, .chip-t, .dd-btn, .inp'
+  const dalamWadahBergulir = (el) => {
+    for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+      const ox = getComputedStyle(p).overflowX
+      if (ox === 'auto' || ox === 'scroll') return true
+    }
+    return false
+  }
+  const keluar = []
+  for (const el of document.querySelectorAll(KENDALI)) {
+    const b = el.getBoundingClientRect()
+    if (b.width === 0 || b.height === 0) continue
+    if (dalamWadahBergulir(el)) continue
+    const lewat = Math.round(Math.max(b.right - window.innerWidth, -b.left))
+    if (lewat > 0) {
+      keluar.push({
+        kendali: nama(el),
+        teks: (el.textContent || el.placeholder || '').trim().slice(0, 28),
+        kiri: Math.round(b.left),
+        kanan: Math.round(b.right),
+        lewatPx: lewat,
+      })
+    }
+  }
+  keluar.sort((a, b) => b.lewatPx - a.lewatPx)
+
   temuan.sort((a, b) => b.kosongPx - a.kosongPx)
   const total = temuan.reduce((a, t) => a + t.kosongPx, 0)
   console.log(
@@ -140,11 +183,21 @@
   if (temuan.length) console.table(temuan)
   else console.log('bersih: tak ada wadah dengan ruang menganggur di atas ambang')
 
+  if (keluar.length) {
+    console.log(
+      `%c${keluar.length} kendali keluar dari layar ${window.innerWidth}px`,
+      'font-weight:bold;color:#e0a',
+    )
+    console.table(keluar)
+  } else {
+    console.log(`kendali: semuanya di dalam layar ${window.innerWidth}px`)
+  }
+
   if (perataan.length) {
     console.log(`%c${perataan.length} kolom yang kepala & selnya tak sejajar`, 'font-weight:bold;color:#e0a')
     console.table(perataan)
   } else {
     console.log('perataan tabel: kepala dan sel sejajar di semua kolom')
   }
-  return { ruangKosong: temuan, perataan }
+  return { ruangKosong: temuan, perataan, kendaliKeluar: keluar }
 })()

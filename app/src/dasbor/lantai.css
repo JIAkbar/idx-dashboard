@@ -815,7 +815,16 @@
    KELOMPOK di layar sempit — bukan per chip — sehingga pasangan label-chip
    tak pernah terpisah baris. */
 .lantai .bilah-kendali{display:flex;align-items:center;gap:var(--j1) var(--j1);flex-wrap:wrap;border:1px solid var(--line);border-radius:9px;padding:7px 10px}
-.lantai .bilah-kendali .grup-k{display:flex;align-items:center;gap:var(--j1);flex-wrap:wrap}
+/* `min-width:0` WAJIB, bukan hiasan. Flex item bawaannya `min-width:auto`,
+   artinya ia menolak menyusut di bawah lebar isinya — jadi satu anak selebar
+   186px (kotak cari) membuat seluruh grup melar melewati induknya, dan di
+   ponsel 412px kendalinya menonjol keluar layar. Terukur 30 Agu 2026: grup
+   385px di dalam ruang isi 346px, kotak cari berakhir di 419px. Versi flex
+   dari jebakan `minmax(0,1fr)` yang sudah tercatat untuk grid di CLAUDE.md;
+   badan halaman TIDAK menggulir mendatar saat ini terjadi, jadi pemeriksaan
+   "apakah halaman menggulir" tak pernah menangkapnya. */
+.lantai .bilah-kendali .grup-k{display:flex;align-items:center;gap:var(--j1);flex-wrap:wrap;min-width:0}
+.lantai .bilah-kendali .grup-k>*{min-width:0}
 .lantai .bilah-kendali .grup-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);font-weight:700;user-select:none}
 .lantai .bilah-kendali .pemisah-v{width:1px;align-self:stretch;background:var(--line);margin:0 2px}
 .lantai .bilah-kendali{container-type:inline-size}
