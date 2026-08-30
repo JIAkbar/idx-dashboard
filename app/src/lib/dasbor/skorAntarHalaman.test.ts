@@ -20,28 +20,33 @@
  * sekali. Bentuk kegagalan yang sama dengan alat ukur yang menguji hal yang
  * bukan persoalannya.
  *
- * ## Bedanya bukan satu baris
+ * ## Bedanya bukan satu baris — dan sebagian besar memang DISENGAJA
  *
- * Daftar periode itu cuma sumbu PERTAMA. Uji negatif 30 Agu 2026 — menyamakan
- * periode Harian Papan dengan Screener lalu menjalankan uji ini — membuktikan
- * keduanya TETAP berbeda, jadi dugaan "bedanya satu baris" salah. Rumusnya
- * memang dua, berbeda di lima tempat:
+ * Dugaan pertama 30 Agu 2026: "bedanya satu baris, daftar periode MA".
+ * Dijatuhkan uji negatif — periode disamakan, hasilnya tetap berbeda.
  *
- *   1. periode MA      10·20·30·50·100·200   vs  5·10·20·50·100·200
- *   2. osilator        6 (RSI, Stoch, Williams %R, CCI, MACD, Momentum 10H)
- *                      vs 4 (tanpa Williams %R dan tanpa Momentum)
- *   3. ambang RSI      30/70                 vs  40/60
- *   4. MACD            garis vs sinyal       vs  garis vs nol
- *   5. pembobotan      rata SELURUH komponen vs  (rataMA + rataOsilator) / 2
- *                      → MA berbobot 12/18       → MA berbobot 1/2
+ * Dugaan kedua, yang sempat ditulis di sini: "lima sumbu yang menyimpang".
+ * Itu juga salah, dan lebih berbahaya karena terdengar seperti temuan.
+ * Kepala `harianPapan.ts:23-42` sudah menjelaskan tiga di antaranya sebagai
+ * keputusan, verbatim: *"beda di tiga hal, dan ketiganya SENGAJA"*.
  *
- * Akibatnya BBCA pada 28 Agu 2026 bernilai 0,2778 (“Buy”) di Screener dan
- * 0,7083 (“Strong Buy”) di Harian Papan. Terukur atas 961 emiten: skor harian
- * beda 325, pekanan 383, bulanan 470.
+ *   periode MA          SENGAJA   harianPapan.ts:29 + spek §Skor Papan
+ *   arah osilator       SENGAJA   momentum, bukan kontrarian — benchmark 83
+ *                                 label menunjukkan Strong Buy berkorelasi
+ *                                 RSI≈73 (TINGGI), jadi arah TradingView
+ *                                 dibalik dengan sengaja
+ *   pembobotan skor     SENGAJA   50/50 dua kelompok, eksplisit "BUKAN
+ *                                 rata-rata rata seluruh 16 komponen"
  *
- * Karena itu “satu konstanta, satu rumah” TIDAK cukup saat peleburan. Yang
- * perlu disatukan fungsinya, dan Johan yang memilih rumus mana yang menang —
- * memilih salah satu mengubah label yang sudah tayang di halaman yang kalah.
+ * Keduanya bahkan bernama berbeda di layar — Screener memajang "SSS D/W/M",
+ * Harian Papan memajang "Skor Papan", dan speknya melarang memakai nama SSS
+ * untuk yang kedua. Jadi BBCA "Buy di satu halaman, Strong Buy di halaman
+ * lain" bukan kontradiksi: itu dua indikator berbeda yang berselisih, yang
+ * memang dilakukan indikator berbeda.
+ *
+ * Yang tersisa sebagai cacat nyata cuma soal STRUKTUR, dan itu yang dijaga
+ * berkas ini: empat salinan konstanta tanpa satu pun pengikat, dan pasangan
+ * Harian Papan yang tak punya uji silang sama sekali.
  *
  * ## Yang dijaga di sini
  *
@@ -49,21 +54,26 @@
  *    terbuka. Dibaca sebagai TEKS, bukan lewat impor: mengimpor
  *    `bangun-harian-papan.mjs` menjalankan pembangunan penuh dan menulis ke
  *    cakram, jadi impor bukan pilihan.
- * 2. Divergensi ANTAR-HALAMAN dikunci sebagai keadaan yang disengaja-sementara.
- *    Uji ini hijau hari ini justru karena keduanya berbeda. Ia berubah merah
- *    kalau ada yang menyamakan konstantanya diam-diam — dan itu memang harus
- *    berhenti dulu di meja Johan, karena menyamakannya mengubah label yang
- *    sudah tayang di salah satu halaman (klausul 3b CLAUDE.md).
+ * 2. Perbedaan ANTAR-HALAMAN dikunci sebagai keputusan, bukan sebagai cacat.
+ *    Uji ini hijau justru karena keduanya berbeda, dan merah kalau ada yang
+ *    "merapikannya" jadi satu — termasuk aku, tiga jam sebelum komentar ini
+ *    ditulis. Menyamakannya berarti membuang Skor Papan beserta kalibrasi 83
+ *    labelnya, dan itu keputusan Johan (klausul 3b CLAUDE.md).
  *
  * 3. Bentuk kedua rumus dikunci — jumlah dan nama komponennya. Menyamakan
  *    daftar periode saja tidak menyatukan keduanya, dan uji ini yang
  *    mengatakannya sebelum seseorang mengira pekerjaannya selesai.
  *
- * ## Saat peleburan Screener + Harian Papan dikerjakan
+ * ## Kalau Screener + Harian Papan dilebur
  *
- * Balik uji nomor 2 & 3 jadi menuntut kesamaan, dan jadikan skornya SATU
- * fungsi yang dipanggil kedua sisi — bukan dua yang "kebetulan disamakan",
- * karena yang kebetulan sama akan menyimpang lagi.
+ * Peleburan HALAMAN tak mengharuskan peleburan SKOR — satu halaman boleh
+ * memajang dua indikator berdampingan. Kalau Johan memang memilih salah satu
+ * rumus dibuang, barulah uji 2 & 3 dibalik jadi menuntut kesamaan.
+ *
+ * Yang tetap harus diperbaiki apa pun keputusannya: empat salinan konstanta
+ * jadi SATU modul tanpa efek samping yang diimpor keempat pemakainya. Nilai
+ * yang "kebetulan sama" di empat tempat akan menyimpang lagi, dan pasangan
+ * Harian Papan tak punya penjaga yang menyadarinya.
  */
 import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync } from 'node:fs'
@@ -145,8 +155,9 @@ describe('skor yang dilihat pembaca — Screener vs Harian Papan', () => {
     expect(
       berbeda,
       `Screener & Harian Papan kini SEPAKAT di ${diperiksa} emiten sampel. ` +
-        'Kalau itu disengaja (peleburan sudah dikerjakan), balik uji ini jadi ' +
-        'menuntut kesamaan dan jadikan periodenya satu ekspor bersama.',
+        'Skor Papan dirancang BERBEDA dari SSS (harianPapan.ts:23-42, benchmark ' +
+        '83 label). Kalau penyamaan ini disengaja dan diputuskan Johan, balik ' +
+        'uji ini jadi menuntut kesamaan; kalau tidak, kembalikan rumusnya.',
     ).toBeGreaterThan(0)
 
     // Dicetak supaya angkanya terlihat tiap uji jalan — divergensi yang tak
@@ -164,12 +175,13 @@ describe('skor yang dilihat pembaca — Screener vs Harian Papan', () => {
     expect(hp.harian?.label).toBeTruthy()
   })
 
-  it('kedua rumus berbeda BENTUK, bukan cuma daftar periodenya', () => {
-    // Penjaga terhadap kesimpulan yang terlalu cepat. Dugaan pertama 30 Agu
-    // 2026 adalah "bedanya satu baris — daftar periode MA". Uji negatif
-    // menjatuhkannya: periode disamakan, hasilnya tetap berbeda. Kalau nanti
-    // ada yang menyamakan periodenya lalu mengira peleburan selesai, uji ini
-    // yang memberitahu bahwa masih ada empat sumbu lagi.
+  it('kedua rumus berbeda BENTUK — dan bedanya memang dirancang', () => {
+    // Penjaga terhadap "perapian" yang tak sengaja membuang kalibrasi.
+    // Screener menimbang enam osilator gaya kontrarian dan merata-rata semua
+    // komponen; Skor Papan menimbang empat osilator gaya momentum dengan
+    // bobot 50/50 — dikalibrasi ke 83 label penyedia lain (96% dalam ±1
+    // tingkat, spek §Skor Papan). Menyamakan keduanya membuang kalibrasi itu
+    // tanpa jejak di layar.
     const baris = bacaBaris(sampel.find((f) => bacaBaris(f).length >= 250)!)
     const sc = skorTeknikal(baris)!
     const hp = skorPapan(baris)!
