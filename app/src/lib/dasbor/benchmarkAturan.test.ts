@@ -146,3 +146,30 @@ describe('selisih terhadap pasar', () => {
     for (const b of SEL.baris) expect(b.n).toBeGreaterThanOrEqual(100)
   })
 })
+
+describe('ketahanan lintas horizon — klaim tak boleh lebih luas dari datanya', () => {
+  it('keunggulan tren tersusun MEMBESAR makin panjang jendelanya', () => {
+    // Ini klaim yang datanya sungguh dukung, dan yang dicetak di layar.
+    const med = (h: number) => barisRezim(SEL, 'tersusun', h)[0].median
+    expect(med(1)).toBeLessThan(med(5))
+    expect(med(5)).toBeLessThan(med(10))
+    expect(med(10)).toBeLessThan(med(20))
+  })
+
+  it('pola "turun > naik" TIDAK bertahan di 20 hari — dan itu disebut di layar', () => {
+    // Klaim yang diterbitkan 1 Sep pagi hanya menguji H=5. Uji ini mengunci
+    // batasnya supaya tak ada yang memperluasnya kembali tanpa mengukur:
+    // di jendela terpanjang polanya TERBALIK.
+    const [t5, , n5] = barisRezim(SEL, 'tersusun', 5)
+    expect(t5.median).toBeGreaterThan(n5.median)          // 5 hari: bertahan
+    const [t20, , n20] = barisRezim(SEL, 'tersusun', 20)
+    expect(t20.median).toBeLessThan(n20.median)           // 20 hari: terbalik
+  })
+
+  it('di 1 hari tak ada selisih sama sekali — keunggulan butuh waktu', () => {
+    for (const s of SEL.urutan) {
+      const b = barisRezim(SEL, s, 1)
+      for (const x of b) expect(Math.abs(x.median)).toBeLessThan(0.1)
+    }
+  })
+})
