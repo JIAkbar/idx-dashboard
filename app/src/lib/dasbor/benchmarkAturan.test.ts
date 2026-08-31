@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { beliTahan, lebihDariBeliTahan, pelemahanPct, type BenchmarkAturan } from './benchmarkAturan'
+import { beliTahan, lebihDariBeliTahan, pelemahanPct, barisRezim, type BenchmarkAturan } from './benchmarkAturan'
 
 /**
  * Penjaga panel Uji Aturan. Dua hal dijaga, dan keduanya pernah gagal senyap
@@ -101,5 +101,48 @@ describe('tak membocorkan istilah mesin ke layar', () => {
     for (const r of [/benchmark_aturan\.py/, /getstocksummary/i, /chartbit/i, /data-idx/]) {
       expect(jsx).not.toMatch(r)
     }
+  })
+})
+
+// ── Selisih terhadap pasar ──────────────────────────────────────────────────
+const SEL = JSON.parse(
+  readFileSync(join(AKAR, 'data-idx', 'json', 'selisih_pasar.json'), 'utf8'),
+) as import('./benchmarkAturan').SelisihPasar
+
+describe('selisih terhadap pasar', () => {
+  it('baris KONTROL nol — kalau tidak, pengukurannya yang rusak', () => {
+    // Seluruh emiten dibanding mediannya sendiri harus nol menurut definisi.
+    // Ini satu-satunya bukti bahwa angka di baris lain terkalibrasi; kalau ia
+    // bergeser, temuan apa pun di baris lain tak boleh dipercaya.
+    for (const b of SEL.baris.filter((x) => x.saringan === 'semua')) {
+      expect(Math.abs(b.median)).toBeLessThan(0.05)
+    }
+  })
+
+  it('tiap saringan punya ketiga rezim, bukan cuma yang enak dilihat', () => {
+    for (const s of SEL.urutan) {
+      const rz = barisRezim(SEL, s, 5).map((b) => b.rezim)
+      expect(rz).toEqual(['turun', 'datar', 'naik'])
+    }
+  })
+
+  it('tren tersusun unggul, dan paling unggul saat pasar TURUN', () => {
+    const [turun, datar, naik] = barisRezim(SEL, 'tersusun', 5)
+    expect(turun.median).toBeGreaterThan(0)
+    expect(turun.median).toBeGreaterThan(naik.median)
+    expect(datar.median).toBeGreaterThan(0)
+  })
+
+  it('vs IHSG dilaporkan APA ADANYA walau negatif', () => {
+    // Ia negatif di data ini, dan itu justru wajib tampil: memilih hanya
+    // pembanding yang menguntungkan adalah bentuk kebohongan yang paling
+    // gampang lolos review.
+    const b = barisRezim(SEL, 'tersusun', 5)[0]
+    expect(b.vsIhsg).not.toBeNull()
+    expect(typeof b.vsIhsg).toBe('number')
+  })
+
+  it('tiap sel membawa n-nya sendiri — angka tanpa penyebut tak sah', () => {
+    for (const b of SEL.baris) expect(b.n).toBeGreaterThanOrEqual(100)
   })
 })
