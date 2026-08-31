@@ -119,3 +119,72 @@ export function lebihDariBeliTahan(d: BenchmarkAturan, eks: number, horizon: num
 export function pelemahanPct(k: KeluargaUji): number | null {
   return k.lama > 0 ? Math.round((1 - k.baru / k.lama) * 100) : null
 }
+
+// ── Selisih terhadap pasar ──────────────────────────────────────────────────
+/**
+ * Usul Johan 1 Sep 2026: *"jika IHSG hari ini turun maka banyak saham turun
+ * tapi saham pilihan malah naik dan sebaliknya"*.
+ *
+ * Menjawab pertanyaan yang ekspektansi TIDAK bisa jawab: berapa banyak dari
+ * hasilnya sebenarnya cuma arah pasar. `median` di sini SELISIH terhadap
+ * median seluruh emiten bervolume pada hari yang sama — jadi nol berarti
+ * "sama saja dengan saham kebanyakan", bukan "tidak bergerak".
+ *
+ * Baris saringan `semua` adalah KONTROL, dan nilainya harus nol: seluruh
+ * emiten dibanding mediannya sendiri memang nol menurut definisi. Kalau suatu
+ * saat ia tidak nol, yang rusak pengukurannya — bukan temuan.
+ *
+ * `vsIhsg` sengaja pendamping, bukan wasit. IHSG tertimbang kapitalisasi dan
+ * didominasi segelintir bank besar, jadi saham kecil bisa terlihat kalah dari
+ * IHSG padahal mengalahkan saham kebanyakan. Terukur: kedua ukuran memberi
+ * kesimpulan BERLAWANAN di data ini, jadi memilih salah satunya diam-diam
+ * akan menyesatkan pembaca. Dua-duanya wajib tampil.
+ */
+export interface SelisihPasar {
+  dibuat: string
+  nEmiten: number
+  horizon: number[]
+  ambangDatar: number
+  urutan: string[]
+  baris: {
+    saringan: string
+    label: string
+    horizon: number
+    /** 'turun' | 'datar' | 'naik' — arah IHSG pada HARI SINYAL. */
+    rezim: string
+    n: number
+    /** Selisih median terhadap median pasar, dalam persen. */
+    median: number
+    menangPct: number
+    vsIhsg: number | null
+  }[]
+}
+
+const cacheSel = new Map<string, Promise<SelisihPasar | null>>()
+
+export function useSelisihPasar(): SelisihPasar | null {
+  const [d, setD] = useState<SelisihPasar | null>(null)
+  useEffect(() => {
+    let batal = false
+    let p = cacheSel.get('x')
+    if (!p) {
+      p = fetch('/data-idx/json/selisih_pasar.json')
+        .then((r) => (r.ok ? (r.json() as Promise<SelisihPasar>) : null))
+        .catch(() => null)
+      cacheSel.set('x', p)
+    }
+    void p.then((x) => { if (!batal) setD(x) })
+    return () => { batal = true }
+  }, [])
+  return d
+}
+
+/** Baris satu saringan pada satu horizon, terurut turun → datar → naik.
+ *  Urutan itu disengaja: pertanyaan Johan tentang hari pasar TURUN, jadi
+ *  kolom itu yang dibaca lebih dulu. */
+export function barisRezim(d: SelisihPasar, saringan: string, horizon: number) {
+  const urut = ['turun', 'datar', 'naik']
+  return urut
+    .map((rz) => d.baris.find((b) => b.saringan === saringan && b.horizon === horizon && b.rezim === rz))
+    .filter((b): b is SelisihPasar['baris'][number] => b != null)
+}

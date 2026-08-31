@@ -1,4 +1,7 @@
-import { useBenchmarkAturan, pelemahanPct, type AturanUji } from '../../lib/dasbor/benchmarkAturan'
+import {
+  useBenchmarkAturan, useSelisihPasar, pelemahanPct, barisRezim,
+  type AturanUji, type SelisihPasar,
+} from '../../lib/dasbor/benchmarkAturan'
 import './UjiAturan.css'
 
 /**
@@ -58,8 +61,92 @@ function Baris({ a, maks }: { a: AturanUji; maks: number }) {
   )
 }
 
+/**
+ * Selisih terhadap pasar, dipecah menurut arah IHSG pada hari sinyal.
+ *
+ * Menjawab pertanyaan Johan langsung: saat pasar turun, apakah saham pilihan
+ * tetap unggul? Kolom "IHSG turun" sengaja ditaruh PALING KIRI karena itu
+ * pertanyaannya — bukan diurut naik-datar-turun seperti kebiasaan.
+ *
+ * Baris kontrol ("semua hari") ditampilkan dan TIDAK disembunyikan walau
+ * nilainya nol: nol itu justru buktinya bahwa pengukurannya terkalibrasi —
+ * seluruh emiten dibanding mediannya sendiri memang harus nol. Menyembunyikan
+ * baris yang "tidak menarik" akan menghapus satu-satunya bukti bahwa angka di
+ * baris lain bisa dipercaya.
+ */
+function PanelSelisih({ d }: { d: SelisihPasar }) {
+  const H = 5
+  return (
+    <>
+      <h3>Saat pasar turun, apakah saham pilihan tetap unggul?</h3>
+      <p className="ua-sub">
+        Selisih terhadap <b>saham median</b> selama {H} hari — bukan terhadap harga
+        sendiri. Nol berarti “sama saja dengan saham kebanyakan”. Dipecah menurut arah
+        pasar pada hari sinyal, dari {d.nEmiten} emiten.
+      </p>
+      <div className="ua-gulir">
+        <table className="ua-tbl">
+          <thead>
+            <tr>
+              <th>Saringan</th>
+              <th className="r">Pasar TURUN</th>
+              <th className="r">Datar</th>
+              <th className="r">Pasar naik</th>
+              <th className="r">Menang</th>
+              <th className="r">vs IHSG</th>
+            </tr>
+          </thead>
+          <tbody>
+            {d.urutan.map((s) => {
+              const b = barisRezim(d, s, H)
+              if (b.length < 3) return null
+              const kontrol = s === 'semua'
+              const kuat = b[0].median > 0.1
+              return (
+                <tr key={s} className={kuat ? 'ua-kini' : undefined}>
+                  <td className="ua-nama">
+                    {b[0].label}
+                    {kontrol && <span className="ua-tag">kontrol</span>}
+                  </td>
+                  {b.map((x) => (
+                    <td key={x.rezim} className={'r ' + (x.median > 0 ? 'up' : x.median < 0 ? 'dn' : 'ua-lemah')}>
+                      {x.median > 0 ? '+' : x.median < 0 ? '−' : ''}
+                      {Math.abs(x.median).toFixed(3).replace('.', ',')}%
+                    </td>
+                  ))}
+                  <td className="r ua-lemah">{b[0].menangPct.toFixed(1).replace('.', ',')}%</td>
+                  <td className={'r ' + ((b[0].vsIhsg ?? 0) < 0 ? 'dn' : 'up')}>
+                    {b[0].vsIhsg == null
+                      ? '—'
+                      : (b[0].vsIhsg > 0 ? '+' : '−') + Math.abs(b[0].vsIhsg).toFixed(3).replace('.', ',') + '%'}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div className="ua-awas">
+        <b>Tiga hal dari tabel itu, dan dua di antaranya membatasi.</b>
+        <br />
+        <b>Satu:</b> hanya <b>tren tersusun rapi</b> yang memberi selisih nyata, dan
+        keunggulannya <b>paling besar justru saat pasar turun</b> — saham bertren
+        memang bertahan lebih baik saat pasar jatuh.{' '}
+        <b>Dua:</b> saringan lain memberi <b>nol</b>; berada di atas satu garis
+        rata-rata saja tak menambah apa pun.{' '}
+        <b>Tiga:</b> kolom terakhir negatif di semua baris — saham pilihan{' '}
+        <b>mengalahkan saham median tapi kalah dari IHSG</b>. Keduanya benar sekaligus:
+        indeks tertimbang kapitalisasi dan didominasi bank besar yang naik lebih kuat
+        daripada emiten kebanyakan di periode ini. Angka menangnya pun cuma 50–52%,
+        jadi keunggulannya datang dari sebaran, bukan dari sering menang.
+      </div>
+    </>
+  )
+}
+
 export function UjiAturan() {
   const d = useBenchmarkAturan()
+  const sel = useSelisihPasar()
   if (!d) return null
 
   const bt5 = d.beliTahan.find((x) => x.saringan === 'semua' && x.horizon === 5)
@@ -130,6 +217,8 @@ export function UjiAturan() {
         bukan aturannya. Angka periode penuh melebih-lebihkan apa yang bisa diharapkan
         sekarang.
       </p>
+
+      {sel && <PanelSelisih d={sel} />}
 
       <h3>Tiap cara, tanpa saringan apa pun</h3>
       <p className="ua-sub">
