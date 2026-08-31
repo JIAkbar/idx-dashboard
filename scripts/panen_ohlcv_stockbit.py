@@ -44,6 +44,8 @@ DIR_JSON = AKAR / "data-idx" / "json"
 DAFTAR = DIR_JSON / "daftar_emiten.json"
 KELUARAN = DIR_JSON / "ohlcv_stockbit"
 ARSIP = AKAR / "_arsip-mentah" / "ohlcv-stockbit"
+# Catatan bar yang dikarantina — dibaca manusia, bukan mesin.
+KARANTINA = DIR_JSON / "ohlcv_karantina.json"
 WIB = timezone(timedelta(hours=7))
 
 URL = "https://exodus.stockbit.com/chartbit/{kode}/price/daily"
@@ -93,18 +95,52 @@ def urai(mentah: dict) -> list[list]:
     return [per_tanggal[t] for t in sorted(per_tanggal)]
 
 
+def karantina_bar(baris: list[list]) -> tuple[list[list], list[dict]]:
+    """Pisahkan bar yang mustahil dari deretnya. Balikan (bar sehat, bar dikarantina).
+
+    Ketetapan Johan 1 Sep 2026: *"karantina satu bar RIGS saja"* — satu bar
+    rusak tak boleh membuang SELURUH emiten. Versi lama menolak emiten begitu
+    ketemu satu `high < low`, dan RIGS karena itu tak pernah terbit sama sekali:
+    satu bar 2020-05-19 mengubur 1.500-an bar sehat.
+
+    **Umum, bukan pengecualian ber-nama RIGS.** Bar cacat berikutnya akan
+    datang dari emiten lain, dan pengecualian yang menyebut kode emiten di
+    dalam kodenya akan membusuk tanpa ada yang tahu.
+
+    Yang dikarantina DIKEMBALIKAN, tidak ditelan — pemanggil menulisnya ke
+    catatan yang bisa dibaca manusia. Bar buang tanpa jejak berarti tiga bulan
+    lagi tak seorang pun tahu deret ini pernah dipotong.
+
+    Yang TIDAK dilakukan, dan itu disengaja: lubangnya tidak ditambal. Tanggal
+    itu absen dari deret, bukan diisi interpolasi atau disalin dari tetangganya
+    — menyambung dua sisi lubang membuat gerak harga yang tak pernah terjadi,
+    dan itu lebih berbahaya daripada satu hari yang hilang.
+    """
+    ih, il = KOLOM.index("high"), KOLOM.index("low")
+    sehat, buang = [], []
+    for b in baris:
+        if b[ih] is not None and b[il] is not None and b[ih] < b[il]:
+            buang.append({"tanggal": b[0], "alasan": "high < low",
+                          "high": b[ih], "low": b[il]})
+            continue
+        sehat.append(b)
+    return sehat, buang
+
+
 def verifikasi(baris: list[list]) -> str | None:
-    """None kalau lolos; kalau tidak, alasan gagal (dicetak, emiten dilewati)."""
+    """None kalau lolos; kalau tidak, alasan gagal (dicetak, emiten dilewati).
+
+    Sejak 1 Sep 2026 ia TIDAK lagi memeriksa `high < low` — itu urusan
+    `karantina_bar()`, yang membuang barnya saja alih-alih emitennya. Yang
+    tersisa di sini cuma cacat yang memang membatalkan seluruh deret: kosong,
+    atau tanggal yang tak terurut/berduplikat (tanda balasan sumber rusak,
+    bukan satu hari yang aneh).
+    """
     if not baris:
         return "nol bar"
     tanggal = [b[0] for b in baris]
     if tanggal != sorted(set(tanggal)):
         return "tanggal tak terurut naik atau ada duplikat"
-    idx = KOLOM.index("high")
-    idxl = KOLOM.index("low")
-    for b in baris:
-        if b[idx] is not None and b[idxl] is not None and b[idx] < b[idxl]:
-            return f"high < low pada {b[0]}"
     return None
 
 
@@ -155,6 +191,11 @@ def jalankan(a) -> int:
         print(f"Panen OHLCV Stockbit {hari_ini} — {len(kode_semua)} emiten, jeda {a.jeda}s")
 
     n_ok = n_lewat = n_gagal = 0
+    # Bar yang dibuang karantina, dikumpulkan lalu ditulis ke berkas di akhir.
+    # Dikumpulkan di memori (bukan ditulis per kejadian) supaya panen yang
+    # dibatalkan di tengah tak meninggalkan catatan separuh yang terbaca
+    # seolah lengkap.
+    karantina_catat: list[dict] = []
     mulai = time.time()
     for i, kode in enumerate(kode_semua, 1):
         ark = ARSIP / kode / f"{hari_ini}.json"
@@ -181,6 +222,12 @@ def jalankan(a) -> int:
             time.sleep(a.jeda)
 
         baris = urai(mentah)
+        baris, dikarantina = karantina_bar(baris)
+        if dikarantina:
+            for b in dikarantina:
+                karantina_catat.append({"kode": kode, **b})
+            print(f"  {kode}: {len(dikarantina)} bar dikarantina "
+                  f"({', '.join(b['tanggal'] for b in dikarantina)}) — sisanya tetap terbit")
         alasan = verifikasi(baris)
         if alasan:
             n_gagal += 1
@@ -228,7 +275,16 @@ def swauji() -> int:
     rusak = list(baris[0])
     idx_h, idx_l = KOLOM.index("high"), KOLOM.index("low")
     rusak[idx_h], rusak[idx_l] = 100, 200  # high < low
-    assert verifikasi([rusak]) is not None and "high < low" in verifikasi([rusak])
+    # high < low TIDAK lagi membatalkan emiten — barnya saja yang dikarantina
+    # (ketetapan Johan 1 Sep 2026, lihat karantina_bar).
+    assert verifikasi([rusak]) is None
+    sehat, buang = karantina_bar([rusak])
+    assert sehat == [] and len(buang) == 1 and buang[0]["alasan"] == "high < low"
+    # Bar sehat di sekitarnya TETAP terbit, dan lubangnya TIDAK ditambal.
+    baik = ["2020-05-18"] + [1] * (len(KOLOM) - 1)
+    sehat2, buang2 = karantina_bar([baik, rusak, baik[:]])
+    assert len(sehat2) == 2 and len(buang2) == 1
+    assert [b[0] for b in sehat2] == ["2020-05-18", "2020-05-18"]  # tanggal rusak absen
 
     dup = [baris[0], baris[0]]
     assert verifikasi(dup) is not None  # duplikat tanggal
