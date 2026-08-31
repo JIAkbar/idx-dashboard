@@ -38,14 +38,20 @@ diakses lewat tautan langsung/markah.
   `data-idx/json/*` di halaman yang sengaja publik saat semuanya tertutup.
 - Dua ukuran layar yang dipakai Johan (1920×1080, 412×915).
 
-## 3. Yang perlu diputuskan Johan (satu hal, kecil)
+## 3. Jalur intip — DIPUTUSKAN Johan 1 Sep: buat (verbatim: *"preview vercel saja dan jalur intip"*)
 
-Perlukah **jalur intip** untuk Johan sendiri melihat produksi selama tertutup
-(mis. `?intip=1` yang disimpan sessionStorage)? Itu kenyamanan, tapi juga lubang —
-siapa pun yang tahu parameternya masuk. Alternatif tanpa lubang: Johan melihat lewat
-dev server lokal / preview deployment Vercel (URL preview per-commit sudah ada
-gratis). **Saran: pakai preview Vercel, tanpa jalur intip.** Kalau Johan mau jalur
-intip, katakan; defaultnya tidak dibuat.
+Johan memakai preview deployment Vercel DAN jalur intip. Pengerasan wajib:
+
+1. **Kode intip dari env var** (`VITE_INTIP_KODE=<slug acak panjang>`), dipakai
+   `?intip=<slug>`. Bukan `?intip=1` — yang tertebak satu percobaan bukan gerbang.
+   Env var = bisa dirotasi tanpa sentuh kode; slug tak pernah masuk git.
+2. **`sessionStorage`, bukan `localStorage`** — hidup per-tab, mati saat tab tutup.
+3. **Slug tak ditulis di mana pun yang tayang** — bukan README, bukan teks halaman,
+   bukan log konsol. Johan memegangnya karena ia yang set env var di Vercel.
+4. **Batas jujur:** env `VITE_*` ter-bake ke bundle JS — pembaca bundle bisa
+   menemukannya. Ini tirai dari pengunjung biasa, bukan kunci dari yang berniat;
+   cukup untuk gerbang renovasi (situs kemarin pun publik penuh), dan pola ini
+   DILARANG dipakai untuk data yang sungguh rahasia.
 
 ## 4. Kriteria terima
 
