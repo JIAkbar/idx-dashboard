@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { IkonMenu, IKON_CARI, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { BedaSkor } from '../../components/dasbor/BedaSkor'
+import { UjiAturan } from '../../components/dasbor/UjiAturan'
 import { DropdownMulti, type OpsiMulti } from '../../components/dasbor/DropdownMulti'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
@@ -424,6 +425,11 @@ export function Screener() {
           setDefinisi={setDefinisiRiwayat}
         />
       )}
+      {/* Uji Aturan di BAWAH rekam jejak harian, bukan menggantikannya: yang di
+          atas catatan yang ditulis sebelum harganya terjadi, yang di bawah
+          rekonstruksi atas sampel jauh lebih besar. Urutan ini disengaja —
+          bukti yang lebih kuat kelasnya diletakkan lebih dulu. */}
+      {mode === 'riwayat' && <UjiAturan />}
     </div>
   )
 }
