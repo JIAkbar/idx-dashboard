@@ -1,13 +1,19 @@
-<!-- Kembaran `favicon.svg` untuk bilah tab GELAP. Geometrinya identik —
-     yang berbeda hanya dua nilai warna, jadi ikon tak pernah "pindah"
-     saat peramban berganti tema. Dipilih peramban lewat
-     media="(prefers-color-scheme: dark)" di index.html. -->
+<!-- Kembaran `favicon.svg` untuk bilah tab GELAP, edisi kedua (1 Sep 2026).
+     Geometrinya IDENTIK dengan kembaran terangnya — yang berbeda hanya dua
+     nilai warna, jadi ikon tak pernah "pindah" saat peramban berganti tema.
+     Dipilih peramban lewat media="(prefers-color-scheme: dark)" di index.html.
+
+     Kalau geometri di sini dan di `favicon.svg` mulai berbeda, ikonnya akan
+     tampak bergeser saat pengguna mengganti tema — cacat yang cuma terlihat
+     kalau seseorang benar-benar mengganti tema sambil melihat bilah tab, jadi
+     ia gampang lolos. Sunting keduanya bersamaan, selalu. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <g fill="none" stroke="#eaeaee" stroke-width="10">
+  <g fill="none" stroke="#eaeaee" stroke-width="10" stroke-linecap="square">
     <path d="M11 22V11H22"/>
     <path d="M42 11H53V22"/>
     <path d="M11 42V53H22"/>
+    <path d="M42 53H53V42"/>
   </g>
-  <path d="M42 53H53V42" fill="none" stroke="#eaeaee" stroke-width="10" opacity=".4"/>
-  <rect x="20" y="28" width="24" height="8" fill="#f2c230"/>
+  <rect x="20" y="26" width="24" height="7" fill="#e0b860"/>
+  <rect x="20" y="37" width="14" height="7" fill="#e0b860" opacity=".45"/>
 </svg>
