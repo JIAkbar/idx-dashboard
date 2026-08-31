@@ -1,0 +1,107 @@
+/* Panel Uji Aturan — di tab Riwayat & Win Rate (Screener).
+   Tanpa awalan `.lantai`: komponen ini dirender di dalam view, dan aturan
+   ber-awalan itu pernah gagal senyap saat komponennya ternyata satu tingkat
+   di atas (TabHalaman, 31 Agu 2026). */
+
+.uji-aturan { margin-top: 28px; }
+.uji-aturan h2 { font-size: 15px; margin: 0 0 4px; }
+.uji-aturan h3 { font-size: 13px; margin: 22px 0 4px; }
+
+.ua-sub {
+  font-size: 12px;
+  color: var(--t2, #8b97a3);
+  margin: 0 0 10px;
+  max-width: 82ch;
+  line-height: 1.55;
+}
+.ua-catat { margin-top: 8px; }
+
+/* Kotak beli-lalu-tahan — sengaja bergaya PERINGATAN, bukan catatan kaki.
+   Ia membatasi tiap angka di bawahnya, jadi ia harus terbaca lebih dulu. */
+.ua-awas,
+.ua-netral {
+  font-size: 12.5px;
+  line-height: 1.6;
+  padding: 11px 13px;
+  border-radius: 4px;
+  margin: 12px 0 16px;
+  max-width: 86ch;
+}
+.ua-awas {
+  background: color-mix(in srgb, var(--dn, #e2574c) 11%, transparent);
+  border-left: 3px solid var(--dn, #e2574c);
+}
+.ua-netral {
+  background: var(--bg2, #171c22);
+  border-left: 3px solid var(--line, #2a333c);
+  margin-top: 20px;
+}
+
+/* Wadah gulir sendiri — badan halaman tak boleh melebar ke samping.
+   Batang gulirnya mengikuti aturan bawaan `.lantai ::-webkit-scrollbar`;
+   JANGAN menyetel scrollbar-width/color di sini (sejak Chrome 121 itu
+   membatalkan SELURUH aturan ::-webkit-scrollbar dan yang menang batang
+   tebal 11px). */
+.ua-gulir {
+  overflow-x: auto;
+  border: 1px solid var(--line, #2a333c);
+  border-radius: 4px;
+}
+
+.ua-tbl {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 560px;
+  font-size: 12px;
+}
+.ua-tbl th,
+.ua-tbl td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line, #2a333c);
+  white-space: nowrap;
+  text-align: left;
+  vertical-align: baseline;
+}
+.ua-tbl thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg2, #171c22);
+  font-size: 10px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--t3, #6f7c88);
+  font-weight: 600;
+}
+.ua-tbl tbody tr:last-child td { border-bottom: none; }
+.ua-tbl .r { text-align: right; font-variant-numeric: tabular-nums; }
+.ua-tbl .ua-nama { white-space: normal; min-width: 15rem; }
+.ua-lemah { color: var(--t3, #6f7c88); }
+
+/* Baris yang sedang dipakai / keluarga teratas — ditandai latar, bukan warna
+   teks, supaya angka di dalamnya tetap memakai warna naik/turunnya sendiri. */
+.ua-tbl .ua-kini { background: color-mix(in srgb, var(--ak, #e8b93a) 9%, transparent); }
+.ua-tag {
+  font-size: 9.5px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--ak, #e8b93a);
+  margin-left: 7px;
+  white-space: nowrap;
+}
+
+/* Batang proporsi di kolom hasil — panjangnya relatif terhadap nilai terbesar,
+   ditaruh SEBELUM angkanya supaya angkanya tetap rata kanan. */
+.ua-bar {
+  display: inline-block;
+  height: 7px;
+  border-radius: 2px;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+.ua-bar.up { background: var(--up, #3fa06a); }
+.ua-bar.dn { background: var(--dn, #e2574c); }
+
+@media (max-width: 640px) {
+  .uji-aturan h2 { font-size: 14px; }
+  .ua-tbl .ua-nama { min-width: 12rem; }
+}
