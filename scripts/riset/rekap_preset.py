@@ -187,9 +187,60 @@ def nilai_preset(row: dict, preset: dict, ctx: dict) -> dict:
 
 
 def jalankan_preset(rows: list[dict], preset: dict, ctx: dict, min_lolos: int = 1) -> list[dict]:
+    """Emiten yang lolos preset, terurut. Yang dipakai cuma TOP_N teratas.
+
+    ## Pemutus seri: nilai transaksi, BUKAN abjad (diperbaiki 1 Sep 2026)
+
+    Skornya proporsi kriteria yang lolos, jadi seri itu hal biasa — bukan
+    kejadian langka. Terukur 31 Agu 2026: 162 emiten berskor SEMPURNA di
+    Whale-Tiket dan 149 di Swing, sementara yang ditampilkan 20. Karena
+    pemutus terakhirnya dulu `h['kode']`, yang tampil adalah 20 PERTAMA
+    MENURUT ABJAD — daftar Whale-Tiket berhenti di BBTN, Swing di BMRI, dan
+    setiap kode sesudahnya tak pernah terlihat sama sekali.
+
+    Akibatnya dua, dan yang kedua lebih buruk:
+
+    1. Sampel jadi condong: 49% emiten bersinyal berkode A/B, padahal di bursa
+       cuma 20%. Win rate yang dihitung darinya adalah win rate SAMPEL ABJAD,
+       bukan win rate presetnya.
+    2. **Ketidakhadiran terbaca sebagai vonis.** Pembaca yang mencari CUAN dan
+       tak menemukannya menyimpulkan sahamnya tak lolos — padahal CUAN berskor
+       sempurna hari itu. Dua pembaca yang membaca berkas mentahnya sendiri
+       sama-sama tertipu; pemakai biasa tak punya peluang.
+
+    Penggantinya **frekuensi transaksi** menurun: di antara yang sama-sama
+    lolos, yang tampil adalah yang paling ramai diperdagangkan — yang benar-
+    benar bisa dimasuki uang. Itu selaras dengan gunanya daftar ini, dan tak
+    memakai kriteria dari keluarga yang sama dengan skornya, jadi ia tak
+    mengulang bias yang sama.
+
+    **`peringkat_value` sengaja TIDAK dipakai, walau namanya paling cocok.**
+    Ia bukan peringkat lintas pasar: `peringkat_populasi()` di kartu_analisa.py
+    memeringkat DI DALAM grup emiten yang tanggal bar terakhirnya sama. Emiten
+    basi yang sendirian di grup tanggalnya otomatis dapat peringkat 1 —
+    terukur 31 Agu 2026: EDGE dan SAFE sama-sama berperingkat 1 dengan
+    frekuensi 245 dan 409, sementara BBRI berperingkat 4 dengan 36.996.
+    Memakainya sebagai pemutus akan mendorong emiten TIDUR ke puncak daftar,
+    bias yang lebih berbahaya daripada abjad karena terdengar masuk akal.
+
+    `h['kode']` DIPERTAHANKAN sebagai pemutus paling akhir, dan itu disengaja:
+    tanpa kunci yang benar-benar unik, dua jalan atas data yang sama bisa
+    menghasilkan urutan berbeda dan berkas sekali-tulis jadi tak bisa
+    direproduksi. Bedanya, sekarang ia cuma dipakai kalau nilai transaksinya
+    pun seri.
+    """
     hasil = [nilai_preset(r, preset, ctx) for r in rows]
     hasil = [h for h in hasil if h['terukur'] > 0 and h['lolos'] >= min_lolos]
-    hasil.sort(key=lambda h: (-(h['lolos'] / h['terukur']), -h['lolos'], h['kode']))
+
+    def keramaian(h: dict) -> float:
+        """Frekuensi transaksi hari itu. Yang tak punya angka ditaruh paling
+        belakang lewat -1 (BUKAN 0: nol frekuensi itu keadaan nyata — emiten
+        yang tak bertransaksi — dan harus bisa dibedakan dari 'tak terukur')."""
+        v = h['row'].get('freq')
+        return v if num(v) else -1.0
+
+    hasil.sort(key=lambda h: (-(h['lolos'] / h['terukur']), -h['lolos'],
+                              -keramaian(h), h['kode']))
     return hasil
 
 
@@ -324,12 +375,19 @@ def tulis_untuk_tanggal(tanggal: str, backtest: bool, top_n: int = TOP_N, rekome
     presets_out = []
     for pd in PRESET_DEFS:
         hasil = jalankan_preset(rows, pd, ctx, min_lolos=1)
+        # Berapa yang SEMPURNA (lolos seluruh kriteria terukurnya) — dipakai
+        # layar untuk menulis "20 dari N", bukan "20 teratas". Tanpa N,
+        # ketidakhadiran sebuah emiten terbaca sebagai vonis "tidak lolos",
+        # padahal ia bisa saja lolos penuh dan cuma terpotong batas 20.
+        n_sempurna = sum(1 for h in hasil if h['lolos'] == h['terukur'])
         saham = []
         for h in hasil[:top_n]:
             s = bangun_saham(h['row'], tanggal)
             s['skor'] = round(h['lolos'] / h['terukur'], 4)
             saham.append(s)
-        presets_out.append({'preset': pd['id'], 'saham': saham})
+        presets_out.append({'preset': pd['id'], 'saham': saham,
+                            'n_lolos': len(hasil), 'n_sempurna': n_sempurna,
+                            'ditampilkan': len(saham)})
 
     out_dir.mkdir(parents=True, exist_ok=True)
     isi = {
