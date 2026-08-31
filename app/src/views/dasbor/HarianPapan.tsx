@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
+import { BedaSkor } from '../../components/dasbor/BedaSkor'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
@@ -178,6 +179,7 @@ export function HarianPapan() {
         <h1>Harian Papan</h1>
         <span className="sub">Peringkat harian satu bursa — Stock Gainer, Net Buy/Sell Foreign.</span>
         <CatatanCakupan inline />
+        <BedaSkor halaman="harian" />
       </div>
 
       <div className="panel">
