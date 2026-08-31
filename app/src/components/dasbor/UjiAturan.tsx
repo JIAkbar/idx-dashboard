@@ -126,8 +126,62 @@ function PanelSelisih({ d }: { d: SelisihPasar }) {
           </tbody>
         </table>
       </div>
+      <h3>Apakah polanya bertahan di horizon lain?</h3>
+      <p className="ua-sub">
+        Tabel di atas satu horizon saja (5 hari). Kalau keunggulan &ldquo;saat pasar
+        turun&rdquo; cuma muncul di satu panjang jendela, ia kebetulan. Ini seluruhnya,
+        untuk saringan yang menang:
+      </p>
+      <div className="ua-gulir">
+        <table className="ua-tbl">
+          <thead>
+            <tr>
+              <th>Tren tersusun rapi</th>
+              <th className="r">Pasar TURUN</th>
+              <th className="r">Datar</th>
+              <th className="r">Pasar naik</th>
+              <th>Pola turun &gt; naik?</th>
+            </tr>
+          </thead>
+          <tbody>
+            {d.horizon.map((h) => {
+              const b = barisRezim(d, 'tersusun', h)
+              if (b.length < 3) return null
+              const [tr, dt, nk] = b
+              const bertahan = tr.median > nk.median
+              return (
+                <tr key={h}>
+                  <td className="ua-nama">{h} hari</td>
+                  {[tr, dt, nk].map((x) => (
+                    <td key={x.rezim} className={'r ' + (x.median > 0 ? 'up' : x.median < 0 ? 'dn' : 'ua-lemah')}>
+                      {x.median > 0 ? '+' : x.median < 0 ? '−' : ''}
+                      {Math.abs(x.median).toFixed(3).replace('.', ',')}%
+                    </td>
+                  ))}
+                  <td className={bertahan ? 'up' : 'dn'}>
+                    {h === 1 ? 'belum ada selisih sama sekali' : bertahan ? 'ya' : 'TIDAK — terbalik'}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
       <div className="ua-awas">
-        <b>Tiga hal dari tabel itu, dan dua di antaranya membatasi.</b>
+        <b>Polanya BERTAHAN sebagian, dan batasnya harus disebut.</b> Keunggulan
+        &ldquo;saat pasar turun&rdquo; jelas di 5 hari, tipis di 10 hari, dan{' '}
+        <b>terbalik di 20 hari</b> — di jendela terpanjang, saham bertren justru sedikit
+        lebih unggul saat pasar naik. Dan di <b>1 hari tak ada selisih sama sekali</b>:
+        keunggulannya butuh waktu untuk muncul, bukan hadir seketika.
+        <br /><br />
+        Yang bertahan di SELURUH horizon: <b>keunggulannya membesar makin panjang
+        jendelanya</b> — nol di 1 hari, +0,34% di 5 hari, +0,54% di 10, +0,85% di 20.
+        Itu klaim yang lebih sempit daripada &ldquo;unggul saat pasar turun&rdquo;, dan
+        itulah yang datanya sungguh dukung.
+      </div>
+
+      <div className="ua-awas">
+        <b>Tiga hal dari tabel pertama, dan dua di antaranya membatasi.</b>
         <br />
         <b>Satu:</b> hanya <b>tren tersusun rapi</b> yang memberi selisih nyata, dan
         keunggulannya <b>paling besar justru saat pasar turun</b> — saham bertren
