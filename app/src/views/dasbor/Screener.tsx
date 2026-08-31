@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
+import { BedaSkor } from '../../components/dasbor/BedaSkor'
 import { DropdownMulti, type OpsiMulti } from '../../components/dasbor/DropdownMulti'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
@@ -223,6 +224,7 @@ export function Screener() {
         <h1>Screener</h1>
         <span className="sub">{data.n} emiten, satu baris per emiten — saring, urutkan, cari.</span>
         <CatatanCakupan inline />
+        <BedaSkor halaman="screener" />
       </div>
 
       <div className="tabs" role="tablist">
