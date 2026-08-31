@@ -53,6 +53,27 @@ Johan memakai preview deployment Vercel DAN jalur intip. Pengerasan wajib:
    cukup untuk gerbang renovasi (situs kemarin pun publik penuh), dan pola ini
    DILARANG dipakai untuk data yang sungguh rahasia.
 
+### Enam uji yang dijalankan (1 Sep 2026, semuanya lulus)
+
+Ditulis di sini karena penjaga nomor 4 di bawah — env var kosong — adalah jenis
+lubang yang tak terlihat dari membaca kode: perbandingan `kode === env` bernilai
+BENAR saat keduanya kosong, jadi `?intip=` telanjang akan membuka seluruh situs.
+Ia harus dicoba, bukan dinalar.
+
+| # | Keadaan | Harapan | Hasil |
+|---|---|---|---|
+| 1 | gerbang menyala, tanpa parameter | tertutup | tertutup |
+| 2 | `?intip=salah` | tertutup | tertutup |
+| 3 | `?intip=<kode benar>` | terbuka, URL dibersihkan | terbuka, URL jadi `/indeks` |
+| 4 | pindah rute tanpa parameter sesudah (3) | tetap terbuka | tetap terbuka |
+| 5 | env var KOSONG + `?intip=` telanjang | tertutup | tertutup |
+| 6 | env var KOSONG + `?intip=undefined` | tertutup | tertutup |
+
+Ditambah satu perilaku yang tak diuji lewat peramban tapi ditulis di kodenya:
+penyimpanan yang DILEMPAR peramban (situs yang memblokir storage) membuat jalur
+intip gagal **tertutup**, bukan terbuka. Gerbang yang membuka saat penjaganya
+rusak bukan gerbang.
+
 ## 4. Kriteria terima
 
 ```bash
