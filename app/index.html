@@ -41,7 +41,18 @@
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/PlusJakartaSans-400.woff2" />
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/PlusJakartaSans-700.woff2" />
     <link rel="stylesheet" href="/fonts/jakarta.css" />
-    <link rel="preload" as="fetch" crossorigin href="/data-idx/json/index.json" />
+    <!-- Preload `data-idx/json/index.json` DIBUANG 1 Sep 2026, dan sengaja
+         tidak dikembalikan. Ia petunjuk statis: berangkat sebelum satu baris
+         skrip pun jalan, jadi tak ada tempat di dalam kode aplikasi yang bisa
+         mencegahnya — termasuk gerbang tutup sementara di `main.tsx`. Saat
+         PAPAN ditutup untuk renovasi, halaman maintenance wajib nol permintaan
+         data (ia satu-satunya yang tayang publik, jadi satu-satunya yang bisa
+         membocorkan alamat sumber data), dan preload ini satu-satunya yang
+         masih lolos.
+         Ongkosnya: unduhan index.json mulai sesudah modulnya diurai, bukan
+         sebelumnya. Preload FONT di atas dipertahankan — ia tak membocorkan
+         apa pun dan menahan pergeseran teks di layar pertama. -->
+
     <!-- tv.js TradingView SENGAJA TIDAK dimuat di sini — cuma dipakai widget
          Chart Indeks (ChartIndeks.tsx), dimuat on-demand oleh
          TradingViewChart.tsx saat komponennya benar-benar dipasang. Halaman

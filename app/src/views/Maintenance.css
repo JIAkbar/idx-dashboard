@@ -1,0 +1,80 @@
+/* Halaman tutup sementara.
+
+   Sengaja BERDIRI SENDIRI: tak mengimpor satu pun token/variabel aplikasi,
+   dan warnanya ditulis apa adanya di sini. Alasannya bukan kemalasan — gerbang
+   ini harus tetap menutup PAPAN walau berkas gaya aplikasi yang sedang
+   direnovasi patah. Halaman yang bergantung pada yang sedang diperbaiki bukan
+   gerbang, ia bagian dari yang rusak.
+
+   Temanya dari `prefers-color-scheme` murni: pemilih tema aplikasi tinggal di
+   dalam konteks yang sengaja tidak dipasang di atas halaman ini. */
+
+.mt-akar {
+  --mt-latar: #f7f7f5;
+  --mt-teks: #16181a;
+  --mt-redup: #6b6f74;
+  --mt-aksen: #7a5e00;
+
+  min-height: 100dvh; /* dvh, bukan vh — bilah alamat ponsel menutup ~105px
+                         dan vh membuat isinya jatuh di balik bilah itu */
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  background: var(--mt-latar);
+  color: var(--mt-teks);
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  .mt-akar {
+    --mt-latar: #0d1014;
+    --mt-teks: #eaeaee;
+    --mt-redup: #8b9199;
+    --mt-aksen: #e0b860;
+  }
+}
+
+.mt-isi {
+  text-align: center;
+  max-width: 30rem;
+}
+
+.mt-ikon {
+  width: clamp(64px, 16vw, 92px);
+  height: auto;
+  display: block;
+  margin: 0 auto 26px;
+  color: var(--mt-teks);
+}
+
+.mt-bilah { fill: var(--mt-aksen); }
+.mt-bilah2 { opacity: .45; }
+
+.mt-nama {
+  font-size: clamp(28px, 7vw, 40px);
+  font-weight: 600;
+  letter-spacing: .22em; /* PAPAN dalam huruf besar butuh jarak; tanpa ini
+                            huruf-hurufnya saling tempel di ukuran besar */
+  text-indent: .22em;    /* imbangi jarak yang menempel di huruf TERAKHIR,
+                            supaya kata tetap terlihat di tengah */
+  margin: 0 0 6px;
+  line-height: 1.1;
+}
+
+.mt-sub {
+  font-size: clamp(12px, 3vw, 13.5px);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--mt-redup);
+  margin: 0 0 30px;
+}
+
+.mt-pesan {
+  font-size: clamp(15px, 4vw, 17px);
+  line-height: 1.6;
+  color: var(--mt-teks);
+  margin: 0;
+}
