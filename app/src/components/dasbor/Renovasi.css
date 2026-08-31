@@ -1,0 +1,110 @@
+/* Pemberitahuan renovasi — pita permanen + modal sekali per tab.
+
+   Tanpa awalan `.lantai`: komponen ini dipasang di `DasborLayout`, satu
+   tingkat di ATAS `.lantai`. Aturan ber-awalan itu pernah gagal senyap persis
+   di posisi ini (TabHalaman, 31 Agu 2026) — tab-nya tampil sebagai tautan biru
+   tanpa gaya, dan itu cuma ketahuan karena ada yang melihat layarnya. */
+
+/* ── Pita permanen ───────────────────────────────────────────────────────── */
+.rnv-pita {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ak, #e8b93a);
+  background: color-mix(in srgb, var(--ak, #e8b93a) 12%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--ak, #e8b93a) 30%, transparent);
+}
+.rnv-pita b { font-weight: 600; }
+.rnv-pita-ikon { width: 13px; height: 13px; flex: 0 0 auto; }
+
+/* ── Modal ───────────────────────────────────────────────────────────────── */
+.rnv-tirai {
+  position: fixed;
+  inset: 0;
+  z-index: 900; /* di atas isi halaman, DI BAWAH dialog milik halaman sendiri
+                   (mis. konfirmasi hapus) supaya ia tak pernah menutupi
+                   keputusan yang sedang diambil pengguna */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, .62);
+  backdrop-filter: blur(2px);
+}
+
+.rnv-kotak {
+  width: min(30rem, 100%);
+  max-height: calc(100dvh - 48px); /* dvh: bilah alamat ponsel menutup ~105px,
+                                      dan vh membuat tombolnya jatuh di baliknya */
+  overflow-y: auto;
+  text-align: center;
+  padding: 30px 26px 26px;
+  border-radius: 10px;
+  background: var(--bg2, #171c22);
+  border: 1px solid var(--line, #2a333c);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .45);
+  color: var(--t1, #e6e9ec);
+}
+
+.rnv-ikon {
+  width: 56px;
+  height: 56px;
+  display: block;
+  margin: 0 auto 16px;
+  color: var(--t1, #e6e9ec);
+}
+.rnv-bilah { fill: var(--ak, #e8b93a); }
+.rnv-bilah2 { opacity: .45; }
+
+.rnv-judul {
+  font-size: 19px;
+  font-weight: 600;
+  margin: 0 0 12px;
+  letter-spacing: -.01em;
+}
+
+.rnv-teks {
+  font-size: 14px;
+  line-height: 1.62;
+  color: var(--t2, #8b97a3);
+  margin: 0 0 10px;
+  text-align: left; /* rata kiri, bukan tengah: dua kalimat rata tengah jadi
+                       ragged di kedua sisi dan lebih lambat dibaca */
+}
+.rnv-teks b { color: var(--t1, #e6e9ec); font-weight: 600; }
+.rnv-teks2 { margin-bottom: 22px; }
+
+.rnv-tombol {
+  width: 100%;
+  /* min-height, BUKAN padding saja. Versi pertama memakai padding 11px dan
+     terukur menghasilkan 39px — di bawah target sentuh 44px yang jadi aturan
+     proyek. Padding tak bisa dipercaya untuk mencapai tinggi tertentu karena
+     ia menumpang tinggi baris fontnya; min-height menyatakan yang dimaksud. */
+  min-height: 44px;
+  padding: 11px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1408;
+  background: var(--ak, #e8b93a);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.rnv-tombol:hover { filter: brightness(1.06); }
+.rnv-tombol:focus-visible { outline: 2px solid var(--t1, #e6e9ec); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .rnv-kotak { animation: rnv-masuk .18s ease-out; }
+  @keyframes rnv-masuk {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+@media (max-width: 640px) {
+  .rnv-tirai { padding: 16px; align-items: flex-start; padding-top: 12vh; }
+  .rnv-pita { font-size: 11px; padding: 5px 10px; }
+}

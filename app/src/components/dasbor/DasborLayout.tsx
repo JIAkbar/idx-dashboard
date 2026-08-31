@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { PitaPengumuman } from './PitaPengumuman'
+import { Renovasi } from './Renovasi'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { LaciMobile } from './LaciMobile'
@@ -83,6 +84,9 @@ export function DasborLayout() {
                   termasuk bilah sisi, dan pada ponsel mendorong menu keluar
                   layar. Di dalam, ia menempati aliran isi seperti halaman
                   biasa dan ikut aturan gulir yang sudah ada. */}
+              {/* Pita renovasi di atas pengumuman lain: ia soal KEADAAN
+                  DATA seluruh situs, jadi ia membingkai apa pun di bawahnya. */}
+              <Renovasi />
               <PitaPengumuman />
               <Outlet />
             </main>
