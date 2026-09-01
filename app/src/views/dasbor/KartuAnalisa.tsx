@@ -22,6 +22,7 @@ import {
   type KartuEmiten, type LevelSR, type TargetItem, type FirstPassage,
 } from '../../lib/dasbor/kartuAnalisa'
 import './KartuAnalisa.css'
+import { RencanaJejak } from '../../components/dasbor/RencanaJejak'
 
 /** Di atas ini, halaman berhenti menampilkan SEMUA kartu sekaligus secara
  *  bawaan — begitu `--semua` (scripts/riset/kartu_analisa.py) dijalankan
@@ -473,6 +474,8 @@ function KartuRingkasSatuEmiten({ kode }: { kode: string }) {
             Pembatal ({fmtPct0(k.stop_pct)}) ada di dalam satu ATR harian ({fmtPct0(k.atr_pct)}) — bukan level yang berarti, lemparan koin.
           </div>
         )}
+
+        <RencanaJejak kode={kode} />
 
         <details className="kta-lihat">
           <summary>Lihat detail</summary>
