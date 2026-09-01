@@ -23,5 +23,28 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  /**
+   * Berkas uji DIKELUARKAN dari build aplikasi (1 Sep 2026).
+   *
+   * Sebabnya nyata dan mahal: tiga berkas uji baru mengimpor `node:fs` untuk
+   * membaca sumber dan memeriksa kebocoran istilah mesin. `types` di sini
+   * sengaja cuma `vite/client` — kode yang TAYANG berjalan di peramban, jadi
+   * memasukkan tipe Node akan membuat `process`/`fs` lolos type-check di kode
+   * aplikasi, dan itu jenis kesalahan yang baru ketahuan di produksi.
+   *
+   * Akibat tak memasukkannya lebih dulu: `npx tsc --noEmit` LULUS (ia memakai
+   * konfigurasi lain) sementara `tsc -b` yang dipakai `npm run build` GAGAL —
+   * jadi build produksi patah tanpa satu pun tanda di pemeriksaan lokal, dan
+   * dua push berturut-turut tak pernah tayang.
+   *
+   * Uji tetap dijalankan vitest, yang punya resolusi sendiri dan memang
+   * berjalan di Node. Yang hilang cuma type-check atas berkas uji — dan itu
+   * harga yang jauh lebih murah daripada melonggarkan tipe kode yang tayang.
+   *
+   * SEBELUM MELAPOR BUILD SEHAT: jalankan `npm run build`, bukan
+   * `npx tsc --noEmit`. Keduanya memakai konfigurasi berbeda dan cuma yang
+   * pertama yang mewakili apa yang dijalankan Vercel.
+   */
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
 }
