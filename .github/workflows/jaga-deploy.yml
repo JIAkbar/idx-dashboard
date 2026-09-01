@@ -1,0 +1,90 @@
+# Penjaga kesegaran produksi.
+#
+# Lahir dari kegagalan 28 Agustus – 1 September 2026: Vercel berhenti men-deploy
+# selama 3,7 hari dan TAK SEORANG PUN TAHU. Situs tetap terbuka, tetap cepat,
+# tetap penuh angka — cuma angkanya beku di 27 Agustus. Actions hijau terus
+# (ia memanen data & membangun Pages, tak menyentuh Vercel), commit masuk tiap
+# jam, dan Vercel tak mengirim apa pun saat build gagal.
+#
+# Situs yang MATI langsung ketahuan. Situs yang BEKU tidak.
+#
+# Penjaga ini menutup seluruh kelas itu dengan satu pertanyaan yang tak bisa
+# dijawab keliru: apakah tanggal data yang TAMPIL DI PRODUKSI sama dengan
+# tanggal data yang ADA DI REPO? Build gagal, integrasi Git putus, kuota habis,
+# cache nyangkut — semuanya bergejala sama, dan semuanya tertangkap di sini.
+#
+# Sengaja memeriksa PRODUKSI lewat jaringan, bukan memeriksa berkas di repo:
+# yang mau dibuktikan adalah "sampai ke pengunjung", dan itu cuma bisa
+# dibuktikan dengan mengambilnya seperti pengunjung. Memeriksa repo cuma akan
+# mengulang kekeliruan yang membuat kegagalan ini luput — memastikan hal yang
+# bersebelahan lalu menyimpulkan yang sesungguhnya.
+
+name: Jaga Deploy
+
+on:
+  schedule:
+    # 02:00 UTC = 09:00 WIB — sesudah panen malam mendarat, sebelum jam kerja.
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+# Hanya membaca; tak pernah menulis ke repo.
+permissions:
+  contents: read
+
+jobs:
+  periksa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: data-idx/json/index.json
+          sparse-checkout-cone-mode: false
+
+      - name: Bandingkan tanggal produksi dengan repo
+        env:
+          SITUS: https://papan-idx.vercel.app
+        run: |
+          set -euo pipefail
+
+          # Tanggal terbaru menurut repo — sumber kebenarannya.
+          # `dates` berisi OBJEK, bukan teks tanggal — tanggalnya di ruas
+          # `date_iso`. Versi pertama penjaga ini mengasumsikan larik teks dan
+          # langsung melempar TypeError; bentuk data diperiksa dulu, bukan
+          # ditebak dari nama ruasnya.
+          BACA='import json,sys; d=json.load(sys.stdin); print(max(x["date_iso"] for x in d["dates"]))'
+          REPO=$(python3 -c "$BACA" < data-idx/json/index.json)
+
+          # Tanggal terbaru menurut PRODUKSI. Cache-bust supaya yang diukur
+          # bukan salinan tepi yang kebetulan masih hangat.
+          PROD=$(curl -sf --max-time 45 "$SITUS/data-idx/json/index.json?cb=$RANDOM" \
+            | python3 -c "$BACA") || {
+              echo "::error::Tidak bisa mengambil data dari produksi ($SITUS). Situsnya mati, atau berkas datanya tak ikut ter-deploy."
+              exit 1
+            }
+
+          echo "repo     : $REPO"
+          echo "produksi : $PROD"
+
+          if [ "$REPO" = "$PROD" ]; then
+            echo "Produksi segar — tanggalnya sama."
+            exit 0
+          fi
+
+          # Selisih dalam HARI KALENDER. Ambang 3 hari, bukan 1: akhir pekan
+          # dan libur bursa membuat repo mendahului produksi secara sah tanpa
+          # ada yang rusak. Tiga hari melewati akhir pekan terpanjang yang wajar
+          # dan tetap menangkap pembekuan sungguhan jauh sebelum ia jadi minggu.
+          BEDA=$(python3 -c "
+          from datetime import date
+          a=date.fromisoformat('$REPO'); b=date.fromisoformat('$PROD')
+          print((a-b).days)
+          ")
+          echo "selisih  : $BEDA hari"
+
+          if [ "$BEDA" -ge 3 ]; then
+            echo "::error::PRODUKSI BEKU $BEDA hari. Repo punya $REPO, yang tayang $PROD."
+            echo "::error::Deploy berhenti mendarat. Periksa dasbor Vercel: build gagal, integrasi Git terputus, atau kuota habis."
+            exit 1
+          fi
+
+          echo "::warning::Produksi tertinggal $BEDA hari ($PROD vs $REPO) — masih dalam ambang akhir pekan, belum dianggap beku."
