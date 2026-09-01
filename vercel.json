@@ -1,8 +1,26 @@
 {
   "buildCommand": "cd app && npm install && npm run build",
   "outputDirectory": "app/dist",
+  "_catatan_crons": [
+    "Jadwalnya HARIAN, bukan 12-jam, dan itu batas paket — bukan pilihan.",
+    "",
+    "Cron 12 jam ('0 */12 * * *') masuk 28 Agu 2026 bersama proxy harga live.",
+    "Sejak hari itu SETIAP deployment DITOLAK saat validasi, sebelum build",
+    "dimulai: akun Hobby cuma mengizinkan cron sekali sehari. Akibatnya nol",
+    "deployment dengan status apa pun selama empat hari — bukan build yang",
+    "gagal, tapi build yang tak pernah dijalankan.",
+    "",
+    "Yang membuatnya luput selama itu: penolakan terjadi di sisi Vercel dan",
+    "tak meninggalkan jejak di mana pun yang biasa dilihat. GitHub Actions",
+    "tetap hijau (ia tak menyentuh Vercel), situs tetap terbuka menyajikan",
+    "bundle lama, dan daftar Deployments tak menampilkan baris merah karena",
+    "memang tak ada deployment yang dibuat.",
+    "",
+    "JANGAN kembalikan ke */12 tanpa menaikkan paket — ia akan mematikan",
+    "seluruh deployment lagi, dan gejalanya sama senyapnya."
+  ],
   "crons": [
-    { "path": "/api/live-refresh", "schedule": "0 */12 * * *" }
+    { "path": "/api/live-refresh", "schedule": "0 0 * * *" }
   ],
   "rewrites": [
     {
