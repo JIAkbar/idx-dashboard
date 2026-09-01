@@ -15,11 +15,23 @@ Spek: `docs/spek-dev-papan/spek_rbs_gap_intraday.md` §3 + arahan pengawas
 - **Rumah**: `_arsip-mentah/intraday/<KODE>/<YYYY-MM>.json.gz` — satu berkas
   per emiten per bulan (pelajaran broker-harian: jangan jutaan berkas kecil).
   Di luar git.
-- **Hari BERJALAN tidak pernah ditulis ke arsip** — berkas parsial akan
-  dilewati jalan berikutnya ("sudah ada") dan tinggal parsial selamanya;
-  ruas foreign_buy/sell hari berjalan juga BASI (salinan kemarin, temuan
-  24 Agu). Bar hari ini dibuang saat tulis; tumpang-tindih run berikutnya
-  yang memungutnya.
+- **Hari berjalan IKUT diarsip sesudah pukul 18.00 WIB** (`JAM_TUTUP`).
+  Ketetapan Johan 1 Sep 2026: *"loh harusnya ikut bukan di lewati malahan
+  selama di atas jam 18.00 udah bisa itu intraday di unduh"*. Sebelum jam itu
+  ia tetap dibuang.
+
+  Aturan lama membuangnya SEPANJANG hari, dengan dua alasan. Yang pertama
+  ternyata keliru: *"berkas parsial akan dilewati jalan berikutnya dan tinggal
+  parsial selamanya"* — penggabungan di `simpan()` berkunci `unix_timestamp`
+  dan MENIMPA dengan tarikan terbaru, dan jendela bawaannya tumpang-tindih 7
+  hari, jadi hari setengah jalan dilengkapi bukan dibekukan. Yang kedua masih
+  benar — `foreign_buy/sell` hari berjalan basi (salinan kemarin, temuan
+  24 Agu) — dan itulah sebabnya ambangnya jam, bukan sepanjang hari.
+
+  Biaya aturan lama jauh lebih besar daripada yang dijaganya: server hanya
+  menyimpan ±90 hari, jadi hari yang tak terpanen **hilang permanen**. Laptop
+  yang tak dibuka besok berarti hari ini lenyap selamanya — dan itu yang
+  terjadi pada 1 September 2026 sampai ketahuan.
 - **TIDAK ADA refresh token dari runner ini.** Stockbit memutar pasangan
   sekali pakai; refresh dari skrip pernah melempar sesi peramban Johan dan
   mematikan rantai (23 Agu 21:01). Access dibaca apa adanya dari simpanan;
@@ -58,6 +70,11 @@ DAFTAR = DIR_JSON / "daftar_emiten.json"
 ARSIP = AKAR / "_arsip-mentah" / "intraday"
 BERES = ARSIP / "_beres"
 WIB = timezone(timedelta(hours=7))
+
+# Jam (WIB) sesudahnya hari berjalan boleh diarsip. Ketetapan Johan 1 Sep
+# 2026: "selama di atas jam 18.00 udah bisa itu intraday di unduh". Bursa
+# tutup 16.00; 18.00 memberi jarak dua jam supaya papan benar-benar settle.
+JAM_TUTUP = 18
 
 URL = "https://exodus.stockbit.com/chartbit/{kode}/price/intraday"
 
@@ -133,14 +150,36 @@ def tanggal_bar(b: dict) -> str:
     return datetime.fromtimestamp(int(b["unix_timestamp"]), WIB).strftime("%Y-%m-%d")
 
 
-def simpan(kode: str, bar: list[dict], hari_ini: str) -> tuple[int, int]:
-    """Merge-dedup ke arsip bulanan. Bar hari berjalan DIBUANG. Kembali
-    (bar_baru, bar_dibuang_hari_ini)."""
+def simpan(kode: str, bar: list[dict], batas_buang: str) -> tuple[int, int]:
+    """Merge-dedup ke arsip bulanan. Bar bertanggal >= `batas_buang` DIBUANG.
+    Kembali (bar_baru, bar_dibuang).
+
+    `batas_buang` biasanya hari ini — tapi SESUDAH bursa tutup ia menjadi
+    besok, sehingga hari berjalan ikut terarsip. Ketetapan Johan 1 Sep 2026:
+    *"loh harusnya ikut bukan di lewati malahan selama di atas jam 18.00 udah
+    bisa itu intraday di unduh"*.
+
+    Kenapa dulu dibuang, dan kenapa itu tak lagi berlaku:
+
+    - "berkas parsial akan dilewati jalan berikutnya dan tinggal parsial
+      selamanya" — TIDAK benar. Penggabungan di bawah berkunci
+      `unix_timestamp` dan MENIMPA dengan tarikan terbaru, dan jendela
+      bawaannya 7 hari tumpang-tindih. Hari yang tersimpan setengah jalan
+      akan dilengkapi jalan berikutnya, bukan dibekukan.
+    - "foreign_buy/foreign_sell hari berjalan BASI" — masih benar, dan itu
+      sebabnya ambangnya jam 18.00, bukan sepanjang hari. Sesudah bursa
+      tutup nilainya sudah final. Kalaupun ada sisa basi, jalan besok
+      menimpanya lewat tumpang-tindih yang sama.
+
+    Yang HILANG kalau hari berjalan terus dibuang jauh lebih mahal: server
+    cuma menyimpan +/-90 hari, jadi hari yang tak terpanen hilang permanen —
+    bukan tertunda. Laptop yang tak dibuka besok berarti hari ini lenyap.
+    """
     buang = 0
     per_bulan: dict[str, list[dict]] = {}
     for b in bar:
         tgl = tanggal_bar(b)
-        if tgl >= hari_ini:
+        if tgl >= batas_buang:
             buang += 1
             continue
         per_bulan.setdefault(tgl[:7], []).append(b)
@@ -186,7 +225,7 @@ def tandai_beres(kode: str, jendela: str, n_bar: int) -> None:
 
 
 def kerjakan(token: str, kode: str, dari_e: int, sampai_e: int,
-             jendela: str, hari_ini: str, jeda: float) -> str:
+             jendela: str, batas_buang: str, jeda: float) -> str:
     if _mati.is_set():
         return "berhenti"
     kode_status, j = ambil(token, kode, dari_e, sampai_e)
@@ -196,7 +235,7 @@ def kerjakan(token: str, kode: str, dari_e: int, sampai_e: int,
     if kode_status != 200:
         return f"HTTP {kode_status}"
     bar = cari_bar(j)
-    baru, _ = simpan(kode, bar, hari_ini)
+    baru, _ = simpan(kode, bar, batas_buang)
     tandai_beres(kode, jendela, len(bar))
     time.sleep(jeda)
     return f"ok {len(bar)} bar (+{baru} baru)"
@@ -251,7 +290,21 @@ def utama() -> int:
     token = token_tanpa_refresh()
     kini = datetime.now(WIB)
     hari_ini = kini.strftime("%Y-%m-%d")
-    jendela = f"{hari_ini}~{a.hari}"
+
+    # Sesudah JAM_TUTUP, hari berjalan ikut diarsip — batas buang digeser ke
+    # besok. Sebelum itu ia tetap dibuang (bar hari yang masih berjalan belum
+    # final dan ruas asingnya salinan kemarin).
+    tutup = kini.hour >= JAM_TUTUP
+    batas_buang = ((kini + timedelta(days=1)).strftime("%Y-%m-%d") if tutup else hari_ini)
+
+    # Penanda "sudah beres" ikut membawa jamnya. Tanpa ini, jalan sore yang
+    # membuang hari ini akan menandai emiten beres, lalu jalan malam yang
+    # SEHARUSNYA memungut hari ini melewatinya begitu saja — hari itu hilang
+    # permanen begitu jendela 90 hari bergeser.
+    jendela = f"{hari_ini}~{a.hari}{'~tutup' if tutup else ''}"
+    print(f"batas arsip: < {batas_buang}"
+          + (f"  (jam {kini.hour}:00 >= {JAM_TUTUP}:00 — hari ini IKUT)" if tutup
+             else f"  (jam {kini.hour}:00 < {JAM_TUTUP}:00 — hari ini dibuang)"))
     dari_e = int(kini.timestamp())
     sampai_e = int((kini - timedelta(days=a.hari)).timestamp())
 
@@ -262,13 +315,13 @@ def utama() -> int:
         pilih = {k.strip().upper() for k in a.hanya.split(",")}
         emiten = [k for k in emiten if k in pilih]
     antre = [k for k in emiten if not sudah_beres(k, jendela)]
-    print(f"panen intraday 1m · jendela {a.hari} hari (s.d. kemarin; hari ini dibuang) · "
+    print(f"panen intraday 1m · jendela {a.hari} hari (batas arsip tercetak di baris atas) · "
           f"{len(antre)}/{len(emiten)} emiten antre · paralel {a.paralel}", flush=True)
 
     n_ok = n_gagal = 0
     t0 = time.time()
     with ThreadPoolExecutor(max_workers=a.paralel) as ex:
-        fut = {ex.submit(kerjakan, token, k, dari_e, sampai_e, jendela, hari_ini, a.jeda): k
+        fut = {ex.submit(kerjakan, token, k, dari_e, sampai_e, jendela, batas_buang, a.jeda): k
                for k in antre}
         for i, f in enumerate(as_completed(fut), 1):
             k = fut[f]

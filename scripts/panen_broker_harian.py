@@ -217,11 +217,19 @@ def perbarui_ringkas(lama: dict | None, kode: str, tanggal: str, baris: list[lis
     else:
         hari[tanggal] = {**(hari.get(tanggal) or {}), varian: isi}
     tgl = sorted(hari)[-jendela:]
+    # Label sumber DITURUNKAN dari isi, bukan diketik tetap. Versi lama
+    # menuliskan "GROSS, reguler, semua investor" apa adanya, dan itu masih
+    # benar saat berkas ini cuma memuat satu varian. Begitu panen 12 varian
+    # masuk, label itu tak ikut berubah — 963 berkas menyatakan dirinya
+    # reguler-saja padahal separuh isinya NET, dan tak ada satu pun galat.
+    # Diturunkan begini, ia tak bisa basi lagi tanpa datanya ikut berubah.
+    tersedia = sorted({v for t in tgl for v in (hari[t] or {}) if v != "ringkas"})
     return {
         "kode": kode,
         "jendela_hari": jendela,
         "kolom": KOLOM,
-        "sumber": "Stockbit marketdetectors — GROSS, reguler, semua investor",
+        "sumber": "Stockbit marketdetectors",
+        "varian": tersedia,
         "diperbarui": datetime.now(WIB).isoformat(timespec="seconds"),
         "hari": {t: hari[t] for t in tgl},
     }
