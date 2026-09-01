@@ -1,23 +1,23 @@
 {
  "kode": "BMSR",
- "tgl": "2026-08-31",
- "harga": 312.0,
- "prev": 310.0,
- "chg": 0.6451612903225712,
- "n": 5748,
+ "tgl": "2026-09-01",
+ "harga": 310.0,
+ "prev": 312.0,
+ "chg": -0.6410256410256387,
+ "n": 5749,
  "mulai": "2003-01-01",
  "ma20": 307.8,
- "ma50": 303.72,
+ "ma50": 303.64,
  "ma200": 312.97,
- "atr": 10.042768849632598,
- "atr_pct": 3.218836169754038,
+ "atr": 11.039713931801698,
+ "atr_pct": 3.5611980425166765,
  "support": [
   {
-   "level": 284.8888888888889,
-   "sentuhan": 9,
-   "terakhir": "2026-07-21",
-   "dalam_atr": false,
-   "harga": 284
+   "level": 303.73333333333335,
+   "sentuhan": 30,
+   "terakhir": "2026-08-11",
+   "dalam_atr": true,
+   "harga": 302
   },
   {
    "level": 272.0,
@@ -36,117 +36,78 @@
  ],
  "resistance": [
   {
-   "level": 338.0,
-   "sentuhan": 29,
+   "level": 345.8918918918919,
+   "sentuhan": 37,
    "terakhir": "2026-08-04",
    "dalam_atr": false,
-   "harga": 338
-  },
-  {
-   "level": 374.5,
-   "sentuhan": 8,
-   "terakhir": "2026-04-10",
-   "dalam_atr": false,
-   "harga": 376
+   "harga": 346
   }
  ],
- "stop": 284,
+ "stop": 302,
  "stop_asal": "klaster",
- "stop_pct": 8.974358974358974,
- "er": 0.21030517470145954,
- "er_persentil": 54.63414634146342,
- "er_n_populasi": 410,
- "likuiditas_median20": 6818700.0,
+ "stop_pct": 2.5806451612903225,
+ "er": 0.21008403361344538,
+ "er_persentil": 55.15587529976019,
+ "er_n_populasi": 417,
+ "likuiditas_median20": 7381100.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "tipis",
-  "lilin": 5748,
-  "nilai20": 6818700.0
+  "lilin": 5749,
+  "nilai20": 7381100.0
  },
  "beku": 0,
  "beku_sejak": null,
- "dihitung": "2026-08-31",
- "rsi": 54.14708830501636,
+ "dihitung": "2026-09-01",
+ "rsi": 51.97134003529439,
  "stochrsi": [
-  70.10847873916187,
-  74.38889153098803
+  63.06277103596301,
+  67.94489321359693
  ],
  "target": [
   {
-   "harga": 338,
-   "pct": 8.333333333333332,
-   "sentuhan": 29,
+   "harga": 346,
+   "pct": 11.612903225806452,
+   "sentuhan": 37,
    "terakhir": "2026-08-04",
    "fp": {
-    "n": 5727,
+    "n": 5728,
     "n_efektif": 286,
-    "kena": 2305,
-    "stop": 2233,
-    "lewat": 1189,
-    "p_kena": 40.24794831499913,
-    "p_stop": 38.99074559105989,
+    "kena": 1217,
+    "stop": 3648,
+    "lewat": 863,
+    "p_kena": 21.24650837988827,
+    "p_stop": 63.687150837988824,
     "median_hari": 3,
     "q1": 1,
     "q3": 8,
-    "harapan": -0.14517378320416663
+    "harapan": 0.8237970805550552
    },
    "fp60": {
-    "n": 5687,
+    "n": 5688,
     "n_efektif": 95,
-    "kena": 2658,
-    "stop": 2855,
-    "lewat": 174,
-    "p_kena": 46.738174784596445,
-    "p_stop": 50.2022155793916,
+    "kena": 1434,
+    "stop": 4150,
+    "lewat": 104,
+    "p_kena": 25.21097046413502,
+    "p_stop": 72.96061884669479,
     "median_hari": 5.0,
     "q1": 2,
-    "q3": 12,
-    "harapan": -0.6104791404597991
-   }
-  },
-  {
-   "harga": 376,
-   "pct": 20.51282051282051,
-   "sentuhan": 8,
-   "terakhir": "2026-04-10",
-   "fp": {
-    "n": 5727,
-    "n_efektif": 286,
-    "kena": 1244,
-    "stop": 2678,
-    "lewat": 1805,
-    "p_kena": 21.721669285839006,
-    "p_stop": 46.76095687096211,
-    "median_hari": 6.0,
-    "q1": 2,
-    "q3": 11,
-    "harapan": 0.25923090354729883
-   },
-   "fp60": {
-    "n": 5687,
-    "n_efektif": 95,
-    "kena": 1702,
-    "stop": 3526,
-    "lewat": 459,
-    "p_kena": 29.92790574995604,
-    "p_stop": 62.00105503780552,
-    "median_hari": 10.0,
-    "q1": 3,
-    "q3": 22,
-    "harapan": 0.5748603427520251
+    "q3": 14,
+    "harapan": 1.044870922371943
    }
   }
  ],
  "musiman": {
   "n": 24,
-  "naik": 9,
-  "mentah": 37.5,
-  "tersusut": 37.49116607773851,
-  "bawah": 21.159133433631457,
-  "atas": 57.29038096209293,
-  "median": -1.2446010456922008,
-  "dasar": 37.455830388692576,
-  "total_bulan": 283
+  "naik": 11,
+  "mentah": 45.83333333333333,
+  "tersusut": 44.13145539906103,
+  "bawah": 27.89105835168143,
+  "atas": 64.92544644689336,
+  "median": 0.0,
+  "dasar": 37.32394366197183,
+  "total_bulan": 284
  },
  "sektor": {
   "nama": "Bintang Mitra Semestaraya Tbk",
@@ -186,47 +147,47 @@
    "frekuensi": "kali"
   },
   "mulai": "2020-01-02",
-  "akhir": "2026-08-31",
-  "n_total": 1601,
+  "akhir": "2026-09-01",
+  "n_total": 1602,
   "periode": {
    "5": {
     "n": 5,
     "beli": 0,
-    "jual": 5500,
-    "net": -5500,
+    "jual": 3000,
+    "net": -3000,
     "porsi_beli_pct": 0.0,
-    "porsi_jual_pct": 3.922967189728958
+    "porsi_jual_pct": 1.3192612137203166
    },
    "20": {
     "n": 20,
-    "beli": 95200,
+    "beli": 94100,
     "jual": 77300,
-    "net": 17900,
-    "porsi_beli_pct": 12.95238095238095,
-    "porsi_jual_pct": 10.517006802721088
+    "net": 16800,
+    "porsi_beli_pct": 11.260021538829722,
+    "porsi_jual_pct": 9.249730764628456
    }
   }
  },
- "ma5": 312.0,
- "ma100": 309.56,
- "ma150": 314.94666666666666,
+ "ma5": 311.2,
+ "ma100": 309.6,
+ "ma150": 314.81333333333333,
  "bb20": {
   "mid": 307.8,
   "atas": 315.37891812859857,
   "bawah": 300.22108187140145
  },
- "posisi_bb": 0.5542,
+ "posisi_bb": 0.2903,
  "ichimoku": {
-  "tenkan": 311.0,
-  "kijun": 312.0,
-  "senkou_a": 311.5,
+  "tenkan": 314.0,
+  "kijun": 313.0,
+  "senkou_a": 313.5,
   "senkou_b": 310.0,
-  "di_atas_kumo": true
+  "di_atas_kumo": false
  },
  "regresi60": {
-  "kemiringan": 0.5349819394276187,
-  "tengah": 316.1486338797814,
-  "posisi": -0.3976
+  "kemiringan": 0.5094748541261461,
+  "tengah": 315.9628415300546,
+  "posisi": -0.5732
  },
  "freq": 15,
  "ukuran_order": 7.2667,
@@ -242,12 +203,12 @@
  "asing_net_5h": -1748000,
  "asing_net_20h": 4986800,
  "asing_streak": 0,
- "tiket_broker_maks": 1023000.0,
- "broker_tiket_maks_kode": "PD",
- "bval_maks": 1305400.0,
- "nego_blok_rp": 0.0,
+ "tiket_broker_maks": null,
+ "broker_tiket_maks_kode": null,
+ "bval_maks": null,
+ "nego_blok_rp": null,
  "nego_broker_maks_kode": null,
- "top3_pct": 177.98,
- "number_broker_buysell": 1,
- "label_accdist": "Dist"
+ "top3_pct": null,
+ "number_broker_buysell": null,
+ "label_accdist": null
 }

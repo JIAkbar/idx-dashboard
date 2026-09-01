@@ -87,3 +87,48 @@ grep -n "fetch\|data-idx" <berkas halaman maintenance>   # nol
 Manual: buka papan-idx.vercel.app → maintenance tampil di `/`, di `/screener`, dan
 di satu rute dalam via tautan langsung; favicon baru; lokal tetap normal; matikan
 env var di preview → aplikasi penuh kembali.
+
+---
+
+## ADENDUM 1 Sep 2026 — keputusan Johan BERUBAH: situs tetap TERBUKA + modal renovasi
+
+Johan (verbatim): *"artinya Papan skrg biarkan terbuka tapi di beri modal kalau Papan
+belum bisa update dan under maintenance"*.
+
+Gerbang penuh (bagian 1–3 di atas) TIDAK dibatalkan — kodenya sudah ter-push dan jadi
+**saklar cadangan** yang tinggal dinyalakan env var kapan pun. Yang tayang sekarang
+bentuk lain:
+
+### KEPUTUSAN & TANGAN JOHAN: **tidak ada** — semuanya bisa jalan tanpa dia
+
+Modal sengaja **hardcode menyala** (bukan env var) supaya tak ada satu pun langkah
+yang menunggu dasbor Vercel. Mematikannya nanti = satu commit saat renovasi selesai —
+yang memang akan terjadi bersama push besar pembukaan.
+
+### Bentuk
+
+1. **Modal saat halaman dibuka**: ikon PAPAN terbaru + judul "Sedang Renovasi" +
+   isi jujur dua kalimat: PAPAN tetap bisa dibuka, tapi **data belum diperbarui
+   untuk sementara dan angka bisa berubah selama renovasi**. Tanpa tanggal janji.
+   Tombol "Mengerti" menutupnya; `sessionStorage` supaya tidak muncul ulang tiap
+   pindah halaman, tapi muncul lagi di kunjungan/tab baru.
+2. **Pita kecil permanen** (header, teks "Renovasi") sesudah modal ditutup — pengunjung
+   yang sudah menutup modal tetap melihat situsnya sedang direnovasi. Kecil, tidak
+   menghalangi, dua tema.
+3. Ikon PAPAN terbaru juga menggantikan favicon (permintaan awal Johan tetap berlaku).
+4. Dua ukuran layar Johan; modal harus bisa ditutup di 412×915 (tombol dalam jangkauan
+   jempol, tidak terpotong lipatan 810px).
+
+### Yang TIDAK berubah
+
+- Gerbang `VITE_PAPAN_TUTUP` tetap di kode sebagai cadangan; jalur intip dorman
+  (situs terbuka, belum diperlukan).
+- Nol janji tanggal di teks mana pun.
+- Push modal = disetujui oleh instruksi Johan ini (perubahan tampilan produksi yang
+  ia minta sendiri).
+
+### Kriteria terima
+
+Render produksi (bukan grep bundle): modal tampil di kunjungan baru `/` dan di rute
+dalam; tertutup → pita tetap tampil; muat ulang di tab sama → modal tak muncul lagi;
+favicon baru; dua tema; 412×915 tombol terjangkau.

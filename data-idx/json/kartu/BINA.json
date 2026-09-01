@@ -1,24 +1,17 @@
 {
  "kode": "BINA",
- "tgl": "2026-08-31",
- "harga": 4380.0,
- "prev": 4100.0,
- "chg": 6.829268292682933,
- "n": 3047,
+ "tgl": "2026-09-01",
+ "harga": 4160.0,
+ "prev": 4380.0,
+ "chg": -5.022831050228316,
+ "n": 3048,
  "mulai": "2014-01-16",
- "ma20": 4139.0,
- "ma50": 4002.2,
- "ma200": 4295.05,
- "atr": 152.1694497872239,
- "atr_pct": 3.4741883513064815,
+ "ma20": 4127.0,
+ "ma50": 4013.4,
+ "ma200": 4293.35,
+ "atr": 160.58591765956504,
+ "atr_pct": 3.8602384052780057,
  "support": [
-  {
-   "level": 4183.275862068966,
-   "sentuhan": 58,
-   "terakhir": "2026-08-06",
-   "dalam_atr": false,
-   "harga": 4180
-  },
   {
    "level": 3600.0,
    "sentuhan": 1,
@@ -36,6 +29,13 @@
  ],
  "resistance": [
   {
+   "level": 4360.882352941177,
+   "sentuhan": 68,
+   "terakhir": "2026-08-19",
+   "dalam_atr": false,
+   "harga": 4370
+  },
+  {
    "level": 4775.0,
    "sentuhan": 8,
    "terakhir": "2026-02-25",
@@ -43,71 +43,103 @@
    "harga": 4780
   }
  ],
- "stop": 4180,
+ "stop": 3600,
  "stop_asal": "klaster",
- "stop_pct": 4.5662100456621,
- "er": 0.1568627450980392,
- "er_persentil": 4.390243902439024,
- "er_n_populasi": 410,
+ "stop_pct": 13.461538461538462,
+ "er": 0.1567446255610678,
+ "er_persentil": 4.316546762589928,
+ "er_n_populasi": 417,
  "likuiditas_median20": 954868500.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "cukup",
-  "lilin": 3047,
+  "lilin": 3048,
   "nilai20": 954868500.0
  },
  "beku": 0,
  "beku_sejak": null,
- "dihitung": "2026-08-31",
- "rsi": 61.546405746735395,
+ "dihitung": "2026-09-01",
+ "rsi": 51.49111716075084,
  "stochrsi": [
-  48.866363994323756,
-  37.4755766772703
+  41.91902694584037,
+  39.6525500983356
  ],
  "target": [
   {
+   "harga": 4370,
+   "pct": 5.048076923076923,
+   "sentuhan": 68,
+   "terakhir": "2026-08-19",
+   "fp": {
+    "n": 3027,
+    "n_efektif": 151,
+    "kena": 1193,
+    "stop": 334,
+    "lewat": 1500,
+    "p_kena": 39.41195903534853,
+    "p_stop": 11.034027089527584,
+    "median_hari": 4,
+    "q1": 2,
+    "q3": 9,
+    "harapan": 0.5041962084826308
+   },
+   "fp60": {
+    "n": 2987,
+    "n_efektif": 50,
+    "kena": 1540,
+    "stop": 562,
+    "lewat": 885,
+    "p_kena": 51.556745898895215,
+    "p_stop": 18.814864412453964,
+    "median_hari": 7.0,
+    "q1": 2,
+    "q3": 20,
+    "harapan": 0.06985398264273446
+   }
+  },
+  {
    "harga": 4780,
-   "pct": 9.1324200913242,
+   "pct": 14.903846153846153,
    "sentuhan": 8,
    "terakhir": "2026-02-25",
    "fp": {
-    "n": 3026,
+    "n": 3027,
     "n_efektif": 151,
-    "kena": 546,
-    "stop": 1574,
-    "lewat": 906,
-    "p_kena": 18.043621943159284,
-    "p_stop": 52.01586252478519,
-    "median_hari": 5.0,
-    "q1": 2,
-    "q3": 9,
-    "harapan": -0.7273341844048686
+    "kena": 487,
+    "stop": 395,
+    "lewat": 2145,
+    "p_kena": 16.08853650479022,
+    "p_stop": 13.049223653782624,
+    "median_hari": 7,
+    "q1": 4,
+    "q3": 12,
+    "harapan": 0.6411844679931893
    },
    "fp60": {
-    "n": 2986,
+    "n": 2987,
     "n_efektif": 50,
-    "kena": 686,
-    "stop": 1769,
-    "lewat": 531,
-    "p_kena": 22.973878097789687,
-    "p_stop": 59.24313462826524,
-    "median_hari": 7.0,
-    "q1": 3,
-    "q3": 18,
-    "harapan": -0.6070949056020942
+    "kena": 755,
+    "stop": 741,
+    "lewat": 1491,
+    "p_kena": 25.2761968530298,
+    "p_stop": 24.80749916303984,
+    "median_hari": 13,
+    "q1": 6,
+    "q3": 30,
+    "harapan": 0.4276544513404241
    }
   }
  ],
  "musiman": {
   "n": 13,
-  "naik": 1,
-  "mentah": 7.6923076923076925,
-  "tersusut": 20.738933426280934,
-  "bawah": 1.3710066379696324,
-  "atas": 33.31453392824736,
-  "median": -2.035623409669207,
-  "dasar": 49.00662251655629,
-  "total_bulan": 151
+  "naik": 5,
+  "mentah": 38.46153846153847,
+  "tersusut": 41.689750692520775,
+  "bawah": 17.70944658123682,
+  "atas": 64.47751902773146,
+  "median": -2.5316455696202556,
+  "dasar": 48.68421052631579,
+  "total_bulan": 152
  },
  "sektor": {
   "nama": "PT Bank Ina Perdana Tbk.",
@@ -147,47 +179,47 @@
    "frekuensi": "kali"
   },
   "mulai": "2020-01-02",
-  "akhir": "2026-08-31",
-  "n_total": 1601,
+  "akhir": "2026-09-01",
+  "n_total": 1602,
   "periode": {
    "5": {
     "n": 5,
-    "beli": 185900,
-    "jual": 44000,
-    "net": 141900,
-    "porsi_beli_pct": 3.950695994049516,
-    "porsi_jual_pct": 0.9350759749229625
+    "beli": 148700,
+    "jual": 80300,
+    "net": 68400,
+    "porsi_beli_pct": 3.176807383353273,
+    "porsi_jual_pct": 1.7155187147496154
    },
    "20": {
     "n": 20,
-    "beli": 411400,
-    "jual": 176300,
-    "net": 235100,
-    "porsi_beli_pct": 3.621128235822235,
-    "porsi_jual_pct": 1.5517863587152654
+    "beli": 364300,
+    "jual": 209900,
+    "net": 154400,
+    "porsi_beli_pct": 4.3849301877708236,
+    "porsi_jual_pct": 2.5264805007221955
    }
   }
  },
- "ma5": 4188.0,
- "ma100": 4031.4,
- "ma150": 4229.4,
+ "ma5": 4190.0,
+ "ma100": 4030.0,
+ "ma150": 4225.2,
  "bb20": {
-  "mid": 4139.0,
-  "atas": 4375.296424010183,
-  "bawah": 3902.703575989817
+  "mid": 4127.0,
+  "atas": 4331.264534366591,
+  "bawah": 3922.7354656334096
  },
- "posisi_bb": 1.0199,
+ "posisi_bb": 0.1616,
  "ichimoku": {
-  "tenkan": 4200.0,
+  "tenkan": 4230.0,
   "kijun": 4175.0,
-  "senkou_a": 4187.5,
+  "senkou_a": 4202.5,
   "senkou_b": 3755.0,
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 9.925257015837733,
-  "tengah": 4253.961748633879,
-  "posisi": 0.5653
+  "kemiringan": 10.147540983606557,
+  "tengah": 4264.852459016393,
+  "posisi": -0.4739
  },
  "freq": 364,
  "ukuran_order": 87.717,
@@ -203,12 +235,12 @@
  "asing_net_5h": 585753000,
  "asing_net_20h": 968430000,
  "asing_streak": 5,
- "tiket_broker_maks": 90377913.0,
- "broker_tiket_maks_kode": "RS",
- "bval_maks": 10393460000.0,
- "nego_blok_rp": 0.0,
+ "tiket_broker_maks": null,
+ "broker_tiket_maks_kode": null,
+ "bval_maks": null,
+ "nego_blok_rp": null,
  "nego_broker_maks_kode": null,
- "top3_pct": 139.26,
- "number_broker_buysell": -7,
- "label_accdist": "Acc"
+ "top3_pct": null,
+ "number_broker_buysell": null,
+ "label_accdist": null
 }
