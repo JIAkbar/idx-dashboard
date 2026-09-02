@@ -34,7 +34,19 @@ import './Renovasi.css'
  */
 
 /** Matikan di sini saat renovasi selesai — satu baris, satu commit. */
-export const RENOVASI_AKTIF = true
+/* DIMATIKAN 2 Sep 2026 malam — keputusan Johan: *"bukannya angka sudah
+ * selesai ya? dan workflow panen nya sudah paham"*. Premis pemberitahuan
+ * ini ("datanya belum diperbarui") sudah tak benar: produksi menyajikan data
+ * 2026-09-02, sama dengan repo, dan panen berjalan dari JALANKAN_BUKA_LAPTOP.
+ * Ia dipasang 1 Sep saat produksi beku di 27 Agu (deploy ditolak Vercel —
+ * `docs/catatan-vercel.md`), dan sejak deploy pulih siang tadi ia justru
+ * membuat pembaca mengabaikan angka yang sudah segar. Peringatan yang salah
+ * lebih buruk daripada tak ada peringatan.
+ *
+ * Komponen & ujinya dibiarkan utuh supaya bisa dinyalakan lagi dengan satu
+ * `true` kalau produksi beku lagi — dan saat itu, periksa dulu teksnya
+ * masih benar untuk sebab yang baru. */
+export const RENOVASI_AKTIF = false
 
 const KUNCI = 'papan-renovasi-ditutup'
 
