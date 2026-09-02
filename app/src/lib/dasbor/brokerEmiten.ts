@@ -15,6 +15,8 @@
  * (lihat docs/desain-broker-summary.md) — jangan menurunkannya dari sini.
  */
 
+import { urlData } from './baseData'
+
 /**
  * Kolom larik padat per broker, urutannya dari `panen_broker_harian.KOLOM`.
  * Tanpa avg: terukur 22 Agu 2026 (26.172 baris) avg Stockbit = nilai ÷ (lot×100)
@@ -106,7 +108,7 @@ export async function muatRentang(
 ): Promise<Array<[string, HariBroker]>> {
   const berkas = await Promise.all(
     tahunDalamRentang(dari, sampai).map(async (t) => {
-      const r = await fetch(`/data-idx/json/broker_tahunan/${kode}/${t}.json`)
+      const r = await fetch(urlData(`/data-idx/json/broker_tahunan/${kode}/${t}.json`))
       if (!r.ok) return null
       // Server SPA (Vite dev & rewrite produksi) membalas berkas yang TAK ADA
       // dengan index.html berstatus 200 — r.ok saja tidak cukup, dan satu

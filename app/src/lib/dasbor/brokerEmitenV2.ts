@@ -14,6 +14,7 @@ import { muatRentang } from './brokerEmiten'
 import { pesanGalat } from '../pesanGalat'
 import { kelompokBroker, LABEL_KELOMPOK, KETERANGAN_KELOMPOK, type KelompokBroker } from './kelompokBroker'
 import { LABEL_KATEGORI, type DaftarKategoriBroker, type KategoriBroker } from './kategoriBroker'
+import { urlData } from './baseData'
 
 export interface BarisOhlcv {
   tanggal: string
@@ -204,7 +205,7 @@ export function saringTahunAwal(semua: number[]): { tahun: number[] | null; tutu
  * yang lebih tepat ke pembaca.
  */
 async function tahunTersedia(kode: string): Promise<{ tahun: number[] | null; tutup: boolean }> {
-  const r = await fetch(`/data-idx/json/broker_tahunan/${kode}/index.json`)
+  const r = await fetch(urlData(`/data-idx/json/broker_tahunan/${kode}/index.json`))
   // Server dev/statis di sini membalas 200 + index.html (fallback SPA) untuk
   // berkas yang TIDAK ada, bukan 404 — `r.ok` saja lolos untuk kode yang
   // belum dipanen, lalu `r.json()` gagal parse `<!DOCTYPE …` dengan pesan

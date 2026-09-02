@@ -74,20 +74,59 @@ for (const usang of ['data-idx', 'arus-pasar']) {
 // per emiten berarti tiap dataset baru menambah seribuan berkas. Jawaban
 // sebenarnya memindahkan data statis ke luar Vercel — belum diputuskan.
 
+// ── 2 September 2026: uji itu sudah dijalankan, dan hasilnya MERAH ──────────
+//
+// Johan memutuskan 25 Agu "deploy sekali, lihat hasilnya". Deploy-nya hijau
+// sampai 28 Agustus, lalu 11 deployment berturut Error. Angkanya menjelaskan
+// kenapa jeda itu ada:
+//
+//   25 Agu, hijau    17.184 berkas  (broker_tahunan 2.740)
+//    2 Sep, merah    24.446 berkas  (broker_tahunan 8.894)
+//
+// `broker_tahunan` TRIPLE dalam sepekan — satu berkas per emiten per tahun,
+// jadi tiap tahun yang dibangun menambah ~963. Ia sendirian **2.161 MB dari
+// 2.915 MB** dan **8.894 dari 24.446 berkas**: 74% ukuran, 36% jumlah.
+//
+// Yang TIDAK bisa kuklaim: bahwa jumlah berkas adalah sebabnya. Log build
+// belum terbaca, dan dugaanku sudah salah tiga kali di perkara ini (jumlah
+// berkas, build yang kupatahkan, kuota). Yang bisa kuklaim: 2,9 GB disalin
+// tiap build, tiap commit panen memicu build, dan itu rapuh dengan sebab apa
+// pun.
+//
+// Karena itu `broker_tahunan` dikecualikan — bukan sebagai tebakan penyebab,
+// melainkan karena ia satu-satunya bagian yang (a) besar sekali, (b) tumbuh
+// tak terbatas, dan (c) **sudah tersedia utuh & lebih segar di GitHub Pages**
+// (diperiksa 2 Sep: `/broker_tahunan/BUMI/index.json` HTTP 200, dan
+// `index.json` Pages bertanggal 1 Sep sementara Vercel masih 27 Agu).
+//
+// Pembacanya diarahkan ke sana lewat `lib/dasbor/baseData.ts` — tiga berkas,
+// bukan 109 pemanggilan. Kalau kelak Vercel terbukti sanggup lagi, cukup
+// kosongkan `LUAR` di bawah dan `BASE_DATA_LUAR` di berkas itu.
+const LUAR = new Set(['broker_tahunan'])
+
 const targets = [
-  { src: path.join(repoRoot, 'data-idx', 'json'), dest: path.join(distDir, 'data-idx', 'json') },
+  { src: path.join(repoRoot, 'data-idx', 'json'), dest: path.join(distDir, 'data-idx', 'json'), saring: true },
   { src: path.join(repoRoot, 'data-idx', 'radar'), dest: path.join(distDir, 'data-idx', 'radar') },
   { src: path.join(repoRoot, 'arus-pasar', 'keluaran'), dest: path.join(distDir, 'arus-pasar', 'keluaran') },
 ]
 
 
-for (const { src, dest } of targets) {
+for (const { src, dest, saring } of targets) {
   if (!existsSync(src)) {
     console.warn(`[copy-static-data] lewati, sumber tidak ada: ${src}`)
     continue
   }
   rmSync(dest, { recursive: true, force: true })
-  cpSync(src, dest, { recursive: true })
-  console.log(`[copy-static-data] ${path.relative(repoRoot, src)} -> dist/${path.relative(distDir, dest)}`)
+  cpSync(src, dest, {
+    recursive: true,
+    // `filter` dipanggil untuk TIAP berkas; hanya anak langsung yang diperiksa
+    // supaya tak ada emiten bernama sama di kedalaman lain ikut terbuang.
+    filter: saring
+      ? (s) => !LUAR.has(path.relative(src, s).split(path.sep)[0])
+      : undefined,
+  })
+  const nama = path.relative(repoRoot, src)
+  console.log(`[copy-static-data] ${nama} -> dist/${path.relative(distDir, dest)}`
+    + (saring ? `  (dikecualikan: ${[...LUAR].join(', ')} — disajikan GitHub Pages)` : ''))
 }
 

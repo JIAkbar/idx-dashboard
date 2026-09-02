@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { dariBerkasTahunan, tahunDibutuhkan, type HariBroker } from './whalesPapan'
+import { urlData } from './baseData'
 
 /**
  * Muat seluruh arsip broker harian satu emiten.
@@ -35,7 +36,7 @@ export function useBrokerTahunan(kode: string): {
     setGalat(null)
     ;(async () => {
       try {
-        const ri = await fetch(`/data-idx/json/broker_tahunan/${kode}/index.json`)
+        const ri = await fetch(urlData(`/data-idx/json/broker_tahunan/${kode}/index.json`))
         if (!ri.ok) throw new Error('belum-ada')
         const idx = (await ri.json()) as { tahun?: number[] }
         const tahun = (idx.tahun ?? []).slice().sort((a, b) => a - b)
@@ -52,7 +53,7 @@ export function useBrokerTahunan(kode: string): {
         ).filter((t) => tahun.includes(t))
         const bagian = await Promise.all(
           perlu.map(async (t) => {
-            const r = await fetch(`/data-idx/json/broker_tahunan/${kode}/${t}.json`)
+            const r = await fetch(urlData(`/data-idx/json/broker_tahunan/${kode}/${t}.json`))
             return r.ok ? dariBerkasTahunan(await r.json()) : []
           }),
         )
