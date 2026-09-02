@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { MENU_KELOMPOK } from '../../lib/dasbor/menu'
+import { MENU_UTAMA } from '../../lib/dasbor/menu'
 
 /** Rumah — pintu Beranda di laci telepon. */
 const IKON_RUMAH_LACI = 'M4 11.5 12 4l8 7.5M6.5 10v9h11v-9'
@@ -72,13 +72,13 @@ export function LaciMobile({ buka, onTutup, onMasuk }: {
           >
             <IkonMenu d={IKON_RUMAH_LACI} size={18} /> Beranda
           </NavLink>
-          {MENU_KELOMPOK.map((grup) => (
-            <div className="dasbor-laci-grup" key={grup.id}>
-              <div className="dasbor-laci-grup-jd">
-                <IkonMenu d={grup.ikon} size={14} />
-                <span>{grup.label}</span>
-              </div>
-              {grup.items.map((item) => {
+          {/* DATAR, sama dengan rail — saran Johan 2 Sep 2026: "tidak perlu
+              lagi dijadikan sub menu, sudah bisa di lebur juga". Di laci,
+              judul kelompok memakan satu baris penuh untuk memayungi satu
+              atau tiga item; dengan sembilan pintu ia cuma menambah jarak
+              yang harus digulir. */}
+          <div className="dasbor-laci-grup">
+            {MENU_UTAMA.map((item) => {
                 // Cuma item bermapping eksplisit yang dicek — lihat komentar
                 // sama di Sidebar.tsx (jangan fallback ke item.id, bisa nyasar
                 // ke kunci halaman lain yang kebetulan namanya sama).
@@ -102,9 +102,8 @@ export function LaciMobile({ buka, onTutup, onMasuk }: {
                     )}
                   </NavLink>
                 )
-              })}
-            </div>
-          ))}
+            })}
+          </div>
         </div>
 
         <div className="dasbor-laci-kiri-aksi">

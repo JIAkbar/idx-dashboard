@@ -1,7 +1,6 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { MarkPapan } from './MarkPapan'
-import { Link, NavLink, useLocation } from 'react-router-dom'
-import { MENU_KELOMPOK, type GrupId, type MenuGrup, type MenuItem } from '../../lib/dasbor/menu'
+import { Link, NavLink } from 'react-router-dom'
+import { MENU_UTAMA, type MenuItem } from '../../lib/dasbor/menu'
 import { IkonMenu, IKON_KUNCI } from './IkonMenu'
 
 /** Rumah — hanya dipakai pintu Beranda di rail & laci. */
@@ -33,14 +32,7 @@ export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
   const { theme, toggleTheme } = useTheme()
   const { session } = useAuth()
   const { boleh, alasanRingkas } = useAksesHalaman()
-  const { pathname } = useLocation()
-  // Cuma satu flyout terbuka pada satu waktu — dipegang di sini, bukan di tiap
-  // kelompok, supaya membuka yang satu otomatis menutup yang lain.
-  const [grupBuka, setGrupBuka] = useState<GrupId | null>(null)
-  // Pindah halaman lewat jalur lain (tombol kembali, tautan di isi halaman)
-  // ikut menutup flyout yang menggantung.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { setGrupBuka(null) }, [pathname])
+
   // #79: navigasi rail dibungkus View Transition (crossfade + naik tipis di
   // .dasbor-main). LaciMobile sengaja TIDAK ikut — laci yang menutup sudah
   // jadi gerak perpindahannya, dan startViewTransition membekukan snapshot
@@ -74,19 +66,45 @@ export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
           <IkonMenu d={IKON_RUMAH} size={22} />
           <span className="dasbor-rail-kode">HOME</span>
         </NavLink>
-        {MENU_KELOMPOK.map((grup) => (
-          <RailGrup
-            key={grup.id}
-            grup={grup}
-            buka={grupBuka === grup.id}
-            onToggle={() => setGrupBuka((k) => (k === grup.id ? null : grup.id))}
-            onTutup={() => setGrupBuka(null)}
-            pathname={pathname}
-            klik={klik}
-            boleh={boleh}
-            alasanRingkas={alasanRingkas}
-          />
-        ))}
+        {/* DATAR — tanpa kelompok, tanpa flyout. Saran Johan 2 Sep 2026
+            melihat ANL membuka tiga pilihan: "tidak perlu lagi dijadikan sub
+            menu, sudah bisa di lebur juga".
+
+            Pengelompokan lahir waktu rail memuat 12 menu satuan; sesudah
+            peleburan #306 (30 pintu jadi 9) ia jadi ongkos tanpa manfaat —
+            dan tiga dari lima kelompok bahkan cuma berisi SATU item, jadi
+            PSR/EMT/ALR adalah flyout yang membuka untuk memperlihatkan satu
+            pilihan. Satu klik terbuang di tiap kunjungan.
+
+            Muat diukur, bukan ditebak: tinggi baris 60px, 10 baris = 600px.
+            Daftar rail punya ±693px di laptop 1536x960 dan ±823px di desktop
+            1920x1080. Di layar lebih pendek dari ±800px CSS ia menggulung —
+            `.dasbor-rail-list` memang sudah `overflow-y: auto` sejak awal. */}
+        {MENU_UTAMA.map((item) => {
+          const kunci = kunciMengganjal(item, boleh)
+          return (
+            <NavLink
+              key={item.id}
+              to={item.path}
+              end={item.path === '/'}
+              className={({ isActive }) => 'dasbor-rail-item' + (isActive ? ' active' : '')}
+              title={kunci ? `${item.label} — ${alasanRingkas(kunci)}` : item.label}
+              onClick={(e) => klik(e, item.path)}
+              // Chunk halaman diunduh saat penunjuk mampir, bukan saat diklik.
+              onPointerEnter={() => prefetchRute(item.path)}
+            >
+              <IkonMenu d={item.ikon} size={22} />
+              <span className="dasbor-rail-kode">{item.kode}</span>
+              {kunci ? (
+                <span className="dasbor-kunci-badge" aria-hidden="true">
+                  <IkonMenu d={IKON_KUNCI} size={8} />
+                </span>
+              ) : (
+                item.badge && <span className="dasbor-nav-badge">{item.badge}</span>
+              )}
+            </NavLink>
+          )
+        })}
       </div>
 
       <div className="dasbor-rail-foot">
@@ -164,143 +182,3 @@ function kunciMengganjal(item: MenuItem, boleh: (k: string) => boolean): string 
  * dibuka. Koordinatnya sekalian dijepit ke tinggi jendela supaya kelompok
  * dekat kaki layar naik sendiri.
  */
-function RailGrup({ grup, buka, onToggle, onTutup, pathname, klik, boleh, alasanRingkas }: {
-  grup: MenuGrup & { items: MenuItem[] }
-  buka: boolean
-  onToggle: () => void
-  onTutup: () => void
-  pathname: string
-  klik: (e: React.MouseEvent<HTMLAnchorElement>, path: string) => void
-  boleh: (k: string) => boolean
-  alasanRingkas: (k: string) => string
-}) {
-  const tombolRef = useRef<HTMLButtonElement>(null)
-  const flyRef = useRef<HTMLDivElement>(null)
-  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
-  const idFly = useId()
-
-  const aktif = grup.items.some((m) => pathname === m.path || pathname.startsWith(m.path + '/'))
-  // Gembok kelompok cuma menyala kalau SELURUH isinya terkunci — satu menu
-  // terbuka saja sudah membuat kelompoknya berguna.
-  const semuaTerkunci = grup.items.every((m) => kunciMengganjal(m, boleh) !== null)
-
-  // Posisi dihitung di layout effect (sebelum cat pertama, jadi tak ada kedip)
-  // dan fokus langsung dipindah ke menu pertama supaya papan ketik tidak perlu
-  // Tab lagi setelah Enter.
-  useLayoutEffect(() => {
-    if (!buka) { setPos(null); return }
-    const kotak = tombolRef.current?.getBoundingClientRect()
-    const fly = flyRef.current
-    if (!kotak || !fly) return
-    const tinggi = fly.offsetHeight
-    // Flyout DISEJAJARKAN ke tengah ikonnya, bukan ke tepi atasnya (Johan
-    // 21 Agu 2026: "perlu di rapikan lagi nih di re layouting soal sub
-    // menu nya"). Sebelumnya panel setinggi 250px yang dibuka dari ikon
-    // teratas menjulur jauh ke bawah dan terbaca melayang lepas dari ikon
-    // yang diklik — tak ada garis pandang antara sumber dan isinya.
-    const tengahIkon = kotak.top + kotak.height / 2
-    const top = Math.max(8, Math.min(tengahIkon - tinggi / 2, window.innerHeight - tinggi - 8))
-    setPos({ top, left: kotak.right + 8 })
-    // Panah penunjuk mengikuti ikon, bukan tengah panel: kalau panel kena
-    // jepitan tepi layar, panahnya tetap menunjuk ikon yang benar.
-    fly.style.setProperty('--panah-y', `${Math.max(14, Math.min(tengahIkon - top, tinggi - 14))}px`)
-    fly.querySelector('a')?.focus()
-  }, [buka])
-
-  // Klik di luar menutup. Klik pada tombolnya sendiri sengaja dilewati supaya
-  // tidak bertabrakan dengan onToggle (tutup lalu buka lagi seketika).
-  useEffect(() => {
-    if (!buka) return
-    const onDown = (e: MouseEvent) => {
-      const t = e.target as Node
-      if (tombolRef.current?.contains(t) || flyRef.current?.contains(t)) return
-      onTutup()
-    }
-    document.addEventListener('mousedown', onDown)
-    return () => document.removeEventListener('mousedown', onDown)
-  }, [buka, onTutup])
-
-  const tutupDanFokus = () => { onTutup(); tombolRef.current?.focus() }
-
-  const onKeyFly = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') { e.preventDefault(); tutupDanFokus(); return }
-    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
-    e.preventDefault()
-    const tautan = Array.from(flyRef.current?.querySelectorAll('a') ?? [])
-    if (!tautan.length) return
-    const kini = tautan.indexOf(document.activeElement as HTMLAnchorElement)
-    const arah = e.key === 'ArrowDown' ? 1 : -1
-    tautan[(kini + arah + tautan.length) % tautan.length].focus()
-  }
-
-  return (
-    <div className="dasbor-rail-grup-bungkus">
-      <button
-        type="button"
-        ref={tombolRef}
-        className={'dasbor-rail-item dasbor-rail-grup' + (aktif ? ' active' : '') + (buka ? ' buka' : '')}
-        title={grup.label}
-        aria-haspopup="menu"
-        aria-expanded={buka}
-        aria-controls={buka ? idFly : undefined}
-        onClick={onToggle}
-        onKeyDown={(e) => { if (e.key === 'Escape' && buka) { e.preventDefault(); onTutup() } }}
-        // Chunk halaman diunduh saat penunjuk mampir, bukan saat diklik —
-        // lihat lib/prefetchRute.ts.
-        onPointerEnter={() => grup.items.forEach((m) => prefetchRute(m.path))}
-      >
-        <IkonMenu d={grup.ikon} size={22} />
-        <span className="dasbor-rail-kode">{grup.kode}</span>
-        {semuaTerkunci && (
-          <span className="dasbor-kunci-badge" aria-hidden="true">
-            <IkonMenu d={IKON_KUNCI} size={8} />
-          </span>
-        )}
-      </button>
-
-      {buka && (
-        <div
-          id={idFly}
-          ref={flyRef}
-          role="menu"
-          aria-label={grup.label}
-          className="dasbor-rail-flyout"
-          // Sebelum posisinya terhitung panelnya disembunyikan dengan OPACITY,
-          // bukan visibility: elemen ber-visibility:hidden tidak bisa menerima
-          // fokus, dan fokus pertama ke menu teratas jatuh diam-diam.
-          style={pos ? { top: pos.top, left: pos.left } : { opacity: 0 }}
-          onKeyDown={onKeyFly}
-        >
-          <div className="dasbor-rail-flyout-jd">{grup.label}</div>
-          {grup.items.map((item) => {
-            // Menu TETAP tampil & bisa diklik walau terkunci (bukan
-            // disembunyikan) — halaman tujuannya sendiri menampilkan kerangka
-            // terkunci (PenjagaHalaman.tsx), gembok di sini cuma penanda.
-            const kunci = kunciMengganjal(item, boleh)
-            return (
-              <NavLink
-                key={item.id}
-                to={item.path}
-                end={item.path === '/'}
-                role="menuitem"
-                title={kunci ? alasanRingkas(kunci) : undefined}
-                className={({ isActive }) => 'dasbor-rail-fly-item' + (isActive ? ' active' : '')}
-                onClick={(e) => { onTutup(); klik(e, item.path) }}
-                onPointerEnter={() => prefetchRute(item.path)}
-              >
-                <IkonMenu d={item.ikon} size={16} />
-                <span className="dasbor-rail-fly-kode">{item.kode}</span>
-                <span className="dasbor-rail-fly-label">{item.label}</span>
-                {kunci ? (
-                  <IkonMenu d={IKON_KUNCI} size={12} />
-                ) : (
-                  item.badge && <span className="dasbor-nav-badge">{item.badge}</span>
-                )}
-              </NavLink>
-            )
-          })}
-        </div>
-      )}
-    </div>
-  )
-}
