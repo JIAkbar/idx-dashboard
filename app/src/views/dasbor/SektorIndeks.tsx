@@ -6,20 +6,14 @@ import { fmtTanggalPendek } from '../../components/dasbor/Kalender'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { useDataHarian, useDataPembanding } from '../../lib/dasbor/dataHarian'
-import { hitungPeriodePct, rentangPreset, type RentangTanggal } from '../../lib/dasbor/periode'
+import { hitungPeriodePct, LABEL_RENTANG, type RentangTanggal } from '../../lib/dasbor/periode'
 import { fN, fp } from '../../lib/dasbor/format'
 import type { DataHarian, SectorRow } from '../../lib/dasbor/dataHarian'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_GRAFIK_BATANG, IKON_GRAFIK_NAIK, IKON_BULAN_SABIT, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
 
-type PeriodeId = 'd' | 'm1' | 'm3' | 'ytd' | 'rentang'
+type PeriodeId = 'd' | 'rentang'
 
-const PERIODE: { id: PeriodeId; label: string }[] = [
-  { id: 'd', label: 'Hari Ini' },
-  { id: 'm1', label: '1 Bulan' },
-  { id: 'm3', label: '3 Bulan' },
-  { id: 'ytd', label: 'YTD' },
-]
 
 // Keputusan Johan 27 Agu: nilai klasifikasi tampil INGGRIS RESMI IDX.
 // Nama tile `hari.sectors` sudah Inggris resmi dan PERSIS sama dengan
@@ -64,6 +58,8 @@ const CATATAN_UMUM = 'Keanggotaan sektor dari peta IDX-IC resmi (962/962 emiten 
  *    clientWidth → scrollbar Windows nongol; scrollbar disembunyikan
  *    (swipe mobile tetap jalan), lihat blok "#87 sector r2" lantai.css.
  *
+ * [Lampau — tab periode panel dibuang #357 (2 Sep 2026); periode kini turunan
+ *  bilah tanggal atas, lihat blok komentar di atas `periode`.]
  * Task #88 — tab periode + mode rentang menyetir SEMUA tabel halaman:
  *    Kolom "Hari Ini" di Indeks Unggulan/Syariah/Board jadi kolom periode
  *    dinamis (header ikut pilihan; nilai % titik-awal vs titik-akhir, pola
@@ -151,9 +147,6 @@ export function SektorIndeks() {
       .catch(() => { /* panel daftar tampil kosong dengan catatan, bukan crash */ })
     return () => { batal = true }
   }, [])
-  // Strip Kalender — target scroll halus saat tab "Rentang" panel Performa
-  // Sektor diklik (#1 revisi user 14 Agu).
-
   // Rentang dipilih → data utama pindah ke tanggal AKHIR rentang (nilai
   // indeks & tile dihitung akhir vs awal).
   function gantiRentang(r: RentangTanggal | null) {
@@ -161,34 +154,34 @@ export function SektorIndeks() {
     if (r) pilihTanggal(r.akhir)
   }
 
-  /** Tab "Rentang" panel Performa Sektor: buka mode rentang di Kalender strip
-   * (preset 1 Minggu, sama seperti toggle "Rentang" di dalam Kalender sendiri)
-   * lalu scroll halus ke strip supaya user langsung lihat kontrolnya. */
-
   /* SATU kendali waktu — bilah tanggal di atas (Johan 2 Sep 2026: *"perlu di
    * sinkronkan penggunaan tombol waktu ini"*). Dulu panel Performa Sektor
    * punya tab periode sendiri (`d · m1 · m3 · ytd · rentang`) dengan state
    * terpisah, sehingga bilah atas bisa "1 Hari" sementara panel "YTD" —
    * dua kendali yang saling tak kenal. Sekarang `periode` DITURUNKAN dari
    * rentang bilah atas, bukan state kedua:
-   *   rentang kosong            → 'd'   (angka harian resmi, `x.d`)
-   *   rentang = preset YTD      → 'ytd' (angka YTD RESMI bursa, `x.ytd` —
-   *                                      basis tutup akhir tahun lalu; hitung
-   *                                      ulang dari hari perdagangan pertama
-   *                                      memberi basis yang berbeda sehari)
-   *   rentang lain (1 Minggu, 1 Bulan, 3 Bulan, kustom) → 'rentang': dibanding
-   *                                      ke berkas di tanggal MULAI rentang.
+   *   rentang kosong → 'd'       angka harian resmi (`x.d`)
+   *   rentang ada    → 'rentang' dibanding ke berkas di tanggal MULAI rentang,
+   *                              APA PUN presetnya — termasuk pil YTD.
+   *
+   * TIDAK ada kasus khusus YTD, dan itu disengaja. Versi pertama (8259f8662)
+   * memetakan "rentang yang tanggalnya sama dengan preset YTD" ke angka YTD
+   * RESMI bursa (`x.ytd`). Tinjauan berlawanan wf_4dc0e438 membuktikannya
+   * salah: `rentangPreset` 1 Minggu/1 Bulan/3 Bulan jatuh ke hari berdata
+   * PERTAMA bila riwayat lebih pendek dari preset, dan hari itu (7 Jan 2026)
+   * persis sama dengan mulai YTD — jadi pil "3 Bulan" menayangkan angka YTD
+   * resmi (Energy −14,40% vs rentang 7 Jan→25 Mar −20,73%), nol galat.
+   * Identitas preset tak boleh ditebak dari kesamaan tanggal. Angka YTD
+   * resmi tetap tersedia sebagai kolom tetap "YTD" di tiap tabel; pil YTD
+   * berarti "sejak hari berdata pertama tahun ini", sama seperti di 11
+   * halaman lain yang memakai `LABEL_RENTANG`.
    * 1 Bulan / 3 Bulan dulu lewat `cariTanggalPembanding` 30/91 hari; preset
    * bilah atas memakai fungsi yang sama, jadi tanggal pembandingnya identik. */
-  const periode: PeriodeId = useMemo(() => {
-    if (!rentang) return 'd'
-    const ytd = rentangPreset(tanggalTersedia, rentang.akhir, 'ytd')
-    return ytd && ytd.mulai === rentang.mulai ? 'ytd' : 'rentang'
-  }, [rentang, tanggalTersedia])
+  const periode: PeriodeId = rentang ? 'rentang' : 'd'
   const tanggalPembanding = useMemo(() => {
-    if (!rentang || periode === 'ytd') return null
+    if (!rentang) return null
     return tanggalTersedia.find((t) => t.date_iso === rentang.mulai) ?? null
-  }, [rentang, periode, tanggalTersedia])
+  }, [rentang, tanggalTersedia])
 
   // Hooks dipanggil tanpa syarat sebelum return dini loading/error (Rules of
   // Hooks) — pola sama dengan TopStocks.tsx.
@@ -248,7 +241,6 @@ export function SektorIndeks() {
    * "—" (bukan 0). #88: digeneralisasi dari sektor ke featured/sharia/board. */
   function nilaiPeriodeDari(x: SectorRow, sumber: 'sectors' | 'featured' | 'sharia' | 'board'): number | null {
     if (periode === 'd') return x.d
-    if (periode === 'ytd') return x.ytd
     if (!tanggalPembanding) return null
     const cmp = pembanding?.[sumber]?.find((s) => s.n === x.n)?.v
     return hitungPeriodePct(x.v, cmp)
@@ -257,11 +249,13 @@ export function SektorIndeks() {
 
   // Label pendek periode/rentang untuk header kolom & judul panel (#88) —
   // rentang sebulan sama dipadatkan "5–12 Agu", beda bulan "28 Jul – 12 Agu".
-  const labelPeriode = rentang && periode !== 'ytd'
+  // Tanpa rentang labelnya "1 Hari" — kata yang sama dengan pil bilah atas,
+  // dan benar juga saat tanggal yang dilihat bukan hari ini ("Hari Ini" tidak).
+  const labelPeriode = rentang
     ? (rentang.mulai.slice(0, 7) === rentang.akhir.slice(0, 7)
         ? `${Number(rentang.mulai.slice(8))}–${fmtTanggalPendek(rentang.akhir)}`
         : `${fmtTanggalPendek(rentang.mulai)} – ${fmtTanggalPendek(rentang.akhir)}`)
-    : PERIODE.find((p) => p.id === periode)!.label
+    : LABEL_RENTANG.h1
 
   // ─── Daftar Performa Sektor kompak (re-layout a) ─────────
   const secVals = sectors.map((s) => ({ s, val: nilaiPeriode(s) }))
@@ -306,9 +300,7 @@ export function SektorIndeks() {
   return (
     <div className="lantai">
       {vhead}
-      <div>
-        <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} memuat={loading && !hari} />
-      </div>
+      <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} memuat={loading && !hari} />
       <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
 
       {labelRentang && (
@@ -333,8 +325,8 @@ export function SektorIndeks() {
         {sectors.map((s) => {
           const kode = s.n.match(/^\[(.)\]/)?.[1] ?? ''
           const nama = s.n.replace(/^\[.\] /, '')
-          // Mode rentang: tile pakai % rentang (bukan harian). null = netral.
-          const v = rentang ? nilaiPeriode(s) : s.d
+          // nilaiPeriode sudah memilih harian vs rentang. null = netral.
+          const v = nilaiPeriode(s)
           const naik = (v ?? 0) >= 0
           // Intensitas warna: port rumus tile artifact lama (design-lantai-
           // bursa-reimagined.html baris 980) — alpha 0,06-0,38 sebanding |v|,
@@ -396,7 +388,7 @@ export function SektorIndeks() {
       <div className="grid2">
       <div className="panel">
         <div className="panel-h">
-          <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Performa Sektor</span>
+          <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Performa Sektor — {labelPeriode}</span>
         </div>
         {/* Daftar portrait 1 kolom (#87): nama | nilai indeks | bar mini
             | badge %. Sumbu nol proporsional, pola BatangPeringkat. */}

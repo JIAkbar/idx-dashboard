@@ -1474,8 +1474,6 @@
 .lantai .chip-t:disabled{opacity:.4;cursor:default}
 .lantai .chip-t.on{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
 .lantai .chip-t.on:hover{color:var(--amber-ink)}
-@media (max-width: 768px) {
-}
 /* Baris "Performa Sektor" kompak (re-layout /sector #75): nama | nilai indeks
    | bar mini | badge persen — dalam .rank-wrap yang sudah 2 kolom auto-fit,
    jadi 11 sektor kebagi ±6+5 berdampingan di desktop, 1 kolom di mobile.
@@ -1618,7 +1616,8 @@
 }
 
 /* ===== #87 sector r2 — relayout /sector ronde 2 ===== */
-/* Bug scrollbar tab periode: .tabs overflow-x:auto + width:max-content; di
+/* Bug scrollbar .tabs (lahir di tab periode /sector #87; tabnya sudah dibuang
+   #357, aturan ini tetap untuk .tabs lain): overflow-x:auto + width:max-content; di
    DPR!=1 pembulatan subpiksel bikin scrollWidth > clientWidth sepiksel,
    scrollbar Windows muncul padahal isinya muat. Sembunyikan visual scrollbar
    (overflow-x:auto dipertahankan, swipe di mobile tetap jalan). */

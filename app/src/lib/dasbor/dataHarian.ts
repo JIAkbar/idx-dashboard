@@ -379,6 +379,10 @@ export function useDataPembanding(stem: string | null) {
       return
     }
     let cancelled = false
+    // Kosongkan dulu: tanpa ini, berpindah rentang menampilkan angka yang
+    // dihitung terhadap berkas pembanding LAMA selama berkas baru diunduh —
+    // angka salah sesaat, bukan "—" (tinjauan wf_4dc0e438 #4).
+    setData(null)
     setLoading(true)
     fetch(`/data-idx/json/${stem}.json`)
       .then((r) => {
