@@ -27,7 +27,7 @@ import { PRESET_RENTANG, rentangPreset, type PresetRentang, type RentangTanggal 
  * otomatis satu-hari dan pil preset tak dirender. Pemilih rentang di
  * halaman per-hari adalah janji kosong (catatan Fable, review #343).
  */
-export function BilahTanggal({ tanggalTersedia, tanggalAktif, onPilih, onRentang, rentangAktif = null, memuat = false }: {
+export function BilahTanggal({ tanggalTersedia, tanggalAktif, onPilih, onRentang, rentangAktif = null }: {
   /** Urut menaik; elemen terakhir = hari bursa terbaru. */
   tanggalTersedia: TanggalIndex[]
   tanggalAktif: string | null
@@ -58,8 +58,12 @@ export function BilahTanggal({ tanggalTersedia, tanggalAktif, onPilih, onRentang
       })?.id
     : undefined
   const pilAktif: Pil = !rentangAktif ? 'hari' : (cocok ?? 'kustom')
+  // "1 Hari", bukan "Hari": pil ini berdiri di sebelah tombol "Hari ini" milik
+  // DatePicker, dan dua kata yang nyaris sama untuk dua hal berbeda (mode
+  // satu-hari vs lompat ke hari terbaru) terbaca sebagai pengulangan. "1 Hari"
+  // juga seirama dengan "1 Minggu · 1 Bulan · 3 Bulan" — semuanya durasi.
   const opsiPil: { id: Pil; label: string }[] = [
-    { id: 'hari', label: 'Hari' },
+    { id: 'hari', label: '1 Hari' },
     ...PRESET_RENTANG,
     ...(pilAktif === 'kustom' ? [{ id: 'kustom' as const, label: 'Kustom' }] : []),
   ]
@@ -88,9 +92,13 @@ export function BilahTanggal({ tanggalTersedia, tanggalAktif, onPilih, onRentang
           rentang={rentangAktif ? { dari: rentangAktif.mulai, sampai: rentangAktif.akhir } : null}
           onGantiRentang={onRentang ? (dari, sampai) => onRentang({ mulai: dari, akhir: sampai }) : undefined}
         />
-        {terbaru && jangkar !== terbaru && !memuat && (
-          <button type="button" className="chip-t" onClick={() => keHari(terbaru)}>Hari ini</button>
-        )}
+        {/* "Hari ini" juga TIDAK dipasang di sini — DatePicker sudah
+            merendernya sendiri saat tanggal bukan yang terbaru. Versi pertama
+            menambah satu lagi, dan di Top Stocks tampil "Hari ini · Hari ini ·
+            Hari" tiga kata beruntun. Johan yang menangkapnya dari layar:
+            "apa ini ada hari hari hari ini". Pelajarannya sama dengan panah
+            ganda di atas: sebelum menambah kendali di samping DatePicker,
+            periksa dulu apa yang sudah ia bawa. */}
       </div>
       {onRentang && (
         <div className="grup-k">
