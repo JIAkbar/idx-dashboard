@@ -80,7 +80,7 @@ function SparkIhsg() {
 
 /** Nomor WhatsApp pengelola PAPAN, format internasional tanpa tanda plus
  *  (0899… → 62899…) — bentuk yang diminta wa.me. */
-const WA_ADMIN = '628990447098'
+export const WA_ADMIN = '628990447098'
 /** Channel pengumuman PAPAN — rilis fitur publik & halaman baru diumumkan di
  *  sini. Disisipkan ke dalam pesan registrasi (WA_PESAN), bukan jadi tautan
  *  tersendiri di modal. */
@@ -89,7 +89,7 @@ const WA_CHANNEL = 'https://whatsapp.com/channel/0029VbBJN5y7j6gB0S4zFW1R'
  *  ikut di dalamnya, bukan berdiri sebagai tautan sendiri di modal: begitu
  *  pesan terkirim, calon kontributor punya link itu di riwayat chatnya sendiri
  *  dan bisa membukanya kapan pun tanpa kembali ke halaman ini. */
-const WA_PESAN = [
+export const WA_PESAN = [
   'Halo, saya mau Registrasi PAPAN — Pusat Analisa Pasar Nusantara.',
   '',
   'Nama saya: ',

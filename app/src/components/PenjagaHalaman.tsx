@@ -7,6 +7,7 @@ import type { AlasanKunci } from '../lib/aksesHalaman'
 import { PemuatHalaman } from './dasbor/PemuatHalaman'
 import { useJarakJenjang } from '../lib/jarakJenjang'
 import { PenunjukJarak } from './dasbor/PenunjukJarak'
+import { WA_ADMIN, WA_PESAN } from './dasbor/LoginModal'
 
 /**
  * Penjaga rute (Fase 6 — akses & jenjang): kalau `boleh(kunci)` false,
@@ -85,9 +86,37 @@ function KerangkaTerkunci({ kunci, judul, kalimat, sasaran }: AlasanKunci & { ku
             <p className="pgh-kalimat">{kalimat}</p>
             {jarak && <PenunjukJarak jarak={jarak} className="pgh-jarak" />}
             {sasaran === 'login' ? (
-              <button type="button" className="btn-p" disabled={!loginModal} onClick={() => loginModal?.buka()}>
-                Masuk
-              </button>
+              <>
+                {/* Cara mendapat akun — diminta Johan 2 Sep 2026: "tambahkan
+                    informasi yang lebih lengkap misal pendaftaran nya dimana
+                    pakai apa, pastinya gratis". Isinya mengikuti alur yang
+                    BENAR-BENAR ada di kode, bukan karangan: tak ada halaman
+                    daftar-sendiri; akun dibuat pengelola (fungsi admin-akun)
+                    setelah calon anggota mengirim nama lewat WhatsApp, lalu
+                    masuk memakai email & sandi (satu-satunya metode di
+                    AuthContext). Nomor & isi pesannya dipakai bersama
+                    LoginModal supaya tak ada dua nomor yang bisa saling
+                    berbeda. */}
+                <div className="pgh-daftar">
+                  <p className="pgh-daftar-judul">Belum punya akun? Gratis.</p>
+                  <ol className="pgh-daftar-langkah">
+                    <li>Kirim <b>nama</b> lewat WhatsApp ke pengelola PAPAN — pesannya sudah terketik.</li>
+                    <li>Pengelola membuatkan akunmu dan mengabari begitu aktif.</li>
+                    <li>Masuk dengan <b>email &amp; sandi</b> yang diberikan.</li>
+                  </ol>
+                  <a
+                    className="pgh-daftar-wa"
+                    href={`https://wa.me/${WA_ADMIN}?text=${encodeURIComponent(WA_PESAN)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Daftar lewat WhatsApp
+                  </a>
+                </div>
+                <button type="button" className="btn-p" disabled={!loginModal} onClick={() => loginModal?.buka()}>
+                  Masuk
+                </button>
+              </>
             ) : (
               <Link className="btn-p pgh-tautan" to="/admin">Lihat jenjang kontributor</Link>
             )}

@@ -2168,6 +2168,29 @@
   letter-spacing: -.02em; color: var(--text);
 }
 .pgh-kalimat { margin: 0; max-width: 300px; font-size: 12.5px; color: var(--text2); line-height: 1.65; }
+/* Cara mendapat akun — di antara kalimat pengumuman dan tombol Masuk (Johan
+   2 Sep 2026). Rata kiri di dalam kartu yang rata tengah: tiga langkah
+   bernomor dibaca berurutan, dan daftar rata tengah bergerigi di kedua sisi. */
+.pgh-daftar {
+  width: 100%; max-width: 300px; text-align: left;
+  padding: 12px 14px; border-radius: var(--r-kecil, 8px);
+  background: color-mix(in srgb, var(--amber) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--amber) 22%, transparent);
+}
+.pgh-daftar-judul { margin: 0 0 6px; font-size: 12.5px; font-weight: 600; color: var(--text); }
+.pgh-daftar-langkah {
+  margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.6; color: var(--text2);
+}
+.pgh-daftar-langkah li + li { margin-top: 2px; }
+.pgh-daftar-langkah b { color: var(--text); font-weight: 600; }
+.pgh-daftar-wa {
+  display: inline-block; margin-top: 8px; font-size: 12px; font-weight: 600;
+  color: var(--amber); text-decoration: none;
+}
+.pgh-daftar-wa:hover { text-decoration: underline; }
+.pgh-daftar-wa:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; border-radius: 3px; }
+/* Kartu mini (di dalam panel) tetap ringkas — cara daftar cukup di kartu penuh. */
+.pgh-mini .pgh-daftar { display: none; }
 /* Tombol utama versi besar — kartu ini satu-satunya jalan keluar halaman,
    jadi tombolnya pantas terlihat sebagai tujuan, bukan kontrol sekunder. */
 .pgh-cta .btn-p, .pgh-cta .pgh-tautan {
