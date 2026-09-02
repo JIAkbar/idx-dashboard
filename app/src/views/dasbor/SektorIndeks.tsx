@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
 import { BilahTanggal } from '../../components/dasbor/BilahTanggal'
@@ -6,13 +6,13 @@ import { fmtTanggalPendek } from '../../components/dasbor/Kalender'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { useDataHarian, useDataPembanding } from '../../lib/dasbor/dataHarian'
-import { cariTanggalPembanding, hitungPeriodePct, rentangPreset, type RentangTanggal } from '../../lib/dasbor/periode'
+import { hitungPeriodePct, rentangPreset, type RentangTanggal } from '../../lib/dasbor/periode'
 import { fN, fp } from '../../lib/dasbor/format'
 import type { DataHarian, SectorRow } from '../../lib/dasbor/dataHarian'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_GRAFIK_BATANG, IKON_GRAFIK_NAIK, IKON_BULAN_SABIT, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
 
-type PeriodeId = 'd' | 'm1' | 'm3' | 'ytd'
+type PeriodeId = 'd' | 'm1' | 'm3' | 'ytd' | 'rentang'
 
 const PERIODE: { id: PeriodeId; label: string }[] = [
   { id: 'd', label: 'Hari Ini' },
@@ -21,15 +21,12 @@ const PERIODE: { id: PeriodeId; label: string }[] = [
   { id: 'ytd', label: 'YTD' },
 ]
 
-const HARI_MUNDUR: Record<'m1' | 'm3', number> = { m1: 30, m3: 91 }
-
 // Keputusan Johan 27 Agu: nilai klasifikasi tampil INGGRIS RESMI IDX.
 // Nama tile `hari.sectors` sudah Inggris resmi dan PERSIS sama dengan
 // `sektor_en` di emiten_sektor.json (bijeksi 11:11, bukti:
 // docs/spek-dev-papan/bukti_peta_sektor_idx_en.md) — jadi keanggotaan
 // dicocokkan LANGSUNG tanpa tabel terjemahan; peta EN→ID lama dibuang.
 const CATATAN_UMUM = 'Keanggotaan sektor dari peta IDX-IC resmi (962/962 emiten terklasifikasi).'
-
 
 /**
  * Panel "Sektor & Indeks" — port buildSectorPanel() index_live.html baris
@@ -135,7 +132,6 @@ function pctSaham(hari: DataHarian, ticker: string): number | null {
 
 export function SektorIndeks() {
   const { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error } = useDataHarian()
-  const [periode, setPeriode] = useState<PeriodeId>('d')
   const [rentang, setRentang] = useState<RentangTanggal | null>(null)
   /** Nama sektor IDX-IC (tanpa prefiks "[X] ") yang tile-nya diklik — panel daftar saham sektor itu tampil di bawah heatmap. */
   const [sektorTerpilih, setSektorTerpilih] = useState<string | null>(null)
@@ -157,7 +153,6 @@ export function SektorIndeks() {
   }, [])
   // Strip Kalender — target scroll halus saat tab "Rentang" panel Performa
   // Sektor diklik (#1 revisi user 14 Agu).
-  const kalenderRef = useRef<HTMLDivElement>(null)
 
   // Rentang dipilih → data utama pindah ke tanggal AKHIR rentang (nilai
   // indeks & tile dihitung akhir vs awal).
@@ -169,19 +164,31 @@ export function SektorIndeks() {
   /** Tab "Rentang" panel Performa Sektor: buka mode rentang di Kalender strip
    * (preset 1 Minggu, sama seperti toggle "Rentang" di dalam Kalender sendiri)
    * lalu scroll halus ke strip supaya user langsung lihat kontrolnya. */
-  function bukaTabRentang() {
-    if (!rentang) {
-      const akhir = tanggalAktif ?? tanggalTersedia[tanggalTersedia.length - 1]?.date_iso
-      if (akhir) gantiRentang(rentangPreset(tanggalTersedia, akhir, 'w1'))
-    }
-    kalenderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
 
+  /* SATU kendali waktu — bilah tanggal di atas (Johan 2 Sep 2026: *"perlu di
+   * sinkronkan penggunaan tombol waktu ini"*). Dulu panel Performa Sektor
+   * punya tab periode sendiri (`d · m1 · m3 · ytd · rentang`) dengan state
+   * terpisah, sehingga bilah atas bisa "1 Hari" sementara panel "YTD" —
+   * dua kendali yang saling tak kenal. Sekarang `periode` DITURUNKAN dari
+   * rentang bilah atas, bukan state kedua:
+   *   rentang kosong            → 'd'   (angka harian resmi, `x.d`)
+   *   rentang = preset YTD      → 'ytd' (angka YTD RESMI bursa, `x.ytd` —
+   *                                      basis tutup akhir tahun lalu; hitung
+   *                                      ulang dari hari perdagangan pertama
+   *                                      memberi basis yang berbeda sehari)
+   *   rentang lain (1 Minggu, 1 Bulan, 3 Bulan, kustom) → 'rentang': dibanding
+   *                                      ke berkas di tanggal MULAI rentang.
+   * 1 Bulan / 3 Bulan dulu lewat `cariTanggalPembanding` 30/91 hari; preset
+   * bilah atas memakai fungsi yang sama, jadi tanggal pembandingnya identik. */
+  const periode: PeriodeId = useMemo(() => {
+    if (!rentang) return 'd'
+    const ytd = rentangPreset(tanggalTersedia, rentang.akhir, 'ytd')
+    return ytd && ytd.mulai === rentang.mulai ? 'ytd' : 'rentang'
+  }, [rentang, tanggalTersedia])
   const tanggalPembanding = useMemo(() => {
-    if (rentang) return tanggalTersedia.find((t) => t.date_iso === rentang.mulai) ?? null
-    if ((periode !== 'm1' && periode !== 'm3') || !tanggalAktif) return null
-    return cariTanggalPembanding(tanggalTersedia, tanggalAktif, HARI_MUNDUR[periode])
-  }, [rentang, periode, tanggalAktif, tanggalTersedia])
+    if (!rentang || periode === 'ytd') return null
+    return tanggalTersedia.find((t) => t.date_iso === rentang.mulai) ?? null
+  }, [rentang, periode, tanggalTersedia])
 
   // Hooks dipanggil tanpa syarat sebelum return dini loading/error (Rules of
   // Hooks) — pola sama dengan TopStocks.tsx.
@@ -240,11 +247,9 @@ export function SektorIndeks() {
    * berkas pembanding — null = pembanding belum ada/tidak ketemu, tampilkan
    * "—" (bukan 0). #88: digeneralisasi dari sektor ke featured/sharia/board. */
   function nilaiPeriodeDari(x: SectorRow, sumber: 'sectors' | 'featured' | 'sharia' | 'board'): number | null {
-    if (!rentang) {
-      if (periode === 'd') return x.d
-      if (periode === 'ytd') return x.ytd
-      if (!tanggalPembanding) return null
-    }
+    if (periode === 'd') return x.d
+    if (periode === 'ytd') return x.ytd
+    if (!tanggalPembanding) return null
     const cmp = pembanding?.[sumber]?.find((s) => s.n === x.n)?.v
     return hitungPeriodePct(x.v, cmp)
   }
@@ -252,7 +257,7 @@ export function SektorIndeks() {
 
   // Label pendek periode/rentang untuk header kolom & judul panel (#88) —
   // rentang sebulan sama dipadatkan "5–12 Agu", beda bulan "28 Jul – 12 Agu".
-  const labelPeriode = rentang
+  const labelPeriode = rentang && periode !== 'ytd'
     ? (rentang.mulai.slice(0, 7) === rentang.akhir.slice(0, 7)
         ? `${Number(rentang.mulai.slice(8))}–${fmtTanggalPendek(rentang.akhir)}`
         : `${fmtTanggalPendek(rentang.mulai)} – ${fmtTanggalPendek(rentang.akhir)}`)
@@ -301,7 +306,7 @@ export function SektorIndeks() {
   return (
     <div className="lantai">
       {vhead}
-      <div ref={kalenderRef}>
+      <div>
         <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} memuat={loading && !hari} />
       </div>
       <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
@@ -392,33 +397,6 @@ export function SektorIndeks() {
       <div className="panel">
         <div className="panel-h">
           <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Performa Sektor</span>
-          <div className="tabs sek-periode-tabs" role="tablist" aria-label="Periode Performa Sektor">
-            {PERIODE.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                role="tab"
-                aria-selected={!rentang && periode === p.id}
-                className={'tab' + (!rentang && periode === p.id ? ' on' : '')}
-                onClick={() => {
-                  setPeriode(p.id)
-                  if (rentang) gantiRentang(null)
-                }}
-              >
-                {p.label}
-              </button>
-            ))}
-            <button
-              type="button"
-              role="tab"
-              aria-selected={!!rentang}
-              className={'tab' + (rentang ? ' on' : '')}
-              title={rentang ? labelRentang ?? undefined : undefined}
-              onClick={bukaTabRentang}
-            >
-              Rentang
-            </button>
-          </div>
         </div>
         {/* Daftar portrait 1 kolom (#87): nama | nilai indeks | bar mini
             | badge %. Sumbu nol proporsional, pola BatangPeringkat. */}

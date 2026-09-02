@@ -1474,14 +1474,7 @@
 .lantai .chip-t:disabled{opacity:.4;cursor:default}
 .lantai .chip-t.on{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
 .lantai .chip-t.on:hover{color:var(--amber-ink)}
-/* #1 (14 Agu): tab "Rentang" ke-5 di .sek-periode-tabs bikin baris 5 tab
-   overflow diam-diam di layar sempit (.tabs dasarnya width:max-content +
-   overflow-x:auto scrollbar disembunyikan — "Rentang" kegeser keluar tanpa
-   afordans, tak kepencet). Pola sama .blt-tabs (Bulletin #95): di ≤768px
-   dibagi rata selebar baris, bukan discroll diam-diam. */
 @media (max-width: 768px) {
-  .lantai .sek-periode-tabs{display:flex;width:100%}
-  .lantai .sek-periode-tabs .tab{flex:1 1 0;min-width:0;justify-content:center;padding:0 3px;font-size:9.5px}
 }
 /* Baris "Performa Sektor" kompak (re-layout /sector #75): nama | nilai indeks
    | bar mini | badge persen — dalam .rank-wrap yang sudah 2 kolom auto-fit,
