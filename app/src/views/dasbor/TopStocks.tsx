@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { Kalender, fmtTanggalPendek } from '../../components/dasbor/Kalender'
+import { BilahTanggal } from '../../components/dasbor/BilahTanggal'
+import { fmtTanggalPendek } from '../../components/dasbor/Kalender'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { useDataHarian, useDataRentang, fetchHari, cariHariResmiTerakhir, type DataHarian } from '../../lib/dasbor/dataHarian'
@@ -149,7 +150,7 @@ export function TopStocks() {
     return (
       <div className="lantai">
         {vhead}
-        <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
+        <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p style={{ fontSize: 28 }}>⏳</p>
           <p className="lbl">Memuat data…</p>
@@ -162,7 +163,7 @@ export function TopStocks() {
     return (
       <div className="lantai">
         {vhead}
-        <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
+        <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p className="lbl">Data tidak tersedia untuk tanggal ini</p>
@@ -187,7 +188,7 @@ export function TopStocks() {
   return (
     <div className="lantai">
       {vhead}
-      <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
+      <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
       <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
 
       {hari.sementara === true && (

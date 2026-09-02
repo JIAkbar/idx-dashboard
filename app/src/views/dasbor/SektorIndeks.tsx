@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
-import { Kalender, fmtTanggalPendek } from '../../components/dasbor/Kalender'
+import { BilahTanggal } from '../../components/dasbor/BilahTanggal'
+import { fmtTanggalPendek } from '../../components/dasbor/Kalender'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { useDataHarian, useDataPembanding } from '../../lib/dasbor/dataHarian'
@@ -201,7 +202,7 @@ export function SektorIndeks() {
     return (
       <div className="lantai">
         {vhead}
-        <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} memuat={loading && !hari} />
+        <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} memuat={loading && !hari} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_JAM} size={28} /></p>
           <p className="lbl">Memuat data…</p>
@@ -214,7 +215,7 @@ export function SektorIndeks() {
     return (
       <div className="lantai">
         {vhead}
-        <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} memuat={loading && !hari} />
+        <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} memuat={loading && !hari} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p className="lbl">Data tidak tersedia untuk tanggal ini</p>
@@ -301,7 +302,7 @@ export function SektorIndeks() {
     <div className="lantai">
       {vhead}
       <div ref={kalenderRef}>
-        <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} memuat={loading && !hari} />
+        <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} memuat={loading && !hari} />
       </div>
       <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
 

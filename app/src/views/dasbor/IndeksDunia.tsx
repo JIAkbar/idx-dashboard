@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from
 import { useNavigate } from 'react-router-dom'
 import type { ChartConfiguration } from 'chart.js/auto'
 import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
-import { Kalender } from '../../components/dasbor/Kalender'
+import { BilahTanggal } from '../../components/dasbor/BilahTanggal'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { Papan } from '../../components/dasbor/Papan'
@@ -375,17 +375,11 @@ function Skel({ w, h, style }: { w?: number | string; h: number; style?: CSSProp
  * Kerangka panel utama Indeks Dunia selagi `loading && !hari` (#109) —
  * gantikan blok "Memuat data…" di tengah layar. Bentuknya mengikuti tata
  * letak asli (board + grid2 + panel ranking/tabel) SUPAYA tata letak tidak
- * melompat saat data datang — bukan sekadar hiasan. Kalender di kolom kiri
- * tetap komponen ASLI (sudah punya kerangka `.cg.memuat` sendiri, dan
- * `tanggalTersedia` bisa saja sudah terisi duluan sebelum berkas harian
- * datang, lihat useDataHarian).
+ * melompat saat data datang — bukan sekadar hiasan. Bilah tanggal TIDAK di
+ * sini: ia dirender halaman di bawah judul pada semua cabang (sejak hero
+ * kalender dibuang 2 Sep 2026), jadi kerangka ini murni panel data.
  */
-function PanelSkeleton({ tanggalTersedia, tanggalAktif, pilihTanggal, loading }: {
-  tanggalTersedia: TanggalIndex[]
-  tanggalAktif: string | null
-  pilihTanggal: (iso: string) => void
-  loading: boolean
-}) {
+function PanelSkeleton() {
   return (
     <>
       <div className="board">
@@ -411,45 +405,46 @@ function PanelSkeleton({ tanggalTersedia, tanggalAktif, pilihTanggal, loading }:
         </div>
       </div>
 
-      <div className="grid2 w-kiri">
-        <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} memuat={loading} />
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div className="panel">
-            <div className="panel-h"><Skel w={100} h={11} /></div>
-            <div className="nf-grid">
-              {[0, 1].map((i) => (
-                <div className="nf-cell" key={i}>
-                  <Skel w={40} h={9} />
-                  <div style={{ marginTop: 8 }}><Skel w={90} h={22} /></div>
-                  <div style={{ marginTop: 6 }}><Skel w={70} h={9} /></div>
-                </div>
-              ))}
-            </div>
+      {/* Tiga panel ini dulu kolom kanan `grid2 w-kiri`, berpasangan dengan
+          grid bulan hero di kiri. Hero dibuang 2 Sep 2026 ("D + E digabung"),
+          bilah tanggalnya naik ke bawah judul seperti Sektor/Top Stocks/Top
+          Broker, dan ketiganya jadi kisi otomatis — bukan kolom 1fr yang
+          ditinggal pasangannya. */}
+      <div className="grid2">
+        <div className="panel">
+          <div className="panel-h"><Skel w={100} h={11} /></div>
+          <div className="nf-grid">
+            {[0, 1].map((i) => (
+              <div className="nf-cell" key={i}>
+                <Skel w={40} h={9} />
+                <div style={{ marginTop: 8 }}><Skel w={90} h={22} /></div>
+                <div style={{ marginTop: 6 }}><Skel w={70} h={9} /></div>
+              </div>
+            ))}
           </div>
+        </div>
 
-          <div className="panel" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-            <div className="panel-h"><Skel w={140} h={11} /></div>
-            <div className="nf-grid" style={{ flex: 1, alignItems: 'center' }}>
-              {[0, 1].map((i) => (
-                <div className="nf-cell" key={i} style={{ textAlign: 'center' }}>
-                  <Skel w={80} h={9} style={{ margin: '0 auto' }} />
-                  <div style={{ marginTop: 8 }}><Skel w={50} h={24} style={{ margin: '0 auto' }} /></div>
-                </div>
-              ))}
-            </div>
+        <div className="panel" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+          <div className="panel-h"><Skel w={140} h={11} /></div>
+          <div className="nf-grid" style={{ flex: 1, alignItems: 'center' }}>
+            {[0, 1].map((i) => (
+              <div className="nf-cell" key={i} style={{ textAlign: 'center' }}>
+                <Skel w={80} h={9} style={{ margin: '0 auto' }} />
+                <div style={{ marginTop: 8 }}><Skel w={50} h={24} style={{ margin: '0 auto' }} /></div>
+              </div>
+            ))}
           </div>
+        </div>
 
-          <div className="panel">
-            <div className="panel-h"><Skel w={190} h={11} /></div>
-            <div className="adt">
-              {[0, 1, 2].map((i) => (
-                <div className="adt-c" key={i}>
-                  <Skel w={70} h={9} />
-                  <div style={{ marginTop: 6 }}><Skel w={60} h={20} /></div>
-                </div>
-              ))}
-            </div>
+        <div className="panel">
+          <div className="panel-h"><Skel w={190} h={11} /></div>
+          <div className="adt">
+            {[0, 1, 2].map((i) => (
+              <div className="adt-c" key={i}>
+                <Skel w={70} h={9} />
+                <div style={{ marginTop: 6 }}><Skel w={60} h={20} /></div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -612,7 +607,8 @@ export function IndeksDunia() {
     return (
       <div className="lantai">
         {vhead}
-        <PanelSkeleton tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} pilihTanggal={pilihTanggal} loading={loading} />
+        <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} memuat={loading} />
+        <PanelSkeleton />
       </div>
     )
   }
@@ -621,7 +617,7 @@ export function IndeksDunia() {
     return (
       <div className="lantai">
         {vhead}
-        <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} memuat={loading && !hari} />
+        <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} memuat={loading && !hari} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p className="lbl">Data tidak tersedia untuk tanggal ini</p>
@@ -637,84 +633,86 @@ export function IndeksDunia() {
   return (
     <div className="lantai">
       {vhead}
+      <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} memuat={loading && !hari} />
       <PapanIhsg hari={hari} tanggalTersedia={tanggalTersedia} buka={buka} />
       <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
 
-      <div className="grid2 w-kiri">
-        <Kalender tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} memuat={loading && !hari} />
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div className="panel">
-            <div className="panel-h">
-              <span className="lbl"><IkonMenu d={IKON_GLOBE} size={13} /> Net Foreign</span>
+      {/* Tiga panel ini dulu kolom kanan `grid2 w-kiri`, berpasangan dengan
+          grid bulan hero di kiri. Hero dibuang 2 Sep 2026 ("D + E digabung"),
+          bilah tanggalnya naik ke bawah judul seperti Sektor/Top Stocks/Top
+          Broker, dan ketiganya jadi kisi otomatis — bukan kolom 1fr yang
+          ditinggal pasangannya. */}
+      <div className="grid2">
+        <div className="panel">
+          <div className="panel-h">
+            <span className="lbl"><IkonMenu d={IKON_GLOBE} size={13} /> Net Foreign</span>
+          </div>
+          {/* Ruas hilang tampil "—" TANPA warna — `?? 0` mencetak "+0,00"
+              hijau untuk 8 hari yang ruas net-foreign-nya memang bolong,
+              terbaca "asing netral" padahal artinya "tak ada data"
+              (audit 26 Agu 1.1; standar `meta` di PapanIhsg atas). */}
+          <div className="nf-grid">
+            <div className="nf-cell">
+              <span className="lbl">Today</span>
+              <div className={`nf-sec ${hari.nf_today_idr == null ? '' : hari.nf_today_idr < 0 ? 'dn' : 'up'}`}>{hari.nf_today_status ?? '-'}</div>
+              <div className={`num nf-big ${hari.nf_today_idr == null ? '' : hari.nf_today_idr < 0 ? 'dn' : 'up'}`}>{hari.nf_today_idr == null ? '—' : fmtNF(hari.nf_today_idr)}</div>
+              <div className="nf-unit">(billion IDR)</div>
+              <div className={`num nf-sec ${hari.nf_today_usd == null ? '' : hari.nf_today_usd < 0 ? 'dn' : 'up'}`}>{hari.nf_today_usd == null ? '—' : fmtNF(hari.nf_today_usd)}</div>
+              <div className="nf-unit">(million USD~)</div>
             </div>
-            {/* Ruas hilang tampil "—" TANPA warna — `?? 0` mencetak "+0,00"
-                hijau untuk 8 hari yang ruas net-foreign-nya memang bolong,
-                terbaca "asing netral" padahal artinya "tak ada data"
-                (audit 26 Agu 1.1; standar `meta` di PapanIhsg atas). */}
-            <div className="nf-grid">
-              <div className="nf-cell">
-                <span className="lbl">Today</span>
-                <div className={`nf-sec ${hari.nf_today_idr == null ? '' : hari.nf_today_idr < 0 ? 'dn' : 'up'}`}>{hari.nf_today_status ?? '-'}</div>
-                <div className={`num nf-big ${hari.nf_today_idr == null ? '' : hari.nf_today_idr < 0 ? 'dn' : 'up'}`}>{hari.nf_today_idr == null ? '—' : fmtNF(hari.nf_today_idr)}</div>
-                <div className="nf-unit">(billion IDR)</div>
-                <div className={`num nf-sec ${hari.nf_today_usd == null ? '' : hari.nf_today_usd < 0 ? 'dn' : 'up'}`}>{hari.nf_today_usd == null ? '—' : fmtNF(hari.nf_today_usd)}</div>
-                <div className="nf-unit">(million USD~)</div>
-              </div>
-              <div className="nf-cell">
-                <span className="lbl">YTD</span>
-                <div className={`nf-sec ${hari.nf_ytd_idr == null ? '' : hari.nf_ytd_idr < 0 ? 'dn' : 'up'}`}>{hari.nf_ytd_status ?? '-'}</div>
-                <div className={`num nf-big ${hari.nf_ytd_idr == null ? '' : hari.nf_ytd_idr < 0 ? 'dn' : 'up'}`}>{hari.nf_ytd_idr == null ? '—' : fmtNF(hari.nf_ytd_idr)}</div>
-                <div className="nf-unit">(billion IDR)</div>
-                <div className={`num nf-sec ${hari.nf_ytd_usd == null ? '' : hari.nf_ytd_usd < 0 ? 'dn' : 'up'}`}>{hari.nf_ytd_usd == null ? '—' : fmtNF(hari.nf_ytd_usd)}</div>
-                <div className="nf-unit">(million USD)</div>
-              </div>
+            <div className="nf-cell">
+              <span className="lbl">YTD</span>
+              <div className={`nf-sec ${hari.nf_ytd_idr == null ? '' : hari.nf_ytd_idr < 0 ? 'dn' : 'up'}`}>{hari.nf_ytd_status ?? '-'}</div>
+              <div className={`num nf-big ${hari.nf_ytd_idr == null ? '' : hari.nf_ytd_idr < 0 ? 'dn' : 'up'}`}>{hari.nf_ytd_idr == null ? '—' : fmtNF(hari.nf_ytd_idr)}</div>
+              <div className="nf-unit">(billion IDR)</div>
+              <div className={`num nf-sec ${hari.nf_ytd_usd == null ? '' : hari.nf_ytd_usd < 0 ? 'dn' : 'up'}`}>{hari.nf_ytd_usd == null ? '—' : fmtNF(hari.nf_ytd_usd)}</div>
+              <div className="nf-unit">(million USD)</div>
             </div>
           </div>
+        </div>
 
-          {/* flex:1 (Fix #23) — .grid2.w-kiri menyamakan tinggi kolom kanan
-              dgn Kalender (kolom terpanjang); tanpa ini sisa ruang di bawah
-              kartu ini kosong tak berbingkai. nf-grid ikut flex + align-items
-              center biar PER/PBV tidak nempel di atas saat kartu melar. */}
-          <div className="panel" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-            <div className="panel-h">
-              <span className="lbl"><IkonMenu d={IKON_PENGGARIS} size={13} /> Market Fundamental</span>
-              <span className="num" style={{ fontSize: 11, color: 'var(--text3)' }}>
-                ~ USD/IDR BI = {hari.usd_idr == null ? '—' : fN(hari.usd_idr, 0)}
-              </span>
+        {/* flex:1 (Fix #23) — .grid2.w-kiri menyamakan tinggi kolom kanan
+            dgn Kalender (kolom terpanjang); tanpa ini sisa ruang di bawah
+            kartu ini kosong tak berbingkai. nf-grid ikut flex + align-items
+            center biar PER/PBV tidak nempel di atas saat kartu melar. */}
+        <div className="panel" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+          <div className="panel-h">
+            <span className="lbl"><IkonMenu d={IKON_PENGGARIS} size={13} /> Market Fundamental</span>
+            <span className="num" style={{ fontSize: 11, color: 'var(--text3)' }}>
+              ~ USD/IDR BI = {hari.usd_idr == null ? '—' : fN(hari.usd_idr, 0)}
+            </span>
+          </div>
+          <div className="nf-grid" style={{ flex: 1, alignItems: 'center' }}>
+            <div className="nf-cell" style={{ textAlign: 'center' }}>
+              <span className="lbl">Market PER (x)</span>
+              <div className="num mf-big">{hari.mkt_per == null ? '—' : hari.mkt_per.toFixed(2)}</div>
             </div>
-            <div className="nf-grid" style={{ flex: 1, alignItems: 'center' }}>
-              <div className="nf-cell" style={{ textAlign: 'center' }}>
-                <span className="lbl">Market PER (x)</span>
-                <div className="num mf-big">{hari.mkt_per == null ? '—' : hari.mkt_per.toFixed(2)}</div>
-              </div>
-              <div className="nf-cell" style={{ textAlign: 'center' }}>
-                <span className="lbl">Market PBV (x)</span>
-                <div className="num mf-big">{hari.mkt_pbv == null ? '—' : hari.mkt_pbv.toFixed(2)}</div>
-              </div>
+            <div className="nf-cell" style={{ textAlign: 'center' }}>
+              <span className="lbl">Market PBV (x)</span>
+              <div className="num mf-big">{hari.mkt_pbv == null ? '—' : hari.mkt_pbv.toFixed(2)}</div>
             </div>
           </div>
+        </div>
 
-          {/* Digabung ke kolom ini (user 14 Agu): dulu panel full-width sendiri
-              di bawah — satu section dengan Net Foreign + Market Fundamental. */}
-          <div className="panel">
-            <div className="panel-h">
-              <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Average Daily Trading (YTD)</span>
+        {/* Digabung ke kolom ini (user 14 Agu): dulu panel full-width sendiri
+            di bawah — satu section dengan Net Foreign + Market Fundamental. */}
+        <div className="panel">
+          <div className="panel-h">
+            <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Average Daily Trading (YTD)</span>
+          </div>
+          <div className="adt">
+            <div className="adt-c">
+              <span className="lbl">Avg. Volume</span>
+              <div className="num adt-v">{fN(hari.avg_vol, 0)}<span className="adt-u">Jt Lbr</span></div>
             </div>
-            <div className="adt">
-              <div className="adt-c">
-                <span className="lbl">Avg. Volume</span>
-                <div className="num adt-v">{fN(hari.avg_vol, 0)}<span className="adt-u">Jt Lbr</span></div>
-              </div>
-              <div className="adt-c">
-                <span className="lbl">Avg. Value</span>
-                <div className="num adt-v">{fN(hari.avg_val_idr, 0)}<span className="adt-u">B IDR</span></div>
-                <div className="num adt-s">{fN(hari.avg_val_usd, 0)} Jt USD</div>
-              </div>
-              <div className="adt-c">
-                <span className="lbl">Avg. Frequency</span>
-                <div className="num adt-v">{fN(hari.avg_freq, 0)}<span className="adt-u">Rb Kali</span></div>
-              </div>
+            <div className="adt-c">
+              <span className="lbl">Avg. Value</span>
+              <div className="num adt-v">{fN(hari.avg_val_idr, 0)}<span className="adt-u">B IDR</span></div>
+              <div className="num adt-s">{fN(hari.avg_val_usd, 0)} Jt USD</div>
+            </div>
+            <div className="adt-c">
+              <span className="lbl">Avg. Frequency</span>
+              <div className="num adt-v">{fN(hari.avg_freq, 0)}<span className="adt-u">Rb Kali</span></div>
             </div>
           </div>
         </div>

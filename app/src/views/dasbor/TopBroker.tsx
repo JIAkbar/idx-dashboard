@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Kalender } from '../../components/dasbor/Kalender'
+import { BilahTanggal } from '../../components/dasbor/BilahTanggal'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { useDataHarian } from '../../lib/dasbor/dataHarian'
@@ -66,7 +66,7 @@ export function TopBroker() {
     return (
       <div className="lantai">
         {vhead}
-        <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
+        <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p style={{ fontSize: 28 }}>⏳</p>
           <p className="lbl">Memuat data…</p>
@@ -79,7 +79,7 @@ export function TopBroker() {
     return (
       <div className="lantai">
         {vhead}
-        <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
+        <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p className="lbl">Data tidak tersedia untuk tanggal ini</p>
@@ -108,7 +108,7 @@ export function TopBroker() {
   return (
     <div className="lantai">
       {vhead}
-      <Kalender varian="strip" tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
+      <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
       <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
 
       <div className="panel">

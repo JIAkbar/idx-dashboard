@@ -109,6 +109,39 @@
   animation: dasbor-pita-jalan 52s linear infinite;
 }
 .dasbor-pita:hover .dasbor-pita-track { animation-play-state: paused; }
+/* Bar sesi bersegmen — dipakai LoginModal lewat BarSesi. Dipulihkan sesudah
+   sapuan hero 2 Sep 2026 sempat menghapusnya: kelasnya tak tertulis di tsx
+   mana pun kecuali komponennya sendiri, jadi grep nama kelas tak menangkapnya. */
+/* Bar progres polos lama (.seg i) diganti .sesi-bar bersegmen (rule bersama
+   di seksi kalender strip) — di sini cuma jarak atasnya. */
+.lantai .login-sesi .sesi-bar { margin-top: 9px; }
+/* bar bersegmen (.sesi-bar-wrap, rule bersama di seksi kalender strip)
+   menggantikan .seg polos; label jam 08:45/16:15 rata dengan barnya. */
+.lantai .sesi .sesi-bar-wrap{flex:1;min-width:0}
+/* ===== BAR SESI BERSEGMEN (feedback #3 — jam resmi IDX pasar reguler).
+   Rule bersama: LoginModal (.sesi) — pemakai strip/expand hero sudah dibuang 2 Sep 2026,
+   modal login (.login-sesi). Segmen proporsional durasi nyata (450 menit),
+   batas kelihatan lewat border antar segmen, istirahat diarsir garis miring,
+   segmen aktif amber, marker posisi "sekarang". ===== */
+.lantai .sesi-bar{position:relative;display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--bg3)}
+.lantai .sesi-bar .sb{height:100%;background:var(--line2);opacity:.55}
+.lantai .sesi-bar .sb+.sb{border-left:1px solid var(--bg1)}
+.lantai .sesi-bar .sb.rehat{background:repeating-linear-gradient(-45deg,var(--bg3) 0 3px,var(--line2) 3px 6px);opacity:.8}
+.lantai .sesi-bar .sb.on{background:var(--amber);opacity:1}
+.lantai .sesi-bar .sb-now{position:absolute;top:0;bottom:0;width:2px;transform:translateX(-1px);background:var(--text);border-radius:1px}
+.lantai .sesi-bar-names{display:flex;margin-top:3px;font-family:var(--disp);font-size:8px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3)}
+.lantai .sesi-bar-names span{overflow:hidden;white-space:nowrap;text-align:center;flex:none}
+/* Status bursa di ujung kanan pita — statis, di luar jalur bergerak. Pindah
+   dari hero kalender (Johan 2 Sep 2026, "D + E digabung"). */
+.dasbor-pita-status {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px;
+  margin-left: 12px; padding-left: 12px; border-left: 1px solid var(--border2);
+  font-size: 11px; color: var(--text2); white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.dasbor-pita-titik { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); }
+.dasbor-pita-status.buka { color: var(--text); }
+.dasbor-pita-status.buka .dasbor-pita-titik { background: var(--green); box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 22%, transparent); }
 @keyframes dasbor-pita-jalan { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .dasbor-tk {
   display: inline-flex; align-items: center; gap: 7px; padding: 0 16px;
@@ -236,11 +269,6 @@
 /* "Admin" dan "Masuk" adalah KATA, bukan kode — huruf kecilnya membuat mono
    terbaca janggal di antara kode kapital tiga huruf di atasnya. */
 .dasbor-rail-tombol .dasbor-rail-kode { font-family: "Plus Jakarta Sans", system-ui, sans-serif; letter-spacing: .04em; }
-
-@media (prefers-reduced-motion: reduce) {
-}
-@media (pointer: coarse) {
-}
 /* Semua ikon menu digambar sendiri; strokenya ikut warna teks induk supaya
    tema & keadaan aktif tidak perlu diurus terpisah. */
 .dasbor-ikon { stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; display: inline-block; vertical-align: -3px; flex: none; }
@@ -426,9 +454,6 @@
 .lantai .login-sesi.tutup .status i { background: var(--text3); }
 .lantai .login-sesi .jam { font-family: var(--mono); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .lantai .login-sesi .jam small { font-size: 9px; color: var(--text3); font-weight: 400; }
-/* Bar progres polos lama (.seg i) diganti .sesi-bar bersegmen (rule bersama
-   di seksi kalender strip) — di sini cuma jarak atasnya. */
-.lantai .login-sesi .sesi-bar { margin-top: 9px; }
 .lantai .login-sesi .seglbl { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 9px; color: var(--text3); margin-top: 4px; }
 /* min-height me-reserve tinggi label+svg+nilai — jalur "data belum ada"
    (placeholder —) dan "data ada" (sparkline) sama tingginya, layout tak
@@ -1174,14 +1199,6 @@
 .lantai .vcard{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;display:flex;flex-direction:column;gap:6px}
 .lantai .vcard .v-num{font-family:var(--mono);font-size:21px;font-weight:600}
 .lantai .vcard .v-note{font-size:11px;color:var(--text3)}
-
-/* calendar */
-/* #26: geser hari bursa prev/next, ditaruh nempel di atas .cal-strip supaya
-   dekat sel tanggal aktif (bukan cuma dropdown bulan di .panel-h). */
-.lantai .hari-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px}
-.lantai .hari-nav .hari-nav-lbl{flex:1;text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* 5 kolom SEN-JUM: akhir pekan dibuang total dari kalender (bursa tutup, lanjutan #75) */
-.lantai .cal-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 .lantai .cal-d{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:8px 4px;text-align:center}
 .lantai .cal-d .dw{font-family:var(--disp);font-size:9.5px;letter-spacing:.12em;color:var(--text3);text-transform:uppercase}
 .lantai .cal-d .dn2{font-family:var(--mono);font-size:15px;font-weight:600;margin-top:3px}
@@ -1192,137 +1209,13 @@
    bukan tanggal kalender hari ini) menang atas .today, gaya ikut .cg.aktif. */
 .lantai .cal-d.aktif{border-color:var(--amber);background:var(--amber)}
 .lantai .cal-d.aktif .dw,.lantai .cal-d.aktif .dn2{color:var(--amber-ink)}
-/* #30: status sesi berjalan + jam digital (detik) di atas bar */
-.lantai .sesi-status{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-family:var(--ui);font-size:11px;color:var(--text2)}
-.lantai .sesi-status .sesi-jam{font-family:var(--mono);font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
 .lantai .sesi{display:flex;align-items:flex-start;gap:8px;margin-top:6px;font-family:var(--mono);font-size:11px;color:var(--text2)}
-/* bar bersegmen (.sesi-bar-wrap, rule bersama di seksi kalender strip)
-   menggantikan .seg polos; label jam 08:45/16:15 rata dengan barnya. */
-.lantai .sesi .sesi-bar-wrap{flex:1;min-width:0}
 .lantai .sesi>span{line-height:1;padding-top:0}
 
 /* feedback */
 .lantai .rate{display:flex;gap:6px}
 .lantai .rate button{width:34px;height:34px;border:1px solid var(--line2);border-radius:var(--r);font-family:var(--mono);font-weight:600;color:var(--text3)}
 .lantai .rate button.on{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
-
-/* kalender grid bulan */
-.lantai .cal-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin-top:12px;border-top:1px solid var(--line);padding-top:11px}
-.lantai .cal-grid .cg{height:28px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);
-  font-size:11px;color:var(--text3);border-radius:3px}
-.lantai .cal-grid .cg.ada{color:var(--text);background:var(--bg2);border:1px solid var(--line)}
-.lantai .cal-grid .cg.aktif{background:var(--amber);color:var(--amber-ink);font-weight:700;border-color:var(--amber)}
-.lantai .cal-grid .cg.hdr{height:16px;font-family:var(--disp);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
-/* Tanggal yang BELUM berlangsung: angka diredupkan, tanpa label apa pun —
-   dulu SEMUA sel tanpa data dilabeli "Bursa Libur", termasuk hari yang belum
-   terjadi (keluhan user 14 Agu). Empat keadaan kini dibedakan di Kalender.tsx:
-   Libur (tanggal merah terdaftar) · Menunggu (hari ini) · Tanpa data (lampau,
-   sebabnya belum pasti) · tanpa label (masa depan). */
-.lantai .cal-grid .cg.depan{opacity:.42}
-/* Task 7c: .cg.ada artifact aslinya 1 baris kosong 28px (skrip vanilla, tak
-   dipakai) — instruksi eksplisit sebelumnya minta harga+persen IHSG tetap
-   tampil di sel berdata, jadi butuh 3 baris (tanggal · IHSG · persen). Cuma
-   tinggi & arah susun yang berubah di sini; warna/border tetap ikut .cg.ada
-   di atas — SATU-SATUNYA rule CSS baru di task ini. */
-.lantai .cal-grid .cg.ada{height:auto;min-height:44px;flex-direction:column;gap:1px;padding:4px 2px;line-height:1.2}
-
-/* Kalender berdiri sendiri (Stocks/Broker/Sector) render langsung sebagai anak
-   .lantai tanpa dipasangkan grid2 kayak Indeks Dunia (#29) — grid 7 kolomnya
-   melar penuh lebar viewport, sel jadi raksasa di desktop. Selector anak
-   langsung (`.lantai > .panel`) + :has(.cal-grid) sengaja dipakai supaya HANYA
-   kena kasus berdiri sendiri ini; saat Kalender jadi item .grid2.w-kiri
-   (IndeksDunia.tsx) parent-nya .grid2 bukan .lantai, jadi tidak kena, lebarnya
-   tetap ikut kolom grid seperti sekarang. max-width tanpa width tetap fluid
-   turun ke mobile (baru berlaku begitu container lebih lebar dari cap ini).
-   Sejak varian strip (Konsep 1), TIGA halaman standalone itu pakai
-   .cal-strip-bar yang barnya HARUS full-width — :not(:has(.cal-strip-bar))
-   mengecualikannya (cal-grid ikut muncul di dalam expand strip; tanpa
-   pengecualian ini bar menciut ke 520px begitu expand dibuka). Rule tetap
-   dipertahankan (bukan dihapus) sebagai jaring pengaman kalau ada pemakaian
-   varian penuh standalone baru. */
-.lantai > .panel:has(.cal-grid):not(:has(.cal-strip-bar)){max-width:520px;margin-inline:auto}
-
-/* ===== KALENDER VARIAN STRIP (Konsep 1 — mockup kalender-3-konsep.html
-   .cal-strip-bar/.csb-*, nilai disalin persis; adaptasi: token bg mockup
-   digeser satu tingkat ke token .lantai (panel mockup = --bg2, panel app =
-   --bg1) mengikuti konvensi primitif lain (.cal-d pakai bg2 di atas panel
-   bg1), dan lebar .seg i dari inline width React (mockup statis 78%). ===== */
-.lantai .cal-strip-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 14px}
-.lantai .csb-now{display:flex;align-items:baseline;gap:9px}
-.lantai .csb-now .tgl{font-weight:700;font-size:13.5px}
-.lantai .csb-now .ihsg{font-family:var(--mono);font-size:12.5px}
-/* Feedback ronde 2: bar sesi strip melebar mengisi ruang sampai dekat strip
-   7 hari (flex:1) supaya segmen jeda waktu kebaca — bukan lagi mini 110px. */
-.lantai .csb-sesi{display:flex;align-items:center;gap:8px;flex:1;min-width:0;font-family:var(--ui);font-size:11px;color:var(--text2);padding-left:14px;border-left:1px solid var(--line)}
-.lantai .csb-sesi .sesi-bar-wrap{flex:1;min-width:0}
-.lantai .csb-hari{display:flex;align-items:center;gap:5px;margin-left:auto}
-.lantai .csb-d{min-width:44px;text-align:center;border:1px solid var(--line);border-radius:var(--r);padding:4px 6px;background:var(--bg2);cursor:pointer;font-family:var(--mono)}
-.lantai span.csb-d{cursor:default}
-/* .dw/.dd/.dp: span di dalam .csb-d — .dd di sini cuma angka tanggal (numpang
-   nama kelas mockup); rule dropdown `.lantai .dd{position:relative}` ikut
-   kena tapi tidak berefek pada span statis ini. */
-.lantai .csb-d .dw{display:block;font-size:8.5px;letter-spacing:.1em;color:var(--text3);text-transform:uppercase}
-.lantai .csb-d .dd{font-size:12.5px;font-weight:700}
-.lantai .csb-d .dp{display:block;font-size:9px}
-.lantai .csb-d.aktif{background:var(--amber);border-color:var(--amber)}
-.lantai .csb-d.aktif .dw,.lantai .csb-d.aktif .dd,.lantai .csb-d.aktif .dp{color:var(--amber-ink)}
-.lantai .csb-d.off{opacity:.65;cursor:default} /* #77: .45 nyaris hilang di light */
-.lantai .csb-more{font-family:var(--ui);font-size:10.5px;color:var(--text2);background:var(--bg3);border:1px solid var(--line2);border-radius:var(--r);padding:6px 10px;cursor:pointer;white-space:nowrap}
-.lantai .csb-more:hover{border-color:var(--amber);color:var(--text)}
-/* Area expand "Kalender penuh" (#k1full mockup: display toggle + border-top).
-   Feedback #1 (dua ronde): dulu satu kolom cap 448px — sisa kanan kosong
-   melompong; jadi FULL-WIDTH — dua kolom fr fleksibel, kanan sesi+statistik
-   stretch sisa lebar. Tapi kiri (fr tanpa cap atas) ikut melebar di monitor
-   lebar — sel kalender jadi raksasa (120×46px di 1536px, keluhan #29 "segede
-   gaban"). Kolom KANAN yang tetap fr (mengisi lebar, bukan "kosong
-   melompong" lagi), kolom KIRI dikunci max 460px (5 sel ~86px, masuk akal
-   dibaca) — dua perbaikan berbeda, tidak saling menghapus. */
-.lantai .csb-full{border-top:1px solid var(--line);padding:12px 14px;display:grid;grid-template-columns:minmax(380px,460px) minmax(320px,1fr);gap:30px;align-items:start}
-.lantai .csb-full .cal-grid{margin-top:0;border-top:none;padding-top:0}
-/* Dua sub-blok kolom kanan (sesi | tanggal terpilih) berdampingan mengisi
-   sisa lebar; auto-fit merobohkannya jadi satu kolom saat sempit. */
-.lantai .csb-kanan{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px 32px;align-items:start}
-@media (max-width:760px){
-  .lantai .csb-full{grid-template-columns:1fr}
-}
-
-/* ===== BAR SESI BERSEGMEN (feedback #3 — jam resmi IDX pasar reguler).
-   Rule bersama: strip (.csb-sesi), varian penuh (.sesi), expand (.csb-kanan),
-   modal login (.login-sesi). Segmen proporsional durasi nyata (450 menit),
-   batas kelihatan lewat border antar segmen, istirahat diarsir garis miring,
-   segmen aktif amber, marker posisi "sekarang". ===== */
-.lantai .sesi-bar{position:relative;display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--bg3)}
-.lantai .sesi-bar .sb{height:100%;background:var(--line2);opacity:.55}
-.lantai .sesi-bar .sb+.sb{border-left:1px solid var(--bg1)}
-.lantai .sesi-bar .sb.rehat{background:repeating-linear-gradient(-45deg,var(--bg3) 0 3px,var(--line2) 3px 6px);opacity:.8}
-.lantai .sesi-bar .sb.on{background:var(--amber);opacity:1}
-.lantai .sesi-bar .sb-now{position:absolute;top:0;bottom:0;width:2px;transform:translateX(-1px);background:var(--text);border-radius:1px}
-.lantai .sesi-bar-names{display:flex;margin-top:3px;font-family:var(--disp);font-size:8px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3)}
-.lantai .sesi-bar-names span{overflow:hidden;white-space:nowrap;text-align:center;flex:none}
-
-/* Kolom kanan expand: legenda sesi + statistik mini tanggal terpilih. */
-.lantai .sesi-legend{display:flex;flex-direction:column;gap:5px;margin-top:12px;font-family:var(--ui);font-size:10.5px;color:var(--text2)}
-.lantai .sesi-legend .sl{display:flex;align-items:center;gap:8px}
-.lantai .sesi-legend .sl i{width:7px;height:7px;border-radius:2px;flex:none}
-.lantai .sesi-legend .sl b{margin-left:auto;font-weight:600;color:var(--text3)}
-.lantai .sesi-legend .sl.on span{color:var(--text);font-weight:700}
-.lantai .sesi-legend .sl.on b{color:var(--text)}
-.lantai .csb-stat .lbl{display:block;margin-bottom:4px}
-.lantai .csb-stat .baris{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:12px;color:var(--text2);margin-top:7px}
-.lantai .csb-stat .baris b{color:var(--text);font-weight:600}
-.lantai .csb-stat .baris b.up{color:var(--green)}
-.lantai .csb-stat .baris b.dn{color:var(--red)}
-
-@media (max-width:560px){
-  .lantai .csb-hari{margin-left:0;width:100%;overflow-x:auto;padding-bottom:2px}
-  /* Bar sesi dapat baris sendiri full-width (di bawah baris tanggal/status,
-     di atas strip hari) — segmen tetap kebaca di 412px, tidak terjepit.
-     flex-basis 100% (bukan width) karena width kalah oleh flex-basis:0 dari
-     flex:1 di rule dasar; di dalamnya wrap lagi: baris label+jam, lalu bar. */
-  .lantai .csb-sesi{border-left:none;padding-left:0;flex:1 0 100%;flex-wrap:wrap;row-gap:5px}
-  .lantai .csb-sesi>:last-child{margin-left:auto}
-  .lantai .csb-sesi .sesi-bar-wrap{flex:1 0 100%;order:2}
-}
 
 /* net foreign & market fundamental */
 .lantai .nf-grid{display:grid;grid-template-columns:1fr 1fr}
@@ -1578,21 +1471,9 @@
   .lantai .pi-tbl-wrap { max-width: calc(100vw - 24px); }
   .lantai .pi-tbl th, .lantai .pi-tbl td { font-size: 10px; padding: 6px 7px; }
 }
-
-/* ===== MODE RENTANG (#75) — toggle Hari|Rentang di strip kalender, preset,
-   highlight rentang di grid bulan, dan baris sektor kompak re-layout /sector.
-   .dlm = tanggal DALAM rentang (amber-dim), ujung rentang pakai .aktif yang
-   sudah ada. Toggle numpang primitif .tabs/.tab (diperkecil), preset numpang
-   .chip-t (+ state .on & :disabled yang sebelumnya belum ada). ===== */
-.lantai .cal-grid .cg.ada.dlm{background:var(--amber-dim);border-color:var(--amber)}
-.lantai .cal-strip-bar .tabs.mode-tgl{padding:2px}
-.lantai .cal-strip-bar .tabs.mode-tgl .tab{padding:4px 10px;font-size:10px}
-.lantai .cal-rentang-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 14px;border-top:1px solid var(--line)}
-.lantai .cal-rentang-bar .chip-t{padding:4px 11px;font-size:10.5px}
 .lantai .chip-t:disabled{opacity:.4;cursor:default}
 .lantai .chip-t.on{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
 .lantai .chip-t.on:hover{color:var(--amber-ink)}
-.lantai .crb-hint{font-family:var(--ui);font-size:10.5px;color:var(--text2);margin-left:auto}
 /* #1 (14 Agu): tab "Rentang" ke-5 di .sek-periode-tabs bikin baris 5 tab
    overflow diam-diam di layar sempit (.tabs dasarnya width:max-content +
    overflow-x:auto scrollbar disembunyikan — "Rentang" kegeser keluar tanpa
@@ -1741,14 +1622,6 @@
   }
 }
 @media (max-width: 560px) {
-  .lantai .cal-strip-bar { gap: 12px 8px; padding: 12px; }
-  .lantai .csb-hari { gap: 6px; }
-  .lantai .csb-d { flex: 1 0 auto; min-width: 0; padding: 5px 2px; }
-  /* Baris kontrol wrap (Hari Ini + Kalender penuh / toggle): jangan
-     melayang acak — bagi rata satu baris penuh, teks center (user 14 Agu). */
-  .lantai .cal-strip-bar .csb-more { margin-left: 0; flex: 1 1 0; text-align: center; }
-  .lantai .cal-strip-bar .mode-tgl { flex: 1 1 auto; justify-content: center; }
-  .lantai .cal-rentang-bar { padding: 8px 12px; }
 }
 
 /* ===== #87 sector r2 — relayout /sector ronde 2 ===== */
@@ -1792,7 +1665,7 @@
       BUKAN dari bentuk. Panel/popover/modal TIDAK ikut (tetap --r). Lingkaran
       status (dot, medal peringkat, legend-dot) bukan tombol, tetap bundar. ===== */
 .lantai .dd-btn,
-.lantai .csb-more,
+
 .lantai .btn-p,
 .lantai .chip-t,
 .lantai .pi-view-tab,
@@ -1809,19 +1682,18 @@
 /* gap 6px (#79D5): .tab inline-flex membuang text-node spasi antara ikon
    IkonMenu dan teks — tanpa gap eksplisit ikon menempel ke label. */
 .lantai .tab { height: 26px; gap: 6px; }
-.lantai .dd-btn, .lantai .csb-more, .lantai .btn-p, .lantai .chip-t,
+.lantai .dd-btn, .lantai .btn-p, .lantai .chip-t,
 .lantai .pi-view-tab, .lantai .pi-loadmore {
   padding-top: 0; padding-bottom: 0;
   display: inline-flex; align-items: center;
 }
 .lantai .tab { padding-top: 0; padding-bottom: 0; display: inline-flex; align-items: center; }
-.lantai .cal-strip-bar .tabs.mode-tgl .tab { padding-top: 0; padding-bottom: 0; }
 .lantai .rate button { width: 32px; height: 32px; }
 
 .lantai .tabs, .lantai .tab, .lantai .dd-btn, .lantai .dd-it,
 .lantai .inp, .lantai .btn-p, .lantai .chip, .lantai .chip-t,
 .lantai .bchip, .lantai .ytd-bdg, .lantai .blt-dl,
-.lantai .csb-more, .lantai .csb-d, .lantai .cal-d, .lantai .cal-grid .cg,
+
 .lantai .rate button, .lantai .badge,
 .lantai .pi-view-tab, .lantai .pi-search, .lantai .pi-search-go,
 .lantai .pi-search-reset, .lantai .pi-tbl-search, .lantai .pi-tbl-select,
@@ -1833,7 +1705,7 @@
 /* Micro-interaction "mewah": transisi halus + hover amber + tekan 1px.
    Hover per-kontrol yang sudah ada (dd-btn/chip-t/csb-more/blt-dl) tetap;
    di sini cuma melengkapi yang belum punya & menyeragamkan transisinya. */
-.lantai .dd-btn, .lantai .csb-more, .lantai .chip-t, .lantai .blt-dl,
+.lantai .dd-btn, .lantai .chip-t, .lantai .blt-dl,
 .lantai .pi-view-tab, .lantai .pi-loadmore, .lantai .rate button,
 .lantai .btn-p, .lantai .tab {
   transition: color .15s ease-out, border-color .15s ease-out,
@@ -1842,14 +1714,14 @@
 }
 .lantai .pi-view-tab:not(.active):hover,
 .lantai .pi-loadmore:hover { background: var(--amber-dim); border-color: var(--amber); color: var(--text); }
-.lantai .btn-p:active, .lantai .dd-btn:active, .lantai .csb-more:active,
+.lantai .btn-p:active, .lantai .dd-btn:active, 
 .lantai .chip-t:active, .lantai .pi-view-tab:active, .lantai .pi-search-go:active,
 .lantai .pi-loadmore:active, .lantai .rate button:active, .lantai .blt-dl:active,
 .lantai .tab:active { transform: translateY(1px); }
 .lantai .btn-p, .lantai .pi-search-go { box-shadow: 0 1px 2px rgba(0,0,0,.18); }
 .lantai .btn-p:active, .lantai .pi-search-go:active { box-shadow: 0 0 1px rgba(0,0,0,.14); }
 @media (prefers-reduced-motion: reduce) {
-  .lantai .btn-p:active, .lantai .dd-btn:active, .lantai .csb-more:active,
+  .lantai .btn-p:active, .lantai .dd-btn:active, 
   .lantai .chip-t:active, .lantai .pi-view-tab:active, .lantai .pi-search-go:active,
   .lantai .pi-loadmore:active, .lantai .rate button:active, .lantai .blt-dl:active,
   .lantai .tab:active, .lantai .lt:active, .lantai .ti:active { transform: none; }
@@ -1884,14 +1756,6 @@
 .lantai .ks-badge.ks-a{background:var(--amber-dim);color:var(--amber)}
 .lantai .ks-badge.ks-r{background:var(--red-dim);color:var(--red)}
 .lantai .ks-note{display:block;font-size:9px;color:var(--text3)}
-
-/* #90 Tombol "Hari Ini" — reuse .csb-more, cuma butuh state disabled
-   (redup saat tanggal aktif sudah hari bursa terkini). */
-/* opacity .35 membuat tombol terbaca RUSAK, bukan "sudah di sana".
-   Dinaikkan ke .55 supaya tetap jelas tak bisa ditekan tapi masih terbaca
-   sebagai keadaan yang wajar. */
-.lantai .csb-more:disabled{opacity:.55;cursor:default}
-.lantai .csb-more:disabled:hover{border-color:var(--line2);color:var(--text2)}
 
 /* #91 — Peta Investor: tab bernafas, tabel tanpa scroll-x, scrollbar tak menimpa isi.
    (a) Tab toolbar /peta-investor: padding horizontal lega + line-height 1;
@@ -1959,21 +1823,18 @@
 .lantai .pi-search-drop::-webkit-scrollbar,
 .lantai .pi-panel::-webkit-scrollbar,
 .lantai .dd-menu::-webkit-scrollbar,
-.lantai .csb-hari::-webkit-scrollbar,
 .dasbor-laci-kiri::-webkit-scrollbar { width: 4px; height: 4px; }
 .lantai .blt-wrap::-webkit-scrollbar-thumb,
 .dasbor-shell .board-tbl-wrap::-webkit-scrollbar-thumb,
 .lantai .pi-search-drop::-webkit-scrollbar-thumb,
 .lantai .pi-panel::-webkit-scrollbar-thumb,
 .lantai .dd-menu::-webkit-scrollbar-thumb,
-.lantai .csb-hari::-webkit-scrollbar-thumb,
 .dasbor-laci-kiri::-webkit-scrollbar-thumb { background: var(--line2, var(--border)); border-radius: 99px; }
 .lantai .blt-wrap::-webkit-scrollbar-track,
 .dasbor-shell .board-tbl-wrap::-webkit-scrollbar-track,
 .lantai .pi-search-drop::-webkit-scrollbar-track,
 .lantai .pi-panel::-webkit-scrollbar-track,
 .lantai .dd-menu::-webkit-scrollbar-track,
-.lantai .csb-hari::-webkit-scrollbar-track,
 .dasbor-laci-kiri::-webkit-scrollbar-track { background: transparent; }
 
 /* ===== #98 RAPIAN MOBILE RONDE 2 =====
