@@ -115,6 +115,11 @@
  * muat di 412px, dan halaman TIDAK boleh menggulir mendatar. */
 .rj-gulir {
   overflow-x: auto;
+  /* Sumbu tegak dikunci: `overflow-x: auto` sendirian membuat overflow-y ikut
+     `auto`, dan di DPR != 1 pembulatan subpiksel memanggil scrollbar tegak
+     yang tak ada gunanya. Terjaring sapuan gutter 2 Sep 2026 (#332), bug yang
+     sama dengan baris tab halaman. */
+  overflow-y: hidden;
   margin-top: 8px;
 }
 

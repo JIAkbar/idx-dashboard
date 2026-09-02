@@ -43,6 +43,10 @@
   display: flex;
   gap: 1px;
   overflow-x: auto;
+  /* Sumbu tegak dikunci — `overflow-x: auto` sendirian membuat overflow-y ikut
+     `auto`, dan di DPR != 1 pembulatan subpiksel memanggil scrollbar tegak
+     padahal isinya muat. Terjaring sapuan gutter 2 Sep 2026 (#332). */
+  overflow-y: hidden;
   border: 1px solid var(--line);
   border-radius: 4px;
   background: var(--line);

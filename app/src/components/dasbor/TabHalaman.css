@@ -16,10 +16,25 @@
      terlipat jadi dua baris menggeser seluruh isi halaman ke bawah, dan di
      ponsel itu memakan layar pertama yang justru paling berharga. */
   overflow-x: auto;
+  /* Sumbu tegak DIKUNCI. `overflow-x: auto` sendirian membuat overflow-y ikut
+     jadi `auto` (aturan CSS: satu sumbu non-visible memaksa sumbu lain ikut),
+     dan di DPR != 1 pembulatan subpiksel membuat scrollHeight melebihi
+     clientHeight — terukur 35 > 30 di DPR 1,125 (2 Sep 2026). Hasilnya
+     scrollbar Windows tegak lengkap dengan panah, menempel di ujung baris tab,
+     padahal tak ada apa pun untuk digulir. Bug yang sama persis dengan #87 pada
+     `.lantai .tabs`; baris ini cuma luput karena hidup di atas `.lantai`
+     sehingga obat di sana tak menjangkaunya. */
+  overflow-y: hidden;
+  /* Batang gulir mendatar disembunyikan secara visual, swipe di ponsel tetap
+     jalan — pola #87. `scrollbar-width: none` boleh di sini karena tujuannya
+     MENYEMBUNYIKAN, bukan menipiskan; jebakan Chrome 121 hanya menggigit kalau
+     kita berharap ::-webkit-scrollbar mengatur ukurannya. */
+  scrollbar-width: none;
   margin: 0 0 var(--j2, 14px);
   padding-bottom: 2px;
   scroll-snap-type: x proximity;
 }
+.tab-halaman::-webkit-scrollbar { display: none; }
 
 .tab-halaman-it {
   flex: 0 0 auto;
