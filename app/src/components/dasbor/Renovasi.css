@@ -6,19 +6,71 @@
    tanpa gaya, dan itu cuma ketahuan karena ada yang melihat layarnya. */
 
 /* ── Pita permanen ───────────────────────────────────────────────────────── */
+/* Pita "sedang renovasi".
+ *
+ * Diperbaiki 2 Sep 2026 atas keluhan Johan: *"teks atau badge sedang renovasi
+ * perlu di perbaiki dengan baik biar gak mepet di beberapa page itu ganggu
+ * menu"*. Terukur di produksi sebelum disentuh — **jarak pita ke baris tab
+ * 0 px**, di desktop 1920 maupun ponsel 412. Ia menempel persis ke menu.
+ *
+ * Sebabnya bukan cuma margin yang lupa. Versi lama ditulis sebagai STRIP
+ * SELEBAR LAYAR — sudut siku, `border-bottom` saja, tanpa margin — bentuk
+ * yang benar untuk pita yang menempel di bawah bilah atas. Tapi ia dirender
+ * DI DALAM `.dasbor-main` yang berpadding, jadi yang tampil balok mengambang
+ * dengan garis nyasar di bawahnya dan nol napas. Bentuk dan tempatnya tak
+ * pernah cocok.
+ *
+ * Sekarang ia kartu: berbatas penuh, bersudut, dan berjarak ke bawah.
+ *
+ * ANGKA DI BAWAH DIPATOK, BUKAN TOKEN — dan itu terpaksa, bukan pilihan.
+ * Diukur di produksi: di tempat pita ini hidup, `--j2`, `--r-kecil`, DAN
+ * `--ak` ketiganya **tak terdefinisi**. Rantai induknya
+ * `.dasbor-main → .dasbor-kolom → .dasbor-body → .dasbor-shell` tak pernah
+ * menyentuh `.lantai`, tempat token-token itu tinggal — jebakan yang sama
+ * dengan #307 (aturan berprefiks `.lantai` yang tak pernah berlaku untuk
+ * komponen layout).
+ *
+ * Bentuk `var(--x, angka)` dipertahankan supaya ia otomatis ikut token kalau
+ * kelak token itu dinaikkan ke `.dasbor-shell`. Tapi HARI INI yang mengecat
+ * adalah angka cadangannya, dan menulis komentar seolah ia mengikuti ritme
+ * halaman akan membuat orang berikutnya mengubah `--j2` lalu bingung kenapa
+ * pita ini tak bergeser. 14px dipilih menyamai `--j2` yang dipakai baris tab
+ * di dalam `.lantai`, jadi ritmenya SAMA — cuma tidak terhubung.
+ *
+ * Ikutan yang perlu diketahui: warna kuning pita ini juga selalu datang dari
+ * cadangan `#e8b93a`, bukan dari `--ak`. Sudah begitu sejak lahir, jadi ia
+ * tak pernah ikut berganti saat tema berubah. */
 .rnv-pita {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 14px;
+  padding: 7px 12px;
+  margin: 0 0 var(--j2, 14px);
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 1.45;
   color: var(--ak, #e8b93a);
   background: color-mix(in srgb, var(--ak, #e8b93a) 12%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--ak, #e8b93a) 30%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ak, #e8b93a) 30%, transparent);
+  border-radius: var(--r-kecil, 8px);
 }
 .rnv-pita b { font-weight: 600; }
-.rnv-pita-ikon { width: 13px; height: 13px; flex: 0 0 auto; }
+/* Ikon tak boleh ikut mengecil saat teksnya membungkus di layar sempit, dan
+ * tak boleh melar saat barisnya jadi dua — karena itu `flex: 0 0 auto` DAN
+ * `align-self` ke atas, bukan tengah. */
+.rnv-pita-ikon {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+/* Penyetelan ponsel untuk pita ada SATU tempat saja: blok
+ * `@media (max-width: 640px)` di kaki berkas, bersama penyetelan modal.
+ * Versi pertama perbaikan ini menambah blok kedua di sini pada 560px —
+ * dan blok itu MATI, karena yang di kaki letaknya lebih bawah dan menang
+ * dengan spesifisitas yang sama. Ketahuan hanya karena paddingnya diukur
+ * di peramban sesudah disunting; dari membaca kode ia tampak berlaku. */
 
 /* ── Modal ───────────────────────────────────────────────────────────────── */
 .rnv-tirai {
@@ -106,5 +158,9 @@
 
 @media (max-width: 640px) {
   .rnv-tirai { padding: 16px; align-items: flex-start; padding-top: 12vh; }
-  .rnv-pita { font-size: 11px; padding: 5px 10px; }
+  /* Teksnya hampir pasti dua baris di lebar ini, jadi paddingnya dilonggarkan
+   * sedikit supaya baris kedua tak berdempetan dengan tepi kartunya sendiri.
+   * Jarak ke menu di bawahnya diwarisi dari aturan dasar (14px) — cukup, dan
+   * tak perlu diulang di sini. */
+  .rnv-pita { font-size: 11px; padding: 7px 10px; }
 }
