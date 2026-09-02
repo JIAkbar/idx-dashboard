@@ -56,11 +56,31 @@ jobs:
 
           # Tanggal terbaru menurut PRODUKSI. Cache-bust supaya yang diukur
           # bukan salinan tepi yang kebetulan masih hangat.
-          PROD=$(curl -sf --max-time 45 "$SITUS/data-idx/json/index.json?cb=$RANDOM" \
-            | python3 -c "$BACA") || {
-              echo "::error::Tidak bisa mengambil data dari produksi ($SITUS). Situsnya mati, atau berkas datanya tak ikut ter-deploy."
-              exit 1
-            }
+          #
+          # Header ikut diambil (-D) karena sejak 2 Sep 2026 Vercel memasang
+          # "Security Checkpoint": permintaan non-peramban dijawab HTTP 403
+          # berisi halaman challenge, ditandai `X-Vercel-Mitigated: challenge`.
+          # Tanpa membedakannya, penjaga ini melapor GAGAL tiap hari — dan
+          # alarm yang menyala tiap hari adalah alarm yang diabaikan, persis
+          # kekeliruan toleransi info_stockbit yang baru dibetulkan.
+          #
+          # "Tak bisa diukur" BUKAN "beku". Yang pertama peringatan, yang
+          # kedua galat. Menyamakan keduanya membuat penjaga ini berbohong ke
+          # dua arah sekaligus: menuduh beku saat cuma terhalang, dan kelak
+          # diabaikan saat benar-benar beku.
+          BADAN=$(curl -s --max-time 45 -D /tmp/h.txt \
+            "$SITUS/data-idx/json/index.json?cb=$RANDOM" || true)
+          KODE=$(awk 'NR==1{print $2}' /tmp/h.txt 2>/dev/null)
+
+          if grep -qi '^x-vercel-mitigated:[[:space:]]*challenge' /tmp/h.txt 2>/dev/null; then
+            echo "::warning::Produksi TIDAK BISA DIPERIKSA dari CI — Vercel memasang Security Checkpoint (HTTP $KODE, challenge). Ini bukan bukti situs beku dan bukan bukti situs segar; verifikasi hanya sah lewat render peramban. Matikan Attack Challenge Mode di dasbor Vercel kalau pemeriksaan otomatis ini mau dihidupkan lagi."
+            exit 0
+          fi
+
+          PROD=$(printf '%s' "$BADAN" | python3 -c "$BACA" 2>/dev/null) || {
+            echo "::error::Tidak bisa membaca data produksi ($SITUS, HTTP $KODE). Situsnya mati, berkas datanya tak ikut ter-deploy, atau bentuk datanya berubah."
+            exit 1
+          }
 
           echo "repo     : $REPO"
           echo "produksi : $PROD"
