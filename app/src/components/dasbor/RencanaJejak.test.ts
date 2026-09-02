@@ -79,7 +79,26 @@ describe('tata angka utama', () => {
 
 describe('kejujuran teks', () => {
   it('tak menjanjikan peluang masa depan', () => {
-    expect(JSX).toMatch(/[Ff]rekuensi masa lalu, bukan peluang/)
+    // \s+ karena JSX boleh memecah kalimat di pergantian baris; yang dijaga
+    // frasanya, bukan tata spasinya.
+    expect(JSX).toMatch(/[Ff]rekuensi\s+masa lalu, bukan peluang/)
+  })
+
+  it('angka utama SESUDAH biaya, dan tarifnya disebut', () => {
+    // Spek sistem win rate §2: ekspektansi sesudah biaya = angka utama,
+    // tarif yang dipakai disebut di antarmuka. Tanpa penjaga ini, seseorang
+    // yang "merapikan" keterangan bisa mengembalikan angka sebelum biaya.
+    const blok = JSX.slice(JSX.indexOf('rj-angka'), JSX.indexOf('rj-baca'))
+    expect(blok).toMatch(/eksB/)
+    expect(blok).toMatch(/sesudah biaya/i)
+    expect(blok).toMatch(/pulang-pergi/)
+  })
+
+  it('label kelas bukti tampil di kepala kartu', () => {
+    // Spek §2/§3: tiap angka membawa kelas buktinya; dilarang tampil tanpa
+    // label. Kartu ini REKONSTRUKSI — aturan hari ini diterapkan mundur.
+    expect(JSX).toMatch(/rj-kelas/)
+    expect(JSX).toMatch(/direkonstruksi, bukan catatan harian/i)
   })
 
   it('tak membocorkan istilah mesin ke layar', () => {

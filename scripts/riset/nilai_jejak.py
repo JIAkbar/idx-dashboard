@@ -192,6 +192,13 @@ def jalankan() -> dict:
         per_tanggal.append({
             "tanggal": tgl,
             "kelasBukti": "REKONSTRUKSI" if d.get("backtest") else "CATATAN",
+            # Dua ERA sampel yang tak boleh dijumlahkan jadi satu angka: sampai
+            # 31 Agu 2026 pemutus peringkatnya ABJAD (4 dari 5 preset terbaca
+            # alfabetis — cacat #2 di audit win rate), sejak 1 Sep pemutusnya
+            # NILAI TRANSAKSI. Sampel era abjad bukan sampel aturan yang
+            # sekarang dipakai; menggabungkannya membuat win rate hari ini
+            # mengukur aturan yang sudah tak ada.
+            "era": "abjad" if tgl <= "2026-08-31" else "nilai-transaksi",
             "dibangun": d.get("dibangun"),
             "hariBursaTersedia": min(sisa, HORIZON),
             "jendelaTutup": tuntas_penuh,
@@ -284,3 +291,32 @@ if __name__ == "__main__":
     cetak(h)
     KELUARAN.write_text(json.dumps(h, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"\n  ditulis: {KELUARAN.relative_to(AKAR)}")
+
+    # Berkas penilaian per tanggal, SEKALI TULIS — sifat yang sama dengan
+    # rekomendasi/<tgl>.json (spek_sistem_winrate_produksi §1.2). Ditulis
+    # hanya untuk tanggal yang jendelanya sudah TUTUP, dan tak pernah ditimpa:
+    # angka yang sudah terbit tak boleh berubah diam-diam saat aturan
+    # penilaiannya disunting kelak. Koreksi = berkas terpisah, bukan timpaan.
+    # Agregat `nilai_jejak.json` di atas TETAP ditulis ulang tiap jalan — ia
+    # ringkasan untuk halaman, bukan catatan.
+    PENILAIAN = AKAR / "data-idx" / "json" / "penilaian"
+    PENILAIAN.mkdir(parents=True, exist_ok=True)
+    baru = lewat = 0
+    for b in h["perTanggal"]:
+        if not b["jendelaTutup"]:
+            continue
+        p = PENILAIAN / f"{b['tanggal']}.json"
+        if p.exists():
+            lewat += 1
+            continue
+        from datetime import datetime, timedelta, timezone
+        p.write_text(json.dumps({
+            "tanggal": b["tanggal"], "horizon": h["horizon"],
+            "dinilaiPada": datetime.now(timezone(timedelta(hours=7))).isoformat(timespec="seconds"),
+            "hariBursaTerakhirSaatDinilai": h["hariBursaTerakhir"],
+            **{k: b[k] for k in ("kelasBukti", "era", "n", "menang", "kalah", "gantung",
+                                  "tak_masuk", "ambigu", "menangDariTuntas", "menangDariSemua",
+                                  "preset")},
+        }, ensure_ascii=False, indent=1), encoding="utf-8")
+        baru += 1
+    print(f"  penilaian/: {baru} tanggal baru ditulis, {lewat} sudah ada (tak ditimpa)")

@@ -19,8 +19,12 @@ export interface JejakHorizon {
   winRate: number | null
   /** menang / SELURUH sinyal, termasuk yang menggantung. */
   winRateSemua: number | null
-  /** Rata-rata hasil per sinyal, persen. Bisa negatif walau win rate tinggi. */
+  /** Rata-rata hasil per sinyal, persen, SEBELUM biaya. Bisa negatif walau win rate tinggi. */
   ekspektansi: number | null
+  /** Sesudah biaya transaksi pulang-pergi (`RencanaSaham.biayaPct`). INI angka
+   *  utamanya: aturan yang untung tipis sebelum biaya dan rugi sesudahnya
+   *  harus terbaca rugi. Tarifnya sama dengan benchmark 644 aturan. */
+  ekspektansiBiaya: number | null
 }
 
 export interface RencanaEmiten {
@@ -44,6 +48,12 @@ export interface RencanaEmiten {
 
 export interface RencanaSaham {
   dibangun: string
+  /** Kelas bukti seluruh angka rekam jejak di berkas ini. Selalu REKONSTRUKSI:
+   *  aturan hari ini diterapkan mundur ke riwayat — bukan catatan yang ditulis
+   *  tiap sore. Tampil di kartu sebagai label, bukan disembunyikan. */
+  kelasBukti: 'REKONSTRUKSI'
+  /** Tarif biaya pulang-pergi yang dipotong dari `ekspektansiBiaya`, persen. */
+  biayaPct: number
   nSinyal: number
   horizon: number[]
   atrHari: number
@@ -86,9 +96,12 @@ export function bacaJejak(j: JejakHorizon | undefined): {
   kalimat: string
 } {
   if (!j || !j.n) return { nada: 'sepi', kalimat: 'belum cukup riwayat untuk diukur' }
-  if (j.ekspektansi == null) return { nada: 'sepi', kalimat: 'belum terukur' }
-  if (j.ekspektansi > 0) {
-    return { nada: 'baik', kalimat: 'aturan ini menguntungkan di masa lalu emiten ini' }
+  // Dinilai SESUDAH biaya. Sebelum biaya cuma pembanding — aturan yang untung
+  // tipis sebelum biaya dan rugi sesudahnya harus terbaca rugi.
+  const e = j.ekspektansiBiaya ?? j.ekspektansi
+  if (e == null) return { nada: 'sepi', kalimat: 'belum terukur' }
+  if (e > 0) {
+    return { nada: 'baik', kalimat: 'aturan ini menguntungkan di masa lalu emiten ini, sesudah biaya' }
   }
   if (j.winRate != null && j.winRate >= 50) {
     return {

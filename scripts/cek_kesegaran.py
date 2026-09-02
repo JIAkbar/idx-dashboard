@@ -273,6 +273,16 @@ MANIFEST: list[Turunan] = [
             "Screener (kolom pola)", pembangun="app/scripts/pola-screener.ts"),
     Turunan("Jago Papan", "jago_papan/terbaru.json", dari_ruas("tanggal"),
             "Jago Papan", pembangun="app/scripts/bangun-jago-papan.mjs"),
+    # Tiga keluaran sistem win rate (spek_sistem_winrate_produksi §1.4). Tanpa
+    # baris ini, kartu Rencana & Rekam Jejak dan tabel TERKUNCI bisa membeku
+    # berhari-hari sementara gerbang melapor "basi 0" — bentuk kegagalan lima
+    # alarm senyap yang sudah dibayar 28 Agu–1 Sep 2026.
+    Turunan("Rencana & rekam jejak", "rencana_saham.json", dari_modus_anak("emiten", "tanggal"),
+            "Kartu Analisa (blok rencana dagang)", pembangun="riset/rencana_saham.py"),
+    Turunan("Penilai jejak (hakim)", "nilai_jejak.json", dari_ruas("hariBursaTerakhir"),
+            "Screener · Riwayat & Win Rate", pembangun="riset/nilai_jejak.py"),
+    Turunan("Selisih-pasar TERKUNCI", "selisih_terkunci.json", dari_ruas("hariBursaTerakhir"),
+            "Screener · Riwayat & Win Rate", pembangun="riset/selisih_terkunci.py"),
     Turunan("IPO Papan", "ipo.json", dari_ruas("tanggal"),
             "IPO Papan", pembangun="app/scripts/bangun-ipo.mjs"),
     Turunan("Aliran investor", "aliran_investor.json", dari_ruas("akhir"),
@@ -316,7 +326,11 @@ MANIFEST: list[Turunan] = [
             pembangun="panen_keystats_stockbit.py"),
     Turunan("Info emiten Stockbit (snapshot)", "info_stockbit",
             dari_ruas_direktori("dipanen_pada"),
-            "Berkas Emiten blok G (notasi & UMA) · Neo Papan (indeks)", toleransi=7,
+            # 30, bukan 7: ketetapan Johan 1 Sep 2026 "keystat dan profile
+            # cukup 1 bulan sekali" — bat Buka Laptop memanennya per 28 hari.
+            # Toleransi 7 akan melapor BASI di 21 dari 28 hari tanpa ada yang
+            # salah, dan alarm yang menyala terus adalah alarm yang diabaikan.
+            "Berkas Emiten blok G (notasi & UMA) · Neo Papan (indeks)", toleransi=30,
             pembangun="panen_info_stockbit.py"),
 ]
 
@@ -443,6 +457,8 @@ def _uji() -> None:
         "ohlc", "ohlcv_stockbit", "harian_papan/index.json", "kartu/ringkas.json",
         "screener.json", "jago_papan/terbaru.json", "broker_harian", "index.json",
         "keystats_stockbit", "info_stockbit", "daftar_emiten.json",
+        # keluaran sistem win rate — dibaca Kartu Analisa & Screener/Riwayat
+        "rencana_saham.json", "nilai_jejak.json", "selisih_terkunci.json",
     }
     kurang = wajib - {t.jalur for t in MANIFEST}
     assert not kurang, f"gudang dibaca halaman tapi tak diperiksa gerbang: {sorted(kurang)}"

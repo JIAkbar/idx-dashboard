@@ -692,6 +692,49 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
               })}
             </tbody>
           </table>
+          {/* Dua ERA sampel, TIDAK dijumlahkan jadi satu angka. Sampai 31 Agu
+              2026 pemutus peringkat preset adalah ABJAD — 4 dari 5 preset
+              terbaca alfabetis (cacat #2 audit win rate), jadi "20 dari N"
+              yang tersimpan bukan pilihan aturan yang sekarang dipakai. Sejak
+              1 Sep pemutusnya nilai transaksi. Menggabungkan keduanya membuat
+              win rate hari ini mengukur aturan yang sudah tak ada; memisahkan
+              keduanya membuat era lama tetap terbaca sebagai apa adanya —
+              catatan yang sah, dengan pemutus yang berbeda. */}
+          {(() => {
+            const ERA_BATAS = '2026-08-31'
+            const era = [
+              { id: 'abjad', label: 's.d. 31 Agu — pemutus abjad', hari: live.filter((h) => h.tanggal <= ERA_BATAS) },
+              { id: 'nilai', label: 'sejak 1 Sep — pemutus nilai transaksi', hari: live.filter((h) => h.tanggal > ERA_BATAS) },
+            ].filter((e) => e.hari.length > 0)
+            if (era.length < 2) return null
+            return (
+              <table className="tbl scr-tbl" style={{ marginTop: 10 }}>
+                <thead>
+                  <tr>
+                    <th>Era sampel — definisi aktif</th>
+                    <th className="r">Tanggal</th>
+                    <th className="r">Menang</th>
+                    <th className="r">Kalah</th>
+                    <th className="r">Tak tentu</th>
+                    <th className="r">Tak terukur</th>
+                    <th className="r">Win rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {era.map((e) => {
+                    const ag = agregatWinRate(e.hari.flatMap((h) => h.baris).map((b) => ambilHasil(b, definisi)))
+                    return (
+                      <tr key={e.id}>
+                        <td>{e.label}</td>
+                        <td className="r">{e.hari.length}</td>
+                        <RingkasAngka ag={ag} />
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            )
+          })()}
           <ul className="muted" style={{ margin: '8px 0 0', paddingLeft: 18, fontSize: 12, lineHeight: 1.6 }}>
             {DEFINISI_OPSI.map((d) => <li key={d.id}><b>{d.label}</b> — {d.kalimat}</li>)}
           </ul>

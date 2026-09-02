@@ -63,6 +63,13 @@ KELUARAN = AKAR / "data-idx" / "json" / "rencana_saham.json"
 HORIZON = [5, 10, 20]
 N_SINYAL = 120      # hari sinyal yang dinilai — sama untuk semua horizon
 ATR_HARI = 14
+# Biaya transaksi pulang-pergi, sebagai pecahan. DIPAKAI ULANG dari benchmark
+# 644 aturan (benchmarkAturan.ts: "eksR sesudah biaya transaksi 0,40%
+# pulang-pergi"), bukan dikarang: dua angka biaya yang berbeda di dua halaman
+# akan membuat aturan yang sama terbaca untung di satu tempat dan rugi di
+# tempat lain.
+BIAYA = 0.004
+KELAS_BUKTI = "REKONSTRUKSI"   # aturan hari ini diterapkan ke masa lalu — bukan catatan harian
 WIB = timezone(timedelta(hours=7))
 
 
@@ -136,11 +143,16 @@ def telusuri(d: list, n_sinyal: int, horizon: int) -> dict:
                 hasil_r.append((akhir - harga) / harga)
     tuntas = menang + kalah
     n = menang + kalah + gantung
+    rata = st.mean(hasil_r) if hasil_r else None
     return {
         "menang": menang, "kalah": kalah, "gantung": gantung, "n": n,
         "winRate": round(100 * menang / tuntas, 1) if tuntas else None,
         "winRateSemua": round(100 * menang / n, 1) if n else None,
-        "ekspektansi": round(100 * st.mean(hasil_r), 3) if hasil_r else None,
+        "ekspektansi": round(100 * rata, 3) if rata is not None else None,
+        # Sesudah biaya pulang-pergi — INI angka utamanya di kartu. Sebelum
+        # biaya cuma pembanding: aturan yang untung tipis sebelum biaya dan
+        # rugi sesudahnya harus terbaca rugi.
+        "ekspektansiBiaya": round(100 * (rata - BIAYA), 3) if rata is not None else None,
     }
 
 
@@ -201,6 +213,8 @@ def jalankan() -> dict:
             print(f"    {j}/{len(berkas)}")
     return {
         "dibangun": datetime.now(WIB).isoformat(timespec="seconds"),
+        "kelasBukti": KELAS_BUKTI,
+        "biayaPct": round(100 * BIAYA, 2),
         "nSinyal": N_SINYAL, "horizon": HORIZON, "atrHari": ATR_HARI,
         "catatan": ("Target 1 = penutupan + 1xATR, target 2 = +2xATR, batas rugi = "
                     "yang lebih rendah antara (penutupan - 1,5xATR) dan terendah 5 hari. "

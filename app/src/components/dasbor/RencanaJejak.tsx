@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
-  muatRencana, bacaJejak,
+  muatRencana, metaRencana, bacaJejak,
   type RencanaEmiten, type JejakHorizon,
 } from '../../lib/dasbor/rencanaSaham'
 import './RencanaJejak.css'
@@ -55,7 +55,8 @@ const miliar = (v: number | null | undefined) =>
 
 function BarisJejak({ label, j }: { label: string; j: JejakHorizon | undefined }) {
   if (!j) return null
-  const e = j.ekspektansi
+  // Sesudah biaya; jatuh balik ke sebelum biaya hanya untuk berkas lama.
+  const e = j.ekspektansiBiaya ?? j.ekspektansi
   return (
     <tr>
       <td>{label}</td>
@@ -89,6 +90,13 @@ export function RencanaJejak({ kode }: { kode: string }) {
 
   const j5 = r.jejak?.h5
   const baca = bacaJejak(j5)
+  const meta = metaRencana()
+  // Angka utama = SESUDAH biaya. Jatuh balik ke sebelum biaya hanya bila berkas
+  // lama belum membawa ruasnya — dan saat itu keterangan tarifnya ikut hilang,
+  // jadi pembaca tak dijanjikan potongan yang tak terjadi.
+  const eksB = j5?.ekspektansiBiaya ?? j5?.ekspektansi ?? null
+  const biaya = j5?.ekspektansiBiaya != null ? meta?.biayaPct ?? null : null
+  const kelas = meta?.kelasBukti ?? 'REKONSTRUKSI'
   const rrLemah = r.rr != null && r.rr < 1
   const naikTp = ((r.tp1 - r.harga) / r.harga) * 100
   const turunSl = ((r.harga - r.sl) / r.harga) * 100
@@ -97,15 +105,27 @@ export function RencanaJejak({ kode }: { kode: string }) {
     <section className="rj">
       <div className="rj-kepala">
         <span className="rj-judul">Rencana &amp; rekam jejak</span>
+        {/* Label kelas bukti — WAJIB tampil, bukan disembunyikan di kaki.
+            Seluruh angka rekam jejak di kartu ini REKONSTRUKSI: aturan hari
+            ini diterapkan mundur ke riwayat. Ia bukan catatan yang ditulis
+            tiap sore sebelum hasilnya diketahui, dan pembaca berhak tahu
+            bedanya sebelum membaca angkanya. */}
+        <span className="rj-kelas" title="Aturan hari ini diterapkan mundur ke riwayat — bukan catatan harian">
+          {kelas}
+        </span>
         <span className="rj-tgl">{r.tanggal}</span>
       </div>
 
       <div className="rj-angka">
         <div>
-          <b className={j5?.ekspektansi != null && j5.ekspektansi > 0 ? 'up' : 'dn'}>
-            {j5?.ekspektansi == null ? '—' : pct(j5.ekspektansi, 2)}
+          <b className={eksB != null && eksB > 0 ? 'up' : 'dn'}>
+            {eksB == null ? '—' : pct(eksB, 2)}
           </b>
-          <span>hasil rata-rata per sinyal, 5 hari bursa</span>
+          <span>
+            hasil rata-rata per sinyal, 5 hari bursa, <b>sesudah biaya</b>
+            {biaya != null ? ` ${biaya.toFixed(2).replace('.', ',')}% pulang-pergi` : ''}
+            {j5?.ekspektansi != null ? ` · sebelum biaya ${pct(j5.ekspektansi, 2)}` : ''}
+          </span>
         </div>
         <div>
           <b>{pct0(j5?.winRate)}</b>
@@ -167,7 +187,7 @@ export function RencanaJejak({ kode }: { kode: string }) {
               <th className="n">Dari tuntas</th>
               <th className="n">Dari semua</th>
               <th className="n">M·K·G</th>
-              <th className="n">Per sinyal</th>
+              <th className="n">Sesudah biaya</th>
             </tr>
           </thead>
           <tbody>
@@ -179,12 +199,15 @@ export function RencanaJejak({ kode }: { kode: string }) {
       </div>
 
       <p className="rj-kaki">
-        Aturan yang sama diterapkan ke tiap hari sinyal di riwayat {r.kode} —
-        hari sinyalnya sendiri tak ikut dinilai, dan target serta batas yang
+        <b>Sinyal direkonstruksi, bukan catatan harian</b> — aturan yang sama
+        diterapkan mundur ke tiap hari sinyal di riwayat {r.kode}; hari
+        sinyalnya sendiri tak ikut dinilai, dan target serta batas yang
         tersentuh di hari yang sama dihitung kalah. <b>M·K·G</b> = menang,
         kalah, menggantung; yang menggantung adalah sinyal yang jendelanya
-        tutup tanpa menyentuh keduanya. Frekuensi masa lalu, bukan peluang
-        untuk besok.
+        tutup tanpa menyentuh keduanya. Kolom <b>sesudah biaya</b> memotong
+        {biaya != null ? ` ${biaya.toFixed(2).replace('.', ',')}%` : ' biaya'} pulang-pergi
+        dari tiap sinyal, tarif yang sama dengan halaman Uji Aturan. Frekuensi
+        masa lalu, bukan peluang untuk besok.
       </p>
     </section>
   )
