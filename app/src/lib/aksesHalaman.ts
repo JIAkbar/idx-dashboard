@@ -158,6 +158,7 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   // Trader Papan (25 Agu 2026) — pasangan Whales Papan, keadaan pendaftaran
   // sama persis: kunci di sini sekarang, baris Supabase menyusul.
   'trader-papan': 'trader-papan',
+  bandarmologi: 'bandarmologi',
   // Harian & Jago Papan (26 Agu 2026) — keadaan pendaftaran sama: kunci di
   // sini sekarang, baris Supabase menyusul.
   'harian-papan': 'harian-papan',

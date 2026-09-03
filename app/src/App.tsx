@@ -34,6 +34,7 @@ const NeoPapan = lazy(() => import('./views/dasbor/NeoPapan').then((m) => ({ def
 const BerkasEmiten = lazy(() => import('./views/dasbor/BerkasEmiten'))
 const WhalesPapan = lazy(() => import('./views/dasbor/WhalesPapan'))
 const TraderPapan = lazy(() => import('./views/dasbor/TraderPapan'))
+const Bandarmologi = lazy(() => import('./views/dasbor/Bandarmologi'))
 const HarianPapan = lazy(() => import('./views/dasbor/HarianPapan').then((m) => ({ default: m.HarianPapan })))
 const JagoPapan = lazy(() => import('./views/dasbor/JagoPapan').then((m) => ({ default: m.JagoPapan })))
 const StockDetail = lazy(() => import('./views/dasbor/StockDetail').then((m) => ({ default: m.StockDetail })))
@@ -155,6 +156,7 @@ function App() {
                   Papan (sumbu masuk pelaku, bukan harga) dan membaca berkas yang
                   sama. Baris `akses_halaman` di Supabase menyusul. */}
               <Route path="/trader-papan" element={<PenjagaHalaman kunci="trader-papan"><TraderPapan /></PenjagaHalaman>} />
+              <Route path="/bandarmologi" element={<PenjagaHalaman kunci="bandarmologi"><Bandarmologi /></PenjagaHalaman>} />
               {/* Harian & Jago Papan (26 Agu 2026, dispatch Dev PAPAN) — kunci
                   terdaftar di PETA_MENU_KUNCI; baris akses_halaman Supabase
                   menyusul (aturan dua tempat). */}

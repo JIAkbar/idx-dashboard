@@ -298,6 +298,13 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M4 19h16M6 16V9m5 7V5m5 11v-6',
   },
   {
+    // Bandarmologi (3 Sep 2026) — teori kelas bid-offer bandar & spek
+    // order-flow dihitung dari data harian yang sudah dipanen. Kode 'BDM'.
+    id: 'bandarmologi', path: '/bandarmologi', label: 'Bandarmologi', kode: 'BDM', induk: '/broker-summary-v2', tabLabel: 'Bandarmologi', grup: 'dev',
+    ringkas: 'Teori jejak pemain besar — ketimpangan antrean, lot per transaksi, konsentrasi sekuritas — dihitung dari rekaman harian, dengan batasnya disebut.',
+    ikon: 'M3 17l6-6 4 4 8-8M17 7h4v4',
+  },
+  {
     // Harian Papan (26 Agu 2026) — kode 'HRP'.
     id: 'harian-papan', path: '/harian-papan', label: 'Harian Papan', kode: 'HRP', induk: '/screener', tabLabel: 'Harian', grup: 'dev',
     ringkas: 'Rekap harian tiga tab: gainer, net beli asing, net jual asing — plus Skor Papan.',

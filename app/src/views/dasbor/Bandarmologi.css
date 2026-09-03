@@ -1,0 +1,184 @@
+/* Bandarmologi — halaman yang membahas teori sekaligus menunjukkan angkanya.
+   Semua pemilih ber-awalan `.lantai` karena halaman ini hidup di dalamnya
+   (lihat #307: aturan tanpa awalan tak pernah berlaku, dan sebaliknya). */
+
+.lantai .bm-pengantar {
+  max-width: 78ch;
+  margin: 14px 2px 0;
+  font-size: 13.5px;
+  line-height: 1.72;
+  color: var(--text2);
+}
+.lantai .bm-pengantar b { color: var(--text); font-weight: 600; }
+
+/* Angka ringkas — kisi yang melipat sendiri, bukan kolom tetap. */
+.lantai .bm-angka {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--r-kecil);
+  overflow: hidden;
+  margin: 16px 0 4px;
+}
+.lantai .bm-angka > div { background: var(--bg1); padding: 11px 13px; }
+.lantai .bm-angka b {
+  display: block;
+  font-family: var(--mono);
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  color: var(--text);
+}
+.lantai .bm-angka span {
+  display: block;
+  font-size: 11px;
+  color: var(--text2);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+.lantai .bm-angka small { display: block; color: var(--text3); font-size: 10px; }
+
+/* Blok teori */
+.lantai .bm-teori {
+  margin-top: 22px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-kecil);
+  background: var(--bg1);
+}
+.lantai .bm-teori-h {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.lantai .bm-teori-n {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--amber);
+  letter-spacing: .1em;
+}
+.lantai .bm-teori-h h2 {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  color: var(--text);
+}
+.lantai .bm-teori-src {
+  margin-left: auto;
+  font-size: 10.5px;
+  color: var(--text3);
+  font-family: var(--mono);
+}
+/* Bunyi teorinya — dikutip, jadi dibedakan bentuknya dari penjelasan kita. */
+.lantai .bm-bunyi {
+  margin: 0 0 9px;
+  padding-left: 11px;
+  border-left: 2px solid color-mix(in srgb, var(--amber) 45%, transparent);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text);
+  font-style: italic;
+  max-width: 76ch;
+}
+.lantai .bm-cara,
+.lantai .bm-batas {
+  margin: 0 0 6px;
+  font-size: 12.5px;
+  line-height: 1.68;
+  color: var(--text2);
+  max-width: 78ch;
+}
+.lantai .bm-cara b, .lantai .bm-batas b { color: var(--text); font-weight: 600; }
+.lantai .bm-batas {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 9px 11px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--amber) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--amber) 20%, transparent);
+  margin-top: 8px;
+}
+.lantai .bm-batas .dasbor-ikon { flex: 0 0 auto; margin-top: 3px; stroke: var(--amber); }
+
+/* Bilah kendali & tabel */
+.lantai .bm-alat { margin-top: 18px; }
+.lantai .bm-hint { font-size: 10.5px; color: var(--text3); }
+.lantai .bm-tbl th, .lantai .bm-tbl td { white-space: nowrap; }
+.lantai .bm-tbl .bm-med { color: var(--text3); font-size: 10px; }
+.lantai .bm-tbl .bm-lbl { color: var(--text3); font-size: 10px; }
+.lantai .bm-pil {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+.lantai .bm-pil.up { color: var(--green); border-color: color-mix(in srgb, var(--green) 40%, transparent); }
+.lantai .bm-pil.dn { color: var(--red); border-color: color-mix(in srgb, var(--red) 40%, transparent); }
+.lantai .bm-key { white-space: nowrap; }
+.lantai .bm-brk {
+  display: inline-block;
+  margin-right: 5px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--text);
+}
+.lantai .bm-brk small { color: var(--text3); margin-left: 3px; }
+
+/* Yang tak bisa dihitung */
+.lantai .bm-takbisa { border-style: dashed; }
+.lantai .bm-daftar { margin: 6px 0 0; padding: 0; list-style: none; }
+.lantai .bm-daftar li {
+  padding: 9px 0;
+  border-top: 1px solid var(--line);
+}
+.lantai .bm-daftar li:first-child { border-top: 0; }
+.lantai .bm-daftar b { font-size: 12.5px; color: var(--text); font-weight: 600; }
+.lantai .bm-sumber {
+  margin-left: 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+}
+.lantai .bm-daftar p {
+  margin: 3px 0 0;
+  font-size: 12px;
+  line-height: 1.62;
+  color: var(--text2);
+  max-width: 78ch;
+}
+
+.lantai .bm-kaki {
+  margin: 20px 2px 0;
+  font-size: 11.5px;
+  line-height: 1.7;
+  color: var(--text3);
+  max-width: 80ch;
+}
+.lantai .bm-kosong { text-align: center; padding: 40px 20px; }
+
+@media (max-width: 640px) {
+  .lantai .bm-teori { padding: 12px 13px; }
+  .lantai .bm-teori-src { margin-left: 0; width: 100%; }
+  .lantai .bm-angka b { font-size: 18px; }
+}
+
+/* Warna kode sekuritas menurut kategori perilaku 120 hari (kategoriBroker.ts).
+   Bukan penilaian baik/buruk — hanya membedakan porsi besar/kecil dan arah
+   tegas/lemah, sesuai keterangan kategori yang wajib tampil di dekatnya. */
+.lantai .bm-brk.kb-whale { border-color: color-mix(in srgb, var(--amber) 55%, transparent); color: var(--amber); }
+.lantai .bm-brk.kb-smart { border-color: color-mix(in srgb, var(--green) 45%, transparent); color: var(--green); }
+.lantai .bm-brk.kb-ritel { border-color: var(--line); color: var(--text2); }
+.lantai .bm-brk.kb-smart_ritel { border-color: var(--line); color: var(--text2); }
