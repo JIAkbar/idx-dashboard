@@ -42,6 +42,22 @@ Konstanta semuanya default dan dinyatakan bisa diubah (Lampiran A).
 Yang tak kita punya dan tak bisa diturunkan: **sisi agresor per transaksi** dan
 **order book berlapis dengan jumlah order, disnapshot beruntun**.
 
+**Catatan Johan, 3 Sep 2026** — *"sepertinya agressor itu buatan sendiri gak
+ada data itu di IHSG"*. Benar, dan ini mengubah cara membaca seluruh §3: IDX
+**tidak menerbitkan ruas agresor**. Yang tampil sebagai HAKA/HAKI di
+Stockbit/IPOT adalah **turunan platform** dari aturan kutipan (*quote rule*
+/ *tick test*): tiap baris running trade dibandingkan dengan bid/offer terbaik
+pada detik itu — terjadi di harga offer → pembeli agresif (HAKA), di harga bid
+→ penjual agresif (HAKI), di tengah → tak pasti. Jadi "tape ber-agresor" bukan
+satu sumber, melainkan **dua yang harus ada bersamaan**: running trade per
+transaksi DAN kutipan bid/offer intrabar — lalu diturunkan sendiri, dengan
+galat klasifikasi yang tak pernah nol (Lee–Ready dkk. mengukur 15–25% salah
+label pada data harian AS; di IDX belum ada angkanya). Spek ini memakai
+label itu seolah ruas mentah (simbol *a*, §1) tanpa menyebut asalnya. Untuk
+kita: seluruh butir yang bergantung agresor tetap ❌ sampai running trade
+diinventaris — dan kalaupun ada, angkanya adalah taksiran yang harus diuji,
+bukan pengukuran.
+
 ## 3. Matriks kelayakan — bagian per bagian
 
 Legenda: ✅ bisa persis dari data kita · 🟡 bisa sebagai **proksi** (harus diuji dulu, ditandai di layar) · ❌ butuh sumber baru.
@@ -50,7 +66,7 @@ Legenda: ✅ bisa persis dari data kita · 🟡 bisa sebagai **proksi** (harus d
 |---|---|---|
 | §2 baseline robust, z-robust, kalibrasi ≥20 hari | ✅ | Semua fitur harian kita ≥20 hari; ember waktu-hari dari bar menit. Ini fondasi yang paling murah dan paling luas dampaknya |
 | §2.5 ember waktu-hari | ✅ | menit WIB dari `datetime` bar |
-| §3.1–3.2 CVD, cvdShare | 🟡 | Proksi (a) **net asing per menit** (`foreign_buy−foreign_sell`) — bertanda, tapi asing saja; (b) tick-rule per bar (close vs close sebelumnya) — lemah; (c) harian: net broker per hari dari 6 varian. Ketiganya BUKAN CVD; wajib diuji terhadap hasil sebelum dipakai sebagai sinyal |
+| §3.1–3.2 CVD, cvdShare | 🟡 | Sisi agresor sendiri **bukan ruas IDX** (lihat §2). Proksi (a) **net asing per menit** (`foreign_buy−foreign_sell`) — bertanda, tapi asing saja; (b) tick-rule per bar (close vs close sebelumnya) — lemah; (c) harian: net broker per hari dari 6 varian. Ketiganya BUKAN CVD; wajib diuji terhadap hasil sebelum dipakai sebagai sinyal |
 | §3.3 VPIN | 🟡 | Bulk Volume Classification (Easley dkk.) memang dirancang untuk **bar**: bagi volume bar memakai z perubahan harga. Bisa dari bar menit kita |
 | §3.4 Hawkes | 🟡 | Kita punya **frequency per menit** — burstiness jumlah transaksi per menit adalah proksi wajar untuk intensitas |
 | §3.5 OBI | ❌ | Perlu ≥2 level; kita 1 level, sekali sehari |
