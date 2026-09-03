@@ -54,6 +54,8 @@ from pathlib import Path
 
 AKAR = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(AKAR / "scripts" / "riset"))
+sys.path.insert(0, str(AKAR / "scripts"))
+from bar_berisi import potong_ke_berisi  # noqa: E402
 from kartu_analisa import ke_fraksi  # noqa: E402  (rumus tick bursa — jangan disalin)
 
 OHLC = AKAR / "data-idx" / "json" / "ohlc"
@@ -180,6 +182,15 @@ def jalankan() -> dict:
             d = isi["d"]
         except Exception:
             continue
+        if len(d) < ATR_HARI + 30:
+            continue
+        # Sabuk kedua: potong deret sampai bar berisi terakhir. Sejak 3 Sep 2026
+        # kedua pemanen tak lagi menulis bar hari berjalan, jadi ini tak pernah
+        # memotong apa pun dalam keadaan normal — ia jaring untuk data yang
+        # masuk lewat jalur lain (tambalan tangan, arsip lama, panen darurat).
+        # Seluruh rencana di bawah memakai `d[-1]` sebagai "hari ini"; satu bar
+        # stub di ujung akan menggeser harga, area beli, dan jejaknya sekaligus.
+        d = potong_ke_berisi(d)
         if len(d) < ATR_HARI + 30:
             continue
         harga = d[-1][4]
