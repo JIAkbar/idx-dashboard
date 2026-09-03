@@ -164,7 +164,52 @@ def ke_baris(data: dict) -> list[list]:
             rapi(ci),
             int(v[i]) if i < len(v) and v[i] is not None else 0,
         ])
-    return baris
+    return buang_bar_hari_berjalan(baris)
+
+
+# WIB dipakai untuk memutuskan "hari ini" dan "sudah tutup" — timestamp Yahoo
+# UTC, tapi hari bursanya hari Jakarta.
+_WIB = timezone(timedelta(hours=7))
+# Bursa tutup 16:15; pasca-penutupan selesai di situ. Ditambah jeda Yahoo
+# ±15 menit → 16:45 baru aman. Angka yang sama sudah tertulis di docstring
+# berkas ini sejak lama; yang belum ada penegakannya.
+_JAM_AMAN_WIB = 16 * 60 + 45
+
+
+def buang_bar_hari_berjalan(baris: list[list]) -> list[list]:
+    """Buang bar bertanggal HARI INI selama hari itu belum benar-benar tutup.
+
+    Yahoo (dan chartbit) mengembalikan bar untuk hari berjalan sejak
+    pra-pembukaan, isinya harga penutupan KEMARIN dengan volume 0 —
+    buka = tinggi = rendah = tutup. Menuliskannya ke arsip membuat setiap
+    pembaca yang mengambil bar terakhir mendapat harga kemarin berstempel
+    hari ini, dan perubahan harian 0,00%.
+
+    Terukur 3 Sep 2026 pukul 12:00: **963 dari 963 emiten** punya bar stub
+    hari itu, dan bar itu SUDAH TERDORONG KE PRODUKSI oleh CI. Akibat yang
+    terlihat: seluruh 82 anggota grup konglomerat tampil 0,00%; turunan lain
+    (harga terakhir, skor harian, rezim) ikut lahir dari angka itu.
+
+    Dua syarat, dan keduanya perlu:
+      1. sudah lewat 16:45 WIB — sebelum itu hari belum tutup, apa pun isinya;
+      2. volumenya bukan nol — hari bursa yang sungguh diperdagangkan selalu
+         punya volume, dan bar bervolume nol di hari berjalan adalah stub,
+         bukan suspensi (suspensi hari LAMPAU tetap disimpan apa adanya —
+         itu riwayat yang sah, dan fungsi ini tak menyentuhnya).
+
+    Bar hari lampau tak pernah dibuang, termasuk yang bervolume nol.
+    """
+    if not baris:
+        return baris
+    kini = datetime.now(_WIB)
+    hari_ini = kini.strftime("%Y-%m-%d")
+    sudah_tutup = (kini.hour * 60 + kini.minute) >= _JAM_AMAN_WIB
+    keluar = []
+    for b in baris:
+        if b[0] == hari_ini and not (sudah_tutup and b[5]):
+            continue
+        keluar.append(b)
+    return keluar
 
 
 def simpan(kode: str, baris: list[list], th_full: int | None = None) -> int:
