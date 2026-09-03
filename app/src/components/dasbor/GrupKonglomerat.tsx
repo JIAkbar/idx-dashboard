@@ -40,6 +40,11 @@ interface BerkasGrup {
   dibuat: string
   sumber: string
   ambang_pct: number
+  /** Tanggal bar OHLC yang dipakai harga & pct1d — BUKAN tanggal posisi KSEI.
+   *  Keduanya berbeda jauh (KSEI bulanan, harga harian) dan halaman wajib
+   *  menyebutkan yang mana, kalau tidak pembaca menyangka persentase ubin
+   *  ikut tanggal kepemilikan di kepala halaman. */
+  harga_per?: string | null
   grup: Record<string, { kode: string; anggota: Anggota[] }>
 }
 
@@ -221,6 +226,11 @@ export function GrupKonglomerat() {
         {mode !== 'deret'
           ? <PemilihRentang opsi={OPSI_RENTANG_GRUP} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang kinerja harga anggota grup" />
           : <PemilihRentang opsi={OPSI_RENTANG_DERET} nilai={rentangDeret} onGanti={setRentangDeret} ariaLabel="Rentang deret kinerja grup" />}
+        {mode === 'kartu' && data.harga_per && (
+          <span className="gk-tgl-harga">
+            harga per tutup {new Date(`${data.harga_per}T12:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+          </span>
+        )}
         {mode === 'kartu' && (
           <span className="gk-legenda" aria-hidden="true">
             <i className="naik" /> Naik <i className="nol" /> Datar <i className="turun" /> Turun
@@ -330,7 +340,7 @@ export function GrupKonglomerat() {
           lebih. Persen pada chip adalah <b>perubahan harga pada rentang terpilih</b> ({OPSI_RENTANG_GRUP.find((o) => o.id === rentang)?.label}), bukan porsi
           kepemilikan — deret kepemilikan KSEI antar-waktu belum tersedia, jadi rentang di sini
           mengukur kinerja harga anggota, bukan pergeseran porsi grup.
-          {mode === 'kartu' && ' Mode Kartu: huruf A pada ubin adalah net asing dalam miliar rupiah pada hari bursa terakhir, dari rincian broker enam varian; ubin tanpa A berarti rinciannya belum tersedia untuk hari itu.'}
+          {mode === 'kartu' && ' Mode Kartu: angka pada ubin adalah harga PENUTUPAN hari bursa terakhir, bukan harga berjalan — rincian broker memang baru terbit sesudah pasar tutup, jadi seluruh kartu ini satu tanggal yang sama. Huruf A adalah net asing dalam miliar rupiah dari rincian enam varian; ubin tanpa A berarti nilainya di bawah 100 juta atau rinciannya belum terbit untuk hari itu.'}
           {mode === 'deret' && ' Mode Deret: indeks kumulatif bobot setara anggota grup dibanding IHSG, rebased 100 di awal rentang — klik legenda untuk menyorot satu garis.'}
         </p>
       </div>

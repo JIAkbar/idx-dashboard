@@ -3426,3 +3426,7 @@
   .lantai .gk-ubin { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
   .lantai .gk-rata { margin-left: 0; width: 100%; }
 }
+/* Tanggal harga di kepala mode Kartu — dipisah dari tanggal posisi KSEI di
+   kepala halaman. Keduanya beda bulan, dan tanpa label ini pembaca menyangka
+   persentase ubin ikut tanggal kepemilikan. */
+.lantai .gk-tgl-harga { font-family: var(--mono); font-size: 10.5px; color: var(--text3); }
