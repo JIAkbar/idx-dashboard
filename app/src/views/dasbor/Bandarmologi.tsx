@@ -274,7 +274,14 @@ export default function Bandarmologi() {
           'seharian, dan beli bersih asing terhadap volume emiten.'
         }
         batas={
-          `Aturan pangsa nilai TIDAK berlaku pada kadens harian, dan itu terukur: pangsa tertinggi ` +
+          'ATURAN INI SUDAH DIUJI DAN TIDAK MEMBERI KEUNGGULAN. Backtest Januari 2025 sampai ' +
+          'Agustus 2026 atas seluruh emiten, horizon lima hari bursa: hari-emiten yang lolos ' +
+          'saringan pangsa nilai (452 kejadian) menghasilkan median −0,63% dengan 44% menang, ' +
+          'dan yang ditambah saringan aliran asing (98 kejadian) −0,87%. Pembandingnya — semua ' +
+          'hari-emiten tanpa saringan, 320.309 kejadian — median 0,00% dengan 43% menang. ' +
+          'Jadi saringan ini sedikit lebih buruk daripada tidak menyaring sama sekali. Angkanya ' +
+          'tetap ditampilkan supaya bisa diperiksa ulang, bukan karena ia layak dipakai. ' +
+          `Terpisah dari itu, ambang pangsa nilai juga tak berlaku pada kadens harian: pangsa tertinggi ` +
           `hari ini hanya ${((ringkas?.shareTertinggi ?? 0) * 100).toFixed(1)}% — nol emiten mencapai 8%. ` +
           'Sebabnya jelas begitu diperiksa: aturan itu dirancang untuk lima sampai sepuluh menit ' +
           'pertama perdagangan, saat nilai pasar masih kecil, bukan untuk sehari penuh. Ambangnya ' +
