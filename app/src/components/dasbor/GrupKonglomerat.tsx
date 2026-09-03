@@ -23,6 +23,17 @@ interface Anggota {
   pct1d: number | null
   /** Hanya untuk baris yang ditambahkan manual — alasannya wajib ada. */
   alasan?: string
+  /** Arus dana (3 Sep 2026, Johan: "sambungin ke data realtime 6 varian +
+   *  OHLCV"). Ditempel di berkas grup, bukan diunduh per emiten dari
+   *  peramban — 82 permintaan demi satu ubin tak sepadan. Semua opsional:
+   *  hari yang rincian brokernya belum terbit tetap merender ubinnya. */
+  vol?: number | null
+  nilai?: number | null
+  /** Net asing rupiah hari bursa terakhir, dari varian asing. */
+  net_asing?: number | null
+  accdist?: string | null
+  top3_pct?: number | null
+  varian_ada?: string[]
 }
 
 interface BerkasGrup {
@@ -62,8 +73,9 @@ const OPSI_RENTANG_GRUP: { id: RentangGrup; label: string }[] = [
 
 /** K4 lanjutan (Paket J, 27 Agu): mode Deret — grafik garis kumulatif per
  *  grup vs IHSG, melengkapi chip snapshot yang cuma satu titik waktu. */
-type Mode = 'tabel' | 'deret'
+type Mode = 'kartu' | 'tabel' | 'deret'
 const OPSI_MODE: { id: Mode; label: string }[] = [
+  { id: 'kartu', label: 'Kartu' },
   { id: 'tabel', label: 'Tabel' },
   { id: 'deret', label: 'Deret' },
 ]
@@ -160,7 +172,7 @@ export function GrupKonglomerat() {
   const [data, setData] = useState<BerkasGrup | null>(null)
   const [galat, setGalat] = useState(false)
   const [rentang, setRentang] = useState<RentangGrup>('h1')
-  const [mode, setMode] = useState<Mode>('tabel')
+  const [mode, setMode] = useState<'kartu' | 'tabel' | 'deret'>('kartu')
   const [rentangDeret, setRentangDeret] = useState<RentangDeret>('b3')
   const [ihsg, setIhsg] = useState<BarisOhlc[] | null>(null)
   /** kode -> {h1,wtd,mtd} dari screener; null = belum termuat (chip pakai
@@ -206,9 +218,14 @@ export function GrupKonglomerat() {
       <div className="panel-h">
         <span className="lbl">Grup Konglomerat</span>
         <PemilihRentang opsi={OPSI_MODE} nilai={mode} onGanti={setMode} ariaLabel="Mode tampilan grup" />
-        {mode === 'tabel'
+        {mode !== 'deret'
           ? <PemilihRentang opsi={OPSI_RENTANG_GRUP} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang kinerja harga anggota grup" />
           : <PemilihRentang opsi={OPSI_RENTANG_DERET} nilai={rentangDeret} onGanti={setRentangDeret} ariaLabel="Rentang deret kinerja grup" />}
+        {mode === 'kartu' && (
+          <span className="gk-legenda" aria-hidden="true">
+            <i className="naik" /> Naik <i className="nol" /> Datar <i className="turun" /> Turun
+          </span>
+        )}
         <span className="v-note">{urut.length} grup · diturunkan dari kepemilikan KSEI ≥{data.ambang_pct}%</span>
       </div>
       <div className="panel-b gk-isi">
@@ -218,9 +235,65 @@ export function GrupKonglomerat() {
               <span className="gk-nama">{nama}</span>
               <span className="gk-kode">{g.kode}</span>
               <span className="gk-jml">{g.anggota.length} emiten</span>
+              {mode === 'kartu' && (() => {
+                // Rata-rata grup: dari anggota yang PUNYA angka saja. Memasukkan
+                // yang kosong sebagai nol akan menyeret rata-rata ke tengah dan
+                // membuat grup yang datanya bolong terlihat lebih tenang.
+                const nilai = g.anggota
+                  .map((a) => (chg ? (chg.get(a.kode)?.[rentang] ?? null) : (rentang === 'h1' ? a.pct1d : null)))
+                  .filter((v): v is number => v != null)
+                if (!nilai.length) return null
+                const rata = nilai.reduce((s2, v) => s2 + v, 0) / nilai.length
+                return (
+                  <span className={'gk-rata ' + (rata > 0 ? 'naik' : rata < 0 ? 'turun' : 'nol')}>
+                    Rata-rata {fp(rata)}
+                    {nilai.length < g.anggota.length && <small> ({nilai.length}/{g.anggota.length})</small>}
+                  </span>
+                )
+              })()}
             </div>
             {mode === 'deret' ? (
               <GrupDeretChart kodeAnggota={g.anggota.map((a) => a.kode)} ihsg={ihsg} rentang={rentangDeret} />
+            ) : mode === 'kartu' ? (
+              <div className="gk-ubin">
+                {g.anggota.map((a) => {
+                  const nilai = chg ? (chg.get(a.kode)?.[rentang] ?? null) : (rentang === 'h1' ? a.pct1d : null)
+                  const arah = nilai == null ? 'nol' : nilai > 0 ? 'naik' : nilai < 0 ? 'turun' : 'nol'
+                  return (
+                    <Link
+                      key={a.kode}
+                      to={`/grafik?kode=${a.kode}`}
+                      className={'gk-ubin-it ' + arah}
+                      title={[
+                        a.lewat ? `${a.lewat} — ${a.pct?.toFixed(2)}%` : (a.alasan ?? a.kode),
+                        a.harga ? `harga ${fN(a.harga, 0)}` : null,
+                        a.vol ? `volume ${fN(a.vol, 0)}` : null,
+                        a.net_asing ? `net asing ${a.net_asing > 0 ? '+' : ''}${fN(a.net_asing / 1e9, 1)} miliar` : null,
+                        a.varian_ada?.length ? `${a.varian_ada.length} varian rincian broker` : 'rincian broker belum ada',
+                      ].filter(Boolean).join(' · ')}
+                    >
+                      <b>{a.kode}</b>
+                      <span className="gk-ubin-pct">{nilai == null ? '—' : fp(nilai)}</span>
+                      {(() => {
+                        // Net asing hanya ditampilkan kalau angkanya BERARTI di
+                        // ubin sekecil ini. Di bawah 100 juta, pembulatan ke
+                        // satu desimal miliar mencetak "0,0" — nol yang bukan
+                        // nol, dan itu lebih menyesatkan daripada tak ada
+                        // baris sama sekali (terlihat 3 Sep: LIFE −14 juta
+                        // tampil sebagai "A −0").
+                        const na = a.net_asing
+                        if (na == null || Math.abs(na) < 1e8) return null
+                        const miliar = Math.abs(na) / 1e9
+                        return (
+                          <span className={'gk-ubin-asing ' + (na > 0 ? 'naik' : 'turun')} title="net asing, miliar rupiah">
+                            A {na > 0 ? '+' : '−'}{fN(miliar, miliar >= 10 ? 0 : 1)}
+                          </span>
+                        )
+                      })()}
+                    </Link>
+                  )
+                })}
+              </div>
             ) : (
             <div className="gk-chip-baris">
               {g.anggota.map((a) => {
@@ -257,6 +330,7 @@ export function GrupKonglomerat() {
           lebih. Persen pada chip adalah <b>perubahan harga pada rentang terpilih</b> ({OPSI_RENTANG_GRUP.find((o) => o.id === rentang)?.label}), bukan porsi
           kepemilikan — deret kepemilikan KSEI antar-waktu belum tersedia, jadi rentang di sini
           mengukur kinerja harga anggota, bukan pergeseran porsi grup.
+          {mode === 'kartu' && ' Mode Kartu: huruf A pada ubin adalah net asing dalam miliar rupiah pada hari bursa terakhir, dari rincian broker enam varian; ubin tanpa A berarti rinciannya belum tersedia untuk hari itu.'}
           {mode === 'deret' && ' Mode Deret: indeks kumulatif bobot setara anggota grup dibanding IHSG, rebased 100 di awal rentang — klik legenda untuk menyorot satu garis.'}
         </p>
       </div>

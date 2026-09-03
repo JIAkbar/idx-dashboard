@@ -32,6 +32,8 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 AKAR = Path(__file__).parent.parent
 SUMBER = AKAR / "data-idx" / "json" / "investor_map.json"
+from bar_berisi import tutup_dan_ubah
+
 KELUARAN = AKAR / "data-idx" / "json" / "grup_konglomerat.json"
 OHLC = AKAR / "data-idx" / "json" / "ohlc"
 
@@ -157,18 +159,72 @@ def petakan(emiten: list[dict]) -> dict:
     return hasil
 
 
-def harga_terakhir(kode: str) -> tuple[float | None, float | None]:
+def harga_terakhir(kode: str) -> tuple[float | None, float | None, str | None]:
     """(close, %1D) dari berkas OHLC emiten. Ditempelkan ke berkas grup supaya
     halaman cukup mengunduh SATU berkas — memuat 80-an berkas OHLC dari
     peramban demi satu chip per emiten jelas tak sepadan."""
     p = OHLC / f"{kode}.json"
     if not p.exists():
-        return None, None
+        return None, None, None
     d = json.loads(p.read_text(encoding="utf-8"))["d"]
-    if len(d) < 2:
-        return (d[-1][4] if d else None), None
-    kini, lalu = d[-1][4], d[-2][4]
-    return kini, (round((kini - lalu) * 100 / lalu, 2) if lalu else None)
+    # Bar hari BERJALAN ada sejak pagi tapi masih kosong (volume 0, tutup =
+    # tutup kemarin). Mengambilnya apa adanya membuat SELURUH anggota tampil
+    # 0,00% — terjadi 3 Sep 2026, 82 dari 82 anggota, tanpa satu pun galat.
+    tutup, ubah, tgl = tutup_dan_ubah(d)
+    return tutup, ubah, tgl
+
+
+# ── Arus dana per anggota: OHLCV + 6 varian broker ──────────────────────────
+# Johan 3 Sep 2026: *"data nya di sambungin ke data realtime 6 varian + OHLCV"*.
+# Ditempel ke berkas grup (82 anggota saja) supaya halaman cukup mengunduh SATU
+# berkas — memuat 82 berkas broker dari peramban demi satu ubin jelas tak
+# sepadan, alasan yang sama dengan `harga_terakhir` di atas.
+BROKER = AKAR / "data-idx" / "json" / "broker_harian"
+VARIAN_TAMPIL = ["broker", "asing", "nego", "nego-asing", "tunai", "tunai-asing"]
+# Nama yang dipakai berkas untuk varian reguler adalah `broker`; di layar ia
+# disebut "reguler" supaya sejajar dengan lima lainnya.
+
+
+def _net(baris: list | None) -> float:
+    """Σ(beli_nilai − jual_nilai) satu varian. Untuk varian ALL angkanya nol
+    menurut definisi (tiap transaksi punya dua sisi); yang bermakna adalah
+    varian ASING — di situ hanya sisi asing yang tercatat, jadi netnya nyata."""
+    if not baris:
+        return 0.0
+    return sum((b[2] or 0) - (b[4] or 0) for b in baris if len(b) > 4)
+
+
+def arus_emiten(kode: str, tanggal: str | None) -> dict:
+    """Volume/nilai OHLC + ringkasan 6 varian broker untuk satu hari."""
+    kosong = {"vol": None, "nilai": None, "net_asing": None,
+              "accdist": None, "varian_ada": [], "top3_pct": None}
+    if not tanggal:
+        return kosong
+    o = OHLC / f"{kode}.json"
+    vol = nilai = None
+    if o.exists():
+        for b in reversed(json.loads(o.read_text(encoding="utf-8"))["d"]):
+            if b and b[0] == tanggal:
+                vol = b[5]
+                nilai = round(b[4] * b[5]) if b[4] and b[5] else None
+                break
+    bp = BROKER / f"{kode}.json"
+    if not bp.exists():
+        return {**kosong, "vol": vol, "nilai": nilai}
+    hari = (json.loads(bp.read_text(encoding="utf-8")).get("hari") or {}).get(tanggal) or {}
+    ada = [v for v in VARIAN_TAMPIL if hari.get(v)]
+    rg = hari.get("ringkas") or {}
+    return {
+        "vol": vol,
+        "nilai": nilai,
+        # Net asing dalam rupiah — varian ASING, satu-satunya yang netnya
+        # bermakna (lihat `_net`).
+        "net_asing": round(_net((hari.get("asing") or {}).get("broker")
+                                if isinstance(hari.get("asing"), dict) else None)) or None,
+        "accdist": rg.get("accdist"),
+        "top3_pct": rg.get("top3_pct"),
+        "varian_ada": ada,
+    }
 
 
 def main() -> None:
@@ -181,7 +237,8 @@ def main() -> None:
 
     for anggota in hasil.values():
         for a in anggota:
-            a["harga"], a["pct1d"] = harga_terakhir(a["kode"])
+            a["harga"], a["pct1d"], a["_tgl"] = harga_terakhir(a["kode"])
+            a.update(arus_emiten(a["kode"], a["_tgl"]))
 
     total = sum(len(v) for v in hasil.values())
     print(f"{len(emiten)} emiten dipindai · {total} keanggotaan di {len(hasil)} grup\n")

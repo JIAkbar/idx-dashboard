@@ -3327,3 +3327,102 @@
 .kuli-papan .kp-tutor summary { cursor: pointer; color: var(--text2); font-weight: 600; }
 .kuli-papan .kp-tutor ol { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 6px; }
 .kuli-papan .kp-tutor li { line-height: 1.5; }
+
+/* ── Mode Kartu grup konglomerat (3 Sep 2026) ───────────────────────────────
+   Bentuknya dari contoh yang dibawa Johan: satu kartu per grup, ubin per
+   emiten dalam kisi, rata-rata grup di kepala kartu. Yang berbeda dari
+   contoh itu: warna ubin di sini SELALU berpasangan dengan angkanya, tidak
+   pernah warna saja — ubin hijau tanpa angka tak bisa dibedakan antara
+   "naik tipis" dan "naik banyak", dan pembaca yang tak membedakan warna
+   kehilangan seluruh isinya. */
+.lantai .gk-isi:has(.gk-ubin) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+  gap: 12px;
+  align-items: start;
+}
+.lantai .gk-isi:has(.gk-ubin) > .gk-grup {
+  border: 1px solid var(--line);
+  border-radius: var(--r-kecil);
+  padding: 11px 12px 12px;
+  background: var(--bg1);
+}
+.lantai .gk-isi:has(.gk-ubin) > .gk-catatan { grid-column: 1 / -1; }
+
+.lantai .gk-rata {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.lantai .gk-rata.naik { color: var(--green); }
+.lantai .gk-rata.turun { color: var(--red); }
+.lantai .gk-rata.nol { color: var(--text3); }
+.lantai .gk-rata small { color: var(--text3); }
+
+.lantai .gk-ubin {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 5px;
+  margin-top: 9px;
+}
+.lantai .gk-ubin-it {
+  display: block;
+  padding: 6px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--line);
+  background: var(--bg2);
+  text-decoration: none;
+  line-height: 1.3;
+  /* min-height, bukan padding saja: ubin dengan baris asing dan tanpa baris
+     asing harus sama tinggi, kalau tidak kisinya bergerigi. */
+  min-height: 44px;
+}
+.lantai .gk-ubin-it:hover { border-color: var(--amber); }
+.lantai .gk-ubin-it b {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.lantai .gk-ubin-pct {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.lantai .gk-ubin-it.naik { background: color-mix(in srgb, var(--green) 13%, var(--bg2)); border-color: color-mix(in srgb, var(--green) 32%, transparent); }
+.lantai .gk-ubin-it.naik .gk-ubin-pct { color: var(--green); }
+.lantai .gk-ubin-it.turun { background: color-mix(in srgb, var(--red) 13%, var(--bg2)); border-color: color-mix(in srgb, var(--red) 32%, transparent); }
+.lantai .gk-ubin-it.turun .gk-ubin-pct { color: var(--red); }
+.lantai .gk-ubin-it.nol .gk-ubin-pct { color: var(--text3); }
+.lantai .gk-ubin-asing {
+  display: block;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-variant-numeric: tabular-nums;
+  opacity: .85;
+}
+.lantai .gk-ubin-asing.naik { color: var(--green); }
+.lantai .gk-ubin-asing.turun { color: var(--red); }
+
+.lantai .gk-legenda {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  color: var(--text3);
+}
+.lantai .gk-legenda i {
+  width: 9px; height: 9px; border-radius: 2px; display: inline-block;
+  border: 1px solid var(--line);
+}
+.lantai .gk-legenda i.naik { background: color-mix(in srgb, var(--green) 40%, var(--bg2)); }
+.lantai .gk-legenda i.turun { background: color-mix(in srgb, var(--red) 40%, var(--bg2)); }
+.lantai .gk-legenda i.nol { background: var(--bg2); }
+
+@media (max-width: 560px) {
+  .lantai .gk-ubin { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
+  .lantai .gk-rata { margin-left: 0; width: 100%; }
+}

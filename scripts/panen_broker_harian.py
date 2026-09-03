@@ -415,7 +415,10 @@ def tanggal_bawaan() -> str:
     bar = [b for b in d.get("d", []) if b]
     if not bar:
         raise SystemExit("OHLC BBCA kosong — jalankan panen_ohlc.py dulu.")
-    return bar[-1][0]
+    # Bar hari berjalan sudah ada sejak pagi tapi masih kosong; memakainya
+    # membuat panen tanpa --tanggal menyasar hari yang datanya belum terbit.
+    from bar_berisi import tanggal_terakhir
+    return tanggal_terakhir(bar) or bar[-1][0]
 
 
 def volume_idx(kode: str, tanggal: str):

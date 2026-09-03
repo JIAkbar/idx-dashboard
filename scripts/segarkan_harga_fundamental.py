@@ -85,7 +85,11 @@ def hitung(fd: dict, bar: list) -> dict:
     """Ruas baru untuk satu emiten. Ruas yang penyusunnya tak ada di `fd`
     (mis. `eps` kosong) DILEWATI — bukan diisi None, karena None di sini akan
     menghapus nilai lama yang masih sah."""
-    b = bar[-1]
+    # Bar hari berjalan masih kosong sampai panen sore; harganya sama dengan
+    # kemarin tapi stempel `harga_pada` akan tertulis hari ini — harga basi
+    # yang terlihat segar. Ambil bar berisi terakhir.
+    from bar_berisi import bar_terakhir
+    b = bar_terakhir(bar) or bar[-1]
     harga = b[4]
     baru: dict = {
         "last_price": harga,
