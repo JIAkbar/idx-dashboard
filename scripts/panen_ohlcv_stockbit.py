@@ -92,7 +92,13 @@ def urai(mentah: dict) -> list[list]:
     bar = (mentah or {}).get("data", {}).get("chartbit") or []
     per_tanggal = {b["date"]: [b.get(k if k != "tanggal" else "date") for k in KOLOM]
                    for b in bar if b and b.get("date")}
-    return [per_tanggal[t] for t in sorted(per_tanggal)]
+    baris = [per_tanggal[t] for t in sorted(per_tanggal)]
+    # Bar hari berjalan: chartbit mengembalikannya sejak pra-pembukaan dengan
+    # volume/value/frequency nol TAPI foreignbuy/sell/flow disalin dari bar
+    # kemarin — angka basi yang terlihat nyata. Dibuang di sini, di penulis,
+    # supaya tak pernah masuk arsip maupun terdorong CI.
+    from bar_berisi import buang_bar_hari_berjalan
+    return buang_bar_hari_berjalan(baris, i_volume=KOLOM.index("volume"))
 
 
 def karantina_bar(baris: list[list]) -> tuple[list[list], list[dict]]:

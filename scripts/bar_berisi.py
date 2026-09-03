@@ -79,6 +79,44 @@ def tutup_dan_ubah(bar: list, i_volume: int = I_VOLUME) -> tuple[float | None, f
     return kini[I_TUTUP], ubah, kini[I_TANGGAL]
 
 
+# ── Penjaga sisi PENULIS ────────────────────────────────────────────────────
+# Bar hari berjalan tak boleh masuk arsip sebelum harinya benar-benar tutup.
+# Dipakai DUA pemanen dengan tata kolom berbeda (Yahoo: volume di indeks 5;
+# chartbit: indeks 6), karena itu indeksnya parameter, bukan tetapan.
+#
+# Bursa tutup 16:15; sumber memberi harga dengan jeda ±15 menit → 16:45 baru
+# aman. Angka itu sudah tertulis di dokumentasi pemanen Yahoo sejak lama —
+# yang tak pernah ada penegakannya.
+JAM_AMAN_WIB = 16 * 60 + 45
+
+
+def buang_bar_hari_berjalan(baris: list, i_volume: int = I_VOLUME,
+                            i_tanggal: int = I_TANGGAL, kini=None) -> list:
+    """Buang bar bertanggal HARI INI selama harinya belum tutup DAN kosong.
+
+    Dua syarat, keduanya perlu: sudah lewat 16:45 WIB, dan volumenya bukan
+    nol. Bar hari LAMPAU tak pernah dibuang, termasuk yang bervolume nol —
+    suspensi itu riwayat yang sah.
+
+    Kenapa ini di penulis dan bukan cuma di pembaca: terukur 3 Sep 2026,
+    963 emiten di `ohlc/` DAN 963 di `ohlcv_stockbit/` membawa bar stub yang
+    sudah terdorong ke produksi oleh CI. Di berkas chartbit stubnya lebih
+    berbahaya — `volume`/`value`/`frequency` nol, tapi `foreignbuy`,
+    `foreignsell`, dan `foreignflow` adalah SALINAN PERSIS bar kemarin. Nol
+    terlihat kosong; salinan terlihat nyata.
+    """
+    import datetime as _dt
+    if not baris:
+        return baris
+    wib = _dt.timezone(_dt.timedelta(hours=7))
+    kini = kini or _dt.datetime.now(wib)
+    hari_ini = kini.strftime("%Y-%m-%d")
+    tutup = (kini.hour * 60 + kini.minute) >= JAM_AMAN_WIB
+    return [b for b in baris
+            if not (b and len(b) > max(i_volume, i_tanggal)
+                    and b[i_tanggal] == hari_ini and not (tutup and b[i_volume]))]
+
+
 def swauji() -> int:
     lulus = gagal = 0
 
@@ -117,6 +155,23 @@ def swauji() -> int:
     cek("satu bar saja: ubah None", tutup_dan_ubah([["x", 1, 1, 1, 5, 9]]) == (5, None, "x"))
     cek("nol bar: semua None", tutup_dan_ubah([]) == (None, None, None))
     cek("bar pendek tak meledak", indeks_bar_berisi([["x", 1]]) is None)
+
+    import datetime as _dt
+    _wib = _dt.timezone(_dt.timedelta(hours=7))
+    pagi = _dt.datetime(2026, 9, 3, 12, 0, tzinfo=_wib)
+    malam = _dt.datetime(2026, 9, 3, 17, 0, tzinfo=_wib)
+    dgn_stub = [["2026-09-02", 1, 1, 1, 11, 500], ["2026-09-03", 11, 11, 11, 11, 0]]
+    dgn_isi = [["2026-09-02", 1, 1, 1, 11, 500], ["2026-09-03", 11, 13, 10, 12, 900]]
+    cek("penulis: stub dibuang siang", len(buang_bar_hari_berjalan(dgn_stub, kini=pagi)) == 1)
+    cek("penulis: stub dibuang malam juga", len(buang_bar_hari_berjalan(dgn_stub, kini=malam)) == 1)
+    cek("penulis: bervolume dibuang sebelum 16:45", len(buang_bar_hari_berjalan(dgn_isi, kini=pagi)) == 1)
+    cek("penulis: bervolume disimpan sesudah 16:45", len(buang_bar_hari_berjalan(dgn_isi, kini=malam)) == 2)
+    cek("penulis: bar lampau bervolume nol aman",
+        len(buang_bar_hari_berjalan([["2026-08-28", 1, 1, 1, 1, 0]], kini=pagi)) == 1)
+    # tata kolom chartbit: volume di indeks 6
+    cb = [["2026-09-02", 0, 1, 1, 1, 11, 500], ["2026-09-03", 0, 1, 1, 1, 11, 0]]
+    cek("penulis: indeks volume chartbit", len(buang_bar_hari_berjalan(cb, i_volume=6, kini=pagi)) == 1)
+    cek("penulis: deret kosong", buang_bar_hari_berjalan([], kini=pagi) == [])
 
     print(f"{lulus}/{lulus + gagal} lulus")
     return 0 if not gagal else 1
