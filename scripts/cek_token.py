@@ -61,6 +61,16 @@ def uji_hidup(access: str) -> tuple[int, str]:
        timeout=30)
     if r.status_code == 200:
         n = len(((r.json().get("data") or {}).get("broker_summary") or {}).get("brokers_buy") or [])
+        # 200 dengan NOL broker untuk tanggal yang PASTI sudah terbit = token
+        # diterima gateway tapi tak lagi berhak data — mati diam-diam. Terjadi
+        # 2 Sep 2026 malam (refresh 19:56): semua tanggal, termasuk 14 Agu dan
+        # 1 Sep yang sudah 831 emiten di cakram, dijawab 200 "Successfully
+        # retrieved" dengan brokers kosong. Gerbang versi lama meloloskannya
+        # karena hanya melihat status, dan panen paginya menulis 895 emiten
+        # kosong lalu mendorongnya ke produksi. Status 200 bukan bukti hidup;
+        # yang jadi bukti adalah DATANYA.
+        if n == 0:
+            return 0, "200 tapi NOL broker BBCA 21 Agu — token diterima tapi tak berhak data (MATI DIAM-DIAM)"
         return 200, f"200 OK — {n} broker beli BBCA 21 Agu terbaca"
     return r.status_code, f"HTTP {r.status_code}: {r.text[:120]}"
 

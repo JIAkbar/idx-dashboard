@@ -66,6 +66,9 @@ ARSIP = AKAR / "_arsip-mentah" / "broker-harian"
 WIB = timezone(timedelta(hours=7))
 
 URL = "https://exodus.stockbit.com/marketdetectors/{kode}"
+# Batas `limit` yang masih dijawab berisi — terukur 3 Sep 2026 (lihat komentar
+# di _ambil_sekali). Di atas ini sumber menjawab 200 dengan brokers kosong.
+LIMIT_BROKER = 50
 # Varian panen per hari. `reguler` = dasar (semua investor, pasar reguler) dan
 # satu-satunya yang masuk cek silang volume. `asing` & `nego` diminta Johan
 # 22 Agu 2026 ("panen juga asing dan nego") sesudah layar Stockbit membuktikan
@@ -145,6 +148,60 @@ def _angka(v) -> float:
 
 
 # ── Normalisasi ─────────────────────────────────────────────────────────────
+# ── Penjaga laju: jawaban kosong beruntun = sumber menolak, bukan data tak ada ──
+# 3 Sep 2026 pagi: sumber menjawab 200 "Successfully retrieved" dengan brokers
+# KOSONG untuk 962 emiten berturut — bukan 429, bukan 401 — sementara BBCA
+# 24 Agu (limit 50) tetap berisi dan 21 Agu berkedip berisi/kosong dalam dua
+# menit. Itu pembatasan laju yang diam, dan menggilingnya 962×6 kali hanya
+# memperpanjang blokirnya. Aturan proyek: penolakan beruntun → BERHENTI dan
+# catat, bukan diulang sampai tembus. Kanari = satu emiten & tanggal yang
+# terbukti berisi; kalau kanari pun kosong sesudah beberapa kali jeda, hentikan
+# jalan ini dengan pesan yang menyebut sebabnya.
+AMBANG_KOSONG = 12       # jawaban "nol broker padahal ada volume" beruntun
+KANARI_COBA = 5
+KANARI_JEDA = 60         # detik antar percobaan kanari
+
+
+def _kanari_tanggal() -> str | None:
+    """Tanggal BBCA di cakram yang ≥10 hari lalu dan punya ≥30 baris broker
+    reguler — cukup tua supaya sudah pasti terbit, cukup ramai supaya jawaban
+    berisi tak bisa disamakan dengan hari sepi."""
+    d = baca(KELUARAN / "BBCA.json") or {}
+    hari = d.get("hari") or {}
+    batas = (datetime.now().date() - timedelta(days=10)).isoformat()
+    calon = [t for t, h in hari.items() if t <= batas and len((h or {}).get("broker") or []) >= 30]
+    return max(calon) if calon else None
+
+
+def _kanari(token: str) -> int:
+    """Kembalikan 0 bila sumber menjawab berisi lagi; SystemExit bila tidak."""
+    tgl = _kanari_tanggal()
+    if not tgl:
+        print("  kanari: tak ada tanggal BBCA yang layak di cakram — lanjut tanpa penjaga")
+        return 0
+    for i in range(1, KANARI_COBA + 1):
+        st, isi = ambil(token, "BBCA", tgl)
+        n = len((((isi if isinstance(isi, dict) else {}).get("data") or {}).get("broker_summary") or {}).get("brokers_buy") or [])
+        if st == 200 and n:
+            print(f"  kanari BBCA {tgl}: {n} broker — sumber menjawab lagi, lanjut")
+            return 0
+        print(f"  kanari BBCA {tgl}: HTTP {st}, {n} broker — percobaan {i}/{KANARI_COBA}, jeda {KANARI_JEDA}s")
+        time.sleep(KANARI_JEDA)
+    raise SystemExit(
+        f"BERHENTI: {AMBANG_KOSONG} jawaban kosong beruntun dan kanari BBCA {tgl} tetap kosong "
+        f"{KANARI_COBA}x — sumber membatasi laju atau token tak berhak data. "
+        "Jangan diulang sekarang; coba lagi nanti dengan jeda lebih besar."
+    )
+
+
+def _reguler_tersimpan(keluaran: dict | None, tanggal: str) -> bool:
+    """Benar bila berkas keluaran emiten sudah memuat baris broker REGULER
+    untuk `tanggal` — dipakai sebagai wasit "sumber sudah siap" sebelum varian
+    lain yang kosong diizinkan tersimpan (lihat komentar di jalur simpan)."""
+    hari = ((keluaran or {}).get("hari") or {}).get(tanggal) or {}
+    return bool(hari.get("broker"))
+
+
 def padatkan(mentah: dict) -> tuple[list[list], dict]:
     """Balasan GROSS -> (baris padat per broker, ringkasan bandar_detector).
 
@@ -320,7 +377,16 @@ def _ambil_sekali(token: str, kode: str, tanggal: str, pasar: str,
         "transaction_type": transaksi,
         "market_board": pasar,
         "investor_type": investor,
-        "limit": 100,
+        # 50, BUKAN 100. Terukur 3 Sep 2026 pagi (BBCA 21 Agu, token hidup):
+        # limit 5/20/50 → 50 baris; 51/55/60/70/80/90/99/100 → 200 "Successfully
+        # retrieved" dengan brokers KOSONG — sumber memasang batas 50 dan
+        # menjawab kosong alih-alih 400. Dengan 100, panen semalam menulis 895
+        # emiten kosong (asing/nego/tunai) dan pagi ini 962 "belum siap".
+        # Ikutan yang belum terjawab: emiten dengan >50 broker per sisi (BBCA
+        # 76 di 1 Sep) tak lagi muat satu panggilan; offset/page/skip/start
+        # diuji dan tak berpengaruh — pengujian jatuh di jendela jawaban kosong,
+        # jadi belum konklusif. Lihat docs/referensi & jejak #359.
+        "limit": LIMIT_BROKER,
     }, timeout=60)
     return r.status_code, (r.json() if r.status_code == 200 else r.text[:200])
 
@@ -376,6 +442,7 @@ def jalankan(a) -> int:
     if len(kode_semua) > 1:
         print(f"Panen broker GROSS {tanggal} — {len(kode_semua)} emiten, jeda {a.jeda}s")
     n_ok = n_lewat = n_kosong = n_gagal = n_meleset = 0
+    beruntun_kosong = 0  # penjaga laju — lihat _kanari
     mulai = time.time()
 
     varian_semua = [v.strip() for v in (getattr(a, "varian", None) or "reguler").split(",") if v.strip()]
@@ -414,6 +481,14 @@ def jalankan(a) -> int:
             time.sleep(a.jeda)
 
         baris, ringkas = padatkan(mentah)
+        # Tandai bila salah satu sisi menyentuh batas LIMIT_BROKER: daftarnya
+        # TERPOTONG oleh sumber (BBCA 1 Sep punya 76 broker per sisi; sejak
+        # 3 Sep 2026 sumber cuma memberi 50). Ditulis ke ringkasan supaya
+        # halaman bisa menyatakannya, bukan menyajikan "50 broker" seolah
+        # lengkap. Nilai lengkapnya belum bisa diambil — tak ada paginasi.
+        _bs = (mentah.get("data") or {}).get("broker_summary") or {}
+        if len(_bs.get("brokers_buy") or []) >= LIMIT_BROKER or len(_bs.get("brokers_sell") or []) >= LIMIT_BROKER:
+            ringkas["terpotong"] = LIMIT_BROKER
         vol = volume_idx(kode, tanggal)
         if not baris:
             # Reguler nol hanya sah kalau IDX juga nol. Asing/nego nol itu WAJAR
@@ -446,12 +521,32 @@ def jalankan(a) -> int:
                 # bukan galat jaringan.)
                 if vol:
                     print(f"  {kode}: API nol broker padahal IDX volume {vol:,} — belum siap, tak disimpan")
+                    beruntun_kosong += 1
+                    if beruntun_kosong >= AMBANG_KOSONG:
+                        beruntun_kosong = _kanari(token)
                     continue
                 if vol is None:
                     continue
                 if not ark.exists():
                     ark.parent.mkdir(parents=True, exist_ok=True)
                     tulis_ulet(ark, json.dumps(mentah, ensure_ascii=False))
+                continue
+            # Varian NON-reguler kosong padahal IDX mencatat volume: perlakukan
+            # SAMA dengan reguler — jangan disimpan. Sebelum ini hanya reguler
+            # yang dijaga; asing/nego/tunai kosong ditulis sebagai ringkasan
+            # bernilai nol, dan 2 Sep 2026 malam itu yang terjadi pada 895
+            # emiten saat token mati diam-diam (200, brokers kosong) — lalu
+            # ikut terdorong ke produksi sebagai "tak ada transaksi asing".
+            # Nol asing/nego/tunai yang SAH (hari bertransaksi tapi papan itu
+            # memang sepi) tak bisa dibedakan dari token mati lewat volume
+            # reguler; jalan amannya: kalau reguler hari itu belum tersimpan,
+            # varian lain pun ditunda — reguler-lah wasit "sumber sudah siap".
+            if vol and not _reguler_tersimpan(baca(KELUARAN / f"{kode}.json"), tanggal):
+                n_kosong += 1
+                print(f"  {kode}/{varian}: API nol broker padahal IDX volume {vol:,} dan reguler belum ada — ditunda, tak disimpan")
+                beruntun_kosong += 1
+                if beruntun_kosong >= AMBANG_KOSONG:
+                    beruntun_kosong = _kanari(token)
                 continue
             if not ark.exists():
                 ark.parent.mkdir(parents=True, exist_ok=True)
@@ -478,6 +573,7 @@ def jalankan(a) -> int:
         tulis_ulet(out, json.dumps(perbarui_ringkas(baca(out), kode, tanggal, baris, ringkas, varian=varian),
                                    ensure_ascii=False, separators=(",", ":")))
         n_ok += 1
+        beruntun_kosong = 0
       if i % 100 == 0:
             print(f"  ...{i}/{len(kode_semua)} ({time.time()-mulai:.0f}s)")
 
