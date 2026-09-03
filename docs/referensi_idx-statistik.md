@@ -1129,6 +1129,28 @@ Riwayat broker Stockbit mulai 2017, jadi "10 tahun" = seluruh riwayat, bukan pem
 
 Keputusan yang diminta dari Johan: (a) J14 NET dihitung dari GROSS, tidak dipanen; (b) konsolidasi per emiten-tahun gz; (c) tempat backup.
 
+## Referensi desain & dokumen ide — folder `data ide/` (dicatat 3 Sep 2026)
+
+Johan, 3 Sep 2026, saat PDF Creepy Stocks kutandai "belum dipelajari": *"padahal
+ini sudah dan jadi bulletin berarti selama ini tidak tercatat baik"*. Benar —
+sumber-sumber ini dipakai tapi tak pernah punya bagian di sini, dan siapa pun
+yang membaca dokumen akan menyimpulkan "belum". Section ini menutupnya. Berkas
+non-PDF di folder yang sama (video, HTML dev, gambar WhatsApp di `Selesai/`)
+tercatat di jejak #348–#361, bukan di sini.
+
+| Berkas (`data ide/`) | Tanggal | Isi | Dipakai untuk | Status |
+|---|---|---|---|---|
+| `CSMTTV10826P.pdf` (25 hal) · `CSMTTV14AUG26P.pdf` (29 hal, gambar) | 10 & 14 Agu 2026 | Creepy Stocks **Morning Trending Technical View** — per emiten: CLOSE, **BIG MONEY FLOW**, TEKNIKAL | **Acuan format Bulletin Arus Pasar** — edisi pertama `AP-100826-E01` lahir 10 Agu (`80f92aaf1`), hari yang sama dengan PDF pertama. Yang diambil: struktur per-emiten (arus dana besar → teknikal → level), bukan angkanya | Dipakai (Johan 3 Sep). Angka & emiten di PDF tidak disalin — data Bulletin dari panen sendiri |
+| `CSCTA CUAN.pdf` (8 hal) | 14 Agu 2026 | Creepy Stocks **Complete Technical Analyst** — CUAN: snapshot basis, scope, pandangan teknikal utama, **bias**, **konfirmasi yang dibutuhkan** (total order flow), **level kunci** | **Acuan struktur Deep Dive / Analisa PAPAN v1** (`docs/analisa-papan-v1.md`): bias → konfirmasi → level → skenario dalam angka. PAPAN menambah arus broker multi-hari, PCD, tangga pivot + EMA50, asimetri, probabilitas v2 | Dipakai (Johan 3 Sep) |
+| `Kuli Papan.pdf` (2 hal) · `Neo Papan.pdf` (12 hal, gambar) | 23 Agu 2026 | Rancangan halaman | Halaman Kuli Papan (tab Pantau) & Neo Papan — lihat section "Prototipe Dev — Kuli Papan & Neo Papan" | Dipakai, sudah tercatat |
+| `Private Class BIDOFFER Bandar Juli — Abo.pdf` (20 hal) | 25 Agu 2026 | Kelas bid-offer bandar (batch 1, 2025) | `bidoffer.json` (antrean penutupan level terbaik, 833 emiten) dan 9 dokumen `docs/` yang merujuk BIDOFFER | **Sebagian** — datanya dipanen; metodenya belum diturunkan jadi halaman/skor. Belum ada bagian kamus ruasnya di sini |
+| `Rasio untuk Analisis Awal Kinerja Keuangan dan Perpajakan.pdf` (28 hal) | 26 Mei 2026 | 52 rasio keuangan & perpajakan | — | **Belum** dipelajari; kandidat untuk halaman fundamental (keystats 94 rasio Stockbit sudah dipanen — pembanding yang wajar) |
+| `algo-radar-ops-formula.pdf` (25 hal) | 1 Sep 2026 | Spesifikasi kuantitatif: order-flow, forensik order book, 11 detektor, kalibrasi P(win), rencana ATR, Kelly | Studi: `docs/spek-dev-papan/studi_algo-radar-ops-formula.md` — matriks kelayakan terhadap data kita (12 ✅ · 8 proksi · 9 ❌ butuh order book berlapis + tape ber-agresor) | **Dipelajari 3 Sep**; adopsi menunggu keputusan Johan (§7 studi) |
+
+Aturan yang lahir dari kejadian ini: **acuan desain/metode wajib dicatat di
+section ini saat pertama dipakai**, bukan hanya sumber data. Tanpa itu, jejak
+"dari mana bentuk halaman ini" hilang begitu sesi yang membuatnya di-`/clear`.
+
 ## Riwayat
 
 - 23 Agustus 2026 — dibuat (Fable, sesi AI Skill) dari kode dan dokumen yang ada; sumber dicatat: 23 (4 di antaranya ❓ belum dipastikan: GetSecuritiesStock, Stockbit endpoint belum terpecahkan, indexalpha, halaman Chart); halaman dipetakan: 28; baris inventaris "belum diputuskan": 31; jahitan ditandai: 8 (semua perlu keputusan Johan). Koreksi yang ditemukan untuk dokumen lain: `status-panen.md` baris Kepemilikan KSEI ("belum dipakai") basi — dibaca `brokerProfilKsei.ts:27`. Produsen `kandidat_deepdive.json` dan penulis asli `harga_terakhir.json` belum ditemukan. Tabel pembanding angka untuk J1/J2/J4/J5/J8 belum pernah dibuat — itu prasyarat sebelum Johan memutuskan, dan pekerjaan pertama yang disarankan untuk sesi Papan Trading.

@@ -414,6 +414,7 @@ hr { border: none; border-top: 1px solid var(--hairline); margin: 24px 0; }
 <li><a href="#kamus-ruas-arti-tiap-ruas-dan-data-apa-yang-dihasilkannya-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Kamus ruas — arti tiap ruas dan data apa yang dihasilkannya (23 Agu 2026)</span></a></li>
 <li><a href="#prototipe-dev-kuli-papan-neo-papan-artifact-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Prototipe Dev — Kuli Papan &amp; Neo Papan (artifact, 23 Agu 2026)</span></a></li>
 <li><a href="#batas-repo-hosting-github-dan-vercel-diukur-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Batas repo &amp; hosting — GitHub dan Vercel (diukur 23 Agu 2026)</span></a></li>
+<li><a href="#referensi-desain-dokumen-ide-folder-data-ide-dicatat-3-sep-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Referensi desain &amp; dokumen ide — folder data ide/ (dicatat 3 Sep 2026)</span></a></li>
 <li><a href="#riwayat" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Riwayat</span></a></li>
 <li><a href="#harian-papan-harian-papan-masukan-tiap-kolom" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Harian Papan /harian-papan — masukan &amp; tiap kolom</span></a></li>
 </ul>
@@ -4982,6 +4983,82 @@ TP/SL H+5 (dua-duanya tersentuh hari sama = "tak tentu", tidak diklaim menang).<
 2. Turunan halaman di repo dipangkas sesuai kebutuhan halaman: harian penuh 1–2 tahun terakhir; 2017→ cukup agregat per emiten-bulan (net per broker, Σ nilai).<br />
 3. Satu setelan <code>VITE_DATA_BASE</code>: localhost → arsip penuh; Vercel → turunan di repo; hosting besar kelak (VPS / R2+CDN) → data penuh. Satu kode, tiga sumber.</p>
 <p>Keputusan yang diminta dari Johan: (a) J14 NET dihitung dari GROSS, tidak dipanen; (b) konsolidasi per emiten-tahun gz; (c) tempat backup.</p>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="referensi-desain-dokumen-ide-folder-data-ide-dicatat-3-sep-2026" data-title="Referensi desain &amp; dokumen ide — folder data ide/ (dicatat 3 Sep 2026)">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Referensi desain &amp; dokumen ide — folder data ide/ (dicatat 3 Sep 2026)</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<p>Johan, 3 Sep 2026, saat PDF Creepy Stocks kutandai "belum dipelajari": <em>"padahal<br />
+ini sudah dan jadi bulletin berarti selama ini tidak tercatat baik"</em>. Benar —<br />
+sumber-sumber ini dipakai tapi tak pernah punya bagian di sini, dan siapa pun<br />
+yang membaca dokumen akan menyimpulkan "belum". Section ini menutupnya. Berkas<br />
+non-PDF di folder yang sama (video, HTML dev, gambar WhatsApp di <code>Selesai/</code>)<br />
+tercatat di jejak #348–#361, bukan di sini.</p>
+<table>
+<thead>
+<tr>
+<th>Berkas (<code>data ide/</code>)</th>
+<th>Tanggal</th>
+<th>Isi</th>
+<th>Dipakai untuk</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CSMTTV10826P.pdf</code> (25 hal) · <code>CSMTTV14AUG26P.pdf</code> (29 hal, gambar)</td>
+<td>10 &amp; 14 Agu 2026</td>
+<td>Creepy Stocks <strong>Morning Trending Technical View</strong> — per emiten: CLOSE, <strong>BIG MONEY FLOW</strong>, TEKNIKAL</td>
+<td><strong>Acuan format Bulletin Arus Pasar</strong> — edisi pertama <code>AP-100826-E01</code> lahir 10 Agu (<code>80f92aaf1</code>), hari yang sama dengan PDF pertama. Yang diambil: struktur per-emiten (arus dana besar → teknikal → level), bukan angkanya</td>
+<td>Dipakai (Johan 3 Sep). Angka &amp; emiten di PDF tidak disalin — data Bulletin dari panen sendiri</td>
+</tr>
+<tr>
+<td><code>CSCTA CUAN.pdf</code> (8 hal)</td>
+<td>14 Agu 2026</td>
+<td>Creepy Stocks <strong>Complete Technical Analyst</strong> — CUAN: snapshot basis, scope, pandangan teknikal utama, <strong>bias</strong>, <strong>konfirmasi yang dibutuhkan</strong> (total order flow), <strong>level kunci</strong></td>
+<td><strong>Acuan struktur Deep Dive / Analisa PAPAN v1</strong> (<code>docs/analisa-papan-v1.md</code>): bias → konfirmasi → level → skenario dalam angka. PAPAN menambah arus broker multi-hari, PCD, tangga pivot + EMA50, asimetri, probabilitas v2</td>
+<td>Dipakai (Johan 3 Sep)</td>
+</tr>
+<tr>
+<td><code>Kuli Papan.pdf</code> (2 hal) · <code>Neo Papan.pdf</code> (12 hal, gambar)</td>
+<td>23 Agu 2026</td>
+<td>Rancangan halaman</td>
+<td>Halaman Kuli Papan (tab Pantau) &amp; Neo Papan — lihat section "Prototipe Dev — Kuli Papan &amp; Neo Papan"</td>
+<td>Dipakai, sudah tercatat</td>
+</tr>
+<tr>
+<td><code>Private Class BIDOFFER Bandar Juli — Abo.pdf</code> (20 hal)</td>
+<td>25 Agu 2026</td>
+<td>Kelas bid-offer bandar (batch 1, 2025)</td>
+<td><code>bidoffer.json</code> (antrean penutupan level terbaik, 833 emiten) dan 9 dokumen <code>docs/</code> yang merujuk BIDOFFER</td>
+<td><strong>Sebagian</strong> — datanya dipanen; metodenya belum diturunkan jadi halaman/skor. Belum ada bagian kamus ruasnya di sini</td>
+</tr>
+<tr>
+<td><code>Rasio untuk Analisis Awal Kinerja Keuangan dan Perpajakan.pdf</code> (28 hal)</td>
+<td>26 Mei 2026</td>
+<td>52 rasio keuangan &amp; perpajakan</td>
+<td>—</td>
+<td><strong>Belum</strong> dipelajari; kandidat untuk halaman fundamental (keystats 94 rasio Stockbit sudah dipanen — pembanding yang wajar)</td>
+</tr>
+<tr>
+<td><code>algo-radar-ops-formula.pdf</code> (25 hal)</td>
+<td>1 Sep 2026</td>
+<td>Spesifikasi kuantitatif: order-flow, forensik order book, 11 detektor, kalibrasi P(win), rencana ATR, Kelly</td>
+<td>Studi: <code>docs/spek-dev-papan/studi_algo-radar-ops-formula.md</code> — matriks kelayakan terhadap data kita (12 ✅ · 8 proksi · 9 ❌ butuh order book berlapis + tape ber-agresor)</td>
+<td><strong>Dipelajari 3 Sep</strong>; adopsi menunggu keputusan Johan (§7 studi)</td>
+</tr>
+</tbody>
+</table>
+<p>Aturan yang lahir dari kejadian ini: <strong>acuan desain/metode wajib dicatat di<br />
+section ini saat pertama dipakai</strong>, bukan hanya sumber data. Tanpa itu, jejak<br />
+"dari mana bentuk halaman ini" hilang begitu sesi yang membuatnya di-<code>/clear</code>.</p>
 
 </div>
 </div></div>
