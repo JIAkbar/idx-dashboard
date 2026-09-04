@@ -1,16 +1,16 @@
 {
  "kode": "SMAR",
- "tgl": "2026-09-02",
- "harga": 6875.0,
- "prev": 6650.0,
- "chg": 3.383458646616533,
- "n": 6333,
+ "tgl": "2026-09-03",
+ "harga": 6775.0,
+ "prev": 6875.0,
+ "chg": -1.4545454545454528,
+ "n": 6334,
  "mulai": "2000-10-09",
- "ma20": 5900.0,
- "ma50": 5480.5,
- "ma200": 5331.275,
- "atr": 225.1100468109792,
- "atr_pct": 3.274327953614243,
+ "ma20": 5947.5,
+ "ma50": 5518.6,
+ "ma200": 5339.775,
+ "atr": 217.95932918162356,
+ "atr_pct": 3.217111869839462,
  "support": [
   {
    "level": 5925.0,
@@ -36,6 +36,13 @@
  ],
  "resistance": [
   {
+   "level": 6975.0,
+   "sentuhan": 1,
+   "terakhir": "2026-04-29",
+   "dalam_atr": true,
+   "harga": 6975
+  },
+  {
    "level": 7250.0,
    "sentuhan": 2,
    "terakhir": "2025-08-25",
@@ -45,56 +52,88 @@
  ],
  "stop": 5925,
  "stop_asal": "klaster",
- "stop_pct": 13.818181818181818,
+ "stop_pct": 12.546125461254611,
  "er": 0.21739130434782608,
- "er_persentil": 61.87050359712231,
+ "er_persentil": 62.11031175059952,
  "er_n_populasi": 417,
- "likuiditas_median20": 526636250.0,
+ "likuiditas_median20": 531933750.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "cukup",
-  "lilin": 6333,
-  "nilai20": 526636250.0
+  "lilin": 6334,
+  "nilai20": 531933750.0
  },
- "beku": 1,
- "beku_sejak": "2026-09-02",
- "dihitung": "2026-09-02",
- "rsi": 84.01015838005111,
+ "beku": 0,
+ "beku_sejak": null,
+ "dihitung": "2026-09-03",
+ "rsi": 78.66781968529374,
  "stochrsi": [
-  100.0,
-  100.0
+  93.38199923667965,
+  97.79399974555987
  ],
  "target": [
   {
+   "harga": 6975,
+   "pct": 2.952029520295203,
+   "sentuhan": 1,
+   "terakhir": "2026-04-29",
+   "fp": {
+    "n": 6313,
+    "n_efektif": 316,
+    "kena": 4017,
+    "stop": 724,
+    "lewat": 1572,
+    "p_kena": 63.630603516553144,
+    "p_stop": 11.468398542689688,
+    "median_hari": 4,
+    "q1": 1,
+    "q3": 8,
+    "harapan": 0.4395545301881023
+   },
+   "fp60": {
+    "n": 6273,
+    "n_efektif": 105,
+    "kena": 4724,
+    "stop": 1148,
+    "lewat": 401,
+    "p_kena": 75.30687071576598,
+    "p_stop": 18.30065359477124,
+    "median_hari": 5.0,
+    "q1": 2,
+    "q3": 13,
+    "harapan": -0.07294190588964655
+   }
+  },
+  {
    "harga": 7250,
-   "pct": 5.454545454545454,
+   "pct": 7.011070110701106,
    "sentuhan": 2,
    "terakhir": "2025-08-25",
    "fp": {
-    "n": 6312,
+    "n": 6313,
     "n_efektif": 316,
-    "kena": 3108,
-    "stop": 746,
-    "lewat": 2458,
-    "p_kena": 49.23954372623574,
-    "p_stop": 11.818757921419518,
-    "median_hari": 5.0,
-    "q1": 2,
+    "kena": 2643,
+    "stop": 900,
+    "lewat": 2770,
+    "p_kena": 41.8659908126089,
+    "p_stop": 14.256296530967843,
+    "median_hari": 6,
+    "q1": 3,
     "q3": 11,
-    "harapan": 1.0526558359257978
+    "harapan": 1.1466411195079793
    },
    "fp60": {
-    "n": 6272,
+    "n": 6273,
     "n_efektif": 105,
-    "kena": 4158,
-    "stop": 1250,
-    "lewat": 864,
-    "p_kena": 66.29464285714286,
-    "p_stop": 19.929846938775512,
-    "median_hari": 9.0,
-    "q1": 3,
-    "q3": 21,
-    "harapan": 0.862128942486085
+    "kena": 3792,
+    "stop": 1506,
+    "lewat": 975,
+    "p_kena": 60.44954567192731,
+    "p_stop": 24.007651841224295,
+    "median_hari": 11.0,
+    "q1": 4,
+    "q3": 25,
+    "harapan": 1.2261299083579065
    }
   }
  ],
@@ -123,7 +162,7 @@
  "fundamental": {
   "name": "PT Sinar Mas Agro Resources and Technology Tbk",
   "updated": "2026-09-01 02:02",
-  "pe": 4.811393379522709,
+  "pe": 4.741409475820561,
   "pb": 0.7472,
   "eps": 1428.9,
   "roe": 0.18349001,
@@ -168,26 +207,26 @@
    }
   }
  },
- "ma5": 6415.0,
- "ma100": 5427.55,
- "ma150": 5451.166666666667,
+ "ma5": 6550.0,
+ "ma100": 5445.3,
+ "ma150": 5462.0,
  "bb20": {
-  "mid": 5900.0,
-  "atas": 6582.275604136627,
-  "bawah": 5217.724395863373
+  "mid": 5947.5,
+  "atas": 6727.5480754415075,
+  "bawah": 5167.4519245584925
  },
- "posisi_bb": 1.429,
+ "posisi_bb": 1.0608,
  "ichimoku": {
-  "tenkan": 6300.0,
+  "tenkan": 6350.0,
   "kijun": 6187.5,
-  "senkou_a": 6243.75,
+  "senkou_a": 6268.75,
   "senkou_b": 5782.5,
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 30.930119477632676,
-  "tengah": 6246.688524590164,
-  "posisi": 3.197
+  "kemiringan": 31.06446235065296,
+  "tengah": 6296.5683060109295,
+  "posisi": 2.3973
  },
  "freq": 250,
  "ukuran_order": 6.34,
@@ -206,7 +245,7 @@
  "tiket_broker_maks": null,
  "broker_tiket_maks_kode": null,
  "bval_maks": null,
- "nego_blok_rp": 0.0,
+ "nego_blok_rp": null,
  "nego_broker_maks_kode": null,
  "top3_pct": null,
  "number_broker_buysell": null,

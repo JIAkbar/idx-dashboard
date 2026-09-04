@@ -1,17 +1,24 @@
 {
  "kode": "DUTI",
- "tgl": "2026-09-02",
+ "tgl": "2026-09-03",
  "harga": 4800.0,
  "prev": 4800.0,
  "chg": 0.0,
- "n": 6006,
+ "n": 6007,
  "mulai": "2002-01-09",
- "ma20": 4567.5,
- "ma50": 4355.2,
- "ma200": 4235.7,
- "atr": 35.76402137450623,
- "atr_pct": 0.7450837786355464,
+ "ma20": 4593.0,
+ "ma50": 4362.8,
+ "ma200": 4238.5,
+ "atr": 33.209448419184355,
+ "atr_pct": 0.6918635087330074,
  "support": [
+  {
+   "level": 4770.0,
+   "sentuhan": 1,
+   "terakhir": "2026-08-27",
+   "dalam_atr": true,
+   "harga": 4770
+  },
   {
    "level": 4400.0,
    "sentuhan": 2,
@@ -25,13 +32,6 @@
    "terakhir": "2025-09-29",
    "dalam_atr": false,
    "harga": 4350
-  },
-  {
-   "level": 4290.0,
-   "sentuhan": 1,
-   "terakhir": "2026-08-10",
-   "dalam_atr": false,
-   "harga": 4290
   }
  ],
  "resistance": [
@@ -43,9 +43,9 @@
    "harga": 4950
   }
  ],
- "stop": 4400,
+ "stop": 4770,
  "stop_asal": "klaster",
- "stop_pct": 8.333333333333332,
+ "stop_pct": 0.625,
  "er": 0.2727272727272727,
  "er_persentil": 93.28537170263789,
  "er_n_populasi": 417,
@@ -53,16 +53,16 @@
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "tipis",
-  "lilin": 6006,
+  "lilin": 6007,
   "nilai20": 5030000.0
  },
- "beku": 1,
- "beku_sejak": "2026-09-02",
- "dihitung": "2026-09-02",
+ "beku": 0,
+ "beku_sejak": null,
+ "dihitung": "2026-09-03",
  "rsi": 87.37304581162246,
  "stochrsi": [
-  88.35906881177732,
-  94.17953440588866
+  82.53860321766598,
+  88.35906881177732
  ],
  "target": [
   {
@@ -71,30 +71,30 @@
    "sentuhan": 4,
    "terakhir": "2026-03-16",
    "fp": {
-    "n": 5985,
+    "n": 5986,
     "n_efektif": 299,
-    "kena": 2854,
-    "stop": 1246,
-    "lewat": 1885,
-    "p_kena": 47.6858813700919,
-    "p_stop": 20.818713450292396,
-    "median_hari": 4.0,
-    "q1": 2,
-    "q3": 9,
-    "harapan": -0.24470899470899443
+    "kena": 1478,
+    "stop": 3583,
+    "lewat": 925,
+    "p_kena": 24.69094553959238,
+    "p_stop": 59.856331440026736,
+    "median_hari": 2.0,
+    "q1": 1,
+    "q3": 6,
+    "harapan": 0.39748997661209484
    },
    "fp60": {
-    "n": 5945,
+    "n": 5946,
     "n_efektif": 99,
-    "kena": 3305,
-    "stop": 1861,
-    "lewat": 779,
-    "p_kena": 55.592935239697226,
-    "p_stop": 31.303616484440706,
-    "median_hari": 5,
-    "q1": 2,
-    "q3": 13,
-    "harapan": -0.8713554807961867
+    "kena": 1498,
+    "stop": 4171,
+    "lewat": 277,
+    "p_kena": 25.193407332660612,
+    "p_stop": 70.14799865455768,
+    "median_hari": 2.0,
+    "q1": 1,
+    "q3": 6,
+    "harapan": 0.3488689875546586
    }
   }
  ],
@@ -168,15 +168,15 @@
    }
   }
  },
- "ma5": 4810.0,
- "ma100": 4250.9,
- "ma150": 4223.133333333333,
+ "ma5": 4808.0,
+ "ma100": 4257.8,
+ "ma150": 4226.2,
  "bb20": {
-  "mid": 4567.5,
-  "atas": 5048.784739005923,
-  "bawah": 4086.2152609940763
+  "mid": 4593.0,
+  "atas": 5066.755211053134,
+  "bawah": 4119.244788946866
  },
- "posisi_bb": 0.4831,
+ "posisi_bb": 0.4369,
  "ichimoku": {
   "tenkan": 4795.0,
   "kijun": 4435.0,
@@ -185,9 +185,9 @@
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 10.836899138649624,
-  "tengah": 4634.355191256831,
-  "posisi": 0.9722
+  "kemiringan": 11.183939983328703,
+  "tengah": 4657.092896174864,
+  "posisi": 0.8343
  },
  "freq": 1,
  "ukuran_order": 4.0,
@@ -206,7 +206,7 @@
  "tiket_broker_maks": null,
  "broker_tiket_maks_kode": null,
  "bval_maks": null,
- "nego_blok_rp": 0.0,
+ "nego_blok_rp": null,
  "nego_broker_maks_kode": null,
  "top3_pct": null,
  "number_broker_buysell": null,
