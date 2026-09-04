@@ -76,7 +76,15 @@ def ambil_daftar_resmi():
             # bukan di tiap pembangun turunan: GOTOM sempat lolos ke Harian
             # Papan & Jago Papan sebagai baris kosong karena pengecualiannya
             # cuma ada di satu pemanen.
-            return d.isoformat(), [emiten[k] for k in sorted(emiten) if not dilewati(k)]
+                # `return` HARUS di dalam `if data:`. Sebelum 4 Sep 2026 ia
+                # sejajar dengan `if`, jadi saat IDX menjawab kosong `emiten`
+                # tak pernah dibuat tapi baris ini tetap dijalankan —
+                # UnboundLocalError, dan mundur-sehari di bawahnya tak pernah
+                # tercapai. Baris `print` di bawahnya pun kode mati (sesudah
+                # `return`). Gejalanya: skrip mati total di hari yang datanya
+                # belum terbit, bukan mundur ke hari bursa sebelumnya seperti
+                # yang seluruh loop ini dirancang untuk lakukan.
+                return d.isoformat(), [emiten[k] for k in sorted(emiten) if not dilewati(k)]
             print(f"  [--] {tgl_ymd}: kosong (libur bursa?)")
         d -= timedelta(days=1)
     return None, []
