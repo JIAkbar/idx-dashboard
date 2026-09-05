@@ -5,6 +5,8 @@ import { pesanGalat } from '../../lib/pesanGalat'
 import { IkonMenu, IKON_PERINGATAN, IKON_SILANG } from '../../components/dasbor/IkonMenu'
 import { muatIndeks, type BarisIndeks, muatBelum} from '../../lib/seasonalityData'
 import { DatePicker } from '../../components/dasbor/DatePicker'
+import { CatatanSumberBar } from '../../components/dasbor/CatatanSumberBar'
+import type { RentangSumber } from '../../lib/dasbor/sumberBar'
 import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
 
 /** Hari bursa minimum buat rentang bebas = satu putaran Senin–Jumat penuh
@@ -52,6 +54,12 @@ const BLN_PENDEK = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep
  */
 export function SeasonalityHarian() {
   const [tutup, setTutup] = useState<Record<string, number> | null>(null)
+  /** Penanda sumber per bar — hanya ada di arsip harga emiten. IHSG di
+   *  halaman ini dibaca dari arsip statistik harian, yang punya cerita
+   *  sumber sendiri (cadangan sementara saat laporan resmi belum terbit),
+   *  jadi sengaja TIDAK diisi dari sana — dua hal berbeda yang kebetulan
+   *  sama-sama bernama jahitan. */
+  const [sumberBarBerkas, setSumberBarBerkas] = useState<RentangSumber[] | undefined>(undefined)
   const [galat, setGalat] = useState<string | null>(null)
   // Bawaan "1 Tahun" (bukan "Semua"): "Semua" menarik 8.848 hari sejak 1990 dan
   // grafik kumulatifnya jadi didominasi rezim pasar 1990-an yang sudah tak
@@ -78,6 +86,7 @@ export function SeasonalityHarian() {
   useEffect(() => {
     let batal = false
     setTutup(null)
+    setSumberBarBerkas(undefined)
     setGalat(null)
     const alamat = kode === 'IHSG'
       ? '/data-idx/json/ihsg_harian.json'
@@ -87,9 +96,10 @@ export function SeasonalityHarian() {
       // Dua bentuk berkas: IHSG menyimpan peta {tanggal: tutup}, emiten
       // menyimpan baris OHLCV. Yang dibutuhkan ringkasHarian() cuma
       // penutupannya, jadi baris emiten diperas jadi peta yang sama.
-      .then((d: { tutup?: Record<string, number>; d?: Array<[string, number, number, number, number, number]> }) => {
+      .then((d: { tutup?: Record<string, number>; d?: Array<[string, number, number, number, number, number]>; sumber_bar?: RentangSumber[] }) => {
         if (batal) return
         setTutup(d.tutup ?? Object.fromEntries((d.d ?? []).map((b) => [b[0], b[4]])))
+        setSumberBarBerkas(d.sumber_bar)
       })
       .catch((e: unknown) => {
         if (!batal) setGalat(pesanGalat(e, `Gagal memuat data harian ${kode}.`))
@@ -271,6 +281,10 @@ export function SeasonalityHarian() {
                 {' · '}
                 <span className="sea-rentang-jumlah">{r.totalObservasi.toLocaleString('id-ID')}</span>
                 {' hari bursa'}
+                {/* Rentang yang SEDANG dipilih, bukan seluruh isi berkas —
+                    halaman ini menghitung pola per hari dari rentang itu
+                    saja, jadi yang perlu diketahui pembaca juga rentang itu. */}
+                <CatatanSumberBar sumberBar={sumberBarBerkas} mulai={r.mulai} akhir={r.akhir} />
               </>
             ) : (
               <>{kode} · rentang ini belum cukup panjang</>
