@@ -47,6 +47,15 @@ on:
         type: boolean
         default: false
 
+# Runner rumahan ini memakai konsol Windows ber-encoding lama, dan di sana satu
+# tanda panah atau minus Unicode di pesan cetak MEMBUNUH skripnya sebelum ia
+# bekerja. Terukur 5 Sep 2026: `panen_asing.py` mati di baris cetak pembukanya,
+# jadi aliran asing berhenti berhari-hari sementara langkah berikutnya tetap
+# hijau — datanya bahkan sudah ada di arsip, nol unduhan diperlukan. Satu
+# variabel di sini menutup seluruh langkah Python sekaligus.
+env:
+  PYTHONIOENCODING: utf-8
+
 permissions:
   contents: write
 
