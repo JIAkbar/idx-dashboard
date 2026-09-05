@@ -26,7 +26,7 @@ export interface BerkasOhlcEmiten {
    *  Menggantikan `jahitan` di bawah, yang menandai SATU potongan awal saja.
    *  Terukur 5 Sep 2026 itu tak cukup: jahitan IHSG ternyata 13 blok berselang
    *  sampai 2017, bukan satu potongan pra-2000 seperti yang dikira. */
-  sumber_bar?: RentangSumber
+  sumber_bar?: RentangSumber[]
 
   /** MATI sejak penggabung tunggal menggantikan penjahit lama — terukur
    *  5 Sep 2026: 0 dari 963 berkas membawanya. Dipertahankan di tipe supaya
