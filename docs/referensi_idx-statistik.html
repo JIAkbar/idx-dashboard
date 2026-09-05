@@ -881,6 +881,135 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <div class="section-panel"><div class="section-panel-inner">
 <div class="section-body">
 
+<h3>Tabel jahitan TERUKUR — 5 September 2026 (permintaan Johan: <em>"nanti buatkan tabel apa saja data yang di jahit yaaaa"</em>)</h3>
+<p>Tabel J1–J15 di bawah mencatat <strong>keputusan</strong> tiap jahitan. Tabel ini mencatat <strong>kenyataannya</strong>: berapa yang benar-benar terjahit hari ini, diukur dari berkasnya sendiri — bukan dari ingatan dan bukan dari niat skripnya. Bisa diukur karena tiap berkas harga sekarang membawa penanda sumber per bar (<code>sumber_bar</code>), keputusan Johan 5 Sep 2026.</p>
+<p>Cara mengulang pengukurannya: baca <code>sumber_bar</code> tiap berkas di <code>ohlc/</code>, hitung bar yang jatuh di blok berkode <code>yh</code>.</p>
+<p><strong>Ringkas: 2.034 dari 3.015.102 bar (0,07%) berasal dari cadangan, tersebar di 6 dari 963 emiten.</strong> Sisanya — 99,93% — dari sumber utama.</p>
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Sumber utama</th>
+<th>Cadangan</th>
+<th>Terjahit berapa</th>
+<th>Rentang</th>
+<th>Ditandai di layar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Harga &amp; volume harian per emiten (<code>ohlc/</code>)</td>
+<td>Stockbit</td>
+<td>Yahoo Finance</td>
+<td>223 bar di 5 emiten</td>
+<td>2016-08-10 s.d. 2020-05-19</td>
+<td>ya — catatan menyebut tanggalnya</td>
+</tr>
+<tr>
+<td>Harga &amp; volume harian IHSG</td>
+<td>Stockbit (1997→)</td>
+<td>Yahoo Finance (1990–1997 + hari yang hilang)</td>
+<td>1.811 bar dari 8.870 (20,4%)</td>
+<td>1990-04-06 s.d. 2017-12-01, 13 blok</td>
+<td>ya — catatan menyebut tanggalnya</td>
+</tr>
+<tr>
+<td>Aliran asing rupiah</td>
+<td>Stockbit</td>
+<td>— (IDX lembar = pembanding, bukan tambalan)</td>
+<td>pra-2020 ditandai jahitan</td>
+<td>2004→</td>
+<td>ya (J8)</td>
+</tr>
+<tr>
+<td>Jumlah saham beredar di <code>fundamental/</code></td>
+<td>Yahoo (908 emiten)</td>
+<td>Bursa, dipakai saat Yahoo ketinggalan aksi korporasi (50 emiten)</td>
+<td>50 dari 958 emiten</td>
+<td>—</td>
+<td>ruas <code>shares_sumber</code> di berkas</td>
+</tr>
+<tr>
+<td>Rasio kosong Berkas Emiten blok F</td>
+<td>Stockbit keystats</td>
+<td>Yahoo, hanya 3 ruas, hanya yang kosong</td>
+<td>saat dibaca, tak menimpa</td>
+<td>—</td>
+<td>ya — per angka (J15)</td>
+</tr>
+<tr>
+<td>Statistik harian IHSG (<code>ihsg_harian</code>)</td>
+<td>PDF resmi bursa</td>
+<td>Yahoo, sementara, sampai PDF terbit</td>
+<td>0 hari sementara saat ini</td>
+<td>—</td>
+<td>perlu dicek (J6)</td>
+</tr>
+</tbody>
+</table>
+<p>Rincian per emiten yang terjahit di <code>ohlc/</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Emiten</th>
+<th style="text-align: right;">Bar dari cadangan</th>
+<th style="text-align: right;">Dari total</th>
+<th>Rentang</th>
+<th style="text-align: right;">Blok</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IHSG</td>
+<td style="text-align: right;">1.811</td>
+<td style="text-align: right;">8.870</td>
+<td>1990-04-06 s.d. 2017-12-01</td>
+<td style="text-align: right;">13</td>
+</tr>
+<tr>
+<td>GOLD</td>
+<td style="text-align: right;">202</td>
+<td style="text-align: right;">3.331</td>
+<td>2016-08-15 s.d. 2017-08-04</td>
+<td style="text-align: right;">22</td>
+</tr>
+<tr>
+<td>INCF</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">2.427</td>
+<td>2016-08-10 s.d. 2016-09-05</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr>
+<td>FILM</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1.948</td>
+<td>2018-08-07</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr>
+<td>POLA</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1.878</td>
+<td>2018-11-16</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr>
+<td>RIGS</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">5.492</td>
+<td>2020-05-19</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+<p>Yang <strong>tidak</strong> terjahit walau namanya terdengar begitu, dan itu perlu disebut supaya tak dikira jahitan:</p>
+<ul>
+<li><strong>Laporan keuangan</strong> — <code>keuangan/</code> (agregator) dan <code>keuangan_idx/</code> (resmi bursa) berkunci periode sama tapi menghitung rentang berbeda: yang satu kuartal diskret, yang lain interim kumulatif. Terukur berbeda ~2× pada ruas arus (pendapatan, laba). <strong>Sengaja belum disambung</strong>; menyambungnya dengan aturan "yang tidak kosong menang" memberi angka hampir dua kali lipat tanpa satu pun galat.</li>
+<li><strong>Ruas fundamental yang dihitung</strong> — <code>eps</code> kosong yang diisi dari laba ÷ jumlah saham di berkas yang sama itu <strong>perhitungan</strong>, bukan jahitan: pembilang dan penyebutnya sudah ada di situ.</li>
+<li><strong>Volume reguler + non-reguler</strong> — penjumlahan dua papan dari <strong>satu</strong> sumber, bukan dua sumber.</li>
+</ul>
+<p>Dua skrip penjahit lama sudah <strong>tidak dipakai</strong> dan tak terpanggil di rantai panen mana pun: <code>ganti_volume_ohlc.py</code> (J3) dan <code>jahit_riwayat_yahoo.py</code> — terukur 0 berkas membawa ruas <code>jahitan</code> yang ditulis skrip kedua. Keduanya tergantikan penggabung tunggal. Dibiarkan ada sebagai riwayat, bukan sebagai jalur aktif.</p>
 <p>Johan 23 Agu 2026: <em>"data yang sempurna pasti itu yang digunakan bukan data jahit menjahit yang belum tentu uji nya betul"</em>. Aturan lama proyek (<code>sumber-data-harga.md</code>): <em>"mencampur dua sumber tanpa memberitahu adalah cara paling halus kehilangan kepercayaan"</em>. Daftar ini tidak menyatakan jahitan mana yang salah — ia menyatakan <strong>siapa yang memutuskan dan apa buktinya</strong>, supaya Johan bisa memutuskan ulang dengan dasar yang sama.</p>
 <table>
 <thead>
@@ -900,7 +1029,7 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <td><code>gabung_ohlc_stockbit.py</code>: tanggal ada di Stockbit → Stockbit (o/h/l/c/v); tanggal hanya di Yahoo → Yahoo apa adanya</td>
 <td>harga Yahoo vs Stockbit terukur 0,00% beda; volume Yahoo 2,66% bar salah vs Stockbit = IDX 100,00%; 30.245 bar hanya-Yahoo "diselamatkan"; satuan volume emiten sama (rasio median 1,0000 atas 345.454 bar)</td>
 <td><strong>tafsir agen</strong> atas kutipan Johan di docstring skrip — <em>"kalau mau saya yang lengkap saja dari sumber yang lengkap juga"</em> — yang bisa dibaca sebagai "pakai satu sumber yang lengkap", bukan "gabungkan"</td>
-<td><strong>perlu keputusan ulang</strong>: (a) tetap union tapi tiap bar diberi penanda sumber di berkas dan disebut di antarmuka, atau (b) Stockbit saja (kehilangan bar hanya-Yahoo: pra-2004 dan 38 hari IHSG)</td>
+<td><strong>DIPUTUSKAN 5 Sep 2026</strong> — Johan: <em>"pakai penanda sumber per bar, riwayat lama jangan dipotong"</em>. Union DIPERTAHANKAN; tiap berkas kini membawa ruas <code>sumber_bar</code> berisi rentang beruntun <code>[dari, sampai, kode]</code> (<code>sb</code> = Stockbit, <code>yh</code> = Yahoo), ditulis <code>gabung_ohlc_stockbit.py</code> — penulis union satu-satunya — dan diturunkan dari keputusan penggabungan yang sama, bukan ditebak ulang. Bentuk <code>d</code> (6 elemen/bar) TIDAK berubah supaya 7 pembaca frontend &amp; skrip turunan tak perlu disunting. Rentang dipilih karena terukur paling kecil: <strong>37x</strong> lebih kecil daripada satu huruf per bar, <strong>8x</strong> daripada daftar indeks (6 emiten, 38.143 bar: 1.029 vs 38.155 vs 7.956 bita). Antarmuka: komponen bersama <code>CatatanSumberBar</code> menyebut bagian cadangan beserta tanggalnya, dan DIAM kalau seluruh rentang dari sumber utama. Terukur 5 Sep 2026: hanya <strong>6 dari 963 emiten</strong> punya bar cadangan, <strong>2.034 dari 3.015.102 bar (0,1%)</strong>, rentang 1990-04-06 s.d. 2020-05-19 — hampir seluruhnya riwayat IHSG 1990-2017.</td>
 </tr>
 <tr>
 <td>J2</td>
@@ -908,7 +1037,7 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <td><code>jahit_ihsg.py</code> (commit <code>d217d247</code>); Yahoo melapor volume dalam <strong>lot</strong>, Stockbit <strong>lembar</strong> (rasio median tepat 100,00) → disamakan</td>
 <td>8.861 bar; volume 0 tinggal 1.261 (semua pra-2000)</td>
 <td>agen, dilaporkan ke Johan</td>
-<td><strong>perlu konfirmasi</strong>: Stockbit tidak punya pra-2000, jadi pra-2000 hanya bisa Yahoo — keputusannya "tampilkan dengan penanda sumber per periode" atau "potong di 2000"</td>
+<td><strong>DIPUTUSKAN 5 Sep 2026</strong> bersama J1 — Johan: <em>"pakai penanda sumber per bar, riwayat lama jangan dipotong"</em>. Jawabannya "tampilkan dengan penanda", bukan "potong di 2000". <code>jahit_ihsg.py</code> kini memakai fungsi penanda yang sama dengan penggabung emiten biasa (<code>rentang_sumber</code>, satu rumah, bukan salinan kedua) dan menulis <code>sumber_bar</code> ke berkas IHSG. Terukur sesudahnya: 8.870 bar, <strong>1.811 dari cadangan (20,4%)</strong> tersebar di <strong>13 blok</strong> — jadi jahitannya bukan satu potongan pra-2000 seperti dikira, melainkan berselang sampai 2017-12-01. Angka itu sendiri alasan penanda per bar dipilih: penanda "per periode" akan salah untuk 12 blok dari 13.</td>
 </tr>
 <tr>
 <td>J3</td>
@@ -916,7 +1045,7 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <td><code>ganti_volume_ohlc.py</code></td>
 <td>Yahoo 2,66% bar bervolume salah; cadangan asli di <code>_arsip-mentah/ohlc-yahoo-sebelum-ganti-volume/</code></td>
 <td>agen (23 Agu)</td>
-<td>sudah tercakup J1</td>
+<td>sudah tercakup J1 — dan skripnya kini <strong>mati</strong>: terukur 5 Sep 2026 tak terpanggil di satu pun rantai panen. Sama untuk <code>jahit_riwayat_yahoo.py</code> (0 berkas membawa ruas <code>jahitan</code> yang ia tulis). Dibiarkan sebagai riwayat, bukan jalur aktif.</td>
 </tr>
 <tr>
 <td>J4</td>
