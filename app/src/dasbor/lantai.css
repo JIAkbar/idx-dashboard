@@ -2188,7 +2188,21 @@
   background: color-mix(in srgb, var(--amber) 7%, transparent);
   border: 1px solid color-mix(in srgb, var(--amber) 22%, transparent);
 }
-.pgh-daftar-judul { margin: 0 0 6px; font-size: 12.5px; font-weight: 600; color: var(--text); }
+/* Baris pembuka yang melipat cara mendaftar (5 Sep 2026). Ia menggantikan
+   `.pgh-daftar-judul`, yang dulu jadi kepala kotak yang selalu terbuka.
+   Bentuknya sengaja tombol teks, bukan tombol berbingkai: kartu ini sudah
+   punya SATU tombol utama, dan tombol kedua yang sama tegasnya membuat
+   pembaca memilih dua hal yang bukan pilihan setara. */
+.pgh-daftar-buka {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 2px; padding: 4px 2px;
+  font-family: inherit; font-size: 12.5px; font-weight: 600;
+  color: var(--text2); background: none; border: 0; cursor: pointer;
+}
+.pgh-daftar-buka:hover { color: var(--amber); }
+.pgh-daftar-buka:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; border-radius: 3px; }
+.pgh-daftar-kar { color: var(--text3); font-size: 10px; }
+.pgh-daftar-buka:hover .pgh-daftar-kar { color: var(--amber); }
 .pgh-daftar-langkah {
   margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.6; color: var(--text2);
 }
@@ -2201,7 +2215,7 @@
 .pgh-daftar-wa:hover { text-decoration: underline; }
 .pgh-daftar-wa:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; border-radius: 3px; }
 /* Kartu mini (di dalam panel) tetap ringkas — cara daftar cukup di kartu penuh. */
-.pgh-mini .pgh-daftar { display: none; }
+.pgh-mini .pgh-daftar, .pgh-mini .pgh-daftar-buka { display: none; }
 /* Tombol utama versi besar — kartu ini satu-satunya jalan keluar halaman,
    jadi tombolnya pantas terlihat sebagai tujuan, bukan kontrol sekunder. */
 .pgh-cta .btn-p, .pgh-cta .pgh-tautan {

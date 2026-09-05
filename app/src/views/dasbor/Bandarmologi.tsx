@@ -310,15 +310,21 @@ export default function Bandarmologi() {
             ariaLabel="Saring"
           />
         </div>
-        <div className="grup-k grup-kanan">
-          <span className="lbl">{fN(baris.length, 0)} dari {fN(data.n, 0)} emiten</span>
-        </div>
+        {/* Hitungan hasil TIDAK di sini lagi (keputusan Johan 5 Sep 2026,
+            artifact "Empat Bilah Kendali PAPAN", opsi A): ia menerangkan tabel
+            di bawah, bukan kendali di sebelahnya, jadi tempatnya di kepala
+            panel itu. Di layar sempit `grup-kanan` juga kehilangan posisi
+            kanannya (container query 1460px) dan angkanya turun jadi baris
+            ketiga sendirian. */}
       </div>
 
       <div className="panel">
         <div className="panel-h">
           <span className="lbl">Hasil hitung per emiten</span>
-          <span className="num bm-hint">terurut nilai transaksi · 150 teratas</span>
+          {/* "150 teratas" tak perlu ditulis lagi — angka kiri sudah
+              mengatakannya, dan menuliskan dua kali membuat pembaca mencari
+              beda yang tak ada. */}
+          <span className="num bm-hint">{fN(baris.length, 0)} dari {fN(data.n, 0)} emiten · terurut nilai transaksi</span>
         </div>
         <div className="gulir">
           <table className="tbl bm-tbl">

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useAksesHalaman } from '../context/AksesHalamanContext'
 import { useLoginModalOpsional } from '../context/LoginModalContext'
@@ -42,6 +42,7 @@ export function PenjagaHalaman({ kunci, children }: { kunci: string; children: R
  */
 function KerangkaTerkunci({ kunci, judul, kalimat, sasaran }: AlasanKunci & { kunci: string }) {
   const loginModal = useLoginModalOpsional()
+  const [bukaDaftar, setBukaDaftar] = useState(false)
   // Cuma yang tertahan JENJANG yang punya jarak terukur. Tamu yang belum masuk
   // tidak punya setoran untuk dihitung, dan halaman superadmin tak bisa
   // dikejar dengan setoran sebanyak apa pun.
@@ -87,6 +88,19 @@ function KerangkaTerkunci({ kunci, judul, kalimat, sasaran }: AlasanKunci & { ku
             {jarak && <PenunjukJarak jarak={jarak} className="pgh-jarak" />}
             {sasaran === 'login' ? (
               <>
+                {/* Tombol Masuk DULU, cara mendaftar terlipat di bawahnya —
+                    keputusan Johan 5 Sep 2026 (artifact "Empat Bilah Kendali
+                    PAPAN", opsi A).
+
+                    Sebelumnya urutannya terbalik: tiga langkah bernomor
+                    memakan ruang terbesar di depan, dan tombol Masuk — tugas
+                    utama gerbang ini bagi orang yang sudah punya kunci —
+                    duduk paling bawah, di ponsel sering di bawah lipatan.
+                    Tak ada kata yang dibuang; yang berubah urutan dan
+                    keterlihatannya. */}
+                <button type="button" className="btn-p" disabled={!loginModal} onClick={() => loginModal?.buka()}>
+                  Masuk
+                </button>
                 {/* Cara mendapat akun — diminta Johan 2 Sep 2026: "tambahkan
                     informasi yang lebih lengkap misal pendaftaran nya dimana
                     pakai apa, pastinya gratis". Isinya mengikuti alur yang
@@ -97,25 +111,36 @@ function KerangkaTerkunci({ kunci, judul, kalimat, sasaran }: AlasanKunci & { ku
                     AuthContext). Nomor & isi pesannya dipakai bersama
                     LoginModal supaya tak ada dua nomor yang bisa saling
                     berbeda. */}
-                <div className="pgh-daftar">
-                  <p className="pgh-daftar-judul">Belum punya akun? Gratis.</p>
-                  <ol className="pgh-daftar-langkah">
-                    <li>Kirim <b>nama</b> lewat WhatsApp ke pengelola PAPAN — pesannya sudah terketik.</li>
-                    <li>Pengelola membuatkan akunmu dan mengabari begitu aktif.</li>
-                    <li>Masuk dengan <b>email &amp; sandi</b> yang diberikan.</li>
-                  </ol>
-                  <a
-                    className="pgh-daftar-wa"
-                    href={`https://wa.me/${WA_ADMIN}?text=${encodeURIComponent(WA_PESAN)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Daftar lewat WhatsApp
-                  </a>
-                </div>
-                <button type="button" className="btn-p" disabled={!loginModal} onClick={() => loginModal?.buka()}>
-                  Masuk
+                <button
+                  type="button"
+                  className="pgh-daftar-buka"
+                  aria-expanded={bukaDaftar}
+                  aria-controls="pgh-cara-daftar"
+                  onClick={() => setBukaDaftar((b) => !b)}
+                >
+                  Belum punya akun? Gratis.
+                  <span className="pgh-daftar-kar" aria-hidden="true">{bukaDaftar ? '▴' : '▾'}</span>
                 </button>
+                {/* Dirender bersyarat, bukan disembunyikan CSS: tautan yang ada
+                    di DOM tapi tak terlihat tetap kena Tab dan tetap dibacakan
+                    pembaca layar sebagai pilihan yang tersedia. */}
+                {bukaDaftar && (
+                  <div className="pgh-daftar" id="pgh-cara-daftar">
+                    <ol className="pgh-daftar-langkah">
+                      <li>Kirim <b>nama</b> lewat WhatsApp ke pengelola PAPAN — pesannya sudah terketik.</li>
+                      <li>Pengelola membuatkan akunmu dan mengabari begitu aktif.</li>
+                      <li>Masuk dengan <b>email &amp; sandi</b> yang diberikan.</li>
+                    </ol>
+                    <a
+                      className="pgh-daftar-wa"
+                      href={`https://wa.me/${WA_ADMIN}?text=${encodeURIComponent(WA_PESAN)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Daftar lewat WhatsApp
+                    </a>
+                  </div>
+                )}
               </>
             ) : (
               <Link className="btn-p pgh-tautan" to="/admin">Lihat jenjang kontributor</Link>
