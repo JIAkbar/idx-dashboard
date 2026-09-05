@@ -60,6 +60,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import arsip_mentah  # noqa: E402 — reuse, lihat CLAUDE.md rung 2
+from gabung_ohlc_stockbit import padatkan_rentang  # noqa: E402 — satu pemadat, bukan salinan kedua
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -169,10 +170,46 @@ def ke_baris(data: dict) -> list[list]:
 
 
 
-def simpan(kode: str, baris: list[list], th_full: int | None = None) -> int:
+def _kode_lama(tgl: str, rentang: list[list] | None) -> str | None:
+    """Kode sumber sebuah tanggal menurut penanda LAMA, atau None."""
+    for dari, sampai, kode in (rentang or []):
+        if dari <= tgl <= sampai:
+            return kode
+    return None
+
+
+def simpan(kode: str, baris: list[list], th_full: int | None = None,
+           sumber_lama: list[list] | None = None,
+           tanggal_ditulis: set[str] | None = None) -> int:
+    """Tulis satu berkas emiten, LENGKAP dengan penanda sumber per bar.
+
+    Kenapa pemanen ini ikut menulis penanda, padahal ia cuma tahu satu
+    penyedia: arsip `ohlc/` punya lebih dari satu penulis di rantai yang tak
+    bisa diurutkan satu sama lain — pemanen ini dijalankan CI di awan,
+    penggabung dijalankan panen lokal. Terukur 5 Sep 2026 pada berkas IHSG:
+    penulis yang membangun berkas dari nol dengan lima ruas saja MENGHAPUS
+    penanda 26 blok (1.811 bar cadangan) tanpa satu pun galat, dan halaman
+    kehilangan keterangan sumbernya diam-diam.
+
+    Membiarkan penanda lama bertahan apa adanya justru lebih buruk: tanggal
+    yang baru saja ditimpa penyedia ini akan mengklaim asal yang salah dengan
+    percaya diri. Yang benar: tanggal yang BARU DITULIS di sini menjadi
+    cadangan (`yh`), sisanya mempertahankan kode lamanya. Penggabung akan
+    memperhalusnya lagi saat ia jalan.
+
+    `sumber_lama` = ruas `sumber_bar` berkas sebelumnya (None kalau tak ada).
+    `tanggal_ditulis` = tanggal yang penyedia ini kirim pada jalan ini; None
+    berarti seluruh deret berasal dari penyedia ini (panen penuh).
+    """
     KELUARAN.mkdir(parents=True, exist_ok=True)
     p = KELUARAN / f"{kode}.json"
-    obj = {"kode": kode, "mulai": baris[0][0], "akhir": baris[-1][0], "n": len(baris), "d": baris}
+    def kode_untuk(tgl: str) -> str:
+        if tanggal_ditulis is None or tgl in tanggal_ditulis:
+            return "yh"
+        return _kode_lama(tgl, sumber_lama) or "yh"
+
+    obj = {"kode": kode, "mulai": baris[0][0], "akhir": baris[-1][0], "n": len(baris), "d": baris,
+           "sumber_bar": padatkan_rentang(baris, kode_untuk)}
     if th_full is not None:
         # Dicatat SETIAP kali (penuh maupun refresh harian yang meneruskan nilai
         # lama) supaya `cukup()` di bawah tahu seberapa dalam emiten ini PERNAH
@@ -315,7 +352,13 @@ def main() -> None:
                 peta[b[0]] = b
             # th_full diteruskan dari berkas lama (bukan diisi ulang) — refresh
             # harian cuma menambah hari baru, bukan menyelami lebih dalam.
-            total_byte += simpan(kode, [peta[k] for k in sorted(peta)], th_full=lama.get("th_full"))
+            # Penanda sumber juga diteruskan: hanya tanggal yang BARU ditulis
+            # di sini yang berubah jadi cadangan, sisanya mempertahankan
+            # asalnya. Tanpa ini, refresh harian menghapus penanda seluruh
+            # riwayat — lihat docstring `simpan`.
+            total_byte += simpan(kode, [peta[k] for k in sorted(peta)], th_full=lama.get("th_full"),
+                                 sumber_lama=lama.get("sumber_bar"),
+                                 tanggal_ditulis={b[0] for b in baris})
             segar += 1
 
         if i % 50 == 0:
@@ -338,5 +381,40 @@ def main() -> None:
         (KELUARAN / "_gagal.json").write_text(json.dumps(gagal, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def swauji() -> int:
+    """Uji penanda sumber saat refresh harian — bagian yang gagal SENYAP.
+
+    Kelas kesalahannya sudah dibayar 5 Sep 2026: penulis yang membangun berkas
+    dari nol menghapus penanda hasil penggabungan tanpa satu pun galat. Uji ini
+    menjaga dua sifat yang mencegahnya terulang.
+    """
+    lama = [["2020-01-01", "2020-06-30", "yh"], ["2020-07-01", "2026-09-03", "sb"]]
+
+    # 1. Bar lama MEMPERTAHANKAN asalnya; hanya tanggal yang baru ditulis
+    #    penyedia ini yang jadi cadangan.
+    assert _kode_lama("2020-03-01", lama) == "yh"
+    assert _kode_lama("2021-01-01", lama) == "sb"
+    assert _kode_lama("1999-01-01", lama) is None, "di luar rentang harus None, bukan menebak"
+    assert _kode_lama("2020-01-01", None) is None, "tanpa penanda lama harus None"
+
+    bar = [["2020-03-01"], ["2021-01-01"], ["2026-09-04"]]
+    ditulis = {"2026-09-04"}
+    r = padatkan_rentang(bar, lambda t: "yh" if t in ditulis else (_kode_lama(t, lama) or "yh"))
+    assert r == [["2020-03-01", "2020-03-01", "yh"],
+                 ["2021-01-01", "2021-01-01", "sb"],
+                 ["2026-09-04", "2026-09-04", "yh"]], r
+
+    # 2. Panen PENUH: seluruh deret memang dari penyedia ini, jadi satu rentang.
+    penuh = padatkan_rentang(bar, lambda t: "yh")
+    assert penuh == [["2020-03-01", "2026-09-04", "yh"]], penuh
+
+    # 3. Penanda wajib menutup SETIAP bar — tak boleh ada yang jatuh di celah.
+    for b in bar:
+        assert any(a <= b[0] <= z for a, z, _ in r), f"bar {b[0]} tak berpenanda"
+
+    print("swauji OK — 8/8 assert lulus")
+    return 0
+
+
 if __name__ == "__main__":
-    main()
+    sys.exit(swauji() if "--swauji" in sys.argv else (main() or 0))

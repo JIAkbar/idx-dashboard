@@ -273,10 +273,28 @@ def rentang_sumber(baris: list[list], peta_sb: dict[str, list]) -> list[list]:
     Bentuk: [[dari, sampai, kode]] dengan kode "sb" (utama) atau "yh"
     (cadangan). Pembacanya: `sumberBar()` di `lib/dasbor/sumberBar.ts`.
     """
+    return padatkan_rentang(baris, lambda tgl: "sb" if tgl in peta_sb else "yh")
+
+
+def padatkan_rentang(baris: list[list], kode_untuk) -> list[list]:
+    """Padatkan kode per bar jadi rentang beruntun [[dari, sampai, kode]].
+
+    Dipisah dari `rentang_sumber` supaya penulis LAIN arsip harga bisa memakai
+    pemadatan yang sama tanpa menyalin ulang. Arsip `ohlc/` punya lebih dari
+    satu penulis di rantai yang tak bisa diurutkan satu sama lain — pemanen
+    dijalankan CI di awan, penggabung dan penjahit dijalankan panen lokal —
+    dan tiap penulis wajib menyatakan kebenaran tentang apa yang IA tulis.
+
+    Terukur 5 Sep 2026 kenapa ini perlu: CI menulis `ohlc/IHSG.json` sesudah
+    penjahit, dari nol dengan lima ruas saja, dan penanda 26 blok (1.811 bar
+    cadangan) terhapus tanpa satu pun galat.
+
+    `kode_untuk(tanggal) -> "sb" | "yh"`.
+    """
     out: list[list] = []
     for b in baris:
         tgl = b[0]
-        kode = "sb" if tgl in peta_sb else "yh"
+        kode = kode_untuk(tgl)
         if out and out[-1][2] == kode:
             out[-1][1] = tgl
         else:

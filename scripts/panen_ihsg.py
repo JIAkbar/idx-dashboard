@@ -99,8 +99,25 @@ def tarik_penuh() -> list[list]:
 
 def tulis(baris: list[list]) -> None:
     OHLC.parent.mkdir(parents=True, exist_ok=True)
+    # Penanda sumber per bar. Skrip ini memanen SATU penyedia saja, jadi seluruh
+    # bar yang ditulisnya memang berasal dari penyedia itu — dan ia menyatakannya,
+    # bukan diam.
+    #
+    # Kenapa dinyatakan dan bukan dibiarkan kosong (terukur 5 Sep 2026): berkas
+    # ini punya DUA penulis di dua rantai yang tak bisa diurutkan satu sama lain —
+    # penjahit IHSG dijalankan panen lokal, pemanen ini dijalankan CI di awan.
+    # Hari itu CI menulis terakhir; karena blok tulis ini membangun berkas dari
+    # nol dengan lima ruas saja, penanda hasil penjahitan (26 blok, 1.811 bar
+    # cadangan) TERHAPUS tanpa satu pun galat, dan halaman kehilangan keterangan
+    # sumbernya diam-diam.
+    #
+    # Membiarkan penanda lama bertahan justru LEBIH buruk: bar-barnya baru saja
+    # ditimpa penyedia ini, jadi penanda lama akan mengklaim asal yang salah
+    # dengan percaya diri. Yang benar: tiap penulis menyatakan kebenaran tentang
+    # apa yang IA tulis. Penjahit akan memperhalusnya lagi saat ia jalan.
     OHLC.write_text(json.dumps({
         "kode": "IHSG", "mulai": baris[0][0], "akhir": baris[-1][0], "n": len(baris), "d": baris,
+        "sumber_bar": [[baris[0][0], baris[-1][0], "yh"]],
     }, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
     HARIAN.write_text(json.dumps({
