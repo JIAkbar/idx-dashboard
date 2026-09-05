@@ -335,6 +335,47 @@ MANIFEST: list[Turunan] = [
 ]
 
 
+def penanda_sumber_hilang() -> list[str]:
+    """Berkas `ohlc/` yang kehilangan ruas penanda sumber per bar.
+
+    Bukan pemeriksaan kesegaran melainkan pemeriksaan KEMUNDURAN. Arsip harga
+    punya lebih dari satu penulis di rantai yang tak bisa diurutkan satu sama
+    lain: pemanen dijalankan CI di awan, penggabung dan penjahit dijalankan
+    panen lokal. Penulis yang membangun berkas dari nol tanpa membawa penanda
+    menghapusnya tanpa satu pun galat.
+
+    Terjadi 5 Sep 2026 pada IHSG: penanda 26 blok (1.811 bar cadangan) tinggal
+    nol, dan tak ada apa pun yang melaporkannya - halaman cuma diam-diam
+    berhenti menyebut sumber cadangannya. Ketiga penulis sudah diperbaiki hari
+    itu juga; penjaga ini ada supaya penulis BERIKUTNYA tak bisa mengulanginya
+    tanpa ketahuan.
+
+    Usul sesi pengawas (Fable), 5 Sep 2026.
+    """
+    d = JSON / "ohlc"
+    if not d.is_dir():
+        return []
+    # SELURUH berkas, bukan sampel. Versi pertama penjaga ini memeriksa tiap
+    # berkas ke-12 dan karena itu DIAM saat satu berkas kehilangan penandanya -
+    # diuji sengaja pada BBCA, dan gerbangnya tetap hijau. Kemunduran satu
+    # berkas justru yang paling sulit dilihat dengan mata.
+    #
+    # Pindai penuh terjangkau karena isinya tak diurai: cukup dicari kuncinya
+    # sebagai teks. Terukur 5 Sep 2026: 964 berkas (114 MB) dalam 0,4 detik,
+    # sementara mengurai JSON-nya memakan puluhan detik untuk jawaban yang sama.
+    hilang: list[str] = []
+    for f in sorted(d.glob("*.json")):
+        if f.name.startswith("_"):
+            continue  # _gagal.json: daftar kegagalan panen, bukan deret harga
+        try:
+            teks = f.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if '"d":' in teks and '"sumber_bar"' not in teks:
+            hilang.append(f.stem)
+    return hilang
+
+
 def hari_bursa_terakhir() -> str | None:
     """Acuan dari statistik harian — sumber yang tak memakai kredensial, jadi
     ia tetap terbit saat sumber lain mati. Itu justru gunanya di sini."""
@@ -352,6 +393,8 @@ def periksa(cetak_semua: bool = False) -> int:
               "acuan kesegaran tak ada, pemeriksaan dibatalkan")
         return 1
     print(f"hari bursa terakhir (statistik harian): {acuan}\n")
+
+    hilang_penanda = penanda_sumber_hilang()
 
     segar, basi, tak_terperiksa = [], [], []
     for t in MANIFEST:
@@ -385,6 +428,13 @@ def periksa(cetak_semua: bool = False) -> int:
         print(f"  ?      {t.nama:24} {sebab}")
 
     print(f"\nsegar {len(segar)} · basi {len(basi)} · tak terperiksa {len(tak_terperiksa)}")
+    if hilang_penanda:
+        contoh = ", ".join(hilang_penanda[:6])
+        lagi = f" (+{len(hilang_penanda) - 6} lagi)" if len(hilang_penanda) > 6 else ""
+        print(f"::error::{len(hilang_penanda)} berkas harga kehilangan penanda sumber per bar "
+              f"(contoh: {contoh}{lagi}) - ada penulis yang membangun berkas dari nol "
+              "tanpa membawanya; pembangun: gabung_ohlc_stockbit.py / jahit_ihsg.py / panen_ohlc.py")
+        return 1
     if basi:
         nama = ", ".join(t.nama for t, _, _ in basi)
         print(f"::error::{len(basi)} turunan basi: {nama}")
