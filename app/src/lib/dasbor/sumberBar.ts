@@ -20,6 +20,24 @@
  * menyentuh bar cadangan, sebutkan di layar. Angka dari dua penyedia yang
  * berbeda tak selalu identik, dan pembaca berhak tahu bagian mana yang
  * bukan dari sumber utama — itu seluruh alasan penanda ini ada.
+ *
+ * SAPUAN PEMBACA, 5 Sep 2026 — tujuh pembaca arsip harga, dua dipasangi
+ * catatan, lima sengaja tidak. Alasannya satu dan terukur: **bar cadangan
+ * termuda bertanggal 2020-05-19**, sedangkan kelima pembaca itu hanya
+ * melihat jendela yang mulai jauh sesudahnya, jadi rentang tampilannya tak
+ * pernah bisa menyentuh satu pun bar cadangan.
+ *
+ * | Pembaca | Jendelanya | Dipasangi? |
+ * |---|---|---|
+ * | Grafik Emiten | seluruh riwayat berkas | ya |
+ * | Musiman (harian) | rentang pilihan pembaca | ya |
+ * | Watchlist | harga terakhir saja | tidak |
+ * | Screener → tingkat menang | hari rekomendasi, 2026-08-24 → | tidak |
+ * | Tanya PAPAN | ringkas kinerja 1 tahun | tidak |
+ *
+ * Kalau salah satu dari lima itu kelak melebarkan jendelanya ke belakang
+ * 2020, catatannya WAJIB ikut dipasang — alasan di atas gugur bersama
+ * jendelanya, dan tak ada galat yang akan memberitahu.
  */
 
 /** Kode sumber di berkas. Sengaja pendek: ia berulang di ribuan berkas. */
