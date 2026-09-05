@@ -229,6 +229,32 @@ jobs:
             if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_seasonality gagal" }
           } else { Write-Host 'skrip seasonality tak ada — dilewati' }
 
+      # Hakim jejak + kohort terkunci. Ditambahkan 5 Sep 2026 atas permintaan
+      # Johan: *"termasuk win rate kita yang kita cari belum selesai bahas itu
+      # terakhir tanggal 2 september … win rate nya berapa, dan diterapin di
+      # page mana"*.
+      #
+      # Sebelum ini seluruh rantai win rate HANYA hidup di bat buka-laptop —
+      # kalau laptopnya tak dibuka, angka di Screener dan Kartu Analisa diam
+      # tanpa satu pun galat. Dua skrip ini aman dijalankan dari dua tempat:
+      # keduanya nol jaringan, membaca `ohlc/` dan `rekomendasi/` yang sudah
+      # ada, dan keluarannya SEKALI TULIS — `penilaian/<tgl>.json` tak pernah
+      # ditimpa, jadi menjalankannya dua kali tak mengubah apa pun.
+      #
+      # Yang SENGAJA tidak ikut ke sini: `rekap_preset.py` dan
+      # `bangun-screener.mjs`. Keduanya MENULIS `rekomendasi/<tgl>.json`, dan
+      # dua penulis di dua mesin untuk berkas sekali-tulis yang sama persis
+      # bentuk masalah yang sudah dibayar di `ohlc/`. Kalau kelak rantai itu
+      # perlu jalan tanpa laptop, pindahkan seluruhnya ke sini — bukan
+      # dijalankan di dua tempat.
+      - name: 7 · Hakim jejak (win rate) & kohort terkunci
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/riset/nilai_jejak.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::nilai_jejak gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/riset/selisih_terkunci.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::selisih_terkunci gagal" }
+
       # Vonis merah/hijau diputuskan DI SINI, satu tempat — bukan tersebar di
       # exit code tiap langkah. Tiap langkah di atas `continue-on-error` supaya
       # satu pemanen mati tak menghentikan yang lain; harganya, kegagalan jadi
