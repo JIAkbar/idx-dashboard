@@ -166,24 +166,35 @@ jobs:
       # SESUDAH langkah 2 karena tanggal bawaannya = bar OHLC terakhir, dan cek
       # silangnya memakai Volume dari berkas yang sama.
       #
-      # DUA BELAS varian, bukan satu (Johan 23 Agu 2026: "CI harus ke lengkap
-      # Varian"). Sebelum ini langkah ini memanggil skripnya TANPA `--varian`,
-      # dan bawaannya "reguler" saja — jadi sebelas varian lain hanya terisi
-      # lewat backfill manual dan akan tertinggal satu hari tiap hari.
-      # Susunannya: 3 papan (REGULER/NEGO/TUNAI) x 2 tipe investor
-      # (ALL/FOREIGN) x 2 jenis transaksi (GROSS/NET). DOMESTIC sengaja tak
-      # ikut — terbukti = ALL - FOREIGN, jadi diturunkan, bukan dipanen.
+      # ENAM varian GROSS, bukan dua belas — Johan 5 Sep 2026: *"ralat dulu
+      # setiap hari itu harusnya panen 6 varian karena gross, sedangkan yang
+      # net bisa di hitung"*. Ini menggantikan ketetapan 23 Agu ("CI harus ke
+      # lengkap Varian") yang memanen 12, dan menyelaraskan CI dengan bat
+      # buka-laptop yang sudah 6 sejak 1 Sep.
       #
-      # Beban: 12 x ±960 = ±11.500 permintaan. Pada jeda 0,4 detik ≈ 1,3 jam
-      # (jeda 1,0 detik akan jadi 3,2 jam — terlalu panjang untuk jendela
-      # harian). Balasan 429 sudah ditangani skripnya: jeda 30 detik lalu
-      # coba sekali lagi.
-      - name: 3d · Broker summary per emiten (Stockbit, 12 varian)
+      # Susunannya: 3 papan (REGULER/NEGO/TUNAI) x 2 tipe investor
+      # (ALL/FOREIGN), semuanya GROSS. Dua hal sengaja TIDAK dipanen karena
+      # keduanya turunan eksak, bukan karena dianggap tak perlu:
+      #   NET      = beli - jual dari GROSS (backtest 5.756 baris, 0 beda)
+      #   DOMESTIC = ALL - FOREIGN
+      # Halaman yang memajang "Net" menghitungnya di layar dari gross
+      # (`tabelDuaSisi` di lib/dasbor/brokerEmiten.ts), tak satu pun pembaca
+      # membuka berkas varian net-*. Diperiksa 5 Sep 2026 dengan grep, bukan
+      # diingat.
+      #
+      # Beban turun separuh: 6 x ±960 = ±5.800 permintaan, pada jeda 0,4 detik
+      # ≈ 40 menit (dulu 12 varian ≈ 1,3 jam). Balasan 429 sudah ditangani
+      # skripnya: jeda 30 detik lalu coba sekali lagi.
+      #
+      # Berkas net-* yang TELANJUR ada di arsip dibiarkan sampai konsolidasi
+      # (ketetapan J14) — berhenti memanennya bukan alasan menghapus yang
+      # sudah terlanjur dibayar.
+      - name: 3d · Broker summary per emiten (Stockbit, 6 varian GROSS)
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/stockbit_token.py --status
           & "${{ steps.py.outputs.exe }}" scripts/panen_broker_harian.py --jeda 0.4 `
-            --varian reguler,asing,nego,nego-asing,tunai,tunai-asing,net,net-asing,net-nego,net-nego-asing,net-tunai,net-tunai-asing
+            --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_broker_harian gagal" }
 
       - name: 4 · Kartu Analisa
