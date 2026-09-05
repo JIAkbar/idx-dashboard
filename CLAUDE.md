@@ -387,6 +387,62 @@ Lahir dari kesalahan nyata hari itu; tiap satunya sudah dibayar.
    tak menolong di sini: pertanyaan yang tak diajukan tak akan dijawab
    sepintar apa pun modelnya.
 
+### `tsc --noEmit -p tsconfig.json` TIDAK memeriksa apa pun — pemeriksanya `tsc -b`
+
+Lahir 5 Sep 2026, dibayar dengan build produksi yang patah dan sempat tayang.
+
+`app/tsconfig.json` adalah akar REFERENSI PROYEK: ia cuma menunjuk ke
+`tsconfig.app.json` dan `tsconfig.node.json`, dan tak memuat satu pun berkas
+sumber sendiri. Karena itu `npx tsc --noEmit -p tsconfig.json` selesai dalam
+sekejap dengan **exit 0 tanpa membaca kode apa pun** — bukan "bersih",
+melainkan "tak diperiksa". Dua hasil itu tak bisa dibedakan dari keluarannya.
+
+Hari itu perintah tersebut melapor bersih **tiga kali** atas kode yang tak
+bisa dikompilasi (`sumber_bar?: RentangSumber` — seharusnya larik), dan galat
+sesungguhnya baru muncul di `npm run build`, sesudah didorong. Vercel gagal
+membangun; produksi tertahan di bangunan lama selama ±25 menit sampai
+diperbaiki.
+
+Yang sah sebagai bukti "tipe bersih", dan cuma ini:
+
+```bash
+cd app && npm run build      # tsc -b + vite build + salin data — bukti terkuat
+```
+
+atau, kalau cuma tipe yang diperiksa: `npx tsc -b` (tambah `--force` supaya
+singgahan build lama tak menyembunyikan galat).
+
+Aturan ini bukan hal baru — Papan Pekerjaan #166, #180, #185, #187 semuanya
+memakai `npx tsc -b --force`. Yang terjadi 5 Sep adalah **menyimpang dari
+konvensi yang sudah benar**, lalu percaya pada hasilnya. Karena itu ia ditulis
+di sini: supaya penyimpangan berikutnya berhadapan dengan kalimat, bukan
+dengan ingatan.
+
+Pola umumnya, dan ini yang mahal: **perintah verifikasi yang lolos karena tak
+memeriksa apa pun terbaca persis seperti perintah yang lolos karena semuanya
+benar.** Sebelum memakai sebuah perintah sebagai bukti, pastikan ia benar-benar
+menyentuh yang diklaimnya — sekali saja, dengan sengaja merusak sesuatu dan
+memastikan ia MERAH.
+
+**Buktinya, diukur bukan diduga** (5 Sep 2026). Isi `app/tsconfig.json`
+seluruhnya:
+
+```json
+{ "files": [], "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }] }
+```
+
+`"files": []` — nol berkas, harfiah. Lalu satu baris yang pasti salah tipe
+(`const RUSAK: number = "bukan angka"`) disisipkan ke sebuah modul, dan kedua
+perintah dijalankan atas kode yang sama:
+
+| Perintah | Hasil |
+|---|---|
+| `npx tsc --noEmit -p tsconfig.json` | **exit 0** — hijau, tak menyebut apa-apa |
+| `npx tsc -b` | **exit 2**, galat tipe ditunjuk |
+
+Berkasnya dipulihkan sesudah uji. Kalau ragu apakah sebuah perintah verifikasi
+benar-benar memeriksa, ulangi uji ini: rusakkan, jalankan, pulihkan.
+
 ### Cara kerja & rilis — WAJIB
 
 **Kerjakan semua di localhost. Jangan push tanpa diminta.** Aturan ini berlaku sejak
