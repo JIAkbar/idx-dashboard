@@ -128,8 +128,8 @@ export function PetaInvestor() {
         <span className="sub">
           jaringan kepemilikan KSEI{posisiTanggal ? ` · posisi ${posisiTanggal}` : ''} · ≥1% · {data?.length ?? 0} emiten
         </span>
+        <KonteksData tanggal={posisiIso} />
       </div>
-      <KonteksData tanggal={posisiIso} />
 
       {loading && (
         <div className="fd-empty">

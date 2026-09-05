@@ -946,6 +946,19 @@
 .lantai .vhead+.catatan-cakupan,
 .lantai .konteks-data+.catatan-cakupan,
 .lantai .vhead+.konteks-data{margin-top:-8px}
+/* Sejak 5 Sep 2026 baris "Data per …" TIDAK berdiri sendiri — ia anak .vhead,
+   didorong ke ujung kanan baris judul (Johan: "kenapa teks 2 juni 2026 gak di
+   pindahkan saja 1 baris dengan teks peta investor"). `flex:none` wajib: tanpa
+   itu ia ikut melar dan menyeret tautan Metodologi ke tengah baris.
+
+   Di ≤768px ia kembali jadi baris penuh. Judul + subjudul + catatan cakupan
+   sudah memakan seluruh lebar di sana, jadi memaksanya sebaris cuma memotong
+   tanggalnya — satu baris yang dihemat di desktop tak sepadan dengan tanggal
+   yang tak terbaca di ponsel. */
+.lantai .vhead .konteks-data{margin-left:auto;flex:none;justify-content:flex-end;gap:14px}
+@media (max-width:768px){
+  .lantai .vhead .konteks-data{margin-left:0;flex:1 0 100%;justify-content:space-between}
+}
 /* Varian SEBARIS judul (Johan 28 Agu "di jadikan 1 baris saja ... (Rincian
    broker ...)") — anak .vhead, tanpa ikon, dalam kurung; membungkus wajar
    di layar sempit karena .vhead sudah flex-wrap. */

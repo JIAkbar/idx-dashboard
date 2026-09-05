@@ -138,18 +138,28 @@ export function TopStocks() {
   // Judul = label menu resmi rute /stocks (lib/dasbor/menu.ts) — dipakai
   // ulang di ketiga cabang return (loading/error/utama) supaya header tak
   // melompat, pola sama StatistikBerkala.tsx.
-  const vhead = (
+  // Baris "Data per …" TIDAK lagi berdiri sendiri di bawah kepala
+  // (Johan 5 Sep 2026: "kenapa teks 2 juni 2026 gak di pindahkan saja
+  // 1 baris dengan teks peta investor"). Ia masuk ke .vhead dan
+  // didorong ke ujung kanan, jadi satu baris hilang tanpa ada yang
+  // dibuang — tautan Metodologi di dalamnya ikut pindah, bukan mati.
+  //
+  // vhead jadi FUNGSI karena tanggalnya baru diketahui di cabang utama;
+  // cabang memuat/galat memanggilnya tanpa argumen dan komponennya
+  // menulis "Data per —" apa adanya, bukan menyembunyikan barisnya.
+  const vhead = (tgl: string | null = null, sementara = false) => (
     <div className="vhead">
       <h1>Top Stocks</h1>
       <span className="sub">Top gainer, loser, kapitalisasi, dan kontribusi saham ke IHSG — satu hari bursa.</span>
       <CatatanCakupan inline />
+      <KonteksData tanggal={tgl} sementara={sementara} />
     </div>
   )
 
   if (loading && !hari) {
     return (
       <div className="lantai">
-        {vhead}
+        {vhead()}
         <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p style={{ fontSize: 28 }}>⏳</p>
@@ -162,7 +172,7 @@ export function TopStocks() {
   if (error || !hari) {
     return (
       <div className="lantai">
-        {vhead}
+        {vhead()}
         <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
@@ -187,9 +197,8 @@ export function TopStocks() {
 
   return (
     <div className="lantai">
-      {vhead}
+      {vhead(tanggalAktif, hari?.sementara === true)}
       <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
-      <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
 
       {hari.sementara === true && (
         <div className="chip warn" style={{ display: 'flex', whiteSpace: 'normal', height: 'auto', lineHeight: 1.5 }}>

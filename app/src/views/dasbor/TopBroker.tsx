@@ -54,18 +54,28 @@ export function TopBroker() {
   // Judul = label menu resmi rute /broker (lib/dasbor/menu.ts) — dipakai
   // ulang di ketiga cabang return (loading/error/utama) supaya header tak
   // melompat, pola sama StatistikBerkala.tsx.
-  const vhead = (
+  // Baris "Data per …" TIDAK lagi berdiri sendiri di bawah kepala
+  // (Johan 5 Sep 2026: "kenapa teks 2 juni 2026 gak di pindahkan saja
+  // 1 baris dengan teks peta investor"). Ia masuk ke .vhead dan
+  // didorong ke ujung kanan, jadi satu baris hilang tanpa ada yang
+  // dibuang — tautan Metodologi di dalamnya ikut pindah, bukan mati.
+  //
+  // vhead jadi FUNGSI karena tanggalnya baru diketahui di cabang utama;
+  // cabang memuat/galat memanggilnya tanpa argumen dan komponennya
+  // menulis "Data per —" apa adanya, bukan menyembunyikan barisnya.
+  const vhead = (tgl: string | null = null, sementara = false) => (
     <div className="vhead">
       <h1>Top Broker</h1>
       <span className="sub">Saham dan broker paling aktif per hari — volume, nilai, dan frekuensi transaksi.</span>
       <CatatanCakupan inline />
+      <KonteksData tanggal={tgl} sementara={sementara} />
     </div>
   )
 
   if (loading && !hari) {
     return (
       <div className="lantai">
-        {vhead}
+        {vhead()}
         <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p style={{ fontSize: 28 }}>⏳</p>
@@ -78,7 +88,7 @@ export function TopBroker() {
   if (error || !hari) {
     return (
       <div className="lantai">
-        {vhead}
+        {vhead()}
         <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
@@ -107,9 +117,8 @@ export function TopBroker() {
 
   return (
     <div className="lantai">
-      {vhead}
+      {vhead(tanggalAktif, hari?.sementara === true)}
       <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
-      <KonteksData tanggal={tanggalAktif} sementara={hari?.sementara === true} />
 
       <div className="panel">
         <div className="panel-h"><span className="lbl">Top Stock Trading — By Volume · Value · Frequency</span></div>

@@ -121,18 +121,28 @@ export default function Bandarmologi() {
     }).slice(0, 150)
   }, [data, cari, saring])
 
-  const vhead = (
+  // Baris "Data per …" TIDAK lagi berdiri sendiri di bawah kepala
+  // (Johan 5 Sep 2026: "kenapa teks 2 juni 2026 gak di pindahkan saja
+  // 1 baris dengan teks peta investor"). Ia masuk ke .vhead dan
+  // didorong ke ujung kanan, jadi satu baris hilang tanpa ada yang
+  // dibuang — tautan Metodologi di dalamnya ikut pindah, bukan mati.
+  //
+  // vhead jadi FUNGSI karena tanggalnya baru diketahui di cabang utama;
+  // cabang memuat/galat memanggilnya tanpa argumen dan komponennya
+  // menulis "Data per —" apa adanya, bukan menyembunyikan barisnya.
+  const vhead = (tgl: string | null = null, sementara = false) => (
     <div className="vhead">
       <h1>Bandarmologi</h1>
       <span className="sub">Teori bid-offer bandar dan spesifikasi order-flow, dihitung dari data yang sudah dipanen.</span>
       <CatatanCakupan inline />
+      <KonteksData tanggal={tgl} sementara={sementara} />
     </div>
   )
 
-  if (memuat) return <div className="lantai">{vhead}<div className="panel panel-b">Memuat…</div></div>
+  if (memuat) return <div className="lantai">{vhead()}<div className="panel panel-b">Memuat…</div></div>
   if (galat || !data) {
     return (
-      <div className="lantai">{vhead}
+      <div className="lantai">{vhead()}
         <div className="panel panel-b bm-kosong">
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p className="lbl">Data belum dibangun untuk hari ini.</p>
@@ -145,8 +155,7 @@ export default function Bandarmologi() {
 
   return (
     <div className="lantai">
-      {vhead}
-      <KonteksData tanggal={data.tanggal} />
+      {vhead(data.tanggal)}
 
       <p className="bm-pengantar">
         Dua dokumen di arsip ide menjelaskan cara membaca jejak pemain besar: kelas

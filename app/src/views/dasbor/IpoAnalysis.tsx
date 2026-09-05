@@ -80,8 +80,8 @@ export function IpoAnalysis() {
       <div className="vhead">
         <h1>IPO Papan</h1>
         <span className="sub">{data.n} emiten tercatat sejak listing perdana, dengan rapor penjamin emisi.</span>
+        <KonteksData tanggal={data.tanggal} />
       </div>
-      <KonteksData tanggal={data.tanggal} />
 
       <div className="panel">
         <div className="panel-b">
