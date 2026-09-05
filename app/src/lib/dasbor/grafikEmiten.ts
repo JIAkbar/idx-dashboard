@@ -7,6 +7,7 @@
 import type { Bar } from 'oakscriptjs'
 import type { Katalog, LilinMentah, PenandaMentah, SegmenMentah } from './katalogIndikator'
 import type { BarisOhlc } from './ihsgOhlc'
+import type { RentangSumber } from './sumberBar'
 import { HARI, ringkasHarian, vonisUji, type RingkasHari } from '../seasonality'
 import { keEpoch } from './kerangkaWaktu'
 
@@ -16,7 +17,23 @@ export interface BerkasOhlcEmiten {
   akhir: string
   n: number
   d: BarisOhlc[]
-  /** Ada HANYA kalau riwayat awal berkas ini disambung dari sumber lain.
+  /** Penanda sumber PER BAR — rentang beruntun `[dari, sampai, kode]`.
+   *
+   *  Keputusan Johan 5 Sep 2026: *"pakai penanda sumber per bar, riwayat lama
+   *  jangan dipotong"*. Riwayat tua dipertahankan, dan karena dipertahankan
+   *  pembaca berhak tahu bagian mana yang bukan dari sumber utama.
+   *
+   *  Menggantikan `jahitan` di bawah, yang menandai SATU potongan awal saja.
+   *  Terukur 5 Sep 2026 itu tak cukup: jahitan IHSG ternyata 13 blok berselang
+   *  sampai 2017, bukan satu potongan pra-2000 seperti yang dikira. */
+  sumber_bar?: RentangSumber
+
+  /** MATI sejak penggabung tunggal menggantikan penjahit lama — terukur
+   *  5 Sep 2026: 0 dari 963 berkas membawanya. Dipertahankan di tipe supaya
+   *  berkas lama yang belum dibangun ulang tetap terbaca, bukan karena masih
+   *  ditulis. Pemakai baru pakai `sumber_bar`.
+   *
+   *  Ada HANYA kalau riwayat awal berkas ini disambung dari sumber lain.
    *
    *  49 emiten dijahit 25 Agu 2026: sumber utama tak menyimpan bar sebelum
    *  lantai arsipnya, sumber pembanding punya. Bar lama tak tersentuh — yang

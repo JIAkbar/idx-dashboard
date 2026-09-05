@@ -254,6 +254,36 @@ def endus_anomali(baris: list[list]) -> dict:
     return {"harga_ekstrem": ekstrem, "beku_terpanjang": terpanjang if terpanjang > 1 else 0}
 
 
+def rentang_sumber(baris: list[list], peta_sb: dict[str, list]) -> list[list]:
+    """Penanda sumber PER BAR, disimpan sebagai rentang beruntun.
+
+    Keputusan Johan 5 Sep 2026: *"pakai penanda sumber per bar, riwayat lama
+    jangan dipotong"*. Sebelum ini berkas hanya membawa satu kalimat `sumber`
+    untuk SELURUH deret, jadi tujuh pembaca di antarmuka — termasuk
+    rekomendasi dan win rate — tak bisa tahu bar mana berasal dari mana.
+
+    Disimpan sebagai rentang, bukan satu bendera per baris, dan itu bukan
+    penyederhanaan: sumbernya datang dalam blok beruntun (riwayat tua hanya
+    ada di cadangan, hari-hari baru selalu di sumber utama), jadi rentang
+    menjawab pertanyaan per-bar dengan tepat sambil menambah beberapa puluh
+    bita alih-alih ribuan. Bar yang tanggalnya ada di sumber utama SELALU
+    dimenangkan sumber utama (lihat `gabung`), jadi penandanya diturunkan
+    dari keputusan yang sama — bukan ditebak ulang.
+
+    Bentuk: [[dari, sampai, kode]] dengan kode "sb" (utama) atau "yh"
+    (cadangan). Pembacanya: `sumberBar()` di `lib/dasbor/sumberBar.ts`.
+    """
+    out: list[list] = []
+    for b in baris:
+        tgl = b[0]
+        kode = "sb" if tgl in peta_sb else "yh"
+        if out and out[-1][2] == kode:
+            out[-1][1] = tgl
+        else:
+            out.append([tgl, tgl, kode])
+    return out
+
+
 def gabung(bar_yahoo: list[list], peta_sb: dict[str, list],
            hari_bursa: set[str] | None = None, sejak: str | None = None) -> tuple[list[list], dict]:
     hasil: dict[str, list] = {r[0]: list(r) for r in bar_yahoo}
@@ -273,6 +303,7 @@ def gabung(bar_yahoo: list[list], peta_sb: dict[str, list],
     baris = [hasil[t] for t in sorted(hasil)]
     baris, dibuang = buang_lompatan_mustahil(baris)
     return baris, {
+        "sumber_bar": rentang_sumber(baris, peta_sb),
         "sebelum": len(bar_yahoo),
         "sesudah": len(baris),
         "tambahan": len(baris) - len(bar_yahoo),
@@ -295,6 +326,22 @@ def swauji() -> int:
     assert st["tambahan"] == 1 and st["hanya_yahoo"] == 1
     ulang, _ = gabung(y, sb)
     assert ulang == baris, "gabung dari sumber sama harus idempoten"
+
+    # Penanda sumber per bar (Johan 5 Sep 2026) — rentang beruntun, dan
+    # yang diuji bukan cuma bentuknya melainkan KEBENARANNYA: tiap bar
+    # harus menjawab sumber yang sama dengan aturan `gabung` (tanggal yang
+    # ada di sumber utama selalu dimenangkan sumber utama).
+    rs = st["sumber_bar"]
+    assert rs == [["2004-01-02", "2016-08-10", "sb"], ["2016-08-11", "2016-08-11", "yh"]], rs
+    for b in baris:
+        cocok = [r for r in rs if r[0] <= b[0] <= r[1]]
+        assert len(cocok) == 1, f"bar {b[0]} harus jatuh di TEPAT satu rentang"
+        assert cocok[0][2] == ("sb" if b[0] in sb else "yh"), f"sumber {b[0]} salah"
+    # deret satu sumber = satu rentang, bukan satu per bar
+    hy, _ = gabung(y, {})
+    assert _["sumber_bar"] == [["2016-08-10", "2016-08-11", "yh"]], _["sumber_bar"]
+    # deret kosong tak meledak
+    assert gabung([], {})[1]["sumber_bar"] == []
 
     # Pagar bar mustahil (28 Agu 2026): bar 5.500.000 di tengah deret 560
     # WAJIB terbuang, dan bar sehat sesudahnya WAJIB bertahan — pembanding
@@ -364,6 +411,10 @@ def main() -> int:
             oh["mulai"] = baris[0][0]
             oh["akhir"] = baris[-1][0]
             oh["sumber"] = "Stockbit chartbit (utama) + Yahoo (hari yang tak ada di Stockbit)"
+            # Penanda sumber PER BAR (Johan 5 Sep 2026) — rentang beruntun,
+            # lihat `rentang_sumber`. Ruas `sumber` di atas tetap ada sebagai
+            # kalimat ringkas; yang ini yang bisa ditanyai per tanggal.
+            oh["sumber_bar"] = st["sumber_bar"]
             p_out.write_text(json.dumps(oh, ensure_ascii=False, separators=(",", ":")),
                              encoding="utf-8")
         n_tulis += 1

@@ -46,6 +46,7 @@ import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { LangkahTanggal } from '../../components/dasbor/LangkahTanggal'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { TombolLayarPenuh } from '../../components/dasbor/TombolLayarPenuh'
+import { CatatanSumberBar } from '../../components/dasbor/CatatanSumberBar'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { InfoIndikator, type ItemInfoIndikator } from '../../components/dasbor/InfoIndikator'
 import { AlatGambar } from '../../components/dasbor/AlatGambar'
@@ -3216,21 +3217,22 @@ export function GrafikEmiten() {
           CatatanCakupan dibungkus satu baris kecil (bukan .vhead) supaya
           tak menambah tinggi header. */}
       <p className="muted" style={{ margin: 0, fontSize: 11 }}><CatatanCakupan inline /></p>
-      {/* Penanda jahitan riwayat. Muncul HANYA untuk 49 emiten yang bar
-          paling awalnya berasal dari sumber pembanding — sumber utama tak
-          menyimpan periode itu. Wajib ada: pembaca yang menghitung return
-          jangka panjang berhak tahu potongan awal grafiknya bukan dari sumber
-          yang sama, karena konvensi penyesuaian aksi korporasi antar sumber
-          tidak selalu cocok. Justru itu sebabnya 117 emiten lain DITOLAK dari
-          penjahitan — yang lolos pun tetap dinyatakan, bukan disembunyikan. */}
-      {berkas?.jahitan && (
-        <p className="grf-jahitan" role="note">
-          Riwayat sebelum <strong>{berkas.jahitan.sampai}</strong> (
-          {berkas.jahitan.bar.toLocaleString('id-ID')} hari) berasal dari sumber pembanding —
-          bagian itu disambungkan karena sumber utama tak menyimpan periode tersebut.
-          Harga di rentang tumpang tindih keduanya sudah diadu dan cocok.
-        </p>
-      )}
+      {/* Penanda sumber riwayat. Wajib ada: pembaca yang menghitung return
+          jangka panjang berhak tahu bagian mana grafiknya bukan dari sumber
+          utama, karena konvensi penyesuaian aksi korporasi antar sumber tidak
+          selalu cocok.
+
+          Sampai 5 Sep 2026 blok ini membaca ruas `jahitan` — yang menandai
+          SATU potongan awal. Ruas itu sudah tak pernah ditulis lagi (terukur
+          0 dari 963 berkas), jadi catatannya tak pernah muncul walau
+          jahitannya nyata: gagal senyap, persis bentuk yang paling mahal.
+          Sekarang berjangkar pada penanda per bar, dan komponennya dipakai
+          bersama halaman lain supaya kalimatnya tak menyimpang satu per satu. */}
+      <CatatanSumberBar
+        sumberBar={berkas?.sumber_bar}
+        mulai={berkas?.mulai ?? ''}
+        akhir={berkas?.akhir ?? ''}
+      />
       <section className="panel grf-panel" ref={panelRef}>
         {/* Bilah atas — susunan acuan Stockbit/TradingView: cari · kerangka
             waktu · jenis chart · ƒx Indikator · (kanan) layar penuh & kamera.

@@ -3430,3 +3430,12 @@
    kepala halaman. Keduanya beda bulan, dan tanpa label ini pembaca menyangka
    persentase ubin ikut tanggal kepemilikan. */
 .lantai .gk-tgl-harga { font-family: var(--mono); font-size: 10.5px; color: var(--text3); }
+/* Catatan sumber bar cadangan (Johan 5 Sep 2026, penanda sumber per bar).
+   Kecil dan tenang: ia menandai pengecualian yang jarang muncul (0,1% bar),
+   jadi ia tak boleh berebut perhatian dengan angka yang ditandainya. */
+.lantai .csb-catatan {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text3);
+}

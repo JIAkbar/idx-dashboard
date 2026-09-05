@@ -49,6 +49,9 @@ import shutil
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from gabung_ohlc_stockbit import rentang_sumber  # noqa: E402
+
 AKAR = Path(__file__).resolve().parent.parent
 P_OHLC = AKAR / "data-idx" / "json" / "ohlc" / "IHSG.json"
 P_SB = AKAR / "data-idx" / "json" / "ohlcv_stockbit" / "IHSG.json"
@@ -112,6 +115,7 @@ def jahit(bar_yahoo: list[list], peta_sb: dict[str, list]) -> tuple[list[list], 
         "bar_sebelum": len(bar_yahoo), "bar_sesudah": len(baris),
         "dari_stockbit": dari_sb, "hanya_yahoo": dari_yahoo,
         "volume_nol_sebelum": nol_sebelum, "volume_nol_sesudah": nol_sesudah,
+        "sumber_bar": rentang_sumber(baris, peta_sb),
     }
     return baris, stat
 
@@ -130,7 +134,14 @@ def swauji() -> int:
     # keluaran akan mengali 100 lagi, dan itu memang benar: jangkarnya sumber.
     ulang, _ = jahit(y, sb)
     assert ulang == baris, "jahit dari sumber yang sama harus menghasilkan sama"
-    print("swauji OK — 5/5 assert lulus")
+    # Penanda wajib menutup SELURUH deret dan setuju dengan aturan jahitnya:
+    # tanggal yang ada di Stockbit menang, sisanya Yahoo.
+    assert st["sumber_bar"] == [["1999-12-30", "1999-12-30", "yh"],
+                                ["2000-01-04", "2000-01-04", "sb"],
+                                ["2001-07-24", "2001-07-24", "yh"]], st["sumber_bar"]
+    assert sum(1 for _ in baris) == sum(
+        1 for d, _, _ in st["sumber_bar"] for _ in [d]), "tiap bar wajib berpenanda"
+    print("swauji OK — 7/7 assert lulus")
     return 0
 
 
@@ -223,6 +234,10 @@ def main() -> int:
     oh["mulai"] = baris[0][0]
     oh["akhir"] = baris[-1][0]
     oh["sumber"] = "Yahoo (kerangka 1990-1999) + Stockbit chartbit (harga & volume 2000->)"
+    # Penanda PER BAR — kalimat `sumber` di atas berlaku untuk seluruh deret
+    # dan karena itu tak bisa menjawab "bar ini dari mana". Lihat
+    # `rentang_sumber` di penggabung emiten biasa.
+    oh["sumber_bar"] = st["sumber_bar"]
     P_OHLC.write_text(json.dumps(oh, ensure_ascii=False, separators=(",", ":")),
                       encoding="utf-8")
     # Ringkas 250 bar ikut ditulis DI SINI (temuan Johan 27 Agu: caption chart
