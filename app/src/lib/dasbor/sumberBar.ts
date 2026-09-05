@@ -12,9 +12,15 @@
  * tak bisa membedakan bar yang berasal dari penyedia utama dari bar cadangan.
  *
  * Sekarang tiap berkas membawa `sumber_bar`: rentang beruntun `[dari, sampai,
- * kode]`. Rentang, bukan bendera per baris, karena sumbernya memang datang
- * dalam blok — riwayat tua seluruhnya cadangan, hari-hari baru seluruhnya
- * utama. Jawabannya tetap per bar dan tetap tepat; yang dihemat ukurannya.
+ * kode]`. Rentang, bukan bendera per baris, karena sumbernya datang dalam
+ * blok. Jawabannya tetap per bar dan tetap tepat; yang dihemat ukurannya.
+ *
+ * **Blok tidak selalu satu potongan tua di depan.** Dugaan itu sempat
+ * dipercaya dan salah: terukur 5 Sep 2026, GOLD punya 45 blok berselang-seling
+ * di 2016–2017 dan IHSG 26 blok sampai 2017. Kalimat apa pun yang
+ * mengasumsikan bentuk "riwayat tua = cadangan, sisanya utama" akan salah
+ * untuk keduanya — itu sebabnya `catatanSumber` di bawah tidak pernah
+ * mengklaim mana yang mayoritas tanpa menghitungnya.
  *
  * Yang WAJIB dilakukan pemakai: kalau rentang yang sedang ditampilkan
  * menyentuh bar cadangan, sebutkan di layar. Angka dari dua penyedia yang
@@ -53,6 +59,15 @@ export const NAMA_SUMBER: Record<KodeSumber, string> = {
   yh: 'Yahoo Finance',
 }
 
+/** Berapa potongan cadangan yang masih layak disebut satu per satu sebelum
+ *  kalimatnya berubah jadi ringkasan.
+ *
+ *  Bukan angka selera: tanpa batas, GOLD merender 22 rentang tanggal dalam
+ *  satu paragraf 549 aksara — di ponsel 412px itu delapan baris teks abu-abu
+ *  untuk menandai 6% barnya. Yang tayang berhenti jadi keterangan dan mulai
+ *  jadi isi berkas. */
+const MAKS_POTONGAN = 3
+
 /** Sumber satu tanggal. `null` kalau tanggalnya di luar seluruh rentang —
  *  itu berarti berkasnya belum membawa penanda (arsip lama), bukan berarti
  *  tak bersumber. Pemakai wajib membedakan keduanya. */
@@ -88,12 +103,40 @@ export function sumberDalamRentang(
   return ada
 }
 
+/** Potongan cadangan yang benar-benar terlihat, DIPOTONG ke jendela tampilan.
+ *
+ *  Pemotongan itu bukan kerapian: tanpanya kalimatnya menyebut tanggal di luar
+ *  yang sedang dilihat pembaca — mis. "s.d. 2017-07-19" padahal layar berhenti
+ *  di 2017-06-22 — dan pembaca tak punya cara tahu itu bukan bagian dari yang
+ *  ia lihat. */
+export function potonganCadangan(
+  rentang: RentangSumber[] | undefined,
+  mulai: string,
+  akhir: string,
+): Array<[string, string]> {
+  return (rentang ?? [])
+    .filter(([dari, sampai, kode]) => kode === 'yh' && sampai >= mulai && dari <= akhir)
+    .map(([dari, sampai]): [string, string] => [
+      dari < mulai ? mulai : dari,
+      sampai > akhir ? akhir : sampai,
+    ])
+}
+
 /** Kalimat siap tayang, atau `null` kalau tak perlu disebut.
  *
  * Sengaja diam saat seluruh rentang berasal dari penyedia utama — catatan
  * yang selalu muncul berhenti dibaca, dan yang ingin diketahui pembaca
  * justru pengecualiannya. Diam juga saat berkasnya belum berpenanda:
  * mengarang "sumber tidak diketahui" lebih buruk daripada tidak berkata apa-apa.
+ *
+ * **Tidak pernah menyebut mana yang mayoritas.** Versi pertama membuka dengan
+ * "Sebagian besar harga dari [utama]" begitu dua sumber tersentuh — tanpa
+ * pernah menghitung satu bar pun. Terukur pada GOLD, jendela 2017-01-03 s.d.
+ * 2017-06-22: **107 dari 114 bar (94%) justru dari cadangan**, jadi kalimatnya
+ * membantah daftarnya sendiri di kalimat yang sama. Modul ini tak memegang
+ * deret barnya, jadi ia tak bisa menghitung proporsi — maka ia tidak
+ * mengklaimnya. Kalimat netral yang benar mengalahkan kalimat tegas yang
+ * kadang terbalik.
  */
 export function catatanSumber(
   rentang: RentangSumber[] | undefined,
@@ -104,10 +147,14 @@ export function catatanSumber(
   if (ada.length === 0) return null
   if (ada.length === 1 && ada[0] === 'sb') return null
   if (ada.length === 1) return `Harga pada rentang ini dari ${NAMA_SUMBER[ada[0]]}.`
-  // Campuran: sebut bagian cadangannya dengan tanggalnya, karena itu yang
-  // perlu diperiksa pembaca — bukan sekadar "ada dua sumber".
-  const potongan = (rentang ?? [])
-    .filter(([dari, sampai, kode]) => kode === 'yh' && sampai >= mulai && dari <= akhir)
-    .map(([dari, sampai]) => (dari === sampai ? dari : `${dari} s.d. ${sampai}`))
-  return `Sebagian besar harga dari ${NAMA_SUMBER.sb}; bagian ${potongan.join(', ')} dari ${NAMA_SUMBER.yh}.`
+
+  const potongan = potonganCadangan(rentang, mulai, akhir)
+  if (!potongan.length) return null
+  const sebut = (p: [string, string]) => (p[0] === p[1] ? p[0] : `${p[0]} s.d. ${p[1]}`)
+  const bagian = potongan.length <= MAKS_POTONGAN
+    ? potongan.map(sebut).join(', ')
+    // Diringkas, bukan dipotong diam-diam: jumlahnya disebut supaya pembaca
+    // tahu ada berapa, dan ujung-ujungnya disebut supaya ia tahu di mana.
+    : `${potongan.length} potongan antara ${potongan[0][0]} dan ${potongan[potongan.length - 1][1]}`
+  return `Sebagian harga pada rentang ini dari ${NAMA_SUMBER.yh} — ${bagian}; selebihnya dari ${NAMA_SUMBER.sb}.`
 }

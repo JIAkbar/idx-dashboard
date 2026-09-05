@@ -92,12 +92,53 @@ describe('catatanSumber — diam saat tak perlu, bicara saat perlu', () => {
     expect(t).not.toContain(NAMA_SUMBER.sb)
   })
 
-  it('menyebut TANGGAL bagian cadangan saat campuran, bukan cuma "dua sumber"', () => {
+  it('menyebut TANGGAL bagian cadangan saat campuran, DIPOTONG ke jendela', () => {
     const t = catatanSumber(RENTANG, '2003-01-01', '2005-01-01') ?? ''
     expect(t).toContain(NAMA_SUMBER.sb)
     expect(t).toContain(NAMA_SUMBER.yh)
-    // yang perlu diperiksa pembaca adalah tanggalnya
-    expect(t).toMatch(/1990-04-06 s\.d\. 2003-12-30/)
+    // Dipotong ke jendela: blok aslinya mulai 1990-04-06, tapi pembaca sedang
+    // melihat sejak 2003-01-01. Menyebut 1990 membuatnya mengira melihat
+    // sesuatu yang tak ada di layarnya.
+    expect(t).toMatch(/2003-01-01 s\.d\. 2003-12-30/)
+    expect(t).not.toContain('1990-04-06')
+  })
+
+  it('TIDAK PERNAH mengklaim mana yang mayoritas', () => {
+    // Versi pertama membuka dengan "Sebagian besar harga dari Stockbit" begitu
+    // dua sumber tersentuh, tanpa menghitung satu bar pun. Terukur terbalik di
+    // GOLD: 107 dari 114 bar justru dari cadangan.
+    const berselang: RentangSumber[] = [
+      ['2016-01-04', '2016-08-12', 'sb'],
+      ['2016-08-15', '2017-08-04', 'yh'],
+      ['2017-08-07', '2026-09-04', 'sb'],
+    ]
+    const t = catatanSumber(berselang, '2016-08-15', '2017-08-04') ?? ''
+    expect(t).not.toMatch(/[Ss]ebagian besar/)
+    expect(t).toContain(NAMA_SUMBER.yh)
+  })
+
+  it('meringkas saat potongannya banyak — bukan menuang isi berkas ke layar', () => {
+    // GOLD nyata: 22 blok cadangan berselang-seling menghasilkan satu paragraf
+    // 549 aksara berisi 22 rentang tanggal. Yang tayang berhenti jadi
+    // keterangan dan mulai jadi isi berkas.
+    const banyak: RentangSumber[] = []
+    for (let i = 0; i < 12; i++) {
+      const b = 2016 + i
+      banyak.push([`${b}-01-04`, `${b}-01-10`, 'yh'])
+      banyak.push([`${b}-01-11`, `${b}-12-30`, 'sb'])
+    }
+    const t = catatanSumber(banyak, '2016-01-04', '2027-12-30') ?? ''
+    expect(t).toMatch(/12 potongan antara 2016-01-04 dan 2027-01-10/)
+    expect(t.length).toBeLessThan(180)
+  })
+
+  it('tetap menyebut satu per satu selama masih sedikit', () => {
+    const sedikit: RentangSumber[] = [
+      ['2020-01-02', '2020-01-03', 'yh'],
+      ['2020-01-06', '2026-09-04', 'sb'],
+    ]
+    const t = catatanSumber(sedikit, '2020-01-02', '2026-09-04') ?? ''
+    expect(t).toContain('2020-01-02 s.d. 2020-01-03')
   })
 
   it('tidak membocorkan nama endpoint atau jalur berkas', () => {
