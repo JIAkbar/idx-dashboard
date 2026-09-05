@@ -11,7 +11,7 @@
  * Tingkat akses `superadmin` (terdaftar di PETA_MENU_KUNCI DAN di tabel
  * `akses_halaman` pada hari yang sama — aturan dua tempat).
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
@@ -65,6 +65,16 @@ const INFO: ItemInfoIndikator[] = [
 ]
 
 /** Skala kuadran: 0–2× dipetakan ke 0–100%, di atas 2 dijepit ke tepi. */
+interface TitikAwan {
+  kode: string
+  /** persen 2-98 pada sumbu mendatar (tangkap saat turun) */
+  x: number
+  /** persen 2-98 pada sumbu tegak (tangkap saat naik) */
+  y: number
+  naik: number | null
+  turun: number | null
+}
+
 function posisi(v: number | null): number | null {
   if (v == null) return null
   return Math.max(2, Math.min(98, (v / 2) * 100))
@@ -92,13 +102,73 @@ export default function BerkasEmiten() {
   const r: RezimEmiten | null = berkas?.emiten?.[kode] ?? null
 
   /** Titik semua emiten untuk latar kuadran — dihitung sekali per berkas,
-   *  bukan per render: 962 titik × tiap ketikan akan terasa. */
+   *  bukan per render: 962 titik × tiap ketikan akan terasa.
+   *
+   *  Membawa KODE dan kedua nilai sumbunya sejak 5 Sep 2026: titiknya kini
+   *  bisa ditunjuk dan diklik, dan tanpa kode di sini pertanyaan "yang paling
+   *  kencang itu siapa" tetap tak terjawab. */
   const awan = useMemo(() => {
     if (!berkas) return []
-    return Object.values(berkas.emiten)
-      .map((v) => ({ x: posisi(v.tangkap_turun), y: posisi(v.tangkap_naik) }))
-      .filter((p): p is { x: number; y: number } => p.x != null && p.y != null)
+    return Object.entries(berkas.emiten)
+      .map(([kd, v]) => ({
+        kode: kd,
+        x: posisi(v.tangkap_turun),
+        y: posisi(v.tangkap_naik),
+        naik: v.tangkap_naik,
+        turun: v.tangkap_turun,
+      }))
+      .filter((p): p is TitikAwan => p.x != null && p.y != null)
   }, [berkas])
+
+  /** Titik yang sedang disorot — SATU keadaan untuk seluruh awan, bukan satu
+   *  elemen tooltip per titik: 955 tooltip yang menunggu akan membebani
+   *  halaman untuk sesuatu yang cuma satu yang terlihat. */
+  const [sorot, setSorot] = useState<TitikAwan | null>(null)
+  const kuadRef = useRef<HTMLDivElement>(null)
+
+  /** Titik terdekat dari kursor/sentuhan dalam radius 14px.
+   *
+   *  Dicari dari SATU penangan di wadahnya, bukan dengan melebarkan area klik
+   *  tiap titik: di kuadran serapat ini area 12px milik 955 titik akan saling
+   *  tindih, dan yang menang jadi urusan tumpukan, bukan jarak. Cara ini
+   *  selalu memilih yang benar-benar paling dekat — dan sekaligus memberi
+   *  target sentuh 28px di ponsel tanpa menambah satu elemen pun. */
+  function titikDekat(cx: number, cy: number): TitikAwan | null {
+    const el = kuadRef.current
+    if (!el) return null
+    const b = el.getBoundingClientRect()
+    let terbaik: TitikAwan | null = null
+    let jarak = Infinity
+    for (const t of awan) {
+      const dx = (t.x / 100) * b.width - (cx - b.left)
+      const dy = (1 - t.y / 100) * b.height - (cy - b.top)
+      const d = dx * dx + dy * dy
+      if (d < jarak) { jarak = d; terbaik = t }
+    }
+    return jarak <= 14 * 14 ? terbaik : null
+  }
+
+  /** Sepuluh teratas per kuadran — jalan masuk untuk PONSEL, yang tak punya
+   *  hover sama sekali. Urutannya jarak dari persilangan sumbu: makin jauh
+   *  dari tengah, makin murni wataknya. */
+  const kuadran = useMemo(() => {
+    const kotak: { id: string; judul: string; sub: string; isi: TitikAwan[] }[] = [
+      { id: 'z1', judul: 'Naik kencang', sub: 'turun tertahan', isi: [] },
+      { id: 'z2', judul: 'Naik kencang', sub: 'turun kencang', isi: [] },
+      { id: 'z3', judul: 'Naik pelan', sub: 'turun tertahan', isi: [] },
+      { id: 'z4', judul: 'Naik pelan', sub: 'turun kencang', isi: [] },
+    ]
+    for (const t of awan) {
+      const atas = t.y >= 50
+      const kanan = t.x >= 50
+      kotak[atas ? (kanan ? 1 : 0) : (kanan ? 3 : 2)].isi.push(t)
+    }
+    for (const k of kotak) {
+      k.isi.sort((m, n) => ((n.x - 50) ** 2 + (n.y - 50) ** 2) - ((m.x - 50) ** 2 + (m.y - 50) ** 2))
+      k.isi = k.isi.slice(0, 10)
+    }
+    return kotak
+  }, [awan])
 
   // Blok B — arsip broker emiten ini (hook yang sama dipakai Whales Papan,
   // jadi berkasnya tersinggah bersama, bukan diunduh dua kali).
@@ -428,17 +498,42 @@ export default function BerkasEmiten() {
 
             <div className="be-sub">
               <h3>Posisi di antara empat watak</h3>
-              <p className="be-ket">Titik terang = {kode}. Titik redup = {awan.length} emiten lain.</p>
+              <p className="be-ket">
+                Titik terang = {kode}. Titik redup = {awan.length} emiten lain.
+                Arahkan kursor untuk melihat kodenya, klik untuk membuka emiten itu.
+              </p>
               <div className="be-kuad-bung">
-                <div className="be-kuad">
+                <div
+                  className="be-kuad be-kuad-aktif"
+                  ref={kuadRef}
+                  onMouseMove={(ev) => setSorot(titikDekat(ev.clientX, ev.clientY))}
+                  onMouseLeave={() => setSorot(null)}
+                  onClick={(ev) => {
+                    const t = titikDekat(ev.clientX, ev.clientY)
+                    // Klik = pindah ke emiten itu (jawaban Johan: "otomatis ke
+                    // saham tersebut"). Halaman ini membaca emitennya dari
+                    // alamat, jadi cukup menggantinya — bukan pindah rute.
+                    if (t && t.kode !== kode) setParams({ kode: t.kode })
+                  }}
+                >
                   <div className="be-zona z1"><span>Naik kencang</span><small>turun tertahan</small></div>
                   <div className="be-zona z2"><span>Naik kencang</span><small>turun kencang</small></div>
                   <div className="be-zona z3"><span>Naik pelan</span><small>turun tertahan</small></div>
                   <div className="be-zona z4"><span>Naik pelan</span><small>turun kencang</small></div>
                   <div className="be-salib h" /><div className="be-salib v" />
-                  {awan.map((p, i) => (
-                    <span className="be-jejak" key={i} style={{ left: `${p.x}%`, top: `${100 - p.y}%` }} />
+                  {awan.map((p) => (
+                    <span
+                      className={'be-jejak' + (sorot?.kode === p.kode ? ' sorot' : '')}
+                      key={p.kode}
+                      style={{ left: `${p.x}%`, top: `${100 - p.y}%` }}
+                    />
                   ))}
+                  {sorot && (
+                    <span className="be-tip" style={{ left: `${sorot.x}%`, top: `${100 - sorot.y}%` }}>
+                      <b>{sorot.kode}</b>
+                      <span>naik {fmtX(sorot.naik)} · turun {fmtX(sorot.turun)}</span>
+                    </span>
+                  )}
                   {posisi(r.tangkap_turun) != null && posisi(r.tangkap_naik) != null && (
                     <span className="be-titik" data-kode={kode}
                       style={{ left: `${posisi(r.tangkap_turun)}%`, top: `${100 - (posisi(r.tangkap_naik) ?? 0)}%` }} />
@@ -446,6 +541,35 @@ export default function BerkasEmiten() {
                   <span className="be-sumbu x">tangkap saat turun →</span>
                   <span className="be-sumbu y">tangkap saat naik →</span>
                 </div>
+              </div>
+
+              {/* Jalan masuk untuk PONSEL — layar sentuh tak punya hover, jadi
+                  tanpa daftar ini pertanyaan "yang paling kencang siapa" cuma
+                  terjawab di desktop. Sepuluh per kuadran, terjauh dari
+                  persilangan sumbu lebih dulu. */}
+              <div className="be-kuad-daftar">
+                {kuadran.map((k) => (
+                  <div className="be-kuad-kotak" key={k.id}>
+                    <span className="be-kuad-judul">{k.judul} <small>{k.sub}</small></span>
+                    <div className="be-kuad-chip">
+                      {k.isi.map((t) => (
+                        <button
+                          type="button"
+                          key={t.kode}
+                          className={'chip-t' + (t.kode === kode ? ' on' : '')}
+                          onMouseEnter={() => setSorot(t)}
+                          onFocus={() => setSorot(t)}
+                          onMouseLeave={() => setSorot(null)}
+                          onBlur={() => setSorot(null)}
+                          title={`naik ${fmtX(t.naik)} · turun ${fmtX(t.turun)}`}
+                          onClick={() => { if (t.kode !== kode) setParams({ kode: t.kode }) }}
+                        >
+                          {t.kode}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
 
             </div>

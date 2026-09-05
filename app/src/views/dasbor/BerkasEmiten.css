@@ -162,6 +162,59 @@
   transform: translate(-50%, -50%);
   z-index: 2;
 }
+/* Titik yang sedang ditunjuk — dibesarkan dan dipekatkan, bukan diberi warna
+   lain: warna di kuadran ini sudah dipakai untuk emiten terpilih. */
+.be-jejak.sorot {
+  width: 9px; height: 9px;
+  opacity: 1;
+  background: var(--text);
+  z-index: 4;
+}
+/* Kuadran yang bisa ditunjuk & diklik (5 Sep 2026). Kursor penunjuk dipasang
+   di WADAHNYA, bukan per titik: penangannya memang satu di wadah, dan kursor
+   yang cuma berubah tepat di atas 4px titik akan terlewat. */
+.be-kuad-aktif { cursor: crosshair; }
+/* Satu tooltip untuk seluruh awan — dipindah, bukan 955 yang menunggu.
+   `pointer-events:none` wajib: tanpa itu ia menutupi titik di bawahnya dan
+   pencarian titik terdekat mulai mengukur jarak ke tooltipnya sendiri. */
+.be-tip {
+  position: absolute;
+  z-index: 6;
+  transform: translate(10px, -50%);
+  display: flex; flex-direction: column; gap: 1px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--bg0);
+  border: 1px solid var(--line2);
+  box-shadow: 0 6px 18px -8px rgba(0,0,0,.6);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.be-tip b { font-family: var(--mono, ui-monospace, monospace); font-size: 11.5px; }
+.be-tip span { font-size: 10.5px; color: var(--text2); }
+
+/* Daftar per kuadran — jalan masuk ponsel (tak ada hover di layar sentuh). */
+.be-kuad-daftar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.be-kuad-kotak {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 9px 11px;
+  min-width: 0;
+}
+.be-kuad-judul {
+  display: block;
+  font-size: 11px; font-weight: 700; letter-spacing: .04em;
+  margin-bottom: 7px;
+}
+.be-kuad-judul small { color: var(--text3); font-weight: 500; }
+.be-kuad-chip { display: flex; flex-wrap: wrap; gap: 5px; }
+.be-kuad-chip .chip-t { padding: 4px 9px; font-size: 10.5px; }
+
 .be-titik {
   position: absolute;
   width: 11px; height: 11px;
