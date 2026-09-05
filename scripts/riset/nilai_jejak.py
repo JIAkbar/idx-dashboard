@@ -315,6 +315,11 @@ def jalankan() -> dict:
             "era": "abjad" if tgl <= "2026-08-31" else "nilai-transaksi",
             "dibangun": d.get("dibangun"),
             "hariBursaTersedia": min(sisa, HORIZON),
+            # Sisa MENTAH, tak dipotong HORIZON. Yang dipotong tak bisa
+            # membedakan "jendelanya baru saja tutup hari ini" dari "sudah
+            # tutup seminggu lalu" — padahal justru beda itu yang menentukan
+            # apakah datanya sudah mengendap (lihat aturan segel di bawah).
+            "hariBursaSesudah": sisa,
             "jendelaTutup": tuntas_penuh,
             "n": n, **tot,
             "ambigu": sum(x["ambigu"] for x in per_preset),
@@ -454,7 +459,18 @@ if __name__ == "__main__":
     PENILAIAN.mkdir(parents=True, exist_ok=True)
     baru = lewat = 0
     for b in h["perTanggal"]:
-        if not b["jendelaTutup"]:
+        # Jendela tutup SAJA tidak cukup untuk menyegel. Terukur 5 Sep 2026
+        # lewat uji kecocokan halaman: `penilaian/2026-08-27.json` disegel
+        # 3 Sep — hari terakhir jendelanya sendiri — dan mencatat 41 menang /
+        # 29 menggantung. Dihitung ulang hari ini angkanya 42 / 28: satu emiten
+        # barnya baru lengkap sesudah segel dibuat, dan sinyalnya ternyata kena
+        # target. Segel yang dibuat di atas data yang belum mengendap bukan
+        # catatan, ia tebakan yang dibekukan.
+        #
+        # Jadi butuh satu hari bursa JEDA sesudah jendelanya tutup. Berkas yang
+        # sudah telanjur disegel TIDAK ditimpa — koreksi berupa berkas
+        # terpisah, bukan timpaan (aturan yang sama dengan J14).
+        if b.get("hariBursaSesudah", 0) < HORIZON + 1:
             continue
         p = PENILAIAN / f"{b['tanggal']}.json"
         if p.exists():
