@@ -98,6 +98,21 @@
   background: var(--bg2);
   border-bottom: 1px solid var(--border);
 }
+
+/* Kepala TANPA isi (halaman non-Beranda sejak 5 Sep 2026, Johan: "kalau top
+   bar ini di kosongi berarti hero bisa naik ke atas dong ... di hapus saja").
+
+   `display:none`, bukan `height:0`: tinggi nol masih menyisakan garis bawah
+   dan padding, dan strip setipis itu terbaca sebagai sisa tampilan yang rusak,
+   bukan sebagai ruang yang sengaja dikosongkan.
+
+   Di bawah 768px ia HARUS kembali: zona merek di dalamnya memuat tombol P,
+   satu-satunya pemicu laci navigasi di ponsel (rail disembunyikan di sana).
+   Menyembunyikannya di ponsel berarti membuang menu di setiap halaman selain
+   Beranda — kegagalan yang jauh lebih mahal daripada 52px yang dihemat. */
+.dasbor-atas-kosong { display: none; }
+@media (max-width: 768px) { .dasbor-atas-kosong { display: flex; } }
+
 /* Tanda merek di bilah atas HANYA muncul di telepon — di layar lebar tanda
    yang berlaku ada di puncak rail, dan menaruhnya dua kali cuma berebut. */
 .dasbor-merek-mini { display: none; }

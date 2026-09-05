@@ -5,7 +5,7 @@ import { Renovasi } from './Renovasi'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { LaciMobile } from './LaciMobile'
-import { PitaKurs, StatusBursa } from './PitaKurs'
+import { PitaKurs } from './PitaKurs'
 import { LoginModal } from './LoginModal'
 import { TanyaPapan } from './TanyaPapan'
 import { LoginModalProvider } from '../../context/LoginModalContext'
@@ -60,7 +60,7 @@ export function DasborLayout() {
         <div className="dasbor-body">
           <Sidebar onMasuk={() => setLoginOpen(true)} />
           <div className="dasbor-kolom">
-            <header className="dasbor-atas">
+            <header className={beranda ? 'dasbor-atas' : 'dasbor-atas dasbor-atas-kosong'}>
               {/* #76: logo P di telepon = tombol laci navigasi kiri (BUKAN
                   hamburger terpisah — satu trigger). Zona logo diberi pembatas
                   hairline sendiri supaya tidak menyatu dengan pita kurs; akses
@@ -80,22 +80,28 @@ export function DasborLayout() {
                 </button>
               </div>
               {/* Pita kurs berjalan HANYA di Beranda (Johan, 5 Sep 2026:
-                  "marquee sepertinya cukup di home saja"). Di halaman lain
-                  kepala tetap berdiri dengan chip status bursa saja.
+                  "marquee sepertinya cukup di home saja"), dan sejak sore hari
+                  yang sama chip status bursa pun tak lagi ikut ke halaman lain:
+                  *"kalau top bar ini di kosongi berarti hero bisa naik ke atas
+                  dong terutama ini (teks Bursa tutup · buka Senin 08:45) di
+                  hapus saja"*.
 
-                  Chip-nya sengaja TIDAK ikut bersyarat: menaruhnya di kepala
-                  adalah keputusan terpisah (Johan 2 Sep, "D + E digabung")
-                  justru supaya ia tampil di semua halaman - ia keadaan seluruh
-                  situs, bukan milik satu halaman. Kalau pita disembunyikan
-                  begitu saja, chip ikut hilang dan keputusan lama itu batal
-                  diam-diam.
+                  Ini MENCABUT sebagian keputusan 2 Sep ("D + E digabung", chip
+                  di kepala supaya tampil di semua halaman) — atas perintah
+                  Johan sendiri, bukan karena keputusan itu terlupa.
 
-                  `<header>` sendiri TETAP dirender di semua halaman: tingginya
-                  konstanta `--dasbor-topbar-h` (52px), dan sederet
-                  `calc(100dvh - N)` di halaman grafik/tabel sudah
-                  memperhitungkannya. Membuang kepalanya akan menggeser
-                  semuanya 52px tanpa satu pun galat. */}
-              {beranda ? <PitaKurs /> : <div className="dasbor-pita dasbor-pita-solo"><StatusBursa /></div>}
+                  Akibatnya di halaman non-Beranda kepala ini tak punya isi
+                  apa pun di DESKTOP, jadi ia disembunyikan penuh lewat
+                  `.dasbor-atas-kosong` (display:none, bukan tinggi 0 yang
+                  masih menyisakan garis dan padding) dan tab serta hero naik
+                  52px.
+
+                  Di PONSEL ia tetap tampil, dan itu bukan setengah-setengah:
+                  zona merek di sebelah kiri berisi tombol P yang merupakan
+                  SATU-SATUNYA pemicu laci navigasi di bawah 768px — rail
+                  disembunyikan di sana. Menyembunyikan kepala di ponsel berarti
+                  membuang seluruh menu di setiap halaman selain Beranda. */}
+              {beranda && <PitaKurs />}
             </header>
 
             <main className="dasbor-main">
