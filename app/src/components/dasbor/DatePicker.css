@@ -27,13 +27,27 @@
 
 /* Lebar tetap — .dd-menu bawaannya min-width:100% (ngikut lebar input),
    di-reset di sini supaya popover kompak rata kiri di bawah field. */
-.lantai .dpk-pop { width: 250px; min-width: 0; max-width: calc(100vw - 48px); padding: 8px; }
+/* 288px, dulu 250px (Johan 5 Sep 2026: "sweep teks kalender yang berhimpit").
+   Terukur sebelum diubah: kepala popover 232px, dua grup panah 76px masing-
+   masing, jadi judul bulan cuma kebagian 80px — "September 2026" membungkus
+   jadi dua baris (tinggi 33px, bukan 16px) dan berhimpit dengan panahnya.
+
+   Yang dilebarkan popovernya, BUKAN panahnya yang dirapatkan: jarak ≥12px
+   antar tombol ikon itu aturan yang sudah dibayar (area kliknya dilebarkan
+   `::after{inset:-6px}`, dan tanpa jarak itu klik di celah jatuh ke tombol
+   yang salah). Nama bulan terpanjang di sini "September" — 288px memberi
+   judul 136px, dua kali lipat kebutuhannya. */
+.lantai .dpk-pop { width: 288px; min-width: 0; max-width: calc(100vw - 48px); padding: 8px; }
 /* Pemicu dekat tepi kanan layar (header /broker-summary): popover rata kanan
    supaya tidak terpotong viewport. */
 .lantai .dpk-kanan .dpk-pop { left: auto; right: 0; }
 
 .lantai .dpk-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-.lantai .dpk-bulan { font-family: var(--disp); font-weight: 700; font-size: 11px; letter-spacing: .05em; }
+/* `nowrap` adalah PAGARNYA, bukan perbaikannya: kalau suatu saat ruangnya
+   menyempit lagi (bahasa lain, huruf lebih besar, popover dipersempit), judul
+   ini menonjol keluar dan langsung terlihat — bukan diam-diam membungkus jadi
+   dua baris dan menabrak panah di sebelahnya seperti sebelum 5 Sep 2026. */
+.lantai .dpk-bulan { font-family: var(--disp); font-weight: 700; font-size: 11px; letter-spacing: .05em; white-space: nowrap; }
 
 .lantai .dpk-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
 .lantai .dpk-dow {
