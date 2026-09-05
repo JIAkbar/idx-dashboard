@@ -55,37 +55,66 @@ describe('pembaca nilai jejak', () => {
   })
 
   /**
-   * Dua berkas ini disegel SEBELUM aturan jeda ada (5 Sep 2026), yaitu pada
-   * hari terakhir jendelanya sendiri — saat bar hari itu belum lengkap untuk
-   * semua emiten. Angkanya karena itu beda dari hitungan hari ini:
-   *
-   *   2026-08-27 — segel 41 menang / 29 menggantung, kini 42 / 28
-   *
-   * Segelnya TIDAK ditimpa: catatan yang sudah terbit tak boleh berubah
-   * diam-diam, dan koreksi berupa berkas terpisah (aturan yang sama dengan
-   * J14). Yang diperbaiki penyebabnya — `nilai_jejak.py` kini menuntut satu
-   * hari bursa JEDA sesudah jendela tutup sebelum menyegel. Daftar ini tidak
-   * boleh bertambah; kalau bertambah, aturan jedanya bocor lagi.
+   * Catatan yang BERLAKU untuk satu tanggal — cermin `berkas_penilaian()` di
+   * `nilai_jejak.py`. Koreksi menang atas segel asli; segel aslinya tetap ada
+   * dan tetap utuh, ia riwayat, bukan sumber angka.
    */
-  const SEGEL_PRA_JEDA = new Set(['2026-08-27.json'])
+  const catatanBerlaku = (tanggal: string) => {
+    for (const nama of [`${tanggal}.koreksi.json`, `${tanggal}.json`]) {
+      const p = join(DIR_PENILAIAN, nama)
+      if (existsSync(p)) return { nama, isi: JSON.parse(readFileSync(p, 'utf-8')) }
+    }
+    return null
+  }
 
-  it('tiap berkas penilaian tersegel cocok dengan rincian di berkas hakim', () => {
-    const berkas = readdirSync(DIR_PENILAIAN).filter((f) => f.endsWith('.json'))
-    expect(berkas.length).toBeGreaterThan(0)
+  it('tiap catatan penilaian yang berlaku cocok dengan rincian di berkas hakim', () => {
+    const tanggal = [...new Set(readdirSync(DIR_PENILAIAN)
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => f.slice(0, 10)))]
+    expect(tanggal.length).toBeGreaterThan(0)
     const menyimpang: string[] = []
-    for (const f of berkas) {
-      const segel = JSON.parse(readFileSync(join(DIR_PENILAIAN, f), 'utf-8'))
-      const t = jejak!.perTanggal.find((x) => x.tanggal === segel.tanggal)
+    for (const tgl of tanggal) {
+      const c = catatanBerlaku(tgl)!
+      const t = jejak!.perTanggal.find((x) => x.tanggal === c.isi.tanggal)
       if (!t) continue
       const dirakit = jumlahTpSl(t.preset.map((x) => x.definisi.tpSl))
-      if (dirakit.menang !== segel.menang || dirakit.kalah !== segel.kalah) {
-        menyimpang.push(f)
-        continue
-      }
-      expect(SEGEL_PRA_JEDA.has(f), `${f} cocok — keluarkan dari daftar pengecualian`).toBe(false)
+      if (dirakit.menang !== c.isi.menang || dirakit.kalah !== c.isi.kalah) menyimpang.push(c.nama)
     }
-    expect(menyimpang.sort(), 'segel yang menyimpang harus persis yang sudah didokumentasikan')
-      .toEqual([...SEGEL_PRA_JEDA].sort())
+    // Daftar ini pernah berisi `2026-08-27.json` — segel yang dibuat pada hari
+    // penutup jendelanya sendiri, sebelum aturan jeda satu hari bursa ada.
+    // Segelnya TIDAK ditimpa; yang dibaca sekarang koreksinya, dan daftar ini
+    // karena itu kosong. Ia tak boleh terisi lagi: satu nama di sini berarti
+    // ada catatan terbit yang angkanya sudah tak berlaku dan tak dikoreksi.
+    expect(menyimpang.sort(), 'tak boleh ada catatan berlaku yang menyimpang').toEqual([])
+  })
+
+  it('koreksi tak menimpa segelnya, dan hanya boleh sekali per tanggal', () => {
+    const koreksi = readdirSync(DIR_PENILAIAN).filter((f) => f.endsWith('.koreksi.json'))
+    for (const f of koreksi) {
+      const k = JSON.parse(readFileSync(join(DIR_PENILAIAN, f), 'utf-8'))
+      const asli = JSON.parse(readFileSync(join(DIR_PENILAIAN, k.mengoreksi), 'utf-8'))
+      // Segel asli masih memegang angka LAMA — bukti ia tak ditimpa, dan
+      // koreksinya menyimpan angka lama itu apa adanya sebagai `sebelum`.
+      expect(asli.menang).toBe(k.sebelum.menang)
+      expect(asli.gantung).toBe(k.sebelum.gantung)
+      expect(k.menang).not.toBe(k.sebelum.menang)
+      expect(k.alasan.length).toBeGreaterThan(20)
+      expect(k.dikoreksiPada).toMatch(/^\d{4}-\d{2}-\d{2}/)
+    }
+    // Nama berkasnya sendiri yang menegakkan "sekali koreksi": hanya ada satu
+    // `<tgl>.koreksi.json` per tanggal, jadi koreksi kedua tak punya tempat.
+    expect(new Set(koreksi).size).toBe(koreksi.length)
+  })
+
+  it('halaman diberi tahu tanggal mana yang angkanya hasil koreksi', () => {
+    const koreksi = readdirSync(DIR_PENILAIAN).filter((f) => f.endsWith('.koreksi.json'))
+    for (const f of koreksi) {
+      const t = jejak!.perTanggal.find((x) => x.tanggal === f.slice(0, 10))
+      if (!t) continue
+      // Tanpa ruas ini angkanya berganti tanpa seorang pun diberi tahu.
+      expect(t.koreksi, `${t.tanggal} dikoreksi tapi tak ditandai di berkas hakim`).toBeTruthy()
+      expect(Object.keys(t.koreksi!.berubah).length).toBeGreaterThan(0)
+    }
   })
 })
 

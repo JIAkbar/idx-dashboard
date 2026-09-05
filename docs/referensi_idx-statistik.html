@@ -847,7 +847,7 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 <tr>
 <td>Screener <code>/screener</code> (tab Tabel, Preset Whale, <strong>Riwayat &amp; Win Rate</strong> — B45, 28 Agu 2026)</td>
-<td><code>screener.json</code>, <code>pola_screener.json</code>, <code>kandidat_deepdive.json</code>, <code>kartu/ringkas.json</code> (tab Preset Whale, lewat <code>keBarisPreset</code>); <strong>tab Riwayat &amp; Win Rate</strong>: <code>rekomendasi/index.json</code> + <code>rekomendasi/&lt;tgl&gt;.json</code> (<code>rekomendasi.ts</code>) + <code>ohlc/&lt;KODE&gt;.json</code> (win rate H+1/H+5, <code>winRate.ts</code>)</td>
+<td><code>screener.json</code>, <code>pola_screener.json</code>, <code>kandidat_deepdive.json</code>, <code>kartu/ringkas.json</code> (tab Preset Whale, lewat <code>keBarisPreset</code>); <strong>tab Riwayat &amp; Win Rate</strong> (sejak 5 Sep 2026): <code>nilai_jejak.json</code> (vonis + ketiga definisi, <code>nilaiJejak.ts</code>) + <code>rekomendasi/&lt;tgl&gt;.json</code> hanya untuk keterangan sinyal (skor, target, batas rugi) — vonis TIDAK dihitung di peramban lagi; <code>penilaian/&lt;tgl&gt;.json</code> (+ <code>.koreksi.json</code>) catatan tersegelnya</td>
 <td>⚙️ <code>app/scripts/bangun-screener.mjs</code> &amp; <code>pola-screener.ts</code> dari <code>ohlc/</code> (<strong>jahitan</strong>) + fundamental; <strong>ruas <code>sektor</code> sejak 27 Agu 2026 dari <code>emiten_sektor.json</code> (IDX-IC resmi, 962/962, keputusan Johan)</strong> — GICS Yahoo di fundamental jadi cadangan, tak dipakai kolom ini; <code>kandidat_deepdive.json</code> ❓ produsen belum ditemukan di <code>scripts/</code> maupun <code>app/scripts/</code>; <strong><code>rekomendasi/</code> ⚙️ turunan <code>scripts/riset/rekap_preset.py</code></strong> dari <code>kartu/arsip/&lt;tgl&gt;.json</code> (ruas preset, sudah <code>ohlc/</code>-jahitan lewat <code>kartu_analisa.py</code>) + <code>ohlc/&lt;KODE&gt;.json</code> (low harian, TP/SL fallback ATR) — nol jaringan, ditulis sekali per tanggal, tidak pernah ditimpa</td>
 <td><strong>ya</strong> (lewat <code>ohlc/</code>; ruas preset diport manual Python↔TypeScript, lihat <code>PRESET_DEFS</code> vs <code>presetScreener.ts</code>)</td>
 <td>28 Agu 2026</td>
@@ -4857,11 +4857,96 @@ preset per tanggal (bukan seluruh populasi lolos — itu tugas tab Preset, bukan
 </table>
 <p>TP/SL memakai <strong>fallback ATR</strong> (spek §Tugas B), bukan rumus "Target Realistis" papan-terdorong <code>kuliPapan.ts</code><br />
 — itu butuh antrean penutupan (bid/offer) yang cuma ada dari setoran Kuli Papan kontributor, bukan data<br />
-cakram untuk 962 emiten sekaligus. Win rate dihitung client-side (<code>winRate.ts</code>, murni) dari <code>ohlc/&lt;KODE&gt;.json</code><br />
-H+1..H+5 sesudah tanggal rekomendasi — bar dengan <code>volume=0</code> DIBUANG (snapshot hari-berjalan yang OHLC-nya<br />
-cuma ditaruh datar, lihat entri Riwayat 24 Agustus 14:33 di bawah) supaya tak mencemari hasil dengan "kalah"<br />
-palsu. Tiga definisi (kompatibel SPLE): Open-Tinggi H+1 (longgar), Tutup-ke-Tutup H+1 (ketat + rata-rata %),<br />
-TP/SL H+5 (dua-duanya tersentuh hari sama = "tak tentu", tidak diklaim menang).</p>
+cakram untuk 962 emiten sekaligus.</p>
+<p><strong>Ralat 5 September 2026:</strong> paragraf ini dulu menyebut win rate dihitung di peramban (<code>winRate.ts</code>) dari<br />
+<code>ohlc/&lt;KODE&gt;.json</code>. Itu tidak berlaku lagi. Satu metrik punya dua kalkulator dengan aturan yang bertentangan<br />
+pada kasus ambigu, dan yang di peramban hanya memuat bar sebagian emiten sehingga sisanya jatuh dari penyebut<br />
+— terukur satu preset satu bulan: 90,6% / 38,8% / 89,4% di layar vs 77,0% / 34,0% / 84,1% dari hakim untuk<br />
+irisan yang sama. Sekarang penilaiannya di sisi panen, halaman cuma membaca (lihat bagian berikut).</p>
+<h4>Penilaian jejak — <code>nilai_jejak.json</code>, <code>penilaian/&lt;tgl&gt;.json</code>, <code>penilaian/&lt;tgl&gt;.koreksi.json</code></h4>
+<p>⚙️ <code>scripts/riset/nilai_jejak.py</code> (nol jaringan) dari <code>rekomendasi/&lt;tgl&gt;.json</code> + <code>ohlc/&lt;KODE&gt;.json</code>.<br />
+Dibaca halaman lewat <code>app/src/lib/dasbor/nilaiJejak.ts</code> — modul itu <strong>tidak menghitung vonis apa pun</strong>,<br />
+hanya menjumlahkan lintas tanggal. Tiga definisi menang tetap sama (Open-Tinggi H+1, Tutup-ke-Tutup H+1,<br />
+TP/SL H+5), dan empat keputusan hakimnya ditulis di kepala skripnya supaya bisa dibantah, bukan diasumsikan.</p>
+<table>
+<thead>
+<tr>
+<th>Berkas</th>
+<th>Sifat</th>
+<th>Isi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>nilai_jejak.json</code></td>
+<td>ditulis ulang tiap jalan</td>
+<td>ringkasan untuk halaman: <code>perTanggal[]</code> berisi ketiga definisi, rincian per preset, dan vonis per emiten</td>
+</tr>
+<tr>
+<td><code>penilaian/&lt;tgl&gt;.json</code></td>
+<td><strong>sekali tulis, tak pernah ditimpa</strong></td>
+<td>catatan tanggal yang jendelanya sudah tutup DAN datanya sudah mengendap</td>
+</tr>
+<tr>
+<td><code>penilaian/&lt;tgl&gt;.koreksi.json</code></td>
+<td><strong>sekali tulis, satu per tanggal</strong></td>
+<td>koreksi atas segel yang terbukti menyimpang — segel aslinya tetap utuh</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Ruas</th>
+<th>Arti</th>
+<th>Kenapa ada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hariBursaSesudah</code></td>
+<td>sisa hari bursa sesudah tanggal sinyal, <strong>mentah</strong>, tak dipotong horizon</td>
+<td>syarat segel. Yang sudah dipotong horizon tak bisa membedakan "jendelanya baru tutup hari ini" dari "sudah tutup seminggu lalu"</td>
+</tr>
+<tr>
+<td><code>jendelaTutup</code> · <code>hariBursaTersedia</code></td>
+<td>jendela H+5 sudah penuh; berapa hari bursa yang sudah terisi (dipotong horizon)</td>
+<td>kolom "masih berjalan" di layar — tanggal yang belum tuntas tak ikut penyebut</td>
+</tr>
+<tr>
+<td><code>saham[].tglKeluar</code></td>
+<td>hari bursa saat vonis TP/SL jatuh; <code>null</code> kalau menggantung atau tak masuk</td>
+<td>dasar penelusuran koreksi: sinyal yang vonisnya jatuh TEPAT di hari segel dibuat adalah sinyal yang datanya paling mungkin belum mengendap</td>
+</tr>
+<tr>
+<td><code>koreksi.dikoreksiPada</code> · <code>.alasan</code> · <code>.berubah</code></td>
+<td>ditempelkan ke <code>perTanggal</code> bila tanggal itu punya berkas koreksi</td>
+<td>halaman menandai angka hasil koreksi dengan penanda bertanggal. Angka yang berganti tanpa penanda lebih buruk daripada angka salah — yang salah masih bisa ketahuan</td>
+</tr>
+<tr>
+<td>koreksi: <code>mengoreksi</code> · <code>sebelum</code> · <code>berubah</code> · <code>sahamBerubah</code></td>
+<td>nama segel yang dikoreksi, angka lamanya, ruas yang bergeser <code>[sebelum, sesudah]</code>, dan emiten yang vonisnya berubah</td>
+<td>koreksi yang tak menyimpan angka lamanya memaksa pembaca percaya tanpa bisa memeriksa</td>
+</tr>
+<tr>
+<td><code>sahamBerubah.cara</code></td>
+<td><code>diff</code> (segel membawa vonis per emiten) atau <code>tersangka-hari-segel</code></td>
+<td>segel sebelum 5 Sep 2026 belum mencatat vonis per emiten, jadi yang bisa ditunjuk cuma tersangkanya — dan berkasnya wajib mengatakan itu tersangka, bukan temuan</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Aturan segel (5 Sep 2026).</strong> Jendela tutup saja tidak cukup: butuh <strong>satu hari bursa jeda</strong> sesudahnya<br />
+(<code>hariBursaSesudah &gt;= horizon + 1</code>). Sebabnya terukur: <code>penilaian/2026-08-27.json</code> disegel 3 Sep pukul 08.25<br />
+— hari terakhir jendelanya sendiri — dan mencatat 41 menang / 29 menggantung; sesudah data hari itu lengkap,<br />
+angkanya 42 / 28.</p>
+<p><strong>Aturan koreksi (6 Sep 2026, antrean #8).</strong> Segel yang sudah terbit <strong>tidak ditimpa</strong>; koreksinya berkas<br />
+terpisah, aturan yang sama dengan J14. Koreksi hanya <strong>sekali per tanggal</strong> — nama berkasnya sendiri yang<br />
+menegakkannya, dan koreksi kedua dilaporkan sebagai ditolak, bukan ditulis diam-diam. Keempat segel yang ada<br />
+lahir dalam kondisi tak aman yang sama, tapi hanya <strong>satu</strong> yang terbukti bergeser (27 Agu; emiten<br />
+tersangkanya IHSG di preset scalping, vonisnya jatuh tepat di hari segel dibuat) — tiga lainnya cocok karena<br />
+bar hari terakhirnya memang sudah lengkap, dan mengoreksi angka yang sudah benar cuma menambah riwayat tanpa<br />
+menambah kebenaran. Uji <code>app/src/lib/dasbor/nilaiJejak.test.ts</code> membaca catatan yang <strong>berlaku</strong> (koreksi<br />
+menang atas segel asli) dan merah kalau ada catatan terbit yang angkanya sudah tak berlaku dan tak dikoreksi.</p>
 
 </div>
 </div></div>

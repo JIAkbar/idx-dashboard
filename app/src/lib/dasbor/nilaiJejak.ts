@@ -56,6 +56,24 @@ export interface VonisSaham {
   openTinggi: VonisDefinisi
   tutupTutup: VonisDefinisi
   persen: number | null
+  /** Hari bursa saat vonis TP/SL jatuh; null kalau menggantung atau tak masuk. */
+  tglKeluar?: string | null
+}
+
+/**
+ * Catatan penilaian yang sudah terbit lalu terbukti menyimpang.
+ *
+ * Segel `penilaian/<tgl>.json` tak pernah ditimpa; koreksinya berkas terpisah
+ * (`<tgl>.koreksi.json`, aturan yang sama dengan J14). Ruas ini ada supaya
+ * halaman bisa MENGATAKAN bahwa satu tanggal angkanya hasil koreksi —
+ * angka yang berganti diam-diam lebih buruk daripada angka yang salah, karena
+ * yang salah masih bisa ketahuan.
+ */
+export interface KoreksiJejak {
+  dikoreksiPada: string
+  alasan: string
+  /** ruas → [sebelum, sesudah] */
+  berubah: Record<string, [number, number]>
 }
 
 export interface PresetJejak {
@@ -74,6 +92,8 @@ export interface TanggalJejak {
   n: number
   definisi: { openTinggi: RingkasH1; tutupTutup: RingkasH1; tpSl: RingkasTpSl }
   preset: PresetJejak[]
+  /** Ada hanya kalau segel tanggal ini pernah dikoreksi. */
+  koreksi?: KoreksiJejak
 }
 
 export interface BerkasJejak {
@@ -103,12 +123,13 @@ export function tanggalPreset(berkas: BerkasJejak, preset: string, nHari: number
   era: TanggalJejak['era']
   jendelaTutup: boolean
   hariBursaTersedia: number
+  koreksi?: KoreksiJejak
   p: PresetJejak
 }[] {
   return berkas.perTanggal
     .map((t) => {
       const p = t.preset.find((x) => x.preset === preset)
-      return p ? { tanggal: t.tanggal, kelasBukti: t.kelasBukti, era: t.era, jendelaTutup: t.jendelaTutup, hariBursaTersedia: t.hariBursaTersedia, p } : null
+      return p ? { tanggal: t.tanggal, kelasBukti: t.kelasBukti, era: t.era, jendelaTutup: t.jendelaTutup, hariBursaTersedia: t.hariBursaTersedia, koreksi: t.koreksi, p } : null
     })
     .filter((x): x is NonNullable<typeof x> => x !== null)
     .sort((a, b) => b.tanggal.localeCompare(a.tanggal))

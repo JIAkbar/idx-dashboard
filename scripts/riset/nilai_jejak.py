@@ -56,6 +56,7 @@ AKAR = Path(__file__).resolve().parents[2]
 REKOMENDASI_DIR = AKAR / "data-idx" / "json" / "rekomendasi"
 OHLC_DIR = AKAR / "data-idx" / "json" / "ohlc"
 KELUARAN = AKAR / "data-idx" / "json" / "nilai_jejak.json"
+PENILAIAN = AKAR / "data-idx" / "json" / "penilaian"
 
 # Jendela penilaian, dalam HARI BURSA sesudah hari sinyal.
 HORIZON = 5
@@ -282,10 +283,15 @@ def jalankan() -> dict:
                 # kalkulator kedua yang mau dihapus itu hidup lagi lewat pintu
                 # belakang. ~900 baris untuk seluruh berkas — murah dibanding
                 # dua sumber kebenaran.
+                # `tglKeluar` = hari bursa saat vonis TP/SL jatuh (None kalau
+                # menggantung/tak masuk). Dipakai koreksi segel: sinyal yang
+                # vonisnya jatuh TEPAT di hari segel dibuat adalah sinyal yang
+                # datanya paling mungkin belum mengendap saat itu.
                 "saham": [
                     {"kode": h["kode"], DEF_TP_SL: h["hasil"],
                      DEF_OPEN_TINGGI: x[DEF_OPEN_TINGGI],
-                     DEF_TUTUP_TUTUP: x[DEF_TUTUP_TUTUP], "persen": x["persen"]}
+                     DEF_TUTUP_TUTUP: x[DEF_TUTUP_TUTUP], "persen": x["persen"],
+                     "tglKeluar": h.get("tglKeluar")}
                     for h, x in zip(hasil, h1)
                 ],
                 "definisi": {
@@ -331,6 +337,159 @@ def jalankan() -> dict:
 
     return {"horizon": HORIZON, "hariBursaTerakhir": kalender[-1] if kalender else None,
             "perTanggal": per_tanggal}
+
+
+# ── Catatan tersegel dan koreksinya ─────────────────────────────────────────
+# `penilaian/<tgl>.json` SEKALI TULIS (spek_sistem_winrate_produksi §1.2). Ia
+# tak pernah ditimpa: angka yang sudah terbit tak boleh berubah diam-diam saat
+# aturan penilaiannya disunting kelak. Koreksi karena itu berupa BERKAS
+# TERPISAH, `<tgl>.koreksi.json` — aturan yang sama dengan J14.
+#
+# Kenapa koreksi dibutuhkan sama sekali: sampai 5 Sep 2026 segel ditulis
+# begitu jendelanya tutup, termasuk kalau hari penutupnya adalah hari bursa
+# terakhir yang datanya baru masuk. `2026-08-27.json` disegel 3 Sep pukul
+# 08.25 — hari terakhir jendelanya sendiri — dan mencatat 41 menang / 29
+# menggantung; dihitung ulang sesudah data hari itu lengkap, angkanya 42 / 28.
+# Penyebabnya sudah ditutup (jeda satu hari bursa di bawah), tapi berkas yang
+# telanjur terbit tetap perlu dikoreksi, dan koreksinya tak boleh berbentuk
+# timpaan.
+#
+# Koreksi hanya SEKALI per tanggal. Catatan yang bisa dikoreksi berulang kali
+# bukan catatan lagi — dan nama berkasnya sendiri yang menegakkan aturan itu:
+# hanya ada satu `<tgl>.koreksi.json`.
+
+RUAS_SEGEL = ("n", "menang", "kalah", "gantung", "tak_masuk", "ambigu")
+
+ALASAN_PRA_JEDA = (
+    "Segel dibuat pada hari penutup jendelanya sendiri, sebelum bar hari itu "
+    "mengendap; aturan jeda satu hari bursa belum berlaku saat itu."
+)
+
+
+def beda_segel(segel: dict, kini: dict) -> dict:
+    """Ruas yang berbeda antara catatan tersegel dan hitungan hari ini.
+
+    Kosong berarti cocok. Sengaja cuma ruas HITUNGAN — `dinilaiPada` dan
+    kawan-kawannya memang berbeda tiap jalan dan bukan penyimpangan."""
+    return {k: [segel.get(k), kini.get(k)] for k in RUAS_SEGEL
+            if segel.get(k) != kini.get(k)}
+
+
+def berkas_penilaian(tanggal: str, dir_=None):
+    """Catatan yang BERLAKU untuk satu tanggal: koreksi menang atas segel asli.
+
+    Tiap pembaca segel memanggil ini alih-alih menyusun nama berkasnya sendiri.
+    Pembaca yang menebak namanya akan membaca angka yang sudah diketahui salah."""
+    d = dir_ or PENILAIAN
+    k = d / f"{tanggal}.koreksi.json"
+    if k.exists():
+        return k
+    asli = d / f"{tanggal}.json"
+    return asli if asli.exists() else None
+
+
+def saham_berubah(b: dict, segel: dict) -> dict:
+    """Emiten yang vonisnya bergeser sesudah segel dibuat.
+
+    Dua jalan, dan yang kedua sengaja menyebut dirinya tebakan:
+
+    - Segel yang MEMBAWA vonis per emiten → diff persis, ditandai `diff`.
+    - Segel lama (sebelum 5 Sep 2026 vonis per emiten belum ikut dicatat) tak
+      bisa didiff sama sekali. Yang bisa ditunjuk cuma tersangkanya: sinyal
+      yang vonisnya jatuh TEPAT di hari segel dibuat — satu-satunya hari yang
+      datanya belum mengendap saat itu.
+    """
+    lama = {(pr["preset"], s["kode"]): s[DEF_TP_SL]
+            for pr in segel.get("preset", []) for s in pr.get("saham", [])}
+    if lama:
+        return {"cara": "diff", "saham": [
+            {"preset": pr["preset"], "kode": s["kode"],
+             "sebelum": lama[(pr["preset"], s["kode"])], "sesudah": s[DEF_TP_SL]}
+            for pr in b["preset"] for s in pr["saham"]
+            if (pr["preset"], s["kode"]) in lama
+            and lama[(pr["preset"], s["kode"])] != s[DEF_TP_SL]]}
+    hari = segel.get("hariBursaTerakhirSaatDinilai")
+    return {"cara": "tersangka-hari-segel", "saham": [
+        {"preset": pr["preset"], "kode": s["kode"], "sesudah": s[DEF_TP_SL],
+         "tglKeluar": s.get("tglKeluar")}
+        for pr in b["preset"] for s in pr["saham"] if s.get("tglKeluar") == hari]}
+
+
+def _catatan_segel(b: dict, hasil: dict, sekarang: str) -> dict:
+    """Isi baku sebuah catatan penilaian — bentuk yang SAMA untuk segel asli
+    dan koreksinya, supaya pembaca tak perlu tahu ia sedang membaca yang mana."""
+    return {
+        "tanggal": b["tanggal"], "horizon": hasil["horizon"],
+        "dinilaiPada": sekarang,
+        "hariBursaTerakhirSaatDinilai": hasil["hariBursaTerakhir"],
+        **{k: b[k] for k in ("kelasBukti", "era", "n", "menang", "kalah", "gantung",
+                             "tak_masuk", "ambigu", "menangDariTuntas",
+                             "menangDariSemua", "preset")},
+    }
+
+
+def segel_dan_koreksi(hasil: dict, dir_=None, sekarang: str | None = None) -> dict:
+    """Tulis segel untuk tanggal yang datanya sudah mengendap, lalu koreksi
+    untuk segel yang terbukti menyimpang. Ringkasan koreksinya ditempelkan ke
+    `perTanggal` supaya halaman bisa menandai angka mana yang hasil koreksi.
+
+    Jendela tutup SAJA tidak cukup untuk menyegel: butuh satu hari bursa JEDA
+    sesudahnya (`hariBursaSesudah >= HORIZON + 1`). Sisa yang dipakai di sini
+    sengaja yang MENTAH — yang sudah dipotong horizon tak bisa membedakan
+    "jendelanya baru tutup hari ini" dari "sudah tutup seminggu lalu", padahal
+    justru beda itu yang menentukan apakah datanya sudah mengendap.
+    """
+    from datetime import datetime, timedelta, timezone
+    d = dir_ or PENILAIAN
+    d.mkdir(parents=True, exist_ok=True)
+    sekarang = sekarang or datetime.now(timezone(timedelta(hours=7))).isoformat(timespec="seconds")
+    n = {"baru": 0, "lewat": 0, "koreksi": 0, "koreksiDitolak": 0}
+
+    for b in hasil["perTanggal"]:
+        mengendap = b.get("hariBursaSesudah", 0) >= HORIZON + 1
+        asli = d / f"{b['tanggal']}.json"
+
+        if not asli.exists():
+            if mengendap:
+                asli.write_text(json.dumps(_catatan_segel(b, hasil, sekarang),
+                                           ensure_ascii=False, indent=1), encoding="utf-8")
+                n["baru"] += 1
+            continue
+
+        n["lewat"] += 1
+        segel = json.loads(asli.read_text(encoding="utf-8"))
+        beda = beda_segel(segel, b)
+        p_kor = d / f"{b['tanggal']}.koreksi.json"
+
+        if p_kor.exists():
+            kor = json.loads(p_kor.read_text(encoding="utf-8"))
+            b["koreksi"] = {k: kor[k] for k in ("dikoreksiPada", "alasan", "berubah")}
+            # Koreksi KEDUA ditolak — sekali koreksi, dan itu batasnya. Kalau
+            # angkanya bergeser lagi sesudah dikoreksi, yang salah bukan
+            # berkasnya melainkan aturannya, dan itu perlu keputusan manusia.
+            if beda_segel(kor, b):
+                n["koreksiDitolak"] += 1
+            continue
+
+        if not beda or not mengendap:
+            continue
+
+        kor = {**_catatan_segel(b, hasil, sekarang),
+               "jenis": "koreksi",
+               "mengoreksi": asli.name,
+               "dikoreksiPada": sekarang,
+               "alasan": ALASAN_PRA_JEDA,
+               "segelDinilaiPada": segel.get("dinilaiPada"),
+               "segelHariBursaTerakhir": segel.get("hariBursaTerakhirSaatDinilai"),
+               "sebelum": {k: segel.get(k) for k in RUAS_SEGEL},
+               "berubah": beda,
+               "sahamBerubah": saham_berubah(b, segel)}
+        del kor["dinilaiPada"]
+        p_kor.write_text(json.dumps(kor, ensure_ascii=False, indent=1), encoding="utf-8")
+        b["koreksi"] = {k: kor[k] for k in ("dikoreksiPada", "alasan", "berubah")}
+        n["koreksi"] += 1
+
+    return n
 
 
 def cetak(hasil: dict) -> None:
@@ -433,7 +592,92 @@ def swauji() -> None:
                      {DEF_OPEN_TINGGI: TAK_TERUKUR}], DEF_OPEN_TINGGI)
     assert rk == {"menang": 1, "kalah": 1, "takTerukur": 1, "winRate": 50.0}, rk
 
-    print("swauji nilai_jejak: 11 kasus lolos")
+    # ── Segel dan koreksinya ────────────────────────────────────────────────
+    import tempfile
+
+    def _hasil(menang, gantung, keluar=None, vonis_b=GANTUNG):
+        """Satu tanggal palsu berjendela tutup: satu preset, dua saham."""
+        return {"horizon": HORIZON, "hariBursaTerakhir": "2026-09-04", "perTanggal": [{
+            "tanggal": "2026-08-27", "kelasBukti": "CATATAN", "era": "abjad",
+            "hariBursaSesudah": HORIZON + 1, "jendelaTutup": True,
+            "n": 2, "menang": menang, "kalah": 0, "gantung": gantung,
+            "tak_masuk": 0, "ambigu": 0,
+            "menangDariTuntas": 100.0, "menangDariSemua": 50.0,
+            "preset": [{"preset": "scalping", "n": 2, "saham": [
+                {"kode": "AAAA", DEF_TP_SL: MENANG, "tglKeluar": "2026-09-02"},
+                {"kode": "BBBB", DEF_TP_SL: vonis_b, "tglKeluar": keluar}]}],
+        }]}
+
+    with tempfile.TemporaryDirectory() as td:
+        d = Path(td)
+
+        # Jalan pertama: disegel.
+        n = segel_dan_koreksi(_hasil(1, 1), d, "2026-09-03T08:25:51+07:00")
+        assert n == {"baru": 1, "lewat": 0, "koreksi": 0, "koreksiDitolak": 0}, n
+        asli = (d / "2026-08-27.json").read_text(encoding="utf-8")
+
+        # Jendela tutup SAJA tak cukup — tanpa jeda satu hari bursa, tak disegel.
+        # Aturan ini lahir 5 Sep 2026; tanpa penjaga di sini ia gampang hilang lagi.
+        h = _hasil(1, 1)
+        h["perTanggal"][0]["tanggal"] = "2026-08-28"
+        h["perTanggal"][0]["hariBursaSesudah"] = HORIZON
+        segel_dan_koreksi(h, d, "2026-09-03T08:25:51+07:00")
+        assert not (d / "2026-08-28.json").exists()
+
+        # Jalan kedua, vonis satu emiten bergeser: koreksi lahir sebagai BERKAS
+        # TERPISAH dan segel aslinya tak tersentuh satu bita pun.
+        h = _hasil(2, 0, keluar="2026-09-03", vonis_b=MENANG)
+        n = segel_dan_koreksi(h, d, "2026-09-06T10:00:00+07:00")
+        assert n["koreksi"] == 1 and n["baru"] == 0, n
+        assert (d / "2026-08-27.json").read_text(encoding="utf-8") == asli, "segel asli TERTIMPA"
+        kor = json.loads((d / "2026-08-27.koreksi.json").read_text(encoding="utf-8"))
+        assert kor["sebelum"]["menang"] == 1 and kor["menang"] == 2, kor
+        assert kor["berubah"]["gantung"] == [1, 0], kor
+        # Segel yang membawa vonis per emiten bisa didiff persis.
+        assert kor["sahamBerubah"] == {"cara": "diff", "saham": [
+            {"preset": "scalping", "kode": "BBBB", "sebelum": GANTUNG, "sesudah": MENANG}]}, kor
+        # Ringkasannya menempel ke perTanggal supaya halaman bisa menandainya.
+        assert h["perTanggal"][0]["koreksi"]["dikoreksiPada"] == "2026-09-06T10:00:00+07:00"
+
+        # Pembaca memilih koreksi, bukan segel asli.
+        assert berkas_penilaian("2026-08-27", d).name == "2026-08-27.koreksi.json"
+        assert berkas_penilaian("2026-08-99", d) is None
+
+        # Jalan ketiga, angka bergeser LAGI: koreksi kedua DITOLAK, isinya tetap.
+        n = segel_dan_koreksi(_hasil(2, 5), d, "2026-09-07T10:00:00+07:00")
+        assert n["koreksiDitolak"] == 1 and n["koreksi"] == 0, n
+        assert json.loads((d / "2026-08-27.koreksi.json").read_text(encoding="utf-8")) == kor
+
+        # Angka cocok dengan koreksinya = tak ada penolakan, tak ada berkas baru.
+        n = segel_dan_koreksi(_hasil(2, 0, keluar="2026-09-03", vonis_b=MENANG), d,
+                              "2026-09-08T10:00:00+07:00")
+        assert n["koreksi"] == 0 and n["koreksiDitolak"] == 0, n
+
+    with tempfile.TemporaryDirectory() as td:
+        # Segel LAMA — dibuat sebelum vonis per emiten ikut dicatat (5 Sep 2026).
+        # Tak bisa didiff; yang bisa ditunjuk cuma tersangkanya, dan berkasnya
+        # wajib mengatakan bahwa itu tersangka, bukan temuan.
+        d = Path(td)
+        (d / "2026-08-27.json").write_text(json.dumps({
+            "tanggal": "2026-08-27", "menang": 1, "kalah": 0, "gantung": 1,
+            "tak_masuk": 0, "ambigu": 0, "n": 2,
+            "dinilaiPada": "2026-09-03T08:25:51+07:00",
+            "hariBursaTerakhirSaatDinilai": "2026-09-03",
+            "preset": [{"preset": "scalping", "n": 2}],
+        }), encoding="utf-8")
+        segel_dan_koreksi(_hasil(2, 0, keluar="2026-09-03", vonis_b=MENANG), d,
+                          "2026-09-06T10:00:00+07:00")
+        kor = json.loads((d / "2026-08-27.koreksi.json").read_text(encoding="utf-8"))
+        assert kor["sahamBerubah"]["cara"] == "tersangka-hari-segel", kor
+        assert [x["kode"] for x in kor["sahamBerubah"]["saham"]] == ["BBBB"], kor
+
+    nol = {k: 0 for k in RUAS_SEGEL}
+    assert beda_segel(nol, nol) == {}
+    assert beda_segel(nol, {**nol, "kalah": 3}) == {"kalah": [0, 3]}
+    # Stempel waktu BUKAN penyimpangan — ia memang berbeda tiap jalan.
+    assert beda_segel({**nol, "dinilaiPada": "a"}, {**nol, "dinilaiPada": "b"}) == {}
+
+    print("swauji nilai_jejak: 32 kasus lolos")
 
 
 if __name__ == "__main__":
@@ -444,46 +688,11 @@ if __name__ == "__main__":
         swauji()
         sys.exit(0)
     h = jalankan()
+    # Segel & koreksi DULUAN: keduanya menempelkan ruas `koreksi` ke perTanggal,
+    # dan ruas itu harus ikut terbawa ke berkas yang dibaca halaman.
+    n = segel_dan_koreksi(h)
     cetak(h)
     KELUARAN.write_text(json.dumps(h, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"\n  ditulis: {KELUARAN.relative_to(AKAR)}")
-
-    # Berkas penilaian per tanggal, SEKALI TULIS — sifat yang sama dengan
-    # rekomendasi/<tgl>.json (spek_sistem_winrate_produksi §1.2). Ditulis
-    # hanya untuk tanggal yang jendelanya sudah TUTUP, dan tak pernah ditimpa:
-    # angka yang sudah terbit tak boleh berubah diam-diam saat aturan
-    # penilaiannya disunting kelak. Koreksi = berkas terpisah, bukan timpaan.
-    # Agregat `nilai_jejak.json` di atas TETAP ditulis ulang tiap jalan — ia
-    # ringkasan untuk halaman, bukan catatan.
-    PENILAIAN = AKAR / "data-idx" / "json" / "penilaian"
-    PENILAIAN.mkdir(parents=True, exist_ok=True)
-    baru = lewat = 0
-    for b in h["perTanggal"]:
-        # Jendela tutup SAJA tidak cukup untuk menyegel. Terukur 5 Sep 2026
-        # lewat uji kecocokan halaman: `penilaian/2026-08-27.json` disegel
-        # 3 Sep — hari terakhir jendelanya sendiri — dan mencatat 41 menang /
-        # 29 menggantung. Dihitung ulang hari ini angkanya 42 / 28: satu emiten
-        # barnya baru lengkap sesudah segel dibuat, dan sinyalnya ternyata kena
-        # target. Segel yang dibuat di atas data yang belum mengendap bukan
-        # catatan, ia tebakan yang dibekukan.
-        #
-        # Jadi butuh satu hari bursa JEDA sesudah jendelanya tutup. Berkas yang
-        # sudah telanjur disegel TIDAK ditimpa — koreksi berupa berkas
-        # terpisah, bukan timpaan (aturan yang sama dengan J14).
-        if b.get("hariBursaSesudah", 0) < HORIZON + 1:
-            continue
-        p = PENILAIAN / f"{b['tanggal']}.json"
-        if p.exists():
-            lewat += 1
-            continue
-        from datetime import datetime, timedelta, timezone
-        p.write_text(json.dumps({
-            "tanggal": b["tanggal"], "horizon": h["horizon"],
-            "dinilaiPada": datetime.now(timezone(timedelta(hours=7))).isoformat(timespec="seconds"),
-            "hariBursaTerakhirSaatDinilai": h["hariBursaTerakhir"],
-            **{k: b[k] for k in ("kelasBukti", "era", "n", "menang", "kalah", "gantung",
-                                  "tak_masuk", "ambigu", "menangDariTuntas", "menangDariSemua",
-                                  "preset")},
-        }, ensure_ascii=False, indent=1), encoding="utf-8")
-        baru += 1
-    print(f"  penilaian/: {baru} tanggal baru ditulis, {lewat} sudah ada (tak ditimpa)")
+    print(f"  penilaian/: {n['baru']} segel baru, {n['lewat']} sudah ada (tak ditimpa), "
+          f"{n['koreksi']} koreksi ditulis, {n['koreksiDitolak']} koreksi kedua ditolak")

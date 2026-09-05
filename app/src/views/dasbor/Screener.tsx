@@ -30,7 +30,7 @@ import {
   useJendelaRekomendasi } from '../../lib/dasbor/rekomendasi'
 import {
   ambilJejak, ambilVonis, barisSahamDariHakim, jumlahH1, jumlahTpSl, rataPersenTertimbang, tanggalPreset,
-  type BarisJejakSaham, type BerkasJejak, type DefinisiId, type RingkasH1, type RingkasTpSl,
+  type BarisJejakSaham, type BerkasJejak, type DefinisiId, type KoreksiJejak, type RingkasH1, type RingkasTpSl,
 } from '../../lib/dasbor/nilaiJejak'
 import './Screener.css'
 
@@ -620,6 +620,7 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
       jendelaTutup: t.jendelaTutup,
       hariBursaTersedia: t.hariBursaTersedia,
       era: t.era,
+      koreksi: t.koreksi,
       def: t.p.definisi,
       baris: barisSahamDariHakim(t.tanggal, t.p, keteranganPerTanggal.get(t.tanggal) ?? new Map()),
     }))
@@ -840,6 +841,11 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
                         jendela {h.hariBursaTersedia}/{jejak.horizon}
                       </span>
                     )}
+                    {/* Angka hasil koreksi mengatakan dirinya koreksi. Catatan
+                        yang sudah terbit tak ditimpa; kalau angkanya berganti
+                        tanpa penanda, pembaca yang mencatat angka lama tak
+                        punya cara tahu bahwa yang berubah bukan ingatannya. */}
+                    {h.koreksi && <PenandaKoreksi k={h.koreksi} />}
                   </td>
                   <td className="r num">{h.baris.length}</td>
                   {definisi === 'tpSl' ? selTpSl(h.def.tpSl) : selH1(h.def[definisi])}
@@ -906,6 +912,24 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
         investasi.
       </div>
     </div>
+  )
+}
+
+/** Penanda kecil bertanggal untuk angka yang sudah dikoreksi. Sengaja membawa
+ *  angka lamanya di tooltip: penanda yang cuma bilang "dikoreksi" memaksa
+ *  pembaca percaya tanpa bisa memeriksa. */
+function PenandaKoreksi({ k }: { k: KoreksiJejak }) {
+  const rinci = Object.entries(k.berubah)
+    .map(([ruas, [a, b]]) => `${ruas} ${a} → ${b}`)
+    .join(', ')
+  return (
+    <span
+      className="muted"
+      style={{ fontSize: 11, marginLeft: 6, borderBottom: '1px dotted currentColor', cursor: 'help' }}
+      title={`Dikoreksi ${k.dikoreksiPada.slice(0, 10)} — ${rinci}. ${k.alasan} Catatan aslinya tidak ditimpa; koreksinya berkas terpisah.`}
+    >
+      dikoreksi {k.dikoreksiPada.slice(0, 10)}
+    </span>
   )
 }
 

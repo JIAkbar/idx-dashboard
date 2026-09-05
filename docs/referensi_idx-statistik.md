@@ -68,7 +68,7 @@ Satu baris per halaman di `app/src/lib/dasbor/menu.ts` + komponen data di Berand
 | Watchlist `/watchlist` | `ohlc/<KODE>.json`, `fundamental/`, `harga_terakhir.json`, `daftar_emiten.json` | **`ohlc/` jahitan**; fundamental campuran; `harga_terakhir` ⚙️ (produsen: dirujuk `petakan_grup.py` — ❓ penulis aslinya belum ditelusuri) | **ya** | 23 Agu 2026 |
 | Kalkulator `/kalkulator` (AvgDown, Pemulihan, PosisiBar, …) | `harga_terakhir.json`, `fundamental/` | ⚙️ turunan; fundamental campuran | **ya** (lewat fundamental) | 23 Agu 2026 |
 | Kartu Analisa `/kartu` | `kartu/<KODE>.json`, `kartu/index.json`, `kartu/ringkas.json`, `kartu/arsip/`, `seasonality/`, `emiten_sektor.json`, `ihsg_harian.json` | ⚙️ `scripts/riset/kartu_analisa.py` dari `ohlc/` (**jahitan**) + asing + seasonality; IDX profil; IDX PDF | **ya** (lewat `ohlc/`) | 23 Agu 2026 |
-| Screener `/screener` (tab Tabel, Preset Whale, **Riwayat & Win Rate** — B45, 28 Agu 2026) | `screener.json`, `pola_screener.json`, `kandidat_deepdive.json`, `kartu/ringkas.json` (tab Preset Whale, lewat `keBarisPreset`); **tab Riwayat & Win Rate**: `rekomendasi/index.json` + `rekomendasi/<tgl>.json` (`rekomendasi.ts`) + `ohlc/<KODE>.json` (win rate H+1/H+5, `winRate.ts`) | ⚙️ `app/scripts/bangun-screener.mjs` & `pola-screener.ts` dari `ohlc/` (**jahitan**) + fundamental; **ruas `sektor` sejak 27 Agu 2026 dari `emiten_sektor.json` (IDX-IC resmi, 962/962, keputusan Johan)** — GICS Yahoo di fundamental jadi cadangan, tak dipakai kolom ini; `kandidat_deepdive.json` ❓ produsen belum ditemukan di `scripts/` maupun `app/scripts/`; **`rekomendasi/` ⚙️ turunan `scripts/riset/rekap_preset.py`** dari `kartu/arsip/<tgl>.json` (ruas preset, sudah `ohlc/`-jahitan lewat `kartu_analisa.py`) + `ohlc/<KODE>.json` (low harian, TP/SL fallback ATR) — nol jaringan, ditulis sekali per tanggal, tidak pernah ditimpa | **ya** (lewat `ohlc/`; ruas preset diport manual Python↔TypeScript, lihat `PRESET_DEFS` vs `presetScreener.ts`) | 28 Agu 2026 |
+| Screener `/screener` (tab Tabel, Preset Whale, **Riwayat & Win Rate** — B45, 28 Agu 2026) | `screener.json`, `pola_screener.json`, `kandidat_deepdive.json`, `kartu/ringkas.json` (tab Preset Whale, lewat `keBarisPreset`); **tab Riwayat & Win Rate** (sejak 5 Sep 2026): `nilai_jejak.json` (vonis + ketiga definisi, `nilaiJejak.ts`) + `rekomendasi/<tgl>.json` hanya untuk keterangan sinyal (skor, target, batas rugi) — vonis TIDAK dihitung di peramban lagi; `penilaian/<tgl>.json` (+ `.koreksi.json`) catatan tersegelnya | ⚙️ `app/scripts/bangun-screener.mjs` & `pola-screener.ts` dari `ohlc/` (**jahitan**) + fundamental; **ruas `sektor` sejak 27 Agu 2026 dari `emiten_sektor.json` (IDX-IC resmi, 962/962, keputusan Johan)** — GICS Yahoo di fundamental jadi cadangan, tak dipakai kolom ini; `kandidat_deepdive.json` ❓ produsen belum ditemukan di `scripts/` maupun `app/scripts/`; **`rekomendasi/` ⚙️ turunan `scripts/riset/rekap_preset.py`** dari `kartu/arsip/<tgl>.json` (ruas preset, sudah `ohlc/`-jahitan lewat `kartu_analisa.py`) + `ohlc/<KODE>.json` (low harian, TP/SL fallback ATR) — nol jaringan, ditulis sekali per tanggal, tidak pernah ditimpa | **ya** (lewat `ohlc/`; ruas preset diport manual Python↔TypeScript, lihat `PRESET_DEFS` vs `presetScreener.ts`) | 28 Agu 2026 |
 
 ### Divergensi klasifikasi — 8 emiten yang DUA sumber resmi IDX-nya bertentangan (27 Agu 2026)
 
@@ -1089,11 +1089,49 @@ preset per tanggal (bukan seluruh populasi lolos — itu tugas tab Preset, bukan
 
 TP/SL memakai **fallback ATR** (spek §Tugas B), bukan rumus "Target Realistis" papan-terdorong `kuliPapan.ts`
 — itu butuh antrean penutupan (bid/offer) yang cuma ada dari setoran Kuli Papan kontributor, bukan data
-cakram untuk 962 emiten sekaligus. Win rate dihitung client-side (`winRate.ts`, murni) dari `ohlc/<KODE>.json`
-H+1..H+5 sesudah tanggal rekomendasi — bar dengan `volume=0` DIBUANG (snapshot hari-berjalan yang OHLC-nya
-cuma ditaruh datar, lihat entri Riwayat 24 Agustus 14:33 di bawah) supaya tak mencemari hasil dengan "kalah"
-palsu. Tiga definisi (kompatibel SPLE): Open-Tinggi H+1 (longgar), Tutup-ke-Tutup H+1 (ketat + rata-rata %),
-TP/SL H+5 (dua-duanya tersentuh hari sama = "tak tentu", tidak diklaim menang).
+cakram untuk 962 emiten sekaligus.
+
+**Ralat 5 September 2026:** paragraf ini dulu menyebut win rate dihitung di peramban (`winRate.ts`) dari
+`ohlc/<KODE>.json`. Itu tidak berlaku lagi. Satu metrik punya dua kalkulator dengan aturan yang bertentangan
+pada kasus ambigu, dan yang di peramban hanya memuat bar sebagian emiten sehingga sisanya jatuh dari penyebut
+— terukur satu preset satu bulan: 90,6% / 38,8% / 89,4% di layar vs 77,0% / 34,0% / 84,1% dari hakim untuk
+irisan yang sama. Sekarang penilaiannya di sisi panen, halaman cuma membaca (lihat bagian berikut).
+
+#### Penilaian jejak — `nilai_jejak.json`, `penilaian/<tgl>.json`, `penilaian/<tgl>.koreksi.json`
+
+⚙️ `scripts/riset/nilai_jejak.py` (nol jaringan) dari `rekomendasi/<tgl>.json` + `ohlc/<KODE>.json`.
+Dibaca halaman lewat `app/src/lib/dasbor/nilaiJejak.ts` — modul itu **tidak menghitung vonis apa pun**,
+hanya menjumlahkan lintas tanggal. Tiga definisi menang tetap sama (Open-Tinggi H+1, Tutup-ke-Tutup H+1,
+TP/SL H+5), dan empat keputusan hakimnya ditulis di kepala skripnya supaya bisa dibantah, bukan diasumsikan.
+
+| Berkas | Sifat | Isi |
+|---|---|---|
+| `nilai_jejak.json` | ditulis ulang tiap jalan | ringkasan untuk halaman: `perTanggal[]` berisi ketiga definisi, rincian per preset, dan vonis per emiten |
+| `penilaian/<tgl>.json` | **sekali tulis, tak pernah ditimpa** | catatan tanggal yang jendelanya sudah tutup DAN datanya sudah mengendap |
+| `penilaian/<tgl>.koreksi.json` | **sekali tulis, satu per tanggal** | koreksi atas segel yang terbukti menyimpang — segel aslinya tetap utuh |
+
+| Ruas | Arti | Kenapa ada |
+|---|---|---|
+| `hariBursaSesudah` | sisa hari bursa sesudah tanggal sinyal, **mentah**, tak dipotong horizon | syarat segel. Yang sudah dipotong horizon tak bisa membedakan "jendelanya baru tutup hari ini" dari "sudah tutup seminggu lalu" |
+| `jendelaTutup` · `hariBursaTersedia` | jendela H+5 sudah penuh; berapa hari bursa yang sudah terisi (dipotong horizon) | kolom "masih berjalan" di layar — tanggal yang belum tuntas tak ikut penyebut |
+| `saham[].tglKeluar` | hari bursa saat vonis TP/SL jatuh; `null` kalau menggantung atau tak masuk | dasar penelusuran koreksi: sinyal yang vonisnya jatuh TEPAT di hari segel dibuat adalah sinyal yang datanya paling mungkin belum mengendap |
+| `koreksi.dikoreksiPada` · `.alasan` · `.berubah` | ditempelkan ke `perTanggal` bila tanggal itu punya berkas koreksi | halaman menandai angka hasil koreksi dengan penanda bertanggal. Angka yang berganti tanpa penanda lebih buruk daripada angka salah — yang salah masih bisa ketahuan |
+| koreksi: `mengoreksi` · `sebelum` · `berubah` · `sahamBerubah` | nama segel yang dikoreksi, angka lamanya, ruas yang bergeser `[sebelum, sesudah]`, dan emiten yang vonisnya berubah | koreksi yang tak menyimpan angka lamanya memaksa pembaca percaya tanpa bisa memeriksa |
+| `sahamBerubah.cara` | `diff` (segel membawa vonis per emiten) atau `tersangka-hari-segel` | segel sebelum 5 Sep 2026 belum mencatat vonis per emiten, jadi yang bisa ditunjuk cuma tersangkanya — dan berkasnya wajib mengatakan itu tersangka, bukan temuan |
+
+**Aturan segel (5 Sep 2026).** Jendela tutup saja tidak cukup: butuh **satu hari bursa jeda** sesudahnya
+(`hariBursaSesudah >= horizon + 1`). Sebabnya terukur: `penilaian/2026-08-27.json` disegel 3 Sep pukul 08.25
+— hari terakhir jendelanya sendiri — dan mencatat 41 menang / 29 menggantung; sesudah data hari itu lengkap,
+angkanya 42 / 28.
+
+**Aturan koreksi (6 Sep 2026, antrean #8).** Segel yang sudah terbit **tidak ditimpa**; koreksinya berkas
+terpisah, aturan yang sama dengan J14. Koreksi hanya **sekali per tanggal** — nama berkasnya sendiri yang
+menegakkannya, dan koreksi kedua dilaporkan sebagai ditolak, bukan ditulis diam-diam. Keempat segel yang ada
+lahir dalam kondisi tak aman yang sama, tapi hanya **satu** yang terbukti bergeser (27 Agu; emiten
+tersangkanya IHSG di preset scalping, vonisnya jatuh tepat di hari segel dibuat) — tiga lainnya cocok karena
+bar hari terakhirnya memang sudah lengkap, dan mengoreksi angka yang sudah benar cuma menambah riwayat tanpa
+menambah kebenaran. Uji `app/src/lib/dasbor/nilaiJejak.test.ts` membaca catatan yang **berlaku** (koreksi
+menang atas segel asli) dan merah kalau ada catatan terbit yang angkanya sudah tak berlaku dan tak dikoreksi.
 
 ## Prototipe Dev — Kuli Papan & Neo Papan (artifact, 23 Agu 2026)
 
