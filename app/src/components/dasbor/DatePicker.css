@@ -36,8 +36,19 @@
    antar tombol ikon itu aturan yang sudah dibayar (area kliknya dilebarkan
    `::after{inset:-6px}`, dan tanpa jarak itu klik di celah jatuh ke tombol
    yang salah). Nama bulan terpanjang di sini "September" — 288px memberi
-   judul 136px, dua kali lipat kebutuhannya. */
-.lantai .dpk-pop { width: 288px; min-width: 0; max-width: calc(100vw - 48px); padding: 8px; }
+   judul 136px, dua kali lipat kebutuhannya.
+
+   Selektornya `.dd-menu.dpk-pop`, BUKAN `.dpk-pop` saja — dan itu bukan
+   kerapian. Elemen
+   yang sama membawa kedua kelas, dan `.lantai .dd-menu` sudah menyetel
+   `width: max-content`. Keduanya selektor dua-kelas, jadi yang menang urutan
+   berkas, dan lantai.css dimuat SESUDAH berkas ini: lebar 288px yang ditulis
+   di sini tak pernah berlaku sama sekali. Terukur di produksi 5 Sep 2026
+   sesudah didorong — aturannya ADA di bundel, `white-space: nowrap` ikut
+   berlaku, tapi popovernya tetap 258,8px (= max-content). Judul bulan berhenti
+   membungkus hanya karena nowrap, dengan sisa ruang 2px. Menambah satu kelas
+   membuat aturan ini benar-benar menang. */
+.lantai .dd-menu.dpk-pop { width: 288px; min-width: 0; max-width: calc(100vw - 48px); padding: 8px; }
 /* Pemicu dekat tepi kanan layar (header /broker-summary): popover rata kanan
    supaya tidak terpotong viewport. */
 .lantai .dpk-kanan .dpk-pop { left: auto; right: 0; }
