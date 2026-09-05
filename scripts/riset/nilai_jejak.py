@@ -64,8 +64,12 @@ MENANG, KALAH, GANTUNG, TAK_MASUK = "menang", "kalah", "gantung", "tak_masuk"
 
 
 def bar_per_tanggal(kode: str, singgahan: dict) -> dict:
-    """{tanggal: (high, low)} untuk satu emiten. Disinggahi — satu emiten
-    muncul di banyak preset dan banyak tanggal."""
+    """{tanggal: (open, high, low, close)} untuk satu emiten. Disinggahi — satu
+    emiten muncul di banyak preset dan banyak tanggal.
+
+    Dulu cuma (high, low): itu semua yang dibutuhkan TP/SL. Sejak 5 Sep 2026
+    hakim juga menghitung dua definisi H+1 yang butuh buka dan tutup, jadi
+    keempatnya disimpan sekaligus — satu bacaan berkas untuk tiga definisi."""
     if kode in singgahan:
         return singgahan[kode]
     p = OHLC_DIR / f"{kode}.json"
@@ -74,7 +78,7 @@ def bar_per_tanggal(kode: str, singgahan: dict) -> dict:
         try:
             for b in json.loads(p.read_text(encoding="utf-8"))["d"]:
                 # d = [tanggal, open, high, low, close, volume]
-                peta[b[0]] = (b[2], b[3])
+                peta[b[0]] = (b[1], b[2], b[3], b[4])
         except (KeyError, ValueError, IndexError):
             pass
     singgahan[kode] = peta
@@ -108,7 +112,7 @@ def nilai_satu(sinyal: dict, tgl_sinyal: str, kalender: list[str],
 
     masuk = batas is None
     for t in hari:
-        tinggi, rendah = peta[t]
+        _, tinggi, rendah, _ = peta[t]
         if not masuk:
             # Terisi kalau harga turun menyentuh area beli.
             if rendah <= batas:
@@ -135,6 +139,61 @@ def nilai_satu(sinyal: dict, tgl_sinyal: str, kalender: list[str],
             "hariTerukur": len(hari)}
 
 
+DEF_OPEN_TINGGI, DEF_TUTUP_TUTUP, DEF_TP_SL = "openTinggi", "tutupTutup", "tpSl"
+TAK_TERUKUR = "tak_terukur"
+
+
+def nilai_h1(sinyal: dict, tgl_sinyal: str, kalender: list[str],
+             singgahan: dict) -> dict:
+    """Dua definisi menang berhorizon SATU hari bursa.
+
+    Keduanya sudah lama tayang di layar tapi dihitung di peramban; sejak 5 Sep
+    2026 hakim yang menghitungnya, supaya satu metrik tak punya dua kalkulator.
+
+    - `openTinggi` — menang bila TERTINGGI H+1 di atas PEMBUKAAN H+1 sendiri.
+      Longgar dan sengaja begitu: ia tak peduli area beli kena atau tidak.
+    - `tutupTutup` — menang bila PENUTUPAN H+1 di atas penutupan hari sinyal.
+      Ketat, dan satu-satunya yang punya besaran (`persen`).
+
+    Keputusan (1) hakim tetap berlaku di keduanya: hari sinyal tak dinilai,
+    jendela mulai hari bursa BERIKUTNYA. `tak_terukur` berarti barnya memang
+    belum ada — beda dari kalah.
+    """
+    kode = sinyal["kode"]
+    try:
+        i = kalender.index(tgl_sinyal)
+    except ValueError:
+        return {DEF_OPEN_TINGGI: TAK_TERUKUR, DEF_TUTUP_TUTUP: TAK_TERUKUR, "persen": None}
+    peta = bar_per_tanggal(kode, singgahan)
+    b0 = peta.get(tgl_sinyal)
+    b1 = peta.get(kalender[i + 1]) if i + 1 < len(kalender) else None
+
+    if b1 is None:
+        ot = TAK_TERUKUR
+    else:
+        buka1, tinggi1, _, _ = b1
+        ot = MENANG if (tinggi1 is not None and buka1 is not None and tinggi1 > buka1) else KALAH
+
+    if b1 is None or b0 is None or not b0[3]:
+        tt, persen = TAK_TERUKUR, None
+    else:
+        tutup0, tutup1 = b0[3], b1[3]
+        tt = MENANG if tutup1 > tutup0 else KALAH
+        persen = round(100 * (tutup1 / tutup0 - 1), 4)
+
+    return {DEF_OPEN_TINGGI: ot, DEF_TUTUP_TUTUP: tt, "persen": persen}
+
+
+def ringkas_h1(hasil: list[dict], kunci: str) -> dict:
+    """Agregat satu definisi H+1. Penyebutnya menang+kalah; `tak_terukur`
+    dilaporkan terpisah supaya besarnya kelihatan, bukan disembunyikan."""
+    m = sum(1 for h in hasil if h[kunci] == MENANG)
+    k = sum(1 for h in hasil if h[kunci] == KALAH)
+    t = sum(1 for h in hasil if h[kunci] == TAK_TERUKUR)
+    return {"menang": m, "kalah": k, "takTerukur": t,
+            "winRate": round(100 * m / (m + k), 1) if (m + k) else None}
+
+
 def kalender_bursa() -> list[str]:
     """Hari bursa dibangun dari DATA, bukan daftar libur yang harus dirawat —
     sama seperti `gabung_ohlc_stockbit.py`. Sebuah tanggal dianggap hari
@@ -159,6 +218,34 @@ def kalender_bursa() -> list[str]:
     return sorted(t for t, c in hitung.items() if c >= ambang)
 
 
+def gabung_definisi(per_preset: list[dict]) -> dict:
+    """Jumlahkan ketiga definisi lintas preset untuk satu tanggal.
+
+    Rata-rata persen ditimbang jumlah sinyal terukur, BUKAN rata-rata dari
+    rata-rata: preset dengan 3 sinyal terukur tak boleh menimbang sama dengan
+    preset yang 20."""
+    keluar: dict = {}
+    for d in (DEF_OPEN_TINGGI, DEF_TUTUP_TUTUP, DEF_TP_SL):
+        potong = [x["definisi"][d] for x in per_preset]
+        kunci = [k for k in potong[0] if isinstance(potong[0][k], int)] if potong else []
+        gab = {k: sum(x[k] for x in potong) for k in kunci}
+        if d == DEF_TP_SL:
+            tuntas = gab["menang"] + gab["kalah"]
+            n = tuntas + gab["gantung"] + gab["tak_masuk"]
+            gab["menangDariTuntas"] = round(100 * gab["menang"] / tuntas, 1) if tuntas else None
+            gab["menangDariSemua"] = round(100 * gab["menang"] / n, 1) if n else None
+        else:
+            tuntas = gab["menang"] + gab["kalah"]
+            gab["winRate"] = round(100 * gab["menang"] / tuntas, 1) if tuntas else None
+        if d == DEF_TUTUP_TUTUP:
+            bobot = [(x["definisi"][d]["rataPersen"], x["definisi"][d]["menang"] + x["definisi"][d]["kalah"])
+                     for x in per_preset if x["definisi"][d]["rataPersen"] is not None]
+            tot_b = sum(w for _, w in bobot)
+            gab["rataPersen"] = round(sum(v * w for v, w in bobot) / tot_b, 4) if tot_b else None
+        keluar[d] = gab
+    return keluar
+
+
 def jalankan() -> dict:
     kalender = kalender_bursa()
     singgahan: dict = {}
@@ -176,14 +263,41 @@ def jalankan() -> dict:
         per_preset = []
         for pr in d["presets"]:
             hasil = [nilai_satu(s, tgl, kalender, singgahan) for s in pr["saham"]]
+            h1 = [nilai_h1(s, tgl, kalender, singgahan) for s in pr["saham"]]
             c = {k: sum(1 for h in hasil if h["hasil"] == k)
                  for k in (MENANG, KALAH, GANTUNG, TAK_MASUK)}
             tuntas = c[MENANG] + c[KALAH]
+            persen = [x["persen"] for x in h1 if x["persen"] is not None]
             per_preset.append({
                 "preset": pr["preset"], "n": len(hasil), **c,
                 "ambigu": sum(1 for h in hasil if h.get("ambigu")),
                 "menangDariTuntas": round(100 * c[MENANG] / tuntas, 1) if tuntas else None,
                 "menangDariSemua": round(100 * c[MENANG] / len(hasil), 1) if hasil else None,
+                # Tiga definisi berdampingan. `tpSl` mengulang angka di atas
+                # dengan sengaja: halaman membaca satu bentuk untuk ketiganya,
+                # dan ruas lama tetap ada supaya pembaca yang sudah ada tak
+                # patah.
+                # Vonis PER SAHAM ikut ditulis. Tanpa ini halaman masih harus
+                # menghitung sendiri untuk daftar Menang/Kalah-nya, dan
+                # kalkulator kedua yang mau dihapus itu hidup lagi lewat pintu
+                # belakang. ~900 baris untuk seluruh berkas — murah dibanding
+                # dua sumber kebenaran.
+                "saham": [
+                    {"kode": h["kode"], DEF_TP_SL: h["hasil"],
+                     DEF_OPEN_TINGGI: x[DEF_OPEN_TINGGI],
+                     DEF_TUTUP_TUTUP: x[DEF_TUTUP_TUTUP], "persen": x["persen"]}
+                    for h, x in zip(hasil, h1)
+                ],
+                "definisi": {
+                    DEF_OPEN_TINGGI: ringkas_h1(h1, DEF_OPEN_TINGGI),
+                    DEF_TUTUP_TUTUP: {**ringkas_h1(h1, DEF_TUTUP_TUTUP),
+                                      "rataPersen": round(sum(persen) / len(persen), 4) if persen else None},
+                    DEF_TP_SL: {"menang": c[MENANG], "kalah": c[KALAH],
+                                "gantung": c[GANTUNG], "tak_masuk": c[TAK_MASUK],
+                                "ambigu": sum(1 for h in hasil if h.get("ambigu")),
+                                "menangDariTuntas": round(100 * c[MENANG] / tuntas, 1) if tuntas else None,
+                                "menangDariSemua": round(100 * c[MENANG] / len(hasil), 1) if hasil else None},
+                },
             })
 
         tot = {k: sum(x[k] for x in per_preset) for k in (MENANG, KALAH, GANTUNG, TAK_MASUK)}
@@ -206,6 +320,7 @@ def jalankan() -> dict:
             "ambigu": sum(x["ambigu"] for x in per_preset),
             "menangDariTuntas": round(100 * tot[MENANG] / tuntas, 1) if tuntas else None,
             "menangDariSemua": round(100 * tot[MENANG] / n, 1) if n else None,
+            "definisi": gabung_definisi(per_preset),
             "preset": per_preset,
         })
 
@@ -244,10 +359,18 @@ def cetak(hasil: dict) -> None:
 def swauji() -> None:
     kal = ["2026-08-24", "2026-08-26", "2026-08-27", "2026-08-28", "2026-08-31",
            "2026-09-01", "2026-09-02"]
-    singgahan = {"X": {"2026-08-26": (110, 95), "2026-08-27": (120, 105)}}
+    # (buka, tinggi, rendah, tutup) — empat, bukan dua, sejak hakim juga
+    # menghitung dua definisi H+1 yang butuh buka dan tutup.
+    singgahan = {"X": {
+        "2026-08-24": (100, 104, 98, 100),
+        "2026-08-26": (101, 110, 95, 106),
+        "2026-08-27": (107, 120, 105, 108),
+    }}
 
-    # Hari sinyal tak ikut: bar 24 Agu sengaja TIDAK ada di singgahan, jadi
-    # kalau ia terbaca hasilnya akan berubah.
+    # Hari sinyal tak ikut dinilai TP/SL. Bar 24 Agu sekarang ADA (definisi
+    # tutup-ke-tutup membutuhkannya), jadi penjaganya dibuat eksplisit: tp1
+    # 104 tepat tersentuh di hari sinyal, dan hasilnya tetap bukan menang
+    # karena hari itu di luar jendela.
     r = nilai_satu({"kode": "X", "tp1": 118, "sl": 90, "entry": None},
                    "2026-08-24", kal, singgahan)
     assert r["hasil"] == MENANG and r["tglKeluar"] == "2026-08-27", r
@@ -277,7 +400,35 @@ def swauji() -> None:
                    "2026-08-24", kal, singgahan)
     assert r["hasil"] == GANTUNG, r
 
-    print("swauji nilai_jejak: 6 kasus lolos")
+    # Keputusan (1) diuji langsung: tp1 104 = tinggi hari sinyal. Kalau hari
+    # sinyal ikut dinilai, ini menang di 24 Agu.
+    r = nilai_satu({"kode": "X", "tp1": 104, "sl": 1, "entry": None},
+                   "2026-08-24", kal, singgahan)
+    assert r["hasil"] == MENANG and r["tglKeluar"] == "2026-08-26", r
+
+    # ── Dua definisi H+1 ────────────────────────────────────────────────────
+    # H+1 dari 24 Agu adalah 26 Agu: buka 101, tinggi 110, tutup 106.
+    h = nilai_h1({"kode": "X"}, "2026-08-24", kal, singgahan)
+    assert h[DEF_OPEN_TINGGI] == MENANG, h          # 110 > 101
+    assert h[DEF_TUTUP_TUTUP] == MENANG, h          # 106 > 100
+    assert h["persen"] == 6.0, h
+
+    # H+1 dari 26 Agu adalah 27 Agu: buka 107, tinggi 120, tutup 108 vs 106.
+    h = nilai_h1({"kode": "X"}, "2026-08-26", kal, singgahan)
+    assert h[DEF_OPEN_TINGGI] == MENANG and h[DEF_TUTUP_TUTUP] == MENANG, h
+
+    # Emiten tanpa bar sama sekali: tak_terukur, BUKAN kalah — membedakan
+    # "belum ada datanya" dari "harganya turun" itu seluruh gunanya.
+    h = nilai_h1({"kode": "KOSONG"}, "2026-08-24", kal, {"KOSONG": {}})
+    assert h[DEF_OPEN_TINGGI] == TAK_TERUKUR and h[DEF_TUTUP_TUTUP] == TAK_TERUKUR, h
+    assert h["persen"] is None, h
+
+    # Agregat: penyebut winRate hanya menang+kalah; tak_terukur di luar.
+    rk = ringkas_h1([{DEF_OPEN_TINGGI: MENANG}, {DEF_OPEN_TINGGI: KALAH},
+                     {DEF_OPEN_TINGGI: TAK_TERUKUR}], DEF_OPEN_TINGGI)
+    assert rk == {"menang": 1, "kalah": 1, "takTerukur": 1, "winRate": 50.0}, rk
+
+    print("swauji nilai_jejak: 11 kasus lolos")
 
 
 if __name__ == "__main__":
