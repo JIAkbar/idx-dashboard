@@ -27,8 +27,11 @@ import {
   type HasilKriteria, type HasilPreset, type Preset, type BarisPreset } from '../../lib/dasbor/presetScreener'
 import { muatKepemilikan } from '../../lib/dasbor/brokerProfilKsei'
 import {
-  useJendelaRekomendasi, usePetaBarsPreset, hasilSahamPreset, type HasilSahamRekomendasi } from '../../lib/dasbor/rekomendasi'
-import { agregatWinRate, rataPersen, type HasilMenang, type AgregatWinRate } from '../../lib/dasbor/winRate'
+  useJendelaRekomendasi } from '../../lib/dasbor/rekomendasi'
+import {
+  ambilJejak, ambilVonis, barisSahamDariHakim, jumlahH1, jumlahTpSl, rataPersenTertimbang, tanggalPreset,
+  type BarisJejakSaham, type BerkasJejak, type DefinisiId, type RingkasH1, type RingkasTpSl,
+} from '../../lib/dasbor/nilaiJejak'
 import './Screener.css'
 
 /** Tiga preset Whale saja (adendum_preset_whale.md) — Scalping/Swing di luar
@@ -571,25 +574,17 @@ const JENDELA_OPSI: { id: JendelaId; label: string }[] = (['w1', 'b1', 'b3'] as 
   .map((id) => ({ id, label: LABEL_RENTANG[id] }))
 const JENDELA_HARI: Record<JendelaId, number> = { w1: 7, b1: 30, b3: 90 }
 
-type DefinisiId = 'openHigh' | 'closeClose' | 'tpSl'
 const DEFINISI_OPSI: { id: DefinisiId; label: string; kalimat: string }[] = [
   {
-    id: 'openHigh', label: 'Open-Tinggi H+1',
+    id: 'openTinggi', label: 'Open-Tinggi H+1',
     kalimat: 'Longgar, persis definisi ringkas SPLE: menang kalau harga TERTINGGI keesokan hari bursa lebih tinggi dari harga PEMBUKAANNYA sendiri hari itu — tak peduli entry beneran kena atau tidak.' },
   {
-    id: 'closeClose', label: 'Tutup-ke-Tutup H+1',
+    id: 'tutupTutup', label: 'Tutup-ke-Tutup H+1',
     kalimat: 'Ketat: menang kalau harga PENUTUPAN keesokan hari bursa lebih tinggi dari penutupan hari rekomendasi. Rata-rata % perubahan dihitung dari definisi ini.' },
   {
     id: 'tpSl', label: 'TP/SL H+5',
     kalimat: 'Realistis — pakai target & batas rugi preset sendiri: dalam 5 hari bursa berikutnya, target (TP1) harus tersentuh SEBELUM batas rugi (SL). Kalau KEDUANYA tersentuh di hari yang sama, hasilnya "tak tentu" — data harian tak bisa membuktikan mana yang lebih dulu, jadi TIDAK diklaim menang.' },
 ]
-
-function ambilHasil(b: HasilSahamRekomendasi, definisi: DefinisiId): HasilMenang {
-  return definisi === 'openHigh' ? b.openHigh : definisi === 'closeClose' ? b.closeClose : b.tpSl
-}
-
-/** Baris hasil dua Rp+preset digabung { HariRekomendasi × HasilSahamRekomendasi[] }. */
-interface BarisHari { tanggal: string; backtest: boolean; baris: HasilSahamRekomendasi[] }
 
 function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, definisi, setDefinisi }: {
   presetId: string
@@ -600,27 +595,89 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
   setDefinisi: (d: DefinisiId) => void
 }) {
   const presetAktif = PRESET.find((p) => p.id === presetId) ?? PRESET[0]
+  // Berkas HAKIM = satu-satunya sumber vonis (5 Sep 2026, antrean #7).
+  // `useJendelaRekomendasi` tetap dipakai, tapi HANYA untuk keterangan sinyal
+  // (skor, target, batas rugi) yang dipajang di kolom — bukan untuk menilai.
+  const [jejak, setJejak] = useState<BerkasJejak | null | undefined>(undefined)
+  useEffect(() => { void ambilJejak().then(setJejak) }, [])
   const hariDimuat = useJendelaRekomendasi(JENDELA_HARI[jendela])
-  const hari = hariDimuat ?? []
-  const petaBars = usePetaBarsPreset(hari, presetId)
-  const perHari = useMemo<BarisHari[]>(
-    () => hari
-      .map((h) => ({ tanggal: h.tanggal, backtest: h.backtest, baris: hasilSahamPreset(h, presetId, petaBars) }))
-      .sort((a, b) => b.tanggal.localeCompare(a.tanggal)),
-    [hari, presetId, petaBars],
-  )
+
+  const keteranganPerTanggal = useMemo(() => {
+    const peta = new Map<string, Map<string, { skor: number | null; tp1: number | null; sl: number | null }>>()
+    for (const h of hariDimuat ?? []) {
+      const p = h.presets.find((x) => x.preset === presetId)
+      if (!p) continue
+      peta.set(h.tanggal, new Map(p.saham.map((s) => [s.kode, { skor: s.skor, tp1: s.tp1, sl: s.sl }])))
+    }
+    return peta
+  }, [hariDimuat, presetId])
+
+  const perHari = useMemo(() => {
+    if (!jejak) return []
+    return tanggalPreset(jejak, presetId, JENDELA_HARI[jendela]).map((t) => ({
+      tanggal: t.tanggal,
+      backtest: t.kelasBukti === 'REKONSTRUKSI',
+      jendelaTutup: t.jendelaTutup,
+      hariBursaTersedia: t.hariBursaTersedia,
+      era: t.era,
+      def: t.p.definisi,
+      baris: barisSahamDariHakim(t.tanggal, t.p, keteranganPerTanggal.get(t.tanggal) ?? new Map()),
+    }))
+  }, [jejak, presetId, jendela, keteranganPerTanggal])
+
   const live = perHari.filter((h) => !h.backtest)
   const backtest = perHari.filter((h) => h.backtest)
   const barisLive = live.flatMap((h) => h.baris)
+  const masihBerjalan = live.filter((h) => !h.jendelaTutup)
 
-  if (hariDimuat === null) {
+  if (jejak === undefined) {
     return (
       <div className="panel">
         <div className="panel-b" style={{ textAlign: 'center', padding: '30px 20px' }}>
-          <p className="lbl">Memuat jejak rekomendasi…</p>
+          <p className="lbl">Memuat penilaian jejak…</p>
         </div>
       </div>
     )
+  }
+  if (jejak === null) {
+    return (
+      <div className="panel">
+        <div className="panel-b" style={{ padding: '20px' }}>
+          <p className="muted">Berkas penilaian belum tersedia. Angka win rate sengaja TIDAK dihitung di
+            peramban sebagai gantinya — satu metrik satu sumber; menghitung cadangan di sini persis
+            kebiasaan yang baru saja dihapus.</p>
+        </div>
+      </div>
+    )
+  }
+
+  /** Sel angka untuk definisi H+1 (dua kolom hasil + satu win rate). */
+  const selH1 = (r: RingkasH1) => (
+    <>
+      <td className="r num up">{r.menang}</td>
+      <td className="r num dn">{r.kalah}</td>
+      <td className="r num muted">—</td>
+      <td className="r num muted">{r.takTerukur}</td>
+      <td className="r num">{r.winRate == null ? <span className="muted">—</span> : `${r.winRate.toFixed(1)}%`}</td>
+      <td className="r num muted">—</td>
+    </>
+  )
+  /** Sel angka TP/SL — DUA win rate berdampingan (keputusan 4 hakim). */
+  const selTpSl = (r: RingkasTpSl) => (
+    <>
+      <td className="r num up">{r.menang}</td>
+      <td className="r num dn">{r.kalah}</td>
+      <td className="r num muted">{r.tak_masuk}</td>
+      <td className="r num muted">{r.gantung}</td>
+      <td className="r num">{r.menangDariTuntas == null ? <span className="muted">—</span> : `${r.menangDariTuntas.toFixed(1)}%`}</td>
+      <td className="r num">{r.menangDariSemua == null ? <span className="muted">—</span> : `${r.menangDariSemua.toFixed(1)}%`}</td>
+    </>
+  )
+
+  const ringkasDef = {
+    openTinggi: jumlahH1(live.map((h) => h.def.openTinggi)),
+    tutupTutup: jumlahH1(live.map((h) => h.def.tutupTutup)),
+    tpSl: jumlahTpSl(live.map((h) => h.def.tpSl)),
   }
 
   return (
@@ -654,6 +711,7 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
           <div className="grup-k grup-kanan">
             <span className="muted scr-jumlah">
               {live.length} tanggal rekomendasi{backtest.length ? ` + ${backtest.length} backtest` : ''}
+              {masihBerjalan.length ? ` · ${masihBerjalan.length} masih berjalan` : ''}
             </span>
           </div>
         </div>
@@ -668,7 +726,6 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
       )}
 
       {(live.length > 0 || backtest.length > 0) && (<>
-        {/* Definisi menang — tercetak di layar, bukan cuma title (spek §Tugas C.3). */}
         <div className="panel-b" style={{ paddingTop: 0 }}>
           <table className="tbl scr-tbl">
             <thead>
@@ -676,43 +733,45 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
                 <th>Definisi menang</th>
                 <th className="r">Menang</th>
                 <th className="r">Kalah</th>
-                <th className="r">Tak tentu</th>
-                <th className="r">Tak terukur</th>
-                <th className="r">Win rate</th>
+                <th className="r">Tak masuk</th>
+                <th className="r">Masih berjalan</th>
+                <th className="r">Dari tuntas</th>
+                <th className="r">Dari semua</th>
               </tr>
             </thead>
             <tbody>
-              {DEFINISI_OPSI.map((d) => {
-                const ag = agregatWinRate(barisLive.map((b) => ambilHasil(b, d.id)))
-                return (
-                  <tr key={d.id}>
-                    <td>
-                      <button
-                        type="button" className={`chip-t${definisi === d.id ? ' on' : ''}`}
-                        style={{ marginRight: 8 }} onClick={() => setDefinisi(d.id)}
-                      >
-                        {d.label}
-                      </button>
-                    </td>
-                    <RingkasAngka ag={ag} />
-                  </tr>
-                )
-              })}
+              {DEFINISI_OPSI.map((d) => (
+                <tr key={d.id}>
+                  <td>
+                    <button
+                      type="button" className={`chip-t${definisi === d.id ? ' on' : ''}`}
+                      style={{ marginRight: 8 }} onClick={() => setDefinisi(d.id)}
+                    >
+                      {d.label}
+                    </button>
+                  </td>
+                  {d.id === 'tpSl' ? selTpSl(ringkasDef.tpSl) : selH1(d.id === 'openTinggi' ? ringkasDef.openTinggi : ringkasDef.tutupTutup)}
+                </tr>
+              ))}
             </tbody>
           </table>
+          {ringkasDef.tpSl.ambigu > 0 && (
+            <p className="muted" style={{ margin: '6px 0 0', fontSize: 12 }}>
+              <b>{ringkasDef.tpSl.ambigu}</b> sinyal menyentuh target DAN batas rugi di hari yang sama —
+              dihitung <b>kalah</b>. Data harian tak menyimpan urutannya, jadi memilih menang di situ berarti
+              memilih asumsi yang menguntungkan diri sendiri di setiap kasus yang ambigu.
+            </p>
+          )}
+
           {/* Dua ERA sampel, TIDAK dijumlahkan jadi satu angka. Sampai 31 Agu
-              2026 pemutus peringkat preset adalah ABJAD — 4 dari 5 preset
-              terbaca alfabetis (cacat #2 audit win rate), jadi "20 dari N"
-              yang tersimpan bukan pilihan aturan yang sekarang dipakai. Sejak
-              1 Sep pemutusnya nilai transaksi. Menggabungkan keduanya membuat
-              win rate hari ini mengukur aturan yang sudah tak ada; memisahkan
-              keduanya membuat era lama tetap terbaca sebagai apa adanya —
-              catatan yang sah, dengan pemutus yang berbeda. */}
+              2026 pemutus peringkat preset adalah ABJAD (cacat #2 audit win
+              rate), sejak 1 Sep pemutusnya nilai transaksi. Menggabungkan
+              keduanya membuat win rate hari ini mengukur aturan yang sudah
+              tak ada. */}
           {(() => {
-            const ERA_BATAS = '2026-08-31'
             const era = [
-              { id: 'abjad', label: 's.d. 31 Agu — pemutus abjad', hari: live.filter((h) => h.tanggal <= ERA_BATAS) },
-              { id: 'nilai', label: 'sejak 1 Sep — pemutus nilai transaksi', hari: live.filter((h) => h.tanggal > ERA_BATAS) },
+              { id: 'abjad', label: 's.d. 31 Agu — pemutus abjad', hari: live.filter((h) => h.era === 'abjad') },
+              { id: 'nilai', label: 'sejak 1 Sep — pemutus nilai transaksi', hari: live.filter((h) => h.era === 'nilai-transaksi') },
             ].filter((e) => e.hari.length > 0)
             if (era.length < 2) return null
             return (
@@ -723,22 +782,22 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
                     <th className="r">Tanggal</th>
                     <th className="r">Menang</th>
                     <th className="r">Kalah</th>
-                    <th className="r">Tak tentu</th>
-                    <th className="r">Tak terukur</th>
-                    <th className="r">Win rate</th>
+                    <th className="r">Tak masuk</th>
+                    <th className="r">Masih berjalan</th>
+                    <th className="r">Dari tuntas</th>
+                    <th className="r">Dari semua</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {era.map((e) => {
-                    const ag = agregatWinRate(e.hari.flatMap((h) => h.baris).map((b) => ambilHasil(b, definisi)))
-                    return (
-                      <tr key={e.id}>
-                        <td>{e.label}</td>
-                        <td className="r">{e.hari.length}</td>
-                        <RingkasAngka ag={ag} />
-                      </tr>
-                    )
-                  })}
+                  {era.map((e) => (
+                    <tr key={e.id}>
+                      <td>{e.label}</td>
+                      <td className="r">{e.hari.length}</td>
+                      {definisi === 'tpSl'
+                        ? selTpSl(jumlahTpSl(e.hari.map((h) => h.def.tpSl)))
+                        : selH1(jumlahH1(e.hari.map((h) => h.def[definisi])))}
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             )
@@ -747,7 +806,7 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
             {DEFINISI_OPSI.map((d) => <li key={d.id}><b>{d.label}</b> — {d.kalimat}</li>)}
           </ul>
           {(() => {
-            const rata = rataPersen(barisLive.map((b) => b.closeClosePersen))
+            const rata = rataPersenTertimbang(live.map((h) => h.def.tutupTutup))
             return rata != null && (
               <p className="muted" style={{ margin: '6px 0 0', fontSize: 12 }}>
                 Rata-rata perubahan Tutup-ke-Tutup H+1 (yang terukur): <b className={rata >= 0 ? 'up' : 'dn'}>{rata >= 0 ? '+' : ''}{rata.toFixed(2)}%</b>
@@ -765,22 +824,27 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
                 <th className="r">Saham</th>
                 <th className="r">Menang</th>
                 <th className="r">Kalah</th>
-                <th className="r">Tak tentu</th>
-                <th className="r">Tak terukur</th>
-                <th className="r">Win rate</th>
+                <th className="r">Tak masuk</th>
+                <th className="r">Masih berjalan</th>
+                <th className="r">Dari tuntas</th>
+                <th className="r">Dari semua</th>
               </tr>
             </thead>
             <tbody>
-              {live.map((h) => {
-                const ag = agregatWinRate(h.baris.map((b) => ambilHasil(b, definisi)))
-                return (
-                  <tr key={h.tanggal}>
-                    <td>{h.tanggal}</td>
-                    <td className="r num">{h.baris.length}</td>
-                    <RingkasAngka ag={ag} />
-                  </tr>
-                )
-              })}
+              {live.map((h) => (
+                <tr key={h.tanggal}>
+                  <td>
+                    {h.tanggal}
+                    {!h.jendelaTutup && (
+                      <span className="muted" style={{ fontSize: 11, marginLeft: 6 }}>
+                        jendela {h.hariBursaTersedia}/{jejak.horizon}
+                      </span>
+                    )}
+                  </td>
+                  <td className="r num">{h.baris.length}</td>
+                  {definisi === 'tpSl' ? selTpSl(h.def.tpSl) : selH1(h.def[definisi])}
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -790,8 +854,8 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
 
         {/* Menang/Kalah — sama besar, dua tabel identik berdampingan (spek §Tugas C.2). */}
         <div className="panel-b" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
-          <DaftarSaham judul="Menang" baris={barisLive.filter((b) => ambilHasil(b, definisi) === 'menang')} definisi={definisi} />
-          <DaftarSaham judul="Kalah" baris={barisLive.filter((b) => ambilHasil(b, definisi) === 'kalah')} definisi={definisi} />
+          <DaftarSaham judul="Menang" baris={barisLive.filter((b) => ambilVonis(b, definisi) === 'menang')} definisi={definisi} />
+          <DaftarSaham judul="Kalah" baris={barisLive.filter((b) => ambilVonis(b, definisi) === 'kalah')} definisi={definisi} />
         </div>
 
         {/* Backtest — dipisah visual + peringatan survivorship (spek §Tugas C.3). */}
@@ -810,22 +874,20 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
                   <th className="r">Saham</th>
                   <th className="r">Menang</th>
                   <th className="r">Kalah</th>
-                  <th className="r">Tak tentu</th>
-                  <th className="r">Tak terukur</th>
-                  <th className="r">Win rate</th>
+                  <th className="r">Tak masuk</th>
+                  <th className="r">Masih berjalan</th>
+                  <th className="r">Dari tuntas</th>
+                  <th className="r">Dari semua</th>
                 </tr>
               </thead>
               <tbody>
-                {backtest.map((h) => {
-                  const ag = agregatWinRate(h.baris.map((b) => ambilHasil(b, definisi)))
-                  return (
-                    <tr key={h.tanggal}>
-                      <td>{h.tanggal}</td>
-                      <td className="r num">{h.baris.length}</td>
-                      <RingkasAngka ag={ag} />
-                    </tr>
-                  )
-                })}
+                {backtest.map((h) => (
+                  <tr key={h.tanggal}>
+                    <td>{h.tanggal}</td>
+                    <td className="r num">{h.baris.length}</td>
+                    {definisi === 'tpSl' ? selTpSl(h.def.tpSl) : selH1(h.def[definisi])}
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -834,35 +896,22 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
 
       <div className="asal">
         Sumber: jejak rekomendasi ditulis sekali tiap sore dari skor preset hari itu (harga penutupan, target,
-        batas rugi) — berkas yang sudah ditulis TIDAK diedit lagi, supaya rapor menang/kalahnya jujur terhadap
-        apa yang sungguh direkomendasikan saat itu. Preset adalah <b>penyaring</b>, bukan peringkat kelayakan
-        beli. Win rate dihitung hanya dari hasil yang <b>terukur</b> (menang+kalah) — "tak tentu"/"tak terukur"
-        dikeluarkan dari pembagi, bukan dihitung sebagai kalah. Tab ini alat bantu edukasi, bukan rekomendasi
+        batas rugi) — berkas yang sudah ditulis TIDAK diedit lagi. Menang/kalahnya <b>dinilai di sisi panen</b>,
+        bukan dihitung ulang di peramban, supaya satu metrik tak punya dua kalkulator yang bisa menyimpang.
+        Aturannya: hari sinyal tak ikut dinilai; target dan batas rugi tersentuh di hari yang sama dihitung
+        <b> kalah</b>; sinyal yang harganya tak pernah masuk area beli dihitung <b>tak masuk</b> dan tetap jadi
+        pembagi di kolom "dari semua". Dua win rate dilaporkan berdampingan dan tak pernah satu:
+        <b> dari tuntas</b> memakai pembagi menang+kalah, <b>dari semua</b> memakai seluruh sinyal. Preset
+        adalah <b>penyaring</b>, bukan peringkat kelayakan beli. Tab ini alat bantu edukasi, bukan rekomendasi
         investasi.
       </div>
     </div>
   )
 }
 
-/** Sel Menang/Kalah/TakTentu/TakTerukur/WinRate — dipakai tabel ringkasan
- *  definisi & tabel per-tanggal, biar warnanya konsisten (up/dn/muted). */
-function RingkasAngka({ ag }: { ag: AgregatWinRate }) {
-  return (
-    <>
-      <td className="r num up">{ag.menang}</td>
-      <td className="r num dn">{ag.kalah}</td>
-      <td className="r num muted">{ag.takTentu}</td>
-      <td className="r num muted">{ag.takTerukur}</td>
-      <td className="r num">
-        {ag.winRatePct == null ? <span className="muted">—</span> : `${ag.winRatePct.toFixed(1)}%`}
-      </td>
-    </>
-  )
-}
-
 /** Satu daftar (Menang ATAU Kalah) — SAMA bentuk tabel untuk keduanya supaya
  *  "kalah" tak pernah terlihat lebih kecil/dikubur (spek §Tugas C.3). */
-function DaftarSaham({ judul, baris, definisi }: { judul: string; baris: HasilSahamRekomendasi[]; definisi: DefinisiId }) {
+function DaftarSaham({ judul, baris, definisi }: { judul: string; baris: BarisJejakSaham[]; definisi: DefinisiId }) {
   return (
     <div>
       <p className="muted" style={{ margin: '0 0 4px', fontWeight: 600 }}>{judul} ({baris.length})</p>
@@ -873,7 +922,7 @@ function DaftarSaham({ judul, baris, definisi }: { judul: string; baris: HasilSa
               <th>Tanggal</th>
               <th>Kode</th>
               <th className="r">Skor</th>
-              {definisi === 'closeClose' && <th className="r">%</th>}
+              {definisi === 'tutupTutup' && <th className="r">%</th>}
               {definisi === 'tpSl' && <th className="r">TP1</th>}
               {definisi === 'tpSl' && <th className="r">SL</th>}
             </tr>
@@ -887,9 +936,9 @@ function DaftarSaham({ judul, baris, definisi }: { judul: string; baris: HasilSa
                 <td>{b.tanggal}</td>
                 <td><Link to={`/grafik?kode=${b.kode}`} className="tick">{b.kode}</Link></td>
                 <td className="r num">{b.skor == null ? '—' : b.skor.toFixed(2)}</td>
-                {definisi === 'closeClose' && (
-                  <td className={`r num ${b.closeClosePersen == null ? '' : b.closeClosePersen >= 0 ? 'up' : 'dn'}`}>
-                    {b.closeClosePersen == null ? '—' : `${b.closeClosePersen >= 0 ? '+' : ''}${b.closeClosePersen.toFixed(2)}%`}
+                {definisi === 'tutupTutup' && (
+                  <td className={`r num ${b.persen == null ? '' : b.persen >= 0 ? 'up' : 'dn'}`}>
+                    {b.persen == null ? '—' : `${b.persen >= 0 ? '+' : ''}${b.persen.toFixed(2)}%`}
                   </td>
                 )}
                 {definisi === 'tpSl' && <td className="r num">{b.tp1 == null ? '—' : b.tp1.toLocaleString('id-ID')}</td>}
