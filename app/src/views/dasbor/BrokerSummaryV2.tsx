@@ -227,14 +227,20 @@ export function BrokerSummaryV2() {
               </span>
             </div>
             <span className="pemisah-v" aria-hidden="true" />
+            {/* Label "Cakupan" dibuang 5 Sep 2026 (Johan: "jelas2 itu tombol
+                kenapa ada teks nya"): kedua dropdown menampilkan namanya
+                sendiri — "All Investor" dan "Regular". `ariaLabel` tetap ada,
+                jadi pembaca layar tak kehilangan apa pun. */}
             <div className="grup-k">
-              <span className="grup-lbl">Cakupan</span>
               <Dropdown opsi={INVESTOR_OPSI} nilai={investor} onGanti={setInvestor} ariaLabel="Investor" />
               <Dropdown opsi={MARKET_OPSI} nilai={pasar} onGanti={setPasar} ariaLabel="Market" />
             </div>
             <span className="pemisah-v" aria-hidden="true" />
             <div className="grup-k">
-              <span className="grup-lbl">Ukuran</span>
+              {/* Label "Ukuran" dibuang — dan ia bukan cuma berlebih, ia
+                  keliru: Net/Gross bukan ukuran melainkan jenis transaksi.
+                  Satu label yang memayungi dua hal berbeda menamai keduanya
+                  dengan salah satunya. */}
               <PemilihRentang opsi={MODE_OPSI} nilai={mode} onGanti={setMode} ariaLabel="Net atau Gross" />
               <PemilihRentang opsi={UKURAN_OPSI} nilai={ukuran} onGanti={setUkuran} ariaLabel="Ukuran" />
             </div>

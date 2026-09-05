@@ -454,9 +454,13 @@ function PanelPresetWhale({ presetAktif, presetId, setPresetId, hasil, petaBaris
             jumlah hasil di grup-kanan. Teks keterangan tetap di luar bilah,
             bukan kendali. */}
         <div className="bilah-kendali">
+          {/* Label "Preset" dibuang: tabnya sendiri sudah bernama
+              "Preset Whale" / "Riwayat & Win Rate", dan chipnya menamai
+              strateginya masing-masing. Label "Jendela" di sebelahnya
+              TETAP — "1 Minggu · 1 Bulan · 3 Bulan" tanpa label terbaca
+              sebagai rentang data, bukan panjang jendela penilaian. */}
           <div className="grup-k">
-            <span className="grup-lbl">Preset</span>
-            <div className="tabs" role="tablist">
+            <div className="tabs" role="tablist" aria-label="Preset">
               {PRESET_WHALE.map((p) => (
                 <button
                   key={p.id} type="button" role="tab" aria-selected={presetId === p.id}
@@ -623,9 +627,13 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
     <div className="panel">
       <div className="panel-b scr-alat">
         <div className="bilah-kendali">
+          {/* Label "Preset" dibuang: tabnya sendiri sudah bernama
+              "Preset Whale" / "Riwayat & Win Rate", dan chipnya menamai
+              strateginya masing-masing. Label "Jendela" di sebelahnya
+              TETAP — "1 Minggu · 1 Bulan · 3 Bulan" tanpa label terbaca
+              sebagai rentang data, bukan panjang jendela penilaian. */}
           <div className="grup-k">
-            <span className="grup-lbl">Preset</span>
-            <div className="tabs" role="tablist">
+            <div className="tabs" role="tablist" aria-label="Preset">
               {PRESET.map((p) => (
                 <button
                   key={p.id} type="button" role="tab" aria-selected={presetId === p.id}

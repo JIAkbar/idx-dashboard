@@ -733,8 +733,12 @@ export default function WhalesPapan() {
         {/* Pemilih TF Harian/4H/1H DICABUT (Johan 27 Agu: "di hapus saja ini
             ... cukup pakai harian dlu") — mode intraday tetap di kode (tf
             selalu 'harian'), tinggal mengembalikan tombol ini bila diminta. */}
+        {/* Label "Lapisan" dibuang: kelima chipnya menamai lapisannya
+            sendiri (Pilih area · Garis AVG · Profil · Bubble · Footprint).
+            Label "Tampilan" di kelompok sebelahnya TETAP — chipnya berbunyi
+            "Grid · 30% · Auto", dan angka telanjang tanpa label tak berarti
+            apa-apa. */}
         <div className="grup-k">
-        <span className="grup-lbl">Lapisan</span>
         <button
           type="button"
           className={`chip-t${modeSeleksi ? ' on' : ''}`}
