@@ -57,6 +57,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from panen_ohlc import JEDA, Ditolak, ambil, ke_baris
+from gabung_ohlc_stockbit import padatkan_rentang
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -69,6 +70,10 @@ HARIAN = AKAR / "data-idx" / "json" / "ihsg_harian.json"
 RINGKAS = AKAR / "data-idx" / "json" / "ihsg_ohlc_ringkas.json"
 HARI_RINGKAS = 250
 SIMBOL = "%5EJKSE"
+
+# Yahoo melaporkan volume INDEKS dalam lot; bursa dan sumber harga memakai
+# lembar. Rasionya terukur tepat 100,00 (lihat jahit_ihsg).
+LOT_KE_LEMBAR = 100
 MULAI = datetime(1990, 1, 1, tzinfo=timezone.utc)
 
 
@@ -97,7 +102,16 @@ def tarik_penuh() -> list[list]:
     return baris
 
 
-def tulis(baris: list[list]) -> None:
+def _kode_lama(tgl: str, rentang: list[list] | None) -> str | None:
+    """Kode sumber sebuah tanggal menurut penanda LAMA, atau None."""
+    for dari, sampai, kode in (rentang or []):
+        if dari <= tgl <= sampai:
+            return kode
+    return None
+
+
+def tulis(baris: list[list], sumber_lama: list[list] | None = None,
+          tanggal_ditulis: set[str] | None = None) -> None:
     OHLC.parent.mkdir(parents=True, exist_ok=True)
     # Penanda sumber per bar. Skrip ini memanen SATU penyedia saja, jadi seluruh
     # bar yang ditulisnya memang berasal dari penyedia itu — dan ia menyatakannya,
@@ -115,9 +129,14 @@ def tulis(baris: list[list]) -> None:
     # ditimpa penyedia ini, jadi penanda lama akan mengklaim asal yang salah
     # dengan percaya diri. Yang benar: tiap penulis menyatakan kebenaran tentang
     # apa yang IA tulis. Penjahit akan memperhalusnya lagi saat ia jalan.
+    def _kode(tgl: str) -> str:
+        if tanggal_ditulis is not None and tgl in tanggal_ditulis:
+            return "yh"
+        return _kode_lama(tgl, sumber_lama) or "yh"
+
     OHLC.write_text(json.dumps({
         "kode": "IHSG", "mulai": baris[0][0], "akhir": baris[-1][0], "n": len(baris), "d": baris,
-        "sumber_bar": [[baris[0][0], baris[-1][0], "yh"]],
+        "sumber_bar": padatkan_rentang(baris, _kode),
     }, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
     HARIAN.write_text(json.dumps({
@@ -258,6 +277,8 @@ def main() -> None:
         return
 
     lama = json.loads(OHLC.read_text(encoding="utf-8"))["d"] if OHLC.exists() else []
+    sumber_lama = (json.loads(OHLC.read_text(encoding="utf-8")).get("sumber_bar")
+                   if OHLC.exists() else None)
     try:
         baru = tarik_penuh() if (arg.penuh or not lama) else ke_baris(ambil(SIMBOL, None, None, "5d"))
     except Ditolak as e:
@@ -266,8 +287,18 @@ def main() -> None:
     if not baru:
         print("seri kosong — tidak ada yang ditulis.")
         sys.exit(1)
-    gabungan = gabung(lama, baru)
-    tulis(gabungan)
+    # Volume Yahoo untuk INDEKS dilaporkan dalam lot; seluruh berkas ini
+    # bersatuan lembar, jadi konversinya di sini - di titik masuk, sekali.
+    #
+    # Dulu konversi ini dikerjakan penjahit, dan itulah akar kerusakan yang
+    # ditemukan 5 Sep 2026: penjahit membaca berkas yang ditulisnya sendiri,
+    # jadi tiap jalan mengali 100 LAGI. Terukur 551 bar (1995-2006) menggembung
+    # sampai 61 digit - 24 Juli 2001 tercatat 2,3 x 10^59 lembar. Mengonversi
+    # di titik masuk membuat pengaliannya mustahil menumpuk: bar yang sudah ada
+    # di berkas tak pernah disentuh lagi oleh siapa pun.
+    baru_lembar = [[r[0], r[1], r[2], r[3], r[4], (r[5] or 0) * LOT_KE_LEMBAR] for r in baru]
+    gabungan = gabung(lama, baru_lembar)
+    tulis(gabungan, sumber_lama=sumber_lama, tanggal_ditulis={r[0] for r in baru_lembar})
 
     n = isi_cadangan_index(gabungan)
     print(f"\ncadangan index.json: {n} hari ditambal dari Yahoo" if n else "\ncadangan index.json: tak ada yang perlu ditambal")

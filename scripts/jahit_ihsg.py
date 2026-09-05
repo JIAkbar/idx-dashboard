@@ -99,9 +99,13 @@ def jahit(bar_yahoo: list[list], peta_sb: dict[str, list]) -> tuple[list[list], 
     hasil: dict[str, list] = {}
     dari_yahoo = dari_sb = 0
     for r in bar_yahoo:
-        b = list(r)
-        b[5] = (b[5] or 0) * LOT_KE_LEMBAR
-        hasil[r[0]] = b
+        # TIDAK ada konversi satuan di sini lagi. Sampai 5 Sep 2026 baris ini
+        # mengali volume dengan 100 (lot -> lembar), dan karena `bar_yahoo`
+        # dibaca dari berkas yang ditulis fungsi ini sendiri, pengaliannya
+        # menumpuk tiap jalan: 551 bar (1995-2006) menggembung sampai 61 digit.
+        # Konversinya pindah ke titik masuk (`panen_ihsg`), jadi berkas ini
+        # bersatuan lembar seluruhnya dan penjahitan jadi benar-benar idempoten.
+        hasil[r[0]] = list(r)
         dari_yahoo += 1
     for tgl, b in peta_sb.items():
         if tgl in hasil:
@@ -128,12 +132,22 @@ def swauji() -> int:
     baris, st = jahit(y, sb)
     assert len(baris) == 3, "union tak boleh menghilangkan bar"
     assert baris[1][5] == 1125350016, "volume Stockbit harus menang"
-    assert baris[2][5] == 22755300 * 100, "bar Yahoo wajib bertahan DAN diseragamkan ke lembar"
+    assert baris[2][5] == 22755300, "bar Yahoo wajib bertahan APA ADANYA (sudah lembar)"
     assert st["volume_nol_sebelum"] == 2 and st["volume_nol_sesudah"] == 1
-    # idempoten diuji dari SUMBER yang sama, bukan dari hasil — menjahit ulang
-    # keluaran akan mengali 100 lagi, dan itu memang benar: jangkarnya sumber.
-    ulang, _ = jahit(y, sb)
-    assert ulang == baris, "jahit dari sumber yang sama harus menghasilkan sama"
+
+    # IDEMPOTENSI diuji pada jalur yang main() BENAR-BENAR pakai: menjahit
+    # KELUARAN, bukan menjahit sumber yang sama dua kali.
+    #
+    # Uji lama melakukan yang kedua (`jahit(y, sb)` dua kali dari `y` yang sama)
+    # dan karena itu HIJAU selama berbulan-bulan sementara berkas produksi
+    # menggembung 100x tiap jalan. Komentarnya bahkan menuliskan cacatnya lalu
+    # membenarkannya: "menjahit ulang keluaran akan mengali 100 lagi, dan itu
+    # memang benar: jangkarnya sumber" - padahal jangkarnya memang keluaran.
+    # Uji yang tak pernah menjalankan jalur produksinya bukan penjaga.
+    b2, _ = jahit(baris, sb)
+    assert b2 == baris, "menjahit KELUARAN harus memberi hasil sama - ini jalur main()"
+    b3, _ = jahit(b2, sb)
+    assert b3 == baris, "jalan ketiga pun harus sama"
     # Penanda wajib menutup SELURUH deret dan setuju dengan aturan jahitnya:
     # tanggal yang ada di Stockbit menang, sisanya Yahoo.
     assert st["sumber_bar"] == [["1999-12-30", "1999-12-30", "yh"],
@@ -141,7 +155,7 @@ def swauji() -> int:
                                 ["2001-07-24", "2001-07-24", "yh"]], st["sumber_bar"]
     assert sum(1 for _ in baris) == sum(
         1 for d, _, _ in st["sumber_bar"] for _ in [d]), "tiap bar wajib berpenanda"
-    print("swauji OK — 7/7 assert lulus")
+    print("swauji OK — 8/8 assert lulus")
     return 0
 
 
