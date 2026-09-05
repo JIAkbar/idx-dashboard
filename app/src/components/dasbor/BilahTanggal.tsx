@@ -50,32 +50,47 @@ export function BilahTanggal({ tanggalTersedia, tanggalAktif, onPilih, onRentang
   // Pil yang menyala = preset yang persis menghasilkan rentang aktif; rentang
   // hasil dua klik di kalender tak cocok dengan preset mana pun → "Kustom",
   // yang hanya muncul saat itu supaya daftar pil tak menyusut/melar diam-diam.
-  type Pil = 'hari' | PresetRentang | 'kustom'
+  //
+  // TIDAK ADA pil "1 Hari" (keputusan Johan 5 Sep 2026, artifact "Empat Bilah
+  // Kendali PAPAN", opsi A: *"kalender jadi penentu, pil jadi pintasan"*).
+  // Keadaan satu-hari itu keadaan bawaan, dan kalender di sebelahnya sudah
+  // menyatakannya; pil itu juga berdiri persis di samping tombol "Hari ini"
+  // milik DatePicker, dua kata nyaris sama untuk dua hal berbeda.
+  //
+  // Jalan KEMBALI dari rentang ke satu hari tetap ada dua, dan keduanya lewat
+  // kalender: klik satu tanggal di dalamnya (`keHari` membuang rentangnya),
+  // atau tombol "Hari ini" — yang oleh DatePicker memang selalu dirender
+  // selagi rentang aktif, persis supaya jalan keluar itu tak pernah hilang.
+  type Pil = PresetRentang | 'kustom' | 'tak-ada'
   const cocok = rentangAktif
     ? PRESET_RENTANG.find((p) => {
         const r = rentangPreset(tanggalTersedia, rentangAktif.akhir, p.id)
         return r?.mulai === rentangAktif.mulai && r?.akhir === rentangAktif.akhir
       })?.id
     : undefined
-  const pilAktif: Pil = !rentangAktif ? 'hari' : (cocok ?? 'kustom')
-  // "1 Hari", bukan "Hari": pil ini berdiri di sebelah tombol "Hari ini" milik
-  // DatePicker, dan dua kata yang nyaris sama untuk dua hal berbeda (mode
-  // satu-hari vs lompat ke hari terbaru) terbaca sebagai pengulangan. "1 Hari"
-  // juga seirama dengan "1 Minggu · 1 Bulan · 3 Bulan" — semuanya durasi.
+  // 'tak-ada' sengaja BUKAN salah satu opsi: tanpa rentang, tak ada pil yang
+  // menyala sama sekali — itu yang benar, karena yang berlaku saat itu tanggal
+  // di kalender, bukan durasi.
+  const pilAktif: Pil = !rentangAktif ? 'tak-ada' : (cocok ?? 'kustom')
   const opsiPil: { id: Pil; label: string }[] = [
-    { id: 'hari', label: '1 Hari' },
     ...PRESET_RENTANG,
     ...(pilAktif === 'kustom' ? [{ id: 'kustom' as const, label: 'Kustom' }] : []),
   ]
 
   function gantiPil(id: Pil) {
     if (!onRentang) return
-    if (id === 'hari') { onRentang(null); return }
-    if (id === 'kustom') return
+    if (id === 'kustom' || id === 'tak-ada') return
     onRentang(rentangPreset(tanggalTersedia, jangkar, id))
   }
 
-  return (
+  // Jumlah hari BURSA di rentang, bukan selisih kalender: rentang 3 bulan
+  // memuat ±62 hari berdata, dan angka kalender (91) akan membuat pembaca
+  // mengira ada hari yang hilang.
+  const hariBursa = rentangAktif
+    ? tanggalTersedia.filter((t) => t.date_iso >= rentangAktif.mulai && t.date_iso <= rentangAktif.akhir).length
+    : 0
+
+  const bilah = (
     <div className="bilah-kendali bt-bilah">
       <div className="grup-k">
         {/* Stepper ‹ › TIDAK dipasang di sini: DatePicker sudah membawanya
@@ -105,6 +120,26 @@ export function BilahTanggal({ tanggalTersedia, tanggalAktif, onPilih, onRentang
           <PemilihRentang opsi={opsiPil} nilai={pilAktif} onGanti={gantiPil} ariaLabel="Rentang waktu" />
         </div>
       )}
+    </div>
+  )
+
+  if (!rentangAktif) return bilah
+  return (
+    <div className="bt-tumpuk">
+      {bilah}
+      {/* Keterangan hanya muncul selagi rentang aktif — kalimat yang selalu
+          ada berhenti dibaca, dan saat satu hari tak ada yang perlu
+          diterangkan: tanggalnya sudah tertulis di kalender.
+
+          Kalimat "kolom YTD dihitung bursa" dipasang hanya pada preset
+          sejak-1-Januari, satu-satunya keadaan di mana angka pil dan angka
+          kolom bisa tertukar. Dua halaman yang merender pil ini (Sektor &
+          Indeks, Top Stocks) sama-sama punya kolom itu — diperiksa, bukan
+          diasumsikan. */}
+      <p className="bt-catatan">
+        {hariBursa} hari bursa
+        {cocok === 'ytd' && ' · kolom YTD di tabel tetap angka resmi bursa, dihitung terpisah'}
+      </p>
     </div>
   )
 }

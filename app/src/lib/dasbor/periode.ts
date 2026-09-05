@@ -84,6 +84,17 @@ export const LABEL_RENTANG = {
   wtd: 'WTD',
   mtd: 'MTD',
   ytd: 'YTD',
+  // Rentang yang mulai di hari berdata pertama tahun berjalan — HITUNGAN yang
+  // sama dengan `ytd`, KATA yang sengaja berbeda (keputusan Johan 5 Sep 2026,
+  // artifact "Empat Bilah Kendali PAPAN", opsi A).
+  //
+  // Sebabnya tabrakan nama, bukan selera: Sektor & Indeks dan Top Stocks
+  // sama-sama memajang kolom "YTD" berisi angka RESMI bursa, sementara pil di
+  // bilah atasnya menghitung sendiri dari harga di tanggal mulai. Dua angka
+  // berbeda dengan satu nama di satu layar — dan itu sudah pernah salah
+  // dibaca (lihat kasus khusus YTD yang dijatuhkan tinjauan 2 Sep). Kata
+  // "YTD" sekarang milik kolom resmi saja.
+  sejakJan: 'Sejak 1 Jan',
   y1: '1 Tahun',
   y2: '2 Tahun',
   y3: '3 Tahun',
@@ -127,8 +138,13 @@ export const LABEL_RENTANG_RINGKAS: Partial<Record<KunciRentang, string>> = {
 
 export type PresetRentang = 'w1' | 'b1' | 'b3' | 'ytd'
 
+/** Id-nya tetap `ytd` — yang berganti kata layarnya, bukan hitungannya, jadi
+ *  tak ada state tersimpan atau tes yang perlu ikut berpindah. */
+const KATA_PRESET: Record<PresetRentang, KunciRentang> =
+  { w1: 'w1', b1: 'b1', b3: 'b3', ytd: 'sejakJan' }
+
 export const PRESET_RENTANG: { id: PresetRentang; label: string }[] =
-  (['w1', 'b1', 'b3', 'ytd'] as const).map((id) => ({ id, label: LABEL_RENTANG[id] }))
+  (['w1', 'b1', 'b3', 'ytd'] as const).map((id) => ({ id, label: LABEL_RENTANG[KATA_PRESET[id]] }))
 
 
 const HARI_PRESET: Record<Exclude<PresetRentang, 'ytd'>, number> = { w1: 7, b1: 30, b3: 91 }

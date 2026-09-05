@@ -220,25 +220,48 @@ export function GrupKonglomerat() {
 
   return (
     <section className="panel">
+      {/* Kepala menyimpan NAMA dan CAKUPAN saja; kendali turun ke bilahnya
+          sendiri di dalam badan panel — keputusan Johan 5 Sep 2026 (artifact
+          "Empat Bilah Kendali PAPAN", opsi A).
+
+          Sebelumnya satu baris kepala memikul enam benda sekaligus: judul,
+          tiga tombol mode, tiga pil rentang, tanggal harga, legenda tiga
+          warna, dan catatan jumlah grup. Di ponsel keenamnya jadi empat baris
+          sebelum satu kartu pun terlihat — dan bentuknya menyimpang dari
+          sistem tata yang sudah dipakai 21 halaman lain, yang menaruh kendali
+          di `.bilah-kendali` di bawah judul, bukan di dalam kepala. */}
       <div className="panel-h">
         <span className="lbl">Grup Konglomerat</span>
-        <PemilihRentang opsi={OPSI_MODE} nilai={mode} onGanti={setMode} ariaLabel="Mode tampilan grup" />
-        {mode !== 'deret'
-          ? <PemilihRentang opsi={OPSI_RENTANG_GRUP} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang kinerja harga anggota grup" />
-          : <PemilihRentang opsi={OPSI_RENTANG_DERET} nilai={rentangDeret} onGanti={setRentangDeret} ariaLabel="Rentang deret kinerja grup" />}
-        {mode === 'kartu' && data.harga_per && (
-          <span className="gk-tgl-harga">
-            harga per tutup {new Date(`${data.harga_per}T12:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
-          </span>
-        )}
-        {mode === 'kartu' && (
-          <span className="gk-legenda" aria-hidden="true">
-            <i className="naik" /> Naik <i className="nol" /> Datar <i className="turun" /> Turun
-          </span>
-        )}
         <span className="v-note">{urut.length} grup · diturunkan dari kepemilikan KSEI ≥{data.ambang_pct}%</span>
       </div>
-      <div className="panel-b gk-isi">
+      <div className="panel-b">
+        <div className="gk-alat">
+        <div className="bilah-kendali">
+          <div className="grup-k">
+            <PemilihRentang opsi={OPSI_MODE} nilai={mode} onGanti={setMode} ariaLabel="Mode tampilan grup" />
+          </div>
+          <div className="grup-k">
+            {mode !== 'deret'
+              ? <PemilihRentang opsi={OPSI_RENTANG_GRUP} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang kinerja harga anggota grup" />
+              : <PemilihRentang opsi={OPSI_RENTANG_DERET} nilai={rentangDeret} onGanti={setRentangDeret} ariaLabel="Rentang deret kinerja grup" />}
+          </div>
+          {mode === 'kartu' && (
+            <div className="grup-k grup-kanan">
+              <span className="gk-legenda" aria-hidden="true">
+                <i className="naik" /> Naik <i className="nol" /> Datar <i className="turun" /> Turun
+              </span>
+            </div>
+          )}
+        </div>
+        {/* Tanggal harga menerangkan ISI, bukan kendali — jadi ia duduk di
+            dekat ubinnya, bukan di antara tombol. */}
+        {mode === 'kartu' && data.harga_per && (
+          <p className="gk-tgl-harga gk-alat-catatan">
+            Angka pada ubin adalah harga penutupan {new Date(`${data.harga_per}T12:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}, bukan harga berjalan.
+          </p>
+        )}
+        </div>
+      <div className="gk-isi">
         {urut.map(([nama, g]) => (
           <div className="gk-grup" key={nama}>
             <div className="gk-kepala">
@@ -340,9 +363,14 @@ export function GrupKonglomerat() {
           lebih. Persen pada chip adalah <b>perubahan harga pada rentang terpilih</b> ({OPSI_RENTANG_GRUP.find((o) => o.id === rentang)?.label}), bukan porsi
           kepemilikan — deret kepemilikan KSEI antar-waktu belum tersedia, jadi rentang di sini
           mengukur kinerja harga anggota, bukan pergeseran porsi grup.
-          {mode === 'kartu' && ' Mode Kartu: angka pada ubin adalah harga PENUTUPAN hari bursa terakhir, bukan harga berjalan — rincian broker memang baru terbit sesudah pasar tutup, jadi seluruh kartu ini satu tanggal yang sama. Huruf A adalah net asing dalam miliar rupiah dari rincian enam varian; ubin tanpa A berarti nilainya di bawah 100 juta atau rinciannya belum terbit untuk hari itu.'}
+          {/* Kalimat "harga penutupan, bukan berjalan" TIDAK diulang di sini —
+              ia sudah berdiri sendiri tepat di atas ubinnya sejak kendali
+              dipindah (5 Sep 2026). Yang tinggal di sini cuma yang belum
+              terjawab di sana. */}
+          {mode === 'kartu' && ' Mode Kartu: seluruh kartu memakai satu tanggal yang sama — rincian broker memang baru terbit sesudah pasar tutup. Huruf A adalah net asing dalam miliar rupiah dari rincian enam varian; ubin tanpa A berarti nilainya di bawah 100 juta atau rinciannya belum terbit untuk hari itu.'}
           {mode === 'deret' && ' Mode Deret: indeks kumulatif bobot setara anggota grup dibanding IHSG, rebased 100 di awal rentang — klik legenda untuk menyorot satu garis.'}
         </p>
+      </div>
       </div>
     </section>
   )

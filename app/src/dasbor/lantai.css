@@ -804,6 +804,14 @@
    ambang ini kelompok kanan mengalir biasa, rata kiri seperti yang lain. */
 @container (max-width:1460px){.lantai .bilah-kendali .grup-kanan{margin-left:0}}
 
+/* Bilah tanggal + satu baris keterangan di bawahnya (BilahTanggal, opsi A
+   yang dipilih Johan 5 Sep 2026). Pembungkusnya kolom, bukan margin pada
+   keterangannya: margin bawah bilah dan margin atas keterangan akan bergantung
+   pada siapa tetangganya di tiap halaman, dan keempat halaman menaruhnya di
+   tempat yang berbeda. */
+.lantai .bt-tumpuk{display:flex;flex-direction:column;gap:6px}
+.lantai .bt-catatan{margin:0 2px;font-size:11px;color:var(--text3)}
+
 /* Tata dua kolom 12-grid (9:3) dengan panel kanan KONTEKSTUAL: ada isi =
    kolom penuh, kosong = kolaps jadi strip petunjuk tipis dan kolom kiri
    (chart/tabel) memakai seluruh lebar. minmax(0,…) wajib — kolom auto
@@ -3441,6 +3449,12 @@
    kepala halaman. Keduanya beda bulan, dan tanpa label ini pembaca menyangka
    persentase ubin ikut tanggal kepemilikan. */
 .lantai .gk-tgl-harga { font-family: var(--mono); font-size: 10.5px; color: var(--text3); }
+/* Bilah kendali panel Grup Konglomerat + keterangan tanggal harga di bawahnya
+   (5 Sep 2026, kendali dipindah keluar dari kepala panel). Jaraknya memakai
+   token --j1/--j2 seperti seluruh sistem tata; angka baru di luar itu
+   pelanggaran, bukan kreasi. */
+.lantai .gk-alat { display: flex; flex-direction: column; gap: var(--j1); margin-bottom: var(--j2); }
+.lantai .gk-alat-catatan { margin: 0 2px; }
 /* Catatan sumber bar cadangan (Johan 5 Sep 2026, penanda sumber per bar).
    Kecil dan tenang: ia menandai pengecualian yang jarang muncul (0,1% bar),
    jadi ia tak boleh berebut perhatian dengan angka yang ditandainya. */
