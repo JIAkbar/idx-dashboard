@@ -498,6 +498,17 @@
   border-radius: 3px;
   background: var(--amber-dim);
 }
+/* Warna isi bar = POSISI harga dalam rentangnya (Johan 5 Sep 2026: "bar nya
+   berikan warna dong"). Sepertiga bawah merah, tengah amber, sepertiga atas
+   hijau — satu skema untuk sembilan baris, jadi deretnya terbaca sekilas
+   sebagai "harga sedang di mana", bukan sembilan warna yang harus dihafal.
+
+   Token *-dim yang dipakai, bukan warna penuh: bar ini latar, penanda posisi
+   di atasnya yang harus menang kontras. Ketiganya rgba di atas --bg3, jadi
+   ikut benar di tema terang maupun gelap tanpa aturan kedua. */
+.lantai .dia-rentang-bar b.bawah { background: var(--red-dim); }
+.lantai .dia-rentang-bar b.tengah { background: var(--amber-dim); }
+.lantai .dia-rentang-bar b.atas { background: var(--green-dim); }
 .lantai .dia-rentang-bar i {
   /* Penanda posisi harga sekarang di dalam rentang — segitiga kecil ala
      panel acuan diganti pil tegak: bentuknya tegas di 9px tinggi. */

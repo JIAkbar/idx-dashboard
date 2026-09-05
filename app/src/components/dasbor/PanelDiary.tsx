@@ -296,11 +296,18 @@ export function PanelDiary() {
           {rentang.map((r) => (
             <div className="dia-perf" key={`r-${r.id}`}
               title={r.sumber === 'tutup'
-                ? 'Dari penutupan harian — ekstrem intraday bisa sedikit di luar angka ini'
-                : 'Dari high/low harian'}>
+                ? `${r.id} dihitung dari PENUTUPAN harian — deret sepanjang itu tak menyimpan tertinggi/terendah intraday, jadi ekstrem sebenarnya bisa sedikit di luar angka ini.`
+                : 'Dari tertinggi/terendah harian'}>
               <span className="dia-perf-lbl">{r.id}{r.sumber === 'tutup' ? '·t' : ''}</span>
+              {/* Warna isi bar mengikuti POSISI harga dalam rentangnya, bukan
+                  hiasan (Johan 5 Sep 2026: "bar nya berikan warna dong"):
+                  sepertiga bawah merah = merapat ke terendah, sepertiga atas
+                  hijau = merapat ke tertinggi, tengah amber. Satu skema untuk
+                  semua baris supaya sederet bar bisa dibaca sekilas sebagai
+                  "harga sedang di mana", bukan warna berbeda per baris. */}
               <span className="dia-rentang-bar">
-                <b style={{ width: `${r.posisi}%` }} />
+                <b className={r.posisi < 100 / 3 ? 'bawah' : r.posisi > 200 / 3 ? 'atas' : 'tengah'}
+                  style={{ width: `${r.posisi}%` }} />
                 <i style={{ left: `${r.posisi}%` }} />
               </span>
               <span className="num dia-rentang-nilai">
@@ -308,12 +315,12 @@ export function PanelDiary() {
               </span>
             </div>
           ))}
-          {tutupPanjang && (
-            <p className="sub dia-rentang-catatan">
-              ·t = 3Y/5Y dihitung dari <b>penutupan</b> harian — deret panjangnya tak menyimpan
-              high/low, jadi ekstrem intraday bisa sedikit di luar angka itu.
-            </p>
-          )}
+          {/* Catatan kaki "·t = …" DIBUANG (Johan 5 Sep 2026: "teks ini di
+              hapus saja"). Peringatannya TIDAK hilang: kalimat lengkapnya
+              pindah ke tooltip baris yang bersangkutan (lihat `title` di atas),
+              dan penjelasan panjangnya tetap di Metodologi. Satu baris teks
+              yang selalu tampil untuk hal yang hanya berlaku pada dua dari
+              sembilan baris memang lebih mahal daripada nilainya. */}
         </div>
       </div>
     </section>
