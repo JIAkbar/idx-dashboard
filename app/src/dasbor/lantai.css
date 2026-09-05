@@ -2896,6 +2896,32 @@
 .lantai .pi-atur .pi-head-actions { flex: 0 1 300px; min-width: 180px; display: block; }
 .lantai .pi-atur .pi-srch-container { position: relative; }
 .lantai .pi-atur .pi-search-go, .lantai .pi-atur .dd-btn { flex: none; white-space: nowrap; }
+/* Kotak cari SEBARIS dengan tombol "Tampilkan" (Johan 5 Sep 2026: "kolom
+   pencarian saham dan tombol itu bisa 1 baris lebih efesiensi").
+
+   Sebabnya satu baris CSS lama: pembungkus kotak cari (`.pi-head-actions`)
+   memakai `flex: 1 1 100%` — basis 100% memaksanya memakan satu baris penuh
+   di dalam kelompoknya, jadi tombol di sebelahnya SELALU jatuh ke baris
+   berikutnya, berapa pun lebar layarnya. Aturan itu lahir untuk toolbar lama
+   yang memang ingin kotak carinya sebaris sendiri (#109); di bilah kendali
+   baru ia jadi salah.
+
+   Basis 260px, bukan 0: di bawah itu daftar saran di bawahnya jadi lebih
+   sempit daripada teks yang disarankan. Di ≤768px ia kembali sebaris penuh —
+   di 412 kotak cari + tombol berdampingan menyisakan ±150px untuk mengetik
+   kode emiten, dan itu terlalu sempit. */
+.lantai .pi-atur .pi-head-actions { flex: 1 1 260px; }
+/* Kelompoknya sendiri juga tak boleh membungkus: `.grup-k` bawaannya
+   `flex-wrap: wrap`, jadi begitu kotak cari memakai seluruh lebar kelompok,
+   tombol di sebelahnya turun DI DALAM kelompok — dan lebar kelompok lalu
+   terkunci ke lebar kotak carinya (terukur 302px padahal bilahnya 1.420px
+   dan seluruh isinya cuma 924px). Basis 340px memberi ruang untuk keduanya
+   sebelum menyusut. */
+.lantai .pi-atur .grup-k:has(> .pi-head-actions) { flex-wrap: nowrap; flex: 1 1 340px; }
+@media (max-width: 768px) {
+  .lantai .pi-atur .pi-head-actions { flex: 1 1 100%; }
+  .lantai .pi-atur .grup-k:has(> .pi-head-actions) { flex-wrap: wrap; flex: 1 1 100%; }
+}
 
 /* ── Kotak cari & paginasi (dipakai bersama admin + halaman publik) ─────
    Dulu tinggal di AdminShared.css; begitu halaman Kabar Pasar memakainya,

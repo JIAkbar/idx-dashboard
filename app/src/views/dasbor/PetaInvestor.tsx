@@ -165,8 +165,11 @@ export function PetaInvestor() {
               Agu, artifact "Re-Layout PAPAN"). Kelompok Tampilan · Cari ·
               Export dari fungsi nyata toolbar lama (dulu .pi-toolbar polos). */}
           <div className="bilah-kendali pi-atur">
+            {/* Label "Tampilan" DIBUANG (Johan 5 Sep 2026: "teks tampilan itu
+                di hapus saja") — empat tabnya sudah menamai dirinya sendiri,
+                dan `aria-label` di bawah tetap menyebut namanya untuk pembaca
+                layar, jadi tak ada yang hilang selain satu kata di layar. */}
             <div className="grup-k">
-              <span className="grup-lbl">Tampilan</span>
               <div className="tabs" role="tablist" aria-label="Tampilan Peta Investor">
                 {TABS.map((t) => (
                   <button
@@ -188,8 +191,9 @@ export function PetaInvestor() {
               <button type="button" className="pi-search-go" onClick={() => searchRef.current?.tampilkan()}>Tampilkan</button>
             </div>
             <span className="pemisah-v" aria-hidden="true" />
+            {/* Label "Export" DIBUANG dengan alasan yang sama: tombolnya
+                sendiri berbunyi "Export XLS". */}
             <div className="grup-k grup-kanan">
-              <span className="grup-lbl">Export</span>
               {/* K3: dulu .dd/.dd-btn/.dd-menu/.dd-it ditulis ulang di sini lengkap
                   dengan posisi inline, onBlur bertimer, dan opacity nonaktif per
                   item — padahal Dropdown.tsx sudah menangani semuanya dan dipakai
