@@ -5,7 +5,7 @@ import { Renovasi } from './Renovasi'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { LaciMobile } from './LaciMobile'
-import { PitaKurs } from './PitaKurs'
+import { PitaKurs, StatusBursa } from './PitaKurs'
 import { LoginModal } from './LoginModal'
 import { TanyaPapan } from './TanyaPapan'
 import { LoginModalProvider } from '../../context/LoginModalContext'
@@ -42,6 +42,9 @@ export function DasborLayout() {
   const [loginOpen, setLoginOpen] = useState(false)
   const [laciKiri, setLaciKiri] = useState(false)
   const location = useLocation()
+  // Rute Beranda satu-satunya '/'; catch-all mengalihkan ke sana dengan
+  // `replace`, jadi pathname sesudah pengalihan tetap '/'.
+  const beranda = location.pathname === '/'
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -76,7 +79,23 @@ export function DasborLayout() {
                   <MarkPapan size={24} />
                 </button>
               </div>
-              <PitaKurs />
+              {/* Pita kurs berjalan HANYA di Beranda (Johan, 5 Sep 2026:
+                  "marquee sepertinya cukup di home saja"). Di halaman lain
+                  kepala tetap berdiri dengan chip status bursa saja.
+
+                  Chip-nya sengaja TIDAK ikut bersyarat: menaruhnya di kepala
+                  adalah keputusan terpisah (Johan 2 Sep, "D + E digabung")
+                  justru supaya ia tampil di semua halaman - ia keadaan seluruh
+                  situs, bukan milik satu halaman. Kalau pita disembunyikan
+                  begitu saja, chip ikut hilang dan keputusan lama itu batal
+                  diam-diam.
+
+                  `<header>` sendiri TETAP dirender di semua halaman: tingginya
+                  konstanta `--dasbor-topbar-h` (52px), dan sederet
+                  `calc(100dvh - N)` di halaman grafik/tabel sudah
+                  memperhitungkannya. Membuang kepalanya akan menggeser
+                  semuanya 52px tanpa satu pun galat. */}
+              {beranda ? <PitaKurs /> : <div className="dasbor-pita dasbor-pita-solo"><StatusBursa /></div>}
             </header>
 
             <main className="dasbor-main">

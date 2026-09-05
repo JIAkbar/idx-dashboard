@@ -16,7 +16,12 @@ import { useJamBursa } from './Kalender'
  * halaman — bukan di empat halaman yang kebetulan punya hero. Saat bursa
  * buka ia menyebut sesinya dan jam berjalan; saat tutup, kapan buka lagi.
  */
-function StatusBursa() {
+/** Diekspor sejak 5 Sep 2026 supaya kepala halaman bisa menampilkannya
+ *  TANPA pita berjalan. Johan minta pita hanya di Beranda; chip ini keputusan
+ *  terpisah (2 Sep, "D + E digabung") yang justru menaruhnya di kepala supaya
+ *  tampil di semua halaman. Mengekspornya menjaga kedua keputusan sekaligus,
+ *  alih-alih yang baru diam-diam membatalkan yang lama. */
+export function StatusBursa() {
   const { buka, sesi, jam, labelTutup } = useJamBursa()
   return (
     <span className={'dasbor-pita-status' + (buka ? ' buka' : '')} aria-live="off">
@@ -29,7 +34,7 @@ function StatusBursa() {
 export function PitaKurs() {
   const { hari } = useDataHarian()
 
-  if (!hari) return <div className="dasbor-pita"><StatusBursa /></div>
+  if (!hari) return <div className="dasbor-pita dasbor-pita-solo"><StatusBursa /></div>
 
   const topGainers = (hari.gainers ?? []).slice(0, 5)
   const topLosers = (hari.losers ?? []).slice(0, 5)

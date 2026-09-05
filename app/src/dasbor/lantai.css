@@ -140,6 +140,17 @@
   font-variant-numeric: tabular-nums;
 }
 .dasbor-pita-titik { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); }
+/* Chip SENDIRIAN di kepala - halaman non-Beranda (pita hanya di Beranda sejak
+   5 Sep 2026) dan jalur data-harian-belum-termuat. Dua hal berubah, keduanya
+   karena tak ada lagi pita di sebelahnya:
+   - didorong ke kanan sendiri; tanpa ini ia menempel di kiri, karena yang
+     mendorongnya ke kanan selama ini `.dasbor-pita-mid { flex: 1 }`.
+   - garis pemisah dibuang: garis yang tak memisahkan apa pun terbaca sebagai
+     sisa tampilan yang rusak, bukan sebagai pembatas.
+   Jalur data-belum-termuat sudah punya cacat ini sejak chip pindah ke kepala
+   2 Sep; satu kelas menutup keduanya. */
+.dasbor-pita-solo .dasbor-pita-status { margin-left: auto; padding-left: 0; border-left: 0; }
+
 .dasbor-pita-status.buka { color: var(--text); }
 .dasbor-pita-status.buka .dasbor-pita-titik { background: var(--green); box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 22%, transparent); }
 @keyframes dasbor-pita-jalan { from { transform: translateX(0); } to { transform: translateX(-50%); } }
