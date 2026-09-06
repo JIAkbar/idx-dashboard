@@ -81,6 +81,21 @@ def ambil_daftar(isi) -> list[dict]:
     return isi.get("tesis") or []
 
 
+# Kosakata status HAKIM vs kosakata TABEL. Hakim jejak memakai "gantung"
+# (`nilai_jejak.py`), tabel `tesis` dan antarmuka memakai "menggantung" — dan
+# ketidakcocokan itu TIDAK menimbulkan galat apa pun: selnya cuma kosong di
+# layar, dan tesis yang menggantung tak terhitung di mana-mana. Terlihat 6 Sep
+# 2026 pada uji ujung-ke-ujung pertama, di produksi, dengan mata.
+#
+# Yang diterjemahkan keluaran hakim, bukan kosakata tabelnya: tabel adalah
+# kontrak yang dipakai basis data, halaman, dan RLS sekaligus.
+KE_STATUS_TABEL = {GANTUNG: "menggantung"}
+
+
+def status_tabel(hasil: str) -> str:
+    return KE_STATUS_TABEL.get(hasil, hasil)
+
+
 def nilai_tesis(t: dict, kalender: list[str], singgahan: dict) -> dict:
     """Vonis satu tesis + jejak secukupnya untuk diperiksa ulang orang lain."""
     horizon = int(t["horizon_hari"])
@@ -114,7 +129,7 @@ def nilai_tesis(t: dict, kalender: list[str], singgahan: dict) -> dict:
         "arah": t.get("arah", "naik"),
         "tanggalSinyal": t["tanggal_sinyal"],
         "horizonHari": horizon,
-        "status": hasil,
+        "status": status_tabel(hasil),
         "ambigu": bool(r.get("ambigu")),
         "sebab": r["sebab"],
         "tglKeluar": keluar,
@@ -134,7 +149,8 @@ def ringkas(vonis: list[dict]) -> dict:
     penyebut menghukum keaktifan, bukan ketepatan (keputusan Johan #3)."""
     per: dict[str, dict] = {}
     for v in vonis:
-        p = per.setdefault(v["penyetor"], {k: 0 for k in (MENANG, KALAH, TAK_MASUK, GANTUNG)})
+        p = per.setdefault(v["penyetor"],
+                           {k: 0 for k in (MENANG, KALAH, TAK_MASUK, status_tabel(GANTUNG))})
         p[v["status"]] = p.get(v["status"], 0) + 1
     for p in per.values():
         tuntas = p[MENANG] + p[KALAH] + p[TAK_MASUK]
@@ -187,7 +203,8 @@ def segel(hasil: dict) -> dict:
             "dinilaiPada": hasil["dibangun"],
             "hariBursaTerakhirSaatDinilai": hasil["hariBursaTerakhir"],
             "n": len(isi),
-            **{k: sum(1 for v in isi if v["status"] == k) for k in (MENANG, KALAH, TAK_MASUK, GANTUNG)},
+            **{k: sum(1 for v in isi if v["status"] == k)
+               for k in (MENANG, KALAH, TAK_MASUK, status_tabel(GANTUNG))},
             "tesis": isi,
         }, ensure_ascii=False, indent=1), encoding="utf-8")
         n["baru"] += 1
@@ -217,7 +234,7 @@ def swauji() -> None:
     # punya 6, jadi jendelanya tutup — tapi tesis bertanggal 1 Sep belum.
     v = nilai_tesis({**dasar, "tanggal_sinyal": "2026-09-01", "arah": "naik",
                      "target": 999, "stop": 1}, kal, singgahan)
-    assert v["status"] == GANTUNG and v["jendelaTutup"] is False, v
+    assert v["status"] == status_tabel(GANTUNG) and v["jendelaTutup"] is False, v
 
     # Area masuk yang tak pernah tersentuh = tak_masuk, dan ia TETAP dihitung.
     v = nilai_tesis({**dasar, "arah": "naik", "masuk_bawah": 50, "masuk_atas": 60,
@@ -226,7 +243,7 @@ def swauji() -> None:
 
     r = ringkas([
         {"penyetor": "u1", "status": MENANG}, {"penyetor": "u1", "status": KALAH},
-        {"penyetor": "u1", "status": TAK_MASUK}, {"penyetor": "u1", "status": GANTUNG},
+        {"penyetor": "u1", "status": TAK_MASUK}, {"penyetor": "u1", "status": status_tabel(GANTUNG)},
     ])["u1"]
     assert r["tuntas"] == 3, r                       # menggantung di luar penyebut
     assert r["akurasi"] == round(100 / 3, 1), r      # 1 menang dari 3 tuntas
@@ -234,7 +251,7 @@ def swauji() -> None:
 
     # Penyetor tanpa tesis tuntas: akurasi None, BUKAN 0 — belum terukur beda
     # dari selalu salah.
-    r = ringkas([{"penyetor": "u2", "status": GANTUNG}])["u2"]
+    r = ringkas([{"penyetor": "u2", "status": status_tabel(GANTUNG)}])["u2"]
     assert r["tuntas"] == 0 and r["akurasi"] is None, r
 
     satu = {"kode": "X", "status": "menunggu"}
@@ -243,7 +260,14 @@ def swauji() -> None:
     assert ambil_daftar({"n": 0, "tesis": []}) == []
     assert ambil_daftar({}) == []
 
-    print("swauji nilai_tesis: 14 kasus lolos")
+    # Kosakata keluaran = kosakata tabel, bukan kosakata hakim jejak.
+    assert status_tabel(GANTUNG) == "menggantung"
+    assert status_tabel(MENANG) == "menang" and status_tabel(TAK_MASUK) == "tak_masuk"
+    v = nilai_tesis({**dasar, "tanggal_sinyal": "2026-09-01", "arah": "naik",
+                     "target": 999, "stop": 1}, kal, singgahan)
+    assert v["status"] == "menggantung", v
+
+    print("swauji nilai_tesis: 17 kasus lolos")
 
 
 if __name__ == "__main__":
@@ -260,8 +284,10 @@ if __name__ == "__main__":
         sys.exit(0)
     n = segel(h)
     KELUARAN.write_text(json.dumps(h, ensure_ascii=False, indent=1), encoding="utf-8")
+    # Kunci laporan memakai kosakata TABEL — sama dengan yang ditulis ke berkas.
+    # Versi pertamanya mencetak "gantung 0" padahal ada satu yang menggantung.
     hitung = {k: sum(1 for v in h["tesis"] if v["status"] == k)
-              for k in (MENANG, KALAH, TAK_MASUK, GANTUNG)}
+              for k in (MENANG, KALAH, TAK_MASUK, status_tabel(GANTUNG))}
     print(f"{len(h['tesis'])} tesis: " + " · ".join(f"{k} {v}" for k, v in hitung.items()))
     print(f"  ditulis: {KELUARAN.relative_to(AKAR)}")
     print(f"  penilaian_tesis/: {n['baru']} tanggal baru, {n['lewat']} sudah ada (tak ditimpa)")
