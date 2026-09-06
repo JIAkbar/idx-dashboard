@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { BilahTanggal } from '../../components/dasbor/BilahTanggal'
 import { fmtTanggalPendek } from '../../components/dasbor/Kalender'
 import { KonteksData } from '../../components/dasbor/KonteksData'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { useDataHarian, useDataRentang, fetchHari, cariHariResmiTerakhir, type DataHarian } from '../../lib/dasbor/dataHarian'
 import type { RentangTanggal } from '../../lib/dasbor/periode'
 import { useUrut } from '../../lib/dasbor/useUrut'
@@ -150,7 +149,6 @@ export function TopStocks() {
   const vhead = (tgl: string | null = null, sementara = false) => (
     <div className="vhead">
       <h1>Top Stocks</h1>
-      <CatatanCakupan inline />
       <KonteksData tanggal={tgl} sementara={sementara} />
     </div>
   )

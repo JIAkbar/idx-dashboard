@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { Dropdown, type OpsiDropdown } from '../../components/dasbor/Dropdown'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
@@ -809,7 +808,6 @@ export function KartuAnalisa() {
           struktur harga, level, musiman &amp; fundamental — tiap angka membawa asal-usulnya ·{' '}
           <Link to="/metodologi" className="kd-tautan">Metodologi &amp; sumber data →</Link>
         </span>
-        <CatatanCakupan inline />
       </div>
 
       {tab !== 'semua' && (

@@ -267,6 +267,19 @@ if errorlevel 1 echo   (bandarmologi gagal - lanjut)
 if errorlevel 1 echo   (harga terakhir gagal - lanjut)
 "%PYEXE%" scripts\petakan_grup.py
 if errorlevel 1 echo   (peta grup gagal - lanjut)
+REM [E4] Seasonality HILIR. Pemanen hulunya (~20 menit ke Yahoo, 963
+REM emiten) SENGAJA tidak ikut ke bat - ia terjadwal di CI
+REM panen-harian-rumah.yml, dan menambahkannya di sini berarti dua sapuan
+REM jaringan berat per hari untuk data yang cuma berubah sebulan sekali.
+REM Yang di sini dua langkah NOL JARINGAN yang mengubah hasil panen itu
+REM jadi berkas yang benar-benar dibaca halaman. Sampai 6 Sep 2026
+REM keduanya tak dipanggil dari MANA PUN (grep seluruh repo: cuma
+REM docstring-nya sendiri), jadi hulunya segar tiap hari sementara
+REM hilirnya berhenti di 19 Agustus - nol galat, angkanya salah di layar.
+"%PYEXE%" scripts\bangun_ihsg_bulanan.py
+if errorlevel 1 echo   (ihsg bulanan gagal - lanjut)
+"%PYEXE%" scripts\siapkan_seasonality.py
+if errorlevel 1 echo   (siapkan seasonality gagal - lanjut)
 REM -- Keystats + profil: SEBULAN SEKALI, ketetapan Johan 1 Sep 2026
 REM -- ("keystat dan profile cukup 1 bulan sekali"). Keduanya memanen 963
 REM -- emiten dan makan puluhan menit, sementara isinya rasio & profil yang
@@ -313,8 +326,8 @@ REM nilai_jejak, penilaian/, selisih_terkunci, rencana_saham) tak ada di
 REM daftar bat mana pun dan cuma ikut kalau JALANKAN_OTOMATIS kebetulan jalan.
 REM `penilaian/` yang paling mahal kalau tertinggal: isinya catatan SEKALI
 REM TULIS, dan catatan yang tak pernah didorong sama saja dengan tak ada.
-git add data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/screener.json data-idx/json/bandarmologi.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/rekomendasi data-idx/json/rezim_pasar.json data-idx/json/nilai_jejak.json data-idx/json/penilaian data-idx/json/selisih_terkunci.json data-idx/json/rencana_saham.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/tesis_vonis.json data-idx/json/penilaian_tesis 2>nul
-git commit -m "data: panen buka-laptop otomatis (%date%)" -- data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/screener.json data-idx/json/bandarmologi.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/rekomendasi data-idx/json/rezim_pasar.json data-idx/json/nilai_jejak.json data-idx/json/penilaian data-idx/json/selisih_terkunci.json data-idx/json/rencana_saham.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/tesis_vonis.json data-idx/json/penilaian_tesis
+git add data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/screener.json data-idx/json/bandarmologi.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/rekomendasi data-idx/json/rezim_pasar.json data-idx/json/nilai_jejak.json data-idx/json/penilaian data-idx/json/selisih_terkunci.json data-idx/json/rencana_saham.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/tesis_vonis.json data-idx/json/penilaian_tesis data-idx/json/seasonality 2>nul
+git commit -m "data: panen buka-laptop otomatis (%date%)" -- data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/screener.json data-idx/json/bandarmologi.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/rekomendasi data-idx/json/rezim_pasar.json data-idx/json/nilai_jejak.json data-idx/json/penilaian data-idx/json/selisih_terkunci.json data-idx/json/rencana_saham.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/tesis_vonis.json data-idx/json/penilaian_tesis data-idx/json/seasonality
 set COMMIT_RC=%errorlevel%
 REM Ditangkap SEGERA sesudah commit. Baris echo di bawah menyetel ulang
 REM errorlevel, jadi memeriksanya sesudah echo membuat pemeriksaan itu
@@ -337,6 +350,17 @@ goto sesudah_push
 :lewati_push
 echo   (tak ada commit baru - push dilewati)
 :sesudah_push
+
+REM Jalan SUKSES berakhir di :akhir, dan baris ini yang mengantarnya ke
+REM sana. Tanpa `goto akhir`, eksekusi jatuh lurus ke :keluar_terkunci di
+REM bawah lalu `goto :eof` - jadi `rmdir` di :akhir TAK PERNAH tercapai
+REM (tak ada satu pun `goto akhir` di berkas ini sebelum baris ini) dan
+REM .panen.lock tertinggal di cakram sesudah tiap jalan yang BERHASIL.
+REM Akibatnya berlipat dan senyap: jalan buka-laptop berikutnya DAN panen
+REM sore sama-sama melihat kunci itu, mencetak "Pipeline lain sedang
+REM jalan", lalu keluar 0 - dari log dan dari Task Scheduler, hari yang
+REM tak memanen apa pun terlihat persis seperti hari yang sukses.
+goto akhir
 
 REM Keluar karena kunci milik ORANG LAIN. Sengaja tidak lewat :akhir --
 REM label itu menghapus kunci, dan menghapus kunci yang baru saja kita

@@ -72,6 +72,11 @@ for /f %%y in ('"%PYEXE%" -c "import datetime;print(datetime.date.today().year)"
 "%PYEXE%" scripts\bangun_broker_tahunan.py --tahun %TAHUN_KINI% --paralel 8
 "%PYEXE%" scripts\bangun_kategori_broker.py
 "%PYEXE%" scripts\riset\kartu_analisa.py --semua --tulis
+REM Rezim pasar: dulu HANYA di bat buka-laptop. Hari Johan tak membuka
+REM laptop, halaman Rezim Pasar diam memakai angka kemarin tanpa satu pun
+REM galat. Membaca ohlc/ + ohlc/IHSG.json yang baru dijahit langkah [B].
+"%PYEXE%" scripts\bangun_rezim_pasar.py
+if errorlevel 1 echo   (rezim pasar gagal - lanjut)
 node app\scripts\bangun-screener.mjs
 "%PYEXE%" scripts\riset\rekap_preset.py
 if errorlevel 1 echo   (rekap preset gagal - lanjut)
@@ -104,10 +109,28 @@ REM aman dipanggil dari kedua jalur tanpa panen dobel.
 if errorlevel 1 echo   (aliran investor gagal - lanjut)
 "%PYEXE%" scripts\bangun_bidoffer.py
 if errorlevel 1 echo   (bidoffer gagal - lanjut)
+REM Bandarmologi: sama - dulu HANYA di bat buka-laptop, jadi Whales/Neo
+REM memakai angka kemarin diam-diam. Membaca asing/ [C], broker_harian/
+REM [B2], dan ohlc/ [B] - ketiganya sudah turun di atas.
+"%PYEXE%" scripts\bangun_bandarmologi.py
+if errorlevel 1 echo   (bandarmologi gagal - lanjut)
 "%PYEXE%" scripts\bangun_harga_terakhir.py
 if errorlevel 1 echo   (harga terakhir gagal - lanjut)
 "%PYEXE%" scripts\petakan_grup.py
 if errorlevel 1 echo   (peta grup gagal - lanjut)
+REM [E4] Seasonality HILIR. Pemanen hulunya (~20 menit ke Yahoo, 963
+REM emiten) SENGAJA tidak ikut ke bat - ia terjadwal di CI
+REM panen-harian-rumah.yml, dan menambahkannya di sini berarti dua sapuan
+REM jaringan berat per hari untuk data yang cuma berubah sebulan sekali.
+REM Yang di sini dua langkah NOL JARINGAN yang mengubah hasil panen itu
+REM jadi berkas yang benar-benar dibaca halaman. Sampai 6 Sep 2026
+REM keduanya tak dipanggil dari MANA PUN (grep seluruh repo: cuma
+REM docstring-nya sendiri), jadi hulunya segar tiap hari sementara
+REM hilirnya berhenti di 19 Agustus - nol galat, angkanya salah di layar.
+"%PYEXE%" scripts\bangun_ihsg_bulanan.py
+if errorlevel 1 echo   (ihsg bulanan gagal - lanjut)
+"%PYEXE%" scripts\siapkan_seasonality.py
+if errorlevel 1 echo   (siapkan seasonality gagal - lanjut)
 "%PYEXE%" scripts\panen_keystats_stockbit.py --semua --jeda 0.4
 if errorlevel 1 echo   (keystats gagal - lanjut)
 "%PYEXE%" scripts\panen_info_stockbit.py --semua --jeda 0.4
@@ -116,8 +139,8 @@ if errorlevel 1 echo   (info stockbit gagal - lanjut)
 
 echo.
 echo [F] Commit data hasil panen
-git add data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/screener.json data-idx/json/pola_screener.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/ihsg_ohlc_ringkas.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/keystats_stockbit data-idx/json/info_stockbit data-idx/json/rekomendasi 2>nul
-git commit -m "data: panen sore otomatis (%date%)" -- data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/screener.json data-idx/json/pola_screener.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/ihsg_ohlc_ringkas.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/keystats_stockbit data-idx/json/info_stockbit data-idx/json/rekomendasi
+git add data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/screener.json data-idx/json/pola_screener.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/ihsg_ohlc_ringkas.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/keystats_stockbit data-idx/json/info_stockbit data-idx/json/rekomendasi data-idx/json/seasonality data-idx/json/rezim_pasar.json data-idx/json/bandarmologi.json 2>nul
+git commit -m "data: panen sore otomatis (%date%)" -- data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/screener.json data-idx/json/pola_screener.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/ihsg_ohlc_ringkas.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/keystats_stockbit data-idx/json/info_stockbit data-idx/json/rekomendasi data-idx/json/seasonality data-idx/json/rezim_pasar.json data-idx/json/bandarmologi.json
 git push origin main
 
 :akhir

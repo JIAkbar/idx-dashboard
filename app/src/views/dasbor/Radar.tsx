@@ -12,7 +12,6 @@ import { rollupBulanan, rollupMingguan } from '../../lib/radar/rollup'
 import { LangkahTanggal } from '../../components/dasbor/LangkahTanggal'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
 import { KonteksData } from '../../components/dasbor/KonteksData'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 // Gaya lightbox (.af-lb-*) hidup di AdminShared.css (dulu AdminHome.css,
 // pindah folder saat rombak shell tab #shell-tab), ter-scope .lantai —
 // diimpor di sini juga supaya pratinjau RBU jalan tanpa mampir halaman admin.
@@ -278,7 +277,6 @@ export function Radar() {
         <div className="vhead-kiri">
           <h1>Radar Watchlist</h1>
           <span className="sub">arsip WD Watch List — satu edisi per tanggal, skor dari arsip sendiri</span>
-          <CatatanCakupan inline />
         </div>
         <div className="rdr-nav">
           <div className="rdr-arsip" aria-label="Arsip edisi">

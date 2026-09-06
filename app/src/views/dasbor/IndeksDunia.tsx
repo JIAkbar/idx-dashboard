@@ -6,7 +6,6 @@ import type { ChartConfiguration } from 'chart.js/auto'
 import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
 import { BilahTanggal } from '../../components/dasbor/BilahTanggal'
 import { KonteksData } from '../../components/dasbor/KonteksData'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { Papan } from '../../components/dasbor/Papan'
 import { useDataHarian, type DataHarian, type TanggalIndex } from '../../lib/dasbor/dataHarian'
 import { hitungYtdPct } from '../../lib/dasbor/ytd'
@@ -607,7 +606,6 @@ export function IndeksDunia() {
   const vhead = (tgl: string | null = null, sementara = false) => (
     <div className="vhead">
       <h1>Indeks Dunia</h1>
-      <CatatanCakupan inline />
       <KonteksData tanggal={tgl} sementara={sementara} />
     </div>
   )

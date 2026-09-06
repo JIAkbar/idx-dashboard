@@ -3,7 +3,6 @@ import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { PanelAliranAsing } from '../../components/dasbor/PanelAliranAsing'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { TINGKAT_LIKUIDITAS } from '../../lib/dasbor/likuiditas'
 import { saringAliranAsing } from '../../lib/dasbor/aliranAsing'
 import { useUrut } from '../../lib/dasbor/useUrut'
@@ -71,7 +70,6 @@ export function AliranAsing() {
       <div className="vhead">
         <h1>Aliran Asing</h1>
         <span className="sub">Emiten diurut net asing — pilih baris untuk arus harian, grafik kumulatif, dan persentilnya.</span>
-        <CatatanCakupan inline />
       </div>
 
       <div className="panel">

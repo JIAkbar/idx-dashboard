@@ -11,7 +11,6 @@ import { useBulletinList, tipeEdisi, LABEL_TIPE_EDISI } from '../../lib/dasbor/b
 import { PapanRti } from '../../components/dasbor/PapanRti'
 import { PanelDiary } from '../../components/dasbor/PanelDiary'
 import { IkonMenu, IKON_KUNCI, IKON_PANAH_KANAN } from '../../components/dasbor/IkonMenu'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 // Gaya baris kabar (.kbr-*) hidup di Kabar.css dan dipakai juga di sini.
 // WAJIB diimpor: halaman Kabar dimuat malas (lazy), jadi tanpa impor ini
 // jalur kabar Beranda tampil sebagai tautan biru tanpa gaya sampai
@@ -341,9 +340,6 @@ export function Beranda() {
         </div>
       </section>
 
-      {/* Catatan cakupan turun jadi kaki halaman (Arah A) — informasinya
-          tetap, tapi tak lagi memakan baris di ambang pintu. */}
-      <CatatanCakupan />
     </div>
   )
 }

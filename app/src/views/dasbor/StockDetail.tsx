@@ -19,7 +19,6 @@ import { PanelLimaLangkahUang } from '../../components/dasbor/PanelLimaLangkahUa
 import { PanelKhasPapan } from '../../components/dasbor/PanelKhasPapan'
 import { PanelBandingEmiten } from '../../components/dasbor/PanelBandingEmiten'
 import { IkonMenu, IKON_PERINGATAN, IKON_JAM } from '../../components/dasbor/IkonMenu'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { usePengendali, pengendaliEmiten, labelPengendali } from '../../lib/dasbor/pengendali'
 import { tanggalPendek } from '../../lib/dasbor/statistikBerkala'
 import { muatTambahanKeystats, type TambahanKeystats } from '../../lib/dasbor/rasioTambahanKeystats'
@@ -287,12 +286,9 @@ export function StockDetail() {
           {/* "Data delay" saja menyisakan pertanyaan yang justru menentukan:
               tertinggal lima belas menit atau tiga hari? Tanggalnya membuat
               pembaca menilai sendiri, bukan menebak. Ditempel hanya kalau
-              memang ada — "Terakhir diperbarui —" lebih buruk daripada diam.
-              CatatanCakupan digabung SEBARIS ke baris ini (28 Agu, C+A
-              gelombang 3) — hemat satu baris, halaman ini tak punya .vhead
-              (header khusus/hero, lihat komentar fungsi). */}
+              memang ada — "Terakhir diperbarui —" lebih buruk daripada diam. */}
           <p style={{ fontSize: 10, color: 'var(--text3)', lineHeight: 1.6 }}>
-            Data delay, bukan harga real-time.{fd?.updated ? ` Terakhir diperbarui ${fd.updated}.` : ''} <CatatanCakupan inline />
+            Data delay, bukan harga real-time.{fd?.updated ? ` Terakhir diperbarui ${fd.updated}.` : ''}
           </p>
         </div>
       )}

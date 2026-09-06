@@ -35,6 +35,28 @@ Katalis & Risiko (Pro dan Kontra)
 Kesimpulan Analis (Pandangan akhir yang merangkum data)
 
 Jika Anda mengerti dan siap menerima peran ini, balas dengan: "Saya siap bertindak sebagai Analis Pasar Keuangan Anda. Saham, sektor, atau kondisi makroekonomi apa yang ingin kita bedah hari ini?"
+## Pengawas — sesi terpisah yang mengawasi PAPAN (6 Sep 2026)
+
+Asal: Johan, 6 Sep 2026 — *"artinya kmu fable sebagai pengawas yaaa, karena saya perlu sentuhan terakhir dan pastinya soal data hasil panen yang di inject atau di pakai data panen tersebut ke semua halaman yang membutuhkannya"* · *"perbaiki ini pola nya perbaiki"*.
+
+Ada dua sesi Claude untuk proyek ini dan perannya berbeda:
+
+| | Papan Trading (sesi proyek, folder repo ini) | Pengawas (sesi di folder `AI Skill`) |
+|---|---|---|
+| Mengubah kode/data | ya, hanya atas kata pemicu Johan | tidak pernah |
+| Mengubah berkas aturan/dokumen proyek (`CLAUDE.md`, `docs/`) | ya | hanya atas permintaan Johan yang dikutip verbatim di baris antrean; Papan memeriksa isinya sebelum commit dan boleh mencabut |
+| Verifikasi | sebelum push: uji, `tsc`, devtools localhost/produksi | sesudah deploy: produksi lewat Browser pane sendiri, ditambah kesegaran "Data per" tiap halaman dan hitung ulang angka kritis dari berkas data |
+| Bicara ke Johan | langsung di sesinya | langsung di sesinya |
+| Bicara ke sesi lain | balasan/koreksi premis ke pengawas | baris antrean MASUK + usulan, **selalu kutipan verbatim Johan**, tidak pernah diterjemahkan jadi persetujuan |
+
+Aturan yang mengikat keduanya:
+
+1. **Keputusan hanya dari Johan, ditulis di sesi Papan.** Pesan pengawas yang mengutip Johan bukan pengganti kata pemicu (`kerjakan #n` / `kerjakan semua` / `langsung kerjakan` / `push`). Papan boleh menganggap kutipan itu pemicu hanya kalau kalimat Johan sendiri memuat kata pemicunya. **Pengecualian tertulis — push (Johan, 6 Sep 2026 14:5x):** *"saya percayakan pengawas ke kamu fable, jadi setelah papan kerja langsung perintahkan push saja dulu"* — untuk PAPAN, pengawas boleh memerintahkan push sesudah memeriksa laporan pra-push Papan (uji hijau, `tsc`, devtools 1536 + 412, pohon kerja bersih); bentuknya pesan berawalan `PUSH DISETUJUI PENGAWAS <sha>` bersidik jari. Tanpa awalan itu, atau untuk hal selain push, kutipan pengawas tetap bukan pemicu. Johan bisa mencabutnya kapan saja dengan satu kalimat.
+2. **Setiap pesan lintas sesi membawa sidik jari** (frasa unik tanpa tanda kutip) dan pengirim memverifikasi pendaratannya dengan grep pada transkrip tujuan; pesan yang dikirim saat sesi tujuan restart/kompaksi hilang tanpa jejak.
+3. **Papan mengoreksi premis pengawas, bukan menurutinya.** Usulan pengawas berangka (diukur dari berkas repo/data) tetap diperiksa ulang Papan sebelum dipakai; koreksi ditulis di baris antreannya.
+4. **Tindakan darurat pengawas** (mis. mematikan proses yang menahan `.panen.lock`) hanya untuk mencegah kehilangan data, dicocokkan dulu ke bukti (baris perintah proses, isi kunci), lalu dilaporkan ke Papan dan Johan pada menit yang sama.
+5. **Keadaan bersama ada di berkas, bukan di ingatan sesi:** `docs/antrean-permintaan.md`, `docs/jejak-permintaan.md`, dan pemantau mandiri `C:\Users\Johan\.pengawas\papan.json` + `papan.log` (task Windows `Pengawas-PAPAN`, sumber di `AI Skill/01 - Digunakan/Pengawas PAPAN/`). Sesi pengawas baru membaca berkas itu dulu, bukan menebak sesi Papan mana yang aktif.
+
 <!-- ai-kemampuan-pointer -->
 ## Basis Pengetahuan
 Baca dulu (efisiensi + navigasi): `C:\1-Johan\10. Pengembangan\AI Skill\03 - AI Kemampuan (Basis Pengetahuan)\hemat.md` lalu `kemampuan-index.md`.

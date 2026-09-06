@@ -4,7 +4,6 @@ import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
 import { BilahTanggal } from '../../components/dasbor/BilahTanggal'
 import { fmtTanggalPendek } from '../../components/dasbor/Kalender'
 import { KonteksData } from '../../components/dasbor/KonteksData'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { useDataHarian, useDataPembanding } from '../../lib/dasbor/dataHarian'
 import { hitungPeriodePct, LABEL_RENTANG, type RentangTanggal } from '../../lib/dasbor/periode'
 import { fN, fp } from '../../lib/dasbor/format'
@@ -202,7 +201,6 @@ export function SektorIndeks() {
   const vhead = (tgl: string | null = null, sementara = false) => (
     <div className="vhead">
       <h1>Sektor & Indeks</h1>
-      <CatatanCakupan inline />
       <KonteksData tanggal={tgl} sementara={sementara} />
     </div>
   )

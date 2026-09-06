@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { BedaSkor } from '../../components/dasbor/BedaSkor'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
@@ -243,7 +242,6 @@ export function HarianPapan() {
     <div className="lantai">
       <div className="vhead">
         <h1>Harian Papan</h1>
-        <CatatanCakupan inline />
         <BedaSkor halaman="harian" />
       </div>
 

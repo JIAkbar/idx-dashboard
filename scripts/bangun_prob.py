@@ -28,6 +28,21 @@ semuanya; tugas skrip ini tidak membuangnya di tengah jalan.
 Uji luar sampel (`evaluasi`) ditulis SEKALI di index, bukan diulang di 962
 berkas: ia menilai penaksirnya, bukan emitennya.
 
+## Dua stempel, bukan satu
+
+`dibangun` = kapan dihitung. `harga_pada` = tanggal bar harga terakhir yang
+ikut dihitung. Keduanya WAJIB ada dan tak boleh disatukan: berkas bisa ditulis
+ulang tanpa membawa bar baru (emiten disuspend, atau pembangun dijalankan dua
+kali di hari yang sama), dan satu stempel saja membuat angka lama terbaca
+sesegar hari ia ditulis. Nama `harga_pada` mengikuti `fundamental/*.json`
+yang sudah memakai pasangan yang sama (`updated` + `harga_pada`) untuk
+persoalan persis ini — bukan nama baru.
+
+`harga_pada` di tiap berkas emiten adalah bar terakhir EMITEN ITU; yang di
+`index.json` adalah bar terakhir PASAR. Bedanya justru yang berguna: emiten
+yang berhenti diperdagangkan akan tertinggal dari index, dan itu terbaca
+tanpa perlu membuka arsip harga.
+
 Pakai:
     python scripts/bangun_prob.py            # seluruh emiten
     python scripts/bangun_prob.py BBCA BUMI  # sebagian, untuk uji cepat
@@ -111,6 +126,10 @@ def main() -> int:
         isi = {k: h.get(k) for k in RUAS if k in h}
         isi["kode"] = kode
         isi["dibangun"] = datetime.now(WIB).isoformat(timespec="seconds")
+        # Bar terakhir emiten INI — seri yang sama yang dipakai mesin (sudah
+        # tersaring dari bar berharga nol), jadi stempelnya tak bisa melenceng
+        # dari angka yang baru saja dihitung di atasnya.
+        isi["harga_pada"] = ohlc[kode][-1][0]
         (KELUARAN / f"{kode}.json").write_text(
             json.dumps(isi, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
         )
@@ -120,6 +139,9 @@ def main() -> int:
         json.dumps(
             {
                 "dibangun": datetime.now(WIB).isoformat(timespec="seconds"),
+                # Bar terakhir PASAR = bar termuda di antara seluruh emiten.
+                # Ini yang dipakai mesin sebagai batas pool.
+                "harga_pada": max((s[-1][0] for s in ohlc.values() if s), default=None),
                 "n": ditulis,
                 "tanpa_angka": kosong,
                 "pool_n": pool_n,
@@ -134,6 +156,7 @@ def main() -> int:
     )
 
     print(f"selesai {time.time() - t0:.0f}s: {ditulis} emiten -> {KELUARAN}")
+    print(f"  harga sampai {max((s[-1][0] for s in ohlc.values() if s), default='?')}")
     if kosong:
         print(f"  {len(kosong)} tanpa angka (riwayat terlalu pendek): {', '.join(kosong[:8])}"
               + (" …" if len(kosong) > 8 else ""))

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { bandingkanBaris } from '../../lib/dasbor/useUrut'
 import { fp } from '../../lib/dasbor/format'
 import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
@@ -91,7 +90,6 @@ export function JagoPapan() {
       <div className="vhead">
         <h1>Jago Papan</h1>
         <span className="sub">Empat screener siap-pakai bertema momentum — bukan rekomendasi beli.</span>
-        <CatatanCakupan inline />
       </div>
 
       <div className="panel">

@@ -229,6 +229,25 @@ jobs:
             if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_seasonality gagal" }
           } else { Write-Host 'skrip seasonality tak ada — dilewati' }
 
+      # HILIR Seasonality — langkah 6 di atas cuma memanen hulunya.
+      # `siapkan_seasonality.py` yang mengubah hasil panen itu jadi berkas yang
+      # BENAR-BENAR dibaca halaman, dan sampai 6 Sep 2026 ia tak dipanggil dari
+      # MANA PUN: grep seluruh repo atas namanya hanya menemukan docstring-nya
+      # sendiri. Akibatnya hulunya segar tiap hari sementara hilirnya terakhir
+      # dibangun tangan 19 Agustus — segar di sumber, salah di layar, nol galat.
+      # `bangun_ihsg_bulanan.py` jalan lebih dulu: keluarannya tinggal di
+      # direktori seasonality yang sama dan dipakai sebagai pembanding.
+      # Keduanya NOL JARINGAN — membaca berkas yang baru turun di langkah 6.
+      - name: 6b · IHSG bulanan + berkas siap-unduh Seasonality
+        continue-on-error: true
+        run: |
+          if (Test-Path 'scripts/bangun_ihsg_bulanan.py') {
+            & "${{ steps.py.outputs.exe }}" scripts/bangun_ihsg_bulanan.py
+            if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_ihsg_bulanan gagal" }
+          } else { Write-Host '::warning::scripts/bangun_ihsg_bulanan.py tak ada — dilewati' }
+          & "${{ steps.py.outputs.exe }}" scripts/siapkan_seasonality.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::siapkan_seasonality gagal" }
+
       # Hakim jejak + kohort terkunci. Ditambahkan 5 Sep 2026 atas permintaan
       # Johan: *"termasuk win rate kita yang kita cari belum selesai bahas itu
       # terakhir tanggal 2 september … win rate nya berapa, dan diterapin di
