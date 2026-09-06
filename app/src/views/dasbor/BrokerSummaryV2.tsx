@@ -203,7 +203,10 @@ export function BrokerSummaryV2() {
 
       <header className="panel" style={{ marginBottom: 14 }}>
         <div className="panel-b">
-          <h1 style={{ margin: 0, fontSize: 26 }}>{kode} <small className="lbl" style={{ marginLeft: 8, textTransform: 'none', letterSpacing: 0 }}>{namaEmiten}</small></h1>
+          {/* h2, bukan h1: judul halaman sudah dipegang `.vhead` di atas.
+              Dua h1 di satu halaman membuat urutan heading tak punya puncak,
+              dan pembaca layar melompat-lompat. Ukuran visual tak berubah. */}
+          <h2 style={{ margin: 0, fontSize: 26 }}>{kode} <small className="lbl" style={{ marginLeft: 8, textTransform: 'none', letterSpacing: 0 }}>{namaEmiten}</small></h2>
           <div className="num" style={{ display: 'flex', gap: 16, alignItems: 'baseline', flexWrap: 'wrap', marginTop: 4 }}>
             <span style={{ fontSize: 22, fontWeight: 500 }}>{hargaKini !== null ? `Rp ${keFraksi(hargaKini).toLocaleString('id-ID')}` : '—'}</span>
             {gerak !== null && <span className="lbl" style={{ color: gerak >= 0 ? 'var(--green)' : 'var(--red)' }}>{gerak >= 0 ? '+' : ''}{gerak.toFixed(2)}% dalam rentang</span>}

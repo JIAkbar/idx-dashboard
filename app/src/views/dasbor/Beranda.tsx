@@ -78,7 +78,12 @@ function RingkasanPasar() {
           dirakit dari angka, bukan ditulis AI
         </span>
       </div>
-      <h2 className="brd-ringkas-judul">{r.headline}</h2>
+      {/* h1, bukan h2: ini judul halaman yang sebenarnya - kalimat yang
+          merangkum hari itu. Beranda tak punya `.vhead`, jadi tanpa baris ini
+          halaman terbuka tanpa satu pun h1 dan pembaca layar kehilangan
+          penanda "halaman ini tentang apa". Gayanya berbasis kelas
+          (`.brd-ringkas-judul`), jadi tampilannya tidak berubah. */}
+      <h1 className="brd-ringkas-judul">{r.headline}</h1>
       {r.ringkasan && <p className="brd-ringkas-isi">{r.ringkasan}</p>}
       <div className="brd-chips">
         {r.chips.map((c) => (
