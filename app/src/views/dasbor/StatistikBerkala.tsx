@@ -4,7 +4,6 @@ import { Dropdown } from '../../components/dasbor/Dropdown'
 import { LangkahTanggal } from '../../components/dasbor/LangkahTanggal'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import {
   angka,
@@ -237,13 +236,14 @@ export function StatistikBerkala() {
     <div className="vhead stb-head">
       <div className="vhead-kiri">
         <h1>Statistik {jenis === 'minggu' ? 'Mingguan' : 'Bulanan'}</h1>
-        <span className="sub">
-          {/* "rekap satu pekan bursa" dibuang 7 Sep 2026: judul halaman sudah
-              mengatakannya. Yang tinggal menjawab hal yang TIDAK terbaca dari
-              judul — bahwa tiap angka punya pasangan pembanding. */}
-          tiap angka berpasangan dengan {kataPeriode} sebelumnya
-        </span>
-        <CatatanCakupan inline />
+        {/* Subjudul dan catatan cakupan broker DICABUT 7 Sep 2026.
+            Johan menyebut keduanya verbatim dua kali - permintaan pertama
+            7 Sep 00:0x, lalu "kok masih" atas produksi. Di #25 keduanya
+            kupertahankan dengan alasan aturan cakupan; itu keliru sebagai
+            proses: daftar eksplisit pemilik menang atas penilaian agen, dan
+            kalau agen ingin mempertahankan ia harus BERTANYA, bukan memutuskan.
+            Cakupan broker sendiri tak hilang dari situs - ia masih tercetak di
+            halaman yang isinya memang data broker. */}
       </div>
     </div>
     </>
@@ -339,16 +339,10 @@ export function StatistikBerkala() {
         : <TabIndeks edisi={edisi} labelLalu={labelLalu} labelIni={labelIni} />)}
       {tab === 'transaksi' && (edisiBulanan ? <TabTransaksiBulanan edisi={edisiBulanan} /> : <TabTransaksi edisi={edisi} />)}
 
-      <p className="muted stb-sumber">
-        {/* Kalimat sumber dibuang 7 Sep 2026 (Johan: "redundant banget").
-            Tanggal edisinya sudah tercetak di pemilih tanggal beberapa piksel
-            di atas, dan penyedianya sudah disebut di Metodologi yang ditaut
-            di baris ini juga. Yang TIDAK terbaca dari mana pun dipertahankan:
-            bahwa “—” berarti ruasnya tak tercantum, bukan nilainya nol.
-            Itu beda yang mengubah cara membaca seluruh tabel. */}
-        Ruas yang tidak tercantum di edisinya ditulis “—”, bukan nol.{' '}
-        <Link to="/metodologi" className="kd-tautan">Metodologi &amp; sumber data →</Link>
-      </p>
+      {/* Kaki halaman DICABUT seluruhnya 7 Sep 2026 (Johan menyebutnya
+          verbatim). Tautan Metodologi tidak hilang dari situs: rail kiri
+          punya pintu MTD di tiap halaman. Nilai "—" di sel tetap apa adanya;
+          yang dibuang kalimat penjelasnya, bukan datanya. */}
     </div>
   )
 }
@@ -387,7 +381,15 @@ function TabRingkas({
         </div>
       </div>
 
+      {/* Dua kolom MANDIRI, bukan baris yang disejajarkan (#41, Johan:
+          "layout nya masih ada yang bolong, space mubadzir"). Sebelumnya
+          Rata-rata (6 baris) disandingkan dengan IHSG (3) dan Net asing (2)
+          dengan Dana dihimpun (11) - dua lubang besar, karena grid menyamakan
+          TINGGI BARIS sementara isinya tak sama panjang. Sekarang kiri
+          menumpuk tiga panel (6+3+2 = 11 baris) menghadapi Dana dihimpun (11).
+          Yang menutup lubang bukan tinggi panel, melainkan JUMLAH BARISNYA. */}
       <div className="grid2 stb-jajar">
+        <div className="stb-kolom">
         <div className="panel">
           <div className="panel-h"><span className="lbl">Rata-rata harian</span></div>
           {rata.length === 0
@@ -416,9 +418,6 @@ function TabRingkas({
               />
             )}
         </div>
-      </div>
-
-      <div className="grid2 stb-jajar">
         {net ? (
           <div className="panel">
             <div className="panel-h"><span className="lbl">Net asing</span></div>
@@ -446,6 +445,7 @@ function TabRingkas({
           // bertransaksi" — pernyataan yang salah.
           <PanelKosong judul="Net asing" alasan="Edisi ini tidak memuat rekap net asing." />
         )}
+        </div>
 
         <div className="panel">
           <div className="panel-h"><span className="lbl">Dana dihimpun</span></div>

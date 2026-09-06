@@ -45,6 +45,10 @@
    (mis. IHSG 3 baris) diregangkan mengikuti tetangganya yang panjang dan
    menyisakan kotak kosong yang terbaca seperti data yang hilang. */
 .lantai .stb-jajar { align-items: start; }
+/* Kolom yang menumpuk beberapa panel di dalam satu sel grid. Jaraknya sama
+   dengan jarak antar-panel `.lantai` supaya tumpukan tak terbaca sebagai satu
+   panel besar berpembatas. */
+.lantai .stb-kolom { display: flex; flex-direction: column; gap: var(--j2, 14px); }
 
 /* #16 (Johan 6 Sep 2026: "kalender button ini dekat kan dengan tab ringkasan
    dll"). Kendali periode dulu duduk di ujung kanan .vhead sementara baris tab
