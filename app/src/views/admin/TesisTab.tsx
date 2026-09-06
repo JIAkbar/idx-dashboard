@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import {
-  LABEL_STATUS, batalkanTesis, pesanGalat, ringkasTesis, useSisaKuotaTesis, useTesisSaya,
-  type TesisRow,
+  LABEL_STATUS, ambilVonisTesis, batalkanTesis, pesanGalat, ringkasTesis, useSisaKuotaTesis,
+  useTesisSaya, type TesisRow, type VonisTesis,
 } from '../../lib/tesis'
 
 /**
@@ -18,9 +18,20 @@ import {
 export function TesisTab() {
   const { session } = useAuth()
   const [pemicu, setPemicu] = useState(0)
-  const { baris, galat, muat } = useTesisSaya()
+  const { baris: mentah, galat, muat } = useTesisSaya()
   const sisaKuota = useSisaKuotaTesis(pemicu)
   const [sibuk, setSibuk] = useState<string | null>(null)
+
+  // Vonis hakim ditempelkan ke baris tabel saat MEMBACA. Tabel menyimpan apa
+  // yang disetor; hakim yang memutuskan menang/kalah, dan halaman ini tak
+  // menghitung apa pun sendiri.
+  const [vonis, setVonis] = useState<Map<string, VonisTesis>>(new Map())
+  useEffect(() => { void ambilVonisTesis().then(setVonis) }, [])
+  const baris = mentah?.map((t) => {
+    const v = vonis.get(t.id)
+    return v ? { ...t, status: v.status, ambigu: v.ambigu, harga_akhir: v.hargaAkhir,
+                 hari_terpakai: v.hariTerpakai } : t
+  }) ?? null
 
   async function batal(t: TesisRow) {
     setSibuk(t.id)

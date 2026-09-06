@@ -17,12 +17,14 @@
 -- `setoran` TIDAK disentuh sama sekali: riwayat lama tetap utuh, dan tabel ini
 -- berdiri sendiri. Tak ada satu baris pun yang dipindahkan atau dihapus.
 --
--- CARA MENERAPKAN (belum dijalankan — sesi ini tak diberi izin menulis DDL ke
--- basis data produksi):
---   Supabase Studio → SQL Editor → tempel berkas ini → Run
---   atau: supabase db push
--- Sesudah diterapkan, jalankan pemeriksa keamanan (`get_advisors`) dan
--- pastikan tak ada tabel baru tanpa RLS.
+-- DITERAPKAN 6 September 2026 (pemicu Johan "kerjakan #3"). Berkas ini adalah
+-- salinan sah dari apa yang berdiri di basis data; dua perbaikan menyusul
+-- setelah diuji dan sudah ikut di sini: `search_path` `batas_batal_tesis`
+-- dikunci, dan pengenal hakim juga membaca peran sesi.
+--
+-- Diperiksa sesudah diterapkan: 4 policy, RLS nyala, 1 pemicu, advisor
+-- keamanan NOL error; tujuh penjaga diuji satu per satu dengan baris nyata
+-- yang dihapus lagi sesudahnya.
 
 -- ── Tabel ───────────────────────────────────────────────────────────────────
 
@@ -80,8 +82,10 @@ create index if not exists tesis_nilai_idx    on public.tesis (status, tanggal_s
 -- dari kenyataan saat ada libur — arah yang aman untuk catatan sekali-tulis:
 -- yang salah paling banter membuat pembatalan ditolak lebih awal, bukan
 -- membuka pembatalan sesudah harganya diketahui.
+-- `search_path` dikunci: fungsi tanpa itu memakai jalur pencarian PEMANGGIL.
+-- Fungsi ini cuma memakai built-in, jadi jalur kosong sudah cukup.
 create or replace function public.batas_batal_tesis(dibuat timestamptz)
-returns timestamptz language sql immutable as $$
+returns timestamptz language sql immutable set search_path = '' as $$
   select min(t) from (
     select ((d::date + time '09:00') at time zone 'Asia/Jakarta') as t
     from generate_series((dibuat at time zone 'Asia/Jakarta')::date,
@@ -98,7 +102,17 @@ $$;
 create or replace function public.tesis_jaga_sekali_tulis()
 returns trigger language plpgsql security definer set search_path = public as $$
 declare
-  layanan boolean := coalesce(current_setting('request.jwt.claims', true), '') like '%service_role%';
+  -- Diuji 6 Sep 2026 dan versi pertamanya GAGAL: klaim JWT kosong kalau
+  -- dijalankan lewat sambungan SQL langsung, jadi hakim yang sah ikut
+  -- tertolak. Gagalnya ke arah aman (memblokir, bukan mengizinkan), tapi
+  -- tetap salah.
+  --
+  -- `session_user`, BUKAN `current_user`: di dalam SECURITY DEFINER
+  -- `current_user` selalu pemilik fungsinya, jadi memakainya membuat penjaga
+  -- ini selalu lolos untuk siapa pun.
+  layanan boolean :=
+    coalesce(current_setting('request.jwt.claims', true), '') like '%service_role%'
+    or session_user in ('postgres', 'supabase_admin', 'service_role');
 begin
   if (new.penyetor, new.kode, new.arah, new.tanggal_sinyal, new.masuk_bawah, new.masuk_atas,
       new.target, new.stop, new.horizon_hari, new.alasan, new.dibuat_pada)

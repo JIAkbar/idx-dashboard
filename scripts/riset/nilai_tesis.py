@@ -66,6 +66,21 @@ def ke_sinyal(t: dict) -> dict:
     }
 
 
+def ambil_daftar(isi) -> list[dict]:
+    """Daftar tesis dari berkas tarikan, apa pun bentuk pembungkusnya.
+
+    Ditulis sebagai fungsi bernama karena versi satu barisnya SALAH dan
+    salahnya tak kelihatan: `isi.get("tesis") or isi if isinstance(isi, list)
+    else []` dibaca Python sebagai `(A or B) if C else D`, bukan
+    `A or (B if C else D)` — jadi seluruh cabangnya jatuh ke `[]` untuk
+    pembungkus dict, dan hakim menjawab "belum ada tesis" atas berkas yang
+    jelas-jelas berisi satu. Terlihat 6 Sep 2026 pada uji ujung-ke-ujung
+    pertama; tak ada satu pun galat yang menyebutnya."""
+    if isinstance(isi, list):
+        return isi
+    return isi.get("tesis") or []
+
+
 def nilai_tesis(t: dict, kalender: list[str], singgahan: dict) -> dict:
     """Vonis satu tesis + jejak secukupnya untuk diperiksa ulang orang lain."""
     horizon = int(t["horizon_hari"])
@@ -137,8 +152,7 @@ def jalankan() -> dict:
         return {"tesis": [], "perPenyetor": {}, "hariBursaTerakhir": None}
 
     isi = json.loads(MASUK.read_text(encoding="utf-8"))
-    daftar = [t for t in (isi.get("tesis") or isi if isinstance(isi, list) else [])
-              if t.get("status") != "batal"]
+    daftar = [t for t in ambil_daftar(isi) if t.get("status") != "batal"]
     kalender = kalender_bursa()
     singgahan: dict = {}
     vonis = [nilai_tesis(t, kalender, singgahan) for t in daftar]
@@ -223,7 +237,13 @@ def swauji() -> None:
     r = ringkas([{"penyetor": "u2", "status": GANTUNG}])["u2"]
     assert r["tuntas"] == 0 and r["akurasi"] is None, r
 
-    print("swauji nilai_tesis: 10 kasus lolos")
+    satu = {"kode": "X", "status": "menunggu"}
+    assert ambil_daftar({"n": 1, "tesis": [satu]}) == [satu]
+    assert ambil_daftar([satu]) == [satu]
+    assert ambil_daftar({"n": 0, "tesis": []}) == []
+    assert ambil_daftar({}) == []
+
+    print("swauji nilai_tesis: 14 kasus lolos")
 
 
 if __name__ == "__main__":

@@ -222,3 +222,36 @@ export function ringkasTesis(baris: TesisRow[]): {
   const tuntas = menang + kalah + takMasuk
   return { tuntas, menang, kalah, takMasuk, berjalan, akurasi: tuntas ? (menang / tuntas) * 100 : null }
 }
+
+/**
+ * Vonis hakim untuk tesis — dibaca dari berkas statis, bukan dari tabel.
+ *
+ * Tabel `tesis` menyimpan APA yang disetor; vonisnya ditulis hakim di sisi
+ * panen (`scripts/riset/nilai_tesis.py`) ke `tesis_vonis.json`. Halaman
+ * menggabungkan keduanya saat membaca — pola yang sama dengan Screener sesudah
+ * antrean #7, dan alasannya sama: satu metrik tak boleh punya dua penulis.
+ * Tanpa ini status di layar akan selamanya "Menunggu" walau hakim sudah
+ * memutuskan (terlihat pada uji ujung-ke-ujung pertama, 6 Sep 2026).
+ */
+export interface VonisTesis {
+  id: string
+  status: StatusTesis
+  ambigu: boolean
+  tglKeluar: string | null
+  hariTerpakai: number | null
+  hargaAkhir: number | null
+  jendelaTutup: boolean
+}
+
+let singgahanVonis: Promise<Map<string, VonisTesis>> | null = null
+
+export function ambilVonisTesis(): Promise<Map<string, VonisTesis>> {
+  if (!singgahanVonis) {
+    singgahanVonis = fetch('/data-idx/json/tesis_vonis.json')
+      .then((r) => (r.ok ? r.json() : { tesis: [] }))
+      .then((j: { tesis?: Array<VonisTesis & { id: string }> }) =>
+        new Map((j.tesis ?? []).map((v) => [v.id, v])))
+      .catch(() => new Map<string, VonisTesis>())
+  }
+  return singgahanVonis
+}
