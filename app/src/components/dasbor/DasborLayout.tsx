@@ -54,6 +54,28 @@ export function DasborLayout() {
     }
   }, [location, navigate])
 
+  // Roda gulir di atas input angka MENGUBAH NILAINYA di Chrome - dan itu
+  // bukan gangguan tampilan. Di kalkulator posisi dan rata-rata harga,
+  // menggulung halaman dengan kursor kebetulan di atas kolom cukup untuk
+  // mengganti angka yang dipakai menghitung, tanpa pengguna tahu ia
+  // mengubahnya. Nol galat, nol tanda di layar - hanya hasil yang salah.
+  //
+  // Dipasang SEKALI di sini, bukan sebagai onWheel di 59 input: satu
+  // penjaga yang tak bisa lupa dipasang di input berikutnya.
+  // `capture` supaya sampai lebih dulu daripada penangan milik komponen,
+  // dan `passive: false` supaya preventDefault benar-benar berlaku.
+  useEffect(() => {
+    const tahan = (e: WheelEvent) => {
+      const el = document.activeElement
+      if (el instanceof HTMLInputElement && el.type === 'number' && el.contains(e.target as Node)) {
+        e.preventDefault()
+        el.blur()   // gulir halaman tetap jalan sesudah fokus dilepas
+      }
+    }
+    document.addEventListener('wheel', tahan, { capture: true, passive: false })
+    return () => document.removeEventListener('wheel', tahan, { capture: true })
+  }, [])
+
   return (
     <LoginModalProvider buka={() => setLoginOpen(true)}>
       <div className="dasbor-shell" data-theme={theme}>

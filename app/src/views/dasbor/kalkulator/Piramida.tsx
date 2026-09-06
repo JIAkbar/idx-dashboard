@@ -72,26 +72,26 @@ export function Piramida() {
         <div className="panel-b" style={{ display: 'grid', gap: 12 }}>
           <div className="field">
             <span className="lbl">Modal (Rp)</span>
-            <input className="inp" type="number" min={0} value={modalRaw} onChange={(e) => setModalRaw(e.target.value)} />
+            <input className="inp" type="number" inputMode="decimal" min={0} value={modalRaw} onChange={(e) => setModalRaw(e.target.value)} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div className="field">
               <span className="lbl">Risiko per transaksi (%)</span>
-              <input className="inp" type="number" min={0.1} step={0.1} value={risiko} onChange={(e) => setRisiko(e.target.value)} />
+              <input className="inp" type="number" inputMode="decimal" min={0.1} step={0.1} value={risiko} onChange={(e) => setRisiko(e.target.value)} />
             </div>
             <div className="field">
               <span className="lbl">Langkah kenaikan lapis (%)</span>
-              <input className="inp" type="number" min={0.1} step={0.5} value={langkah} onChange={(e) => setLangkah(e.target.value)} />
+              <input className="inp" type="number" inputMode="decimal" min={0.1} step={0.5} value={langkah} onChange={(e) => setLangkah(e.target.value)} />
             </div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div className="field">
               <span className="lbl">Harga masuk (Rp)</span>
-              <input className="inp" type="number" min={0} value={masuk} onChange={(e) => setMasuk(e.target.value)} />
+              <input className="inp" type="number" inputMode="decimal" min={0} value={masuk} onChange={(e) => setMasuk(e.target.value)} />
             </div>
             <div className="field">
               <span className="lbl">Stop loss (Rp)</span>
-              <input className="inp" type="number" min={0} value={sl} onChange={(e) => setSl(e.target.value)} />
+              <input className="inp" type="number" inputMode="decimal" min={0} value={sl} onChange={(e) => setSl(e.target.value)} />
             </div>
           </div>
 

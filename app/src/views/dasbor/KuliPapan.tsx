@@ -223,49 +223,49 @@ export function KuliPapan() {
             </label>
             <label className="kp-field">
               <span>Buy Avg</span>
-              <input className="inp" type="number" value={buyAvg || ''}
+              <input className="inp" type="number" inputMode="decimal" value={buyAvg || ''}
                 onChange={(e) => setBuyAvg(+e.target.value)} />
             </label>
             <label className="kp-field">
               <span>Lot bandar (net)</span>
-              <input className="inp" type="number" value={buyLot || ''}
+              <input className="inp" type="number" inputMode="decimal" value={buyLot || ''}
                 onChange={(e) => setBuyLot(+e.target.value)} />
             </label>
             <label className="kp-field">
               <span>Bid</span>
-              <input className="inp" type="number" value={bid || ''}
+              <input className="inp" type="number" inputMode="decimal" value={bid || ''}
                 onChange={(e) => setBid(+e.target.value)} />
             </label>
             <label className="kp-field">
               <span>Offer</span>
-              <input className="inp" type="number" value={offer || ''}
+              <input className="inp" type="number" inputMode="decimal" value={offer || ''}
                 onChange={(e) => setOffer(+e.target.value)} />
             </label>
             <label className="kp-field">
               <span>Tick</span>
-              <input className="inp" type="number" value={tick || ''}
+              <input className="inp" type="number" inputMode="decimal" value={tick || ''}
                 onChange={(e) => setTick(+e.target.value)} />
             </label>
             <label className="kp-field kp-manual">
               <span>Total Bid (lot) <em>isi sendiri</em></span>
-              <input className="inp" type="number" value={totalBid || ''}
+              <input className="inp" type="number" inputMode="decimal" value={totalBid || ''}
                 onChange={(e) => setTotalBid(+e.target.value)} />
             </label>
             <label className="kp-field kp-manual">
               <span>Total Offer (lot) <em>isi sendiri</em></span>
-              <input className="inp" type="number" value={totalOffer || ''}
+              <input className="inp" type="number" inputMode="decimal" value={totalOffer || ''}
                 onChange={(e) => setTotalOffer(+e.target.value)} />
             </label>
             {agresif ? (
               <label className="kp-field kp-manual">
                 <span>Jumlah baris <em>isi sendiri</em></span>
-                <input className="inp" type="number" value={barisManual || ''}
+                <input className="inp" type="number" inputMode="decimal" value={barisManual || ''}
                   onChange={(e) => setBarisManual(+e.target.value)} />
               </label>
             ) : (
               <label className="kp-field">
                 <span>Baseline (%)</span>
-                <input className="inp" type="number" step="0.5" value={baselinePersen}
+                <input className="inp" type="number" inputMode="decimal" step="0.5" value={baselinePersen}
                   onChange={(e) => setBaselinePersen(+e.target.value)} />
               </label>
             )}
@@ -347,17 +347,17 @@ export function KuliPapan() {
           <div className="kp-grid">
             <label className="kp-field">
               <span>Harga pasar</span>
-              <input className="inp" type="number" value={harga || ''}
+              <input className="inp" type="number" inputMode="decimal" value={harga || ''}
                 onChange={(e) => setHarga(+e.target.value)} />
             </label>
             <label className="kp-field">
               <span>BVPS</span>
-              <input className="inp" type="number" value={bvps || ''}
+              <input className="inp" type="number" inputMode="decimal" value={bvps || ''}
                 onChange={(e) => setBvps(+e.target.value)} />
             </label>
             <label className="kp-field">
               <span>P/B band (×)</span>
-              <input className="inp" type="number" step="0.01" value={band || ''}
+              <input className="inp" type="number" inputMode="decimal" step="0.01" value={band || ''}
                 onChange={(e) => setBand(+e.target.value)} />
             </label>
           </div>

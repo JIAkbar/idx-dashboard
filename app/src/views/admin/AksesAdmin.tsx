@@ -215,7 +215,7 @@ export function AksesAdmin() {
                         <td className="r">
                           <input
                             className="inp"
-                            type="number"
+                            type="number" inputMode="decimal"
                             // 56px cuma memuat dua digit: setelah dikurangi
                             // padding dan tombol putar bawaan type=number,
                             // "100" tergunting jadi "10(" dan "145" jadi "14:".

@@ -103,25 +103,25 @@ export function Bunga() {
         <div className="panel-b" style={{ display: 'grid', gap: 12 }}>
           <div className="field">
             <span className="lbl">Modal awal (Rp)</span>
-            <input className="inp" type="number" min={0} value={modalRaw} onChange={(e) => setModalRaw(e.target.value)} />
+            <input className="inp" type="number" inputMode="decimal" min={0} value={modalRaw} onChange={(e) => setModalRaw(e.target.value)} />
           </div>
           <div className="field">
             <span className="lbl">Setoran bulanan (Rp)</span>
-            <input className="inp" type="number" min={0} value={setoranRaw} onChange={(e) => setSetoranRaw(e.target.value)} />
+            <input className="inp" type="number" inputMode="decimal" min={0} value={setoranRaw} onChange={(e) => setSetoranRaw(e.target.value)} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div className="field">
               <span className="lbl">Imbal tahunan (%)</span>
-              <input className="inp" type="number" step={0.1} value={imbal} onChange={(e) => setImbal(e.target.value)} />
+              <input className="inp" type="number" inputMode="decimal" step={0.1} value={imbal} onChange={(e) => setImbal(e.target.value)} />
             </div>
             <div className="field">
               <span className="lbl">Inflasi tahunan (%)</span>
-              <input className="inp" type="number" step={0.1} value={inflasi} onChange={(e) => setInflasi(e.target.value)} />
+              <input className="inp" type="number" inputMode="decimal" step={0.1} value={inflasi} onChange={(e) => setInflasi(e.target.value)} />
             </div>
           </div>
           <div className="field">
             <span className="lbl">Horizon (tahun)</span>
-            <input className="inp" type="number" min={1} max={50} step={1} value={horizon} onChange={(e) => setHorizon(e.target.value)} />
+            <input className="inp" type="number" inputMode="decimal" min={1} max={50} step={1} value={horizon} onChange={(e) => setHorizon(e.target.value)} />
           </div>
 
           <div className="v-note" style={{ display: 'block', lineHeight: 1.6 }}>

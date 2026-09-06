@@ -4366,7 +4366,7 @@ export function GrafikEmiten() {
                            render; commit di blur/Enter, dan key baru me-
                            remount input dengan nilai yang sudah sah. */
                         <span key={`${i}-${lv}`} className="grf-fib-item">
-                          <input className="inp" type="number" step="0.001" defaultValue={lv}
+                          <input className="inp" type="number" inputMode="decimal" step="0.001" defaultValue={lv}
                             aria-label={`Level Fibonacci ${lv}`}
                             onBlur={(e) => { const v = Number(e.target.value); if (v !== lv) ubahLevel(i, v) }}
                             onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }} />
@@ -4382,7 +4382,7 @@ export function GrafikEmiten() {
                   <div className="grf-setel-baris" role="group" aria-label="Tambah level Fibonacci">
                     <span className="grf-setel-lbl">Tambah</span>
                     <span className="grf-fib-level">
-                      <input className="inp" type="number" step="0.001" placeholder="mis. 1.13"
+                      <input className="inp" type="number" inputMode="decimal" step="0.001" placeholder="mis. 1.13"
                         aria-label="Nilai level Fibonacci baru"
                         onKeyDown={(e) => {
                           if (e.key !== 'Enter') return

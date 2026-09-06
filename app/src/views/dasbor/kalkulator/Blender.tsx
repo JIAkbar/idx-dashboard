@@ -75,9 +75,9 @@ export function Blender() {
               {posisi.map((p, i) => (
                 <tr key={i}>
                   <td>{i + 1}</td>
-                  <td className="r"><input className="inp" type="number" min={0} value={p.harga || ''} placeholder="0"
+                  <td className="r"><input className="inp" type="number" inputMode="decimal" min={0} value={p.harga || ''} placeholder="0"
                     onChange={(e) => ubah(i, 'harga', e.target.value)} style={{ textAlign: 'right' }} /></td>
-                  <td className="r"><input className="inp" type="number" min={0} value={p.lot || ''} placeholder="0"
+                  <td className="r"><input className="inp" type="number" inputMode="decimal" min={0} value={p.lot || ''} placeholder="0"
                     onChange={(e) => ubah(i, 'lot', e.target.value)} style={{ textAlign: 'right' }} /></td>
                 </tr>
               ))}
@@ -87,11 +87,11 @@ export function Blender() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
             <div className="field">
               <span className="lbl">Fee Beli (%)</span>
-              <input className="inp" type="number" min={0} max={5} step={0.01} value={feeBeli} onChange={(e) => setFeeBeli(parseFloat(e.target.value) || 0)} />
+              <input className="inp" type="number" inputMode="decimal" min={0} max={5} step={0.01} value={feeBeli} onChange={(e) => setFeeBeli(parseFloat(e.target.value) || 0)} />
             </div>
             <div className="field">
               <span className="lbl">Fee Jual (%)</span>
-              <input className="inp" type="number" min={0} max={5} step={0.01} value={feeJual} onChange={(e) => setFeeJual(parseFloat(e.target.value) || 0)} />
+              <input className="inp" type="number" inputMode="decimal" min={0} max={5} step={0.01} value={feeJual} onChange={(e) => setFeeJual(parseFloat(e.target.value) || 0)} />
             </div>
           </div>
           <div className="v-note" style={{ display: 'block', marginTop: 6, lineHeight: 1.5 }}>

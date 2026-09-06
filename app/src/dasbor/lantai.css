@@ -1201,6 +1201,19 @@
 .lantai .inp{background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r);color:var(--text);font-family:var(--ui);font-variant-numeric:tabular-nums;font-size:12.5px;padding:7px 11px;width:100%}
 .lantai .inp::placeholder{color:var(--text3)}
 .lantai .inp:focus{outline:none;border-color:var(--amber)}
+/* Panah pemutar bawaan peramban di input angka - dibuang untuk SELURUH
+   lantai, bukan per kelas.
+
+   Sebelum 7 Sep 2026 hanya satu kelas yang menyembunyikannya, jadi 58 input
+   angka lain memajang panah bawaan: dua tombol mungil berjarak nol yang
+   melanggar aturan target sentuh 44px, dan di kalkulator posisi mereka
+   berdempetan dengan angkanya sendiri.
+
+   `appearance: textfield` untuk Firefox, pseudo-elemen untuk Chromium.
+   Keduanya perlu; salah satu saja menyisakan panah di separuh peramban. */
+.lantai input[type=number]{appearance:textfield;-moz-appearance:textfield}
+.lantai input[type=number]::-webkit-outer-spin-button,
+.lantai input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;appearance:none;margin:0}
 .lantai .btn-p{background:var(--amber);color:var(--amber-ink);font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding:9px 18px;border-radius:var(--r)}
 .lantai .btn-p:hover{filter:brightness(1.08)}
 .lantai .field .lbl{display:block;margin-bottom:5px}

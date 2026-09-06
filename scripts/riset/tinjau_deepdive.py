@@ -40,11 +40,22 @@ Pakai:
 """
 from __future__ import annotations
 
+import io
 import json
 import re
 import sys
 from datetime import datetime
 from pathlib import Path
+
+# Keluaran dipaksa UTF-8. Tanpa ini skrip MATI dengan UnicodeEncodeError
+# begitu dijalankan di luar konsol UTF-8 - panah dan tanda kutip lengkung di
+# laporannya cukup untuk menjatuhkannya. Ketahuan 7 Sep 2026 saat hendak
+# menjadwalkannya: dijalankan dari bat, ia akan gagal TIAP JALAN. Diperbaiki
+# di sumbernya, bukan lewat PYTHONIOENCODING di pemanggil - variabel
+# lingkungan bisa lupa dipasang di pemanggil berikutnya, baris ini tidak.
+if hasattr(sys.stdout, 'buffer'):
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 AKAR = Path(__file__).resolve().parent.parent.parent
 DIR_BEDAH = AKAR / "arus-pasar" / "bedah"

@@ -80,25 +80,25 @@ export function Dividen({ feeBeli, setFeeBeli, feeJual, setFeeJual }: DividenPro
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 10, marginBottom: 8 }}>
               <div className="field">
                 <span className="lbl">Avg Buy Price (IDR/saham)</span>
-                <input className="inp" type="number" name="buy" placeholder="0" min={0} value={buy} onChange={(e) => setBuy(e.target.value)} />
+                <input className="inp" type="number" inputMode="decimal" name="buy" placeholder="0" min={0} value={buy} onChange={(e) => setBuy(e.target.value)} />
               </div>
               <div className="field">
                 <span className="lbl">Lots (1 lot = 100 saham)</span>
-                <input className="inp" type="number" name="lots" placeholder="0" min={0} value={lots} onChange={(e) => setLots(e.target.value)} />
+                <input className="inp" type="number" inputMode="decimal" name="lots" placeholder="0" min={0} value={lots} onChange={(e) => setLots(e.target.value)} />
               </div>
               <div className="field">
                 <span className="lbl">Dividen / Saham (IDR)</span>
-                <input className="inp" type="number" name="dps" placeholder="0" min={0} value={dps} onChange={(e) => setDps(e.target.value)} />
+                <input className="inp" type="number" inputMode="decimal" name="dps" placeholder="0" min={0} value={dps} onChange={(e) => setDps(e.target.value)} />
               </div>
               <div className="field">
                 <span className="lbl">Pajak Dividen (%)</span>
-                <input className="inp" type="number" name="tax" value={tax} min={0} max={100} step={0.5} onChange={(e) => setTax(e.target.value)} />
+                <input className="inp" type="number" inputMode="decimal" name="tax" value={tax} min={0} max={100} step={0.5} onChange={(e) => setTax(e.target.value)} />
                 <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 2 }}>WNI OP: 10% final</div>
               </div>
               <div className="field">
                 <span className="lbl">Fee Beli (%)</span>
                 <input
-                  className="inp" type="number" min={0} max={5} step={0.01}
+                  className="inp" type="number" inputMode="decimal" min={0} max={5} step={0.01}
                   name="feeBeli" value={feeBeli}
                   aria-label="Fee beli (persen)"
                   onChange={(e) => setFeeBeli(parseFloat(e.target.value) || 0)}
@@ -107,7 +107,7 @@ export function Dividen({ feeBeli, setFeeBeli, feeJual, setFeeJual }: DividenPro
               <div className="field">
                 <span className="lbl">Fee Jual (%)</span>
                 <input
-                  className="inp" type="number" min={0} max={5} step={0.01}
+                  className="inp" type="number" inputMode="decimal" min={0} max={5} step={0.01}
                   name="feeJual" value={feeJual}
                   aria-label="Fee jual (persen)"
                   onChange={(e) => setFeeJual(parseFloat(e.target.value) || 0)}

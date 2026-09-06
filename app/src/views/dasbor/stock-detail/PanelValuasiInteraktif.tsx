@@ -139,15 +139,15 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
               (lihat lantai.css blok #98). Lebar input inline tetap utk desktop. */}
           <div className="gv-form">
             <div className="field"><span className="lbl">EPS (Rp/saham)</span>
-              <input className="inp" type="number" value={eps} step="any" style={{ width: 90 }} onChange={(e) => setEps(num(e.target.value))} /></div>
+              <input className="inp" type="number" inputMode="decimal" value={eps} step="any" style={{ width: 90 }} onChange={(e) => setEps(num(e.target.value))} /></div>
             <div className="field"><span className="lbl">BV/Saham (Rp)</span>
-              <input className="inp" type="number" value={bv} step="any" style={{ width: 100 }} onChange={(e) => setBv(num(e.target.value))} /></div>
+              <input className="inp" type="number" inputMode="decimal" value={bv} step="any" style={{ width: 100 }} onChange={(e) => setBv(num(e.target.value))} /></div>
             <div className="field"><span className="lbl">Growth EPS (g%/tahun)</span>
-              <input className="inp" type="number" value={g} min={0} max={30} step={0.5} style={{ width: 75 }} onChange={(e) => setG(num(e.target.value))} /></div>
+              <input className="inp" type="number" inputMode="decimal" value={g} min={0} max={30} step={0.5} style={{ width: 75 }} onChange={(e) => setG(num(e.target.value))} /></div>
             <div className="field"><span className="lbl">Risk-free (Y%)</span>
-              <input className="inp" type="number" value={Y} min={1} max={20} step={0.25} style={{ width: 65 }} onChange={(e) => setY(num(e.target.value))} /></div>
+              <input className="inp" type="number" inputMode="decimal" value={Y} min={1} max={20} step={0.25} style={{ width: 65 }} onChange={(e) => setY(num(e.target.value))} /></div>
             <div className="field"><span className="lbl">Harga saat ini</span>
-              <input className="inp" type="number" value={price} step="any" style={{ width: 90 }} onChange={(e) => setPrice(num(e.target.value))} /></div>
+              <input className="inp" type="number" inputMode="decimal" value={price} step="any" style={{ width: 90 }} onChange={(e) => setPrice(num(e.target.value))} /></div>
           </div>
           {/* minmax 200 (bukan 240 bawaan grid3) supaya 3 vcard muat sebaris
               di kolom .duo.lebar — 240 bikin 2+1 dan bolong di samping NCAV. */}
@@ -231,7 +231,7 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
             <div className="panel-b">
               <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 8 }}>
                 Gordon Growth Model · Required Return ={' '}
-                <input className="inp" type="number" value={ddmR} min={5} max={25} step={0.5} style={{ width: 44, padding: '1px 3px', textAlign: 'center', fontSize: 10 }} onChange={(e) => setDdmR(num(e.target.value))} />%
+                <input className="inp" type="number" inputMode="decimal" value={ddmR} min={5} max={25} step={0.5} style={{ width: 44, padding: '1px 3px', textAlign: 'center', fontSize: 10 }} onChange={(e) => setDdmR(num(e.target.value))} />%
               </div>
               <table>
                 <tbody>

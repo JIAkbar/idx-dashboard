@@ -22,11 +22,9 @@
 }
 .lantai .wl-avg:hover { background: var(--bg2); border-color: var(--line2); border-radius: var(--r); }
 .lantai .wl-avg:focus { background: var(--bg2); border-color: var(--amber); border-radius: var(--r); }
-/* Tombol naik-turun bawaan sudah tak ada sejak input-nya jadi type="text",
-   tapi aturannya ditahan: sebagian peramban masih menampilkannya untuk
-   inputMode="decimal" di ponsel. */
-.lantai .wl-avg::-webkit-outer-spin-button,
-.lantai .wl-avg::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+/* Panah pemutar: diurus aturan global `input[type=number]` di lantai.css
+   sejak 7 Sep 2026. Salinan per-kelas di sini dicabut - satu kelas yang
+   rapi sementara 58 input lain tidak justru menyembunyikan masalahnya. */
 
 /* Kolom EMA: tiga penanda berjarak tetap supaya sejajar antarbaris walau
    isinya beda arah. Titik tengah (·) = EMA-nya belum ada, bukan "netral". */

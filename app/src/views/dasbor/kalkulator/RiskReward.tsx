@@ -82,21 +82,21 @@ export function RiskReward() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 10, marginBottom: 8 }}>
               <div className="field">
                 <span className="lbl">Entry Price (IDR)</span>
-                <input className="inp" type="number" name="entry" placeholder="0" min={0} value={entry} onChange={(e) => setEntry(e.target.value)} />
+                <input className="inp" type="number" inputMode="decimal" name="entry" placeholder="0" min={0} value={entry} onChange={(e) => setEntry(e.target.value)} />
               </div>
               <div className="field">
                 <span className="lbl">Stop Loss (IDR)</span>
-                <input className="inp" type="number" name="sl" placeholder="0" min={0} value={sl} onChange={(e) => setSl(e.target.value)} />
+                <input className="inp" type="number" inputMode="decimal" name="sl" placeholder="0" min={0} value={sl} onChange={(e) => setSl(e.target.value)} />
                 <div className="v-note" style={{ color: 'var(--red)', marginTop: 3 }}>{slNote}</div>
               </div>
               <div className="field">
                 <span className="lbl">Target Profit (IDR)</span>
-                <input className="inp" type="number" name="tp" placeholder="0" min={0} value={tp} onChange={(e) => setTp(e.target.value)} />
+                <input className="inp" type="number" inputMode="decimal" name="tp" placeholder="0" min={0} value={tp} onChange={(e) => setTp(e.target.value)} />
                 <div className="v-note" style={{ color: 'var(--green)', marginTop: 3 }}>{tpNote}</div>
               </div>
               <div className="field">
                 <span className="lbl">Posisi (Lot) — opsional</span>
-                <input className="inp" type="number" name="lots" placeholder="0" min={0} value={lots} onChange={(e) => setLots(e.target.value)} />
+                <input className="inp" type="number" inputMode="decimal" name="lots" placeholder="0" min={0} value={lots} onChange={(e) => setLots(e.target.value)} />
               </div>
             </div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>

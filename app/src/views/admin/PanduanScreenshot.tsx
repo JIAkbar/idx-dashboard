@@ -307,7 +307,7 @@ function FormTambahContoh({ urutanAwal, onClose, onSukses }: { urutanAwal: numbe
         </div>
         <div className="field">
           <span className="lbl">Urutan</span>
-          <input className="inp" type="number" style={{ width: 80 }} value={urutan} onChange={(e) => setUrutan(Number(e.target.value) || 0)} />
+          <input className="inp" type="number" inputMode="decimal" style={{ width: 80 }} value={urutan} onChange={(e) => setUrutan(Number(e.target.value) || 0)} />
         </div>
         <button type="submit" className="btn-p" disabled={kirim}>{kirim ? 'Mengunggah…' : 'Tambah'}</button>
         {err && <p className="af-err" style={{ margin: 0 }}>{err}</p>}

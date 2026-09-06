@@ -42,11 +42,11 @@ export function PosisiBar({ kode, onKode, lots, onLots, avg, onAvg, onFill }: Po
         </div>
         <div className="field" style={{ width: 80 }}>
           <span className="lbl">Lots</span>
-          <input className="inp" type="number" name="lots" placeholder="0" min={0} value={lots} onChange={(e) => onLots(e.target.value)} />
+          <input className="inp" type="number" inputMode="decimal" name="lots" placeholder="0" min={0} value={lots} onChange={(e) => onLots(e.target.value)} />
         </div>
         <div className="field" style={{ width: 110 }}>
           <span className="lbl">Avg Cost</span>
-          <input className="inp" type="number" name="avg" placeholder="0" min={0} value={avg} onChange={(e) => onAvg(e.target.value)} />
+          <input className="inp" type="number" inputMode="decimal" name="avg" placeholder="0" min={0} value={avg} onChange={(e) => onAvg(e.target.value)} />
         </div>
         <button className="btn-p btn-p-kecil" onClick={onFill}>↩ Isi Kalkulator</button>
       </div>
