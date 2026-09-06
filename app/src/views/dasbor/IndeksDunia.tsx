@@ -8,6 +8,9 @@ import { BilahTanggal } from '../../components/dasbor/BilahTanggal'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { Papan } from '../../components/dasbor/Papan'
 import { useDataHarian, type DataHarian, type TanggalIndex } from '../../lib/dasbor/dataHarian'
+import { useDataRentang } from '../../lib/dasbor/dataHarian'
+import { ringkasRentang } from '../../lib/dasbor/rentangPasar'
+import type { RentangTanggal } from '../../lib/dasbor/periode'
 import { hitungYtdPct } from '../../lib/dasbor/ytd'
 import { fN, fp, fmtNF } from '../../lib/dasbor/format'
 import { useChartCanvas } from '../../lib/dasbor/useChartJs'
@@ -581,6 +584,60 @@ export function PapanIhsg({ hari, tanggalTersedia, buka, kepala, tanpaMeta }: {
   )
 }
 
+/**
+ * Ringkasan pasar untuk rentang terpilih (#34).
+ *
+ * Tiap ruas yang DIJUMLAHKAN membawa cacah harinya sendiri, dan cacah itu
+ * dicetak begitu lebih kecil daripada jumlah hari di rentang. Itu bukan
+ * kerapian: total yang dihitung dari 4 dari 5 hari terlihat persis seperti
+ * total yang lengkap, dan seluruh cacat terbesar 6-7 Sep 2026 berbentuk itu.
+ *
+ * Ruas yang bersifat TITIK (PER/PBV pasar, kurs) sengaja tidak ada di sini -
+ * menjumlahkannya tak punya arti, dan merata-ratakannya menyembunyikan
+ * pergerakan. Keduanya tetap dibaca dari panel harian di bawah.
+ */
+function PanelRentangPasar({ r }: { r: NonNullable<ReturnType<typeof ringkasRentang>> }) {
+  const naik = (r.ihsg_pct ?? 0) >= 0
+  const cakupan = (n: number) => (n < r.n_hari ? ` · ${n} dari ${r.n_hari} hari berdata` : '')
+  const ruas: [string, string, string][] = [
+    ['Volume', r.vol == null ? '—' : `${fN(r.vol, 0)} Jt lbr`,
+      r.vol_rerata == null ? '' : `rata-rata ${fN(r.vol_rerata, 0)} Jt/hari${cakupan(r.n_vol)}`],
+    ['Nilai', r.val == null ? '—' : `${fN(r.val, 0)} M IDR`,
+      r.val_rerata == null ? '' : `rata-rata ${fN(r.val_rerata, 0)} M/hari${cakupan(r.n_val)}`],
+    ['Frekuensi', r.frek == null ? '—' : `${fN(r.frek, 0)} Rb kali`,
+      r.frek_rerata == null ? '' : `rata-rata ${fN(r.frek_rerata, 0)} Rb/hari${cakupan(r.n_frek)}`],
+    ['Net asing', r.nf == null ? '—' : `${r.nf >= 0 ? '+' : ''}${fN(r.nf, 0)} M IDR`,
+      r.nf == null ? 'ruas tak ada di berkas hari mana pun'
+        : `dijumlahkan dari nilai harian${cakupan(r.n_nf)}`],
+  ]
+  return (
+    <section className="panel">
+      <div className="panel-h">
+        <span className="lbl">Ringkasan rentang · {r.n_hari} hari bursa</span>
+      </div>
+      <div className="panel-b">
+        <div className="be-tangga-baris">
+          <span className="be-pil">IHSG<b className={naik ? 'up' : 'dn'}>
+            {r.ihsg_pct == null ? '—' : `${naik ? '+' : ''}${r.ihsg_pct.toFixed(2)}%`}</b></span>
+          <span className="be-pil">awal<b>{r.ihsg_awal == null ? '—' : fN(r.ihsg_awal, 2)}</b></span>
+          <span className="be-pil">akhir<b>{r.ihsg_akhir == null ? '—' : fN(r.ihsg_akhir, 2)}</b></span>
+          <span className="be-pil">tertinggi<b>{r.ihsg_tertinggi == null ? '—' : fN(r.ihsg_tertinggi, 2)}</b></span>
+          <span className="be-pil">terendah<b>{r.ihsg_terendah == null ? '—' : fN(r.ihsg_terendah, 2)}</b></span>
+        </div>
+        <div className="kv-baris" style={{ marginTop: 10 }}>
+          {ruas.map(([nama, nilai, sub]) => (
+            <div key={nama} className="kv">
+              <span className="lbl">{nama}</span>
+              <span className="v-num num">{nilai}</span>
+              {sub && <span className="v-note">{sub}</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export function IndeksDunia() {
   const { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error } = useDataHarian()
   const navigate = useNavigate()
@@ -588,6 +645,23 @@ export function IndeksDunia() {
   // sebagian render. `null` kalau tanggalnya belum dipanen Yahoo (panen jalan
   // sore); lilin lalu mundur ke penutupan kemarin seperti sebelum #108.
   const buka = useIhsgBuka(tanggalAktif ?? undefined)
+
+  // Mode rentang (#34, Johan: "page ini jika datanya bisa rentang waktu lebih
+  // baik lagi"). Panel harian TETAP ada di bawahnya - rentang MENAMBAH cara
+  // membaca, bukan mengganti: sebagian ruas di halaman ini memang bersifat
+  // titik (PER/PBV pasar, kurs) dan tak punya arti kalau dijumlahkan.
+  const [rentangPasar, setRentangPasar] = useState<RentangTanggal | null>(null)
+  const tanggalRentang = useMemo(
+    () => (rentangPasar
+      ? tanggalTersedia.filter((t) => t.date_iso >= rentangPasar.mulai && t.date_iso <= rentangPasar.akhir)
+      : []),
+    [tanggalTersedia, rentangPasar],
+  )
+  const { days: hariRentang, loading: memuatRentang } = useDataRentang(tanggalRentang)
+  const ringkas = useMemo(
+    () => (hariRentang ? ringkasRentang(hariRentang.filter(Boolean)) : null),
+    [hariRentang],
+  )
 
   const world = hari?.world ?? []
 
@@ -640,7 +714,15 @@ export function IndeksDunia() {
   return (
     <div className="lantai">
       {vhead(tanggalAktif, hari?.sementara === true)}
-      <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} memuat={loading && !hari} />
+      <BilahTanggal
+        tanggalTersedia={tanggalTersedia}
+        tanggalAktif={tanggalAktif}
+        onPilih={pilihTanggal}
+        onRentang={setRentangPasar}
+        rentangAktif={rentangPasar}
+        memuat={(loading && !hari) || memuatRentang}
+      />
+      {ringkas && <PanelRentangPasar r={ringkas} />}
       <PapanIhsg hari={hari} tanggalTersedia={tanggalTersedia} buka={buka} />
 
       {/* Tiga panel ini dulu kolom kanan `grid2 w-kiri`, berpasangan dengan
