@@ -91,3 +91,9 @@ data-idx/radar/masuk/
 
 # Penanda radar basi — ditulis cek_radar_basi.py di task buka-laptop
 .radar_basi.json
+
+# Salinan tabel `tesis` untuk hakim nol-jaringan. TIDAK dilacak: ia
+# perantara yang bisa ditarik ulang kapan saja, dan menyimpannya di riwayat
+# publik berarti mengabadikan uuid penyetor tanpa alasan. Yang DILACAK
+# hasil penilaiannya: tesis_vonis.json + penilaian_tesis/.
+data-idx/json/tesis_masuk.json

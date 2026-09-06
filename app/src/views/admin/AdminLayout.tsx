@@ -214,12 +214,21 @@ export function AdminLayout() {
 
   const perluLengkapiProfil = Boolean(profil && !profil.alias?.trim() && !lengkapiTutup)
 
+  // ── Antrean #3, 6 Sep 2026 ────────────────────────────────────────────────
+  // Johan: *"sekarang kan tidak perlu lagi ada kurasi, setor orderbook,
+  // deepdive yang butuh data broker panjang"* · *"artinya menu2 sekarang di
+  // bekukan saja"*. Yang kehilangan BAHANNYA dibekukan — bukan dihapus:
+  // Unggah (tangkapan layar), Kurasi, dan Deep Dive manual sekarang superadmin
+  // saja dan berlabel "Arsip", karena sumber brokernya kini panen mesin.
+  // Tak ada satu baris `setoran` pun yang dihapus; riwayatnya tetap bisa
+  // dibuka. Radar, Terbitan, Akun, Akses, Aktivitas, Changelog tak berubah.
   const tabs: TabDef[] = [
-    { to: '/admin', end: true, label: 'Unggah', ikon: IKON_GAMBAR, tampil: true },
-    { to: '/admin/kurasi', label: 'Kurasi', ikon: IKON_PAPAN_KLIP, tampil: superadmin, badge: menunggu },
+    { to: '/admin', end: true, label: 'Tesis', ikon: IKON_GRAFIK_NAIK, tampil: true },
+    { to: '/admin/unggah-arsip', label: 'Unggah · arsip', ikon: IKON_GAMBAR, tampil: superadmin },
+    { to: '/admin/kurasi', label: 'Kurasi · arsip', ikon: IKON_PAPAN_KLIP, tampil: superadmin, badge: menunggu },
     // Radar WDWL — produk kurasi khusus, kontributor tidak menyetor bahannya.
     { to: '/admin/radar', label: 'Radar', ikon: IKON_RADAR, tampil: superadmin },
-    { to: '/admin/bedah', label: 'Deep Dive', ikon: IKON_GRAFIK_NAIK, tampil: Boolean(profil?.boleh_bedah) },
+    { to: '/admin/bedah', label: 'Deep Dive · arsip', ikon: IKON_GRAFIK_NAIK, tampil: superadmin },
     { to: '/admin/terbitan', label: 'Terbitan', ikon: IKON_KOTAK_ARSIP, tampil: true },
     { to: '/admin/akun', label: 'Akun', ikon: IKON_GIR, tampil: superadmin },
     { to: '/admin/akses', label: 'Akses', ikon: IKON_KUNCI, tampil: superadmin },
@@ -387,9 +396,14 @@ export function AdminLayout() {
                   </p>
                 )}
                 <p className="muted" style={{ margin: 0, fontSize: 11.5, lineHeight: 1.55 }}>
+                  {/* Antrean #3: kalimat ini dulu menyuruh mengunggah tangkapan
+                      layar broker. Jalur itu beku — sumber brokernya kini panen
+                      mesin — jadi sambutannya ikut berganti. Kalimat yang
+                      mengarahkan ke jalur yang sudah tak menerima setoran lebih
+                      buruk daripada tak ada kalimat sama sekali. */}
                   {superadmin
-                    ? 'Unggah screenshot broker summary harian, kurasi setoran, pantau Radar WDWL, dan kelola rak terbitan Arus Pasar — semuanya di tab-tab atas.'
-                    : 'Unggah screenshot broker summary harian dan pantau rak terbitan Arus Pasar — semuanya di tab-tab atas.'}
+                    ? 'Setor tesis dari halaman Berkas Emiten, pantau Radar WDWL, dan kelola rak terbitan Arus Pasar — semuanya di tab-tab atas. Unggah & Kurasi kini arsip: isinya tetap bisa dibuka, tapi tak menerima setoran baru.'
+                    : 'Setor tesis dari halaman Berkas Emiten, lalu pantau hasilnya di tab Tesis. Tesis dinilai mesin, bukan dikurasi — menang atau kalah, keduanya tercatat.'}
                 </p>
                 {!superadmin && profil && <SambutanJenjang profil={profil} />}
                 <button

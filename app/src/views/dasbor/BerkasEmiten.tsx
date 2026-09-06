@@ -16,6 +16,8 @@ import { useSearchParams } from 'react-router-dom'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { InfoIndikator, type ItemInfoIndikator } from '../../components/dasbor/InfoIndikator'
+import { ModalSetorTesis } from '../../components/tesis/ModalSetorTesis'
+import { useAuth } from '../../context/AuthContext'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useBrokerTahunan } from '../../lib/dasbor/brokerTahunanData'
 import { ringkasPemegang, bacaKonsentrasi } from '../../lib/dasbor/berkasPemegang'
@@ -86,6 +88,11 @@ function fmtX(v: number | null): string {
 
 export default function BerkasEmiten() {
   const [params, setParams] = useSearchParams()
+  // Setor tesis — pengganti unggah tangkapan layar (antrean #3). Tombolnya
+  // hanya untuk yang sudah masuk: tesis itu rekam jejak bernama, bukan
+  // masukan anonim.
+  const { session } = useAuth()
+  const [setorTesis, setSetorTesis] = useState(false)
   const kode = (params.get('kode') || 'BBRI').toUpperCase()
   const [ketik, setKetik] = useState(kode)
   const { index: indeks } = useStockIndex()
@@ -323,9 +330,22 @@ export default function BerkasEmiten() {
           <span className="be-statis">IHSG</span>
         </div>
         <div className="grup-kanan">
+          {session && (
+            <button type="button" className="dd-btn" onClick={() => setSetorTesis(true)}>
+              Setor tesis
+            </button>
+          )}
           <InfoIndikator judul={`Berkas Emiten · ${kode}`} item={INFO} />
         </div>
       </div>
+
+      {setorTesis && (
+        <ModalSetorTesis
+          kode={kode}
+          harga={candle.lilin.length ? candle.lilin[candle.lilin.length - 1].close : null}
+          onTutup={() => setSetorTesis(false)}
+        />
+      )}
 
       <div className="vhead">
         <h1>Berkas Emiten</h1>

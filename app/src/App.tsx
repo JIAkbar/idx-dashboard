@@ -53,6 +53,7 @@ const AliranAsing = lazy(() => import('./views/dasbor/AliranAsing').then((m) => 
 const IpoAnalysis = lazy(() => import('./views/dasbor/IpoAnalysis').then((m) => ({ default: m.IpoAnalysis })))
 const AdminLayout = lazy(() => import('./views/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })))
 const UnggahHarian = lazy(() => import('./views/admin/UnggahHarian').then((m) => ({ default: m.UnggahHarian })))
+const TesisTab = lazy(() => import('./views/admin/TesisTab').then((m) => ({ default: m.TesisTab })))
 const AkunAdmin = lazy(() => import('./views/admin/AkunAdmin').then((m) => ({ default: m.AkunAdmin })))
 const KurasiSetoran = lazy(() => import('./views/admin/KurasiSetoran').then((m) => ({ default: m.KurasiSetoran })))
 const RadarUnggah = lazy(() => import('./views/admin/RadarUnggah').then((m) => ({ default: m.RadarUnggah })))
@@ -234,7 +235,13 @@ function App() {
                     di pintu depan aman dipasang. Gerbang superadmin tetap
                     berlaku PER TAB (Kurasi/Akun/Akses/Radar). */}
                 <Route path="/admin" element={<PenjagaHalaman kunci="admin"><AdminLayout /></PenjagaHalaman>}>
-                  <Route index element={<UnggahHarian />} />
+                  {/* Halaman muka /admin sekarang TESIS, bukan unggah tangkapan
+                      layar (antrean #3, Johan 5 Sep 2026: "artinya tidak ada lagi
+                      upload broker summary yaa, cukup buat tesis ?"). Unggah lama
+                      tidak dihapus — ia pindah ke rute arsip di bawah supaya
+                      riwayatnya tetap bisa dibuka superadmin. */}
+                  <Route index element={<TesisTab />} />
+                  <Route path="unggah-arsip" element={<UnggahHarian />} />
                   <Route path="kurasi" element={<KurasiSetoran />} />
                   <Route path="radar" element={<RadarUnggah />} />
                   <Route path="bedah" element={<PenjagaHalaman kunci="bedah"><BedahTab /></PenjagaHalaman>} />

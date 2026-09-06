@@ -405,6 +405,7 @@ hr { border: none; border-top: 1px solid var(--hairline); margin: 24px 0; }
 <li><a href="#ksei-balancepos-bulanan-dan-holding-composition" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">KSEI — Balancepos bulanan dan holding composition</span></a></li>
 <li><a href="#kabar-ipot-kontan-google-news" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Kabar — IPOT, Kontan, Google News</span></a></li>
 <li><a href="#indexalpha-api-indexalpha-id-belum-dipastikan" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">indexalpha (api.indexalpha.id) — ❓ belum dipastikan</span></a></li>
+<li><a href="#tesis-kontributor-tabel-supabase-tesis-6-sep-2026-antrean-3" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Tesis kontributor — tabel Supabase tesis (6 Sep 2026, antrean #3)</span></a></li>
 <li><a href="#setoran-kontributor-supabase-dan-unggahan-admin" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Setoran kontributor, Supabase, dan unggahan admin</span></a></li>
 <li><a href="#keputusan-tidak-diambil-ganti-sumber-jahit" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Keputusan &quot;tidak diambil&quot; / ganti sumber / jahit</span></a></li>
 <li><a href="#j8-aliran-asing-rupiah-stockbit-utama-idx-lembar-dipertahankan-eksekusi-24-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J8 · Aliran asing rupiah — Stockbit utama, IDX lembar dipertahankan (eksekusi 24 Agu 2026)</span></a></li>
@@ -2185,6 +2186,84 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 </tbody>
 </table>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="tesis-kontributor-tabel-supabase-tesis-6-sep-2026-antrean-3" data-title="Tesis kontributor — tabel Supabase tesis (6 Sep 2026, antrean #3)">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>Tesis kontributor — tabel Supabase tesis (6 Sep 2026, antrean #3)</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<ul>
+<li><strong>Sumber:</strong> basis data Supabase proyek PAPAN, tabel <code>public.tesis</code>. Ditarik ke cakram oleh <code>scripts/tarik_tesis.py</code> (satu-satunya langkah berjaringan di rantai ini), dinilai <code>scripts/riset/nilai_tesis.py</code> (nol jaringan).</li>
+<li><strong>Akses &amp; batasan:</strong> kebijakan baca <strong>publik</strong> (keputusan Johan #1, 5 Sep 2026 — "halaman publik boleh membaca isi tesis"), jadi kunci anon sudah cukup dan <strong>service key tidak pernah dipakai</strong> pemanennya. Tulis hanya oleh pemiliknya sendiri, dan hanya kalau akunnya aktif + kuota harian belum habis.</li>
+<li><strong>Berkas lokal:</strong> <code>tesis_masuk.json</code> (salinan mentah, <strong>tidak dilacak git</strong> — perantara yang bisa ditarik ulang; menyimpannya di riwayat publik berarti mengabadikan uuid penyetor tanpa alasan), <code>tesis_vonis.json</code> (ringkasan, ditulis ulang tiap jalan), <code>penilaian_tesis/&lt;tgl&gt;.json</code> (<strong>sekali tulis</strong>).</li>
+<li><strong>Dipakai untuk:</strong> tab Tesis di <code>/admin</code>, tombol "Setor tesis" di Berkas Emiten; kelak jenjang kontributor.</li>
+<li><strong>Diverifikasi:</strong> 6 Sep 2026 — rantainya jalan sampai ke ujung yang tersedia: <code>tarik_tesis.py</code> menjawab exit 2 dengan pesan "tabel belum ada" selama migrasinya belum diterapkan.</li>
+</ul>
+<h3>Kamus ruas <code>tesis</code></h3>
+<table>
+<thead>
+<tr>
+<th>Ruas</th>
+<th>Arti</th>
+<th>Kenapa begitu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>arah</code></td>
+<td><code>naik</code> / <code>turun</code></td>
+<td><code>turun</code> dinilai sebagai <strong>cermin</strong> (harga dibalik tanda), bukan lewat cabang perbandingan kedua — dua aturan yang harus dijaga tetap sama selamanya adalah dua aturan yang akan menyimpang</td>
+</tr>
+<tr>
+<td><code>tanggal_sinyal</code></td>
+<td>hari bursa yang barnya sudah final saat setor</td>
+<td>hari sinyal <strong>tidak</strong> ikut dinilai; sebelum 16:45 WIB dipakai hari bursa sebelumnya, supaya tesis tak pernah bersandar pada bar yang masih bergerak</td>
+</tr>
+<tr>
+<td><code>masuk_bawah</code> · <code>masuk_atas</code></td>
+<td>area masuk (boleh sama = satu harga)</td>
+<td>harga yang tak pernah masuk area = <code>tak_masuk</code>, dan itu <strong>tetap</strong> jadi penyebut akurasi — tanpanya asal-tembak jadi gratis</td>
+</tr>
+<tr>
+<td><code>target</code> · <code>stop</code></td>
+<td>target dan batas rugi</td>
+<td>ditegakkan CHECK: <code>naik</code> → target di atas area, stop di bawahnya; <code>turun</code> sebaliknya</td>
+</tr>
+<tr>
+<td><code>horizon_hari</code></td>
+<td>5 / 10 / 20 hari bursa</td>
+<td>keputusan Johan #4</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><code>menunggu</code> → <code>menang</code>/<code>kalah</code>/<code>tak_masuk</code>/<code>menggantung</code>, atau <code>batal</code></td>
+<td>vonis ditulis hakim; <code>batal</code> hanya oleh penyetor dan hanya sebelum bursa berikutnya buka</td>
+</tr>
+<tr>
+<td><code>ambigu</code></td>
+<td>target DAN stop tersentuh di hari yang sama</td>
+<td>dihitung <strong>kalah</strong>, ditandai di sini supaya besarnya pilihan itu kelihatan</td>
+</tr>
+<tr>
+<td><code>dinilai_pada</code> · <code>harga_akhir</code> · <code>hari_terpakai</code></td>
+<td>jejak penilaian</td>
+<td>sekali tulis</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tiga penjaga yang tidak ada di tabel lain,</strong> dan alasan masing-masing:</p>
+<ol>
+<li><strong>Sekali tulis lewat pemicu, bukan cuma RLS.</strong> RLS membatasi <em>siapa</em> yang menyunting, bukan <em>apa</em> yang boleh berubah — tanpa pemicu, pembatalan yang sah bisa dipakai menyelundupkan target baru ke baris yang sudah jadi rekam jejak.</li>
+<li><strong>Batas pembatalan <code>batas_batal_tesis()</code></strong> = 09:00 WIB hari kerja berikutnya. Kalender libur bursa tak ada di basis data; memakai hari kerja membuat jendelanya lebih <strong>pendek</strong> dari kenyataan saat ada libur — arah yang aman, karena yang salah paling banter menolak pembatalan lebih awal, bukan membukanya sesudah harganya diketahui.</li>
+<li><strong>Kuota ditegakkan basis data</strong> (<code>sisa_kuota_tesis()</code> di policy INSERT), bukan cuma di layar. Yang cuma dijaga layar tidak dijaga.</li>
+</ol>
+<p><strong>Penyebut akurasi</strong> = tesis yang horizonnya sudah lewat (menang + kalah + tak masuk). Yang masih berjalan tidak dihitung — keputusan Johan #3: penyebut yang memuatnya menghukum penyetor yang rajin, bukan yang meleset.</p>
 
 </div>
 </div></div>

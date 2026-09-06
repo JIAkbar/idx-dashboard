@@ -87,19 +87,43 @@ def bar_per_tanggal(kode: str, singgahan: dict) -> dict:
 
 
 def nilai_satu(sinyal: dict, tgl_sinyal: str, kalender: list[str],
-               singgahan: dict) -> dict:
-    """Satu sinyal terhadap harga nyata. Mengembalikan hasil + kenapa."""
+               singgahan: dict, horizon: int | None = None) -> dict:
+    """Satu sinyal terhadap harga nyata. Mengembalikan hasil + kenapa.
+
+    Dua ruas opsional di `sinyal`, keduanya berbawaan perilaku lama supaya
+    pemanggil yang sudah ada tak berubah:
+
+    - `arah` — `naik` (bawaan) atau `turun`. Tesis kontributor boleh menebak
+      arah turun; hakimnya sama persis, dicerminkan.
+    - `horizon` lewat parameter — tesis memilih 5/10/20 hari bursa sendiri.
+
+    **Arah turun dikerjakan dengan MENCERMINKAN harga, bukan dengan cabang
+    perbandingan kedua.** Menulis `if turun: rendah <= target else: tinggi >=
+    target` di setiap tempat berarti dua aturan yang harus dijaga tetap sama
+    selamanya; membalik tanda harga membuat keduanya satu jalur kode. Bar
+    (buka, tinggi, rendah, tutup) jadi (−buka, −rendah, −tinggi, −tutup):
+    yang tertinggi jadi yang terendah, dan seluruh logika di bawah berlaku apa
+    adanya.
+    """
     kode = sinyal["kode"]
     tp1, sl, entry = sinyal.get("tp1"), sinyal.get("sl"), sinyal.get("entry")
     if tp1 is None or sl is None:
         return {"kode": kode, "hasil": TAK_MASUK, "sebab": "tanpa tp/sl"}
+
+    naik = sinyal.get("arah", "naik") != "turun"
+    if not naik:
+        tp1, sl = -tp1, -sl
+        if isinstance(entry, list) and len(entry) == 2:
+            entry = [-entry[1], -entry[0]]
+
+    horizon = horizon or HORIZON
 
     # Hari bursa SESUDAH hari sinyal — keputusan (1) di docstring.
     try:
         i = kalender.index(tgl_sinyal)
     except ValueError:
         return {"kode": kode, "hasil": TAK_MASUK, "sebab": "tanggal di luar kalender"}
-    jendela = kalender[i + 1: i + 1 + HORIZON]
+    jendela = kalender[i + 1: i + 1 + horizon]
 
     peta = bar_per_tanggal(kode, singgahan)
     # Bar yang benar-benar ada untuk emiten ini di dalam jendela. Emiten yang
@@ -114,6 +138,11 @@ def nilai_satu(sinyal: dict, tgl_sinyal: str, kalender: list[str],
     masuk = batas is None
     for t in hari:
         _, tinggi, rendah, _ = peta[t]
+        if not naik:
+            # Cermin dibuat saat membaca, BUKAN di singgahan: peta bar itu
+            # dipakai bersama seluruh preset dan tesis lain, dan membalik
+            # isinya akan merusak penilaian sinyal di sebelahnya.
+            tinggi, rendah = -rendah, -tinggi
         if not masuk:
             # Terisi kalau harga turun menyentuh area beli.
             if rendah <= batas:
@@ -570,6 +599,51 @@ def swauji() -> None:
                    "2026-08-24", kal, singgahan)
     assert r["hasil"] == MENANG and r["tglKeluar"] == "2026-08-26", r
 
+    # ── Arah TURUN (cermin) dan horizon per sinyal ──────────────────────────
+    # Bar X: 24 Agu (100,104,98,100) · 26 Agu (101,110,95,106) · 27 Agu
+    # (107,120,105,108). Jendela sinyal 24 Agu = 26 & 27 Agu.
+
+    # Menang turun: harga JATUH menyentuh target 96 di 26 Agu (rendah 95).
+    r = nilai_satu({"kode": "X", "arah": "turun", "tp1": 96, "sl": 121, "entry": None},
+                   "2026-08-24", kal, singgahan)
+    assert r["hasil"] == MENANG and r["tglKeluar"] == "2026-08-26", r
+
+    # Kalah turun: stop 108 tersentuh (tinggi 110) sementara target 90 tidak.
+    r = nilai_satu({"kode": "X", "arah": "turun", "tp1": 90, "sl": 108, "entry": None},
+                   "2026-08-24", kal, singgahan)
+    assert r["hasil"] == KALAH and r["tglKeluar"] == "2026-08-26", r
+
+    # Ambigu turun: target 96 DAN stop 108 tersentuh di hari yang sama —
+    # dihitung kalah dan ditandai, sama seperti arah naik.
+    r = nilai_satu({"kode": "X", "arah": "turun", "tp1": 96, "sl": 108, "entry": None},
+                   "2026-08-24", kal, singgahan)
+    assert r["hasil"] == KALAH and r.get("ambigu") is True, r
+
+    # Tak masuk turun: area jual [200,210] tak pernah tersentuh dari bawah.
+    r = nilai_satu({"kode": "X", "arah": "turun", "tp1": 90, "sl": 250, "entry": [200, 210]},
+                   "2026-08-24", kal, singgahan)
+    assert r["hasil"] == TAK_MASUK, r
+
+    # Masuk turun lalu menang: area [105,115] tersentuh 26 Agu (tinggi 110),
+    # target 96 kena di hari yang sama (rendah 95).
+    r = nilai_satu({"kode": "X", "arah": "turun", "tp1": 96, "sl": 130, "entry": [105, 115]},
+                   "2026-08-24", kal, singgahan)
+    assert r["hasil"] == MENANG, r
+
+    # Cermin tidak merusak singgahan: sinyal NAIK sesudahnya tetap benar.
+    r = nilai_satu({"kode": "X", "tp1": 118, "sl": 90, "entry": None},
+                   "2026-08-24", kal, singgahan)
+    assert r["hasil"] == MENANG and r["tglKeluar"] == "2026-08-27", r
+
+    # Horizon per sinyal: tp1 118 baru kena 27 Agu, jadi dengan horizon 1
+    # (jendela cuma 26 Agu) hasilnya MENGGANTUNG, bukan menang.
+    r = nilai_satu({"kode": "X", "tp1": 118, "sl": 90, "entry": None},
+                   "2026-08-24", kal, singgahan, horizon=1)
+    assert r["hasil"] == GANTUNG, r
+    r = nilai_satu({"kode": "X", "tp1": 118, "sl": 90, "entry": None},
+                   "2026-08-24", kal, singgahan, horizon=2)
+    assert r["hasil"] == MENANG, r
+
     # ── Dua definisi H+1 ────────────────────────────────────────────────────
     # H+1 dari 24 Agu adalah 26 Agu: buka 101, tinggi 110, tutup 106.
     h = nilai_h1({"kode": "X"}, "2026-08-24", kal, singgahan)
@@ -677,7 +751,7 @@ def swauji() -> None:
     # Stempel waktu BUKAN penyimpangan — ia memang berbeda tiap jalan.
     assert beda_segel({**nol, "dinilaiPada": "a"}, {**nol, "dinilaiPada": "b"}) == {}
 
-    print("swauji nilai_jejak: 32 kasus lolos")
+    print("swauji nilai_jejak: 40 kasus lolos")
 
 
 if __name__ == "__main__":

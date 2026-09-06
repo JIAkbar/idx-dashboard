@@ -440,6 +440,35 @@ Kamus ruas (12 ruas per bar, semuanya diarsipkan mentah):
 |---|---|---|---|
 | Broker per emiten (menurut tabel di kepala skrip) | ❓ | jalur ada di kode, pemakaian nyata tidak terlacak | **belum diputuskan** — perlu Johan konfirmasi apakah akun/token pernah ada |
 
+## Tesis kontributor — tabel Supabase `tesis` (6 Sep 2026, antrean #3)
+
+- **Sumber:** basis data Supabase proyek PAPAN, tabel `public.tesis`. Ditarik ke cakram oleh `scripts/tarik_tesis.py` (satu-satunya langkah berjaringan di rantai ini), dinilai `scripts/riset/nilai_tesis.py` (nol jaringan).
+- **Akses & batasan:** kebijakan baca **publik** (keputusan Johan #1, 5 Sep 2026 — "halaman publik boleh membaca isi tesis"), jadi kunci anon sudah cukup dan **service key tidak pernah dipakai** pemanennya. Tulis hanya oleh pemiliknya sendiri, dan hanya kalau akunnya aktif + kuota harian belum habis.
+- **Berkas lokal:** `tesis_masuk.json` (salinan mentah, **tidak dilacak git** — perantara yang bisa ditarik ulang; menyimpannya di riwayat publik berarti mengabadikan uuid penyetor tanpa alasan), `tesis_vonis.json` (ringkasan, ditulis ulang tiap jalan), `penilaian_tesis/<tgl>.json` (**sekali tulis**).
+- **Dipakai untuk:** tab Tesis di `/admin`, tombol "Setor tesis" di Berkas Emiten; kelak jenjang kontributor.
+- **Diverifikasi:** 6 Sep 2026 — rantainya jalan sampai ke ujung yang tersedia: `tarik_tesis.py` menjawab exit 2 dengan pesan "tabel belum ada" selama migrasinya belum diterapkan.
+
+### Kamus ruas `tesis`
+
+| Ruas | Arti | Kenapa begitu |
+|---|---|---|
+| `arah` | `naik` / `turun` | `turun` dinilai sebagai **cermin** (harga dibalik tanda), bukan lewat cabang perbandingan kedua — dua aturan yang harus dijaga tetap sama selamanya adalah dua aturan yang akan menyimpang |
+| `tanggal_sinyal` | hari bursa yang barnya sudah final saat setor | hari sinyal **tidak** ikut dinilai; sebelum 16:45 WIB dipakai hari bursa sebelumnya, supaya tesis tak pernah bersandar pada bar yang masih bergerak |
+| `masuk_bawah` · `masuk_atas` | area masuk (boleh sama = satu harga) | harga yang tak pernah masuk area = `tak_masuk`, dan itu **tetap** jadi penyebut akurasi — tanpanya asal-tembak jadi gratis |
+| `target` · `stop` | target dan batas rugi | ditegakkan CHECK: `naik` → target di atas area, stop di bawahnya; `turun` sebaliknya |
+| `horizon_hari` | 5 / 10 / 20 hari bursa | keputusan Johan #4 |
+| `status` | `menunggu` → `menang`/`kalah`/`tak_masuk`/`menggantung`, atau `batal` | vonis ditulis hakim; `batal` hanya oleh penyetor dan hanya sebelum bursa berikutnya buka |
+| `ambigu` | target DAN stop tersentuh di hari yang sama | dihitung **kalah**, ditandai di sini supaya besarnya pilihan itu kelihatan |
+| `dinilai_pada` · `harga_akhir` · `hari_terpakai` | jejak penilaian | sekali tulis |
+
+**Tiga penjaga yang tidak ada di tabel lain,** dan alasan masing-masing:
+
+1. **Sekali tulis lewat pemicu, bukan cuma RLS.** RLS membatasi *siapa* yang menyunting, bukan *apa* yang boleh berubah — tanpa pemicu, pembatalan yang sah bisa dipakai menyelundupkan target baru ke baris yang sudah jadi rekam jejak.
+2. **Batas pembatalan `batas_batal_tesis()`** = 09:00 WIB hari kerja berikutnya. Kalender libur bursa tak ada di basis data; memakai hari kerja membuat jendelanya lebih **pendek** dari kenyataan saat ada libur — arah yang aman, karena yang salah paling banter menolak pembatalan lebih awal, bukan membukanya sesudah harganya diketahui.
+3. **Kuota ditegakkan basis data** (`sisa_kuota_tesis()` di policy INSERT), bukan cuma di layar. Yang cuma dijaga layar tidak dijaga.
+
+**Penyebut akurasi** = tesis yang horizonnya sudah lewat (menang + kalah + tak masuk). Yang masih berjalan tidak dihitung — keputusan Johan #3: penyebut yang memuatnya menghukum penyetor yang rajin, bukan yang meleset.
+
 ## Setoran kontributor, Supabase, dan unggahan admin
 
 - **URL / endpoint:** Supabase (`app/src/lib/supabaseSetoran.ts`; URL/kunci lewat env, tidak ditulis di sini); unggahan lewat halaman `/admin`
