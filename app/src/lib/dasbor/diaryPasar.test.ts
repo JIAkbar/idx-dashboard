@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { BarisOhlc } from './ihsgOhlc'
+import { existsSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { bulanDiary, performaIhsg, rentangIhsg, selDiary, tallyDiary } from './diaryPasar'
 import ihsg from './__fixtures__/ihsg-250-hari.json'
 
@@ -99,9 +101,9 @@ describe('tallyDiary', () => {
 })
 
 describe('performaIhsg', () => {
-  it('tujuh periode, urut, dan 1D sama dengan perubahan hari terakhir', () => {
+  it('sembilan periode, urut, dan 1D sama dengan perubahan hari terakhir', () => {
     const p = performaIhsg(NYATA)
-    expect(p.map((x) => x.id)).toEqual(['1D', '5D', '1M', '3M', '6M', 'YTD', '1Y'])
+    expect(p.map((x) => x.id)).toEqual(['1D', '5D', '1M', '3M', '6M', 'YTD', '1Y', '3Y', '5Y'])
     const sel = selDiary(NYATA)
     expect(p[0].persen).toBeCloseTo(sel[sel.length - 1].persen, 6)
   })
@@ -122,61 +124,102 @@ describe('performaIhsg', () => {
     expect(p.find((x) => x.id === '5D')!.persen).toBeNull()
   })
 
-  it('data nyata: seluruh periode terisi (250 hari bursa melampaui 1 tahun)', () => {
-    for (const p of performaIhsg(NYATA)) expect(p.persen).not.toBeNull()
-  })
-
-  it('1M memakai bulan KALENDER, bukan 20 lilin', () => {
-    // Deret dengan hari bursa yang jarang: 20 lilin ke belakang akan melompat
-    // jauh melewati satu bulan kalender.
+  it('periode dihitung dalam HARI BURSA, bukan bulan kalender', () => {
+    // Deret 40 titik berjarak 3 hari kalender: satu bulan kalender mundur
+    // mendarat ~10 titik ke belakang, 20 hari bursa mendarat 20 titik. Dua
+    // jawaban berbeda, dan yang benar sekarang yang kedua — itu definisi RTI.
     const deret: BarisOhlc[] = []
     for (let i = 0; i < 40; i++) {
       const d = new Date(Date.UTC(2026, 0, 1 + i * 3))
       deret.push(bar(d.toISOString().slice(0, 10), 100 + i))
     }
     const akhir = deret[deret.length - 1]
-    const sebulanLalu = new Date(`${akhir[0]}T00:00:00Z`)
-    sebulanLalu.setUTCMonth(sebulanLalu.getUTCMonth() - 1)
-    const patokan = deret.filter((b) => b[0] <= sebulanLalu.toISOString().slice(0, 10)).at(-1)!
+    const dasar = deret[deret.length - 1 - 20]
     expect(performaIhsg(deret).find((x) => x.id === '1M')!.persen)
-      .toBeCloseTo((akhir[4] / patokan[4] - 1) * 100, 6)
+      .toBeCloseTo((akhir[4] / dasar[4] - 1) * 100, 6)
+  })
+
+  it('250 hari bursa belum menjangkau 1Y (260) — jawabannya null, bukan angka lain', () => {
+    // Ini yang dulu tersembunyi: deret ringkas 250 hari TIDAK cukup untuk 1Y
+    // ala RTI, dan diam-diam menjawabnya dari titik terdekat memberi angka
+    // yang terlihat benar tapi berjangkar di tanggal yang salah.
+    const p = performaIhsg(NYATA)
+    expect(NYATA.length).toBe(250)
+    expect(p.find((x) => x.id === '6M')!.persen).not.toBeNull()
+    expect(p.find((x) => x.id === '1Y')!.persen).toBeNull()
   })
 })
 
-describe('performaIhsg — 3Y/5Y dari deret panjang', () => {
-  /** Penutupan panjang buatan: 6 tahun, awal tiap bulan. */
-  const panjang: Record<string, number> = {}
-  for (let th = 2020; th <= 2026; th++) {
-    for (let bl = 1; bl <= 12; bl++) {
-      panjang[`${th}-${String(bl).padStart(2, '0')}-01`] = 1000 + (th - 2020) * 100 + bl
-    }
-  }
+/**
+ * Fixture RTI — 4 September 2026.
+ *
+ * Angka acuan diketik dari tangkapan layar RTI Business milik Johan (panel
+ * "IDX Performance" + "Low - High Range"). Yang diuji BUKAN salinan data:
+ * arsip `ohlc/IHSG.json` yang sungguhan dibaca dari repo, lalu dipotong tepat
+ * di 2026-09-04 supaya uji ini tetap sah walau arsipnya terus bertambah.
+ *
+ * Kalau definisi periode kelak diubah lagi, uji inilah yang merah — dan
+ * merahnya berarti "layar kita tak lagi sama dengan acuan yang dipakai Johan
+ * setiap hari", bukan sekadar angka bergeser.
+ */
+describe('cocok dengan RTI Business, 4 September 2026', () => {
+  const ARSIP = join(__dirname, '..', '..', '..', '..', 'data-idx', 'json', 'ohlc', 'IHSG.json')
+  const ada = existsSync(ARSIP)
+  const semua: BarisOhlc[] = ada ? JSON.parse(readFileSync(ARSIP, 'utf-8')).d : []
+  const sampai4Sep = semua.filter((b) => b[0] <= '2026-09-04')
 
-  it('tanpa deret panjang, baris 3Y/5Y TIDAK ada — bukan ada tapi kosong', () => {
-    const id = performaIhsg(NYATA).map((p) => p.id)
-    expect(id).not.toContain('3Y')
-    expect(id).not.toContain('5Y')
+  const RTI_PERSEN: Array<[string, number]> = [
+    ['5D', 1.82], ['1M', 4.49], ['3M', 7.12], ['6M', -19.96],
+    ['YTD', -23.25], ['1Y', -11.09], ['3Y', -1.38], ['5Y', 11.16],
+  ]
+  const RTI_RENTANG: Array<[string, number, number]> = [
+    ['1D', 6633.915, 6704.125], ['5D', 6476.175, 6704.125], ['1M', 6230.097, 6704.125],
+    ['3M', 5317.908, 6704.125], ['6M', 5317.908, 8437.089], ['YTD', 5317.908, 9174.474],
+    ['1Y', 5317.908, 9174.474], ['3Y', 5317.908, 9174.474], ['5Y', 5317.908, 9174.474],
+  ]
+
+  it('arsip IHSG ada dan menjangkau 4 Sep 2026', () => {
+    expect(ada, 'ohlc/IHSG.json harus ada — uji ini membaca arsip sungguhan').toBe(true)
+    expect(sampai4Sep.at(-1)![0]).toBe('2026-09-04')
+    expect(sampai4Sep.length).toBeGreaterThan(1300)
   })
 
-  it('dengan deret panjang, 3Y berjangkar ke penutupan terakhir <= 36 bulan lalu', () => {
-    const p = performaIhsg(NYATA, panjang)
-    const p3 = p.find((x) => x.id === '3Y')!
-    const kini = NYATA[NYATA.length - 1][4]
-    // Akhir data 2026-08-20 -> 36 bulan mundur = 2023-08-20 -> jangkar 2023-08-01.
-    expect(p3.persen).toBeCloseTo((kini / panjang['2023-08-01'] - 1) * 100, 6)
-    expect(p.find((x) => x.id === '5Y')!.persen)
-      .toBeCloseTo((kini / panjang['2021-08-01'] - 1) * 100, 6)
+  it.each(RTI_PERSEN)('performa %s = %s%% seperti RTI', (id, persen) => {
+    const p = performaIhsg(sampai4Sep).find((x) => x.id === id)!
+    expect(p.persen).not.toBeNull()
+    expect(p.persen!).toBeCloseTo(persen, 1)
+  })
+
+  it.each(RTI_RENTANG)('rentang %s = %s – %s seperti RTI', (id, rendah, tinggi) => {
+    const r = rentangIhsg(sampai4Sep).find((x) => x.id === id)!
+    expect(r, `rentang ${id} harus ada`).toBeTruthy()
+    expect(r.rendah).toBeCloseTo(rendah, 2)
+    expect(r.tinggi).toBeCloseTo(tinggi, 2)
+  })
+
+  it('rentang periode panjang TAK PERNAH lebih sempit dari periode pendek', () => {
+    // Kontradiksi yang dulu tampil di layar: 3Y/5Y (dari penutupan saja)
+    // 5.342-9.135, lebih sempit daripada 1Y (intraday) 5.318-9.174. Jendela
+    // yang lebih panjang tak mungkin lebih sempit; kalau uji ini merah lagi,
+    // artinya ada dua sumber yang tercampur lagi.
+    const r = rentangIhsg(sampai4Sep)
+    const urut = ['1D', '5D', '1M', '3M', '6M', '1Y', '3Y', '5Y']
+    for (let i = 1; i < urut.length; i++) {
+      const kecil = r.find((x) => x.id === urut[i - 1])!
+      const besar = r.find((x) => x.id === urut[i])!
+      expect(besar.rendah).toBeLessThanOrEqual(kecil.rendah)
+      expect(besar.tinggi).toBeGreaterThanOrEqual(kecil.tinggi)
+    }
   })
 })
 
 describe('rentangIhsg', () => {
-  it('rentang <= 1Y dari HIGH/LOW sungguhan, posisi 0-100', () => {
+  it('rentang dari HIGH/LOW sungguhan, posisi 0-100', () => {
     const r = rentangIhsg(NYATA)
-    const r1y = r.find((x) => x.id === '1Y')!
-    expect(r1y.sumber).toBe('ohlc')
-    // High/low sungguhan dari seluruh 250 hari (>= 1 tahun bursa).
-    const hi = Math.max(...NYATA.map((b) => b[2]))
-    expect(r1y.tinggi).toBeCloseTo(hi, 6)
+    const r6m = r.find((x) => x.id === '6M')!
+    const jendela = NYATA.slice(NYATA.length - 130)
+    expect(r6m.tinggi).toBeCloseTo(Math.max(...jendela.map((b) => b[2])), 6)
+    expect(r6m.rendah).toBeCloseTo(Math.min(...jendela.map((b) => b[3])), 6)
     for (const x of r) {
       expect(x.tinggi).toBeGreaterThanOrEqual(x.rendah)
       expect(x.posisi).toBeGreaterThanOrEqual(0)
@@ -191,13 +234,11 @@ describe('rentangIhsg', () => {
     expect(r1d.rendah).toBeCloseTo(akhir[3], 6)
   })
 
-  it('3Y/5Y bersumber TUTUP dan ditandai — bukan mengaku high/low', () => {
-    const panjang: Record<string, number> = { '2022-01-03': 6000, '2024-06-03': 7500, '2025-01-02': 6600 }
-    const r = rentangIhsg(NYATA, panjang)
-    const r3 = r.find((x) => x.id === '3Y')!
-    expect(r3.sumber).toBe('tutup')
-    expect(r3.rendah).toBe(6600) // 2022 di luar jendela 36 bulan dari 2026-08
-    expect(r3.tinggi).toBe(7500)
+  it('periode yang deretnya belum menjangkau TIDAK dipajang, bukan dipajang salah', () => {
+    const id = rentangIhsg(NYATA).map((x) => x.id)
+    expect(id).toContain('6M')
+    expect(id).not.toContain('1Y')   // butuh 260 hari, deret ringkas 250
+    expect(id).not.toContain('5Y')
   })
 })
 

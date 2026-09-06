@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useIhsgOhlc } from '../../lib/dasbor/ihsgOhlc'
+import { useIhsgOhlc, type BarisOhlc } from '../../lib/dasbor/ihsgOhlc'
 import { fetchHari, type DataHarian } from '../../lib/dasbor/dataHarian'
 import {
   bulanDiary, performaIhsg, rentangIhsg, selDiary, tallyDiary, type KotakDiary,
@@ -17,11 +17,13 @@ import { LangkahTanggal } from './LangkahTanggal'
  * sekarang di dalamnya. Rumus & kalibrasinya di `lib/dasbor/diaryPasar.ts`.
  *
  * Tiga sumber data, dan cuma satu yang benar-benar unduhan baru:
- *   - `ihsg_ohlc_ringkas.json` (13 KB) — kalender, tally, performa <= 1Y;
- *     sudah ditarik halaman ini untuk lilin harian.
- *   - `ihsg_harian.json` (354 KB, 36 tahun penutupan) — HANYA untuk 3Y/5Y,
- *     ditarik sekali saat panel tampil; sebelum tiba, baris 3Y/5Y memang
- *     belum ada (bukan strip kosong yang mengiklankan data yang tak datang).
+ *   - `ihsg_ohlc_ringkas.json` (13 KB) — kalender, tally, dan lilin harian;
+ *     sudah ditarik halaman ini.
+ *   - `ohlc/IHSG.json` (36 tahun, tinggi/rendah intraday) — SELURUH performa
+ *     dan rentang, semua periode dari satu deret. Sejak 6 Sep 2026 ia
+ *     menggantikan `ihsg_harian.json` yang cuma punya penutupan: dengan dua
+ *     sumber, rentang 3Y/5Y tampil lebih SEMPIT daripada rentang 1Y —
+ *     mustahil, dan yang salah bukan hitungannya melainkan datanya.
  *   - `ds_<tanggal>.json` — detail SATU hari, ditarik saat tanggalnya
  *     diklik, lewat `fetchHari` yang cache modulnya dibagi panel lain.
  */
@@ -83,17 +85,19 @@ export function PanelDiary() {
   const [pilih, setPilih] = useState<string | null>(null)
   const [detail, setDetail] = useState<DataHarian | null>(null)
   const [detailGagal, setDetailGagal] = useState(false)
-  // Penutupan 36 tahun — HANYA untuk 3Y/5Y & rentang panjangnya.
-  const [tutupPanjang, setTutupPanjang] = useState<Record<string, number> | null>(null)
+  // Deret OHLC 36 tahun — dasar SELURUH performa & rentang. Sebelum ia tiba,
+  // panel tetap menampilkan kalender dan tally dari deret 250 hari; barisnya
+  // yang menunggu, bukan seluruh panel.
+  const [panjang, setPanjang] = useState<BarisOhlc[] | null>(null)
 
   useEffect(() => {
     let batal = false
-    fetch('/data-idx/json/ihsg_harian.json')
+    fetch('/data-idx/json/ohlc/IHSG.json')
       .then((r) => r.json())
-      .then((j: { tutup?: Record<string, number> }) => {
-        if (!batal && j.tutup) setTutupPanjang(j.tutup)
+      .then((j: { d?: BarisOhlc[] }) => {
+        if (!batal && j.d?.length) setPanjang(j.d)
       })
-      .catch(() => {}) // gagal = baris 3Y/5Y tak tampil; sisanya tetap utuh
+      .catch(() => {}) // gagal = performa & rentang tak tampil; kalender utuh
     return () => { batal = true }
   }, [])
 
@@ -123,14 +127,10 @@ export function PanelDiary() {
     setPilih(sel[sel.length - 1].tanggal)
     setAutoTerpasang(true)
   }, [sel, autoTerpasang])
-  const performa = useMemo(
-    () => (baris ? performaIhsg(baris, tutupPanjang) : []),
-    [baris, tutupPanjang],
-  )
-  const rentang = useMemo(
-    () => (baris ? rentangIhsg(baris, tutupPanjang) : []),
-    [baris, tutupPanjang],
-  )
+  // Keduanya dari deret PANJANG saja — bukan campuran dua sumber. Itu yang
+  // dulu membuat 3Y/5Y punya satuan berbeda dari tetangganya di layar yang sama.
+  const performa = useMemo(() => (panjang ? performaIhsg(panjang) : []), [panjang])
+  const rentang = useMemo(() => (panjang ? rentangIhsg(panjang) : []), [panjang])
 
   const bulan = useMemo(() => {
     if (!sel.length) return null
@@ -295,10 +295,8 @@ export function PanelDiary() {
           <span className="sub dia-rentang-judul">Rentang Rendah–Tinggi</span>
           {rentang.map((r) => (
             <div className="dia-perf" key={`r-${r.id}`}
-              title={r.sumber === 'tutup'
-                ? `${r.id} dihitung dari PENUTUPAN harian — deret sepanjang itu tak menyimpan tertinggi/terendah intraday, jadi ekstrem sebenarnya bisa sedikit di luar angka ini.`
-                : 'Dari tertinggi/terendah harian'}>
-              <span className="dia-perf-lbl">{r.id}{r.sumber === 'tutup' ? '·t' : ''}</span>
+              title="Tertinggi/terendah INTRADAY sepanjang periode itu, dari deret 36 tahun">
+              <span className="dia-perf-lbl">{r.id}</span>
               {/* Warna isi bar mengikuti POSISI harga dalam rentangnya, bukan
                   hiasan (Johan 5 Sep 2026: "bar nya berikan warna dong"):
                   sepertiga bawah merah = merapat ke terendah, sepertiga atas

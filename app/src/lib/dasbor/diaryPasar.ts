@@ -157,33 +157,44 @@ function indeksSampai(baris: BarisOhlc[], batas: string): number {
   return -1
 }
 
-/** Mundur `bulan` bulan kalender dari `tanggal` (`yyyy-mm-dd`). Memakai
- *  aritmetika UTC supaya 31 Maret − 1 bulan jatuh di 28/29 Februari, bukan
- *  meleset sehari karena zona waktu. */
-function mundurBulan(tanggal: string, bulan: number): string {
-  const d = new Date(`${tanggal}T00:00:00Z`)
-  d.setUTCMonth(d.getUTCMonth() - bulan)
-  return d.toISOString().slice(0, 10)
+/**
+ * Berapa HARI BURSA mundur untuk tiap periode.
+ *
+ * Angka RTI, dan bukan tebakan: dengan tabel ini seluruh persen di panel
+ * "IDX Performance" RTI Business tereproduksi PERSIS dari `ohlc/IHSG.json`
+ * pada 4 September 2026 — 1M 4,49 · 3M 7,12 · 6M −19,96 · 1Y −11,09 ·
+ * 3Y −1,38 · 5Y 11,16, keenamnya selisih 0,00. Uji `diaryPasar.test.ts`
+ * mengunci keenamnya berikut rentangnya.
+ *
+ * Sebelum 6 Sep 2026 periode bulanan dihitung dari BULAN KALENDER mundur.
+ * Itu terdengar lebih jujur untuk pembaca yang membaca "3 Bulan", tapi
+ * hasilnya berbeda dari acuan yang dipakai Johan setiap hari: 3M kita 13,64%
+ * vs RTI 7,12% — dua hari selisih tanggal dasar (4 Jun vs 2 Jun) jatuh tepat
+ * di pekan pasar rontok, dan bedanya 6,5 poin. Yang dipilih: satu definisi
+ * yang sama dengan acuannya, supaya angka yang berbeda berarti data yang
+ * berbeda — bukan definisi yang berbeda.
+ *
+ * 260 hari bursa per tahun, bukan 252: itu yang dipakai RTI, terbukti dari
+ * tanggal dasarnya (1Y jatuh di 2025-08-04, bukan 2025-08-18).
+ */
+const HARI_BURSA_PERIODE: Partial<Record<PerformaPeriode['id'], number>> = {
+  '1D': 1, '5D': 5, '1M': 20, '3M': 65, '6M': 130, '1Y': 260, '3Y': 780, '5Y': 1300,
 }
 
 /**
  * Performa beberapa periode, dari penutupan terakhir.
  *
- * Periode bulanan dihitung dari TANGGAL KALENDER mundur (lalu hari bursa
- * terakhir sebelum tanggal itu), bukan dari "20 lilin ke belakang": pembaca
- * yang membaca "1 Bulan" berharap sebulan kalender, dan jumlah hari bursa per
- * bulan tak tetap — Mei 2026 cuma 12 hari bursa karena libur panjang.
- * `5D` justru sebaliknya: ia memang dimaksudkan lima hari BURSA (sepekan
- * perdagangan), dan lima hari kalender akan mendarat di akhir pekan.
+ * Satu sumber untuk semuanya: deret OHLC panjang (`ohlc/IHSG.json`, 36 tahun).
+ * Dulu 3Y/5Y datang dari deret PENUTUPAN terpisah (`ihsg_harian.json`) dan
+ * hasilnya kontradiksi yang kelihatan di layar — rentang 3Y/5Y lebih SEMPIT
+ * daripada rentang 1Y, karena yang satu tanpa tinggi/rendah intraday.
+ * Jendela yang lebih panjang tak mungkin lebih sempit.
+ *
+ * `YTD` tetap dihitung dari penutupan terakhir TAHUN SEBELUMNYA — itu memang
+ * definisinya, bukan sekian hari bursa, dan angkanya sudah cocok dengan RTI
+ * (−23,25%) sejak sebelum perubahan ini.
  */
-export function performaIhsg(
-  baris: BarisOhlc[],
-  /** Penutupan 36 tahun (`ihsg_harian.json` ruas `tutup`) — sumber 3Y/5Y.
-   *  Deret 250 hari tak menjangkau keduanya, dan tanpa deret panjang baris
-   *  3Y/5Y TIDAK dipajang sama sekali (bukan dipajang kosong): baris "3Y"
-   *  yang selamanya strip cuma mengiklankan data yang tak pernah datang. */
-  tutupPanjang?: Record<string, number> | null,
-): PerformaPeriode[] {
+export function performaIhsg(baris: BarisOhlc[]): PerformaPeriode[] {
   const n = baris.length
   if (n < 2) return []
   const akhir = baris[n - 1]
@@ -196,37 +207,22 @@ export function performaIhsg(
     return (kini / dasar - 1) * 100
   }
 
-  /** Penutupan terakhir <= `batas` di deret panjang. */
-  const dariPanjang = (batas: string): number | null => {
-    if (!tutupPanjang) return null
-    let terbaik: string | null = null
-    for (const t of Object.keys(tutupPanjang)) {
-      if (t <= batas && (terbaik === null || t > terbaik)) terbaik = t
-    }
-    const v = terbaik !== null ? tutupPanjang[terbaik] : undefined
-    return v !== undefined && v > 0 ? (kini / v - 1) * 100 : null
-  }
-
   const keluar: PerformaPeriode[] = []
   for (const { id, label } of PERIODE_PERFORMA) {
-    if (id === '3Y' || id === '5Y') {
-      if (!tutupPanjang) continue // tak dipajang, bukan dipajang kosong
-      keluar.push({ id, label, persen: dariPanjang(mundurBulan(akhir[0], id === '3Y' ? 36 : 60)) })
-      continue
-    }
     let i: number
-    if (id === '1D') i = n - 2
-    else if (id === '5D') i = n - 6
-    else if (id === 'YTD') {
+    if (id === 'YTD') {
       // Penutupan terakhir TAHUN SEBELUMNYA — itu titik nol tahun berjalan.
       i = indeksSampai(baris, `${akhir[0].slice(0, 4)}-01-01`)
       // `<= 1 Januari` bisa mendarat tepat di 1 Januari kalau hari itu bursa
       // buka (tak pernah di IDX, tapi deret Yahoo pernah memuatnya).
       if (i >= 0 && baris[i][0].slice(0, 4) === akhir[0].slice(0, 4)) i -= 1
     } else {
-      const bulan = id === '1M' ? 1 : id === '3M' ? 3 : id === '6M' ? 6 : 12
-      i = indeksSampai(baris, mundurBulan(akhir[0], bulan))
+      const mundur = HARI_BURSA_PERIODE[id]
+      if (mundur === undefined) continue
+      i = n - 1 - mundur
     }
+    // Riwayat yang belum menjangkau periodenya menjawab `null`, bukan 0 —
+    // dan barisnya tetap dipajang: "belum ada datanya" adalah jawaban.
     keluar.push({ id, label, persen: dari(i) })
   }
   return keluar
@@ -236,11 +232,14 @@ export function performaIhsg(
  * Rentang Rendah-Tinggi per periode + posisi penutupan terakhir di dalamnya —
  * baris "Low-High Range" di panel RTI acuan.
  *
- * Sampai 1 tahun, angkanya dari HIGH/LOW harian sungguhan
- * (`ihsg_ohlc_ringkas.json`). 3Y/5Y cuma punya deret PENUTUPAN, jadi
- * rentangnya dari penutupan terendah/tertinggi dan ruas `sumber` menandainya
- * — ekstrem intraday bisa sedikit di luar angka itu, dan pembaca berhak tahu
- * bahwa itu keterbatasan datanya, bukan kesalahan hitung.
+ * Jendelanya N hari bursa TERAKHIR (tanpa bar dasarnya sendiri), dan itu
+ * bukan pilihan selera: dengan aturan itu kesembilan rentang RTI 4 September
+ * 2026 tereproduksi persis, termasuk 1D yang memang cuma tinggi/rendah hari
+ * itu sendiri dan 6M yang memuat puncak 8.437,089 dari 24 Februari.
+ *
+ * Tinggi/rendahnya INTRADAY, dari deret OHLC yang sama untuk semua periode.
+ * Ruas `sumber` yang dulu menandai "ini cuma dari penutupan" sudah tak ada —
+ * karena sumber keduanya sudah tak ada.
  */
 export interface RentangPeriode {
   id: PerformaPeriode['id']
@@ -249,57 +248,34 @@ export interface RentangPeriode {
   tinggi: number
   /** Posisi tutup terakhir di dalam rentang, 0-100. */
   posisi: number
-  sumber: 'ohlc' | 'tutup'
 }
 
-export function rentangIhsg(
-  baris: BarisOhlc[],
-  tutupPanjang?: Record<string, number> | null,
-): RentangPeriode[] {
+export function rentangIhsg(baris: BarisOhlc[]): RentangPeriode[] {
   const n = baris.length
   if (n < 2) return []
   const akhir = baris[n - 1]
   const kini = akhir[4]
   const keluar: RentangPeriode[] = []
 
-  const dorong = (
-    id: PerformaPeriode['id'], label: string,
-    rendah: number, tinggi: number, sumber: 'ohlc' | 'tutup',
-  ) => {
-    if (!(tinggi > 0) || tinggi < rendah) return
-    const posisi = tinggi === rendah ? 50 : ((kini - rendah) / (tinggi - rendah)) * 100
-    keluar.push({ id, label, rendah, tinggi, posisi: Math.max(0, Math.min(100, posisi)), sumber })
-  }
-
   for (const { id, label } of PERIODE_PERFORMA) {
-    if (id === '3Y' || id === '5Y') {
-      if (!tutupPanjang) continue
-      const batas = mundurBulan(akhir[0], id === '3Y' ? 36 : 60)
-      let lo = Infinity; let hi = -Infinity
-      for (const [t, v] of Object.entries(tutupPanjang)) {
-        if (t >= batas && t <= akhir[0] && v > 0) { lo = Math.min(lo, v); hi = Math.max(hi, v) }
-      }
-      if (Number.isFinite(lo)) dorong(id, label, lo, hi, 'tutup')
-      continue
-    }
     let iAwal: number
-    if (id === '1D') iAwal = n - 1
-    else if (id === '5D') iAwal = Math.max(0, n - 5)
-    else if (id === 'YTD') {
+    if (id === 'YTD') {
       iAwal = indeksSampai(baris, `${akhir[0].slice(0, 4)}-01-01`) + 1
     } else {
-      const bulan = id === '1M' ? 1 : id === '3M' ? 3 : id === '6M' ? 6 : 12
-      const i = indeksSampai(baris, mundurBulan(akhir[0], bulan))
-      if (i < 0) continue // riwayat 250 hari belum menjangkau periodenya
-      iAwal = i + 1
+      const mundur = HARI_BURSA_PERIODE[id]
+      if (mundur === undefined) continue
+      iAwal = n - mundur
     }
     if (iAwal < 0 || iAwal >= n) continue
-    let lo = Infinity; let hi = -Infinity
+    let lo = Infinity
+    let hi = -Infinity
     for (let i = iAwal; i < n; i++) {
       if (baris[i][3] > 0) lo = Math.min(lo, baris[i][3])
       hi = Math.max(hi, baris[i][2])
     }
-    if (Number.isFinite(lo)) dorong(id, label, lo, hi, 'ohlc')
+    if (!Number.isFinite(lo) || !(hi > 0) || hi < lo) continue
+    const posisi = hi === lo ? 50 : ((kini - lo) / (hi - lo)) * 100
+    keluar.push({ id, label, rendah: lo, tinggi: hi, posisi: Math.max(0, Math.min(100, posisi)) })
   }
   return keluar
 }
