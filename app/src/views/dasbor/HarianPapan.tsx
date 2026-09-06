@@ -243,7 +243,6 @@ export function HarianPapan() {
     <div className="lantai">
       <div className="vhead">
         <h1>Harian Papan</h1>
-        <span className="sub">Peringkat harian satu bursa — Stock Gainer, Net Buy/Sell Foreign.</span>
         <CatatanCakupan inline />
         <BedaSkor halaman="harian" />
       </div>

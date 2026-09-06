@@ -121,7 +121,6 @@ export function BrokerSummary() {
     <div className="lantai">
       <div className="vhead">
         <h1>Broker Summary</h1>
-        <span className="sub">akumulasi vs distribusi · sumber idx.co.id, harian otomatis</span>
         <CatatanCakupan inline />
         <KonteksData tanggal={tanggalAktif} />
       </div>

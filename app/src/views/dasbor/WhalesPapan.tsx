@@ -698,7 +698,6 @@ export default function WhalesPapan() {
     <div className="lantai">
       <div className="vhead">
         <h1>Whales Papan</h1>
-        <span className="sub">jejak bandar harian — pilih rentang harga &amp; waktu, lihat siapa menampung</span>
         <CatatanCakupan inline />
       </div>
 

@@ -36,7 +36,6 @@ export function KalkulatorJia() {
     <div className="lantai kalkulator-view">
       <div className="vhead">
         <h1>Kalkulator</h1>
-        <span className="sub">alat hitung posisi</span>
       </div>
 
       <div className="tabs" role="tablist">

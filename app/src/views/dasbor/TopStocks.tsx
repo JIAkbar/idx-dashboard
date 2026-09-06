@@ -150,7 +150,6 @@ export function TopStocks() {
   const vhead = (tgl: string | null = null, sementara = false) => (
     <div className="vhead">
       <h1>Top Stocks</h1>
-      <span className="sub">Top gainer, loser, kapitalisasi, dan kontribusi saham ke IHSG — satu hari bursa.</span>
       <CatatanCakupan inline />
       <KonteksData tanggal={tgl} sementara={sementara} />
     </div>

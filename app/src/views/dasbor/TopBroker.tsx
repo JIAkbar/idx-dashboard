@@ -66,7 +66,6 @@ export function TopBroker() {
   const vhead = (tgl: string | null = null, sementara = false) => (
     <div className="vhead">
       <h1>Top Broker</h1>
-      <span className="sub">Saham dan broker paling aktif per hari — volume, nilai, dan frekuensi transaksi.</span>
       <CatatanCakupan inline />
       <KonteksData tanggal={tgl} sementara={sementara} />
     </div>

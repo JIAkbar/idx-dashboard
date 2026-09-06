@@ -48,7 +48,6 @@ export function NeoPapan() {
     <div className="lantai neo-papan">
       <div className="vhead">
         <h1>Neo Papan</h1>
-        <span className="sub">delapan tab analisis: transaksi, broker, kepemilikan, musiman, dan rotasi sektor</span>
       </div>
 
       {/* Bilah kendali berkelompok — sistem tata C+A (keputusan Johan 28

@@ -154,7 +154,6 @@ export function KuliPapan() {
     <div className="lantai kuli-papan">
       <div className="vhead">
         <h1>Kuli Papan</h1>
-        <span className="sub">dua kalkulator papan — target realistis &amp; pita PBV</span>
       </div>
 
       <div className="kp-bar">

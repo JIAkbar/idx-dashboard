@@ -168,7 +168,6 @@ export function Bulletin() {
     <div className="lantai">
       <div className="vhead">
         <h1>Bulletin Arus Pasar</h1>
-        <span className="sub">analisa teknikal &amp; arus dana broker, terbit berkala</span>
       </div>
 
       <div className="panel">

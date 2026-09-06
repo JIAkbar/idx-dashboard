@@ -202,7 +202,6 @@ export function SektorIndeks() {
   const vhead = (tgl: string | null = null, sementara = false) => (
     <div className="vhead">
       <h1>Sektor & Indeks</h1>
-      <span className="sub">Sebelas sektor IDX dan indeks tematik, diurut kinerja.</span>
       <CatatanCakupan inline />
       <KonteksData tanggal={tgl} sementara={sementara} />
     </div>

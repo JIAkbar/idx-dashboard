@@ -15,7 +15,12 @@ export function CatatanCakupan({ inline = false }: { inline?: boolean } = {}) {
   // baris saja ... misal Whales Papan .... (Rincian broker tersedia ...)"):
   // duduk SEBARIS dengan judul di dalam .vhead, dalam kurung — hemat satu
   // baris header, ruangnya jatuh ke chart/tabel.
-  const teks = `Rincian broker tersedia dan tervalidasi sejak ${TAHUN_AWAL}. Riwayat harga tersedia sejak emiten tercatat di bursa.`
+  // Kalimat kedua ("Riwayat harga tersedia sejak emiten tercatat di bursa")
+  // DIBUANG 6 Sep 2026 atas contoh Johan di kepala Indeks Dunia: ia berlaku
+  // untuk emiten mana pun di bursa mana pun, jadi ia tak memberi tahu apa pun
+  // tentang data PAPAN. Yang tinggal memuat ANGKA — tahun awal rincian broker —
+  // dan itu justru batas cakupan yang perlu dibaca sebelum menilai angkanya.
+  const teks = `Rincian broker tersedia dan tervalidasi sejak ${TAHUN_AWAL}.`
   if (inline) {
     return <span className="catatan-cakupan catatan-inline muted">({teks})</span>
   }

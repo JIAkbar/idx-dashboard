@@ -133,7 +133,6 @@ export default function Bandarmologi() {
   const vhead = (tgl: string | null = null, sementara = false) => (
     <div className="vhead">
       <h1>Bandarmologi</h1>
-      <span className="sub">Teori bid-offer bandar dan spesifikasi order-flow, dihitung dari data yang sudah dipanen.</span>
       <CatatanCakupan inline />
       <KonteksData tanggal={tgl} sementara={sementara} />
     </div>

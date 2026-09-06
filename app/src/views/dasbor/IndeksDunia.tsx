@@ -607,7 +607,6 @@ export function IndeksDunia() {
   const vhead = (tgl: string | null = null, sementara = false) => (
     <div className="vhead">
       <h1>Indeks Dunia</h1>
-      <span className="sub">Indeks utama dunia dan IHSG dalam satu layar — penutupan, perubahan, dan kalender bursa.</span>
       <CatatanCakupan inline />
       <KonteksData tanggal={tgl} sementara={sementara} />
     </div>
