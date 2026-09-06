@@ -2,6 +2,7 @@ import { Fragment, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { tipeEdisi, useBulletinList, LABEL_TIPE_EDISI, type TipeEdisi } from '../../lib/dasbor/bulletin'
+import { muatEvaluasiProb, layakSinyal, type EvaluasiProb } from '../../lib/dasbor/berkasRekam'
 import { useAksesHalaman } from '../../context/AksesHalamanContext'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { IkonMenu, IKON_KUNCI, IKON_SILANG, IKON_MATA } from '../../components/dasbor/IkonMenu'
@@ -119,6 +120,11 @@ function TabelProbabilitasTerkunci({ alasan }: { alasan: { judul: string; kalima
  * edisi), dan IHSG + Δ% digabung satu kolom (badge pola .ytd-bdg).
  */
 export function Bulletin() {
+  // Hasil uji penaksir peluang. Halaman ini memajang angka peluang untuk
+  // banyak emiten sekaligus; tanpa ini pembaca melihat persen telanjang dan
+  // tak punya cara tahu bahwa penaksirnya belum mengalahkan rata-rata pasar.
+  const [evalProb, setEvalProb] = useState<EvaluasiProb | null>(null)
+  useEffect(() => { muatEvaluasiProb().then(setEvalProb) }, [])
   const { daftar, error } = useBulletinList()
   const peta = useIhsgMap()
   const [cari, setCari] = useState('')
@@ -361,7 +367,7 @@ export function Bulletin() {
                                     <th className="r" title="Skor komposit 0–100: Teknikal 35% · Flow 30% · Risk/Reward 20% · Likuiditas 10% · IHSG 5%">Skor</th>
                                     <th className="r" title="Peluang close lebih tinggi dalam 5 hari bursa — dihitung dari seluruh kejadian historis yang setup teknikalnya serupa (posisi vs EMA50, pivot, rasio volume, posisi rentang 20 hari)">Prob 5h ⓘ</th>
                                     <th className="r" title="Peluang harga SEMPAT naik ≥3% dalam 5 hari bursa pada setup serupa">P ≥3% ⓘ</th>
-                                    <th className="r" title="Jumlah sampel historis di balik angka probabilitas — makin besar makin bisa dipercaya. 'k/4' berarti pencocokan setup diperlonggar karena sampel persis terlalu sedikit">n ⓘ</th>
+                                    <th className="r" title="Jumlah sampel historis di balik angka probabilitas — sampel besar membuat angkanya lebih stabil, bukan lebih benar. 'k/4' berarti pencocokan setup diperlonggar karena sampel persis terlalu sedikit">n ⓘ</th>
                                     <th title="z-score nilai transaksi (harga×volume) vs 60 hari. Badge menyala kalau nilai melonjak (z≥2,0) tapi harga nyaris datar (|Δharga|≤1%)">VolVal ⓘ</th>
                                   </tr>
                                 </thead>
@@ -423,6 +429,18 @@ export function Bulletin() {
                                 tak bergerak (|Δharga|≤1%).
                                 Arahkan kursor / tahan di judul kolom ⓘ untuk detail. Probabilistik, bukan kepastian —
                                 bukan ajakan transaksi.
+                                {evalProb && !layakSinyal(evalProb) && (
+                                  <>
+                                    {' '}
+                                    <b style={{ color: 'var(--text)' }}>
+                                      Diuji ke belakang, kolom Prob 5h belum lebih baik daripada
+                                      sekadar memakai rata-rata pasar.
+                                    </b>{' '}
+                                    Baca sebagai konteks, bukan sinyal. Kolom P ≥3% dan peluang
+                                    menyentuh level berdiri terpisah — keduanya menghitung jarak,
+                                    bukan menebak arah.
+                                  </>
+                                )}
                               </div>
                               </>
                               )}

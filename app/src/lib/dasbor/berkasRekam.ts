@@ -258,6 +258,26 @@ export async function muatProb(
 }
 
 /**
+ * Hasil uji penaksir saja, tanpa memuat berkas satu emiten.
+ *
+ * Dipisah dari `muatProb` karena halaman Bulletin memajang angka peluang untuk
+ * BANYAK emiten sekaligus dan tak butuh satu pun berkas per-emiten — ia cuma
+ * perlu tahu apakah penaksirnya lolos ujinya. Menyalin ambangnya ke sana akan
+ * membuat dua tempat memutuskan hal yang sama, dan yang kedua diam-diam basi
+ * begitu yang pertama disetel.
+ */
+export async function muatEvaluasiProb(): Promise<EvaluasiProb | null> {
+  try {
+    const r = await fetch('/data-idx/json/prob/index.json')
+    if (!r.ok) return null
+    const idx = (await r.json()) as { evaluasi?: EvaluasiProb }
+    return idx?.evaluasi ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
  * Apakah penaksir layak dibaca sebagai sinyal, menurut ujinya sendiri.
  *
  * Dijawab dari `skill`, bukan dari kesan. Uji 29 Agu 2026 menjawab TIDAK
