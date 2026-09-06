@@ -833,7 +833,17 @@
 .lantai .bilah-kendali .grup-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);font-weight:700;user-select:none}
 .lantai .bilah-kendali .pemisah-v{width:1px;align-self:stretch;background:var(--line);margin:0 2px}
 .lantai .bilah-kendali{container-type:inline-size}
-.lantai .bilah-kendali .grup-kanan{margin-left:auto}
+/* `display:flex` + `gap` WAJIB di sini, bukan hanya `margin-left`. Sampai
+   7 Sep 2026 kelompok ini cuma punya `margin-left:auto`, jadi ia blok biasa
+   dan anak-anaknya mengalir menempel: di Berkas Emiten tombol "Setor tesis"
+   berakhir di 502px dan ikon info mulai di 502px — jarak NOL. Itu melanggar
+   aturan proyek "dua tombol ikon bersebelahan wajib berjarak >= 12px", dan
+   akibatnya bukan estetika: area sentuh 44px keduanya (`::after{inset:-6px}`)
+   saling tindih, sehingga klik di celah jatuh ke tombol yang menang tumpukan.
+   Johan menyebutnya "komponen nya masih tumpang tindih" — dan memang begitu
+   yang terjadi pada area kliknya, walau kotak visualnya bersinggungan pas.
+   `flex:none` menjaga kelompok ini tidak menyusut saat bilah sempit. */
+.lantai .bilah-kendali .grup-kanan{margin-left:auto;display:flex;align-items:center;gap:var(--j1);flex:none}
 /* Saat bilah tak cukup lebar untuk satu baris, `margin-left:auto` membuat
    kelompok kanan turun ke baris kedua RATA KANAN dengan lubang besar di
    kirinya (temuan Johan 28 Agu "grid di laptop masih berantakan") — di bawah

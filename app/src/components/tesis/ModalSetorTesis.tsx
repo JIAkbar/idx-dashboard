@@ -98,8 +98,14 @@ export function ModalSetorTesis({ kode, harga, onTutup, onTerkirim }: {
         {sisaKuota != null && <> Sisa kuota hari ini: <b>{sisaKuota}</b>.</>}
       </p>
 
-      <div className="grup-k" style={{ gap: 8 }}>
-        <span className="grup-lbl">Arah</span>
+      {/* BUKAN `.grup-k`/`.grup-lbl`. Keduanya HANYA bergaya di dalam
+          `.bilah-kendali` (lantai.css:833), dan modal ini bukan bilah kendali —
+          jadi labelnya tak dapat gaya apa pun DAN jaraknya tak berlaku. Itu
+          sebabnya "Arah" tampil sebagai teks badan biasa yang menempel ke
+          tombol pertama: aturannya ada, terbaca benar, dan tak pernah
+          menjangkau elemen ini. */}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+        <span className="lbl">Arah</span>
         {(['naik', 'turun'] as ArahTesis[]).map((a) => (
           <button key={a} type="button" className={`chip-t${arah === a ? ' on' : ''}`} onClick={() => setArah(a)}>
             {a === 'naik' ? 'Naik' : 'Turun'}
@@ -107,7 +113,12 @@ export function ModalSetorTesis({ kode, harga, onTutup, onTerkirim }: {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 }}>
+      {/* DUA kolom tetap, bukan auto-fit. `repeat(auto-fit, minmax(120px, 1fr))`
+          menghasilkan TIGA kolom di lebar modal 420px - terukur
+          124,66px x 3 - sehingga empat kotak jatuh 3+1 dan "Batas rugi"
+          berdiri sendirian di baris kedua. Pasangannya memang berpasangan:
+          bawah-atas satu baris, target-batas rugi satu baris. */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
         <label className="lbl">Area masuk bawah
           <input className="inp" inputMode="decimal" value={bawah} onChange={(e) => setBawah(e.target.value)} />
         </label>
@@ -127,8 +138,8 @@ export function ModalSetorTesis({ kode, harga, onTutup, onTerkirim }: {
         </p>
       )}
 
-      <div className="grup-k" style={{ gap: 8 }}>
-        <span className="grup-lbl">Horizon</span>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+        <span className="lbl">Horizon</span>
         {HORIZON_TESIS.map((h) => (
           <button key={h} type="button" className={`chip-t${horizon === h ? ' on' : ''}`} onClick={() => setHorizon(h)}>
             {h} hari
@@ -149,7 +160,7 @@ export function ModalSetorTesis({ kode, harga, onTutup, onTerkirim }: {
       )}
       {galat && <p className="dn" style={{ fontSize: 12, margin: 0 }}>{galat}</p>}
 
-      <div className="grup-k grup-kanan" style={{ gap: 8 }}>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
         <button type="button" className="dd-btn" onClick={onTutup}>Batal</button>
         <button type="button" className="dd-btn on" disabled={Boolean(salah) || sibuk || sisaKuota === 0} onClick={() => void simpan()}>
           {sibuk ? 'Mengirim…' : 'Kirim tesis'}
