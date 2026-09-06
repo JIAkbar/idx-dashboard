@@ -47,7 +47,6 @@ import { LangkahTanggal } from '../../components/dasbor/LangkahTanggal'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { TombolLayarPenuh } from '../../components/dasbor/TombolLayarPenuh'
 import { CatatanSumberBar } from '../../components/dasbor/CatatanSumberBar'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { InfoIndikator, type ItemInfoIndikator } from '../../components/dasbor/InfoIndikator'
 import { AlatGambar } from '../../components/dasbor/AlatGambar'
 import { useAlatGambar } from '../../lib/dasbor/useAlatGambar'
@@ -3213,10 +3212,9 @@ export function GrafikEmiten() {
 
   return (
     <div className="lantai">
-      {/* Tanpa judul by design (langsung chart) — C+A gelombang 3, 28 Agu:
-          CatatanCakupan dibungkus satu baris kecil (bukan .vhead) supaya
-          tak menambah tinggi header. */}
-      <p className="muted" style={{ margin: 0, fontSize: 11 }}><CatatanCakupan inline /></p>
+      {/* Tanpa judul by design (langsung chart) — C+A gelombang 3, 28 Agu.
+          Catatan cakupan broker yang dulu dibungkus di sini DICABUT 7 Sep 2026
+          bersama sepuluh pemakai lainnya (Johan menyebutnya tiga kali). */}
       {/* Penanda sumber riwayat. Wajib ada: pembaca yang menghitung return
           jangka panjang berhak tahu bagian mana grafiknya bukan dari sumber
           utama, karena konvensi penyesuaian aksi korporasi antar sumber tidak

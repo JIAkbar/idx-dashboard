@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { BilahTanggal } from '../../components/dasbor/BilahTanggal'
 import { KonteksData } from '../../components/dasbor/KonteksData'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { useDataHarian } from '../../lib/dasbor/dataHarian'
 import { useUrut } from '../../lib/dasbor/useUrut'
 import { fN } from '../../lib/dasbor/format'
@@ -66,7 +65,6 @@ export function TopBroker() {
   const vhead = (tgl: string | null = null, sementara = false) => (
     <div className="vhead">
       <h1>Top Broker</h1>
-      <CatatanCakupan inline />
       <KonteksData tanggal={tgl} sementara={sementara} />
     </div>
   )

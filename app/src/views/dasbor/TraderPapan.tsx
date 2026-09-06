@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { TAHUN_AWAL } from '../../lib/dasbor/brokerEmitenV2'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useBrokerTahunan } from '../../lib/dasbor/brokerTahunanData'
@@ -186,7 +185,6 @@ export default function TraderPapan() {
     <div className="lantai">
       <div className="vhead">
         <h1>Trader Papan</h1>
-        <CatatanCakupan inline />
       </div>
 
       {/* Bilah kendali berkelompok — sistem tata C+A (lantai.css). Emiten ·

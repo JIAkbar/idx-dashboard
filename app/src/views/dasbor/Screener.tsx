@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { BedaSkor } from '../../components/dasbor/BedaSkor'
 import { UjiAturan } from '../../components/dasbor/UjiAturan'
 import { DropdownMulti, type OpsiMulti } from '../../components/dasbor/DropdownMulti'
@@ -229,7 +228,6 @@ export function Screener() {
         {/* "saring, urutkan, cari" dibuang 7 Sep 2026: kendalinya sudah bicara
             sendiri. Cakupan {n} emiten DIPERTAHANKAN — itu angka, bukan hiasan. */}
         <span className="sub">{data.n} emiten, satu baris per emiten</span>
-        <CatatanCakupan inline />
         <BedaSkor halaman="screener" />
       </div>
 

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { ChartConfiguration } from 'chart.js/auto'
 import { IKON_TONG } from '../../components/dasbor/IkonMenu'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
@@ -277,7 +276,6 @@ export function Watchlist() {
     <div className="lantai">
       <div className="vhead">
         <h1>Watchlist</h1>
-        <CatatanCakupan inline />
       </div>
 
       <div className="panel">

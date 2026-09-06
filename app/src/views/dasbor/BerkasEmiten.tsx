@@ -14,7 +14,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { InfoIndikator, type ItemInfoIndikator } from '../../components/dasbor/InfoIndikator'
 import { ModalSetorTesis } from '../../components/tesis/ModalSetorTesis'
 import { useAuth } from '../../context/AuthContext'
@@ -349,7 +348,6 @@ export default function BerkasEmiten() {
 
       <div className="vhead">
         <h1>Berkas Emiten</h1>
-        <CatatanCakupan inline />
       </div>
 
       {/* BLOK G — di ATAS, bukan di urutan hurufnya. Letak itu bagian dari

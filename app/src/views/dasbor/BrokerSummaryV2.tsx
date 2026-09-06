@@ -5,7 +5,6 @@ import { Dropdown, type OpsiDropdown } from '../../components/dasbor/Dropdown'
 import { LangkahTanggal } from '../../components/dasbor/LangkahTanggal'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { IkonMenu, IKON_ULANG, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { agregatBroker, type ModeTransaksi } from '../../lib/dasbor/brokerEmiten'
@@ -198,7 +197,6 @@ export function BrokerSummaryV2() {
       <div className="vhead">
         <h1>Arus Broker</h1>
         <span className="sub">pasar reguler · semua investor · arsip harian PAPAN</span>
-        <CatatanCakupan inline />
       </div>
 
       <header className="panel" style={{ marginBottom: 14 }}>

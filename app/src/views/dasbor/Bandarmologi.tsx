@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
@@ -133,7 +132,6 @@ export default function Bandarmologi() {
   const vhead = (tgl: string | null = null, sementara = false) => (
     <div className="vhead">
       <h1>Bandarmologi</h1>
-      <CatatanCakupan inline />
       <KonteksData tanggal={tgl} sementara={sementara} />
     </div>
   )

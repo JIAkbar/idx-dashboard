@@ -7,7 +7,6 @@ import {
 import { muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
-import { CatatanCakupan } from '../../components/dasbor/CatatanCakupan'
 import { LencanaBeku, tidakDiperdagangkan } from '../../components/dasbor/LencanaBeku'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useBrokerTahunan } from '../../lib/dasbor/brokerTahunanData'
@@ -698,7 +697,6 @@ export default function WhalesPapan() {
     <div className="lantai">
       <div className="vhead">
         <h1>Whales Papan</h1>
-        <CatatanCakupan inline />
       </div>
 
 
