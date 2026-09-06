@@ -212,11 +212,10 @@ export function PanelBandingEmiten({ awal }: { awal: string }) {
         )}
 
         <p style={{ fontSize: 9.5, color: 'var(--text3)', marginTop: 8, lineHeight: 1.6 }}>
-          {kalimatTanggal(tabel)}. Vonis valuasi diukur terhadap sejarah emiten <b>itu sendiri</b>,
-          bukan terhadap emiten di kolom sebelah: dua emiten beda sektor tak sebanding P/E-nya
-          mentah-mentah. Tabel ini tidak bisa diurutkan, dan itu disengaja — tak satu pun ruas di sini
-          merupakan peringkat kualitas. Tombol kamera menyimpan tabel ini apa adanya sebagai satu
-          berkas gambar, mengikuti tema yang sedang tampil.
+          {/* Prosa penjelas dibuang 7 Sep 2026 (Johan: "ada teks di footer di hapus
+              gak bakal kebaca"). Yang tinggal cuma tanggalnya - satu-satunya bagian
+              yang menjawab pertanyaan pembaca, bukan menjelaskan niat desainer. */}
+          {kalimatTanggal(tabel)}.
         </p>
       </div>
     </div>

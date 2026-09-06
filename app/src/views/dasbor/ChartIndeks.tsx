@@ -2,7 +2,6 @@ import { TombolLayarPenuh } from '../../components/dasbor/TombolLayarPenuh'
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { TradingViewChart } from '../../components/dasbor/TradingViewChart'
-import { IkonMenu, IKON_GRAFIK_NAIK, IKON_API } from '../../components/dasbor/IkonMenu'
 import { useTheme } from '../../context/ThemeContext'
 
 /** Port TV_GROUPS index_live.html baris 3442-3466 — dua simbol dikoreksi
@@ -175,11 +174,12 @@ export function ChartIndeks() {
   return (
     <div className="lantai">
       <div className="panel" ref={chartPanelRef}>
-        <div className="panel-h">
-          <span className="lbl"><IkonMenu d={IKON_GRAFIK_NAIK} size={13} /> Chart Indeks IDX</span>
-          <TombolLayarPenuh target={chartPanelRef} aktif={panelFs !== null && panelFs === chartPanelRef.current} />
-        </div>
+        {/* Kepala panel dibuang 7 Sep 2026 (#2/#35): judulnya cuma mengulang
+            nama halaman, dan barisnya memakan tinggi layar pertama. Tombol
+            layar penuh pindah ke ujung kanan baris tab - pola #16: kendali
+            menempel pada yang dikendalikannya, bukan berdiri di baris sendiri. */}
         <div className="panel-b">
+          <div className="tv-baris-tab">
           <div className="tabs" role="tablist" aria-label="Grup Indeks">
             {(Object.keys(TV_GROUPS) as TvGroup[]).map((g) => (
               <button
@@ -193,6 +193,8 @@ export function ChartIndeks() {
                 {GROUP_LABEL[g]}
               </button>
             ))}
+          </div>
+            <TombolLayarPenuh target={chartPanelRef} aktif={panelFs !== null && panelFs === chartPanelRef.current} />
           </div>
           <div className="tv-chips">
             {TV_GROUPS[grp].map(({ sym: s, label }) => {
@@ -216,8 +218,11 @@ export function ChartIndeks() {
       </div>
 
       <div className="panel" ref={heatPanelRef}>
-        <div className="panel-h">
-          <span className="lbl"><IkonMenu d={IKON_API} size={13} /> Heatmap Saham IDX</span>
+        {/* Label dibuang; kepala TIPIS berisi tombol saja dipertahankan.
+            Overlay di atas widget TradingView ditolak: widget itu iframe pihak
+            ketiga yang menggambar sampai ujung, jadi tombol melayang di atasnya
+            akan menutupi isinya dan tak bisa dijamin kontrasnya. */}
+        <div className="panel-h tv-kepala-tipis">
           <TombolLayarPenuh target={heatPanelRef} aktif={panelFs !== null && panelFs === heatPanelRef.current} />
         </div>
         <div className="panel-b">

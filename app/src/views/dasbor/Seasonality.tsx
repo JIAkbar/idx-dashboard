@@ -239,7 +239,7 @@ export function Seasonality() {
 
           <div className="sea-chip-baris">
             {dipilih.map((k) => (
-              <button key={k} type="button" className="sea-chip" onClick={() => buang(k)} title={`Buang ${k}`}>
+              <button key={k} type="button" className="chip-t sea-chip" onClick={() => buang(k)} title={`Buang ${k}`}>
                 {k} <IkonMenu d={IKON_SILANG} size={9} />
               </button>
             ))}

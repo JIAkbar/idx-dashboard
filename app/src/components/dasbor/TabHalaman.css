@@ -5,13 +5,19 @@
    memakai prefiks itu dan seluruh aturannya tak pernah berlaku — tabnya
    tampil sebagai empat tautan biru bersambung tanpa jarak, terlihat di layar
    31 Agu 2026 dan tanpa satu pun galat. — lihat catatan rancangan di TabHalaman.tsx.
-   Bentuknya sengaja SAMA dengan `.chip-t` (komponen kanonis #170) supaya tab
-   ini tidak terbaca sebagai jenis kendali baru: yang berbeda cuma perannya
-   (pindah halaman), bukan tampilannya. */
+   Bentuknya SENGAJA BERBEDA dari pil penyaring, dan itu keputusan Johan
+   7 Sep 2026 (#2 opsi B, dipilih dari artifact pembanding): tab navigasi
+   ANTAR-HALAMAN memakai garis bawah, bukan kotak. Alasannya peran, bukan
+   selera — pil 4px dipakai penyaring (`.chip-t`) dan sub-tab di DALAM satu
+   halaman, jadi memberi bentuk yang sama kepada perpindahan halaman membuat
+   dua hal berbeda terbaca sama. Komentar lama di sini mengklaim bentuknya
+   'sama dengan .chip-t'; itu tak pernah benar di layar — blok ronde 2
+   `lantai.css` memaksa kendali di dalam `.lantai` jadi 32px radius 4px,
+   sementara baris ini hidup DI ATAS `.lantai` dan lolos aturan itu. */
 
 .tab-halaman {
   display: flex;
-  gap: 6px;
+  gap: 18px;
   /* Menggulir mendatar di layar sempit, bukan membungkus: enam tab yang
      terlipat jadi dua baris menggeser seluruh isi halaman ke bawah, dan di
      ponsel itu memakan layar pertama yang justru paling berharga. */
@@ -31,7 +37,24 @@
      kita berharap ::-webkit-scrollbar mengatur ukurannya. */
   scrollbar-width: none;
   margin: 0 0 var(--j2, 14px);
-  padding-bottom: 2px;
+  padding-bottom: 0;
+  /* Garis dasar sepanjang baris: yang membuat tab aktif terbaca sebagai
+     'sedang di sini' adalah garis emasnya MEMOTONG garis ini, bukan warna
+     latarnya. Tanpa garis dasar, garis emas sendirian terbaca seperti
+     coretan. */
+  /* JEBAKAN YANG SAMA DENGAN KEPALA BERKAS INI, kali kedua (7 Sep 2026).
+     Token `--line` didefinisikan di `.lantai`, dan baris tab ini hidup di
+     `dasbor-main` SATU TINGKAT DI ATASNYA - jadi rujukannya tak
+     terselesaikan, deklarasinya dibuang peramban, dan garisnya tak pernah
+     muncul. Nol galat: computed style membaca `0px none`, persis seperti
+     aturan yang memang tak pernah ditulis. Terukur di nav ini: --line,
+     --line2, --panel, --emas semuanya KOSONG; --text, --text2, --bg2 ada.
+     Garis emas tab aktif selamat HANYA karena sudah punya nilai cadangan.
+
+     Dipakai warna turunan `currentColor`, bukan angka tetap: satu nilai
+     tetap akan benar di satu tema dan salah di tema lain. */
+  border-bottom: 1px solid rgba(127, 127, 127, .28);
+  border-bottom-color: color-mix(in srgb, currentColor 22%, transparent);
   scroll-snap-type: x proximity;
 }
 .tab-halaman::-webkit-scrollbar { display: none; }
@@ -39,13 +62,18 @@
 .tab-halaman-it {
   flex: 0 0 auto;
   scroll-snap-align: start;
-  padding: 6px 12px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--panel, var(--bg2));
+  padding: 8px 2px 9px;
+  border: 0;
+  border-radius: 0;
+  background: none;
   color: var(--text2);
-  font-size: 12.5px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
+  /* Garis penanda dipesan sejak awal supaya lebar tab tidak bergeser saat
+     berpindah aktif — transparan, bukan tak ada. `margin-bottom: -1px`
+     menaruhnya TEPAT di atas garis dasar wadah, bukan di bawahnya. */
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
   text-decoration: none;
   white-space: nowrap;
   /* Target sentuh 44px lewat ::after, pola sama TombolIkon (#170) — tinggi
@@ -58,16 +86,26 @@
   inset: -7px -2px;
 }
 
-.tab-halaman-it:hover { color: var(--text); border-color: var(--line2); }
+.tab-halaman-it:hover { color: var(--text); }
 
 .tab-halaman-it.on {
-  background: var(--emas, #d9a441);
-  border-color: var(--emas, #d9a441);
-  color: #1a1408;
-  font-weight: 600;
+  background: none;
+  color: var(--text);
+  border-bottom-color: var(--emas, #d9a441);
 }
 
 @media (max-width: 560px) {
   .tab-halaman { margin-bottom: 10px; }
-  .tab-halaman-it { font-size: 12px; padding: 5px 10px; }
+  .tab-halaman-it { font-size: 12px; padding: 7px 2px 8px; }
+  /* ISYARAT UJUNG KANAN SENGAJA TIDAK DIPASANG, dan alasannya terukur.
+     Versi mask (memudarkan 18px terakhir) dicoba lalu dicabut: di 412px
+     keenam tab PAS dalam 396px dengan sisa 6px, jadi tak ada yang bisa
+     digulir - tapi pudarnya tetap menutup 12px terakhir tab 'Chart' dan
+     membuatnya terbaca seperti terpotong. Isyarat yang berbohong lebih
+     buruk daripada tak ada isyarat.
+     Varian CSS-murni lain juga gugur: 'scrolling shadow' ala
+     background-attachment butuh warna latar padat untuk menutupinya,
+     sementara baris ini transparan di atas `dasbor-main`. Kalau nanti
+     jumlah tab bertambah sehingga benar-benar menggulir, pasang isyarat
+     yang membaca keadaan gulir - bukan yang selalu menyala. */
 }

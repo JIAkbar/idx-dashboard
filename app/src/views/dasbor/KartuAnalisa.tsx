@@ -805,7 +805,10 @@ export function KartuAnalisa() {
       <div className="vhead">
         <h1>Kartu Analisa Emiten</h1>
         <span className="sub">
-          struktur harga, level, musiman &amp; fundamental — tiap angka membawa asal-usulnya ·{' '}
+          {/* Daftar isi halaman dibuang 7 Sep 2026 — judul kartunya sendiri
+              yang menyebutkan blok apa saja. Yang tinggal janji yang tak
+              terbaca dari mana pun: tiap angka membawa asal-usulnya. */}
+          tiap angka membawa asal-usulnya ·{' '}
           <Link to="/metodologi" className="kd-tautan">Metodologi &amp; sumber data →</Link>
         </span>
       </div>

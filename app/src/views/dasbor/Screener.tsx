@@ -226,7 +226,9 @@ export function Screener() {
     <div className="lantai">
       <div className="vhead">
         <h1>Screener</h1>
-        <span className="sub">{data.n} emiten, satu baris per emiten — saring, urutkan, cari.</span>
+        {/* "saring, urutkan, cari" dibuang 7 Sep 2026: kendalinya sudah bicara
+            sendiri. Cakupan {n} emiten DIPERTAHANKAN — itu angka, bukan hiasan. */}
+        <span className="sub">{data.n} emiten, satu baris per emiten</span>
         <CatatanCakupan inline />
         <BedaSkor halaman="screener" />
       </div>

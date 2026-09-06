@@ -617,6 +617,20 @@
 .lantai .hero .ident .nm{font-size:16px;font-weight:700;margin:2px 0 3px}
 .lantai .hero .ident .sek{font-size:11px;color:var(--text3)}
 .lantai .badge{display:inline-block;margin-top:8px;font-family:var(--ui);font-size:9.5px;background:var(--amber-dim);color:var(--amber);border-radius:99px;padding:2px 9px}
+/* Badge bersebelahan WAJIB berjarak. `.badge` hanya punya margin-top, jadi
+   dua badge di satu baris menempel tanpa celah - terlihat seperti satu
+   lencana bersambung, dan di Stock Detail 'Papan Utama' + 'Laporan: IDR'
+   terbaca sebagai satu blok. Aturan sibling, bukan margin di tiap badge:
+   badge pertama tak boleh ikut bergeser. */
+.lantai .badge + .badge{margin-left:6px}
+/* Baris tab yang membawa kendalinya sendiri di ujung kanan (#16: kendali
+   menempel pada yang dikendalikannya, bukan berdiri di baris terpisah).
+   Dipakai Chart Indeks sesudah kepala panelnya dibuang. */
+.lantai .tv-baris-tab{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.lantai .tv-baris-tab .tabs{margin-bottom:0}
+/* Kepala panel tanpa judul: cuma rumah bagi tombolnya. Tanpa tinggi minimum,
+   `panel-h` yang kosong judul menyusut sampai tombolnya menempel ke bingkai. */
+.lantai .tv-kepala-tipis{justify-content:flex-end;min-height:34px}
 .lantai .hero .harga{border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:center}
 .lantai .hero .harga .px{font-family:var(--mono);font-size:30px;font-weight:700;line-height:1.1}
 .lantai .hero .harga .rng{margin-top:10px}

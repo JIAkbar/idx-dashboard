@@ -57,7 +57,16 @@
 
    Di <=720px kendalinya turun ke barisnya sendiri: memaksanya sebaris di lebar
    itu cuma memotong pemilih tanggalnya. */
-.lantai .stb-jajar {
+/* REGRESI 6-7 Sep 2026, dan sebabnya nama kelas yang dipakai dua peran.
+   Blok ini lahir untuk pembungkus KEPALA (baris tab + kendali periode), tapi
+   ditulis ke `.stb-jajar` - kelas yang juga dipakai 11 pembungkus PANEL yang
+   membawa `grid2`/`grid3`. `display: flex` di sini menang atas
+   `.lantai .grid2 { display: grid }` (spesifisitas sama, berkas ini menang
+   urutan), jadi kesebelas grid diam-diam berubah jadi flex-wrap: panel
+   selebar isinya dan TERPUSAT vertikal. Itu yang terlihat sebagai IHSG dan
+   Net Asing melayang di tengah tinggi tetangganya.
+   Sekarang kelasnya sendiri, dipakai satu tempat. */
+.lantai .stb-kepala {
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -67,7 +76,7 @@
 /* Kendali menempel di SEBELAH baris tab, bukan didorong ke ujung kanan.
    `space-between` membuat keduanya sebaris tapi tetap 628px berjauhan di
    1536 — sebaris belum tentu berdekatan, dan yang diminta "dekatkan". */
-.lantai .stb-jajar .stb-nav { margin-left: 0; }
+.lantai .stb-kepala .stb-nav { margin-left: 0; }
 @media (max-width: 720px) {
-  .lantai .stb-jajar .stb-nav { width: 100%; margin-left: 0; justify-content: space-between; }
+  .lantai .stb-kepala .stb-nav { width: 100%; margin-left: 0; justify-content: space-between; }
 }

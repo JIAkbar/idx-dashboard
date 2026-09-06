@@ -349,7 +349,6 @@ export default function BerkasEmiten() {
 
       <div className="vhead">
         <h1>Berkas Emiten</h1>
-        <span className="sub">{kode} — semua yang PAPAN tahu tentang satu emiten</span>
         <CatatanCakupan inline />
       </div>
 

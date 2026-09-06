@@ -238,7 +238,10 @@ export function StatistikBerkala() {
       <div className="vhead-kiri">
         <h1>Statistik {jenis === 'minggu' ? 'Mingguan' : 'Bulanan'}</h1>
         <span className="sub">
-          rekap satu {kataPeriode} bursa — tiap angka berpasangan dengan {kataPeriode} sebelumnya
+          {/* "rekap satu pekan bursa" dibuang 7 Sep 2026: judul halaman sudah
+              mengatakannya. Yang tinggal menjawab hal yang TIDAK terbaca dari
+              judul — bahwa tiap angka punya pasangan pembanding. */}
+          tiap angka berpasangan dengan {kataPeriode} sebelumnya
         </span>
         <CatatanCakupan inline />
       </div>
@@ -279,7 +282,7 @@ export function StatistikBerkala() {
     <div className="lantai">
       {kepala}
 
-      <div className="stb-jajar">
+      <div className="stb-kepala">
         <div className="tabs" role="tablist" aria-label="Bagian statistik">
         {TABS.map((t) => (
           <button
@@ -337,7 +340,12 @@ export function StatistikBerkala() {
       {tab === 'transaksi' && (edisiBulanan ? <TabTransaksiBulanan edisi={edisiBulanan} /> : <TabTransaksi edisi={edisi} />)}
 
       <p className="muted stb-sumber">
-        Sumber: terbitan statistik berkala resmi Bursa Efek Indonesia, edisi {labelEdisi(edisi)}.
+        {/* Kalimat sumber dibuang 7 Sep 2026 (Johan: "redundant banget").
+            Tanggal edisinya sudah tercetak di pemilih tanggal beberapa piksel
+            di atas, dan penyedianya sudah disebut di Metodologi yang ditaut
+            di baris ini juga. Yang TIDAK terbaca dari mana pun dipertahankan:
+            bahwa “—” berarti ruasnya tak tercantum, bukan nilainya nol.
+            Itu beda yang mengubah cara membaca seluruh tabel. */}
         Ruas yang tidak tercantum di edisinya ditulis “—”, bukan nol.{' '}
         <Link to="/metodologi" className="kd-tautan">Metodologi &amp; sumber data →</Link>
       </p>
