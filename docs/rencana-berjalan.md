@@ -8,10 +8,40 @@
 > dari `docs/antrean.md` saja.** Bagian di bawah tetap dibaca untuk riwayat
 > keputusan & sumber data, bukan untuk status antrean terkini.
 
+## ⏳ TENGGAT: 9 September 2026
+
+Dikonfirmasi Johan 6 Sep 2026 atas pertanyaan langsung (*"9 september bener,
+tulis ke rencana-berjalan"*). **Tiga hari kerja tersisa terhitung 6 Sep.**
+
+Ditulis di sini karena sebelumnya ia tidak ada di mana pun yang dibaca saat
+kerja: dicari di seluruh `docs/`, `CLAUDE.md` proyek, `CLAUDE.md` global, dan
+berkas memori — nol hasil. Satu-satunya jejaknya anak kalimat di dokumentasi
+metodologi lintas proyek (`kemampuan-workflow.md` §WF-216: *"Johan, 5 Sep
+2026, empat hari sebelum deadline PAPAN"*), ditulis sesi pengawas sebagai
+keterangan waktu — bukan sebagai komitmen yang dicatat. Tanggal yang
+menentukan urutan seluruh pekerjaan tidak boleh cuma hidup sebagai keterangan
+waktu di berkas lain.
+
+### Keadaan antrean pada 6 Sep 2026, 3 hari sebelum tenggat
+
+| # | Perihal | Kondisi |
+|---|---|---|
+| **#3** | Tesis kontributor | Kode, hakim, formulir, tab, pembekuan **sudah jadi dan terdorong**. Tertahan di **migrasi basis data** (`supabase/migrations/20260906_*`) yang hanya Johan bisa terapkan. Sesudah diterapkan: uji end-to-end + ganti label jenjang |
+| **#15** | Diary Pasar vs RTI | Paling siap dieksekusi — aturan RTI sudah direproduksi 6 dari 6 dengan selisih 0,00 dari `ohlc/IHSG.json` |
+| **#12** | Metodologi bocor mekanisme | Premis terverifikasi (angkanya memang tayang), tinggal pemicu |
+| **#13** | Glosarium | Premis terverifikasi; entri hidup di `glosarium.json`, bukan berkas TypeScript |
+| **#14** | Nama sumber di 2 halaman publik | Premis terverifikasi (kedua string ada di baris yang disebut) |
+| **#16** | Kendali periode vs baris tab | Jaraknya terukur 626 px (bukan 1.400); daftar sapuannya butuh satu putaran devtools saat eksekusi |
+| **#1 · #2** | Rentang statistik IDX · baris tab dipikir ulang | Belum ada keputusan sama sekali |
+
+**Yang menghalangi, dan hanya satu:** migrasi #3. Selama tabel `tesis` belum
+berdiri, rantai tesis berhenti di `tarik_tesis.py` yang menjawab exit 2, dan
+kriteria terima terakhirnya tak bisa dijalankan siapa pun.
+
 Catatan hidup — diperbarui tiap ada keputusan. Ditulis ke berkas supaya tidak
 bergantung pada ingatan percakapan (yang bisa diringkas dan kehilangan detail).
 
-Terakhir diperbarui: 20 Agustus 2026 (chip Bulanan Statistik Berkala dinyalakan).
+Terakhir diperbarui: 6 September 2026 (tenggat 9 Sep dicatat + keadaan antrean).
 
 ## 📌 Sesi 20 Agu 2026 — Chip Bulanan Statistik Berkala dinyalakan (Papan Pekerjaan #203)
 
