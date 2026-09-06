@@ -64,7 +64,8 @@ import {
 import { PanelAnalitikChart, type BarAnalitik } from '../../components/dasbor/PanelAnalitikChart'
 import { GarisAvgBroker } from '../../lib/dasbor/garisAvgBroker'
 import { PitaCpr } from '../../lib/dasbor/pitaCprChart'
-import { BubbleBroker, bubbleOutlierHarian } from '../../lib/dasbor/bubbleBroker'
+import { BubbleBroker, bubbleOutlierHarian, type BubbleHari } from '../../lib/dasbor/bubbleBroker'
+import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
 import { cariRbs, RINGKAS_BACKTEST_RBS } from '../../lib/dasbor/polaRbs'
 import { PolaRbsChart } from '../../lib/dasbor/polaRbsChart'
 import { cariGap, RINGKAS_BACKTEST_GAP } from '../../lib/dasbor/polaGap'
@@ -91,25 +92,25 @@ const IKON_GAP = 'M4 18h6v-6h6v-6h6'
  *  berikan modal informasi terkait fungsi nya"). Bahasa pembaca, dari `title`/
  *  komentar kendali masing-masing — tanpa nama sumber/jalur internal. */
 const INFO_GRAFIK: ItemInfoIndikator[] = [
-  { nama: 'Kerangka waktu', isi: 'Interval tiap lilin. 5 menit sampai 1 jam riwayatnya sekitar sebulan, 4 jam sekitar dua tahun, sedangkan Harian/Pekanan/Bulanan memakai arsip sendiri dengan riwayat penuh 10 tahun.' },
-  { nama: 'Lilin / Garis', isi: 'Bentuk gambar harga: Lilin menampilkan buka-tinggi-rendah-tutup tiap periode, Garis hanya menyambungkan harga tutup. Menukarnya tidak menyentuh indikator atau pola yang sudah dipasang.' },
+  { nama: 'Kerangka waktu', isi: 'Interval tiap candle. 5 menit sampai 1 jam riwayatnya sekitar sebulan, 4 jam sekitar dua tahun, sedangkan Harian/Pekanan/Bulanan memakai arsip sendiri dengan riwayat penuh 10 tahun.' },
+  { nama: 'Candle / Garis', isi: 'Bentuk gambar harga: Candle menampilkan buka-tinggi-rendah-tutup tiap periode, Garis hanya menyambungkan harga tutup. Menukarnya tidak menyentuh indikator atau pola yang sudah dipasang.' },
   { nama: 'ƒx Indikator', isi: 'Menambahkan indikator teknikal (rata-rata bergerak, osilator momentum, dan sejenisnya) ke kanvas — kelompok "Pilihan" berisi yang sering dipakai, disusul indikator populer dan katalog lengkap per kategori. Tiap pilihan menambah satu instans baru dan bisa ditumpuk.' },
   { nama: '+ Pola', isi: 'Menambahkan pendeteksi pola grafik otomatis: pola klasik (double/triple top-bottom, dan sejenisnya), struktur pasar (swing high/low & patahan tren), musiman, serta divergensi indikator momentum terhadap harga.' },
   { nama: '+ Banding', isi: 'Menumpuk harga emiten lain (maksimal tiga sekaligus, termasuk IHSG) sebagai garis pembanding di kanvas yang sama. Menambahkan pembanding otomatis mengunci skala ke persentase supaya emiten berharga jauh berbeda tetap bisa dibandingkan bentuknya.' },
-  { nama: 'Bar replay', isi: 'Memundurkan chart ke suatu titik lalu memutarnya maju satu lilin per klik atau otomatis — untuk melatih membaca pergerakan harga tanpa tahu kelanjutannya lebih dulu.' },
+  { nama: 'Bar replay', isi: 'Memundurkan chart ke suatu titik lalu memutarnya maju satu candle per klik atau otomatis — untuk melatih membaca pergerakan harga tanpa tahu kelanjutannya lebih dulu.' },
   { nama: 'Template', isi: 'Menyimpan dan memuat kembali susunan indikator & pola yang sedang terpasang, supaya tak perlu menyusunnya ulang tiap kali membuka emiten lain.' },
   { nama: 'Garis rata-rata beli broker', isi: 'Garis putus-putus harga rata-rata beli lima broker net-pembeli terbesar pada rentang yang sedang tampil — seberapa murah atau mahal mereka menampung.' },
   { nama: 'Pita CPR + Pivot', isi: 'Pita rentang harga tengah dan level pivot harian dari sesi tutup terakhir, dipakai sebagai acuan support/resistance. Hanya tersedia di kerangka Harian.' },
   { nama: 'Bubble broker outlier', isi: 'Lingkaran pada broker yang net beli/jual hariannya menyimpang jauh dari kebiasaan pasar hari itu. Hanya tersedia di kerangka Harian.' },
   { nama: 'Pola RBS', isi: 'Menandai level resistance/breakout/support dari histori harga harian. Deskriptif — menggambarkan apa yang sudah terjadi, bukan sinyal beli/jual. Hanya tersedia di kerangka Harian.' },
   { nama: 'Pola Gap', isi: 'Menandai zona celah harga (gap) dan target penutupan celahnya dari histori harga harian. Deskriptif, bukan sinyal beli/jual. Hanya tersedia di kerangka Harian.' },
-  { nama: 'Analitik', isi: 'Panel tambahan berisi Pivot/CPR, rasio Risk:Reward, return multi-horizon, dan lonjakan volume — dihitung dari lilin yang sedang tampil di jendela pandang.' },
+  { nama: 'Analitik', isi: 'Panel tambahan berisi Pivot/CPR, rasio Risk:Reward, return multi-horizon, dan lonjakan volume — dihitung dari candle yang sedang tampil di jendela pandang.' },
   { nama: 'Alat gambar', isi: 'Bilah alat menggambar di kanvas — garis tren, level harga, bentuk geometris, dan sejenisnya — untuk menandai sendiri area yang menarik perhatian. Terpisah dari indikator otomatis di atas.' },
   { nama: 'Rentang tampil', isi: 'Pintasan memperbesar/mempersempit jendela pandang kanvas: 1 hari, 5 hari, 1/3/6 bulan, 1/5 tahun, atau seluruh riwayat. Pilihan yang riwayatnya tak cukup pada kerangka waktu aktif ditampilkan redup.' },
   { nama: 'vol', isi: 'Memindahkan panel volume transaksi ke bawah kanvas harga sendiri, terpisah dari dasar panel harga.' },
   { nama: 'grid', isi: 'Menyalakan/mematikan garis bantu pada kanvas, lengkap dengan pengatur keburamannya.' },
   { nama: '% / log', isi: 'Skala sumbu harga di kanan kanvas: % mengukur semua dari titik pertama yang terlihat, log membuat jarak yang sama berarti persentase perubahan yang sama sepanjang sumbu. Terkunci ke % otomatis selagi ada emiten pembanding.' },
-  { nama: 'auto', isi: 'Skala harga menyesuaikan sendiri ke rentang lilin yang sedang terlihat di kanvas.' },
+  { nama: 'auto', isi: 'Skala harga menyesuaikan sendiri ke rentang candle yang sedang terlihat di kanvas.' },
 ]
 
 /** Pilihan dropdown "Indikator" bagian ATAS — sepuluh kurasi PAPAN,
@@ -175,7 +176,7 @@ const MAKS_PENANDA_MUSIMAN = 60
  *  kerangka waktunya. */
 export type JenisChart = 'lilin' | 'garis'
 const JENIS_CHART: Array<[JenisChart, string, string]> = [
-  ['lilin', 'Lilin', IKON_LILIN],
+  ['lilin', 'Candle', IKON_LILIN],
   ['garis', 'Garis', IKON_GRAFIK_NAIK],
 ]
 
@@ -478,11 +479,11 @@ const PANDUAN_INDIKATOR: Array<{ label: string; teks: string }> = [
   { label: 'W%R (Williams %R)',
     teks: 'Jarak harga tutup dari harga TERTINGGI sekian hari terakhir, dinyatakan −100 sampai 0. Isi ukurannya sama dengan Stochastic %K, cuma dibalik dan digeser skalanya.' },
   { label: 'VWAP (Volume Weighted Average Price)',
-    teks: 'Harga rata-rata yang dibobot volume, dihitung menumpuk sejak awal pekan atau awal bulan lalu dimulai ulang di batas berikutnya. Menjawab "berapa harga rata-rata yang benar-benar dibayar orang sejauh ini", bukan sekadar rata-rata harga penutupan. Jangkar harian sengaja tidak disediakan: pada data harian ia dimulai ulang tiap lilin dan hasilnya cuma harga lilin itu sendiri.' },
+    teks: 'Harga rata-rata yang dibobot volume, dihitung menumpuk sejak awal pekan atau awal bulan lalu dimulai ulang di batas berikutnya. Menjawab "berapa harga rata-rata yang benar-benar dibayar orang sejauh ini", bukan sekadar rata-rata harga penutupan. Jangkar harian sengaja tidak disediakan: pada data harian ia dimulai ulang tiap candle dan hasilnya cuma harga candle itu sendiri.' },
   { label: 'Katalog pustaka — ratusan indikator lain',
-    teks: 'Di bawah "Pilihan PAPAN" pada menu ƒx Indikator ada katalog penuh pustaka lightweight-charts-indicators (MIT), dikelompokkan menurut kategori pustakanya sendiri: rata-rata bergerak, osilator, momentum, tren, volatilitas, pita & kanal, volume, pola lilin. Ketik di kotak cari untuk menyaringnya. Daftarnya dibaca dari registry pustaka, bukan disalin — versi pustaka berikutnya langsung terbaca apa adanya.' },
+    teks: 'Di bawah "Pilihan PAPAN" pada menu ƒx Indikator ada katalog penuh pustaka lightweight-charts-indicators (MIT), dikelompokkan menurut kategori pustakanya sendiri: rata-rata bergerak, osilator, momentum, tren, volatilitas, pita & kanal, volume, pola candle. Ketik di kotak cari untuk menyaringnya. Daftarnya dibaca dari registry pustaka, bukan disalin — versi pustaka berikutnya langsung terbaca apa adanya.' },
   { label: 'Katalog: apa yang tidak ikut, dan kenapa',
-    teks: 'Indikator yang keluarannya bukan deret angka (kebanyakan pola lilin yang menggambar penanda) tidak dimasukkan — kanvas ini menggambar deret, dan indikator yang menyala tapi tak menggambar apa pun lebih membingungkan daripada indikator yang jujur tak ada. Penempatannya (menumpang di panel harga atau panel sendiri di bawah) juga dibaca dari registry, bukan ditebak. Sebagian parameter yang bukan angka — pilihan sumber harga, sakelar ya/tidak — memakai bawaan pustaka.' },
+    teks: 'Indikator yang keluarannya bukan deret angka (kebanyakan pola candle yang menggambar penanda) tidak dimasukkan — kanvas ini menggambar deret, dan indikator yang menyala tapi tak menggambar apa pun lebih membingungkan daripada indikator yang jujur tak ada. Penempatannya (menumpang di panel harga atau panel sendiri di bawah) juga dibaca dari registry, bukan ditebak. Sebagian parameter yang bukan angka — pilihan sumber harga, sakelar ya/tidak — memakai bawaan pustaka.' },
   { label: 'Sepuluh yang dikurasi, dan pemeriksaan silangnya',
     teks: 'MA, EMA, BB, RSI, MACD, dan OBV dihitung kode PAPAN sendiri; Stochastic, StochRSI, W%R, dan VWAP memakai rumus pustaka tapi dengan label dan parameter yang sudah dirapikan. Kesepuluhnya muncul paling atas di menu, dan versi pustaka dari enam yang pertama sengaja tidak ikut di katalog supaya tak ada dua garis bernama sama yang boleh berbeda. Sebagai pemeriksaan silang, RSI PAPAN diadu dengan RSI pustaka pada data yang sama di dalam uji otomatis.' },
   { label: 'Beberapa instans sekaligus',
@@ -491,7 +492,7 @@ const PANDUAN_INDIKATOR: Array<{ label: string; teks: string }> = [
 
 const PANDUAN_POLA: Array<{ label: string; teks: string }> = [
   { label: 'Double Bottom — apa yang dicari',
-    teks: 'Dua lembah yang harganya sepadan, dipisahkan sebuah puncak di antaranya (leher). Lembah dicari sebagai pivot: titik yang sekian lilin di kiri dan kanannya tak ada yang lebih rendah — karena itu beberapa lilin terakhir tak pernah menghasilkan pivot, sebuah pivot baru bisa disebut pivot setelah harga terbukti berbalik.' },
+    teks: 'Dua lembah yang harganya sepadan, dipisahkan sebuah puncak di antaranya (leher). Lembah dicari sebagai pivot: titik yang sekian candle di kiri dan kanannya tak ada yang lebih rendah — karena itu beberapa candle terakhir tak pernah menghasilkan pivot, sebuah pivot baru bisa disebut pivot setelah harga terbukti berbalik.' },
   { label: 'Kenapa toleransinya dihitung dari ATR, bukan persen',
     teks: 'ATR mengukur seberapa jauh saham itu memang biasa bergerak dalam sehari. Toleransi persen tetap memperlakukan saham 50 rupiah dan saham 50.000 rupiah dengan ukuran yang salah satunya pasti keliru; "1 × ATR" berarti hal yang sama di seluruh papan.' },
   { label: 'Kedalaman minimum',
@@ -505,43 +506,43 @@ const PANDUAN_POLA: Array<{ label: string; teks: string }> = [
   { label: 'Tiga keadaan Lonjakan Volume',
     teks: `Terkonfirmasi — ${ARTI_LONJAKAN.terkonfirmasi}. Kuat — ${ARTI_LONJAKAN.kuat}. Tak terkonfirmasi — ${ARTI_LONJAKAN.takTerkonfirmasi}. Kenaikan harga tanpa kenaikan volume berarti sedikit pihak yang ikut; keadaan ketiga itu justru yang membuat daftar ini bukan sekadar kumpulan hari yang menyenangkan.` },
   { label: 'Pola Klasik — enam belas pola, satu mesin',
-    teks: 'Sembilan reversal — Double/Triple Top & Bottom, Head & Shoulders (+inverted), Rising/Falling Wedge, Expanding Triangle — plus tujuh continuation: Bullish/Bearish Flag, Bullish/Bearish Pennant, Ascending/Descending/Symmetrical Triangle. Semuanya dicari di atas pivot zigzag yang sama dengan Harmonic. Flag & Pennant tambahan mensyaratkan TIANG (pole) — gerak kuat searah sebelum kanalnya — supaya beda dari baji/expanding yang bentuknya mirip tapi tanpa tiang. Sebuah pola baru dihitung SELESAI saat lehernya (atau garis trennya) ditembus penutupan, bukan saat bentuknya kelihatan; penanda dan garisnya berdiri di lilin patahan itu.' },
+    teks: 'Sembilan reversal — Double/Triple Top & Bottom, Head & Shoulders (+inverted), Rising/Falling Wedge, Expanding Triangle — plus tujuh continuation: Bullish/Bearish Flag, Bullish/Bearish Pennant, Ascending/Descending/Symmetrical Triangle. Semuanya dicari di atas pivot zigzag yang sama dengan Harmonic. Flag & Pennant tambahan mensyaratkan TIANG (pole) — gerak kuat searah sebelum kanalnya — supaya beda dari baji/expanding yang bentuknya mirip tapi tanpa tiang. Sebuah pola baru dihitung SELESAI saat lehernya (atau garis trennya) ditembus penutupan, bukan saat bentuknya kelihatan; penanda dan garisnya berdiri di candle patahan itu.' },
   { label: 'Pola Klasik — angka backtest-nya, jujur',
-    teks: 'Diukur atas 18 emiten beragam watak, bebas bocor masa depan, dibandingkan peluang dasar arah yang sama: harian −2,4pp pada 5 lilin naik jadi +2,7pp pada 20 lilin, 4 jam mendekati nol di ketiga jendela, pekanan +6,9pp pada 5 lilin (sampel pekanan kecil). Per pola TIDAK sama kuat — Head & Shoulders +18pp dan Double Bottom +12pp di harian tetap paling teruji; dari continuation, Bearish Flag harian +35pp di 20 lilin (n=7) paling menjanjikan tapi sampelnya kecil, sementara Bullish Flag negatif di ketiga jendela harian (n=13). Angka ini dicetak supaya polanya ditimbang, bukan dipercaya buta.' },
+    teks: 'Diukur atas 18 emiten beragam watak, bebas bocor masa depan, dibandingkan peluang dasar arah yang sama: harian −2,4pp pada 5 candle naik jadi +2,7pp pada 20 candle, 4 jam mendekati nol di ketiga jendela, pekanan +6,9pp pada 5 candle (sampel pekanan kecil). Per pola TIDAK sama kuat — Head & Shoulders +18pp dan Double Bottom +12pp di harian tetap paling teruji; dari continuation, Bearish Flag harian +35pp di 20 candle (n=7) paling menjanjikan tapi sampelnya kecil, sementara Bullish Flag negatif di ketiga jendela harian (n=13). Angka ini dicetak supaya polanya ditimbang, bukan dipercaya buta.' },
   { label: 'Pola Klasik — target harga & statusnya',
-    teks: 'Mengikuti spek Auto Chart Patterns TradingView (dibaca langsung dari dokumentasinya): sesudah patahan, harga diharapkan berjalan kira-kira SETINGGI POLANYA searah patahan — garis putus-putus mendatar menandai level itu. Status tiap pola dinilai dari lilin yang sudah terjadi: tercapai (ekstrem menyentuh target), gagal (penutupan melewati ekstrem pola di sisi berlawanan sebelum target), atau menunggu. Ini label atas masa lalu, bukan ramalan — dan backtest di atas tidak memakainya.' },
+    teks: 'Mengikuti spek Auto Chart Patterns TradingView (dibaca langsung dari dokumentasinya): sesudah patahan, harga diharapkan berjalan kira-kira SETINGGI POLANYA searah patahan — garis putus-putus mendatar menandai level itu. Status tiap pola dinilai dari candle yang sudah terjadi: tercapai (ekstrem menyentuh target), gagal (penutupan melewati ekstrem pola di sisi berlawanan sebelum target), atau menunggu. Ini label atas masa lalu, bukan ramalan — dan backtest di atas tidak memakainya.' },
   { label: 'Divergensi — tiga lapis, tiga peran berbeda',
     teks: 'Lapis harga menentukan ADA-tidaknya pola: dua puncak (bearish) atau dua lembah (bullish) yang dicari dengan pivot yang sama seperti Double Bottom. Lapis Stochastic %K dibandingkan di dua pivot yang sama dan itulah yang MENYATAKAN divergensinya — arah harga dan arah momentum harus berlawanan. Lapis volume tidak pernah menolak apa pun; ia cuma mengesahkan derajatnya.' },
   { label: 'Divergensi — dua arah dan artinya',
-    teks: 'Bearish: harga membentuk puncak lebih tinggi sementara %K membentuk puncak lebih rendah — naiknya kehilangan tenaga. Bullish: harga membentuk lembah lebih rendah sementara %K membentuk lembah lebih tinggi — turunnya kehilangan tenaga. Penanda bearish duduk di atas lilin, bullish di bawahnya. Ini penyajian pola, bukan saran beli atau jual.' },
+    teks: 'Bearish: harga membentuk puncak lebih tinggi sementara %K membentuk puncak lebih rendah — naiknya kehilangan tenaga. Bullish: harga membentuk lembah lebih rendah sementara %K membentuk lembah lebih tinggi — turunnya kehilangan tenaga. Penanda bearish duduk di atas candle, bullish di bawahnya. Ini penyajian pola, bukan saran beli atau jual.' },
   { label: 'Divergensi — kenapa volume ikut dihitung',
-    teks: 'Puncak kedua yang terbentuk dengan rata-rata volume lebih rendah dari puncak pertama berarti kenaikan tanpa dukungan; lembah kedua yang volumenya mengering berarti tekanan jual yang habis. Volume dibandingkan sebagai rata-rata beberapa lilin sampai pivot, bukan satu batang — satu batang terlalu berisik. Volume yang bergerak berlawanan menurunkan derajat, tidak membatalkan polanya.' },
+    teks: 'Puncak kedua yang terbentuk dengan rata-rata volume lebih rendah dari puncak pertama berarti kenaikan tanpa dukungan; lembah kedua yang volumenya mengering berarti tekanan jual yang habis. Volume dibandingkan sebagai rata-rata beberapa candle sampai pivot, bukan satu batang — satu batang terlalu berisik. Volume yang bergerak berlawanan menurunkan derajat, tidak membatalkan polanya.' },
   { label: 'Divergensi — tiga derajat',
     teks: `Kuat — ${ARTI_DERAJAT.kuat}. Sedang — ${ARTI_DERAJAT.sedang}. Lemah — ${ARTI_DERAJAT.lemah}. Dua pivot yang jaraknya di luar batas justru tidak ditampilkan sama sekali: terlalu dekat berarti masih satu ayunan yang sama, terlalu jauh berarti dua kejadian yang tak lagi berhubungan.` },
   { label: 'Divergensi — Stochastic-nya yang mana',
-    teks: 'Deret %K yang sama persis dengan indikator Stoch di menu ƒx, lewat jalur perhitungan yang sama — jadi garis yang tergambar di panel bawah dan angka yang dipakai pola tak bisa berselisih. Bawaannya 14 dengan penghalusan 3 (bukan 1 seperti indikatornya): %K mentah berayun penuh 0–100 tiap beberapa lilin, dan "puncak %K lebih rendah" pada deret sekasar itu lebih sering kebetulan daripada tanda.' },
+    teks: 'Deret %K yang sama persis dengan indikator Stoch di menu ƒx, lewat jalur perhitungan yang sama — jadi garis yang tergambar di panel bawah dan angka yang dipakai pola tak bisa berselisih. Bawaannya 14 dengan penghalusan 3 (bukan 1 seperti indikatornya): %K mentah berayun penuh 0–100 tiap beberapa candle, dan "puncak %K lebih rendah" pada deret sekasar itu lebih sering kebetulan daripada tanda.' },
   { label: 'Musiman — apa yang ditandai',
-    teks: 'Pilih satu hari (Senin–Jumat) dan lilin hari itu ditandai kotak di kanvas. Kotaknya menunjuk "ini hari yang dimaksud", bukan menyarankan apa pun; angkanya ada di tooltip dan di daftar bawah. Yang ditandai 60 lilin terakhir saja — pada rentang bertahun-tahun, menandai semuanya menghasilkan satu pita pekat yang justru menutupi harganya. Angka statistiknya tetap dihitung dari seluruh hari di rentang itu.' },
+    teks: 'Pilih satu hari (Senin–Jumat) dan candle hari itu ditandai kotak di kanvas. Kotaknya menunjuk "ini hari yang dimaksud", bukan menyarankan apa pun; angkanya ada di tooltip dan di daftar bawah. Yang ditandai 60 candle terakhir saja — pada rentang bertahun-tahun, menandai semuanya menghasilkan satu pita pekat yang justru menutupi harganya. Angka statistiknya tetap dihitung dari seluruh hari di rentang itu.' },
   { label: 'Musiman — kenapa cuma di kerangka harian ke atas',
-    teks: 'Pada kerangka intraday (5m sampai 4h) pola ini sengaja tidak dihitung sama sekali. Perhitungannya berkunci TANGGAL, jadi 78 lilin lima menit di hari yang sama akan saling menimpa di satu kunci dan yang tersisa cuma lilin terakhir tiap hari — angkanya tetap keluar dan tetap terlihat masuk akal, padahal menjawab pertanyaan yang sama sekali lain.' },
+    teks: 'Pada kerangka intraday (5m sampai 4h) pola ini sengaja tidak dihitung sama sekali. Perhitungannya berkunci TANGGAL, jadi 78 candle lima menit di hari yang sama akan saling menimpa di satu kunci dan yang tersisa cuma candle terakhir tiap hari — angkanya tetap keluar dan tetap terlihat masuk akal, padahal menjawab pertanyaan yang sama sekali lain.' },
   { label: 'Musiman — kenapa n selalu ikut disebut',
     teks: 'Peluang naik 60% dari 12 hari dan dari 240 hari terlihat sama meyakinkannya di layar, padahal yang pertama hampir pasti kebetulan. Karena itu jumlah observasi (n), selang kepercayaan 95%, dan hasil uji permutasi selalu menempel pada angkanya — di legenda, di tooltip, dan di daftar.' },
   { label: 'Musiman — rentang perhitungannya',
-    teks: 'Persis rentang yang sedang tergambar (chip di kaki kanvas). Mengganti chip berarti menghitung ulang pola harinya pada rentang itu — angka yang tertulis selalu berasal dari lilin yang terlihat, tak pernah dari data yang tak ada di layar. Angkanya sendiri datang dari perhitungan yang sama dengan halaman Seasonality, bukan hitungan kedua.' },
+    teks: 'Persis rentang yang sedang tergambar (chip di kaki kanvas). Mengganti chip berarti menghitung ulang pola harinya pada rentang itu — angka yang tertulis selalu berasal dari candle yang terlihat, tak pernah dari data yang tak ada di layar. Angkanya sendiri datang dari perhitungan yang sama dengan halaman Seasonality, bukan hitungan kedua.' },
   { label: 'Wyckoff Phase — dua sumbu, enam fase',
-    teks: 'Fase diturunkan dari perkalian dua hal yang masing-masing cuma punya sedikit kemungkinan: struktur MA (MA pendek di atas atau di bawah MA panjang) dan posisi harga (di atas kedua MA, di antaranya, atau di bawah keduanya). Dua kali tiga = enam, jadi tiap lilin yang MA-nya sudah lengkap dapat tepat satu fase — tak ada lilin yang memenuhi dua fase sekaligus, dan tak ada yang tak kebagian. Dibaca melingkar, keenamnya membentuk satu siklus: Akumulasi, Markup Awal, Markup, Konsolidasi, Markdown Awal, Markdown, lalu kembali.' },
+    teks: 'Fase diturunkan dari perkalian dua hal yang masing-masing cuma punya sedikit kemungkinan: struktur MA (MA pendek di atas atau di bawah MA panjang) dan posisi harga (di atas kedua MA, di antaranya, atau di bawah keduanya). Dua kali tiga = enam, jadi tiap candle yang MA-nya sudah lengkap dapat tepat satu fase — tak ada candle yang memenuhi dua fase sekaligus, dan tak ada yang tak kebagian. Dibaca melingkar, keenamnya membentuk satu siklus: Akumulasi, Markup Awal, Markup, Konsolidasi, Markdown Awal, Markdown, lalu kembali.' },
   { label: 'Wyckoff Phase — peran aliran asing, dan batasnya',
-    teks: 'Pita tengah (harga di antara kedua MA) memang ambigu, dan di situlah arah aliran asing dipakai memisahkannya: net asing beberapa lilin terakhir positif berarti Akumulasi, negatif berarti Konsolidasi. Yang wajib diketahui pembaca: catatan asing bursa baru ada sejak 2020 sementara deret harga jauh lebih panjang (banyak emiten sampai sejak IPO-nya), jadi untuk lilin yang tak punya catatan asing penentunya jatuh ke struktur MA — daftar di bawah menyebutkan yang mana untuk tiap segmen. Angka net asing satuannya LEMBAR, bukan rupiah; IDX tidak melaporkan aliran asing dalam rupiah.' },
+    teks: 'Pita tengah (harga di antara kedua MA) memang ambigu, dan di situlah arah aliran asing dipakai memisahkannya: net asing beberapa candle terakhir positif berarti Akumulasi, negatif berarti Konsolidasi. Yang wajib diketahui pembaca: catatan asing bursa baru ada sejak 2020 sementara deret harga jauh lebih panjang (banyak emiten sampai sejak IPO-nya), jadi untuk candle yang tak punya catatan asing penentunya jatuh ke struktur MA — daftar di bawah menyebutkan yang mana untuk tiap segmen. Angka net asing satuannya LEMBAR, bukan rupiah; IDX tidak melaporkan aliran asing dalam rupiah.' },
   { label: 'Wyckoff Phase — kenapa volume tidak ikut menentukan',
     teks: 'Sebagian panduan menjadikan "volume di atas rata-rata" syarat wajib fase Markup. Di sini volume dilaporkan sebagai RVOL segmen dan tidak pernah memindahkan fase, karena syarat semacam itu diam-diam menurunkan sebuah Markup jadi Markup Awal hanya gara-gara ruas volume beberapa hari itu kebetulan sepi — dan ruas volume adalah ruas yang paling sering cacat. Alasan yang sama dipakai penanda volume di Double Bottom.' },
   { label: 'Wyckoff Phase — kenapa segmen, bukan label harian',
-    teks: 'Yang ditandai di kanvas adalah lilin PERTAMA tiap segmen, yaitu hari fasenya berganti. Menandai tiap lilin berarti ribuan penanda yang menutupi harganya sendiri, sementara pertanyaan pembacanya justru "kapan bergantinya". Segmen yang lebih pendek dari ambang panjang minimum tidak dilaporkan: di sekitar titik silang MA, fasenya kerap berkedip sehari-dua dan kedipan itu bukan pergantian fase.' },
+    teks: 'Yang ditandai di kanvas adalah candle PERTAMA tiap segmen, yaitu hari fasenya berganti. Menandai tiap candle berarti ribuan penanda yang menutupi harganya sendiri, sementara pertanyaan pembacanya justru "kapan bergantinya". Segmen yang lebih pendek dari ambang panjang minimum tidak dilaporkan: di sekitar titik silang MA, fasenya kerap berkedip sehari-dua dan kedipan itu bukan pergantian fase.' },
   { label: 'Harmonic Pattern — lima titik dan empat rasio',
     teks: 'Pola harmonic adalah lima titik balik berselang-seling (X-A-B-C-D) yang perbandingan panjang kakinya jatuh di angka Fibonacci tertentu. Gartley: AB/XA 0,618 dan AD/XA 0,786. Bat: AB/XA 0,382-0,50 dan AD/XA 0,886. Crab: AB/XA 0,382-0,618 dan AD/XA 1,618. Butterfly: AB/XA 0,786 dan AD/XA 1,27-1,618. Toleransi pencocokannya bisa disetel; makin lebar, makin sering dua nama pola berebut lima titik yang sama.' },
   { label: 'Harmonic Pattern — gerbang BC/AB, dan kenapa ia lebih dulu',
     teks: 'BC adalah koreksi atas AB, jadi ia tak bisa lebih panjang dari yang dikoreksinya. Perbandingan BC/AB diperiksa berada di 0,382-0,886 SEBELUM rasio pola dicek sama sekali. Tanpa gerbang itu muncul "pola" berrasio berkali-kali lipat yang mustahil secara definisi — terukur di papan IDX, BC/AB terbesar yang pernah muncul mencapai 486 kali dan puluhan ribu kaki punya BC/AB di atas 1. Gerbangnya membuang sekitar 61% kandidat, dan sekaligus menjamin titik C tak melewati A tanpa perlu syarat geometri tambahan.' },
   { label: 'Harmonic Pattern — kenapa jauh lebih jarang dari pola lain',
-    teks: 'Terukur di seluruh papan: sekitar 0,07 pola per 100 lilin, sementara Divergensi 2,83 dan Double Bottom 2,43. Sebabnya bukan ambang yang kelewat ketat melainkan bentuk syaratnya — dua pola itu menuntut dua kondisi atas dua titik, harmonic menuntut empat rasio jatuh bersamaan atas lima titik. Dari seluruh jendela lima titik yang diperiksa, cuma 2% rasionya cocok dengan pola mana pun. Pola harmonic memang formasi langka; daftar yang selalu penuh justru tanda ambangnya terlalu longgar.' },
+    teks: 'Terukur di seluruh papan: sekitar 0,07 pola per 100 candle, sementara Divergensi 2,83 dan Double Bottom 2,43. Sebabnya bukan ambang yang kelewat ketat melainkan bentuk syaratnya — dua pola itu menuntut dua kondisi atas dua titik, harmonic menuntut empat rasio jatuh bersamaan atas lima titik. Dari seluruh jendela lima titik yang diperiksa, cuma 2% rasionya cocok dengan pola mana pun. Pola harmonic memang formasi langka; daftar yang selalu penuh justru tanda ambangnya terlalu longgar.' },
   { label: 'Harmonic Pattern — zigzag, bukan pivot mentah',
     teks: 'Kelima titiknya diambil dari zigzag: pivot tinggi dan rendah yang dipaksa berselang-seling, dan dua pivot sejenis berturutan digantikan yang lebih ekstrem. Tanpa pemaksaan itu, "XABCD" bisa berisi dua puncak berurutan tanpa lembah di antaranya dan kaki AB-nya bukan koreksi apa pun. Ayunan yang lebih kecil dari ambang dibuang, bukan diterima sebagai titik.' },
   { label: 'OBV melengkapi, bukan mengulang',
@@ -801,6 +802,8 @@ export function GrafikEmiten() {
   const [templateBuka, setTemplateBuka] = useState(false)
 
   const [sorot, setSorot] = useState<{ waktu: string; x: number; y: number } | null>(null)
+  /** Bubble broker outlier dikelompokkan per tanggal — bahan tooltip (#48). */
+  const [bubblePerHari, setBubblePerHari] = useState<Map<string, BubbleHari[]>>(new Map())
   /** Instans mana yang MODAL setelannya sedang terbuka (id), null = tak ada. */
   const [setelanTerbuka, setSetelanTerbuka] = useState<string | null>(null)
   /** Modal setelan gambar (warna/tebal/gaya garis) TERPILIH — #185 lanjutan,
@@ -907,7 +910,7 @@ export function GrafikEmiten() {
     ambilIntraday(kode, kerangka, '#38B77E', '#E6635A', kontrol.signal)
       .then((d) => { if (!batal) setIntra(d) })
       .catch((e: unknown) => {
-        if (!batal) setGalatIntra(pesanGalat(e, `Gagal memuat lilin ${kerangka} untuk ${kode}.`))
+        if (!batal) setGalatIntra(pesanGalat(e, `Gagal memuat candle ${kerangka} untuk ${kode}.`))
       })
       .finally(() => { if (!batal) setMuatIntra(false) })
     return () => { batal = true; kontrol.abort() }
@@ -1468,16 +1471,33 @@ export function GrafikEmiten() {
   useEffect(() => {
     const prim = bubbleRef.current
     if (!prim) return
-    if (!bubbleAktif || kerangka !== 'D' || penuh.lilin.length === 0) { prim.setData([]); return }
+    if (!bubbleAktif || kerangka !== 'D' || penuh.lilin.length === 0) { prim.setData([]); setBubblePerHari(new Map()); return }
     const dari = (penuh.lilin[awalRentang] ?? penuh.lilin[0]).time.slice(0, 10)
     const sampai = penuh.lilin[penuh.lilin.length - 1].time.slice(0, 10)
     let batal = false
     muatRentang(kode, dari, sampai)
       .then((hari) => {
         if (batal) return
-        prim.setData(bubbleOutlierHarian(hari.map(([tanggal, h]) => ({ tanggal, broker: h.broker }))))
+        const bub = bubbleOutlierHarian(hari.map(([tanggal, h]) => ({ tanggal, broker: h.broker })))
+        prim.setData(bub)
+        // Salinan yang dikelompokkan per tanggal untuk tooltip (#48). Bubble
+        // digambar di kanvas, jadi tak ada elemen DOM yang bisa membawa
+        // keterangannya sendiri; keterangan itu harus datang dari React.
+        const peta = new Map<string, BubbleHari[]>()
+        for (const b of bub) {
+          const daftar = peta.get(b.waktu)
+          if (daftar) daftar.push(b)
+          else peta.set(b.waktu, [b])
+        }
+        setBubblePerHari(peta)
+        // Kail QA dev-only, sejalan `__papanChart` di atas: bubble digambar
+        // di kanvas dan tak punya simpul DOM, jadi tanggal mana yang punya
+        // bubble mustahil diketahui dari luar. Di-tree-shake Vite saat build.
+        if (import.meta.env.DEV) {
+          (window as Window & { __papanBubble?: string[] }).__papanBubble = [...peta.keys()]
+        }
       })
-      .catch(() => { if (!batal) prim.setData([]) })
+      .catch(() => { if (!batal) { prim.setData([]); setBubblePerHari(new Map()) } })
     return () => { batal = true }
   }, [bubbleAktif, kerangka, kode, penuh.lilin, awalRentang])
 
@@ -2927,11 +2947,11 @@ export function GrafikEmiten() {
       for (const w of wyckoff.slice(-MAKS_PENANDA_POLA)) {
         const asal = w.fnetDipakai
           ? `net asing ${fN(w.fnet ?? 0, 0)} lembar`
-          : 'struktur MA (tak ada catatan asing di lilin ini)'
+          : 'struktur MA (tak ada catatan asing di candle ini)'
         out.push({
           time: w.waktuMulai, seri: 'harga', posisi: 'aboveBar', token: WARNA_FASE[w.fase], bentuk: 'square',
           teks: `${nama} · ${NAMA_FASE[w.fase]} mulai · tutup ${fN(w.harga, 0)} vs MA ${fN(w.maPendek, 0)}/${fN(w.maPanjang, 0)}`
-            + ` · ${w.panjang} lilin · RVOL ${fN(w.rvol, 2)}× · dasar label: ${asal}`,
+            + ` · ${w.panjang} candle · RVOL ${fN(w.rvol, 2)}× · dasar label: ${asal}`,
         })
       }
       // Harmonic: kelima titiknya ditandai, dan huruf yang bersangkutan ikut
@@ -3442,7 +3462,7 @@ export function GrafikEmiten() {
           )}
           {!galat && !galatIntra && !siap && (
             <div className="fd-empty">
-              <p>{muatIntra ? `Memuat lilin ${kerangkaAktif?.label} ${kode}…` : `Memuat data harga ${kode}…`}</p>
+              <p>{muatIntra ? `Memuat candle ${kerangkaAktif?.label} ${kode}…` : `Memuat data harga ${kode}…`}</p>
             </div>
           )}
 
@@ -3509,7 +3529,17 @@ export function GrafikEmiten() {
                 bukan display:none) — lihat komentar .grf-chart-wrap.memuat di
                 GrafikEmiten.css: autoSize butuh lebar sungguhan sejak elemen
                 dibuat, bukan sejak elemen "muncul". */}
-            <div ref={containerRef} className={'grf-chart-wrap' + (siap ? '' : ' memuat')} />
+            {/* Kanvas chart tak punya satu pun simpul aksesibilitas — di
+                pohon a11y, seluruh area gambar harga ini sebelumnya TIDAK ADA.
+                `role="img"` + nama memberinya satu simpul bernama; isinya tetap
+                tak terbaca pembaca layar (kanvas memang begitu), tapi
+                keberadaan dan identitasnya terbaca. */}
+            <div
+              ref={containerRef}
+              className={'grf-chart-wrap' + (siap ? '' : ' memuat')}
+              role="img"
+              aria-label={`Grafik harga ${kode}, kerangka ${kerangkaAktif?.judul ?? kerangka}`}
+            />
 
             {/* Dot tooltip (Johan 21 Agu 2026: "keterangan di chart nya
                 munculkan dot tooltips") — keterangan penanda MENGIKUTI
@@ -3518,7 +3548,15 @@ export function GrafikEmiten() {
                 terbaca tanpa menutupi harga di belakangnya. */}
             {sorot && (() => {
               const dekat = penandaDiSekitar(penandaPola, indeksWaktu, sorot.waktu, 0)
-              if (dekat.length === 0) return null
+              // Bubble broker ikut menumpang tooltip yang sama (#48, Johan:
+              // "Fungis indikator bubble broker ini gak jelas berikan
+              // informasi berupa tooltips ketika mouse mendekat ke candle").
+              // Kuncinya TANGGAL, bukan jarak ke lingkarannya: bubble duduk
+              // di harga rata-rata broker, yang bisa jauh dari kursor
+              // sementara candle-nya sudah jelas yang itu. Urutan larik per
+              // hari sudah peringkat |net| menurun dari `bubbleOutlierHarian`.
+              const bub = bubblePerHari.get(sorot.waktu.slice(0, 10)) ?? []
+              if (dekat.length === 0 && bub.length === 0) return null
               // Lebar bungkus diukur langsung — tak ada state ukuran yang
               // disimpan, dan tooltip hanya butuh keputusan kiri/kanan.
               const lebar = bungkusRef.current?.clientWidth ?? 0
@@ -3534,6 +3572,23 @@ export function GrafikEmiten() {
                 >
                   {dekat.slice(0, 3).map((o, i) => <div key={i}>{o.teks}</div>)}
                   {dekat.length > 3 && <div className="muted">+{dekat.length - 3} lagi — klik kanan untuk semua</div>}
+                  {bub.length > 0 && (
+                    <div className="grf-tip-bubble">
+                      <div className="muted">Broker menyimpang {tglPendek(sorot.waktu.slice(0, 10))}</div>
+                      {bub.map((b, i) => (
+                        <div key={b.broker}>
+                          <b>#{i + 1} {b.broker}</b> net {b.netNilai >= 0 ? 'beli' : 'jual'}{' '}
+                          <span className={b.netNilai >= 0 ? 'up' : 'dn'}>Rp {fRingkas(Math.abs(b.netNilai))}</span>
+                          {' · rata-rata '}{fN(keFraksi(b.harga, 'dekat'), 0)}
+                        </div>
+                      ))}
+                      {/* Identitas lokal/asing sengaja TIDAK ditulis: yang ada
+                          di data cuma porsi transaksi asing, bukan identitas
+                          brokernya — menyebutnya "L"/"A" akan jadi label yang
+                          terdengar resmi dan tak punya dasar. */}
+                      <div className="muted">Ukuran lingkaran = besar net-nya, letaknya = harga rata-rata sisi itu</div>
+                    </div>
+                  )}
                 </div>
               )
             })()}
@@ -3707,7 +3762,7 @@ export function GrafikEmiten() {
                       </span>
                     ))}
                     <span className="grf-banding-basis">
-                      % relatif terhadap {basisPersen ? tglPendek(basisPersen) : 'lilin pertama yang terlihat'}
+                      % relatif terhadap {basisPersen ? tglPendek(basisPersen) : 'candle pertama yang terlihat'}
                       <span className="grf-banding-ket"> — bergeser sendiri saat sumbu waktu digeser</span>
                     </span>
                   </>
@@ -3865,7 +3920,7 @@ export function GrafikEmiten() {
               onGanti={setRentangLabel}
             />
             <span className="grf-kaki-isi" />
-            <span className="grf-kaki-jam" title="Seluruh waktu di halaman ini WIB (UTC+7), termasuk lilin intraday">UTC+7</span>
+            <span className="grf-kaki-jam" title="Seluruh waktu di halaman ini WIB (UTC+7), termasuk candle intraday">UTC+7</span>
             {/* B33 — garis bantu. Duduk di bilah BAWAH, bukan di bilah atas:
                 yang mengubah APA YANG TERLIHAT memang tempatnya di sini,
                 sejajar skala dan rentang; yang mengubah APA YANG DIGAMBAR
@@ -3911,7 +3966,7 @@ export function GrafikEmiten() {
             <button type="button"
               className={`chip-t grf-kaki-chip${autoSkala ? ' on' : ''}`}
               aria-pressed={autoSkala}
-              title="Skala harga menyesuaikan sendiri ke lilin yang terlihat"
+              title="Skala harga menyesuaikan sendiri ke candle yang terlihat"
               onClick={() => setAutoSkala((x) => !x)}>auto</button>
           </div>
 
@@ -3935,13 +3990,13 @@ export function GrafikEmiten() {
                 value={tglReplay}
                 onChange={mulaiReplayDi}
                 maks={penuh.lilin[penuh.lilin.length - 1]?.time.slice(0, 10)}
-                ariaLabel="Tanggal lilin terakhir yang ditampilkan replay"
+                ariaLabel="Tanggal candle terakhir yang ditampilkan replay"
               />
               <span className="ti-grup">
-                <LangkahTanggal arah="mundur" ukuran="sebaris" label="Mundur satu lilin"
+                <LangkahTanggal arah="mundur" ukuran="sebaris" label="Mundur satu candle"
                   disabled={replay <= 1}
                   onClick={() => { setPutar(false); setReplay((n) => Math.max(1, (n ?? 1) - 1)) }} />
-                <LangkahTanggal arah="maju" ukuran="sebaris" label="Maju satu lilin"
+                <LangkahTanggal arah="maju" ukuran="sebaris" label="Maju satu candle"
                   disabled={replay >= penuh.lilin.length}
                   onClick={() => { setPutar(false); setReplay((n) => Math.min(penuh.lilin.length, (n ?? 0) + 1)) }} />
               </span>
@@ -3986,7 +4041,7 @@ export function GrafikEmiten() {
                         {labelInstansPola(inst)}: {musiman
                           ? `${musiman.ringkas.n} hari di rentang ini`
                           : intraday(kerangka)
-                            ? 'tidak dihitung pada kerangka intraday — perhitungannya berkunci tanggal, dan lilin dalam satu hari akan saling menimpa'
+                            ? 'tidak dihitung pada kerangka intraday — perhitungannya berkunci tanggal, dan candle dalam satu hari akan saling menimpa'
                             : 'rentangnya terlalu pendek untuk dihitung'}
                         {musiman && musiman.ringkas.n > MAKS_PENANDA_MUSIMAN
                           && ` — ${MAKS_PENANDA_MUSIMAN} terakhir ditandai di kanvas (angka di bawah tetap dari seluruh ${musiman.ringkas.n} hari); persempit rentang untuk melihat lebih ke belakang`}
@@ -4022,7 +4077,7 @@ export function GrafikEmiten() {
                                   MA — ikut ditulis, karena tanpa itu pembaca tak bisa tahu
                                   bahwa lilin sebelum 2020 memang tak punya catatan asing. */}
                               {' · '}{w.fnetDipakai
-                                ? `net asing 5 lilin ${fN(w.fnet ?? 0, 0)} lembar`
+                                ? `net asing 5 candle ${fN(w.fnet ?? 0, 0)} lembar`
                                 : 'tanpa catatan asing — label dari struktur MA'}
                             </span>
                           </li>

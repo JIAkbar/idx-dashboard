@@ -281,7 +281,7 @@ describe('galatNilaiParam', () => {
   })
   it('periode lebih panjang dari jumlah lilin ditolak — itu garis yang lenyap senyap', () => {
     expect(galatNilaiParam(spekPeriode, '300', 250))
-      .toBe('Lebih besar dari jumlah lilin (250) — garisnya tak akan muncul.')
+      .toBe('Lebih besar dari jumlah candle (250) — garisnya tak akan muncul.')
   })
   it('jumlah lilin 0 (data belum dimuat) tak dipakai membatasi apa pun', () => {
     expect(galatNilaiParam(spekPeriode, '300', 0)).toBeNull()

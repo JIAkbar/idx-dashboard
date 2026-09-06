@@ -244,7 +244,7 @@ function KartuSatuEmiten({ kode }: { kode: string }) {
             <div className="lvl lvl-acuan"><span><b>harga</b> {fmtHarga(k.harga)}</span><em>penutupan</em></div>
             {k.support.map((lv, i) => <BarisLevel key={`s${i}`} tipe="S" urutan={i + 1} lv={lv} />)}
             {resAsc.length === 0 && k.support.length === 0 && <p style={{ fontSize: 11, color: 'var(--text3)', margin: 0 }}>Belum ada klaster yang cukup jauh dari harga sekarang.</p>}
-            <div className="asal"><b>Asal:</b> klaster pivot fraktal (jendela ±5 lilin) dari 500 lilin terakhir, digabung bila jaraknya &lt;0,75 ATR. Jumlah anggota klaster = &quot;n sentuhan&quot; — berapa kali harga benar-benar berbalik di level itu.</div>
+            <div className="asal"><b>Asal:</b> klaster pivot fraktal (jendela ±5 candle) dari 500 candle terakhir, digabung bila jaraknya &lt;0,75 ATR. Jumlah anggota klaster = &quot;n sentuhan&quot; — berapa kali harga benar-benar berbalik di level itu.</div>
           </div>
 
           <div className="blok">
@@ -632,7 +632,7 @@ function TabelScreenerKartu() {
               type="button"
               className={`chip-t${sembunyikanPendek ? '' : ' on'}`}
               onClick={() => setSembunyikanPendek((v) => !v)}
-              title="Riwayat < 250 lilin — di luar populasi statistik (ER persentil, median pasar)"
+              title="Riwayat < 250 candle — di luar populasi statistik (ER persentil, median pasar)"
             >
               Riwayat pendek · {nRiwayatPendek}
             </button>
@@ -692,7 +692,7 @@ function TabelScreenerKartu() {
                 <td>
                   <a href={`/grafik?kode=${b.kode}`} className="tick" onClick={(e) => klikKode(e, b.kode)}>{b.kode}</a>
                   {b.kualitas?.riwayat === 'pendek' && (
-                    <span className="chip-t kta-lencana" title={`${b.kualitas.lilin.toLocaleString('id-ID')} lilin`}>riwayat &lt; 250 lilin</span>
+                    <span className="chip-t kta-lencana" title={`${b.kualitas.lilin.toLocaleString('id-ID')} candle`}>riwayat &lt; 250 candle</span>
                   )}
                   {b.kualitas?.likuiditas === 'tipis' && (
                     <span className="chip-t kta-lencana" title="likuiditas median 20 hari di bawah Rp500 jt/hari">likuiditas &lt; Rp500jt/hari</span>

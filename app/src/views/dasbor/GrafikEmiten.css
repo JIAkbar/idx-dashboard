@@ -748,3 +748,12 @@
   pointer-events: none;
 }
 
+/* Blok bubble broker di dalam dot tooltip (#48). Dipisah garis tipis, bukan
+   sekadar baris tambahan: isinya beda jenis — penanda pola menjelaskan BENTUK
+   harga, ini menjelaskan SIAPA yang bertransaksi. */
+.lantai .grf-dot-tip .grf-tip-bubble {
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: 1px solid var(--line);
+}
+

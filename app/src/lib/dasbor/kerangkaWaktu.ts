@@ -97,10 +97,10 @@ export const KERANGKA: Kerangka[] = [
   { id: '15m', label: '15m', judul: '15 menit — Yahoo, riwayat ±1 bulan', interval: '15m', rentang: '1mo' },
   { id: '30m', label: '30m', judul: '30 menit — Yahoo, riwayat ±1 bulan', interval: '30m', rentang: '1mo' },
   { id: '1h', label: '1h', judul: '1 jam — Yahoo, riwayat ±2 tahun', interval: '60m', rentang: '2y' },
-  { id: '4h', label: '4h', judul: '4 jam — dirakit dari lilin 1 jam (Yahoo tak punya interval ini), riwayat ±2 tahun', interval: '60m', rentang: '2y', rakitDari: '1h' },
+  { id: '4h', label: '4h', judul: '4 jam — dirakit dari candle 1 jam (Yahoo tak punya interval ini), riwayat ±2 tahun', interval: '60m', rentang: '2y', rakitDari: '1h' },
   { id: 'D', label: 'D', judul: 'Harian — data PAPAN sendiri, riwayat 10 tahun', interval: null, rentang: null },
-  { id: 'W', label: 'W', judul: 'Pekanan — dirakit dari lilin harian, riwayat 10 tahun', interval: null, rentang: null, rakitDari: 'D' },
-  { id: 'M', label: 'M', judul: 'Bulanan — dirakit dari lilin harian, riwayat 10 tahun', interval: null, rentang: null, rakitDari: 'D' },
+  { id: 'W', label: 'W', judul: 'Pekanan — dirakit dari candle harian, riwayat 10 tahun', interval: null, rentang: null, rakitDari: 'D' },
+  { id: 'M', label: 'M', judul: 'Bulanan — dirakit dari candle harian, riwayat 10 tahun', interval: null, rentang: null, rakitDari: 'D' },
 ]
 
 export const KERANGKA_BAWAAN: IdKerangka = 'D'
@@ -270,6 +270,6 @@ export async function ambilIntraday(
   )
   if (!r.ok) throw new Error(`Yahoo menolak permintaan intraday ${kode} (HTTP ${r.status}).`)
   const mentah = dariYahoo((await r.json()) as YahooIntradayJson, warnaNaik, warnaTurun)
-  if (mentah.lilin.length === 0) throw new Error(`Yahoo tak punya lilin ${k.label} untuk ${kode}.`)
+  if (mentah.lilin.length === 0) throw new Error(`Yahoo tak punya candle ${k.label} untuk ${kode}.`)
   return k.rakitDari ? rakitBar(mentah.lilin, mentah.volume, kunci4Jam, warnaNaik, warnaTurun) : mentah
 }

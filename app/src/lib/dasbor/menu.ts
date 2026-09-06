@@ -142,12 +142,12 @@ export const MENU_ITEMS: MenuItem[] = [
     // akumulasi broker, penanda Radar) bisa dipasang di tahap berikutnya.
     // Kode 'CHT' sudah dipakai TradingView, jadi 'GRF'.
     id: 'grafik', path: '/grafik', label: 'Grafik Emiten', kode: 'GRF', induk: '/stock-detail', tabLabel: 'Grafik', grup: 'emiten',
-    ringkas: 'Lilin dan volume satu emiten dari data OHLC PAPAN sendiri — bisa di-zoom dan digeser.',
+    ringkas: 'Candle dan volume satu emiten dari data OHLC PAPAN sendiri — bisa di-zoom dan digeser.',
     ikon: 'M4 3v18M2 8h4v6H2zM11 2v20M9 6h4v10H9zM18 5v16M16 9h4v8h-4z',
   },
   {
     id: 'chart', path: '/chart', label: 'Chart', kode: 'CHT', induk: '/indeks', tabLabel: 'Chart', grup: 'emiten',
-    ringkas: 'Grafik lilin IHSG dengan rentang 10 tahun dan penanda level kunci.',
+    ringkas: 'Grafik candle IHSG dengan rentang 10 tahun dan penanda level kunci.',
     ikon: 'M7 5v14M5 8h4v8H5zM15 3v18M13 7h4v9h-4z',
   },
 

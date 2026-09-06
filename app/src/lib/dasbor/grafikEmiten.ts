@@ -920,7 +920,7 @@ export function galatNilaiParam(spek: SpekParam, teks: string, jumlahLilin: numb
   if (n < spek.min) return `Minimum ${spek.min}.`
   if (n > spek.maks) return `Maksimum ${spek.maks}.`
   if (spek.bandingLilin && jumlahLilin > 0 && n > jumlahLilin) {
-    return `Lebih besar dari jumlah lilin (${jumlahLilin}) — garisnya tak akan muncul.`
+    return `Lebih besar dari jumlah candle (${jumlahLilin}) — garisnya tak akan muncul.`
   }
   return null
 }

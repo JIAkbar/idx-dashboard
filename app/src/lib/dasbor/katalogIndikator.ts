@@ -166,7 +166,7 @@ export const KATEGORI: Array<[inggris: string, indonesia: string]> = [
   ['Volatility', 'Volatilitas'],
   ['Channels & Bands', 'Pita & kanal'],
   ['Volume', 'Volume'],
-  ['Candlestick Patterns', 'Pola lilin'],
+  ['Candlestick Patterns', 'Pola candle'],
 ]
 
 /**

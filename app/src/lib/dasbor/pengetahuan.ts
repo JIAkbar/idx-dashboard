@@ -427,7 +427,7 @@ export const PENGETAHUAN: Entri[] = [
     id: 'halaman-chart',
     kunci: ['halaman chart', 'apa itu chart', 'chart'],
     judul: 'Chart',
-    isi: 'Chart menampilkan grafik lilin (candlestick) IHSG dengan rentang sampai 10 tahun dan penanda level kunci.',
+    isi: 'Chart menampilkan grafik candlestick IHSG dengan rentang sampai 10 tahun dan penanda level kunci.',
     ke: '/chart',
     keLabel: 'Buka Chart',
   },
