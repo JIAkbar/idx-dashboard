@@ -90,6 +90,20 @@ export function BilahTanggal({ tanggalTersedia, tanggalAktif, onPilih, onRentang
     ? tanggalTersedia.filter((t) => t.date_iso >= rentangAktif.mulai && t.date_iso <= rentangAktif.akhir).length
     : 0
 
+  // Pintasan yang MENTOK di awal arsip. `rentangPreset` menjepit diam-diam
+  // ke tanggal berdata pertama, jadi "1 Tahun" hari ini menghasilkan 155 hari
+  // sejak 7 Jan 2026 - benar sebagai data, tapi tanpa keterangan ia terbaca
+  // seolah bursa memang cuma buka 155 hari setahun. Rentangnya sendiri sudah
+  // tercetak di kalender sebelah; yang ditambahkan cuma SEBABNYA.
+  const awalArsip = tanggalTersedia[0]?.date_iso
+  // TIDAK mengecualikan 'ytd'. Di 2026 "1 Tahun" dan "Sejak 1 Jan" menjepit
+  // ke tanggal yang SAMA (7 Jan, hari berdata pertama), jadi rentangnya tak
+  // bisa dibedakan - klik "1 Tahun" bahkan menyalakan pil "Sejak 1 Jan",
+  // karena pil aktif disimpulkan dari rentang, bukan dari yang diklik.
+  // Keterangan ini benar untuk keduanya, jadi ia dicetak untuk keduanya.
+  // Ambiguitasnya hilang sendiri Januari 2027 saat arsip melewati setahun.
+  const terjepit = !!rentangAktif && !!cocok && rentangAktif.mulai === awalArsip
+
   const bilah = (
     <div className="bilah-kendali bt-bilah">
       <div className="grup-k">
@@ -138,6 +152,7 @@ export function BilahTanggal({ tanggalTersedia, tanggalAktif, onPilih, onRentang
           diasumsikan. */}
       <p className="bt-catatan">
         {hariBursa} hari bursa
+        {terjepit && ' · arsip statistik harian baru mulai di tanggal itu, jadi rentangnya berhenti di sana'}
         {cocok === 'ytd' && ' · kolom YTD di tabel tetap angka resmi bursa, dihitung terpisah'}
       </p>
     </div>

@@ -136,18 +136,43 @@ export const LABEL_RENTANG_RINGKAS: Partial<Record<KunciRentang, string>> = {
   y1: '1T',
 }
 
-export type PresetRentang = 'w1' | 'b1' | 'b3' | 'ytd'
+/**
+ * Pintasan durasi yang dipakai bersama seluruh halaman berentang.
+ *
+ * Diperluas 7 Sep 2026 atas permintaan Johan (#34): *"rentang waktu sendiri
+ * umum nya hari ini, 1 minggu, 1 bulan, 6 bulan, YTD, 1 tahun dan pilihan
+ * rentang waktu"*. Yang ditambahkan `b6` dan `y1`.
+ *
+ * DUA hal di daftar itu SENGAJA tidak jadi pil, dan keduanya karena sudah ada:
+ *  - "hari ini" itu keadaan BAWAAN (tanpa rentang, tak ada pil menyala), dan
+ *    pilnya sudah pernah dibuang 5 Sep 2026 justru karena berdiri persis di
+ *    samping tombol "Hari ini" milik kalender - dua kata nyaris sama untuk dua
+ *    hal berbeda. Menghidupkannya lagi membatalkan keputusan itu.
+ *  - "pilihan rentang waktu" sudah dijawab kalender mode rentang (#75), yang
+ *    memunculkan pil "Kustom" begitu rentangnya bukan salah satu pintasan.
+ *
+ * `b3` DIPERTAHANKAN walau tak disebut di daftar Johan: tiga halaman sudah
+ * memakainya (Sektor, Top Stocks, Kalender) dan membuangnya berarti mencabut
+ * pintasan yang bekerja untuk permintaan yang isinya menambah, bukan mengurangi.
+ */
+export type PresetRentang = 'w1' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1'
 
 /** Id-nya tetap `ytd` — yang berganti kata layarnya, bukan hitungannya, jadi
  *  tak ada state tersimpan atau tes yang perlu ikut berpindah. */
 const KATA_PRESET: Record<PresetRentang, KunciRentang> =
-  { w1: 'w1', b1: 'b1', b3: 'b3', ytd: 'sejakJan' }
+  { w1: 'w1', b1: 'b1', b3: 'b3', b6: 'b6', ytd: 'sejakJan', y1: 'y1' }
 
 export const PRESET_RENTANG: { id: PresetRentang; label: string }[] =
-  (['w1', 'b1', 'b3', 'ytd'] as const).map((id) => ({ id, label: LABEL_RENTANG[KATA_PRESET[id]] }))
+  (['w1', 'b1', 'b3', 'b6', 'ytd', 'y1'] as const)
+    .map((id) => ({ id, label: LABEL_RENTANG[KATA_PRESET[id]] }))
 
 
-const HARI_PRESET: Record<Exclude<PresetRentang, 'ytd'>, number> = { w1: 7, b1: 30, b3: 91 }
+// Hari KALENDER mundur, lalu di-snap ke hari bursa terakhir yang <= target.
+// 182 dan 365, bukan 180 dan 360: yang dihitung kalender, dan pembulatan
+// "kira-kira setengah tahun" akan menggeser batas rentang sampai tiga hari
+// bursa - cukup untuk membuat jumlah nilai transaksi berbeda tanpa sebab.
+const HARI_PRESET: Record<Exclude<PresetRentang, 'ytd'>, number> =
+  { w1: 7, b1: 30, b3: 91, b6: 182, y1: 365 }
 
 /**
  * Rentang preset mundur dari `akhir` (tanggal aktif), snap ke hari berdata:
