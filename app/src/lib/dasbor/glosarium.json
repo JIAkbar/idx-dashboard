@@ -99,7 +99,6 @@
         "pivot"
       ],
       "definisi": "Titik acuan harga harian (P) yang menjadi basis penghitungan level support (S1-S3) dan resistance (R1-R3) — dihitung dari data harga, bukan ditebak.",
-      "catatan": "`pivot_ragu` di data edisi menandai level pivot yang perhitungannya kurang mantap (mis. data harga tak lengkap).",
       "contoh": "Pivot dari analisa chart;",
       "frekuensi": 42
     },
@@ -225,7 +224,6 @@
         "laporan keuangan"
       ],
       "definisi": "Laporan keuangan resmi emiten dalam format XLSX ber-tag XBRL (eXtensible Business Reporting Language) yang diterbitkan IDX per emiten per kuartal — sumbernya langsung dari emiten, dwibahasa, dan mencakup sektor IDX-IC resmi serta informasi pemegang saham pengendali.",
-      "catatan": "Diuji 16 Agustus 2026: 778 emiten TW2 2026, 777 di antaranya punya berkas .xlsx.",
       "ke": "/stock-detail",
       "frekuensi": 23
     },
@@ -246,7 +244,6 @@
         "broker summary"
       ],
       "definisi": "Rekap transaksi broker per emiten (sisi beli & jual, per broker, per hari) — istilah yang benar untuk data ini di PAPAN.",
-      "catatan": "\"Orderbook\" pernah dipakai keliru untuk data ini di beberapa nama teknis lama (#144) — istilah yang benar tetap broker summary; orderbook sebetulnya berarti antrean bid/offer real-time, bukan rekap harian broker.",
       "contoh": "Arus broker ditranskripsi dari Broker Summary Stockbit dan diverifikasi redaksi.",
       "ke": "/broker-summary",
       "frekuensi": 18
@@ -423,7 +420,6 @@
         "risiko"
       ],
       "definisi": "Penanda tingkat risiko yang disematkan PAPAN pada tiap setup/skenario emiten — TINGGI atau EKSTREM menandai skenario dengan volatilitas atau ketidakpastian di atas rata-rata.",
-      "catatan": "Kriteria pembeda TINGGI vs EKSTREM ada di skrip build.py yang tidak termasuk sumber yang ditambang untuk glosarium ini — definisi sengaja ditulis umum, jangan dianggap ambang pasti.",
       "contoh": "Spekulatif — Momentum Kencang, Risiko Setara",
       "frekuensi": 9
     },
@@ -518,17 +514,6 @@
       "frekuensi": 7
     },
     {
-      "id": "rebalancing-msci",
-      "istilah": "Rebalancing Indeks (MSCI)",
-      "kunci": [
-        "rebalancing",
-        "MSCI"
-      ],
-      "definisi": "Penyesuaian berkala komposisi/bobot indeks global (mis. MSCI) yang memicu jual-beli mekanis pada saham-saham terkait — dampaknya bersifat teknis-mekanis, bukan selalu mencerminkan perubahan fundamental.",
-      "contoh": "IHSG ditutup 6.301,77, melemah 1,13% — tekanan datang dari net sell asing Rp1,41 triliun di tengah periode rebalancing MSCI.",
-      "frekuensi": 6
-    },
-    {
       "id": "divergensi",
       "istilah": "Divergensi",
       "kunci": [
@@ -544,7 +529,6 @@
         "PCD"
       ],
       "definisi": "Aproksimasi PAPAN atas distribusi volume-tertimbang harga dari data OHLCV (bukan data 'done' per transaksi sesungguhnya) — dipakai untuk memperkirakan di harga berapa mayoritas modal pemegang saham 'nyangkut' (zona modal), dengan pembobotan meluruh (half-life 60 hari bursa).",
-      "catatan": "Metode aproksimasi, bukan data transaksi riil — label metodenya wajib tercetak di output produk (lihat `arus-pasar/pcd.py`).",
       "contoh": "Reclaim bertahap di atas 961 (PCD) baru mengubah mayoritas modal atas menjadi netral.",
       "frekuensi": 5
     },
@@ -659,7 +643,6 @@
         "EPS"
       ],
       "definisi": "Laba bersih dibagi jumlah saham beredar — komponen dasar penghitungan PER.",
-      "catatan": "Di korpus kita, EPS muncul dalam konteks kelengkapan data (ruas `eps` kosong di ~71% emiten sumber Yahoo), bukan pembahasan naratif tentang nilainya.",
       "frekuensi": 3
     },
     {
@@ -679,7 +662,6 @@
         "arus kas"
       ],
       "definisi": "Catatan pergerakan kas perusahaan, terbagi tiga: operasi (CFO), investasi (CFI), pendanaan (CFF). Arus kas operasi jadi salah satu ruas yang paling sering kosong di sumber data sekunder.",
-      "catatan": "`operating_cf` tercatat 80% kosong di sumber Yahoo yang dipakai PAPAN sekarang — salah satu alasan laporan resmi IDX (XBRL) dijajaki sebagai pelengkap.",
       "frekuensi": 2
     },
     {
@@ -798,7 +780,6 @@
         "spread"
       ],
       "definisi": "Selisih antara harga beli (bid) tertinggi dan harga jual (offer) terendah pada order book — spread lebar biasanya menandai likuiditas tipis.",
-      "catatan": "Muncul tipis di korpus kita (jarang dibahas eksplisit); definisi mengikuti pengertian bursa yang baku.",
       "contoh": "Spread lebar;",
       "frekuensi": 1
     },

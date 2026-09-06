@@ -197,7 +197,7 @@ export function BrokerSummaryV2() {
     <div className="lantai">
       <div className="vhead">
         <h1>Arus Broker</h1>
-        <span className="sub">pasar reguler · semua investor · arsip harian Stockbit</span>
+        <span className="sub">pasar reguler · semua investor · arsip harian PAPAN</span>
         <CatatanCakupan inline />
       </div>
 

@@ -187,7 +187,7 @@ export function ActivityTab() {
         (yang sama dipakai Rotation Chart, {uni.perSektorJumlah} per sektor) — bukan terhadap seluruh nilai
         transaksi pasar, karena itu butuh riwayat harga seluruh emiten yang tidak diunduh di peramban.
       </div>
-      <Sumber>Nilai transaksi harian sampel emiten dari arsip harga Stockbit, dikelompokkan per sektor IDX-IC atau papan pencatatan. Mode Indeks tidak disediakan: deret indeks dan daftar konstituennya tidak ada di arsip — menebak keanggotaan menghasilkan angka salah diam-diam.</Sumber>
+      <Sumber>Nilai transaksi harian sampel emiten dari arsip harga PAPAN, dikelompokkan per sektor IDX-IC atau papan pencatatan. Mode Indeks tidak disediakan: deret indeks dan daftar konstituennya tidak ada di arsip — menebak keanggotaan menghasilkan angka salah diam-diam.</Sumber>
     </section>
   )
 }

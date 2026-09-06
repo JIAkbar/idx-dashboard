@@ -16,6 +16,23 @@ function labelRute(path: string): string {
 }
 
 /**
+ * ATURAN HALAMAN INI (Johan, 6 Sep 2026 — "tolong perbaiki lagi ini cara
+ * sistem bekerja tidak perlu di bocorkan", lalu "asal tidak membuka rahasia
+ * PAPAN"):
+ *
+ *   Halaman ini menerangkan **ARTI angka bagi pembaca**, bukan **CARA sistem
+ *   memperolehnya.** Yang TIDAK boleh tayang di sini: nama penyedia data
+ *   sebagai sumber ruas, nama ruas mentah, persentase cakupan/kelengkapan,
+ *   statistik uji internal, nama berkas/direktori/skrip, dan ambang
+ *   kalibrasi. Yang BOLEH: apa arti sebuah tanda, apa arti sebuah lencana,
+ *   aturan resmi bursa, dan penyangkalan yang wajib tercetak.
+ *
+ *   Kenapa: menerangkan mekanismenya tak menambah satu pun pemahaman bagi
+ *   pembaca yang sedang memindai angka, tapi memberi tahu orang luar persis
+ *   di mana sistemnya tipis. Prinsip lama "batasnya disebutkan apa adanya"
+ *   benar untuk BATAS ("angka ini perkiraan"), bukan untuk MEKANISME
+ *   ("perkiraannya dihitung begini, diuji atas sekian sampel").
+ *
  * Metodologi & Glosarium (backlog C6) — halaman publik, sengaja TANPA
  * PenjagaHalaman: ini justru untuk pembaca yang belum percaya sistemnya,
  * mengunci di balik login melawan tujuannya sendiri.
@@ -47,42 +64,21 @@ export function Metodologi() {
         </div>
         <div className="panel-b">
           <p className="muted mtd-intro">
-            Cara PAPAN mengambil dan mengolah data — batasnya disebutkan apa adanya, bukan disembunyikan.
+            Cara PAPAN menghitung angka yang ditampilkan.
           </p>
-
-          <div className="mtd-kartu">
-            <h3>Sumber harga: IDX + Yahoo Finance, saling menambal</h3>
-            <p>
-              Hari berjalan dan riwayat harian sejak awal 2020 (High/Low/Close/Volume, asing, frekuensi
-              transaksi) diambil dari IDX. Harga BUKA riwayat dan data sebelum
-              2020 diambil dari Yahoo Finance — ruas <code>OpenPrice</code> IDX bolong parah pada rentang lama
-              (8% terisi Januari 2020, membaik jadi 74% Agustus 2026). Kandang OHLC lokal (dipakai halaman
-              Grafik Emiten) mengikuti pola ini: kedalaman sekitar 10 tahun per emiten.
-            </p>
-          </div>
 
           {/* Ditambahkan 29 Agu 2026. Rincian angka perkiraan Net Asing tinggal
               DI SINI, bukan di halaman yang memakainya: di sana ia cuma
               ditandai ≈, karena cara angka dirakit bukan urusan pembaca yang
               sedang memindai tabel. Halaman ini justru dibuat untuk itu. */}
           <div className="mtd-kartu">
-            <h3>Net Asing bertanda ≈ — angka perkiraan, dan seberapa dekat</h3>
+            <h3>Net Asing bertanda ≈ — angka perkiraan</h3>
             <p>
-              Aliran asing dilaporkan bursa dalam <b>lembar saham</b>, sementara kolom Net Asing di
-              Harian Papan menyatakan <b>rupiah</b>. Untuk hari yang nilai rupiahnya belum tersedia,
-              angkanya dihitung dari lembar dikalikan harga rata-rata emiten itu pada hari yang sama
-              (nilai transaksi dibagi volumenya). Angka hasil hitungan itu diberi tanda{' '}
-              <b>≈</b>; angka tanpa tanda adalah nilai yang dilaporkan apa adanya.
-            </p>
-            <p>
-              Seberapa dekat perkiraannya, diuji atas <b>5.590 pasang emiten-hari</b> terhadap nilai
-              rupiah sungguhan: arahnya cocok 98,6%, nilai tengahnya 0,9995 (praktis pas), dan 93%
-              meleset kurang dari 10%. Dijumlahkan seluruh sampel, selisihnya 0,23%.
-            </p>
-            <p>
-              Batasnya jujur disebut: 7% emiten meleset lebih dari 10%, dan perkiraan ini hanya
-              dipakai untuk hari terakhir yang nilai resminya belum masuk — begitu masuk, angka
-              resmi menggantikannya dan tanda ≈ hilang dengan sendirinya.
+              Aliran asing dilaporkan bursa dalam <b>lembar saham</b>, sementara kolom Net Asing
+              menyatakan <b>rupiah</b>. Untuk hari yang nilai rupiahnya belum tersedia, angkanya
+              diperkirakan dan diberi tanda <b>≈</b>; angka tanpa tanda adalah nilai yang dilaporkan
+              apa adanya. Begitu nilai resminya masuk, ia menggantikan perkiraan dan tandanya hilang
+              dengan sendirinya.
             </p>
           </div>
 
@@ -98,54 +94,16 @@ export function Metodologi() {
           </div>
 
           <div className="mtd-kartu">
-            <h3>Laporan keuangan: dua sumber, TIDAK bisa dijumlah begitu saja</h3>
+            <h3>Laporan keuangan: lencana asal tiap angka</h3>
             <p>
-              PAPAN memanen laporan keuangan dari yfinance (kuartal <b>diskret</b>) dan dari XLSX ber-XBRL
-              resmi IDX (interim <b>kumulatif</b> sejak awal tahun buku). Keduanya berbagi kunci periode yang
-              sama persis (mis. <code>2026-06-30</code>) tapi menghitung rentang berbeda — revenue TLKM 1,96×
-              lebih besar di XBRL untuk kunci yang sama, karena satu diskret satu kumulatif. Kedua sumber
-              {/* Nama direktori internal TIDAK dicetak di sini. Halaman ini publik, dan
-                  menyebut "keuangan/" vs "keuangan_idx/" membocorkan tata letak penyimpanan
-                  tanpa menambah satu pun pemahaman bagi pembaca — yang perlu ia tahu adalah
-                  KEDUA SUMBERNYA disimpan utuh, bukan di folder mana. Preseden: halaman ini
-                  pernah terbit dengan nama berkas kode tercetak dan itu dinilai fatal. */}
-              tetap disimpan terpisah supaya
-              asalnya tak pernah hilang, tapi <b>digabungkan saat ditampilkan</b>: laporan resmi bursa
-              menang bila ada, interim kumulatif dikonversi lebih dulu jadi kuartal diskret, dan tiap sel
-              membawa lencana asalnya (<code>B</code> laporan bursa, <code>B·YTD</code> interim kumulatif).
-              Ruas yang tak ada di kedua sumber dibiarkan kosong — bukan diisi nol.
+              Tiap sel laporan keuangan membawa lencana asalnya: <b>B</b> untuk angka laporan resmi
+              bursa, <b>B·YTD</b> untuk angka interim yang dihitung sejak awal tahun buku lalu
+              dijadikan setara kuartal. Angka resmi bursa selalu menang bila tersedia. Ruas yang
+              memang tak tersedia dibiarkan <b>kosong</b> — bukan diisi nol, karena nol adalah angka
+              dan kosong adalah keterangan.
             </p>
           </div>
 
-          <div className="mtd-kartu">
-            <h3>Skor Radar WDWL: dikalibrasi dari arsip sendiri, bukan angka tetap</h3>
-            <p>
-              Tiap sinyal (Greens+Whites, Streak≥3, Oscillator+Greens, Reds+Blacks) dihitung hit-rate-nya
-              dari forward return antar-edisi di arsip PAPAN sendiri — bukan ambang yang ditentukan di muka.
-              Sampel kecil ditarik ke prior netral 50% (semakin sedikit sampel, semakin dekat ke netral)
-              supaya sinyal langka tak dibaca lebih pasti daripada datanya sendiri.
-            </p>
-          </div>
-
-          <div className="mtd-kartu">
-            <h3>Riwayat &amp; Win Rate preset: tiga definisi menang, dicetak apa adanya</h3>
-            <p>
-              Jejak rekomendasi preset (tab Riwayat &amp; Win Rate di halaman Screener) ditulis SEKALI tiap
-              sore dan tidak pernah diedit ulang — supaya rapor menang/kalahnya jujur terhadap apa yang
-              sungguh direkomendasikan saat itu. Tiga definisi menang dihitung berdampingan: <b>Open-Tinggi
-              H+1</b> (longgar — harga tertinggi keesokan hari lebih tinggi dari pembukaannya sendiri),
-              <b> Tutup-ke-Tutup H+1</b> (ketat — penutupan keesokan hari lebih tinggi dari penutupan hari
-              rekomendasi), dan <b>TP/SL H+5</b> (realistis — dalam 5 hari bursa, target tersentuh sebelum
-              batas rugi; kalau keduanya tersentuh di hari yang SAMA, hasilnya "tak tentu", tidak diklaim
-              menang, karena data harian tak bisa membuktikan urutannya). Win rate dibagi hanya atas hasil
-              yang terukur (menang+kalah) — "tak tentu"/"tak terukur" dikeluarkan dari pembagi, bukan
-              dihitung sebagai kalah. Target &amp; batas rugi memakai rentang harga rata-rata sejati (ATR)
-              14 hari, dibulatkan ke fraksi harga BEI. Preset tetap <b>penyaring</b>, bukan peringkat
-              kelayakan beli — dan berkas backtest (kalau ada) ditandai terpisah karena bisa bias
-              survivorship: daftar emiten yang dipakai adalah daftar hari ini, bukan daftar yang benar-benar
-              tersedia pada tanggal itu.
-            </p>
-          </div>
         </div>
       </section>
 
@@ -162,11 +120,7 @@ export function Metodologi() {
         </div>
         <div className="panel-b">
           <p className="muted mtd-intro">
-            Sebagian besar istilah ditambang dari korpus terbitan PAPAN sendiri (edisi, bedah, dokumen
-            pedoman, kode radar/skor/fraksi) — <code>frekuensi</code> menunjukkan berapa kali istilah itu
-            benar-benar muncul, bukan hafalan kamus umum. Istilah fundamental Stock Detail (TTM, CAGR,
-            DER, Altman Z-Score, dan sejenisnya) ditambahkan manual saat halaman Bedah Emiten pensiun dan
-            digabung ke Stock Detail — <code>frekuensi</code> 0 menandai entri itu, bukan hasil tambang.
+            Istilah yang dipakai PAPAN, beserta artinya.
           </p>
 
           {tersaring.length === 0 && <p className="muted">Tak ada istilah yang cocok dengan pencarian ini.</p>}
@@ -176,7 +130,9 @@ export function Metodologi() {
               <div key={e.id} id={e.id} className="mtd-entri">
                 <div className="mtd-entri-h">
                   <h4>{e.istilah}</h4>
+                  {e.frekuensi > 0 && (
                   <span className="muted mtd-frek">dipakai {e.frekuensi}× di terbitan PAPAN</span>
+                )}
                 </div>
                 <p className="mtd-def">{e.definisi}</p>
                 {e.contoh && <p className="mtd-contoh">&ldquo;{e.contoh}&rdquo;</p>}
