@@ -33,7 +33,15 @@
    melemparkannya ke bawah panel — mengetik "mbma" memunculkan daftar yang
    ada di DOM tapi tak pernah terlihat di dekat kotaknya. Dilaporkan Johan
    20 Agu 2026 sebagai "kolom saham tidak muncul pilihan sahamnya". */
-.lantai .grf-cari { position: relative; display: flex; align-items: center; gap: 6px; flex: 0 1 260px; min-width: 150px; }
+/* `flex: 1 1 140px` + `min-width: 120px`, naik dari `0 1 260px` / 150px (#52,
+   Johan 7 Sep 2026: "menu ini masih bisa jadi 1 baris kenapa tombol layar penuh
+   dan informasi turun rapikan"). Yang membuat bilah melipat di ±1.450px bukan
+   kekurangan ruang melainkan PRIORITAS: kotak cari menolak menyusut di bawah
+   260px, jadi kelompok terakhir yang tak muat — Layar Penuh + info — terdorong
+   ke baris kedua sementara ruang kosong masih tersisa di kanan. Kotak cari
+   adalah kendali yang paling tak dirugikan oleh penyusutan: isinya kode empat
+   huruf. */
+.lantai .grf-cari { position: relative; display: flex; align-items: center; gap: 6px; flex: 0 1 140px; min-width: 120px; }
 .lantai .grf-cari .inp { height: 28px; padding: 4px 8px; font-size: 11.5px; min-width: 0; }
 .lantai .grf-kode-aktif {
   font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--amber);
@@ -67,6 +75,18 @@
 .lantai .grf-menu { display: inline-flex; align-items: center; gap: 6px; }
 .lantai .grf-menu .dd-btn { height: 28px; padding: 0 10px; font-size: 11.5px; margin-right: 0; }
 .lantai .grf-toolbar .tlp { height: 28px; padding: 0 10px; font-size: 11px; margin-right: 0; }
+/* Di bawah 1.520px teks "Layar Penuh" (107px terukur) disembunyikan dan
+   tombolnya jadi ikon saja — `title` di komponennya tetap menjelaskan
+   fungsinya, jadi maknanya tidak hilang bagi tetikus maupun pembaca layar.
+   Ambangnya 1.520 dan bukan 1.100 seperti usulan awal, karena diukur bukan
+   ditebak: pada 1.450 bilah butuh 1.442px sementara ruangnya 1.420 — kurang
+   22px, dan satu-satunya kendali yang bisa menyerahkan ruang sebanyak itu
+   tanpa kehilangan arti adalah label ini. Menyusutkan kotak cari lebih jauh
+   hanya menghemat 20px dan membuat kode emitennya terpotong. */
+@media (max-width: 1520px) {
+  .lantai .grf-toolbar .tlp { padding: 0; width: 28px; justify-content: center; }
+  .lantai .grf-toolbar .tlp span { display: none; }
+}
 
 /* ---------- Bilah bawah ---------- */
 /* Yang mengubah APA YANG TERLIHAT duduk di bawah kanvas (rentang, skala);
