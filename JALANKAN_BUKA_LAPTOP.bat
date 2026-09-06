@@ -32,9 +32,40 @@ REM tetap dapat jalur bawaan yang sama seperti sebelumnya.
 if not defined PYEXE set PYEXE=C:\Python314\python.exe
 if not exist "%PYEXE%" set PYEXE=python
 
+REM -- GERBANG JAM (antrean #17, 6 Sep 2026) ------------------------------
+REM Johan: "perlu di perbaiki ini tidak setiap buka laptop Panen, tapi setiap
+REM buka laptop pukul 18.00-20.00 trigger nya".
+REM
+REM Pemicu tugasnya ONLOGON dan ONLOGON tak mengenal jam, jadi tiap login -
+REM pagi, siang, tengah malam - bat ini masuk gerbang token. Gerbangnya
+REM hanya digerbang di sini, BUKAN di Task Scheduler: pemicunya dibiarkan apa
+REM adanya supaya login jam 18-20 tetap menangkap panen yang terlewat.
+REM
+REM Jam dibaca lewat PowerShell, BUKAN %time%: %time% mengikuti format
+REM regional dan jam satu digit datang dengan spasi di depan (" 9:05"), jadi
+REM potongan substring-nya salah di separuh mesin.
+REM
+REM Hanya mode `auto` yang digerbang. Dijalankan tangan = memang disengaja,
+REM dan menolaknya cuma bikin orang mencari cara melewatinya.
+REM TANPA blok berkurung, dan itu bukan soal gaya: di dalam `if (...)` semua
+REM `%JAM%` diperluas saat baris DIBACA - sebelum `set` sempat jalan - jadi
+REM perbandingannya memakai nilai kosong dan cmd menjawab "LSS was unexpected
+REM at this time". Di luar blok, tiap baris diperluas saat dieksekusi.
+if not "%1"=="auto" goto jam_ok
+for /f %%h in ('powershell -NoProfile -Command "(Get-Date).Hour"') do set JAM=%%h
+if not defined JAM goto jam_ok
+if %JAM% LSS 18 goto luar_jendela
+if %JAM% GEQ 20 goto luar_jendela
+goto jam_ok
+
+:luar_jendela
+echo Di luar jendela panen 18.00-20.00 ^(jam %JAM%^) - keluar tanpa memanen.
+exit /b 0
+
+:jam_ok
 REM JANGAN menaruh tanda kurung di echo DALAM blok if-berkurung: kurung
 REM tutupnya menutup blok lebih awal dan sisa barisnya dieksekusi sebagai
-REM perintah ("- was unexpected at this time", task 0xFF — uji sadar 27 Agu).
+REM perintah ("- was unexpected at this time", task 0xFF - uji sadar 27 Agu).
 if exist "%~dp0.panen.lock" (
   echo Pipeline lain sedang jalan - .panen.lock ada - keluar.
   goto keluar_terkunci
@@ -81,6 +112,19 @@ echo.
 echo     3. Kembali ke jendela ini dan tekan tombol apa saja.
 echo        Token akan disemai dari .env.local lalu DIUJI LAGI ke server.
 echo.
+REM `pause` ini DULU tanpa syarat, dan itu yang membuat tugas terjadwal
+REM menggantung selamanya: jalan `auto` menunggu tombol yang tak akan pernah
+REM ditekan, sementara `.panen.lock` sudah terlanjur dibuat di atas - jadi
+REM panen sore pukul 18.00 ikut keluar dengan "Pipeline lain sedang jalan".
+REM Terjadi 6 Sep 2026: proses 11:45 masih hidup pukul 12.30 dengan hasil
+REM tugas 0x41301 (masih berjalan), dan kuncinya masih ada di cakram.
+REM Mode auto sekarang MENYERAH dengan bersih: kunci dilepas, keluar 0,
+REM panen sore tetap bisa jalan. Yang dijalankan tangan tetap menunggu.
+if "%1"=="auto" (
+  echo   Mode otomatis - tak ada yang bisa menekan tombol. Berhenti bersih.
+  rmdir "%~dp0.panen.lock" 2>nul
+  exit /b 0
+)
 pause
 echo.
 echo   Menyemai dan menguji ulang...

@@ -107,7 +107,12 @@ describe('skor yang dilihat pembaca — Screener vs Harian Papan', () => {
     expect(sampel.length).toBeGreaterThanOrEqual(30)
   })
 
-  it('KEADAAN SEKARANG: dua halaman memberi label berbeda untuk sebagian emiten', () => {
+  // Batas waktu dinaikkan 6 Sep 2026: uji ini membaca ratusan berkas OHLC
+  // dari cakram dan makan 2,4-3,0 detik kalau mesinnya sepi — tapi 5-6,3
+  // detik kalau build atau uji lain sedang jalan. Dengan batas bawaan 5
+  // detik ia gagal EMPAT kali dalam satu sesi tanpa satu pun regresi, dan
+  // uji yang merah karena mesin sibuk melatih orang mengabaikan warna merah.
+  it('KEADAAN SEKARANG: dua halaman memberi label berbeda untuk sebagian emiten', { timeout: 30_000 }, () => {
     let diperiksa = 0
     let berbeda = 0
     const contoh = []
