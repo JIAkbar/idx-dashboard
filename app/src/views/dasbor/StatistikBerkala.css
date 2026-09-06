@@ -45,3 +45,29 @@
    (mis. IHSG 3 baris) diregangkan mengikuti tetangganya yang panjang dan
    menyisakan kotak kosong yang terbaca seperti data yang hilang. */
 .lantai .stb-jajar { align-items: start; }
+
+/* #16 (Johan 6 Sep 2026: "kalender button ini dekat kan dengan tab ringkasan
+   dll"). Kendali periode dulu duduk di ujung kanan .vhead sementara baris tab
+   ada di baris bawah sisi kiri — terukur 626px mendatar dan 48px menurun di
+   1536, padahal keduanya sama-sama memilih APA yang dilihat.
+
+   Yang berubah cuma PENEMPATAN: `.tabs` tetap komponen kanonis yang berdiri
+   sendiri (#170), tidak dimasukkan ke dalam kotak tab. Keduanya jadi anak satu
+   pembungkus flex — tab di kiri, kendali di kanan.
+
+   Di <=720px kendalinya turun ke barisnya sendiri: memaksanya sebaris di lebar
+   itu cuma memotong pemilih tanggalnya. */
+.lantai .stb-jajar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+/* Kendali menempel di SEBELAH baris tab, bukan didorong ke ujung kanan.
+   `space-between` membuat keduanya sebaris tapi tetap 628px berjauhan di
+   1536 — sebaris belum tentu berdekatan, dan yang diminta "dekatkan". */
+.lantai .stb-jajar .stb-nav { margin-left: 0; }
+@media (max-width: 720px) {
+  .lantai .stb-jajar .stb-nav { width: 100%; margin-left: 0; justify-content: space-between; }
+}

@@ -242,34 +242,6 @@ export function StatistikBerkala() {
         </span>
         <CatatanCakupan inline />
       </div>
-      <div className="stb-nav">
-        <PemilihRentang opsi={opsiJenis} nilai={jenis} onGanti={setJenis} ariaLabel="Panjang periode" />
-        {daftar && idx != null && (
-          <div className="stb-langkah">
-            <LangkahTanggal
-              arah="mundur"
-              ukuran="sebaris"
-              label={`${labelIni === 'Pekan ini' ? 'Pekan' : 'Bulan'} sebelumnya`}
-              disabled={idx === 0}
-              onClick={() => pilih(idx - 1)}
-            />
-            <Dropdown
-              opsi={opsiEdisi}
-              nilai={String(idx)}
-              onGanti={(v) => pilih(Number(v))}
-              ariaLabel={`Pilih ${kataPeriode}`}
-              rata="kanan"
-            />
-            <LangkahTanggal
-              arah="maju"
-              ukuran="sebaris"
-              label={`${labelIni === 'Pekan ini' ? 'Pekan' : 'Bulan'} berikutnya`}
-              disabled={idx === daftar.length - 1}
-              onClick={() => pilih(idx + 1)}
-            />
-          </div>
-        )}
-      </div>
     </div>
     </>
   )
@@ -307,7 +279,8 @@ export function StatistikBerkala() {
     <div className="lantai">
       {kepala}
 
-      <div className="tabs" role="tablist" aria-label="Bagian statistik">
+      <div className="stb-jajar">
+        <div className="tabs" role="tablist" aria-label="Bagian statistik">
         {TABS.map((t) => (
           <button
             key={t.id}
@@ -320,6 +293,35 @@ export function StatistikBerkala() {
             {t.label}
           </button>
         ))}
+      </div>
+        <div className="stb-nav">
+        <PemilihRentang opsi={opsiJenis} nilai={jenis} onGanti={setJenis} ariaLabel="Panjang periode" />
+        {daftar && idx != null && (
+          <div className="stb-langkah">
+            <LangkahTanggal
+              arah="mundur"
+              ukuran="sebaris"
+              label={`${labelIni === 'Pekan ini' ? 'Pekan' : 'Bulan'} sebelumnya`}
+              disabled={idx === 0}
+              onClick={() => pilih(idx - 1)}
+            />
+            <Dropdown
+              opsi={opsiEdisi}
+              nilai={String(idx)}
+              onGanti={(v) => pilih(Number(v))}
+              ariaLabel={`Pilih ${kataPeriode}`}
+              rata="kanan"
+            />
+            <LangkahTanggal
+              arah="maju"
+              ukuran="sebaris"
+              label={`${labelIni === 'Pekan ini' ? 'Pekan' : 'Bulan'} berikutnya`}
+              disabled={idx === daftar.length - 1}
+              onClick={() => pilih(idx + 1)}
+            />
+          </div>
+        )}
+        </div>
       </div>
 
       {tab === 'ringkas' && (edisiBulanan

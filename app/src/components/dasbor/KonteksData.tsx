@@ -47,7 +47,7 @@ export function KonteksData({ tanggal, sementara }: KonteksDataProps) {
         )}
       </span>
       <Link to="/metodologi" className="kd-tautan">
-        Metodologi &amp; sumber data <IkonMenu d={IKON_PANAH_KANAN} size={11} />
+        Metodologi<span className="kd-panjang"> &amp; sumber data</span> <IkonMenu d={IKON_PANAH_KANAN} size={11} />
       </Link>
     </div>
   )

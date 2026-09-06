@@ -951,13 +951,30 @@
    pindahkan saja 1 baris dengan teks peta investor"). `flex:none` wajib: tanpa
    itu ia ikut melar dan menyeret tautan Metodologi ke tengah baris.
 
-   Di ≤768px ia kembali jadi baris penuh. Judul + subjudul + catatan cakupan
-   sudah memakan seluruh lebar di sana, jadi memaksanya sebaris cuma memotong
-   tanggalnya — satu baris yang dihemat di desktop tak sepadan dengan tanggal
-   yang tak terbaca di ponsel. */
+   Sampai 5 Sep 2026 ia kembali jadi BARIS PENUH di ≤768px, dengan alasan yang
+   ditulis di sini: "judul + subjudul + catatan cakupan sudah memakan seluruh
+   lebar di sana". Alasan itu GUGUR 6 Sep: subjudul deskriptifnya dibuang
+   (#4 tahap 2) dan kalimat cakupannya tinggal separuh. Yang tersisa cuma
+   judul pendek, jadi tanggalnya muat sebaris — dan Johan memintanya begitu:
+   "hapus juga ini teks di mobile penuh2in (Rincian broker tersedia dan
+   tervalidasi sejak 2016.) dan Data per 4 September 2026 jadi 1 baris dengan
+   jdl".
+
+   Catatan cakupan disembunyikan di ponsel, TIDAK dihapus dari halaman: di
+   desktop ia tetap tampil, dan ia satu-satunya tempat pembaca tahu rincian
+   broker cuma tervalidasi sejak 2016. Menghapusnya dari kode akan membuang
+   batas cakupan itu untuk semua orang; menyembunyikannya di layar sempit
+   cuma memilih apa yang muat. */
 .lantai .vhead .konteks-data{margin-left:auto;flex:none;justify-content:flex-end;gap:14px}
 @media (max-width:768px){
-  .lantai .vhead .konteks-data{margin-left:0;flex:1 0 100%;justify-content:space-between}
+  .lantai .vhead .catatan-inline{display:none}
+  .lantai .vhead .konteks-data{margin-left:auto;flex:none;justify-content:flex-end;gap:10px}
+  .lantai .vhead h1{font-size:17px}
+  /* Tautan metodologi dipendekkan jadi ikon+"Metodologi": kalimat penuhnya
+     sendirian memakan ~180px, dan itu yang memaksa barisnya pecah dua. Yang
+     hilang cuma kata "& sumber data" — tujuannya sama, satu ketukan sama. */
+  .lantai .vhead .kd-tautan{font-size:11px}
+  .lantai .vhead .kd-tautan .kd-panjang{display:none}
 }
 /* Varian SEBARIS judul (Johan 28 Agu "di jadikan 1 baris saja ... (Rincian
    broker ...)") — anak .vhead, tanpa ikon, dalam kurung; membungkus wajar
