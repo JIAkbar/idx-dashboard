@@ -12,7 +12,8 @@ dari dalam halaman idx.co.id, pola sama dengan fetch_broker_summary.py).
 
 Output: data-idx/json/investor_map.json (format sama persis dengan file lama:
 list of {code, issuer, holders:[{name, cls, lf, pct}]}) + investor_map.meta.json.
-Backup sekali: investor_map.json.bak-2026-06.
+Cadangan: investor_map.json.bak-<tanggal data yang diganti>, satu per tanggal
+sumber. Lihat nama_cadangan().
 
 Cara pakai:
   python scripts/fetch_investor_map.py                 # otomatis: cari pengumuman terbaru
@@ -30,7 +31,30 @@ import arsip_mentah  # noqa: E402 — reuse, lihat CLAUDE.md rung 2
 ROOT = Path(__file__).parent.parent
 OUT = ROOT / "data-idx" / "json" / "investor_map.json"
 META = ROOT / "data-idx" / "json" / "investor_map.meta.json"
-BAK = ROOT / "data-idx" / "json" / "investor_map.json.bak-2026-06"
+def nama_cadangan() -> Path:
+    """Nama cadangan mengikuti tanggal DATA YANG DIGANTI, bukan tanggal penyalinan.
+
+    Sebelum 6 Sep 2026 namanya tetap: `investor_map.json.bak-2026-06`. Karena
+    tetap, jalan kedua mana pun sesudah Juni menghasilkan berkas bernama Juni
+    yang isinya data Agustus atau lebih baru -- nama yang berbohong tentang
+    isinya, dan tak ada satu pun galat yang mengatakannya. Johan 6 Sep 2026
+    memilih opsi A: jaring pengamannya dipertahankan, kebohongan namanya
+    dibuang.
+
+    Tanggalnya diambil dari `updated` di meta -- itu stempel data yang SEDANG
+    ditimpa, jadi nama cadangan menyatakan isi cadangan itu. Memakai tanggal
+    hari ini akan salah dengan cara yang sama seperti sebelumnya: berkas
+    bertanggal hari ini yang isinya data bulan lalu.
+    """
+    tgl = None
+    try:
+        tgl = json.loads(META.read_text(encoding="utf-8")).get("updated")
+    except (OSError, ValueError):
+        pass
+    if not (isinstance(tgl, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", tgl)):
+        tgl = date.today().isoformat()   # meta hilang/rusak: jangan diam, tetap bercadangan
+    return OUT.parent / f"{OUT.name}.bak-{tgl}"
+
 PDF_DIR = ROOT / "data owner"
 
 HALAMAN = "https://www.idx.co.id/id/berita/pengumuman"
@@ -234,11 +258,46 @@ def validasi(baru, lama):
     return m
 
 
+def swauji() -> None:
+    """Cukup untuk gagal kalau penamaan cadangan kembali membohong."""
+    import tempfile
+    global OUT, META
+    simpan = (OUT, META)
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            OUT = Path(d) / "investor_map.json"
+            META = Path(d) / "investor_map.meta.json"
+
+            META.write_text(json.dumps({"updated": "2026-08-13"}), encoding="utf-8")
+            assert nama_cadangan().name == "investor_map.json.bak-2026-08-13", nama_cadangan().name
+
+            # Meta hilang -> jatuh ke hari ini, BUKAN ke nama tetap lama.
+            META.unlink()
+            n = nama_cadangan().name
+            assert n == f"investor_map.json.bak-{date.today().isoformat()}", n
+
+            # Meta rusak dan meta bertanggal ngawur diperlakukan sama.
+            for isi in ("{bukan json", json.dumps({"updated": "Juni 2026"}), json.dumps({})):
+                META.write_text(isi, encoding="utf-8")
+                assert nama_cadangan().name.endswith(date.today().isoformat()), isi[:20]
+
+            # Nama tetap lama tak boleh bisa lahir lagi dari jalur mana pun.
+            META.write_text(json.dumps({"updated": "2026-06-02"}), encoding="utf-8")
+            assert nama_cadangan().name == "investor_map.json.bak-2026-06-02"
+            assert nama_cadangan().name != "investor_map.json.bak-2026-06"
+    finally:
+        OUT, META = simpan
+    print("swauji penamaan cadangan: 6 kasus lolos")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pdf", help="parse PDF lampiran lokal (lewati download)")
     ap.add_argument("--dry-run", action="store_true", help="jangan timpa output")
+    ap.add_argument("--swauji", action="store_true", help="uji penamaan cadangan lalu keluar")
     args = ap.parse_args()
+    if args.swauji:
+        return swauji()
 
     sumber_info = {}
     if args.pdf:
@@ -283,9 +342,14 @@ def main():
         print("--dry-run: tidak menimpa.")
         return
 
-    if OUT.exists() and not BAK.exists():
-        shutil.copy2(OUT, BAK)
-        print(f"  backup: {BAK.name}")
+    if OUT.exists():
+        bak = nama_cadangan()
+        # Satu cadangan per tanggal sumber, bukan satu seumur hidup: jalan
+        # berulang di hari yang sama tidak menumpuk, versi yang benar-benar
+        # berbeda tidak saling menimpa.
+        if not bak.exists():
+            shutil.copy2(OUT, bak)
+            print(f"  backup: {bak.name}")
     OUT.write_text(json.dumps(baru, ensure_ascii=False, separators=(",", ":")),
                    encoding="utf-8")
     META.write_text(json.dumps({
