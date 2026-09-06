@@ -2,13 +2,46 @@
    (kartu/label/angka) datang dari kelas kanonis `.panel`/`.panel-h`/`.panel-b`/
    `.lbl`/`.v`/`.num`/`.up`/`.dn` di lantai.css — jangan didefinisikan ulang di sini. */
 
+/* Empat kartu SEBARIS (#51, Johan: "4 tabel 1 baris pasti bisa itu").
+   Sebelumnya kolom tunggal: tiap kartu satu baris penuh dengan ruang kosong
+   di kanannya, dan panel setinggi empat kartu menjepit kanvas di mode layar
+   penuh. `minmax(0, 1fr)` wajib, bukan `1fr`: `1fr` = `minmax(auto, 1fr)`
+   yang menolak menyusut di bawah isinya, dan `.dasbor-main` memotong
+   kelebihannya tanpa scrollbar dan tanpa galat. */
 .pac-grup {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
   gap: 10px;
 }
 
-.pac-panel { margin-bottom: 0; }
+/* Basis & banner bicara untuk SELURUH panel, bukan untuk satu kartu — tanpa
+   ini keduanya memakan satu sel dan kartu terakhir terlempar ke baris kedua. */
+.pac-basis,
+.pac-banner { grid-column: 1 / -1; }
+
+@media (max-width: 1279px) {
+  .pac-grup { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 719px) {
+  .pac-grup { grid-template-columns: minmax(0, 1fr); }
+}
+
+.pac-panel {
+  margin-bottom: 0;
+  /* Kartu jadi konteks container: isi yang perlu menyusut (ladder pivot 7
+     kolom) menanggapi lebar KARTU, bukan lebar viewport. Dua sumbu itu tak
+     lagi sejalan begitu jumlah kolomnya berubah 4 -> 2 -> 1. */
+  container-type: inline-size;
+}
+
+.pac-basis {
+  margin: 0;
+  color: var(--text3);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.pac-basis b { color: var(--text2); font-weight: 600; }
 
 .pac-banner {
   margin: 0;
@@ -61,7 +94,15 @@
 
 .pac-baris .num { font-variant-numeric: tabular-nums; }
 
-@media (max-width: 480px) {
+/* Dulu `@media (max-width: 480px)` — patokan yang salah sejak kartunya
+   berbaris empat: di viewport 1280 kartunya cuma 272px dan ladder 7 kolom
+   meluber 7px, sementara media query itu tak pernah aktif. Ambangnya
+   diukur, bukan ditebak: pada kartu 272px ladder butuh 249px sedangkan
+   ruangnya 242px. Ambangnya 380px, bukan 320px: kartu satu kolom di ponsel
+   412 punya isi 364px, dan pada lebar itu sel ladder cuma ~43px sementara
+   harga enam digit ("104.250") butuh ~53px — meluber diam-diam persis di
+   emiten yang harganya panjang. */
+@container (max-width: 380px) {
   .pac-grid-pivot { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .pac-grid-return { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

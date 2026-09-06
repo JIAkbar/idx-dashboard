@@ -109,6 +109,28 @@ export const KERANGKA_BAWAAN: IdKerangka = 'D'
 export const intraday = (id: IdKerangka): boolean =>
   (KERANGKA.find((k) => k.id === id)?.interval ?? null) !== null
 
+/** Kata untuk SATU bar kerangka itu, tunggal, apa adanya di layar.
+ *
+ *  Satu-satunya tempat kata ini dieja — persis seperti `LABEL_RENTANG` untuk
+ *  rentang waktu. Sebelum ini seluruh panel analitik mengeja "sesi" apa pun
+ *  kerangkanya, jadi 40 candle lima menit tercetak sebagai "40 sesi". */
+export const SATUAN_BAR: Record<IdKerangka, string> = {
+  '5m': 'candle 5 menit',
+  '15m': 'candle 15 menit',
+  '30m': 'candle 30 menit',
+  '1h': 'candle 1 jam',
+  '4h': 'candle 4 jam',
+  D: 'sesi',
+  W: 'pekan',
+  M: 'bulan',
+}
+
+/** Kelas kerangka untuk perhitungan horizon (`offsetHorizon`). */
+export function kelasKerangka(id: IdKerangka): 'intraday' | 'D' | 'W' | 'M' {
+  if (id === 'D' || id === 'W' || id === 'M') return id
+  return 'intraday'
+}
+
 /* ------------------------------------------------------------------ *
  * Perakitan
  * ------------------------------------------------------------------ */

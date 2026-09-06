@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   hitungPivot, hitungCpr, klasifikasiLebarCpr, posisiCpr, relasiCpr,
   hitungRR, jarakKeLevel, returnMultiHorizon, klasifikasiVolumeSurge,
-  cekGating, placeholderGating,
+  cekGating, placeholderGating, offsetHorizon, offsetIntraday, OFFSET_HARIAN,
 } from './chartAnalitik'
 import type { Pivot } from '../skor/types'
 
@@ -157,5 +157,114 @@ describe('cekGating', () => {
 
   it('placeholder format persis', () => {
     expect(placeholderGating(21, 10)).toBe('— (butuh 21 sesi, tersedia 10)')
+  })
+})
+
+describe('offsetHorizon — arti 1D/1W/1M/3M per kerangka (#51)', () => {
+  it('harian tetap 1/5/21/63 sesi', () => {
+    expect(offsetHorizon('D')).toEqual(OFFSET_HARIAN)
+    expect(offsetHorizon('D')).toEqual({ d1: 1, w1: 5, m1: 21, m3: 63 })
+  })
+
+  it('pekanan: "1 hari" tak punya wujud, dan 3M = 13 bar bukan 63', () => {
+    expect(offsetHorizon('W')).toEqual({ d1: null, w1: 1, m1: 4, m3: 13 })
+  })
+
+  it('bulanan: hanya 1M dan 3M yang bisa dinyatakan', () => {
+    expect(offsetHorizon('M')).toEqual({ d1: null, w1: null, m1: 1, m3: 3 })
+  })
+
+})
+
+describe('offsetIntraday — jangkar dari TANGGAL, bukan perkalian bar-per-hari', () => {
+  /** Deret intraday sintetis: `perHari` bar untuk tiap tanggal berurutan. */
+  const deret = (perHari: number[]) => {
+    const keluar: string[] = []
+    perHari.forEach((n, hari) => {
+      const tgl = `2026-09-${String(hari + 1).padStart(2, '0')}`
+      for (let i = 0; i < n; i++) keluar.push(`${tgl} ${String(9 + i).padStart(2, '0')}:00`)
+    })
+    return keluar
+  }
+
+  it('1D = jarak ke bar TERAKHIR hari bursa sebelumnya', () => {
+    // 3 bar/hari, dua hari: bar terakhir index 5, tutup kemarin index 2 -> 3 bar.
+    expect(offsetIntraday(deret([3, 3])).d1).toBe(3)
+  })
+
+  it('sesi PENDEK tidak menggeser jangkarnya — inti kenapa perkalian modus salah', () => {
+    // Kamis 7 bar, Jumat 6 bar (sesi Jumat IDX lebih pendek). Perkalian modus
+    // 7 akan mendarat SATU JAM SEBELUM tutup Kamis; jangkar-tanggal tepat.
+    const w = deret([7, 7, 7, 7, 6])
+    expect(offsetIntraday(w).d1).toBe(6)                      // 6 bar Jumat, bukan 7
+    expect(w[w.length - 1 - 6]).toBe('2026-09-04 15:00')      // tutup Kamis, bar terakhirnya
+  })
+
+  it('bar hilang di tengah hari juga tak menggeser apa pun', () => {
+    expect(offsetIntraday(deret([2, 9, 4])).d1).toBe(4)
+  })
+
+  it('hari kurang -> null, bukan angka yang dipaksakan', () => {
+    const sehari = offsetIntraday(deret([20]))
+    expect(sehari).toEqual({ d1: null, w1: null, m1: null, m3: null })
+    expect(offsetIntraday(deret([5, 5, 5])).w1).toBeNull()    // 1W butuh 6 tanggal
+  })
+
+  it('jendela yang membelah DUA hari terpotong tetap benar — dulu memberi return 75 menit', () => {
+    // Separuh belakang Senin + separuh depan Selasa. Perkalian modus memberi
+    // d1 = 30 (setengah hari) dan gatingnya ikut menyusut sehingga lolos.
+    const w = [...deret([30]).map((x) => x), ...deret([0, 30])]
+    expect(offsetIntraday(w).d1).toBe(30)                     // tetap: tutup Senin memang 30 bar ke belakang
+    expect(offsetIntraday(w).w1).toBeNull()
+  })
+
+  it('deret kosong -> semua null', () => {
+    expect(offsetIntraday([])).toEqual({ d1: null, w1: null, m1: null, m3: null })
+  })
+})
+
+describe('returnMultiHorizon dengan offset kerangka', () => {
+  it('offset pekanan memakai bar ke-13 untuk 3M, bukan ke-63', () => {
+    // 14 bar: index 0 dipakai 3M (13 bar ke belakang dari index 13).
+    const closes = Array.from({ length: 14 }, (_, i) => 100 + i)
+    const r = returnMultiHorizon(closes, offsetHorizon('W'))
+    expect(r.r1d).toBeNull()                                    // 1 hari tak berlaku di chart pekanan
+    expect(r.r1w).toBeCloseTo(((113 - 112) / 112) * 100, 6)
+    expect(r.r1m).toBeCloseTo(((113 - 109) / 109) * 100, 6)
+    expect(r.r3m).toBeCloseTo(((113 - 100) / 100) * 100, 6)
+  })
+
+  it('deret yang sama dengan offset harian memberi 3M null — bukti offsetnya benar-benar dipakai', () => {
+    const closes = Array.from({ length: 14 }, (_, i) => 100 + i)
+    expect(returnMultiHorizon(closes).r3m).toBeNull()
+  })
+})
+
+describe('cekGating ikut kerangka (#51)', () => {
+  it('satuan bar dipakai apa adanya di banner', () => {
+    const g = cekGating(10, { satuan: 'candle 5 menit' })
+    expect(g.banner).toContain('Periode 10 candle 5 menit belum cukup')
+  })
+
+  it('di chart pekanan 20 bar sudah cukup untuk 3M — dengan ambang lama ia gagal', () => {
+    const pekan = cekGating(20, { satuan: 'pekan', offset: offsetHorizon('W') })
+    expect(pekan.gagal.map((m) => m.kunci)).not.toContain('return_3m')
+    expect(cekGating(20).gagal.map((m) => m.kunci)).toContain('return_3m')
+  })
+
+  it('horizon yang tak berlaku tidak ikut banner "belum cukup"', () => {
+    const bulan = cekGating(120, { satuan: 'bulan', offset: offsetHorizon('M') })
+    expect(bulan.gagal.map((m) => m.kunci)).toEqual(['return_1d', 'return_1w'])
+    expect(bulan.banner).toBeNull()                             // data cukup; dua horizon itu memang tak ada wujudnya
+  })
+})
+
+describe('placeholderGating membedakan dua sebab', () => {
+  it('data kurang menyebut angkanya, dalam satuan kerangka', () => {
+    expect(placeholderGating(14, 9, 'pekan')).toBe('— (butuh 14 pekan, tersedia 9)')
+  })
+
+  it('tak berlaku di kerangka ini bukan kalimat yang sama dengan data kurang', () => {
+    expect(placeholderGating(null, 500, 'bulan')).toBe('— (tak berlaku di kerangka ini)')
   })
 })

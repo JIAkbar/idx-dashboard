@@ -172,17 +172,101 @@ export interface HasilReturnMultiHorizon {
   r3m: number | null
 }
 
-/** `closes` ASCENDING, elemen terakhir = Close bar `t`. Sesi bursa, bukan
- *  hari kalender — 1W=5 sesi, 1M=21 sesi, 3M=63 sesi. */
-export function returnMultiHorizon(closes: number[]): HasilReturnMultiHorizon {
+export interface OffsetHorizon {
+  /** Berapa BAR ke belakang untuk tiap horizon; null = tak bisa dinyatakan
+   *  pada kerangka itu (mis. "1 hari" pada chart bulanan). */
+  d1: number | null
+  w1: number | null
+  m1: number | null
+  m3: number | null
+}
+
+/** Offset baku kerangka HARIAN — sesi bursa: 1W=5 sesi, 1M=21, 3M=63. */
+export const OFFSET_HARIAN: OffsetHorizon = { d1: 1, w1: 5, m1: 21, m3: 63 }
+
+/**
+ * Berapa bar ke belakang yang benar-benar berarti "1 hari / 1 pekan / 1 bulan
+ * / 3 bulan" pada kerangka HARIAN, PEKANAN, atau BULANAN.
+ *
+ * Ini menutup cacat yang persis ditanyakan Johan ("data tebakan saja"):
+ * sebelumnya offsetnya SELALU 1/5/21/63 bar apa pun kerangkanya, sementara
+ * label di layar tetap 1D/1W/1M/3M. Di chart bulanan kotak "3M" berisi return
+ * 63 BULAN — lima tahun lebih — dan tetap terbaca masuk akal. Di chart 5 menit
+ * kotak "3M" justru lebih pendek daripada satu hari bursa.
+ *
+ * Tabelnya sengaja ditulis eksplisit, bukan diturunkan dari rumus: 1 pekan =
+ * 5 sesi tapi 7 hari kalender, dan mencampur dua satuan itu di dalam satu
+ * rumus adalah cara paling gampang melahirkan angka yang salah tanpa galat.
+ * Pembulatannya tak terhindarkan (1 bulan = 4,33 pekan), jadi angkanya
+ * DICETAK di layar alih-alih diakali — lihat `LOOKBACK` di panel.
+ *
+ * Intraday TIDAK ada di sini: di sana offsetnya wajib dicari dari cap
+ * waktunya sendiri (`offsetIntraday`), bukan dari perkalian.
+ */
+export function offsetHorizon(kerangka: 'D' | 'W' | 'M'): OffsetHorizon {
+  if (kerangka === 'D') return OFFSET_HARIAN
+  // Pekan: 1 bulan ≈ 4 pekan, 3 bulan ≈ 13 pekan. "1 hari" tak ada wujudnya.
+  if (kerangka === 'W') return { d1: null, w1: 1, m1: 4, m3: 13 }
+  return { d1: null, w1: null, m1: 1, m3: 3 }
+}
+
+/** Berapa HARI BURSA ke belakang tiap horizon, untuk deret intraday. */
+const HARI_HORIZON: Array<[keyof OffsetHorizon, number]> = [
+  ['d1', 1], ['w1', 5], ['m1', 21], ['m3', 63],
+]
+
+/**
+ * Offset intraday DICARI DARI CAP WAKTU, bukan dari perkalian bar-per-hari.
+ *
+ * Versi pertama fungsi ini mengukur modus bar-per-hari lalu mengalikannya
+ * 5/21/63, dan itu salah secara struktural — bukan cuma kurang teliti:
+ *
+ * - Sesi Jumat IDX lebih pendek, dan bar tanpa transaksi dibuang di emiten
+ *   tipis, jadi tak ada satu pun angka "bar per hari" yang berlaku untuk semua
+ *   hari. Melesetnya searah dan menumpuk: pada 3 bulan ia lewat ~2 hari bursa.
+ * - Bar-per-hari itu diukur dari JENDELA PANDANG, jadi ia menyusut saat
+ *   pengguna memperbesar. Jendela 2,5 jam yang membelah dua tanggal memberi
+ *   "1 hari" = 75 menit — dan ambang gatingnya (offset + 1) lahir dari
+ *   pengukuran yang SAMA sehingga ikut menyusut dengan laju persis sama.
+ *   Golongan galat itu mustahil tertangkap pagar semacam itu.
+ *
+ * Cara di bawah kebal ketiganya: jangkarnya bar TERAKHIR pada tanggal bursa
+ * ke-k sebelum tanggal bar t. Sesi pendek, libur, dan bar yang dibuang tak
+ * mengubah apa pun, karena yang dihitung tanggal, bukan jumlah bar.
+ */
+export function offsetIntraday(waktu: string[]): OffsetHorizon {
+  const n = waktu.length
+  const hasil: OffsetHorizon = { d1: null, w1: null, m1: null, m3: null }
+  if (n === 0) return hasil
+  const tanggal = waktu.map((w) => w.slice(0, 10))
+  const hari: string[] = []
+  for (const t of tanggal) if (hari[hari.length - 1] !== t) hari.push(t)
+  // Indeks bar TERAKHIR di tiap tanggal — itulah "tutup" hari bursa itu.
+  const akhirHari = new Map<string, number>()
+  for (let i = 0; i < n; i++) akhirHari.set(tanggal[i], i)
+  for (const [ruas, k] of HARI_HORIZON) {
+    if (hari.length < k + 1) continue
+    const idx = akhirHari.get(hari[hari.length - 1 - k])
+    if (idx == null) continue
+    hasil[ruas] = n - 1 - idx
+  }
+  return hasil
+}
+
+/** `closes` ASCENDING, elemen terakhir = Close bar `t`. `offset` menentukan
+ *  berapa bar setiap horizon — bawaannya kerangka harian. */
+export function returnMultiHorizon(
+  closes: number[],
+  offset: OffsetHorizon = OFFSET_HARIAN,
+): HasilReturnMultiHorizon {
   const n = closes.length
-  const ret = (bars: number): number | null => {
-    if (n < bars + 1) return null
+  const ret = (bars: number | null): number | null => {
+    if (bars == null || n < bars + 1) return null
     const cPrev = closes[n - 1 - bars]
     if (cPrev === 0) return null
     return ((closes[n - 1] - cPrev) / cPrev) * 100
   }
-  return { r1d: ret(1), r1w: ret(5), r1m: ret(21), r3m: ret(63) }
+  return { r1d: ret(offset.d1), r1w: ret(offset.w1), r1m: ret(offset.m1), r3m: ret(offset.m3) }
 }
 
 // ── 9. Klasifikasi Volume Surge (§4.5) ──────────────────────────────────────
@@ -223,7 +307,9 @@ export type KunciGating =
 export interface MetrikGagal {
   kunci: KunciGating
   label: string
-  minimum: number
+  /** Bar minimum. `null` = horizon itu TAK BERLAKU di kerangka aktif (mis.
+   *  "1 hari" pada chart bulanan) — bukan soal data kurang. */
+  minimum: number | null
 }
 
 /** Tabel bar minimum PERSIS §4.7. `klasifikasi-lebar` sengaja TAK ADA di
@@ -231,7 +317,10 @@ export interface MetrikGagal {
  *  bukan gate total. */
 const AMBANG_GATING: MetrikGagal[] = [
   { kunci: 'pivot_cpr', label: 'Pivot & CPR', minimum: 2 },
-  { kunci: 'relasi_cpr', label: 'Relasi CPR vs sesi lalu', minimum: 3 },
+  // Label ini ikut tercetak di banner yang satuannya SUDAH mengikuti kerangka,
+  // jadi 'sesi' di sini melahirkan kalimat yang menabrak dirinya sendiri:
+  // 'Periode 2 bulan belum cukup untuk: Relasi CPR vs sesi lalu'. Netral.
+  { kunci: 'relasi_cpr', label: 'Relasi CPR vs bar sebelumnya', minimum: 3 },
   { kunci: 'rr_setup', label: 'R:R Setup', minimum: 2 },
   { kunci: 'candlestick_1bar', label: 'Pola candlestick 1-bar', minimum: 1 },
   { kunci: 'candlestick_2bar', label: 'Pola candlestick 2-bar', minimum: 2 },
@@ -248,15 +337,45 @@ export interface HasilGating {
   banner: string | null
 }
 
-export function cekGating(nBar: number): HasilGating {
-  const gagal = AMBANG_GATING.filter((m) => nBar < m.minimum)
+/** Kunci return -> ruas offset yang menentukan ambangnya. */
+const RUAS_RETURN: Array<[KunciGating, keyof OffsetHorizon]> = [
+  ['return_1d', 'd1'], ['return_1w', 'w1'], ['return_1m', 'm1'], ['return_3m', 'm3'],
+]
+
+/**
+ * `satuan` = kata untuk SATU bar pada kerangka aktif ("sesi", "pekan",
+ * "bulan", "candle 5 menit"). Bawaannya "sesi" supaya pemanggil harian tak
+ * berubah — tapi memakai bawaan itu di kerangka lain berarti banner menyebut
+ * 40 candle lima menit sebagai "40 sesi", persis salah baca yang dikeluhkan.
+ *
+ * `offset` menggeser ambang return supaya ikut kerangkanya: di chart pekanan
+ * "3M" butuh 14 bar, bukan 64. Tanpa ini, panel di kerangka W hampir selalu
+ * memajang banner "belum cukup" padahal riwayatnya sepuluh tahun.
+ */
+export function cekGating(
+  nBar: number,
+  opsi: { satuan?: string; offset?: OffsetHorizon } = {},
+): HasilGating {
+  const { satuan = 'sesi', offset = OFFSET_HARIAN } = opsi
+  const ambang = AMBANG_GATING.map((m) => {
+    const ruas = RUAS_RETURN.find(([k]) => k === m.kunci)
+    if (!ruas) return m
+    const o = offset[ruas[1]]
+    return { ...m, minimum: o == null ? null : o + 1 }
+  })
+  const gagal = ambang.filter((m) => m.minimum == null || nBar < m.minimum)
   if (gagal.length === 0) return { gagal, banner: null }
-  const daftar = gagal.map((m) => m.label).join(', ')
-  return { gagal, banner: `Periode ${nBar} sesi belum cukup untuk: ${daftar}. Perpanjang rentang tanggal.` }
+  const kurang = gagal.filter((m) => m.minimum != null)
+  if (kurang.length === 0) return { gagal, banner: null }
+  const daftar = kurang.map((m) => m.label).join(', ')
+  return { gagal, banner: `Periode ${nBar} ${satuan} belum cukup untuk: ${daftar}. Perpanjang rentang tanggal.` }
 }
 
 /** Placeholder generik metrik yang gagal gate — dipakai ganti angka apa pun
- *  ("0.0%"/"—" polos dilarang §4.7), bukan cuma di satu panel. */
-export function placeholderGating(minimum: number, nBar: number): string {
-  return `— (butuh ${minimum} sesi, tersedia ${nBar})`
+ *  ("0.0%"/"—" polos dilarang §4.7), bukan cuma di satu panel. `minimum` null
+ *  berarti horizonnya tak berlaku di kerangka ini, bukan datanya kurang; dua
+ *  sebab yang berbeda tak boleh memakai kalimat yang sama. */
+export function placeholderGating(minimum: number | null, nBar: number, satuan = 'sesi'): string {
+  if (minimum == null) return '— (tak berlaku di kerangka ini)'
+  return `— (butuh ${minimum} ${satuan}, tersedia ${nBar})`
 }

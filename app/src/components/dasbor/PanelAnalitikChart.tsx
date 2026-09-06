@@ -2,8 +2,10 @@ import { useMemo } from 'react'
 import {
   hitungPivot, hitungCpr, klasifikasiLebarCpr, posisiCpr, relasiCpr, hitungRR,
   jarakKeLevel, returnMultiHorizon, klasifikasiVolumeSurge, cekGating, placeholderGating,
+  offsetHorizon, offsetIntraday,
   type KunciGating, type KelasRelasiCpr, type PosisiCpr, type KlasifikasiVolumeSurge,
 } from '../../lib/dasbor/chartAnalitik'
+import { KERANGKA, SATUAN_BAR, kelasKerangka, type IdKerangka } from '../../lib/dasbor/kerangkaWaktu'
 import { fN, fp } from '../../lib/dasbor/format'
 import { BadgeRapor } from './BadgeRapor'
 import type { IndexBt, RunBt } from '../../lib/dasbor/raporBadge'
@@ -67,8 +69,12 @@ function cariRun(indexBt: IndexBt | null | undefined, strategi: string): RunBt |
   return indexBt?.run.find((r) => r.strategi === strategi) ?? null
 }
 
-export function PanelAnalitikChart({ bars, tier, indexBt }: {
+export function PanelAnalitikChart({ bars, kerangka = 'D', tier, indexBt }: {
   bars: BarAnalitik[]
+  /** Kerangka waktu chart yang sedang tampil — menentukan SATUAN tiap bar,
+   *  dan karena itu arti setiap angka di panel ini. Tanpa ini panel mengeja
+   *  "sesi" untuk candle lima menit dan menghitung "3M" sebagai 63 bulan. */
+  kerangka?: IdKerangka
   tier?: number
   indexBt?: IndexBt | null
 }) {
@@ -76,9 +82,20 @@ export function PanelAnalitikChart({ bars, tier, indexBt }: {
   const t = n > 0 ? bars[n - 1] : null
   const prevBar = n >= 2 ? bars[n - 2] : null
 
-  const gating = useMemo(() => cekGating(n), [n])
+  const satuan = SATUAN_BAR[kerangka] ?? 'sesi'
+  const judulKerangka = KERANGKA.find((k) => k.id === kerangka)?.judul.split(' — ')[0] ?? kerangka
+  // Bar per hari DIUKUR dari deret yang sedang dipegang, bukan ditebak dari
+  // jam bursa — sesi bisa dipotong libur setengah hari, dan jendela pandang
+  // bisa berisi hari yang terpotong di kedua ujungnya.
+  const offset = useMemo(() => {
+    const kelas = kelasKerangka(kerangka)
+    return kelas === 'intraday' ? offsetIntraday(bars.map((b) => b.tanggal)) : offsetHorizon(kelas)
+  }, [kerangka, bars])
+
+  const gating = useMemo(() => cekGating(n, { satuan, offset }), [n, satuan, offset])
   const gagalSet = useMemo(() => new Set(gating.gagal.map((m) => m.kunci)), [gating])
   const gagal = (kunci: KunciGating) => gagalSet.has(kunci)
+  const ambang = (kunci: KunciGating) => gating.gagal.find((m) => m.kunci === kunci)?.minimum ?? null
 
   const pivot = t ? hitungPivot(t.h, t.l, t.c) : null
   const cpr = t ? hitungCpr(t.h, t.l, t.c) : null
@@ -102,7 +119,7 @@ export function PanelAnalitikChart({ bars, tier, indexBt }: {
   const rr = t && pivot ? hitungRR(t.c, pivot) : null
   const jarak = t && pivot && cpr ? jarakKeLevel(t.c, { r1: pivot.R1, s1: pivot.S1, tc: cpr.tc, bc: cpr.bc }) : null
 
-  const ret = useMemo(() => returnMultiHorizon(bars.map((b) => b.c)), [bars])
+  const ret = useMemo(() => returnMultiHorizon(bars.map((b) => b.c), offset), [bars, offset])
 
   const surge = useMemo(() => {
     if (n < 21) return null
@@ -113,17 +130,42 @@ export function PanelAnalitikChart({ bars, tier, indexBt }: {
   const runPosisi = posisi ? cariRun(indexBt, `pivot_cpr.posisi_${SLUG_POSISI[posisi]}`) : null
   const runRR = cariRun(indexBt, 'rr_setup.target_before_stop')
 
+  /** Judul hover tiap kotak return: berapa bar yang benar-benar dipakai.
+   *  Tanpa ini, "1M" di chart harian (21 sesi) dan di chart pekanan (4 pekan)
+   *  memberi angka berbeda untuk emiten dan hari yang sama, dan selisihnya
+   *  terbaca sebagai data yang tak konsisten — bukan sebagai pembulatan bar. */
+  const lookback = (bars: number | null) =>
+    bars == null ? 'tak berlaku di kerangka ini' : `dihitung dari ${bars} ${satuan} ke belakang`
+
+  // Bar datar (H = L) memberi P = R1 = S1 = TC = BC — tangga pivot runtuh jadi
+  // satu harga dan lebar CPR 0,00%. Sering terjadi di bar intraday terakhir
+  // (lelang penutupan) dan di emiten tipis. Angkanya BENAR menurut rumusnya,
+  // tapi tanpa keterangan ia terbaca seperti data rusak — persis yang bikin
+  // Johan curiga "data tebakan".
+  const rata = !!t && t.h === t.l
+
   if (!t || !pivot || !cpr) return null
 
   return (
     <div className="pac-grup">
+      {/* Basis dinyatakan di depan, bukan disimpan di tooltip. Johan 7 Sep
+          2026: "datanya tidak berubah memang gitu atau data tebakan saja" —
+          pertanyaan itu lahir karena layar tak pernah menyebut angka-angka ini
+          dihitung dari bar APA dan dari rentang yang MANA. Keduanya berubah
+          diam-diam: satuannya ikut kerangka, jangkarnya ikut jendela pandang
+          (geser kanvas ke kiri dan "sekarang" berpindah ke masa lalu). */}
+      <p className="pac-basis">
+        Basis: <b>{judulKerangka}</b> — {n} {satuan} yang sedang tampil di kanvas
+        {t && <> · terakhir <b>{t.tanggal}</b></>}
+        {rata && <span className="pac-sub"> · bar terakhir datar (tinggi = rendah), jadi seluruh tangga pivot jatuh di satu harga</span>}
+      </p>
       {gating.banner && <p className="pac-banner">{gating.banner}</p>}
 
       <section className="panel pac-panel">
         <div className="panel-h"><span className="lbl">Pivot &amp; CPR</span></div>
         <div className="panel-b">
           {gagal('pivot_cpr') ? (
-            <p className="pac-kosong">{placeholderGating(2, n)}</p>
+            <p className="pac-kosong">{placeholderGating(ambang('pivot_cpr'), n, satuan)}</p>
           ) : (
             <>
               <div className="pac-grid-pivot">
@@ -148,10 +190,10 @@ export function PanelAnalitikChart({ bars, tier, indexBt }: {
               </p>
 
               {gagal('relasi_cpr') ? (
-                <p className="pac-kosong">{placeholderGating(3, n)}</p>
+                <p className="pac-kosong">{placeholderGating(ambang('relasi_cpr'), n, satuan)}</p>
               ) : relasi && (
                 <p className="pac-baris">
-                  Relasi vs sesi lalu: <b className={warnaRelasi(relasi.kelas)}>{relasi.kelas}</b>
+                  Relasi vs {satuan} lalu: <b className={warnaRelasi(relasi.kelas)}>{relasi.kelas}</b>
                   {' — '}<span className="pac-sub">{relasi.bias}</span>
                   {runRelasi && <span className="pac-badge-slot"><BadgeRapor run={runRelasi} tier={tier} /></span>}
                 </p>
@@ -165,7 +207,7 @@ export function PanelAnalitikChart({ bars, tier, indexBt }: {
         <div className="panel-h"><span className="lbl">Risk : Reward</span></div>
         <div className="panel-b">
           {gagal('rr_setup') || !rr ? (
-            <p className="pac-kosong">{placeholderGating(2, n)}</p>
+            <p className="pac-kosong">{placeholderGating(ambang('rr_setup'), n, satuan)}</p>
           ) : (
             <p className="pac-baris">
               Target <span className="num">{fN(rr.target, 0)}</span> · SL <span className="num">{fN(rr.stopLoss, 0)}</span>
@@ -181,27 +223,27 @@ export function PanelAnalitikChart({ bars, tier, indexBt }: {
         <div className="panel-b">
           <div className="pac-grid-return">
             <div>
-              <span className="lbl">1D</span>
+              <span className="lbl" title={lookback(offset.d1)}>1D</span>
               <span className={`v num ${ret.r1d != null ? (ret.r1d >= 0 ? 'up' : 'dn') : ''}`}>
-                {gagal('return_1d') || ret.r1d == null ? placeholderGating(2, n) : fp(ret.r1d)}
+                {gagal('return_1d') || ret.r1d == null ? placeholderGating(ambang('return_1d'), n, satuan) : fp(ret.r1d)}
               </span>
             </div>
             <div>
-              <span className="lbl">1W</span>
+              <span className="lbl" title={lookback(offset.w1)}>1W</span>
               <span className={`v num ${ret.r1w != null ? (ret.r1w >= 0 ? 'up' : 'dn') : ''}`}>
-                {gagal('return_1w') || ret.r1w == null ? placeholderGating(6, n) : fp(ret.r1w)}
+                {gagal('return_1w') || ret.r1w == null ? placeholderGating(ambang('return_1w'), n, satuan) : fp(ret.r1w)}
               </span>
             </div>
             <div>
-              <span className="lbl">1M</span>
+              <span className="lbl" title={lookback(offset.m1)}>1M</span>
               <span className={`v num ${ret.r1m != null ? (ret.r1m >= 0 ? 'up' : 'dn') : ''}`}>
-                {gagal('return_1m') || ret.r1m == null ? placeholderGating(22, n) : fp(ret.r1m)}
+                {gagal('return_1m') || ret.r1m == null ? placeholderGating(ambang('return_1m'), n, satuan) : fp(ret.r1m)}
               </span>
             </div>
             <div>
-              <span className="lbl">3M</span>
+              <span className="lbl" title={lookback(offset.m3)}>3M</span>
               <span className={`v num ${ret.r3m != null ? (ret.r3m >= 0 ? 'up' : 'dn') : ''}`}>
-                {gagal('return_3m') || ret.r3m == null ? placeholderGating(64, n) : fp(ret.r3m)}
+                {gagal('return_3m') || ret.r3m == null ? placeholderGating(ambang('return_3m'), n, satuan) : fp(ret.r3m)}
               </span>
             </div>
           </div>
@@ -214,10 +256,10 @@ export function PanelAnalitikChart({ bars, tier, indexBt }: {
       </section>
 
       <section className="panel pac-panel">
-        <div className="panel-h"><span className="lbl">Volume Surge</span></div>
+        <div className="panel-h"><span className="lbl" title={`Dibanding rata-rata volume 20 ${satuan} sebelumnya`}>Volume Surge</span></div>
         <div className="panel-b">
           {gagal('volume_surge') ? (
-            <p className="pac-kosong">{placeholderGating(21, n)}</p>
+            <p className="pac-kosong">{placeholderGating(ambang('volume_surge'), n, satuan)}</p>
           ) : !surge ? (
             <p className="pac-kosong">—</p>
           ) : (

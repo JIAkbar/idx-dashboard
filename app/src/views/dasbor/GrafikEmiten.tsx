@@ -3907,7 +3907,7 @@ export function GrafikEmiten() {
           </div>
           </div>
 
-          {analitikAktif && <PanelAnalitikChart bars={barsAnalitik} />}
+          {analitikAktif && <PanelAnalitikChart bars={barsAnalitik} kerangka={kerangka} />}
 
           {/* Bilah bawah — rentang tampil, zona waktu, mode skala. Sama seperti
               kaki chart acuan: yang mengubah APA yang terlihat ada di bawah
