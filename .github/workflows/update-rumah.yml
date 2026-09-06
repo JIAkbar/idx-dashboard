@@ -100,6 +100,16 @@ jobs:
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/download_idx.py --hari-ini --jenis semua
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # Susulan bulan berjalan. PDF IDX kadang terbit SESUDAH runner
+          # jalan: 31 Agu 2026 dijalankan 19.11 dan 19.16, PDF-nya belum
+          # ada, dan --hari-ini tak pernah menengok ke belakang - hari itu
+          # tersimpan sebagai potret Yahoo 12 kunci selama seminggu tanpa
+          # satu pun galat. Menyapu bulan berjalan murah: download_idx.py
+          # melewati berkas yang sudah ada (>10 KB) dan mencetak [SKIP],
+          # jadi yang benar-benar diunduh cuma hari yang memang bolong.
+          $kini = Get-Date
+          & "${{ steps.py.outputs.exe }}" scripts/download_idx.py --bulan $kini.Month --tahun $kini.Year --jenis harian
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       # Parse WAJIB memakai jalur MUTLAK. Jalur relatif membuat skripnya
       # menjawab "SKIP" tanpa satu pun galat — PDF-nya turun, JSON-nya tak

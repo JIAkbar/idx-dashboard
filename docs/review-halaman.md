@@ -49,7 +49,7 @@ Status: ⬜ belum direview · 🔎 sedang · ⚠️ ada temuan terbuka · ✅ be
 
 | Status | Halaman | Rute | Temuan |
 |---|---|---|---|
-| ⬜ | Seasonality | `/seasonality` | Turunan 15 Agu — 13 hari |
+| ⬜ | Seasonality | `/seasonality` | ~~Turunan 15 Agu — 13 hari~~ — **ditutup 6 Sep 2026 (Papan Pekerjaan #515, #517).** Bukan cuma basi: imbal Agustus dihitung 18 Agu saat bulannya separuh lalu tersaji sebagai bulan penuh — 91 dari 104 emiten pembanding berbeda dari hitungan yang benar. Pembangun hilirnya tak pernah dipanggil dari mana pun. Sekarang terjadwal di dua bat + CI, bulan berjalan dibuang lewat kalender bursa, dan panen sore 6 Sep membangunnya sendiri (`tuntas` = 2026-08). Tetap ⬜: belum direview Johan |
 | ⬜ | Radar Watchlist | `/radar` | |
 | ⬜ | Watchlist | `/watchlist` | |
 | ⬜ | Kalkulator | `/kalkulator` | |

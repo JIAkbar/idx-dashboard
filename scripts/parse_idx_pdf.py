@@ -106,22 +106,52 @@ def parse_page2(text):
         out["avg_val_usd"] = num(m.group(3))
         out["avg_freq"]    = num(m.group(4))
 
-    # Net Foreign — scan lines sekuensial
+    # Net Foreign — jangkar POSISI, bukan besaran.
+    #
+    # Versi sebelum 7 Sep 2026 menerima pasangan pertama hanya bila
+    # `abs(v1) > 100`, dengan asumsi diam-diam bahwa arus asing harian selalu
+    # ratusan miliar. 4 Sep 2026 mematahkannya: arus hari itu -29,76 miliar,
+    # syaratnya gagal, dan SELURUH ruas nf tak pernah ditulis - berkasnya 44
+    # kunci alih-alih 49, halaman mencetak "—", nol galat. Terukur 9 dari 155
+    # hari kehilangan ruas ini.
+    #
+    # Ambang besaran juga tak bisa membedakan BARIS MANA dari ANGKA BERAPA:
+    # begitu baris IDR dilewati, penerimanya masih menganggur, jadi pasangan
+    # lain yang kebetulan lebih besar bisa terbaca sebagai IDR. Diam-diam
+    # salah lebih mahal daripada kosong.
+    #
+    # Tata letaknya (pdfplumber, halaman AVERAGE DAILY TRADING) tetap sejak
+    # 2026-01: sesudah "NET FOREIGN FUNDAMENTAL" datang pasangan IDR, lalu
+    # baris status "Net Buy Net Sell", lalu pasangan USD, lalu PER/PBV. Jadi
+    # urutannya yang dipakai - bukan nilainya.
     nf_idr, nf_usd, nf_status = [], [], []
-    for line in lines:
-        l = line.strip()
-        # baris angka IDR: "-3,731.16 -61,361.58"
-        m2 = re.match(r'^([-\d,.]+)\s+([-\d,.]+)$', l)
-        if m2:
-            v1, v2 = num(m2.group(1)), num(m2.group(2))
-            if abs(v1) > 100 and len(nf_idr) == 0:
-                nf_idr = [v1, v2]
-            elif abs(v1) < 10000 and len(nf_usd) == 0 and len(nf_idr) > 0:
-                nf_usd = [v1, v2]
-        # baris status: "Net Sell Net Sell" / "Net Buy Net Sell"
-        ms = re.match(r'^(Net (?:Sell|Buy))\s+(Net (?:Sell|Buy))$', l, re.I)
-        if ms:
-            nf_status = [ms.group(1).strip(), ms.group(2).strip()]
+    mulai = next((i for i, l in enumerate(lines) if "NET FOREIGN" in l.upper()), None)
+    if mulai is not None:
+        pasangan = []
+        for line in lines[mulai:]:
+            l = line.strip()
+            m2 = re.match(r'^([-\d,.]+)\s+([-\d,.]+)$', l)
+            if m2:
+                a, b = num(m2.group(1)), num(m2.group(2))
+                if a is not None and b is not None:
+                    pasangan.append([a, b])
+            ms = re.match(r'^(Net (?:Sell|Buy))\s+(Net (?:Sell|Buy))$', l, re.I)
+            if ms and not nf_status:
+                nf_status = [ms.group(1).strip(), ms.group(2).strip()]
+            if len(pasangan) >= 3 and nf_status:
+                break
+
+        if pasangan:
+            nf_idr = pasangan[0]
+        # Pasangan kedua diterima sebagai USD hanya kalau rasionya masuk akal
+        # sebagai kurs (miliar IDR : juta USD). Terukur 17,6-17,7 di hari-hari
+        # sampel; PER/PBV yang berdiri di posisi ketiga berasio ~7,4 dan akan
+        # ditolak kalau baris USD hilang. Gagal syarat = USD dikosongkan, BUKAN
+        # diisi angka milik baris lain.
+        if len(pasangan) > 1 and nf_idr and nf_idr[0] and pasangan[1][0]:
+            kurs = abs(nf_idr[0] / pasangan[1][0])
+            if 5 < kurs < 50:
+                nf_usd = pasangan[1]
 
     if nf_idr:
         out["nf_today_idr"]    = nf_idr[0]
@@ -493,11 +523,54 @@ def update_index(stem: str, data: dict):
     with open(idx_file, "w", encoding="utf-8") as f:
         json.dump(idx, f, ensure_ascii=False, indent=2)
 
+def swauji_net_foreign() -> None:
+    """Cukup untuk MERAH kalau ambang besaran kembali, atau USD salah ambil."""
+    B = chr(10)
+
+    def halaman(idr, usd, per, status="Net Sell Net Sell"):
+        return B.join([
+            "AVERAGE DAILY TRADING", "NET FOREIGN FUNDAMENTAL", idr,
+            "Market PER Market PBV", "Today YTD",
+            "(billion IDR) (billion IDR) (x) (x)", status, usd, per])
+
+    # Hari arus KECIL - kasus yang dulu jatuh diam-diam (4 Sep 2026).
+    r = parse_page2(halaman("-29.76 -68,054.59", "-1.69 -3,858.84", "13.14 1.76"))
+    assert r.get("nf_today_idr") == -29.76, r.get("nf_today_idr")
+    assert r.get("nf_ytd_idr") == -68054.59
+    assert r.get("nf_today_status") == "Net Sell"
+    assert r.get("nf_today_usd") == -1.69, r.get("nf_today_usd")
+
+    # Hari arus besar - tidak boleh ikut rusak.
+    r = parse_page2(halaman("1,069.28 -68,024.83", "60.45 -3,845.60", "13.18 1.77",
+                            "Net Buy Net Sell"))
+    assert r.get("nf_today_idr") == 1069.28
+    assert r.get("nf_today_status") == "Net Buy"
+    assert r.get("nf_ytd_status") == "Net Sell"
+
+    # Baris USD hilang: PER/PBV berdiri di posisi kedua dan rasionya tak masuk
+    # akal sebagai kurs -> USD dikosongkan, BUKAN diisi angka milik baris lain.
+    r = parse_page2(B.join([
+        "AVERAGE DAILY TRADING", "NET FOREIGN FUNDAMENTAL", "-29.76 -68,054.59",
+        "Market PER Market PBV", "Net Sell Net Sell", "13.14 1.76"]))
+    assert r.get("nf_today_idr") == -29.76
+    assert "nf_today_usd" not in r, r.get("nf_today_usd")
+
+    # Tanpa jangkar "NET FOREIGN": tak ada ruas sama sekali, bukan tebakan.
+    r = parse_page2("AVERAGE DAILY TRADING" + B + "123.45 678.90")
+    assert "nf_today_idr" not in r
+
+    print("swauji Net Foreign: 4 kasus lolos")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("files", nargs="*")
     ap.add_argument("--semua", action="store_true")
+    ap.add_argument("--swauji", action="store_true",
+                    help="uji pembacaan Net Foreign lalu keluar")
     args = ap.parse_args()
+    if args.swauji:
+        return swauji_net_foreign()
 
     pdfs = sorted(PDF_DIR.glob("ds_*.pdf")) if args.semua else [PDF_DIR / f for f in args.files]
     if not pdfs:
@@ -509,6 +582,15 @@ def main():
             print(f"  SKIP: {p.name}"); continue
         try:
             d = parse_pdf(p)
+            # Penjaga kebisuan. Cacat 4 Sep 2026 bersembunyi tiga hari justru
+            # karena tak ada yang berteriak: berkasnya jadi, jumlah kuncinya
+            # cuma menyusut, dan halaman mencetak "—" dengan sopan. Hari bursa
+            # yang PDF-nya terbaca tapi tak menghasilkan net asing hampir pasti
+            # parser yang meleset, bukan bursa yang tak melaporkannya.
+            if "nf_today_idr" not in d:
+                print()
+                print(f"  ::warning::{p.name}: net asing TIDAK terbaca "
+                      f"({len(d)} kunci) - periksa tata letak halaman")
             save_json(d, p.stem)
             update_index(p.stem, d)
         except Exception as e:

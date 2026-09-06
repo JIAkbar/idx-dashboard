@@ -386,6 +386,31 @@ def selisih_hari(a: str, b: str) -> int:
     return (date.fromisoformat(b) - date.fromisoformat(a)).days
 
 
+def hari_sementara_tertinggal(acuan: str) -> list[str]:
+    """Hari yang masih memakai angka cadangan padahal statistik resminya
+    sudah lewat.
+
+    Berkas harian yang PDF resminya belum terbit ditulis dari sumber cadangan
+    dan ditandai `sementara`. Itu benar untuk hari berjalan. Yang salah adalah
+    ia BERTAHAN: 31 Agu 2026 tersimpan sebagai potret cadangan 12 kunci selama
+    seminggu karena pengunduh tak pernah menengok ke belakang, dan tak ada satu
+    pun galat yang menyebutnya - halaman memang jujur menulis "angka sementara",
+    tapi tak seorang pun membaca halaman hari lampau.
+
+    Hari berjalan dan hari terakhir dibiarkan: wajar keduanya belum resmi.
+    Yang dilaporkan hanya yang lebih tua dari acuan.
+    """
+    tertinggal = []
+    for f in sorted((JSON).glob("ds_*.json")):
+        d = _muat(f)
+        if not isinstance(d, dict) or not d.get("sementara"):
+            continue
+        iso = d.get("date_iso")
+        if isinstance(iso, str) and iso < acuan:
+            tertinggal.append(iso)
+    return tertinggal
+
+
 def periksa(cetak_semua: bool = False) -> int:
     acuan = hari_bursa_terakhir()
     if not acuan:
@@ -393,6 +418,15 @@ def periksa(cetak_semua: bool = False) -> int:
               "acuan kesegaran tak ada, pemeriksaan dibatalkan")
         return 1
     print(f"hari bursa terakhir (statistik harian): {acuan}\n")
+
+    tertinggal = hari_sementara_tertinggal(acuan)
+    if tertinggal:
+        print(f"::warning::{len(tertinggal)} hari bursa masih memakai angka "
+              f"cadangan padahal statistik resminya sudah lewat: "
+              f"{', '.join(tertinggal[:8])}"
+              + (" ..." if len(tertinggal) > 8 else ""))
+        print("           tambal: download_idx.py --bulan <n> --tahun <n> "
+              "--jenis harian, lalu parse_idx_pdf.py berkasnya")
 
     hilang_penanda = penanda_sumber_hilang()
 

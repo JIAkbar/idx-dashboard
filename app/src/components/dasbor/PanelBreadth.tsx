@@ -147,6 +147,14 @@ export function PanelBreadth() {
     ? { mulai: titik[0].tanggal, akhir: titik[titik.length - 1].tanggal, hari: titik.length }
     : null
 
+  // Cakupan grafik. `titik` sudah menyaring hari tanpa breadth, dan itu benar
+  // secara aritmetika - tapi menyaring diam-diam membuat garis 20 hari yang
+  // sebenarnya digambar dari 16 hari terbaca seolah utuh. Johan 7 Sep 2026:
+  // "jika bisa data rentang waktu maka akan jadi data tebakan, BAHAYA".
+  // Ditulis hanya saat ADA yang hilang; rentang utuh tak perlu dibebani angka.
+  const hariDiminta = rentangTanggal.length
+  const hariHilang = hariDiminta - titik.length
+
   if (loading && !hari) return null
   if (!hari) return null
 
@@ -159,7 +167,17 @@ export function PanelBreadth() {
     // (Johan 30 Agu 2026).
     <section className="panel" ref={wrapRef}>
       <div className="panel-h">
-        <span className="lbl">Market Breadth (Advance/Decline) · {hari.date_id}</span>
+        <span className="lbl">
+          Market Breadth (Advance/Decline) · {hari.date_id}
+          {hariHilang > 0 && (
+            <em
+              style={{ color: 'var(--amber)', fontStyle: 'normal', marginLeft: 6 }}
+              title="Hari bursa tanpa rincian naik/turun di berkas statistiknya tidak digambar. Garisnya menyambung antar hari yang ada — bukan menebak hari yang hilang."
+            >
+              · {titik.length} dari {hariDiminta} hari berdata
+            </em>
+          )}
+        </span>
         <div className="grup-k">
           <DatePicker
             value={rentangBebas?.sampai ?? tanggalAktif ?? ''}

@@ -30,6 +30,13 @@ echo ============================================================
 echo.
 echo [1/8] Download PDF harian + mingguan + bulanan...
 "%PYEXE%" scripts\download_idx.py --hari-ini --jenis semua
+REM Susulan bulan berjalan - PDF IDX kadang terbit sesudah runner jalan
+REM (31 Agu 2026 hilang seminggu karena --hari-ini tak menengok mundur).
+REM Yang sudah ada dilewati [SKIP], jadi ini murah.
+for /f %%b in ('"%PYEXE%" -c "import datetime;print(datetime.date.today().month)"') do set BLN=%%b
+for /f %%t in ('"%PYEXE%" -c "import datetime;print(datetime.date.today().year)"') do set THN=%%t
+"%PYEXE%" scripts\download_idx.py --bulan %BLN% --tahun %THN% --jenis harian
+if errorlevel 1 echo   (susulan bulan berjalan gagal - lanjut)
 if errorlevel 1 (
   echo GAGAL download - berhenti tanpa commit.
   goto akhir
