@@ -2096,7 +2096,7 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <li><strong>URL / endpoint:</strong> IPOT <code>https://www.indopremier.com/ipotnews/nw-saham.php?level4=…</code> (<code>panen_kabar.py:281</code>, <code>panen_ipot_arsip.py:84</code>), <code>https://www.indopremier.com/module/newsresearch/ajax/ajax_generalNewsPagesMore.php</code> (<code>panen_kabar.py:245</code>); Kontan <code>https://investasi.kontan.co.id/rss</code> (<code>panen_kabar.py:452</code>); Google News <code>https://news.google.com/rss/search?q=…</code> dengan 3 kueri <code>saham IHSG when:1d</code>, <code>"Bursa Efek Indonesia" when:1d</code>, <code>emiten saham when:1d</code> (<code>panen_kabar.py:414</code>)</li>
 <li><strong>Jenis:</strong> situs (scrape) · RSS · RSS publik</li>
 <li><strong>Akses &amp; batasan:</strong> IPOT mengabaikan parameter <code>halaman</code> (halaman 0/1/5/50 membalas 200 item yang sama) → pemanen berhenti kalau halaman <strong>kembar persis</strong>, bukan kalau "tak ada item baru" (tanpa ini: 1.000 permintaan 20 menit untuk nol hasil). Google News: kueri longgar (<code>bursa when:1d</code>, <code>saham</code>) sengaja TIDAK dipakai — menyeret bursa kerja/kripto/saham AS; <strong>belum terbukti tembus dari IP datacenter GitHub</strong>. Dedup dua lapis (dalam-sumber tautan+judul+waktu; lintas-sumber judul).</li>
-<li><strong>Berkas lokal:</strong> <code>kabar.json</code> (331 item; IPOT 20 Agu 08:26, Google News 20 Agu 08:41, IDX &amp; Kontan 18 Agu 21:56 WIB), <code>ipot_arsip.json</code></li>
+<li><strong>Berkas lokal:</strong> <code>kabar.json</code> (1.487 item pada 6 Sep 2026 — jendela geser 7 hari, retensi khusus 60 hari untuk siaran pers BEI), <code>snips.json</code> (238 item, arsip 365 hari), <code>kabar-sumber-awan.json</code> (catatan sumber mana yang tembus dari awan), <code>ipot_arsip.json</code></li>
 <li><strong>Dipakai untuk:</strong> Kabar Pasar (<code>kabar.ts:94-100</code>), Beranda</li>
 <li><strong>Bukti di kode:</strong> baris di atas</li>
 </ul>
@@ -2148,6 +2148,44 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 </tbody>
 </table>
+<h3>Jadwal panen — dan kapan kabarnya benar-benar TAMPIL (6 Sep 2026, antrean #9)</h3>
+<p>Asal: Johan — <em>"bukan aturan setiap panen langsung push"</em>, lalu keputusan<br />
+<em>"kerjakan #9 B"</em>.</p>
+<table>
+<thead>
+<tr>
+<th>Jalur</th>
+<th>Jadwal (WIB)</th>
+<th>Jalan/hari</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Awan <code>panen-kabar.yml</code></td>
+<td>08:45 · 12:45 · 16:45 · 20:45 · 00:45 · 04:45</td>
+<td><strong>6</strong> (dulu 12)</td>
+</tr>
+<tr>
+<td>Rumahan <code>panen-kabar-rumah.yml</code></td>
+<td>18:15 · 19:15 · 20:15, Sen–Sab</td>
+<td>3 (tidak diubah)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Panen = tampil.</strong> Tiap jalan yang membawa perubahan langsung commit dan<br />
+push, dan halaman membaca berkas dari hasil deploy — jadi jeda panen adalah<br />
+jeda tampil. Sesudah keputusan B, kabar baru tertunda <strong>paling lama 4 jam</strong><br />
+(dulu 2), dan commit kabar turun kira-kira separuh.</p>
+<p>Yang <strong>tidak</strong> berubah, dan sempat disalahpahami sebagai masalahnya: penjaga<br />
+"commit cuma kalau berubah" sudah ada sejak awal di kedua alur<br />
+(<code>git diff --quiet</code> sebelum commit). Commit kabar yang ramai bukan commit<br />
+kosong — terukur 11–17 item kabar baru tiap jalan, dan 10 dari 53 commit pada<br />
+hari teramai (5 Sep). Karena itu yang disetel kepadatan panennya, bukan<br />
+penjaganya.</p>
+<p>Mekanisme alternatif yang sempat dibangun (panen tetap 2 jam, dorong dijeda<br />
+2×/hari lewat simpanan cache antar-jalan) <strong>tidak dipakai</strong> — keputusan Johan<br />
+B. Ia menukar kebisingan git dengan kabar basi sampai 12 jam, dan menambah<br />
+satu tempat penyimpanan antar-jalan yang bisa hilang.</p>
 
 </div>
 </div></div>

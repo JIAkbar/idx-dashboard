@@ -63,7 +63,34 @@ on:
     # luar jam bursa juga, jadi cakupan 24 jam masuk akal untuk mereka. Yang
     # tak tembus dari awan (IDX, Kontan) tetap tak tembus — itu blokir per-IP
     # yang sudah divonis permanen di komentar kepala berkas ini.
-    - cron: '0 */2 * * *'
+    #
+    # ── 6 Sep 2026: 2 jam → 4 jam (antrean #9, pilihan B) ────────────────────
+    # Johan: *"bukan aturan setiap panen langsung push"*, lalu *"kerjakan #9 B"*.
+    #
+    # Yang diubah HANYA kepadatannya. Penjaga "commit cuma kalau berubah" sudah
+    # ada sejak awal (langkah "Commit kalau ada perubahan" di bawah), jadi yang
+    # membuat riwayat ramai bukan commit kosong melainkan kabar yang memang
+    # benar-benar baru: terukur 11–17 item baru tiap jalan, 3–10 commit per
+    # hari. Empat jam memangkas jalannya 12 → 6 dan commitnya kira-kira
+    # separuh.
+    #
+    # HARGA YANG DIBAYAR, disebut supaya tidak ditemukan belakangan: halaman
+    # membaca berkas dari hasil deploy, jadi kabar baru bisa tertunda **sampai
+    # 4 jam** (dulu 2). Itu memang yang dipilih; kalau kelak kesegaran lebih
+    # penting, kembalikan angkanya di baris cron ini — tak ada mesin lain yang
+    # perlu disentuh.
+    #
+    # Menit :45 dan jam ganjil dipilih supaya tak menabrak jadwal lain yang
+    # sudah dihitung di berkas-berkas tetangga (semua UTC):
+    #   02:00 jaga-deploy · 11:15/12:15/13:15 panen-kabar-rumah ·
+    #   11:30 panen-harian-rumah · 12:30 & 13:00 update-rumah
+    # Jarak terdekat jadi 30 menit (13:15 rumahan → 13:45 awan) — dan keduanya
+    # berbagi `concurrency: panen-kabar`, jadi kalaupun bertumpuk ia mengantre,
+    # bukan berebut commit.
+    #
+    #   UTC   01:45 05:45 09:45 13:45 17:45 21:45
+    #   WIB   08:45 12:45 16:45 20:45 00:45 04:45
+    - cron: '45 1,5,9,13,17,21 * * *'
   workflow_dispatch:
     inputs:
       sumber:

@@ -414,7 +414,7 @@ Kamus ruas (12 ruas per bar, semuanya diarsipkan mentah):
 - **URL / endpoint:** IPOT `https://www.indopremier.com/ipotnews/nw-saham.php?level4=…` (`panen_kabar.py:281`, `panen_ipot_arsip.py:84`), `https://www.indopremier.com/module/newsresearch/ajax/ajax_generalNewsPagesMore.php` (`panen_kabar.py:245`); Kontan `https://investasi.kontan.co.id/rss` (`panen_kabar.py:452`); Google News `https://news.google.com/rss/search?q=…` dengan 3 kueri `saham IHSG when:1d`, `"Bursa Efek Indonesia" when:1d`, `emiten saham when:1d` (`panen_kabar.py:414`)
 - **Jenis:** situs (scrape) · RSS · RSS publik
 - **Akses & batasan:** IPOT mengabaikan parameter `halaman` (halaman 0/1/5/50 membalas 200 item yang sama) → pemanen berhenti kalau halaman **kembar persis**, bukan kalau "tak ada item baru" (tanpa ini: 1.000 permintaan 20 menit untuk nol hasil). Google News: kueri longgar (`bursa when:1d`, `saham`) sengaja TIDAK dipakai — menyeret bursa kerja/kripto/saham AS; **belum terbukti tembus dari IP datacenter GitHub**. Dedup dua lapis (dalam-sumber tautan+judul+waktu; lintas-sumber judul).
-- **Berkas lokal:** `kabar.json` (331 item; IPOT 20 Agu 08:26, Google News 20 Agu 08:41, IDX & Kontan 18 Agu 21:56 WIB), `ipot_arsip.json`
+- **Berkas lokal:** `kabar.json` (1.487 item pada 6 Sep 2026 — jendela geser 7 hari, retensi khusus 60 hari untuk siaran pers BEI), `snips.json` (238 item, arsip 365 hari), `kabar-sumber-awan.json` (catatan sumber mana yang tembus dari awan), `ipot_arsip.json`
 - **Dipakai untuk:** Kabar Pasar (`kabar.ts:94-100`), Beranda
 - **Bukti di kode:** baris di atas
 
@@ -426,6 +426,33 @@ Kamus ruas (12 ruas per bar, semuanya diarsipkan mentah):
 | Google News 3 kueri | ✅ | 45 mentah → 40 unik (20 Agu) | Johan (20 Agu) |
 | Google News per emiten (960 kueri) | ❌ | 960 permintaan/hari tak masuk akal | Johan (20 Agu, tercatat `panen-kabar.md`) |
 | Sumber kabar lain (CNBC Indonesia, Bisnis, Investor Daily, emitennews) | ❓ | belum diuji | **belum diputuskan** |
+
+### Jadwal panen — dan kapan kabarnya benar-benar TAMPIL (6 Sep 2026, antrean #9)
+
+Asal: Johan — *"bukan aturan setiap panen langsung push"*, lalu keputusan
+*"kerjakan #9 B"*.
+
+| Jalur | Jadwal (WIB) | Jalan/hari |
+|---|---|---|
+| Awan `panen-kabar.yml` | 08:45 · 12:45 · 16:45 · 20:45 · 00:45 · 04:45 | **6** (dulu 12) |
+| Rumahan `panen-kabar-rumah.yml` | 18:15 · 19:15 · 20:15, Sen–Sab | 3 (tidak diubah) |
+
+**Panen = tampil.** Tiap jalan yang membawa perubahan langsung commit dan
+push, dan halaman membaca berkas dari hasil deploy — jadi jeda panen adalah
+jeda tampil. Sesudah keputusan B, kabar baru tertunda **paling lama 4 jam**
+(dulu 2), dan commit kabar turun kira-kira separuh.
+
+Yang **tidak** berubah, dan sempat disalahpahami sebagai masalahnya: penjaga
+"commit cuma kalau berubah" sudah ada sejak awal di kedua alur
+(`git diff --quiet` sebelum commit). Commit kabar yang ramai bukan commit
+kosong — terukur 11–17 item kabar baru tiap jalan, dan 10 dari 53 commit pada
+hari teramai (5 Sep). Karena itu yang disetel kepadatan panennya, bukan
+penjaganya.
+
+Mekanisme alternatif yang sempat dibangun (panen tetap 2 jam, dorong dijeda
+2×/hari lewat simpanan cache antar-jalan) **tidak dipakai** — keputusan Johan
+B. Ia menukar kebisingan git dengan kabar basi sampai 12 jam, dan menambah
+satu tempat penyimpanan antar-jalan yang bisa hilang.
 
 ## indexalpha (`api.indexalpha.id`) — ❓ belum dipastikan
 
