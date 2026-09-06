@@ -56,6 +56,14 @@
   border-bottom: 1px solid rgba(127, 127, 127, .28);
   border-bottom-color: color-mix(in srgb, currentColor 22%, transparent);
   scroll-snap-type: x proximity;
+  /* Lebar mengikuti ISI supaya garis dasar berhenti tepat di ujung tab
+     terakhir, bukan memanjang melintasi sisa lebar halaman (Johan 7 Sep
+     2026: "garis nya tembus dari menu chart tidak di maksimalkan sampai
+     ujung menu saja"). `max-width:100%` menjaga perilaku gulir di layar
+     sempit: begitu isinya lebih lebar dari layar, wadahnya berhenti di
+     100% dan `overflow-x:auto` di atas yang mengambil alih. */
+  width: max-content;
+  max-width: 100%;
 }
 .tab-halaman::-webkit-scrollbar { display: none; }
 

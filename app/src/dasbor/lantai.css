@@ -630,7 +630,14 @@
 .lantai .tv-baris-tab .tabs{margin-bottom:0}
 /* Kepala panel tanpa judul: cuma rumah bagi tombolnya. Tanpa tinggi minimum,
    `panel-h` yang kosong judul menyusut sampai tombolnya menempel ke bingkai. */
-.lantai .tv-kepala-tipis{justify-content:flex-end;min-height:34px}
+/* `.panel-h.tv-kepala-tipis`, BUKAN `.tv-kepala-tipis` sendirian.
+   `.lantai .panel-h` memasang `justify-content:space-between` dan ia
+   didefinisikan JAUH DI BAWAH aturan ini dengan spesifisitas yang sama,
+   jadi versi pertama tak pernah berlaku dan tombol tunggal jatuh ke kiri.
+   Menaikkan spesifisitas, bukan memindahkan barisnya: urutan berkas bisa
+   berubah lagi oleh penyuntingan berikutnya, spesifisitas tidak. Ini
+   jebakan urutan selector yang KETIGA hari ini (#26 dan #2 B dua lainnya). */
+.lantai .panel-h.tv-kepala-tipis{justify-content:flex-end;min-height:34px}
 .lantai .hero .harga{border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:center}
 .lantai .hero .harga .px{font-family:var(--mono);font-size:30px;font-weight:700;line-height:1.1}
 .lantai .hero .harga .rng{margin-top:10px}
