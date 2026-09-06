@@ -72,6 +72,12 @@ for /f %%y in ('"%PYEXE%" -c "import datetime;print(datetime.date.today().year)"
 "%PYEXE%" scripts\bangun_broker_tahunan.py --tahun %TAHUN_KINI% --paralel 8
 "%PYEXE%" scripts\bangun_kategori_broker.py
 "%PYEXE%" scripts\riset\kartu_analisa.py --semua --tulis
+REM Peluang historis seluruh emiten. Dulu YATIM: nol pemanggil di bat
+REM maupun CI, jadi angkanya membeku dan tak seorang pun tahu - stempel
+REM `harga_pada` yang dipasang 6 Sep 2026 langsung memperlihatkannya
+REM tertinggal 5 hari bursa. Membaca ohlc/ yang baru dijahit langkah [B].
+"%PYEXE%" scripts\bangun_prob.py
+if errorlevel 1 echo   (peluang gagal - lanjut)
 REM Rezim pasar: dulu HANYA di bat buka-laptop. Hari Johan tak membuka
 REM laptop, halaman Rezim Pasar diam memakai angka kemarin tanpa satu pun
 REM galat. Membaca ohlc/ + ohlc/IHSG.json yang baru dijahit langkah [B].
@@ -139,8 +145,8 @@ if errorlevel 1 echo   (info stockbit gagal - lanjut)
 
 echo.
 echo [F] Commit data hasil panen
-git add data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/screener.json data-idx/json/pola_screener.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/ihsg_ohlc_ringkas.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/keystats_stockbit data-idx/json/info_stockbit data-idx/json/rekomendasi data-idx/json/seasonality data-idx/json/rezim_pasar.json data-idx/json/bandarmologi.json 2>nul
-git commit -m "data: panen sore otomatis (%date%)" -- data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/screener.json data-idx/json/pola_screener.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/ihsg_ohlc_ringkas.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/keystats_stockbit data-idx/json/info_stockbit data-idx/json/rekomendasi data-idx/json/seasonality data-idx/json/rezim_pasar.json data-idx/json/bandarmologi.json
+git add data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/prob data-idx/json/screener.json data-idx/json/pola_screener.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/ihsg_ohlc_ringkas.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/keystats_stockbit data-idx/json/info_stockbit data-idx/json/rekomendasi data-idx/json/seasonality data-idx/json/rezim_pasar.json data-idx/json/bandarmologi.json 2>nul
+git commit -m "data: panen sore otomatis (%date%)" -- data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/prob data-idx/json/screener.json data-idx/json/pola_screener.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/ihsg_ohlc_ringkas.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/keystats_stockbit data-idx/json/info_stockbit data-idx/json/rekomendasi data-idx/json/seasonality data-idx/json/rezim_pasar.json data-idx/json/bandarmologi.json
 git push origin main
 
 :akhir

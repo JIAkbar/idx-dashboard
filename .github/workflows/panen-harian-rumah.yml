@@ -202,6 +202,11 @@ jobs:
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/riset/kartu_analisa.py --semua --tulis
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::kartu_analisa gagal" }
+          # Peluang historis seluruh emiten. Yatim sampai 6 Sep 2026 -- nol
+          # pemanggil di CI maupun bat, jadi angkanya membeku tanpa satu pun
+          # galat. Membaca arsip harga yang sama dengan kartu_analisa.
+          & "${{ steps.py.outputs.exe }}" scripts/bangun_prob.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_prob gagal" }
 
       # Kandidat Deep Dive dihitung SESUDAH kartu (butuh OHLC + asing yang
       # sudah segar). Keluarannya memandu setoran Broker Summary hari
