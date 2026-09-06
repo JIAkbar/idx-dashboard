@@ -7,7 +7,20 @@ venv/
 
 # File kerja lokal — tidak perlu di GitHub
 _lokal/
-*.bat
+
+# `*.bat` DICABUT 6 Sep 2026 atas keputusan Johan ("kerjakan #11", antrean #11).
+# Alasannya: keenam JALANKAN_*.bat bukan alat kerja lokal, mereka PIPA PANEN
+# PRODUKSI — merekalah yang memanggil pemanen, membangun turunan, meng-commit,
+# dan mendorong ke repo ini tiap hari. Selama diabaikan, otomatisasi yang
+# menulis ke repo publik tiap hari tak bisa ditinjau lewat repo, tak
+# terpulihkan kalau mesinnya hilang, dan tak dimiliki mesin atau sesi lain.
+# Ketahuan lewat #10: bat membangun sembilan keluaran lalu tak menyebutnya
+# saat commit — cacat yang hidup berbulan-bulan justru karena berkasnya tak
+# pernah ikut ditinjau siapa pun.
+# Diperiksa sebelum dilacak: 6 berkas, 602 baris, NOL nilai rahasia dan nol
+# jalur pengguna (pindaian per berkas ada di Papan Pekerjaan).
+# Bat yang memang lokal tetap bisa disembunyikan — taruh di `_lokal/`, yang
+# masih diabaikan seluruhnya di baris atas.
 
 # Bahan mentah manual (bukan bagian pipeline otomatis)
 data emiten/

@@ -207,6 +207,8 @@ run terakhir yang benar-benar diperiksa, bukan dari niat workflow-nya.**
 
 ## Diperbarui 28 Agustus 2026 — rantai panen → halaman DISAMBUNG PENUH (audit atas keluhan Johan *"bnyk yang setelah panen data, page-page itu tidak saling terhubung"*)
 
+> **6 Sep 2026 — bat pipa panen kini TERLACAK git** (keputusan Johan, antrean #11). Sampai hari ini `.gitignore` mengabaikan `*.bat` dengan alasan "file kerja lokal", padahal keenam `JALANKAN_*.bat` inilah yang memanggil pemanen, membangun turunan, meng-commit, dan mendorong ke repo tiap hari. Akibat nyatanya terlihat di #10: bat buka-laptop membangun sembilan keluaran lalu tak menyebut satu pun saat commit, dan cacat itu hidup berbulan-bulan justru karena berkasnya tak pernah ikut ditinjau. Sekarang keenamnya bisa dibaca, ditinjau, dan dipulihkan dari repo. Diperiksa sebelum dilacak: 6 berkas, 602 baris, **nol** nilai rahasia dan **nol** jalur pengguna; `set PYEXE` dibuat bisa ditimpa lingkungan supaya berkasnya tak mengunci satu mesin.
+
 Dua bat lokal (`JALANKAN_PANEN_SORE.bat` 18:00 & `JALANKAN_BUKA_LAPTOP.bat` ONLOGON) kini menjalankan SEMUA turunan halaman — sekali panen, semua halaman segar. Blok [E] pembangun (28 Agu pagi) + blok [E2] hasil audit (28 Agu siang):
 
 | Sumber/turunan | Halaman pemakai | Asal data | Isi terakhir | Berkas | Otomatis? | Pemicu |

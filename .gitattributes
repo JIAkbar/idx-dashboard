@@ -1,0 +1,9 @@
+# Berkas batch WAJIB CRLF di pohon kerja mana pun.
+#
+# Bat ini penuh label dan lompatan (`:gerbang_token`, `:token_ok`,
+# `:lewati_push`), dan cmd.exe tidak memperlakukan berkas .bat berakhiran LF
+# dengan cara yang sama — `goto` bisa gagal senyap. `core.autocrlf=true` di
+# mesin penulisnya sudah cukup untuk mesin ITU; baris ini yang membuatnya
+# benar juga di checkout yang setelannya berbeda. Ditulis 6 Sep 2026, saat
+# bat mulai dilacak (antrean #11).
+*.bat text eol=crlf
