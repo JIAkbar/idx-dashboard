@@ -11,11 +11,12 @@
  */
 import type { CanvasRenderingTarget2D } from 'fancy-canvas'
 import type {
-  IPanePrimitive, IPanePrimitivePaneView, IPrimitivePaneRenderer,
+  IChartApiBase, IPanePrimitive, IPanePrimitivePaneView, IPrimitivePaneRenderer,
   ISeriesApi, PaneAttachedParameter, SeriesType, Time,
 } from 'lightweight-charts'
 import type { Pivot } from '../skor/types'
 import type { HasilCpr } from './chartAnalitik'
+import { garisPenunjuk, kolomLabel } from './tataLabelLevel'
 
 export interface DataCpr {
   pivot: Pivot
@@ -33,6 +34,7 @@ const GARIS_PITA = 'rgba(148, 116, 246, 0.55)'
 
 export class PitaCpr implements IPanePrimitive<Time> {
   private ambilSeri: () => ISeriesApi<SeriesType> | null
+  private chart: IChartApiBase<Time> | null = null
   private data: DataCpr | null = null
   private mintaGambar: (() => void) | null = null
   private views: IPanePrimitivePaneView[] = [{ renderer: () => this.renderer() }]
@@ -42,10 +44,12 @@ export class PitaCpr implements IPanePrimitive<Time> {
   }
 
   attached(p: PaneAttachedParameter<Time>): void {
+    this.chart = p.chart
     this.mintaGambar = p.requestUpdate
   }
 
   detached(): void {
+    this.chart = null
     this.mintaGambar = null
   }
 
@@ -137,16 +141,23 @@ export class PitaCpr implements IPanePrimitive<Time> {
           }
           ctx.setLineDash([])
 
-          // Dodge: urut dari atas, tiap label minimal setinggi-teks di bawah
-          // label sebelumnya. Garisnya tetap di harga aslinya — hanya teksnya
-          // yang bergeser supaya semua terbaca.
+          // Anti-tumpuk lewat kolom BERSAMA, bukan penata lokal: label RBS dan
+          // AVG broker menempati kolom yang sama di frame yang sama, dan
+          // penata lokal buta terhadap keduanya (#47). Garisnya tetap di harga
+          // aslinya — hanya teksnya yang bergeser.
+          const kolom = this.chart ? kolomLabel(this.chart) : null
+          kolom?.mulai('pita-cpr')
+          const batas = { atas: 0, bawah: bitmapSize.height }
           labelAntri.sort((a, b) => a.y - b.y)
-          let batasBawah = -Infinity
           for (const l of labelAntri) {
-            const y = Math.max(l.y, batasBawah + tinggiTeks)
-            batasBawah = y
+            const yAtas = kolom
+              ? kolom.pesan(l.y - tinggiTeks / 2, tinggiTeks, batas)
+              : l.y - tinggiTeks / 2
+            const yTengah = yAtas + tinggiTeks / 2
             ctx.fillStyle = l.warna
-            ctx.fillText(l.teks, xTeks, y)
+            ctx.fillText(l.teks, xTeks, yTengah)
+            const kiri = xTeks - ctx.measureText(l.teks).width
+            garisPenunjuk(ctx, kiri - 2 * hp, kiri - 10 * hp, yTengah, l.y, l.warna, tebal)
           }
           ctx.restore()
         })

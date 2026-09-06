@@ -13,9 +13,10 @@
  */
 import type { CanvasRenderingTarget2D } from 'fancy-canvas'
 import type {
-  IPanePrimitive, IPanePrimitivePaneView, IPrimitivePaneRenderer,
+  IChartApiBase, IPanePrimitive, IPanePrimitivePaneView, IPrimitivePaneRenderer,
   ISeriesApi, PaneAttachedParameter, PrimitiveHoveredItem, SeriesType, Time,
 } from 'lightweight-charts'
+import { garisPenunjuk, kolomLabel } from './tataLabelLevel'
 
 export interface GarisBroker {
   broker: string
@@ -57,6 +58,7 @@ export class GarisAvgBroker implements IPanePrimitive<Time> {
    *  jenis chart (lilin ↔ garis), dan referensi beku akan menggambar pakai
    *  seri yang sudah dibongkar. */
   private ambilSeri: () => ISeriesApi<SeriesType> | null
+  private chart: IChartApiBase<Time> | null = null
   private garis: GarisBroker[] = []
   private mintaGambar: (() => void) | null = null
   /** Kotak pill terakhir yang digambar, RUANG MEDIA — bahan hitTest supaya
@@ -72,10 +74,12 @@ export class GarisAvgBroker implements IPanePrimitive<Time> {
   }
 
   attached(p: PaneAttachedParameter<Time>): void {
+    this.chart = p.chart
     this.mintaGambar = p.requestUpdate
   }
 
   detached(): void {
+    this.chart = null
     this.mintaGambar = null
   }
 
@@ -116,11 +120,15 @@ export class GarisAvgBroker implements IPanePrimitive<Time> {
           ctx.font = `600 ${Math.round(FONT_PX * vp)}px system-ui, sans-serif`
           ctx.textBaseline = 'middle'
           const tebal = Math.max(1, Math.round(vp))
-          // Label didorong turun kalau bertindih dengan label sebelumnya —
-          // dua broker berharga rata-rata mirip lazim, dan pill yang
-          // bertumpuk tak terbaca sama sekali.
+          // Label digeser kalau bertindih — dua broker berharga rata-rata
+          // mirip itu lazim, dan pill yang bertumpuk tak terbaca sama sekali.
+          // Kolomnya BERSAMA dengan Pivot/CPR dan RBS (#47): penata lokal
+          // hanya melihat pill-nya sendiri, jadi ia rapi terhadap sesama AVG
+          // dan tetap menabrak label indikator lain di kolom yang sama.
           const tinggiPill = Math.round(FONT_PX * vp) + PAD_Y * 2 * vp
-          let batasBawahTerpakai = -Infinity
+          const kolom = this.chart ? kolomLabel(this.chart) : null
+          kolom?.mulai('avg-broker')
+          const batas = { atas: 0, bawah: bitmapSize.height }
           for (const g of [...baris].sort((a, b) => a.y - b.y)) {
             const y = Math.round(g.y * vp)
             ctx.strokeStyle = g.warna
@@ -136,9 +144,9 @@ export class GarisAvgBroker implements IPanePrimitive<Time> {
             const lebarTeks = ctx.measureText(teks).width
             const lebarPill = lebarTeks + PAD_X * 2 * hp
             const x = bitmapSize.width - TEPI_KANAN * hp - lebarPill
-            let yPill = y - tinggiPill / 2
-            if (yPill < batasBawahTerpakai + 2 * vp) yPill = batasBawahTerpakai + 2 * vp
-            batasBawahTerpakai = yPill + tinggiPill
+            const yPill = kolom
+              ? kolom.pesan(y - tinggiPill / 2, tinggiPill + 2 * vp, batas)
+              : y - tinggiPill / 2
             ctx.fillStyle = g.warna
             const r = tinggiPill / 2
             ctx.beginPath()
@@ -151,6 +159,7 @@ export class GarisAvgBroker implements IPanePrimitive<Time> {
             ctx.stroke()
             ctx.fillStyle = teksKontras(g.warna)
             ctx.fillText(teks, x + PAD_X * hp, yPill + tinggiPill / 2)
+            garisPenunjuk(ctx, x, x - 10 * hp, yPill + tinggiPill / 2, y, g.warna, tebal)
             this.pillRect.push({
               x0: x / hp, x1: (x + lebarPill) / hp,
               y0: yPill / vp, y1: (yPill + tinggiPill) / vp,

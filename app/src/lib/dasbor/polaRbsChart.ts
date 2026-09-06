@@ -22,6 +22,7 @@ import type {
   ISeriesApi, PaneAttachedParameter, PrimitiveHoveredItem, SeriesType, Time,
 } from 'lightweight-charts'
 import type { LevelRbs, StatusRbs } from './polaRbs'
+import { garisPenunjuk, kolomLabel } from './tataLabelLevel'
 
 const FONT_PX = 10
 const PAD_X = 6
@@ -191,22 +192,27 @@ export class PolaRbsChart implements IPanePrimitive<Time> {
             labelAntri.push({ y, teks, warna, id: `rbs:${i}` })
           })
 
-          // Badge pill kanan, dodge anti-tumpuk — persis pola garisAvgBroker.ts.
+          // Badge pill kanan. Anti-tumpuknya lewat kolom BERSAMA, bukan
+          // penata lokal: pill RBS dulu bertindih dengan label Pivot/CPR
+          // justru karena keduanya rapi sendiri-sendiri dan buta satu sama
+          // lain (#47). Jarak 2px antar pill ikut dipesan supaya dua pill
+          // bersebelahan tak berdempetan.
           const tinggiPill = Math.round(FONT_PX * vp) + PAD_Y * 2 * vp
-          let batasBawah = -Infinity
+          const kolom = kolomLabel(chart)
+          kolom.mulai('rbs')
+          const batas = { atas: 0, bawah: bitmapSize.height }
           for (const l of [...labelAntri].sort((a, b) => a.y - b.y)) {
             const lebarTeks = ctx.measureText(l.teks).width
             const lebarPill = lebarTeks + PAD_X * 2 * hp
             const x = bitmapSize.width - TEPI_KANAN * hp - lebarPill
-            let yPill = l.y - tinggiPill / 2
-            if (yPill < batasBawah + 2 * vp) yPill = batasBawah + 2 * vp
-            batasBawah = yPill + tinggiPill
+            const yPill = kolom.pesan(l.y - tinggiPill / 2, tinggiPill + 2 * vp, batas)
             ctx.fillStyle = l.warna
             ctx.beginPath()
             ctx.roundRect(x, yPill, lebarPill, tinggiPill, tinggiPill / 2)
             ctx.fill()
             ctx.fillStyle = '#fff'
             ctx.fillText(l.teks, x + PAD_X * hp, yPill + tinggiPill / 2)
+            garisPenunjuk(ctx, x, x - 10 * hp, yPill + tinggiPill / 2, l.y, l.warna, tebal)
             pillRectBaru.push({
               x0: x / hp, x1: (x + lebarPill) / hp,
               y0: yPill / vp, y1: (yPill + tinggiPill) / vp,
