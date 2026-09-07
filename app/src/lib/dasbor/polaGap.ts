@@ -83,6 +83,13 @@ export interface GapEvent {
   /** Data berakhir sebelum zonanya habis — sensor kanan, wajib disebut di
    *  layar dan di statistik. 19,8% gap emiten mati kena ini. */
   dataHabis: boolean
+  /** Kedua barnya dipisahkan BATAS SESI, bukan berurutan di dalam satu sesi
+   *  perdagangan (§5). Di kerangka intraday inilah mayoritasnya: tutup 15:00
+   *  ke buka 09:00 esoknya, dan jeda siang. Ruang kosongnya nyata, tapi
+   *  artinya berbeda — tak ada yang bisa memperdagangkannya karena bursanya
+   *  tutup, bukan karena harga melompat. Selalu `false` di kerangka harian ke
+   *  atas: di sana tiap bar memang satu sesi. */
+  antarSesi: boolean
 }
 
 // Parameter algoritme (spek §2) — JANGAN diubah tanpa entri Metodologi +
@@ -120,8 +127,41 @@ export function potongZona(sisa: Potongan[], l: number, h: number): Potongan[] {
  * patah, tapi TANPA-nya penyaring bar hantu mati dan hasilnya kembali memuat
  * gap yang "terisi" oleh bar tanpa transaksi.
  */
+/**
+ * Langkah waktu LAZIM antar bar, milidetik — modus selisih dua bar berurutan.
+ *
+ * Diukur dari deretnya sendiri, bukan ditebak dari jam bursa: sesi Jumat lebih
+ * pendek, ada libur setengah hari, dan bar tanpa transaksi dibuang di emiten
+ * tipis. Yang dicari cuma "berapa jarak yang normal di deret ini" supaya
+ * lompatan yang JAUH lebih besar bisa dikenali sebagai batas sesi.
+ *
+ * 0 untuk deret harian/pekanan/bulanan (waktunya cuma tanggal) — di sana
+ * konsep batas sesi tak berlaku.
+ */
+function langkahLazim(bars: LilinData[]): number {
+  if (bars.length < 3 || bars[0].time.length <= 10) return 0
+  const hitung = new Map<number, number>()
+  for (let i = 1; i < bars.length; i++) {
+    const d = Date.parse(bars[i].time.replace(' ', 'T') + 'Z') - Date.parse(bars[i - 1].time.replace(' ', 'T') + 'Z')
+    if (d > 0) hitung.set(d, (hitung.get(d) ?? 0) + 1)
+  }
+  let modus = 0
+  let terbanyak = 0
+  for (const [d, n] of hitung) if (n > terbanyak) { modus = d; terbanyak = n }
+  return modus
+}
+
 export function cariGap(bars: LilinData[], volume?: number[]): GapEvent[] {
   const adaVolume = (i: number) => (volume ? (volume[i] ?? 0) > 0 : true)
+  const langkah = langkahLazim(bars)
+  const antarSesiDi = (i: number): boolean => {
+    if (langkah === 0) return false
+    const a = Date.parse(bars[i - 1].time.replace(' ', 'T') + 'Z')
+    const b = Date.parse(bars[i].time.replace(' ', 'T') + 'Z')
+    // Ambang 1,5× langkah lazim: cukup longgar untuk satu bar yang dibuang
+    // karena nol transaksi, cukup ketat untuk menangkap jeda siang.
+    return b - a > langkah * 1.5
+  }
   const keluar: GapEvent[] = []
 
   for (let i = 1; i < bars.length; i++) {
@@ -172,6 +212,7 @@ export function cariGap(bars: LilinData[], volume?: number[]): GapEvent[] {
       barTerisi,
       bertahanBar: barTerisi ?? (bars.length - 1 - i),
       dataHabis: barTerisi === undefined,
+      antarSesi: antarSesiDi(i),
     })
   }
   return keluar

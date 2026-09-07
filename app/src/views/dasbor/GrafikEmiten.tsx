@@ -664,6 +664,14 @@ export function GrafikEmiten() {
   /** Overlay pola RBS (spek §1) — TOGGLE SENDIRI, tak boleh dicampur dengan
    *  Gap (ketetapan Johan). Hanya kerangka harian — algoritmenya diuji &
    *  dikalibrasi di bar harian (spek §3 intraday di luar lingkup). */
+  /**
+   * Kerangka yang punya mesin TERKALIBRASI untuk tiap pola. Satu tempat,
+   * dipakai efek datanya DAN tombolnya — kalau keduanya punya daftar
+   * sendiri, yang terjadi adalah tombol hidup yang menggambar nol garis
+   * (atau sebaliknya) tanpa satu pun galat.
+   */
+  const rbsBisa = kerangka === 'D' || kerangka === 'W' || kerangka === 'M'
+  const gapBisa = rbsBisa || kerangka === '1h' || kerangka === '4h'
   const [rbsAktif, setRbsAktif] = useState(false)
   const polaRbsRef = useRef<PolaRbsChart | null>(null)
   /** Overlay pola Gap (spek §2) — TOGGLE SENDIRI, berdiri sendiri dari RBS. */
@@ -1526,13 +1534,12 @@ export function GrafikEmiten() {
   useEffect(() => {
     const prim = polaRbsRef.current
     if (!prim) return
-    const bisa = kerangka === 'D' || kerangka === 'W' || kerangka === 'M'
-    if (!rbsAktif || !bisa || penuh.lilin.length === 0) { prim.setData({ level: [], hargaTerakhir: null }); return }
+    if (!rbsAktif || !rbsBisa || penuh.lilin.length === 0) { prim.setData({ level: [], hargaTerakhir: null }); return }
     prim.setData({
       level: cariRbs(penuh.lilin, paramRbs(kerangka)),
       hargaTerakhir: penuh.lilin[penuh.lilin.length - 1]?.close ?? null,
     })
-  }, [rbsAktif, kerangka, penuh.lilin])
+  }, [rbsAktif, rbsBisa, penuh.lilin])
 
   /**
    * Data primitive Pola Gap (spek §2) — sama alasannya dengan RBS: seluruh
@@ -1542,12 +1549,15 @@ export function GrafikEmiten() {
   useEffect(() => {
     const prim = polaGapRef.current
     if (!prim) return
-    if (!gapAktif || kerangka !== 'D' || penuh.lilin.length === 0) { prim.setData({ gap: [], waktuTerakhir: null }); return }
+    // Yang di bawah 1 jam masih dijegal (`gapBisa`): pada 5-15 menit
+    // hampir tiap batas bar memberi ruang kosong sekecil satu tick, dan
+    // kanvas jadi kabut kotak yang tak menjawab apa pun.
+    if (!gapAktif || !gapBisa || penuh.lilin.length === 0) { prim.setData({ gap: [], waktuTerakhir: null }); return }
     prim.setData({
-      gap: cariGap(penuh.lilin),
+      gap: cariGap(penuh.lilin, penuh.volume.map((v) => v.value)),
       waktuTerakhir: penuh.lilin[penuh.lilin.length - 1]?.time ?? null,
     })
-  }, [gapAktif, kerangka, penuh.lilin])
+  }, [gapAktif, gapBisa, penuh.lilin, penuh.volume])
 
   /**
    * Chip rentang yang tak punya riwayat untuk ditampilkan — DINONAKTIFKAN,
@@ -3503,16 +3513,16 @@ export function GrafikEmiten() {
               seperti CPR/Bubble di atas. */}
           <TombolIkon d={IKON_RBS} ukuranIkon={14}
             className={rbsAktif ? 'on' : ''}
-            disabled={kerangka !== 'D'}
-            label={kerangka !== 'D'
-              ? 'Pola RBS hanya untuk kerangka harian'
+            disabled={!rbsBisa}
+            label={!rbsBisa
+              ? 'Pola RBS: harian, pekanan, bulanan — intraday belum dikalibrasi'
               : rbsAktif ? 'Sembunyikan pola RBS' : 'Pola RBS — level resistance/breakout/support dari histori harian; deskriptif, bukan sinyal beli'}
             onClick={() => setRbsAktif((v) => !v)} />
           <TombolIkon d={IKON_GAP} ukuranIkon={14}
             className={gapAktif ? 'on' : ''}
-            disabled={kerangka !== 'D'}
-            label={kerangka !== 'D'
-              ? 'Pola Gap hanya untuk kerangka harian'
+            disabled={!gapBisa}
+            label={!gapBisa
+              ? 'Pola Gap: 1 jam ke atas — di bawah itu tiap batas bar jadi celah sekecil satu tick'
               : gapAktif ? 'Sembunyikan pola Gap' : 'Pola Gap — zona celah harga & target gap-fill; deskriptif, bukan sinyal beli'}
             onClick={() => setGapAktif((v) => !v)} />
 

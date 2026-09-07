@@ -174,7 +174,10 @@ export class PolaGapChart implements IPanePrimitive<Time> {
               : g.status === 'sebagian'
                 ? `sisa ${Math.round(g.sisaPct)}%`
                 : g.dataHabis ? `bertahan ${g.bertahanBar}b · data habis` : `bertahan ${g.bertahanBar}b`
-            const teks = `GAP ${tanda}${g.gapPct.toFixed(1)}% · ${keadaan}`
+            // Gap antar-sesi ditandai, bukan disamakan: ruang kosongnya nyata
+            // tapi sebabnya bursanya tutup, bukan harga yang melompat.
+            const awalan = g.antarSesi ? 'SESI' : 'GAP'
+            const teks = `${awalan} ${tanda}${g.gapPct.toFixed(1)}% · ${keadaan}`
             labelAntri.push({
               y: yTengah, x1,
               teks, warna: habis ? WARNA_PILL_TERISI : WARNA_PILL_TERBUKA, id: `gap:${i}`,

@@ -214,3 +214,52 @@ describe('bar bervolume nol tak membentuk dan tak mengisi', () => {
     expect(tanpaPenyaring[0].sisa.length).toBeGreaterThan(denganHantu[0].sisa.length)
   })
 })
+
+describe('gap ANTAR-SESI di kerangka intraday (#50 §5)', () => {
+  /** Bar 1 jam, sesi IDX disederhanakan: 09-11 lalu 13-15. */
+  const jam = (tgl: string, j: number, o: number, h: number, l: number, c: number): LilinData => ({
+    time: `${tgl} ${String(j).padStart(2, '0')}:00`, open: o, high: h, low: l, close: c,
+  })
+
+  it('lompatan SEMALAM ditandai antarSesi, bukan disamakan dengan celah intrahari', () => {
+    const b: LilinData[] = [
+      jam('2026-09-01', 9, 100, 101, 99, 100),
+      jam('2026-09-01', 10, 100, 101, 99, 100),
+      jam('2026-09-01', 11, 100, 101, 99, 100),
+      jam('2026-09-01', 13, 100, 101, 99, 100),
+      jam('2026-09-01', 14, 100, 101, 99, 100),
+      jam('2026-09-01', 15, 100, 101, 99, 100),
+      // Buka esok jauh di atas high kemarin -> zona 101..110.
+      jam('2026-09-02', 9, 111, 112, 110, 111),
+      jam('2026-09-02', 10, 111, 112, 110, 111),
+    ]
+    const g = cariGap(b)
+    expect(g).toHaveLength(1)
+    expect(g[0].antarSesi).toBe(true)
+    expect(g[0].bawah).toBe(101)
+    expect(g[0].atas).toBe(110)
+  })
+
+  it('celah DI DALAM satu sesi tidak ditandai antarSesi', () => {
+    const b: LilinData[] = [
+      jam('2026-09-01', 9, 100, 101, 99, 100),
+      jam('2026-09-01', 10, 100, 101, 99, 100),
+      jam('2026-09-01', 11, 100, 101, 99, 100),
+      jam('2026-09-01', 12, 111, 112, 110, 111),   // lompat, tapi bar berikutnya
+      jam('2026-09-01', 13, 111, 112, 110, 111),
+      jam('2026-09-01', 14, 111, 112, 110, 111),
+    ]
+    const g = cariGap(b)
+    expect(g).toHaveLength(1)
+    expect(g[0].antarSesi).toBe(false)
+  })
+
+  it('kerangka HARIAN tak pernah antarSesi — di sana tiap bar memang satu sesi', () => {
+    const b: LilinData[] = [
+      bar(0, 100, 100, 98, 99),
+      bar(1, 110, 112, 108, 110),
+      bar(2, 111, 113, 109, 112),
+    ]
+    expect(cariGap(b)[0].antarSesi).toBe(false)
+  })
+})
