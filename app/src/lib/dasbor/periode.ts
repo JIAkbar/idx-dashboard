@@ -171,7 +171,7 @@ export const PRESET_RENTANG: { id: PresetRentang; label: string }[] =
 // 182 dan 365, bukan 180 dan 360: yang dihitung kalender, dan pembulatan
 // "kira-kira setengah tahun" akan menggeser batas rentang sampai tiga hari
 // bursa - cukup untuk membuat jumlah nilai transaksi berbeda tanpa sebab.
-const HARI_PRESET: Record<Exclude<PresetRentang, 'ytd'>, number> =
+export const HARI_PRESET: Record<Exclude<PresetRentang, 'ytd'>, number> =
   { w1: 7, b1: 30, b3: 91, b6: 182, y1: 365 }
 
 /**

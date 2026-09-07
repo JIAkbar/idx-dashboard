@@ -4,6 +4,23 @@ export function fN(v: number | null | undefined, d = 2): string {
   return (v ?? 0).toLocaleString('id-ID', { maximumFractionDigits: d })
 }
 
+/**
+ * ISO `YYYY-MM-DD` -> "5 Agu 2026". Tinggal di sini bersama pemformat angka
+ * lain supaya tak lahir salinan ketiga: sebelumnya bentuk ini hanya ada di
+ * modul Statistik Berkala dan modul arsip Radar, dan halaman ketiga yang
+ * membutuhkannya akan menulis versinya sendiri.
+ *
+ * Jam 12.00 dipakai, bukan tengah malam: `new Date('2026-08-05')` diurai
+ * sebagai UTC lalu ditampilkan di zona lokal, sehingga di zona barat
+ * tanggalnya mundur satu hari.
+ */
+export function tanggalRingkas(iso: string): string {
+  const d = new Date(`${iso}T12:00:00`)
+  return Number.isNaN(d.getTime())
+    ? iso
+    : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 export function fp(v: number | null | undefined, d = 2): string {
   // `null` WAJIB dijaga di sini, bukan cuma di pemanggil: `null >= 0` bernilai
   // true di JS, jadi cabang tanda lolos lalu `.toFixed` meledak dan SELURUH

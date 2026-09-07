@@ -19,6 +19,7 @@ import { ModalSetorTesis } from '../../components/tesis/ModalSetorTesis'
 import { useAuth } from '../../context/AuthContext'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useBrokerTahunan } from '../../lib/dasbor/brokerTahunanData'
+import { PanelBrokerDominan } from '../../components/dasbor/PanelBrokerDominan'
 import { ringkasPemegang, bacaKonsentrasi } from '../../lib/dasbor/berkasPemegang'
 import { ringkasAsing, bacaAliran, bacaPorsi } from '../../lib/dasbor/berkasAsing'
 import { ringkasLikuid, labelLikuiditas } from '../../lib/dasbor/berkasLikuiditas'
@@ -378,6 +379,24 @@ export default function BerkasEmiten() {
           </ul>
         )}
       </section>
+
+      {/* BROKER DOMINAN (#65) — SESUDAH bendera risiko, bukan sebelumnya.
+          Usulan barisnya menaruh panel ini "atas, sebelum bendera risiko";
+          itu bertabrakan dengan alasan yang sudah tertulis di atas, dan
+          alasannya masih berlaku: bendera mengubah CARA MEMBACA semua yang
+          di bawahnya, termasuk panel ini. Broker yang mengakumulasi emiten
+          bernotasi khusus berarti hal yang berbeda dari broker yang
+          mengakumulasi emiten biasa, dan pembaca perlu tahu itu lebih dulu.
+          Jadi panel ini kartu DATA pertama, tepat di bawah bendera.
+
+          Nol permintaan jaringan baru: `hariBroker` sudah dimuat halaman
+          ini, dan penutupan terakhir diambil dari lilin yang juga sudah
+          ada. Saudaranya di sisi broker (#30) dipra-hitung karena arahnya
+          menuntut membalik 963 arsip; yang ini tidak. */}
+      <PanelBrokerDominan
+        hari={hariBroker}
+        hargaAkhir={candle.lilin.length ? candle.lilin[candle.lilin.length - 1].close : null}
+      />
 
       {muat && <div className="be-kosong">Memuat berkas…</div>}
 

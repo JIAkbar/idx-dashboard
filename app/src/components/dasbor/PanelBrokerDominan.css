@@ -1,0 +1,53 @@
+/* Panel Broker Dominan (#65). Dua sisi berdampingan di layar lebar,
+   bertumpuk di ponsel. Kolom `minmax(0, 1fr)` — kolom `auto` melebar
+   mengikuti anak terlebar dan tabelnya dipotong, bukan digulung. */
+.lantai .pbd-kepala {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  justify-content: space-between; margin-bottom: 8px;
+}
+.lantai .pbd-kepala h2 { margin: 0; }
+.lantai .pbd-rentang { display: flex; flex-wrap: wrap; gap: 3px; }
+
+.lantai .pbd-basis { margin: 0 0 10px; font-size: 11px; line-height: 1.55; }
+.lantai .pbd-kosong { margin: 8px 0; font-size: 11.5px; color: var(--text3); }
+
+.lantai .pbd-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+@media (min-width: 1100px) {
+  .lantai .pbd-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.lantai .pbd-sisi-blok > .lbl { margin: 0 0 6px; }
+
+.lantai .pbd-tbl td.num { font-variant-numeric: tabular-nums; }
+/* Kolom broker memuat tiga hal (kode, sisi, nama) dan hanya kode yang wajib
+   terbaca penuh — namanya boleh terpotong daripada memaksa tabel melebar. */
+.lantai .pbd-kode { white-space: nowrap; }
+.lantai .pbd-sisi { margin-left: 5px; font-size: 9.5px; color: var(--text3); }
+.lantai .pbd-nama {
+  display: inline-block; margin-left: 7px; max-width: 15ch;
+  overflow: hidden; text-overflow: ellipsis; vertical-align: bottom;
+  font-size: 10.5px;
+}
+
+/* Kolom broker BEKU saat tabel digulung mendatar di layar sempit. Enam
+   kolom tak muat di 412 px, dan tanpa ini pembaca kehilangan tahu baris
+   siapa yang sedang dibacanya begitu ia menggulung ke kolom Dominasi -
+   angka tanpa pemilik. Latar WAJIB pekat (bukan transparan): sel yang
+   sticky tetap menumpuk di atas sel lain, dan latar tembus membuat
+   keduanya tercetak bertindih.
+
+   Tokennya `--card` (latar kartu ini, terukur #14151A), BUKAN `--panel`
+   yang tidak terdefinisi di sini sama sekali - rujukan tanpa nilai dibuang
+   peramban tanpa satu pun galat, dan hasilnya sel tembus yang gejalanya
+   baru terlihat saat seseorang menggulung. Nilai cadangan literal
+   dipasang karena alasan yang sama.
+
+   `th` ikut dibekukan supaya kepala dan isinya tak pernah bergeser
+   relatif satu sama lain. */
+.lantai .pbd-tbl th:first-child,
+.lantai .pbd-tbl td:first-child {
+  position: sticky; left: 0; z-index: 1;
+  background: var(--card, #14151A);
+}
+.lantai .pbd-tbl th:first-child { z-index: 2; }
+
+.lantai .pbd-lagi { margin-top: 8px; }

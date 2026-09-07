@@ -4,7 +4,7 @@ import { KonteksData } from '../../components/dasbor/KonteksData'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
-import { fN } from '../../lib/dasbor/format'
+import { fN, tanggalRingkas } from '../../lib/dasbor/format'
 import { kelasBroker, namaBroker } from '../../lib/dasbor/kelompokBroker'
 import { sisiBroker } from '../../lib/dasbor/pilihGarisBroker'
 import { useBrokerPivot, type BarisPivot, type PresetPivot } from '../../lib/dasbor/brokerPivot'
@@ -33,17 +33,6 @@ import './BrokerDetail.css'
  *    broker ini. Tanpa keterangan itu angka 7,55% mudah terbaca sebagai
  *    "7,55% dari kegiatan broker ini", yang artinya jauh berbeda.
  */
-
-/** ISO -> "5 Agu 2026". Ditulis di sini, bukan diimpor dari modul lain:
- *  satu-satunya pemformat tanggal pendek yang ada tinggal di modul
- *  Statistik Berkala dan modul arsip Radar, dan menariknya ke sini
- *  menyeret ketergantungan yang tak ada hubungannya dengan broker. */
-function tglPendek(iso: string): string {
-  const d = new Date(`${iso}T12:00:00`)
-  return Number.isNaN(d.getTime())
-    ? iso
-    : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-}
 
 /** Kolom rupiah: dua desimal TETAP. `fN` memakai `maximumFractionDigits`
  *  sehingga 110,00 tercetak "110" dan 465,40 jadi "465,4" - satu kolom
@@ -166,8 +155,8 @@ export function BrokerDetail() {
       {isi && rentang && (
         <>
           <p className="muted bdt-basis">
-            Dijumlah dari transaksi harian <b>{tglPendek(rentang.mulai)}</b> s.d.
-            {' '}<b>{tglPendek(rentang.akhir)}</b> —
+            Dijumlah dari transaksi harian <b>{tanggalRingkas(rentang.mulai)}</b> s.d.
+            {' '}<b>{tanggalRingkas(rentang.akhir)}</b> —
             {' '}broker ini tercatat di <b>{isi.n_emiten} emiten</b> pada periode itu; tabel memuat
             {' '}20 teratas tiap sisi. <b>Pangsa</b> dihitung terhadap nilai transaksi emiten
             {' '}tersebut pada periode yang sama, bukan terhadap kegiatan broker ini.
