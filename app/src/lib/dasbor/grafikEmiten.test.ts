@@ -18,7 +18,7 @@ import {
 } from './grafikEmiten'
 import {
   muatKatalog, keSpekParam, keMasukanPustaka, ID_SUDAH_ADA, ID_LILIN, ID_PENANDA, ID_PIVOT, KATEGORI,
-  POPULER, ID_RUSAK,
+  INTI, pilahMenu, ID_RUSAK,
 } from './katalogIndikator'
 import type { BarisOhlc } from './ihsgOhlc'
 
@@ -1196,16 +1196,54 @@ describe('katalogIndikator', () => {
     for (const id of ID_SUDAH_ADA) expect(k.has(id)).toBe(true)
   })
 
-  /** #236 — kelompok "Populer (TradingView)". Tiap id WAJIB benar-benar ada di
-   *  katalog: satu id yang salah ketik berarti baris menu yang dipilih pembaca
-   *  lalu tak menggambar apa pun tanpa satu pun galat. */
-  it('POPULER: tiap id benar-benar ada di katalog dan tak dobel dengan ID_SUDAH_ADA', async () => {
+  /** #45a — set INTI. Tiap id WAJIB benar-benar ada di katalog: satu id yang
+   *  salah ketik berarti baris menu yang dipilih pembaca lalu tak menggambar
+   *  apa pun tanpa satu pun galat. Pengganti uji POPULER lama, yang kelompok
+   *  menunya sudah tak ada. */
+  it('INTI: tiap id ada di katalog dan tidak tersaring ID_SUDAH_ADA', async () => {
     const k = await muatKatalog()
-    expect(POPULER.size).toBeGreaterThan(15)
-    for (const id of POPULER) {
+    for (const id of INTI) {
       expect(k.has(id)).toBe(true)
       expect(ID_SUDAH_ADA.has(id)).toBe(false)
     }
+  })
+
+  it('ATR bisa dipilih lagi — sebelum #45a ia tersaring demi jenis PAPAN yang tak pernah ada', async () => {
+    const k = await muatKatalog()
+    expect(ID_SUDAH_ADA.has('atr')).toBe(false)
+    expect(k.has('atr')).toBe(true)
+    expect(INTI.has('atr')).toBe(true)
+  })
+
+  /** Tiga angka yang dijanjikan ke Johan: berapa yang ADA, berapa yang tampil
+   *  di menu bawaan, berapa yang diarsipkan. Ujinya menjaga PEMBAGIANNYA utuh
+   *  (tak ada entri yang hilang atau dobel), bukan angka pastinya — angka itu
+   *  ikut versi pustaka. */
+  it('pilahMenu: tiga lapis, tanpa entri hilang maupun dobel', async () => {
+    const k = await muatKatalog()
+    const { inti, bawaan, arsip } = pilahMenu(k)
+    const dapatDipilih = [...k.values()].filter((e) => !ID_SUDAH_ADA.has(e.id))
+    expect(inti.length + bawaan.length + arsip.length).toBe(dapatDipilih.length)
+    const id = [...inti, ...bawaan, ...arsip].map((e) => e.id)
+    expect(new Set(id).size).toBe(id.length)
+  })
+
+  it('pilahMenu: menu bawaan (Pilihan PAPAN + Inti) tetap di bawah 40 baris', async () => {
+    const k = await muatKatalog()
+    const { inti } = pilahMenu(k)
+    // 10 Pilihan PAPAN + Inti + dua baris sakelar lipatan.
+    expect(10 + inti.length + 2).toBeLessThanOrEqual(40)
+  })
+
+  it('pilahMenu: yang diarsipkan hanya skrip komunitas & pola candle', async () => {
+    const k = await muatKatalog()
+    const { inti, bawaan, arsip } = pilahMenu(k)
+    for (const e of arsip) expect(e.asal).not.toBe('standard')
+    for (const e of bawaan) expect(e.asal).toBe('standard')
+    for (const e of inti) expect(e.asal).toBe('standard')
+    // Arsipnya memang ratusan — itu yang dikeluhkan Johan, dan angkanya",
+    // bukan tebakan.
+    expect(arsip.length).toBeGreaterThan(250)
   })
 
   /** ID_RUSAK kosong sekarang (audit 21 Agu 2026, `audit-katalog-terpakai.ts`,

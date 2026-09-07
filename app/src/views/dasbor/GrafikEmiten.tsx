@@ -37,7 +37,7 @@ import {
 } from '../../lib/dasbor/kerangkaWaktu'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import {
-  muatKatalog, KATEGORI, ID_SUDAH_ADA, POPULER, type Katalog,
+  muatKatalog, pilahMenu, KATEGORI, type Katalog, type EntriKatalog,
 } from '../../lib/dasbor/katalogIndikator'
 import { useDaftarInstans } from '../../components/dasbor/DaftarInstans'
 import { ModalSetelanInstans } from '../../components/dasbor/ModalSetelanInstans'
@@ -98,6 +98,7 @@ const INFO_GRAFIK: ItemInfoIndikator[] = [
   { nama: '+ Pola', isi: 'Menambahkan pendeteksi pola grafik otomatis: pola klasik (double/triple top-bottom, dan sejenisnya), struktur pasar (swing high/low & patahan tren), musiman, serta divergensi indikator momentum terhadap harga.' },
   { nama: '+ Banding', isi: 'Menumpuk harga emiten lain (maksimal tiga sekaligus, termasuk IHSG) sebagai garis pembanding di kanvas yang sama. Menambahkan pembanding otomatis mengunci skala ke persentase supaya emiten berharga jauh berbeda tetap bisa dibandingkan bentuknya.' },
   { nama: 'Bar replay', isi: 'Memundurkan chart ke suatu titik lalu memutarnya maju satu candle per klik atau otomatis — untuk melatih membaca pergerakan harga tanpa tahu kelanjutannya lebih dulu.' },
+  { nama: 'Isi menu ƒx Indikator', isi: 'Tiga lapis. "Pilihan PAPAN" sepuluh rumus yang ditulis dan diuji sendiri di sini. "Inti" enam rumus baku yang paling lazim dipakai — ATR, ADX, DMI, Parabolic SAR, Supertrend, Ichimoku. Sisanya terlipat: satu baris membuka 73 rumus baku lain (padanan daftar bawaan TradingView), satu baris lagi membuka arsip berisi skrip komunitas yang di-port dan pola candle. Yang diarsipkan tidak dihapus — susunan lama yang memakainya tetap tergambar seperti biasa.' },
   { nama: 'Template', isi: 'Menyimpan dan memuat kembali susunan indikator & pola yang sedang terpasang, supaya tak perlu menyusunnya ulang tiap kali membuka emiten lain.' },
   { nama: 'Garis rata-rata beli broker', isi: 'Garis putus-putus harga rata-rata beli lima broker net-pembeli terbesar pada rentang yang sedang tampil — seberapa murah atau mahal mereka menampung.' },
   { nama: 'Pita CPR + Pivot', isi: 'Pita rentang harga tengah dan level pivot harian dari sesi tutup terakhir, dipakai sebagai acuan support/resistance. Hanya tersedia di kerangka Harian.' },
@@ -671,6 +672,9 @@ export function GrafikEmiten() {
    *  sedang terlihat di jendela pandang (zoom/pan), supaya banner gating
    *  "N sesi belum cukup" bereaksi wajar saat pembaca mempersempit rentang. */
   const [analitikAktif, setAnalitikAktif] = useState(false)
+  /** Dua lipatan menu indikator (#45a) — bawaan pustaka dan arsip. */
+  const [bawaanTampil, setBawaanTampil] = useState(false)
+  const [arsipTampil, setArsipTampil] = useState(false)
   const [rentangTampilAnalitik, setRentangTampilAnalitik] = useState<{ from: number; to: number } | null>(null)
 
   /* ---------------- Compare symbols (#187) ---------------- */
@@ -1862,29 +1866,58 @@ export function GrafikEmiten() {
       }]
     }
     const urutan = new Map(KATEGORI.map(([ing], i) => [ing, i]))
-    const semua = [...katalog.values()].filter((e) => !ID_SUDAH_ADA.has(e.id))
     const label = (e: { nama: string; singkat: string }) =>
       // Nama panjang + pendek keduanya ikut supaya kotak cari menemukannya
       // lewat singkatan ("ADX") maupun kata lengkapnya ("Directional").
       e.nama === e.singkat ? e.nama : `${e.nama} · ${e.singkat}`
-    // Kelompok "Populer (TradingView)" tampil TEPAT sesudah "Pilihan PAPAN" —
-    // entri yang masuk sini DISARING dari kelompok kategorinya di bawah,
-    // supaya tak dobel (Johan 21 Agu 2026: lihat catatan di `POPULER`).
-    const populer = semua.filter((e) => POPULER.has(e.id))
-      .sort((a, b) => a.nama.localeCompare(b.nama))
-    const entri = semua.filter((e) => !POPULER.has(e.id))
-      .sort((a, b) => (urutan.get(a.kategori) ?? 99) - (urutan.get(b.kategori) ?? 99)
-        || a.nama.localeCompare(b.nama))
+    const { inti, bawaan, arsip } = pilahMenu(katalog)
+    const perKategori = (a: EntriKatalog, b: EntriKatalog) =>
+      (urutan.get(a.kategori) ?? 99) - (urutan.get(b.kategori) ?? 99) || a.nama.localeCompare(b.nama)
+    const baris = (e: EntriKatalog, grup: string) => ({ nilai: `p:${e.id}`, label: label(e), grup })
+    const grupKategori = (e: EntriKatalog) => KATEGORI.find(([ing]) => ing === e.kategori)?.[1] ?? e.kategori
     return [
       ...OPSI_KURASI,
-      ...populer.map((e) => ({ nilai: `p:${e.id}`, label: label(e), grup: 'Populer (TradingView)' })),
-      ...entri.map((e) => ({
-        nilai: `p:${e.id}`,
-        label: label(e),
-        grup: KATEGORI.find(([ing]) => ing === e.kategori)?.[1] ?? e.kategori,
-      })),
+      ...inti.map((e) => baris(e, 'Inti')),
+      // Dua lapis sisanya TERLIPAT — inilah inti #45a. Menu lama menumpahkan
+      // 365 entri sekaligus, mayoritasnya skrip komunitas yang di-port dengan
+      // nama seperti "PMaxRSIT3"; Johan: "RATUSAN INDIKATOR SIAPA JUGA YANG
+      // PAKAI". Dilipat, bukan dihapus: templat lama yang memakainya tetap
+      // tergambar, dan satu baris cukup untuk membukanya lagi.
+      {
+        nilai: '__bawaan',
+        label: bawaanTampil
+          ? `Sembunyikan ${bawaan.length} indikator baku lain`
+          : `Tampilkan ${bawaan.length} indikator baku lain (padanan bawaan TradingView)`,
+        grup: 'Lainnya',
+      },
+      // Selalu ikut di daftar, cuma tak DIPAJANG selagi terlipat. Melipatnya
+      // dengan cara membuangnya dari `opsi` membuat pencarian jadi buntu:
+      // mengetik "aroon" — indikator baku yang benar-benar ada — dijawab "Tak
+      // ada yang cocok" (terukur di 412 sebelum `hanyaCari` dibuat).
+      ...[...bawaan].sort(perKategori)
+        .map((e) => ({ ...baris(e, grupKategori(e)), hanyaCari: !bawaanTampil })),
+      {
+        nilai: '__arsip',
+        label: arsipTampil
+          ? `Sembunyikan ${arsip.length} entri arsip`
+          : `Tampilkan ${arsip.length} entri arsip (skrip komunitas & pola candle)`,
+        grup: 'Lainnya',
+      },
+      ...[...arsip].sort(perKategori)
+        .map((e) => ({ ...baris(e, `Arsip · ${grupKategori(e)}`), hanyaCari: !arsipTampil })),
     ]
-  }, [katalog])
+  }, [katalog, bawaanTampil, arsipTampil])
+
+  /**
+   * Menu indikator meneruskan dua baris SAKELAR ke sini alih-alih ke
+   * `ind.tambah` — Dropdown tak punya konsep "baris yang membuka lipatan",
+   * dan menambahkannya berarti prop baru yang cuma dipakai satu menu.
+   */
+  const tambahIndikator = useCallback((nilai: string) => {
+    if (nilai === '__bawaan') { setBawaanTampil((v) => !v); return }
+    if (nilai === '__arsip') { setArsipTampil((v) => !v); return }
+    ind.tambah(nilai)
+  }, [ind])
 
   const opsiPola = useMemo(() => JENIS_POLA.map((jenis) => {
     const sudah = pol.daftar.some((x) => x.jenis === jenis)
@@ -3324,7 +3357,7 @@ export function GrafikEmiten() {
                 menu ini", dan itu sudah terjawab pointer/fokus. */}
             <span onPointerDownCapture={mintaKatalog} onFocusCapture={mintaKatalog}>
               <Dropdown opsi={opsiIndikator} nilai="" placeholder="ƒx Indikator"
-                ariaLabel="Tambah indikator" onGanti={ind.tambah} />
+                ariaLabel="Tambah indikator" onGanti={tambahIndikator} />
             </span>
             {/* Menu Pola ikut memicu unduhan katalog, dan itu BUKAN kehati-hatian
                 berlebih: pola Divergensi menghitung %K lewat entri Stochastic

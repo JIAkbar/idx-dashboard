@@ -10,6 +10,10 @@ export interface OpsiDropdown {
    *  membuat menu menyusut tanpa keterangan — pembaca tak tahu pilihannya
    *  hilang karena sudah dipakai atau karena ia salah ingat. */
   nonaktif?: boolean
+  /** Tersembunyi selama kotak cari kosong, tapi tetap KETEMU begitu
+   *  diketik. Untuk daftar yang sengaja dilipat supaya menunya pendek —
+   *  melipat tanpa ruas ini berarti membuang entrinya dari pencarian juga. */
+  hanyaCari?: boolean
   /** Judul kelompok. Item BERURUTAN dengan grup yang sama muncul di bawah satu
    *  judul; pengelompokannya mengikuti URUTAN array, bukan disortir ulang di
    *  sini — pemanggil yang tahu urutan mana yang berarti (mis. katalog
@@ -107,7 +111,13 @@ export function Dropdown({ opsi, nilai, onGanti, ariaLabel, placeholder, disable
   // pelan-pelan jadi tak terpakai tanpa ada yang sadar harus mengubah apa.
   const pakaiCari = opsi.length >= 10
   const kata = q.trim().toLowerCase()
-  const tampil = kata ? opsi.filter((o) => o.label.toLowerCase().includes(kata)) : opsi
+  // `hanyaCari` = ada di daftar tapi tak dipajang sampai ada yang mengetik.
+  // Tanpa ini, daftar yang "dilipat" jadi buntu: menu indikator melipat 352
+  // entri dan mengetik "aroon" — indikator baku yang benar-benar ada —
+  // menjawab "Tak ada yang cocok" (terukur di 412 sebelum ruas ini dibuat).
+  const tampil = kata
+    ? opsi.filter((o) => o.label.toLowerCase().includes(kata))
+    : opsi.filter((o) => !o.hanyaCari)
 
   // Kategori dalam urutan kemunculan pertama di `opsi` — pemanggil (mis.
   // AlatGambar) sudah mengurutkannya sesuai KATEGORI_GAMBAR, di sini cuma

@@ -127,6 +127,11 @@ export interface EntriKatalog {
   nama: string
   singkat: string
   kategori: string
+  /** Kolom `group` registry: `standard` (rumus baku, padanan daftar Built-in
+   *  Technicals TradingView), `community` (skrip komunitas yang di-port), atau
+   *  `candlestick` (pola lilin). Inilah pembeda yang dipakai triase menu —
+   *  terbaca dari data, bukan daftar tangan. Lihat `pilahMenu`. */
+  asal: string
   /** Dari registry, bukan tebakan kita — lihat catatan di `KATEGORI`. */
   diPanelHarga: boolean
   param: SpekParam[]
@@ -169,60 +174,6 @@ export const KATEGORI: Array<[inggris: string, indonesia: string]> = [
   ['Candlestick Patterns', 'Pola candle'],
 ]
 
-/**
- * Id pustaka untuk indikator yang di TradingView masuk deretan bawaan/
- * terpopuler — tampil sebagai kelompok "Populer (TradingView)" TEPAT sesudah
- * "Pilihan PAPAN" di menu (`GrafikEmiten.tsx`), supaya tak tenggelam di antara
- * 340-an entri katalog lain. Johan 21 Agu 2026: *"indikator default atau yang
- * umum di pakai di tradingview munculkan di utama di kelompokkan"*.
- *
- * Tiap id di sini DIVERIFIKASI mekanis ada di registry DAN lolos
- * `keEntriKatalog` (skrip pemeriksa sekali-pakai, bukan tebakan) sebelum
- * ditulis — bukan disalin dari nama yang "kedengarannya" cocok. Tiga
- * kandidat yang diminta TIDAK masuk, dan alasannya bukan kelalaian:
- * - `atr`: entrinya ADA tapi masuk `ID_SUDAH_ADA` (ATR internal PAPAN) —
- *   menu sudah menyaringnya di tempat lain, dobel di sini tak akan pernah
- *   tampil.
- * - "Pivot Points Standard": TIDAK ada di registry pustaka ini (yang ada
- *   cuma varian turunan — `pivot-point-supertrend`, `pivot-hh-hl-lh-ll` —
- *   beda indikator, bukan pivot S/R baku).
- * - `price-volume-profile`: `plotConfig` kosong (bukan deret angka, bentuknya
- *   profil harga×volume) — tak lolos `keEntriKatalog`, tak pernah ada di
- *   katalog untuk dirujuk.
- */
-export const POPULER: ReadonlySet<string> = new Set([
-  'supertrend', 'ichimoku', 'parabolic-sar',
-  'adx', 'dmi', // dua indikator TradingView terpisah (ADX-saja vs +DI/-DI/ADX), bukan duplikat
-  'cci', 'mfi', 'roc', 'momentum',
-  'williams-alligator', 'aroon', 'keltner', 'donchian',
-  'ema-ribbon', 'hma', 'wma', 'dema', 'tema', 'vwma',
-  'chaikin-mf', 'stochastic-momentum-index', 'trix',
-  'ultimate-osc', 'awesome-oscillator', 'bull-bear-power',
-  'elder-force', 'eom',
-])
-
-/**
- * Id pustaka TANPA `plotConfig` yang tetap masuk katalog lewat jalur PENANDA
- * (`createSeriesMarkers`), bukan garis. B30 — Johan menunjuk tiga kandidat
- * (`volume-delta`, `williams-fractals`, `zigzag`), diuji mekanis lewat
- * `app/scripts/periksa-bentuk-marker.mjs` atas OHLC nyata (BBCA) sebelum
- * satu baris kode ditulis. Cuma satu yang bentuknya PERSIS `SeriesMarker`
- * (`time`/`position`/`shape`/`color`/`size`) — dua lainnya TIDAK dipaksakan
- * lewat jalur ini:
- *
- * - `volume-delta` mengembalikan `plotCandles.delta`: deret LILIN (open/high/
- *   low/close/color) berskala volume, bukan penanda titik.
- * - `zigzag` mengembalikan `pivots`/`lines`/`labels`: SEGMEN garis dua titik
- *   + teks. Markernya sendiri (titik pivot) sah, tapi tanpa garis
- *   penghubungnya bukan lagi zigzag — cuma titik-titik lepas yang bentuknya
- *   menyesatkan (terlihat seperti pola acak, bukan tren berbelok).
- *
- * Dua yang terakhir sempat DITOLAK karena kanvas ini belum punya jalur untuk
- * bentuknya. Jalur itu sekarang ada — garis pola divergensi membuka jalan seri
- * garis tambahan, dan panel volume yang berdiri sendiri membuka jalan seri
- * lilin di pane sendiri — jadi keduanya masuk lewat pintunya masing-masing di
- * bawah, bukan dipaksakan jadi penanda titik.
- */
 export const ID_PENANDA: ReadonlySet<string> = new Set(['williams-fractals'])
 
 /** Keluarannya SEGMEN garis bersambung (`lines`), dirangkai jadi satu garis
@@ -242,8 +193,13 @@ export const ID_LILIN: ReadonlySet<string> = new Set(['volume-delta'])
  * berbeda tanpa ada yang tahu mana yang benar. Yang dipakai tetap punya kita;
  * kesetaraan angkanya dijaga uji silang RSI, bukan asumsi.
  */
+// `atr` DICABUT dari daftar ini 7 Sep 2026 (#45a). Alasan lamanya "ATR internal
+// PAPAN" keliru: `hitungATR` di `grafikEmiten.ts` cuma dipakai detektor pola,
+// dan TIDAK ada jenis `atr` di `SPEK_INDIKATOR`. Jadi ATR — salah satu
+// indikator paling baku di mana pun — disaring dari katalog demi jenis PAPAN
+// yang tak pernah ada, dan pembaca tak punya satu pun jalan menambahkannya.
 export const ID_SUDAH_ADA = new Set([
-  'sma', 'ema', 'rsi', 'macd', 'bb', 'obv', 'atr',
+  'sma', 'ema', 'rsi', 'macd', 'bb', 'obv',
   // Empat berikut sudah dikurasi jadi jenis sendiri (label & parameter
   // Indonesia, jangkar VWAP yang tak degenerate di data harian) — rumusnya
   // tetap milik pustaka, jalurnya lewat `hitungInstans`.
@@ -267,6 +223,73 @@ export const ID_SUDAH_ADA = new Set([
  * `keEntriKatalog`.
  */
 export const ID_RUSAK: ReadonlySet<string> = new Set([])
+
+/**
+ * Set INTI — indikator baku yang wajib ada di menu bawaan, DARI PUSTAKA.
+ *
+ * Delapan anggota inti lain (SMA, EMA, RSI, MACD, Stochastic, Bollinger, OBV,
+ * VWAP) tidak ada di sini karena PAPAN punya rumusnya sendiri: mereka sudah
+ * berdiri di kelompok "Pilihan PAPAN". Volume juga tidak: ia sakelar di kaki
+ * kanvas, bukan indikator yang ditambahkan.
+ *
+ * ATR ada di sini dan itu bukan sekadar kelengkapan — sebelum #45a ia tak bisa
+ * dipilih sama sekali (lihat catatan di `ID_SUDAH_ADA`).
+ */
+export const INTI: ReadonlySet<string> = new Set([
+  'atr', 'adx', 'dmi', 'parabolic-sar', 'supertrend', 'ichimoku',
+])
+
+export interface PilahMenu {
+  /** Indikator baku dari pustaka — kelompok kedua, selalu tampil. */
+  inti: EntriKatalog[]
+  /** Sisa rumus BAKU pustaka (`group: standard`), setara daftar Built-in
+   *  Technicals TradingView. Terlipat: baru tampil kalau diminta. */
+  bawaan: EntriKatalog[]
+  /** Skrip komunitas yang di-port + pola lilin. Diarsipkan: tak ikut menu
+   *  bawaan, tapi TIDAK dihapus — templat lama yang memakainya tetap
+   *  tergambar, dan pembaca masih bisa membukanya lewat satu baris di menu. */
+  arsip: EntriKatalog[]
+}
+
+/**
+ * Pilah isi katalog jadi tiga lapis untuk menu ƒx Indikator (#45a).
+ *
+ * Johan 7 Sep 2026: *"HAPUS INDIKATOR YANG TIDAK BERGUNA ITU RATUSAN INDIKATOR
+ * SIAPA JUGA YANG PAKAI, GUNAKAN DEFAULT REFERENSI … BISA LIHAT DI STOCKBIT
+ * ATAU DI TRADINGVIEW"*.
+ *
+ * Pembedanya kolom `group` REGISTRY, bukan daftar nama TradingView yang
+ * ditulis tangan. Itu keputusan yang diukur, bukan selera: registry menandai
+ * 95 entri `standard`, 318 `community`, 44 `candlestick`, dan yang `community`
+ * persis yang ditunjuk Johan di tangkapan layarnya — "PMaxRSIT3", "SMACDHA",
+ * "ADX by cobra", "72s: Adaptive Hull Moving Average+". Silang-uji terhadap
+ * daftar Built-in Technicals TradingView (`scripts/petakan-tv-bawaan.mjs`, 68
+ * nama) menemukan 64 di antaranya, dan SEMUANYA di kelompok `standard` — jadi
+ * `standard` memang padanan daftar bawaan itu, bukan kebetulan penamaan.
+ *
+ * Pola lilin ikut diarsipkan karena PAPAN punya menu Pola sendiri yang
+ * mengurusnya lengkap dengan status dan target; dua pintu untuk hal yang sama
+ * berarti salah satunya dipilih orang tanpa tahu bedanya.
+ */
+export function pilahMenu(katalog: Katalog): PilahMenu {
+  const namaDulu = (a: EntriKatalog, b: EntriKatalog) => a.nama.localeCompare(b.nama)
+  const semua = [...katalog.values()].filter((e) => !ID_SUDAH_ADA.has(e.id))
+  const inti: EntriKatalog[] = []
+  const bawaan: EntriKatalog[] = []
+  const arsip: EntriKatalog[] = []
+  for (const e of semua) {
+    if (INTI.has(e.id)) inti.push(e)
+    else if (e.asal === 'standard') bawaan.push(e)
+    else arsip.push(e)
+  }
+  // Urutan INTI mengikuti daftarnya, bukan abjad: ia daftar kurasi, dan abjad
+  // akan menaruh ATR di depan Supertrend tanpa alasan apa pun.
+  const urutInti = [...INTI]
+  inti.sort((a, b) => urutInti.indexOf(a.id) - urutInti.indexOf(b.id))
+  bawaan.sort(namaDulu)
+  arsip.sort(namaDulu)
+  return { inti, bawaan, arsip }
+}
 
 /** Ruas masukan pustaka -> satu kolom di panel setelan. `null` = tak
  *  ditampilkan dan dibiarkan memakai bawaan pustaka:
@@ -354,6 +377,7 @@ export function keEntriKatalog(e: EntriRegistry): EntriKatalog | null {
     nama: e.name,
     singkat: e.shortName || e.name,
     kategori: e.category,
+    asal: e.group,
     // Langsung dari registry. Menebak sendiri berarti menaruh osilator 0-100
     // di skala rupiah (garisnya rata di dasar kanvas) atau menaruh garis harga
     // di panel bawah — dua-duanya salah dan dua-duanya senyap.
