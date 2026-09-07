@@ -442,7 +442,7 @@ export function SektorIndeks() {
           <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_GRAFIK_NAIK} size={13} /> Indeks Unggulan</span></div>
           <div className="board-tbl-wrap">
             <table className="tbl">
-              <thead><tr><th>Indeks</th><th className="r">Nilai</th><th className="r">{labelPeriode}</th><th className="r">YTD</th></tr></thead>
+              <thead><tr><th>Indeks</th><th className="r">Nilai</th><th className="r">{labelPeriode}</th><th className="r">{LABEL_RENTANG.ytd}</th></tr></thead>
               <tbody>{featured.map((x) => perfRowFull(x, nilaiPeriodeDari(x, 'featured')))}</tbody>
             </table>
           </div>
@@ -452,7 +452,7 @@ export function SektorIndeks() {
             <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_BULAN_SABIT} size={13} /> Indeks Syariah</span></div>
             <div className="board-tbl-wrap">
               <table className="tbl">
-                <thead><tr><th>Indeks</th><th className="r">Nilai</th><th className="r">{labelPeriode}</th><th className="r">YTD</th></tr></thead>
+                <thead><tr><th>Indeks</th><th className="r">Nilai</th><th className="r">{labelPeriode}</th><th className="r">{LABEL_RENTANG.ytd}</th></tr></thead>
                 <tbody>{sharia.map((x) => perfRowFull(x, nilaiPeriodeDari(x, 'sharia')))}</tbody>
               </table>
             </div>
@@ -461,7 +461,7 @@ export function SektorIndeks() {
             <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_KOTAK_ARSIP} size={13} /> Indeks Papan</span></div>
             <div className="board-tbl-wrap">
               <table className="tbl">
-                <thead><tr><th>Papan</th><th className="r">Nilai</th><th className="r">{labelPeriode}</th><th className="r">YTD</th></tr></thead>
+                <thead><tr><th>Papan</th><th className="r">Nilai</th><th className="r">{labelPeriode}</th><th className="r">{LABEL_RENTANG.ytd}</th></tr></thead>
                 <tbody>
                   {board.map((x) => perfRowFull({
                     ...x,

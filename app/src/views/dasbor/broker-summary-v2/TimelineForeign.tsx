@@ -14,7 +14,7 @@ type RentangFr = 'b3' | 'b6' | 'ytd'
 const OPSI_RENTANG: { id: RentangFr; label: string }[] = [
   { id: 'b3', label: LABEL_RENTANG.b3 },
   { id: 'b6', label: LABEL_RENTANG.b6 },
-  { id: 'ytd', label: LABEL_RENTANG.ytd },
+  { id: 'ytd', label: LABEL_RENTANG.sejakJan },
 ]
 
 function hariUntukRentang(r: RentangFr, bars: BarisOhlcv[]): number {

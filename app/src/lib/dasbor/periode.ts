@@ -83,6 +83,12 @@ export const LABEL_RENTANG = {
   b6: '6 Bulan',
   wtd: 'WTD',
   mtd: 'MTD',
+  // KATA UNTUK KOLOM RESMI BURSA, bukan untuk pil (#70). Sejak 7 Sep 2026
+  // pembagiannya tegas: pil rentang yang menghitung sendiri memakai
+  // `sejakJan` ("Sejak 1 Jan"), dan kunci ini disisakan untuk kolom yang
+  // memuat angka YTD resmi bursa - persis pembagian yang diputuskan Johan
+  // 5 Sep 2026, tapi dulu cuma tegak di empat halaman berbilah-tanggal
+  // sementara sembilan tempat lain memakai kata ini untuk pil.
   ytd: 'YTD',
   // Rentang yang mulai di hari berdata pertama tahun berjalan — HITUNGAN yang
   // sama dengan `ytd`, KATA yang sengaja berbeda (keputusan Johan 5 Sep 2026,
@@ -105,6 +111,49 @@ export const LABEL_RENTANG = {
 } as const
 
 export type KunciRentang = keyof typeof LABEL_RENTANG
+
+/**
+ * URUTAN kanonis pil rentang — pendek ke panjang (#70).
+ *
+ * `LABEL_RENTANG` sudah menjamin satu KATA per rentang. Yang belum dijaga
+ * adalah URUTAN dan pemilihan subsetnya: tiap halaman menulis lariknya
+ * sendiri, jadi tak ada apa pun yang mencegah "3 Bulan" berdiri sebelum
+ * "1 Bulan" di halaman berikutnya. Sekarang urutannya milik berkas ini,
+ * dan halaman cuma menyebut kunci mana yang berlaku untuknya.
+ *
+ * Subset yang berbeda antar halaman TETAP sah dan memang perlu — Top
+ * Broker punya rollup lima preset, rincian broker tiga, Broker Dominan
+ * empat. Yang tidak boleh berbeda hanya kata dan urutannya.
+ *
+ * `ytd` sengaja TIDAK ada di sini: sebagai PIL ia selalu dieja
+ * "Sejak 1 Jan" (`sejakJan`), dan kata "YTD" disisakan untuk kolom resmi
+ * bursa. Menaruh keduanya berarti dua kunci berebut satu posisi.
+ */
+export const URUTAN_PIL: readonly KunciRentang[] = [
+  'hariIni', 'h1', 'h5', 'w1', 'w2', 'b1', 'b2', 'b3', 'b6',
+  'wtd', 'mtd', 'sejakJan', 'y1', 'y2', 'y3', 'y5', 'y10', 'y20', 'semua',
+] as const
+
+/**
+ * Susun opsi `PemilihRentang` dari kunci kosakata (#70).
+ *
+ * `id` dipisah dari `kunci` karena keduanya memang bisa berbeda: Top
+ * Broker memakai id `hari` untuk kata "Hari Ini", dan beberapa halaman
+ * menyimpan id `ytd` di state-nya sementara katanya "Sejak 1 Jan". Memaksa
+ * id mengikuti kunci berarti memindahkan state tersimpan orang — harga
+ * yang tak sebanding dengan kerapian nama.
+ *
+ * Hasilnya SELALU terurut menurut `URUTAN_PIL`, apa pun urutan masukannya.
+ * Itu inti penjaganya: halaman tak bisa lagi menyusun urutan sendiri,
+ * bahkan kalau penulisnya tak tahu ada aturannya.
+ */
+export function pilRentang<T extends string>(
+  entri: ReadonlyArray<{ id: T; kunci: KunciRentang; judul?: string }>,
+): Array<{ id: T; label: string; judul?: string }> {
+  return [...entri]
+    .sort((a, b) => URUTAN_PIL.indexOf(a.kunci) - URUTAN_PIL.indexOf(b.kunci))
+    .map((e) => ({ id: e.id, label: LABEL_RENTANG[e.kunci], judul: e.judul }))
+}
 
 /**
  * Bentuk RINGKAS untuk tempat yang tak muat label penuh — kepala kolom tabel

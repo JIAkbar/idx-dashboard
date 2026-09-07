@@ -21,7 +21,7 @@ const AMBANG_BEBAS = 5
 const RENTANG: Array<[string, () => string]> = [
   [LABEL_RENTANG.semua, () => ''],
   [LABEL_RENTANG.mtd, () => new Date().toISOString().slice(0, 8) + '01'],
-  [LABEL_RENTANG.ytd, () => new Date().getUTCFullYear() + '-01-01'],
+  [LABEL_RENTANG.sejakJan, () => new Date().getUTCFullYear() + '-01-01'],
   [LABEL_RENTANG.y1, () => geser(1)],
   [LABEL_RENTANG.y2, () => geser(2)],
   [LABEL_RENTANG.y3, () => geser(3)],

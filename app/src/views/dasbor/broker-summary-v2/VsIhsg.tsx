@@ -13,7 +13,7 @@ type RentangVs = 'b3' | 'b6' | 'ytd'
 const OPSI_RENTANG: { id: RentangVs; label: string }[] = [
   { id: 'b3', label: LABEL_RENTANG.b3 },
   { id: 'b6', label: LABEL_RENTANG.b6 },
-  { id: 'ytd', label: LABEL_RENTANG.ytd },
+  { id: 'ytd', label: LABEL_RENTANG.sejakJan },
 ]
 
 /** Jumlah hari bursa yang diminta rentang — YTD dihitung dari 1 Jan tahun bar TERAKHIR (bukan angka tetap). */

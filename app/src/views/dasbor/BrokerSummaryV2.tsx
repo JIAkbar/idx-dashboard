@@ -74,7 +74,7 @@ const PRESET: { id: PresetId; label: string; hari: number }[] = [
   { id: 'b1', label: LABEL_RENTANG.b1, hari: 30 },
   { id: 'b3', label: LABEL_RENTANG.b3, hari: 91 },
   { id: 'b6', label: LABEL_RENTANG.b6, hari: 182 },
-  { id: 'ytd', label: LABEL_RENTANG.ytd, hari: 0 },
+  { id: 'ytd', label: LABEL_RENTANG.sejakJan, hari: 0 },
   { id: 'y1', label: LABEL_RENTANG.y1, hari: 365 },
 ]
 

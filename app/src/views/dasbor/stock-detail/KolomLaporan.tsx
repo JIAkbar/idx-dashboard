@@ -17,7 +17,7 @@ function TR(lbl: string, val: ReactNode) {
  * '1D/1W/3M' sendiri, kosakata keempat di aplikasi. Kunci kedua = ruas feed. */
 const PERF_KEYS: [string, string][] = [
   [LABEL_RENTANG.h1, '1d'], [LABEL_RENTANG.w1, '1w'], [LABEL_RENTANG.b1, '1m'],
-  [LABEL_RENTANG.b3, '3m'], [LABEL_RENTANG.b6, '6m'], [LABEL_RENTANG.ytd, 'ytd'],
+  [LABEL_RENTANG.b3, '3m'], [LABEL_RENTANG.b6, '6m'], [LABEL_RENTANG.sejakJan, 'ytd'],
   [LABEL_RENTANG.y1, '1y'], [LABEL_RENTANG.y3, '3y'], [LABEL_RENTANG.y5, '5y'],
 ]
 

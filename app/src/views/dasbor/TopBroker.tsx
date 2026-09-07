@@ -7,7 +7,7 @@ import { fN } from '../../lib/dasbor/format'
 import type { StockRankRow, BrokerRankRow } from '../../lib/dasbor/dataHarian'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
-import { LABEL_RENTANG } from '../../lib/dasbor/periode'
+import { LABEL_RENTANG, pilRentang } from '../../lib/dasbor/periode'
 import { useBrokerRentang, type PresetBroker } from '../../lib/dasbor/brokerRentang'
 import { useState } from 'react'
 
@@ -142,20 +142,25 @@ export function TopBroker() {
             ariaLabel="Rentang Top Broker"
             nilai={rentang ?? 'hari'}
             onGanti={(id) => setRentang(id === 'hari' ? null : (id as PresetBroker))}
-            opsi={[
-              { id: 'hari', label: LABEL_RENTANG.hariIni, judul: 'Rekap satu hari bursa' },
-              { id: 'h5', label: LABEL_RENTANG.h5 },
-              { id: 'w1', label: LABEL_RENTANG.w1 },
-              { id: 'b1', label: LABEL_RENTANG.b1 },
-              { id: 'b3', label: LABEL_RENTANG.b3 },
-              // `sejakJan`, bukan `ytd`: halaman ini memajang DUA kelompok
-              // pintasan - bilah tanggal di atas (yang sudah memakai kosakata
-              // preset bersama) dan pil rollup ini. Dengan `ytd` keduanya
-              // berdiri bersebelahan menghitung hal yang SAMA dengan dua nama
-              // berbeda. Kata "YTD" sendiri sengaja disisakan untuk kolom
-              // resmi bursa (keputusan Johan 5 Sep 2026).
-              { id: 'ytd', label: LABEL_RENTANG.sejakJan },
-            ]}
+            // Disusun `pilRentang` (#70): kata DAN urutannya milik kamus
+            // rentang, halaman cuma menyebut kunci mana yang berlaku.
+            // `id` sengaja tetap seperti semula - ia kunci rollup yang
+            // tersimpan, dan menyamakannya dengan kunci kata berarti
+            // memindahkan state orang demi kerapian nama.
+            //
+            // `sejakJan`, bukan `ytd`: halaman ini memajang DUA kelompok
+            // pintasan - bilah tanggal di atas dan pil rollup ini - jadi
+            // dengan `ytd` keduanya berdiri bersebelahan menghitung hal yang
+            // SAMA dengan dua nama berbeda. Kata "YTD" disisakan untuk
+            // kolom resmi bursa (keputusan Johan 5 Sep 2026).
+            opsi={pilRentang([
+              { id: 'hari', kunci: 'hariIni', judul: 'Rekap satu hari bursa' },
+              { id: 'h5', kunci: 'h5' },
+              { id: 'w1', kunci: 'w1' },
+              { id: 'b1', kunci: 'b1' },
+              { id: 'b3', kunci: 'b3' },
+              { id: 'ytd', kunci: 'sejakJan' },
+            ])}
           />
         </div>
       </div>

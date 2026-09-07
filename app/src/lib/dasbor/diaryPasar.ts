@@ -144,7 +144,7 @@ export const PERIODE_PERFORMA: Array<{ id: PerformaPeriode['id']; label: string 
   { id: '1M', label: LABEL_RENTANG.b1 },
   { id: '3M', label: LABEL_RENTANG.b3 },
   { id: '6M', label: LABEL_RENTANG.b6 },
-  { id: 'YTD', label: LABEL_RENTANG.ytd },
+  { id: 'YTD', label: LABEL_RENTANG.sejakJan },
   { id: '1Y', label: LABEL_RENTANG.y1 },
   { id: '3Y', label: LABEL_RENTANG.y3 },
   { id: '5Y', label: LABEL_RENTANG.y5 },

@@ -31,7 +31,7 @@
  *   pernyataan tentang posisi hari ini seandainya belum dilepas — bukan
  *   realisasi. Kata "estimasi" di judul kolomnya bukan hiasan.
  */
-import { LABEL_RENTANG, HARI_PRESET } from './periode'
+import { HARI_PRESET, pilRentang } from './periode'
 import { sisiBroker, type SisiBroker } from './pilihGarisBroker'
 import { namaBroker } from './kelompokBroker'
 
@@ -44,8 +44,10 @@ export interface HariRingkas {
 
 export type RentangDominan = 'w1' | 'b1' | 'b3' | 'b6'
 
-export const RENTANG_DOMINAN: Array<{ id: RentangDominan; label: string }> =
-  (['w1', 'b1', 'b3', 'b6'] as const).map((id) => ({ id, label: LABEL_RENTANG[id] }))
+/** Kata dan urutannya dari kamus rentang (#70). */
+export const RENTANG_DOMINAN = pilRentang<RentangDominan>(
+  (['w1', 'b1', 'b3', 'b6'] as const).map((id) => ({ id, kunci: id })),
+)
 
 export interface BarisDominan {
   kode: string

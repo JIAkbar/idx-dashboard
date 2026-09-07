@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
-import { LABEL_RENTANG } from '../../lib/dasbor/periode'
+import { pilRentang } from '../../lib/dasbor/periode'
 import { fN, tanggalRingkas } from '../../lib/dasbor/format'
 import { kelasBroker, namaBroker } from '../../lib/dasbor/kelompokBroker'
 import { sisiBroker } from '../../lib/dasbor/pilihGarisBroker'
@@ -49,11 +49,13 @@ function miliar(v: number): string {
   return dua(Math.abs(v) / 1e9)
 }
 
-const PRESET: Array<{ id: PresetPivot; label: string }> = [
-  { id: 'h5', label: LABEL_RENTANG.h5 },
-  { id: 'b1', label: LABEL_RENTANG.b1 },
-  { id: 'b3', label: LABEL_RENTANG.b3 },
-]
+/** Kata dan urutannya dari kamus rentang (#70) - halaman cuma menyebut
+ *  kunci mana yang punya rollup. */
+const PRESET = pilRentang<PresetPivot>([
+  { id: 'h5', kunci: 'h5' },
+  { id: 'b1', kunci: 'b1' },
+  { id: 'b3', kunci: 'b3' },
+])
 
 function Tabel({ baris, sisi }: { baris: BarisPivot[]; sisi: 'beli' | 'jual' }) {
   if (baris.length === 0) {

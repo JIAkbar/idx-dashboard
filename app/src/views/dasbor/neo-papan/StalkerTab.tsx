@@ -52,7 +52,7 @@ const PRESET_JENDELA = [
   { id: '10', label: '10 hari' },
   { id: '20', label: '20 hari' },
   { id: 'b3', label: LABEL_RENTANG.b3 },
-  { id: 'ytd', label: LABEL_RENTANG.ytd },
+  { id: 'ytd', label: LABEL_RENTANG.sejakJan },
   { id: 'y1', label: LABEL_RENTANG.y1 },
   { id: 'y3', label: LABEL_RENTANG.y3 },
   { id: 'y5', label: LABEL_RENTANG.y5 },
@@ -385,7 +385,7 @@ export function StalkerTab() {
               untuk {totalEmiten ?? '…'} emiten, sekali per rentang per sesi.
               <br />
               <button type="button" className="btn-p" style={{ marginTop: 10 }} onClick={muatTahunan}>
-                Muat data {jendelaId === 'ytd' ? 'YTD' : JENDELA_BAKU.has(jendelaId) ? PRESET_JENDELA.find((o) => o.id === jendelaId)?.label : `${jendelaId} hari`}
+                Muat data {jendelaId === 'ytd' ? LABEL_RENTANG.sejakJan : JENDELA_BAKU.has(jendelaId) ? PRESET_JENDELA.find((o) => o.id === jendelaId)?.label : `${jendelaId} hari`}
                 {investor !== 'all' ? ` · investor ${investor}` : ''}
               </button>
             </>

@@ -89,7 +89,7 @@ type RentangDeret = 'b1' | 'b3' | 'ytd'
 const OPSI_RENTANG_DERET: { id: RentangDeret; label: string }[] = [
   { id: 'b1', label: LABEL_RENTANG.b1 },
   { id: 'b3', label: LABEL_RENTANG.b3 },
-  { id: 'ytd', label: LABEL_RENTANG.ytd },
+  { id: 'ytd', label: LABEL_RENTANG.sejakJan },
 ]
 
 function tanggalMulaiDeret(rentang: RentangDeret, akhir: string): string {

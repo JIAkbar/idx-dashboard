@@ -752,7 +752,10 @@ export function IndeksDunia() {
               <div className="nf-unit">(million USD~)</div>
             </div>
             <div className="nf-cell">
-              <span className="lbl">YTD</span>
+              {/* Kolom YTD RESMI bursa - katanya dari kamus, bukan dieja
+                  di sini (#70). Kunci `ytd` memang disisakan untuk peran
+                  ini; pil rentang di halaman yang sama memakai `sejakJan`. */}
+              <span className="lbl">{LABEL_RENTANG.ytd}</span>
               <div className={`nf-sec ${hari.nf_ytd_idr == null ? '' : hari.nf_ytd_idr < 0 ? 'dn' : 'up'}`}>{hari.nf_ytd_status ?? '-'}</div>
               <div className={`num nf-big ${hari.nf_ytd_idr == null ? '' : hari.nf_ytd_idr < 0 ? 'dn' : 'up'}`}>{hari.nf_ytd_idr == null ? '—' : fmtNF(hari.nf_ytd_idr)}</div>
               <div className="nf-unit">(billion IDR)</div>
@@ -835,7 +838,7 @@ export function IndeksDunia() {
             <thead>
               <tr>
                 <th>Negara</th><th>Indeks</th><th className="r">Nilai</th>
-                <th className="r">Hari Ini</th><th className="r">YTD</th>
+                <th className="r">{LABEL_RENTANG.hariIni}</th><th className="r">{LABEL_RENTANG.ytd}</th>
                 <th className="r">A</th><th className="r">AP</th><th className="r">W</th>
               </tr>
             </thead>
