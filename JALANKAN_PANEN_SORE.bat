@@ -36,7 +36,7 @@ if errorlevel 1 echo   (OHLCV gagal - lanjut)
 "%PYEXE%" scripts\jahit_ihsg.py
 
 echo.
-echo [B2] Broker hari-tuntas - 6 varian bentuk PERSIS CI, 64 utas
+echo [B2] Broker hari-tuntas - 6 varian bentuk PERSIS CI, 8 utas
 for /f %%d in ('"%PYEXE%" scripts\tgl_broker_aman.py') do set TGL_BROKER=%%d
 echo      target: %TGL_BROKER%
 REM -- ENAM varian, bukan dua belas. Ketetapan Johan 1 Sep 2026: "tidak
@@ -52,7 +52,7 @@ REM -- justru tak konsisten dengan dirinya sendiri di situ.
 REM --
 REM -- Memanen keduanya menggandakan permintaan untuk nol angka baru --
 REM -- dan kuota permintaan itu yang dibutuhkan panen harga.
-"%PYEXE%" scripts\panen_broker_harian.py --tanggal %TGL_BROKER% --jeda 0.4 --paralel 64 --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
+"%PYEXE%" scripts\panen_broker_harian.py --tanggal %TGL_BROKER% --jeda 0.4 --paralel 8 --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
 if errorlevel 1 echo   (broker gagal - lanjut)
 
 echo.

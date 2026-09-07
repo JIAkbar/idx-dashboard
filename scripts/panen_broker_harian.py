@@ -466,9 +466,31 @@ def jalankan(a) -> int:
     # berhasil. Ambangnya sama, artinya sedikit lebih longgar; kanari yang
     # jadi wasit akhirnya, dan ia tak berubah.
     kunci = threading.Lock()
+    # Kanari HANYA satu pada satu waktu (diukur 7 Sep 2026 22:0x).
+    #
+    # Jalan pertama dengan 64 utas memperlihatkan cacatnya telak: puluhan
+    # utas menyentuh ambang kosong hampir bersamaan, masing-masing memulai
+    # kanarinya SENDIRI, dan log penuh percobaan kanari yang saling
+    # menimpa - sebagian menjawab "50 broker, lanjut" sementara sebagian
+    # lain menjawab "HTTP 200, 0 broker" untuk tanggal yang SAMA. Itu
+    # bukan sumber yang mati, itu sumber yang membatasi laju karena kami
+    # sendiri membanjirinya - dan penjaga laju yang justru menambah
+    # permintaan adalah penjaga yang bekerja terbalik.
+    kunci_kanari = threading.Lock()
     n = {"ok": 0, "lewat": 0, "kosong": 0, "gagal": 0, "meleset": 0,
          "kosong_menumpuk": 0, "belum_siap": 0, "selesai": 0}
     henti = threading.Event()
+
+    def kanari_sekali() -> int:
+        """Kanari di bawah kunci: utas kedua dan seterusnya MENUNGGU
+        hasil yang pertama, bukan menembak kanarinya sendiri."""
+        with kunci_kanari:
+            with kunci:
+                # Utas yang antre di belakang kanari yang baru saja lulus
+                # tak perlu mengulanginya.
+                if n["kosong_menumpuk"] < AMBANG_KOSONG:
+                    return n["kosong_menumpuk"]
+            return _kanari(tok["v"])
 
     def satu_emiten(kode: str) -> None:
       i = 0
@@ -571,7 +593,7 @@ def jalankan(a) -> int:
                     if henti.is_set():
                         break
                     if perlu_kanari:
-                        pulih = _kanari(tok["v"])
+                        pulih = kanari_sekali()
                         with kunci:
                             n["kosong_menumpuk"] = pulih
                     continue
@@ -598,7 +620,7 @@ def jalankan(a) -> int:
                     n["kosong_menumpuk"] += 1
                     perlu_kanari = n["kosong_menumpuk"] >= AMBANG_KOSONG
                 if perlu_kanari:
-                    pulih = _kanari(tok["v"])
+                    pulih = kanari_sekali()
                     with kunci:
                         n["kosong_menumpuk"] = pulih
                 continue
@@ -724,8 +746,11 @@ def main() -> int:
     ap.add_argument("--batas", type=int, help="maksimum emiten (untuk uji)")
     ap.add_argument("--jeda", type=float, default=1.0, help="detik antar permintaan")
     ap.add_argument("--paralel", type=int, default=1,
-                    help="emiten diproses N utas sekaligus (#77; 64 untuk panen satu hari). "
-                         "Jeda tetap berlaku PER UTAS, jadi laju total = paralel/jeda per detik")
+                    help="emiten diproses N utas sekaligus (#77). Jeda berlaku PER UTAS, "
+                         "jadi laju total = paralel/jeda per detik: 8 utas dengan jeda 0,4 "
+                         "sudah 20 permintaan/detik. 64 DIUKUR TERLALU AGRESIF 7 Sep 2026 "
+                         "(sumber mulai menjawab 200 dengan nol broker untuk tanggal yang "
+                         "jelas berisi); 8 adalah angka yang dipakai pemanggil.")
     ap.add_argument("--ulang", action="store_true", help="ambil ulang walau arsip ada")
     ap.add_argument("--varian", default="reguler",
                     help=f"dipisah koma; pilihan: {', '.join(VARIAN)} (bawaan reguler saja)")

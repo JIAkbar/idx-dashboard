@@ -193,7 +193,7 @@ jobs:
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/stockbit_token.py --status
-          & "${{ steps.py.outputs.exe }}" scripts/panen_broker_harian.py --jeda 0.4 --paralel 64 `
+          & "${{ steps.py.outputs.exe }}" scripts/panen_broker_harian.py --jeda 0.4 --paralel 8 `
             --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_broker_harian gagal" }
 
