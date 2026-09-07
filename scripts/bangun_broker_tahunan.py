@@ -32,6 +32,7 @@ Pakai:
 from __future__ import annotations
 
 import json
+import re
 import sys
 from collections import defaultdict
 from datetime import datetime
@@ -42,6 +43,44 @@ AKAR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(AKAR / "scripts"))
 
 import panen_broker_harian as ph  # noqa: E402
+
+
+BENTUK_KODE = re.compile(r"^[A-Z][A-Z0-9]{2,4}$")
+
+
+def periksa_kode(kode: str) -> str:
+    """Kode emiten, atau mati dengan galat yang menyebutkan asalnya (#68).
+
+    6 Sep 2026 18:27 pembangun ini melahirkan `broker_tahunan/8/index.json`
+    berisi {"kode": "8", "tahun": [], "n_hari": 0}. Asalnya bukan arsip -
+    `_arsip-mentah/broker-harian/` tak pernah punya direktori `8` - melainkan
+    baris bat panen sore:
+
+        bangun_broker_tahunan.py --tahun %TAHUN_KINI% --paralel 8
+
+    dengan `%TAHUN_KINI%` KOSONG. Perintahnya menyusut jadi
+    `--tahun --paralel 8`: penguraian argumen menelan `--paralel` sebagai NILAI
+    dari `--tahun` (menghasilkan daftar tahun kosong), lalu `8` yang tersisa
+    jatuh ke daftar positional dan diperlakukan sebagai kode emiten.
+
+    Yang mahal bukan direktorinya - isinya kosong. Yang mahal bentuk
+    kegagalannya: tak ada satu pun galat, dan kalau yang bocor lain kali
+    sebuah kode yang MIRIP emiten, arsipnya akan terisi angka milik emiten
+    yang salah dan tak seorang pun tahu. Karena itu penjaganya MEMATIKAN
+    proses, bukan melewati kode itu diam-diam.
+
+    3-5 huruf, bukan 4: kode bursa memang 4, tapi arsipnya memuat GOTOM (5)
+    dan swauji memakai UJI (3). Yang dijaga bentuknya, bukan panjang yang
+    kebetulan berlaku hari ini.
+    """
+    if not BENTUK_KODE.match(kode):
+        raise SystemExit(
+            f"kode emiten tak sah: {kode!r}. Bentuk yang diterima: 3-5 huruf/angka "
+            f"berawal huruf (mis. BUMI). Kalau ini datang dari bat panen, "
+            f"periksa nilai --tahun: nilai yang kosong membuat flag berikutnya "
+            f"tertelan sebagai nilainya dan angkanya jatuh jadi kode emiten."
+        )
+    return kode
 
 
 def tulis_retry(path, teks: str) -> None:
@@ -170,7 +209,20 @@ def swauji() -> int:
             assert idx["tahun"] == [2025, 2026] and idx["n_hari"] == 3
     finally:
         ph.ARSIP, KELUARAN = asli_arsip, asli_out
-    print("6/6 lulus")
+
+    # Penjaga bentuk kode (#68) - "8" pernah lolos jadi emiten dan
+    # melahirkan direktori arsip kosong tanpa satu pun galat.
+    assert periksa_kode("BUMI") == "BUMI"
+    assert periksa_kode("UJI") == "UJI"      # swauji sendiri 3 huruf
+    assert periksa_kode("GOTOM") == "GOTOM"  # ada di arsip, 5 huruf
+    for buruk in ("8", "", "2026", "--paralel", "bumi.json", "AB"):
+        try:
+            periksa_kode(buruk)
+        except SystemExit:
+            pass
+        else:
+            raise AssertionError(f"kode {buruk!r} mestinya ditolak")
+    print("8/8 lulus")
     return 0
 
 
@@ -200,16 +252,27 @@ def main() -> int:
         a = argv[i]
         if a == "--tahun":
             i += 1
+            # Nilai yang hilang (variabel bat kosong) dulu menelan flag
+            # BERIKUTNYA sebagai nilainya, dan sisa barisnya jatuh jadi kode
+            # emiten - itu asal direktori `8` (#68). Sekarang mati di sini.
+            if i >= len(argv) or argv[i].startswith("-"):
+                raise SystemExit("--tahun butuh nilai, mis. --tahun 2026")
             tahun = tuple(t for t in argv[i].split(",") if t in TAHUN_PENUH)
+            if not tahun:
+                raise SystemExit(f"--tahun {argv[i]!r} tak memuat satu pun tahun yang dikenal")
         elif a == "--paralel":
             i += 1
+            if i >= len(argv) or argv[i].startswith("-"):
+                raise SystemExit("--paralel butuh nilai, mis. --paralel 8")
             paralel = max(1, int(argv[i]))
         elif a == "--lanjut":
             pass  # ditangani setelah daftar kode tersusun
         elif not a.startswith("-"):
             arg.append(a)
         i += 1
-    kode_semua = [a.upper() for a in arg] or sorted(p.name for p in ph.ARSIP.iterdir() if p.is_dir())
+    kode_semua = [periksa_kode(a.upper()) for a in arg] or [
+        periksa_kode(p.name) for p in sorted(ph.ARSIP.iterdir()) if p.is_dir()
+    ]
     if "--lanjut" in argv:
         # Lewati emiten yang SUDAH punya salah satu berkas tahun yang diminta
         # (resume backfill). Emiten yang mentahnya memang kosong akan discan

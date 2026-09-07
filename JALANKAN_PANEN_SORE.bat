@@ -69,6 +69,12 @@ if errorlevel 1 echo   (intraday gagal - lanjut)
 echo.
 echo [E] Turunan: tahunan + kategori + kartu + screener + penjaga radar
 for /f %%y in ('"%PYEXE%" -c "import datetime;print(datetime.date.today().year)"') do set TAHUN_KINI=%%y
+REM Pagar tahun (#68). Tanpa ini, TAHUN_KINI kosong membuat barisnya jadi
+REM "--tahun --paralel 8": pengurai menelan --paralel sebagai nilai --tahun
+REM dan angka 8 jatuh jadi KODE EMITEN - itu asal broker_tahunan/8 pada
+REM 6 Sep 18:27. Baris kembar di JALANKAN_BUKA_LAPTOP.bat sudah berpagar
+REM sejak awal; yang ini tertinggal.
+if "%TAHUN_KINI%"=="" (echo   [E] PERINGATAN: tahun tak terbaca, memakai 2026 ^& lanjut) & if "%TAHUN_KINI%"=="" set TAHUN_KINI=2026
 "%PYEXE%" scripts\bangun_broker_tahunan.py --tahun %TAHUN_KINI% --paralel 8
 "%PYEXE%" scripts\bangun_kategori_broker.py
 "%PYEXE%" scripts\riset\kartu_analisa.py --semua --tulis
