@@ -6,7 +6,7 @@ import type { AgregatBroker, HariBroker, ModeTransaksi } from '../../../lib/dasb
 import { convictionHarian } from '../../../lib/dasbor/brokerEmitenV2'
 import { warnaBroker, namaBroker } from '../../../lib/dasbor/kelompokBroker'
 import { fmtB, fmtLot } from '../../../lib/dasbor/brokerSummaryFormat'
-import { labelTanggal } from '../../../lib/dasbor/brokerHarian'
+import { labelTanggal } from '../../../lib/dasbor/brokerHarian'
 import { TautanBroker, useBrokerBerhalaman } from '../../../components/dasbor/TautanBroker'
 
 /** Satu sisi (Buy atau Sell) tabel Gross/Net/%Net — port `renderFlowNetGross()` mockup. */

@@ -1,5 +1,5 @@
 import type { BrokerRow } from '../../../lib/dasbor/brokerSummaryData'
-import { fmtB, fmtLot } from '../../../lib/dasbor/brokerSummaryFormat'
+import { fmtB, fmtLot } from '../../../lib/dasbor/brokerSummaryFormat'
 import { TautanBroker, useBrokerBerhalaman } from '../../../components/dasbor/TautanBroker'
 
 interface InventoryProps {

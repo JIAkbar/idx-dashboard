@@ -5,7 +5,7 @@ import { warnaBroker, namaBroker } from '../../../lib/dasbor/kelompokBroker'
 import { fmtB, fmtLot } from '../../../lib/dasbor/brokerSummaryFormat'
 import { labelTanggal } from '../../../lib/dasbor/brokerHarian'
 import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
-import { EmptyState } from './Overview'
+import { EmptyState } from './Overview'
 import { TautanBroker, useBrokerBerhalaman } from '../../../components/dasbor/TautanBroker'
 
 interface NegoProps {
