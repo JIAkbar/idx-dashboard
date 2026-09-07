@@ -263,7 +263,11 @@
 .lantai .brd-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 .lantai .brd-chip {
   font-family: var(--ui); font-size: 10.5px; text-decoration: none;
-  border: 1px solid var(--line2); border-radius: 999px; padding: 3px 10px; color: var(--text2);
+  /* 4px, bukan 999px (#39): aturan bentuk ronde 2 menyeragamkan radius
+     kendali interaktif DAN badge data; yang boleh tetap bundar cuma
+     lingkaran status (dot, medal, legend-dot). Ini `<Link>` yang membawa
+     orang ke halaman lain, jadi ia kendali. */
+  border: 1px solid var(--line2); border-radius: 4px; padding: 3px 10px; color: var(--text2);
   transition: border-color .18s ease, color .18s ease, transform .18s ease;
 }
 .lantai .brd-chip:hover { border-color: var(--amber); color: var(--text); transform: translateY(-1px); }

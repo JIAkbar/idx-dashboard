@@ -1457,9 +1457,11 @@
 }
 
 /* ===== PETA INVESTOR — port markup baris 2219-2369 + CSS baris 544-563, 610-622, 630-632 ===== */
-.lantai .pi-view-tabs { display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
-.lantai .pi-view-tab { padding: 6px 14px; border-radius: var(--r-kecil, 8px); border: 0.5px solid var(--border2); background: var(--bg3); color: var(--text2); font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; font-family: inherit; }
-.lantai .pi-view-tab.active { background: var(--accent); color: var(--amber-ink); border-color: var(--accent); }
+/* .pi-view-tab DIBUANG 7 Sep 2026 (#39): nol pemakai di seluruh kode -
+   diperiksa dengan grep atas semua .tsx. CSS tanpa pemakai bukan sekadar
+   bobot mati; ia ikut terbaca sebagai "kendali yang ada" saat orang
+   menyapu aturan bentuk, dan menghabiskan waktu untuk sesuatu yang tak
+   pernah tampil. */
 
 .lantai .pi-legend { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; font-size: 11px; color: var(--text2); }
 .lantai .pi-legend-title { font-weight: 700; color: var(--text); margin-right: 4px; }
@@ -1788,7 +1790,6 @@
 
 .lantai .btn-p,
 .lantai .chip-t,
-.lantai .pi-view-tab,
 .lantai .pi-tbl-search,
 .lantai .pi-tbl-select,
 .lantai .pi-loadmore,
@@ -1803,7 +1804,7 @@
    IkonMenu dan teks — tanpa gap eksplisit ikon menempel ke label. */
 .lantai .tab { height: 26px; gap: 6px; }
 .lantai .dd-btn, .lantai .btn-p, .lantai .chip-t,
-.lantai .pi-view-tab, .lantai .pi-loadmore {
+.lantai .pi-loadmore {
   padding-top: 0; padding-bottom: 0;
   display: inline-flex; align-items: center;
 }
@@ -1815,34 +1816,43 @@
 .lantai .bchip, .lantai .ytd-bdg, .lantai .blt-dl,
 
 .lantai .rate button, .lantai .badge,
-.lantai .pi-view-tab, .lantai .pi-search, .lantai .pi-search-go,
+.lantai .pi-search, .lantai .pi-search-go,
 .lantai .pi-search-reset, .lantai .pi-tbl-search, .lantai .pi-tbl-select,
 .lantai .pi-loadmore,
 .lantai .dpk-hari,
 .dasbor-shell .bdg, .dasbor-shell .bchip, .dasbor-nav-badge,
-.dasbor-shell .dasbor-laci-item, .dasbor-shell .dasbor-laci-tombol { border-radius: 4px; }
+.dasbor-shell .dasbor-laci-item, .dasbor-shell .dasbor-laci-tombol,
+/* Enam kelas berikut ditambahkan 7 Sep 2026 (#39). Semuanya lolos aturan
+   ini bertahun-tahun bukan karena dikecualikan, melainkan karena daftar di
+   atas dibuat sebelum mereka lahir dan tak ada yang memberi tahu: terukur
+   .brd-chip 999px, .be-pil 999px, .bm-pil 999px, .gk-chip 8px,
+   .bs2-chipstat 5px, .rdr-chip 3px. Nilainya juga sudah dibetulkan di
+   tempat masing-masing lahir - didaftarkan DI SINI juga supaya
+   penegakannya tetap satu tempat, dan uji `radiusKendali.test.ts`
+   menjaga daftar ini tetap lengkap. */
+.lantai .brd-chip, .lantai .be-pil, .lantai .bm-pil,
+.lantai .gk-chip, .lantai .bs2-chipstat, .lantai .rdr-chip { border-radius: 4px; }
 
 /* Micro-interaction "mewah": transisi halus + hover amber + tekan 1px.
    Hover per-kontrol yang sudah ada (dd-btn/chip-t/csb-more/blt-dl) tetap;
    di sini cuma melengkapi yang belum punya & menyeragamkan transisinya. */
 .lantai .dd-btn, .lantai .chip-t, .lantai .blt-dl,
-.lantai .pi-view-tab, .lantai .pi-loadmore, .lantai .rate button,
+.lantai .pi-loadmore, .lantai .rate button,
 .lantai .btn-p, .lantai .tab {
   transition: color .15s ease-out, border-color .15s ease-out,
     background .15s ease-out, transform .15s ease-out, box-shadow .15s ease-out;
   letter-spacing: .02em;
 }
-.lantai .pi-view-tab:not(.active):hover,
 .lantai .pi-loadmore:hover { background: var(--amber-dim); border-color: var(--amber); color: var(--text); }
 .lantai .btn-p:active, .lantai .dd-btn:active, 
-.lantai .chip-t:active, .lantai .pi-view-tab:active, .lantai .pi-search-go:active,
+.lantai .chip-t:active, .lantai .pi-search-go:active,
 .lantai .pi-loadmore:active, .lantai .rate button:active, .lantai .blt-dl:active,
 .lantai .tab:active { transform: translateY(1px); }
 .lantai .btn-p, .lantai .pi-search-go { box-shadow: 0 1px 2px rgba(0,0,0,.18); }
 .lantai .btn-p:active, .lantai .pi-search-go:active { box-shadow: 0 0 1px rgba(0,0,0,.14); }
 @media (prefers-reduced-motion: reduce) {
   .lantai .btn-p:active, .lantai .dd-btn:active, 
-  .lantai .chip-t:active, .lantai .pi-view-tab:active, .lantai .pi-search-go:active,
+  .lantai .chip-t:active, .lantai .pi-search-go:active,
   .lantai .pi-loadmore:active, .lantai .rate button:active, .lantai .blt-dl:active,
   .lantai .tab:active, .lantai .lt:active, .lantai .ti:active { transform: none; }
 }
@@ -2036,7 +2046,8 @@
 .lantai .bs2-legenda{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--text3);margin:2px 0 10px}
 .lantai .bs2-legenda span{display:inline-flex;align-items:center;gap:5px}
 .lantai .bs2-legenda i{width:8px;height:8px;border-radius:2px;display:inline-block}
-.lantai .bs2-chipstat{display:inline-flex;gap:6px;align-items:baseline;border:1px solid var(--line);border-radius:5px;padding:4px 10px;background:var(--bg2);font-size:12.5px}
+/* radius 4px (#39): badge data ikut aturan bentuk. */
+.lantai .bs2-chipstat{display:inline-flex;gap:6px;align-items:baseline;border:1px solid var(--line);border-radius:4px;padding:4px 10px;background:var(--bg2);font-size:12.5px}
 .lantai .bs2-chipstat b{font-weight:600}
 .lantai .bs2-metrik{display:grid;gap:0}
 .lantai .bs2-metrik>div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
@@ -2196,7 +2207,8 @@
 .lantai .rdr-z-uptrend .tick{color:var(--rdr-uptrend)}
 
 /* Chip sinyal */
-.lantai .rdr-chip{display:inline-block;font-family:var(--mono);font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:3px;border:1px solid var(--line2);color:var(--text2);white-space:nowrap;margin:1px 4px 1px 0;background:none}
+/* radius 4px (#39): badge data ikut aturan bentuk. */
+.lantai .rdr-chip{display:inline-block;font-family:var(--mono);font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:4px;border:1px solid var(--line2);color:var(--text2);white-space:nowrap;margin:1px 4px 1px 0;background:none}
 .lantai .rdr-chip.g{color:var(--green);border-color:var(--green);background:var(--green-dim)}
 .lantai .rdr-chip.o{color:var(--amber);border-color:var(--amber);background:var(--amber-dim)}
 .lantai .rdr-chip.b{color:var(--rdr-uptrend);border-color:var(--rdr-uptrend);background:var(--rdr-uptrend-dim)}
@@ -2351,7 +2363,8 @@
    makna ke satu warna membuat keduanya tak terbaca. */
 .lantai .gk-chip {
   display: inline-flex; align-items: baseline; gap: 5px;
-  padding: 3px 8px; border-radius: var(--r-kecil);
+  /* 4px, bukan --r-kecil 8px (#39): ini `<Link>` ke halaman emiten. */
+  padding: 3px 8px; border-radius: 4px;
   border: 1px solid var(--line); text-decoration: none;
   font-family: var(--mono); font-size: 10.5px; color: var(--text);
 }
