@@ -85,6 +85,10 @@ REM Statistik Gap per kerangka (#50). Node, bukan Python: skripnya
 REM MENGIMPOR mesin gap yang sama dengan yang menggambar zonanya, jadi
 REM angka layar dan zona layar tak mungkin berbeda diam-diam.
 for %%T in (D W M) do node app\scripts\gap-statistik.ts --tf=%%T --tulis
+REM Rollup Top Broker lintas hari (#29). Dijumlah dari rekap broker harian
+REM resmi yang SUDAH dibaca halaman itu - sumber sama, bukan jahitan.
+"%PYEXE%" scripts\bangun_broker_rentang.py --tulis
+if errorlevel 1 echo   (rollup broker rentang gagal - lanjut)
 "%PYEXE%" scripts\bangun_prob.py
 if errorlevel 1 echo   (peluang gagal - lanjut)
 REM Rezim pasar: dulu HANYA di bat buka-laptop. Hari Johan tak membuka

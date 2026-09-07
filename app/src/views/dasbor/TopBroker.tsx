@@ -6,6 +6,10 @@ import { useUrut } from '../../lib/dasbor/useUrut'
 import { fN } from '../../lib/dasbor/format'
 import type { StockRankRow, BrokerRankRow } from '../../lib/dasbor/dataHarian'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
+import { LABEL_RENTANG } from '../../lib/dasbor/periode'
+import { useBrokerRentang, type PresetBroker } from '../../lib/dasbor/brokerRentang'
+import { useState } from 'react'
 
 /**
  * Reset tombol judul kolom ke tampilan teks polos — padanan `button{font:
@@ -41,14 +45,24 @@ function thSort<T extends object>(s: UrutState<T>, k: keyof T, label: string, ka
 export function TopBroker() {
   const { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error } = useDataHarian()
 
+  /**
+   * `null` = mode HARI (perilaku lama, tak berubah sedikit pun).
+   * Johan: "di page ini apakah tidak bisa range waktu ? kita punya data
+   * hasil panen looh" — jawabannya bisa, dan datanya memang sudah ada.
+   */
+  const [rentang, setRentang] = useState<PresetBroker | null>(null)
+  const { data: dataRentang, memuat: memuatRentang } = useBrokerRentang(rentang)
+
   // Hooks dipanggil tanpa syarat sebelum return dini loading/error (Rules of
   // Hooks) — pola sama dengan SektorIndeks.tsx.
   const volS = useUrut<StockRankRow>(hari?.top_vol ?? [], 'v')
   const valS = useUrut<StockRankRow>(hari?.top_val ?? [], 'v')
   const freqS = useUrut<StockRankRow>(hari?.top_freq ?? [], 'v')
-  const volB = useUrut<BrokerRankRow>(hari?.broker_vol ?? [], 'v')
-  const valB = useUrut<BrokerRankRow>(hari?.broker_val ?? [], 'v')
-  const freqB = useUrut<BrokerRankRow>(hari?.broker_freq ?? [], 'v')
+  // Sumber baris broker: rollup rentang kalau sedang dipilih, kalau tidak
+  // rekap hari itu. `useUrut` tetap satu pemanggilan (Rules of Hooks).
+  const volB = useUrut<BrokerRankRow>(dataRentang?.broker_vol ?? hari?.broker_vol ?? [], 'v')
+  const valB = useUrut<BrokerRankRow>(dataRentang?.broker_val ?? hari?.broker_val ?? [], 'v')
+  const freqB = useUrut<BrokerRankRow>(dataRentang?.broker_freq ?? hari?.broker_freq ?? [], 'v')
 
   // Judul = label menu resmi rute /broker (lib/dasbor/menu.ts) — dipakai
   // ulang di ketiga cabang return (loading/error/utama) supaya header tak
@@ -95,6 +109,8 @@ export function TopBroker() {
     )
   }
 
+  const labelRentang = rentang ? LABEL_RENTANG[rentang] : ''
+
   const tblStock = (s: UrutState<StockRankRow> & { urut: StockRankRow[] }) => s.urut.map((x) => (
     <tr key={x.c}>
       <td><Link to={`/grafik?kode=${x.c}`} className="tick">{x.c}</Link></td>
@@ -116,6 +132,35 @@ export function TopBroker() {
     <div className="lantai">
       {vhead(tanggalAktif, hari?.sementara === true)}
       <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
+      <div className="bilah-kendali">
+        <div className="grup-k">
+          <PemilihRentang
+            ariaLabel="Rentang Top Broker"
+            nilai={rentang ?? 'hari'}
+            onGanti={(id) => setRentang(id === 'hari' ? null : (id as PresetBroker))}
+            opsi={[
+              { id: 'hari', label: LABEL_RENTANG.hariIni, judul: 'Rekap satu hari bursa' },
+              { id: 'h5', label: LABEL_RENTANG.h5 },
+              { id: 'w1', label: LABEL_RENTANG.w1 },
+              { id: 'b1', label: LABEL_RENTANG.b1 },
+              { id: 'b3', label: LABEL_RENTANG.b3 },
+              { id: 'ytd', label: LABEL_RENTANG.ytd },
+            ]}
+          />
+        </div>
+      </div>
+      {rentang && (
+        <p className="muted" style={{ margin: '0 0 8px', fontSize: 11, lineHeight: 1.55 }}>
+          {memuatRentang && 'Menjumlah rentang…'}
+          {!memuatRentang && !dataRentang && 'Rollup rentang ini belum tersedia — jalankan panen turunan.'}
+          {!memuatRentang && dataRentang && (<>
+            Peringkat broker dijumlah dari <b>{dataRentang.n_hari} hari bursa</b>
+            {' '}({dataRentang.mulai} s.d. {dataRentang.akhir}), seluruh <b>{dataRentang.n_broker} broker</b>.
+            {' '}Tabel <b>Top Stock</b> di bawah tetap satu hari: rekap hariannya cuma memuat sepuluh besar,
+            {' '}dan menjumlah sepuluh besar harian bukan peringkat sepekan.
+          </>)}
+        </p>
+      )}
 
       <div className="panel">
         <div className="panel-h"><span className="lbl">Top Stock Trading — By Volume · Value · Frequency</span></div>
@@ -148,7 +193,7 @@ export function TopBroker() {
 
       <div className="grid3">
         <div className="panel">
-          <div className="panel-h"><span className="lbl">Top Broker — By Volume (Juta Saham)</span></div>
+          <div className="panel-h"><span className="lbl">Top Broker — By Volume (Juta Saham){rentang ? ` · ${labelRentang}` : ''}</span></div>
           <div className="board-tbl-wrap">
             <table className="tbl">
               <thead><tr>{thSort(volB, 'cd', 'Kode')}{thSort(volB, 'nm', 'Nama Broker')}{thSort(volB, 'v', 'Volume', true)}{thSort(volB, 'p', '%', true)}</tr></thead>
@@ -157,7 +202,7 @@ export function TopBroker() {
           </div>
         </div>
         <div className="panel">
-          <div className="panel-h"><span className="lbl">Top Broker — By Value (Miliar IDR)</span></div>
+          <div className="panel-h"><span className="lbl">Top Broker — By Value (Miliar IDR){rentang ? ` · ${labelRentang}` : ''}</span></div>
           <div className="board-tbl-wrap">
             <table className="tbl">
               <thead><tr>{thSort(valB, 'cd', 'Kode')}{thSort(valB, 'nm', 'Nama Broker')}{thSort(valB, 'v', 'Nilai', true)}{thSort(valB, 'p', '%', true)}</tr></thead>
@@ -166,7 +211,7 @@ export function TopBroker() {
           </div>
         </div>
         <div className="panel">
-          <div className="panel-h"><span className="lbl">Top Broker — By Frequency (Kali)</span></div>
+          <div className="panel-h"><span className="lbl">Top Broker — By Frequency (Kali){rentang ? ` · ${labelRentang}` : ''}</span></div>
           <div className="board-tbl-wrap">
             <table className="tbl">
               <thead><tr>{thSort(freqB, 'cd', 'Kode')}{thSort(freqB, 'nm', 'Nama Broker')}{thSort(freqB, 'v', 'Frekuensi', true)}{thSort(freqB, 'p', '%', true)}</tr></thead>

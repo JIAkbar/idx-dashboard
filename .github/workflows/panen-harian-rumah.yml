@@ -233,6 +233,14 @@ jobs:
             if ($LASTEXITCODE -ne 0) { Write-Host "::warning::gap-statistik $tf gagal" }
           }
 
+      # Rollup Top Broker lintas hari (#29) — dijumlah dari rekap broker
+      # harian resmi yang sudah dibaca halaman itu, bukan sumber lain.
+      - name: 4d · Rollup Top Broker rentang
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/bangun_broker_rentang.py --tulis
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_broker_rentang gagal" }
+
       - name: 5 · Valuasi historis
         continue-on-error: true
         run: |
