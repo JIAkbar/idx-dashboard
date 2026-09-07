@@ -1,0 +1,40 @@
+{
+  "param": {
+    "pivot_n": 5,
+    "klaster_pct": 0.015,
+    "jendela_klaster": 120,
+    "breakout_pct": 0.01,
+    "retest_tol_pct": 0.01,
+    "retest_bar": 20,
+    "konfirmasi_pct": 0.02,
+    "konfirmasi_bar": 3
+  },
+  "level": [
+    {
+      "level": 6587.5,
+      "status": "sah",
+      "tanggal_pivot": [
+        "2026-06-17",
+        "2026-07-20"
+      ],
+      "tanggal_breakout": "2026-09-02",
+      "tanggal_retest": "2026-09-03",
+      "tanggal_konfirmasi": "2026-09-03",
+      "sentuhan": 2
+    },
+    {
+      "level": 8725.0,
+      "status": "resistance",
+      "tanggal_pivot": [
+        "2025-10-22",
+        "2025-10-30",
+        "2025-11-20"
+      ],
+      "tanggal_breakout": null,
+      "tanggal_retest": null,
+      "tanggal_konfirmasi": null,
+      "sentuhan": 3
+    }
+  ],
+  "catatan": "Keluaran HARAPAN mesin RBS atas fixture bersama (#49). Dihasilkan scripts/riset/rbs_mesin.py --fixture --json, lalu diuji ULANG oleh KEDUA bahasa: polaRbs.test.ts dan scripts/riset/uji_rbs_mesin.py. Berkas ini kontraknya — satu mesin dua bahasa dibuktikan di sini, bukan diklaim di komentar."
+}

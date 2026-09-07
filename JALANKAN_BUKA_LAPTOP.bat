@@ -216,6 +216,11 @@ REM Peluang historis seluruh emiten. Dulu YATIM: nol pemanggil di bat
 REM maupun CI, jadi angkanya membeku dan tak seorang pun tahu - stempel
 REM `harga_pada` yang dipasang 6 Sep 2026 langsung memperlihatkannya
 REM tertinggal 5 hari bursa. Membaca ohlc/ yang baru dijahit langkah [B].
+REM Statistik RBS per kerangka + pemasok kandidat Deep Dive (#49). Angka
+REM yang dipajang chart datang dari berkas ini; kalau ia tak jalan, chart
+REM DIAM soal statistik alih-alih memajang angka basi.
+"%PYEXE%" scripts\riset\rbs_statistik.py --kerangka D W M --tulis
+if errorlevel 1 echo   (statistik RBS gagal - lanjut)
 "%PYEXE%" scripts\bangun_prob.py
 if errorlevel 1 echo   (peluang gagal - lanjut)
 "%PYEXE%" scripts\bangun_rezim_pasar.py

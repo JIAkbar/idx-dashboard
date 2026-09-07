@@ -66,7 +66,8 @@ import { GarisAvgBroker } from '../../lib/dasbor/garisAvgBroker'
 import { PitaCpr } from '../../lib/dasbor/pitaCprChart'
 import { BubbleBroker, bubbleOutlierHarian, type BubbleHari } from '../../lib/dasbor/bubbleBroker'
 import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
-import { cariRbs, RINGKAS_BACKTEST_RBS } from '../../lib/dasbor/polaRbs'
+import { cariRbs, paramRbs } from '../../lib/dasbor/polaRbs'
+import { useStatRbs, kalimatStatRbs } from '../../lib/dasbor/rbsStatistik'
 import { PolaRbsChart } from '../../lib/dasbor/polaRbsChart'
 import { cariGap, RINGKAS_BACKTEST_GAP } from '../../lib/dasbor/polaGap'
 import { PolaGapChart } from '../../lib/dasbor/polaGapChart'
@@ -1509,16 +1510,25 @@ export function GrafikEmiten() {
    * Data primitive Pola RBS (spek §1) — dihitung dari SELURUH riwayat harian
    * yang tersedia (`penuh.lilin`, bukan rentang chip yang sedang dipilih):
    * klaster level butuh jendela 120 bar ke belakang dan level lama tetap
-   * relevan walau rentang chip sedang dipersempit ke "1M". Hanya kerangka
-   * harian — algoritmenya belum diuji/dikalibrasi di intraday (spek §3, di
-   * luar lingkup tugas ini).
+   * relevan walau rentang chip sedang dipersempit ke "1M".
+   *
+   * Harian, Pekanan, dan Bulanan (#49): ketiganya dirakit dari arsip harian
+   * yang sama, jadi barnya sudah benar dan yang perlu ikut cuma parameternya —
+   * jendela retest 20 bar di harian, 10 di pekanan/bulanan, karena menuntut
+   * level pekanan menunggu retest 20 PEKAN berarti hampir tak ada yang pernah
+   * berstatus selain `breakout`.
+   *
+   * Intraday TETAP dijegal: barnya dari sumber lain (`intraday_1h`) dan
+   * kalibrasinya belum diukur di sana — menyalakannya sekarang berarti garis
+   * yang terlihat sama meyakinkannya tanpa satu angka pun di belakangnya.
    */
   useEffect(() => {
     const prim = polaRbsRef.current
     if (!prim) return
-    if (!rbsAktif || kerangka !== 'D' || penuh.lilin.length === 0) { prim.setData({ level: [], hargaTerakhir: null }); return }
+    const bisa = kerangka === 'D' || kerangka === 'W' || kerangka === 'M'
+    if (!rbsAktif || !bisa || penuh.lilin.length === 0) { prim.setData({ level: [], hargaTerakhir: null }); return }
     prim.setData({
-      level: cariRbs(penuh.lilin),
+      level: cariRbs(penuh.lilin, paramRbs(kerangka)),
       hargaTerakhir: penuh.lilin[penuh.lilin.length - 1]?.close ?? null,
     })
   }, [rbsAktif, kerangka, penuh.lilin])
@@ -2041,6 +2051,11 @@ export function GrafikEmiten() {
     if (perluKatalogPola && !katalog) mintaKatalog()
   }, [perluKatalogPola, katalog, mintaKatalog])
 
+
+  /** Angka statistik RBS untuk kerangka yang sedang tampil — dari berkas,
+   *  bukan konstanta. Kerangka tanpa berkas tak menampilkan apa pun. */
+  const statRbs = useStatRbs(kerangka, rbsAktif)
+  const kalimatRbs = kalimatStatRbs(statRbs)
 
   const perluFnet = pol.daftar.some((i) => i.jenis === 'wyckoff')
   const [fnetPeta, setFnetPeta] = useState<Map<string, number>>(() => new Map())
@@ -3518,7 +3533,7 @@ export function GrafikEmiten() {
               dari spek, satu rumah dengan badge kanvas (`RINGKAS_BACKTEST_*`
               di polaRbs.ts/polaGap.ts) supaya tak ada dua salinan yang bisa
               diam-diam berbeda. */}
-          {kerangka === 'D' && rbsAktif && <p className="muted grf-pola-keterangan">RBS: {RINGKAS_BACKTEST_RBS}</p>}
+          {rbsAktif && kalimatRbs && <p className="muted grf-pola-keterangan">RBS {kerangka}: {kalimatRbs}</p>}
           {kerangka === 'D' && gapAktif && <p className="muted grf-pola-keterangan">Gap: {RINGKAS_BACKTEST_GAP}</p>}
           {kodeAsing && (
             <p className="muted">

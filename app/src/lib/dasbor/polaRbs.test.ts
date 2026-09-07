@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { cariRbs } from './polaRbs'
+import { cariRbs, paramRbs, PARAM_RBS_DASAR } from './polaRbs'
 import type { LilinData } from './grafikEmiten'
 // Arsip mentah diimpor sebagai modul JSON (resolveJsonModule) — sama pola
 // dengan harianPapan.test.ts: regresi terhadap DATA NYATA, bukan fixture
 // yang diketik ulang. Bentuknya {d:[[tanggal,open,high,low,close,volume],...]}
 // (lihat app/scripts/backtest-struktur.ts yang membaca berkas sama).
 import bbcaRaw from '../../../../data-idx/json/ohlc/BBCA.json'
+// Fixture BERSAMA dengan mesin Python (#49) — kontrak "satu mesin".
+import fixtureRbs from './__fixtures__/rbs-mesin.json'
+import harapanRbs from './__fixtures__/rbs-mesin-harapan.json'
 
 function tgl(i: number): string {
   const d = new Date(Date.UTC(2020, 0, 1))
@@ -149,5 +152,60 @@ describe('cariRbs', () => {
     // (polaRbsChart.ts) untuk memotong 3 level terdekat ke harga terakhir.
     const level = hasil.map((l) => l.level)
     expect(level).toEqual([...level].sort((a, b) => a - b))
+  })
+})
+
+/* ------------------------------------------------------------------ *
+ * Paritas dengan mesin Python (#49).
+ *
+ * Sebelum ini ada DUA mesin RBS yang berbeda diam-diam: yang ini untuk
+ * garis di chart, `deteksi_rbs` di `bt_papan.py` untuk backtest. Angka
+ * backtest karena itu tak pernah benar-benar menggambarkan garis yang
+ * dilihat orang. Uji ini pasangan dari `scripts/riset/uji_rbs_mesin.py`:
+ * dua bahasa, satu fixture, satu berkas harapan.
+ * ------------------------------------------------------------------ */
+
+describe('paritas mesin RBS TypeScript <-> Python', () => {
+  const bar: LilinData[] = (fixtureRbs.d as Array<[string, number, number, number, number, number]>)
+    .map(([t, o, h, l, c]) => ({ time: t, open: o, high: h, low: l, close: c }))
+
+  it('keluarannya sama persis dengan kontrak bersama', () => {
+    const hasil = cariRbs(bar, paramRbs(fixtureRbs.kerangka))
+    const bentukSamaDenganPython = hasil.map((lv) => ({
+      level: lv.level,
+      status: lv.status,
+      tanggal_pivot: lv.tanggalPivot,
+      tanggal_breakout: lv.tanggalBreakout ?? null,
+      tanggal_retest: lv.tanggalRetest ?? null,
+      tanggal_konfirmasi: lv.tanggalKonfirmasi ?? null,
+      sentuhan: lv.sentuhan,
+    }))
+    expect(bentukSamaDenganPython).toEqual(harapanRbs.level)
+  })
+
+  it('BBCA harian: satu level sah di 6.588, breakout 2 Sep, retest 3 Sep', () => {
+    // Angka yang bisa dicocokkan langsung ke layar — kriteria terima #49.
+    const sah = cariRbs(bar, PARAM_RBS_DASAR).filter((lv) => lv.status === 'sah')
+    expect(sah).toHaveLength(1)
+    expect(Math.round(sah[0].level)).toBe(6588)
+    expect(sah[0].tanggalBreakout).toBe('2026-09-02')
+    expect(sah[0].tanggalRetest).toBe('2026-09-03')
+  })
+})
+
+describe('level BEKU sesudah lahir — kebocoran masa depan yang ditutup #49', () => {
+  it('sentuhan ketiga dicatat tapi TIDAK menggeser harga level', () => {
+    // Dua puncak 100 dan 101 (level lahir 100,5), lalu puncak ketiga 99.
+    // Mesin lama memakai rata-rata SELURUH sentuhan, jadi harga yang dipakai
+    // memutuskan breakout ikut ditentukan bar yang belum terjadi.
+    const tinggi = [
+      ...Array(6).fill(90), 100, ...Array(11).fill(90), 101,
+      ...Array(11).fill(90), 99, ...Array(10).fill(90),
+    ]
+    const b: LilinData[] = tinggi.map((h, i) => custom(i, 88, h, 87, 88))
+    const hasil = cariRbs(b, { ...PARAM_RBS_DASAR, pivotN: 3, klasterPct: 0.05, jendelaKlaster: 200 })
+    expect(hasil).toHaveLength(1)
+    expect(hasil[0].level).toBeCloseTo(100.5, 9)
+    expect(hasil[0].sentuhan).toBe(3)
   })
 })

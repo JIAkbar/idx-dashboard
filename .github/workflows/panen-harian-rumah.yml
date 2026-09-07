@@ -218,6 +218,15 @@ jobs:
           & "${{ steps.py.outputs.exe }}" scripts/riset/kandidat_deepdive.py
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::kandidat_deepdive gagal" }
 
+      # Statistik RBS per kerangka + pemasok kandidat Deep Dive (#49). Chart
+      # membaca `bt/rbs-stat-<TF>.json`; kerangka tanpa berkas tak menampilkan
+      # angka sama sekali, jadi langkah ini yang menjaga angkanya hidup.
+      - name: 4c · Statistik RBS & kandidat
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/riset/rbs_statistik.py --kerangka D W M --tulis
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::rbs_statistik gagal" }
+
       - name: 5 · Valuasi historis
         continue-on-error: true
         run: |
