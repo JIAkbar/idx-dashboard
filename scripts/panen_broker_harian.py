@@ -48,6 +48,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import threading
 import time
 
 import requests
@@ -158,6 +159,12 @@ def _angka(v) -> float:
 # terbukti berisi; kalau kanari pun kosong sesudah beberapa kali jeda, hentikan
 # jalan ini dengan pesan yang menyebut sebabnya.
 AMBANG_KOSONG = 12       # jawaban "nol broker padahal ada volume" beruntun
+# Henti dini (#77 B): kalau sumber belum menerbitkan hari ini, tiap emiten
+# menghabiskan satu permintaan untuk mendengar hal yang sama. 962 emiten x
+# 6 varian = ±65 menit menunggu jawaban yang sudah diketahui sejak emiten
+# ke-20. Angkanya 20, bukan 5: emiten sepi memang wajar kosong, dan
+# dua puluh berturut-turut TANPA satu pun berhasil baru berarti sumbernya.
+AMBANG_BELUM_TERBIT = 20
 KANARI_COBA = 5
 KANARI_JEDA = 60         # detik antar percobaan kanari
 
@@ -441,43 +448,70 @@ def jalankan(a) -> int:
     if a.batas:
         kode_semua = kode_semua[: a.batas]
 
-    token = token_segar()
-    if len(kode_semua) > 1:
-        print(f"Panen broker GROSS {tanggal} — {len(kode_semua)} emiten, jeda {a.jeda}s")
-    n_ok = n_lewat = n_kosong = n_gagal = n_meleset = 0
-    beruntun_kosong = 0  # penjaga laju — lihat _kanari
-    mulai = time.time()
-
     varian_semua = [v.strip() for v in (getattr(a, "varian", None) or "reguler").split(",") if v.strip()]
     for v in varian_semua:
         if v not in VARIAN:
             raise SystemExit(f"varian tak dikenal: {v} (pilihan: {', '.join(VARIAN)})")
 
-    for i, kode in enumerate(kode_semua, 1):
+    paralel = max(1, int(getattr(a, "paralel", 1) or 1))
+    tok = {"v": token_segar()}
+    if len(kode_semua) > 1:
+        print(f"Panen broker GROSS {tanggal} — {len(kode_semua)} emiten, "
+              f"{len(varian_semua)} varian, jeda {a.jeda}s, paralel {paralel}")
+    mulai = time.time()
+
+    # Pencacah dipakai banyak utas; satu kunci untuk semuanya. `kosong`
+    # dulu "beruntun" - di kolam utas urutan tak lagi berarti, jadi yang
+    # dihitung sekarang kosong yang MENUMPUK dan direset tiap ada yang
+    # berhasil. Ambangnya sama, artinya sedikit lebih longgar; kanari yang
+    # jadi wasit akhirnya, dan ia tak berubah.
+    kunci = threading.Lock()
+    n = {"ok": 0, "lewat": 0, "kosong": 0, "gagal": 0, "meleset": 0,
+         "kosong_menumpuk": 0, "belum_siap": 0, "selesai": 0}
+    henti = threading.Event()
+
+    def satu_emiten(kode: str) -> None:
+      i = 0
+      if henti.is_set():
+        return
+      # Reguler jadi wasit kesiapan sumber (#77 B): begitu ia menjawab
+      # "belum siap", lima varian sisanya PASTI menjawab hal yang sama -
+      # memanggilnya tetap cuma membeli jawaban yang sudah diketahui.
+      reguler_belum_siap = False
       for varian in varian_semua:
+        if henti.is_set() or reguler_belum_siap:
+            break
         pasar, investor, transaksi = VARIAN[varian]
         ark = ARSIP / kode / nama_arsip(tanggal, varian)
         if ark.exists() and not a.ulang:
-            n_lewat += 1
+            with kunci:
+                n["lewat"] += 1
             mentah = baca(ark)
         else:
-            st, isi = ambil(token, kode, tanggal, pasar, investor, transaksi)
+            st, isi = ambil(tok["v"], kode, tanggal, pasar, investor, transaksi)
             if st == 401:
-                token = token_segar(margin=10**9)  # paksa refresh
-                st, isi = ambil(token, kode, tanggal, pasar, investor, transaksi)
+                # Putaran token sudah dikunci di `stockbit_token.py`
+                # (`_KUNCI_PUTAR`), jadi banyak utas yang kena 401 bersamaan
+                # tetap memutar SEKALI. Yang perlu dijaga di sini cuma
+                # penulisan salinan lokalnya.
+                with kunci:
+                    tok["v"] = token_segar(margin=10**9)  # paksa refresh
+                st, isi = ambil(tok["v"], kode, tanggal, pasar, investor, transaksi)
             if st == 429:
                 print(f"  {kode}: 429 — jeda 30 detik")
                 time.sleep(30)
-                st, isi = ambil(token, kode, tanggal, pasar, investor, transaksi)
+                st, isi = ambil(tok["v"], kode, tanggal, pasar, investor, transaksi)
             if st != 200:
-                n_gagal += 1
+                with kunci:
+                    n["gagal"] += 1
                 print(f"  {kode} {varian}: HTTP {st} {str(isi)[:80]}")
                 time.sleep(a.jeda)
                 continue
             mentah = isi
             dijawab = (mentah.get("data") or {}).get("from")
             if dijawab and dijawab != tanggal:
-                n_gagal += 1
+                with kunci:
+                    n["gagal"] += 1
                 print(f"  {kode}: server menjawab {dijawab}, diminta {tanggal} — dibuang")
                 time.sleep(a.jeda)
                 continue
@@ -498,7 +532,8 @@ def jalankan(a) -> int:
             # (hari tanpa transaksi asing atau tanpa nego) — tetap diarsipkan
             # supaya tak diminta ulang tiap jalan.
             if varian == "reguler":
-                n_kosong += 1
+                with kunci:
+                    n["kosong"] += 1
                 # Nol broker di reguler punya DUA sebab yang beda nasibnya, dan
                 # membedakannya memakai volume IDX hari itu:
                 #
@@ -524,9 +559,21 @@ def jalankan(a) -> int:
                 # bukan galat jaringan.)
                 if vol:
                     print(f"  {kode}: API nol broker padahal IDX volume {vol:,} — belum siap, tak disimpan")
-                    beruntun_kosong += 1
-                    if beruntun_kosong >= AMBANG_KOSONG:
-                        beruntun_kosong = _kanari(token)
+                    reguler_belum_siap = True
+                    with kunci:
+                        n["kosong_menumpuk"] += 1
+                        n["belum_siap"] += 1
+                        perlu_kanari = n["kosong_menumpuk"] >= AMBANG_KOSONG
+                        # Sumber belum terbit: berhenti, jangan habiskan
+                        # 962 x 6 permintaan untuk jawaban yang sama.
+                        if n["ok"] == 0 and n["belum_siap"] >= AMBANG_BELUM_TERBIT:
+                            henti.set()
+                    if henti.is_set():
+                        break
+                    if perlu_kanari:
+                        pulih = _kanari(tok["v"])
+                        with kunci:
+                            n["kosong_menumpuk"] = pulih
                     continue
                 if vol is None:
                     continue
@@ -545,11 +592,15 @@ def jalankan(a) -> int:
             # reguler; jalan amannya: kalau reguler hari itu belum tersimpan,
             # varian lain pun ditunda — reguler-lah wasit "sumber sudah siap".
             if vol and not _reguler_tersimpan(baca(KELUARAN / f"{kode}.json"), tanggal):
-                n_kosong += 1
                 print(f"  {kode}/{varian}: API nol broker padahal IDX volume {vol:,} dan reguler belum ada — ditunda, tak disimpan")
-                beruntun_kosong += 1
-                if beruntun_kosong >= AMBANG_KOSONG:
-                    beruntun_kosong = _kanari(token)
+                with kunci:
+                    n["kosong"] += 1
+                    n["kosong_menumpuk"] += 1
+                    perlu_kanari = n["kosong_menumpuk"] >= AMBANG_KOSONG
+                if perlu_kanari:
+                    pulih = _kanari(tok["v"])
+                    with kunci:
+                        n["kosong_menumpuk"] = pulih
                 continue
             if not ark.exists():
                 ark.parent.mkdir(parents=True, exist_ok=True)
@@ -567,7 +618,8 @@ def jalankan(a) -> int:
         if varian == "reguler":
             ringkas["cocok_volume"] = cocok_volume(ringkas["total_lot"], vol)
             if ringkas["cocok_volume"] is not None and abs(ringkas["cocok_volume"] - 1) > TOLERANSI_VOLUME:
-                n_meleset += 1
+                with kunci:
+                    n["meleset"] += 1
                 print(f"  {kode}: Σlot x100 = {ringkas['total_lot']*100:,} vs IDX {vol:,} "
                       f"(rasio {ringkas['cocok_volume']})")
 
@@ -575,10 +627,30 @@ def jalankan(a) -> int:
         out.parent.mkdir(parents=True, exist_ok=True)
         tulis_ulet(out, json.dumps(perbarui_ringkas(baca(out), kode, tanggal, baris, ringkas, varian=varian),
                                    ensure_ascii=False, separators=(",", ":")))
-        n_ok += 1
-        beruntun_kosong = 0
+        with kunci:
+            n["ok"] += 1
+            n["kosong_menumpuk"] = 0
+      with kunci:
+        n["selesai"] += 1
+        i = n["selesai"]
       if i % 100 == 0:
-            print(f"  ...{i}/{len(kode_semua)} ({time.time()-mulai:.0f}s)")
+        print(f"  ...{i}/{len(kode_semua)} ({time.time()-mulai:.0f}s)")
+
+    if paralel == 1:
+        for kode in kode_semua:
+            satu_emiten(kode)
+    else:
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=paralel) as kolam:
+            for _ in kolam.map(satu_emiten, kode_semua):
+                pass
+
+    n_ok, n_lewat, n_kosong = n["ok"], n["lewat"], n["kosong"]
+    n_gagal, n_meleset = n["gagal"], n["meleset"]
+    if henti.is_set():
+        print(f"BERHENTI: {n['belum_siap']} emiten pertama semuanya belum siap dan nol tersimpan — "
+              "sumber belum terbit untuk tanggal ini.")
+        return 2
 
     print(f"Selesai {time.time()-mulai:.0f}s: {n_ok} tersimpan ({n_lewat} dari arsip), "
           f"{n_kosong} kosong, {n_gagal} gagal, {n_meleset} volume meleset >{TOLERANSI_VOLUME:.0%}")
@@ -651,6 +723,9 @@ def main() -> int:
     ap.add_argument("--hanya", help="kode dipisah koma")
     ap.add_argument("--batas", type=int, help="maksimum emiten (untuk uji)")
     ap.add_argument("--jeda", type=float, default=1.0, help="detik antar permintaan")
+    ap.add_argument("--paralel", type=int, default=1,
+                    help="emiten diproses N utas sekaligus (#77; 64 untuk panen satu hari). "
+                         "Jeda tetap berlaku PER UTAS, jadi laju total = paralel/jeda per detik")
     ap.add_argument("--ulang", action="store_true", help="ambil ulang walau arsip ada")
     ap.add_argument("--varian", default="reguler",
                     help=f"dipisah koma; pilihan: {', '.join(VARIAN)} (bawaan reguler saja)")

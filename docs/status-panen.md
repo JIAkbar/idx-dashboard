@@ -242,3 +242,49 @@ Dua bat lokal (`JALANKAN_PANEN_SORE.bat` 18:00 & `JALANKAN_BUKA_LAPTOP.bat` ONLO
 | `broker_pivot/<KODE_BROKER>.json` | Rincian Broker (`/broker/<kode>`) — akumulasi & distribusi per emiten | Turunan MURNI dari arsip transaksi broker per emiten (`broker_tahunan/`, varian reguler) — arah bacanya dibalik, bukan sumber baru. **Daftar harian per emiten dipotong 50 broker teratas tiap sisi oleh sumbernya**, dan halaman pemakainya wajib menyebut itu | **2026-09-07** (perdana): akhir 2026-09-04; 3 periode (5 hari bursa, 30 hari, 91 hari) | 90 berkas `data-idx/json/broker_pivot/*.json` (89 broker + index), 1,8 MB | ⚙️ otomatis — kedua bat panen (`[E] Turunan`) + CI rumah langkah `4e` | `python scripts/bangun_broker_pivot.py --tulis` — ikut **"Panen Lagi"**. Broker tanpa berkas membuat halaman berkata rinciannya belum ada, bukan memajang tabel kosong |
 
 Tetap manual sesuai sifatnya (bukan putus): kepemilikan KSEI (bulanan), pengendali (per laporan kuartalan), bt/ win-rate fitur (beku by design), ipot_arsip (parkir C3). Sapuan OHLC-Yahoo 963 kini DILEWATI dari jalur Buka Laptop (`LEWATI_OHLC_YAHOO=1` — Stockbit utama, Yahoo cadangan); jalur mandiri `JALANKAN_OTOMATIS.bat` tetap utuh sebagai cadangan.
+
+## Pemicu Task Scheduler — setelan baterai (#72)
+
+Asal: Johan 7 Sep 2026, *"oke kerjakan semua"* atas baris antrean #72.
+
+`PAPAN-PanenSore` 7 Sep 19:25 **ditolak** Task Scheduler dengan
+`LastTaskResult 2147946720` (0x800710E0) — laptop sedang memakai baterai,
+dan setelan bawaannya melarang tugas mulai di baterai. Akibatnya panen sore
+hari itu tidak berjalan sama sekali; tak ada satu pun galat di log panen,
+karena skripnya memang tak pernah dipanggil.
+
+Keadaan SEBELUM diubah (diukur 7 Sep 2026 20:4x):
+
+| Tugas | DisallowStartIfOnBatteries | StopIfGoingOnBatteries | StartWhenAvailable | ExecutionTimeLimit | MultipleInstances |
+|---|---|---|---|---|---|
+| `PAPAN-PanenSore` | True | True | **False** | PT72H | IgnoreNew |
+| `PAPAN-BukaLaptop` | True | True | True | PT4H | IgnoreNew |
+
+**Perintahnya dijalankan Johan sendiri, bukan agen** — ia mengubah setelan
+sistem, dan itu di luar batas yang boleh disentuh sesi ini. Jalankan di
+PowerShell **sebagai Administrator**:
+
+```powershell
+foreach ($n in 'PAPAN-PanenSore','PAPAN-BukaLaptop') {
+  $t = Get-ScheduledTask -TaskName $n
+  # Batas waktu DIBACA dari tugasnya sendiri, tidak dipatok: PanenSore
+  # PT72H dan BukaLaptop PT4H, dan New-ScheduledTaskSettingsSet
+  # mengembalikan BAWAAN untuk tiap setelan yang tidak disebut.
+  $baru = New-ScheduledTaskSettingsSet `
+    -ExecutionTimeLimit $t.Settings.ExecutionTimeLimit `
+    -MultipleInstances $t.Settings.MultipleInstances `
+    -StartWhenAvailable
+  $baru.DisallowStartIfOnBatteries = $false
+  $baru.StopIfGoingOnBatteries = $false
+  Set-ScheduledTask -TaskName $n -Settings $baru | Out-Null
+}
+Get-ScheduledTask -TaskName 'PAPAN-PanenSore','PAPAN-BukaLaptop' |
+  Select-Object TaskName -ExpandProperty Settings |
+  Format-List TaskName, DisallowStartIfOnBatteries, StopIfGoingOnBatteries, StartWhenAvailable, ExecutionTimeLimit, MultipleInstances
+```
+
+Sesudahnya keempat baris pertama harus berbunyi `False`, `False`, `True`,
+dan batas waktunya tetap seperti tabel di atas. `StartWhenAvailable`
+membuat pemicu 18:00 yang terlewat (laptop mati) dijalankan begitu laptop
+hidup — tanpa itu, satu hari mati berarti satu hari panen yang hilang
+diam-diam.

@@ -186,7 +186,7 @@ REM -- justru tak konsisten dengan dirinya sendiri di situ.
 REM --
 REM -- Memanen keduanya menggandakan permintaan untuk nol angka baru --
 REM -- dan kuota permintaan itu yang dibutuhkan panen harga.
-"%PYEXE%" scripts\panen_broker_harian.py --tanggal %TGL_BROKER% --jeda 0.4 --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
+"%PYEXE%" scripts\panen_broker_harian.py --tanggal %TGL_BROKER% --jeda 0.4 --paralel 64 --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
 if errorlevel 1 echo   (broker gagal - lanjut; jangan ulangi manual saat token dipakai proses lain)
 
 echo.

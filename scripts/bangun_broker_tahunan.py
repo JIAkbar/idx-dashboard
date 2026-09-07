@@ -43,6 +43,7 @@ AKAR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(AKAR / "scripts"))
 
 import panen_broker_harian as ph  # noqa: E402
+from emiten_lewati import dilewati  # noqa: E402
 
 
 BENTUK_KODE = re.compile(r"^[A-Z][A-Z0-9]{2,4}$")
@@ -270,9 +271,24 @@ def main() -> int:
         elif not a.startswith("-"):
             arg.append(a)
         i += 1
+    # Daftar-lewati ikut dipatuhi di sini (#75), bukan cuma di
+    # `sinkron_emiten.py`. Pemanen broker aman karena membaca daftar emiten
+    # yang sudah tersaring, tapi pembangun ini menyusun daftarnya dari NAMA
+    # DIREKTORI arsip - jadi sisa arsip lama (GOTOM, dipanen 25-27 Agu,
+    # sebelum keputusan Johan 28 Agu) tetap melahirkan direktori keluaran
+    # kosong tiap kali ia jalan. Penjaga bentuk kode #68 tak menangkapnya:
+    # bentuk GOTOM sah, yang tidak sah PERANNYA sebagai emiten biasa.
     kode_semua = [periksa_kode(a.upper()) for a in arg] or [
-        periksa_kode(p.name) for p in sorted(ph.ARSIP.iterdir()) if p.is_dir()
+        periksa_kode(p.name) for p in sorted(ph.ARSIP.iterdir())
+        if p.is_dir() and not dilewati(p.name)
     ]
+    if arg:
+        ditolak = [k for k in kode_semua if dilewati(k)]
+        if ditolak:
+            raise SystemExit(
+                f"kode ada di daftar-lewati: {', '.join(ditolak)}. "
+                "Lihat scripts/emiten_lewati.py untuk alasannya."
+            )
     if "--lanjut" in argv:
         # Lewati emiten yang SUDAH punya salah satu berkas tahun yang diminta
         # (resume backfill). Emiten yang mentahnya memang kosong akan discan
