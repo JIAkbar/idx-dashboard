@@ -57,7 +57,7 @@ export function BadgeRapor({
       )}
       <span className="br-meta">
         {' '}
-        · {labelHorizon(run.parameter_ringkas.model_keluar)} · n={run.n_trade}
+        · {labelHorizon(run.parameter_ringkas.model_keluar, run.parameter_ringkas.kerangka)} · n={run.n_trade}
         {kecil ? ' (sampel kecil)' : ''} · {rentang}
       </span>
     </>

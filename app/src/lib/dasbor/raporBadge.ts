@@ -79,10 +79,25 @@ const LABEL_HORIZON: Record<string, string> = {
   tp_sl: 'TP/SL',
 }
 
-/** Horizon manusiawi dari `parameter_ringkas.model_keluar` — mengikuti label
- *  mesin bila belum dikenal, lebih baik terlihat aneh daripada diam-diam salah. */
-export function labelHorizon(modelKeluar: string | undefined): string {
+/** Satuan bar per kerangka run. `h5` berarti lima BAR, dan bar pekanan
+ *  bukan hari (#63). */
+const SATUAN_KERANGKA: Record<string, string> = { D: 'hari', W: 'pekan', M: 'bulan' }
+
+/**
+ * Horizon manusiawi dari `parameter_ringkas.model_keluar` — mengikuti label
+ * mesin bila belum dikenal, lebih baik terlihat aneh daripada diam-diam salah.
+ *
+ * `kerangka` (dari `parameter_ringkas.kerangka`) mengubah SATUANNYA: run
+ * pekanan ber-`h5` berhorizon lima PEKAN, dan mengejanya "5 hari" adalah
+ * label yang tertinggal di belakang angkanya — persis bentuk cacat yang
+ * ditutup #58/#64. Run lama tanpa ruas `kerangka` tetap terbaca "hari",
+ * sama seperti sebelum 7 Sep 2026.
+ */
+export function labelHorizon(modelKeluar: string | undefined, kerangka?: unknown): string {
   if (!modelKeluar) return '—'
+  const satuan = typeof kerangka === 'string' ? SATUAN_KERANGKA[kerangka] : undefined
+  const cocok = /^h(\d+)$/.exec(modelKeluar)
+  if (satuan && cocok) return `${cocok[1]} ${satuan}`
   return LABEL_HORIZON[modelKeluar] ?? modelKeluar
 }
 

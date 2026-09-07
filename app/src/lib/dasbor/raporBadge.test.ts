@@ -4,6 +4,7 @@ import {
   capSampelKecil,
   dariBarOhlcvStockbit,
   hitungForm,
+  labelHorizon,
   perluPeringatanBasi,
   warnaBadge,
 } from './raporBadge'
@@ -134,5 +135,30 @@ describe('hitungForm — bar tanpa harga pembukaan', () => {
     ])
     expect(h.seri).toEqual(['datar', 'tak-tahu'])
     expect(h.takTahu).toBe(1)
+  })
+})
+
+describe('labelHorizon — satuan ikut kerangka run (#63)', () => {
+  it('run harian tetap dieja hari', () => {
+    expect(labelHorizon('h5', 'D')).toBe('5 hari')
+  })
+
+  it('run pekanan dieja PEKAN, bukan hari', () => {
+    // h5 berarti lima BAR. Di kerangka pekanan itu lima pekan; mengejanya
+    // "5 hari" membuat badge berbohong soal horizon yang diukurnya.
+    expect(labelHorizon('h5', 'W')).toBe('5 pekan')
+    expect(labelHorizon('h5', 'M')).toBe('5 bulan')
+  })
+
+  it('run lama tanpa ruas kerangka terbaca persis seperti sebelumnya', () => {
+    expect(labelHorizon('h5')).toBe('5 hari')
+    expect(labelHorizon('h20')).toBe('20 hari')
+    expect(labelHorizon('tp_sl', 'W')).toBe('TP/SL')
+    expect(labelHorizon(undefined)).toBe('—')
+  })
+
+  it('kerangka yang tak dikenal tak mengarang satuan', () => {
+    expect(labelHorizon('h5', '5m')).toBe('5 hari')
+    expect(labelHorizon('h5', 42)).toBe('5 hari')
   })
 })

@@ -62,6 +62,8 @@ import {
   IKON_GARIS_AVG, IKON_PITA_CPR, IKON_BUBBLE, IKON_GRAFIK_BATANG,
 } from '../../components/dasbor/IkonMenu'
 import { PanelAnalitikChart, type BarAnalitik } from '../../components/dasbor/PanelAnalitikChart'
+import { ambilIndexBt, type IndexBt } from '../../lib/dasbor/raporBadge'
+import { useProfilSaya } from '../../lib/profilSaya'
 import { GarisAvgBroker } from '../../lib/dasbor/garisAvgBroker'
 import { PitaCpr } from '../../lib/dasbor/pitaCprChart'
 import { BubbleBroker, bubbleOutlierHarian, type BubbleHari } from '../../lib/dasbor/bubbleBroker'
@@ -723,6 +725,24 @@ export function GrafikEmiten() {
    *  sedang terlihat di jendela pandang (zoom/pan), supaya banner gating
    *  "N sesi belum cukup" bereaksi wajar saat pembaca mempersempit rentang. */
   const [analitikAktif, setAnalitikAktif] = useState(false)
+  /**
+   * Rapor backtest untuk badge panel analitik (#63).
+   *
+   * Ditarik SAAT panel dinyalakan, bukan saat halaman dimuat: berkasnya
+   * 72 KB dan panelnya mati secara bawaan, jadi menariknya di awal berarti
+   * membayar unduhan itu untuk tiap pembaca chart yang tak pernah membuka
+   * panelnya. Sekali tarik per kunjungan - `indexBt` yang sudah terisi tak
+   * ditarik ulang saat panel dimatikan lalu dinyalakan lagi.
+   */
+  const [indexBt, setIndexBt] = useState<IndexBt | null>(null)
+  const { profil } = useProfilSaya()
+  useEffect(() => {
+    if (!analitikAktif || indexBt) return
+    let batal = false
+    ambilIndexBt().then((idx) => { if (!batal) setIndexBt(idx) })
+    return () => { batal = true }
+  }, [analitikAktif, indexBt])
+
   /** Dua lipatan menu indikator (#45a) — bawaan pustaka dan arsip. */
   const [bawaanTampil, setBawaanTampil] = useState(false)
   const [arsipTampil, setArsipTampil] = useState(false)
@@ -4179,7 +4199,14 @@ export function GrafikEmiten() {
           </div>
           </div>
 
-          {analitikAktif && <PanelAnalitikChart bars={barsAnalitik} kerangka={kerangka} />}
+          {analitikAktif && (
+            <PanelAnalitikChart
+              bars={barsAnalitik}
+              kerangka={kerangka}
+              tier={profil?.tier ?? null}
+              indexBt={indexBt}
+            />
+          )}
 
           {/* Bilah bawah — rentang tampil, zona waktu, mode skala. Sama seperti
               kaki chart acuan: yang mengubah APA yang terlihat ada di bawah

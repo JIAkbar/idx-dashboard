@@ -62,11 +62,18 @@ function warnaPosisi(p: PosisiCpr): string {
   return ''
 }
 
-/** Satu-satunya pintu cari run BT per kunci — null kalau belum pernah diuji
- *  (`bt/index.json` belum punya entri ini sekarang), BadgeRapor otomatis tak
- *  tampil. JANGAN mengarang angka di sini. */
-function cariRun(indexBt: IndexBt | null | undefined, strategi: string): RunBt | null {
-  return indexBt?.run.find((r) => r.strategi === strategi) ?? null
+/**
+ * Satu-satunya pintu cari run BT per kunci - null kalau belum pernah diuji,
+ * dan BadgeRapor otomatis tak tampil. JANGAN mengarang angka di sini.
+ *
+ * Kuncinya BERKERANGKA (#63): kelas Pivot/CPR dihitung dari bar kerangka
+ * yang sedang tampil, jadi satu angka untuk semua kerangka berarti win
+ * rate harian dipajang di sebelah klasifikasi pekanan. Kerangka yang belum
+ * pernah di-backtest (5m/15m/1h/4h - arsipnya cuma sepanjang sebulan)
+ * tak punya run, dan badge-nya memang tak muncul di sana.
+ */
+function cariRun(indexBt: IndexBt | null, strategi: string, kerangka: IdKerangka): RunBt | null {
+  return indexBt?.run.find((r) => r.strategi === `${strategi}-${kerangka}`) ?? null
 }
 
 export function PanelAnalitikChart({ bars, kerangka = 'D', tier, indexBt }: {
@@ -75,8 +82,18 @@ export function PanelAnalitikChart({ bars, kerangka = 'D', tier, indexBt }: {
    *  dan karena itu arti setiap angka di panel ini. Tanpa ini panel mengeja
    *  "sesi" untuk candle lima menit dan menghitung "3M" sebagai 63 bulan. */
   kerangka?: IdKerangka
-  tier?: number
-  indexBt?: IndexBt | null
+  /**
+   * Jenjang pembaca dan index backtest - WAJIB, bukan opsional (#63).
+   *
+   * Keduanya sempat opsional, dan satu-satunya pemanggil tak mengoper
+   * satu pun: tiga slot badge mati total sementara TypeScript diam dan
+   * build hijau. Prop wajib membuat pemanggil berikutnya berhadapan
+   * dengan galat kompilasi, bukan dengan panel yang diam-diam kosong.
+   * `null` tetap sah - artinya 'belum termuat', dan itu memang perlu
+   * bisa dinyatakan.
+   */
+  tier: number | null
+  indexBt: IndexBt | null
 }) {
   const n = bars.length
   const t = n > 0 ? bars[n - 1] : null
@@ -126,9 +143,9 @@ export function PanelAnalitikChart({ bars, kerangka = 'D', tier, indexBt }: {
     return klasifikasiVolumeSurge(bars[n - 1].v, bars.slice(n - 21, n - 1).map((b) => b.v))
   }, [bars, n])
 
-  const runRelasi = relasi ? cariRun(indexBt, `pivot_cpr.relasi_${SLUG_RELASI[relasi.kelas]}`) : null
-  const runPosisi = posisi ? cariRun(indexBt, `pivot_cpr.posisi_${SLUG_POSISI[posisi]}`) : null
-  const runRR = cariRun(indexBt, 'rr_setup.target_before_stop')
+  const runRelasi = relasi ? cariRun(indexBt, `pivot_cpr.relasi_${SLUG_RELASI[relasi.kelas]}`, kerangka) : null
+  const runPosisi = posisi ? cariRun(indexBt, `pivot_cpr.posisi_${SLUG_POSISI[posisi]}`, kerangka) : null
+  const runRR = cariRun(indexBt, 'rr_setup.target_before_stop', kerangka)
 
   /** Judul hover tiap kotak return: berapa bar yang benar-benar dipakai.
    *  Tanpa ini, "1M" di chart harian (21 sesi) dan di chart pekanan (4 pekan)
