@@ -1,0 +1,77 @@
+# Uji + pemeriksaan tipe di tiap push dan PR (#76, keputusan Johan 7 Sep 2026).
+#
+# Sampai sekarang tak ada satu pun alur kerja yang menjalankan `vitest` atau
+# `tsc`. Satu-satunya pemeriksaan tipe otomatis adalah `npm run build` milik
+# Vercel — dan itu berjalan SESUDAH didorong, jadi kegagalannya menahan
+# produksi alih-alih menahan commit. Persis yang terjadi 5 Sep 2026: build
+# patah, produksi tertahan di bangunan lama ±25 menit.
+#
+# Urutan diacak (`--sequence.shuffle`) dan laporannya diunggah sebagai artifact
+# supaya kegagalan yang tak berulang (#69) meninggalkan NAMA ujinya, bukan cuma
+# jumlah. Suite itu sudah tiga kali melaporkan 1, lalu 3, lalu 2 kegagalan yang
+# tak pernah bisa diulang; 12 jalan acak lokal 7 Sep semuanya bersih.
+name: Uji
+
+on:
+  push:
+  pull_request:
+
+# Push beruntun ke cabang yang sama: yang lama dibatalkan. Repo ini menerima
+# commit data otomatis beberapa kali sehari, dan menjalankan uji untuk tiap
+# commit data yang tak menyentuh kode sama sekali cuma membakar menit.
+concurrency:
+  group: uji-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  uji:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Checkout penuh mahal: `data-idx/` 3,3 GB, dan 2,1 GB di antaranya
+          # `broker_tahunan/` yang tak disentuh satu berkas uji pun. Yang
+          # SISANYA tetap diambil, bukan dipangkas serapat mungkin: belasan
+          # berkas uji mengimpor JSON data langsung (`ohlc/BBCA.json`,
+          # sepuluh berkas `ohlcv_stockbit/`, lima berkas `radar/`), dan satu
+          # uji membaca SELURUH isi direktori `ohlc/` lewat readdirSync.
+          # Memangkasnya lebih rapat membuat uji itu diam-diam menguji lebih
+          # sedikit — kegagalan yang paling mahal di repo ini justru yang
+          # senyap.
+          sparse-checkout: |
+            /*
+            !/data-idx/json/broker_tahunan
+            !/_arsip-mentah
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Pasang dependensi
+        working-directory: app
+        run: npm ci
+
+      # `tsc -b`, BUKAN `tsc --noEmit -p tsconfig.json`: yang kedua selesai
+      # dengan exit 0 tanpa membaca satu baris kode pun karena tsconfig.json
+      # cuma menunjuk proyek lain (terukur 5 Sep 2026). `--force` supaya
+      # singgahan build tak menyembunyikan galat.
+      - name: Periksa tipe
+        working-directory: app
+        run: npx tsc -b --force
+
+      - name: Uji (urutan diacak)
+        working-directory: app
+        run: npx vitest run --sequence.shuffle --reporter=json --outputFile=uji-acak.json --reporter=default
+
+      # `always()`: laporan justru paling dibutuhkan saat ujinya MERAH.
+      - name: Simpan laporan uji
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: laporan-uji-${{ github.run_number }}
+          path: app/uji-acak.json
+          retention-days: 30
