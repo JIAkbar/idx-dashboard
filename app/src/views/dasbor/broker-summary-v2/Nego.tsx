@@ -5,7 +5,8 @@ import { warnaBroker, namaBroker } from '../../../lib/dasbor/kelompokBroker'
 import { fmtB, fmtLot } from '../../../lib/dasbor/brokerSummaryFormat'
 import { labelTanggal } from '../../../lib/dasbor/brokerHarian'
 import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
-import { EmptyState } from './Overview'
+import { EmptyState } from './Overview'
+import { TautanBroker, useBrokerBerhalaman } from '../../../components/dasbor/TautanBroker'
 
 interface NegoProps {
   hari: Array<[string, HariBroker]>
@@ -22,6 +23,8 @@ const FILTER_OPSI: { id: FilterPola; label: string; judul: string }[] = [
  *  vs reguler (§B.2 spek C2, `polaNegoBroker`). */
 export function Nego({ hari }: NegoProps) {
   const [filter, setFilter] = useState<FilterPola>('semua')
+  // Satu pemanggilan untuk seluruh tabel, bukan satu per baris (#27).
+  const brokerAda = useBrokerBerhalaman()
   const semuaBaris = useMemo(() => polaNegoBroker(hari), [hari])
   const baris = filter === 'semua' ? semuaBaris : semuaBaris.filter((r) => r.kelas === filter)
   const hariNego = hari.filter(([, h]) => h.nego)
@@ -54,7 +57,10 @@ export function Nego({ hari }: NegoProps) {
                       return (
                         <tr key={`${r.tanggal}-${r.broker}`}>
                           <td className="num">{labelTanggal(r.tanggal)}</td>
-                          <td style={{ color: warnaBroker(r.broker), fontWeight: 600 }} title={namaBroker(r.broker)}>{r.broker}</td>
+                          <td>
+                            <TautanBroker kode={r.broker} punya={brokerAda}
+                              style={{ color: warnaBroker(r.broker), fontWeight: 600 }} title={namaBroker(r.broker)} />
+                          </td>
                           <td className="r num">{r.negoBeliNilai ? fmtB(r.negoBeliNilai) : '—'}</td>
                           <td className="r num">{r.negoJualNilai ? fmtB(r.negoJualNilai) : '—'}</td>
                           <td className="r num">{fmtLot(Math.max(r.negoBeliLot, r.negoJualLot))}</td>

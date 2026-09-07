@@ -6,10 +6,13 @@ import type { AgregatBroker, HariBroker, ModeTransaksi } from '../../../lib/dasb
 import { convictionHarian } from '../../../lib/dasbor/brokerEmitenV2'
 import { warnaBroker, namaBroker } from '../../../lib/dasbor/kelompokBroker'
 import { fmtB, fmtLot } from '../../../lib/dasbor/brokerSummaryFormat'
-import { labelTanggal } from '../../../lib/dasbor/brokerHarian'
+import { labelTanggal } from '../../../lib/dasbor/brokerHarian'
+import { TautanBroker, useBrokerBerhalaman } from '../../../components/dasbor/TautanBroker'
 
 /** Satu sisi (Buy atau Sell) tabel Gross/Net/%Net — port `renderFlowNetGross()` mockup. */
-function BarisFlow({ a, sisi, ukuran }: { a: AgregatBroker; sisi: 'beli' | 'jual'; ukuran: 'nilai' | 'lot' }) {
+function BarisFlow({ a, sisi, ukuran, punya }: {
+  a: AgregatBroker; sisi: 'beli' | 'jual'; ukuran: 'nilai' | 'lot'; punya: Set<string>
+}) {
   const fmt = ukuran === 'nilai' ? fmtB : fmtLot
   const gross = sisi === 'beli' ? (ukuran === 'nilai' ? a.beliNilai : a.beliLot) : (ukuran === 'nilai' ? a.jualNilai : a.jualLot)
   const net = Math.abs(ukuran === 'nilai' ? a.netNilai : a.netLot)
@@ -17,7 +20,10 @@ function BarisFlow({ a, sisi, ukuran }: { a: AgregatBroker; sisi: 'beli' | 'jual
   const warna = sisi === 'beli' ? 'var(--green)' : 'var(--red)'
   return (
     <tr>
-      <td style={{ color: warnaBroker(a.broker), fontWeight: 600 }} title={namaBroker(a.broker)}>{a.broker}</td>
+      <td>
+        <TautanBroker kode={a.broker} punya={punya}
+          style={{ color: warnaBroker(a.broker), fontWeight: 600 }} title={namaBroker(a.broker)} />
+      </td>
       <td className="r num" style={{ color: 'var(--text2)' }}>{fmt(gross)}</td>
       <td className="r num"><b>{fmt(net)}</b></td>
       <td className="r num">
@@ -94,6 +100,9 @@ export function FlowNetGross({ hari, agg, mode, ukuran }: FlowNetGrossProps) {
     }
   }, [konviksi, theme, ukuran, fmt])
   const canvasRef = useChartCanvas(config)
+  // Satu pemanggilan untuk SELURUH tabel, dioper ke tiap baris (#27) -
+  // memanggil hooknya per baris berarti puluhan langganan untuk satu daftar.
+  const brokerAda = useBrokerBerhalaman()
 
   return (
     <>
@@ -106,13 +115,13 @@ export function FlowNetGross({ hari, agg, mode, ukuran }: FlowNetGrossProps) {
           <div className="board-tbl-wrap">
             <table className="tbl">
               <thead><tr><th style={{ color: 'var(--green)' }}>Buy</th><th className="r">Gross</th><th className="r">Net</th><th className="r">% Net</th></tr></thead>
-              <tbody>{beli.map((a) => <BarisFlow key={a.broker} a={a} sisi="beli" ukuran={ukuran} />)}</tbody>
+              <tbody>{beli.map((a) => <BarisFlow key={a.broker} a={a} sisi="beli" ukuran={ukuran} punya={brokerAda} />)}</tbody>
             </table>
           </div>
           <div className="board-tbl-wrap">
             <table className="tbl">
               <thead><tr><th style={{ color: 'var(--red)' }}>Sell</th><th className="r">Gross</th><th className="r">Net</th><th className="r">% Net</th></tr></thead>
-              <tbody>{jual.map((a) => <BarisFlow key={a.broker} a={a} sisi="jual" ukuran={ukuran} />)}</tbody>
+              <tbody>{jual.map((a) => <BarisFlow key={a.broker} a={a} sisi="jual" ukuran={ukuran} punya={brokerAda} />)}</tbody>
             </table>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import type { BrokerRow } from '../../../lib/dasbor/brokerSummaryData'
-import { fmtB, fmtLot } from '../../../lib/dasbor/brokerSummaryFormat'
+import { fmtB, fmtLot } from '../../../lib/dasbor/brokerSummaryFormat'
+import { TautanBroker, useBrokerBerhalaman } from '../../../components/dasbor/TautanBroker'
 
 interface InventoryProps {
   brokers: BrokerRow[]
@@ -13,6 +14,7 @@ interface InventoryProps {
  * ini cuma mengembalikan isi tabel.
  */
 export function Inventory({ brokers }: InventoryProps) {
+  const brokerAda = useBrokerBerhalaman()
   const totalNilai = brokers.reduce((s, b) => s + b.nilai, 0)
   const maxNilai = brokers[0]?.nilai ?? 1
 
@@ -31,7 +33,7 @@ export function Inventory({ brokers }: InventoryProps) {
             return (
               <tr key={b.kode}>
                 <td className="num">{i + 1}</td>
-                <td><span className="bchip">{b.kode}</span></td>
+                <td><TautanBroker kode={b.kode} punya={brokerAda} className="bchip" /></td>
                 <td style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text2)' }}>
                   {b.nama}
                 </td>

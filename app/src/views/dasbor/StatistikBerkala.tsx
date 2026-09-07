@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { DatePicker } from '../../components/dasbor/DatePicker'
+import { TautanBroker, useBrokerBerhalaman } from '../../components/dasbor/TautanBroker'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
@@ -160,6 +161,9 @@ function TabelBanding({
 
 /** Tabel peringkat sederhana (top saham / top broker): kode, nama, nilai, %. */
 function TabelPeringkat({ judul, baris, tautan }: { judul: string; baris: BarisPeringkat[]; tautan: boolean }) {
+  // `tautan` menandai tabel EMITEN; yang false berarti tabel BROKER, dan
+  // sejak #27 kodenya juga menautkan - ke rincian brokernya, bukan ke chart.
+  const brokerAda = useBrokerBerhalaman()
   return (
     <div className="panel">
       <div className="panel-h"><span className="lbl">{judul}</span></div>
@@ -182,7 +186,7 @@ function TabelPeringkat({ judul, baris, tautan }: { judul: string; baris: BarisP
                   <td>
                     {tautan
                       ? <Link to={`/grafik?kode=${r.kode}`} className="tick">{r.kode}</Link>
-                      : <span className="bchip">{r.kode}</span>}
+                      : <TautanBroker kode={r.kode} punya={brokerAda} className="bchip" />}
                   </td>
                   {!tautan && <td className="muted">{r.nama ?? '—'}</td>}
                   <td className="r num">{angka(r.nilai)}</td>

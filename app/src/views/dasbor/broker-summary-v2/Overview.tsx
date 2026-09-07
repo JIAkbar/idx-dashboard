@@ -8,6 +8,7 @@ import { fmtB, fmtLot } from '../../../lib/dasbor/brokerSummaryFormat'
 import { labelTanggal } from '../../../lib/dasbor/brokerHarian'
 import { keFraksi } from '../../../lib/fraksiHarga'
 import { Sparkline } from './Sparkline'
+import { TautanBroker, useBrokerBerhalaman } from '../../../components/dasbor/TautanBroker'
 
 const URUTAN_LEGENDA = ['asing', 'bumn', 'smart', 'ritel', 'afiliasi', 'lain'] as const
 
@@ -25,8 +26,18 @@ function LabelAD({ pct }: { pct: number }) {
   return <span className={`chip ${pct >= 0 ? 'up' : 'dn'} bs2-badge-${tingkat}`} title={KET_AD}>{besar} {arah}</span>
 }
 
-function KodeBroker({ kode }: { kode: string }) {
-  return <span style={{ color: warnaBroker(kode), fontWeight: 600 }} title={namaBroker(kode)}>{kode}</span>
+/** Satu komponen, tiga tabel di halaman ini - jadi tautannya cukup dipasang
+ *  sekali (#27). Warna & tebalnya dipertahankan supaya kode broker tetap
+ *  terbaca sebagai kode broker, bukan berubah jadi tautan biru. */
+function KodeBroker({ kode, punya }: { kode: string; punya: Set<string> }) {
+  return (
+    <TautanBroker
+      kode={kode}
+      punya={punya}
+      style={{ color: warnaBroker(kode), fontWeight: 600 }}
+      title={namaBroker(kode)}
+    />
+  )
 }
 
 interface OverviewProps {
@@ -42,6 +53,8 @@ interface OverviewProps {
  * satu grid3, sama seperti struktur DOM mockup `#tab-overview`).
  */
 export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
+  // Satu pemanggilan untuk TIGA tabel halaman ini (#27).
+  const brokerAda = useBrokerBerhalaman()
   const ringkas = ringkasSB(agg)
   const { beli, jual } = tabelDuaSisi(agg, mode)
   const rataLot = [1, 2, 3, 4, 5].reduce((s, n) => s + ringkas.topLot(n), 0) / 5
@@ -159,7 +172,7 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
                   <table className="tbl">
                     <thead><tr><th>BY</th><th className="r">Val</th><th className="r">Lot</th><th className="r">Avg</th></tr></thead>
                     <tbody>{beli.map((r) => (
-                      <tr key={r.broker}><td><KodeBroker kode={r.broker} /></td><td className="r num">{fmtB(r.nilai)}</td><td className="r num">{fmtLot(r.lot)}</td><td className="r num">{r.avg ? Math.round(r.avg) : '—'}</td></tr>
+                      <tr key={r.broker}><td><KodeBroker kode={r.broker} punya={brokerAda} /></td><td className="r num">{fmtB(r.nilai)}</td><td className="r num">{fmtLot(r.lot)}</td><td className="r num">{r.avg ? Math.round(r.avg) : '—'}</td></tr>
                     ))}</tbody>
                   </table>
                 </div>
@@ -173,7 +186,7 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
                   <table className="tbl">
                     <thead><tr><th>SL</th><th className="r">Val</th><th className="r">Lot</th><th className="r">Avg</th></tr></thead>
                     <tbody>{jual.map((r) => (
-                      <tr key={r.broker}><td><KodeBroker kode={r.broker} /></td><td className="r num">{fmtB(r.nilai)}</td><td className="r num">{fmtLot(r.lot)}</td><td className="r num">{r.avg ? Math.round(r.avg) : '—'}</td></tr>
+                      <tr key={r.broker}><td><KodeBroker kode={r.broker} punya={brokerAda} /></td><td className="r num">{fmtB(r.nilai)}</td><td className="r num">{fmtLot(r.lot)}</td><td className="r num">{r.avg ? Math.round(r.avg) : '—'}</td></tr>
                     ))}</tbody>
                   </table>
                 </div>
@@ -240,7 +253,7 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
                   <thead><tr><th>Broker</th><th className="r">Floor</th><th className="r">Tanggal</th><th className="r">Lot hari itu</th></tr></thead>
                   <tbody>{floor.map((f) => (
                     <tr key={f.broker}>
-                      <td><KodeBroker kode={f.broker} /></td>
+                      <td><KodeBroker kode={f.broker} punya={brokerAda} /></td>
                       <td className="r num">Rp {keFraksi(f.floor).toLocaleString('id-ID')}</td>
                       <td className="r num">{labelTanggal(f.tanggal)}</td>
                       <td className="r num">{fmtLot(f.lot)}</td>
