@@ -160,6 +160,16 @@ def lompatan_neraca(dasar: dict) -> list[dict]:
 
 
 def revenue_negatif() -> tuple[int, int, list[str]]:
+    # Lapis diskret dipensiunkan 8 Sep 2026 (#19): seluruh 96.611 nilainya
+    # terbukti bisa dilahirkan kembali dari `keuangan_idx/` (kuartal + tahunan),
+    # nol beda, nol yang unik. Kalau direktorinya memang sudah tidak ada,
+    # pemeriksaan ini WAJIB berkata begitu — `glob` atas direktori yang hilang
+    # menghasilkan nol berkas dan pemeriksanya lolos tanpa memeriksa apa pun,
+    # bentuk kegagalan yang sama dengan `tsc --noEmit` 5 Sep.
+    if not DISKRET.exists():
+        print(f"  (lewat) {DISKRET.name}/ tidak ada — lapis diskret dipensiunkan #19; "
+              "hitung ulang dengan scripts/turunkan_kuartal_diskret.py kalau perlu diperiksa lagi")
+        return 0, 0, []
     neg, total, daftar = 0, 0, []
     for p in sorted(DISKRET.glob("*.json")):
         isi = json.loads(p.read_text(encoding="utf-8"))

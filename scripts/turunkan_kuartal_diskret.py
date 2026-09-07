@@ -2,6 +2,19 @@
 """Turunkan kuartal DISKRET dari `data-idx/json/keuangan_idx/<TICKER>.json`
 (interim IDX, KUMULATIF sejak awal tahun buku) -> `keuangan_idx_diskret/`.
 
+DIPENSIUNKAN 8 Sep 2026 (antrean #19) — skripnya sengaja DIPERTAHANKAN, tapi
+keluarannya tidak lagi disimpan sebagai lapisan data.
+
+Alasannya diukur, bukan ditaksir: seluruh isi gudang diskret diuji ulang
+terhadap `keuangan_idx/` (kunci `kuartal` untuk TW1-TW3, kunci `tahunan`
+untuk audit) — 949 emiten, 10.807 periode, 15 ruas, **96.611 nilai cocok,
+0 beda, 0 yang tak bisa dilahirkan kembali**. Halaman `/stock-detail` sudah
+menghitung hal yang sama langsung di layar, jadi gudang ini pra-hitung murni:
+nol angka baru, tapi 11 MB dan satu lagi tempat yang bisa basi sendiri.
+
+Jalankan lagi kapan pun perlu (nol jaringan, hasilnya sama persis) — yang
+dibuang lapisannya, bukan kemampuan menghitungnya.
+
 Kenapa ada (18 Agu 2026, task diskret-kuartal): Johan -- "diskret saja biar
 bisa dibandingkan antar kuartal". Laporan interim resmi IDX itu KUMULATIF
 (TW2 = Jan-Jun, bukan Apr-Jun saja) -- lihat docs/sumber-fundamental-idx.md
