@@ -34,9 +34,26 @@ describe('pembaca nilai jejak', () => {
     expect(t.preset[0].saham.length).toBeGreaterThan(0)
   })
 
-  it('angka yang dirakit pembaca = berkas penilaian tersegel (tanggal tutup terakhir)', () => {
-    const tutup = jejak!.perTanggal.filter((t) => t.jendelaTutup)
-    expect(tutup.length, 'harus ada tanggal berjendela tutup').toBeGreaterThan(0)
+  it('angka yang dirakit pembaca = berkas penilaian tersegel (tanggal tersegel terakhir)', () => {
+    // ATURAN SEGEL, bukan sekadar "jendelanya sudah tutup": penulisnya
+    // (`nilai_jejak.py:segel_dan_koreksi`) menuntut satu hari bursa JEDA
+    // sesudah jendela menutup — `hariBursaSesudah >= HORIZON + 1` — supaya
+    // datanya sempat mengendap.
+    //
+    // Uji ini dulu memakai "tanggal berjendela tutup terakhir" dan karena itu
+    // MERAH selama satu hari bursa tiap kali sebuah jendela menutup: tanggalnya
+    // sudah tutup, segelnya belum boleh terbit. Terukur 7 Sep 2026 21:2x —
+    // 2026-08-31 tutup dengan hariBursaSesudah 5, sementara segel butuh 6.
+    // Kegagalan itu tiga kali terbaca sebagai uji flaky (1, lalu 3, lalu 2
+    // kegagalan yang tak bisa diulang) padahal ia tak acak sama sekali: ia
+    // mengikuti kalender bursa.
+    //
+    // Penjaganya TIDAK dilonggarkan — tanggal yang sudah lewat masa
+    // mengendapnya tetap wajib punya segel dan angkanya tetap wajib cocok.
+    // Yang diperbaiki cuma tanggal mana yang ditagih.
+    const HORIZON = 5
+    const tutup = jejak!.perTanggal.filter((t) => t.jendelaTutup && (t.hariBursaSesudah ?? 0) >= HORIZON + 1)
+    expect(tutup.length, 'harus ada tanggal yang sudah melewati masa mengendap').toBeGreaterThan(0)
     const t = tutup[tutup.length - 1]
     const p = join(DIR_PENILAIAN, `${t.tanggal}.json`)
     expect(existsSync(p), `penilaian/${t.tanggal}.json harus ada`).toBe(true)
