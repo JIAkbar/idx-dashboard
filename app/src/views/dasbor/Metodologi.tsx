@@ -60,7 +60,8 @@ export function Metodologi() {
     <div className="lantai mtd">
       <section className="panel">
         <div className="panel-h">
-          <span className="lbl">Metodologi</span>
+          {/* h1, bukan span: nama halaman sudah tercetak di sini (#24). */}
+          <h1 className="lbl">Metodologi</h1>
         </div>
         <div className="panel-b">
           <p className="muted mtd-intro">

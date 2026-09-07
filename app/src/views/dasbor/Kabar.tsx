@@ -90,9 +90,12 @@ export function Kabar() {
     <div className="lantai">
       <section className="panel">
         <div className="panel-h kbr-h">
-          <span className="lbl">
+          {/* h1, bukan span: nama halaman ini sudah tercetak di sini, jadi
+              tag-nya saja yang berganti - nol baris baru, nol perubahan
+              tampilan, dan halaman berhenti terbuka tanpa judul (#24). */}
+          <h1 className="lbl">
             Kabar pasar{kabar ? ` (${kabar.item.length})` : ''}
-          </span>
+          </h1>
           <span className="tabs kbr-tabs" role="tablist" aria-label="Saring sumber kabar">
             {TAB.map((t) => (
               <button key={t} type="button" role="tab" aria-selected={tab === t}

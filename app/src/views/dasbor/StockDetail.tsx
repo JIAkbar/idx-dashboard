@@ -270,6 +270,11 @@ export function StockDetail() {
 
   return (
     <div className="lantai">
+      {/* Judul untuk pembaca layar saja (#24). Halaman ini membuka dengan
+          bilah cari emiten, dan menyelipkan baris judul di atasnya mendorong
+          kendali utamanya turun tanpa menambah satu pun keterangan bagi yang
+          melihat layar. */}
+      <h1 className="h-sembunyi">Detail Emiten</h1>
       {activeTicker && (
         <div>
           {/* Proporsi #81: input dominan (flex:1 di StockAutocomplete, cap

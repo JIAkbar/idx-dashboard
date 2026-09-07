@@ -173,6 +173,11 @@ export function ChartIndeks() {
 
   return (
     <div className="lantai">
+      {/* Judul untuk pembaca layar saja (#24). Kepala panel halaman ini
+          DIBUANG 7 Sep 2026 karena judulnya cuma mengulang nama halaman dan
+          barisnya memakan tinggi layar pertama; alasan itu masih berlaku,
+          jadi judulnya kembali tanpa menempati ruang. */}
+      <h1 className="h-sembunyi">Chart Indeks</h1>
       <div className="panel" ref={chartPanelRef}>
         {/* Kepala panel dibuang 7 Sep 2026 (#2/#35): judulnya cuma mengulang
             nama halaman, dan barisnya memakan tinggi layar pertama. Tombol
