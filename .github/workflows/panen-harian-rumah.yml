@@ -241,6 +241,14 @@ jobs:
           & "${{ steps.py.outputs.exe }}" scripts/bangun_broker_rentang.py --tulis
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_broker_rentang gagal" }
 
+      # Pivot broker -> emiten (#30) — membalik arsip per-emiten jadi satu
+      # berkas per broker. Sumbernya sama, cuma arah bacanya yang dibalik.
+      - name: 4e · Pivot broker per emiten
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/bangun_broker_pivot.py --tulis
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_broker_pivot gagal" }
+
       - name: 5 · Valuasi historis
         continue-on-error: true
         run: |

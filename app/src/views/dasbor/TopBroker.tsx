@@ -121,7 +121,11 @@ export function TopBroker() {
 
   const tblBroker = (s: UrutState<BrokerRankRow> & { urut: BrokerRankRow[] }) => s.urut.map((x) => (
     <tr key={x.cd}>
-      <td><span className="bchip">{x.cd}</span></td>
+      {/* Kode broker jadi pintu ke rinciannya (#30) - "misal broker itu di
+          klik bisa kita lihat aslinya oh XL lagi akumulasi di saham apa
+          saja". Pil `.bchip` dipertahankan sebagai isi tautan, bukan
+          diganti: bentuknya sudah dikenali sebagai "ini kode broker". */}
+      <td><Link to={`/broker/${x.cd}`} className="bchip">{x.cd}</Link></td>
       <td className="muted">{x.nm}</td>
       <td className="r num">{fN(x.v, 0)}</td>
       <td className="r num muted">{x.p}%</td>

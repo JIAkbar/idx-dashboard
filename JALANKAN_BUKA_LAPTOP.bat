@@ -229,6 +229,10 @@ REM Rollup Top Broker lintas hari (#29). Dijumlah dari rekap broker harian
 REM resmi yang SUDAH dibaca halaman itu - sumber sama, bukan jahitan.
 "%PYEXE%" scripts\bangun_broker_rentang.py --tulis
 if errorlevel 1 echo   (rollup broker rentang gagal - lanjut)
+REM Pivot broker -> emiten (#30). Membalik arsip per-emiten jadi satu
+REM berkas per broker; sumber sama, cuma arah bacanya yang dibalik.
+"%PYEXE%" scripts\bangun_broker_pivot.py --tulis
+if errorlevel 1 echo   (pivot broker gagal - lanjut)
 "%PYEXE%" scripts\bangun_prob.py
 if errorlevel 1 echo   (peluang gagal - lanjut)
 "%PYEXE%" scripts\bangun_rezim_pasar.py

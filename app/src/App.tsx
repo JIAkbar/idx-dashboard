@@ -11,6 +11,7 @@ import { Beranda } from './views/dasbor/Beranda'
 import { IndeksDunia } from './views/dasbor/IndeksDunia'
 import { TopStocks } from './views/dasbor/TopStocks'
 import { TopBroker } from './views/dasbor/TopBroker'
+import { BrokerDetail } from './views/dasbor/BrokerDetail'
 import { SektorIndeks } from './views/dasbor/SektorIndeks'
 import { KalkulatorJia } from './views/dasbor/KalkulatorJia'
 import { Feedback } from './views/dasbor/Feedback'
@@ -112,6 +113,13 @@ function App() {
               {/* Kunci 'broker' = "Broker Summary" (halaman lain); Top Broker
                   punya kuncinya sendiri, 'topbroker'. */}
               <Route path="/broker" element={<PenjagaHalaman kunci="topbroker"><TopBroker /></PenjagaHalaman>} />
+              {/* Rincian satu broker (#30). Kuncinya SENGAJA `topbroker`,
+                  bukan kunci baru: ini tampilan rinci dari halaman yang
+                  sama, bukan halaman menu tersendiri, jadi aturan akses
+                  induknya harus berlaku apa adanya. Kunci sendiri akan
+                  membuat rincian bisa terbuka saat induknya terkunci -
+                  gerbang yang bocor lewat satu klik. */}
+              <Route path="/broker/:kode" element={<PenjagaHalaman kunci="topbroker"><BrokerDetail /></PenjagaHalaman>} />
               <Route path="/sector" element={<PenjagaHalaman kunci="sektor"><SektorIndeks /></PenjagaHalaman>} />
               {/* Statistik Berkala — rekap pekan bursa dari terbitan resmi IDX
                   (arsipnya sudah lama dipanen tapi belum pernah punya layar).

@@ -1,0 +1,18 @@
+/* Rincian broker (#30). Dua panel berdampingan di layar lebar, bertumpuk di
+   ponsel — kolom `minmax(0, 1fr)`, BUKAN `auto`: kolom auto melebar mengikuti
+   anak terlebar dan `.dasbor-main` memotongnya, jadi kelebihannya tak
+   terjangkau sama sekali di ponsel (jebakan yang sudah tercatat di CLAUDE.md). */
+.lantai .bdt-grid {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px;
+}
+@media (min-width: 1024px) {
+  .lantai .bdt-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.lantai .bdt-basis { margin: 0 0 10px; font-size: 11px; line-height: 1.55; }
+.lantai .bdt-kosong { margin: 10px 0; }
+
+.lantai .bdt-tbl td.num { font-variant-numeric: tabular-nums; }
+
+.lantai .bdt-pesan { text-align: center; padding: 40px 20px; }
+.lantai .bdt-pesan-sub { max-width: 46ch; margin: 6px auto 14px; font-size: 11px; line-height: 1.6; }
