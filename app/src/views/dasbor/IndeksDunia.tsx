@@ -47,7 +47,10 @@ function tglSingkatTahun(iso: string) {
 
 /** Pilihan rentang chart IHSG. `tahun: 0` = seluruh riwayat. */
 const RENTANG = [
-  { id: 'ytd', label: LABEL_RENTANG.ytd, judul: 'Tahun Berjalan', tahun: null },
+  // `sejakJan`: bilah tanggal halaman ini sudah memakai kosakata preset
+  // bersama, jadi `ytd` di sini membuat dua pintasan bernama beda untuk
+  // hitungan yang sama berdiri di satu layar.
+  { id: 'ytd', label: LABEL_RENTANG.sejakJan, judul: 'Tahun Berjalan', tahun: null },
   { id: 'y1', label: LABEL_RENTANG.y1, judul: '1 Tahun', tahun: 1 },
   { id: 'y5', label: LABEL_RENTANG.y5, judul: '5 Tahun', tahun: 5 },
   { id: 'y10', label: LABEL_RENTANG.y10, judul: '10 Tahun', tahun: 10 },

@@ -8,6 +8,7 @@ import { muatCandle, type DataCandle } from '../../../lib/dasbor/candleStockbit'
 import { muatRentang, type HariBroker as HariTahunan } from '../../../lib/dasbor/brokerEmiten'
 import { SeleksiRentangChart } from '../../../lib/dasbor/seleksiRentangChart'
 import { agregasiBroker, avgHarga, type AgregatBroker } from '../../../lib/dasbor/neoPapan'
+import { LABEL_RENTANG } from '../../../lib/dasbor/periode'
 import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
 import { DatePicker } from '../../../components/dasbor/DatePicker'
 import { useTheme } from '../../../context/ThemeContext'
@@ -35,10 +36,10 @@ const INFO_COMPARE: ItemInfoIndikator[] = [
  */
 
 const LEBAR = [
-  { id: 'b1', label: '1 Bulan' },
-  { id: 'b3', label: '3 Bulan' },
-  { id: 'b6', label: '6 Bulan' },
-  { id: 'y1', label: '1 Tahun' },
+  { id: 'b1', label: LABEL_RENTANG.b1 },
+  { id: 'b3', label: LABEL_RENTANG.b3 },
+  { id: 'b6', label: LABEL_RENTANG.b6 },
+  { id: 'y1', label: LABEL_RENTANG.y1 },
 ] as const
 type IdLebar = (typeof LEBAR)[number]['id']
 const HARI_LEBAR: Record<IdLebar, number> = { b1: 31, b3: 92, b6: 183, y1: 366 }

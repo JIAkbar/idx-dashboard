@@ -32,7 +32,7 @@ const RENTANG = [
   { id: 'b3', label: LABEL_RENTANG.b3 },
   { id: 'b6', label: LABEL_RENTANG.b6 },
   { id: 'y1', label: LABEL_RENTANG.y1 },
-  { id: 'semua', label: 'Semua' },
+  { id: 'semua', label: LABEL_RENTANG.semua },
 ] as const
 type IdRentang = (typeof RENTANG)[number]['id']
 

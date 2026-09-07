@@ -148,7 +148,13 @@ export function TopBroker() {
               { id: 'w1', label: LABEL_RENTANG.w1 },
               { id: 'b1', label: LABEL_RENTANG.b1 },
               { id: 'b3', label: LABEL_RENTANG.b3 },
-              { id: 'ytd', label: LABEL_RENTANG.ytd },
+              // `sejakJan`, bukan `ytd`: halaman ini memajang DUA kelompok
+              // pintasan - bilah tanggal di atas (yang sudah memakai kosakata
+              // preset bersama) dan pil rollup ini. Dengan `ytd` keduanya
+              // berdiri bersebelahan menghitung hal yang SAMA dengan dua nama
+              // berbeda. Kata "YTD" sendiri sengaja disisakan untuk kolom
+              // resmi bursa (keputusan Johan 5 Sep 2026).
+              { id: 'ytd', label: LABEL_RENTANG.sejakJan },
             ]}
           />
         </div>

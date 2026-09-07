@@ -38,7 +38,10 @@ const PRESET_BROKER: { id: PresetId; label: string; hari: number }[] = [
   { id: 'b1', label: LABEL_RENTANG.b1, hari: 30 },
   { id: 'b3', label: LABEL_RENTANG.b3, hari: 91 },
   { id: 'b6', label: LABEL_RENTANG.b6, hari: 182 },
-  { id: 'ytd', label: LABEL_RENTANG.ytd, hari: 0 },
+  // `sejakJan`: berkas ini juga merender PRESET_RENTANG, yang mengeja
+  // preset yang sama sebagai "Sejak 1 Jan". Dua kata untuk satu hitungan
+  // di satu berkas.
+  { id: 'ytd', label: LABEL_RENTANG.sejakJan, hari: 0 },
   { id: 'y1', label: LABEL_RENTANG.y1, hari: 365 },
 ]
 
