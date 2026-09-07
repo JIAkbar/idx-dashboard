@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Dropdown } from '../../components/dasbor/Dropdown'
-import { LangkahTanggal } from '../../components/dasbor/LangkahTanggal'
+import { DatePicker } from '../../components/dasbor/DatePicker'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
@@ -10,7 +9,7 @@ import {
   belahDua,
   bulananKeBanding,
   bulananKePeringkat,
-  labelEdisi,
+  isoEdisi,
   pangsa,
   persen,
   persenBanding,
@@ -222,10 +221,22 @@ export function StatistikBerkala() {
 
   // Pemilih edisi: yang TERBARU di atas (yang dicari orang lebih dulu),
   // sementara `daftar` tetap urut naik supaya "berikutnya" = indeks + 1.
-  const opsiEdisi = useMemo(
-    () => (daftar ?? []).map((e, i) => ({ nilai: String(i), label: labelEdisi(e) })).reverse(),
-    [daftar],
+  /**
+   * Edisi -> tanggal kalender (#42). Sampai 7 Sep 2026 pemilih periode di
+   * sini berupa daftar bergulir ber-"Cari...", sementara sepuluh halaman
+   * lain memakai kalender; Johan menandainya: "penggunaan kalender tidak
+   * konsisten nih, coba sweep".
+   *
+   * Edisi yang tanggalnya tak terbaca DIBUANG dari kalender, bukan
+   * dipaksa masuk: sel yang tak pernah cocok dengan nilai terpilih akan
+   * membuat pemilihnya terlihat kosong tanpa satu pun galat.
+   */
+  const isoDaftar = useMemo(() => (daftar ?? []).map(isoEdisi), [daftar])
+  const tersedia = useMemo(
+    () => new Set(isoDaftar.filter((v): v is string => v !== null)),
+    [isoDaftar],
   )
+  const isoTerpilih = idx != null ? isoDaftar[idx] : null
 
   const kataPeriode = jenis === 'minggu' ? 'pekan' : 'bulan'
   const labelLalu = jenis === 'minggu' ? 'Pekan lalu' : 'Bulan lalu'
@@ -299,28 +310,23 @@ export function StatistikBerkala() {
       </div>
         <div className="stb-nav">
         <PemilihRentang opsi={opsiJenis} nilai={jenis} onGanti={setJenis} ariaLabel="Panjang periode" />
-        {daftar && idx != null && (
+        {daftar && idx != null && isoTerpilih && (
           <div className="stb-langkah">
-            <LangkahTanggal
-              arah="mundur"
-              ukuran="sebaris"
-              label={`${labelIni === 'Pekan ini' ? 'Pekan' : 'Bulan'} sebelumnya`}
-              disabled={idx === 0}
-              onClick={() => pilih(idx - 1)}
-            />
-            <Dropdown
-              opsi={opsiEdisi}
-              nilai={String(idx)}
-              onGanti={(v) => pilih(Number(v))}
+            {/* Panah <  > tidak ditulis lagi di sini: DatePicker sudah
+                merendernya sendiri begitu `tersedia` diisi, dan panahnya
+                melompat antar EDISI yang ada - bukan antar hari kalender.
+                Dua pasang panah berdampingan yang artinya sama persis
+                cuma menambah benda di bilah. */}
+            <DatePicker
+              mode={jenis === 'bulan' ? 'bulan' : 'hari'}
+              value={isoTerpilih}
+              tersedia={tersedia}
+              onChange={(iso) => {
+                const i = isoDaftar.indexOf(iso)
+                if (i >= 0) pilih(i)
+              }}
               ariaLabel={`Pilih ${kataPeriode}`}
               rata="kanan"
-            />
-            <LangkahTanggal
-              arah="maju"
-              ukuran="sebaris"
-              label={`${labelIni === 'Pekan ini' ? 'Pekan' : 'Bulan'} berikutnya`}
-              disabled={idx === daftar.length - 1}
-              onClick={() => pilih(idx + 1)}
             />
           </div>
         )}

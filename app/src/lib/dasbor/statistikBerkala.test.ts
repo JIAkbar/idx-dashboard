@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   angka,
   bacaIndeks,
+  isoEdisi,
   labelEdisi,
   pangsa,
   persen,
@@ -142,5 +143,33 @@ describe('baca daftar edisi', () => {
     expect(bacaIndeks(null)).toEqual([])
     expect(bacaIndeks('<!doctype html>')).toEqual([])
     expect(bacaIndeks({})).toEqual([])
+  })
+})
+
+describe('isoEdisi — kunci kalender pemilih periode (#42)', () => {
+  it('mingguan memakai tanggal terbitnya', () => {
+    expect(isoEdisi({ stem: 'ws_260904', tanggal_edisi_iso: '2026-09-04', rentang_minggu: '' }))
+      .toBe('2026-09-04')
+  })
+
+  it('bulanan jadi tanggal 1 bulan itu — kisi bulan tetap bicara ISO', () => {
+    expect(isoEdisi({ stem: 'ms_2509', periode: '2025-09', periode_id: 'September 2025' }))
+      .toBe('2025-09-01')
+  })
+
+  it('indeks tanpa ruas tanggal jatuh ke penamaan berkas', () => {
+    expect(isoEdisi({ stem: 'ws_260102' })).toBe('2026-01-02')
+    expect(isoEdisi({ stem: 'ms_2608' })).toBe('2026-08-01')
+  })
+
+  it('bentuk yang tak dikenali mengembalikan null, bukan tebakan', () => {
+    // Menebak di sini berakibat sel kalender yang tak pernah cocok dengan
+    // nilai terpilih: pemilihnya terlihat kosong tanpa satu pun galat.
+    expect(isoEdisi({ stem: 'entah', periode: 'Agustus 2026' })).toBeNull()
+    expect(isoEdisi({ stem: 'lain_260904', tanggal_edisi_iso: '4 Sep 2026' })).toBeNull()
+  })
+
+  it('tanggal yang bukan ISO diselamatkan penamaan berkas, bukan dipakai apa adanya', () => {
+    expect(isoEdisi({ stem: 'ws_260904', tanggal_edisi_iso: '4 Sep 2026' })).toBe('2026-09-04')
   })
 })

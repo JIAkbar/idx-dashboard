@@ -292,6 +292,28 @@ export function kunciUrut(e: EntriIndeks): string {
   return e.tanggal_edisi_iso ?? e.periode ?? e.stem
 }
 
+/**
+ * Kunci KALENDER satu edisi - ISO `YYYY-MM-DD` yang dipakai pemilih
+ * tanggal (#42). Mingguan memakai tanggal terbitnya; bulanan memakai
+ * tanggal 1 bulan itu, karena kisi bulan tetap berbicara ISO supaya
+ * `tersedia`, stepper, dan pengurutan tak butuh cabang kedua.
+ *
+ * Beda dari `kunciUrut`: yang itu boleh mengembalikan bentuk apa pun asal
+ * urut (termasuk `stem`), yang ini WAJIB tanggal sah - kalau tidak, sel
+ * kalendernya tak akan pernah cocok. Karena itu bentuk yang tak dikenali
+ * mengembalikan null, bukan menebak.
+ */
+export function isoEdisi(e: EntriIndeks): string | null {
+  if (e.tanggal_edisi_iso && /^\d{4}-\d{2}-\d{2}$/.test(e.tanggal_edisi_iso)) return e.tanggal_edisi_iso
+  if (e.periode && /^\d{4}-\d{2}$/.test(e.periode)) return `${e.periode}-01`
+  // Jaring terakhir dari penamaan berkas: ws_YYMMDD / ms_YYMM.
+  const w = /^ws_(\d{2})(\d{2})(\d{2})$/.exec(e.stem ?? '')
+  if (w) return `20${w[1]}-${w[2]}-${w[3]}`
+  const m = /^ms_(\d{2})(\d{2})$/.exec(e.stem ?? '')
+  if (m) return `20${m[1]}-${m[2]}-01`
+  return null
+}
+
 const BERKAS_INDEKS: Record<JenisPeriode, string> = {
   minggu: '/data-idx/json/index_weekly.json',
   bulan: '/data-idx/json/index_monthly.json',

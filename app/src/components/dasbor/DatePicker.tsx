@@ -30,7 +30,7 @@ function urai(iso: string): { t: number; b: number; d: number } | null {
  * Nilai masuk/keluar tetap string ISO `YYYY-MM-DD` — kompatibel penuh dengan
  * pemakaian input date sebelumnya.
  */
-export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 'kiri', tanda, rentang, onGantiRentang }: {
+export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 'kiri', tanda, rentang, onGantiRentang, mode = 'hari' }: {
   value: string
   onChange: (iso: string) => void
   /** Kalau diisi: hanya tanggal di set ini yang bisa dipilih (hari ber-data),
@@ -57,11 +57,22 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
    *  berubah perilakunya sama sekali. */
   rentang?: { dari: string; sampai: string } | null
   onGantiRentang?: (dari: string, sampai: string) => void
+  /** KISI BULAN (#42) - 12 kotak x tahun, bukan kisi hari. Dipakai
+   *  pemilih periode yang satuannya memang bulan (Statistik Berkala
+   *  bulanan): sebelumnya halaman itu memakai daftar bergulir
+   *  ber-"Cari..." sementara semua pemilih periode lain di aplikasi ini
+   *  kalender, dan Johan menandainya sebagai kalender tak konsisten.
+   *
+   *  Nilai masuk/keluar tetap ISO `YYYY-MM-01` supaya `tersedia`, stepper
+   *  panah, dan pengurutan bekerja apa adanya tanpa cabang kedua.
+   *  Bulan tanpa edisi dimatikan lewat `tersedia`, sama seperti hari. */
+  mode?: 'hari' | 'bulan'
 }) {
   const [open, setOpen] = useState(false)
   /** Ujung awal yang sudah diklik tapi belum ditutup. null = belum mulai. */
   const [awalSementara, setAwalSementara] = useState<string | null>(null)
   const modeRentang = typeof onGantiRentang === 'function'
+  const modeBulan = mode === 'bulan'
   const kini = new Date()
   const vAwal = urai(value)
   const [tahun, setTahun] = useState(vAwal ? vAwal.t : kini.getFullYear())
@@ -150,7 +161,9 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
   }
   // Kolom (0=Sen..4=Jum) hari kerja pertama bulan ini → sel kosong pembuka.
   const offset = hariKerja.length ? (new Date(tahun, bulan, hariKerja[0]).getDay() + 6) % 7 : 0
-  const isoIni = keIso(kini.getFullYear(), kini.getMonth(), kini.getDate())
+  const isoIni = modeBulan
+    ? keIso(kini.getFullYear(), kini.getMonth(), 1)
+    : keIso(kini.getFullYear(), kini.getMonth(), kini.getDate())
 
   // Clamp arah popover ke viewport (sweep 27 Agu: keluar kiri 18px di
   // Broker Summary ponsel saat dipaksa rata kanan dekat tepi kiri).
@@ -171,7 +184,9 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
     ? `${pendek(awalSementara)} · klik lagi bisa jadi rentang`
     : modeRentang && rentang
       ? `${pendek(rentang.dari)} – ${pendek(rentang.sampai)}`
-      : v ? `${v.d} ${NAMA_BULAN[v.b].slice(0, 3)} ${v.t}` : 'Pilih tanggal'
+      : v
+        ? (modeBulan ? `${NAMA_BULAN[v.b]} ${v.t}` : `${v.d} ${NAMA_BULAN[v.b].slice(0, 3)} ${v.t}`)
+        : (modeBulan ? 'Pilih bulan' : 'Pilih tanggal')
 
   // Stepper dirender mengapit field, di luar .dd supaya popover tetap
   // menempel pas di bawah field (bukan di bawah stepper).
@@ -245,15 +260,36 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
               >=12px; tanpa itu area klik yang dilebarkan `::after{inset:-6px}`
               saling tindih dan klik di celah jatuh ke tombol yang salah. */}
           <span className="ti-grup">
-            <LangkahTanggal arah="mundur" ukuran="sebaris" ganda label="Tahun sebelumnya" onClick={() => geserTahun(-1)} />
-            <LangkahTanggal arah="mundur" ukuran="sebaris" label="Bulan sebelumnya" onClick={() => geser(-1)} />
+            <LangkahTanggal arah="mundur" ukuran="sebaris" ganda={!modeBulan} label="Tahun sebelumnya" onClick={() => geserTahun(-1)} />
+            {!modeBulan && <LangkahTanggal arah="mundur" ukuran="sebaris" label="Bulan sebelumnya" onClick={() => geser(-1)} />}
           </span>
-          <span className="dpk-bulan">{NAMA_BULAN[bulan]} {tahun}</span>
+          <span className="dpk-bulan">{modeBulan ? tahun : `${NAMA_BULAN[bulan]} ${tahun}`}</span>
           <span className="ti-grup">
-            <LangkahTanggal arah="maju" ukuran="sebaris" label="Bulan berikutnya" onClick={() => geser(1)} />
-            <LangkahTanggal arah="maju" ukuran="sebaris" ganda label="Tahun berikutnya" onClick={() => geserTahun(1)} />
+            {!modeBulan && <LangkahTanggal arah="maju" ukuran="sebaris" label="Bulan berikutnya" onClick={() => geser(1)} />}
+            <LangkahTanggal arah="maju" ukuran="sebaris" ganda={!modeBulan} label="Tahun berikutnya" onClick={() => geserTahun(1)} />
           </span>
         </div>
+        {modeBulan ? (
+        <div className="dpk-grid dpk-bln">
+          {NAMA_BULAN.map((nama, b) => {
+            const iso = keIso(tahun, b, 1)
+            const adaEdisi = tersedia ? tersedia.has(iso) : true
+            const lewatMaks = maks !== undefined && iso > maks
+            return (
+              <button
+                key={iso}
+                type="button"
+                className={`dpk-hari${iso === isoIni ? ' now' : ''}${iso === value ? ' sel' : ''}`}
+                disabled={!adaEdisi || lewatMaks}
+                title={adaEdisi ? undefined : 'Belum ada edisi untuk bulan ini'}
+                onClick={() => { onChange(iso); setOpen(false) }}
+              >
+                {nama.slice(0, 3)}
+              </button>
+            )
+          })}
+        </div>
+        ) : (
         <div className="dpk-grid">
           {NAMA_HARI.map((h) => <span key={h} className="dpk-dow">{h}</span>)}
           {Array.from({ length: offset }, (_, i) => <span key={`k${i}`} />)}
@@ -344,6 +380,7 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
             )
           })}
         </div>
+        )}
       </div>
       </div>
       {daftar && stepper(1)}
@@ -351,10 +388,12 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
         <button
           type="button"
           className="chip-t dpk-kini"
-          title="Lompat ke hari bursa terakhir yang sudah berdata"
+          title={modeBulan
+            ? 'Lompat ke bulan terbaru yang sudah terbit'
+            : 'Lompat ke hari bursa terakhir yang sudah berdata'}
           onClick={() => isoTerkini && onChange(isoTerkini)}
         >
-          Hari ini
+          {modeBulan ? 'Terbaru' : 'Hari ini'}
         </button>
       )}
     </div>

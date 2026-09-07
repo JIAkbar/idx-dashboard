@@ -61,6 +61,12 @@
 .lantai .dpk-bulan { font-family: var(--disp); font-weight: 700; font-size: 11px; letter-spacing: .05em; white-space: nowrap; }
 
 .lantai .dpk-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
+/* Kisi BULAN (#42): 12 kotak, 3 kolom x 4 baris. Selnya memakai kelas
+   `.dpk-hari` yang sama supaya seluruh keadaan (terpilih, mati, hover,
+   bulan berjalan) lahir dari satu definisi - yang berbeda cuma jumlah
+   kolom dan tinggi sel, bukan bentuknya. */
+.lantai .dpk-grid.dpk-bln { grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.lantai .dpk-grid.dpk-bln .dpk-hari { padding: 9px 0; font-size: 11px; }
 .lantai .dpk-dow {
   font-family: var(--disp); font-size: 8.5px; font-weight: 600;
   letter-spacing: .08em; text-transform: uppercase;

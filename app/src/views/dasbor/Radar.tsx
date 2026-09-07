@@ -9,7 +9,7 @@ import {
 } from '../../lib/radar/arsip'
 import { skorRadar } from '../../lib/radar/skor'
 import { rollupBulanan, rollupMingguan } from '../../lib/radar/rollup'
-import { LangkahTanggal } from '../../components/dasbor/LangkahTanggal'
+import { DatePicker } from '../../components/dasbor/DatePicker'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 // Gaya lightbox (.af-lb-*) hidup di AdminShared.css (dulu AdminHome.css,
@@ -234,6 +234,10 @@ export function Radar() {
   const idx = pilih ?? (arsip ? arsip.length - 1 : 0)
   const edisi: EdisiRadar | null = arsip?.[idx] ?? null
 
+  /** Tanggal yang PUNYA edisi - sel kalender di luar ini mati sendiri,
+   *  jadi tak ada klik yang berujung halaman kosong. */
+  const tglArsip = useMemo(() => new Set((arsip ?? []).map((e) => e.date_iso)), [arsip])
+
   // Subset arsip pekan & bulan edisi terpilih — bahan rollup.
   const arsipMinggu = useMemo(
     () => (arsip && edisi ? arsip.filter((e) => awalMinggu(e.date_iso) === awalMinggu(edisi.date_iso)) : []),
@@ -279,24 +283,24 @@ export function Radar() {
           <span className="sub">arsip WD Watch List — satu edisi per tanggal, skor dari arsip sendiri</span>
         </div>
         <div className="rdr-nav">
-          <div className="rdr-arsip" aria-label="Arsip edisi">
-            {arsip.map((e, i) => (
-              <button
-                key={e.date_iso}
-                type="button"
-                className={`chip-t${i === idx ? ' on' : ''}`}
-                title={tanggalPanjang(e.date_iso)}
-                onClick={() => setPilih(i)}
-              >
-                {e.date_iso.slice(8)}
-              </button>
-            ))}
-          </div>
-          <div className="rdr-stepper">
-            <LangkahTanggal arah="mundur" label="Edisi sebelumnya" disabled={idx === 0} onClick={() => setPilih(idx - 1)} />
-            <span className="tgl">{tanggalPanjang(edisi.date_iso)}</span>
-            <LangkahTanggal arah="maju" label="Edisi berikutnya" disabled={idx === arsip.length - 1} onClick={() => setPilih(idx + 1)} />
-          </div>
+          {/* Kalender, bukan deretan nomor tanggal (#42). Sebelum 7 Sep 2026
+              halaman ini memajang satu pil per edisi yang isinya HANYA angka
+              tanggal - "03 06 10 12 ..." - tanpa bulan maupun tahun, jadi
+              melompat ke edisi bulan lain berarti menebak. Panahnya pun
+              setinggi 44px sementara panah periode di sepuluh halaman lain
+              32px. DatePicker menutup keduanya sekaligus: bulan & tahun
+              terbaca, tanggal tanpa edisi mati sendiri lewat `tersedia`, dan
+              panahnya ikut ukuran kanonis. */}
+          <DatePicker
+            value={edisi.date_iso}
+            tersedia={tglArsip}
+            onChange={(iso) => {
+              const i = arsip.findIndex((e) => e.date_iso === iso)
+              if (i >= 0) setPilih(i)
+            }}
+            ariaLabel="Pilih edisi arsip"
+            rata="kanan"
+          />
         </div>
       </div>
       <KonteksData tanggal={edisi.date_iso} />

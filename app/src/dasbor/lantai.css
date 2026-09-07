@@ -2163,17 +2163,11 @@
 
 /* Navigasi arsip per tanggal: tombol tanggal + stepper ‹ › */
 .lantai .rdr-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-/* Pemilih edisi: kelas sendiri (~23px, angka tanggal telanjang) diganti
-   .chip-t — kelas kanonis "pilih satu dari beberapa" yang sudah setinggi 32px
-   dan punya state .on. Yang tersisa di sini cuma penataan barisnya (#170). */
-.lantai .rdr-arsip{display:flex;gap:5px;flex-wrap:wrap}
-.lantai .rdr-arsip .chip-t{padding:6px 10px;font-size:11px}
-/* Stepper edisi tetap satu bingkai bersambung, tapi panahnya kini
-   LangkahTanggal (44px, target sentuh terpenuhi). Bingkainya yang melepas
-   border tiap panah, bukan panahnya yang mengecil. */
-.lantai .rdr-stepper{display:flex;align-items:center;border:1px solid var(--line2);border-radius:4px;overflow:hidden}
-.lantai .rdr-stepper .lt{border:0;border-radius:0;background:none}
-.lantai .rdr-stepper .tgl{font-family:var(--mono);font-size:12.5px;color:var(--text);padding:7px 14px;border-inline:1px solid var(--line2);font-weight:700;white-space:nowrap}
+/* Pemilih edisi #42: pil-per-tanggal dan stepper ber-bingkai DICABUT, diganti
+   DatePicker - satu-satunya pemicu periode di seluruh aplikasi. Yang hilang
+   bukan cuma bentuknya: pilnya cuma memuat angka tanggal ("03 06 10 ...")
+   tanpa bulan maupun tahun, jadi melompat ke edisi bulan lain berarti
+   menebak. Sisa aturan di sini cuma penataan barisnya. */
 
 /* Tabel papan: warna ticker per zona + superscript hari beruntun */
 .lantai .rdr-tbl .tick small{color:var(--text3);font-weight:400;font-size:9px;vertical-align:super;margin-left:1px}
@@ -3039,9 +3033,10 @@
 
 /* ── Panah langkah (LangkahTanggal.tsx) ──
    44×44 sungguhan. Sebelumnya tugas ini dipikul .dd-btn (34×32) di Kalender,
-   .dpk-nav (24) dan .dpk-step (26×32) di DatePicker, dan .rdr-stepper (~30)
-   di Radar — empat ukuran untuk satu maksud, semuanya lebih kecil daripada
-   sel tanggal yang mereka apit. */
+   .dpk-nav (24) dan .dpk-step (26x32) di DatePicker, dan satu stepper
+   ber-bingkai (~30) di Radar - empat ukuran untuk satu maksud, semuanya
+   lebih kecil daripada sel tanggal yang mereka apit. Yang di Radar sudah
+   dicabut seluruhnya (#42): halaman itu memakai DatePicker sekarang. */
 .lantai .lt {
   width: 44px; height: 44px; flex-shrink: 0; padding: 0;
   display: inline-flex; align-items: center; justify-content: center;
