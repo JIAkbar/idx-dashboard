@@ -34,6 +34,51 @@ export interface OhlcvKaya {
   byDate: Map<string, BarisKaya>
 }
 
+export interface EmberKaya extends BarisKaya {
+  /** Berapa HARI BURSA benar-benar terjumlah — dicetak di layar supaya
+   *  pembaca tahu angka itu sepekan atau sehari. */
+  hari: number
+}
+
+/**
+ * Jumlahkan ruas kaya sepanjang satu EMBER bar: `[dari, sampai)`, tanggal
+ * `yyyy-mm-dd`. `sampai` null = sampai habis (bar terakhir).
+ *
+ * Ada karena legenda baris kedua dulu memanggil `byDate.get(waktuBar)` apa
+ * adanya. Di kerangka Pekanan/Bulanan waktu bar itu KUNCI EMBER (Senin /
+ * tanggal 1), dan kunci itu kebetulan ada juga di arsip harian — jadi
+ * lookup-nya BERHASIL dan mencetak angka SATU HARI di sebelah candle sepekan.
+ * Cacat keduanya justru kebalikannya: kalau Senin itu libur, kuncinya tak ada
+ * dan barisnya hilang sama sekali. Dua-duanya senyap.
+ *
+ * `sahamBeredar` TIDAK dijumlah — ia ruas POSISI, bukan arus; menjumlah saham
+ * beredar tujuh hari berarti angka tujuh kali lipat. Diambil dari hari
+ * TERAKHIR di ember, yaitu posisi pada saat bar itu tutup.
+ */
+export function jumlahEmber(
+  byDate: Map<string, BarisKaya>,
+  dari: string,
+  sampai: string | null,
+): EmberKaya | null {
+  let hari = 0
+  let nilai = 0
+  let frekuensi = 0
+  let foreignBeli = 0
+  let foreignJual = 0
+  let sahamBeredar = 0
+  let terakhir = ''
+  for (const [tgl, b] of byDate) {
+    if (tgl < dari || (sampai !== null && tgl >= sampai)) continue
+    hari += 1
+    nilai += b.nilai
+    frekuensi += b.frekuensi
+    foreignBeli += b.foreignBeli
+    foreignJual += b.foreignJual
+    if (tgl > terakhir) { terakhir = tgl; sahamBeredar = b.sahamBeredar }
+  }
+  return hari === 0 ? null : { hari, nilai, frekuensi, foreignBeli, foreignJual, sahamBeredar }
+}
+
 interface BerkasMentah {
   kolom: readonly string[]
   bar: (string | number)[][]

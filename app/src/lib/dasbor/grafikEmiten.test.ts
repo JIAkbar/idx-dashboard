@@ -1104,6 +1104,19 @@ describe('cariMusiman', () => {
     }
   })
 
+  it('deret PEKANAN ditolak — dulu lolos dan mencetak blok statistik nol yang tampak sah', () => {
+    // Bar pekanan berkunci tanggal Senin, jadi penjaga intraday (panjang
+    // waktu > 10) tak menangkapnya sama sekali. Yang keluar dulu: 'peluang
+    // naik 0,0% · n=0 dari 79 hari bursa' lengkap dengan vonis uji permutasi
+    // untuk empat dari lima pilihan hari.
+    const pekanan = Array.from({ length: 60 }, (_, i) => {
+      const t = new Date(Date.UTC(2025, 0, 6 + i * 7))
+      const iso = t.toISOString().slice(0, 10)
+      return { time: iso, open: 100, high: 101, low: 99, close: 100 + (i % 3) }
+    })
+    for (let hari = 0; hari < 5; hari++) expect(cariMusiman(pekanan, hari)).toBeNull()
+  })
+
   it('jumlah penanda = n yang disebut tooltip — bukan dua hitungan berbeda', () => {
     for (let hari = 0; hari < 5; hari++) {
       const m = cariMusiman(lilin, hari)!

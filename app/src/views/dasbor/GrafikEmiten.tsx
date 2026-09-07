@@ -74,7 +74,7 @@ import { hitungCpr, hitungPivot } from '../../lib/dasbor/chartAnalitik'
 import { agregatBroker, muatRentang } from '../../lib/dasbor/brokerEmiten'
 import { warnaBrokerCanvas } from '../../lib/dasbor/kelompokBroker'
 import { useTheme } from '../../context/ThemeContext'
-import { useOhlcvKaya } from '../../lib/dasbor/ohlcvKaya'
+import { useOhlcvKaya, jumlahEmber } from '../../lib/dasbor/ohlcvKaya'
 import { fmtB, fmtRingkas } from '../../lib/dasbor/brokerSummaryFormat'
 import './GrafikEmiten.css'
 
@@ -2022,9 +2022,15 @@ export function GrafikEmiten() {
    * Gagal, tak ada berkasnya (48 dari 963 emiten), atau belum sampai =
    * peta KOSONG, bukan angka tebakan: `cariWyckoff` menjawabnya dengan jatuh
    * ke cadangan struktur MA dan ruas `fnetDipakai` menyebutkannya di layar.
-   * Kunci petanya tanggal, jadi pada kerangka pekanan/bulanan/intraday ia
-   * memang tak cocok dengan `lilin[i].time` dan hasilnya cadangan itu juga —
-   * benar apa adanya, karena net asing memang tercatat harian.
+   *
+   * KOREKSI 7 Sep 2026: kalimat lama di sini berbunyi "pada kerangka
+   * pekanan/bulanan/intraday ia memang tak cocok … dan hasilnya cadangan itu
+   * juga — benar apa adanya". Itu KELIRU untuk pekanan dan bulanan, dan
+   * kelirunya tersembunyi: kunci bar pekanan adalah tanggal Senin dan bar
+   * bulanan tanggal 1, dua-duanya tanggal bursa yang ADA di peta, jadi
+   * lookup-nya berhasil dan memberi net asing sehari sebagai kalau-kalau itu
+   * sepekan. Penjumlahan per ember sekarang di `fnetPerBar`; yang benar-benar
+   * jatuh ke cadangan cuma intraday.
    */
   // Menu bukan satu-satunya jalan masuk. Template yang memuat pola Divergensi
   // menggambarnya tanpa pembaca menyentuh menu apa pun, dan jalur itu butuh
@@ -2035,8 +2041,44 @@ export function GrafikEmiten() {
     if (perluKatalogPola && !katalog) mintaKatalog()
   }, [perluKatalogPola, katalog, mintaKatalog])
 
+
   const perluFnet = pol.daftar.some((i) => i.jenis === 'wyckoff')
   const [fnetPeta, setFnetPeta] = useState<Map<string, number>>(() => new Map())
+
+  /**
+   * Net asing per BAR, bukan per tanggal.
+   *
+   * Komentar lama di efek pengambilnya menyatakan peta bertanggal itu "memang
+   * tak cocok" di kerangka pekanan/bulanan sehingga jatuh ke cadangan struktur
+   * MA. Diperiksa 7 Sep 2026: keliru, dan kelirunya searah dengan yang paling
+   * merugikan. Bar pekanan berkunci tanggal SENIN dan bar bulanan tanggal 1 —
+   * dua-duanya tanggal bursa yang ADA di peta harian — jadi lookup-nya justru
+   * BERHASIL dan memberi net asing SATU HARI sebagai kalau-kalau itu net asing
+   * sepekan. Cadangan yang disebut komentar itu tak pernah terpakai di sana.
+   *
+   * Sekarang dijumlah sepanjang ember bar (dari waktunya sampai sebelum bar
+   * berikutnya). Di kerangka Harian embernya satu hari, jadi hasilnya sama
+   * persis dengan sebelumnya; intraday tetap null (waktu bar memuat jam,
+   * tanggalnya sendiri berulang di banyak bar) dan di situ cadangan MA memang
+   * benar-benar terpakai.
+   */
+  const fnetPerBar = useMemo<Array<number | null>>(() => {
+    if (fnetPeta.size === 0) return lilin.map(() => null)
+    const intraday = lilin.some((l) => l.time.length > 10)
+    if (intraday) return lilin.map(() => null)
+    return lilin.map((l, i) => {
+      const dari = l.time.slice(0, 10)
+      const sampai = lilin[i + 1]?.time.slice(0, 10) ?? null
+      let ada = false
+      let jumlah = 0
+      for (const [tgl, v] of fnetPeta) {
+        if (tgl < dari || (sampai !== null && tgl >= sampai)) continue
+        ada = true
+        jumlah += v
+      }
+      return ada ? jumlah : null
+    })
+  }, [lilin, fnetPeta])
   useEffect(() => {
     if (!perluFnet) return
     let batal = false
@@ -2093,7 +2135,7 @@ export function GrafikEmiten() {
       wyckoff: inst.jenis === 'wyckoff'
         ? cariWyckoff(
           lilin, vol,
-          lilin.map((l) => fnetPeta.get(l.time) ?? null),
+          fnetPerBar,
           inst.param as unknown as ParamWyckoff,
         )
         : ([] as SegmenWyckoff[]),
@@ -3745,7 +3787,17 @@ export function GrafikEmiten() {
                     mengatakan sejak kapan datanya ada — bukan diam-diam
                     menampilkan nol. */}
                 {pane === 0 && status && (() => {
-                  const k = kaya.byDate.get(status.l.time)
+                  // Intraday tak punya baris ini dan itu disengaja: arsip ruas
+                  // kaya berkunci TANGGAL, jadi satu-satunya angka yang bisa
+                  // ditawarkan di candle lima menit adalah nilai SEHARI PENUH —
+                  // angka yang benar untuk pertanyaan yang tak sedang diajukan.
+                  if (kerangka !== 'D' && kerangka !== 'W' && kerangka !== 'M') return null
+                  // Ember bar ini: dari waktunya sampai (tak termasuk) waktu bar
+                  // berikutnya. Di Harian embernya satu hari, jadi hasilnya sama
+                  // persis dengan lookup lama.
+                  const iBar = indeksWaktu.get(status.l.time)
+                  const sampai = iBar === undefined ? null : lilin[iBar + 1]?.time.slice(0, 10) ?? null
+                  const k = jumlahEmber(kaya.byDate, status.l.time.slice(0, 10), sampai)
                   if (k) {
                     const netAsing = k.foreignBeli - k.foreignJual
                     return (
@@ -3756,6 +3808,9 @@ export function GrafikEmiten() {
                           Asing {netAsing >= 0 ? '+' : ''}{fmtB(netAsing)}
                         </span>
                         <span>Saham beredar {fmtRingkas(k.sahamBeredar)}</span>
+                        {/* Jumlah hari disebut begitu embernya lebih dari sehari —
+                            tanpa itu angka sepekan terbaca seperti angka sehari. */}
+                        {k.hari > 1 && <span className="muted">Σ {k.hari} hari bursa</span>}
                       </span>
                     )
                   }

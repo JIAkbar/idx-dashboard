@@ -1975,6 +1975,27 @@ export function cariMusiman(lilin: LilinData[], hari: number): TemuanMusiman | n
   // persis seperti yang dilarang CLAUDE.md; jadi dijegal di sini, bukan di
   // salah satu pemanggilnya.
   if (lilin.some((l) => l.time.length > 10)) return null
+  // PEKANAN & BULANAN ikut ditolak (7 Sep 2026). Penjaga di atas cuma
+  // menangkap intraday, dan itu ternyata setengah jalan: bar pekanan berkunci
+  // tanggal SENIN dan bar bulanan tanggal 1, jadi `ringkasHarian` tetap jalan
+  // dan mencetak statistik "per hari bursa" yang isinya bukan hari.
+  //
+  // Yang membuatnya berbahaya bukan angka yang meleset melainkan angka yang
+  // TERLIHAT SAH: di kerangka pekanan, empat dari lima hari menghasilkan blok
+  // "peluang naik 0,0% · n=0 dari 79 hari bursa" lengkap dengan vonis uji
+  // permutasi — nol pengamatan disajikan sebagai temuan. Di bulanan, tanggal 1
+  // yang jatuh Sabtu/Minggu dibuang `ringkasHarian` sehingga sebagian bar
+  // hilang dari hitungan tanpa satu pun keterangan.
+  //
+  // Dua bar berjarak lebih dari 4 hari kalender = bukan deret harian. Ambangnya
+  // longgar karena libur panjang bursa bisa membuat dua sesi harian berjarak
+  // sampai 4 hari (Jumat -> Selasa), sementara jarak pekanan selalu 7.
+  if (lilin.length >= 3) {
+    const jarak = (a: string, b: string) =>
+      Math.round((Date.parse(b) - Date.parse(a)) / 86400000)
+    const tengah = Math.floor(lilin.length / 2)
+    if (jarak(lilin[tengah - 1].time, lilin[tengah].time) > 4) return null
+  }
   const tutup: Record<string, number> = {}
   for (const l of lilin) tutup[l.time] = l.close
   // Tanpa batas tanggal: `lilin` SUDAH dipotong ke rentang chip di pemanggil.
