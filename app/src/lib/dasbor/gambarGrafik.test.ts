@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   kunciGambar, uraiGambar, bacaGambarTersimpan, tulisGambarTersimpan, VERSI_GAMBAR,
   bacaGayaBawaan, tulisGayaBawaan, dashDariGaya, gayaDariDash, GAYA_BAWAAN,
+  epochWaktu, epochAnchor, proyeksiAnchor,
   type GambarTersimpan, type GayaGambar,
 } from './gambarGrafik'
 
@@ -132,5 +133,59 @@ describe('dashDariGaya / gayaDariGaya — bolak-balik gaya garis <-> lineDash pu
   it('dashed/dotted bolak-balik ke gaya yang sama', () => {
     expect(gayaDariDash(dashDariGaya('dashed'))).toBe('dashed')
     expect(gayaDariDash(dashDariGaya('dotted'))).toBe('dotted')
+  })
+})
+
+describe('jangkar gambar berkoordinat absolut & diproyeksikan (#62)', () => {
+  /** Sumbu pekanan: kuncinya SENIN, jadi tanggal Kamis tak pernah ada di sini. */
+  const waktuW = ['2026-08-17', '2026-08-24', '2026-08-31']
+  const epochW = waktuW.map((w) => epochWaktu(w) as number)
+
+  it('epochWaktu menangani tanggal harian DAN waktu intraday', () => {
+    // `keEpoch` di kerangkaWaktu merakit `${waktu}:00+07:00` dan memberi NaN
+    // untuk tanggal harian - NaN yang mengalir ke perbandingan epoch akan
+    // membuat SEMUA gambar tak terproyeksi, senyap.
+    expect(epochWaktu('2026-08-20')).toBe(Date.UTC(2026, 7, 19, 17) / 1000)
+    expect(epochWaktu('2026-08-20 09:00')).toBe(Date.UTC(2026, 7, 20, 2) / 1000)
+    expect(epochWaktu('bukan tanggal')).toBeNull()
+  })
+
+  it('anchor LAMA tanpa epoch tetap terbaca - dihitung dari waktunya', () => {
+    expect(epochAnchor({ waktu: '2026-08-20', harga: 100 }))
+      .toBe(epochWaktu('2026-08-20'))
+  })
+
+  it('jangkar Kamis mendarat di bar pekan yang MEMUATnya, bukan pekan berikutnya', () => {
+    // 20 Agu 2026 Kamis; pekan yang memuatnya mulai Senin 17 Agu.
+    const hasil = proyeksiAnchor([{ waktu: '2026-08-20', harga: 100 }], epochW, waktuW)
+    expect(hasil?.[0].waktu).toBe('2026-08-17')
+  })
+
+  it('jangkar yang jatuh SEBELUM bar pertama tak bisa diproyeksikan', () => {
+    // Pemanggil menyembunyikan gambarnya di kerangka ini - bukan menghapusnya,
+    // karena di kerangka asalnya ia masih benar.
+    expect(proyeksiAnchor([{ waktu: '2020-01-02', harga: 100 }], epochW, waktuW)).toBeNull()
+  })
+
+  it('satu jangkar gagal = SELURUH gambar disembunyikan', () => {
+    // Garis tren dengan satu ujung di luar jangkauan bukan garis tren yang
+    // separuh benar; ia jadi garis ke tempat yang salah.
+    const hasil = proyeksiAnchor(
+      [{ waktu: '2026-08-20', harga: 100 }, { waktu: '2019-01-02', harga: 90 }],
+      epochW, waktuW,
+    )
+    expect(hasil).toBeNull()
+  })
+
+  it('epoch dipertahankan di hasil - proyeksi ulang mendarat di bar yang sama', () => {
+    const asal = { waktu: '2026-08-20', harga: 100 }
+    const hasil = proyeksiAnchor([asal], epochW, waktuW)
+    expect(hasil?.[0].epoch).toBe(epochWaktu('2026-08-20'))
+    const lagi = proyeksiAnchor(hasil ?? [], epochW, waktuW)
+    expect(lagi?.[0].waktu).toBe('2026-08-17')
+  })
+
+  it('sumbu kosong = tak ada yang bisa diproyeksikan', () => {
+    expect(proyeksiAnchor([{ waktu: '2026-08-20', harga: 1 }], [], [])).toBeNull()
   })
 })

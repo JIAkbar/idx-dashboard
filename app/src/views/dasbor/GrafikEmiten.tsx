@@ -1294,8 +1294,20 @@ export function GrafikEmiten() {
    * internal hook ini berjalan, `chartRef.current`/`hargaRef.current` sudah
    * terisi — urutan efek React mengikuti urutan pemanggilan hook di sini.
    */
+  /**
+   * Sumbu kerangka aktif untuk proyeksi jangkar gambar (#62).
+   *
+   * STATE, bukan memo dari `lilin`: deret lilin baru lahir ratusan baris di
+   * bawah pemanggilan hook ini, jadi memo di sini akan membaca variabel yang
+   * belum ada. Diisi efek begitu lilinnya siap - identitas lariknya tetap
+   * stabil per perubahan lilin, dan itu yang penting karena ia masuk deps
+   * efek impor gambar.
+   */
+  const [waktuBarGambar, setWaktuBarGambar] = useState<string[]>([])
   const alatGambar = useAlatGambar({
     chartRef, seriesRef: hargaRef, containerRef, kode, versiSeriHarga,
+    // Sumbu kerangka aktif - jangkar gambar diproyeksikan ke sini (#62).
+    waktuBar: waktuBarGambar,
   })
   // Modal setelan gambar wajib tertutup begitu tak ada lagi yang terpilih —
   // gambar bisa lepas terpilih dari luar modal (klik kanvas kosong, Escape,
@@ -1442,6 +1454,7 @@ export function GrafikEmiten() {
     }))
     return { lilin: d.lilin, volume: vol }
   }, [berkas, intra, kerangka, theme])
+
 
   /**
    * Indeks lilin PERTAMA yang masuk chip rentang kaki — satu-satunya bekas
@@ -1663,6 +1676,13 @@ export function GrafikEmiten() {
       ? penuh
       : { lilin: penuh.lilin.slice(0, replay), volume: penuh.volume.slice(0, replay) }
   ), [penuh, replay])
+
+  // Sumbu untuk proyeksi jangkar gambar (#62). Di SINI, bukan di dekat
+  // pemanggilan `useAlatGambar`: deret lilin baru lahir di baris ini, dan
+  // membacanya lebih awal berarti membaca variabel yang belum ada.
+  useEffect(() => {
+    setWaktuBarGambar(lilin.map((l) => l.time))
+  }, [lilin])
 
   /** Jendela pandang aktual (indeks logis, pecahan di ujung) — dilanggan
    *  HANYA selagi panel Analitik menyala, sama seperti basisPersen di atas.

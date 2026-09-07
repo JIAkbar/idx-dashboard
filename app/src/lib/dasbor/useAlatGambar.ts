@@ -29,7 +29,8 @@ import type { Anchor, DrawingStyle, SerializedDrawing } from 'lightweight-charts
 import { ALAT_UTAMA, muatPustakaGambar } from './gambarPustaka'
 import {
   bacaGambarTersimpan, tulisGambarTersimpan, VERSI_GAMBAR,
-  bacaGayaBawaan, tulisGayaBawaan, dashDariGaya, type GambarTersimpan, type GayaGambar,
+  bacaGayaBawaan, tulisGayaBawaan, dashDariGaya, epochWaktu, proyeksiAnchor,
+  type GambarTersimpan, type GayaGambar,
 } from './gambarGrafik'
 import { keWaktuChart, dariWaktuChart } from './kerangkaWaktu'
 
@@ -190,8 +191,17 @@ export function useAlatGambar(opts: {
   /** Naik tiap seri harga dibuat ulang (lihat `GrafikEmiten.tsx`) — dipakai
    *  memasang ulang manager ke seri yang baru. */
   versiSeriHarga: number
+  /**
+   * Waktu internal SETIAP bar kerangka aktif, terurut naik (#62).
+   *
+   * Dipakai memproyeksikan jangkar gambar ke sumbu kerangka ini. Tanpa
+   * itu jangkar dipakai apa adanya, dan jangkar dari kerangka lain jatuh
+   * di tanggal yang tak ada di sumbu - garisnya meleset tanpa satu pun
+   * galat.
+   */
+  waktuBar: string[]
 }): UseAlatGambar {
-  const { chartRef, seriesRef, containerRef, kode, versiSeriHarga } = opts
+  const { chartRef, seriesRef, containerRef, kode, versiSeriHarga, waktuBar } = opts
 
   const [pustaka, setPustaka] = useState<ModulPustaka | null>(null)
   const [galat, setGalat] = useState<string | null>(null)
@@ -321,6 +331,22 @@ export function useAlatGambar(opts: {
    *  berhenti, bukan tiap piksel antaranya. Tanpa ini seretan sebentar saja
    *  memicu puluhan `JSON.stringify`+`localStorage.setItem` yang tak berguna. */
   const tundaSimpanRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /**
+   * Sedang memasang gambar ke kanvas dari penyimpanan (#62).
+   *
+   * `importDrawings` menembakkan `drawing:added` untuk TIAP gambar, dan
+   * pendengarnya menyimpan balik memakai koordinat sumbu SAAT ITU. Sejak
+   * jangkar diproyeksikan per kerangka, tiap pergantian kerangka jadi
+   * MENIMPA jangkar asli dengan hasil proyeksinya - dan karena proyeksi
+   * selalu mundur ke awal bar, jangkarnya merayap mundur tiap kali.
+   * Terukur: garis 20 Agu / 3 Sep jadi 17 Agu / 31 Agu di pekanan, lalu
+   * 1 Agu / 1 Agu di bulanan, lalu 31 Jul / 31 Jul begitu kembali ke
+   * harian - dua ujungnya runtuh jadi satu titik.
+   *
+   * Ref, bukan state: pendengarnya dipasang sekali dan wajib membaca
+   * nilai TERKINI, bukan yang tertangkap closure saat dipasang.
+   */
+  const sedangImpor = useRef(false)
   /** Duck-type keluarga Fibonacci: kelas mana pun yang memajang `fibOptions`
    *  (FibRetracement/Extension/Channel dst.) ikut dapat editor levelnya. */
   const bacaOpsiFib = (d: unknown): OpsiFib | null => {
@@ -336,6 +362,8 @@ export function useAlatGambar(opts: {
   }
 
   const simpanSekarang = useCallback(() => {
+    // Impor bukan perubahan dari pembaca (#62).
+    if (sedangImpor.current) return
     if (tundaSimpanRef.current) clearTimeout(tundaSimpanRef.current)
     tundaSimpanRef.current = setTimeout(() => {
       const manager = managerRef.current
@@ -345,7 +373,13 @@ export function useAlatGambar(opts: {
         type: d.type,
         id: d.id,
         anchors: d.anchors
-          .map((a) => ({ waktu: dariWaktuChart(a.time) ?? '', harga: a.price }))
+          // `epoch` ikut disimpan (#62): `waktu` adalah koordinat sumbu
+          // kerangka tempat gambarnya dibuat, dan sumbu itu berbeda di tiap
+          // kerangka. Epoch tak bergantung kerangka.
+          .map((a) => {
+            const waktu = dariWaktuChart(a.time) ?? ''
+            return { waktu, harga: a.price, epoch: waktu ? (epochWaktu(waktu) ?? undefined) : undefined }
+          })
           .filter((a) => a.waktu !== ''),
         style: d.style as unknown as Record<string, unknown>,
         options: d.options as unknown as Record<string, unknown>,
@@ -477,6 +511,10 @@ export function useAlatGambar(opts: {
   useEffect(() => {
     const manager = managerRef.current
     if (!manager || !pustaka) return
+    // Simpanan tertunda dari seretan yang belum sempat menembak akan
+    // menembak SESUDAH impor - isinya jadi koordinat hasil proyeksi.
+    // Dibatalkan; seretannya sendiri memang hilang saat `clearAll()`.
+    if (tundaSimpanRef.current) clearTimeout(tundaSimpanRef.current)
     manager.clearAll()
     const registry = pustaka.getToolRegistry()
     const factory = (type: string, data: SerializedDrawing) => {
@@ -498,16 +536,39 @@ export function useAlatGambar(opts: {
       }
       return d
     }
-    const serial: SerializedDrawing[] = bacaGambarTersimpan(kode).map((g) => ({
-      id: g.id,
-      type: g.type,
-      anchors: g.anchors.map((a) => ({ time: keWaktuChart(a.waktu) as unknown as Time, price: a.harga })) as Anchor[],
-      style: g.style as unknown as SerializedDrawing['style'],
-      options: g.options as SerializedDrawing['options'],
-    }))
+    // Jangkar DIPROYEKSIKAN ke sumbu kerangka aktif (#62) sebelum diimpor.
+    // `waktu` tersimpan adalah koordinat kerangka tempat gambarnya dibuat;
+    // dipakai apa adanya di kerangka lain ia jatuh di tanggal yang tak ada
+    // di sumbu. Gambar yang jangkarnya di luar jangkauan bar kerangka ini
+    // DISEMBUNYIKAN - bukan dihapus, karena di kerangka asalnya ia benar.
+    const epochBar = waktuBar.map((w) => epochWaktu(w) ?? Number.NaN)
+    const serial: SerializedDrawing[] = bacaGambarTersimpan(kode)
+      .map((g) => {
+        const anchors = proyeksiAnchor(g.anchors, epochBar, waktuBar)
+        return anchors ? { ...g, anchors } : null
+      })
+      .filter((g): g is GambarTersimpan => g !== null)
+      .map((g) => ({
+        id: g.id,
+        type: g.type,
+        anchors: g.anchors.map((a) => ({ time: keWaktuChart(a.waktu) as unknown as Time, price: a.harga })) as Anchor[],
+        style: g.style as unknown as SerializedDrawing['style'],
+        options: g.options as SerializedDrawing['options'],
+      }))
+    sedangImpor.current = true
     manager.importDrawings(serial, factory)
+    // Dilepas di tick berikutnya, bukan di baris ini: kalau manager
+    // menembakkan `drawing:added` secara tertunda, melepas di sini
+    // membiarkan event-nya lolos. 0 ms sudah cukup - yang perlu
+    // dilewati cuma antrean event impor, bukan debounce 250 ms
+    // (`simpanSekarang` dijegal sebelum timernya dipasang).
+    const lepas = setTimeout(() => { sedangImpor.current = false }, 0)
+    return () => clearTimeout(lepas)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kode, pustaka])
+    // `waktuBar` ikut deps: berganti kerangka mengganti seluruh sumbu, dan
+    // gambar wajib diproyeksikan ulang ke sumbu yang baru.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kode, pustaka, waktuBar])
 
   /* ---------------- Tempel titik: klik-klik (semua alat KECUALI kuas) ---------------- */
   useEffect(() => {

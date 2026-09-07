@@ -24,6 +24,81 @@
 export interface AnchorTersimpan {
   waktu: string
   harga: number
+  /**
+   * Detik UTC absolut dari `waktu` (#62). Ditambahkan 7 Sep 2026.
+   *
+   * `waktu` sendiri adalah koordinat sumbu KERANGKA TEMPAT GAMBARNYA
+   * DIBUAT, dan sumbu itu berbeda di tiap kerangka: garis yang ditarik di
+   * harian berlabuh di '2026-08-20', tapi sumbu pekanan cuma punya hari
+   * Senin - tanggal itu tak ada di sana, jadi jangkarnya meleset diam-diam.
+   *
+   * Epoch tak bergantung kerangka. Yang disimpan tetap dua-duanya: `waktu`
+   * supaya berkas lama tetap terbaca dan supaya jangkar bisa dibaca manusia,
+   * `epoch` supaya bisa diproyeksikan ulang ke sumbu mana pun.
+   *
+   * Opsional karena gambar yang tersimpan SEBELUM 7 Sep tak memilikinya;
+   * `epochAnchor` mengisinya saat dibaca, bukan menolak barisnya.
+   */
+  epoch?: number
+}
+
+/**
+ * Waktu internal -> detik UTC absolut.
+ *
+ * TIDAK memakai `keEpoch` dari `kerangkaWaktu.ts` apa adanya: fungsi itu
+ * merakit string `${waktu}:00+07:00` dan cuma benar untuk waktu berjam
+ * ('2026-08-20 09:00'). Diberi tanggal harian ia menghasilkan
+ * '2026-08-20:00+07:00' yang diurai jadi NaN - senyap, dan NaN yang
+ * mengalir ke perbandingan epoch membuat SEMUA gambar tak terproyeksi.
+ * Dibedakan di sini, sekali.
+ */
+export function epochWaktu(waktu: string): number | null {
+  const t = waktu.length <= 10
+    ? Date.parse(`${waktu}T00:00:00+07:00`)
+    : Date.parse(`${waktu.replace(' ', 'T')}:00+07:00`)
+  return Number.isFinite(t) ? Math.round(t / 1000) : null
+}
+
+/** Anchor dengan `epoch` terisi - dari ruasnya sendiri kalau ada, kalau
+ *  tidak dihitung dari `waktu`. Null kalau waktunya tak terurai. */
+export function epochAnchor(a: AnchorTersimpan): number | null {
+  return a.epoch ?? epochWaktu(a.waktu)
+}
+
+/**
+ * Proyeksikan anchor ke sumbu kerangka aktif (#62).
+ *
+ * Tiap anchor dipindahkan ke bar TERAKHIR yang mulainya tidak melewati
+ * epoch anchor - yaitu bar yang MEMUAT saat itu. Bukan bar terdekat:
+ * gambar yang dibuat Kamis harus berlabuh di bar pekan yang memuat Kamis,
+ * bukan di pekan berikutnya yang kebetulan lebih dekat.
+ *
+ * `null` = gambar ini TIDAK BISA ditempatkan di kerangka aktif (jangkarnya
+ * jatuh sebelum bar pertama). Pemanggil menyembunyikannya di sana - bukan
+ * menghapusnya, karena di kerangka asalnya ia masih benar.
+ */
+export function proyeksiAnchor(
+  anchors: AnchorTersimpan[],
+  epochBar: number[],
+  waktuBar: string[],
+): AnchorTersimpan[] | null {
+  if (epochBar.length === 0 || anchors.length === 0) return null
+  const keluar: AnchorTersimpan[] = []
+  for (const a of anchors) {
+    const e = epochAnchor(a)
+    if (e === null) return null
+    // Pencarian biner: bar terakhir yang epoch-nya <= e.
+    let lo = 0
+    let hi = epochBar.length - 1
+    let idx = -1
+    while (lo <= hi) {
+      const m = (lo + hi) >> 1
+      if (epochBar[m] <= e) { idx = m; lo = m + 1 } else { hi = m - 1 }
+    }
+    if (idx < 0) return null
+    keluar.push({ waktu: waktuBar[idx], harga: a.harga, epoch: e })
+  }
+  return keluar
 }
 
 /** Satu gambar tersimpan — bentuknya sengaja LONGGAR untuk `style`/`options`
