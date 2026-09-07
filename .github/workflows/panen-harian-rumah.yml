@@ -226,6 +226,12 @@ jobs:
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/riset/rbs_statistik.py --kerangka D W M --tulis
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::rbs_statistik gagal" }
+          # Statistik Gap: Node, bukan Python — skripnya MENGIMPOR mesin gap
+          # yang sama dengan yang menggambar zonanya di layar.
+          foreach ($tf in @("D","W","M")) {
+            node app/scripts/gap-statistik.ts --tf=$tf --tulis
+            if ($LASTEXITCODE -ne 0) { Write-Host "::warning::gap-statistik $tf gagal" }
+          }
 
       - name: 5 · Valuasi historis
         continue-on-error: true

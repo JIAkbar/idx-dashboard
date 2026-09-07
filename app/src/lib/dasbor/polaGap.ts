@@ -1,113 +1,178 @@
 /**
- * Mesin murni Pola Gap — celah harga naik/turun antar bar
- * (`docs/spek-dev-papan/spek_rbs_gap_intraday.md` §2, algoritme v1 teruji).
+ * Mesin murni Pola Gap — RUANG KOSONG antara rentang dua bar berurutan
+ * (`docs/spek-dev-papan/spek_rbs_gap_intraday.md` §2).
  * Berdiri sendiri — JANGAN dicampur dengan pola RBS (§1, `polaRbs.ts`).
  *
- * `cariGap(bars)` murni (tanpa DOM/chart/fetch), bisa jalan di bar kerangka
- * apa pun (pemanggil di halaman membatasinya ke harian — lihat komentar di
- * `GrafikEmiten.tsx`). Penggambarnya ada di `polaGapChart.ts`.
+ * ## Kenapa definisinya diganti, 7 Sep 2026 (#50)
  *
- * ## Algoritme, tahap demi tahap
+ * Johan, menunjuk zona yang masih tergambar di layar padahal candle-nya sudah
+ * lama menutupinya: *"aneh nya ini di cursor itu gap kecil tapi kenapa masih
+ * ada, padahal sudah di tutpu sama depannya … artinya logika berpikir nya
+ * salah, lalu gap itu candle yang tidak terisi"*.
  *
- * 1. **Ambang** — dihitung dari harga ACUAN bar sebelumnya (`high(t-1)` untuk
- *    gap naik, `low(t-1)` untuk gap turun): `max(2×fraksi(acuan), 1%×acuan)`.
- *    Dua tick — bukan persen tetap — supaya saham murah (fraksi Rp1-2) tak
- *    dibanjiri gap palsu: 1 tick di Rp50 sudah 2%, dan tanpa lantai tick itu
- *    gerakan sewajarnya kena tandai gap.
- * 2. **Gap naik** — `open(t) ≥ high(t-1) + ambang`.
- * 3. **Gap turun** — cermin: `open(t) ≤ low(t-1) - ambang`.
- * 4. **Terisi** — gap naik: bar PERTAMA (dihitung MULAI dari bar gap itu
- *    sendiri, bar ke-0) yang `low ≤ high(t-1)`. Gap turun cermin: `high ≥
- *    low(t-1)`. Bar gap sendiri ikut diperiksa — pembalikan intrahari yang
- *    langsung menutup gap di hari yang sama itu sah, bukan kasus tepi yang
- *    harus dilewati.
+ * Ia benar, dan cacatnya ada di dua tempat sekaligus:
  *
- * Satu bar cuma bisa satu arah (naik XOR turun, tak pernah dua-duanya —
- * `high(t-1) >= low(t-1)` membuat kedua ambang tak mungkin terlampaui
- * bersamaan oleh satu `open`).
+ * 1. **Gap dulu didefinisikan dari OPEN**, bukan dari rentang. Candle yang
+ *    MEMBUKA di bawah low kemarin tapi sumbunya naik jauh ke dalam ruang itu
+ *    tetap dihitung sebagai gap selebar jarak open — padahal ruang kosong yang
+ *    sebenarnya jauh lebih kecil, kadang tak ada sama sekali. Terukur: definisi
+ *    open memberi 258.327 gap harian dan 51,6% di antaranya "terisi" di bar
+ *    ke-0 — angka yang seharusnya jadi tanda bahaya, bukan hasil.
+ * 2. **"Terisi" dulu semua-atau-tak-sama-sekali.** Zona tetap digambar penuh
+ *    sampai ada satu bar yang menembus SELURUHNYA ke harga acuan. Candle yang
+ *    memakan 90% ruangnya tak mengubah apa pun di layar.
+ *
+ * Sekarang: gap = ruang antara RENTANG dua candle yang tak tumpang tindih, dan
+ * tiap bar berikutnya MEMOTONG ruang itu sebesar rentangnya sendiri. Yang
+ * digambar cuma sisanya; begitu sisanya habis, zonanya hilang.
+ *
+ * ## Algoritme
+ *
+ * 1. **Zona** — turun: `[cur.high, prev.low]` bila `cur.high < prev.low`;
+ *    naik: `[prev.high, cur.low]` bila `cur.low > prev.high`. Perhatikan
+ *    keduanya memakai HIGH/LOW, tak satu pun memakai `open`.
+ * 2. **Ambang** — lebar zona wajib > `max(2×fraksi, 1%)` dari harga acuan.
+ *    Dua tick, bukan persen tetap: 1 tick di Rp50 sudah 2%, dan tanpa lantai
+ *    tick saham murah kebanjiran gap palsu.
+ * 3. **Pengisian progresif** — tiap bar sesudahnya memotong zona sebesar
+ *    `[low, high]`-nya. Sisa bisa TERBELAH DUA kalau rentang bar jatuh persis
+ *    di tengah zona (1.739 kejadian di kerangka 1 jam), jadi sisanya disimpan
+ *    sebagai daftar potongan, bukan satu pasang angka.
+ * 4. **Bar bervolume nol tidak membentuk dan tidak mengisi.** Bar tanpa
+ *    transaksi bukan bukti harga pernah diperdagangkan di situ. Penyaring lama
+ *    cuma membuang bar volume 0 yang OHLC-nya rata; 22.740 bar volume 0 dengan
+ *    OHLC tidak rata lolos, dan 3,6% gap tercatat "terisi" oleh bar hantu.
+ * 5. **Status** — `utuh` (sisa = lebar awal), `sebagian`, `terisi` (sisa
+ *    habis), dan bila data berakhir sebelum terisi ia tetap `utuh`/`sebagian`
+ *    dengan `dataHabis: true` — sensor kanan disebut, bukan disembunyikan.
  */
 import type { LilinData } from './grafikEmiten'
-import { fraksi } from '../fraksiHarga'
+// Ekstensi .ts eksplisit: skrip statistik gap mengimpor mesin ini lewat Node
+// biasa (bukan Vite) supaya angka layar dan zona di layar lahir dari SATU
+// mesin, dan di Node impor relatif tanpa ekstensi gagal resolve. Vite dan
+// vitest sama-sama menerima bentuk ini.
+import { fraksi } from '../fraksiHarga.ts'
 
 export type ArahGap = 'naik' | 'turun'
 
+/** Satu potongan sisa zona, `[bawah, atas]`. */
+export type Potongan = readonly [number, number]
+
 export interface GapEvent {
   arah: ArahGap
-  /** Tanggal bar gap (hari `t`, tempat `open` melompat). */
+  /** Waktu bar gap (bar `t`, yang rentangnya melompat). */
   waktuGap: string
-  /** Tanggal bar acuan (hari `t-1`, sumber `high`/`low` acuan). */
+  /** Waktu bar acuan (bar `t-1`). */
   waktuAcuan: string
-  /** `high(t-1)` untuk gap naik, `low(t-1)` untuk gap turun. */
-  hargaAcuan: number
-  open: number
-  /** `(open - hargaAcuan) / hargaAcuan × 100` — positif untuk gap naik,
-   *  negatif untuk gap turun (satu rumus, tandanya sudah membawa arah). */
+  /** Batas zona AWAL, sebelum ada yang mengisinya. */
+  bawah: number
+  atas: number
+  /** Lebar awal terhadap harga acuan, persen. Positif untuk gap naik,
+   *  negatif untuk gap turun — tandanya membawa arah. */
   gapPct: number
-  terisi: boolean
+  /** Sisa yang BELUM terisi, bisa lebih dari satu potongan (zona terbelah). */
+  sisa: Potongan[]
+  /** Sisa terhadap lebar awal, 0..100. */
+  sisaPct: number
+  status: 'utuh' | 'sebagian' | 'terisi'
   waktuTerisi?: string
-  /** Bar ke berapa sejak bar gap (0 = terisi di hari yang sama). */
-  hariTerisi?: number
+  /** Bar ke berapa sejak bar gap sampai sisanya habis (0 = di bar gap itu). */
+  barTerisi?: number
+  /** Berapa bar sudah lewat sejak gap tanpa terisi habis. */
+  bertahanBar: number
+  /** Data berakhir sebelum zonanya habis — sensor kanan, wajib disebut di
+   *  layar dan di statistik. 19,8% gap emiten mati kena ini. */
+  dataHabis: boolean
 }
 
-// Parameter algoritme v1 (spek §2) — JANGAN diubah tanpa entri Metodologi +
+// Parameter algoritme (spek §2) — JANGAN diubah tanpa entri Metodologi +
 // referensi (CLAUDE.md "Ukur definisinya dulu sebelum menurunkan satu ruas").
 const TICK_KALI = 2
 const BUFFER_PCT = 0.01
-
-/** Angka backtest v1 (spek §2) — SATU rumah, dipakai keterangan toggle chart
- *  dan halaman Metodologi sekaligus, supaya tak ada dua salinan yang bisa
- *  diam-diam berbeda. */
-export const RINGKAS_BACKTEST_GAP =
-  '3.897 gap naik · 80% terisi ≤5 hari, 88% ≤20 hari · '
-  + 'beli di open hari gap median −0,71% (29% hijau) · konfirmasi volume tidak menolong · '
-  + 'bukan sinyal beli — zona level & target gap-fill'
 
 function ambang(hargaAcuan: number): number {
   return Math.max(TICK_KALI * fraksi(hargaAcuan), hargaAcuan * BUFFER_PCT)
 }
 
-function cariTerisi(
-  bars: LilinData[],
-  iGap: number,
-  hargaAcuan: number,
-  arah: ArahGap,
-): { terisi: boolean; waktuTerisi?: string; hariTerisi?: number } {
-  for (let j = iGap; j < bars.length; j++) {
-    const tertutup = arah === 'naik' ? bars[j].low <= hargaAcuan : bars[j].high >= hargaAcuan
-    if (tertutup) return { terisi: true, waktuTerisi: bars[j].time, hariTerisi: j - iGap }
-  }
-  return { terisi: false }
+function lebarTotal(sisa: Potongan[]): number {
+  return sisa.reduce((s, [a, b]) => s + (b - a), 0)
 }
 
-export function cariGap(bars: LilinData[]): GapEvent[] {
+/**
+ * Potong daftar sisa dengan rentang `[l, h]` satu bar.
+ *
+ * Sebuah potongan `[a, b]` bisa menghasilkan NOL, SATU, atau DUA potongan
+ * baru — yang dua itu kasus zona terbelah, dan ia bukan kasus tepi: rentang
+ * kecil yang jatuh di tengah zona lebar terjadi 1.739 kali di kerangka 1 jam.
+ */
+export function potongZona(sisa: Potongan[], l: number, h: number): Potongan[] {
+  const keluar: Potongan[] = []
+  for (const [a, b] of sisa) {
+    if (h <= a || l >= b) { keluar.push([a, b]); continue }   // tak bersinggungan
+    if (a < l) keluar.push([a, Math.min(b, l)])
+    if (h < b) keluar.push([Math.max(a, h), b])
+  }
+  return keluar.filter(([a, b]) => b > a)
+}
+
+/**
+ * `volume` sejajar indeks dengan `bars` — opsional supaya pemanggil lama tak
+ * patah, tapi TANPA-nya penyaring bar hantu mati dan hasilnya kembali memuat
+ * gap yang "terisi" oleh bar tanpa transaksi.
+ */
+export function cariGap(bars: LilinData[], volume?: number[]): GapEvent[] {
+  const adaVolume = (i: number) => (volume ? (volume[i] ?? 0) > 0 : true)
   const keluar: GapEvent[] = []
+
   for (let i = 1; i < bars.length; i++) {
     const prev = bars[i - 1]
     const cur = bars[i]
+    // Bar hantu tak boleh MEMBENTUK gap: harga yang tak pernah diperdagangkan
+    // bukan bukti ada ruang kosong di sebelahnya.
+    if (!adaVolume(i) || !adaVolume(i - 1)) continue
 
-    if (cur.open >= prev.high + ambang(prev.high)) {
-      keluar.push({
-        arah: 'naik',
-        waktuGap: cur.time,
-        waktuAcuan: prev.time,
-        hargaAcuan: prev.high,
-        open: cur.open,
-        gapPct: (cur.open - prev.high) / prev.high * 100,
-        ...cariTerisi(bars, i, prev.high, 'naik'),
-      })
+    let arah: ArahGap
+    let bawah: number
+    let atas: number
+    let acuan: number
+    if (cur.low > prev.high) {
+      arah = 'naik'; bawah = prev.high; atas = cur.low; acuan = prev.high
+    } else if (cur.high < prev.low) {
+      arah = 'turun'; bawah = cur.high; atas = prev.low; acuan = prev.low
+    } else {
       continue
     }
-    if (cur.open <= prev.low - ambang(prev.low)) {
-      keluar.push({
-        arah: 'turun',
-        waktuGap: cur.time,
-        waktuAcuan: prev.time,
-        hargaAcuan: prev.low,
-        open: cur.open,
-        gapPct: (cur.open - prev.low) / prev.low * 100,
-        ...cariTerisi(bars, i, prev.low, 'turun'),
-      })
+    const lebar = atas - bawah
+    if (lebar <= ambang(acuan)) continue
+
+    // Pengisian progresif, mulai dari bar gap SENDIRI: rentangnya sudah
+    // membentuk salah satu tepi zona, tapi bar sesudahnya yang memakannya.
+    let sisa: Potongan[] = [[bawah, atas]]
+    let waktuTerisi: string | undefined
+    let barTerisi: number | undefined
+    for (let j = i; j < bars.length; j++) {
+      if (!adaVolume(j)) continue
+      sisa = potongZona(sisa, bars[j].low, bars[j].high)
+      if (sisa.length === 0) { waktuTerisi = bars[j].time; barTerisi = j - i; break }
     }
+
+    const sisaLebar = lebarTotal(sisa)
+    const sisaPct = (sisaLebar / lebar) * 100
+    keluar.push({
+      arah,
+      waktuGap: cur.time,
+      waktuAcuan: prev.time,
+      bawah,
+      atas,
+      gapPct: (arah === 'naik' ? lebar : -lebar) / acuan * 100,
+      sisa,
+      sisaPct,
+      status: sisaLebar <= 0 ? 'terisi' : sisaPct >= 100 ? 'utuh' : 'sebagian',
+      waktuTerisi,
+      barTerisi,
+      bertahanBar: barTerisi ?? (bars.length - 1 - i),
+      dataHabis: barTerisi === undefined,
+    })
   }
   return keluar
 }

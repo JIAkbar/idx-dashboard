@@ -81,6 +81,10 @@ REM yang dipajang chart datang dari berkas ini; kalau ia tak jalan, chart
 REM DIAM soal statistik alih-alih memajang angka basi.
 "%PYEXE%" scripts\riset\rbs_statistik.py --kerangka D W M --tulis
 if errorlevel 1 echo   (statistik RBS gagal - lanjut)
+REM Statistik Gap per kerangka (#50). Node, bukan Python: skripnya
+REM MENGIMPOR mesin gap yang sama dengan yang menggambar zonanya, jadi
+REM angka layar dan zona layar tak mungkin berbeda diam-diam.
+for %%T in (D W M) do node app\scripts\gap-statistik.ts --tf=%%T --tulis
 "%PYEXE%" scripts\bangun_prob.py
 if errorlevel 1 echo   (peluang gagal - lanjut)
 REM Rezim pasar: dulu HANYA di bat buka-laptop. Hari Johan tak membuka

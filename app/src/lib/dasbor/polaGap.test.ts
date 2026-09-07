@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cariGap } from './polaGap'
+import { cariGap, potongZona } from './polaGap'
 import type { LilinData } from './grafikEmiten'
 // Arsip mentah diimpor sebagai modul JSON — sama pola dengan polaRbs.test.ts:
 // regresi terhadap DATA NYATA, bukan fixture yang diketik ulang.
@@ -15,102 +15,85 @@ function bar(i: number, o: number, h: number, l: number, c: number): LilinData {
   return { time: tgl(i), open: o, high: h, low: l, close: c }
 }
 
-describe('cariGap', () => {
-  it('gap naik pada tepat ambang (fraksi 1 di harga 100 -> ambang = 2 tick = Rp2, bukan 1% = Rp1)', () => {
-    // fraksi(100) = 1 (jenjang <=200) -> 2 tick = 2; 1% x 100 = 1 -> ambang = max(2,1) = 2.
-    const b: LilinData[] = [
-      bar(0, 100, 100, 100, 100),
-      bar(1, 102, 103, 101, 102), // open 102 = high(0) 100 + ambang 2 -> tepat kena (>=)
-      bar(2, 102, 103, 101.5, 102),
-    ]
-    const hasil = cariGap(b)
+describe('cariGap — definisi RENTANG', () => {
+  it('ambang 2 tick menang di harga murah (fraksi 1 di harga 100 -> 2, bukan 1% = 1)', () => {
+    // Zona 100..101,5 lebar 1,5 < ambang 2 -> ditolak.
+    expect(cariGap([bar(0, 100, 100, 99, 100), bar(1, 102, 103, 101.5, 102)])).toHaveLength(0)
+    // Zona 100..102,5 lebar 2,5 > 2 -> lolos.
+    const hasil = cariGap([bar(0, 100, 100, 99, 100), bar(1, 103, 104, 102.5, 103)])
     expect(hasil).toHaveLength(1)
     expect(hasil[0].arah).toBe('naik')
-    expect(hasil[0].waktuGap).toBe(tgl(1))
-    expect(hasil[0].waktuAcuan).toBe(tgl(0))
-    expect(hasil[0].hargaAcuan).toBe(100)
-    expect(hasil[0].gapPct).toBeCloseTo(2, 5)
+    expect(hasil[0].bawah).toBe(100)
+    expect(hasil[0].atas).toBe(102.5)
+    expect(hasil[0].gapPct).toBeCloseTo(2.5, 5)
   })
 
-  it('open satu tick DI BAWAH ambang -> bukan gap', () => {
-    const b: LilinData[] = [
-      bar(0, 100, 100, 100, 100),
-      bar(1, 101, 102, 100.5, 101), // open 101 < 102 (ambang tepat) -> tak kena
-    ]
-    expect(cariGap(b)).toHaveLength(0)
-  })
-
-  it('gap naik di harga tinggi -> ambang 1% MENANG dari 2 tick (fraksi 3000 = Rp10)', () => {
-    // fraksi(3000) = 10 -> 2 tick = 20; 1% x 3000 = 30 -> ambang = max(20,30) = 30.
-    const b: LilinData[] = [
-      bar(0, 3000, 3000, 3000, 3000),
-      bar(1, 3029, 3040, 3020, 3030), // open 3029 < 3030 -> belum kena
-    ]
-    expect(cariGap(b)).toHaveLength(0)
-
-    const b2: LilinData[] = [
-      bar(0, 3000, 3000, 3000, 3000),
-      bar(1, 3030, 3040, 3020, 3030), // open 3030 = 3000+30 -> tepat kena
-    ]
-    const hasil = cariGap(b2)
+  it('ambang 1% menang di harga tinggi (fraksi 3000 = 10 -> 2 tick 20 < 1% 30)', () => {
+    // Lebar 25 < 30 -> ditolak walau sudah lebih dari dua tick.
+    expect(cariGap([bar(0, 3000, 3000, 2990, 3000), bar(1, 3030, 3040, 3025, 3030)])).toHaveLength(0)
+    const hasil = cariGap([bar(0, 3000, 3000, 2990, 3000), bar(1, 3040, 3050, 3031, 3040)])
     expect(hasil).toHaveLength(1)
-    expect(hasil[0].gapPct).toBeCloseTo(1, 5)
+    expect(hasil[0].gapPct).toBeCloseTo(31 / 30, 2)
   })
 
-  it('gap naik belum terisi selamanya kalau low tak pernah turun ke high(t-1)', () => {
-    const b: LilinData[] = [
-      bar(0, 100, 100, 100, 100),
-      bar(1, 105, 108, 103, 106), // gap naik, low 103 > 100 -> belum terisi hari itu
-      bar(2, 106, 110, 104, 108),
-      bar(3, 108, 112, 105, 110),
-    ]
-    const hasil = cariGap(b)
-    expect(hasil).toHaveLength(1)
-    expect(hasil[0].terisi).toBe(false)
-    expect(hasil[0].waktuTerisi).toBeUndefined()
-    expect(hasil[0].hariTerisi).toBeUndefined()
+  it('OPEN tak lagi menentukan — candle yang membuka jauh tapi sumbunya menutup ruangnya bukan gap', () => {
+    // Persis keluhan Johan: open 90 melompat jauh di bawah low 98, tapi high
+    // 97,5 hampir menyentuhnya sehingga ruang kosongnya cuma 0,5.
+    // Definisi open lama menandainya gap −8%; definisi rentang menolaknya.
+    expect(cariGap([bar(0, 100, 100, 98, 99), bar(1, 90, 97.5, 89, 97)])).toHaveLength(0)
   })
 
-  it('gap naik terisi DI HARI YANG SAMA (low hari gap sudah turun balik ke high(t-1))', () => {
+  it('zona menyusut sedikit demi sedikit, bukan penuh-lalu-hilang', () => {
     const b: LilinData[] = [
-      bar(0, 100, 100, 100, 100),
-      bar(1, 105, 108, 99, 101), // gap naik, tapi low hari itu 99 <= 100 -> terisi hari ke-0
+      bar(0, 100, 100, 98, 99),
+      bar(1, 110, 112, 108, 110),   // gap naik, zona 100..108
+      bar(2, 108, 109, 104, 105),   // memotong dari atas -> sisa 100..104
+      bar(3, 104, 105, 102, 103),   // -> sisa 100..102
     ]
-    const hasil = cariGap(b)
-    expect(hasil).toHaveLength(1)
-    expect(hasil[0].terisi).toBe(true)
-    expect(hasil[0].waktuTerisi).toBe(tgl(1))
-    expect(hasil[0].hariTerisi).toBe(0)
+    const g = cariGap(b)[0]
+    expect(g.status).toBe('sebagian')
+    expect(g.sisa).toEqual([[100, 102]])
+    expect(g.sisaPct).toBeCloseTo(25, 5)   // 2 dari 8
   })
 
-  it('gap naik terisi N hari kemudian', () => {
+  it('terisi di bar gap SENDIRI kalau bar berikutnya langsung melahapnya', () => {
     const b: LilinData[] = [
-      bar(0, 100, 100, 100, 100),
-      bar(1, 105, 108, 103, 106), // gap naik, belum terisi
-      bar(2, 106, 109, 104, 107), // belum terisi
-      bar(3, 105, 106, 100, 101), // low 100 <= 100 -> terisi di sini
+      bar(0, 100, 100, 98, 99),
+      bar(1, 110, 112, 108, 110),   // zona 100..108
+      bar(2, 108, 109, 99, 100),    // rentang 99..109 menutupi seluruh zona
     ]
-    const hasil = cariGap(b)
-    expect(hasil).toHaveLength(1)
-    expect(hasil[0].terisi).toBe(true)
-    expect(hasil[0].waktuTerisi).toBe(tgl(3))
-    expect(hasil[0].hariTerisi).toBe(2)
+    const g = cariGap(b)[0]
+    expect(g.status).toBe('terisi')
+    expect(g.waktuTerisi).toBe(tgl(2))
+    expect(g.barTerisi).toBe(1)
+    expect(g.dataHabis).toBe(false)
   })
 
-  it('gap turun (cermin) — ambang dari low(t-1), terisi saat high naik balik ke low(t-1)', () => {
+  it('belum terisi sampai data habis -> dataHabis true, dan itu DISEBUT', () => {
     const b: LilinData[] = [
-      bar(0, 100, 100, 100, 100),
-      bar(1, 98, 99, 97, 98), // open 98 = low(0) 100 - ambang 2 -> tepat kena
-      bar(2, 98, 99.5, 97, 98),
-      bar(3, 98, 100.5, 98, 100), // high 100,5 >= 100 -> terisi
+      bar(0, 100, 100, 98, 99),
+      bar(1, 110, 112, 108, 110),
+      bar(2, 111, 113, 109, 112),
     ]
-    const hasil = cariGap(b)
-    expect(hasil).toHaveLength(1)
-    expect(hasil[0].arah).toBe('turun')
-    expect(hasil[0].hargaAcuan).toBe(100)
-    expect(hasil[0].gapPct).toBeCloseTo(-2, 5)
-    expect(hasil[0].terisi).toBe(true)
-    expect(hasil[0].hariTerisi).toBe(2)
+    const g = cariGap(b)[0]
+    expect(g.status).toBe('utuh')
+    expect(g.dataHabis).toBe(true)
+    expect(g.waktuTerisi).toBeUndefined()
+    expect(g.bertahanBar).toBe(1)
+  })
+
+  it('gap turun — cermin', () => {
+    const b: LilinData[] = [
+      bar(0, 100, 102, 100, 101),
+      bar(1, 96, 97, 95, 96),       // zona 97..100
+      bar(2, 96, 101, 96, 100),     // menutupi seluruh zona
+    ]
+    const g = cariGap(b)[0]
+    expect(g.arah).toBe('turun')
+    expect(g.bawah).toBe(97)
+    expect(g.atas).toBe(100)
+    expect(g.gapPct).toBeLessThan(0)
+    expect(g.status).toBe('terisi')
   })
 
   it('data nyata BBCA — bentuk keluaran valid & konsisten', () => {
@@ -118,9 +101,7 @@ describe('cariGap', () => {
     const bars: LilinData[] = baris.map(([time, open, high, low, close]) => (
       { time, open, high, low, close }
     ))
-    const hasil = cariGap(bars)
-
-    // BBCA 22 tahun riwayat harian — kalau ini kosong, mesinnya rusak total.
+    const hasil = cariGap(bars, baris.map((b) => b[5]))
     expect(hasil.length).toBeGreaterThan(0)
 
     const waktuValid = new Set(bars.map((b) => b.time))
@@ -130,20 +111,106 @@ describe('cariGap', () => {
       expect(waktuValid.has(g.waktuGap)).toBe(true)
       expect(waktuValid.has(g.waktuAcuan)).toBe(true)
       expect(g.waktuGap > g.waktuAcuan).toBe(true)
-      // Satu rumus gapPct membawa tanda arahnya sendiri.
+      expect(g.atas).toBeGreaterThan(g.bawah)
       if (g.arah === 'naik') expect(g.gapPct).toBeGreaterThan(0)
       else expect(g.gapPct).toBeLessThan(0)
-      if (g.terisi) {
+      if (g.status === 'terisi') {
         expect(g.waktuTerisi).toBeDefined()
         expect(waktuValid.has(g.waktuTerisi!)).toBe(true)
-        expect(g.hariTerisi).toBeGreaterThanOrEqual(0)
+        expect(g.dataHabis).toBe(false)
       } else {
-        expect(g.waktuTerisi).toBeUndefined()
-        expect(g.hariTerisi).toBeUndefined()
+        expect(g.sisa.length).toBeGreaterThan(0)
       }
-      // Urut naik menurut waktu gap — kontrak yang dipakai penggambar.
       expect(g.waktuGap >= terakhir).toBe(true)
       terakhir = g.waktuGap
     }
+  })
+})
+/* ------------------------------------------------------------------ *
+ * Definisi RENTANG + pengisian progresif (#50).
+ *
+ * Johan, menunjuk zona yang masih tergambar padahal candle-nya sudah
+ * menutupinya: "gap kecil tapi kenapa masih ada, padahal sudah di tutpu
+ * sama depannya … artinya logika berpikir nya salah, lalu gap itu candle
+ * yang tidak terisi".
+ * ------------------------------------------------------------------ */
+
+describe('potongZona', () => {
+  it('bar yang jatuh di TENGAH zona membelahnya jadi dua', () => {
+    // 1.739 kejadian di kerangka 1 jam — bukan kasus tepi.
+    expect(potongZona([[100, 200]], 140, 160)).toEqual([[100, 140], [160, 200]])
+  })
+
+  it('bar yang menutupi seluruh zona menghabiskannya', () => {
+    expect(potongZona([[100, 200]], 90, 210)).toEqual([])
+  })
+
+  it('bar yang tak bersinggungan tak mengubah apa pun', () => {
+    expect(potongZona([[100, 200]], 210, 220)).toEqual([[100, 200]])
+    expect(potongZona([[100, 200]], 50, 100)).toEqual([[100, 200]])
+  })
+
+  it('memotong dari satu sisi', () => {
+    expect(potongZona([[100, 200]], 90, 150)).toEqual([[150, 200]])
+    expect(potongZona([[100, 200]], 150, 250)).toEqual([[100, 150]])
+  })
+})
+
+describe('cariGap — arsip BBCA 2026, kriteria terima #50', () => {
+  const bar2026: LilinData[] = (bbcaRaw.d as Array<[string, number, number, number, number, number]>)
+    .filter(([t]) => t.startsWith('2026'))
+    .map(([t, o, h, l, c]) => ({ time: t, open: o, high: h, low: l, close: c }))
+  const vol2026 = (bbcaRaw.d as Array<[string, number, number, number, number, number]>)
+    .filter(([t]) => t.startsWith('2026')).map((b) => b[5])
+  const gap = cariGap(bar2026, vol2026)
+
+  it('6 Feb dan 2 Mar TIDAK jadi gap — lebarnya di bawah ambang', () => {
+    // Dua zona yang dikeluhkan Johan masih tergambar. Definisi open dulu
+    // menandainya; definisi rentang memberi lebar 25 dengan ambang ~78 dan ~72.
+    expect(gap.find((g) => g.waktuGap === '2026-02-06')).toBeUndefined()
+    expect(gap.find((g) => g.waktuGap === '2026-03-02')).toBeUndefined()
+  })
+
+  it('30 Mar jadi gap turun zona 6.500-6.700', () => {
+    const g = gap.find((x) => x.waktuGap === '2026-03-30')
+    expect(g).toBeDefined()
+    expect(g!.arah).toBe('turun')
+    expect(g!.bawah).toBe(6500)
+    expect(g!.atas).toBe(6700)
+  })
+
+  it('zona 30 Mar menyusut lebih dulu, lalu habis 8 Apr', () => {
+    const g = gap.find((x) => x.waktuGap === '2026-03-30')!
+    expect(g.status).toBe('terisi')
+    expect(g.waktuTerisi).toBe('2026-04-08')
+    // Menyusut, bukan langsung habis: kalau ia habis di bar pertama berarti
+    // pengisian progresifnya tak berjalan.
+    expect(g.barTerisi).toBeGreaterThan(0)
+  })
+
+  it('tiap gap punya sisa yang konsisten dengan statusnya', () => {
+    for (const g of gap) {
+      const lebarSisa = g.sisa.reduce((s, [a, b]) => s + (b - a), 0)
+      if (g.status === 'terisi') expect(lebarSisa).toBe(0)
+      else expect(lebarSisa).toBeGreaterThan(0)
+      expect(g.sisaPct).toBeGreaterThanOrEqual(0)
+      expect(g.sisaPct).toBeLessThanOrEqual(100)
+    }
+  })
+})
+
+describe('bar bervolume nol tak membentuk dan tak mengisi', () => {
+  it('bar hantu di tengah zona tidak menghabiskannya', () => {
+    const b: LilinData[] = [
+      { time: '2026-01-01', open: 100, high: 100, low: 98, close: 99 },
+      { time: '2026-01-02', open: 90, high: 90, low: 88, close: 89 },   // gap turun 90..98
+      { time: '2026-01-05', open: 94, high: 95, low: 93, close: 94 },   // hantu, di tengah zona
+      { time: '2026-01-06', open: 89, high: 90, low: 88, close: 89 },
+    ]
+    const denganHantu = cariGap(b, [1000, 1000, 0, 1000])
+    const tanpaPenyaring = cariGap(b)
+    expect(denganHantu).toHaveLength(1)
+    // Tanpa volume, bar hantu ikut memotong dan zonanya terbelah.
+    expect(tanpaPenyaring[0].sisa.length).toBeGreaterThan(denganHantu[0].sisa.length)
   })
 })

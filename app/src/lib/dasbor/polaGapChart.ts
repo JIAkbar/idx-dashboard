@@ -127,47 +127,59 @@ export class PolaGapChart implements IPanePrimitive<Time> {
           const gambarBadgeTerisi = barSpacing >= 9
 
           gap.forEach((g, i) => {
-            if (g.terisi && !gambarTerisi) return
+            const habis = g.status === 'terisi'
+            if (habis && !gambarTerisi) return
             const xMulaiM = skalaWaktu.timeToCoordinate(g.waktuGap as Time)
             if (xMulaiM === null) return
-            const waktuAkhir = g.terisi ? g.waktuTerisi! : (waktuTerakhir ?? g.waktuGap)
+            const waktuAkhir = habis ? g.waktuTerisi! : (waktuTerakhir ?? g.waktuGap)
             const xAkhirM = skalaWaktu.timeToCoordinate(waktuAkhir as Time)
             if (xAkhirM === null) return
             const x0raw = xMulaiM as number
             const x1raw = xAkhirM as number
             // Culling: kotak yang seluruhnya di luar jendela pandang tak digambar.
             if (x1raw < 0 || x0raw > lebarPane) return
-
-            const atas = Math.max(g.hargaAcuan, g.open)
-            const bawah = Math.min(g.hargaAcuan, g.open)
-            const yAtasM = seri.priceToCoordinate(atas)
-            const yBawahM = seri.priceToCoordinate(bawah)
-            if (yAtasM === null || yBawahM === null) return
-
             const x0 = Math.max(0, Math.round(x0raw * hp))
             const x1 = Math.min(bitmapSize.width, Math.round(x1raw * hp))
             if (x1 <= x0) return
-            const yA = Math.round((yAtasM as number) * vp)
-            const yB = Math.round((yBawahM as number) * vp)
-            const terbuka = !g.terisi
 
-            ctx.fillStyle = terbuka ? ISI_TERBUKA : ISI_TERISI
-            ctx.fillRect(x0, yA, x1 - x0, Math.max(1, yB - yA))
-            ctx.strokeStyle = terbuka ? GARIS_TERBUKA : GARIS_TERISI
-            ctx.lineWidth = tebal
-            ctx.setLineDash(terbuka ? [] : [4 * hp, 3 * hp])
-            ctx.strokeRect(x0, yA, x1 - x0, Math.max(1, yB - yA))
-            ctx.setLineDash([])
+            // Yang digambar SISANYA, bukan zona awal — inti #50. Sisa bisa
+            // lebih dari satu potongan (zona terbelah oleh bar yang jatuh di
+            // tengahnya), jadi ini perulangan, bukan satu kotak.
+            const petak = habis ? [[g.bawah, g.atas] as const] : g.sisa
+            let yTengah: number | null = null
+            for (const [pBawah, pAtas] of petak) {
+              const yAtasM = seri.priceToCoordinate(pAtas)
+              const yBawahM = seri.priceToCoordinate(pBawah)
+              if (yAtasM === null || yBawahM === null) continue
+              const yA = Math.round((yAtasM as number) * vp)
+              const yB = Math.round((yBawahM as number) * vp)
+              ctx.fillStyle = habis ? ISI_TERISI : ISI_TERBUKA
+              ctx.fillRect(x0, yA, x1 - x0, Math.max(1, yB - yA))
+              ctx.strokeStyle = habis ? GARIS_TERISI : GARIS_TERBUKA
+              ctx.lineWidth = tebal
+              ctx.setLineDash(habis ? [4 * hp, 3 * hp] : [])
+              ctx.strokeRect(x0, yA, x1 - x0, Math.max(1, yB - yA))
+              ctx.setLineDash([])
+              if (yTengah === null) yTengah = Math.round((yA + yB) / 2)
+            }
+            if (yTengah === null) return
 
-            if (g.terisi && !gambarBadgeTerisi) return // kotak saja, tanpa badge
+            if (habis && !gambarBadgeTerisi) return // kotak saja, tanpa badge
             const tanda = g.gapPct >= 0 ? '+' : ''
-            const teks = `GAP ${tanda}${g.gapPct.toFixed(1)}% · ${g.terisi ? `terisi ${g.hariTerisi}h` : 'belum terisi'}`
+            // Label menyebut SISA, bukan cuma terisi/belum: zona yang sudah
+            // dimakan 90% tapi masih hidup adalah keadaan yang berbeda dari
+            // zona yang belum tersentuh, dan dulu keduanya terbaca sama.
+            const keadaan = habis
+              ? `terisi ${g.barTerisi}b`
+              : g.status === 'sebagian'
+                ? `sisa ${Math.round(g.sisaPct)}%`
+                : g.dataHabis ? `bertahan ${g.bertahanBar}b · data habis` : `bertahan ${g.bertahanBar}b`
+            const teks = `GAP ${tanda}${g.gapPct.toFixed(1)}% · ${keadaan}`
             labelAntri.push({
-              y: Math.round((yA + yB) / 2), x1,
-              teks, warna: terbuka ? WARNA_PILL_TERBUKA : WARNA_PILL_TERISI, id: `gap:${i}`,
+              y: yTengah, x1,
+              teks, warna: habis ? WARNA_PILL_TERISI : WARNA_PILL_TERBUKA, id: `gap:${i}`,
             })
           })
-
           // Dodge vertikal per KELOMPOK sisi kanan (lihat catatan ponytail di
           // kepala berkas) — bucket kasar 8px cukup buat mengumpulkan badge
           // yang sisi kanannya sama-sama `waktuTerakhir`.

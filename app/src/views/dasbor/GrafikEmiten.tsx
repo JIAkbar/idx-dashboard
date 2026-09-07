@@ -69,7 +69,8 @@ import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
 import { cariRbs, paramRbs } from '../../lib/dasbor/polaRbs'
 import { useStatRbs, kalimatStatRbs } from '../../lib/dasbor/rbsStatistik'
 import { PolaRbsChart } from '../../lib/dasbor/polaRbsChart'
-import { cariGap, RINGKAS_BACKTEST_GAP } from '../../lib/dasbor/polaGap'
+import { cariGap } from '../../lib/dasbor/polaGap'
+import { useStatGap, kalimatStatGap } from '../../lib/dasbor/gapStatistik'
 import { PolaGapChart } from '../../lib/dasbor/polaGapChart'
 import { hitungCpr, hitungPivot } from '../../lib/dasbor/chartAnalitik'
 import { agregatBroker, muatRentang } from '../../lib/dasbor/brokerEmiten'
@@ -2055,7 +2056,9 @@ export function GrafikEmiten() {
   /** Angka statistik RBS untuk kerangka yang sedang tampil — dari berkas,
    *  bukan konstanta. Kerangka tanpa berkas tak menampilkan apa pun. */
   const statRbs = useStatRbs(kerangka, rbsAktif)
+  const statGap = useStatGap(kerangka, gapAktif)
   const kalimatRbs = kalimatStatRbs(statRbs)
+  const kalimatGap = kalimatStatGap(statGap)
 
   const perluFnet = pol.daftar.some((i) => i.jenis === 'wyckoff')
   const [fnetPeta, setFnetPeta] = useState<Map<string, number>>(() => new Map())
@@ -3534,7 +3537,7 @@ export function GrafikEmiten() {
               di polaRbs.ts/polaGap.ts) supaya tak ada dua salinan yang bisa
               diam-diam berbeda. */}
           {rbsAktif && kalimatRbs && <p className="muted grf-pola-keterangan">RBS {kerangka}: {kalimatRbs}</p>}
-          {kerangka === 'D' && gapAktif && <p className="muted grf-pola-keterangan">Gap: {RINGKAS_BACKTEST_GAP}</p>}
+          {gapAktif && kalimatGap && <p className="muted grf-pola-keterangan">Gap {kerangka}: {kalimatGap}</p>}
           {kodeAsing && (
             <p className="muted">
               Kode <strong>{kodeAsing}</strong> tidak ada di daftar emiten — yang
