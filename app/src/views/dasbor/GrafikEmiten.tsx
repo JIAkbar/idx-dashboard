@@ -1677,8 +1677,16 @@ export function GrafikEmiten() {
    * whitespace ({time} tanpa harga) supaya area itu ADA di sumbu waktu.
    * Autoscale mengabaikannya, jadi skala harga tak berubah sedikit pun.
    *
-   * Harian melompati akhir pekan (waktu bursa, bukan kalender); intraday
-   * melangkah sebesar jarak dua bar terakhirnya.
+   * LANGKAHNYA MENGIKUTI KERANGKA (#61). Harian melompati akhir pekan
+   * (waktu bursa, bukan kalender), pekanan melangkah tujuh hari, bulanan
+   * satu bulan, intraday sebesar jarak dua bar terakhirnya. Sampai 7 Sep
+   * 2026 ketiga kerangka non-intraday memakai langkah HARIAN yang sama,
+   * jadi di chart pekanan label sumbu waktu sesudah bar terakhir berisi
+   * tanggal harian berturut-turut — ruang kosong yang mengaku pekanan.
+   *
+   * Kunci ember memang jatuh di Senin (pekanan) dan tanggal 1 (bulanan),
+   * jadi menambah 7 hari / 1 bulan menghasilkan kunci berikutnya apa
+   * adanya — tak perlu memanggil fungsi kuncinya lagi.
    */
   const ekorWhitespace = useMemo(() => {
     if (lilin.length < 2) return []
@@ -1686,11 +1694,19 @@ export function GrafikEmiten() {
     const akhir = lilin[lilin.length - 1].time
     if (akhir.length <= 10) {
       const d = new Date(`${akhir}T00:00:00Z`)
-      while (keluar.length < 60) {
-        d.setUTCDate(d.getUTCDate() + 1)
-        const hari = d.getUTCDay()
-        if (hari === 0 || hari === 6) continue
-        keluar.push({ time: d.toISOString().slice(0, 10) })
+      if (kerangka === 'W' || kerangka === 'M') {
+        while (keluar.length < 60) {
+          if (kerangka === 'W') d.setUTCDate(d.getUTCDate() + 7)
+          else d.setUTCMonth(d.getUTCMonth() + 1)
+          keluar.push({ time: d.toISOString().slice(0, 10) })
+        }
+      } else {
+        while (keluar.length < 60) {
+          d.setUTCDate(d.getUTCDate() + 1)
+          const hari = d.getUTCDay()
+          if (hari === 0 || hari === 6) continue
+          keluar.push({ time: d.toISOString().slice(0, 10) })
+        }
       }
     } else {
       const detik = (t: string) => keEpoch(t)
@@ -1698,8 +1714,14 @@ export function GrafikEmiten() {
       let t = detik(akhir)
       for (let i = 0; i < 60; i++) { t += jarak; keluar.push({ time: dariEpoch(t) }) }
     }
+    // Kail QA dev-only, sejalan `__papanBubble` dan `__papanAvg`: ekor
+    // ini whitespace di kanvas dan tak punya simpul DOM, jadi langkah
+    // waktunya mustahil diperiksa dari luar. Di-tree-shake Vite saat build.
+    if (import.meta.env.DEV) {
+      (window as Window & { __papanEkor?: string[] }).__papanEkor = keluar.map((e) => e.time)
+    }
     return keluar
-  }, [lilin])
+  }, [lilin, kerangka])
 
   useEffect(() => {
     const harga = hargaRef.current
@@ -1775,6 +1797,32 @@ export function GrafikEmiten() {
       awalRentang, rentangLabel])
 
   /**
+   * Deret pembanding YANG SUDAH DIRAKIT ULANG ke kerangka aktif (#57).
+   *
+   * Sebelum ini deret pembanding tetap HARIAN sementara deret utama sudah
+   * pekanan/bulanan, lalu keduanya dibandingkan sebagai satu persen. Yang
+   * membuatnya salah bukan cuma "satuan berbeda" melainkan pergeseran satu
+   * ember penuh: kunci lilin pekanan jatuh di hari SENIN, tapi tutupnya
+   * tutup hari JUMAT ember itu. Membaca pembanding pada tanggal kunci
+   * karena itu mengambil tutup pekan SEBELUMNYA — dan tak ada satu pun
+   * galat, cuma dua garis yang berselisih satu bar selamanya.
+   *
+   * Dirakit dengan `rakitBar` dan fungsi kunci yang SAMA dengan deret
+   * utama, jadi tutup ember keduanya jatuh di tanggal kunci yang sama.
+   * Kerangka harian & intraday tak menyentuh apa pun (intraday memang
+   * dilewati; lihat efek di bawah).
+   */
+  const bandingKerangka = useMemo(() => {
+    const kunci = kerangka === 'W' ? kunciPekan : kerangka === 'M' ? kunciBulan : null
+    if (!kunci) return dataBanding
+    const keluar: Record<string, LilinData[]> = {}
+    for (const [k, d] of Object.entries(dataBanding)) {
+      keluar[k] = d.length > 0 ? rakitBar(d, [], kunci, '', '').lilin : d
+    }
+    return keluar
+  }, [dataBanding, kerangka])
+
+  /**
    * Garis emiten pembanding di panel harga (#187).
    *
    * Duduk di skala harga yang SAMA ('right') dengan seri utama — itu syarat
@@ -1797,7 +1845,7 @@ export function GrafikEmiten() {
     if (intraday(kerangka) || lilin.length === 0) return
     const cs = getComputedStyle(el)
     banding.forEach((k, i) => {
-      const d = dataBanding[k]
+      const d = bandingKerangka[k]
       if (!d || d.length === 0) return
       // Titiknya dipasang pada WAKTU LILIN UTAMA, bukan pada tanggal harian
       // pembandingnya sendiri. Dua sebab, keduanya terlihat langsung di layar:
@@ -1831,7 +1879,7 @@ export function GrafikEmiten() {
       s.setData(titik)
       seriBandingRef.current.push(s)
     })
-  }, [banding, dataBanding, lilin, kerangka, theme, versiSeriHarga])
+  }, [banding, bandingKerangka, lilin, kerangka, theme, versiSeriHarga])
 
   /**
    * Basis normalisasi persen = lilin PERTAMA yang terlihat.
@@ -2886,7 +2934,9 @@ export function GrafikEmiten() {
     return [
       { kode, warna: '--text', utama: true, nilai: takIntraday ? persen(lilin) : '' },
       ...banding.map((k, i) => {
-        const d = dataBanding[k]
+        // Deret yang SAMA dengan yang digambar. Dua sumber di sini berarti
+        // garis dan angka persennya bisa berselisih tanpa ada yang tahu.
+        const d = bandingKerangka[k]
         return {
           kode: k,
           warna: WARNA_BANDING[i],
@@ -2897,7 +2947,7 @@ export function GrafikEmiten() {
         }
       }),
     ]
-  }, [banding, dataBanding, basisPersen, sorot, lilin, kerangka, kode])
+  }, [banding, bandingKerangka, basisPersen, sorot, lilin, kerangka, kode])
 
   /* ---------------- Bar replay ---------------- */
 
@@ -3366,12 +3416,22 @@ export function GrafikEmiten() {
           0 dari 963 berkas), jadi catatannya tak pernah muncul walau
           jahitannya nyata: gagal senyap, persis bentuk yang paling mahal.
           Sekarang berjangkar pada penanda per bar, dan komponennya dipakai
-          bersama halaman lain supaya kalimatnya tak menyimpang satu per satu. */}
-      <CatatanSumberBar
-        sumberBar={berkas?.sumber_bar}
-        mulai={berkas?.mulai ?? ''}
-        akhir={berkas?.akhir ?? ''}
-      />
+          bersama halaman lain supaya kalimatnya tak menyimpang satu per satu.
+
+          DISEMBUNYIKAN DI KERANGKA INTRADAY (#59). Kalimatnya menjelaskan
+          asal bar arsip harian beserta rentang tanggalnya — dan di 5m/15m/
+          30m/1h/4h arsip itu tidak digambar sama sekali, barnya dari deret
+          lain. Catatan yang menerangkan sesuatu yang tak ada di layar lebih
+          buruk daripada tak ada catatan: ia terbaca sebagai keterangan atas
+          yang SEDANG dilihat. W dan M tetap menampilkannya, karena keduanya
+          memang dirakit dari arsip harian itu juga. */}
+      {!intraday(kerangka) && (
+        <CatatanSumberBar
+          sumberBar={berkas?.sumber_bar}
+          mulai={berkas?.mulai ?? ''}
+          akhir={berkas?.akhir ?? ''}
+        />
+      )}
       <section className="panel grf-panel" ref={panelRef}>
         {/* Bilah atas — susunan acuan Stockbit/TradingView: cari · kerangka
             waktu · jenis chart · ƒx Indikator · (kanan) layar penuh & kamera.

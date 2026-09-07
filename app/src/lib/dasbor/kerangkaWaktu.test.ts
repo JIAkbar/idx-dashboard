@@ -3,7 +3,7 @@ import {
   dariEpoch, keEpoch, keWaktuChart, dariWaktuChart, dariYahoo,
   rakitBar, kunci4Jam, kunciPekan, kunciBulan, KERANGKA, intraday,
 } from './kerangkaWaktu'
-import { cariMusiman, type LilinData, type VolumeData } from './grafikEmiten'
+import { cariMusiman, tutupSampai, type LilinData, type VolumeData } from './grafikEmiten'
 
 const HIJAU = '#0f0'
 const MERAH = '#f00'
@@ -181,5 +181,42 @@ describe('cariMusiman pada lilin intraday', () => {
       }
     }
     expect(cariMusiman(lilin, 1)).toBeNull()
+  })
+})
+
+describe('deret pembanding wajib dirakit ke kerangka yang sama (#57)', () => {
+  /**
+   * Kunci lilin pekanan jatuh di hari SENIN, tetapi TUTUP-nya tutup hari
+   * terakhir ember itu. Membaca deret harian pada tanggal kunci karena itu
+   * mengambil tutup pekan SEBELUMNYA - pergeseran satu ember penuh, tanpa
+   * satu pun galat. Dua arahnya diuji sekaligus supaya yang salah tetap
+   * terbaca sebagai salah kalau seseorang mengembalikannya nanti.
+   */
+  const harian: LilinData[] = [
+    { time: '2026-08-17', open: 100, high: 101, low: 99, close: 100 },   // Senin
+    { time: '2026-08-18', open: 100, high: 106, low: 99, close: 105 },
+    { time: '2026-08-21', open: 105, high: 111, low: 104, close: 110 },  // Jumat
+    { time: '2026-08-24', open: 110, high: 121, low: 109, close: 120 },  // Senin
+    { time: '2026-08-28', open: 120, high: 131, low: 119, close: 130 },  // Jumat
+  ]
+
+  it('deret HARIAN dibaca di tanggal kunci memberi tutup ember SEBELUMNYA', () => {
+    expect(kunciPekan('2026-08-28')).toBe('2026-08-24')
+    // Tutup pekan 24 Agu yang sebenarnya 130 (tutup 28 Agu), bukan 120.
+    expect(tutupSampai(harian, '2026-08-24')).toBe(120)
+  })
+
+  it('deret yang DIRAKIT dengan kunci yang sama memberi tutup ember itu sendiri', () => {
+    const pekanan = rakitBar(harian, [], kunciPekan, HIJAU, MERAH).lilin
+    expect(pekanan.map((l) => l.time)).toEqual(['2026-08-17', '2026-08-24'])
+    expect(tutupSampai(pekanan, '2026-08-24')).toBe(130)
+    expect(tutupSampai(pekanan, '2026-08-17')).toBe(110)
+  })
+
+  it('rakitBar tak mengubah deret masukan - pembanding dipakai ulang antar kerangka', () => {
+    const salinan = harian.map((l) => ({ ...l }))
+    rakitBar(harian, [], kunciPekan, HIJAU, MERAH)
+    rakitBar(harian, [], kunciBulan, HIJAU, MERAH)
+    expect(harian).toEqual(salinan)
   })
 })
