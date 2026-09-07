@@ -74,7 +74,11 @@ import { useStatGap, kalimatStatGap } from '../../lib/dasbor/gapStatistik'
 import { PolaGapChart } from '../../lib/dasbor/polaGapChart'
 import { hitungCpr, hitungPivot } from '../../lib/dasbor/chartAnalitik'
 import { agregatBroker, muatRentang } from '../../lib/dasbor/brokerEmiten'
-import { warnaBrokerCanvas } from '../../lib/dasbor/kelompokBroker'
+import {
+  brokerAktif,
+  pilihGarisBroker,
+  type TampilSisi,
+} from '../../lib/dasbor/pilihGarisBroker'
 import { useTheme } from '../../context/ThemeContext'
 import { useOhlcvKaya, jumlahEmber } from '../../lib/dasbor/ohlcvKaya'
 import { fmtB, fmtRingkas } from '../../lib/dasbor/brokerSummaryFormat'
@@ -189,6 +193,14 @@ const JENIS_CHART: Array<[JenisChart, string, string]> = [
 const MODE_SKALA: Array<[string, string, number, string]> = [
   ['persen', '%', 2, 'Skala persentase — semua diukur dari titik pertama yang terlihat'],
   ['log', 'log', 1, 'Skala logaritmik — jarak yang sama berarti persentase yang sama'],
+]
+
+/** Saklar sisi garis rata-rata beli broker (#46). Urutannya menaruh
+ *  'Semua' di depan karena itu keadaan bawaannya. */
+const OPSI_SISI_AVG: Array<{ id: TampilSisi; label: string }> = [
+  { id: 'semua', label: 'Semua' },
+  { id: 'lokal', label: 'Lokal' },
+  { id: 'asing', label: 'Asing' },
 ]
 
 /**
@@ -654,6 +666,10 @@ export function GrafikEmiten() {
   /** Overlay garis rata-rata beli broker (primitive P1 spek hybrid) —
    *  mati bawaan: memuat berkas broker tahunan hanya saat diminta. */
   const [avgBroker, setAvgBroker] = useState(false)
+  /** Sisi kepemilikan yang ditampilkan garis AVG (#46). Bawaannya 'semua'
+   *  supaya perilaku lama (lima garis begitu tombolnya ditekan) tetap
+   *  yang pertama terlihat - saklarnya menyaring, bukan syarat. */
+  const [sisiAvg, setSisiAvg] = useState<TampilSisi>('semua')
   const avgBrokerRef = useRef<GarisAvgBroker | null>(null)
   /** Overlay pita CPR + level Pivot (primitive P3) — hanya kerangka harian. */
   const [cprAktif, setCprAktif] = useState(false)
@@ -1440,23 +1456,25 @@ export function GrafikEmiten() {
     muatRentang(kode, dari, sampai)
       .then((hari) => {
         if (batal) return
-        const agg = agregatBroker(hari)
-        const totalBeli = agg.reduce((s, a) => s + a.beliNilai, 0)
-        prim.setGaris(
-          agg
-            .filter((a) => a.netNilai > 0 && a.beliAvg !== null)
-            .slice(0, 5)
-            .map((a) => ({
-              broker: a.broker,
-              harga: a.beliAvg as number,
-              pct: totalBeli ? a.beliNilai / totalBeli : 0,
-              warna: warnaBrokerCanvas(a.broker),
-            })),
-        )
+        // Pemilihan & pewarnaan pindah ke `pilihGarisBroker` (#46): dua
+        // peringkat terpisah (lokal & asing), palet kategorikal ber-jarak
+        // terukur, dan broker yang sudah lama tak bertransaksi dibuang.
+        // Sebelumnya warnanya diambil dari kelompok identitas, jadi dua
+        // broker sekelompok - XL dan PD dua-duanya ritel - menggambar dua
+        // garis berwarna sama persis.
+        const garis = pilihGarisBroker(agregatBroker(hari), brokerAktif(hari), sisiAvg)
+        prim.setGaris(garis)
+        // Kail QA dev-only, sejalan `__papanBubble`: garisnya digambar ke
+        // kanvas dan tak punya simpul DOM, jadi broker mana yang terpilih -
+        // dan warna apa yang dipakainya - mustahil diperiksa dari luar.
+        // Di-tree-shake Vite saat build.
+        if (import.meta.env.DEV) {
+          (window as Window & { __papanAvg?: unknown }).__papanAvg = garis
+        }
       })
       .catch(() => { if (!batal) prim.setGaris([]) })
     return () => { batal = true }
-  }, [avgBroker, kode, penuh.lilin, awalRentang])
+  }, [avgBroker, kode, penuh.lilin, awalRentang, sisiAvg])
 
   /**
    * Data primitive pita CPR + Pivot: dihitung dari bar HARIAN terakhir yang
@@ -3481,12 +3499,13 @@ export function GrafikEmiten() {
             onClick={() => setTemplateBuka(true)} />
 
           {/* P1 spek hybrid: garis rata-rata beli broker sebagai primitive di
-              render-loop chart. Lima pembeli bersih terbesar rentang aktif. */}
+              render-loop chart. Sejak #46: lima pembeli bersih terbesar LOKAL
+              dan lima ASING, dipotong 8 garis, saklar sisinya di bilah kaki. */}
           <TombolIkon d={IKON_GARIS_AVG} ukuranIkon={14}
             className={avgBroker ? 'on' : ''}
             label={avgBroker
               ? 'Sembunyikan garis rata-rata beli broker'
-              : 'Garis rata-rata beli broker — 5 pembeli bersih terbesar rentang ini'}
+              : 'Garis rata-rata beli broker — pembeli bersih terbesar rentang ini, lokal & asing'}
             onClick={() => setAvgBroker((v) => !v)} />
 
           {/* P3: pita CPR + Pivot. P2: bubble outlier. Keduanya harian —
@@ -4084,6 +4103,29 @@ export function GrafikEmiten() {
               aria-pressed={autoSkala}
               title="Skala harga menyesuaikan sendiri ke candle yang terlihat"
               onClick={() => setAutoSkala((x) => !x)}>auto</button>
+            {/* Saklar sisi garis AVG (#46) — hanya muncul selagi garisnya
+                hidup. Tempatnya di bilah KAKI karena ia mengubah apa yang
+                TERLIHAT dari lapisan yang sudah menyala, bukan menyalakan
+                lapisan baru; yang menyalakan tetap tombol ikon di atas
+                kanvas. Kendali kanonis PemilihRentang, bukan tiga tombol
+                lepas — sudah 32px dan punya keadaan terpilih. */}
+            {avgBroker && (
+              <>
+              {/* Label DIPERTAHANKAN walau aturan #264 membuang label yang
+                  kendalinya sudah bicara. Di sini kendalinya TIDAK bicara:
+                  bilah yang sama sudah memuat pil rentang yang juga berbunyi
+                  "Semua", jadi dua pil "Semua" berdiri bersebelahan dengan
+                  arti yang sama sekali berbeda. Labelnya yang membedakan. */}
+              <span className="grf-kaki-lbl">AVG broker</span>
+              <PemilihRentang
+                className="grf-kaki-sisi"
+                opsi={OPSI_SISI_AVG}
+                nilai={sisiAvg}
+                onGanti={(v) => setSisiAvg(v as TampilSisi)}
+                ariaLabel="Sisi broker pada garis rata-rata beli"
+              />
+              </>
+            )}
           </div>
 
           {/* Bilah Bar replay (#187) — muncul hanya selagi replay hidup, tepat

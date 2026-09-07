@@ -20,6 +20,11 @@ import { garisPenunjuk, kolomLabel } from './tataLabelLevel'
 
 export interface GarisBroker {
   broker: string
+  /** Sisi kepemilikan - dicetak (L)/(A) di pill (#46). Tanpa penanda ini,
+   *  "AK" dan "XL" terbaca sama saja padahal justru pembedaan itu yang
+   *  ditanyakan; dan warna saja tak bisa menyampaikannya karena palet
+   *  garisnya kategorikal, bukan per-sisi. */
+  sisi?: 'lokal' | 'asing'
   /** Harga rata-rata beli tertimbang (rupiah per lembar). */
   harga: number
   /** Porsi nilai beli broker ini terhadap total beli rentang (0..1). */
@@ -140,7 +145,8 @@ export class GarisAvgBroker implements IPanePrimitive<Time> {
             ctx.stroke()
             ctx.setLineDash([])
 
-            const teks = `${g.broker} AVG ${Math.round(g.harga).toLocaleString('id-ID')} (${Math.round(g.pct * 100)}%)`
+            const tanda = g.sisi === 'asing' ? ' (A)' : g.sisi === 'lokal' ? ' (L)' : ''
+            const teks = `${g.broker}${tanda} AVG ${Math.round(g.harga).toLocaleString('id-ID')} (${Math.round(g.pct * 100)}%)`
             const lebarTeks = ctx.measureText(teks).width
             const lebarPill = lebarTeks + PAD_X * 2 * hp
             const x = bitmapSize.width - TEPI_KANAN * hp - lebarPill

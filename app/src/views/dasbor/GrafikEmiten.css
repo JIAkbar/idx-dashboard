@@ -100,9 +100,19 @@
   padding: 8px var(--ruang-fab) 10px 0; border-bottom: 1px solid var(--line); margin-bottom: 10px;
 }
 .lantai .grf-kaki-isi { flex: 1 1 auto; }
-.lantai .grf-kaki-rentang { display: flex; flex-wrap: wrap; gap: 3px; }
+.lantai .grf-kaki-rentang,
+/* Saklar sisi garis AVG broker (#46) - pil yang sama, gaya yang sama. */
+.lantai .grf-kaki-sisi { display: flex; flex-wrap: wrap; gap: 3px; }
 .lantai .grf-kaki-rentang .chip-t,
+.lantai .grf-kaki-sisi .chip-t,
 .lantai .grf-kaki-chip { padding: 4px 10px; font-size: 10.5px; }
+/* Label pembeda: bilah ini memuat DUA kelompok pil yang sama-sama punya
+   pilihan bernama "Semua" (rentang tampil vs sisi broker). Tanpa label,
+   keduanya terbaca sebagai satu kelompok yang saling bertentangan. */
+.lantai .grf-kaki-lbl {
+  font-size: 10.5px; color: var(--text3); letter-spacing: .04em;
+  white-space: nowrap; margin-left: 4px;
+}
 .lantai .grf-kaki-jam {
   font-family: var(--mono); font-size: 10.5px; color: var(--text3);
   border: 1px solid var(--line); border-radius: 99px; padding: 3px 9px;
