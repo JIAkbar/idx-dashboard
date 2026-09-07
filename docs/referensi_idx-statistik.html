@@ -750,10 +750,10 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 <tr>
 <td>Top Broker <code>/broker</code></td>
-<td><code>index.json</code>/<code>ds_*</code> (dataHarian)</td>
-<td>IDX PDF harian (broker level pasar dari PDF)</td>
-<td>tidak</td>
-<td>23 Agu 2026</td>
+<td><strong>utama sejak 7 Sep 2026: <code>broker/bs_*.json</code></strong> (mode hari lewat <code>brokerHarian.ts:peringkatBroker</code>, mode rentang lewat <code>broker_rentang/&lt;preset&gt;.json</code>); <code>ds_*</code> (dataHarian) tinggal <strong>cadangan bertanda</strong> untuk tanggal yang <code>bs_</code> -nya belum terpanen</td>
+<td>rekap broker resmi bursa (seluruh papan) — cadangan: statistik PDF harian (papan reguler)</td>
+<td>tidak (satu sumber; cadangan dipakai utuh, tak dijahit)</td>
+<td>7 Sep 2026</td>
 </tr>
 <tr>
 <td>Stock Detail <code>/stock-detail</code></td>
@@ -1449,7 +1449,8 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <li><strong>Jenis:</strong> API tidak resmi</li>
 <li><strong>Akses &amp; batasan:</strong> rumahan 200 (16 Agu 2026); <strong>parameter <code>code</code>/<code>stockCode</code>/<code>kodeEmiten</code> DIABAIKAN</strong> — selalu 88 broker level pasar (diuji ulang 22 Agu 2026: jawaban identik). Broker per emiten tidak tersedia dari IDX — itu yang membuat Stockbit <code>marketdetectors</code> dan setoran kontributor dibutuhkan.</li>
 <li><strong>Berkas lokal:</strong> <code>data-idx/json/broker/&lt;tgl&gt;.json</code> + <code>broker/index.json</code> (756 berkas, 21 Agu 2026); CI <code>panen-harian-rumah.yml</code> langkah 3c sejak 22 Agu</li>
-<li><strong>Dipakai untuk:</strong> Broker Summary (<code>brokerHarian.ts:84,104,194</code>), Broker Summary v2 (Nego, Overview), Top Broker (versi PDF)</li>
+<li><strong>Dipakai untuk:</strong> Broker Summary (<code>brokerHarian.ts:84,104,194</code>), Broker Summary v2 (Nego, Overview), <strong>Top Broker <code>/broker</code> — KEDUA mode sejak 7 Sep 2026</strong></li>
+<li><strong>Rotasi sumber 7 Sep 2026 (aturan 3c, keputusan Johan — baris antrean #66 pilihan A):</strong> mode hari Top Broker dulu membaca statistik PDF harian (<code>ds_*</code>), mode rentang membaca rekap ini. Satu tabel, dua cakupan papan. Terukur 4 Sep 2026 (juta lembar): XL 12.947 vs 14.159 (1,094×), ZP 4.293 vs 4.551 (1,060×), CC 6.812 vs 6.953 (1,021×), MG 1,022×, YP 1,017×, AK 3.276 vs 3.276 (1,000×) — selisihnya berbeda-beda PER BROKER, jadi ia cakupan papan (reguler vs reguler+negosiasi+tunai), bukan pembulatan; nilai rupiahnya cuma berselisih 1,000–1,008×, konsisten dengan transaksi negosiasi yang menambah banyak lembar berharga kecil. Rekap ini juga lebih lengkap: <strong>765 tanggal vs 155</strong>, dan setiap tanggal <code>ds_</code> punya pasangan <code>bs_</code> (diperiksa 7 Sep 2026, nol tanggal yatim). <strong>Sumber lama tidak dibuang</strong>: ia cadangan yang dipakai hanya bila <code>bs_</code> tanggal itu belum ada, dan halamannya menyatakan di layar bahwa cakupannya papan reguler saja.</li>
 <li><strong>Bukti di kode:</strong> <code>scripts/fetch_broker_summary.py:33</code></li>
 </ul>
 <table>

@@ -19,6 +19,7 @@ import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync } from 
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { cariGap } from '../src/lib/dasbor/polaGap.ts'
+import { rakitBar, kunciPekan, kunciBulan } from '../src/lib/dasbor/kerangkaWaktu.ts'
 import type { LilinData } from '../src/lib/dasbor/grafikEmiten.ts'
 
 const AKAR = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -31,25 +32,26 @@ const arg = process.argv.slice(2)
 const tf = (arg.find((a) => a.startsWith('--tf='))?.slice(5) ?? 'D').toUpperCase()
 const tulis = arg.includes('--tulis')
 
-/** Bar harian -> bar kerangka. Kunci ember: Senin (W), tanggal 1 (M). */
+/**
+ * Bar harian -> bar kerangka, lewat perakit yang dipakai CHART (#74).
+ *
+ * Sampai 7 Sep 2026 berkas ini merakit sendiri dengan ember Senin /
+ * tanggal 1 - hasilnya kebetulan sama persis, tapi tak ada yang
+ * menjaganya tetap sama. Itu ganjil justru di sini: statistik Gap ada
+ * untuk mengangkakan zona yang digambar mesin satunya, jadi dua perakit
+ * yang berbeda diam-diam akan membuat angkanya bicara soal bar yang tak
+ * pernah dilihat pembaca.
+ *
+ * Diukur sebelum ditukar, atas SELURUH arsip (bukan sampel): 0 emiten
+ * berbeda, 0 bar berbeda, di W maupun M.
+ */
 function rakit(bar: Baris[], kerangka: string): Baris[] {
   if (kerangka === 'D') return bar
-  const ember = new Map<string, Baris>()
-  for (const b of bar) {
-    const d = new Date(`${b[0]}T00:00:00Z`)
-    let k: string
-    if (kerangka === 'W') {
-      const senin = new Date(d)
-      senin.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7))
-      k = senin.toISOString().slice(0, 10)
-    } else {
-      k = `${b[0].slice(0, 7)}-01`
-    }
-    const e = ember.get(k)
-    if (!e) ember.set(k, [k, b[1], b[2], b[3], b[4], b[5]])
-    else { e[2] = Math.max(e[2], b[2]); e[3] = Math.min(e[3], b[3]); e[4] = b[4]; e[5] += b[5] }
-  }
-  return [...ember.keys()].sort().map((k) => ember.get(k)!)
+  const lilin: LilinData[] = bar.map(([time, open, high, low, close]) => ({ time, open, high, low, close }))
+  // `color` wajib ada di tipe VolumeData walau perakitnya menimpanya sendiri.
+  const volume = bar.map(([time, , , , , v]) => ({ time, value: v, color: '' }))
+  const r = rakitBar(lilin, volume, kerangka === 'W' ? kunciPekan : kunciBulan, '', '')
+  return r.lilin.map((l, i) => [l.time, l.open, l.high, l.low, l.close, r.volume[i].value] as Baris)
 }
 
 function median(xs: number[]): number | null {

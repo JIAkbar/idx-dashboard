@@ -9,6 +9,7 @@ import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { LABEL_RENTANG, pilRentang } from '../../lib/dasbor/periode'
 import { useBrokerRentang, type PresetBroker } from '../../lib/dasbor/brokerRentang'
+import { useTopBrokerHari } from '../../lib/dasbor/brokerHarian'
 import { useState } from 'react'
 
 /**
@@ -53,6 +54,17 @@ export function TopBroker() {
   const [rentang, setRentang] = useState<PresetBroker | null>(null)
   const { data: dataRentang, memuat: memuatRentang } = useBrokerRentang(rentang)
 
+  /**
+   * Mode hari kini membaca rekap SELURUH PAPAN, sumber yang sama dengan
+   * mode rentang (#66 A, keputusan Johan 7 Sep 2026).
+   *
+   * Sebelumnya mode hari memakai rekap ringkas (papan reguler saja) dan
+   * mode rentang memakai rekap seluruh papan - satu tabel, dua cakupan.
+   * Rekap ringkas TIDAK dibuang: ia cadangan bertanda untuk tanggal yang
+   * rekap seluruh papannya belum terpanen.
+   */
+  const bs = useTopBrokerHari(tanggalAktif)
+
   // Hooks dipanggil tanpa syarat sebelum return dini loading/error (Rules of
   // Hooks) — pola sama dengan SektorIndeks.tsx.
   const volS = useUrut<StockRankRow>(hari?.top_vol ?? [], 'v')
@@ -60,9 +72,12 @@ export function TopBroker() {
   const freqS = useUrut<StockRankRow>(hari?.top_freq ?? [], 'v')
   // Sumber baris broker: rollup rentang kalau sedang dipilih, kalau tidak
   // rekap hari itu. `useUrut` tetap satu pemanggilan (Rules of Hooks).
-  const volB = useUrut<BrokerRankRow>(dataRentang?.broker_vol ?? hari?.broker_vol ?? [], 'v')
-  const valB = useUrut<BrokerRankRow>(dataRentang?.broker_val ?? hari?.broker_val ?? [], 'v')
-  const freqB = useUrut<BrokerRankRow>(dataRentang?.broker_freq ?? hari?.broker_freq ?? [], 'v')
+  const volB = useUrut<BrokerRankRow>(dataRentang?.broker_vol ?? bs.vol ?? hari?.broker_vol ?? [], 'v')
+  const valB = useUrut<BrokerRankRow>(dataRentang?.broker_val ?? bs.val ?? hari?.broker_val ?? [], 'v')
+  const freqB = useUrut<BrokerRankRow>(dataRentang?.broker_freq ?? bs.freq ?? hari?.broker_freq ?? [], 'v')
+  /** Mode hari sedang memakai cadangan (rekap ringkas) karena rekap
+   *  seluruh papan tanggal itu belum ada — wajib tampak di layar. */
+  const pakaiCadangan = !rentang && !bs.memuat && !bs.vol && (hari?.broker_vol?.length ?? 0) > 0
 
   // Judul = label menu resmi rute /broker (lib/dasbor/menu.ts) — dipakai
   // ulang di ketiga cabang return (loading/error/utama) supaya header tak
@@ -164,6 +179,20 @@ export function TopBroker() {
           />
         </div>
       </div>
+      {!rentang && (
+        <p className="muted" style={{ margin: '0 0 8px', fontSize: 11, lineHeight: 1.55 }}>
+          {bs.memuat && 'Memuat rekap broker…'}
+          {!bs.memuat && bs.vol && (<>
+            Peringkat broker dihitung dari rekap <b>seluruh papan</b> — reguler, negosiasi, dan tunai —
+            {' '}sumber yang sama dengan pil rentang di atas.
+          </>)}
+          {pakaiCadangan && (<>
+            Rekap seluruh papan untuk tanggal ini <b>belum tersedia</b>; angka broker di bawah memakai
+            {' '}rekap cadangan yang cakupannya <b>papan reguler saja</b>, jadi lembarnya lebih kecil
+            {' '}daripada hari-hari lain di halaman ini.
+          </>)}
+        </p>
+      )}
       {rentang && (
         <p className="muted" style={{ margin: '0 0 8px', fontSize: 11, lineHeight: 1.55 }}>
           {memuatRentang && 'Menjumlah rentang…'}

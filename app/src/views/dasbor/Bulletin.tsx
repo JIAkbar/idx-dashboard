@@ -1,4 +1,8 @@
 import { Fragment, useEffect, useState } from 'react'
+import {
+  muatTinjauanDeepDive, petaTinjauan, ringkasTinjauan,
+  type TinjauanTerbitan, type WarnaTinjauan,
+} from '../../lib/dasbor/tinjauanDeepDive'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { tipeEdisi, useBulletinList, LABEL_TIPE_EDISI, type TipeEdisi } from '../../lib/dasbor/bulletin'
@@ -28,6 +32,61 @@ interface IhsgHari {
   pct: number
 }
 let cacheIhsg: Map<string, IhsgHari> | null = null
+
+/** Warna semantik -> kelas badge kanonis (#170). Badge `.ytd-bdg` sudah
+ *  dipakai kolom IHSG di tabel yang sama dan punya persis tiga varian:
+ *  hijau, merah, netral - jadi tak ada kelas baru yang perlu lahir. */
+const KELAS_WARNA: Record<WarnaTinjauan, string> = { naik: 'u', turun: 'd', netral: 'n' }
+
+/** Satu baris hasil H+5 di dalam laci terbitan (#20 B). */
+function BlokHasilH5({ t }: { t: TinjauanTerbitan }) {
+  const r = ringkasTinjauan(t)
+  const angka = (x: number | null) => (x == null ? '—' : x.toLocaleString('id-ID'))
+  return (
+    <div style={{ padding: '10px 14px 4px' }}>
+      <div className="lbl" style={{ marginBottom: 6 }}>
+        Hasil H+5 — {t.kode} · dijalankan ulang lima hari bursa sesudah terbit
+      </div>
+      <table className="tbl" style={{ minWidth: 520 }}>
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th className="r">Acuan</th>
+            <th className="r">H+5</th>
+            <th className="r" title="Harga tertinggi yang sempat dicapai dalam lima hari bursa">Tertinggi</th>
+            <th className="r">Gerak</th>
+            <th>Level bullish tersentuh</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span className={`ytd-bdg ${KELAS_WARNA[r.warna]}`} style={{ minWidth: 0, textAlign: 'left' }}>{t.status}</span></td>
+            <td className="r num">{angka(t.harga_acuan)}</td>
+            <td className="r num">{angka(t.harga_h5)}</td>
+            <td className="r num">{angka(t.tertinggi_h5)}</td>
+            <td className={`r num ${(t.gerak_pct ?? 0) >= 0 ? 'up' : 'dn'}`}>
+              {t.gerak_pct == null ? '—' : `${t.gerak_pct > 0 ? '+' : ''}${t.gerak_pct.toLocaleString('id-ID', {
+                minimumFractionDigits: 2, maximumFractionDigits: 2,
+              })}%`}
+            </td>
+            <td style={{ fontSize: 11, color: 'var(--text2)' }}>
+              {t.urutan_tersentuh.length === 0
+                ? 'belum ada'
+                : t.urutan_tersentuh.map((x) => `${x.level.toLocaleString('id-ID')} (${x.tanggal})`).join(' → ')}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      {/* Level yang TIDAK tersentuh ikut disebut: tanpa itu tabelnya cuma
+          bercerita soal yang kena, dan klaim terbitannya jadi terlihat
+          lebih sering benar daripada sebenarnya. */}
+      <p className="muted" style={{ margin: '6px 0 0', fontSize: 11 }}>
+        Level bullish di terbitan: {t.level_bull.length === 0 ? '—' : t.level_bull.map((x) => x.toLocaleString('id-ID')).join(' · ')}
+        {' '}· batas invalidasi: {t.level_invalid.length === 0 ? '—' : t.level_invalid.map((x) => x.toLocaleString('id-ID')).join(' · ')}
+      </p>
+    </div>
+  )
+}
 
 function useIhsgMap() {
   const [peta, setPeta] = useState<Map<string, IhsgHari> | null>(cacheIhsg)
@@ -120,6 +179,22 @@ function TabelProbabilitasTerkunci({ alasan }: { alasan: { judul: string; kalima
  * edisi), dan IHSG + Δ% digabung satu kolom (badge pola .ytd-bdg).
  */
 export function Bulletin() {
+  /**
+   * Hasil H+5 tiap terbitan Deep Dive (#20 B, Johan 7 Sep 2026:
+   * "Kerjakan A dan B sekalian"). Ditarik sekali per kunjungan; berkasnya
+   * kecil dan dipakai seluruh baris tabel.
+   *
+   * Penggabungan berangkat dari MANIFEST ke tinjauan, tak pernah
+   * sebaliknya - tinjauan memuat terbitan yang ditahan, dan menyusurinya
+   * dari sisi tinjauan akan memajangnya di halaman publik.
+   */
+  const [tinjauan, setTinjauan] = useState<Map<string, TinjauanTerbitan>>(new Map())
+  useEffect(() => {
+    let batal = false
+    muatTinjauanDeepDive().then((b) => { if (!batal) setTinjauan(petaTinjauan(b)) })
+    return () => { batal = true }
+  }, [])
+
   // Hasil uji penaksir peluang. Halaman ini memajang angka peluang untuk
   // banyak emiten sekaligus; tanpa ini pembaca melihat persen telanjang dan
   // tak punya cara tahu bahwa penaksirnya belum mengalahkan rata-rata pasar.
@@ -257,12 +332,25 @@ export function Bulletin() {
                   {tampil.map(({ e, no }) => {
                     const h = peta?.get(e.tanggal)
                     const buka = detail === e.kode
+                    // Hasil H+5 terbitan ini, kalau sudah ditinjau (#20 B).
+                    const tj = tinjauan.get(e.kode)
+                    const rj = tj ? ringkasTinjauan(tj) : null
+                    const bukaH5 = detail === `h5:${e.kode}`
                     return (
                       <Fragment key={e.kode}>
                       <tr>
                         <td className="r blt-no">{no}</td>
                         <td>
                           <span className="tick">{e.kode}</span>
+                          {rj && (
+                            <span
+                              className={`ytd-bdg ${KELAS_WARNA[rj.warna]}`}
+                              title={rj.judul}
+                              style={{ marginLeft: 6, minWidth: 0, textAlign: 'left' }}
+                            >
+                              {rj.label}
+                            </span>
+                          )}
                           {e.update_dari != null && e.emiten.length > e.update_dari && (
                             <span
                               className="bchip"
@@ -325,6 +413,16 @@ export function Bulletin() {
                                 {buka ? 'Tutup' : 'Prob'}
                               </button>
                             )}
+                            {tj && (
+                              <button
+                                type="button"
+                                className={`blt-dl${bukaH5 ? ' on' : ''}`}
+                                onClick={() => setDetail(bukaH5 ? null : `h5:${e.kode}`)}
+                                title={bukaH5 ? 'Tutup hasil H+5' : 'Hasil H+5 terbitan ini'}
+                              >
+                                {bukaH5 ? 'Tutup' : 'H+5'}
+                              </button>
+                            )}
                             <button
                               type="button"
                               className="blt-dl"
@@ -346,6 +444,15 @@ export function Bulletin() {
                           </span>
                         </td>
                       </tr>
+                      {bukaH5 && tj && (
+                        <tr>
+                          <td colSpan={7} style={{ padding: '0 0 14px', background: 'var(--bg2)' }}>
+                            <div style={{ overflowX: 'auto' }}>
+                              <BlokHasilH5 t={tj} />
+                            </div>
+                          </td>
+                        </tr>
+                      )}
                       {buka && e.analisa && (
                         <tr>
                           <td colSpan={7} style={{ padding: '0 0 14px', background: 'var(--bg2)' }}>

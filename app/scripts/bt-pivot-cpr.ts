@@ -200,7 +200,10 @@ type Baris = [string, number, number, number, number, number]
  *  bervolume nol. */
 function keKerangka(mentah: Baris[], kerangka: 'D' | 'W' | 'M'): { bar: LilinData[]; vol: number[] } {
   const lilin: LilinData[] = mentah.map(([time, open, high, low, close]) => ({ time, open, high, low, close }))
-  const volume = mentah.map(([time, , , , , v]) => ({ time, value: v }))
+  // `color` wajib ada di tipe VolumeData walau perakitnya menimpanya
+  // sendiri di keluaran. Sebelum #73 baris ini salah tipe dan tak ada yang
+  // tahu - skrip di app/scripts memang tak pernah diperiksa TypeScript.
+  const volume = mentah.map(([time, , , , , v]) => ({ time, value: v, color: '' }))
   if (kerangka === 'D') return { bar: lilin, vol: volume.map((v) => v.value) }
   const kunci = kerangka === 'W' ? kunciPekan : kunciBulan
   const r = rakitBar(lilin, volume, kunci, '', '')

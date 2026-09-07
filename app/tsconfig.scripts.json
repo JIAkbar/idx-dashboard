@@ -1,0 +1,41 @@
+{
+  /**
+   * Skrip pembangun data (#73).
+   *
+   * Sebelum berkas ini, `app/scripts/` tak diperiksa TypeScript sama sekali:
+   * `tsconfig.app.json` memuat `src` saja dan `tsconfig.node.json` memuat
+   * `vite.config.ts` saja, jadi 18 skrip yang membangun angka tayang jalan
+   * lewat penanggalan tipe Node — tipe dibuang, tak pernah diperiksa. Salah
+   * tipe di sana baru ketahuan kalau skripnya kebetulan melewati barisnya.
+   *
+   * `lib` memuat DOM dan `types` memuat `vite/client` bukan karena skripnya
+   * menyentuh peramban, melainkan karena ia MENGIMPOR modul `src/` yang sama
+   * dengan yang dipakai layar (itu inti aturan "satu mesin": angka backtest
+   * dan angka layar wajib lahir dari kode yang sama). Modul itu membawa tipe
+   * DOM-nya sendiri.
+   */
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.scripts.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023", "DOM"],
+    "types": ["node", "vite/client"],
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+
+    /* Bundler mode — sama dengan proyek app supaya impor `../src/**.ts` yang
+       berekstensi eksplisit tetap sah. */
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["scripts"]
+}

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { BrokerRow } from './brokerSummaryData'
+import type { BrokerRankRow } from './dataHarian'
 import { pesanGalat } from '../pesanGalat'
 
 /** Baris mentah bs_YYMMDD.json (harvester harian idx.co.id). */
@@ -74,11 +75,44 @@ export function agregatBrokerRows(perHari: BrokerRow[][]): BrokerRow[] {
   return rankRows([...m.values()])
 }
 
+/**
+ * Sepuluh broker teratas satu metrik, dalam SATUAN yang tertulis di judul
+ * kolom halaman Top Broker (#66 A).
+ *
+ * Kontraknya sama persis dengan rollup rentang (`bangun_broker_rentang.py`,
+ * fungsi `peringkat`): sepuluh teratas, `v` dibagi 1e6 untuk lembar dan 1e9
+ * untuk rupiah, `p` = porsi terhadap total SELURUH broker hari itu (bukan
+ * total sepuluh besar). Dua tempat yang harus sepakat; kalau salah satu
+ * berubah, ujinya yang jatuh - bukan pembaca yang menemukannya dari angka
+ * yang tak masuk akal.
+ *
+ * Pembagi bukan kosmetik: judul kolomnya berbunyi "Juta Saham" dan
+ * "Miliar IDR", sementara rekap hariannya menyimpan angka mentah.
+ */
+export function peringkatBroker(
+  rows: BrokerRow[],
+  metrik: 'vol' | 'val' | 'freq',
+): BrokerRankRow[] {
+  const nilai = (b: BrokerRow) => (metrik === 'vol' ? b.vol : metrik === 'val' ? b.nilai : b.freq)
+  const pembagi = metrik === 'vol' ? 1e6 : metrik === 'val' ? 1e9 : 1
+  const total = rows.reduce((t, b) => t + nilai(b), 0) || 1
+  return [...rows]
+    .sort((a, b) => nilai(b) - nilai(a))
+    .slice(0, 10)
+    .map((b) => ({
+      cd: b.kode,
+      nm: b.nama,
+      v: Math.round((nilai(b) / pembagi) * 100) / 100,
+      p: Math.round((nilai(b) / total) * 10000) / 100,
+    }))
+}
+
 /** Cache di memori per-tanggal — pindah tanggal balik lagi tidak fetch ulang (pola dataHarian.ts). */
 const cache = new Map<string, BrokerRow[]>()
 
-/** Fetch baris broker satu tanggal lewat cache modul — dipakai mode rentang. */
-function fetchBrokerRows(iso: string): Promise<BrokerRow[]> {
+/** Fetch baris broker satu tanggal lewat cache modul — dipakai mode rentang
+ *  DAN mode hari halaman Top Broker (#66 A). */
+export function fetchBrokerRows(iso: string): Promise<BrokerRow[]> {
   const c = cache.get(iso)
   if (c) return Promise.resolve(c)
   return fetch(`/data-idx/json/broker/${stemDariIso(iso)}.json`)
@@ -218,4 +252,49 @@ export function useBrokerHarian() {
   }, [pilihTanggal])
 
   return { tanggalTersedia, tanggalAktif, rows, rentang, pilihTanggal, pilihRentang, loading, error, selesai, total }
+}
+
+/**
+ * Peringkat broker SATU HARI dari rekap seluruh papan (#66 A).
+ *
+ * Sampai 7 Sep 2026 mode hari halaman Top Broker membaca rekap harian
+ * ringkas, yang cakupannya papan REGULER saja - sementara mode rentang di
+ * halaman yang sama membaca rekap seluruh papan. Dua mode, dua cakupan,
+ * satu tabel: terukur 4 Sep 2026 XL 12.947 vs 14.159 juta lembar (1,094x),
+ * ZP 1,060x, CC 1,021x, sementara AK persis 1,000x - selisih yang
+ * berbeda-beda per broker, jadi ia cakupan papan, bukan pembulatan.
+ *
+ * `null` = rekap seluruh papan untuk tanggal itu belum ada; pemanggil
+ * jatuh ke rekap ringkas dan WAJIB menandainya di layar. Rekap ringkas
+ * tidak dibuang (aturan 3c) - ia cadangan, bukan sampah.
+ */
+export function useTopBrokerHari(iso: string | null): {
+  vol: BrokerRankRow[] | null
+  val: BrokerRankRow[] | null
+  freq: BrokerRankRow[] | null
+  memuat: boolean
+} {
+  const [rows, setRows] = useState<BrokerRow[] | null>(null)
+  const [memuat, setMemuat] = useState(false)
+
+  useEffect(() => {
+    if (!iso) { setRows(null); return }
+    let batal = false
+    setMemuat(true)
+    fetchBrokerRows(iso)
+      .then((r) => { if (!batal) setRows(r) })
+      // Galat DIAM di sini bukan kelalaian: satu-satunya arti yang mungkin
+      // adalah "belum terpanen", dan pemanggil sudah menyiapkan cadangan
+      // bertanda untuk itu.
+      .catch(() => { if (!batal) setRows(null) })
+      .finally(() => { if (!batal) setMemuat(false) })
+    return () => { batal = true }
+  }, [iso])
+
+  return {
+    vol: rows ? peringkatBroker(rows, 'vol') : null,
+    val: rows ? peringkatBroker(rows, 'val') : null,
+    freq: rows ? peringkatBroker(rows, 'freq') : null,
+    memuat,
+  }
 }
