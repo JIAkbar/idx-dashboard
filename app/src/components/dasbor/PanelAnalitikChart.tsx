@@ -152,10 +152,16 @@ export function PanelAnalitikChart({ bars, kerangka = 'D', tier, indexBt }: {
           2026: "datanya tidak berubah memang gitu atau data tebakan saja" —
           pertanyaan itu lahir karena layar tak pernah menyebut angka-angka ini
           dihitung dari bar APA dan dari rentang yang MANA. Keduanya berubah
-          diam-diam: satuannya ikut kerangka, jangkarnya ikut jendela pandang
-          (geser kanvas ke kiri dan "sekarang" berpindah ke masa lalu). */}
+          diam-diam: satuannya ikut kerangka, dan dulu jangkarnya ikut jendela
+          pandang juga.
+
+          KALIMATNYA IKUT BERUBAH 7 Sep 2026 (#64). Sejak jangkarnya dipaku ke
+          bar TERBARU, "yang sedang tampil di kanvas" tidak lagi benar: yang
+          mengikuti jendela pandang cuma seberapa jauh riwayat pembandingnya,
+          sementara "sekarang" selalu bar terakhir. Label yang tertinggal di
+          belakang perilakunya lebih menyesatkan daripada tidak ada label. */}
       <p className="pac-basis">
-        Basis: <b>{judulKerangka}</b> — {n} {satuan} yang sedang tampil di kanvas
+        Basis: <b>{judulKerangka}</b> — {n} {satuan} riwayat, berjangkar pada bar terbaru
         {t && <> · terakhir <b>{t.tanggal}</b></>}
         {rata && <span className="pac-sub"> · bar terakhir datar (tinggi = rendah), jadi seluruh tangga pivot jatuh di satu harga</span>}
       </p>

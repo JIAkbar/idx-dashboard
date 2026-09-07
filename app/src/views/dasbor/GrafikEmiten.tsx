@@ -72,10 +72,11 @@ import { PolaRbsChart } from '../../lib/dasbor/polaRbsChart'
 import { cariGap } from '../../lib/dasbor/polaGap'
 import { useStatGap, kalimatStatGap } from '../../lib/dasbor/gapStatistik'
 import { PolaGapChart } from '../../lib/dasbor/polaGapChart'
-import { hitungCpr, hitungPivot } from '../../lib/dasbor/chartAnalitik'
+import { MIN_BAR_ANALITIK, hitungCpr, hitungPivot } from '../../lib/dasbor/chartAnalitik'
 import { agregatBroker, muatRentang } from '../../lib/dasbor/brokerEmiten'
 import {
   brokerAktif,
+  maksGaris,
   pilihGarisBroker,
   type TampilSisi,
 } from '../../lib/dasbor/pilihGarisBroker'
@@ -686,6 +687,30 @@ export function GrafikEmiten() {
    * sendiri, yang terjadi adalah tombol hidup yang menggambar nol garis
    * (atau sebaliknya) tanpa satu pun galat.
    */
+  /**
+   * Overlay AVG broker BERBASIS ARSIP HARIAN (#58) - satu nilai rata-rata
+   * per broker untuk seluruh rentang, dihitung dari transaksi per HARI.
+   * Sampai 7 Sep 2026 ia satu-satunya overlay broker yang tak dijaga
+   * kerangka, jadi di 5 menit garis rata-rata seluruh rentang harian
+   * melintang di chart lima menit tanpa satu pun keterangan - dan di
+   * pekanan/bulanan ia menyatakan hal yang sama untuk sumbu yang berbeda.
+   *
+   * Dijaga ke harian saja, sama seperti Bubble dan Pita CPR yang datanya
+   * juga harian. Satu perlakuan untuk semua overlay berbasis arsip harian:
+   * tiga gerbang berbeda untuk tiga overlay bersumber sama persis bentuk
+   * ketidakkonsistenan yang membuat yang satu ini lolos selama ini.
+   */
+  const avgBisa = kerangka === 'D'
+  /** Lebar layar, dilanggan supaya batas garis AVG ikut berubah saat jendela
+   *  diubah ukurannya - bukan cuma saat halaman dimuat (#67). */
+  const [lebarLayar, setLebarLayar] = useState(
+    () => (typeof window === 'undefined' ? 1536 : window.innerWidth),
+  )
+  useEffect(() => {
+    const ukur = () => setLebarLayar(window.innerWidth)
+    window.addEventListener('resize', ukur)
+    return () => window.removeEventListener('resize', ukur)
+  }, [])
   const rbsBisa = kerangka === 'D' || kerangka === 'W' || kerangka === 'M'
   const gapBisa = rbsBisa || kerangka === '1h' || kerangka === '4h'
   const [rbsAktif, setRbsAktif] = useState(false)
@@ -1449,7 +1474,17 @@ export function GrafikEmiten() {
   useEffect(() => {
     const prim = avgBrokerRef.current
     if (!prim) return
-    if (!avgBroker || penuh.lilin.length === 0) { prim.setGaris([]); return }
+    if (!avgBroker || !avgBisa || penuh.lilin.length === 0) {
+      prim.setGaris([])
+      // Kail QA ikut dikosongkan. Tanpa baris ini ia menyimpan nilai dari
+      // kerangka SEBELUMNYA, jadi pemeriksa yang membacanya di 5 menit
+      // melihat 'delapan garis' padahal kanvasnya bersih - kail yang
+      // berbohong lebih buruk daripada tak ada kail.
+      if (import.meta.env.DEV) {
+        (window as Window & { __papanAvg?: unknown }).__papanAvg = []
+      }
+      return
+    }
     const dari = (penuh.lilin[awalRentang] ?? penuh.lilin[0]).time.slice(0, 10)
     const sampai = penuh.lilin[penuh.lilin.length - 1].time.slice(0, 10)
     let batal = false
@@ -1462,7 +1497,10 @@ export function GrafikEmiten() {
         // Sebelumnya warnanya diambil dari kelompok identitas, jadi dua
         // broker sekelompok - XL dan PD dua-duanya ritel - menggambar dua
         // garis berwarna sama persis.
-        const garis = pilihGarisBroker(agregatBroker(hari), brokerAktif(hari), sisiAvg)
+        // Batas garis mengikuti lebar layar (#67) - lihat `maksGaris`.
+        const garis = pilihGarisBroker(
+          agregatBroker(hari), brokerAktif(hari), sisiAvg, 5, maksGaris(lebarLayar),
+        )
         prim.setGaris(garis)
         // Kail QA dev-only, sejalan `__papanBubble`: garisnya digambar ke
         // kanvas dan tak punya simpul DOM, jadi broker mana yang terpilih -
@@ -1474,7 +1512,7 @@ export function GrafikEmiten() {
       })
       .catch(() => { if (!batal) prim.setGaris([]) })
     return () => { batal = true }
-  }, [avgBroker, kode, penuh.lilin, awalRentang, sisiAvg])
+  }, [avgBroker, avgBisa, kode, penuh.lilin, awalRentang, sisiAvg, lebarLayar])
 
   /**
    * Data primitive pita CPR + Pivot: dihitung dari bar HARIAN terakhir yang
@@ -1643,15 +1681,31 @@ export function GrafikEmiten() {
     return () => skala.unsubscribeVisibleLogicalRangeChange(perbarui)
   }, [analitikAktif, lilin])
 
-  /** Bar untuk PanelAnalitikChart — potongan `lilin`/`volume` yang benar-benar
-   *  terlihat di jendela pandang, bukan seluruh riwayat. Indeks logis
-   *  dibulatkan & dijepit ke batas array (ujung layar bisa jatuh di ruang
-   *  kosong sebelum/sesudah data). */
+  /**
+   * Bar untuk PanelAnalitikChart (#64).
+   *
+   * BERJANGKAR PADA BAR TERBARU, bukan pada bar terakhir yang kebetulan
+   * terlihat. Sampai 7 Sep 2026 ujung kanannya mengikuti jendela pandang,
+   * dan akibatnya dua hal yang sama-sama salah tanpa satu pun galat:
+   * menggeser kanvas ke kiri membuat SELURUH angka panel jadi milik candle
+   * 2023 sementara labelnya tetap berbunyi '1D', dan memperbesar zoom
+   * sampai barnya kurang dari ambang membuat placeholder menyalahkan
+   * kelangkaan data untuk sesuatu yang cuma tingkat zoom.
+   *
+   * Jendela pandang tetap dipakai - tapi hanya untuk menentukan SEBERAPA
+   * JAUH riwayat pembandingnya, bukan di mana 'sekarang' berada. Dan
+   * riwayat itu tak pernah lebih pendek daripada ambang gating terbesar,
+   * jadi placeholder kelangkaan data cuma muncul kalau datanya memang
+   * kurang.
+   */
   const barsAnalitik = useMemo<BarAnalitik[]>(() => {
     const n = lilin.length
     if (!analitikAktif || n === 0) return []
-    const dari = rentangTampilAnalitik ? Math.max(0, Math.round(rentangTampilAnalitik.from)) : 0
-    const sampai = rentangTampilAnalitik ? Math.min(n - 1, Math.round(rentangTampilAnalitik.to)) : n - 1
+    const sampai = n - 1
+    const dariPandang = rentangTampilAnalitik
+      ? Math.max(0, Math.round(rentangTampilAnalitik.from))
+      : 0
+    const dari = Math.max(0, Math.min(dariPandang, sampai - MIN_BAR_ANALITIK + 1))
     if (sampai < dari) return []
     return lilin.slice(dari, sampai + 1).map((bar, i) => ({
       tanggal: bar.time, o: bar.open, h: bar.high, l: bar.low, c: bar.close,
@@ -3562,10 +3616,13 @@ export function GrafikEmiten() {
               render-loop chart. Sejak #46: lima pembeli bersih terbesar LOKAL
               dan lima ASING, dipotong 8 garis, saklar sisinya di bilah kaki. */}
           <TombolIkon d={IKON_GARIS_AVG} ukuranIkon={14}
-            className={avgBroker ? 'on' : ''}
-            label={avgBroker
-              ? 'Sembunyikan garis rata-rata beli broker'
-              : 'Garis rata-rata beli broker — pembeli bersih terbesar rentang ini, lokal & asing'}
+            className={avgBroker && avgBisa ? 'on' : ''}
+            disabled={!avgBisa}
+            label={!avgBisa
+              ? 'Garis rata-rata beli broker: basis HARIAN — arsip transaksi broker dicatat per hari, jadi angkanya tak berarti di kerangka ini'
+              : avgBroker
+                ? 'Sembunyikan garis rata-rata beli broker'
+                : 'Garis rata-rata beli broker — pembeli bersih terbesar rentang ini, lokal & asing'}
             onClick={() => setAvgBroker((v) => !v)} />
 
           {/* P3: pita CPR + Pivot. P2: bubble outlier. Keduanya harian —
@@ -4169,7 +4226,7 @@ export function GrafikEmiten() {
                 lapisan baru; yang menyalakan tetap tombol ikon di atas
                 kanvas. Kendali kanonis PemilihRentang, bukan tiga tombol
                 lepas — sudah 32px dan punya keadaan terpilih. */}
-            {avgBroker && (
+            {avgBroker && avgBisa && (
               <>
               {/* Label DIPERTAHANKAN walau aturan #264 membuang label yang
                   kendalinya sudah bicara. Di sini kendalinya TIDAK bicara:
@@ -4693,12 +4750,15 @@ export function GrafikEmiten() {
           `ModalSetelanInstans` ber-generik pada jenisnya, dan gabungan dua
           daftar bertipe beda tak bisa memuaskan satu generik. */}
       {instTerbuka && (
+        // Prop `kerangka` dipakai modal untuk mematikan opsi parameter yang
+        // tak berarti di kerangka aktif - jangkar VWAP (#60).
         <ModalSetelanInstans
           inst={instTerbuka}
           nama={labelInstansIndikator(instTerbuka, katalog)}
           param={ind.paramSpek(instTerbuka.jenis)}
           plot={garisPerInstans.find((x) => x.inst.id === instTerbuka.id)?.garis.map((g) => g.nama) ?? []}
           jumlahLilin={lilin.length}
+          kerangka={kerangka}
           onSimpan={ind.terapkan}
           onTutup={() => setSetelanTerbuka(null)}
           onBawaan={() => ind.bawaan(instTerbuka.jenis)}

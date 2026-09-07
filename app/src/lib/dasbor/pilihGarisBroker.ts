@@ -66,8 +66,27 @@ export const PALET_GARIS = [
   '#FB923C', '#F472B6', '#94A3B8', '#FDA4AF',
 ] as const
 
-/** Batas maksimal garis tampak sekaligus (spek #46). */
+/** Batas maksimal garis tampak sekaligus di layar LEBAR (spek #46). */
 export const MAKS_GARIS = 8
+
+/** Batas di layar sempit (#67). Delapan pill menutup sekitar 40% tinggi
+ *  kanvas di 412 px - diukur saat #46 diverifikasi - dan lilin di
+ *  belakangnya jadi tak terbaca. Yang dikurangi jumlah GARIS, bukan tinggi
+ *  pillnya: pill yang dikecilkan tetap menutup, cuma jadi lebih sulit
+ *  dibaca. */
+export const MAKS_GARIS_SEMPIT = 5
+
+/** Ambang lebar tempat batasnya berganti. 1024 px, bukan 768: di antara
+ *  keduanya kanvas masih setinggi ~300 px dan delapan pill sudah memakan
+ *  sepertiganya. */
+export const LEBAR_GARIS_PENUH = 1024
+
+/** Batas garis untuk sebuah lebar layar. Satu tempat, dipakai mesin DAN
+ *  pemanggilnya - dua ambang terpisah berarti jumlah garis yang dihitung
+ *  bisa berbeda dari yang digambar. */
+export function maksGaris(lebar: number): number {
+  return lebar >= LEBAR_GARIS_PENUH ? MAKS_GARIS : MAKS_GARIS_SEMPIT
+}
 
 /** Berapa hari bursa terakhir yang dilihat untuk menilai "masih aktif". */
 export const JENDELA_AKTIF = 60
@@ -118,6 +137,9 @@ export function pilihGarisBroker(
   aktif: Set<string>,
   tampil: TampilSisi = 'semua',
   perSisi = 5,
+  /** Batas garis tampak. Bawaannya batas layar lebar supaya pemanggil lama
+   *  tak berubah perilakunya; kanvas mengopernya dari lebar nyata (#67). */
+  maks: number = MAKS_GARIS,
 ): GarisTerpilih[] {
   const totalBeli = agg.reduce((s, a) => s + a.beliNilai, 0)
   const layak = agg.filter(
@@ -138,7 +160,7 @@ export function pilihGarisBroker(
     if (asing[i]) gabung.push(asing[i])
   }
   const dipakai = tampil === 'asing' ? asing : tampil === 'lokal' ? lokal : gabung
-  return dipakai.slice(0, MAKS_GARIS).map((a, i) => ({
+  return dipakai.slice(0, maks).map((a, i) => ({
     broker: a.broker,
     sisi: sisiBroker(a.broker),
     harga: a.beliAvg as number,

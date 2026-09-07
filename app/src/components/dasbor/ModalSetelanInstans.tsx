@@ -40,7 +40,7 @@ const GAYA_GARIS: Array<[number, string]> = [[0, 'Solid'], [2, 'Dashed'], [1, 'D
 const TEBAL: number[] = [1, 2, 3]
 
 export function ModalSetelanInstans<J extends string>({
-  inst, nama, param, plot, jumlahLilin, onSimpan, onTutup, onBawaan, onPratinjau,
+  inst, nama, param, plot, jumlahLilin, kerangka, onSimpan, onTutup, onBawaan, onPratinjau,
 }: {
   inst: Instans<J>
   nama: string
@@ -51,6 +51,10 @@ export function ModalSetelanInstans<J extends string>({
    *  tergambar, dan dua perhitungan terpisah adalah dua kesempatan berbeda. */
   plot: string[]
   jumlahLilin: number
+  /** Kerangka aktif kanvas - dipakai mematikan opsi parameter yang tak
+   *  berarti di sana (#60). Opsional supaya pemakai lain tak wajib tahu
+   *  soal kerangka; tanpa itu semua opsi tetap hidup, sama seperti dulu. */
+  kerangka?: string
   onSimpan: (baru: Instans<J>) => void
   onTutup: () => void
   /** Instans "pabrik" jenis ini — isi tombol `Defaults`. */
@@ -121,12 +125,19 @@ export function ModalSetelanInstans<J extends string>({
             <div key={s.kunci} className="grf-setel-baris" role="group" aria-label={`${s.label} ${nama}`}>
               <span className="grf-setel-lbl">{s.label}</span>
               <span className="grf-setel-pilihan">
-                {s.pilihan.map((o) => (
-                  <button key={o.nilai} type="button"
-                    className={`chip-t${Number(teks[s.kunci]) === o.nilai ? ' on' : ''}`}
-                    aria-pressed={Number(teks[s.kunci]) === o.nilai}
-                    onClick={() => setTeks((t) => ({ ...t, [s.kunci]: String(o.nilai) }))}>{o.label}</button>
-                ))}
+                {s.pilihan.map((o) => {
+                  const mati = !!(kerangka && o.matiDi?.includes(kerangka))
+                  return (
+                    <button key={o.nilai} type="button"
+                      className={`chip-t${Number(teks[s.kunci]) === o.nilai && !mati ? ' on' : ''}`}
+                      disabled={mati}
+                      aria-pressed={Number(teks[s.kunci]) === o.nilai && !mati}
+                      title={mati
+                        ? `Jangkar ${o.label.toLowerCase()} tidak lebih panjang daripada satu bar kerangka ${kerangka} — tiap bar akan memulai periode jangkarnya sendiri, dan garisnya cuma menempel pada harga`
+                        : undefined}
+                      onClick={() => setTeks((t) => ({ ...t, [s.kunci]: String(o.nilai) }))}>{o.label}</button>
+                  )
+                })}
               </span>
             </div>
           ) : (

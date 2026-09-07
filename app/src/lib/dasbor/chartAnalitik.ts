@@ -331,6 +331,18 @@ const AMBANG_GATING: MetrikGagal[] = [
   { kunci: 'return_3m', label: 'Return 3M', minimum: 64 },
 ]
 
+/**
+ * Bar minimum terbesar di seluruh tabel gating (#64).
+ *
+ * Dipakai kanvas untuk menjamin panel selalu menerima cukup bar, apa pun
+ * tingkat zoomnya. Diturunkan dari tabelnya, bukan ditulis ulang sebagai
+ * angka - kalau kelak ada horizon yang lebih panjang, angka ini ikut naik
+ * sendiri alih-alih diam-diam ketinggalan.
+ */
+export const MIN_BAR_ANALITIK = Math.max(
+  ...AMBANG_GATING.map((m) => m.minimum ?? 0),
+)
+
 export interface HasilGating {
   gagal: MetrikGagal[]
   /** Teks siap tampil, format persis spek — null kalau semua metrik lolos. */

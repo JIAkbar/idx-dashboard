@@ -692,7 +692,22 @@ export interface SpekParam {
    * musiman (Senin–Jumat) dan jangkar VWAP (pekan/bulan) — mengetik "3" untuk
    * Kamis adalah teka-teki, bukan masukan.
    */
-  pilihan?: Array<{ nilai: number; label: string }>
+  pilihan?: Array<{
+    nilai: number
+    label: string
+    /**
+     * Kerangka tempat opsi ini TIDAK berarti (#60), beserta alasannya.
+     *
+     * Ada karena jangkar VWAP: jangkar dibaca dari TANGGAL bar, jadi di
+     * kerangka pekanan dengan jangkar "pekan" tiap bar memulai periode
+     * jangkarnya sendiri - garisnya jadi deret satu-titik yang menempel
+     * pada harga dan tak memberitahu apa pun. Opsi yang tak berarti
+     * DIMATIKAN dengan alasan tertulis, bukan dibiarkan bisa dipilih:
+     * garis yang menempel pada harga terbaca seperti indikator yang
+     * bekerja, dan tak ada satu pun galat yang menyanggahnya.
+     */
+    matiDi?: readonly string[]
+  }>
   /** Ruas yang tak boleh melebihi jumlah lilin yang tergambar. Periode
    *  sepanjang itu membuat seluruh deret hasilnya `null` — garisnya lenyap
    *  tanpa satu pun galat, dan itulah kegagalan senyap yang harus dicegat
@@ -766,7 +781,13 @@ export const SPEK_INDIKATOR: Record<JenisAsli, SpekIndikator> = {
       min: 1,
       maks: 2,
       bulat: true,
-      pilihan: [{ nilai: 1, label: 'Pekan' }, { nilai: 2, label: 'Bulan' }],
+      // Jangkar wajib LEBIH PANJANG daripada satu bar kerangka aktif.
+      // Pekan mati di W (satu bar = satu pekan) dan di M; Bulan mati di M.
+      // Di harian & intraday keduanya sah.
+      pilihan: [
+        { nilai: 1, label: 'Pekan', matiDi: ['W', 'M'] },
+        { nilai: 2, label: 'Bulan', matiDi: ['M'] },
+      ],
     }],
   },
   macd: {

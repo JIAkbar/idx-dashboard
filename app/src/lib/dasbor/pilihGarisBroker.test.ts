@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import {
+  LEBAR_GARIS_PENUH,
   MAKS_GARIS,
+  MAKS_GARIS_SEMPIT,
+  maksGaris,
   PALET_GARIS,
   brokerAktif,
   pilihGarisBroker,
@@ -165,5 +168,37 @@ describe('pilihGarisBroker', () => {
     const agg = [ag('XL', 900), ag('PD', 800), ag('AK', 40), ag('BK', 30)]
     expect(pilihGarisBroker(agg, semuaAktif, 'asing').map((x) => x.broker)).toEqual(['AK', 'BK'])
     expect(pilihGarisBroker(agg, semuaAktif, 'lokal').map((x) => x.broker)).toEqual(['XL', 'PD'])
+  })
+})
+
+describe('batas garis mengikuti lebar layar (#67)', () => {
+  it('layar lebar dapat batas penuh, layar sempit dapat batas kecil', () => {
+    expect(maksGaris(1536)).toBe(MAKS_GARIS)
+    expect(maksGaris(LEBAR_GARIS_PENUH)).toBe(MAKS_GARIS)
+    expect(maksGaris(LEBAR_GARIS_PENUH - 1)).toBe(MAKS_GARIS_SEMPIT)
+    expect(maksGaris(412)).toBe(MAKS_GARIS_SEMPIT)
+  })
+
+  it('batas benar-benar memotong daftar, bukan cuma dilaporkan', () => {
+    // Delapan pill menutup ~40% tinggi kanvas di 412 px (diukur saat #46
+    // diverifikasi), dan lilin di belakangnya jadi tak terbaca.
+    const agg = [
+      ag('XL', 900), ag('PD', 800), ag('YP', 700), ag('SQ', 600), ag('LG', 500),
+      ag('AK', 40), ag('BK', 30), ag('ZP', 20), ag('YU', 10), ag('RX', 5),
+    ]
+    const aktif = new Set(['XL', 'PD', 'YP', 'SQ', 'LG', 'AK', 'BK', 'ZP', 'YU', 'RX'])
+    expect(pilihGarisBroker(agg, aktif, 'semua', 5, maksGaris(1536))).toHaveLength(8)
+    expect(pilihGarisBroker(agg, aktif, 'semua', 5, maksGaris(412))).toHaveLength(5)
+  })
+
+  it('di layar sempit kedua sisi tetap terwakili — bukan lima lokal saja', () => {
+    const agg = [
+      ag('XL', 900), ag('PD', 800), ag('YP', 700), ag('SQ', 600), ag('LG', 500),
+      ag('AK', 40), ag('BK', 30), ag('ZP', 20), ag('YU', 10), ag('RX', 5),
+    ]
+    const aktif = new Set(['XL', 'PD', 'YP', 'SQ', 'LG', 'AK', 'BK', 'ZP', 'YU', 'RX'])
+    const g = pilihGarisBroker(agg, aktif, 'semua', 5, maksGaris(412))
+    expect(g.filter((x) => x.sisi === 'lokal').length).toBeGreaterThan(0)
+    expect(g.filter((x) => x.sisi === 'asing').length).toBeGreaterThan(0)
   })
 })
