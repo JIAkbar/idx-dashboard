@@ -17,6 +17,7 @@ import { IkonMenu, IKON_KUNCI, IKON_PANAH_KANAN } from '../../components/dasbor/
 // pengunjung kebetulan membuka /kabar lebih dulu.
 import './Kabar.css'
 import './Beranda.css'
+import { KartuKunjungan } from '../../components/dasbor/KartuKunjungan'
 
 /** Berapa kabar & edisi yang tampil di Beranda. Enam, bukan lima: daftarnya
  *  dua kolom, dan angka ganjil menyisakan satu petak kosong di sudut. */
@@ -344,6 +345,11 @@ export function Beranda() {
           )}
         </div>
       </section>
+
+      {/* Kaki halaman depan — angka pengunjung (#112 A). Di sini, bukan di
+          rel kiri: rel sudah padat dan angka ini bukan kendali navigasi.
+          Hilang sendiri kalau endpointnya diam. */}
+      <KartuKunjungan />
 
     </div>
   )

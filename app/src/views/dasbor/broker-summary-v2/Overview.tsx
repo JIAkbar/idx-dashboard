@@ -162,7 +162,8 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
               </div>
             </div>
 
-            <div className="grid2">
+            {/* grid3, bukan grid2: grid dalam ini cuma dapat separuh lebar grid luar, ambang 340px grid2 tak pernah tercapai di laptop; 240px bikin dua kolom mulai ~494px dan tetap menumpuk sendiri di ponsel */}
+            <div className="grid3">
               <div>
                 <div className="sisi-h" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                   <span className="lbl" style={{ color: 'var(--green)' }}>Beli</span>

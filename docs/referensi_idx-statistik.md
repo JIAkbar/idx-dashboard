@@ -319,6 +319,21 @@ Angka 24/36 adalah batas atas asumsi linear; yang sah adalah mengukur 1 jam pada
   5. Skrip langsung menguji `/api/live-harga?kode=BNBR` di produksi; **200** dengan tanggal bar hari ini berarti rantai hidup. Sesudah itu rotasi milik cron `/api/live-refresh` SAJA — jangan pernah menyemai ulang selagi rantainya masih hidup.
 - **Uji:** `app/src/lib/dasbor/candleStockbit.test.ts` (6 kasus: tanggal ≤ arsip ditolak, bukan hari ini ditolak, OHLC cacat ditolak, volume kosong = 0, deret asli utuh).
 
+## PAPAN sendiri — `/api/kunjungan` (penghitung pengunjung, 8 September 2026)
+
+- **Asal perintah:** Johan 8 Sep 2026 (verbatim): *"sudah kmu pasang soal setiap hari pengunjung PAPAN berapa orang ?"* — lanjutan permintaan 26 Agu *"di PAPAN di beri visitor nih harusnya untuk mengukur dan tracking pengguna papan non login"*. Antrean #112 opsi A.
+- **Jalur:** peramban → `POST /api/kunjungan` (sekali per tab, `keepalive`) dan `GET /api/kunjungan` (angka untuk kartu). Fungsi serverless `api/kunjungan.js`; penyimpanan tabel Supabase `kunjungan_harian` lewat service role (env server).
+- **Yang disimpan, seluruhnya:** `tanggal` (date, WIB) + `sidik` (text). Kunci utama `(tanggal, sidik)`. TIDAK ADA IP, user-agent, cookie, maupun id perangkat — dan tak ada kolom lain sama sekali.
+- **Sidik:** `sha256(ip + "|" + user-agent + "|" + tanggal WIB + "|" + garam)`, dihitung di server lalu bahan bakunya dilupakan. Tanggal ikut di-hash, jadi sidik hari ini tak bisa disambungkan ke sidik besok — tabel ini tak bisa dipakai melacak seseorang lintas hari, termasuk oleh kita sendiri.
+- **Garam:** env `KUNJUNGAN_GARAM`; bila belum dipasang dipakai turunan `sha256(SUPABASE_SERVICE_ROLE_KEY + "kunjungan")`. Konsekuensi yang dicatat: mengganti kunci server kelak mengganti garam, sehingga sidik hari-hari sebelumnya tak sebanding lagi (hitungan harian yang sudah tercatat tetap benar; yang hilang cuma kesinambungan bila kelak ingin menghitung "pengunjung berulang").
+- **Idempoten:** `Prefer: resolution=ignore-duplicates` — memuat ulang halaman di hari yang sama tak menambah baris. Itulah definisi "unik per hari" di sini.
+- **Kamus ruas balasan GET:** `tanggal` (hari WIB yang dihitung) · `hari_ini` · `bulan_ini` · `total` — semuanya jumlah SIDIK, bukan orang.
+- **Batas yang wajib ikut tayang:** unik per hari = perangkat + jaringan, bukan orang. Satu orang dengan ponsel dan laptop terhitung dua; satu kantor ber-NAT bisa terhitung satu. Kalimatnya tinggal di `lib/dasbor/kunjungan.ts` (`BATAS_KUNJUNGAN`) supaya tak ada dua penjelasan berbeda.
+- **Pagar:** sama dengan proxy live — `api/_pagar.js` (asal `Origin`/`Referer` + batas laju 40/menit per IP per instans). GET disinggah CDN 60 detik.
+- **RLS:** aktif tanpa satu pun policy (pola `live_token`): anon dan authenticated tak bisa membaca maupun menulis; hanya service role dari fungsi server.
+- **Migrasi:** `supabase/migrations/20260908_kunjungan.sql` (diterapkan 8 Sep 2026).
+- **Kalau endpointnya diam:** kartu di layar HILANG, bukan menampilkan nol — nol yang dikarang lebih buruk daripada tak ada angka.
+
 ## Stockbit — `chartbit/<KODE>/price/intraday` (bar 1 MENIT) — sumber resmi baru 26 Agu 2026
 
 - **URL / endpoint:** `https://exodus.stockbit.com/chartbit/<KODE>/price/intraday?from=<epoch TERBARU>&to=<epoch TERLAMA>&limit=0` — konvensi `from`/`to` TERBALIK seperti daily (teruji 25 Agu, sesi AI Skill)

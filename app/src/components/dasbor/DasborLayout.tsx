@@ -12,6 +12,7 @@ import { LoginModalProvider } from '../../context/LoginModalContext'
 import { useTheme } from '../../context/ThemeContext'
 import { MarkPapan } from './MarkPapan'
 import { judulHalaman } from '../../lib/dasbor/menu'
+import { catatKunjungan } from '../../lib/dasbor/kunjungan'
 import { TANYA_PAPAN_AKTIF } from '../../lib/fitur'
 import '../../dasbor/lantai.css'
 
@@ -43,6 +44,10 @@ export function DasborLayout() {
   const [loginOpen, setLoginOpen] = useState(false)
   const [laciKiri, setLaciKiri] = useState(false)
   const location = useLocation()
+  // Satu kunjungan dicatat sekali per tab (#112 A). Ditaruh di kerangka,
+  // bukan di tiap halaman: yang diukur "seseorang membuka PAPAN", bukan
+  // berapa halaman yang ia buka. Gagal apa pun tak menyentuh render.
+  useEffect(() => { catatKunjungan() }, [])
   // Rute Beranda satu-satunya '/'; catch-all mengalihkan ke sana dengan
   // `replace`, jadi pathname sesudah pengalihan tetap '/'.
   const beranda = location.pathname === '/'

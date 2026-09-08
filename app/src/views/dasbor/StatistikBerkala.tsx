@@ -210,6 +210,28 @@ function PanelKosong({ judul, alasan }: { judul: string; alasan: string }) {
   )
 }
 
+/** Satu tabel Ruas/Nilai — Dana dihimpun dipecah jadi dua panggilan (6 baris
+ *  atas + 5 bawah, #118) supaya kartunya sepadan tinggi dengan Rata-rata
+ *  harian di sebelahnya. Bentuknya sama persis dengan sebelum dipecah, cuma
+ *  barisnya diiris dua; tak ada baris yang dibuang. */
+function TabelDana({ baris }: { baris: [string, number | null][] }) {
+  return (
+    <div className="board-tbl-wrap">
+      <table className="tbl">
+        <thead><tr><th>Ruas</th><th className="r">Nilai</th></tr></thead>
+        <tbody>
+          {baris.map(([k, v]) => (
+            <tr key={k}>
+              <td>{labelRuas(k)}</td>
+              <td className="r num">{angka(v, 2)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 export function StatistikBerkala() {
   const [jenis, setJenis] = useState<JenisPeriode>('minggu')
   const [tab, setTab] = useState<Tab>('ringkas')
@@ -391,15 +413,27 @@ function TabRingkas({
         </div>
       </div>
 
-      {/* Dua kolom MANDIRI, bukan baris yang disejajarkan (#41, Johan:
-          "layout nya masih ada yang bolong, space mubadzir"). Sebelumnya
-          Rata-rata (6 baris) disandingkan dengan IHSG (3) dan Net asing (2)
-          dengan Dana dihimpun (11) - dua lubang besar, karena grid menyamakan
-          TINGGI BARIS sementara isinya tak sama panjang. Sekarang kiri
-          menumpuk tiga panel (6+3+2 = 11 baris) menghadapi Dana dihimpun (11).
-          Yang menutup lubang bukan tinggi panel, melainkan JUMLAH BARISNYA. */}
-      <div className="grid2 stb-jajar">
-        <div className="stb-kolom">
+      {/* 2 kolom x 2 baris (#118, Johan: "kalau mau di rapikan bisa ini jadi
+          2 kolom 2 baris saja"). Sebelumnya kolom kiri menumpuk tiga panel
+          (Rata-rata + IHSG + Net asing, ±543px) menghadapi satu panel kanan
+          (Dana dihimpun, ±383px) - menyisakan lubang ±160px di bawah kanan,
+          karena grid menyamakan TINGGI BARIS, bukan JUMLAH kartu. Sekarang
+          keempat panel jadi sel grid sendiri-sendiri: baris 1 Rata-rata
+          harian | Dana dihimpun, baris 2 IHSG | Net asing. Dana dihimpun (11
+          baris, tak satu pun dibuang) dipecah jadi dua tabel 6+5 di dalam
+          satu kartu (lihat TabelDana) supaya tingginya mendekati Rata-rata
+          harian di sebelahnya.
+
+          `.w-agak`, bukan `grid2` polos, supaya kolomnya PASTI 2: `grid2`
+          polos memakai auto-fit (repeat(auto-fit,minmax(340px,1fr))) yang
+          menghitung jumlah kolom dari lebar KONTAINER, bukan dari jumlah sel
+          - dengan 4 sel top-level dan kontainer ~1400px di laptop (1536px
+          dikurangi rail 88px + padding), itu muat 4x340=1360px sekaligus,
+          jadi 4 kolom sebaris, bukan 2x2. `.w-agak` sudah ada di lantai.css
+          (dipakai kalkulator & IndeksDunia.tsx), menetapkan
+          grid-template-columns literal `1.1fr 1fr` — hampir rata, dan tetap
+          ambruk ke 1 kolom di ≤820px lewat aturan bersama di sana. */}
+      <div className="grid2 stb-jajar w-agak">
         <div className="panel">
           <div className="panel-h"><span className="lbl">Rata-rata harian</span></div>
           {rata.length === 0
@@ -411,6 +445,24 @@ function TabRingkas({
                 labelIni={labelIni}
                 baris={rata.map(([k, b]) => ({ kunci: k, label: labelRuas(k), b }))}
               />
+            )}
+        </div>
+
+        <div className="panel">
+          <div className="panel-h"><span className="lbl">Dana dihimpun</span></div>
+          {dana.length === 0
+            ? <div className="panel-b"><p className="muted stb-kosong">Tidak tercantum di edisi ini.</p></div>
+            : (
+              /* Dua tabel BERSISIAN, bukan bertumpuk: menumpuknya justru
+                 membuat kartu ini 425 px (terukur) — lubangnya cuma pindah
+                 ke bawah kartu kiri yang 235 px. Bersisian, tinggi kartu
+                 kembali ±240 px dan baris pertama jadi rata. `grid2`
+                 menumpuk sendiri di bawah 694 px, jadi di ponsel bentuknya
+                 kembali seperti semula tanpa aturan tambahan. */
+              <div className="grid3">
+                <TabelDana baris={dana.slice(0, 6)} />
+                {dana.length > 6 && <TabelDana baris={dana.slice(6)} />}
+              </div>
             )}
         </div>
 
@@ -428,6 +480,7 @@ function TabRingkas({
               />
             )}
         </div>
+
         {net ? (
           <div className="panel">
             <div className="panel-h"><span className="lbl">Net asing</span></div>
@@ -455,28 +508,6 @@ function TabRingkas({
           // bertransaksi" — pernyataan yang salah.
           <PanelKosong judul="Net asing" alasan="Edisi ini tidak memuat rekap net asing." />
         )}
-        </div>
-
-        <div className="panel">
-          <div className="panel-h"><span className="lbl">Dana dihimpun</span></div>
-          {dana.length === 0
-            ? <div className="panel-b"><p className="muted stb-kosong">Tidak tercantum di edisi ini.</p></div>
-            : (
-              <div className="board-tbl-wrap">
-                <table className="tbl">
-                  <thead><tr><th>Ruas</th><th className="r">Nilai</th></tr></thead>
-                  <tbody>
-                    {dana.map(([k, v]) => (
-                      <tr key={k}>
-                        <td>{labelRuas(k)}</td>
-                        <td className="r num">{angka(v, 2)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-        </div>
       </div>
     </>
   )

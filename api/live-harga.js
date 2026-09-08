@@ -1,3 +1,8 @@
+// Pagar dipakai BERSAMA dengan endpoint lain (#112) — dipindah ke modul
+// sendiri saat endpoint kedua lahir: dua salinan pagar bisa diam-diam
+// berbeda, dan pagar yang berbeda per endpoint tak bisa diaudit sekali jalan.
+import { periksaPagar, tglWib } from './_pagar.js'
+
 /**
  * Harga live per emiten — proxy server-side ke arsip harga Stockbit memakai
  * token AKUN KEDUA (nganggur) milik Johan (keputusan 28 Agu 2026: "boleh kita
@@ -51,12 +56,6 @@ async function accessToken() {
   return access
 }
 
-/** Tanggal WIB `YYYY-MM-DD`, `geser` hari ke belakang. Server berjalan di
- *  UTC, jadi tanggalnya digeser +7 jam dulu — tanpa itu, tiap hari antara
- *  00:00 dan 07:00 WIB jendelanya meleset satu hari. */
-const tglWib = (geser) =>
-  new Date(Date.now() + 7 * 3600e3 - geser * 86400e3).toISOString().slice(0, 10)
-
 /** Larik bar di dalam balasan — dicari dari bentuknya (list-of-object ber-
  *  `close`), bukan diasumsikan dari nama pembungkusnya. */
 function cariBar(j) {
@@ -73,94 +72,11 @@ function cariBar(j) {
   return []
 }
 
-/* ── Pagar pemakaian (#109 A, Johan 8 Sep 2026: "batasi pemakaian endpoint —
-   hanya menerima permintaan dari domain PAPAN + batas laju per IP") ─────────
-
-   Yang dilindungi BUKAN angkanya — harga penutupan itu data pasar yang memang
-   publik — melainkan KUOTA akun sumber yang ada di belakangnya. Tanpa pagar,
-   endpoint ini bisa dipakai siapa pun sebagai sumber data gratis atas nama
-   akun Johan.
-
-   Dua lapis, dan keduanya sengaja lemah pada hal yang berbeda:
-
-   1. ASAL — permintaan yang MEMBAWA `Origin`/`Referer` milik situs lain
-      ditolak. Ini menutup pemakaian dari halaman web orang lain (fetch lintas
-      situs), bukan penyalin yang memakai skrip. Permintaan TANPA asal (bilah
-      alamat peramban, curl, pemantau) tetap dilayani — memblokirnya cuma
-      melukai pemeriksaan kita sendiri, sementara penyalin tinggal menghapus
-      header.
-   2. BATAS LAJU per IP — inilah yang benar-benar menahan pemakaian bervolume,
-      dari mana pun asalnya. Jendela luncur 60 detik, per instans fungsi.
-      Instans TIDAK dibagi antar-wilayah, jadi angkanya "per instans", bukan
-      global — cukup untuk menahan hantaman beruntun dari satu IP, tidak cukup
-      untuk menahan botnet, dan itu memang batasnya. Pelindung utama tetap
-      singgahan CDN 30 detik: pengunjung berulang tak pernah sampai ke fungsi.
-
-   Batasnya dipilih dari pemakaian NYATA: klien menarik tiap 45 detik per tab
-   per emiten, jadi 40 permintaan/menit per IP sudah jauh di atas pemakaian
-   wajar (rumah ber-NAT sekalipun) dan masih jauh di bawah beban yang membuat
-   sumber menolak. */
-// SEMPIT, bukan `*.vercel.app`: uji pertama pagar ini menunjukkan pola lebar
-// itu meloloskan situs Vercel milik SIAPA PUN — pagar yang terbaca ketat
-// tapi praktis terbuka. Yang sah: domain produksi, pratayang cabang
-// (`papan-idx-git-…`), pratayang deploy proyek ini (`…-johan-iriawan-akbar-
-// s-projects.vercel.app`), dan localhost saat kerja lokal.
-const ASAL_SAH = /^papan-idx\.vercel\.app$|^papan-idx-[a-z0-9-]+\.vercel\.app$|-johan-iriawan-akbar-s-projects\.vercel\.app$|^localhost$|^127\.0\.0\.1$/
-
-/** Host dari `Origin`/`Referer`; null kalau permintaan tak membawa keduanya. */
-export function asalPermintaan(headers) {
-  const h = headers ?? {}
-  const mentah = h.origin || h.referer || h.Referer || ''
-  if (!mentah) return null
-  try {
-    return new URL(mentah).hostname
-  } catch {
-    return null
-  }
-}
-
-/** true = boleh dilayani. Tanpa asal = boleh (lihat catatan di atas). */
-export function asalDiizinkan(headers) {
-  const host = asalPermintaan(headers)
-  return host === null || ASAL_SAH.test(host)
-}
-
-const JENDELA_MS = 60_000
-const BATAS_PER_IP = 40
-/** IP -> daftar stempel waktu permintaan di dalam jendela. Milik satu instans. */
-const jejakIp = new Map()
-
-/** Catat satu permintaan; balikkan sisa jatah (negatif = melewati batas).
- *  Dipisah dari handler supaya bisa diuji tanpa jaringan. */
-export function catatLaju(ip, kini, batas = BATAS_PER_IP, jendela = JENDELA_MS) {
-  const lama = jejakIp.get(ip) ?? []
-  const hidup = lama.filter((t) => kini - t < jendela)
-  hidup.push(kini)
-  jejakIp.set(ip, hidup)
-  // Peta dibersihkan sesekali supaya instans yang hidup lama tak menumpuk IP
-  // yang sudah tak pernah datang lagi.
-  if (jejakIp.size > 500) {
-    for (const [k, v] of jejakIp) if (v.every((t) => kini - t >= jendela)) jejakIp.delete(k)
-  }
-  return batas - hidup.length
-}
-
-/** IP pemanggil menurut header proxy Vercel; string kosong kalau tak terbaca. */
-function ipPemanggil(req) {
-  const h = req.headers ?? {}
-  const maju = String(h['x-forwarded-for'] || '')
-  return maju.split(',')[0].trim() || String(h['x-real-ip'] || '') || 'tak-dikenal'
-}
-
 export default async function handler(req, res) {
-  if (!asalDiizinkan(req.headers)) {
-    // Nama tahap saja, tanpa menyebut domain mana yang ditolak.
-    return res.status(403).json({ galat: 'asal tidak diizinkan' })
-  }
-  const sisa = catatLaju(ipPemanggil(req), Date.now())
-  if (sisa < 0) {
-    res.setHeader('Retry-After', '60')
-    return res.status(429).json({ galat: 'terlalu sering', coba_lagi_detik: 60 })
+  const tolak = periksaPagar(req)
+  if (tolak) {
+    if (tolak.kode === 429) res.setHeader('Retry-After', '60')
+    return res.status(tolak.kode).json(tolak.badan)
   }
   const kode = String((req.query ?? {}).kode ?? '')
   // Daftar tertutup bentuk kode — ruas ini masuk URL pihak ketiga.

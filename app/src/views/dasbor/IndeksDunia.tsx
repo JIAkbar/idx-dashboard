@@ -627,9 +627,9 @@ function PanelRentangPasar({ r }: { r: NonNullable<ReturnType<typeof ringkasRent
           <span className="be-pil">tertinggi<b>{r.ihsg_tertinggi == null ? '—' : fN(r.ihsg_tertinggi, 2)}</b></span>
           <span className="be-pil">terendah<b>{r.ihsg_terendah == null ? '—' : fN(r.ihsg_terendah, 2)}</b></span>
         </div>
-        <div className="kv-baris" style={{ marginTop: 10 }}>
+        <div className="grid3" style={{ marginTop: 10 }}>
           {ruas.map(([nama, nilai, sub]) => (
-            <div key={nama} className="kv">
+            <div key={nama} className="vcard">
               <span className="lbl">{nama}</span>
               <span className="v-num num">{nilai}</span>
               {sub && <span className="v-note">{sub}</span>}

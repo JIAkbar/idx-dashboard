@@ -399,6 +399,7 @@ hr { border: none; border-top: 1px solid var(--hairline); margin: 24px 0; }
 <li><a href="#idx-profil-sektor-saham-tercatat-berita-pengumuman" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">IDX — profil, sektor, saham tercatat, berita &amp; pengumuman</span></a></li>
 <li><a href="#stockbit-chartbit-kode-ohlcv-aliran-asing-rupiah" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Stockbit — chartbit/&lt;KODE&gt; (OHLCV + aliran asing rupiah)</span></a></li>
 <li><a href="#stockbit-chartbit-kode-price-daily-limit-3-lewat-proxy-server-api-live-harga-bar-hari-berjalan-8-september-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Stockbit — chartbit/&lt;KODE&gt;/price/daily?limit=3 lewat proxy server /api/live-harga (bar HARI BERJALAN, 8 September 2026)</span></a></li>
+<li><a href="#papan-sendiri-api-kunjungan-penghitung-pengunjung-8-september-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">PAPAN sendiri — /api/kunjungan (penghitung pengunjung, 8 September 2026)</span></a></li>
 <li><a href="#stockbit-chartbit-kode-price-intraday-bar-1-menit-sumber-resmi-baru-26-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Stockbit — chartbit/&lt;KODE&gt;/price/intraday (bar 1 MENIT) — sumber resmi baru 26 Agu 2026</span></a></li>
 <li><a href="#stockbit-marketdetectors-kode-broker-per-emiten-12-varian" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Stockbit — marketdetectors/&lt;KODE&gt; (broker per emiten, 12 varian)</span></a></li>
 <li><a href="#stockbit-keystats-emitten-profil-info-snips-dan-endpoint-yang-belum-terpecahkan" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Stockbit — keystats, emitten (profil &amp; info), Snips, dan endpoint yang belum terpecahkan</span></a></li>
@@ -1712,6 +1713,32 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
   4. <code>python scripts/semai_live_token.py</code> (butuh <code>SUPABASE_SERVICE_ROLE_KEY</code> di lingkungan atau <code>.env.local</code> — kunci server tak pernah masuk git). Skrip menolak menulis kalau pemilik tokennya sama dengan rantai panen, dan tak pernah mencetak isi token — hanya tanggal terbit/kedaluwarsa, sidik 8 aksara, dan kode HTTP. <code>--periksa</code> memeriksa keadaan tanpa menulis apa pun.<br />
   5. Skrip langsung menguji <code>/api/live-harga?kode=BNBR</code> di produksi; <strong>200</strong> dengan tanggal bar hari ini berarti rantai hidup. Sesudah itu rotasi milik cron <code>/api/live-refresh</code> SAJA — jangan pernah menyemai ulang selagi rantainya masih hidup.</li>
 <li><strong>Uji:</strong> <code>app/src/lib/dasbor/candleStockbit.test.ts</code> (6 kasus: tanggal ≤ arsip ditolak, bukan hari ini ditolak, OHLC cacat ditolak, volume kosong = 0, deret asli utuh).</li>
+</ul>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="papan-sendiri-api-kunjungan-penghitung-pengunjung-8-september-2026" data-title="PAPAN sendiri — /api/kunjungan (penghitung pengunjung, 8 September 2026)">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>PAPAN sendiri — /api/kunjungan (penghitung pengunjung, 8 September 2026)</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<ul>
+<li><strong>Asal perintah:</strong> Johan 8 Sep 2026 (verbatim): <em>"sudah kmu pasang soal setiap hari pengunjung PAPAN berapa orang ?"</em> — lanjutan permintaan 26 Agu <em>"di PAPAN di beri visitor nih harusnya untuk mengukur dan tracking pengguna papan non login"</em>. Antrean #112 opsi A.</li>
+<li><strong>Jalur:</strong> peramban → <code>POST /api/kunjungan</code> (sekali per tab, <code>keepalive</code>) dan <code>GET /api/kunjungan</code> (angka untuk kartu). Fungsi serverless <code>api/kunjungan.js</code>; penyimpanan tabel Supabase <code>kunjungan_harian</code> lewat service role (env server).</li>
+<li><strong>Yang disimpan, seluruhnya:</strong> <code>tanggal</code> (date, WIB) + <code>sidik</code> (text). Kunci utama <code>(tanggal, sidik)</code>. TIDAK ADA IP, user-agent, cookie, maupun id perangkat — dan tak ada kolom lain sama sekali.</li>
+<li><strong>Sidik:</strong> <code>sha256(ip + "|" + user-agent + "|" + tanggal WIB + "|" + garam)</code>, dihitung di server lalu bahan bakunya dilupakan. Tanggal ikut di-hash, jadi sidik hari ini tak bisa disambungkan ke sidik besok — tabel ini tak bisa dipakai melacak seseorang lintas hari, termasuk oleh kita sendiri.</li>
+<li><strong>Garam:</strong> env <code>KUNJUNGAN_GARAM</code>; bila belum dipasang dipakai turunan <code>sha256(SUPABASE_SERVICE_ROLE_KEY + "kunjungan")</code>. Konsekuensi yang dicatat: mengganti kunci server kelak mengganti garam, sehingga sidik hari-hari sebelumnya tak sebanding lagi (hitungan harian yang sudah tercatat tetap benar; yang hilang cuma kesinambungan bila kelak ingin menghitung "pengunjung berulang").</li>
+<li><strong>Idempoten:</strong> <code>Prefer: resolution=ignore-duplicates</code> — memuat ulang halaman di hari yang sama tak menambah baris. Itulah definisi "unik per hari" di sini.</li>
+<li><strong>Kamus ruas balasan GET:</strong> <code>tanggal</code> (hari WIB yang dihitung) · <code>hari_ini</code> · <code>bulan_ini</code> · <code>total</code> — semuanya jumlah SIDIK, bukan orang.</li>
+<li><strong>Batas yang wajib ikut tayang:</strong> unik per hari = perangkat + jaringan, bukan orang. Satu orang dengan ponsel dan laptop terhitung dua; satu kantor ber-NAT bisa terhitung satu. Kalimatnya tinggal di <code>lib/dasbor/kunjungan.ts</code> (<code>BATAS_KUNJUNGAN</code>) supaya tak ada dua penjelasan berbeda.</li>
+<li><strong>Pagar:</strong> sama dengan proxy live — <code>api/_pagar.js</code> (asal <code>Origin</code>/<code>Referer</code> + batas laju 40/menit per IP per instans). GET disinggah CDN 60 detik.</li>
+<li><strong>RLS:</strong> aktif tanpa satu pun policy (pola <code>live_token</code>): anon dan authenticated tak bisa membaca maupun menulis; hanya service role dari fungsi server.</li>
+<li><strong>Migrasi:</strong> <code>supabase/migrations/20260908_kunjungan.sql</code> (diterapkan 8 Sep 2026).</li>
+<li><strong>Kalau endpointnya diam:</strong> kartu di layar HILANG, bukan menampilkan nol — nol yang dikarang lebih buruk daripada tak ada angka.</li>
 </ul>
 
 </div>

@@ -96,7 +96,7 @@ export function Kabar() {
           <h1 className="lbl">
             Kabar pasar{kabar ? ` (${kabar.item.length})` : ''}
           </h1>
-          <span className="tabs kbr-tabs" role="tablist" aria-label="Saring sumber kabar">
+          <span className="tabs blt-tabs" role="tablist" aria-label="Saring sumber kabar">
             {TAB.map((t) => (
               <button key={t} type="button" role="tab" aria-selected={tab === t}
                 className={`tab${tab === t ? ' on' : ''}`} onClick={() => setTab(t)}>
@@ -104,33 +104,24 @@ export function Kabar() {
               </button>
             ))}
           </span>
-          {/* Bulan dan pencarian DISATUKAN jadi satu kendali. Dua kotak
-              terpisah di header ber-`space-between` saling terlempar ke ujung
-              yang berbeda, dan yang di tengah terbaca seperti tersesat.
-              Keduanya menyaring daftar yang sama, jadi memang satu alat.
-              Saringan bulan sendiri baru muncul kalau arsipnya lintas bulan —
-              di berkas yang cuma berumur sepekan, kotak itu tak menjelaskan
-              apa pun. */}
-          <span className="kbr-alat">
-            {/* `Dropdown` proyek, bukan <select> bawaan: daftar pilihan
-                <select> digambar sistem operasi, jadi muncul putih terang di
-                atas panel gelap dan tak bisa ditema. */}
-            {BULAN.length > 1 && (
-              <span className="kbr-bulan">
-                <Dropdown
-                  ariaLabel="Saring bulan"
-                  nilai={bulan}
-                  onGanti={setBulan}
-                  opsi={[{ nilai: '', label: 'Semua bulan' },
-                    ...BULAN.map((b) => ({ nilai: b, label: labelBulan(b) }))]}
-                />
-              </span>
-            )}
-            <span className="af-cari">
-              {/* Kotak CARI CAMPURAN (bukan picker emiten) — sengaja BUKAN StockAutocomplete: menyaring lebih dari satu ruas sekaligus. Jangan "diperbaiki" jadi picker; riwayat: sweep Papan Pekerjaan #355. */}
-              <input className="inp" type="search" value={cari} onChange={(e) => setCari(e.target.value)}
-                placeholder="Cari judul / emiten…" aria-label="Cari kabar" />
-            </span>
+          {/* `Dropdown` proyek, bukan <select> bawaan: daftar pilihan
+              <select> digambar sistem operasi, jadi muncul putih terang di
+              atas panel gelap dan tak bisa ditema. Saringan bulan sendiri
+              baru muncul kalau arsipnya lintas bulan — di berkas yang cuma
+              berumur sepekan, kotak itu tak menjelaskan apa pun. */}
+          {BULAN.length > 1 && (
+            <Dropdown
+              ariaLabel="Saring bulan"
+              nilai={bulan}
+              onGanti={setBulan}
+              opsi={[{ nilai: '', label: 'Semua bulan' },
+                ...BULAN.map((b) => ({ nilai: b, label: labelBulan(b) }))]}
+            />
+          )}
+          <span className="af-cari">
+            {/* Kotak CARI CAMPURAN (bukan picker emiten) — sengaja BUKAN StockAutocomplete: menyaring lebih dari satu ruas sekaligus. Jangan "diperbaiki" jadi picker; riwayat: sweep Papan Pekerjaan #355. */}
+            <input className="inp" type="search" value={cari} onChange={(e) => setCari(e.target.value)}
+              placeholder="Cari judul / emiten…" aria-label="Cari kabar" />
           </span>
         </div>
 

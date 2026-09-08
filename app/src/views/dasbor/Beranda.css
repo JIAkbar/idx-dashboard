@@ -610,3 +610,20 @@
 .lantai .brd-papan-ringkas .board { padding: 14px 16px; gap: 20px; }
 .lantai .brd-papan-ringkas .brd-nama { font-size: clamp(26px, 3.4vw, 38px); }
 .lantai .brd-papan-ringkas .brd-tagline { font-size: 12.5px; }
+
+/* Kartu pengunjung (#112 A) — satu baris tipis di kaki halaman depan.
+   Sengaja tanpa bingkai kartu: ia keterangan, bukan panel data, dan di
+   bawah deretan kartu menu satu kotak lagi akan terbaca sebagai menu. */
+.lantai .kjg {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px;
+  margin-top: 18px; padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 12px; color: var(--text3);
+}
+.lantai .kjg-l { font-weight: 700; color: var(--text2); letter-spacing: .02em; }
+.lantai .kjg-a { font-family: var(--mono, ui-monospace, monospace); color: var(--text); }
+.lantai .kjg-p { opacity: .5; }
+/* Batasnya ikut TERCETAK, bukan cuma di tooltip: tooltip tak pernah muncul
+   di layar sentuh, dan angka pengunjung tanpa batasnya gampang dibaca
+   lebih besar daripada yang sebenarnya diukur. */
+.lantai .kjg-batas { flex: 1 1 100%; font-size: 11px; opacity: .8; }

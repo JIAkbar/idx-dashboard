@@ -28,7 +28,8 @@ tanggal terbit/kedaluwarsa, sidik pendek (8 aksara SHA-256), kode HTTP.
 
 ## Pakai (SOP lengkap ada di docs/referensi_idx-statistik.md, section proxy live)
 
-    python scripts/semai_live_token.py            # semai + uji hidup
+    python scripts/semai_live_token.py            # semai dari app/.env.local
+    python scripts/semai_live_token.py --dari-berkas   # semai dari token runner (rantai tunggal)
     python scripts/semai_live_token.py --periksa   # cek keadaan saja, nol tulis
     python scripts/semai_live_token.py --swauji    # uji murni, nol jaringan
 
@@ -177,12 +178,39 @@ def periksa(env: dict) -> int:
     return 0
 
 
-def semai(env: dict, paksa: bool) -> int:
+def token_dari_berkas() -> tuple[str | None, str | None]:
+    """Pasangan token milik runner apa adanya — untuk rantai TUNGGAL
+    (keputusan Johan 8 Sep 2026: "jawabannya 2" — satu akun melayani panen
+    DAN tayangan live). Tak ada peramban yang perlu dibuka: yang disemai
+    justru pasangan paling segar yang baru dipakai panen."""
+    try:
+        d = json.loads(TOKEN_PANEN.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001 — berkas tak ada/rusak
+        return None, None
+    return d.get("access"), d.get("refresh")
+
+
+def semai(env: dict, paksa: bool, dari_berkas: bool = False) -> int:
     import requests
     url = env.get("VITE_SUPABASE_URL") or env.get("SUPABASE_URL")
     kunci = env.get("SUPABASE_SERVICE_ROLE_KEY")
-    access = env.get("STOCKBIT_LIVE_TOKEN")
-    refresh = env.get("STOCKBIT_LIVE_REFRESH_TOKEN")
+    if dari_berkas:
+        # Rantai tunggal: jangan menyemai selagi panen berjalan. Pemanen
+        # masih boleh memutar pasangannya sampai peralihan selesai, dan
+        # pasangan yang diputar SESUDAH disemai membuat salinan di tabel
+        # tak sah — cron besok lalu ditolak 401 dan rantai live mati.
+        if (AKAR / ".panen.lock").exists():
+            print("  DITOLAK: .panen.lock ada — panen sedang berjalan dan masih bisa memutar token.")
+            print("  Tunggu panen selesai, baru semai (pasangan yang diputar sesudah semai membuat baris tabel basi).")
+            return 3
+        access, refresh = token_dari_berkas()
+        if not (access and refresh):
+            print(f"  Berkas token runner tak terbaca: {TOKEN_PANEN}")
+            return 2
+        print(f"  sumber: berkas token runner ({TOKEN_PANEN.name}) — rantai tunggal")
+    else:
+        access = env.get("STOCKBIT_LIVE_TOKEN")
+        refresh = env.get("STOCKBIT_LIVE_REFRESH_TOKEN")
 
     if not (access and refresh):
         print("  STOCKBIT_LIVE_TOKEN / STOCKBIT_LIVE_REFRESH_TOKEN kosong.")
@@ -204,7 +232,9 @@ def semai(env: dict, paksa: bool) -> int:
         return 2
 
     p_live, p_panen = pemilik(access), token_panen_pemilik()
-    if p_live and p_panen and p_live == p_panen and not paksa:
+    # Rantai tunggal memang SENGAJA berpemilik sama — penjaga ini hanya
+    # untuk mode dua rantai, tempat kesamaan itu berarti salah kamar.
+    if not dari_berkas and p_live and p_panen and p_live == p_panen and not paksa:
         print("  DITOLAK: token ini milik pemilik yang SAMA dengan rantai panen.")
         print("  Rantai live wajib akun kedua — dua rantai satu akun akan saling mencabut")
         print("  (insiden 23–24 Agu 2026). Pakai --paksa hanya kalau kesamaan itu memang disengaja.")
@@ -273,6 +303,12 @@ def swauji() -> int:
     jarum = ['env.get("STOCKBIT_' + 'TOKEN")', 'env.get("STOCKBIT_' + 'REFRESH_TOKEN")']
     cek("nama kunci live terpisah dari rantai panen", not any(j in isi for j in jarum))
 
+    # Mode rantai tunggal wajib punya penjaga kunci panen — kalau seseorang
+    # membuangnya, semai bisa jalan di tengah panen dan membuat baris tabel
+    # basi begitu pemanen memutar pasangannya.
+    cek('mode --dari-berkas menolak saat .panen.lock ada', '.panen.lock' in isi)
+    cek('penjaga pemilik hanya untuk mode dua rantai', 'not dari_berkas and p_live' in isi)
+
     print(f"swauji semai_live_token: {lulus} lolos, {gagal} gagal")
     return 1 if gagal else 0
 
@@ -283,7 +319,8 @@ def main() -> int:
     env = env_gabungan()
     if "--periksa" in sys.argv:
         return periksa(env)
-    return semai(env, paksa="--paksa" in sys.argv)
+    return semai(env, paksa="--paksa" in sys.argv,
+                 dari_berkas="--dari-berkas" in sys.argv)
 
 
 if __name__ == "__main__":
