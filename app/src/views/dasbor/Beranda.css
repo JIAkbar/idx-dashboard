@@ -490,6 +490,10 @@
   background: var(--bg3);
   display: block;
   min-width: 0;
+  /* Garis tepi tipis: tanpa ini ujung KANAN bar (bagian trek yang belum
+     terisi) melebur ke latar kartu di tema terang, dan panjang isinya
+     jadi tak bisa dibaca relatif terhadap apa pun. */
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 .lantai .dia-rentang-bar b {
   /* Isi dari low (kiri) sampai posisi harga sekarang — dulu bar cuma
@@ -507,12 +511,19 @@
    hijau — satu skema untuk sembilan baris, jadi deretnya terbaca sekilas
    sebagai "harga sedang di mana", bukan sembilan warna yang harus dihafal.
 
-   Token *-dim yang dipakai, bukan warna penuh: bar ini latar, penanda posisi
-   di atasnya yang harus menang kontras. Ketiganya rgba di atas --bg3, jadi
-   ikut benar di tema terang maupun gelap tanpa aturan kedua. */
-.lantai .dia-rentang-bar b.bawah { background: var(--red-dim); }
-.lantai .dia-rentang-bar b.tengah { background: var(--amber-dim); }
-.lantai .dia-rentang-bar b.atas { background: var(--green-dim); }
+   DIPERTAJAM 8 Sep 2026 (Johan: "berikan warna berbeda atau lebih tajam
+   lagi", tangkapan layar tema terang). Sebelumnya ketiganya memakai token
+   *-dim yang beralfa 0,10 di tema terang; di atas --bg3 (#E4E7E3) ketiga
+   warna itu jatuh ke abu yang sama dan sembilan bar terbaca seragam —
+   skema tiga warnanya ada di kode tapi tidak sampai ke mata.
+
+   `color-mix` 45% dipakai, bukan warna penuh: bar ini tetap LATAR, dan
+   penanda posisi di atasnya yang harus menang kontras. Satu nilai untuk
+   dua tema — campuran dihitung dari token warnanya sendiri, yang memang
+   sudah berbeda per tema. */
+.lantai .dia-rentang-bar b.bawah { background: color-mix(in srgb, var(--red) 45%, transparent); }
+.lantai .dia-rentang-bar b.tengah { background: color-mix(in srgb, var(--amber) 45%, transparent); }
+.lantai .dia-rentang-bar b.atas { background: color-mix(in srgb, var(--green) 45%, transparent); }
 .lantai .dia-rentang-bar i {
   /* Penanda posisi harga sekarang di dalam rentang — segitiga kecil ala
      panel acuan diganti pil tegak: bentuknya tegas di 9px tinggi. */
@@ -522,6 +533,10 @@
   height: 13px;
   border-radius: 2px;
   background: var(--text);
+  /* Cincin setipis rambut berwarna latar kartu: penanda gelap di atas isi
+     bar yang kini lebih pekat butuh pemisah, kalau tidak ia melebur di
+     baris yang posisinya di sepertiga bawah (isi merah). */
+  box-shadow: 0 0 0 1.5px var(--bg1);
   transform: translateX(-50%);
 }
 .lantai .dia-rentang-nilai { text-align: right; font-size: 11px; white-space: nowrap; font-variant-numeric: tabular-nums; }
