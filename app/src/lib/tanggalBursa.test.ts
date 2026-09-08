@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { hariBursa, hariBursaSejak, lupakanDaftarHariBursa, pasangDaftarHariBursa, tanggalBursaTerakhir } from './tanggalBursa'
+import {
+  hariBursa, hariBursaSejak, jamPasarJakarta, lupakanDaftarHariBursa, pasangDaftarHariBursa,
+  tanggalBursaTerakhir,
+} from './tanggalBursa'
 
 // Daftar hari bursa itu keadaan tingkat-modul. Tanpa pembersihan ini, uji yang
 // memasangnya akan diam-diam mengubah jawaban uji berikutnya.
@@ -114,5 +117,34 @@ describe('hariBursaSejak', () => {
 
   it('rentang terbalik -> 0, bukan galat', () => {
     expect(hariBursaSejak('2026-08-18', '2026-08-14')).toBe(0)
+  })
+})
+
+describe('jamPasarJakarta', () => {
+  // Waktu diberikan dalam UTC supaya jawabannya tak bergantung zona mesin uji;
+  // WIB = UTC+7.
+  it('Senin 10:30 WIB = buka, jam & tanggal versi Jakarta', () => {
+    expect(jamPasarJakarta(new Date('2026-09-07T03:30:00Z')))
+      .toEqual({ status: 'buka', jam: '10:30', iso: '2026-09-07' })
+  })
+
+  it('08:59 WIB belum buka; 09:00 sudah', () => {
+    expect(jamPasarJakarta(new Date('2026-09-07T01:59:00Z')).status).toBe('tutup')
+    expect(jamPasarJakarta(new Date('2026-09-07T02:00:00Z')).status).toBe('buka')
+  })
+
+  it('16:14 WIB masih buka; 16:15 tutup (batas eksklusif)', () => {
+    expect(jamPasarJakarta(new Date('2026-09-07T09:14:00Z')).status).toBe('buka')
+    expect(jamPasarJakarta(new Date('2026-09-07T09:15:00Z')).status).toBe('tutup')
+  })
+
+  it('Sabtu dan libur bursa tutup walau di jam sesi', () => {
+    expect(jamPasarJakarta(new Date('2026-09-05T03:00:00Z')).status).toBe('tutup') // Sabtu
+    expect(jamPasarJakarta(new Date('2026-08-17T03:00:00Z')).status).toBe('tutup') // HUT RI
+  })
+
+  it('lintas tengah malam UTC: tanggalnya ikut Jakarta, bukan UTC', () => {
+    const r = jamPasarJakarta(new Date('2026-09-06T23:30:00Z')) // 06:30 WIB, 7 Sep
+    expect(r).toEqual({ status: 'tutup', jam: '06:30', iso: '2026-09-07' })
   })
 })

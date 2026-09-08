@@ -5,6 +5,8 @@ import {
   bulanDiary, performaIhsg, rentangIhsg, selDiary, tallyDiary, type KotakDiary,
 } from '../../lib/dasbor/diaryPasar'
 import { LangkahTanggal } from './LangkahTanggal'
+import { useHargaLive } from '../../lib/dasbor/hargaLive'
+import { jamPasarJakarta } from '../../lib/tanggalBursa'
 
 /**
  * Panel "Diary Pasar" — kalender IHSG berwarna, tally hari naik/turun,
@@ -132,6 +134,19 @@ export function PanelDiary() {
   const performa = useMemo(() => (panjang ? performaIhsg(panjang) : []), [panjang])
   const rentang = useMemo(() => (panjang ? rentangIhsg(panjang) : []), [panjang])
 
+  // Angka HARI BERJALAN (#92 A, Johan: "bisa gak data ini di pasang token nya
+  // stockbit supaya realtime?"). Ditarik lewat proxy server PAPAN yang sudah
+  // dipakai halaman Indeks — token hidup di server, yang sampai ke peramban
+  // cuma angka — dan HANYA selama jam bursa: di luar itu tak ada yang berubah,
+  // jadi tak ada yang diminta. null = rantai live sedang mati atau dev lokal;
+  // barisnya lalu cuma menyebut angka resmi, bukan galat. Arsip tak disentuh.
+  const [pasar, setPasar] = useState(() => jamPasarJakarta())
+  useEffect(() => {
+    const t = setInterval(() => setPasar(jamPasarJakarta()), 60_000)
+    return () => clearInterval(t)
+  }, [])
+  const live = useHargaLive(pasar.status === 'buka' ? 'IHSG' : null, 60)
+
   const bulan = useMemo(() => {
     if (!sel.length) return null
     const akhir = new Date(`${sel[sel.length - 1].tanggal}T00:00:00Z`)
@@ -193,6 +208,31 @@ export function PanelDiary() {
           label="Bulan berikutnya"
         />
         </span>
+      </div>
+      {/* Baris hari berjalan — dipisah tegas dari angka resmi harian di bawahnya:
+          arsip tetap angka penutupan bursa, baris ini cuma "sekarang berapa". */}
+      <div className="dia-live" aria-live="polite">
+        {pasar.status === 'buka' ? (
+          live ? (
+            <>
+              <span className="dia-live-tanda">Hari berjalan</span>
+              <b className={`num ${(live.pct ?? 0) < 0 ? 'down' : 'up'}`}>
+                {fangka(live.close, 2)}{live.pct != null && ` · ${fpersen(live.pct)}`}
+              </b>
+              <span>
+                {jamPasarJakarta(new Date(live.diambilPada)).jam} WIB · tertunda ≤ 2 menit ·
+                angka resmi menyusul sesudah tutup
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="dia-live-tanda">Hari berjalan</span>
+              <span>angka langsung belum tersedia · angka resmi terakhir {sel[sel.length - 1].tanggal}</span>
+            </>
+          )
+        ) : (
+          <span>Pasar tutup · angka resmi {sel[sel.length - 1].tanggal}</span>
+        )}
       </div>
       <div className="panel-b dia-isi">
         <div className="dia-kiri">

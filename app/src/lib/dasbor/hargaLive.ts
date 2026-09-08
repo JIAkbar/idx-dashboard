@@ -13,6 +13,9 @@ export interface HargaLive {
   close: number
   prev: number | null
   pct: number | null
+  /** Kapan angkanya sampai di peramban (epoch ms) — label jam di layar
+   *  dibaca dari sini, karena server tak mengirim stempel waktu. */
+  diambilPada: number
 }
 
 export async function ambilHargaLive(kode: string): Promise<HargaLive | null> {
@@ -21,8 +24,8 @@ export async function ambilHargaLive(kode: string): Promise<HargaLive | null> {
   try {
     const r = await fetch(`/api/live-harga?kode=${encodeURIComponent(kode)}`, { signal: kendali.signal })
     if (!r.ok) return null
-    const d = (await r.json()) as HargaLive
-    return Number.isFinite(d?.close) ? d : null
+    const d = (await r.json()) as Omit<HargaLive, 'diambilPada'>
+    return Number.isFinite(d?.close) ? { ...d, diambilPada: Date.now() } : null
   } catch {
     return null
   } finally {

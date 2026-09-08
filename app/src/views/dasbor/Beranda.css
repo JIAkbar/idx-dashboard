@@ -348,6 +348,26 @@
   min-width: 108px;
   text-align: center;
 }
+/* Baris hari berjalan (#92 A): di bawah kepala, di atas isi. Padding
+   mendatarnya menyamai .panel-b (14px) supaya teksnya sejajar dengan
+   kalender di bawahnya, tanpa masuk ke grid dua kolomnya. */
+.lantai .dia-live {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 8px 14px 0;
+  font-size: 11.5px;
+  color: var(--text2);
+}
+.lantai .dia-live .dia-live-tanda {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.lantai .dia-live b.num { font-size: 13px; }
 
 .lantai .dia-kal {
   /* Dibatasi, bukan 100%: kolom kiri panel selebar ~700px membuat tiap sel

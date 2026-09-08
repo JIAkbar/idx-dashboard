@@ -164,3 +164,34 @@ export function hariBursaSejak(dariIso: string, sampaiIso: string): number {
   }
   return n
 }
+
+/**
+ * Jam pasar Jakarta untuk saat `kini` — dibaca dari zona Asia/Jakarta, bukan
+ * dari jam perangkat, supaya pembaca di luar WIB mendapat jawaban yang sama.
+ *
+ * `buka` = hari bursa DAN 09:00 ≤ jam < 16:15 (sesi I + II pasar reguler,
+ * pra-pembukaan tidak dihitung); selain itu `tutup`. Dipakai Diary Pasar untuk
+ * memutuskan KAPAN angka hari berjalan ditarik: di luar jam bursa tak ada yang
+ * berubah, jadi tak ada yang diminta ke server.
+ */
+export function jamPasarJakarta(kini: Date = new Date()): {
+  status: 'buka' | 'tutup'
+  /** Jam dinding Jakarta, "HH:MM". */
+  jam: string
+  /** Tanggal Jakarta, YYYY-MM-DD — bisa beda dari tanggal perangkat. */
+  iso: string
+} {
+  const bagian = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta', hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+  }).formatToParts(kini)
+  const ambil = (t: string) => bagian.find((b) => b.type === t)?.value ?? '00'
+  const iso = `${ambil('year')}-${ambil('month')}-${ambil('day')}`
+  // Beberapa mesin memberi "24" untuk tengah malam saat hour12:false.
+  const jamAngka = Number(ambil('hour')) % 24
+  const menit = Number(ambil('minute'))
+  const jam = `${String(jamAngka).padStart(2, '0')}:${String(menit).padStart(2, '0')}`
+  const menitHari = jamAngka * 60 + menit
+  const buka = hariBursa(iso) && menitHari >= 9 * 60 && menitHari < 16 * 60 + 15
+  return { status: buka ? 'buka' : 'tutup', jam, iso }
+}
