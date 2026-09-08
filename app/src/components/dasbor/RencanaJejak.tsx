@@ -124,7 +124,7 @@ export function RencanaJejak({ kode }: { kode: string }) {
             {eksB == null ? '—' : pct(eksB, 2)}
           </b>
           <span>
-            ekspektansi per sinyal (hasil rata-rata), 5 hari bursa · <b>fee diabaikan</b>, harga ke fraksi BEI
+            ekspektansi per sinyal (hasil rata-rata), 5 hari bursa · fee diabaikan, harga ke fraksi BEI
             {biaya != null && biaya > 0 ? ` (tarif ${biaya.toFixed(2).replace('.', ',')}% dipotong)` : ''}
           </span>
         </div>
@@ -188,7 +188,7 @@ export function RencanaJejak({ kode }: { kode: string }) {
               <th className="n">Dari tuntas</th>
               <th className="n">Dari semua</th>
               <th className="n">M·K·G</th>
-              <th className="n">Sesudah biaya</th>
+              <th className="n">Ekspektansi</th>
             </tr>
           </thead>
           <tbody>
