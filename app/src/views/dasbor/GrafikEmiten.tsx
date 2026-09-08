@@ -54,7 +54,10 @@ import { gayaDariDash, type GayaGaris } from '../../lib/dasbor/gambarGrafik'
 import { fN } from '../../lib/dasbor/format'
 import { pesanGalat } from '../../lib/pesanGalat'
 import { keFraksi } from '../../lib/fraksiHarga'
-import { arahStruktur, cariPatahan, cariSwing, hitungPrz, type Patahan, type Swing } from '../../lib/dasbor/strukturPasar'
+import {
+  arahStruktur, cariFvg, cariOrderBlock, cariPatahan, cariSwing, hitungPrz,
+  type Patahan, type Swing, type Zona,
+} from '../../lib/dasbor/strukturPasar'
 import {
   IkonMenu, IKON_SILANG, IKON_INFO, IKON_TONG, IKON_MATA,
   IKON_MATA_CORET, IKON_GIR, IKON_LILIN, IKON_GRAFIK_NAIK, IKON_KAMERA,
@@ -160,6 +163,11 @@ const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'O
  * Yang ingin melihat lebih lama ke belakang bisa mempersempit rentang.
  */
 const MAKS_PENANDA_POLA = 6
+
+/** Zona FVG/order block terbuka yang digambar per instans, tiap jenis.
+ *  Tiga sudah membuat kanvas ramai; zona lama yang belum tersentuh tetap
+ *  ada di datanya, cuma tak digambar. */
+const MAKS_ZONA = 3
 
 /**
  * Berapa lilin TERAKHIR yang ditandai pola Musiman.
@@ -2350,6 +2358,13 @@ export function GrafikEmiten() {
       patahan: x.inst.jenis === 'struktur' ? cariPatahan(lilin, x.swing, x.inst.param.n) : ([] as Patahan[]),
     })).map((x) => ({
       ...x,
+      // FVG & order block (#53). Order block diturunkan dari patahan yang
+      // baru dihitung di atas — bukan dari kriteria "lilin besar" kedua yang
+      // mirip tapi beda, yang akan memberi dua jawaban untuk satu pertanyaan.
+      fvg: x.inst.jenis === 'struktur' ? cariFvg(lilin) : ([] as Zona[]),
+      ob: x.inst.jenis === 'struktur' ? cariOrderBlock(lilin, x.patahan) : ([] as Zona[]),
+    })).map((x) => ({
+      ...x,
       divergensi: x.inst.jenis === 'divergensi'
         ? cariDivergensi(lilin, vol, x.stoch, x.inst.param as unknown as ParamDivergensi)
         : x.divergensi,
@@ -2829,6 +2844,37 @@ export function GrafikEmiten() {
       }
     }
 
+    // FVG & order block: dua garis mendatar per zona (batas atas & bawah),
+    // ditarik dari lilin asalnya sampai lilin terakhir. Yang digambar HANYA
+    // zona yang masih terbuka: zona yang harganya sudah kembali masuk sudah
+    // habis perannya, dan menggambarnya berarti puluhan pita di kanvas yang
+    // sama sekali tak bisa dibaca. Batasnya MAKS_ZONA teratas yang terbaru.
+    for (const { inst, fvg, ob } of polaPerInstans) {
+      if (inst.jenis !== 'struktur' || !digambar(inst)) continue
+      const zona = [
+        ...fvg.filter((z) => !z.ditutupPada).slice(-MAKS_ZONA).map((z) => ({ z, ob: false })),
+        ...ob.filter((z) => !z.ditutupPada).slice(-MAKS_ZONA).map((z) => ({ z, ob: true })),
+      ]
+      for (const { z, ob: blok } of zona) {
+        const warna = baca(z.arah === 'naik' ? '--green' : '--red')
+        for (const nilai of [z.bawah, z.atas]) {
+          const g = chart.addSeries(LineSeries, {
+            color: warna, lineWidth: 1,
+            // Order block digambar utuh, FVG putus-putus: yang satu jejak
+            // lilin yang benar-benar ada, yang lain pita kosong yang tak
+            // pernah diperdagangkan — bedanya wajib terlihat tanpa legenda.
+            lineStyle: blok ? LineStyle.Solid : LineStyle.Dashed,
+            priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
+          }, 0)
+          g.setData(keChart([
+            { time: z.waktu, value: nilai },
+            { time: lilin[lilin.length - 1].time, value: nilai },
+          ]))
+          seriPolaRef.current.push(g)
+        }
+      }
+    }
+
     // Harmonic: kerangka XABCD digambar sebagai garis + zona PRZ (Johan
     // 21 Agu 2026: "coba perbaiki supaya muncul drawing nya"). Konvensinya
     // dari literatur harmonic (riset web, lihat Papan Pekerjaan): kaki-kaki
@@ -2953,7 +2999,7 @@ export function GrafikEmiten() {
     }
     // Pola selalu di pane 0: temuannya digambar di panel harga & volume, tak
     // pernah punya pane sendiri.
-    for (const { inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik, swing, patahan, klasik } of polaPerInstans) {
+    for (const { inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik, swing, patahan, klasik, fvg, ob } of polaPerInstans) {
       // `klasik` sempat TIDAK ikut dijumlah di sini, dan akibatnya persis
       // jenis kegagalan yang paling mahal: legenda menulis "tak ada" untuk
       // instans yang sedang menggambar 40 pola di kanvas yang sama. Johan
@@ -2991,6 +3037,8 @@ export function GrafikEmiten() {
                 ? swing.length === 0
                   ? 'rentangnya terlalu pendek'
                   : `struktur ${arahStruktur(swing)} · ${swing.length} swing · ${patahan.length} patahan`
+                    + ` · ${fvg.filter((z) => !z.ditutupPada).length} FVG & `
+                    + `${ob.filter((z) => !z.ditutupPada).length} order block terbuka`
                 : jenisKlasik(inst.jenis)
                   ? klasik.length === 0
                     ? 'tak ada di rentang ini'
@@ -3154,7 +3202,7 @@ export function GrafikEmiten() {
    */
   const penandaPola = useMemo<PenandaPola[]>(() => {
     const out: PenandaPola[] = []
-    for (const { inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik, swing, patahan, klasik } of polaPerInstans) {
+    for (const { inst, doubleBottom, lonjakan, musiman, divergensi, wyckoff, harmonik, swing, patahan, klasik, fvg, ob } of polaPerInstans) {
       if (!digambar(inst)) continue
       const nama = labelInstansPola(inst)
       // Struktur pasar: label HH/HL/LH/LL di tiap swing, plus penanda di
@@ -3204,6 +3252,29 @@ export function GrafikEmiten() {
           labelKanvas: pt.jenis,
           teks: `${nama} · ${pt.jenis} ${pt.arah} · menutup melewati ${fN(pt.harga, 0)}`
             + (pt.jenis === 'CHoCH' ? ' — struktur berbalik' : ' — struktur berlanjut'),
+        })
+      }
+      // FVG & order block: penanda di lilin ASAL zonanya, cuma untuk zona
+      // yang masih terbuka — sama dengan yang digambar di kanvas, supaya
+      // penanda dan pita tak pernah bercerita berbeda.
+      for (const z of fvg.filter((q) => !q.ditutupPada).slice(-MAKS_ZONA)) {
+        out.push({
+          time: z.waktu, seri: 'harga',
+          posisi: z.arah === 'naik' ? 'belowBar' : 'aboveBar',
+          token: z.arah === 'naik' ? '--green' : '--red',
+          bentuk: 'circle', labelKanvas: 'FVG',
+          teks: `${nama} · celah harga ${z.arah} ${fN(z.bawah, 0)}–${fN(z.atas, 0)}`
+            + ' — pita yang tak diperdagangkan pada rentetan tiga candle itu, masih terbuka',
+        })
+      }
+      for (const z of ob.filter((q) => !q.ditutupPada).slice(-MAKS_ZONA)) {
+        out.push({
+          time: z.waktu, seri: 'harga',
+          posisi: z.arah === 'naik' ? 'belowBar' : 'aboveBar',
+          token: z.arah === 'naik' ? '--green' : '--red',
+          bentuk: 'square', labelKanvas: 'OB',
+          teks: `${nama} · order block ${z.arah} ${fN(z.bawah, 0)}–${fN(z.atas, 0)}`
+            + ' — candle berlawanan arah terakhir sebelum struktur patah, belum disentuh ulang',
         })
       }
       // Wyckoff: satu penanda di lilin PERTAMA tiap segmen — hari fasenya

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import type { LilinData } from './grafikEmiten'
-import { LEBAR_PRZ_MAKS, arahStruktur, cariPatahan, cariSwing, hitungPrz } from './strukturPasar'
+import {
+  LEBAR_PRZ_MAKS, arahStruktur, cariFvg, cariOrderBlock, cariPatahan, cariSwing, hitungPrz,
+  type Patahan,
+} from './strukturPasar'
 
 /** Lilin dari deret tinggi/rendah eksplisit — bentuk paling jujur untuk
  *  menguji deteksi swing, karena swing memang dibaca dari high/low. */
@@ -144,5 +147,92 @@ describe('hitungPrz', () => {
     // MUSTAHIL meleset: apa pun yang terjadi berikutnya jatuh di dalamnya,
     // jadi angka keberhasilannya benar tapi tak berarti apa-apa.
     expect(hitungPrz(100, 200, 105, 195, 0.786)).toBeNull()
+  })
+})
+
+/* ── FVG & order block (#53) ─────────────────────────────────────────────── */
+
+/** Lilin dengan badan eksplisit — arah badan yang menentukan order block. */
+function lilin(o: number, h: number, l: number, c: number, hari: number): LilinData {
+  return { time: `2026-02-${String(hari).padStart(2, '0')}`, open: o, high: h, low: l, close: c }
+}
+
+describe('cariFvg', () => {
+  it('celah naik: rendah lilin ke-3 di atas tinggi lilin ke-1', () => {
+    const d = [lilin(100, 101, 99, 100, 1), lilin(101, 112, 100, 111, 2), lilin(111, 115, 110, 114, 3)]
+    expect(cariFvg(d)).toEqual([{
+      i: 1, waktu: '2026-02-02', arah: 'naik', atas: 110, bawah: 101, ditutupPada: null,
+    }])
+  })
+
+  it('celah turun terbaca dengan batas yang benar, bukan terbalik', () => {
+    const d = [lilin(100, 101, 99, 100, 1), lilin(99, 100, 88, 89, 2), lilin(89, 90, 85, 86, 3)]
+    const [z] = cariFvg(d)
+    expect(z.arah).toBe('turun')
+    expect([z.bawah, z.atas]).toEqual([90, 99])
+  })
+
+  it('tiga lilin yang saling tumpang tindih = tak ada celah', () => {
+    const d = [lilin(100, 105, 95, 104, 1), lilin(104, 110, 100, 109, 2), lilin(109, 112, 103, 111, 3)]
+    expect(cariFvg(d)).toEqual([])
+  })
+
+  it('celah setipis satu tick dibuang — kalau tidak, papan tipis penuh pita', () => {
+    // 0,04% dari harga tengah: nyata, tapi di bawah ambang bawaan 0,1%.
+    const d = [lilin(100, 100, 99, 100, 1), lilin(100, 105, 100, 104, 2), lilin(104, 106, 100.04, 105, 3)]
+    expect(cariFvg(d)).toEqual([])
+    expect(cariFvg(d, 0.0001)).toHaveLength(1)
+  })
+
+  it('zona yang harganya kembali masuk ditandai waktunya, bukan dihapus', () => {
+    const d = [
+      lilin(100, 101, 99, 100, 1), lilin(101, 112, 100, 111, 2), lilin(111, 115, 110, 114, 3),
+      lilin(114, 116, 113, 115, 4), lilin(115, 116, 105, 106, 5),
+    ]
+    expect(cariFvg(d)[0].ditutupPada).toBe('2026-02-05')
+  })
+})
+
+describe('cariOrderBlock', () => {
+  const patahan = (i: number, arah: 'naik' | 'turun'): Patahan =>
+    ({ i, waktu: `2026-02-${String(i + 1).padStart(2, '0')}`, harga: 0, jenis: 'BOS', arah })
+
+  it('blok naik = lilin MERAH terakhir sebelum tembusan ke atas', () => {
+    const d = [
+      lilin(100, 101, 99, 100.5, 1),   // hijau
+      lilin(100, 101, 97, 98, 2),      // merah — inilah bloknya
+      lilin(98, 110, 98, 109, 3),      // tembusan
+    ]
+    expect(cariOrderBlock(d, [patahan(2, 'naik')])).toEqual([{
+      i: 1, waktu: '2026-02-02', arah: 'naik', atas: 101, bawah: 97, ditutupPada: null,
+    }])
+  })
+
+  it('blok turun = lilin HIJAU terakhir sebelum tembusan ke bawah', () => {
+    const d = [lilin(100, 101, 99, 99, 1), lilin(99, 106, 99, 105, 2), lilin(105, 105, 90, 91, 3)]
+    const [z] = cariOrderBlock(d, [patahan(2, 'turun')])
+    expect([z.i, z.arah, z.atas, z.bawah]).toEqual([1, 'turun', 106, 99])
+  })
+
+  it('tak ada lilin berlawanan dalam jangkauan = tak ada blok karangan', () => {
+    const naikTerus = Array.from({ length: 6 }, (_, i) => lilin(100 + i, 102 + i, 99 + i, 101 + i, i + 1))
+    expect(cariOrderBlock(naikTerus, [patahan(5, 'naik')], 4)).toEqual([])
+  })
+
+  it('batas mundur dipatuhi — blok tak boleh diambil dari berbulan lalu', () => {
+    const d = [
+      lilin(100, 101, 97, 98, 1),                                            // merah, jauh di belakang
+      ...Array.from({ length: 5 }, (_, i) => lilin(100 + i, 102 + i, 99 + i, 101 + i, i + 2)),
+    ]
+    expect(cariOrderBlock(d, [patahan(5, 'naik')], 3)).toEqual([])
+    expect(cariOrderBlock(d, [patahan(5, 'naik')], 5)).toHaveLength(1)
+  })
+
+  it('satu lilin tidak dipakai dua kali oleh dua patahan berurutan', () => {
+    const d = [
+      lilin(100, 101, 99, 100.5, 1), lilin(100, 101, 97, 98, 2),
+      lilin(98, 110, 98, 109, 3), lilin(109, 118, 108, 117, 4),
+    ]
+    expect(cariOrderBlock(d, [patahan(2, 'naik'), patahan(3, 'naik')])).toHaveLength(1)
   })
 })

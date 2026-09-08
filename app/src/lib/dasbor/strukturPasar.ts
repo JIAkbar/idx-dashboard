@@ -256,3 +256,98 @@ export function hitungPrz(
   if (lebarPersen > LEBAR_PRZ_MAKS) return null
   return { bawah, atas, tengah, lebarPersen, proyeksi }
 }
+
+/* ── FVG & order block (#53 bagian 3) ───────────────────────────────────── */
+
+export interface Zona {
+  /** Indeks lilin penanda: lilin tengah untuk FVG, lilin blok untuk OB. */
+  i: number
+  waktu: string
+  arah: 'naik' | 'turun'
+  atas: number
+  bawah: number
+  /**
+   * Waktu lilin yang MENUTUP zona ini (harga kembali ke dalamnya); null
+   * selama zonanya masih terbuka. Zona yang sudah tersentuh masih boleh
+   * digambar — yang berubah artinya, bukan keberadaannya.
+   */
+  ditutupPada: string | null
+}
+
+/** Lebar zona relatif terhadap harga tengahnya; 0,001 = 0,1%. */
+export const LEBAR_ZONA_MIN = 0.001
+
+/**
+ * Fair value gap: celah harga yang ditinggalkan tiga lilin berurutan.
+ *
+ * Naik bila `low` lilin ke-3 masih di ATAS `high` lilin ke-1 — pita di
+ * antaranya tak pernah diperdagangkan pada rentetan itu. Turun kebalikannya.
+ * Definisi ini mekanis dan itulah alasannya dipilih: tak ada satu pun
+ * parameter selain ambang lebar.
+ *
+ * Ambang lebar bukan hiasan. Di papan tipis IDX satu fraksi harga saja sudah
+ * membuat celah, dan tanpa ambang, layar penuh pita setebal satu tick yang
+ * tak berarti apa-apa. Bawaannya 0,1% dari harga tengah zona.
+ */
+export function cariFvg(lilin: LilinData[], lebarMin = LEBAR_ZONA_MIN): Zona[] {
+  const keluar: Zona[] = []
+  for (let i = 1; i < lilin.length - 1; i++) {
+    const kiri = lilin[i - 1]
+    const kanan = lilin[i + 1]
+    const naik = kanan.low > kiri.high
+    const turun = kanan.high < kiri.low
+    if (!naik && !turun) continue
+    const atas = naik ? kanan.low : kiri.low
+    const bawah = naik ? kiri.high : kanan.high
+    const tengah = (atas + bawah) / 2
+    if (tengah <= 0 || (atas - bawah) / tengah < lebarMin) continue
+    keluar.push({
+      i, waktu: lilin[i].time, arah: naik ? 'naik' : 'turun',
+      atas, bawah, ditutupPada: tutupZona(lilin, i + 2, atas, bawah),
+    })
+  }
+  return keluar
+}
+
+/**
+ * Order block: lilin berlawanan arah TERAKHIR sebelum patahan struktur.
+ *
+ * Blok naik = lilin merah terakhir sebelum lilin yang menembus ke atas; blok
+ * turun = lilin hijau terakhir sebelum tembusan ke bawah. Zonanya seluruh
+ * badan-dan-sumbu lilin itu (`low`..`high`) — memakai badan saja membuat blok
+ * di papan tipis hampir setipis garis.
+ *
+ * Ia SENGAJA diturunkan dari `cariPatahan`, bukan dari "lilin besar" atau
+ * "lilin sebelum impuls": patahan sudah punya definisi yang teruji di berkas
+ * ini, dan menambah kriteria kedua yang mirip-tapi-beda berarti dua jawaban
+ * untuk satu pertanyaan. Pencarian mundur dibatasi `maksMundur` lilin supaya
+ * satu patahan tak menunjuk lilin dari berbulan-bulan sebelumnya.
+ */
+export function cariOrderBlock(lilin: LilinData[], patahan: Patahan[], maksMundur = 10): Zona[] {
+  const keluar: Zona[] = []
+  for (const p of patahan) {
+    const naik = p.arah === 'naik'
+    let blok = -1
+    for (let j = p.i - 1; j >= 0 && j >= p.i - maksMundur; j--) {
+      const l = lilin[j]
+      if (naik ? l.close < l.open : l.close > l.open) { blok = j; break }
+    }
+    if (blok < 0) continue
+    // Satu lilin bisa jadi blok untuk dua patahan berurutan; dipakai sekali.
+    if (keluar.some((z) => z.i === blok)) continue
+    keluar.push({
+      i: blok, waktu: lilin[blok].time, arah: p.arah,
+      atas: lilin[blok].high, bawah: lilin[blok].low,
+      ditutupPada: tutupZona(lilin, p.i + 1, lilin[blok].high, lilin[blok].low),
+    })
+  }
+  return keluar
+}
+
+/** Lilin pertama sejak `mulai` yang harganya masuk kembali ke [bawah, atas]. */
+function tutupZona(lilin: LilinData[], mulai: number, atas: number, bawah: number): string | null {
+  for (let j = Math.max(0, mulai); j < lilin.length; j++) {
+    if (lilin[j].low <= atas && lilin[j].high >= bawah) return lilin[j].time
+  }
+  return null
+}
