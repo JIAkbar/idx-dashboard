@@ -2192,7 +2192,10 @@
   /* (2) header panel dua baris: tab full-width bagi rata, kontrol di bawahnya */
   .lantai .bs-h{flex-wrap:wrap}
   .lantai .bs-h>.tabs{flex:1 0 100%;display:flex}
-  .lantai .bs-h>.tabs .tab{flex:1 1 0;min-width:0;justify-content:center;padding:0 4px;font-size:10px}
+  /* Alasan sama dengan `.blt-tabs .tab` di bawah: pembagian rata memepet
+     tab sampai labelnya meluber. Deretnya menggulir (`.tabs` sudah
+     `overflow-x:auto`) alih-alih dipepet. */
+  .lantai .bs-h>.tabs .tab{flex:0 0 auto;min-width:max-content;justify-content:center;padding:0 6px;font-size:10px}
   .lantai .bs-ctl{flex:1 0 100%;justify-content:flex-start;min-width:0}
   /* #4/#5 (14 Agu) mobile: rantai flex bersarang (.bs-h > .bs-ctl > .bs-preset,
      tiga level flex-wrap) kena gotcha "min-width:auto" default flex item —
@@ -2211,7 +2214,17 @@
   .lantai .gv-form .inp{width:100% !important} /* menang atas inline width 65-100px desktop */
   /* (5) tab filter bulletin dibagi rata selebar baris */
   .lantai .blt-tabs{display:flex;width:100%}
-  .lantai .blt-tabs .tab{flex:1 1 0;min-width:0;justify-content:center;padding:0 4px}
+  /* Dulu `flex:1 1 0; min-width:0` — empat tab Bulletin dibagi rata. Sejak
+     #121 C, Kabar memakai kelas yang sama dengan TUJUH tab, dan pembagian
+     rata itu memepet tiap tab jadi 48 px sementara labelnya `nowrap`:
+     teksnya meluber keluar kotaknya (scrollWidth 55-77 px) dan terbaca
+     bertumpuk. Kotaknya sendiri TIDAK beririsan — itu sebabnya pemeriksaan
+     tumpang-tindih berbasis bounding box melaporkan bersih, dan yang benar
+     diukur per tab: scrollWidth <= clientWidth.
+     Sekarang tab memakai lebar isinya; Bulletin (4 tab) tetap muat dan cuma
+     kehilangan pembagian rata, Kabar (7 tab) menggulir sesuai keputusan
+     7 Sep. */
+  .lantai .blt-tabs .tab{flex:0 0 auto;min-width:max-content;justify-content:center;padding:0 6px}
 }
 
 /* Deretan tab halaman v2 di layar sempit. Aturan bersama
