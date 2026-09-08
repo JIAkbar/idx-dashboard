@@ -27,21 +27,27 @@ let singgahan = { access: null, sampai: 0 }
 /** Singgah NEGATIF 30 s: saat baris token belum disemai/rantai mati, tiap
  *  pengunjung tak lagi memukul Supabase tiap tarikan (temuan tinjauan 8 Sep). */
 let kosongSampai = 0
+/** Tahap kegagalan terakhir saat mengambil token — nama tahap saja, tak
+ *  pernah isi kunci/token. Tanpa ini 503 tak bisa dibedakan antara "env
+ *  server belum diisi", "baris tabel kosong", dan "sumber menolak", dan
+ *  satu-satunya jalan mendiagnosisnya adalah menebak (terukur 8 Sep 2026:
+ *  env sudah benar, baris sudah ada, tetap 503). */
+let tahapToken = 'belum'
 
 async function accessToken() {
   if (singgahan.access && Date.now() < singgahan.sampai) return singgahan.access
   if (Date.now() < kosongSampai) return null
   const url = process.env.SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!url || !key) return null
+  if (!url || !key) { tahapToken = 'env-server-kosong'; return null }
   const r = await fetch(`${url}/rest/v1/live_token?id=eq.1&select=access`, {
     headers: { apikey: key, Authorization: `Bearer ${key}` },
   })
-  if (!r.ok) { kosongSampai = Date.now() + 30 * 1000; return null }
+  if (!r.ok) { tahapToken = `tabel-http-${r.status}`; kosongSampai = Date.now() + 30 * 1000; return null }
   const rows = await r.json()
   const access = rows?.[0]?.access ?? null
-  if (access) singgahan = { access, sampai: Date.now() + 5 * 60 * 1000 }
-  else kosongSampai = Date.now() + 30 * 1000
+  if (access) { tahapToken = 'ok'; singgahan = { access, sampai: Date.now() + 5 * 60 * 1000 } }
+  else { tahapToken = 'baris-kosong'; kosongSampai = Date.now() + 30 * 1000 }
   return access
 }
 
@@ -70,7 +76,9 @@ export default async function handler(req, res) {
   // 503 tidak disinggah CDN Vercel (hanya 200/404/410/30x) — yang menahan
   // badai saat rantai mati adalah singgah negatif 30 s di accessToken() dan
   // pembuangan token mati di bawah, bukan header ini.
-  const tertunda = () => res.status(503).json({ galat: 'tertunda' })
+  // `tahap` = di mana rantainya putus. Aman ditayangkan: nama tahap dan kode
+  // HTTP saja — tak ada kunci, token, maupun jalur internal.
+  const tertunda = (tahap) => res.status(503).json({ galat: 'tertunda', tahap: tahap ?? tahapToken })
   // accessToken() ikut di dalam try: galat jaringan ke Supabase harus jadi
   // 503 bersinggah negatif, bukan 500 FUNCTION_INVOCATION_FAILED tanpa singgah
   // (temuan pemeriksa akhir 8 Sep).
@@ -110,11 +118,11 @@ export default async function handler(req, res) {
       // mematikan live semua emiten (temuan pemeriksa akhir 8 Sep).
       singgahan = { access: null, sampai: 0 }
       kosongSampai = Date.now() + 30 * 1000
-      return tertunda()
+      return tertunda(`sumber-http-${r.status}`)
     }
-    if (!r.ok) return tertunda()
+    if (!r.ok) return tertunda(`sumber-http-${r.status}`)
     const bar = cariBar(await r.json())
-    if (bar.length === 0) return tertunda()
+    if (bar.length === 0) return tertunda('sumber-tanpa-bar')
     // Urutan balasan tak diasumsikan — bar terbaru dipilih dari tanggalnya.
     const urut = [...bar].sort((a, b) => String(a.date ?? '').localeCompare(String(b.date ?? '')))
     const kini = urut[urut.length - 1]
