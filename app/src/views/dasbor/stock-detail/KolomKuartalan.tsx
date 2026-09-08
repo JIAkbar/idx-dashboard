@@ -3,6 +3,7 @@ import type { QuarterMap, StockFundamental, StockKeuangan } from '../../../lib/d
 import { useStockKeuanganIdx } from '../../../lib/dasbor/stockDetailData'
 import { FdPercent } from '../../../components/dasbor/FdPercent'
 import { LencanaTurunan } from '../../../components/dasbor/LencanaTurunan'
+import { NilaiRotasi, type PetaRasio } from '../../../components/dasbor/NilaiRotasi'
 
 export type QMode = 'ni' | 'eps' | 'rev'
 
@@ -313,7 +314,7 @@ export function PanelGrowth({ fd }: { fd: StockFundamental }) {
   )
 }
 
-export function PanelDividen({ fd }: { fd: StockFundamental }) {
+export function PanelDividen({ fd, rasio = null }: { fd: StockFundamental; rasio?: PetaRasio }) {
   return (
     <div className="panel">
       <div className="panel-h"><span className="lbl">Dividen</span></div>
@@ -322,7 +323,9 @@ export function PanelDividen({ fd }: { fd: StockFundamental }) {
           <tbody>
             {TR('Dividen/Saham', fd.dividend ? 'Rp ' + Number(fd.dividend).toLocaleString('id-ID', { maximumFractionDigits: 0 }) : '—')}
             {TR('Payout Ratio', <FdPercent v={fd.payout_ratio != null ? fd.payout_ratio * 100 : null} d={1} />)}
-            {TR('Div Yield', <><FdPercent v={fd.dividend_yield} /><LencanaTurunan fd={fd} ruas="dividend_yield" /></>)}
+            {TR('Div Yield', <NilaiRotasi ruas="dividend_yield" lama={fd.dividend_yield} rasio={rasio}
+              render={(v) => <FdPercent v={v} />}
+              lencanaLama={<LencanaTurunan fd={fd} ruas="dividend_yield" />} />)}
             {TR('Ex-Date', fd.ex_dividend_date || '—')}
           </tbody>
         </table>

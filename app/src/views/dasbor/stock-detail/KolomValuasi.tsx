@@ -3,6 +3,7 @@ import type { StockFundamental } from '../../../lib/dasbor/stockDetailData'
 import { fB, fMC, fv, fvx } from '../../../lib/dasbor/stockDetailFormat'
 import { FdPercent } from '../../../components/dasbor/FdPercent'
 import { LencanaTurunan } from '../../../components/dasbor/LencanaTurunan'
+import { NilaiRotasi, type PetaRasio } from '../../../components/dasbor/NilaiRotasi'
 
 /** Baris <tr> label + nilai rata-kanan — port TR() index_live.html baris 4044. */
 function TR(lbl: string, val: ReactNode) {
@@ -22,7 +23,7 @@ function fHari(v: number | null | undefined): string {
 /* ── #93 Key Stats — panel kelompok ala referensi Stockbit, gaya Lantai ── */
 
 /** Panel Valuasi — rasio harga lengkap (annualised + TTM). */
-export function PanelValuasi({ fd }: { fd: StockFundamental }) {
+export function PanelValuasi({ fd, rasio = null }: { fd: StockFundamental; rasio?: PetaRasio }) {
   return (
     <div className="panel">
       <div className="panel-h"><span className="lbl">Valuasi</span></div>
@@ -33,8 +34,8 @@ export function PanelValuasi({ fd }: { fd: StockFundamental }) {
             {TR('P/E (TTM)', <>{fvx(fd.pe)}<LencanaTurunan fd={fd} ruas="pe" /></>)}
             {TR('Forward P/E', fvx(fd.forward_pe))}
             {TR('Earnings Yield', <FdPercent v={fd.earn_yield} />)}
-            {TR('P/S (TTM)', fvx(fd.ps))}
-            {TR('P/BV', fvx(fd.pb))}
+            {TR('P/S (TTM)', <NilaiRotasi ruas="ps" lama={fd.ps} rasio={rasio} render={fvx} />)}
+            {TR('P/BV', <NilaiRotasi ruas="pb" lama={fd.pb} rasio={rasio} render={fvx} />)}
             {TR('P/Cash Flow', fvx(fd.price_cf))}
             {TR('P/FCF', fvx(fd.price_fcf))}
             {TR('EV/EBIT', fvx(fd.ev_ebit))}
@@ -85,7 +86,7 @@ function AltmanBadge({ z }: { z: number | null | undefined }) {
  * Panel Solvabilitas — perluasan PanelSolvency lama (#93): + Financial
  * Leverage, Interest Coverage, FCF, Altman Z-Score berbadge warna.
  */
-export function PanelSolvency({ fd }: { fd: StockFundamental }) {
+export function PanelSolvency({ fd, rasio = null }: { fd: StockFundamental; rasio?: PetaRasio }) {
   return (
     <div className="panel">
       <div className="panel-h"><span className="lbl">Solvabilitas</span></div>
@@ -101,7 +102,8 @@ export function PanelSolvency({ fd }: { fd: StockFundamental }) {
             {TR('Financial Leverage (Q)', fvx(fd.lev_q))}
             {TR('Interest Coverage', fvx(fd.interest_coverage))}
             {TR('Free Cash Flow (TTM)', fB(fd.ttm_fcf))}
-            {TR('Altman Z-Score', <AltmanBadge z={fd.altman_z} />)}
+            {TR('Altman Z-Score', <NilaiRotasi ruas="altman_z" lama={fd.altman_z} rasio={rasio}
+              render={(z) => <AltmanBadge z={z} />} />)}
           </tbody>
         </table>
       </div>
@@ -110,7 +112,7 @@ export function PanelSolvency({ fd }: { fd: StockFundamental }) {
 }
 
 /** Panel Efektivitas Manajemen — return + siklus operasi + turnover. */
-export function PanelEfektivitas({ fd }: { fd: StockFundamental }) {
+export function PanelEfektivitas({ fd, rasio = null }: { fd: StockFundamental; rasio?: PetaRasio }) {
   return (
     <div className="panel">
       <div className="panel-h"><span className="lbl">Efektivitas Manajemen</span></div>
@@ -127,7 +129,8 @@ export function PanelEfektivitas({ fd }: { fd: StockFundamental }) {
             {TR('Cash Conversion Cycle', fHari(fd.cash_conversion_cycle))}
             {TR('Receivables Turnover', fvx(fd.receivables_turnover))}
             {TR('Inventory Turnover', fvx(fd.inventory_turnover))}
-            {TR('Asset Turnover', fvx(fd.asset_turnover))}
+            {TR('Asset Turnover', <NilaiRotasi ruas="asset_turnover" lama={fd.asset_turnover}
+              rasio={rasio} render={fvx} />)}
           </tbody>
         </table>
       </div>

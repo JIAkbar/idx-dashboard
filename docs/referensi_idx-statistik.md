@@ -106,6 +106,7 @@ Cara mengulang pengukurannya: baca `sumber_bar` tiap berkas di `ohlc/`, hitung b
 | Aliran asing rupiah | Stockbit | — (IDX lembar = pembanding, bukan tambalan) | pra-2020 ditandai jahitan | 2004→ | ya (J8) |
 | Jumlah saham beredar di `fundamental/` | Yahoo (908 emiten) | Bursa, dipakai saat Yahoo ketinggalan aksi korporasi (50 emiten) | 50 dari 958 emiten | — | ruas `shares_sumber` di berkas |
 | Rasio kosong Berkas Emiten blok F | Stockbit keystats | Yahoo, hanya 3 ruas, hanya yang kosong | saat dibaca, tak menimpa | — | ya — per angka (J15) |
+| Lima rasio Stock Detail (P/BV, P/S, Asset Turnover, Div Yield, Altman Z) | Stockbit keystats (sejak 8 Sep 2026) | Yahoo, hanya kalau keystats kosong | 70 sel dari 4.835 (1,4%) | — | ya — per angka, lencana `c` (J16) |
 | Statistik harian IHSG (`ihsg_harian`) | PDF resmi bursa | Yahoo, sementara, sampai PDF terbit | 0 hari sementara saat ini | — | perlu dicek (J6) |
 
 Rincian per emiten yang terjahit di `ohlc/`:
@@ -616,6 +617,62 @@ Yang akhirnya memutuskan: wasit independen. Angka bursa di `asing/` cocok **1,00
 ### Belum dikerjakan
 
 Berkas faktor penyesuaian per emiten per tanggal (bisa dihitung dari rasio chartbit ÷ bursa, **nol jaringan**) supaya kedua konvensi bisa disandingkan kalau suatu saat perlu. Belum ada keputusan Johan untuk membuatnya.
+
+## J16 · Lima rasio Stock Detail dirotasi ke Stockbit, Yahoo jadi cadangan bertanda (8 September 2026)
+
+Asal: keputusan Johan 8 Sep 2026 atas tabel pembanding 12 ruas × 15 emiten (aturan 3c —
+sumber terlengkap jadi utama, yang lama jadi cadangan bertanda, bukan dibuang).
+
+### Yang dirotasi, dan kenapa hanya lima
+
+Diukur ulang sebelum dipasang, 962 emiten, rasio nilai baru ÷ nilai lama:
+
+| Rasio di layar | Median | p10 | p90 | Emiten dibanding |
+|---|---:|---:|---:|---:|
+| P/BV | 1,0084 | 0,9450 | 1,1680 | 954 |
+| P/S (TTM) | 0,9998 | 0,8788 | 1,0692 | 867 |
+| Asset Turnover | 1,0160 | 0,9396 | 1,2266 | 620 |
+| Div Yield | 0,9823 | 0,8333 | 1,0500 | 409 |
+| Altman Z-Score | 1,0016 | 0,6905 | 1,1042 | 571 |
+
+Enam rasio lain (P/E, EPS, ROE, DER kuartalan, P/FCF, F-Score) **tidak** ikut dan tetap
+memakai sumber lama: keduanya memakai laba TTM yang berbeda (satu emiten sampel berselisih
+2,26× di EPS) dan F-Score berselisih sistematis — itu perbedaan definisi, bukan perbedaan
+kesegaran, jadi menukarnya akan menggandakan laba di layar tanpa satu pun galat. Kelompok itu
+menunggu keputusan definisi tersendiri.
+
+### Cakupan sesudah rotasi — 967 emiten
+
+| Rasio di layar | Dari sumber utama | Dari cadangan | Kosong di dua-duanya | **Terisi berkat rotasi** |
+|---|---:|---:|---:|---:|
+| P/BV | 960 | 3 | 4 | 6 |
+| P/S (TTM) | 908 | 50 | 9 | 41 |
+| Asset Turnover | 898 | 17 | 52 | 278 |
+| Div Yield | 411 | 0 | 556 | 2 |
+| Altman Z-Score | 961 | 0 | 6 | 390 |
+
+**717 sel yang sebelumnya kosong kini terisi**, dan 70 sel tetap hidup karena cadangan lama
+dipertahankan. Altman Z-Score contoh paling terang: 390 emiten sebelumnya menampilkan "—".
+
+### Penandaan di antarmuka
+
+Angka yang jatuh ke cadangan diberi lencana `c` di sebelah kanannya, dengan keterangan hover
+yang menyebut bahwa penyedia utama tidak memuat rasio itu untuk emiten tersebut. Angka dari
+sumber utama **tidak** diberi tanda: memasang tanda di hampir tiap baris membuat tanda itu
+berhenti dibaca, dan yang perlu dibedakan pembaca justru yang menyimpang. Lencana lama
+("dihitung ulang dari ruas lain") tetap ikut tampil kalau angka lamanya yang tayang — merotasi
+sebuah rasio tidak boleh diam-diam menghapus keterangan yang sudah terpasang di baris itu.
+
+Pemilihan sumber ada di satu tempat (`app/src/lib/dasbor/rasioUtamaKeystats.ts`) dan dipakai
+lewat satu komponen (`NilaiRotasi`) oleh keempat panel yang memuat kelima rasio ini. Menyalin
+aturannya per panel akan melahirkan empat aturan yang bisa berbeda diam-diam.
+
+### Batas yang tetap berlaku
+
+Nol dari sumber utama dihitung sebagai nilai yang sah — rasio memang bisa nol, dan membuangnya
+akan diam-diam memilih sumber lama untuk emiten yang angkanya justru benar-benar nol. Sumber
+lama tidak dihapus dari berkas mana pun; ia tetap ada dan tetap dipakai untuk sepuluh ruas lain
+di halaman yang sama.
 
 ## Inventaris ruas per berkas — jawaban untuk Johan 23 Agu 2026 (Stock Detail, OHLC/OHLCV, Broker Summary, metode panen)
 

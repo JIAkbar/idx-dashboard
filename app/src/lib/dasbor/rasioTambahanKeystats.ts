@@ -60,6 +60,15 @@ export interface TambahanKeystats {
   bank: RasioBank | null
   rank: PeringkatPeer | null
   profil: ProfilRingkas | null
+  /**
+   * Seluruh rasio keystats yang terbaca sebagai angka, apa adanya (#36 A).
+   *
+   * Dibutuhkan sejak lima ruas dirotasi ke sumber ini: `pilihRasio` di
+   * `rasioUtamaKeystats.ts` membacanya lewat nama rasio, dan menyalin
+   * kelimanya satu per satu ke ruas bernama sendiri cuma akan melahirkan
+   * peta kedua yang bisa berbeda dari peta di sana.
+   */
+  rasio: Record<string, number | null> | null
 }
 
 interface BerkasKeystatsRasio {
@@ -192,10 +201,15 @@ export function muatTambahanKeystats(kode: string): Promise<TambahanKeystats | n
         }
       }
 
+      // Seluruh rasio yang terbaca sebagai angka, apa adanya (#36 A).
+      const rasio: Record<string, number | null> = {}
+      for (const [k, v] of Object.entries(r)) rasio[k] = angka(v)
+
       return {
         bank: semuaKosong(bank) ? null : bank,
         rank: semuaKosong(rank) ? null : rank,
         profil,
+        rasio: Object.keys(rasio).length > 0 ? rasio : null,
       }
     })()
     CACHE.set(kode, p)

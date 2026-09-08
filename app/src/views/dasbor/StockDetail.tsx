@@ -508,13 +508,13 @@ export function StockDetail() {
                   angka telanjang lebih mudah disalahbaca kalau pembandingnya
                   baru muncul di bawahnya. */}
               <PanelValuasiHistoris fd={fd} />
-              <PanelValuasi fd={fd} />
+              <PanelValuasi fd={fd} rasio={tambahan?.rasio ?? null} />
               <PanelPerSaham fd={fd} />
-              <PanelSolvency fd={fd} />
-              <PanelEfektivitas fd={fd} />
+              <PanelSolvency fd={fd} rasio={tambahan?.rasio ?? null} />
+              <PanelEfektivitas fd={fd} rasio={tambahan?.rasio ?? null} />
               <PanelProfitabilitas fd={fd} />
               <PanelGrowth fd={fd} />
-              <PanelDividen fd={fd} />
+              <PanelDividen fd={fd} rasio={tambahan?.rasio ?? null} />
               <PanelRiwayatDividen fd={fd} />
               <PanelKuartalan fd={fd} />
               <PanelTahunan fd={fd} />

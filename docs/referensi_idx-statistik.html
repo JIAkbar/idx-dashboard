@@ -410,6 +410,7 @@ hr { border: none; border-top: 1px solid var(--hairline); margin: 24px 0; }
 <li><a href="#keputusan-tidak-diambil-ganti-sumber-jahit" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Keputusan &quot;tidak diambil&quot; / ganti sumber / jahit</span></a></li>
 <li><a href="#j8-aliran-asing-rupiah-stockbit-utama-idx-lembar-dipertahankan-eksekusi-24-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J8 · Aliran asing rupiah — Stockbit utama, IDX lembar dipertahankan (eksekusi 24 Agu 2026)</span></a></li>
 <li><a href="#j12-dua-konvensi-harga-volume-tersesuaikan-vs-apa-adanya-ketetapan-johan-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J12 · Dua konvensi harga &amp; volume — tersesuaikan vs apa adanya (ketetapan Johan, 23 Agu 2026)</span></a></li>
+<li><a href="#j16-lima-rasio-stock-detail-dirotasi-ke-stockbit-yahoo-jadi-cadangan-bertanda-8-september-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J16 · Lima rasio Stock Detail dirotasi ke Stockbit, Yahoo jadi cadangan bertanda (8 September 2026)</span></a></li>
 <li><a href="#inventaris-ruas-per-berkas-jawaban-untuk-johan-23-agu-2026-stock-detail-ohlc-ohlcv-broker-summary-metode-panen" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Inventaris ruas per berkas — jawaban untuk Johan 23 Agu 2026 (Stock Detail, OHLC/OHLCV, Broker Summary, metode panen)</span></a></li>
 <li><a href="#matriks-sumber-stockbit-menang-di-mana-duplikasi-per-halaman-dan-usulan-kanonik-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Matriks sumber — Stockbit menang di mana, duplikasi per halaman, dan usulan kanonik (23 Agu 2026)</span></a></li>
 <li><a href="#kamus-ruas-arti-tiap-ruas-dan-data-apa-yang-dihasilkannya-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Kamus ruas — arti tiap ruas dan data apa yang dihasilkannya (23 Agu 2026)</span></a></li>
@@ -937,6 +938,14 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <td>saat dibaca, tak menimpa</td>
 <td>—</td>
 <td>ya — per angka (J15)</td>
+</tr>
+<tr>
+<td>Lima rasio Stock Detail (P/BV, P/S, Asset Turnover, Div Yield, Altman Z)</td>
+<td>Stockbit keystats (sejak 8 Sep 2026)</td>
+<td>Yahoo, hanya kalau keystats kosong</td>
+<td>70 sel dari 4.835 (1,4%)</td>
+<td>—</td>
+<td>ya — per angka, lencana <code>c</code> (J16)</td>
 </tr>
 <tr>
 <td>Statistik harian IHSG (<code>ihsg_harian</code>)</td>
@@ -2653,6 +2662,141 @@ satu tempat penyimpanan antar-jalan yang bisa hilang.</p>
 <p>Yang akhirnya memutuskan: wasit independen. Angka bursa di <code>asing/</code> cocok <strong>1,0000</strong> dengan endpoint broker, tidak dengan endpoint harga.</p>
 <h3>Belum dikerjakan</h3>
 <p>Berkas faktor penyesuaian per emiten per tanggal (bisa dihitung dari rasio chartbit ÷ bursa, <strong>nol jaringan</strong>) supaya kedua konvensi bisa disandingkan kalau suatu saat perlu. Belum ada keputusan Johan untuk membuatnya.</p>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="j16-lima-rasio-stock-detail-dirotasi-ke-stockbit-yahoo-jadi-cadangan-bertanda-8-september-2026" data-title="J16 · Lima rasio Stock Detail dirotasi ke Stockbit, Yahoo jadi cadangan bertanda (8 September 2026)">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>J16 · Lima rasio Stock Detail dirotasi ke Stockbit, Yahoo jadi cadangan bertanda (8 September 2026)</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<p>Asal: keputusan Johan 8 Sep 2026 atas tabel pembanding 12 ruas × 15 emiten (aturan 3c —<br />
+sumber terlengkap jadi utama, yang lama jadi cadangan bertanda, bukan dibuang).</p>
+<h3>Yang dirotasi, dan kenapa hanya lima</h3>
+<p>Diukur ulang sebelum dipasang, 962 emiten, rasio nilai baru ÷ nilai lama:</p>
+<table>
+<thead>
+<tr>
+<th>Rasio di layar</th>
+<th style="text-align: right;">Median</th>
+<th style="text-align: right;">p10</th>
+<th style="text-align: right;">p90</th>
+<th style="text-align: right;">Emiten dibanding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P/BV</td>
+<td style="text-align: right;">1,0084</td>
+<td style="text-align: right;">0,9450</td>
+<td style="text-align: right;">1,1680</td>
+<td style="text-align: right;">954</td>
+</tr>
+<tr>
+<td>P/S (TTM)</td>
+<td style="text-align: right;">0,9998</td>
+<td style="text-align: right;">0,8788</td>
+<td style="text-align: right;">1,0692</td>
+<td style="text-align: right;">867</td>
+</tr>
+<tr>
+<td>Asset Turnover</td>
+<td style="text-align: right;">1,0160</td>
+<td style="text-align: right;">0,9396</td>
+<td style="text-align: right;">1,2266</td>
+<td style="text-align: right;">620</td>
+</tr>
+<tr>
+<td>Div Yield</td>
+<td style="text-align: right;">0,9823</td>
+<td style="text-align: right;">0,8333</td>
+<td style="text-align: right;">1,0500</td>
+<td style="text-align: right;">409</td>
+</tr>
+<tr>
+<td>Altman Z-Score</td>
+<td style="text-align: right;">1,0016</td>
+<td style="text-align: right;">0,6905</td>
+<td style="text-align: right;">1,1042</td>
+<td style="text-align: right;">571</td>
+</tr>
+</tbody>
+</table>
+<p>Enam rasio lain (P/E, EPS, ROE, DER kuartalan, P/FCF, F-Score) <strong>tidak</strong> ikut dan tetap<br />
+memakai sumber lama: keduanya memakai laba TTM yang berbeda (satu emiten sampel berselisih<br />
+2,26× di EPS) dan F-Score berselisih sistematis — itu perbedaan definisi, bukan perbedaan<br />
+kesegaran, jadi menukarnya akan menggandakan laba di layar tanpa satu pun galat. Kelompok itu<br />
+menunggu keputusan definisi tersendiri.</p>
+<h3>Cakupan sesudah rotasi — 967 emiten</h3>
+<table>
+<thead>
+<tr>
+<th>Rasio di layar</th>
+<th style="text-align: right;">Dari sumber utama</th>
+<th style="text-align: right;">Dari cadangan</th>
+<th style="text-align: right;">Kosong di dua-duanya</th>
+<th style="text-align: right;"><strong>Terisi berkat rotasi</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P/BV</td>
+<td style="text-align: right;">960</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">6</td>
+</tr>
+<tr>
+<td>P/S (TTM)</td>
+<td style="text-align: right;">908</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">41</td>
+</tr>
+<tr>
+<td>Asset Turnover</td>
+<td style="text-align: right;">898</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">52</td>
+<td style="text-align: right;">278</td>
+</tr>
+<tr>
+<td>Div Yield</td>
+<td style="text-align: right;">411</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">556</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr>
+<td>Altman Z-Score</td>
+<td style="text-align: right;">961</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">390</td>
+</tr>
+</tbody>
+</table>
+<p><strong>717 sel yang sebelumnya kosong kini terisi</strong>, dan 70 sel tetap hidup karena cadangan lama<br />
+dipertahankan. Altman Z-Score contoh paling terang: 390 emiten sebelumnya menampilkan "—".</p>
+<h3>Penandaan di antarmuka</h3>
+<p>Angka yang jatuh ke cadangan diberi lencana <code>c</code> di sebelah kanannya, dengan keterangan hover<br />
+yang menyebut bahwa penyedia utama tidak memuat rasio itu untuk emiten tersebut. Angka dari<br />
+sumber utama <strong>tidak</strong> diberi tanda: memasang tanda di hampir tiap baris membuat tanda itu<br />
+berhenti dibaca, dan yang perlu dibedakan pembaca justru yang menyimpang. Lencana lama<br />
+("dihitung ulang dari ruas lain") tetap ikut tampil kalau angka lamanya yang tayang — merotasi<br />
+sebuah rasio tidak boleh diam-diam menghapus keterangan yang sudah terpasang di baris itu.</p>
+<p>Pemilihan sumber ada di satu tempat (<code>app/src/lib/dasbor/rasioUtamaKeystats.ts</code>) dan dipakai<br />
+lewat satu komponen (<code>NilaiRotasi</code>) oleh keempat panel yang memuat kelima rasio ini. Menyalin<br />
+aturannya per panel akan melahirkan empat aturan yang bisa berbeda diam-diam.</p>
+<h3>Batas yang tetap berlaku</h3>
+<p>Nol dari sumber utama dihitung sebagai nilai yang sah — rasio memang bisa nol, dan membuangnya<br />
+akan diam-diam memilih sumber lama untuk emiten yang angkanya justru benar-benar nol. Sumber<br />
+lama tidak dihapus dari berkas mana pun; ia tetap ada dan tetap dipakai untuk sepuluh ruas lain<br />
+di halaman yang sama.</p>
 
 </div>
 </div></div>
