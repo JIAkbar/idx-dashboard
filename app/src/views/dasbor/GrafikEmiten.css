@@ -767,3 +767,14 @@
   border-top: 1px solid var(--line);
 }
 
+/* Lencana bar hari berjalan (#108 A) — bentuk sama dengan `.wp-live`
+   Whales Papan; kelas terpisah karena penempatannya di bilah alat, dan
+   yang boleh khas halaman cuma penempatan (aturan komponen kanonis). */
+.grf-live { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 6px; font-size: 12px; }
+.grf-live .grf-live-tanda {
+  font-family: var(--mono, ui-monospace, monospace); font-size: 10px; letter-spacing: .1em;
+  padding: 1px 6px; border-radius: 4px;
+  background: var(--amber-bg, rgba(242,194,48,.14)); color: var(--amber, #F2C230);
+}
+.grf-live .num.up { color: var(--green, #38B77E); }
+.grf-live .num.down { color: var(--red, #E6635A); }

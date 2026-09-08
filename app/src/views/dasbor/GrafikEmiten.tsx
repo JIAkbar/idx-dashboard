@@ -35,6 +35,9 @@ import {
   ambilIntraday, dariEpoch, dariWaktuChart, intraday, keEpoch, keWaktuChart,
   kunciBulan, kunciPekan, rakitBar, KERANGKA, KERANGKA_BAWAAN, type IdKerangka,
 } from '../../lib/dasbor/kerangkaWaktu'
+import { gabungBarBerjalan } from '../../lib/dasbor/candleStockbit'
+import { useHargaLive, type HargaLive } from '../../lib/dasbor/hargaLive'
+import { jamPasarJakarta } from '../../lib/tanggalBursa'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import {
   muatKatalog, pilahMenu, KATEGORI, type Katalog, type EntriKatalog,
@@ -162,6 +165,36 @@ const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'O
  * terbaca lebih buruk daripada gambar yang mengaku cuma menampilkan sebagian.
  * Yang ingin melihat lebih lama ke belakang bisa mempersempit rentang.
  */
+/** Bungkus `gabungBarBerjalan` untuk tipe halaman ini.
+ *
+ * Dua hal yang perlu diterjemahkan: waktu di halaman ini selalu `string`
+ * 'yyyy-mm-dd', sedangkan lib bersama memakai `Time` lightweight-charts (yang
+ * MEMUAT string tapi lebih luas); dan warna volume di sini mengikuti tema,
+ * bukan tetapan lib. Yang disalin cuma bar TERAKHIR, dan hanya kalau memang
+ * ada yang ditempel — memetakan ulang 6.000 bar tiap 45 detik sekadar untuk
+ * mengganti tipe waktu adalah biaya yang tak pernah kembali.
+ */
+function tempelBarBerjalan(
+  d: { lilin: LilinData[]; volume: VolumeData[] },
+  live: HargaLive | null,
+  hariIni: string,
+  green: string,
+  red: string,
+): { lilin: LilinData[]; volume: VolumeData[] } {
+  const g = gabungBarBerjalan({ lilin: d.lilin, volume: d.volume }, live, hariIni)
+  if (g.lilin.length === d.lilin.length) return d
+  const b = g.lilin[g.lilin.length - 1] as { time: unknown; open: number; high: number; low: number; close: number }
+  const v = g.volume[g.volume.length - 1] as { value: number }
+  const bar: LilinData = {
+    time: String(b.time),
+    open: Number(b.open), high: Number(b.high), low: Number(b.low), close: Number(b.close),
+  }
+  return {
+    lilin: [...d.lilin, bar],
+    volume: [...d.volume, { time: bar.time, value: Number(v.value), color: bar.close >= bar.open ? green : red }],
+  }
+}
+
 const MAKS_PENANDA_POLA = 6
 
 /** Zona FVG/order block terbuka yang digambar per instans, tiap jenis.
@@ -924,6 +957,37 @@ export function GrafikEmiten() {
     void muatKatalog().then((k) => { if (k.size > 0) setKatalog((lama) => lama ?? k) })
   }, [])
 
+  /* ── Bar HARI BERJALAN (#108 A, Johan 8 Sep 2026: "kerjakan #108 A dan B").
+     Pola persis Whales Papan: tarik hanya selagi bursa buka, tahan nilai
+     terakhir sesudah tutup, dan biarkan `gabungBarBerjalan` yang memutuskan
+     — ia menolak bar yang tanggalnya tak lebih baru daripada arsip, jadi
+     begitu panen sore menulis hari itu, arsip yang menang tanpa kedipan.
+
+     HANYA kerangka harian. Pekanan/bulanan dirakit dari deret harian lewat
+     `rakitBar`, jadi bar berjalan ikut sendiri lewat `dasar`; intraday punya
+     sumbernya sendiri (#108 B) dan tak disentuh di sini. */
+  const [pasar, setPasar] = useState(() => jamPasarJakarta())
+  useEffect(() => {
+    const t = setInterval(() => setPasar((p) => {
+      const n = jamPasarJakarta()
+      return n.status === p.status && n.iso === p.iso ? p : n
+    }), 60_000)
+    return () => clearInterval(t)
+  }, [])
+  const live = useHargaLive(pasar.status === 'buka' ? kode : null, 45)
+  const [liveTahan, setLiveTahan] = useState<HargaLive | null>(null)
+  useEffect(() => { if (live && live.kode === kode) setLiveTahan(live) }, [live, kode])
+  useEffect(() => { setLiveTahan(null) }, [kode])
+  const liveTampil = live ?? (liveTahan && liveTahan.kode === kode ? liveTahan : null)
+  // Detak 30 s hanya untuk umur label — tak menyentuh kanvas.
+  const [kiniLive, setKiniLive] = useState(() => Date.now())
+  useEffect(() => {
+    if (!liveTampil) return
+    const t = setInterval(() => setKiniLive(Date.now()), 30_000)
+    return () => clearInterval(t)
+  }, [liveTampil])
+  const umurLiveDetik = liveTampil ? Math.max(0, Math.round((kiniLive - liveTampil.diambilPada) / 1000)) : 0
+
   // Ruas kaya (nilai transaksi, frekuensi, aliran asing, saham beredar) —
   // fetch TERPISAH dari `ohlc/` (lihat `ohlcvKaya.ts`). Cakupannya lebih
   // pendek (sejak ±2004, IHSG sejak 1997-07-01); baris status di bawah
@@ -1105,6 +1169,8 @@ export function GrafikEmiten() {
   // Apakah replay SUDAH aktif pada render sebelumnya — dipakai memutuskan
   // kapan `fitContent()` boleh dipanggil (lihat efek setData).
   const replayAktifRef = useRef(false)
+  /** Sidik jendela pandang terakhir yang dipasang — lihat efek pemasang data. */
+  const kunciPandangRef = useRef('')
   // Gambar pola: garis leher (price line) + penanda di lembah/leher/penembusan.
   // Keduanya API bawaan lightweight-charts, BUKAN <div> melayang yang
   // posisinya dihitung sendiri — posisi hitungan sendiri langsung meleset
@@ -1472,6 +1538,13 @@ export function GrafikEmiten() {
       dasar = intra
     } else if (berkas) {
       dasar = keDataLilinVolume(berkas.d, green, red)
+      // Bar berjalan ditempel SEBELUM perakitan pekan/bulan, supaya bar W/M
+      // berjalan ikut memuat hari ini alih-alih tertinggal satu bar.
+      // Ditaruh di `penuh` (bukan di lapisan gambar) supaya SELURUH turunan
+      // — MA, RSI, pola, legenda, tooltip — menghitung bar yang sama dengan
+      // yang terlihat; indikator yang diam-diam memakai deret berbeda dari
+      // kanvasnya persis kegagalan senyap yang mahal di berkas ini.
+      dasar = tempelBarBerjalan(dasar, liveTampil, pasar.iso, green, red)
       if (kerangka === 'W') dasar = rakitBar(dasar.lilin, dasar.volume, kunciPekan, green, red)
       else if (kerangka === 'M') dasar = rakitBar(dasar.lilin, dasar.volume, kunciBulan, green, red)
     }
@@ -1481,7 +1554,7 @@ export function GrafikEmiten() {
       ...v, color: d.lilin[i].close >= d.lilin[i].open ? green : red,
     }))
     return { lilin: d.lilin, volume: vol }
-  }, [berkas, intra, kerangka, theme])
+  }, [berkas, intra, kerangka, theme, liveTampil, pasar.iso])
 
 
   /**
@@ -1699,6 +1772,15 @@ export function GrafikEmiten() {
    * MA 20 yang tetap dihitung dari data penuh terlihat sempurna wajar di
    * layar.
    */
+  /** Bar berjalan benar-benar tertempel? Dibaca dari deret yang DIPAKAI
+   *  kanvas, bukan dari ada-tidaknya balasan live: begitu arsip memuat
+   *  tanggal yang sama, `tempelBarBerjalan` memenangkan arsip dan lencana
+   *  harus diam. */
+  const barBerjalanTampil = !intraday(kerangka) && liveTampil != null
+    && penuh.lilin.length > 0 && String(penuh.lilin[penuh.lilin.length - 1].time) === liveTampil.tanggal
+    && (berkas?.d.length ?? 0) > 0
+    && String(berkas!.d[berkas!.d.length - 1][0]) !== liveTampil.tanggal
+
   const { lilin, volume } = useMemo(() => (
     replay === null
       ? penuh
@@ -1840,7 +1922,17 @@ export function GrafikEmiten() {
     // dipasang: saat replay tak aktif (perilaku lama), dan SEKALI saat replay
     // baru dinyalakan.
     const replayAktif = replay !== null
-    if (!replayAktif || !replayAktifRef.current) {
+    // Bar berjalan memperbarui dirinya tiap 45 detik. Tanpa penjaga ini,
+    // tiap tarikan memasang ulang jendela pandang dan zoom/geser pengguna
+    // dilempar balik ke rentang chip — tiap 45 detik, selama bursa buka.
+    // Kuncinya sengaja TIDAK memuat nilai OHLC bar terakhir: yang boleh
+    // memicu pemasangan ulang cuma pergantian emiten/kerangka/rentang/
+    // replay dan bertambahnya JUMLAH lilin (bar baru muncul), bukan
+    // berubahnya harga di bar yang sudah ada.
+    const kunciPandang = `${kode}|${kerangka}|${rentangLabel}|${replayAktif}|${lilin.length}`
+    const pandangBaru = kunciPandangRef.current !== kunciPandang
+    kunciPandangRef.current = kunciPandang
+    if (pandangBaru && (!replayAktif || !replayAktifRef.current)) {
       const ts = chartRef.current?.timeScale()
       // Chip rentang = JENDELA PANDANG, bukan potongan data. Logical range
       // (indeks lilin), bukan `setVisibleRange` (waktu): batas bawah rentang
@@ -3780,6 +3872,30 @@ export function GrafikEmiten() {
             label={analitikAktif ? 'Sembunyikan panel Analitik' : 'Analitik — Pivot/CPR, Risk:Reward, return, volume surge dari rentang tampil'}
             onClick={() => setAnalitikAktif((v) => !v)} />
 
+          {/* Lencana bar hari berjalan (#108 A) — tanda yang sama dengan
+              Whales Papan supaya satu bahasa di dua halaman. Muncul hanya
+              kalau barnya BENAR-BENAR tertempel: kalau arsip sudah memuat
+              hari itu (sesudah panen sore), `gabungBarBerjalan` memenangkan
+              arsip dan lencana ini diam — persis yang diinginkan, karena
+              angkanya lalu bukan lagi "berjalan". */}
+          {barBerjalanTampil && liveTampil && (
+            <span className="grf-live" title={pasar.status === 'buka'
+              ? 'Bar hari berjalan lewat server PAPAN: singgahan server 30 detik + tarikan tiap 45 detik, jadi umur terburuknya sekitar dua menit. Indikator dan pola ikut menghitung bar ini.'
+              : 'Bursa tutup: ini bar terakhir yang diterima hari ini, ditahan sampai arsip harian memuat tanggal yang sama.'}>
+              <b className="grf-live-tanda">{pasar.status === 'buka' ? 'LIVE' : 'PENUTUPAN SEMENTARA'}</b>
+              <b className={`num ${(liveTampil.pct ?? 0) < 0 ? 'down' : 'up'}`}>
+                {liveTampil.close.toLocaleString('id-ID')}
+                {liveTampil.pct != null && ` · ${liveTampil.pct > 0 ? '+' : ''}${liveTampil.pct.toLocaleString('id-ID')}%`}
+              </b>
+              <span className="muted">
+                {pasar.status !== 'buka'
+                  ? 'menunggu arsip'
+                  : umurLiveDetik < 150
+                    ? 'tertunda ≤ 2 menit'
+                    : `basi ${Math.round(umurLiveDetik / 60)} menit, tarikan gagal`}
+              </span>
+            </span>
+          )}
           <span className="grf-toolbar-isi" />
 
           <TombolIkon d={IKON_KAMERA} ukuranIkon={14} label="Simpan gambar kanvas (PNG)"
