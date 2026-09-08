@@ -196,8 +196,12 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
    *  sekali (temuan pemeriksa sapuan 29 Agu 2026). */
   const geserRentang = (arah: -1 | 1): { dari: string; sampai: string } | null => {
     if (!rentang || !daftar) return null
-    const iDari = daftar.indexOf(rentang.dari)
-    const iSampai = daftar.indexOf(rentang.sampai)
+    // Ujung rentang tak selalu jatuh di hari berdata — rentang "sejak 1 Januari"
+    // mulai di hari libur, dan `indexOf` menjawab -1 sehingga panahnya hidup
+    // tapi tak melakukan apa pun (tombol mati senyap, keluhan Johan 8 Sep 2026).
+    // Yang dicari hari berdata terdekat KE DALAM rentang, bukan tanggal persisnya.
+    const iDari = daftar.findIndex((t) => t >= rentang.dari)
+    const iSampai = daftar.reduce((k, t, i) => (t <= rentang.sampai ? i : k), -1)
     if (iDari < 0 || iSampai < 0) return null
     const jDari = iDari + arah
     const jSampai = iSampai + arah
@@ -238,12 +242,20 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
    *  melompat ke sana cuma menghasilkan halaman kosong. Pola yang sama sudah
    *  dipakai `Kalender.tsx` (#90). */
   const isoTerkini = daftar && daftar.length ? daftar[daftar.length - 1] : null
-  // Disembunyikan saat sudah di sana DAN tak sedang melihat rentang — tombol
-  // yang tak mengubah apa pun cuma menambah benda di bilah.
-  // Dipakai `rentang` (SEDANG melihat rentang), bukan `modeRentang` (komponen
-  // MENDUKUNG rentang) — yang kedua selalu true di halaman yang memberi prop
-  // rentang, jadi tombolnya tak pernah hilang meski sudah di hari terbaru.
-  const perluHariIni = !!isoTerkini && (!!rentang || value !== isoTerkini)
+  // Disembunyikan saat sudah di sana — tombol yang tak mengubah apa pun cuma
+  // menambah benda di bilah. Untuk rentang, "sudah di sana" berarti KEDUA
+  // ujungnya di hari terbaru; rentang 8 Sep–8 Sep memang sudah hari ini.
+  //
+  // Sebelumnya `!!rentang || value !== isoTerkini`: syaratnya cuma "komponen
+  // sedang menampilkan rentang", jadi di Arus Broker tombol ini berdiri
+  // bersebelahan dengan pilihan "Hari Ini" yang sudah aktif — dua tombol yang
+  // mengerjakan hal yang sama (Johan 8 Sep 2026: "lalu hari ini double untuk
+  // apa ?"). Syaratnya ditaruh di sini, bukan di halamannya, supaya semua
+  // pemakai kalender rentang ikut benar sekaligus.
+  const diTerkini = rentang
+    ? rentang.dari === isoTerkini && rentang.sampai === isoTerkini
+    : value === isoTerkini
+  const perluHariIni = !!isoTerkini && !diTerkini
 
   return (
     <div className="dpk-wrap" ref={ref}>

@@ -15,6 +15,7 @@ import { pesanGalat } from '../pesanGalat'
 import { kelompokBroker, LABEL_KELOMPOK, KETERANGAN_KELOMPOK, type KelompokBroker } from './kelompokBroker'
 import { LABEL_KATEGORI, type DaftarKategoriBroker, type KategoriBroker } from './kategoriBroker'
 import { urlData } from './baseData'
+import { LABEL_RENTANG } from './periode'
 
 export interface BarisOhlcv {
   tanggal: string
@@ -179,6 +180,69 @@ export function pilihTopInventaris(
  *  (ketetapan Johan 27 Agu "gpp sampai 2016"; backfill 2016-2019 selesai,
  *  2016 terukur 100,00% hari, uji manual cocok arsip mentah). */
 export const TAHUN_AWAL = 2016
+
+export type PresetId = 'hariini' | 'w1' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1' | 'y2'
+
+/** Pintasan rentang bilah Arus Broker. `hari` dihitung mundur dari hari
+ *  berdata TERAKHIR, bukan dari jam dinding — arsip bisa berhenti beberapa
+ *  hari sebelum hari ini dan menghitung dari 'sekarang' memotong data yang
+ *  sebenarnya ada. */
+export const PRESET_BROKER: { id: PresetId; label: string; hari: number }[] = [
+  { id: 'hariini', label: LABEL_RENTANG.hariIni, hari: 0 },
+  { id: 'w1', label: LABEL_RENTANG.w1, hari: 7 },
+  { id: 'b1', label: LABEL_RENTANG.b1, hari: 30 },
+  { id: 'b3', label: LABEL_RENTANG.b3, hari: 91 },
+  { id: 'b6', label: LABEL_RENTANG.b6, hari: 182 },
+  { id: 'ytd', label: LABEL_RENTANG.sejakJan, hari: 0 },
+  { id: 'y1', label: LABEL_RENTANG.y1, hari: 365 },
+  // Johan 8 Sep 2026: "ada 1 tahun ada 2 tahun dan rentang". Arsip broker
+  // per emiten memang mundur sampai 2016, jadi dua tahun bukan janji kosong.
+  { id: 'y2', label: LABEL_RENTANG.y2, hari: 730 },
+]
+
+function mundurIso(iso: string, hari: number): string {
+  const d = new Date(`${iso}T12:00:00`)
+  d.setDate(d.getDate() - hari)
+  return d.toISOString().slice(0, 10)
+}
+
+/**
+ * Tanggal mulai sebuah preset — SELALU hari yang benar-benar berdata.
+ *
+ * Dulu mengembalikan tanggal kalender mentah: `ytd` jatuh di 1 Januari yang
+ * tak pernah hari bursa, `b1` bisa jatuh di akhir pekan. Rentangnya sendiri
+ * tetap benar (penyaringnya `t >= dari`), tapi panah geser mencari tanggal
+ * itu di daftar hari berdata, tak menemukannya, lalu diam — tombol hidup
+ * yang tak melakukan apa pun. Disnap di sini, sekali.
+ */
+export function mulaiPreset(id: PresetId, akhir: string, tersedia: readonly string[] = []): string {
+  const mentah = id === 'ytd' ? `${akhir.slice(0, 4)}-01-01`
+    : id === 'hariini' ? akhir
+      : mundurIso(akhir, PRESET_BROKER.find((x) => x.id === id)!.hari)
+  // Hari berdata PERTAMA sejak tanggal itu; kalau seluruh arsip lebih muda
+  // (preset lebih panjang daripada riwayatnya), pakai hari terawal yang ada.
+  return tersedia.find((t) => t >= mentah) ?? (tersedia.length ? tersedia[0] : mentah)
+}
+
+/**
+ * Preset mana yang SEDANG berlaku, dicocokkan dari rentang aktif.
+ *
+ * Kosong = tidak satu pun — rentang hasil geseran panah atau pilihan
+ * kalender. Dulu ini state terpisah yang ditambal tebakan tetap `?? 'b1'`
+ * saat kosong, jadi setiap rentang bukan-hasil-klik tampil sebagai
+ * "1 Bulan": dua sumber kebenaran yang tak saling tahu.
+ *
+ * Kalau beberapa preset menghasilkan rentang yang PERSIS sama — emiten yang
+ * riwayatnya lebih pendek daripada presetnya, di mana YTD/1 Tahun/2 Tahun
+ * sama-sama jatuh di hari terawal — yang pertama di daftar menang. Rentang
+ * yang ditampilkan tetap benar; yang tak bisa dibedakan cuma namanya, dan
+ * memang tak ada bedanya untuk dibedakan.
+ */
+export function presetBerlaku(dari: string, akhir: string, tersedia: readonly string[]): PresetId | '' {
+  const akhirData = tersedia[tersedia.length - 1]
+  if (!akhirData || akhir !== akhirData) return ''
+  return PRESET_BROKER.find((p) => mulaiPreset(p.id, akhirData, tersedia) === dari)?.id ?? ''
+}
 
 /** true bila tanggal ISO berada SEBELUM cakupan broker — dipakai halaman
  *  chart panjang (candle sejak IPO) untuk peringatan Johan 27 Agu: "kurang

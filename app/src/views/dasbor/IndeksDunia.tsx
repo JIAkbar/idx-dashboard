@@ -278,6 +278,9 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
           pendek lebih cepat dibaca berjajar daripada disembunyikan di balik
           satu klik. */}
       <PemilihRentang
+        // Lima chip pendek terukur muat sebaris di 412 px — menu di sini
+        // cuma menyembunyikan pilihan yang sudah kelihatan semua.
+        tampil="pil"
         className="ihsg-rentang"
         opsi={RENTANG}
         nilai={rentang}

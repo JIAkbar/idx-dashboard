@@ -9,8 +9,12 @@ import { IkonMenu, IKON_SILANG, IKON_PERINGATAN, IKON_KUNCI } from '../../compon
 import { useAksesHalaman } from '../../context/AksesHalamanContext'
 import { useJarakJenjang } from '../../lib/jarakJenjang'
 import { PenunjukJarak } from '../../components/dasbor/PenunjukJarak'
+import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 
 const MAKS = 5
+/** Tahun awal perbandingan musiman — empat pilihan, jadi menu sendiri di
+ *  ponsel lewat primitifnya (#116). */
+const AWAL_TAHUN = [0, 2010, 2015, 2020].map((t) => ({ id: String(t), label: t === 0 ? 'Semua' : String(t) }))
 const BLN3 = BULAN.map((b) => b.slice(0, 3))
 
 /** Warna sel dari peluang TERSUSUT, bukan mentah — sel yang menyala terang
@@ -229,11 +233,15 @@ export function Seasonality() {
             </div>
             <span className="pemisah-v" aria-hidden="true" />
             <div className="grup-k grup-kanan sea-tahun">
+              {/* Label dipertahankan: "Semua / 2010 / 2015 / 2020" tak menyebut
+                  dirinya sendiri — angka telanjang bisa terbaca sebagai apa saja. */}
               <span className="grup-lbl">Mulai dari</span>
-              {[0, 2010, 2015, 2020].map((t) => (
-                <button key={t} type="button" className={`chip-t${sejak === t ? ' on' : ''}`}
-                  onClick={() => setSejak(t)}>{t === 0 ? 'Semua' : t}</button>
-              ))}
+              <PemilihRentang
+                opsi={AWAL_TAHUN}
+                nilai={String(sejak)}
+                onGanti={(v) => setSejak(Number(v))}
+                ariaLabel="Mulai dari tahun"
+              />
             </div>
           </div>
 

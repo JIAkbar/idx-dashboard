@@ -8,6 +8,7 @@ import { DatePicker } from '../../components/dasbor/DatePicker'
 import { CatatanSumberBar } from '../../components/dasbor/CatatanSumberBar'
 import type { RentangSumber } from '../../lib/dasbor/sumberBar'
 import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
+import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 
 /** Hari bursa minimum buat rentang bebas = satu putaran Senin–Jumat penuh
  *  (#170 K9, perintah Johan). Di bawah itu bukan pintu tertutup — cuma pesan
@@ -252,10 +253,16 @@ export function SeasonalityHarian() {
                 Tanggal ke tanggal
               </button>
             </div>
-            {!modeBebas && RENTANG.map(([label]) => (
-              <button key={label} type="button" className={`chip-t${pilih === label ? ' on' : ''}`}
-                onClick={() => setPilih(label)}>{label}</button>
-            ))}
+            {/* Sembilan preset — di ponsel primitifnya berganti jadi menu
+                (#116); dulu deret ini membungkus sampai tiga baris. */}
+            {!modeBebas && (
+              <PemilihRentang
+                opsi={RENTANG.map(([label]) => ({ id: label, label }))}
+                nilai={pilih}
+                onGanti={setPilih}
+                ariaLabel="Rentang tahun"
+              />
+            )}
             {/* Satu kalender mode rentang (bukan dua DatePicker berdampingan) —
                 dua klik di popover yang sama, bukan dua popover yang harus
                 dibuka bergantian untuk memilih dua ujung rentang. */}

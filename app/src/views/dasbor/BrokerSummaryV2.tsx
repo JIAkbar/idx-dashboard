@@ -2,13 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { Dropdown, type OpsiDropdown } from '../../components/dasbor/Dropdown'
-import { LangkahTanggal } from '../../components/dasbor/LangkahTanggal'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { IkonMenu, IKON_ULANG, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
-import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { agregatBroker, type ModeTransaksi } from '../../lib/dasbor/brokerEmiten'
-import { TAHUN_AWAL, useArusBrokerEmiten, useOhlcvEmiten, irisOhlcv, vwapRentang } from '../../lib/dasbor/brokerEmitenV2'
+import { TAHUN_AWAL, PRESET_BROKER, mulaiPreset, presetBerlaku, type PresetId, useArusBrokerEmiten, useOhlcvEmiten, irisOhlcv, vwapRentang } from '../../lib/dasbor/brokerEmitenV2'
 import { keFraksi } from '../../lib/fraksiHarga'
 import { Overview } from './broker-summary-v2/Overview'
 import { Inventory } from './broker-summary-v2/Inventory'
@@ -67,17 +65,6 @@ const MARKET_OPSI: OpsiDropdown[] = [
   { nilai: 'semua', label: 'All — gabungan pasar belum dihitung', nonaktif: true },
 ]
 
-type PresetId = 'hariini' | 'w1' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1'
-const PRESET: { id: PresetId; label: string; hari: number }[] = [
-  { id: 'hariini', label: LABEL_RENTANG.hariIni, hari: 0 },
-  { id: 'w1', label: LABEL_RENTANG.w1, hari: 7 },
-  { id: 'b1', label: LABEL_RENTANG.b1, hari: 30 },
-  { id: 'b3', label: LABEL_RENTANG.b3, hari: 91 },
-  { id: 'b6', label: LABEL_RENTANG.b6, hari: 182 },
-  { id: 'ytd', label: LABEL_RENTANG.sejakJan, hari: 0 },
-  { id: 'y1', label: LABEL_RENTANG.y1, hari: 365 },
-]
-
 /** Modal "i" — penjelasan kendali & tab halaman ini (permintaan Johan 27 Agu
  *  2026: "sweep semua page setiap ada indikator seperti ini berikan modal
  *  informasi terkait fungsi nya"). Bahasa pembaca, tanpa nama sumber/jalur
@@ -97,17 +84,6 @@ const INFO_BSV2: ItemInfoIndikator[] = [
   { nama: 'Shareholders', isi: 'Pemegang saham ≥5% dan pengendali, anak usaha, jajaran pengurus, serta komposisi kepemilikan bulanan — dari data resmi emiten dan KSEI.' },
   { nama: 'NEGO', isi: 'Transaksi pasar negosiasi per broker, dengan penanda broker yang arahnya berlawanan dengan transaksi reguler-nya hari itu (kandidat akumulasi/distribusi tersembunyi) versus yang searah.' },
 ]
-
-function mundurIso(iso: string, hari: number): string {
-  const d = new Date(`${iso}T12:00:00`)
-  d.setDate(d.getDate() - hari)
-  return d.toISOString().slice(0, 10)
-}
-function mulaiPreset(id: PresetId, akhir: string): string {
-  if (id === 'ytd') return `${akhir.slice(0, 4)}-01-01`
-  if (id === 'hariini') return akhir
-  return mundurIso(akhir, PRESET.find((x) => x.id === id)!.hari)
-}
 
 /**
  * Broker Summary v2 (#187) — REBUILD supaya PERSIS mengikuti struktur artifact
@@ -132,7 +108,11 @@ export function BrokerSummaryV2() {
   const [mode, setMode] = useState<ModeTransaksi>('net')
   const [ukuran, setUkuran] = useState<'nilai' | 'lot'>('nilai')
   const [tab, setTab] = useState<Tab>('overview')
-  const [preset, setPreset] = useState<PresetId | null>('hariini')
+  // Sengaja TANPA state `preset` terpisah. Dulu ada, dan pil yang menyala
+  // ditebak dengan `preset ?? 'b1'`: setiap rentang yang bukan hasil klik
+  // pil (panah geser, kalender) membuang preset jadi null lalu tampil
+  // sebagai "1 Bulan" — dua sumber kebenaran yang tak saling tahu.
+  // Sekarang satu arah: rentang yang menentukan, pilihan cuma cerminannya.
   const [dari, setDari] = useState('')
   const [akhir, setAkhir] = useState('')
 
@@ -152,7 +132,7 @@ export function BrokerSummaryV2() {
   useEffect(() => {
     if (tanggalTersedia.length === 0 || dari) return
     const akhirData = tanggalTersedia[tanggalTersedia.length - 1]
-    setDari(mulaiPreset(preset ?? 'hariini', akhirData))
+    setDari(mulaiPreset('hariini', akhirData, tanggalTersedia))
     setAkhir(akhirData)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tanggalTersedia, dari])
@@ -160,28 +140,19 @@ export function BrokerSummaryV2() {
   function keRentang(p: PresetId) {
     const akhirData = tanggalTersedia[tanggalTersedia.length - 1]
     if (!akhirData) return
-    setPreset(p)
-    setDari(mulaiPreset(p, akhirData))
+    setDari(mulaiPreset(p, akhirData, tanggalTersedia))
     setAkhir(akhirData)
   }
   function keRentangBebas(d: string, a: string) {
-    setPreset(null)
     setDari(d)
     setAkhir(a)
   }
-  // Port tglPrev/tglNext mockup — geser SELURUH jendela [dari,akhir] satu hari
-  // bursa (bukan menggeser salah satu ujung), tetap dalam hari BERDATA.
-  function langkahHari(arah: -1 | 1) {
-    const iAkhir = tanggalTersedia.indexOf(akhir)
-    const iDari = tanggalTersedia.indexOf(dari)
-    if (iAkhir < 0 || iDari < 0) return
-    const span = iAkhir - iDari
-    const j = iAkhir + arah
-    if (j < 0 || j >= tanggalTersedia.length) return
-    setPreset(null)
-    setDari(tanggalTersedia[Math.max(0, j - span)])
-    setAkhir(tanggalTersedia[j])
-  }
+  /** Kosong = rentangnya bukan salah satu pintasan (hasil panah geser atau
+   *  kalender) — tak ada yang menyala, bukan preset yang ditebak. */
+  const presetAktif = useMemo(
+    () => presetBerlaku(dari, akhir, tanggalTersedia),
+    [dari, akhir, tanggalTersedia],
+  )
 
   const hariAktif = useMemo(() => semuaHari.filter(([t]) => t >= dari && t <= akhir), [semuaHari, dari, akhir])
   const agg = useMemo(() => agregatBroker(hariAktif), [hariAktif])
@@ -242,14 +213,36 @@ export function BrokerSummaryV2() {
                   keliru: Net/Gross bukan ukuran melainkan jenis transaksi.
                   Satu label yang memayungi dua hal berbeda menamai keduanya
                   dengan salah satunya. */}
-              <PemilihRentang opsi={MODE_OPSI} nilai={mode} onGanti={setMode} ariaLabel="Net atau Gross" />
-              <PemilihRentang opsi={UKURAN_OPSI} nilai={ukuran} onGanti={setUkuran} ariaLabel="Ukuran" />
+              {/* Johan 8 Sep 2026: "ini seharusnya jadi dropdown saja di broker
+                  summary". Satu bilah tak boleh memakai dua bentuk untuk
+                  pekerjaan yang sama — Investor & Market di sebelah kiri sudah
+                  menu, jadi tiga kendali ini menyusul. `tampil="dropdown"`,
+                  bukan `auto`: di sini bentuknya diminta tetap, tak bergantung
+                  lebar layar. */}
+              <PemilihRentang tampil="dropdown" opsi={MODE_OPSI} nilai={mode} onGanti={setMode} ariaLabel="Net atau Gross" />
+              <PemilihRentang tampil="dropdown" opsi={UKURAN_OPSI} nilai={ukuran} onGanti={setUkuran} ariaLabel="Ukuran" />
             </div>
             <span className="pemisah-v" aria-hidden="true" />
             <div className="grup-k">
-              <div className="bs-preset"><PemilihRentang opsi={PRESET} nilai={preset ?? 'b1'} onGanti={keRentang} /></div>
+              <div className="bs-preset">
+                <PemilihRentang
+                  tampil="dropdown"
+                  opsi={PRESET_BROKER}
+                  // Kosong = rentangnya tak sama dengan preset mana pun (hasil
+                  // panah geser atau kalender). Tombol menampilkan placeholder,
+                  // bukan preset yang kebetulan jadi bawaan.
+                  nilai={presetAktif}
+                  onGanti={keRentang}
+                  ariaLabel="Rentang cepat"
+                  placeholder="Rentang bebas"
+                />
+              </div>
+              {/* Panah geser TIDAK ditulis lagi di sini: `DatePicker` sudah
+                  membawa steppernya sendiri yang menggeser seluruh rentang
+                  satu hari bursa. Dulu keduanya dirender berdampingan, jadi
+                  bilahnya memajang empat panah untuk dua perintah (Johan
+                  8 Sep 2026, tangkapan layar bilah tanggal). */}
               <div className="bs-tgl">
-                <LangkahTanggal arah="mundur" ukuran="sebaris" label="Rentang satu hari bursa sebelumnya" disabled={!tanggalTersedia.length} onClick={() => langkahHari(-1)} />
                 {/* Satu kalender mode rentang (klik awal lalu akhir) menggantikan
                     dua DatePicker terpisah — dulu dua popover harus dibuka
                     bergantian untuk satu rentang, sekarang cukup dua klik di
@@ -268,7 +261,6 @@ export function BrokerSummaryV2() {
                   rentang={{ dari, sampai: akhir }}
                   onGantiRentang={keRentangBebas}
                 />
-                <LangkahTanggal arah="maju" ukuran="sebaris" label="Rentang satu hari bursa berikutnya" disabled={!tanggalTersedia.length} onClick={() => langkahHari(1)} />
               </div>
             </div>
             <div className="grup-k grup-kanan">

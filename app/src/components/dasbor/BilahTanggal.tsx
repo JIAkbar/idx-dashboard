@@ -131,7 +131,16 @@ export function BilahTanggal({ tanggalTersedia, tanggalAktif, onPilih, onRentang
       </div>
       {onRentang && (
         <div className="grup-k">
-          <PemilihRentang opsi={opsiPil} nilai={pilAktif} onGanti={gantiPil} ariaLabel="Rentang waktu" />
+          {/* 'tak-ada' dikirim sebagai nilai KOSONG: dalam bentuk pil artinya
+              sama saja (tak ada yang menyala), tapi dalam bentuk dropdown di
+              ponsel (#116) tombolnya perlu kata — tanpa ini ia memajang "—". */}
+          <PemilihRentang
+            opsi={opsiPil}
+            nilai={pilAktif === 'tak-ada' ? '' : pilAktif}
+            onGanti={gantiPil}
+            ariaLabel="Rentang waktu"
+            placeholder="Pilih rentang"
+          />
         </div>
       )}
     </div>

@@ -4400,6 +4400,10 @@ export function GrafikEmiten() {
               kanvas, yang mengubah APA yang digambar ada di atasnya. */}
           <div className="grf-kaki">
             <PemilihRentang
+              // Kaki kanvas memakai label chart pendek (1D/5D/1M…) yang justru
+              // dipilih supaya muat di 412 px, dan ini kendali yang paling
+              // sering ditekan — satu klik ekstra lewat menu mahal di sini.
+              tampil="pil"
               className="grf-kaki-rentang"
               opsi={rentangOpsi}
               nilai={rentangLabel}
