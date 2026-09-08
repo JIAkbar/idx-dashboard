@@ -162,7 +162,9 @@ def jalankan(a) -> int:
         else:
             st, isi = ambil(token, kode)
             if st == 401:
-                token = token_segar(margin=10**9)
+                # BACA ULANG dari tabel, bukan paksa putar (#105 A): rantai tunggal
+                # sejak 8 Sep 2026 — pemutar satu-satunya cron /api/live-refresh.
+                token = token_segar()
                 st, isi = ambil(token, kode)
             if st == 429:
                 print(f"  {kode}: 429 — jeda 30 detik")

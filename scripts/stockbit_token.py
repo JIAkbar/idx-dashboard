@@ -59,6 +59,7 @@ import base64
 import threading as _threading
 import json
 import os
+import time
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -124,6 +125,48 @@ def tulis_simpanan(simpanan: dict) -> None:
     simpanan = dict(simpanan)
     simpanan["ditulis"] = datetime.now(WIB).isoformat(timespec="seconds")
     BERKAS_TOKEN.write_text(json.dumps(simpanan, indent=1), encoding="utf-8")
+
+
+def _kunci_supabase() -> tuple[str | None, str | None]:
+    """URL + kunci server, dari lingkungan atau app/.env.local."""
+    env = _baca_env_local()
+    url = os.environ.get("SUPABASE_URL") or env.get("SUPABASE_URL") or env.get("VITE_SUPABASE_URL")
+    kunci = os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or env.get("SUPABASE_SERVICE_ROLE_KEY")
+    return url, kunci
+
+
+def access_dari_tabel() -> str | None:
+    """Access token dari baris `live_token` id=1 — SUMBER UTAMA sejak
+    keputusan Johan 8 Sep 2026 ("jawabannya 2": satu rantai untuk panen DAN
+    tayangan live).
+
+    Runner tak pernah memutar lagi; pemutar tunggal adalah cron
+    `/api/live-refresh`. Refresh Stockbit sekali pakai — dua pemutar pada
+    satu rantai mencabut satu keluarga sesi (insiden 23–24 Agu 2026), dan
+    sejak pasangan yang sama duduk di berkas DAN tabel, "dua pemutar" itu
+    bukan lagi kemungkinan melainkan jadwal: cron 07:00 WIB vs runner saat
+    access habis.
+
+    `None` = tabel tak terjangkau/kosong; pemanggil jatuh ke berkas lokal
+    APA ADANYA (tetap tanpa memutar).
+    """
+    url, kunci = _kunci_supabase()
+    if not (url and kunci):
+        return None
+    try:
+        import requests
+        r = requests.get(f"{url}/rest/v1/live_token",
+                         params={"id": "eq.1", "select": "access"},
+                         headers={"apikey": kunci, "Authorization": f"Bearer {kunci}"},
+                         timeout=20)
+        if r.status_code != 200:
+            print(f"  [token] tabel menjawab HTTP {r.status_code} — pakai berkas lokal")
+            return None
+        baris = r.json()
+        return (baris[0].get("access") if baris else None) or None
+    except Exception as e:  # noqa: BLE001 — jaringan/paket apa pun
+        print(f"  [token] tabel tak terjangkau ({type(e).__name__}) — pakai berkas lokal")
+        return None
 
 
 def perlu_refresh(access: str | None, sekarang: datetime | None = None,
@@ -194,22 +237,53 @@ def refresh_sekarang(simpanan: dict) -> dict:
 _KUNCI_PUTAR = _threading.Lock()
 
 
-def token_segar(margin: int = MARGIN_DETIK) -> str:
-    """Access token yang masih hidup ≥ `margin` detik — refresh kalau perlu."""
-    simpanan = baca_simpanan()
-    if not perlu_refresh(simpanan.get("access"), margin=margin):
-        return simpanan["access"]
-    with _KUNCI_PUTAR:
-        # Baca ULANG di dalam kunci: thread lain mungkin sudah memutar selagi
-        # kita menunggu, dan memutar lagi akan membatalkan hasil kerjanya.
-        simpanan = baca_simpanan()
-        if not perlu_refresh(simpanan.get("access"), margin=margin):
-            return simpanan["access"]
-        return refresh_sekarang(simpanan)["access"]
+def token_segar(margin: int = MARGIN_DETIK, coba: int = 3, jeda: int = 60) -> str:
+    """Access token hidup — DIBACA dari tabel `live_token`, tak pernah diputar.
+
+    Rantai tunggal (#105 A, keputusan Johan 8 Sep 2026). Urutannya:
+      1. tabel — sumber kebenaran, diputar cron `/api/live-refresh`;
+      2. berkas `~/.papan` — cadangan APA ADANYA kalau tabel tak terjangkau,
+         supaya satu kegagalan jaringan tak mematikan panen;
+      3. kalau keduanya sudah kedaluwarsa: TUNGGU lalu baca lagi (cron
+         mungkin sedang memutar), maksimal `coba` kali — lalu BERHENTI
+         dengan pesan jelas. Memutar sendiri di sini persis yang membuat
+         salinan cron basi.
+
+    `margin` dipertahankan demi pemanggil lama; nilai raksasa (dulu dipakai
+    untuk MEMAKSA putar) kini berarti "anggap access ini sudah tak layak,
+    baca ulang dari tabel" — bukan memutar.
+    """
+    for ke in range(1, coba + 1):
+        dari_tabel = access_dari_tabel()
+        if dari_tabel and not perlu_refresh(dari_tabel, margin=margin):
+            simpanan = baca_simpanan()
+            if simpanan.get("access") != dari_tabel:
+                # Cadangan lokal disamakan supaya jalur (2) tetap berguna.
+                simpanan["access"] = dari_tabel
+                simpanan["asal"] = "tabel live_token"
+                tulis_simpanan(simpanan)
+            return dari_tabel
+        lokal = baca_simpanan().get("access")
+        if lokal and not perlu_refresh(lokal, margin=margin):
+            return lokal
+        if ke < coba:
+            print(f"  [token] access di tabel maupun cadangan sudah tak layak — "
+                  f"tunggu {jeda}s lalu baca lagi ({ke}/{coba - 1})")
+            time.sleep(jeda)
+    raise SystemExit(
+        "Token tak layak dan runner TIDAK memutar sendiri (rantai tunggal #105 A).\n"
+        "  Pemutar tunggal: cron /api/live-refresh (07:00 WIB) atau pemicu manualnya.\n"
+        "  Kalau rantainya memang mati: semai ulang lewat scripts/semai_live_token.py.")
 
 
 def status() -> int:
     s = baca_simpanan()
+    dari_tabel = access_dari_tabel()
+    if dari_tabel:
+        sama = dari_tabel == s.get("access")
+        print(f"asal   : TABEL live_token (cadangan lokal {'sama' if sama else 'BEDA — tabel yang dipakai'})")
+    else:
+        print("asal   : berkas lokal (tabel tak terjangkau/kosong) — cron tetap satu-satunya pemutar")
     kini = datetime.now(WIB)
     print(f"berkas : {BERKAS_TOKEN}")
     for nama in ("access", "refresh"):

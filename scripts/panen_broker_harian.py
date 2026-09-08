@@ -579,7 +579,9 @@ def jalankan(a) -> int:
                 # tetap memutar SEKALI. Yang perlu dijaga di sini cuma
                 # penulisan salinan lokalnya.
                 with kunci:
-                    tok["v"] = token_segar(margin=10**9)  # paksa refresh
+                    # BACA ULANG dari tabel, bukan paksa putar (#105 A): rantai tunggal
+                    # sejak 8 Sep 2026 — pemutar satu-satunya cron /api/live-refresh.
+                    tok["v"] = token_segar()
                 st, isi = ambil(tok["v"], kode, tanggal, pasar, investor, transaksi)
             if st == 429:
                 print(f"  {kode}: 429 — jeda 30 detik")
