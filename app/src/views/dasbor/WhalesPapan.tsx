@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { TAHUN_AWAL } from '../../lib/dasbor/brokerEmitenV2'
 import {
-  CandlestickSeries, CrosshairMode, HistogramSeries, createChart,
-  type IChartApi, type ISeriesApi, type SeriesType, type Time,
+  CandlestickSeries, CrosshairMode, HistogramSeries, createChart, createTextWatermark,
+  type IChartApi, type ISeriesApi, type ITextWatermarkPluginApi, type SeriesType, type Time,
 } from 'lightweight-charts'
 import { gabungBarBerjalan, muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
 import { useHargaLive, type HargaLive } from '../../lib/dasbor/hargaLive'
@@ -231,6 +231,10 @@ export default function WhalesPapan() {
   const barLiveTerpasang = useRef<string | null>(null)
   const lilinRef = useRef<ISeriesApi<SeriesType> | null>(null)
   const volRef = useRef<ISeriesApi<SeriesType> | null>(null)
+  // Watermark kode emiten di latar area harga — plugin bawaan yang sama
+  // dengan GrafikEmiten (#111, Johan 8 Sep: "di whales ini juga munculkan
+  // kode emiten seperti di grafik").
+  const watermarkRef = useRef<ITextWatermarkPluginApi<Time> | null>(null)
   const seleksiRef = useRef<SeleksiAreaChart | null>(null)
   const avgRef = useRef<GarisAvgBroker | null>(null)
   const profilRef = useRef<ProfilHargaChart | null>(null)
@@ -360,6 +364,7 @@ export default function WhalesPapan() {
     volRef.current = vol
     const pane0 = chart.panes()[0]
     if (pane0) {
+      watermarkRef.current = createTextWatermark(pane0, { horzAlign: 'center', vertAlign: 'center', lines: [] })
       const seleksi = new SeleksiAreaChart(
         () => lilinRef.current,
         () => (getComputedStyle(el).getPropertyValue('--accent') || '').trim() || '#F2C230',
@@ -414,6 +419,7 @@ export default function WhalesPapan() {
       chartRef.current = null
       lilinRef.current = null
       volRef.current = null
+      watermarkRef.current = null
       seleksiRef.current = null
       avgRef.current = null
       profilRef.current = null
@@ -441,6 +447,24 @@ export default function WhalesPapan() {
       },
     })
   }, [theme, grid])
+
+  // Watermark kode emiten — ikut berganti saat emiten diganti, warnanya
+  // dibaca ulang tiap tema ditukar (ukuran & keredupan sama dengan /grafik).
+  useEffect(() => {
+    const el = bungkusRef.current
+    if (!el || !watermarkRef.current) return
+    const teks = getComputedStyle(el).getPropertyValue('--text').trim() || '#888D99'
+    watermarkRef.current.applyOptions({
+      visible: true,
+      lines: [{
+        text: kode,
+        color: warnaGrid(teks, 0.08),
+        fontSize: 76,
+        fontFamily: "'IBM Plex Mono', Consolas, ui-monospace, monospace",
+        fontStyle: 'bold',
+      }],
+    })
+  }, [kode, theme])
 
   // Data candle harian per emiten.
   useEffect(() => {
