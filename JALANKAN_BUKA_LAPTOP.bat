@@ -200,7 +200,7 @@ echo [B3] Bangun arsip broker tahunan TAHUN BERJALAN (pembaca: Trader Papan,
 echo      Neo Inventory/Compare/Stalker) - tahun lain tak disentuh.
 for /f %%y in ('powershell -NoProfile -Command "(Get-Date).Year"') do set TAHUN_KINI=%%y
 if "%TAHUN_KINI%"=="" (echo   [B3] PERINGATAN: tahun tak terbaca, memakai 2026 & lanjut) & if "%TAHUN_KINI%"=="" set TAHUN_KINI=2026
-"%PYEXE%" scripts\bangun_broker_tahunan.py --tahun %TAHUN_KINI% --paralel 8
+"%PYEXE%" scripts\bangun_broker_tahunan.py --tahun %TAHUN_KINI% --paralel 16
 if errorlevel 1 echo   (bangun tahunan gagal - lanjut)
 
 echo.
