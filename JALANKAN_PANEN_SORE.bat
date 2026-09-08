@@ -106,7 +106,7 @@ if errorlevel 1 echo   (intraday gagal - lanjut)
 
 echo.
 echo [E] Turunan: tahunan + kategori + kartu + screener + penjaga radar
-for /f %%y in ('"%PYEXE%" -c "import datetime;print(datetime.date.today().year)"') do set TAHUN_KINI=%%y
+for /f %%y in ('call "%PYEXE%" -c "import datetime;print(datetime.date.today().year)"') do set TAHUN_KINI=%%y
 REM Pagar tahun (#68). Tanpa ini, TAHUN_KINI kosong membuat barisnya jadi
 REM "--tahun --paralel 8": pengurai menelan --paralel sebagai nilai --tahun
 REM dan angka 8 jatuh jadi KODE EMITEN - itu asal broker_tahunan/8 pada
