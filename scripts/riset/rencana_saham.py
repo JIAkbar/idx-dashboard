@@ -70,7 +70,12 @@ ATR_HARI = 14
 # pulang-pergi"), bukan dikarang: dua angka biaya yang berbeda di dua halaman
 # akan membuat aturan yang sama terbaca untung di satu tempat dan rugi di
 # tempat lain.
-BIAYA = 0.004
+# Keputusan Johan 8 Sep 2026 (antrean #93): "biaya transaksi atau fee di abaikan
+# di semua page gak perlu di hiraukan yang penting sistem dlu, kecuali fraksi
+# harga sudah jelas ada aturan dari BEI". Parameternya TETAP ada (isi 0, bukan
+# dihapus) supaya bisa dinyalakan lagi; pembulatan ke fraksi bursa tak berubah.
+# Sebelumnya 0,4% pulang-pergi.
+BIAYA = 0.0
 KELAS_BUKTI = "REKONSTRUKSI"   # aturan hari ini diterapkan ke masa lalu — bukan catatan harian
 WIB = timezone(timedelta(hours=7))
 

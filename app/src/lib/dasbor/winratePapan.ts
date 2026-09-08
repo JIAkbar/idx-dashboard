@@ -30,7 +30,8 @@ export interface RingkasWinrate {
   /** Penyebut penuh: dari SELURUH sinyal termasuk yang menggantung. */
   winRateSemua: number | null
   ekspektansi: number | null
-  /** Sesudah biaya pulang-pergi — angka utamanya. */
+  /** Dikurangi `biayaPct` berkas — 0 sejak keputusan Johan #93 (fee diabaikan),
+   *  jadi sama dengan `ekspektansi`; angka utamanya. */
   ekspektansiBiaya: number | null
   rataMenang: number | null
   rataKalah: number | null
@@ -122,7 +123,7 @@ export const URUTAN_SARINGAN: readonly string[] = [
  *  kejadian menggeser ekspektansinya terlalu jauh untuk dipercaya. */
 export const N_SARINGAN_SAH = 30
 
-/** Kondisi terbaik & terburuk menurut ekspektansi sesudah biaya, HANYA di
+/** Kondisi terbaik & terburuk menurut ekspektansi (fee diabaikan), HANYA di
  *  antara kondisi yang n-nya sah. null = tak ada yang sah. */
 export function lencanaSaringan(
   saringan: Record<string, RingkasWinrate>,

@@ -55,7 +55,8 @@ const miliar = (v: number | null | undefined) =>
 
 function BarisJejak({ label, j }: { label: string; j: JejakHorizon | undefined }) {
   if (!j) return null
-  // Sesudah biaya; jatuh balik ke sebelum biaya hanya untuk berkas lama.
+  // Ruas ekspektansi berbiaya (kini biaya 0, keputusan Johan #93); jatuh balik
+  // ke ruas tanpa biaya hanya untuk berkas lama.
   const e = j.ekspektansiBiaya ?? j.ekspektansi
   return (
     <tr>
@@ -91,9 +92,10 @@ export function RencanaJejak({ kode }: { kode: string }) {
   const j5 = r.jejak?.h5
   const baca = bacaJejak(j5)
   const meta = metaRencana()
-  // Angka utama = SESUDAH biaya. Jatuh balik ke sebelum biaya hanya bila berkas
-  // lama belum membawa ruasnya — dan saat itu keterangan tarifnya ikut hilang,
-  // jadi pembaca tak dijanjikan potongan yang tak terjadi.
+  // Angka utama = ruas ekspektansi berbiaya. Sejak keputusan Johan 8 Sep 2026
+  // (#93) tarifnya 0 — fee diabaikan di semua halaman, hanya fraksi BEI yang
+  // tetap — jadi ruasnya sama dengan ekspektansi polos; keterangan tarif tak
+  // lagi dicetak, diganti pernyataan bahwa fee diabaikan.
   const eksB = j5?.ekspektansiBiaya ?? j5?.ekspektansi ?? null
   const biaya = j5?.ekspektansiBiaya != null ? meta?.biayaPct ?? null : null
   const kelas = meta?.kelasBukti ?? 'REKONSTRUKSI'
@@ -122,9 +124,8 @@ export function RencanaJejak({ kode }: { kode: string }) {
             {eksB == null ? '—' : pct(eksB, 2)}
           </b>
           <span>
-            hasil rata-rata per sinyal, 5 hari bursa, <b>sesudah biaya</b>
-            {biaya != null ? ` ${biaya.toFixed(2).replace('.', ',')}% pulang-pergi` : ''}
-            {j5?.ekspektansi != null ? ` · sebelum biaya ${pct(j5.ekspektansi, 2)}` : ''}
+            ekspektansi per sinyal (hasil rata-rata), 5 hari bursa · <b>fee diabaikan</b>, harga ke fraksi BEI
+            {biaya != null && biaya > 0 ? ` (tarif ${biaya.toFixed(2).replace('.', ',')}% dipotong)` : ''}
           </span>
         </div>
         <div>
@@ -204,10 +205,9 @@ export function RencanaJejak({ kode }: { kode: string }) {
         sinyalnya sendiri tak ikut dinilai, dan target serta batas yang
         tersentuh di hari yang sama dihitung kalah. <b>M·K·G</b> = menang,
         kalah, menggantung; yang menggantung adalah sinyal yang jendelanya
-        tutup tanpa menyentuh keduanya. Kolom <b>sesudah biaya</b> memotong
-        {biaya != null ? ` ${biaya.toFixed(2).replace('.', ',')}%` : ' biaya'} pulang-pergi
-        dari tiap sinyal, tarif yang sama dengan halaman Uji Aturan. Frekuensi
-        masa lalu, bukan peluang untuk besok.
+        tutup tanpa menyentuh keduanya. <b>Fee transaksi diabaikan</b> di seluruh
+        PAPAN; yang tetap dihitung hanya pembulatan harga ke fraksi BEI — sama dengan
+        halaman Uji Aturan. Frekuensi masa lalu, bukan peluang untuk besok.
       </p>
     </section>
   )

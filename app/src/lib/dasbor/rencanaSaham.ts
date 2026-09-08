@@ -19,11 +19,11 @@ export interface JejakHorizon {
   winRate: number | null
   /** menang / SELURUH sinyal, termasuk yang menggantung. */
   winRateSemua: number | null
-  /** Rata-rata hasil per sinyal, persen, SEBELUM biaya. Bisa negatif walau win rate tinggi. */
+  /** Rata-rata hasil per sinyal, persen, tanpa potongan biaya. Bisa negatif walau win rate tinggi. */
   ekspektansi: number | null
-  /** Sesudah biaya transaksi pulang-pergi (`RencanaSaham.biayaPct`). INI angka
-   *  utamanya: aturan yang untung tipis sebelum biaya dan rugi sesudahnya
-   *  harus terbaca rugi. Tarifnya sama dengan benchmark 644 aturan. */
+  /** Dikurangi tarif `RencanaSaham.biayaPct` — sejak keputusan Johan 8 Sep 2026
+   *  (#93) tarifnya 0 (fee diabaikan, fraksi BEI tetap), jadi sama dengan
+   *  `ekspektansi`. Ruasnya dipertahankan supaya tarif bisa dinyalakan lagi. */
   ekspektansiBiaya: number | null
 }
 
@@ -52,7 +52,7 @@ export interface RencanaSaham {
    *  aturan hari ini diterapkan mundur ke riwayat — bukan catatan yang ditulis
    *  tiap sore. Tampil di kartu sebagai label, bukan disembunyikan. */
   kelasBukti: 'REKONSTRUKSI'
-  /** Tarif biaya pulang-pergi yang dipotong dari `ekspektansiBiaya`, persen. */
+  /** Tarif yang dipotong dari `ekspektansiBiaya`, persen — 0 sejak #93. */
   biayaPct: number
   nSinyal: number
   horizon: number[]
@@ -96,12 +96,11 @@ export function bacaJejak(j: JejakHorizon | undefined): {
   kalimat: string
 } {
   if (!j || !j.n) return { nada: 'sepi', kalimat: 'belum cukup riwayat untuk diukur' }
-  // Dinilai SESUDAH biaya. Sebelum biaya cuma pembanding — aturan yang untung
-  // tipis sebelum biaya dan rugi sesudahnya harus terbaca rugi.
+  // Dinilai dari ruas berbiaya (tarifnya 0 sejak #93, jadi = ekspektansi).
   const e = j.ekspektansiBiaya ?? j.ekspektansi
   if (e == null) return { nada: 'sepi', kalimat: 'belum terukur' }
   if (e > 0) {
-    return { nada: 'baik', kalimat: 'aturan ini menguntungkan di masa lalu emiten ini, sesudah biaya' }
+    return { nada: 'baik', kalimat: 'aturan ini menguntungkan di masa lalu emiten ini (fee diabaikan)' }
   }
   if (j.winRate != null && j.winRate >= 50) {
     return {

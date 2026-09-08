@@ -98,7 +98,7 @@ CONTOH_TRADE = 200
 AMBANG_RETURN = {'1H': 1.0, '4H': 1.0, 'D': 3.5, 'W': 20.0, 'M': 50.0}
 
 MIN_BAR = 250
-BIAYA = 0.003          # roundtrip, sama dengan run resmi bt_papan
+BIAYA = 0.0            # roundtrip; 0 sejak keputusan Johan 8 Sep 2026 (#93), dulu 0,3%
 MODEL_MASUK = 'open_h1'
 MODEL_KELUAR = 'h5'    # 5 BAR kerangka itu, bukan 5 hari
 

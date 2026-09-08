@@ -59,7 +59,9 @@ import kartu_analisa as ka  # noqa: E402  (ma/bollinger/pivot_idx/fraksi — lih
 AKAR = Path(__file__).resolve().parents[2]
 STOCKBIT = AKAR / "data-idx" / "json" / "ohlcv_stockbit"
 BT_DIR = AKAR / "data-idx" / "json" / "bt"
-BIAYA_DEFAULT = 0.003  # 0,3% pulang-pergi, wajib selalu tercatat di hasil
+# Keputusan Johan 8 Sep 2026 (#93): fee diabaikan di semua halaman; parameter
+# tetap tercatat di hasil (dulu 0,3% pulang-pergi) supaya bisa dinyalakan lagi.
+BIAYA_DEFAULT = 0.0  # wajib selalu tercatat di hasil
 
 
 # =========================================================== muat data mentah

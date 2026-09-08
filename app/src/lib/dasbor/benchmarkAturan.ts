@@ -49,7 +49,8 @@ export interface AturanUji {
   risiko: number
   eks: number
   eksR: number
-  /** eksR sesudah biaya transaksi 0,40% pulang-pergi. `null` kalau tak terhitung. */
+  /** eksR dikurangi tarif biaya berkasnya — 0 sejak keputusan Johan #93 (fee
+   *  diabaikan), jadi sama dengan `eksR`. `null` kalau tak terhitung. */
   eksR_biaya: number | null
 }
 

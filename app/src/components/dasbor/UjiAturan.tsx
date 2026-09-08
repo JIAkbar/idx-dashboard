@@ -18,7 +18,10 @@ import './UjiAturan.css'
  *    Kalau pembaca melihat "+1,59% per sinyal" lebih dulu, angka itu sudah
  *    telanjur terbaca sebagai prestasi sebelum ia tahu bahwa membeli apa saja
  *    lalu menahan lima hari memberi +0,87% tanpa aturan sama sekali.
- * 2. **Sesudah biaya** satu kolom dengan sebelum biaya. Enam aturan berbalik
+ * 2. **Kolom berbiaya DIBUANG** (keputusan Johan 8 Sep 2026, #93: fee diabaikan
+ *    di semua halaman; berkas benchmark lama masih memotong 0,40% dan tak punya
+ *    pembangun di repo, jadi angkanya tak boleh tayang di bawah label apa pun).
+ *    Dulu ia sebaris dengan yang polos, dan enam aturan berbalik
  *    jadi rugi begitu ongkos dipotong, dan semuanya aturan bertarget rapat —
  *    yang justru terlihat paling aman karena win rate-nya tinggi.
  * 3. **Win rate ditaruh di kolom paling kiri dan sengaja TIDAK diurutkan
@@ -49,13 +52,6 @@ function Baris({ a, maks }: { a: AturanUji; maks: number }) {
       <td className="r">
         <span className={'ua-bar ' + (a.eksR > 0 ? 'up' : 'dn')} style={{ width: `${lebar}px` }} />
         <b className={a.eksR > 0 ? 'up' : 'dn'}>{f3(a.eksR)}</b>
-      </td>
-      <td className="r">
-        {a.eksR_biaya == null ? (
-          <span className="ua-lemah">—</span>
-        ) : (
-          <span className={a.eksR_biaya > 0 ? 'up' : 'dn'}>{f3(a.eksR_biaya)}</span>
-        )}
       </td>
     </tr>
   )
@@ -206,7 +202,6 @@ export function UjiAturan() {
   const bt5 = d.beliTahan.find((x) => x.saringan === 'semua' && x.horizon === 5)
   const btTren = d.beliTahan.find((x) => x.saringan === 'tersusun' && x.horizon === 5)
   const maks = Math.max(...d.aturan.map((a) => Math.abs(a.eksR)))
-  const nRugi = d.aturan.filter((a) => a.eksR_biaya != null && a.eksR_biaya < 0).length
 
   return (
     <section className="uji-aturan">
@@ -287,7 +282,6 @@ export function UjiAturan() {
               <th className="r">Win rate</th>
               <th className="r">Risiko</th>
               <th className="r">Hasil per risiko</th>
-              <th className="r">Sesudah biaya</th>
             </tr>
           </thead>
           <tbody>
@@ -296,10 +290,9 @@ export function UjiAturan() {
         </table>
       </div>
       <p className="ua-sub ua-catat">
-        Kolom terakhir memotong ongkos beli+jual 0,40% pulang-pergi.{' '}
-        <b>{nRugi} cara berbalik jadi rugi</b> begitu ongkos dihitung — semuanya cara
-        bertarget rapat, yang justru terlihat paling aman karena win rate-nya tinggi.
-        Ongkos tetap membebani lebih berat kalau batas ruginya dekat.
+        Fee transaksi <b>diabaikan</b> di seluruh PAPAN (keputusan 8 September 2026); yang tetap
+        dihitung hanya pembulatan harga ke fraksi BEI. Cara bertarget rapat tetap yang paling
+        rentan begitu ongkos sungguhan dihitung — win rate tinggi bukan jaminan hasil.
       </p>
 
       <div className="ua-netral">

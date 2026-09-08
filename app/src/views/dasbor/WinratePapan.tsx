@@ -17,7 +17,7 @@ import './WinratePapan.css'
  * kalau ada teknikal lagi lebih bagus").
  *
  * Satu halaman per emiten: kalau aturan rencana dagang PAPAN diterapkan pada
- * saham ini, seberapa sering menang, berapa ekspektansinya sesudah biaya,
+ * saham ini, seberapa sering menang, berapa ekspektansinya (fee diabaikan),
  * pada horizon berapa, dan pada kondisi teknikal apa. Semua angka dari batch
  * riset yang SAMA dengan kartu rencana dagang — halaman ini memformat, tak
  * menghitung. Kejujuran penyebutnya ditulis di layar: win rate dari yang
@@ -90,7 +90,7 @@ export function WinratePapan() {
         <h1>Winrate PAPAN</h1>
         <span className="sub">
           Aturan rencana dagang PAPAN diuji ulang pada riwayat tiap emiten: seberapa sering menang,
-          ekspektansi sesudah biaya, dan kondisi teknikal yang membedakannya.
+          ekspektansi per sinyal (fee diabaikan, fraksi BEI), dan kondisi teknikal yang membedakannya.
         </span>
       </div>
 
@@ -143,8 +143,9 @@ export function WinratePapan() {
 
       <p className="muted wr-kaki">
         Angka di halaman ini <b>rekonstruksi</b>: aturan hari ini diterapkan ke masa lalu, bukan catatan sinyal
-        yang benar-benar terbit. Dibaca dari arsip harga PAPAN (harga bursa, arus asing dari Stockbit), nol
-        jaringan, dibangun ulang tiap panen sore. Bukan rekomendasi beli atau jual — cara membaca penyebut penuh,
+        yang benar-benar terbit. Fee transaksi <b>diabaikan</b> di seluruh PAPAN (keputusan 8 September 2026);
+        yang tetap dihitung hanya pembulatan harga ke fraksi BEI. Dibaca dari arsip harga PAPAN (harga bursa,
+        arus asing dari Stockbit), nol jaringan, dibangun ulang tiap panen sore. Bukan rekomendasi beli atau jual — cara membaca penyebut penuh,
         n efektif, dan sinyal menggantung ada di <Link to="/metodologi#winrate">Metodologi</Link>.
       </p>
     </div>
@@ -176,10 +177,10 @@ function IsiWinrate({ data: e, jendela: j, hSaring, setHSaring, pasar }: {
         <Kpi label="Win rate · 20 hari" nilai={fp(h20.winRate)}
           kelas={(h20.winRate ?? 0) >= 60 ? 'up' : ''}
           ket={`${h20.menang} menang · ${h20.kalah} kalah · ${h20.gantung} gantung · penyebut penuh ${fp(h20.winRateSemua)}`} />
-        <Kpi label="Ekspektansi sesudah biaya · 20 hari" nilai={fs(h20.ekspektansiBiaya)}
+        <Kpi label="Ekspektansi · 20 hari" nilai={fs(h20.ekspektansiBiaya)}
           kelas={arah(h20.ekspektansiBiaya)}
           ket={`Per sinyal · rata menang ${fs(h20.rataMenang)} vs rata kalah ${fs(h20.rataKalah)}`} />
-        <Kpi label="Ekspektansi sesudah biaya · 60 hari" nilai={fs(h60.ekspektansiBiaya)}
+        <Kpi label="Ekspektansi · 60 hari" nilai={fs(h60.ekspektansiBiaya)}
           kelas={arah(h60.ekspektansiBiaya)}
           ket={`Win rate ${fp(h60.winRate)} · n efektif ${h60.nEfektif ?? '—'}`} />
         <Kpi label="Persentil pasar · 20 hari" nilai={p20 ? String(p20.persentilEks) : '—'}
@@ -194,7 +195,7 @@ function IsiWinrate({ data: e, jendela: j, hSaring, setHSaring, pasar }: {
           <span className="lbl">Aturan rencana dagang · enam horizon</span>
           <span className="muted wr-sub">
             Target = tutup + 1×ATR · batas = yang lebih rendah antara tutup − 1,5×ATR dan terendah 5 hari ·
-            biaya {fN(e.biayaPct, 2)}% pulang-pergi · {LABEL_JENDELA[j]}
+            fee diabaikan (keputusan 8 Sep 2026), harga ke fraksi BEI · {LABEL_JENDELA[j]}
           </span>
         </div>
         <div className="panel-b">
@@ -204,7 +205,7 @@ function IsiWinrate({ data: e, jendela: j, hSaring, setHSaring, pasar }: {
                 <tr>
                   <th scope="col">Horizon</th><th scope="col" className="r">Menang</th><th scope="col" className="r">Kalah</th>
                   <th scope="col" className="r">Gantung</th><th scope="col" className="r">Win rate</th>
-                  <th scope="col" className="r">Penyebut penuh</th><th scope="col">Ekspektansi sesudah biaya</th>
+                  <th scope="col" className="r">Penyebut penuh</th><th scope="col">Ekspektansi</th>
                   <th scope="col" className="r">Rata menang</th><th scope="col" className="r">Rata kalah</th>
                   <th scope="col" className="r">n efektif</th>
                 </tr>
@@ -306,7 +307,7 @@ function IsiWinrate({ data: e, jendela: j, hSaring, setHSaring, pasar }: {
                           <td className="r num">{p?.persentilWinRate ?? '—'}</td>
                         </tr>
                         <tr key={`${h}-eks`}>
-                          <td>Ekspektansi sesudah biaya {HARI_HORIZON[h]} hari</td>
+                          <td>Ekspektansi {HARI_HORIZON[h]} hari</td>
                           <td className={`r num ${arah(r.ekspektansiBiaya)}`}>{fs(r.ekspektansiBiaya)}</td>
                           <td className="r num">{m ? fs(m.eksMedian) : '—'}</td>
                           <td className="r num wr-redup">{m ? `${fs(m.eksP25)} – ${fs(m.eksP75)}` : '—'}</td>
@@ -320,7 +321,7 @@ function IsiWinrate({ data: e, jendela: j, hSaring, setHSaring, pasar }: {
             </div>
             {pasar && 'pctEksPositif' in pasar.pasar.h20 && 'pctEksPositif' in pasar.pasar.h60 && (
               <p className="muted wr-ket">
-                Hanya <b>{fp(pasar.pasar.h20.pctEksPositif)}</b> emiten yang ekspektansinya positif sesudah biaya di
+                Hanya <b>{fp(pasar.pasar.h20.pctEksPositif)}</b> emiten yang ekspektansinya positif di
                 20 hari, dan <b>{fp(pasar.pasar.h60.pctEksPositif)}</b> di 60 hari. Win rate tinggi adalah sifat
                 aturannya (target dekat, batas jauh); yang membedakan emiten adalah ekspektansinya.
               </p>
@@ -345,7 +346,7 @@ function IsiWinrate({ data: e, jendela: j, hSaring, setHSaring, pasar }: {
         <div className="panel-b">
           <div className="board-tbl-wrap">
             <table className="tbl wr-tbl">
-              <thead><tr><th scope="col">Kondisi saat sinyal terbit</th><th scope="col" className="r">n</th><th scope="col" className="r">Win rate</th><th scope="col">Ekspektansi sesudah biaya</th><th scope="col" className="r">Rata menang</th><th scope="col" className="r">Rata kalah</th></tr></thead>
+              <thead><tr><th scope="col">Kondisi saat sinyal terbit</th><th scope="col" className="r">n</th><th scope="col" className="r">Win rate</th><th scope="col">Ekspektansi</th><th scope="col" className="r">Rata menang</th><th scope="col" className="r">Rata kalah</th></tr></thead>
               <tbody>
                 {URUTAN_SARINGAN.filter((k) => sar[k]).map((k) => {
                   const r = sar[k]
@@ -484,7 +485,7 @@ function IsiWinrate({ data: e, jendela: j, hSaring, setHSaring, pasar }: {
           <div className="panel-b">
             <p className="wr-ket">
               Satu tick fraksi bursa di harga Rp {fN(t.harga, 0)} = <b className={`num ${tick != null && tick >= 0.9 ? 'down' : ''}`}>{tick == null ? '—' : `${fN(tick, 2)}%`}</b>
-              {tick != null && tick >= 0.9 && <> — di harga ini satu tick saja sudah hampir seluruh biaya pulang-pergi; target satu ATR bisa jatuh persis di tick berikutnya.</>}
+              {tick != null && tick >= 0.9 && <> — di harga ini satu tick sudah hampir 1% harga; target satu ATR bisa jatuh persis di tick berikutnya, dan itulah satu-satunya "biaya" yang tetap dihitung.</>}
             </p>
             <ul className="wr-daftar muted">
               <li><b>Rekonstruksi, bukan sinyal terbit.</b> Aturan hari ini diterapkan ke seluruh masa lalu; sinyal yang benar-benar diterbitkan PAPAN dinilai terpisah di Screener · Riwayat &amp; Win Rate.</li>

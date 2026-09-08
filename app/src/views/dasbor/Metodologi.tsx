@@ -114,8 +114,9 @@ export function Metodologi() {
               harga tutup terakhir, bukan dianggap nol. Keduanya selalu tampil berdampingan: aturan yang
               sering menggantung tampak lebih baik daripada aturan yang selalu tuntas bila hanya angka
               pertama yang dibaca. Target dan batas yang tersentuh di hari yang sama dihitung <b>kalah</b>,
-              karena data harian tak tahu mana yang lebih dulu. Ekspektansi yang ditampilkan sudah
-              dikurangi biaya pulang-pergi.
+              karena data harian tak tahu mana yang lebih dulu. <b>Fee transaksi diabaikan</b> di seluruh
+              PAPAN (keputusan 8 September 2026): ekspektansi yang ditampilkan tidak memotong ongkos
+              beli-jual; yang tetap dihitung hanya pembulatan harga ke fraksi BEI.
             </p>
             <p>
               <b>n efektif</b> = jumlah sinyal dibagi horizon. Sinyal harian yang jendelanya saling

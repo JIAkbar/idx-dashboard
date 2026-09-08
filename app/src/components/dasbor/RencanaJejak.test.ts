@@ -84,14 +84,15 @@ describe('kejujuran teks', () => {
     expect(JSX).toMatch(/[Ff]rekuensi\s+masa lalu, bukan peluang/)
   })
 
-  it('angka utama SESUDAH biaya, dan tarifnya disebut', () => {
-    // Spek sistem win rate §2: ekspektansi sesudah biaya = angka utama,
-    // tarif yang dipakai disebut di antarmuka. Tanpa penjaga ini, seseorang
-    // yang "merapikan" keterangan bisa mengembalikan angka sebelum biaya.
+  it('angka utama = ruas ekspektansi berbiaya, dan layar menyatakan fee diabaikan', () => {
+    // Keputusan Johan 8 Sep 2026 (#93): fee diabaikan di semua halaman, fraksi
+    // BEI tetap. Penjaga ini memastikan keterangannya TERCETAK — bukan diam-diam
+    // menampilkan angka yang pembaca kira sudah dipotong ongkos.
     const blok = JSX.slice(JSX.indexOf('rj-angka'), JSX.indexOf('rj-baca'))
     expect(blok).toMatch(/eksB/)
-    expect(blok).toMatch(/sesudah biaya/i)
-    expect(blok).toMatch(/pulang-pergi/)
+    expect(blok).toMatch(/fee diabaikan/i)
+    expect(blok).toMatch(/fraksi BEI/)
+    expect(blok).not.toMatch(/sesudah\s+biaya/i)
   })
 
   it('label kelas bukti tampil di kepala kartu', () => {

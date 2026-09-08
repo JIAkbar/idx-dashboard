@@ -972,7 +972,7 @@ Dibangun `scripts/riset/winrate_emiten.py` (nol jaringan, ±40 detik untuk 956 e
 
 | Ruas | Arti (dibuktikan dari nilai) | Dipakai di |
 |---|---|---|
-| `dibangun`, `kelasBukti`, `biayaPct` | stempel WIB; selalu `REKONSTRUKSI` (aturan hari ini diterapkan ke masa lalu); biaya pulang-pergi dalam persen (0,4) yang sudah dikurangkan di `ekspektansiBiaya` | kaki halaman |
+| `dibangun`, `kelasBukti`, `biayaPct` | stempel WIB; selalu `REKONSTRUKSI` (aturan hari ini diterapkan ke masa lalu); tarif yang dikurangkan di `ekspektansiBiaya` — **0 sejak keputusan Johan 8 Sep 2026 (#93: fee diabaikan di semua halaman, fraksi BEI tetap)**, dulu 0,4; ruas dipertahankan supaya bisa dinyalakan lagi | kaki halaman |
 | `kode`, `nBar`, `mulai`, `akhir` | emiten; jumlah bar OHLC berisi; tanggal bar pertama & terakhir (BNBR 6.343 bar, 2000-09-28 → 2026-09-07) | kepala halaman, gerbang kesegaran |
 | `horizon.h{5,10,20,60,120,200}.n{120,500}` | ringkasan aturan rencana dagang per horizon × jendela sinyal: `menang`, `kalah`, `gantung`, `n`, `winRate` (menang ÷ tuntas), `winRateSemua` (menang ÷ n, "penyebut penuh"), `ekspektansi`, `ekspektansiBiaya` (persen per sinyal), `rataMenang`, `rataKalah`, `rataGantung` (persen), `medianBarKe` (bar ke berapa tuntas), `nEfektif` (n ÷ horizon, minimal 1) | KPI, tabel enam horizon, pembanding pasar |
 | `returnMentah.h*` | beli-lalu-tahan tanpa target/batas atas 750 bar terakhir: `n`, `nEfektif`, `winRate` (porsi positif), `median`, `p25`, `p75`, `rata` — persen | kartu "Beli lalu tahan" |
@@ -981,7 +981,7 @@ Dibangun `scripts/riset/winrate_emiten.py` (nol jaringan, ±40 detik untuk 956 e
 | `teknikal` | `harga`, `ma20`, `ma50`, `ma200`, `rsi14`, `tertinggi52`, `terendah52` (250 bar) — posisi hari ini | kartu "Posisi teknikal hari ini" |
 | `rencana` | salinan ruas `tanggal`, `harga`, `areaBeli`, `tp1`, `tp2`, `sl`, `rr`, `atrPct`, `nilaiHarian` dari `rencana_saham.json`; **null** untuk 76 emiten yang punya riwayat tapi tak punya rencana hari ini (rentang harian nol / harga kosong) | kartu "Rencana berjalan" |
 | `pasar.h*` | `persentilWinRate`, `persentilEks` — persentil emiten di antara seluruh emiten yang punya sinyal tuntas (jendela 120), 0–99 | KPI persentil, tabel pembanding pasar |
-| `index.json` → `pasar.h*` | distribusi pasar jendela 120: `n`, `winRateMedian`/`P25`/`P75`, `eksMedian`/`P25`/`P75`, `pctEksPositif` (h20 8 Sep 2026: 929 emiten, median 63,9%, hanya 43,7% ekspektansi positif) | tabel pembanding pasar |
+| `index.json` → `pasar.h*` | distribusi pasar jendela 120: `n`, `winRateMedian`/`P25`/`P75`, `eksMedian`/`P25`/`P75`, `pctEksPositif` (h20 8 Sep 2026 dengan biaya 0: 929 emiten, median win rate 63,9%, 55,2% ekspektansi positif — dengan biaya 0,4% dulu 43,7%) | tabel pembanding pasar |
 | `index.json` → `emiten.<KODE>` | `akhir`, `nBar`, `p.h*` = `[persentilWinRate, persentilEks]` (dipadatkan jadi larik: 956 × 6 dengan nama ruas penuh membuat berkasnya dua kali lipat) | — (cadangan; halaman memakai `pasar` di berkas emiten) |
 
 Yang **tidak** dihitung dan alasannya: win rate per pola chart (RBS, gap, breakout) — butuh penanda sinyal per hari dari arsip `bt/`, belum ada (tahap 2 spek); slippage — data harian tak memuatnya; sinyal yang benar-benar terbit dinilai terpisah di Screener · Riwayat & Win Rate (`nilai_jejak.json`).
