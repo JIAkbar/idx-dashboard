@@ -170,10 +170,17 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
   const { rataKanan } = useArahBuka(ref, open, rata === 'kanan' ? 'kanan' : 'kiri')
 
   const v = urai(value)
-  const pendek = (iso: string) => {
+  const pendek = (iso: string, denganTahun = false) => {
     const u = urai(iso)
-    return u ? `${u.d} ${NAMA_BULAN[u.b].slice(0, 3)}` : iso
+    if (!u) return iso
+    const bln = `${u.d} ${NAMA_BULAN[u.b].slice(0, 3)}`
+    return denganTahun ? `${bln} ${String(u.t).slice(2)}` : bln
   }
+  /** Rentang yang melintasi tahun WAJIB menyebut tahunnya di kedua ujung.
+   *  Tanpa itu preset "2 Tahun" memajang "9 Sep – 8 Sep" — terbaca seperti
+   *  rentang terbalik, padahal maksudnya 9 Sep 2024 sampai 8 Sep 2026.
+   *  Tahunnya dua digit supaya tombolnya tidak melebar di ponsel. */
+  const lintasTahun = !!rentang && urai(rentang.dari)?.t !== urai(rentang.sampai)?.t
   // Label tombol menyebut apa yang SEDANG dipilih, termasuk saat rentang baru
   // separuh jadi — supaya orang tahu kalender menunggu klik kedua, bukan
   // mengira kliknya tak terdaftar.
@@ -183,7 +190,7 @@ export function DatePicker({ value, onChange, tersedia, maks, ariaLabel, rata = 
     // orang mengira kliknya belum jadi.
     ? `${pendek(awalSementara)} · klik lagi bisa jadi rentang`
     : modeRentang && rentang
-      ? `${pendek(rentang.dari)} – ${pendek(rentang.sampai)}`
+      ? `${pendek(rentang.dari, lintasTahun)} – ${pendek(rentang.sampai, lintasTahun)}`
       : v
         ? (modeBulan ? `${NAMA_BULAN[v.b]} ${v.t}` : `${v.d} ${NAMA_BULAN[v.b].slice(0, 3)} ${v.t}`)
         : (modeBulan ? 'Pilih bulan' : 'Pilih tanggal')

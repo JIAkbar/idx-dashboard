@@ -124,7 +124,25 @@ export function kabarEmiten(item: KabarItem[], kode: string, maks = 8): KabarIte
   // "PADA" pada teks huruf kecil kalau bendera `i` dipakai — jadi peka huruf
   // yang menutupnya, bukan pola yang lebih rumit.
   const pola = new RegExp(`(^|[^A-Z0-9])${k}([^A-Z0-9]|$)`)
-  return item.filter((x) => x.emiten.includes(k) || pola.test(x.judul)).slice(0, maks)
+  const cocok = item.filter((x) => x.emiten.includes(k) || pola.test(x.judul))
+  // Satu peristiwa, satu baris. Agregator berita menyalurkan artikel yang
+  // sama dari dua kanal dengan sufiks nama outlet berbeda ('… - Bisnis.com'
+  // vs '… - market.bisnis.com'), jadi tautannya sama tapi judulnya tidak —
+  // dedup `gabungKabar` (tautan+judul+waktu) melewatkannya dengan benar,
+  // dan di daftar delapan baris hasilnya dua baris kembar yang mencolok.
+  //
+  // PENGUMUMAN RESMI dikecualikan, dan ini bukan kehati-hatian berlebih:
+  // pengumuman bursa tanpa lampiran SEMUANYA menunjuk satu URL generik, jadi
+  // dedup ber-tautan di sana meringkas belasan pengumuman berbeda jadi satu
+  // baris — bug 16 Agu 2026 yang sudah dibayar sekali (CLAUDE.md).
+  const terlihat = new Set<string>()
+  const unik = cocok.filter((x) => {
+    const kunci = x.jenis === 'pengumuman' ? `${x.tautan}|${x.judul}|${x.waktu ?? ''}` : x.tautan
+    if (terlihat.has(kunci)) return false
+    terlihat.add(kunci)
+    return true
+  })
+  return unik.slice(0, maks)
 }
 
 export function useKabar(denganArsip = false) {

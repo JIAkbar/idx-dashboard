@@ -43,6 +43,36 @@ describe('kabarEmiten', () => {
     expect(kabarEmiten(daftar, 'ISAT')).toHaveLength(1)
   })
 
+  it('satu tautan satu baris — artikel yang sama dari dua kanal agregator (#142)', () => {
+    // Terukur 9 Sep 2026: kabar.json memuat 38 tautan yang muncul dua kali,
+    // judulnya beda hanya di sufiks nama outlet, jadi dedup tautan+judul+waktu
+    // di hulu melewatkannya. Di daftar delapan baris hasilnya kembar mencolok.
+    const daftar = [
+      item('Top Leaders Sepekan: Ditopang BBCA - market.bisnis.com'),
+      { ...item('Top Leaders Sepekan: Ditopang BBCA - Bisnis.com - Market'), tautan: 'https://x/Top Leaders Sepekan: Ditopang BBCA - market.bisnis.com' },
+      item('BBCA tebar dividen'),
+    ]
+    const hasil = kabarEmiten(daftar, 'BBCA')
+    expect(hasil).toHaveLength(2)
+    expect(new Set(hasil.map((x) => x.tautan)).size).toBe(2)
+  })
+
+  it('pengumuman resmi ber-tautan generik TIDAK saling menghapus (#142)', () => {
+    // Kebalikannya, dan sama pentingnya: pengumuman bursa tanpa lampiran
+    // semuanya menunjuk satu URL generik. Dedup ber-tautan di sana meringkas
+    // belasan pengumuman berbeda jadi satu baris — bug 16 Agu 2026.
+    const generik = 'https://www.idx.co.id/id/perusahaan-tercatat/keterbukaan-informasi'
+    const peng = (judul: string, waktu: string) => ({
+      sumber: 'IDX', jenis: 'pengumuman' as const, judul, tautan: generik, waktu, emiten: ['BBCA'],
+    })
+    const daftar = [
+      peng('RUPS Luar Biasa', '2026-09-08T09:00:00+07:00'),
+      peng('Laporan kepemilikan saham', '2026-09-07T09:00:00+07:00'),
+      peng('Transaksi material', '2026-09-06T09:00:00+07:00'),
+    ]
+    expect(kabarEmiten(daftar, 'BBCA')).toHaveLength(3)
+  })
+
   it('memotong di `maks` dan menolak kode tak masuk akal', () => {
     const daftar = Array.from({ length: 12 }, (_, i) => item(`BBCA kabar ke-${i}`))
     expect(kabarEmiten(daftar, 'BBCA')).toHaveLength(8)
