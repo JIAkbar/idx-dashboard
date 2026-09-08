@@ -233,7 +233,9 @@ export const MENU_ITEMS: MenuItem[] = [
     // 18 kolom, dibaca dari berkas turunan `data-idx/json/screener.json`
     // supaya halaman tak perlu mengunduh 921 berkas OHLC.
     // Kode 'SCR' — 'SEK' Sektor & 'SRN' Saran sudah dipakai.
-    id: 'screener', path: '/screener', label: 'Sinyal', kode: 'SCR', grup: 'analisa',
+    // Dulu 'Sinyal' — satu halaman dua nama (#104): judulnya sendiri, URL-nya,
+    // dan seluruh dokumentasi sudah "Screener", jadi menu yang disamakan.
+    id: 'screener', path: '/screener', label: 'Screener', kode: 'SCR', grup: 'analisa',
     ringkas: 'Saringan seluruh papan, kartu analisa per emiten, rekap harian, dan preset momentum — berikut win rate-nya.',
     ikon: 'M4 5h16M4 5l6 7v6l4 2v-8l6-7M4 5v0',
   },

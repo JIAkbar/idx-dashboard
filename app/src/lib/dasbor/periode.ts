@@ -100,7 +100,13 @@ export const LABEL_RENTANG = {
   // berbeda dengan satu nama di satu layar — dan itu sudah pernah salah
   // dibaca (lihat kasus khusus YTD yang dijatuhkan tinjauan 2 Sep). Kata
   // "YTD" sekarang milik kolom resmi saja.
-  sejakJan: 'Sejak 1 Jan',
+  // DIBALIK 9 Sep 2026 (#114 A, Johan lewat pengawas: pil ini dieja "YTD").
+  // Keputusan 5 Sep sebelumnya justru sebaliknya — "Sejak 1 Jan" dipilih
+  // supaya kata "YTD" tersisa untuk kolom berisi angka YTD RESMI bursa.
+  // Yang membuat pembalikan ini aman: kunci/id-nya TIDAK ikut berubah
+  // (`sejakJan` tetap `sejakJan`, `ytd` tetap `ytd`), jadi yang bergeser
+  // cuma kata di layar — bukan data, bukan state, bukan alamat.
+  sejakJan: 'YTD',
   y1: '1 Tahun',
   y2: '2 Tahun',
   y3: '3 Tahun',

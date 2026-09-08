@@ -211,9 +211,10 @@ function PanelKosong({ judul, alasan }: { judul: string; alasan: string }) {
 }
 
 /** Satu tabel Ruas/Nilai — Dana dihimpun dipecah jadi dua panggilan (6 baris
- *  atas + 5 bawah, #118) supaya kartunya sepadan tinggi dengan Rata-rata
- *  harian di sebelahnya. Bentuknya sama persis dengan sebelum dipecah, cuma
- *  barisnya diiris dua; tak ada baris yang dibuang. */
+ *  lalu 5 sisanya, #118), dirender bersisian oleh pemanggilnya supaya
+ *  kartunya sepadan tinggi dengan Rata-rata harian di sebelahnya. Bentuknya
+ *  sama persis dengan sebelum dipecah, cuma barisnya diiris dua; tak ada
+ *  baris yang dibuang. */
 function TabelDana({ baris }: { baris: [string, number | null][] }) {
   return (
     <div className="board-tbl-wrap">
@@ -454,11 +455,14 @@ function TabRingkas({
             ? <div className="panel-b"><p className="muted stb-kosong">Tidak tercantum di edisi ini.</p></div>
             : (
               /* Dua tabel BERSISIAN, bukan bertumpuk: menumpuknya justru
-                 membuat kartu ini 425 px (terukur) — lubangnya cuma pindah
-                 ke bawah kartu kiri yang 235 px. Bersisian, tinggi kartu
-                 kembali ±240 px dan baris pertama jadi rata. `grid2`
-                 menumpuk sendiri di bawah 694 px, jadi di ponsel bentuknya
-                 kembali seperti semula tanpa aturan tambahan. */
+                 membuat kartu ini ±425px (thead dobel + jarak) - lubangnya
+                 cuma pindah ke bawah kartu kiri yang ±235px. Bersisian,
+                 tinggi kartu kembali ±240px dan baris pertama jadi rata.
+                 `grid3` (bukan kelas baru) sudah auto-fit minmax(240px,1fr) -
+                 dengan 2 sel, itu otomatis 1 kolom begitu kartunya < ±494px
+                 (kartu Dana Dihimpun di ponsel ≤412px selalu di bawah itu),
+                 jadi di ponsel bentuknya kembali bertumpuk tanpa media query
+                 tambahan. */
               <div className="grid3">
                 <TabelDana baris={dana.slice(0, 6)} />
                 {dana.length > 6 && <TabelDana baris={dana.slice(6)} />}

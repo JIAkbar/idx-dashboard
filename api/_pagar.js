@@ -11,7 +11,13 @@
  *    ditolak. Menutup pemakaian dari halaman web orang lain, bukan penyalin
  *    yang memakai skrip. Permintaan TANPA asal (bilah alamat, curl, pemantau)
  *    tetap dilayani: memblokirnya cuma melukai pemeriksaan kita sendiri,
- *    sementara penyalin tinggal menghapus header.
+ *    sementara penyalin tinggal menghapus header. Dua batas lagi yang
+ *    perlu diketahui sebelum lapis ini dianggap perlindungan (#111):
+ *    ia hanya berjalan saat permintaan BENAR-BENAR sampai ke fungsi
+ *    (di belakang singgahan CDN, permintaan yang kena HIT tak pernah
+ *    diperiksa), dan halaman orang lain sebenarnya sudah tak bisa
+ *    MEMBACA balasan kita tanpa header CORS — jadi nilainya menghemat
+ *    kuota sumber, bukan merahasiakan angka.
  * 2. BATAS LAJU per IP — yang benar-benar menahan pemakaian bervolume. Jendela
  *    luncur 60 detik, per instans fungsi (instans tak dibagi antar-wilayah,
  *    jadi angkanya "per instans", bukan global). Cukup menahan hantaman

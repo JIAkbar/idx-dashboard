@@ -131,12 +131,12 @@ describe('rentang baru & kalender (#95)', () => {
       { dari: '2026-01-10', sampai: '2026-01-20' })).toBeNull()
   })
 
-  it('daftar pil: tujuh, urut pendek ke panjang, YTD dieja Sejak 1 Jan', () => {
+  it('daftar pil: tujuh, urut pendek ke panjang, sejakJan dieja YTD', () => {
     expect(RENTANG_DOMINAN.map((o) => o.id)).toEqual(
       ['hariIni', 'w1', 'b1', 'b3', 'b6', 'sejakJan', 'y1'])
-    // Kata "YTD" milik kolom resmi bursa; sebagai pil ia selalu
-    // "Sejak 1 Jan" (keputusan Johan 5 Sep 2026).
-    expect(RENTANG_DOMINAN.map((o) => o.label)).not.toContain('YTD')
-    expect(RENTANG_DOMINAN.map((o) => o.label)).toContain('Sejak 1 Jan')
+    // Dibalik 9 Sep 2026 (#114 A): pil ini dieja "YTD". Kunci `sejakJan`
+    // sengaja TIDAK ikut berganti — yang berubah cuma katanya di layar.
+    expect(RENTANG_DOMINAN.map((o) => o.label)).toContain('YTD')
+    expect(RENTANG_DOMINAN.map((o) => o.label)).not.toContain('Sejak 1 Jan')
   })
 })

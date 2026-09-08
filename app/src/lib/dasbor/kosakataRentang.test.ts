@@ -10,12 +10,12 @@ import { LABEL_RENTANG, URUTAN_PIL, pilRentang } from './periode'
  * Aturan proyek: kata rentang waktu cuma dieja di `periode.ts`. Sebelum ini
  * penegakannya cuma kalimat di CLAUDE.md, dan terukur 7 Sep 2026 ia bocor di
  * dua arah sekaligus — satu berkas mengeja empat label sendiri, dan satu
- * preset punya DUA kata di layar ("YTD" di sembilan tempat, "Sejak 1 Jan" di
+ * preset punya DUA kata di layar ("YTD" di sembilan tempat, "YTD" di
  * tiga) tanpa satu pun yang gagal.
  *
  * ## Pembagian kata yang dijaga di sini
  *
- * - **Pil rentang** yang menghitung sendiri: selalu `sejakJan` = "Sejak 1 Jan".
+ * - **Pil rentang** yang menghitung sendiri: selalu `sejakJan` = "YTD".
  * - **Kolom YTD resmi bursa**: `ytd` = "YTD".
  *
  * Pembagian itu keputusan Johan 5 Sep 2026, dan alasannya bukan selera:
@@ -45,12 +45,12 @@ describe('pilRentang menyusun urutan, bukan halamannya (#70)', () => {
       { id: 'b', kunci: 'w1' },
     ])
     expect(acak.map((o) => o.id)).toEqual(['a', 'b', 'c', 'd'])
-    expect(acak.map((o) => o.label)).toEqual(['5 Hari', '1 Minggu', '3 Bulan', 'Sejak 1 Jan'])
+    expect(acak.map((o) => o.label)).toEqual(['5 Hari', '1 Minggu', '3 Bulan', 'YTD'])
   })
 
   it('id boleh berbeda dari kunci kata — state tersimpan tak ikut pindah', () => {
     const o = pilRentang([{ id: 'ytd', kunci: 'sejakJan' }])
-    expect(o[0]).toMatchObject({ id: 'ytd', label: 'Sejak 1 Jan' })
+    expect(o[0]).toMatchObject({ id: 'ytd', label: 'YTD' })
   })
 
   it('judul opsional diteruskan apa adanya', () => {
@@ -73,7 +73,7 @@ describe('kata rentang cuma dieja di periode.ts (#70)', () => {
 
   it('tak ada halaman yang mengeja label rentang sendiri', () => {
     // Bentuk yang dicari: string literal berisi kata rentang di posisi label.
-    const pola = /label: *'(\d+ (Hari|Minggu|Bulan|Tahun|Pekan)|Sejak 1 Jan|Hari Ini|YTD|WTD|MTD)'/
+    const pola = /label: *'(\d+ (Hari|Minggu|Bulan|Tahun|Pekan)|YTD|Hari Ini|YTD|WTD|MTD)'/
     const langgar: string[] = []
     for (const p of kode) {
       const isi = readFileSync(p, 'utf8')
