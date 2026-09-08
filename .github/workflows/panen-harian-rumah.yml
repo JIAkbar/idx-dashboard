@@ -308,6 +308,10 @@ jobs:
           & "${{ steps.py.outputs.exe }}" scripts/riset/nilai_jejak.py
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::nilai_jejak gagal" }
           & "${{ steps.py.outputs.exe }}" scripts/riset/selisih_terkunci.py
+          # Rencana dagang Kartu Analisa. Di sini, bukan cuma di bat, karena
+          # akar #89 justru pemicu tunggal: alur kerja ini jalan tanpa perlu
+          # ada yang membuka laptop.
+          & "${{ steps.py.outputs.exe }}" scripts/riset/rencana_saham.py
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::selisih_terkunci gagal" }
 
       # Vonis merah/hijau diputuskan DI SINI, satu tempat — bukan tersebar di
