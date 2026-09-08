@@ -260,22 +260,39 @@ Keadaan SEBELUM diubah (diukur 7 Sep 2026 20:4x):
 | `PAPAN-PanenSore` | True | True | **False** | PT72H | IgnoreNew |
 | `PAPAN-BukaLaptop` | True | True | True | PT4H | IgnoreNew |
 
-**Perintahnya dijalankan Johan sendiri, bukan agen** — ia mengubah setelan
-sistem, dan itu di luar batas yang boleh disentuh sesi ini. Jalankan di
-PowerShell **sebagai Administrator**:
+**SUDAH DIJALANKAN 8 Sep 2026 08:1x** oleh sesi pengawas atas perintah Johan
+(*"mau itu di mode baterai atau tidak pun tetep wajib mulai panen dan
+pasang"*), tanpa elevasi. Keadaan sesudahnya, diukur ulang di sini:
+`DisallowStartIfOnBatteries False`, `StopIfGoingOnBatteries False`,
+`StartWhenAvailable True`, batas waktu PT72H/PT4H dan `MultipleInstances`
+IgnoreNew utuh. Blok di bawah disimpan untuk mesin lain, bukan untuk
+dijalankan ulang.
+
+Dua kekeliruan di versi pertama blok ini, keduanya baru ketahuan saat
+BENAR-BENAR dijalankan — dan keduanya kuukur ulang sebelum ditulis di sini:
+
+1. `Get-ScheduledTask ... .Settings.ExecutionTimeLimit` mengembalikan
+   **String** `"PT72H"`, bukan TimeSpan, jadi mengopernya langsung ke
+   `-ExecutionTimeLimit` gagal. Perlu `[System.Xml.XmlConvert]::ToTimeSpan()`.
+2. Setelan baterai punya **saklar sendiri** (`-AllowStartIfOnBatteries`,
+   `-DontStopIfGoingOnBatteries`); itu jalan yang didukung. (Properti
+   `DisallowStartIfOnBatteries` memang ADA di objeknya — kuperiksa — tapi
+   menyetelnya lewat properti bukan bentuk yang dijamin bekerja.)
+
+Jalankan di PowerShell **sebagai Administrator**:
 
 ```powershell
 foreach ($n in 'PAPAN-PanenSore','PAPAN-BukaLaptop') {
   $t = Get-ScheduledTask -TaskName $n
   # Batas waktu DIBACA dari tugasnya sendiri, tidak dipatok: PanenSore
-  # PT72H dan BukaLaptop PT4H, dan New-ScheduledTaskSettingsSet
-  # mengembalikan BAWAAN untuk tiap setelan yang tidak disebut.
+  # PT72H dan BukaLaptop PT4H. Nilainya string ISO8601, jadi dikonversi.
+  $batas = [System.Xml.XmlConvert]::ToTimeSpan($t.Settings.ExecutionTimeLimit)
   $baru = New-ScheduledTaskSettingsSet `
-    -ExecutionTimeLimit $t.Settings.ExecutionTimeLimit `
+    -ExecutionTimeLimit $batas `
     -MultipleInstances $t.Settings.MultipleInstances `
-    -StartWhenAvailable
-  $baru.DisallowStartIfOnBatteries = $false
-  $baru.StopIfGoingOnBatteries = $false
+    -StartWhenAvailable `
+    -AllowStartIfOnBatteries `
+    -DontStopIfGoingOnBatteries
   Set-ScheduledTask -TaskName $n -Settings $baru | Out-Null
 }
 Get-ScheduledTask -TaskName 'PAPAN-PanenSore','PAPAN-BukaLaptop' |
@@ -283,8 +300,8 @@ Get-ScheduledTask -TaskName 'PAPAN-PanenSore','PAPAN-BukaLaptop' |
   Format-List TaskName, DisallowStartIfOnBatteries, StopIfGoingOnBatteries, StartWhenAvailable, ExecutionTimeLimit, MultipleInstances
 ```
 
-Sesudahnya keempat baris pertama harus berbunyi `False`, `False`, `True`,
-dan batas waktunya tetap seperti tabel di atas. `StartWhenAvailable`
+Sesudahnya ketiga baris pertama harus berbunyi `False`, `False`, `True`, dan
+batas waktunya tetap seperti tabel di atas. `StartWhenAvailable`
 membuat pemicu 18:00 yang terlewat (laptop mati) dijalankan begitu laptop
 hidup — tanpa itu, satu hari mati berarti satu hari panen yang hilang
 diam-diam.
