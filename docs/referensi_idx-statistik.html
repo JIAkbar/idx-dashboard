@@ -1889,20 +1889,20 @@ hanya yang tak bisa dihitung ulang dari ruas lain:</p>
 <tr>
 <td>frekuensi, sisi beli</td>
 <td>jumlah transaksi sisi beli</td>
-<td>✅ kolom 5 (baru)</td>
+<td>✅ kolom 5 <code>freq_beli</code> (baru)</td>
 <td>dua sisi berbeda di 1.574 dari 1.606 pasangan (98%)</td>
 </tr>
 <tr>
 <td>frekuensi, sisi jual</td>
 <td>jumlah transaksi sisi jual</td>
-<td>✅ kolom 6 (baru)</td>
+<td>✅ kolom 6 <code>freq_jual</code> (baru)</td>
 <td>idem — satu angka gabungan akan salah di 98% baris</td>
 </tr>
 <tr>
 <td>jenis broker</td>
 <td>Asing · Lokal · <strong>Pemerintah</strong></td>
-<td>✅ kolom 7 (baru), disingkat A/L/P</td>
-<td>40 hari sampel: Lokal 2.279 · Asing 1.281 · Pemerintah 301</td>
+<td>✅ kolom 7 <code>jenis</code> (baru): <code>A</code> = Asing, <code>L</code> = Lokal, <code>P</code> = Pemerintah</td>
+<td>2026 penuh sesudah dibangun ulang: L 2.000.629 · A 1.209.006 · P 405.937</td>
 </tr>
 <tr>
 <td>harga rata-rata beli</td>
@@ -1934,6 +1934,14 @@ hanya yang tak bisa dihitung ulang dari ruas lain:</p>
 yang lebih pendek berarti "belum dibangun ulang", BUKAN nol dan bukan lokal —<br />
 pembacanya (<code>jenisBaris</code> di <code>app/src/lib/dasbor/brokerEmiten.ts</code>) mengembalikan<br />
 null untuk itu, dan layar jatuh ke kurasi tangan.</p>
+<p><strong>Kepala tiap berkas menyebut nama kolomnya sendiri</strong> di ruas <code>kolom</code>, dan sejak<br />
+8 Sep 2026 isinya delapan nama untuk berkas 2026. Sempat ketinggalan satu jalan —<br />
+881 berkas tayang menyatakan lima kolom padahal barisnya delapan, tanpa satu pun<br />
+galat. Sekarang ada penjaga di dua bahasa yang menahan pengulangannya: swauji<br />
+pemanen membandingkan <code>len(KOLOM)</code> dengan panjang baris hasil, dan uji sisi layar<br />
+membandingkan <code>KOLOM_BROKER.length</code> dengan panjang tuple <code>BarisBroker</code>. Berkas<br />
+tahun 2016–2025 masih lima kolom, dan kepala lima nama di situ <strong>masih pernyataan<br />
+yang benar</strong> — bukan ketinggalan.</p>
 <p><strong>Jenis broker mengganti kurasi tangan sebagai sumber utama (#82).</strong> Terukur<br />
 2026-08-03 atas 962 emiten: sumber menyebut 23 kode asing, daftar tangan<br />
 menyebut 17. Daftar tangan tetap ada sebagai cadangan untuk kode yang tak<br />

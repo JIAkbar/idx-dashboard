@@ -361,9 +361,9 @@ hanya yang tak bisa dihitung ulang dari ruas lain:
 | kode broker | identitas anggota bursa | ✅ kolom 0 | — |
 | lot beli / lot jual | lot (1 lot = 100 lembar) | ✅ kolom 1 & 3 | — |
 | nilai beli / nilai jual | rupiah | ✅ kolom 2 & 4 | — |
-| frekuensi, sisi beli | jumlah transaksi sisi beli | ✅ kolom 5 (baru) | dua sisi berbeda di 1.574 dari 1.606 pasangan (98%) |
-| frekuensi, sisi jual | jumlah transaksi sisi jual | ✅ kolom 6 (baru) | idem — satu angka gabungan akan salah di 98% baris |
-| jenis broker | Asing · Lokal · **Pemerintah** | ✅ kolom 7 (baru), disingkat A/L/P | 40 hari sampel: Lokal 2.279 · Asing 1.281 · Pemerintah 301 |
+| frekuensi, sisi beli | jumlah transaksi sisi beli | ✅ kolom 5 `freq_beli` (baru) | dua sisi berbeda di 1.574 dari 1.606 pasangan (98%) |
+| frekuensi, sisi jual | jumlah transaksi sisi jual | ✅ kolom 6 `freq_jual` (baru) | idem — satu angka gabungan akan salah di 98% baris |
+| jenis broker | Asing · Lokal · **Pemerintah** | ✅ kolom 7 `jenis` (baru): `A` = Asing, `L` = Lokal, `P` = Pemerintah | 2026 penuh sesudah dibangun ulang: L 2.000.629 · A 1.209.006 · P 405.937 |
 | harga rata-rata beli | rupiah per lembar | ❌ turunan | = nilai ÷ (lot × 100), simpangan maks 2,2e-16 atas 4.044 baris beli & 3.829 baris jual |
 | harga rata-rata jual | rupiah per lembar | ❌ turunan | idem |
 | lot dalam lembar | lot × 100 | ❌ turunan | median 100,000 atas 2.004 baris |
@@ -373,6 +373,15 @@ hanya yang tak bisa dihitung ulang dari ruas lain:
 yang lebih pendek berarti "belum dibangun ulang", BUKAN nol dan bukan lokal —
 pembacanya (`jenisBaris` di `app/src/lib/dasbor/brokerEmiten.ts`) mengembalikan
 null untuk itu, dan layar jatuh ke kurasi tangan.
+
+**Kepala tiap berkas menyebut nama kolomnya sendiri** di ruas `kolom`, dan sejak
+8 Sep 2026 isinya delapan nama untuk berkas 2026. Sempat ketinggalan satu jalan —
+881 berkas tayang menyatakan lima kolom padahal barisnya delapan, tanpa satu pun
+galat. Sekarang ada penjaga di dua bahasa yang menahan pengulangannya: swauji
+pemanen membandingkan `len(KOLOM)` dengan panjang baris hasil, dan uji sisi layar
+membandingkan `KOLOM_BROKER.length` dengan panjang tuple `BarisBroker`. Berkas
+tahun 2016–2025 masih lima kolom, dan kepala lima nama di situ **masih pernyataan
+yang benar** — bukan ketinggalan.
 
 **Jenis broker mengganti kurasi tangan sebagai sumber utama (#82).** Terukur
 2026-08-03 atas 962 emiten: sumber menyebut 23 kode asing, daftar tangan

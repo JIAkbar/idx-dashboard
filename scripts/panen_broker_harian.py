@@ -126,7 +126,13 @@ JENDELA_HARI = 20
 # sesudah Johan bertanya "sudah di uji dulu? sebelum dibuang?". Urutan yang
 # benar kebalikannya (aturan proyek: ukur definisinya dulu sebelum menurunkan
 # satu ruas dari ruas lain). Hasilnya kebetulan membenarkan keputusannya.
-KOLOM = ["broker", "beli_lot", "beli_nilai", "jual_lot", "jual_nilai"]
+# Nama kolom yang IKUT DITULIS ke kepala tiap berkas gudang. Ia bukan
+# dokumentasi: pembaca memakainya untuk tahu isi lariknya. Ketinggalan satu
+# jalan saja dan berkasnya menyatakan lima kolom sementara barisnya delapan —
+# terjadi persis begitu di #81, dan tak ada satu pun galat yang menyebutnya.
+# `swauji` sekarang menahan itu: len(KOLOM) wajib sama dengan panjang baris.
+KOLOM = ["broker", "beli_lot", "beli_nilai", "jual_lot", "jual_nilai",
+         "freq_beli", "freq_jual", "jenis"]
 TOLERANSI_VOLUME = 0.01
 
 
@@ -781,6 +787,10 @@ def swauji() -> int:
     assert [r[:5] for r in p] == [["AK", 450276, 47472579000, 10, 10530],
                                   ["OD", 1000, 1053000, 429953, 45226967500]], p
     assert len(p[0]) == 8, "delapan kolom: 5 lama + freq beli/jual + jenis"
+    # Kepala berkas dan barisnya WAJIB sepanjang: berkas yang menyebut lima
+    # kolom untuk baris berisi delapan berbohong tentang dirinya sendiri, dan
+    # pembacanya tak punya cara tahu.
+    assert len(KOLOM) == len(p[0]), (KOLOM, p[0])
     # Frekuensi DUA sisi — 98% baris nyata punya angka yang berbeda di sini.
     assert p[0][5] == 63 and p[0][6] == 507, p[0]
     assert p[1][5] == 7 and p[1][6] == 512, p[1]

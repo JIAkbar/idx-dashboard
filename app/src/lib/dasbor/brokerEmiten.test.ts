@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  KOLOM_BROKER,
   agregatBroker, arusHarian, floorPriceBroker, irisHari, kumulatifBroker,
   tabelDuaSisi, tahunDalamRentang, type BarisBroker, type BerkasTahunan, type HariBroker,
 } from './brokerEmiten'
@@ -100,5 +101,21 @@ describe('floorPriceBroker', () => {
     // AK: 10.000÷(100×100)=1,0 pada 5 Jan; 6.000÷(50×100)=1,2 pada 6 Jan → floor 1,0
     expect(f[0]).toEqual({ broker: 'AK', floor: 1, tanggal: '2026-01-05', lot: 100 })
     expect(f.find((x) => x.broker === 'ZP')).toBeUndefined() // tak pernah beli
+  })
+})
+
+describe('KOLOM_BROKER sebagai kepala berkas (#85)', () => {
+  it('nama kolom sama banyak dengan isi lariknya', () => {
+    // Kepala tiap berkas gudang ditulis dari daftar ini. Ketinggalan satu
+    // jalan dan berkasnya menyebut lima kolom untuk baris berisi delapan —
+    // berbohong tentang dirinya sendiri, tanpa satu pun galat. Terjadi di #81
+    // dan baru ketahuan sesudah 881 berkas tayang.
+    const contoh: BarisBroker = ['AK', 1, 100, 2, 200, 5, 6, 'A']
+    expect(KOLOM_BROKER.length).toBe(contoh.length)
+  })
+
+  it('lima nama pertama TIDAK bergeser — pembaca lama membaca indeks, bukan nama', () => {
+    expect(KOLOM_BROKER.slice(0, 5)).toEqual(
+      ['broker', 'beli_lot', 'beli_nilai', 'jual_lot', 'jual_nilai'])
   })
 })
