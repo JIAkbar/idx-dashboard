@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useProfilSaya, type ProfilSaya } from '../../lib/profilSaya'
 import { useAdminTanggal } from '../../context/AdminTanggalContext'
+import { TautanEmiten, useEmitenTerdaftar } from '../../components/dasbor/TautanEmiten'
 import { namaTampil } from '../../lib/namaTampil'
 import { daftarJenjang, hitungRingkasanSetoranSaya, ringkasanJenjang, type JenjangRow } from '../../lib/jenjang'
 import { ambilKuotaSaya } from '../../lib/kuotaSaya'
@@ -537,6 +538,10 @@ function useTinggiSepuluhBaris(
  * cuma isi panelnya.
  */
 export function UnggahHarian() {
+  // Kode emiten di panel ini bertautan ke berkasnya (#27) — yang mengurasi
+  // sering perlu membukanya, dan menyalin kode dengan tangan itu langkah
+  // yang tak perlu ada. Daftarnya dimuat sekali, bukan per baris.
+  const emitenAda = useEmitenTerdaftar()
   const { session } = useAuth()
   const { profil } = useProfilSaya()
   const { index } = useStockIndex()
@@ -1172,7 +1177,7 @@ export function UnggahHarian() {
                               onChange={() => togglePilih(b.ticker)}
                             />
                           </td>
-                          <td className="tick">{b.ticker}</td>
+                          <td><TautanEmiten kode={b.ticker} punya={emitenAda} className="tick" /></td>
                           <td className="muted" style={{ fontSize: 11 }}>
                             {milikOrangLain
                               ? <span className="af-lain" title="Nama penyetor hanya terlihat oleh dirinya sendiri dan superadmin.">Kontributor lain</span>

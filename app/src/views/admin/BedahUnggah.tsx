@@ -2,6 +2,7 @@ import { Fragment, useEffect, useRef, useState, type FormEvent } from 'react'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { IkonMenu, IKON_CENTANG, IKON_GAMBAR, IKON_PERINGATAN, IKON_SILANG, IKON_TAMBAH, IKON_TONG } from '../../components/dasbor/IkonMenu'
 import { DatePicker } from '../../components/dasbor/DatePicker'
+import { TautanEmiten, useEmitenTerdaftar } from '../../components/dasbor/TautanEmiten'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
 import { AlasanField } from '../../components/dasbor/AlasanField'
@@ -127,6 +128,10 @@ function SlotBerkas({ label, file, onFile }: {
  * dibangun paralel di luar app ini — komponen ini cuma jalur unggah sumber.
  */
 export function BedahUnggah() {
+  // Kode emiten di panel ini bertautan ke berkasnya (#27) — yang mengurasi
+  // sering perlu membukanya, dan menyalin kode dengan tangan itu langkah
+  // yang tak perlu ada. Daftarnya dimuat sekali, bukan per baris.
+  const emitenAda = useEmitenTerdaftar()
   const { session } = useAuth()
   const { index } = useStockIndex()
   const { profil } = useProfilSaya()
@@ -432,7 +437,7 @@ export function BedahUnggah() {
                   return (
                     <Fragment key={b.ticker}>
                       <tr>
-                        <td className="tick">{b.ticker}</td>
+                        <td><TautanEmiten kode={b.ticker} punya={emitenAda} className="tick" /></td>
                         {/* Dulu sel ini menampilkan JUMLAH tanggal di bawah kolom
                             berjudul "Tanggal" — kepala kolom menjanjikan tanggal,
                             selnya memberi angka "1". Sekarang yang tampil rentang

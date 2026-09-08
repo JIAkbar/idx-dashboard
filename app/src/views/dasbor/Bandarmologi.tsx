@@ -3,6 +3,7 @@ import { KonteksData } from '../../components/dasbor/KonteksData'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { Dropdown } from '../../components/dasbor/Dropdown'
+import { TautanBroker, useBrokerBerhalaman } from '../../components/dasbor/TautanBroker'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useKategoriBroker, LABEL_KATEGORI, KETERANGAN_KATEGORI } from '../../lib/dasbor/kategoriBroker'
 import { fN } from '../../lib/dasbor/format'
@@ -102,6 +103,10 @@ export default function Bandarmologi() {
     const b = perilaku?.broker?.[kode]
     return b ? LABEL_KATEGORI[b.kategori] : ''
   }
+
+  // Kolom sekuritas di sini kode BROKER, bukan emiten — satu-satunya tabel
+  // broker yang tertinggal saat sisi broker #27 dikerjakan.
+  const brokerAda = useBrokerBerhalaman()
 
   const baris = useMemo(() => {
     if (!data) return []
@@ -354,7 +359,7 @@ export default function Bandarmologi() {
                 const key3 = (b.key_account ?? []).slice(0, 3)
                 return (
                   <tr key={b.kode}>
-                    <td className="tick">{b.kode}</td>
+                    <td><TautanBroker kode={b.kode} punya={brokerAda} className="tick" /></td>
                     <td className="r num">
                       {fN(b.lot_per_tx, 1)}
                       <small className="bm-med"> med {fN(b.lot_med, 1)}</small>

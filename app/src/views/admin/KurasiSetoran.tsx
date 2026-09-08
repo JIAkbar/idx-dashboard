@@ -13,6 +13,7 @@ import {
   type StatusSetoran,
 } from '../../lib/supabaseSetoran'
 import { alasanBukanHariBursa, todayIsoJakarta } from '../../lib/tanggalBursa'
+import { TautanEmiten, useEmitenTerdaftar } from '../../components/dasbor/TautanEmiten'
 import { IkonMenu, IKON_CENTANG, IKON_KALENDER, IKON_PAPAN_KLIP, IKON_PERINGATAN, IKON_SILANG } from '../../components/dasbor/IkonMenu'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
@@ -56,6 +57,10 @@ const TAB_STATUS: { id: StatusSetoran | 'semua'; label: string }[] = [
  * superadmin", guard di sini cuma UX (hindari kedip form yang pasti ditolak).
  */
 export function KurasiSetoran() {
+  // Kode emiten di panel ini bertautan ke berkasnya (#27) — yang mengurasi
+  // sering perlu membukanya, dan menyalin kode dengan tangan itu langkah
+  // yang tak perlu ada. Daftarnya dimuat sekali, bukan per baris.
+  const emitenAda = useEmitenTerdaftar()
   const { profil, loading: profilLoading } = useProfilSaya()
   const superadmin = profil?.peran === 'superadmin'
   const { tanggal, setTanggal } = useAdminTanggal()
@@ -420,7 +425,7 @@ export function KurasiSetoran() {
                           kartu jadi beda-beda. Di sini lebarnya lega karena kode
                           emiten cuma 4 huruf. */}
                       <span className="ks-tick-baris">
-                        <span className="tick">{s.ticker}</span>
+                        <TautanEmiten kode={s.ticker} punya={emitenAda} className="tick" />
                         <span className={`chip ks-jenis ks-jenis-${s.jenis}`}>{LABEL_JENIS[s.jenis]}</span>
                       </span>
                       <span className="muted" style={{ fontSize: 10.5 }}>{nama}</span>

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { Dropdown } from '../../components/dasbor/Dropdown'
+import { TautanEmiten, useEmitenTerdaftar } from '../../components/dasbor/TautanEmiten'
 import { useUrut } from '../../lib/dasbor/useUrut'
 import { fp } from '../../lib/dasbor/format'
 import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
@@ -188,6 +189,9 @@ function thSortTabel(s: ReturnType<typeof useUrut<BarisIpo>>, k: keyof BarisIpo,
 }
 
 function TabelIpo({ s }: { s: ReturnType<typeof useUrut<BarisIpo>> }) {
+  // Pencatatan yang batal ikut ada di berkas ini, dan kodenya bukan emiten
+  // tercatat — daftar inilah yang menahan tautan mendarat di halaman kosong.
+  const emitenAda = useEmitenTerdaftar()
   return (
     <div className="board-tbl-wrap">
       <table className="tbl">
@@ -207,7 +211,7 @@ function TabelIpo({ s }: { s: ReturnType<typeof useUrut<BarisIpo>> }) {
         <tbody>
           {s.urut.map((e) => (
             <tr key={e.kode}>
-              <td><span className="tick">{e.kode}</span></td>
+              <td><TautanEmiten kode={e.kode} punya={emitenAda} className="tick" /></td>
               <td title={e.nama ?? undefined}>{e.tanggal_listing}</td>
               <td className="r num">{e.harga_ipo.toLocaleString('id-ID')}</td>
               <td className="r num">{e.dana == null ? '—' : `Rp${fRingkas(e.dana)}`}</td>
