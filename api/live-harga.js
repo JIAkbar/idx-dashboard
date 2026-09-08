@@ -51,6 +51,12 @@ async function accessToken() {
   return access
 }
 
+/** Tanggal WIB `YYYY-MM-DD`, `geser` hari ke belakang. Server berjalan di
+ *  UTC, jadi tanggalnya digeser +7 jam dulu — tanpa itu, tiap hari antara
+ *  00:00 dan 07:00 WIB jendelanya meleset satu hari. */
+const tglWib = (geser) =>
+  new Date(Date.now() + 7 * 3600e3 - geser * 86400e3).toISOString().slice(0, 10)
+
 /** Larik bar di dalam balasan — dicari dari bentuknya (list-of-object ber-
  *  `close`), bukan diasumsikan dari nama pembungkusnya. */
 function cariBar(j) {
@@ -96,8 +102,15 @@ export default async function handler(req, res) {
   const kendali = new AbortController()
   const batas = setTimeout(() => kendali.abort(), 8000)
   try {
+    // JENDELA TANGGAL, bukan `limit=3`: terukur 8 Sep 2026, endpoint ini
+    // menjawab 200 dengan NOL bar bila `from`/`to` tak diberikan — 503
+    // 'sumber-tanpa-bar' yang bikin proxy tak pernah hidup. Konvensinya
+    // terbalik dari intuisi: `from` = tanggal TERBARU, `to` = TERLAMA.
+    // Sepuluh hari cukup untuk close + penutupan sebelumnya walau ada
+    // libur panjang, dan tetap kecil (6 bar pada uji BNBR).
     const r = await fetch(
-      `https://exodus.stockbit.com/chartbit/${kode}/price/daily?limit=3`,
+      `https://exodus.stockbit.com/chartbit/${kode}/price/daily`
+        + `?from=${tglWib(0)}&to=${tglWib(10)}&limit=0`,
       {
         headers: {
           Authorization: `Bearer ${access}`,
