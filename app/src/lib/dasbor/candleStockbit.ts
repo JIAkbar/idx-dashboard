@@ -41,16 +41,19 @@ export async function muatCandle(kode: string): Promise<DataCandle> {
  * Tempelkan bar HARI BERJALAN dari proxy live ke deret candle arsip (#97 A,
  * keputusan Johan 8 Sep 2026: "di whales juga bisa dong itu datanya realtime
  * pakai OHLCV nya"). Aturan:
- * - hanya bila tanggal live LEBIH BARU dari bar arsip terakhir (arsip sengaja
- *   membuang bar hari berjalan — `buang_bar_hari_berjalan` di panen); tanggal
- *   sama atau lebih tua = arsip menang, tak ada yang ditimpa;
+ * - hanya bila tanggal live = `hariIni` (tanggal Jakarta dari jamPasarJakarta)
+ *   DAN lebih baru dari bar arsip terakhir (arsip sengaja membuang bar hari
+ *   berjalan — `buang_bar_hari_berjalan` di panen); tanggal sama atau lebih
+ *   tua = arsip menang. Temuan tinjauan 8 Sep: tanpa syarat hari ini, bar
+ *   kemarin (saat arsip tertinggal) atau bar stub besok ikut berlabel LIVE;
  * - open/high/low/close harus angka sah dan konsisten (low ≤ min(o,c), high ≥
  *   max(o,c)); kalau tidak, bar dibuang — lebih baik tanpa bar daripada bar
  *   cacat menggeser skala;
  * - deret asli TIDAK diubah (kembalian larik baru); tak pernah ditulis ke mana pun.
  */
-export function gabungBarBerjalan(candle: DataCandle, live: HargaLive | null | undefined): DataCandle {
+export function gabungBarBerjalan(candle: DataCandle, live: HargaLive | null | undefined, hariIni?: string): DataCandle {
   if (!live || !live.tanggal || !/^\d{4}-\d{2}-\d{2}$/.test(live.tanggal)) return candle
+  if (hariIni && live.tanggal !== hariIni) return candle
   const terakhir = candle.lilin.length ? String(candle.lilin[candle.lilin.length - 1].time) : ''
   if (live.tanggal <= terakhir) return candle
   const o = Number(live.open), h = Number(live.high), l = Number(live.low), c = Number(live.close)

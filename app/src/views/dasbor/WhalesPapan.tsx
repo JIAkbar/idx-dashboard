@@ -5,7 +5,7 @@ import {
   type IChartApi, type ISeriesApi, type SeriesType, type Time,
 } from 'lightweight-charts'
 import { gabungBarBerjalan, muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
-import { useHargaLive } from '../../lib/dasbor/hargaLive'
+import { useHargaLive, type HargaLive } from '../../lib/dasbor/hargaLive'
 import { jamPasarJakarta } from '../../lib/tanggalBursa'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
@@ -139,10 +139,21 @@ export default function WhalesPapan() {
   // halaman diam-diam tetap memakai arsip harian.
   const [pasar, setPasar] = useState(() => jamPasarJakarta())
   useEffect(() => {
-    const t = setInterval(() => setPasar(jamPasarJakarta()), 60_000)
+    const t = setInterval(() => setPasar((p) => {
+      const n = jamPasarJakarta()
+      return n.status === p.status && n.iso === p.iso ? p : n
+    }), 60_000)
     return () => clearInterval(t)
   }, [])
   const live = useHargaLive(pasar.status === 'buka' ? kode : null, 45)
+  // Sesudah tutup (16:15) polling berhenti, tetapi bar terakhir yang sudah
+  // diterima DITAHAN sampai arsip memuat tanggal yang sama (gabungBarBerjalan
+  // otomatis memenangkan arsip) atau kode berganti — temuan tinjauan 8 Sep:
+  // tanpa ini bar hari ini lenyap 16:15 dan baru kembali sesudah panen malam.
+  const [liveTahan, setLiveTahan] = useState<HargaLive | null>(null)
+  useEffect(() => { if (live && live.kode === kode) setLiveTahan(live) }, [live, kode])
+  useEffect(() => { setLiveTahan(null) }, [kode])
+  const liveTampil = live ?? (liveTahan && liveTahan.kode === kode ? liveTahan : null)
 
   const [sel, setSel] = useState<SeleksiArea | null>(null)
   const [selIntra, setSelIntra] = useState<SelIntra | null>(null)
@@ -154,8 +165,12 @@ export default function WhalesPapan() {
   // dan itulah akar 10 deploy Vercel gagal beruntun 27 Agu.
   const [tf] = useState<Tf>('harian')
   const [candle, setCandle] = useState<DataCandle>({ lilin: [], volume: [] })
-  const candleTampil = useMemo(() => gabungBarBerjalan(candle, live), [candle, live])
+  const candleTampil = useMemo(() => gabungBarBerjalan(candle, liveTampil, pasar.iso), [candle, liveTampil, pasar.iso])
   const barBerjalan = candleTampil.lilin.length > candle.lilin.length
+  const barLive = barBerjalan ? candleTampil.lilin[candleTampil.lilin.length - 1] : null
+  const volLive = barBerjalan ? candleTampil.volume[candleTampil.volume.length - 1] : null
+  // Kunci nilai (bukan identitas objek): efek update hanya jalan saat angkanya berubah.
+  const kunciLive = barLive ? `${barLive.time}|${barLive.open}|${barLive.high}|${barLive.low}|${barLive.close}|${volLive?.value ?? 0}` : ''
   const [intra, setIntra] = useState<{ bar: Bar1H[]; galat: GalatIntraday }>({ bar: [], galat: null })
   const [avgAktif, setAvgAktif] = useState(true)
   const [profilAktif, setProfilAktif] = useState(true)
@@ -223,7 +238,7 @@ export default function WhalesPapan() {
     // "fungsi auto hanya ke candle tapi tidak di chart").
     lilinRef.current?.priceScale().applyOptions({ autoScale: true })
     const skala = chart.timeScale()
-    const n = candle.lilin.length
+    const n = candleTampil.lilin.length
     if (fp && n > 0) {
       // `hanyaBilaSempit`: jalur toggle Footprint — jangan sentuh pandangan
       // yang sudah cukup dekat. Tombol Auto memaksa, apa pun zoom-nya.
@@ -445,9 +460,9 @@ export default function WhalesPapan() {
     // di luar jendela (volume tetap tampak karena skalanya terpisah).
     lilin.priceScale().applyOptions({ autoScale: true })
     if (tf === 'harian') {
-      lilin.setData(candleTampil.lilin)
-      vol.setData(candleTampil.volume)
-      const n = candleTampil.lilin.length
+      lilin.setData(candle.lilin)
+      vol.setData(candle.volume)
+      const n = candle.lilin.length
       if (n > 0) {
         // Footprint yang SUDAH menyala harus tetap terlihat di emiten baru
         // (temuan Johan 28 Agu "jika ganti emiten dia tidak aktif langsung
@@ -473,7 +488,21 @@ export default function WhalesPapan() {
       color: b.close >= b.open ? 'rgba(48, 164, 108, 0.5)' : 'rgba(229, 72, 77, 0.5)',
     })))
     if (barIntra.length > 0) chart.timeScale().fitContent()
-  }, [tf, candleTampil, barIntra])
+  }, [tf, candle, barIntra])
+
+  // Bar hari berjalan: series.update() menempel/mengganti bar terakhir TANPA
+  // menyentuh autoScale atau jendela waktu — zoom/geser pengguna tidak direset
+  // tiap tarikan (temuan tinjauan 8 Sep: efek setData yang bergantung pada
+  // objek live mereset pandangan tiap 45 detik). Dideklarasikan SESUDAH efek
+  // muat penuh supaya urutannya: setData arsip dulu, lalu bar live.
+  useEffect(() => {
+    const lilin = lilinRef.current
+    const vol = volRef.current
+    if (!lilin || !vol || tf !== 'harian' || !barLive || !volLive) return
+    lilin.update(barLive)
+    vol.update(volLive)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tf, candle, kunciLive])
 
   // Kotak terkunci digambar primitive dari NILAI — ikut zoom/pan.
   useEffect(() => {
@@ -579,7 +608,7 @@ export default function WhalesPapan() {
     const chart = chartRef.current
     const lilin = lilinRef.current
     const deret: Array<string | number> = tf === 'harian'
-      ? candle.lilin.map((b) => b.time as string)
+      ? candleTampil.lilin.map((b) => b.time as string)
       : barIntra.map((b) => b.epoch + GESER_WIB)
     if (!chart || !lilin || deret.length === 0) return null
     const harga = lilin.coordinateToPrice(y)
@@ -740,21 +769,24 @@ export default function WhalesPapan() {
             </span>
           )}
           {muat && <span className="muted" style={{ fontSize: 12 }}>memuat…</span>}
-          {live && barBerjalan && (
+          {liveTampil && barBerjalan && (
             <span
               className="wp-live"
-              title="Bar hari berjalan dari Stockbit lewat server PAPAN; tertunda paling lama 45 detik; tidak ditulis ke arsip. Angka asing tidak ditampilkan karena sumbernya baru sah sesudah tutup."
+              title={pasar.status === 'buka'
+                ? 'Bar hari berjalan dari Stockbit lewat server PAPAN: cache server 30 detik (boleh basi 30 detik lagi) + tarikan tiap 45 detik, jadi tertunda paling lama sekitar 2 menit. Tidak ditulis ke arsip. Angka asing tidak ditampilkan karena sumbernya baru sah sesudah tutup.'
+                : 'Bursa sudah tutup: ini bar terakhir yang diterima hari ini, ditahan sampai arsip harian hasil panen memuat tanggal yang sama. Bukan angka penutupan resmi.'}
             >
-              <b className="wp-live-tanda">LIVE</b>
-              <b className={`num ${(live.pct ?? 0) < 0 ? 'down' : 'up'}`}>
-                {live.close.toLocaleString('id-ID')}{live.pct != null && ` · ${live.pct > 0 ? '+' : ''}${live.pct.toLocaleString('id-ID', { maximumFractionDigits: 2 })}%`}
+              <b className="wp-live-tanda">{pasar.status === 'buka' ? 'LIVE' : 'PENUTUPAN SEMENTARA'}</b>
+              <b className={`num ${(liveTampil.pct ?? 0) < 0 ? 'down' : 'up'}`}>
+                {liveTampil.close.toLocaleString('id-ID')}{liveTampil.pct != null && ` · ${liveTampil.pct > 0 ? '+' : ''}${liveTampil.pct.toLocaleString('id-ID', { maximumFractionDigits: 2 })}%`}
               </b>
               <span className="muted">
-                O {live.open?.toLocaleString('id-ID')} · H {live.high?.toLocaleString('id-ID')} · L {live.low?.toLocaleString('id-ID')}
-                {live.volume != null && ` · vol ${lotRingkas(live.volume / 100)} lot`}
-                {live.value != null && ` · Rp ${rupiahRingkas(live.value)}`}
-                {live.frequency != null && ` · ${live.frequency.toLocaleString('id-ID')} kali`}
-                {` · ${jamPasarJakarta(new Date(live.diambilPada)).jam} WIB · tertunda ≤45 s`}
+                O {liveTampil.open?.toLocaleString('id-ID')} · H {liveTampil.high?.toLocaleString('id-ID')} · L {liveTampil.low?.toLocaleString('id-ID')}
+                {liveTampil.volume != null && ` · vol ${lotRingkas(liveTampil.volume / 100)} lot`}
+                {liveTampil.value != null && ` · Rp ${rupiahRingkas(liveTampil.value)}`}
+                {liveTampil.frequency != null && ` · ${liveTampil.frequency.toLocaleString('id-ID')} kali`}
+                {` · diterima ${jamPasarJakarta(new Date(liveTampil.diambilPada)).jam} WIB`}
+                {pasar.status === 'buka' ? ' · tertunda ≤ 2 menit' : ' · menunggu arsip'}
               </span>
             </span>
           )}

@@ -22,9 +22,13 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
 /** Cache access token per instance fungsi — 5 menit, jauh di bawah umurnya
  *  (24 jam), supaya tiap permintaan tak memukul Supabase. */
 let singgahan = { access: null, sampai: 0 }
+/** Singgah NEGATIF 30 s: saat baris token belum disemai/rantai mati, tiap
+ *  pengunjung tak lagi memukul Supabase tiap tarikan (temuan tinjauan 8 Sep). */
+let kosongSampai = 0
 
 async function accessToken() {
   if (singgahan.access && Date.now() < singgahan.sampai) return singgahan.access
+  if (Date.now() < kosongSampai) return null
   const url = process.env.SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!url || !key) return null
@@ -35,6 +39,7 @@ async function accessToken() {
   const rows = await r.json()
   const access = rows?.[0]?.access ?? null
   if (access) singgahan = { access, sampai: Date.now() + 5 * 60 * 1000 }
+  else kosongSampai = Date.now() + 30 * 1000
   return access
 }
 
@@ -60,8 +65,10 @@ export default async function handler(req, res) {
   if (!/^[A-Z0-9]{2,6}$/.test(kode)) {
     return res.status(400).json({ galat: 'Kode tidak dikenal.' })
   }
+  // 503 pun disinggah CDN 30 s supaya rantai mati tidak jadi badai fungsi.
+  const tertunda = () => { res.setHeader('Cache-Control', 's-maxage=30'); return res.status(503).json({ galat: 'tertunda' }) }
   const access = await accessToken()
-  if (!access) return res.status(503).json({ galat: 'tertunda' })
+  if (!access) return tertunda()
   try {
     const r = await fetch(
       `https://exodus.stockbit.com/chartbit/${kode}/price/daily?limit=3`,
@@ -77,10 +84,10 @@ export default async function handler(req, res) {
     if (!r.ok) {
       // 401 = rantai akun live mati — klien jatuh ke arsip, cron berikutnya
       // (atau semai ulang) yang menghidupkan lagi. Bukan error pengunjung.
-      return res.status(503).json({ galat: 'tertunda' })
+      return tertunda()
     }
     const bar = cariBar(await r.json())
-    if (bar.length === 0) return res.status(503).json({ galat: 'tertunda' })
+    if (bar.length === 0) return tertunda()
     // Urutan balasan tak diasumsikan — bar terbaru dipilih dari tanggalnya.
     const urut = [...bar].sort((a, b) => String(a.date ?? '').localeCompare(String(b.date ?? '')))
     const kini = urut[urut.length - 1]
@@ -93,7 +100,9 @@ export default async function handler(req, res) {
     // BASI (salinan kemarin) — jadi asing sengaja TIDAK dikirim. Angka ini
     // tidak pernah ditulis ke arsip; arsip tetap harian sesudah tutup.
     const angka = (v) => (Number.isFinite(Number(v)) ? Number(v) : null)
-    res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=90')
+    // stale-while-revalidate diturunkan 90 → 30 (temuan tinjauan 8 Sep): umur
+    // terburuk di CDN 60 s + jeda tarikan klien 45 s ≈ 2 menit, sesuai label.
+    res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=30')
     return res.status(200).json({
       kode,
       tanggal: kini.date ?? null,
@@ -110,6 +119,6 @@ export default async function handler(req, res) {
   } catch (e) {
     // Galat asli dicatat, tak dikirim (pass kebocoran, CLAUDE.md 18 Agu).
     console.error('live-harga gagal:', e)
-    return res.status(503).json({ galat: 'tertunda' })
+    return tertunda()
   }
 }

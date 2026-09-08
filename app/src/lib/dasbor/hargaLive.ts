@@ -50,7 +50,12 @@ export function useHargaLive(kode: string | null, jedaDetik = 45): HargaLive | n
     let timer: ReturnType<typeof setInterval> | null = null
     const tarik = () => {
       if (document.visibilityState === 'hidden') return
-      void ambilHargaLive(kode).then((d) => { if (!batal) setHarga(d) })
+      // Gagal sesaat (timeout 2,5 s, 503 saat rantai token mati) TIDAK
+      // menimpa nilai yang sudah baik dengan null — pemakai membaca umurnya
+      // dari `diambilPada`. Null hanya saat kode berganti (blok di atas).
+      // Temuan tinjauan 8 Sep 2026: tanpa ini bar/label live berkedip hilang
+      // 45 detik tiap satu tarikan gagal.
+      void ambilHargaLive(kode).then((d) => { if (!batal && d) setHarga(d) })
     }
     setHarga(null)
     tarik()

@@ -45,6 +45,14 @@ describe('gabungBarBerjalan', () => {
     expect(hasil.volume[2]).toEqual({ time: '2026-09-08', value: 0, color: WARNA_VOL_TURUN })
   })
 
+  it('hariIni diberikan: hanya bar bertanggal hari itu yang ditempel (kemarin/besok ditolak)', () => {
+    expect(gabungBarBerjalan(arsip, live({}), '2026-09-08').lilin).toHaveLength(3)
+    // arsip tertinggal (berhenti 4 Sep) dan proxy masih mengirim bar 7 Sep: bukan hari ini, tolak
+    const tertinggal: DataCandle = { lilin: arsip.lilin.slice(0, 1), volume: arsip.volume.slice(0, 1) }
+    expect(gabungBarBerjalan(tertinggal, live({ tanggal: '2026-09-07' }), '2026-09-08')).toBe(tertinggal)
+    expect(gabungBarBerjalan(arsip, live({ tanggal: '2026-09-09' }), '2026-09-08')).toBe(arsip)
+  })
+
   it('arsip kosong: bar berjalan tetap boleh berdiri sendiri', () => {
     const hasil = gabungBarBerjalan({ lilin: [], volume: [] }, live({}))
     expect(hasil.lilin).toHaveLength(1)
