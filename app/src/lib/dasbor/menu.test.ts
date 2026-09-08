@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { MENU_GRUP, MENU_ITEMS, MENU_KELOMPOK, MENU_UTAMA, tabHalaman } from './menu'
+import { MENU_GRUP, MENU_ITEMS, MENU_KELOMPOK, MENU_UTAMA, judulHalaman, tabHalaman } from './menu'
 
 /**
  * Rail desktop kini menggambar KELOMPOK, bukan menu satuan (#175). Menu yang
@@ -61,5 +61,37 @@ describe('pengelompokan menu', () => {
   it('path menu unik', () => {
     const path = MENU_ITEMS.map((m) => m.path)
     expect(new Set(path).size).toBe(path.length)
+  })
+})
+
+describe('judulHalaman (#103)', () => {
+  it('cocok persis dari MENU_ITEMS, bukan teks yang diketik ulang', () => {
+    expect(judulHalaman('/screener')).toBe(MENU_ITEMS.find((m) => m.path === '/screener')!.label)
+    expect(judulHalaman('/winrate')).toBe('Winrate PAPAN')
+  })
+
+  it('halaman ber-parameter memakai nama induk ruas pertamanya', () => {
+    expect(judulHalaman('/broker/BBCA')).toBe(judulHalaman('/broker'))
+  })
+
+  it('garis miring di ujung tak mengubah jawaban', () => {
+    expect(judulHalaman('/screener/')).toBe(judulHalaman('/screener'))
+  })
+
+  it('Beranda null — kepalanya sudah berisi pita kurs', () => {
+    expect(judulHalaman('/')).toBeNull()
+    expect(judulHalaman('')).toBeNull()
+  })
+
+  it('alamat tak dikenal null, BUKAN tebakan', () => {
+    // Kepala tanpa nama lebih jujur daripada kepala yang menyebut halaman salah.
+    expect(judulHalaman('/entah-apa')).toBeNull()
+    expect(judulHalaman('/rute/yang/tak/ada')).toBeNull()
+  })
+
+  it('rute di luar menu yang memang ada rutenya tetap bernama', () => {
+    expect(judulHalaman('/admin')).toBe('Admin')
+    expect(judulHalaman('/admin/changelog')).toBe('Admin')
+    expect(judulHalaman('/login')).toBe('Masuk')
   })
 })

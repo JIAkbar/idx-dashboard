@@ -11,6 +11,7 @@ import { TanyaPapan } from './TanyaPapan'
 import { LoginModalProvider } from '../../context/LoginModalContext'
 import { useTheme } from '../../context/ThemeContext'
 import { MarkPapan } from './MarkPapan'
+import { judulHalaman } from '../../lib/dasbor/menu'
 import { TANYA_PAPAN_AKTIF } from '../../lib/fitur'
 import '../../dasbor/lantai.css'
 
@@ -45,6 +46,9 @@ export function DasborLayout() {
   // Rute Beranda satu-satunya '/'; catch-all mengalihkan ke sana dengan
   // `replace`, jadi pathname sesudah pengalihan tetap '/'.
   const beranda = location.pathname === '/'
+  // Nama halaman untuk kepala di ponsel (#103). null = tak dikenal; kepala
+  // lalu tetap kosong, bukan diisi tebakan.
+  const judul = judulHalaman(location.pathname)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -124,6 +128,15 @@ export function DasborLayout() {
                   disembunyikan di sana. Menyembunyikan kepala di ponsel berarti
                   membuang seluruh menu di setiap halaman selain Beranda. */}
               {beranda && <PitaKurs />}
+              {/* Nama halaman — HANYA di ponsel (#103, Johan: "di mobile ini top
+                  bar nya diisi nama app PAPAN atau gmn yaa ? karena home ada
+                  marquee sedangkan yang lain kosong"). Yang ditulis nama HALAMAN,
+                  bukan nama aplikasi: ikon P di sebelahnya sudah merek, sedangkan
+                  judul h1 halaman ikut tergulung hilang begitu pembaca menggulir —
+                  jadi inilah satu-satunya penanda "ini halaman apa" saat menggulir
+                  di layar sempit. Namanya dibaca dari daftar menu, tak diketik
+                  ulang, supaya halaman baru tak bisa punya dua nama. */}
+              {!beranda && judul && <span className="dasbor-judul">{judul}</span>}
             </header>
 
             <main className="dasbor-main">

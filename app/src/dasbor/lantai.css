@@ -1731,6 +1731,21 @@
      (jarak kini urusan zona). */
   .dasbor-merek-mini { margin: 0; padding: 0; border: none; cursor: pointer; }
 
+  /* Nama halaman di kepala (#103). Hidup HANYA di ponsel: di desktop kepala
+     non-Beranda memang disembunyikan seluruhnya. Satu baris, dipotong dengan
+     elipsis — nama terpanjang di menu ("Probabilitas & rekam jejak" dsb.) tak
+     boleh mendorong tinggi kepala 52px jadi dua baris dan menggeser isi.
+     min-width:0 wajib supaya elipsis benar-benar bekerja di dalam flex. */
+  .dasbor-judul {
+    display: flex; align-items: center;
+    min-width: 0; flex: 1 1 auto;
+    padding: 0 12px;
+    font-family: var(--disp); font-weight: 700;
+    font-size: 14px; letter-spacing: .01em;
+    color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
   .dasbor-laci-kiri-bg {
     display: block;
     position: fixed; inset: 0; z-index: 80;

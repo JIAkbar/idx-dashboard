@@ -343,6 +343,32 @@ export function tabHalaman(path: string): { path: string; label: string }[] {
   ]
 }
 
+/** Nama halaman untuk sebuah alamat — SATU sumber nama, yaitu `MENU_ITEMS`.
+ *  Dipakai kepala dasbor di ponsel (#103): di bawah 768px judul `h1` halaman
+ *  ikut tergulung hilang saat pembaca menggulir, jadi kepala yang tadinya cuma
+ *  berisi tombol menu menyebutkan halaman apa yang sedang dibuka.
+ *
+ *  Cocok persis dulu, baru ruas pertama alamat (`/broker/BBCA` → `/broker`) —
+ *  itu yang membuat halaman ber-parameter ikut bernama tanpa mendaftarkan tiap
+ *  kemungkinan. Alamat yang tak dikenal balik `null`, dan pemanggil TIDAK boleh
+ *  menggantinya dengan tebakan: kepala tanpa nama lebih jujur daripada kepala
+ *  yang menyebut halaman yang salah.
+ *
+ *  Beranda sengaja `null`: di sana kepala sudah berisi pita kurs berjalan.
+ */
+export function judulHalaman(path: string): string | null {
+  if (!path || path === '/') return null
+  const bersih = path.length > 1 ? path.replace(/\/+$/, '') : path
+  const persis = MENU_ITEMS.find((m) => m.path === bersih)
+  if (persis) return persis.label
+  const ruas1 = '/' + bersih.split('/')[1]
+  const induk = MENU_ITEMS.find((m) => m.path === ruas1)
+  if (induk) return induk.label
+  if (ruas1 === '/admin') return 'Admin'
+  if (ruas1 === '/login') return 'Masuk'
+  return null
+}
+
 /** Rute induk dari sebuah halaman — dipakai halaman anak untuk menggambar
  *  baris tab yang SAMA dengan induknya. */
 export function indukDari(path: string): string | null {
