@@ -35,7 +35,7 @@
    sticky tetap menumpuk di atas sel lain, dan latar tembus membuat
    keduanya tercetak bertindih.
 
-   Tokennya `--card` (latar kartu ini, terukur #14151A), BUKAN `--panel`
+   Tokennya `--card` (latar kartu ini, terukur #12141D), BUKAN `--panel`
    yang tidak terdefinisi di sini sama sekali - rujukan tanpa nilai dibuang
    peramban tanpa satu pun galat, dan hasilnya sel tembus yang gejalanya
    baru terlihat saat seseorang menggulung. Nilai cadangan literal
@@ -46,7 +46,7 @@
 .lantai .pbd-tbl th:first-child,
 .lantai .pbd-tbl td:first-child {
   position: sticky; left: 0; z-index: 1;
-  background: var(--card, #14151A);
+  background: var(--card, #12141D);
 }
 .lantai .pbd-tbl th:first-child { z-index: 2; }
 

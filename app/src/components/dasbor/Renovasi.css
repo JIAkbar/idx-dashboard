@@ -95,10 +95,10 @@
   text-align: center;
   padding: 30px 26px 26px;
   border-radius: 10px;
-  background: var(--bg2, #171c22);
-  border: 1px solid var(--line, #2a333c);
+  background: var(--bg2, #181B26);
+  border: 1px solid var(--line, #313A50);
   box-shadow: 0 18px 48px rgba(0, 0, 0, .45);
-  color: var(--t1, #e6e9ec);
+  color: var(--t1, #EDEFF5);
 }
 
 .rnv-ikon {
@@ -106,7 +106,7 @@
   height: 56px;
   display: block;
   margin: 0 auto 16px;
-  color: var(--t1, #e6e9ec);
+  color: var(--t1, #EDEFF5);
 }
 .rnv-bilah { fill: var(--ak, #e8b93a); }
 .rnv-bilah2 { opacity: .45; }
@@ -121,12 +121,12 @@
 .rnv-teks {
   font-size: 14px;
   line-height: 1.62;
-  color: var(--t2, #8b97a3);
+  color: var(--t2, #A6AEC4);
   margin: 0 0 10px;
   text-align: left; /* rata kiri, bukan tengah: dua kalimat rata tengah jadi
                        ragged di kedua sisi dan lebih lambat dibaca */
 }
-.rnv-teks b { color: var(--t1, #e6e9ec); font-weight: 600; }
+.rnv-teks b { color: var(--t1, #EDEFF5); font-weight: 600; }
 .rnv-teks2 { margin-bottom: 22px; }
 
 .rnv-tombol {
@@ -146,7 +146,7 @@
   cursor: pointer;
 }
 .rnv-tombol:hover { filter: brightness(1.06); }
-.rnv-tombol:focus-visible { outline: 2px solid var(--t1, #e6e9ec); outline-offset: 2px; }
+.rnv-tombol:focus-visible { outline: 2px solid var(--t1, #EDEFF5); outline-offset: 2px; }
 
 @media (prefers-reduced-motion: no-preference) {
   .rnv-kotak { animation: rnv-masuk .18s ease-out; }

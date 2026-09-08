@@ -30,9 +30,11 @@
 
 @media (prefers-color-scheme: dark) {
   .mt-akar {
-    --mt-latar: #0d1014;
-    --mt-teks: #eaeaee;
-    --mt-redup: #8b9199;
+    /* Ikut tangga navy tema gelap (#40 A) - halaman ini berdiri sendiri
+       dan tak memuat token .lantai, jadi nilainya disalin, bukan dirujuk. */
+    --mt-latar: #0B0D14;
+    --mt-teks: #EDEFF5;
+    --mt-redup: #98A0B6;
     --mt-aksen: #e0b860;
   }
 }

@@ -715,13 +715,31 @@
      aplikasi ini keduanya juga jatuh di atas --bg3, dan di situ rasionya
      4,25:1 dan 4,26:1 — di bawah ambang WCAG AA. Digelapkan sampai lolos di
      KEEMPAT latar. */
-  --bg0:#0C0D10; --bg1:#14151A; --bg2:#1A1C22; --bg3:#22242C;
-  --line:#24262E; --line2:#363945;
-  --text:#EAEAEE; --text2:#9CA0AC; --text3:#888D99;
+  /* Tangga permukaan NAVY (#40 A, keputusan Johan 7 Sep 2026 dari
+     pembanding Better Stack). Yang dipinjam paletnya saja, bukan
+     bentuknya: radius 12/8 px, Plus Jakarta Sans, dan tata letaknya
+     tidak ikut berubah - keputusan ronde 2 (radius 4 px kendali) dan
+     font tetap berlaku.
+
+     Nilai garis TIDAK disalin mentah dari rujukannya. Better Stack
+     memakai #1f2433/#2b3245, dan diukur di sini yang kuat cuma 1,44:1
+     terhadap --bg1 - di bawah kriteria terima barisnya sendiri (1,8:1),
+     bahkan nyaris sama tak-terlihatnya dengan garis lama yang dikeluhkan
+     (1,21:1). Dinaikkan sampai 2,46:1 (--bg1) dan 2,30:1 (--bg2).
+
+     Terukur seluruh pasangan teks x permukaan: minimum 4,51:1 (merah di
+     atas --bg3), jadi keempat permukaan lolos AA untuk SEMUA warna teks.
+     --blue dinaikkan dari #5B94E8 ke #7DA6F0 supaya siap dipakai sebagai
+     aksen interaksi; pemindahan pemakaiannya sendiri BELUM dikerjakan
+     (lihat catatan #40 di jejak - ia bertabrakan dengan keputusan Johan
+     soal garis bawah emas tab halaman). */
+  --bg0:#0B0D14; --bg1:#12141D; --bg2:#181B26; --bg3:#222634;
+  --line:#313A50; --line2:#485477;
+  --text:#EDEFF5; --text2:#A6AEC4; --text3:#98A0B6;
   --amber:#F2C230; --amber-ink:#171207; --amber-dim:rgba(242,194,48,.12);
   --red:#E6635A; --red-dim:rgba(230,99,90,.14);
   --green:#38B77E; --green-dim:rgba(56,183,126,.14);
-  --blue:#5B94E8;
+  --blue:#7DA6F0;
   /* #187 Compare symbols (/grafik): tiga warna emiten PEMBANDING. Sengaja di
      luar PALET_INDIKATOR (--amber/--blue/--green/--red/--text2/--text3) —
      garis pembanding dan garis indikator hidup di kanvas yang sama, dan dua
