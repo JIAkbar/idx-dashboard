@@ -71,8 +71,22 @@ export default async function handler(req, res) {
   // badai saat rantai mati adalah singgah negatif 30 s di accessToken() dan
   // pembuangan token mati di bawah, bukan header ini.
   const tertunda = () => res.status(503).json({ galat: 'tertunda' })
-  const access = await accessToken()
+  // accessToken() ikut di dalam try: galat jaringan ke Supabase harus jadi
+  // 503 bersinggah negatif, bukan 500 FUNCTION_INVOCATION_FAILED tanpa singgah
+  // (temuan pemeriksa akhir 8 Sep).
+  let access = null
+  try {
+    access = await accessToken()
+  } catch (e) {
+    console.error('live-harga: token tak terbaca:', e)
+    kosongSampai = Date.now() + 30 * 1000
+    return tertunda()
+  }
   if (!access) return tertunda()
+  // Batas waktu 8 s: koneksi menggantung ke Stockbit tidak menahan fungsi
+  // sampai maxDuration sementara klien sudah putus di 2,5 s.
+  const kendali = new AbortController()
+  const batas = setTimeout(() => kendali.abort(), 8000)
   try {
     const r = await fetch(
       `https://exodus.stockbit.com/chartbit/${kode}/price/daily?limit=3`,
@@ -83,18 +97,22 @@ export default async function handler(req, res) {
           Referer: 'https://stockbit.com/',
           'User-Agent': UA,
         },
+        signal: kendali.signal,
       },
     )
-    if (!r.ok) {
-      // 401 = rantai akun live mati — klien jatuh ke arsip, cron berikutnya
-      // (atau semai ulang) yang menghidupkan lagi. Bukan error pengunjung.
-      // Token yang ditolak dibuang dari singgahan dan 30 s berikutnya tidak
-      // ada permintaan ke Stockbit sama sekali (temuan tinjauan 8 Sep: token
-      // mati yang disinggah 5 menit = 401 berulang tiap tarikan tiap pengunjung).
+    if (r.status === 401 || r.status === 403 || r.status === 429) {
+      // Rantai akun live mati / dibatasi — klien jatuh ke arsip, cron
+      // berikutnya (atau semai ulang) yang menghidupkan lagi. Token yang
+      // ditolak dibuang dari singgahan dan 30 s berikutnya tidak ada
+      // permintaan ke Stockbit (token mati yang disinggah 5 menit = 401
+      // berulang tiap tarikan tiap pengunjung). HANYA status akun/limit yang
+      // membutakan instance: 404/400 untuk satu kode aneh tidak boleh
+      // mematikan live semua emiten (temuan pemeriksa akhir 8 Sep).
       singgahan = { access: null, sampai: 0 }
       kosongSampai = Date.now() + 30 * 1000
       return tertunda()
     }
+    if (!r.ok) return tertunda()
     const bar = cariBar(await r.json())
     if (bar.length === 0) return tertunda()
     // Urutan balasan tak diasumsikan — bar terbaru dipilih dari tanggalnya.
@@ -127,7 +145,13 @@ export default async function handler(req, res) {
     })
   } catch (e) {
     // Galat asli dicatat, tak dikirim (pass kebocoran, CLAUDE.md 18 Agu).
+    // Jaringan putus / balasan bukan JSON (halaman tantangan) adalah keadaan
+    // instance, bukan per kode: singgah negatif 30 s supaya tarikan berikutnya
+    // dari semua pengunjung tidak memukul Stockbit lagi selama gangguan.
     console.error('live-harga gagal:', e)
+    kosongSampai = Date.now() + 30 * 1000
     return tertunda()
+  } finally {
+    clearTimeout(batas)
   }
 }
