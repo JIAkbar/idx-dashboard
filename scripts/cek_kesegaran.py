@@ -254,6 +254,14 @@ class Turunan:
     halaman: str
     toleransi: int = 0
     pembangun: str = ""
+    # Berapa baris yang benar-benar dibawa berkasnya. Tanggal saja tidak
+    # cukup: `bandarmologi.json` tayang dua hari sebagai "0 emiten
+    # bertransaksi" dengan tanggal yang terbaca segar, karena penyaringnya
+    # membuang semua emiten saat acuan tanggalnya lebih tua daripada arsip
+    # harga. Berkas yang tanggalnya benar tapi isinya kosong lolos gerbang
+    # yang cuma menimbang tanggal — dan itu bentuk kegagalan yang paling
+    # sulit dilihat, karena dari layar ia terbaca sebagai "bursanya sepi".
+    hitung: object = None
 
 
 MANIFEST: list[Turunan] = [
@@ -293,6 +301,15 @@ MANIFEST: list[Turunan] = [
             "Broker Summary tab Flow", pembangun="bangun_aliran_investor.py"),
     Turunan("Bid/offer", "bidoffer.json", dari_ruas("tanggal"),
             "Kuli Papan", pembangun="bangun_bidoffer.py"),
+    # Ditambahkan 9 Sep 2026: keduanya dibaca halaman dan keduanya membeku
+    # berhari-hari tanpa gerbang ini menyebutnya (bandarmologi 0 baris pada
+    # 7-8 Sep, ihsg_harian berhenti 5 Sep saat pipa panen mati di langkah 1).
+    Turunan("Bandarmologi", "bandarmologi.json", dari_ruas("tanggal"),
+            "Bandarmologi", pembangun="bangun_bandarmologi.py",
+            hitung=lambda d: len(json.loads(d.read_text(encoding="utf-8")).get("d") or [])),
+    Turunan("IHSG harian", "ihsg_harian.json", dari_ruas("akhir"),
+            "Indeks Dunia (chart IHSG) · Seasonality Harian", pembangun="panen_ihsg.py",
+            hitung=lambda d: int(json.loads(d.read_text(encoding="utf-8")).get("n") or 0)),
     Turunan("Arsip broker harian", "broker_harian", dari_kunci_peta("hari"),
             "Whales Papan · Kuli Papan · Neo Papan · Berkas Emiten · Watchlist",
             pembangun="backfill_broker_massal.py (6 varian)"),
@@ -434,7 +451,7 @@ def periksa(cetak_semua: bool = False) -> int:
 
     hilang_penanda = penanda_sumber_hilang()
 
-    segar, basi, tak_terperiksa = [], [], []
+    segar, basi, tak_terperiksa, kosong = [], [], [], []
     for t in MANIFEST:
         p = JSON / t.jalur
         if not p.exists():
@@ -448,6 +465,15 @@ def periksa(cetak_semua: bool = False) -> int:
         if not isi:
             tak_terperiksa.append((t, "tanggal tak terbaca dari isinya"))
             continue
+        if t.hitung:
+            try:
+                n = t.hitung(p)
+            except Exception as e:  # noqa: BLE001
+                tak_terperiksa.append((t, f"jumlah baris gagal dihitung: {e}"))
+                continue
+            if n == 0:
+                kosong.append((t, isi))
+                continue
         umur = selisih_hari(isi, acuan)
         if umur > t.toleransi:
             basi.append((t, isi, umur))
@@ -462,16 +488,29 @@ def periksa(cetak_semua: bool = False) -> int:
         print(f"         dipakai: {t.halaman}")
         if t.pembangun:
             print(f"         pembangun: {t.pembangun}")
+    for t, isi in kosong:
+        print(f"  KOSONG {t.nama:24} {isi}  (tanggalnya segar, tapi NOL baris)")
+        print(f"         dipakai: {t.halaman}")
+        if t.pembangun:
+            print(f"         pembangun: {t.pembangun}")
     for t, sebab in tak_terperiksa:
         print(f"  ?      {t.nama:24} {sebab}")
 
-    print(f"\nsegar {len(segar)} · basi {len(basi)} · tak terperiksa {len(tak_terperiksa)}")
+    print(f"\nsegar {len(segar)} · basi {len(basi)} · kosong {len(kosong)} "
+          f"· tak terperiksa {len(tak_terperiksa)}")
     if hilang_penanda:
         contoh = ", ".join(hilang_penanda[:6])
         lagi = f" (+{len(hilang_penanda) - 6} lagi)" if len(hilang_penanda) > 6 else ""
         print(f"::error::{len(hilang_penanda)} berkas harga kehilangan penanda sumber per bar "
               f"(contoh: {contoh}{lagi}) - ada penulis yang membangun berkas dari nol "
               "tanpa membawanya; pembangun: gabung_ohlc_stockbit.py / jahit_ihsg.py / panen_ohlc.py")
+        return 1
+    if kosong:
+        # Sebelum basi: berkas bertanggal segar yang isinya nol baris adalah
+        # kegagalan yang lebih menipu daripada berkas basi — dari layar ia
+        # terbaca "tak ada yang bertransaksi", bukan "datanya tak terbangun".
+        nama = ", ".join(t.nama for t, _ in kosong)
+        print(f"::error::{len(kosong)} turunan bertanggal segar tapi NOL baris: {nama}")
         return 1
     if basi:
         nama = ", ".join(t.nama for t, _, _ in basi)

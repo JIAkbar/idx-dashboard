@@ -336,6 +336,17 @@ def main() -> int:
         ],
         "d": sorted(hasil, key=lambda r: -(r["nilai"] or 0)),
     }
+    # Nol baris berarti acuannya yang salah, bukan bursanya yang sepi: penyaring
+    # di atas membuang emiten yang hari terakhirnya bukan `tanggal`, jadi acuan
+    # yang lebih tua daripada arsip harga membuang SEMUANYA. Itu yang terjadi
+    # 7-8 Sep 2026 — halaman menayangkan "0 emiten bertransaksi" dua hari
+    # berturut-turut tanpa satu pun galat, dan pemeriksa kesegaran diam karena
+    # ia cuma menimbang tanggal. Berhenti TANPA MENULIS lebih baik daripada
+    # menimpa data kemarin yang masih benar dengan daftar kosong.
+    if not hasil:
+        print(f"  BERHENTI: {tanggal} menghasilkan 0 emiten — berkas lama TIDAK ditimpa.")
+        print("  Periksa apakah statistik harian (acuan tanggal) lebih tua daripada arsip harga.")
+        return 1
     KELUARAN.write_text(json.dumps(keluar, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     n_kal = sum(1 for r in hasil if r["terkalibrasi"])
     n_tmm = sum(1 for r in hasil if r["tmm_swing"])
