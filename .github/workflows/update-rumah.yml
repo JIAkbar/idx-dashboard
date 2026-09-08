@@ -115,15 +115,37 @@ jobs:
       # menjawab "SKIP" tanpa satu pun galat — PDF-nya turun, JSON-nya tak
       # pernah dibuat, dan Kalender Bursa tetap berbunyi "Tanpa data".
       # Terjadi 20 Agu 2026 saat menambal 19 Agustus dengan tangan.
+      # Pemilihan berkas memakai NAMA, bukan waktu tulis (#127, 8 Sep 2026).
+      # Runner membuang PDF (`git clean` di akhir tiap run), jadi tiap run
+      # mengunduh ULANG seluruh bulan: hari ini turun lebih dulu, tanggal
+      # 01-07 menyusul sesudahnya, dan `Sort LastWriteTime -Descending`
+      # karena itu menaruh hari TERBARU di urutan paling belakang lalu
+      # membuangnya lewat `-First 5`. Akibatnya, sejak hari bursa ke-6 tiap
+      # bulan, ds hari itu tak pernah ter-parse: `git diff` kosong, langkah
+      # commit menjawab "Tidak ada perubahan", run HIJAU, dan Beranda diam
+      # di tanggal lama. Tanggalnya ada di NAMA berkas (ds_yymmdd), jadi
+      # nama yang dipakai mengurutkan.
       - name: Parse PDF ke JSON
         run: |
           $akar = (Get-Location).Path
-          $pdf = Get-ChildItem "$akar\data-idx\daily" -Filter '*.pdf' -ErrorAction SilentlyContinue |
-                 Sort-Object LastWriteTime -Descending | Select-Object -First 5
-          if (-not $pdf) { Write-Host 'Tak ada PDF baru.'; exit 0 }
+          $semua = Get-ChildItem "$akar\data-idx\daily" -Filter 'ds_*.pdf' -ErrorAction SilentlyContinue |
+                   Sort-Object Name -Descending
+          if (-not $semua) { Write-Host 'Tak ada PDF baru.'; exit 0 }
+          $pdf = $semua | Select-Object -First 5
+          Write-Host ('Akan di-parse: ' + (($pdf | ForEach-Object { $_.Name }) -join ', '))
           foreach ($f in $pdf) {
             & "${{ steps.py.outputs.exe }}" scripts/parse_idx_pdf.py $f.FullName
           }
+          # Gerbang fail-loud (pola #102): PDF bertanggal TERBARU wajib punya
+          # JSON-nya. Tanpa gerbang ini kegagalan pemilihan berkas tak punya
+          # satu pun gejala yang terlihat dari luar.
+          $terbaru = $semua[0]
+          $json = Join-Path "$akar\data-idx\json" ($terbaru.BaseName + '.json')
+          if (-not (Test-Path $json)) {
+            Write-Host ('GAGAL: ' + $terbaru.Name + ' tidak menghasilkan ' + $terbaru.BaseName + '.json')
+            exit 1
+          }
+          Write-Host ('OK: ' + $terbaru.BaseName + '.json ada')
           exit 0
 
       - name: Commit kalau ada perubahan
