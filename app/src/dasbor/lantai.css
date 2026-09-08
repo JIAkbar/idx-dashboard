@@ -683,7 +683,16 @@
 .lantai .empty svg{width:34px;height:34px;stroke:var(--text3);fill:none;stroke-width:1.5}
 .lantai .empty p{margin:0;color:var(--text2);font-size:13px;max-width:46ch}
 .lantai .empty .chips{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
-.lantai .chip-t{font-family:var(--ui);font-size:11.5px;font-weight:700;background:var(--bg3);border:1px solid var(--line2);border-radius:99px;padding:6px 14px;cursor:pointer;color:var(--text)}
+/* white-space:nowrap wajib karena .chip-t dikunci height:32px di blok bentuk
+   seragam di bawah: label yang membungkus tak menambah tinggi pil, ia MELUBER
+   ke atas dan ke bawah latarnya — teks di luar kapsul, menimpa baris
+   tetangganya. Persis kegagalan yang sudah dibayar .tabs (#79D) dan diperbaiki
+   di sana dengan min-height; untuk pil jawabannya nowrap, karena kapsul
+   99px yang tingginya tiga baris bukan lagi pil. Terukur 8 Sep 2026 (#96):
+   Screener mode Riwayat di 412px — "Tutup-ke-Tutup H+1" pecah 4 baris, teks
+   16px di luar pilnya. Pemakai pil di wadah sempit memberi wadahnya jalan
+   gulir (tabel) atau flex-wrap antar-pil, bukan membungkus label. */
+.lantai .chip-t{font-family:var(--ui);font-size:11.5px;font-weight:700;background:var(--bg3);border:1px solid var(--line2);border-radius:99px;padding:6px 14px;cursor:pointer;color:var(--text);white-space:nowrap}
 .lantai .chip-t:hover{border-color:var(--amber);color:var(--amber)}
 .lantai .empty .cari{display:flex;gap:8px;width:min(430px,100%)}
 /* Ticker "terakhir dilihat" — tombol teks polos di dalam .lbl */
