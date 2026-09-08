@@ -728,34 +728,36 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
 
       {(live.length > 0 || backtest.length > 0) && (<>
         <div className="panel-b" style={{ paddingTop: 0 }}>
-          <table className="tbl scr-tbl">
-            <thead>
-              <tr>
-                <th>Definisi menang</th>
-                <th className="r">Menang</th>
-                <th className="r">Kalah</th>
-                <th className="r">Tak masuk</th>
-                <th className="r">Masih berjalan</th>
-                <th className="r">Dari tuntas</th>
-                <th className="r">Dari semua</th>
-              </tr>
-            </thead>
-            <tbody>
-              {DEFINISI_OPSI.map((d) => (
-                <tr key={d.id}>
-                  <td>
-                    <button
-                      type="button" className={`chip-t${definisi === d.id ? ' on' : ''}`}
-                      style={{ marginRight: 8 }} onClick={() => setDefinisi(d.id)}
-                    >
-                      {d.label}
-                    </button>
-                  </td>
-                  {d.id === 'tpSl' ? selTpSl(ringkasDef.tpSl) : selH1(d.id === 'openTinggi' ? ringkasDef.openTinggi : ringkasDef.tutupTutup)}
+          <div className="board-tbl-wrap">
+            <table className="tbl scr-tbl">
+              <thead>
+                <tr>
+                  <th>Definisi menang</th>
+                  <th className="r">Menang</th>
+                  <th className="r">Kalah</th>
+                  <th className="r">Tak masuk</th>
+                  <th className="r">Masih berjalan</th>
+                  <th className="r">Dari tuntas</th>
+                  <th className="r">Dari semua</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {DEFINISI_OPSI.map((d) => (
+                  <tr key={d.id}>
+                    <td>
+                      <button
+                        type="button" className={`chip-t${definisi === d.id ? ' on' : ''}`}
+                        style={{ marginRight: 8 }} onClick={() => setDefinisi(d.id)}
+                      >
+                        {d.label}
+                      </button>
+                    </td>
+                    {d.id === 'tpSl' ? selTpSl(ringkasDef.tpSl) : selH1(d.id === 'openTinggi' ? ringkasDef.openTinggi : ringkasDef.tutupTutup)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           {ringkasDef.tpSl.ambigu > 0 && (
             <p className="muted" style={{ margin: '6px 0 0', fontSize: 12 }}>
               <b>{ringkasDef.tpSl.ambigu}</b> sinyal menyentuh target DAN batas rugi di hari yang sama —
@@ -776,31 +778,33 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
             ].filter((e) => e.hari.length > 0)
             if (era.length < 2) return null
             return (
-              <table className="tbl scr-tbl" style={{ marginTop: 10 }}>
-                <thead>
-                  <tr>
-                    <th>Era sampel — definisi aktif</th>
-                    <th className="r">Tanggal</th>
-                    <th className="r">Menang</th>
-                    <th className="r">Kalah</th>
-                    <th className="r">Tak masuk</th>
-                    <th className="r">Masih berjalan</th>
-                    <th className="r">Dari tuntas</th>
-                    <th className="r">Dari semua</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {era.map((e) => (
-                    <tr key={e.id}>
-                      <td>{e.label}</td>
-                      <td className="r">{e.hari.length}</td>
-                      {definisi === 'tpSl'
-                        ? selTpSl(jumlahTpSl(e.hari.map((h) => h.def.tpSl)))
-                        : selH1(jumlahH1(e.hari.map((h) => h.def[definisi])))}
+              <div className="board-tbl-wrap">
+                <table className="tbl scr-tbl" style={{ marginTop: 10 }}>
+                  <thead>
+                    <tr>
+                      <th>Era sampel — definisi aktif</th>
+                      <th className="r">Tanggal</th>
+                      <th className="r">Menang</th>
+                      <th className="r">Kalah</th>
+                      <th className="r">Tak masuk</th>
+                      <th className="r">Masih berjalan</th>
+                      <th className="r">Dari tuntas</th>
+                      <th className="r">Dari semua</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {era.map((e) => (
+                      <tr key={e.id}>
+                        <td>{e.label}</td>
+                        <td className="r">{e.hari.length}</td>
+                        {definisi === 'tpSl'
+                          ? selTpSl(jumlahTpSl(e.hari.map((h) => h.def.tpSl)))
+                          : selH1(jumlahH1(e.hari.map((h) => h.def[definisi])))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )
           })()}
           <ul className="muted" style={{ margin: '8px 0 0', paddingLeft: 18, fontSize: 12, lineHeight: 1.6 }}>
@@ -873,29 +877,31 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
               INI, bukan daftar yang benar-benar tersedia pada tanggal itu (emiten yang sudah delisting/
               disuspensi sejak itu tak ikut terhitung) — jangan baca angkanya sebagai jaminan hasil di masa lalu.
             </p>
-            <table className="tbl scr-tbl">
-              <thead>
-                <tr>
-                  <th>Tanggal</th>
-                  <th className="r">Saham</th>
-                  <th className="r">Menang</th>
-                  <th className="r">Kalah</th>
-                  <th className="r">Tak masuk</th>
-                  <th className="r">Masih berjalan</th>
-                  <th className="r">Dari tuntas</th>
-                  <th className="r">Dari semua</th>
-                </tr>
-              </thead>
-              <tbody>
-                {backtest.map((h) => (
-                  <tr key={h.tanggal}>
-                    <td>{h.tanggal}</td>
-                    <td className="r num">{h.baris.length}</td>
-                    {definisi === 'tpSl' ? selTpSl(h.def.tpSl) : selH1(h.def[definisi])}
+            <div className="board-tbl-wrap">
+              <table className="tbl scr-tbl">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th className="r">Saham</th>
+                    <th className="r">Menang</th>
+                    <th className="r">Kalah</th>
+                    <th className="r">Tak masuk</th>
+                    <th className="r">Masih berjalan</th>
+                    <th className="r">Dari tuntas</th>
+                    <th className="r">Dari semua</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {backtest.map((h) => (
+                    <tr key={h.tanggal}>
+                      <td>{h.tanggal}</td>
+                      <td className="r num">{h.baris.length}</td>
+                      {definisi === 'tpSl' ? selTpSl(h.def.tpSl) : selH1(h.def[definisi])}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </>)}
