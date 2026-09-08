@@ -27,7 +27,9 @@ on:
     - cron: '0 2 * * *'
   workflow_dispatch:
 
-# Hanya membaca; tak pernah menulis ke repo.
+# Pekerjaan `periksa` hanya membaca. `kesegaran-sumber` butuh izin menulis
+# issue, dan izinnya diberikan di pekerjaan itu saja — bukan di seluruh
+# alur kerja.
 permissions:
   contents: read
 
@@ -108,3 +110,81 @@ jobs:
           fi
 
           echo "::warning::Produksi tertinggal $BEDA hari ($PROD vs $REPO) — masih dalam ambang akhir pekan, belum dianggap beku."
+
+  # ---------------------------------------------------------------------
+  # #80 B — kesegaran SUMBER di dalam repo.
+  #
+  # Penjaga di atas menjawab "apakah yang tayang sama dengan yang di repo".
+  # Ia tak bisa melihat kegagalan yang membuat Johan bertanya 7 Sep 2026:
+  # repo dan produksi sama-sama menunjukkan "Data per 4 September" karena
+  # yang basi SUMBERNYA, bukan penyalurannya. Dua sumber yang seharusnya
+  # bergerak bersama dibandingkan SATU SAMA LAIN di sini.
+  #
+  # Dibandingkan silang, bukan ke kalender: hari bursa punya libur yang tak
+  # ada di kalender mana pun yang dipegang CI, dan penjaga yang menebak
+  # kalender akan menyalak tiap libur nasional. Dua sumber yang saling
+  # menyusul menghapus seluruh persoalan itu — keduanya diam di hari libur.
+  kesegaran-sumber:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            data-idx/json/index.json
+            data-idx/json/ohlc/BBCA.json
+          sparse-checkout-cone-mode: false
+
+      - name: Bandingkan tanggal statistik IDX dengan tanggal harga
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          DS=$(python3 -c "import json;d=json.load(open('data-idx/json/index.json'));print(max(x['date_iso'] for x in d['dates']))")
+          HARGA=$(python3 -c "import json;d=json.load(open('data-idx/json/ohlc/BBCA.json'));print(d['d'][-1][0])")
+          echo "statistik IDX : $DS"
+          echo "harga BBCA    : $HARGA"
+
+          if [ "$DS" = "$HARGA" ]; then
+            echo "Kedua sumber sejalan."
+            exit 0
+          fi
+
+          BEDA=$(python3 -c "
+          from datetime import date
+          a=date.fromisoformat('$HARGA'); b=date.fromisoformat('$DS')
+          print(abs((a-b).days))",)
+          BASI=$([ "$DS" \< "$HARGA" ] && echo "statistik IDX (ds_*.json)" || echo "harga (ohlc/)")
+          echo "selisih: $BEDA hari, yang tertinggal: $BASI"
+
+          # Satu hari masih wajar: PDF statistik terbit malam, dan panen
+          # sore bisa telat beberapa jam tanpa ada yang rusak. Dua hari
+          # berarti satu panen benar-benar hilang.
+          if [ "$BEDA" -lt 2 ]; then
+            echo "::warning::Sumber tertinggal $BEDA hari ($BASI). Masih dalam ambang keterlambatan panen sore."
+            exit 0
+          fi
+
+          JUDUL="Data basi $BEDA hari: $BASI tertinggal (statistik $DS, harga $HARGA)"
+          # Dedup: alarm yang membuat satu issue tiap pagi adalah alarm yang
+          # ditutup tanpa dibaca.
+          ADA=$(gh issue list --state open --search "Data basi in:title" --json title --jq '[.[] | select(.title | startswith("Data basi"))] | length')
+          if [ "$ADA" != "0" ]; then
+            echo "::warning::$JUDUL — issue serupa sudah terbuka, tak dibuat lagi."
+            exit 0
+          fi
+
+          gh issue create --title "$JUDUL" --body "$(printf '%s\n' \
+            "Penjaga kesegaran sumber (#80 B) menemukan dua sumber yang tak lagi sejalan." \
+            "" \
+            "- statistik IDX (ds_*.json): $DS" \
+            "- harga (ohlc/BBCA.json): $HARGA" \
+            "- selisih: $BEDA hari, yang tertinggal: $BASI" \
+            "" \
+            "Yang biasanya jadi sebabnya: panen sore tak berjalan (Task Scheduler menolak, token mati sebelum langkah IDX), atau PDF IDX belum terbit dan tak pernah disusul." \
+            "" \
+            "Issue ini dibuat otomatis dan tidak akan digandakan selama masih terbuka.")"
+          echo "::error::$JUDUL"

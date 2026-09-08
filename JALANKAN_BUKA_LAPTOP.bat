@@ -73,9 +73,26 @@ if exist "%~dp0.panen.lock" (
 mkdir "%~dp0.panen.lock" 2>nul
 
 echo.
+
 echo ============================================================
-echo  [0] GERBANG TOKEN - panen TIDAK dimulai sebelum ini lolos
+echo  PAPAN - Panen Buka Laptop (%date% %time%)
 echo ============================================================
+
+echo.
+echo [A] Jalur IDX + Yahoo + kabar (pipeline lama)...
+set LEWATI_OHLC_YAHOO=1
+call "%~dp0JALANKAN_OTOMATIS.bat" auto
+set LEWATI_OHLC_YAHOO=
+
+echo ============================================================
+echo  [0] GERBANG TOKEN - langkah STOCKBIT tak dimulai sebelum ini lolos
+echo ============================================================
+REM  Gerbang token BERDIRI DI SINI, bukan di kepala berkas (#80 A, 8 Sep 2026).
+REM  Sebelumnya ia menjaga SELURUH panen, jadi token Stockbit yang mati juga
+REM  membatalkan jalur IDX yang sama sekali tak memakainya - dan 7 Sep itu
+REM  yang terjadi: BukaLaptop 19:23 keluar bersih di gerbang, statistik harian
+REM  ikut tidak terbit. Yang dijaga sekarang cuma langkah yang benar-benar
+REM  butuh token.
 REM Kenapa gerbang, dan kenapa BUKAN --status:
 REM   `stockbit_token.py --status` membaca masa berlaku dari ISI token, bukan
 REM   dari jawaban server. Ia tetap melaporkan refresh sah sampai 6 hari ke
@@ -135,18 +152,7 @@ echo   Masih mati. Ulangi langkah 1-3, atau tutup jendela ini untuk berhenti.
 goto gerbang_token
 
 :token_ok
-echo   Token HIDUP - panen dimulai.
-
-
-echo ============================================================
-echo  PAPAN - Panen Buka Laptop (%date% %time%)
-echo ============================================================
-
-echo.
-echo [A] Jalur IDX + Yahoo + kabar (pipeline lama)...
-set LEWATI_OHLC_YAHOO=1
-call "%~dp0JALANKAN_OTOMATIS.bat" auto
-set LEWATI_OHLC_YAHOO=
+echo   Token HIDUP - panen Stockbit dimulai.
 
 echo.
 echo [B] OHLCV Stockbit (17 ruas, sejak IPO) + gabung + IHSG...

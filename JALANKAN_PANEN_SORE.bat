@@ -28,6 +28,22 @@ echo  PAPAN - Panen Sore (%date% %time%)
 echo ============================================================
 
 echo.
+echo [A] Jalur IDX (statistik harian/mingguan/bulanan + kabar) - pipa yang sama
+REM  Sampai 8 Sep 2026 panen sore TIDAK punya jalur IDX sama sekali: statistik
+REM  harian hanya lahir dari BukaLaptop (yang berdiri di belakang gerbang token)
+REM  dan dari CI 19:30. Akibatnya terlihat di layar - Johan menemukan "Data per
+REM  4 September" pada 7 Sep. Sekarang satu pipa: jalur IDX jalan lebih dulu,
+REM  tanpa bergantung pada hidup-matinya token Stockbit.
+REM
+REM  LEWATI_OHLC_YAHOO=1: sapuan Yahoo 963 emiten percuma di sini karena
+REM  langkah [B] menimpa ohlc/ dengan arsip Stockbit beberapa menit kemudian.
+REM  Kuncinya TIDAK diambil ulang - bat ini sudah memegangnya di atas, dan
+REM  JALANKAN_OTOMATIS memang tak pernah mengambil kunci sendiri.
+set LEWATI_OHLC_YAHOO=1
+call "%~dp0JALANKAN_OTOMATIS.bat" auto
+set LEWATI_OHLC_YAHOO=
+
+echo.
 echo [B] OHLCV Stockbit --paksa (bar hari ini) + IHSG + gabung + jahit
 "%PYEXE%" scripts\panen_ohlcv_stockbit.py --semua --paksa
 if errorlevel 1 echo   (OHLCV gagal - lanjut)
