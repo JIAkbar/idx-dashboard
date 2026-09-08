@@ -22,6 +22,35 @@ keterangan waktu — bukan sebagai komitmen yang dicatat. Tanggal yang
 menentukan urutan seluruh pekerjaan tidak boleh cuma hidup sebagai keterangan
 waktu di berkas lain.
 
+### Keadaan pada 8 September 2026 pukul 11, sehari sebelum tenggat
+
+Antrean permintaan **kosong dari pekerjaan**: yang tersisa cuma menunggu hasil
+panen 18:00 sebagai uji nyata pipa yang diperbaiki pagi ini. Sebelas baris
+ditutup dalam satu hari — semuanya terdorong dan CI hijau:
+
+| # | Yang berubah | Bukti terkuat |
+|---|---|---|
+| #36 A | Lima rasio Stock Detail (P/BV, P/S, Asset Turnover, Div Yield, Altman Z) dirotasi ke sumber terlengkap, yang lama jadi cadangan bertanda | **717 sel yang tadinya "—" kini terisi**; median rasio baru÷lama 0,98–1,02 atas 962 emiten |
+| #81 A | Gudang broker tahunan +3 kolom di ujung (frekuensi dua sisi, jenis broker) | 881 emiten, 134.274 hari, 3.615.572 baris dibangun ulang; 10 hari acak cocok persis arsip mentah |
+| #82 A | Sisi asing/lokal broker dibaca dari data, kurasi tangan jadi cadangan | sumber menyebut 23 kode asing, daftar tangan 17 |
+| #53 | FVG + order block melengkapi struktur pasar | BBCA: 37 FVG & 20 order block terbuka, pita tergambar |
+| #84 | **Alur kerja uji CI tidak pernah hijau sekali pun sejak lahir** | 7 berkas gagal DIMUAT (env Supabase kosong di runner), bukan gagal assertion; run pertama yang hijau `0b45b6305` |
+| #85 | Kepala berkas gudang menyebut delapan kolom sesuai isinya | 881 kepala diperbarui; penjaga dipasang di dua bahasa |
+| #27 | Kode emiten di tabel membuka berkasnya | sapuan 34 titik: 6 diubah, 28 sengaja tidak; IPO Papan 961/961 jadi tautan |
+| #86 · #87 | Tabel Bandarmologi bisa digulung di ponsel; tombol Jago Papan tak lagi keluar layar | sapuan 12 halaman di 412: nol luber, nol gulir body |
+| #78 A | Tanya PAPAN menjawab broker teraktif dari sumber yang sama dengan halamannya | 3 uji baru; panelnya sendiri masih dimatikan `lib/fitur.ts` |
+| #88 | Commit panen menyebut path sendiri; rebase gagal dibatalkan | sapuan `*.bat`: nol commit tanpa `--`, nol rebase tanpa penjaga |
+
+**Tiga kesalahan hari ini yang layak diingat lebih lama daripada hasilnya:**
+audit tampilan otomatis yang melaporkan 114 kombinasi bersih ternyata mengukur
+layar login 114 kali; alur kerja CI yang kubuat sendiri tak pernah kuperiksa
+hasil run-nya selama lima push; dan satu "tumpang tindih" yang hampir jadi baris
+antrean ternyata elemen di dalam blok tertutup. Ketiganya lolos dari angka dan
+tertangkap oleh satu kebiasaan yang sama — melihat hasilnya, bukan mempercayainya.
+
+Yang masih menunggu Johan: #78 sudah dikerjakan tapi panelnya dimatikan sejak
+21 Agu (menyalakannya keputusan produk, bukan teknis), dan hasil panen 18:00.
+
 ### Keadaan antrean pada 6 Sep 2026, 3 hari sebelum tenggat
 
 | # | Perihal | Kondisi |

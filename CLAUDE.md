@@ -564,6 +564,40 @@ Dua viewport (laptop 1536×960×1.25, telepon 412×915×2.625) sebelum melapor
 selesai. Halaman admin ada di balik login: **jangan pernah mengisi kolom
 sandi** — minta Johan login sendiri di jendela devtools.
 
+**Audit tampilan yang dijalankan dari browser BERSIH mengukur halaman login,
+bukan halamannya.** 8 Sep 2026 satu jalan otomatis melaporkan 114 kombinasi
+bersih — 19 halaman × 3 viewport × 2 tema, nol cacat di semuanya. Yang diukur
+ternyata layar "Masuk dulu" yang sama 114 kali, karena konteks browser baru tak
+membawa sesi login. Gejalanya tersedia dan murah: panjang teks halaman ≈285
+karakter di SETIAP rute dan judul yang identik di semuanya. Sebelum memakai
+audit tampilan apa pun sebagai bukti, periksa dulu satu angka yang membuktikan
+halamannya benar-benar termuat (panjang teks, judul, jumlah baris tabel) — dan
+kalau halamannya di balik login, audit itu wajib lewat sesi yang memang login.
+
+**Kelas CSS yang tak pernah didefinisikan gagal tanpa satu pun galat.**
+`<div className="gulir">` di Bandarmologi terbaca benar di kode selama
+berbulan-bulan; kelas `gulir` tak ada di satu pun berkas CSS, jadi tabel 923px
+di layar 412px terpotong tanpa bisa digulung. Sapuannya satu perintah dan
+murah — untuk tiap kelas tata letak yang baru dipakai, `grep -rn "\.<nama>"
+app/src --include=*.css` harus mengembalikan sesuatu. Kelas kanonis yang sudah
+ada (`.board-tbl-wrap` untuk tabel lebar) selalu didahulukan daripada nama baru.
+
+**`flex:none` membuat `flex-wrap` yang sudah ada tak pernah terpakai.** Kotak
+yang tak boleh menyusut mengambil lebar KONTEN, jadi isinya selalu muat dan tak
+pernah perlu membungkus — walau kotaknya sendiri lebih lebar daripada layar.
+Terukur di Jago Papan: grup 457px di layar 412px, tombol terakhir terbaca "UN".
+Kalau sebuah baris kendali membungkus di sebagian tempat tapi tidak di tempat
+lain, periksa `flex` induknya lebih dulu, bukan `flex-wrap`-nya.
+
+**`git commit` di berkas `.bat` panen WAJIB menyebut path-nya.** Aturan yang
+sama dengan sesi agen, dan alasannya sama: `git add <dir>` diikuti `git commit`
+tanpa `--` mengambil SELURUH index, termasuk apa pun yang kebetulan di-stage
+orang atau sesi lain. Selama bat itu dijalankan tangan, risikonya sesekali;
+sejak pipa sore memanggilnya otomatis (#80 A), ia berjalan tiap hari tanpa ada
+yang menonton. Dan `git pull --rebase` di bat wajib punya jalan keluar
+(`if errorlevel 1` → `git rebase --abort`): rebase yang berhenti di konflik
+meninggalkan `.git/rebase-merge` dan git BERIKUTNYA di mesin itu menolak bekerja.
+
 
 ---
 
