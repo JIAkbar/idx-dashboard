@@ -290,3 +290,13 @@
   background: none; color: var(--text2); font: inherit; cursor: pointer;
 }
 .wp-menu button:hover { background: var(--bg2); color: var(--text); }
+
+/* Bar hari berjalan (#97 A) — satu baris di kelompok emiten, warna ikut
+   token naik/turun halaman; angka arsip di chart tak berubah bentuknya. */
+.wp-live { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 6px; font-size: 12px; }
+.wp-live .wp-live-tanda {
+  font-family: var(--mono, ui-monospace, monospace); font-size: 10px; letter-spacing: .1em;
+  padding: 1px 6px; border-radius: 4px; background: var(--amber-bg, rgba(242,194,48,.14)); color: var(--amber, #F2C230);
+}
+.wp-live .num.up { color: var(--naik, #38B77E); }
+.wp-live .num.down { color: var(--turun, #E6635A); }

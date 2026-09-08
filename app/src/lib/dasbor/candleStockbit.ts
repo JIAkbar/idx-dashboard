@@ -5,6 +5,7 @@
  * Kolom berkas: tanggal, unixdate, o, h, l, c, volume, … (lihat ohlcvKaya.ts).
  */
 import type { CandlestickData, HistogramData, Time } from 'lightweight-charts'
+import type { HargaLive } from './hargaLive'
 
 export interface DataCandle {
   lilin: CandlestickData[]
@@ -33,5 +34,32 @@ export async function muatCandle(kode: string): Promise<DataCandle> {
   } catch {
     // Server SPA membalas berkas hilang dengan index.html 200 (pelajaran #341).
     return { lilin: [], volume: [] }
+  }
+}
+
+/**
+ * Tempelkan bar HARI BERJALAN dari proxy live ke deret candle arsip (#97 A,
+ * keputusan Johan 8 Sep 2026: "di whales juga bisa dong itu datanya realtime
+ * pakai OHLCV nya"). Aturan:
+ * - hanya bila tanggal live LEBIH BARU dari bar arsip terakhir (arsip sengaja
+ *   membuang bar hari berjalan — `buang_bar_hari_berjalan` di panen); tanggal
+ *   sama atau lebih tua = arsip menang, tak ada yang ditimpa;
+ * - open/high/low/close harus angka sah dan konsisten (low ≤ min(o,c), high ≥
+ *   max(o,c)); kalau tidak, bar dibuang — lebih baik tanpa bar daripada bar
+ *   cacat menggeser skala;
+ * - deret asli TIDAK diubah (kembalian larik baru); tak pernah ditulis ke mana pun.
+ */
+export function gabungBarBerjalan(candle: DataCandle, live: HargaLive | null | undefined): DataCandle {
+  if (!live || !live.tanggal || !/^\d{4}-\d{2}-\d{2}$/.test(live.tanggal)) return candle
+  const terakhir = candle.lilin.length ? String(candle.lilin[candle.lilin.length - 1].time) : ''
+  if (live.tanggal <= terakhir) return candle
+  const o = Number(live.open), h = Number(live.high), l = Number(live.low), c = Number(live.close)
+  if (![o, h, l, c].every(Number.isFinite) || o <= 0 || c <= 0) return candle
+  if (l > Math.min(o, c) || h < Math.max(o, c)) return candle
+  const time = live.tanggal as Time
+  const v = Number(live.volume)
+  return {
+    lilin: [...candle.lilin, { time, open: o, high: h, low: l, close: c }],
+    volume: [...candle.volume, { time, value: Number.isFinite(v) && v > 0 ? v : 0, color: c >= o ? WARNA_VOL_NAIK : WARNA_VOL_TURUN }],
   }
 }

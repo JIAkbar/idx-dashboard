@@ -13,6 +13,14 @@ export interface HargaLive {
   close: number
   prev: number | null
   pct: number | null
+  /** Bar hari berjalan (#97 A). Opsional: null/undefined bila proxy belum
+   *  mengirimnya; pemakai memperlakukannya sebagai "tak ada bar berjalan". */
+  open?: number | null
+  high?: number | null
+  low?: number | null
+  volume?: number | null
+  value?: number | null
+  frequency?: number | null
   /** Kapan angkanya sampai di peramban (epoch ms) — label jam di layar
    *  dibaca dari sini, karena server tak mengirim stempel waktu. */
   diambilPada: number

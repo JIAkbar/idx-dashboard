@@ -87,6 +87,12 @@ export default async function handler(req, res) {
     const sebelum = urut.length > 1 ? urut[urut.length - 2] : null
     const close = Number(kini.close)
     const prev = sebelum ? Number(sebelum.close) : null
+    // Angka bar hari berjalan (#97 A, keputusan Johan 8 Sep 2026): OHLC, volume,
+    // nilai, frekuensi dari bar terbaru chartbit. Diukur 24 Agu 2026: harga/
+    // volume/frekuensi bar berjalan sah selama bursa buka, foreignbuy/sell
+    // BASI (salinan kemarin) — jadi asing sengaja TIDAK dikirim. Angka ini
+    // tidak pernah ditulis ke arsip; arsip tetap harian sesudah tutup.
+    const angka = (v) => (Number.isFinite(Number(v)) ? Number(v) : null)
     res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=90')
     return res.status(200).json({
       kode,
@@ -94,6 +100,12 @@ export default async function handler(req, res) {
       close,
       prev,
       pct: prev ? Math.round(((close - prev) / prev) * 10000) / 100 : null,
+      open: angka(kini.open),
+      high: angka(kini.high),
+      low: angka(kini.low),
+      volume: angka(kini.volume),
+      value: angka(kini.value),
+      frequency: angka(kini.frequency),
     })
   } catch (e) {
     // Galat asli dicatat, tak dikirim (pass kebocoran, CLAUDE.md 18 Agu).

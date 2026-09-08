@@ -4,7 +4,9 @@ import {
   CandlestickSeries, CrosshairMode, HistogramSeries, createChart,
   type IChartApi, type ISeriesApi, type SeriesType, type Time,
 } from 'lightweight-charts'
-import { muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
+import { gabungBarBerjalan, muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
+import { useHargaLive } from '../../lib/dasbor/hargaLive'
+import { jamPasarJakarta } from '../../lib/tanggalBursa'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { LencanaBeku, tidakDiperdagangkan } from '../../components/dasbor/LencanaBeku'
@@ -131,6 +133,17 @@ export default function WhalesPapan() {
     [ringkasKartu, kode],
   )
 
+  // Bar hari berjalan (#97 A): ditarik hanya selama bursa buka, lewat proxy
+  // server (token tidak pernah ke peramban), tiap 45 detik — mengikuti cache
+  // CDN 30 s proxy. Di luar jam bursa tak ada permintaan; gagal = null dan
+  // halaman diam-diam tetap memakai arsip harian.
+  const [pasar, setPasar] = useState(() => jamPasarJakarta())
+  useEffect(() => {
+    const t = setInterval(() => setPasar(jamPasarJakarta()), 60_000)
+    return () => clearInterval(t)
+  }, [])
+  const live = useHargaLive(pasar.status === 'buka' ? kode : null, 45)
+
   const [sel, setSel] = useState<SeleksiArea | null>(null)
   const [selIntra, setSelIntra] = useState<SelIntra | null>(null)
   /** Broker yang pill AVG-nya diklik — kartu rinciannya tampil di panel. */
@@ -141,6 +154,8 @@ export default function WhalesPapan() {
   // dan itulah akar 10 deploy Vercel gagal beruntun 27 Agu.
   const [tf] = useState<Tf>('harian')
   const [candle, setCandle] = useState<DataCandle>({ lilin: [], volume: [] })
+  const candleTampil = useMemo(() => gabungBarBerjalan(candle, live), [candle, live])
+  const barBerjalan = candleTampil.lilin.length > candle.lilin.length
   const [intra, setIntra] = useState<{ bar: Bar1H[]; galat: GalatIntraday }>({ bar: [], galat: null })
   const [avgAktif, setAvgAktif] = useState(true)
   const [profilAktif, setProfilAktif] = useState(true)
@@ -430,9 +445,9 @@ export default function WhalesPapan() {
     // di luar jendela (volume tetap tampak karena skalanya terpisah).
     lilin.priceScale().applyOptions({ autoScale: true })
     if (tf === 'harian') {
-      lilin.setData(candle.lilin)
-      vol.setData(candle.volume)
-      const n = candle.lilin.length
+      lilin.setData(candleTampil.lilin)
+      vol.setData(candleTampil.volume)
+      const n = candleTampil.lilin.length
       if (n > 0) {
         // Footprint yang SUDAH menyala harus tetap terlihat di emiten baru
         // (temuan Johan 28 Agu "jika ganti emiten dia tidak aktif langsung
@@ -458,7 +473,7 @@ export default function WhalesPapan() {
       color: b.close >= b.open ? 'rgba(48, 164, 108, 0.5)' : 'rgba(229, 72, 77, 0.5)',
     })))
     if (barIntra.length > 0) chart.timeScale().fitContent()
-  }, [tf, candle, barIntra])
+  }, [tf, candleTampil, barIntra])
 
   // Kotak terkunci digambar primitive dari NILAI — ikut zoom/pan.
   useEffect(() => {
@@ -725,6 +740,24 @@ export default function WhalesPapan() {
             </span>
           )}
           {muat && <span className="muted" style={{ fontSize: 12 }}>memuat…</span>}
+          {live && barBerjalan && (
+            <span
+              className="wp-live"
+              title="Bar hari berjalan dari Stockbit lewat server PAPAN; tertunda paling lama 45 detik; tidak ditulis ke arsip. Angka asing tidak ditampilkan karena sumbernya baru sah sesudah tutup."
+            >
+              <b className="wp-live-tanda">LIVE</b>
+              <b className={`num ${(live.pct ?? 0) < 0 ? 'down' : 'up'}`}>
+                {live.close.toLocaleString('id-ID')}{live.pct != null && ` · ${live.pct > 0 ? '+' : ''}${live.pct.toLocaleString('id-ID', { maximumFractionDigits: 2 })}%`}
+              </b>
+              <span className="muted">
+                O {live.open?.toLocaleString('id-ID')} · H {live.high?.toLocaleString('id-ID')} · L {live.low?.toLocaleString('id-ID')}
+                {live.volume != null && ` · vol ${lotRingkas(live.volume / 100)} lot`}
+                {live.value != null && ` · Rp ${rupiahRingkas(live.value)}`}
+                {live.frequency != null && ` · ${live.frequency.toLocaleString('id-ID')} kali`}
+                {` · ${jamPasarJakarta(new Date(live.diambilPada)).jam} WIB · tertunda ≤45 s`}
+              </span>
+            </span>
+          )}
         </div>
         <span className="pemisah-v" aria-hidden="true" />
         {/* Pemilih TF Harian/4H/1H DICABUT (Johan 27 Agu: "di hapus saja ini
