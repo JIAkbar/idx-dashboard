@@ -94,6 +94,37 @@ export function Metodologi() {
             </p>
           </div>
 
+          {/* Ditambahkan 8 Sep 2026 (#91). Arti penyebut penuh, n efektif, dan
+              sinyal menggantung tinggal DI SINI; halaman Winrate cuma menaut ke
+              sini. Yang ditulis: arti angkanya, bukan cara batch menghitungnya. */}
+          <div className="mtd-kartu" id="winrate">
+            <h3>Winrate PAPAN — penyebut penuh, n efektif, dan sinyal menggantung</h3>
+            <p>
+              Win rate di halaman Winrate PAPAN memakai aturan rencana dagang yang sama dengan Kartu
+              Analisa — target satu rentang harian khas di atas harga tutup, batas rugi yang lebih rendah
+              antara satu setengah rentang di bawah tutup dan terendah lima hari, keduanya dibulatkan ke
+              fraksi bursa — diterapkan ke tiap hari bursa di riwayat emiten. Kelas buktinya
+              <b> rekonstruksi</b>: aturan hari ini diterapkan ke masa lalu, bukan catatan sinyal yang
+              benar-benar pernah diterbitkan, jadi tanpa slippage dan tanpa keputusan manusia.
+            </p>
+            <p>
+              <b>Win rate</b> dihitung dari sinyal yang <b>tuntas</b> (menang atau kalah). <b>Penyebut
+              penuh</b> membagi dengan seluruh sinyal, termasuk yang <b>menggantung</b> — sinyal yang sampai
+              akhir horizon tak menyentuh target maupun batas; posisinya masih terbuka dan dinilai pada
+              harga tutup terakhir, bukan dianggap nol. Keduanya selalu tampil berdampingan: aturan yang
+              sering menggantung tampak lebih baik daripada aturan yang selalu tuntas bila hanya angka
+              pertama yang dibaca. Target dan batas yang tersentuh di hari yang sama dihitung <b>kalah</b>,
+              karena data harian tak tahu mana yang lebih dulu. Ekspektansi yang ditampilkan sudah
+              dikurangi biaya pulang-pergi.
+            </p>
+            <p>
+              <b>n efektif</b> = jumlah sinyal dibagi horizon. Sinyal harian yang jendelanya saling
+              beririsan bukan sampel yang saling bebas — 120 sinyal pada horizon 200 hari kira-kira satu
+              percobaan. Tanda ⚠ berarti kurang dari lima percobaan bebas; kondisi teknikal dengan sinyal
+              di bawah tiga puluh ditulis redup dan tak diberi lencana.
+            </p>
+          </div>
+
           <div className="mtd-kartu">
             <h3>Laporan keuangan: lencana asal tiap angka</h3>
             <p>

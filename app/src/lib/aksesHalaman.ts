@@ -180,6 +180,9 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   // `akses_halaman` ditambahkan bareng rutenya, bukan menyusul.
   grafik: 'grafik',
   kartu: 'kta',
+  // Winrate PAPAN (#91, 8 Sep 2026) — terkunci login seperti Grafik; baris
+  // `akses_halaman` disisipkan bersama rutenya.
+  winrate: 'winrate',
   statistik: 'statistik',
   // Daftar pantau milik pembaca sendiri (localStorage), BEDA dari 'radar'
   // yang berisi arsip WDWL berbasis aturan. Dua produk, dua kunci.

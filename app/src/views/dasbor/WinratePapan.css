@@ -1,0 +1,96 @@
+/* Winrate PAPAN — hanya PENEMPATAN dan lebar (aturan #170: bentuk kendali
+   dan tabel milik lantai.css). Kelas ber-awalan .wr- tak pernah mendefinisikan
+   bentuk baru; yang ada di sini cuma grid, jarak, dan dua visual kecil
+   (bar ekspektansi, penanda rentang 52 minggu) yang tak punya padanan umum. */
+
+.lantai.wr .wr-alat { align-items: center; }
+.lantai.wr .wr-cari { min-width: 220px; }
+.lantai.wr .wr-meta { font-size: 12px; color: var(--text2); }
+.lantai.wr .wr-meta b { color: var(--text); }
+
+/* Empat tile KPI berbagi rata; di ponsel 412 px dua per baris (basis 180 px:
+   dua tile + jarak 8 px masih muat di 396 px isi). */
+.lantai.wr .wr-kpi .tile { flex: 1 1 180px; }
+.lantai.wr .wr-tile .t-name { color: var(--text3); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; }
+.lantai.wr .wr-tile .t-val { font-size: 24px; }
+.lantai.wr .wr-tile .t-code { font-family: var(--ui); font-size: 11.5px; color: var(--text2); white-space: normal; }
+
+/* Dua kartu bersisian — ambangnya lebar WADAH (auto-fit), sama seperti
+   Berkas Emiten #98: satu lajur di ponsel tanpa media query. */
+.lantai.wr .wr-duo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr));
+  gap: var(--j2, 16px);
+  align-items: start;
+}
+
+.lantai.wr .wr-sub { font-size: 11.5px; }
+.lantai.wr .wr-ket { margin: 10px 0 0; font-size: 12px; line-height: 1.55; max-width: 78ch; }
+.lantai.wr .wr-daftar { margin: 8px 0 0; padding-left: 18px; font-size: 12px; line-height: 1.55; }
+.lantai.wr .wr-daftar li { margin-bottom: 5px; }
+.lantai.wr .wr-daftar b { color: var(--text); }
+.lantai.wr .wr-kaki { margin: 0; font-size: 12px; line-height: 1.55; max-width: 92ch; }
+
+/* Baris yang disorot (horizon 20 hari, kondisi terbaik) dan baris redup
+   (sampel kecil). Warna dari token, tak ada nilai baru. */
+.lantai.wr .wr-sorot td { background: var(--amber-dim); }
+.lantai.wr tr.wr-redup td, .lantai.wr td.wr-redup { color: var(--text3); }
+.lantai.wr .wr-tbl td b { font-weight: 600; }
+.lantai.wr .wr-pasangan td:first-child { color: var(--text2); }
+.lantai.wr .wr-lencana {
+  margin-left: 6px;
+  font: 600 9.5px/1 var(--mono);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text2);
+  border: 1px solid var(--line2);
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+/* Bar ekspektansi: trek dua arah, nol di tengah. Isi mengambil warna
+   semantik naik/turun; bar beku memakai trek satu arah dari kiri. */
+.lantai.wr .wr-eks { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.lantai.wr .wr-eks b { min-width: 58px; text-align: right; }
+.lantai.wr .wr-bar {
+  position: relative;
+  display: inline-block;
+  width: 110px;
+  height: 8px;
+  border-radius: 3px;
+  background: var(--bg3);
+  box-shadow: inset 0 0 0 1px var(--line);
+  vertical-align: middle;
+}
+.lantai.wr .wr-bar:not(.wr-bar-kiri)::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: -2px; bottom: -2px;
+  width: 1px;
+  background: var(--line2);
+}
+.lantai.wr .wr-bar i { position: absolute; top: 0; height: 100%; border-radius: 3px; }
+.lantai.wr .wr-bar i.up { background: color-mix(in srgb, var(--green) 55%, transparent); }
+.lantai.wr .wr-bar i.down { background: color-mix(in srgb, var(--red) 55%, transparent); }
+.lantai.wr .wr-bar i.netral { background: var(--line2); }
+
+/* Penanda posisi harga di rentang 52 minggu. */
+.lantai.wr .wr-rentang52 {
+  position: relative;
+  height: 8px;
+  margin: 12px 0 6px;
+  border-radius: 3px;
+  background: var(--bg3);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.lantai.wr .wr-rentang52 i {
+  position: absolute;
+  top: -4px;
+  width: 3px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--amber);
+  box-shadow: 0 0 0 1.5px var(--bg1);
+}

@@ -219,6 +219,14 @@ export const MENU_ITEMS: MenuItem[] = [
     ringkas: 'Kartu per emiten: struktur harga, level dengan n sentuhan, ekspektasi waktu, musiman, dan fundamental — tiap angka membawa asal-usulnya.',
     ikon: 'M4 4h16v16H4zM4 9h16M9 9v11M14 13h3M14 16h3',
   },
+  {
+    // Winrate PAPAN (8 Sep 2026, #91) — aturan rencana dagang diuji ulang
+    // pada riwayat tiap emiten: enam horizon, dua jendela sinyal, saringan
+    // teknikal, pembanding pasar. Kode 'WRT'; 'WIN' terbaca seperti seruan.
+    id: 'winrate', path: '/winrate', label: 'Winrate PAPAN', kode: 'WRT', induk: '/screener', tabLabel: 'Winrate', grup: 'analisa',
+    ringkas: 'Win rate dan ekspektansi aturan rencana dagang per emiten: 5 sampai 200 hari, saringan teknikal, dibandingkan seluruh pasar.',
+    ikon: 'M4 20h16M6 16l4-5 3 3 5-7M17 7h2v2',
+  },
 
   {
     // Screener lembar-kerja (B31, 21 Agu 2026) — 921 emiten dalam satu tabel
