@@ -1,4 +1,4 @@
-import type { DataHarian, TanggalIndex } from './dataHarian'
+import type { BrokerRankRow, DataHarian, TanggalIndex } from './dataHarian'
 import { muatSektor, sektorEmiten, type DaftarSektor } from './sektorIdx'
 import type { EdisiBulletin } from './bulletin'
 import type { KabarItem } from './kabar'
@@ -50,6 +50,16 @@ export type DataButuh =
 
 export interface KonteksTanya {
   hari: DataHarian | null
+  /**
+   * Peringkat broker se-pasar dari sumber yang SAMA dengan halaman Top Broker
+   * (#66 A). null = belum termuat, dan jawabannya jatuh ke rekap ringkas
+   * bawaan berkas harian — yang basisnya papan REGULER saja.
+   *
+   * Dua sumber untuk satu pertanyaan itu persoalan nyata, bukan kerapian:
+   * terukur di XL 1,094× pada volume 4 September, jadi orang yang bertanya di
+   * panel ini dan membuka halamannya bisa membaca dua angka berbeda.
+   */
+  topBroker?: BrokerRankRow[] | null
   /** Seri penutupan IHSG per hari bursa (index.json) — bahan pertanyaan
    *  lintas waktu: sepekan, sebulan, beruntun berapa hari. */
   seri: TanggalIndex[] | null
@@ -320,11 +330,19 @@ const linkBroker = { ke: '/broker', keLabel: 'Top Broker' }
  * terbesar" belum dicabangkan ke `h.broker_vol`/`h.broker_freq` — tambahkan
  * kalau memang ada yang menanyakannya secara eksplisit.
  */
-function jawabBroker(h: DataHarian): Jawaban {
-  const top = (h.broker_val ?? []).slice(0, 3)
+function jawabBroker(h: DataHarian, sepasar?: BrokerRankRow[] | null): Jawaban {
+  // Sumber utamanya peringkat se-pasar yang dipakai halamannya sendiri;
+  // rekap ringkas berkas harian cuma cadangan saat berkasnya belum termuat.
+  const dariHalaman = sepasar != null && sepasar.length > 0
+  const top = (dariHalaman ? sepasar : (h.broker_val ?? [])).slice(0, 3)
   if (top.length === 0) return { teks: 'Data Top Broker hari ini belum ada.', takPaham: true, ...linkBroker }
+  // Basisnya DISEBUT, bukan disembunyikan: angka "paling aktif" berubah arti
+  // kalau papan negosiasi dan tunai ikut atau tidak, dan pembaca tak punya
+  // cara lain menebaknya dari kalimatnya.
+  const basis = dariHalaman ? 'seluruh papan' : 'papan reguler'
   return {
-    teks: `Broker paling aktif hari ini (nilai transaksi): ${top.map((x) => `${x.nm} ${rp(x.p)}%`).join(', ')}.`,
+    teks: `Broker paling aktif hari ini (nilai transaksi, ${basis}): `
+      + `${top.map((x) => `${x.nm} ${rp(x.p)}%`).join(', ')}.`,
     topik: 'broker', ...linkBroker,
   }
 }
@@ -1216,7 +1234,7 @@ function jawabInti(pertanyaan: string, k: KonteksTanya): Jawaban {
   // ada kata rangking): di sini pertanyaannya sudah cukup spesifik untuk
   // dijawab langsung, bukan ditawari cabang tiga arah.
   if (punya(t, 'broker') && punya(t, 'paling aktif', 'teraktif', 'top broker', 'terbesar', 'tersibuk', 'paling banyak')) {
-    return jawabBroker(h)
+    return jawabBroker(h, k.topBroker)
   }
 
   // ── Penggerak indeks ─────────────────────────────────────────────────────

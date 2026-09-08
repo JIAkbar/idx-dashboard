@@ -339,7 +339,7 @@ describe('jawab — susulan atas topik baru tak menebak (dan tak crash)', () => 
   })
 })
 
-describe('jawab — top broker (market-wide, dari h.broker_val)', () => {
+describe('jawab — top broker (se-pasar; sumber sama dengan halamannya, #78)', () => {
   it('broker paling aktif diurut nilai transaksi, tanpa fetch tahap-2', () => {
     const j = jawab('broker paling aktif hari ini', konteks())
     expect(j.butuh).toBeUndefined()
@@ -352,6 +352,35 @@ describe('jawab — top broker (market-wide, dari h.broker_val)', () => {
   it('"top broker" tanpa kata rangking lain tetap dikenali', () => {
     const j = jawab('top broker hari ini', konteks())
     expect(j.teks).toContain('Stockbit')
+  })
+
+  it('peringkat dari halaman Top Broker MENANG atas rekap ringkas berkas harian', () => {
+    // Dua sumber untuk satu pertanyaan: terukur berselisih 1,094x di satu
+    // broker pada 4 September. Yang dipakai halamannya yang harus menang,
+    // supaya panel dan halaman tak menjawab dua angka berbeda.
+    const j = jawab('broker paling aktif hari ini', konteks({
+      topBroker: [
+        { cd: 'XL', nm: 'Broker Uji Satu', v: 12.3, p: 9.1 },
+        { cd: 'YP', nm: 'Broker Uji Dua', v: 8.2, p: 6.4 },
+      ],
+    }))
+    expect(j.teks).toContain('Broker Uji Satu')
+    expect(j.teks).not.toContain('Stockbit')
+  })
+
+  it('kalimatnya MENYEBUT basis papannya — angka "paling aktif" berubah arti tanpa itu', () => {
+    expect(jawab('broker paling aktif hari ini', konteks({
+      topBroker: [{ cd: 'XL', nm: 'Broker Uji Satu', v: 1, p: 1 }],
+    })).teks).toContain('seluruh papan')
+    // Cadangan: berkas harian belum termuat -> rekap ringkas, basisnya lebih
+    // sempit, dan itu dikatakan apa adanya alih-alih disamarkan.
+    expect(jawab('broker paling aktif hari ini', konteks()).teks).toContain('papan reguler')
+  })
+
+  it('peringkat KOSONG jatuh ke cadangan, bukan ke "data belum ada"', () => {
+    const j = jawab('broker paling aktif hari ini', konteks({ topBroker: [] }))
+    expect(j.teks).toContain('Stockbit')
+    expect(j.takPaham).toBeUndefined()
   })
 
   it('data broker belum ada dijawab jujur, bukan array kosong diam-diam', () => {

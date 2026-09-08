@@ -7,6 +7,7 @@ import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import { fetchFundamental } from '../../lib/dasbor/stockDetailData'
 import { loadInvestorMap } from '../../lib/dasbor/petaInvestorData'
 import { jawab, CONTOH_TANYA, type Jawaban, type Topik, type DataButuh, type OhlcRingkas } from '../../lib/dasbor/tanyaPapan'
+import { useTopBrokerHari } from '../../lib/dasbor/brokerHarian'
 import { tanyaAI, rakitKonteks } from '../../lib/dasbor/tanyaAI'
 import { useAuth } from '../../context/AuthContext'
 import { IkonMenu, IKON_SILANG } from './IkonMenu'
@@ -118,7 +119,11 @@ export function TanyaPapan() {
   // jawaban), dan panel terpaksa balik bertanya padahal orangnya jelas masih
   // membicarakan BBCA.
   const subjekRef = useRef<string | null>(null)
-  const { hari, tanggalTersedia } = useDataHarian()
+  const { hari, tanggalTersedia, tanggalAktif } = useDataHarian()
+  // Peringkat broker dari sumber yang SAMA dengan halaman Top Broker (#78):
+  // panel ini dan halamannya menjawab pertanyaan yang sama, dan sebelum ini
+  // keduanya memakai basis papan yang berbeda.
+  const { val: topBroker } = useTopBrokerHari(tanggalAktif ?? null)
   const { daftar: edisi } = useBulletinList()
   const { kabar } = useKabar()
   const kamus = useKamusEmiten()
@@ -147,6 +152,7 @@ export function TanyaPapan() {
 
     const ctx = {
       hari: hari ?? null,
+      topBroker: topBroker ?? null,
       seri: tanggalTersedia ?? null,
       edisi: edisi ?? null,
       kabar: kabar?.item ?? null,
