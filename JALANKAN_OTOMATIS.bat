@@ -129,14 +129,33 @@ if /i not "%HARI%"=="Friday" (
 
 echo.
 echo [8/8] Commit dan push data baru...
-git add data-idx/json/ arus-pasar/keluaran/
-git diff --staged --quiet
+REM Dua penjaga di blok ini, keduanya dibayar pengalaman:
+REM
+REM 1. `git commit` DULU tanpa daftar path, jadi ia mengambil SELURUH index —
+REM    termasuk berkas yang kebetulan sudah di-stage sesi lain. Persis cara
+REM    13 berkas halaman Kartu Analisa terbawa ke commit berjudul lain pada
+REM    18 Agu. Sejak pipa sore memanggil berkas ini sebagai langkah [A]
+REM    (#80 A), risikonya jalan tiap hari tanpa ada yang menonton. Sekarang
+REM    commit menyebut kedua path yang memang miliknya.
+REM 2. `git pull --rebase` yang berhenti di konflik meninggalkan
+REM    `.git/rebase-merge` terbuka, dan git BERIKUTNYA di mesin ini menolak
+REM    bekerja (terjadi 2 Sep 18:39 dan 3 Sep 08:01). Rebase yang gagal
+REM    sekarang dibatalkan dan panennya berhenti dengan pesan, bukan
+REM    meninggalkan pohon kerja setengah jalan.
+set DATA_PATH=data-idx/json/ arus-pasar/keluaran/
+git add %DATA_PATH%
+git diff --staged --quiet -- %DATA_PATH%
 if not errorlevel 1 (
   echo Tidak ada data baru hari ini.
   goto akhir
 )
-git commit -m "data: update IDX %date%"
+git commit -m "data: update IDX %date%" -- %DATA_PATH%
 git pull --rebase origin main
+if errorlevel 1 (
+  echo   Rebase gagal - dibatalkan, data TETAP ter-commit tapi belum ter-push.
+  git rebase --abort
+  goto akhir
+)
 git push origin main
 echo Data ter-push ke GitHub.
 
