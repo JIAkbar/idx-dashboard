@@ -848,6 +848,13 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <td>23 Agu 2026</td>
 </tr>
 <tr>
+<td>Winrate PAPAN <code>/winrate</code> <em>(baru 8 Sep 2026, #91)</em></td>
+<td><code>winrate/&lt;KODE&gt;.json</code> (956 emiten), <code>winrate/index.json</code>; pencarian dari <code>stock_index</code></td>
+<td>⚙️ <code>scripts/riset/winrate_emiten.py</code> — mengimpor aturan <code>scripts/riset/rencana_saham.py</code> (tidak menyalin) dan membaca <code>ohlc/</code> (<strong>jahitan</strong>, deret yang sama dengan Kartu Analisa), <code>ohlcv_stockbit/</code> (<code>foreignbuy</code>/<code>foreignsell</code> untuk arus asing 5 hari), <code>rencana_saham.json</code> (blok rencana berjalan); nol jaringan</td>
+<td><strong>ya</strong> (lewat <code>ohlc/</code>)</td>
+<td>8 Sep 2026</td>
+</tr>
+<tr>
 <td>Screener <code>/screener</code> (tab Tabel, Preset Whale, <strong>Riwayat &amp; Win Rate</strong> — B45, 28 Agu 2026)</td>
 <td><code>screener.json</code>, <code>pola_screener.json</code>, <code>kandidat_deepdive.json</code>, <code>kartu/ringkas.json</code> (tab Preset Whale, lewat <code>keBarisPreset</code>); <strong>tab Riwayat &amp; Win Rate</strong> (sejak 5 Sep 2026): <code>nilai_jejak.json</code> (vonis + ketiga definisi, <code>nilaiJejak.ts</code>) + <code>rekomendasi/&lt;tgl&gt;.json</code> hanya untuk keterangan sinyal (skor, target, batas rugi) — vonis TIDAK dihitung di peramban lagi; <code>penilaian/&lt;tgl&gt;.json</code> (+ <code>.koreksi.json</code>) catatan tersegelnya</td>
 <td>⚙️ <code>app/scripts/bangun-screener.mjs</code> &amp; <code>pola-screener.ts</code> dari <code>ohlc/</code> (<strong>jahitan</strong>) + fundamental; <strong>ruas <code>sektor</code> sejak 27 Agu 2026 dari <code>emiten_sektor.json</code> (IDX-IC resmi, 962/962, keputusan Johan)</strong> — GICS Yahoo di fundamental jadi cadangan, tak dipakai kolom ini; <code>kandidat_deepdive.json</code> ❓ produsen belum ditemukan di <code>scripts/</code> maupun <code>app/scripts/</code>; <strong><code>rekomendasi/</code> ⚙️ turunan <code>scripts/riset/rekap_preset.py</code></strong> dari <code>kartu/arsip/&lt;tgl&gt;.json</code> (ruas preset, sudah <code>ohlc/</code>-jahitan lewat <code>kartu_analisa.py</code>) + <code>ohlc/&lt;KODE&gt;.json</code> (low harian, TP/SL fallback ATR) — nol jaringan, ditulis sekali per tanggal, tidak pernah ditimpa</td>
@@ -3980,6 +3987,75 @@ di halaman yang sama.</p>
 </tbody>
 </table>
 <p>Ditambah <code>financial_year_groups</code> (revenue dkk per tahun, Q1–Q4 <strong>diskret</strong> + annualised + TTM) dan <code>most_recent_quarter</code> (tanggal kuartal, saham beredar, market cap, EV, free float). Dihasilkan: Stock Detail bagian valuasi/solvabilitas/efektivitas tanpa menghitung sendiri; rasio khusus bank yang tidak ada di yfinance; peringkat relatif terhadap pasar.</p>
+<h3>Kamus ruas <code>winrate/&lt;KODE&gt;.json</code> dan <code>winrate/index.json</code> (8 September 2026, #91)</h3>
+<p>Dibangun <code>scripts/riset/winrate_emiten.py</code> (nol jaringan, ±40 detik untuk 956 emiten) sesudah <code>rencana_saham.py</code> di PanenSore dan BukaLaptop; gerbang <code>cek_kesegaran.py</code> membaca ruas <code>akhir</code> di <code>index.json</code>. Dipakai satu halaman: <strong>Winrate PAPAN</strong> <code>/winrate</code>. Bukti uji: <code>winrate_emiten.py --uji</code> — 45 pembanding data nyata (BNBR, ARCI, BBCA × 6 horizon × 2 jendela) identik dengan <code>telusuri()</code> produksi, dan h5/h10/h20 pada 120 sinyal identik dengan <code>jejak</code> di <code>rencana_saham.json</code> (BNBR h10: 67,0 / 59,2 / −0,250).</p>
+<table>
+<thead>
+<tr>
+<th>Ruas</th>
+<th>Arti (dibuktikan dari nilai)</th>
+<th>Dipakai di</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dibangun</code>, <code>kelasBukti</code>, <code>biayaPct</code></td>
+<td>stempel WIB; selalu <code>REKONSTRUKSI</code> (aturan hari ini diterapkan ke masa lalu); biaya pulang-pergi dalam persen (0,4) yang sudah dikurangkan di <code>ekspektansiBiaya</code></td>
+<td>kaki halaman</td>
+</tr>
+<tr>
+<td><code>kode</code>, <code>nBar</code>, <code>mulai</code>, <code>akhir</code></td>
+<td>emiten; jumlah bar OHLC berisi; tanggal bar pertama &amp; terakhir (BNBR 6.343 bar, 2000-09-28 → 2026-09-07)</td>
+<td>kepala halaman, gerbang kesegaran</td>
+</tr>
+<tr>
+<td><code>horizon.h{5,10,20,60,120,200}.n{120,500}</code></td>
+<td>ringkasan aturan rencana dagang per horizon × jendela sinyal: <code>menang</code>, <code>kalah</code>, <code>gantung</code>, <code>n</code>, <code>winRate</code> (menang ÷ tuntas), <code>winRateSemua</code> (menang ÷ n, "penyebut penuh"), <code>ekspektansi</code>, <code>ekspektansiBiaya</code> (persen per sinyal), <code>rataMenang</code>, <code>rataKalah</code>, <code>rataGantung</code> (persen), <code>medianBarKe</code> (bar ke berapa tuntas), <code>nEfektif</code> (n ÷ horizon, minimal 1)</td>
+<td>KPI, tabel enam horizon, pembanding pasar</td>
+</tr>
+<tr>
+<td><code>returnMentah.h*</code></td>
+<td>beli-lalu-tahan tanpa target/batas atas 750 bar terakhir: <code>n</code>, <code>nEfektif</code>, <code>winRate</code> (porsi positif), <code>median</code>, <code>p25</code>, <code>p75</code>, <code>rata</code> — persen</td>
+<td>kartu "Beli lalu tahan"</td>
+</tr>
+<tr>
+<td><code>saringan.h20</code>, <code>saringan.h60</code></td>
+<td>13 kondisi di hari sinyal (jendela 500) → ringkasan bentuk yang sama dengan <code>horizon</code>: RSI14 Wilder (&lt;30 · 30–70 · &gt;70), posisi vs MA20·50·200 sederhana (di atas semua · campuran · di bawah semua), volume vs rata 20 hari (&gt;1,5× · normal · &lt;0,5×), arus asing bersih 5 hari dari <code>ohlcv_stockbit</code> (net beli · net jual/nol), rentang harian vs median jendela (atas · bawah). Kondisi yang tak bisa dihitung (mis. gudang asing tak ada) tak muncul, bukan dianggap nol</td>
+<td>kartu "Saringan teknikal"</td>
+</tr>
+<tr>
+<td><code>barBeku.&lt;tahun&gt;</code></td>
+<td><code>beku</code> (tinggi = rendah DAN tutup = tutup kemarin), <code>bar</code>, <code>pct</code> — BNBR 2013–2017 100% beku</td>
+<td>kartu "Bar beku per tahun"</td>
+</tr>
+<tr>
+<td><code>teknikal</code></td>
+<td><code>harga</code>, <code>ma20</code>, <code>ma50</code>, <code>ma200</code>, <code>rsi14</code>, <code>tertinggi52</code>, <code>terendah52</code> (250 bar) — posisi hari ini</td>
+<td>kartu "Posisi teknikal hari ini"</td>
+</tr>
+<tr>
+<td><code>rencana</code></td>
+<td>salinan ruas <code>tanggal</code>, <code>harga</code>, <code>areaBeli</code>, <code>tp1</code>, <code>tp2</code>, <code>sl</code>, <code>rr</code>, <code>atrPct</code>, <code>nilaiHarian</code> dari <code>rencana_saham.json</code>; <strong>null</strong> untuk 76 emiten yang punya riwayat tapi tak punya rencana hari ini (rentang harian nol / harga kosong)</td>
+<td>kartu "Rencana berjalan"</td>
+</tr>
+<tr>
+<td><code>pasar.h*</code></td>
+<td><code>persentilWinRate</code>, <code>persentilEks</code> — persentil emiten di antara seluruh emiten yang punya sinyal tuntas (jendela 120), 0–99</td>
+<td>KPI persentil, tabel pembanding pasar</td>
+</tr>
+<tr>
+<td><code>index.json</code> → <code>pasar.h*</code></td>
+<td>distribusi pasar jendela 120: <code>n</code>, <code>winRateMedian</code>/<code>P25</code>/<code>P75</code>, <code>eksMedian</code>/<code>P25</code>/<code>P75</code>, <code>pctEksPositif</code> (h20 8 Sep 2026: 929 emiten, median 63,9%, hanya 43,7% ekspektansi positif)</td>
+<td>tabel pembanding pasar</td>
+</tr>
+<tr>
+<td><code>index.json</code> → <code>emiten.&lt;KODE&gt;</code></td>
+<td><code>akhir</code>, <code>nBar</code>, <code>p.h*</code> = <code>[persentilWinRate, persentilEks]</code> (dipadatkan jadi larik: 956 × 6 dengan nama ruas penuh membuat berkasnya dua kali lipat)</td>
+<td>— (cadangan; halaman memakai <code>pasar</code> di berkas emiten)</td>
+</tr>
+</tbody>
+</table>
+<p>Yang <strong>tidak</strong> dihitung dan alasannya: win rate per pola chart (RBS, gap, breakout) — butuh penanda sinyal per hari dari arsip <code>bt/</code>, belum ada (tahap 2 spek); slippage — data harian tak memuatnya; sinyal yang benar-benar terbit dinilai terpisah di Screener · Riwayat &amp; Win Rate (<code>nilai_jejak.json</code>).</p>
 <h3>Kamus per-ruas 94 rasio keystats — satuan, fill rate, tabrakan dgn fundamental lama (24 Agu 2026)</h3>
 <p>Perintah Johan 24 Agu 2026, verbatim: <em>"sekalian pasang OHLCV di emiten, IHSG, serta Keystat dan Profile, kirim agent-agent"</em>. Sub-bagian ini kamus per-ruas yang diminta eksplisit — tiap ruas: satuan (dibuktikan dari NILAI, bukan ditebak dari nama — aturan proyek), berapa dari 963 berkas terisi, dan apakah ruas itu SUDAH tayang dari fundamental lama (kolom "Tabrakan?"). Kalau tabrakan = ya, ruas itu <strong>tidak</strong> diganti — lihat tabel pembanding di bawah. Kalau tabrakan = tidak, ruas itu murni tambahan.</p>
 <p>Satuan <code>%</code> berarti nilainya sudah datang dengan tanda <code>%</code> dari sumber (string, langsung dipakai apa adanya, tak perlu dikali/dibagi 100). Satuan <code>x</code> = rasio kali. Satuan <code>Rp</code> = rupiah per lembar. Satuan <code>Rp (agregat)</code> = rupiah total (ditulis dengan sufiks <code>B</code>=miliar).</p>
