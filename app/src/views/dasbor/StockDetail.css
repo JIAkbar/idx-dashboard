@@ -230,3 +230,9 @@
   .lantai .bdh-cmp-tbl th:first-child,
   .lantai .bdh-cmp-tbl td:first-child { max-width: 148px; white-space: normal; }
 }
+
+/* Tautan "Semua kabar" di kepala panel Kabar emiten. Daftar & barisnya
+   memakai .kbr-list/.kbr-it milik Kabar.css — yang khas di sini cuma
+   penempatan tautannya. */
+.lantai .sd-kabar-semua { margin-left: auto; font-size: 11px; color: var(--amber); text-decoration: none; }
+.lantai .sd-kabar-semua:hover { text-decoration: underline; }

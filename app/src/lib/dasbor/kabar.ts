@@ -80,6 +80,35 @@ function segarKabar(denganArsip: boolean): boolean {
     : cache !== null && Date.now() - cacheSejak < UMUR_CACHE_MS
 }
 
+/**
+ * Kabar yang benar-benar menyebut satu emiten (#122).
+ *
+ * Dua sumber sebutan, dan keduanya perlu:
+ *   1. ruas `emiten` — hanya terisi di pengumuman resmi bursa (75 dari 2.413
+ *      item, 8 Sep 2026), jadi ia akurat tapi jauh dari cukup;
+ *   2. KODE di judul — 769 judul menyebut kode nyata.
+ *
+ * Pencocokan judul dibuat KETAT, dan itu inti perbaikan ini: dua pencocok
+ * yang sudah ada (Kabar.tsx dan tanyaPapan.ts) memakai substring tanpa batas
+ * kata dan tak peka huruf, sehingga EMAS menangkap "ETF Emas" (52 item, 4
+ * yang benar), PADA menangkap kata "pada" (106 vs 0), CUAN 28 vs 11. Di sini:
+ * kode utuh berbatas kata DAN peka huruf besar — "Emas" bukan "EMAS".
+ *
+ * Batas yang disadari: judul yang menyebut NAMA tanpa kode ("Antam" tanpa
+ * ANTM) tidak tertangkap. Terlewat lebih baik daripada salah tangkap —
+ * pembaca yang melihat berita orang lain di halaman emitennya berhenti
+ * mempercayai seluruh panelnya.
+ */
+export function kabarEmiten(item: KabarItem[], kode: string, maks = 8): KabarItem[] {
+  const k = kode.trim().toUpperCase()
+  if (!/^[A-Z0-9]{2,6}$/.test(k)) return []
+  // \b tidak cukup sendirian: ia cocok juga di "BBCA-nya" (aman) DAN di
+  // "PADA" pada teks huruf kecil kalau bendera `i` dipakai — jadi peka huruf
+  // yang menutupnya, bukan pola yang lebih rumit.
+  const pola = new RegExp(`(^|[^A-Z0-9])${k}([^A-Z0-9]|$)`)
+  return item.filter((x) => x.emiten.includes(k) || pola.test(x.judul)).slice(0, maks)
+}
+
 export function useKabar(denganArsip = false) {
   const [kabar, setKabar] = useState<Kabar | null>(segarKabar(denganArsip) ? (denganArsip ? cacheArsip : cache) : null)
   const [galat, setGalat] = useState(false)

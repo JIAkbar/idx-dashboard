@@ -12,6 +12,7 @@ import { cariPengetahuan, PENGETAHUAN } from './pengetahuan'
 import { cariGlosarium } from './glosarium'
 import { normalTanya } from './teksTanya'
 import { HOLIDAYS, todayIsoJakarta } from '../../components/dasbor/Kalender'
+import { kabarEmiten } from './kabar'
 
 /**
  * Mesin jawab "Tanya PAPAN" — tahap pertama: **menjawab dari data, bukan dari
@@ -1304,7 +1305,11 @@ function jawabInti(pertanyaan: string, k: KonteksTanya): Jawaban {
 
     const dariEdisi = (k.edisi ?? []).filter((e) => e.emiten.includes(kode))
     if (dariEdisi.length) bagian.push(`dibahas di ${dariEdisi.length} edisi (terakhir ${dariEdisi[0].kode})`)
-    const dariKabar = (k.kabar ?? []).filter((x) => x.emiten.includes(kode) || x.judul.toUpperCase().includes(kode))
+    // Pencocok yang sama dengan panel Kabar di Stock Detail (#122): dulu
+    // substring tanpa batas kata di judul yang di-uppercase, sehingga PADA
+    // menangkap kata "pada" (106 sebutan palsu) dan EMAS menangkap "ETF
+    // Emas". Angka "disebut di N kabar" ikut salah selama itu.
+    const dariKabar = kabarEmiten(k.kabar ?? [], kode, Number.MAX_SAFE_INTEGER)
     if (dariKabar.length) bagian.push(`disebut di ${dariKabar.length} kabar terbaru`)
 
     if (bagian.length === 0) {

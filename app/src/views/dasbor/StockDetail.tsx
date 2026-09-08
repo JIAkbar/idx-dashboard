@@ -1,5 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { useStockFundamental, useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useSektorIdx, sektorEmiten, papanBerisiko } from '../../lib/dasbor/sektorIdx'
@@ -22,7 +22,11 @@ import { IkonMenu, IKON_PERINGATAN, IKON_JAM } from '../../components/dasbor/Iko
 import { usePengendali, pengendaliEmiten, labelPengendali } from '../../lib/dasbor/pengendali'
 import { tanggalPendek } from '../../lib/dasbor/statistikBerkala'
 import { muatTambahanKeystats, type TambahanKeystats } from '../../lib/dasbor/rasioTambahanKeystats'
+import { useKabar, kabarEmiten, waktuKabar } from '../../lib/dasbor/kabar'
 import './StockDetail.css'
+// Baris kabar (.kbr-*) hidup di Kabar.css dan dipakai juga di sini —
+// pola yang sama dengan Beranda, bukan kelas baru.
+import './Kabar.css'
 
 type Tab = 'statistik' | 'valuasi' | 'banding'
 
@@ -557,6 +561,59 @@ export function StockDetail() {
           )}
         </>
       )}
+
+      {/* Kabar emiten ini, di LUAR kondisi tab: pertanyaan "ada berita apa
+          soal saham ini" berlaku apa pun tab yang sedang dibuka. */}
+      {activeTicker && <PanelKabarEmiten kode={activeTicker} />}
+    </div>
+  )
+}
+
+/**
+ * Delapan kabar terbaru yang menyebut emiten ini.
+ *
+ * Pencocokannya milik `kabarEmiten` di lib — bukan ditulis lagi di sini,
+ * karena pencocok longgar persis yang membuat halaman EMAS memajang berita
+ * "ETF Emas". Keadaan kosong menyebut BATASnya, bukan cuma "tidak ada":
+ * yang dicari kode emitennya, jadi berita yang hanya menyebut nama
+ * perusahaan memang tak tertangkap.
+ */
+function PanelKabarEmiten({ kode }: { kode: string }) {
+  const { kabar } = useKabar()
+  const item = useMemo(() => kabarEmiten(kabar?.item ?? [], kode, 8), [kabar, kode])
+  // Belum termuat/gagal — panel tak muncul sama sekali, bukan tampil kosong
+  // yang terbaca sebagai "emiten ini tak pernah diberitakan".
+  if (!kabar) return null
+  return (
+    <div className="panel">
+      <div className="panel-h">
+        <span className="lbl">Kabar {kode}</span>
+        <Link className="sd-kabar-semua" to="/kabar">Semua kabar →</Link>
+      </div>
+      <div className="panel-b">
+        {item.length === 0 ? (
+          <p className="muted">
+            Tak ada kabar termuat yang menyebut <b>{kode}</b>. Yang dicocokkan kodenya —
+            di judul berita, atau di daftar emiten pengumuman resmi bursa. Berita yang
+            cuma menyebut nama perusahaan tanpa kodenya tidak tertangkap.
+          </p>
+        ) : (
+          <div className="kbr-list">
+            {item.map((i, n) => (
+              <a key={`${i.tautan}-${n}`} className={`kbr-it${i.jenis === 'pengumuman' ? ' resmi' : ''}`}
+                href={i.tautan} target="_blank" rel="noopener noreferrer" title={i.judul}
+                style={{ '--i': String(n) } as Record<string, string>}>
+                <span className="kbr-meta">
+                  <span className={`kbr-sum s-${i.sumber.split(' ')[0].toLowerCase()}`}>{i.sumber}</span>
+                  {i.jenis === 'pengumuman' && <span className="kbr-resmi">Pengumuman resmi</span>}
+                  <span className="kbr-waktu">{waktuKabar(i.waktu)}</span>
+                </span>
+                <span className="kbr-judul">{i.judul}</span>
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
