@@ -64,9 +64,15 @@
      dipasang DUA KALI: sekali di .lantai untuk isi halaman, sekali di sini
      untuk rail, topbar, dan pita kurs. Melewatkan yang ini persis yang bikin
      rail & topbar tertinggal di palet lama. */
-  --bg: #0c0d10; --bg2: #14151a; --bg3: #1a1c22; --card: #14151a; --card2: #1a1c22;
-  --border: #24262e; --border2: rgba(242,194,48,0.30);
-  --text: #eaeaee; --text2: #9ca0ac; --text3: #888d99;
+  /* Tangga navy #40 A — nilainya SAMA dengan blok `.lantai` di bawah,
+     cuma namanya yang berbeda (warisan index_live.html):
+     --bg = --bg0, --bg2 = --bg1, --bg3 = --bg2. Jalan pertama #40 melewatkan
+     blok ini, dan rail serta topbar tertinggal di abu lama — persis yang
+     diperingatkan komentar di atas. Terukur di produksi: rail rgb(20,21,26)
+     berdampingan dengan panel rgb(18,20,29). */
+  --bg: #0B0D14; --bg2: #12141D; --bg3: #181B26; --card: #12141D; --card2: #181B26;
+  --border: #313A50; --border2: rgba(242,194,48,0.30);
+  --text: #EDEFF5; --text2: #A6AEC4; --text3: #98A0B6;
   --accent: #f2c230; --accent2: #ffd863;
   --accent-soft: rgba(242,194,48,0.12); --accent-soft2: rgba(242,194,48,0.26); --accent-soft3: rgba(242,194,48,0.45);
   --red: #e6635a; --red-bg: rgba(230,99,90,0.14); --red-txt: #f0a49d;
@@ -76,11 +82,11 @@
   --cal-avail-bg: rgba(242,194,48,0.12); --cal-avail-txt: #f2c230;
   --cal-up: #38b77e; --cal-dn: #e6635a;
   --cal-active-bg: #f2c230; --cal-active-txt: #171207;
-  --cal-holiday: #14151a; --cal-holiday-txt: #3a3d47;
-  --chart-grid: rgba(255,255,255,0.05); --chart-txt: #888d99;
-  --rank1bg: #f2c230; --rank2bg: #363945; --rank3bg: #3d3320;
-  --broker-chip-bg: #1a1c22; --broker-chip-txt: #9ca0ac;
-  --bar-track: #1a1c22;
+  --cal-holiday: #12141D; --cal-holiday-txt: #4A5266;
+  --chart-grid: rgba(255,255,255,0.06); --chart-txt: #98A0B6;
+  --rank1bg: #f2c230; --rank2bg: #485477; --rank3bg: #3d3320;
+  --broker-chip-bg: #181B26; --broker-chip-txt: #A6AEC4;
+  --bar-track: #181B26;
 }
 
 /* ===== KEPALA HALAMAN: merek + pita kurs berjalan =====
