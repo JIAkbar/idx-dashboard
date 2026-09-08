@@ -7,6 +7,9 @@
 }
 .lantai .pbd-kepala h2 { margin: 0; }
 .lantai .pbd-rentang { display: flex; flex-wrap: wrap; gap: 3px; }
+/* Pil + kalender duduk berdampingan dan boleh membungkus di layar sempit;
+   grupnya sendiri tak boleh mengambil lebar konten (pelajaran #87). */
+.lantai .pbd-kendali { display: flex; align-items: center; flex-wrap: wrap; gap: var(--j1, 8px); min-width: 0; }
 
 .lantai .pbd-basis { margin: 0 0 10px; font-size: 11px; line-height: 1.55; }
 .lantai .pbd-kosong { margin: 8px 0; font-size: 11.5px; color: var(--text3); }

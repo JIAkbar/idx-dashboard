@@ -43,11 +43,20 @@ export interface HariRingkas {
   broker: BarisBroker[]
 }
 
-export type RentangDominan = 'w1' | 'b1' | 'b3' | 'b6'
+export type RentangDominan =
+  | 'hariIni' | 'w1' | 'b1' | 'b3' | 'b6' | 'sejakJan' | 'y1'
 
-/** Kata dan urutannya dari kamus rentang (#70). */
+/**
+ * Kata dan urutannya dari kamus rentang (#70).
+ *
+ * `sejakJan`, BUKAN `ytd`: sebagai pil, rentang tahun-berjalan selalu
+ * dieja "Sejak 1 Jan" (keputusan Johan 5 Sep 2026), dan kata "YTD"
+ * disisakan untuk kolom yang memuat angka YTD resmi bursa. Dua angka
+ * berbeda dengan satu nama di satu layar sudah pernah salah dibaca.
+ */
 export const RENTANG_DOMINAN = pilRentang<RentangDominan>(
-  (['w1', 'b1', 'b3', 'b6'] as const).map((id) => ({ id, kunci: id })),
+  (['hariIni', 'w1', 'b1', 'b3', 'b6', 'sejakJan', 'y1'] as const)
+    .map((id) => ({ id, kunci: id })),
 )
 
 export interface BarisDominan {
@@ -79,10 +88,21 @@ export interface HasilDominan {
   jual: BarisDominan[]
 }
 
-/** Tanggal ISO paling awal yang masih ikut rentang, snap ke hari BERDATA. */
+/** Tanggal ISO paling awal yang masih ikut rentang, snap ke hari BERDATA.
+ *
+ * Dua preset tak punya jumlah hari dan karena itu ditangani sendiri:
+ * `hariIni` = hari berdata terakhir (rentang satu hari, bukan nol hari),
+ * dan `sejakJan` = hari berdata pertama di tahun yang sama dengan akhir.
+ * Menaruh keduanya di `HARI_PRESET` berarti mengarang jumlah hari yang
+ * berubah-ubah tiap tanggal — persis yang tak boleh ditebak. */
 export function mulaiRentang(hari: HariRingkas[], preset: RentangDominan): string {
   if (hari.length === 0) return ''
   const akhir = hari[hari.length - 1].tanggal
+  if (preset === 'hariIni') return akhir
+  if (preset === 'sejakJan') {
+    const jan = `${akhir.slice(0, 4)}-01-01`
+    return hari.find((h) => h.tanggal >= jan)?.tanggal ?? hari[0].tanggal
+  }
   const d = new Date(`${akhir}T00:00:00Z`)
   d.setUTCDate(d.getUTCDate() - HARI_PRESET[preset])
   const target = d.toISOString().slice(0, 10)
@@ -92,16 +112,30 @@ export function mulaiRentang(hari: HariRingkas[], preset: RentangDominan): strin
   return hari.find((h) => h.tanggal >= target)?.tanggal ?? hari[0].tanggal
 }
 
+/** Rentang tanggal yang dipilih dari kalender — menggantikan preset. */
+export interface RentangKustom {
+  dari: string
+  sampai: string
+}
+
 export function hitungDominan(
   hari: HariRingkas[],
   preset: RentangDominan,
   hargaAkhir: number | null,
   topN = 7,
+  kustom?: RentangKustom | null,
 ): HasilDominan | null {
   if (hari.length === 0) return null
-  const mulai = mulaiRentang(hari, preset)
-  const akhir = hari[hari.length - 1].tanggal
+  // Kalender MENGGANTIKAN preset, bukan menyaring hasilnya: dua sumber
+  // rentang yang berlaku bersamaan akan memberi tanggal di kepala panel
+  // yang tak cocok dengan angka di tabelnya.
+  const mulai = kustom ? kustom.dari : mulaiRentang(hari, preset)
+  const akhir = kustom ? kustom.sampai : hari[hari.length - 1].tanggal
   const potong = hari.filter((h) => h.tanggal >= mulai && h.tanggal <= akhir)
+  // Rentang kalender bisa jatuh seluruhnya di hari tanpa data (libur
+  // panjang, atau emiten yang arsipnya belum sampai situ). Itu keadaan
+  // yang sah dan harus terbaca sebagai 'tak ada data di rentang ini',
+  // bukan sebagai tabel kosong tanpa keterangan.
   if (potong.length === 0) return null
 
   const per = new Map<string, { bl: number; bn: number; jl: number; jn: number }>()

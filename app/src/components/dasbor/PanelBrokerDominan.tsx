@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PemilihRentang } from './PemilihRentang'
+import { DatePicker } from './DatePicker'
 import { tanggalRingkas } from '../../lib/dasbor/format'
 import {
   RENTANG_DOMINAN,
   hitungDominan,
+  type RentangKustom,
   type BarisDominan,
   type HariRingkas,
   type RentangDominan,
@@ -101,19 +103,44 @@ export function PanelBrokerDominan({ hari, hargaAkhir }: {
   hargaAkhir: number | null
 }) {
   const [rentang, setRentang] = useState<RentangDominan>('b1')
-  const hasil = useMemo(() => hitungDominan(hari, rentang, hargaAkhir), [hari, rentang, hargaAkhir])
+  // Rentang pilihan kalender. Non-null = kalender yang berlaku dan pil
+  // dimatikan tampilannya; memilih pil lagi mengosongkannya kembali.
+  const [kustom, setKustom] = useState<RentangKustom | null>(null)
+  const tersedia = useMemo(() => new Set(hari.map((h) => h.tanggal)), [hari])
+  const akhirData = hari.length ? hari[hari.length - 1].tanggal : ''
+  const hasil = useMemo(
+    () => hitungDominan(hari, rentang, hargaAkhir, 7, kustom),
+    [hari, rentang, hargaAkhir, kustom],
+  )
 
   return (
     <section className="be-kartu pbd">
       <div className="pbd-kepala">
         <h2>Broker dominan</h2>
-        <PemilihRentang
-          className="pbd-rentang"
-          ariaLabel="Rentang broker dominan"
-          nilai={rentang}
-          onGanti={(id) => setRentang(id as RentangDominan)}
-          opsi={RENTANG_DOMINAN}
-        />
+        <div className="pbd-kendali">
+          <PemilihRentang
+            className="pbd-rentang"
+            ariaLabel="Rentang broker dominan"
+            nilai={kustom ? '' : rentang}
+            onGanti={(id) => { setKustom(null); setRentang(id as RentangDominan) }}
+            opsi={RENTANG_DOMINAN}
+          />
+          {/* Kalender pakai komponen kanonis yang sama dengan 21 halaman
+              lain (#170): satu klik memilih tanggal, klik kedua menutup
+              rentang. `tersedia` dibatasi hari yang PUNYA arsip broker —
+              memilih hari libur di sini menghasilkan tabel kosong yang
+              terbaca seperti kerusakan. */}
+          <DatePicker
+            ariaLabel="Rentang tanggal broker dominan"
+            rata="kanan"
+            value={kustom?.dari ?? akhirData}
+            tersedia={tersedia}
+            maks={akhirData}
+            rentang={kustom ? { dari: kustom.dari, sampai: kustom.sampai } : null}
+            onChange={(iso) => setKustom({ dari: iso, sampai: iso })}
+            onGantiRentang={(dari, sampai) => setKustom({ dari, sampai })}
+          />
+        </div>
       </div>
 
       {!hasil ? (

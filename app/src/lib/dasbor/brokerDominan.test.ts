@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { hitungDominan, mulaiRentang, type HariRingkas } from './brokerDominan'
+import {
+  RENTANG_DOMINAN, hitungDominan, mulaiRentang, type HariRingkas,
+} from './brokerDominan'
 
 /** [kode, beli_lot, beli_nilai, jual_lot, jual_nilai] — urutan arsipnya. */
 function h(tanggal: string, ...baris: HariRingkas['broker']): HariRingkas {
@@ -93,5 +95,48 @@ describe('hitungDominan', () => {
 
   it('deret kosong mengembalikan null, bukan hasil bernilai nol', () => {
     expect(hitungDominan([], 'b1', 100)).toBeNull()
+  })
+})
+
+describe('rentang baru & kalender (#95)', () => {
+  // Deret sengaja melintasi pergantian tahun: "Sejak 1 Jan" hanya benar
+  // kalau ia memotong di Januari tahun AKHIR, bukan 365 hari mundur.
+  const lintasTahun = [
+    h('2025-12-29'), h('2025-12-30'), h('2026-01-05'),
+    h('2026-02-02'), h('2026-03-02'),
+  ]
+
+  it('hariIni = satu hari bursa terakhir, bukan nol hari', () => {
+    expect(mulaiRentang(lintasTahun, 'hariIni')).toBe('2026-03-02')
+  })
+
+  it('sejakJan memotong di Januari tahun AKHIR, bukan 365 hari mundur', () => {
+    expect(mulaiRentang(lintasTahun, 'sejakJan')).toBe('2026-01-05')
+    // 365 hari mundur dari 2026-03-02 menyeret dua hari Desember 2025 ikut —
+    // tahun lain, dan angkanya jadi bukan 'sejak 1 Januari'.
+    expect(mulaiRentang(lintasTahun, 'y1')).toBe('2025-12-29')
+  })
+
+  it('rentang kalender MENGGANTIKAN preset, bukan menyaringnya', () => {
+    const hasil = hitungDominan(lintasTahun, 'b1', null, 7,
+      { dari: '2025-12-30', sampai: '2026-01-05' })!
+    expect([hasil.mulai, hasil.akhir, hasil.nHari])
+      .toEqual(['2025-12-30', '2026-01-05', 2])
+  })
+
+  it('rentang yang jatuh di hari tanpa data = null, bukan tabel kosong', () => {
+    // Libur panjang atau arsip yang belum sampai situ: keadaan sah yang
+    // harus terbaca "belum ada data", bukan tabel nol baris.
+    expect(hitungDominan(lintasTahun, 'b1', null, 7,
+      { dari: '2026-01-10', sampai: '2026-01-20' })).toBeNull()
+  })
+
+  it('daftar pil: tujuh, urut pendek ke panjang, YTD dieja Sejak 1 Jan', () => {
+    expect(RENTANG_DOMINAN.map((o) => o.id)).toEqual(
+      ['hariIni', 'w1', 'b1', 'b3', 'b6', 'sejakJan', 'y1'])
+    // Kata "YTD" milik kolom resmi bursa; sebagai pil ia selalu
+    // "Sejak 1 Jan" (keputusan Johan 5 Sep 2026).
+    expect(RENTANG_DOMINAN.map((o) => o.label)).not.toContain('YTD')
+    expect(RENTANG_DOMINAN.map((o) => o.label)).toContain('Sejak 1 Jan')
   })
 })
